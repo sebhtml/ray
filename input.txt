@@ -1,0 +1,1 @@
+LoadSingleEndReads 50xpopo.fasta_fragments.fasta
