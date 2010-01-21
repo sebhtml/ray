@@ -35,7 +35,6 @@ using namespace std;
 Machine::Machine(int argc,char**argv){
 	m_wordSize=21;
 	m_last_value=0;
-
 	m_mode_send_ingoing_edges=false;
 	m_mode_send_edge_sequence_id_position=0;
 	m_mode_send_vertices=false;
@@ -81,7 +80,7 @@ Machine::Machine(int argc,char**argv){
 	MPI_Get_processor_name (m_name, &m_nameLen); 
 	cout<<"Rank="<<m_rank<<" processor "<<m_name<<endl;
 	m_alive=true;
-	m_welcomeStep=false;
+	m_welcomeStep=true;
 	m_loadSequenceStep=false;
 	m_inputFile=argv[1];
 	m_vertices_sent=0;
@@ -102,7 +101,6 @@ void Machine::run(){
 		receiveMessages();
 		checkRequests();
 		processData();
-		sendMessages();
 	}
 }
 
@@ -120,7 +118,6 @@ void Machine::checkRequests(){
 			}
 		}
 		m_pendingMpiRequest=toRecheck;
-		minQueries=10;
 	}
 	if(m_messageMyAllocator.getNumberOfChunks()>1){
 		m_messageMyAllocator.clear();
@@ -430,6 +427,9 @@ void Machine::loadSequences(){
 }
 
 void Machine::processData(){
+	if(m_pendingMpiRequest.size()>0)
+		return;
+
 	if(!m_parameters.isInitiated()&&isMaster()){
 		m_parameters.load(m_inputFile);
 	}else if(m_welcomeStep==true && m_loadSequenceStep==false&&isMaster()){
@@ -533,7 +533,7 @@ void Machine::processData(){
 		
 	}else if(m_numberOfMachinesDoneSendingEdges==getSize()){
 		m_numberOfMachinesDoneSendingEdges=-1;
-		cout<<"Edges are distributed."<<endl;
+		cout<<"Rank "<<getRank()<<" says that edges are distributed."<<endl;
 		for(int i=0;i<getSize();i++){
 			char*message=m_name;
 			MPI_Request request;
@@ -703,25 +703,13 @@ bool Machine::isMaster(){
 	return getRank()==MASTER_RANK;
 }
 
-void Machine::sendMessages(){
-	if(getRank()==MASTER_RANK && m_welcomeStep==false){
-		sendWelcomeMessages();
-	}
-}
+
 
 int Machine::getSize(){
 	return m_size;
 }
 
-void Machine::sendWelcomeMessages(){
-	for(int i=0;i<getSize();i++){
-		char*message=m_name;
-		MPI_Request request;
-		MPI_Isend(message, strlen(message), MPI_BYTE, i, m_TAG_WELCOME, MPI_COMM_WORLD, &request);
-		m_pendingMpiRequest.push_back(request);
-	}
-	m_welcomeStep=true;
-}
+
 
 bool Machine::isAlive(){
 	return m_alive;

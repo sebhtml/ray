@@ -81,6 +81,7 @@ class Machine{
 	int m_numberOfMachinesReadyToSendDistribution;
 	int m_vertices_sent;
 	
+
 	map<int,uint64_t> m_coverageDistribution;
 	int m_minimumCoverage;
 	int m_peakCoverage;
@@ -126,8 +127,6 @@ class Machine{
 	void loadSequences();
 	void processMessages();
 	void processData();
-	void sendMessages();
-	void sendWelcomeMessages();
 	int getRank();
 	void receiveWelcomeMessage(MPI_Status*status);
 	int vertexRank(uint64_t a);
