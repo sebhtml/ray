@@ -3,7 +3,7 @@ CXXFLAGS=  -Wall  -O3  -I/usr/include/openmpi/1.2.4-gcc/  -I. #-DDEBUG
 
 all: Ray
 
-OBJECTS= Machine.o common_functions.o Loader.o ray_main.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o Edge.o CoverageDistribution.o
+OBJECTS= Machine.o common_functions.o Loader.o ray_main.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o Edge.o CoverageDistribution.o MessageToSend.o
 
 
 %.o: %.cpp

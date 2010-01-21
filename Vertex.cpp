@@ -74,7 +74,6 @@ bool Vertex::hasEdge(Edge*e,int rank,void*ptr){
 	int i=0;
 	while(t!=NULL){
 		if(t->getRank()==rank and t->getPtr()==ptr){
-			//cout<<"Found"<<endl;
 			return true;
 		}
 		t=t->getNext();
