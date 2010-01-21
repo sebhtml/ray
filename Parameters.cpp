@@ -47,6 +47,9 @@ void Parameters::load(string file){
 			f>>token;
 			m_singleEndReadsFile.push_back(token);
 			cout<<"LoadSingleEndReads "<<token<<endl;
+		}else if(token=="SetOutputDirectory"){
+			f>>token;
+			m_directory=token;
 		}
 	}
 	f.close();

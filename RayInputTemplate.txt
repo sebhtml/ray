@@ -17,5 +17,4 @@ LoadPairedEndReads	4-left.fasta	4-right.fasta	200	10
 
 # Set options
 
-SetMinimumContigLength 500
 SetOutputDirectory UNTITLED
