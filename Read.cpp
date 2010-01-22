@@ -30,14 +30,14 @@ using namespace  std;
 
 Read::Read(){
 	m_sequence=NULL;
-	m_id=NULL;
+	//m_id=NULL;
 }
 
 
 void Read::copy(const char*id,const char*sequence,MyAllocator*seqMyAllocator){
 	m_sequence=(char*)seqMyAllocator->allocate(strlen(sequence)+1);
 	//m_id=(char*)malloc(strlen(id)+1);
-	m_id=NULL;
+	//m_id=NULL;
 	strcpy(m_sequence,sequence);
 	//strcpy(m_id,id);
 }
@@ -66,7 +66,7 @@ char*Read::getSeq(){
 
 
 char*Read::getId(){
-	return m_id;
+	return NULL;
 }
 
 

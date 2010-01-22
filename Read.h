@@ -30,7 +30,7 @@
 using namespace std;
 
 class Read{
-	char*m_id;
+	//char*m_id;
 	char*m_sequence;
 public:
 	Read();

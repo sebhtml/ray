@@ -43,7 +43,7 @@ Machine::Machine(int argc,char**argv){
 	m_mode_send_outgoing_edges=false;
 	m_mode_send_vertices_sequence_id=0;
 	m_mode_send_vertices_sequence_id_position=0;
-
+	m_reverseComplementEdge=false;
 
 	m_numberOfMachinesDoneSendingVertices=0;
 	m_numberOfMachinesDoneSendingEdges=0;
@@ -107,40 +107,35 @@ void Machine::run(){
 }
 
 void Machine::sendMessages(){
-	if(m_messagesToSend.size()==0 and m_pendingMpiRequest.size()==0){
-		if(m_messageMyAllocator.getNumberOfChunks()>1){
-			m_messageMyAllocator.clear();
-			m_messageMyAllocator.constructor();
-		}
-	}
 
 	for(int i=0;i<(int)m_messagesToSend.size();i++){
 		MessageToSend*aMessage=&(m_messagesToSend[i]);
 		
 		MPI_Request request;
 		MPI_Isend(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD, &request);
-		m_pendingMpiRequest.push_back(request);
+		Request aRequest(*aMessage,request);
+		m_pendingMpiRequest.push_back(aRequest);
 	}
 	m_messagesToSend.clear();
 }
 
 void Machine::checkRequests(){
-	int minQueries=0;
-	int iterations=0;
-	while((int)m_pendingMpiRequest.size()>minQueries){
-		vector<MPI_Request> toRecheck;
-		for(int i=0;i<(int)m_pendingMpiRequest.size();i++){
-			MPI_Status status;
-			int flag;
-			MPI_Request request=m_pendingMpiRequest[i];
-			MPI_Test(&request,&flag,&status);
-			if(!flag){
-				toRecheck.push_back(request);
-			}
-		}
-		m_pendingMpiRequest=toRecheck;
+	MPI_Request requests[1024];
+	MPI_Status status[1024];
+	for(int i=0;i<(int)m_pendingMpiRequest.size();i++){
+		requests[i]=m_pendingMpiRequest[i].getMPIRequest();
 	}
 
+	MPI_Waitall(m_pendingMpiRequest.size(),requests,status);
+
+	m_pendingMpiRequest.clear();
+
+	if(false and m_messagesToSend.size()==0){
+		if(m_messageMyAllocator.getNumberOfChunks()>1){
+			m_messageMyAllocator.clear();
+			m_messageMyAllocator.constructor();
+		}
+	}
 }
 
 void Machine::receiveMessages(){
@@ -579,16 +574,27 @@ void Machine::processData(){
 		m_messagesToSend.push_back(aMessage);
 	}else if(m_mode_send_outgoing_edges==true){ 
 
-		if(m_mode_send_edge_sequence_id%10000==0 and m_mode_send_edge_sequence_id_position==0){
-			cout<<"Rank "<<getRank()<<" is extracting outgoing edges "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<endl;
+		if(m_mode_send_edge_sequence_id%100000==0 and m_mode_send_edge_sequence_id_position==0){
+			string strand="";
+			if(m_reverseComplementEdge)
+				strand="(reverse complement)";
+			cout<<"Rank "<<getRank()<<" is extracting outgoing edges "<<strand<<" "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<endl;
 		}
 
 		if(m_mode_send_edge_sequence_id>(int)m_myReads.size()-1){
-			m_mode_send_outgoing_edges=false;
-			m_mode_send_ingoing_edges=true;
-			m_mode_send_edge_sequence_id_position=0;
-			cout<<"Rank "<<getRank()<<" is extracting outgoing edges "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
-			m_mode_send_edge_sequence_id=0;
+			if(m_reverseComplementEdge==false){
+				m_mode_send_edge_sequence_id=0;
+				m_mode_send_edge_sequence_id_position=0;
+				m_reverseComplementEdge=true;
+				cout<<"Rank "<<getRank()<<" is extracting outgoing edges "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
+			}else{
+				m_mode_send_outgoing_edges=false;
+				m_mode_send_ingoing_edges=true;
+				m_mode_send_edge_sequence_id_position=0;
+				cout<<"Rank "<<getRank()<<" is extracting outgoing edges (reverse complement) "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
+				m_mode_send_edge_sequence_id=0;
+				m_reverseComplementEdge=false;
+			}
 		}else{
 
 
@@ -602,18 +608,21 @@ void Machine::processData(){
 				memory[m_wordSize+1]='\0';
 				if(isValidDNA(memory)){
 					VertexMer a=wordId(memory);
-					VertexMer b=complementVertex(a,m_wordSize+1);
-					uint64_t a_1=getKPrefix(a,m_wordSize);
-					uint64_t a_2=getKSuffix(a,m_wordSize);
-					uint64_t b_1=getKPrefix(b,m_wordSize);
-					uint64_t b_2=getKSuffix(b,m_wordSize);
+					if(m_reverseComplementEdge){
+						VertexMer b=complementVertex(a,m_wordSize+1);
+						uint64_t b_1=getKPrefix(b,m_wordSize);
+						uint64_t b_2=getKSuffix(b,m_wordSize);
+						int rankB=vertexRank(b_2);
+						messagesStockOut[rankB].push_back(b_1);
+						messagesStockOut[rankB].push_back(b_2);
+					}else{
+						uint64_t a_1=getKPrefix(a,m_wordSize);
+						uint64_t a_2=getKSuffix(a,m_wordSize);
+						int rankA=vertexRank(a_2);
+						messagesStockOut[rankA].push_back(a_1);
+						messagesStockOut[rankA].push_back(a_2);
+					}
 					
-					int rankA=vertexRank(a_2);
-					int rankB=vertexRank(b_2);
-					messagesStockOut[rankA].push_back(a_1);
-					messagesStockOut[rankA].push_back(a_2);
-					messagesStockOut[rankB].push_back(b_1);
-					messagesStockOut[rankB].push_back(b_2);
 				}
 			}
 
@@ -639,16 +648,26 @@ void Machine::processData(){
 		}
 	}else if(m_mode_send_ingoing_edges==true){ 
 
-		if(m_mode_send_edge_sequence_id%10000==0 and m_mode_send_edge_sequence_id_position==0){
-			cout<<"Rank "<<getRank()<<" is extracting ingoing edges "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<endl;
+		if(m_mode_send_edge_sequence_id%100000==0 and m_mode_send_edge_sequence_id_position==0){
+			string strand="";
+			if(m_reverseComplementEdge)
+				strand="(reverse complement)";
+			cout<<"Rank "<<getRank()<<" is extracting ingoing edges "<<strand<<" "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<endl;
 		}
 
 		if(m_mode_send_edge_sequence_id>(int)m_myReads.size()-1){
-			char*message=m_name;
-			MessageToSend aMessage(message, strlen(message), MPI_BYTE, MASTER_RANK, m_TAG_EDGES_DISTRIBUTED);
-			m_messagesToSend.push_back(aMessage);
-			m_mode_send_ingoing_edges=false;
-			cout<<"Rank "<<getRank()<<" is extracting ingoing edges "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
+			if(m_reverseComplementEdge==false){
+				m_reverseComplementEdge=true;
+				m_mode_send_edge_sequence_id=0;
+				m_mode_send_edge_sequence_id_position=0;
+				cout<<"Rank "<<getRank()<<" is extracting ingoing edges "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
+			}else{
+				char*message=m_name;
+				MessageToSend aMessage(message, strlen(message), MPI_BYTE, MASTER_RANK, m_TAG_EDGES_DISTRIBUTED);
+				m_messagesToSend.push_back(aMessage);
+				m_mode_send_ingoing_edges=false;
+				cout<<"Rank "<<getRank()<<" is extracting ingoing edges (reverse complement) "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
+			}
 		}else{
 
 
@@ -662,18 +681,21 @@ void Machine::processData(){
 				memory[m_wordSize+1]='\0';
 				if(isValidDNA(memory)){
 					VertexMer a=wordId(memory);
-					VertexMer b=complementVertex(a,m_wordSize+1);
-					uint64_t a_1=getKPrefix(a,m_wordSize);
-					uint64_t a_2=getKSuffix(a,m_wordSize);
-					uint64_t b_1=getKPrefix(b,m_wordSize);
-					uint64_t b_2=getKSuffix(b,m_wordSize);
-					
-					int rankA=vertexRank(a_1);
-					int rankB=vertexRank(b_1);
-					messagesStockIn[rankA].push_back(a_1);
-					messagesStockIn[rankA].push_back(a_2);
-					messagesStockIn[rankB].push_back(b_1);
-					messagesStockIn[rankB].push_back(b_2);
+
+					if(m_reverseComplementEdge){
+						VertexMer b=complementVertex(a,m_wordSize+1);
+						uint64_t b_1=getKPrefix(b,m_wordSize);
+						uint64_t b_2=getKSuffix(b,m_wordSize);
+						int rankB=vertexRank(b_1);
+						messagesStockIn[rankB].push_back(b_1);
+						messagesStockIn[rankB].push_back(b_2);
+					}else{
+						uint64_t a_1=getKPrefix(a,m_wordSize);
+						uint64_t a_2=getKSuffix(a,m_wordSize);
+						int rankA=vertexRank(a_1);
+						messagesStockIn[rankA].push_back(a_1);
+						messagesStockIn[rankA].push_back(a_2);
+					}
 				}
 			}
 

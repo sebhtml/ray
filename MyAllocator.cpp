@@ -32,7 +32,7 @@ MyAllocator::MyAllocator(){
 }
 
 void MyAllocator::constructor(){
-	m_CHUNK_SIZE=1024*1024*1024; // 1M
+	m_CHUNK_SIZE=10*1024*1024; // 10M
 	m_currentChunk=(char*)malloc(m_CHUNK_SIZE);
 	m_chunks.push_back(m_currentChunk);
 	m_currentPosition=0;

@@ -34,6 +34,7 @@ class MessageToSend{
 	int m_dest;
 	int m_tag;
 public:
+	MessageToSend();
 	MessageToSend(void*b,int c,MPI_Datatype d,int dest,int tag);
 	void*getBuffer();
 	int getCount();

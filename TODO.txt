@@ -1,3 +1,4 @@
+* possibly proceed separatly for direct and reverse for edges.
 * compute seeds
 * problem with memory usage on MASTER
 * attach reads

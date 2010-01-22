@@ -27,6 +27,7 @@
 #include<mpi.h>
 #include<vector>
 #include"Vertex.h"
+#include"Request.h"
 #include<SplayTree.h>
 #include"MessageToSend.h"
 #include<set>
@@ -46,6 +47,7 @@ class Machine{
 	int m_size;
 	char m_name[255];
 	int m_nameLen;
+	bool m_reverseComplementEdge;
 	int m_totalLetters;
 	bool m_alive;
 	bool m_welcomeStep;
@@ -94,7 +96,7 @@ class Machine{
 	uint64_t m_send_buffer[10];
 	set<uint64_t> m_test;
 	vector<uint64_t> m_test2;
-	vector<MPI_Request> m_pendingMpiRequest;
+	vector<Request> m_pendingMpiRequest;
 	Parameters m_parameters;
 	int m_numberOfMachinesDoneSendingEdges;
 	SplayTree<uint64_t,Vertex> m_subgraph;

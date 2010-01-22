@@ -20,40 +20,23 @@
 */
 
 
+#ifndef _Request
+#define _Request
 
-
+#include<mpi.h>
 #include"MessageToSend.h"
 
+class Request{
+	MessageToSend m_message;
+	int m_numberOfTests;
+	MPI_Request m_request;
+public:
+	Request(MessageToSend m,MPI_Request m_request);
+	MPI_Request getMPIRequest();
+	void addTest();
+	int getNumberOfTests();
+	void print();
+};
 
-MessageToSend::MessageToSend(void*b,int c,MPI_Datatype d,int dest,int tag){
-	m_buffer=b;
-	m_count=c;
-	m_datatype=d;
-	m_dest=dest;
-	m_tag=tag;
-}
-
-
-void*MessageToSend::getBuffer(){
-	return m_buffer;
-}
-
-int MessageToSend::getCount(){
-	return m_count;
-}
-
-MPI_Datatype MessageToSend::getMPIDatatype(){
-	return m_datatype;
-}
-
-int MessageToSend::getDestination(){
-	return m_dest;
-}
-
-int MessageToSend::getTag(){
-	return m_tag;
-}
-
-MessageToSend::MessageToSend(){
-}
+#endif
 

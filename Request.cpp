@@ -20,40 +20,28 @@
 */
 
 
+#include"Request.h"
+#include<iostream>
+using namespace std;
 
-
-#include"MessageToSend.h"
-
-
-MessageToSend::MessageToSend(void*b,int c,MPI_Datatype d,int dest,int tag){
-	m_buffer=b;
-	m_count=c;
-	m_datatype=d;
-	m_dest=dest;
-	m_tag=tag;
+Request::Request(MessageToSend m,MPI_Request request){
+	m_numberOfTests=0;
+	m_message=m;
+	m_request=request;
 }
 
-
-void*MessageToSend::getBuffer(){
-	return m_buffer;
+void Request::addTest(){
+	m_numberOfTests++;
 }
 
-int MessageToSend::getCount(){
-	return m_count;
+MPI_Request Request::getMPIRequest(){
+	return m_request;
 }
 
-MPI_Datatype MessageToSend::getMPIDatatype(){
-	return m_datatype;
+int Request::getNumberOfTests(){
+	return m_numberOfTests;
 }
 
-int MessageToSend::getDestination(){
-	return m_dest;
+void Request::print(){
+	cout<<"Destination="<<m_message.getDestination()<<endl;
 }
-
-int MessageToSend::getTag(){
-	return m_tag;
-}
-
-MessageToSend::MessageToSend(){
-}
-
