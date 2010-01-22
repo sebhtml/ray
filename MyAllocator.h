@@ -27,8 +27,8 @@
 using namespace std;
 
 class MyAllocator{
-	vector<char*>m_chunks;
-	char*m_currentChunk;
+	vector<void*>m_chunks;
+	void*m_currentChunk;
 	int m_currentPosition;
 	unsigned int m_jobs;
 	int m_CHUNK_SIZE;
@@ -37,7 +37,7 @@ public:
 	void print();
 	void clear();
 	void constructor();
-	char*allocate(int s);
+	void*allocate(int s);
 	~MyAllocator();
 	int getChunkSize();
 	int getNumberOfChunks();

@@ -28,6 +28,7 @@
 
 
 #include"Vertex.h"
+#include<cstdlib>
 #include<iostream>
 using namespace std;
 

@@ -24,19 +24,19 @@
 #define _Request
 
 #include<mpi.h>
-#include"MessageToSend.h"
+#include"Message.h"
 
 class Request{
-	MessageToSend m_message;
+	Message m_message;
 	int m_numberOfTests;
 	MPI_Request m_request;
 public:
-	Request(MessageToSend m,MPI_Request m_request);
+	Request(Message m,MPI_Request m_request);
 	MPI_Request getMPIRequest();
 	void addTest();
 	int getNumberOfTests();
 	void print();
-	MessageToSend*getMessage();
+	Message*getMessage();
 };
 
 #endif

@@ -19,9 +19,9 @@
 
 */
 
+#include"Machine.h"
 #include"Message.h"
 #include"common_functions.h"
-#include"Machine.h"
 #include<iostream>
 #include<fstream>
 #include"CoverageDistribution.h"
@@ -34,6 +34,9 @@
 using namespace std;
 
 Machine::Machine(int argc,char**argv){
+	m_sentMessages=0;
+	m_ticks=0;
+	m_receivedMessages=0;
 	m_wordSize=21;
 	m_last_value=0;
 	m_mode_send_ingoing_edges=false;
@@ -47,7 +50,7 @@ Machine::Machine(int argc,char**argv){
 
 	m_numberOfMachinesDoneSendingVertices=0;
 	m_numberOfMachinesDoneSendingEdges=0;
-	m_numberOfMachinesReadyDistribution=0;
+	m_numberOfMachinesReadyToSendDistribution=0;
 	m_numberOfMachinesDoneSendingCoverage=0;
 
 	m_messageSentForVerticesDistribution=false;
@@ -99,8 +102,20 @@ Machine::Machine(int argc,char**argv){
 
 void Machine::run(){
 	while(isAlive()){
+		// TODO: get rid of this
+		if(m_ticks%1000==0)
+			MPI_Barrier(MPI_COMM_WORLD);
+
+/*
+		if(m_ticks%1000000==0)
+			printStatus();
+*/
+		m_ticks++;
 		receiveMessages(); 
 		checkRequests();
+		if(m_pendingMpiRequest.size()>0){
+			continue;
+		}
 		processMessages();
 		processData();
 		sendMessages();
@@ -108,36 +123,55 @@ void Machine::run(){
 }
 
 void Machine::sendMessages(){
-
 	for(int i=0;i<(int)m_outbox.size();i++){
 		Message*aMessage=&(m_outbox[i]);
 		if(aMessage->getDestination()==getRank()){
-			m_inBox.push_back(*aMessage);
+			m_inbox.push_back(*aMessage);
+			m_receivedMessages++;
 		}else{
 			MPI_Request request;
 			MPI_Isend(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD, &request);
-			Request aRequest(*aMessage,request);
-			m_pendingMpiRequest.push_back(aRequest);
+			m_pendingMpiRequest.push_back(request);
+			m_requestIterations.push_back(0);
 		}
+		m_sentMessages++;
 	}
 	m_outbox.clear();
 }
 
 void Machine::checkRequests(){
-
-	MPI_Request requests[1024];
-	MPI_Status status[1024];
-	int notToSelf=0;
+/*
+	MPI_Request theRequests[1024];
+	MPI_Status theStatus[1024];
+	
 	for(int i=0;i<(int)m_pendingMpiRequest.size();i++){
-		MPI_Request aMpiRequest=m_pendingMpiRequest[i].getMPIRequest();
-		int destination=m_pendingMpiRequest[i].getMessage()->getDestination();
-		requests[i]=aMpiRequest;
+		theRequests[i]=m_pendingMpiRequest[i];
 	}
-
-	MPI_Waitall(m_pendingMpiRequest.size(),requests,status);
-
-
+	MPI_Waitall(m_pendingMpiRequest.size(),theRequests,theStatus);
 	m_pendingMpiRequest.clear();
+
+	return;
+*/
+	vector<MPI_Request> requests;
+	vector<int> requestIterations;
+	for(int i=0;i<(int)m_pendingMpiRequest.size();i++){
+		MPI_Request aMpiRequest=m_pendingMpiRequest[i];
+		int numberOfIterations=m_requestIterations[i];
+		if(numberOfIterations%100==0){
+			int flag;
+			MPI_Status status;
+			MPI_Test(&aMpiRequest,&flag,&status);
+			if(!flag){
+				requests.push_back(aMpiRequest);
+				requestIterations.push_back(numberOfIterations+1);
+			}
+		}else{
+			requests.push_back(aMpiRequest);
+			requestIterations.push_back(numberOfIterations+1);
+		}
+	}
+	m_pendingMpiRequest=requests;
+
 	if(false and m_outbox.size()==0){
 		if(m_messageMyAllocator.getNumberOfChunks()>1){
 			m_messageMyAllocator.clear();
@@ -152,20 +186,34 @@ void Machine::receiveMessages(){
 	MPI_Status status;
 	MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
 	while(flag){
-		numberOfMessages++;
+		if(numberOfMessages>10)
+			break;
+		MPI_Datatype datatype=MPI_UNSIGNED_LONG_LONG;
+		int sizeOfType=8;
+		if(m_TAG_SEND_SEQUENCE){
+			datatype=MPI_BYTE;
+			sizeOfType=1;
+		}
+
 		int tag=status.MPI_TAG;
 		int source=status.MPI_SOURCE;
 		int length;
-		MPI_Get_count(&status,MPI_BYTE,&length);
-		void*incoming=(void*)m_outboxMessages.allocate(length);
+		MPI_Get_count(&status,datatype,&length);
+		void*incoming=(void*)m_outboxMessages.allocate(length*sizeOfType);
 		MPI_Status status2;
-		MPI_Recv(incoming,length,MPI_BYTE,source,tag,MPI_COMM_WORLD,&status2);
-		
-		Message aMessage(incoming,length,MPI_BYTE,source,tag,source);
-		m_inBox.push_back(aMessage);
-
+		MPI_Recv(incoming,length,datatype,source,tag,MPI_COMM_WORLD,&status2);
+		Message aMessage(incoming,length,datatype,source,tag,source);
+		m_inbox.push_back(aMessage);
+		m_receivedMessages++;
+		numberOfMessages++;
 		MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
 	}
+
+	/*
+	if(numberOfMessages>10){
+		cout<<"Rank "<<getRank()<<" received "<<numberOfMessages<<" messages."<<endl;
+	}
+	*/
 }
 
 
@@ -185,7 +233,7 @@ void Machine::loadSequences(){
 		m_loadSequenceStep=true;
 		for(int i=0;i<getSize();i++){
 			char*message=m_name;
-			Message aMessage(message, strlen(message), MPI_BYTE, i, m_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS);
+			Message aMessage(message, 0, MPI_UNSIGNED_LONG_LONG, i, m_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS,getRank());
 			m_outbox.push_back(aMessage);
 		}
 		m_distribution_reads.clear();
@@ -215,7 +263,7 @@ void Machine::loadSequences(){
 		if(false and destination==MASTER_RANK){
 
 		}else{
-			Message aMessage(sequence, strlen(sequence), MPI_BYTE, destination, m_TAG_SEND_SEQUENCE);
+			Message aMessage(sequence, strlen(sequence), MPI_BYTE, destination, m_TAG_SEND_SEQUENCE,getRank());
 			m_outbox.push_back(aMessage);
 		}
 		m_distribution_currentSequenceId++;
@@ -232,7 +280,7 @@ void Machine::processMessage(Message*message){
 
 	if(tag==m_TAG_VERTICES_DATA){
 		int length=count/8;
-		uint64_t*=(*uint64_t)buffer;
+		uint64_t*incoming=(uint64_t*)buffer;
 	
 		for(int i=0;i<length;i++){
 			uint64_t l=incoming[i];
@@ -260,7 +308,6 @@ void Machine::processMessage(Message*message){
 		m_numberOfMachinesDoneSendingCoverage++;
 	// receive an outgoing edge in respect to prefix, along with the pointer for suffix
 	}else if(tag==m_TAG_OUT_EDGE_DATA_WITH_PTR){
-		int length=count/8;
 		uint64_t*incoming=(uint64_t*)buffer;
 		void*ptr=(void*)incoming[2];
 		uint64_t prefix=incoming[0];
@@ -268,11 +315,11 @@ void Machine::processMessage(Message*message){
 		int rank=vertexRank(incoming[1]);
 		
 		Vertex*vertex=m_subgraph.find(prefix)->getValue();
-		vertex->addOutgoingEdge(rank,ptr,&m_persistentAllocator);
+		// RESTORE
+		//vertex->addOutgoingEdge(rank,ptr,&m_persistentAllocator);
 	
 	// receive an ingoing edge in respect to prefix, along with the pointer for suffix
 	}else if(tag==m_TAG_IN_EDGE_DATA_WITH_PTR){
-		int length=count/8;
 		uint64_t*incoming=(uint64_t*)buffer;
 		uint64_t prefix=incoming[0];
 		uint64_t suffix=incoming[1];
@@ -280,7 +327,7 @@ void Machine::processMessage(Message*message){
 		int rank=vertexRank(prefix);
 
 		Vertex*vertex=m_subgraph.find(suffix)->getValue();
-		vertex->addIngoingEdge(rank,ptr,&m_persistentAllocator);
+		//vertex->addIngoingEdge(rank,ptr,&m_persistentAllocator);
 
 	// receive a out edge, send it back with the pointer
 	}else if(tag==m_TAG_OUT_EDGES_DATA){
@@ -297,7 +344,7 @@ void Machine::processMessage(Message*message){
 			int destination=vertexRank(incoming[i+0]);
 
 
-			Message aMessage(sendBuffer,currentLength,MPI_UNSIGNED_LONG_LONG,destination,m_TAG_OUT_EDGE_DATA_WITH_PTR);
+			Message aMessage(sendBuffer,currentLength,MPI_UNSIGNED_LONG_LONG,destination,m_TAG_OUT_EDGE_DATA_WITH_PTR,getRank());
 			m_outbox.push_back(aMessage);
 		}
 
@@ -315,7 +362,7 @@ void Machine::processMessage(Message*message){
 			
 			int destination=vertexRank(incoming[i+1]);
 
-			Message aMessage(sendBuffer,currentLength,MPI_UNSIGNED_LONG_LONG,destination,m_TAG_IN_EDGE_DATA_WITH_PTR);
+			Message aMessage(sendBuffer,currentLength,MPI_UNSIGNED_LONG_LONG,destination,m_TAG_IN_EDGE_DATA_WITH_PTR,getRank());
 			m_outbox.push_back(aMessage);
 		}
 	}else if(tag==m_TAG_WELCOME){
@@ -324,7 +371,7 @@ void Machine::processMessage(Message*message){
 		int length=count;
 		char incoming[2000];
 		for(int i=0;i<(int)length;i++)
-			incoming[i]=buffer[i];
+			incoming[i]=((char*)buffer)[i];
 
 		incoming[length]='\0';
 		Read*myRead=(Read*)m_persistentAllocator.allocate(sizeof(Read));
@@ -336,7 +383,7 @@ void Machine::processMessage(Message*message){
 	}else if(tag==m_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS){
 		cout<<"Rank "<<getRank()<<" has "<<m_myReads.size()<<" sequences"<<endl;
 		char*message=m_name;
-		Message aMessage(message,strlen(message),MPI_BYTE,status.MPI_SOURCE,m_TAG_SEQUENCES_READY);
+		Message aMessage(message,0,MPI_UNSIGNED_LONG_LONG,source,m_TAG_SEQUENCES_READY,getRank());
 		m_outbox.push_back(aMessage);
 	}else if(tag==m_TAG_SHOW_VERTICES){
 		cout<<"Rank "<<getRank()<<" has "<<m_subgraph.size()<<" vertices (DONE)"<<endl;
@@ -345,16 +392,16 @@ void Machine::processMessage(Message*message){
 	}else if(tag==m_TAG_START_EDGES_DISTRIBUTION_ANSWER){
 		m_numberOfMachinesReadyForEdgesDistribution++;
 	}else if(tag==m_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER){
-		m_numberOfMachinesReadyDistribution++;
+		m_numberOfMachinesReadyToSendDistribution++;
 	}else if(tag==m_TAG_PREPARE_COVERAGE_DISTRIBUTION){
 		m_mode_sendDistribution=true;
 	}else if(tag==m_TAG_START_EDGES_DISTRIBUTION_ASK){
 		char*message=m_name;
-		Message aMessage(message, strlen(message), MPI_BYTE, source, m_TAG_START_EDGES_DISTRIBUTION_ANSWER);
+		Message aMessage(message, 0, MPI_UNSIGNED_LONG_LONG, source, m_TAG_START_EDGES_DISTRIBUTION_ANSWER,getRank());
 		m_outbox.push_back(aMessage);
 	}else if(tag==m_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION){
 		char*message=m_name;
-		Message aMessage(message, strlen(message), MPI_BYTE, source, m_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER);
+		Message aMessage(message, 0, MPI_UNSIGNED_LONG_LONG, source, m_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER,getRank());
 		m_outbox.push_back(aMessage);
 	}else if(tag==m_TAG_START_EDGES_DISTRIBUTION){
 		m_mode_send_outgoing_edges=true;
@@ -372,13 +419,13 @@ void Machine::processMessage(Message*message){
 }
 
 void Machine::processMessages(){
-	for(int i=0;i<m_inBox.size();i++){
-		processMessage(&(m_inBox[i]));
+	for(int i=0;i<(int)m_inbox.size();i++){
+		processMessage(&(m_inbox[i]));
 	}
+	m_inbox.clear();
 }
 
 void Machine::processData(){
-
 	if(!m_parameters.isInitiated()&&isMaster()){
 		m_parameters.load(m_inputFile);
 	}else if(m_welcomeStep==true && m_loadSequenceStep==false&&isMaster()){
@@ -387,7 +434,7 @@ void Machine::processData(){
 		cout<<"Rank "<<getRank()<<" tells others to start vertices distribution"<<endl;
 		for(int i=0;i<getSize();i++){
 			char*sequence=m_name;
-			Message aMessage(sequence, strlen(sequence), MPI_BYTE,i, m_TAG_START_VERTICES_DISTRIBUTION);
+			Message aMessage(sequence, 0, MPI_UNSIGNED_LONG_LONG,i, m_TAG_START_VERTICES_DISTRIBUTION,getRank());
 			m_outbox.push_back(aMessage);
 		}
 		m_messageSentForVerticesDistribution=true;
@@ -395,7 +442,7 @@ void Machine::processData(){
 		m_numberOfMachinesReadyForEdgesDistribution=0;
 		for(int i=0;i<getSize();i++){
 			char*sequence=m_name;
-			Message aMessage(sequence, strlen(sequence), MPI_BYTE,i, m_TAG_START_EDGES_DISTRIBUTION_ASK);
+			Message aMessage(sequence, 0, MPI_UNSIGNED_LONG_LONG,i, m_TAG_START_EDGES_DISTRIBUTION_ASK,getRank());
 			m_outbox.push_back(aMessage);
 		}
 		m_numberOfMachinesDoneSendingVertices=-1;
@@ -404,7 +451,7 @@ void Machine::processData(){
 		m_numberOfMachinesReadyForEdgesDistribution=-1;
 		for(int i=0;i<getSize();i++){
 			char*sequence=m_name;
-			Message aMessage(sequence, strlen(sequence), MPI_BYTE,i, m_TAG_START_EDGES_DISTRIBUTION);
+			Message aMessage(sequence, 0, MPI_UNSIGNED_LONG_LONG,i, m_TAG_START_EDGES_DISTRIBUTION,getRank());
 			m_outbox.push_back(aMessage);
 		}
 	}else if(m_numberOfMachinesDoneSendingCoverage==getSize()){
@@ -418,13 +465,13 @@ void Machine::processData(){
 	}
 
 	if(m_mode_send_vertices==true){
-		if(m_mode_send_vertices_sequence_id%100000==0 and m_mode_send_vertices_sequence_id_position==0){
+		if(m_mode_send_vertices_sequence_id%10000==0 and m_mode_send_vertices_sequence_id_position==0){
 			cout<<"Rank "<<getRank()<<" is extracting vertices from sequences "<<m_mode_send_vertices_sequence_id<<"/"<<m_myReads.size()<<endl;
 		}
 
 		if(m_mode_send_vertices_sequence_id>(int)m_myReads.size()-1){
 			char*message=m_name;
-			Message aMessage(message, strlen(message), MPI_BYTE, MASTER_RANK, m_TAG_VERTICES_DISTRIBUTED);
+			Message aMessage(message, 0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, m_TAG_VERTICES_DISTRIBUTED,getRank());
 			m_outbox.push_back(aMessage);
 			m_mode_send_vertices=false;
 			cout<<"Rank "<<getRank()<<" is extracting vertices from sequences "<<m_mode_send_vertices_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
@@ -442,7 +489,7 @@ void Machine::processData(){
 					VertexMer a=wordId(memory);
 					VertexMer b=complementVertex(a,m_wordSize);
 					messagesStock[vertexRank(a)].push_back(a);
-					//messagesStock[vertexRank(b)].push_back(b);
+					messagesStock[vertexRank(b)].push_back(b);
 				}
 			}
 			m_mode_send_vertices_sequence_id_position++;
@@ -454,7 +501,7 @@ void Machine::processData(){
 				for(int j=0;j<(int)i->second.size();j++)
 					data[j]=i->second[j];
 			
-				Message aMessage(data, length, MPI_UNSIGNED_LONG_LONG,destination, m_TAG_VERTICES_DATA);
+				Message aMessage(data, length, MPI_UNSIGNED_LONG_LONG,destination, m_TAG_VERTICES_DATA,getRank());
 				m_outbox.push_back(aMessage);
 				m_vertices_sent+=length;
 			}
@@ -470,7 +517,7 @@ void Machine::processData(){
 		m_numberOfMachinesDoneSendingVertices=0;
 		for(int i=0;i<getSize();i++){
 			char*message=m_name;
-			Message aMessage(message, strlen(message), MPI_BYTE, i, m_TAG_SHOW_VERTICES);
+			Message aMessage(message, 0, MPI_UNSIGNED_LONG_LONG, i, m_TAG_SHOW_VERTICES,getRank());
 			m_outbox.push_back(aMessage);
 		}
 		
@@ -479,14 +526,14 @@ void Machine::processData(){
 		cout<<"Rank "<<getRank()<<" says that edges are distributed."<<endl;
 		for(int i=0;i<getSize();i++){
 			char*message=m_name;
-			Message aMessage(message, strlen(message), MPI_BYTE, i, m_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION);
+			Message aMessage(message, 0, MPI_UNSIGNED_LONG_LONG, i, m_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION,getRank());
 			m_outbox.push_back(aMessage);
 		}
-	}else if(m_numberOfMachinesReadyDistribution==getSize()){
-		m_numberOfMachinesReadyDistribution=-1;
+	}else if(m_numberOfMachinesReadyToSendDistribution==getSize()){
+		m_numberOfMachinesReadyToSendDistribution=-1;
 		for(int i=0;i<getSize();i++){
 			char*message=m_name;
-			Message aMessage(message, strlen(message), MPI_BYTE, i, m_TAG_PREPARE_COVERAGE_DISTRIBUTION);
+			Message aMessage(message, 0, MPI_UNSIGNED_LONG_LONG, i, m_TAG_PREPARE_COVERAGE_DISTRIBUTION,getRank());
 			m_outbox.push_back(aMessage);
 		}
 	}
@@ -511,7 +558,7 @@ void Machine::processData(){
 			j+=2;
 		}
 		 
-		Message aMessage(data,length, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, m_TAG_COVERAGE_DATA);
+		Message aMessage(data,length, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, m_TAG_COVERAGE_DATA,getRank());
 		m_outbox.push_back(aMessage);
 	}else if(m_mode_send_outgoing_edges==true){ 
 
@@ -577,7 +624,7 @@ void Machine::processData(){
 					data[j]=i->second[j];
 				}
 	
-				Message aMessage(data, length, MPI_UNSIGNED_LONG_LONG,destination, m_TAG_OUT_EDGES_DATA);
+				Message aMessage(data, length, MPI_UNSIGNED_LONG_LONG,destination, m_TAG_OUT_EDGES_DATA,getRank());
 				m_outbox.push_back(aMessage);
 			}
 
@@ -604,7 +651,7 @@ void Machine::processData(){
 				cout<<"Rank "<<getRank()<<" is extracting ingoing edges "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
 			}else{
 				char*message=m_name;
-				Message aMessage(message, strlen(message), MPI_BYTE, MASTER_RANK, m_TAG_EDGES_DISTRIBUTED);
+				Message aMessage(message, strlen(message), MPI_UNSIGNED_LONG_LONG, MASTER_RANK, m_TAG_EDGES_DISTRIBUTED,getRank());
 				m_outbox.push_back(aMessage);
 				m_mode_send_ingoing_edges=false;
 				cout<<"Rank "<<getRank()<<" is extracting ingoing edges (reverse complement) "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
@@ -685,11 +732,10 @@ void Machine::printStatus(){
 	cout<<"********"<<endl;
 	cout<<"Rank: "<<getRank()<<endl;
 	cout<<"Reads: "<<m_myReads.size()<<endl;
-	m_persistentAllocator.print();
-
-	cout<<"For distribution: "<<endl;
-	m_distributionAllocator.print();
-	cout<<"Reads: "<<m_distribution_reads.size()<<endl;
+	cout<<"Inbox: "<<m_inbox.size()<<endl;
+	cout<<"Outbox: "<<m_outbox.size()<<endl;
+	cout<<"ReceivedMessages="<<m_receivedMessages<<endl;
+	cout<<"SentMessages="<<m_sentMessages<<endl;
 }
 
 int Machine::vertexRank(uint64_t a){

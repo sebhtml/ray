@@ -24,7 +24,7 @@
 #include<iostream>
 using namespace std;
 
-Request::Request(MessageToSend m,MPI_Request request){
+Request::Request(Message m,MPI_Request request){
 	m_numberOfTests=0;
 	m_message=m;
 	m_request=request;
@@ -46,6 +46,6 @@ void Request::print(){
 	cout<<"Destination="<<m_message.getDestination()<<endl;
 }
 
-MessageToSend*Request::getMessage(){
+Message*Request::getMessage(){
 	return &m_message;
 }

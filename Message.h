@@ -36,7 +36,7 @@ class Message{
 	int m_source;
 public:
 	Message();
-	Message(void*b,int c,MPI_Datatype d,int dest,int tag);
+	Message(void*b,int c,MPI_Datatype d,int dest,int tag,int source);
 	void*getBuffer();
 	int getCount();
 	MPI_Datatype getMPIDatatype();

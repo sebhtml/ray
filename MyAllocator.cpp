@@ -33,13 +33,17 @@ MyAllocator::MyAllocator(){
 
 void MyAllocator::constructor(){
 	m_CHUNK_SIZE=10*1024*1024; // 10M
-	m_currentChunk=(char*)malloc(m_CHUNK_SIZE);
+	m_currentChunk=(void*)malloc(m_CHUNK_SIZE);
+	if(m_currentChunk==NULL){
+		cout<<"NULL"<<endl;
+	}
 	m_chunks.push_back(m_currentChunk);
 	m_currentPosition=0;
 	m_jobs=0;
 }
 
-char*MyAllocator::allocate(int s){
+void*MyAllocator::allocate(int s){
+	s+=s%8;
 	if(s>m_CHUNK_SIZE){
 		return NULL;
 	}
@@ -47,12 +51,12 @@ char*MyAllocator::allocate(int s){
 	m_jobs++;
 	int left=m_CHUNK_SIZE-m_currentPosition;
 	if(s>left){
-		m_currentChunk=(char*)malloc(m_CHUNK_SIZE);
+		m_currentChunk=malloc(m_CHUNK_SIZE);
 		m_chunks.push_back(m_currentChunk);
 		m_currentPosition=0;
 		return allocate(s);
 	}
-	char*r=m_currentChunk+m_currentPosition;
+	void*r=(void*)((char*)m_currentChunk+m_currentPosition);
 	m_currentPosition+=s;
 	return r;
 }

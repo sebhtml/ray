@@ -37,6 +37,9 @@
 using namespace std;
 
 class Machine{
+	int m_ticks;
+	unsigned long long int m_receivedMessages;
+	unsigned long long int m_sentMessages;
 	int m_wordSize;
 	int MASTER_RANK;
 	int m_last_value;
@@ -84,8 +87,8 @@ class Machine{
 	int m_numberOfMachinesReadyToSendDistribution;
 	int m_vertices_sent;
 	
-	vector<Message> m_outBox;
-	vector<Message> m_inBox;
+	vector<Message> m_outbox;
+	vector<Message> m_inbox;
 
 	map<int,uint64_t> m_coverageDistribution;
 	int m_minimumCoverage;
@@ -97,7 +100,8 @@ class Machine{
 	uint64_t m_send_buffer[10];
 	set<uint64_t> m_test;
 	vector<uint64_t> m_test2;
-	vector<Request> m_pendingMpiRequest;
+	vector<MPI_Request> m_pendingMpiRequest;
+	vector<int> m_requestIterations;
 	Parameters m_parameters;
 	int m_numberOfMachinesDoneSendingEdges;
 	SplayTree<uint64_t,Vertex> m_subgraph;
