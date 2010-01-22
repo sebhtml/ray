@@ -45,3 +45,7 @@ int Request::getNumberOfTests(){
 void Request::print(){
 	cout<<"Destination="<<m_message.getDestination()<<endl;
 }
+
+MessageToSend*Request::getMessage(){
+	return &m_message;
+}

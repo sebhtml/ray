@@ -36,6 +36,7 @@ public:
 	void addTest();
 	int getNumberOfTests();
 	void print();
+	MessageToSend*getMessage();
 };
 
 #endif

@@ -22,38 +22,27 @@
 
 
 
-#include"MessageToSend.h"
 
+#ifndef _Message
+#define _Message
 
-MessageToSend::MessageToSend(void*b,int c,MPI_Datatype d,int dest,int tag){
-	m_buffer=b;
-	m_count=c;
-	m_datatype=d;
-	m_dest=dest;
-	m_tag=tag;
-}
+#include<mpi.h>
+class Message{
+	void*m_buffer;
+	int m_count;
+	MPI_Datatype m_datatype;
+	int m_dest;
+	int m_tag;
+	int m_source;
+public:
+	Message();
+	Message(void*b,int c,MPI_Datatype d,int dest,int tag);
+	void*getBuffer();
+	int getCount();
+	MPI_Datatype getMPIDatatype();
+	int getDestination();
+	int getTag();
+	int getSource();
+};
 
-
-void*MessageToSend::getBuffer(){
-	return m_buffer;
-}
-
-int MessageToSend::getCount(){
-	return m_count;
-}
-
-MPI_Datatype MessageToSend::getMPIDatatype(){
-	return m_datatype;
-}
-
-int MessageToSend::getDestination(){
-	return m_dest;
-}
-
-int MessageToSend::getTag(){
-	return m_tag;
-}
-
-MessageToSend::MessageToSend(){
-}
-
+#endif

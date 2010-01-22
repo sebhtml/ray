@@ -29,7 +29,7 @@
 #include"Vertex.h"
 #include"Request.h"
 #include<SplayTree.h>
-#include"MessageToSend.h"
+#include"Message.h"
 #include<set>
 #include<Read.h>
 #include"Parameters.h"
@@ -84,7 +84,8 @@ class Machine{
 	int m_numberOfMachinesReadyToSendDistribution;
 	int m_vertices_sent;
 	
-	vector<MessageToSend> m_messagesToSend;
+	vector<Message> m_outBox;
+	vector<Message> m_inBox;
 
 	map<int,uint64_t> m_coverageDistribution;
 	int m_minimumCoverage;
@@ -107,6 +108,7 @@ class Machine{
 
 	int m_seedCoverage;
 
+	MyAllocator m_outboxMessages;
 	MyAllocator m_messageMyAllocator;
 	MyAllocator m_distributionAllocator;
 	MyAllocator m_persistentAllocator;
@@ -130,6 +132,7 @@ class Machine{
 	void receiveMessages();
 	void loadSequences();
 	void processMessages();
+	void processMessage(Message*message);
 	void sendMessages();
 	void processData();
 	int getRank();
