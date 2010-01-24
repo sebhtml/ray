@@ -38,6 +38,7 @@ Machine::Machine(int argc,char**argv){
 	m_ticks=0;
 	m_receivedMessages=0;
 	m_wordSize=21;
+	m_reverseComplementVertex=false;
 	m_last_value=0;
 	m_mode_send_ingoing_edges=false;
 	m_mode_send_edge_sequence_id_position=0;
@@ -140,7 +141,6 @@ void Machine::sendMessages(){
 }
 
 void Machine::checkRequests(){
-/*
 	MPI_Request theRequests[1024];
 	MPI_Status theStatus[1024];
 	
@@ -150,8 +150,8 @@ void Machine::checkRequests(){
 	MPI_Waitall(m_pendingMpiRequest.size(),theRequests,theStatus);
 	m_pendingMpiRequest.clear();
 
+/*
 	return;
-*/
 	vector<MPI_Request> requests;
 	vector<int> requestIterations;
 	for(int i=0;i<(int)m_pendingMpiRequest.size();i++){
@@ -178,6 +178,7 @@ void Machine::checkRequests(){
 			m_messageMyAllocator.constructor();
 		}
 	}
+*/
 }
 
 void Machine::receiveMessages(){
@@ -190,12 +191,12 @@ void Machine::receiveMessages(){
 			break;
 		MPI_Datatype datatype=MPI_UNSIGNED_LONG_LONG;
 		int sizeOfType=8;
-		if(m_TAG_SEND_SEQUENCE){
+		int tag=status.MPI_TAG;
+		if(tag==m_TAG_SEND_SEQUENCE){
 			datatype=MPI_BYTE;
 			sizeOfType=1;
 		}
 
-		int tag=status.MPI_TAG;
 		int source=status.MPI_SOURCE;
 		int length;
 		MPI_Get_count(&status,datatype,&length);
@@ -272,16 +273,16 @@ void Machine::loadSequences(){
 }
 
 void Machine::processMessage(Message*message){
-	// receive vertices and store them
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
 	int tag=message->getTag();
 	int source=message->getSource();
 
+
 	if(tag==m_TAG_VERTICES_DATA){
-		int length=count/8;
+		int length=count;
 		uint64_t*incoming=(uint64_t*)buffer;
-	
+		//cout<<"Length="<<length<<endl;
 		for(int i=0;i<length;i++){
 			uint64_t l=incoming[i];
 			if(m_last_value!=m_subgraph.size() and m_subgraph.size()%100000==0){
@@ -297,7 +298,7 @@ void Machine::processMessage(Message*message){
 		}
 	// receive coverage data, and merge it
 	}else if(tag==m_TAG_COVERAGE_DATA){
-		int length=count/8;
+		int length=count;
 		uint64_t*incoming=(uint64_t*)buffer;
 
 		for(int i=0;i<length;i+=2){
@@ -311,13 +312,16 @@ void Machine::processMessage(Message*message){
 		uint64_t*incoming=(uint64_t*)buffer;
 		void*ptr=(void*)incoming[2];
 		uint64_t prefix=incoming[0];
+		uint64_t suffix=incoming[1];
+		int rank=vertexRank(suffix);
 		
-		int rank=vertexRank(incoming[1]);
-		
-		Vertex*vertex=m_subgraph.find(prefix)->getValue();
-		// RESTORE
-		//vertex->addOutgoingEdge(rank,ptr,&m_persistentAllocator);
-	
+		SplayNode<uint64_t,Vertex>*node=m_subgraph.find(prefix);
+		if(node==NULL){
+			cout<<"NULL "<<prefix<<" Rank="<<getRank()<<endl;
+		}else{
+			Vertex*vertex=node->getValue();
+			vertex->addOutgoingEdge(rank,ptr,&m_persistentAllocator);
+		}
 	// receive an ingoing edge in respect to prefix, along with the pointer for suffix
 	}else if(tag==m_TAG_IN_EDGE_DATA_WITH_PTR){
 		uint64_t*incoming=(uint64_t*)buffer;
@@ -326,12 +330,17 @@ void Machine::processMessage(Message*message){
 		void*ptr=(void*)incoming[2];
 		int rank=vertexRank(prefix);
 
-		Vertex*vertex=m_subgraph.find(suffix)->getValue();
-		//vertex->addIngoingEdge(rank,ptr,&m_persistentAllocator);
 
+		SplayNode<uint64_t,Vertex>*node=m_subgraph.find(suffix);
+		if(node==NULL){
+			cout<<"NULL "<<prefix<<endl;
+		}else{
+			Vertex*vertex=node->getValue();
+			vertex->addIngoingEdge(rank,ptr,&m_persistentAllocator);
+		}
 	// receive a out edge, send it back with the pointer
 	}else if(tag==m_TAG_OUT_EDGES_DATA){
-		int length=count/8;
+		int length=count;
 		uint64_t*incoming=(uint64_t*)buffer;
 		
 
@@ -350,7 +359,7 @@ void Machine::processMessage(Message*message){
 
 	// receive an ingoing edge, send it back with the pointer
 	}else if(tag==m_TAG_IN_EDGES_DATA){
-		int length=count/8;
+		int length=count;
 		uint64_t*incoming=(uint64_t*)buffer;
 
 		for(int i=0;i<(int)length;i+=2){
@@ -466,15 +475,25 @@ void Machine::processData(){
 
 	if(m_mode_send_vertices==true){
 		if(m_mode_send_vertices_sequence_id%10000==0 and m_mode_send_vertices_sequence_id_position==0){
-			cout<<"Rank "<<getRank()<<" is extracting vertices from sequences "<<m_mode_send_vertices_sequence_id<<"/"<<m_myReads.size()<<endl;
+			string reverse="";
+			if(m_reverseComplementVertex==true)
+				reverse="(reverse complement) ";
+			cout<<"Rank "<<getRank()<<" is extracting vertices "<<reverse<<"from sequences "<<m_mode_send_vertices_sequence_id<<"/"<<m_myReads.size()<<endl;
 		}
 
 		if(m_mode_send_vertices_sequence_id>(int)m_myReads.size()-1){
-			char*message=m_name;
-			Message aMessage(message, 0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, m_TAG_VERTICES_DISTRIBUTED,getRank());
-			m_outbox.push_back(aMessage);
-			m_mode_send_vertices=false;
-			cout<<"Rank "<<getRank()<<" is extracting vertices from sequences "<<m_mode_send_vertices_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
+			if(m_reverseComplementVertex==false){
+				cout<<"Rank "<<getRank()<<" is extracting vertices from sequences "<<m_mode_send_vertices_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
+				m_mode_send_vertices_sequence_id=0;
+				m_mode_send_vertices_sequence_id_position=0;
+				m_reverseComplementVertex=true;
+			}else{
+				char*message=m_name;
+				Message aMessage(message, 0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, m_TAG_VERTICES_DISTRIBUTED,getRank());
+				m_outbox.push_back(aMessage);
+				m_mode_send_vertices=false;
+				cout<<"Rank "<<getRank()<<" is extracting vertices (reverse complement) from sequences "<<m_mode_send_vertices_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
+			}
 		}else{
 			char*readSequence=m_myReads[m_mode_send_vertices_sequence_id]->getSeq();
 			int len=strlen(readSequence);
@@ -487,9 +506,12 @@ void Machine::processData(){
 				memory[m_wordSize]='\0';
 				if(isValidDNA(memory)){
 					VertexMer a=wordId(memory);
-					VertexMer b=complementVertex(a,m_wordSize);
-					messagesStock[vertexRank(a)].push_back(a);
-					messagesStock[vertexRank(b)].push_back(b);
+					if(m_reverseComplementVertex==false){
+						messagesStock[vertexRank(a)].push_back(a);
+					}else{
+						VertexMer b=complementVertex(a,m_wordSize);
+						messagesStock[vertexRank(b)].push_back(b);
+					}
 				}
 			}
 			m_mode_send_vertices_sequence_id_position++;
@@ -498,9 +520,11 @@ void Machine::processData(){
 				int destination=i->first;
 				int length=i->second.size();
 				uint64_t *data=(uint64_t*)m_messageMyAllocator.allocate(sizeof(uint64_t)*length);
-				for(int j=0;j<(int)i->second.size();j++)
+				for(int j=0;j<(int)i->second.size();j++){
 					data[j]=i->second[j];
-			
+				}
+				
+				
 				Message aMessage(data, length, MPI_UNSIGNED_LONG_LONG,destination, m_TAG_VERTICES_DATA,getRank());
 				m_outbox.push_back(aMessage);
 				m_vertices_sent+=length;

@@ -47,9 +47,11 @@ int Vertex::getCoverage(){
 }
 
 void Vertex::addOutgoingEdge(int rank,void*ptr,MyAllocator*allocator){
-	if(hasEdge(m_outgoingEdges,rank,ptr))
+	//cout<<"Coverage="<<getCoverage()<<endl;
+	if(hasEdge(m_outgoingEdges,rank,ptr)){
 		return;
-	
+	}
+
 	Edge*e=(Edge*)allocator->allocate(sizeof(Edge));
 	e->constructor(rank,ptr);
 	if(m_outgoingEdges!=NULL){

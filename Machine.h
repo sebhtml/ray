@@ -106,6 +106,7 @@ class Machine{
 	int m_numberOfMachinesDoneSendingEdges;
 	SplayTree<uint64_t,Vertex> m_subgraph;
 
+	bool m_reverseComplementVertex;
 	int m_distribution_currentSequenceId;
 	int m_distribution_file_id;
 	int m_distribution_sequence_id;

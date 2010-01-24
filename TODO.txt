@@ -1,7 +1,6 @@
-* get rid of MPI_Barrier
-* Resotre add Edges. (find SEGFAULT .)
+ get rid of MPI_Barrier
+* free message memory
 * remove class Request
-* possibly proceed separatly for direct and reverse for edges.
 * compute seeds
 * problem with memory usage on MASTER
 * attach reads
