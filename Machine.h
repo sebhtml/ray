@@ -90,6 +90,8 @@ class Machine{
 	
 	map<int,uint64_t> m_distributionOfCoverage;
 
+	int m_machineRank;
+
 	int m_mode_send_coverage_iterator;
 	vector<Message> m_outbox;
 	vector<Message> m_inbox;

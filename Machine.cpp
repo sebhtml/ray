@@ -53,7 +53,7 @@ Machine::Machine(int argc,char**argv){
 	m_numberOfMachinesDoneSendingEdges=0;
 	m_numberOfMachinesReadyToSendDistribution=0;
 	m_numberOfMachinesDoneSendingCoverage=0;
-
+	m_machineRank=0;
 	m_messageSentForVerticesDistribution=false;
 	MASTER_RANK=0;
 	m_sequence_ready_machines=0;
@@ -378,6 +378,7 @@ void Machine::processMessage(Message*message){
 	}else if(tag==m_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER){
 		m_numberOfMachinesReadyToSendDistribution++;
 	}else if(tag==m_TAG_PREPARE_COVERAGE_DISTRIBUTION){
+		cout<<"Rank "<<getRank()<<" prepares its distribution."<<endl;
 		m_mode_send_coverage_iterator=0;
 		m_mode_sendDistribution=true;
 	}else if(tag==m_TAG_START_EDGES_DISTRIBUTION_ASK){
@@ -398,7 +399,7 @@ void Machine::processMessage(Message*message){
 		m_numberOfMachinesDoneSendingVertices++;
 	}else if(tag==m_TAG_COVERAGE_END){
 		m_numberOfMachinesDoneSendingCoverage++;
-		//cout<<"m_numberOfMachinesDoneSendingCoverage="<<m_numberOfMachinesDoneSendingCoverage<<" "<<source<<" is done"<<endl;
+		cout<<"m_numberOfMachinesDoneSendingCoverage="<<m_numberOfMachinesDoneSendingCoverage<<" "<<source<<" is done"<<endl;
 	}else if(tag==m_TAG_EDGES_DISTRIBUTED){
 		m_numberOfMachinesDoneSendingEdges++;
 	}else{
@@ -539,11 +540,18 @@ void Machine::processData(){
 			m_outbox.push_back(aMessage);
 		}
 	}else if(m_numberOfMachinesReadyToSendDistribution==getSize()){
-		m_numberOfMachinesReadyToSendDistribution=-1;
-		for(int i=0;i<getSize();i++){
+		//m_numberOfMachinesReadyToSendDistribution=-1;
+
+		if(m_machineRank<=m_numberOfMachinesDoneSendingCoverage){
+			cout<<"Rank "<<getRank()<<" tells "<<m_machineRank<<" to distribute its distribution."<<endl;
 			char*message=m_name;
-			Message aMessage(message, 0, MPI_UNSIGNED_LONG_LONG, i, m_TAG_PREPARE_COVERAGE_DISTRIBUTION,getRank());
+			Message aMessage(message, 0, MPI_UNSIGNED_LONG_LONG, m_machineRank, m_TAG_PREPARE_COVERAGE_DISTRIBUTION,getRank());
 			m_outbox.push_back(aMessage);
+			m_machineRank++;
+		}
+
+		if(m_machineRank==getSize()){
+			m_numberOfMachinesReadyToSendDistribution=-1;
 		}
 	}
 
