@@ -1,8 +1,11 @@
 MPICC=~/software/openmpi-1.4.1/output/bin/mpic++
+#MPICC=/home/boiseb01/software/mpich2-1.2.1/output/bin/mpic++
 #MPICC=mpic++
-MPIRUN=~/software/openmpi-1.4.1/output/bin/mpirun -v
+MPIRUN=~/software/openmpi-1.4.1/output/bin/mpirun 
+#MPIRUN=/home/boiseb01/software/mpich2-1.2.1/output/bin/mpiexec
 #MPIRUN=mpirun
 CXXFLAGS=  -Wall -g -I. -I~/software/openmpi-1.4.1/output/include/ -I~/software/openmpi-1.4.1/output/include/openmpi 
+#CXXFLAGS=  -Wall -g -I. -I~/software/mpich2-1.2.1/output/include/ -I~/software/mpich2-1.2.1/output/include/openmpi 
 
 all: Ray
 
@@ -17,7 +20,7 @@ Ray: ray_main.o $(OBJECTS)
 	$(MPICC) $(CXXFLAGS) $^ -o $@
 
 test1: Ray
-	$(MPIRUN) -np 8  -machinefile RayMachinesFile.txt Ray input.txt
+	$(MPIRUN) -np 2  -machinefile RayMachinesFile.txt Ray input.txt
 
 test2: Ray
 	$(MPIRUN) -np 25  -machinefile RayMachinesFile.txt Ray input2.txt

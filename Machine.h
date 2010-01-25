@@ -25,6 +25,7 @@
 #ifndef _Machine
 #define _Machine
 #include<mpi.h>
+#include<map>
 #include<vector>
 #include"Vertex.h"
 #include<SplayTree.h>
