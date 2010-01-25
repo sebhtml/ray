@@ -1,5 +1,5 @@
-ls30 max-slots=25
 globe max-slots=8
+ls30 max-slots=25
 ls13 max-slots=2
 ls26 max-slots=4
 lw132 max-slots=2

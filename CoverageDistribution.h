@@ -25,6 +25,7 @@
 
 #include<map>
 #include<string>
+#include"types.h"
 using namespace std;
 
 class CoverageDistribution{
