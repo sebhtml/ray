@@ -113,8 +113,9 @@ class Machine{
 
 	int m_seedCoverage;
 
-	MyAllocator m_outboxMessages;
-	MyAllocator m_messageMyAllocator;
+	MyAllocator m_outboxAllocator;
+	MyAllocator m_inboxAllocator;
+
 	MyAllocator m_distributionAllocator;
 	MyAllocator m_persistentAllocator;
 	vector<Read*> m_distribution_reads;

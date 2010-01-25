@@ -103,20 +103,12 @@ Machine::Machine(int argc,char**argv){
 
 void Machine::run(){
 	while(isAlive()){
-		// TODO: get rid of this
-		if(m_ticks%1000==0)
+		if(m_ticks%100==0)
 			MPI_Barrier(MPI_COMM_WORLD);
 
-/*
-		if(m_ticks%1000000==0)
-			printStatus();
-*/
 		m_ticks++;
 		receiveMessages(); 
 		checkRequests();
-		if(m_pendingMpiRequest.size()>0){
-			continue;
-		}
 		processMessages();
 		processData();
 		sendMessages();
@@ -126,18 +118,24 @@ void Machine::run(){
 void Machine::sendMessages(){
 	for(int i=0;i<(int)m_outbox.size();i++){
 		Message*aMessage=&(m_outbox[i]);
+/*
 		if(aMessage->getDestination()==getRank()){
 			m_inbox.push_back(*aMessage);
 			m_receivedMessages++;
 		}else{
+*/
 			MPI_Request request;
 			MPI_Isend(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD, &request);
 			m_pendingMpiRequest.push_back(request);
 			m_requestIterations.push_back(0);
-		}
+		//}
 		m_sentMessages++;
 	}
 	m_outbox.clear();
+	if(m_outboxAllocator.getNumberOfChunks()>1){
+		m_outboxAllocator.clear();
+		m_outboxAllocator.constructor();
+	}
 }
 
 void Machine::checkRequests(){
@@ -149,36 +147,6 @@ void Machine::checkRequests(){
 	}
 	MPI_Waitall(m_pendingMpiRequest.size(),theRequests,theStatus);
 	m_pendingMpiRequest.clear();
-
-/*
-	return;
-	vector<MPI_Request> requests;
-	vector<int> requestIterations;
-	for(int i=0;i<(int)m_pendingMpiRequest.size();i++){
-		MPI_Request aMpiRequest=m_pendingMpiRequest[i];
-		int numberOfIterations=m_requestIterations[i];
-		if(numberOfIterations%100==0){
-			int flag;
-			MPI_Status status;
-			MPI_Test(&aMpiRequest,&flag,&status);
-			if(!flag){
-				requests.push_back(aMpiRequest);
-				requestIterations.push_back(numberOfIterations+1);
-			}
-		}else{
-			requests.push_back(aMpiRequest);
-			requestIterations.push_back(numberOfIterations+1);
-		}
-	}
-	m_pendingMpiRequest=requests;
-
-	if(false and m_outbox.size()==0){
-		if(m_messageMyAllocator.getNumberOfChunks()>1){
-			m_messageMyAllocator.clear();
-			m_messageMyAllocator.constructor();
-		}
-	}
-*/
 }
 
 void Machine::receiveMessages(){
@@ -200,7 +168,7 @@ void Machine::receiveMessages(){
 		int source=status.MPI_SOURCE;
 		int length;
 		MPI_Get_count(&status,datatype,&length);
-		void*incoming=(void*)m_outboxMessages.allocate(length*sizeOfType);
+		void*incoming=(void*)m_inboxAllocator.allocate(length*sizeOfType);
 		MPI_Status status2;
 		MPI_Recv(incoming,length,datatype,source,tag,MPI_COMM_WORLD,&status2);
 		Message aMessage(incoming,length,datatype,source,tag,source);
@@ -346,7 +314,7 @@ void Machine::processMessage(Message*message){
 
 		for(int i=0;i<(int)length;i+=2){
 			int currentLength=3;
-			uint64_t*sendBuffer=(uint64_t*)m_messageMyAllocator.allocate(currentLength*sizeof(uint64_t));
+			uint64_t*sendBuffer=(uint64_t*)m_outboxAllocator.allocate(currentLength*sizeof(uint64_t));
 			sendBuffer[0]=incoming[i+0];
 			sendBuffer[1]=incoming[i+1];
 			sendBuffer[2]=(uint64_t)m_subgraph.find(incoming[i+1]);
@@ -364,7 +332,7 @@ void Machine::processMessage(Message*message){
 
 		for(int i=0;i<(int)length;i+=2){
 			int currentLength=3;
-			uint64_t*sendBuffer=(uint64_t*)m_messageMyAllocator.allocate(currentLength*sizeof(uint64_t));
+			uint64_t*sendBuffer=(uint64_t*)m_outboxAllocator.allocate(currentLength*sizeof(uint64_t));
 			sendBuffer[0]=incoming[i+0];
 			sendBuffer[1]=incoming[i+1];
 			sendBuffer[2]=(uint64_t)m_subgraph.find(incoming[i+0]);
@@ -432,6 +400,10 @@ void Machine::processMessages(){
 		processMessage(&(m_inbox[i]));
 	}
 	m_inbox.clear();
+	if(m_inboxAllocator.getNumberOfChunks()>1){
+		m_inboxAllocator.clear();
+		m_inboxAllocator.constructor();
+	}
 }
 
 void Machine::processData(){
@@ -519,7 +491,7 @@ void Machine::processData(){
 			for(map<int,vector<uint64_t> >::iterator i=messagesStock.begin();i!=messagesStock.end();i++){
 				int destination=i->first;
 				int length=i->second.size();
-				uint64_t *data=(uint64_t*)m_messageMyAllocator.allocate(sizeof(uint64_t)*length);
+				uint64_t *data=(uint64_t*)m_outboxAllocator.allocate(sizeof(uint64_t)*length);
 				for(int j=0;j<(int)i->second.size();j++){
 					data[j]=i->second[j];
 				}
@@ -572,7 +544,7 @@ void Machine::processData(){
 			distributionOfCoverage[coverage]++;
 		}
 		int length=2*distributionOfCoverage.size();
-		uint64_t*data=(uint64_t*)m_messageMyAllocator.allocate(sizeof(uint64_t)*length);
+		uint64_t*data=(uint64_t*)m_outboxAllocator.allocate(sizeof(uint64_t)*length);
 		int j=0;
 		for(map<int,uint64_t>::iterator i=distributionOfCoverage.begin();i!=distributionOfCoverage.end();i++){
 			int coverage=i->first;
@@ -643,7 +615,7 @@ void Machine::processData(){
 			for(map<int,vector<uint64_t> >::iterator i=messagesStockOut.begin();i!=messagesStockOut.end();i++){
 				int destination=i->first;
 				int length=i->second.size();
-				uint64_t*data=(uint64_t*)m_messageMyAllocator.allocate(sizeof(uint64_t)*(length));
+				uint64_t*data=(uint64_t*)m_outboxAllocator.allocate(sizeof(uint64_t)*(length));
 				for(int j=0;j<(int)i->second.size();j++){
 					data[j]=i->second[j];
 				}
@@ -719,7 +691,7 @@ void Machine::processData(){
 			for(map<int,vector<uint64_t> >::iterator i=messagesStockIn.begin();i!=messagesStockIn.end();i++){
 				int destination=i->first;
 				int length=i->second.size();
-				uint64_t*data=(uint64_t*)m_messageMyAllocator.allocate(sizeof(uint64_t)*(length));
+				uint64_t*data=(uint64_t*)m_outboxAllocator.allocate(sizeof(uint64_t)*(length));
 				for(int j=0;j<(int)i->second.size();j++){
 					data[j]=i->second[j];
 				}

@@ -2,7 +2,7 @@ MPICC=~/software/openmpi-1.4.1/output/bin/mpic++
 #MPICC=mpic++
 MPIRUN=~/software/openmpi-1.4.1/output/bin/mpirun -v
 #MPIRUN=mpirun
-CXXFLAGS=  -Wall -g -I. -I~/software/openmpi-1.4.1/output/include/ -I~/software/openmpi-1.4.1/output/include/openmpi 
+CXXFLAGS=  -Wall -O3 -I. -I~/software/openmpi-1.4.1/output/include/ -I~/software/openmpi-1.4.1/output/include/openmpi 
 
 all: Ray
 

@@ -30,16 +30,12 @@ using namespace  std;
 
 Read::Read(){
 	m_sequence=NULL;
-	//m_id=NULL;
 }
 
 
 void Read::copy(const char*id,const char*sequence,MyAllocator*seqMyAllocator){
 	m_sequence=(char*)seqMyAllocator->allocate(strlen(sequence)+1);
-	//m_id=(char*)malloc(strlen(id)+1);
-	//m_id=NULL;
 	strcpy(m_sequence,sequence);
-	//strcpy(m_id,id);
 }
 
 Read::Read(const char*id,const char*sequence,MyAllocator*seqMyAllocator){
@@ -47,16 +43,6 @@ Read::Read(const char*id,const char*sequence,MyAllocator*seqMyAllocator){
 }
 
 Read::~Read(){
-/*
-	if(m_id!=NULL){
-		free(m_id);
-		m_id=NULL;
-	}
-	if(m_sequence!=NULL){
-		free(m_sequence);
-		m_sequence=NULL;
-	}
-*/
 }
 
 

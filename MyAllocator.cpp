@@ -43,8 +43,6 @@ void MyAllocator::constructor(){
 }
 
 void*MyAllocator::allocate(int s){
-	return malloc(s);
-
 	s+=s%8;
 	if(s>m_CHUNK_SIZE){
 		return NULL;
