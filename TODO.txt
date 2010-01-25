@@ -1,5 +1,3 @@
-* free message memory
-* remove class Request
 * compute seeds
 * problem with memory usage on MASTER
 * attach reads
