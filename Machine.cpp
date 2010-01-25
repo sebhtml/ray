@@ -102,6 +102,7 @@ Machine::Machine(int argc,char**argv){
 }
 
 void Machine::run(){
+	cout<<"Rank "<<getRank()<<" is "<<m_name<<endl;
 	while(isAlive()){
 		if(m_ticks%100==0)
 			MPI_Barrier(MPI_COMM_WORLD);

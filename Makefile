@@ -17,10 +17,10 @@ Ray: ray_main.o $(OBJECTS)
 	$(MPICC) $(CXXFLAGS) $^ -o $@
 
 test1: Ray
-	$(MPIRUN) -np 10  -machinefile RayMachinesFile.txt Ray input.txt
+	$(MPIRUN) -np 17  -machinefile RayMachinesFile.txt Ray input.txt
 
 test2: Ray
-	$(MPIRUN) -np 10  -machinefile RayMachinesFile.txt Ray input2.txt
+	$(MPIRUN) -np 27  -machinefile RayMachinesFile.txt Ray input2.txt
 
 
 test3: Ray
