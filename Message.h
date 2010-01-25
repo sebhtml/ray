@@ -43,6 +43,7 @@ public:
 	int getDestination();
 	int getTag();
 	int getSource();
+	void setBuffer(void*buffer);
 };
 
 #endif

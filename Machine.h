@@ -27,7 +27,6 @@
 #include<mpi.h>
 #include<vector>
 #include"Vertex.h"
-#include"Request.h"
 #include<SplayTree.h>
 #include"Message.h"
 #include<set>
@@ -80,6 +79,8 @@ class Machine{
 	int m_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER;
 	int m_TAG_PREPARE_COVERAGE_DISTRIBUTION;
 	int m_TAG_COVERAGE_DATA;
+	int m_TAG_COVERAGE_END;
+
 	bool m_mode_send_ingoing_edges;
 
 	int m_numberOfMachinesReadyForEdgesDistribution;
@@ -87,6 +88,9 @@ class Machine{
 	int m_numberOfMachinesReadyToSendDistribution;
 	int m_vertices_sent;
 	
+	map<int,uint64_t> m_distributionOfCoverage;
+
+	int m_mode_send_coverage_iterator;
 	vector<Message> m_outbox;
 	vector<Message> m_inbox;
 

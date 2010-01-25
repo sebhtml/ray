@@ -61,3 +61,7 @@ Message::Message(){
 int Message::getSource(){
 	return m_source;
 }
+
+void Message::setBuffer(void*a){
+	m_buffer=a;
+}

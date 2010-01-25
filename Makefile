@@ -6,7 +6,7 @@ CXXFLAGS=  -Wall -O3 -I. -I~/software/openmpi-1.4.1/output/include/ -I~/software
 
 all: Ray
 
-OBJECTS= Machine.o common_functions.o Loader.o ray_main.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o Edge.o CoverageDistribution.o Message.o Request.o
+OBJECTS= Machine.o common_functions.o Loader.o ray_main.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o Edge.o CoverageDistribution.o Message.o 
 
 
 %.o: %.cpp
@@ -17,10 +17,10 @@ Ray: ray_main.o $(OBJECTS)
 	$(MPICC) $(CXXFLAGS) $^ -o $@
 
 test1: Ray
-	$(MPIRUN) -np 17  -machinefile RayMachinesFile.txt Ray input.txt
+	$(MPIRUN) -np 25  -machinefile RayMachinesFile.txt Ray input.txt
 
 test2: Ray
-	$(MPIRUN) -np 27  -machinefile RayMachinesFile.txt Ray input2.txt
+	$(MPIRUN) -np 25  -machinefile RayMachinesFile.txt Ray input2.txt
 
 
 test3: Ray

@@ -79,6 +79,7 @@ Machine::Machine(int argc,char**argv){
 	m_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER=18;
 	m_TAG_PREPARE_COVERAGE_DISTRIBUTION=19;
 	m_TAG_COVERAGE_DATA=20;
+	m_TAG_COVERAGE_END=21;
 
 	MPI_Init(&argc,&argv);
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
@@ -119,17 +120,22 @@ void Machine::run(){
 void Machine::sendMessages(){
 	for(int i=0;i<(int)m_outbox.size();i++){
 		Message*aMessage=&(m_outbox[i]);
-/*
 		if(aMessage->getDestination()==getRank()){
+			int sizeOfElements=8;
+			if(aMessage->getTag()==m_TAG_SEND_SEQUENCE){
+				sizeOfElements=1;
+			}
+			void*newBuffer=m_inboxAllocator.allocate(sizeOfElements*aMessage->getCount());
+			memcpy(newBuffer,aMessage->getBuffer(),sizeOfElements*aMessage->getCount());
+			aMessage->setBuffer(newBuffer);
 			m_inbox.push_back(*aMessage);
 			m_receivedMessages++;
 		}else{
-*/
 			MPI_Request request;
 			MPI_Isend(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD, &request);
 			m_pendingMpiRequest.push_back(request);
 			m_requestIterations.push_back(0);
-		//}
+		}
 		m_sentMessages++;
 	}
 	m_outbox.clear();
@@ -273,9 +279,9 @@ void Machine::processMessage(Message*message){
 		for(int i=0;i<length;i+=2){
 			int coverage=incoming[i+0];
 			uint64_t count=incoming[i+1];
+			//cout<<coverage<<" "<<count<<endl;
 			m_coverageDistribution[coverage]+=count;
 		}
-		m_numberOfMachinesDoneSendingCoverage++;
 	// receive an outgoing edge in respect to prefix, along with the pointer for suffix
 	}else if(tag==m_TAG_OUT_EDGE_DATA_WITH_PTR){
 		uint64_t*incoming=(uint64_t*)buffer;
@@ -372,6 +378,7 @@ void Machine::processMessage(Message*message){
 	}else if(tag==m_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER){
 		m_numberOfMachinesReadyToSendDistribution++;
 	}else if(tag==m_TAG_PREPARE_COVERAGE_DISTRIBUTION){
+		m_mode_send_coverage_iterator=0;
 		m_mode_sendDistribution=true;
 	}else if(tag==m_TAG_START_EDGES_DISTRIBUTION_ASK){
 		char*message=m_name;
@@ -389,6 +396,9 @@ void Machine::processMessage(Message*message){
 		m_mode_send_vertices_sequence_id=0;
 	}else if(tag==m_TAG_VERTICES_DISTRIBUTED){
 		m_numberOfMachinesDoneSendingVertices++;
+	}else if(tag==m_TAG_COVERAGE_END){
+		m_numberOfMachinesDoneSendingCoverage++;
+		//cout<<"m_numberOfMachinesDoneSendingCoverage="<<m_numberOfMachinesDoneSendingCoverage<<" "<<source<<" is done"<<endl;
 	}else if(tag==m_TAG_EDGES_DISTRIBUTED){
 		m_numberOfMachinesDoneSendingEdges++;
 	}else{
@@ -444,6 +454,7 @@ void Machine::processData(){
 		m_seedCoverage=(m_minimumCoverage+m_peakCoverage)/2;
 		cout<<"MinimumCoverage = "<<m_minimumCoverage<<endl;
 		cout<<"PeakCoverage = "<<m_peakCoverage<<endl;
+		cout<<"SeedCoverage = "<<m_seedCoverage<<endl;
 	}
 
 	if(m_mode_send_vertices==true){
@@ -511,6 +522,7 @@ void Machine::processData(){
 
 
 	}else if(m_numberOfMachinesDoneSendingVertices==getSize()){
+		cout<<"Now showing everyone."<<endl;
 		m_numberOfMachinesDoneSendingVertices=0;
 		for(int i=0;i<getSize();i++){
 			char*message=m_name;
@@ -536,27 +548,42 @@ void Machine::processData(){
 	}
 
 	if(m_mode_sendDistribution){
-		m_mode_sendDistribution=false;
-		map<int,uint64_t> distributionOfCoverage;
-
-		SplayTreeIterator<uint64_t,Vertex> iterator(&m_subgraph);
-		while(iterator.hasNext()){
-			int coverage=iterator.next()->getValue()->getCoverage();
-			distributionOfCoverage[coverage]++;
+		if(m_distributionOfCoverage.size()==0){
+			SplayTreeIterator<uint64_t,Vertex> iterator(&m_subgraph);
+			while(iterator.hasNext()){
+				int coverage=iterator.next()->getValue()->getCoverage();
+				m_distributionOfCoverage[coverage]++;
+			}
 		}
-		int length=2*distributionOfCoverage.size();
+
+
+		int length=2;
 		uint64_t*data=(uint64_t*)m_outboxAllocator.allocate(sizeof(uint64_t)*length);
 		int j=0;
-		for(map<int,uint64_t>::iterator i=distributionOfCoverage.begin();i!=distributionOfCoverage.end();i++){
+		for(map<int,uint64_t>::iterator i=m_distributionOfCoverage.begin();i!=m_distributionOfCoverage.end();i++){
 			int coverage=i->first;
 			uint64_t count=i->second;
-			data[j+0]=coverage;
-			data[j+1]=count;
-			j+=2;
+			if(m_mode_send_coverage_iterator==j){
+				data[0]=coverage;
+				data[1]=count;
+				break;
+			}
+			j++;
 		}
-		 
+
+		//cout<<"Rank "<<getRank()<<" is sending distribution to "<<MASTER_RANK<<""<<endl;
 		Message aMessage(data,length, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, m_TAG_COVERAGE_DATA,getRank());
 		m_outbox.push_back(aMessage);
+
+		m_mode_send_coverage_iterator++;
+		if(m_mode_send_coverage_iterator>=(int)m_distributionOfCoverage.size()){
+			m_mode_sendDistribution=false;
+			char*message=m_name;
+			Message aMessage(message, 0, MPI_UNSIGNED_LONG_LONG,MASTER_RANK, m_TAG_COVERAGE_END,getRank());
+			m_outbox.push_back(aMessage);
+			m_distributionOfCoverage.clear();
+		}
+
 	}else if(m_mode_send_outgoing_edges==true){ 
 
 		if(m_mode_send_edge_sequence_id%10000==0 and m_mode_send_edge_sequence_id_position==0){
