@@ -117,6 +117,8 @@ void Machine::run(){
 
 		checkRequests();
 		processMessages();
+		if(m_ticks%100==0)
+			MPI_Barrier(MPI_COMM_WORLD);
 
 		if(m_inBarrier==true){
 			//cout<<"Rank "<<getRank()<<" is paused."<<endl;
@@ -171,7 +173,7 @@ void Machine::checkRequests(){
 	for(int i=0;i<(int)m_pendingMpiRequest.size();i++){
 		theRequests[i]=m_pendingMpiRequest[i];
 	}
-	waitall(m_pendingMpiRequest.size(),theRequests,theStatus);
+	MPI_Waitall(m_pendingMpiRequest.size(),theRequests,theStatus);
 	m_pendingMpiRequest.clear();
 }
 
@@ -420,7 +422,7 @@ void Machine::processMessage(Message*message){
 		cout<<"Rank "<<getRank()<<" has "<<m_myReads.size()<<" sequences"<<endl;
 		char*message=m_name;
 		Message aMessage(message,0,MPI_UNSIGNED_LONG_LONG,source,m_TAG_SEQUENCES_READY,getRank());
-		m_canUseBarrier=true;
+		//m_canUseBarrier=true;
 		m_outbox.push_back(aMessage);
 	}else if(tag==m_TAG_SHOW_VERTICES){
 		cout<<"Rank "<<getRank()<<" has "<<m_subgraph.size()<<" vertices (DONE)"<<endl;
