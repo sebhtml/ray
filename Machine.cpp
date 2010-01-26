@@ -170,7 +170,7 @@ void Machine::checkRequests(){
 	for(int i=0;i<(int)m_pendingMpiRequest.size();i++){
 		theRequests[i]=m_pendingMpiRequest[i];
 	}
-	MPI_Waitall(m_pendingMpiRequest.size(),theRequests,theStatus);
+	waitall(m_pendingMpiRequest.size(),theRequests,theStatus);
 	m_pendingMpiRequest.clear();
 }
 
