@@ -24,7 +24,7 @@ test1: Ray
 
 test2: Ray
 	#bash sendBinary.sh
-	$(MPIRUN) -np 16  -machinefile RayMachinesFile.txt Ray input2.txt
+	$(MPIRUN) -np 26  -machinefile RayMachinesFile.txt Ray input2.txt
 
 
 test3: Ray
