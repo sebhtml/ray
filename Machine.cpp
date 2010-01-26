@@ -36,7 +36,9 @@ using namespace std;
 Machine::Machine(int argc,char**argv){
 	m_sentMessages=0;
 	m_ticks=0;
+	m_numberOfStops=0;
 	m_receivedMessages=0;
+	m_canUseBarrier=false;
 	m_wordSize=21;
 	m_reverseComplementVertex=false;
 	m_last_value=0;
@@ -80,6 +82,11 @@ Machine::Machine(int argc,char**argv){
 	m_TAG_PREPARE_COVERAGE_DISTRIBUTION=19;
 	m_TAG_COVERAGE_DATA=20;
 	m_TAG_COVERAGE_END=21;
+	m_TAG_BARRIER_STOP=22;
+	m_TAG_BARRIER_START=23;
+	
+
+	m_inBarrier=false;
 
 	MPI_Init(&argc,&argv);
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
@@ -105,21 +112,34 @@ Machine::Machine(int argc,char**argv){
 void Machine::run(){
 	cout<<"Rank "<<getRank()<<" is "<<m_name<<endl;
 	while(isAlive()){
-		if(m_ticks%100==0)
-			MPI_Barrier(MPI_COMM_WORLD);
-
-		m_ticks++;
 		receiveMessages(); 
+
 		checkRequests();
 		processMessages();
+
+		if(m_ticks%1000){
+			MPI_Barrier(MPI_COMM_WORLD);
+		}
+		if(m_inBarrier==true){
+			//cout<<"Rank "<<getRank()<<" is paused."<<endl;
+			continue;
+		}
+
 		processData();
 		sendMessages();
+
+		m_ticks++;
 	}
 }
 
 void Machine::sendMessages(){
 	for(int i=0;i<(int)m_outbox.size();i++){
 		Message*aMessage=&(m_outbox[i]);
+		int tag=aMessage->getTag();
+		if(tag==m_TAG_BARRIER_START){
+			//cout<<"Tag= m_TAG_BARRIER_START"<<endl;
+		}
+/*
 		if(aMessage->getDestination()==getRank()){
 			int sizeOfElements=8;
 			if(aMessage->getTag()==m_TAG_SEND_SEQUENCE){
@@ -131,11 +151,12 @@ void Machine::sendMessages(){
 			m_inbox.push_back(*aMessage);
 			m_receivedMessages++;
 		}else{
+*/
 			MPI_Request request;
 			MPI_Isend(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD, &request);
 			m_pendingMpiRequest.push_back(request);
 			m_requestIterations.push_back(0);
-		}
+		//}
 		m_sentMessages++;
 	}
 	m_outbox.clear();
@@ -154,6 +175,22 @@ void Machine::checkRequests(){
 	}
 	MPI_Waitall(m_pendingMpiRequest.size(),theRequests,theStatus);
 	m_pendingMpiRequest.clear();
+}
+
+void Machine::waitall(int c,MPI_Request*a,MPI_Status*b){
+	set<int> done;
+	while(1){
+		if(done.size()==c)
+			break;
+		for(int i=0;i<c;i++){
+			if(done.count(i)>0)
+				continue;
+			int flag;
+			MPI_Test(a+i,&flag,b+i);
+			if(flag)
+				done.insert(i);
+		}
+	}
 }
 
 void Machine::receiveMessages(){
@@ -226,7 +263,7 @@ void Machine::loadSequences(){
 		loader.load(allFiles[m_distribution_file_id],&m_distribution_reads,&m_distributionAllocator,&m_distributionAllocator);
 		cout<<m_distribution_reads.size()<<" sequences to distribute"<<endl;
 	}
-	for(int i=0;i<1*getSize();i++){
+	for(int i=0;i<1;i++){
 		if(m_distribution_sequence_id>(int)m_distribution_reads.size()-1)
 			break;
 
@@ -272,6 +309,23 @@ void Machine::processMessage(Message*message){
 			tmp->getValue()->setCoverage(tmp->getValue()->getCoverage()+1);
 		}
 	// receive coverage data, and merge it
+	}else if(tag==m_TAG_BARRIER_STOP){
+		m_numberOfStops++;
+		if(m_numberOfStops==getSize()){
+			//cout<<"m_numberOfStops="<<m_numberOfStops<<endl;
+			m_inBarrier=false;
+			m_ticks++;
+			m_numberOfStops=0;
+			for(int i=0;i<getSize();i++){
+				void*sendBuffer=m_name;
+				Message aMessage(sendBuffer,0,MPI_UNSIGNED_LONG_LONG,i,m_TAG_BARRIER_START,getRank());
+				//cout<<"Rank "<<getRank()<<" tells "<<i<<" to start."<<endl;
+				m_outbox.push_back(aMessage);
+			}
+		}
+	}else if(tag==m_TAG_BARRIER_START){
+		m_inBarrier=false;
+		//cout<<"Rank "<<getRank()<<" exiting barrier."<<endl;
 	}else if(tag==m_TAG_COVERAGE_DATA){
 		int length=count;
 		uint64_t*incoming=(uint64_t*)buffer;
@@ -368,6 +422,7 @@ void Machine::processMessage(Message*message){
 		cout<<"Rank "<<getRank()<<" has "<<m_myReads.size()<<" sequences"<<endl;
 		char*message=m_name;
 		Message aMessage(message,0,MPI_UNSIGNED_LONG_LONG,source,m_TAG_SEQUENCES_READY,getRank());
+		//m_canUseBarrier=true;
 		m_outbox.push_back(aMessage);
 	}else if(tag==m_TAG_SHOW_VERTICES){
 		cout<<"Rank "<<getRank()<<" has "<<m_subgraph.size()<<" vertices (DONE)"<<endl;
@@ -378,7 +433,7 @@ void Machine::processMessage(Message*message){
 	}else if(tag==m_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER){
 		m_numberOfMachinesReadyToSendDistribution++;
 	}else if(tag==m_TAG_PREPARE_COVERAGE_DISTRIBUTION){
-		cout<<"Rank "<<getRank()<<" prepares its distribution."<<endl;
+		//cout<<"Rank "<<getRank()<<" prepares its distribution."<<endl;
 		m_mode_send_coverage_iterator=0;
 		m_mode_sendDistribution=true;
 	}else if(tag==m_TAG_START_EDGES_DISTRIBUTION_ASK){
@@ -399,7 +454,7 @@ void Machine::processMessage(Message*message){
 		m_numberOfMachinesDoneSendingVertices++;
 	}else if(tag==m_TAG_COVERAGE_END){
 		m_numberOfMachinesDoneSendingCoverage++;
-		cout<<"m_numberOfMachinesDoneSendingCoverage="<<m_numberOfMachinesDoneSendingCoverage<<" "<<source<<" is done"<<endl;
+		//cout<<"m_numberOfMachinesDoneSendingCoverage="<<m_numberOfMachinesDoneSendingCoverage<<" "<<source<<" is done"<<endl;
 	}else if(tag==m_TAG_EDGES_DISTRIBUTED){
 		m_numberOfMachinesDoneSendingEdges++;
 	}else{
@@ -419,6 +474,15 @@ void Machine::processMessages(){
 }
 
 void Machine::processData(){
+
+	if(m_ticks%100==0 and m_canUseBarrier){
+		char*sequence=m_name;
+		Message aMessage(sequence, 0, MPI_UNSIGNED_LONG_LONG,MASTER_RANK, m_TAG_BARRIER_STOP,getRank());
+		m_outbox.push_back(aMessage);
+		m_inBarrier=true;
+	}
+
+
 	if(!m_parameters.isInitiated()&&isMaster()){
 		m_parameters.load(m_inputFile);
 	}else if(m_welcomeStep==true && m_loadSequenceStep==false&&isMaster()){
@@ -543,7 +607,7 @@ void Machine::processData(){
 		//m_numberOfMachinesReadyToSendDistribution=-1;
 
 		if(m_machineRank<=m_numberOfMachinesDoneSendingCoverage){
-			cout<<"Rank "<<getRank()<<" tells "<<m_machineRank<<" to distribute its distribution."<<endl;
+			//cout<<"Rank "<<getRank()<<" tells "<<m_machineRank<<" to distribute its distribution."<<endl;
 			char*message=m_name;
 			Message aMessage(message, 0, MPI_UNSIGNED_LONG_LONG, m_machineRank, m_TAG_PREPARE_COVERAGE_DISTRIBUTION,getRank());
 			m_outbox.push_back(aMessage);

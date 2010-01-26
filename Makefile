@@ -20,10 +20,11 @@ Ray: ray_main.o $(OBJECTS)
 	$(MPICC) $(CXXFLAGS) $^ -o $@
 
 test1: Ray
-	$(MPIRUN) -np 2  -machinefile RayMachinesFile.txt Ray input.txt
+	$(MPIRUN) -np 16  -machinefile RayMachinesFile.txt Ray input.txt
 
 test2: Ray
-	$(MPIRUN) -np 25  -machinefile RayMachinesFile.txt Ray input2.txt
+	bash sendBinary.sh
+	$(MPIRUN) -np 34  -machinefile RayMachinesFile.txt Ray input2.txt
 
 
 test3: Ray
