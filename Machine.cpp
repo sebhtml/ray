@@ -117,9 +117,6 @@ void Machine::run(){
 		checkRequests();
 		processMessages();
 
-		if(m_ticks%1000){
-			MPI_Barrier(MPI_COMM_WORLD);
-		}
 		if(m_inBarrier==true){
 			//cout<<"Rank "<<getRank()<<" is paused."<<endl;
 			continue;
@@ -422,7 +419,7 @@ void Machine::processMessage(Message*message){
 		cout<<"Rank "<<getRank()<<" has "<<m_myReads.size()<<" sequences"<<endl;
 		char*message=m_name;
 		Message aMessage(message,0,MPI_UNSIGNED_LONG_LONG,source,m_TAG_SEQUENCES_READY,getRank());
-		//m_canUseBarrier=true;
+		m_canUseBarrier=true;
 		m_outbox.push_back(aMessage);
 	}else if(tag==m_TAG_SHOW_VERTICES){
 		cout<<"Rank "<<getRank()<<" has "<<m_subgraph.size()<<" vertices (DONE)"<<endl;
