@@ -30,6 +30,7 @@
 #include"Vertex.h"
 #include<SplayTree.h>
 #include"Message.h"
+#include"SplayTreeIterator.h"
 #include<set>
 #include<Read.h>
 #include"Parameters.h"
@@ -37,6 +38,9 @@
 using namespace std;
 
 class Machine{
+	int m_USE_MPI_Isend;
+	int m_USE_MPI_Send;
+	int m_Sending_Mechanism;
 	int m_ticks;
 	unsigned long long int m_receivedMessages;
 	unsigned long long int m_sentMessages;
@@ -59,6 +63,7 @@ class Machine{
 	int m_sequence_ready_machines;
 	bool m_messageSentForVerticesDistribution;
 
+	// MPI TAGs
 	int m_TAG_OUT_EDGE_DATA_WITH_PTR;
 	int m_TAG_VERTEX_PTR_REQUEST;
 	int m_TAG_VERTICES_DATA;
@@ -81,17 +86,66 @@ class Machine{
 	int m_TAG_PREPARE_COVERAGE_DISTRIBUTION;
 	int m_TAG_COVERAGE_DATA;
 	int m_TAG_COVERAGE_END;
+	int m_TAG_SEND_COVERAGE_VALUES;
+	int m_TAG_READY_TO_SEED;
+	int m_TAG_START_SEEDING;
+	int m_TAG_REQUEST_VERTEX_COVERAGE;
+	int m_TAG_REQUEST_VERTEX_COVERAGE_REPLY;
+	int m_TAG_REQUEST_VERTEX_OUTGOING_EDGES;
+	int m_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY;
+	int m_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE;
+	int m_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE_REPLY;
+	int m_TAG_SEEDING_IS_OVER;
+	int m_TAG_GOOD_JOB_SEE_YOU_SOON;
+	int m_TAG_I_GO_NOW;
 
+	int m_readyToSeed;
 	bool m_mode_send_ingoing_edges;
 
+	// MODE
+	int m_MODE_START_SEEDING;
+	int m_MODE_DO_NOTHING;
+	int m_mode;
+
+	// Counters.
 	int m_numberOfMachinesReadyForEdgesDistribution;
 
 	int m_numberOfMachinesReadyToSendDistribution;
 	int m_vertices_sent;
-	
+	int m_numberOfRanksDoneSeeding;
+	int m_numberOfRanksGone;
 	map<int,uint64_t> m_distributionOfCoverage;
 
 	int m_machineRank;
+
+	// SEEDING
+	SplayTreeIterator<uint64_t,Vertex>*m_SEEDING_iterator;
+	SplayNode<uint64_t,Vertex>*m_SEEDING_node;
+	bool m_SEEDING_edgesReceived;
+	uint64_t m_SEEDING_receivedKey;
+	bool m_SEEDING_vertexKeyAndCoverageReceived;
+	int m_SEEDING_receivedVertexCoverage;
+	bool m_SEEDING_vertexCoverageReceived;
+	int m_SEEDING_numberOfIngoingEdgesWithSeedCoverage;
+	Edge*m_SEEDING_edge;
+	bool m_SEEDING_vertexCoverageRequested;
+	bool m_SEEDING_edge_initiated;
+	bool m_SEEDING_NodeInitiated;
+	bool m_SEEDING_passedCoverageTest;
+	bool m_SEEDING_passedParentsTest;
+	bool m_SEEDING_Extended;
+	uint64_t m_SEEDING_currentVertex;
+	vector<uint64_t> m_SEEDING_seed;
+	
+	bool m_SEEDING_edgesRequested;
+	int m_SEEDING_currentRank;
+	void*m_SEEDING_currentPointer;
+	vector<int> m_SEEDING_outgoingRanks;
+	vector<int> m_SEEDING_outgoingCoverages;
+	vector<uint64_t> m_SEEDING_outgoingKeys;
+	vector<void*>m_SEEDING_outgoingPointers;
+	bool m_SEEDING_vertexKeyAndCoverageRequested;
+
 
 	int m_mode_send_coverage_iterator;
 	vector<Message> m_outbox;
@@ -100,6 +154,7 @@ class Machine{
 	map<int,uint64_t> m_coverageDistribution;
 	int m_minimumCoverage;
 	int m_peakCoverage;
+	int m_seedCoverage;
 	int m_numberOfMachinesDoneSendingCoverage;
 	
 	bool m_mode_sendDistribution;
@@ -118,11 +173,11 @@ class Machine{
 	int m_distribution_file_id;
 	int m_distribution_sequence_id;
 
-	int m_seedCoverage;
 
 	MyAllocator m_outboxAllocator;
 	MyAllocator m_inboxAllocator;
 
+	MyAllocator m_seedingAllocator;
 	MyAllocator m_distributionAllocator;
 	MyAllocator m_persistentAllocator;
 	vector<Read*> m_distribution_reads;

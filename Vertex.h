@@ -43,7 +43,8 @@ public:
 	int getCoverage();
 	void addOutgoingEdge(int rank,void*ptr,MyAllocator*allocator);
 	void addIngoingEdge(int rank,void*ptr,MyAllocator*allocator);
-
+	Edge*getFirstIngoingEdge();
+	Edge*getFirstOutgoingEdge();
 };
 
 #endif

@@ -89,3 +89,10 @@ bool Vertex::hasEdge(Edge*e,int rank,void*ptr){
 	return false;
 }
 
+Edge*Vertex::getFirstOutgoingEdge(){
+	return m_outgoingEdges;
+}
+
+Edge*Vertex::getFirstIngoingEdge(){
+	return m_ingoingEdges;
+}
