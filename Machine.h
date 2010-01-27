@@ -81,13 +81,6 @@ class Machine{
 	int m_TAG_PREPARE_COVERAGE_DISTRIBUTION;
 	int m_TAG_COVERAGE_DATA;
 	int m_TAG_COVERAGE_END;
-	int m_TAG_BARRIER_STOP;
-	int m_TAG_BARRIER_START;
-
-	int m_numberOfStops;
-	bool m_inBarrier;
-
-	bool m_canUseBarrier;
 
 	bool m_mode_send_ingoing_edges;
 
@@ -158,7 +151,6 @@ class Machine{
 	int getRank();
 	void receiveWelcomeMessage(MPI_Status*status);
 	int vertexRank(uint64_t a);
-	void waitall(int c,MPI_Request*a,MPI_Status*b);
 public:
 	Machine(int argc,char**argv);
 };
