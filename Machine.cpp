@@ -462,6 +462,9 @@ void Machine::processMessage(Message*message){
 		uint64_t*incoming=(uint64_t*)buffer;
 		uint64_t vertex=incoming[0];
 		int sequenceIdOnDestination=(int)incoming[1];
+		if(sequenceIdOnDestination%10000==0){
+			cout<<"Rank "<<getRank()<<" attaches sequences. "<<sequenceIdOnDestination<<"/"<<m_myReads.size()<<endl;
+		}
 		void*pointer=(void*)m_myReads[sequenceIdOnDestination];
 		int rankToSendInformation=vertexRank(vertex);
 		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(2*sizeof(uint64_t));
@@ -503,6 +506,7 @@ void Machine::processMessage(Message*message){
 	}else if(tag==m_TAG_MASTER_IS_DONE_ATTACHING_READS){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,m_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,getRank());
 		m_outbox.push_back(aMessage);
+		cout<<"Rank "<<getRank()<<" attaches sequences. "<<m_myReads.size()<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
 	}else if(tag==m_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY){
 		m_ranksDoneAttachingReads++;
 	}else if(tag==m_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE){
@@ -639,7 +643,7 @@ void Machine::processMessage(Message*message){
 		m_sequence_ready_machines++;
 	}else if(tag==m_TAG_START_EDGES_DISTRIBUTION_ANSWER){
 		m_numberOfMachinesReadyForEdgesDistribution++;
-		cout<<"Rank "<<getRank()<<" m_numberOfMachinesReadyForEdgesDistribution="<<m_numberOfMachinesReadyForEdgesDistribution<<endl;
+		//cout<<"Rank "<<getRank()<<" m_numberOfMachinesReadyForEdgesDistribution="<<m_numberOfMachinesReadyForEdgesDistribution<<endl;
 	}else if(tag==m_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER){
 		m_numberOfMachinesReadyToSendDistribution++;
 	}else if(tag==m_TAG_PREPARE_COVERAGE_DISTRIBUTION){
@@ -733,7 +737,7 @@ void Machine::processData(){
 		}
 		m_startEdgeDistribution=false;
 	}else if(m_numberOfMachinesReadyForEdgesDistribution==getSize()){
-		cout<<"Rank "<<getRank()<<" tells others to start edges distribution m_numberOfMachinesReadyForEdgesDistribution="<<m_numberOfMachinesReadyForEdgesDistribution<<endl;
+		cout<<"Rank "<<getRank()<<" tells others to start edges distribution."<<endl;// m_numberOfMachinesReadyForEdgesDistribution="<<m_numberOfMachinesReadyForEdgesDistribution<<endl;
 		m_numberOfMachinesReadyForEdgesDistribution=-1;
 		for(int i=0;i<getSize();i++){
 			char*sequence=m_name;
