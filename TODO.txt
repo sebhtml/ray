@@ -1,2 +1,5 @@
+
+* use single-end reads to resolve repeats.
 * attach reverse complement vertices.
 * load paired reads.
+* use paired-end reads. to resolve repeats.

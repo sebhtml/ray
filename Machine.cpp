@@ -239,8 +239,6 @@ void Machine::receiveMessages(){
 	MPI_Status status;
 	MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
 	while(flag){
-		//if(numberOfMessages>10)
-			//break;
 		MPI_Datatype datatype=MPI_UNSIGNED_LONG_LONG;
 		int sizeOfType=8;
 		int tag=status.MPI_TAG;
@@ -374,9 +372,9 @@ void Machine::attachReads(){
 			message[1]=sequenceIdOnDestination;
 			Message aMessage(message,2, MPI_UNSIGNED_LONG_LONG, destination, m_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER,getRank());
 			m_outbox.push_back(aMessage);
-			m_distribution_currentSequenceId++;
-			m_distribution_sequence_id++;
 		}
+		m_distribution_currentSequenceId++;
+		m_distribution_sequence_id++;
 	}
 
 }
@@ -413,6 +411,7 @@ void Machine::processMessage(Message*message){
 		m_mode=m_MODE_START_SEEDING;
 		m_SEEDING_iterator=new SplayTreeIterator<uint64_t,Vertex>(&m_subgraph);
 		m_SEEDING_NodeInitiated=false;
+		m_SEEDING_i=0;
 	}else if(tag==m_TAG_REQUEST_VERTEX_COVERAGE){
 		uint64_t*incoming=(uint64_t*)buffer;
 		SplayNode<uint64_t,Vertex>*node=(SplayNode<uint64_t,Vertex>*)incoming[0];
@@ -465,6 +464,7 @@ void Machine::processMessage(Message*message){
 		if(sequenceIdOnDestination%10000==0){
 			cout<<"Rank "<<getRank()<<" attaches sequences. "<<sequenceIdOnDestination<<"/"<<m_myReads.size()<<endl;
 		}
+		//cout<<"Rank "<<getRank()<<" "<<sequenceIdOnDestination<<" of "<<m_myReads.size()<<endl;
 		void*pointer=(void*)m_myReads[sequenceIdOnDestination];
 		int rankToSendInformation=vertexRank(vertex);
 		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(2*sizeof(uint64_t));
@@ -1059,12 +1059,16 @@ void Machine::processData(){
 		if(!m_SEEDING_NodeInitiated){
 			if(!m_SEEDING_iterator->hasNext()){
 				m_mode=m_MODE_DO_NOTHING;
-				cout<<"Rank "<<getRank()<<": seeding is over."<<endl;
+				cout<<"Rank "<<getRank()<<" seeding vertices. "<<m_SEEDING_i<<"/"<<m_subgraph.size()<<" (DONE)"<<endl;
 				m_seedingAllocator.clear();
 				Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,m_TAG_SEEDING_IS_OVER,getRank());
 				m_outbox.push_back(aMessage);
 			}else{
+				if(m_SEEDING_i % 10000 ==0){
+					cout<<"Rank "<<getRank()<<" seeding vertices. "<<m_SEEDING_i<<"/"<<m_subgraph.size()<<endl;
+				}
 				m_SEEDING_node=m_SEEDING_iterator->next();
+				m_SEEDING_i++;
 				m_SEEDING_numberOfIngoingEdgesWithSeedCoverage=0;
 				m_SEEDING_numberOfIngoingEdges=0;
 				m_SEEDING_passedCoverageTest=false;
@@ -1120,6 +1124,7 @@ void Machine::processData(){
 					m_SEEDING_Extended=false;
 					m_SEEDING_currentVertex=m_SEEDING_node->getKey();
 					m_SEEDING_seed.clear();
+					m_SEEDING_vertices.clear();
 					m_SEEDING_seed.push_back(m_SEEDING_currentVertex);
 					m_SEEDING_edge_initiated=true;
 					m_SEEDING_edge=m_SEEDING_node->getValue()->getFirstOutgoingEdge();
@@ -1192,10 +1197,11 @@ void Machine::processData(){
 						}
 					}
 				}
-				if(numberOfSeedCoverageCandidates==1){
+				if(numberOfSeedCoverageCandidates==1 and m_SEEDING_vertices.count(m_SEEDING_outgoingKeys[index])==0){
 					//cout<<"Rank "<<getRank()<<" has exactly 1"<<endl;
 					m_SEEDING_currentVertex=m_SEEDING_outgoingKeys[index];
 					m_SEEDING_seed.push_back(m_SEEDING_currentVertex);
+					m_SEEDING_vertices.insert(m_SEEDING_currentVertex);
 					m_SEEDING_currentRank=m_SEEDING_outgoingRanks[index];
 					m_SEEDING_currentPointer=m_SEEDING_outgoingPointers[index];
 					//cout<<"Rank "<<getRank()<<" sets current pointer to "<<m_SEEDING_currentPointer<<endl;

@@ -143,6 +143,7 @@ class Machine{
 	bool m_SEEDING_passedCoverageTest;
 	bool m_SEEDING_passedParentsTest;
 	bool m_SEEDING_Extended;
+	int m_SEEDING_i;
 	uint64_t m_SEEDING_currentVertex;
 	vector<uint64_t> m_SEEDING_seed;
 	
@@ -155,6 +156,7 @@ class Machine{
 	vector<void*>m_SEEDING_outgoingPointers;
 	bool m_SEEDING_vertexKeyAndCoverageRequested;
 	int m_SEEDING_numberOfIngoingEdges;
+	set<uint64_t> m_SEEDING_vertices;
 
 	int m_mode_send_coverage_iterator;
 	vector<Message> m_outbox;

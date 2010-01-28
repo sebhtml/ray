@@ -44,7 +44,7 @@ int Parameters::getWordSize(){
 }
 
 void Parameters::load(string file){
-	cout<<"Loading "<<file<<endl;
+	//cout<<"Loading "<<file<<endl;
 	ifstream f(file.c_str());
 	while(!f.eof()){
 		string token;
@@ -52,7 +52,7 @@ void Parameters::load(string file){
 		if(token=="LoadSingleEndReads"){
 			f>>token;
 			m_singleEndReadsFile.push_back(token);
-			cout<<"LoadSingleEndReads "<<token<<endl;
+			//cout<<"LoadSingleEndReads "<<token<<endl;
 		}else if(token=="SetOutputDirectory"){
 			f>>token;
 			m_directory=token;
