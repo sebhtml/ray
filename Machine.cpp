@@ -1038,6 +1038,8 @@ void Machine::processData(){
 					//cout<<"Rank "<<getRank()<<" with "<<m_SEEDING_outgoingRanks.size()<<" outgoing edges so far."<<endl;
 				}
 			}else if(m_SEEDING_edge==NULL){
+				// get ingoing edges also, just to be sure it is ok...
+
 				// choose the best fit between outgoing edges.
 				int index=-1;
 				int numberOfSeedCoverageCandidates=0;
