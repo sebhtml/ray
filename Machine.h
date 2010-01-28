@@ -147,7 +147,7 @@ class Machine{
 	vector<uint64_t> m_SEEDING_outgoingKeys;
 	vector<void*>m_SEEDING_outgoingPointers;
 	bool m_SEEDING_vertexKeyAndCoverageRequested;
-
+	int m_SEEDING_numberOfIngoingEdges;
 
 	int m_mode_send_coverage_iterator;
 	vector<Message> m_outbox;

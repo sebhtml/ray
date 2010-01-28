@@ -20,6 +20,7 @@
 */
 
 #include"Machine.h"
+#include<sstream>
 #include"Message.h"
 #include"common_functions.h"
 #include<iostream>
@@ -929,6 +930,7 @@ void Machine::processData(){
 			}else{
 				m_SEEDING_node=m_SEEDING_iterator->next();
 				m_SEEDING_numberOfIngoingEdgesWithSeedCoverage=0;
+				m_SEEDING_numberOfIngoingEdges=0;
 				m_SEEDING_passedCoverageTest=false;
 				m_SEEDING_NodeInitiated=true;
 				if(m_seedingAllocator.getNumberOfChunks()>1){
@@ -967,11 +969,15 @@ void Machine::processData(){
 					if(coverage>=m_seedCoverage){
 						m_SEEDING_numberOfIngoingEdgesWithSeedCoverage++;
 					}
+					m_SEEDING_numberOfIngoingEdges++;
 					m_SEEDING_edge=m_SEEDING_edge->getNext();
 					m_SEEDING_vertexCoverageRequested=false;
 				}
 			}else if(m_SEEDING_edge==NULL){
-				if(m_SEEDING_numberOfIngoingEdgesWithSeedCoverage==1){
+				if(m_SEEDING_numberOfIngoingEdges!=1){
+					//cout<<"Rank "<<getRank()<<" vertex has "<<m_SEEDING_numberOfIngoingEdges<<", "<<m_SEEDING_numberOfIngoingEdgesWithSeedCoverage<<" with >= seedCoverage"<<endl;
+				}
+				if(m_SEEDING_numberOfIngoingEdges==1 or m_SEEDING_numberOfIngoingEdgesWithSeedCoverage==1){
 					m_SEEDING_NodeInitiated=false;
 				}else{
 					m_SEEDING_passedParentsTest=true;
@@ -985,9 +991,11 @@ void Machine::processData(){
 					m_SEEDING_outgoingCoverages.clear();
 					m_SEEDING_outgoingPointers.clear();
 					m_SEEDING_outgoingKeys.clear();
+					cout<<"Rank "<<getRank()<<" SOURCE "<<idToWord(m_SEEDING_seed[0],m_wordSize)<<endl;
 				}
 			}
 		}else if(!m_SEEDING_Extended){
+
 			//cout<<"Rank "<<getRank()<<" extending."<<endl;
 			// here, we have m_SEEDING_node.
 			// let us extend it now, we will first extend it as long as there is only one next >=seedCoverage
@@ -1048,8 +1056,8 @@ void Machine::processData(){
 				}
 				if(numberOfSeedCoverageCandidates==1){
 					//cout<<"Rank "<<getRank()<<" has exactly 1"<<endl;
-					m_SEEDING_seed.push_back(m_SEEDING_currentVertex);
 					m_SEEDING_currentVertex=m_SEEDING_outgoingKeys[index];
+					m_SEEDING_seed.push_back(m_SEEDING_currentVertex);
 					m_SEEDING_currentRank=m_SEEDING_outgoingRanks[index];
 					m_SEEDING_currentPointer=m_SEEDING_outgoingPointers[index];
 					//cout<<"Rank "<<getRank()<<" sets current pointer to "<<m_SEEDING_currentPointer<<endl;
@@ -1062,6 +1070,13 @@ void Machine::processData(){
 				}else{
 					m_SEEDING_NodeInitiated=false;
 					cout<<"Rank "<<getRank()<<" has a beautiful seed with "<<m_SEEDING_seed.size()<<" vertices."<<endl;
+					ostringstream buffer;
+					buffer<<idToWord(m_SEEDING_seed[0],m_wordSize);
+					for(int i=1;i<(int)m_SEEDING_seed.size();i++){
+						buffer<<getLastSymbol(m_SEEDING_seed[i],m_wordSize);
+					}
+					string contig=buffer.str();
+					cout<<contig.length()<<" CONTIG "<<contig<<endl;
 				}
 			}
 		}
