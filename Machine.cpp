@@ -41,6 +41,8 @@ Machine::Machine(int argc,char**argv){
 	m_sentMessages=0;
 	m_readyToSeed=0;
 	m_ticks=0;
+	m_maxTicks=-1;
+	m_watchMaxTicks=false;
 	m_receivedMessages=0;
 	m_wordSize=21;
 	m_reverseComplementVertex=false;
@@ -134,16 +136,26 @@ void Machine::run(){
 	cout<<"Rank "<<getRank()<<" is "<<m_name<<endl;
 	while(isAlive()){
 		if(m_ticks%100==0){
-			MPI_Barrier(MPI_COMM_WORLD);
+			if(!(m_watchMaxTicks and m_ticks > m_maxTicks)){
+				MPI_Barrier(MPI_COMM_WORLD);
+			}else{
+			}
+		}
+		
+		if(!(m_watchMaxTicks and m_ticks > m_maxTicks)){
+			m_ticks++;
+		}else{
+			//cout<<"Rank "<<getRank()<<" is ready to die."<<endl;
+			m_alive=false;
 		}
 
-		m_ticks++;
 		receiveMessages(); 
 		checkRequests();
 		processMessages();
 		processData();
 		sendMessages();
 	}
+	MPI_Barrier(MPI_COMM_WORLD);
 }
 
 void Machine::sendMessages(){
@@ -350,7 +362,12 @@ void Machine::processMessage(Message*message){
 		m_outbox.push_back(aMessage);
 		//cout<<"Rank "<<getRank()<<" sends outgoing edges."<<endl;
 	}else if(tag==m_TAG_GOOD_JOB_SEE_YOU_SOON){
-		m_alive=false;
+		//m_alive=false;
+		uint64_t*incoming=(uint64_t*)buffer;
+		m_maxTicks=(incoming[0]+1000);
+		
+		//cout<<"Rank "<<getRank()<<" ticks="<<m_ticks<<", maxTicks="<<m_maxTicks<<endl;
+		m_watchMaxTicks=true;
 	}else if(tag==m_TAG_SEEDING_IS_OVER){
 		m_numberOfRanksDoneSeeding++;
 	}else if(tag==m_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY){
@@ -1016,7 +1033,7 @@ void Machine::processData(){
 				// choose the best fit between outgoing edges.
 				int index=-1;
 				int numberOfSeedCoverageCandidates=0;
-				if(false and m_SEEDING_outgoingCoverages.size()==1){
+				if(m_SEEDING_outgoingCoverages.size()==1){
 					index=0;
 					numberOfSeedCoverageCandidates=1;
 				}else{
@@ -1053,7 +1070,9 @@ void Machine::processData(){
 		m_numberOfRanksDoneSeeding=-1;
 		cout<<"Rank "<<getRank()<<" All work is done, good job ranks!"<<endl;
 		for(int i=0;i<getSize();i++){
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,m_TAG_GOOD_JOB_SEE_YOU_SOON,getRank());
+			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
+			message[0]=m_ticks;
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,i,m_TAG_GOOD_JOB_SEE_YOU_SOON,getRank());
 			m_outbox.push_back(aMessage);
 		}
 	}

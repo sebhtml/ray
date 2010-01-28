@@ -1,7 +1,7 @@
+* for symmetry-> maybe parent checking.
 * grep beaut test1.log |awk '{print $8}'|sort -n|uniq -c|less
 * check that the number of contigs is 2*n
 * compute seeds (almost done.)
-* problem with Finalize and MPI_Barrier.
 * problem with memory usage on MASTER
 * attach reads
 * attach reverse complement vertices.

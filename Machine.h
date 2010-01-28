@@ -42,6 +42,8 @@ class Machine{
 	int m_USE_MPI_Send;
 	int m_Sending_Mechanism;
 	int m_ticks;
+	int m_maxTicks;
+	bool m_watchMaxTicks;
 	unsigned long long int m_receivedMessages;
 	unsigned long long int m_sentMessages;
 	int m_wordSize;
