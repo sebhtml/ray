@@ -166,6 +166,7 @@ class Machine{
 	int m_seedCoverage;
 	int m_numberOfMachinesDoneSendingCoverage;
 	
+	string m_VERSION="dev";
 	bool m_mode_sendDistribution;
 
 	uint64_t m_send_buffer[10];

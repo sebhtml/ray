@@ -124,6 +124,16 @@ Machine::Machine(int argc,char**argv){
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
 	MPI_Comm_size(MPI_COMM_WORLD,&m_size);
 	MPI_Get_processor_name (m_name, &m_nameLen); 
+	if(isMaster()){
+		cout<<"Rank "<<getRank()<<" welcomes you to the MPI_COMM_WORLD."<<endl;
+		cout<<"Rank "<<getRank()<<": website -> http://denovoassembler.sf.net/"<<endl;
+		cout<<"Rank "<<getRank()<<": version -> "<<m_VERSION<<" $Id$"<<endl;
+		#ifdef OPEN_MPI
+		cout<<"Rank "<<getRank()<<" using Open MPI "<<OMPI_MAJOR_VERSION<<"."<<OMPI_MINOR_VERSION<<"."<<OMPI_RELEASE_VERSION<<endl;
+		#else
+		cout<<"Rank "<<getRank()<<" MPI implementation is not Open MPI."<<endl;
+		#endif
+	}
 	m_alive=true;
 	m_welcomeStep=true;
 	m_loadSequenceStep=false;
@@ -135,9 +145,10 @@ Machine::Machine(int argc,char**argv){
 		if(isMaster()){
 			cout<<"You must provide a input file."<<endl;
 		}
-		return ;
+	}else{
+		run();
 	}
-	run();
+
 	MPI_Barrier(MPI_COMM_WORLD);
 	cout<<"Rank "<<getRank()<<" finalizes."<<endl;
 	MPI_Finalize();
