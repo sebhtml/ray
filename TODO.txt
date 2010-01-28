@@ -1,5 +1,4 @@
 
-* problem with memory usage on MASTER
 * attach reads
 * attach reverse complement vertices.
 * load paired reads.
