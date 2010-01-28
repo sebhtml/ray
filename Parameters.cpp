@@ -25,6 +25,7 @@
 #include<string>
 #include<iostream>
 #include<vector>
+#include<cstdlib>
 #include<fstream>
 #include<Read.h>
 #include"Loader.h"
@@ -35,6 +36,11 @@ using namespace std;
 Parameters::Parameters(){
 	m_initiated=false;
 	m_directory="assembly";
+	m_wordSize=21;
+}
+
+int Parameters::getWordSize(){
+	return m_wordSize;
 }
 
 void Parameters::load(string file){
@@ -50,6 +56,9 @@ void Parameters::load(string file){
 		}else if(token=="SetOutputDirectory"){
 			f>>token;
 			m_directory=token;
+		}else if(token=="SetWordSize"){
+			f>>token;
+			m_wordSize=atoi(token.c_str());
 		}
 	}
 	f.close();

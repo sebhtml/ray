@@ -60,6 +60,15 @@ void Vertex::addOutgoingEdge(int rank,void*ptr,MyAllocator*allocator){
 	m_outgoingEdges=e;
 }
 
+void Vertex::addRead(int rank,void*ptr,MyAllocator*allocator){
+	Edge*e=(Edge*)allocator->allocate(sizeof(Edge));
+	e->constructor(rank,ptr);
+	if(m_readsStartingHere!=NULL){
+		e->setNext(m_readsStartingHere);
+	}
+	m_readsStartingHere=e;
+}
+
 void Vertex::addIngoingEdge(int rank,void*ptr,MyAllocator*allocator){
 	if(hasEdge(m_ingoingEdges,rank,ptr))
 		return;

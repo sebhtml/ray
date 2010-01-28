@@ -45,7 +45,7 @@ Machine::Machine(int argc,char**argv){
 	m_maxTicks=-1;
 	m_watchMaxTicks=false;
 	m_receivedMessages=0;
-	m_wordSize=21;
+	m_wordSize=-1;
 	m_reverseComplementVertex=false;
 	m_last_value=0;
 	m_mode_send_ingoing_edges=false;
@@ -104,11 +104,20 @@ Machine::Machine(int argc,char**argv){
 	m_TAG_SEEDING_IS_OVER=35;
 	m_TAG_GOOD_JOB_SEE_YOU_SOON=36;
 	m_TAG_I_GO_NOW=37;
+	m_TAG_SET_WORD_SIZE=38;
+	m_TAG_MASTER_IS_DONE_ATTACHING_READS=39;
+	m_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY=40;
+	m_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER=41;
+	m_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER_REPLY=42;
 
 	m_MODE_START_SEEDING=0;
 	m_MODE_DO_NOTHING=1;
 
 	m_mode=m_MODE_DO_NOTHING;
+	m_mode_AttachSequences=false;
+	m_startEdgeDistribution=false;
+
+	m_ranksDoneAttachingReads=0;
 
 	MPI_Init(&argc,&argv);
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
@@ -213,8 +222,8 @@ void Machine::receiveMessages(){
 	MPI_Status status;
 	MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
 	while(flag){
-		if(numberOfMessages>10)
-			break;
+		//if(numberOfMessages>10)
+			//break;
 		MPI_Datatype datatype=MPI_UNSIGNED_LONG_LONG;
 		int sizeOfType=8;
 		int tag=status.MPI_TAG;
@@ -275,7 +284,7 @@ void Machine::loadSequences(){
 		m_distributionAllocator.clear();
 		m_distributionAllocator.constructor();
 		loader.load(allFiles[m_distribution_file_id],&m_distribution_reads,&m_distributionAllocator,&m_distributionAllocator);
-		cout<<m_distribution_reads.size()<<" sequences to distribute"<<endl;
+		cout<<"Rank "<<getRank()<<" "<<m_distribution_reads.size()<<" sequences to distribute"<<endl;
 	}
 	for(int i=0;i<1*getSize();i++){
 		if(m_distribution_sequence_id>(int)m_distribution_reads.size()-1)
@@ -296,6 +305,61 @@ void Machine::loadSequences(){
 		m_distribution_currentSequenceId++;
 		m_distribution_sequence_id++;
 	}
+}
+
+void Machine::attachReads(){
+	//cout<<"Rank "<<getRank()<<" Attaching reads."<<endl;
+	vector<string> allFiles=m_parameters.getAllFiles();
+	if(m_distribution_reads.size()>0 and m_distribution_sequence_id>(int)m_distribution_reads.size()-1){
+		m_distribution_file_id++;
+		m_distribution_sequence_id=0;
+		m_distribution_reads.clear();
+	}
+	if(m_distribution_file_id>(int)allFiles.size()-1){
+		for(int i=0;i<getSize();i++){
+			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, i, m_TAG_MASTER_IS_DONE_ATTACHING_READS,getRank());
+			m_outbox.push_back(aMessage);
+		}
+		m_distribution_reads.clear();
+		m_distributionAllocator.clear();
+		m_mode_AttachSequences=false;
+		return;
+	}
+	if(m_distribution_reads.size()==0){
+		Loader loader;
+		m_distribution_reads.clear();
+		m_distributionAllocator.clear();
+		m_distributionAllocator.constructor();
+		m_distributionAllocator.clear();
+		m_distributionAllocator.constructor();
+		loader.load(allFiles[m_distribution_file_id],&m_distribution_reads,&m_distributionAllocator,&m_distributionAllocator);
+		cout<<"Rank "<<getRank()<<" "<<m_distribution_reads.size()<<" sequences to attach"<<endl;
+	}
+	for(int i=0;i<1;i++){
+		if(m_distribution_sequence_id>(int)m_distribution_reads.size()-1)
+			break;
+
+		int destination=m_distribution_currentSequenceId%getSize();
+		int sequenceIdOnDestination=m_distribution_currentSequenceId/getSize();
+
+		if(destination<0 or destination>getSize()-1){
+			cout<<destination<<" is bad"<<endl;
+		}
+		char*sequence=m_distribution_reads[m_distribution_sequence_id]->getSeq();
+		char vertexChar[100];
+		memcpy(vertexChar,sequence,m_wordSize);
+		vertexChar[m_wordSize]='\0';
+		uint64_t vertex=wordId(vertexChar);
+		// ask the machine with sequenceIdOnDestination to send the associated pointer and rank to the rank that holds vertex.
+		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(2*sizeof(uint64_t));
+		message[0]=vertex;
+		message[1]=sequenceIdOnDestination;
+		Message aMessage(message,2, MPI_UNSIGNED_LONG_LONG, destination, m_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER,getRank());
+		m_outbox.push_back(aMessage);
+		m_distribution_currentSequenceId++;
+		m_distribution_sequence_id++;
+	}
+
 }
 
 void Machine::processMessage(Message*message){
@@ -322,6 +386,10 @@ void Machine::processMessage(Message*message){
 			}
 			tmp->getValue()->setCoverage(tmp->getValue()->getCoverage()+1);
 		}
+	}else if(tag==m_TAG_SET_WORD_SIZE){
+		uint64_t*incoming=(uint64_t*)buffer;
+		m_wordSize=incoming[0];
+		cout<<"Rank "<<getRank()<<" WordSize="<<m_wordSize<<endl;
 	}else if(tag==m_TAG_START_SEEDING){
 		m_mode=m_MODE_START_SEEDING;
 		m_SEEDING_iterator=new SplayTreeIterator<uint64_t,Vertex>(&m_subgraph);
@@ -371,6 +439,29 @@ void Machine::processMessage(Message*message){
 		m_watchMaxTicks=true;
 	}else if(tag==m_TAG_SEEDING_IS_OVER){
 		m_numberOfRanksDoneSeeding++;
+	}else if(tag==m_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER){
+		uint64_t*incoming=(uint64_t*)buffer;
+		uint64_t vertex=incoming[0];
+		int sequenceIdOnDestination=(int)incoming[1];
+		void*pointer=(void*)m_myReads[sequenceIdOnDestination];
+		int rankToSendInformation=vertexRank(vertex);
+		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(2*sizeof(uint64_t));
+		message[0]=vertex;
+		message[1]=(uint64_t)pointer;
+		Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,rankToSendInformation,m_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER_REPLY,getRank());
+		m_outbox.push_back(aMessage);
+	}else if(tag==m_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER_REPLY){
+		uint64_t*incoming=(uint64_t*)buffer;
+		uint64_t vertex=incoming[0];
+		void*ptr=(void*)incoming[1];
+		
+		SplayNode<uint64_t,Vertex>*node=m_subgraph.find(vertex);
+		if(node==NULL){
+			cout<<" Rank="<<getRank()<<" NULL "<<vertex<<endl;
+		}else{
+			Vertex*vertex=node->getValue();
+			vertex->addRead(source,ptr,&m_persistentAllocator);
+		}
 	}else if(tag==m_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY){
 		uint64_t*incoming=(uint64_t*)buffer;
 		int i=0;
@@ -390,6 +481,11 @@ void Machine::processMessage(Message*message){
 		}
 		m_SEEDING_edgesReceived=true;
 		m_SEEDING_edge_initiated=true;
+	}else if(tag==m_TAG_MASTER_IS_DONE_ATTACHING_READS){
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,m_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,getRank());
+		m_outbox.push_back(aMessage);
+	}else if(tag==m_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY){
+		m_ranksDoneAttachingReads++;
 	}else if(tag==m_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE){
 		uint64_t*incoming=(uint64_t*)buffer;
 		SplayNode<uint64_t,Vertex>*node=(SplayNode<uint64_t,Vertex>*)incoming[0];
@@ -524,6 +620,7 @@ void Machine::processMessage(Message*message){
 		m_sequence_ready_machines++;
 	}else if(tag==m_TAG_START_EDGES_DISTRIBUTION_ANSWER){
 		m_numberOfMachinesReadyForEdgesDistribution++;
+		cout<<"Rank "<<getRank()<<" m_numberOfMachinesReadyForEdgesDistribution="<<m_numberOfMachinesReadyForEdgesDistribution<<endl;
 	}else if(tag==m_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER){
 		m_numberOfMachinesReadyToSendDistribution++;
 	}else if(tag==m_TAG_PREPARE_COVERAGE_DISTRIBUTION){
@@ -570,6 +667,12 @@ void Machine::processMessages(){
 void Machine::processData(){
 	if(!m_parameters.isInitiated()&&isMaster()){
 		m_parameters.load(m_inputFile);
+		for(int i=0;i<getSize();i++){
+			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
+			message[0]=m_parameters.getWordSize();
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,i,m_TAG_SET_WORD_SIZE,getRank());
+			m_outbox.push_back(aMessage);
+		}
 	}else if(m_welcomeStep==true && m_loadSequenceStep==false&&isMaster()){
 		loadSequences();
 	}else if(m_loadSequenceStep==true && m_mode_send_vertices==false&&isMaster() and m_sequence_ready_machines==getSize()&&m_messageSentForVerticesDistribution==false){
@@ -582,14 +685,26 @@ void Machine::processData(){
 		m_messageSentForVerticesDistribution=true;
 	}else if(m_numberOfMachinesDoneSendingVertices==getSize()){
 		m_numberOfMachinesReadyForEdgesDistribution=0;
+		m_numberOfMachinesDoneSendingVertices=-1;
+		for(int i=0;i<getSize();i++){
+			char*message=m_name;
+			Message aMessage(message, 0, MPI_UNSIGNED_LONG_LONG, i, m_TAG_SHOW_VERTICES,getRank());
+			m_outbox.push_back(aMessage);
+		}
+
+		cout<<"Rank "<<getRank()<<" attaches reads now."<<endl;
+		m_mode_AttachSequences=true;
+		m_distribution_file_id=m_distribution_sequence_id=m_distribution_currentSequenceId=0;
+		m_startEdgeDistribution=false;
+	}else if(m_startEdgeDistribution){
 		for(int i=0;i<getSize();i++){
 			char*sequence=m_name;
 			Message aMessage(sequence, 0, MPI_UNSIGNED_LONG_LONG,i, m_TAG_START_EDGES_DISTRIBUTION_ASK,getRank());
 			m_outbox.push_back(aMessage);
 		}
-		m_numberOfMachinesDoneSendingVertices=-1;
+		m_startEdgeDistribution=false;
 	}else if(m_numberOfMachinesReadyForEdgesDistribution==getSize()){
-		cout<<"Rank "<<getRank()<<" tells others to start edges distribution"<<endl;
+		cout<<"Rank "<<getRank()<<" tells others to start edges distribution m_numberOfMachinesReadyForEdgesDistribution="<<m_numberOfMachinesReadyForEdgesDistribution<<endl;
 		m_numberOfMachinesReadyForEdgesDistribution=-1;
 		for(int i=0;i<getSize();i++){
 			char*sequence=m_name;
@@ -615,9 +730,7 @@ void Machine::processData(){
 			Message aMessage(buffer,3,MPI_UNSIGNED_LONG_LONG,i,m_TAG_SEND_COVERAGE_VALUES,getRank());
 			m_outbox.push_back(aMessage);
 		}
-	}
-
-	if(m_mode_send_vertices==true){
+	}else if(m_mode_send_vertices==true){
 		if(m_mode_send_vertices_sequence_id%10000==0 and m_mode_send_vertices_sequence_id_position==0){
 			string reverse="";
 			if(m_reverseComplementVertex==true)
@@ -679,16 +792,6 @@ void Machine::processData(){
 				m_mode_send_vertices_sequence_id_position=0;
 			}
 		}
-
-
-	}else if(m_numberOfMachinesDoneSendingVertices==getSize()){
-		cout<<"Now showing everyone."<<endl;
-		m_numberOfMachinesDoneSendingVertices=0;
-		for(int i=0;i<getSize();i++){
-			char*message=m_name;
-			Message aMessage(message, 0, MPI_UNSIGNED_LONG_LONG, i, m_TAG_SHOW_VERTICES,getRank());
-			m_outbox.push_back(aMessage);
-		}
 		
 	}else if(m_numberOfMachinesDoneSendingEdges==getSize()){
 		m_numberOfMachinesDoneSendingEdges=-1;
@@ -702,7 +805,7 @@ void Machine::processData(){
 		//m_numberOfMachinesReadyToSendDistribution=-1;
 
 		if(m_machineRank<=m_numberOfMachinesDoneSendingCoverage){
-			//cout<<"Rank "<<getRank()<<" tells "<<m_machineRank<<" to distribute its distribution."<<endl;
+			cout<<"Rank "<<getRank()<<" tells "<<m_machineRank<<" to distribute its distribution."<<endl;
 			char*message=m_name;
 			Message aMessage(message, 0, MPI_UNSIGNED_LONG_LONG, m_machineRank, m_TAG_PREPARE_COVERAGE_DISTRIBUTION,getRank());
 			m_outbox.push_back(aMessage);
@@ -712,6 +815,9 @@ void Machine::processData(){
 		if(m_machineRank==getSize()){
 			m_numberOfMachinesReadyToSendDistribution=-1;
 		}
+	}else if(m_ranksDoneAttachingReads==getSize()){
+		m_ranksDoneAttachingReads=-1;
+		m_startEdgeDistribution=true;
 	}
 
 	if(m_mode_sendDistribution){
@@ -900,9 +1006,7 @@ void Machine::processData(){
 				m_mode_send_edge_sequence_id_position=0;
 			}
 		}
-	}
-
-	if(m_readyToSeed==getSize()){
+	}else if(m_readyToSeed==getSize()){
 		m_readyToSeed=-1;
 		m_numberOfRanksDoneSeeding=0;
 		// tell everyone to seed now.
@@ -910,8 +1014,7 @@ void Machine::processData(){
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,m_TAG_START_SEEDING,getRank());
 			m_outbox.push_back(aMessage);
 		}
-	}
-	if(m_mode==m_MODE_START_SEEDING){
+	}else if(m_mode==m_MODE_START_SEEDING){
 		// seed.
 		//cout<<m_minimumCoverage<<" "<<m_seedCoverage<<" "<<m_peakCoverage<<endl;
 	
@@ -1082,8 +1185,7 @@ void Machine::processData(){
 				}
 			}
 		}
-	}
-	if(m_numberOfRanksDoneSeeding==getSize()){
+	}else if(m_numberOfRanksDoneSeeding==getSize()){
 		m_numberOfRanksDoneSeeding=-1;
 		cout<<"Rank "<<getRank()<<" All work is done, good job ranks!"<<endl;
 		for(int i=0;i<getSize();i++){
@@ -1092,6 +1194,8 @@ void Machine::processData(){
 			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,i,m_TAG_GOOD_JOB_SEE_YOU_SOON,getRank());
 			m_outbox.push_back(aMessage);
 		}
+	}else if(m_mode_AttachSequences){
+		attachReads();
 	}
 }
 

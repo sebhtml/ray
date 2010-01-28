@@ -1,4 +1,4 @@
-ls30 max-slots=27
+ls30 max-slots=28
 ls28 max-slots=24
 globe max-slots=8
 ls13 max-slots=2

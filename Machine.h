@@ -100,7 +100,12 @@ class Machine{
 	int m_TAG_SEEDING_IS_OVER;
 	int m_TAG_GOOD_JOB_SEE_YOU_SOON;
 	int m_TAG_I_GO_NOW;
-
+	int m_TAG_SET_WORD_SIZE;
+	int m_TAG_MASTER_IS_DONE_ATTACHING_READS;
+	int m_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY;
+	int m_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER;
+	int m_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER_REPLY;
+	
 	int m_readyToSeed;
 	bool m_mode_send_ingoing_edges;
 
@@ -108,10 +113,12 @@ class Machine{
 	int m_MODE_START_SEEDING;
 	int m_MODE_DO_NOTHING;
 	int m_mode;
+	bool m_startEdgeDistribution;
+	bool m_mode_AttachSequences;
 
 	// Counters.
 	int m_numberOfMachinesReadyForEdgesDistribution;
-
+	int m_ranksDoneAttachingReads;
 	int m_numberOfMachinesReadyToSendDistribution;
 	int m_vertices_sent;
 	int m_numberOfRanksDoneSeeding;
@@ -192,7 +199,7 @@ class Machine{
 	int m_mode_send_vertices_sequence_id_position;
 	int m_numberOfMachinesDoneSendingVertices;
 
-
+	void attachReads();
 	void printStatus();
 	int getSize();
 	bool isAlive();

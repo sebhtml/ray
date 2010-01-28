@@ -1,4 +1,2 @@
-
-* attach reads
 * attach reverse complement vertices.
 * load paired reads.
