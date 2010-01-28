@@ -119,6 +119,7 @@ Machine::Machine(int argc,char**argv){
 	m_startEdgeDistribution=false;
 
 	m_ranksDoneAttachingReads=0;
+	m_VERSION="0.0.0";
 
 	MPI_Init(&argc,&argv);
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
