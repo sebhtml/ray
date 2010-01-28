@@ -39,6 +39,7 @@ Machine::Machine(int argc,char**argv){
 	m_USE_MPI_Isend=1;
 	m_Sending_Mechanism=m_USE_MPI_Send;
 
+	m_aborted=false;
 	m_sentMessages=0;
 	m_readyToSeed=0;
 	m_ticks=0;
@@ -143,7 +144,11 @@ Machine::Machine(int argc,char**argv){
 }
 
 void Machine::run(){
-	cout<<"Rank "<<getRank()<<" is "<<m_name<<endl;
+	cout<<"Rank "<<getRank()<<": hello from "<<m_name<<endl;
+	if(isMaster()){
+		cout<<"Rank "<<getRank()<<": I am the master among "<<getSize()<<" ranks in the MPI_COMM_WORLD."<<endl;
+	}
+	//cout<<"Rank "<<getRank()<<" is "<<m_name<<endl;
 	while(isAlive()){
 		if(m_ticks%100==0){
 			if(!(m_watchMaxTicks and m_ticks > m_maxTicks)){
@@ -349,15 +354,17 @@ void Machine::attachReads(){
 		char vertexChar[100];
 		memcpy(vertexChar,sequence,m_wordSize);
 		vertexChar[m_wordSize]='\0';
-		uint64_t vertex=wordId(vertexChar);
-		// ask the machine with sequenceIdOnDestination to send the associated pointer and rank to the rank that holds vertex.
-		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(2*sizeof(uint64_t));
-		message[0]=vertex;
-		message[1]=sequenceIdOnDestination;
-		Message aMessage(message,2, MPI_UNSIGNED_LONG_LONG, destination, m_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER,getRank());
-		m_outbox.push_back(aMessage);
-		m_distribution_currentSequenceId++;
-		m_distribution_sequence_id++;
+		if(isValidDNA(vertexChar)){
+			uint64_t vertex=wordId(vertexChar);
+			// ask the machine with sequenceIdOnDestination to send the associated pointer and rank to the rank that holds vertex.
+			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(2*sizeof(uint64_t));
+			message[0]=vertex;
+			message[1]=sequenceIdOnDestination;
+			Message aMessage(message,2, MPI_UNSIGNED_LONG_LONG, destination, m_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER,getRank());
+			m_outbox.push_back(aMessage);
+			m_distribution_currentSequenceId++;
+			m_distribution_sequence_id++;
+		}
 	}
 
 }
@@ -665,7 +672,17 @@ void Machine::processMessages(){
 }
 
 void Machine::processData(){
+	if(m_aborted){
+		return;
+	}
 	if(!m_parameters.isInitiated()&&isMaster()){
+		ifstream f(m_inputFile);
+		if(!f){
+			cout<<"Rank "<<getRank()<<" invalid input file."<<endl;
+			m_aborted=true;
+			killRanks();
+			return;
+		}
 		m_parameters.load(m_inputFile);
 		for(int i=0;i<getSize();i++){
 			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
@@ -1188,14 +1205,18 @@ void Machine::processData(){
 	}else if(m_numberOfRanksDoneSeeding==getSize()){
 		m_numberOfRanksDoneSeeding=-1;
 		cout<<"Rank "<<getRank()<<" All work is done, good job ranks!"<<endl;
-		for(int i=0;i<getSize();i++){
-			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
-			message[0]=m_ticks;
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,i,m_TAG_GOOD_JOB_SEE_YOU_SOON,getRank());
-			m_outbox.push_back(aMessage);
-		}
+		killRanks();
 	}else if(m_mode_AttachSequences){
 		attachReads();
+	}
+}
+
+void Machine::killRanks(){
+	for(int i=0;i<getSize();i++){
+		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
+		message[0]=m_ticks;
+		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,i,m_TAG_GOOD_JOB_SEE_YOU_SOON,getRank());
+		m_outbox.push_back(aMessage);
 	}
 }
 

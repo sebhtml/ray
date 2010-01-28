@@ -199,6 +199,9 @@ class Machine{
 	int m_mode_send_vertices_sequence_id_position;
 	int m_numberOfMachinesDoneSendingVertices;
 
+	bool m_aborted;
+
+	void killRanks();
 	void attachReads();
 	void printStatus();
 	int getSize();
