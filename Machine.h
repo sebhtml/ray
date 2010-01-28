@@ -105,7 +105,10 @@ class Machine{
 	int m_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY;
 	int m_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER;
 	int m_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER_REPLY;
-	
+	int m_TAG_REQUEST_VERTEX_INGOING_EDGES;
+	int m_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY;
+
+
 	int m_readyToSeed;
 	bool m_mode_send_ingoing_edges;
 
@@ -146,7 +149,12 @@ class Machine{
 	int m_SEEDING_i;
 	uint64_t m_SEEDING_currentVertex;
 	vector<uint64_t> m_SEEDING_seed;
-	
+	Edge*m_SEEDING_Inedge;
+	bool m_SEEDING_InedgesReceived;
+	bool m_SEEDING_InedgesRequested;
+	int m_SEEDING_outgoing_index;
+	int m_SEEDING_numberOfSeedCoverageCandidates;
+	bool m_SEEDING_outgoing_choice_done;
 	bool m_SEEDING_edgesRequested;
 	int m_SEEDING_currentRank;
 	void*m_SEEDING_currentPointer;
@@ -209,6 +217,7 @@ class Machine{
 	void printStatus();
 	int getSize();
 	bool isAlive();
+	void completeSeed();
 	void run();
 	bool isMaster();
 	void checkRequests();

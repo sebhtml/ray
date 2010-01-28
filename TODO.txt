@@ -1,3 +1,4 @@
+* also check that added vertices are 1-in 1-out (work in progress.)
 
 * use single-end reads to resolve repeats.
 * attach reverse complement vertices.
