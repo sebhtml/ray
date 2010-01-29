@@ -638,7 +638,7 @@ void Machine::processMessage(Message*message){
 
 	}else if(tag==TAG_SEND_SEQUENCE){
 		int length=count;
-		char incoming[2000];
+		char*incoming=(char*)m_inboxAllocator.allocate(count*sizeof(char)+1);
 		for(int i=0;i<(int)length;i++)
 			incoming[i]=((char*)buffer)[i];
 

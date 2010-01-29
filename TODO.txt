@@ -1,4 +1,3 @@
-* SEGFAULT with 1 sequence.
 
 * use single-end reads to resolve repeats.
 * attach reverse complement vertices.
