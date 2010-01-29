@@ -35,6 +35,55 @@
 #include<Read.h>
 #include"Parameters.h"
 #include"MyAllocator.h"
+
+
+
+
+#define TAG_WELCOME 0
+#define TAG_SEND_SEQUENCE 1
+#define TAG_SEQUENCES_READY 2
+#define TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS 3
+#define TAG_VERTICES_DATA 4
+#define TAG_VERTICES_DISTRIBUTED 5
+#define TAG_VERTEX_PTR_REQUEST 6
+#define TAG_OUT_EDGE_DATA_WITH_PTR 7
+#define TAG_OUT_EDGES_DATA 8
+#define TAG_SHOW_VERTICES 9
+#define TAG_START_VERTICES_DISTRIBUTION 10
+#define TAG_EDGES_DISTRIBUTED 11
+#define TAG_IN_EDGES_DATA 12
+#define TAG_IN_EDGE_DATA_WITH_PTR 13
+#define TAG_START_EDGES_DISTRIBUTION 14
+#define TAG_START_EDGES_DISTRIBUTION_ASK 15
+#define TAG_START_EDGES_DISTRIBUTION_ANSWER 16
+#define TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION 17
+#define TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER 18
+#define TAG_PREPARE_COVERAGE_DISTRIBUTION 19
+#define TAG_COVERAGE_DATA 20
+#define TAG_COVERAGE_END 21
+#define TAG_SEND_COVERAGE_VALUES 22
+#define TAG_READY_TO_SEED 23
+#define TAG_START_SEEDING 24
+#define TAG_REQUEST_VERTEX_COVERAGE 25
+#define TAG_REQUEST_VERTEX_COVERAGE_REPLY 26
+#define TAG_REQUEST_VERTEX_KEY_AND_COVERAGE 28
+#define TAG_REQUEST_VERTEX_KEY_AND_COVERAGE_REPLY 30
+#define TAG_REQUEST_VERTEX_OUTGOING_EDGES 31
+#define TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY 32
+#define TAG_SEEDING_IS_OVER 33
+#define TAG_GOOD_JOB_SEE_YOU_SOON 34
+#define TAG_I_GO_NOW 35
+#define TAG_SET_WORD_SIZE 36
+#define TAG_MASTER_IS_DONE_ATTACHING_READS 37
+#define TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY 38
+#define TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER 39
+#define TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER_REPLY 40
+#define TAG_REQUEST_VERTEX_INGOING_EDGES 41
+#define TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY 42
+
+#define MASTER_RANK 0
+#define BARRIER_PERIOD 100
+
 using namespace std;
 
 class Machine{
@@ -47,7 +96,6 @@ class Machine{
 	unsigned long long int m_receivedMessages;
 	unsigned long long int m_sentMessages;
 	int m_wordSize;
-	int MASTER_RANK;
 	int m_last_value;
 	bool m_mode_send_outgoing_edges;
 	int m_mode_send_edge_sequence_id;
@@ -64,49 +112,6 @@ class Machine{
 	char*m_inputFile;
 	int m_sequence_ready_machines;
 	bool m_messageSentForVerticesDistribution;
-
-	// MPI TAGs
-	int m_TAG_OUT_EDGE_DATA_WITH_PTR;
-	int m_TAG_VERTEX_PTR_REQUEST;
-	int m_TAG_VERTICES_DATA;
-	int m_TAG_SEND_SEQUENCE;
-	int m_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS;
-	int m_TAG_START_VERTICES_DISTRIBUTION;
-	int m_TAG_SEQUENCES_READY;
-	int m_TAG_SHOW_VERTICES;
-	int m_TAG_VERTICES_DISTRIBUTED;
-	int m_TAG_WELCOME;
-	int m_TAG_OUT_EDGES_DATA;
-	int m_TAG_IN_EDGES_DATA;
-	int m_TAG_EDGES_DISTRIBUTED;
-	int m_TAG_IN_EDGE_DATA_WITH_PTR;
-	int m_TAG_START_EDGES_DISTRIBUTION;
-	int m_TAG_START_EDGES_DISTRIBUTION_ASK;
-	int m_TAG_START_EDGES_DISTRIBUTION_ANSWER;
-	int m_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION;
-	int m_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER;
-	int m_TAG_PREPARE_COVERAGE_DISTRIBUTION;
-	int m_TAG_COVERAGE_DATA;
-	int m_TAG_COVERAGE_END;
-	int m_TAG_SEND_COVERAGE_VALUES;
-	int m_TAG_READY_TO_SEED;
-	int m_TAG_START_SEEDING;
-	int m_TAG_REQUEST_VERTEX_COVERAGE;
-	int m_TAG_REQUEST_VERTEX_COVERAGE_REPLY;
-	int m_TAG_REQUEST_VERTEX_OUTGOING_EDGES;
-	int m_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY;
-	int m_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE;
-	int m_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE_REPLY;
-	int m_TAG_SEEDING_IS_OVER;
-	int m_TAG_GOOD_JOB_SEE_YOU_SOON;
-	int m_TAG_I_GO_NOW;
-	int m_TAG_SET_WORD_SIZE;
-	int m_TAG_MASTER_IS_DONE_ATTACHING_READS;
-	int m_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY;
-	int m_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER;
-	int m_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER_REPLY;
-	int m_TAG_REQUEST_VERTEX_INGOING_EDGES;
-	int m_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY;
 
 
 	int m_readyToSeed;
@@ -134,10 +139,14 @@ class Machine{
 	SplayTreeIterator<uint64_t,Vertex>*m_SEEDING_iterator;
 	SplayNode<uint64_t,Vertex>*m_SEEDING_node;
 	bool m_SEEDING_edgesReceived;
+	int m_SEEDING_numberOfOutgoingEdgesWithSeedCoverage;
+	uint64_t m_SEEDING_currentChildVertex;
+	uint64_t m_SEEDING_currentParentVertex;
 	uint64_t m_SEEDING_receivedKey;
 	bool m_SEEDING_vertexKeyAndCoverageReceived;
 	int m_SEEDING_receivedVertexCoverage;
 	bool m_SEEDING_vertexCoverageReceived;
+	int m_SEEDING_currentChildRank;
 	int m_SEEDING_numberOfIngoingEdgesWithSeedCoverage;
 	Edge*m_SEEDING_edge;
 	bool m_SEEDING_vertexCoverageRequested;
@@ -165,10 +174,21 @@ class Machine{
 	bool m_SEEDING_vertexKeyAndCoverageRequested;
 	int m_SEEDING_numberOfIngoingEdges;
 	set<uint64_t> m_SEEDING_vertices;
-
+	int m_SEEDING_numberOfOutgoingEdges;
+	bool m_SEEDING_testInitiated;
+	bool m_SEEDING_1_1_test_result;
+	int m_SEEDING_currentParentRank;
+	bool m_SEEDING_1_1_test_done;
+	bool m_SEEDING_firstVertexTestDone;
+	void*m_SEEDING_currentChildPointer;
+	bool m_SEEDING_firstVertexParentTestDone;	
+	void*m_SEEDING_currentParentPointer;
+	bool m_SEEDING_ingoingEdgesDone;
+	bool m_SEEDING_outgoingEdgesDone;
 	int m_mode_send_coverage_iterator;
 	vector<Message> m_outbox;
 	vector<Message> m_inbox;
+	int m_BARRIER_PERIOD;
 
 	map<int,uint64_t> m_coverageDistribution;
 	int m_minimumCoverage;
@@ -217,8 +237,8 @@ class Machine{
 	void printStatus();
 	int getSize();
 	bool isAlive();
-	void completeSeed();
 	void run();
+	void do_1_1_test();
 	bool isMaster();
 	void checkRequests();
 	void receiveMessages();

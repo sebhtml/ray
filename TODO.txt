@@ -1,4 +1,4 @@
-* also check that added vertices are 1-in 1-out (work in progress.)
+* remove suffix in TAG_OUT_EDGE_DATA_WITH_PTR
 
 * use single-end reads to resolve repeats.
 * attach reverse complement vertices.

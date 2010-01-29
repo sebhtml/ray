@@ -187,40 +187,9 @@ VertexMer complementVertex(VertexMer a,int m_wordSize){
 
 
 
-void writePathsToFile(string pathsFile,vector<vector<VertexIndex> >*paths){
-	FILE*f=fopen(pathsFile.c_str(),"w+");
-	int numberOfPaths=paths->size();
-	fwrite(&numberOfPaths,1,sizeof(int),f);
-	for(int pathNumber=0;pathNumber<(int)paths->size();pathNumber++){
-		int numberOfVertices=paths->at(pathNumber).size();
-		fwrite(&numberOfVertices,1,sizeof(int),f);
-		
-		for(int j=0;j<(int)paths->at(pathNumber).size();j++){
-			VertexIndex element=paths->at(pathNumber).at(j);
-			fwrite(&element,1,sizeof(VertexIndex),f);
-		}
-	}
-	fclose(f);
-	cout<<"Wrote "<<pathsFile<<" ."<<endl;
-}
 
-void loadPathsFromFile(string pathsFile,vector<vector<VertexIndex> >*paths){
-	int numberOfPaths;
-	FILE*f=fopen(pathsFile.c_str(),"r");
-	fread(&numberOfPaths,1,sizeof(int),f);
-	for(int j=0;j<numberOfPaths;j++){
-		int pathLength;
-		fread(&pathLength,1,sizeof(int),f);
-		vector<VertexIndex> pathVertices;
-		for(int i=0;i<pathLength;i++){
-			VertexIndex vertexValue;
-			fread(&vertexValue,1,sizeof(VertexIndex),f);
-			pathVertices.push_back(vertexValue);
-		}
-		paths->push_back(pathVertices);
-	}
-	fclose(f);
-}
+
+
 
 string addLineBreaks(string dna){
 	ostringstream output;

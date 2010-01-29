@@ -4,7 +4,7 @@ MPICC=~/software/openmpi-1.4.1/output/bin/mpic++
 MPIRUN=~/software/openmpi-1.4.1/output/bin/mpirun 
 #MPIRUN=/home/boiseb01/software/mpich2-1.2.1/output/bin/mpiexec
 #MPIRUN=mpirun
-CXXFLAGS=  -Wall -g -I. -I~/software/openmpi-1.4.1/output/include/ -I~/software/openmpi-1.4.1/output/include/openmpi 
+CXXFLAGS=  -Wall -O3 -I. -I~/software/openmpi-1.4.1/output/include/ -I~/software/openmpi-1.4.1/output/include/openmpi 
 #CXXFLAGS=  -Wall -g -I. -I~/software/mpich2-1.2.1/output/include/ -I~/software/mpich2-1.2.1/output/include/openmpi 
 
 all: Ray
@@ -30,7 +30,7 @@ test2: Ray
 
 
 test3: Ray
-	$(MPIRUN) -np 10  -machinefile RayMachinesFile.txt Ray input3.txt
+	$(MPIRUN) -np 28  -machinefile RayMachinesFile.txt Ray input3.txt
 
 clean:
 	rm -f *.o Ray
