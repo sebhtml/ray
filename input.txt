@@ -1,1 +1,3 @@
 LoadSingleEndReads 50xpopo.fasta_fragments.fasta
+LoadSingleEndReads 50xpopo.fasta_fragments.fasta
+SetWordSize 31

@@ -37,13 +37,17 @@ class Vertex{
 	Edge*m_ingoingEdges;
 	Edge*m_outgoingEdges;
 	bool hasEdge(Edge*e,int rank,void*ptr);
+
+	Edge*m_readsStartingHere;
 public:
 	void constructor();
 	void setCoverage(int coverage);
 	int getCoverage();
 	void addOutgoingEdge(int rank,void*ptr,MyAllocator*allocator);
 	void addIngoingEdge(int rank,void*ptr,MyAllocator*allocator);
-
+	void addRead(int rank,void*ptr,MyAllocator*allocator);
+	Edge*getFirstIngoingEdge();
+	Edge*getFirstOutgoingEdge();
 };
 
 #endif

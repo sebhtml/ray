@@ -25,6 +25,7 @@
 #include<string>
 #include<iostream>
 #include<vector>
+#include<cstdlib>
 #include<fstream>
 #include<Read.h>
 #include"Loader.h"
@@ -35,10 +36,15 @@ using namespace std;
 Parameters::Parameters(){
 	m_initiated=false;
 	m_directory="assembly";
+	m_wordSize=21;
+}
+
+int Parameters::getWordSize(){
+	return m_wordSize;
 }
 
 void Parameters::load(string file){
-	cout<<"Loading "<<file<<endl;
+	//cout<<"Loading "<<file<<endl;
 	ifstream f(file.c_str());
 	while(!f.eof()){
 		string token;
@@ -46,10 +52,13 @@ void Parameters::load(string file){
 		if(token=="LoadSingleEndReads"){
 			f>>token;
 			m_singleEndReadsFile.push_back(token);
-			cout<<"LoadSingleEndReads "<<token<<endl;
+			//cout<<"LoadSingleEndReads "<<token<<endl;
 		}else if(token=="SetOutputDirectory"){
 			f>>token;
 			m_directory=token;
+		}else if(token=="SetWordSize"){
+			f>>token;
+			m_wordSize=atoi(token.c_str());
 		}
 	}
 	f.close();

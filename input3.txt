@@ -1,1 +1,3 @@
-LoadSingleEndReads test3.fasta
+LoadSingleEndReads 100xLlactis-sk11.fasta_fragments.fasta
+SetWordSize 31
+

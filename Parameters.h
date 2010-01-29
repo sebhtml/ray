@@ -31,12 +31,14 @@ class Parameters{
 	int m_numberOfSequences;
 	vector<string> m_singleEndReadsFile;
 	string m_directory;
+	int m_wordSize;
 public:
 	Parameters();
 	void load(string file);
 	bool isInitiated();
 	vector<string> getAllFiles();
 	string getDirectory();
+	int getWordSize();
 };
 
 #endif
