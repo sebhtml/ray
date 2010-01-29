@@ -564,11 +564,10 @@ void Machine::processMessage(Message*message){
 	// receive an outgoing edge in respect to prefix, along with the pointer for suffix
 	}else if(tag==TAG_OUT_EDGE_DATA_WITH_PTR){
 		uint64_t*incoming=(uint64_t*)buffer;
-		void*ptr=(void*)incoming[2];
+		void*ptr=(void*)incoming[1];
 		uint64_t prefix=incoming[0];
-		uint64_t suffix=incoming[1];
 		//cout<<"Rank "<<getRank()<<" TAG_OUT_EDGE_DATA_WITH_PTR "<<idToWord(prefix,m_wordSize)<<"->"<<idToWord(suffix,m_wordSize)<<endl;
-		int rank=vertexRank(suffix);
+		int rank=source;
 		
 		SplayNode<uint64_t,Vertex>*node=m_subgraph.find(prefix);
 		if(node==NULL){
@@ -580,15 +579,14 @@ void Machine::processMessage(Message*message){
 	// receive an ingoing edge in respect to prefix, along with the pointer for suffix
 	}else if(tag==TAG_IN_EDGE_DATA_WITH_PTR){
 		uint64_t*incoming=(uint64_t*)buffer;
-		uint64_t prefix=incoming[0];
-		uint64_t suffix=incoming[1];
-		void*ptr=(void*)incoming[2];
-		int rank=vertexRank(prefix);
+		uint64_t suffix=incoming[0];
+		void*ptr=(void*)incoming[1];
+		int rank=source;
 
 
 		SplayNode<uint64_t,Vertex>*node=m_subgraph.find(suffix);
 		if(node==NULL){
-			cout<<"NULL "<<prefix<<endl;
+			//cout<<"NULL "<<prefix<<endl;
 		}else{
 			Vertex*vertex=node->getValue();
 			vertex->addIngoingEdge(rank,ptr,&m_persistentAllocator);
@@ -609,11 +607,10 @@ void Machine::processMessage(Message*message){
 		
 
 		for(int i=0;i<(int)length;i+=2){
-			int currentLength=3;
+			int currentLength=2;
 			uint64_t*sendBuffer=(uint64_t*)m_outboxAllocator.allocate(currentLength*sizeof(uint64_t));
 			sendBuffer[0]=incoming[i+0];
-			sendBuffer[1]=incoming[i+1];
-			sendBuffer[2]=(uint64_t)m_subgraph.find(incoming[i+1]);
+			sendBuffer[1]=(uint64_t)m_subgraph.find(incoming[i+1]);
 			int destination=vertexRank(incoming[i+0]);
 
 
@@ -629,9 +626,8 @@ void Machine::processMessage(Message*message){
 		for(int i=0;i<(int)length;i+=2){
 			int currentLength=3;
 			uint64_t*sendBuffer=(uint64_t*)m_outboxAllocator.allocate(currentLength*sizeof(uint64_t));
-			sendBuffer[0]=incoming[i+0];
-			sendBuffer[1]=incoming[i+1];
-			sendBuffer[2]=(uint64_t)m_subgraph.find(incoming[i+0]);
+			sendBuffer[0]=incoming[i+1];
+			sendBuffer[1]=(uint64_t)m_subgraph.find(incoming[i+0]);
 			
 			int destination=vertexRank(incoming[i+1]);
 
@@ -1155,7 +1151,7 @@ void Machine::processData(){
 				}
 				if(!m_SEEDING_1_1_test_result){
 					m_SEEDING_NodeInitiated=false;
-					cout<<"Rank "<<getRank()<<" completed with "<<m_SEEDING_seed.size()<<" vertices result="<<m_SEEDING_1_1_test_result<<endl;
+					//cout<<"Rank "<<getRank()<<" completed with "<<m_SEEDING_seed.size()<<" vertices result="<<m_SEEDING_1_1_test_result<<endl;
 					ostringstream a;
 					a<<idToWord(m_SEEDING_seed[0],m_wordSize);
 					for(int i=1;i<(int)m_SEEDING_seed.size();i++){

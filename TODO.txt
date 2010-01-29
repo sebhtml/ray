@@ -1,4 +1,4 @@
-* remove suffix in TAG_OUT_EDGE_DATA_WITH_PTR
+* SEGFAULT with 1 sequence.
 
 * use single-end reads to resolve repeats.
 * attach reverse complement vertices.
