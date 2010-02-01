@@ -1,4 +1,3 @@
-* test1 should output 6300 letters, byt 6298 are output.
 
 * use single-end reads to resolve repeats.
 * attach reverse complement vertices.
