@@ -36,9 +36,12 @@ void Vertex::constructor(){
 	m_coverage=0;
 	m_outgoingEdges=NULL;
 	m_ingoingEdges=NULL;
+	m_assembled=false;
 }
 
 void Vertex::setCoverage(int coverage){
+	if(m_coverage==255)
+		return;
 	m_coverage=coverage;
 }
 
@@ -105,3 +108,13 @@ Edge*Vertex::getFirstOutgoingEdge(){
 Edge*Vertex::getFirstIngoingEdge(){
 	return m_ingoingEdges;
 }
+
+void Vertex::assemble(){
+	m_assembled=true;
+}
+
+bool Vertex::isAssembled(){
+	return m_assembled;
+}
+
+

@@ -33,9 +33,11 @@
 using namespace std;
 
 class Vertex{
-	int m_coverage;
+	char m_coverage;
 	Edge*m_ingoingEdges;
 	Edge*m_outgoingEdges;
+	bool m_assembled;
+
 	bool hasEdge(Edge*e,int rank,void*ptr);
 
 	Edge*m_readsStartingHere;
@@ -46,6 +48,8 @@ public:
 	void addOutgoingEdge(int rank,void*ptr,MyAllocator*allocator);
 	void addIngoingEdge(int rank,void*ptr,MyAllocator*allocator);
 	void addRead(int rank,void*ptr,MyAllocator*allocator);
+	bool isAssembled();
+	void assemble();
 	Edge*getFirstIngoingEdge();
 	Edge*getFirstOutgoingEdge();
 };

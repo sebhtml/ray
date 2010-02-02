@@ -39,7 +39,7 @@ Machine::Machine(int argc,char**argv){
 	m_USE_MPI_Send=0;
 	m_USE_MPI_Isend=1;
 	m_Sending_Mechanism=m_USE_MPI_Send;
-
+	m_mode_EXTENSION=false;
 	m_aborted=false;
 	m_sentMessages=0;
 	m_readyToSeed=0;
@@ -70,10 +70,8 @@ Machine::Machine(int argc,char**argv){
 
 
 
-	m_MODE_START_SEEDING=0;
-	m_MODE_DO_NOTHING=1;
 
-	m_mode=m_MODE_DO_NOTHING;
+	m_mode=MODE_DO_NOTHING;
 	m_mode_AttachSequences=false;
 	m_startEdgeDistribution=false;
 
@@ -377,12 +375,14 @@ void Machine::processMessage(Message*message){
 			}
 			tmp->getValue()->setCoverage(tmp->getValue()->getCoverage()+1);
 		}
+	}else if(tag==TAG_EXTENSION_IS_DONE){
+		m_EXTENSION_currentRankIsDone=true;
 	}else if(tag==TAG_SET_WORD_SIZE){
 		uint64_t*incoming=(uint64_t*)buffer;
 		m_wordSize=incoming[0];
 		cout<<"Rank "<<getRank()<<" WordSize="<<m_wordSize<<endl;
 	}else if(tag==TAG_START_SEEDING){
-		m_mode=m_MODE_START_SEEDING;
+		m_mode=MODE_START_SEEDING;
 		m_SEEDING_iterator=new SplayTreeIterator<uint64_t,Vertex>(&m_subgraph);
 		m_SEEDING_NodeInitiated=false;
 		m_SEEDING_i=0;
@@ -421,7 +421,30 @@ void Machine::processMessage(Message*message){
 		Message aMessage(message,c*2,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY,getRank());
 		m_outbox.push_back(aMessage);
 		//cout<<"Rank "<<getRank()<<" sends outgoing edges."<<endl;
-	
+	}else if(tag==TAG_ASK_EXTENSION){
+		m_EXTENSION_initiated=false;
+		m_mode_EXTENSION=true;
+	}else if(tag==TAG_ASK_REVERSE_COMPLEMENT){
+		uint64_t*incoming=(uint64_t*)buffer;
+		SplayNode<uint64_t,Vertex>*node=(SplayNode<uint64_t,Vertex>*)incoming[0];
+		uint64_t value=node->getKey();
+		uint64_t reverseComplement=complementVertex(value,m_wordSize);
+		int rank=vertexRank(reverseComplement);
+		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(2*sizeof(uint64_t));
+		Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,rank,TAG_REQUEST_VERTEX_POINTER,getRank());
+		m_outbox.push_back(aMessage);
+	}else if(tag==TAG_ASK_IS_ASSEMBLED){
+		uint64_t*incoming=(uint64_t*)buffer;
+		SplayNode<uint64_t,Vertex>*node=(SplayNode<uint64_t,Vertex>*)incoming[0];
+		bool isAssembled=node->getValue()->isAssembled();
+		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
+		message[0]=isAssembled;
+		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_IS_ASSEMBLED_REPLY,getRank());
+		m_outbox.push_back(aMessage);
+	}else if(tag==TAG_ASK_IS_ASSEMBLED_REPLY){
+		uint64_t*incoming=(uint64_t*)buffer;
+		m_EXTENSION_VertexAssembled_received=true;
+		m_EXTENSION_vertexIsAssembledResult=(bool)incoming[0];
 	}else if(tag==TAG_REQUEST_VERTEX_OUTGOING_EDGES){
 		uint64_t*incoming=(uint64_t*)buffer;
 		SplayNode<uint64_t,Vertex>*node=(SplayNode<uint64_t,Vertex>*)incoming[0];
@@ -1064,12 +1087,12 @@ void Machine::processData(){
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_START_SEEDING,getRank());
 			m_outbox.push_back(aMessage);
 		}
-	}else if(m_mode==m_MODE_START_SEEDING){
+	}else if(m_mode==MODE_START_SEEDING){
 
 		// assign a first vertex
 		if(!m_SEEDING_NodeInitiated){
 			if(!m_SEEDING_iterator->hasNext()){
-				m_mode=m_MODE_DO_NOTHING;
+				m_mode=MODE_DO_NOTHING;
 				cout<<"Rank "<<getRank()<<" seeding vertices. "<<m_SEEDING_i<<"/"<<m_subgraph.size()<<" (DONE)"<<endl;
 				m_seedingAllocator.clear();
 				Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_SEEDING_IS_OVER,getRank());
@@ -1123,7 +1146,8 @@ void Machine::processData(){
 					m_SEEDING_NodeInitiated=false;//abort
 				}else{
 					m_SEEDING_firstVertexParentTestDone=true;
-					m_SEEDING_seed.clear();
+					m_SEEDING_currentSeedRanks.clear();
+					m_SEEDING_currentSeedPointers.clear();
 					m_SEEDING_vertices.clear();
 					// restore original starter.
 					m_SEEDING_currentVertex=m_SEEDING_node->getKey();
@@ -1144,24 +1168,28 @@ void Machine::processData(){
 				if(m_SEEDING_vertices.count(m_SEEDING_currentVertex)>0){
 					m_SEEDING_1_1_test_result=false;
 					//cout<<"Rank "<<getRank()<<" already in ";
-					for(int i=0;i<(int)m_SEEDING_seed.size();i++){
-						cout<<" "<<idToWord(m_SEEDING_seed[i],m_wordSize);
-					}
 					cout<<endl;
 				}
 				if(!m_SEEDING_1_1_test_result){
 					m_SEEDING_NodeInitiated=false;
 					//cout<<"Rank "<<getRank()<<" completed with "<<m_SEEDING_seed.size()<<" vertices result="<<m_SEEDING_1_1_test_result<<endl;
 					ostringstream a;
+/*
 					a<<idToWord(m_SEEDING_seed[0],m_wordSize);
 					for(int i=1;i<(int)m_SEEDING_seed.size();i++){
 						a<<getLastSymbol(m_SEEDING_seed[i],m_wordSize);
 					}
+*/
 					string contig=a.str();
-					cout<<"Rank "<<getRank()<<endl<<contig.length()<<" contig "<<contig<<endl;
+					cout<<"Rank "<<getRank()<<endl<<m_SEEDING_currentSeedPointers.size()<<" contig "<<contig<<endl;
+					m_SEEDING_seedRanks.push_back(m_SEEDING_currentSeedRanks);
+					m_SEEDING_seedPointers.push_back(m_SEEDING_currentSeedPointers);
 				}else{
 					//cout<<"Rank "<<getRank()<<" adding "<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<" Rank="<<m_SEEDING_currentRank<<" Pointer="<<m_SEEDING_currentPointer<<endl;
-					m_SEEDING_seed.push_back(m_SEEDING_currentVertex);
+					//m_SEEDING_seed.push_back(m_SEEDING_currentVertex);
+					m_SEEDING_currentSeedRanks.push_back(m_SEEDING_currentRank);
+					m_SEEDING_currentSeedPointers.push_back(m_SEEDING_currentPointer);
+
 					m_SEEDING_vertices.insert(m_SEEDING_currentVertex);
 					m_SEEDING_currentRank=m_SEEDING_currentChildRank;
 					m_SEEDING_currentPointer=m_SEEDING_currentChildPointer;
@@ -1176,8 +1204,39 @@ void Machine::processData(){
 		m_numberOfRanksDoneSeeding=-1;
 		cout<<"Rank "<<getRank()<<" All work is done, good job ranks!"<<endl;
 		killRanks();
+
+		//m_mode=MODE_EXTENSION_ASK;
+		//m_EXTENSION_rank=-1;
+		//m_EXTENSION_currentRankIsSet=false;
 	}else if(m_mode_AttachSequences){
 		attachReads();
+	}else if(m_mode==MODE_EXTENSION_ASK and isMaster()){
+		if(!m_EXTENSION_currentRankIsSet){
+			m_EXTENSION_currentRankIsSet=true;
+			m_EXTENSION_currentRankIsStarted=false;
+			if(m_EXTENSION_rank==-1){
+				m_EXTENSION_rank=0;
+			}else{
+				m_EXTENSION_rank++;
+			}
+		}
+		if(m_EXTENSION_rank==getSize()){//done
+			cout<<"Rank "<<getRank()<<": extension done."<<endl;
+			m_mode=MODE_DO_NOTHING;
+			killRanks();
+		}else if(!m_EXTENSION_currentRankIsStarted){
+			m_EXTENSION_currentRankIsStarted=true;
+			cout<<"Rank "<<getRank()<<" tells "<<m_EXTENSION_rank<<" to extend its seeds."<<endl;
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_EXTENSION_rank,TAG_ASK_EXTENSION,getRank());
+			m_outbox.push_back(aMessage);
+			m_EXTENSION_currentRankIsDone=false;
+		}else if(m_EXTENSION_currentRankIsDone){
+			m_EXTENSION_currentRankIsSet=false; // go with the next one.
+		}
+	}
+
+	if(m_mode_EXTENSION){
+		extendSeeds();
 	}
 }
 
@@ -1327,7 +1386,151 @@ bool Machine::isMaster(){
 	return getRank()==MASTER_RANK;
 }
 
+void Machine::extendSeeds(){
+	if(m_SEEDING_seedRanks.size()==0){
+		m_mode_EXTENSION=false;
+		cout<<"Rank "<<getRank()<<" has finished extending its seeds (0 seeds)."<<endl;
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_IS_DONE,getRank());
+		m_outbox.push_back(aMessage);
+		return;
+	}
+	if(!m_EXTENSION_initiated){
+		m_EXTENSION_initiated=true;
+		m_EXTENSION_currentSeedIndex=0;
+		m_EXTENSION_currentPosition=0;
+		m_EXTENSION_currentRank=m_SEEDING_seedRanks[m_EXTENSION_currentSeedIndex][m_EXTENSION_currentPosition];
+		m_EXTENSION_currentPointer=m_SEEDING_seedPointers[m_EXTENSION_currentSeedIndex][m_EXTENSION_currentPosition];
+	}
+	if(m_EXTENSION_currentSeedIndex==(int)m_SEEDING_seedRanks.size()-1){
+		m_mode_EXTENSION=false;
+		cout<<"Rank "<<getRank()<<" has finished extending its seeds."<<endl;
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_IS_DONE,getRank());
+		m_outbox.push_back(aMessage);
+		return;
+	}
 
+	
+
+	// algorithms here.
+	// if the current vertex is assembled or if its reverse complement is assembled, return
+	// else, mark it as assembled, and mark its reverse complement as assembled too.
+	// 	enumerate the available choices
+	// 	if choices are included in the seed itself
+	// 		choose it
+	// 	else
+	// 		use read paths or pairs of reads to resolve the repeat.
+	
+	if(!m_EXTENSION_checkedIfCurrentVertexIsAssembled){
+		checkIfCurrentVertexIsAssembled();
+	}else if(m_EXTENSION_vertexIsAssembledResult){
+		m_EXTENSION_currentSeedIndex++;// skip the current one.
+		// TODO: check if the position !=0
+		cout<<"Rank" <<getRank()<<" already assembled."<<endl;
+	}else if(!m_EXTENSION_markedCurrentVertexAsAssembled){
+		markCurrentVertexAsAssembled();
+	}else if(!m_EXTENSION_enumerateChoices){
+		enumerateChoices();
+	}else if(!m_EXTENSION_choose){
+		doChoice();
+	}
+
+}
+
+void Machine::enumerateChoices(){
+	m_EXTENSION_enumerateChoices=true;
+	m_EXTENSION_choose=false;
+}
+
+void Machine::doChoice(){
+	m_EXTENSION_choose=true;
+
+	// seek next one.
+	cout<<"Rank "<<getRank()<<": "<<m_SEEDING_seedRanks[m_EXTENSION_currentSeedIndex].size()<<" VERtices."<<endl;
+	m_EXTENSION_currentSeedIndex++;
+}
+void Machine::checkIfCurrentVertexIsAssembled(){
+	if(!m_EXTENSION_directVertexDone){
+		if(!m_EXTENSION_VertexAssembled_requested){
+			cout<<"Rank "<<getRank()<<" requests 'isAssembled'."<<endl;
+			m_EXTENSION_VertexAssembled_requested=true;
+			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
+			message[0]=(uint64_t)m_EXTENSION_currentPointer;
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,m_EXTENSION_currentRank,TAG_ASK_IS_ASSEMBLED,getRank());
+			m_outbox.push_back(aMessage);
+			m_EXTENSION_VertexAssembled_received=false;
+		}else if(m_EXTENSION_VertexAssembled_received){
+			cout<<"Rank "<<getRank()<<" receives 'isAssembled'."<<endl;
+			if(m_EXTENSION_receivedAssembled){
+				m_EXTENSION_vertexIsAssembledResult=true;
+				m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
+			}
+			m_EXTENSION_directVertexDone=true;
+		}
+	}else if(!m_EXTENSION_reverseVertexDone){
+		if(!m_EXTENSION_reverseComplement_requested){
+			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
+			message[0]=(uint64_t)m_EXTENSION_currentPointer;
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,m_EXTENSION_currentRank,TAG_ASK_REVERSE_COMPLEMENT,getRank());
+			m_outbox.push_back(aMessage);
+			m_EXTENSION_reverseComplement_requested=true;
+			m_EXTENSION_reverseComplement_received=false;
+			m_EXTENSION_VertexAssembled_requested=false;
+		}else if(m_EXTENSION_reverseComplement_received){
+			if(!m_EXTENSION_VertexAssembled_requested){
+				m_EXTENSION_VertexAssembled_requested=true;
+				uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
+				message[0]=(uint64_t)m_EXTENSION_currentPointer;
+				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,m_EXTENSION_currentRank,TAG_ASK_IS_ASSEMBLED,getRank());
+				m_outbox.push_back(aMessage);
+				m_EXTENSION_VertexAssembled_received=false;
+			}else if(m_EXTENSION_VertexAssembled_received){
+				if(m_EXTENSION_receivedAssembled){
+					m_EXTENSION_vertexIsAssembledResult=true;
+					m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
+				}else{
+					m_EXTENSION_vertexIsAssembledResult=false;
+					m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
+				}
+				m_EXTENSION_markedCurrentVertexAsAssembled=false;
+			}
+		}
+	}
+}
+
+void Machine::markCurrentVertexAsAssembled(){
+	if(!m_EXTENSION_directVertexDone){
+		if(!m_EXTENSION_VertexMarkAssembled_requested){
+			m_EXTENSION_VertexMarkAssembled_requested=true;
+			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
+			message[0]=(uint64_t)m_EXTENSION_currentPointer;
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,m_EXTENSION_currentRank,TAG_MARK_AS_ASSEMBLED,getRank());
+			m_outbox.push_back(aMessage);
+			m_EXTENSION_directVertexDone=true;
+		}
+	}else if(!m_EXTENSION_reverseVertexDone){
+		if(!m_EXTENSION_reverseComplement_requested){
+			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
+			message[0]=(uint64_t)m_EXTENSION_currentPointer;
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,m_EXTENSION_currentRank,TAG_ASK_REVERSE_COMPLEMENT,getRank());
+			m_outbox.push_back(aMessage);
+			m_EXTENSION_reverseComplement_requested=true;
+			m_EXTENSION_reverseComplement_received=false;
+			m_EXTENSION_VertexAssembled_requested=false;
+		}else if(m_EXTENSION_reverseComplement_received){
+			if(!m_EXTENSION_VertexMarkAssembled_requested){
+				m_EXTENSION_VertexMarkAssembled_requested=true;
+				uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
+				message[0]=(uint64_t)m_EXTENSION_currentPointer;
+				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,m_EXTENSION_currentRank,TAG_MARK_AS_ASSEMBLED,getRank());
+				m_outbox.push_back(aMessage);
+				m_EXTENSION_VertexMarkAssembled_received=false;
+			}else if(m_EXTENSION_VertexMarkAssembled_received){
+				m_EXTENSION_reverseVertexDone=true;
+				m_EXTENSION_enumerateChoices=false;
+			}
+		}
+	}
+}
 
 int Machine::getSize(){
 	return m_size;

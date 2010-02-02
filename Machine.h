@@ -37,8 +37,7 @@
 #include"MyAllocator.h"
 
 
-
-
+// tags
 #define TAG_WELCOME 0
 #define TAG_SEND_SEQUENCE 1
 #define TAG_SEQUENCES_READY 2
@@ -80,9 +79,21 @@
 #define TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER_REPLY 40
 #define TAG_REQUEST_VERTEX_INGOING_EDGES 41
 #define TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY 42
+#define TAG_EXTENSION_IS_DONE 43
+#define TAG_ASK_EXTENSION 44
+#define TAG_ASK_IS_ASSEMBLED 45
+#define TAG_ASK_REVERSE_COMPLEMENT 46
+#define TAG_REQUEST_VERTEX_POINTER 47
+#define TAG_ASK_IS_ASSEMBLED_REPLY 48
+#define TAG_MARK_AS_ASSEMBLED 49
 
 #define MASTER_RANK 0
 #define BARRIER_PERIOD 100
+
+// modes
+#define MODE_EXTENSION_ASK 0
+#define MODE_START_SEEDING 1
+#define MODE_DO_NOTHING 2
 
 using namespace std;
 
@@ -117,9 +128,6 @@ class Machine{
 	int m_readyToSeed;
 	bool m_mode_send_ingoing_edges;
 
-	// MODE
-	int m_MODE_START_SEEDING;
-	int m_MODE_DO_NOTHING;
 	int m_mode;
 	bool m_startEdgeDistribution;
 	bool m_mode_AttachSequences;
@@ -157,7 +165,10 @@ class Machine{
 	bool m_SEEDING_Extended;
 	int m_SEEDING_i;
 	uint64_t m_SEEDING_currentVertex;
-	vector<uint64_t> m_SEEDING_seed;
+	
+	vector<vector<int > > m_SEEDING_seedRanks;
+	vector<vector<void*> > m_SEEDING_seedPointers;
+
 	Edge*m_SEEDING_Inedge;
 	bool m_SEEDING_InedgesReceived;
 	bool m_SEEDING_InedgesRequested;
@@ -184,12 +195,42 @@ class Machine{
 	bool m_SEEDING_firstVertexParentTestDone;	
 	void*m_SEEDING_currentParentPointer;
 	bool m_SEEDING_ingoingEdgesDone;
+	vector<int> m_SEEDING_currentSeedRanks;
+	vector<void*> m_SEEDING_currentSeedPointers;
 	bool m_SEEDING_outgoingEdgesDone;
+
+
 	int m_mode_send_coverage_iterator;
 	vector<Message> m_outbox;
 	vector<Message> m_inbox;
 	int m_BARRIER_PERIOD;
 
+	// EXTENSION MODE
+	int m_EXTENSION_currentRank;
+	bool m_EXTENSION_checkedIfCurrentVertexIsAssembled;
+	bool m_EXTENSION_VertexMarkAssembled_requested;
+	bool m_EXTENSION_reverseComplement_requested;
+	bool m_EXTENSION_vertexIsAssembledResult;
+	bool m_mode_EXTENSION;
+	bool m_EXTENSION_currentRankIsDone;
+	bool m_EXTENSION_currentRankIsSet;
+	bool m_EXTENSION_currentRankIsStarted;
+	int m_EXTENSION_rank;
+	bool m_EXTENSION_initiated;
+	int m_EXTENSION_currentSeedIndex;
+	bool m_EXTENSION_VertexAssembled_received;
+	int m_EXTENSION_currentPosition;
+	bool m_EXTENSION_VertexMarkAssembled_received;
+	void*m_EXTENSION_currentPointer;
+	bool m_EXTENSION_markedCurrentVertexAsAssembled;
+	bool m_EXTENSION_enumerateChoices;
+	bool m_EXTENSION_choose;
+	bool m_EXTENSION_directVertexDone;
+	bool m_EXTENSION_VertexAssembled_requested;
+	bool m_EXTENSION_receivedAssembled;
+	bool m_EXTENSION_reverseComplement_received;
+	bool m_EXTENSION_reverseVertexDone;
+	// coverage distribubtion
 	map<int,uint64_t> m_coverageDistribution;
 	int m_minimumCoverage;
 	int m_peakCoverage;
@@ -231,10 +272,13 @@ class Machine{
 	int m_numberOfMachinesDoneSendingVertices;
 
 	bool m_aborted;
-
+	void enumerateChoices();
 	void killRanks();
 	void attachReads();
 	void printStatus();
+	void doChoice();
+	void checkIfCurrentVertexIsAssembled();
+	void markCurrentVertexAsAssembled();
 	int getSize();
 	bool isAlive();
 	void run();
@@ -250,6 +294,7 @@ class Machine{
 	int getRank();
 	void receiveWelcomeMessage(MPI_Status*status);
 	int vertexRank(uint64_t a);
+	void extendSeeds();
 public:
 	Machine(int argc,char**argv);
 };
