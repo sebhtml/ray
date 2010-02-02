@@ -1,6 +1,5 @@
 * add a m_masterMode
 * when encountering assembled vertex, use a merger strategy?
-* replace edges with a char
 * replace reads positions with (int,int)
 
 

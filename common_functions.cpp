@@ -108,6 +108,21 @@ string idToWord(VertexMer i,int wordSize){
 	return b;
 }
 
+//  63 62 ... 1 0
+//              
+char getFirstSymbol(uint64_t i,int k){
+	i=(i<<(62))>>62;
+        if((int)i==0)
+                return 'A';
+        if((int)i==1)
+                return 'T';
+        if((int)i==2)
+                return 'C';
+        if((int)i==3)
+                return 'G';
+	return '0';
+}
+
 char getLastSymbol(VertexMer i,int m_wordSize){
 	i=(i<<(64-2*m_wordSize))>>62;
         if((int)i==0)
@@ -145,6 +160,8 @@ void coutBIN(VertexMer a){
 	}
 	cout<<endl;
 }
+
+
 
 VertexMer getKPrefix(VertexMer a,int k){
 	return (a<<(64-2*(k+1)+2))>>(64-2*(k+1)+2);

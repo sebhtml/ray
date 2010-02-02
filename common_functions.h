@@ -48,6 +48,7 @@ string reverseComplement(string a);
 VertexMer wordId(const char*a);
 string idToWord(VertexMer i,int wordSize);
 bool isValidDNA(const char*x);
+char getFirstSymbol(uint64_t i,int k);
 char getLastSymbol(VertexMer i,int w);
 void coutBIN(VertexMer a);
 VertexMer getKPrefix(VertexMer a,int k);

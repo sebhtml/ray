@@ -29,29 +29,34 @@
 #define _Vertex
 #include"Edge.h"
 #include"MyAllocator.h"
+#include"types.h"
 #include<vector>
 using namespace std;
 
 class Vertex{
 	char m_coverage;
-	Edge*m_ingoingEdges;
-	Edge*m_outgoingEdges;
+	// 
+	// outgoing  ingoing
+	//
+	// G C T A G C T A
+	//
+	// 7 6 5 4 3 2 1 0
+	char m_edges;
 	bool m_assembled;
 
-	bool hasEdge(Edge*e,int rank,void*ptr);
 
 	Edge*m_readsStartingHere;
 public:
 	void constructor();
 	void setCoverage(int coverage);
 	int getCoverage();
-	void addOutgoingEdge(int rank,void*ptr,MyAllocator*allocator);
-	void addIngoingEdge(int rank,void*ptr,MyAllocator*allocator);
+	void addOutgoingEdge(uint64_t a,int k);
+	void addIngoingEdge(uint64_t a,int k);
 	void addRead(int rank,void*ptr,MyAllocator*allocator);
 	bool isAssembled();
 	void assemble();
-	Edge*getFirstIngoingEdge();
-	Edge*getFirstOutgoingEdge();
+	vector<uint64_t> getIngoingEdges(uint64_t a,int k);
+	vector<uint64_t> getOutgoingEdges(uint64_t a,int k);
 };
 
 #endif

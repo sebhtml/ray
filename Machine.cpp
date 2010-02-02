@@ -81,6 +81,30 @@ Machine::Machine(int argc,char**argv){
 	MPI_Init(&argc,&argv);
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
 	MPI_Comm_size(MPI_COMM_WORLD,&m_size);
+
+	if(false and isMaster()){
+		string current="GTGCA";
+		string in1="TGTGC";
+		string in2="CGTGC";
+		string out1="TGCAT";
+		string out2="TGCAA";
+		Vertex vertex;
+		vertex.constructor();
+		cout<<"current="<<current<<endl;
+		vertex.addIngoingEdge(wordId(in1.c_str()),5);
+		vertex.addIngoingEdge(wordId(in2.c_str()),5);
+		vertex.addOutgoingEdge(wordId(out1.c_str()),5);
+		vertex.addOutgoingEdge(wordId(out2.c_str()),5);
+		vector<uint64_t> ingoing=vertex.getIngoingEdges(wordId(current.c_str()),5);
+		vector<uint64_t> outgoing=vertex.getOutgoingEdges(wordId(current.c_str()),5);
+		for(int i=0;i<ingoing.size();i++){
+			cout<<idToWord(ingoing[i],5)<<"->"<<current<<endl;
+		}
+		for(int i=0;i<outgoing.size();i++){
+			cout<<current<<"->"<<idToWord(outgoing[i],5)<<endl;
+		}
+	}
+
 	MPI_Get_processor_name (m_name, &m_nameLen); 
 	if(isMaster()){
 		cout<<"Rank "<<getRank()<<" welcomes you to the MPI_COMM_WORLD."<<endl;
@@ -396,30 +420,8 @@ void Machine::processMessage(Message*message){
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_VERTEX_COVERAGE_REPLY,getRank());
 		m_outbox.push_back(aMessage);
 	}else if(tag==TAG_REQUEST_VERTEX_INGOING_EDGES){
-		uint64_t*incoming=(uint64_t*)buffer;
-		SplayNode<uint64_t,Vertex>*node=(SplayNode<uint64_t,Vertex>*)incoming[0];
-		int c=0;
-		if(node==NULL){
-			cout<<"Invalid pointer."<<endl;
-		}
-			
-		Edge*e=node->getValue()->getFirstIngoingEdge();
-		while(e!=NULL){
-			c++;
-			e=e->getNext();
-		}
-		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(c*2*sizeof(uint64_t));
-		int i=0;
-		e=node->getValue()->getFirstIngoingEdge();
-		while(e!=NULL){
-			message[i]=e->getRank();
-			i++;
-			message[i]=(uint64_t)e->getPtr();
-			++i;
-			e=e->getNext();
-		}
-		Message aMessage(message,c*2,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY,getRank());
-		m_outbox.push_back(aMessage);
+		//Message aMessage(message,c*2,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY,getRank());
+		//m_outbox.push_back(aMessage);
 		//cout<<"Rank "<<getRank()<<" sends outgoing edges."<<endl;
 	}else if(tag==TAG_ASK_EXTENSION){
 		m_EXTENSION_initiated=false;
@@ -446,31 +448,8 @@ void Machine::processMessage(Message*message){
 		m_EXTENSION_VertexAssembled_received=true;
 		m_EXTENSION_vertexIsAssembledResult=(bool)incoming[0];
 	}else if(tag==TAG_REQUEST_VERTEX_OUTGOING_EDGES){
-		uint64_t*incoming=(uint64_t*)buffer;
-		SplayNode<uint64_t,Vertex>*node=(SplayNode<uint64_t,Vertex>*)incoming[0];
-		//cout<<"Rank "<<getRank()<<" prepares outgoing edges, pointer="<<node<<"."<<endl;
-		int c=0;
-		if(node==NULL){
-			cout<<"Invalid pointer."<<endl;
-		}
-			
-		Edge*e=node->getValue()->getFirstOutgoingEdge();
-		while(e!=NULL){
-			c++;
-			e=e->getNext();
-		}
-		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(c*2*sizeof(uint64_t));
-		int i=0;
-		e=node->getValue()->getFirstOutgoingEdge();
-		while(e!=NULL){
-			message[i]=e->getRank();
-			i++;
-			message[i]=(uint64_t)e->getPtr();
-			++i;
-			e=e->getNext();
-		}
-		Message aMessage(message,c*2,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY,getRank());
-		m_outbox.push_back(aMessage);
+		//Message aMessage(message,c*2,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY,getRank());
+		//m_outbox.push_back(aMessage);
 		//cout<<"Rank "<<getRank()<<" sends outgoing edges."<<endl;
 	}else if(tag==TAG_GOOD_JOB_SEE_YOU_SOON){
 		//m_alive=false;
@@ -586,34 +565,8 @@ void Machine::processMessage(Message*message){
 		}
 	// receive an outgoing edge in respect to prefix, along with the pointer for suffix
 	}else if(tag==TAG_OUT_EDGE_DATA_WITH_PTR){
-		uint64_t*incoming=(uint64_t*)buffer;
-		void*ptr=(void*)incoming[1];
-		uint64_t prefix=incoming[0];
-		//cout<<"Rank "<<getRank()<<" TAG_OUT_EDGE_DATA_WITH_PTR "<<idToWord(prefix,m_wordSize)<<"->"<<idToWord(suffix,m_wordSize)<<endl;
-		int rank=source;
-		
-		SplayNode<uint64_t,Vertex>*node=m_subgraph.find(prefix);
-		if(node==NULL){
-			cout<<"NULL "<<prefix<<" Rank="<<getRank()<<endl;
-		}else{
-			Vertex*vertex=node->getValue();
-			vertex->addOutgoingEdge(rank,ptr,&m_persistentAllocator);
-		}
 	// receive an ingoing edge in respect to prefix, along with the pointer for suffix
 	}else if(tag==TAG_IN_EDGE_DATA_WITH_PTR){
-		uint64_t*incoming=(uint64_t*)buffer;
-		uint64_t suffix=incoming[0];
-		void*ptr=(void*)incoming[1];
-		int rank=source;
-
-
-		SplayNode<uint64_t,Vertex>*node=m_subgraph.find(suffix);
-		if(node==NULL){
-			//cout<<"NULL "<<prefix<<endl;
-		}else{
-			Vertex*vertex=node->getValue();
-			vertex->addIngoingEdge(rank,ptr,&m_persistentAllocator);
-		}
 	}else if(tag==TAG_SEND_COVERAGE_VALUES){
 		uint64_t*incoming=(uint64_t*)buffer;
 		m_minimumCoverage=incoming[0];
@@ -630,15 +583,9 @@ void Machine::processMessage(Message*message){
 		
 
 		for(int i=0;i<(int)length;i+=2){
-			int currentLength=2;
-			uint64_t*sendBuffer=(uint64_t*)m_outboxAllocator.allocate(currentLength*sizeof(uint64_t));
-			sendBuffer[0]=incoming[i+0];
-			sendBuffer[1]=(uint64_t)m_subgraph.find(incoming[i+1]);
-			int destination=vertexRank(incoming[i+0]);
-
-
-			Message aMessage(sendBuffer,currentLength,MPI_UNSIGNED_LONG_LONG,destination,TAG_OUT_EDGE_DATA_WITH_PTR,getRank());
-			m_outbox.push_back(aMessage);
+			uint64_t prefix=incoming[i+0];
+			uint64_t suffix=incoming[i+1];
+			m_subgraph.find(prefix)->getValue()->addOutgoingEdge(suffix,m_wordSize);
 		}
 
 	// receive an ingoing edge, send it back with the pointer
@@ -647,15 +594,9 @@ void Machine::processMessage(Message*message){
 		uint64_t*incoming=(uint64_t*)buffer;
 
 		for(int i=0;i<(int)length;i+=2){
-			int currentLength=3;
-			uint64_t*sendBuffer=(uint64_t*)m_outboxAllocator.allocate(currentLength*sizeof(uint64_t));
-			sendBuffer[0]=incoming[i+1];
-			sendBuffer[1]=(uint64_t)m_subgraph.find(incoming[i+0]);
-			
-			int destination=vertexRank(incoming[i+1]);
-
-			Message aMessage(sendBuffer,currentLength,MPI_UNSIGNED_LONG_LONG,destination,TAG_IN_EDGE_DATA_WITH_PTR,getRank());
-			m_outbox.push_back(aMessage);
+			uint64_t prefix=incoming[i+0];
+			uint64_t suffix=incoming[i+1];
+			m_subgraph.find(suffix)->getValue()->addIngoingEdge(prefix,m_wordSize);
 		}
 	}else if(tag==TAG_WELCOME){
 
@@ -898,6 +839,7 @@ void Machine::processData(){
 			SplayTreeIterator<uint64_t,Vertex> iterator(&m_subgraph);
 			while(iterator.hasNext()){
 				int coverage=iterator.next()->getValue()->getCoverage();
+				cout<<"Coverage is "<<coverage<<endl;
 				m_distributionOfCoverage[coverage]++;
 			}
 		}
@@ -970,13 +912,13 @@ void Machine::processData(){
 						VertexMer b=complementVertex(a,m_wordSize+1);
 						uint64_t b_1=getKPrefix(b,m_wordSize);
 						uint64_t b_2=getKSuffix(b,m_wordSize);
-						int rankB=vertexRank(b_2);
+						int rankB=vertexRank(b_1);
 						messagesStockOut[rankB].push_back(b_1);
 						messagesStockOut[rankB].push_back(b_2);
 					}else{
 						uint64_t a_1=getKPrefix(a,m_wordSize);
 						uint64_t a_2=getKSuffix(a,m_wordSize);
-						int rankA=vertexRank(a_2);
+						int rankA=vertexRank(a_1);
 						messagesStockOut[rankA].push_back(a_1);
 						messagesStockOut[rankA].push_back(a_2);
 					}
@@ -1046,13 +988,13 @@ void Machine::processData(){
 						VertexMer b=complementVertex(a,m_wordSize+1);
 						uint64_t b_1=getKPrefix(b,m_wordSize);
 						uint64_t b_2=getKSuffix(b,m_wordSize);
-						int rankB=vertexRank(b_1);
+						int rankB=vertexRank(b_2);
 						messagesStockIn[rankB].push_back(b_1);
 						messagesStockIn[rankB].push_back(b_2);
 					}else{
 						uint64_t a_1=getKPrefix(a,m_wordSize);
 						uint64_t a_2=getKSuffix(a,m_wordSize);
-						int rankA=vertexRank(a_1);
+						int rankA=vertexRank(a_2);
 						messagesStockIn[rankA].push_back(a_1);
 						messagesStockIn[rankA].push_back(a_2);
 					}
@@ -1083,10 +1025,13 @@ void Machine::processData(){
 		m_readyToSeed=-1;
 		m_numberOfRanksDoneSeeding=0;
 		// tell everyone to seed now.
+		killRanks();
+		/*
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_START_SEEDING,getRank());
 			m_outbox.push_back(aMessage);
 		}
+		*/
 	}else if(m_mode==MODE_START_SEEDING){
 
 		// assign a first vertex

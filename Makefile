@@ -23,7 +23,7 @@ test: Ray
 	$(MPIRUN) -np 28  -machinefile RayMachinesFile.txt Ray input.txt
 
 test1: Ray
-	$(MPIRUN) -np 28  -machinefile RayMachinesFile.txt Ray input1.txt
+	$(MPIRUN) -np 30  -machinefile RayMachinesFile.txt Ray input1.txt|tee test1.log
 
 test2: Ray
 	$(MPIRUN)   -np 30  -machinefile RayMachinesFile.txt Ray input2.txt|tee test2.log

@@ -26,22 +26,21 @@
 
 
 
-
+#include<vector>
 #include"Vertex.h"
 #include<cstdlib>
+#include"common_functions.h"
 #include<iostream>
+#include"types.h"
 using namespace std;
 
 void Vertex::constructor(){
 	m_coverage=0;
-	m_outgoingEdges=NULL;
-	m_ingoingEdges=NULL;
+	m_edges=0;
 	m_assembled=false;
 }
 
 void Vertex::setCoverage(int coverage){
-	if(m_coverage==255)
-		return;
 	m_coverage=coverage;
 }
 
@@ -49,18 +48,37 @@ int Vertex::getCoverage(){
 	return m_coverage;
 }
 
-void Vertex::addOutgoingEdge(int rank,void*ptr,MyAllocator*allocator){
-	//cout<<"Coverage="<<getCoverage()<<endl;
-	if(hasEdge(m_outgoingEdges,rank,ptr)){
-		return;
+vector<uint64_t> Vertex::getIngoingEdges(uint64_t a,int k){
+	vector<uint64_t> b;
+	for(int i=0;i<4;i++){
+		int j=((((uint64_t)m_edges)<<(63-i))>>63);
+		if(j==1){
+			uint64_t l=((a<<(64-2*(k+1)+2))>>(64-2*(k+1)+2)<<2)|i;
+			b.push_back(l);
+		}
+	}
+	return b;
+}
+
+vector<uint64_t> Vertex::getOutgoingEdges(uint64_t a,int k){
+	vector<uint64_t> b;
+	for(int i=0;i<4;i++){
+		int j=((((uint64_t)m_edges)<<(59-i))>>63);
+		if(j==1){
+			uint64_t l=((a>>2))|(i<<(2*(k-1)));
+			b.push_back(l);
+		}
 	}
 
-	Edge*e=(Edge*)allocator->allocate(sizeof(Edge));
-	e->constructor(rank,ptr);
-	if(m_outgoingEdges!=NULL){
-		e->setNext(m_outgoingEdges);
-	}
-	m_outgoingEdges=e;
+	return b;
+}
+
+void Vertex::addIngoingEdge(uint64_t a,int k){
+	m_edges=m_edges|(1<<((a<<(62))>>62));
+}
+
+void Vertex::addOutgoingEdge(uint64_t a,int k){
+	m_edges=m_edges|(1<<(4+((a<<(64-2*k))>>62)));
 }
 
 void Vertex::addRead(int rank,void*ptr,MyAllocator*allocator){
@@ -72,42 +90,7 @@ void Vertex::addRead(int rank,void*ptr,MyAllocator*allocator){
 	m_readsStartingHere=e;
 }
 
-void Vertex::addIngoingEdge(int rank,void*ptr,MyAllocator*allocator){
-	if(hasEdge(m_ingoingEdges,rank,ptr))
-		return;
-	
-	Edge*e=(Edge*)allocator->allocate(sizeof(Edge));
-	e->constructor(rank,ptr);
-	if(m_ingoingEdges!=NULL){
-		e->setNext(m_ingoingEdges);
-	}
-	m_ingoingEdges=e;
-}
 
-bool Vertex::hasEdge(Edge*e,int rank,void*ptr){
-	Edge*t=e;
-	int i=0;
-	while(t!=NULL){
-		if(t->getRank()==rank and t->getPtr()==ptr){
-			return true;
-		}
-		t=t->getNext();
-		i++;
-	}
-	if(i>4){
-		cout<<"Too many edges "<<i<<endl;
-		cout<<rank<<" "<<ptr<<endl;
-	}
-	return false;
-}
-
-Edge*Vertex::getFirstOutgoingEdge(){
-	return m_outgoingEdges;
-}
-
-Edge*Vertex::getFirstIngoingEdge(){
-	return m_ingoingEdges;
-}
 
 void Vertex::assemble(){
 	m_assembled=true;
