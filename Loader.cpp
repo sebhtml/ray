@@ -40,13 +40,11 @@ int Loader::getReads(){
 }
 
 void Loader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator){
-	(cout)<<"Loading "<<file<<endl;
 	if(file.length()<4){
 		(cout)<<"Error: "<<file<<endl;
 		exit(0);
 	}
 	if(file.substr(file.length()-4,4)==".sff"){
-		(cout)<<"Format: SFF"<<endl;
 		SffLoader sffLoader;
 		sffLoader.load(file,reads,seqMyAllocator,readMyAllocator);
 		m_bases=sffLoader.getBases();
@@ -62,10 +60,8 @@ void Loader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyA
 	f>>buffer;
 	if(buffer[0]=='>'){
 		type=fasta;
-		(cout)<<"Format: fasta."<<endl;
 	}else if(buffer[0]=='@'){
 		type=fastq;
-		(cout)<<"Format: fastq."<<endl;
 	}else{
 		(cout)<<"Format: unknown."<<endl;
 	}

@@ -1,5 +1,5 @@
-CXXFLAGS=  -Wall -g -I. -DDEBUG
-#CXXFLAGS=  -Wall -O3 -I. 
+#CXXFLAGS=  -Wall -g -I. -DDEBUG
+CXXFLAGS=  -Wall  -I.  -O3
 
 #ls 30
 MPIRUN=~/software/openmpi-1.4.1/output/bin/mpirun 

@@ -205,7 +205,6 @@ class Machine{
 	int m_BARRIER_PERIOD;
 
 	// EXTENSION MODE
-	uint64_t m_EXTENSION_currentVertex;
 	bool m_EXTENSION_checkedIfCurrentVertexIsAssembled;
 	bool m_EXTENSION_VertexMarkAssembled_requested;
 	bool m_EXTENSION_reverseComplement_requested;
