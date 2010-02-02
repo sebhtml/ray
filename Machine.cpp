@@ -839,7 +839,7 @@ void Machine::processData(){
 			SplayTreeIterator<uint64_t,Vertex> iterator(&m_subgraph);
 			while(iterator.hasNext()){
 				int coverage=iterator.next()->getValue()->getCoverage();
-				cout<<"Coverage is "<<coverage<<endl;
+				//cout<<"Coverage is "<<coverage<<endl;
 				m_distributionOfCoverage[coverage]++;
 			}
 		}
