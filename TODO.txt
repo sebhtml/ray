@@ -1,8 +1,9 @@
+* extension does not work on test2 yet.
+
 * when encountering assembled vertex, use a merger strategy?
 * check memory allocation for master...
 * replace reads positions with (int,int)
 * extend in both direction too. 
-* extension does not work on test2 yet.
 * use single-end reads to resolve repeats.
 * attach reverse complement vertices.
 * load paired reads.
