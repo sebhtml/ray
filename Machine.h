@@ -152,6 +152,8 @@ class Machine{
 	uint64_t m_SEEDING_currentParentVertex;
 	uint64_t m_SEEDING_receivedKey;
 	bool m_SEEDING_vertexKeyAndCoverageReceived;
+	vector<uint64_t> m_SEEDING_nodes;
+	uint64_t m_SEEDING_first;
 	int m_SEEDING_receivedVertexCoverage;
 	bool m_SEEDING_vertexCoverageReceived;
 	int m_SEEDING_currentChildRank;
@@ -166,8 +168,6 @@ class Machine{
 	int m_SEEDING_i;
 	uint64_t m_SEEDING_currentVertex;
 	
-	vector<vector<int > > m_SEEDING_seedRanks;
-	vector<vector<void*> > m_SEEDING_seedPointers;
 
 	Edge*m_SEEDING_Inedge;
 	bool m_SEEDING_InedgesReceived;
@@ -176,12 +176,15 @@ class Machine{
 	int m_SEEDING_numberOfSeedCoverageCandidates;
 	bool m_SEEDING_outgoing_choice_done;
 	bool m_SEEDING_edgesRequested;
+	int m_SEEDING_ingoingEdgeIndex;
+	int m_SEEDING_outgoingEdgeIndex;
 	int m_SEEDING_currentRank;
-	void*m_SEEDING_currentPointer;
-	vector<int> m_SEEDING_outgoingRanks;
+	vector<vector<uint64_t> > m_SEEDING_seeds;
+	vector<uint64_t> m_SEEDING_seed;
+	vector<uint64_t> m_SEEDING_receivedIngoingEdges;
+	vector<uint64_t> m_SEEDING_receivedOutgoingEdges;
 	vector<int> m_SEEDING_outgoingCoverages;
 	vector<uint64_t> m_SEEDING_outgoingKeys;
-	vector<void*>m_SEEDING_outgoingPointers;
 	bool m_SEEDING_vertexKeyAndCoverageRequested;
 	int m_SEEDING_numberOfIngoingEdges;
 	set<uint64_t> m_SEEDING_vertices;
@@ -191,12 +194,8 @@ class Machine{
 	int m_SEEDING_currentParentRank;
 	bool m_SEEDING_1_1_test_done;
 	bool m_SEEDING_firstVertexTestDone;
-	void*m_SEEDING_currentChildPointer;
 	bool m_SEEDING_firstVertexParentTestDone;	
-	void*m_SEEDING_currentParentPointer;
 	bool m_SEEDING_ingoingEdgesDone;
-	vector<int> m_SEEDING_currentSeedRanks;
-	vector<void*> m_SEEDING_currentSeedPointers;
 	bool m_SEEDING_outgoingEdgesDone;
 
 
@@ -206,7 +205,7 @@ class Machine{
 	int m_BARRIER_PERIOD;
 
 	// EXTENSION MODE
-	int m_EXTENSION_currentRank;
+	uint64_t m_EXTENSION_currentVertex;
 	bool m_EXTENSION_checkedIfCurrentVertexIsAssembled;
 	bool m_EXTENSION_VertexMarkAssembled_requested;
 	bool m_EXTENSION_reverseComplement_requested;
@@ -221,7 +220,6 @@ class Machine{
 	bool m_EXTENSION_VertexAssembled_received;
 	int m_EXTENSION_currentPosition;
 	bool m_EXTENSION_VertexMarkAssembled_received;
-	void*m_EXTENSION_currentPointer;
 	bool m_EXTENSION_markedCurrentVertexAsAssembled;
 	bool m_EXTENSION_enumerateChoices;
 	bool m_EXTENSION_choose;

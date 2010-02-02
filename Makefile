@@ -1,10 +1,14 @@
-MPICC=~/software/openmpi-1.4.1/output/bin/mpic++
+CXXFLAGS=  -Wall -g -I. -DDEBUG
+#CXXFLAGS=  -Wall -O3 -I. 
+
+#ls 30
 MPIRUN=~/software/openmpi-1.4.1/output/bin/mpirun 
-CXXFLAGS=  -Wall -O3 -I.
+MPICC=~/software/openmpi-1.4.1/output/bin/mpic++
 
 # colosse:
-MPIRUN=/software/MPI/openmpi-1.4.1_gcc/bin/mpirun
-MPICC=/software/MPI/openmpi-1.4.1_gcc/bin/mpic++
+#MPIRUN=/software/MPI/openmpi-1.4.1_gcc/bin/mpirun
+#MPICC=/software/MPI/openmpi-1.4.1_gcc/bin/mpic++
+
 
 all: Ray
 
@@ -19,7 +23,7 @@ Ray: ray_main.o $(OBJECTS)
 	$(MPICC) $(CXXFLAGS) $^ -o $@
 
 test: Ray
-	$(MPIRUN) -np 28  -machinefile RayMachinesFile.txt Ray input.txt
+	$(MPIRUN) -np 1  -machinefile RayMachinesFile.txt Ray input.txt
 
 test1: Ray
 	$(MPIRUN) -np 30  -machinefile RayMachinesFile.txt Ray input1.txt|tee test1.log

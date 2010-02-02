@@ -53,7 +53,21 @@ vector<uint64_t> Vertex::getIngoingEdges(uint64_t a,int k){
 	for(int i=0;i<4;i++){
 		int j=((((uint64_t)m_edges)<<(63-i))>>63);
 		if(j==1){
-			uint64_t l=((a<<(64-2*(k+1)+2))>>(64-2*(k+1)+2)<<2)|i;
+			uint64_t l=((a<<(64-2*k+2))>>(64-2*k))|((uint64_t)i);
+/*
+			if(idToWord(a,k)=="TTTTACACATTATCCACAAAT"){
+				cout<<"we have "<<idToWord(a,k)<<endl;
+				cout<<"i="<<i<<endl;
+				cout<<"origin"<<endl;
+				coutBIN(a);
+				cout<<"shifted."<<endl;
+				coutBIN(a<<(64-2*k+2)>>(64-2*k));
+				cout<<"filter"<<endl;
+				coutBIN((uint64_t)i);
+				cout<<"Result."<<endl;
+				coutBIN(l);
+			}
+*/
 			b.push_back(l);
 		}
 	}
@@ -63,9 +77,19 @@ vector<uint64_t> Vertex::getIngoingEdges(uint64_t a,int k){
 vector<uint64_t> Vertex::getOutgoingEdges(uint64_t a,int k){
 	vector<uint64_t> b;
 	for(int i=0;i<4;i++){
+		//cout<<"Outgoing, i="<<i<<endl;
+		//coutBIN(((((uint64_t)m_edges)<<(59-i))>>63));
 		int j=((((uint64_t)m_edges)<<(59-i))>>63);
 		if(j==1){
-			uint64_t l=((a>>2))|(i<<(2*(k-1)));
+/*
+			cout<<"original"<<endl;
+			coutBIN(a);
+			cout<<"shifted"<<endl;
+			coutBIN(a>>2);
+			cout<<"to add"<<endl;
+			coutBIN(((uint64_t)i)<<(2*(k-1)));
+*/
+			uint64_t l=(a>>2)|(((uint64_t)i)<<(2*(k-1)));
 			b.push_back(l);
 		}
 	}
@@ -78,7 +102,11 @@ void Vertex::addIngoingEdge(uint64_t a,int k){
 }
 
 void Vertex::addOutgoingEdge(uint64_t a,int k){
+	//cout<<"before adding."<<endl;
+	//coutBIN((uint64_t)m_edges);
 	m_edges=m_edges|(1<<(4+((a<<(64-2*k))>>62)));
+	//cout<<"after adding."<<endl;
+	//coutBIN((uint64_t)m_edges);
 }
 
 void Vertex::addRead(int rank,void*ptr,MyAllocator*allocator){

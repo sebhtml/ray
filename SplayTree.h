@@ -103,6 +103,7 @@ SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::getRoot(){
  */
 template<class KEY,class VALUE>
 SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::insert(KEY key){
+	//cout<<"DEBUG insert "<<key<<endl;
 	m_inserted=false;
 	if(m_root==NULL){
 		m_root=(SplayNode<KEY,VALUE>*)/*malloc*/m_allocator.allocate(sizeof(SplayNode<KEY,VALUE>));
@@ -139,6 +140,7 @@ SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::insert(KEY key){
  */
 template<class KEY,class VALUE>
 SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::find(KEY key){
+	//cout<<"DEBUG find "<<key<<endl;
 	if(m_root==NULL)
 		return NULL;
 	splay(key);

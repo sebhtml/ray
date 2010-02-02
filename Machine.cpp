@@ -22,6 +22,7 @@
 #include"Machine.h"
 #include<sstream>
 #include"Message.h"
+#include<assert.h>
 #include"common_functions.h"
 #include<iostream>
 #include<fstream>
@@ -406,13 +407,33 @@ void Machine::processMessage(Message*message){
 		m_wordSize=incoming[0];
 		cout<<"Rank "<<getRank()<<" WordSize="<<m_wordSize<<endl;
 	}else if(tag==TAG_START_SEEDING){
+		cout<<"Rank "<<getRank()<<" starts to seed."<<endl;
 		m_mode=MODE_START_SEEDING;
-		m_SEEDING_iterator=new SplayTreeIterator<uint64_t,Vertex>(&m_subgraph);
+		SplayTreeIterator<uint64_t,Vertex> seedingIterator(&m_subgraph);
+		map<int,map<int,int> > edgesDistribution;
+		while(seedingIterator.hasNext()){
+			SplayNode<uint64_t,Vertex>*node=seedingIterator.next();
+			edgesDistribution[node->getValue()->getIngoingEdges(node->getKey(),m_wordSize).size()][node->getValue()->getOutgoingEdges(node->getKey(),m_wordSize).size()]++;
+			m_SEEDING_nodes.push_back(node->getKey());
+		}
+		cout<<"Ingoing and outgoing edges."<<endl;
+		for(map<int,map<int,int> >::iterator i=edgesDistribution.begin();i!=edgesDistribution.end();++i){
+			for(map<int,int>::iterator j=i->second.begin();j!=i->second.end();++j){
+				cout<<i->first<<" "<<j->first<<" "<<j->second<<endl;
+			}
+		}
+		//cout<<"Rank "<<getRank()<<" "<<m_SEEDING_nodes.size()<<" vertices, "<<m_subgraph.size()<<""<<endl;
 		m_SEEDING_NodeInitiated=false;
 		m_SEEDING_i=0;
 	}else if(tag==TAG_REQUEST_VERTEX_COVERAGE){
 		uint64_t*incoming=(uint64_t*)buffer;
-		SplayNode<uint64_t,Vertex>*node=(SplayNode<uint64_t,Vertex>*)incoming[0];
+		SplayNode<uint64_t,Vertex>*node=m_subgraph.find(incoming[0]);
+		if(node==NULL){
+			cout<<"NULL (TAG_REQUEST_VERTEX_COVERAGE), vertex="<<idToWord(incoming[0],m_wordSize)<<endl;
+			//coutBIN(incoming[0]);
+			//cout<<"Normal"<<endl;
+			//coutBIN(wordId(idToWord(incoming[0],m_wordSize).c_str()));
+		}
 		uint64_t coverage=node->getValue()->getCoverage();
 		//cout<<"Rank "<<getRank()<<" ptr "<<node<<" resolves. "<<node->getKey()<<" "<<coverage<<endl;
 		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
@@ -420,9 +441,19 @@ void Machine::processMessage(Message*message){
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_VERTEX_COVERAGE_REPLY,getRank());
 		m_outbox.push_back(aMessage);
 	}else if(tag==TAG_REQUEST_VERTEX_INGOING_EDGES){
-		//Message aMessage(message,c*2,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY,getRank());
-		//m_outbox.push_back(aMessage);
-		//cout<<"Rank "<<getRank()<<" sends outgoing edges."<<endl;
+		uint64_t*incoming=(uint64_t*)buffer;
+		SplayNode<uint64_t,Vertex>*node=m_subgraph.find(incoming[0]);
+		if(node==NULL){
+			cout<<"NULL (TAG_REQUEST_VERTEX_INGOING_EDGES), vertex="<<incoming[0]<<""<<endl;
+		}
+		vector<uint64_t> ingoingEdges=node->getValue()->getIngoingEdges(incoming[0],m_wordSize);
+		//cout<<ingoingEdges.size()<<" ingoing edges."<<endl;
+		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(ingoingEdges.size()*sizeof(uint64_t));
+		for(int i=0;i<(int)ingoingEdges.size();i++){
+			message[i]=ingoingEdges[i];
+		}
+		Message aMessage(message,ingoingEdges.size(),MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY,getRank());
+		m_outbox.push_back(aMessage);
 	}else if(tag==TAG_ASK_EXTENSION){
 		m_EXTENSION_initiated=false;
 		m_mode_EXTENSION=true;
@@ -435,9 +466,13 @@ void Machine::processMessage(Message*message){
 		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(2*sizeof(uint64_t));
 		Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,rank,TAG_REQUEST_VERTEX_POINTER,getRank());
 		m_outbox.push_back(aMessage);
+	}else if(tag==TAG_MARK_AS_ASSEMBLED){
+		uint64_t*incoming=(uint64_t*)buffer;
+		SplayNode<uint64_t,Vertex>*node=m_subgraph.find(incoming[0]);
+		node->getValue()->assemble();
 	}else if(tag==TAG_ASK_IS_ASSEMBLED){
 		uint64_t*incoming=(uint64_t*)buffer;
-		SplayNode<uint64_t,Vertex>*node=(SplayNode<uint64_t,Vertex>*)incoming[0];
+		SplayNode<uint64_t,Vertex>*node=m_subgraph.find(incoming[0]);
 		bool isAssembled=node->getValue()->isAssembled();
 		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
 		message[0]=isAssembled;
@@ -448,9 +483,15 @@ void Machine::processMessage(Message*message){
 		m_EXTENSION_VertexAssembled_received=true;
 		m_EXTENSION_vertexIsAssembledResult=(bool)incoming[0];
 	}else if(tag==TAG_REQUEST_VERTEX_OUTGOING_EDGES){
-		//Message aMessage(message,c*2,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY,getRank());
-		//m_outbox.push_back(aMessage);
-		//cout<<"Rank "<<getRank()<<" sends outgoing edges."<<endl;
+		uint64_t*incoming=(uint64_t*)buffer;
+		vector<uint64_t> outgoingEdges=m_subgraph.find(incoming[0])->getValue()->getOutgoingEdges(incoming[0],m_wordSize);
+		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(outgoingEdges.size()*sizeof(uint64_t));
+		for(int i=0;i<(int)outgoingEdges.size();i++){
+			message[i]=outgoingEdges[i];
+		}
+		//cout<<idToWord(incoming[0],m_wordSize)<<" has "<<outgoingEdges.size()<<" outgoing edges."<<endl;
+		Message aMessage(message,outgoingEdges.size(),MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY,getRank());
+		m_outbox.push_back(aMessage);
 	}else if(tag==TAG_GOOD_JOB_SEE_YOU_SOON){
 		//m_alive=false;
 		uint64_t*incoming=(uint64_t*)buffer;
@@ -489,39 +530,18 @@ void Machine::processMessage(Message*message){
 		}
 	}else if(tag==TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY){
 		uint64_t*incoming=(uint64_t*)buffer;
-		int i=0;
-		m_SEEDING_Inedge=NULL;
-		while(i<count){
-			Edge*edge=(Edge*)m_seedingAllocator.allocate(sizeof(Edge));
-			int rank=incoming[i];
-			i++;
-			void*ptr=(void*)incoming[i];
-			++i;
-			edge->constructor(rank,ptr);
-			if(m_SEEDING_Inedge==NULL){
-			}else{
-				edge->setNext(m_SEEDING_Inedge);
-			}
-			m_SEEDING_Inedge=edge;
+		m_SEEDING_receivedIngoingEdges.clear();
+		for(int i=0;i<count;i++){
+			m_SEEDING_receivedIngoingEdges.push_back(incoming[i]);
 		}
 		m_SEEDING_InedgesReceived=true;
 	}else if(tag==TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY){
 		uint64_t*incoming=(uint64_t*)buffer;
-		int i=0;
-		m_SEEDING_edge=NULL;
-		while(i<count){
-			Edge*edge=(Edge*)m_seedingAllocator.allocate(sizeof(Edge));
-			int rank=incoming[i];
-			i++;
-			void*ptr=(void*)incoming[i];
-			++i;
-			edge->constructor(rank,ptr);
-			if(m_SEEDING_edge==NULL){
-			}else{
-				edge->setNext(m_SEEDING_edge);
-			}
-			m_SEEDING_edge=edge;
+		m_SEEDING_receivedOutgoingEdges.clear();
+		for(int i=0;i<count;i++){
+			m_SEEDING_receivedOutgoingEdges.push_back(incoming[i]);
 		}
+		//cout<<"Received "<<count<<" outgoing edges."<<endl;
 		m_SEEDING_edgesReceived=true;
 	}else if(tag==TAG_MASTER_IS_DONE_ATTACHING_READS){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,getRank());
@@ -585,7 +605,18 @@ void Machine::processMessage(Message*message){
 		for(int i=0;i<(int)length;i+=2){
 			uint64_t prefix=incoming[i+0];
 			uint64_t suffix=incoming[i+1];
+			//cout<<"adding "<<idToWord(prefix,m_wordSize)<<"->"<<idToWord(suffix,m_wordSize)<<endl;
 			m_subgraph.find(prefix)->getValue()->addOutgoingEdge(suffix,m_wordSize);
+			#ifdef DEBUG
+			vector<uint64_t> newEdges=m_subgraph.find(prefix)->getValue()->getOutgoingEdges(prefix,m_wordSize);
+			bool found=false;
+			for(int i=0;i<(int)newEdges.size();i++){
+				//cout<<"new edge: "<<idToWord(prefix,m_wordSize)<<"->"<<idToWord(newEdges[i],m_wordSize)<<endl;
+				if(newEdges[i]==suffix)
+					found=true;
+			}
+			assert(found);
+			#endif
 		}
 
 	// receive an ingoing edge, send it back with the pointer
@@ -596,7 +627,19 @@ void Machine::processMessage(Message*message){
 		for(int i=0;i<(int)length;i+=2){
 			uint64_t prefix=incoming[i+0];
 			uint64_t suffix=incoming[i+1];
+			//cout<<"Adding ingoing edge "<<idToWord(prefix,m_wordSize)<<"->"<<idToWord(suffix,m_wordSize)<<endl;
 			m_subgraph.find(suffix)->getValue()->addIngoingEdge(prefix,m_wordSize);
+			#ifdef DEBUG
+			bool found=false;
+			vector<uint64_t> edges=m_subgraph.find(suffix)->getValue()->getIngoingEdges(suffix,m_wordSize);
+			for(int i=0;i<(int)edges.size();i++){
+				//acout<<"new edge: "<<idToWord(edges[i],m_wordSize)<<"->"<<idToWord(suffix,m_wordSize)<<endl;
+				if(edges[i]==prefix)
+					found=true;
+			}
+			assert(found);
+			#endif
+	
 		}
 	}else if(tag==TAG_WELCOME){
 
@@ -1025,31 +1068,29 @@ void Machine::processData(){
 		m_readyToSeed=-1;
 		m_numberOfRanksDoneSeeding=0;
 		// tell everyone to seed now.
-		killRanks();
-		/*
+		//killRanks();
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_START_SEEDING,getRank());
 			m_outbox.push_back(aMessage);
 		}
-		*/
 	}else if(m_mode==MODE_START_SEEDING){
 
 		// assign a first vertex
 		if(!m_SEEDING_NodeInitiated){
-			if(!m_SEEDING_iterator->hasNext()){
+			if(m_SEEDING_i==m_subgraph.size()-1){
 				m_mode=MODE_DO_NOTHING;
 				cout<<"Rank "<<getRank()<<" seeding vertices. "<<m_SEEDING_i<<"/"<<m_subgraph.size()<<" (DONE)"<<endl;
 				m_seedingAllocator.clear();
 				Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_SEEDING_IS_OVER,getRank());
+				m_SEEDING_nodes.clear();
 				m_outbox.push_back(aMessage);
 			}else{
 				if(m_SEEDING_i % 10000 ==0){
 					cout<<"Rank "<<getRank()<<" seeding vertices. "<<m_SEEDING_i<<"/"<<m_subgraph.size()<<endl;
 				}
-				m_SEEDING_node=m_SEEDING_iterator->next();
-				m_SEEDING_currentRank=getRank();
-				m_SEEDING_currentVertex=m_SEEDING_node->getKey();
-				m_SEEDING_currentPointer=(void*)m_SEEDING_node;
+				m_SEEDING_currentVertex=m_SEEDING_nodes[m_SEEDING_i];
+				m_SEEDING_first=m_SEEDING_currentVertex;
+				//cout<<"Iteration 2 "<<m_SEEDING_currentVertex<<endl;
 				m_SEEDING_testInitiated=false;
 				m_SEEDING_1_1_test_done=false;
 				m_SEEDING_i++;
@@ -1072,8 +1113,6 @@ void Machine::processData(){
 				}else{
 					m_SEEDING_firstVertexParentTestDone=false;
 					m_SEEDING_firstVertexTestDone=true;
-					m_SEEDING_currentRank=m_SEEDING_currentParentRank;
-					m_SEEDING_currentPointer=m_SEEDING_currentParentPointer;
 					//cout<<"Rank "<<getRank()<<" Check parent edge. "<<idToWord(m_SEEDING_currentParentVertex,m_wordSize)<<"->"<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<endl;
 					m_SEEDING_currentVertex=m_SEEDING_currentParentVertex;
 					m_SEEDING_testInitiated=false;
@@ -1091,16 +1130,13 @@ void Machine::processData(){
 					m_SEEDING_NodeInitiated=false;//abort
 				}else{
 					m_SEEDING_firstVertexParentTestDone=true;
-					m_SEEDING_currentSeedRanks.clear();
-					m_SEEDING_currentSeedPointers.clear();
 					m_SEEDING_vertices.clear();
+					m_SEEDING_seed.clear();
 					// restore original starter.
-					m_SEEDING_currentVertex=m_SEEDING_node->getKey();
-					m_SEEDING_currentPointer=(void*)m_SEEDING_node;
-					m_SEEDING_currentRank=getRank();
+					m_SEEDING_currentVertex=m_SEEDING_first;
 					m_SEEDING_testInitiated=false;
 					m_SEEDING_1_1_test_done=false;
-					//cout<<"Rank "<<getRank()<<" first's parent is ok too."<<endl;
+					cout<<"Rank "<<getRank()<<" first's parent is ok too, first vertex="<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<endl;
 				}
 			}
 
@@ -1112,12 +1148,13 @@ void Machine::processData(){
 			}else{
 				if(m_SEEDING_vertices.count(m_SEEDING_currentVertex)>0){
 					m_SEEDING_1_1_test_result=false;
-					//cout<<"Rank "<<getRank()<<" already in ";
+					cout<<"Rank "<<getRank()<<" already in ";
 					cout<<endl;
 				}
 				if(!m_SEEDING_1_1_test_result){
 					m_SEEDING_NodeInitiated=false;
 					//cout<<"Rank "<<getRank()<<" completed with "<<m_SEEDING_seed.size()<<" vertices result="<<m_SEEDING_1_1_test_result<<endl;
+					
 					ostringstream a;
 /*
 					a<<idToWord(m_SEEDING_seed[0],m_wordSize);
@@ -1126,18 +1163,12 @@ void Machine::processData(){
 					}
 */
 					string contig=a.str();
-					cout<<"Rank "<<getRank()<<endl<<m_SEEDING_currentSeedPointers.size()<<" contig "<<contig<<endl;
-					m_SEEDING_seedRanks.push_back(m_SEEDING_currentSeedRanks);
-					m_SEEDING_seedPointers.push_back(m_SEEDING_currentSeedPointers);
+					cout<<"Rank "<<getRank()<<endl<<m_SEEDING_seed.size()<<" contig "<<contig<<endl;
+					m_SEEDING_seeds.push_back(m_SEEDING_seed);
 				}else{
-					//cout<<"Rank "<<getRank()<<" adding "<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<" Rank="<<m_SEEDING_currentRank<<" Pointer="<<m_SEEDING_currentPointer<<endl;
-					//m_SEEDING_seed.push_back(m_SEEDING_currentVertex);
-					m_SEEDING_currentSeedRanks.push_back(m_SEEDING_currentRank);
-					m_SEEDING_currentSeedPointers.push_back(m_SEEDING_currentPointer);
-
+					//cout<<"Rank "<<getRank()<<" adding to seed "<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<"->"<<idToWord(m_SEEDING_currentChildVertex,m_wordSize)<<endl;
+					m_SEEDING_seed.push_back(m_SEEDING_currentVertex);
 					m_SEEDING_vertices.insert(m_SEEDING_currentVertex);
-					m_SEEDING_currentRank=m_SEEDING_currentChildRank;
-					m_SEEDING_currentPointer=m_SEEDING_currentChildPointer;
 					//cout<<"Rank "<<getRank()<<" seeking next Rank="<<m_SEEDING_currentChildRank<<" Pointer="<<m_SEEDING_currentChildPointer<<" visual: "<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<"->"<<idToWord(m_SEEDING_currentChildVertex,m_wordSize)<<endl;
 					m_SEEDING_currentVertex=m_SEEDING_currentChildVertex;
 					m_SEEDING_testInitiated=false;
@@ -1219,41 +1250,41 @@ void Machine::do_1_1_test(){
 		m_SEEDING_testInitiated=true;
 		m_SEEDING_ingoingEdgesDone=false;
 		m_SEEDING_InedgesRequested=false;
-		m_SEEDING_outgoingEdgesDone=false;
 	}else if(!m_SEEDING_ingoingEdgesDone){
 		if(!m_SEEDING_InedgesRequested){
 			//cout<<"Rank "<<getRank()<<" requests ingoing edges."<<endl;
 			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
-			message[0]=(uint64_t)m_SEEDING_currentPointer;
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,m_SEEDING_currentRank,TAG_REQUEST_VERTEX_INGOING_EDGES,getRank());
+			message[0]=(uint64_t)m_SEEDING_currentVertex;
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(m_SEEDING_currentVertex),TAG_REQUEST_VERTEX_INGOING_EDGES,getRank());
 			m_outbox.push_back(aMessage);
 			m_SEEDING_InedgesRequested=true;
 			m_SEEDING_numberOfIngoingEdges=0;
 			m_SEEDING_numberOfIngoingEdgesWithSeedCoverage=0;
-			m_SEEDING_vertexKeyAndCoverageRequested=false;
+			m_SEEDING_vertexCoverageRequested=false;
 			m_SEEDING_InedgesReceived=false;
+			m_SEEDING_ingoingEdgeIndex=0;
 		}else if(m_SEEDING_InedgesReceived){
-			if(m_SEEDING_Inedge!=NULL){
-				if(!m_SEEDING_vertexKeyAndCoverageRequested){
+			if(m_SEEDING_ingoingEdgeIndex<(int)m_SEEDING_receivedIngoingEdges.size()){
+				// TODO: don't check coverage if there is only 1
+				if(!m_SEEDING_vertexCoverageRequested){
+					//cout<<"ingoing edge: "<<idToWord(m_SEEDING_receivedIngoingEdges[m_SEEDING_ingoingEdgeIndex],m_wordSize)<<"->"<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<endl;
+					//cout<<m_SEEDING_ingoingEdgeIndex<<"/"<<m_SEEDING_receivedIngoingEdges.size()<<endl;
 					uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
-					message[0]=(uint64_t)m_SEEDING_Inedge->getPtr();
-					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,m_SEEDING_Inedge->getRank(),TAG_REQUEST_VERTEX_KEY_AND_COVERAGE,getRank());
+					message[0]=(uint64_t)m_SEEDING_receivedIngoingEdges[m_SEEDING_ingoingEdgeIndex];
+					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0]),TAG_REQUEST_VERTEX_COVERAGE,getRank());
 					m_outbox.push_back(aMessage);
-					m_SEEDING_vertexKeyAndCoverageRequested=true;
-					m_SEEDING_vertexKeyAndCoverageReceived=false;
-				}else if(m_SEEDING_vertexKeyAndCoverageReceived){
-					if(m_SEEDING_numberOfIngoingEdges==0 and m_SEEDING_Inedge->getNext()==NULL){//there is only one anyway
-						m_SEEDING_currentParentRank=m_SEEDING_Inedge->getRank();
-						m_SEEDING_currentParentPointer=m_SEEDING_Inedge->getPtr();
-						m_SEEDING_currentParentVertex=m_SEEDING_receivedKey;
+					m_SEEDING_vertexCoverageRequested=true;
+					m_SEEDING_vertexCoverageReceived=false;
+				}else if(m_SEEDING_vertexCoverageReceived){
+					if(m_SEEDING_receivedIngoingEdges.size()==1){//there is only one anyway
+						m_SEEDING_currentParentVertex=m_SEEDING_receivedIngoingEdges[m_SEEDING_ingoingEdgeIndex];
+						//cout<<"only 1 ingoing edge."<<endl;
 					}
 					if(m_SEEDING_receivedVertexCoverage>=m_seedCoverage){
-						m_SEEDING_currentParentVertex=m_SEEDING_receivedKey;
-						m_SEEDING_currentParentRank=m_SEEDING_Inedge->getRank();
-						m_SEEDING_currentParentPointer=m_SEEDING_Inedge->getPtr();
+						m_SEEDING_currentParentVertex=m_SEEDING_receivedIngoingEdges[m_SEEDING_ingoingEdgeIndex];
 						m_SEEDING_numberOfIngoingEdgesWithSeedCoverage++;
 					}
-					m_SEEDING_Inedge=m_SEEDING_Inedge->getNext();
+					m_SEEDING_ingoingEdgeIndex++;
 					m_SEEDING_numberOfIngoingEdges++;
 					//cout<<"Rank "<<getRank()<<" checking ingoing edge. "<<idToWord(m_SEEDING_receivedKey,m_wordSize)<<"->"<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<endl;
 				}
@@ -1261,6 +1292,7 @@ void Machine::do_1_1_test(){
 				m_SEEDING_ingoingEdgesDone=true;
 				m_SEEDING_outgoingEdgesDone=false;
 				m_SEEDING_edgesRequested=false;
+				//cout<<"ingoing edges are ok."<<endl;
 				//cout<<"Rank "<<getRank()<<" ingoing is done., edges="<<m_SEEDING_numberOfIngoingEdges<<" >=sc "<<m_SEEDING_numberOfIngoingEdgesWithSeedCoverage<<""<<endl;
 			}
 		}
@@ -1268,42 +1300,47 @@ void Machine::do_1_1_test(){
 		if(!m_SEEDING_edgesRequested){
 			//cout<<"Rank "<<getRank()<<" requests outgoing edges."<<endl;
 			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
-			message[0]=(uint64_t)m_SEEDING_currentPointer;
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,m_SEEDING_currentRank,TAG_REQUEST_VERTEX_OUTGOING_EDGES,getRank());
+			message[0]=(uint64_t)m_SEEDING_currentVertex;
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(m_SEEDING_currentVertex),TAG_REQUEST_VERTEX_OUTGOING_EDGES,getRank());
 			m_outbox.push_back(aMessage);
 			m_SEEDING_edgesRequested=true;
 			m_SEEDING_numberOfOutgoingEdges=0;
 			m_SEEDING_numberOfOutgoingEdgesWithSeedCoverage=0;
-			m_SEEDING_vertexKeyAndCoverageRequested=false;
+			m_SEEDING_vertexCoverageRequested=false;
 			m_SEEDING_edgesReceived=false;
+			m_SEEDING_outgoingEdgeIndex=0;
 		}else if(m_SEEDING_edgesReceived){
-			if(m_SEEDING_edge!=NULL){
-				if(!m_SEEDING_vertexKeyAndCoverageRequested){
+			if(m_SEEDING_outgoingEdgeIndex<(int)m_SEEDING_receivedOutgoingEdges.size()){
+				// TODO: don't check the coverage if there is only one
+				if(!m_SEEDING_vertexCoverageRequested){
+					string y=idToWord(m_SEEDING_receivedOutgoingEdges[m_SEEDING_outgoingEdgeIndex],m_wordSize);
+					//cout<<"Outgoing edge: "<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<"->"<<y<<endl;
 					uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
-					message[0]=(uint64_t)m_SEEDING_edge->getPtr();
-					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,m_SEEDING_edge->getRank(),TAG_REQUEST_VERTEX_KEY_AND_COVERAGE,getRank());
+					message[0]=(uint64_t)m_SEEDING_receivedOutgoingEdges[m_SEEDING_outgoingEdgeIndex];
+					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0]),TAG_REQUEST_VERTEX_COVERAGE,getRank());
 					m_outbox.push_back(aMessage);
-					m_SEEDING_vertexKeyAndCoverageRequested=true;
-					m_SEEDING_vertexKeyAndCoverageReceived=false;
-				}else if(m_SEEDING_vertexKeyAndCoverageReceived){
-					if(m_SEEDING_numberOfOutgoingEdges==0 and m_SEEDING_edge->getNext()==NULL){//there is only one anyway
-						m_SEEDING_currentChildRank=m_SEEDING_edge->getRank();
-						m_SEEDING_currentChildPointer=m_SEEDING_edge->getPtr();
-						m_SEEDING_currentChildVertex=m_SEEDING_receivedKey;
+					m_SEEDING_vertexCoverageRequested=true;
+					m_SEEDING_vertexCoverageReceived=false;
+				}else if(m_SEEDING_vertexCoverageReceived){
+					if(m_SEEDING_outgoingEdgeIndex==0){
+						//cout<<m_SEEDING_receivedOutgoingEdges.size()<<" outgoing edges."<<endl;
+					}
+					if(m_SEEDING_receivedOutgoingEdges.size()==1){//there is only one anyway
+						m_SEEDING_currentChildVertex=m_SEEDING_receivedOutgoingEdges[m_SEEDING_outgoingEdgeIndex];
 						//cout<<"Rank "<<getRank()<<" only one "<<idToWord(m_SEEDING_receivedKey,m_wordSize)<<endl;
+						//cout<<"only one outgoing edge."<<endl;
 					}
 					if(m_SEEDING_receivedVertexCoverage>=m_seedCoverage){
-						m_SEEDING_currentChildRank=m_SEEDING_edge->getRank();
-						m_SEEDING_currentChildPointer=m_SEEDING_edge->getPtr();
-						m_SEEDING_currentChildVertex=m_SEEDING_receivedKey;
+						m_SEEDING_currentChildVertex=m_SEEDING_receivedOutgoingEdges[m_SEEDING_outgoingEdgeIndex];
 						m_SEEDING_numberOfOutgoingEdgesWithSeedCoverage++;
 					}
 					//cout<<"Rank "<<getRank()<<" checking outgoing edge. "<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<"->"<<idToWord(m_SEEDING_receivedKey,m_wordSize)<<endl;
-					m_SEEDING_edge=m_SEEDING_edge->getNext();
+					m_SEEDING_outgoingEdgeIndex++;
 					m_SEEDING_numberOfOutgoingEdges++;
 				}
 			}else{// done analyzing ingoing edges.
 				m_SEEDING_outgoingEdgesDone=true;
+				//cout<<"outgoing edges are ok."<<endl;
 			}
 		}
 
@@ -1312,9 +1349,11 @@ void Machine::do_1_1_test(){
 		m_SEEDING_1_1_test_done=true;
 		m_SEEDING_1_1_test_result=(m_SEEDING_numberOfIngoingEdges==1 or m_SEEDING_numberOfIngoingEdgesWithSeedCoverage==1)and
 			(m_SEEDING_numberOfOutgoingEdges==1 or m_SEEDING_numberOfOutgoingEdgesWithSeedCoverage==1);
-		//cout<<"Rank "<<getRank()<<" result is "<<m_SEEDING_1_1_test_result<<" Rank="<<m_SEEDING_currentRank<<" Pointer="<<m_SEEDING_currentPointer<<" "<<endl;
-
-		//cout<<"Rank "<<getRank()<<" Values "<<m_SEEDING_currentPointer<<" "<<m_SEEDING_numberOfIngoingEdges<<" "<<m_SEEDING_numberOfIngoingEdgesWithSeedCoverage<<" "<<m_SEEDING_numberOfOutgoingEdges<<" "<<m_SEEDING_numberOfOutgoingEdgesWithSeedCoverage<<endl;
+		#ifdef DEBUG
+		if(m_SEEDING_numberOfIngoingEdges!=1 or m_SEEDING_numberOfOutgoingEdges!=1){
+			//cout<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<" "<<"in="<<m_SEEDING_numberOfIngoingEdges<<" out="<<m_SEEDING_numberOfOutgoingEdges<<endl;
+		}
+		#endif
 	}
 }
 
@@ -1332,7 +1371,7 @@ bool Machine::isMaster(){
 }
 
 void Machine::extendSeeds(){
-	if(m_SEEDING_seedRanks.size()==0){
+	if(m_SEEDING_seeds.size()==0){
 		m_mode_EXTENSION=false;
 		cout<<"Rank "<<getRank()<<" has finished extending its seeds (0 seeds)."<<endl;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_IS_DONE,getRank());
@@ -1343,10 +1382,9 @@ void Machine::extendSeeds(){
 		m_EXTENSION_initiated=true;
 		m_EXTENSION_currentSeedIndex=0;
 		m_EXTENSION_currentPosition=0;
-		m_EXTENSION_currentRank=m_SEEDING_seedRanks[m_EXTENSION_currentSeedIndex][m_EXTENSION_currentPosition];
-		m_EXTENSION_currentPointer=m_SEEDING_seedPointers[m_EXTENSION_currentSeedIndex][m_EXTENSION_currentPosition];
+		m_EXTENSION_currentVertex=m_SEEDING_seeds[m_EXTENSION_currentSeedIndex][m_EXTENSION_currentPosition];
 	}
-	if(m_EXTENSION_currentSeedIndex==(int)m_SEEDING_seedRanks.size()-1){
+	if(m_EXTENSION_currentSeedIndex==(int)m_SEEDING_seeds.size()-1){
 		m_mode_EXTENSION=false;
 		cout<<"Rank "<<getRank()<<" has finished extending its seeds."<<endl;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_IS_DONE,getRank());
@@ -1390,7 +1428,7 @@ void Machine::doChoice(){
 	m_EXTENSION_choose=true;
 
 	// seek next one.
-	cout<<"Rank "<<getRank()<<": "<<m_SEEDING_seedRanks[m_EXTENSION_currentSeedIndex].size()<<" VERtices."<<endl;
+	cout<<"Rank "<<getRank()<<": "<<m_SEEDING_seeds[m_EXTENSION_currentSeedIndex].size()<<" VERtices."<<endl;
 	m_EXTENSION_currentSeedIndex++;
 }
 void Machine::checkIfCurrentVertexIsAssembled(){
@@ -1399,8 +1437,8 @@ void Machine::checkIfCurrentVertexIsAssembled(){
 			cout<<"Rank "<<getRank()<<" requests 'isAssembled'."<<endl;
 			m_EXTENSION_VertexAssembled_requested=true;
 			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
-			message[0]=(uint64_t)m_EXTENSION_currentPointer;
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,m_EXTENSION_currentRank,TAG_ASK_IS_ASSEMBLED,getRank());
+			message[0]=(uint64_t)m_EXTENSION_currentVertex;
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(m_EXTENSION_currentVertex),TAG_ASK_IS_ASSEMBLED,getRank());
 			m_outbox.push_back(aMessage);
 			m_EXTENSION_VertexAssembled_received=false;
 		}else if(m_EXTENSION_VertexAssembled_received){
@@ -1410,34 +1448,26 @@ void Machine::checkIfCurrentVertexIsAssembled(){
 				m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
 			}
 			m_EXTENSION_directVertexDone=true;
+			m_EXTENSION_reverseVertexDone=false;
+			m_EXTENSION_VertexMarkAssembled_requested=false;
 		}
 	}else if(!m_EXTENSION_reverseVertexDone){
-		if(!m_EXTENSION_reverseComplement_requested){
+		if(!m_EXTENSION_VertexAssembled_requested){
+			m_EXTENSION_VertexAssembled_requested=true;
 			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
-			message[0]=(uint64_t)m_EXTENSION_currentPointer;
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,m_EXTENSION_currentRank,TAG_ASK_REVERSE_COMPLEMENT,getRank());
+			message[0]=(uint64_t)complementVertex(m_EXTENSION_currentVertex,m_wordSize);
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0]),TAG_ASK_IS_ASSEMBLED,getRank());
 			m_outbox.push_back(aMessage);
-			m_EXTENSION_reverseComplement_requested=true;
-			m_EXTENSION_reverseComplement_received=false;
-			m_EXTENSION_VertexAssembled_requested=false;
-		}else if(m_EXTENSION_reverseComplement_received){
-			if(!m_EXTENSION_VertexAssembled_requested){
-				m_EXTENSION_VertexAssembled_requested=true;
-				uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
-				message[0]=(uint64_t)m_EXTENSION_currentPointer;
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,m_EXTENSION_currentRank,TAG_ASK_IS_ASSEMBLED,getRank());
-				m_outbox.push_back(aMessage);
-				m_EXTENSION_VertexAssembled_received=false;
-			}else if(m_EXTENSION_VertexAssembled_received){
-				if(m_EXTENSION_receivedAssembled){
-					m_EXTENSION_vertexIsAssembledResult=true;
-					m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
-				}else{
-					m_EXTENSION_vertexIsAssembledResult=false;
-					m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
-				}
-				m_EXTENSION_markedCurrentVertexAsAssembled=false;
+			m_EXTENSION_VertexAssembled_received=false;
+		}else if(m_EXTENSION_VertexAssembled_received){
+			if(m_EXTENSION_receivedAssembled){
+				m_EXTENSION_vertexIsAssembledResult=true;
+				m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
+			}else{
+				m_EXTENSION_vertexIsAssembledResult=false;
+				m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
 			}
+			m_EXTENSION_markedCurrentVertexAsAssembled=false;
 		}
 	}
 }
@@ -1447,32 +1477,23 @@ void Machine::markCurrentVertexAsAssembled(){
 		if(!m_EXTENSION_VertexMarkAssembled_requested){
 			m_EXTENSION_VertexMarkAssembled_requested=true;
 			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
-			message[0]=(uint64_t)m_EXTENSION_currentPointer;
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,m_EXTENSION_currentRank,TAG_MARK_AS_ASSEMBLED,getRank());
+			message[0]=(uint64_t)m_EXTENSION_currentVertex;
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(m_EXTENSION_currentVertex),TAG_MARK_AS_ASSEMBLED,getRank());
 			m_outbox.push_back(aMessage);
 			m_EXTENSION_directVertexDone=true;
+			m_EXTENSION_VertexMarkAssembled_requested=false;
 		}
 	}else if(!m_EXTENSION_reverseVertexDone){
-		if(!m_EXTENSION_reverseComplement_requested){
+		if(!m_EXTENSION_VertexMarkAssembled_requested){
+			m_EXTENSION_VertexMarkAssembled_requested=true;
 			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
-			message[0]=(uint64_t)m_EXTENSION_currentPointer;
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,m_EXTENSION_currentRank,TAG_ASK_REVERSE_COMPLEMENT,getRank());
+			message[0]=(uint64_t)complementVertex(m_EXTENSION_currentVertex,m_wordSize);
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0]),TAG_MARK_AS_ASSEMBLED,getRank());
 			m_outbox.push_back(aMessage);
-			m_EXTENSION_reverseComplement_requested=true;
-			m_EXTENSION_reverseComplement_received=false;
-			m_EXTENSION_VertexAssembled_requested=false;
-		}else if(m_EXTENSION_reverseComplement_received){
-			if(!m_EXTENSION_VertexMarkAssembled_requested){
-				m_EXTENSION_VertexMarkAssembled_requested=true;
-				uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
-				message[0]=(uint64_t)m_EXTENSION_currentPointer;
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,m_EXTENSION_currentRank,TAG_MARK_AS_ASSEMBLED,getRank());
-				m_outbox.push_back(aMessage);
-				m_EXTENSION_VertexMarkAssembled_received=false;
-			}else if(m_EXTENSION_VertexMarkAssembled_received){
-				m_EXTENSION_reverseVertexDone=true;
-				m_EXTENSION_enumerateChoices=false;
-			}
+			m_EXTENSION_VertexMarkAssembled_received=false;
+		}else if(m_EXTENSION_VertexMarkAssembled_received){
+			m_EXTENSION_reverseVertexDone=true;
+			m_EXTENSION_enumerateChoices=false;
 		}
 	}
 }
