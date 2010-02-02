@@ -97,10 +97,10 @@ Machine::Machine(int argc,char**argv){
 		vertex.addOutgoingEdge(wordId(out2.c_str()),5);
 		vector<uint64_t> ingoing=vertex.getIngoingEdges(wordId(current.c_str()),5);
 		vector<uint64_t> outgoing=vertex.getOutgoingEdges(wordId(current.c_str()),5);
-		for(int i=0;i<ingoing.size();i++){
+		for(int i=0;i<(int)ingoing.size();i++){
 			cout<<idToWord(ingoing[i],5)<<"->"<<current<<endl;
 		}
-		for(int i=0;i<outgoing.size();i++){
+		for(int i=0;i<(int)outgoing.size();i++){
 			cout<<current<<"->"<<idToWord(outgoing[i],5)<<endl;
 		}
 	}
@@ -572,7 +572,7 @@ void Machine::processMessage(Message*message){
 		m_minimumCoverage=incoming[0];
 		m_seedCoverage=incoming[1];
 		m_peakCoverage=incoming[2];
-		Message aMessage(m_name,NULL,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_READY_TO_SEED,getRank());
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_READY_TO_SEED,getRank());
 		m_outbox.push_back(aMessage);
 	}else if(tag==TAG_READY_TO_SEED){
 		m_readyToSeed++;

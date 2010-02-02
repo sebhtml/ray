@@ -1,11 +1,10 @@
 MPICC=~/software/openmpi-1.4.1/output/bin/mpic++
-#MPICC=/home/boiseb01/software/mpich2-1.2.1/output/bin/mpic++
-#MPICC=mpic++
 MPIRUN=~/software/openmpi-1.4.1/output/bin/mpirun 
-#MPIRUN=/home/boiseb01/software/mpich2-1.2.1/output/bin/mpiexec
-#MPIRUN=mpirun
-CXXFLAGS=  -Wall -O3 -I. -I~/software/openmpi-1.4.1/output/include/ -I~/software/openmpi-1.4.1/output/include/openmpi 
-#CXXFLAGS=  -Wall -g -I. -I~/software/mpich2-1.2.1/output/include/ -I~/software/mpich2-1.2.1/output/include/openmpi 
+CXXFLAGS=  -Wall -O3 -I.
+
+# colosse:
+MPIRUN=/software/MPI/openmpi-1.4.1_gcc/bin/mpirun
+MPICC=/software/MPI/openmpi-1.4.1_gcc/bin/mpic++
 
 all: Ray
 
