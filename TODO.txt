@@ -1,4 +1,4 @@
-* when encountering assembled vertex, use a merger strategy?
+* try on human genome chromosome 1.
 * remove the line break before the Minimum Coverage
 * check memory allocation for master...
 * replace reads positions with (int,int)

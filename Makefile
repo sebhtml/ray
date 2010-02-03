@@ -34,7 +34,7 @@ test2: Ray
 
 
 test3: Ray
-	$(MPIRUN) -np 28  -machinefile RayMachinesFile.txt Ray input3.txt
+	$(MPIRUN) -np 30 -machinefile RayMachinesFile.txt Ray input3.txt
 
 clean:
 	rm -f *.o Ray

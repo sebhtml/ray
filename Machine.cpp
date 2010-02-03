@@ -1517,7 +1517,7 @@ void Machine::doChoice(){
 		m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 		m_EXTENSION_directVertexDone=false;
 		m_EXTENSION_VertexAssembled_requested=false;
-	}else if(m_EXTENSION_currentPosition<m_EXTENSION_currentSeed.size()){
+	}else if(m_EXTENSION_currentPosition<(int)m_EXTENSION_currentSeed.size()){
 		//cout<<"Using seed."<<endl;
 		for(int i=0;i<(int)m_SEEDING_receivedOutgoingEdges.size();i++){
 			if(m_SEEDING_receivedOutgoingEdges[i]==m_EXTENSION_currentSeed[m_EXTENSION_currentPosition]){
