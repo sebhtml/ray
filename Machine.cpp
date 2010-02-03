@@ -293,7 +293,7 @@ void Machine::loadSequences(){
 		m_distributionAllocator.clear();
 		m_distributionAllocator.constructor();
 		loader.load(allFiles[m_distribution_file_id],&m_distribution_reads,&m_distributionAllocator,&m_distributionAllocator);
-		cout<<"Rank "<<getRank()<<" "<<m_distribution_reads.size()<<" sequences to distribute"<<endl;
+		cout<<"Rank "<<getRank()<<" "<<m_distribution_reads.size()<<" sequences to distribute ("<<allFiles[m_distribution_file_id]<<")"<<endl;
 	}
 	for(int i=0;i<1*getSize();i++){
 		if(m_distribution_sequence_id>(int)m_distribution_reads.size()-1)
@@ -1362,11 +1362,9 @@ void Machine::extendSeeds(){
 		m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 		m_EXTENSION_directVertexDone=false;
 		m_EXTENSION_VertexAssembled_requested=false;
-		//cout<<"Seed #"<<m_EXTENSION_currentSeedIndex<<endl;
 	}
 	if(m_EXTENSION_currentSeedIndex==(int)m_SEEDING_seeds.size()){
 		m_mode_EXTENSION=false;
-		//cout<<"Rank "<<getRank()<<" has finished extending its seeds."<<endl;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_IS_DONE,getRank());
 		m_outbox.push_back(aMessage);
 		return;
@@ -1384,9 +1382,8 @@ void Machine::extendSeeds(){
 	// 		use read paths or pairs of reads to resolve the repeat.
 	
 	if(!m_EXTENSION_checkedIfCurrentVertexIsAssembled){
-		
 		checkIfCurrentVertexIsAssembled();
-	}else if(m_EXTENSION_vertexIsAssembledResult){
+	}else if(m_EXTENSION_vertexIsAssembledResult and m_EXTENSION_currentPosition==0){
 		m_EXTENSION_currentSeedIndex++;// skip the current one.
 		m_EXTENSION_currentPosition=0;
 		m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
@@ -1396,7 +1393,7 @@ void Machine::extendSeeds(){
 			m_SEEDING_currentVertex=m_SEEDING_seeds[m_EXTENSION_currentSeedIndex][m_EXTENSION_currentPosition];
 		}
 		// TODO: check if the position !=0
-		//cout<<"Rank "<<getRank()<<" already assembled."<<endl;
+		cout<<"Rank "<<getRank()<<" already assembled."<<endl;
 	}else if(!m_EXTENSION_markedCurrentVertexAsAssembled){
 		markCurrentVertexAsAssembled();
 	}else if(!m_EXTENSION_enumerateChoices){
@@ -1418,6 +1415,7 @@ void Machine::enumerateChoices(){
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(m_SEEDING_currentVertex),TAG_REQUEST_VERTEX_OUTGOING_EDGES,getRank());
 		m_outbox.push_back(aMessage);
 		//cout<<"Enumerating choices."<<endl;
+		m_EXTENSION_currentPosition++;
 	}else if(m_SEEDING_edgesReceived){
 		//cout<<"Received."<<endl;
 		m_EXTENSION_enumerateChoices=true;
@@ -1442,6 +1440,8 @@ void Machine::doChoice(){
 			m_SEEDING_currentVertex=m_SEEDING_seeds[m_EXTENSION_currentSeedIndex][m_EXTENSION_currentPosition];
 		}
 		m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
+		m_EXTENSION_directVertexDone=false;
+		m_EXTENSION_VertexAssembled_requested=false;
 	}
 
 	// seek next one.
@@ -1449,6 +1449,9 @@ void Machine::doChoice(){
 void Machine::checkIfCurrentVertexIsAssembled(){
 	if(!m_EXTENSION_directVertexDone){
 		if(!m_EXTENSION_VertexAssembled_requested){
+			if(m_EXTENSION_currentPosition==0){
+				cout<<"Rank "<<getRank()<<" has a seed: "<<m_SEEDING_seeds[m_EXTENSION_currentSeedIndex].size()<<endl;
+			}
 			//cout<<"Rank "<<getRank()<<" (1) requests 'isAssembled'."<<endl;
 			m_EXTENSION_VertexAssembled_requested=true;
 			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
@@ -1458,8 +1461,11 @@ void Machine::checkIfCurrentVertexIsAssembled(){
 			m_EXTENSION_VertexAssembled_received=false;
 		}else if(m_EXTENSION_VertexAssembled_received){
 			//cout<<"Rank "<<getRank()<<" (1) receives 'isAssembled'."<<endl;
-			if(m_EXTENSION_vertexIsAssembledResult)
+			if(m_EXTENSION_vertexIsAssembledResult){
+				//cout<<"Rank "<<getRank()<<" Result is true (position="<<m_EXTENSION_currentPosition<<")"<<endl;
 				m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
+				m_EXTENSION_markedCurrentVertexAsAssembled=false;
+			}
 			m_EXTENSION_directVertexDone=true;
 			m_EXTENSION_reverseVertexDone=false;
 			m_EXTENSION_VertexMarkAssembled_requested=false;

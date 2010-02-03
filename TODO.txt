@@ -1,5 +1,3 @@
-* extension does not work on test2 yet.
-
 * when encountering assembled vertex, use a merger strategy?
 * check memory allocation for master...
 * replace reads positions with (int,int)
