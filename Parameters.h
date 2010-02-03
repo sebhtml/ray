@@ -31,6 +31,7 @@ class Parameters{
 	int m_numberOfSequences;
 	vector<string> m_singleEndReadsFile;
 	string m_directory;
+	string m_outputFile;
 	int m_wordSize;
 public:
 	Parameters();
@@ -38,6 +39,7 @@ public:
 	bool isInitiated();
 	vector<string> getAllFiles();
 	string getDirectory();
+	string getOutputFile();
 	int getWordSize();
 };
 

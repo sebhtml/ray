@@ -36,7 +36,9 @@ using namespace std;
 Parameters::Parameters(){
 	m_initiated=false;
 	m_directory="assembly";
-	m_wordSize=21;
+	
+	m_wordSize=25;
+	m_outputFile="Contigs.fasta";
 }
 
 int Parameters::getWordSize(){
@@ -79,4 +81,8 @@ vector<string> Parameters::getAllFiles(){
 
 string Parameters::getDirectory(){
 	return m_directory;
+}
+
+string Parameters::getOutputFile(){
+	return m_outputFile;
 }

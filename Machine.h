@@ -86,6 +86,10 @@
 #define TAG_REQUEST_VERTEX_POINTER 47
 #define TAG_ASK_IS_ASSEMBLED_REPLY 48
 #define TAG_MARK_AS_ASSEMBLED 49
+#define TAG_ASK_EXTENSION_DATA 50
+#define TAG_EXTENSION_DATA 51
+#define TAG_EXTENSION_END 52
+#define TAG_EXTENSION_DATA_END 53
 
 #define MASTER_RANK 0
 #define BARRIER_PERIOD 100
@@ -94,6 +98,8 @@
 #define MODE_EXTENSION_ASK 0
 #define MODE_START_SEEDING 1
 #define MODE_DO_NOTHING 2
+#define MODE_ASK_EXTENSIONS 3
+#define MODE_SEND_EXTENSION_DATA 4
 
 using namespace std;
 
@@ -129,6 +135,9 @@ class Machine{
 	bool m_mode_send_ingoing_edges;
 
 	int m_mode;
+	int m_master_mode;
+
+	// TODO: merge all m_mode_* variables with m_mode and m_master_mode.
 	bool m_startEdgeDistribution;
 	bool m_mode_AttachSequences;
 
@@ -202,9 +211,14 @@ class Machine{
 	int m_mode_send_coverage_iterator;
 	vector<Message> m_outbox;
 	vector<Message> m_inbox;
-	int m_BARRIER_PERIOD;
+
+
 
 	// EXTENSION MODE
+	vector<uint64_t> m_EXTENSION_extension;
+	bool m_EXTENSION_complementedSeed;
+	vector<uint64_t> m_EXTENSION_currentSeed;
+	vector<vector<uint64_t> > m_EXTENSION_contigs;
 	bool m_EXTENSION_checkedIfCurrentVertexIsAssembled;
 	bool m_EXTENSION_VertexMarkAssembled_requested;
 	bool m_EXTENSION_reverseComplement_requested;
@@ -268,6 +282,7 @@ class Machine{
 	int m_mode_send_vertices_sequence_id_position;
 	int m_numberOfMachinesDoneSendingVertices;
 
+	vector<vector<uint64_t> > m_allPaths;
 	bool m_aborted;
 	void enumerateChoices();
 	void killRanks();
