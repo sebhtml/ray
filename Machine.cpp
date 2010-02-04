@@ -44,12 +44,10 @@ Machine::Machine(int argc,char**argv){
 	m_Sending_Mechanism=m_USE_MPI_Send;
 	m_mode_EXTENSION=false;
 	m_aborted=false;
-	m_sentMessages=0;
 	m_readyToSeed=0;
 	m_ticks=0;
 	m_maxTicks=-1;
 	m_watchMaxTicks=false;
-	m_receivedMessages=0;
 	m_wordSize=-1;
 	m_reverseComplementVertex=false;
 	m_last_value=0;
@@ -197,7 +195,6 @@ void Machine::sendMessages(){
 			memcpy(newBuffer,aMessage->getBuffer(),sizeOfElements*aMessage->getCount());
 			aMessage->setBuffer(newBuffer);
 			m_inbox.push_back(*aMessage);
-			m_receivedMessages++;
 		}else{
 			if(m_Sending_Mechanism==m_USE_MPI_Isend){
 				//cout<<"Sending data "<<aMessage->getCount()<<""<<endl;
@@ -214,7 +211,6 @@ void Machine::sendMessages(){
 				MPI_Send(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD);
 			}
 		}
-		m_sentMessages++;
 	}
 	m_outbox.clear();
 	if(m_outboxAllocator.getNumberOfChunks()>1){
@@ -235,7 +231,6 @@ void Machine::checkRequests(){
 }
 
 void Machine::receiveMessages(){
-	int numberOfMessages=0;
 	int flag;
 	MPI_Status status;
 	MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
@@ -256,16 +251,8 @@ void Machine::receiveMessages(){
 		MPI_Recv(incoming,length,datatype,source,tag,MPI_COMM_WORLD,&status2);
 		Message aMessage(incoming,length,datatype,source,tag,source);
 		m_inbox.push_back(aMessage);
-		m_receivedMessages++;
-		numberOfMessages++;
 		MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
 	}
-
-	/*
-	if(numberOfMessages>10){
-		cout<<"Rank "<<getRank()<<" received "<<numberOfMessages<<" messages."<<endl;
-	}
-	*/
 }
 
 
@@ -1155,7 +1142,11 @@ void Machine::processData(){
 				}
 				if(!m_SEEDING_1_1_test_result){
 					m_SEEDING_NodeInitiated=false;
-					m_SEEDING_seeds.push_back(m_SEEDING_seed);
+					int nucleotides=m_SEEDING_seed.size()+m_wordSize-1;
+					// only consider the long ones.
+					if(nucleotides>=m_parameters.getMinimumContigLength()){
+						m_SEEDING_seeds.push_back(m_SEEDING_seed);
+					}
 				}else{
 					m_SEEDING_seed.push_back(m_SEEDING_currentVertex);
 					m_SEEDING_vertices.insert(m_SEEDING_currentVertex);
@@ -1665,8 +1656,6 @@ void Machine::printStatus(){
 	cout<<"Reads: "<<m_myReads.size()<<endl;
 	cout<<"Inbox: "<<m_inbox.size()<<endl;
 	cout<<"Outbox: "<<m_outbox.size()<<endl;
-	cout<<"ReceivedMessages="<<m_receivedMessages<<endl;
-	cout<<"SentMessages="<<m_sentMessages<<endl;
 }
 
 int Machine::vertexRank(uint64_t a){

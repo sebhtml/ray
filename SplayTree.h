@@ -109,7 +109,7 @@ SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::insert(KEY key){
 	//cout<<"DEBUG insert "<<key<<endl;
 	m_inserted=false;
 	if(m_root==NULL){
-		m_root=(SplayNode<KEY,VALUE>*)/*malloc*/m_allocator.allocate(sizeof(SplayNode<KEY,VALUE>));
+		m_root=(SplayNode<KEY,VALUE>*)m_allocator.allocate(sizeof(SplayNode<KEY,VALUE>));
 		m_root->init(key);
 		m_inserted=true;
 		m_size++;
@@ -118,7 +118,7 @@ SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::insert(KEY key){
 	splay(key);
 	if(m_root->getKey()==key)
 		return m_root;
-	SplayNode<KEY,VALUE>*n=(SplayNode<KEY,VALUE>*)/*malloc*/m_allocator.allocate(sizeof(SplayNode<KEY,VALUE>));
+	SplayNode<KEY,VALUE>*n=(SplayNode<KEY,VALUE>*)m_allocator.allocate(sizeof(SplayNode<KEY,VALUE>));
 	n->init(key);
 	
 	if(key<m_root->getKey()){

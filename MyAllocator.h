@@ -30,7 +30,6 @@ class MyAllocator{
 	vector<void*>m_chunks;
 	void*m_currentChunk;
 	int m_currentPosition;
-	unsigned int m_jobs;
 	int m_CHUNK_SIZE;
 public:
 	MyAllocator();

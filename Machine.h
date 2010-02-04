@@ -115,8 +115,6 @@ class Machine{
 	int m_ticks;
 	int m_maxTicks;
 	bool m_watchMaxTicks;
-	unsigned long long int m_receivedMessages;
-	unsigned long long int m_sentMessages;
 	int m_wordSize;
 	int m_last_value;
 	bool m_mode_send_outgoing_edges;
