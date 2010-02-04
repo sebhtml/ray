@@ -32,6 +32,8 @@
 #include<stack>
 using namespace std;
 
+#define CHUNK_SIZE 10*1024*1024 // 10 MB
+
 // see http://www.eli.sdsu.edu/courses/fall95/cs660/notes/splay/Splay.html
 // see http://www.cs.nyu.edu/algvis/java/SplayTree.html
 // see ftp://ftp.cs.cmu.edu/user/sleator/splaying/SplayTree.java
@@ -78,6 +80,7 @@ SplayTree<KEY,VALUE>::SplayTree(){
 	m_root=NULL;
 	m_size=0;
 	m_inserted=false;
+	m_allocator.constructor(CHUNK_SIZE);
 }
 
 template<class KEY,class VALUE>

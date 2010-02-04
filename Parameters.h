@@ -33,12 +33,14 @@ class Parameters{
 	string m_directory;
 	string m_outputFile;
 	int m_wordSize;
+	int m_minimumContigLength;
 public:
 	Parameters();
 	void load(string file);
 	bool isInitiated();
 	vector<string> getAllFiles();
 	string getDirectory();
+	int getMinimumContigLength();
 	string getOutputFile();
 	int getWordSize();
 };

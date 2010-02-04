@@ -36,6 +36,7 @@
 using namespace std;
 
 Machine::Machine(int argc,char**argv){
+	m_numberOfRanksDoneSeeding=0;
 	m_master_mode=MODE_DO_NOTHING;
 	m_numberOfMachinesReadyForEdgesDistribution=-1;
 	m_USE_MPI_Send=0;
@@ -71,6 +72,10 @@ Machine::Machine(int argc,char**argv){
 
 
 
+	m_outboxAllocator.constructor(OUTBOX_ALLOCATOR_CHUNK_SIZE);
+	m_inboxAllocator.constructor(INBOX_ALLOCATOR_CHUNK_SIZE);
+	m_distributionAllocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
+	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
 
 
 	m_mode=MODE_DO_NOTHING;
@@ -214,7 +219,7 @@ void Machine::sendMessages(){
 	m_outbox.clear();
 	if(m_outboxAllocator.getNumberOfChunks()>1){
 		m_outboxAllocator.clear();
-		m_outboxAllocator.constructor();
+		m_outboxAllocator.constructor(OUTBOX_ALLOCATOR_CHUNK_SIZE);
 	}
 }
 
@@ -291,11 +296,10 @@ void Machine::loadSequences(){
 		Loader loader;
 		m_distribution_reads.clear();
 		m_distributionAllocator.clear();
-		m_distributionAllocator.constructor();
-		m_distributionAllocator.clear();
-		m_distributionAllocator.constructor();
+		m_distributionAllocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
+		cout<<"Rank "<<getRank()<<" loads "<<allFiles[m_distribution_file_id]<<"."<<endl;
 		loader.load(allFiles[m_distribution_file_id],&m_distribution_reads,&m_distributionAllocator,&m_distributionAllocator);
-		cout<<"Rank "<<getRank()<<" "<<m_distribution_reads.size()<<" sequences to distribute ("<<allFiles[m_distribution_file_id]<<")"<<endl;
+		cout<<"Rank "<<getRank()<<" has "<<m_distribution_reads.size()<<" sequences to distribute."<<endl;
 	}
 	for(int i=0;i<1*getSize();i++){
 		if(m_distribution_sequence_id>(int)m_distribution_reads.size()-1)
@@ -340,9 +344,7 @@ void Machine::attachReads(){
 		Loader loader;
 		m_distribution_reads.clear();
 		m_distributionAllocator.clear();
-		m_distributionAllocator.constructor();
-		m_distributionAllocator.clear();
-		m_distributionAllocator.constructor();
+		m_distributionAllocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
 		loader.load(allFiles[m_distribution_file_id],&m_distribution_reads,&m_distributionAllocator,&m_distributionAllocator);
 		cout<<"Rank "<<getRank()<<" "<<m_distribution_reads.size()<<" sequences to attach"<<endl;
 	}
@@ -519,7 +521,7 @@ void Machine::processMessage(Message*message){
 		uint64_t*incoming=(uint64_t*)buffer;
 		uint64_t vertex=incoming[0];
 		int sequenceIdOnDestination=(int)incoming[1];
-		if(sequenceIdOnDestination%10000==0){
+		if(sequenceIdOnDestination%100000==0){
 			cout<<"Rank "<<getRank()<<" attaches sequences. "<<sequenceIdOnDestination<<"/"<<m_myReads.size()<<endl;
 		}
 		//cout<<"Rank "<<getRank()<<" "<<sequenceIdOnDestination<<" of "<<m_myReads.size()<<endl;
@@ -625,7 +627,6 @@ void Machine::processMessage(Message*message){
 			vector<uint64_t> newEdges=m_subgraph.find(prefix)->getValue()->getOutgoingEdges(prefix,m_wordSize);
 			bool found=false;
 			for(int i=0;i<(int)newEdges.size();i++){
-				//cout<<"new edge: "<<idToWord(prefix,m_wordSize)<<"->"<<idToWord(newEdges[i],m_wordSize)<<endl;
 				if(newEdges[i]==suffix)
 					found=true;
 			}
@@ -647,7 +648,6 @@ void Machine::processMessage(Message*message){
 			bool found=false;
 			vector<uint64_t> edges=m_subgraph.find(suffix)->getValue()->getIngoingEdges(suffix,m_wordSize);
 			for(int i=0;i<(int)edges.size();i++){
-				//acout<<"new edge: "<<idToWord(edges[i],m_wordSize)<<"->"<<idToWord(suffix,m_wordSize)<<endl;
 				if(edges[i]==prefix)
 					found=true;
 			}
@@ -667,7 +667,7 @@ void Machine::processMessage(Message*message){
 		Read*myRead=(Read*)m_persistentAllocator.allocate(sizeof(Read));
 		myRead->copy(NULL,incoming,&m_persistentAllocator);
 		m_myReads.push_back(myRead);
-		if(m_myReads.size()%10000==0){
+		if(m_myReads.size()%100000==0){
 			cout<<"Rank "<<getRank()<<" has "<<m_myReads.size()<<" sequences"<<endl;
 		}
 	}else if(tag==TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS){
@@ -721,7 +721,7 @@ void Machine::processMessages(){
 	m_inbox.clear();
 	if(m_inboxAllocator.getNumberOfChunks()>1){
 		m_inboxAllocator.clear();
-		m_inboxAllocator.constructor();
+		m_inboxAllocator.constructor(INBOX_ALLOCATOR_CHUNK_SIZE);
 	}
 }
 
@@ -802,7 +802,7 @@ void Machine::processData(){
 			m_outbox.push_back(aMessage);
 		}
 	}else if(m_mode_send_vertices==true){
-		if(m_mode_send_vertices_sequence_id%10000==0 and m_mode_send_vertices_sequence_id_position==0){
+		if(m_mode_send_vertices_sequence_id%100000==0 and m_mode_send_vertices_sequence_id_position==0){
 			string reverse="";
 			if(m_reverseComplementVertex==true)
 				reverse="(reverse complement) ";
@@ -929,7 +929,7 @@ void Machine::processData(){
 
 	}else if(m_mode_send_outgoing_edges==true){ 
 
-		if(m_mode_send_edge_sequence_id%10000==0 and m_mode_send_edge_sequence_id_position==0){
+		if(m_mode_send_edge_sequence_id%100000==0 and m_mode_send_edge_sequence_id_position==0){
 			string strand="";
 			if(m_reverseComplementEdge)
 				strand="(reverse complement)";
@@ -1003,7 +1003,7 @@ void Machine::processData(){
 		}
 	}else if(m_mode_send_ingoing_edges==true){ 
 
-		if(m_mode_send_edge_sequence_id%10000==0 and m_mode_send_edge_sequence_id_position==0){
+		if(m_mode_send_edge_sequence_id%100000==0 and m_mode_send_edge_sequence_id_position==0){
 			string strand="";
 			if(m_reverseComplementEdge)
 				strand="(reverse complement)";
@@ -1091,12 +1091,11 @@ void Machine::processData(){
 			if(m_SEEDING_i==m_subgraph.size()-1){
 				m_mode=MODE_DO_NOTHING;
 				cout<<"Rank "<<getRank()<<" seeding vertices. "<<m_SEEDING_i<<"/"<<m_subgraph.size()<<" (DONE)"<<endl;
-				m_seedingAllocator.clear();
 				Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_SEEDING_IS_OVER,getRank());
 				m_SEEDING_nodes.clear();
 				m_outbox.push_back(aMessage);
 			}else{
-				if(m_SEEDING_i % 10000 ==0){
+				if(m_SEEDING_i % 100000 ==0){
 					cout<<"Rank "<<getRank()<<" seeding vertices. "<<m_SEEDING_i<<"/"<<m_subgraph.size()<<endl;
 				}
 				m_SEEDING_currentVertex=m_SEEDING_nodes[m_SEEDING_i];
@@ -1108,10 +1107,6 @@ void Machine::processData(){
 				m_SEEDING_NodeInitiated=true;
 				m_SEEDING_firstVertexTestDone=false;
 				//cout<<"Rank "<<getRank()<<" setting first "<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<endl;
-				if(m_seedingAllocator.getNumberOfChunks()>1){
-					m_seedingAllocator.clear();
-					m_seedingAllocator.constructor();
-				}	
 			}
 		// check that this node has 1 ingoing edge and 1 outgoing edge.
 		}else if(!m_SEEDING_firstVertexTestDone){
@@ -1249,7 +1244,7 @@ void Machine::processData(){
 					a<<getLastSymbol(m_allPaths[i][j],m_wordSize);
 				}
 				string contig=a.str();
-				f<<">contig"<<i+1<<" "<<contig.length()<<" nucleotides"<<endl<<addLineBreaks(contig)<<endl;
+				f<<">contig"<<i+1<<" "<<contig.length()<<" nucleotides"<<endl<<addLineBreaks(contig);
 			}
 			f.close();
 			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<endl;
@@ -1546,8 +1541,11 @@ void Machine::doChoice(){
 			m_EXTENSION_directVertexDone=false;
 			m_EXTENSION_VertexAssembled_requested=false;
 		}else{
-			//cout<<"Rank "<<getRank()<<": "<<m_EXTENSION_extension.size()+m_wordSize-1<<" nucleotides."<<endl;
-			m_EXTENSION_contigs.push_back(m_EXTENSION_extension);
+			int nucleotides=m_EXTENSION_extension.size()+m_wordSize-1;
+			if(nucleotides>=m_parameters.getMinimumContigLength()){
+				cout<<"Rank "<<getRank()<<": "<<m_EXTENSION_extension.size()+m_wordSize-1<<" nucleotides."<<endl;
+				m_EXTENSION_contigs.push_back(m_EXTENSION_extension);
+			}
 			m_EXTENSION_currentSeedIndex++;
 			m_EXTENSION_currentPosition=0;
 			if(m_EXTENSION_currentSeedIndex<(int)m_SEEDING_seeds.size()){

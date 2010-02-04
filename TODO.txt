@@ -1,7 +1,11 @@
-* try on human genome chromosome 1.
-* remove the line break before the Minimum Coverage
 * check memory allocation for master...
+
+* remove commented lines in code.
+* try on human genome chromosome 1.
+* find out why the extension is slow (?).
+* remove the line break before the Minimum Coverage
 * replace reads positions with (int,int)
 * use single-end reads to resolve repeats.
 * load paired reads.
 * use paired-end reads. to resolve repeats.
+

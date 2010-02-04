@@ -36,7 +36,7 @@ using namespace std;
 Parameters::Parameters(){
 	m_initiated=false;
 	m_directory="assembly";
-	
+	m_minimumContigLength=100;
 	m_wordSize=25;
 	m_outputFile="Contigs.fasta";
 }
@@ -85,4 +85,8 @@ string Parameters::getDirectory(){
 
 string Parameters::getOutputFile(){
 	return m_outputFile;
+}
+
+int Parameters::getMinimumContigLength(){
+	return m_minimumContigLength;
 }

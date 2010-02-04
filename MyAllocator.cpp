@@ -28,11 +28,10 @@
 using namespace std;
 
 MyAllocator::MyAllocator(){
-	constructor();
 }
 
-void MyAllocator::constructor(){
-	m_CHUNK_SIZE=10*1024*1024; // 10M
+void MyAllocator::constructor(int chunkSize){
+	m_CHUNK_SIZE=chunkSize; // 10M
 	m_currentChunk=(void*)malloc(m_CHUNK_SIZE);
 	if(m_currentChunk==NULL){
 		cout<<"NULL"<<endl;

@@ -36,7 +36,7 @@ public:
 	MyAllocator();
 	void print();
 	void clear();
-	void constructor();
+	void constructor(int a);
 	void*allocate(int s);
 	~MyAllocator();
 	int getChunkSize();

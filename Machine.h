@@ -101,6 +101,11 @@
 #define MODE_ASK_EXTENSIONS 3
 #define MODE_SEND_EXTENSION_DATA 4
 
+#define OUTBOX_ALLOCATOR_CHUNK_SIZE 10*1024*1024 // 10 MB
+#define DISTRIBUTION_ALLOCATOR_CHUNK_SIZE 10*1024*1024 // 10 MB
+#define INBOX_ALLOCATOR_CHUNK_SIZE 10*1024*1024 // 10 MB
+#define PERSISTENT_ALLOCATOR_CHUNK_SIZE 10*1024*1024 // 10 MB
+
 using namespace std;
 
 class Machine{
@@ -268,8 +273,6 @@ class Machine{
 
 	MyAllocator m_outboxAllocator;
 	MyAllocator m_inboxAllocator;
-
-	MyAllocator m_seedingAllocator;
 	MyAllocator m_distributionAllocator;
 	MyAllocator m_persistentAllocator;
 	vector<Read*> m_distribution_reads;
