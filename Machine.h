@@ -170,7 +170,6 @@ class Machine{
 	bool m_SEEDING_vertexCoverageReceived;
 	int m_SEEDING_currentChildRank;
 	int m_SEEDING_numberOfIngoingEdgesWithSeedCoverage;
-	Edge*m_SEEDING_edge;
 	bool m_SEEDING_vertexCoverageRequested;
 	bool m_SEEDING_edge_initiated;
 	bool m_SEEDING_NodeInitiated;
@@ -181,7 +180,6 @@ class Machine{
 	uint64_t m_SEEDING_currentVertex;
 	
 
-	Edge*m_SEEDING_Inedge;
 	bool m_SEEDING_InedgesReceived;
 	bool m_SEEDING_InedgesRequested;
 	int m_SEEDING_outgoing_index;
@@ -254,11 +252,7 @@ class Machine{
 	string m_VERSION;
 	bool m_mode_sendDistribution;
 
-	uint64_t m_send_buffer[10];
-	set<uint64_t> m_test;
-	vector<uint64_t> m_test2;
 	vector<MPI_Request> m_pendingMpiRequest;
-	vector<int> m_requestIterations;
 	Parameters m_parameters;
 	int m_numberOfMachinesDoneSendingEdges;
 	SplayTree<uint64_t,Vertex> m_subgraph;
@@ -285,6 +279,7 @@ class Machine{
 
 	vector<vector<uint64_t> > m_allPaths;
 	bool m_aborted;
+
 	void enumerateChoices();
 	void killRanks();
 	void attachReads();

@@ -1,6 +1,7 @@
 * check memory allocation for master...
 
-* remove commented lines in code.
+* remove Edge class
+* remove paired end read class.
 * try on human genome chromosome 1.
 * find out why the extension is slow (?).
 * remove the line break before the Minimum Coverage

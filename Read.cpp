@@ -72,7 +72,7 @@ VertexMer Read::Vertex(int pos,int w,char strand){
 	if(strand=='F'){
 		for(int i=0;i<w;i++){
 			char a=m_sequence[pos+i];
-			uint64_t mask=0;
+			uint64_t mask=0; // default is A
 			switch(a){
 				/*
 				case 'A':

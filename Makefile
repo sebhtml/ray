@@ -23,18 +23,18 @@ Ray: ray_main.o $(OBJECTS)
 	$(MPICC) $(CXXFLAGS) $^ -o $@
 
 test: Ray
-	$(MPIRUN) -np 30  -machinefile RayMachinesFile.txt Ray input.txt|tee test.log
+	$(MPIRUN) -np 2  -machinefile RayMachinesFile.txt Ray input.txt|tee test.log
 
 test1: Ray
-	$(MPIRUN) -np 30  -machinefile RayMachinesFile.txt Ray input1.txt|tee test1.log
+	$(MPIRUN) -np 2  -machinefile RayMachinesFile.txt Ray input1.txt|tee test1.log
 
 test2: Ray
-	$(MPIRUN)   -np 30  -machinefile RayMachinesFile.txt Ray input2.txt|tee test2.log
+	$(MPIRUN)   -np 2  -machinefile RayMachinesFile.txt Ray input2.txt|tee test2.log
 	echo see test2.log
 
 
 test3: Ray
-	$(MPIRUN) -np 30 -machinefile RayMachinesFile.txt Ray input3.txt
+	$(MPIRUN) -np 2 -machinefile RayMachinesFile.txt Ray input3.txt
 
 clean:
 	rm -f *.o Ray
