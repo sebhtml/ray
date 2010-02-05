@@ -267,7 +267,7 @@ class Machine{
 	MyAllocator m_inboxAllocator;
 	MyAllocator m_distributionAllocator;
 	MyAllocator m_persistentAllocator;
-	vector<Read*> m_distribution_reads;
+	vector<Read*>m_distribution_reads;
 
 
 	vector<Read*> m_myReads;

@@ -1,5 +1,5 @@
 #CXXFLAGS=  -Wall -g -I. -DDEBUG
-CXXFLAGS=  -Wall  -I.  -O3 -std=c++98 
+CXXFLAGS=  -Wall  -I.  -O3 
 
 #ls 30
 MPIRUN=~/software/openmpi-1.4.1/output/bin/mpirun 
@@ -23,13 +23,16 @@ Ray: ray_main.o $(OBJECTS)
 	$(MPICC) $(CXXFLAGS) $^ -o $@
 
 test: Ray
-	$(MPIRUN) -np 2  -machinefile RayMachinesFile.txt Ray input.txt|tee test.log
+	$(MPIRUN) -np 30  -machinefile RayMachinesFile.txt Ray input.txt|tee test.log
+
+test0: Ray
+	$(MPIRUN) -np 30  Ray input0.txt > test0.log
 
 test1: Ray
-	$(MPIRUN) -np 2  -machinefile RayMachinesFile.txt Ray input1.txt|tee test1.log
+	$(MPIRUN) -np 30  -machinefile RayMachinesFile.txt Ray input1.txt|tee test1.log
 
 test2: Ray
-	$(MPIRUN)   -np 2  -machinefile RayMachinesFile.txt Ray input2.txt|tee test2.log
+	$(MPIRUN)   -np 28  -machinefile RayMachinesFile.txt Ray input2.txt|tee test2.log
 	echo see test2.log
 
 

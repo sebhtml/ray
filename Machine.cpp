@@ -36,6 +36,7 @@
 using namespace std;
 
 Machine::Machine(int argc,char**argv){
+
 	m_numberOfRanksDoneSeeding=0;
 	m_master_mode=MODE_DO_NOTHING;
 	m_numberOfMachinesReadyForEdgesDistribution=-1;
@@ -115,10 +116,12 @@ Machine::Machine(int argc,char**argv){
 		cout<<"Rank "<<getRank()<<" welcomes you to the MPI_COMM_WORLD."<<endl;
 		cout<<"Rank "<<getRank()<<": website -> http://denovoassembler.sf.net/"<<endl;
 		cout<<"Rank "<<getRank()<<": version -> "<<m_VERSION<<" $Id$"<<endl;
+		#ifdef DEBUG
 		#ifdef OPEN_MPI
 		cout<<"Rank "<<getRank()<<" using Open MPI "<<OMPI_MAJOR_VERSION<<"."<<OMPI_MINOR_VERSION<<"."<<OMPI_RELEASE_VERSION<<endl;
 		#else
 		cout<<"Rank "<<getRank()<<" MPI implementation is not Open MPI."<<endl;
+		#endif
 		#endif
 	}
 	m_alive=true;
@@ -274,8 +277,8 @@ void Machine::loadSequences(){
 			Message aMessage(message, 0, MPI_UNSIGNED_LONG_LONG, i, TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS,getRank());
 			m_outbox.push_back(aMessage);
 		}
-		m_distribution_reads.clear();
 		m_distributionAllocator.clear();
+		m_distribution_reads.clear();
 		return;
 	}
 	if(m_distribution_reads.size()==0){
@@ -296,7 +299,7 @@ void Machine::loadSequences(){
 		if(destination<0 or destination>getSize()-1){
 			cout<<destination<<" is bad"<<endl;
 		}
-		char*sequence=m_distribution_reads[m_distribution_sequence_id]->getSeq();
+		char*sequence=(m_distribution_reads)[m_distribution_sequence_id]->getSeq();
 		if(false and destination==MASTER_RANK){
 
 		}else{
@@ -343,7 +346,7 @@ void Machine::attachReads(){
 		if(destination<0 or destination>getSize()-1){
 			cout<<destination<<" is bad"<<endl;
 		}
-		char*sequence=m_distribution_reads[m_distribution_sequence_id]->getSeq();
+		char*sequence=(m_distribution_reads)[m_distribution_sequence_id]->getSeq();
 		char vertexChar[100];
 		memcpy(vertexChar,sequence,m_wordSize);
 		vertexChar[m_wordSize]='\0';
@@ -712,6 +715,7 @@ void Machine::processData(){
 			m_outbox.push_back(aMessage);
 		}
 
+
 		m_mode_AttachSequences=true;
 		m_distribution_file_id=m_distribution_sequence_id=m_distribution_currentSequenceId=0;
 		m_startEdgeDistribution=false;
@@ -735,7 +739,7 @@ void Machine::processData(){
 		CoverageDistribution distribution(m_coverageDistribution,m_parameters.getDirectory());
 		m_minimumCoverage=distribution.getMinimumCoverage();
 		m_peakCoverage=distribution.getPeakCoverage();
-		m_seedCoverage=(m_minimumCoverage+m_peakCoverage)/2;
+		m_seedCoverage=m_minimumCoverage;//(m_minimumCoverage+m_peakCoverage)/2;
 		cout<<"Rank "<<getRank()<<" MinimumCoverage = "<<m_minimumCoverage<<endl;
 		cout<<"Rank "<<getRank()<<" PeakCoverage = "<<m_peakCoverage<<endl;
 		cout<<"Rank "<<getRank()<<" SeedCoverage = "<<m_seedCoverage<<endl;
@@ -954,9 +958,9 @@ void Machine::processData(){
 		if(m_mode_send_edge_sequence_id>(int)m_myReads.size()-1){
 			if(m_reverseComplementEdge==false){
 				m_reverseComplementEdge=true;
-				m_mode_send_edge_sequence_id=0;
 				m_mode_send_edge_sequence_id_position=0;
 				cout<<"Rank "<<getRank()<<" is extracting ingoing edges "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
+				m_mode_send_edge_sequence_id=0;
 			}else{
 				char*message=m_name;
 				Message aMessage(message, strlen(message), MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_EDGES_DISTRIBUTED,getRank());
@@ -1054,8 +1058,10 @@ void Machine::processData(){
 			}else{
 				if(!m_SEEDING_1_1_test_result){
 					m_SEEDING_NodeInitiated=false;// abort
+					//cout<<"Rank "<<getRank()<<" first is incorrect "<<endl;
 				}else{
 					m_SEEDING_firstVertexParentTestDone=false;
+					//cout<<"Rank "<<getRank()<<" first is correct "<<endl;
 					m_SEEDING_firstVertexTestDone=true;
 					m_SEEDING_currentVertex=m_SEEDING_currentParentVertex;
 					m_SEEDING_testInitiated=false;
@@ -1070,6 +1076,8 @@ void Machine::processData(){
 			}else{
 				if(m_SEEDING_1_1_test_result){
 					m_SEEDING_NodeInitiated=false;//abort
+					//cout<<"Rank "<<getRank()<<" parent is incorrect."<<endl;
+					//cout<<"Rank "<<getRank()<<" parent is incorrect "<<endl;
 				}else{
 					m_SEEDING_firstVertexParentTestDone=true;
 					m_SEEDING_vertices.clear();
@@ -1078,6 +1086,7 @@ void Machine::processData(){
 					m_SEEDING_currentVertex=m_SEEDING_first;
 					m_SEEDING_testInitiated=false;
 					m_SEEDING_1_1_test_done=false;
+					//cout<<"Rank "<<getRank()<<" parent is correct "<<endl;
 				}
 			}
 
@@ -1089,15 +1098,19 @@ void Machine::processData(){
 			}else{
 				if(m_SEEDING_vertices.count(m_SEEDING_currentVertex)>0){
 					m_SEEDING_1_1_test_result=false;
+					//cout<<"Rank "<<getRank()<<" already in."<<endl;
 				}
 				if(!m_SEEDING_1_1_test_result){
 					m_SEEDING_NodeInitiated=false;
 					int nucleotides=m_SEEDING_seed.size()+m_wordSize-1;
+					//cout<<"Rank "<<getRank()<<" "<<m_SEEDING_seed.size()<<" before seed."<<endl;
 					// only consider the long ones.
 					if(nucleotides>=m_parameters.getMinimumContigLength()){
 						m_SEEDING_seeds.push_back(m_SEEDING_seed);
+						cout<<"Rank "<<getRank()<<" "<<m_SEEDING_seed.size()<<" seed."<<endl;
 					}
 				}else{
+					//cout<<"Rank "<<getRank()<<" next is correct."<<endl;
 					m_SEEDING_seed.push_back(m_SEEDING_currentVertex);
 					m_SEEDING_vertices.insert(m_SEEDING_currentVertex);
 					m_SEEDING_currentVertex=m_SEEDING_currentChildVertex;
@@ -1258,16 +1271,19 @@ void Machine::do_1_1_test(){
 					m_outbox.push_back(aMessage);
 					m_SEEDING_vertexCoverageRequested=true;
 					m_SEEDING_vertexCoverageReceived=false;
+					m_SEEDING_receivedVertexCoverage=-1;
 				}else if(m_SEEDING_vertexCoverageReceived){
 					if(m_SEEDING_receivedIngoingEdges.size()==1){//there is only one anyway
 						m_SEEDING_currentParentVertex=m_SEEDING_receivedIngoingEdges[m_SEEDING_ingoingEdgeIndex];
 					}
+					//cout<<"Rank "<<getRank()<<" InCoverage="<<m_SEEDING_receivedVertexCoverage<<endl;
 					if(m_SEEDING_receivedVertexCoverage>=m_seedCoverage){
 						m_SEEDING_currentParentVertex=m_SEEDING_receivedIngoingEdges[m_SEEDING_ingoingEdgeIndex];
 						m_SEEDING_numberOfIngoingEdgesWithSeedCoverage++;
 					}
 					m_SEEDING_ingoingEdgeIndex++;
 					m_SEEDING_numberOfIngoingEdges++;
+					m_SEEDING_vertexCoverageRequested=false;
 				}
 			}else{// done analyzing ingoing edges.
 				m_SEEDING_ingoingEdgesDone=true;
@@ -1298,9 +1314,9 @@ void Machine::do_1_1_test(){
 					m_outbox.push_back(aMessage);
 					m_SEEDING_vertexCoverageRequested=true;
 					m_SEEDING_vertexCoverageReceived=false;
+					m_SEEDING_receivedVertexCoverage=-1;
 				}else if(m_SEEDING_vertexCoverageReceived){
-					if(m_SEEDING_outgoingEdgeIndex==0){
-					}
+					//cout<<"Rank "<<getRank()<<" outCoverage="<<m_SEEDING_receivedVertexCoverage<<endl;
 					if(m_SEEDING_receivedOutgoingEdges.size()==1){//there is only one anyway
 						m_SEEDING_currentChildVertex=m_SEEDING_receivedOutgoingEdges[m_SEEDING_outgoingEdgeIndex];
 					}
@@ -1310,6 +1326,7 @@ void Machine::do_1_1_test(){
 					}
 					m_SEEDING_outgoingEdgeIndex++;
 					m_SEEDING_numberOfOutgoingEdges++;
+					m_SEEDING_vertexCoverageRequested=false;
 				}
 			}else{// done analyzing ingoing edges.
 				m_SEEDING_outgoingEdgesDone=true;
@@ -1319,12 +1336,9 @@ void Machine::do_1_1_test(){
 
 	}else{
 		m_SEEDING_1_1_test_done=true;
-		m_SEEDING_1_1_test_result=(m_SEEDING_numberOfIngoingEdges==1 or m_SEEDING_numberOfIngoingEdgesWithSeedCoverage==1)and
-			(m_SEEDING_numberOfOutgoingEdges==1 or m_SEEDING_numberOfOutgoingEdgesWithSeedCoverage==1);
-		#ifdef DEBUG
-		if(m_SEEDING_numberOfIngoingEdges!=1 or m_SEEDING_numberOfOutgoingEdges!=1){
-		}
-		#endif
+		m_SEEDING_1_1_test_result=(/*m_SEEDING_numberOfOutgoingEdges==1 or*/ m_SEEDING_numberOfIngoingEdgesWithSeedCoverage==1)and
+			(/*m_SEEDING_numberOfIngoingEdges==1 or*/ m_SEEDING_numberOfOutgoingEdgesWithSeedCoverage==1);
+		//cout<<"Rank "<<getRank()<<" "<<m_SEEDING_numberOfIngoingEdges<<" "<<m_SEEDING_numberOfIngoingEdgesWithSeedCoverage<<" "<<m_SEEDING_numberOfOutgoingEdges<<" "<<m_SEEDING_numberOfOutgoingEdgesWithSeedCoverage<<endl;
 	}
 }
 
