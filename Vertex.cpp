@@ -42,6 +42,10 @@ void Vertex::constructor(){
 }
 
 void Vertex::setCoverage(int coverage){
+	if(m_coverage==255){ // maximum value for unsigned char.
+		return;
+	}
+
 	m_coverage=coverage;
 }
 

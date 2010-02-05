@@ -34,7 +34,7 @@
 using namespace std;
 
 class Vertex{
-	char m_coverage;
+	unsigned char m_coverage;
 	// 
 	// outgoing  ingoing
 	//

@@ -1460,7 +1460,7 @@ void Machine::doChoice(){
 				if(i==j)
 					continue;
 				int coverageJ=m_EXTENSION_coverages[j];
-				if(!(coverageJ<=m_minimumCoverage and coverageI>=(m_minimumCoverage+m_seedCoverage)/2)){
+				if(!(coverageJ<=m_minimumCoverage/2 and coverageI>=m_minimumCoverage)){
 					isBetter=false;
 					break;
 				}
