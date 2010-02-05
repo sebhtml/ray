@@ -1,10 +1,11 @@
+* remove Edge class
+* replace reads positions with (int,int)
+
 * make it work on SRA001125.
 * find out why the extension is slow (?).
-* remove Edge class
-* remove paired end read class.
-* try on human genome chromosome 1.
 * remove the line break before the Minimum Coverage
-* replace reads positions with (int,int)
+* try on human genome chromosome 1.
+* remove paired end read class.
 * use single-end reads to resolve repeats.
 * load paired reads.
 * use paired-end reads. to resolve repeats.

@@ -27,7 +27,7 @@
 #ifndef _Vertex
 
 #define _Vertex
-#include"Edge.h"
+#include"ReadAnnotation.h"
 #include"MyAllocator.h"
 #include"types.h"
 #include<vector>
@@ -45,14 +45,14 @@ class Vertex{
 	bool m_assembled;
 
 
-	Edge*m_readsStartingHere;
+	ReadAnnotation*m_readsStartingHere;
 public:
 	void constructor();
 	void setCoverage(int coverage);
 	int getCoverage();
 	void addOutgoingEdge(uint64_t a,int k);
 	void addIngoingEdge(uint64_t a,int k);
-	void addRead(int rank,void*ptr,MyAllocator*allocator);
+	void addRead(int rank,int i,MyAllocator*allocator);
 	bool isAssembled();
 	void assemble();
 	vector<uint64_t> getIngoingEdges(uint64_t a,int k);

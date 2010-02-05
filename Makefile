@@ -1,5 +1,5 @@
 #CXXFLAGS=  -Wall -g -I. -DDEBUG
-CXXFLAGS=  -Wall  -I.  -O3 
+CXXFLAGS=  -Wall  -I.  -O3
 
 #ls 30
 MPIRUN=~/software/openmpi-1.4.1/output/bin/mpirun 
@@ -12,7 +12,7 @@ MPICC=~/software/openmpi-1.4.1/output/bin/mpic++
 
 all: Ray
 
-OBJECTS= Machine.o common_functions.o Loader.o ray_main.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o Edge.o CoverageDistribution.o Message.o 
+OBJECTS= Machine.o common_functions.o Loader.o ray_main.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o ReadAnnotation.o CoverageDistribution.o Message.o 
 
 
 %.o: %.cpp
@@ -32,7 +32,7 @@ test1: Ray
 	$(MPIRUN) -np 30  -machinefile RayMachinesFile.txt Ray input1.txt|tee test1.log
 
 test2: Ray
-	$(MPIRUN)   -np 28  -machinefile RayMachinesFile.txt Ray input2.txt|tee test2.log
+	$(MPIRUN)   -np 31  -machinefile RayMachinesFile.txt Ray input2.txt|tee test2.log
 	echo see test2.log
 
 

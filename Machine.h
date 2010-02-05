@@ -90,6 +90,7 @@
 #define TAG_EXTENSION_DATA 51
 #define TAG_EXTENSION_END 52
 #define TAG_EXTENSION_DATA_END 53
+#define TAG_ATTACH_SEQUENCE 54
 
 #define MASTER_RANK 0
 #define BARRIER_PERIOD 100
@@ -217,6 +218,7 @@ class Machine{
 
 	// EXTENSION MODE
 	vector<uint64_t> m_EXTENSION_extension;
+	vector<int> m_EXTENSION_coverages;
 	bool m_EXTENSION_complementedSeed;
 	vector<uint64_t> m_EXTENSION_currentSeed;
 	vector<vector<uint64_t> > m_EXTENSION_contigs;
@@ -268,7 +270,7 @@ class Machine{
 	MyAllocator m_distributionAllocator;
 	MyAllocator m_persistentAllocator;
 	vector<Read*>m_distribution_reads;
-
+	
 
 	vector<Read*> m_myReads;
 

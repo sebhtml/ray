@@ -38,6 +38,7 @@ void Vertex::constructor(){
 	m_coverage=0;
 	m_edges=0;
 	m_assembled=false;
+	m_readsStartingHere=NULL;
 }
 
 void Vertex::setCoverage(int coverage){
@@ -81,9 +82,9 @@ void Vertex::addOutgoingEdge(uint64_t a,int k){
 	m_edges=m_edges|(1<<(4+((a<<(64-2*k))>>62)));
 }
 
-void Vertex::addRead(int rank,void*ptr,MyAllocator*allocator){
-	Edge*e=(Edge*)allocator->allocate(sizeof(Edge));
-	e->constructor(rank,ptr);
+void Vertex::addRead(int rank,int i,MyAllocator*allocator){
+	ReadAnnotation*e=(ReadAnnotation*)allocator->allocate(sizeof(ReadAnnotation));
+	e->constructor(rank,i);
 	if(m_readsStartingHere!=NULL){
 		e->setNext(m_readsStartingHere);
 	}
