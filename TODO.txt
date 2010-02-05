@@ -1,4 +1,5 @@
 * use single-end reads to resolve repeats.
+* with the seed, store directions in the graph, then, use these direction to assemble the thing..
 
 * make it work on SRA001125.
 * try with a barrier=1000

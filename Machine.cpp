@@ -594,14 +594,12 @@ void Machine::processMessage(Message*message){
 		
 		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
 		message[0]=length;
-		//cout<<"Length is "<<length<<endl;
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_READ_LENGTH_REPLY,getRank());
 		m_outbox.push_back(aMessage);
 	}else if(tag==TAG_ASK_READ_LENGTH_REPLY){
 		uint64_t*incoming=(uint64_t*)buffer;
 		m_EXTENSION_readLength_received=true;
 		m_EXTENSION_receivedLength=incoming[0];
-		//cout<<"I received length="<<m_EXTENSION_receivedLength<<endl;
 	}else if(tag==TAG_ASK_READ_VERTEX_AT_POSITION){
 		uint64_t*incoming=(uint64_t*)buffer;
 		char strand=incoming[2];
