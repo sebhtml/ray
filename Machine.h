@@ -24,6 +24,8 @@
 
 #ifndef _Machine
 #define _Machine
+
+
 #include<mpi.h>
 #include<map>
 #include<vector>
@@ -91,9 +93,15 @@
 #define TAG_EXTENSION_END 52
 #define TAG_EXTENSION_DATA_END 53
 #define TAG_ATTACH_SEQUENCE 54
+#define TAG_REQUEST_READS 55
+#define TAG_REQUEST_READS_REPLY 56
+#define TAG_ASK_READ_VERTEX_AT_POSITION 57
+#define TAG_ASK_READ_VERTEX_AT_POSITION_REPLY 58
+#define TAG_ASK_READ_LENGTH 59
+#define TAG_ASK_READ_LENGTH_REPLY 60
 
 #define MASTER_RANK 0
-#define BARRIER_PERIOD 100
+#define BARRIER_PERIOD 1000
 
 // modes
 #define MODE_EXTENSION_ASK 0
@@ -226,6 +234,13 @@ class Machine{
 	bool m_EXTENSION_VertexMarkAssembled_requested;
 	bool m_EXTENSION_reverseComplement_requested;
 	bool m_EXTENSION_vertexIsAssembledResult;
+	set<ReadAnnotation,ReadAnnotationComparator>::iterator m_EXTENSION_readIterator;
+	bool m_EXTENSION_readLength_requested;
+	bool m_EXTENSION_readLength_received;
+	bool m_EXTENSION_readLength_done;
+	bool m_EXTENSION_read_vertex_received;
+	bool m_EXTENSION_read_vertex_requested;
+	uint64_t m_EXTENSION_receivedReadVertex;
 	bool m_mode_EXTENSION;
 	bool m_EXTENSION_currentRankIsDone;
 	bool m_EXTENSION_currentRankIsSet;
@@ -243,7 +258,22 @@ class Machine{
 	bool m_EXTENSION_VertexAssembled_requested;
 	bool m_EXTENSION_receivedAssembled;
 	bool m_EXTENSION_reverseComplement_received;
+	vector<ReadAnnotation> m_EXTENSION_receivedReads;
+	bool m_EXTENSION_reads_requested;
+	bool m_EXTENSION_reads_received;
+	vector<ReadAnnotation> m_EXTENSION_readsOutOfRange;
+	int m_EXTENSION_receivedLength;
 	bool m_EXTENSION_reverseVertexDone;
+	// reads used so far
+	set<int> m_EXTENSION_usedReads;
+	// reads to check (the ones "in range")
+	set<ReadAnnotation,ReadAnnotationComparator> m_EXTENSION_readsInRange;
+	bool m_EXTENSION_singleEndResolution;
+	map<int,vector<int> > m_EXTENSION_readPositionsForVertices;
+	map<int,int> m_EXTENSION_reads_startingPositionOnContig;
+
+	
+
 	// coverage distribubtion
 	map<int,uint64_t> m_coverageDistribution;
 	int m_minimumCoverage;

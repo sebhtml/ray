@@ -52,11 +52,12 @@ public:
 	int getCoverage();
 	void addOutgoingEdge(uint64_t a,int k);
 	void addIngoingEdge(uint64_t a,int k);
-	void addRead(int rank,int i,MyAllocator*allocator);
+	void addRead(int rank,int i,char c,MyAllocator*allocator);
 	bool isAssembled();
 	void assemble();
 	vector<uint64_t> getIngoingEdges(uint64_t a,int k);
 	vector<uint64_t> getOutgoingEdges(uint64_t a,int k);
+	ReadAnnotation*getReads();
 };
 
 #endif

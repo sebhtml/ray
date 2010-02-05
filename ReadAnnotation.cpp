@@ -22,17 +22,22 @@
 #include"ReadAnnotation.h"
 #include<cstdlib>
 
-void ReadAnnotation::constructor(int a,int b){
+void ReadAnnotation::constructor(int a,int b,char c){
 	m_rank=a;
 	m_readIndex=b;
 	m_next=NULL;
+	m_strand=c;
 }
 
-int ReadAnnotation::getRank(){
+char ReadAnnotation::getStrand()const{
+	return m_strand;
+}
+
+int ReadAnnotation::getRank()const{
 	return m_rank;
 }
 
-int ReadAnnotation::getReadIndex(){
+int ReadAnnotation::getReadIndex()const{
 	return m_readIndex;
 }
 
@@ -40,7 +45,11 @@ void ReadAnnotation::setNext(ReadAnnotation*a){
 	m_next=a;
 }
 
-ReadAnnotation*ReadAnnotation::getNext(){
+ReadAnnotation*ReadAnnotation::getNext()const{
 	return m_next;
+}
+
+int ReadAnnotation::getUniqueId()const{
+	return getReadIndex()*10000+getRank();
 }
 

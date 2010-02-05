@@ -23,17 +23,29 @@
 #ifndef _ReadAnnotation
 #define _ReadAnnotation
 
+
 class ReadAnnotation{
 	int m_rank;
+	char m_strand;
 	int m_readIndex;
 	ReadAnnotation*m_next;
 public:
-	void constructor(int a,int b);
-	int getRank();
-	int getReadIndex();
-	ReadAnnotation*getNext();
+	void constructor(int a,int b,char c);
+	int getRank()const;
+	int getReadIndex()const;
+	char getStrand()const;
+	ReadAnnotation*getNext()const;
 	void setNext(ReadAnnotation*a);
+	int getUniqueId() const;
 };
+
+class ReadAnnotationComparator{
+public:
+	bool operator()(const ReadAnnotation&a,const ReadAnnotation&b)const{
+		return a.getUniqueId()<b.getUniqueId();
+	}
+};
+
 
 #endif
 

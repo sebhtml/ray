@@ -86,9 +86,9 @@ void Vertex::addOutgoingEdge(uint64_t a,int k){
 	m_edges=m_edges|(1<<(4+((a<<(64-2*k))>>62)));
 }
 
-void Vertex::addRead(int rank,int i,MyAllocator*allocator){
+void Vertex::addRead(int rank,int i,char c,MyAllocator*allocator){
 	ReadAnnotation*e=(ReadAnnotation*)allocator->allocate(sizeof(ReadAnnotation));
-	e->constructor(rank,i);
+	e->constructor(rank,i,c);
 	if(m_readsStartingHere!=NULL){
 		e->setNext(m_readsStartingHere);
 	}
@@ -105,4 +105,7 @@ bool Vertex::isAssembled(){
 	return m_assembled;
 }
 
+ReadAnnotation*Vertex::getReads(){
+	return m_readsStartingHere;
+}
 
