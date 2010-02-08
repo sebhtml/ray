@@ -460,6 +460,12 @@ void Machine::processMessage(Message*message){
 		m_mode=MODE_SEND_EXTENSION_DATA;
 		m_SEEDING_i=0;
 		m_EXTENSION_currentPosition=0;
+	}else if(tag==TAG_SAVE_WAVE_PROGRESSION){
+		uint64_t*incoming=(uint64_t*)buffer;
+		SplayNode<uint64_t,Vertex>*node=(SplayNode<uint64_t,Vertex>*)incoming[0];
+		int wave=incoming[1];
+		int progression=incoming[2];
+		node->getValue()->addWaveProgression(wave,progression,&m_persistentAllocator);
 	}else if(tag==TAG_EXTENSION_DATA){
 		uint64_t*incoming=(uint64_t*)buffer;
 		m_allPaths[m_allPaths.size()-1].push_back(incoming[0]);
@@ -476,9 +482,11 @@ void Machine::processMessage(Message*message){
 		Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,rank,TAG_REQUEST_VERTEX_POINTER,getRank());
 		m_outbox.push_back(aMessage);
 	}else if(tag==TAG_MARK_AS_ASSEMBLED){
+/*
 		uint64_t*incoming=(uint64_t*)buffer;
 		SplayNode<uint64_t,Vertex>*node=m_subgraph.find(incoming[0]);
-		node->getValue()->assemble();
+*/
+		//node->getValue()->assemble();
 	}else if(tag==TAG_ASK_IS_ASSEMBLED){
 		uint64_t*incoming=(uint64_t*)buffer;
 		SplayNode<uint64_t,Vertex>*node=m_subgraph.find(incoming[0]);
@@ -1717,7 +1725,8 @@ void Machine::doChoice(){
 		}
 
 		// no choice possible...
-		if(!m_EXTENSION_complementedSeed){
+		if(m_EXTENSION_complementedSeed){
+/*
 			m_EXTENSION_complementedSeed=true;
 			vector<uint64_t> complementedSeed;
 			for(int i=m_EXTENSION_extension.size()-1;i>=0;i--){
@@ -1733,10 +1742,11 @@ void Machine::doChoice(){
 			m_EXTENSION_VertexAssembled_requested=false;
 			m_EXTENSION_reads_startingPositionOnContig.clear();
 			m_EXTENSION_readsInRange.clear();
+*/
 		}else{
 			int nucleotides=m_EXTENSION_extension.size()+m_wordSize-1;
+			cout<<"Rank "<<getRank()<<": a wave with "<<m_EXTENSION_extension.size()<<" vertices."<<endl;
 			if(nucleotides>=m_parameters.getMinimumContigLength()){
-				cout<<"Rank "<<getRank()<<": "<<m_EXTENSION_extension.size()+m_wordSize-1<<" nucleotides."<<endl;
 				m_EXTENSION_contigs.push_back(m_EXTENSION_extension);
 			}
 			m_EXTENSION_currentSeedIndex++;
@@ -1798,15 +1808,21 @@ void Machine::markCurrentVertexAsAssembled(){
 	if(!m_EXTENSION_directVertexDone){
 		if(!m_EXTENSION_VertexMarkAssembled_requested){
 			m_EXTENSION_extension.push_back(m_SEEDING_currentVertex);
+			// save wave progress.
+	
+			int waveId=m_EXTENSION_currentSeedIndex*10000+getRank();
+			int progression=m_EXTENSION_extension.size()-1;
 			
 			//cout<<"Mark assembled."<<endl;
 
 			m_EXTENSION_VertexMarkAssembled_requested=true;
-			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
+			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(3*sizeof(uint64_t));
 			message[0]=(uint64_t)m_SEEDING_currentVertex;
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(m_SEEDING_currentVertex),TAG_MARK_AS_ASSEMBLED,getRank());
+			message[1]=waveId;
+			message[2]=progression;
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(m_SEEDING_currentVertex),TAG_SAVE_WAVE_PROGRESSION,getRank());
 			m_outbox.push_back(aMessage);
-			m_EXTENSION_reverseVertexDone=false;
+			m_EXTENSION_reverseVertexDone=true;
 			m_EXTENSION_reads_requested=false;
 
 		// get the reads starting at that position.
@@ -1833,7 +1849,8 @@ void Machine::markCurrentVertexAsAssembled(){
 			m_EXTENSION_directVertexDone=true;
 			m_EXTENSION_VertexMarkAssembled_requested=false;
 		}
-	}else if(!m_EXTENSION_reverseVertexDone){
+	}
+/*else if(!m_EXTENSION_reverseVertexDone){
 		if(!m_EXTENSION_VertexMarkAssembled_requested){
 			m_EXTENSION_VertexMarkAssembled_requested=true;
 			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
@@ -1847,6 +1864,7 @@ void Machine::markCurrentVertexAsAssembled(){
 			m_EXTENSION_markedCurrentVertexAsAssembled=true;
 		}
 	}
+*/
 }
 
 int Machine::getSize(){

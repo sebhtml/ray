@@ -37,8 +37,8 @@ using namespace std;
 void Vertex::constructor(){
 	m_coverage=0;
 	m_edges=0;
-	m_assembled=false;
 	m_readsStartingHere=NULL;
+	m_direction=NULL;
 }
 
 void Vertex::setCoverage(int coverage){
@@ -95,14 +95,18 @@ void Vertex::addRead(int rank,int i,char c,MyAllocator*allocator){
 	m_readsStartingHere=e;
 }
 
-
-
-void Vertex::assemble(){
-	m_assembled=true;
+void Vertex::addWaveProgression(int wave,int progression,MyAllocator*allocator){
+	Direction*e=(Direction*)allocator->allocate(sizeof(Direction));
+	e->constructor(wave,progression);
+	if(m_direction!=NULL){
+		e->setNext(m_direction);
+	}
+	m_direction=e;
 }
 
+
 bool Vertex::isAssembled(){
-	return m_assembled;
+	return m_direction!=NULL;
 }
 
 ReadAnnotation*Vertex::getReads(){

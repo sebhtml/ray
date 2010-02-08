@@ -30,6 +30,7 @@
 #include"ReadAnnotation.h"
 #include"MyAllocator.h"
 #include"types.h"
+#include"Direction.h"
 #include<vector>
 using namespace std;
 
@@ -42,10 +43,10 @@ class Vertex{
 	//
 	// 7 6 5 4 3 2 1 0
 	char m_edges;
-	bool m_assembled;
-
 
 	ReadAnnotation*m_readsStartingHere;
+	Direction*m_direction;
+
 public:
 	void constructor();
 	void setCoverage(int coverage);
@@ -58,6 +59,7 @@ public:
 	vector<uint64_t> getIngoingEdges(uint64_t a,int k);
 	vector<uint64_t> getOutgoingEdges(uint64_t a,int k);
 	ReadAnnotation*getReads();
+	void addWaveProgression(int wave,int progression,MyAllocator*a);
 };
 
 #endif

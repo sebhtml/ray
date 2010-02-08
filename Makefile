@@ -12,7 +12,7 @@ MPICC=~/software/openmpi-1.4.1/output/bin/mpic++
 
 all: Ray
 
-OBJECTS= Machine.o common_functions.o Loader.o ray_main.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o ReadAnnotation.o CoverageDistribution.o Message.o 
+OBJECTS= Machine.o common_functions.o Loader.o ray_main.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o ReadAnnotation.o CoverageDistribution.o Message.o  Direction.o
 
 
 %.o: %.cpp
