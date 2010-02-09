@@ -37,14 +37,24 @@ class SplayTreeIterator{
 	stack<SplayNode<AVL_KEY,AVL_VALUE>*>m_stack;
 public:
 	SplayTreeIterator(SplayTree<AVL_KEY,AVL_VALUE>*tree);
+	void constructor(SplayTree<AVL_KEY,AVL_VALUE>*tree);
+	SplayTreeIterator();
 	bool hasNext();
 	SplayNode<AVL_KEY,AVL_VALUE>*next();
 };
 
 
+template<class AVL_KEY,class AVL_VALUE>
+SplayTreeIterator<AVL_KEY,AVL_VALUE>::SplayTreeIterator(){
+}
 
 template<class AVL_KEY,class AVL_VALUE>
 SplayTreeIterator<AVL_KEY,AVL_VALUE>::SplayTreeIterator(SplayTree<AVL_KEY,AVL_VALUE>*tree){
+	constructor(tree);
+}
+
+template<class AVL_KEY,class AVL_VALUE>
+void SplayTreeIterator<AVL_KEY,AVL_VALUE>::constructor(SplayTree<AVL_KEY,AVL_VALUE>*tree){
 	for(SplayNode<AVL_KEY,AVL_VALUE>*node=tree->getRoot();node!=NULL;node=node->getLeft()){
 		m_stack.push(node);
 	}

@@ -8,6 +8,8 @@
 
 * use easy-start technology to make the process faster. 
 
+* extend in parallel.
+* use only the MODE constants for modes.
 * make it work on SRA001125.
 * try with a barrier=1000
 * find out why the extension is slow (?).

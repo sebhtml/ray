@@ -100,6 +100,10 @@
 #define TAG_ASK_READ_LENGTH 59
 #define TAG_ASK_READ_LENGTH_REPLY 60
 #define TAG_SAVE_WAVE_PROGRESSION 61
+#define TAG_COPY_DIRECTIONS 62
+#define TAG_ASSEMBLE_WAVES 63
+#define TAG_COPY_DIRECTIONS_DONE 64
+#define TAG_SAVE_WAVE_PROGRESSION_REVERSE 65
 
 #define MASTER_RANK 0
 #define BARRIER_PERIOD 1000
@@ -110,6 +114,9 @@
 #define MODE_DO_NOTHING 2
 #define MODE_ASK_EXTENSIONS 3
 #define MODE_SEND_EXTENSION_DATA 4
+#define MODE_ASSEMBLE_WAVES 5
+#define MODE_COPY_DIRECTIONS 6
+#define MODE_ASSEMBLE_GRAPH 7
 
 #define OUTBOX_ALLOCATOR_CHUNK_SIZE 10*1024*1024 // 10 MB
 #define DISTRIBUTION_ALLOCATOR_CHUNK_SIZE 10*1024*1024 // 10 MB
@@ -274,6 +281,8 @@ class Machine{
 	map<int,int> m_EXTENSION_reads_startingPositionOnContig;
 
 	
+	// COPY Directions.
+	int m_COPY_ranks;
 
 	// coverage distribubtion
 	map<int,uint64_t> m_coverageDistribution;
