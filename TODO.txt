@@ -1,20 +1,11 @@
-* use single-end reads to resolve repeats.
-* with the seed, store directions in the graph, then, use these direction to assemble the thing..
+* add early-stop technology
+* add path-merging.
 
-* extends seeds in one direction. (stop when an overlap (> 1000 vertices) with a previous wave
-	* is found)
-	* duplicate waves on other strands.
-	* use waves to build contigs.
 
-* use easy-start technology to make the process faster. 
-
-* extend in parallel.
 * use only the MODE constants for modes.
 * make it work on SRA001125.
-* try with a barrier=1000
-* find out why the extension is slow (?).
 * remove the line break before the Minimum Coverage
-* try on human genome chromosome 1. (started.)
+* try on human genome chromosome 1.
 * remove paired end read class.
 * load paired reads.
 * use paired-end reads. to resolve repeats.

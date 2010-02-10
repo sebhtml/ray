@@ -36,7 +36,7 @@
 using namespace std;
 
 Machine::Machine(int argc,char**argv){
-	m_EXTENSION_numberOfRanksDone++;
+	m_EXTENSION_numberOfRanksDone=0;
 	m_numberOfRanksDoneSeeding=0;
 	m_master_mode=MODE_DO_NOTHING;
 	m_numberOfMachinesReadyForEdgesDistribution=-1;
@@ -1287,7 +1287,7 @@ void Machine::processData(){
 			m_EXTENSION_currentRankIsStarted=true;
 */
 		for(int i=0;i<(int)getSize();i++){
-			cout<<"Rank "<<getRank()<<" tells "<<m_EXTENSION_rank<<" to extend its seeds."<<endl;
+			cout<<"Rank "<<getRank()<<" tells "<<i<<" to extend its seeds."<<endl;
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_ASK_EXTENSION,getRank());
 			m_outbox.push_back(aMessage);
 			//m_EXTENSION_currentRankIsDone=false;
@@ -1326,7 +1326,8 @@ void Machine::processData(){
 	if(m_EXTENSION_numberOfRanksDone==getSize()){
 		cout<<"Rank "<<getRank()<<" done."<<endl;
 		m_EXTENSION_numberOfRanksDone=-1;
-		killRanks();
+		//killRanks();
+		m_master_mode=MODE_ASK_EXTENSIONS;
 	}
 
 	if(m_master_mode==MODE_ASSEMBLE_GRAPH){
@@ -1866,14 +1867,14 @@ void Machine::doChoice(){
 			return;
 		}
 
-	
+	/*
 		cout<<"Rank "<<getRank()<<" failed to extend. "<<m_EXTENSION_coverages.size()<<" outgoing edges."<<endl;
 		
 		for(int i=0;i<(int)m_EXTENSION_coverages.size();i++){
 			int coverageI=m_EXTENSION_coverages[i];
 			cout<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<"->"<<idToWord(m_SEEDING_receivedOutgoingEdges[i],m_wordSize)<<" ("<<coverageI<<")"<<endl;
 		}
-
+	*/
 
 		// no choice possible...
 		if(!m_EXTENSION_complementedSeed){
@@ -1896,10 +1897,10 @@ void Machine::doChoice(){
 			//int nucleotides=(int)m_EXTENSION_extension.size()+m_wordSize-1;
 			if(m_EXTENSION_extension.size()>=100){
 				cout<<"Rank "<<getRank()<<": an extension with "<<m_EXTENSION_extension.size()<<" vertices."<<endl;
+				m_EXTENSION_contigs.push_back(m_EXTENSION_extension);
 			}
 			/*
 			if(nucleotides>=m_parameters.getMinimumContigLength()){
-				m_EXTENSION_contigs.push_back(m_EXTENSION_extension);
 			}*/
 			m_EXTENSION_currentSeedIndex++;
 			m_EXTENSION_currentPosition=0;
