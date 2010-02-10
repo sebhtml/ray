@@ -46,7 +46,6 @@ class Vertex{
 
 	ReadAnnotation*m_readsStartingHere;
 	Direction*m_direction;
-	Direction*m_reverse_direction;
 public:
 	void constructor();
 	void setCoverage(int coverage);
@@ -60,9 +59,7 @@ public:
 	vector<uint64_t> getOutgoingEdges(uint64_t a,int k);
 	ReadAnnotation*getReads();
 	void addDirection(int wave,int progression,MyAllocator*a);
-	void addReverseDirection(int wave,int progression,MyAllocator*a);
 	vector<Direction> getDirections();
-	vector<Direction> getReverseDirections();
 };
 
 #endif

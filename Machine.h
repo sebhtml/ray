@@ -104,6 +104,8 @@
 #define TAG_ASSEMBLE_WAVES 63
 #define TAG_COPY_DIRECTIONS_DONE 64
 #define TAG_SAVE_WAVE_PROGRESSION_REVERSE 65
+#define TAG_ASSEMBLE_WAVES_DONE 66
+
 
 #define MASTER_RANK 0
 #define BARRIER_PERIOD 1000
@@ -237,6 +239,7 @@ class Machine{
 	vector<int> m_EXTENSION_coverages;
 	bool m_EXTENSION_complementedSeed;
 	vector<uint64_t> m_EXTENSION_currentSeed;
+	int m_EXTENSION_numberOfRanksDone;
 	vector<vector<uint64_t> > m_EXTENSION_contigs;
 	bool m_EXTENSION_checkedIfCurrentVertexIsAssembled;
 	bool m_EXTENSION_VertexMarkAssembled_requested;

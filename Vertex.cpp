@@ -39,7 +39,6 @@ void Vertex::constructor(){
 	m_edges=0;
 	m_readsStartingHere=NULL;
 	m_direction=NULL;
-	m_reverse_direction=NULL;
 }
 
 void Vertex::setCoverage(int coverage){
@@ -105,15 +104,6 @@ void Vertex::addDirection(int wave,int progression,MyAllocator*allocator){
 	m_direction=e;
 }
 
-void Vertex::addReverseDirection(int wave,int progression,MyAllocator*allocator){
-	Direction*e=(Direction*)allocator->allocate(sizeof(Direction));
-	e->constructor(wave,progression);
-	if(m_reverse_direction!=NULL){
-		e->setNext(m_reverse_direction);
-	}
-	m_reverse_direction=e;
-}
-
 
 
 
@@ -135,13 +125,4 @@ vector<Direction> Vertex::getDirections(){
 	return a;
 }
 
-vector<Direction> Vertex::getReverseDirections(){
-	vector<Direction> a;
-	Direction*e=m_reverse_direction;
-	while(e!=NULL){
-		a.push_back(*e);
-		e=e->getNext();
-	}
-	return a;
-}
 
