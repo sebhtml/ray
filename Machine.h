@@ -108,7 +108,7 @@
 
 
 #define MASTER_RANK 0
-#define BARRIER_PERIOD 1000
+#define BARRIER_PERIOD 100
 
 // modes
 #define MODE_EXTENSION_ASK 0

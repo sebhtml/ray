@@ -149,6 +149,7 @@ Machine::Machine(int argc,char**argv){
 	if(argc!=2){
 		if(isMaster()){
 			cout<<"You must provide a input file."<<endl;
+			cout<<"See RayInputTemplate.txt"<<endl;
 		}
 	}else{
 		run();
@@ -482,16 +483,17 @@ void Machine::processMessage(Message*message){
 		int progression=incoming[2];
 		node->getValue()->addDirection(wave,progression,&m_persistentAllocator);
 	}else if(tag==TAG_SAVE_WAVE_PROGRESSION_REVERSE){
-		uint64_t*incoming=(uint64_t*)buffer;
-		SplayNode<uint64_t,Vertex>*node=m_subgraph.find(incoming[0]);
+		//uint64_t*incoming=(uint64_t*)buffer;
+		//SplayNode<uint64_t,Vertex>*node=m_subgraph.find(incoming[0]);
 /*
 		if(node==NULL){
 			cout<<"Rank "<<getRank()<<" has a NULL pointer -- TAG_SAVE_WAVE_PROGRESSION_REVERSE "<<incoming[0]<<endl;
 		}
 */
-		
+		/*
 		int wave=incoming[1];
 		int progression=incoming[2];
+		*/
 		//node->getValue()->addReverseDirection(wave,progression,&m_persistentAllocator);
 	}else if(tag==TAG_EXTENSION_DATA){
 		uint64_t*incoming=(uint64_t*)buffer;
@@ -928,7 +930,7 @@ void Machine::processData(){
 
 	if(m_mode==MODE_ASSEMBLE_WAVES){
 		// take each seed, and extend it in both direction using previously obtained information.
-		if(m_SEEDING_i==m_SEEDING_seeds.size()){
+		if(m_SEEDING_i==(int)m_SEEDING_seeds.size()){
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_ASSEMBLE_WAVES_DONE,getRank());
 			m_outbox.push_back(aMessage);
 		}else{

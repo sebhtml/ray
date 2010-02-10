@@ -15,6 +15,3 @@ LoadSingleEndReads	2.fasta
 LoadPairedEndReads	3-left.fasta	3-right.fasta	200	10
 LoadPairedEndReads	4-left.fasta	4-right.fasta	200	10
 
-# Set options
-
-SetOutputDirectory UNTITLED
