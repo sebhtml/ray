@@ -1689,6 +1689,7 @@ void Machine::doChoice(){
 			}
 		}
 	}else{
+/*
 		// try to use the coverage to choose.
 		for(int i=0;i<(int)m_EXTENSION_coverages.size();i++){
 			bool isBetter=true;
@@ -1735,7 +1736,8 @@ void Machine::doChoice(){
 				return;
 			}
 		}
-	
+*/
+
 		if(!m_EXTENSION_singleEndResolution){
 			//cout<<"Single-end resolution "<<"Position="<<m_EXTENSION_extension.size()<<" Reads."<<m_EXTENSION_readsInRange.size()<<endl;
 			// try to use single-end reads to resolve the repeat.
@@ -1816,31 +1818,41 @@ void Machine::doChoice(){
 				map<int,int> theSums;
 				map<int,int> theNumbers;
 				for(int i=0;i<(int)m_EXTENSION_readPositionsForVertices.size();i++){
-					//cout<<getLastSymbol(m_SEEDING_receivedOutgoingEdges[i],m_wordSize)<<endl;
 					int max=-1;
 					for(int j=0;j<(int)m_EXTENSION_readPositionsForVertices[i].size();j++){
-						//cout<<" "<<m_EXTENSION_readPositionsForVertices[i][j];
 						int offset=m_EXTENSION_readPositionsForVertices[i][j];
 						theSums[i]+=offset;
-						theNumbers[i]++;
 						if(offset>max){
 							max=offset;
 						}
 					}
+					theNumbers[i]=m_EXTENSION_readPositionsForVertices[i].size();
 					theMaxs[i]=max;
 					//cout<<endl;
 				}
+/*
+				cout<<"Edges."<<endl;
+				for(int i=0;i<(int)m_EXTENSION_readPositionsForVertices.size();i++){
+					cout<<getLastSymbol(m_SEEDING_receivedOutgoingEdges[i],m_wordSize)<<" Number="<<theNumbers[i]<<" Sum="<<theSums[i]<<" Max="<<theMaxs[i]<<endl;
+					for(int j=0;j<(int)m_EXTENSION_readPositionsForVertices[i].size();j++){
+						int offset=m_EXTENSION_readPositionsForVertices[i][j];
+						cout<<" "<<offset;
+					}
+					cout<<endl;
+				}
+*/
 				for(int i=0;i<(int)m_EXTENSION_readPositionsForVertices.size();i++){
 					bool winner=true;
 					for(int j=0;j<(int)m_EXTENSION_readPositionsForVertices.size();j++){
 						if(i==j)
 							continue;
-						if(3*theMaxs[i]<theMaxs[j] or 3*theSums[i] < theSums[j] or 3*theNumbers[i] < theNumbers[j]){
+						if((theMaxs[i] < 3*theMaxs[j]) or (theSums[i] < 3*theSums[j]) or (theNumbers[i] < 3*theNumbers[j])){
 							winner=false;
 							break;
 						}
 					}
-					if(winner){
+					if(winner==true){
+						//cout<<"Winner: "<<getLastSymbol(m_SEEDING_receivedOutgoingEdges[i],m_wordSize)<<endl;
 						m_SEEDING_currentVertex=m_SEEDING_receivedOutgoingEdges[i];
 						m_EXTENSION_choose=true;
 						m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
@@ -1849,19 +1861,8 @@ void Machine::doChoice(){
 						return;
 					}
 				}
-				for(int i=0;i<(int)m_EXTENSION_readPositionsForVertices.size();i++){
-					cout<<getLastSymbol(m_SEEDING_receivedOutgoingEdges[i],m_wordSize)<<endl;
-					int max=-1;
-					for(int j=0;j<(int)m_EXTENSION_readPositionsForVertices[i].size();j++){
-						cout<<" "<<m_EXTENSION_readPositionsForVertices[i][j];
-						int offset=m_EXTENSION_readPositionsForVertices[i][j];
-						if(offset>max){
-							max=offset;
-						}
-					}
-					theMaxs[i]=max;
-					cout<<endl;
-				}
+				//cout<<"Winner: none."<<endl;
+
 
 			}
 			return;
