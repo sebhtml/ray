@@ -1,4 +1,4 @@
-* add early-stop technology
+* add early-stop trick
 * add path-merging.
 
 
@@ -6,7 +6,6 @@
 * make it work on SRA001125.
 * remove the line break before the Minimum Coverage
 * try on human genome chromosome 1.
-* remove paired end read class.
 * load paired reads.
 * use paired-end reads. to resolve repeats.
 
