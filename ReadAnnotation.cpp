@@ -19,31 +19,37 @@
 
 */
 
-
-#include"Edge.h"
+#include"ReadAnnotation.h"
 #include<cstdlib>
-void Edge::constructor(int rank,void*ptr){
-	m_rank=rank;
-	m_ptr=ptr;
+
+void ReadAnnotation::constructor(int a,int b,char c){
+	m_rank=a;
+	m_readIndex=b;
 	m_next=NULL;
+	m_strand=c;
 }
 
+char ReadAnnotation::getStrand()const{
+	return m_strand;
+}
 
-
-int Edge::getRank()const{
+int ReadAnnotation::getRank()const{
 	return m_rank;
 }
 
-void* Edge::getPtr()const{
-	return m_ptr;
+int ReadAnnotation::getReadIndex()const{
+	return m_readIndex;
 }
 
-void Edge::setNext(Edge*next){
-	m_next=next;
+void ReadAnnotation::setNext(ReadAnnotation*a){
+	m_next=a;
 }
 
-
-Edge*Edge::getNext(){
+ReadAnnotation*ReadAnnotation::getNext()const{
 	return m_next;
+}
+
+int ReadAnnotation::getUniqueId()const{
+	return getReadIndex()*10000+getRank();
 }
 

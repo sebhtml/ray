@@ -19,15 +19,28 @@
 
 */
 
-#ifndef _PairedEndReads
-#include<string>
-using namespace std;
+#include"Direction.h"
+#include<stdlib.h>
 
-class PairedEndReads{
-	string m_left;
-	string m_right;
-	int m_fragmentLength;
-	int m_deviation;
-};
+void Direction::constructor(int wave,int progression){
+	m_wave=wave;
+	m_progression=progression;
+	m_next=NULL;
+}
 
-#endif
+int Direction::getWave(){
+	return m_wave;
+}
+
+int Direction::getProgression(){
+	return m_progression;
+}
+
+Direction*Direction::getNext(){
+	return m_next;
+}
+
+void Direction::setNext(Direction*e){
+	m_next=e;
+}
+

@@ -27,14 +27,15 @@
 #ifndef _Vertex
 
 #define _Vertex
-#include"Edge.h"
+#include"ReadAnnotation.h"
 #include"MyAllocator.h"
 #include"types.h"
+#include"Direction.h"
 #include<vector>
 using namespace std;
 
 class Vertex{
-	char m_coverage;
+	unsigned char m_coverage;
 	// 
 	// outgoing  ingoing
 	//
@@ -42,21 +43,23 @@ class Vertex{
 	//
 	// 7 6 5 4 3 2 1 0
 	char m_edges;
-	bool m_assembled;
 
-
-	Edge*m_readsStartingHere;
+	ReadAnnotation*m_readsStartingHere;
+	Direction*m_direction;
 public:
 	void constructor();
 	void setCoverage(int coverage);
 	int getCoverage();
 	void addOutgoingEdge(uint64_t a,int k);
 	void addIngoingEdge(uint64_t a,int k);
-	void addRead(int rank,void*ptr,MyAllocator*allocator);
+	void addRead(int rank,int i,char c,MyAllocator*allocator);
 	bool isAssembled();
 	void assemble();
 	vector<uint64_t> getIngoingEdges(uint64_t a,int k);
 	vector<uint64_t> getOutgoingEdges(uint64_t a,int k);
+	ReadAnnotation*getReads();
+	void addDirection(int wave,int progression,MyAllocator*a);
+	vector<Direction> getDirections();
 };
 
 #endif

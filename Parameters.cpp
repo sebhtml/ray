@@ -36,7 +36,9 @@ using namespace std;
 Parameters::Parameters(){
 	m_initiated=false;
 	m_directory="assembly";
-	m_wordSize=21;
+	m_minimumContigLength=100;
+	m_wordSize=25;
+	m_outputFile="Contigs.fasta";
 }
 
 int Parameters::getWordSize(){
@@ -44,7 +46,6 @@ int Parameters::getWordSize(){
 }
 
 void Parameters::load(string file){
-	//cout<<"Loading "<<file<<endl;
 	ifstream f(file.c_str());
 	while(!f.eof()){
 		string token;
@@ -52,7 +53,6 @@ void Parameters::load(string file){
 		if(token=="LoadSingleEndReads"){
 			f>>token;
 			m_singleEndReadsFile.push_back(token);
-			//cout<<"LoadSingleEndReads "<<token<<endl;
 		}else if(token=="SetOutputDirectory"){
 			f>>token;
 			m_directory=token;
@@ -79,4 +79,12 @@ vector<string> Parameters::getAllFiles(){
 
 string Parameters::getDirectory(){
 	return m_directory;
+}
+
+string Parameters::getOutputFile(){
+	return m_outputFile;
+}
+
+int Parameters::getMinimumContigLength(){
+	return m_minimumContigLength;
 }

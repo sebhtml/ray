@@ -19,30 +19,19 @@
 
 */
 
-#ifndef _Parameters
 
-#define _Parameters
-#include<string>
-#include<vector>
-using namespace std;
-
-class Parameters{
-	bool m_initiated;
-	int m_numberOfSequences;
-	vector<string> m_singleEndReadsFile;
-	string m_directory;
-	string m_outputFile;
-	int m_wordSize;
-	int m_minimumContigLength;
+#ifndef Direction
+#define _Direction
+class Direction{
+	int m_wave;
+	int m_progression;
+	Direction*m_next;
 public:
-	Parameters();
-	void load(string file);
-	bool isInitiated();
-	vector<string> getAllFiles();
-	string getDirectory();
-	int getMinimumContigLength();
-	string getOutputFile();
-	int getWordSize();
+	void constructor(int wave,int progression);
+	int getWave();
+	int getProgression();
+	Direction*getNext();
+	void setNext(Direction*e);
 };
 
 #endif

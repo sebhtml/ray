@@ -12,7 +12,7 @@ MPICC=~/software/openmpi-1.4.1/output/bin/mpic++
 
 all: Ray
 
-OBJECTS= Machine.o common_functions.o Loader.o ray_main.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o Edge.o CoverageDistribution.o Message.o 
+OBJECTS= Machine.o common_functions.o Loader.o ray_main.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o ReadAnnotation.o CoverageDistribution.o Message.o  Direction.o
 
 
 %.o: %.cpp
@@ -23,18 +23,21 @@ Ray: ray_main.o $(OBJECTS)
 	$(MPICC) $(CXXFLAGS) $^ -o $@
 
 test: Ray
-	$(MPIRUN) -np 1  -machinefile RayMachinesFile.txt Ray input.txt
+	$(MPIRUN) -np 31  -machinefile RayMachinesFile.txt Ray input.txt|tee test.log
+
+test0: Ray
+	$(MPIRUN) -np 30  Ray input0.txt > test0.log
 
 test1: Ray
 	$(MPIRUN) -np 30  -machinefile RayMachinesFile.txt Ray input1.txt|tee test1.log
 
 test2: Ray
-	$(MPIRUN)   -np 30  -machinefile RayMachinesFile.txt Ray input2.txt|tee test2.log
+	$(MPIRUN)   -np 31  -machinefile RayMachinesFile.txt Ray input2.txt|tee test2.log
 	echo see test2.log
 
 
 test3: Ray
-	$(MPIRUN) -np 28  -machinefile RayMachinesFile.txt Ray input3.txt
+	$(MPIRUN) -np 2 -machinefile RayMachinesFile.txt Ray input3.txt
 
 clean:
 	rm -f *.o Ray

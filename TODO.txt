@@ -1,10 +1,11 @@
-* extension does not work on test2 yet.
+* add early-stop trick
+* add path-merging.
 
-* when encountering assembled vertex, use a merger strategy?
-* check memory allocation for master...
-* replace reads positions with (int,int)
-* extend in both direction too. 
-* use single-end reads to resolve repeats.
-* attach reverse complement vertices.
+
+* use only the MODE constants for modes.
+* make it work on SRA001125.
+* remove the line break before the Minimum Coverage
+* try on human genome chromosome 1.
 * load paired reads.
 * use paired-end reads. to resolve repeats.
+

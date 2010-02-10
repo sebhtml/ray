@@ -24,6 +24,8 @@
 
 #ifndef _Machine
 #define _Machine
+
+
 #include<mpi.h>
 #include<map>
 #include<vector>
@@ -86,6 +88,24 @@
 #define TAG_REQUEST_VERTEX_POINTER 47
 #define TAG_ASK_IS_ASSEMBLED_REPLY 48
 #define TAG_MARK_AS_ASSEMBLED 49
+#define TAG_ASK_EXTENSION_DATA 50
+#define TAG_EXTENSION_DATA 51
+#define TAG_EXTENSION_END 52
+#define TAG_EXTENSION_DATA_END 53
+#define TAG_ATTACH_SEQUENCE 54
+#define TAG_REQUEST_READS 55
+#define TAG_REQUEST_READS_REPLY 56
+#define TAG_ASK_READ_VERTEX_AT_POSITION 57
+#define TAG_ASK_READ_VERTEX_AT_POSITION_REPLY 58
+#define TAG_ASK_READ_LENGTH 59
+#define TAG_ASK_READ_LENGTH_REPLY 60
+#define TAG_SAVE_WAVE_PROGRESSION 61
+#define TAG_COPY_DIRECTIONS 62
+#define TAG_ASSEMBLE_WAVES 63
+#define TAG_COPY_DIRECTIONS_DONE 64
+#define TAG_SAVE_WAVE_PROGRESSION_REVERSE 65
+#define TAG_ASSEMBLE_WAVES_DONE 66
+
 
 #define MASTER_RANK 0
 #define BARRIER_PERIOD 100
@@ -94,6 +114,16 @@
 #define MODE_EXTENSION_ASK 0
 #define MODE_START_SEEDING 1
 #define MODE_DO_NOTHING 2
+#define MODE_ASK_EXTENSIONS 3
+#define MODE_SEND_EXTENSION_DATA 4
+#define MODE_ASSEMBLE_WAVES 5
+#define MODE_COPY_DIRECTIONS 6
+#define MODE_ASSEMBLE_GRAPH 7
+
+#define OUTBOX_ALLOCATOR_CHUNK_SIZE 10*1024*1024 // 10 MB
+#define DISTRIBUTION_ALLOCATOR_CHUNK_SIZE 10*1024*1024 // 10 MB
+#define INBOX_ALLOCATOR_CHUNK_SIZE 10*1024*1024 // 10 MB
+#define PERSISTENT_ALLOCATOR_CHUNK_SIZE 10*1024*1024 // 10 MB
 
 using namespace std;
 
@@ -104,8 +134,6 @@ class Machine{
 	int m_ticks;
 	int m_maxTicks;
 	bool m_watchMaxTicks;
-	unsigned long long int m_receivedMessages;
-	unsigned long long int m_sentMessages;
 	int m_wordSize;
 	int m_last_value;
 	bool m_mode_send_outgoing_edges;
@@ -129,6 +157,9 @@ class Machine{
 	bool m_mode_send_ingoing_edges;
 
 	int m_mode;
+	int m_master_mode;
+
+	// TODO: merge all m_mode_* variables with m_mode and m_master_mode.
 	bool m_startEdgeDistribution;
 	bool m_mode_AttachSequences;
 
@@ -158,7 +189,6 @@ class Machine{
 	bool m_SEEDING_vertexCoverageReceived;
 	int m_SEEDING_currentChildRank;
 	int m_SEEDING_numberOfIngoingEdgesWithSeedCoverage;
-	Edge*m_SEEDING_edge;
 	bool m_SEEDING_vertexCoverageRequested;
 	bool m_SEEDING_edge_initiated;
 	bool m_SEEDING_NodeInitiated;
@@ -169,7 +199,6 @@ class Machine{
 	uint64_t m_SEEDING_currentVertex;
 	
 
-	Edge*m_SEEDING_Inedge;
 	bool m_SEEDING_InedgesReceived;
 	bool m_SEEDING_InedgesRequested;
 	int m_SEEDING_outgoing_index;
@@ -202,13 +231,27 @@ class Machine{
 	int m_mode_send_coverage_iterator;
 	vector<Message> m_outbox;
 	vector<Message> m_inbox;
-	int m_BARRIER_PERIOD;
+
+
 
 	// EXTENSION MODE
+	vector<uint64_t> m_EXTENSION_extension;
+	vector<int> m_EXTENSION_coverages;
+	bool m_EXTENSION_complementedSeed;
+	vector<uint64_t> m_EXTENSION_currentSeed;
+	int m_EXTENSION_numberOfRanksDone;
+	vector<vector<uint64_t> > m_EXTENSION_contigs;
 	bool m_EXTENSION_checkedIfCurrentVertexIsAssembled;
 	bool m_EXTENSION_VertexMarkAssembled_requested;
 	bool m_EXTENSION_reverseComplement_requested;
 	bool m_EXTENSION_vertexIsAssembledResult;
+	set<ReadAnnotation,ReadAnnotationComparator>::iterator m_EXTENSION_readIterator;
+	bool m_EXTENSION_readLength_requested;
+	bool m_EXTENSION_readLength_received;
+	bool m_EXTENSION_readLength_done;
+	bool m_EXTENSION_read_vertex_received;
+	bool m_EXTENSION_read_vertex_requested;
+	uint64_t m_EXTENSION_receivedReadVertex;
 	bool m_mode_EXTENSION;
 	bool m_EXTENSION_currentRankIsDone;
 	bool m_EXTENSION_currentRankIsSet;
@@ -226,7 +269,24 @@ class Machine{
 	bool m_EXTENSION_VertexAssembled_requested;
 	bool m_EXTENSION_receivedAssembled;
 	bool m_EXTENSION_reverseComplement_received;
+	vector<ReadAnnotation> m_EXTENSION_receivedReads;
+	bool m_EXTENSION_reads_requested;
+	bool m_EXTENSION_reads_received;
+	vector<ReadAnnotation> m_EXTENSION_readsOutOfRange;
+	int m_EXTENSION_receivedLength;
 	bool m_EXTENSION_reverseVertexDone;
+	// reads used so far
+	set<int> m_EXTENSION_usedReads;
+	// reads to check (the ones "in range")
+	set<ReadAnnotation,ReadAnnotationComparator> m_EXTENSION_readsInRange;
+	bool m_EXTENSION_singleEndResolution;
+	map<int,vector<int> > m_EXTENSION_readPositionsForVertices;
+	map<int,int> m_EXTENSION_reads_startingPositionOnContig;
+
+	
+	// COPY Directions.
+	int m_COPY_ranks;
+
 	// coverage distribubtion
 	map<int,uint64_t> m_coverageDistribution;
 	int m_minimumCoverage;
@@ -237,11 +297,7 @@ class Machine{
 	string m_VERSION;
 	bool m_mode_sendDistribution;
 
-	uint64_t m_send_buffer[10];
-	set<uint64_t> m_test;
-	vector<uint64_t> m_test2;
 	vector<MPI_Request> m_pendingMpiRequest;
-	vector<int> m_requestIterations;
 	Parameters m_parameters;
 	int m_numberOfMachinesDoneSendingEdges;
 	SplayTree<uint64_t,Vertex> m_subgraph;
@@ -254,12 +310,10 @@ class Machine{
 
 	MyAllocator m_outboxAllocator;
 	MyAllocator m_inboxAllocator;
-
-	MyAllocator m_seedingAllocator;
 	MyAllocator m_distributionAllocator;
 	MyAllocator m_persistentAllocator;
-	vector<Read*> m_distribution_reads;
-
+	vector<Read*>m_distribution_reads;
+	
 
 	vector<Read*> m_myReads;
 
@@ -268,7 +322,9 @@ class Machine{
 	int m_mode_send_vertices_sequence_id_position;
 	int m_numberOfMachinesDoneSendingVertices;
 
+	vector<vector<uint64_t> > m_allPaths;
 	bool m_aborted;
+
 	void enumerateChoices();
 	void killRanks();
 	void attachReads();

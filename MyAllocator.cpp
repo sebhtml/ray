@@ -28,18 +28,16 @@
 using namespace std;
 
 MyAllocator::MyAllocator(){
-	constructor();
 }
 
-void MyAllocator::constructor(){
-	m_CHUNK_SIZE=10*1024*1024; // 10M
+void MyAllocator::constructor(int chunkSize){
+	m_CHUNK_SIZE=chunkSize; 
 	m_currentChunk=(void*)malloc(m_CHUNK_SIZE);
 	if(m_currentChunk==NULL){
 		cout<<"NULL"<<endl;
 	}
 	m_chunks.push_back(m_currentChunk);
 	m_currentPosition=0;
-	m_jobs=0;
 }
 
 void*MyAllocator::allocate(int s){
@@ -48,7 +46,6 @@ void*MyAllocator::allocate(int s){
 		return NULL;
 	}
 	
-	m_jobs++;
 	int left=m_CHUNK_SIZE-m_currentPosition;
 	if(s>left){
 		m_currentChunk=malloc(m_CHUNK_SIZE);
@@ -78,7 +75,6 @@ int MyAllocator::getChunkSize(){
 }
 
 void MyAllocator::print(){
-	cout<<"Jobs="<<m_jobs<<endl;
 	cout<<"ChunkSize="<<m_CHUNK_SIZE<<endl;
 	cout<<"EatenRams="<<m_chunks.size()<<endl;
 	cout<<"TotalBytesConsumed="<<m_CHUNK_SIZE*m_chunks.size()<<endl;

@@ -32,6 +32,8 @@
 #include<stack>
 using namespace std;
 
+#define CHUNK_SIZE 10*1024*1024 // 10 MB
+
 // see http://www.eli.sdsu.edu/courses/fall95/cs660/notes/splay/Splay.html
 // see http://www.cs.nyu.edu/algvis/java/SplayTree.html
 // see ftp://ftp.cs.cmu.edu/user/sleator/splaying/SplayTree.java
@@ -78,6 +80,7 @@ SplayTree<KEY,VALUE>::SplayTree(){
 	m_root=NULL;
 	m_size=0;
 	m_inserted=false;
+	m_allocator.constructor(CHUNK_SIZE);
 }
 
 template<class KEY,class VALUE>
@@ -103,10 +106,9 @@ SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::getRoot(){
  */
 template<class KEY,class VALUE>
 SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::insert(KEY key){
-	//cout<<"DEBUG insert "<<key<<endl;
 	m_inserted=false;
 	if(m_root==NULL){
-		m_root=(SplayNode<KEY,VALUE>*)/*malloc*/m_allocator.allocate(sizeof(SplayNode<KEY,VALUE>));
+		m_root=(SplayNode<KEY,VALUE>*)m_allocator.allocate(sizeof(SplayNode<KEY,VALUE>));
 		m_root->init(key);
 		m_inserted=true;
 		m_size++;
@@ -115,7 +117,7 @@ SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::insert(KEY key){
 	splay(key);
 	if(m_root->getKey()==key)
 		return m_root;
-	SplayNode<KEY,VALUE>*n=(SplayNode<KEY,VALUE>*)/*malloc*/m_allocator.allocate(sizeof(SplayNode<KEY,VALUE>));
+	SplayNode<KEY,VALUE>*n=(SplayNode<KEY,VALUE>*)m_allocator.allocate(sizeof(SplayNode<KEY,VALUE>));
 	n->init(key);
 	
 	if(key<m_root->getKey()){
@@ -140,7 +142,6 @@ SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::insert(KEY key){
  */
 template<class KEY,class VALUE>
 SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::find(KEY key){
-	//cout<<"DEBUG find "<<key<<endl;
 	if(m_root==NULL)
 		return NULL;
 	splay(key);
