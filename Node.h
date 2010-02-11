@@ -1,6 +1,6 @@
 /*
- 	OpenAssembler -- a de Bruijn DNA assembler for mixed high-throughput technologies
-    Copyright (C) 2009  Sébastien Boisvert
+ 	Ray
+    Copyright (C) 2009, 2010  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 

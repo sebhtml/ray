@@ -4,8 +4,10 @@
 
 * use only the MODE constants for modes.
 * make it work on SRA001125.
-* remove the line break before the Minimum Coverage
 * try on human genome chromosome 1.
 * load paired reads.
 * use paired-end reads. to resolve repeats.
 
+* speed hack:
+  when extending reverse-complement paths, only thread reads at the ~1000
+last vertices.

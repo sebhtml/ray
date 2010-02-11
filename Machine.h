@@ -105,7 +105,10 @@
 #define TAG_COPY_DIRECTIONS_DONE 64
 #define TAG_SAVE_WAVE_PROGRESSION_REVERSE 65
 #define TAG_ASSEMBLE_WAVES_DONE 66
-
+#define TAG_START_FUSION 67
+#define TAG_FUSION_DONE 68
+#define TAG_ASK_VERTEX_PATHS 69
+#define TAG_ASK_VERTEX_PATHS_REPLY 70
 
 #define MASTER_RANK 0
 #define BARRIER_PERIOD 100
@@ -119,6 +122,8 @@
 #define MODE_ASSEMBLE_WAVES 5
 #define MODE_COPY_DIRECTIONS 6
 #define MODE_ASSEMBLE_GRAPH 7
+#define MODE_FUSION 8
+
 
 #define OUTBOX_ALLOCATOR_CHUNK_SIZE 10*1024*1024 // 10 MB
 #define DISTRIBUTION_ALLOCATOR_CHUNK_SIZE 10*1024*1024 // 10 MB
@@ -235,6 +240,8 @@ class Machine{
 
 
 	// EXTENSION MODE
+	vector<int> m_EXTENSION_identifiers;
+	set<int> m_FUSION_eliminated;
 	vector<uint64_t> m_EXTENSION_extension;
 	vector<int> m_EXTENSION_coverages;
 	bool m_EXTENSION_complementedSeed;
@@ -287,6 +294,16 @@ class Machine{
 	// COPY Directions.
 	int m_COPY_ranks;
 
+	// FUSION
+	bool m_FUSION_direct_fusionDone;
+	bool m_FUSION_first_done;
+	int m_FUSION_numberOfRanksDone;
+	bool m_FUSION_last_done;
+	bool m_FUSION_paths_requested;
+	bool m_FUSION_paths_received;
+	vector<Direction> m_FUSION_firstPaths;
+	vector<Direction> m_FUSION_lastPaths;
+	vector<Direction> m_FUSION_receivedPaths;
 	// coverage distribubtion
 	map<int,uint64_t> m_coverageDistribution;
 	int m_minimumCoverage;
