@@ -385,7 +385,6 @@ void Machine::processMessage(Message*message){
 		uint64_t*incoming=(uint64_t*)buffer;
 		m_wordSize=incoming[0];
 	}else if(tag==TAG_START_SEEDING){
-		cout<<"Rank "<<getRank()<<" starts to seed."<<endl;
 		m_mode=MODE_START_SEEDING;
 		map<int,map<int,int> > edgesDistribution;
 
@@ -1262,18 +1261,28 @@ void Machine::processData(){
 				map<int,int> index;
 				map<int,int> starts;
 				map<int,int> ends;
-				int currentId=m_SEEDING_i*10000+getRank();
+				bool fusionOccured=false;
+				int currentId=m_EXTENSION_identifiers[m_SEEDING_i];
 				for(int i=0;i<(int)m_FUSION_firstPaths.size();i++){
 					index[m_FUSION_firstPaths[i].getWave()]++;
-					starts[m_FUSION_firstPaths[i].getWave()]=m_FUSION_firstPaths[i].getProgression();
+					int pathId=m_FUSION_firstPaths[i].getWave();
+					int progression=m_FUSION_firstPaths[i].getProgression();
+					if(starts.count(pathId)==0 or starts[pathId]>progression){
+						starts[pathId]=progression;
+					}
 				}
 				for(int i=0;i<(int)m_FUSION_lastPaths.size();i++){
 					index[m_FUSION_lastPaths[i].getWave()]++;
-					ends[m_FUSION_lastPaths[i].getWave()]=m_FUSION_lastPaths[i].getProgression();
+					
+					int pathId=m_FUSION_lastPaths[i].getWave();
+					int progression=m_FUSION_lastPaths[i].getProgression();
+					if(ends.count(pathId)==0 or ends[pathId]<progression){
+						ends[pathId]=progression;
+					}
 				}
 				vector<int> matches;
 				for(map<int,int>::iterator i=index.begin();i!=index.end();++i){
-					if(i->second==2){
+					if(i->second>=2){
 						// possible match.
 						matches.push_back(i->first);
 					}
@@ -1288,6 +1297,99 @@ void Machine::processData(){
 						if(matches[i]<currentId){
 							// we can trash currentId
 							m_FUSION_eliminated.insert(currentId); // boom	
+							fusionOccured=true;
+							cout<<"bang"<<endl;
+							break;
+						}else{
+						}
+					}
+				}
+
+				// process the next one.
+				if(fusionOccured){
+					m_FUSION_direct_fusionDone=false;
+					m_FUSION_first_done=false;
+					m_FUSION_paths_requested=false;
+					m_SEEDING_i++;
+				}else{
+					m_FUSION_first_done=false;
+					m_FUSION_direct_fusionDone=true;
+					m_FUSION_paths_requested=false;
+					m_FUSION_reverse_fusionDone=false;
+				}
+			}
+		}else if(!m_FUSION_reverse_fusionDone){
+			if(!m_FUSION_first_done){
+				if(!m_FUSION_paths_requested){
+					// get the paths going on the first vertex
+					uint64_t firstVertex=complementVertex(m_EXTENSION_contigs[m_SEEDING_i][m_EXTENSION_contigs[m_SEEDING_i].size()-1],m_wordSize);
+					uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
+					message[0]=firstVertex;
+					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(firstVertex),TAG_ASK_VERTEX_PATHS,getRank());
+					m_outbox.push_back(aMessage);
+					m_FUSION_paths_requested=true;
+					m_FUSION_paths_received=false;
+				}else if(m_FUSION_paths_received){
+					m_FUSION_first_done=true;
+					m_FUSION_paths_requested=false;
+					m_FUSION_last_done=false;
+					m_FUSION_firstPaths=m_FUSION_receivedPaths;
+				}
+			}else if(!m_FUSION_last_done){
+				// get the paths going on the last vertex.
+				if(!m_FUSION_paths_requested){
+					// get the paths going on the first vertex
+					uint64_t lastVertex=complementVertex(m_EXTENSION_contigs[m_SEEDING_i][0],m_wordSize);
+					uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
+					message[0]=lastVertex;
+					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(lastVertex),TAG_ASK_VERTEX_PATHS,getRank());
+					m_outbox.push_back(aMessage);
+					m_FUSION_paths_requested=true;
+					m_FUSION_paths_received=false;
+				}else if(m_FUSION_paths_received){
+					m_FUSION_last_done=true;
+					m_FUSION_paths_requested=false;
+					m_FUSION_lastPaths=m_FUSION_receivedPaths;
+				}
+			}else{
+				map<int,int> index;
+				map<int,int> starts;
+				map<int,int> ends;
+				int currentId=m_EXTENSION_identifiers[m_SEEDING_i];
+				for(int i=0;i<(int)m_FUSION_firstPaths.size();i++){
+					index[m_FUSION_firstPaths[i].getWave()]++;
+					int pathId=m_FUSION_firstPaths[i].getWave();
+					int progression=m_FUSION_firstPaths[i].getProgression();
+					if(starts.count(pathId)==0 or starts[pathId]>progression){
+						starts[pathId]=progression;
+					}
+				}
+				for(int i=0;i<(int)m_FUSION_lastPaths.size();i++){
+					index[m_FUSION_lastPaths[i].getWave()]++;
+					int pathId=m_FUSION_lastPaths[i].getWave();
+					int progression=m_FUSION_lastPaths[i].getProgression();
+					if(ends.count(pathId)==0 or ends[pathId]<progression){
+						ends[pathId]=progression;
+					}
+				}
+				vector<int> matches;
+				for(map<int,int>::iterator i=index.begin();i!=index.end();++i){
+					if(i->second>=2){
+						// possible match.
+						matches.push_back(i->first);
+					}
+				}
+
+				// decide right here what to do.
+				// if both start at 0 on first vertex, we eliminate the current if it does not have the smallest id.
+				
+				// check for matches starting at 0
+				for(int i=0;i<(int)matches.size();i++){
+					if(starts[matches[i]]==0 and ends[matches[i]]==(int)m_EXTENSION_contigs[m_SEEDING_i].size()-1){
+						if(matches[i]<currentId){
+							// we can trash currentId
+							m_FUSION_eliminated.insert(currentId); // boom	
+							cout<<"boom"<<endl;
 							break;
 						}
 					}
@@ -1300,7 +1402,6 @@ void Machine::processData(){
 				m_SEEDING_i++;
 			}
 		}
-
 	}
 
 	if(m_COPY_ranks==getSize()){
@@ -1400,7 +1501,6 @@ void Machine::processData(){
 			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<endl;
 			killRanks();
 		}else if(!m_EXTENSION_currentRankIsStarted){
-			cout<<"Rank "<<getRank()<<" asks "<<m_EXTENSION_rank<<" its extensions."<<endl;
 			m_EXTENSION_currentRankIsStarted=true;
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_EXTENSION_rank,TAG_ASK_EXTENSION_DATA,getRank());
 			m_outbox.push_back(aMessage);

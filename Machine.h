@@ -302,6 +302,7 @@ class Machine{
 	bool m_FUSION_paths_requested;
 	bool m_FUSION_paths_received;
 	vector<Direction> m_FUSION_firstPaths;
+	bool m_FUSION_reverse_fusionDone;
 	vector<Direction> m_FUSION_lastPaths;
 	vector<Direction> m_FUSION_receivedPaths;
 	// coverage distribubtion
