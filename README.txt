@@ -1,9 +1,3 @@
-Installation:
-
-Ray works with OpenMPI 1.4.1.
-
-
-
 Description:
 
 Ray is a single-executable program (the executable is Ray). Its aim is to assemble sequences on
