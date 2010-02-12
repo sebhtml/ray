@@ -24,6 +24,7 @@
 #define _Read
 
 #include<string>
+#include<stdint.h>
 #include<vector>
 #include<MyAllocator.h>
 using namespace std;
