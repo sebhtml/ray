@@ -1281,6 +1281,7 @@ void Machine::processData(){
 					m_FUSION_paths_requested=false;
 					m_FUSION_lastPaths=m_FUSION_receivedPaths;
 					m_FUSION_matches_done=false;
+					m_FUSION_matches.clear();
 				}
 			}else if(!m_FUSION_matches_done){
 				m_FUSION_matches_done=true;
@@ -1306,7 +1307,7 @@ void Machine::processData(){
 				}
 				vector<int> matches;
 				for(map<int,int>::iterator i=index.begin();i!=index.end();++i){
-					if(i->second>=2 and i->first != currentId){
+					if(i->second>=2 and i->first != currentId and (ends[i->first]-starts[i->first]+1)==(int)m_EXTENSION_contigs[m_SEEDING_i].size()){
 						// possible match.
 						m_FUSION_matches.push_back(i->first);
 						//cout<<"Matching "<<i->first<<endl;
@@ -1344,7 +1345,8 @@ void Machine::processData(){
 						m_FUSION_paths_requested=false;
 						//cout<<"Eliminating direct."<<endl;
 						m_SEEDING_i++;
-					}else if(false and m_FUSION_receivedLength>(int)m_EXTENSION_contigs[m_SEEDING_i].size()){
+					}else if(m_FUSION_receivedLength>(int)m_EXTENSION_contigs[m_SEEDING_i].size() ){
+						//cout<<" Forward-Forward match: otherId="<<m_FUSION_matches[m_FUSION_match_index]<<" otherLength="<<m_FUSION_receivedLength<<" with currentId="<<currentId<<" currentLength="<<m_EXTENSION_contigs[m_SEEDING_i].size() <<endl;
 						m_FUSION_eliminated.insert(currentId);
 						m_FUSION_direct_fusionDone=false;
 						m_FUSION_first_done=false;
@@ -1366,9 +1368,6 @@ void Machine::processData(){
 			int currentId=m_EXTENSION_identifiers[m_SEEDING_i];
 			if(!m_FUSION_first_done){
 				if(!m_FUSION_paths_requested){
-					if(m_EXTENSION_contigs[m_SEEDING_i].size()==30478){
-						cout<<"Rank "<<getRank()<<" has path with "<<30478<<" id="<<currentId<<endl;
-					}
 					// get the paths going on the first vertex
 					uint64_t firstVertex=complementVertex(m_EXTENSION_contigs[m_SEEDING_i][m_EXTENSION_contigs[m_SEEDING_i].size()-1],m_wordSize);
 					uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
@@ -1399,6 +1398,7 @@ void Machine::processData(){
 					m_FUSION_paths_requested=false;
 					m_FUSION_lastPaths=m_FUSION_receivedPaths;
 					m_FUSION_matches_done=false;
+					m_FUSION_matches.clear();
 				}
 			}else if(!m_FUSION_matches_done){
 				m_FUSION_matches_done=true;
@@ -1424,7 +1424,7 @@ void Machine::processData(){
 				}
 				vector<int> matches;
 				for(map<int,int>::iterator i=index.begin();i!=index.end();++i){
-					if(i->second>=2 and i->first != currentId){
+					if(i->second>=2 and i->first != currentId and ends[i->first]-starts[i->first]+1==(int)m_EXTENSION_contigs[m_SEEDING_i].size()){
 						// possible match.
 						m_FUSION_matches.push_back(i->first);
 						//cout<<"Matching "<<i->first<<endl;
@@ -1455,9 +1455,6 @@ void Machine::processData(){
 					m_FUSION_pathLengthRequested=true;
 					m_FUSION_pathLengthReceived=false;
 				}else if(m_FUSION_pathLengthReceived){
-					if(m_EXTENSION_contigs[m_SEEDING_i].size()==30478){
-						cout<<"Received this="<<m_FUSION_receivedLength<<" I am "<<currentId<<" "<<m_EXTENSION_contigs[m_SEEDING_i].size()<<endl;
-					}
 					if(m_FUSION_matches[m_FUSION_match_index]<currentId and m_FUSION_receivedLength == (int)m_EXTENSION_contigs[m_SEEDING_i].size()){
 						m_FUSION_eliminated.insert(currentId);
 						m_FUSION_direct_fusionDone=false;
@@ -1465,7 +1462,8 @@ void Machine::processData(){
 						m_FUSION_first_done=false;
 						m_FUSION_paths_requested=false;
 						m_SEEDING_i++;
-					}else if(false and m_FUSION_receivedLength>(int)m_EXTENSION_contigs[m_SEEDING_i].size()){
+					}else if(m_FUSION_receivedLength>(int)m_EXTENSION_contigs[m_SEEDING_i].size()){
+						//cout<<"I am "<<currentId<<" with length="<<m_EXTENSION_contigs[m_SEEDING_i].size()<<" with my friend "<<m_FUSION_matches[m_FUSION_match_index]<<" with length="<<m_FUSION_receivedLength<<endl;
 						m_FUSION_eliminated.insert(currentId);
 						m_FUSION_direct_fusionDone=false;
 						m_FUSION_first_done=false;

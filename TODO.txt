@@ -1,10 +1,13 @@
 
-* do a refinement on the merger.
+* possibly use a map<,> to hold information on path lengths.
 * use only the MODE constants for modes.
-* make it work on SRA001125.
-* try on human genome chromosome 1.
 * load paired reads.
 * use paired-end reads. to resolve repeats.
 * speed hack:   when extending reverse-complement paths, only thread reads at the ~1000 last vertices.
 * remove commented c++ code
+* commit results for Human genome chromosome 1 unpaired. 50 bp reads.
+* commit results for SRA001125 unpaired.
 
+
+* support 454's homopolymers. LOL (use the SRA003611 454 data)
+* support polymorphic genomes (which data to use, simulated data?)

@@ -45,7 +45,7 @@ RayMachinesFile.txt
 
 
 
-Example of commands:
+Example of commands (see the Makefile also.)
 
 mpirun -np 1 -machinefile RayMachinesFile.txt input.txt  # 1 cpu only
 
