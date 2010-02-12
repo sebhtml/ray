@@ -27,9 +27,9 @@
 
 
 #include<vector>
-#include"Vertex.h"
+#include<Vertex.h>
 #include<cstdlib>
-#include"common_functions.h"
+#include<common_functions.h>
 #include<iostream>
 using namespace std;
 

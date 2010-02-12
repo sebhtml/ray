@@ -29,14 +29,14 @@
 #include<mpi.h>
 #include<map>
 #include<vector>
-#include"Vertex.h"
+#include<Vertex.h>
 #include<SplayTree.h>
-#include"Message.h"
-#include"SplayTreeIterator.h"
+#include<Message.h>
+#include<SplayTreeIterator.h>
 #include<set>
 #include<Read.h>
-#include"Parameters.h"
-#include"MyAllocator.h"
+#include<Parameters.h>
+#include<MyAllocator.h>
 
 
 // tags

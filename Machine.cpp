@@ -19,20 +19,20 @@
 
 */
 
-#include"Machine.h"
+#include<Machine.h>
 #include<sstream>
-#include"Message.h"
+#include<Message.h>
 #include<assert.h>
-#include"common_functions.h"
+#include<common_functions.h>
 #include<iostream>
 #include<fstream>
-#include"CoverageDistribution.h"
+#include<CoverageDistribution.h>
 #include<string.h>
-#include"SplayTreeIterator.h"
+#include<SplayTreeIterator.h>
 #include<mpi.h>
-#include"Read.h"
-#include"Loader.h"
-#include"MyAllocator.h"
+#include<Read.h>
+#include<Loader.h>
+#include<MyAllocator.h>
 using namespace std;
 
 Machine::Machine(int argc,char**argv){

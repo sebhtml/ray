@@ -27,9 +27,9 @@
 #ifndef _Vertex
 
 #define _Vertex
-#include"ReadAnnotation.h"
-#include"MyAllocator.h"
-#include"Direction.h"
+#include<ReadAnnotation.h>
+#include<MyAllocator.h>
+#include<Direction.h>
 #include<stdint.h>
 #include<vector>
 using namespace std;

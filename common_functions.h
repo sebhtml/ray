@@ -21,7 +21,6 @@
 
 #ifndef _common_functions
 #define _common_functions
-#include<sys/stat.h>
 #include<stdint.h>
 #include<SplayTree.h>
 #include<stdlib.h>
@@ -34,18 +33,6 @@ using namespace std;
 
 #define MAX_NUMBER_OF_MPI_PROCESSES 10000
 
-// uniform random numbers
-// from Heng Li's code (LGPL)
-// http://maq.svn.sourceforge.net/viewvc/maq/trunk/maq/genran.h?view=markup
-
-#ifdef _WIN32
-#define ran_seed() srand(time(NULL))
-#define ran_uniform() rand()/(RAND_MAX+0.0)
-#else
-#define ran_seed() srand48(time(NULL)*(long)getpid())
-#define ran_uniform() drand48()
-#endif
-string reverseComplement(string a);
 uint64_t wordId(const char*a);
 string idToWord(uint64_t i,int wordSize);
 bool isValidDNA(const char*x);
@@ -56,23 +43,8 @@ uint64_t getKPrefix(uint64_t a,int k);
 uint64_t getKSuffix(uint64_t a,int k);
 uint64_t complementVertex(uint64_t a,int m_wordSize);
 
-void writePathsToFile(string file,vector<vector<uint64_t> >*paths);
 
-void loadPathsFromFile(string file,vector<vector<uint64_t> >*paths);
 string addLineBreaks(string sequence);
-
-int homopolymerLength(string*s);
-
-void loadTreeFromFile(string file,SplayTree<uint64_t,int>*tree);
-void writeTreeToFile(string file,SplayTree<uint64_t,int>*tree);
-
-void mkdir_portable(string directory);
-
-void processSequence(const char*readSequence,int wordSize,SplayTree<uint64_t,int>*treeOfVertices,SplayTree<uint64_t,int>*treeOfEdges);
-
-bool fileExists(string a);
-
-void statistics(vector<vector<uint64_t> >*paths);
 
 uint64_t hash_uint64_t(uint64_t a);
 

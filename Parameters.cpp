@@ -21,16 +21,16 @@
 
 
 
-#include"Parameters.h"
+#include<Parameters.h>
 #include<string>
 #include<iostream>
 #include<vector>
 #include<cstdlib>
 #include<fstream>
 #include<Read.h>
-#include"Loader.h"
-#include"Parameters.h"
-#include"MyAllocator.h"
+#include<Loader.h>
+#include<Parameters.h>
+#include<MyAllocator.h>
 using namespace std;
 
 Parameters::Parameters(){

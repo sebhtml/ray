@@ -246,13 +246,7 @@ int homopolymerLength(string*as){
 
 
 
-void mkdir_portable(string directory){
-	#ifndef _WIN32
-	mkdir(directory.c_str(),0700);
-	#else
-	system((((string)"mkdir -p ")+directory).c_str());
-	#endif
-}
+
 
 
 

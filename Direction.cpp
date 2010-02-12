@@ -19,7 +19,7 @@
 
 */
 
-#include"Direction.h"
+#include<Direction.h>
 #include<stdlib.h>
 
 void Direction::constructor(int wave,int progression){
