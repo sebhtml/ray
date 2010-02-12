@@ -2051,6 +2051,7 @@ void Machine::doChoice(){
 
 				int id=m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+getRank();
 				m_EXTENSION_identifiers.push_back(id);
+				cout<<"Rank "<<getRank()<<" add a path with "<<m_EXTENSION_extension.size()<<" vertices."<<endl;
 			}
 			m_EXTENSION_currentSeedIndex++;
 			m_EXTENSION_currentPosition=0;
@@ -2073,7 +2074,7 @@ void Machine::doChoice(){
 void Machine::checkIfCurrentVertexIsAssembled(){
 	if(!m_EXTENSION_directVertexDone){
 		if(!m_EXTENSION_VertexAssembled_requested){
-			if(m_EXTENSION_currentSeedIndex%1000==0 and m_EXTENSION_currentPosition==0){
+			if(m_EXTENSION_currentSeedIndex%10==0 and m_EXTENSION_currentPosition==0){
 				cout<<"Rank "<<getRank()<<": extending seeds "<<m_EXTENSION_currentSeedIndex<<"/"<<m_SEEDING_seeds.size()<<endl;
 			}
 			m_EXTENSION_VertexAssembled_requested=true;

@@ -1,4 +1,6 @@
 * remove commented c++ code
+* add progression for fusion in stdout.
+* add an early-stop technology (To speed up the process.)
 
 * possibly use a map<,> to hold information on path lengths.
 * use only the MODE constants for modes.
