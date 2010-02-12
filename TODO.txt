@@ -1,10 +1,10 @@
+* remove commented c++ code
 
 * possibly use a map<,> to hold information on path lengths.
 * use only the MODE constants for modes.
-* load paired reads.
-* use paired-end reads. to resolve repeats.
+* load paired reads. (test on SpPaired)
+* use paired-end reads. to resolve repeats. (teste on SpPaired)
 * speed hack:   when extending reverse-complement paths, only thread reads at the ~1000 last vertices.
-* remove commented c++ code
 * commit results for Human genome chromosome 1 unpaired. 50 bp reads.
 * commit results for SRA001125 unpaired.
 
