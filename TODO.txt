@@ -1,9 +1,7 @@
 
-* add early-stop trick
-* add path-merging.
-
 
 * use only the MODE constants for modes.
+
 * make it work on SRA001125.
 * try on human genome chromosome 1.
 * load paired reads.
@@ -12,3 +10,6 @@
 * speed hack:
   when extending reverse-complement paths, only thread reads at the ~1000
 last vertices.
+
+* document 10000, that is the max # of machines.
+* remove commented c++ code

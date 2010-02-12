@@ -109,6 +109,9 @@
 #define TAG_FUSION_DONE 68
 #define TAG_ASK_VERTEX_PATHS 69
 #define TAG_ASK_VERTEX_PATHS_REPLY 70
+#define TAG_GET_PATH_LENGTH 71
+#define TAG_GET_PATH_LENGTH_REPLY 72
+
 
 #define MASTER_RANK 0
 #define BARRIER_PERIOD 100
@@ -302,8 +305,15 @@ class Machine{
 	bool m_FUSION_paths_requested;
 	bool m_FUSION_paths_received;
 	vector<Direction> m_FUSION_firstPaths;
+	int m_FUSION_receivedLength;
 	bool m_FUSION_reverse_fusionDone;
 	vector<Direction> m_FUSION_lastPaths;
+	vector<int> m_FUSION_matches;
+	bool m_FUSION_matches_done;
+	bool m_FUSION_pathLengthReceived;
+	bool m_FUSION_matches_length_done;
+	int m_FUSION_match_index;
+	bool m_FUSION_pathLengthRequested;
 	vector<Direction> m_FUSION_receivedPaths;
 	// coverage distribubtion
 	map<int,uint64_t> m_coverageDistribution;

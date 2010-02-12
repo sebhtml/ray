@@ -404,6 +404,27 @@ void Machine::processMessage(Message*message){
 		#endif
 		m_SEEDING_NodeInitiated=false;
 		m_SEEDING_i=0;
+	}else if(tag==TAG_GET_PATH_LENGTH){
+		uint64_t*incoming=(uint64_t*)buffer;
+		int id=incoming[0];
+		int length=-1;
+		for(int i=0;i<(int)m_EXTENSION_contigs.size();i++){
+			if(m_EXTENSION_identifiers[i]==id){
+				length=m_EXTENSION_contigs[i].size();
+			}
+		}
+		if(length==-1){
+			cout<<"Error FATALL"<<endl;
+		}
+		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(sizeof(uint64_t));
+		message[0]=length;
+		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,source,TAG_GET_PATH_LENGTH_REPLY,getRank());
+		m_outbox.push_back(aMessage);
+	}else if(tag==TAG_GET_PATH_LENGTH_REPLY){
+		uint64_t*incoming=(uint64_t*)buffer;
+		m_FUSION_receivedLength=incoming[0];
+		//cout<<"Length="<<m_FUSION_receivedLength<<endl;
+		m_FUSION_pathLengthReceived=true;
 	}else if(tag==TAG_REQUEST_VERTEX_COVERAGE){
 		uint64_t*incoming=(uint64_t*)buffer;
 		SplayNode<uint64_t,Vertex>*node=m_subgraph.find(incoming[0]);
@@ -781,7 +802,7 @@ void Machine::processData(){
 		}
 		m_startEdgeDistribution=false;
 	}else if(m_numberOfMachinesReadyForEdgesDistribution==getSize() and isMaster()){
-		cout<<"Rank "<<getRank()<<" tells others to start edges distribution."<<endl;
+		//cout<<"Rank "<<getRank()<<" tells others to start edges distribution."<<endl;
 		m_numberOfMachinesReadyForEdgesDistribution=-1;
 		for(int i=0;i<getSize();i++){
 			char*sequence=m_name;
@@ -794,9 +815,11 @@ void Machine::processData(){
 		m_minimumCoverage=distribution.getMinimumCoverage();
 		m_peakCoverage=distribution.getPeakCoverage();
 		m_seedCoverage=(m_minimumCoverage+m_peakCoverage)/2;
-		cout<<"Rank "<<getRank()<<" MinimumCoverage = "<<m_minimumCoverage<<endl;
-		cout<<"Rank "<<getRank()<<" PeakCoverage = "<<m_peakCoverage<<endl;
-		cout<<"Rank "<<getRank()<<" SeedCoverage = "<<m_seedCoverage<<endl;
+/*
+		cout<<"Rank "<<getRank()<<": MinimumCoverage = "<<m_minimumCoverage<<endl;
+		cout<<"Rank "<<getRank()<<": PeakCoverage = "<<m_peakCoverage<<endl;
+		cout<<"Rank "<<getRank()<<": SeedCoverage = "<<m_seedCoverage<<endl;
+*/
 		m_coverageDistribution.clear();
 
 		// see these values to everyone.
@@ -1183,7 +1206,7 @@ void Machine::processData(){
 		attachReads();
 	}else if(m_mode==MODE_EXTENSION_ASK and isMaster()){
 		for(int i=0;i<(int)getSize();i++){
-			cout<<"Rank "<<getRank()<<" tells "<<i<<" to extend its seeds."<<endl;
+			//cout<<"Rank "<<getRank()<<" tells "<<i<<" to extend its seeds."<<endl;
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_ASK_EXTENSION,getRank());
 			m_outbox.push_back(aMessage);
 		}
@@ -1225,6 +1248,7 @@ void Machine::processData(){
 			m_mode=MODE_DO_NOTHING;
 			
 		}else if(!m_FUSION_direct_fusionDone){
+			int currentId=m_EXTENSION_identifiers[m_SEEDING_i];
 			if(!m_FUSION_first_done){
 				if(!m_FUSION_paths_requested){
 					// get the paths going on the first vertex
@@ -1256,13 +1280,13 @@ void Machine::processData(){
 					m_FUSION_last_done=true;
 					m_FUSION_paths_requested=false;
 					m_FUSION_lastPaths=m_FUSION_receivedPaths;
+					m_FUSION_matches_done=false;
 				}
-			}else{
+			}else if(!m_FUSION_matches_done){
+				m_FUSION_matches_done=true;
 				map<int,int> index;
 				map<int,int> starts;
 				map<int,int> ends;
-				bool fusionOccured=false;
-				int currentId=m_EXTENSION_identifiers[m_SEEDING_i];
 				for(int i=0;i<(int)m_FUSION_firstPaths.size();i++){
 					index[m_FUSION_firstPaths[i].getWave()]++;
 					int pathId=m_FUSION_firstPaths[i].getWave();
@@ -1282,45 +1306,69 @@ void Machine::processData(){
 				}
 				vector<int> matches;
 				for(map<int,int>::iterator i=index.begin();i!=index.end();++i){
-					if(i->second>=2){
+					if(i->second>=2 and i->first != currentId){
 						// possible match.
-						matches.push_back(i->first);
+						m_FUSION_matches.push_back(i->first);
+						//cout<<"Matching "<<i->first<<endl;
 					}
 				}
-
-				// decide right here what to do.
-				// if both start at 0 on first vertex, we eliminate the current if it does not have the smallest id.
-				
-				// check for matches starting at 0
-				for(int i=0;i<(int)matches.size();i++){
-					if(starts[matches[i]]==0){
-						if(matches[i]<currentId){
-							// we can trash currentId
-							m_FUSION_eliminated.insert(currentId); // boom	
-							fusionOccured=true;
-							cout<<"bang"<<endl;
-							break;
-						}else{
-						}
-					}
-				}
-
-				// process the next one.
-				if(fusionOccured){
-					m_FUSION_direct_fusionDone=false;
-					m_FUSION_first_done=false;
-					m_FUSION_paths_requested=false;
-					m_SEEDING_i++;
-				}else{
-					m_FUSION_first_done=false;
+				if(m_FUSION_matches.size()==0){ // no match, go next.
 					m_FUSION_direct_fusionDone=true;
-					m_FUSION_paths_requested=false;
 					m_FUSION_reverse_fusionDone=false;
+					m_FUSION_first_done=false;
+					m_FUSION_paths_requested=false;
 				}
+				m_FUSION_matches_length_done=false;
+				m_FUSION_match_index=0;
+				m_FUSION_pathLengthRequested=false;
+			}else if(!m_FUSION_matches_length_done){
+				int currentId=m_EXTENSION_identifiers[m_SEEDING_i];
+				if(m_FUSION_match_index==(int)m_FUSION_matches.size()){
+					m_FUSION_matches_length_done=true;
+				}else if(!m_FUSION_pathLengthRequested){
+					int uniquePathId=m_FUSION_matches[m_FUSION_match_index];
+					int rankId=uniquePathId%10000;
+					//cout<<"UniquePathId="<<uniquePathId<<endl;
+					//cout<<"RankId="<<rankId<<endl;
+					uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(sizeof(uint64_t));
+					message[0]=uniquePathId;
+					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rankId,TAG_GET_PATH_LENGTH,getRank());
+					m_outbox.push_back(aMessage);
+					m_FUSION_pathLengthRequested=true;
+					m_FUSION_pathLengthReceived=false;
+				}else if(m_FUSION_pathLengthReceived){
+					if(m_FUSION_matches[m_FUSION_match_index]<currentId and m_FUSION_receivedLength == (int)m_EXTENSION_contigs[m_SEEDING_i].size()){
+						m_FUSION_eliminated.insert(currentId);
+						m_FUSION_direct_fusionDone=false;
+						m_FUSION_first_done=false;
+						m_FUSION_paths_requested=false;
+						//cout<<"Eliminating direct."<<endl;
+						m_SEEDING_i++;
+					}else if(false and m_FUSION_receivedLength>(int)m_EXTENSION_contigs[m_SEEDING_i].size()){
+						m_FUSION_eliminated.insert(currentId);
+						m_FUSION_direct_fusionDone=false;
+						m_FUSION_first_done=false;
+						m_FUSION_paths_requested=false;
+						m_SEEDING_i++;
+					}
+					m_FUSION_match_index++;
+					m_FUSION_pathLengthRequested=false;
+				}
+			}else if(m_FUSION_matches_length_done){ // no candidate found for fusion.
+				m_FUSION_direct_fusionDone=true;
+				m_FUSION_reverse_fusionDone=false;
+				m_FUSION_first_done=false;
+				m_FUSION_paths_requested=false;
+				//m_SEEDING_i++;
 			}
+
 		}else if(!m_FUSION_reverse_fusionDone){
+			int currentId=m_EXTENSION_identifiers[m_SEEDING_i];
 			if(!m_FUSION_first_done){
 				if(!m_FUSION_paths_requested){
+					if(m_EXTENSION_contigs[m_SEEDING_i].size()==30478){
+						cout<<"Rank "<<getRank()<<" has path with "<<30478<<" id="<<currentId<<endl;
+					}
 					// get the paths going on the first vertex
 					uint64_t firstVertex=complementVertex(m_EXTENSION_contigs[m_SEEDING_i][m_EXTENSION_contigs[m_SEEDING_i].size()-1],m_wordSize);
 					uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
@@ -1350,12 +1398,13 @@ void Machine::processData(){
 					m_FUSION_last_done=true;
 					m_FUSION_paths_requested=false;
 					m_FUSION_lastPaths=m_FUSION_receivedPaths;
+					m_FUSION_matches_done=false;
 				}
-			}else{
+			}else if(!m_FUSION_matches_done){
+				m_FUSION_matches_done=true;
 				map<int,int> index;
 				map<int,int> starts;
 				map<int,int> ends;
-				int currentId=m_EXTENSION_identifiers[m_SEEDING_i];
 				for(int i=0;i<(int)m_FUSION_firstPaths.size();i++){
 					index[m_FUSION_firstPaths[i].getWave()]++;
 					int pathId=m_FUSION_firstPaths[i].getWave();
@@ -1366,6 +1415,7 @@ void Machine::processData(){
 				}
 				for(int i=0;i<(int)m_FUSION_lastPaths.size();i++){
 					index[m_FUSION_lastPaths[i].getWave()]++;
+					
 					int pathId=m_FUSION_lastPaths[i].getWave();
 					int progression=m_FUSION_lastPaths[i].getProgression();
 					if(ends.count(pathId)==0 or ends[pathId]<progression){
@@ -1374,34 +1424,65 @@ void Machine::processData(){
 				}
 				vector<int> matches;
 				for(map<int,int>::iterator i=index.begin();i!=index.end();++i){
-					if(i->second>=2){
+					if(i->second>=2 and i->first != currentId){
 						// possible match.
-						matches.push_back(i->first);
+						m_FUSION_matches.push_back(i->first);
+						//cout<<"Matching "<<i->first<<endl;
 					}
 				}
-
-				// decide right here what to do.
-				// if both start at 0 on first vertex, we eliminate the current if it does not have the smallest id.
-				
-				// check for matches starting at 0
-				for(int i=0;i<(int)matches.size();i++){
-					if(starts[matches[i]]==0 and ends[matches[i]]==(int)m_EXTENSION_contigs[m_SEEDING_i].size()-1){
-						if(matches[i]<currentId){
-							// we can trash currentId
-							m_FUSION_eliminated.insert(currentId); // boom	
-							cout<<"boom"<<endl;
-							break;
-						}
-					}
+				if(m_FUSION_matches.size()==0){ // no match, go next.
+					m_FUSION_direct_fusionDone=false;
+					m_FUSION_first_done=false;
+					m_FUSION_paths_requested=false;
+					m_SEEDING_i++;
 				}
-
-				// process the next one.
+				m_FUSION_matches_length_done=false;
+				m_FUSION_match_index=0;
+				m_FUSION_pathLengthRequested=false;
+			}else if(!m_FUSION_matches_length_done){
+				int currentId=m_EXTENSION_identifiers[m_SEEDING_i];
+				if(m_FUSION_match_index==(int)m_FUSION_matches.size()){
+					m_FUSION_matches_length_done=true;
+				}else if(!m_FUSION_pathLengthRequested){
+					int uniquePathId=m_FUSION_matches[m_FUSION_match_index];
+					int rankId=uniquePathId%10000;
+					//cout<<"UniquePathId="<<uniquePathId<<endl;
+					//cout<<"RankId="<<rankId<<endl;
+					uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(sizeof(uint64_t));
+					message[0]=uniquePathId;
+					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rankId,TAG_GET_PATH_LENGTH,getRank());
+					m_outbox.push_back(aMessage);
+					m_FUSION_pathLengthRequested=true;
+					m_FUSION_pathLengthReceived=false;
+				}else if(m_FUSION_pathLengthReceived){
+					if(m_EXTENSION_contigs[m_SEEDING_i].size()==30478){
+						cout<<"Received this="<<m_FUSION_receivedLength<<" I am "<<currentId<<" "<<m_EXTENSION_contigs[m_SEEDING_i].size()<<endl;
+					}
+					if(m_FUSION_matches[m_FUSION_match_index]<currentId and m_FUSION_receivedLength == (int)m_EXTENSION_contigs[m_SEEDING_i].size()){
+						m_FUSION_eliminated.insert(currentId);
+						m_FUSION_direct_fusionDone=false;
+						//cout<<"eliminating reverse."<<endl;
+						m_FUSION_first_done=false;
+						m_FUSION_paths_requested=false;
+						m_SEEDING_i++;
+					}else if(false and m_FUSION_receivedLength>(int)m_EXTENSION_contigs[m_SEEDING_i].size()){
+						m_FUSION_eliminated.insert(currentId);
+						m_FUSION_direct_fusionDone=false;
+						m_FUSION_first_done=false;
+						m_FUSION_paths_requested=false;
+						m_SEEDING_i++;
+					}
+					m_FUSION_match_index++;
+					m_FUSION_pathLengthRequested=false;
+				}
+			}else if(m_FUSION_matches_length_done){ // no candidate found for fusion.
 				m_FUSION_direct_fusionDone=false;
 				m_FUSION_first_done=false;
 				m_FUSION_paths_requested=false;
 				m_SEEDING_i++;
 			}
 		}
+
 	}
 
 	if(m_COPY_ranks==getSize()){
