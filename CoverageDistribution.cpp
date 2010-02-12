@@ -24,7 +24,6 @@
 #include<iostream>
 #include<fstream>
 #include<map>
-#include"types.h"
 using namespace std;
 
 CoverageDistribution::CoverageDistribution(map<int,uint64_t>distributionOfCoverage,string m_assemblyDirectory){

@@ -347,7 +347,7 @@ void Machine::processMessage(Message*message){
 		uint64_t*incoming=(uint64_t*)buffer;
 		for(int i=0;i<length;i++){
 			uint64_t l=incoming[i];
-			if(m_last_value!=m_subgraph.size() and m_subgraph.size()%100000==0){
+			if(m_last_value!=(int)m_subgraph.size() and (int)m_subgraph.size()%100000==0){
 				m_last_value=m_subgraph.size();
 				cout<<"Rank "<<getRank()<<" has "<<m_subgraph.size()<<" vertices "<<endl;
 			}
@@ -863,11 +863,11 @@ void Machine::processData(){
 				memcpy(memory,readSequence+p,m_wordSize);
 				memory[m_wordSize]='\0';
 				if(isValidDNA(memory)){
-					VertexMer a=wordId(memory);
+					uint64_t a=wordId(memory);
 					if(m_reverseComplementVertex==false){
 						messagesStock[vertexRank(a)].push_back(a);
 					}else{
-						VertexMer b=complementVertex(a,m_wordSize);
+						uint64_t b=complementVertex(a,m_wordSize);
 						messagesStock[vertexRank(b)].push_back(b);
 					}
 				}
@@ -993,9 +993,9 @@ void Machine::processData(){
 				memcpy(memory,readSequence+p,m_wordSize+1);
 				memory[m_wordSize+1]='\0';
 				if(isValidDNA(memory)){
-					VertexMer a=wordId(memory);
+					uint64_t a=wordId(memory);
 					if(m_reverseComplementEdge){
-						VertexMer b=complementVertex(a,m_wordSize+1);
+						uint64_t b=complementVertex(a,m_wordSize+1);
 						uint64_t b_1=getKPrefix(b,m_wordSize);
 						uint64_t b_2=getKSuffix(b,m_wordSize);
 						int rankB=vertexRank(b_1);
@@ -1068,10 +1068,10 @@ void Machine::processData(){
 				memcpy(memory,readSequence+p,m_wordSize+1);
 				memory[m_wordSize+1]='\0';
 				if(isValidDNA(memory)){
-					VertexMer a=wordId(memory);
+					uint64_t a=wordId(memory);
 
 					if(m_reverseComplementEdge){
-						VertexMer b=complementVertex(a,m_wordSize+1);
+						uint64_t b=complementVertex(a,m_wordSize+1);
 						uint64_t b_1=getKPrefix(b,m_wordSize);
 						uint64_t b_2=getKSuffix(b,m_wordSize);
 						int rankB=vertexRank(b_2);
@@ -1119,7 +1119,7 @@ void Machine::processData(){
 
 		// assign a first vertex
 		if(!m_SEEDING_NodeInitiated){
-			if(m_SEEDING_i==m_subgraph.size()-1){
+			if(m_SEEDING_i==(int)m_subgraph.size()-1){
 				m_mode=MODE_DO_NOTHING;
 				cout<<"Rank "<<getRank()<<" seeding vertices. "<<m_SEEDING_i<<"/"<<m_subgraph.size()<<" (DONE)"<<endl;
 				Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_SEEDING_IS_OVER,getRank());
@@ -1327,7 +1327,7 @@ void Machine::processData(){
 					m_FUSION_matches_length_done=true;
 				}else if(!m_FUSION_pathLengthRequested){
 					int uniquePathId=m_FUSION_matches[m_FUSION_match_index];
-					int rankId=uniquePathId%10000;
+					int rankId=uniquePathId%MAX_NUMBER_OF_MPI_PROCESSES;
 					//cout<<"UniquePathId="<<uniquePathId<<endl;
 					//cout<<"RankId="<<rankId<<endl;
 					uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(sizeof(uint64_t));
@@ -1445,7 +1445,7 @@ void Machine::processData(){
 					m_FUSION_matches_length_done=true;
 				}else if(!m_FUSION_pathLengthRequested){
 					int uniquePathId=m_FUSION_matches[m_FUSION_match_index];
-					int rankId=uniquePathId%10000;
+					int rankId=uniquePathId%MAX_NUMBER_OF_MPI_PROCESSES;
 					//cout<<"UniquePathId="<<uniquePathId<<endl;
 					//cout<<"RankId="<<rankId<<endl;
 					uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(sizeof(uint64_t));
@@ -2051,7 +2051,7 @@ void Machine::doChoice(){
 			if(m_EXTENSION_extension.size()>=100){
 				m_EXTENSION_contigs.push_back(m_EXTENSION_extension);
 
-				int id=m_EXTENSION_currentSeedIndex*10000+getRank();
+				int id=m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+getRank();
 				m_EXTENSION_identifiers.push_back(id);
 			}
 			m_EXTENSION_currentSeedIndex++;
@@ -2119,7 +2119,7 @@ void Machine::markCurrentVertexAsAssembled(){
 			m_EXTENSION_extension.push_back(m_SEEDING_currentVertex);
 			// save wave progress.
 	
-			int waveId=m_EXTENSION_currentSeedIndex*10000+getRank();
+			int waveId=m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+getRank();
 			int progression=m_EXTENSION_extension.size()-1;
 			
 			//cout<<"Rank "<<getRank()<<" Mark assembled."<<endl;

@@ -21,6 +21,7 @@
 
 #include"ReadAnnotation.h"
 #include<cstdlib>
+#include<common_functions.h>
 
 void ReadAnnotation::constructor(int a,int b,char c){
 	m_rank=a;
@@ -50,6 +51,6 @@ ReadAnnotation*ReadAnnotation::getNext()const{
 }
 
 int ReadAnnotation::getUniqueId()const{
-	return getReadIndex()*10000+getRank();
+	return getReadIndex()*MAX_NUMBER_OF_MPI_PROCESSES+getRank();
 }
 

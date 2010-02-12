@@ -31,7 +31,6 @@
 #include<cstdlib>
 #include"common_functions.h"
 #include<iostream>
-#include"types.h"
 using namespace std;
 
 void Vertex::constructor(){

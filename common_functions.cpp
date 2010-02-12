@@ -60,7 +60,7 @@ string reverseComplement(string a){
 }
 
 // convert k-mer to uint64_t
-VertexMer wordId(const char*a){
+uint64_t wordId(const char*a){
 	uint64_t i=0;
 	for(int j=0;j<(int)strlen(a);j++){
 		uint64_t k=0; // default is A
@@ -81,7 +81,7 @@ VertexMer wordId(const char*a){
 	return i;
 }
 
-string idToWord(VertexMer i,int wordSize){
+string idToWord(uint64_t i,int wordSize){
 	char*a=new char[wordSize+1];
 	for(int p=0;p<wordSize;p++){
 		uint64_t j=(i<<(62-2*p))>>62;
@@ -123,7 +123,7 @@ char getFirstSymbol(uint64_t i,int k){
 	return '0';
 }
 
-char getLastSymbol(VertexMer i,int m_wordSize){
+char getLastSymbol(uint64_t i,int m_wordSize){
 	i=(i<<(64-2*m_wordSize))>>62;
         if((int)i==0)
                 return 'A';
@@ -154,7 +154,7 @@ bool isValidDNA(const char*x){
  *
  */
 
-void coutBIN(VertexMer a){
+void coutBIN(uint64_t a){
 	for(int i=63;i>=0;i--){
 		cout<<(int)((a<<(63-i))>>63);
 	}
@@ -163,17 +163,17 @@ void coutBIN(VertexMer a){
 
 
 
-VertexMer getKPrefix(VertexMer a,int k){
+uint64_t getKPrefix(uint64_t a,int k){
 	return (a<<(64-2*(k+1)+2))>>(64-2*(k+1)+2);
 }
 
-VertexMer getKSuffix(VertexMer a,int k){
+uint64_t getKSuffix(uint64_t a,int k){
 	return a>>2;
 }
 
 
 
-VertexMer complementVertex(VertexMer a,int m_wordSize){
+uint64_t complementVertex(uint64_t a,int m_wordSize){
 	//  A:0, T:1, C:2, G:3
 	uint64_t output=0;
 	int position2=0;

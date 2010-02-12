@@ -1,4 +1,4 @@
-
+* do a refinement on the merger.
 
 * use only the MODE constants for modes.
 
@@ -11,5 +11,6 @@
   when extending reverse-complement paths, only thread reads at the ~1000
 last vertices.
 
-* document 10000, that is the max # of machines.
 * remove commented c++ code
+
+* in includes, only use < and >

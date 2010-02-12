@@ -29,8 +29,8 @@
 #define _Vertex
 #include"ReadAnnotation.h"
 #include"MyAllocator.h"
-#include"types.h"
 #include"Direction.h"
+#include<stdint.h>
 #include<vector>
 using namespace std;
 

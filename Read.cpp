@@ -67,14 +67,14 @@ int Read::length(){
  *           -----------------------------------
  *                     p p-1 p-2               0
  */
-VertexMer Read::Vertex(int pos,int w,char strand){
+uint64_t Read::Vertex(int pos,int w,char strand){
 	if(pos>length()-w){
 		cout<<"Fatal: offset is too large."<<endl;
 	}
 	if(pos<0){
 		cout<<"Fatal: negative offset. "<<pos<<endl;
 	}
-	VertexMer key=0;
+	uint64_t key=0;
 	if(strand=='F'){
 		for(int i=0;i<w;i++){
 			char a=m_sequence[pos+i];

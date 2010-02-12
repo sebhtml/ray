@@ -25,7 +25,6 @@
 
 #include<vector>
 #include<stdlib.h>
-#include<types.h>
 #include<SplayNode.h>
 #include<iostream>
 #include<MyAllocator.h>
@@ -41,7 +40,7 @@ using namespace std;
 template<class KEY,class VALUE>
 class SplayTree{
 	SplayNode<KEY,VALUE>*m_root;
-	VertexIndex m_size;
+	uint64_t m_size;
 	bool m_inserted;
 	void splay(KEY key);
 	MyAllocator m_allocator;
@@ -54,7 +53,7 @@ public:
 	SplayNode<KEY,VALUE>*find(KEY key);
 	void print();
 	SplayNode<KEY,VALUE>*getRoot();
-	VertexIndex size();
+	uint64_t size();
 	bool inserted();
 	void clear();
 };
@@ -66,7 +65,7 @@ void SplayTree<KEY,VALUE>::clear(){
 }
 
 template<class KEY,class VALUE>
-VertexIndex SplayTree<KEY,VALUE>::size(){
+uint64_t SplayTree<KEY,VALUE>::size(){
 	return m_size;
 }
 

@@ -23,7 +23,6 @@
 #ifndef _Read
 #define _Read
 
-#include<types.h>
 #include<string>
 #include<vector>
 #include<MyAllocator.h>
@@ -38,7 +37,7 @@ public:
 	char*getSeq();
 	char*getId();
 	int length();
-	VertexMer Vertex(int pos,int w,char strand);
+	uint64_t Vertex(int pos,int w,char strand);
 	void copy(const char*id,const char*sequence,MyAllocator*seqMyAllocator);
 };
 

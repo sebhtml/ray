@@ -21,17 +21,18 @@
 
 #ifndef _common_functions
 #define _common_functions
-#include<AvlTree.h>
 #include<sys/stat.h>
 #include<stdint.h>
 #include<SplayTree.h>
-#include<types.h>
 #include<stdlib.h>
 #include<sys/types.h>
 #include<unistd.h>
 #include<string>
 #include<vector>
 using namespace std;
+
+
+#define MAX_NUMBER_OF_MPI_PROCESSES 10000
 
 // uniform random numbers
 // from Heng Li's code (LGPL)
@@ -45,33 +46,33 @@ using namespace std;
 #define ran_uniform() drand48()
 #endif
 string reverseComplement(string a);
-VertexMer wordId(const char*a);
-string idToWord(VertexMer i,int wordSize);
+uint64_t wordId(const char*a);
+string idToWord(uint64_t i,int wordSize);
 bool isValidDNA(const char*x);
 char getFirstSymbol(uint64_t i,int k);
-char getLastSymbol(VertexMer i,int w);
-void coutBIN(VertexMer a);
-VertexMer getKPrefix(VertexMer a,int k);
-VertexMer getKSuffix(VertexMer a,int k);
-VertexMer complementVertex(VertexMer a,int m_wordSize);
+char getLastSymbol(uint64_t i,int w);
+void coutBIN(uint64_t a);
+uint64_t getKPrefix(uint64_t a,int k);
+uint64_t getKSuffix(uint64_t a,int k);
+uint64_t complementVertex(uint64_t a,int m_wordSize);
 
-void writePathsToFile(string file,vector<vector<VertexIndex> >*paths);
+void writePathsToFile(string file,vector<vector<uint64_t> >*paths);
 
-void loadPathsFromFile(string file,vector<vector<VertexIndex> >*paths);
+void loadPathsFromFile(string file,vector<vector<uint64_t> >*paths);
 string addLineBreaks(string sequence);
 
 int homopolymerLength(string*s);
 
-void loadTreeFromFile(string file,SplayTree<VertexMer,int>*tree);
-void writeTreeToFile(string file,SplayTree<VertexMer,int>*tree);
+void loadTreeFromFile(string file,SplayTree<uint64_t,int>*tree);
+void writeTreeToFile(string file,SplayTree<uint64_t,int>*tree);
 
 void mkdir_portable(string directory);
 
-void processSequence(const char*readSequence,int wordSize,SplayTree<VertexMer,int>*treeOfVertices,SplayTree<VertexMer,int>*treeOfEdges);
+void processSequence(const char*readSequence,int wordSize,SplayTree<uint64_t,int>*treeOfVertices,SplayTree<uint64_t,int>*treeOfEdges);
 
 bool fileExists(string a);
 
-void statistics(vector<vector<VertexIndex> >*paths);
+void statistics(vector<vector<uint64_t> >*paths);
 
 uint64_t hash_uint64_t(uint64_t a);
 
