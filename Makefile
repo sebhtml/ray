@@ -1,9 +1,11 @@
 #CXXFLAGS=  -Wall -g -I. -DDEBUG
-CXXFLAGS=  -Wall  -I.  -O3
+CXXFLAGS=  -Wall  -I.  -g
 
 #ls 30
 MPIRUN=~/software/openmpi-1.4.1/output/bin/mpirun 
 MPICC=~/software/openmpi-1.4.1/output/bin/mpic++
+
+#MPICC=~/software/mpich2-1.2.1/output/bin/mpic++
 
 # colosse:
 #MPIRUN=/software/MPI/openmpi-1.4.1_gcc/bin/mpirun
