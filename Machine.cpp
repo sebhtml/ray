@@ -472,6 +472,8 @@ void Machine::processMessage(Message*message){
 			a.constructor(id,progression);
 			m_FUSION_receivedPaths.push_back(a);
 		}
+	}else if(tag==TAG_DUMMY_MESSAGE){
+		// do nothing.
 	}else if(tag==TAG_ASK_EXTENSION_DATA){
 		m_mode=MODE_SEND_EXTENSION_DATA;
 		m_SEEDING_i=0;
@@ -2052,7 +2054,7 @@ void Machine::doChoice(){
 
 				int id=m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+getRank();
 				m_EXTENSION_identifiers.push_back(id);
-				cout<<"Rank "<<getRank()<<" add a path with "<<m_EXTENSION_extension.size()<<" vertices."<<endl;
+			//cout<<"Rank "<<getRank()<<" add a path with "<<m_EXTENSION_extension.size()<<" vertices."<<endl;
 			}
 			m_EXTENSION_currentSeedIndex++;
 			m_EXTENSION_currentPosition=0;

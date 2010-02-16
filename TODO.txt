@@ -1,5 +1,5 @@
-* SRA001125 freezes with 32 cores on ls30. (find the bug)
-
+* SRA001125 freezes with 32 cores on ls30. (find the bug, fixed with --mca btl ^sm
+* essayer plusieurs valeurs de périodes pour les barriers.
 * remove commented c++ code
 * add progression for fusion in stdout.
 * add an early-stop technology (To speed up the process.)

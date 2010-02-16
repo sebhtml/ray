@@ -1,4 +1,4 @@
-CXXFLAGS=  -Wall  -I.  -g
+CXXFLAGS=  -Wall  -I.  -O3
 
 MPIRUN=~/software/openmpi-1.4.1/output/bin/mpirun 
 MPICC=~/software/openmpi-1.4.1/output/bin/mpic++
