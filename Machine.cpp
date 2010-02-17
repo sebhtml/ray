@@ -159,7 +159,7 @@ void Machine::run(){
 
 		#ifdef SHOW_STATISTICS
 		time_t theTime=time(NULL);
-		if(theTime>m_lastTimeStamp+INTERVAL){
+		if(theTime>=m_lastTimeStamp+INTERVAL){
 			m_lastTimeStamp=theTime;
 			ostringstream o;
 			o<<"STATISTICS "<<getRank()<<" "<<INTERVAL<<" "<<theTime;
