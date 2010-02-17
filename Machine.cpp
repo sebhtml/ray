@@ -30,6 +30,9 @@
 #include<string.h>
 #include<SplayTreeIterator.h>
 #include<mpi.h>
+#ifdef SHOW_STATISTICS
+#include<time.h>
+#endif
 #include<Read.h>
 #include<Loader.h>
 #include<MyAllocator.h>
@@ -70,7 +73,10 @@ Machine::Machine(int argc,char**argv){
 	m_messageSentForVerticesDistribution=false;
 	m_sequence_ready_machines=0;
 
-
+	#ifdef SHOW_STATISTICS
+	#define INTERVAL 1
+	m_lastTimeStamp=time(NULL);
+	#endif
 
 	m_outboxAllocator.constructor(OUTBOX_ALLOCATOR_CHUNK_SIZE);
 	m_inboxAllocator.constructor(INBOX_ALLOCATOR_CHUNK_SIZE);
@@ -127,17 +133,44 @@ void Machine::run(){
 			}
 		}
 		
-		if(!(m_watchMaxTicks and m_ticks > m_maxTicks)){
-			m_ticks++;
-		}else{
-			m_alive=false;
-		}
 
 		receiveMessages(); 
 		checkRequests();
 		processMessages();
 		processData();
+
+		if(!(m_watchMaxTicks and m_ticks > m_maxTicks)){
+			m_ticks++;
+			/*
+			if(m_outbox.size()>0){// only do something when the outbox 
+				m_ticks++;
+			}
+			if(m_mode==MODE_DO_NOTHING){
+				m_ticks++; // the outbox is empty, and the MPI process is not waiting for something.
+			}
+			*/
+		}else{
+
+			m_alive=false;
+		}
+
+
 		sendMessages();
+
+		#ifdef SHOW_STATISTICS
+		time_t theTime=time(NULL);
+		if(theTime>m_lastTimeStamp+INTERVAL){
+			m_lastTimeStamp=theTime;
+			ostringstream o;
+			o<<"STATISTICS "<<getRank()<<" "<<INTERVAL<<" "<<theTime;
+			for(int i=0;i<getSize();i++){
+				o<<" "<<m_statistics[i];
+			}
+			o<<endl;
+			cout<<o.str();
+			m_statistics.clear();
+		}
+		#endif
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
 }
@@ -145,6 +178,9 @@ void Machine::run(){
 void Machine::sendMessages(){
 	for(int i=0;i<(int)m_outbox.size();i++){
 		Message*aMessage=&(m_outbox[i]);
+		#ifdef SHOW_STATISTICS
+		m_statistics[aMessage->getDestination()]++;
+		#endif
 		if(aMessage->getDestination()==getRank()){
 			int sizeOfElements=8;
 			if(aMessage->getTag()==TAG_SEND_SEQUENCE){
@@ -472,9 +508,8 @@ void Machine::processMessage(Message*message){
 			a.constructor(id,progression);
 			m_FUSION_receivedPaths.push_back(a);
 		}
-	}else if(tag==TAG_DUMMY_MESSAGE){
-		// do nothing.
 	}else if(tag==TAG_ASK_EXTENSION_DATA){
+		//cout<<"Rank "<<getRank()<<" will give data."<<endl;
 		m_mode=MODE_SEND_EXTENSION_DATA;
 		m_SEEDING_i=0;
 		m_EXTENSION_currentPosition=0;
@@ -1208,12 +1243,23 @@ void Machine::processData(){
 	}else if(m_mode_AttachSequences){
 		attachReads();
 	}else if(m_mode==MODE_EXTENSION_ASK and isMaster()){
-		for(int i=0;i<(int)getSize();i++){
-			//cout<<"Rank "<<getRank()<<" tells "<<i<<" to extend its seeds."<<endl;
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_ASK_EXTENSION,getRank());
-			m_outbox.push_back(aMessage);
+		
+		if(!m_EXTENSION_currentRankIsSet){
+			m_EXTENSION_currentRankIsSet=true;
+			m_EXTENSION_currentRankIsStarted=false;
+			m_EXTENSION_rank++;
 		}
-		m_mode=MODE_DO_NOTHING;
+		if(m_EXTENSION_rank==getSize()){
+			m_mode=MODE_DO_NOTHING;
+
+		}else if(!m_EXTENSION_currentRankIsStarted){
+			m_EXTENSION_currentRankIsStarted=true;
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_EXTENSION_rank,TAG_ASK_EXTENSION,getRank());
+			m_outbox.push_back(aMessage);
+			m_EXTENSION_currentRankIsDone=true; // set to false for non-parallel extension.
+		}else if(m_EXTENSION_currentRankIsDone){
+			m_EXTENSION_currentRankIsSet=false;
+		}
 
 	}else if(m_mode==MODE_SEND_EXTENSION_DATA){
 		if(m_SEEDING_i==(int)m_EXTENSION_contigs.size()){
@@ -1527,6 +1573,8 @@ void Machine::processData(){
 		cout<<"Rank "<<getRank()<<": fusion is done."<<endl;
 		m_FUSION_numberOfRanksDone=-1;
 		m_master_mode=MODE_ASK_EXTENSIONS;
+		m_EXTENSION_currentRankIsSet=false;
+		m_EXTENSION_rank=-1;
 	}
 
 	if(m_mode==MODE_COPY_DIRECTIONS){
@@ -2077,7 +2125,8 @@ void Machine::doChoice(){
 void Machine::checkIfCurrentVertexIsAssembled(){
 	if(!m_EXTENSION_directVertexDone){
 		if(!m_EXTENSION_VertexAssembled_requested){
-			if(m_EXTENSION_currentSeedIndex%10==0 and m_EXTENSION_currentPosition==0){
+			if(m_EXTENSION_currentSeedIndex%10==0 and m_EXTENSION_currentPosition==0 and m_last_value!=m_EXTENSION_currentSeedIndex){
+				m_last_value=m_EXTENSION_currentSeedIndex;
 				cout<<"Rank "<<getRank()<<": extending seeds "<<m_EXTENSION_currentSeedIndex<<"/"<<m_SEEDING_seeds.size()<<endl;
 			}
 			m_EXTENSION_VertexAssembled_requested=true;

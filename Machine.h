@@ -25,6 +25,9 @@
 #ifndef _Machine
 #define _Machine
 
+#ifdef SHOW_STATISTICS
+#include<time.h>
+#endif
 
 #include<mpi.h>
 #include<map>
@@ -37,7 +40,6 @@
 #include<Read.h>
 #include<Parameters.h>
 #include<MyAllocator.h>
-
 
 // tags
 #define TAG_WELCOME 0
@@ -113,7 +115,7 @@
 #define TAG_GET_PATH_LENGTH_REPLY 72
 
 #define MASTER_RANK 0
-#define BARRIER_PERIOD 100
+#define BARRIER_PERIOD 1000
 
 // modes
 #define MODE_EXTENSION_ASK 0
@@ -351,6 +353,11 @@ class Machine{
 
 	vector<vector<uint64_t> > m_allPaths;
 	bool m_aborted;
+
+	#ifdef SHOW_STATISTICS
+	map<int,int> m_statistics;
+	time_t m_lastTimeStamp;
+	#endif
 
 	void enumerateChoices();
 	void killRanks();

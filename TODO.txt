@@ -1,8 +1,15 @@
-* SRA001125 freezes with 32 cores on ls30. (find the bug, fixed with --mca btl ^sm
+* SRA001125 freezes with 32 cores on ls30. (find the bug, fixed with --mca btl ^sm ?)
+* add a DEFINE for the Isend or Send.
 * essayer plusieurs valeurs de périodes pour les barriers.
 * remove commented c++ code
 * add progression for fusion in stdout.
 * add an early-stop technology (To speed up the process.)
+
+* see "screen -r 4002" for the result without shared memory.
+
+* the current problem with extension: several MPI processes are extending the
+ very same region, thus sending messages to the same exact MPI rank. the rank
+ is then running out of fifos, and the sm btl hangs. LOL
 
 * possibly use a map<,> to hold information on path lengths.
 * use only the MODE constants for modes.
