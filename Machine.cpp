@@ -42,6 +42,9 @@ Machine::Machine(int argc,char**argv){
 	m_COPY_ranks=-1;
 	m_EXTENSION_numberOfRanksDone=0;
 	m_numberOfRanksDoneSeeding=0;
+	m_showMessages=false;
+	m_calibrationAskedCalibration=false;
+	m_calibrationIsDone=false;
 	m_master_mode=MODE_DO_NOTHING;
 	m_numberOfMachinesReadyForEdgesDistribution=-1;
 	m_USE_MPI_Send=0;
@@ -56,6 +59,7 @@ Machine::Machine(int argc,char**argv){
 	m_wordSize=-1;
 	m_reverseComplementVertex=false;
 	m_last_value=0;
+	m_speedLimitIsOn=false;// set to false to remove the speed limit everywhere.
 	m_mode_send_ingoing_edges=false;
 	m_mode_send_edge_sequence_id_position=0;
 	m_mode_send_vertices=false;
@@ -64,7 +68,8 @@ Machine::Machine(int argc,char**argv){
 	m_mode_send_vertices_sequence_id=0;
 	m_mode_send_vertices_sequence_id_position=0;
 	m_reverseComplementEdge=false;
-
+	m_calibration_MaxSpeed=99999999; // initial speed limit before calibration
+	srand(NULL);
 	m_numberOfMachinesDoneSendingVertices=0;
 	m_numberOfMachinesDoneSendingEdges=0;
 	m_numberOfMachinesReadyToSendDistribution=0;
@@ -83,6 +88,8 @@ Machine::Machine(int argc,char**argv){
 	m_distributionAllocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
 	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
 
+	m_messagesSent=0;
+	m_lastTime=time(NULL);
 
 	m_mode=MODE_DO_NOTHING;
 	m_mode_AttachSequences=false;
@@ -176,34 +183,35 @@ void Machine::run(){
 }
 
 void Machine::sendMessages(){
+	while(m_speedLimitIsOn and m_messagesSent>m_calibration_MaxSpeed){
+		//cout<<"Rank "<<getRank()<<" waiting..."<<endl;
+		int theTime=time(NULL);
+		if(theTime>m_lastTime){
+			m_messagesSent=0;// reset the counter.
+		}
+		m_lastTime=theTime;
+		usleep(50);
+	}
+	m_messagesSent+=m_outbox.size();
+
 	for(int i=0;i<(int)m_outbox.size();i++){
 		Message*aMessage=&(m_outbox[i]);
 		#ifdef SHOW_STATISTICS
 		m_statistics[aMessage->getDestination()]++;
 		#endif
-		if(aMessage->getDestination()==getRank()){
-			int sizeOfElements=8;
-			if(aMessage->getTag()==TAG_SEND_SEQUENCE){
-				sizeOfElements=1;
+
+		if(m_Sending_Mechanism==m_USE_MPI_Isend){
+			MPI_Request request;
+			MPI_Status status;
+			int flag;
+			
+			MPI_Isend(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD,&request);
+			MPI_Test(&request,&flag,&status);
+			if(!flag){
+				m_pendingMpiRequest.push_back(request);
 			}
-			void*newBuffer=m_inboxAllocator.allocate(sizeOfElements*aMessage->getCount());
-			memcpy(newBuffer,aMessage->getBuffer(),sizeOfElements*aMessage->getCount());
-			aMessage->setBuffer(newBuffer);
-			m_inbox.push_back(*aMessage);
 		}else{
-			if(m_Sending_Mechanism==m_USE_MPI_Isend){
-				MPI_Request request;
-				MPI_Status status;
-				int flag;
-				
-				MPI_Isend(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD,&request);
-				MPI_Test(&request,&flag,&status);
-				if(!flag){
-					m_pendingMpiRequest.push_back(request);
-				}
-			}else{
 				MPI_Send(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD);
-			}
 		}
 	}
 	m_outbox.clear();
@@ -407,6 +415,13 @@ void Machine::processMessage(Message*message){
 		m_FUSION_direct_fusionDone=false;
 		m_FUSION_first_done=false;
 		m_FUSION_paths_requested=false;
+	}else if(tag==TAG_BEGIN_CALIBRATION){
+		m_calibration_numberOfMessagesSent=0;
+		m_mode=MODE_PERFORM_CALIBRATION;
+	}else if(tag==TAG_END_CALIBRATION){
+		m_mode=MODE_DO_NOTHING;
+		m_calibration_MaxSpeed=m_calibration_numberOfMessagesSent/CALIBRATION_DURATION;
+		cout<<"Rank "<<getRank()<<" MaximumAllowedSpeed="<<m_calibration_MaxSpeed<<" messages/second"<<endl;
 	}else if(tag==TAG_COPY_DIRECTIONS){
 		m_mode=MODE_COPY_DIRECTIONS;
 		SplayTreeIterator<uint64_t,Vertex> seedingIterator(&m_subgraph);
@@ -486,6 +501,7 @@ void Machine::processMessage(Message*message){
 		}
 		Message aMessage(message,ingoingEdges.size(),MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY,getRank());
 		m_outbox.push_back(aMessage);
+	}else if(tag==TAG_CALIBRATION_MESSAGE){
 	}else if(tag==TAG_ASK_VERTEX_PATHS){
 		uint64_t*incoming=(uint64_t*)buffer;
 		vector<Direction> paths=m_subgraph.find(incoming[0])->getValue()->getDirections();
@@ -533,6 +549,8 @@ void Machine::processMessage(Message*message){
 	}else if(tag==TAG_ASK_EXTENSION){
 		m_EXTENSION_initiated=false;
 		m_mode_EXTENSION=true;
+		m_showMessages=true;
+		m_speedLimitIsOn=true;
 	}else if(tag==TAG_ASK_REVERSE_COMPLEMENT){
 		uint64_t*incoming=(uint64_t*)buffer;
 		SplayNode<uint64_t,Vertex>*node=(SplayNode<uint64_t,Vertex>*)incoming[0];
@@ -795,7 +813,27 @@ void Machine::processData(){
 	if(m_aborted){
 		return;
 	}
-	if(!m_parameters.isInitiated()&&isMaster()){
+
+	if(!m_calibrationIsDone and isMaster()){
+		if(!m_calibrationAskedCalibration){
+			cout<<"Rank "<<getRank()<<": calibration of communication speeds, please wait "<<CALIBRATION_DURATION<<" seconds."<<endl;
+			for(int i=0;i<getSize();i++){
+				Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_BEGIN_CALIBRATION,getRank());
+				m_outbox.push_back(aMessage);
+			}
+			m_calibrationAskedCalibration=true;
+			m_calibrationStart=time(NULL);
+		}else{
+			if(time(NULL)-m_calibrationStart>=CALIBRATION_DURATION){
+				m_calibrationIsDone=true;
+				for(int i=0;i<getSize();i++){
+					Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_END_CALIBRATION,getRank());
+					m_outbox.push_back(aMessage);
+				}
+				m_calibrationIsDone=true;
+			}
+		}
+	}else if(!m_parameters.isInitiated()&&isMaster()){
 		ifstream f(m_inputFile);
 		if(!f){
 			cout<<"Rank "<<getRank()<<" invalid input file."<<endl;
@@ -962,6 +1000,12 @@ void Machine::processData(){
 			m_outbox.push_back(aMessage);
 		}else{
 		}
+	}else if(m_mode==MODE_PERFORM_CALIBRATION){
+		int rank=rand()%getSize();
+		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
+		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rank,TAG_CALIBRATION_MESSAGE,getRank());
+		m_outbox.push_back(aMessage);
+		m_calibration_numberOfMessagesSent++;
 	}
 
 	if(m_mode_sendDistribution){
@@ -2213,21 +2257,6 @@ void Machine::markCurrentVertexAsAssembled(){
 			m_EXTENSION_markedCurrentVertexAsAssembled=true;
 		}
 	}
-/*else if(!m_EXTENSION_reverseVertexDone){
-		if(!m_EXTENSION_VertexMarkAssembled_requested){
-			m_EXTENSION_VertexMarkAssembled_requested=true;
-			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
-			message[0]=(uint64_t)complementVertex(m_SEEDING_currentVertex,m_wordSize);
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0]),TAG_MARK_AS_ASSEMBLED,getRank());
-			m_outbox.push_back(aMessage);
-			m_EXTENSION_VertexMarkAssembled_received=false;
-			m_EXTENSION_reverseVertexDone=true;
-			m_EXTENSION_enumerateChoices=false;
-			m_SEEDING_edgesRequested=false;
-			m_EXTENSION_markedCurrentVertexAsAssembled=true;
-		}
-	}
-*/
 }
 
 int Machine::getSize(){

@@ -113,9 +113,14 @@
 #define TAG_ASK_VERTEX_PATHS_REPLY 70
 #define TAG_GET_PATH_LENGTH 71
 #define TAG_GET_PATH_LENGTH_REPLY 72
+#define TAG_CALIBRATION_MESSAGE 73
+#define TAG_BEGIN_CALIBRATION 74
+#define TAG_END_CALIBRATION 75
 
 #define MASTER_RANK 0
-#define BARRIER_PERIOD 10
+#define BARRIER_PERIOD 250
+
+#define CALIBRATION_DURATION 10 // in seconds.
 
 // modes
 #define MODE_EXTENSION_ASK 0
@@ -127,7 +132,8 @@
 #define MODE_COPY_DIRECTIONS 6
 #define MODE_ASSEMBLE_GRAPH 7
 #define MODE_FUSION 8
-
+#define MODE_MASTER_ASK_CALIBRATION 9
+#define MODE_PERFORM_CALIBRATION 10
 
 #define OUTBOX_ALLOCATOR_CHUNK_SIZE 10*1024*1024 // 10 MB
 #define DISTRIBUTION_ALLOCATOR_CHUNK_SIZE 10*1024*1024 // 10 MB
@@ -161,8 +167,18 @@ class Machine{
 	int m_sequence_ready_machines;
 	bool m_messageSentForVerticesDistribution;
 
+	// speed calibration to make OpenMPI handle the communication in its shared memory.
+	int m_calibrationStart;
+	bool m_speedLimitIsOn;
+	int m_calibration_numberOfMessagesSent;
+	bool m_calibrationAskedCalibration;
+	int m_calibration_MaxSpeed;
+	bool m_calibrationIsDone;
+	int m_messagesSent;
+	int m_lastTime;
 
 	int m_readyToSeed;
+	bool m_showMessages;
 	bool m_mode_send_ingoing_edges;
 
 	int m_mode;

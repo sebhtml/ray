@@ -3,7 +3,6 @@
 
 CXXFLAGS=  -Wall  -I.  -O3 -DSHOW_STATISTICS
 
-MPIRUN=~/software/openmpi-1.4.1/output/bin/mpirun 
 MPICC=~/software/openmpi-1.4.1/output/bin/mpic++
 
 all: Ray
