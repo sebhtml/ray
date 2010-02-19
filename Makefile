@@ -2,6 +2,7 @@
 # _DDEBUG1 to show message in the extension
 # -DSHOW_STATISTICS for statistics on messages.
 # -DDEBUG_BARRIERS to debug barriers.
+# -DWRITE_COVERAGE_DISTRIBUTION to write coverage distribution.
 
 CXXFLAGS=  -Wall  -I.  -O3 -DSHOW_STATISTICS
 

@@ -80,11 +80,6 @@ uint64_t Read::Vertex(int pos,int w,char strand){
 			char a=m_sequence[pos+i];
 			uint64_t mask=0; // default is A
 			switch(a){
-				/*
-				case 'A':
-					mask=0;
-					break;
-				*/
 				case 'T':
 					mask=1;
 					break;
@@ -102,8 +97,6 @@ uint64_t Read::Vertex(int pos,int w,char strand){
 			char a=m_sequence[strlen(m_sequence)-1-i-pos];
 			uint64_t mask=0;
 
-		// TODO: change to switch.
-		//
 			if(a=='A'){
 				mask=1;
 			}else if(a=='T'){

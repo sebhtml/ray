@@ -177,7 +177,6 @@ class Machine{
 	bool m_calibrationAskedCalibration;
 	int m_calibration_MaxSpeed;
 	bool m_calibrationIsDone;
-	int*m_messagesSent;
 
 	int m_readyToSeed;
 	bool m_showMessages;
@@ -391,7 +390,6 @@ class Machine{
 	void run();
 	void do_1_1_test();
 	bool isMaster();
-	void checkRequests();
 	void receiveMessages();
 	void loadSequences();
 	void processMessages();
@@ -402,7 +400,6 @@ class Machine{
 	void receiveWelcomeMessage(MPI_Status*status);
 	int vertexRank(uint64_t a);
 	void extendSeeds();
-	void maintainCommunicationStability();
 public:
 	Machine(int argc,char**argv);
 };
