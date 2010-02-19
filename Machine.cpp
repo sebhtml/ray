@@ -329,21 +329,21 @@ void Machine::loadSequences(){
 		cout<<"Rank "<<getRank()<<" has "<<m_distribution_reads.size()<<" sequences to distribute."<<endl;
 	}
 	for(int i=0;i<1*getSize();i++){
-		if(m_distribution_sequence_id>(int)m_distribution_reads.size()-1)
+		if(m_distribution_sequence_id>(int)m_distribution_reads.size()-1){
+			cout<<"Rank "<<getRank()<<" distributes sequences, "<<m_distribution_sequence_id<<"/"<<m_distribution_reads.size()<<endl;
 			break;
-
+		}
 		int destination=m_distribution_currentSequenceId%getSize();
 
 		if(destination<0 or destination>getSize()-1){
 			cout<<destination<<" is bad"<<endl;
 		}
 		char*sequence=(m_distribution_reads)[m_distribution_sequence_id]->getSeq();
-		if(false and destination==MASTER_RANK){
-
-		}else{
-			Message aMessage(sequence, strlen(sequence), MPI_BYTE, destination, TAG_SEND_SEQUENCE,getRank());
-			m_outbox.push_back(aMessage);
+		if(m_distribution_sequence_id%1000000==0){
+			cout<<"Rank "<<getRank()<<" distributes sequences, "<<m_distribution_sequence_id<<"/"<<m_distribution_reads.size()<<endl;
 		}
+		Message aMessage(sequence, strlen(sequence), MPI_BYTE, destination, TAG_SEND_SEQUENCE,getRank());
+		m_outbox.push_back(aMessage);
 		m_distribution_currentSequenceId++;
 		m_distribution_sequence_id++;
 	}

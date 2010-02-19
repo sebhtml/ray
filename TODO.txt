@@ -1,5 +1,4 @@
 * do some merging between contigs (test on Ecoli400 dataset.)
-* add progress when distributing reads.
 * add progress when attaching reads.
 
 * add a DEFINE for the Isend or Send.
