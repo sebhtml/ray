@@ -146,12 +146,6 @@
 using namespace std;
 
 class Machine{
-	int m_USE_MPI_Isend;
-	int m_USE_MPI_Send;
-	int m_Sending_Mechanism;
-	int m_ticks;
-	int m_maxTicks;
-	bool m_watchMaxTicks;
 	int m_wordSize;
 	int m_last_value;
 	bool m_mode_send_outgoing_edges;
@@ -159,8 +153,6 @@ class Machine{
 	int m_mode_send_edge_sequence_id_position;
 	int m_rank;
 	int m_size;
-	char m_name[255];
-	int m_nameLen;
 	bool m_reverseComplementEdge;
 	int m_totalLetters;
 	bool m_alive;
