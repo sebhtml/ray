@@ -19,7 +19,6 @@
 
 */
 
-#include<sys/time.h>
 #include<Machine.h>
 #include<sstream>
 #include<Message.h>
@@ -31,9 +30,6 @@
 #include<string.h>
 #include<SplayTreeIterator.h>
 #include<mpi.h>
-#ifdef SHOW_STATISTICS
-#include<time.h>
-#endif
 #include<Read.h>
 #include<Loader.h>
 #include<MyAllocator.h>
@@ -64,7 +60,6 @@ Machine::Machine(int argc,char**argv){
 	m_mode_send_vertices_sequence_id_position=0;
 	m_reverseComplementEdge=false;
 	m_calibration_MaxSpeed=99999999; // initial speed limit before calibration
-	srand(time(NULL));
 	m_numberOfMachinesDoneSendingVertices=0;
 	m_numberOfMachinesDoneSendingEdges=0;
 	m_numberOfMachinesReadyToSendDistribution=0;
@@ -73,17 +68,12 @@ Machine::Machine(int argc,char**argv){
 	m_messageSentForVerticesDistribution=false;
 	m_sequence_ready_machines=0;
 
-	#ifdef SHOW_STATISTICS
-	#define INTERVAL 1
-	m_lastTimeStamp=time(NULL);
-	#endif
 
 	m_outboxAllocator.constructor(OUTBOX_ALLOCATOR_CHUNK_SIZE);
 	m_inboxAllocator.constructor(INBOX_ALLOCATOR_CHUNK_SIZE);
 	m_distributionAllocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
 	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
 
-	m_lastTimeStamp=time(NULL);
 
 	m_mode=MODE_DO_NOTHING;
 	m_mode_AttachSequences=false;
@@ -122,15 +112,6 @@ Machine::Machine(int argc,char**argv){
 	MPI_Finalize();
 }
 
-int Machine::milliSeconds(){
-	struct timeval tv;
-	struct timezone tz;
-	struct tm *tm;
-	gettimeofday(&tv, &tz);
-	tm=localtime(&tv.tv_sec);
-	return tv.tv_usec/1000;
-}
-
 void Machine::run(){
 	if(isMaster()){
 		cout<<"Rank "<<getRank()<<": I am the master among "<<getSize()<<" ranks in the MPI_COMM_WORLD."<<endl;
@@ -146,13 +127,6 @@ void Machine::run(){
 void Machine::sendMessages(){
 	for(int i=0;i<(int)m_outbox.size();i++){
 		Message*aMessage=&(m_outbox[i]);
-		#ifdef SHOW_STATISTICS
-		m_statistics[aMessage->getDestination()]++;
-		#endif
-
-		#ifdef DEBUG1
-		cout<<"MESSAGE Time="<<time(NULL)<<" Source="<<getRank()<<" Destination="<<aMessage->getDestination()<<" Tag="<<aMessage->getTag()<<endl;
-		#endif
 
 		MPI_Send(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD);
 	}
@@ -489,7 +463,6 @@ void Machine::processMessage(Message*message){
 		m_EXTENSION_initiated=false;
 		m_mode_EXTENSION=true;
 		m_last_value=-1;
-		m_lastTimeStamp=time(NULL);
 	}else if(tag==TAG_ASK_REVERSE_COMPLEMENT){
 		uint64_t*incoming=(uint64_t*)buffer;
 		SplayNode<uint64_t,Vertex>*node=(SplayNode<uint64_t,Vertex>*)incoming[0];
@@ -748,26 +721,7 @@ void Machine::processData(){
 		return;
 	}
 
-	if(!m_calibrationIsDone and isMaster()){
-		if(!m_calibrationAskedCalibration){
-			cout<<"Rank "<<getRank()<<": calibration of communication speeds, please wait "<<CALIBRATION_DURATION<<" seconds."<<endl;
-			for(int i=0;i<getSize();i++){
-				Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_BEGIN_CALIBRATION,getRank());
-				m_outbox.push_back(aMessage);
-			}
-			m_calibrationAskedCalibration=true;
-			m_calibrationStart=time(NULL);
-		}else{
-			if(time(NULL)-m_calibrationStart>=CALIBRATION_DURATION){
-				m_calibrationIsDone=true;
-				for(int i=0;i<getSize();i++){
-					Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_END_CALIBRATION,getRank());
-					m_outbox.push_back(aMessage);
-				}
-				m_calibrationIsDone=true;
-			}
-		}
-	}else if(!m_parameters.isInitiated()&&isMaster()){
+	if(!m_parameters.isInitiated()&&isMaster()){
 		ifstream f(m_inputFile);
 		if(!f){
 			cout<<"Rank "<<getRank()<<" invalid input file."<<endl;

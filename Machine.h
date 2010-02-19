@@ -25,9 +25,6 @@
 #ifndef _Machine
 #define _Machine
 
-#ifdef SHOW_STATISTICS
-#include<time.h>
-#endif
 
 #include<mpi.h>
 #include<map>
@@ -250,7 +247,6 @@ class Machine{
 	vector<Message> m_outbox;
 	vector<Message> m_inbox;
 
-	int m_lastBarrier;
 
 	// EXTENSION MODE
 	vector<int> m_EXTENSION_identifiers;
@@ -368,7 +364,6 @@ class Machine{
 	#endif
 
 	int milliSeconds();
-	time_t m_lastTimeStamp;
 	int m_numberOfBarriers;
 	void enumerateChoices();
 	void killRanks();
