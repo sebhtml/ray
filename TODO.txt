@@ -1,5 +1,6 @@
+
+
 * do some merging between contigs (test on Ecoli400 dataset.)
-* add progress when attaching reads.
 
 * add a DEFINE for the Isend or Send.
 * remove commented c++ code

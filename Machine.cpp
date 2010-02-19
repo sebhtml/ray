@@ -330,7 +330,7 @@ void Machine::loadSequences(){
 	}
 	for(int i=0;i<1*getSize();i++){
 		if(m_distribution_sequence_id>(int)m_distribution_reads.size()-1){
-			cout<<"Rank "<<getRank()<<" distributes sequences, "<<m_distribution_sequence_id<<"/"<<m_distribution_reads.size()<<endl;
+			cout<<"Rank "<<getRank()<<" distributes sequences, "<<m_distribution_reads.size()<<"/"<<m_distribution_reads.size()<<endl;
 			break;
 		}
 		int destination=m_distribution_currentSequenceId%getSize();
@@ -376,8 +376,10 @@ void Machine::attachReads(){
 		cout<<"Rank "<<getRank()<<" "<<m_distribution_reads.size()<<" sequences to attach"<<endl;
 	}
 	for(int i=0;i<1;i++){
-		if(m_distribution_sequence_id>(int)m_distribution_reads.size()-1)
+		if(m_distribution_sequence_id>(int)m_distribution_reads.size()-1){
+			cout<<"Rank "<<getRank()<<" attaches sequences, "<<m_distribution_reads.size<<"/"<<m_distribution_reads.size()<<endl;
 			break;
+		}
 
 		int destination=m_distribution_currentSequenceId%getSize();
 		int sequenceIdOnDestination=m_distribution_currentSequenceId/getSize();
@@ -385,6 +387,11 @@ void Machine::attachReads(){
 		if(destination<0 or destination>getSize()-1){
 			cout<<destination<<" is bad"<<endl;
 		}
+
+		if(m_distribution_sequence_id%1000000==0){
+			cout<<"Rank "<<getRank()<<" attaches sequences, "<<m_distribution_sequence_id<<"/"<<m_distribution_reads.size()<<endl;
+		}
+
 		char*sequence=(m_distribution_reads)[m_distribution_sequence_id]->getSeq();
 		char vertexChar[100];
 		memcpy(vertexChar,sequence,m_wordSize);
