@@ -116,9 +116,12 @@
 #define TAG_CALIBRATION_MESSAGE 73
 #define TAG_BEGIN_CALIBRATION 74
 #define TAG_END_CALIBRATION 75
+#define TAG_COMMUNICATION_STABILITY_MESSAGE 76
 
 #define MASTER_RANK 0
-#define BARRIER_PERIOD 250
+#define BARRIER_PERIOD 300
+#define BARRIER_PERIOD_IN_MILLISECONDS 20
+
 
 #define CALIBRATION_DURATION 10 // in seconds.
 
@@ -256,7 +259,7 @@ class Machine{
 	vector<Message> m_outbox;
 	vector<Message> m_inbox;
 
-
+	int m_lastBarrier;
 
 	// EXTENSION MODE
 	vector<int> m_EXTENSION_identifiers;
@@ -373,6 +376,7 @@ class Machine{
 	map<int,int> m_statistics;
 	#endif
 
+	int milliSeconds();
 	time_t m_lastTimeStamp;
 	int m_numberOfBarriers;
 	void enumerateChoices();
@@ -398,6 +402,7 @@ class Machine{
 	void receiveWelcomeMessage(MPI_Status*status);
 	int vertexRank(uint64_t a);
 	void extendSeeds();
+	void maintainCommunicationStability();
 public:
 	Machine(int argc,char**argv);
 };

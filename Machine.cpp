@@ -19,6 +19,7 @@
 
 */
 
+#include<sys/time.h>
 #include<Machine.h>
 #include<sstream>
 #include<Message.h>
@@ -44,7 +45,7 @@ Machine::Machine(int argc,char**argv){
 	m_numberOfRanksDoneSeeding=0;
 	m_numberOfBarriers=0;
 	m_calibrationAskedCalibration=false;
-	m_calibrationIsDone=false;
+	m_calibrationIsDone=true; // set to false to perform a speed calibration.
 	m_master_mode=MODE_DO_NOTHING;
 	m_numberOfMachinesReadyForEdgesDistribution=-1;
 	m_USE_MPI_Send=0;
@@ -115,11 +116,16 @@ Machine::Machine(int argc,char**argv){
 	m_totalLetters=0;
 	m_distribution_file_id=m_distribution_sequence_id=m_distribution_currentSequenceId=0;
 
+
 	m_messagesSent=(int*)m_persistentAllocator.allocate(getSize()*sizeof(int));
 	for(int i=0;i<getSize();i++){
 		m_messagesSent[i]=0;
 	}
-
+/*
+	m_lastBarrier=milliSeconds();
+	m_lastBarrier=m_lastBarrier-m_lastBarrier%BARRIER_PERIOD_IN_MILLISECONDS;
+	cout<<"Rank "<<getRank()<<" first barrier is at "<<m_lastBarrier<<endl;
+*/
 	if(argc!=2){
 		if(isMaster()){
 			cout<<"You must provide a input file."<<endl;
@@ -129,8 +135,16 @@ Machine::Machine(int argc,char**argv){
 		run();
 	}
 
-	MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Finalize();
+}
+
+int Machine::milliSeconds(){
+	struct timeval tv;
+	struct timezone tz;
+	struct tm *tm;
+	gettimeofday(&tv, &tz);
+	tm=localtime(&tv.tv_sec);
+	return tv.tv_usec/1000;
 }
 
 void Machine::run(){
@@ -138,31 +152,42 @@ void Machine::run(){
 		cout<<"Rank "<<getRank()<<": I am the master among "<<getSize()<<" ranks in the MPI_COMM_WORLD."<<endl;
 	}
 	while(isAlive()){
+/*
+		int theMilliSeconds=milliSeconds();
+		if(theMilliSeconds>=m_lastBarrier+BARRIER_PERIOD_IN_MILLISECONDS // a period has passed.
+		or theMilliSeconds+BARRIER_PERIOD_IN_MILLISECONDS < m_lastBarrier){ // overflow.)
+			m_lastBarrier+=BARRIER_PERIOD_IN_MILLISECONDS;
+			if(m_lastBarrier>=1000){ // fix the overflow.
+				m_lastBarrier=0;
+			}
+			//m_numberOfBarriers++;
+		}
+*/
+/*
 		if(m_ticks%BARRIER_PERIOD==0){
 			if(!(m_watchMaxTicks and m_ticks > m_maxTicks)){
 				//if(m_numberOfBarriers<150){
-				MPI_Barrier(MPI_COMM_WORLD);
 				m_numberOfBarriers++;
 				//}
 			}else{
 			}
 		}
-		
-
+*/
 		receiveMessages(); 
 		checkRequests();
 		processMessages();
 		processData();
 
+/*
 		if(!(m_watchMaxTicks and m_ticks > m_maxTicks)){
 			m_ticks++;
 		}else{
 			m_alive=false;
 		}
-
+*/
 
 		sendMessages();
-
+/*
 		time_t theTime=time(NULL);
 		if(theTime>m_lastTimeStamp){// each second.
 			m_lastTimeStamp=theTime;
@@ -181,8 +206,8 @@ void Machine::run(){
 			m_statistics.clear();
 			#endif
 		}
+*/
 	}
-	MPI_Barrier(MPI_COMM_WORLD);
 }
 
 void Machine::sendMessages(){
@@ -194,7 +219,8 @@ void Machine::sendMessages(){
 
 		if(m_speedLimitIsOn){// a per-MPI process limit is better.
 			int rank=aMessage->getDestination();
-			while(m_messagesSent[rank]>m_calibration_MaxSpeed){
+			while(m_messagesSent[rank] > m_calibration_MaxSpeed){
+				cout<<"Rank "<<getRank()<<"Time="<<time(NULL)<<" m_messagesSent[rank]="<<m_messagesSent[rank]<<endl;
 				int theTime=time(NULL);
 				if(theTime>m_lastTimeStamp){ // 1 second.
 					for(int j=0;j<getSize();j++){
@@ -202,7 +228,7 @@ void Machine::sendMessages(){
 					}
 					m_lastTimeStamp=theTime;
 				}else{
-					usleep(50);
+					usleep(1000);
 				}
 			}
 			m_messagesSent[rank]++; // ok, we can go now.
@@ -223,7 +249,7 @@ void Machine::sendMessages(){
 				m_pendingMpiRequest.push_back(request);
 			}
 		}else{
-				MPI_Send(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD);
+			MPI_Send(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD);
 		}
 	}
 	m_outbox.clear();
@@ -468,6 +494,8 @@ void Machine::processMessage(Message*message){
 		#endif
 		m_SEEDING_NodeInitiated=false;
 		m_SEEDING_i=0;
+	}else if(tag==TAG_COMMUNICATION_STABILITY_MESSAGE){
+		// do nothing, just maintain stability.
 	}else if(tag==TAG_GET_PATH_LENGTH){
 		uint64_t*incoming=(uint64_t*)buffer;
 		int id=incoming[0];
@@ -561,8 +589,11 @@ void Machine::processMessage(Message*message){
 	}else if(tag==TAG_ASK_EXTENSION){
 		m_EXTENSION_initiated=false;
 		m_mode_EXTENSION=true;
+		m_last_value=-1;
+		/*
 		m_speedLimitIsOn=true;
 		cout<<"Rank "<<getRank()<<" sets speed limit to "<<m_calibration_MaxSpeed<<endl;
+		*/
 		m_lastTimeStamp=time(NULL);
 	}else if(tag==TAG_ASK_REVERSE_COMPLEMENT){
 		uint64_t*incoming=(uint64_t*)buffer;
@@ -596,9 +627,12 @@ void Machine::processMessage(Message*message){
 		Message aMessage(message,outgoingEdges.size(),MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY,getRank());
 		m_outbox.push_back(aMessage);
 	}else if(tag==TAG_GOOD_JOB_SEE_YOU_SOON){
+		/*
 		uint64_t*incoming=(uint64_t*)buffer;
 		m_maxTicks=(incoming[0]+1000);
 		m_watchMaxTicks=true;
+		*/
+		m_alive=false;
 	}else if(tag==TAG_SEEDING_IS_OVER){
 		m_numberOfRanksDoneSeeding++;
 	}else if(tag==TAG_ATTACH_SEQUENCE){
@@ -1825,9 +1859,11 @@ void Machine::do_1_1_test(){
 
 void Machine::killRanks(){
 	for(int i=0;i<getSize();i++){
+		/*
 		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
 		message[0]=m_ticks;
-		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,i,TAG_GOOD_JOB_SEE_YOU_SOON,getRank());
+		*/
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_GOOD_JOB_SEE_YOU_SOON,getRank());
 		m_outbox.push_back(aMessage);
 	}
 }
@@ -1836,7 +1872,22 @@ bool Machine::isMaster(){
 	return getRank()==MASTER_RANK;
 }
 
+void Machine::maintainCommunicationStability(){
+	int rank=rand()%getSize();
+	uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
+	Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rank,TAG_COMMUNICATION_STABILITY_MESSAGE,getRank());
+	m_outbox.push_back(aMessage);
+}
+
 void Machine::extendSeeds(){
+	// send a DUMMY_MESSAGE to a random rank to maintain core stability.
+
+	/*
+	if(m_ticks%15==0){
+		maintainCommunicationStability();
+	}
+	*/
+
 	if(m_SEEDING_seeds.size()==0){
 		cout<<"Rank "<<getRank()<<": extending seeds "<<m_SEEDING_seeds.size()<<"/"<<m_SEEDING_seeds.size()<<" (DONE)"<<endl;
 		m_mode_EXTENSION=false;
@@ -1857,8 +1908,7 @@ void Machine::extendSeeds(){
 		m_EXTENSION_complementedSeed=false;
 		m_EXTENSION_reads_startingPositionOnContig.clear();
 		m_EXTENSION_readsInRange.clear();
-	}
-	if(m_EXTENSION_currentSeedIndex==(int)m_SEEDING_seeds.size()){
+	}else if(m_EXTENSION_currentSeedIndex==(int)m_SEEDING_seeds.size()){
 		cout<<"Rank "<<getRank()<<": extending seeds "<<m_SEEDING_seeds.size()<<"/"<<m_SEEDING_seeds.size()<<" (DONE)"<<endl;
 		m_mode_EXTENSION=false;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_IS_DONE,getRank());
@@ -2205,6 +2255,7 @@ void Machine::checkIfCurrentVertexIsAssembled(){
 			}else{
 				//cout<<"Rank "<<getRank()<<" Ok, is not assembled."<<endl;
 			}
+		}else{
 		}
 	}else if(!m_EXTENSION_reverseVertexDone){
 		if(!m_EXTENSION_VertexAssembled_requested){
@@ -2218,6 +2269,7 @@ void Machine::checkIfCurrentVertexIsAssembled(){
 			m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
 			m_EXTENSION_markedCurrentVertexAsAssembled=false;
 			m_EXTENSION_directVertexDone=false;
+		}else{
 		}
 	}
 }
