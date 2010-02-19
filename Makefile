@@ -1,4 +1,5 @@
 # -DDEBUG for debug information
+# _DDEBUG1 to show message in the extension
 # -DSHOW_STATISTICS for statistics on messages.
 
 CXXFLAGS=  -Wall  -I.  -O3 -DSHOW_STATISTICS

@@ -6,6 +6,12 @@
  is then running out of fifos, and the sm btl hangs. LOL
 
 
+* increase overall speed with regular interval between barriers and messages sent ?
+
+* add progress when distributing reads.
+* add progress when attaching reads.
+* don'T underestimate maxSpeed -- use a distinct timestamp in each MPI process
+
 * add a DEFINE for the Isend or Send.
 * essayer plusieurs valeurs de périodes pour les barriers.
 * remove commented c++ code

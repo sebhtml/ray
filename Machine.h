@@ -174,8 +174,7 @@ class Machine{
 	bool m_calibrationAskedCalibration;
 	int m_calibration_MaxSpeed;
 	bool m_calibrationIsDone;
-	int m_messagesSent;
-	int m_lastTime;
+	int*m_messagesSent;
 
 	int m_readyToSeed;
 	bool m_showMessages;
@@ -372,9 +371,10 @@ class Machine{
 
 	#ifdef SHOW_STATISTICS
 	map<int,int> m_statistics;
-	time_t m_lastTimeStamp;
 	#endif
 
+	time_t m_lastTimeStamp;
+	int m_numberOfBarriers;
 	void enumerateChoices();
 	void killRanks();
 	void attachReads();

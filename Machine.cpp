@@ -42,7 +42,7 @@ Machine::Machine(int argc,char**argv){
 	m_COPY_ranks=-1;
 	m_EXTENSION_numberOfRanksDone=0;
 	m_numberOfRanksDoneSeeding=0;
-	m_showMessages=false;
+	m_numberOfBarriers=0;
 	m_calibrationAskedCalibration=false;
 	m_calibrationIsDone=false;
 	m_master_mode=MODE_DO_NOTHING;
@@ -69,7 +69,7 @@ Machine::Machine(int argc,char**argv){
 	m_mode_send_vertices_sequence_id_position=0;
 	m_reverseComplementEdge=false;
 	m_calibration_MaxSpeed=99999999; // initial speed limit before calibration
-	srand(NULL);
+	srand(time(NULL));
 	m_numberOfMachinesDoneSendingVertices=0;
 	m_numberOfMachinesDoneSendingEdges=0;
 	m_numberOfMachinesReadyToSendDistribution=0;
@@ -88,8 +88,7 @@ Machine::Machine(int argc,char**argv){
 	m_distributionAllocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
 	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
 
-	m_messagesSent=0;
-	m_lastTime=time(NULL);
+	m_lastTimeStamp=time(NULL);
 
 	m_mode=MODE_DO_NOTHING;
 	m_mode_AttachSequences=false;
@@ -115,6 +114,12 @@ Machine::Machine(int argc,char**argv){
 	m_vertices_sent=0;
 	m_totalLetters=0;
 	m_distribution_file_id=m_distribution_sequence_id=m_distribution_currentSequenceId=0;
+
+	m_messagesSent=(int*)m_persistentAllocator.allocate(getSize()*sizeof(int));
+	for(int i=0;i<getSize();i++){
+		m_messagesSent[i]=0;
+	}
+
 	if(argc!=2){
 		if(isMaster()){
 			cout<<"You must provide a input file."<<endl;
@@ -135,7 +140,10 @@ void Machine::run(){
 	while(isAlive()){
 		if(m_ticks%BARRIER_PERIOD==0){
 			if(!(m_watchMaxTicks and m_ticks > m_maxTicks)){
+				//if(m_numberOfBarriers<150){
 				MPI_Barrier(MPI_COMM_WORLD);
+				m_numberOfBarriers++;
+				//}
 			}else{
 			}
 		}
@@ -148,26 +156,21 @@ void Machine::run(){
 
 		if(!(m_watchMaxTicks and m_ticks > m_maxTicks)){
 			m_ticks++;
-			/*
-			if(m_outbox.size()>0){// only do something when the outbox 
-				m_ticks++;
-			}
-			if(m_mode==MODE_DO_NOTHING){
-				m_ticks++; // the outbox is empty, and the MPI process is not waiting for something.
-			}
-			*/
 		}else{
-
 			m_alive=false;
 		}
 
 
 		sendMessages();
 
-		#ifdef SHOW_STATISTICS
 		time_t theTime=time(NULL);
-		if(theTime>=m_lastTimeStamp+INTERVAL){
+		if(theTime>m_lastTimeStamp){// each second.
 			m_lastTimeStamp=theTime;
+			#ifdef DEBUG_BARRIERS
+			cout<<"BARRIER "<<getRank()<<" "<<time(NULL)<<" "<<m_numberOfBarriers<<endl;
+			#endif
+			m_numberOfBarriers=0;
+			#ifdef SHOW_STATISTICS
 			ostringstream o;
 			o<<"STATISTICS "<<getRank()<<" "<<INTERVAL<<" "<<theTime;
 			for(int i=0;i<getSize();i++){
@@ -176,28 +179,37 @@ void Machine::run(){
 			o<<endl;
 			cout<<o.str();
 			m_statistics.clear();
+			#endif
 		}
-		#endif
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
 }
 
 void Machine::sendMessages(){
-	while(m_speedLimitIsOn and m_messagesSent>m_calibration_MaxSpeed){
-		//cout<<"Rank "<<getRank()<<" waiting..."<<endl;
-		int theTime=time(NULL);
-		if(theTime>m_lastTime){
-			m_messagesSent=0;// reset the counter.
-		}
-		m_lastTime=theTime;
-		usleep(50);
-	}
-	m_messagesSent+=m_outbox.size();
-
 	for(int i=0;i<(int)m_outbox.size();i++){
 		Message*aMessage=&(m_outbox[i]);
 		#ifdef SHOW_STATISTICS
 		m_statistics[aMessage->getDestination()]++;
+		#endif
+
+		if(m_speedLimitIsOn){// a per-MPI process limit is better.
+			int rank=aMessage->getDestination();
+			while(m_messagesSent[rank]>m_calibration_MaxSpeed){
+				int theTime=time(NULL);
+				if(theTime>m_lastTimeStamp){ // 1 second.
+					for(int j=0;j<getSize();j++){
+						m_messagesSent[j]=0;
+					}
+					m_lastTimeStamp=theTime;
+				}else{
+					usleep(50);
+				}
+			}
+			m_messagesSent[rank]++; // ok, we can go now.
+		}
+
+		#ifdef DEBUG1
+		cout<<"MESSAGE Time="<<time(NULL)<<" Source="<<getRank()<<" Destination="<<aMessage->getDestination()<<" Tag="<<aMessage->getTag()<<endl;
 		#endif
 
 		if(m_Sending_Mechanism==m_USE_MPI_Isend){
@@ -420,8 +432,8 @@ void Machine::processMessage(Message*message){
 		m_mode=MODE_PERFORM_CALIBRATION;
 	}else if(tag==TAG_END_CALIBRATION){
 		m_mode=MODE_DO_NOTHING;
-		m_calibration_MaxSpeed=m_calibration_numberOfMessagesSent/CALIBRATION_DURATION;
-		cout<<"Rank "<<getRank()<<" MaximumAllowedSpeed="<<m_calibration_MaxSpeed<<" messages/second"<<endl;
+		m_calibration_MaxSpeed=m_calibration_numberOfMessagesSent/CALIBRATION_DURATION/getSize();
+		cout<<"Rank "<<getRank()<<" MaximumSpeed (point-to-point)="<<m_calibration_MaxSpeed<<" messages/second"<<endl;
 	}else if(tag==TAG_COPY_DIRECTIONS){
 		m_mode=MODE_COPY_DIRECTIONS;
 		SplayTreeIterator<uint64_t,Vertex> seedingIterator(&m_subgraph);
@@ -549,8 +561,9 @@ void Machine::processMessage(Message*message){
 	}else if(tag==TAG_ASK_EXTENSION){
 		m_EXTENSION_initiated=false;
 		m_mode_EXTENSION=true;
-		m_showMessages=true;
 		m_speedLimitIsOn=true;
+		cout<<"Rank "<<getRank()<<" sets speed limit to "<<m_calibration_MaxSpeed<<endl;
+		m_lastTimeStamp=time(NULL);
 	}else if(tag==TAG_ASK_REVERSE_COMPLEMENT){
 		uint64_t*incoming=(uint64_t*)buffer;
 		SplayNode<uint64_t,Vertex>*node=(SplayNode<uint64_t,Vertex>*)incoming[0];
@@ -1339,6 +1352,7 @@ void Machine::processData(){
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_FUSION_DONE,getRank());
 			m_outbox.push_back(aMessage);
 			m_mode=MODE_DO_NOTHING;
+			m_speedLimitIsOn=false;// remove the speed limit because rank MASTER will ask everyone their things
 			
 		}else if(!m_FUSION_direct_fusionDone){
 			int currentId=m_EXTENSION_identifiers[m_SEEDING_i];
@@ -2278,5 +2292,5 @@ void Machine::printStatus(){
 }
 
 int Machine::vertexRank(uint64_t a){
-	return hash_uint64_t(a)%getSize();
+	return hash_uint64_t(a)%(getSize());
 }
