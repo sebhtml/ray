@@ -22,6 +22,7 @@
 #include<Machine.h>
 #include<sstream>
 #include<Message.h>
+#include<time.h>
 #include<assert.h>
 #include<common_functions.h>
 #include<iostream>
@@ -99,7 +100,7 @@ Machine::Machine(int argc,char**argv){
 	m_totalLetters=0;
 	m_distribution_file_id=m_distribution_sequence_id=m_distribution_currentSequenceId=0;
 
-
+	MPI_Barrier(MPI_COMM_WORLD);
 	if(argc!=2){
 		if(isMaster()){
 			cout<<"You must provide a input file."<<endl;
@@ -108,6 +109,7 @@ Machine::Machine(int argc,char**argv){
 	}else{
 		run();
 	}
+	MPI_Barrier(MPI_COMM_WORLD);
 
 	MPI_Finalize();
 }
@@ -126,8 +128,14 @@ void Machine::run(){
 
 void Machine::sendMessages(){
 	for(int i=0;i<(int)m_outbox.size();i++){
+
 		Message*aMessage=&(m_outbox[i]);
 
+		#ifdef DEBUG_EXTENSION
+		if(m_mode_EXTENSION){
+			cout<<"DEBUG_EXTENSION Time="<<time(NULL)<<" Source="<<getRank()<<" Destination="<<aMessage->getDestination()<<" Tag="<<aMessage->getTag()<<" Datatype="<<aMessage->getMPIDatatype()<<" Count="<<aMessage->getCount()<<endl;
+		}
+		#endif
 		MPI_Send(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD);
 	}
 	m_outbox.clear();
