@@ -4,7 +4,7 @@
 # -DDEBUG_BARRIERS to debug barriers.
 # -DWRITE_COVERAGE_DISTRIBUTION to write coverage distribution.
 
-CXXFLAGS=  -Wall  -I.  -O3 -DSHOW_STATISTICS
+CXXFLAGS=  -Wall  -I.  -O3 #-DSHOW_STATISTICS
 
 MPICC=~/software/openmpi-1.4.1/output/bin/mpic++
 

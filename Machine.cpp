@@ -100,7 +100,6 @@ Machine::Machine(int argc,char**argv){
 	m_totalLetters=0;
 	m_distribution_file_id=m_distribution_sequence_id=m_distribution_currentSequenceId=0;
 
-	MPI_Barrier(MPI_COMM_WORLD);
 	if(argc!=2){
 		if(isMaster()){
 			cout<<"You must provide a input file."<<endl;
@@ -109,7 +108,6 @@ Machine::Machine(int argc,char**argv){
 	}else{
 		run();
 	}
-	MPI_Barrier(MPI_COMM_WORLD);
 
 	MPI_Finalize();
 }
