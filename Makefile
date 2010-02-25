@@ -10,6 +10,7 @@ CXXFLAGS=  -Wall  -I.  -O3  #-DSHOW_STATISTICS
 MPICC=~/software/openmpi-1.4.1/output/bin/mpic++
 #MPICC=/home/boiseb01/software/mvapich2/bin/mpicxx
 MPICC=/home/boiseb01/software/ompi-1.4.1-gcc/bin/mpic++
+MPICC=/home/boiseb01/software/mpich2-nemesis/bin/mpic++
 
 all: Ray
 

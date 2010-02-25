@@ -19,6 +19,7 @@
 
 */
 
+#include<mpi.h>
 #ifdef MPICH2_VERSION
 #define  USE_ISEND
 #endif
@@ -28,7 +29,6 @@
 #define _Machine
 
 
-#include<mpi.h>
 #include<map>
 #include<vector>
 #include<Vertex.h>
