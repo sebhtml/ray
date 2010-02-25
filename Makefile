@@ -1,12 +1,15 @@
-# -DDEBUG for debug information
-# _DDEBUG1 to show message in the extension
-# -DSHOW_STATISTICS for statistics on messages.
-# -DDEBUG_BARRIERS to debug barriers.
-# -DWRITE_COVERAGE_DISTRIBUTION to write coverage distribution.
+# DEBUG for debug information
+# DEBUG1 to show message in the extension
+# SHOW_STATISTICS for statistics on messages.
+# DEBUG_BARRIERS to debug barriers.
+# WRITE_COVERAGE_DISTRIBUTION to write coverage distribution.
+# USE_ISEND  necessary with mvapich2. (autodetect)
 
-CXXFLAGS=  -Wall  -I.  -O3 #-DSHOW_STATISTICS
+CXXFLAGS=  -Wall  -I.  -O3  #-DSHOW_STATISTICS
 
 MPICC=~/software/openmpi-1.4.1/output/bin/mpic++
+#MPICC=/home/boiseb01/software/mvapich2/bin/mpicxx
+MPICC=/home/boiseb01/software/ompi-1.4.1-gcc/bin/mpic++
 
 all: Ray
 

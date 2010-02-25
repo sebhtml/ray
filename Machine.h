@@ -19,7 +19,9 @@
 
 */
 
-
+#ifdef MPICH2_VERSION
+#define  USE_ISEND
+#endif
 
 
 #ifndef _Machine
@@ -382,6 +384,7 @@ class Machine{
 	void processMessages();
 	void processMessage(Message*message);
 	void sendMessages();
+	void checkRequests();
 	void processData();
 	int getRank();
 	void receiveWelcomeMessage(MPI_Status*status);

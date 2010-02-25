@@ -118,10 +118,24 @@ void Machine::run(){
 	}
 	while(isAlive()){
 		receiveMessages(); 
+		#ifdef USE_ISEND
+		checkRequests();
+		#endif
 		processMessages();
 		processData();
 		sendMessages();
 	}
+}
+
+void Machine::checkRequests(){
+	MPI_Request theRequests[1024];
+	MPI_Status theStatus[1024];
+	
+	for(int i=0;i<(int)m_pendingMpiRequest.size();i++){
+		theRequests[i]=m_pendingMpiRequest[i];
+	}
+	MPI_Waitall(m_pendingMpiRequest.size(),theRequests,theStatus);
+	m_pendingMpiRequest.clear();
 }
 
 void Machine::sendMessages(){
@@ -134,7 +148,18 @@ void Machine::sendMessages(){
 			cout<<"DEBUG_EXTENSION Time="<<time(NULL)<<" Source="<<getRank()<<" Destination="<<aMessage->getDestination()<<" Tag="<<aMessage->getTag()<<" Datatype="<<aMessage->getMPIDatatype()<<" Count="<<aMessage->getCount()<<endl;
 		}
 		#endif
+		#ifdef USE_ISEND
+		MPI_Request request;
+		MPI_Status status;
+		int flag;
+		MPI_Isend(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD,&request);
+		MPI_Test(&request,&flag,&status);
+		if(!flag){
+			m_pendingMpiRequest.push_back(request);
+		}
+		#else
 		MPI_Send(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD);
+		#endif
 	}
 	m_outbox.clear();
 	if(m_outboxAllocator.getNumberOfChunks()>1){
