@@ -142,6 +142,16 @@ void Machine::sendMessages(){
 	for(int i=0;i<(int)m_outbox.size();i++){
 
 		Message*aMessage=&(m_outbox[i]);
+		if(aMessage->getDestination()==getRank()){
+			int sizeOfElements=8;
+			if(aMessage->getTag()==TAG_SEND_SEQUENCE){
+				sizeOfElements=1;
+			}
+			void*newBuffer=m_inboxAllocator.allocate(sizeOfElements*aMessage->getCount());
+			memcpy(newBuffer,aMessage->getBuffer(),sizeOfElements*aMessage->getCount());
+			aMessage->setBuffer(newBuffer);
+			m_inbox.push_back(*aMessage);
+		}
 
 		#ifdef DEBUG_EXTENSION
 		if(m_mode_EXTENSION){
