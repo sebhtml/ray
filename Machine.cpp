@@ -151,6 +151,7 @@ void Machine::sendMessages(){
 			memcpy(newBuffer,aMessage->getBuffer(),sizeOfElements*aMessage->getCount());
 			aMessage->setBuffer(newBuffer);
 			m_inbox.push_back(*aMessage);
+			continue;
 		}
 
 		#ifdef DEBUG_EXTENSION
