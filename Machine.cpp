@@ -40,7 +40,6 @@ Machine::Machine(int argc,char**argv){
 	m_COPY_ranks=-1;
 	m_EXTENSION_numberOfRanksDone=0;
 	m_numberOfRanksDoneSeeding=0;
-	m_numberOfBarriers=0;
 	m_calibrationAskedCalibration=false;
 	m_calibrationIsDone=true; // set to false to perform a speed calibration.
 	m_master_mode=MODE_DO_NOTHING;
@@ -168,7 +167,7 @@ void Machine::sendMessages(){
 			cout<<"DEBUG_EXTENSION Time="<<time(NULL)<<" Source="<<getRank()<<" Destination="<<aMessage->getDestination()<<" Tag="<<aMessage->getTag()<<" Datatype="<<aMessage->getMPIDatatype()<<" Count="<<aMessage->getCount()<<endl;
 		}
 		#endif
-		#ifdef MPICH2_VERSION
+		#ifdef MPICH2_VERSION // MPICH2 waits for the response on the other end.
 		MPI_Request request;
 		MPI_Status status;
 		int flag;
@@ -177,7 +176,7 @@ void Machine::sendMessages(){
 		if(!flag){
 			m_pendingMpiRequest.push_back(request);
 		}
-		#else
+		#else // Open-MPI-1.4.1 sends message eagerly.
 		MPI_Send(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD);
 		#endif
 	}

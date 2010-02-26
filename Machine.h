@@ -363,7 +363,6 @@ class Machine{
 	#endif
 
 	int milliSeconds();
-	int m_numberOfBarriers;
 	void enumerateChoices();
 	void killRanks();
 	void attachReads();
