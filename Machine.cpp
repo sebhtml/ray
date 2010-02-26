@@ -91,6 +91,15 @@ Machine::Machine(int argc,char**argv){
 		cout<<"Rank "<<getRank()<<" welcomes you to the MPI_COMM_WORLD."<<endl;
 		cout<<"Rank "<<getRank()<<": website -> http://denovoassembler.sf.net/"<<endl;
 		cout<<"Rank "<<getRank()<<": version -> "<<m_VERSION<<" $Id$"<<endl;
+		#ifdef MPICH2_VERSION
+		cout<<"Rank "<<getRank()<<": using MPICH2"<<endl;
+		#else
+			#ifdef OMPI_MPI_H
+			cout<<"Rank "<<getRank()<<": using Open-MPI"<<endl;
+			#else
+			cout<<"Rank "<<getRank()<<": Warning, unknown implementation of MPI"<<endl;
+			#endif
+		#endif
 	}
 	m_alive=true;
 	m_welcomeStep=true;
@@ -118,7 +127,7 @@ void Machine::run(){
 	}
 	while(isAlive()){
 		receiveMessages(); 
-		#ifdef USE_ISEND
+		#ifdef MPICH2_VERSION
 		checkRequests();
 		#endif
 		processMessages();
@@ -159,7 +168,7 @@ void Machine::sendMessages(){
 			cout<<"DEBUG_EXTENSION Time="<<time(NULL)<<" Source="<<getRank()<<" Destination="<<aMessage->getDestination()<<" Tag="<<aMessage->getTag()<<" Datatype="<<aMessage->getMPIDatatype()<<" Count="<<aMessage->getCount()<<endl;
 		}
 		#endif
-		#ifdef USE_ISEND
+		#ifdef MPICH2_VERSION
 		MPI_Request request;
 		MPI_Status status;
 		int flag;

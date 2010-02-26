@@ -20,9 +20,6 @@
 */
 
 #include<mpi.h>
-#ifdef MPICH2_VERSION
-#define  USE_ISEND
-#endif
 
 
 #ifndef _Machine
