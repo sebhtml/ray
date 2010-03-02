@@ -212,6 +212,8 @@ class Machine{
 	int m_SEEDING_i;
 	uint64_t m_SEEDING_currentVertex;
 	
+	map<int,int> m_FUSION_identifier_map;
+
 
 	bool m_SEEDING_InedgesReceived;
 	bool m_SEEDING_InedgesRequested;

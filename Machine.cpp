@@ -376,6 +376,12 @@ void Machine::processMessage(Message*message){
 		vector<uint64_t> a;
 		m_allPaths.push_back(a);
 	}else if(tag==TAG_START_FUSION){
+	
+		for(int i=0;i<(int)m_EXTENSION_identifiers.size();i++){
+			int id=m_EXTENSION_identifiers[i];
+			m_FUSION_identifier_map[id]=i;
+		}
+
 		m_mode=MODE_FUSION;
 		m_SEEDING_i=0;
 
@@ -428,13 +434,14 @@ void Machine::processMessage(Message*message){
 		uint64_t*incoming=(uint64_t*)buffer;
 		int id=incoming[0];
 		int length=-1;
-		for(int i=0;i<(int)m_EXTENSION_contigs.size();i++){
-			if(m_EXTENSION_identifiers[i]==id){
-				length=m_EXTENSION_contigs[i].size();
-			}
+		if(m_FUSION_identifier_map.count(id)>0){
+			length=m_EXTENSION_contigs[m_FUSION_identifier_map[id]].size();
+		}else{
+			cout<<"Rank "<<getRank()<<" Fatal error, "<<id<<" is not in my data."<<endl;
 		}
+
 		if(length==-1){
-			cout<<"Error FATALL"<<endl;
+			cout<<"Rank "<<getRank()<<": Invalid length."<<endl;
 		}
 		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(sizeof(uint64_t));
 		message[0]=length;
@@ -1313,6 +1320,7 @@ void Machine::processData(){
 				map<int,int> index;
 				map<int,int> starts;
 				map<int,int> ends;
+				// extract those that are on both starting and ending vertices.
 				for(int i=0;i<(int)m_FUSION_firstPaths.size();i++){
 					index[m_FUSION_firstPaths[i].getWave()]++;
 					int pathId=m_FUSION_firstPaths[i].getWave();
@@ -1332,7 +1340,8 @@ void Machine::processData(){
 				}
 				vector<int> matches;
 				for(map<int,int>::iterator i=index.begin();i!=index.end();++i){
-					if(i->second>=2 and i->first != currentId and (ends[i->first]-starts[i->first]+1)==(int)m_EXTENSION_contigs[m_SEEDING_i].size()){
+					int otherPathId=i->first;
+					if(i->second>=2 and otherPathId != currentId and (ends[otherPathId]-starts[otherPathId]+1)==(int)m_EXTENSION_contigs[m_SEEDING_i].size()){
 						// possible match.
 						m_FUSION_matches.push_back(i->first);
 					}
@@ -1348,7 +1357,7 @@ void Machine::processData(){
 				m_FUSION_pathLengthRequested=false;
 			}else if(!m_FUSION_matches_length_done){
 				int currentId=m_EXTENSION_identifiers[m_SEEDING_i];
-				if(m_FUSION_match_index==(int)m_FUSION_matches.size()){
+				if(m_FUSION_match_index==(int)m_FUSION_matches.size()){// tested all matches, and nothing was found.
 					m_FUSION_matches_length_done=true;
 				}else if(!m_FUSION_pathLengthRequested){
 					int uniquePathId=m_FUSION_matches[m_FUSION_match_index];
@@ -1597,6 +1606,7 @@ void Machine::processData(){
 			killRanks();
 		}else if(!m_EXTENSION_currentRankIsStarted){
 			m_EXTENSION_currentRankIsStarted=true;
+			cout<<"Rank "<<getRank()<<" asks "<<m_EXTENSION_rank<<" for its extensions."<<endl;
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_EXTENSION_rank,TAG_ASK_EXTENSION_DATA,getRank());
 			m_outbox.push_back(aMessage);
 			m_EXTENSION_currentRankIsDone=false;
