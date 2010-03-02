@@ -1318,32 +1318,60 @@ void Machine::processData(){
 			}else if(!m_FUSION_matches_done){
 				m_FUSION_matches_done=true;
 				map<int,int> index;
-				map<int,int> starts;
-				map<int,int> ends;
+				map<int,vector<int> > starts;
+				map<int,vector<int> > ends;
+
+				if(m_EXTENSION_contigs[m_SEEDING_i].size()==44820-m_wordSize+1){
+					cout<<"44820"<<endl;
+					cout<<"First: "<<m_FUSION_firstPaths.size()<<endl;
+					for(int i=0;i<m_FUSION_firstPaths.size();i++){
+						cout<<m_FUSION_firstPaths[i].getWave()<<" "<<m_FUSION_firstPaths[i].getProgression()<<endl;
+					}
+					cout<<"Last: "<<m_FUSION_lastPaths.size()<<endl;
+
+					for(int i=0;i<m_FUSION_lastPaths.size();i++){
+						cout<<m_FUSION_lastPaths[i].getWave()<<" "<<m_FUSION_lastPaths[i].getProgression()<<endl;
+					}
+				}
+				set<int> startingAt0;
+
 				// extract those that are on both starting and ending vertices.
 				for(int i=0;i<(int)m_FUSION_firstPaths.size();i++){
 					index[m_FUSION_firstPaths[i].getWave()]++;
 					int pathId=m_FUSION_firstPaths[i].getWave();
 					int progression=m_FUSION_firstPaths[i].getProgression();
-					if(starts.count(pathId)==0 or starts[pathId]>progression){
-						starts[pathId]=progression;
-					}
+					starts[pathId].push_back(progression);
 				}
+
+				vector<int> matches;
+
 				for(int i=0;i<(int)m_FUSION_lastPaths.size();i++){
 					index[m_FUSION_lastPaths[i].getWave()]++;
 					
 					int pathId=m_FUSION_lastPaths[i].getWave();
 					int progression=m_FUSION_lastPaths[i].getProgression();
-					if(ends.count(pathId)==0 or ends[pathId]<progression){
-						ends[pathId]=progression;
-					}
+					ends[pathId].push_back(progression);
 				}
-				vector<int> matches;
+				
+
+				
 				for(map<int,int>::iterator i=index.begin();i!=index.end();++i){
 					int otherPathId=i->first;
-					if(i->second>=2 and otherPathId != currentId and (ends[otherPathId]-starts[otherPathId]+1)==(int)m_EXTENSION_contigs[m_SEEDING_i].size()){
-						// possible match.
-						m_FUSION_matches.push_back(i->first);
+					if(i->second>=2 and otherPathId != currentId){
+						// try to find a match with the current size.
+						for(int k=0;k<starts[otherPathId].size();k++){
+							bool found=false;
+							for(int p=0;p<ends[otherPathId].size();p++){
+								if(ends[otherPathId][p]-starts[otherPathId][k]+1==m_EXTENSION_contigs[m_SEEDING_i].size()){
+									m_FUSION_matches.push_back(otherPathId);
+									cout<<"MATCHING. for"<<endl;
+									found=true;
+									break;
+								}
+							}
+							if(found)
+								break;
+						}
 					}
 				}
 				if(m_FUSION_matches.size()==0){ // no match, go next.
@@ -1355,6 +1383,9 @@ void Machine::processData(){
 				m_FUSION_matches_length_done=false;
 				m_FUSION_match_index=0;
 				m_FUSION_pathLengthRequested=false;
+				if(m_EXTENSION_contigs[m_SEEDING_i].size()==44820-m_wordSize+1){
+					cout<<"Length=44820, matches: "<<m_FUSION_matches.size()<<endl;
+				}
 			}else if(!m_FUSION_matches_length_done){
 				int currentId=m_EXTENSION_identifiers[m_SEEDING_i];
 				if(m_FUSION_match_index==(int)m_FUSION_matches.size()){// tested all matches, and nothing was found.
@@ -1369,6 +1400,9 @@ void Machine::processData(){
 					m_FUSION_pathLengthRequested=true;
 					m_FUSION_pathLengthReceived=false;
 				}else if(m_FUSION_pathLengthReceived){
+					if(m_EXTENSION_contigs[m_SEEDING_i].size()==44820-m_wordSize+1){
+						cout<<"44820 matches with another: "<<m_FUSION_receivedLength<<endl;
+					}
 					if(m_FUSION_matches[m_FUSION_match_index]<currentId and m_FUSION_receivedLength == (int)m_EXTENSION_contigs[m_SEEDING_i].size()){
 						m_FUSION_eliminated.insert(currentId);
 						m_FUSION_direct_fusionDone=false;
@@ -1376,6 +1410,7 @@ void Machine::processData(){
 						m_FUSION_paths_requested=false;
 						m_SEEDING_i++;
 					}else if(m_FUSION_receivedLength>(int)m_EXTENSION_contigs[m_SEEDING_i].size() ){
+						cout<<"Rank "<<getRank()<<" there is a bigger one."<<endl;
 						m_FUSION_eliminated.insert(currentId);
 						m_FUSION_direct_fusionDone=false;
 						m_FUSION_first_done=false;
@@ -1431,30 +1466,39 @@ void Machine::processData(){
 			}else if(!m_FUSION_matches_done){
 				m_FUSION_matches_done=true;
 				map<int,int> index;
-				map<int,int> starts;
-				map<int,int> ends;
+				map<int,vector<int> > starts;
+				map<int,vector<int> > ends;
 				for(int i=0;i<(int)m_FUSION_firstPaths.size();i++){
 					index[m_FUSION_firstPaths[i].getWave()]++;
 					int pathId=m_FUSION_firstPaths[i].getWave();
 					int progression=m_FUSION_firstPaths[i].getProgression();
-					if(starts.count(pathId)==0 or starts[pathId]>progression){
-						starts[pathId]=progression;
-					}
+					starts[pathId].push_back(progression);
 				}
 				for(int i=0;i<(int)m_FUSION_lastPaths.size();i++){
 					index[m_FUSION_lastPaths[i].getWave()]++;
 					
 					int pathId=m_FUSION_lastPaths[i].getWave();
 					int progression=m_FUSION_lastPaths[i].getProgression();
-					if(ends.count(pathId)==0 or ends[pathId]<progression){
-						ends[pathId]=progression;
-					}
+					ends[pathId].push_back(progression);
 				}
 				vector<int> matches;
 				for(map<int,int>::iterator i=index.begin();i!=index.end();++i){
-					if(i->second>=2 and i->first != currentId and ends[i->first]-starts[i->first]+1==(int)m_EXTENSION_contigs[m_SEEDING_i].size()){
-						// possible match.
-						m_FUSION_matches.push_back(i->first);
+					int otherPathId=i->first;
+					if(i->second>=2 and i->first != currentId){
+						// try to find a match with the current size.
+						for(int k=0;k<starts[otherPathId].size();k++){
+							bool found=false;
+							for(int p=0;p<ends[otherPathId].size();p++){
+								if(ends[otherPathId][p]-starts[otherPathId][k]+1==m_EXTENSION_contigs[m_SEEDING_i].size()){
+									m_FUSION_matches.push_back(otherPathId);
+									cout<<"MATCHING rev."<<endl;
+									found=true;
+									break;
+								}
+							}
+							if(found)
+								break;
+						}
 					}
 				}
 				if(m_FUSION_matches.size()==0){ // no match, go next.
