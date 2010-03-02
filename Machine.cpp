@@ -108,6 +108,8 @@ Machine::Machine(int argc,char**argv){
 	m_totalLetters=0;
 	m_distribution_file_id=m_distribution_sequence_id=m_distribution_currentSequenceId=0;
 
+	MPI_Barrier(MPI_COMM_WORLD);
+
 	if(argc!=2){
 		if(isMaster()){
 			cout<<"You must provide a input file."<<endl;
@@ -116,6 +118,8 @@ Machine::Machine(int argc,char**argv){
 	}else{
 		run();
 	}
+
+	MPI_Barrier(MPI_COMM_WORLD);
 
 	MPI_Finalize();
 }
@@ -1263,11 +1267,15 @@ void Machine::processData(){
 			m_outbox.push_back(aMessage);
 			m_mode=MODE_DO_NOTHING;
 			m_speedLimitIsOn=false;// remove the speed limit because rank MASTER will ask everyone their things
+			cout<<"Rank "<<getRank()<<": fusion "<<m_SEEDING_i-1<<"/"<<m_EXTENSION_contigs.size()<<" (DONE)"<<endl;
 			
 		}else if(!m_FUSION_direct_fusionDone){
 			int currentId=m_EXTENSION_identifiers[m_SEEDING_i];
 			if(!m_FUSION_first_done){
 				if(!m_FUSION_paths_requested){
+					if(m_SEEDING_i%100==0){
+						cout<<"Rank "<<getRank()<<": fusion "<<m_SEEDING_i<<"/"<<m_EXTENSION_contigs.size()<<endl;
+					}
 					// get the paths going on the first vertex
 					uint64_t firstVertex=m_EXTENSION_contigs[m_SEEDING_i][0];
 					uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
@@ -2035,6 +2043,7 @@ void Machine::doChoice(){
 			m_EXTENSION_readsInRange.clear();
 		}else{
 			if(m_EXTENSION_extension.size()>=100){
+				cout<<"Rank "<<getRank()<<" stores an extension, "<<m_EXTENSION_extension.size()<<" vertices."<<endl;
 				m_EXTENSION_contigs.push_back(m_EXTENSION_extension);
 
 				int id=m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+getRank();
