@@ -440,7 +440,7 @@ void Machine::processMessage(Message*message){
 			cout<<"Rank "<<getRank()<<" Fatal error, "<<id<<" is not in my data."<<endl;
 		}
 
-		if(length==-1){
+		if(length==0){
 			cout<<"Rank "<<getRank()<<": Invalid length."<<endl;
 		}
 		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(sizeof(uint64_t));
@@ -1503,7 +1503,9 @@ void Machine::processData(){
 					m_FUSION_pathLengthRequested=true;
 					m_FUSION_pathLengthReceived=false;
 				}else if(m_FUSION_pathLengthReceived){
-					if(m_FUSION_matches[m_FUSION_match_index]<currentId and m_FUSION_receivedLength == (int)m_EXTENSION_contigs[m_SEEDING_i].size()){
+					if(m_FUSION_receivedLength==0){
+						cout<<"Rank "<<getRank()<<" the length is 0"<<endl;
+					}else if(m_FUSION_matches[m_FUSION_match_index]<currentId and m_FUSION_receivedLength == (int)m_EXTENSION_contigs[m_SEEDING_i].size()){
 						m_FUSION_eliminated.insert(currentId);
 						m_FUSION_direct_fusionDone=false;
 						m_FUSION_first_done=false;
