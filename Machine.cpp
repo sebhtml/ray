@@ -1536,6 +1536,8 @@ void Machine::processData(){
 	}
 
 	if(m_EXTENSION_numberOfRanksDone==getSize()){
+		// ask one at once to do the fusion
+		// because otherwise it may lead to hanging of the program for unknown reasons
 		m_EXTENSION_numberOfRanksDone=-1;
 		m_master_mode=MODE_DO_NOTHING;
 		m_FUSION_numberOfRanksDone=0;
