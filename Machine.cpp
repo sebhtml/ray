@@ -377,10 +377,6 @@ void Machine::processMessage(Message*message){
 		m_allPaths.push_back(a);
 	}else if(tag==TAG_START_FUSION){
 	
-		for(int i=0;i<(int)m_EXTENSION_identifiers.size();i++){
-			int id=m_EXTENSION_identifiers[i];
-			m_FUSION_identifier_map[id]=i;
-		}
 
 		m_mode=MODE_FUSION;
 		m_SEEDING_i=0;
@@ -433,7 +429,7 @@ void Machine::processMessage(Message*message){
 	}else if(tag==TAG_GET_PATH_LENGTH){
 		uint64_t*incoming=(uint64_t*)buffer;
 		int id=incoming[0];
-		int length=-1;
+		int length=0;
 		if(m_FUSION_identifier_map.count(id)>0){
 			length=m_EXTENSION_contigs[m_FUSION_identifier_map[id]].size();
 		}else{
@@ -1383,14 +1379,15 @@ void Machine::processData(){
 					m_FUSION_pathLengthRequested=true;
 					m_FUSION_pathLengthReceived=false;
 				}else if(m_FUSION_pathLengthReceived){
-					if(m_FUSION_matches[m_FUSION_match_index]<currentId and m_FUSION_receivedLength == (int)m_EXTENSION_contigs[m_SEEDING_i].size()){
+					if(m_FUSION_receivedLength==0){
+					}else if(m_FUSION_matches[m_FUSION_match_index]<currentId and m_FUSION_receivedLength == (int)m_EXTENSION_contigs[m_SEEDING_i].size()){
 						m_FUSION_eliminated.insert(currentId);
 						m_FUSION_direct_fusionDone=false;
 						m_FUSION_first_done=false;
 						m_FUSION_paths_requested=false;
 						m_SEEDING_i++;
 					}else if(m_FUSION_receivedLength>(int)m_EXTENSION_contigs[m_SEEDING_i].size() ){
-						cout<<"Rank "<<getRank()<<" there is a bigger one."<<endl;
+						//cout<<"Rank "<<getRank()<<" there is a bigger one."<<endl;
 						m_FUSION_eliminated.insert(currentId);
 						m_FUSION_direct_fusionDone=false;
 						m_FUSION_first_done=false;
@@ -1504,7 +1501,6 @@ void Machine::processData(){
 					m_FUSION_pathLengthReceived=false;
 				}else if(m_FUSION_pathLengthReceived){
 					if(m_FUSION_receivedLength==0){
-						cout<<"Rank "<<getRank()<<" the length is 0"<<endl;
 					}else if(m_FUSION_matches[m_FUSION_match_index]<currentId and m_FUSION_receivedLength == (int)m_EXTENSION_contigs[m_SEEDING_i].size()){
 						m_FUSION_eliminated.insert(currentId);
 						m_FUSION_direct_fusionDone=false;
@@ -1804,6 +1800,13 @@ void Machine::extendSeeds(){
 	}else if(m_EXTENSION_currentSeedIndex==(int)m_SEEDING_seeds.size()){
 		cout<<"Rank "<<getRank()<<": extending seeds "<<m_SEEDING_seeds.size()<<"/"<<m_SEEDING_seeds.size()<<" (DONE)"<<endl;
 		m_mode_EXTENSION=false;
+		
+		// store the lengths.
+		for(int i=0;i<(int)m_EXTENSION_identifiers.size();i++){
+			int id=m_EXTENSION_identifiers[i];
+			m_FUSION_identifier_map[id]=i;
+		}
+
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_IS_DONE,getRank());
 		m_outbox.push_back(aMessage);
 		return;
