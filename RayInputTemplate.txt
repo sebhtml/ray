@@ -1,5 +1,6 @@
 # Ray Configuration File (Template)
 # to start Ray: make test
+# you can provide fastq files too.
 
 # load single-end reads
 # LoadPairedEndReads <FastaFile>

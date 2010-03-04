@@ -27,10 +27,12 @@
 #include<stdint.h>
 #include<vector>
 #include<MyAllocator.h>
+#include<PairedRead.h>
 using namespace std;
 
 class Read{
 	char*m_sequence;
+	PairedRead*m_pairedRead;
 public:
 	Read();
 	Read(const char*id,const char*sequence,MyAllocator*seqMyAllocator);

@@ -33,6 +33,22 @@ using namespace std;
 
 #define MAX_NUMBER_OF_MPI_PROCESSES 10000
 
+
+
+// uniform random numbers
+// from Heng Li's code (LGPL)
+// http://maq.svn.sourceforge.net/viewvc/maq/trunk/maq/genran.h?view=markup
+
+#ifdef _WIN32
+#define ran_seed() srand(time(NULL))
+#define ran_uniform() rand()/(RAND_MAX+0.0)
+#else
+#define ran_seed() srand48(time(NULL)*(long)getpid())
+#define ran_uniform() drand48()
+#endif
+
+
+string reverseComplement(string a);
 uint64_t wordId(const char*a);
 string idToWord(uint64_t i,int wordSize);
 bool isValidDNA(const char*x);

@@ -109,7 +109,7 @@ Machine::Machine(int argc,char**argv){
 		#endif
 		#else
 		cout<<"Ray runs on "<<getSize()<<" MPI processes"<<endl;
-		cout<<"Starting \"RayEngine\""<<endl;
+		cout<<"Starting \"RayEngine\"";
 		#endif
 	}
 	m_alive=true;
@@ -142,7 +142,7 @@ Machine::Machine(int argc,char**argv){
 		minutes=minutes%60;
 		int days=hours/24;
 		hours=hours%24;
-		cout<<"Computation time: "<<days<<" d "<<hours<<" h "<<minutes<<" min "<<seconds<<" s"<<endl;
+		cout<<endl<<"Computation time: "<<days<<" d "<<hours<<" h "<<minutes<<" min "<<seconds<<" s"<<endl;
 	}
 	MPI_Finalize();
 }
@@ -292,7 +292,7 @@ void Machine::loadSequences(){
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<" loads "<<allFiles[m_distribution_file_id]<<"."<<endl;
 		#else
-		cout<<"Loading sequences"<<endl;
+		cout<<endl<<"Loading sequences"<<endl;
 		#endif
 		loader.load(allFiles[m_distribution_file_id],&m_distribution_reads,&m_distributionAllocator,&m_distributionAllocator);
 		#ifdef SHOW_PROGRESS
@@ -363,7 +363,7 @@ void Machine::attachReads(){
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<" loads "<<allFiles[m_distribution_file_id]<<"."<<endl;
 		#else
-		cout<<"Loading sequences"<<endl;
+		cout<<endl<<"Loading sequences"<<endl;
 		#endif
 		loader.load(allFiles[m_distribution_file_id],&m_distribution_reads,&m_distributionAllocator,&m_distributionAllocator);
 		
@@ -937,9 +937,6 @@ void Machine::processData(){
 		}
 		m_messageSentForVerticesDistribution=true;
 	}else if(m_numberOfMachinesDoneSendingVertices==getSize()){
-		#ifndef SHOW_PROGRESS
-		cout<<endl;
-		#endif
 		m_numberOfMachinesReadyForEdgesDistribution=0;
 		m_numberOfMachinesDoneSendingVertices=-1;
 		for(int i=0;i<getSize();i++){

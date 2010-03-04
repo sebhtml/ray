@@ -19,33 +19,20 @@
 
 */
 
-#ifndef _Parameters
+#ifndef _PairedFiles
+#define _PairedFiles
 
-#define _Parameters
-#include<PairedFiles.h>
 #include<string>
-#include<vector>
 using namespace std;
 
-class Parameters{
-	bool m_initiated;
-	int m_numberOfSequences;
-	vector<string> m_singleEndReadsFile;
-	vector<PairedFiles> m_pairedFiles;
-	string m_directory;
-	string m_outputFile;
-	int m_wordSize;
-	int m_minimumContigLength;
+
+class PairedFiles{
+	string m_left;
+	string m_right;
+	int m_average_length;
+	int m_standardDeviation;
 public:
-	Parameters();
-	void load(string file);
-	bool isInitiated();
-	vector<string> getAllFiles();
-	string getDirectory();
-	int getMinimumContigLength();
-	string getOutputFile();
-	int getWordSize();
+	PairedFiles(string left, string right, int averageLength,int standardDeviation);
 };
 
 #endif
-

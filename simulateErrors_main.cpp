@@ -1,6 +1,6 @@
 /*
- 	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+ 	OpenAssembler -- a de Bruijn DNA assembler for mixed high-throughput technologies
+    Copyright (C) 2009  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -19,33 +19,18 @@
 
 */
 
-#ifndef _Parameters
 
-#define _Parameters
-#include<PairedFiles.h>
-#include<string>
-#include<vector>
+#include<ErrorSimulator.h>
+#include<iostream>
 using namespace std;
 
-class Parameters{
-	bool m_initiated;
-	int m_numberOfSequences;
-	vector<string> m_singleEndReadsFile;
-	vector<PairedFiles> m_pairedFiles;
-	string m_directory;
-	string m_outputFile;
-	int m_wordSize;
-	int m_minimumContigLength;
-public:
-	Parameters();
-	void load(string file);
-	bool isInitiated();
-	vector<string> getAllFiles();
-	string getDirectory();
-	int getMinimumContigLength();
-	string getOutputFile();
-	int getWordSize();
-};
-
-#endif
-
+int main(int argc,char**argv){
+	if(argc!=3){
+		cout<<"Usage"<<endl;
+		cout<<argv[0]<<" input.fasta output.fasta"<<endl;
+		return 0;
+	}
+	ErrorSimulator simulator;
+	simulator.simulateErrors(argv[1],argv[2]);
+	return 0;
+}

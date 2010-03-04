@@ -30,6 +30,7 @@ using namespace  std;
 
 Read::Read(){
 	m_sequence=NULL;
+	m_pairedRead=NULL;
 }
 
 
@@ -40,6 +41,7 @@ void Read::copy(const char*id,const char*sequence,MyAllocator*seqMyAllocator){
 
 Read::Read(const char*id,const char*sequence,MyAllocator*seqMyAllocator){
 	copy(id,sequence,seqMyAllocator);
+	m_pairedRead=NULL;
 }
 
 Read::~Read(){

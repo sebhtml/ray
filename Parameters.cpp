@@ -20,7 +20,7 @@
 */
 
 
-
+#include<PairedFiles.h>
 #include<Parameters.h>
 #include<string>
 #include<iostream>
@@ -53,6 +53,20 @@ void Parameters::load(string file){
 		if(token=="LoadSingleEndReads"){
 			f>>token;
 			m_singleEndReadsFile.push_back(token);
+		}else if(token=="LoadPairedEndReads"){
+			f>>token;
+			string left=token;
+			// add left file
+			m_singleEndReadsFile.push_back(left);
+			f>>token;
+			// add right file
+			string right=token;
+			m_singleEndReadsFile.push_back(right);
+			int meanFragmentLength;
+			int standardDeviation;
+			f>>meanFragmentLength>>standardDeviation;
+			PairedFiles pair(left,right,meanFragmentLength,standardDeviation);
+			m_pairedFiles.push_back(pair);
 		}else if(token=="SetOutputDirectory"){
 			f>>token;
 			m_directory=token;

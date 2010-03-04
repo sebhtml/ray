@@ -19,33 +19,12 @@
 
 */
 
-#ifndef _Parameters
 
-#define _Parameters
-#include<PairedFiles.h>
-#include<string>
-#include<vector>
-using namespace std;
+#include<PairedRead.h>
 
-class Parameters{
-	bool m_initiated;
-	int m_numberOfSequences;
-	vector<string> m_singleEndReadsFile;
-	vector<PairedFiles> m_pairedFiles;
-	string m_directory;
-	string m_outputFile;
-	int m_wordSize;
-	int m_minimumContigLength;
-public:
-	Parameters();
-	void load(string file);
-	bool isInitiated();
-	vector<string> getAllFiles();
-	string getDirectory();
-	int getMinimumContigLength();
-	string getOutputFile();
-	int getWordSize();
-};
 
-#endif
-
+PairedRead::PairedRead(int rank,int id, int fragmentSize){
+	m_rank=rank;
+	m_sequence_id=id;
+	m_fragmentSize=fragmentSize;
+}
