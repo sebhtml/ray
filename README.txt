@@ -60,3 +60,13 @@ Limitations:
 Ray can not run without mpi as it is a pure parallel program with no
 non-parallel steps. However, it is safe and reliable to run it with 1 cpu.
 Ray is distributed with the GPLv3 license (see gpl-3.txt).
+
+
+
+Note on MPI implementation:
+
+It currently works well with Open-MPI.
+You may have to disable the Byte Transfer Layer called Shared Memory to avoid a race condition in the spinlock of Open-MPI. This problem is presumably due to a processor defective design rather than a defect in Open-MPI. The lock instruction is supposed to lock the bus, so if you encounter the race condition, you know something is wrong. The following command disables the btl sm.
+
+ mpirun -np 32 --mca btl ^sm ./Ray sequences.fasta 
+
