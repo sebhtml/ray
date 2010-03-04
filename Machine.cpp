@@ -37,8 +37,13 @@
 using namespace std;
 
 Machine::Machine(int argc,char**argv){
+	time_t startingTime=time(NULL);
+	m_lastTime=time(NULL);
+	srand(m_lastTime);
+	m_fusionStarted=false;
 	m_COPY_ranks=-1;
 	m_EXTENSION_numberOfRanksDone=0;
+	m_messageSentForEdgesDistribution=false;
 	m_numberOfRanksDoneSeeding=0;
 	m_calibrationAskedCalibration=false;
 	m_calibrationIsDone=true; // set to false to perform a speed calibration.
@@ -80,13 +85,16 @@ Machine::Machine(int argc,char**argv){
 	m_startEdgeDistribution=false;
 
 	m_ranksDoneAttachingReads=0;
-	m_VERSION="0.0.0";
+	m_VERSION="0.0.3";
 
 	MPI_Init(&argc,&argv);
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
 	MPI_Comm_size(MPI_COMM_WORLD,&m_size);
 
+
+
 	if(isMaster()){
+		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<" welcomes you to the MPI_COMM_WORLD."<<endl;
 		cout<<"Rank "<<getRank()<<": website -> http://denovoassembler.sf.net/"<<endl;
 		cout<<"Rank "<<getRank()<<": version -> "<<m_VERSION<<" $Id$"<<endl;
@@ -98,6 +106,10 @@ Machine::Machine(int argc,char**argv){
 			#else
 			cout<<"Rank "<<getRank()<<": Warning, unknown implementation of MPI"<<endl;
 			#endif
+		#endif
+		#else
+		cout<<"Ray runs on "<<getSize()<<" MPI processes"<<endl;
+		cout<<"Starting \"RayEngine\""<<endl;
 		#endif
 	}
 	m_alive=true;
@@ -121,13 +133,26 @@ Machine::Machine(int argc,char**argv){
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
+	if(isMaster()){
+		time_t endingTime=time(NULL);
+		int difference=endingTime-startingTime;
+		int minutes=difference/60;
+		int seconds=difference%60;
+		int hours=minutes/60;
+		minutes=minutes%60;
+		int days=hours/24;
+		hours=hours%24;
+		cout<<"Computation time: "<<days<<" d "<<hours<<" h "<<minutes<<" min "<<seconds<<" s"<<endl;
+	}
 	MPI_Finalize();
 }
 
 void Machine::run(){
+	#ifdef SHOW_PROGRESS
 	if(isMaster()){
 		cout<<"Rank "<<getRank()<<": I am the master among "<<getSize()<<" ranks in the MPI_COMM_WORLD."<<endl;
 	}
+	#endif
 	while(isAlive()){
 		receiveMessages(); 
 		#ifdef MPICH2_VERSION
@@ -225,6 +250,20 @@ int Machine::getRank(){
 	return m_rank;
 }
 
+void Machine::showProgress(){
+	printf("\r");
+	int nn=rand()%10;
+	
+	for(int i=0;i<nn;i++){
+		printf(".");
+	}
+	for(int i=0;i<10-nn;i++){
+		printf(" ");
+	}
+	fflush(stdout);
+
+}
+
 void Machine::loadSequences(){
 	vector<string> allFiles=m_parameters.getAllFiles();
 	if(m_distribution_reads.size()>0 and m_distribution_sequence_id>(int)m_distribution_reads.size()-1){
@@ -240,6 +279,9 @@ void Machine::loadSequences(){
 		}
 		m_distributionAllocator.clear();
 		m_distribution_reads.clear();
+		#ifndef SHOW_PROGRESS
+		cout<<endl;
+		#endif
 		return;
 	}
 	if(m_distribution_reads.size()==0){
@@ -247,13 +289,32 @@ void Machine::loadSequences(){
 		m_distribution_reads.clear();
 		m_distributionAllocator.clear();
 		m_distributionAllocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
+		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<" loads "<<allFiles[m_distribution_file_id]<<"."<<endl;
+		#else
+		cout<<"Loading sequences"<<endl;
+		#endif
 		loader.load(allFiles[m_distribution_file_id],&m_distribution_reads,&m_distributionAllocator,&m_distributionAllocator);
+		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<" has "<<m_distribution_reads.size()<<" sequences to distribute."<<endl;
+		#else
+		cout<<"Distributing sequences"<<endl;
+		#endif
 	}
+
+	#ifndef SHOW_PROGRESS
+	time_t tmp=time(NULL);
+	if(tmp>m_lastTime){
+		m_lastTime=tmp;
+		showProgress();
+	}
+	#endif
+
 	for(int i=0;i<1*getSize();i++){
 		if(m_distribution_sequence_id>(int)m_distribution_reads.size()-1){
+			#ifdef SHOW_PROGRESS
 			cout<<"Rank "<<getRank()<<" distributes sequences, "<<m_distribution_reads.size()<<"/"<<m_distribution_reads.size()<<endl;
+			#endif
 			break;
 		}
 		int destination=m_distribution_currentSequenceId%getSize();
@@ -262,9 +323,11 @@ void Machine::loadSequences(){
 			cout<<destination<<" is bad"<<endl;
 		}
 		char*sequence=(m_distribution_reads)[m_distribution_sequence_id]->getSeq();
+		#ifdef SHOW_PROGRESS
 		if(m_distribution_sequence_id%1000000==0){
 			cout<<"Rank "<<getRank()<<" distributes sequences, "<<m_distribution_sequence_id<<"/"<<m_distribution_reads.size()<<endl;
 		}
+		#endif
 		Message aMessage(sequence, strlen(sequence), MPI_BYTE, destination, TAG_SEND_SEQUENCE,getRank());
 		m_outbox.push_back(aMessage);
 		m_distribution_currentSequenceId++;
@@ -287,6 +350,9 @@ void Machine::attachReads(){
 		m_distribution_reads.clear();
 		m_distributionAllocator.clear();
 		m_mode_AttachSequences=false;
+		#ifndef SHOW_PROGRESS
+		cout<<endl;
+		#endif
 		return;
 	}
 	if(m_distribution_reads.size()==0){
@@ -294,13 +360,32 @@ void Machine::attachReads(){
 		m_distribution_reads.clear();
 		m_distributionAllocator.clear();
 		m_distributionAllocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
+		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<" loads "<<allFiles[m_distribution_file_id]<<"."<<endl;
+		#else
+		cout<<"Loading sequences"<<endl;
+		#endif
 		loader.load(allFiles[m_distribution_file_id],&m_distribution_reads,&m_distributionAllocator,&m_distributionAllocator);
+		
+		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<" "<<m_distribution_reads.size()<<" sequences to attach"<<endl;
+		#else
+		cout<<"Indexing sequences"<<endl;
+		#endif
 	}
+	#ifndef SHOW_PROGRESS
+	time_t tmp=time(NULL);
+	if(tmp>m_lastTime){
+		m_lastTime=tmp;
+		showProgress();
+	}
+	#endif
+
 	for(int i=0;i<1;i++){
 		if(m_distribution_sequence_id>(int)m_distribution_reads.size()-1){
+			#ifdef SHOW_PROGRESS
 			cout<<"Rank "<<getRank()<<" attaches sequences, "<<m_distribution_reads.size()<<"/"<<m_distribution_reads.size()<<endl;
+			#endif
 			break;
 		}
 
@@ -311,9 +396,11 @@ void Machine::attachReads(){
 			cout<<destination<<" is bad"<<endl;
 		}
 
+		#ifdef SHOW_PROGRESS
 		if(m_distribution_sequence_id%1000000==0){
 			cout<<"Rank "<<getRank()<<" attaches sequences, "<<m_distribution_sequence_id<<"/"<<m_distribution_reads.size()<<endl;
 		}
+		#endif
 
 		char*sequence=(m_distribution_reads)[m_distribution_sequence_id]->getSeq();
 		char vertexChar[100];
@@ -362,7 +449,9 @@ void Machine::processMessage(Message*message){
 			uint64_t l=incoming[i];
 			if(m_last_value!=(int)m_subgraph.size() and (int)m_subgraph.size()%100000==0){
 				m_last_value=m_subgraph.size();
+				#ifdef SHOW_PROGRESS
 				cout<<"Rank "<<getRank()<<" has "<<m_subgraph.size()<<" vertices "<<endl;
+				#endif
 			}
 			SplayNode<uint64_t,Vertex>*tmp=m_subgraph.insert(l);
 		
@@ -377,7 +466,6 @@ void Machine::processMessage(Message*message){
 		vector<uint64_t> a;
 		m_allPaths.push_back(a);
 	}else if(tag==TAG_START_FUSION){
-	
 
 		m_mode=MODE_FUSION;
 		m_SEEDING_i=0;
@@ -588,7 +676,9 @@ void Machine::processMessage(Message*message){
 	}else if(tag==TAG_MASTER_IS_DONE_ATTACHING_READS){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,getRank());
 		m_outbox.push_back(aMessage);
+		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<" attaches sequences. "<<m_myReads.size()<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
+		#endif
 	}else if(tag==TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY){
 		m_ranksDoneAttachingReads++;
 	}else if(tag==TAG_REQUEST_VERTEX_KEY_AND_COVERAGE){
@@ -699,15 +789,21 @@ void Machine::processMessage(Message*message){
 		Read*myRead=(Read*)m_persistentAllocator.allocate(sizeof(Read));
 		myRead->copy(NULL,incoming,&m_persistentAllocator);
 		m_myReads.push_back(myRead);
+		#ifdef SHOW_PROGRESS
 		if(m_myReads.size()%100000==0){
 			cout<<"Rank "<<getRank()<<" has "<<m_myReads.size()<<" sequences"<<endl;
 		}
+		#endif
 	}else if(tag==TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS){
+		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<" has "<<m_myReads.size()<<" sequences"<<endl;
+		#endif
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,TAG_SEQUENCES_READY,getRank());
 		m_outbox.push_back(aMessage);
 	}else if(tag==TAG_SHOW_VERTICES){
+		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<" has "<<m_subgraph.size()<<" vertices (DONE)"<<endl;
+		#endif
 	}else if(tag==TAG_SEQUENCES_READY){
 		m_sequence_ready_machines++;
 	}else if(tag==TAG_START_EDGES_DISTRIBUTION_ANSWER){
@@ -784,6 +880,33 @@ void Machine::processData(){
 	if(m_aborted){
 		return;
 	}
+	
+	#ifndef SHOW_PROGRESS
+	if(m_readyToSeed==getSize()){
+		cout<<endl<<"Computing seeds"<<endl;
+	}
+
+	if(isMaster() and m_messageSentForVerticesDistribution and m_numberOfMachinesDoneSendingVertices<getSize()){
+		time_t tmp=time(NULL);
+		if(tmp>m_lastTime){
+			m_lastTime=tmp;
+			showProgress();
+		}
+	}else if(isMaster() and m_messageSentForEdgesDistribution and m_numberOfMachinesDoneSendingEdges<getSize() and m_numberOfMachinesDoneSendingEdges!=-9){
+		time_t tmp=time(NULL);
+		if(tmp>m_lastTime){
+			m_lastTime=tmp;
+			showProgress();
+		}
+	}else if(isMaster() and m_fusionStarted  and m_FUSION_numberOfRanksDone<getSize()){
+		time_t tmp=time(NULL);
+		if(tmp>m_lastTime){
+			m_lastTime=tmp;
+			showProgress();
+		}
+
+	}
+	#endif
 
 	if(!m_parameters.isInitiated()&&isMaster()){
 		ifstream f(m_inputFile);
@@ -803,12 +926,20 @@ void Machine::processData(){
 	}else if(m_welcomeStep==true && m_loadSequenceStep==false&&isMaster()){
 		loadSequences();
 	}else if(m_loadSequenceStep==true && m_mode_send_vertices==false&&isMaster() and m_sequence_ready_machines==getSize()&&m_messageSentForVerticesDistribution==false){
+		#ifdef SHOW_PROGRESS
+		cout<<"Rank "<<getRank()<<": starting vertices distribution."<<endl;
+		#else
+		cout<<"Computing vertices"<<endl;
+		#endif
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i, TAG_START_VERTICES_DISTRIBUTION,getRank());
 			m_outbox.push_back(aMessage);
 		}
 		m_messageSentForVerticesDistribution=true;
 	}else if(m_numberOfMachinesDoneSendingVertices==getSize()){
+		#ifndef SHOW_PROGRESS
+		cout<<endl;
+		#endif
 		m_numberOfMachinesReadyForEdgesDistribution=0;
 		m_numberOfMachinesDoneSendingVertices=-1;
 		for(int i=0;i<getSize();i++){
@@ -821,6 +952,9 @@ void Machine::processData(){
 		m_distribution_file_id=m_distribution_sequence_id=m_distribution_currentSequenceId=0;
 		m_startEdgeDistribution=false;
 	}else if(m_startEdgeDistribution){
+		#ifndef SHOW_PROGRESS
+		cout<<"Computing edges"<<endl;
+		#endif
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i, TAG_START_EDGES_DISTRIBUTION_ASK,getRank());
 			m_outbox.push_back(aMessage);
@@ -832,6 +966,7 @@ void Machine::processData(){
 			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i, TAG_START_EDGES_DISTRIBUTION,getRank());
 			m_outbox.push_back(aMessage);
 		}
+		m_messageSentForEdgesDistribution=true;
 	}else if(m_numberOfMachinesDoneSendingCoverage==getSize()){
 		m_numberOfMachinesDoneSendingCoverage=-1;
 		CoverageDistribution distribution(m_coverageDistribution,m_parameters.getDirectory());
@@ -850,16 +985,20 @@ void Machine::processData(){
 			m_outbox.push_back(aMessage);
 		}
 	}else if(m_mode_send_vertices==true){
+		#ifdef SHOW_PROGRESS
 		if(m_mode_send_vertices_sequence_id%100000==0 and m_mode_send_vertices_sequence_id_position==0){
 			string reverse="";
 			if(m_reverseComplementVertex==true)
 				reverse="(reverse complement) ";
 			cout<<"Rank "<<getRank()<<" is extracting vertices "<<reverse<<"from sequences "<<m_mode_send_vertices_sequence_id<<"/"<<m_myReads.size()<<endl;
 		}
+		#endif
 
 		if(m_mode_send_vertices_sequence_id>(int)m_myReads.size()-1){
 			if(m_reverseComplementVertex==false){
+				#ifdef SHOW_PROGRESS
 				cout<<"Rank "<<getRank()<<" is extracting vertices from sequences "<<m_mode_send_vertices_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
+				#endif
 				m_mode_send_vertices_sequence_id=0;
 				m_mode_send_vertices_sequence_id_position=0;
 				m_reverseComplementVertex=true;
@@ -867,7 +1006,9 @@ void Machine::processData(){
 				Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_VERTICES_DISTRIBUTED,getRank());
 				m_outbox.push_back(aMessage);
 				m_mode_send_vertices=false;
+				#ifdef SHOW_PROGRESS
 				cout<<"Rank "<<getRank()<<" is extracting vertices (reverse complement) from sequences "<<m_mode_send_vertices_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
+				#endif
 			}
 		}else{
 			char*readSequence=m_myReads[m_mode_send_vertices_sequence_id]->getSeq();
@@ -912,7 +1053,7 @@ void Machine::processData(){
 		}
 		
 	}else if(m_numberOfMachinesDoneSendingEdges==getSize()){
-		m_numberOfMachinesDoneSendingEdges=-1;
+		m_numberOfMachinesDoneSendingEdges=-9;
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, i, TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION,getRank());
 			m_outbox.push_back(aMessage);
@@ -981,25 +1122,30 @@ void Machine::processData(){
 		}
 
 	}else if(m_mode_send_outgoing_edges==true){ 
-
+		#ifdef SHOW_PROGRESS
 		if(m_mode_send_edge_sequence_id%100000==0 and m_mode_send_edge_sequence_id_position==0){
 			string strand="";
 			if(m_reverseComplementEdge)
 				strand="(reverse complement)";
 			cout<<"Rank "<<getRank()<<" is extracting outgoing edges "<<strand<<" "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<endl;
 		}
+		#endif
 
 		if(m_mode_send_edge_sequence_id>(int)m_myReads.size()-1){
 			if(m_reverseComplementEdge==false){
 				m_mode_send_edge_sequence_id_position=0;
 				m_reverseComplementEdge=true;
+				#ifdef SHOW_PROGRESS
 				cout<<"Rank "<<getRank()<<" is extracting outgoing edges "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
+				#endif
 				m_mode_send_edge_sequence_id=0;
 			}else{
 				m_mode_send_outgoing_edges=false;
 				m_mode_send_ingoing_edges=true;
 				m_mode_send_edge_sequence_id_position=0;
+				#ifdef SHOW_PROGRESS
 				cout<<"Rank "<<getRank()<<" is extracting outgoing edges (reverse complement) "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
+				#endif
 				m_mode_send_edge_sequence_id=0;
 				m_reverseComplementEdge=false;
 			}
@@ -1054,24 +1200,31 @@ void Machine::processData(){
 		}
 	}else if(m_mode_send_ingoing_edges==true){ 
 
+		#ifdef SHOW_PROGRESS
 		if(m_mode_send_edge_sequence_id%100000==0 and m_mode_send_edge_sequence_id_position==0){
 			string strand="";
 			if(m_reverseComplementEdge)
 				strand="(reverse complement)";
 			cout<<"Rank "<<getRank()<<" is extracting ingoing edges "<<strand<<" "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<endl;
 		}
+		#endif
 
 		if(m_mode_send_edge_sequence_id>(int)m_myReads.size()-1){
 			if(m_reverseComplementEdge==false){
 				m_reverseComplementEdge=true;
 				m_mode_send_edge_sequence_id_position=0;
+				#ifdef SHOW_PROGRESS
 				cout<<"Rank "<<getRank()<<" is extracting ingoing edges "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
+				#endif
 				m_mode_send_edge_sequence_id=0;
 			}else{
 				Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_EDGES_DISTRIBUTED,getRank());
 				m_outbox.push_back(aMessage);
 				m_mode_send_ingoing_edges=false;
+			
+				#ifdef SHOW_PROGRESS
 				cout<<"Rank "<<getRank()<<" is extracting ingoing edges (reverse complement) "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
+				#endif
 			}
 		}else{
 
@@ -1140,14 +1293,18 @@ void Machine::processData(){
 		if(!m_SEEDING_NodeInitiated){
 			if(m_SEEDING_i==(int)m_subgraph.size()-1){
 				m_mode=MODE_DO_NOTHING;
+				#ifdef SHOW_PROGRESS
 				cout<<"Rank "<<getRank()<<" seeding vertices. "<<m_SEEDING_i<<"/"<<m_subgraph.size()<<" (DONE)"<<endl;
+				#endif
 				Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_SEEDING_IS_OVER,getRank());
 				m_SEEDING_nodes.clear();
 				m_outbox.push_back(aMessage);
 			}else{
+				#ifdef SHOW_PROGRESS
 				if(m_SEEDING_i % 100000 ==0){
 					cout<<"Rank "<<getRank()<<" seeding vertices. "<<m_SEEDING_i<<"/"<<m_subgraph.size()<<endl;
 				}
+				#endif
 				m_SEEDING_currentVertex=m_SEEDING_nodes[m_SEEDING_i];
 				m_SEEDING_first=m_SEEDING_currentVertex;
 				m_SEEDING_testInitiated=false;
@@ -1217,7 +1374,9 @@ void Machine::processData(){
 		}
 	}else if(m_numberOfRanksDoneSeeding==getSize()){
 		m_numberOfRanksDoneSeeding=-1;
-
+		#ifndef SHOW_PROGRESS
+		cout<<endl<<"Extending seeds"<<endl;
+		#endif
 		m_mode=MODE_EXTENSION_ASK;
 		m_EXTENSION_rank=-1;
 		m_EXTENSION_currentRankIsSet=false;
@@ -1277,15 +1436,19 @@ void Machine::processData(){
 			m_outbox.push_back(aMessage);
 			m_mode=MODE_DO_NOTHING;
 			m_speedLimitIsOn=false;// remove the speed limit because rank MASTER will ask everyone their things
+			#ifdef SHOW_PROGRESS
 			cout<<"Rank "<<getRank()<<": fusion "<<m_SEEDING_i-1<<"/"<<m_EXTENSION_contigs.size()<<" (DONE)"<<endl;
+			#endif
 			
 		}else if(!m_FUSION_direct_fusionDone){
 			int currentId=m_EXTENSION_identifiers[m_SEEDING_i];
 			if(!m_FUSION_first_done){
 				if(!m_FUSION_paths_requested){
+					#ifdef SHOW_PROGRESS
 					if(m_SEEDING_i%100==0){
 						cout<<"Rank "<<getRank()<<": fusion "<<m_SEEDING_i<<"/"<<m_EXTENSION_contigs.size()<<endl;
 					}
+					#endif
 					// get the paths going on the first vertex
 					uint64_t theVertex=m_EXTENSION_contigs[m_SEEDING_i][0];
 					uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
@@ -1316,7 +1479,6 @@ void Machine::processData(){
 						m_FUSION_paths_requested=false;
 						m_FUSION_last_done=false;
 						m_FUSION_firstPaths=m_FUSION_receivedPaths;
-						cout<<"Paths= 1 "<<m_FUSION_numberOfPaths<<endl;
 						#ifdef ASSERT
 						assert(m_FUSION_numberOfPaths==(int)m_FUSION_firstPaths.size());
 						#endif
@@ -1358,7 +1520,6 @@ void Machine::processData(){
 						m_FUSION_matches_done=false;
 						m_FUSION_matches.clear();
 
-						cout<<"Paths= 2 "<<m_FUSION_numberOfPaths<<endl;
 						#ifdef ASSERT
 						assert(m_FUSION_numberOfPaths==(int)m_FUSION_lastPaths.size());
 						#endif
@@ -1493,7 +1654,6 @@ void Machine::processData(){
 						m_FUSION_paths_requested=false;
 						m_FUSION_last_done=false;
 						m_FUSION_firstPaths=m_FUSION_receivedPaths;
-						cout<<"Paths= 3 "<<m_FUSION_numberOfPaths<<endl;
 						#ifdef ASSERT
 						assert(m_FUSION_numberOfPaths==(int)m_FUSION_firstPaths.size());
 						#endif
@@ -1534,7 +1694,6 @@ void Machine::processData(){
 						m_FUSION_lastPaths=m_FUSION_receivedPaths;
 						m_FUSION_matches_done=false;
 						m_FUSION_matches.clear();
-						cout<<"Paths= 4 "<<m_FUSION_numberOfPaths<<endl;
 
 						#ifdef ASSERT
 						assert(m_FUSION_numberOfPaths==(int)m_FUSION_lastPaths.size());
@@ -1638,6 +1797,10 @@ void Machine::processData(){
 	}
 
 	if(m_EXTENSION_numberOfRanksDone==getSize()){
+
+		#ifndef SHOW_PROGRESS
+		cout<<endl<<"Computing fusions"<<endl;
+		#endif
 		// ask one at once to do the fusion
 		// because otherwise it may lead to hanging of the program for unknown reasons
 		m_EXTENSION_numberOfRanksDone=-1;
@@ -1647,6 +1810,7 @@ void Machine::processData(){
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_START_FUSION,getRank());
 			m_outbox.push_back(aMessage);
 		}
+		m_fusionStarted=true;
 	}
 
 	if(m_master_mode==MODE_ASSEMBLE_GRAPH){
@@ -1671,7 +1835,11 @@ void Machine::processData(){
 	}
 
 	if(m_FUSION_numberOfRanksDone==getSize()){
+		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<": fusion is done."<<endl;
+		#else
+		cout<<"Getting fusions"<<endl;
+		#endif
 		m_FUSION_numberOfRanksDone=-1;
 		m_master_mode=MODE_ASK_EXTENSIONS;
 		m_EXTENSION_currentRankIsSet=false;
@@ -1703,6 +1871,14 @@ void Machine::processData(){
 	}
 
 	if(m_master_mode==MODE_ASK_EXTENSIONS){
+		#ifndef SHOW_PROGRESS
+		time_t tmp=time(NULL);
+		if(tmp>m_lastTime){
+			m_lastTime=tmp;
+			showProgress();
+		}
+		#endif
+
 		// ask ranks to send their extensions.
 		if(!m_EXTENSION_currentRankIsSet){
 			m_EXTENSION_currentRankIsSet=true;
@@ -1729,11 +1905,17 @@ void Machine::processData(){
 				f<<">contig"<<i+1<<" "<<contig.length()<<" nucleotides"<<endl<<addLineBreaks(contig);
 			}
 			f.close();
+			#ifdef SHOW_PROGRESS
 			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<endl;
+			#else
+			cout<<endl<<"Writing "<<m_parameters.getOutputFile()<<endl;
+			#endif
 			killRanks();
 		}else if(!m_EXTENSION_currentRankIsStarted){
 			m_EXTENSION_currentRankIsStarted=true;
+			#ifdef SHOW_PROGRESS
 			cout<<"Rank "<<getRank()<<" asks "<<m_EXTENSION_rank<<" for its extensions."<<endl;
+			#endif
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_EXTENSION_rank,TAG_ASK_EXTENSION_DATA,getRank());
 			m_outbox.push_back(aMessage);
 			m_EXTENSION_currentRankIsDone=false;
@@ -1882,7 +2064,9 @@ bool Machine::isMaster(){
 
 void Machine::extendSeeds(){
 	if(m_SEEDING_seeds.size()==0){
+		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<": extending seeds "<<m_SEEDING_seeds.size()<<"/"<<m_SEEDING_seeds.size()<<" (DONE)"<<endl;
+		#endif
 		m_mode_EXTENSION=false;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_IS_DONE,getRank());
 		m_outbox.push_back(aMessage);
@@ -1902,7 +2086,9 @@ void Machine::extendSeeds(){
 		m_EXTENSION_reads_startingPositionOnContig.clear();
 		m_EXTENSION_readsInRange.clear();
 	}else if(m_EXTENSION_currentSeedIndex==(int)m_SEEDING_seeds.size()){
+		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<": extending seeds "<<m_SEEDING_seeds.size()<<"/"<<m_SEEDING_seeds.size()<<" (DONE)"<<endl;
+		#endif
 		m_mode_EXTENSION=false;
 		
 		// store the lengths.
@@ -2187,7 +2373,9 @@ void Machine::doChoice(){
 			m_EXTENSION_readsInRange.clear();
 		}else{
 			if(m_EXTENSION_extension.size()>=100){
+				#ifdef SHOW_PROGRESS
 				cout<<"Rank "<<getRank()<<" stores an extension, "<<m_EXTENSION_extension.size()<<" vertices."<<endl;
+				#endif
 				m_EXTENSION_contigs.push_back(m_EXTENSION_extension);
 
 				int id=m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+getRank();
@@ -2216,7 +2404,9 @@ void Machine::checkIfCurrentVertexIsAssembled(){
 		if(!m_EXTENSION_VertexAssembled_requested){
 			if(m_EXTENSION_currentSeedIndex%10==0 and m_EXTENSION_currentPosition==0 and m_last_value!=m_EXTENSION_currentSeedIndex){
 				m_last_value=m_EXTENSION_currentSeedIndex;
+				#ifdef SHOW_PROGRESS
 				cout<<"Rank "<<getRank()<<": extending seeds "<<m_EXTENSION_currentSeedIndex<<"/"<<m_SEEDING_seeds.size()<<endl;
+				#endif
 			}
 			m_EXTENSION_VertexAssembled_requested=true;
 			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));

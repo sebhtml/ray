@@ -31,6 +31,7 @@
 #include<Vertex.h>
 #include<SplayTree.h>
 #include<Message.h>
+#include<time.h>
 #include<SplayTreeIterator.h>
 #include<set>
 #include<Read.h>
@@ -146,6 +147,7 @@ using namespace std;
 class Machine{
 	int m_wordSize;
 	int m_last_value;
+	time_t m_lastTime;
 	bool m_mode_send_outgoing_edges;
 	int m_mode_send_edge_sequence_id;
 	int m_mode_send_edge_sequence_id_position;
@@ -306,7 +308,9 @@ class Machine{
 	// COPY Directions.
 	int m_COPY_ranks;
 
+	
 	// FUSION
+	bool m_fusionStarted;
 	bool m_FUSION_direct_fusionDone;
 	bool m_FUSION_first_done;
 	int m_FUSION_numberOfRanksDone;
@@ -369,6 +373,8 @@ class Machine{
 	vector<vector<uint64_t> > m_allPaths;
 	bool m_aborted;
 
+	bool m_messageSentForEdgesDistribution;
+
 	#ifdef SHOW_STATISTICS
 	map<int,int> m_statistics;
 	#endif
@@ -396,6 +402,7 @@ class Machine{
 	int getRank();
 	void receiveWelcomeMessage(MPI_Status*status);
 	int vertexRank(uint64_t a);
+	void showProgress();
 	void extendSeeds();
 public:
 	Machine(int argc,char**argv);

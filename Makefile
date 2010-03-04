@@ -23,9 +23,12 @@
 # SHOW_STATISTICS for statistics on messages.
 # WRITE_COVERAGE_DISTRIBUTION to write coverage distribution.
 # ASSERT verify various assertions.
-# SHOW_PROGRESSION to show progression.
-
-CXXFLAGS=  -Wall  -I.  -O3 
+# SHOW_PROGRESS to show progression.
+#
+# detections at compilation:
+#
+# MPICH2_VERSION is set when using mpi.h from mpich2
+CXXFLAGS=  -Wall  -I.  -O3  
 
 MPICC=mpic++
 
