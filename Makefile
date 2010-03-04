@@ -27,7 +27,7 @@
 
 CXXFLAGS=  -Wall  -I.  -O3 
 
-MPICC=/home/boiseb01/software/ompi-1.4.1-gcc/bin/mpic++
+MPICC=mpic++
 
 all: Ray
 
