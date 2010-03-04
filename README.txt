@@ -1,8 +1,8 @@
 = Acknowledgments =
 
-We are very thankful to the [https://www.clumeq.ca/ CLUMEQ consortium] for access to [http://www.top500.org/site/systems/3088 colosse], a 7680-slot computer. Our hardware infrastructure is mostly funded by the [http://www.innovation.ca/en Canada Foundation for Innovation]. [http://boisvert.info/ Sébastien Boisvert] has a scholarship from the [http://www.cihr-irsc.gc.ca/e/193.html Canadian Institutes of Health Research].
+We are very thankful to the [http://www.clumeq.ca/ CLUMEQ consortium] for access to [http://www.top500.org/site/systems/3088 colosse], a 7680-slot computer. Our hardware infrastructure is mostly funded by the [http://www.innovation.ca/en Canada Foundation for Innovation]. [http://boisvert.info/ Sébastien Boisvert] has a scholarship from the [http://www.cihr-irsc.gc.ca/e/193.html Canadian Institutes of Health Research].
 [http://www.cri.ulaval.ca/?jcorbeil_eng Jacques Corbeil] is the [http://genome.ulaval.ca/corbeillab Canada Research Chair in Medical Genomics] and is funded by the [http://www.cihr-irsc.gc.ca/e/193.html Canadian Institutes of Health Research].
-[http://www.cs.ucl.ac.uk/people/F.Laviolette.html François Laviolette] is funded by [http://www.nserc-crsng.gc.ca/ Natural Sciences and Engineering Research Council of Canada]. We thank [https://sourceforge.net/ SourceForge] for the project hosting.
+[http://www.cs.ucl.ac.uk/people/F.Laviolette.html François Laviolette] is funded by [http://www.nserc-crsng.gc.ca/ Natural Sciences and Engineering Research Council of Canada]. We thank [http://sourceforge.net/ SourceForge] for the project hosting.
 
 = Ray: a massively parallel MPI-based approach to de Bruijn genome assembly with mixed technologies =
 
@@ -41,7 +41,7 @@ Ray
 
 === Download Ray! ===
 
-[https://sourceforge.net/projects/denovoassembler/files/ Download Ray] (version 0.0.3 will be available around 10 March 2010)
+[http://sourceforge.net/projects/denovoassembler/files/ Download Ray] (version 0.0.3 will be available around 10 March 2010)
 
 === Compilation ===
 
@@ -89,5 +89,5 @@ You may have to disable the Byte Transfer Layer called Shared Memory to avoid a 
 
 We submitted a manuscript on 15 October 2009. The source code will be available upon acceptance.
 
-[https://sourceforge.net/projects/denovoassembler/files/ Download OpenAssembler] (not there yet, sorry)
+[http://sourceforge.net/projects/denovoassembler/files/ Download OpenAssembler] (not there yet, sorry)
 
