@@ -1,10 +1,10 @@
-== Acknowledgments ==
+= Acknowledgments =
 
 We are very thankful to the [https://www.clumeq.ca/ CLUMEQ consortium] for access to [http://www.top500.org/site/systems/3088 colosse], a 7680-slot computer. Our hardware infrastructure is mostly funded by the [http://www.innovation.ca/en Canada Foundation for Innovation]. [http://boisvert.info/ Sébastien Boisvert] has a scholarship from the [http://www.cihr-irsc.gc.ca/e/193.html Canadian Institutes of Health Research].
 [http://www.cri.ulaval.ca/?jcorbeil_eng Jacques Corbeil] is the [http://genome.ulaval.ca/corbeillab Canada Research Chair in Medical Genomics] and is funded by the [http://www.cihr-irsc.gc.ca/e/193.html Canadian Institutes of Health Research].
 [http://www.cs.ucl.ac.uk/people/F.Laviolette.html François Laviolette] is funded by [http://www.nserc-crsng.gc.ca/ Natural Sciences and Engineering Research Council of Canada]. We thank [https://sourceforge.net/ SourceForge] for the project hosting.
 
-== Ray: a massively parallel MPI-based approach to de Bruijn genome assembly with mixed technologies ==
+= Ray: a massively parallel MPI-based approach to de Bruijn genome assembly with mixed technologies =
 
 Ray is a parallel genome assembler utilizing [http://en.wikipedia.org/wiki/Message_Passing_Interface MPI]. 
 Ray is a single-executable program (the executable is Ray). Its aim is to assemble sequences on
@@ -12,7 +12,7 @@ mpi-enabled computers or clusters.
 Ray is implemented in c++. It is tested with OpenMPI and g++ on Linux 2.6.
 Only the master rank needs to access the files on disk.
 
-=== Features ===
+== Features ==
 
 Ray
 
@@ -31,19 +31,19 @@ Ray
 * uses splay trees, and
 * runs on one and more MPI processes.
 
-=== How to cite us ===
+== How to cite us ==
 
  Sébastien Boisvert, Jacques Corbeil, and François Laviolette. 
  Ray: a massively parallel MPI-based approach to de Bruijn genome assembly with mixed technologies. 
  http://denovoassembler.sf.net/, 2010.
 
-=== Installation ===
+== Installation ==
 
-==== Download Ray! ====
+=== Download Ray! ===
 
 [https://sourceforge.net/projects/denovoassembler/files/ Download Ray] (version 0.0.3 will be available around 10 March 2010)
 
-==== Compilation ====
+=== Compilation ===
 
  tar -xjf Ray-0.0.3.tar.bz2
  cd Ray-0.0.3
@@ -53,11 +53,11 @@ To use an alternative mpic++ executable:
 
  make MPICC=/home/boiseb01/software/ompi-1.4.1-gcc/bin/mpic++
 
-==== Example of input files ==== 
+=== Example of input files === 
 
 RayInputTemplate.txt
 
-==== Examples of commands ====
+=== Examples of commands ===
 
  mpirun -np 1 -machinefile RayMachinesFile.txt input.txt  # 1 cpu only
 
@@ -65,7 +65,11 @@ RayInputTemplate.txt
 
  mpirun -np 1024  -machinefile RayMachinesFile.txt input.txt  # 1024 cpu
 
-=== Limitations ===
+== Community ==
+
+* Mailing list: denovoassembler-users <AT> lists <DOT> sourceforge <DOT> net ([http://sourceforge.net/mailarchive/forum.php?forum_name=denovoassembler-users archives])
+
+== Limitations ==
 
 Ray can not run without mpi as it is a pure parallel program with no
 non-parallel steps. However, it is safe and reliable to run it with 1 cpu.
@@ -75,7 +79,9 @@ You may have to disable the Byte Transfer Layer called Shared Memory to avoid a 
 
  mpirun -np 32 --mca btl ^sm ./Ray sequences.fasta
 
-== OpenAssembler: assembling genome with mixed sequencing technologies ==
+
+
+= OpenAssembler: assembling genome with mixed sequencing technologies =
 
 <b>OpenAssembler</b> assembles Illumina reads or 454 + Illumina reads, or any combination without non-random error incorporation. The manuscript is under review. Its novelty is that it avoids both 454's homopolymers and Illumina's short read length. Unlike EULER-SR, Velvet, or ABySS, OpenAssembler can assemble reads obtained from a mix of technology. However, it runs only on one process. 
 
