@@ -105,14 +105,16 @@
 #define TAG_ASSEMBLE_WAVES_DONE 66
 #define TAG_START_FUSION 67
 #define TAG_FUSION_DONE 68
-#define TAG_ASK_VERTEX_PATHS 69
-#define TAG_ASK_VERTEX_PATHS_REPLY 70
+#define TAG_ASK_VERTEX_PATHS_SIZE 69
+#define TAG_ASK_VERTEX_PATHS_SIZE_REPLY 70
 #define TAG_GET_PATH_LENGTH 71
 #define TAG_GET_PATH_LENGTH_REPLY 72
 #define TAG_CALIBRATION_MESSAGE 73
 #define TAG_BEGIN_CALIBRATION 74
 #define TAG_END_CALIBRATION 75
 #define TAG_COMMUNICATION_STABILITY_MESSAGE 76
+#define TAG_ASK_VERTEX_PATH 77
+#define TAG_ASK_VERTEX_PATH_REPLY 78
 
 #define MASTER_RANK 0
 #define BARRIER_PERIOD 300
@@ -309,9 +311,13 @@ class Machine{
 	bool m_FUSION_first_done;
 	int m_FUSION_numberOfRanksDone;
 	bool m_FUSION_last_done;
+	int m_FUSION_path_id;
+	int m_FUSION_numberOfPaths;
 	bool m_FUSION_paths_requested;
 	bool m_FUSION_paths_received;
 	vector<Direction> m_FUSION_firstPaths;
+	bool m_FUSION_path_received;
+	map<int,vector<Direction> > m_FUSION_cachedDirections;
 	int m_FUSION_receivedLength;
 	bool m_FUSION_reverse_fusionDone;
 	vector<Direction> m_FUSION_lastPaths;
@@ -322,6 +328,9 @@ class Machine{
 	int m_FUSION_match_index;
 	bool m_FUSION_pathLengthRequested;
 	vector<Direction> m_FUSION_receivedPaths;
+	bool m_FUSION_path_requested;
+	Direction m_FUSION_receivedPath;
+
 	// coverage distribubtion
 	map<int,uint64_t> m_coverageDistribution;
 	int m_minimumCoverage;

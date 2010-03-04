@@ -23,8 +23,8 @@
 #ifndef Direction
 #define _Direction
 class Direction{
-	int m_wave;
-	int m_progression;
+	int m_wave; // the path Identifier, as a wave for itself.
+	int m_progression; // the position in the path.
 	Direction*m_next;
 public:
 	void constructor(int wave,int progression);
