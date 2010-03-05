@@ -1835,7 +1835,7 @@ void Machine::processData(){
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<": fusion is done."<<endl;
 		#else
-		cout<<"Getting fusions"<<endl;
+		cout<<endl<<"Getting fusions"<<endl;
 		#endif
 		m_FUSION_numberOfRanksDone=-1;
 		m_master_mode=MODE_ASK_EXTENSIONS;
