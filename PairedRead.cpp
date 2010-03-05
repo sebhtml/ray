@@ -22,9 +22,30 @@
 
 #include<PairedRead.h>
 
+PairedRead::PairedRead(){
+}
 
-PairedRead::PairedRead(int rank,int id, int fragmentSize){
+void PairedRead::constructor(int rank,int id, int fragmentSize,int deviation){
 	m_rank=rank;
 	m_sequence_id=id;
 	m_fragmentSize=fragmentSize;
+	m_deviation=deviation;
 }
+
+
+int PairedRead::getRank(){
+	return m_rank;
+}
+
+int PairedRead::getId(){
+	return m_sequence_id;
+}
+
+int PairedRead::getAverageFragmentLength(){
+	return m_fragmentSize;
+}
+
+int PairedRead::getStandardDeviation(){
+	return m_deviation;
+}
+

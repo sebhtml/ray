@@ -116,6 +116,12 @@
 #define TAG_COMMUNICATION_STABILITY_MESSAGE 76
 #define TAG_ASK_VERTEX_PATH 77
 #define TAG_ASK_VERTEX_PATH_REPLY 78
+#define TAG_INDEX_PAIRED_SEQUENCE 79
+#define TAG_HAS_PAIRED_READ 80
+#define TAG_HAS_PAIRED_READ_REPLY 81
+#define TAG_GET_PAIRED_READ 82
+#define TAG_GET_PAIRED_READ_REPLY 83
+
 
 #define MASTER_RANK 0
 #define BARRIER_PERIOD 300
@@ -254,6 +260,13 @@ class Machine{
 
 
 	// EXTENSION MODE
+	PairedRead m_EXTENSION_pairedRead;
+	bool m_EXTENSION_pairedSequenceRequested;
+	bool m_EXTENSION_hasPairedReadAnswer;
+	bool m_EXTENSION_pairedSequenceReceived;
+	int m_EXTENSION_edgeIterator;
+	bool m_EXTENSION_hasPairedReadRequested;
+	bool m_EXTENSION_hasPairedReadReceived;
 	vector<int> m_EXTENSION_identifiers;
 	set<int> m_FUSION_eliminated;
 	vector<uint64_t> m_EXTENSION_extension;
@@ -302,6 +315,7 @@ class Machine{
 	set<ReadAnnotation,ReadAnnotationComparator> m_EXTENSION_readsInRange;
 	bool m_EXTENSION_singleEndResolution;
 	map<int,vector<int> > m_EXTENSION_readPositionsForVertices;
+	map<int,vector<int> > m_EXTENSION_pairedReadPositionsForVertices;
 	map<int,int> m_EXTENSION_reads_startingPositionOnContig;
 
 	
@@ -350,18 +364,25 @@ class Machine{
 	int m_numberOfMachinesDoneSendingEdges;
 	SplayTree<uint64_t,Vertex> m_subgraph;
 
+	// SEQUENCE DISTRIBUTION
 	bool m_reverseComplementVertex;
 	int m_distribution_currentSequenceId;
 	int m_distribution_file_id;
 	int m_distribution_sequence_id;
+	bool m_LOADER_isLeftFile;
+	bool m_LOADER_isRightFile;
+	int m_LOADER_numberOfSequencesInLeftFile;
+	vector<Read*>m_distribution_reads;
+	int m_LOADER_averageFragmentLength;
+	int m_LOADER_deviation;
 
-
+	// memory allocators
+	// m_outboxAllocator, m_inboxAllocator, and m_distributionAllocator are
+	// cleaned everynow and then.
 	MyAllocator m_outboxAllocator;
 	MyAllocator m_inboxAllocator;
 	MyAllocator m_distributionAllocator;
 	MyAllocator m_persistentAllocator;
-	vector<Read*>m_distribution_reads;
-	
 
 	vector<Read*> m_myReads;
 

@@ -57,14 +57,18 @@ void Parameters::load(string file){
 			f>>token;
 			string left=token;
 			// add left file
+			m_leftFiles.insert(m_singleEndReadsFile.size());
 			m_singleEndReadsFile.push_back(left);
 			f>>token;
 			// add right file
 			string right=token;
+			m_rightFiles.insert(m_singleEndReadsFile.size());
 			m_singleEndReadsFile.push_back(right);
 			int meanFragmentLength;
 			int standardDeviation;
 			f>>meanFragmentLength>>standardDeviation;
+			m_averageFragmentLengths[m_singleEndReadsFile.size()-1]=meanFragmentLength;
+			m_standardDeviations[m_singleEndReadsFile.size()-1]=standardDeviation;
 			PairedFiles pair(left,right,meanFragmentLength,standardDeviation);
 			m_pairedFiles.push_back(pair);
 		}else if(token=="SetOutputDirectory"){
@@ -101,4 +105,20 @@ string Parameters::getOutputFile(){
 
 int Parameters::getMinimumContigLength(){
 	return m_minimumContigLength;
+}
+
+bool Parameters::isLeftFile(int i){
+	return m_leftFiles.count(i)>0;
+}
+
+bool Parameters::isRightFile(int i){
+	return m_rightFiles.count(i)>0;
+}
+
+int Parameters::getFragmentLength(int i){
+	return m_averageFragmentLengths[i];
+}
+
+int Parameters::getStandardDeviation(int i){
+	return m_standardDeviations[i];
 }

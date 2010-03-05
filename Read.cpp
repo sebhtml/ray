@@ -115,3 +115,16 @@ uint64_t Read::Vertex(int pos,int w,char strand){
 
 	return key;
 }
+
+void Read::setPairedRead(PairedRead*t){
+	m_pairedRead=t;
+}
+
+bool Read::hasPairedRead(){
+	return m_pairedRead!=NULL;
+}
+
+PairedRead*Read::getPairedRead(){
+	return m_pairedRead;
+}
+

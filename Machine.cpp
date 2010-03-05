@@ -108,8 +108,20 @@ Machine::Machine(int argc,char**argv){
 			#endif
 		#endif
 		#else
+
+		cout<<"    Ray  Copyright (C) 2010  Sébastien Boisvert, Jacques Corbeil, François Laviolette"<<endl;
+    		cout<<"This program comes with ABSOLUTELY NO WARRANTY."<<endl;
+    		cout<<"This is free software, and you are welcome to redistribute it"<<endl;
+    		cout<<"under certain conditions; see \"gpl-3.0.txt\" for details."<<endl;
+		cout<<endl;
+		cout<<"How to cite us?"<<endl;
+		cout<<"Sébastien Boisvert, Jacques Corbeil, and François Laviolette."<<endl;
+ 		cout<<"Ray: a massively parallel MPI-based approach to de Bruijn genome assembly with mixed technologies."<<endl;
+ 		cout<<"http://denovoassembler.sf.net/, 2010."<<endl;
+		cout<<endl;
+
 		cout<<"Ray runs on "<<getSize()<<" MPI processes"<<endl;
-		cout<<"Starting \"RayEngine\"";
+		cout<<"Starting 'Parallel_Ray_Engine' "+m_VERSION;
 		#endif
 	}
 	m_alive=true;
@@ -267,7 +279,11 @@ void Machine::showProgress(){
 void Machine::loadSequences(){
 	vector<string> allFiles=m_parameters.getAllFiles();
 	if(m_distribution_reads.size()>0 and m_distribution_sequence_id>(int)m_distribution_reads.size()-1){
+		// we reached the end of the file.
 		m_distribution_file_id++;
+		if(m_LOADER_isLeftFile){
+			m_LOADER_numberOfSequencesInLeftFile=m_distribution_sequence_id;
+		}
 		m_distribution_sequence_id=0;
 		m_distribution_reads.clear();
 	}
@@ -295,6 +311,17 @@ void Machine::loadSequences(){
 		cout<<endl<<"Loading sequences"<<endl;
 		#endif
 		loader.load(allFiles[m_distribution_file_id],&m_distribution_reads,&m_distributionAllocator,&m_distributionAllocator);
+
+		if(m_parameters.isLeftFile(m_distribution_file_id)){
+			m_LOADER_isLeftFile=true;
+		}else if(m_parameters.isRightFile(m_distribution_file_id)){
+			m_LOADER_isRightFile=true;
+			m_LOADER_averageFragmentLength=m_parameters.getFragmentLength(m_distribution_file_id);
+			m_LOADER_deviation=m_parameters.getStandardDeviation(m_distribution_file_id);
+		}else{
+			m_LOADER_isLeftFile=m_LOADER_isRightFile=false;
+		}
+
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<" has "<<m_distribution_reads.size()<<" sequences to distribute."<<endl;
 		#else
@@ -330,6 +357,41 @@ void Machine::loadSequences(){
 		#endif
 		Message aMessage(sequence, strlen(sequence), MPI_BYTE, destination, TAG_SEND_SEQUENCE,getRank());
 		m_outbox.push_back(aMessage);
+
+		// add paired information here..
+		// algorithm follows.
+		// check if current file is in a right file.
+		// if yes, the leftDistributionCurrentSequenceId=m_distribution_currentSequenceId-NumberOfSequencesInRightFile.
+		// the destination of a read i is i%getSize()
+		// the readId on destination is i/getSize()
+		// so, basically, send these bits to destination:
+		//
+		// rightSequenceGlobalId:= m_distribution_currentSequenceId
+		// rightSequenceRank:= rightSequenceGlobalId%getSize
+		// rightSequenceIdOnRank:= rightSequenceGlobalId/getSize
+		// leftSequenceGlobalId:= rightSequenceGlobalId-numberOfSequencesInRightFile
+		// leftSequenceRank:= leftSequenceGlobalId%getSize
+		// leftSequenceIdOnRank:= leftSequenceGlobalId/getSize
+		// averageFragmentLength:= ask the pairedFiles in m_parameters.
+		if(m_LOADER_isRightFile){
+			int rightSequenceGlobalId=m_distribution_currentSequenceId;
+			int rightSequenceRank=rightSequenceGlobalId%getSize();
+			int rightSequenceIdOnRank=rightSequenceGlobalId/getSize();
+			int leftSequenceGlobalId=rightSequenceGlobalId-m_LOADER_numberOfSequencesInLeftFile;
+			int leftSequenceRank=leftSequenceGlobalId%getSize();
+			int leftSequenceIdOnRank=leftSequenceGlobalId/getSize();
+			int averageFragmentLength=m_LOADER_averageFragmentLength;
+			int deviation=m_LOADER_deviation;
+			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(5*sizeof(uint64_t));
+			message[0]=rightSequenceIdOnRank;
+			message[1]=leftSequenceRank;
+			message[2]=leftSequenceIdOnRank;
+			message[3]=averageFragmentLength;
+			message[4]=deviation;
+			Message aMessage(message,5,MPI_UNSIGNED_LONG_LONG,rightSequenceRank,TAG_INDEX_PAIRED_SEQUENCE,getRank());
+			m_outbox.push_back(aMessage);
+		}
+
 		m_distribution_currentSequenceId++;
 		m_distribution_sequence_id++;
 	}
@@ -514,6 +576,11 @@ void Machine::processMessage(Message*message){
 		#endif
 		m_SEEDING_NodeInitiated=false;
 		m_SEEDING_i=0;
+	}else if(tag==TAG_INDEX_PAIRED_SEQUENCE){
+		uint64_t*incoming=(uint64_t*)buffer;
+		PairedRead*t=(PairedRead*)m_persistentAllocator.allocate(sizeof(PairedRead));
+		t->constructor(incoming[1],incoming[2],incoming[3],incoming[4]);
+		m_myReads[incoming[0]]->setPairedRead(t);
 	}else if(tag==TAG_COMMUNICATION_STABILITY_MESSAGE){
 	}else if(tag==TAG_GET_PATH_LENGTH){
 		uint64_t*incoming=(uint64_t*)buffer;
@@ -548,6 +615,17 @@ void Machine::processMessage(Message*message){
 		message[0]=coverage;
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_VERTEX_COVERAGE_REPLY,getRank());
 		m_outbox.push_back(aMessage);
+	}else if(tag==TAG_HAS_PAIRED_READ){
+		uint64_t*incoming=(uint64_t*)buffer;
+		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
+		message[0]=m_myReads[incoming[0]]->hasPairedRead();
+		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,source,TAG_HAS_PAIRED_READ_REPLY,getRank());
+		m_outbox.push_back(aMessage);
+	}else if(tag==TAG_HAS_PAIRED_READ_REPLY){
+		uint64_t*incoming=(uint64_t*)buffer;
+		m_EXTENSION_hasPairedReadAnswer=incoming[0];
+		m_EXTENSION_hasPairedReadReceived=true;
+		//cout<<"Received answer "<<m_EXTENSION_hasPairedReadAnswer<<endl;
 	}else if(tag==TAG_REQUEST_VERTEX_INGOING_EDGES){
 		uint64_t*incoming=(uint64_t*)buffer;
 		SplayNode<uint64_t,Vertex>*node=m_subgraph.find(incoming[0]);
@@ -594,6 +672,20 @@ void Machine::processMessage(Message*message){
 		m_mode=MODE_SEND_EXTENSION_DATA;
 		m_SEEDING_i=0;
 		m_EXTENSION_currentPosition=0;
+	}else if(tag==TAG_GET_PAIRED_READ){
+		uint64_t*incoming=(uint64_t*)buffer;
+		PairedRead*t=m_myReads[incoming[0]]->getPairedRead();
+		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(4*sizeof(uint64_t));
+		message[0]=t->getRank();
+		message[1]=t->getId();
+		message[2]=t->getAverageFragmentLength();
+		message[3]=t->getStandardDeviation();
+		Message aMessage(message,4,MPI_UNSIGNED_LONG_LONG,source,TAG_GET_PAIRED_READ_REPLY,getRank());
+		m_outbox.push_back(aMessage);
+	}else if(tag==TAG_GET_PAIRED_READ_REPLY){
+		uint64_t*incoming=(uint64_t*)buffer;
+		m_EXTENSION_pairedRead.constructor(incoming[0],incoming[1],incoming[2],incoming[3]);
+		m_EXTENSION_pairedSequenceReceived=true;
 	}else if(tag==TAG_ASSEMBLE_WAVES){
 		m_mode=MODE_ASSEMBLE_WAVES;
 		m_SEEDING_i=0;
@@ -950,7 +1042,7 @@ void Machine::processData(){
 		m_startEdgeDistribution=false;
 	}else if(m_startEdgeDistribution){
 		#ifndef SHOW_PROGRESS
-		cout<<"Computing edges"<<endl;
+		cout<<"Computing arcs"<<endl;
 		#endif
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i, TAG_START_EDGES_DISTRIBUTION_ASK,getRank());
@@ -2174,6 +2266,7 @@ void Machine::enumerateChoices(){
 			m_EXTENSION_readLength_done=false;
 			m_EXTENSION_readLength_requested=false;
 			m_EXTENSION_readPositionsForVertices.clear();
+			m_EXTENSION_pairedReadPositionsForVertices.clear();
 		}
 	}
 }
@@ -2291,18 +2384,79 @@ void Machine::doChoice(){
 					Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_ASK_READ_VERTEX_AT_POSITION,getRank());
 					m_outbox.push_back(aMessage);
 					m_EXTENSION_read_vertex_received=false;
+					m_EXTENSION_edgeIterator=0;
+					m_EXTENSION_hasPairedReadRequested=false;
 				}else if(m_EXTENSION_read_vertex_received){
 					ReadAnnotation annotation=*m_EXTENSION_readIterator;
 					int startPosition=m_EXTENSION_reads_startingPositionOnContig[annotation.getUniqueId()];
 					int distance=m_EXTENSION_extension.size()-startPosition;
-					for(int i=0;i<(int)m_SEEDING_receivedOutgoingEdges.size();i++){
-						if(m_EXTENSION_receivedReadVertex==m_SEEDING_receivedOutgoingEdges[i]){
-							m_EXTENSION_readPositionsForVertices[i].push_back(distance);
+
+					// process each edge separately.
+					if(m_EXTENSION_edgeIterator<(int)m_SEEDING_receivedOutgoingEdges.size()){
+						// got a match!
+						if(m_EXTENSION_receivedReadVertex==m_SEEDING_receivedOutgoingEdges[m_EXTENSION_edgeIterator]){
+							ReadAnnotation annotation=*m_EXTENSION_readIterator;
+							// check if the current read has a paired read.
+							if(!m_EXTENSION_hasPairedReadRequested){
+								uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
+								message[0]=annotation.getReadIndex();
+								Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_HAS_PAIRED_READ,getRank());
+								m_outbox.push_back(aMessage);
+								m_EXTENSION_hasPairedReadRequested=true;
+								m_EXTENSION_hasPairedReadReceived=false;
+								m_EXTENSION_pairedSequenceRequested=false;
+							}else if(m_EXTENSION_hasPairedReadReceived){
+								// vertex matches, but no paired end read found, at last.
+								if(!m_EXTENSION_hasPairedReadAnswer){
+									m_EXTENSION_readPositionsForVertices[m_EXTENSION_edgeIterator].push_back(distance);
+									m_EXTENSION_edgeIterator++;
+									m_EXTENSION_hasPairedReadRequested=false;
+								}else{
+									// get the paired end read.
+									if(!m_EXTENSION_pairedSequenceRequested){
+										m_EXTENSION_pairedSequenceRequested=true;
+										uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
+										message[0]=annotation.getReadIndex();
+										Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_GET_PAIRED_READ,getRank());
+										m_outbox.push_back(aMessage);
+										m_EXTENSION_pairedSequenceReceived=false;
+									}else if(m_EXTENSION_pairedSequenceReceived){
+										int expectedFragmentLength=m_EXTENSION_pairedRead.getAverageFragmentLength();
+										int expectedDeviation=m_EXTENSION_pairedRead.getStandardDeviation();
+										int rank=m_EXTENSION_pairedRead.getRank();
+										int id=m_EXTENSION_pairedRead.getId();
+										int uniqueReadIdentifier=id*MAX_NUMBER_OF_MPI_PROCESSES+rank;
+			
+										// it is mandatory for a read to start at 0. at position X on the path.
+										if(m_EXTENSION_reads_startingPositionOnContig.count(uniqueReadIdentifier)>0){
+											int startingPositionOnPath=m_EXTENSION_reads_startingPositionOnContig[uniqueReadIdentifier];
+											int observedFragmentLength=(startPosition-startingPositionOnPath)+m_EXTENSION_receivedLength;
+											if(expectedFragmentLength-expectedDeviation<=observedFragmentLength and
+											observedFragmentLength <= expectedFragmentLength+expectedDeviation){
+											// it matches!
+												int theDistance=startPosition-startingPositionOnPath+distance;
+												m_EXTENSION_pairedReadPositionsForVertices[m_EXTENSION_edgeIterator].push_back(theDistance);
+											}
+
+										}
+										
+										// add it anyway as a single-end match too!
+										m_EXTENSION_readPositionsForVertices[m_EXTENSION_edgeIterator].push_back(distance);
+										m_EXTENSION_edgeIterator++;
+										m_EXTENSION_hasPairedReadRequested=false;
+									}
+								}
+							}else{
+							}
+						}else{// no match, too bad.
+							m_EXTENSION_edgeIterator++;
+							m_EXTENSION_hasPairedReadRequested=false;
 						}
+					}else{
+						m_EXTENSION_readLength_done=false;
+						m_EXTENSION_readLength_requested=false;
+						m_EXTENSION_readIterator++;
 					}
-					m_EXTENSION_readLength_done=false;
-					m_EXTENSION_readLength_requested=false;
-					m_EXTENSION_readIterator++;
 				}
 			}else{
 				for(int i=0;i<(int)m_EXTENSION_readsOutOfRange.size();i++){
@@ -2311,6 +2465,43 @@ void Machine::doChoice(){
 				m_EXTENSION_readsOutOfRange.clear();
 				m_EXTENSION_singleEndResolution=true;
 				
+				// paired-end resolution of repeats.
+				map<int,int> theMaxsPaired;
+				map<int,int> theSumsPaired;
+				map<int,int> theNumbersPaired;
+				for(int i=0;i<(int)m_EXTENSION_pairedReadPositionsForVertices.size();i++){
+					int max=-1;
+					for(int j=0;j<(int)m_EXTENSION_pairedReadPositionsForVertices[i].size();j++){
+						int offset=m_EXTENSION_pairedReadPositionsForVertices[i][j];
+						theSumsPaired[i]+=offset;
+						if(offset>max){
+							max=offset;
+						}
+					}
+					theNumbersPaired[i]=m_EXTENSION_pairedReadPositionsForVertices[i].size();
+					theMaxsPaired[i]=max;
+				}
+				for(int i=0;i<(int)m_EXTENSION_pairedReadPositionsForVertices.size();i++){
+					bool winner=true;
+					for(int j=0;j<(int)m_EXTENSION_pairedReadPositionsForVertices.size();j++){
+						if(i==j)
+							continue;
+						if((theMaxsPaired[i] < 3*theMaxsPaired[j]) or (theSumsPaired[i] < 3*theSumsPaired[j]) or (theNumbersPaired[i] < 3*theNumbersPaired[j])){
+							winner=false;
+							break;
+						}
+					}
+					if(winner==true){
+						m_SEEDING_currentVertex=m_SEEDING_receivedOutgoingEdges[i];
+						m_EXTENSION_choose=true;
+						m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
+						m_EXTENSION_directVertexDone=false;
+						m_EXTENSION_VertexAssembled_requested=false;
+						return;
+					}
+				}
+
+				// single-end resolution of repeats.
 				map<int,int> theMaxs;
 				map<int,int> theSums;
 				map<int,int> theNumbers;
@@ -2345,6 +2536,8 @@ void Machine::doChoice(){
 						return;
 					}
 				}
+
+
 
 			}
 			return;

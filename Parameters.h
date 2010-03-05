@@ -23,6 +23,8 @@
 
 #define _Parameters
 #include<PairedFiles.h>
+#include<map>
+#include<set>
 #include<string>
 #include<vector>
 using namespace std;
@@ -36,6 +38,11 @@ class Parameters{
 	string m_outputFile;
 	int m_wordSize;
 	int m_minimumContigLength;
+	set<int> m_leftFiles;
+	set<int> m_rightFiles;
+	map<int,int> m_averageFragmentLengths;
+	map<int,int> m_standardDeviations;
+
 public:
 	Parameters();
 	void load(string file);
@@ -45,6 +52,10 @@ public:
 	int getMinimumContigLength();
 	string getOutputFile();
 	int getWordSize();
+	int getFragmentLength(int i);
+	int getStandardDeviation(int i);
+	bool isLeftFile(int i);
+	bool isRightFile(int i);
 };
 
 #endif

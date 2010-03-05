@@ -42,6 +42,9 @@ public:
 	int length();
 	uint64_t Vertex(int pos,int w,char strand);
 	void copy(const char*id,const char*sequence,MyAllocator*seqMyAllocator);
+	void setPairedRead(PairedRead*t);
+	bool hasPairedRead();
+	PairedRead*getPairedRead();
 };
 
 #endif
