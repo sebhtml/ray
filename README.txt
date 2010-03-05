@@ -1,7 +1,10 @@
-[http://denovoassembler.sf.net/ DeNovoAssembler.SF.Net] hosts the Ray project (
-[http://sourceforge.net/projects/denovoassembler/files/ Download Ray 0.0.3]) -- a massively parallel open source genome assembler for sequencers such as [http://454.com/ Roche 454 sequencers], [http://illumina.com/ Illumina sequencers], [http://solid.appliedbiosystems.com/ SOLiD sequencers], [http://www.pacificbiosciences.com/ Pacific Biosciences sequencers], [http://www.helicosbio.com/ Helicos Biosciences sequencers], and exciting [http://www.iontorrent.com/ Ion Torrent] semiconductor-based sequencers. Ray can assemble reads obtained with a mix of sequencing technologies too!
+[http://denovoassembler.sf.net/ DeNovoAssembler.SF.Net] hosts the Ray project -- a massively parallel open source genome assembler for sequencers such as [http://454.com/ Roche 454 sequencers], [http://illumina.com/ Illumina sequencers], [http://solid.appliedbiosystems.com/ SOLiD sequencers], [http://www.pacificbiosciences.com/ Pacific Biosciences sequencers], [http://www.helicosbio.com/ Helicos Biosciences sequencers], and exciting [http://www.iontorrent.com/ Ion Torrent] semiconductor-based sequencers. Ray can assemble reads obtained with a mix of sequencing technologies too!
 
-You will also find information on OpenAssembler, the core algorithm behind Ray, but unfortunately, its associated paper is still under review and we can't release the algorithm or its source code yet. So, unless you read the source code of Ray, you won't know how it works, and you will have to wait for the OpenAssembler paper.
+
+* [http://sourceforge.net/projects/denovoassembler/files/ Download]
+* [http://lists.sourceforge.net/lists/listinfo/denovoassembler-users Mailing list]
+
+
 
 = Ray: a massively parallel MPI-based approach to de Bruijn genome assembly with mixed technologies =
 
@@ -9,11 +12,7 @@ Ray is a parallel genome assembler utilizing [http://en.wikipedia.org/wiki/Messa
 Ray is a single-executable program (the executable is Ray). Its aim is to assemble sequences on
 mpi-enabled computers or clusters.
 Ray is implemented in c++. It is tested with OpenMPI and g++ on Linux 2.6.
-Only the master rank needs to access the files on disk.
-
-== Features ==
-
-Ray
+Only the master rank needs to access the files on disk. Ray
 
 * is massively parallel,
 * supports the mixing of sequencing technologies, as long as the error incorporation is random,
@@ -38,31 +37,44 @@ Ray
 
 == Installation ==
 
-[http://sourceforge.net/projects/denovoassembler/files/ Download Ray 0.0.3]
+[http://sourceforge.net/projects/denovoassembler/files/ Download]
 
- tar -xjf Ray-0.0.3.tar.bz2
- cd Ray-0.0.3
+ tar -xjf Ray-<version>.tar.bz2
+ cd Ray-<version>
  make
 
 To use an alternative mpic++ executable:
 
  make MPICC=/home/boiseb01/software/ompi-1.4.1-gcc/bin/mpic++
 
-=== Example of input files === 
+== Running Ray ==
 
-RayInputTemplate.txt
+You must use mpirun:
 
-=== Examples of commands ===
+ mpirun -np 1 -machinefile RayMachinesFile.txt Ray RayInputTemplate.txt  # 1 cpu only
+ mpirun -np 4  -machinefile RayMachinesFile.txt Ray RayInputTemplate.txt  # quad-core
+ mpirun -np 1024  -machinefile RayMachinesFile.txt Ray RayInputTemplate.txt  # 1024 cpu
 
- mpirun -np 1 -machinefile RayMachinesFile.txt input.txt  # 1 cpu only
+Basically, Ray understands two commands in RayInputTemplate.txt:
 
- mpirun -np 4  -machinefile RayMachinesFile.txt input.txt  # quad-core
+ LoadSingleEndReads <sequencesFile>
 
- mpirun -np 1024  -machinefile RayMachinesFile.txt input.txt  # 1024 cpu
+and
 
-== Community ==
+ LoadPairedEndReads <leftSequencesFile> <rightSequencesFile> <fragmentLength> <fragmentLengthStandardDeviation>
 
-* [http://lists.sourceforge.net/lists/listinfo/denovoassembler-users Mailing list]
+<leftSequencesFile> and <rightSequencesFile> must contain the exact same number of sequences, paired reads must be on reverse strands, and the <fragmentLength> includes their read lengths. Ray supports fasta, fastq, and sff formats. But beware!, if your sff file contains paired-end reads, you must first extract the information, and tell Ray to use them with LoadPairedEndReads.
+
+Examples:
+
+ LoadSingleEndReads 1.fasta
+ LoadSingleEndReads 2.fastq
+ LoadSingleEndReads UIJD.sff
+ LoadPairedEndReads 908_1.fastq 908_fastq 215 30
+ LoadPairedEndReads large_l.fasta large_r.fasta 2000 200
+
+
+Ray writes contigs to Contigs.fasta.
 
 == Limitations ==
 
