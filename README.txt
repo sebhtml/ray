@@ -1,8 +1,7 @@
-= Acknowledgments =
+[http://denovoassembler.sf.net/ DeNovoAssembler.SF.Net] hosts the Ray project (
+[http://sourceforge.net/projects/denovoassembler/files/ Download Ray 0.0.3]) -- a massively parallel open source genome assembler for sequencers such as [http://454.com/ Roche 454 sequencers], [http://illumina.com/ Illumina sequencers], [http://solid.appliedbiosystems.com/ SOLiD sequencers], [http://www.pacificbiosciences.com/ Pacific Biosciences sequencers], [http://www.helicosbio.com/ Helicos Biosciences sequencers], and exciting [http://www.iontorrent.com/ Ion Torrent] semiconductor-based sequencers. Ray can assemble reads obtained with a mix of sequencing technologies too!
 
-We are very thankful to the [http://www.clumeq.ca/ CLUMEQ consortium] for access to [http://www.top500.org/site/systems/3088 colosse], a 7680-slot computer. Our hardware infrastructure is mostly funded by the [http://www.innovation.ca/en Canada Foundation for Innovation]. [http://boisvert.info/ Sébastien Boisvert] has a scholarship from the [http://www.cihr-irsc.gc.ca/e/193.html Canadian Institutes of Health Research].
-[http://www.cri.ulaval.ca/?jcorbeil_eng Jacques Corbeil] is the [http://genome.ulaval.ca/corbeillab Canada Research Chair in Medical Genomics] and is funded by the [http://www.cihr-irsc.gc.ca/e/193.html Canadian Institutes of Health Research].
-[http://www.cs.ucl.ac.uk/people/F.Laviolette.html François Laviolette] is funded by [http://www.nserc-crsng.gc.ca/ Natural Sciences and Engineering Research Council of Canada]. We thank [http://sourceforge.net/ SourceForge] for the project hosting.
+You will also find information on OpenAssembler, the core algorithm behind Ray, but unfortunately, its associated paper is still under review and we can't release the algorithm or its source code yet. So, unless you read the source code of Ray, you won't know how it works, and you will have to wait for the OpenAssembler paper.
 
 = Ray: a massively parallel MPI-based approach to de Bruijn genome assembly with mixed technologies =
 
@@ -31,7 +30,7 @@ Ray
 * uses splay trees, and
 * runs on one and more MPI processes.
 
-== How to cite us ==
+== How to cite us?==
 
  Sébastien Boisvert, Jacques Corbeil, and François Laviolette. 
  Ray: a massively parallel MPI-based approach to de Bruijn genome assembly with mixed technologies. 
@@ -39,11 +38,7 @@ Ray
 
 == Installation ==
 
-=== Download Ray! ===
-
-[http://sourceforge.net/projects/denovoassembler/files/ Download Ray] (version 0.0.3 will be available around 10 March 2010)
-
-=== Compilation ===
+[http://sourceforge.net/projects/denovoassembler/files/ Download Ray 0.0.3]
 
  tar -xjf Ray-0.0.3.tar.bz2
  cd Ray-0.0.3
@@ -67,27 +62,40 @@ RayInputTemplate.txt
 
 == Community ==
 
-* Mailing list: denovoassembler-users <AT> lists <DOT> sourceforge <DOT> net ([http://sourceforge.net/mailarchive/forum.php?forum_name=denovoassembler-users archives])
+* [http://lists.sourceforge.net/lists/listinfo/denovoassembler-users Mailing list]
 
 == Limitations ==
 
 Ray can not run without mpi as it is a pure parallel program with no
 non-parallel steps. However, it is safe and reliable to run it with 1 cpu.
-
 It currently works well with Open-MPI.
-You may have to disable the Byte Transfer Layer called Shared Memory to avoid a race condition in the spinlock of Open-MPI. This problem is presumably due to a processor defective design rather than a defect in Open-MPI. The lock instruction is supposed to lock the bus, so if you encounter the race condition, you know something is wrong. The following command disables the btl sm.
+You may have to disable the Byte Transfer Layer called Shared Memory to avoid a race condition in the spinlock of Open-MPI. This problem is presumably due to a processor defective design rather than a defect in Open-MPI. The lock instruction is supposed to lock the bus, so if you encounter the race condition, you know something is wrong. The following command disables the btl sm at runtime.
 
  mpirun -np 32 --mca btl ^sm ./Ray sequences.fasta
 
-
-
 = OpenAssembler: assembling genome with mixed sequencing technologies =
 
-<b>OpenAssembler</b> assembles Illumina reads or 454 + Illumina reads, or any combination without non-random error incorporation. The manuscript is under review. Its novelty is that it avoids both 454's homopolymers and Illumina's short read length. Unlike EULER-SR, Velvet, or ABySS, OpenAssembler can assemble reads obtained from a mix of technology. However, it runs only on one process. 
+OpenAssembler assembles Illumina reads or 454 + Illumina reads, or any combination without non-random error incorporation. The manuscript is under review. Its novelty is that it avoids both 454's homopolymers and Illumina's short read length. Unlike EULER-SR, Velvet, or ABySS, OpenAssembler can assemble reads obtained from a mix of technology. However, it runs only on one process. 
 
-=== Manuscript ===
+=== References ===
 
-We submitted a manuscript on 15 October 2009. The source code will be available upon acceptance.
+Paper:
 
-[http://sourceforge.net/projects/denovoassembler/files/ Download OpenAssembler] (not there yet, sorry)
+We submitted a manuscript on 15 October 2009. The source code of OpenAssembler will be available upon acceptance.
+
+We published an abstract on OpenAssembler in a conference:
+
+ OpenAssembler: assembly of reads from a mix of high-throughput sequencing technologies. 
+ Sébastien Boisvert, François Laviolette, Jacques Corbeil. 
+ [http://www.centrerc.umontreal.ca/colloque2009a.html Robert Cedergren Bioinformatics Colloquium 2009], 2009.
+
+= Acknowledgments =
+
+Developing an open source assembler is made possible by investing in research infrastructure. We are very thankful to the [http://www.clumeq.ca/ CLUMEQ consortium] for access to [http://www.top500.org/site/systems/3088 colosse], a 7680-slot computer. Our hardware infrastructure is mostly funded by the [http://www.innovation.ca/en Canada Foundation for Innovation].
+
+Scholarships and grants are equally important. [http://boisvert.info/ Sébastien Boisvert] has a scholarship from the [http://www.cihr-irsc.gc.ca/e/193.html Canadian Institutes of Health Research].
+[http://www.cri.ulaval.ca/?jcorbeil_eng Jacques Corbeil] is the [http://genome.ulaval.ca/corbeillab Canada Research Chair in Medical Genomics] and is funded by the [http://www.cihr-irsc.gc.ca/e/193.html Canadian Institutes of Health Research].
+[http://www.cs.ucl.ac.uk/people/F.Laviolette.html François Laviolette] is funded by [http://www.nserc-crsng.gc.ca/ Natural Sciences and Engineering Research Council of Canada]. 
+
+We thank [http://sourceforge.net/ SourceForge] for the project hosting. We are also thankful to the Free/Libre Open Source Software community for outstanding projects such as [http://www.gnu.org/ GNU], [http://gcc.gnu.org/ g++], [http://www.open-mpi.org/ Open-MPI], [http://kernel.org/ Linux], just to name a few.
 
