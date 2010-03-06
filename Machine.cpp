@@ -116,7 +116,7 @@ Machine::Machine(int argc,char**argv){
 		cout<<endl;
 		cout<<"How to cite us?"<<endl;
 		cout<<"Sébastien Boisvert, Jacques Corbeil, and François Laviolette."<<endl;
- 		cout<<"Ray: a massively parallel MPI-based approach to de Bruijn genome assembly with mixed technologies."<<endl;
+ 		cout<<"Ray: a massively parallel MPI-based approach for genome assembly with mixed technologies."<<endl;
  		cout<<"http://denovoassembler.sf.net/, 2010."<<endl;
 		cout<<endl;
 
