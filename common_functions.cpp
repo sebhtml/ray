@@ -221,52 +221,6 @@ string addLineBreaks(string dna){
 
 
 
-// return the length of the longuest homopolymer in sequence as
-int homopolymerLength(string*as){
-	int max=1;
-	int count=1;
-	for(int i=0;i<(int)as->length()-1;i++){// avoid the last nucleotide
-		if(i!=0){
-			if(as->at(i-1)==as->at(i)){
-				count++;
-			}else{
-				if(count>max){
-					max=count;
-				}	
-				count=1;
-			}
-		}
-	}
-	if(count>max){
-		max=count;
-	}	
-
-	return max;
-}
-
-
-
-
-
-
-
-
-bool fileExists(string a){
-	#ifdef DEBUG_ASSEMBLER
-cout<<"testing file: "<<a<<endl;
-	#endif
-	ifstream b(a.c_str());
-	bool c=false;
-	if(b)
-		c=true;
-	b.close();
-	#ifdef DEBUG_ASSEMBLER
-	cout<<c<<endl;
-	#endif
-	return c;
-}
-
-
 
 
 // http://www.concentric.net/~Ttwang/tech/inthash.htm 64 bit Mix Functions

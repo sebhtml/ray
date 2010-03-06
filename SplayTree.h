@@ -88,7 +88,7 @@ SplayTree<KEY,VALUE>::~SplayTree(){
 }
 
 /*
- * TODO: currently not implemented.
+ *  currently not implemented.
  */
 template<class KEY,class VALUE>
 void SplayTree<KEY,VALUE>::remove(KEY key){

@@ -21,11 +21,6 @@
 
 
 
-
-
-
-
-
 #include<vector>
 #include<Vertex.h>
 #include<cstdlib>

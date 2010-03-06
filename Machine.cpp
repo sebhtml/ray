@@ -597,7 +597,6 @@ void Machine::processMessage(Message*message){
 	}else if(tag==TAG_GET_PATH_LENGTH_REPLY){
 		uint64_t*incoming=(uint64_t*)buffer;
 		m_FUSION_receivedLength=incoming[0];
-		//cout<<"Length="<<m_FUSION_receivedLength<<endl;
 		m_FUSION_pathLengthReceived=true;
 	}else if(tag==TAG_REQUEST_VERTEX_COVERAGE){
 		uint64_t*incoming=(uint64_t*)buffer;
@@ -620,7 +619,6 @@ void Machine::processMessage(Message*message){
 		uint64_t*incoming=(uint64_t*)buffer;
 		m_EXTENSION_hasPairedReadAnswer=incoming[0];
 		m_EXTENSION_hasPairedReadReceived=true;
-		//cout<<"Received answer "<<m_EXTENSION_hasPairedReadAnswer<<endl;
 	}else if(tag==TAG_REQUEST_VERTEX_INGOING_EDGES){
 		uint64_t*incoming=(uint64_t*)buffer;
 		SplayNode<uint64_t,Vertex>*node=m_subgraph.find(incoming[0]);
@@ -1687,7 +1685,6 @@ void Machine::processData(){
 						m_FUSION_paths_requested=false;
 						m_SEEDING_i++;
 					}else if(m_FUSION_receivedLength>(int)m_EXTENSION_contigs[m_SEEDING_i].size() ){
-						//cout<<"Rank "<<getRank()<<" there is a bigger one."<<endl;
 						m_FUSION_eliminated.insert(currentId);
 						m_FUSION_direct_fusionDone=false;
 						m_FUSION_first_done=false;

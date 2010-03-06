@@ -1,6 +1,4 @@
 # Ray Configuration File (Template)
-# to start Ray: make test
-# you can provide fastq files too.
 
 # load single-end reads
 # LoadPairedEndReads <FastaFile>
@@ -10,8 +8,6 @@ LoadSingleEndReads	2.fasta
 
 # load paired-end reads
 # LoadSingleEndReads <LeftFastaFile> <RightFastaFile> <MeanFragmentLength (including read length)> <standard variation>
-# sequences in LeftFastaFile and RightFastaFile are expected to be on the same strand.
-# reverse-complement sequences beforehand as needed.
 
 LoadPairedEndReads	3-left.fasta	3-right.fasta	200	10
 LoadPairedEndReads	4-left.fasta	4-right.fasta	200	10

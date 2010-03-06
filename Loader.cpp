@@ -65,7 +65,6 @@ void Loader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyA
 	}else{
 		(cout)<<"Format: unknown."<<endl;
 	}
-	//TODO: put this in FastaLoader.cpp
 	
 	f.seekg(0,ios_base::beg);
 	if(type==fasta){
@@ -101,7 +100,6 @@ void Loader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyA
 		}
 		add(reads,&id,&sequence,&quality,seqMyAllocator,readMyAllocator);
 		
-	//TODO: put this in FastqLoader.cpp
 	}else if(type==fastq){
 		string id;
 		ostringstream sequence;
