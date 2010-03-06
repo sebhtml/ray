@@ -668,6 +668,9 @@ void Machine::processMessage(Message*message){
 	}else if(tag==TAG_GET_PAIRED_READ){
 		uint64_t*incoming=(uint64_t*)buffer;
 		PairedRead*t=m_myReads[incoming[0]]->getPairedRead();
+		if(t==NULL){
+			cout<<"Fatal, no paired read."<<endl;
+		}
 		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(4*sizeof(uint64_t));
 		message[0]=t->getRank();
 		message[1]=t->getId();
