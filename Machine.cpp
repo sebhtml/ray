@@ -1038,7 +1038,7 @@ void Machine::processData(){
 		m_startEdgeDistribution=false;
 	}else if(m_startEdgeDistribution){
 		#ifndef SHOW_PROGRESS
-		cout<<"\r"<<"Computing arcs"<<endl;
+		cout<<"\r"<<"Adding arcs"<<endl;
 		#endif
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i, TAG_START_EDGES_DISTRIBUTION_ASK,getRank());

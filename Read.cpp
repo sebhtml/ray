@@ -37,11 +37,11 @@ Read::Read(){
 void Read::copy(const char*id,const char*sequence,MyAllocator*seqMyAllocator){
 	m_sequence=(char*)seqMyAllocator->allocate(strlen(sequence)+1);
 	strcpy(m_sequence,sequence);
+	m_pairedRead=NULL;
 }
 
 Read::Read(const char*id,const char*sequence,MyAllocator*seqMyAllocator){
 	copy(id,sequence,seqMyAllocator);
-	m_pairedRead=NULL;
 }
 
 Read::~Read(){
