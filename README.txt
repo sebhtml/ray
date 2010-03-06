@@ -63,7 +63,7 @@ and
 
  LoadPairedEndReads <leftSequencesFile> <rightSequencesFile> <fragmentLength> <fragmentLengthStandardDeviation>
 
-<leftSequencesFile> and <rightSequencesFile> must contain the exact same number of sequences, paired reads must be on reverse strands, and the <fragmentLength> includes their read lengths. Ray supports fasta, fastq, and sff formats. But beware!, if your sff file contains paired-end reads, you must first extract the information, and tell Ray to use them with LoadPairedEndReads.
+<leftSequencesFile> and <rightSequencesFile> must contain the exact same number of sequences, paired reads must be on reverse strands, and the <fragmentLength> includes the read lengths. Ray supports fasta, fastq, and sff formats. But beware!, if your sff file contains paired-end reads, you must first extract the information, and tell Ray to use them with LoadPairedEndReads.
 
 Examples:
 
