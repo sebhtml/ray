@@ -121,7 +121,7 @@ Machine::Machine(int argc,char**argv){
 		cout<<endl;
 
 		cout<<"Ray runs on "<<getSize()<<" MPI processes"<<endl;
-		cout<<"Starting 'Parallel_Ray_Engine' "+m_VERSION;
+		cout<<"Starting 'Parallel_Ray_Engine' "+m_VERSION<<endl;
 		#endif
 	}
 	m_alive=true;
@@ -154,7 +154,7 @@ Machine::Machine(int argc,char**argv){
 		minutes=minutes%60;
 		int days=hours/24;
 		hours=hours%24;
-		cout<<endl<<"Computation time: "<<days<<" d "<<hours<<" h "<<minutes<<" min "<<seconds<<" s"<<endl;
+		cout<<"Computation time: "<<days<<" d "<<hours<<" h "<<minutes<<" min "<<seconds<<" s"<<endl;
 	}
 	MPI_Finalize();
 }
@@ -264,12 +264,13 @@ int Machine::getRank(){
 
 void Machine::showProgress(){
 	printf("\r");
-	int nn=rand()%10;
+	int columns=10;
+	int nn=m_lastTime%columns;
 	
 	for(int i=0;i<nn;i++){
 		printf(".");
 	}
-	for(int i=0;i<10-nn;i++){
+	for(int i=0;i<columns-nn;i++){
 		printf(" ");
 	}
 	fflush(stdout);
@@ -295,9 +296,6 @@ void Machine::loadSequences(){
 		}
 		m_distributionAllocator.clear();
 		m_distribution_reads.clear();
-		#ifndef SHOW_PROGRESS
-		cout<<endl;
-		#endif
 		return;
 	}
 	if(m_distribution_reads.size()==0){
@@ -308,7 +306,7 @@ void Machine::loadSequences(){
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<" loads "<<allFiles[m_distribution_file_id]<<"."<<endl;
 		#else
-		cout<<endl<<"Loading sequences"<<endl;
+		cout<<"\r"<<"Loading sequences ("<<allFiles[m_distribution_file_id]<<")"<<endl;
 		#endif
 		loader.load(allFiles[m_distribution_file_id],&m_distribution_reads,&m_distributionAllocator,&m_distributionAllocator);
 
@@ -412,9 +410,6 @@ void Machine::attachReads(){
 		m_distribution_reads.clear();
 		m_distributionAllocator.clear();
 		m_mode_AttachSequences=false;
-		#ifndef SHOW_PROGRESS
-		cout<<endl;
-		#endif
 		return;
 	}
 	if(m_distribution_reads.size()==0){
@@ -425,7 +420,7 @@ void Machine::attachReads(){
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<" loads "<<allFiles[m_distribution_file_id]<<"."<<endl;
 		#else
-		cout<<endl<<"Loading sequences"<<endl;
+		cout<<"\r"<<"Loading sequences ("<<allFiles[m_distribution_file_id]<<")"<<endl;
 		#endif
 		loader.load(allFiles[m_distribution_file_id],&m_distribution_reads,&m_distributionAllocator,&m_distributionAllocator);
 		
@@ -975,7 +970,7 @@ void Machine::processData(){
 	
 	#ifndef SHOW_PROGRESS
 	if(m_readyToSeed==getSize()){
-		cout<<endl<<"Computing seeds"<<endl;
+		cout<<"\r"<<"Computing seeds"<<endl;
 	}
 
 	if(isMaster() and m_messageSentForVerticesDistribution and m_numberOfMachinesDoneSendingVertices<getSize()){
@@ -1021,7 +1016,7 @@ void Machine::processData(){
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<": starting vertices distribution."<<endl;
 		#else
-		cout<<"Computing vertices"<<endl;
+		cout<<"\r"<<"Computing vertices"<<endl;
 		#endif
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i, TAG_START_VERTICES_DISTRIBUTION,getRank());
@@ -1042,7 +1037,7 @@ void Machine::processData(){
 		m_startEdgeDistribution=false;
 	}else if(m_startEdgeDistribution){
 		#ifndef SHOW_PROGRESS
-		cout<<"Computing arcs"<<endl;
+		cout<<"\r"<<"Computing arcs"<<endl;
 		#endif
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i, TAG_START_EDGES_DISTRIBUTION_ASK,getRank());
@@ -1464,7 +1459,7 @@ void Machine::processData(){
 	}else if(m_numberOfRanksDoneSeeding==getSize()){
 		m_numberOfRanksDoneSeeding=-1;
 		#ifndef SHOW_PROGRESS
-		cout<<endl<<"Extending seeds"<<endl;
+		cout<<"\r"<<"Extending seeds"<<endl;
 		#endif
 		m_mode=MODE_EXTENSION_ASK;
 		m_EXTENSION_rank=-1;
@@ -1888,7 +1883,7 @@ void Machine::processData(){
 	if(m_EXTENSION_numberOfRanksDone==getSize()){
 
 		#ifndef SHOW_PROGRESS
-		cout<<endl<<"Computing fusions"<<endl;
+		cout<<"\r"<<"Computing fusions"<<endl;
 		#endif
 		// ask one at once to do the fusion
 		// because otherwise it may lead to hanging of the program for unknown reasons
@@ -1927,7 +1922,7 @@ void Machine::processData(){
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<": fusion is done."<<endl;
 		#else
-		cout<<endl<<"Getting fusions"<<endl;
+		cout<<"\r"<<"Getting fusions"<<endl;
 		#endif
 		m_FUSION_numberOfRanksDone=-1;
 		m_master_mode=MODE_ASK_EXTENSIONS;
@@ -1997,7 +1992,7 @@ void Machine::processData(){
 			#ifdef SHOW_PROGRESS
 			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<endl;
 			#else
-			cout<<endl<<"Writing "<<m_parameters.getOutputFile()<<endl;
+			cout<<"\r"<<"Writing "<<m_parameters.getOutputFile()<<endl;
 			#endif
 			killRanks();
 		}else if(!m_EXTENSION_currentRankIsStarted){
