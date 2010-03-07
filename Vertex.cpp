@@ -36,7 +36,9 @@ void Vertex::constructor(){
 }
 
 void Vertex::setCoverage(int coverage){
-	if(m_coverage==255){ // maximum value for unsigned char.
+	COVERAGE_TYPE max=0;
+	max=max-1;// underflow.
+	if(m_coverage==max){ // maximum value for unsigned char.
 		return;
 	}
 
@@ -119,4 +121,6 @@ vector<Direction> Vertex::getDirections(){
 	return a;
 }
 
-
+void Vertex::clearDirections(){
+	m_direction=NULL;
+}

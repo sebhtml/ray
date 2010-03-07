@@ -19,6 +19,124 @@
 
 */
 
+// tags
+#define TAG_WELCOME 0
+#define TAG_SEND_SEQUENCE 1
+#define TAG_SEQUENCES_READY 2
+#define TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS 3
+#define TAG_VERTICES_DATA 4
+#define TAG_VERTICES_DISTRIBUTED 5
+#define TAG_VERTEX_PTR_REQUEST 6
+#define TAG_OUT_EDGE_DATA_WITH_PTR 7
+#define TAG_OUT_EDGES_DATA 8
+#define TAG_SHOW_VERTICES 9
+#define TAG_START_VERTICES_DISTRIBUTION 10
+#define TAG_EDGES_DISTRIBUTED 11
+#define TAG_IN_EDGES_DATA 12
+#define TAG_IN_EDGE_DATA_WITH_PTR 13
+#define TAG_START_EDGES_DISTRIBUTION 14
+#define TAG_START_EDGES_DISTRIBUTION_ASK 15
+#define TAG_START_EDGES_DISTRIBUTION_ANSWER 16
+#define TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION 17
+#define TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER 18
+#define TAG_PREPARE_COVERAGE_DISTRIBUTION 19
+#define TAG_COVERAGE_DATA 20
+#define TAG_COVERAGE_END 21
+#define TAG_SEND_COVERAGE_VALUES 22
+#define TAG_READY_TO_SEED 23
+#define TAG_START_SEEDING 24
+#define TAG_REQUEST_VERTEX_COVERAGE 25
+#define TAG_REQUEST_VERTEX_COVERAGE_REPLY 26
+#define TAG_REQUEST_VERTEX_KEY_AND_COVERAGE 28
+#define TAG_REQUEST_VERTEX_KEY_AND_COVERAGE_REPLY 30
+#define TAG_REQUEST_VERTEX_OUTGOING_EDGES 31
+#define TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY 32
+#define TAG_SEEDING_IS_OVER 33
+#define TAG_GOOD_JOB_SEE_YOU_SOON 34
+#define TAG_I_GO_NOW 35
+#define TAG_SET_WORD_SIZE 36
+#define TAG_MASTER_IS_DONE_ATTACHING_READS 37
+#define TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY 38
+#define TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER 39
+#define TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER_REPLY 40
+#define TAG_REQUEST_VERTEX_INGOING_EDGES 41
+#define TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY 42
+#define TAG_EXTENSION_IS_DONE 43
+#define TAG_ASK_EXTENSION 44
+#define TAG_ASK_IS_ASSEMBLED 45
+#define TAG_ASK_REVERSE_COMPLEMENT 46
+#define TAG_REQUEST_VERTEX_POINTER 47
+#define TAG_ASK_IS_ASSEMBLED_REPLY 48
+#define TAG_MARK_AS_ASSEMBLED 49
+#define TAG_ASK_EXTENSION_DATA 50
+#define TAG_EXTENSION_DATA 51
+#define TAG_EXTENSION_END 52
+#define TAG_EXTENSION_DATA_END 53
+#define TAG_ATTACH_SEQUENCE 54
+#define TAG_REQUEST_READS 55
+#define TAG_REQUEST_READS_REPLY 56
+#define TAG_ASK_READ_VERTEX_AT_POSITION 57
+#define TAG_ASK_READ_VERTEX_AT_POSITION_REPLY 58
+#define TAG_ASK_READ_LENGTH 59
+#define TAG_ASK_READ_LENGTH_REPLY 60
+#define TAG_SAVE_WAVE_PROGRESSION 61
+#define TAG_COPY_DIRECTIONS 62
+#define TAG_ASSEMBLE_WAVES 63
+#define TAG_COPY_DIRECTIONS_DONE 64
+#define TAG_SAVE_WAVE_PROGRESSION_REVERSE 65
+#define TAG_ASSEMBLE_WAVES_DONE 66
+#define TAG_START_FUSION 67
+#define TAG_FUSION_DONE 68
+#define TAG_ASK_VERTEX_PATHS_SIZE 69
+#define TAG_ASK_VERTEX_PATHS_SIZE_REPLY 70
+#define TAG_GET_PATH_LENGTH 71
+#define TAG_GET_PATH_LENGTH_REPLY 72
+#define TAG_CALIBRATION_MESSAGE 73
+#define TAG_BEGIN_CALIBRATION 74
+#define TAG_END_CALIBRATION 75
+#define TAG_COMMUNICATION_STABILITY_MESSAGE 76
+#define TAG_ASK_VERTEX_PATH 77
+#define TAG_ASK_VERTEX_PATH_REPLY 78
+#define TAG_INDEX_PAIRED_SEQUENCE 79
+#define TAG_HAS_PAIRED_READ 80
+#define TAG_HAS_PAIRED_READ_REPLY 81
+#define TAG_GET_PAIRED_READ 82
+#define TAG_GET_PAIRED_READ_REPLY 83
+#define TAG_CLEAR_DIRECTIONS 84
+#define TAG_CLEAR_DIRECTIONS_REPLY 85
+#define TAG_FINISH_FUSIONS 86
+#define TAG_FINISH_FUSIONS_FINISHED 87
+#define TAG_DISTRIBUTE_FUSIONS 88
+#define TAG_DISTRIBUTE_FUSIONS_FINISHED 89
+#define TAG_EXTENSION_START 90
+
+
+#define MASTER_RANK 0
+
+
+// modes
+#define MODE_EXTENSION_ASK 0
+#define MODE_START_SEEDING 1
+#define MODE_DO_NOTHING 2
+#define MODE_ASK_EXTENSIONS 3
+#define MODE_SEND_EXTENSION_DATA 4
+#define MODE_ASSEMBLE_WAVES 5
+#define MODE_COPY_DIRECTIONS 6
+#define MODE_ASSEMBLE_GRAPH 7
+#define MODE_FUSION 8
+#define MODE_MASTER_ASK_CALIBRATION 9
+#define MODE_PERFORM_CALIBRATION 10
+#define MODE_FINISH_FUSIONS 11
+#define MODE_DISTRIBUTE_FUSIONS 12
+
+#define OUTBOX_ALLOCATOR_CHUNK_SIZE 10*1024*1024 // 10 MB
+#define DISTRIBUTION_ALLOCATOR_CHUNK_SIZE 10*1024*1024 // 10 MB
+#define INBOX_ALLOCATOR_CHUNK_SIZE 10*1024*1024 // 10 MB
+#define PERSISTENT_ALLOCATOR_CHUNK_SIZE 10*1024*1024 // 10 MB
+
+#define CALIBRATION_DURATION 10
+
+
 #include<Machine.h>
 #include<sstream>
 #include<Message.h>
@@ -35,6 +153,57 @@
 #include<Loader.h>
 #include<MyAllocator.h>
 using namespace std;
+
+/*
+ * get the Directions taken by a vertex.
+ *
+ * m_Machine_getPaths_INITIALIZED must be set to false before any calls.
+ * also, you must set m_Machine_getPaths_DONE to false;
+ *
+ * when done, m_Machine_getPaths_DONE is true
+ * and
+ * the result is in m_Machine_getPaths_result (a vector<Direction>)
+ */
+void Machine::getPaths(uint64_t vertex){
+	if(!m_Machine_getPaths_INITIALIZED){
+		m_Machine_getPaths_INITIALIZED=true;
+		m_FUSION_paths_requested=false;
+		m_Machine_getPaths_DONE=false;
+		m_Machine_getPaths_result.clear();
+		return;
+	}
+
+	if(!m_FUSION_paths_requested){
+		uint64_t theVertex=vertex;
+		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
+		message[0]=theVertex;
+		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex),TAG_ASK_VERTEX_PATHS_SIZE,getRank());
+		m_outbox.push_back(aMessage);
+		m_FUSION_paths_requested=true;
+		m_FUSION_paths_received=false;
+		m_FUSION_path_id=0;
+		m_FUSION_path_requested=false;
+		m_FUSION_receivedPaths.clear();
+	}else if(m_FUSION_paths_received){
+		if(m_FUSION_path_id<m_FUSION_numberOfPaths){
+			if(!m_FUSION_path_requested){
+				uint64_t theVertex=vertex;
+				uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
+				message[0]=m_FUSION_path_id;
+				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex),TAG_ASK_VERTEX_PATH,getRank());
+				m_outbox.push_back(aMessage);
+				m_FUSION_path_requested=true;
+				m_FUSION_path_received=false;
+			}else if(m_FUSION_path_received){
+				m_FUSION_path_id++;
+				m_Machine_getPaths_result.push_back(m_FUSION_receivedPath);
+				m_FUSION_path_requested=false;
+			}
+		}else{
+			m_Machine_getPaths_DONE=true;
+		}
+	}
+}
 
 Machine::Machine(int argc,char**argv){
 	time_t startingTime=time(NULL);
@@ -78,6 +247,7 @@ Machine::Machine(int argc,char**argv){
 	m_inboxAllocator.constructor(INBOX_ALLOCATOR_CHUNK_SIZE);
 	m_distributionAllocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
 	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
+	m_directionsAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
 
 
 	m_mode=MODE_DO_NOTHING;
@@ -154,7 +324,7 @@ Machine::Machine(int argc,char**argv){
 		minutes=minutes%60;
 		int days=hours/24;
 		hours=hours%24;
-		cout<<"Computation time: "<<days<<" d "<<hours<<" h "<<minutes<<" min "<<seconds<<" s"<<endl;
+		cout<<"\rComputation time: "<<days<<" d "<<hours<<" h "<<minutes<<" min "<<seconds<<" s"<<endl;
 	}
 	MPI_Finalize();
 }
@@ -205,7 +375,7 @@ void Machine::sendMessages(){
 
 		#ifdef DEBUG
 		if(m_mode==MODE_FUSION){
-			cout<<"DEBUG Time="<<time(NULL)<<" Source="<<getRank()<<" Destination="<<aMessage->getDestination()<<" Tag="<<aMessage->getTag()<<" Datatype="<<aMessage->getMPIDatatype()<<" Count="<<aMessage->getCount()<<endl;
+			//cout<<"DEBUG Time="<<time(NULL)<<" Source="<<getRank()<<" Destination="<<aMessage->getDestination()<<" Tag="<<aMessage->getTag()<<" Datatype="<<aMessage->getMPIDatatype()<<" Count="<<aMessage->getCount()<<endl;
 		}
 		#endif
 
@@ -497,11 +667,11 @@ void Machine::processMessage(Message*message){
 	int count=message->getCount();
 	int tag=message->getTag();
 	int source=message->getSource();
+	uint64_t*incoming=(uint64_t*)buffer;
 
 
 	if(tag==TAG_VERTICES_DATA){
 		int length=count;
-		uint64_t*incoming=(uint64_t*)buffer;
 		for(int i=0;i<length;i++){
 			uint64_t l=incoming[i];
 			if(m_last_value!=(int)m_subgraph.size() and (int)m_subgraph.size()%100000==0){
@@ -519,9 +689,16 @@ void Machine::processMessage(Message*message){
 		}
 	}else if(tag==TAG_EXTENSION_DATA_END){
 		m_EXTENSION_currentRankIsDone=true;
-	}else if(tag==TAG_EXTENSION_END){
+	}else if(tag==TAG_EXTENSION_START){
 		vector<uint64_t> a;
 		m_allPaths.push_back(a);
+		int id=incoming[0];
+		#ifdef DEBUG
+		int rank=id%MAX_NUMBER_OF_MPI_PROCESSES;
+		assert(rank<getSize());
+		#endif
+		m_identifiers.push_back(id);
+	}else if(tag==TAG_EXTENSION_END){
 	}else if(tag==TAG_START_FUSION){
 
 		m_mode=MODE_FUSION;
@@ -537,6 +714,12 @@ void Machine::processMessage(Message*message){
 		m_mode=MODE_DO_NOTHING;
 		m_calibration_MaxSpeed=m_calibration_numberOfMessagesSent/CALIBRATION_DURATION/getSize();
 		cout<<"Rank "<<getRank()<<" MaximumSpeed (point-to-point)="<<m_calibration_MaxSpeed<<" messages/second"<<endl;
+	}else if(tag==TAG_FINISH_FUSIONS){
+		m_mode=MODE_FINISH_FUSIONS;
+		m_SEEDING_i=0;
+		m_FUSION_first_done=false;
+		m_Machine_getPaths_INITIALIZED=false;
+		m_Machine_getPaths_DONE=false;
 	}else if(tag==TAG_COPY_DIRECTIONS){
 		m_mode=MODE_COPY_DIRECTIONS;
 		SplayTreeIterator<uint64_t,Vertex> seedingIterator(&m_subgraph);
@@ -549,7 +732,6 @@ void Machine::processMessage(Message*message){
 		m_EXTENSION_numberOfRanksDone++;
 		m_EXTENSION_currentRankIsDone=true;
 	}else if(tag==TAG_SET_WORD_SIZE){
-		uint64_t*incoming=(uint64_t*)buffer;
 		m_wordSize=incoming[0];
 	}else if(tag==TAG_START_SEEDING){
 		m_mode=MODE_START_SEEDING;
@@ -562,23 +744,55 @@ void Machine::processMessage(Message*message){
 			m_SEEDING_nodes.push_back(node->getKey());
 		}
 		#ifdef DEBUG
-		cout<<"Ingoing and outgoing edges."<<endl;
+		//cout<<"Ingoing and outgoing edges."<<endl;
 		for(map<int,map<int,int> >::iterator i=edgesDistribution.begin();i!=edgesDistribution.end();++i){
 			for(map<int,int>::iterator j=i->second.begin();j!=i->second.end();++j){
-				cout<<i->first<<" "<<j->first<<" "<<j->second<<endl;
+				//cout<<i->first<<" "<<j->first<<" "<<j->second<<endl;
 			}
 		}
 		#endif
 		m_SEEDING_NodeInitiated=false;
 		m_SEEDING_i=0;
+	}else if(tag==TAG_FINISH_FUSIONS_FINISHED){
+		m_FINISH_n++;
+	}else if(tag==TAG_CLEAR_DIRECTIONS){
+
+		SplayTreeIterator<uint64_t,Vertex> iterator(&m_subgraph);
+		while(iterator.hasNext()){
+			iterator.next()->getValue()->clearDirections();
+		}
+		m_directionsAllocator.clear();
+		m_directionsAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
+
+		vector<int> identifiers;
+		vector<vector<uint64_t> > fusions;
+		vector<vector<uint64_t> > additionalFusions;
+		for(int i=0;i<(int)m_EXTENSION_contigs.size();i++){
+			int id=m_EXTENSION_identifiers[i];
+			#ifdef DEBUG
+			assert(id%MAX_NUMBER_OF_MPI_PROCESSES<getSize());
+			#endif
+			if(m_FUSION_eliminated.count(id)==0){
+				fusions.push_back(m_EXTENSION_contigs[i]);
+				identifiers.push_back(id);
+			}
+		}
+		m_FUSION_eliminated.clear();
+		m_EXTENSION_identifiers.clear();
+		m_EXTENSION_contigs.clear();
+		m_EXTENSION_identifiers=identifiers;
+		m_EXTENSION_contigs=fusions;
+
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,TAG_CLEAR_DIRECTIONS_REPLY,getRank());
+		m_outbox.push_back(aMessage);
+	}else if(tag==TAG_CLEAR_DIRECTIONS_REPLY){
+		m_CLEAR_n++;
 	}else if(tag==TAG_INDEX_PAIRED_SEQUENCE){
-		uint64_t*incoming=(uint64_t*)buffer;
 		PairedRead*t=(PairedRead*)m_persistentAllocator.allocate(sizeof(PairedRead));
 		t->constructor(incoming[1],incoming[2],incoming[3],incoming[4]);
 		m_myReads[incoming[0]]->setPairedRead(t);
 	}else if(tag==TAG_COMMUNICATION_STABILITY_MESSAGE){
 	}else if(tag==TAG_GET_PATH_LENGTH){
-		uint64_t*incoming=(uint64_t*)buffer;
 		int id=incoming[0];
 		int length=0;
 		if(m_FUSION_identifier_map.count(id)>0){
@@ -595,11 +809,9 @@ void Machine::processMessage(Message*message){
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,source,TAG_GET_PATH_LENGTH_REPLY,getRank());
 		m_outbox.push_back(aMessage);
 	}else if(tag==TAG_GET_PATH_LENGTH_REPLY){
-		uint64_t*incoming=(uint64_t*)buffer;
 		m_FUSION_receivedLength=incoming[0];
 		m_FUSION_pathLengthReceived=true;
 	}else if(tag==TAG_REQUEST_VERTEX_COVERAGE){
-		uint64_t*incoming=(uint64_t*)buffer;
 		SplayNode<uint64_t,Vertex>*node=m_subgraph.find(incoming[0]);
 		if(node==NULL){
 			cout<<"NULL (TAG_REQUEST_VERTEX_COVERAGE), vertex="<<idToWord(incoming[0],m_wordSize)<<endl;
@@ -609,18 +821,21 @@ void Machine::processMessage(Message*message){
 		message[0]=coverage;
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_VERTEX_COVERAGE_REPLY,getRank());
 		m_outbox.push_back(aMessage);
+	}else if(tag==TAG_DISTRIBUTE_FUSIONS){
+		m_mode=MODE_DISTRIBUTE_FUSIONS;
+		m_SEEDING_i=0;
+		m_EXTENSION_currentPosition=0;
+	}else if(tag==TAG_DISTRIBUTE_FUSIONS_FINISHED){
+		m_DISTRIBUTE_n++;
 	}else if(tag==TAG_HAS_PAIRED_READ){
-		uint64_t*incoming=(uint64_t*)buffer;
 		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
 		message[0]=m_myReads[incoming[0]]->hasPairedRead();
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,source,TAG_HAS_PAIRED_READ_REPLY,getRank());
 		m_outbox.push_back(aMessage);
 	}else if(tag==TAG_HAS_PAIRED_READ_REPLY){
-		uint64_t*incoming=(uint64_t*)buffer;
 		m_EXTENSION_hasPairedReadAnswer=incoming[0];
 		m_EXTENSION_hasPairedReadReceived=true;
 	}else if(tag==TAG_REQUEST_VERTEX_INGOING_EDGES){
-		uint64_t*incoming=(uint64_t*)buffer;
 		SplayNode<uint64_t,Vertex>*node=m_subgraph.find(incoming[0]);
 		if(node==NULL){
 			cout<<"NULL (TAG_REQUEST_VERTEX_INGOING_EDGES), vertex="<<incoming[0]<<""<<endl;
@@ -634,7 +849,6 @@ void Machine::processMessage(Message*message){
 		m_outbox.push_back(aMessage);
 	}else if(tag==TAG_CALIBRATION_MESSAGE){
 	}else if(tag==TAG_ASK_VERTEX_PATHS_SIZE){
-		uint64_t*incoming=(uint64_t*)buffer;
 		vector<Direction> paths=m_subgraph.find(incoming[0])->getValue()->getDirections();
 		m_FUSION_cachedDirections[source]=paths;
 		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
@@ -647,7 +861,6 @@ void Machine::processMessage(Message*message){
 		m_FUSION_receivedPaths.clear();
 		m_FUSION_numberOfPaths=incoming[0];
 	}else if(tag==TAG_ASK_VERTEX_PATH){
-		uint64_t*incoming=(uint64_t*)buffer;
 		int i=incoming[0];
 		Direction d=m_FUSION_cachedDirections[source][i];
 		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(2*sizeof(uint64_t));
@@ -657,7 +870,6 @@ void Machine::processMessage(Message*message){
 		m_outbox.push_back(aMessage);
 	}else if(tag==TAG_ASK_VERTEX_PATH_REPLY){
 		m_FUSION_path_received=true;
-		uint64_t*incoming=(uint64_t*)buffer;
 		int pathId=incoming[0];
 		int position=incoming[1];
 		m_FUSION_receivedPath.constructor(pathId,position);
@@ -666,7 +878,6 @@ void Machine::processMessage(Message*message){
 		m_SEEDING_i=0;
 		m_EXTENSION_currentPosition=0;
 	}else if(tag==TAG_GET_PAIRED_READ){
-		uint64_t*incoming=(uint64_t*)buffer;
 		PairedRead*t=m_myReads[incoming[0]]->getPairedRead();
 		if(t==NULL){
 			cout<<"Fatal, no paired read."<<endl;
@@ -679,7 +890,6 @@ void Machine::processMessage(Message*message){
 		Message aMessage(message,4,MPI_UNSIGNED_LONG_LONG,source,TAG_GET_PAIRED_READ_REPLY,getRank());
 		m_outbox.push_back(aMessage);
 	}else if(tag==TAG_GET_PAIRED_READ_REPLY){
-		uint64_t*incoming=(uint64_t*)buffer;
 		m_EXTENSION_pairedRead.constructor(incoming[0],incoming[1],incoming[2],incoming[3]);
 		m_EXTENSION_pairedSequenceReceived=true;
 	}else if(tag==TAG_ASSEMBLE_WAVES){
@@ -688,14 +898,12 @@ void Machine::processMessage(Message*message){
 	}else if(tag==TAG_COPY_DIRECTIONS_DONE){
 		m_COPY_ranks++;
 	}else if(tag==TAG_SAVE_WAVE_PROGRESSION){
-		uint64_t*incoming=(uint64_t*)buffer;
 		SplayNode<uint64_t,Vertex>*node=m_subgraph.find(incoming[0]);
 		int wave=incoming[1];
 		int progression=incoming[2];
-		node->getValue()->addDirection(wave,progression,&m_persistentAllocator);
+		node->getValue()->addDirection(wave,progression,&m_directionsAllocator);
 	}else if(tag==TAG_SAVE_WAVE_PROGRESSION_REVERSE){
 	}else if(tag==TAG_EXTENSION_DATA){
-		uint64_t*incoming=(uint64_t*)buffer;
 		m_allPaths[m_allPaths.size()-1].push_back(incoming[0]);
 	}else if(tag==TAG_FUSION_DONE){
 		m_FUSION_numberOfRanksDone++;
@@ -704,7 +912,6 @@ void Machine::processMessage(Message*message){
 		m_mode_EXTENSION=true;
 		m_last_value=-1;
 	}else if(tag==TAG_ASK_REVERSE_COMPLEMENT){
-		uint64_t*incoming=(uint64_t*)buffer;
 		SplayNode<uint64_t,Vertex>*node=(SplayNode<uint64_t,Vertex>*)incoming[0];
 		uint64_t value=node->getKey();
 		uint64_t reverseComplement=complementVertex(value,m_wordSize);
@@ -714,7 +921,6 @@ void Machine::processMessage(Message*message){
 		m_outbox.push_back(aMessage);
 	}else if(tag==TAG_MARK_AS_ASSEMBLED){
 	}else if(tag==TAG_ASK_IS_ASSEMBLED){
-		uint64_t*incoming=(uint64_t*)buffer;
 		SplayNode<uint64_t,Vertex>*node=m_subgraph.find(incoming[0]);
 		bool isAssembled=node->getValue()->isAssembled();
 		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
@@ -722,11 +928,9 @@ void Machine::processMessage(Message*message){
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_IS_ASSEMBLED_REPLY,getRank());
 		m_outbox.push_back(aMessage);
 	}else if(tag==TAG_ASK_IS_ASSEMBLED_REPLY){
-		uint64_t*incoming=(uint64_t*)buffer;
 		m_EXTENSION_VertexAssembled_received=true;
 		m_EXTENSION_vertexIsAssembledResult=(bool)incoming[0];
 	}else if(tag==TAG_REQUEST_VERTEX_OUTGOING_EDGES){
-		uint64_t*incoming=(uint64_t*)buffer;
 		vector<uint64_t> outgoingEdges=m_subgraph.find(incoming[0])->getValue()->getOutgoingEdges(incoming[0],m_wordSize);
 		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(outgoingEdges.size()*sizeof(uint64_t));
 		for(int i=0;i<(int)outgoingEdges.size();i++){
@@ -739,21 +943,18 @@ void Machine::processMessage(Message*message){
 	}else if(tag==TAG_SEEDING_IS_OVER){
 		m_numberOfRanksDoneSeeding++;
 	}else if(tag==TAG_ATTACH_SEQUENCE){
-		uint64_t*incoming=(uint64_t*)buffer;
 		uint64_t vertex=incoming[0];
 		int rank=incoming[1];
 		int sequenceIdOnDestination=(int)incoming[2];
 		char strand=(char)incoming[3];
 		m_subgraph.find(vertex)->getValue()->addRead(rank,sequenceIdOnDestination,strand,&m_persistentAllocator);
 	}else if(tag==TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY){
-		uint64_t*incoming=(uint64_t*)buffer;
 		m_SEEDING_receivedIngoingEdges.clear();
 		for(int i=0;i<count;i++){
 			m_SEEDING_receivedIngoingEdges.push_back(incoming[i]);
 		}
 		m_SEEDING_InedgesReceived=true;
 	}else if(tag==TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY){
-		uint64_t*incoming=(uint64_t*)buffer;
 		m_SEEDING_receivedOutgoingEdges.clear();
 		for(int i=0;i<count;i++){
 			m_SEEDING_receivedOutgoingEdges.push_back(incoming[i]);
@@ -770,7 +971,6 @@ void Machine::processMessage(Message*message){
 	}else if(tag==TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY){
 		m_ranksDoneAttachingReads++;
 	}else if(tag==TAG_REQUEST_VERTEX_KEY_AND_COVERAGE){
-		uint64_t*incoming=(uint64_t*)buffer;
 		SplayNode<uint64_t,Vertex>*node=(SplayNode<uint64_t,Vertex>*)incoming[0];
 		uint64_t key=node->getKey();
 		uint64_t coverage=node->getValue()->getCoverage();
@@ -780,17 +980,14 @@ void Machine::processMessage(Message*message){
 		Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_VERTEX_KEY_AND_COVERAGE_REPLY,getRank());
 		m_outbox.push_back(aMessage);
 	}else if(tag==TAG_REQUEST_VERTEX_KEY_AND_COVERAGE_REPLY){
-		uint64_t*incoming=(uint64_t*)buffer;
 		m_SEEDING_receivedKey=incoming[0];
 		m_SEEDING_receivedVertexCoverage=incoming[1];
 		m_SEEDING_vertexKeyAndCoverageReceived=true;
 	}else if(tag==TAG_REQUEST_VERTEX_COVERAGE_REPLY){
-		uint64_t*incoming=(uint64_t*)buffer;
 		m_SEEDING_receivedVertexCoverage=incoming[0];
 		m_SEEDING_vertexCoverageReceived=true;
 	}else if(tag==TAG_COVERAGE_DATA){
 		int length=count;
-		uint64_t*incoming=(uint64_t*)buffer;
 
 		for(int i=0;i<length;i+=2){
 			int coverage=incoming[i+0];
@@ -798,7 +995,6 @@ void Machine::processMessage(Message*message){
 			m_coverageDistribution[coverage]+=count;
 		}
 	}else if(tag==TAG_SEND_COVERAGE_VALUES){
-		uint64_t*incoming=(uint64_t*)buffer;
 		m_minimumCoverage=incoming[0];
 		m_seedCoverage=incoming[1];
 		m_peakCoverage=incoming[2];
@@ -808,7 +1004,6 @@ void Machine::processMessage(Message*message){
 		m_readyToSeed++;
 	}else if(tag==TAG_OUT_EDGES_DATA){
 		int length=count;
-		uint64_t*incoming=(uint64_t*)buffer;
 
 		for(int i=0;i<(int)length;i+=2){
 			uint64_t prefix=incoming[i+0];
@@ -825,7 +1020,6 @@ void Machine::processMessage(Message*message){
 			#endif
 		}
 	}else if(tag==TAG_ASK_READ_LENGTH){
-		uint64_t*incoming=(uint64_t*)buffer;
 		int length=m_myReads[incoming[0]]->length();
 		
 		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
@@ -833,11 +1027,9 @@ void Machine::processMessage(Message*message){
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_READ_LENGTH_REPLY,getRank());
 		m_outbox.push_back(aMessage);
 	}else if(tag==TAG_ASK_READ_LENGTH_REPLY){
-		uint64_t*incoming=(uint64_t*)buffer;
 		m_EXTENSION_readLength_received=true;
 		m_EXTENSION_receivedLength=incoming[0];
 	}else if(tag==TAG_ASK_READ_VERTEX_AT_POSITION){
-		uint64_t*incoming=(uint64_t*)buffer;
 		char strand=incoming[2];
 		uint64_t vertex=m_myReads[incoming[0]]->Vertex(incoming[1],m_wordSize,strand);
 		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
@@ -849,7 +1041,6 @@ void Machine::processMessage(Message*message){
 		m_EXTENSION_receivedReadVertex=((uint64_t*)buffer)[0];
 	}else if(tag==TAG_IN_EDGES_DATA){
 		int length=count;
-		uint64_t*incoming=(uint64_t*)buffer;
 
 		for(int i=0;i<(int)length;i+=2){
 			uint64_t prefix=incoming[i+0];
@@ -919,7 +1110,6 @@ void Machine::processMessage(Message*message){
 		m_numberOfMachinesDoneSendingCoverage++;
 	}else if(tag==TAG_REQUEST_READS){
 		vector<ReadAnnotation> reads;
-		uint64_t*incoming=(uint64_t*)buffer;
 		ReadAnnotation*e=m_subgraph.find(incoming[0])->getValue()->getReads();
 		while(e!=NULL){
 			reads.push_back(*e);
@@ -935,7 +1125,6 @@ void Machine::processMessage(Message*message){
 		Message aMessage(message,3*reads.size(),MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READS_REPLY,getRank());
 		m_outbox.push_back(aMessage);
 	}else if(tag==TAG_REQUEST_READS_REPLY){
-		uint64_t*incoming=(uint64_t*)buffer;
 		m_EXTENSION_receivedReads.clear();
 		for(int i=0;i<count;i+=3){
 			int rank=incoming[i];
@@ -1171,6 +1360,95 @@ void Machine::processData(){
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rank,TAG_CALIBRATION_MESSAGE,getRank());
 		m_outbox.push_back(aMessage);
 		m_calibration_numberOfMessagesSent++;
+	}else if(m_mode==MODE_FINISH_FUSIONS){
+		if(m_SEEDING_i==(int)m_EXTENSION_contigs.size()){
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_FINISH_FUSIONS_FINISHED,getRank());
+			m_outbox.push_back(aMessage);
+			m_mode=MODE_DO_NOTHING;
+			return;
+		}
+		int overlapMinimumLength=1000;
+		if((int)m_EXTENSION_contigs[m_SEEDING_i].size()<overlapMinimumLength){
+			m_SEEDING_i++;
+			return;
+		}
+		// check if the path begins with someone else.
+		
+		int currentId=m_EXTENSION_identifiers[m_SEEDING_i];
+		if(!m_FUSION_first_done){
+			if(!m_Machine_getPaths_DONE){
+				getPaths(m_EXTENSION_contigs[m_SEEDING_i][0]);
+			}else{
+				m_FUSION_firstPaths=m_Machine_getPaths_result;
+				m_FUSION_first_done=true;
+				m_FUSION_last_done=false;
+				m_Machine_getPaths_DONE=false;
+				m_Machine_getPaths_INITIALIZED=false;
+			}
+		}else if(!m_FUSION_last_done){
+			if(!m_Machine_getPaths_DONE){
+				getPaths(m_EXTENSION_contigs[m_SEEDING_i][overlapMinimumLength-1]);
+			}else{
+				m_FUSION_lastPaths=m_Machine_getPaths_result;
+				m_FUSION_last_done=true;
+			}
+		}else{
+			map<int,int> keys;
+			map<int,int> starts;
+			map<int,int> ends;
+
+			for(int i=0;i<(int)m_FUSION_firstPaths.size();i++){
+				int path=m_FUSION_firstPaths[i].getWave();
+				if(path==currentId)
+					continue;
+				starts[path]=m_FUSION_firstPaths[i].getProgression();
+			}
+			for(int i=0;i<(int)m_FUSION_lastPaths.size();i++){
+				int path=m_FUSION_lastPaths[i].getWave();
+				if(path==currentId)
+					continue;
+				ends[path]=m_FUSION_lastPaths[i].getProgression();
+			}
+
+			for(map<int,int>::iterator i=starts.begin();i!=starts.end();i++){
+				int pathA=i->first;
+				int start=i->second;
+				for(map<int,int>::iterator j=ends.begin();j!=ends.end();j++){
+					int pathB=j->first;
+					int theEnd=j->second;
+					if(pathA==pathB and theEnd-start+1==overlapMinimumLength){
+						cout<<getRank()<<" "<<" path="<<currentId<<" Perfect "<<currentId<<" 0-"<<overlapMinimumLength-1<<" and "<<pathA<<" "<<start<<"-"<<theEnd<<endl;
+					}
+				}
+			}
+			m_SEEDING_i++;
+			m_FUSION_first_done=false;
+			m_Machine_getPaths_INITIALIZED=false;
+			m_Machine_getPaths_DONE=false;
+		}
+	}else if(m_mode==MODE_DISTRIBUTE_FUSIONS){
+		if(m_SEEDING_i==(int)m_EXTENSION_contigs.size()){
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_DISTRIBUTE_FUSIONS_FINISHED,getRank());
+			m_outbox.push_back(aMessage);
+			m_mode=MODE_DO_NOTHING;
+			return;
+		}
+	
+		uint64_t vertex=m_EXTENSION_contigs[m_SEEDING_i][m_EXTENSION_currentPosition];
+		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(3*sizeof(uint64_t));
+		message[0]=vertex;
+		message[1]=m_EXTENSION_identifiers[m_SEEDING_i];
+		message[2]=m_EXTENSION_currentPosition;
+		Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,vertexRank(vertex),TAG_SAVE_WAVE_PROGRESSION,getRank());
+		m_outbox.push_back(aMessage);
+
+		m_EXTENSION_currentPosition++;
+
+		// the next one
+		if(m_EXTENSION_currentPosition==(int)m_EXTENSION_contigs[m_SEEDING_i].size()){
+			m_SEEDING_i++;
+			m_EXTENSION_currentPosition=0;
+		}
 	}
 
 	if(m_mode_sendDistribution){
@@ -1496,6 +1774,13 @@ void Machine::processData(){
 				m_SEEDING_i++;
 				m_EXTENSION_currentPosition=0;
 			}else{
+				if(m_EXTENSION_currentPosition==0){
+					uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(sizeof(uint64_t)*1);
+					int theId=m_EXTENSION_identifiers[m_SEEDING_i];
+					message[0]=theId;
+					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_START,getRank());
+					m_outbox.push_back(aMessage);
+				}
 				uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(sizeof(uint64_t)*1);
 				message[0]=m_EXTENSION_contigs[m_SEEDING_i][m_EXTENSION_currentPosition];
 				m_EXTENSION_currentPosition++;
@@ -1922,9 +2207,39 @@ void Machine::processData(){
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<": fusion is done."<<endl;
 		#else
-		cout<<"\r"<<"Getting fusions"<<endl;
+		cout<<"\r"<<"Finishing fusions"<<endl;
 		#endif
 		m_FUSION_numberOfRanksDone=-1;
+
+		for(int i=0;i<getSize();i++){
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_CLEAR_DIRECTIONS,getRank());
+			m_outbox.push_back(aMessage);
+		}
+
+		m_CLEAR_n=0;
+		m_master_mode=MODE_ASK_EXTENSIONS;
+		m_EXTENSION_currentRankIsSet=false;
+		m_EXTENSION_rank=-1;
+	}
+
+	if(m_CLEAR_n==getSize()){
+		m_CLEAR_n=-1;
+
+		for(int i=0;i<getSize();i++){
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_DISTRIBUTE_FUSIONS,getRank());
+			m_outbox.push_back(aMessage);
+		}
+		m_DISTRIBUTE_n=0;
+	}else if(m_DISTRIBUTE_n==getSize()){
+		m_DISTRIBUTE_n=-1;
+		for(int i=0;i<getSize();i++){
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_FINISH_FUSIONS,getRank());
+			m_outbox.push_back(aMessage);
+		}
+		m_FINISH_n=0;
+	}else if(m_FINISH_n==getSize()){	
+		cout<<"\r"<<"Collecting fusions"<<endl;
+		m_FINISH_n=-1;
 		m_master_mode=MODE_ASK_EXTENSIONS;
 		m_EXTENSION_currentRankIsSet=false;
 		m_EXTENSION_rank=-1;
@@ -1968,25 +2283,31 @@ void Machine::processData(){
 			m_EXTENSION_currentRankIsSet=true;
 			m_EXTENSION_currentRankIsStarted=false;
 			m_EXTENSION_rank++;
-			if(m_EXTENSION_rank==0){
-				vector<uint64_t> a;
-				m_allPaths.push_back(a);
-			}
 		}
 		if(m_EXTENSION_rank==getSize()){
 			m_master_mode=MODE_DO_NOTHING;
 
+			
+			#ifdef DEBUG
+			assert(m_allPaths.size()==m_identifiers.size());
+			#endif
 			ofstream f(m_parameters.getOutputFile().c_str());
 			for(int i=0;i<(int)m_allPaths.size();i++){
-				if(m_allPaths[i].size()==0)
-					break;
 				ostringstream a;
 				a<<idToWord(m_allPaths[i][0],m_wordSize);
 				for(int j=1;j<(int)m_allPaths[i].size();j++){
 					a<<getLastSymbol(m_allPaths[i][j],m_wordSize);
 				}
 				string contig=a.str();
-				f<<">contig"<<i+1<<" "<<contig.length()<<" nucleotides"<<endl<<addLineBreaks(contig);
+				#ifdef DEBUG
+				assert(i<(int)m_identifiers.size());
+				#endif
+				int id=m_identifiers[i];
+				#ifdef DEBUG
+				int theRank=id%MAX_NUMBER_OF_MPI_PROCESSES;
+				assert(theRank<getSize());
+				#endif
+				f<<">contig-"<<id<<" "<<contig.length()<<" nucleotides"<<endl<<addLineBreaks(contig);
 			}
 			f.close();
 			#ifdef SHOW_PROGRESS

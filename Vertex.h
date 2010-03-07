@@ -34,8 +34,10 @@
 #include<vector>
 using namespace std;
 
+#define COVERAGE_TYPE unsigned char
+
 class Vertex{
-	unsigned char m_coverage;
+	COVERAGE_TYPE m_coverage;
 	// 
 	// outgoing  ingoing
 	//
@@ -60,6 +62,7 @@ public:
 	ReadAnnotation*getReads();
 	void addDirection(int wave,int progression,MyAllocator*a);
 	vector<Direction> getDirections();
+	void clearDirections();
 };
 
 #endif
