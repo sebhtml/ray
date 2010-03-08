@@ -296,6 +296,7 @@ class Machine{
 	// FINISHING.
 	int m_FINISH_n;
 	int m_DISTRIBUTE_n;
+	bool m_isFinalFusion;
 
 	// getPaths
 	bool m_Machine_getPaths_INITIALIZED;

@@ -241,7 +241,7 @@ Machine::Machine(int argc,char**argv){
 	m_machineRank=0;
 	m_messageSentForVerticesDistribution=false;
 	m_sequence_ready_machines=0;
-
+	m_isFinalFusion=false;
 
 	m_outboxAllocator.constructor(OUTBOX_ALLOCATOR_CHUNK_SIZE);
 	m_inboxAllocator.constructor(INBOX_ALLOCATOR_CHUNK_SIZE);
@@ -689,6 +689,7 @@ void Machine::processMessage(Message*message){
 		}
 	}else if(tag==TAG_EXTENSION_DATA_END){
 		m_EXTENSION_currentRankIsDone=true;
+		cout<<"Rank "<<source<<" is done."<<endl;
 	}else if(tag==TAG_EXTENSION_START){
 		vector<uint64_t> a;
 		m_allPaths.push_back(a);
@@ -764,23 +765,36 @@ void Machine::processMessage(Message*message){
 		m_directionsAllocator.clear();
 		m_directionsAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
 
-		vector<int> identifiers;
 		vector<vector<uint64_t> > fusions;
-		vector<vector<uint64_t> > additionalFusions;
 		for(int i=0;i<(int)m_EXTENSION_contigs.size();i++){
 			int id=m_EXTENSION_identifiers[i];
+			if(m_FUSION_eliminated.count(id)==0){
+				fusions.push_back(m_EXTENSION_contigs[i]);
+				vector<uint64_t> rc;
+				for(int j=m_EXTENSION_contigs[i].size()-1;j>=0;j--){
+					rc.push_back(complementVertex(m_EXTENSION_contigs[i][j],m_wordSize));
+				}
+				fusions.push_back(rc);
+			}
+		}
+
+		m_EXTENSION_identifiers.clear();
+		m_FUSION_eliminated.clear();
+		for(int i=0;i<(int)fusions.size();i++){
+			int id=i*MAX_NUMBER_OF_MPI_PROCESSES+getRank();
 			#ifdef DEBUG
 			assert(id%MAX_NUMBER_OF_MPI_PROCESSES<getSize());
 			#endif
-			if(m_FUSION_eliminated.count(id)==0){
-				fusions.push_back(m_EXTENSION_contigs[i]);
-				identifiers.push_back(id);
-			}
+			m_EXTENSION_identifiers.push_back(id);
 		}
-		m_FUSION_eliminated.clear();
-		m_EXTENSION_identifiers.clear();
+
+		for(int i=0;i<(int)m_EXTENSION_identifiers.size();i++){
+			int id=m_EXTENSION_identifiers[i];
+			m_FUSION_identifier_map[id]=i;
+		}
+
+
 		m_EXTENSION_contigs.clear();
-		m_EXTENSION_identifiers=identifiers;
 		m_EXTENSION_contigs=fusions;
 
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,TAG_CLEAR_DIRECTIONS_REPLY,getRank());
@@ -1417,7 +1431,7 @@ void Machine::processData(){
 					int pathB=j->first;
 					int theEnd=j->second;
 					if(pathA==pathB and theEnd-start+1==overlapMinimumLength){
-						cout<<getRank()<<" "<<" path="<<currentId<<" Perfect "<<currentId<<" 0-"<<overlapMinimumLength-1<<" and "<<pathA<<" "<<start<<"-"<<theEnd<<endl;
+						//cout<<getRank()<<" "<<" path="<<currentId<<" Perfect "<<currentId<<" 0-"<<overlapMinimumLength-1<<" and "<<pathA<<" "<<start<<"-"<<theEnd<<endl;
 					}
 				}
 			}
@@ -1993,6 +2007,9 @@ void Machine::processData(){
 			int currentId=m_EXTENSION_identifiers[m_SEEDING_i];
 			if(!m_FUSION_first_done){
 				if(!m_FUSION_paths_requested){
+					if(m_EXTENSION_contigs[m_SEEDING_i].size()==24530){
+						cout<<"Debuging it now."<<endl;
+					}
 					// get the paths going on the first vertex
 					uint64_t theVertex=complementVertex(m_EXTENSION_contigs[m_SEEDING_i][m_EXTENSION_contigs[m_SEEDING_i].size()-1],m_wordSize);
 					uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
@@ -2203,7 +2220,7 @@ void Machine::processData(){
 		}
 	}
 
-	if(m_FUSION_numberOfRanksDone==getSize()){
+	if(m_FUSION_numberOfRanksDone==getSize() and !m_isFinalFusion){
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<": fusion is done."<<endl;
 		#else
@@ -2217,9 +2234,6 @@ void Machine::processData(){
 		}
 
 		m_CLEAR_n=0;
-		m_master_mode=MODE_ASK_EXTENSIONS;
-		m_EXTENSION_currentRankIsSet=false;
-		m_EXTENSION_rank=-1;
 	}
 
 	if(m_CLEAR_n==getSize()){
@@ -2238,8 +2252,18 @@ void Machine::processData(){
 		}
 		m_FINISH_n=0;
 	}else if(m_FINISH_n==getSize()){	
-		cout<<"\r"<<"Collecting fusions"<<endl;
+		m_FUSION_numberOfRanksDone=0;
+		m_master_mode=MODE_DO_NOTHING;
 		m_FINISH_n=-1;
+		for(int i=0;i<(int)getSize();i++){// start fusion.
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_START_FUSION,getRank());
+			m_outbox.push_back(aMessage);
+		}
+		m_isFinalFusion=true;
+
+	}else if(m_FUSION_numberOfRanksDone==getSize() and m_isFinalFusion){
+		m_FUSION_numberOfRanksDone=-1;
+		cout<<"\r"<<"Collecting fusions"<<endl;
 		m_master_mode=MODE_ASK_EXTENSIONS;
 		m_EXTENSION_currentRankIsSet=false;
 		m_EXTENSION_rank=-1;
@@ -2321,6 +2345,7 @@ void Machine::processData(){
 			#ifdef SHOW_PROGRESS
 			cout<<"Rank "<<getRank()<<" asks "<<m_EXTENSION_rank<<" for its extensions."<<endl;
 			#endif
+			cout<<"Asking "<<m_EXTENSION_rank<<endl;
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_EXTENSION_rank,TAG_ASK_EXTENSION_DATA,getRank());
 			m_outbox.push_back(aMessage);
 			m_EXTENSION_currentRankIsDone=false;
