@@ -6,7 +6,7 @@
 
 
 
-= Ray: a massively parallel MPI-based approach to de Bruijn genome assembly with mixed technologies =
+= Ray: a massively parallel MPI-based approach for genome assembly with mixed technologies =
 
 Ray is a parallel genome assembler utilizing [http://en.wikipedia.org/wiki/Message_Passing_Interface MPI]. 
 Ray is a single-executable program (the executable is Ray). Its aim is to assemble sequences on
@@ -32,7 +32,7 @@ Only the master rank needs to access the files on disk. Ray
 == How to cite us?==
 
  Sébastien Boisvert, Jacques Corbeil, and François Laviolette. 
- Ray: a massively parallel MPI-based approach to de Bruijn genome assembly with mixed technologies. 
+ Ray: a massively parallel MPI-based approach for genome assembly with mixed technologies. 
  http://denovoassembler.sf.net/, 2010.
 
 == Installation ==

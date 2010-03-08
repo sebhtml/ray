@@ -297,6 +297,14 @@ class Machine{
 	int m_FINISH_n;
 	int m_DISTRIBUTE_n;
 	bool m_isFinalFusion;
+	bool m_FINISH_hits_computed;
+	int m_FINISH_hit;
+	int m_FINISH_positionStart;
+	bool m_FINISH_hasHit;
+	vector<vector<uint64_t> > m_FINISH_newFusions;
+	bool m_FINISH_vertex_received;
+	uint64_t m_FINISH_received_vertex;
+	bool m_FINISH_vertex_requested;
 
 	// getPaths
 	bool m_Machine_getPaths_INITIALIZED;
