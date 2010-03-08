@@ -2316,6 +2316,7 @@ void Machine::processData(){
 
 		m_reductionOccured=true;
 		m_cycleStarted=false;
+		m_cycleNumber=0;
 	}
 
 	if(m_reductionOccured){
@@ -2400,7 +2401,7 @@ void Machine::processData(){
 		}else if(m_FUSION_numberOfRanksDone==getSize() and m_isFinalFusion){
 			m_reductionOccured=m_nextReductionOccured;
 			m_FUSION_numberOfRanksDone=-1;
-			if(!m_reductionOccured){
+			if(!m_reductionOccured or m_cycleNumber ==5){
 				cout<<"\r"<<"Collecting fusions"<<endl;
 				m_master_mode=MODE_ASK_EXTENSIONS;
 				m_EXTENSION_currentRankIsSet=false;
@@ -2408,6 +2409,7 @@ void Machine::processData(){
 			}else{
 				// we continue now!
 				m_cycleStarted=false;
+				m_cycleNumber++;
 			}
 		}
 	}

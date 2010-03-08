@@ -294,6 +294,7 @@ class Machine{
 	// COLLECTING things.
 	vector<int> m_identifiers;
 	// FINISHING.
+	int m_cycleNumber;
 	int m_FINISH_n;
 	int m_DISTRIBUTE_n;
 	bool m_isFinalFusion;
