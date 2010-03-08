@@ -2401,7 +2401,7 @@ void Machine::processData(){
 		}else if(m_FUSION_numberOfRanksDone==getSize() and m_isFinalFusion){
 			m_reductionOccured=m_nextReductionOccured;
 			m_FUSION_numberOfRanksDone=-1;
-			if(!m_reductionOccured or m_cycleNumber ==5){
+			if(!m_reductionOccured or m_cycleNumber ==5 or true){ // cycling is in development!
 				cout<<"\r"<<"Collecting fusions"<<endl;
 				m_master_mode=MODE_ASK_EXTENSIONS;
 				m_EXTENSION_currentRankIsSet=false;
