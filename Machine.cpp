@@ -758,13 +758,21 @@ void Machine::processMessage(Message*message){
 	}else if(tag==TAG_FINISH_FUSIONS_FINISHED){
 		m_FINISH_n++;
 	}else if(tag==TAG_CLEAR_DIRECTIONS){
-
+	
+		// clear graph
 		SplayTreeIterator<uint64_t,Vertex> iterator(&m_subgraph);
 		while(iterator.hasNext()){
 			iterator.next()->getValue()->clearDirections();
 		}
 		m_directionsAllocator.clear();
 		m_directionsAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
+
+		// add the FINISHING bits
+		for(int i=0;i<(int)m_FINISH_newFusions.size();i++){
+			m_EXTENSION_contigs.push_back(m_FINISH_newFusions[i]);
+		}
+		m_FINISH_newFusions.clear();
+
 
 		vector<vector<uint64_t> > fusions;
 		for(int i=0;i<(int)m_EXTENSION_contigs.size();i++){
@@ -793,7 +801,6 @@ void Machine::processMessage(Message*message){
 			int id=m_EXTENSION_identifiers[i];
 			m_FUSION_identifier_map[id]=i;
 		}
-
 
 		m_EXTENSION_contigs.clear();
 		m_EXTENSION_contigs=fusions;
@@ -1456,7 +1463,6 @@ void Machine::processData(){
 				m_FINISH_hit=hits[0];
 				m_FINISH_hasHit=true;
 				m_FINISH_positionStart=ends[m_FINISH_hit]+1;
-				cout<<"FINISH "<<currentId<<" and "<<m_FINISH_hit<<" at "<<m_FINISH_positionStart<<endl;
 				m_FUSION_pathLengthRequested=false;
 				m_FUSION_eliminated.insert(currentId);
 				int rankId=m_FINISH_hit%MAX_NUMBER_OF_MPI_PROCESSES;
@@ -1482,7 +1488,6 @@ void Machine::processData(){
 				m_FUSION_pathLengthRequested=true;
 				m_FUSION_pathLengthReceived=false;
 				m_FINISH_vertex_requested=false;
-				cout<<"Requests the length. "<<m_FINISH_hit<<endl;
 			}else if(m_FUSION_pathLengthReceived){
 				if(m_FINISH_positionStart<m_FUSION_receivedLength){
 					if(!m_FINISH_vertex_requested){
@@ -1500,7 +1505,6 @@ void Machine::processData(){
 						m_FINISH_newFusions[m_FINISH_newFusions.size()-1].push_back(m_FINISH_received_vertex);
 					}
 				}else{
-					cout<<"New finished fusion currentId="<<currentId<<" otherId="<<m_FINISH_hit<<" otherLength="<<m_FUSION_receivedLength<<" "<<m_FINISH_newFusions[m_FINISH_newFusions.size()-1].size()<<endl;
 					m_SEEDING_i++;
 					m_FUSION_first_done=false;
 					m_Machine_getPaths_INITIALIZED=false;
@@ -1885,14 +1889,6 @@ void Machine::processData(){
 		
 		if(m_SEEDING_i==(int)m_EXTENSION_contigs.size()){
 
-			// add the FINISHING bits
-			for(int i=0;i<(int)m_FINISH_newFusions.size();i++){
-				m_EXTENSION_contigs.push_back(m_FINISH_newFusions[i]);
-				int id=(m_EXTENSION_contigs.size()-1)*MAX_NUMBER_OF_MPI_PROCESSES+getRank();
-				m_FUSION_identifier_map[id]=m_EXTENSION_contigs.size()-1;
-				m_EXTENSION_identifiers.push_back(id);
-			}
-			m_FINISH_newFusions.clear();
 
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_FUSION_DONE,getRank());
 			m_outbox.push_back(aMessage);
@@ -2305,12 +2301,12 @@ void Machine::processData(){
 
 		// the finishing is
 		//
-		//  * a fusion cycle
 		//  * a clear cycle
 		//  * a distribute cycle
 		//  * a finish cycle
 		//  * a clear cycle
 		//  * a distribute cycle
+		//  * a fusion cycle
 
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_CLEAR_DIRECTIONS,getRank());
@@ -2320,7 +2316,7 @@ void Machine::processData(){
 		m_CLEAR_n=0;
 	}
 
-	if(m_CLEAR_n==getSize()){
+	if(m_CLEAR_n==getSize() and !m_isFinalFusion){
 		m_CLEAR_n=-1;
 
 		for(int i=0;i<getSize();i++){
@@ -2328,23 +2324,38 @@ void Machine::processData(){
 			m_outbox.push_back(aMessage);
 		}
 		m_DISTRIBUTE_n=0;
-	}else if(m_DISTRIBUTE_n==getSize()){
+	}else if(m_DISTRIBUTE_n==getSize() and !m_isFinalFusion){
 		m_DISTRIBUTE_n=-1;
+		m_isFinalFusion=true;
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_FINISH_FUSIONS,getRank());
 			m_outbox.push_back(aMessage);
 		}
 		m_FINISH_n=0;
-	}else if(m_FINISH_n==getSize()){
+	}else if(m_FINISH_n==getSize() and m_isFinalFusion){
+		for(int i=0;i<getSize();i++){
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_CLEAR_DIRECTIONS,getRank());
+			m_outbox.push_back(aMessage);
+		}
+		m_FINISH_n=-1;
+		m_CLEAR_n=0;
+	}else if(m_CLEAR_n==getSize() and m_isFinalFusion){
+		m_CLEAR_n=-1;
 
+		for(int i=0;i<getSize();i++){
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_DISTRIBUTE_FUSIONS,getRank());
+			m_outbox.push_back(aMessage);
+		}
+		m_DISTRIBUTE_n=0;
+
+	}else if(m_DISTRIBUTE_n==getSize() and m_isFinalFusion){
 		m_FUSION_numberOfRanksDone=0;
 		m_master_mode=MODE_DO_NOTHING;
-		m_FINISH_n=-1;
+		m_DISTRIBUTE_n=-1;
 		for(int i=0;i<(int)getSize();i++){// start fusion.
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_START_FUSION,getRank());
 			m_outbox.push_back(aMessage);
 		}
-		m_isFinalFusion=true;
 
 	}else if(m_FUSION_numberOfRanksDone==getSize() and m_isFinalFusion){
 		m_FUSION_numberOfRanksDone=-1;
