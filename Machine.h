@@ -304,6 +304,9 @@ class Machine{
 	vector<vector<uint64_t> > m_FINISH_newFusions;
 	bool m_FINISH_vertex_received;
 	uint64_t m_FINISH_received_vertex;
+	bool m_nextReductionOccured;
+	bool m_cycleStarted;
+	bool m_reductionOccured;
 	bool m_FINISH_vertex_requested;
 
 	// getPaths
