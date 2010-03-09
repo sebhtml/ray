@@ -20,6 +20,8 @@
 */
 
 // tags
+// these are the message types used by Ray
+// Ray instances like to communicate a lots!
 #define TAG_WELCOME 0
 #define TAG_SEND_SEQUENCE 1
 #define TAG_SEQUENCES_READY 2
@@ -131,10 +133,11 @@
 #define MODE_FINISH_FUSIONS 11
 #define MODE_DISTRIBUTE_FUSIONS 12
 
-#define OUTBOX_ALLOCATOR_CHUNK_SIZE 10*1024*1024 // 10 MB
-#define DISTRIBUTION_ALLOCATOR_CHUNK_SIZE 10*1024*1024 // 10 MB
-#define INBOX_ALLOCATOR_CHUNK_SIZE 10*1024*1024 // 10 MB
-#define PERSISTENT_ALLOCATOR_CHUNK_SIZE 10*1024*1024 // 10 MB
+#define 10MB 10*1024*1024
+#define OUTBOX_ALLOCATOR_CHUNK_SIZE 10MB
+#define DISTRIBUTION_ALLOCATOR_CHUNK_SIZE 10MB
+#define INBOX_ALLOCATOR_CHUNK_SIZE 10MB
+#define PERSISTENT_ALLOCATOR_CHUNK_SIZE 10MB
 
 #define CALIBRATION_DURATION 10
 
@@ -331,6 +334,16 @@ Machine::Machine(int argc,char**argv){
 	MPI_Finalize();
 }
 
+/*
+ * this is the function that runs a lots
+ *
+ * it
+ * 	1) receives messages
+ * 	2) free Request if any (only with MPICH2, Open-MPI is better designed and send small messages more efficiently!)
+ * 	3) process message. The function that deals with a message is selected with the message's tag
+ * 	4) process data, this depends on the master-mode and slave-mode states.
+ * 	5) send messages
+ */
 void Machine::run(){
 	#ifdef SHOW_PROGRESS
 	if(isMaster()){
@@ -348,6 +361,9 @@ void Machine::run(){
 	}
 }
 
+/*
+ * free the memory of Requests
+ */
 void Machine::checkRequests(){
 	MPI_Request theRequests[1024];
 	MPI_Status theStatus[1024];
@@ -358,6 +374,8 @@ void Machine::checkRequests(){
 	MPI_Waitall(m_pendingMpiRequest.size(),theRequests,theStatus);
 	m_pendingMpiRequest.clear();
 }
+
+
 
 void Machine::sendMessages(){
 	for(int i=0;i<(int)m_outbox.size();i++){
@@ -375,11 +393,6 @@ void Machine::sendMessages(){
 			continue;
 		}
 
-		#ifdef DEBUG
-		if(m_mode==MODE_FUSION){
-			//cout<<"DEBUG Time="<<time(NULL)<<" Source="<<getRank()<<" Destination="<<aMessage->getDestination()<<" Tag="<<aMessage->getTag()<<" Datatype="<<aMessage->getMPIDatatype()<<" Count="<<aMessage->getCount()<<endl;
-		}
-		#endif
 
 		#ifdef MPICH2_VERSION // MPICH2 waits for the response on the other end.
 		MPI_Request request;
