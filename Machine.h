@@ -295,11 +295,19 @@ class Machine{
 	vector<int> m_identifiers;
 	// FINISHING.
 	int m_cycleNumber;
+	vector<vector<Direction> > m_FINISH_pathsForPosition;
+	map<int,int> m_FINISH_pathLengths;
+	bool m_checkedValidity;
 	int m_FINISH_n;
 	int m_DISTRIBUTE_n;
 	bool m_isFinalFusion;
 	bool m_FINISH_hits_computed;
 	int m_FINISH_hit;
+	int m_selectedPath;
+	int m_selectedPosition;
+	#ifdef DEBUG
+	set<int> m_collisions;
+	#endif
 	int m_FINISH_positionStart;
 	bool m_FINISH_hasHit;
 	vector<vector<uint64_t> > m_FINISH_newFusions;

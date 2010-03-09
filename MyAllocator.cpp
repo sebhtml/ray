@@ -25,6 +25,7 @@
 #include<MyAllocator.h>
 #include<stdlib.h>
 #include<iostream>
+#include<assert.h>
 using namespace std;
 
 MyAllocator::MyAllocator(){
@@ -41,6 +42,9 @@ void MyAllocator::constructor(int chunkSize){
 }
 
 void*MyAllocator::allocate(int s){
+	#ifdef DEBUG
+	assert(m_currentChunk!=NULL);
+	#endif
 	s+=s%8;
 	if(s>m_CHUNK_SIZE){
 		return NULL;

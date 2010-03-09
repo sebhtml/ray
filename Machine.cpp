@@ -676,18 +676,24 @@ void Machine::processMessage(Message*message){
 		int length=count;
 		for(int i=0;i<length;i++){
 			uint64_t l=incoming[i];
+
+			#ifdef SHOW_PROGRESS
 			if(m_last_value!=(int)m_subgraph.size() and (int)m_subgraph.size()%100000==0){
 				m_last_value=m_subgraph.size();
-				#ifdef SHOW_PROGRESS
 				cout<<"Rank "<<getRank()<<" has "<<m_subgraph.size()<<" vertices "<<endl;
-				#endif
 			}
+			#endif
 			SplayNode<uint64_t,Vertex>*tmp=m_subgraph.insert(l);
-		
+			#ifdef DEBUG
+			assert(tmp!=NULL);
+			#endif
 			if(m_subgraph.inserted()){
 				tmp->getValue()->constructor(); 
 			}
 			tmp->getValue()->setCoverage(tmp->getValue()->getCoverage()+1);
+			#ifdef DEBUG
+			assert(tmp->getValue()->getCoverage()>0);
+			#endif
 		}
 	}else if(tag==TAG_EXTENSION_DATA_END){
 		m_EXTENSION_currentRankIsDone=true;
@@ -702,7 +708,6 @@ void Machine::processMessage(Message*message){
 		m_identifiers.push_back(id);
 	}else if(tag==TAG_EXTENSION_END){
 	}else if(tag==TAG_START_FUSION){
-
 		m_mode=MODE_FUSION;
 		m_SEEDING_i=0;
 
@@ -712,6 +717,9 @@ void Machine::processMessage(Message*message){
 	}else if(tag==TAG_BEGIN_CALIBRATION){
 		m_calibration_numberOfMessagesSent=0;
 		m_mode=MODE_PERFORM_CALIBRATION;
+		#ifdef DEBUG
+
+		#endif
 	}else if(tag==TAG_END_CALIBRATION){
 		m_mode=MODE_DO_NOTHING;
 		m_calibration_MaxSpeed=m_calibration_numberOfMessagesSent/CALIBRATION_DURATION/getSize();
@@ -719,6 +727,7 @@ void Machine::processMessage(Message*message){
 	}else if(tag==TAG_FINISH_FUSIONS){
 		m_mode=MODE_FINISH_FUSIONS;
 		m_SEEDING_i=0;
+		m_EXTENSION_currentPosition=0;
 		m_FUSION_first_done=false;
 		m_Machine_getPaths_INITIALIZED=false;
 		m_Machine_getPaths_DONE=false;
@@ -890,6 +899,9 @@ void Machine::processMessage(Message*message){
 		m_outbox.push_back(aMessage);
 	}else if(tag==TAG_CALIBRATION_MESSAGE){
 	}else if(tag==TAG_ASK_VERTEX_PATHS_SIZE){
+		#ifdef DEBUG
+		assert(m_subgraph.find(incoming[0])!=NULL);
+		#endif
 		vector<Direction> paths=m_subgraph.find(incoming[0])->getValue()->getDirections();
 		m_FUSION_cachedDirections[source]=paths;
 		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
@@ -1420,111 +1432,125 @@ void Machine::processData(){
 		
 		int currentId=m_EXTENSION_identifiers[m_SEEDING_i];
 		// don't do it if it is removed.
-		if(!m_FUSION_first_done){
+
+		// start threading the extension
+		// as the algorithm advance on it, it stores the path positions.
+		// when it reaches a choice, it will use the available path as basis.
+		
+		// we have the extension in m_EXTENSION_contigs[m_SEEDING_i]
+		// we get the paths with getPaths
+		bool done=false;
+		if(m_EXTENSION_currentPosition<(int)m_EXTENSION_contigs[m_SEEDING_i].size()){
 			if(!m_Machine_getPaths_DONE){
-				int len=m_EXTENSION_contigs[m_SEEDING_i].size();
-				getPaths(m_EXTENSION_contigs[m_SEEDING_i][len-overlapMinimumLength]);
+				getPaths(m_EXTENSION_contigs[m_SEEDING_i][m_EXTENSION_currentPosition]);
 			}else{
-				m_FUSION_firstPaths=m_Machine_getPaths_result;
-				m_FUSION_first_done=true;
-				m_FUSION_last_done=false;
+				vector<Direction> a;
+				for(int i=0;i<(int)m_Machine_getPaths_result.size();i++){
+					if(m_Machine_getPaths_result[i].getWave()!=currentId){
+						a.push_back(m_Machine_getPaths_result[i]);
+					}
+				}
+				m_FINISH_pathsForPosition.push_back(a);
+				if(m_EXTENSION_currentPosition==0){
+					m_FUSION_eliminated.insert(currentId);
+					vector<uint64_t> a;
+					m_FINISH_newFusions.push_back(a);
+					m_FINISH_vertex_requested=false;
+					m_FUSION_pathLengthRequested=false;
+					m_checkedValidity=false;
+				}
+				uint64_t vertex=m_EXTENSION_contigs[m_SEEDING_i][m_EXTENSION_currentPosition];
+				m_FINISH_newFusions[m_FINISH_newFusions.size()-1].push_back(vertex);
+				m_EXTENSION_currentPosition++;
 				m_Machine_getPaths_DONE=false;
 				m_Machine_getPaths_INITIALIZED=false;
 			}
-		}else if(!m_FUSION_last_done){
-			if(!m_Machine_getPaths_DONE){
-				int len=m_EXTENSION_contigs[m_SEEDING_i].size();
-				getPaths(m_EXTENSION_contigs[m_SEEDING_i][len-1]);
-			}else{
-				m_FUSION_lastPaths=m_Machine_getPaths_result;
-				m_FUSION_last_done=true;
-				m_FINISH_hits_computed=false;
-			}
-		}else if(!m_FINISH_hits_computed){
-			m_FINISH_hits_computed=true;
-			map<int,int> keys;
-			map<int,int> starts;
-			map<int,int> ends;
-
-			for(int i=0;i<(int)m_FUSION_firstPaths.size();i++){
-				int path=m_FUSION_firstPaths[i].getWave();
-				if(path==currentId)
-					continue;
-				starts[path]=m_FUSION_firstPaths[i].getProgression();
-			}
-			for(int i=0;i<(int)m_FUSION_lastPaths.size();i++){
-				int path=m_FUSION_lastPaths[i].getWave();
-				if(path==currentId)
-					continue;
-				ends[path]=m_FUSION_lastPaths[i].getProgression();
-			}
-
-			vector<int> hits;
-			for(map<int,int>::iterator i=starts.begin();i!=starts.end();i++){
-				int pathA=i->first;
-				int start=i->second;
-				for(map<int,int>::iterator j=ends.begin();j!=ends.end();j++){
-					int pathB=j->first;
-					int theEnd=j->second;
-					if(pathA==pathB and theEnd-start+1==overlapMinimumLength){
-						hits.push_back(pathA);
+		}else if(!m_checkedValidity){
+			done=true;
+			vector<Direction> directions1=m_FINISH_pathsForPosition[m_FINISH_pathsForPosition.size()-1];
+			vector<Direction> directions2=m_FINISH_pathsForPosition[m_FINISH_pathsForPosition.size()-overlapMinimumLength];
+			int hits=0;
+			for(int i=0;i<(int)directions1.size();i++){
+				for(int j=0;j<(int)directions2.size();j++){
+					if(directions1[i].getWave()==directions2[j].getWave()){
+						int progression=directions1[i].getProgression();
+						int otherProgression=directions2[j].getProgression();
+						#ifdef DEBUG
+						assert(progression>otherProgression);
+						#endif
+						if(progression-otherProgression+1==overlapMinimumLength){
+							// this is 
+							done=false;
+							hits++;
+							m_selectedPath=directions1[i].getWave();
+							m_selectedPosition=directions1[i].getProgression();
+						}
 					}
 				}
 			}
-			if(hits.size()==1 and m_FUSION_eliminated.count(currentId)==0){// the verification is done.
-				m_FINISH_hit=hits[0];
-				m_FINISH_hasHit=true;
-				m_FINISH_positionStart=ends[m_FINISH_hit]+1;
-				m_FUSION_pathLengthRequested=false;
-				m_FUSION_eliminated.insert(currentId);
-				int rankId=m_FINISH_hit%MAX_NUMBER_OF_MPI_PROCESSES;
-				uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(sizeof(uint64_t));
-				message[0]=m_FINISH_hit;
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rankId,TAG_ELIMINATE_PATH,getRank());
-				m_outbox.push_back(aMessage);
-				m_FINISH_newFusions.push_back(m_EXTENSION_contigs[m_SEEDING_i]);
-				//cout<<currentId<<" hits hard on "<<m_FINISH_hit<<endl;
-			}else{
-				// no hit there.
-				m_SEEDING_i++;
-				m_FUSION_first_done=false;
-				m_Machine_getPaths_INITIALIZED=false;
-				m_Machine_getPaths_DONE=false;
+			if(hits>1){// we don't support that right now.
+				done=true;
 			}
+			m_checkedValidity=true;
 		}else{
-			if(!m_FUSION_pathLengthRequested){
-				int rankId=m_FINISH_hit%MAX_NUMBER_OF_MPI_PROCESSES;
-				uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(sizeof(uint64_t));
-				message[0]=m_FINISH_hit;
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rankId,TAG_GET_PATH_LENGTH,getRank());
-				m_outbox.push_back(aMessage);
-				m_FUSION_pathLengthRequested=true;
-				m_FUSION_pathLengthReceived=false;
-				m_FINISH_vertex_requested=false;
-			}else if(m_FUSION_pathLengthReceived){
-				if(m_FINISH_positionStart<m_FUSION_receivedLength){
+			// check if it is there for at least overlapMinimumLength
+			int pathId=m_selectedPath;
+			int progression=m_selectedPosition;
+
+			// only one path, just go where it goes...
+			if(m_FINISH_pathLengths.count(pathId)==0){
+				if(!m_FUSION_pathLengthRequested){
+					int rankId=pathId%MAX_NUMBER_OF_MPI_PROCESSES;
+					uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(sizeof(uint64_t));
+					message[0]=pathId;
+					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rankId,TAG_GET_PATH_LENGTH,getRank());
+					m_outbox.push_back(aMessage);
+					m_FUSION_pathLengthRequested=true;
+					m_FUSION_pathLengthReceived=false;
+				}else if(m_FUSION_pathLengthReceived){
+					m_FINISH_pathLengths[pathId]=m_FUSION_receivedLength;
+				}
+			}else{
+				int nextPosition=progression+1;
+				if(nextPosition<m_FINISH_pathLengths[pathId]){
+					// get the vertex
+					// get its paths,
+					// and continue...
 					if(!m_FINISH_vertex_requested){
-						int rankId=m_FINISH_hit%MAX_NUMBER_OF_MPI_PROCESSES;
+						int rankId=pathId%MAX_NUMBER_OF_MPI_PROCESSES;
 						uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(sizeof(uint64_t)*2);
-						message[0]=m_FINISH_hit;
-						message[1]=m_FINISH_positionStart;
+						message[0]=pathId;
+						message[1]=nextPosition;
 						Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,rankId,TAG_GET_PATH_VERTEX,getRank());
 						m_outbox.push_back(aMessage);
 						m_FINISH_vertex_requested=true;
 						m_FINISH_vertex_received=false;
 					}else if(m_FINISH_vertex_received){
-						m_FINISH_positionStart++;
-						m_FINISH_vertex_requested=false;
-						m_FINISH_newFusions[m_FINISH_newFusions.size()-1].push_back(m_FINISH_received_vertex);
+						if(!m_Machine_getPaths_DONE){
+							getPaths(m_FINISH_received_vertex);
+						}else{
+							m_FINISH_pathsForPosition.push_back(m_Machine_getPaths_result);
+							m_FINISH_newFusions[m_FINISH_newFusions.size()-1].push_back(m_FINISH_received_vertex);
+							m_FINISH_vertex_requested=false;
+							m_Machine_getPaths_INITIALIZED=false;
+							m_Machine_getPaths_DONE=false;
+							m_selectedPosition++;
+						}
 					}
 				}else{
-					//cout<<"Rank "<<getRank()<<" New finish currentId="<<currentId<<" ("<<m_EXTENSION_contigs[m_SEEDING_i].size()<<") otherId="<<m_FINISH_hit<<" ("<<m_FUSION_receivedLength<<") m_fusionLength="<<m_FINISH_newFusions[m_FINISH_newFusions.size()-1].size()<<" Cumulative fusions: "<<m_FINISH_newFusions.size()<<endl;
-					m_SEEDING_i++;
-					m_FUSION_first_done=false;
-					m_Machine_getPaths_INITIALIZED=false;
-					m_Machine_getPaths_DONE=false;
+					done=true;
 				}
 			}
+		}
+		if(done){
+			// there is nothing we can do.
+			m_SEEDING_i++;
+			m_FINISH_vertex_requested=false;
+			m_EXTENSION_currentPosition=0;
+			m_FUSION_pathLengthRequested=false;
+			m_Machine_getPaths_INITIALIZED=false;
+			m_Machine_getPaths_DONE=false;
+			m_checkedValidity=false;
 		}
 	}else if(m_mode==MODE_DISTRIBUTE_FUSIONS){
 		if(m_SEEDING_i==(int)m_EXTENSION_contigs.size()){
@@ -2330,7 +2356,7 @@ void Machine::processData(){
 		//  * a fusion cycle
 
 		if(!m_cycleStarted){
-			#ifdef DEBUG
+			#ifdef SHOW_PROGRESS
 			cout<<"1 TAG_CLEAR_DIRECTIONS"<<endl;
 			#endif
 			m_nextReductionOccured=false;
@@ -2343,7 +2369,7 @@ void Machine::processData(){
 	
 			m_CLEAR_n=0;
 		}else if(m_CLEAR_n==getSize() and !m_isFinalFusion){
-			#ifdef DEBUG
+			#ifdef SHOW_PROGRESS
 			cout<<"2 TAG_DISTRIBUTE_FUSIONS"<<endl;
 			#endif
 			m_CLEAR_n=-1;
@@ -2354,7 +2380,7 @@ void Machine::processData(){
 			}
 			m_DISTRIBUTE_n=0;
 		}else if(m_DISTRIBUTE_n==getSize() and !m_isFinalFusion){
-			#ifdef DEBUG
+			#ifdef SHOW_PROGRESS
 			cout<<"3 TAG_FINISH_FUSIONS"<<endl;
 			#endif
 			m_DISTRIBUTE_n=-1;
@@ -2365,7 +2391,7 @@ void Machine::processData(){
 			}
 			m_FINISH_n=0;
 		}else if(m_FINISH_n==getSize() and m_isFinalFusion){
-			#ifdef DEBUG
+			#ifdef SHOW_PROGRESS
 			cout<<"4 TAG_CLEAR_DIRECTIONS"<<endl;
 			#endif
 			for(int i=0;i<getSize();i++){
@@ -2376,7 +2402,7 @@ void Machine::processData(){
 			m_CLEAR_n=0;
 		}else if(m_CLEAR_n==getSize() and m_isFinalFusion){
 			m_CLEAR_n=-1;
-			#ifdef DEBUG
+			#ifdef SHOW_PROGRESS
 			cout<<"5 TAG_DISTRIBUTE_FUSIONS"<<endl;
 			#endif
 
@@ -2387,7 +2413,7 @@ void Machine::processData(){
 			m_DISTRIBUTE_n=0;
 
 		}else if(m_DISTRIBUTE_n==getSize() and m_isFinalFusion){
-			#ifdef DEBUG
+			#ifdef SHOW_PROGRESS
 			cout<<"6 TAG_START_FUSION"<<endl;
 			#endif
 			m_FUSION_numberOfRanksDone=0;
@@ -2401,7 +2427,7 @@ void Machine::processData(){
 		}else if(m_FUSION_numberOfRanksDone==getSize() and m_isFinalFusion){
 			m_reductionOccured=m_nextReductionOccured;
 			m_FUSION_numberOfRanksDone=-1;
-			if(!m_reductionOccured or m_cycleNumber ==5 or true){ // cycling is in development!
+			if(!m_reductionOccured or m_cycleNumber ==5){ // cycling is in development!
 				cout<<"\r"<<"Collecting fusions"<<endl;
 				m_master_mode=MODE_ASK_EXTENSIONS;
 				m_EXTENSION_currentRankIsSet=false;
@@ -2410,29 +2436,6 @@ void Machine::processData(){
 				// we continue now!
 				m_cycleStarted=false;
 				m_cycleNumber++;
-			}
-		}
-	}
-	if(m_mode==MODE_COPY_DIRECTIONS){
-		if(m_SEEDING_i==(int)m_SEEDING_nodes.size()){
-			m_mode=MODE_DO_NOTHING;
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_COPY_DIRECTIONS_DONE,getRank());
-			m_outbox.push_back(aMessage);
-		}else{
-			SplayNode<uint64_t,Vertex>*node=m_subgraph.find(m_SEEDING_nodes[m_SEEDING_i]);
-			m_SEEDING_i++;
-			vector<Direction>a=node->getValue()->getDirections();
-			uint64_t vertex=node->getKey();
-			uint64_t complement=complementVertex(vertex,m_wordSize);
-			
-			int destination=vertexRank(complement);
-			for(int i=0;i<(int)a.size();i++){
-				uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(3*sizeof(uint64_t));
-				message[0]=complement;
-				message[1]=a[i].getWave();
-				message[2]=a[i].getProgression();
-				Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,destination,TAG_SAVE_WAVE_PROGRESSION_REVERSE,getRank());
-				m_outbox.push_back(aMessage);
 			}
 		}
 	}
