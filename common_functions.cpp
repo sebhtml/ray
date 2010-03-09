@@ -84,7 +84,7 @@ uint64_t wordId(const char*a){
 string idToWord(uint64_t i,int wordSize){
 	char*a=new char[wordSize+1];
 	for(int p=0;p<wordSize;p++){
-		uint64_t j=(i<<(62-2*p))>>62;
+		uint64_t j=(i<<(62-2*p))>>62; // clear the bits.
 		switch(j){
 			case 0:
 				a[p]='A';
@@ -111,7 +111,7 @@ string idToWord(uint64_t i,int wordSize){
 //  63 62 ... 1 0
 //              
 char getFirstSymbol(uint64_t i,int k){
-	i=(i<<(62))>>62;
+	i=(i<<(62))>>62; // clear bits
         if((int)i==0)
                 return 'A';
         if((int)i==1)
@@ -124,7 +124,7 @@ char getFirstSymbol(uint64_t i,int k){
 }
 
 char getLastSymbol(uint64_t i,int m_wordSize){
-	i=(i<<(64-2*m_wordSize))>>62;
+	i=(i<<(64-2*m_wordSize))>>62; // clecar bits
         if((int)i==0)
                 return 'A';
         if((int)i==1)
@@ -164,7 +164,7 @@ void coutBIN(uint64_t a){
 
 
 uint64_t getKPrefix(uint64_t a,int k){
-	return (a<<(64-2*(k+1)+2))>>(64-2*(k+1)+2);
+	return (a<<(64-2*(k+1)+2))>>(64-2*(k+1)+2); // move things around...
 }
 
 uint64_t getKSuffix(uint64_t a,int k){
@@ -220,16 +220,20 @@ string addLineBreaks(string dna){
 }
 
 
-
-
-
-// http://www.concentric.net/~Ttwang/tech/inthash.htm 64 bit Mix Functions
+/*
+ * Basically, we take a 64-bit unsigned integer (the sign does not matter..)
+ * and we compute the image corresponding to a uniform distribution.
+ *
+ * This uses some magic, of course!
+ */
+// see http://www.concentric.net/~Ttwang/tech/inthash.htm 64 bit Mix Functions
 uint64_t hash_uint64_t(uint64_t key){
-	key = (~key) + (key << 21); // key = (key << 21) - key - 1;
+	// some magic here and there.
+	key = (~key) + (key << 21); 
 	key = key ^ (key >> 24);
-	key = (key + (key << 3)) + (key << 8); // key * 265
+	key = (key + (key << 3)) + (key << 8); 
 	key = key ^ (key >> 14);
-	key = (key + (key << 2)) + (key << 4); // key * 21
+	key = (key + (key << 2)) + (key << 4); 
 	key = key ^ (key >> 28);
 	key = key + (key << 31);
 	return key;

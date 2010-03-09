@@ -30,6 +30,10 @@
 #include<string>
 using namespace std;
 
+/*
+ * Loader loads data files. Data can be formated as SFF, FASTA, and FASTQ.
+ * Ray makes no use of quality values, so Their encoding is irrelevant.
+ */
 class Loader{
 	int m_total;
 	int m_bases;

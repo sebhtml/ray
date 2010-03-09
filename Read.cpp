@@ -36,7 +36,7 @@ Read::Read(){
 
 void Read::copy(const char*id,const char*sequence,MyAllocator*seqMyAllocator){
 	m_sequence=(char*)seqMyAllocator->allocate(strlen(sequence)+1);
-	strcpy(m_sequence,sequence);
+	strcpy(m_sequence,sequence); // memcpy + \0
 	m_pairedRead=NULL;
 }
 
@@ -72,9 +72,11 @@ int Read::length(){
 uint64_t Read::Vertex(int pos,int w,char strand){
 	if(pos>length()-w){
 		cout<<"Fatal: offset is too large."<<endl;
+		exit(0);
 	}
 	if(pos<0){
 		cout<<"Fatal: negative offset. "<<pos<<endl;
+		exit(0);
 	}
 	uint64_t key=0;
 	if(strand=='F'){

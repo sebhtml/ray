@@ -35,8 +35,12 @@ void MyAllocator::constructor(int chunkSize){
 	m_CHUNK_SIZE=chunkSize; 
 	m_currentChunk=(void*)malloc(m_CHUNK_SIZE);
 	if(m_currentChunk==NULL){
-		cout<<"NULL"<<endl;
+		cout<<"Out of memory!"<<endl;// ouch, this is critical...
+		exit(0);
 	}
+	#ifdef DEBUG
+	assert(m_currentChunk!=NULL);
+	#endif
 	m_chunks.push_back(m_currentChunk);
 	m_currentPosition=0;
 }
@@ -46,8 +50,11 @@ void*MyAllocator::allocate(int s){
 	assert(m_currentChunk!=NULL);
 	#endif
 	s+=s%8;
+	#ifdef DEBUG
+	assert(s<=m_CHUNK_SIZE);
+	#endif
 	if(s>m_CHUNK_SIZE){
-		return NULL;
+		return NULL;// you asked too much.., this is critical..
 	}
 	
 	int left=m_CHUNK_SIZE-m_currentPosition;

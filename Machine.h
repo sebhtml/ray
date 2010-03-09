@@ -353,6 +353,8 @@ class Machine{
 	void showProgress();
 	void getPaths(uint64_t vertex);
 	void extendSeeds();
+	void finishFusions();
+	void makeFusions();
 public:
 	/*
  * this is the only public bit

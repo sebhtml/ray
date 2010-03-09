@@ -22,7 +22,6 @@
 #ifndef _Parameters
 
 #define _Parameters
-#include<PairedFiles.h>
 #include<map>
 #include<set>
 #include<string>
@@ -40,7 +39,6 @@ class Parameters{
 	bool m_initiated;
 	int m_numberOfSequences;
 	vector<string> m_singleEndReadsFile;
-	vector<PairedFiles> m_pairedFiles;
 	string m_directory;
 	string m_outputFile;
 	int m_wordSize;

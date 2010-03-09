@@ -26,6 +26,14 @@
 #include<vector>
 using namespace std;
 
+/*
+ * all memory allocations that are pervasive use this allocator.
+ * MyAllocator is a simple CHUNK_ALLOCATOR.
+ * it allocates m_CHUNK_SIZE bytes internally.
+ * when one requests memory, it uses this *chunk*.
+ * it the chunk gets depleted, MyAllocator renews a new one and store the depleted one in its internals.
+ *
+ */
 class MyAllocator{
 	vector<void*>m_chunks;
 	void*m_currentChunk;

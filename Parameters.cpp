@@ -20,7 +20,6 @@
 */
 
 
-#include<PairedFiles.h>
 #include<Parameters.h>
 #include<string>
 #include<iostream>
@@ -69,8 +68,6 @@ void Parameters::load(string file){
 			f>>meanFragmentLength>>standardDeviation;
 			m_averageFragmentLengths[m_singleEndReadsFile.size()-1]=meanFragmentLength;
 			m_standardDeviations[m_singleEndReadsFile.size()-1]=standardDeviation;
-			PairedFiles pair(left,right,meanFragmentLength,standardDeviation);
-			m_pairedFiles.push_back(pair);
 		}else if(token=="SetOutputDirectory"){
 			f>>token;
 			m_directory=token;

@@ -25,7 +25,11 @@
 #include<Machine.h>
 using namespace std;
 
+/*
+ *  the main function calls Machine.
+ */
 int main(int argc,char**argv){
 	Machine machine(argc,argv);
 	return 0;
 }
+

@@ -26,7 +26,7 @@
 void ReadAnnotation::constructor(int a,int b,char c){
 	m_rank=a;
 	m_readIndex=b;
-	m_next=NULL;
+	m_next=NULL; // xor on the next.
 	m_strand=c;
 }
 
@@ -51,6 +51,6 @@ ReadAnnotation*ReadAnnotation::getNext()const{
 }
 
 int ReadAnnotation::getUniqueId()const{
-	return getReadIndex()*MAX_NUMBER_OF_MPI_PROCESSES+getRank();
+	return getReadIndex()*MAX_NUMBER_OF_MPI_PROCESSES+getRank(); // this builds a unique identifiers based on MAX_NUMBER_OF_MPI_PROCESSES
 }
 

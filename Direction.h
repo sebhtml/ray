@@ -22,6 +22,13 @@
 
 #ifndef Direction
 #define _Direction
+
+/*
+ * a direction is a wave and a progression.
+ *
+ * A wave is the flow given by the Parallel_Ray_Engine in the graph.
+ * directions of the flow are stored with Directions. (as linked lists).
+ */
 class Direction{
 	int m_wave; // the path Identifier, as a wave for itself.
 	int m_progression; // the position in the path.

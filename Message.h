@@ -27,6 +27,11 @@
 #define _Message
 
 #include<mpi.h>
+
+/*
+ * in Ray, every message is a Message.
+ * the inbox and the outbox are arrays of Message's
+ */
 class Message{
 	void*m_buffer;
 	int m_count;

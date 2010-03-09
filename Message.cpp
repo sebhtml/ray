@@ -26,6 +26,7 @@
 
 
 Message::Message(void*b,int c,MPI_Datatype d,int dest,int tag,int source){
+	// buffer must be allocated or else it will CORE DUMP.
 	m_buffer=b;
 	m_count=c;
 	m_datatype=d;
