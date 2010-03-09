@@ -30,7 +30,7 @@
 #include<vector>
 using namespace std;
 
-
+// the maximum of processes is utilized to construct unique hyperfusions IDs
 #define MAX_NUMBER_OF_MPI_PROCESSES 10000
 
 
@@ -48,20 +48,65 @@ using namespace std;
 #endif
 
 
+/*
+ *  complement the sequence of a biological thing
+ */
 string reverseComplement(string a);
+
+/*
+ * convert a char* to uint64_t
+ * A=00, T=01, C=10, G=11
+ */
 uint64_t wordId(const char*a);
+
+/*
+ * convert a 64-bit integer to a string
+ */
 string idToWord(uint64_t i,int wordSize);
+
+/*
+ * verify that x has only A,T,C, and G
+ */
 bool isValidDNA(const char*x);
+
+/*
+ * get the first letter of a uint64_t
+ */
 char getFirstSymbol(uint64_t i,int k);
+
+/*
+ * get the last letter of a uint64_t
+ */
 char getLastSymbol(uint64_t i,int w);
+
+/*
+ * output in stdout the binary view of a 64-bit integer.
+ */
 void coutBIN(uint64_t a);
+
+/*
+ * get the prefix
+ */
 uint64_t getKPrefix(uint64_t a,int k);
+
+/*
+ * get the suffix
+ */
 uint64_t getKSuffix(uint64_t a,int k);
+
+/*
+ * complement a vertex, and return another one
+ */
 uint64_t complementVertex(uint64_t a,int m_wordSize);
 
-
+/*
+ * add line breaks to a string
+ */
 string addLineBreaks(string sequence);
 
+/*
+ * hash a uint64_t in a uniform way.
+ */
 uint64_t hash_uint64_t(uint64_t a);
 
 

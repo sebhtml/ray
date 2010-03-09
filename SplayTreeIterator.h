@@ -27,10 +27,10 @@
 #include<SplayTree.h>
 #include<stdlib.h>
 
-// basé sur
+// based on
 // http://www.liafa.jussieu.fr/~carton/Enseignement/Algorithmique/LicenceMathInfo/Programmation/Tree/parcours.html
 // http://www.liafa.jussieu.fr/~carton/Enseignement/Algorithmique/Programmation/Tree/Sources/Tree.java
-// iterator Infixe
+// iterator infixe (from the lowest to the greatest.)
 
 template<class AVL_KEY,class AVL_VALUE>
 class SplayTreeIterator{

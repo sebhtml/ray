@@ -30,6 +30,10 @@
 #include<PairedRead.h>
 using namespace std;
 
+/*
+ * a read is represented as a char*
+ * and a (possible) link to paired information.
+ */
 class Read{
 	char*m_sequence;
 	PairedRead*m_pairedRead;

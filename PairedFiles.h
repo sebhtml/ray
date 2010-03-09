@@ -25,7 +25,9 @@
 #include<string>
 using namespace std;
 
-
+/*
+ * 
+ */
 class PairedFiles{
 	string m_left;
 	string m_right;

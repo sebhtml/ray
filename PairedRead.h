@@ -22,6 +22,14 @@
 #ifndef _PairedRead
 #define _PairedRead
 
+/*
+ *    LeftRead							RightRead
+ * ------------>
+ *                                                       <-----------
+ *
+ *                   AverageFragmentLength  +/- StandardDeviation
+ * <----------------------------------------------------------------->
+ */
 class PairedRead{
 	int m_rank;
 	int m_sequence_id;

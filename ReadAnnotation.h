@@ -23,7 +23,11 @@
 #ifndef _ReadAnnotation
 #define _ReadAnnotation
 
-
+/*
+ * implemented as linked lists, read annotations give 
+ * information about read index in the graph.
+ * The read paths are restored using read annotations.
+ */
 class ReadAnnotation{
 	int m_rank;
 	char m_strand;

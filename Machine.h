@@ -354,6 +354,9 @@ class Machine{
 	void getPaths(uint64_t vertex);
 	void extendSeeds();
 public:
+	/*
+ * this is the only public bit
+ */
 	Machine(int argc,char**argv);
 };
 

@@ -34,11 +34,26 @@
 #include<vector>
 using namespace std;
 
+/*
+ * this is the type used to store coverage values
+ * default is 8 bits, unsigned.
+ */
 #define COVERAGE_TYPE unsigned char
 
+/*
+ * the vertex is important in the algorithm
+ * a DNA sequence is simply an ordered array of vertices. Two consecutive 
+ * vertices always respect the de Bruijn property.
+ */
 class Vertex{
+	/*
+ *	The coverage of the vertex
+ */
 	COVERAGE_TYPE m_coverage;
-	// 
+
+	/*
+ *	the ingoing and outgoing edges.
+ */
 	// outgoing  ingoing
 	//
 	// G C T A G C T A
@@ -46,7 +61,15 @@ class Vertex{
 	// 7 6 5 4 3 2 1 0
 	char m_edges;
 
+	/*
+ * 	read annotations
+ * 	which reads start here?
+ */
 	ReadAnnotation*m_readsStartingHere;
+
+/*
+ *	which hyperfusions go on this vertex at least once?
+ */
 	Direction*m_direction;
 public:
 	void constructor();

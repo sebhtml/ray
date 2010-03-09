@@ -32,9 +32,15 @@ class MyAllocator{
 	int m_currentPosition;
 	int m_CHUNK_SIZE;
 public:
+	/*
+ * allocator.
+ */
 	MyAllocator();
 	void print();
 	void clear();
+	/*
+ * assign a size to the allocator.
+ */
 	void constructor(int a);
 	void*allocate(int s);
 	~MyAllocator();

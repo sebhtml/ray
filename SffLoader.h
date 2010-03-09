@@ -30,6 +30,10 @@
 #include<MyAllocator.h>
 using namespace std;
 
+/*
+ * This class allows one to use SFF file directly.
+ * see http://454.com
+ */
 class SffLoader{
 	int m_bases;
 public:

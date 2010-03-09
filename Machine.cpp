@@ -133,6 +133,9 @@
 #define MODE_FINISH_FUSIONS 11
 #define MODE_DISTRIBUTE_FUSIONS 12
 
+// allocators size
+// for MPI communications, memory is allocated and freed with OUTBOX_ALLOCATOR_CHUNK_SIZE and INBOX_ALLOCATOR_CHUNK_SIZE
+// persistant memory are stored with PERSISTENT_ALLOCATOR_CHUNK_SIZE
 #define SIZE_10MB 10*1024*1024
 #define OUTBOX_ALLOCATOR_CHUNK_SIZE SIZE_10MB
 #define DISTRIBUTION_ALLOCATOR_CHUNK_SIZE SIZE_10MB
@@ -375,8 +378,10 @@ void Machine::checkRequests(){
 	m_pendingMpiRequest.clear();
 }
 
-
-
+/*
+ * send messages,
+ * if the message goes to self, do a memcpy!
+ */
 void Machine::sendMessages(){
 	for(int i=0;i<(int)m_outbox.size();i++){
 
@@ -414,7 +419,11 @@ void Machine::sendMessages(){
 	}
 }
 
-
+/*	
+ * using Iprobe, probe for new messages as they arrive
+ * if no more message are available, return.
+ * messages are kept in the inbox.
+ */
 
 void Machine::receiveMessages(){
 	int flag;
@@ -440,8 +449,6 @@ void Machine::receiveMessages(){
 		MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
 	}
 }
-
-
 
 int Machine::getRank(){
 	return m_rank;

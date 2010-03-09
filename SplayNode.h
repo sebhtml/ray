@@ -26,6 +26,9 @@
 #include<iostream>
 using namespace std;
 
+/*
+ * a splay node.
+ */
 template<class KEY,class VALUE>
 class SplayNode{
 public:

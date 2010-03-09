@@ -29,6 +29,13 @@
 #include<vector>
 using namespace std;
 
+/*
+ * This class is the implementation of an interpreter for the RayInputFile.
+ * It allows the following commands:
+ * 	LoadSingleEndReads <FileA>
+ * 	LoadPairedEndReads <FileLeft> <FileRight> <FragmentLength> <StandardDeviation>
+ *
+ */
 class Parameters{
 	bool m_initiated;
 	int m_numberOfSequences;

@@ -33,6 +33,11 @@ using namespace std;
 
 #define CHUNK_SIZE 10*1024*1024 // 10 MB
 
+/*
+ * the splay tree is a binary tree. If a key is asked often, the key will be near the root, otherwise, it will be deeper.
+ * this eases the processing because sequencing errors are kept far away from the root.
+ *
+ */
 // see http://www.eli.sdsu.edu/courses/fall95/cs660/notes/splay/Splay.html
 // see http://www.cs.nyu.edu/algvis/java/SplayTree.html
 // see ftp://ftp.cs.cmu.edu/user/sleator/splaying/SplayTree.java
