@@ -1475,9 +1475,6 @@ void Machine::processData(){
 					if(directions1[i].getWave()==directions2[j].getWave()){
 						int progression=directions1[i].getProgression();
 						int otherProgression=directions2[j].getProgression();
-						#ifdef DEBUG
-						assert(progression>otherProgression);
-						#endif
 						if(progression-otherProgression+1==overlapMinimumLength){
 							// this is 
 							done=false;
