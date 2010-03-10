@@ -749,6 +749,7 @@ void Machine::processMessage(Message*message){
 		cout<<"Rank "<<getRank()<<" MaximumSpeed (point-to-point)="<<m_calibration_MaxSpeed<<" messages/second"<<endl;
 	}else if(tag==TAG_FINISH_FUSIONS){
 		m_mode=MODE_FINISH_FUSIONS;
+		m_FINISH_fusionOccured=false;
 		m_SEEDING_i=0;
 		m_EXTENSION_currentPosition=0;
 		m_FUSION_first_done=false;
@@ -1225,7 +1226,7 @@ void Machine::processMessage(Message*message){
 void Machine::finishFusions(){
 	if(m_SEEDING_i==(int)m_EXTENSION_contigs.size()){
 		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
-		message[0]=m_FINISH_newFusions.size()>0;
+		message[0]=m_FINISH_fusionOccured;
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_FINISH_FUSIONS_FINISHED,getRank());
 		m_outbox.push_back(aMessage);
 		m_mode=MODE_DO_NOTHING;
@@ -1340,6 +1341,7 @@ void Machine::finishFusions(){
 						m_Machine_getPaths_INITIALIZED=false;
 						m_Machine_getPaths_DONE=false;
 						m_selectedPosition++;
+						m_FINISH_fusionOccured=true;
 					}
 				}
 			}else{

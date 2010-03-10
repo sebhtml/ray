@@ -295,6 +295,7 @@ class Machine{
 	vector<int> m_identifiers;
 	// FINISHING.
 	int m_cycleNumber;
+	bool m_FINISH_fusionOccured;
 	vector<vector<Direction> > m_FINISH_pathsForPosition;
 	map<int,int> m_FINISH_pathLengths;
 	bool m_checkedValidity;
