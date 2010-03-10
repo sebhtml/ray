@@ -2483,7 +2483,6 @@ void Machine::processData(){
 			}else{
 				// we continue now!
 				m_cycleStarted=false;
-				cout<<"Cycling."<<endl;
 				m_cycleNumber++;
 			}
 		}
