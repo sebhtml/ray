@@ -47,7 +47,7 @@ class Parameters{
 	set<int> m_rightFiles;
 	map<int,int> m_averageFragmentLengths;
 	map<int,int> m_standardDeviations;
-
+	bool m_colorSpaceMode;
 public:
 	Parameters();
 	void load(string file);
@@ -61,6 +61,7 @@ public:
 	int getStandardDeviation(int i);
 	bool isLeftFile(int i);
 	bool isRightFile(int i);
+	bool getColorSpaceMode();
 };
 
 #endif

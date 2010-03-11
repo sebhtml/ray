@@ -19,7 +19,7 @@
 
 */
 
-
+#include<common_functions.h>
 #include<cstring>
 #include<fstream>
 #include<string>
@@ -68,7 +68,6 @@ void invert64(uint64_t*c){
 // or 
 // http://blog.malde.org/index.php/2008/11/14/454-sequencing-and-parsing-the-sff-binary-format/
 void SffLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator){
-	(cout)<<"[SffLoader::load]"<<endl;
 	uint32_t magic_number;
 	uint32_t version;
 	uint64_t index_offset;
@@ -99,32 +98,26 @@ void SffLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,
 	fread_result=fread((char*)&index_length,1,sizeof(uint32_t),fp);
 	fread_result=fread((char*)&number_of_reads,1,sizeof(uint32_t),fp);
 	invert32(&index_length);
-	(cout)<<"Index length: "<<index_length<<endl;
 	invert32(&number_of_reads);
-	(cout)<<"Reads: "<<number_of_reads<<endl;
 	uint16_t header_length;
 	fread_result=fread((char*)&header_length,1,sizeof(uint16_t),fp);
 	invert16(&header_length);
-	(cout)<<"Header: "<<header_length<<endl;
 	uint16_t key_length;
 	
 	fread_result=fread((char*)&key_length,1,sizeof(uint16_t),fp);
 	invert16(&key_length);
-	(cout)<<"Key Length: "<<(int)key_length<<endl;
 	uint16_t number_of_flows_per_read;
 	fread_result=fread((char*)&number_of_flows_per_read,1,sizeof(uint16_t),fp);
 	invert16(&number_of_flows_per_read);
 	uint8_t flowgram_format_code;
 	fread_result=fread((char*)&flowgram_format_code,1,sizeof(uint8_t),fp);
-	(cout)<<"number_of_flows_per_read: "<<number_of_flows_per_read<<endl;
-	char*flow_chars=new char[number_of_flows_per_read+1];
+	char*flow_chars=(char*)__Malloc(number_of_flows_per_read+1);
 	fread_result=fread(flow_chars,1,number_of_flows_per_read,fp);
 	flow_chars[number_of_flows_per_read]='\0';
-	char*key_sequence=new char[key_length+1];
+	char*key_sequence=(char*)__Malloc(key_length+1);
 	fread_result=fread(key_sequence,1,key_length,fp);
 	key_sequence[key_length]='\0';
 	
-	(cout)<<"key: "<<key_sequence<<endl;
 	
 	// padding
 	while(ftell(fp)%8!=0)
@@ -152,7 +145,7 @@ void SffLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,
 		uint16_t clip_adaptor_right;
 		fread_result=fread((char*)&clip_adaptor_right,1,sizeof(uint16_t),fp);
 		invert16(&clip_adaptor_right);
-		char*Name=new char[name_length+1];
+		char*Name=(char*)__Malloc(name_length+1);
 		fread_result=fread(Name,1,name_length,fp);
 		Name[name_length]='\0';
 
@@ -166,7 +159,7 @@ void SffLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,
 		skip=number_of_bases*sizeof(uint8_t);
 		for(int i=0;i<skip;i++)
 			fgetc(fp);
-		char*Bases=new char[number_of_bases+1];
+		char*Bases=(char*)__Malloc(number_of_bases+1);
 		fread_result=fread(Bases,1,number_of_bases,fp);
 		Bases[number_of_bases]='\0';
 		skip=number_of_bases*sizeof(uint8_t);
@@ -191,8 +184,8 @@ void SffLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,
 		read->copy(Name,sequence.substr(first-1,last-first+1).c_str(),seqMyAllocator);
 		reads->push_back(read);
 		m_bases+=strlen(read->getSeq());
-		delete[]Name;
-		delete[]Bases;
+		__Free(Name);
+		__Free(Bases);
 	}
 
 	delete[] key_sequence;

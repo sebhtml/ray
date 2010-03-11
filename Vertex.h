@@ -60,6 +60,8 @@ class Vertex{
 	//
 	// 7 6 5 4 3 2 1 0
 	char m_edges;
+	char m_outgoingLast;
+	char m_ingoingFirst;
 
 	/*
  * 	read annotations

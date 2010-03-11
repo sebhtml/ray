@@ -38,6 +38,7 @@ Parameters::Parameters(){
 	m_minimumContigLength=100;
 	m_wordSize=25;
 	m_outputFile="Contigs.fasta";
+	m_colorSpaceMode=false;
 }
 
 int Parameters::getWordSize(){
@@ -52,8 +53,14 @@ void Parameters::load(string file){
 		if(token=="LoadSingleEndReads"){
 			f>>token;
 			m_singleEndReadsFile.push_back(token);
+			if(token.find(".csfasta")!=string::npos){
+				m_colorSpaceMode=true;
+			}
 		}else if(token=="LoadPairedEndReads"){
 			f>>token;
+			if(token.find(".csfasta")!=string::npos){
+				m_colorSpaceMode=true;
+			}
 			string left=token;
 			// add left file
 			m_leftFiles.insert(m_singleEndReadsFile.size());
@@ -118,4 +125,8 @@ int Parameters::getFragmentLength(int i){
 
 int Parameters::getStandardDeviation(int i){
 	return m_standardDeviations[i];
+}
+
+bool Parameters::getColorSpaceMode(){
+	return m_colorSpaceMode;
 }

@@ -19,6 +19,7 @@
 
 */
 
+#include<assert.h>
 #include<vector>
 #include<fstream>
 #include<common_functions.h>
@@ -29,8 +30,14 @@
 #include<sstream>
 using namespace std;
 
+#define _ENCODING_A 0
+#define _ENCODING_T 1
+#define _ENCODING_C 2
+#define _ENCODING_G 3
+#define _SEGMENT_LENGTH 7
+
 string reverseComplement(string a){
-	char*rev=new char[a.length()+1];
+	char*rev=(char*)__Malloc(a.length()+1);
 	int i=0;
 	for(int p=a.length()-1;p>=0;p--){
 		char c=a[p];
@@ -55,25 +62,61 @@ string reverseComplement(string a){
 	}
 	rev[a.length()]='\0';
 	string j(rev);
-	delete[]rev;
+	__Free(rev);
 	return j;
 }
 
 // convert k-mer to uint64_t
-uint64_t wordId(const char*a){
+uint64_t wordId(const char*a,bool colorSpace){
+	if(colorSpace)
+		return wordId_DistantSegments(a);
 	uint64_t i=0;
 	for(int j=0;j<(int)strlen(a);j++){
-		uint64_t k=0; // default is A
+		uint64_t k=_ENCODING_A; // default is A
 		char h=a[j];
 		switch(h){
 			case 'T':
-				k=1;
+				k=_ENCODING_T;
 				break;
 			case 'C':
-				k=2;
+				k=_ENCODING_C;
 				break;
 			case 'G':
-				k=3;
+				k=_ENCODING_G;
+				break;
+		}
+		i=(i|(k<<(j<<1)));
+	}
+	return i;
+}
+
+uint64_t wordId_DistantSegments(const char*a){
+	uint64_t i=0;
+	int numberOfSymbols=strlen(a);
+	int segmentLength=_SEGMENT_LENGTH;
+	
+	/*
+ *                    <------------ 5 ---------->
+ *                    0   1       2       3     4
+ *                    segmentLength=2
+ *
+ */
+	for(int j=0;j<(int)numberOfSymbols;j++){
+		uint64_t k=_ENCODING_A; // default is A
+		char h='A';
+		if(j<segmentLength // left part 
+		or j>=numberOfSymbols-segmentLength){ // right part.
+			h=a[j];
+		}
+		switch(h){
+			case 'T':
+				k=_ENCODING_T;
+				break;
+			case 'C':
+				k=_ENCODING_C;
+				break;
+			case 'G':
+				k=_ENCODING_G;
 				break;
 		}
 		i=(i|(k<<(j<<1)));
@@ -86,16 +129,16 @@ string idToWord(uint64_t i,int wordSize){
 	for(int p=0;p<wordSize;p++){
 		uint64_t j=(i<<(62-2*p))>>62; // clear the bits.
 		switch(j){
-			case 0:
+			case _ENCODING_A:
 				a[p]='A';
 				break;
-			case 1:
+			case _ENCODING_T:
 				a[p]='T';
 				break;
-			case 2:
+			case _ENCODING_C:
 				a[p]='C';
 				break;
-			case 3:
+			case _ENCODING_G:
 				a[p]='G';
 				break;
 			default:
@@ -112,26 +155,26 @@ string idToWord(uint64_t i,int wordSize){
 //              
 char getFirstSymbol(uint64_t i,int k){
 	i=(i<<(62))>>62; // clear bits
-        if((int)i==0)
+        if((int)i==_ENCODING_A)
                 return 'A';
-        if((int)i==1)
+        if((int)i==_ENCODING_T)
                 return 'T';
-        if((int)i==2)
+        if((int)i==_ENCODING_C)
                 return 'C';
-        if((int)i==3)
+        if((int)i==_ENCODING_G)
                 return 'G';
 	return '0';
 }
 
 char getLastSymbol(uint64_t i,int m_wordSize){
 	i=(i<<(64-2*m_wordSize))>>62; // clecar bits
-        if((int)i==0)
+        if((int)i==_ENCODING_A)
                 return 'A';
-        if((int)i==1)
+        if((int)i==_ENCODING_T)
                 return 'T';
-        if((int)i==2)
+        if((int)i==_ENCODING_C)
                 return 'C';
-        if((int)i==3)
+        if((int)i==_ENCODING_G)
                 return 'G';
 	cout<<"Fatal exception, getLastSymbol."<<endl;
 	exit(0);
@@ -171,29 +214,45 @@ uint64_t getKSuffix(uint64_t a,int k){
 	return a>>2;
 }
 
+uint64_t complementVertex(uint64_t a,int b,bool colorSpace){
+	if(colorSpace)
+		return complementVertex_colorSpace(a,b);
+	return complementVertex_normal(a,b);
+}
 
+uint64_t complementVertex_colorSpace(uint64_t a,int wordSize){
+	uint64_t output=0;
+	int position2=0;
+	for(int positionInMer=wordSize-1;positionInMer>=0;positionInMer--){
+		uint64_t complementVertex=(a<<(62-2*positionInMer))>>62;
+		output=(output|(complementVertex<<(position2<<1)));
+		position2++;
+	}
 
-uint64_t complementVertex(uint64_t a,int m_wordSize){
-	//  A:0, T:1, C:2, G:3
+	return output;
+}
+
+uint64_t complementVertex_normal(uint64_t a,int m_wordSize){
 	uint64_t output=0;
 	int position2=0;
 	for(int positionInMer=m_wordSize-1;positionInMer>=0;positionInMer--){
 		uint64_t j=(a<<(62-2*positionInMer))>>62;
 		uint64_t complementVertex=0;
 		switch(j){
-			case 0:
-				complementVertex=1;
+			case _ENCODING_A:
+				complementVertex=_ENCODING_T;
 				break;
-			case 1:
-				complementVertex=0;
+			case _ENCODING_T:
+				complementVertex=_ENCODING_A;
 				break;
-			case 2:
-				complementVertex=3;
+			case _ENCODING_C:
+				complementVertex=_ENCODING_G;
 				break;
-			case 3:
-				complementVertex=2;
+			case _ENCODING_G:
+				complementVertex=_ENCODING_C;
 				break;
 			default:
+				assert(false);
 				break;
 		}
 		output=(output|(complementVertex<<(position2<<1)));
@@ -237,4 +296,78 @@ uint64_t hash_uint64_t(uint64_t key){
 	key = key ^ (key >> 28);
 	key = key + (key << 31);
 	return key;
+}
+
+
+void*__Malloc(int c){
+	void*a=NULL;
+	a=malloc(c);
+	assert(a!=NULL);
+	return a;
+}
+
+void __Free(void*a){
+}
+
+
+
+uint8_t getFirstSegmentLastCode(uint64_t v,int totalLength,int segmentLength){
+	// ATCAGTTGCAGTACTGCAATCTACG
+	// 0000000000000011100001100100000000000000000000000001011100100100
+	//                                                   6 5 4 3 2 1 0
+	v=(v<<(64-(segmentLength*2)));// clear garbage
+	v=(v>>62);// restore state
+	return v;
+}
+
+uint8_t getSecondSegmentLastCode(uint64_t v,int totalLength,int segmentLength){
+	// ATCAGTTGCAGTACTGCAATCTACG
+	// 0000000000000011100001100100000000000000000000000001011100100100
+	//               6 5 4 3 2 1 0
+	v=v<<(64-(totalLength*2));
+	v=(v>>62);// restore state
+	
+	return v;
+}
+
+uint8_t getFirstSegmentFirstCode(uint64_t v,int totalLength,int segmentLength){
+	// ATCAGTTGCAGTACTGCAATCTACG
+	// 0000000000000011100001100100000000000000000000000001011100100100
+	//                                                   6 5 4 3 2 1 0
+	v=v<<62;
+	v=v>>62;
+	return v;
+}
+
+uint8_t getSecondSegmentFirstCode(uint64_t v,int totalLength,int segmentLength){
+	// ATCAGTTGCAGTACTGCAATCTACG
+	// 0000000000000011100001100100000000000000000000000001011100100100
+	//               6 5 4 3 2 1 0
+	v=v<<(64-segmentLength*2-2);
+	v=v>>62;
+	return v;
+}
+
+uint8_t charToCode(char a){
+	if(a=='A')
+		return _ENCODING_A;
+	if(a=='T')
+		return _ENCODING_T;
+	if(a=='C')
+		return _ENCODING_C;
+	if(a=='G')
+		return _ENCODING_G;
+	return _ENCODING_A;
+}
+
+char codeToChar(uint8_t a){
+	if(a==_ENCODING_A)
+		return 'A';
+	if(a==_ENCODING_T)
+		return 'T';
+	if(a==_ENCODING_C)
+		return 'C';
+	if(a==_ENCODING_G)
+		return 'G';
+	return 'A';
 }

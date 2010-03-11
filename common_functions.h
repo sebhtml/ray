@@ -57,7 +57,7 @@ string reverseComplement(string a);
  * convert a char* to uint64_t
  * A=00, T=01, C=10, G=11
  */
-uint64_t wordId(const char*a);
+uint64_t wordId(const char*a,bool colorSpace);
 
 /*
  * convert a 64-bit integer to a string
@@ -97,7 +97,7 @@ uint64_t getKSuffix(uint64_t a,int k);
 /*
  * complement a vertex, and return another one
  */
-uint64_t complementVertex(uint64_t a,int m_wordSize);
+uint64_t complementVertex(uint64_t a,int m_wordSize,bool useColorSpace);
 
 /*
  * add line breaks to a string
@@ -109,6 +109,34 @@ string addLineBreaks(string sequence);
  */
 uint64_t hash_uint64_t(uint64_t a);
 
+void*__Malloc(int c);
+void __Free(void*a);
+
+
+/*
+ * compute the reverse complement in color space (it is just the same, but reverse)
+ */
+
+uint64_t complementVertex_colorSpace(uint64_t a,int b);
+
+/*
+ * complement vertex, normal.
+ */
+uint64_t complementVertex_normal(uint64_t a,int m_wordSize);
+
+/*
+ * use mini distant segments here.
+ */
+uint64_t wordId_DistantSegments(const char*a);
+
+uint8_t getFirstSegmentLastCode(uint64_t v,int segmentLength,int totalLength);
+uint8_t getFirstSegmentFirstCode(uint64_t v,int segmentLength,int totalLength);
+uint8_t getSecondSegmentFirstCode(uint64_t v,int segmentLength,int totalLength);
+uint8_t getSecondSegmentLastCode(uint64_t v,int segmentLength,int totalLength);
+
+uint8_t charToCode(char a);
+
+char codeToChar(uint8_t a);
+
 
 #endif
-

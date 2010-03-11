@@ -27,16 +27,12 @@
 using namespace std;
 
 CoverageDistribution::CoverageDistribution(map<int,uint64_t>distributionOfCoverage,string m_assemblyDirectory){
-	#ifdef WRITE_COVERAGE_DISTRIBUTION
-	string distributionFile="CoverageDistribution.txt";
-	ofstream   distributionStream(distributionFile.c_str());
-	#endif
 	m_coverage_mean=100;
 	m_minimumCoverage=1;
 
 	for(map<int,uint64_t>::iterator i=distributionOfCoverage.begin();i!=distributionOfCoverage.end();i++){
-		#ifdef WRITE_COVERAGE_DISTRIBUTION
-		distributionStream<<i->first<<" "<<i->second<<endl;
+		#ifdef SHOW_PROGRESS
+		cout<<"DISTRIBUTION "<<i->first<<" "<<i->second<<endl;
 		#endif
 		int coverage=i->first;
 		if(
@@ -49,9 +45,6 @@ CoverageDistribution::CoverageDistribution(map<int,uint64_t>distributionOfCovera
 			m_coverage_mean=coverage;
 		}
 	}
-	#ifdef WRITE_COVERAGE_DISTRIBUTION
-	distributionStream.close();
-	#endif
 
 	for(int coverage=1;coverage<=m_coverage_mean;coverage++){
 		if(

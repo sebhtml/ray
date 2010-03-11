@@ -19,8 +19,7 @@
 
 */
 
-
-
+#include<assert.h>
 #include<vector>
 #include<Vertex.h>
 #include<cstdlib>
@@ -79,11 +78,17 @@ void Vertex::addIngoingEdge(uint64_t a,int k){
 }
 
 void Vertex::addOutgoingEdge(uint64_t a,int k){
+	uint8_t s1Last=getFirstSegmentLastCode(a,k,_SEGMENT_LENGTH);
+	uint8_t s2Last=getSecondSegmentLastCode(a,k,_SEGMENT_LENGTH);
+
 	m_edges=m_edges|(1<<(4+((a<<(64-2*k))>>62)));
 }
 
 void Vertex::addRead(int rank,int i,char c,MyAllocator*allocator){
 	ReadAnnotation*e=(ReadAnnotation*)allocator->allocate(sizeof(ReadAnnotation));
+	#ifdef DEBUG
+	assert(e!=NULL);
+	#endif
 	e->constructor(rank,i,c);
 	if(m_readsStartingHere!=NULL){
 		e->setNext(m_readsStartingHere);

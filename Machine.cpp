@@ -114,6 +114,7 @@
 #define TAG_ELIMINATE_PATH 91
 #define TAG_GET_PATH_VERTEX 92
 #define TAG_GET_PATH_VERTEX_REPLY 93
+#define TAG_SET_COLOR_MODE 94
 
 #define MASTER_RANK 0
 
@@ -220,6 +221,7 @@ Machine::Machine(int argc,char**argv){
 	m_fusionStarted=false;
 	m_COPY_ranks=-1;
 	m_EXTENSION_numberOfRanksDone=0;
+	m_colorSpaceMode=false;
 	m_messageSentForEdgesDistribution=false;
 	m_numberOfRanksDoneSeeding=0;
 	m_calibrationAskedCalibration=false;
@@ -659,7 +661,7 @@ void Machine::attachReads(){
 		memcpy(vertexChar,sequence,m_wordSize);
 		vertexChar[m_wordSize]='\0';
 		if(isValidDNA(vertexChar)){
-			uint64_t vertex=wordId(vertexChar);
+			uint64_t vertex=wordId(vertexChar,m_colorSpaceMode);
 			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(4*sizeof(uint64_t));
 			message[0]=vertex;
 			message[1]=destination;
@@ -671,7 +673,7 @@ void Machine::attachReads(){
 		memcpy(vertexChar,sequence+strlen(sequence)-m_wordSize,m_wordSize);
 		vertexChar[m_wordSize]='\0';
 		if(isValidDNA(vertexChar)){
-			uint64_t vertex=complementVertex(wordId(vertexChar),m_wordSize);
+			uint64_t vertex=complementVertex(wordId(vertexChar,m_colorSpaceMode),m_wordSize,m_colorSpaceMode);
 			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(4*sizeof(uint64_t));
 			message[0]=vertex;
 			message[1]=destination;
@@ -768,6 +770,8 @@ void Machine::processMessage(Message*message){
 		m_EXTENSION_currentRankIsDone=true;
 	}else if(tag==TAG_SET_WORD_SIZE){
 		m_wordSize=incoming[0];
+	}else if(tag==TAG_SET_COLOR_MODE){
+		m_colorSpaceMode=incoming[0];
 	}else if(tag==TAG_START_SEEDING){
 		m_mode=MODE_START_SEEDING;
 		map<int,map<int,int> > edgesDistribution;
@@ -823,7 +827,7 @@ void Machine::processMessage(Message*message){
 				fusions.push_back(m_EXTENSION_contigs[i]);
 				vector<uint64_t> rc;
 				for(int j=m_EXTENSION_contigs[i].size()-1;j>=0;j--){
-					rc.push_back(complementVertex(m_EXTENSION_contigs[i][j],m_wordSize));
+					rc.push_back(complementVertex(m_EXTENSION_contigs[i][j],m_wordSize,m_colorSpaceMode));
 				}
 				fusions.push_back(rc);
 			}
@@ -992,7 +996,7 @@ void Machine::processMessage(Message*message){
 	}else if(tag==TAG_ASK_REVERSE_COMPLEMENT){
 		SplayNode<uint64_t,Vertex>*node=(SplayNode<uint64_t,Vertex>*)incoming[0];
 		uint64_t value=node->getKey();
-		uint64_t reverseComplement=complementVertex(value,m_wordSize);
+		uint64_t reverseComplement=complementVertex(value,m_wordSize,m_colorSpaceMode);
 		int rank=vertexRank(reverseComplement);
 		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(2*sizeof(uint64_t));
 		Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,rank,TAG_REQUEST_VERTEX_POINTER,getRank());
@@ -1025,6 +1029,12 @@ void Machine::processMessage(Message*message){
 		int rank=incoming[1];
 		int sequenceIdOnDestination=(int)incoming[2];
 		char strand=(char)incoming[3];
+		#ifdef DEBUG
+		if(m_subgraph.find(vertex)==NULL){
+			cout<<"Strand="<<strand<<endl;
+		}
+		assert(m_subgraph.find(vertex)!=NULL);
+		#endif
 		m_subgraph.find(vertex)->getValue()->addRead(rank,sequenceIdOnDestination,strand,&m_persistentAllocator);
 	}else if(tag==TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY){
 		m_SEEDING_receivedIngoingEdges.clear();
@@ -1093,6 +1103,17 @@ void Machine::processMessage(Message*message){
 			for(int i=0;i<(int)newEdges.size();i++){
 				if(newEdges[i]==suffix)
 					found=true;
+			}
+			if(!found){
+
+				cout<<" ARC"<<endl;
+				coutBIN(prefix);
+				coutBIN(suffix);
+				cout<<"EDges."<<endl;
+				for(int i=0;i<(int)newEdges.size();i++){
+					coutBIN(newEdges[i]);
+				}
+
 			}
 			assert(found);
 			#endif
@@ -1575,7 +1596,7 @@ void Machine::makeFusions(){
 		if(!m_FUSION_first_done){
 			if(!m_FUSION_paths_requested){
 				// get the paths going on the first vertex
-				uint64_t theVertex=complementVertex(m_EXTENSION_contigs[m_SEEDING_i][m_EXTENSION_contigs[m_SEEDING_i].size()-END_LENGTH],m_wordSize);
+				uint64_t theVertex=complementVertex(m_EXTENSION_contigs[m_SEEDING_i][m_EXTENSION_contigs[m_SEEDING_i].size()-END_LENGTH],m_wordSize,m_colorSpaceMode);
 				uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
 				message[0]=theVertex;
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex),TAG_ASK_VERTEX_PATHS_SIZE,getRank());
@@ -1587,7 +1608,7 @@ void Machine::makeFusions(){
 			}else if(m_FUSION_paths_received){
 				if(m_FUSION_path_id<m_FUSION_numberOfPaths){
 					if(!m_FUSION_path_requested){
-						uint64_t theVertex=complementVertex(m_EXTENSION_contigs[m_SEEDING_i][m_EXTENSION_contigs[m_SEEDING_i].size()-END_LENGTH],m_wordSize);
+						uint64_t theVertex=complementVertex(m_EXTENSION_contigs[m_SEEDING_i][m_EXTENSION_contigs[m_SEEDING_i].size()-END_LENGTH],m_wordSize,m_colorSpaceMode);
 						uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
 						message[0]=m_FUSION_path_id;
 						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex),TAG_ASK_VERTEX_PATH,getRank());
@@ -1614,7 +1635,7 @@ void Machine::makeFusions(){
 
 			if(!m_FUSION_paths_requested){
 				// get the paths going on the first vertex
-				uint64_t theVertex=complementVertex(m_EXTENSION_contigs[m_SEEDING_i][END_LENGTH],m_wordSize);
+				uint64_t theVertex=complementVertex(m_EXTENSION_contigs[m_SEEDING_i][END_LENGTH],m_wordSize,m_colorSpaceMode);
 				uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
 				message[0]=theVertex;
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex),TAG_ASK_VERTEX_PATHS_SIZE,getRank());
@@ -1626,7 +1647,7 @@ void Machine::makeFusions(){
 			}else if(m_FUSION_paths_received){
 				if(m_FUSION_path_id<m_FUSION_numberOfPaths){
 					if(!m_FUSION_path_requested){
-						uint64_t theVertex=complementVertex(m_EXTENSION_contigs[m_SEEDING_i][END_LENGTH],m_wordSize);
+						uint64_t theVertex=complementVertex(m_EXTENSION_contigs[m_SEEDING_i][END_LENGTH],m_wordSize,m_colorSpaceMode);
 						uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
 						message[0]=m_FUSION_path_id;
 						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex),TAG_ASK_VERTEX_PATH,getRank());
@@ -1801,6 +1822,12 @@ void Machine::processData(){
 			message[0]=m_parameters.getWordSize();
 			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,i,TAG_SET_WORD_SIZE,getRank());
 			m_outbox.push_back(aMessage);
+			
+			uint64_t*message2=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
+
+			message2[0]=m_parameters.getColorSpaceMode();
+			Message aMessage2(message2,1,MPI_UNSIGNED_LONG_LONG,i,TAG_SET_COLOR_MODE,getRank());
+			m_outbox.push_back(aMessage2);
 		}
 	}else if(m_welcomeStep==true && m_loadSequenceStep==false&&isMaster()){
 		loadSequences();
@@ -1897,11 +1924,11 @@ void Machine::processData(){
 				memcpy(memory,readSequence+p,m_wordSize);
 				memory[m_wordSize]='\0';
 				if(isValidDNA(memory)){
-					uint64_t a=wordId(memory);
+					uint64_t a=wordId(memory,m_colorSpaceMode);
 					if(m_reverseComplementVertex==false){
 						messagesStock[vertexRank(a)].push_back(a);
 					}else{
-						uint64_t b=complementVertex(a,m_wordSize);
+						uint64_t b=complementVertex(a,m_wordSize,m_colorSpaceMode);
 						messagesStock[vertexRank(b)].push_back(b);
 					}
 				}
@@ -2060,17 +2087,22 @@ void Machine::processData(){
 				memcpy(memory,readSequence+p,m_wordSize+1);
 				memory[m_wordSize+1]='\0';
 				if(isValidDNA(memory)){
-					uint64_t a=wordId(memory);
+					char prefix[100];
+					char suffix[100];
+					strcpy(prefix,memory);
+					prefix[m_wordSize]='\0';
+					strcpy(suffix,memory+1);
+					uint64_t a_1=wordId(prefix,m_colorSpaceMode);
+					uint64_t a_2=wordId(suffix,m_colorSpaceMode);
 					if(m_reverseComplementEdge){
-						uint64_t b=complementVertex(a,m_wordSize+1);
-						uint64_t b_1=getKPrefix(b,m_wordSize);
-						uint64_t b_2=getKSuffix(b,m_wordSize);
+						uint64_t b_1=complementVertex(a_2,m_wordSize,m_colorSpaceMode);
+						uint64_t b_2=complementVertex(a_1,m_wordSize,m_colorSpaceMode);
+
+						cout<<prefix<<" -> "<<suffix<<endl;
 						int rankB=vertexRank(b_1);
 						messagesStockOut[rankB].push_back(b_1);
 						messagesStockOut[rankB].push_back(b_2);
 					}else{
-						uint64_t a_1=getKPrefix(a,m_wordSize);
-						uint64_t a_2=getKSuffix(a,m_wordSize);
 						int rankA=vertexRank(a_1);
 						messagesStockOut[rankA].push_back(a_1);
 						messagesStockOut[rankA].push_back(a_2);
@@ -2141,18 +2173,20 @@ void Machine::processData(){
 				memcpy(memory,readSequence+p,m_wordSize+1);
 				memory[m_wordSize+1]='\0';
 				if(isValidDNA(memory)){
-					uint64_t a=wordId(memory);
-
+					char prefix[100];
+					char suffix[100];
+					strcpy(prefix,memory);
+					prefix[m_wordSize]='\0';
+					strcpy(suffix,memory+1);
+					uint64_t a_1=wordId(prefix,m_colorSpaceMode);
+					uint64_t a_2=wordId(suffix,m_colorSpaceMode);
 					if(m_reverseComplementEdge){
-						uint64_t b=complementVertex(a,m_wordSize+1);
-						uint64_t b_1=getKPrefix(b,m_wordSize);
-						uint64_t b_2=getKSuffix(b,m_wordSize);
+						uint64_t b_1=complementVertex(a_2,m_wordSize,m_colorSpaceMode);
+						uint64_t b_2=complementVertex(a_1,m_wordSize,m_colorSpaceMode);
 						int rankB=vertexRank(b_2);
 						messagesStockIn[rankB].push_back(b_1);
 						messagesStockIn[rankB].push_back(b_2);
 					}else{
-						uint64_t a_1=getKPrefix(a,m_wordSize);
-						uint64_t a_2=getKSuffix(a,m_wordSize);
 						int rankA=vertexRank(a_2);
 						messagesStockIn[rankA].push_back(a_1);
 						messagesStockIn[rankA].push_back(a_2);
@@ -3084,7 +3118,7 @@ void Machine::doChoice(){
 			m_EXTENSION_complementedSeed=true;
 			vector<uint64_t> complementedSeed;
 			for(int i=m_EXTENSION_extension.size()-1;i>=0;i--){
-				complementedSeed.push_back(complementVertex(m_EXTENSION_extension[i],m_wordSize));
+				complementedSeed.push_back(complementVertex(m_EXTENSION_extension[i],m_wordSize,m_colorSpaceMode));
 			}
 			m_EXTENSION_currentPosition=0;
 			m_EXTENSION_currentSeed=complementedSeed;
@@ -3156,7 +3190,7 @@ void Machine::checkIfCurrentVertexIsAssembled(){
 		if(!m_EXTENSION_VertexAssembled_requested){
 			m_EXTENSION_VertexAssembled_requested=true;
 			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
-			message[0]=(uint64_t)complementVertex(m_SEEDING_currentVertex,m_wordSize);
+			message[0]=(uint64_t)complementVertex(m_SEEDING_currentVertex,m_wordSize,m_colorSpaceMode);
 			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0]),TAG_ASK_IS_ASSEMBLED,getRank());
 			m_outbox.push_back(aMessage);
 			m_EXTENSION_VertexAssembled_received=false;

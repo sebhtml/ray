@@ -20,8 +20,7 @@
 */
 
 
-
-
+#include<common_functions.h>
 #include<MyAllocator.h>
 #include<stdlib.h>
 #include<iostream>
@@ -33,11 +32,7 @@ MyAllocator::MyAllocator(){
 
 void MyAllocator::constructor(int chunkSize){
 	m_CHUNK_SIZE=chunkSize; 
-	m_currentChunk=(void*)malloc(m_CHUNK_SIZE);
-	if(m_currentChunk==NULL){
-		cout<<"Out of memory!"<<endl;// ouch, this is critical...
-		exit(0);
-	}
+	m_currentChunk=(void*)__Malloc(m_CHUNK_SIZE);
 	#ifdef DEBUG
 	assert(m_currentChunk!=NULL);
 	#endif
@@ -54,12 +49,16 @@ void*MyAllocator::allocate(int s){
 	assert(s<=m_CHUNK_SIZE);
 	#endif
 	if(s>m_CHUNK_SIZE){
+		assert(false);
 		return NULL;// you asked too much.., this is critical..
 	}
 	
 	int left=m_CHUNK_SIZE-m_currentPosition;
 	if(s>left){
-		m_currentChunk=malloc(m_CHUNK_SIZE);
+		m_currentChunk=__Malloc(m_CHUNK_SIZE);
+		#ifdef DEBUG
+		assert(m_currentChunk!=NULL);
+		#endif
 		m_chunks.push_back(m_currentChunk);
 		m_currentPosition=0;
 		return allocate(s);
@@ -76,7 +75,7 @@ MyAllocator::~MyAllocator(){
 
 void MyAllocator::clear(){
 	for(int i=0;i<(int)m_chunks.size();i++){
-		free(m_chunks[i]);
+		__Free(m_chunks[i]);
 	}
 	m_chunks.clear();
 }

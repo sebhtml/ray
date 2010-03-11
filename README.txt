@@ -22,7 +22,7 @@ Only the master rank needs to access the files on disk.
 
 == Supported file formats ==
 
-* Color-Space Fasta (".csfasta")
+* Color-Space fasta (".csfasta")
 * Fasta with qualities ("fastq")
 * SFF (".sff")
 * Fasta (".fasta")
@@ -96,17 +96,79 @@ and
 
 <leftSequencesFile> and <rightSequencesFile> must contain the exact same number of sequences, paired reads must be on reverse strands, and the <fragmentLength> includes the read lengths. Ray supports fasta, fastq, and sff formats. But beware!, if your sff file contains paired-end reads, you must first extract the information, and tell Ray to use them with LoadPairedEndReads.
 
-Examples:
-
- LoadSingleEndReads 1.fasta
- LoadSingleEndReads 2.fastq
- LoadSingleEndReads UIJD.sff
- LoadPairedEndReads 908_1.fastq 908_fastq 215 30
- LoadPairedEndReads large_l.fasta large_r.fasta 2000 200
-
-Ray likes the following extensions: ".sff", ".fasta", ".fastq", and ".csfasta".
-
 Ray writes contigs to Contigs.fasta.
+
+== Examples ==
+
+=== SRA001125 ===
+
+* Technology: Illumina paired-end reads
+
+* Reads
+ ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX000/SRX000429/SRR001665_1.fastq.gz
+ ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX000/SRX000429/SRR001665_2.fastq.gz
+ ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX000/SRX000430/SRR001666_1.fastq.gz
+ ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX000/SRX000430/SRR001666_2.fastq.gz
+
+* Template.ray
+ LoadPairedEndReads SRR001665_1.fastq SRR001665_2.fastq 215 20
+ LoadPairedEndReads SRR001666_1.fastq SRR001666_2.fastq 215 20
+
+* Command
+ mpirun -np 32 Ray Template.ray
+
+* Reference
+ ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Escherichia_coli_K_12_substr__MG1655/NC_000913.fna
+
+=== dh10bfrag ===
+
+* Technology: SOLiD single-end reads
+
+* Reads
+ http://download.solidsoftwaretools.com/frag/R1a007_20080307_2_EG017_F3.csfasta.zip
+
+* Reference
+ http://download.solidsoftwaretools.com/frag/DH10B_WithDup_FinalEdit_validated.fasta.zip
+
+* Template.ray
+ LoadSingleEndReads R1a007_20080307_2_EG017_F3.csfasta
+
+* Command
+ mpirun -np 32 Ray Template.ray
+
+=== ecoli2x50 ===
+
+* Technology: SOLiD paired-end reads
+
+* Reads
+ http://download.solidsoftwaretools.com/mp50/Rosalind_20080729_2_Chris5_F3.csfasta.zip
+ http://download.solidsoftwaretools.com/mp50/Rosalind_20080729_2_Chris5_R3.csfasta.zip
+
+* Template.ray (the data is paired, but we did not find the fragment length.)
+ LoadSingleEndReads Rosalind_20080729_2_Chris5_F3.csfasta  
+ LoadSingleEndReads Rosalind_20080729_2_Chris5_R3.csfasta
+
+* Command
+ mpirun -np 32 Ray Template.ray
+
+* Reference
+ http://download.solidsoftwaretools.com/mp/DH10B_WithDup_FinalEdit_validated.fasta.zip
+
+=== clcbio.com SOLiD data ===
+
+* Technology: SOLiD
+
+* Reads
+ http://download.clcbio.com/testdata/solid.zip
+
+* Template.ray
+ LoadSingleEndReads GRACE20070409_Suis-frag-20070425_F3_sequence.csfasta
+
+* Command
+ mpirun -np 32 Ray Template.ray
+
+* Reference
+ http://download.clcbio.com/testdata/solid.zip
 
 == Limitations ==
 

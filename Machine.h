@@ -115,7 +115,7 @@ class Machine{
 	bool m_SEEDING_Extended;
 	int m_SEEDING_i;
 	uint64_t m_SEEDING_currentVertex;
-	
+	bool m_colorSpaceMode;
 	map<int,int> m_FUSION_identifier_map;
 
 

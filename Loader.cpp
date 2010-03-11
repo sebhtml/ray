@@ -24,6 +24,7 @@
 #include<iostream>
 #include<string>
 #include<vector>
+#include<ColorSpaceLoader.h>
 #include<Loader.h>
 #include<SffLoader.h>
 #include<stdlib.h>
@@ -43,6 +44,13 @@ void Loader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyA
 	if(file.length()<4){
 		(cout)<<"Error: "<<file<<endl;
 		exit(0);
+	}
+	string csfastaExtension=".csfasta";
+	if(file.length()>=csfastaExtension.length() and
+		file.substr(file.length()-csfastaExtension.length(),csfastaExtension.length())==csfastaExtension){
+		ColorSpaceLoader loader;
+		loader.load(file,reads,seqMyAllocator,readMyAllocator);
+		return;
 	}
 	if(file.substr(file.length()-4,4)==".sff"){
 		SffLoader sffLoader;

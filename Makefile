@@ -18,11 +18,7 @@
 
 
 # These are things you can provide with -D<Something> for development purposes
-# DEBUG for debug information
-# DEBUG1 to show message in the extension
-# SHOW_STATISTICS for statistics on messages.
-# WRITE_COVERAGE_DISTRIBUTION to write coverage distribution.
-# ASSERT verify various assertions.
+# DEBUG verify various assertions.
 # SHOW_PROGRESS to show progression, this one is useful if you want to know what is going on.
 #
 # detections at compilation:
@@ -31,7 +27,7 @@
 #   if MPICH2_VERSION is set, then MPI_Isend is utilized for all point-to-point communications.
 #   otherwise, MPI_Send is used because Open-MPI is smarter: it sends eagerly small messages!
 
-CXXFLAGS=  -Wall  -I.  -O3  
+CXXFLAGS=  -Wall  -I.  -O3   -DDEBUG -DSHOW_PROGRESS
 
 # the default is to use mpic++ provided in your $PATH
 MPICC=mpic++
@@ -42,7 +38,7 @@ TARGETS=Ray #SimulateFragments SimulateErrors SimulatePairedReads
 all: $(TARGETS)
 
 
-OBJECTS= Machine.o common_functions.o Loader.o ray_main.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o ReadAnnotation.o CoverageDistribution.o Message.o  Direction.o  PairedRead.o
+OBJECTS= Machine.o common_functions.o Loader.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o ReadAnnotation.o CoverageDistribution.o Message.o  Direction.o  PairedRead.o ColorSpaceDecoder.o ColorSpaceLoader.o
 
 %.o: %.cpp
 	$(MPICC) $(CXXFLAGS) -c $< -o $@
@@ -60,6 +56,9 @@ SimulateFragments: simulate_fragments_main.o $(OBJECTS)
 Ray: ray_main.o $(OBJECTS)
 	$(MPICC) $(CXXFLAGS) $^ -o $@
 
+test: test_main.o $(OBJECTS)
+	$(MPICC) $(CXXFLAGS) $^ -o $@
+	/home/boiseb01/software/ompi-1.4.1-gcc/bin/mpirun ./test
 clean:
 	rm -f $(OBJECTS) $(TARGETS)
 
