@@ -59,9 +59,13 @@ class Vertex{
 	// G C T A G C T A
 	//
 	// 7 6 5 4 3 2 1 0
-	char m_edges;
-	char m_outgoingLast;
-	char m_ingoingFirst;
+	uint8_t m_edges;
+
+	// b b b b b b b b
+	// 7 6 5 4 3 2 1 0
+	// G   C   T   A
+	uint8_t m_outgoingLast;
+	uint8_t m_ingoingFirst;
 
 	/*
  * 	read annotations

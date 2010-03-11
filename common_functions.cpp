@@ -34,7 +34,6 @@ using namespace std;
 #define _ENCODING_T 1
 #define _ENCODING_C 2
 #define _ENCODING_G 3
-#define _SEGMENT_LENGTH 7
 
 string reverseComplement(string a){
 	char*rev=(char*)__Malloc(a.length()+1);
@@ -203,7 +202,12 @@ void coutBIN(uint64_t a){
 	}
 	cout<<endl;
 }
-
+void coutBIN8(uint8_t a){
+	for(int i=7;i>=0;i--){
+		cout<<(int)((a<<(7-i))>>7);
+	}
+	cout<<endl;
+}
 
 
 uint64_t getKPrefix(uint64_t a,int k){

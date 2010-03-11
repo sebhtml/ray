@@ -54,6 +54,18 @@ vector<uint64_t> Vertex::getIngoingEdges(uint64_t a,int k){
 		int j=((((uint64_t)m_edges)<<(63-i))>>63);
 		if(j==1){
 			uint64_t l=((a<<(64-2*k+2))>>(64-2*k))|((uint64_t)i);
+			// add the first thing of the second segment too.
+			//
+			
+			// ATCAGTTGCAGTACTGCAATCTACG
+			// 0000000000000011100001100100000000000000000000000001011100100100
+			//                6 5 4 3 2 1 0
+			uint64_t clearBits=3;
+			clearBits=clearBits<<(_SEGMENT_LENGTH*2);
+			l=l&(~clearBits);
+			uint64_t extraBits=m_ingoingFirst<<(6-2*i)>>6; 
+			extraBits=extraBits<<((k-_SEGMENT_LENGTH)*2);
+			l=l|extraBits;
 			b.push_back(l);
 		}
 	}
@@ -66,6 +78,24 @@ vector<uint64_t> Vertex::getOutgoingEdges(uint64_t a,int k){
 		int j=((((uint64_t)m_edges)<<(59-i))>>63);
 		if(j==1){
 			uint64_t l=(a>>2)|(((uint64_t)i)<<(2*(k-1)));
+			// add the last thing of the first segment too.
+			// fetch the bits at position 2*i in m_outgoingLast
+			//
+			// b b b b b b b b
+			// 7 6 5 4 3 2 1 0
+			uint64_t extraBits=m_outgoingLast<<(6-2*i)>>6;
+			
+			uint64_t clearBits=3;
+			clearBits=clearBits<<(_SEGMENT_LENGTH*2);
+			cout<<"l"<<endl;
+			coutBIN(l);
+			cout<<"clearBits"<<endl;
+			coutBIN(clearBits);
+			//l=l&(~clearBits);
+			extraBits=extraBits<<(_SEGMENT_LENGTH*2-2);
+			// 0000000000000011100001100100000000000000000000000001011100100100
+			//                                                    6 5 4 3 2 1 0
+			l=l|extraBits;
 			b.push_back(l);
 		}
 	}
@@ -74,14 +104,41 @@ vector<uint64_t> Vertex::getOutgoingEdges(uint64_t a,int k){
 }
 
 void Vertex::addIngoingEdge(uint64_t a,int k){
-	m_edges=m_edges|(1<<((a<<(62))>>62));
+	uint8_t s1First=getFirstSegmentFirstCode(a,k,_SEGMENT_LENGTH);
+	uint8_t s2First=getSecondSegmentFirstCode(a,k,_SEGMENT_LENGTH);
+	// add s1First to it to edges.
+	uint8_t newBits=(1<<(s1First));
+	m_edges=m_edges|newBits;
+
+	// also add s2First somewhere!
+	// geometry of m_ingoingFirst
+	// b b b b b b b b
+	// 7 6 5 4 3 2 1 0
+	//   G   C   T   A
+	m_ingoingFirst=m_ingoingFirst|(s2First<<(2*s1First));
 }
 
 void Vertex::addOutgoingEdge(uint64_t a,int k){
 	uint8_t s1Last=getFirstSegmentLastCode(a,k,_SEGMENT_LENGTH);
 	uint8_t s2Last=getSecondSegmentLastCode(a,k,_SEGMENT_LENGTH);
+	
+	// description of m_edges:
+	// outgoing  ingoing
+	//
+	// G C T A G C T A
+	//
+	// 7 6 5 4 3 2 1 0
 
-	m_edges=m_edges|(1<<(4+((a<<(64-2*k))>>62)));
+	// put s2Last in m_edges
+	uint64_t newBits=1<<(4+s2Last);
+	m_edges=m_edges|newBits;
+	
+	// b b b b b b b b
+	// 7 6 5 4 3 2 1 0
+	//   G   C   T   A
+	// put s1Last in m_outgoingLast at position s2Last
+	uint8_t toSet=(s1Last<<(2*s2Last));
+	m_outgoingLast=m_outgoingLast|toSet;
 }
 
 void Vertex::addRead(int rank,int i,char c,MyAllocator*allocator){

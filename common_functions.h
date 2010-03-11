@@ -30,6 +30,8 @@
 #include<vector>
 using namespace std;
 
+#define _SEGMENT_LENGTH 7
+
 // the maximum of processes is utilized to construct unique hyperfusions IDs
 #define MAX_NUMBER_OF_MPI_PROCESSES 10000
 
@@ -83,6 +85,7 @@ char getLastSymbol(uint64_t i,int w);
  * output in stdout the binary view of a 64-bit integer.
  */
 void coutBIN(uint64_t a);
+void coutBIN8(uint8_t a);
 
 /*
  * get the prefix
