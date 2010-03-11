@@ -3,7 +3,7 @@
 
 * [http://sourceforge.net/projects/denovoassembler/files/ Download]
 * [http://lists.sourceforge.net/lists/listinfo/denovoassembler-users Mailing list]
-
+* [http://seqanswers.com/forums/showthread.php?t=4301 SeqAnswers.com thread]
 
 
 = Ray: a massively parallel MPI-based approach for genome assembly with mixed technologies =
@@ -11,23 +11,35 @@
 Ray is a parallel genome assembler utilizing [http://en.wikipedia.org/wiki/Message_Passing_Interface MPI]. 
 Ray is a single-executable program (the executable is Ray). Its aim is to assemble sequences on
 mpi-enabled computers or clusters.
-Ray is implemented in c++. It is tested with OpenMPI and g++ on Linux 2.6.
-Only the master rank needs to access the files on disk. Ray
+Ray is implemented in c++.
+Only the master rank needs to access the files on disk. 
 
-* is massively parallel,
-* supports the mixing of sequencing technologies, as long as the error incorporation is random,
-* supports paired-end reads,
-* does not write pesky intermediate large binary files,
-* is licensed with the [http://www.gnu.org/licenses/gpl-3.0.html GPL version 3],
-* is implemented in c++,
-* distributes computation across MPI processes,
-* distributes data across MPI processes,
-* is tested with [http://open-mpi.org/ Open-MPI],
-* runs on [http://www.linux.com/ GNU/Linux],
-* uses bit shifts and other optimizations,
-* supports a vertex size up to 31,
-* uses splay trees, and
-* runs on one and more MPI processes.
+== Tested technologies ==
+
+* Illumina
+* SOLiD 
+* mix of technologies (to obtain random noise)
+
+== Supported file formats ==
+
+* Color-Space Fasta (".csfasta")
+* Fasta with qualities ("fastq")
+* SFF (".sff")
+* Fasta (".fasta")
+
+== Reads ==
+
+* single-end reads (with LoadSingleEndReads)
+* paired-end reads (with LoadPairedEndReads)
+
+== Other features ==
+
+* is massively parallel
+* supports the mixing of sequencing technologies, as long as the error incorporation is random
+* is implemented in c++
+* distributes computation across MPI processes
+* distributes data across MPI processes
+* runs on one and more MPI processes
 
 == How to cite us?==
 
@@ -36,6 +48,25 @@ Only the master rank needs to access the files on disk. Ray
  http://denovoassembler.sf.net/, 2010.
 
 == Installation ==
+
+
+=== Requirements ===
+
+* make
+* g++
+* openmpi (1.3.4 or 1.4.1)
+* sequence data ;)
+* Any GNU/Linux flavor will do.
+
+=== Tested platforms ===
+
+* Fedora
+* CentOS
+* Ubuntu
+
+=== License ===
+
+* [http://www.gnu.org/licenses/gpl-3.0.html GPL version 3]
 
 [http://sourceforge.net/projects/denovoassembler/files/ Download]
 
@@ -73,6 +104,7 @@ Examples:
  LoadPairedEndReads 908_1.fastq 908_fastq 215 30
  LoadPairedEndReads large_l.fasta large_r.fasta 2000 200
 
+Ray likes the following extensions: ".sff", ".fasta", ".fastq", and ".csfasta".
 
 Ray writes contigs to Contigs.fasta.
 
@@ -83,7 +115,7 @@ non-parallel steps. However, it is safe and reliable to run it with 1 cpu.
 It currently works well with Open-MPI.
 You may have to disable the Byte Transfer Layer called Shared Memory to avoid a race condition in the spinlock of Open-MPI. This problem is presumably due to a processor defective design rather than a defect in Open-MPI. The lock instruction is supposed to lock the bus, so if you encounter the race condition, you know something is wrong. The following command disables the btl sm at runtime.
 
- mpirun -np 32 --mca btl ^sm ./Ray sequences.fasta
+ mpirun -np 32 --mca btl ^sm ./Ray template.ray
 
 = OpenAssembler: assembling genome with mixed sequencing technologies =
 
