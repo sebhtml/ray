@@ -2568,7 +2568,6 @@ void Machine::processData(){
 				for(int p=0;p<m_wordSize;p++){
 					a<<codeToChar(getFirstSegmentFirstCode(m_allPaths[i][p],_SEGMENT_LENGTH,m_wordSize));
 				}
-				cout<<"First="<<a.str()<<endl;
 				#else
 				a<<idToWord(m_allPaths[i][0],m_wordSize);
 				#endif
@@ -3259,6 +3258,10 @@ void Machine::markCurrentVertexAsAssembled(){
 		}else if(m_EXTENSION_reads_received){
 			for(int i=0;i<(int)m_EXTENSION_receivedReads.size();i++){
 				int uniqueId=m_EXTENSION_receivedReads[i].getUniqueId();
+				// check that the complete sequence of m_SEEDING_currentVertex correspond to
+				// the one of the start of the read on the good strand.
+				// this is important when USE_DISTANT_SEGMENTS_GRAPH is set.
+
 				if(m_EXTENSION_usedReads.count(uniqueId)==0){
 					m_EXTENSION_usedReads.insert(uniqueId);
 					m_EXTENSION_reads_startingPositionOnContig[uniqueId]=m_EXTENSION_extension.size()-1;

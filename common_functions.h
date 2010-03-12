@@ -32,14 +32,14 @@ see <http://www.gnu.org/licenses/>
 #include<vector>
 using namespace std;
 
-#define _SEGMENT_LENGTH 8
+#define _SEGMENT_LENGTH 5
 
 
 // the maximum of processes is utilized to construct unique hyperfusions IDs
 #define MAX_NUMBER_OF_MPI_PROCESSES 10000
 
 // unlock the power of Ray here!
-#define USE_DISTANT_SEGMENTS_GRAPH
+//#define USE_DISTANT_SEGMENTS_GRAPH
 
 // uniform random numbers
 // from Heng Li's code (LGPL)
