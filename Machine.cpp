@@ -1104,7 +1104,20 @@ void Machine::processMessage(Message*message){
 				if(newEdges[i]==suffix)
 					found=true;
 			}
-			if(!found){
+			if(newEdges.size()==0){
+				cout<<"prefix,suffix"<<endl;
+				coutBIN(prefix);
+				coutBIN(suffix);
+				cout<<idToWord(prefix,m_wordSize)<<endl;
+				cout<<idToWord(suffix,m_wordSize)<<endl;
+			}
+			assert(newEdges.size()>0);
+			f(!found){
+				cout<<"prefix,suffix"<<endl;
+				coutBIN(prefix);
+				coutBIN(suffix);
+				cout<<idToWord(prefix,m_wordSize)<<endl;
+				cout<<idToWord(suffix,m_wordSize)<<endl;
 
 				cout<<" ARC"<<endl;
 				coutBIN(prefix);

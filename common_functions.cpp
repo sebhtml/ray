@@ -347,7 +347,8 @@ uint8_t getSecondSegmentFirstCode(uint64_t v,int totalLength,int segmentLength){
 	// ATCAGTTGCAGTACTGCAATCTACG
 	// 0000000000000011100001100100000000000000000000000001011100100100
 	//               6 5 4 3 2 1 0
-	v=v<<(64-segmentLength*2-2);
+	int extra=(2*segmentLength-2);
+	v=v<<(64-2*totalLength+extra);
 	v=v>>62;
 	return v;
 }

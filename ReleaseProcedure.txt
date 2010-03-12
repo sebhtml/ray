@@ -1,0 +1,5 @@
+1) svn export
+2) upload the tarball on sf
+3) post an email on the list (with new features)
+4) post on seqanswers thread
+5) update the wiki page

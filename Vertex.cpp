@@ -32,6 +32,8 @@ void Vertex::constructor(){
 	m_edges=0;
 	m_readsStartingHere=NULL;
 	m_direction=NULL;
+	m_outgoingLast=0;
+	m_ingoingFirst=0;
 }
 
 void Vertex::setCoverage(int coverage){
@@ -62,7 +64,12 @@ vector<uint64_t> Vertex::getIngoingEdges(uint64_t a,int k){
 			//                6 5 4 3 2 1 0
 			uint64_t clearBits=3;
 			clearBits=clearBits<<(_SEGMENT_LENGTH*2);
-			l=l&(~clearBits);
+			clearBits=~clearBits;
+			l=l&clearBits;
+			clearBits=3;
+			clearBits=clearBits<<(2*k-2*_SEGMENT_LENGTH-2);
+			clearBits=~clearBits;
+			l=l&clearBits;
 			uint64_t extraBits=m_ingoingFirst<<(6-2*i)>>6; 
 			extraBits=extraBits<<((k-_SEGMENT_LENGTH)*2);
 			l=l|extraBits;
@@ -83,15 +90,12 @@ vector<uint64_t> Vertex::getOutgoingEdges(uint64_t a,int k){
 			//
 			// b b b b b b b b
 			// 7 6 5 4 3 2 1 0
-			uint64_t extraBits=m_outgoingLast<<(6-2*i)>>6;
-			
+			//   G   C   T   A
+			uint64_t extraBits=(m_outgoingLast<<(6-2*i))>>6;
 			uint64_t clearBits=3;
-			clearBits=clearBits<<(_SEGMENT_LENGTH*2);
-			cout<<"l"<<endl;
-			coutBIN(l);
-			cout<<"clearBits"<<endl;
-			coutBIN(clearBits);
-			//l=l&(~clearBits);
+			clearBits=clearBits<<(2*k-2*_SEGMENT_LENGTH-2);
+			clearBits=~clearBits;	
+			l=l&(clearBits);
 			extraBits=extraBits<<(_SEGMENT_LENGTH*2-2);
 			// 0000000000000011100001100100000000000000000000000001011100100100
 			//                                                    6 5 4 3 2 1 0
@@ -115,13 +119,13 @@ void Vertex::addIngoingEdge(uint64_t a,int k){
 	// b b b b b b b b
 	// 7 6 5 4 3 2 1 0
 	//   G   C   T   A
-	m_ingoingFirst=m_ingoingFirst|(s2First<<(2*s1First));
+	uint8_t newFilter=(s2First<<(2*s1First));
+	m_ingoingFirst=m_ingoingFirst|newFilter;
 }
 
 void Vertex::addOutgoingEdge(uint64_t a,int k){
 	uint8_t s1Last=getFirstSegmentLastCode(a,k,_SEGMENT_LENGTH);
 	uint8_t s2Last=getSecondSegmentLastCode(a,k,_SEGMENT_LENGTH);
-	
 	// description of m_edges:
 	// outgoing  ingoing
 	//
@@ -131,8 +135,8 @@ void Vertex::addOutgoingEdge(uint64_t a,int k){
 
 	// put s2Last in m_edges
 	uint64_t newBits=1<<(4+s2Last);
-	m_edges=m_edges|newBits;
 	
+	m_edges=m_edges|newBits;
 	// b b b b b b b b
 	// 7 6 5 4 3 2 1 0
 	//   G   C   T   A
