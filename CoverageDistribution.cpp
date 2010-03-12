@@ -26,11 +26,11 @@
 #include<map>
 using namespace std;
 
-CoverageDistribution::CoverageDistribution(map<int,uint64_t>distributionOfCoverage,string m_assemblyDirectory){
+CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>distributionOfCoverage,string m_assemblyDirectory){
 	m_coverage_mean=100;
 	m_minimumCoverage=1;
 
-	for(map<int,uint64_t>::iterator i=distributionOfCoverage.begin();i!=distributionOfCoverage.end();i++){
+	for(map<int,VERTEX_TYPE>::iterator i=distributionOfCoverage.begin();i!=distributionOfCoverage.end();i++){
 		#ifdef SHOW_PROGRESS
 		cout<<"DISTRIBUTION "<<i->first<<" "<<i->second<<endl;
 		#endif

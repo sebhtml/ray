@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C)  2010  Sébastien Boisvert
+    Copyright (C) 2010  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -19,37 +19,21 @@
 
 */
 
+#ifndef _VertexLinkedList
+#define _VertexLinkedList
 
-#ifndef _Read
-#define _Read
-
-#include<string>
-#include<stdint.h>
-#include<vector>
 #include<common_functions.h>
 #include<MyAllocator.h>
-#include<PairedRead.h>
-using namespace std;
 
-/*
- * a read is represented as a char*
- * and a (possible) link to paired information.
- */
-class Read{
-	char*m_sequence;
-	PairedRead*m_pairedRead;
+class VertexLinkedList{
+	VERTEX_TYPE m_vertex;
+	VertexLinkedList*m_next;
 public:
-	Read();
-	Read(const char*id,const char*sequence,MyAllocator*seqMyAllocator);
-	~Read();
-	char*getSeq();
-	char*getId();
-	int length();
-	VERTEX_TYPE Vertex(int pos,int w,char strand,bool color);
-	void copy(const char*id,const char*sequence,MyAllocator*seqMyAllocator);
-	void setPairedRead(PairedRead*t);
-	bool hasPairedRead();
-	PairedRead*getPairedRead();
+	VertexLinkedList();
+	void constructor(VERTEX_TYPE a);
+	void setNext(VertexLinkedList*a);
+	VERTEX_TYPE getVertex();
+	VertexLinkedList*getNext();
 };
 
 #endif

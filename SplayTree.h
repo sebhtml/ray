@@ -45,7 +45,7 @@ using namespace std;
 template<class KEY,class VALUE>
 class SplayTree{
 	SplayNode<KEY,VALUE>*m_root;
-	uint64_t m_size;
+	VERTEX_TYPE m_size;
 	bool m_inserted;
 	void splay(KEY key);
 	MyAllocator m_allocator;
@@ -58,7 +58,7 @@ public:
 	SplayNode<KEY,VALUE>*find(KEY key);
 	void print();
 	SplayNode<KEY,VALUE>*getRoot();
-	uint64_t size();
+	VERTEX_TYPE size();
 	bool inserted();
 	void clear();
 };
@@ -70,7 +70,7 @@ void SplayTree<KEY,VALUE>::clear(){
 }
 
 template<class KEY,class VALUE>
-uint64_t SplayTree<KEY,VALUE>::size(){
+VERTEX_TYPE SplayTree<KEY,VALUE>::size(){
 	return m_size;
 }
 

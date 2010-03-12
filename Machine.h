@@ -25,7 +25,7 @@
 #ifndef _Machine
 #define _Machine
 
-
+#include<common_functions.h>
 #include<map>
 #include<vector>
 #include<Vertex.h>
@@ -88,21 +88,21 @@ class Machine{
 	int m_vertices_sent;
 	int m_numberOfRanksDoneSeeding;
 	int m_numberOfRanksGone;
-	map<int,uint64_t> m_distributionOfCoverage;
+	map<int,VERTEX_TYPE> m_distributionOfCoverage;
 
 	int m_machineRank;
 
 	// SEEDING
-	SplayTreeIterator<uint64_t,Vertex>*m_SEEDING_iterator;
-	SplayNode<uint64_t,Vertex>*m_SEEDING_node;
+	SplayTreeIterator<VERTEX_TYPE,Vertex>*m_SEEDING_iterator;
+	SplayNode<VERTEX_TYPE,Vertex>*m_SEEDING_node;
 	bool m_SEEDING_edgesReceived;
 	int m_SEEDING_numberOfOutgoingEdgesWithSeedCoverage;
-	uint64_t m_SEEDING_currentChildVertex;
-	uint64_t m_SEEDING_currentParentVertex;
-	uint64_t m_SEEDING_receivedKey;
+	VERTEX_TYPE m_SEEDING_currentChildVertex;
+	VERTEX_TYPE m_SEEDING_currentParentVertex;
+	VERTEX_TYPE m_SEEDING_receivedKey;
 	bool m_SEEDING_vertexKeyAndCoverageReceived;
-	vector<uint64_t> m_SEEDING_nodes;
-	uint64_t m_SEEDING_first;
+	vector<VERTEX_TYPE> m_SEEDING_nodes;
+	VERTEX_TYPE m_SEEDING_first;
 	int m_SEEDING_receivedVertexCoverage;
 	bool m_SEEDING_vertexCoverageReceived;
 	int m_SEEDING_currentChildRank;
@@ -114,7 +114,7 @@ class Machine{
 	bool m_SEEDING_passedParentsTest;
 	bool m_SEEDING_Extended;
 	int m_SEEDING_i;
-	uint64_t m_SEEDING_currentVertex;
+	VERTEX_TYPE m_SEEDING_currentVertex;
 	bool m_colorSpaceMode;
 	map<int,int> m_FUSION_identifier_map;
 
@@ -128,15 +128,15 @@ class Machine{
 	int m_SEEDING_ingoingEdgeIndex;
 	int m_SEEDING_outgoingEdgeIndex;
 	int m_SEEDING_currentRank;
-	vector<vector<uint64_t> > m_SEEDING_seeds;
-	vector<uint64_t> m_SEEDING_seed;
-	vector<uint64_t> m_SEEDING_receivedIngoingEdges;
-	vector<uint64_t> m_SEEDING_receivedOutgoingEdges;
+	vector<vector<VERTEX_TYPE> > m_SEEDING_seeds;
+	vector<VERTEX_TYPE> m_SEEDING_seed;
+	vector<VERTEX_TYPE> m_SEEDING_receivedIngoingEdges;
+	vector<VERTEX_TYPE> m_SEEDING_receivedOutgoingEdges;
 	vector<int> m_SEEDING_outgoingCoverages;
-	vector<uint64_t> m_SEEDING_outgoingKeys;
+	vector<VERTEX_TYPE> m_SEEDING_outgoingKeys;
 	bool m_SEEDING_vertexKeyAndCoverageRequested;
 	int m_SEEDING_numberOfIngoingEdges;
-	set<uint64_t> m_SEEDING_vertices;
+	set<VERTEX_TYPE> m_SEEDING_vertices;
 	int m_SEEDING_numberOfOutgoingEdges;
 	bool m_SEEDING_testInitiated;
 	bool m_SEEDING_1_1_test_result;
@@ -163,12 +163,12 @@ class Machine{
 	bool m_EXTENSION_hasPairedReadReceived;
 	vector<int> m_EXTENSION_identifiers;
 	set<int> m_FUSION_eliminated;
-	vector<uint64_t> m_EXTENSION_extension;
+	vector<VERTEX_TYPE> m_EXTENSION_extension;
 	vector<int> m_EXTENSION_coverages;
 	bool m_EXTENSION_complementedSeed;
-	vector<uint64_t> m_EXTENSION_currentSeed;
+	vector<VERTEX_TYPE> m_EXTENSION_currentSeed;
 	int m_EXTENSION_numberOfRanksDone;
-	vector<vector<uint64_t> > m_EXTENSION_contigs;
+	vector<vector<VERTEX_TYPE> > m_EXTENSION_contigs;
 	bool m_EXTENSION_checkedIfCurrentVertexIsAssembled;
 	bool m_EXTENSION_VertexMarkAssembled_requested;
 	bool m_EXTENSION_reverseComplement_requested;
@@ -179,7 +179,7 @@ class Machine{
 	bool m_EXTENSION_readLength_done;
 	bool m_EXTENSION_read_vertex_received;
 	bool m_EXTENSION_read_vertex_requested;
-	uint64_t m_EXTENSION_receivedReadVertex;
+	VERTEX_TYPE m_EXTENSION_receivedReadVertex;
 	bool m_mode_EXTENSION;
 	bool m_EXTENSION_currentRankIsDone;
 	bool m_EXTENSION_currentRankIsSet;
@@ -244,7 +244,7 @@ class Machine{
 	Direction m_FUSION_receivedPath;
 
 	// coverage distribubtion
-	map<int,uint64_t> m_coverageDistribution;
+	map<int,VERTEX_TYPE> m_coverageDistribution;
 	int m_minimumCoverage;
 	int m_peakCoverage;
 	int m_seedCoverage;
@@ -256,7 +256,7 @@ class Machine{
 	vector<MPI_Request> m_pendingMpiRequest;
 	Parameters m_parameters;
 	int m_numberOfMachinesDoneSendingEdges;
-	SplayTree<uint64_t,Vertex> m_subgraph;
+	SplayTree<VERTEX_TYPE,Vertex> m_subgraph;
 
 	// SEQUENCE DISTRIBUTION
 	bool m_reverseComplementVertex;
@@ -286,7 +286,7 @@ class Machine{
 	int m_mode_send_vertices_sequence_id_position;
 	int m_numberOfMachinesDoneSendingVertices;
 
-	vector<vector<uint64_t> > m_allPaths;
+	vector<vector<VERTEX_TYPE> > m_allPaths;
 	bool m_aborted;
 
 	bool m_messageSentForEdgesDistribution;
@@ -311,9 +311,9 @@ class Machine{
 	#endif
 	int m_FINISH_positionStart;
 	bool m_FINISH_hasHit;
-	vector<vector<uint64_t> > m_FINISH_newFusions;
+	vector<vector<VERTEX_TYPE> > m_FINISH_newFusions;
 	bool m_FINISH_vertex_received;
-	uint64_t m_FINISH_received_vertex;
+	VERTEX_TYPE m_FINISH_received_vertex;
 	bool m_nextReductionOccured;
 	bool m_cycleStarted;
 	bool m_reductionOccured;
@@ -350,9 +350,9 @@ class Machine{
 	void processData();
 	int getRank();
 	void receiveWelcomeMessage(MPI_Status*status);
-	int vertexRank(uint64_t a);
+	int vertexRank(VERTEX_TYPE a);
 	void showProgress();
-	void getPaths(uint64_t vertex);
+	void getPaths(VERTEX_TYPE vertex);
 	void extendSeeds();
 	void finishFusions();
 	void makeFusions();
@@ -361,6 +361,7 @@ public:
  * this is the only public bit
  */
 	Machine(int argc,char**argv);
+	~Machine();
 };
 
 

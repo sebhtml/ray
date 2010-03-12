@@ -27,7 +27,7 @@
 #   if MPICH2_VERSION is set, then MPI_Isend is utilized for all point-to-point communications.
 #   otherwise, MPI_Send is used because Open-MPI is smarter: it sends eagerly small messages!
 
-CXXFLAGS=  -Wall  -I.  -O3   -DDEBUG -DSHOW_PROGRESS
+CXXFLAGS=  -Wall  -I.  -O3   -DDEBUG -DSHOW_PROGRESS  -g
 
 # the default is to use mpic++ provided in your $PATH
 MPICC=mpic++
@@ -38,7 +38,7 @@ TARGETS=Ray #SimulateFragments SimulateErrors SimulatePairedReads
 all: $(TARGETS)
 
 
-OBJECTS= Machine.o common_functions.o Loader.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o ReadAnnotation.o CoverageDistribution.o Message.o  Direction.o  PairedRead.o ColorSpaceDecoder.o ColorSpaceLoader.o
+OBJECTS= Machine.o common_functions.o Loader.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o ReadAnnotation.o CoverageDistribution.o Message.o  Direction.o  PairedRead.o ColorSpaceDecoder.o ColorSpaceLoader.o VertexLinkedList.o
 
 %.o: %.cpp
 	$(MPICC) $(CXXFLAGS) -c $< -o $@

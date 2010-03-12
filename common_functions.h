@@ -1,26 +1,28 @@
 /*
- 	Ray
-    Copyright (C)  2010  Sébastien Boisvert
+Ray
+Copyright (C)  2010  Sébastien Boisvert
 
-	http://DeNovoAssembler.SourceForge.Net/
+http://DeNovoAssembler.SourceForge.Net/
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, version 3 of the License.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, version 3 of the License.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-    You have received a copy of the GNU General Public License
-    along with this program (gpl-3.0.txt).  
-	see <http://www.gnu.org/licenses/>
+You have received a copy of the GNU General Public License
+along with this program (gpl-3.0.txt).  
+see <http://www.gnu.org/licenses/>
 
 */
 
 #ifndef _common_functions
 #define _common_functions
+
+#define VERTEX_TYPE uint64_t
 #include<stdint.h>
 #include<SplayTree.h>
 #include<stdlib.h>
@@ -30,12 +32,14 @@
 #include<vector>
 using namespace std;
 
-#define _SEGMENT_LENGTH 7
+#define _SEGMENT_LENGTH 8
+
 
 // the maximum of processes is utilized to construct unique hyperfusions IDs
 #define MAX_NUMBER_OF_MPI_PROCESSES 10000
 
-
+// unlock the power of Ray here!
+#define USE_DISTANT_SEGMENTS_GRAPH
 
 // uniform random numbers
 // from Heng Li's code (LGPL)
@@ -56,15 +60,16 @@ using namespace std;
 string reverseComplement(string a);
 
 /*
- * convert a char* to uint64_t
+ * convert a char* to VERTEX_TYPE
  * A=00, T=01, C=10, G=11
  */
-uint64_t wordId(const char*a,bool colorSpace);
+VERTEX_TYPE wordId(const char*a);
+VERTEX_TYPE wordId_Classic(const char*a);
 
 /*
  * convert a 64-bit integer to a string
  */
-string idToWord(uint64_t i,int wordSize);
+string idToWord(VERTEX_TYPE i,int wordSize);
 
 /*
  * verify that x has only A,T,C, and G
@@ -72,35 +77,35 @@ string idToWord(uint64_t i,int wordSize);
 bool isValidDNA(const char*x);
 
 /*
- * get the first letter of a uint64_t
+ * get the first letter of a VERTEX_TYPE
  */
-char getFirstSymbol(uint64_t i,int k);
+char getFirstSymbol(VERTEX_TYPE i,int k);
 
 /*
- * get the last letter of a uint64_t
+ * get the last letter of a VERTEX_TYPE
  */
-char getLastSymbol(uint64_t i,int w);
+char getLastSymbol(VERTEX_TYPE i,int w);
 
 /*
  * output in stdout the binary view of a 64-bit integer.
  */
-void coutBIN(uint64_t a);
+void coutBIN(VERTEX_TYPE a);
 void coutBIN8(uint8_t a);
 
 /*
  * get the prefix
  */
-uint64_t getKPrefix(uint64_t a,int k);
+VERTEX_TYPE getKPrefix(VERTEX_TYPE a,int k);
 
 /*
  * get the suffix
  */
-uint64_t getKSuffix(uint64_t a,int k);
+VERTEX_TYPE getKSuffix(VERTEX_TYPE a,int k);
 
 /*
  * complement a vertex, and return another one
  */
-uint64_t complementVertex(uint64_t a,int m_wordSize,bool useColorSpace);
+VERTEX_TYPE complementVertex(VERTEX_TYPE a,int m_wordSize,bool useColorSpace);
 
 /*
  * add line breaks to a string
@@ -108,9 +113,9 @@ uint64_t complementVertex(uint64_t a,int m_wordSize,bool useColorSpace);
 string addLineBreaks(string sequence);
 
 /*
- * hash a uint64_t in a uniform way.
+ * hash a VERTEX_TYPE in a uniform way.
  */
-uint64_t hash_uint64_t(uint64_t a);
+VERTEX_TYPE hash_VERTEX_TYPE(VERTEX_TYPE a);
 
 void*__Malloc(int c);
 void __Free(void*a);
@@ -120,22 +125,22 @@ void __Free(void*a);
  * compute the reverse complement in color space (it is just the same, but reverse)
  */
 
-uint64_t complementVertex_colorSpace(uint64_t a,int b);
+VERTEX_TYPE complementVertex_colorSpace(VERTEX_TYPE a,int b);
 
 /*
  * complement vertex, normal.
  */
-uint64_t complementVertex_normal(uint64_t a,int m_wordSize);
+VERTEX_TYPE complementVertex_normal(VERTEX_TYPE a,int m_wordSize);
 
 /*
  * use mini distant segments here.
  */
-uint64_t wordId_DistantSegments(const char*a);
+VERTEX_TYPE wordId_DistantSegments(const char*a);
 
-uint8_t getFirstSegmentLastCode(uint64_t v,int segmentLength,int totalLength);
-uint8_t getFirstSegmentFirstCode(uint64_t v,int segmentLength,int totalLength);
-uint8_t getSecondSegmentFirstCode(uint64_t v,int segmentLength,int totalLength);
-uint8_t getSecondSegmentLastCode(uint64_t v,int segmentLength,int totalLength);
+uint8_t getFirstSegmentLastCode(VERTEX_TYPE v,int segmentLength,int totalLength);
+uint8_t getFirstSegmentFirstCode(VERTEX_TYPE v,int segmentLength,int totalLength);
+uint8_t getSecondSegmentFirstCode(VERTEX_TYPE v,int segmentLength,int totalLength);
+uint8_t getSecondSegmentLastCode(VERTEX_TYPE v,int segmentLength,int totalLength);
 
 uint8_t charToCode(char a);
 

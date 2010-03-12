@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C)  2010  Sébastien Boisvert
+    Copyright (C) 2010  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -19,28 +19,28 @@
 
 */
 
+#include<VertexLinkedList.h>
 
-#ifndef _CoverageDistribution
-#define _CoverageDistribution
 
-#include<map>
-#include<string>
-#include<stdint.h>
-#include<common_functions.h>
-using namespace std;
+VertexLinkedList::VertexLinkedList(){
 
-/*
- *
- * Given a distribution of coverage, CoverageDistribution computes 
- * the minimum coverage, and the peak coverage.
- */
-class CoverageDistribution{
-	int m_minimumCoverage;
-	int m_coverage_mean;
-public:
-	CoverageDistribution(map<int,VERTEX_TYPE>distributionOfCoverage,string m_assemblyDirectory);
-	int getMinimumCoverage();
-	int getPeakCoverage();
-};
+}
+void VertexLinkedList::constructor(VERTEX_TYPE a){
+	m_vertex=a;
+	m_next=NULL;
+}
 
-#endif
+void VertexLinkedList::setNext(VertexLinkedList*a){
+	m_next=a;
+}
+
+
+VERTEX_TYPE VertexLinkedList::getVertex(){
+	return m_vertex;
+}
+
+VertexLinkedList*VertexLinkedList::getNext(){
+	return m_next;
+}
+
+

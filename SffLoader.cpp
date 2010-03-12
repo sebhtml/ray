@@ -54,8 +54,8 @@ void invert32(uint32_t*c){
 	}
 }
 
-void invert64(uint64_t*c){
-	uint64_t index_offset2=*c;
+void invert64(VERTEX_TYPE*c){
+	VERTEX_TYPE index_offset2=*c;
 	char*b=(char*)&index_offset2;
 	char*a=(char*)c;
 	for(int i=0;i<8;i++){
@@ -70,7 +70,7 @@ void invert64(uint64_t*c){
 void SffLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator){
 	uint32_t magic_number;
 	uint32_t version;
-	uint64_t index_offset;
+	VERTEX_TYPE index_offset;
 	uint32_t index_length;
 	uint32_t number_of_reads;
 	FILE*fp=fopen(file.c_str(),"r");
@@ -91,7 +91,7 @@ void SffLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,
 		(cout)<<"Error: incorrect version"<<endl;
 		return;
 	}
-	fread_result=fread((char*)&index_offset,1,sizeof(uint64_t),fp);
+	fread_result=fread((char*)&index_offset,1,sizeof(VERTEX_TYPE),fp);
 	invert64(&index_offset);
 	(cout)<<"Using clip values"<<endl;
 	(cout)<<"Index offset: "<<index_offset<<endl;

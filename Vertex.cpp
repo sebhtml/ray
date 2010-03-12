@@ -29,11 +29,14 @@ using namespace std;
 
 void Vertex::constructor(){
 	m_coverage=0;
+	#ifdef USE_DISTANT_SEGMENTS_GRAPH
+	m_ingoingEdges=NULL;
+	m_outgoingEdges=NULL;
+	#else
 	m_edges=0;
+	#endif
 	m_readsStartingHere=NULL;
 	m_direction=NULL;
-	m_outgoingLast=0;
-	m_ingoingFirst=0;
 }
 
 void Vertex::setCoverage(int coverage){
@@ -50,81 +53,76 @@ int Vertex::getCoverage(){
 	return m_coverage;
 }
 
-vector<uint64_t> Vertex::getIngoingEdges(uint64_t a,int k){
-	vector<uint64_t> b;
+vector<VERTEX_TYPE> Vertex::getIngoingEdges(VERTEX_TYPE a,int k){
+	vector<VERTEX_TYPE> b;
+	#ifdef USE_DISTANT_SEGMENTS_GRAPH
+	VertexLinkedList*t=m_ingoingEdges;
+	while(t!=NULL){
+		b.push_back(t->getVertex());
+		t=t->getNext();
+	}
+	#else
 	for(int i=0;i<4;i++){
-		int j=((((uint64_t)m_edges)<<(63-i))>>63);
+		int j=((((VERTEX_TYPE)m_edges)<<((sizeof(VERTEX_TYPE)*8-1)-i))>>(sizeof(VERTEX_TYPE)*8-1));
 		if(j==1){
-			uint64_t l=((a<<(64-2*k+2))>>(64-2*k))|((uint64_t)i);
-			// add the first thing of the second segment too.
-			//
-			
-			// ATCAGTTGCAGTACTGCAATCTACG
-			// 0000000000000011100001100100000000000000000000000001011100100100
-			//                6 5 4 3 2 1 0
-			uint64_t clearBits=3;
-			clearBits=clearBits<<(_SEGMENT_LENGTH*2);
-			clearBits=~clearBits;
-			l=l&clearBits;
-			clearBits=3;
-			clearBits=clearBits<<(2*k-2*_SEGMENT_LENGTH-2);
-			clearBits=~clearBits;
-			l=l&clearBits;
-			uint64_t extraBits=m_ingoingFirst<<(6-2*i)>>6; 
-			extraBits=extraBits<<((k-_SEGMENT_LENGTH)*2);
-			l=l|extraBits;
+			VERTEX_TYPE l=((a<<(sizeof(VERTEX_TYPE)*8-2*k+2))>>(sizeof(VERTEX_TYPE)*8-2*k))|((VERTEX_TYPE)i);
 			b.push_back(l);
 		}
 	}
+	#endif
 	return b;
 }
 
-vector<uint64_t> Vertex::getOutgoingEdges(uint64_t a,int k){
-	vector<uint64_t> b;
+vector<VERTEX_TYPE> Vertex::getOutgoingEdges(VERTEX_TYPE a,int k){
+	vector<VERTEX_TYPE> b;
+	#ifdef USE_DISTANT_SEGMENTS_GRAPH
+	VertexLinkedList*t=m_outgoingEdges;
+	while(t!=NULL){
+		b.push_back(t->getVertex());
+		t=t->getNext();
+	}
+	#else
 	for(int i=0;i<4;i++){
-		int j=((((uint64_t)m_edges)<<(59-i))>>63);
+		int j=((((VERTEX_TYPE)m_edges)<<(sizeof(VERTEX_TYPE)*8-5-i))>>(sizeof(VERTEX_TYPE)*8-1));
 		if(j==1){
-			uint64_t l=(a>>2)|(((uint64_t)i)<<(2*(k-1)));
-			// add the last thing of the first segment too.
-			// fetch the bits at position 2*i in m_outgoingLast
-			//
-			// b b b b b b b b
-			// 7 6 5 4 3 2 1 0
-			//   G   C   T   A
-			uint64_t extraBits=(m_outgoingLast<<(6-2*i))>>6;
-			uint64_t clearBits=3;
-			clearBits=clearBits<<(2*k-2*_SEGMENT_LENGTH-2);
-			clearBits=~clearBits;	
-			l=l&(clearBits);
-			extraBits=extraBits<<(_SEGMENT_LENGTH*2-2);
-			// 0000000000000011100001100100000000000000000000000001011100100100
-			//                                                    6 5 4 3 2 1 0
-			l=l|extraBits;
+			VERTEX_TYPE l=(a>>2)|(((VERTEX_TYPE)i)<<(2*(k-1)));
 			b.push_back(l);
 		}
 	}
 
+	#endif
 	return b;
 }
 
-void Vertex::addIngoingEdge(uint64_t a,int k){
+#ifndef USE_DISTANT_SEGMENTS_GRAPH
+void Vertex::addIngoingEdge_ClassicMethod(VERTEX_TYPE a,int k){
 	uint8_t s1First=getFirstSegmentFirstCode(a,k,_SEGMENT_LENGTH);
-	uint8_t s2First=getSecondSegmentFirstCode(a,k,_SEGMENT_LENGTH);
 	// add s1First to it to edges.
 	uint8_t newBits=(1<<(s1First));
 	m_edges=m_edges|newBits;
+}
+#endif
 
-	// also add s2First somewhere!
-	// geometry of m_ingoingFirst
-	// b b b b b b b b
-	// 7 6 5 4 3 2 1 0
-	//   G   C   T   A
-	uint8_t newFilter=(s2First<<(2*s1First));
-	m_ingoingFirst=m_ingoingFirst|newFilter;
+void Vertex::addIngoingEdge(VERTEX_TYPE a,int k,MyAllocator*m){
+	#ifdef USE_DISTANT_SEGMENTS_GRAPH
+	VertexLinkedList*t=m_ingoingEdges;
+	while(t!=NULL){
+		if(t->getVertex()==a)
+			return;
+		t=t->getNext();
+	}
+
+	VertexLinkedList*n=(VertexLinkedList*)m->allocate(sizeof(VertexLinkedList));
+	n->constructor(a);
+	n->setNext(m_ingoingEdges);
+	m_ingoingEdges=n;
+	#else
+	addIngoingEdge_ClassicMethod(a,k);
+	#endif
 }
 
-void Vertex::addOutgoingEdge(uint64_t a,int k){
-	uint8_t s1Last=getFirstSegmentLastCode(a,k,_SEGMENT_LENGTH);
+#ifndef USE_DISTANT_SEGMENTS_GRAPH
+void Vertex::addOutgoingEdge_ClassicMethod(VERTEX_TYPE a,int k){
 	uint8_t s2Last=getSecondSegmentLastCode(a,k,_SEGMENT_LENGTH);
 	// description of m_edges:
 	// outgoing  ingoing
@@ -134,15 +132,30 @@ void Vertex::addOutgoingEdge(uint64_t a,int k){
 	// 7 6 5 4 3 2 1 0
 
 	// put s2Last in m_edges
-	uint64_t newBits=1<<(4+s2Last);
+	VERTEX_TYPE newBits=1<<(4+s2Last);
 	
 	m_edges=m_edges|newBits;
-	// b b b b b b b b
-	// 7 6 5 4 3 2 1 0
-	//   G   C   T   A
-	// put s1Last in m_outgoingLast at position s2Last
-	uint8_t toSet=(s1Last<<(2*s2Last));
-	m_outgoingLast=m_outgoingLast|toSet;
+}
+
+#endif
+
+void Vertex::addOutgoingEdge(VERTEX_TYPE a,int k,MyAllocator*m){
+	#ifdef USE_DISTANT_SEGMENTS_GRAPH
+	VertexLinkedList*t=m_outgoingEdges;
+	while(t!=NULL){
+		if(t->getVertex()==a)
+			return;
+		t=t->getNext();
+	}
+
+	VertexLinkedList*n=(VertexLinkedList*)m->allocate(sizeof(VertexLinkedList));
+	n->constructor(a);
+	n->setNext(m_outgoingEdges);
+	m_outgoingEdges=n;
+
+	#else
+	addOutgoingEdge_ClassicMethod(a,k);
+	#endif
 }
 
 void Vertex::addRead(int rank,int i,char c,MyAllocator*allocator){

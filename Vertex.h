@@ -21,18 +21,18 @@
 
 
 
-
-
-
 #ifndef _Vertex
 
 #define _Vertex
 #include<ReadAnnotation.h>
 #include<MyAllocator.h>
 #include<Direction.h>
+#include<VertexLinkedList.h>
 #include<stdint.h>
+#include<common_functions.h>
 #include<vector>
 using namespace std;
+
 
 /*
  * this is the type used to store coverage values
@@ -59,13 +59,14 @@ class Vertex{
 	// G C T A G C T A
 	//
 	// 7 6 5 4 3 2 1 0
+	
+	#ifdef USE_DISTANT_SEGMENTS_GRAPH
+	VertexLinkedList*m_ingoingEdges;
+	VertexLinkedList*m_outgoingEdges;
+	#else
 	uint8_t m_edges;
 
-	// b b b b b b b b
-	// 7 6 5 4 3 2 1 0
-	// G   C   T   A
-	uint8_t m_outgoingLast;
-	uint8_t m_ingoingFirst;
+	#endif
 
 	/*
  * 	read annotations
@@ -77,17 +78,21 @@ class Vertex{
  *	which hyperfusions go on this vertex at least once?
  */
 	Direction*m_direction;
+	#ifndef USE_DISTANT_SEGMENTS_GRAPH
+	void addOutgoingEdge_ClassicMethod(VERTEX_TYPE a,int k);
+	void addIngoingEdge_ClassicMethod(VERTEX_TYPE a,int k);
+	#endif
 public:
 	void constructor();
 	void setCoverage(int coverage);
 	int getCoverage();
-	void addOutgoingEdge(uint64_t a,int k);
-	void addIngoingEdge(uint64_t a,int k);
+	void addOutgoingEdge(VERTEX_TYPE a,int k,MyAllocator*m);
+	void addIngoingEdge(VERTEX_TYPE a,int k,MyAllocator*m);
 	void addRead(int rank,int i,char c,MyAllocator*allocator);
 	bool isAssembled();
 	void assemble();
-	vector<uint64_t> getIngoingEdges(uint64_t a,int k);
-	vector<uint64_t> getOutgoingEdges(uint64_t a,int k);
+	vector<VERTEX_TYPE> getIngoingEdges(VERTEX_TYPE a,int k);
+	vector<VERTEX_TYPE> getOutgoingEdges(VERTEX_TYPE a,int k);
 	ReadAnnotation*getReads();
 	void addDirection(int wave,int progression,MyAllocator*a);
 	vector<Direction> getDirections();
