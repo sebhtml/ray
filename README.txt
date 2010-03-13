@@ -1,4 +1,4 @@
-[http://denovoassembler.sf.net/ DeNovoAssembler.SF.Net] hosts the Ray project -- a massively parallel open source genome assembler for sequencers such as [http://454.com/ Roche 454 sequencers], [http://illumina.com/ Illumina sequencers], [http://solid.appliedbiosystems.com/ SOLiD sequencers], [http://www.pacificbiosciences.com/ Pacific Biosciences sequencers], [http://www.helicosbio.com/ Helicos Biosciences sequencers], and exciting [http://www.iontorrent.com/ Ion Torrent] semiconductor-based sequencers. Ray can assemble reads obtained with a mix of sequencing technologies too!
+[http://denovoassembler.sf.net/ DeNovoAssembler.SF.Net] hosts the Ray project -- a massively parallel open source genome assembler for sequencers such as [http://454.com/ Roche 454 sequencers], [http://illumina.com/ Illumina sequencers], [http://solid.appliedbiosystems.com/ SOLiD sequencers], [http://www.pacificbiosciences.com/ Pacific Biosciences sequencers], [http://www.helicosbio.com/ Helicos Biosciences sequencers], and exciting [http://www.iontorrent.com/ Ion Torrent] semiconductor-based sequencers. 
 
 
 * [http://sourceforge.net/projects/denovoassembler/files/ Download]
@@ -16,13 +16,10 @@ Only the master rank needs to access the files on disk.
 
 == Tested technologies ==
 
-* Illumina
-* SOLiD 
-* mix of technologies (to obtain random noise)
+* Illumina paired-end reads
 
 == Supported file formats ==
 
-* Color-Space fasta (".csfasta")
 * Fasta with qualities ("fastq")
 * SFF (".sff")
 * Fasta (".fasta")
@@ -119,56 +116,6 @@ Ray writes contigs to Contigs.fasta.
 
 * Reference
  ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Escherichia_coli_K_12_substr__MG1655/NC_000913.fna
-
-=== dh10bfrag ===
-
-* Technology: SOLiD single-end reads
-
-* Reads
- http://download.solidsoftwaretools.com/frag/R1a007_20080307_2_EG017_F3.csfasta.zip
-
-* Reference
- http://download.solidsoftwaretools.com/frag/DH10B_WithDup_FinalEdit_validated.fasta.zip
-
-* Template.ray
- LoadSingleEndReads R1a007_20080307_2_EG017_F3.csfasta
-
-* Command
- mpirun -np 32 Ray Template.ray
-
-=== ecoli2x50 ===
-
-* Technology: SOLiD paired-end reads
-
-* Reads
- http://download.solidsoftwaretools.com/mp50/Rosalind_20080729_2_Chris5_F3.csfasta.zip
- http://download.solidsoftwaretools.com/mp50/Rosalind_20080729_2_Chris5_R3.csfasta.zip
-
-* Template.ray (the data is paired, but we did not find the fragment length.)
- LoadSingleEndReads Rosalind_20080729_2_Chris5_F3.csfasta  
- LoadSingleEndReads Rosalind_20080729_2_Chris5_R3.csfasta
-
-* Command
- mpirun -np 32 Ray Template.ray
-
-* Reference
- http://download.solidsoftwaretools.com/mp/DH10B_WithDup_FinalEdit_validated.fasta.zip
-
-=== clcbio.com SOLiD data ===
-
-* Technology: SOLiD
-
-* Reads
- http://download.clcbio.com/testdata/solid.zip
-
-* Template.ray
- LoadSingleEndReads GRACE20070409_Suis-frag-20070425_F3_sequence.csfasta
-
-* Command
- mpirun -np 32 Ray Template.ray
-
-* Reference
- http://download.clcbio.com/testdata/solid.zip
 
 == Limitations ==
 

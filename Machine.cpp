@@ -657,6 +657,11 @@ void Machine::attachReads(){
 		#endif
 
 		char*sequence=(m_distribution_reads)[m_distribution_sequence_id]->getSeq();
+		if((int)strlen(sequence)<m_wordSize){
+			m_distribution_currentSequenceId++;
+			m_distribution_sequence_id++;
+			return;
+		}
 		char vertexChar[100];
 		memcpy(vertexChar,sequence,m_wordSize);
 		vertexChar[m_wordSize]='\0';
@@ -1096,6 +1101,9 @@ void Machine::processMessage(Message*message){
 		for(int i=0;i<(int)length;i+=2){
 			VERTEX_TYPE prefix=incoming[i+0];
 			VERTEX_TYPE suffix=incoming[i+1];
+			#ifdef DEBUG
+			assert(m_subgraph.find(prefix)!=NULL);
+			#endif
 			m_subgraph.find(prefix)->getValue()->addOutgoingEdge(suffix,m_wordSize,&m_persistentAllocator);
 			#ifdef DEBUG
 			vector<VERTEX_TYPE> newEdges=m_subgraph.find(prefix)->getValue()->getOutgoingEdges(prefix,m_wordSize);
@@ -2093,8 +2101,15 @@ void Machine::processData(){
 		}else{
 			char*readSequence=m_myReads[m_mode_send_edge_sequence_id]->getSeq();
 			int len=strlen(readSequence);
+
 			char memory[100];
 			int lll=len-m_wordSize-1;
+			if(m_mode_send_edge_sequence_id_position>lll){
+				m_mode_send_edge_sequence_id++;
+				m_mode_send_edge_sequence_id_position=0;
+				return;
+			}
+
 			map<int,vector<VERTEX_TYPE> > messagesStockOut;
 			for(int p=m_mode_send_edge_sequence_id_position;p<=m_mode_send_edge_sequence_id_position;p++){
 				memcpy(memory,readSequence+p,m_wordSize+1);
@@ -2138,10 +2153,6 @@ void Machine::processData(){
 			}
 
 
-			if(m_mode_send_edge_sequence_id_position>lll){
-				m_mode_send_edge_sequence_id++;
-				m_mode_send_edge_sequence_id_position=0;
-			}
 		}
 	}else if(m_mode_send_ingoing_edges==true){ 
 
@@ -2179,6 +2190,11 @@ void Machine::processData(){
 			char memory[100];
 			int lll=len-m_wordSize-1;
 			
+			if(m_mode_send_edge_sequence_id_position>lll){
+				m_mode_send_edge_sequence_id++;
+				m_mode_send_edge_sequence_id_position=0;
+				return;
+			}
 
 			map<int,vector<VERTEX_TYPE> > messagesStockIn;
 			for(int p=m_mode_send_edge_sequence_id_position;p<=m_mode_send_edge_sequence_id_position;p++){
