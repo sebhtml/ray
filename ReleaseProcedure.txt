@@ -1,5 +1,16 @@
-1) svn export
-2) upload the tarball on sf
-3) post an email on the list (with new features)
-4) post on seqanswers thread
-5) update the wiki page
+1) test on datasets 
+	Sp
+	SpEr
+	Ecoli400
+	SpPaired
+	SRA001125-paired
+	SRA001125-notpaired
+	SRA003611-Illumina
+	SRA003611-Mixed
+	SRA003611-454
+
+2) svn export
+3) upload the tarball on sf
+4) post an email on the list (with new features)
+5) post on seqanswers thread
+6) update the wiki page

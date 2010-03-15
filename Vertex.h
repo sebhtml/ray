@@ -34,11 +34,6 @@
 using namespace std;
 
 
-/*
- * this is the type used to store coverage values
- * default is 8 bits, unsigned.
- */
-#define COVERAGE_TYPE unsigned char
 
 /*
  * the vertex is important in the algorithm

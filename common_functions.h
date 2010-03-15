@@ -34,11 +34,18 @@ using namespace std;
 
 #define _SEGMENT_LENGTH 5
 
+/*
+ * this is the type used to store coverage values
+ * default is 8 bits, unsigned.
+ */
+#define COVERAGE_TYPE unsigned char
+
 
 // the maximum of processes is utilized to construct unique hyperfusions IDs
 #define MAX_NUMBER_OF_MPI_PROCESSES 10000
 
 // unlock the power of Ray here!
+// currently not working...
 //#define USE_DISTANT_SEGMENTS_GRAPH
 
 // uniform random numbers

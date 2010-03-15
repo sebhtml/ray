@@ -1905,7 +1905,12 @@ void Machine::processData(){
 		m_seedCoverage=(m_minimumCoverage+m_peakCoverage)/2;
 		m_coverageDistribution.clear();
 
-		if(m_minimumCoverage > m_peakCoverage or m_peakCoverage==255){
+		COVERAGE_TYPE maxCoverage=0;
+		maxCoverage--;// underflow.
+		#ifdef SHOW_PROGRESS
+		cout<<"MaxCoverage="<<maxCoverage<<endl;
+		#endif
+		if(m_minimumCoverage > m_peakCoverage or m_peakCoverage==maxCoverage){
 			killRanks();
 			cout<<"Error: no enrichment observed."<<endl;
 			return;

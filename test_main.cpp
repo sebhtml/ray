@@ -30,7 +30,7 @@ void test_segment(string x,int segment){
 	bool color=true;
 	string word=x;
 	int w=x.length();
-	VERTEX_TYPE word64=wordId(word.c_str(),color);
+	VERTEX_TYPE word64=wordId(word.c_str());
 	char s1_first=word[0];
 	char s1_last=word[segment-1];
 	char s2_first=word[w-segment];
@@ -51,9 +51,9 @@ void test_vertex(string x){
 	int w=x.length()-1;
 	string prefix=x.substr(0,w);
 	string suffix=x.substr(1);
-	VERTEX_TYPE p=wordId(prefix.c_str(),color);
-	VERTEX_TYPE s=wordId(suffix.c_str(),color);
-	v.addOutgoingEdge(wordId(suffix.c_str(),color),w);
+	VERTEX_TYPE p=wordId(prefix.c_str());
+	VERTEX_TYPE s=wordId(suffix.c_str());
+	v.addOutgoingEdge(wordId(suffix.c_str()),w);
 	vector<VERTEX_TYPE> out=v.getOutgoingEdges(p,w);
 	assert(out.size()==1);
 	if(out[0]!=s){
@@ -85,9 +85,9 @@ void test_vertex2(){
 	string prefix="ATGGAAAAAAATGAGAATGCAC";
 	string suffix1="TGGAAAAAAATGAGAATGCACG";
 	string suffix2="TGGAAAAAAATGAGAATGCACA";
-	VERTEX_TYPE p=wordId(prefix.c_str(),color);
-	VERTEX_TYPE s1=wordId(suffix1.c_str(),color);
-	VERTEX_TYPE s2=wordId(suffix2.c_str(),color);
+	VERTEX_TYPE p=wordId(prefix.c_str());
+	VERTEX_TYPE s1=wordId(suffix1.c_str());
+	VERTEX_TYPE s2=wordId(suffix2.c_str());
 	Vertex v0;
 	v0.constructor();
 	int w=prefix.length();
