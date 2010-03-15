@@ -29,7 +29,9 @@ using namespace std;
  *  the main function calls Machine.
  */
 int main(int argc,char**argv){
-	Machine machine(argc,argv);
+	// if I don't use new (ex: Machine m(argc,argv), it segfaults!!!)
+	Machine*m=new Machine(argc,argv);
+	m->start();
 	return 0;
 }
 

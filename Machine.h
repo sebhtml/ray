@@ -19,7 +19,6 @@
 
 */
 
-#include<mpi.h>
 
 
 #ifndef _Machine
@@ -37,11 +36,15 @@
 #include<Read.h>
 #include<Parameters.h>
 #include<MyAllocator.h>
-
+#include<mpi.h>
+#include<stack>
 
 using namespace std;
 
+
 class Machine{
+	int m_argc;
+	char**m_argv;
 	int m_wordSize;
 	int m_last_value;
 	time_t m_lastTime;
@@ -154,6 +157,8 @@ class Machine{
 
 
 	// EXTENSION MODE
+	vector<VERTEX_TYPE> m_enumerateChoices_outgoingEdges;
+	bool m_doChoice_tips_Detected;
 	PairedRead m_EXTENSION_pairedRead;
 	bool m_EXTENSION_pairedSequenceRequested;
 	bool m_EXTENSION_hasPairedReadAnswer;
@@ -328,6 +333,17 @@ class Machine{
 	map<int,int> m_statistics;
 	#endif
 
+	// depth first search
+	bool m_doChoice_tips_Initiated;
+	bool m_doChoice_tips_dfs_done;
+	int m_depthFirstSearch_maxDepth;
+	stack<int> m_depthFirstSearchDepths;
+	int m_doChoice_tips_i;
+	vector<VERTEX_TYPE> m_doChoice_tips_newEdges;
+	bool m_doChoice_tips_dfs_initiated;
+	set<VERTEX_TYPE> m_depthFirstSearchVisitedVertices;
+	stack<VERTEX_TYPE> m_depthFirstSearchVerticesToVisit;
+
 	int milliSeconds();
 	void enumerateChoices();
 	void killRanks();
@@ -356,11 +372,13 @@ class Machine{
 	void extendSeeds();
 	void finishFusions();
 	void makeFusions();
+	void depthFirstSearch(VERTEX_TYPE a,int b);
 public:
 	/*
  * this is the only public bit
  */
 	Machine(int argc,char**argv);
+	void start();
 	~Machine();
 };
 

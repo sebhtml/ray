@@ -215,6 +215,11 @@ void Machine::getPaths(VERTEX_TYPE vertex){
 }
 
 Machine::Machine(int argc,char**argv){
+	m_argc=argc;
+	m_argv=argv;
+}
+
+void Machine::start(){
 	time_t startingTime=time(NULL);
 	m_lastTime=time(NULL);
 	srand(m_lastTime);
@@ -267,7 +272,7 @@ Machine::Machine(int argc,char**argv){
 	m_ranksDoneAttachingReads=0;
 	m_VERSION="0.0.4";
 
-	MPI_Init(&argc,&argv);
+	MPI_Init(&m_argc,&m_argv);
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
 	MPI_Comm_size(MPI_COMM_WORLD,&m_size);
 
@@ -307,14 +312,14 @@ Machine::Machine(int argc,char**argv){
 	m_alive=true;
 	m_welcomeStep=true;
 	m_loadSequenceStep=false;
-	m_inputFile=argv[1];
+	m_inputFile=m_argv[1];
 	m_vertices_sent=0;
 	m_totalLetters=0;
 	m_distribution_file_id=m_distribution_sequence_id=m_distribution_currentSequenceId=0;
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	if(argc!=2){
+	if(m_argc!=2){
 		if(isMaster()){
 			cout<<"You must provide a input file."<<endl;
 			cout<<"See RayInputTemplate.txt"<<endl;
@@ -337,6 +342,7 @@ Machine::Machine(int argc,char**argv){
 		cout<<"\rComputation time: "<<days<<" d "<<hours<<" h "<<minutes<<" min "<<seconds<<" s"<<endl;
 	}
 	MPI_Finalize();
+
 }
 
 /*
@@ -2881,21 +2887,22 @@ void Machine::enumerateChoices(){
 			m_EXTENSION_readLength_requested=false;
 			m_EXTENSION_readPositionsForVertices.clear();
 			m_EXTENSION_pairedReadPositionsForVertices.clear();
+			m_enumerateChoices_outgoingEdges=m_SEEDING_receivedOutgoingEdges;
 		}
 	}
 }
 
 void Machine::doChoice(){
-	if(m_SEEDING_receivedOutgoingEdges.size()==1){
-		m_SEEDING_currentVertex=m_SEEDING_receivedOutgoingEdges[0];
+	if(m_enumerateChoices_outgoingEdges.size()==1){
+		m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[0];
 		m_EXTENSION_choose=true;
 		m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 		m_EXTENSION_directVertexDone=false;
 		m_EXTENSION_VertexAssembled_requested=false;
 	}else if(m_EXTENSION_currentPosition<(int)m_EXTENSION_currentSeed.size()){
-		for(int i=0;i<(int)m_SEEDING_receivedOutgoingEdges.size();i++){
-			if(m_SEEDING_receivedOutgoingEdges[i]==m_EXTENSION_currentSeed[m_EXTENSION_currentPosition]){
-				m_SEEDING_currentVertex=m_SEEDING_receivedOutgoingEdges[i];
+		for(int i=0;i<(int)m_enumerateChoices_outgoingEdges.size();i++){
+			if(m_enumerateChoices_outgoingEdges[i]==m_EXTENSION_currentSeed[m_EXTENSION_currentPosition]){
+				m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[i];
 				m_EXTENSION_choose=true;
 				m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 				m_EXTENSION_directVertexDone=false;
@@ -2917,7 +2924,7 @@ void Machine::doChoice(){
 				}
 			}
 			if(isBetter){
-				m_SEEDING_currentVertex=m_SEEDING_receivedOutgoingEdges[i];
+				m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[i];
 				m_EXTENSION_choose=true;
 				m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 				m_EXTENSION_directVertexDone=false;
@@ -2939,7 +2946,7 @@ void Machine::doChoice(){
 				}
 			}
 			if(isBetter){
-				m_SEEDING_currentVertex=m_SEEDING_receivedOutgoingEdges[i];
+				m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[i];
 				m_EXTENSION_choose=true;
 				m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 				m_EXTENSION_directVertexDone=false;
@@ -3006,9 +3013,9 @@ void Machine::doChoice(){
 					int distance=m_EXTENSION_extension.size()-startPosition;
 
 					// process each edge separately.
-					if(m_EXTENSION_edgeIterator<(int)m_SEEDING_receivedOutgoingEdges.size()){
+					if(m_EXTENSION_edgeIterator<(int)m_enumerateChoices_outgoingEdges.size()){
 						// got a match!
-						if(m_EXTENSION_receivedReadVertex==m_SEEDING_receivedOutgoingEdges[m_EXTENSION_edgeIterator]){
+						if(m_EXTENSION_receivedReadVertex==m_enumerateChoices_outgoingEdges[m_EXTENSION_edgeIterator]){
 							ReadAnnotation annotation=*m_EXTENSION_readIterator;
 							// check if the current read has a paired read.
 							if(!m_EXTENSION_hasPairedReadRequested){
@@ -3106,7 +3113,7 @@ void Machine::doChoice(){
 						}
 					}
 					if(winner==true){
-						m_SEEDING_currentVertex=m_SEEDING_receivedOutgoingEdges[i];
+						m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[i];
 						m_EXTENSION_choose=true;
 						m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 						m_EXTENSION_directVertexDone=false;
@@ -3142,7 +3149,7 @@ void Machine::doChoice(){
 						}
 					}
 					if(winner==true){
-						m_SEEDING_currentVertex=m_SEEDING_receivedOutgoingEdges[i];
+						m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[i];
 						m_EXTENSION_choose=true;
 						m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 						m_EXTENSION_directVertexDone=false;
@@ -3151,8 +3158,46 @@ void Machine::doChoice(){
 					}
 				}
 
-				cout<<"No winner."<<endl;
+				m_doChoice_tips_Detected=false;
+				m_doChoice_tips_Initiated=false;
+				cout<<"Checking tips."<<endl;
+			}
+			return;
+		}else if(!m_doChoice_tips_Detected){
+ 			//for each entries in m_enumerateChoices_outgoingEdges, do a dfs of max depth 40.
+			//if the reached depth is 40, it is not a tip, otherwise, it is.
+			int maxDepth=40;
+			if(!m_doChoice_tips_Initiated){
+				m_doChoice_tips_i=0;
+				m_doChoice_tips_newEdges.clear();
+				m_doChoice_tips_dfs_initiated=false;
+				m_doChoice_tips_dfs_done=false;
+				m_doChoice_tips_Initiated=true;
+			}
 
+			if(m_doChoice_tips_i<(int)m_enumerateChoices_outgoingEdges.size()){
+				if(!m_doChoice_tips_dfs_done){
+					depthFirstSearch(m_enumerateChoices_outgoingEdges[m_doChoice_tips_i],maxDepth);
+				}else{
+					// keep the edge if it is not a tip.
+					cout<<"Depth= "<<m_enumerateChoices_outgoingEdges[m_doChoice_tips_i]<<" "<<m_depthFirstSearch_maxDepth<<endl;
+					if(m_depthFirstSearch_maxDepth<maxDepth){
+						m_doChoice_tips_newEdges.push_back(m_enumerateChoices_outgoingEdges[m_doChoice_tips_i]);
+					}
+					m_doChoice_tips_i++;
+				}
+			}else{
+				if(m_doChoice_tips_newEdges.size()==1){
+					m_SEEDING_currentVertex=m_doChoice_tips_newEdges[0];
+					m_EXTENSION_choose=true;
+					m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
+					m_EXTENSION_directVertexDone=false;
+					m_EXTENSION_VertexAssembled_requested=false;
+					return;
+				}else{
+					// no luck..., yet.
+					m_doChoice_tips_Detected=true;
+				}
 			}
 			return;
 		}
@@ -3202,6 +3247,63 @@ void Machine::doChoice(){
 		}
 	}
 }
+
+/*
+ * do a depth first search with max depth of maxDepth;
+ */
+void Machine::depthFirstSearch(VERTEX_TYPE a,int maxDepth){
+	if(!m_doChoice_tips_dfs_initiated){
+		m_depthFirstSearchVisitedVertices.clear();
+		while(m_depthFirstSearchVerticesToVisit.size()>0)
+			m_depthFirstSearchVerticesToVisit.pop();
+		while(m_depthFirstSearchDepths.size()>0)
+			m_depthFirstSearchDepths.pop();
+
+		m_depthFirstSearchVerticesToVisit.push(a);
+		m_depthFirstSearchDepths.push(0);
+		m_depthFirstSearch_maxDepth=0;
+		m_doChoice_tips_dfs_initiated=true;
+		m_doChoice_tips_dfs_done=false;
+		m_SEEDING_edgesRequested=false;
+	}
+	if(m_depthFirstSearchVerticesToVisit.size()>0){
+		if(!m_SEEDING_edgesRequested){
+			VERTEX_TYPE vertexToVisit=m_depthFirstSearchVerticesToVisit.top();
+			int theDepth=m_depthFirstSearchDepths.top();
+			// too far away.
+			if(theDepth>m_depthFirstSearch_maxDepth){
+				m_depthFirstSearch_maxDepth=theDepth;
+			}
+			// don't visit it
+			if(theDepth==maxDepth or m_depthFirstSearchVisitedVertices.count(vertexToVisit)>0){
+				m_depthFirstSearchVerticesToVisit.pop();
+				m_depthFirstSearchDepths.pop();
+			}else{
+				// visit the vertex, and ask next edges.
+				m_depthFirstSearchVisitedVertices.insert(vertexToVisit);
+				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
+				message[0]=vertexToVisit;
+				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(vertexToVisit),TAG_REQUEST_VERTEX_OUTGOING_EDGES,getRank());
+				m_outbox.push_back(aMessage);
+				m_SEEDING_edgesRequested=true;
+				m_SEEDING_edgesReceived=false;
+			}
+		}else if(m_SEEDING_edgesReceived){
+			int theDepth=m_depthFirstSearchDepths.top();
+			int newDepth=theDepth+1;
+			m_depthFirstSearchVerticesToVisit.pop();
+			m_depthFirstSearchDepths.pop();
+			for(int i=0;i<(int)m_SEEDING_receivedOutgoingEdges.size();i++){
+				m_depthFirstSearchVerticesToVisit.push(m_SEEDING_receivedOutgoingEdges[i]);
+				m_depthFirstSearchDepths.push(newDepth);
+			}
+			m_SEEDING_edgesRequested=false;
+		}
+	}else{
+		m_doChoice_tips_dfs_done=true;
+	}
+}
+
 
 void Machine::checkIfCurrentVertexIsAssembled(){
 	if(!m_EXTENSION_directVertexDone){
@@ -3325,5 +3427,6 @@ int Machine::vertexRank(VERTEX_TYPE a){
 }
 
 Machine::~Machine(){
+	// do nothing.
 }
 
