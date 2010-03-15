@@ -1417,7 +1417,7 @@ void Machine::makeFusions(){
 	// if a path is 100% identical to another one, keep the one with the lowest ID
 	// if a path is 100% identical to another one, but is reverse-complement, keep the one with the lowest ID
 	
-	int END_LENGTH=5;
+	int END_LENGTH=100;
 	if(m_SEEDING_i==(int)m_EXTENSION_contigs.size()){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_FUSION_DONE,getRank());
 		m_outbox.push_back(aMessage);
@@ -3186,13 +3186,16 @@ void Machine::doChoice(){
 				}else{
 					// keep the edge if it is not a tip.
 					cout<<"Depth= "<<m_enumerateChoices_outgoingEdges[m_doChoice_tips_i]<<" "<<m_depthFirstSearch_maxDepth<<endl;
-					if(m_depthFirstSearch_maxDepth<maxDepth){
+					if(m_depthFirstSearch_maxDepth==maxDepth){
 						m_doChoice_tips_newEdges.push_back(m_enumerateChoices_outgoingEdges[m_doChoice_tips_i]);
 					}
 					m_doChoice_tips_i++;
+					m_doChoice_tips_dfs_initiated=false;
+					m_doChoice_tips_dfs_done=false;
 				}
 			}else{
 				if(m_doChoice_tips_newEdges.size()==1){
+					cout<<"Winner by tip detection."<<endl;
 					m_SEEDING_currentVertex=m_doChoice_tips_newEdges[0];
 					m_EXTENSION_choose=true;
 					m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
@@ -3275,6 +3278,12 @@ void Machine::depthFirstSearch(VERTEX_TYPE a,int maxDepth){
 		if(!m_SEEDING_edgesRequested){
 			VERTEX_TYPE vertexToVisit=m_depthFirstSearchVerticesToVisit.top();
 			int theDepth=m_depthFirstSearchDepths.top();
+			if(m_depthFirstSearchVisitedVertices.size()>250){
+				// quit this strange place.
+				m_doChoice_tips_dfs_done=true;
+				cout<<"Exiting, I am lost."<<endl;
+				return;
+			}
 			// too far away.
 			if(theDepth>m_depthFirstSearch_maxDepth){
 				m_depthFirstSearch_maxDepth=theDepth;
