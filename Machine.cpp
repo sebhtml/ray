@@ -265,7 +265,7 @@ Machine::Machine(int argc,char**argv){
 	m_startEdgeDistribution=false;
 
 	m_ranksDoneAttachingReads=0;
-	m_VERSION="0.0.3";
+	m_VERSION="0.0.4";
 
 	MPI_Init(&argc,&argv);
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
@@ -1899,6 +1899,12 @@ void Machine::processData(){
 		m_seedCoverage=(m_minimumCoverage+m_peakCoverage)/2;
 		m_coverageDistribution.clear();
 
+		if(m_minimumCoverage > m_peakCoverage or m_peakCoverage==255){
+			killRanks();
+			cout<<"Error: no enrichment observed."<<endl;
+			return;
+		}
+
 		// see these values to everyone.
 		VERTEX_TYPE*buffer=(VERTEX_TYPE*)m_outboxAllocator.allocate(3*sizeof(VERTEX_TYPE));
 		buffer[0]=m_minimumCoverage;
@@ -3145,7 +3151,7 @@ void Machine::doChoice(){
 					}
 				}
 
-
+				cout<<"No winner."<<endl;
 
 			}
 			return;

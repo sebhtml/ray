@@ -60,6 +60,10 @@ CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>distributionOfCov
 		}
 	}
 
+	#ifdef DEBUG
+	cout<<"PeakCoverage="<<m_coverage_mean<<endl;
+	cout<<"MinimumCoverage="<<m_minimumCoverage<<endl;
+	#endif
 }
 
 int CoverageDistribution::getPeakCoverage(){
