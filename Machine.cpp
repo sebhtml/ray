@@ -1933,7 +1933,16 @@ void Machine::processData(){
 			cout<<"Error: no enrichment observed."<<endl;
 			return;
 		}
-
+		ofstream f("Parameters.txt");
+		f<<"InputFile "<<m_parameters.getInputFile()<<endl;
+		f<<"NumberOfRanks "<<getSize()<<endl;
+		f<<"MasterRank "<<MASTER_RANK<<endl;
+		f<<"WordSize "<<m_wordSize<<endl;
+		f<<"MinimumCoverage "<<m_minimumCoverage<<endl;
+		f<<"PeakCoverage "<<m_peakCoverage<<endl;
+		f<<"SeedCoverage "<<m_seedCoverage<<endl;
+		f.close();
+		cout<<"Writing Parameters.txt"<<endl;
 		// see these values to everyone.
 		VERTEX_TYPE*buffer=(VERTEX_TYPE*)m_outboxAllocator.allocate(3*sizeof(VERTEX_TYPE));
 		buffer[0]=m_minimumCoverage;

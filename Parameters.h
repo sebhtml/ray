@@ -49,6 +49,7 @@ class Parameters{
 	map<int,int> m_averageFragmentLengths;
 	map<int,int> m_standardDeviations;
 	bool m_colorSpaceMode;
+	string m_input;
 public:
 	Parameters();
 	void load(string file);
@@ -64,6 +65,7 @@ public:
 	bool isRightFile(int i);
 	bool getColorSpaceMode();
 	bool useAmos();
+	string getInputFile();
 };
 
 #endif

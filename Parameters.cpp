@@ -48,6 +48,7 @@ int Parameters::getWordSize(){
 
 void Parameters::load(string file){
 	ifstream f(file.c_str());
+	m_input=file;
 	while(!f.eof()){
 		string token;
 		f>>token;
@@ -137,3 +138,8 @@ bool Parameters::getColorSpaceMode(){
 bool Parameters::useAmos(){
 	return m_amos;
 }
+
+string Parameters::getInputFile(){
+	return m_input;
+}
+

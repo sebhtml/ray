@@ -29,10 +29,12 @@ using namespace std;
 CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>distributionOfCoverage,string m_assemblyDirectory){
 	m_coverage_mean=100;
 	m_minimumCoverage=1;
-
+	ofstream f("CoverageDistribution.txt")
+	f<<"Coverage NumberOfVertices"<<endl;
 	for(map<int,VERTEX_TYPE>::iterator i=distributionOfCoverage.begin();i!=distributionOfCoverage.end();i++){
 		#ifdef SHOW_PROGRESS
 		cout<<"DISTRIBUTION "<<i->first<<" "<<i->second<<endl;
+		f<<""<<i->first<<" "<<i->second<<endl;
 		#endif
 		int coverage=i->first;
 		if(
@@ -64,6 +66,9 @@ CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>distributionOfCov
 	cout<<"PeakCoverage="<<m_coverage_mean<<endl;
 	cout<<"MinimumCoverage="<<m_minimumCoverage<<endl;
 	#endif
+
+	cout<<"Writing CoverageDistribution.txt"<<endl;
+	f.close();
 }
 
 int CoverageDistribution::getPeakCoverage(){
