@@ -19,7 +19,8 @@
 
 */
 
-#define MAX_DEPTH 40
+#define MAX_DEPTH 50
+#define MAX_VERTICES_TO_VISIT 1.5*MAX_DEPTH
 
 // tags
 // these are the message types used by Ray
@@ -3233,8 +3234,16 @@ void Machine::doChoice(){
 				if(!m_dfsData->m_doChoice_tips_dfs_done){
 					depthFirstSearch(m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_i],maxDepth);
 				}else{
+					cout<<"m_depthFirstSearch_maxDepth="<<m_dfsData->m_depthFirstSearch_maxDepth<<endl;
 					// keep the edge if it is not a tip.
 					if(m_dfsData->m_depthFirstSearch_maxDepth==maxDepth){
+
+						// just don't try that strange graph place for now.
+						if(m_dfsData->m_depthFirstSearchVisitedVertices.size()==MAX_VERTICES_TO_VISIT){
+							m_doChoice_tips_Detected=true;
+							m_bubbleData->m_doChoice_bubbles_Detected=true;
+							return;
+						}
 						m_dfsData->m_doChoice_tips_newEdges.push_back(m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_i]);
 					
 						// store visited vertices for bubble detection purposes.
@@ -3265,46 +3274,60 @@ void Machine::doChoice(){
 		// bubbles detection aims polymorphisms and homopolymers stretches.
 		}
  		else if(!m_bubbleData->m_doChoice_bubbles_Detected){
+
 			// use m_BUBBLE_visitedVertices here.
 			// if everything just go at the same place, just take any of them...
-			map<VERTEX_TYPE,int> inCommon; // vertices and their count.
+			map<VERTEX_TYPE,vector<int> > inCommon; // vertices and their their depths.
 			cout<<"MiniGraph"<<endl;
+			
 			for(int i=0;i<(int)m_bubbleData->m_BUBBLE_visitedVertices.size();i++){
+				cout<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<" -> "<<idToWord(m_dfsData->m_doChoice_tips_newEdges[i],m_wordSize)<<endl;
 				for(int j=0;j<(int)m_bubbleData->m_BUBBLE_visitedVertices[i].size();j+=2){
 					VERTEX_TYPE prefix=m_bubbleData->m_BUBBLE_visitedVertices[i][j+0];
 					VERTEX_TYPE suffix=m_bubbleData->m_BUBBLE_visitedVertices[i][j+1];
-					int associatedDepth=m_bubbleData->m_BUBBLE_visitedVerticesDepths[i][j];
-					cout<<prefix<<" -> "<<suffix<<endl;
-					if(associatedDepth>=m_wordSize)
-						inCommon[m_bubbleData->m_BUBBLE_visitedVertices[i][j]]++;
+					int associatedDepth=m_bubbleData->m_BUBBLE_visitedVerticesDepths[i][j/2];
+					cout<<idToWord(prefix,m_wordSize)<<" -> "<<idToWord(suffix,m_wordSize)<<endl;
+					inCommon[prefix].push_back(associatedDepth);
 				}
 			}
 			cout<<"/MiniGraph"<<endl;
-			int count=0;
-			map<int,int> distribution;
-			for(map<VERTEX_TYPE,int>::iterator i=inCommon.begin();i!=inCommon.end();i++){
-				distribution[i->second]++;
-				if(i->second==(int)m_bubbleData->m_BUBBLE_visitedVertices.size()){
-					count++;
+			map<int,int> differences;
+			
+			for(map<VERTEX_TYPE,vector<int> >::iterator i=inCommon.begin();i!=inCommon.end();i++){
+				if(i->second.size()!=2)
+					continue;
+				cout<<idToWord(i->first,m_wordSize);
+				for(int j=0;j<(int)i->second.size();j++){
+					cout<<" @"<<i->second[j];
 				}
+				int diff=i->second[0]-i->second[1];
+				if(diff<0)
+					diff=-diff;
+				differences[diff]++;
+				cout<<endl;
 			}
-			for(map<int,int>::iterator i=distribution.begin();i!=distribution.end();i++){
-				cout<<"BubbleStats "<<i->first<<" "<<i->second<<endl;
+			//cout<<"Differences."<<endl;
+			for(map<int,int>::iterator i=differences.begin();i!=differences.end();i++){
+				cout<<i->first<<" "<<i->second<<endl;
 			}
-			// threshold.
-			int threshold=MAX_DEPTH-m_wordSize;
-			if(count>=threshold){
-				cout<<"BubbleTool says YES"<<endl;
-				/*
-				m_SEEDING_currentVertex=m_dfsData->m_doChoice_tips_newEdges[0];
-				m_EXTENSION_choose=true;
-				m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
-				m_EXTENSION_directVertexDone=false;
-				m_EXTENSION_VertexAssembled_requested=false;
-				*/
-			}else{
-				cout<<"BubbleTool says NO"<<endl;
+			int count0=differences[0];
+			int count1=differences[1];
+			int minimum=15;
+			if(count0>=minimum and count0<MAX_DEPTH-m_wordSize){
+				cout<<"Mismatch detected!."<<endl;
+			}else if(count1>=minimum and count1<MAX_DEPTH-m_wordSize){
+				cout<<"Indel detected!."<<endl;
 			}
+			// if count1 is > 0, then we have 454 homopolymers or polymorphism (indel of 1 NT)
+			// if count0 is > 0, then we have a polymorphism  (mismatch type)
+			
+			/*
+			m_SEEDING_currentVertex=m_dfsData->m_doChoice_tips_newEdges[0];
+			m_EXTENSION_choose=true;
+			m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
+			m_EXTENSION_directVertexDone=false;
+			m_EXTENSION_VertexAssembled_requested=false;
+			*/
 			m_bubbleData->m_doChoice_bubbles_Detected=true;
 			return;
 		}
@@ -3368,6 +3391,7 @@ void Machine::depthFirstSearch(VERTEX_TYPE a,int maxDepth){
 			m_dfsData->m_depthFirstSearchDepths.pop();
 
 		m_dfsData->m_depthFirstSearchVerticesToVisit.push(a);
+		m_dfsData->m_depthFirstSearchVisitedVertices.insert(a);
 		m_dfsData->m_depthFirstSearchDepths.push(0);
 		m_dfsData->m_depthFirstSearch_maxDepth=0;
 		m_dfsData->m_doChoice_tips_dfs_initiated=true;
@@ -3378,7 +3402,7 @@ void Machine::depthFirstSearch(VERTEX_TYPE a,int maxDepth){
 		if(!m_SEEDING_edgesRequested){
 			VERTEX_TYPE vertexToVisit=m_dfsData->m_depthFirstSearchVerticesToVisit.top();
 			int theDepth=m_dfsData->m_depthFirstSearchDepths.top();
-			if(m_dfsData->m_depthFirstSearchVisitedVertices.size()>250){
+			if(m_dfsData->m_depthFirstSearchVisitedVertices.size()>=MAX_VERTICES_TO_VISIT){
 				// quit this strange place.
 				m_dfsData->m_doChoice_tips_dfs_done=true;
 				cout<<"Exiting, I am lost."<<endl;
@@ -3388,34 +3412,37 @@ void Machine::depthFirstSearch(VERTEX_TYPE a,int maxDepth){
 			if(theDepth> m_dfsData->m_depthFirstSearch_maxDepth){
 				m_dfsData->m_depthFirstSearch_maxDepth=theDepth;
 			}
-			// don't visit it
-			if(theDepth==maxDepth or m_dfsData->m_depthFirstSearchVisitedVertices.count(vertexToVisit)>0){
-				m_dfsData->m_depthFirstSearchVerticesToVisit.pop();
-				m_dfsData->m_depthFirstSearchDepths.pop();
-			}else{
-				// visit the vertex, and ask next edges.
-				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
-				message[0]=vertexToVisit;
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(vertexToVisit),TAG_REQUEST_VERTEX_OUTGOING_EDGES,getRank());
-				m_outbox.push_back(aMessage);
-				m_SEEDING_edgesRequested=true;
-				m_SEEDING_edgesReceived=false;
-			}
+		
+			// visit the vertex, and ask next edges.
+			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
+			message[0]=vertexToVisit;
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(vertexToVisit),TAG_REQUEST_VERTEX_OUTGOING_EDGES,getRank());
+			m_outbox.push_back(aMessage);
+			m_SEEDING_edgesRequested=true;
+			m_SEEDING_edgesReceived=false;
 		}else if(m_SEEDING_edgesReceived){
 			VERTEX_TYPE vertexToVisit=m_dfsData->m_depthFirstSearchVerticesToVisit.top();
 			int theDepth=m_dfsData->m_depthFirstSearchDepths.top();
+			#ifdef DEBUG
+			assert(theDepth>=0);
+			assert(theDepth<=maxDepth);
+			#endif
 			int newDepth=theDepth+1;
 
-			m_dfsData->m_depthFirstSearchVisitedVertices.insert(vertexToVisit);
 			m_dfsData->m_depthFirstSearchVerticesToVisit.pop();
 			m_dfsData->m_depthFirstSearchDepths.pop();
 			for(int i=0;i<(int)m_SEEDING_receivedOutgoingEdges.size();i++){
 				VERTEX_TYPE nextVertex=m_SEEDING_receivedOutgoingEdges[i];
+				if(m_dfsData->m_depthFirstSearchVisitedVertices.count(nextVertex)>0)
+					continue;
+				if(newDepth>maxDepth)
+					continue;
+				m_dfsData->m_depthFirstSearchVerticesToVisit.push(nextVertex);
+				m_dfsData->m_depthFirstSearchDepths.push(newDepth);
 				m_dfsData->m_depthFirstSearchVisitedVertices_vector.push_back(vertexToVisit);
 				m_dfsData->m_depthFirstSearchVisitedVertices_vector.push_back(nextVertex);
 				m_dfsData->m_depthFirstSearchVisitedVertices_depths.push_back(newDepth);
-				m_dfsData->m_depthFirstSearchVerticesToVisit.push(nextVertex);
-				m_dfsData->m_depthFirstSearchDepths.push(newDepth);
+				m_dfsData->m_depthFirstSearchVisitedVertices.insert(nextVertex);
 			}
 			m_SEEDING_edgesRequested=false;
 		}
