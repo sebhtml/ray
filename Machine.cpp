@@ -133,6 +133,8 @@
 #define MODE_PERFORM_CALIBRATION 10
 #define MODE_FINISH_FUSIONS 11
 #define MODE_DISTRIBUTE_FUSIONS 12
+#define MODE_AMOS 13
+
 
 // allocators size
 // for MPI communications, memory is allocated and freed with OUTBOX_ALLOCATOR_CHUNK_SIZE and INBOX_ALLOCATOR_CHUNK_SIZE
@@ -810,6 +812,9 @@ void Machine::processMessage(Message*message){
 		}
 	}else if(tag==TAG_CLEAR_DIRECTIONS){
 	
+		// clearing old data too!.
+		m_FINISH_pathLengths.clear();
+
 		// clear graph
 		SplayTreeIterator<VERTEX_TYPE,Vertex> iterator(&m_subgraph);
 		while(iterator.hasNext()){
@@ -874,6 +879,15 @@ void Machine::processMessage(Message*message){
 	}else if(tag==TAG_GET_PATH_VERTEX){
 		int id=incoming[0];
 		int position=incoming[1];
+		#ifdef DEBUG
+		assert(m_FUSION_identifier_map.count(id)>0);
+		#endif
+		#ifdef DEBUG
+		if(position>=(int)m_EXTENSION_contigs[m_FUSION_identifier_map[id]].size()){
+			cout<<"Pos="<<position<<" Length="<<m_EXTENSION_contigs[m_FUSION_identifier_map[id]].size()<<endl;
+		}
+		assert(position<(int)m_EXTENSION_contigs[m_FUSION_identifier_map[id]].size());
+		#endif
 		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(sizeof(VERTEX_TYPE));
 		message[0]=m_EXTENSION_contigs[m_FUSION_identifier_map[id]][position];
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,source,TAG_GET_PATH_VERTEX_REPLY,getRank());
@@ -884,15 +898,16 @@ void Machine::processMessage(Message*message){
 	}else if(tag==TAG_GET_PATH_LENGTH){
 		int id=incoming[0];
 		int length=0;
+		#ifdef DEBUG
+		assert(m_FUSION_identifier_map.count(id)>0);
+		#endif
 		if(m_FUSION_identifier_map.count(id)>0){
 			length=m_EXTENSION_contigs[m_FUSION_identifier_map[id]].size();
-		}else{
-			cout<<"Rank "<<getRank()<<" Fatal error, "<<id<<" is not in my data."<<endl;
 		}
 
-		if(length==0){
-			cout<<"Rank "<<getRank()<<": Invalid length."<<endl;
-		}
+		#ifdef DEBUG
+		assert(length>0);
+		#endif
 		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(sizeof(VERTEX_TYPE));
 		message[0]=length;
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,source,TAG_GET_PATH_LENGTH_REPLY,getRank());
@@ -902,9 +917,9 @@ void Machine::processMessage(Message*message){
 		m_FUSION_pathLengthReceived=true;
 	}else if(tag==TAG_REQUEST_VERTEX_COVERAGE){
 		SplayNode<VERTEX_TYPE,Vertex>*node=m_subgraph.find(incoming[0]);
-		if(node==NULL){
-			cout<<"NULL (TAG_REQUEST_VERTEX_COVERAGE), vertex="<<idToWord(incoming[0],m_wordSize)<<endl;
-		}
+		#ifdef DEBUG
+		assert(node!=NULL);
+		#endif
 		VERTEX_TYPE coverage=node->getValue()->getCoverage();
 		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 		message[0]=coverage;
@@ -926,9 +941,9 @@ void Machine::processMessage(Message*message){
 		m_EXTENSION_hasPairedReadReceived=true;
 	}else if(tag==TAG_REQUEST_VERTEX_INGOING_EDGES){
 		SplayNode<VERTEX_TYPE,Vertex>*node=m_subgraph.find(incoming[0]);
-		if(node==NULL){
-			cout<<"NULL (TAG_REQUEST_VERTEX_INGOING_EDGES), vertex="<<incoming[0]<<""<<endl;
-		}
+		#ifdef DEBUG
+		assert(node!=NULL);
+		#endif
 		vector<VERTEX_TYPE> ingoingEdges=node->getValue()->getIngoingEdges(incoming[0],m_wordSize);
 		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(ingoingEdges.size()*sizeof(VERTEX_TYPE));
 		for(int i=0;i<(int)ingoingEdges.size();i++){
@@ -939,6 +954,9 @@ void Machine::processMessage(Message*message){
 	}else if(tag==TAG_CALIBRATION_MESSAGE){
 	}else if(tag==TAG_ASK_VERTEX_PATHS_SIZE){
 		#ifdef DEBUG
+		if(m_subgraph.find(incoming[0])==NULL){
+			cout<<"Vertex "<<incoming[0]<<" is not here."<<endl;
+		}
 		assert(m_subgraph.find(incoming[0])!=NULL);
 		#endif
 		vector<Direction> paths=m_subgraph.find(incoming[0])->getValue()->getDirections();
@@ -2624,7 +2642,12 @@ void Machine::processData(){
 			#else
 			cout<<"\r"<<"Writing "<<m_parameters.getOutputFile()<<endl;
 			#endif
-			killRanks();
+			if(m_parameters.useAmos()){
+				m_master_mode=MODE_AMOS;
+			}else{// we are done.
+				killRanks();
+			}
+			
 		}else if(!m_EXTENSION_currentRankIsStarted){
 			m_EXTENSION_currentRankIsStarted=true;
 			#ifdef SHOW_PROGRESS
@@ -2636,6 +2659,14 @@ void Machine::processData(){
 		}else if(m_EXTENSION_currentRankIsDone){
 			m_EXTENSION_currentRankIsSet=false;
 		}
+	}else if(m_master_mode==MODE_AMOS){
+		// in development.
+		#ifdef SHOW_PROGRESS
+		cout<<"Writing Contigs.amos"<<endl;
+		#endif
+		// write Reads (RED)
+		// write contigs (CTG)
+		killRanks();
 	}
 
 	if(m_mode_EXTENSION){

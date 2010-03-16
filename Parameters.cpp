@@ -39,6 +39,7 @@ Parameters::Parameters(){
 	m_wordSize=25;
 	m_outputFile="Contigs.fasta";
 	m_colorSpaceMode=false;
+	m_amos=false;
 }
 
 int Parameters::getWordSize(){
@@ -81,6 +82,8 @@ void Parameters::load(string file){
 		}else if(token=="SetWordSize"){
 			f>>token;
 			m_wordSize=atoi(token.c_str());
+		}else if(token=="OutputAmosFile"){
+			m_amos=true;
 		}
 	}
 	f.close();
@@ -129,4 +132,8 @@ int Parameters::getStandardDeviation(int i){
 
 bool Parameters::getColorSpaceMode(){
 	return m_colorSpaceMode;
+}
+
+bool Parameters::useAmos(){
+	return m_amos;
 }

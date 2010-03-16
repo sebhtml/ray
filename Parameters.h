@@ -36,6 +36,7 @@ using namespace std;
  *
  */
 class Parameters{
+	bool m_amos;
 	bool m_initiated;
 	int m_numberOfSequences;
 	vector<string> m_singleEndReadsFile;
@@ -62,6 +63,7 @@ public:
 	bool isLeftFile(int i);
 	bool isRightFile(int i);
 	bool getColorSpaceMode();
+	bool useAmos();
 };
 
 #endif
