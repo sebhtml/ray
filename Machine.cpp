@@ -3205,7 +3205,9 @@ void Machine::doChoice(){
 
 				m_doChoice_tips_Detected=false;
 				m_doChoice_tips_Initiated=false;
+				#ifdef SHOW_PROGRESS
 				cout<<"Checking tips."<<endl;
+				#endif
 			}
 			return;
 		}else if(!m_doChoice_tips_Detected){
@@ -3218,6 +3220,7 @@ void Machine::doChoice(){
 				m_doChoice_tips_dfs_initiated=false;
 				m_doChoice_tips_dfs_done=false;
 				m_doChoice_tips_Initiated=true;
+				m_BUBBLE_visitedVertices.clear();
 			}
 
 			if(m_doChoice_tips_i<(int)m_enumerateChoices_outgoingEdges.size()){
@@ -3225,9 +3228,16 @@ void Machine::doChoice(){
 					depthFirstSearch(m_enumerateChoices_outgoingEdges[m_doChoice_tips_i],maxDepth);
 				}else{
 					// keep the edge if it is not a tip.
-					cout<<"Depth= "<<m_enumerateChoices_outgoingEdges[m_doChoice_tips_i]<<" "<<m_depthFirstSearch_maxDepth<<endl;
 					if(m_depthFirstSearch_maxDepth==maxDepth){
 						m_doChoice_tips_newEdges.push_back(m_enumerateChoices_outgoingEdges[m_doChoice_tips_i]);
+					
+						// store visited vertices for bubble detection.
+						vector<VERTEX_TYPE> visitedVertices;
+						for(set<VERTEX_TYPE>::iterator i=m_depthFirstSearchVisitedVertices.begin();i!=m_depthFirstSearchVisitedVertices.end();++i){
+							visitedVertices.push_back(*i);
+						}
+						// store visited vertices for bubble detection purposes.
+						m_BUBBLE_visitedVertices.push_back(visitedVertices);
 					}
 					m_doChoice_tips_i++;
 					m_doChoice_tips_dfs_initiated=false;
@@ -3235,7 +3245,6 @@ void Machine::doChoice(){
 				}
 			}else{
 				if(m_doChoice_tips_newEdges.size()==1){
-					cout<<"Winner by tip detection."<<endl;
 					m_SEEDING_currentVertex=m_doChoice_tips_newEdges[0];
 					m_EXTENSION_choose=true;
 					m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
@@ -3245,8 +3254,29 @@ void Machine::doChoice(){
 				}else{
 					// no luck..., yet.
 					m_doChoice_tips_Detected=true;
+					m_doChoice_bubbles_Detected=false;
+					m_doChoice_bubbles_Initiated=false;
 				}
 			}
+			return;
+		// bubbles detection aims polymorphisms and homopolymers stretches.
+		}else if(!m_doChoice_bubbles_Detected){
+			// use m_BUBBLE_visitedVertices here.
+			// if everything just go at the same place, just take any of them...
+			map<VERTEX_TYPE,int> inCommon;
+			for(int i=0;i<(int)m_BUBBLE_visitedVertices.size();i++){
+				for(int j=0;j<(int)m_BUBBLE_visitedVertices[i].size();j++){
+					inCommon[m_BUBBLE_visitedVertices[i][j]]++;
+				}
+			}
+			int count=0;
+			for(map<VERTEX_TYPE,int>::iterator i=inCommon.begin();i!=inCommon.end();i++){
+				if(i->second==(int)m_BUBBLE_visitedVertices.size()){
+					count++;
+				}
+			}
+			cout<<"BubbleTool says "<<count<<endl;
+			m_doChoice_bubbles_Detected=true;
 			return;
 		}
 

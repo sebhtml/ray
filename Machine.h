@@ -344,6 +344,11 @@ class Machine{
 	set<VERTEX_TYPE> m_depthFirstSearchVisitedVertices;
 	stack<VERTEX_TYPE> m_depthFirstSearchVerticesToVisit;
 
+	// BUBBLE
+	vector<vector<VERTEX_TYPE> > m_BUBBLE_visitedVertices;
+	bool m_doChoice_bubbles_Detected;
+	bool m_doChoice_bubbles_Initiated;
+
 	int milliSeconds();
 	void enumerateChoices();
 	void killRanks();

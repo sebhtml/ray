@@ -29,7 +29,7 @@ using namespace std;
 CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>distributionOfCoverage,string m_assemblyDirectory){
 	m_coverage_mean=100;
 	m_minimumCoverage=1;
-	ofstream f("CoverageDistribution.txt")
+	ofstream f("CoverageDistribution.txt");
 	f<<"Coverage NumberOfVertices"<<endl;
 	for(map<int,VERTEX_TYPE>::iterator i=distributionOfCoverage.begin();i!=distributionOfCoverage.end();i++){
 		#ifdef SHOW_PROGRESS
