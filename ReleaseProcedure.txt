@@ -1,4 +1,4 @@
-1) test on datasets 
+*) test on datasets 
 	Sp
 	SpEr
 	Ecoli400
@@ -9,8 +9,12 @@
 	SRA003611-Mixed
 	SRA003611-454
 
-2) svn export
-3) upload the tarball on sf
-4) post an email on the list (with new features)
-5) post on seqanswers thread
-6) update the wiki page
+*) svn cp trunk tags/<version>
+*) close the milestone in trac
+*) export the closed tickets for milestone
+*) svn log between <version> and lastVersion
+*) svn export
+*) upload the tarball on sf
+*) update the wiki page
+*) post an email on the list (with new features based on closed tickets + svn log)
+*) post on seqanswers thread linking to the email on the list
