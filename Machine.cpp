@@ -19,6 +19,8 @@
 
 */
 
+#define MAX_DEPTH 40
+
 // tags
 // these are the message types used by Ray
 // Ray instances like to communicate a lots!
@@ -219,6 +221,8 @@ void Machine::getPaths(VERTEX_TYPE vertex){
 Machine::Machine(int argc,char**argv){
 	m_argc=argc;
 	m_argv=argv;
+	m_bubbleData=new BubbleData();
+	m_dfsData=new DepthFirstSearchData();
 }
 
 void Machine::start(){
@@ -1926,7 +1930,7 @@ void Machine::processData(){
 		COVERAGE_TYPE maxCoverage=0;
 		maxCoverage--;// underflow.
 		#ifdef SHOW_PROGRESS
-		cout<<"MaxCoverage="<<maxCoverage<<endl;
+		cout<<"MaxCoverage="<<(int)maxCoverage<<endl;
 		#endif
 		if(m_minimumCoverage > m_peakCoverage or m_peakCoverage==maxCoverage){
 			killRanks();
@@ -1941,6 +1945,7 @@ void Machine::processData(){
 		f<<"MinimumCoverage "<<m_minimumCoverage<<endl;
 		f<<"PeakCoverage "<<m_peakCoverage<<endl;
 		f<<"SeedCoverage "<<m_seedCoverage<<endl;
+		f<<"MaximumCoverage "<<maxCoverage<<endl;
 		f.close();
 		cout<<"Writing Parameters.txt"<<endl;
 		// see these values to everyone.
@@ -3204,7 +3209,7 @@ void Machine::doChoice(){
 				}
 
 				m_doChoice_tips_Detected=false;
-				m_doChoice_tips_Initiated=false;
+				m_dfsData->m_doChoice_tips_Initiated=false;
 				#ifdef SHOW_PROGRESS
 				cout<<"Checking tips."<<endl;
 				#endif
@@ -3213,39 +3218,37 @@ void Machine::doChoice(){
 		}else if(!m_doChoice_tips_Detected){
  			//for each entries in m_enumerateChoices_outgoingEdges, do a dfs of max depth 40.
 			//if the reached depth is 40, it is not a tip, otherwise, it is.
-			int maxDepth=40;
-			if(!m_doChoice_tips_Initiated){
-				m_doChoice_tips_i=0;
-				m_doChoice_tips_newEdges.clear();
-				m_doChoice_tips_dfs_initiated=false;
-				m_doChoice_tips_dfs_done=false;
-				m_doChoice_tips_Initiated=true;
-				m_BUBBLE_visitedVertices.clear();
+			int maxDepth=MAX_DEPTH;
+			if(!m_dfsData->m_doChoice_tips_Initiated){
+				m_dfsData->m_doChoice_tips_i=0;
+				m_dfsData->m_doChoice_tips_newEdges.clear();
+				m_dfsData->m_doChoice_tips_dfs_initiated=false;
+				m_dfsData->m_doChoice_tips_dfs_done=false;
+				m_dfsData->m_doChoice_tips_Initiated=true;
+				m_bubbleData->m_BUBBLE_visitedVertices.clear();
+				m_bubbleData->m_BUBBLE_visitedVerticesDepths.clear();
 			}
 
-			if(m_doChoice_tips_i<(int)m_enumerateChoices_outgoingEdges.size()){
-				if(!m_doChoice_tips_dfs_done){
-					depthFirstSearch(m_enumerateChoices_outgoingEdges[m_doChoice_tips_i],maxDepth);
+			if(m_dfsData->m_doChoice_tips_i<(int)m_enumerateChoices_outgoingEdges.size()){
+				if(!m_dfsData->m_doChoice_tips_dfs_done){
+					depthFirstSearch(m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_i],maxDepth);
 				}else{
 					// keep the edge if it is not a tip.
-					if(m_depthFirstSearch_maxDepth==maxDepth){
-						m_doChoice_tips_newEdges.push_back(m_enumerateChoices_outgoingEdges[m_doChoice_tips_i]);
+					if(m_dfsData->m_depthFirstSearch_maxDepth==maxDepth){
+						m_dfsData->m_doChoice_tips_newEdges.push_back(m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_i]);
 					
-						// store visited vertices for bubble detection.
-						vector<VERTEX_TYPE> visitedVertices;
-						for(set<VERTEX_TYPE>::iterator i=m_depthFirstSearchVisitedVertices.begin();i!=m_depthFirstSearchVisitedVertices.end();++i){
-							visitedVertices.push_back(*i);
-						}
 						// store visited vertices for bubble detection purposes.
-						m_BUBBLE_visitedVertices.push_back(visitedVertices);
+						m_bubbleData->m_BUBBLE_visitedVertices.push_back(m_dfsData->m_depthFirstSearchVisitedVertices_vector);
+						m_bubbleData->m_BUBBLE_visitedVerticesDepths.push_back(m_dfsData->m_depthFirstSearchVisitedVertices_depths);
 					}
-					m_doChoice_tips_i++;
-					m_doChoice_tips_dfs_initiated=false;
-					m_doChoice_tips_dfs_done=false;
+					m_dfsData->m_doChoice_tips_i++;
+					m_dfsData->m_doChoice_tips_dfs_initiated=false;
+					m_dfsData->m_doChoice_tips_dfs_done=false;
 				}
 			}else{
-				if(m_doChoice_tips_newEdges.size()==1){
-					m_SEEDING_currentVertex=m_doChoice_tips_newEdges[0];
+				// we have a winner with tips investigation.
+				if(m_dfsData->m_doChoice_tips_newEdges.size()==1){
+					m_SEEDING_currentVertex=m_dfsData->m_doChoice_tips_newEdges[0];
 					m_EXTENSION_choose=true;
 					m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 					m_EXTENSION_directVertexDone=false;
@@ -3254,32 +3257,57 @@ void Machine::doChoice(){
 				}else{
 					// no luck..., yet.
 					m_doChoice_tips_Detected=true;
-					m_doChoice_bubbles_Detected=false;
-					m_doChoice_bubbles_Initiated=false;
+					m_bubbleData->m_doChoice_bubbles_Detected=false;
+					m_bubbleData->m_doChoice_bubbles_Initiated=false;
 				}
 			}
 			return;
 		// bubbles detection aims polymorphisms and homopolymers stretches.
-		}else if(!m_doChoice_bubbles_Detected){
+		}
+ 		else if(!m_bubbleData->m_doChoice_bubbles_Detected){
 			// use m_BUBBLE_visitedVertices here.
 			// if everything just go at the same place, just take any of them...
-			map<VERTEX_TYPE,int> inCommon;
-			for(int i=0;i<(int)m_BUBBLE_visitedVertices.size();i++){
-				for(int j=0;j<(int)m_BUBBLE_visitedVertices[i].size();j++){
-					inCommon[m_BUBBLE_visitedVertices[i][j]]++;
+			map<VERTEX_TYPE,int> inCommon; // vertices and their count.
+			cout<<"MiniGraph"<<endl;
+			for(int i=0;i<(int)m_bubbleData->m_BUBBLE_visitedVertices.size();i++){
+				for(int j=0;j<(int)m_bubbleData->m_BUBBLE_visitedVertices[i].size();j+=2){
+					VERTEX_TYPE prefix=m_bubbleData->m_BUBBLE_visitedVertices[i][j+0];
+					VERTEX_TYPE suffix=m_bubbleData->m_BUBBLE_visitedVertices[i][j+1];
+					int associatedDepth=m_bubbleData->m_BUBBLE_visitedVerticesDepths[i][j];
+					cout<<prefix<<" -> "<<suffix<<endl;
+					if(associatedDepth>=m_wordSize)
+						inCommon[m_bubbleData->m_BUBBLE_visitedVertices[i][j]]++;
 				}
 			}
+			cout<<"/MiniGraph"<<endl;
 			int count=0;
+			map<int,int> distribution;
 			for(map<VERTEX_TYPE,int>::iterator i=inCommon.begin();i!=inCommon.end();i++){
-				if(i->second==(int)m_BUBBLE_visitedVertices.size()){
+				distribution[i->second]++;
+				if(i->second==(int)m_bubbleData->m_BUBBLE_visitedVertices.size()){
 					count++;
 				}
 			}
-			cout<<"BubbleTool says "<<count<<endl;
-			m_doChoice_bubbles_Detected=true;
+			for(map<int,int>::iterator i=distribution.begin();i!=distribution.end();i++){
+				cout<<"BubbleStats "<<i->first<<" "<<i->second<<endl;
+			}
+			// threshold.
+			int threshold=MAX_DEPTH-m_wordSize;
+			if(count>=threshold){
+				cout<<"BubbleTool says YES"<<endl;
+				/*
+				m_SEEDING_currentVertex=m_dfsData->m_doChoice_tips_newEdges[0];
+				m_EXTENSION_choose=true;
+				m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
+				m_EXTENSION_directVertexDone=false;
+				m_EXTENSION_VertexAssembled_requested=false;
+				*/
+			}else{
+				cout<<"BubbleTool says NO"<<endl;
+			}
+			m_bubbleData->m_doChoice_bubbles_Detected=true;
 			return;
 		}
-
 
 		// no choice possible...
 		if(!m_EXTENSION_complementedSeed){
@@ -3330,41 +3358,42 @@ void Machine::doChoice(){
  * do a depth first search with max depth of maxDepth;
  */
 void Machine::depthFirstSearch(VERTEX_TYPE a,int maxDepth){
-	if(!m_doChoice_tips_dfs_initiated){
-		m_depthFirstSearchVisitedVertices.clear();
-		while(m_depthFirstSearchVerticesToVisit.size()>0)
-			m_depthFirstSearchVerticesToVisit.pop();
-		while(m_depthFirstSearchDepths.size()>0)
-			m_depthFirstSearchDepths.pop();
+	if(!m_dfsData->m_doChoice_tips_dfs_initiated){
+		m_dfsData->m_depthFirstSearchVisitedVertices.clear();
+		m_dfsData->m_depthFirstSearchVisitedVertices_vector.clear();
+		m_dfsData->m_depthFirstSearchVisitedVertices_depths.clear();
+		while(m_dfsData->m_depthFirstSearchVerticesToVisit.size()>0)
+			m_dfsData->m_depthFirstSearchVerticesToVisit.pop();
+		while(m_dfsData->m_depthFirstSearchDepths.size()>0)
+			m_dfsData->m_depthFirstSearchDepths.pop();
 
-		m_depthFirstSearchVerticesToVisit.push(a);
-		m_depthFirstSearchDepths.push(0);
-		m_depthFirstSearch_maxDepth=0;
-		m_doChoice_tips_dfs_initiated=true;
-		m_doChoice_tips_dfs_done=false;
+		m_dfsData->m_depthFirstSearchVerticesToVisit.push(a);
+		m_dfsData->m_depthFirstSearchDepths.push(0);
+		m_dfsData->m_depthFirstSearch_maxDepth=0;
+		m_dfsData->m_doChoice_tips_dfs_initiated=true;
+		m_dfsData->m_doChoice_tips_dfs_done=false;
 		m_SEEDING_edgesRequested=false;
 	}
-	if(m_depthFirstSearchVerticesToVisit.size()>0){
+	if(m_dfsData->m_depthFirstSearchVerticesToVisit.size()>0){
 		if(!m_SEEDING_edgesRequested){
-			VERTEX_TYPE vertexToVisit=m_depthFirstSearchVerticesToVisit.top();
-			int theDepth=m_depthFirstSearchDepths.top();
-			if(m_depthFirstSearchVisitedVertices.size()>250){
+			VERTEX_TYPE vertexToVisit=m_dfsData->m_depthFirstSearchVerticesToVisit.top();
+			int theDepth=m_dfsData->m_depthFirstSearchDepths.top();
+			if(m_dfsData->m_depthFirstSearchVisitedVertices.size()>250){
 				// quit this strange place.
-				m_doChoice_tips_dfs_done=true;
+				m_dfsData->m_doChoice_tips_dfs_done=true;
 				cout<<"Exiting, I am lost."<<endl;
 				return;
 			}
 			// too far away.
-			if(theDepth>m_depthFirstSearch_maxDepth){
-				m_depthFirstSearch_maxDepth=theDepth;
+			if(theDepth> m_dfsData->m_depthFirstSearch_maxDepth){
+				m_dfsData->m_depthFirstSearch_maxDepth=theDepth;
 			}
 			// don't visit it
-			if(theDepth==maxDepth or m_depthFirstSearchVisitedVertices.count(vertexToVisit)>0){
-				m_depthFirstSearchVerticesToVisit.pop();
-				m_depthFirstSearchDepths.pop();
+			if(theDepth==maxDepth or m_dfsData->m_depthFirstSearchVisitedVertices.count(vertexToVisit)>0){
+				m_dfsData->m_depthFirstSearchVerticesToVisit.pop();
+				m_dfsData->m_depthFirstSearchDepths.pop();
 			}else{
 				// visit the vertex, and ask next edges.
-				m_depthFirstSearchVisitedVertices.insert(vertexToVisit);
 				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 				message[0]=vertexToVisit;
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(vertexToVisit),TAG_REQUEST_VERTEX_OUTGOING_EDGES,getRank());
@@ -3373,18 +3402,25 @@ void Machine::depthFirstSearch(VERTEX_TYPE a,int maxDepth){
 				m_SEEDING_edgesReceived=false;
 			}
 		}else if(m_SEEDING_edgesReceived){
-			int theDepth=m_depthFirstSearchDepths.top();
+			VERTEX_TYPE vertexToVisit=m_dfsData->m_depthFirstSearchVerticesToVisit.top();
+			int theDepth=m_dfsData->m_depthFirstSearchDepths.top();
 			int newDepth=theDepth+1;
-			m_depthFirstSearchVerticesToVisit.pop();
-			m_depthFirstSearchDepths.pop();
+
+			m_dfsData->m_depthFirstSearchVisitedVertices.insert(vertexToVisit);
+			m_dfsData->m_depthFirstSearchVerticesToVisit.pop();
+			m_dfsData->m_depthFirstSearchDepths.pop();
 			for(int i=0;i<(int)m_SEEDING_receivedOutgoingEdges.size();i++){
-				m_depthFirstSearchVerticesToVisit.push(m_SEEDING_receivedOutgoingEdges[i]);
-				m_depthFirstSearchDepths.push(newDepth);
+				VERTEX_TYPE nextVertex=m_SEEDING_receivedOutgoingEdges[i];
+				m_dfsData->m_depthFirstSearchVisitedVertices_vector.push_back(vertexToVisit);
+				m_dfsData->m_depthFirstSearchVisitedVertices_vector.push_back(nextVertex);
+				m_dfsData->m_depthFirstSearchVisitedVertices_depths.push_back(newDepth);
+				m_dfsData->m_depthFirstSearchVerticesToVisit.push(nextVertex);
+				m_dfsData->m_depthFirstSearchDepths.push(newDepth);
 			}
 			m_SEEDING_edgesRequested=false;
 		}
 	}else{
-		m_doChoice_tips_dfs_done=true;
+		m_dfsData->m_doChoice_tips_dfs_done=true;
 	}
 }
 
@@ -3512,5 +3548,9 @@ int Machine::vertexRank(VERTEX_TYPE a){
 
 Machine::~Machine(){
 	// do nothing.
+	delete m_dfsData;
+	delete m_bubbleData;
+	m_dfsData=NULL;
+	m_bubbleData=NULL;
 }
 

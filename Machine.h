@@ -20,7 +20,6 @@
 */
 
 
-
 #ifndef _Machine
 #define _Machine
 
@@ -38,6 +37,34 @@
 #include<MyAllocator.h>
 #include<mpi.h>
 #include<stack>
+
+/*
+ * put some members in this class or else g++ don't like it. it makes otherwise the program segfault!
+ */
+class BubbleData{
+public:
+	vector<vector<VERTEX_TYPE> > m_BUBBLE_visitedVertices;
+	bool m_doChoice_bubbles_Detected;
+	bool m_doChoice_bubbles_Initiated;
+	vector<vector<int> > m_BUBBLE_visitedVerticesDepths;
+};
+
+class DepthFirstSearchData{
+public:
+	// depth first search
+	bool m_doChoice_tips_Initiated;
+	bool m_doChoice_tips_dfs_done;
+	int m_depthFirstSearch_maxDepth;
+	stack<int> m_depthFirstSearchDepths;
+	int m_doChoice_tips_i;
+	vector<VERTEX_TYPE> m_doChoice_tips_newEdges;
+	bool m_doChoice_tips_dfs_initiated;
+	set<VERTEX_TYPE> m_depthFirstSearchVisitedVertices;
+	stack<VERTEX_TYPE> m_depthFirstSearchVerticesToVisit;
+	vector<VERTEX_TYPE> m_depthFirstSearchVisitedVertices_vector;
+	vector<int> m_depthFirstSearchVisitedVertices_depths;
+
+};
 
 using namespace std;
 
@@ -333,21 +360,11 @@ class Machine{
 	map<int,int> m_statistics;
 	#endif
 
-	// depth first search
-	bool m_doChoice_tips_Initiated;
-	bool m_doChoice_tips_dfs_done;
-	int m_depthFirstSearch_maxDepth;
-	stack<int> m_depthFirstSearchDepths;
-	int m_doChoice_tips_i;
-	vector<VERTEX_TYPE> m_doChoice_tips_newEdges;
-	bool m_doChoice_tips_dfs_initiated;
-	set<VERTEX_TYPE> m_depthFirstSearchVisitedVertices;
-	stack<VERTEX_TYPE> m_depthFirstSearchVerticesToVisit;
 
 	// BUBBLE
-	vector<vector<VERTEX_TYPE> > m_BUBBLE_visitedVertices;
-	bool m_doChoice_bubbles_Detected;
-	bool m_doChoice_bubbles_Initiated;
+	BubbleData*m_bubbleData;
+
+	DepthFirstSearchData*m_dfsData;
 
 	int milliSeconds();
 	void enumerateChoices();
