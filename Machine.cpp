@@ -3319,17 +3319,24 @@ void Machine::doChoice(){
 			}
 			
 			vector<vector<VERTEX_TYPE> > pathsToTop;
+			map<VERTEX_TYPE,int> inCommonInPaths;
 			for(int i=0;i<(int)parents.size();i++){
 				VERTEX_TYPE t=deepestVertex;
 				vector<VERTEX_TYPE> pathToTop;
 				while(parents[i].count(t)>0){
 					pathToTop.push_back(t);
+					inCommonInPaths[t]++;
 					t=parents[i][t];
 				}
 				pathsToTop.push_back(pathToTop);
 				cout<<i<<" has "<<pathToTop.size()<<" vertices to top."<<endl;
 			}
-			
+			int inBoth=0;
+			for(map<VERTEX_TYPE,int>::iterator i=inCommonInPaths.begin();i!=inCommonInPaths.end();i++){
+				if(i->second==2)
+					inBoth++;
+			}
+			cout<<"InBoth="<<inBoth<<endl;
 			int diff=pathsToTop[0].size()-pathsToTop[1].size();
 			if(diff<0)
 				diff=-diff;

@@ -44,7 +44,8 @@ void*MyAllocator::allocate(int s){
 	#ifdef DEBUG
 	assert(m_currentChunk!=NULL);
 	#endif
-	s+=s%8;
+	// if addresses need to be aligned:
+	//s+=s%8;
 	#ifdef DEBUG
 	assert(s<=m_CHUNK_SIZE);
 	#endif
