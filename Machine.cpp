@@ -19,8 +19,8 @@
 
 */
 
-#define MAX_DEPTH 50
-#define MAX_VERTICES_TO_VISIT 1.5*MAX_DEPTH
+#define MAX_DEPTH 200
+#define MAX_VERTICES_TO_VISIT 300
 
 // tags
 // these are the message types used by Ray
@@ -227,6 +227,10 @@ Machine::Machine(int argc,char**argv){
 }
 
 void Machine::start(){
+	#ifdef SHOW_PROGRESS
+	cout<<"sizeof(VERTEX_TYPE) "<<sizeof(VERTEX_TYPE)<<endl;
+	cout<<"sizeof(Vertex) "<<sizeof(Vertex)<<endl;
+	#endif
 	time_t startingTime=time(NULL);
 	m_lastTime=time(NULL);
 	srand(m_lastTime);
@@ -1946,7 +1950,7 @@ void Machine::processData(){
 		f<<"MinimumCoverage "<<m_minimumCoverage<<endl;
 		f<<"PeakCoverage "<<m_peakCoverage<<endl;
 		f<<"SeedCoverage "<<m_seedCoverage<<endl;
-		f<<"MaximumCoverage "<<maxCoverage<<endl;
+		f<<"MaximumCoverage "<<(int)maxCoverage<<endl;
 		f.close();
 		cout<<"Writing Parameters.txt"<<endl;
 		// see these values to everyone.
@@ -3234,7 +3238,6 @@ void Machine::doChoice(){
 				if(!m_dfsData->m_doChoice_tips_dfs_done){
 					depthFirstSearch(m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_i],maxDepth);
 				}else{
-					cout<<"m_depthFirstSearch_maxDepth="<<m_dfsData->m_depthFirstSearch_maxDepth<<endl;
 					// keep the edge if it is not a tip.
 					if(m_dfsData->m_depthFirstSearch_maxDepth==maxDepth){
 
@@ -3274,67 +3277,72 @@ void Machine::doChoice(){
 		// bubbles detection aims polymorphisms and homopolymers stretches.
 		}
  		else if(!m_bubbleData->m_doChoice_bubbles_Detected){
+			// use tree alignments.
 
 			// use m_BUBBLE_visitedVertices here.
 			// if everything just go at the same place, just take any of them...
 			map<VERTEX_TYPE,vector<int> > inCommon; // vertices and their their depths.
 			cout<<"MiniGraph"<<endl;
-			map<int,int> depthCounts;
+			map<VERTEX_TYPE,int> maxDepthForVertex;
+
+			vector<map<VERTEX_TYPE,VERTEX_TYPE> > parents;
+
+			// select the deepest vertex in common
+			// compute the number of vertices in common between these paths.
+
 			for(int i=0;i<(int)m_bubbleData->m_BUBBLE_visitedVertices.size();i++){
 				cout<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<" -> "<<idToWord(m_dfsData->m_doChoice_tips_newEdges[i],m_wordSize)<<endl;
+				map<VERTEX_TYPE,VERTEX_TYPE> localMap;
 				for(int j=0;j<(int)m_bubbleData->m_BUBBLE_visitedVertices[i].size();j+=2){
 					VERTEX_TYPE prefix=m_bubbleData->m_BUBBLE_visitedVertices[i][j+0];
 					VERTEX_TYPE suffix=m_bubbleData->m_BUBBLE_visitedVertices[i][j+1];
 					int associatedDepth=m_bubbleData->m_BUBBLE_visitedVerticesDepths[i][j/2];
 					cout<<idToWord(prefix,m_wordSize)<<" -> "<<idToWord(suffix,m_wordSize)<<endl;
 					inCommon[prefix].push_back(associatedDepth);
-					depthCounts[associatedDepth]++;
+					maxDepthForVertex[prefix]=associatedDepth;
+					localMap[suffix]=prefix;
 				}
+				parents.push_back(localMap);
 			}
+		
 			cout<<"/MiniGraph"<<endl;
-			map<int,int> differences;
-			
+
+			VERTEX_TYPE deepestVertex=0;
+			int deepestVertexDepth=0;
 			for(map<VERTEX_TYPE,vector<int> >::iterator i=inCommon.begin();i!=inCommon.end();i++){
 				if(i->second.size()!=2)
 					continue;
-				cout<<idToWord(i->first,m_wordSize);
-				
-				for(int j=0;j<(int)i->second.size();j++){
-					cout<<" @"<<i->second[j];
+				if(maxDepthForVertex[i->first]>deepestVertexDepth){
+					deepestVertexDepth=maxDepthForVertex[i->first];
+					deepestVertex=i->first;
 				}
-				cout<<endl;
-				int depth1=i->second[0];
-				int depth2=i->second[1];
-				int diff=depth1-depth2;
-				if(depthCounts[depth1]>2 or depthCounts[depth2]>0){
-					continue;
-				}
-				if(diff<0)
-					diff=-diff;
-				differences[diff]++;
 			}
-			cout<<"Differences."<<endl;
-			for(map<int,int>::iterator i=differences.begin();i!=differences.end();i++){
-				cout<<i->first<<" "<<i->second<<endl;
-			}
-			int count0=differences[0];
-			int count1=differences[1];
-			int minimum=15;
-			if(count0>=minimum){
-				cout<<"Mismatch detected!."<<endl;
-			}else if(count1>=minimum){
-				cout<<"Indel detected!."<<endl;
-			}
-			// if count1 is > 0, then we have 454 homopolymers or polymorphism (indel of 1 NT)
-			// if count0 is > 0, then we have a polymorphism  (mismatch type)
 			
-			/*
-			m_SEEDING_currentVertex=m_dfsData->m_doChoice_tips_newEdges[0];
-			m_EXTENSION_choose=true;
-			m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
-			m_EXTENSION_directVertexDone=false;
-			m_EXTENSION_VertexAssembled_requested=false;
-			*/
+			vector<vector<VERTEX_TYPE> > pathsToTop;
+			for(int i=0;i<(int)parents.size();i++){
+				VERTEX_TYPE t=deepestVertex;
+				vector<VERTEX_TYPE> pathToTop;
+				while(parents[i].count(t)>0){
+					pathToTop.push_back(t);
+					t=parents[i][t];
+				}
+				pathsToTop.push_back(pathToTop);
+				cout<<i<<" has "<<pathToTop.size()<<" vertices to top."<<endl;
+			}
+			
+			int diff=pathsToTop[0].size()-pathsToTop[1].size();
+			if(diff<0)
+				diff=-diff;
+			cout<<"Diff="<<diff<<endl;
+
+			if(false){
+				cout<<"Forcing next choice."<<endl;
+				m_SEEDING_currentVertex=m_dfsData->m_doChoice_tips_newEdges[0];
+				m_EXTENSION_choose=true;
+				m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
+				m_EXTENSION_directVertexDone=false;
+				m_EXTENSION_VertexAssembled_requested=false;
+			}
 			m_bubbleData->m_doChoice_bubbles_Detected=true;
 			return;
 		}

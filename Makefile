@@ -27,7 +27,7 @@
 #   if MPICH2_VERSION is set, then MPI_Isend is utilized for all point-to-point communications.
 #   otherwise, MPI_Send is used because Open-MPI is smarter: it sends eagerly small messages!
 
-CXXFLAGS=  -Wall  -I.  -O3     -DSHOW_PROGRESS -DDEBUG -g # debug flags.
+CXXFLAGS=  -Wall  -I.  -O3     -DSHOW_PROGRESS -DDEBUG -g  # debug flags.
 
 # the default is to use mpic++ provided in your $PATH
 MPICC=mpic++
