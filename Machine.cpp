@@ -20,7 +20,7 @@
 */
 
 #define MAX_DEPTH 200
-#define MAX_VERTICES_TO_VISIT 300
+#define MAX_VERTICES_TO_VISIT 500
 
 // tags
 // these are the message types used by Ray
@@ -3285,6 +3285,7 @@ void Machine::doChoice(){
 			cout<<"MiniGraph"<<endl;
 			map<VERTEX_TYPE,int> maxDepthForVertex;
 
+			map<int,int> depthDensity;
 			vector<map<VERTEX_TYPE,VERTEX_TYPE> > parents;
 
 			// select the deepest vertex in common
@@ -3300,11 +3301,13 @@ void Machine::doChoice(){
 					cout<<idToWord(prefix,m_wordSize)<<" -> "<<idToWord(suffix,m_wordSize)<<endl;
 					inCommon[prefix].push_back(associatedDepth);
 					maxDepthForVertex[prefix]=associatedDepth;
+					depthDensity[associatedDepth]++;
 					localMap[suffix]=prefix;
 				}
 				parents.push_back(localMap);
 			}
 		
+			cout<<parents.size()<<" CHOICES."<<endl;
 			cout<<"/MiniGraph"<<endl;
 
 			VERTEX_TYPE deepestVertex=0;
@@ -3312,7 +3315,9 @@ void Machine::doChoice(){
 			for(map<VERTEX_TYPE,vector<int> >::iterator i=inCommon.begin();i!=inCommon.end();i++){
 				if(i->second.size()!=2)
 					continue;
-				if(maxDepthForVertex[i->first]>deepestVertexDepth){
+				int theDepth=maxDepthForVertex[i->first];
+				// only allow singular densities.
+				if(theDepth>deepestVertexDepth and depthDensity[theDepth]==1){
 					deepestVertexDepth=maxDepthForVertex[i->first];
 					deepestVertex=i->first;
 				}
@@ -3337,10 +3342,12 @@ void Machine::doChoice(){
 					inBoth++;
 			}
 			cout<<"InBoth="<<inBoth<<endl;
-			int diff=pathsToTop[0].size()-pathsToTop[1].size();
-			if(diff<0)
-				diff=-diff;
-			cout<<"Diff="<<diff<<endl;
+			if(inBoth>0){
+				int diff=pathsToTop[0].size()-pathsToTop[1].size();
+				if(diff<0)
+					diff=-diff;
+				cout<<"Diff="<<diff<<endl;
+			}
 
 			if(false){
 				cout<<"Forcing next choice."<<endl;
