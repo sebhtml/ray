@@ -8,6 +8,7 @@
 	SRA003611-Illumina
 	SRA003611-Mixed
 	SRA003611-454
+	helicos-ecoli
 
 *) svn cp trunk tags/<version>
 *) close the milestone in trac

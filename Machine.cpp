@@ -3279,7 +3279,7 @@ void Machine::doChoice(){
 			// if everything just go at the same place, just take any of them...
 			map<VERTEX_TYPE,vector<int> > inCommon; // vertices and their their depths.
 			cout<<"MiniGraph"<<endl;
-			
+			map<int,int> depthCounts;
 			for(int i=0;i<(int)m_bubbleData->m_BUBBLE_visitedVertices.size();i++){
 				cout<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<" -> "<<idToWord(m_dfsData->m_doChoice_tips_newEdges[i],m_wordSize)<<endl;
 				for(int j=0;j<(int)m_bubbleData->m_BUBBLE_visitedVertices[i].size();j+=2){
@@ -3288,6 +3288,7 @@ void Machine::doChoice(){
 					int associatedDepth=m_bubbleData->m_BUBBLE_visitedVerticesDepths[i][j/2];
 					cout<<idToWord(prefix,m_wordSize)<<" -> "<<idToWord(suffix,m_wordSize)<<endl;
 					inCommon[prefix].push_back(associatedDepth);
+					depthCounts[associatedDepth]++;
 				}
 			}
 			cout<<"/MiniGraph"<<endl;
@@ -3297,25 +3298,31 @@ void Machine::doChoice(){
 				if(i->second.size()!=2)
 					continue;
 				cout<<idToWord(i->first,m_wordSize);
+				
 				for(int j=0;j<(int)i->second.size();j++){
 					cout<<" @"<<i->second[j];
 				}
-				int diff=i->second[0]-i->second[1];
+				cout<<endl;
+				int depth1=i->second[0];
+				int depth2=i->second[1];
+				int diff=depth1-depth2;
+				if(depthCounts[depth1]>2 or depthCounts[depth2]>0){
+					continue;
+				}
 				if(diff<0)
 					diff=-diff;
 				differences[diff]++;
-				cout<<endl;
 			}
-			//cout<<"Differences."<<endl;
+			cout<<"Differences."<<endl;
 			for(map<int,int>::iterator i=differences.begin();i!=differences.end();i++){
 				cout<<i->first<<" "<<i->second<<endl;
 			}
 			int count0=differences[0];
 			int count1=differences[1];
 			int minimum=15;
-			if(count0>=minimum and count0<MAX_DEPTH-m_wordSize){
+			if(count0>=minimum){
 				cout<<"Mismatch detected!."<<endl;
-			}else if(count1>=minimum and count1<MAX_DEPTH-m_wordSize){
+			}else if(count1>=minimum){
 				cout<<"Indel detected!."<<endl;
 			}
 			// if count1 is > 0, then we have 454 homopolymers or polymorphism (indel of 1 NT)
