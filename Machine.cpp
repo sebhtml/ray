@@ -21,7 +21,7 @@
 
 #define MAX_DEPTH 200
 #define MAX_VERTICES_TO_VISIT 500
-#define TIP_LIMIT 50
+#define TIP_LIMIT 40
 
 #define SHOW_MINI_GRAPH
 
@@ -3287,7 +3287,7 @@ void Machine::doChoice(){
 
 			// use m_BUBBLE_visitedVertices here.
 			// if everything just go at the same place, just take any of them...
-			map<VERTEX_TYPE,vector<int> > inCommon; // vertices and their their depths.
+			map<VERTEX_TYPE,set<int> > inCommon; // vertices and their their depths.
 			map<VERTEX_TYPE,int> maxDepthForVertex;
 
 			vector<map<VERTEX_TYPE,VERTEX_TYPE> > parents;
@@ -3295,12 +3295,14 @@ void Machine::doChoice(){
 			// select the deepest vertex in common
 			// compute the number of vertices in common between these paths.
 			map<VERTEX_TYPE,int> theCoverages;
+			cout<<m_bubbleData->m_BUBBLE_visitedVertices.size()<<" ways in bubble."<<endl;
 			for(int i=0;i<(int)m_bubbleData->m_BUBBLE_visitedVertices.size();i++){
 				for(map<VERTEX_TYPE,int>::iterator j=m_bubbleData->m_coverages[i].begin();j!=m_bubbleData->m_coverages[i].end();j++){
 					theCoverages[j->first]=j->second;
 				}
 
 				map<VERTEX_TYPE,VERTEX_TYPE> localMap;
+				cout<<"i="<<i<<" visited "<<m_bubbleData->m_BUBBLE_visitedVertices[i].size()/2<<" vertices."<<endl;
 				for(int j=0;j<(int)m_bubbleData->m_BUBBLE_visitedVertices[i].size();j+=2){
 					VERTEX_TYPE prefix=m_bubbleData->m_BUBBLE_visitedVertices[i][j+0];
 					VERTEX_TYPE suffix=m_bubbleData->m_BUBBLE_visitedVertices[i][j+1];
@@ -3311,7 +3313,7 @@ void Machine::doChoice(){
 						return;
 					}
 					int associatedDepth=m_bubbleData->m_BUBBLE_visitedVerticesDepths[i][j/2];
-					inCommon[prefix].push_back(associatedDepth);
+					inCommon[prefix].insert(i);
 					maxDepthForVertex[prefix]=associatedDepth;
 					localMap[suffix]=prefix;
 				}
@@ -3321,12 +3323,10 @@ void Machine::doChoice(){
 			for(map<VERTEX_TYPE,int>::iterator i=maxDepthForVertex.begin();i!=maxDepthForVertex.end();i++){
 				depthDensity[i->second]++;
 			}
-			cout<<parents.size()<<" CHOICES."<<endl;
 
 			VERTEX_TYPE deepestVertex=0;
 			int deepestVertexDepth=0;
-			for(map<VERTEX_TYPE,vector<int> >::iterator i=inCommon.begin();i!=inCommon.end();i++){
-
+			for(map<VERTEX_TYPE,set<int> >::iterator i=inCommon.begin();i!=inCommon.end();i++){
 				if(i->second.size()!=2)
 					continue;
 				int theDepth=maxDepthForVertex[i->first];
@@ -3338,6 +3338,7 @@ void Machine::doChoice(){
 			}
 			
 			cout<<"deepestVertexDepth="<<deepestVertexDepth<<endl;
+			cout<<parents.size()<<" parent arrays."<<endl;
 			vector<vector<VERTEX_TYPE> > pathsToTop;
 			map<VERTEX_TYPE,int> inCommonInPaths;
 			for(int i=0;i<(int)parents.size();i++){
@@ -3365,7 +3366,7 @@ void Machine::doChoice(){
 				cout<<"Diff="<<diff<<endl;
 			}
 			// score a little
-			int minimumScore=deepestVertexDepth*0.50;
+			int minimumScore=deepestVertexDepth*0.75;
 			cout<<"min="<<minimumScore<<endl;
 			// but not too much.
 			int maximumScore=MAX_DEPTH;
@@ -3470,7 +3471,9 @@ void Machine::depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int maxDepth){
 			if(!m_SEEDING_edgesRequested){
 				m_dfsData->m_coverages[vertexToVisit]=m_SEEDING_receivedVertexCoverage;
 				string b=idToWord(vertexToVisit,m_wordSize);
-				//cout<<b<<" [label=\""<<b<<" "<<m_SEEDING_receivedVertexCoverage<<"\" ]"<<endl;
+				#ifdef SHOW_MINI_GRAPH
+				cout<<b<<" [label=\""<<b<<" "<<m_SEEDING_receivedVertexCoverage<<"\" ]"<<endl;
+				#endif
 
 				// Ray don't like positions not covered enough
 				int theMinimum=(m_dfsData->m_coverages[a])/2;
