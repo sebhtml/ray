@@ -47,6 +47,7 @@ public:
 	bool m_doChoice_bubbles_Detected;
 	bool m_doChoice_bubbles_Initiated;
 	vector<vector<int> > m_BUBBLE_visitedVerticesDepths;
+	vector<map<VERTEX_TYPE,int> > m_coverages;
 };
 
 class DepthFirstSearchData{
@@ -63,7 +64,7 @@ public:
 	stack<VERTEX_TYPE> m_depthFirstSearchVerticesToVisit;
 	vector<VERTEX_TYPE> m_depthFirstSearchVisitedVertices_vector;
 	vector<int> m_depthFirstSearchVisitedVertices_depths;
-
+	map<VERTEX_TYPE,int> m_coverages;
 };
 
 using namespace std;

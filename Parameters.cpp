@@ -36,7 +36,7 @@ Parameters::Parameters(){
 	m_initiated=false;
 	m_directory="assembly";
 	m_minimumContigLength=100;
-	m_wordSize=25;
+	m_wordSize=21;
 	m_outputFile="Contigs.fasta";
 	m_colorSpaceMode=false;
 	m_amos=false;
