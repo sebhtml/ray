@@ -3236,7 +3236,7 @@ void Machine::doChoice(){
 
 			if(m_dfsData->m_doChoice_tips_i<(int)m_enumerateChoices_outgoingEdges.size()){
 				if(!m_dfsData->m_doChoice_tips_dfs_done){
-					depthFirstSearch(m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_i],maxDepth);
+					depthFirstSearch(m_SEEDING_currentVertex,m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_i],maxDepth);
 				}else{
 					// keep the edge if it is not a tip.
 					if(m_dfsData->m_depthFirstSearch_maxDepth==maxDepth){
@@ -3285,7 +3285,6 @@ void Machine::doChoice(){
 			cout<<"MiniGraph"<<endl;
 			map<VERTEX_TYPE,int> maxDepthForVertex;
 
-			map<int,int> depthDensity;
 			vector<map<VERTEX_TYPE,VERTEX_TYPE> > parents;
 
 			// select the deepest vertex in common
@@ -3297,16 +3296,24 @@ void Machine::doChoice(){
 				for(int j=0;j<(int)m_bubbleData->m_BUBBLE_visitedVertices[i].size();j+=2){
 					VERTEX_TYPE prefix=m_bubbleData->m_BUBBLE_visitedVertices[i][j+0];
 					VERTEX_TYPE suffix=m_bubbleData->m_BUBBLE_visitedVertices[i][j+1];
+
+					// loop are too complex to be analyzed by Ray...
+					if(suffix==m_SEEDING_currentVertex){
+						m_bubbleData->m_doChoice_bubbles_Detected=true;
+						return;
+					}
 					int associatedDepth=m_bubbleData->m_BUBBLE_visitedVerticesDepths[i][j/2];
 					cout<<idToWord(prefix,m_wordSize)<<" -> "<<idToWord(suffix,m_wordSize)<<endl;
 					inCommon[prefix].push_back(associatedDepth);
 					maxDepthForVertex[prefix]=associatedDepth;
-					depthDensity[associatedDepth]++;
 					localMap[suffix]=prefix;
 				}
 				parents.push_back(localMap);
 			}
-		
+			map<int,int> depthDensity;
+			for(map<VERTEX_TYPE,int>::iterator i=maxDepthForVertex.begin();i!=maxDepthForVertex.end();i++){
+				depthDensity[i->second]++;
+			}
 			cout<<parents.size()<<" CHOICES."<<endl;
 			cout<<"/MiniGraph"<<endl;
 
@@ -3318,7 +3325,7 @@ void Machine::doChoice(){
 				int theDepth=maxDepthForVertex[i->first];
 				// only allow singular densities.
 				if(theDepth>deepestVertexDepth and depthDensity[theDepth]==1){
-					deepestVertexDepth=maxDepthForVertex[i->first];
+					deepestVertexDepth=theDepth;
 					deepestVertex=i->first;
 				}
 			}
@@ -3342,15 +3349,24 @@ void Machine::doChoice(){
 					inBoth++;
 			}
 			cout<<"InBoth="<<inBoth<<endl;
+			int diff=99;
 			if(inBoth>0){
-				int diff=pathsToTop[0].size()-pathsToTop[1].size();
+				diff=pathsToTop[0].size()-pathsToTop[1].size();
 				if(diff<0)
 					diff=-diff;
 				cout<<"Diff="<<diff<<endl;
 			}
+			// score a little
+			int minimumScore=MAX_DEPTH*0.75;
+			// but not too much.
+			int maximumScore=MAX_DEPTH-m_wordSize+5;
+			
+			minimumScore=172;
+			maximumScore=172;
 
-			if(false){
-				cout<<"Forcing next choice."<<endl;
+			// support indels of 1 as well as mismatch polymorphisms.
+			if(inBoth>=minimumScore and inBoth<=maximumScore and diff<=1){
+				cout<<"Forcing next choice "<<inBoth<<endl;
 				m_SEEDING_currentVertex=m_dfsData->m_doChoice_tips_newEdges[0];
 				m_EXTENSION_choose=true;
 				m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
@@ -3409,7 +3425,7 @@ void Machine::doChoice(){
 /*
  * do a depth first search with max depth of maxDepth;
  */
-void Machine::depthFirstSearch(VERTEX_TYPE a,int maxDepth){
+void Machine::depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int maxDepth){
 	if(!m_dfsData->m_doChoice_tips_dfs_initiated){
 		m_dfsData->m_depthFirstSearchVisitedVertices.clear();
 		m_dfsData->m_depthFirstSearchVisitedVertices_vector.clear();
