@@ -1460,6 +1460,11 @@ void Machine::makeFusions(){
 		//cout<<"Rank "<<getRank()<<" eliminated: "<<m_FUSION_eliminated.size()<<endl;
 		#endif
 		
+	}else if((int)m_EXTENSION_contigs[m_SEEDING_i].size()<=END_LENGTH){
+		m_FUSION_direct_fusionDone=false;
+		m_FUSION_first_done=false;
+		m_FUSION_paths_requested=false;
+		m_SEEDING_i++;
 	}else if(!m_FUSION_direct_fusionDone){
 		int currentId=m_EXTENSION_identifiers[m_SEEDING_i];
 		if(!m_FUSION_first_done){
@@ -1471,7 +1476,7 @@ void Machine::makeFusions(){
 				#endif
 				// get the paths going on the first vertex
 				#ifdef DEBUG
-				assert((int)m_EXTENSION_contigs[m_SEEDING_i].size()>=END_LENGTH);
+				assert((int)m_EXTENSION_contigs[m_SEEDING_i].size()>END_LENGTH);
 				#endif
 				VERTEX_TYPE theVertex=m_EXTENSION_contigs[m_SEEDING_i][END_LENGTH];
 				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
@@ -3257,7 +3262,7 @@ void Machine::doChoice(){
 						m_bubbleData->m_coverages.push_back(m_dfsData->m_coverages);
 						m_bubbleData->m_BUBBLE_visitedVerticesDepths.push_back(m_dfsData->m_depthFirstSearchVisitedVertices_depths);
 					}else{
-						cout<<"We have a tip."<<endl;
+						cout<<"We have a tip "<<m_dfsData->m_depthFirstSearch_maxDepth<<" LIMIT="<<TIP_LIMIT<<"."<<endl;
 					}
 					m_dfsData->m_doChoice_tips_i++;
 					m_dfsData->m_doChoice_tips_dfs_initiated=false;
@@ -3265,7 +3270,7 @@ void Machine::doChoice(){
 				}
 			}else{
 				// we have a winner with tips investigation.
-				if(m_dfsData->m_doChoice_tips_newEdges.size()==1){
+				if(m_dfsData->m_doChoice_tips_newEdges.size()==1 and m_EXTENSION_readsInRange.size()>0){
 					m_SEEDING_currentVertex=m_dfsData->m_doChoice_tips_newEdges[0];
 					m_EXTENSION_choose=true;
 					m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
@@ -3283,6 +3288,7 @@ void Machine::doChoice(){
 		// bubbles detection aims polymorphisms and homopolymers stretches.
 		}
  		else if(!m_bubbleData->m_doChoice_bubbles_Detected){
+
 			// use tree alignments.
 
 			// use m_BUBBLE_visitedVertices here.
@@ -3470,22 +3476,9 @@ void Machine::depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int maxDepth){
 		}else if(m_SEEDING_vertexCoverageReceived){
 			if(!m_SEEDING_edgesRequested){
 				m_dfsData->m_coverages[vertexToVisit]=m_SEEDING_receivedVertexCoverage;
-				string b=idToWord(vertexToVisit,m_wordSize);
-				#ifdef SHOW_MINI_GRAPH
-				cout<<b<<" [label=\""<<b<<" "<<m_SEEDING_receivedVertexCoverage<<"\" ]"<<endl;
-				#endif
 
 				// Ray don't like positions not covered enough
-				int theMinimum=(m_dfsData->m_coverages[a])/2;
-				if(theMinimum<2)
-					theMinimum=2;
-				if(m_SEEDING_receivedVertexCoverage<theMinimum){
-					m_dfsData->m_depthFirstSearchVerticesToVisit.pop();
-					m_dfsData->m_depthFirstSearchDepths.pop();
-					m_SEEDING_edgesRequested=false;
-					m_SEEDING_vertexCoverageRequested=false;
-					return;
-				}
+
 				int theDepth=m_dfsData->m_depthFirstSearchDepths.top();
 				if(m_dfsData->m_depthFirstSearchVisitedVertices.size()>=MAX_VERTICES_TO_VISIT){
 					// quit this strange place.
@@ -3518,6 +3511,15 @@ void Machine::depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int maxDepth){
 
 				m_dfsData->m_depthFirstSearchVerticesToVisit.pop();
 				m_dfsData->m_depthFirstSearchDepths.pop();
+
+
+				#ifdef SHOW_MINI_GRAPH
+				if(m_dfsData->m_coverages[vertexToVisit]>=m_minimumCoverage/2){
+					string b=idToWord(vertexToVisit,m_wordSize);
+					cout<<b<<" [label=\""<<b<<" "<<m_SEEDING_receivedVertexCoverage<<"\" ]"<<endl;
+				}
+				#endif
+
 				for(int i=0;i<(int)m_SEEDING_receivedOutgoingEdges.size();i++){
 					VERTEX_TYPE nextVertex=m_SEEDING_receivedOutgoingEdges[i];
 					if(m_dfsData->m_depthFirstSearchVisitedVertices.count(nextVertex)>0)
@@ -3526,13 +3528,16 @@ void Machine::depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int maxDepth){
 						continue;
 					m_dfsData->m_depthFirstSearchVerticesToVisit.push(nextVertex);
 					m_dfsData->m_depthFirstSearchDepths.push(newDepth);
-					m_dfsData->m_depthFirstSearchVisitedVertices_vector.push_back(vertexToVisit);
-					m_dfsData->m_depthFirstSearchVisitedVertices_vector.push_back(nextVertex);
-					#ifdef SHOW_MINI_GRAPH
-					cout<<idToWord(vertexToVisit,m_wordSize)<<" -> "<<idToWord(nextVertex,m_wordSize)<<endl;
-					#endif
-					m_dfsData->m_depthFirstSearchVisitedVertices_depths.push_back(newDepth);
 					m_dfsData->m_depthFirstSearchVisitedVertices.insert(nextVertex);
+					if(m_dfsData->m_coverages[vertexToVisit]>=m_minimumCoverage/2){
+						m_dfsData->m_depthFirstSearchVisitedVertices_vector.push_back(vertexToVisit);
+						m_dfsData->m_depthFirstSearchVisitedVertices_vector.push_back(nextVertex);
+						m_dfsData->m_depthFirstSearchVisitedVertices_depths.push_back(newDepth);
+
+						#ifdef SHOW_MINI_GRAPH
+						cout<<idToWord(vertexToVisit,m_wordSize)<<" -> "<<idToWord(nextVertex,m_wordSize)<<endl;
+						#endif
+					}
 				}
 				m_SEEDING_edgesRequested=false;
 				m_SEEDING_vertexCoverageRequested=false;
