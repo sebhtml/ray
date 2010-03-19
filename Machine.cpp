@@ -23,7 +23,7 @@
 #define MAX_VERTICES_TO_VISIT 500
 #define TIP_LIMIT 40
 
-//#define SHOW_MINI_GRAPH
+#define SHOW_MINI_GRAPH
 
 // tags
 // these are the message types used by Ray
@@ -3231,6 +3231,7 @@ void Machine::doChoice(){
 				m_dfsData->m_doChoice_tips_dfs_done=false;
 				m_dfsData->m_doChoice_tips_Initiated=true;
 				m_bubbleData->m_BUBBLE_visitedVertices.clear();
+				m_bubbleData->m_visitedVertices.clear();
 				m_bubbleData->m_BUBBLE_visitedVerticesDepths.clear();
 				m_bubbleData->m_coverages.clear();
 			}
@@ -3251,7 +3252,7 @@ void Machine::doChoice(){
 							*/
 						}
 						m_dfsData->m_doChoice_tips_newEdges.push_back(m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_i]);
-					
+						m_bubbleData->m_visitedVertices.push_back(m_dfsData->m_depthFirstSearchVisitedVertices);
 						// store visited vertices for bubble detection purposes.
 						m_bubbleData->m_BUBBLE_visitedVertices.push_back(m_dfsData->m_depthFirstSearchVisitedVertices_vector);
 						m_bubbleData->m_coverages.push_back(m_dfsData->m_coverages);
@@ -3301,7 +3302,11 @@ void Machine::doChoice(){
 				for(map<VERTEX_TYPE,int>::iterator j=m_bubbleData->m_coverages[i].begin();j!=m_bubbleData->m_coverages[i].end();j++){
 					theCoverages[j->first]=j->second;
 				}
-
+				// abort in strange places...
+				if(m_bubbleData->m_visitedVertices[i].size()>=MAX_VERTICES_TO_VISIT){
+					m_bubbleData->m_doChoice_bubbles_Detected=true;
+					return;
+				}
 				map<VERTEX_TYPE,VERTEX_TYPE> localMap;
 				cout<<"i="<<i<<" visited "<<m_bubbleData->m_BUBBLE_visitedVertices[i].size()/2<<" vertices."<<endl;
 				for(int j=0;j<(int)m_bubbleData->m_BUBBLE_visitedVertices[i].size();j+=2){
@@ -3471,8 +3476,6 @@ void Machine::depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int maxDepth){
 		}else if(m_SEEDING_vertexCoverageReceived){
 			if(!m_SEEDING_edgesRequested){
 				m_dfsData->m_coverages[vertexToVisit]=m_SEEDING_receivedVertexCoverage;
-
-				// Ray don't like positions not covered enough
 
 				int theDepth=m_dfsData->m_depthFirstSearchDepths.top();
 				if(m_dfsData->m_depthFirstSearchVisitedVertices.size()>=MAX_VERTICES_TO_VISIT){

@@ -43,7 +43,10 @@
  */
 class BubbleData{
 public:
+	// arcs with good coverage
 	vector<vector<VERTEX_TYPE> > m_BUBBLE_visitedVertices;
+	// all vertices.
+	vector<set<VERTEX_TYPE> > m_visitedVertices;
 	bool m_doChoice_bubbles_Detected;
 	bool m_doChoice_bubbles_Initiated;
 	vector<vector<int> > m_BUBBLE_visitedVerticesDepths;
