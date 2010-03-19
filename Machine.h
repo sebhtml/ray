@@ -306,11 +306,21 @@ class Machine{
 	// memory allocators
 	// m_outboxAllocator, m_inboxAllocator, and m_distributionAllocator are
 	// cleaned everynow and then.
+	
+	// allocator for outgoing messages
 	MyAllocator m_outboxAllocator;
+	
+	// allocator for ingoing messages
 	MyAllocator m_inboxAllocator;
-	MyAllocator m_distributionAllocator;
+	
+	// allocator for persistent data
 	MyAllocator m_persistentAllocator;
+
+	// allocator for directions in the de Bruijn graph
 	MyAllocator m_directionsAllocator;
+
+	// allocator for distribution of data, not persistent.
+	MyAllocator m_distributionAllocator;
 
 	vector<Read*> m_myReads;
 

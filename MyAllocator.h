@@ -45,6 +45,10 @@ public:
  */
 	MyAllocator();
 	void print();
+	/**
+ 	* reset the chunk to reuse it properly.
+ 	*/
+	void reset();
 	void clear();
 	/*
  * assign a size to the allocator.

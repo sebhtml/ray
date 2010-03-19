@@ -23,7 +23,7 @@
 #define MAX_VERTICES_TO_VISIT 500
 #define TIP_LIMIT 40
 
-#define SHOW_MINI_GRAPH
+//#define SHOW_MINI_GRAPH
 
 // tags
 // these are the message types used by Ray
@@ -434,11 +434,9 @@ void Machine::sendMessages(){
 		MPI_Send(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD);
 		#endif
 	}
+
 	m_outbox.clear();
-	if(m_outboxAllocator.getNumberOfChunks()>1){
-		m_outboxAllocator.clear();
-		m_outboxAllocator.constructor(OUTBOX_ALLOCATOR_CHUNK_SIZE);
-	}
+	m_outboxAllocator.reset();
 }
 
 /*	
@@ -1832,10 +1830,7 @@ void Machine::processMessages(){
 		processMessage(&(m_inbox[i]));
 	}
 	m_inbox.clear();
-	if(m_inboxAllocator.getNumberOfChunks()>1){
-		m_inboxAllocator.clear();
-		m_inboxAllocator.constructor(INBOX_ALLOCATOR_CHUNK_SIZE);
-	}
+	m_inboxAllocator.reset();
 }
 
 void Machine::processData(){

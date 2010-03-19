@@ -30,6 +30,13 @@ using namespace std;
 MyAllocator::MyAllocator(){
 }
 
+/**
+ * reset the currentPosition and reuse allocated memory.
+ */
+void MyAllocator::reset(){
+	m_currentPosition=0;
+}
+
 void MyAllocator::constructor(int chunkSize){
 	m_CHUNK_SIZE=chunkSize; 
 	m_currentChunk=(void*)__Malloc(m_CHUNK_SIZE);
@@ -64,7 +71,10 @@ void*MyAllocator::allocate(int s){
 		m_currentPosition=0;
 		return allocate(s);
 	}
-	void*r=(void*)((char*)m_currentChunk+m_currentPosition);
+	
+	// the address is the head of currentCHunk+ m_currentPosition bytes
+	void*r=(void*)(((char*)m_currentChunk)+m_currentPosition);
+	// increase the current position.
 	m_currentPosition+=s;
 	return r;
 }

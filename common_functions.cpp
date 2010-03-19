@@ -123,7 +123,7 @@ VERTEX_TYPE wordId_DistantSegments(const char*a){
 }
 
 string idToWord(VERTEX_TYPE i,int wordSize){
-	char*a=new char[wordSize+1];
+	char a[1000];
 	for(int p=0;p<wordSize;p++){
 		VERTEX_TYPE j=(i<<(sizeof(VERTEX_TYPE)*8-2-2*p))>>(sizeof(VERTEX_TYPE)*8-2); // clear the bits.
 		switch(j){
@@ -145,7 +145,6 @@ string idToWord(VERTEX_TYPE i,int wordSize){
 	}
 	a[wordSize]='\0';
 	string b(a);
-	delete[]a;
 	return b;
 }
 
@@ -308,7 +307,9 @@ VERTEX_TYPE hash_VERTEX_TYPE(VERTEX_TYPE key){
 	return key;
 }
 
-
+/**
+ * malloc with a memory verification.
+ */
 void*__Malloc(int c){
 	void*a=NULL;
 	a=malloc(c);
@@ -317,6 +318,7 @@ void*__Malloc(int c){
 }
 
 void __Free(void*a){
+	free(a);
 }
 
 
