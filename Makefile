@@ -38,7 +38,7 @@ TARGETS=Ray #SimulateFragments SimulateErrors SimulatePairedReads
 all: $(TARGETS)
 
 
-OBJECTS= Machine.o common_functions.o Loader.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o ReadAnnotation.o CoverageDistribution.o Message.o  Direction.o  PairedRead.o ColorSpaceDecoder.o ColorSpaceLoader.o VertexLinkedList.o
+OBJECTS= Machine.o common_functions.o Loader.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o ReadAnnotation.o CoverageDistribution.o Message.o  Direction.o  PairedRead.o ColorSpaceDecoder.o ColorSpaceLoader.o VertexLinkedList.o BubbleTool.o
 
 %.o: %.cpp
 	$(MPICC) $(CXXFLAGS) -c $< -o $@

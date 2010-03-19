@@ -158,6 +158,7 @@
 #include<sstream>
 #include<Message.h>
 #include<time.h>
+#include<BubbleTool.h>
 #include<assert.h>
 #include<common_functions.h>
 #include<iostream>
@@ -3284,103 +3285,12 @@ void Machine::doChoice(){
 		// bubbles detection aims polymorphisms and homopolymers stretches.
 		}
  		else if(!m_bubbleData->m_doChoice_bubbles_Detected){
-
-			// use tree alignments.
-
-			// use m_BUBBLE_visitedVertices here.
-			// if everything just go at the same place, just take any of them...
-			map<VERTEX_TYPE,set<int> > inCommon; // vertices and their their depths.
-			map<VERTEX_TYPE,int> maxDepthForVertex;
-
-			vector<map<VERTEX_TYPE,VERTEX_TYPE> > parents;
-
-			// select the deepest vertex in common
-			// compute the number of vertices in common between these paths.
-			map<VERTEX_TYPE,int> theCoverages;
-			cout<<m_bubbleData->m_BUBBLE_visitedVertices.size()<<" ways in bubble."<<endl;
-			for(int i=0;i<(int)m_bubbleData->m_BUBBLE_visitedVertices.size();i++){
-				for(map<VERTEX_TYPE,int>::iterator j=m_bubbleData->m_coverages[i].begin();j!=m_bubbleData->m_coverages[i].end();j++){
-					theCoverages[j->first]=j->second;
-				}
-				// abort in strange places...
-				if(m_bubbleData->m_visitedVertices[i].size()>=MAX_VERTICES_TO_VISIT){
-					m_bubbleData->m_doChoice_bubbles_Detected=true;
-					return;
-				}
-				map<VERTEX_TYPE,VERTEX_TYPE> localMap;
-				cout<<"i="<<i<<" visited "<<m_bubbleData->m_BUBBLE_visitedVertices[i].size()/2<<" vertices."<<endl;
-				for(int j=0;j<(int)m_bubbleData->m_BUBBLE_visitedVertices[i].size();j+=2){
-					VERTEX_TYPE prefix=m_bubbleData->m_BUBBLE_visitedVertices[i][j+0];
-					VERTEX_TYPE suffix=m_bubbleData->m_BUBBLE_visitedVertices[i][j+1];
-
-					// loop are too complex to be analyzed by Ray...
-					if(suffix==m_SEEDING_currentVertex){
-						m_bubbleData->m_doChoice_bubbles_Detected=true;
-						return;
-					}
-					int associatedDepth=m_bubbleData->m_BUBBLE_visitedVerticesDepths[i][j/2];
-					inCommon[prefix].insert(i);
-					maxDepthForVertex[prefix]=associatedDepth;
-					localMap[suffix]=prefix;
-				}
-				parents.push_back(localMap);
-			}
-			map<int,int> depthDensity;
-			for(map<VERTEX_TYPE,int>::iterator i=maxDepthForVertex.begin();i!=maxDepthForVertex.end();i++){
-				depthDensity[i->second]++;
-			}
-
-			VERTEX_TYPE deepestVertex=0;
-			int deepestVertexDepth=0;
-			for(map<VERTEX_TYPE,set<int> >::iterator i=inCommon.begin();i!=inCommon.end();i++){
-				if(i->second.size()!=2)
-					continue;
-				int theDepth=maxDepthForVertex[i->first];
-				// only allow singular densities.
-				if(theDepth>deepestVertexDepth and depthDensity[theDepth]==1){
-					deepestVertexDepth=theDepth;
-					deepestVertex=i->first;
-				}
-			}
-			
-			cout<<"deepestVertexDepth="<<deepestVertexDepth<<endl;
-			cout<<parents.size()<<" parent arrays."<<endl;
-			vector<vector<VERTEX_TYPE> > pathsToTop;
-			map<VERTEX_TYPE,int> inCommonInPaths;
-			for(int i=0;i<(int)parents.size();i++){
-				VERTEX_TYPE t=deepestVertex;
-				vector<VERTEX_TYPE> pathToTop;
-				while(parents[i].count(t)>0){
-					pathToTop.push_back(t);
-					inCommonInPaths[t]++;
-					t=parents[i][t];
-				}
-				pathsToTop.push_back(pathToTop);
-				cout<<i<<" has "<<pathToTop.size()<<" vertices to top."<<endl;
-			}
-			int inBoth=0;
-			for(map<VERTEX_TYPE,int>::iterator i=inCommonInPaths.begin();i!=inCommonInPaths.end();i++){
-				if(i->second==2)
-					inBoth++;
-			}
-			cout<<"InBoth="<<inBoth<<endl;
-			int diff=99;
-			if(inBoth>0){
-				diff=pathsToTop[0].size()-pathsToTop[1].size();
-				if(diff<0)
-					diff=-diff;
-				cout<<"Diff="<<diff<<endl;
-			}
-			// score a little
-			int minimumScore=deepestVertexDepth*0.75;
-			cout<<"min="<<minimumScore<<endl;
-			// but not too much.
-			int maximumScore=MAX_DEPTH;
-			
+			BubbleTool tool;
+			bool isGenuineBubble=tool.isGenuineBubble(m_SEEDING_currentVertex,&m_bubbleData->m_BUBBLE_visitedVertices);
 
 			// support indels of 1 as well as mismatch polymorphisms.
-			if(inBoth>=minimumScore and inBoth<=maximumScore and diff<=5 and m_EXTENSION_readsInRange.size()>0){
-				cout<<"Forcing next choice "<<inBoth<<endl;
+			if(isGenuineBubble){
+				cout<<"Forcing next choice "<<endl;
 				m_SEEDING_currentVertex=m_dfsData->m_doChoice_tips_newEdges[0];
 				m_EXTENSION_choose=true;
 				m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
