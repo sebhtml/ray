@@ -21,9 +21,9 @@
 
 #define MAX_DEPTH 200
 #define MAX_VERTICES_TO_VISIT 500
-#define TIP_LIMIT 40
+#define TIP_LIMIT 200
 
-#define SHOW_MINI_GRAPH
+//#define SHOW_MINI_GRAPH
 
 // tags
 // these are the message types used by Ray
@@ -1301,6 +1301,7 @@ void Machine::processMessage(Message*message){
  * finish hyper fusions now!
  */
 void Machine::finishFusions(){
+	// finishing is broken?
 	if(m_SEEDING_i==(int)m_EXTENSION_contigs.size()){
 		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 		message[0]=m_FINISH_fusionOccured;
@@ -2949,13 +2950,8 @@ void Machine::enumerateChoices(){
 }
 
 void Machine::doChoice(){
-	if(m_enumerateChoices_outgoingEdges.size()==1){
-		m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[0];
-		m_EXTENSION_choose=true;
-		m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
-		m_EXTENSION_directVertexDone=false;
-		m_EXTENSION_VertexAssembled_requested=false;
-	}else if(m_EXTENSION_currentPosition<(int)m_EXTENSION_currentSeed.size()){
+	// use seed information.
+	if(m_EXTENSION_currentPosition<(int)m_EXTENSION_currentSeed.size()){
 		for(int i=0;i<(int)m_enumerateChoices_outgoingEdges.size();i++){
 			if(m_enumerateChoices_outgoingEdges[i]==m_EXTENSION_currentSeed[m_EXTENSION_currentPosition]){
 				m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[i];
@@ -2963,9 +2959,12 @@ void Machine::doChoice(){
 				m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 				m_EXTENSION_directVertexDone=false;
 				m_EXTENSION_VertexAssembled_requested=false;
+				return;
 			}
 		}
+	// else, do a paired-end or single-end lookup if reads are in range.
 	}else{
+		/*
 		// try to use the coverage to choose.
 		for(int i=0;i<(int)m_EXTENSION_coverages.size();i++){
 			bool isBetter=true;
@@ -3010,8 +3009,9 @@ void Machine::doChoice(){
 				return;
 			}
 		}
+		*/
 
-		if(!m_EXTENSION_singleEndResolution){
+		if(!m_EXTENSION_singleEndResolution and m_EXTENSION_readsInRange.size()>0){
 			// try to use single-end reads to resolve the repeat.
 			// for each read in range, ask them their vertex at position (CurrentPositionOnContig-StartPositionOfReadOnContig)
 			// and cumulate the results in
@@ -3142,6 +3142,30 @@ void Machine::doChoice(){
 				m_EXTENSION_readsOutOfRange.clear();
 				m_EXTENSION_singleEndResolution=true;
 				
+				if(m_enumerateChoices_outgoingEdges.size()>1){
+					cout<<endl;
+					cout<<"*****************************************"<<endl;
+					cout<<"CurrentVertex="<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<" @"<<m_EXTENSION_extension.size()<<endl;
+					cout<<m_enumerateChoices_outgoingEdges.size()<<" arcs."<<endl;
+					for(int i=0;i<(int)m_enumerateChoices_outgoingEdges.size();i++){
+						string vertex=idToWord(m_enumerateChoices_outgoingEdges[i],m_wordSize);
+						cout<<endl;
+						cout<<"Choice #"<<i+1<<endl;
+						cout<<"Vertex: "<<vertex<<endl;
+						cout<<"New letter: "<<vertex[m_wordSize-1]<<endl;
+						cout<<"Single-end reads:"<<endl;
+						for(int j=0;j<(int)m_EXTENSION_readPositionsForVertices[i].size();j++){
+							cout<<" "<<m_EXTENSION_readPositionsForVertices[i][j];
+						}
+						cout<<endl;
+						cout<<"Paired-end reads:"<<endl;
+						for(int j=0;j<(int)m_EXTENSION_pairedReadPositionsForVertices[i].size();j++){
+							cout<<" "<<m_EXTENSION_pairedReadPositionsForVertices[i][j];
+						}
+						cout<<endl;
+					}
+				}
+
 				// paired-end resolution of repeats.
 				map<int,int> theMaxsPaired;
 				map<int,int> theSumsPaired;
@@ -3163,12 +3187,17 @@ void Machine::doChoice(){
 					for(int j=0;j<(int)m_EXTENSION_pairedReadPositionsForVertices.size();j++){
 						if(i==j)
 							continue;
-						if((theMaxsPaired[i] < 3*theMaxsPaired[j]) or (theSumsPaired[i] < 3*theSumsPaired[j]) or (theNumbersPaired[i] < 3*theNumbersPaired[j])){
+						if((theMaxsPaired[i] <= 3*theMaxsPaired[j]) or
+					 (theSumsPaired[i] <= 3*theSumsPaired[j]) or
+					 (theNumbersPaired[i] <= 3*theNumbersPaired[j])){
 							winner=false;
 							break;
 						}
 					}
 					if(winner==true){
+						if(m_enumerateChoices_outgoingEdges.size()>1){
+							cout<<"Choice "<<i+1<<" wins with paired-end reads."<<endl;
+						}
 						m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[i];
 						m_EXTENSION_choose=true;
 						m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
@@ -3186,6 +3215,7 @@ void Machine::doChoice(){
 					int max=-1;
 					for(int j=0;j<(int)m_EXTENSION_readPositionsForVertices[i].size();j++){
 						int offset=m_EXTENSION_readPositionsForVertices[i][j];
+
 						theSums[i]+=offset;
 						if(offset>max){
 							max=offset;
@@ -3196,15 +3226,23 @@ void Machine::doChoice(){
 				}
 				for(int i=0;i<(int)m_EXTENSION_readPositionsForVertices.size();i++){
 					bool winner=true;
+					if(theMaxs[i]<5)
+						winner=false;
 					for(int j=0;j<(int)m_EXTENSION_readPositionsForVertices.size();j++){
 						if(i==j)
 							continue;
-						if((theMaxs[i] < 3*theMaxs[j]) or (theSums[i] < 3*theSums[j]) or (theNumbers[i] < 3*theNumbers[j])){
+						if(	(theMaxs[i] <= 3*theMaxs[j]) 
+							or (theSums[i] <= 3*theSums[j]) 
+							or (theNumbers[i] <= 3*theNumbers[j])
+							){
 							winner=false;
 							break;
 						}
 					}
 					if(winner==true){
+						if(m_enumerateChoices_outgoingEdges.size()>1){
+							cout<<"Choice "<<i+1<<" wins with single-end reads."<<endl;
+						}
 						m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[i];
 						m_EXTENSION_choose=true;
 						m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
@@ -3221,7 +3259,7 @@ void Machine::doChoice(){
 				#endif
 			}
 			return;
-		}else if(!m_doChoice_tips_Detected){
+		}else if(!m_doChoice_tips_Detected and m_EXTENSION_readsInRange.size()>0){
  			//for each entries in m_enumerateChoices_outgoingEdges, do a dfs of max depth 40.
 			//if the reached depth is 40, it is not a tip, otherwise, it is.
 			int maxDepth=MAX_DEPTH;
@@ -3242,7 +3280,7 @@ void Machine::doChoice(){
 					depthFirstSearch(m_SEEDING_currentVertex,m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_i],maxDepth);
 				}else{
 					// keep the edge if it is not a tip.
-					if(m_dfsData->m_depthFirstSearch_maxDepth>TIP_LIMIT){
+					if(m_dfsData->m_depthFirstSearch_maxDepth>=TIP_LIMIT){
 
 						// just don't try that strange graph place for now.
 						if(m_dfsData->m_depthFirstSearchVisitedVertices.size()==MAX_VERTICES_TO_VISIT){
@@ -3283,8 +3321,7 @@ void Machine::doChoice(){
 			}
 			return;
 		// bubbles detection aims polymorphisms and homopolymers stretches.
-		}
- 		else if(!m_bubbleData->m_doChoice_bubbles_Detected){
+		}else if(!m_bubbleData->m_doChoice_bubbles_Detected and m_EXTENSION_readsInRange.size()>0){
 			BubbleTool tool;
 			bool isGenuineBubble=tool.isGenuineBubble(m_SEEDING_currentVertex,&m_bubbleData->m_BUBBLE_visitedVertices);
 
@@ -3302,6 +3339,7 @@ void Machine::doChoice(){
 		}
 
 		// no choice possible...
+		// do it for the lulz
 		if(!m_EXTENSION_complementedSeed){
 			m_EXTENSION_complementedSeed=true;
 			vector<VERTEX_TYPE> complementedSeed;
@@ -3479,6 +3517,7 @@ void Machine::checkIfCurrentVertexIsAssembled(){
 			m_EXTENSION_reverseVertexDone=false;
 			m_EXTENSION_directVertexDone=true;
 			m_EXTENSION_VertexMarkAssembled_requested=false;
+			m_SEEDING_vertexCoverageRequested=false;
 			m_EXTENSION_VertexAssembled_requested=false;
 			if(m_EXTENSION_vertexIsAssembledResult){
 				m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
@@ -3507,54 +3546,69 @@ void Machine::checkIfCurrentVertexIsAssembled(){
 
 void Machine::markCurrentVertexAsAssembled(){
 	if(!m_EXTENSION_directVertexDone){
-		if(!m_EXTENSION_VertexMarkAssembled_requested){
-			m_EXTENSION_extension.push_back(m_SEEDING_currentVertex);
-			// save wave progress.
-	
-			int waveId=m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+getRank();
-			int progression=m_EXTENSION_extension.size()-1;
+		if(!m_SEEDING_vertexCoverageRequested){
+			m_SEEDING_vertexCoverageRequested=true;
+			m_SEEDING_vertexCoverageReceived=false;
 			
-
-			m_EXTENSION_VertexMarkAssembled_requested=true;
-			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(3*sizeof(VERTEX_TYPE));
-			message[0]=(VERTEX_TYPE)m_SEEDING_currentVertex;
-			message[1]=waveId;
-			message[2]=progression;
-			Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,vertexRank(m_SEEDING_currentVertex),TAG_SAVE_WAVE_PROGRESSION,getRank());
-			m_outbox.push_back(aMessage);
-			m_EXTENSION_reverseVertexDone=true;
-			m_EXTENSION_reads_requested=false;
-
-		// get the reads starting at that position.
-		}else if(!m_EXTENSION_reads_requested){
-			m_EXTENSION_reads_requested=true;
-			m_EXTENSION_reads_received=false;
 			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
-			message[0]=(VERTEX_TYPE)m_SEEDING_currentVertex;
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(m_SEEDING_currentVertex),TAG_REQUEST_READS,getRank());
+			message[0]=m_SEEDING_currentVertex;
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0]),TAG_REQUEST_VERTEX_COVERAGE,getRank());
 			m_outbox.push_back(aMessage);
+		}else if(m_SEEDING_vertexCoverageReceived){
+			if(!m_EXTENSION_VertexMarkAssembled_requested){
+				m_EXTENSION_extension.push_back(m_SEEDING_currentVertex);
+				// save wave progress.
+	
+				int waveId=m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+getRank();
+				int progression=m_EXTENSION_extension.size()-1;
 			
-		}else if(m_EXTENSION_reads_received){
-			for(int i=0;i<(int)m_EXTENSION_receivedReads.size();i++){
-				int uniqueId=m_EXTENSION_receivedReads[i].getUniqueId();
-				// check that the complete sequence of m_SEEDING_currentVertex correspond to
-				// the one of the start of the read on the good strand.
-				// this is important when USE_DISTANT_SEGMENTS_GRAPH is set.
 
-				if(m_EXTENSION_usedReads.count(uniqueId)==0){
-					m_EXTENSION_usedReads.insert(uniqueId);
-					m_EXTENSION_reads_startingPositionOnContig[uniqueId]=m_EXTENSION_extension.size()-1;
-					m_EXTENSION_readsInRange.insert(m_EXTENSION_receivedReads[i]);
-					#ifdef DEBUG
-					assert(m_EXTENSION_readsInRange.count(m_EXTENSION_receivedReads[i])>0);
-					#endif
+				m_EXTENSION_VertexMarkAssembled_requested=true;
+				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(3*sizeof(VERTEX_TYPE));
+				message[0]=(VERTEX_TYPE)m_SEEDING_currentVertex;
+				message[1]=waveId;
+				message[2]=progression;
+				Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,vertexRank(m_SEEDING_currentVertex),TAG_SAVE_WAVE_PROGRESSION,getRank());
+				m_outbox.push_back(aMessage);
+				m_EXTENSION_reverseVertexDone=true;
+				m_EXTENSION_reads_requested=false;
+
+			// get the reads starting at that position.
+			}else if(!m_EXTENSION_reads_requested){
+				m_EXTENSION_reads_requested=true;
+				m_EXTENSION_reads_received=false;
+				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
+				message[0]=(VERTEX_TYPE)m_SEEDING_currentVertex;
+				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(m_SEEDING_currentVertex),TAG_REQUEST_READS,getRank());
+				m_outbox.push_back(aMessage);
+			
+			}else if(m_EXTENSION_reads_received){
+				for(int i=0;i<(int)m_EXTENSION_receivedReads.size();i++){
+					int uniqueId=m_EXTENSION_receivedReads[i].getUniqueId();
+					// check that the complete sequence of m_SEEDING_currentVertex correspond to
+					// the one of the start of the read on the good strand.
+					// this is important when USE_DISTANT_SEGMENTS_GRAPH is set.
+
+					if(m_EXTENSION_usedReads.count(uniqueId)==0 ){
+						// use all reads available.
+						if(true or m_SEEDING_receivedVertexCoverage<3*m_peakCoverage){
+							m_EXTENSION_usedReads.insert(uniqueId);
+							m_EXTENSION_reads_startingPositionOnContig[uniqueId]=m_EXTENSION_extension.size()-1;
+							m_EXTENSION_readsInRange.insert(m_EXTENSION_receivedReads[i]);
+							#ifdef DEBUG
+							assert(m_EXTENSION_readsInRange.count(m_EXTENSION_receivedReads[i])>0);
+							#endif
+						}else{
+							cout<<"Repeated vertex."<<endl;
+						}
+					}
 				}
+				m_EXTENSION_directVertexDone=true;
+				m_EXTENSION_VertexMarkAssembled_requested=false;
+				m_EXTENSION_enumerateChoices=false;
+				m_SEEDING_edgesRequested=false;
+				m_EXTENSION_markedCurrentVertexAsAssembled=true;
 			}
-			m_EXTENSION_directVertexDone=true;
-			m_EXTENSION_VertexMarkAssembled_requested=false;
-			m_EXTENSION_enumerateChoices=false;
-			m_SEEDING_edgesRequested=false;
-			m_EXTENSION_markedCurrentVertexAsAssembled=true;
 		}
 	}
 }
