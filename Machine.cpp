@@ -21,7 +21,8 @@
 
 #define MAX_DEPTH 200
 #define MAX_VERTICES_TO_VISIT 500
-#define TIP_LIMIT 200
+#define TIP_LIMIT 40
+#define _MINIMUM_COVERAGE 2
 
 //#define SHOW_MINI_GRAPH
 
@@ -2964,7 +2965,9 @@ void Machine::doChoice(){
 		}
 	// else, do a paired-end or single-end lookup if reads are in range.
 	}else{
-		/*
+
+
+/*
 		// try to use the coverage to choose.
 		for(int i=0;i<(int)m_EXTENSION_coverages.size();i++){
 			bool isBetter=true;
@@ -2979,6 +2982,7 @@ void Machine::doChoice(){
 				}
 			}
 			if(isBetter){
+				cout<<"Choice "<<i+1<<" wins with coverage."<<endl;
 				m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[i];
 				m_EXTENSION_choose=true;
 				m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
@@ -3009,8 +3013,7 @@ void Machine::doChoice(){
 				return;
 			}
 		}
-		*/
-
+*/
 		if(!m_EXTENSION_singleEndResolution and m_EXTENSION_readsInRange.size()>0){
 			// try to use single-end reads to resolve the repeat.
 			// for each read in range, ask them their vertex at position (CurrentPositionOnContig-StartPositionOfReadOnContig)
@@ -3152,6 +3155,7 @@ void Machine::doChoice(){
 						cout<<endl;
 						cout<<"Choice #"<<i+1<<endl;
 						cout<<"Vertex: "<<vertex<<endl;
+						cout<<"Coverage="<<m_EXTENSION_coverages[i]<<endl;
 						cout<<"New letter: "<<vertex[m_wordSize-1]<<endl;
 						cout<<"Single-end reads:"<<endl;
 						for(int j=0;j<(int)m_EXTENSION_readPositionsForVertices[i].size();j++){
@@ -3182,31 +3186,6 @@ void Machine::doChoice(){
 					theNumbersPaired[i]=m_EXTENSION_pairedReadPositionsForVertices[i].size();
 					theMaxsPaired[i]=max;
 				}
-				for(int i=0;i<(int)m_EXTENSION_pairedReadPositionsForVertices.size();i++){
-					bool winner=true;
-					for(int j=0;j<(int)m_EXTENSION_pairedReadPositionsForVertices.size();j++){
-						if(i==j)
-							continue;
-						if((theMaxsPaired[i] <= 3*theMaxsPaired[j]) or
-					 (theSumsPaired[i] <= 3*theSumsPaired[j]) or
-					 (theNumbersPaired[i] <= 3*theNumbersPaired[j])){
-							winner=false;
-							break;
-						}
-					}
-					if(winner==true){
-						if(m_enumerateChoices_outgoingEdges.size()>1){
-							cout<<"Choice "<<i+1<<" wins with paired-end reads."<<endl;
-						}
-						m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[i];
-						m_EXTENSION_choose=true;
-						m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
-						m_EXTENSION_directVertexDone=false;
-						m_EXTENSION_VertexAssembled_requested=false;
-						return;
-					}
-				}
-
 				// single-end resolution of repeats.
 				map<int,int> theMaxs;
 				map<int,int> theSums;
@@ -3224,12 +3203,55 @@ void Machine::doChoice(){
 					theNumbers[i]=m_EXTENSION_readPositionsForVertices[i].size();
 					theMaxs[i]=max;
 				}
+
+
+				for(int i=0;i<(int)m_EXTENSION_pairedReadPositionsForVertices.size();i++){
+					bool winner=true;
+					if(m_EXTENSION_coverages[i]<_MINIMUM_COVERAGE)
+						continue;
+					if(theNumbers[i]==0 or theNumbersPaired[i]==0)
+						continue;
+					for(int j=0;j<(int)m_EXTENSION_pairedReadPositionsForVertices.size();j++){
+						if(i==j)
+							continue;
+						if(m_EXTENSION_coverages[j]<_MINIMUM_COVERAGE)
+							continue;
+						if((theMaxsPaired[i] <= 3*theMaxsPaired[j]) or
+					 (theSumsPaired[i] <= 3*theSumsPaired[j]) or
+					 (theNumbersPaired[i] <= 3*theNumbersPaired[j]) or
+					theNumbers[i] < theNumbers[j] // make sure that it also has more single-end reads
+){
+							winner=false;
+							break;
+						}
+					}
+					if(winner==true){
+						if(m_enumerateChoices_outgoingEdges.size()>1){
+							cout<<"Choice "<<i+1<<" wins with paired-end reads."<<endl;
+						}
+						m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[i];
+						m_EXTENSION_choose=true;
+						m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
+						m_EXTENSION_directVertexDone=false;
+						m_EXTENSION_VertexAssembled_requested=false;
+						return;
+					}
+				}
+
 				for(int i=0;i<(int)m_EXTENSION_readPositionsForVertices.size();i++){
 					bool winner=true;
 					if(theMaxs[i]<5)
 						winner=false;
+
+					if(m_EXTENSION_coverages[i]<_MINIMUM_COVERAGE)
+						continue;
+					if(theNumbers[i]==0)
+						continue;
 					for(int j=0;j<(int)m_EXTENSION_readPositionsForVertices.size();j++){
 						if(i==j)
+							continue;
+
+						if(m_EXTENSION_coverages[j]<_MINIMUM_COVERAGE)
 							continue;
 						if(	(theMaxs[i] <= 3*theMaxs[j]) 
 							or (theSums[i] <= 3*theSums[j]) 
@@ -3279,6 +3301,7 @@ void Machine::doChoice(){
 				if(!m_dfsData->m_doChoice_tips_dfs_done){
 					depthFirstSearch(m_SEEDING_currentVertex,m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_i],maxDepth);
 				}else{
+					cout<<"Choice #"<<m_dfsData->m_doChoice_tips_i+1<<" : visited "<<m_dfsData->m_depthFirstSearchVisitedVertices.size()<<", max depth is "<<m_dfsData->m_depthFirstSearch_maxDepth<<endl;
 					// keep the edge if it is not a tip.
 					if(m_dfsData->m_depthFirstSearch_maxDepth>=TIP_LIMIT){
 
@@ -3304,8 +3327,10 @@ void Machine::doChoice(){
 					m_dfsData->m_doChoice_tips_dfs_done=false;
 				}
 			}else{
+				cout<<m_dfsData->m_doChoice_tips_newEdges.size()<<" new arcs."<<endl;
 				// we have a winner with tips investigation.
 				if(m_dfsData->m_doChoice_tips_newEdges.size()==1 and m_EXTENSION_readsInRange.size()>0){
+					cout<<"We have a win after tip elimination."<<endl;
 					m_SEEDING_currentVertex=m_dfsData->m_doChoice_tips_newEdges[0];
 					m_EXTENSION_choose=true;
 					m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
@@ -3341,6 +3366,7 @@ void Machine::doChoice(){
 		// no choice possible...
 		// do it for the lulz
 		if(!m_EXTENSION_complementedSeed){
+			cout<<"Switching to reverse complement."<<endl;
 			m_EXTENSION_complementedSeed=true;
 			vector<VERTEX_TYPE> complementedSeed;
 			for(int i=m_EXTENSION_extension.size()-1;i>=0;i--){
@@ -3424,13 +3450,21 @@ void Machine::depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int maxDepth){
 		}else if(m_SEEDING_vertexCoverageReceived){
 			if(!m_SEEDING_edgesRequested){
 				m_dfsData->m_coverages[vertexToVisit]=m_SEEDING_receivedVertexCoverage;
-
+				if(m_SEEDING_receivedVertexCoverage>1){
+					m_dfsData->m_depthFirstSearchVisitedVertices.insert(vertexToVisit);
+				}else{
+					// don't visit it.
+					m_dfsData->m_depthFirstSearchVerticesToVisit.pop();
+					m_dfsData->m_depthFirstSearchDepths.pop();
+					m_SEEDING_edgesRequested=false;
+					m_SEEDING_vertexCoverageRequested=false;
+					return;
+				}
 				int theDepth=m_dfsData->m_depthFirstSearchDepths.top();
 				if(m_dfsData->m_depthFirstSearchVisitedVertices.size()>=MAX_VERTICES_TO_VISIT){
 					// quit this strange place.
 	
 					m_dfsData->m_doChoice_tips_dfs_done=true;
-					cout<<"</MiniGraph>"<<endl;
 					cout<<"Exiting, I am lost. "<<m_dfsData->m_depthFirstSearchVisitedVertices.size()<<""<<endl;
 					return;
 				}
@@ -3474,7 +3508,6 @@ void Machine::depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int maxDepth){
 						continue;
 					m_dfsData->m_depthFirstSearchVerticesToVisit.push(nextVertex);
 					m_dfsData->m_depthFirstSearchDepths.push(newDepth);
-					m_dfsData->m_depthFirstSearchVisitedVertices.insert(nextVertex);
 					if(m_dfsData->m_coverages[vertexToVisit]>=m_minimumCoverage/2){
 						m_dfsData->m_depthFirstSearchVisitedVertices_vector.push_back(vertexToVisit);
 						m_dfsData->m_depthFirstSearchVisitedVertices_vector.push_back(nextVertex);
