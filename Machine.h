@@ -61,7 +61,7 @@ public:
 	int m_depthFirstSearch_maxDepth;
 	stack<int> m_depthFirstSearchDepths;
 	int m_doChoice_tips_i;
-	vector<VERTEX_TYPE> m_doChoice_tips_newEdges;
+	vector<int> m_doChoice_tips_newEdges;
 	bool m_doChoice_tips_dfs_initiated;
 	set<VERTEX_TYPE> m_depthFirstSearchVisitedVertices;
 	stack<VERTEX_TYPE> m_depthFirstSearchVerticesToVisit;

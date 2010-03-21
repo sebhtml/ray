@@ -3313,7 +3313,7 @@ void Machine::doChoice(){
 							return;
 							*/
 						}
-						m_dfsData->m_doChoice_tips_newEdges.push_back(m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_i]);
+						m_dfsData->m_doChoice_tips_newEdges.push_back(m_dfsData->m_doChoice_tips_i);
 						m_bubbleData->m_visitedVertices.push_back(m_dfsData->m_depthFirstSearchVisitedVertices);
 						// store visited vertices for bubble detection purposes.
 						m_bubbleData->m_BUBBLE_visitedVertices.push_back(m_dfsData->m_depthFirstSearchVisitedVertices_vector);
@@ -3329,9 +3329,10 @@ void Machine::doChoice(){
 			}else{
 				cout<<m_dfsData->m_doChoice_tips_newEdges.size()<<" new arcs."<<endl;
 				// we have a winner with tips investigation.
-				if(m_dfsData->m_doChoice_tips_newEdges.size()==1 and m_EXTENSION_readsInRange.size()>0){
+				if(m_dfsData->m_doChoice_tips_newEdges.size()==1 and m_EXTENSION_readsInRange.size()>0 
+		and m_EXTENSION_readPositionsForVertices[m_dfsData->m_doChoice_tips_newEdges[0]].size()>0){
 					cout<<"We have a win after tip elimination."<<endl;
-					m_SEEDING_currentVertex=m_dfsData->m_doChoice_tips_newEdges[0];
+					m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_newEdges[0]];
 					m_EXTENSION_choose=true;
 					m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 					m_EXTENSION_directVertexDone=false;
@@ -3353,7 +3354,7 @@ void Machine::doChoice(){
 			// support indels of 1 as well as mismatch polymorphisms.
 			if(isGenuineBubble){
 				cout<<"Forcing next choice "<<endl;
-				m_SEEDING_currentVertex=m_dfsData->m_doChoice_tips_newEdges[0];
+				m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_newEdges[0]];
 				m_EXTENSION_choose=true;
 				m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 				m_EXTENSION_directVertexDone=false;
