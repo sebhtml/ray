@@ -409,6 +409,7 @@ class Machine{
 	void finishFusions();
 	void makeFusions();
 	void depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int b);
+	int proceedWithCoverages(int a,int b);
 public:
 	/*
  * this is the only public bit

@@ -2950,6 +2950,35 @@ void Machine::enumerateChoices(){
 	}
 }
 
+int Machine::proceedWithCoverages(int a,int b){
+	for(int i=0;i<(int)m_EXTENSION_coverages.size();i++){
+		bool isBetter=true;
+		int coverageI=m_EXTENSION_coverages[i];
+		if(m_EXTENSION_readPositionsForVertices[i].size()==0)
+			continue;
+		for(int j=0;j<(int)m_EXTENSION_coverages.size();j++){
+			if(i==j)
+				continue;
+			int coverageJ=m_EXTENSION_coverages[j];
+			if(!(coverageJ<=a and coverageI>=b)){
+				isBetter=false;
+				break;
+			}
+		}
+		if(isBetter){
+			cout<<"Choice "<<i+1<<" wins with coverage."<<endl;
+			m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[i];
+			m_EXTENSION_choose=true;
+			m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
+			m_EXTENSION_directVertexDone=false;
+			m_EXTENSION_VertexAssembled_requested=false;
+
+			return i;
+		}
+	}
+	return -1;
+}
+
 void Machine::doChoice(){
 	// use seed information.
 	if(m_EXTENSION_currentPosition<(int)m_EXTENSION_currentSeed.size()){
@@ -2966,54 +2995,24 @@ void Machine::doChoice(){
 	// else, do a paired-end or single-end lookup if reads are in range.
 	}else{
 
-
 /*
+ *
+ *                         min                          seed                       peak
+ *             min/2       
+ *                                      2min
+ *   A         ==============
+ *   B                      =============================
+ *   C                      =============
+ */
 		// try to use the coverage to choose.
-		for(int i=0;i<(int)m_EXTENSION_coverages.size();i++){
-			bool isBetter=true;
-			int coverageI=m_EXTENSION_coverages[i];
-			for(int j=0;j<(int)m_EXTENSION_coverages.size();j++){
-				if(i==j)
-					continue;
-				int coverageJ=m_EXTENSION_coverages[j];
-				if(!(coverageJ<=m_minimumCoverage/2 and coverageI>=m_minimumCoverage)){
-					isBetter=false;
-					break;
-				}
-			}
-			if(isBetter){
-				cout<<"Choice "<<i+1<<" wins with coverage."<<endl;
-				m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[i];
-				m_EXTENSION_choose=true;
-				m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
-				m_EXTENSION_directVertexDone=false;
-				m_EXTENSION_VertexAssembled_requested=false;
-				return;
-			}
+		int i=proceedWithCoverages(m_minimumCoverage/2,m_minimumCoverage);
+		if(i>=0){
+			return;
 		}
-		
-		for(int i=0;i<(int)m_EXTENSION_coverages.size();i++){
-			bool isBetter=true;
-			int coverageI=m_EXTENSION_coverages[i];
-			for(int j=0;j<(int)m_EXTENSION_coverages.size();j++){
-				if(i==j)
-					continue;
-				int coverageJ=m_EXTENSION_coverages[j];
-				if(!(coverageJ<=m_minimumCoverage and coverageI>=(m_seedCoverage))){
-					isBetter=false;
-					break;
-				}
-			}
-			if(isBetter){
-				m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[i];
-				m_EXTENSION_choose=true;
-				m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
-				m_EXTENSION_directVertexDone=false;
-				m_EXTENSION_VertexAssembled_requested=false;
-				return;
-			}
-		}
-*/
+		i=proceedWithCoverages(m_minimumCoverage,2*m_minimumCoverage);
+		if(i>=0)
+			return;
+
 		if(!m_EXTENSION_singleEndResolution and m_EXTENSION_readsInRange.size()>0){
 			// try to use single-end reads to resolve the repeat.
 			// for each read in range, ask them their vertex at position (CurrentPositionOnContig-StartPositionOfReadOnContig)
@@ -3331,8 +3330,8 @@ void Machine::doChoice(){
 				// we have a winner with tips investigation.
 				if(m_dfsData->m_doChoice_tips_newEdges.size()==1 and m_EXTENSION_readsInRange.size()>0 
 		and m_EXTENSION_readPositionsForVertices[m_dfsData->m_doChoice_tips_newEdges[0]].size()>0){
-					cout<<"We have a win after tip elimination."<<endl;
 					m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_newEdges[0]];
+					cout<<"We have a win after tip elimination: "<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<endl;
 					m_EXTENSION_choose=true;
 					m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 					m_EXTENSION_directVertexDone=false;
