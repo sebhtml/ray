@@ -838,6 +838,7 @@ void Machine::processMessage(Message*message){
 
 		// add the FINISHING bits
 		for(int i=0;i<(int)m_FINISH_newFusions.size();i++){
+			cout<<"Adding "<<m_FINISH_newFusions[i].size()<<endl;
 			m_EXTENSION_contigs.push_back(m_FINISH_newFusions[i]);
 		}
 
@@ -1313,7 +1314,14 @@ void Machine::finishFusions(){
 	}
 	int overlapMinimumLength=1000;
 	if((int)m_EXTENSION_contigs[m_SEEDING_i].size()<overlapMinimumLength){
+		cout<<"No overlap possible m_SEEDING_i="<<m_SEEDING_i<<" size="<<m_EXTENSION_contigs[m_SEEDING_i].size()<<endl;
 		m_SEEDING_i++;
+		m_FINISH_vertex_requested=false;
+		m_EXTENSION_currentPosition=0;
+		m_FUSION_pathLengthRequested=false;
+		m_Machine_getPaths_INITIALIZED=false;
+		m_Machine_getPaths_DONE=false;
+		m_checkedValidity=false;
 		return;
 	}
 	// check if the path begins with someone else.
@@ -1449,6 +1457,12 @@ void Machine::makeFusions(){
 	// if a path is 100% identical to another one, but is reverse-complement, keep the one with the lowest ID
 	
 	int END_LENGTH=100;
+	// avoid duplication of contigs.
+	if(m_SEEDING_i<(int)m_EXTENSION_contigs.size()){
+		if((int)m_EXTENSION_contigs[m_SEEDING_i].size()<=END_LENGTH){
+			END_LENGTH=m_EXTENSION_contigs[m_SEEDING_i].size()-1;
+		}
+	}
 	if(m_SEEDING_i==(int)m_EXTENSION_contigs.size()){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_FUSION_DONE,getRank());
 		m_outbox.push_back(aMessage);
@@ -1460,12 +1474,14 @@ void Machine::makeFusions(){
 		#ifdef DEBUG
 		//cout<<"Rank "<<getRank()<<" eliminated: "<<m_FUSION_eliminated.size()<<endl;
 		#endif
-		
+		return;
 	}else if((int)m_EXTENSION_contigs[m_SEEDING_i].size()<=END_LENGTH){
+		cout<<"No fusion for me. "<<m_SEEDING_i<<" "<<m_EXTENSION_contigs[m_SEEDING_i].size()<<" "<<m_EXTENSION_identifiers[m_SEEDING_i]<<endl;
 		m_FUSION_direct_fusionDone=false;
 		m_FUSION_first_done=false;
 		m_FUSION_paths_requested=false;
 		m_SEEDING_i++;
+		return;
 	}else if(!m_FUSION_direct_fusionDone){
 		int currentId=m_EXTENSION_identifiers[m_SEEDING_i];
 		if(!m_FUSION_first_done){
@@ -1653,7 +1669,6 @@ void Machine::makeFusions(){
 			m_FUSION_first_done=false;
 			m_FUSION_paths_requested=false;
 		}
-
 	}else if(!m_FUSION_reverse_fusionDone){
 		int currentId=m_EXTENSION_identifiers[m_SEEDING_i];
 		if(!m_FUSION_first_done){
@@ -1824,8 +1839,6 @@ void Machine::makeFusions(){
 			m_SEEDING_i++;
 		}
 	}
-
-
 }
 
 void Machine::processMessages(){
