@@ -3230,9 +3230,15 @@ void Machine::doChoice(){
 							continue;
 						if((theMaxsPaired[i] <= 3*theMaxsPaired[j]) or
 					 (theSumsPaired[i] <= 3*theSumsPaired[j]) or
-					 (theNumbersPaired[i] <= 3*theNumbersPaired[j]) or
-					theNumbers[i] < theNumbers[j] // make sure that it also has more single-end reads
+					 (theNumbersPaired[i] <= 3*theNumbersPaired[j]) 
 ){
+							winner=false;
+							break;
+						}
+				
+						// if the winner does not have too much coverage.
+						if(m_EXTENSION_coverages[i]<m_minimumCoverage and 
+					theNumbers[i] < theNumbers[j]){// make sure that it also has more single-end reads
 							winner=false;
 							break;
 						}
@@ -3269,6 +3275,10 @@ void Machine::doChoice(){
 							or (theSums[i] <= 3*theSums[j]) 
 							or (theNumbers[i] <= 3*theNumbers[j])
 							){
+							winner=false;
+							break;
+						}
+						if(m_EXTENSION_coverages[i]<m_minimumCoverage/4 and m_EXTENSION_coverages[j]>2*m_minimumCoverage){
 							winner=false;
 							break;
 						}
