@@ -1,14 +1,5 @@
 *) test on datasets 
-	Sp
-	SpEr
-	Ecoli400
-	SpPaired
-	SRA001125-paired
-	SRA001125-notpaired
-	SRA003611-Illumina
-	SRA003611-Mixed
-	SRA003611-454
-	helicos-ecoli
+	run run-on-datasets.sh
 
 *) svn cp trunk tags/<version>
 *) close the milestone in trac

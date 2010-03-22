@@ -2983,7 +2983,6 @@ int Machine::proceedWithCoverages(int a,int b){
 			}
 		}
 		if(isBetter){
-			cout<<"Choice "<<i+1<<" wins with coverage."<<endl;
 			m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[i];
 			m_EXTENSION_choose=true;
 			m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
