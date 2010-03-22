@@ -1348,10 +1348,10 @@ void Machine::finishFusions(){
 			}
 			m_FINISH_pathsForPosition.push_back(a);
 			if(m_EXTENSION_currentPosition==0){
-				m_FUSION_eliminated.insert(currentId);
 				vector<VERTEX_TYPE> a;
 				m_FINISH_newFusions.push_back(a);
 				m_FINISH_vertex_requested=false;
+				m_FUSION_eliminated.insert(currentId);
 				m_FUSION_pathLengthRequested=false;
 				m_checkedValidity=false;
 			}
@@ -1391,6 +1391,8 @@ void Machine::finishFusions(){
 		int progression=m_selectedPosition;
 
 		// only one path, just go where it goes...
+		// except if it has the same number of vertices and
+		// the same start and end.
 		if(m_FINISH_pathLengths.count(pathId)==0){
 			if(!m_FUSION_pathLengthRequested){
 				int rankId=pathId%MAX_NUMBER_OF_MPI_PROCESSES;
@@ -1403,7 +1405,7 @@ void Machine::finishFusions(){
 			}else if(m_FUSION_pathLengthReceived){
 				m_FINISH_pathLengths[pathId]=m_FUSION_receivedLength;
 			}
-		}else{
+		}else if(m_FINISH_pathLengths[pathId]!=(int)m_EXTENSION_contigs[m_SEEDING_i].size()){// avoid fusion of same length.
 			int nextPosition=progression+1;
 			if(nextPosition<m_FINISH_pathLengths[pathId]){
 				// get the vertex
@@ -1434,6 +1436,8 @@ void Machine::finishFusions(){
 			}else{
 				done=true;
 			}
+		}else{
+			done=true;
 		}
 	}
 	if(done){

@@ -34,7 +34,6 @@ runTest SpP /data/users/boiseb01/PaperDatasets/SpPaired input /home/boiseb01/nuc
 runTest E400 /data/users/boiseb01/PaperDatasets/Ecoli400 input /home/boiseb01/nuccore/Ecoli-k12-mg1655.fasta
 runTest PAO1-p /data/users/boiseb01/PaperDatasets/Pseudo input /home/boiseb01/nuccore/Pseudomonas-aeruginosa-PAO1,-complete-genome.fasta
 runTest PAO1-np /data/users/boiseb01/PaperDatasets/Pseudo input-np /home/boiseb01/nuccore/Pseudomonas-aeruginosa-PAO1,-complete-genome.fasta
-runTest PAO1-p1 /data/users/boiseb01/PaperDatasets/PseudoEr1 input /home/boiseb01/nuccore/Pseudomonas-aeruginosa-PAO1,-complete-genome.fasta
 
 runTest Ep-Illumina /data/users/boiseb01/PaperDatasets/SRA001125 input /home/boiseb01/nuccore/Ecoli-k12-mg1655.fasta
 runTest Enp-Illumina /data/users/boiseb01/PaperDatasets/SRA001125 input-notpaired /home/boiseb01/nuccore/Ecoli-k12-mg1655.fasta
