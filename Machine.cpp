@@ -527,6 +527,23 @@ void Machine::loadSequences(){
 		#endif
 		loader.load(allFiles[m_distribution_file_id],&m_distribution_reads,&m_distributionAllocator,&m_distributionAllocator);
 
+		// write Reads in AMOS format.
+		if(m_parameters.useAmos()){
+			FILE*fp=fopen("Ray.afg","a+");
+			for(int i=0;i<(int)m_distribution_reads.size();i++){
+				int iid=m_distribution_sequence_id+i;
+				char*seq=m_distribution_reads.at(i)->getSeq();
+				char*qlt=(char*)__Malloc(strlen(seq)+1);
+				strcpy(qlt,seq);
+				// spec: https://sourceforge.net/apps/mediawiki/amos/index.php?title=Message_Types#Sequence_t_:_Universal_t
+				for(int j=0;j<(int)strlen(qlt);j++)
+					qlt[j]='D';
+				fprintf(fp,"{RED\niid:%i\neid:%i\nseq:\n%s\n.\nqlt:\n%s\n.\n}\n",iid,iid,seq,qlt);
+				__Free(qlt);
+			}
+			fclose(fp);
+		}
+
 		if(m_parameters.isLeftFile(m_distribution_file_id)){
 			m_LOADER_isLeftFile=true;
 		}else if(m_parameters.isRightFile(m_distribution_file_id)){
@@ -1900,6 +1917,13 @@ void Machine::processData(){
 			return;
 		}
 		m_parameters.load(m_inputFile);
+		if(m_parameters.useAmos()){
+			// empty the file.
+			cout<<"Preparing AMOS file Ray.afg"<<endl;
+			FILE*fp=fopen("Ray.afg","w+");
+			fclose(fp);
+		}
+
 		for(int i=0;i<getSize();i++){
 			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 			message[0]=m_parameters.getWordSize();
@@ -2707,7 +2731,7 @@ void Machine::processData(){
 	}else if(m_master_mode==MODE_AMOS){
 		// in development.
 		#ifdef SHOW_PROGRESS
-		cout<<"Writing Contigs.amos"<<endl;
+		cout<<"Writing Ray.afg"<<endl;
 		#endif
 		// write Reads (RED)
 		// write contigs (CTG)
