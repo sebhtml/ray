@@ -286,7 +286,7 @@ void Machine::start(){
 	m_startEdgeDistribution=false;
 
 	m_ranksDoneAttachingReads=0;
-	m_VERSION="0.0.4";
+	m_VERSION="0.0.5";
 
 	MPI_Init(&m_argc,&m_argv);
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
@@ -310,7 +310,7 @@ void Machine::start(){
 		#endif
 		#else
 
-		cout<<"    Ray  Copyright (C) 2010  Sébastien Boisvert, Jacques Corbeil, François Laviolette"<<endl;
+		cout<<"Ray  Copyright (C) 2010  Sébastien Boisvert, Jacques Corbeil, François Laviolette"<<endl;
     		cout<<"This program comes with ABSOLUTELY NO WARRANTY."<<endl;
     		cout<<"This is free software, and you are welcome to redistribute it"<<endl;
     		cout<<"under certain conditions; see \"gpl-3.0.txt\" for details."<<endl;
@@ -838,7 +838,9 @@ void Machine::processMessage(Message*message){
 
 		// add the FINISHING bits
 		for(int i=0;i<(int)m_FINISH_newFusions.size();i++){
+			#ifdef SHOW_PROGRESS
 			cout<<"Adding "<<m_FINISH_newFusions[i].size()<<endl;
+			#endif
 			m_EXTENSION_contigs.push_back(m_FINISH_newFusions[i]);
 		}
 
@@ -1314,7 +1316,9 @@ void Machine::finishFusions(){
 	}
 	int overlapMinimumLength=1000;
 	if((int)m_EXTENSION_contigs[m_SEEDING_i].size()<overlapMinimumLength){
+		#ifdef SHOW_PROGRESS
 		cout<<"No overlap possible m_SEEDING_i="<<m_SEEDING_i<<" size="<<m_EXTENSION_contigs[m_SEEDING_i].size()<<endl;
+		#endif
 		m_SEEDING_i++;
 		m_FINISH_vertex_requested=false;
 		m_EXTENSION_currentPosition=0;
@@ -1480,7 +1484,9 @@ void Machine::makeFusions(){
 		#endif
 		return;
 	}else if((int)m_EXTENSION_contigs[m_SEEDING_i].size()<=END_LENGTH){
+		#ifdef SHOW_PROGRESS
 		cout<<"No fusion for me. "<<m_SEEDING_i<<" "<<m_EXTENSION_contigs[m_SEEDING_i].size()<<" "<<m_EXTENSION_identifiers[m_SEEDING_i]<<endl;
+		#endif
 		m_FUSION_direct_fusionDone=false;
 		m_FUSION_first_done=false;
 		m_FUSION_paths_requested=false;
@@ -3159,7 +3165,7 @@ void Machine::doChoice(){
 				}
 				m_EXTENSION_readsOutOfRange.clear();
 				m_EXTENSION_singleEndResolution=true;
-				
+				#ifdef SHOW_PROGRESS
 				if(m_enumerateChoices_outgoingEdges.size()>1){
 					cout<<endl;
 					cout<<"*****************************************"<<endl;
@@ -3184,6 +3190,7 @@ void Machine::doChoice(){
 						cout<<endl;
 					}
 				}
+				#endif
 
 				// paired-end resolution of repeats.
 				map<int,int> theMaxsPaired;
@@ -3247,9 +3254,11 @@ void Machine::doChoice(){
 						}
 					}
 					if(winner==true){
+						#ifdef SHOW_PROGRESS
 						if(m_enumerateChoices_outgoingEdges.size()>1){
 							cout<<"Choice "<<i+1<<" wins with paired-end reads."<<endl;
 						}
+						#endif
 						m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[i];
 						m_EXTENSION_choose=true;
 						m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
@@ -3287,9 +3296,11 @@ void Machine::doChoice(){
 						}
 					}
 					if(winner==true){
+						#ifdef SHOW_PROGRESS
 						if(m_enumerateChoices_outgoingEdges.size()>1){
 							cout<<"Choice "<<i+1<<" wins with single-end reads."<<endl;
 						}
+						#endif
 						m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[i];
 						m_EXTENSION_choose=true;
 						m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
@@ -3326,7 +3337,9 @@ void Machine::doChoice(){
 				if(!m_dfsData->m_doChoice_tips_dfs_done){
 					depthFirstSearch(m_SEEDING_currentVertex,m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_i],maxDepth);
 				}else{
+					#ifdef SHOW_PROGRESS
 					cout<<"Choice #"<<m_dfsData->m_doChoice_tips_i+1<<" : visited "<<m_dfsData->m_depthFirstSearchVisitedVertices.size()<<", max depth is "<<m_dfsData->m_depthFirstSearch_maxDepth<<endl;
+					#endif
 					// keep the edge if it is not a tip.
 					if(m_dfsData->m_depthFirstSearch_maxDepth>=TIP_LIMIT){
 
@@ -3352,7 +3365,9 @@ void Machine::doChoice(){
 					m_dfsData->m_doChoice_tips_dfs_done=false;
 				}
 			}else{
+				#ifdef SHOW_PROGRESS
 				cout<<m_dfsData->m_doChoice_tips_newEdges.size()<<" new arcs."<<endl;
+				#endif
 				// we have a winner with tips investigation.
 				if(m_dfsData->m_doChoice_tips_newEdges.size()==1 and m_EXTENSION_readsInRange.size()>0 
 		and m_EXTENSION_readPositionsForVertices[m_dfsData->m_doChoice_tips_newEdges[0]].size()>0){
@@ -3392,7 +3407,9 @@ void Machine::doChoice(){
 		// no choice possible...
 		// do it for the lulz
 		if(!m_EXTENSION_complementedSeed){
+			#ifdef SHOW_PROGRESS
 			cout<<"Switching to reverse complement."<<endl;
+			#endif
 			m_EXTENSION_complementedSeed=true;
 			vector<VERTEX_TYPE> complementedSeed;
 			for(int i=m_EXTENSION_extension.size()-1;i>=0;i--){
@@ -3491,7 +3508,9 @@ void Machine::depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int maxDepth){
 					// quit this strange place.
 	
 					m_dfsData->m_doChoice_tips_dfs_done=true;
+					#ifdef SHOW_PROGRESS
 					cout<<"Exiting, I am lost. "<<m_dfsData->m_depthFirstSearchVisitedVertices.size()<<""<<endl;
+					#endif
 					return;
 				}
 				// too far away.
