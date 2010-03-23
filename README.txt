@@ -97,9 +97,7 @@ Ray writes contigs to Contigs.fasta.
 
 == Examples ==
 
-=== SRA001125: Illumina paired reads ===
-
-* Technology: Illumina paired-end reads
+=== Escherichia coli K-12 MG1655 with Illumina paired-end reads ===
 
 * Reads
  ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX000/SRX000429/SRR001665_1.fastq.gz
@@ -118,9 +116,7 @@ Ray writes contigs to Contigs.fasta.
  ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Escherichia_coli_K_12_substr__MG1655/NC_000913.fna
 
 
-=== SRA001125: Illumina reads ===
-
-* Technology: Illumina reads
+=== Escherichia coli K-12 MG1655 with Illumina reads ===
 
 * Reads
  ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX000/SRX000429/SRR001665_1.fastq.gz
@@ -140,9 +136,7 @@ Ray writes contigs to Contigs.fasta.
 * Reference
  ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Escherichia_coli_K_12_substr__MG1655/NC_000913.fna
 
-=== SRA003611: Illumina reads ===
-
-* Technology: Illumina reads
+=== Acinetobacter baylyi ADP1 with Illumina reads ===
 
 * Reads
  ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX001/SRX001814/SRR006332.fastq.gz
@@ -156,9 +150,7 @@ Ray writes contigs to Contigs.fasta.
 * Reference
  ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Acinetobacter_sp_ADP1/NC_005966.fna
 
-=== SRA003611: Illumina and Roche 454 reads ===
-
-* Technology: Illumina reads and Roche 454
+=== Acinetobacter baylyi ADP1 with Illumina and Roche 454 reads ===
 
 * Reads
  ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX001/SRX001814/SRR006332.fastq.gz
@@ -179,6 +171,20 @@ Ray writes contigs to Contigs.fasta.
 
 * Reference
  ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Acinetobacter_sp_ADP1/NC_005966.fna
+
+=== Mycoplasma agalactiae PG2 with Illumina reads ===
+
+* Reads
+ ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX001/SRX001814/SRR006331.fastq.gz
+
+* Template.ray
+ LoadSingleEndReads SRR006331.fastq
+
+* Command
+ mpirun -np 32 Ray Template.ray
+
+* Reference
+ ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Mycoplasma_agalactiae_PG2/NC_009497.fna
 
 == Limitations ==
 

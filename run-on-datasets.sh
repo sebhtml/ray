@@ -40,3 +40,4 @@ runTest Enp-Illumina /data/users/boiseb01/PaperDatasets/SRA001125 input-notpaire
 runTest adp1-roche /data/users/boiseb01/PaperDatasets/SRA003611 roche.Ray /home/boiseb01/nuccore/adp1.fasta
 runTest adp1-Illumina /data/users/boiseb01/PaperDatasets/SRA003611 Illumina.ray /home/boiseb01/nuccore/adp1.fasta
 runTest adp1-mix /data/users/boiseb01/PaperDatasets/SRA003611 template.ray /home/boiseb01/nuccore/adp1.fasta
+runTest myco-Illumina /data/users/boiseb01/PaperDatasets/SRA003611 Mycoplasma.Ray /home/boiseb01/nuccore/Mycoplasma_agalactiae_PG2.fasta
