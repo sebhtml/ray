@@ -3358,7 +3358,9 @@ void Machine::doChoice(){
 						m_bubbleData->m_coverages.push_back(m_dfsData->m_coverages);
 						m_bubbleData->m_BUBBLE_visitedVerticesDepths.push_back(m_dfsData->m_depthFirstSearchVisitedVertices_depths);
 					}else{
+						#ifdef SHOW_PROGRESS
 						cout<<"We have a tip "<<m_dfsData->m_depthFirstSearch_maxDepth<<" LIMIT="<<TIP_LIMIT<<"."<<endl;
+						#endif
 					}
 					m_dfsData->m_doChoice_tips_i++;
 					m_dfsData->m_doChoice_tips_dfs_initiated=false;
@@ -3372,7 +3374,9 @@ void Machine::doChoice(){
 				if(m_dfsData->m_doChoice_tips_newEdges.size()==1 and m_EXTENSION_readsInRange.size()>0 
 		and m_EXTENSION_readPositionsForVertices[m_dfsData->m_doChoice_tips_newEdges[0]].size()>0){
 					m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_newEdges[0]];
+					#ifdef SHOW_PROGRESS
 					cout<<"We have a win after tip elimination: "<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<endl;
+					#endif
 					m_EXTENSION_choose=true;
 					m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 					m_EXTENSION_directVertexDone=false;
