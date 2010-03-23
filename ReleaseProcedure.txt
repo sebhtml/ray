@@ -6,6 +6,7 @@
 *) export the closed tickets for milestone
 *) svn log between <version> and lastVersion
 *) svn export
+*) do a tar.bz2, make it
 *) upload the tarball on sf
 *) update the wiki page
 *) post an email on the list (with new features based on closed tickets + svn log)
