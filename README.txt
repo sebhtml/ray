@@ -97,7 +97,7 @@ Ray writes contigs to Contigs.fasta.
 
 == Examples ==
 
-=== SRA001125 ===
+=== SRA001125: Illumina paired reads ===
 
 * Technology: Illumina paired-end reads
 
@@ -116,6 +116,69 @@ Ray writes contigs to Contigs.fasta.
 
 * Reference
  ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Escherichia_coli_K_12_substr__MG1655/NC_000913.fna
+
+
+=== SRA001125: Illumina reads ===
+
+* Technology: Illumina reads
+
+* Reads
+ ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX000/SRX000429/SRR001665_1.fastq.gz
+ ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX000/SRX000429/SRR001665_2.fastq.gz
+ ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX000/SRX000430/SRR001666_1.fastq.gz
+ ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX000/SRX000430/SRR001666_2.fastq.gz
+
+* Template.ray
+ LoadSingleEndReads SRR001665_1.fastq 
+ LoadSingleEndReads SRR001665_2.fastq 
+ LoadSingleEndReads SRR001666_1.fastq 
+ LoadSingleEndReads SRR001666_2.fastq
+
+* Command
+ mpirun -np 32 Ray Template.ray
+
+* Reference
+ ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Escherichia_coli_K_12_substr__MG1655/NC_000913.fna
+
+=== SRA003611: Illumina reads ===
+
+* Technology: Illumina reads
+
+* Reads
+ ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX001/SRX001814/SRR006332.fastq.gz
+
+* Template.ray
+ LoadSingleEndReads SRR006332.fastq
+
+* Command
+ mpirun -np 32 Ray Template.ray
+
+* Reference
+ ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Acinetobacter_sp_ADP1/NC_005966.fna
+
+=== SRA003611: Illumina and Roche 454 reads ===
+
+* Technology: Illumina reads and Roche 454
+
+* Reads
+ ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX001/SRX001814/SRR006332.fastq.gz
+ ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX001/SRX001865/SRR006465.fastq.gz
+ ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX001/SRX001865/SRR006465_1.fastq.gz
+ ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX001/SRX001865/SRR006465_2.fastq.gz
+ ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX001/SRX001813/SRR006330.fastq.gz
+
+* Template.ray
+ LoadSingleEndReads SRR006332.fastq
+ LoadSingleEndReads SRR006330.fastq
+ LoadSingleEndReads SRR006465_1.fastq
+ LoadSingleEndReads SRR006465_2.fastq
+ LoadSingleEndReads SRR006465.fastq
+
+* Command
+ mpirun -np 32 Ray Template.ray
+
+* Reference
+ ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Acinetobacter_sp_ADP1/NC_005966.fna
 
 == Limitations ==
 
