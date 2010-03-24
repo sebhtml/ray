@@ -174,7 +174,7 @@
 using namespace std;
 
 void showUsage(){
-	cout<<"Usage"<<endl;
+	cout<<"Usage:"<<endl;
 	cout<<endl;
 	cout<<"Supported sequences file format: "<<endl;
 
@@ -191,9 +191,9 @@ void showUsage(){
 	cout<<"2) using arguments to provide commands:"<<endl;
 	cout<<"mpirun -np nproc Ray arguments"<<endl;
 	cout<<"Allowed arguments:"<<endl;
-	cout<<" -s|--LoadSingleEndReads sequencesFile"<<endl;
-	cout<<" -p|--LoadPairedEndReads leftSequencesFile rightSequencesFile fragmentLength standardDeviation"<<endl;
-	cout<<" -a|--OutputAmosFile"<<endl;
+	cout<<" -s|--LoadSingleEndReads|LoadSingleEndReads sequencesFile"<<endl;
+	cout<<" -p|--LoadPairedEndReads|LoadPairedEndReads leftSequencesFile rightSequencesFile fragmentLength standardDeviation"<<endl;
+	cout<<" -a|--OutputAmosFile|OutputAmosFile"<<endl;
 
 
 	cout<<endl;
@@ -216,6 +216,12 @@ void showUsage(){
 	cout<<endl;
 	cout<<"$ mpirun -np 32 Ray -p l.fastq r.fastq 200 10 -a -s file.fastq -s 0x98.sff"<<endl;
 
+	cout<<endl;
+	cout<<"Outputs:"<<endl;
+	cout<<" Ray-Contigs.fasta"<<endl;
+	cout<<" Ray-Contigs.afg (with OutputAmosFile)"<<endl;
+	cout<<" Ray-CoverageDistribution.txt"<<endl;
+	cout<<" Ray-Parameters.txt"<<endl;
 	cout<<endl;
 	cout<<"use --help to show this help"<<endl;
 	cout<<endl;
@@ -378,7 +384,7 @@ void Machine::start(){
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	if(m_argc==1){
+	if(m_argc==1 or ((string)m_argv[1])=="--help"){
 		if(isMaster()){
 			showUsage();
 		}
@@ -2045,7 +2051,7 @@ void Machine::processData(){
 			cout<<"Error: no enrichment observed."<<endl;
 			return;
 		}
-		ofstream f("Parameters.txt");
+		ofstream f("Ray-Parameters.txt");
 		f<<"Commands: Ray";
 		vector<string> commands=m_parameters.getCommands();
 		for(int i=0;i<(int)commands.size();i++){
@@ -2057,7 +2063,7 @@ void Machine::processData(){
 		f<<"MinimumCoverage: "<<m_minimumCoverage<<endl;
 		f<<"PeakCoverage: "<<m_peakCoverage<<endl;
 		f.close();
-		cout<<"Writing Parameters.txt"<<endl;
+		cout<<"Writing Ray-Parameters.txt"<<endl;
 		// see these values to everyone.
 		VERTEX_TYPE*buffer=(VERTEX_TYPE*)m_outboxAllocator.allocate(3*sizeof(VERTEX_TYPE));
 		buffer[0]=m_minimumCoverage;
@@ -2830,7 +2836,7 @@ void Machine::processData(){
 						start=theEnd;
 						theEnd=t;
 					}
-					fprintf(fp,"{TLE\nsrc:%i\noff:%i\nclr:%i,%i\n}\n",globalIdentifier,m_mode_send_vertices_sequence_id_position,
+					fprintf(fp,"{TLE\nsrc:%i\noff:%i\nclr:%i,%i\n}\n",globalIdentifier+1,m_mode_send_vertices_sequence_id_position,
 						start,theEnd);
 					fclose(fp);
 				}

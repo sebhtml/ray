@@ -1,10 +1,18 @@
+<b>[http://en.wikipedia.org/wiki/Metal_Gear_(weapon)#Metal_Gear_RAY Ray is a computer-controlled software] that perform parallel de novo genome assemblies of [http://dx.doi.org/doi:10.1038/nmeth.1376 next-gen sequencing data] using [http://www.open-mpi.org/ message passing interface].</b>
+Ray utilizes a parallel version of the OpenAssembler algorithm (under review).
+
 [http://denovoassembler.sf.net/ DeNovoAssembler.SF.Net] hosts the Ray project -- a massively parallel open source genome assembler for sequencers such as [http://454.com/ Roche 454 sequencers], [http://illumina.com/ Illumina sequencers], [http://solid.appliedbiosystems.com/ SOLiD sequencers], [http://www.pacificbiosciences.com/ Pacific Biosciences sequencers], [http://www.helicosbio.com/ Helicos Biosciences sequencers], and exciting [http://www.iontorrent.com/ Ion Torrent] semiconductor-based sequencers. 
 
 
-* [http://sourceforge.net/projects/denovoassembler/files/ Download]
-* [http://lists.sourceforge.net/lists/listinfo/denovoassembler-users Mailing list]
+Quick links:
+* [http://sourceforge.net/projects/denovoassembler/files/ Download] 
+* [http://lists.sourceforge.net/lists/listinfo/denovoassembler-users Mailing list] 
 * [http://seqanswers.com/forums/showthread.php?t=4301 SeqAnswers.com thread]
 
+
+Illumina paired assembly kickstart with [http://sourceforge.net/apps/mediawiki/amos/index.php?title=Hawkeye AMOS] output:
+ mpirun -np 32 Ray -p 1.left.fastq 2.right.fastq 215 10 -p 2.left.fastq 2.right.fastq 400 20 -a
+ # produces Ray-Contigs.fasta and Ray-Contigs.afg
 
 = Ray: a massively parallel MPI-based approach for genome assembly with mixed technologies =
 
@@ -22,7 +30,7 @@ Only the master rank needs to access the files on disk.
 
 == Supported file formats ==
 
-* Fasta with qualities ("fastq")
+* Fasta with qualities (".fastq")
 * SFF (".sff")
 * Fasta (".fasta")
 
@@ -31,14 +39,16 @@ Only the master rank needs to access the files on disk.
 * single-end reads (with LoadSingleEndReads)
 * paired-end reads (with LoadPairedEndReads)
 
-== Other features ==
+== Key features ==
 
+* [http://sourceforge.net/apps/mediawiki/amos/index.php?title=Message_Types AMOS output] for assembly viewers such as [http://sourceforge.net/apps/mediawiki/amos/index.php?title=Hawkeye Hawkeye] & [http://bioinf.scri.ac.uk/tablet/ Tablet] (with OutputAmosFile)
 * is massively parallel
 * supports the mixing of sequencing technologies, as long as the error incorporation is random
 * is implemented in c++
 * distributes computation across MPI processes
 * distributes data across MPI processes
 * runs on one and more MPI processes
+* runs on [http://en.wikipedia.org/wiki/InfiniBand Infiniband] (thanks to [http://open-mpi.org/ Open-MPI])
 
 == How to cite us?==
 
@@ -51,23 +61,33 @@ Only the master rank needs to access the files on disk.
 
 === Requirements ===
 
-* make
-* g++
-* openmpi (1.3.4 or 1.4.1)
-* sequence data ;)
-* Any GNU/Linux flavor will do.
+* [http://www.gnu.org/software/make/ make]
+* [http://gcc.gnu.org/ g++]
+* [http://www.open-mpi.org/ Open-MPI] (1.3.4 or 1.4.1) <span style="color: red">MPICH2 and MVAPICH are not supported</span>
+* [http://www.ncbi.nlm.nih.gov/sra sequence data] ;)
+
+Many available GNU/Linux flavors have packages for these requirements.
+
+=== Tested architectures ===
+
+* x86_64
+** [http://intel.com/ Intel](R) Xeon(R) CPU           X5560  @ 2.80GHz
+** Quad-Core [http://amd.com/ AMD] Opteron(tm) Processor 8378
 
 === Tested platforms ===
 
-* Fedora
-* CentOS
-* Ubuntu
+* [http://fedoraproject.org/ Fedora]
+* [http://www.centos.org/ CentOS]
+* [http://www.ubuntu.com/ Ubuntu]
 
 === License ===
 
 * [http://www.gnu.org/licenses/gpl-3.0.html GPL version 3]
 
-[http://sourceforge.net/projects/denovoassembler/files/ Download]
+=== Compilation ===
+
+
+[http://sourceforge.net/projects/denovoassembler/files/ Download] Ray
 
  tar -xjf Ray-<version>.tar.bz2
  cd Ray-<version>
@@ -79,13 +99,20 @@ To use an alternative mpic++ executable:
 
 == Running Ray ==
 
-You must use mpirun:
+For help:
 
- mpirun -np 1 -machinefile RayMachinesFile.txt Ray RayInputTemplate.txt  # 1 cpu only
- mpirun -np 4  -machinefile RayMachinesFile.txt Ray RayInputTemplate.txt  # quad-core
- mpirun -np 1024  -machinefile RayMachinesFile.txt Ray RayInputTemplate.txt  # 1024 cpu
+ mpirun -np 32 Ray --help
 
-Basically, Ray understands two commands in RayInputTemplate.txt:
+Ray receives commands with command-line arguments or with a commands file. Ray is run with mpirun:
+
+1 cpu only:
+ mpirun -np 1 Ray Commands.Ray
+quad-core:
+ mpirun -np 4 Ray Commands.Ray
+1024 cpu (you'll probably use Sun Grid Engine for that):
+ mpirun -np 1024  -machinefile mpirun.MachinesFile Ray Commands.Ray
+
+Basically, Ray understands two commands in Commands.Ray (or in arguments):
 
  LoadSingleEndReads <sequencesFile>
 
@@ -93,11 +120,73 @@ and
 
  LoadPairedEndReads <leftSequencesFile> <rightSequencesFile> <fragmentLength> <fragmentLengthStandardDeviation>
 
-<leftSequencesFile> and <rightSequencesFile> must contain the exact same number of sequences, paired reads must be on reverse strands, and the <fragmentLength> includes the read lengths. Ray supports fasta, fastq, and sff formats. But beware!, if your sff file contains paired-end reads, you must first extract the information, and tell Ray to use them with LoadPairedEndReads.
+<leftSequencesFile> and <rightSequencesFile> must contain the exact same number of sequences, paired reads must be on reverse strands, and the <fragmentLength> includes the read lengths. But beware!, if your sff file contains paired-end reads, you must first extract the information, and tell Ray to use them with LoadPairedEndReads.
 
-Ray writes contigs to Contigs.fasta.
+Ray writes contigs to Ray-Contigs.fasta. Ray also writes Ray-Contigs.afg if the command "OutputAmosFile" is given.
 
-== Examples ==
+===1) using a commands file:===
+ mpirun -np nproc Ray CommandsFile
+
+Allowed commands in CommandsFile:
+
+ LoadSingleEndReads sequencesFile
+ LoadPairedEndReads leftSequencesFile rightSequencesFile fragmentLength standardDeviation
+ OutputAmosFile
+
+Examples (commands file):
+
+ $ cat example1.Ray
+ LoadSingleEndReads file.fasta
+ LoadSingleEndReads file2.fasta
+ $ mpirun -np 32 Ray example1.Ray
+
+ $ cat example2.Ray
+ LoadPairedEndReads l.fastq r.fastq 200 10
+ OutputAmosFile
+ LoadSingleEndReads file.fastq
+ LoadSingleEndReads 0x98.sff
+ $ mpirun -np 32 Ray example2.Ray
+
+===2) using arguments to provide commands:===
+ mpirun -np nproc Ray arguments
+
+Allowed arguments:
+
+ -s|--LoadSingleEndReads|LoadSingleEndReads sequencesFile
+ -p|--LoadPairedEndReads|LoadSingleEndReads leftSequencesFile rightSequencesFile fragmentLength standardDeviation
+ -a|--OutputAmosFile|OutputAmosFile
+
+
+Examples (program arguments):
+
+ $ mpirun -np 32 Ray -s file.fasta -s file2.fasta
+
+ $ mpirun -np 32 Ray -p l.fastq r.fastq 200 10 -a -s file.fastq -s 0x98.sff
+
+== Do-it-yourself examples ==
+
+=== E. coli K-12 MG1655 with Illumina paired-end reads & amos output ===
+
+* Reads
+ ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX000/SRX000429/SRR001665_1.fastq.gz
+ ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX000/SRX000429/SRR001665_2.fastq.gz
+ ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX000/SRX000430/SRR001666_1.fastq.gz
+ ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX000/SRX000430/SRR001666_2.fastq.gz
+
+* Commands.Ray
+ LoadPairedEndReads SRR001665_1.fastq SRR001665_2.fastq 215 20
+ LoadPairedEndReads SRR001666_1.fastq SRR001666_2.fastq 215 20
+ OutputAmosFile
+
+* Command line
+ mpirun -np 32 Ray Commands.Ray
+
+* Hawkeye command lines:
+ bank-transact -c -m Ray-Contigs.afg -b Ray-Contigs.bank
+ hawkeye Ray-Contigs.bank
+
+* Reference
+ ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Escherichia_coli_K_12_substr__MG1655/NC_000913.fna
 
 === Escherichia coli K-12 MG1655 with Illumina paired-end reads ===
 
@@ -107,16 +196,15 @@ Ray writes contigs to Contigs.fasta.
  ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX000/SRX000430/SRR001666_1.fastq.gz
  ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX000/SRX000430/SRR001666_2.fastq.gz
 
-* Template.ray
+* Commands.Ray
  LoadPairedEndReads SRR001665_1.fastq SRR001665_2.fastq 215 20
  LoadPairedEndReads SRR001666_1.fastq SRR001666_2.fastq 215 20
 
-* Command
- mpirun -np 32 Ray Template.ray
+* Command line
+ mpirun -np 32 Ray Commands.Ray
 
 * Reference
  ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Escherichia_coli_K_12_substr__MG1655/NC_000913.fna
-
 
 === Escherichia coli K-12 MG1655 with Illumina reads ===
 
@@ -126,14 +214,14 @@ Ray writes contigs to Contigs.fasta.
  ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX000/SRX000430/SRR001666_1.fastq.gz
  ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX000/SRX000430/SRR001666_2.fastq.gz
 
-* Template.ray
+* Commands.Ray
  LoadSingleEndReads SRR001665_1.fastq 
  LoadSingleEndReads SRR001665_2.fastq 
  LoadSingleEndReads SRR001666_1.fastq 
  LoadSingleEndReads SRR001666_2.fastq
 
-* Command
- mpirun -np 32 Ray Template.ray
+* Command line
+ mpirun -np 32 Ray Commands.Ray
 
 * Reference
  ftp://ftp.ncbi.nih.gov/genomes/Bacteria/Escherichia_coli_K_12_substr__MG1655/NC_000913.fna
@@ -143,11 +231,11 @@ Ray writes contigs to Contigs.fasta.
 * Reads
  ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX001/SRX001814/SRR006332.fastq.gz
 
-* Template.ray
+* Commands.Ray
  LoadSingleEndReads SRR006332.fastq
 
-* Command
- mpirun -np 32 Ray Template.ray
+* Command line
+ mpirun -np 32 Ray Commands.Ray
 
 * Reference
  ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Acinetobacter_sp_ADP1/NC_005966.fna
@@ -161,15 +249,15 @@ Ray writes contigs to Contigs.fasta.
  ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX001/SRX001865/SRR006465_2.fastq.gz
  ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX001/SRX001813/SRR006330.fastq.gz
 
-* Template.ray
+* Commands.Ray
  LoadSingleEndReads SRR006332.fastq
  LoadSingleEndReads SRR006330.fastq
  LoadSingleEndReads SRR006465_1.fastq
  LoadSingleEndReads SRR006465_2.fastq
  LoadSingleEndReads SRR006465.fastq
 
-* Command
- mpirun -np 32 Ray Template.ray
+* Command line
+ mpirun -np 32 Ray Template.Ray
 
 * Reference
  ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Acinetobacter_sp_ADP1/NC_005966.fna
@@ -179,23 +267,22 @@ Ray writes contigs to Contigs.fasta.
 * Reads
  ftp://ftp.ncbi.nlm.nih.gov/sra/static/SRX001/SRX001814/SRR006331.fastq.gz
 
-* Template.ray
+* Commands.Ray
  LoadSingleEndReads SRR006331.fastq
 
-* Command
- mpirun -np 32 Ray Template.ray
+* Command line
+ mpirun -np 32 Ray Template.Ray
 
 * Reference
  ftp://ftp.ncbi.nlm.nih.gov/genomes/Bacteria/Mycoplasma_agalactiae_PG2/NC_009497.fna
 
 == Limitations ==
 
-Ray can not run without mpi as it is a pure parallel program with no
-non-parallel steps. However, it is safe and reliable to run it with 1 cpu.
-It currently works well with Open-MPI.
-You may have to disable the Byte Transfer Layer called Shared Memory to avoid a race condition in the spinlock of Open-MPI. This problem is presumably due to a processor defective design rather than a defect in Open-MPI. The lock instruction is supposed to lock the bus, so if you encounter the race condition, you know something is wrong. The following command disables the btl sm at runtime.
+Ray can not run without mpirun. However, it is safe and reliable to run it with 1 cpu. 
 
- mpirun -np 32 --mca btl ^sm ./Ray template.ray
+In Open-MPI, you may have to disable the Byte Transfer Layer called Shared Memory to avoid a race condition in the spinlock of Open-MPI. This problem is presumably due to a processor defective design rather than a defect in Open-MPI. The lock instruction is supposed to lock the bus, so if you encounter the race condition (in general, it hangs), you know something is wrong. The following command disables the btl sm at runtime. In our benchmarks on Human Chromosome 1 with short reads, we found that disabling shared memory was necessary.
+
+ mpirun -np 32 --mca btl ^sm ./Ray Commands.Ray
 
 = OpenAssembler: assembling genome with mixed sequencing technologies =
 
