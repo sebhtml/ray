@@ -35,8 +35,41 @@ Read::Read(){
 
 
 void Read::copy(const char*id,const char*sequence,MyAllocator*seqMyAllocator){
+	//cout<<"IN="<<sequence<<endl;
+	int theLen=strlen(sequence);
+	
+	char buffer[4096];
+	strcpy(buffer,sequence);
+	for(int i=0;i<theLen;i++){
+		if(buffer[i]=='a')
+			buffer[i]='A';
+		else if(buffer[i]=='t')
+			buffer[i]='T';
+		else if(buffer[i]=='c')
+			buffer[i]='C';
+		else if(buffer[i]=='g')
+			buffer[i]='G';
+	}
+	// discard N at the beginning and end of the read.
+	// find the first symbol that is a A,T,C or G
+	int first=0;
+	while(buffer[first]!='A' and buffer[first]!='T' and buffer[first]!='C' and buffer[first]!='G' and first<theLen){
+		first++;
+	}
+	char*corrected=buffer+first;
+	// find the last symbol that is a A,T,C, or G
+	int last=0;
+	for(int i=0;i<(int)strlen(corrected);i++){
+		if(corrected[i]=='A' or corrected[i]=='T' or corrected[i]=='C' or corrected[i]=='G'){
+			last=i;
+		}
+	}
+	last++;
+	// only junk awaits beyond <last>
+	corrected[last]='\0';
+	//cout<<"OUT="<<corrected<<endl;
 	m_sequence=(char*)seqMyAllocator->allocate(strlen(sequence)+1);
-	strcpy(m_sequence,sequence); // memcpy + \0
+	strcpy(m_sequence,corrected); // memcpy + \0
 	m_pairedRead=NULL;
 }
 
