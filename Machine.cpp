@@ -561,7 +561,7 @@ void Machine::loadSequences(){
 		if(m_parameters.useAmos()){
 			FILE*fp=fopen(m_parameters.getAmosFile().c_str(),"a+");
 			for(int i=0;i<(int)m_distribution_reads.size();i++){
-				int iid=m_distribution_sequence_id+i;
+				int iid=m_distribution_currentSequenceId+i;
 				char*seq=m_distribution_reads.at(i)->getSeq();
 				char*qlt=(char*)__Malloc(strlen(seq)+1);
 				strcpy(qlt,seq);
