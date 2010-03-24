@@ -72,6 +72,9 @@ public:
 	bool useAmos();
 	string getInputFile();
 	string getAmosFile();
+	string getParametersFile();
+	string getContigsFile();
+	string getCoverageDistributionFile();
 	string getEngineName();
 	string getVersion();
 	vector<string> getCommands();

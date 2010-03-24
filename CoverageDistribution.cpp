@@ -26,10 +26,10 @@
 #include<map>
 using namespace std;
 
-CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>distributionOfCoverage,string m_assemblyDirectory){
+CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>distributionOfCoverage,string file){
 	m_coverage_mean=100;
 	m_minimumCoverage=1;
-	ofstream f("Ray-CoverageDistribution.txt");
+	ofstream f(file.c_str());
 	f<<"#Coverage NumberOfVertices"<<endl;
 	for(map<int,VERTEX_TYPE>::iterator i=distributionOfCoverage.begin();i!=distributionOfCoverage.end();i++){
 		#ifdef SHOW_PROGRESS
@@ -67,7 +67,7 @@ CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>distributionOfCov
 	cout<<"MinimumCoverage="<<m_minimumCoverage<<endl;
 	#endif
 	
-	cout<<"\rWriting Ray-CoverageDistribution.txt"<<endl;
+	cout<<"\rWriting "<<file<<""<<endl;
 	f.close();
 }
 

@@ -37,7 +37,6 @@ Parameters::Parameters(){
 	m_directory="assembly";
 	m_minimumContigLength=100;
 	m_wordSize=21;
-	m_outputFile="Contigs.fasta";
 	m_colorSpaceMode=false;
 	m_amos=false;
 }
@@ -67,14 +66,14 @@ void Parameters::parseCommands(){
 	int i=0;
 	while(i<(int)m_commands.size()){
 		string token=m_commands[i];
-		if(token=="LoadSingleEndReads" or token=="-s" or token=="--LoadSingleEndReads"){
+		if(token=="LoadSingleEndReads" or token=="-s" or token=="--LoadSingleEndReads" or token=="-LoadSingleEndReads"){
 			i++;
 			token=m_commands[i];
 			m_singleEndReadsFile.push_back(token);
 			if(token.find(".csfasta")!=string::npos){
 				m_colorSpaceMode=true;
 			}
-		}else if(token=="LoadPairedEndReads" or token=="-p" or token=="--LoadPairedEndReads"){
+		}else if(token=="LoadPairedEndReads" or token=="-p" or token=="--LoadPairedEndReads" or token=="-LoadPairedEndReads"){
 			i++;
 			token=m_commands[i];
 			if(token.find(".csfasta")!=string::npos){
@@ -105,11 +104,11 @@ void Parameters::parseCommands(){
 			i++;
 			token=m_commands[i];
 			m_directory=token;
-		}else if(token=="SetWordSize" or token=="--SetWordSize" or token=="-w"){
+		}else if(token=="SetWordSize" or token=="--SetWordSize" or token=="-w" or token=="-SetWordSize"){
 			i++;
 			token=m_commands[i];
 			m_wordSize=atoi(token.c_str());
-		}else if(token=="OutputAmosFile" or token=="--OutputAmosFile" or token=="-a"){
+		}else if(token=="OutputAmosFile" or token=="--OutputAmosFile" or token=="-a" or token=="-OutputAmosFile"){
 			m_amos=true;
 		}
 		i++;
@@ -144,7 +143,7 @@ string Parameters::getDirectory(){
 }
 
 string Parameters::getOutputFile(){
-	return m_outputFile;
+	return getContigsFile();
 }
 
 int Parameters::getMinimumContigLength(){
@@ -177,6 +176,19 @@ bool Parameters::useAmos(){
 
 string Parameters::getInputFile(){
 	return m_input;
+}
+
+
+string Parameters::getParametersFile(){
+	return "Ray-Parameters.txt";
+}
+
+string Parameters::getContigsFile(){
+	return "Ray-Contigs.fasta";
+}
+
+string Parameters::getCoverageDistributionFile(){
+	return "Ray-CoverageDistribution.txt";
 }
 
 string Parameters::getAmosFile(){

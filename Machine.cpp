@@ -173,7 +173,7 @@
 #include<MyAllocator.h>
 using namespace std;
 
-void showUsage(){
+void Machine::showUsage(){
 	cout<<"Supported sequences file format: "<<endl;
 
 	cout<<".fasta, .fastq, .sff"<<endl;
@@ -198,10 +198,10 @@ void showUsage(){
 
 	cout<<endl;
 	cout<<"Outputs:"<<endl;
-	cout<<" Ray-Contigs.fasta"<<endl;
-	cout<<" Ray-Contigs.afg (with OutputAmosFile)"<<endl;
-	cout<<" Ray-CoverageDistribution.txt"<<endl;
-	cout<<" Ray-Parameters.txt"<<endl;
+	cout<<" "<<m_parameters.getContigsFile()<<endl;
+	cout<<" "<<m_parameters.getAmosFile()<<" (with OutputAmosFile)"<<endl;
+	cout<<" "<<m_parameters.getCoverageDistributionFile()<<""<<endl;
+	cout<<" "<<m_parameters.getParametersFile()<<endl;
 	cout<<endl;
 	cout<<"use --help to show this help"<<endl;
 	cout<<endl;
@@ -404,8 +404,8 @@ void Machine::run(){
 	#endif
 
 	if(isMaster()){
-		cout<<"Ray runs on "<<getSize()<<" MPI processes"<<endl;
 		cout<<"Starting "<<m_parameters.getEngineName()<<" "<<m_parameters.getVersion()<<endl;
+		cout<<"Ray runs on "<<getSize()<<" MPI processes"<<endl;
 	}
 	while(isAlive()){
 		receiveMessages(); 
@@ -2012,7 +2012,7 @@ void Machine::processData(){
 		m_messageSentForEdgesDistribution=true;
 	}else if(m_numberOfMachinesDoneSendingCoverage==getSize()){
 		m_numberOfMachinesDoneSendingCoverage=-1;
-		CoverageDistribution distribution(m_coverageDistribution,m_parameters.getDirectory());
+		CoverageDistribution distribution(m_coverageDistribution,m_parameters.getCoverageDistributionFile());
 		m_minimumCoverage=distribution.getMinimumCoverage();
 		m_peakCoverage=distribution.getPeakCoverage();
 		m_seedCoverage=(m_minimumCoverage+m_peakCoverage)/2;
@@ -2028,19 +2028,26 @@ void Machine::processData(){
 			cout<<"Error: no enrichment observed."<<endl;
 			return;
 		}
-		ofstream f("Ray-Parameters.txt");
-		f<<"Commands: Ray";
+		ofstream f(m_parameters.getParametersFile().c_str());
+		f<<"Ray Commands: Ray";
 		vector<string> commands=m_parameters.getCommands();
 		for(int i=0;i<(int)commands.size();i++){
 			f<<" "<<commands[i];
 		}
-		cout<<endl;
-		f<<"AssemblyEngine: "<<m_parameters.getEngineName()<<"-"<<m_parameters.getVersion()<<endl;
-		f<<"WordSize: "<<m_wordSize<<endl;
-		f<<"MinimumCoverage: "<<m_minimumCoverage<<endl;
-		f<<"PeakCoverage: "<<m_peakCoverage<<endl;
+		f<<endl;
+		f<<"Ray Assembly Engine: "<<m_parameters.getEngineName()<<"-"<<m_parameters.getVersion()<<endl;
+		f<<"Ray Word Size: "<<m_wordSize<<endl;
+		f<<"Ray Minimum Coverage: "<<m_minimumCoverage<<endl;
+		f<<"Ray Peak Coverage: "<<m_peakCoverage<<endl;
+		f<<"Ray Contigs File: "<<m_parameters.getContigsFile()<<endl;
+		if(m_parameters.useAmos()){
+			f<<"Ray AMOS File: "<<m_parameters.getAmosFile()<<endl;
+		}
+		f<<"Ray Parameters File: "<<m_parameters.getParametersFile()<<endl;
+		f<<"Ray Coverage Distribution File: "<<m_parameters.getCoverageDistributionFile()<<endl;
+
 		f.close();
-		cout<<"Writing Ray-Parameters.txt"<<endl;
+		cout<<"Writing "<<m_parameters.getParametersFile()<<""<<endl;
 		// see these values to everyone.
 		VERTEX_TYPE*buffer=(VERTEX_TYPE*)m_outboxAllocator.allocate(3*sizeof(VERTEX_TYPE));
 		buffer[0]=m_minimumCoverage;
@@ -2799,27 +2806,48 @@ void Machine::processData(){
 				message[0]=m_allPaths[m_SEEDING_i][m_mode_send_vertices_sequence_id_position];
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0]),TAG_REQUEST_READS,getRank());
 				m_outbox.push_back(aMessage);
+
+				// iterator on reads
+				m_FUSION_path_id=0;
+				m_EXTENSION_readLength_requested=false;
 			}else if(m_EXTENSION_reads_received){
-				for(int i=0;i<(int)m_EXTENSION_receivedReads.size();i++){
-					int readRank=m_EXTENSION_receivedReads[i].getRank();
-					char strand=m_EXTENSION_receivedReads[i].getStrand();
-					int idOnRank=m_EXTENSION_receivedReads[i].getReadIndex();
-					int globalIdentifier=idOnRank*getSize()+readRank;
-					FILE*fp=fopen(m_parameters.getAmosFile().c_str(),"a+");
-					int start=0;
-					int theEnd=36-1;
-					if(strand=='R'){
-						int t=start;
-						start=theEnd;
-						theEnd=t;
+				if(m_FUSION_path_id<(int)m_EXTENSION_receivedReads.size()){
+					int readRank=m_EXTENSION_receivedReads[m_FUSION_path_id].getRank();
+					char strand=m_EXTENSION_receivedReads[m_FUSION_path_id].getStrand();
+					int idOnRank=m_EXTENSION_receivedReads[m_FUSION_path_id].getReadIndex();
+					if(!m_EXTENSION_readLength_requested){
+						m_EXTENSION_readLength_requested=true;
+						m_EXTENSION_readLength_received=false;
+						VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
+						message[0]=idOnRank;
+						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,readRank,TAG_ASK_READ_LENGTH,getRank());
+						m_outbox.push_back(aMessage);
+					}else if(m_EXTENSION_readLength_received){
+						int globalIdentifier=idOnRank*getSize()+readRank;
+						FILE*fp=fopen(m_parameters.getAmosFile().c_str(),"a+");
+						int start=0;
+						int readLength=m_EXTENSION_receivedLength;
+						int theEnd=readLength-1;
+						int offset=m_mode_send_vertices_sequence_id_position;
+						if(strand=='R'){
+							int t=start;
+							start=theEnd;
+							theEnd=t;
+							offset++;
+						}
+						fprintf(fp,"{TLE\nsrc:%i\noff:%i\nclr:%i,%i\n}\n",globalIdentifier+1,offset,
+							start,theEnd);
+						fclose(fp);
+			
+						// increment to get the next read.
+						m_FUSION_path_id++;
+						m_EXTENSION_readLength_requested=false;
 					}
-					fprintf(fp,"{TLE\nsrc:%i\noff:%i\nclr:%i,%i\n}\n",globalIdentifier+1,m_mode_send_vertices_sequence_id_position,
-						start,theEnd);
-					fclose(fp);
+				}else{
+					// continue.
+					m_mode_send_vertices_sequence_id_position++;
+					m_EXTENSION_reads_requested=false;
 				}
-				// continue.
-				m_mode_send_vertices_sequence_id_position++;
-				m_EXTENSION_reads_requested=false;
 			}
 
 		}

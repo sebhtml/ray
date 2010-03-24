@@ -19,13 +19,13 @@ function runTest {
 	touch Log
 	mpirun -tag-output  -np $nproc /home/boiseb01/Ray/trunk/Ray $rayTemplate > Log
 	mv Log $currentPlace/$testName.Log
-	/home/boiseb01/Ray/trunk/mummer-validate.rb $reference Contigs.fasta  L
+	/home/boiseb01/Ray/trunk/mummer-validate.rb $reference Ray-Contigs.fasta  L
 	touch L
 	echo "Validating with $reference"
 	mv L $currentPlace/$testName.Validation
-	mv CoverageDistribution.txt $currentPlace/$testName.CoverageDistribution
-	mv Parameters.txt $currentPlace/$testName.Parameters
-	mv Contigs.fasta $currentPlace/$testName.Contigs
+	mv Ray-CoverageDistribution.txt $currentPlace/$testName.CoverageDistribution
+	mv Ray-Parameters.txt $currentPlace/$testName.Parameters
+	mv Ray-Contigs.fasta $currentPlace/$testName.Contigs
 }
 
 runTest Sp /data/users/boiseb01/PaperDatasets/Sp input /home/boiseb01/nuccore/Streptococcus-pneumoniae-R6.fasta

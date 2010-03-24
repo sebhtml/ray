@@ -112,6 +112,7 @@ aliases: -a, OutputAmosFile, -OutputAmosFile, --OutputAmosFile
 
 
 Ray receives commands with command-line arguments or with a commands file. 
+
 <leftSequencesFile> and <rightSequencesFile> must contain the exact same number of sequences, paired reads must be on reverse strands, and the <fragmentLength> includes the read lengths. But beware!, if your sff file contains paired-end reads, you must first extract the information, and tell Ray to use them with LoadPairedEndReads.
 
 Ray writes contigs to Ray-Contigs.fasta. Ray also writes Ray-Contigs.afg if the command "OutputAmosFile" is given.

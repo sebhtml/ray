@@ -38,7 +38,7 @@ class CoverageDistribution{
 	int m_minimumCoverage;
 	int m_coverage_mean;
 public:
-	CoverageDistribution(map<int,VERTEX_TYPE>distributionOfCoverage,string m_assemblyDirectory);
+	CoverageDistribution(map<int,VERTEX_TYPE>distributionOfCoverage,string file);
 	int getMinimumCoverage();
 	int getPeakCoverage();
 };
