@@ -174,47 +174,27 @@
 using namespace std;
 
 void showUsage(){
-	cout<<"Usage:"<<endl;
-	cout<<endl;
 	cout<<"Supported sequences file format: "<<endl;
 
 	cout<<".fasta, .fastq, .sff"<<endl;
 
 	cout<<endl;
-	cout<<"1) using a commands file:"<<endl;
-	cout<<"mpirun -np nproc Ray CommandsFile"<<endl;
-	cout<<"Allowed commands in CommandsFile:"<<endl;
-	cout<<" LoadSingleEndReads sequencesFile"<<endl;
-	cout<<" LoadPairedEndReads leftSequencesFile rightSequencesFile fragmentLength standardDeviation"<<endl;
-	cout<<" OutputAmosFile"<<endl;
-	cout<<endl;
-	cout<<"2) using arguments to provide commands:"<<endl;
-	cout<<"mpirun -np nproc Ray arguments"<<endl;
-	cout<<"Allowed arguments:"<<endl;
-	cout<<" -s|--LoadSingleEndReads|LoadSingleEndReads sequencesFile"<<endl;
-	cout<<" -p|--LoadPairedEndReads|LoadPairedEndReads leftSequencesFile rightSequencesFile fragmentLength standardDeviation"<<endl;
-	cout<<" -a|--OutputAmosFile|OutputAmosFile"<<endl;
 
+	cout<<"Usage:"<<endl;
+	cout<<endl;
+	cout<<"Ray understands these commands:"<<endl;
 
+    	cout<<" LoadSingleEndReads <sequencesFile> "<<endl;
+    	cout<<"  aliases: -s, LoadSingleEndReads, -LoadSingleEndReads, --LoadSingleEndReads"<<endl;
 	cout<<endl;
-	cout<<"Examples (commands file):"<<endl;
+	cout<<" LoadPairedEndReads <leftSequencesFile> <rightSequencesFile> <fragmentLength> <standardDeviation> "<<endl;
+	cout<<"  aliases: -p, LoadPairedEndReads, -LoadPairedEndReads, --LoadPairedEndReads"<<endl;
 	cout<<endl;
-	cout<<"$ cat example1.Ray"<<endl;
-	cout<<"LoadSingleEndReads file.fasta"<<endl;
-	cout<<"LoadSingleEndReads file2.fasta"<<endl;
-	cout<<"$ mpirun -np 32 Ray example1.Ray"<<endl;
-	cout<<endl;
-	cout<<"$ cat example2.Ray"<<endl;
-	cout<<"LoadPairedEndReads l.fastq r.fastq 200 10"<<endl;
-	cout<<"OutputAmosFile"<<endl;
-	cout<<"LoadSingleEndReads file.fastq"<<endl;
-	cout<<"LoadSingleEndReads 0x98.sff"<<endl;
+	cout<<" OutputAmosFile "<<endl;
+	cout<<"  aliases: -a, OutputAmosFile, -OutputAmosFile, --OutputAmosFile"<<endl;
+    	cout<<endl;
+	cout<<"Ray receives commands with command-line arguments or with a commands file. "<<endl;
 
-	cout<<endl;
-	cout<<"Examples (program arguments):"<<endl;
-	cout<<"$ mpirun -np 32 Ray -s file.fasta -s file2.fasta"<<endl;
-	cout<<endl;
-	cout<<"$ mpirun -np 32 Ray -p l.fastq r.fastq 200 10 -a -s file.fastq -s 0x98.sff"<<endl;
 
 	cout<<endl;
 	cout<<"Outputs:"<<endl;
@@ -367,10 +347,7 @@ void Machine::start(){
     		cout<<"This is free software, and you are welcome to redistribute it"<<endl;
     		cout<<"under certain conditions; see \"gpl-3.0.txt\" for details."<<endl;
 		cout<<endl;
-		cout<<"How to cite us?"<<endl;
-		cout<<"Sébastien Boisvert, Jacques Corbeil, and François Laviolette."<<endl;
- 		cout<<"Ray: a massively parallel MPI-based approach for genome assembly with mixed technologies."<<endl;
- 		cout<<"http://denovoassembler.sf.net/, 2010."<<endl;
+ 		cout<<"see http://denovoassembler.sf.net/"<<endl;
 		cout<<endl;
 
 		#endif

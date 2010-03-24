@@ -99,11 +99,24 @@ To use an alternative mpic++ executable:
 
 == Running Ray ==
 
-For help:
+Basically, Ray understands these commands:
 
- mpirun -np 32 Ray --help
+* <b>LoadSingleEndReads</b> <sequencesFile>
+aliases: -s, LoadSingleEndReads, -LoadSingleEndReads, --LoadSingleEndReads
 
-Ray receives commands with command-line arguments or with a commands file. Ray is run with mpirun:
+* <b>LoadPairedEndReads</b> <leftSequencesFile> <rightSequencesFile> <fragmentLength> <standardDeviation>
+aliases: -p, LoadPairedEndReads, -LoadPairedEndReads, --LoadPairedEndReads
+
+* <b>OutputAmosFile</b>
+aliases: -a, OutputAmosFile, -OutputAmosFile, --OutputAmosFile
+
+
+Ray receives commands with command-line arguments or with a commands file. 
+<leftSequencesFile> and <rightSequencesFile> must contain the exact same number of sequences, paired reads must be on reverse strands, and the <fragmentLength> includes the read lengths. But beware!, if your sff file contains paired-end reads, you must first extract the information, and tell Ray to use them with LoadPairedEndReads.
+
+Ray writes contigs to Ray-Contigs.fasta. Ray also writes Ray-Contigs.afg if the command "OutputAmosFile" is given.
+
+Ray is run with mpirun:
 
 1 cpu only:
  mpirun -np 1 Ray Commands.Ray
@@ -112,56 +125,10 @@ quad-core:
 1024 cpu (you'll probably use Sun Grid Engine for that):
  mpirun -np 1024  -machinefile mpirun.MachinesFile Ray Commands.Ray
 
-Basically, Ray understands two commands in Commands.Ray (or in arguments):
 
- LoadSingleEndReads <sequencesFile>
+For help:
 
-and
-
- LoadPairedEndReads <leftSequencesFile> <rightSequencesFile> <fragmentLength> <fragmentLengthStandardDeviation>
-
-<leftSequencesFile> and <rightSequencesFile> must contain the exact same number of sequences, paired reads must be on reverse strands, and the <fragmentLength> includes the read lengths. But beware!, if your sff file contains paired-end reads, you must first extract the information, and tell Ray to use them with LoadPairedEndReads.
-
-Ray writes contigs to Ray-Contigs.fasta. Ray also writes Ray-Contigs.afg if the command "OutputAmosFile" is given.
-
-===1) using a commands file:===
- mpirun -np nproc Ray CommandsFile
-
-Allowed commands in CommandsFile:
-
- LoadSingleEndReads sequencesFile
- LoadPairedEndReads leftSequencesFile rightSequencesFile fragmentLength standardDeviation
- OutputAmosFile
-
-Examples (commands file):
-
- $ cat example1.Ray
- LoadSingleEndReads file.fasta
- LoadSingleEndReads file2.fasta
- $ mpirun -np 32 Ray example1.Ray
-
- $ cat example2.Ray
- LoadPairedEndReads l.fastq r.fastq 200 10
- OutputAmosFile
- LoadSingleEndReads file.fastq
- LoadSingleEndReads 0x98.sff
- $ mpirun -np 32 Ray example2.Ray
-
-===2) using arguments to provide commands:===
- mpirun -np nproc Ray arguments
-
-Allowed arguments:
-
- -s|--LoadSingleEndReads|LoadSingleEndReads sequencesFile
- -p|--LoadPairedEndReads|LoadSingleEndReads leftSequencesFile rightSequencesFile fragmentLength standardDeviation
- -a|--OutputAmosFile|OutputAmosFile
-
-
-Examples (program arguments):
-
- $ mpirun -np 32 Ray -s file.fasta -s file2.fasta
-
- $ mpirun -np 32 Ray -p l.fastq r.fastq 200 10 -a -s file.fastq -s 0x98.sff
+ mpirun -np 32 Ray --help
 
 == Do-it-yourself examples ==
 
