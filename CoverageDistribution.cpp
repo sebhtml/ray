@@ -34,8 +34,8 @@ CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>distributionOfCov
 	for(map<int,VERTEX_TYPE>::iterator i=distributionOfCoverage.begin();i!=distributionOfCoverage.end();i++){
 		#ifdef SHOW_PROGRESS
 		cout<<"DISTRIBUTION "<<i->first<<" "<<i->second<<endl;
-		f<<""<<i->first<<" "<<i->second<<endl;
 		#endif
+		f<<""<<i->first<<" "<<i->second<<endl;
 		int coverage=i->first;
 		if(
 		coverage!=1&&
