@@ -1,12 +1,9 @@
-*) test on datasets 
+*) test on datasets and check logs
 	run run-on-datasets.sh
-
 *) svn cp trunk tags/<version>
 *) close the milestone in trac
-*) export the closed tickets for milestone
-*) svn log between <version> and lastVersion
 *) svn export
-*) do a tar.bz2, make it
+*) do a tar.bz2, compile it to test it
 *) upload the tarball on sf
 *) update the wiki page
 *) post an email on the list (with new features based on closed tickets + svn log)
