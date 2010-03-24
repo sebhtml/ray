@@ -50,9 +50,14 @@ class Parameters{
 	map<int,int> m_standardDeviations;
 	bool m_colorSpaceMode;
 	string m_input;
+	vector<string> m_commands;
+
+	void loadCommandsFromArguments(int argc,char**argv);
+	void loadCommandsFromFile(char*file);
+	void parseCommands();
 public:
 	Parameters();
-	void load(string file);
+	void load(int argc,char**argv);
 	bool isInitiated();
 	vector<string> getAllFiles();
 	string getDirectory();
@@ -66,6 +71,10 @@ public:
 	bool getColorSpaceMode();
 	bool useAmos();
 	string getInputFile();
+	string getAmosFile();
+	string getEngineName();
+	string getVersion();
+	vector<string> getCommands();
 };
 
 #endif

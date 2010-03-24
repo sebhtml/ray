@@ -173,6 +173,54 @@
 #include<MyAllocator.h>
 using namespace std;
 
+void showUsage(){
+	cout<<"Usage"<<endl;
+	cout<<endl;
+	cout<<"Supported sequences file format: "<<endl;
+
+	cout<<".fasta, .fastq, .sff"<<endl;
+
+	cout<<endl;
+	cout<<"1) using a commands file:"<<endl;
+	cout<<"mpirun -np nproc Ray CommandsFile"<<endl;
+	cout<<"Allowed commands in CommandsFile:"<<endl;
+	cout<<" LoadSingleEndReads sequencesFile"<<endl;
+	cout<<" LoadPairedEndReads leftSequencesFile rightSequencesFile fragmentLength standardDeviation"<<endl;
+	cout<<" OutputAmosFile"<<endl;
+	cout<<endl;
+	cout<<"2) using arguments to provide commands:"<<endl;
+	cout<<"mpirun -np nproc Ray arguments"<<endl;
+	cout<<"Allowed arguments:"<<endl;
+	cout<<" -s|--LoadSingleEndReads sequencesFile"<<endl;
+	cout<<" -p|--LoadPairedEndReads leftSequencesFile rightSequencesFile fragmentLength standardDeviation"<<endl;
+	cout<<" -a|--OutputAmosFile"<<endl;
+
+
+	cout<<endl;
+	cout<<"Examples (commands file):"<<endl;
+	cout<<endl;
+	cout<<"$ cat example1.Ray"<<endl;
+	cout<<"LoadSingleEndReads file.fasta"<<endl;
+	cout<<"LoadSingleEndReads file2.fasta"<<endl;
+	cout<<"$ mpirun -np 32 Ray example1.Ray"<<endl;
+	cout<<endl;
+	cout<<"$ cat example2.Ray"<<endl;
+	cout<<"LoadPairedEndReads l.fastq r.fastq 200 10"<<endl;
+	cout<<"OutputAmosFile"<<endl;
+	cout<<"LoadSingleEndReads file.fastq"<<endl;
+	cout<<"LoadSingleEndReads 0x98.sff"<<endl;
+
+	cout<<endl;
+	cout<<"Examples (program arguments):"<<endl;
+	cout<<"$ mpirun -np 32 Ray -s file.fasta -s file2.fasta"<<endl;
+	cout<<endl;
+	cout<<"$ mpirun -np 32 Ray -p l.fastq r.fastq 200 10 -a -s file.fastq -s 0x98.sff"<<endl;
+
+	cout<<endl;
+	cout<<"use --help to show this help"<<endl;
+	cout<<endl;
+}
+
 /*
  * get the Directions taken by a vertex.
  *
@@ -286,7 +334,6 @@ void Machine::start(){
 	m_startEdgeDistribution=false;
 
 	m_ranksDoneAttachingReads=0;
-	m_VERSION="0.0.5";
 
 	MPI_Init(&m_argc,&m_argv);
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
@@ -298,7 +345,6 @@ void Machine::start(){
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<" welcomes you to the MPI_COMM_WORLD."<<endl;
 		cout<<"Rank "<<getRank()<<": website -> http://denovoassembler.sf.net/"<<endl;
-		cout<<"Rank "<<getRank()<<": version -> "<<m_VERSION<<" $Id$"<<endl;
 		#ifdef MPICH2_VERSION
 		cout<<"Rank "<<getRank()<<": using MPICH2"<<endl;
 		#else
@@ -310,7 +356,7 @@ void Machine::start(){
 		#endif
 		#else
 
-		cout<<"Ray  Copyright (C) 2010  Sébastien Boisvert, Jacques Corbeil, François Laviolette"<<endl;
+		cout<<"Ray Copyright (C) 2010  Sébastien Boisvert, Jacques Corbeil, François Laviolette"<<endl;
     		cout<<"This program comes with ABSOLUTELY NO WARRANTY."<<endl;
     		cout<<"This is free software, and you are welcome to redistribute it"<<endl;
     		cout<<"under certain conditions; see \"gpl-3.0.txt\" for details."<<endl;
@@ -321,24 +367,20 @@ void Machine::start(){
  		cout<<"http://denovoassembler.sf.net/, 2010."<<endl;
 		cout<<endl;
 
-		cout<<"Ray runs on "<<getSize()<<" MPI processes"<<endl;
-		cout<<"Starting 'Parallel_Ray_Engine' "+m_VERSION<<endl;
 		#endif
 	}
 	m_alive=true;
 	m_welcomeStep=true;
 	m_loadSequenceStep=false;
-	m_inputFile=m_argv[1];
 	m_vertices_sent=0;
 	m_totalLetters=0;
 	m_distribution_file_id=m_distribution_sequence_id=m_distribution_currentSequenceId=0;
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	if(m_argc!=2){
+	if(m_argc==1){
 		if(isMaster()){
-			cout<<"You must provide a input file."<<endl;
-			cout<<"See RayInputTemplate.txt"<<endl;
+			showUsage();
 		}
 	}else{
 		run();
@@ -355,7 +397,7 @@ void Machine::start(){
 		minutes=minutes%60;
 		int days=hours/24;
 		hours=hours%24;
-		cout<<"\rComputation time: "<<days<<" d "<<hours<<" h "<<minutes<<" min "<<seconds<<" s"<<endl;
+		cout<<"\rElapsed time: "<<days<<" d "<<hours<<" h "<<minutes<<" min "<<seconds<<" s"<<endl;
 	}
 	MPI_Finalize();
 
@@ -377,6 +419,11 @@ void Machine::run(){
 		cout<<"Rank "<<getRank()<<": I am the master among "<<getSize()<<" ranks in the MPI_COMM_WORLD."<<endl;
 	}
 	#endif
+
+	if(isMaster()){
+		cout<<"Ray runs on "<<getSize()<<" MPI processes"<<endl;
+		cout<<"Starting "<<m_parameters.getEngineName()<<" "<<m_parameters.getVersion()<<endl;
+	}
 	while(isAlive()){
 		receiveMessages(); 
 		#ifdef MPICH2_VERSION
@@ -529,7 +576,7 @@ void Machine::loadSequences(){
 
 		// write Reads in AMOS format.
 		if(m_parameters.useAmos()){
-			FILE*fp=fopen("Ray.afg","a+");
+			FILE*fp=fopen(m_parameters.getAmosFile().c_str(),"a+");
 			for(int i=0;i<(int)m_distribution_reads.size();i++){
 				int iid=m_distribution_sequence_id+i;
 				char*seq=m_distribution_reads.at(i)->getSeq();
@@ -538,7 +585,7 @@ void Machine::loadSequences(){
 				// spec: https://sourceforge.net/apps/mediawiki/amos/index.php?title=Message_Types#Sequence_t_:_Universal_t
 				for(int j=0;j<(int)strlen(qlt);j++)
 					qlt[j]='D';
-				fprintf(fp,"{RED\niid:%i\neid:%i\nseq:\n%s\n.\nqlt:\n%s\n.\n}\n",iid,iid,seq,qlt);
+				fprintf(fp,"{RED\niid:%i\neid:%i\nseq:\n%s\n.\nqlt:\n%s\n.\n}\n",iid+1,iid+1,seq,qlt);
 				__Free(qlt);
 			}
 			fclose(fp);
@@ -1909,18 +1956,21 @@ void Machine::processData(){
 	#endif
 
 	if(!m_parameters.isInitiated()&&isMaster()){
-		ifstream f(m_inputFile);
-		if(!f){
-			cout<<"Rank "<<getRank()<<" invalid input file."<<endl;
-			m_aborted=true;
-			killRanks();
-			return;
+		if(m_argc==2){
+			ifstream f(m_argv[1]);
+			if(!f){
+				cout<<"Rank "<<getRank()<<" invalid input file."<<endl;
+				m_aborted=true;
+				f.close();
+				killRanks();
+				return;
+			}
 		}
-		m_parameters.load(m_inputFile);
+		m_parameters.load(m_argc,m_argv);
 		if(m_parameters.useAmos()){
 			// empty the file.
-			cout<<"Preparing AMOS file Ray.afg"<<endl;
-			FILE*fp=fopen("Ray.afg","w+");
+			cout<<"Preparing AMOS file "<<m_parameters.getAmosFile()<<endl;
+			FILE*fp=fopen(m_parameters.getAmosFile().c_str(),"w+");
 			fclose(fp);
 		}
 
@@ -1996,11 +2046,16 @@ void Machine::processData(){
 			return;
 		}
 		ofstream f("Parameters.txt");
-		f<<"InputFile "<<m_parameters.getInputFile()<<endl;
-		f<<"AssemblyEngine Parallel_Ray_Engine-"<<m_VERSION<<endl;
-		f<<"WordSize "<<m_wordSize<<endl;
-		f<<"MinimumCoverage "<<m_minimumCoverage<<endl;
-		f<<"PeakCoverage "<<m_peakCoverage<<endl;
+		f<<"Commands: Ray";
+		vector<string> commands=m_parameters.getCommands();
+		for(int i=0;i<(int)commands.size();i++){
+			f<<" "<<commands[i];
+		}
+		cout<<endl;
+		f<<"AssemblyEngine: "<<m_parameters.getEngineName()<<"-"<<m_parameters.getVersion()<<endl;
+		f<<"WordSize: "<<m_wordSize<<endl;
+		f<<"MinimumCoverage: "<<m_minimumCoverage<<endl;
+		f<<"PeakCoverage: "<<m_peakCoverage<<endl;
 		f.close();
 		cout<<"Writing Parameters.txt"<<endl;
 		// see these values to everyone.
@@ -2678,23 +2733,7 @@ void Machine::processData(){
 			#endif
 			ofstream f(m_parameters.getOutputFile().c_str());
 			for(int i=0;i<(int)m_allPaths.size();i++){
-				ostringstream a;
-				#ifdef USE_DISTANT_SEGMENTS_GRAPH
-				//
-				//TTAATT
-				// TTAATT
-				//  TTAATT
-				//  the first vertex can not fill in the first delta letter alone, it needs help.
-				for(int p=0;p<m_wordSize;p++){
-					a<<codeToChar(getFirstSegmentFirstCode(m_allPaths[i][p],_SEGMENT_LENGTH,m_wordSize));
-				}
-				#else
-				a<<idToWord(m_allPaths[i][0],m_wordSize);
-				#endif
-				for(int j=1;j<(int)m_allPaths[i].size();j++){
-					a<<getLastSymbol(m_allPaths[i][j],m_wordSize);
-				}
-				string contig=a.str();
+				string contig=convertToString(&(m_allPaths[i]),m_wordSize);
 				#ifdef DEBUG
 				assert(i<(int)m_identifiers.size());
 				#endif
@@ -2713,6 +2752,10 @@ void Machine::processData(){
 			#endif
 			if(m_parameters.useAmos()){
 				m_master_mode=MODE_AMOS;
+				m_SEEDING_i=0;
+				m_mode_send_vertices_sequence_id_position=0;
+				m_EXTENSION_reads_requested=false;
+				cout<<"\rCompleting "<<m_parameters.getAmosFile()<<endl;
 			}else{// we are done.
 				killRanks();
 			}
@@ -2730,12 +2773,73 @@ void Machine::processData(){
 		}
 	}else if(m_master_mode==MODE_AMOS){
 		// in development.
-		#ifdef SHOW_PROGRESS
-		cout<<"Writing Ray.afg"<<endl;
-		#endif
-		// write Reads (RED)
-		// write contigs (CTG)
-		killRanks();
+		/*
+ 		* use m_allPaths and m_identifiers
+ 		*
+ 		* iterators: m_SEEDING_i: for the current contig
+ 		*            m_mode_send_vertices_sequence_id_position: for the current position in the current contig.
+ 		*/
+		if(m_SEEDING_i==(int)m_allPaths.size()){// all contigs are processed
+			killRanks();
+			m_master_mode=MODE_DO_NOTHING;
+		}else if(m_mode_send_vertices_sequence_id_position==(int)m_allPaths[m_SEEDING_i].size()){// iterate over the next one
+			m_SEEDING_i++;
+			m_mode_send_vertices_sequence_id_position=0;
+			
+			FILE*fp=fopen(m_parameters.getAmosFile().c_str(),"a+");
+			fprintf(fp,"}\n");
+			fclose(fp);
+		}else{
+			if(!m_EXTENSION_reads_requested){
+				if(m_mode_send_vertices_sequence_id_position==0){
+					FILE*fp=fopen(m_parameters.getAmosFile().c_str(),"a+");
+					string seq=convertToString(&(m_allPaths[m_SEEDING_i]),m_wordSize);
+					char*qlt=(char*)__Malloc(seq.length()+1);
+					strcpy(qlt,seq.c_str());
+					for(int i=0;i<(int)strlen(qlt);i++)
+						qlt[i]='D';
+					fprintf(fp,"{CTG\niid:%i\neid:contig-%i\ncom:\nAssembly engine: %s %s\n.\nseq:\n%s\n.\nqlt:\n%s\n.\n",
+						m_SEEDING_i+1,
+						m_identifiers[m_SEEDING_i],
+						m_parameters.getEngineName().c_str(),
+						m_parameters.getVersion().c_str(),
+						seq.c_str(),
+						qlt
+						);
+					fclose(fp);
+					__Free(qlt);
+				}
+
+				m_EXTENSION_reads_requested=true;
+				m_EXTENSION_reads_received=false;
+				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
+				message[0]=m_allPaths[m_SEEDING_i][m_mode_send_vertices_sequence_id_position];
+				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0]),TAG_REQUEST_READS,getRank());
+				m_outbox.push_back(aMessage);
+			}else if(m_EXTENSION_reads_received){
+				for(int i=0;i<(int)m_EXTENSION_receivedReads.size();i++){
+					int readRank=m_EXTENSION_receivedReads[i].getRank();
+					char strand=m_EXTENSION_receivedReads[i].getStrand();
+					int idOnRank=m_EXTENSION_receivedReads[i].getReadIndex();
+					int globalIdentifier=idOnRank*getSize()+readRank;
+					FILE*fp=fopen(m_parameters.getAmosFile().c_str(),"a+");
+					int start=0;
+					int theEnd=36-1;
+					if(strand=='R'){
+						int t=start;
+						start=theEnd;
+						theEnd=t;
+					}
+					fprintf(fp,"{TLE\nsrc:%i\noff:%i\nclr:%i,%i\n}\n",globalIdentifier,m_mode_send_vertices_sequence_id_position,
+						start,theEnd);
+					fclose(fp);
+				}
+				// continue.
+				m_mode_send_vertices_sequence_id_position++;
+				m_EXTENSION_reads_requested=false;
+			}
+
+		}
 	}
 
 	if(m_mode_EXTENSION){

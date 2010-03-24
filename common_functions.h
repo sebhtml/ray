@@ -153,5 +153,6 @@ uint8_t charToCode(char a);
 
 char codeToChar(uint8_t a);
 
+string convertToString(vector<VERTEX_TYPE>*b,int m_wordSize);
 
 #endif

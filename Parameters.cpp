@@ -46,20 +46,37 @@ int Parameters::getWordSize(){
 	return m_wordSize;
 }
 
-void Parameters::load(string file){
-	ifstream f(file.c_str());
-	m_input=file;
+void Parameters::loadCommandsFromFile(char*file){
+	ifstream f(file);
 	while(!f.eof()){
 		string token;
 		f>>token;
-		if(token=="LoadSingleEndReads"){
-			f>>token;
+		m_commands.push_back(token);
+
+	}
+	f.close();
+}
+
+void Parameters::loadCommandsFromArguments(int argc,char**argv){
+	for(int i=0;i<argc;i++){
+		m_commands.push_back(argv[i]);
+	}
+}
+
+void Parameters::parseCommands(){
+	int i=0;
+	while(i<(int)m_commands.size()){
+		string token=m_commands[i];
+		if(token=="LoadSingleEndReads" or token=="-s" or token=="--LoadSingleEndReads"){
+			i++;
+			token=m_commands[i];
 			m_singleEndReadsFile.push_back(token);
 			if(token.find(".csfasta")!=string::npos){
 				m_colorSpaceMode=true;
 			}
-		}else if(token=="LoadPairedEndReads"){
-			f>>token;
+		}else if(token=="LoadPairedEndReads" or token=="-p" or token=="--LoadPairedEndReads"){
+			i++;
+			token=m_commands[i];
 			if(token.find(".csfasta")!=string::npos){
 				m_colorSpaceMode=true;
 			}
@@ -67,29 +84,48 @@ void Parameters::load(string file){
 			// add left file
 			m_leftFiles.insert(m_singleEndReadsFile.size());
 			m_singleEndReadsFile.push_back(left);
-			f>>token;
+			i++;
+			token=m_commands[i];
+			
 			// add right file
 			string right=token;
 			m_rightFiles.insert(m_singleEndReadsFile.size());
 			m_singleEndReadsFile.push_back(right);
 			int meanFragmentLength;
 			int standardDeviation;
-			f>>meanFragmentLength>>standardDeviation;
+			i++;
+			token=m_commands[i];
+			meanFragmentLength=atoi(token.c_str());
+			i++;
+			token=m_commands[i];
+			standardDeviation=atoi(token.c_str());
 			m_averageFragmentLengths[m_singleEndReadsFile.size()-1]=meanFragmentLength;
 			m_standardDeviations[m_singleEndReadsFile.size()-1]=standardDeviation;
 		}else if(token=="SetOutputDirectory"){
-			f>>token;
+			i++;
+			token=m_commands[i];
 			m_directory=token;
-		}else if(token=="SetWordSize"){
-			f>>token;
+		}else if(token=="SetWordSize" or token=="--SetWordSize" or token=="-w"){
+			i++;
+			token=m_commands[i];
 			m_wordSize=atoi(token.c_str());
-		}else if(token=="OutputAmosFile"){
+		}else if(token=="OutputAmosFile" or token=="--OutputAmosFile" or token=="-a"){
 			m_amos=true;
 		}
+		i++;
 	}
-	f.close();
 
 	m_initiated=true;
+}
+
+void Parameters::load(int argc,char**argv){
+	if(argc==2){
+		m_input=argv[1];
+		loadCommandsFromFile(argv[1]);
+	}else{
+		loadCommandsFromArguments(argc,argv);
+	}
+	parseCommands();
 }
 
 bool Parameters::isInitiated(){
@@ -143,3 +179,18 @@ string Parameters::getInputFile(){
 	return m_input;
 }
 
+string Parameters::getAmosFile(){
+	return "Ray-Contigs.afg";
+}
+
+string Parameters::getEngineName(){
+	return "Parallel_Ray_Engine";
+}
+
+string Parameters::getVersion(){
+	return "0.0.5";
+}
+
+vector<string> Parameters::getCommands(){
+	return m_commands;
+}

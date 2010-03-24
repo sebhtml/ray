@@ -49,3 +49,4 @@ int PairedRead::getStandardDeviation(){
 	return m_deviation;
 }
 
+

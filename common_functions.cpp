@@ -384,3 +384,26 @@ char codeToChar(uint8_t a){
 		return 'G';
 	return 'A';
 }
+
+string convertToString(vector<VERTEX_TYPE>*b,int m_wordSize){
+	ostringstream a;
+	#ifdef USE_DISTANT_SEGMENTS_GRAPH
+	//
+	//TTAATT
+	// TTAATT
+	//  TTAATT
+	//  the first vertex can not fill in the first delta letter alone, it needs help.
+	for(int p=0;p<m_wordSize;p++){
+		a<<codeToChar(getFirstSegmentFirstCode((*b)[p],_SEGMENT_LENGTH,m_wordSize));
+	}
+	#else
+	a<<idToWord((*b)[0],m_wordSize);
+	#endif
+	for(int j=1;j<(int)(*b).size();j++){
+		a<<getLastSymbol((*b)[j],m_wordSize);
+	}
+	string contig=a.str();
+	return contig;
+}
+
+
