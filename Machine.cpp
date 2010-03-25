@@ -3119,8 +3119,9 @@ int Machine::proceedWithCoverages(int a,int b){
 	for(int i=0;i<(int)m_EXTENSION_coverages.size();i++){
 		bool isBetter=true;
 		int coverageI=m_EXTENSION_coverages[i];
-		if(m_EXTENSION_readPositionsForVertices[i].size()==0)
+		if(m_EXTENSION_readPositionsForVertices.count(i)==0 or m_EXTENSION_readPositionsForVertices[i].size()==0)
 			continue;
+
 		for(int j=0;j<(int)m_EXTENSION_coverages.size();j++){
 			if(i==j)
 				continue;
@@ -3131,6 +3132,10 @@ int Machine::proceedWithCoverages(int a,int b){
 			}
 		}
 		if(isBetter){
+			#ifdef SHOW_PROGRESS
+			cout<<"Choice #"<<i+1<<" wins, with "<<m_EXTENSION_readPositionsForVertices[i].size()<<" reads."<<endl;
+			cout<<" in ranges: "<<m_EXTENSION_readsInRange.size()<<endl;
+			#endif
 			m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[i];
 			m_EXTENSION_choose=true;
 			m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
@@ -3174,6 +3179,7 @@ void Machine::doChoice(){
  *   C                      =============
  */
 		// try to use the coverage to choose.
+		/*
 		int i=proceedWithCoverages(m_minimumCoverage/2,m_minimumCoverage);
 		if(i>=0){
 			return;
@@ -3181,6 +3187,7 @@ void Machine::doChoice(){
 		i=proceedWithCoverages(m_minimumCoverage,2*m_minimumCoverage);
 		if(i>=0)
 			return;
+		*/
 
 		if(!m_EXTENSION_singleEndResolution and m_EXTENSION_readsInRange.size()>0){
 			// try to use single-end reads to resolve the repeat.
