@@ -17,23 +17,13 @@
 	#see <http://www.gnu.org/licenses/>
 
 
-# These are things you can provide with -D<Something> for development purposes
-# DEBUG verify various assertions.
-# SHOW_PROGRESS to show progression, this one is useful if you want to know what is going on.
-#
-# detections at compilation:
-#
-# MPICH2_VERSION is set when using mpi.h from mpich2
-#   if MPICH2_VERSION is set, then MPI_Isend is utilized for all point-to-point communications.
-#   otherwise, MPI_Send is used because Open-MPI is smarter: it sends eagerly small messages!
-
-CXXFLAGS=  -Wall  -I.  -O3  # -DSHOW_PROGRESS -DDEBUG -g  # debug flags.
+CXXFLAGS=  -Wall  -I.  -O3  -DSHOW_MINIGRAPH -DSHOW_PROGRESS -DDEBUG -g  # debug flags.
 
 # the default is to use mpic++ provided in your $PATH
 MPICC=mpic++
+MPIRUN=mpirun
 
-# if you want to change the executable name, do it t here!
-TARGETS=Ray #SimulateFragments SimulateErrors SimulatePairedReads
+TARGETS=Ray
 
 all: $(TARGETS)
 
@@ -58,7 +48,7 @@ Ray: ray_main.o $(OBJECTS)
 
 test: test_main.o $(OBJECTS)
 	$(MPICC) $(CXXFLAGS) $^ -o $@
-	/home/boiseb01/software/ompi-1.4.1-gcc/bin/mpirun ./test
+	$(MPIRUN) ./test
 clean:
 	rm -f $(OBJECTS) $(TARGETS)
 

@@ -24,7 +24,6 @@
 #define TIP_LIMIT 40
 #define _MINIMUM_COVERAGE 2
 
-//#define SHOW_MINI_GRAPH
 
 // tags
 // these are the message types used by Ray
