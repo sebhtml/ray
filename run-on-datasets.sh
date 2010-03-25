@@ -5,7 +5,7 @@ currentPlace=$(pwd)
 function runTest {
 	echo ""
 	echo "***************"
-	nproc=31
+	nproc=28
 	date
 	testName=$1
 	dataDirectory=$2

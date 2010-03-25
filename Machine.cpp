@@ -3178,16 +3178,6 @@ void Machine::doChoice(){
  *   B                      =============================
  *   C                      =============
  */
-		// try to use the coverage to choose.
-		/*
-		int i=proceedWithCoverages(m_minimumCoverage/2,m_minimumCoverage);
-		if(i>=0){
-			return;
-		}
-		i=proceedWithCoverages(m_minimumCoverage,2*m_minimumCoverage);
-		if(i>=0)
-			return;
-		*/
 
 		if(!m_EXTENSION_singleEndResolution and m_EXTENSION_readsInRange.size()>0){
 			// try to use single-end reads to resolve the repeat.
@@ -3346,6 +3336,16 @@ void Machine::doChoice(){
 					}
 				}
 				#endif
+
+				// try to use the coverage to choose.
+				int i=proceedWithCoverages(m_minimumCoverage/2,m_minimumCoverage);
+				if(i>=0){
+					return;
+				}
+				i=proceedWithCoverages(m_minimumCoverage,2*m_minimumCoverage);
+				if(i>=0)
+					return;
+
 
 				// paired-end resolution of repeats.
 				map<int,int> theMaxsPaired;
