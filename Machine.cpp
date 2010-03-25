@@ -1176,6 +1176,9 @@ void Machine::processMessage(Message*message){
 		m_minimumCoverage=incoming[0];
 		m_seedCoverage=incoming[1];
 		m_peakCoverage=incoming[2];
+		#ifdef SHOW_PROGRESS
+		cout<<"Min="<<m_minimumCoverage<<" Seed="<<m_seedCoverage<<" Peak="<<m_peakCoverage<<endl;
+		#endif
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_READY_TO_SEED,getRank());
 		m_outbox.push_back(aMessage);
 	}else if(tag==TAG_READY_TO_SEED){
@@ -2015,6 +2018,7 @@ void Machine::processData(){
 		m_minimumCoverage=distribution.getMinimumCoverage();
 		m_peakCoverage=distribution.getPeakCoverage();
 		m_seedCoverage=(m_minimumCoverage+m_peakCoverage)/2;
+
 		m_coverageDistribution.clear();
 
 		COVERAGE_TYPE maxCoverage=0;
@@ -2028,7 +2032,7 @@ void Machine::processData(){
 			return;
 		}
 		ofstream f(m_parameters.getParametersFile().c_str());
-		f<<"Ray Commands: Ray";
+		f<<"Ray Command Line: ";
 		vector<string> commands=m_parameters.getCommands();
 		for(int i=0;i<(int)commands.size();i++){
 			f<<" "<<commands[i];
@@ -2774,6 +2778,7 @@ void Machine::processData(){
 		}else if(m_mode_send_vertices_sequence_id_position==(int)m_allPaths[m_SEEDING_i].size()){// iterate over the next one
 			m_SEEDING_i++;
 			m_mode_send_vertices_sequence_id_position=0;
+			m_EXTENSION_reads_requested=false;
 			
 			FILE*fp=fopen(m_parameters.getAmosFile().c_str(),"a+");
 			fprintf(fp,"}\n");
@@ -2882,7 +2887,6 @@ void Machine::processData(){
  *  m_SEEDING_edgesReceived
  */
 void Machine::do_1_1_test(){
-	
 	if(m_SEEDING_1_1_test_done){
 		return;
 	}else if(!m_SEEDING_testInitiated){
@@ -3141,6 +3145,11 @@ int Machine::proceedWithCoverages(int a,int b){
 
 void Machine::doChoice(){
 	// use seed information.
+	#ifdef SHOW_PROGRESS
+	if(m_EXTENSION_currentPosition==1)
+		cout<<"Priming with seed length="<<m_EXTENSION_currentSeed.size()<<endl;
+	#endif
+
 	if(m_EXTENSION_currentPosition<(int)m_EXTENSION_currentSeed.size()){
 		for(int i=0;i<(int)m_enumerateChoices_outgoingEdges.size();i++){
 			if(m_enumerateChoices_outgoingEdges[i]==m_EXTENSION_currentSeed[m_EXTENSION_currentPosition]){
@@ -3308,6 +3317,7 @@ void Machine::doChoice(){
 					cout<<endl;
 					cout<<"*****************************************"<<endl;
 					cout<<"CurrentVertex="<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<" @"<<m_EXTENSION_extension.size()<<endl;
+					cout<<" # ReadsInRange: "<<m_EXTENSION_readsInRange.size()<<endl;
 					cout<<m_enumerateChoices_outgoingEdges.size()<<" arcs."<<endl;
 					for(int i=0;i<(int)m_enumerateChoices_outgoingEdges.size();i++){
 						string vertex=idToWord(m_enumerateChoices_outgoingEdges[i],m_wordSize);
