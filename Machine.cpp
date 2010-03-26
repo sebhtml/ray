@@ -3147,9 +3147,6 @@ int Machine::proceedWithCoverages(int a,int b){
 				continue;
 			int coverageJ=m_EXTENSION_coverages[j];
 
-			if(counts5[i]<=counts5[j])
-				continue;
-
 			if(!(coverageJ<=a and coverageI>=b)){
 				isBetter=false;
 				break;
