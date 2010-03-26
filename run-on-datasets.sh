@@ -1,6 +1,7 @@
 #!/bin/bash
 
 currentPlace=$(pwd)
+revision=3157
 
 function runTest {
 	echo ""
@@ -20,12 +21,11 @@ function runTest {
 	echo "Input (from $rayTemplate):"
 	cat $rayTemplate
 	touch Log
-	mpirun -tag-output  -np $nproc Ray3153 $rayTemplate > Log
+	mpirun -tag-output  -np $nproc Ray$revision $rayTemplate > Log
 	mv Log $currentPlace/$testName.Log
 	print-latex.sh $reference Ray-Contigs.fasta  Ray > Ray.LatexLine
-	touch L
+	mv Ray.LatexLine $currentPlace/$testName.Validation
 	echo "Validating with $reference"
-	mv L $currentPlace/$testName.Validation
 	mv Ray-CoverageDistribution.txt $currentPlace/$testName.CoverageDistribution
 	mv Ray-Parameters.txt $currentPlace/$testName.Parameters
 	mv Ray-Contigs.fasta $currentPlace/$testName.Contigs

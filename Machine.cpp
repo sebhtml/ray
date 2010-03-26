@@ -3116,16 +3116,40 @@ void Machine::enumerateChoices(){
 }
 
 int Machine::proceedWithCoverages(int a,int b){
+	vector<int> counts2;
+	vector<int> counts5;
+	for(int i=0;i<(int)m_EXTENSION_coverages.size();i++){
+		int j2=0;
+		int j5=0;
+		if(m_EXTENSION_readPositionsForVertices.count(i)>0){
+			for(int k=0;k<(int)m_EXTENSION_readPositionsForVertices[i].size();k++){
+				int distanceFromOrigin=m_EXTENSION_readPositionsForVertices[i][k];
+				if(distanceFromOrigin>=2){
+					j2++;
+				}
+				if(distanceFromOrigin>=5){
+					j5++;
+				}
+			}
+		}
+		counts2.push_back(j2);
+		counts5.push_back(j5);
+	}
+
 	for(int i=0;i<(int)m_EXTENSION_coverages.size();i++){
 		bool isBetter=true;
 		int coverageI=m_EXTENSION_coverages[i];
-		if(m_EXTENSION_readPositionsForVertices.count(i)==0 or m_EXTENSION_readPositionsForVertices[i].size()==0)
+		if(counts2[i]==0)
 			continue;
 
 		for(int j=0;j<(int)m_EXTENSION_coverages.size();j++){
 			if(i==j)
 				continue;
 			int coverageJ=m_EXTENSION_coverages[j];
+
+			if(counts5[i]<=counts5[j])
+				continue;
+
 			if(!(coverageJ<=a and coverageI>=b)){
 				isBetter=false;
 				break;
