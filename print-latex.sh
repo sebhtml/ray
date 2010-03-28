@@ -19,7 +19,7 @@ bases=$(getlengths $assembly500|awk '{sum+= $2} END {print sum}')
 meanSize=$(getN50 $assembly500|head -n2|tail -n1|awk '{print $2}'| sed 's/\..*//')
 n50=$(getN50 $assembly500|head -n3|tail -n1|awk '{print $2}')
 max=$(getlengths $assembly500|awk '{print $2}'|sort -n|tail -n1)
-coverage=$(printf %2.2f $(grep Coverage= mums|sed 's/Coverage=//'))
+coverage=$(printf %2.4f $(grep Coverage= mums|sed 's/Coverage=//'))
 misassembled=$(grep Misas mums|awk '{print $3}')
 
 

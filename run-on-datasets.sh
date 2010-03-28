@@ -1,12 +1,13 @@
 #!/bin/bash
 
 currentPlace=$(pwd)
-revision=3157
+revision=3159
 
 function runTest {
+	startDate=$(date)
 	echo ""
 	echo "***************"
-	nproc=20
+	nproc=30
 	date
 	testName=$1
 	dataDirectory=$2
@@ -25,10 +26,24 @@ function runTest {
 	mv Log $currentPlace/$testName.Log
 	print-latex.sh $reference Ray-Contigs.fasta  Ray > Ray.LatexLine
 	mv Ray.LatexLine $currentPlace/$testName.Validation
+	mv mums $currentPlace/$testName.Mums
 	echo "Validating with $reference"
 	mv Ray-CoverageDistribution.txt $currentPlace/$testName.CoverageDistribution
 	mv Ray-Parameters.txt $currentPlace/$testName.Parameters
 	mv Ray-Contigs.fasta $currentPlace/$testName.Contigs
+	(
+	echo "TestName: $testName"
+	echo "Description: $description"
+	echo "TestSet: $currentPlace"
+	echo "Nproc: $nproc"
+	echo "Host: $(hostname)"
+	echo "StartingDate: $startDate"
+	echo "EndingData: $(date)"
+	echo "WorkingDirectory: $dataDirectory"
+	echo "RayInputFile: $rayTemplate"
+	echo "RayRevision: $revision"
+	echo "ReferenceFile: $reference"
+	)> $currentPlace/$testName.Descriptors
 }
 
 runTest Sp /data/users/boiseb01/PaperDatasets/Sp input /home/boiseb01/nuccore/Streptococcus-pneumoniae-R6.fasta "S. pneumoniae 50-nt reads @ 50X (nuccore/NC_003098)"
