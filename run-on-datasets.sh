@@ -37,6 +37,8 @@ function runTest {
 	echo "TestSet: $currentPlace"
 	echo "Nproc: $nproc"
 	echo "Host: $(hostname)"
+	echo "OperatingSystem: $(uname -a)"
+	echo "User: $(whoami)"
 	echo "StartingDate: $startDate"
 	echo "EndingData: $(date)"
 	echo "WorkingDirectory: $dataDirectory"
