@@ -73,5 +73,5 @@ runTest crypto-illumina /data/users/sra/MarkChaisson/ Illumina /home/boiseb01/nu
 runTest crypto-454 /data/users/sra/MarkChaisson/ roche454 /home/boiseb01/nuccore/Cryptobacterium_curtum_DSM_15641.fasta "Mixed set 3: Cryptobacterium curtum DSM 15641 454 (genome: nuccore/NC_013170, reads: sra/SRA008863) "
 runTest crypto-mix /data/users/sra/MarkChaisson/ mix /home/boiseb01/nuccore/Cryptobacterium_curtum_DSM_15641.fasta "Mixed set 3: Cryptobacterium curtum DSM 15641 mix (genome: nuccore/NC_013170, reads: sra/SRA008863) "
 
-
+runTest 
 runTest myco-Illumina /data/users/boiseb01/PaperDatasets/SRA003611 Mycoplasma.Ray /home/boiseb01/nuccore/Mycoplasma_agalactiae_PG2.fasta "   1.  mycoplasma (genome: nuccore/NC_009497.1, reads: sra/SRA003611) "
