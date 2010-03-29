@@ -60,18 +60,18 @@ runTest PAO1-np /data/users/boiseb01/PaperDatasets/Pseudo input-np /home/boiseb0
 
 
 
-runTest Ep-Illumina /data/users/boiseb01/PaperDatasets/SRA001125 input /home/boiseb01/nuccore/Ecoli-k12-mg1655.fasta "Mixed set 1: E. coli K-12 MG1655 #  Illumina paired "
-runTest Enp-Illumina /data/users/boiseb01/PaperDatasets/SRA001125 input-notpaired /home/boiseb01/nuccore/Ecoli-k12-mg1655.fasta "Mixed set 1: E. coli K-12 MG1655  Illumina non-paired "
-runTest MG1655-454 /data/users/sra/SRX000348-MG1655-454 input /home/boiseb01/nuccore/Ecoli-k12-mg1655.fasta "#  Mixed set 1: E. coli K-12 MG1655 454"
-runTest MG1655-mix /data/users/sra/SRX000348-MG1655-454 input-mix /home/boiseb01/nuccore/Ecoli-k12-mg1655.fasta "Mixed set 1: E. coli K-12 MG1655 #  454+ Illumina paired "
+runTest Ep-Illumina /data/users/boiseb01/PaperDatasets/SRA001125 input /home/boiseb01/nuccore/Ecoli-k12-mg1655.fasta "Mixed set 1: E. coli K-12 MG1655 #  Illumina paired (genome: nuccore/NC_000913, reads: sra/SRA001125 + sra/SRA001028)  "
+runTest Enp-Illumina /data/users/boiseb01/PaperDatasets/SRA001125 input-notpaired /home/boiseb01/nuccore/Ecoli-k12-mg1655.fasta "Mixed set 1: E. coli K-12 MG1655  Illumina non-paired (genome: nuccore/NC_000913, reads: sra/SRA001125 + sra/SRA001028) "
+runTest MG1655-454 /data/users/sra/SRX000348-MG1655-454 input /home/boiseb01/nuccore/Ecoli-k12-mg1655.fasta "#  Mixed set 1: E. coli K-12 MG1655 454 (genome: nuccore/NC_000913, reads: sra/SRA001125 + sra/SRA001028) "
+runTest MG1655-mix /data/users/sra/SRX000348-MG1655-454 input-mix /home/boiseb01/nuccore/Ecoli-k12-mg1655.fasta "Mixed set 1: E. coli K-12 MG1655 #  454+ Illumina paired (genome: nuccore/NC_000913, reads: sra/SRA001125 + sra/SRA001028) "
 
-runTest adp1-roche /data/users/boiseb01/PaperDatasets/SRA003611 roche.Ray /home/boiseb01/nuccore/adp1.fasta "Mixed set 2: Acinetobacter sp. ADP1 454"
-runTest adp1-Illumina /data/users/boiseb01/PaperDatasets/SRA003611 Illumina.ray /home/boiseb01/nuccore/adp1.fasta "Mixed set 2: Acinetobacter sp. ADP1  #  Illumina non-paired "
-runTest adp1-mix /data/users/boiseb01/PaperDatasets/SRA003611 template.ray /home/boiseb01/nuccore/adp1.fasta "Mixed set 2: Acinetobacter sp. ADP1 #  454 + Illumina "
+runTest adp1-roche /data/users/boiseb01/PaperDatasets/SRA003611 roche.Ray /home/boiseb01/nuccore/adp1.fasta "Mixed set 2: Acinetobacter sp. ADP1 454 (genome: nuccore/NC_005966, reads: sra/SRA003611) "
+runTest adp1-Illumina /data/users/boiseb01/PaperDatasets/SRA003611 Illumina.ray /home/boiseb01/nuccore/adp1.fasta "Mixed set 2: Acinetobacter sp. ADP1  #  Illumina non-paired (genome: nuccore/NC_005966, reads: sra/SRA003611) "
+runTest adp1-mix /data/users/boiseb01/PaperDatasets/SRA003611 template.ray /home/boiseb01/nuccore/adp1.fasta "Mixed set 2: Acinetobacter sp. ADP1 #  454 + Illumina (genome: nuccore/NC_005966, reads: sra/SRA003611) "
 
-runTest crypto-illumina /data/users/sra/MarkChaisson/ Illumina /home/boiseb01/nuccore/Cryptobacterium_curtum_DSM_15641.fasta "Mixed set 3: Cryptobacterium curtum DSM 15641 Illumina"
-runTest crypto-454 /data/users/sra/MarkChaisson/ roche454 /home/boiseb01/nuccore/Cryptobacterium_curtum_DSM_15641.fasta "Mixed set 3: Cryptobacterium curtum DSM 15641 454"
-runTest crypto-mix /data/users/sra/MarkChaisson/ mix /home/boiseb01/nuccore/Cryptobacterium_curtum_DSM_15641.fasta "Mixed set 3: Cryptobacterium curtum DSM 15641 mix"
+runTest crypto-illumina /data/users/sra/MarkChaisson/ Illumina /home/boiseb01/nuccore/Cryptobacterium_curtum_DSM_15641.fasta "Mixed set 3: Cryptobacterium curtum DSM 15641 Illumina (genome: nuccore/NC_013170, reads: sra/SRA008863) "
+runTest crypto-454 /data/users/sra/MarkChaisson/ roche454 /home/boiseb01/nuccore/Cryptobacterium_curtum_DSM_15641.fasta "Mixed set 3: Cryptobacterium curtum DSM 15641 454 (genome: nuccore/NC_013170, reads: sra/SRA008863) "
+runTest crypto-mix /data/users/sra/MarkChaisson/ mix /home/boiseb01/nuccore/Cryptobacterium_curtum_DSM_15641.fasta "Mixed set 3: Cryptobacterium curtum DSM 15641 mix (genome: nuccore/NC_013170, reads: sra/SRA008863) "
 
 
 runTest myco-Illumina /data/users/boiseb01/PaperDatasets/SRA003611 Mycoplasma.Ray /home/boiseb01/nuccore/Mycoplasma_agalactiae_PG2.fasta "   1.  mycoplasma (genome: nuccore/NC_009497.1, reads: sra/SRA003611) "
