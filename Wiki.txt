@@ -1,5 +1,6 @@
 <b>[http://en.wikipedia.org/wiki/Metal_Gear_(weapon)#Metal_Gear_RAY Ray is a computer-controlled software] that perform parallel de novo genome assemblies of [http://dx.doi.org/doi:10.1038/nmeth.1376 next-gen sequencing data] using [http://www.open-mpi.org/ message passing interface].</b>
-Ray utilizes a parallel version of the OpenAssembler algorithm (under review).
+It uses an assembly engine called <i>Parallel_Ray_Engine</i>.
+
 
 [http://denovoassembler.sf.net/ DeNovoAssembler.SF.Net] hosts the Ray project -- a massively parallel open source genome assembler for sequencers such as [http://454.com/ Roche 454 sequencers], [http://illumina.com/ Illumina sequencers], [http://solid.appliedbiosystems.com/ SOLiD sequencers], [http://www.pacificbiosciences.com/ Pacific Biosciences sequencers], [http://www.helicosbio.com/ Helicos Biosciences sequencers], and exciting [http://www.iontorrent.com/ Ion Torrent] semiconductor-based sequencers. 
 
@@ -55,6 +56,9 @@ Only the master rank needs to access the files on disk.
  Sébastien Boisvert, Jacques Corbeil, and François Laviolette. 
  Ray: a massively parallel MPI-based approach for genome assembly with mixed technologies. 
  http://denovoassembler.sf.net/, 2010.
+
+
+We have a paper about Ray under review.
 
 == Installation ==
 
@@ -250,17 +254,13 @@ Ray can not run without mpirun. However, it is safe and reliable to run it with 
 
 In Open-MPI, you may have to disable the Byte Transfer Layer called Shared Memory to avoid a race condition in the spinlock of Open-MPI. This problem is presumably due to a processor defective design rather than a defect in Open-MPI. The lock instruction is supposed to lock the bus, so if you encounter the race condition (in general, it hangs), you know something is wrong. The following command disables the btl sm at runtime. In our benchmarks on Human Chromosome 1 with short reads, we found that disabling shared memory was necessary.
 
- mpirun -np 32 --mca btl ^sm ./Ray Commands.Ray
+ mpirun -np 32 --mca btl ^sm Ray Commands.Ray
 
 = OpenAssembler: assembling genome with mixed sequencing technologies =
 
 OpenAssembler assembles Illumina reads or 454 + Illumina reads, or any combination without non-random error incorporation. The manuscript is under review. Its novelty is that it avoids both 454's homopolymers and Illumina's short read length. Unlike EULER-SR, Velvet, or ABySS, OpenAssembler can assemble reads obtained from a mix of technology. However, it runs only on one process. 
 
 === References ===
-
-Paper:
-
-We submitted a manuscript on 15 October 2009. The source code of OpenAssembler will be available upon acceptance.
 
 We published an abstract on OpenAssembler in a conference:
 
