@@ -13,9 +13,9 @@ else
 	echo "Starting $i."
 	mkdir $i.dir -p
 	cd $i.dir
-	bash ../$i  > ../$i.res
+	bash ../$i  > 1
+	mv 1 ../$i.res
 	echo "$i is done."
 	cd ..
-	rm -rf $i.dir
 fi
 
