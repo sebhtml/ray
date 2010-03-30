@@ -12,5 +12,5 @@ addRun 1.fasta &> log2
 addRun 2.fasta &> log3
 addRun 3.fasta &> log4
 addRun 4.fasta &> log5
-runProject
+runProject &> log6
 print-latex.sh $ref assembly/454AllContigs.fna Newbler
