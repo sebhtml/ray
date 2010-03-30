@@ -14,19 +14,28 @@ output=open(sys.argv[3],"w+")
 head=""
 body=""
 
+p=1
+def writeToFile(head,body,output,threshold,p):
+	if len(body)>=threshold:
+		output.write(">"+str(p)+"\n")
+		i=0
+		columns=80
+		while i<len(body):
+			output.write(body[i:(i+columns)]+"\n")
+			i+=columns
+
+
 for line in input:
 	if line[0]=='>':
 		if head!="":
-			if len(body)>=threshold:
-				output.write(head+"\n"+body+"\n")
+			writeToFile(head,body,output,threshold,p)
+			p+=1
 		head=line.strip()
 		body=""
 	else:
 		body+=line.strip()
 
-
-if len(body)>=threshold:
-	output.write(head+"\n"+body+"\n")
+writeToFile(head,body,output,threshold,p)
 
 output.close()
 input.close()
