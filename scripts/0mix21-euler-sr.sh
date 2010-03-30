@@ -1,6 +1,6 @@
 
-. 0parameters.sh
-. 0mix2-parameters.sh
+source ../0parameters.sh
+source ../0mix2-parameters.sh
 
 
 time (cat $file1illumina $file2illumina > reads.fastq

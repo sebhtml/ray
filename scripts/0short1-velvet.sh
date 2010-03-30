@@ -1,5 +1,5 @@
-. 0parameters.sh
-. 0short1-parameters.sh
+source ../0parameters.sh
+source ../0short1-parameters.sh
 
 
 time(

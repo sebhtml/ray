@@ -1,7 +1,7 @@
 #!/bin/bash
 
-. 0mix11-parameters.sh
-. 0parameters.sh
+source ../0mix11-parameters.sh
+source ../0parameters.sh
 
 time (rm -rf velvet
 velveth velvet $wordSize -short -fastq  $p1left $p1right $p2left $p2right &>/dev/null

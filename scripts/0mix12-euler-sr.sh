@@ -1,6 +1,6 @@
 
-. 0mix11-parameters.sh
-. 0parameters.sh
+source ../0mix11-parameters.sh
+source ../0parameters.sh
 
 time(
 (renameReads-for-euler.py /1 $p1left ;renameReads-for-euler.py /2 $p1right ;renameReads-for-euler.py /1 $p2left ; renameReads-for-euler.py /2 $p2right) > reads.fq

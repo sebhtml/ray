@@ -1,6 +1,6 @@
 
-. 0parameters.sh
-. 0mix2-parameters.sh
+source ../0parameters.sh
+source ../0mix2-parameters.sh
 
 time (rm -rf velvet
 velveth velvet $wordSize -short -fastq $file1illumina -short -fastq $file2illumina &>/dev/null
