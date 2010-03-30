@@ -4,7 +4,7 @@ do
 	if test -f $i.res
 	then
 		true
-	elif test -f $i.dir
+	elif test -d $i.dir
 	then
 		true
 	else

@@ -12,4 +12,7 @@ do
 		fi
 
 	done
-done
+done > tmp
+
+head tmp -n5
+echo "($(($(cat tmp|wc -l)-5)) additional entries)"

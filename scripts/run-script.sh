@@ -6,7 +6,7 @@ echo "Running $i"
 if test -f $i.res
 then
 	echo "$i is already done. ($i.res)"
-elif test -f $i.dir
+elif test -d $i.dir
 then
 	echo "$i is already running. ($i.dir)"
 else
