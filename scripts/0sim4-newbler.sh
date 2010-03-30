@@ -5,4 +5,4 @@ newAssembly newbler-run &> log1
 cd newbler-run
 addRun $reads &> log2
 runProject &> log3
-print-latex $ref assembly/454AllContigs.fna Newbler
+print-latex.sh $ref assembly/454AllContigs.fna Newbler
