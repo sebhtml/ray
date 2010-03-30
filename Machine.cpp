@@ -2026,11 +2026,6 @@ void Machine::processData(){
 		#ifdef SHOW_PROGRESS
 		cout<<"MaxCoverage="<<(int)maxCoverage<<endl;
 		#endif
-		if(m_minimumCoverage > m_peakCoverage or m_peakCoverage==maxCoverage){
-			killRanks();
-			cout<<"Error: no enrichment observed."<<endl;
-			return;
-		}
 		ofstream f(m_parameters.getParametersFile().c_str());
 		f<<"Ray Command Line: ";
 		vector<string> commands=m_parameters.getCommands();
@@ -2051,6 +2046,13 @@ void Machine::processData(){
 
 		f.close();
 		cout<<"Writing "<<m_parameters.getParametersFile()<<""<<endl;
+
+		if(m_minimumCoverage > m_peakCoverage or m_peakCoverage==maxCoverage){
+			killRanks();
+			cout<<"Error: no enrichment observed."<<endl;
+			return;
+		}
+
 		// see these values to everyone.
 		VERTEX_TYPE*buffer=(VERTEX_TYPE*)m_outboxAllocator.allocate(3*sizeof(VERTEX_TYPE));
 		buffer[0]=m_minimumCoverage;

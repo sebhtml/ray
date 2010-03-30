@@ -28,6 +28,8 @@ using namespace std;
 
 CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>distributionOfCoverage,string file){
 	m_coverage_mean=100;
+	COVERAGE_TYPE max=0;
+	max=max-1;// underflow.
 	m_minimumCoverage=1;
 	ofstream f(file.c_str());
 	f<<"#Coverage NumberOfVertices"<<endl;
@@ -37,6 +39,9 @@ CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>distributionOfCov
 		#endif
 		f<<""<<i->first<<" "<<i->second<<endl;
 		int coverage=i->first;
+		if(coverage==max){
+			continue;
+		}
 		if(
 		coverage!=1&&
 		(distributionOfCoverage.count(coverage-1)==0||
