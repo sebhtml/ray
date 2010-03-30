@@ -1,0 +1,9 @@
+p1left=/data/users/boiseb01/PaperDatasets/SRA001125/200xSRR001665_1.fastq
+p1right=/data/users/boiseb01/PaperDatasets/SRA001125/200xSRR001665_2.fastq
+length1=215
+sd1=20
+p2left=/data/users/boiseb01/PaperDatasets/SRA001125/200xSRR001666_1.fastq
+p2right=/data/users/boiseb01/PaperDatasets/SRA001125/200xSRR001666_2.fastq
+length2=215
+sd2=20
+mg1655=/home/boiseb01/nuccore/Ecoli-k12-mg1655.fasta
