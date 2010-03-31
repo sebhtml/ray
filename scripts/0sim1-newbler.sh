@@ -1,1 +1,1 @@
-date
+echo "not applicable"
