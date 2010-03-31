@@ -14,7 +14,7 @@ assembly500=$assembly.500.fa
 
 filter-contigs.py $assembly 500 $assembly500
 mummer-validate.rb $reference  $assembly500 mums &> /dev/null
-numberOfContigs=$(getlengths $assembly500|wc -l)
+numberOfContigs=$(grep '>' $assembly500|wc -l)
 bases=$(getlengths $assembly500|awk '{sum+= $2} END {print sum}')
 meanSize=$(getN50 $assembly500|head -n2|tail -n1|awk '{print $2}'| sed 's/\..*//')
 n50=$(getN50 $assembly500|head -n3|tail -n1|awk '{print $2}')
