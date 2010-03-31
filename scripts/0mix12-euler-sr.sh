@@ -4,6 +4,6 @@ source ../0parameters.sh
 qualityTrimmer  -fastq reads.fq -outFasta reads.fasta -type sanger &> log1
 echo '"([^/]*)/([12])" CloneLength=215 CloneVar=20 Type=1      # Illumina mate-pair' > mates.info
 Assemble.pl reads.fasta $wordSize -ruleFile mates.info &>log2
-print-latex.sh $mg1655 Euler-reads.fasta.contig EULER-SR
+print-latex.sh $mg1655 reads.fasta.contig EULER-SR
 
 
