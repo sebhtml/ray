@@ -9,7 +9,7 @@ do
 		file=0$i-$j.sh.res
 		if test -f $file
 		then
-			cat $file|grep -v EDT|grep -v numberOf
+			cat $file|grep -v applicable|grep -v numberOf
 		else
 			echo "MISSING RESULTS ($j)"
 		fi
