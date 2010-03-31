@@ -1,10 +1,8 @@
-#!/bin/bash
-
 source ../0mix11-parameters.sh
 source ../0mix13-parameters.sh
 source ../0parameters.sh
-
-rm -rf velvet
-velveth velvet $wordSize -short -fastq  $p1left $p1right $p2left $p2right -long -fasta $r4541 $r4542 $r4543 &> log1
-velvetg velvet -exp_cov auto -cov_cutoff auto &> log2
+shuffleSequences_fastq.pl $p1left $p1right reads1.fastq
+shuffleSequences_fastq.pl $p2left $p2right reads2.fastq
+velveth velvet $wordSize -fastq -shortPaired reads1.fastq -shortPaired2 reads2.fastq  -long -fasta $r4541 $r4542 $r4543 &> log1
+velvetg velvet   -ins_length $length1 -ins_length_sd $sd1 -ins_length2 $length2 -ins_length_sd $sd2  -exp_cov 109  -cov_cutoff 10 &> log2
 print-latex.sh $ref velvet/contigs.fa Velvet
