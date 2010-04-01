@@ -16,7 +16,7 @@
     #along with this program (gpl-3.0.txt).  
 	#see <http://www.gnu.org/licenses/>
 
-CXXFLAGS=  -Wall  -I.  -O3 # -DSHOW_MINI_GRAPH -DSHOW_PROGRESS -DDEBUG -g  # debug flags.
+CXXFLAGS=  -Wall  -I.  -O3  -DSHOW_MINI_GRAPH -DSHOW_PROGRESS -DDEBUG -g  # debug flags.
 
 # the default is to use mpic++ provided in your $PATH
 MPICC=mpic++

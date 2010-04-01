@@ -170,6 +170,8 @@
 #include<Read.h>
 #include<Loader.h>
 #include<MyAllocator.h>
+#include<unistd.h>
+
 using namespace std;
 
 void Machine::showUsage(){
@@ -480,7 +482,9 @@ void Machine::receiveMessages(){
 	int flag;
 	MPI_Status status;
 	MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
+	int read=0;
 	while(flag){
+		read++;
 		MPI_Datatype datatype=MPI_UNSIGNED_LONG_LONG;
 		int sizeOfType=8;
 		int tag=status.MPI_TAG;
@@ -488,7 +492,6 @@ void Machine::receiveMessages(){
 			datatype=MPI_BYTE;
 			sizeOfType=1;
 		}
-
 		int source=status.MPI_SOURCE;
 		int length;
 		MPI_Get_count(&status,datatype,&length);
@@ -499,6 +502,7 @@ void Machine::receiveMessages(){
 		m_inbox.push_back(aMessage);
 		MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
 	}
+
 }
 
 int Machine::getRank(){
@@ -1309,6 +1313,9 @@ void Machine::processMessage(Message*message){
 		m_mode_send_outgoing_edges=true;
 		m_mode_send_edge_sequence_id=0;
 	}else if(tag==TAG_START_VERTICES_DISTRIBUTION){
+		#ifdef SHOW_PROGRESS
+		cout<<"TAG_START_VERTICES_DISTRIBUTION"<<endl;
+		#endif
 		m_mode_send_vertices=true;
 		m_mode_send_vertices_sequence_id=0;
 	}else if(tag==TAG_VERTICES_DISTRIBUTED){
@@ -2115,7 +2122,6 @@ void Machine::processData(){
 				for(int j=0;j<(int)i->second.size();j++){
 					data[j]=i->second[j];
 				}
-				
 				
 				Message aMessage(data, length, MPI_UNSIGNED_LONG_LONG,destination, TAG_VERTICES_DATA,getRank());
 				m_outbox.push_back(aMessage);
@@ -3137,20 +3143,21 @@ int Machine::proceedWithCoverages(int a,int b){
 	for(int i=0;i<(int)m_EXTENSION_coverages.size();i++){
 		bool isBetter=true;
 		int coverageI=m_EXTENSION_coverages[i];
+		int singleReadsI=m_EXTENSION_readPositionsForVertices[i].size();
 		if(counts2[i]==0)
 			continue;
 
 		// in less than 10% of the coverage is supported by displayed reads, abort it...
-		if((int)m_EXTENSION_readPositionsForVertices[i].size()*10 < coverageI){
+		if(singleReadsI*10 < coverageI){
 			continue;
 		}
 
 		for(int j=0;j<(int)m_EXTENSION_coverages.size();j++){
 			if(i==j)
 				continue;
-			int coverageJ=m_EXTENSION_coverages[j];
-
-			if(!(coverageJ<=a and coverageI>=b)){
+			//int coverageJ=m_EXTENSION_coverages[j];
+			int singleReadsJ=m_EXTENSION_readPositionsForVertices[j].size();
+			if(!(singleReadsJ<=a and singleReadsI>=b)){
 				isBetter=false;
 				break;
 			}

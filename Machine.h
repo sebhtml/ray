@@ -69,7 +69,10 @@ public:
 	vector<VERTEX_TYPE> m_depthFirstSearchVisitedVertices_vector;
 	vector<int> m_depthFirstSearchVisitedVertices_depths;
 	map<VERTEX_TYPE,int> m_coverages;
+
 };
+
+
 
 using namespace std;
 
