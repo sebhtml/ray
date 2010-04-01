@@ -558,7 +558,7 @@ void Machine::loadSequences(){
 
 		// write Reads in AMOS format.
 		if(m_parameters.useAmos()){
-			FILE*fp=fopen(m_parameters.getAmosFile().c_str(),"a+");
+			FILE*fp=m_bubbleData->m_amos;
 			for(int i=0;i<(int)m_distribution_reads.size();i++){
 				int iid=m_distribution_currentSequenceId+i;
 				char*seq=m_distribution_reads.at(i)->getSeq();
@@ -570,7 +570,6 @@ void Machine::loadSequences(){
 				fprintf(fp,"{RED\niid:%i\neid:%i\nseq:\n%s\n.\nqlt:\n%s\n.\n}\n",iid+1,iid+1,seq,qlt);
 				__Free(qlt);
 			}
-			fclose(fp);
 		}
 
 		if(m_parameters.isLeftFile(m_distribution_file_id)){
@@ -1955,8 +1954,7 @@ void Machine::processData(){
 		if(m_parameters.useAmos()){
 			// empty the file.
 			cout<<"Preparing AMOS file "<<m_parameters.getAmosFile()<<endl;
-			FILE*fp=fopen(m_parameters.getAmosFile().c_str(),"w+");
-			fclose(fp);
+			m_bubbleData->m_amos=fopen(m_parameters.getAmosFile().c_str(),"w");
 		}
 
 		for(int i=0;i<getSize();i++){
@@ -2777,18 +2775,18 @@ void Machine::processData(){
 		if(m_SEEDING_i==(int)m_allPaths.size()){// all contigs are processed
 			killRanks();
 			m_master_mode=MODE_DO_NOTHING;
+			fclose(m_bubbleData->m_amos);
 		}else if(m_mode_send_vertices_sequence_id_position==(int)m_allPaths[m_SEEDING_i].size()){// iterate over the next one
 			m_SEEDING_i++;
 			m_mode_send_vertices_sequence_id_position=0;
 			m_EXTENSION_reads_requested=false;
 			
-			FILE*fp=fopen(m_parameters.getAmosFile().c_str(),"a+");
+			FILE*fp=m_bubbleData->m_amos;
 			fprintf(fp,"}\n");
-			fclose(fp);
 		}else{
 			if(!m_EXTENSION_reads_requested){
 				if(m_mode_send_vertices_sequence_id_position==0){
-					FILE*fp=fopen(m_parameters.getAmosFile().c_str(),"a+");
+					FILE*fp=m_bubbleData->m_amos;
 					string seq=convertToString(&(m_allPaths[m_SEEDING_i]),m_wordSize);
 					char*qlt=(char*)__Malloc(seq.length()+1);
 					strcpy(qlt,seq.c_str());
@@ -2802,7 +2800,6 @@ void Machine::processData(){
 						seq.c_str(),
 						qlt
 						);
-					fclose(fp);
 					__Free(qlt);
 				}
 
@@ -2830,7 +2827,7 @@ void Machine::processData(){
 						m_outbox.push_back(aMessage);
 					}else if(m_EXTENSION_readLength_received){
 						int globalIdentifier=idOnRank*getSize()+readRank;
-						FILE*fp=fopen(m_parameters.getAmosFile().c_str(),"a+");
+						FILE*fp=m_bubbleData->m_amos;
 						int start=0;
 						int readLength=m_EXTENSION_receivedLength;
 						int theEnd=readLength-1;
@@ -2843,7 +2840,6 @@ void Machine::processData(){
 						}
 						fprintf(fp,"{TLE\nsrc:%i\noff:%i\nclr:%i,%i\n}\n",globalIdentifier+1,offset,
 							start,theEnd);
-						fclose(fp);
 			
 						// increment to get the next read.
 						m_FUSION_path_id++;
@@ -3143,6 +3139,11 @@ int Machine::proceedWithCoverages(int a,int b){
 		int coverageI=m_EXTENSION_coverages[i];
 		if(counts2[i]==0)
 			continue;
+
+		// in less than 10% of the coverage is supported by displayed reads, abort it...
+		if((int)m_EXTENSION_readPositionsForVertices[i].size()*10 < coverageI){
+			continue;
+		}
 
 		for(int j=0;j<(int)m_EXTENSION_coverages.size();j++){
 			if(i==j)
@@ -3550,7 +3551,20 @@ void Machine::doChoice(){
 				#endif
 				// we have a winner with tips investigation.
 				if(m_dfsData->m_doChoice_tips_newEdges.size()==1 and m_EXTENSION_readsInRange.size()>0 
-		and m_EXTENSION_readPositionsForVertices[m_dfsData->m_doChoice_tips_newEdges[0]].size()>0){
+		and m_EXTENSION_readPositionsForVertices[m_dfsData->m_doChoice_tips_newEdges[0]].size()>0
+){
+					int readsInFavorOfThis=m_EXTENSION_readPositionsForVertices[m_dfsData->m_doChoice_tips_newEdges[0]].size();
+					int coverageAtTheVertexLocation=m_EXTENSION_coverages[m_dfsData->m_doChoice_tips_newEdges[0]];
+
+					// reads are not supportive of this.
+					if(readsInFavorOfThis*10<coverageAtTheVertexLocation){
+						// no luck..., yet.
+						m_doChoice_tips_Detected=true;
+						m_bubbleData->m_doChoice_bubbles_Detected=false;
+						m_bubbleData->m_doChoice_bubbles_Initiated=false;
+						return;
+					}
+
 					m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_newEdges[0]];
 					#ifdef SHOW_PROGRESS
 					cout<<"We have a win after tip elimination: "<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<endl;

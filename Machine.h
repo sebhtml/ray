@@ -51,6 +51,7 @@ public:
 	bool m_doChoice_bubbles_Initiated;
 	vector<vector<int> > m_BUBBLE_visitedVerticesDepths;
 	vector<map<VERTEX_TYPE,int> > m_coverages;
+	FILE*m_amos;
 };
 
 class DepthFirstSearchData{
@@ -103,7 +104,6 @@ class Machine{
 
 	// clearing
 	int m_CLEAR_n;
-
 	int m_readyToSeed;
 	bool m_showMessages;
 	bool m_mode_send_ingoing_edges;
