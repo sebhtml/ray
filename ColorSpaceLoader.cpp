@@ -60,7 +60,7 @@ void ColorSpaceLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAll
 				}
 			}
 			Read*t=(Read*)readMyAllocator->allocate(sizeof(Read));
-			t->copy(NULL,bufferForLine+1,readMyAllocator);// remove the leading T
+			t->copy(NULL,bufferForLine+2,readMyAllocator);// remove the leading T & first color
 			reads->push_back(t);
 			i++;
 		}
