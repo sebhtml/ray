@@ -1,6 +1,5 @@
 source ../0parameters.sh
 source ../0mix13-parameters.sh
-
 newAssembly run &> log1
 cd run
 addRun $r4541 &> log2

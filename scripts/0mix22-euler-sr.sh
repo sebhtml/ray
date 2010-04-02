@@ -1,6 +1,5 @@
 source ../0parameters.sh
 source ../0mix2-parameters.sh
-
 awk '/^@SR/{gsub(/^@/,">",$1);print;getline;print}' $r4541 > 1.fasta
 awk '/^@SR/{gsub(/^@/,">",$1);print;getline;print}' $r4542 > 2.fasta
 awk '/^@SR/{gsub(/^@/,">",$1);print;getline;print}' $r4543 > 3.fasta

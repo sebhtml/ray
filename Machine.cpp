@@ -1937,7 +1937,7 @@ void Machine::processData(){
 			m_lastTime=tmp;
 			showProgress();
 		}
-	}else if(isMaster() and m_fusionStarted  and m_fusionData->m_FUSION_numberOfRanksDone<getSize()){
+	}else if(isMaster() and m_fusionData->m_fusionStarted  and m_fusionData->m_FUSION_numberOfRanksDone<getSize()){
 		time_t tmp=time(NULL);
 		if(tmp>m_lastTime){
 			m_lastTime=tmp;

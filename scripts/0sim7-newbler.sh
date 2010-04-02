@@ -1,1 +1,1 @@
-true
+echo "not applicable"
