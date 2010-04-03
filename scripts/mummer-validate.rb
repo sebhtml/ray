@@ -86,12 +86,14 @@ queries.each do |name,hits|
 	if ok==false
 		fileOutput.puts name
 		hits.each do |hit|
-			if hit.getQueryCoverage<0.10
+			if hit.getQueryCoverage<0.04
 				next
 			end
 			fileOutput.puts hit.getRawLine
 		end
-		misassembled+=1
+		if hits.size>1
+			misassembled+=1
+		end
 	end
 end
 
