@@ -108,6 +108,7 @@ public:
 	map<int,vector<VERTEX_TYPE> > m_messagesStock;
 	map<int,vector<VERTEX_TYPE> > m_messagesStockOut;
 	map<int,vector<VERTEX_TYPE> > m_messagesStockIn;
+	map<int,vector<VERTEX_TYPE> > m_attachedSequence;
 };
 
 using namespace std;
@@ -428,6 +429,7 @@ class Machine{
 	void flushVertices(int threshold);
 	void flushOutgoingEdges(int threshold);
 	void flushIngoingEdges(int threshold);
+	void flushAttachedSequences(int threshold);
 public:
 	/*
  * this is the only public bit

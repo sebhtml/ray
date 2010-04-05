@@ -723,6 +723,7 @@ void Machine::attachReads(){
 		m_distribution_reads.clear();
 	}
 	if(m_distribution_file_id>(int)allFiles.size()-1){
+		flushAttachedSequences(1);
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, i, TAG_MASTER_IS_DONE_ATTACHING_READS,getRank());
 			m_outbox.push_back(aMessage);
@@ -790,31 +791,48 @@ void Machine::attachReads(){
 		vertexChar[m_wordSize]='\0';
 		if(isValidDNA(vertexChar)){
 			VERTEX_TYPE vertex=wordId(vertexChar);
-			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(4*sizeof(VERTEX_TYPE));
-			message[0]=vertex;
-			message[1]=destination;
-			message[2]=sequenceIdOnDestination;
-			message[3]='F';
-			Message aMessage(message,4, MPI_UNSIGNED_LONG_LONG, vertexRank(vertex), TAG_ATTACH_SEQUENCE,getRank());
-			m_outbox.push_back(aMessage);
+			int sendTo=vertexRank(vertex);
+			m_disData->m_attachedSequence[sendTo].push_back(vertex);
+			m_disData->m_attachedSequence[sendTo].push_back(destination);
+			m_disData->m_attachedSequence[sendTo].push_back(sequenceIdOnDestination);
+			m_disData->m_attachedSequence[sendTo].push_back((VERTEX_TYPE)'F');
 		}
 		memcpy(vertexChar,sequence+strlen(sequence)-m_wordSize,m_wordSize);
 		vertexChar[m_wordSize]='\0';
 		if(isValidDNA(vertexChar)){
 			VERTEX_TYPE vertex=complementVertex(wordId(vertexChar),m_wordSize,m_colorSpaceMode);
-			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(4*sizeof(VERTEX_TYPE));
-			message[0]=vertex;
-			message[1]=destination;
-			message[2]=sequenceIdOnDestination;
-			message[3]='R';
-			Message aMessage(message,4, MPI_UNSIGNED_LONG_LONG, vertexRank(vertex), TAG_ATTACH_SEQUENCE,getRank());
-			m_outbox.push_back(aMessage);
+			int sendTo=vertexRank(vertex);
+			m_disData->m_attachedSequence[sendTo].push_back(vertex);
+			m_disData->m_attachedSequence[sendTo].push_back(destination);
+			m_disData->m_attachedSequence[sendTo].push_back(sequenceIdOnDestination);
+			m_disData->m_attachedSequence[sendTo].push_back((VERTEX_TYPE)'R');
 		}
+
+		flushAttachedSequences(MAX_UINT64_T_PER_MESSAGE);
 
 		m_distribution_currentSequenceId++;
 		m_distribution_sequence_id++;
 	}
 
+}
+
+void Machine::flushAttachedSequences(int threshold){
+	vector<int> toFlush;
+	for(map<int,vector<VERTEX_TYPE> >::iterator i=m_disData->m_attachedSequence.begin();
+		i!=m_disData->m_attachedSequence.end();i++){
+		int sendTo=i->first;
+		int count=i->second.size();
+		if(count<threshold)
+			continue;
+		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(count*sizeof(VERTEX_TYPE));
+		for(int j=0;j<count;j++)
+			message[j]=i->second[j];
+		Message aMessage(message,count, MPI_UNSIGNED_LONG_LONG,sendTo,TAG_ATTACH_SEQUENCE,getRank());
+		m_outbox.push_back(aMessage);
+		toFlush.push_back(sendTo);
+	}
+	for(int i=0;i<(int)toFlush.size();i++)
+		m_disData->m_attachedSequence[toFlush[i]].clear();
 }
 
 void Machine::processMessage(Message*message){
