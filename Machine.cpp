@@ -594,6 +594,7 @@ void Machine::loadSequences(){
 	}
 	if(m_distribution_file_id>(int)allFiles.size()-1){
 		m_loadSequenceStep=true;
+		flushPairedStock(1);
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, i, TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS,getRank());
 			m_outbox.push_back(aMessage);
@@ -700,19 +701,36 @@ void Machine::loadSequences(){
 			int leftSequenceIdOnRank=leftSequenceGlobalId/getSize();
 			int averageFragmentLength=m_LOADER_averageFragmentLength;
 			int deviation=m_LOADER_deviation;
-			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(5*sizeof(VERTEX_TYPE));
-			message[0]=rightSequenceIdOnRank;
-			message[1]=leftSequenceRank;
-			message[2]=leftSequenceIdOnRank;
-			message[3]=averageFragmentLength;
-			message[4]=deviation;
-			Message aMessage(message,5,MPI_UNSIGNED_LONG_LONG,rightSequenceRank,TAG_INDEX_PAIRED_SEQUENCE,getRank());
-			m_outbox.push_back(aMessage);
+			m_disData->m_messagesStockPaired[rightSequenceRank].push_back(rightSequenceIdOnRank);
+			m_disData->m_messagesStockPaired[rightSequenceRank].push_back(leftSequenceRank);
+			m_disData->m_messagesStockPaired[rightSequenceRank].push_back(leftSequenceIdOnRank);
+			m_disData->m_messagesStockPaired[rightSequenceRank].push_back(averageFragmentLength);
+			m_disData->m_messagesStockPaired[rightSequenceRank].push_back(deviation);
+			flushPairedStock(MAX_UINT64_T_PER_MESSAGE);
 		}
 
 		m_distribution_currentSequenceId++;
 		m_distribution_sequence_id++;
 	}
+}
+
+void Machine::flushPairedStock(int threshold){
+	vector<int> toFlush;
+	for(map<int,vector<VERTEX_TYPE> >::iterator i=m_disData->m_messagesStockPaired.begin();
+		i!=m_disData->m_messagesStockPaired.end();i++){
+		int rightSequenceRank=i->first;
+		int count=i->second.size();
+		if(count<threshold)
+			continue;
+		toFlush.push_back(rightSequenceRank);
+		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(count*sizeof(VERTEX_TYPE));
+		for(int j=0;j<count;j++)
+			message[j]=i->second[j];
+		Message aMessage(message,count,MPI_UNSIGNED_LONG_LONG,rightSequenceRank,TAG_INDEX_PAIRED_SEQUENCE,getRank());
+		m_outbox.push_back(aMessage);
+	}
+	for(int i=0;i<(int)toFlush.size();i++)
+		m_disData->m_messagesStockPaired[toFlush[i]].clear();
 }
 
 void Machine::attachReads(){
@@ -1008,9 +1026,11 @@ void Machine::processMessage(Message*message){
 	}else if(tag==TAG_CLEAR_DIRECTIONS_REPLY){
 		m_CLEAR_n++;
 	}else if(tag==TAG_INDEX_PAIRED_SEQUENCE){
-		PairedRead*t=(PairedRead*)m_persistentAllocator.allocate(sizeof(PairedRead));
-		t->constructor(incoming[1],incoming[2],incoming[3],incoming[4]);
-		m_myReads[incoming[0]]->setPairedRead(t);
+		for(int i=0;i<count;i+=5){
+			PairedRead*t=(PairedRead*)m_persistentAllocator.allocate(sizeof(PairedRead));
+			t->constructor(incoming[i+1],incoming[i+2],incoming[i+3],incoming[i+4]);
+			m_myReads[incoming[i+0]]->setPairedRead(t);
+		}
 	}else if(tag==TAG_COMMUNICATION_STABILITY_MESSAGE){
 	}else if(tag==TAG_GET_PATH_VERTEX){
 		int id=incoming[0];
