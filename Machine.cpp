@@ -1165,17 +1165,19 @@ void Machine::processMessage(Message*message){
 	}else if(tag==TAG_SEEDING_IS_OVER){
 		m_numberOfRanksDoneSeeding++;
 	}else if(tag==TAG_ATTACH_SEQUENCE){
-		VERTEX_TYPE vertex=incoming[0];
-		int rank=incoming[1];
-		int sequenceIdOnDestination=(int)incoming[2];
-		char strand=(char)incoming[3];
-		#ifdef DEBUG
-		if(m_subgraph.find(vertex)==NULL){
-			cout<<"Strand="<<strand<<endl;
+		for(int i=0;i<count;i+=4){
+			VERTEX_TYPE vertex=incoming[i+0];
+			int rank=incoming[i+1];
+			int sequenceIdOnDestination=(int)incoming[i+2];
+			char strand=(char)incoming[i+3];
+			#ifdef DEBUG
+			if(m_subgraph.find(vertex)==NULL){
+				cout<<"Strand="<<strand<<endl;
+			}
+			assert(m_subgraph.find(vertex)!=NULL);
+			#endif
+			m_subgraph.find(vertex)->getValue()->addRead(rank,sequenceIdOnDestination,strand,&m_persistentAllocator);
 		}
-		assert(m_subgraph.find(vertex)!=NULL);
-		#endif
-		m_subgraph.find(vertex)->getValue()->addRead(rank,sequenceIdOnDestination,strand,&m_persistentAllocator);
 	}else if(tag==TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY){
 		m_SEEDING_receivedIngoingEdges.clear();
 		for(int i=0;i<count;i++){
