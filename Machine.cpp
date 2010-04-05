@@ -28,7 +28,9 @@
 // tests show that 4096-100 bytes are sent eagerly, too.
 // divide that by eight and you get the number of 64-bit integers 
 // allowed in a eager single communication
-#define MAX_UINT64_T_PER_MESSAGE (4096-100)/8
+#define _SINGLE_ELEMENT 1
+#define _FILL_UP (4096-100)/8
+#define MAX_UINT64_T_PER_MESSAGE _FILL_UP
 
 // tags
 // these are the message types used by Ray
