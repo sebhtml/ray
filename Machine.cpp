@@ -23,7 +23,12 @@
 #define MAX_VERTICES_TO_VISIT 500
 #define TIP_LIMIT 40
 #define _MINIMUM_COVERAGE 2
-#define MAX_UINT64_T_PER_MESSAGE 500
+
+// Open-MPI threshold if 4k (4096), and this include Open-MPI's metadata.
+// tests show that 4096-100 bytes are sent eagerly, too.
+// divide that by eight and you get the number of 64-bit integers 
+// allowed in a eager single communication
+#define MAX_UINT64_T_PER_MESSAGE (4096-100)/8
 
 // tags
 // these are the message types used by Ray
