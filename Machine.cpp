@@ -23,7 +23,7 @@
 #define MAX_VERTICES_TO_VISIT 500
 #define TIP_LIMIT 40
 #define _MINIMUM_COVERAGE 2
-
+#define MAX_UINT64_T_PER_MESSAGE 500
 
 // tags
 // these are the message types used by Ray
@@ -266,6 +266,51 @@ Machine::Machine(int argc,char**argv){
 	m_dfsData=new DepthFirstSearchData();
 	m_fusionData=new FusionData();
 	m_disData=new DistributionData();
+}
+
+void Machine::flushIngoingEdges(int threshold){
+	// send messages
+	vector<int> toFlush;
+	for(map<int,vector<VERTEX_TYPE> >::iterator i=m_disData->m_messagesStockIn.begin();i!=m_disData->m_messagesStockIn.end();i++){
+		int destination=i->first;
+		int length=i->second.size();
+		if(length<threshold)
+			continue;
+		toFlush.push_back(destination);
+		VERTEX_TYPE*data=(VERTEX_TYPE*)m_outboxAllocator.allocate(sizeof(VERTEX_TYPE)*(length));
+		for(int j=0;j<(int)i->second.size();j++){
+			data[j]=i->second[j];
+		}
+
+		Message aMessage(data, length, MPI_UNSIGNED_LONG_LONG,destination, TAG_IN_EDGES_DATA,getRank());
+		m_outbox.push_back(aMessage);
+	}
+	for(int i=0;i<(int)toFlush.size();i++){
+		m_disData->m_messagesStockIn[toFlush[i]].clear();
+	}
+}
+
+void Machine::flushOutgoingEdges(int threshold){
+	vector<int> toFlush;
+	for(map<int,vector<VERTEX_TYPE> >::iterator i=m_disData->m_messagesStockOut.begin();i!=m_disData->m_messagesStockOut.end();i++){
+		int destination=i->first;
+		int length=i->second.size();
+		if(length<threshold)
+			continue;
+		toFlush.push_back(destination);
+		#ifdef SHOW_PROGRESS
+		#endif
+		VERTEX_TYPE*data=(VERTEX_TYPE*)m_outboxAllocator.allocate(sizeof(VERTEX_TYPE)*(length));
+		for(int j=0;j<(int)i->second.size();j++){
+			data[j]=i->second[j];
+		}
+
+		Message aMessage(data, length, MPI_UNSIGNED_LONG_LONG,destination, TAG_OUT_EDGES_DATA,getRank());
+		m_outbox.push_back(aMessage);
+	}
+	for(int i=0;i<(int)toFlush.size();i++){
+		m_disData->m_messagesStockOut[toFlush[i]].clear();
+	}
 }
 
 void Machine::start(){
@@ -2148,8 +2193,7 @@ void Machine::processData(){
 				}
 			}
 			m_mode_send_vertices_sequence_id_position++;
-			int messageThreshold=500;
-			flushVertices(messageThreshold);
+			flushVertices(MAX_UINT64_T_PER_MESSAGE);
 
 			if(m_mode_send_vertices_sequence_id_position>lll){
 				m_mode_send_vertices_sequence_id++;
@@ -2265,11 +2309,13 @@ void Machine::processData(){
 			if(m_reverseComplementEdge==false){
 				m_mode_send_edge_sequence_id_position=0;
 				m_reverseComplementEdge=true;
+				flushOutgoingEdges(1);
 				#ifdef SHOW_PROGRESS
 				cout<<"Rank "<<getRank()<<" is extracting outgoing edges "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
 				#endif
 				m_mode_send_edge_sequence_id=0;
 			}else{
+				flushOutgoingEdges(1);
 				m_mode_send_outgoing_edges=false;
 				m_mode_send_ingoing_edges=true;
 				m_mode_send_edge_sequence_id_position=0;
@@ -2291,7 +2337,6 @@ void Machine::processData(){
 				return;
 			}
 
-			map<int,vector<VERTEX_TYPE> > messagesStockOut;
 			for(int p=m_mode_send_edge_sequence_id_position;p<=m_mode_send_edge_sequence_id_position;p++){
 				memcpy(memory,readSequence+p,m_wordSize+1);
 				memory[m_wordSize+1]='\0';
@@ -2308,30 +2353,19 @@ void Machine::processData(){
 						VERTEX_TYPE b_2=complementVertex(a_1,m_wordSize,m_colorSpaceMode);
 
 						int rankB=vertexRank(b_1);
-						messagesStockOut[rankB].push_back(b_1);
-						messagesStockOut[rankB].push_back(b_2);
+						m_disData->m_messagesStockOut[rankB].push_back(b_1);
+						m_disData->m_messagesStockOut[rankB].push_back(b_2);
 					}else{
 						int rankA=vertexRank(a_1);
-						messagesStockOut[rankA].push_back(a_1);
-						messagesStockOut[rankA].push_back(a_2);
+						m_disData->m_messagesStockOut[rankA].push_back(a_1);
+						m_disData->m_messagesStockOut[rankA].push_back(a_2);
 					}
 					
 				}
 			}
-
+			
+			flushOutgoingEdges(MAX_UINT64_T_PER_MESSAGE);
 			m_mode_send_edge_sequence_id_position++;
-
-			for(map<int,vector<VERTEX_TYPE> >::iterator i=messagesStockOut.begin();i!=messagesStockOut.end();i++){
-				int destination=i->first;
-				int length=i->second.size();
-				VERTEX_TYPE*data=(VERTEX_TYPE*)m_outboxAllocator.allocate(sizeof(VERTEX_TYPE)*(length));
-				for(int j=0;j<(int)i->second.size();j++){
-					data[j]=i->second[j];
-				}
-	
-				Message aMessage(data, length, MPI_UNSIGNED_LONG_LONG,destination, TAG_OUT_EDGES_DATA,getRank());
-				m_outbox.push_back(aMessage);
-			}
 
 
 		}
@@ -2350,11 +2384,13 @@ void Machine::processData(){
 			if(m_reverseComplementEdge==false){
 				m_reverseComplementEdge=true;
 				m_mode_send_edge_sequence_id_position=0;
+				flushIngoingEdges(1);
 				#ifdef SHOW_PROGRESS
 				cout<<"Rank "<<getRank()<<" is extracting ingoing edges "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
 				#endif
 				m_mode_send_edge_sequence_id=0;
 			}else{
+				flushIngoingEdges(1);
 				Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_EDGES_DISTRIBUTED,getRank());
 				m_outbox.push_back(aMessage);
 				m_mode_send_ingoing_edges=false;
@@ -2377,7 +2413,6 @@ void Machine::processData(){
 				return;
 			}
 
-			map<int,vector<VERTEX_TYPE> > messagesStockIn;
 			for(int p=m_mode_send_edge_sequence_id_position;p<=m_mode_send_edge_sequence_id_position;p++){
 				memcpy(memory,readSequence+p,m_wordSize+1);
 				memory[m_wordSize+1]='\0';
@@ -2393,30 +2428,20 @@ void Machine::processData(){
 						VERTEX_TYPE b_1=complementVertex(a_2,m_wordSize,m_colorSpaceMode);
 						VERTEX_TYPE b_2=complementVertex(a_1,m_wordSize,m_colorSpaceMode);
 						int rankB=vertexRank(b_2);
-						messagesStockIn[rankB].push_back(b_1);
-						messagesStockIn[rankB].push_back(b_2);
+						m_disData->m_messagesStockIn[rankB].push_back(b_1);
+						m_disData->m_messagesStockIn[rankB].push_back(b_2);
 					}else{
 						int rankA=vertexRank(a_2);
-						messagesStockIn[rankA].push_back(a_1);
-						messagesStockIn[rankA].push_back(a_2);
+						m_disData->m_messagesStockIn[rankA].push_back(a_1);
+						m_disData->m_messagesStockIn[rankA].push_back(a_2);
 					}
 				}
 			}
 
 			m_mode_send_edge_sequence_id_position++;
 
-			// send messages
-			for(map<int,vector<VERTEX_TYPE> >::iterator i=messagesStockIn.begin();i!=messagesStockIn.end();i++){
-				int destination=i->first;
-				int length=i->second.size();
-				VERTEX_TYPE*data=(VERTEX_TYPE*)m_outboxAllocator.allocate(sizeof(VERTEX_TYPE)*(length));
-				for(int j=0;j<(int)i->second.size();j++){
-					data[j]=i->second[j];
-				}
-	
-				Message aMessage(data, length, MPI_UNSIGNED_LONG_LONG,destination, TAG_IN_EDGES_DATA,getRank());
-				m_outbox.push_back(aMessage);
-			}
+			// flush data
+			flushIngoingEdges(MAX_UINT64_T_PER_MESSAGE);
 
 			if(m_mode_send_edge_sequence_id_position>lll){
 				m_mode_send_edge_sequence_id++;

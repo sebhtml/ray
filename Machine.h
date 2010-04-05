@@ -106,6 +106,8 @@ public:
 class DistributionData{
 public:
 	map<int,vector<VERTEX_TYPE> > m_messagesStock;
+	map<int,vector<VERTEX_TYPE> > m_messagesStockOut;
+	map<int,vector<VERTEX_TYPE> > m_messagesStockIn;
 };
 
 using namespace std;
@@ -424,6 +426,8 @@ class Machine{
 	int proceedWithCoverages(int a,int b);
 	void showUsage();
 	void flushVertices(int threshold);
+	void flushOutgoingEdges(int threshold);
+	void flushIngoingEdges(int threshold);
 public:
 	/*
  * this is the only public bit
