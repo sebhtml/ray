@@ -265,6 +265,7 @@ Machine::Machine(int argc,char**argv){
 	m_bubbleData=new BubbleData();
 	m_dfsData=new DepthFirstSearchData();
 	m_fusionData=new FusionData();
+	m_disData=new DistributionData();
 }
 
 void Machine::start(){
@@ -1915,6 +1916,34 @@ void Machine::processMessages(){
 	m_inboxAllocator.reset();
 }
 
+void Machine::flushVertices(int threshold){
+	vector<int>indexesToClear;
+
+	// send messages
+	for(map<int,vector<VERTEX_TYPE> >::iterator i=m_disData->m_messagesStock.begin();i!=m_disData->m_messagesStock.end();i++){
+		int destination=i->first;
+		int length=i->second.size();
+
+		// accumulate data.
+		if(length<threshold)
+			continue;
+
+		VERTEX_TYPE *data=(VERTEX_TYPE*)m_outboxAllocator.allocate(sizeof(VERTEX_TYPE)*length);
+		for(int j=0;j<(int)i->second.size();j++){
+			data[j]=i->second[j];
+		}
+		
+		Message aMessage(data, length, MPI_UNSIGNED_LONG_LONG,destination, TAG_VERTICES_DATA,getRank());
+		m_outbox.push_back(aMessage);
+		m_vertices_sent+=length;
+		indexesToClear.push_back(destination);
+	}
+
+	for(int i=0;i<(int)indexesToClear.size();i++){
+		m_disData->m_messagesStock[indexesToClear[i]].clear();
+	}
+}
+
 void Machine::processData(){
 	if(m_aborted){
 		return;
@@ -2080,6 +2109,9 @@ void Machine::processData(){
 
 		if(m_mode_send_vertices_sequence_id>(int)m_myReads.size()-1){
 			if(m_reverseComplementVertex==false){
+				// flush data
+				flushVertices(1);
+
 				#ifdef SHOW_PROGRESS
 				cout<<"Rank "<<getRank()<<" is extracting vertices from sequences "<<m_mode_send_vertices_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
 				#endif
@@ -2087,6 +2119,9 @@ void Machine::processData(){
 				m_mode_send_vertices_sequence_id_position=0;
 				m_reverseComplementVertex=true;
 			}else{
+				// flush data
+
+				flushVertices(1);
 				Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_VERTICES_DISTRIBUTED,getRank());
 				m_outbox.push_back(aMessage);
 				m_mode_send_vertices=false;
@@ -2099,35 +2134,22 @@ void Machine::processData(){
 			int len=strlen(readSequence);
 			char memory[100];
 			int lll=len-m_wordSize;
-	
-			map<int,vector<VERTEX_TYPE> > messagesStock;
 			for(int p=m_mode_send_vertices_sequence_id_position;p<=m_mode_send_vertices_sequence_id_position;p++){
 				memcpy(memory,readSequence+p,m_wordSize);
 				memory[m_wordSize]='\0';
 				if(isValidDNA(memory)){
 					VERTEX_TYPE a=wordId(memory);
 					if(m_reverseComplementVertex==false){
-						messagesStock[vertexRank(a)].push_back(a);
+						m_disData->m_messagesStock[vertexRank(a)].push_back(a);
 					}else{
 						VERTEX_TYPE b=complementVertex(a,m_wordSize,m_colorSpaceMode);
-						messagesStock[vertexRank(b)].push_back(b);
+						m_disData->m_messagesStock[vertexRank(b)].push_back(b);
 					}
 				}
 			}
 			m_mode_send_vertices_sequence_id_position++;
-			// send messages
-			for(map<int,vector<VERTEX_TYPE> >::iterator i=messagesStock.begin();i!=messagesStock.end();i++){
-				int destination=i->first;
-				int length=i->second.size();
-				VERTEX_TYPE *data=(VERTEX_TYPE*)m_outboxAllocator.allocate(sizeof(VERTEX_TYPE)*length);
-				for(int j=0;j<(int)i->second.size();j++){
-					data[j]=i->second[j];
-				}
-				
-				Message aMessage(data, length, MPI_UNSIGNED_LONG_LONG,destination, TAG_VERTICES_DATA,getRank());
-				m_outbox.push_back(aMessage);
-				m_vertices_sent+=length;
-			}
+			int messageThreshold=500;
+			flushVertices(messageThreshold);
 
 			if(m_mode_send_vertices_sequence_id_position>lll){
 				m_mode_send_vertices_sequence_id++;

@@ -103,6 +103,11 @@ public:
 	set<int> m_FUSION_eliminated;
 };
 
+class DistributionData{
+public:
+	map<int,vector<VERTEX_TYPE> > m_messagesStock;
+};
+
 using namespace std;
 
 
@@ -157,7 +162,7 @@ class Machine{
 	map<int,VERTEX_TYPE> m_distributionOfCoverage;
 
 	FusionData*m_fusionData;
-
+	DistributionData*m_disData;
 	int m_machineRank;
 
 	// SEEDING
@@ -418,6 +423,7 @@ class Machine{
 	void depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int b);
 	int proceedWithCoverages(int a,int b);
 	void showUsage();
+	void flushVertices(int threshold);
 public:
 	/*
  * this is the only public bit
