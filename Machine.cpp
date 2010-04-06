@@ -3164,20 +3164,21 @@ void Machine::doChoice(){
 		#ifdef SHOW_EXTEND_WITH_SEED
 		cout<<"Extending with seed, p="<<m_EXTENSION_currentPosition<<endl;
 		#endif
-		for(int i=0;i<(int)m_enumerateChoices_outgoingEdges.size();i++){
-			if(m_enumerateChoices_outgoingEdges[i]==m_EXTENSION_currentSeed[m_EXTENSION_currentPosition]){
-				#ifdef SHOW_EXTEND_WITH_SEED
-				cout<<"I have a match!: "<<idToWord(m_enumerateChoices_outgoingEdges[i],m_wordSize)<<endl;
-				#endif
-				m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[i];
-				m_EXTENSION_choose=true;
-				m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
-				m_EXTENSION_directVertexDone=false;
-				m_EXTENSION_VertexAssembled_requested=false;
-				return;
-			}
 
+		#define _UNROLLED_LOOP(i) if(m_enumerateChoices_outgoingEdges.size()>=(i+1)){ \
+			if(m_enumerateChoices_outgoingEdges[i]==m_EXTENSION_currentSeed[m_EXTENSION_currentPosition]){ \
+				m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[i]; \
+				m_EXTENSION_choose=true; \
+				m_EXTENSION_checkedIfCurrentVertexIsAssembled=false; \
+				m_EXTENSION_directVertexDone=false; \
+				m_EXTENSION_VertexAssembled_requested=false; \
+				return; \
+			}\
 		}
+		_UNROLLED_LOOP(0);
+		_UNROLLED_LOOP(1);
+		_UNROLLED_LOOP(2);
+		_UNROLLED_LOOP(3);
 		#ifdef SHOW_EXTEND_WITH_SEED
 		cout<<"What the hell? position="<<m_EXTENSION_currentPosition<<" "<<idToWord(m_EXTENSION_currentSeed[m_EXTENSION_currentPosition],m_wordSize)<<" with choices ";
 		for(int j=0;j<(int)m_enumerateChoices_outgoingEdges.size();j++){
