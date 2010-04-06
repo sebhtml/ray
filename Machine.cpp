@@ -39,6 +39,9 @@
 #include<MyAllocator.h>
 #include<unistd.h>
 
+#define __PAIRED_MULTIPLIER 2.5
+#define __SINGLE_MULTIPLIER 2.5
+
 using namespace std;
 
 void Machine::showUsage(){
@@ -3420,9 +3423,9 @@ void Machine::doChoice(){
 							continue;
 						if(m_EXTENSION_coverages[j]<_MINIMUM_COVERAGE)
 							continue;
-						if((theMaxsPaired[i] <= 3*theMaxsPaired[j]) or
-					 (theSumsPaired[i] <= 3*theSumsPaired[j]) or
-					 (theNumbersPaired[i] <= 3*theNumbersPaired[j]) 
+						if((theMaxsPaired[i] <= __PAIRED_MULTIPLIER*theMaxsPaired[j]) or
+					 (theSumsPaired[i] <= __PAIRED_MULTIPLIER*theSumsPaired[j]) or
+					 (theNumbersPaired[i] <= __PAIRED_MULTIPLIER*theNumbersPaired[j]) 
 ){
 							winner=false;
 							break;
@@ -3465,9 +3468,9 @@ void Machine::doChoice(){
 
 						if(m_EXTENSION_coverages[j]<_MINIMUM_COVERAGE)
 							continue;
-						if(	(theMaxs[i] <= 3*theMaxs[j]) 
-							or (theSums[i] <= 3*theSums[j]) 
-							or (theNumbers[i] <= 3*theNumbers[j])
+						if(	(theMaxs[i] <= __SINGLE_MULTIPLIER*theMaxs[j]) 
+							or (theSums[i] <= __SINGLE_MULTIPLIER*theSums[j]) 
+							or (theNumbers[i] <= __SINGLE_MULTIPLIER*theNumbers[j])
 							){
 							winner=false;
 							break;
