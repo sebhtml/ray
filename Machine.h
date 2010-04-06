@@ -110,19 +110,13 @@ public:
 	set<int> m_FUSION_eliminated;
 };
 
-class DistributionData{
-public:
-	map<int,vector<VERTEX_TYPE> > m_messagesStock;
-	map<int,vector<VERTEX_TYPE> > m_messagesStockOut;
-	map<int,vector<VERTEX_TYPE> > m_messagesStockIn;
-	map<int,vector<VERTEX_TYPE> > m_attachedSequence;
-	map<int,vector<VERTEX_TYPE> > m_messagesStockPaired;
-};
 
 using namespace std;
 
 
 class Machine{
+	VerticesExtractor m_verticesExtractor;
+
 	int m_argc;
 	char**m_argv;
 	int m_wordSize;
@@ -165,7 +159,6 @@ class Machine{
 	int m_numberOfMachinesReadyForEdgesDistribution;
 	int m_ranksDoneAttachingReads;
 	int m_numberOfMachinesReadyToSendDistribution;
-	int m_vertices_sent;
 	int m_numberOfRanksDoneSeeding;
 	int m_numberOfRanksGone;
 	map<int,VERTEX_TYPE> m_distributionOfCoverage;
@@ -422,8 +415,8 @@ class Machine{
 	void processData();
 	int getRank();
 	void receiveWelcomeMessage(MPI_Status*status);
-	int vertexRank(VERTEX_TYPE a);
 	void showProgress();
+	int vertexRank(VERTEX_TYPE a);
 	void getPaths(VERTEX_TYPE vertex);
 	void extendSeeds();
 	void finishFusions();
@@ -431,7 +424,6 @@ class Machine{
 	void depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int b);
 	int proceedWithCoverages(int a,int b);
 	void showUsage();
-	void flushVertices(int threshold);
 	void flushOutgoingEdges(int threshold);
 	void flushIngoingEdges(int threshold);
 	void flushAttachedSequences(int threshold);

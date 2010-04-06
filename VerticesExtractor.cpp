@@ -19,4 +19,112 @@
 
 */
 
+#include<VerticesExtractor.h>
+#include<Message.h>
+#include<common_functions.h>
+#include<DistributionData.h>
+
+void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
+				vector<Read*>*m_myReads,
+				bool*m_reverseComplementVertex,
+				int*m_mode_send_vertices_sequence_id_position,
+				int rank,
+				vector<Message>*m_outbox,
+				bool*m_mode_send_vertices,
+				int m_wordSize,
+				DistributionData*m_disData,
+				int size,
+				MyAllocator*m_outboxAllocator,
+				bool m_colorSpaceMode
+				){
+	#ifdef SHOW_PROGRESS
+	if(*m_mode_send_vertices_sequence_id%100000==0 and *m_mode_send_vertices_sequence_id_position==0){
+		string reverse="";
+		if(*m_reverseComplementVertex==true)
+			reverse="(reverse complement) ";
+		cout<<"Rank "<<rank<<" is extracting vertices "<<reverse<<"from sequences "<<*m_mode_send_vertices_sequence_id<<"/"<<m_myReads->size()<<endl;
+	}
+	#endif
+
+	if(*m_mode_send_vertices_sequence_id>(int)m_myReads->size()-1){
+		if(*m_reverseComplementVertex==false){
+			// flush data
+			flushVertices(1,m_disData,m_outboxAllocator,m_outbox,rank);
+
+			#ifdef SHOW_PROGRESS
+			cout<<"Rank "<<rank<<" is extracting vertices from sequences "<<*m_mode_send_vertices_sequence_id<<"/"<<m_myReads->size()<<" (DONE)"<<endl;
+			#endif
+			(*m_mode_send_vertices_sequence_id)=0;
+			*m_mode_send_vertices_sequence_id_position=0;
+			*m_reverseComplementVertex=true;
+		}else{
+			// flush data
+
+			flushVertices(1,m_disData,m_outboxAllocator,m_outbox,rank);
+			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_VERTICES_DISTRIBUTED,rank);
+			m_outbox->push_back(aMessage);
+			*m_mode_send_vertices=false;
+			#ifdef SHOW_PROGRESS
+			cout<<"Rank "<<rank<<" is extracting vertices (reverse complement) from sequences "<<*m_mode_send_vertices_sequence_id<<"/"<<m_myReads->size()<<" (DONE)"<<endl;
+			#endif
+		}
+	}else{
+		char*readSequence=(*m_myReads)[*m_mode_send_vertices_sequence_id]->getSeq();
+		int len=strlen(readSequence);
+		char memory[100];
+		int lll=len-m_wordSize;
+		for(int p=*m_mode_send_vertices_sequence_id_position;p<=*m_mode_send_vertices_sequence_id_position;p++){
+			memcpy(memory,readSequence+p,m_wordSize);
+			memory[m_wordSize]='\0';
+			if(isValidDNA(memory)){
+				VERTEX_TYPE a=wordId(memory);
+				if(*m_reverseComplementVertex==false){
+					m_disData->m_messagesStock[vertexRank(a,size)].push_back(a);
+				}else{
+					VERTEX_TYPE b=complementVertex(a,m_wordSize,m_colorSpaceMode);
+					m_disData->m_messagesStock[vertexRank(b,size)].push_back(b);
+				}
+			}
+		}
+		(*m_mode_send_vertices_sequence_id_position)++;
+		flushVertices(MAX_UINT64_T_PER_MESSAGE,m_disData,m_outboxAllocator,m_outbox,rank);
+
+		if(*m_mode_send_vertices_sequence_id_position>lll){
+			(*m_mode_send_vertices_sequence_id)++;
+			(*m_mode_send_vertices_sequence_id_position)=0;
+		}
+	}
+}
+
+void VerticesExtractor::flushVertices(int threshold,
+				DistributionData*m_disData,
+				MyAllocator*m_outboxAllocator,
+				vector<Message>*m_outbox,
+				int rank
+){
+	vector<int>indexesToClear;
+
+	// send messages
+	for(map<int,vector<VERTEX_TYPE> >::iterator i=m_disData->m_messagesStock.begin();i!=m_disData->m_messagesStock.end();i++){
+		int destination=i->first;
+		int length=i->second.size();
+
+		// accumulate data.
+		if(length<threshold)
+			continue;
+
+		VERTEX_TYPE *data=(VERTEX_TYPE*)m_outboxAllocator->allocate(sizeof(VERTEX_TYPE)*length);
+		for(int j=0;j<(int)i->second.size();j++){
+			data[j]=i->second[j];
+		}
+		
+		Message aMessage(data, length, MPI_UNSIGNED_LONG_LONG,destination, TAG_VERTICES_DATA,rank);
+		m_outbox->push_back(aMessage);
+		indexesToClear.push_back(destination);
+	}
+
+	for(int i=0;i<(int)indexesToClear.size();i++){
+		m_disData->m_messagesStock[indexesToClear[i]].clear();
+	}
+}
 

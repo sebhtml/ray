@@ -19,38 +19,16 @@
 
 */
 
-#ifndef _VerticesExtractor
-#define _VerticesExtractor
+#ifndef _DistributionData
+#define _DistributionData
 
-#include<vector>
-#include<Message.h>
-#include<Read.h>
-#include<DistributionData.h>
-using namespace std;
-
-class VerticesExtractor{
-	void flushVertices(int threshold,
-				DistributionData*m_disData,
-				MyAllocator*m_outboxAllocator,
-				vector<Message>*m_outbox,
-				int rank
-);
+class DistributionData{
 public:
-	void process(int*m_mode_send_vertices_sequence_id,
-				vector<Read*>*m_myReads,
-				bool*m_reverseComplementVertex,
-				int*m_mode_send_vertices_sequence_id_position,
-				int rank,
-				vector<Message>*m_outbox,
-				bool*m_mode_send_vertices,
-				int m_wordSize,
-				DistributionData*m_disData,
-				int size,
-				MyAllocator*m_outboxAllocator,
-				bool m_colorSpaceMode
-			);
-
+	map<int,vector<VERTEX_TYPE> > m_messagesStock;
+	map<int,vector<VERTEX_TYPE> > m_messagesStockOut;
+	map<int,vector<VERTEX_TYPE> > m_messagesStockIn;
+	map<int,vector<VERTEX_TYPE> > m_attachedSequence;
+	map<int,vector<VERTEX_TYPE> > m_messagesStockPaired;
 };
 
 #endif
-

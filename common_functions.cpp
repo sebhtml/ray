@@ -406,4 +406,6 @@ string convertToString(vector<VERTEX_TYPE>*b,int m_wordSize){
 	return contig;
 }
 
-
+int vertexRank(VERTEX_TYPE a,int _size){
+	return hash_VERTEX_TYPE(a)%(_size);
+}
