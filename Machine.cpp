@@ -3171,6 +3171,8 @@ void Machine::extendSeeds(){
 
 }
 
+// upon successful completion, m_EXTENSION_coverages and m_enumerateChoices_outgoingEdges are
+// populated variables.
 void Machine::enumerateChoices(){
 	if(!m_SEEDING_edgesRequested){
 		m_EXTENSION_coverages.clear();
@@ -3210,6 +3212,37 @@ void Machine::enumerateChoices(){
 			m_EXTENSION_readPositionsForVertices.clear();
 			m_EXTENSION_pairedReadPositionsForVertices.clear();
 			m_enumerateChoices_outgoingEdges=m_SEEDING_receivedOutgoingEdges;
+			
+			if(m_enumerateChoices_outgoingEdges.size()<=1)
+				return;
+
+			// only keep those with more than 1 coverage.
+			vector<int> filteredCoverages;
+			vector<VERTEX_TYPE> filteredVertices;
+			for(int i=0;i<(int)m_SEEDING_receivedOutgoingEdges.size();i++){
+				int coverage=m_EXTENSION_coverages[i];
+				VERTEX_TYPE aVertex=m_SEEDING_receivedOutgoingEdges[i];
+				#ifdef SHOW_PROGRESS
+				cout<<" ("<<idToWord(aVertex,m_wordSize)<<","<<coverage<<")";
+				#endif
+				if(coverage>=_MINIMUM_COVERAGE){
+					filteredCoverages.push_back(coverage);
+					filteredVertices.push_back(aVertex);
+				}
+			}
+			#ifdef SHOW_PROGRESS
+			cout<<endl;
+			#endif
+			#ifdef SHOW_PROGRESS
+			cout<<"Filter says: "<<m_SEEDING_receivedOutgoingEdges.size()<<","<<m_EXTENSION_coverages.size()<<" -> "<<filteredVertices.size()<<","<<filteredCoverages.size()<<endl;
+			#endif
+			#ifdef DEBUG
+			assert(filteredCoverages.size()==filteredVertices.size());
+			assert(m_EXTENSION_coverages.size()==m_SEEDING_receivedOutgoingEdges.size());
+			assert(m_enumerateChoices_outgoingEdges.size()==m_SEEDING_receivedOutgoingEdges.size());
+			#endif
+			//m_EXTENSION_coverages=filteredCoverages;
+			//m_enumerateChoices_outgoingEdges=filteredVertices;
 		}
 	}
 }
