@@ -70,7 +70,7 @@ CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>distributionOfCov
 	if(distributionOfCoverage[m_coverage_mean]==0){
 		m_coverage_mean=0;
 	}
-	#ifdef DEBUG
+	#ifdef SHOW_PROGRESS
 	cout<<"PeakCoverage="<<m_coverage_mean<<endl;
 	cout<<"MinimumCoverage="<<m_minimumCoverage<<endl;
 	#endif

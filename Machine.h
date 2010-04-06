@@ -38,6 +38,13 @@
 #include<mpi.h>
 #include<stack>
 
+class StatisticsData{
+public:
+	time_t m_time_t_statistics;
+	map<int,int> m_statistics_messages;
+	map<int,int> m_statistics_bytes;
+};
+
 /*
  * put some members in this class or else g++ don't like it. it makes otherwise the program segfault!
  */
@@ -136,8 +143,6 @@ class Machine{
 	bool m_messageSentForVerticesDistribution;
 
 	// speed calibration to make OpenMPI handle the communication in its shared memory.
-	int m_calibrationStart;
-	bool m_speedLimitIsOn;
 	int m_calibration_numberOfMessagesSent;
 	bool m_calibrationAskedCalibration;
 	int m_calibration_MaxSpeed;
@@ -291,7 +296,6 @@ class Machine{
 
 	
 	// COPY Directions.
-	int m_COPY_ranks;
 
 	
 
@@ -386,8 +390,8 @@ class Machine{
 	bool m_Machine_getPaths_DONE;
 	vector<Direction> m_Machine_getPaths_result;
 
-	#ifdef SHOW_STATISTICS
-	map<int,int> m_statistics;
+	#ifdef SHOW_SENT_MESSAGES
+	StatisticsData*m_stats;
 	#endif
 
 

@@ -60,7 +60,6 @@ class Vertex{
 	VertexLinkedList*m_outgoingEdges;
 	#else
 	uint8_t m_edges;
-
 	#endif
 
 	/*

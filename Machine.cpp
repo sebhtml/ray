@@ -97,7 +97,6 @@
 #define TAG_SAVE_WAVE_PROGRESSION 61
 #define TAG_COPY_DIRECTIONS (sizeof(VERTEX_TYPE)*8-2)
 #define TAG_ASSEMBLE_WAVES 63
-#define TAG_COPY_DIRECTIONS_DONE 64
 #define TAG_SAVE_WAVE_PROGRESSION_REVERSE 65
 #define TAG_ASSEMBLE_WAVES_DONE 66
 #define TAG_START_FUSION 67
@@ -270,6 +269,9 @@ Machine::Machine(int argc,char**argv){
 	m_argc=argc;
 	m_argv=argv;
 	m_bubbleData=new BubbleData();
+	#ifdef SHOW_SENT_MESSAGES
+	m_stats=new StatisticsData();
+	#endif
 	m_dfsData=new DepthFirstSearchData();
 	m_fusionData=new FusionData();
 	m_disData=new DistributionData();
@@ -322,6 +324,7 @@ void Machine::flushOutgoingEdges(int threshold){
 
 void Machine::start(){
 	#ifdef SHOW_PROGRESS
+	cout<<"ProcessIdentifier="<<getpid()<<endl;
 	cout<<"sizeof(VERTEX_TYPE) "<<sizeof(VERTEX_TYPE)<<endl;
 	cout<<"sizeof(Vertex) "<<sizeof(Vertex)<<endl;
 	#endif
@@ -329,7 +332,6 @@ void Machine::start(){
 	m_lastTime=time(NULL);
 	srand(m_lastTime);
 	m_fusionData->m_fusionStarted=false;
-	m_COPY_ranks=-1;
 	m_EXTENSION_numberOfRanksDone=0;
 	m_colorSpaceMode=false;
 	m_messageSentForEdgesDistribution=false;
@@ -344,7 +346,6 @@ void Machine::start(){
 	m_wordSize=-1;
 	m_reverseComplementVertex=false;
 	m_last_value=0;
-	m_speedLimitIsOn=false;// set to false to remove the speed limit everywhere.
 	m_mode_send_ingoing_edges=false;
 	m_mode_send_edge_sequence_id_position=0;
 	m_mode_send_vertices=false;
@@ -493,20 +494,26 @@ void Machine::checkRequests(){
  */
 void Machine::sendMessages(){
 	for(int i=0;i<(int)m_outbox.size();i++){
-
 		Message*aMessage=&(m_outbox[i]);
+		int sizeOfElements=8;
+		if(aMessage->getTag()==TAG_SEND_SEQUENCE){
+			sizeOfElements=1;
+		}
+
+		#ifdef SHOW_SENT_MESSAGES
+		m_stats->m_statistics_messages[aMessage->getDestination()]++;
+		int bytes=sizeOfElements*aMessage->getCount();
+		m_stats->m_statistics_bytes[aMessage->getDestination()]+=bytes;
+		#endif
+
+
 		if(aMessage->getDestination()==getRank()){
-			int sizeOfElements=8;
-			if(aMessage->getTag()==TAG_SEND_SEQUENCE){
-				sizeOfElements=1;
-			}
 			void*newBuffer=m_inboxAllocator.allocate(sizeOfElements*aMessage->getCount());
 			memcpy(newBuffer,aMessage->getBuffer(),sizeOfElements*aMessage->getCount());
 			aMessage->setBuffer(newBuffer);
 			m_inbox.push_back(*aMessage);
 			continue;
 		}
-
 
 		#ifdef MPICH2_VERSION // MPICH2 waits for the response on the other end.
 		MPI_Request request;
@@ -524,6 +531,27 @@ void Machine::sendMessages(){
 
 	m_outbox.clear();
 	m_outboxAllocator.reset();
+	#ifdef SHOW_SENT_MESSAGES
+	time_t tmp=time(NULL);
+	if(tmp>m_stats->m_time_t_statistics){
+		m_stats->m_time_t_statistics=tmp;
+		cout<<"Time="<<tmp<<" Source="<<getRank()<<" ";
+		for(int i=0;i<getSize();i++){
+			int v=m_stats->m_statistics_bytes[i];
+			string units="B";
+			if(v>=1024){
+				v/=1024;
+				units="kiB";
+			}
+			
+			cout<<" "<<m_stats->m_statistics_messages[i]<<"("<<v<<units<<")";
+		}
+		cout<<endl;
+
+		m_stats->m_statistics_bytes.clear();
+		m_stats->m_statistics_messages.clear();
+	}
+	#endif
 }
 
 /*	
@@ -1162,8 +1190,6 @@ void Machine::processMessage(Message*message){
 	}else if(tag==TAG_ASSEMBLE_WAVES){
 		m_mode=MODE_ASSEMBLE_WAVES;
 		m_SEEDING_i=0;
-	}else if(tag==TAG_COPY_DIRECTIONS_DONE){
-		m_COPY_ranks++;
 	}else if(tag==TAG_SAVE_WAVE_PROGRESSION){
 		SplayNode<VERTEX_TYPE,Vertex>*node=m_subgraph.find(incoming[0]);
 		int wave=incoming[1];
@@ -1624,7 +1650,6 @@ void Machine::makeFusions(){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_FUSION_DONE,getRank());
 		m_outbox.push_back(aMessage);
 		m_mode=MODE_DO_NOTHING;
-		m_speedLimitIsOn=false;// remove the speed limit because rank MASTER will ask everyone their things
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<": fusion "<<m_SEEDING_i-1<<"/"<<m_EXTENSION_contigs.size()<<" (DONE)"<<endl;
 		#endif
@@ -2651,12 +2676,6 @@ void Machine::processData(){
 		makeFusions();
 	}
 
-	if(m_COPY_ranks==getSize()){
-		m_COPY_ranks=-1;
-		cout<<"Rank "<<getRank()<<" directions copied."<<endl;
-		m_master_mode=MODE_ASSEMBLE_GRAPH;
-	}
-
 	if(m_EXTENSION_numberOfRanksDone==getSize()){
 
 		#ifndef SHOW_PROGRESS
@@ -3129,6 +3148,9 @@ void Machine::extendSeeds(){
 		}
 
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_IS_DONE,getRank());
+		#ifdef SHOW_PROGRESS
+		cout<<getRank()<<" TAG_EXTENSION_IS_DONE"<<endl;
+		#endif
 		m_outbox.push_back(aMessage);
 		return;
 	}
@@ -3213,8 +3235,15 @@ void Machine::enumerateChoices(){
 			m_EXTENSION_pairedReadPositionsForVertices.clear();
 			m_enumerateChoices_outgoingEdges=m_SEEDING_receivedOutgoingEdges;
 			
+
+			// nothing to trim...
 			if(m_enumerateChoices_outgoingEdges.size()<=1)
 				return;
+
+			// avoid unecessary machine instructions
+			if(m_EXTENSION_currentPosition<(int)m_EXTENSION_currentSeed.size()){
+				return;
+			}
 
 			// only keep those with more than 1 coverage.
 			vector<int> filteredCoverages;
@@ -3223,7 +3252,6 @@ void Machine::enumerateChoices(){
 				int coverage=m_EXTENSION_coverages[i];
 				VERTEX_TYPE aVertex=m_SEEDING_receivedOutgoingEdges[i];
 				#ifdef SHOW_PROGRESS
-				cout<<" ("<<idToWord(aVertex,m_wordSize)<<","<<coverage<<")";
 				#endif
 				if(coverage>=_MINIMUM_COVERAGE){
 					filteredCoverages.push_back(coverage);
@@ -3231,18 +3259,42 @@ void Machine::enumerateChoices(){
 				}
 			}
 			#ifdef SHOW_PROGRESS
-			cout<<endl;
 			#endif
 			#ifdef SHOW_PROGRESS
-			cout<<"Filter says: "<<m_SEEDING_receivedOutgoingEdges.size()<<","<<m_EXTENSION_coverages.size()<<" -> "<<filteredVertices.size()<<","<<filteredCoverages.size()<<endl;
+			if(filteredCoverages.size()==0)
+				cout<<"Now Zero"<<endl;
 			#endif
 			#ifdef DEBUG
 			assert(filteredCoverages.size()==filteredVertices.size());
 			assert(m_EXTENSION_coverages.size()==m_SEEDING_receivedOutgoingEdges.size());
 			assert(m_enumerateChoices_outgoingEdges.size()==m_SEEDING_receivedOutgoingEdges.size());
 			#endif
-			//m_EXTENSION_coverages=filteredCoverages;
-			//m_enumerateChoices_outgoingEdges=filteredVertices;
+	
+			// toss them in vectors
+			#ifdef SHOW_FILTER
+			cout<<"FILTER says ";
+			for(int i=0;i<(int)m_EXTENSION_coverages.size();i++){
+				int coverage=m_EXTENSION_coverages[i];
+				VERTEX_TYPE aVertex=m_enumerateChoices_outgoingEdges[i];
+				cout<<" ("<<idToWord(aVertex,m_wordSize)<<","<<coverage<<")";
+			}
+			cout<<" -> ";
+			for(int i=0;i<(int)filteredVertices.size();i++){
+				int coverage=filteredCoverages[i];
+				VERTEX_TYPE aVertex=filteredVertices[i];
+				cout<<" ("<<idToWord(aVertex,m_wordSize)<<","<<coverage<<")";
+			}
+			cout<<" ."<<endl;
+			#endif
+			#ifdef DEBUG
+			assert(filteredVertices.size()<=m_enumerateChoices_outgoingEdges.size());
+			assert(filteredCoverages.size()<=m_EXTENSION_coverages.size());
+			#endif
+			m_EXTENSION_coverages=filteredCoverages;
+			m_enumerateChoices_outgoingEdges=filteredVertices;
+			#ifdef DEBUG
+			assert(m_EXTENSION_coverages.size()==m_enumerateChoices_outgoingEdges.size());
+			#endif
 		}
 	}
 }
@@ -3291,7 +3343,7 @@ int Machine::proceedWithCoverages(int a,int b){
 			}
 		}
 		if(isBetter){
-			#ifdef SHOW_PROGRESS
+			#ifdef SHOW_CHOICE
 			cout<<"Choice #"<<i+1<<" wins, with "<<m_EXTENSION_readPositionsForVertices[i].size()<<" reads."<<endl;
 			cout<<" in ranges: "<<m_EXTENSION_readsInRange.size()<<endl;
 			#endif
@@ -3313,10 +3365,17 @@ void Machine::doChoice(){
 	if(m_EXTENSION_currentPosition==1)
 		cout<<"Priming with seed length="<<m_EXTENSION_currentSeed.size()<<endl;
 	#endif
-
+	
+	// use the seed to extend the thing.
 	if(m_EXTENSION_currentPosition<(int)m_EXTENSION_currentSeed.size()){
+		#ifdef SHOW_EXTEND_WITH_SEED
+		cout<<"Extending with seed, p="<<m_EXTENSION_currentPosition<<endl;
+		#endif
 		for(int i=0;i<(int)m_enumerateChoices_outgoingEdges.size();i++){
 			if(m_enumerateChoices_outgoingEdges[i]==m_EXTENSION_currentSeed[m_EXTENSION_currentPosition]){
+				#ifdef SHOW_EXTEND_WITH_SEED
+				cout<<"I have a match!: "<<idToWord(m_enumerateChoices_outgoingEdges[i],m_wordSize)<<endl;
+				#endif
 				m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[i];
 				m_EXTENSION_choose=true;
 				m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
@@ -3324,7 +3383,20 @@ void Machine::doChoice(){
 				m_EXTENSION_VertexAssembled_requested=false;
 				return;
 			}
+
 		}
+		#ifdef SHOW_EXTEND_WITH_SEED
+		cout<<"What the hell? position="<<m_EXTENSION_currentPosition<<" "<<idToWord(m_EXTENSION_currentSeed[m_EXTENSION_currentPosition],m_wordSize)<<" with choices ";
+		for(int j=0;j<(int)m_enumerateChoices_outgoingEdges.size();j++){
+			cout<<" "<<idToWord(m_enumerateChoices_outgoingEdges[j],m_wordSize)<<endl;
+		}
+		cout<<endl;
+		#endif
+
+		#ifdef DEBUG
+		assert(false);
+		#endif
+
 	// else, do a paired-end or single-end lookup if reads are in range.
 	}else{
 
@@ -3366,11 +3438,13 @@ void Machine::doChoice(){
 							m_EXTENSION_readLength_requested=false;
 							m_EXTENSION_readIterator++;
 						}else{
+							//the read is in-range
 							m_EXTENSION_readLength_done=true;
 							m_EXTENSION_read_vertex_requested=false;
 						}
 					}
 				}else if(!m_EXTENSION_read_vertex_requested){
+					// request the vertex for the read
 					m_EXTENSION_read_vertex_requested=true;
 					ReadAnnotation annotation=*m_EXTENSION_readIterator;
 					int startPosition=m_EXTENSION_reads_startingPositionOnContig[annotation.getUniqueId()];
@@ -3391,6 +3465,9 @@ void Machine::doChoice(){
 					m_EXTENSION_edgeIterator=0;
 					m_EXTENSION_hasPairedReadRequested=false;
 				}else if(m_EXTENSION_read_vertex_received){
+					// we received the vertex for that read,
+					// now check if it matches one of 
+					// the many choices we have
 					ReadAnnotation annotation=*m_EXTENSION_readIterator;
 					int startPosition=m_EXTENSION_reads_startingPositionOnContig[annotation.getUniqueId()];
 					int distance=m_EXTENSION_extension.size()-startPosition;
@@ -3468,7 +3545,7 @@ void Machine::doChoice(){
 				}
 				m_EXTENSION_readsOutOfRange.clear();
 				m_EXTENSION_singleEndResolution=true;
-				#ifdef SHOW_PROGRESS
+				#ifdef SHOW_CHOICE
 				if(m_enumerateChoices_outgoingEdges.size()>1){
 					cout<<endl;
 					cout<<"*****************************************"<<endl;
@@ -3522,6 +3599,7 @@ void Machine::doChoice(){
 					theNumbersPaired[i]=m_EXTENSION_pairedReadPositionsForVertices[i].size();
 					theMaxsPaired[i]=max;
 				}
+
 				// single-end resolution of repeats.
 				map<int,int> theMaxs;
 				map<int,int> theSums;
@@ -3568,7 +3646,7 @@ void Machine::doChoice(){
 						}
 					}
 					if(winner==true){
-						#ifdef SHOW_PROGRESS
+						#ifdef SHOW_CHOICE
 						if(m_enumerateChoices_outgoingEdges.size()>1){
 							cout<<"Choice "<<i+1<<" wins with paired-end reads."<<endl;
 						}
@@ -3610,7 +3688,7 @@ void Machine::doChoice(){
 						}
 					}
 					if(winner==true){
-						#ifdef SHOW_PROGRESS
+						#ifdef SHOW_CHOICE
 						if(m_enumerateChoices_outgoingEdges.size()>1){
 							cout<<"Choice "<<i+1<<" wins with single-end reads."<<endl;
 						}
@@ -3651,7 +3729,7 @@ void Machine::doChoice(){
 				if(!m_dfsData->m_doChoice_tips_dfs_done){
 					depthFirstSearch(m_SEEDING_currentVertex,m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_i],maxDepth);
 				}else{
-					#ifdef SHOW_PROGRESS
+					#ifdef SHOW_CHOICE
 					cout<<"Choice #"<<m_dfsData->m_doChoice_tips_i+1<<" : visited "<<m_dfsData->m_depthFirstSearchVisitedVertices.size()<<", max depth is "<<m_dfsData->m_depthFirstSearch_maxDepth<<endl;
 					#endif
 					// keep the edge if it is not a tip.
@@ -3839,7 +3917,7 @@ void Machine::depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int maxDepth){
 					// quit this strange place.
 	
 					m_dfsData->m_doChoice_tips_dfs_done=true;
-					#ifdef SHOW_PROGRESS
+					#ifdef SHOW_TIP_LOST
 					cout<<"Exiting, I am lost. "<<m_dfsData->m_depthFirstSearchVisitedVertices.size()<<""<<endl;
 					#endif
 					return;

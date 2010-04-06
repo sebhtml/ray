@@ -16,7 +16,21 @@
     #along with this program (gpl-3.0.txt).  
 	#see <http://www.gnu.org/licenses/>
 
-CXXFLAGS=  -Wall  -I.  -O3  -DSHOW_MINI_GRAPH -DSHOW_PROGRESS -DDEBUG -g  # debug flags.
+# You can set compile time options too:
+# -DSHOW_EXTEND_WITH_SEED (show context-dependant extension, when using seeds)
+# -DSHOW_SENT_MESSAGES (show communication statistics)
+# -DSHOW_PROGRESS (show on-screen progress)
+# -DSHOW_MINI_GRAPH (show graphviz output for tips and bubbles)
+# -DSHOW_FILTER (show the internals of the filters for 1-coverage vertices)
+# -DDEBUG (run an array of assert(<.>) during execution)
+# -O3 (maximum optimization)
+# -g (debug code for gdb utilization)
+
+# debug options follow:
+#CXXFLAGS=-Wall  -I.  -g -DSHOW_EXTEND_WITH_SEED -DSHOW_SENT_MESSAGES -DSHOW_PROGRESS -DSHOW_MINI_GRAPH -DSHOW_FILTER -DDEBUG -DSHOW_TIP_LOST -DSHOW_CHOICE # -O3
+
+# production options follow:
+CXXFLAGS=-I. -O3 -Wall
 
 # the default is to use mpic++ provided in your $PATH
 MPICC=mpic++
@@ -26,11 +40,11 @@ TARGETS=Ray
 
 all: $(TARGETS)
 
-
 OBJECTS= Machine.o common_functions.o Loader.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o ReadAnnotation.o CoverageDistribution.o Message.o  Direction.o  PairedRead.o ColorSpaceDecoder.o ColorSpaceLoader.o VertexLinkedList.o BubbleTool.o
 
 %.o: %.cpp
-	$(MPICC) $(CXXFLAGS) -c $< -o $@
+	@echo MPICC $<
+	@$(MPICC) $(CXXFLAGS) -c $< -o $@
 
 SimulatePairedReads: simulate_paired_main.o $(OBJECTS)
 	$(CC) $(CXXFLAGS) $^ -o $@
@@ -43,11 +57,13 @@ SimulateFragments: simulate_fragments_main.o $(OBJECTS)
 
 
 Ray: ray_main.o $(OBJECTS)
-	$(MPICC) $(CXXFLAGS) $^ -o $@
+	@echo MPICC Ray
+	@$(MPICC) $(CXXFLAGS) $^ -o $@
 
 test: test_main.o $(OBJECTS)
 	$(MPICC) $(CXXFLAGS) $^ -o $@
 	$(MPIRUN) ./test
 clean:
-	rm -f $(OBJECTS) $(TARGETS)
+	@echo RM
+	@rm -f $(OBJECTS) $(TARGETS)
 
