@@ -30,6 +30,7 @@ see <http://www.gnu.org/licenses/>
 #include<SplayTree.h>
 #include<stdlib.h>
 #include<sys/types.h>
+#include<time.h>
 #include<unistd.h>
 #include<string>
 #include<vector>
@@ -302,5 +303,7 @@ string convertToString(vector<VERTEX_TYPE>*b,int m_wordSize);
 
 
 int vertexRank(VERTEX_TYPE a,int _size);
+
+void showProgress(time_t m_lastTime);
 
 #endif

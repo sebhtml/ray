@@ -409,3 +409,22 @@ string convertToString(vector<VERTEX_TYPE>*b,int m_wordSize){
 int vertexRank(VERTEX_TYPE a,int _size){
 	return hash_VERTEX_TYPE(a)%(_size);
 }
+
+/*
+ *
+ * show progress on-screen.
+ */
+void showProgress(time_t m_lastTime){
+	printf("\r");
+	int columns=10;
+	int nn=m_lastTime%columns;
+	
+	for(int i=0;i<nn;i++){
+		printf(".");
+	}
+	for(int i=0;i<columns-nn;i++){
+		printf(" ");
+	}
+	fflush(stdout);
+
+}

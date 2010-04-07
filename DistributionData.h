@@ -21,14 +21,17 @@
 
 #ifndef _DistributionData
 #define _DistributionData
+#include<map>
+#include<vector>
+#include<common_functions.h>
 
 class DistributionData{
 public:
-	map<int,vector<VERTEX_TYPE> > m_messagesStock;
-	map<int,vector<VERTEX_TYPE> > m_messagesStockOut;
-	map<int,vector<VERTEX_TYPE> > m_messagesStockIn;
-	map<int,vector<VERTEX_TYPE> > m_attachedSequence;
-	map<int,vector<VERTEX_TYPE> > m_messagesStockPaired;
+	std::map<int,std::vector<VERTEX_TYPE> > m_messagesStock;
+	std::map<int,std::vector<VERTEX_TYPE> > m_messagesStockOut;
+	std::map<int,std::vector<VERTEX_TYPE> > m_messagesStockIn;
+	std::map<int,std::vector<VERTEX_TYPE> > m_attachedSequence;
+	std::map<int,std::vector<VERTEX_TYPE> > m_messagesStockPaired;
 };
 
 #endif

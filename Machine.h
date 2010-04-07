@@ -26,9 +26,11 @@
 #include<common_functions.h>
 #include<map>
 #include<vector>
+#include<SequencesLoader.h>
 #include<MessageProcessor.h>
 #include<Vertex.h>
 #include<SplayTree.h>
+#include<BubbleData.h>
 #include<Message.h>
 #include<time.h>
 #include<SplayTreeIterator.h>
@@ -59,21 +61,6 @@ public:
 	map<int,int> m_statistics_bytes;
 };
 
-/*
- * put some members in this class or else g++ don't like it. it makes otherwise the program segfault!
- */
-class BubbleData{
-public:
-	// arcs with good coverage
-	vector<vector<VERTEX_TYPE> > m_BUBBLE_visitedVertices;
-	// all vertices.
-	vector<set<VERTEX_TYPE> > m_visitedVertices;
-	bool m_doChoice_bubbles_Detected;
-	bool m_doChoice_bubbles_Initiated;
-	vector<vector<int> > m_BUBBLE_visitedVerticesDepths;
-	vector<map<VERTEX_TYPE,int> > m_coverages;
-	FILE*m_amos;
-};
 
 class DepthFirstSearchData{
 public:
@@ -370,7 +357,7 @@ class Machine{
 	#ifdef SHOW_SENT_MESSAGES
 	StatisticsData*m_stats;
 	#endif
-
+	SequencesLoader m_sl;
 
 	// BUBBLE
 	BubbleData*m_bubbleData;
@@ -399,7 +386,6 @@ class Machine{
 	void processData();
 	int getRank();
 	void receiveWelcomeMessage(MPI_Status*status);
-	void showProgress();
 	int vertexRank(VERTEX_TYPE a);
 	void getPaths(VERTEX_TYPE vertex);
 	void extendSeeds();
@@ -411,7 +397,6 @@ class Machine{
 	void flushOutgoingEdges(int threshold);
 	void flushIngoingEdges(int threshold);
 	void flushAttachedSequences(int threshold);
-	void flushPairedStock(int threshold);
 public:
 	/*
  * this is the only public bit
