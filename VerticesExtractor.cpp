@@ -20,6 +20,7 @@
 */
 
 #include<VerticesExtractor.h>
+#include<assert.h>
 #include<Message.h>
 #include<common_functions.h>
 #include<DistributionData.h>
@@ -69,11 +70,15 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			#endif
 		}
 	}else{
-		char*readSequence=(*m_myReads)[*m_mode_send_vertices_sequence_id]->getSeq();
+		char*readSequence=(*m_myReads)[(*m_mode_send_vertices_sequence_id)]->getSeq();
 		int len=strlen(readSequence);
 		char memory[100];
 		int lll=len-m_wordSize;
-		for(int p=*m_mode_send_vertices_sequence_id_position;p<=*m_mode_send_vertices_sequence_id_position;p++){
+		for(int p=(*m_mode_send_vertices_sequence_id_position);p<=(*m_mode_send_vertices_sequence_id_position);p++){
+			#ifdef DEBUG
+			assert(readSequence!=NULL);
+			assert(m_wordSize<=32);
+			#endif
 			memcpy(memory,readSequence+p,m_wordSize);
 			memory[m_wordSize]='\0';
 			if(isValidDNA(memory)){

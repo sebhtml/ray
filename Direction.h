@@ -20,7 +20,7 @@
 */
 
 
-#ifndef Direction
+#ifndef _Direction
 #define _Direction
 
 /*
