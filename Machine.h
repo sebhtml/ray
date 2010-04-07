@@ -112,6 +112,8 @@ class Machine{
 	int m_calibration_MaxSpeed;
 	bool m_calibrationIsDone;
 
+	COVERAGE_TYPE m_maxCoverage;
+
 	// clearing
 	int m_CLEAR_n;
 	int m_readyToSeed;

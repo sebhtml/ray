@@ -5,4 +5,4 @@ newblerVersion=2.0.00.20
 rayVersion=0.0.6
 abyssVersion=1.1.2
 wordSize=21
-MPIOPTS=-tag-output
+#MPIOPTS=-tag-output

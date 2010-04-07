@@ -187,6 +187,9 @@ void Machine::flushOutgoingEdges(int threshold){
 }
 
 void Machine::start(){
+	m_maxCoverage=0;
+	m_maxCoverage--;// underflow.
+
 	#ifdef SHOW_PROGRESS
 	cout<<"ProcessIdentifier="<<getpid()<<endl;
 	cout<<"sizeof(VERTEX_TYPE) "<<sizeof(VERTEX_TYPE)<<endl;
@@ -1497,8 +1500,6 @@ void Machine::processData(){
 
 		m_coverageDistribution.clear();
 
-		COVERAGE_TYPE maxCoverage=0;
-		maxCoverage--;// underflow.
 		#ifdef SHOW_PROGRESS
 		cout<<"MaxCoverage="<<(int)maxCoverage<<endl;
 		#endif
@@ -1523,7 +1524,7 @@ void Machine::processData(){
 		f.close();
 		cout<<"Writing "<<m_parameters.getParametersFile()<<""<<endl;
 
-		if(m_minimumCoverage > m_peakCoverage or m_peakCoverage==maxCoverage){
+		if(m_minimumCoverage > m_peakCoverage or m_peakCoverage==m_maxCoverage){
 			killRanks();
 			cout<<"Error: no enrichment observed."<<endl;
 			return;
@@ -2621,6 +2622,12 @@ int Machine::proceedWithCoverages(int a,int b){
 				isBetter=false;
 				break;
 			}
+
+			// too much coverage is not good at all, sir
+			if(coverageI==m_maxCoverage){
+				isBetter=false;
+				break;
+			}
 		}
 		if(isBetter){
 			#ifdef SHOW_CHOICE
@@ -2902,14 +2909,16 @@ void Machine::doChoice(){
 
 				for(int i=0;i<(int)m_EXTENSION_pairedReadPositionsForVertices.size();i++){
 					bool winner=true;
-					if(m_EXTENSION_coverages[i]<_MINIMUM_COVERAGE)
+					int coverageI=m_EXTENSION_coverages[i];
+					if(coverageI<_MINIMUM_COVERAGE)
 						continue;
 					if(theNumbers[i]==0 or theNumbersPaired[i]==0)
 						continue;
 					for(int j=0;j<(int)m_EXTENSION_pairedReadPositionsForVertices.size();j++){
 						if(i==j)
 							continue;
-						if(m_EXTENSION_coverages[j]<_MINIMUM_COVERAGE)
+						int coverageJ=m_EXTENSION_coverages[j];
+						if(coverageJ<_MINIMUM_COVERAGE)
 							continue;
 						if((theMaxsPaired[i] <= __PAIRED_MULTIPLIER*theMaxsPaired[j]) or
 					 (theSumsPaired[i] <= __PAIRED_MULTIPLIER*theSumsPaired[j]) or
@@ -2922,6 +2931,12 @@ void Machine::doChoice(){
 						// if the winner does not have too much coverage.
 						if(m_EXTENSION_coverages[i]<m_minimumCoverage and 
 					theNumbers[i] < theNumbers[j]){// make sure that it also has more single-end reads
+							winner=false;
+							break;
+						}
+
+						// too much coverage is sick
+						if(coverageI==m_maxCoverage){
 							winner=false;
 							break;
 						}
@@ -2946,7 +2961,8 @@ void Machine::doChoice(){
 					if(theMaxs[i]<5)
 						winner=false;
 
-					if(m_EXTENSION_coverages[i]<_MINIMUM_COVERAGE)
+					int coverageI=m_EXTENSION_coverages[i];
+					if(coverageI<_MINIMUM_COVERAGE)
 						continue;
 					if(theNumbers[i]==0)
 						continue;
@@ -2967,6 +2983,12 @@ void Machine::doChoice(){
 							winner=false;
 							break;
 						}
+						// too much coverage is dangereous.
+						if(coverageI==m_maxCoverage){
+							winner=false;
+							break;
+						}
+
 					}
 					if(winner==true){
 						#ifdef SHOW_CHOICE
