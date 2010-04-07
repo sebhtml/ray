@@ -39,6 +39,19 @@
 #include<mpi.h>
 #include<stack>
 
+class ChooserData{
+public:
+	// paired-end resolution of repeats.
+	map<int,int> m_CHOOSER_theMaxsPaired;
+	map<int,int> m_CHOOSER_theSumsPaired;
+	map<int,int> m_CHOOSER_theNumbersPaired;
+	// single-end resolution of repeats.
+	map<int,int> m_CHOOSER_theMaxs;
+	map<int,int> m_CHOOSER_theSums;
+	map<int,int> m_CHOOSER_theNumbers;
+
+};
+
 class StatisticsData{
 public:
 	time_t m_time_t_statistics;
@@ -260,15 +273,7 @@ class Machine{
 	map<int,int> m_EXTENSION_reads_startingPositionOnContig;
 
 	
-	// paired-end resolution of repeats.
-	map<int,int> m_CHOOSER_theMaxsPaired;
-	map<int,int> m_CHOOSER_theSumsPaired;
-	map<int,int> m_CHOOSER_theNumbersPaired;
-	// single-end resolution of repeats.
-	map<int,int> m_CHOOSER_theMaxs;
-	map<int,int> m_CHOOSER_theSums;
-	map<int,int> m_CHOOSER_theNumbers;
-
+	ChooserData*m_cd;
 	
 
 	// coverage distribubtion

@@ -139,6 +139,7 @@ Machine::Machine(int argc,char**argv){
 	m_dfsData=new DepthFirstSearchData();
 	m_fusionData=new FusionData();
 	m_disData=new DistributionData();
+	m_cd=new ChooserData();
 }
 
 void Machine::flushIngoingEdges(int threshold){
@@ -1501,7 +1502,7 @@ void Machine::processData(){
 		m_coverageDistribution.clear();
 
 		#ifdef SHOW_PROGRESS
-		cout<<"MaxCoverage="<<(int)maxCoverage<<endl;
+		cout<<"MaxCoverage="<<(int)m_maxCoverage<<endl;
 		#endif
 		ofstream f(m_parameters.getParametersFile().c_str());
 		f<<"Ray Command Line: ";
@@ -2515,12 +2516,12 @@ void Machine::enumerateChoices(){
 			m_EXTENSION_readPositionsForVertices.clear();
 			m_EXTENSION_pairedReadPositionsForVertices.clear();
 			
-			m_CHOOSER_theSumsPaired.clear();
-			m_CHOOSER_theNumbersPaired.clear();
-			m_CHOOSER_theMaxsPaired.clear();
-			m_CHOOSER_theMaxs.clear();
-			m_CHOOSER_theNumbers.clear();
-			m_CHOOSER_theSums.clear();
+			m_cd->m_CHOOSER_theSumsPaired.clear();
+			m_cd->m_CHOOSER_theNumbersPaired.clear();
+			m_cd->m_CHOOSER_theMaxsPaired.clear();
+			m_cd->m_CHOOSER_theMaxs.clear();
+			m_cd->m_CHOOSER_theNumbers.clear();
+			m_cd->m_CHOOSER_theSums.clear();
 
 			m_enumerateChoices_outgoingEdges=m_SEEDING_receivedOutgoingEdges;
 			
@@ -2824,15 +2825,15 @@ void Machine::doChoice(){
 											// it matches!
 												int theDistance=startPosition-startingPositionOnPath+distance;
 												m_EXTENSION_pairedReadPositionsForVertices[m_EXTENSION_edgeIterator].push_back(theDistance);
-												if(m_CHOOSER_theMaxsPaired.count(m_EXTENSION_edgeIterator)==0){
-													m_CHOOSER_theMaxsPaired[m_EXTENSION_edgeIterator]=theDistance;
-													m_CHOOSER_theSumsPaired[m_EXTENSION_edgeIterator]=0;
-													m_CHOOSER_theNumbersPaired[m_EXTENSION_edgeIterator]=0;
+												if(m_cd->m_CHOOSER_theMaxsPaired.count(m_EXTENSION_edgeIterator)==0){
+													m_cd->m_CHOOSER_theMaxsPaired[m_EXTENSION_edgeIterator]=theDistance;
+													m_cd->m_CHOOSER_theSumsPaired[m_EXTENSION_edgeIterator]=0;
+													m_cd->m_CHOOSER_theNumbersPaired[m_EXTENSION_edgeIterator]=0;
 												}
-												if(theDistance>m_CHOOSER_theMaxsPaired[m_EXTENSION_edgeIterator])
-													m_CHOOSER_theMaxsPaired[m_EXTENSION_edgeIterator]=theDistance;
-												m_CHOOSER_theNumbersPaired[m_EXTENSION_edgeIterator]++;
-												m_CHOOSER_theSumsPaired[m_EXTENSION_edgeIterator]+=theDistance;
+												if(theDistance>m_cd->m_CHOOSER_theMaxsPaired[m_EXTENSION_edgeIterator])
+													m_cd->m_CHOOSER_theMaxsPaired[m_EXTENSION_edgeIterator]=theDistance;
+												m_cd->m_CHOOSER_theNumbersPaired[m_EXTENSION_edgeIterator]++;
+												m_cd->m_CHOOSER_theSumsPaired[m_EXTENSION_edgeIterator]+=theDistance;
 											}
 
 										}
@@ -2841,15 +2842,15 @@ void Machine::doChoice(){
 										m_EXTENSION_readPositionsForVertices[m_EXTENSION_edgeIterator].push_back(distance);
 										m_EXTENSION_edgeIterator++;
 										m_EXTENSION_hasPairedReadRequested=false;
-										if(m_CHOOSER_theMaxs.count(m_EXTENSION_edgeIterator)==0){
-											m_CHOOSER_theSums[m_EXTENSION_edgeIterator]=0;
-											m_CHOOSER_theMaxs[m_EXTENSION_edgeIterator]=distance;
-											m_CHOOSER_theNumbers[m_EXTENSION_edgeIterator]=0;
+										if(m_cd->m_CHOOSER_theMaxs.count(m_EXTENSION_edgeIterator)==0){
+											m_cd->m_CHOOSER_theSums[m_EXTENSION_edgeIterator]=0;
+											m_cd->m_CHOOSER_theMaxs[m_EXTENSION_edgeIterator]=distance;
+											m_cd->m_CHOOSER_theNumbers[m_EXTENSION_edgeIterator]=0;
 										}
-										if(distance>m_CHOOSER_theMaxs[m_EXTENSION_edgeIterator])
-											m_CHOOSER_theMaxs[m_EXTENSION_edgeIterator]=distance;
-										m_CHOOSER_theNumbers[m_EXTENSION_edgeIterator]++;
-										m_CHOOSER_theSums[m_EXTENSION_edgeIterator]+=distance;
+										if(distance>m_cd->m_CHOOSER_theMaxs[m_EXTENSION_edgeIterator])
+											m_cd->m_CHOOSER_theMaxs[m_EXTENSION_edgeIterator]=distance;
+										m_cd->m_CHOOSER_theNumbers[m_EXTENSION_edgeIterator]++;
+										m_cd->m_CHOOSER_theSums[m_EXTENSION_edgeIterator]+=distance;
 									}
 								}
 							}else{
@@ -2914,7 +2915,7 @@ void Machine::doChoice(){
 					int coverageI=m_EXTENSION_coverages[i];
 					if(coverageI<_MINIMUM_COVERAGE)
 						continue;
-					if(m_CHOOSER_theNumbers[i]==0 or m_CHOOSER_theNumbersPaired[i]==0)
+					if(m_cd->m_CHOOSER_theNumbers[i]==0 or m_cd->m_CHOOSER_theNumbersPaired[i]==0)
 						continue;
 					for(int j=0;j<(int)m_EXTENSION_pairedReadPositionsForVertices.size();j++){
 						if(i==j)
@@ -2922,9 +2923,9 @@ void Machine::doChoice(){
 						int coverageJ=m_EXTENSION_coverages[j];
 						if(coverageJ<_MINIMUM_COVERAGE)
 							continue;
-						if((m_CHOOSER_theMaxsPaired[i] <= __PAIRED_MULTIPLIER*m_CHOOSER_theMaxsPaired[j]) or
-					 (m_CHOOSER_theSumsPaired[i] <= __PAIRED_MULTIPLIER*m_CHOOSER_theSumsPaired[j]) or
-					 (m_CHOOSER_theNumbersPaired[i] <= __PAIRED_MULTIPLIER*m_CHOOSER_theNumbersPaired[j]) 
+						if((m_cd->m_CHOOSER_theMaxsPaired[i] <= __PAIRED_MULTIPLIER*m_cd->m_CHOOSER_theMaxsPaired[j]) or
+					 (m_cd->m_CHOOSER_theSumsPaired[i] <= __PAIRED_MULTIPLIER*m_cd->m_CHOOSER_theSumsPaired[j]) or
+					 (m_cd->m_CHOOSER_theNumbersPaired[i] <= __PAIRED_MULTIPLIER*m_cd->m_CHOOSER_theNumbersPaired[j]) 
 ){
 							winner=false;
 							break;
@@ -2932,7 +2933,7 @@ void Machine::doChoice(){
 				
 						// if the winner does not have too much coverage.
 						if(m_EXTENSION_coverages[i]<m_minimumCoverage and 
-					m_CHOOSER_theNumbers[i] < m_CHOOSER_theNumbers[j]){// make sure that it also has more single-end reads
+					m_cd->m_CHOOSER_theNumbers[i] < m_cd->m_CHOOSER_theNumbers[j]){// make sure that it also has more single-end reads
 							winner=false;
 							break;
 						}
@@ -2958,13 +2959,13 @@ void Machine::doChoice(){
 
 				for(int i=0;i<(int)m_EXTENSION_readPositionsForVertices.size();i++){
 					bool winner=true;
-					if(m_CHOOSER_theMaxs[i]<5)
+					if(m_cd->m_CHOOSER_theMaxs[i]<5)
 						winner=false;
 
 					int coverageI=m_EXTENSION_coverages[i];
 					if(coverageI<_MINIMUM_COVERAGE)
 						continue;
-					if(m_CHOOSER_theNumbers[i]==0)
+					if(m_cd->m_CHOOSER_theNumbers[i]==0)
 						continue;
 					for(int j=0;j<(int)m_EXTENSION_readPositionsForVertices.size();j++){
 						if(i==j)
@@ -2972,9 +2973,9 @@ void Machine::doChoice(){
 
 						if(m_EXTENSION_coverages[j]<_MINIMUM_COVERAGE)
 							continue;
-						if((m_CHOOSER_theMaxs[i] <= __SINGLE_MULTIPLIER*m_CHOOSER_theMaxs[j]) 
-							or (m_CHOOSER_theSums[i] <= __SINGLE_MULTIPLIER*m_CHOOSER_theSums[j]) 
-							or (m_CHOOSER_theNumbers[i] <= __SINGLE_MULTIPLIER*m_CHOOSER_theNumbers[j])
+						if((m_cd->m_CHOOSER_theMaxs[i] <= __SINGLE_MULTIPLIER*m_cd->m_CHOOSER_theMaxs[j]) 
+							or (m_cd->m_CHOOSER_theSums[i] <= __SINGLE_MULTIPLIER*m_cd->m_CHOOSER_theSums[j]) 
+							or (m_cd->m_CHOOSER_theNumbers[i] <= __SINGLE_MULTIPLIER*m_cd->m_CHOOSER_theNumbers[j])
 							){
 							winner=false;
 							break;
