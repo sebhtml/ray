@@ -2653,6 +2653,18 @@ int Machine::proceedWithCoverages(int a,int b){
 	return -1;
 }
 
+#define _UPDATE_SINGLE_VALUES(d) \
+if(m_cd->m_CHOOSER_theMaxs.count(m_EXTENSION_edgeIterator)==0){ \
+	m_cd->m_CHOOSER_theSums[m_EXTENSION_edgeIterator]=0; \
+	m_cd->m_CHOOSER_theMaxs[m_EXTENSION_edgeIterator]=distance; \
+	m_cd->m_CHOOSER_theNumbers[m_EXTENSION_edgeIterator]=0; \
+}\
+if(distance>m_cd->m_CHOOSER_theMaxs[m_EXTENSION_edgeIterator])\
+	m_cd->m_CHOOSER_theMaxs[m_EXTENSION_edgeIterator]=distance;\
+m_cd->m_CHOOSER_theNumbers[m_EXTENSION_edgeIterator]++;\
+m_cd->m_CHOOSER_theSums[m_EXTENSION_edgeIterator]+=distance;
+
+
 /**
  *
  *  This function do a choice:
@@ -2798,6 +2810,9 @@ void Machine::doChoice(){
 								// vertex matches, but no paired end read found, at last.
 								if(!m_EXTENSION_hasPairedReadAnswer){
 									m_EXTENSION_readPositionsForVertices[m_EXTENSION_edgeIterator].push_back(distance);
+
+									_UPDATE_SINGLE_VALUES(distance);
+
 									m_EXTENSION_edgeIterator++;
 									m_EXTENSION_hasPairedReadRequested=false;
 								}else{
@@ -2840,17 +2855,10 @@ void Machine::doChoice(){
 										
 										// add it anyway as a single-end match too!
 										m_EXTENSION_readPositionsForVertices[m_EXTENSION_edgeIterator].push_back(distance);
-										m_EXTENSION_edgeIterator++;
 										m_EXTENSION_hasPairedReadRequested=false;
-										if(m_cd->m_CHOOSER_theMaxs.count(m_EXTENSION_edgeIterator)==0){
-											m_cd->m_CHOOSER_theSums[m_EXTENSION_edgeIterator]=0;
-											m_cd->m_CHOOSER_theMaxs[m_EXTENSION_edgeIterator]=distance;
-											m_cd->m_CHOOSER_theNumbers[m_EXTENSION_edgeIterator]=0;
-										}
-										if(distance>m_cd->m_CHOOSER_theMaxs[m_EXTENSION_edgeIterator])
-											m_cd->m_CHOOSER_theMaxs[m_EXTENSION_edgeIterator]=distance;
-										m_cd->m_CHOOSER_theNumbers[m_EXTENSION_edgeIterator]++;
-										m_cd->m_CHOOSER_theSums[m_EXTENSION_edgeIterator]+=distance;
+
+										_UPDATE_SINGLE_VALUES(distance);
+										m_EXTENSION_edgeIterator++;
 									}
 								}
 							}else{
