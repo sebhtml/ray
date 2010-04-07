@@ -260,7 +260,14 @@ class Machine{
 	map<int,int> m_EXTENSION_reads_startingPositionOnContig;
 
 	
-	// COPY Directions.
+	// paired-end resolution of repeats.
+	map<int,int> m_CHOOSER_theMaxsPaired;
+	map<int,int> m_CHOOSER_theSumsPaired;
+	map<int,int> m_CHOOSER_theNumbersPaired;
+	// single-end resolution of repeats.
+	map<int,int> m_CHOOSER_theMaxs;
+	map<int,int> m_CHOOSER_theSums;
+	map<int,int> m_CHOOSER_theNumbers;
 
 	
 
