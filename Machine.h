@@ -294,6 +294,8 @@ class Machine{
 	#endif
 	SequencesLoader m_sl;
 
+	int m_repeatedLength;
+
 	OpenAssemblerChooser m_oa;
 	TronChooser m_tc;
 	// BUBBLE

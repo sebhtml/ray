@@ -19,6 +19,7 @@
 
 */
 
+#define _REPEATED_LENGTH_ALARM_THRESHOLD 100
 
 #include<VerticesExtractor.h>
 #include<Machine.h>
@@ -187,6 +188,7 @@ void Machine::flushOutgoingEdges(int threshold){
 }
 
 void Machine::start(){
+	m_repeatedLength=0;
 	m_maxCoverage=0;
 	m_maxCoverage--;// underflow.
 
@@ -3053,6 +3055,13 @@ void Machine::markCurrentVertexAsAssembled(){
 			m_outbox.push_back(aMessage);
 		}else if(m_SEEDING_vertexCoverageReceived){
 			if(!m_ed->m_EXTENSION_VertexMarkAssembled_requested){
+				// watch out for repeats!!!
+				if(m_SEEDING_receivedVertexCoverage==m_maxCoverage){
+					m_repeatedLength++;
+				}else{
+					m_repeatedLength=0;
+				}
+
 				m_ed->m_EXTENSION_extension.push_back(m_SEEDING_currentVertex);
 				// save wave progress.
 	
@@ -3089,7 +3098,7 @@ void Machine::markCurrentVertexAsAssembled(){
 					if(m_ed->m_EXTENSION_usedReads.count(uniqueId)==0 ){
 						// use all reads available.
 						// avoid vertices with too much coverage.
-						if(m_SEEDING_receivedVertexCoverage<m_maxCoverage){
+						if(m_repeatedLength<_REPEATED_LENGTH_ALARM_THRESHOLD){
 							m_ed->m_EXTENSION_usedReads.insert(uniqueId);
 							m_ed->m_EXTENSION_reads_startingPositionOnContig[uniqueId]=m_ed->m_EXTENSION_extension.size()-1;
 							m_ed->m_EXTENSION_readsInRange.insert(m_ed->m_EXTENSION_receivedReads[i]);
