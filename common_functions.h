@@ -36,6 +36,10 @@ see <http://www.gnu.org/licenses/>
 #include<vector>
 using namespace std;
 
+
+#define __PAIRED_MULTIPLIER 2
+#define __SINGLE_MULTIPLIER 2
+
 #define MAX_DEPTH 200
 #define MAX_VERTICES_TO_VISIT 500
 #define TIP_LIMIT 40

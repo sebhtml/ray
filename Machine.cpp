@@ -39,8 +39,6 @@
 #include<MyAllocator.h>
 #include<unistd.h>
 
-#define __PAIRED_MULTIPLIER 2
-#define __SINGLE_MULTIPLIER 2
 
 using namespace std;
 
@@ -2355,12 +2353,17 @@ void Machine::enumerateChoices(){
 			m_ed->m_EXTENSION_readPositionsForVertices.clear();
 			m_ed->m_EXTENSION_pairedReadPositionsForVertices.clear();
 			
-			m_cd->m_CHOOSER_theSumsPaired.clear();
-			m_cd->m_CHOOSER_theNumbersPaired.clear();
-			m_cd->m_CHOOSER_theMaxsPaired.clear();
-			m_cd->m_CHOOSER_theMaxs.clear();
-			m_cd->m_CHOOSER_theNumbers.clear();
-			m_cd->m_CHOOSER_theSums.clear();
+			m_c.clear(m_cd->m_CHOOSER_theSumsPaired,4);
+			#ifdef DEBUG
+			for(int i=0;i<4;i++){
+				assert(m_cd->m_CHOOSER_theSumsPaired[i]==0);
+			}
+			#endif
+			m_c.clear(m_cd->m_CHOOSER_theNumbersPaired,4);
+			m_c.clear(m_cd->m_CHOOSER_theMaxsPaired,4);
+			m_c.clear(m_cd->m_CHOOSER_theMaxs,4);
+			m_c.clear(m_cd->m_CHOOSER_theNumbers,4);
+			m_c.clear(m_cd->m_CHOOSER_theSums,4);
 
 			m_ed->m_enumerateChoices_outgoingEdges=m_SEEDING_receivedOutgoingEdges;
 			
@@ -2470,15 +2473,6 @@ int Machine::proceedWithCoverages(int a,int b){
 				isBetter=false;
 				break;
 			}
-
-			// too much coverage is not good at all, sir
-			if(coverageI==m_maxCoverage){
-				// the comparison is not fair.
-				if(singleReadsI*1.5<coverageI){
-					isBetter=false;
-					break;
-				}
-			}
 		}
 		if(isBetter){
 			#ifdef SHOW_CHOICE
@@ -2498,11 +2492,6 @@ int Machine::proceedWithCoverages(int a,int b){
 }
 
 #define _UPDATE_SINGLE_VALUES(d) \
-if(m_cd->m_CHOOSER_theMaxs.count(m_ed->m_EXTENSION_edgeIterator)==0){ \
-	m_cd->m_CHOOSER_theSums[m_ed->m_EXTENSION_edgeIterator]=0; \
-	m_cd->m_CHOOSER_theMaxs[m_ed->m_EXTENSION_edgeIterator]=distance; \
-	m_cd->m_CHOOSER_theNumbers[m_ed->m_EXTENSION_edgeIterator]=0; \
-}\
 if(distance>m_cd->m_CHOOSER_theMaxs[m_ed->m_EXTENSION_edgeIterator])\
 	m_cd->m_CHOOSER_theMaxs[m_ed->m_EXTENSION_edgeIterator]=distance;\
 m_cd->m_CHOOSER_theNumbers[m_ed->m_EXTENSION_edgeIterator]++;\
@@ -2684,11 +2673,6 @@ void Machine::doChoice(){
 											// it matches!
 												int theDistance=startPosition-startingPositionOnPath+distance;
 												m_ed->m_EXTENSION_pairedReadPositionsForVertices[m_ed->m_EXTENSION_edgeIterator].push_back(theDistance);
-												if(m_cd->m_CHOOSER_theMaxsPaired.count(m_ed->m_EXTENSION_edgeIterator)==0){
-													m_cd->m_CHOOSER_theMaxsPaired[m_ed->m_EXTENSION_edgeIterator]=theDistance;
-													m_cd->m_CHOOSER_theSumsPaired[m_ed->m_EXTENSION_edgeIterator]=0;
-													m_cd->m_CHOOSER_theNumbersPaired[m_ed->m_EXTENSION_edgeIterator]=0;
-												}
 												if(theDistance>m_cd->m_CHOOSER_theMaxsPaired[m_ed->m_EXTENSION_edgeIterator])
 													m_cd->m_CHOOSER_theMaxsPaired[m_ed->m_EXTENSION_edgeIterator]=theDistance;
 												m_cd->m_CHOOSER_theNumbersPaired[m_ed->m_EXTENSION_edgeIterator]++;
@@ -2724,8 +2708,7 @@ void Machine::doChoice(){
 				}
 				m_ed->m_EXTENSION_readsOutOfRange.clear();
 				m_ed->m_EXTENSION_singleEndResolution=true;
-				//#define SHOW_CHOICE1
-				#ifdef SHOW_CHOICE1
+				#ifdef SHOW_CHOICE
 				if(m_ed->m_enumerateChoices_outgoingEdges.size()>1){
 					cout<<endl;
 					cout<<"*****************************************"<<endl;
@@ -2753,62 +2736,19 @@ void Machine::doChoice(){
 				}
 				#endif
 
-				// easy win for a single choice.
-				if(m_ed->m_enumerateChoices_outgoingEdges.size()==1 and m_cd->m_CHOOSER_theNumbers[0]>0){
-					m_SEEDING_currentVertex=m_ed->m_enumerateChoices_outgoingEdges[0];
+				int pairedChoice=m_c.chooseWithPairedReads(m_ed,m_cd,m_minimumCoverage,m_maxCoverage);
+				if(pairedChoice!=IMPOSSIBLE_CHOICE){
+					#ifdef SHOW_CHOICE
+					if(m_ed->m_enumerateChoices_outgoingEdges.size()>1){
+						cout<<"Choice "<<pairedChoice+1<<" wins with paired-end reads."<<endl;
+					}
+					#endif
+					m_SEEDING_currentVertex=m_ed->m_enumerateChoices_outgoingEdges[pairedChoice];
 					m_ed->m_EXTENSION_choose=true;
 					m_ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 					m_ed->m_EXTENSION_directVertexDone=false;
 					m_ed->m_EXTENSION_VertexAssembled_requested=false;
 					return;
-				}
-	
-				// win or lose with paired reads
-				for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
-					bool winner=true;
-					int coverageI=m_ed->m_EXTENSION_coverages[i];
-					if(coverageI<_MINIMUM_COVERAGE)
-						continue;
-					if(m_cd->m_CHOOSER_theNumbers[i]==0 or m_cd->m_CHOOSER_theNumbersPaired[i]==0)
-						continue;
-					for(int j=0;j<(int)m_ed->m_enumerateChoices_outgoingEdges.size();j++){
-						if(i==j)
-							continue;
-						int coverageJ=m_ed->m_EXTENSION_coverages[j];
-						if(coverageJ<_MINIMUM_COVERAGE)
-							continue;
-						if((m_cd->m_CHOOSER_theMaxsPaired[i] <= __PAIRED_MULTIPLIER*m_cd->m_CHOOSER_theMaxsPaired[j]) or
-					 (m_cd->m_CHOOSER_theSumsPaired[i] <= __PAIRED_MULTIPLIER*m_cd->m_CHOOSER_theSumsPaired[j]) or
-					 (m_cd->m_CHOOSER_theNumbersPaired[i] <= __PAIRED_MULTIPLIER*m_cd->m_CHOOSER_theNumbersPaired[j]) 
-){
-							winner=false;
-							break;
-						}
-				
-						// if the winner does not have too much coverage.
-						if(m_ed->m_EXTENSION_coverages[i]<m_minimumCoverage and 
-					m_cd->m_CHOOSER_theNumbers[i] < m_cd->m_CHOOSER_theNumbers[j]){// make sure that it also has more single-end reads
-							winner=false;
-							break;
-						}
-
-						// too much coverage is sick
-						if(coverageI==m_maxCoverage){
-						}
-					}
-					if(winner==true){
-						#ifdef SHOW_CHOICE
-						if(m_ed->m_enumerateChoices_outgoingEdges.size()>1){
-							cout<<"Choice "<<i+1<<" wins with paired-end reads."<<endl;
-						}
-						#endif
-						m_SEEDING_currentVertex=m_ed->m_enumerateChoices_outgoingEdges[i];
-						m_ed->m_EXTENSION_choose=true;
-						m_ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
-						m_ed->m_EXTENSION_directVertexDone=false;
-						m_ed->m_EXTENSION_VertexAssembled_requested=false;
-						return;
-					}
 				}
 
 				// win or lose with single-end reads
@@ -2817,6 +2757,7 @@ void Machine::doChoice(){
 					if(m_cd->m_CHOOSER_theMaxs[i]<5)
 						winner=false;
 
+					//int singleReadsI=m_ed->m_EXTENSION_readPositionsForVertices[i].size();
 					int coverageI=m_ed->m_EXTENSION_coverages[i];
 					if(coverageI<_MINIMUM_COVERAGE)
 						continue;
@@ -2839,10 +2780,6 @@ void Machine::doChoice(){
 							winner=false;
 							break;
 						}
-						// too much coverage is dangereous.
-						if(coverageI==m_maxCoverage){
-						}
-
 					}
 					if(winner==true){
 						#ifdef SHOW_CHOICE
