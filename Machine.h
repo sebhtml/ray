@@ -26,11 +26,13 @@
 #include<common_functions.h>
 #include<map>
 #include<vector>
+#include<TronChooser.h>
 #include<SequencesLoader.h>
 #include<Chooser.h>
 #include<MessageProcessor.h>
 #include<ChooserData.h>
 #include<Vertex.h>
+#include<OpenAssemblerChooser.h>
 #include<SplayTree.h>
 #include<BubbleData.h>
 #include<Message.h>
@@ -292,6 +294,8 @@ class Machine{
 	#endif
 	SequencesLoader m_sl;
 
+	OpenAssemblerChooser m_oa;
+	TronChooser m_tc;
 	// BUBBLE
 	BubbleData*m_bubbleData;
 
@@ -325,7 +329,6 @@ class Machine{
 	void finishFusions();
 	void makeFusions();
 	void depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int b);
-	int proceedWithCoverages(int a,int b);
 	void showUsage();
 	void flushOutgoingEdges(int threshold);
 	void flushIngoingEdges(int threshold);

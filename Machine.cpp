@@ -2431,65 +2431,6 @@ void Machine::enumerateChoices(){
 	}
 }
 
-int Machine::proceedWithCoverages(int a,int b){
-	vector<int> counts2;
-	vector<int> counts5;
-	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
-		int j2=0;
-		int j5=0;
-		if(m_ed->m_EXTENSION_readPositionsForVertices.count(i)>0){
-			for(int k=0;k<(int)m_ed->m_EXTENSION_readPositionsForVertices[i].size();k++){
-				int distanceFromOrigin=m_ed->m_EXTENSION_readPositionsForVertices[i][k];
-				if(distanceFromOrigin>=2){
-					j2++;
-				}
-				if(distanceFromOrigin>=5){
-					j5++;
-				}
-			}
-		}
-		counts2.push_back(j2);
-		counts5.push_back(j5);
-	}
-
-	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
-		bool isBetter=true;
-		int coverageI=m_ed->m_EXTENSION_coverages[i];
-		int singleReadsI=m_ed->m_EXTENSION_readPositionsForVertices[i].size();
-		if(counts2[i]==0)
-			continue;
-
-		// in less than 10% of the coverage is supported by displayed reads, abort it...
-		if(singleReadsI*10 < coverageI){
-			continue;
-		}
-
-		for(int j=0;j<(int)m_ed->m_enumerateChoices_outgoingEdges.size();j++){
-			if(i==j)
-				continue;
-			//int coverageJ=m_ed->m_EXTENSION_coverages[j];
-			int singleReadsJ=m_ed->m_EXTENSION_readPositionsForVertices[j].size();
-			if(!(singleReadsJ<=a and singleReadsI>=b)){
-				isBetter=false;
-				break;
-			}
-		}
-		if(isBetter){
-			#ifdef SHOW_CHOICE
-			cout<<"Choice #"<<i+1<<" wins, with "<<m_ed->m_EXTENSION_readPositionsForVertices[i].size()<<" reads."<<endl;
-			cout<<" in range: "<<m_ed->m_EXTENSION_readsInRange.size()<<endl;
-			#endif
-			m_SEEDING_currentVertex=m_ed->m_enumerateChoices_outgoingEdges[i];
-			m_ed->m_EXTENSION_choose=true;
-			m_ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
-			m_ed->m_EXTENSION_directVertexDone=false;
-			m_ed->m_EXTENSION_VertexAssembled_requested=false;
-
-			return i;
-		}
-	}
-	return -1;
-}
 
 #define _UPDATE_SINGLE_VALUES(d) \
 if(distance>m_cd->m_CHOOSER_theMaxs[m_ed->m_EXTENSION_edgeIterator])\
@@ -2708,6 +2649,8 @@ void Machine::doChoice(){
 				}
 				m_ed->m_EXTENSION_readsOutOfRange.clear();
 				m_ed->m_EXTENSION_singleEndResolution=true;
+
+				// show on-screen dump debug
 				#ifdef SHOW_CHOICE
 				if(m_ed->m_enumerateChoices_outgoingEdges.size()>1){
 					cout<<endl;
@@ -2722,90 +2665,42 @@ void Machine::doChoice(){
 						cout<<"Vertex: "<<vertex<<endl;
 						cout<<"Coverage="<<m_ed->m_EXTENSION_coverages[i]<<endl;
 						cout<<"New letter: "<<vertex[m_wordSize-1]<<endl;
-						cout<<"Single-end reads:"<<endl;
+						cout<<"Single-end reads: ("<<m_ed->m_EXTENSION_readPositionsForVertices[i].size()<<")"<<endl;
 						for(int j=0;j<(int)m_ed->m_EXTENSION_readPositionsForVertices[i].size();j++){
-							cout<<" "<<m_ed->m_EXTENSION_readPositionsForVertices[i][j];
+							if(j!=0)
+								cout<<" ";
+							cout<<m_ed->m_EXTENSION_readPositionsForVertices[i][j];
 						}
 						cout<<endl;
-						cout<<"Paired-end reads:"<<endl;
+						cout<<"Paired-end reads: ("<<m_ed->m_EXTENSION_pairedReadPositionsForVertices[i].size()<<")"<<endl;
 						for(int j=0;j<(int)m_ed->m_EXTENSION_pairedReadPositionsForVertices[i].size();j++){
-							cout<<" "<<m_ed->m_EXTENSION_pairedReadPositionsForVertices[i][j];
+							if(j!=0)
+								cout<<" ";
+							cout<<m_ed->m_EXTENSION_pairedReadPositionsForVertices[i][j];
 						}
 						cout<<endl;
 					}
 				}
 				#endif
+				
+				// select chooser algorithm here.
+				//#define USE_OPEN_ASSEMBLER_CHOOSER
+				#define USE_TRON_CHOOSER
 
-				int pairedChoice=m_c.chooseWithPairedReads(m_ed,m_cd,m_minimumCoverage,m_maxCoverage);
-				if(pairedChoice!=IMPOSSIBLE_CHOICE){
-					#ifdef SHOW_CHOICE
-					if(m_ed->m_enumerateChoices_outgoingEdges.size()>1){
-						cout<<"Choice "<<pairedChoice+1<<" wins with paired-end reads."<<endl;
-					}
-					#endif
-					m_SEEDING_currentVertex=m_ed->m_enumerateChoices_outgoingEdges[pairedChoice];
+				#ifdef USE_OPEN_ASSEMBLER_CHOOSER
+				int choice=m_oa.choose(m_ed,&m_c,m_minimumCoverage,m_maxCoverage,m_cd);
+				#endif
+				#ifdef USE_TRON_CHOOSER
+				int choice=m_tc.choose(m_ed,&m_c,m_minimumCoverage,m_maxCoverage,m_cd);
+				#endif
+				if(choice!=IMPOSSIBLE_CHOICE){
+					m_SEEDING_currentVertex=m_ed->m_enumerateChoices_outgoingEdges[choice];
 					m_ed->m_EXTENSION_choose=true;
 					m_ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 					m_ed->m_EXTENSION_directVertexDone=false;
 					m_ed->m_EXTENSION_VertexAssembled_requested=false;
 					return;
 				}
-
-				// win or lose with single-end reads
-				for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
-					bool winner=true;
-					if(m_cd->m_CHOOSER_theMaxs[i]<5)
-						winner=false;
-
-					//int singleReadsI=m_ed->m_EXTENSION_readPositionsForVertices[i].size();
-					int coverageI=m_ed->m_EXTENSION_coverages[i];
-					if(coverageI<_MINIMUM_COVERAGE)
-						continue;
-					if(m_cd->m_CHOOSER_theNumbers[i]==0)
-						continue;
-					for(int j=0;j<(int)m_ed->m_enumerateChoices_outgoingEdges.size();j++){
-						if(i==j)
-							continue;
-
-						if(m_ed->m_EXTENSION_coverages[j]<_MINIMUM_COVERAGE)
-							continue;
-						if((m_cd->m_CHOOSER_theMaxs[i] <= __SINGLE_MULTIPLIER*m_cd->m_CHOOSER_theMaxs[j]) 
-							or (m_cd->m_CHOOSER_theSums[i] <= __SINGLE_MULTIPLIER*m_cd->m_CHOOSER_theSums[j]) 
-							or (m_cd->m_CHOOSER_theNumbers[i] <= __SINGLE_MULTIPLIER*m_cd->m_CHOOSER_theNumbers[j])
-							){
-							winner=false;
-							break;
-						}
-						if(m_ed->m_EXTENSION_coverages[i]<m_minimumCoverage/4 and m_ed->m_EXTENSION_coverages[j]>2*m_minimumCoverage){
-							winner=false;
-							break;
-						}
-					}
-					if(winner==true){
-						#ifdef SHOW_CHOICE
-						if(m_ed->m_enumerateChoices_outgoingEdges.size()>1){
-							cout<<"Choice "<<i+1<<" wins with single-end reads."<<endl;
-						}
-						#endif
-						m_SEEDING_currentVertex=m_ed->m_enumerateChoices_outgoingEdges[i];
-						m_ed->m_EXTENSION_choose=true;
-						m_ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
-						m_ed->m_EXTENSION_directVertexDone=false;
-						m_ed->m_EXTENSION_VertexAssembled_requested=false;
-						return;
-					}
-				}
-
-				// try to use the coverage to choose.
-				// stick around novel minimum coverages
-				int i=proceedWithCoverages(m_minimumCoverage/2,m_minimumCoverage);
-				if(i>=0){
-					return;
-				}
-				i=proceedWithCoverages(m_minimumCoverage,2*m_minimumCoverage);
-				if(i>=0)
-					return;
-
 
 				m_ed->m_doChoice_tips_Detected=false;
 				m_dfsData->m_doChoice_tips_Initiated=false;

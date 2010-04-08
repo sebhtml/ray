@@ -19,20 +19,15 @@
 
 */
 
-#ifndef _Chooser
-#define _Chooser
 
-#define IMPOSSIBLE_CHOICE -1
-#include<ExtensionData.h>
-#include<ChooserData.h>
+#ifndef _TronChooser
+#define _TronChooser
 
-/**
- * paired-end OpenAssembler chooser class
- */
-class Chooser{
+#include<Chooser.h>
+
+class TronChooser{
 public:
-	int chooseWithPairedReads(ExtensionData*m_ed,ChooserData*m_cd,int m_minimumCoverage,int m_maxCoverage);
-	void clear(int*a,int b);
+	int choose(ExtensionData*m_ed,Chooser*m_c,int m_minimumCoverage,int m_maxCoverage,ChooserData*m_cd);
 };
 
 #endif
