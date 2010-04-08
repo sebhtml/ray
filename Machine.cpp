@@ -2431,7 +2431,7 @@ void Machine::enumerateChoices(){
 int Machine::proceedWithCoverages(int a,int b){
 	vector<int> counts2;
 	vector<int> counts5;
-	for(int i=0;i<(int)m_ed->m_EXTENSION_coverages.size();i++){
+	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
 		int j2=0;
 		int j5=0;
 		if(m_ed->m_EXTENSION_readPositionsForVertices.count(i)>0){
@@ -2449,7 +2449,7 @@ int Machine::proceedWithCoverages(int a,int b){
 		counts5.push_back(j5);
 	}
 
-	for(int i=0;i<(int)m_ed->m_EXTENSION_coverages.size();i++){
+	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
 		bool isBetter=true;
 		int coverageI=m_ed->m_EXTENSION_coverages[i];
 		int singleReadsI=m_ed->m_EXTENSION_readPositionsForVertices[i].size();
@@ -2461,7 +2461,7 @@ int Machine::proceedWithCoverages(int a,int b){
 			continue;
 		}
 
-		for(int j=0;j<(int)m_ed->m_EXTENSION_coverages.size();j++){
+		for(int j=0;j<(int)m_ed->m_enumerateChoices_outgoingEdges.size();j++){
 			if(i==j)
 				continue;
 			//int coverageJ=m_ed->m_EXTENSION_coverages[j];
@@ -2753,24 +2753,25 @@ void Machine::doChoice(){
 				}
 				#endif
 
-				// try to use the coverage to choose.
-				// stick around novel minimum coverages
-				int i=proceedWithCoverages(m_minimumCoverage/2,m_minimumCoverage);
-				if(i>=0){
+				// easy win for a single choice.
+				if(m_ed->m_enumerateChoices_outgoingEdges.size()==1 and m_cd->m_CHOOSER_theNumbers[0]>0){
+					m_SEEDING_currentVertex=m_ed->m_enumerateChoices_outgoingEdges[0];
+					m_ed->m_EXTENSION_choose=true;
+					m_ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
+					m_ed->m_EXTENSION_directVertexDone=false;
+					m_ed->m_EXTENSION_VertexAssembled_requested=false;
 					return;
 				}
-				i=proceedWithCoverages(m_minimumCoverage,2*m_minimumCoverage);
-				if(i>=0)
-					return;
-
-				for(int i=0;i<(int)m_ed->m_EXTENSION_pairedReadPositionsForVertices.size();i++){
+	
+				// win or lose with paired reads
+				for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
 					bool winner=true;
 					int coverageI=m_ed->m_EXTENSION_coverages[i];
 					if(coverageI<_MINIMUM_COVERAGE)
 						continue;
 					if(m_cd->m_CHOOSER_theNumbers[i]==0 or m_cd->m_CHOOSER_theNumbersPaired[i]==0)
 						continue;
-					for(int j=0;j<(int)m_ed->m_EXTENSION_pairedReadPositionsForVertices.size();j++){
+					for(int j=0;j<(int)m_ed->m_enumerateChoices_outgoingEdges.size();j++){
 						if(i==j)
 							continue;
 						int coverageJ=m_ed->m_EXTENSION_coverages[j];
@@ -2810,7 +2811,8 @@ void Machine::doChoice(){
 					}
 				}
 
-				for(int i=0;i<(int)m_ed->m_EXTENSION_readPositionsForVertices.size();i++){
+				// win or lose with single-end reads
+				for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
 					bool winner=true;
 					if(m_cd->m_CHOOSER_theMaxs[i]<5)
 						winner=false;
@@ -2820,7 +2822,7 @@ void Machine::doChoice(){
 						continue;
 					if(m_cd->m_CHOOSER_theNumbers[i]==0)
 						continue;
-					for(int j=0;j<(int)m_ed->m_EXTENSION_readPositionsForVertices.size();j++){
+					for(int j=0;j<(int)m_ed->m_enumerateChoices_outgoingEdges.size();j++){
 						if(i==j)
 							continue;
 
@@ -2856,6 +2858,17 @@ void Machine::doChoice(){
 						return;
 					}
 				}
+
+				// try to use the coverage to choose.
+				// stick around novel minimum coverages
+				int i=proceedWithCoverages(m_minimumCoverage/2,m_minimumCoverage);
+				if(i>=0){
+					return;
+				}
+				i=proceedWithCoverages(m_minimumCoverage,2*m_minimumCoverage);
+				if(i>=0)
+					return;
+
 
 				m_ed->m_doChoice_tips_Detected=false;
 				m_dfsData->m_doChoice_tips_Initiated=false;
