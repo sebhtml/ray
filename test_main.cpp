@@ -22,12 +22,12 @@
 #include<set>
 #include<Vertex.h>
 #include<common_functions.h>
+#include<MyAllocator.h>
 #include<iostream>
 #include<assert.h>
 using namespace std;
 
 void test_segment(string x,int segment){
-	bool color=true;
 	string word=x;
 	int w=x.length();
 	VERTEX_TYPE word64=wordId(word.c_str());
@@ -47,13 +47,14 @@ void test_segment(string x,int segment){
 void test_vertex(string x){
 	Vertex v;
 	v.constructor();
-	bool color=true;
 	int w=x.length()-1;
+	MyAllocator allocator;
+	allocator.constructor(10000);
 	string prefix=x.substr(0,w);
 	string suffix=x.substr(1);
 	VERTEX_TYPE p=wordId(prefix.c_str());
 	VERTEX_TYPE s=wordId(suffix.c_str());
-	v.addOutgoingEdge(wordId(suffix.c_str()),w);
+	v.addOutgoingEdge(wordId(suffix.c_str()),w,&allocator);
 	vector<VERTEX_TYPE> out=v.getOutgoingEdges(p,w);
 	assert(out.size()==1);
 	if(out[0]!=s){
@@ -65,7 +66,7 @@ void test_vertex(string x){
 	assert(out[0]==s);
 	Vertex v2;
 	v2.constructor();
-	v2.addIngoingEdge(p,w);
+	v2.addIngoingEdge(p,w,&allocator);
 	
 	vector<VERTEX_TYPE> in=v2.getIngoingEdges(s,w);
 	assert(in.size()==1);
@@ -81,7 +82,8 @@ void test_vertex(string x){
 }
 
 void test_vertex2(){
-	bool color=true;
+	MyAllocator allocator;
+	allocator.constructor(10000);
 	string prefix="ATGGAAAAAAATGAGAATGCAC";
 	string suffix1="TGGAAAAAAATGAGAATGCACG";
 	string suffix2="TGGAAAAAAATGAGAATGCACA";
@@ -91,8 +93,8 @@ void test_vertex2(){
 	Vertex v0;
 	v0.constructor();
 	int w=prefix.length();
-	v0.addOutgoingEdge(s1,w);
-	v0.addOutgoingEdge(s2,w);
+	v0.addOutgoingEdge(s1,w,&allocator);
+	v0.addOutgoingEdge(s2,w,&allocator);
 	vector<VERTEX_TYPE> out=v0.getOutgoingEdges(p,w);
 	assert(out.size()==2);
 	set<VERTEX_TYPE> o;
@@ -100,23 +102,25 @@ void test_vertex2(){
 	o.insert(out[1]);
 	assert(o.count(s1)>0);
 	assert(o.count(s2)>0);
-	v0.addOutgoingEdge(s1,w);
+	v0.addOutgoingEdge(s1,w,&allocator);
 	assert(out.size()==2);
 }
 
 void test3(){
-	string p="CGCCTTTAAAAAAAAAAAGGCTCGA";
-	string s= "GCCTTTGAAAAAAAAAAAGCTCGAT";
+	MyAllocator allocator;
+	allocator.constructor(10000);
+	string p="CGCCTTTGAAAAAAAAAAGGCTCGA";
+	string s= "GCCTTTGAAAAAAAAAAGGCTCGAT";
 	Vertex v;
 	v.constructor();
 	int w=p.length();
-	VERTEX_TYPE p1=wordId(p.c_str(),w);
-	VERTEX_TYPE s1=wordId(s.c_str(),w);
-	bool color=true;
-	v.addOutgoingEdge(s1,w);
+	VERTEX_TYPE p1=wordId(p.c_str());
+	VERTEX_TYPE s1=wordId(s.c_str());
+	v.addOutgoingEdge(s1,w,&allocator);
 	vector<VERTEX_TYPE> o=v.getOutgoingEdges(p1,w);
 	assert(o.size()==1);
 	assert(o[0]==s1);
+	assert(o.size()>0);
 }
 
 int main(){
