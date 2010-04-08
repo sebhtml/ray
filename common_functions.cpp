@@ -428,3 +428,15 @@ void showProgress(time_t m_lastTime){
 	fflush(stdout);
 
 }
+
+char*__basename(char*a){
+	int i=0;
+	int last=0;
+	int len=strlen(a);
+	while(i<len){
+		if(a[i]=='/')
+			last=i;
+		i++;
+	}
+	return a+last+1;
+}

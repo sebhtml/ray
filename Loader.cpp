@@ -19,7 +19,6 @@
 	see <http://www.gnu.org/licenses/>
 
 */
-
 #include<sstream>
 #include<iostream>
 #include<string>
@@ -41,6 +40,15 @@ int Loader::getReads(){
 }
 
 void Loader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator){
+	{
+		ifstream f(file.c_str());
+		bool exists=f;
+		f.close();
+		if(!exists){
+			cout<<"Ray: cannot access "<<file<<": No such file or directory"<<endl;
+			return;
+		}
+	}
 	if(file.length()<4){
 		(cout)<<"Error: "<<file<<endl;
 		exit(0);

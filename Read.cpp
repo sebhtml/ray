@@ -33,12 +33,8 @@ Read::Read(){
 	m_pairedRead=NULL;
 }
 
-
-void Read::copy(const char*id,const char*sequence,MyAllocator*seqMyAllocator){
-	//cout<<"IN="<<sequence<<endl;
+char*Read::trim(char*buffer,const char*sequence){
 	int theLen=strlen(sequence);
-	
-	char buffer[4096];
 	strcpy(buffer,sequence);
 	for(int i=0;i<theLen;i++){
 		if(buffer[i]=='a')
@@ -68,8 +64,19 @@ void Read::copy(const char*id,const char*sequence,MyAllocator*seqMyAllocator){
 	// only junk awaits beyond <last>
 	corrected[last]='\0';
 	//cout<<"OUT="<<corrected<<endl;
-	m_sequence=(char*)seqMyAllocator->allocate(strlen(sequence)+1);
-	strcpy(m_sequence,corrected); // memcpy + \0
+	return corrected;
+}
+
+void Read::copy(const char*id,const char*sequence,MyAllocator*seqMyAllocator){
+	if(strlen(sequence)<4096){
+		char buffer[4096];
+		char*corrected=trim(buffer,sequence);
+		m_sequence=(char*)seqMyAllocator->allocate(strlen(corrected)+1);
+		strcpy(m_sequence,corrected); // memcpy + \0
+	}else{
+		m_sequence=(char*)seqMyAllocator->allocate(strlen(sequence)+1);
+		strcpy(m_sequence,sequence); // memcpy + \0
+	}
 	m_pairedRead=NULL;
 }
 
@@ -80,18 +87,9 @@ Read::Read(const char*id,const char*sequence,MyAllocator*seqMyAllocator){
 Read::~Read(){
 }
 
-
 char*Read::getSeq(){
 	return m_sequence;
 }
-
-
-char*Read::getId(){
-	return NULL;
-}
-
-
-
 
 int Read::length(){
 	return strlen(m_sequence);

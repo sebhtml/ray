@@ -25,6 +25,7 @@
 #include<stdlib.h>
 #include<fstream>
 #include<set>
+#include<MyAllocator.h>
 #include<string>
 #include<Loader.h>
 #include<common_functions.h>
@@ -43,23 +44,24 @@ int main(int argc,char**argv){
 	string genomeFile=argv[1];
 	int fragmentSize=atoi(argv[2]);
 	int readSize=atoi(argv[4]);
-
-	SequenceAllocator a;
-	Allocator<Read> b;
+	MyAllocator allocator;
+	allocator.constructor(300000000);
 	Loader l;
-	l.load(genomeFile,&sequences,&a,&b);
-	
+	l.load(genomeFile,&sequences,&allocator,&allocator);
+	if(sequences.size()==0)
+		return 0;
 	int coverage=atoi(argv[3]);
 
+	char*base=__basename(argv[1]);
 	ostringstream f1Name;
-	f1Name<<fragmentSize<<"x"<<genomeFile;
-	f1Name<<"_fragments_1.fasta";
+	f1Name<<base<<","<<fragmentSize<<"b,2x"<<readSize<<"b,"<<coverage<<"X";
+	f1Name<<"_1.fasta";
 	ofstream f1(f1Name.str().c_str());
 
 
 	ostringstream f2Name;
-	f2Name<<fragmentSize<<"x"<<genomeFile;
-	f2Name<<"_fragments_2.fasta";
+	f2Name<<base<<","<<fragmentSize<<"b,2x"<<readSize<<"b,"<<coverage<<"X";
+	f2Name<<"_2.fasta";
 	ofstream f2(f2Name.str().c_str());
 	int theReadNumber=0;
 	for(int i=0;i<(int)sequences.size();i++){
@@ -67,7 +69,7 @@ int main(int argc,char**argv){
 		int numberOfReads=sequence.length()*coverage/(2*readSize);
 		for(int j=0;j<numberOfReads;j++){
 			if(j%1000==0){
-				cout<<j<<endl;
+				cout<<".";
 			}
 			int start=ran_uniform()*(sequence.length()-fragmentSize+1);
 			//int start=j;
@@ -90,5 +92,9 @@ int main(int argc,char**argv){
 			f2<<">r_"<<start<<"_"<<readNumber<<"_2"<<endl<<read2<<endl;
 		}
 	}
+	cout<<endl;
+	cout<<"Wrote "<<f1Name.str()<<endl;
+	cout<<"Wrote "<<f2Name.str()<<endl;
+	return 0;
 }
 

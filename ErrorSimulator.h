@@ -1,6 +1,6 @@
 /*
- 	Ray
-    Copyright (C)  2010  Sébastien Boisvert
+ 	OpenAssembler -- a de Bruijn DNA assembler for mixed high-throughput technologies
+    Copyright (C) 2009  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -20,36 +20,19 @@
 */
 
 
-#ifndef _Read
-#define _Read
+#ifndef _ErrorSimulator
+#define _ErrorSimulator
 
 #include<string>
-#include<stdint.h>
-#include<vector>
-#include<common_functions.h>
-#include<MyAllocator.h>
-#include<PairedRead.h>
 using namespace std;
 
-/*
- * a read is represented as a char*
- * and a (possible) link to paired information.
- */
-class Read{
-	char*m_sequence;
-	PairedRead*m_pairedRead;
-	char*trim(char*a,const char*b);
+class ErrorSimulator{
 public:
-	Read();
-	Read(const char*id,const char*sequence,MyAllocator*seqMyAllocator);
-	~Read();
-	char*getSeq();
-	int length();
-	VERTEX_TYPE Vertex(int pos,int w,char strand,bool color);
-	void copy(const char*id,const char*sequence,MyAllocator*seqMyAllocator);
-	void setPairedRead(PairedRead*t);
-	bool hasPairedRead();
-	PairedRead*getPairedRead();
+	void simulateErrors(string inputFile,string outputFile);
+	void simulateInsertion(string*a,int i);
+	void simulateMismatch(string *a,int i);
+	void simulateDeletion(string*a,int i);
+	void simulateUnknownBase(string*a,int i);
 };
 
 #endif

@@ -48,20 +48,18 @@ int main(int argc,char**argv){
 	a.constructor(300000000);
 	Loader l;
 	l.load(genomeFile,&sequences,&a,&a);
-	
 	int coverage=atoi(argv[3]);
-
+	char*base=__basename(argv[1]);
 	ostringstream f1Name;
-	f1Name<<fragmentSize<<"x"<<genomeFile;
-	f1Name<<"_fragments.fasta";
+	f1Name<<base<<",1x"<<fragmentSize<<"b,"<<coverage<<"X.fasta";
 	ofstream f1(f1Name.str().c_str());
 	int theReadNumber=0;
 	for(int i=0;i<(int)sequences.size();i++){
 		string sequence=sequences.at(i)->getSeq();
 		int numberOfReads=sequence.length()*coverage/fragmentSize;
 		for(int j=0;j<numberOfReads;j++){
-			if(j%1000==0){
-				cout<<j<<endl;
+			if(j%100000==0){
+				cout<<".";
 			}
 			int start=ran_uniform()*(sequence.length()-fragmentSize+1);
 
@@ -77,5 +75,8 @@ int main(int argc,char**argv){
 			f1<<">r_"<<start<<"_"<<readNumber<<"_1"<<endl<<read_1<<endl;
 		}
 	}
+	cout<<endl;
+	cout<<"Wrote "<<f1Name.str()<<endl;
+	return 0;
 }
 

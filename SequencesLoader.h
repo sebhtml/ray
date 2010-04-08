@@ -35,7 +35,7 @@ public:
 	/**
  *	load sequences from disk, and distribute them over the network.
  */
-	void loadSequences(int rank,int size,vector<Read*>*m_distribution_reads,int*m_distribution_sequence_id,
+	bool loadSequences(int rank,int size,vector<Read*>*m_distribution_reads,int*m_distribution_sequence_id,
 	bool*m_LOADER_isLeftFile,vector<Message>*m_outbox,int*m_distribution_file_id,
 	MyAllocator*m_distributionAllocator,bool*m_LOADER_isRightFile,int*m_LOADER_averageFragmentLength,
 	DistributionData*m_disData,int*m_LOADER_numberOfSequencesInLeftFile,MyAllocator*m_outboxAllocator,

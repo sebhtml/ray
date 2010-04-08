@@ -310,4 +310,6 @@ int vertexRank(VERTEX_TYPE a,int _size);
 
 void showProgress(time_t m_lastTime);
 
+char*__basename(char*a);
+
 #endif

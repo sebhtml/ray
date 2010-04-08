@@ -31,7 +31,7 @@
 #CXXFLAGS=-Wall  -I. -O3  -g -DSHOW_SENT_MESSAGES -DSHOW_PROGRESS -DSHOW_FILTER -DDEBUG -DSHOW_TIP_LOST -DSHOW_CHOICE  -DSHOW_TRON
 
 # production options follow:
-CXXFLAGS=-I. -Wall -O3  
+CXXFLAGS=-I. -Wall -O3
 
 # the default is to use mpic++ provided in your $PATH
 MPICC=mpic++
@@ -41,30 +41,37 @@ TARGETS=Ray
 
 all: $(TARGETS)
 
-OBJECTS= Machine.o common_functions.o Loader.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o ReadAnnotation.o CoverageDistribution.o Message.o  Direction.o  PairedRead.o ColorSpaceDecoder.o ColorSpaceLoader.o VertexLinkedList.o BubbleTool.o VerticesExtractor.o MessageProcessor.o SequencesLoader.o Chooser.o OpenAssemblerChooser.o TronChooser.o
+OBJECTS= Machine.o common_functions.o Loader.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o ReadAnnotation.o CoverageDistribution.o Message.o  Direction.o  PairedRead.o ColorSpaceDecoder.o ColorSpaceLoader.o VertexLinkedList.o BubbleTool.o VerticesExtractor.o MessageProcessor.o SequencesLoader.o Chooser.o OpenAssemblerChooser.o TronChooser.o ErrorSimulator.o
 
 %.o: %.cpp
 	@echo MPICC $<
 	@$(MPICC) $(CXXFLAGS) -c $< -o $@
 
-SimulatePairedReads: simulate_paired_main.o $(OBJECTS)
-	$(CC) $(CXXFLAGS) $^ -o $@
+simtools: Ray-SimulateFragments Ray-SimulateErrors Ray-SimulatePairedReads
 
-SimulateErrors: simulateErrors_main.o $(OBJECTS)
-	$(CC) $(CXXFLAGS) $^ -o $@
 
-SimulateFragments: simulate_fragments_main.o $(OBJECTS)
-	$(CC) $(CXXFLAGS) $^ -o $@
+Ray-SimulatePairedReads: simulate_paired_main.o $(OBJECTS)
+	@echo A.OUT $@
+	@$(MPICC) $(CXXFLAGS) $^ -o $@
+
+Ray-SimulateErrors: simulateErrors_main.o $(OBJECTS)
+	@echo A.OUT $@
+	@$(MPICC) $(CXXFLAGS) $^ -o $@
+
+Ray-SimulateFragments: simulate_fragments_main.o $(OBJECTS)
+	@echo A.OUT $@
+	@$(MPICC) $(CXXFLAGS) $^ -o $@
 
 
 Ray: ray_main.o $(OBJECTS)
-	@echo MPICC Ray
+	@echo A.OUT $@
 	@$(MPICC) $(CXXFLAGS) $^ -o $@
 
 test: test_main.o $(OBJECTS)
-	$(MPICC) $(CXXFLAGS) $^ -o $@
-	$(MPIRUN) ./test
+	@echo TEST
+	@$(MPICC) $(CXXFLAGS) $^ -o $@
+	@$(MPIRUN) ./test
 clean:
 	@echo CLEAN
-	@rm -f $(OBJECTS) $(TARGETS)
+	@rm -f $(OBJECTS) $(TARGETS) *.o
 

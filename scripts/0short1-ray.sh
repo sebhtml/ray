@@ -1,4 +1,4 @@
 source ../0parameters.sh
 source ../0short1-parameters.sh
-mpirun -np $nproc Ray -p $left $right $length $sd &> log1
-print-latex.sh $syrin Ray-Contigs.fasta Ray
+mpirun -np $nproc Ray.0 -p $left $right $length $sd &> log1
+print-latex.sh $syrin Ray.0-Contigs.fasta Ray.0

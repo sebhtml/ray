@@ -44,7 +44,7 @@
 #include<MyAllocator.h>
 #include<mpi.h>
 #include<stack>
-
+#include<VerticesExtractor.h>
 
 
 class StatisticsData{

@@ -31,7 +31,7 @@ Ray
 #include<iostream>
 using namespace std;
 
-void SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distribution_reads,int*m_distribution_sequence_id,
+bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distribution_reads,int*m_distribution_sequence_id,
 	bool*m_LOADER_isLeftFile,vector<Message>*m_outbox,int*m_distribution_file_id,MyAllocator*m_distributionAllocator,
 	bool*m_LOADER_isRightFile,int*m_LOADER_averageFragmentLength,DistributionData*m_disData,	
 	int*m_LOADER_numberOfSequencesInLeftFile,MyAllocator*m_outboxAllocator,
@@ -58,7 +58,7 @@ void SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		}
 		(*m_distributionAllocator).clear();
 		(*m_distribution_reads).clear();
-		return;
+		return true;
 	}
 	if((*m_distribution_reads).size()==0){
 		Loader loader;
@@ -68,9 +68,12 @@ void SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<rank<<" loads "<<allFiles[(*m_distribution_file_id)]<<"."<<endl;
 		#else
-		cout<<"\r"<<"Loading sequences ("<<allFiles[(*m_distribution_file_id)]<<")"<<endl;
+		cout<<"\r"<<"Loading "<<allFiles[(*m_distribution_file_id)]<<""<<endl;
 		#endif
 		loader.load(allFiles[(*m_distribution_file_id)],&(*m_distribution_reads),&(*m_distributionAllocator),&(*m_distributionAllocator));
+		if((*m_distribution_reads).size()==0){
+			return false;
+		}
 
 		// write Reads in AMOS format.
 		if((*m_parameters).useAmos()){
@@ -169,6 +172,7 @@ void SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		(*m_distribution_currentSequenceId)++;
 		(*m_distribution_sequence_id)++;
 	}
+	return true;
 }
 
 void SequencesLoader::flushPairedStock(int threshold,vector<Message>*m_outbox,

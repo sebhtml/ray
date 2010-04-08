@@ -268,12 +268,10 @@ void Machine::start(){
 		#else
 
 		cout<<"Ray Copyright (C) 2010  Sébastien Boisvert, Jacques Corbeil, François Laviolette"<<endl;
+ 		cout<<"http://denovoassembler.sf.net/"<<endl;
     		cout<<"This program comes with ABSOLUTELY NO WARRANTY."<<endl;
     		cout<<"This is free software, and you are welcome to redistribute it"<<endl;
     		cout<<"under certain conditions; see \"gpl-3.0.txt\" for details."<<endl;
-		cout<<endl;
- 		cout<<"see http://denovoassembler.sf.net/"<<endl;
-		cout<<endl;
 
 		#endif
 	}
@@ -327,8 +325,7 @@ void Machine::run(){
 	#endif
 
 	if(isMaster()){
-		cout<<"Starting "<<m_parameters.getEngineName()<<" "<<m_parameters.getVersion()<<endl;
-		cout<<"Ray runs on "<<getSize()<<" MPI processes"<<endl;
+		cout<<"Starting "<<m_parameters.getEngineName()<<" "<<m_parameters.getVersion()<<" on "<<getSize()<<" MPI processes"<<endl;
 	}
 	while(isAlive()){
 		receiveMessages(); 
@@ -484,7 +481,7 @@ void Machine::attachReads(){
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<" loads "<<allFiles[m_distribution_file_id]<<"."<<endl;
 		#else
-		cout<<"\r"<<"Loading sequences ("<<allFiles[m_distribution_file_id]<<")"<<endl;
+		cout<<"\r"<<"Loading "<<allFiles[m_distribution_file_id]<<""<<endl;
 		#endif
 		loader.load(allFiles[m_distribution_file_id],&m_distribution_reads,&m_distributionAllocator,&m_distributionAllocator);
 		
@@ -1282,7 +1279,7 @@ void Machine::processData(){
 			m_outbox.push_back(aMessage2);
 		}
 	}else if(m_welcomeStep==true && m_loadSequenceStep==false&&isMaster()){
-		m_sl.loadSequences(getRank(),getSize(),&m_distribution_reads,&m_distribution_sequence_id,
+		bool res=m_sl.loadSequences(getRank(),getSize(),&m_distribution_reads,&m_distribution_sequence_id,
 	&m_LOADER_isLeftFile,&m_outbox,&m_distribution_file_id,
 	&m_distributionAllocator,&m_LOADER_isRightFile,&m_LOADER_averageFragmentLength,
 	m_disData,&m_LOADER_numberOfSequencesInLeftFile,&m_outboxAllocator,
@@ -1291,12 +1288,16 @@ void Machine::processData(){
 	&m_lastTime,
 	&m_parameters
 );
+		if(!res){
+			killRanks();
+			m_mode=MODE_DO_NOTHING;
+		}
 
 	}else if(m_loadSequenceStep==true && m_mode_send_vertices==false&&isMaster() and m_sequence_ready_machines==getSize()&&m_messageSentForVerticesDistribution==false){
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<": starting vertices distribution."<<endl;
 		#else
-		cout<<"\r"<<"Computing vertices"<<endl;
+		cout<<"\r"<<"Counting vertices"<<endl;
 		#endif
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i, TAG_START_VERTICES_DISTRIBUTION,getRank());
@@ -1317,7 +1318,7 @@ void Machine::processData(){
 		m_startEdgeDistribution=false;
 	}else if(m_startEdgeDistribution){
 		#ifndef SHOW_PROGRESS
-		cout<<"\r"<<"Adding arcs"<<endl;
+		cout<<"\r"<<"Connecting vertices"<<endl;
 		#endif
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i, TAG_START_EDGES_DISTRIBUTION_ASK,getRank());
