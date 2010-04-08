@@ -19,6 +19,11 @@
 
 */
 
+#include<iostream>
+using namespace std;
+
+// tron sole infamous parameter
+#define __TRON_THRESHOLD 1.3
 
 #include<TronChooser.h>
 #include<math.h>
@@ -30,11 +35,11 @@ double score(vector<int>*a,vector<int>*b){
 	double s=0;
 	for(int i=0;i<(int)a->size();i++){
 		int v=a->at(i);
-		s+=log(v)*v;
+		s+=(1+log(v))*v;
 	}
 	for(int i=0;i<(int)b->size();i++){
 		int v=b->at(i);
-		s+=log(v)*v;
+		s+=(1+log(v))*v;
 	}
 	double norm=s/n;
 	return norm;
@@ -42,16 +47,24 @@ double score(vector<int>*a,vector<int>*b){
 
 int TronChooser::choose(ExtensionData*m_ed,Chooser*m_c,int m_minimumCoverage,int m_maxCoverage,ChooserData*m_cd){
 	double scores[4];
-	int i=0;
 	int n=m_ed->m_enumerateChoices_outgoingEdges.size();
-	while(i<n)
-		scores[i++]=0;
+	#ifdef SHOW_TRON
+	if(n>1)
+		cout<<"Tron ";
+	#endif
 	for(int i=0;i<n;i++){
 		scores[i]=score(&(m_ed->m_EXTENSION_readPositionsForVertices[i]),
 			 &(m_ed->m_EXTENSION_pairedReadPositionsForVertices[i]));
+		#ifdef SHOW_TRON
+		if(n>1)
+			cout<<" "<<i<<"->"<<scores[i];
+		#endif
 	}
+	#ifdef SHOW_TRON
+	#endif
 	for(int i=0;i<n;i++){
 		double vi=scores[i];
+		bool victory=true;
 		if(vi==0)
 			continue;
 		for(int j=0;j<n;j++){
@@ -61,12 +74,22 @@ int TronChooser::choose(ExtensionData*m_ed,Chooser*m_c,int m_minimumCoverage,int
 			if(vj==0)
 				continue;
 			double scale=vi/vj;
-			double scaleLimit=2;
-			if(scale<scaleLimit){
-				return IMPOSSIBLE_CHOICE;
+			if(scale<__TRON_THRESHOLD){
+				victory=false;
+				break;
 			}
 		}
+		if(!victory)
+			continue;
+		#ifdef SHOW_TRON
+		if(n>1)
+			cout<<" wins: "<<i<<endl;
+		#endif
 		return i;
 	}
+	#ifdef SHOW_TRON
+	if(n>1)
+		cout<<" IMPOSSIBLE_CHOICE"<<endl;
+	#endif
 	return IMPOSSIBLE_CHOICE;
 }

@@ -2684,8 +2684,8 @@ void Machine::doChoice(){
 				#endif
 				
 				// select chooser algorithm here.
-				//#define USE_OPEN_ASSEMBLER_CHOOSER
-				#define USE_TRON_CHOOSER
+				#define USE_OPEN_ASSEMBLER_CHOOSER
+				//#define USE_TRON_CHOOSER 
 
 				#ifdef USE_OPEN_ASSEMBLER_CHOOSER
 				int choice=m_oa.choose(m_ed,&m_c,m_minimumCoverage,m_maxCoverage,m_cd);

@@ -24,6 +24,9 @@
 
 #include<Chooser.h> // for IMPOSSIBLE_CHOICE
 
+/**
+ * de Bruijn heuristic to choose extension direction in a graph, described in paper (in revision).
+ */
 class OpenAssemblerChooser{
 	int proceedWithCoverages(int a,int b,ExtensionData*m_ed);
 public:
