@@ -2657,7 +2657,17 @@ void Machine::doChoice(){
 					cout<<"*****************************************"<<endl;
 					cout<<"CurrentVertex="<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<" @"<<m_ed->m_EXTENSION_extension.size()<<endl;
 					cout<<" # ReadsInRange: "<<m_ed->m_EXTENSION_readsInRange.size()<<endl;
-					cout<<m_ed->m_enumerateChoices_outgoingEdges.size()<<" arcs."<<endl;
+					cout<<m_ed->m_enumerateChoices_outgoingEdges.size()<<" arcs: ";
+					for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
+						string vertex=idToWord(m_ed->m_enumerateChoices_outgoingEdges[i],m_wordSize);
+						char letter=vertex[m_wordSize-1];
+						int index=i;
+						int coverage=m_ed->m_EXTENSION_coverages[i];
+						int singleEnds=m_ed->m_EXTENSION_readPositionsForVertices[i].size();
+						int pairedEnds=m_ed->m_EXTENSION_pairedReadPositionsForVertices[i].size();
+						cout<<" "<<index<<"/"<<letter<<"/"<<coverage<<"/"<<singleEnds<<"/"<<pairedEnds;
+					}
+					cout<<endl;
 					for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
 						string vertex=idToWord(m_ed->m_enumerateChoices_outgoingEdges[i],m_wordSize);
 						cout<<endl;
@@ -3078,7 +3088,8 @@ void Machine::markCurrentVertexAsAssembled(){
 
 					if(m_ed->m_EXTENSION_usedReads.count(uniqueId)==0 ){
 						// use all reads available.
-						if(true or m_SEEDING_receivedVertexCoverage<3*m_peakCoverage){
+						// avoid vertices with too much coverage.
+						if(m_SEEDING_receivedVertexCoverage<m_maxCoverage){
 							m_ed->m_EXTENSION_usedReads.insert(uniqueId);
 							m_ed->m_EXTENSION_reads_startingPositionOnContig[uniqueId]=m_ed->m_EXTENSION_extension.size()-1;
 							m_ed->m_EXTENSION_readsInRange.insert(m_ed->m_EXTENSION_receivedReads[i]);
@@ -3086,7 +3097,12 @@ void Machine::markCurrentVertexAsAssembled(){
 							assert(m_ed->m_EXTENSION_readsInRange.count(m_ed->m_EXTENSION_receivedReads[i])>0);
 							#endif
 						}else{
-							cout<<"Repeated vertex."<<endl;
+							#ifdef SHOW_REPEATED_VERTEX
+							cout<<"Repeated vertex: "<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<endl;
+							#endif
+							#ifdef DEBUG
+							assert(m_SEEDING_receivedVertexCoverage>=m_maxCoverage);
+							#endif
 						}
 					}
 				}
