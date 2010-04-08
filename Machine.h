@@ -41,6 +41,70 @@
 #include<mpi.h>
 #include<stack>
 
+class ExtensionData{
+public:
+	// EXTENSION MODE
+	vector<VERTEX_TYPE> m_enumerateChoices_outgoingEdges;
+	bool m_doChoice_tips_Detected;
+	PairedRead m_EXTENSION_pairedRead;
+	bool m_EXTENSION_pairedSequenceRequested;
+	bool m_EXTENSION_hasPairedReadAnswer;
+	bool m_EXTENSION_pairedSequenceReceived;
+	int m_EXTENSION_edgeIterator;
+	bool m_EXTENSION_hasPairedReadRequested;
+	bool m_EXTENSION_hasPairedReadReceived;
+	vector<int> m_EXTENSION_identifiers;
+	vector<VERTEX_TYPE> m_EXTENSION_extension;
+	vector<int> m_EXTENSION_coverages;
+	bool m_EXTENSION_complementedSeed;
+	vector<VERTEX_TYPE> m_EXTENSION_currentSeed;
+	int m_EXTENSION_numberOfRanksDone;
+	vector<vector<VERTEX_TYPE> > m_EXTENSION_contigs;
+	bool m_EXTENSION_checkedIfCurrentVertexIsAssembled;
+	bool m_EXTENSION_VertexMarkAssembled_requested;
+	bool m_EXTENSION_reverseComplement_requested;
+	bool m_EXTENSION_vertexIsAssembledResult;
+	set<ReadAnnotation,ReadAnnotationComparator>::iterator m_EXTENSION_readIterator;
+	bool m_EXTENSION_readLength_requested;
+	bool m_EXTENSION_readLength_received;
+	bool m_EXTENSION_readLength_done;
+	bool m_EXTENSION_read_vertex_received;
+	bool m_EXTENSION_read_vertex_requested;
+	VERTEX_TYPE m_EXTENSION_receivedReadVertex;
+	bool m_mode_EXTENSION;
+	bool m_EXTENSION_currentRankIsDone;
+	bool m_EXTENSION_currentRankIsSet;
+	bool m_EXTENSION_currentRankIsStarted;
+	int m_EXTENSION_rank;
+	bool m_EXTENSION_initiated;
+	int m_EXTENSION_currentSeedIndex;
+	bool m_EXTENSION_VertexAssembled_received;
+	int m_EXTENSION_currentPosition;
+	bool m_EXTENSION_VertexMarkAssembled_received;
+	bool m_EXTENSION_markedCurrentVertexAsAssembled;
+	bool m_EXTENSION_enumerateChoices;
+	bool m_EXTENSION_choose;
+	bool m_EXTENSION_directVertexDone;
+	bool m_EXTENSION_VertexAssembled_requested;
+	bool m_EXTENSION_receivedAssembled;
+	bool m_EXTENSION_reverseComplement_received;
+	vector<ReadAnnotation> m_EXTENSION_receivedReads;
+	bool m_EXTENSION_reads_requested;
+	bool m_EXTENSION_reads_received;
+	vector<ReadAnnotation> m_EXTENSION_readsOutOfRange;
+	int m_EXTENSION_receivedLength;
+	bool m_EXTENSION_reverseVertexDone;
+	// reads used so far
+	set<int> m_EXTENSION_usedReads;
+	// reads to check (the ones "in range")
+	set<ReadAnnotation,ReadAnnotationComparator> m_EXTENSION_readsInRange;
+	bool m_EXTENSION_singleEndResolution;
+	map<int,vector<int> > m_EXTENSION_readPositionsForVertices;
+	map<int,vector<int> > m_EXTENSION_pairedReadPositionsForVertices;
+	map<int,int> m_EXTENSION_reads_startingPositionOnContig;
+
+};
+
 class ChooserData{
 public:
 	// paired-end resolution of repeats.
@@ -199,66 +263,7 @@ class Machine{
 	vector<Message> m_inbox;
 
 
-	// EXTENSION MODE
-	vector<VERTEX_TYPE> m_enumerateChoices_outgoingEdges;
-	bool m_doChoice_tips_Detected;
-	PairedRead m_EXTENSION_pairedRead;
-	bool m_EXTENSION_pairedSequenceRequested;
-	bool m_EXTENSION_hasPairedReadAnswer;
-	bool m_EXTENSION_pairedSequenceReceived;
-	int m_EXTENSION_edgeIterator;
-	bool m_EXTENSION_hasPairedReadRequested;
-	bool m_EXTENSION_hasPairedReadReceived;
-	vector<int> m_EXTENSION_identifiers;
-	vector<VERTEX_TYPE> m_EXTENSION_extension;
-	vector<int> m_EXTENSION_coverages;
-	bool m_EXTENSION_complementedSeed;
-	vector<VERTEX_TYPE> m_EXTENSION_currentSeed;
-	int m_EXTENSION_numberOfRanksDone;
-	vector<vector<VERTEX_TYPE> > m_EXTENSION_contigs;
-	bool m_EXTENSION_checkedIfCurrentVertexIsAssembled;
-	bool m_EXTENSION_VertexMarkAssembled_requested;
-	bool m_EXTENSION_reverseComplement_requested;
-	bool m_EXTENSION_vertexIsAssembledResult;
-	set<ReadAnnotation,ReadAnnotationComparator>::iterator m_EXTENSION_readIterator;
-	bool m_EXTENSION_readLength_requested;
-	bool m_EXTENSION_readLength_received;
-	bool m_EXTENSION_readLength_done;
-	bool m_EXTENSION_read_vertex_received;
-	bool m_EXTENSION_read_vertex_requested;
-	VERTEX_TYPE m_EXTENSION_receivedReadVertex;
-	bool m_mode_EXTENSION;
-	bool m_EXTENSION_currentRankIsDone;
-	bool m_EXTENSION_currentRankIsSet;
-	bool m_EXTENSION_currentRankIsStarted;
-	int m_EXTENSION_rank;
-	bool m_EXTENSION_initiated;
-	int m_EXTENSION_currentSeedIndex;
-	bool m_EXTENSION_VertexAssembled_received;
-	int m_EXTENSION_currentPosition;
-	bool m_EXTENSION_VertexMarkAssembled_received;
-	bool m_EXTENSION_markedCurrentVertexAsAssembled;
-	bool m_EXTENSION_enumerateChoices;
-	bool m_EXTENSION_choose;
-	bool m_EXTENSION_directVertexDone;
-	bool m_EXTENSION_VertexAssembled_requested;
-	bool m_EXTENSION_receivedAssembled;
-	bool m_EXTENSION_reverseComplement_received;
-	vector<ReadAnnotation> m_EXTENSION_receivedReads;
-	bool m_EXTENSION_reads_requested;
-	bool m_EXTENSION_reads_received;
-	vector<ReadAnnotation> m_EXTENSION_readsOutOfRange;
-	int m_EXTENSION_receivedLength;
-	bool m_EXTENSION_reverseVertexDone;
-	// reads used so far
-	set<int> m_EXTENSION_usedReads;
-	// reads to check (the ones "in range")
-	set<ReadAnnotation,ReadAnnotationComparator> m_EXTENSION_readsInRange;
-	bool m_EXTENSION_singleEndResolution;
-	map<int,vector<int> > m_EXTENSION_readPositionsForVertices;
-	map<int,vector<int> > m_EXTENSION_pairedReadPositionsForVertices;
-	map<int,int> m_EXTENSION_reads_startingPositionOnContig;
-
+	ExtensionData*m_ed;
 	
 	ChooserData*m_cd;
 	

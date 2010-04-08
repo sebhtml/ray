@@ -139,6 +139,7 @@ Machine::Machine(int argc,char**argv){
 	m_dfsData=new DepthFirstSearchData();
 	m_fusionData=new FusionData();
 	m_disData=new DistributionData();
+	m_ed=new ExtensionData();
 	m_cd=new ChooserData();
 }
 
@@ -200,7 +201,7 @@ void Machine::start(){
 	m_lastTime=time(NULL);
 	srand(m_lastTime);
 	m_fusionData->m_fusionStarted=false;
-	m_EXTENSION_numberOfRanksDone=0;
+	m_ed->m_EXTENSION_numberOfRanksDone=0;
 	m_colorSpaceMode=false;
 	m_messageSentForEdgesDistribution=false;
 	m_numberOfRanksDoneSeeding=0;
@@ -208,7 +209,7 @@ void Machine::start(){
 	m_calibrationIsDone=true; // set to false to perform a speed calibration.
 	m_master_mode=MODE_DO_NOTHING;
 	m_numberOfMachinesReadyForEdgesDistribution=-1;
-	m_mode_EXTENSION=false;
+	m_ed->m_mode_EXTENSION=false;
 	m_aborted=false;
 	m_readyToSeed=0;
 	m_wordSize=-1;
@@ -584,7 +585,7 @@ void Machine::flushAttachedSequences(int threshold){
  */
 void Machine::finishFusions(){
 	// finishing is broken?
-	if(m_SEEDING_i==(int)m_EXTENSION_contigs.size()){
+	if(m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
 		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 		message[0]=m_FINISH_fusionOccured;
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_FINISH_FUSIONS_FINISHED,getRank());
@@ -593,13 +594,13 @@ void Machine::finishFusions(){
 		return;
 	}
 	int overlapMinimumLength=1000;
-	if((int)m_EXTENSION_contigs[m_SEEDING_i].size()<overlapMinimumLength){
+	if((int)m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()<overlapMinimumLength){
 		#ifdef SHOW_PROGRESS
-		cout<<"No overlap possible m_SEEDING_i="<<m_SEEDING_i<<" size="<<m_EXTENSION_contigs[m_SEEDING_i].size()<<endl;
+		cout<<"No overlap possible m_SEEDING_i="<<m_SEEDING_i<<" size="<<m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()<<endl;
 		#endif
 		m_SEEDING_i++;
 		m_FINISH_vertex_requested=false;
-		m_EXTENSION_currentPosition=0;
+		m_ed->m_EXTENSION_currentPosition=0;
 		m_fusionData->m_FUSION_pathLengthRequested=false;
 		m_Machine_getPaths_INITIALIZED=false;
 		m_Machine_getPaths_DONE=false;
@@ -608,19 +609,19 @@ void Machine::finishFusions(){
 	}
 	// check if the path begins with someone else.
 	
-	int currentId=m_EXTENSION_identifiers[m_SEEDING_i];
+	int currentId=m_ed->m_EXTENSION_identifiers[m_SEEDING_i];
 	// don't do it if it is removed.
 
 	// start threading the extension
 	// as the algorithm advance on it, it stores the path positions.
 	// when it reaches a choice, it will use the available path as basis.
 	
-	// we have the extension in m_EXTENSION_contigs[m_SEEDING_i]
+	// we have the extension in m_ed->m_EXTENSION_contigs[m_SEEDING_i]
 	// we get the paths with getPaths
 	bool done=false;
-	if(m_EXTENSION_currentPosition<(int)m_EXTENSION_contigs[m_SEEDING_i].size()){
+	if(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()){
 		if(!m_Machine_getPaths_DONE){
-			getPaths(m_EXTENSION_contigs[m_SEEDING_i][m_EXTENSION_currentPosition]);
+			getPaths(m_ed->m_EXTENSION_contigs[m_SEEDING_i][m_ed->m_EXTENSION_currentPosition]);
 		}else{
 			vector<Direction> a;
 			for(int i=0;i<(int)m_Machine_getPaths_result.size();i++){
@@ -629,7 +630,7 @@ void Machine::finishFusions(){
 				}
 			}
 			m_FINISH_pathsForPosition.push_back(a);
-			if(m_EXTENSION_currentPosition==0){
+			if(m_ed->m_EXTENSION_currentPosition==0){
 				vector<VERTEX_TYPE> a;
 				m_FINISH_newFusions.push_back(a);
 				m_FINISH_vertex_requested=false;
@@ -637,9 +638,9 @@ void Machine::finishFusions(){
 				m_fusionData->m_FUSION_pathLengthRequested=false;
 				m_checkedValidity=false;
 			}
-			VERTEX_TYPE vertex=m_EXTENSION_contigs[m_SEEDING_i][m_EXTENSION_currentPosition];
+			VERTEX_TYPE vertex=m_ed->m_EXTENSION_contigs[m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
 			m_FINISH_newFusions[m_FINISH_newFusions.size()-1].push_back(vertex);
-			m_EXTENSION_currentPosition++;
+			m_ed->m_EXTENSION_currentPosition++;
 			m_Machine_getPaths_DONE=false;
 			m_Machine_getPaths_INITIALIZED=false;
 		}
@@ -687,7 +688,7 @@ void Machine::finishFusions(){
 			}else if(m_fusionData->m_FUSION_pathLengthReceived){
 				m_FINISH_pathLengths[pathId]=m_fusionData->m_FUSION_receivedLength;
 			}
-		}else if(m_FINISH_pathLengths[pathId]!=(int)m_EXTENSION_contigs[m_SEEDING_i].size()){// avoid fusion of same length.
+		}else if(m_FINISH_pathLengths[pathId]!=(int)m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()){// avoid fusion of same length.
 			int nextPosition=progression+1;
 			if(nextPosition<m_FINISH_pathLengths[pathId]){
 				// get the vertex
@@ -726,7 +727,7 @@ void Machine::finishFusions(){
 		// there is nothing we can do.
 		m_SEEDING_i++;
 		m_FINISH_vertex_requested=false;
-		m_EXTENSION_currentPosition=0;
+		m_ed->m_EXTENSION_currentPosition=0;
 		m_fusionData->m_FUSION_pathLengthRequested=false;
 		m_Machine_getPaths_INITIALIZED=false;
 		m_Machine_getPaths_DONE=false;
@@ -744,25 +745,25 @@ void Machine::makeFusions(){
 	
 	int END_LENGTH=100;
 	// avoid duplication of contigs.
-	if(m_SEEDING_i<(int)m_EXTENSION_contigs.size()){
-		if((int)m_EXTENSION_contigs[m_SEEDING_i].size()<=END_LENGTH){
-			END_LENGTH=m_EXTENSION_contigs[m_SEEDING_i].size()-1;
+	if(m_SEEDING_i<(int)m_ed->m_EXTENSION_contigs.size()){
+		if((int)m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()<=END_LENGTH){
+			END_LENGTH=m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()-1;
 		}
 	}
-	if(m_SEEDING_i==(int)m_EXTENSION_contigs.size()){
+	if(m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_FUSION_DONE,getRank());
 		m_outbox.push_back(aMessage);
 		m_mode=MODE_DO_NOTHING;
 		#ifdef SHOW_PROGRESS
-		cout<<"Rank "<<getRank()<<": fusion "<<m_SEEDING_i-1<<"/"<<m_EXTENSION_contigs.size()<<" (DONE)"<<endl;
+		cout<<"Rank "<<getRank()<<": fusion "<<m_SEEDING_i-1<<"/"<<m_ed->m_EXTENSION_contigs.size()<<" (DONE)"<<endl;
 		#endif
 		#ifdef DEBUG
 		//cout<<"Rank "<<getRank()<<" eliminated: "<<m_fusionData->m_FUSION_eliminated.size()<<endl;
 		#endif
 		return;
-	}else if((int)m_EXTENSION_contigs[m_SEEDING_i].size()<=END_LENGTH){
+	}else if((int)m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()<=END_LENGTH){
 		#ifdef SHOW_PROGRESS
-		cout<<"No fusion for me. "<<m_SEEDING_i<<" "<<m_EXTENSION_contigs[m_SEEDING_i].size()<<" "<<m_EXTENSION_identifiers[m_SEEDING_i]<<endl;
+		cout<<"No fusion for me. "<<m_SEEDING_i<<" "<<m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()<<" "<<m_ed->m_EXTENSION_identifiers[m_SEEDING_i]<<endl;
 		#endif
 		m_fusionData->m_FUSION_direct_fusionDone=false;
 		m_fusionData->m_FUSION_first_done=false;
@@ -770,19 +771,19 @@ void Machine::makeFusions(){
 		m_SEEDING_i++;
 		return;
 	}else if(!m_fusionData->m_FUSION_direct_fusionDone){
-		int currentId=m_EXTENSION_identifiers[m_SEEDING_i];
+		int currentId=m_ed->m_EXTENSION_identifiers[m_SEEDING_i];
 		if(!m_fusionData->m_FUSION_first_done){
 			if(!m_fusionData->m_FUSION_paths_requested){
 				#ifdef SHOW_PROGRESS
 				if(m_SEEDING_i%100==0){
-					cout<<"Rank "<<getRank()<<": fusion "<<m_SEEDING_i<<"/"<<m_EXTENSION_contigs.size()<<endl;
+					cout<<"Rank "<<getRank()<<": fusion "<<m_SEEDING_i<<"/"<<m_ed->m_EXTENSION_contigs.size()<<endl;
 				}
 				#endif
 				// get the paths going on the first vertex
 				#ifdef DEBUG
-				assert((int)m_EXTENSION_contigs[m_SEEDING_i].size()>END_LENGTH);
+				assert((int)m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()>END_LENGTH);
 				#endif
-				VERTEX_TYPE theVertex=m_EXTENSION_contigs[m_SEEDING_i][END_LENGTH];
+				VERTEX_TYPE theVertex=m_ed->m_EXTENSION_contigs[m_SEEDING_i][END_LENGTH];
 				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 				message[0]=theVertex;
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex),TAG_ASK_VERTEX_PATHS_SIZE,getRank());
@@ -794,7 +795,7 @@ void Machine::makeFusions(){
 			}else if(m_fusionData->m_FUSION_paths_received){
 				if(m_fusionData->m_FUSION_path_id<m_fusionData->m_FUSION_numberOfPaths){
 					if(!m_fusionData->m_FUSION_path_requested){
-						VERTEX_TYPE theVertex=m_EXTENSION_contigs[m_SEEDING_i][END_LENGTH];
+						VERTEX_TYPE theVertex=m_ed->m_EXTENSION_contigs[m_SEEDING_i][END_LENGTH];
 						VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 						message[0]=m_fusionData->m_FUSION_path_id;
 						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex),TAG_ASK_VERTEX_PATH,getRank());
@@ -822,9 +823,9 @@ void Machine::makeFusions(){
 			if(!m_fusionData->m_FUSION_paths_requested){
 				// get the paths going on the lastvertex<
 				#ifdef DEBUG
-				assert((int)m_EXTENSION_contigs[m_SEEDING_i].size()>=END_LENGTH);
+				assert((int)m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()>=END_LENGTH);
 				#endif
-				VERTEX_TYPE theVertex=m_EXTENSION_contigs[m_SEEDING_i][m_EXTENSION_contigs[m_SEEDING_i].size()-END_LENGTH];
+				VERTEX_TYPE theVertex=m_ed->m_EXTENSION_contigs[m_SEEDING_i][m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()-END_LENGTH];
 				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 				message[0]=theVertex;
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex),TAG_ASK_VERTEX_PATHS_SIZE,getRank());
@@ -836,7 +837,7 @@ void Machine::makeFusions(){
 			}else if(m_fusionData->m_FUSION_paths_received){
 				if(m_fusionData->m_FUSION_path_id<m_fusionData->m_FUSION_numberOfPaths){
 					if(!m_fusionData->m_FUSION_path_requested){
-						VERTEX_TYPE theVertex=m_EXTENSION_contigs[m_SEEDING_i][m_EXTENSION_contigs[m_SEEDING_i].size()-END_LENGTH];
+						VERTEX_TYPE theVertex=m_ed->m_EXTENSION_contigs[m_SEEDING_i][m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()-END_LENGTH];
 						VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 						message[0]=m_fusionData->m_FUSION_path_id;
 						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex),TAG_ASK_VERTEX_PATH,getRank());
@@ -897,7 +898,7 @@ void Machine::makeFusions(){
 						bool found=false;
 						for(int p=0;p<(int)ends[otherPathId].size();p++){
 							int observedLength=ends[otherPathId][p]-starts[otherPathId][k]+1;
-							int expectedLength=m_EXTENSION_contigs[m_SEEDING_i].size()-2*END_LENGTH+1;
+							int expectedLength=m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()-2*END_LENGTH+1;
 							//cout<<observedLength<<" versus "<<expectedLength<<endl;
 							if(observedLength==expectedLength){
 								m_fusionData->m_FUSION_matches.push_back(otherPathId);
@@ -920,7 +921,7 @@ void Machine::makeFusions(){
 			m_fusionData->m_FUSION_match_index=0;
 			m_fusionData->m_FUSION_pathLengthRequested=false;
 		}else if(!m_fusionData->m_FUSION_matches_length_done){
-			int currentId=m_EXTENSION_identifiers[m_SEEDING_i];
+			int currentId=m_ed->m_EXTENSION_identifiers[m_SEEDING_i];
 			if(m_fusionData->m_FUSION_match_index==(int)m_fusionData->m_FUSION_matches.size()){// tested all matches, and nothing was found.
 				m_fusionData->m_FUSION_matches_length_done=true;
 			}else if(!m_fusionData->m_FUSION_pathLengthRequested){
@@ -934,13 +935,13 @@ void Machine::makeFusions(){
 				m_fusionData->m_FUSION_pathLengthReceived=false;
 			}else if(m_fusionData->m_FUSION_pathLengthReceived){
 				if(m_fusionData->m_FUSION_receivedLength==0){
-				}else if(m_fusionData->m_FUSION_matches[m_fusionData->m_FUSION_match_index]<currentId and m_fusionData->m_FUSION_receivedLength == (int)m_EXTENSION_contigs[m_SEEDING_i].size()){
+				}else if(m_fusionData->m_FUSION_matches[m_fusionData->m_FUSION_match_index]<currentId and m_fusionData->m_FUSION_receivedLength == (int)m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()){
 					m_fusionData->m_FUSION_eliminated.insert(currentId);
 					m_fusionData->m_FUSION_direct_fusionDone=false;
 					m_fusionData->m_FUSION_first_done=false;
 					m_fusionData->m_FUSION_paths_requested=false;
 					m_SEEDING_i++;
-				}else if(m_fusionData->m_FUSION_receivedLength>(int)m_EXTENSION_contigs[m_SEEDING_i].size() ){
+				}else if(m_fusionData->m_FUSION_receivedLength>(int)m_ed->m_EXTENSION_contigs[m_SEEDING_i].size() ){
 					m_fusionData->m_FUSION_eliminated.insert(currentId);
 					m_fusionData->m_FUSION_direct_fusionDone=false;
 					m_fusionData->m_FUSION_first_done=false;
@@ -957,11 +958,11 @@ void Machine::makeFusions(){
 			m_fusionData->m_FUSION_paths_requested=false;
 		}
 	}else if(!m_fusionData->m_FUSION_reverse_fusionDone){
-		int currentId=m_EXTENSION_identifiers[m_SEEDING_i];
+		int currentId=m_ed->m_EXTENSION_identifiers[m_SEEDING_i];
 		if(!m_fusionData->m_FUSION_first_done){
 			if(!m_fusionData->m_FUSION_paths_requested){
 				// get the paths going on the first vertex
-				VERTEX_TYPE theVertex=complementVertex(m_EXTENSION_contigs[m_SEEDING_i][m_EXTENSION_contigs[m_SEEDING_i].size()-END_LENGTH],m_wordSize,m_colorSpaceMode);
+				VERTEX_TYPE theVertex=complementVertex(m_ed->m_EXTENSION_contigs[m_SEEDING_i][m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()-END_LENGTH],m_wordSize,m_colorSpaceMode);
 				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 				message[0]=theVertex;
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex),TAG_ASK_VERTEX_PATHS_SIZE,getRank());
@@ -973,7 +974,7 @@ void Machine::makeFusions(){
 			}else if(m_fusionData->m_FUSION_paths_received){
 				if(m_fusionData->m_FUSION_path_id<m_fusionData->m_FUSION_numberOfPaths){
 					if(!m_fusionData->m_FUSION_path_requested){
-						VERTEX_TYPE theVertex=complementVertex(m_EXTENSION_contigs[m_SEEDING_i][m_EXTENSION_contigs[m_SEEDING_i].size()-END_LENGTH],m_wordSize,m_colorSpaceMode);
+						VERTEX_TYPE theVertex=complementVertex(m_ed->m_EXTENSION_contigs[m_SEEDING_i][m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()-END_LENGTH],m_wordSize,m_colorSpaceMode);
 						VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 						message[0]=m_fusionData->m_FUSION_path_id;
 						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex),TAG_ASK_VERTEX_PATH,getRank());
@@ -1000,7 +1001,7 @@ void Machine::makeFusions(){
 
 			if(!m_fusionData->m_FUSION_paths_requested){
 				// get the paths going on the first vertex
-				VERTEX_TYPE theVertex=complementVertex(m_EXTENSION_contigs[m_SEEDING_i][END_LENGTH],m_wordSize,m_colorSpaceMode);
+				VERTEX_TYPE theVertex=complementVertex(m_ed->m_EXTENSION_contigs[m_SEEDING_i][END_LENGTH],m_wordSize,m_colorSpaceMode);
 				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 				message[0]=theVertex;
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex),TAG_ASK_VERTEX_PATHS_SIZE,getRank());
@@ -1012,7 +1013,7 @@ void Machine::makeFusions(){
 			}else if(m_fusionData->m_FUSION_paths_received){
 				if(m_fusionData->m_FUSION_path_id<m_fusionData->m_FUSION_numberOfPaths){
 					if(!m_fusionData->m_FUSION_path_requested){
-						VERTEX_TYPE theVertex=complementVertex(m_EXTENSION_contigs[m_SEEDING_i][END_LENGTH],m_wordSize,m_colorSpaceMode);
+						VERTEX_TYPE theVertex=complementVertex(m_ed->m_EXTENSION_contigs[m_SEEDING_i][END_LENGTH],m_wordSize,m_colorSpaceMode);
 						VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 						message[0]=m_fusionData->m_FUSION_path_id;
 						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex),TAG_ASK_VERTEX_PATH,getRank());
@@ -1066,7 +1067,7 @@ void Machine::makeFusions(){
 						bool found=false;
 						for(int p=0;p<(int)ends[otherPathId].size();p++){
 							int observedLength=ends[otherPathId][p]-starts[otherPathId][k]+1;
-							int expectedLength=m_EXTENSION_contigs[m_SEEDING_i].size()-2*END_LENGTH+1;
+							int expectedLength=m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()-2*END_LENGTH+1;
 							//cout<<observedLength<<" versus "<<expectedLength<<endl;
 							if(observedLength==expectedLength){
 								m_fusionData->m_FUSION_matches.push_back(otherPathId);
@@ -1089,7 +1090,7 @@ void Machine::makeFusions(){
 			m_fusionData->m_FUSION_match_index=0;
 			m_fusionData->m_FUSION_pathLengthRequested=false;
 		}else if(!m_fusionData->m_FUSION_matches_length_done){
-			int currentId=m_EXTENSION_identifiers[m_SEEDING_i];
+			int currentId=m_ed->m_EXTENSION_identifiers[m_SEEDING_i];
 			if(m_fusionData->m_FUSION_match_index==(int)m_fusionData->m_FUSION_matches.size()){
 				m_fusionData->m_FUSION_matches_length_done=true;
 			}else if(!m_fusionData->m_FUSION_pathLengthRequested){
@@ -1103,13 +1104,13 @@ void Machine::makeFusions(){
 				m_fusionData->m_FUSION_pathLengthReceived=false;
 			}else if(m_fusionData->m_FUSION_pathLengthReceived){
 				if(m_fusionData->m_FUSION_receivedLength==0){
-				}else if(m_fusionData->m_FUSION_matches[m_fusionData->m_FUSION_match_index]<currentId and m_fusionData->m_FUSION_receivedLength == (int)m_EXTENSION_contigs[m_SEEDING_i].size()){
+				}else if(m_fusionData->m_FUSION_matches[m_fusionData->m_FUSION_match_index]<currentId and m_fusionData->m_FUSION_receivedLength == (int)m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()){
 					m_fusionData->m_FUSION_eliminated.insert(currentId);
 					m_fusionData->m_FUSION_direct_fusionDone=false;
 					m_fusionData->m_FUSION_first_done=false;
 					m_fusionData->m_FUSION_paths_requested=false;
 					m_SEEDING_i++;
-				}else if(m_fusionData->m_FUSION_receivedLength>(int)m_EXTENSION_contigs[m_SEEDING_i].size()){
+				}else if(m_fusionData->m_FUSION_receivedLength>(int)m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()){
 					m_fusionData->m_FUSION_eliminated.insert(currentId);
 					m_fusionData->m_FUSION_direct_fusionDone=false;
 					m_fusionData->m_FUSION_first_done=false;
@@ -1134,16 +1135,16 @@ void Machine::processMessages(){
 			&m_subgraph,
 			&m_outboxAllocator,
 			getRank(),
-			&m_EXTENSION_receivedReads,
+			&m_ed->m_EXTENSION_receivedReads,
 			&m_numberOfMachinesDoneSendingEdges,
 			m_fusionData,
-			&m_EXTENSION_contigs,
+			&m_ed->m_EXTENSION_contigs,
 			&m_wordSize,
 			&m_minimumCoverage,
 			&m_seedCoverage,
 			&m_peakCoverage,
 			&m_myReads,
-			&m_EXTENSION_currentRankIsDone,
+			&m_ed->m_EXTENSION_currentRankIsDone,
 			&m_FINISH_newFusions,
 		getSize(),
 	&m_inboxAllocator,
@@ -1160,46 +1161,46 @@ void Machine::processMessages(){
 	&m_calibration_numberOfMessagesSent,
 	&m_mode,
 	&m_allPaths,
-	&m_EXTENSION_VertexAssembled_received,
-	&m_EXTENSION_numberOfRanksDone,
-	&m_EXTENSION_currentPosition,
+	&m_ed->m_EXTENSION_VertexAssembled_received,
+	&m_ed->m_EXTENSION_numberOfRanksDone,
+	&m_ed->m_EXTENSION_currentPosition,
 	&m_last_value,
-	&m_EXTENSION_identifiers,
+	&m_ed->m_EXTENSION_identifiers,
 	&m_ranksDoneAttachingReads,
 	&m_SEEDING_edgesReceived,
-	&m_EXTENSION_pairedRead,
-	&m_mode_EXTENSION,
+	&m_ed->m_EXTENSION_pairedRead,
+	&m_ed->m_mode_EXTENSION,
 	&m_SEEDING_receivedOutgoingEdges,
 	&m_DISTRIBUTE_n,
 	&m_SEEDING_nodes,
-	&m_EXTENSION_hasPairedReadReceived,
+	&m_ed->m_EXTENSION_hasPairedReadReceived,
 	&m_numberOfRanksDoneSeeding,
 	&m_SEEDING_vertexKeyAndCoverageReceived,
 	&m_SEEDING_receivedVertexCoverage,
-	&m_EXTENSION_readLength_received,
+	&m_ed->m_EXTENSION_readLength_received,
 	&m_calibration_MaxSpeed,
 	&m_Machine_getPaths_DONE,
 	&m_CLEAR_n,
 	&m_FINISH_vertex_received,
-	&m_EXTENSION_initiated,
+	&m_ed->m_EXTENSION_initiated,
 	&m_readyToSeed,
 	&m_SEEDING_NodeInitiated,
 	&m_FINISH_n,
 	&m_nextReductionOccured,
-	&m_EXTENSION_hasPairedReadAnswer,
+	&m_ed->m_EXTENSION_hasPairedReadAnswer,
 	&m_directionsAllocator,
 	&m_FINISH_pathLengths,
-	&m_EXTENSION_pairedSequenceReceived,
-	&m_EXTENSION_receivedLength,
+	&m_ed->m_EXTENSION_pairedSequenceReceived,
+	&m_ed->m_EXTENSION_receivedLength,
 	&m_mode_send_coverage_iterator,
 	&m_coverageDistribution,
 	&m_FINISH_received_vertex,
-	&m_EXTENSION_read_vertex_received,
+	&m_ed->m_EXTENSION_read_vertex_received,
 	&m_sequence_ready_machines,
 	&m_SEEDING_InedgesReceived,
-	&m_EXTENSION_vertexIsAssembledResult,
+	&m_ed->m_EXTENSION_vertexIsAssembledResult,
 	&m_SEEDING_vertexCoverageReceived,
-	&m_EXTENSION_receivedReadVertex,
+	&m_ed->m_EXTENSION_receivedReadVertex,
 	&m_numberOfMachinesReadyForEdgesDistribution,
 	&m_numberOfMachinesReadyToSendDistribution,
 	&m_mode_send_outgoing_edges,
@@ -1208,7 +1209,7 @@ void Machine::processMessages(){
 	&m_mode_send_vertices,
 	&m_numberOfMachinesDoneSendingVertices,
 	&m_numberOfMachinesDoneSendingCoverage,
-	&m_EXTENSION_reads_received,
+	&m_ed->m_EXTENSION_reads_received,
 				&m_outbox);
 
 	}
@@ -1430,27 +1431,27 @@ void Machine::processData(){
 	}else if(m_mode==MODE_FINISH_FUSIONS){
 		finishFusions();
 	}else if(m_mode==MODE_DISTRIBUTE_FUSIONS){
-		if(m_SEEDING_i==(int)m_EXTENSION_contigs.size()){
+		if(m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_DISTRIBUTE_FUSIONS_FINISHED,getRank());
 			m_outbox.push_back(aMessage);
 			m_mode=MODE_DO_NOTHING;
 			return;
 		}
 	
-		VERTEX_TYPE vertex=m_EXTENSION_contigs[m_SEEDING_i][m_EXTENSION_currentPosition];
+		VERTEX_TYPE vertex=m_ed->m_EXTENSION_contigs[m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
 		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(3*sizeof(VERTEX_TYPE));
 		message[0]=vertex;
-		message[1]=m_EXTENSION_identifiers[m_SEEDING_i];
-		message[2]=m_EXTENSION_currentPosition;
+		message[1]=m_ed->m_EXTENSION_identifiers[m_SEEDING_i];
+		message[2]=m_ed->m_EXTENSION_currentPosition;
 		Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,vertexRank(vertex),TAG_SAVE_WAVE_PROGRESSION,getRank());
 		m_outbox.push_back(aMessage);
 
-		m_EXTENSION_currentPosition++;
+		m_ed->m_EXTENSION_currentPosition++;
 
 		// the next one
-		if(m_EXTENSION_currentPosition==(int)m_EXTENSION_contigs[m_SEEDING_i].size()){
+		if(m_ed->m_EXTENSION_currentPosition==(int)m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()){
 			m_SEEDING_i++;
-			m_EXTENSION_currentPosition=0;
+			m_ed->m_EXTENSION_currentPosition=0;
 		}
 	}
 
@@ -1739,56 +1740,56 @@ void Machine::processData(){
 		cout<<"\r"<<"Extending seeds"<<endl;
 		#endif
 		m_mode=MODE_EXTENSION_ASK;
-		m_EXTENSION_rank=-1;
-		m_EXTENSION_currentRankIsSet=false;
+		m_ed->m_EXTENSION_rank=-1;
+		m_ed->m_EXTENSION_currentRankIsSet=false;
 	}else if(m_mode_AttachSequences){
 		attachReads();
 	}else if(m_mode==MODE_EXTENSION_ASK and isMaster()){
 		
-		if(!m_EXTENSION_currentRankIsSet){
-			m_EXTENSION_currentRankIsSet=true;
-			m_EXTENSION_currentRankIsStarted=false;
-			m_EXTENSION_rank++;
+		if(!m_ed->m_EXTENSION_currentRankIsSet){
+			m_ed->m_EXTENSION_currentRankIsSet=true;
+			m_ed->m_EXTENSION_currentRankIsStarted=false;
+			m_ed->m_EXTENSION_rank++;
 		}
-		if(m_EXTENSION_rank==getSize()){
+		if(m_ed->m_EXTENSION_rank==getSize()){
 			m_mode=MODE_DO_NOTHING;
 
-		}else if(!m_EXTENSION_currentRankIsStarted){
-			m_EXTENSION_currentRankIsStarted=true;
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_EXTENSION_rank,TAG_ASK_EXTENSION,getRank());
+		}else if(!m_ed->m_EXTENSION_currentRankIsStarted){
+			m_ed->m_EXTENSION_currentRankIsStarted=true;
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_ed->m_EXTENSION_rank,TAG_ASK_EXTENSION,getRank());
 			m_outbox.push_back(aMessage);
-			m_EXTENSION_currentRankIsDone=true; // set to false for non-parallel extension.
-		}else if(m_EXTENSION_currentRankIsDone){
-			m_EXTENSION_currentRankIsSet=false;
+			m_ed->m_EXTENSION_currentRankIsDone=true; // set to false for non-parallel extension.
+		}else if(m_ed->m_EXTENSION_currentRankIsDone){
+			m_ed->m_EXTENSION_currentRankIsSet=false;
 		}
 
 	}else if(m_mode==MODE_SEND_EXTENSION_DATA){
-		if(m_SEEDING_i==(int)m_EXTENSION_contigs.size()){
+		if(m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
 			m_mode=MODE_DO_NOTHING;
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_DATA_END,getRank());
 			m_outbox.push_back(aMessage);
 		}else{
-			if(m_fusionData->m_FUSION_eliminated.count(m_EXTENSION_identifiers[m_SEEDING_i])>0){ // skip merged paths.
+			if(m_fusionData->m_FUSION_eliminated.count(m_ed->m_EXTENSION_identifiers[m_SEEDING_i])>0){ // skip merged paths.
 				m_SEEDING_i++;
-				m_EXTENSION_currentPosition=0;
+				m_ed->m_EXTENSION_currentPosition=0;
 			}else{
-				if(m_EXTENSION_currentPosition==0){
+				if(m_ed->m_EXTENSION_currentPosition==0){
 					VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(sizeof(VERTEX_TYPE)*1);
-					int theId=m_EXTENSION_identifiers[m_SEEDING_i];
+					int theId=m_ed->m_EXTENSION_identifiers[m_SEEDING_i];
 					message[0]=theId;
 					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_START,getRank());
 					m_outbox.push_back(aMessage);
 				}
 				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(sizeof(VERTEX_TYPE)*1);
-				message[0]=m_EXTENSION_contigs[m_SEEDING_i][m_EXTENSION_currentPosition];
-				m_EXTENSION_currentPosition++;
+				message[0]=m_ed->m_EXTENSION_contigs[m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
+				m_ed->m_EXTENSION_currentPosition++;
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_DATA,getRank());
 				m_outbox.push_back(aMessage);
-				if(m_EXTENSION_currentPosition==(int)m_EXTENSION_contigs[m_SEEDING_i].size()){
+				if(m_ed->m_EXTENSION_currentPosition==(int)m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()){
 					Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_END,getRank());
 					m_outbox.push_back(aMessage);
 					m_SEEDING_i++;
-					m_EXTENSION_currentPosition=0;
+					m_ed->m_EXTENSION_currentPosition=0;
 				}
 			}
 		}
@@ -1796,14 +1797,14 @@ void Machine::processData(){
 		makeFusions();
 	}
 
-	if(m_EXTENSION_numberOfRanksDone==getSize()){
+	if(m_ed->m_EXTENSION_numberOfRanksDone==getSize()){
 
 		#ifndef SHOW_PROGRESS
 		cout<<"\r"<<"Computing fusions"<<endl;
 		#endif
 		// ask one at once to do the fusion
 		// because otherwise it may lead to hanging of the program for unknown reasons
-		m_EXTENSION_numberOfRanksDone=-1;
+		m_ed->m_EXTENSION_numberOfRanksDone=-1;
 		m_master_mode=MODE_DO_NOTHING;
 		m_fusionData->m_FUSION_numberOfRanksDone=0;
 		for(int i=0;i<(int)getSize();i++){// start fusion.
@@ -1815,22 +1816,22 @@ void Machine::processData(){
 
 	if(m_master_mode==MODE_ASSEMBLE_GRAPH){
 		// ask ranks to send their extensions.
-		if(!m_EXTENSION_currentRankIsSet){
-			m_EXTENSION_currentRankIsSet=true;
-			m_EXTENSION_currentRankIsStarted=false;
-			m_EXTENSION_rank++;
+		if(!m_ed->m_EXTENSION_currentRankIsSet){
+			m_ed->m_EXTENSION_currentRankIsSet=true;
+			m_ed->m_EXTENSION_currentRankIsStarted=false;
+			m_ed->m_EXTENSION_rank++;
 		}
-		if(m_EXTENSION_rank==getSize()){
+		if(m_ed->m_EXTENSION_rank==getSize()){
 			m_master_mode=MODE_DO_NOTHING;
 			cout<<"Rank "<<getRank()<<" contigs computed."<<endl;
 			killRanks();
-		}else if(!m_EXTENSION_currentRankIsStarted){
-			m_EXTENSION_currentRankIsStarted=true;
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_EXTENSION_rank,TAG_ASSEMBLE_WAVES,getRank());
+		}else if(!m_ed->m_EXTENSION_currentRankIsStarted){
+			m_ed->m_EXTENSION_currentRankIsStarted=true;
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_ed->m_EXTENSION_rank,TAG_ASSEMBLE_WAVES,getRank());
 			m_outbox.push_back(aMessage);
-			m_EXTENSION_currentRankIsDone=false;
-		}else if(m_EXTENSION_currentRankIsDone){
-			m_EXTENSION_currentRankIsSet=false;
+			m_ed->m_EXTENSION_currentRankIsDone=false;
+		}else if(m_ed->m_EXTENSION_currentRankIsDone){
+			m_ed->m_EXTENSION_currentRankIsSet=false;
 		}
 	}
 
@@ -1932,8 +1933,8 @@ void Machine::processData(){
 			if(!m_reductionOccured or m_cycleNumber ==5){ // cycling is in development!
 				cout<<"\r"<<"Collecting fusions"<<endl;
 				m_master_mode=MODE_ASK_EXTENSIONS;
-				m_EXTENSION_currentRankIsSet=false;
-				m_EXTENSION_rank=-1;
+				m_ed->m_EXTENSION_currentRankIsSet=false;
+				m_ed->m_EXTENSION_rank=-1;
 			}else{
 				// we continue now!
 				m_cycleStarted=false;
@@ -1952,12 +1953,12 @@ void Machine::processData(){
 		#endif
 
 		// ask ranks to send their extensions.
-		if(!m_EXTENSION_currentRankIsSet){
-			m_EXTENSION_currentRankIsSet=true;
-			m_EXTENSION_currentRankIsStarted=false;
-			m_EXTENSION_rank++;
+		if(!m_ed->m_EXTENSION_currentRankIsSet){
+			m_ed->m_EXTENSION_currentRankIsSet=true;
+			m_ed->m_EXTENSION_currentRankIsStarted=false;
+			m_ed->m_EXTENSION_rank++;
 		}
-		if(m_EXTENSION_rank==getSize()){
+		if(m_ed->m_EXTENSION_rank==getSize()){
 			m_master_mode=MODE_DO_NOTHING;
 
 			
@@ -1987,22 +1988,22 @@ void Machine::processData(){
 				m_master_mode=MODE_AMOS;
 				m_SEEDING_i=0;
 				m_mode_send_vertices_sequence_id_position=0;
-				m_EXTENSION_reads_requested=false;
+				m_ed->m_EXTENSION_reads_requested=false;
 				cout<<"\rCompleting "<<m_parameters.getAmosFile()<<endl;
 			}else{// we are done.
 				killRanks();
 			}
 			
-		}else if(!m_EXTENSION_currentRankIsStarted){
-			m_EXTENSION_currentRankIsStarted=true;
+		}else if(!m_ed->m_EXTENSION_currentRankIsStarted){
+			m_ed->m_EXTENSION_currentRankIsStarted=true;
 			#ifdef SHOW_PROGRESS
-			cout<<"Rank "<<getRank()<<" asks "<<m_EXTENSION_rank<<" for its extensions."<<endl;
+			cout<<"Rank "<<getRank()<<" asks "<<m_ed->m_EXTENSION_rank<<" for its extensions."<<endl;
 			#endif
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_EXTENSION_rank,TAG_ASK_EXTENSION_DATA,getRank());
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_ed->m_EXTENSION_rank,TAG_ASK_EXTENSION_DATA,getRank());
 			m_outbox.push_back(aMessage);
-			m_EXTENSION_currentRankIsDone=false;
-		}else if(m_EXTENSION_currentRankIsDone){
-			m_EXTENSION_currentRankIsSet=false;
+			m_ed->m_EXTENSION_currentRankIsDone=false;
+		}else if(m_ed->m_EXTENSION_currentRankIsDone){
+			m_ed->m_EXTENSION_currentRankIsSet=false;
 		}
 	}else if(m_master_mode==MODE_AMOS){
 		// in development.
@@ -2019,12 +2020,12 @@ void Machine::processData(){
 		}else if(m_mode_send_vertices_sequence_id_position==(int)m_allPaths[m_SEEDING_i].size()){// iterate over the next one
 			m_SEEDING_i++;
 			m_mode_send_vertices_sequence_id_position=0;
-			m_EXTENSION_reads_requested=false;
+			m_ed->m_EXTENSION_reads_requested=false;
 			
 			FILE*fp=m_bubbleData->m_amos;
 			fprintf(fp,"}\n");
 		}else{
-			if(!m_EXTENSION_reads_requested){
+			if(!m_ed->m_EXTENSION_reads_requested){
 				if(m_mode_send_vertices_sequence_id_position==0){
 					FILE*fp=m_bubbleData->m_amos;
 					string seq=convertToString(&(m_allPaths[m_SEEDING_i]),m_wordSize);
@@ -2043,8 +2044,8 @@ void Machine::processData(){
 					__Free(qlt);
 				}
 
-				m_EXTENSION_reads_requested=true;
-				m_EXTENSION_reads_received=false;
+				m_ed->m_EXTENSION_reads_requested=true;
+				m_ed->m_EXTENSION_reads_received=false;
 				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 				message[0]=m_allPaths[m_SEEDING_i][m_mode_send_vertices_sequence_id_position];
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0]),TAG_REQUEST_READS,getRank());
@@ -2052,24 +2053,24 @@ void Machine::processData(){
 
 				// iterator on reads
 				m_fusionData->m_FUSION_path_id=0;
-				m_EXTENSION_readLength_requested=false;
-			}else if(m_EXTENSION_reads_received){
-				if(m_fusionData->m_FUSION_path_id<(int)m_EXTENSION_receivedReads.size()){
-					int readRank=m_EXTENSION_receivedReads[m_fusionData->m_FUSION_path_id].getRank();
-					char strand=m_EXTENSION_receivedReads[m_fusionData->m_FUSION_path_id].getStrand();
-					int idOnRank=m_EXTENSION_receivedReads[m_fusionData->m_FUSION_path_id].getReadIndex();
-					if(!m_EXTENSION_readLength_requested){
-						m_EXTENSION_readLength_requested=true;
-						m_EXTENSION_readLength_received=false;
+				m_ed->m_EXTENSION_readLength_requested=false;
+			}else if(m_ed->m_EXTENSION_reads_received){
+				if(m_fusionData->m_FUSION_path_id<(int)m_ed->m_EXTENSION_receivedReads.size()){
+					int readRank=m_ed->m_EXTENSION_receivedReads[m_fusionData->m_FUSION_path_id].getRank();
+					char strand=m_ed->m_EXTENSION_receivedReads[m_fusionData->m_FUSION_path_id].getStrand();
+					int idOnRank=m_ed->m_EXTENSION_receivedReads[m_fusionData->m_FUSION_path_id].getReadIndex();
+					if(!m_ed->m_EXTENSION_readLength_requested){
+						m_ed->m_EXTENSION_readLength_requested=true;
+						m_ed->m_EXTENSION_readLength_received=false;
 						VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 						message[0]=idOnRank;
 						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,readRank,TAG_ASK_READ_LENGTH,getRank());
 						m_outbox.push_back(aMessage);
-					}else if(m_EXTENSION_readLength_received){
+					}else if(m_ed->m_EXTENSION_readLength_received){
 						int globalIdentifier=idOnRank*getSize()+readRank;
 						FILE*fp=m_bubbleData->m_amos;
 						int start=0;
-						int readLength=m_EXTENSION_receivedLength;
+						int readLength=m_ed->m_EXTENSION_receivedLength;
 						int theEnd=readLength-1;
 						int offset=m_mode_send_vertices_sequence_id_position;
 						if(strand=='R'){
@@ -2083,19 +2084,19 @@ void Machine::processData(){
 			
 						// increment to get the next read.
 						m_fusionData->m_FUSION_path_id++;
-						m_EXTENSION_readLength_requested=false;
+						m_ed->m_EXTENSION_readLength_requested=false;
 					}
 				}else{
 					// continue.
 					m_mode_send_vertices_sequence_id_position++;
-					m_EXTENSION_reads_requested=false;
+					m_ed->m_EXTENSION_reads_requested=false;
 				}
 			}
 
 		}
 	}
 
-	if(m_mode_EXTENSION){
+	if(m_ed->m_mode_EXTENSION){
 		extendSeeds();
 	}
 }
@@ -2237,33 +2238,33 @@ void Machine::extendSeeds(){
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<": extending seeds "<<m_SEEDING_seeds.size()<<"/"<<m_SEEDING_seeds.size()<<" (DONE)"<<endl;
 		#endif
-		m_mode_EXTENSION=false;
+		m_ed->m_mode_EXTENSION=false;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_IS_DONE,getRank());
 		m_outbox.push_back(aMessage);
 		return;
 	}
-	if(!m_EXTENSION_initiated){
-		m_EXTENSION_initiated=true;
-		m_EXTENSION_currentSeedIndex=0;
-		m_EXTENSION_currentPosition=0;
-		m_EXTENSION_currentSeed=m_SEEDING_seeds[m_EXTENSION_currentSeedIndex];
-		m_SEEDING_currentVertex=m_EXTENSION_currentSeed[m_EXTENSION_currentPosition];
-		m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
-		m_EXTENSION_directVertexDone=false;
-		m_EXTENSION_VertexAssembled_requested=false;
-		m_EXTENSION_extension.clear();
-		m_EXTENSION_complementedSeed=false;
-		m_EXTENSION_reads_startingPositionOnContig.clear();
-		m_EXTENSION_readsInRange.clear();
-	}else if(m_EXTENSION_currentSeedIndex==(int)m_SEEDING_seeds.size()){
+	if(!m_ed->m_EXTENSION_initiated){
+		m_ed->m_EXTENSION_initiated=true;
+		m_ed->m_EXTENSION_currentSeedIndex=0;
+		m_ed->m_EXTENSION_currentPosition=0;
+		m_ed->m_EXTENSION_currentSeed=m_SEEDING_seeds[m_ed->m_EXTENSION_currentSeedIndex];
+		m_SEEDING_currentVertex=m_ed->m_EXTENSION_currentSeed[m_ed->m_EXTENSION_currentPosition];
+		m_ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
+		m_ed->m_EXTENSION_directVertexDone=false;
+		m_ed->m_EXTENSION_VertexAssembled_requested=false;
+		m_ed->m_EXTENSION_extension.clear();
+		m_ed->m_EXTENSION_complementedSeed=false;
+		m_ed->m_EXTENSION_reads_startingPositionOnContig.clear();
+		m_ed->m_EXTENSION_readsInRange.clear();
+	}else if(m_ed->m_EXTENSION_currentSeedIndex==(int)m_SEEDING_seeds.size()){
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<": extending seeds "<<m_SEEDING_seeds.size()<<"/"<<m_SEEDING_seeds.size()<<" (DONE)"<<endl;
 		#endif
-		m_mode_EXTENSION=false;
+		m_ed->m_mode_EXTENSION=false;
 		
 		// store the lengths.
-		for(int i=0;i<(int)m_EXTENSION_identifiers.size();i++){
-			int id=m_EXTENSION_identifiers[i];
+		for(int i=0;i<(int)m_ed->m_EXTENSION_identifiers.size();i++){
+			int id=m_ed->m_EXTENSION_identifiers[i];
 			m_fusionData->m_FUSION_identifier_map[id]=i;
 		}
 
@@ -2286,45 +2287,45 @@ void Machine::extendSeeds(){
 	// 	else
 	// 		use read paths or pairs of reads to resolve the repeat.
 	
-	if(!m_EXTENSION_checkedIfCurrentVertexIsAssembled){
+	if(!m_ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled){
 		checkIfCurrentVertexIsAssembled();
-	}else if(m_EXTENSION_vertexIsAssembledResult and m_EXTENSION_currentPosition==0 and m_EXTENSION_complementedSeed==false){
-		m_EXTENSION_currentSeedIndex++;// skip the current one.
-		m_EXTENSION_currentPosition=0;
-		m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
-		m_EXTENSION_directVertexDone=false;
-		m_EXTENSION_VertexAssembled_requested=false;
-		if(m_EXTENSION_currentSeedIndex<(int)m_SEEDING_seeds.size()){
-			m_EXTENSION_currentSeed=m_SEEDING_seeds[m_EXTENSION_currentSeedIndex];
-			m_SEEDING_currentVertex=m_EXTENSION_currentSeed[m_EXTENSION_currentPosition];
+	}else if(m_ed->m_EXTENSION_vertexIsAssembledResult and m_ed->m_EXTENSION_currentPosition==0 and m_ed->m_EXTENSION_complementedSeed==false){
+		m_ed->m_EXTENSION_currentSeedIndex++;// skip the current one.
+		m_ed->m_EXTENSION_currentPosition=0;
+		m_ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
+		m_ed->m_EXTENSION_directVertexDone=false;
+		m_ed->m_EXTENSION_VertexAssembled_requested=false;
+		if(m_ed->m_EXTENSION_currentSeedIndex<(int)m_SEEDING_seeds.size()){
+			m_ed->m_EXTENSION_currentSeed=m_SEEDING_seeds[m_ed->m_EXTENSION_currentSeedIndex];
+			m_SEEDING_currentVertex=m_ed->m_EXTENSION_currentSeed[m_ed->m_EXTENSION_currentPosition];
 		}
 		// TODO: check if the position !=0
-		m_EXTENSION_complementedSeed=false;
-		m_EXTENSION_extension.clear();
-		m_EXTENSION_reads_startingPositionOnContig.clear();
-		m_EXTENSION_readsInRange.clear();
-	}else if(!m_EXTENSION_markedCurrentVertexAsAssembled){
+		m_ed->m_EXTENSION_complementedSeed=false;
+		m_ed->m_EXTENSION_extension.clear();
+		m_ed->m_EXTENSION_reads_startingPositionOnContig.clear();
+		m_ed->m_EXTENSION_readsInRange.clear();
+	}else if(!m_ed->m_EXTENSION_markedCurrentVertexAsAssembled){
 		markCurrentVertexAsAssembled();
-	}else if(!m_EXTENSION_enumerateChoices){
+	}else if(!m_ed->m_EXTENSION_enumerateChoices){
 		enumerateChoices();
-	}else if(!m_EXTENSION_choose){
+	}else if(!m_ed->m_EXTENSION_choose){
 		doChoice();
 	}
 
 }
 
-// upon successful completion, m_EXTENSION_coverages and m_enumerateChoices_outgoingEdges are
+// upon successful completion, m_ed->m_EXTENSION_coverages and m_ed->m_enumerateChoices_outgoingEdges are
 // populated variables.
 void Machine::enumerateChoices(){
 	if(!m_SEEDING_edgesRequested){
-		m_EXTENSION_coverages.clear();
+		m_ed->m_EXTENSION_coverages.clear();
 		m_SEEDING_edgesReceived=false;
 		m_SEEDING_edgesRequested=true;
 		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 		message[0]=(VERTEX_TYPE)m_SEEDING_currentVertex;
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(m_SEEDING_currentVertex),TAG_REQUEST_VERTEX_OUTGOING_EDGES,getRank());
 		m_outbox.push_back(aMessage);
-		m_EXTENSION_currentPosition++;
+		m_ed->m_EXTENSION_currentPosition++;
 		m_SEEDING_vertexCoverageRequested=false;
 		m_SEEDING_outgoingEdgeIndex=0;
 	}else if(m_SEEDING_edgesReceived){
@@ -2341,18 +2342,18 @@ void Machine::enumerateChoices(){
 			}else if(m_SEEDING_vertexCoverageReceived){
 				m_SEEDING_outgoingEdgeIndex++;
 				m_SEEDING_vertexCoverageRequested=false;
-				m_EXTENSION_coverages.push_back(m_SEEDING_receivedVertexCoverage);
+				m_ed->m_EXTENSION_coverages.push_back(m_SEEDING_receivedVertexCoverage);
 			}
 		}else{
-			m_EXTENSION_enumerateChoices=true;
-			m_EXTENSION_choose=false;
-			m_EXTENSION_singleEndResolution=false;
-			m_EXTENSION_readIterator=m_EXTENSION_readsInRange.begin();
-			m_EXTENSION_readsOutOfRange.clear();
-			m_EXTENSION_readLength_done=false;
-			m_EXTENSION_readLength_requested=false;
-			m_EXTENSION_readPositionsForVertices.clear();
-			m_EXTENSION_pairedReadPositionsForVertices.clear();
+			m_ed->m_EXTENSION_enumerateChoices=true;
+			m_ed->m_EXTENSION_choose=false;
+			m_ed->m_EXTENSION_singleEndResolution=false;
+			m_ed->m_EXTENSION_readIterator=m_ed->m_EXTENSION_readsInRange.begin();
+			m_ed->m_EXTENSION_readsOutOfRange.clear();
+			m_ed->m_EXTENSION_readLength_done=false;
+			m_ed->m_EXTENSION_readLength_requested=false;
+			m_ed->m_EXTENSION_readPositionsForVertices.clear();
+			m_ed->m_EXTENSION_pairedReadPositionsForVertices.clear();
 			
 			m_cd->m_CHOOSER_theSumsPaired.clear();
 			m_cd->m_CHOOSER_theNumbersPaired.clear();
@@ -2361,15 +2362,15 @@ void Machine::enumerateChoices(){
 			m_cd->m_CHOOSER_theNumbers.clear();
 			m_cd->m_CHOOSER_theSums.clear();
 
-			m_enumerateChoices_outgoingEdges=m_SEEDING_receivedOutgoingEdges;
+			m_ed->m_enumerateChoices_outgoingEdges=m_SEEDING_receivedOutgoingEdges;
 			
 
 			// nothing to trim...
-			if(m_enumerateChoices_outgoingEdges.size()<=1)
+			if(m_ed->m_enumerateChoices_outgoingEdges.size()<=1)
 				return;
 
 			// avoid unecessary machine instructions
-			if(m_EXTENSION_currentPosition<(int)m_EXTENSION_currentSeed.size()){
+			if(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_currentSeed.size()){
 				return;
 			}
 
@@ -2377,7 +2378,7 @@ void Machine::enumerateChoices(){
 			vector<int> filteredCoverages;
 			vector<VERTEX_TYPE> filteredVertices;
 			for(int i=0;i<(int)m_SEEDING_receivedOutgoingEdges.size();i++){
-				int coverage=m_EXTENSION_coverages[i];
+				int coverage=m_ed->m_EXTENSION_coverages[i];
 				VERTEX_TYPE aVertex=m_SEEDING_receivedOutgoingEdges[i];
 				#ifdef SHOW_PROGRESS
 				#endif
@@ -2394,16 +2395,16 @@ void Machine::enumerateChoices(){
 			#endif
 			#ifdef DEBUG
 			assert(filteredCoverages.size()==filteredVertices.size());
-			assert(m_EXTENSION_coverages.size()==m_SEEDING_receivedOutgoingEdges.size());
-			assert(m_enumerateChoices_outgoingEdges.size()==m_SEEDING_receivedOutgoingEdges.size());
+			assert(m_ed->m_EXTENSION_coverages.size()==m_SEEDING_receivedOutgoingEdges.size());
+			assert(m_ed->m_enumerateChoices_outgoingEdges.size()==m_SEEDING_receivedOutgoingEdges.size());
 			#endif
 	
 			// toss them in vectors
 			#ifdef SHOW_FILTER
 			cout<<"FILTER says ";
-			for(int i=0;i<(int)m_EXTENSION_coverages.size();i++){
-				int coverage=m_EXTENSION_coverages[i];
-				VERTEX_TYPE aVertex=m_enumerateChoices_outgoingEdges[i];
+			for(int i=0;i<(int)m_ed->m_EXTENSION_coverages.size();i++){
+				int coverage=m_ed->m_EXTENSION_coverages[i];
+				VERTEX_TYPE aVertex=m_ed->m_enumerateChoices_outgoingEdges[i];
 				cout<<" ("<<idToWord(aVertex,m_wordSize)<<","<<coverage<<")";
 			}
 			cout<<" -> ";
@@ -2415,13 +2416,13 @@ void Machine::enumerateChoices(){
 			cout<<" ."<<endl;
 			#endif
 			#ifdef DEBUG
-			assert(filteredVertices.size()<=m_enumerateChoices_outgoingEdges.size());
-			assert(filteredCoverages.size()<=m_EXTENSION_coverages.size());
+			assert(filteredVertices.size()<=m_ed->m_enumerateChoices_outgoingEdges.size());
+			assert(filteredCoverages.size()<=m_ed->m_EXTENSION_coverages.size());
 			#endif
-			m_EXTENSION_coverages=filteredCoverages;
-			m_enumerateChoices_outgoingEdges=filteredVertices;
+			m_ed->m_EXTENSION_coverages=filteredCoverages;
+			m_ed->m_enumerateChoices_outgoingEdges=filteredVertices;
 			#ifdef DEBUG
-			assert(m_EXTENSION_coverages.size()==m_enumerateChoices_outgoingEdges.size());
+			assert(m_ed->m_EXTENSION_coverages.size()==m_ed->m_enumerateChoices_outgoingEdges.size());
 			#endif
 		}
 	}
@@ -2430,12 +2431,12 @@ void Machine::enumerateChoices(){
 int Machine::proceedWithCoverages(int a,int b){
 	vector<int> counts2;
 	vector<int> counts5;
-	for(int i=0;i<(int)m_EXTENSION_coverages.size();i++){
+	for(int i=0;i<(int)m_ed->m_EXTENSION_coverages.size();i++){
 		int j2=0;
 		int j5=0;
-		if(m_EXTENSION_readPositionsForVertices.count(i)>0){
-			for(int k=0;k<(int)m_EXTENSION_readPositionsForVertices[i].size();k++){
-				int distanceFromOrigin=m_EXTENSION_readPositionsForVertices[i][k];
+		if(m_ed->m_EXTENSION_readPositionsForVertices.count(i)>0){
+			for(int k=0;k<(int)m_ed->m_EXTENSION_readPositionsForVertices[i].size();k++){
+				int distanceFromOrigin=m_ed->m_EXTENSION_readPositionsForVertices[i][k];
 				if(distanceFromOrigin>=2){
 					j2++;
 				}
@@ -2448,10 +2449,10 @@ int Machine::proceedWithCoverages(int a,int b){
 		counts5.push_back(j5);
 	}
 
-	for(int i=0;i<(int)m_EXTENSION_coverages.size();i++){
+	for(int i=0;i<(int)m_ed->m_EXTENSION_coverages.size();i++){
 		bool isBetter=true;
-		int coverageI=m_EXTENSION_coverages[i];
-		int singleReadsI=m_EXTENSION_readPositionsForVertices[i].size();
+		int coverageI=m_ed->m_EXTENSION_coverages[i];
+		int singleReadsI=m_ed->m_EXTENSION_readPositionsForVertices[i].size();
 		if(counts2[i]==0)
 			continue;
 
@@ -2460,11 +2461,11 @@ int Machine::proceedWithCoverages(int a,int b){
 			continue;
 		}
 
-		for(int j=0;j<(int)m_EXTENSION_coverages.size();j++){
+		for(int j=0;j<(int)m_ed->m_EXTENSION_coverages.size();j++){
 			if(i==j)
 				continue;
-			//int coverageJ=m_EXTENSION_coverages[j];
-			int singleReadsJ=m_EXTENSION_readPositionsForVertices[j].size();
+			//int coverageJ=m_ed->m_EXTENSION_coverages[j];
+			int singleReadsJ=m_ed->m_EXTENSION_readPositionsForVertices[j].size();
 			if(!(singleReadsJ<=a and singleReadsI>=b)){
 				isBetter=false;
 				break;
@@ -2481,14 +2482,14 @@ int Machine::proceedWithCoverages(int a,int b){
 		}
 		if(isBetter){
 			#ifdef SHOW_CHOICE
-			cout<<"Choice #"<<i+1<<" wins, with "<<m_EXTENSION_readPositionsForVertices[i].size()<<" reads."<<endl;
-			cout<<" in range: "<<m_EXTENSION_readsInRange.size()<<endl;
+			cout<<"Choice #"<<i+1<<" wins, with "<<m_ed->m_EXTENSION_readPositionsForVertices[i].size()<<" reads."<<endl;
+			cout<<" in range: "<<m_ed->m_EXTENSION_readsInRange.size()<<endl;
 			#endif
-			m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[i];
-			m_EXTENSION_choose=true;
-			m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
-			m_EXTENSION_directVertexDone=false;
-			m_EXTENSION_VertexAssembled_requested=false;
+			m_SEEDING_currentVertex=m_ed->m_enumerateChoices_outgoingEdges[i];
+			m_ed->m_EXTENSION_choose=true;
+			m_ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
+			m_ed->m_EXTENSION_directVertexDone=false;
+			m_ed->m_EXTENSION_VertexAssembled_requested=false;
 
 			return i;
 		}
@@ -2497,15 +2498,15 @@ int Machine::proceedWithCoverages(int a,int b){
 }
 
 #define _UPDATE_SINGLE_VALUES(d) \
-if(m_cd->m_CHOOSER_theMaxs.count(m_EXTENSION_edgeIterator)==0){ \
-	m_cd->m_CHOOSER_theSums[m_EXTENSION_edgeIterator]=0; \
-	m_cd->m_CHOOSER_theMaxs[m_EXTENSION_edgeIterator]=distance; \
-	m_cd->m_CHOOSER_theNumbers[m_EXTENSION_edgeIterator]=0; \
+if(m_cd->m_CHOOSER_theMaxs.count(m_ed->m_EXTENSION_edgeIterator)==0){ \
+	m_cd->m_CHOOSER_theSums[m_ed->m_EXTENSION_edgeIterator]=0; \
+	m_cd->m_CHOOSER_theMaxs[m_ed->m_EXTENSION_edgeIterator]=distance; \
+	m_cd->m_CHOOSER_theNumbers[m_ed->m_EXTENSION_edgeIterator]=0; \
 }\
-if(distance>m_cd->m_CHOOSER_theMaxs[m_EXTENSION_edgeIterator])\
-	m_cd->m_CHOOSER_theMaxs[m_EXTENSION_edgeIterator]=distance;\
-m_cd->m_CHOOSER_theNumbers[m_EXTENSION_edgeIterator]++;\
-m_cd->m_CHOOSER_theSums[m_EXTENSION_edgeIterator]+=distance;
+if(distance>m_cd->m_CHOOSER_theMaxs[m_ed->m_EXTENSION_edgeIterator])\
+	m_cd->m_CHOOSER_theMaxs[m_ed->m_EXTENSION_edgeIterator]=distance;\
+m_cd->m_CHOOSER_theNumbers[m_ed->m_EXTENSION_edgeIterator]++;\
+m_cd->m_CHOOSER_theSums[m_ed->m_EXTENSION_edgeIterator]+=distance;
 
 
 /**
@@ -2523,24 +2524,24 @@ m_cd->m_CHOOSER_theSums[m_EXTENSION_edgeIterator]+=distance;
 void Machine::doChoice(){
 	// use seed information.
 	#ifdef SHOW_PROGRESS
-	if(m_EXTENSION_currentPosition==1)
-		cout<<"Priming with seed length="<<m_EXTENSION_currentSeed.size()<<endl;
+	if(m_ed->m_EXTENSION_currentPosition==1)
+		cout<<"Priming with seed length="<<m_ed->m_EXTENSION_currentSeed.size()<<endl;
 	#endif
 	
 	// use the seed to extend the thing.
-	if(m_EXTENSION_currentPosition<(int)m_EXTENSION_currentSeed.size()){
+	if(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_currentSeed.size()){
 		#ifdef SHOW_EXTEND_WITH_SEED
-		cout<<"Extending with seed, p="<<m_EXTENSION_currentPosition<<endl;
+		cout<<"Extending with seed, p="<<m_ed->m_EXTENSION_currentPosition<<endl;
 		#endif
 
 		// a speedy test follows, using mighty MACROs
-		#define _UNROLLED_LOOP(i) if(m_enumerateChoices_outgoingEdges.size()>=(i+1)){ \
-			if(m_enumerateChoices_outgoingEdges[i]==m_EXTENSION_currentSeed[m_EXTENSION_currentPosition]){ \
-				m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[i]; \
-				m_EXTENSION_choose=true; \
-				m_EXTENSION_checkedIfCurrentVertexIsAssembled=false; \
-				m_EXTENSION_directVertexDone=false; \
-				m_EXTENSION_VertexAssembled_requested=false; \
+		#define _UNROLLED_LOOP(i) if(m_ed->m_enumerateChoices_outgoingEdges.size()>=(i+1)){ \
+			if(m_ed->m_enumerateChoices_outgoingEdges[i]==m_ed->m_EXTENSION_currentSeed[m_ed->m_EXTENSION_currentPosition]){ \
+				m_SEEDING_currentVertex=m_ed->m_enumerateChoices_outgoingEdges[i]; \
+				m_ed->m_EXTENSION_choose=true; \
+				m_ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false; \
+				m_ed->m_EXTENSION_directVertexDone=false; \
+				m_ed->m_EXTENSION_VertexAssembled_requested=false; \
 				return; \
 			}\
 		}
@@ -2549,9 +2550,9 @@ void Machine::doChoice(){
 		_UNROLLED_LOOP(2);
 		_UNROLLED_LOOP(3);
 		#ifdef SHOW_EXTEND_WITH_SEED
-		cout<<"What the hell? position="<<m_EXTENSION_currentPosition<<" "<<idToWord(m_EXTENSION_currentSeed[m_EXTENSION_currentPosition],m_wordSize)<<" with choices ";
-		for(int j=0;j<(int)m_enumerateChoices_outgoingEdges.size();j++){
-			cout<<" "<<idToWord(m_enumerateChoices_outgoingEdges[j],m_wordSize)<<endl;
+		cout<<"What the hell? position="<<m_ed->m_EXTENSION_currentPosition<<" "<<idToWord(m_ed->m_EXTENSION_currentSeed[m_ed->m_EXTENSION_currentPosition],m_wordSize)<<" with choices ";
+		for(int j=0;j<(int)m_ed->m_enumerateChoices_outgoingEdges.size();j++){
+			cout<<" "<<idToWord(m_ed->m_enumerateChoices_outgoingEdges[j],m_wordSize)<<endl;
 		}
 		cout<<endl;
 		#endif
@@ -2573,178 +2574,179 @@ void Machine::doChoice(){
  *   C                      =============
  */
 		// stuff in the reads to appropriate arcs.
-		if(!m_EXTENSION_singleEndResolution and m_EXTENSION_readsInRange.size()>0){
+		if(!m_ed->m_EXTENSION_singleEndResolution and m_ed->m_EXTENSION_readsInRange.size()>0){
 			// try to use single-end reads to resolve the repeat.
 			// for each read in range, ask them their vertex at position (CurrentPositionOnContig-StartPositionOfReadOnContig)
 			// and cumulate the results in
-			// m_EXTENSION_readPositions, which is a map<int,vector<int> > if one of the vertices match
-			if(m_EXTENSION_readIterator!=m_EXTENSION_readsInRange.end()){
-				if(!m_EXTENSION_readLength_done){
-					if(!m_EXTENSION_readLength_requested){
-						m_EXTENSION_readLength_requested=true;
-						m_EXTENSION_readLength_received=false;
+			// m_ed->m_EXTENSION_readPositions, which is a map<int,vector<int> > if one of the vertices match
+			if(m_ed->m_EXTENSION_readIterator!=m_ed->m_EXTENSION_readsInRange.end()){
+				if(!m_ed->m_EXTENSION_readLength_done){
+					if(!m_ed->m_EXTENSION_readLength_requested){
+						m_ed->m_EXTENSION_readLength_requested=true;
+						m_ed->m_EXTENSION_readLength_received=false;
 
-						ReadAnnotation annotation=*m_EXTENSION_readIterator;
+						ReadAnnotation annotation=*m_ed->m_EXTENSION_readIterator;
 						VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 						message[0]=annotation.getReadIndex();
 						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_ASK_READ_LENGTH,getRank());
 						m_outbox.push_back(aMessage);
-					}else if(m_EXTENSION_readLength_received){
-						ReadAnnotation annotation=*m_EXTENSION_readIterator;
+					}else if(m_ed->m_EXTENSION_readLength_received){
+						ReadAnnotation annotation=*m_ed->m_EXTENSION_readIterator;
 
-						int startPosition=m_EXTENSION_reads_startingPositionOnContig[annotation.getUniqueId()];
-						int distance=m_EXTENSION_extension.size()-startPosition;
-						if(distance>(m_EXTENSION_receivedLength-m_wordSize)){
+						int startPosition=m_ed->m_EXTENSION_reads_startingPositionOnContig[annotation.getUniqueId()];
+						int distance=m_ed->m_EXTENSION_extension.size()-startPosition;
+						if(distance>(m_ed->m_EXTENSION_receivedLength-m_wordSize)){
 							// the read is now out-of-range.
-							m_EXTENSION_readsOutOfRange.push_back(annotation);
-							m_EXTENSION_readLength_done=false;
-							m_EXTENSION_readLength_requested=false;
-							m_EXTENSION_readIterator++;
+							m_ed->m_EXTENSION_readsOutOfRange.push_back(annotation);
+							m_ed->m_EXTENSION_readLength_done=false;
+							m_ed->m_EXTENSION_readLength_requested=false;
+							m_ed->m_EXTENSION_readIterator++;
 						}else{
 							//the read is in-range
-							m_EXTENSION_readLength_done=true;
-							m_EXTENSION_read_vertex_requested=false;
+							m_ed->m_EXTENSION_readLength_done=true;
+							m_ed->m_EXTENSION_read_vertex_requested=false;
 						}
 					}
-				}else if(!m_EXTENSION_read_vertex_requested){
+				}else if(!m_ed->m_EXTENSION_read_vertex_requested){
 					// request the vertex for the read
-					m_EXTENSION_read_vertex_requested=true;
-					ReadAnnotation annotation=*m_EXTENSION_readIterator;
-					int startPosition=m_EXTENSION_reads_startingPositionOnContig[annotation.getUniqueId()];
-					if(!(0<=startPosition and startPosition<(int)m_EXTENSION_extension.size())){
+					m_ed->m_EXTENSION_read_vertex_requested=true;
+					ReadAnnotation annotation=*m_ed->m_EXTENSION_readIterator;
+					int startPosition=m_ed->m_EXTENSION_reads_startingPositionOnContig[annotation.getUniqueId()];
+					if(!(0<=startPosition and startPosition<(int)m_ed->m_EXTENSION_extension.size())){
 						cout<<"FATAL"<<endl;
 						cout<<"The read started at "<<startPosition<<endl;
-						cout<<"The extension has "<<m_EXTENSION_extension.size()<<" elements."<<endl;
-						cout<<"The read has length="<<m_EXTENSION_receivedLength<<endl;
+						cout<<"The extension has "<<m_ed->m_EXTENSION_extension.size()<<" elements."<<endl;
+						cout<<"The read has length="<<m_ed->m_EXTENSION_receivedLength<<endl;
 					}
-					int distance=m_EXTENSION_extension.size()-startPosition;
+					int distance=m_ed->m_EXTENSION_extension.size()-startPosition;
 					VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(3*sizeof(VERTEX_TYPE));
 					message[0]=annotation.getReadIndex();
 					message[1]=distance;
 					message[2]=annotation.getStrand();
 					Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_ASK_READ_VERTEX_AT_POSITION,getRank());
 					m_outbox.push_back(aMessage);
-					m_EXTENSION_read_vertex_received=false;
-					m_EXTENSION_edgeIterator=0;
-					m_EXTENSION_hasPairedReadRequested=false;
-				}else if(m_EXTENSION_read_vertex_received){
+					m_ed->m_EXTENSION_read_vertex_received=false;
+					m_ed->m_EXTENSION_edgeIterator=0;
+					m_ed->m_EXTENSION_hasPairedReadRequested=false;
+				}else if(m_ed->m_EXTENSION_read_vertex_received){
 					// we received the vertex for that read,
 					// now check if it matches one of 
 					// the many choices we have
-					ReadAnnotation annotation=*m_EXTENSION_readIterator;
-					int startPosition=m_EXTENSION_reads_startingPositionOnContig[annotation.getUniqueId()];
-					int distance=m_EXTENSION_extension.size()-startPosition;
+					ReadAnnotation annotation=*m_ed->m_EXTENSION_readIterator;
+					int startPosition=m_ed->m_EXTENSION_reads_startingPositionOnContig[annotation.getUniqueId()];
+					int distance=m_ed->m_EXTENSION_extension.size()-startPosition;
 
 					// process each edge separately.
-					if(m_EXTENSION_edgeIterator<(int)m_enumerateChoices_outgoingEdges.size()){
+					if(m_ed->m_EXTENSION_edgeIterator<(int)m_ed->m_enumerateChoices_outgoingEdges.size()){
 						// got a match!
-						if(m_EXTENSION_receivedReadVertex==m_enumerateChoices_outgoingEdges[m_EXTENSION_edgeIterator]){
-							ReadAnnotation annotation=*m_EXTENSION_readIterator;
+						if(m_ed->m_EXTENSION_receivedReadVertex==m_ed->m_enumerateChoices_outgoingEdges[m_ed->m_EXTENSION_edgeIterator]){
+							ReadAnnotation annotation=*m_ed->m_EXTENSION_readIterator;
 							// check if the current read has a paired read.
-							if(!m_EXTENSION_hasPairedReadRequested){
+							if(!m_ed->m_EXTENSION_hasPairedReadRequested){
 								VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 								message[0]=annotation.getReadIndex();
 								Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_HAS_PAIRED_READ,getRank());
 								m_outbox.push_back(aMessage);
-								m_EXTENSION_hasPairedReadRequested=true;
-								m_EXTENSION_hasPairedReadReceived=false;
-								m_EXTENSION_pairedSequenceRequested=false;
-							}else if(m_EXTENSION_hasPairedReadReceived){
+								m_ed->m_EXTENSION_hasPairedReadRequested=true;
+								m_ed->m_EXTENSION_hasPairedReadReceived=false;
+								m_ed->m_EXTENSION_pairedSequenceRequested=false;
+							}else if(m_ed->m_EXTENSION_hasPairedReadReceived){
 								// vertex matches, but no paired end read found, at last.
-								if(!m_EXTENSION_hasPairedReadAnswer){
-									m_EXTENSION_readPositionsForVertices[m_EXTENSION_edgeIterator].push_back(distance);
+								if(!m_ed->m_EXTENSION_hasPairedReadAnswer){
+									m_ed->m_EXTENSION_readPositionsForVertices[m_ed->m_EXTENSION_edgeIterator].push_back(distance);
 
 									_UPDATE_SINGLE_VALUES(distance);
 
-									m_EXTENSION_edgeIterator++;
-									m_EXTENSION_hasPairedReadRequested=false;
+									m_ed->m_EXTENSION_edgeIterator++;
+									m_ed->m_EXTENSION_hasPairedReadRequested=false;
 								}else{
 									// get the paired end read.
-									if(!m_EXTENSION_pairedSequenceRequested){
-										m_EXTENSION_pairedSequenceRequested=true;
+									if(!m_ed->m_EXTENSION_pairedSequenceRequested){
+										m_ed->m_EXTENSION_pairedSequenceRequested=true;
 										VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 										message[0]=annotation.getReadIndex();
 										Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_GET_PAIRED_READ,getRank());
 										m_outbox.push_back(aMessage);
-										m_EXTENSION_pairedSequenceReceived=false;
-									}else if(m_EXTENSION_pairedSequenceReceived){
-										int expectedFragmentLength=m_EXTENSION_pairedRead.getAverageFragmentLength();
-										int expectedDeviation=m_EXTENSION_pairedRead.getStandardDeviation();
-										int rank=m_EXTENSION_pairedRead.getRank();
-										int id=m_EXTENSION_pairedRead.getId();
+										m_ed->m_EXTENSION_pairedSequenceReceived=false;
+									}else if(m_ed->m_EXTENSION_pairedSequenceReceived){
+										int expectedFragmentLength=m_ed->m_EXTENSION_pairedRead.getAverageFragmentLength();
+										int expectedDeviation=m_ed->m_EXTENSION_pairedRead.getStandardDeviation();
+										int rank=m_ed->m_EXTENSION_pairedRead.getRank();
+										int id=m_ed->m_EXTENSION_pairedRead.getId();
 										int uniqueReadIdentifier=id*MAX_NUMBER_OF_MPI_PROCESSES+rank;
 			
 										// it is mandatory for a read to start at 0. at position X on the path.
-										if(m_EXTENSION_reads_startingPositionOnContig.count(uniqueReadIdentifier)>0){
-											int startingPositionOnPath=m_EXTENSION_reads_startingPositionOnContig[uniqueReadIdentifier];
-											int observedFragmentLength=(startPosition-startingPositionOnPath)+m_EXTENSION_receivedLength;
+										if(m_ed->m_EXTENSION_reads_startingPositionOnContig.count(uniqueReadIdentifier)>0){
+											int startingPositionOnPath=m_ed->m_EXTENSION_reads_startingPositionOnContig[uniqueReadIdentifier];
+											int observedFragmentLength=(startPosition-startingPositionOnPath)+m_ed->m_EXTENSION_receivedLength;
 											if(expectedFragmentLength-expectedDeviation<=observedFragmentLength and
 											observedFragmentLength <= expectedFragmentLength+expectedDeviation){
 											// it matches!
 												int theDistance=startPosition-startingPositionOnPath+distance;
-												m_EXTENSION_pairedReadPositionsForVertices[m_EXTENSION_edgeIterator].push_back(theDistance);
-												if(m_cd->m_CHOOSER_theMaxsPaired.count(m_EXTENSION_edgeIterator)==0){
-													m_cd->m_CHOOSER_theMaxsPaired[m_EXTENSION_edgeIterator]=theDistance;
-													m_cd->m_CHOOSER_theSumsPaired[m_EXTENSION_edgeIterator]=0;
-													m_cd->m_CHOOSER_theNumbersPaired[m_EXTENSION_edgeIterator]=0;
+												m_ed->m_EXTENSION_pairedReadPositionsForVertices[m_ed->m_EXTENSION_edgeIterator].push_back(theDistance);
+												if(m_cd->m_CHOOSER_theMaxsPaired.count(m_ed->m_EXTENSION_edgeIterator)==0){
+													m_cd->m_CHOOSER_theMaxsPaired[m_ed->m_EXTENSION_edgeIterator]=theDistance;
+													m_cd->m_CHOOSER_theSumsPaired[m_ed->m_EXTENSION_edgeIterator]=0;
+													m_cd->m_CHOOSER_theNumbersPaired[m_ed->m_EXTENSION_edgeIterator]=0;
 												}
-												if(theDistance>m_cd->m_CHOOSER_theMaxsPaired[m_EXTENSION_edgeIterator])
-													m_cd->m_CHOOSER_theMaxsPaired[m_EXTENSION_edgeIterator]=theDistance;
-												m_cd->m_CHOOSER_theNumbersPaired[m_EXTENSION_edgeIterator]++;
-												m_cd->m_CHOOSER_theSumsPaired[m_EXTENSION_edgeIterator]+=theDistance;
+												if(theDistance>m_cd->m_CHOOSER_theMaxsPaired[m_ed->m_EXTENSION_edgeIterator])
+													m_cd->m_CHOOSER_theMaxsPaired[m_ed->m_EXTENSION_edgeIterator]=theDistance;
+												m_cd->m_CHOOSER_theNumbersPaired[m_ed->m_EXTENSION_edgeIterator]++;
+												m_cd->m_CHOOSER_theSumsPaired[m_ed->m_EXTENSION_edgeIterator]+=theDistance;
 											}
 
 										}
 										
 										// add it anyway as a single-end match too!
-										m_EXTENSION_readPositionsForVertices[m_EXTENSION_edgeIterator].push_back(distance);
-										m_EXTENSION_hasPairedReadRequested=false;
+										m_ed->m_EXTENSION_readPositionsForVertices[m_ed->m_EXTENSION_edgeIterator].push_back(distance);
+										m_ed->m_EXTENSION_hasPairedReadRequested=false;
 
 										_UPDATE_SINGLE_VALUES(distance);
-										m_EXTENSION_edgeIterator++;
+										m_ed->m_EXTENSION_edgeIterator++;
 									}
 								}
 							}else{
 							}
 						}else{// no match, too bad.
-							m_EXTENSION_edgeIterator++;
-							m_EXTENSION_hasPairedReadRequested=false;
+							m_ed->m_EXTENSION_edgeIterator++;
+							m_ed->m_EXTENSION_hasPairedReadRequested=false;
 						}
 					}else{
-						m_EXTENSION_readLength_done=false;
-						m_EXTENSION_readLength_requested=false;
-						m_EXTENSION_readIterator++;
+						m_ed->m_EXTENSION_readLength_done=false;
+						m_ed->m_EXTENSION_readLength_requested=false;
+						m_ed->m_EXTENSION_readIterator++;
 					}
 				}
 			}else{
 				// remove reads that are no longer in-range.
-				for(int i=0;i<(int)m_EXTENSION_readsOutOfRange.size();i++){
-					m_EXTENSION_readsInRange.erase(m_EXTENSION_readsOutOfRange[i]);
+				for(int i=0;i<(int)m_ed->m_EXTENSION_readsOutOfRange.size();i++){
+					m_ed->m_EXTENSION_readsInRange.erase(m_ed->m_EXTENSION_readsOutOfRange[i]);
 				}
-				m_EXTENSION_readsOutOfRange.clear();
-				m_EXTENSION_singleEndResolution=true;
-				#ifdef SHOW_CHOICE
-				if(m_enumerateChoices_outgoingEdges.size()>1){
+				m_ed->m_EXTENSION_readsOutOfRange.clear();
+				m_ed->m_EXTENSION_singleEndResolution=true;
+				//#define SHOW_CHOICE1
+				#ifdef SHOW_CHOICE1
+				if(m_ed->m_enumerateChoices_outgoingEdges.size()>1){
 					cout<<endl;
 					cout<<"*****************************************"<<endl;
-					cout<<"CurrentVertex="<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<" @"<<m_EXTENSION_extension.size()<<endl;
-					cout<<" # ReadsInRange: "<<m_EXTENSION_readsInRange.size()<<endl;
-					cout<<m_enumerateChoices_outgoingEdges.size()<<" arcs."<<endl;
-					for(int i=0;i<(int)m_enumerateChoices_outgoingEdges.size();i++){
-						string vertex=idToWord(m_enumerateChoices_outgoingEdges[i],m_wordSize);
+					cout<<"CurrentVertex="<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<" @"<<m_ed->m_EXTENSION_extension.size()<<endl;
+					cout<<" # ReadsInRange: "<<m_ed->m_EXTENSION_readsInRange.size()<<endl;
+					cout<<m_ed->m_enumerateChoices_outgoingEdges.size()<<" arcs."<<endl;
+					for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
+						string vertex=idToWord(m_ed->m_enumerateChoices_outgoingEdges[i],m_wordSize);
 						cout<<endl;
 						cout<<"Choice #"<<i+1<<endl;
 						cout<<"Vertex: "<<vertex<<endl;
-						cout<<"Coverage="<<m_EXTENSION_coverages[i]<<endl;
+						cout<<"Coverage="<<m_ed->m_EXTENSION_coverages[i]<<endl;
 						cout<<"New letter: "<<vertex[m_wordSize-1]<<endl;
 						cout<<"Single-end reads:"<<endl;
-						for(int j=0;j<(int)m_EXTENSION_readPositionsForVertices[i].size();j++){
-							cout<<" "<<m_EXTENSION_readPositionsForVertices[i][j];
+						for(int j=0;j<(int)m_ed->m_EXTENSION_readPositionsForVertices[i].size();j++){
+							cout<<" "<<m_ed->m_EXTENSION_readPositionsForVertices[i][j];
 						}
 						cout<<endl;
 						cout<<"Paired-end reads:"<<endl;
-						for(int j=0;j<(int)m_EXTENSION_pairedReadPositionsForVertices[i].size();j++){
-							cout<<" "<<m_EXTENSION_pairedReadPositionsForVertices[i][j];
+						for(int j=0;j<(int)m_ed->m_EXTENSION_pairedReadPositionsForVertices[i].size();j++){
+							cout<<" "<<m_ed->m_EXTENSION_pairedReadPositionsForVertices[i][j];
 						}
 						cout<<endl;
 					}
@@ -2761,17 +2763,17 @@ void Machine::doChoice(){
 				if(i>=0)
 					return;
 
-				for(int i=0;i<(int)m_EXTENSION_pairedReadPositionsForVertices.size();i++){
+				for(int i=0;i<(int)m_ed->m_EXTENSION_pairedReadPositionsForVertices.size();i++){
 					bool winner=true;
-					int coverageI=m_EXTENSION_coverages[i];
+					int coverageI=m_ed->m_EXTENSION_coverages[i];
 					if(coverageI<_MINIMUM_COVERAGE)
 						continue;
 					if(m_cd->m_CHOOSER_theNumbers[i]==0 or m_cd->m_CHOOSER_theNumbersPaired[i]==0)
 						continue;
-					for(int j=0;j<(int)m_EXTENSION_pairedReadPositionsForVertices.size();j++){
+					for(int j=0;j<(int)m_ed->m_EXTENSION_pairedReadPositionsForVertices.size();j++){
 						if(i==j)
 							continue;
-						int coverageJ=m_EXTENSION_coverages[j];
+						int coverageJ=m_ed->m_EXTENSION_coverages[j];
 						if(coverageJ<_MINIMUM_COVERAGE)
 							continue;
 						if((m_cd->m_CHOOSER_theMaxsPaired[i] <= __PAIRED_MULTIPLIER*m_cd->m_CHOOSER_theMaxsPaired[j]) or
@@ -2783,7 +2785,7 @@ void Machine::doChoice(){
 						}
 				
 						// if the winner does not have too much coverage.
-						if(m_EXTENSION_coverages[i]<m_minimumCoverage and 
+						if(m_ed->m_EXTENSION_coverages[i]<m_minimumCoverage and 
 					m_cd->m_CHOOSER_theNumbers[i] < m_cd->m_CHOOSER_theNumbers[j]){// make sure that it also has more single-end reads
 							winner=false;
 							break;
@@ -2795,34 +2797,34 @@ void Machine::doChoice(){
 					}
 					if(winner==true){
 						#ifdef SHOW_CHOICE
-						if(m_enumerateChoices_outgoingEdges.size()>1){
+						if(m_ed->m_enumerateChoices_outgoingEdges.size()>1){
 							cout<<"Choice "<<i+1<<" wins with paired-end reads."<<endl;
 						}
 						#endif
-						m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[i];
-						m_EXTENSION_choose=true;
-						m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
-						m_EXTENSION_directVertexDone=false;
-						m_EXTENSION_VertexAssembled_requested=false;
+						m_SEEDING_currentVertex=m_ed->m_enumerateChoices_outgoingEdges[i];
+						m_ed->m_EXTENSION_choose=true;
+						m_ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
+						m_ed->m_EXTENSION_directVertexDone=false;
+						m_ed->m_EXTENSION_VertexAssembled_requested=false;
 						return;
 					}
 				}
 
-				for(int i=0;i<(int)m_EXTENSION_readPositionsForVertices.size();i++){
+				for(int i=0;i<(int)m_ed->m_EXTENSION_readPositionsForVertices.size();i++){
 					bool winner=true;
 					if(m_cd->m_CHOOSER_theMaxs[i]<5)
 						winner=false;
 
-					int coverageI=m_EXTENSION_coverages[i];
+					int coverageI=m_ed->m_EXTENSION_coverages[i];
 					if(coverageI<_MINIMUM_COVERAGE)
 						continue;
 					if(m_cd->m_CHOOSER_theNumbers[i]==0)
 						continue;
-					for(int j=0;j<(int)m_EXTENSION_readPositionsForVertices.size();j++){
+					for(int j=0;j<(int)m_ed->m_EXTENSION_readPositionsForVertices.size();j++){
 						if(i==j)
 							continue;
 
-						if(m_EXTENSION_coverages[j]<_MINIMUM_COVERAGE)
+						if(m_ed->m_EXTENSION_coverages[j]<_MINIMUM_COVERAGE)
 							continue;
 						if((m_cd->m_CHOOSER_theMaxs[i] <= __SINGLE_MULTIPLIER*m_cd->m_CHOOSER_theMaxs[j]) 
 							or (m_cd->m_CHOOSER_theSums[i] <= __SINGLE_MULTIPLIER*m_cd->m_CHOOSER_theSums[j]) 
@@ -2831,7 +2833,7 @@ void Machine::doChoice(){
 							winner=false;
 							break;
 						}
-						if(m_EXTENSION_coverages[i]<m_minimumCoverage/4 and m_EXTENSION_coverages[j]>2*m_minimumCoverage){
+						if(m_ed->m_EXTENSION_coverages[i]<m_minimumCoverage/4 and m_ed->m_EXTENSION_coverages[j]>2*m_minimumCoverage){
 							winner=false;
 							break;
 						}
@@ -2842,28 +2844,28 @@ void Machine::doChoice(){
 					}
 					if(winner==true){
 						#ifdef SHOW_CHOICE
-						if(m_enumerateChoices_outgoingEdges.size()>1){
+						if(m_ed->m_enumerateChoices_outgoingEdges.size()>1){
 							cout<<"Choice "<<i+1<<" wins with single-end reads."<<endl;
 						}
 						#endif
-						m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[i];
-						m_EXTENSION_choose=true;
-						m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
-						m_EXTENSION_directVertexDone=false;
-						m_EXTENSION_VertexAssembled_requested=false;
+						m_SEEDING_currentVertex=m_ed->m_enumerateChoices_outgoingEdges[i];
+						m_ed->m_EXTENSION_choose=true;
+						m_ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
+						m_ed->m_EXTENSION_directVertexDone=false;
+						m_ed->m_EXTENSION_VertexAssembled_requested=false;
 						return;
 					}
 				}
 
-				m_doChoice_tips_Detected=false;
+				m_ed->m_doChoice_tips_Detected=false;
 				m_dfsData->m_doChoice_tips_Initiated=false;
 				#ifdef SHOW_PROGRESS
 				cout<<"Checking tips."<<endl;
 				#endif
 			}
 			return;
-		}else if(!m_doChoice_tips_Detected and m_EXTENSION_readsInRange.size()>0){
- 			//for each entries in m_enumerateChoices_outgoingEdges, do a dfs of max depth 40.
+		}else if(!m_ed->m_doChoice_tips_Detected and m_ed->m_EXTENSION_readsInRange.size()>0){
+ 			//for each entries in m_ed->m_enumerateChoices_outgoingEdges, do a dfs of max depth 40.
 			//if the reached depth is 40, it is not a tip, otherwise, it is.
 			int maxDepth=MAX_DEPTH;
 			if(!m_dfsData->m_doChoice_tips_Initiated){
@@ -2878,9 +2880,9 @@ void Machine::doChoice(){
 				m_bubbleData->m_coverages.clear();
 			}
 
-			if(m_dfsData->m_doChoice_tips_i<(int)m_enumerateChoices_outgoingEdges.size()){
+			if(m_dfsData->m_doChoice_tips_i<(int)m_ed->m_enumerateChoices_outgoingEdges.size()){
 				if(!m_dfsData->m_doChoice_tips_dfs_done){
-					depthFirstSearch(m_SEEDING_currentVertex,m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_i],maxDepth);
+					depthFirstSearch(m_SEEDING_currentVertex,m_ed->m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_i],maxDepth);
 				}else{
 					#ifdef SHOW_CHOICE
 					cout<<"Choice #"<<m_dfsData->m_doChoice_tips_i+1<<" : visited "<<m_dfsData->m_depthFirstSearchVisitedVertices.size()<<", max depth is "<<m_dfsData->m_depthFirstSearch_maxDepth<<endl;
@@ -2916,51 +2918,51 @@ void Machine::doChoice(){
 				cout<<m_dfsData->m_doChoice_tips_newEdges.size()<<" new arcs."<<endl;
 				#endif
 				// we have a winner with tips investigation.
-				if(m_dfsData->m_doChoice_tips_newEdges.size()==1 and m_EXTENSION_readsInRange.size()>0 
-		and m_EXTENSION_readPositionsForVertices[m_dfsData->m_doChoice_tips_newEdges[0]].size()>0
+				if(m_dfsData->m_doChoice_tips_newEdges.size()==1 and m_ed->m_EXTENSION_readsInRange.size()>0 
+		and m_ed->m_EXTENSION_readPositionsForVertices[m_dfsData->m_doChoice_tips_newEdges[0]].size()>0
 ){
-					int readsInFavorOfThis=m_EXTENSION_readPositionsForVertices[m_dfsData->m_doChoice_tips_newEdges[0]].size();
-					int coverageAtTheVertexLocation=m_EXTENSION_coverages[m_dfsData->m_doChoice_tips_newEdges[0]];
+					int readsInFavorOfThis=m_ed->m_EXTENSION_readPositionsForVertices[m_dfsData->m_doChoice_tips_newEdges[0]].size();
+					int coverageAtTheVertexLocation=m_ed->m_EXTENSION_coverages[m_dfsData->m_doChoice_tips_newEdges[0]];
 
 					// reads are not supportive of this.
 					if(readsInFavorOfThis*10<coverageAtTheVertexLocation){
 						// no luck..., yet.
-						m_doChoice_tips_Detected=true;
+						m_ed->m_doChoice_tips_Detected=true;
 						m_bubbleData->m_doChoice_bubbles_Detected=false;
 						m_bubbleData->m_doChoice_bubbles_Initiated=false;
 						return;
 					}
 
-					m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_newEdges[0]];
+					m_SEEDING_currentVertex=m_ed->m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_newEdges[0]];
 					#ifdef SHOW_PROGRESS
 					cout<<"We have a win after tip elimination: "<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<endl;
 					#endif
-					m_EXTENSION_choose=true;
-					m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
-					m_EXTENSION_directVertexDone=false;
-					m_EXTENSION_VertexAssembled_requested=false;
+					m_ed->m_EXTENSION_choose=true;
+					m_ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
+					m_ed->m_EXTENSION_directVertexDone=false;
+					m_ed->m_EXTENSION_VertexAssembled_requested=false;
 					return;
 				}else{
 					// no luck..., yet.
-					m_doChoice_tips_Detected=true;
+					m_ed->m_doChoice_tips_Detected=true;
 					m_bubbleData->m_doChoice_bubbles_Detected=false;
 					m_bubbleData->m_doChoice_bubbles_Initiated=false;
 				}
 			}
 			return;
 		// bubbles detection aims polymorphisms and homopolymers stretches.
-		}else if(!m_bubbleData->m_doChoice_bubbles_Detected and m_EXTENSION_readsInRange.size()>0){
+		}else if(!m_bubbleData->m_doChoice_bubbles_Detected and m_ed->m_EXTENSION_readsInRange.size()>0){
 			BubbleTool tool;
 			bool isGenuineBubble=tool.isGenuineBubble(m_SEEDING_currentVertex,&m_bubbleData->m_BUBBLE_visitedVertices);
 
 			// support indels of 1 as well as mismatch polymorphisms.
 			if(isGenuineBubble){
 				cout<<"Forcing next choice "<<endl;
-				m_SEEDING_currentVertex=m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_newEdges[0]];
-				m_EXTENSION_choose=true;
-				m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
-				m_EXTENSION_directVertexDone=false;
-				m_EXTENSION_VertexAssembled_requested=false;
+				m_SEEDING_currentVertex=m_ed->m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_newEdges[0]];
+				m_ed->m_EXTENSION_choose=true;
+				m_ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
+				m_ed->m_EXTENSION_directVertexDone=false;
+				m_ed->m_EXTENSION_VertexAssembled_requested=false;
 			}
 			m_bubbleData->m_doChoice_bubbles_Detected=true;
 			return;
@@ -2968,49 +2970,49 @@ void Machine::doChoice(){
 
 		// no choice possible...
 		// do it for the lulz
-		if(!m_EXTENSION_complementedSeed){
+		if(!m_ed->m_EXTENSION_complementedSeed){
 			#ifdef SHOW_PROGRESS
 			cout<<"Switching to reverse complement."<<endl;
 			#endif
-			m_EXTENSION_complementedSeed=true;
+			m_ed->m_EXTENSION_complementedSeed=true;
 			vector<VERTEX_TYPE> complementedSeed;
-			for(int i=m_EXTENSION_extension.size()-1;i>=0;i--){
-				complementedSeed.push_back(complementVertex(m_EXTENSION_extension[i],m_wordSize,m_colorSpaceMode));
+			for(int i=m_ed->m_EXTENSION_extension.size()-1;i>=0;i--){
+				complementedSeed.push_back(complementVertex(m_ed->m_EXTENSION_extension[i],m_wordSize,m_colorSpaceMode));
 			}
-			m_EXTENSION_currentPosition=0;
-			m_EXTENSION_currentSeed=complementedSeed;
-			m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
-			m_SEEDING_currentVertex=m_EXTENSION_currentSeed[m_EXTENSION_currentPosition];
-			m_EXTENSION_extension.clear();
-			m_EXTENSION_usedReads.clear();
-			m_EXTENSION_directVertexDone=false;
-			m_EXTENSION_VertexAssembled_requested=false;
-			m_EXTENSION_reads_startingPositionOnContig.clear();
-			m_EXTENSION_readsInRange.clear();
+			m_ed->m_EXTENSION_currentPosition=0;
+			m_ed->m_EXTENSION_currentSeed=complementedSeed;
+			m_ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
+			m_SEEDING_currentVertex=m_ed->m_EXTENSION_currentSeed[m_ed->m_EXTENSION_currentPosition];
+			m_ed->m_EXTENSION_extension.clear();
+			m_ed->m_EXTENSION_usedReads.clear();
+			m_ed->m_EXTENSION_directVertexDone=false;
+			m_ed->m_EXTENSION_VertexAssembled_requested=false;
+			m_ed->m_EXTENSION_reads_startingPositionOnContig.clear();
+			m_ed->m_EXTENSION_readsInRange.clear();
 		}else{
-			if(m_EXTENSION_extension.size()>=100){
+			if(m_ed->m_EXTENSION_extension.size()>=100){
 				#ifdef SHOW_PROGRESS
-				cout<<"Rank "<<getRank()<<" stores an extension, "<<m_EXTENSION_extension.size()<<" vertices."<<endl;
+				cout<<"Rank "<<getRank()<<" stores an extension, "<<m_ed->m_EXTENSION_extension.size()<<" vertices."<<endl;
 				#endif
-				m_EXTENSION_contigs.push_back(m_EXTENSION_extension);
+				m_ed->m_EXTENSION_contigs.push_back(m_ed->m_EXTENSION_extension);
 
-				int id=m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+getRank();
-				m_EXTENSION_identifiers.push_back(id);
+				int id=m_ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+getRank();
+				m_ed->m_EXTENSION_identifiers.push_back(id);
 			}
-			m_EXTENSION_currentSeedIndex++;
-			m_EXTENSION_currentPosition=0;
-			if(m_EXTENSION_currentSeedIndex<(int)m_SEEDING_seeds.size()){
-				m_EXTENSION_currentSeed=m_SEEDING_seeds[m_EXTENSION_currentSeedIndex];
-				m_SEEDING_currentVertex=m_EXTENSION_currentSeed[m_EXTENSION_currentPosition];
+			m_ed->m_EXTENSION_currentSeedIndex++;
+			m_ed->m_EXTENSION_currentPosition=0;
+			if(m_ed->m_EXTENSION_currentSeedIndex<(int)m_SEEDING_seeds.size()){
+				m_ed->m_EXTENSION_currentSeed=m_SEEDING_seeds[m_ed->m_EXTENSION_currentSeedIndex];
+				m_SEEDING_currentVertex=m_ed->m_EXTENSION_currentSeed[m_ed->m_EXTENSION_currentPosition];
 			}
-			m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
-			m_EXTENSION_extension.clear();
-			m_EXTENSION_reads_startingPositionOnContig.clear();
-			m_EXTENSION_readsInRange.clear();
-			m_EXTENSION_usedReads.clear();
-			m_EXTENSION_directVertexDone=false;
-			m_EXTENSION_complementedSeed=false;
-			m_EXTENSION_VertexAssembled_requested=false;
+			m_ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
+			m_ed->m_EXTENSION_extension.clear();
+			m_ed->m_EXTENSION_reads_startingPositionOnContig.clear();
+			m_ed->m_EXTENSION_readsInRange.clear();
+			m_ed->m_EXTENSION_usedReads.clear();
+			m_ed->m_EXTENSION_directVertexDone=false;
+			m_ed->m_EXTENSION_complementedSeed=false;
+			m_ed->m_EXTENSION_VertexAssembled_requested=false;
 		}
 	}
 }
@@ -3139,53 +3141,53 @@ void Machine::depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int maxDepth){
 
 
 void Machine::checkIfCurrentVertexIsAssembled(){
-	if(!m_EXTENSION_directVertexDone){
-		if(!m_EXTENSION_VertexAssembled_requested){
-			if(m_EXTENSION_currentSeedIndex%10==0 and m_EXTENSION_currentPosition==0 and m_last_value!=m_EXTENSION_currentSeedIndex){
-				m_last_value=m_EXTENSION_currentSeedIndex;
+	if(!m_ed->m_EXTENSION_directVertexDone){
+		if(!m_ed->m_EXTENSION_VertexAssembled_requested){
+			if(m_ed->m_EXTENSION_currentSeedIndex%10==0 and m_ed->m_EXTENSION_currentPosition==0 and m_last_value!=m_ed->m_EXTENSION_currentSeedIndex){
+				m_last_value=m_ed->m_EXTENSION_currentSeedIndex;
 				#ifdef SHOW_PROGRESS
-				cout<<"Rank "<<getRank()<<": extending seeds "<<m_EXTENSION_currentSeedIndex<<"/"<<m_SEEDING_seeds.size()<<endl;
+				cout<<"Rank "<<getRank()<<": extending seeds "<<m_ed->m_EXTENSION_currentSeedIndex<<"/"<<m_SEEDING_seeds.size()<<endl;
 				#endif
 			}
-			m_EXTENSION_VertexAssembled_requested=true;
+			m_ed->m_EXTENSION_VertexAssembled_requested=true;
 			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 			message[0]=(VERTEX_TYPE)m_SEEDING_currentVertex;
 			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(m_SEEDING_currentVertex),TAG_ASK_IS_ASSEMBLED,getRank());
 			m_outbox.push_back(aMessage);
-			m_EXTENSION_VertexAssembled_received=false;
-		}else if(m_EXTENSION_VertexAssembled_received){
-			m_EXTENSION_reverseVertexDone=false;
-			m_EXTENSION_directVertexDone=true;
-			m_EXTENSION_VertexMarkAssembled_requested=false;
+			m_ed->m_EXTENSION_VertexAssembled_received=false;
+		}else if(m_ed->m_EXTENSION_VertexAssembled_received){
+			m_ed->m_EXTENSION_reverseVertexDone=false;
+			m_ed->m_EXTENSION_directVertexDone=true;
+			m_ed->m_EXTENSION_VertexMarkAssembled_requested=false;
 			m_SEEDING_vertexCoverageRequested=false;
-			m_EXTENSION_VertexAssembled_requested=false;
-			if(m_EXTENSION_vertexIsAssembledResult){
-				m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
-				m_EXTENSION_markedCurrentVertexAsAssembled=false;
-				m_EXTENSION_directVertexDone=false;
+			m_ed->m_EXTENSION_VertexAssembled_requested=false;
+			if(m_ed->m_EXTENSION_vertexIsAssembledResult){
+				m_ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
+				m_ed->m_EXTENSION_markedCurrentVertexAsAssembled=false;
+				m_ed->m_EXTENSION_directVertexDone=false;
 			}else{
 			}
 		}else{
 		}
-	}else if(!m_EXTENSION_reverseVertexDone){
-		if(!m_EXTENSION_VertexAssembled_requested){
-			m_EXTENSION_VertexAssembled_requested=true;
+	}else if(!m_ed->m_EXTENSION_reverseVertexDone){
+		if(!m_ed->m_EXTENSION_VertexAssembled_requested){
+			m_ed->m_EXTENSION_VertexAssembled_requested=true;
 			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 			message[0]=(VERTEX_TYPE)complementVertex(m_SEEDING_currentVertex,m_wordSize,m_colorSpaceMode);
 			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0]),TAG_ASK_IS_ASSEMBLED,getRank());
 			m_outbox.push_back(aMessage);
-			m_EXTENSION_VertexAssembled_received=false;
-		}else if(m_EXTENSION_VertexAssembled_received){
-			m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
-			m_EXTENSION_markedCurrentVertexAsAssembled=false;
-			m_EXTENSION_directVertexDone=false;
+			m_ed->m_EXTENSION_VertexAssembled_received=false;
+		}else if(m_ed->m_EXTENSION_VertexAssembled_received){
+			m_ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
+			m_ed->m_EXTENSION_markedCurrentVertexAsAssembled=false;
+			m_ed->m_EXTENSION_directVertexDone=false;
 		}else{
 		}
 	}
 }
 
 void Machine::markCurrentVertexAsAssembled(){
-	if(!m_EXTENSION_directVertexDone){
+	if(!m_ed->m_EXTENSION_directVertexDone){
 		if(!m_SEEDING_vertexCoverageRequested){
 			m_SEEDING_vertexCoverageRequested=true;
 			m_SEEDING_vertexCoverageReceived=false;
@@ -3195,59 +3197,59 @@ void Machine::markCurrentVertexAsAssembled(){
 			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0]),TAG_REQUEST_VERTEX_COVERAGE,getRank());
 			m_outbox.push_back(aMessage);
 		}else if(m_SEEDING_vertexCoverageReceived){
-			if(!m_EXTENSION_VertexMarkAssembled_requested){
-				m_EXTENSION_extension.push_back(m_SEEDING_currentVertex);
+			if(!m_ed->m_EXTENSION_VertexMarkAssembled_requested){
+				m_ed->m_EXTENSION_extension.push_back(m_SEEDING_currentVertex);
 				// save wave progress.
 	
-				int waveId=m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+getRank();
-				int progression=m_EXTENSION_extension.size()-1;
+				int waveId=m_ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+getRank();
+				int progression=m_ed->m_EXTENSION_extension.size()-1;
 			
 
-				m_EXTENSION_VertexMarkAssembled_requested=true;
+				m_ed->m_EXTENSION_VertexMarkAssembled_requested=true;
 				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(3*sizeof(VERTEX_TYPE));
 				message[0]=(VERTEX_TYPE)m_SEEDING_currentVertex;
 				message[1]=waveId;
 				message[2]=progression;
 				Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,vertexRank(m_SEEDING_currentVertex),TAG_SAVE_WAVE_PROGRESSION,getRank());
 				m_outbox.push_back(aMessage);
-				m_EXTENSION_reverseVertexDone=true;
-				m_EXTENSION_reads_requested=false;
+				m_ed->m_EXTENSION_reverseVertexDone=true;
+				m_ed->m_EXTENSION_reads_requested=false;
 
 			// get the reads starting at that position.
-			}else if(!m_EXTENSION_reads_requested){
-				m_EXTENSION_reads_requested=true;
-				m_EXTENSION_reads_received=false;
+			}else if(!m_ed->m_EXTENSION_reads_requested){
+				m_ed->m_EXTENSION_reads_requested=true;
+				m_ed->m_EXTENSION_reads_received=false;
 				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 				message[0]=(VERTEX_TYPE)m_SEEDING_currentVertex;
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(m_SEEDING_currentVertex),TAG_REQUEST_READS,getRank());
 				m_outbox.push_back(aMessage);
 			
-			}else if(m_EXTENSION_reads_received){
-				for(int i=0;i<(int)m_EXTENSION_receivedReads.size();i++){
-					int uniqueId=m_EXTENSION_receivedReads[i].getUniqueId();
+			}else if(m_ed->m_EXTENSION_reads_received){
+				for(int i=0;i<(int)m_ed->m_EXTENSION_receivedReads.size();i++){
+					int uniqueId=m_ed->m_EXTENSION_receivedReads[i].getUniqueId();
 					// check that the complete sequence of m_SEEDING_currentVertex correspond to
 					// the one of the start of the read on the good strand.
 					// this is important when USE_DISTANT_SEGMENTS_GRAPH is set.
 
-					if(m_EXTENSION_usedReads.count(uniqueId)==0 ){
+					if(m_ed->m_EXTENSION_usedReads.count(uniqueId)==0 ){
 						// use all reads available.
 						if(true or m_SEEDING_receivedVertexCoverage<3*m_peakCoverage){
-							m_EXTENSION_usedReads.insert(uniqueId);
-							m_EXTENSION_reads_startingPositionOnContig[uniqueId]=m_EXTENSION_extension.size()-1;
-							m_EXTENSION_readsInRange.insert(m_EXTENSION_receivedReads[i]);
+							m_ed->m_EXTENSION_usedReads.insert(uniqueId);
+							m_ed->m_EXTENSION_reads_startingPositionOnContig[uniqueId]=m_ed->m_EXTENSION_extension.size()-1;
+							m_ed->m_EXTENSION_readsInRange.insert(m_ed->m_EXTENSION_receivedReads[i]);
 							#ifdef DEBUG
-							assert(m_EXTENSION_readsInRange.count(m_EXTENSION_receivedReads[i])>0);
+							assert(m_ed->m_EXTENSION_readsInRange.count(m_ed->m_EXTENSION_receivedReads[i])>0);
 							#endif
 						}else{
 							cout<<"Repeated vertex."<<endl;
 						}
 					}
 				}
-				m_EXTENSION_directVertexDone=true;
-				m_EXTENSION_VertexMarkAssembled_requested=false;
-				m_EXTENSION_enumerateChoices=false;
+				m_ed->m_EXTENSION_directVertexDone=true;
+				m_ed->m_EXTENSION_VertexMarkAssembled_requested=false;
+				m_ed->m_EXTENSION_enumerateChoices=false;
 				m_SEEDING_edgesRequested=false;
-				m_EXTENSION_markedCurrentVertexAsAssembled=true;
+				m_ed->m_EXTENSION_markedCurrentVertexAsAssembled=true;
 			}
 		}
 	}
