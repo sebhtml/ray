@@ -26,6 +26,7 @@
 #include<set>
 #include<string>
 #include<Loader.h>
+#include<string.h>
 #include<common_functions.h>
 #include<Read.h>
 using namespace std;
@@ -49,7 +50,11 @@ int main(int argc,char**argv){
 	Loader l;
 	l.load(genomeFile,&sequences,&a,&a);
 	int coverage=atoi(argv[3]);
-	char*base=__basename(argv[1]);
+	char theName[3000];
+	strcpy(theName,argv[1]);
+	char*base=__basename(theName);
+	if(strlen(base)>=5)
+		base[5]='\0';
 	ostringstream f1Name;
 	f1Name<<base<<",1x"<<fragmentSize<<"b,"<<coverage<<"X.fasta";
 	ofstream f1(f1Name.str().c_str());

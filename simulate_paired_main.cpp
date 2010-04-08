@@ -19,7 +19,7 @@
 
 */
 
-
+#include<string.h>
 #include<iostream>
 #include<sstream>
 #include<stdlib.h>
@@ -36,7 +36,6 @@ int main(int argc,char**argv){
 	if(argc!=5){
 		cout<<"Usage:"<<endl;
 		cout<<argv[0]<<" File.fasta fragmentSize coverage readSize"<<endl;
-		cout<<" examples:"<<endl;
 		return 0;
 	}
 	ran_seed();
@@ -52,7 +51,11 @@ int main(int argc,char**argv){
 		return 0;
 	int coverage=atoi(argv[3]);
 
-	char*base=__basename(argv[1]);
+	char theName[4024];
+	strcpy(theName,argv[1]);
+	char*base=__basename(theName);
+	if(strlen(base)>=5)
+		base[5]='\0';
 	ostringstream f1Name;
 	f1Name<<base<<","<<fragmentSize<<"b,2x"<<readSize<<"b,"<<coverage<<"X";
 	f1Name<<"_1.fasta";
