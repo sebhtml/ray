@@ -1334,7 +1334,8 @@ void Machine::processData(){
 		m_messageSentForEdgesDistribution=true;
 	}else if(m_numberOfMachinesDoneSendingCoverage==getSize()){
 		m_numberOfMachinesDoneSendingCoverage=-1;
-		CoverageDistribution distribution(m_coverageDistribution,m_parameters.getCoverageDistributionFile());
+		string file=m_parameters.getCoverageDistributionFile();
+		CoverageDistribution distribution(&m_coverageDistribution,&file);
 		m_minimumCoverage=distribution.getMinimumCoverage();
 		m_peakCoverage=distribution.getPeakCoverage();
 		m_seedCoverage=(m_minimumCoverage+m_peakCoverage)/2;
@@ -1344,6 +1345,7 @@ void Machine::processData(){
 		#ifdef SHOW_PROGRESS
 		cout<<"MaxCoverage="<<(int)m_maxCoverage<<endl;
 		#endif
+		#ifdef WRITE_PARAMETERS
 		ofstream f(m_parameters.getParametersFile().c_str());
 		f<<"Ray Command Line: ";
 		vector<string> commands=m_parameters.getCommands();
@@ -1364,6 +1366,7 @@ void Machine::processData(){
 
 		f.close();
 		cout<<"Writing "<<m_parameters.getParametersFile()<<""<<endl;
+		#endif
 
 		if(m_minimumCoverage > m_peakCoverage or m_peakCoverage==m_maxCoverage){
 			killRanks();

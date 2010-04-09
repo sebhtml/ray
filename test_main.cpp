@@ -19,6 +19,8 @@
 
 */
 
+#include<fstream>
+#include<CoverageDistribution.h>
 #include<set>
 #include<Vertex.h>
 #include<common_functions.h>
@@ -123,6 +125,60 @@ void test3(){
 	assert(o.size()>0);
 }
 
+void test_coverage(string file){
+	ifstream f(file.c_str());
+	bool t=f;
+	f.close();
+	if(!t)
+		return;
+	map<int,VERTEX_TYPE> c;
+	ifstream f2(file.c_str());
+	int a;
+	VERTEX_TYPE b;
+	string buffer;
+	f2>>buffer>>buffer;
+	while(!f2.eof()){
+		a=0;
+		f2>>a>>b;
+		if(a==0)
+			break;
+		c[a]=b;
+	}
+	string file2="/dev/null";
+	CoverageDistribution d(&c,&file2);
+	int m=d.getMinimumCoverage();
+	int p=d.getPeakCoverage();
+	assert(m<p);
+	cout<<(file)<<endl;
+	cout<<m<<" "<<p<<endl;
+	f2.close();
+}
+
+void test_coverageDistribution(){
+	test_coverage("./scripts/0mix11-ray.sh.dir/Ray-CoverageDistribution.txt");
+	test_coverage("/data/users/sra/solidsoftwaretools.com/dh10bfrag/Ray-CoverageDistribution.txt");
+	test_coverage("./scripts/0mix12-ray.sh.dir/Ray-CoverageDistribution.txt");
+	test_coverage("./scripts/0mix14-ray.sh.dir/Ray-CoverageDistribution.txt");
+	test_coverage("./scripts/0mix21-ray.sh.dir/Ray-CoverageDistribution.txt");
+	test_coverage("./scripts/0mix22-ray.sh.dir/Ray-CoverageDistribution.txt");
+	test_coverage("./scripts/0mix23-ray.sh.dir/Ray-CoverageDistribution.txt");
+	test_coverage("./scripts/0mix31-ray.sh.dir/Ray-CoverageDistribution.txt");
+	test_coverage("./scripts/0mix32-ray.sh.dir/Ray-CoverageDistribution.txt");
+	test_coverage("./scripts/0mix13-ray.sh.dir/Ray-CoverageDistribution.txt");
+	test_coverage("./scripts/0mix33-ray.sh.dir/Ray-CoverageDistribution.txt");
+	test_coverage("./scripts/0short1-ray.sh.dir/Ray-CoverageDistribution.txt");
+	test_coverage("./scripts/0short2-ray.sh.dir/Ray-CoverageDistribution.txt");
+	test_coverage("./scripts/0sim5-ray.sh.dir/Ray-CoverageDistribution.txt");
+	test_coverage("./scripts/0sim8-ray.sh.dir/Ray-CoverageDistribution.txt");
+	test_coverage("./scripts/0sim1-ray.sh.dir/Ray-CoverageDistribution.txt");
+	test_coverage("./scripts/0sim6-ray.sh.dir/Ray-CoverageDistribution.txt");
+	test_coverage("./scripts/0sim4-ray.sh.dir/Ray-CoverageDistribution.txt");
+	test_coverage("./scripts/0short3-ray.sh.dir/Ray-CoverageDistribution.txt");
+	test_coverage("./scripts/0sim2-ray.sh.dir/Ray-CoverageDistribution.txt");
+	test_coverage("./scripts/0sim7-ray.sh.dir/Ray-CoverageDistribution.txt");
+	test_coverage("./scripts/0sim3-ray.sh.dir/Ray-CoverageDistribution.txt");
+}
+
 int main(){
 	test_segment("ATCAGTTGCAGTACTGCAATCTACG",7);
 	test_segment("GTCAGTTGCAGTACTGCAATTTACG",5);
@@ -137,5 +193,7 @@ int main(){
 	
 	test_vertex2();
 	test3();
+	test_coverageDistribution();
+
 	return 0;
 }
