@@ -31,13 +31,17 @@ CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>distributionOfCov
 	COVERAGE_TYPE max=0;
 	max=max-1;// underflow.
 	m_minimumCoverage=1;
+	#ifdef WRITE_COVERAGE_DISTRIBUTION
 	ofstream f(file.c_str());
 	f<<"#Coverage NumberOfVertices"<<endl;
+	#endif
 	for(map<int,VERTEX_TYPE>::iterator i=distributionOfCoverage.begin();i!=distributionOfCoverage.end();i++){
 		#ifdef SHOW_PROGRESS
 		cout<<"DISTRIBUTION "<<i->first<<" "<<i->second<<endl;
 		#endif
+		#ifdef WRITE_COVERAGE_DISTRIBUTION
 		f<<""<<i->first<<" "<<i->second<<endl;
+		#endif
 		int coverage=i->first;
 		if(coverage==max){
 			continue;
@@ -74,9 +78,10 @@ CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>distributionOfCov
 	cout<<"PeakCoverage="<<m_coverage_mean<<endl;
 	cout<<"MinimumCoverage="<<m_minimumCoverage<<endl;
 	#endif
-	
+	#ifdef WRITE_COVERAGE_DISTRIBUTION
 	cout<<"\rWriting "<<file<<""<<endl;
 	f.close();
+	#endif
 }
 
 int CoverageDistribution::getPeakCoverage(){

@@ -24,6 +24,7 @@
 # -DSHOW_FILTER (show the internals of the filters for 1-coverage vertices)
 # -DDEBUG (run an array of assert(<.>) during execution)
 # -DSHOW_TRON (show Tron internals)
+# -DWRITE_COVERAGE_DISTRIBUTION
 # -O3 (maximum optimization)
 # -g (debug code for gdb utilization)
 
@@ -31,7 +32,7 @@
 #CXXFLAGS=-Wall  -I. -O3  -g -DSHOW_SENT_MESSAGES -DSHOW_PROGRESS -DSHOW_FILTER -DDEBUG -DSHOW_TIP_LOST -DSHOW_CHOICE  -DSHOW_TRON
 
 # production options follow:
-CXXFLAGS=-I. -Wall -O3
+CXXFLAGS=-I. -Wall -O3 -DWRITE_COVERAGE_DISTRIBUTION
 
 # the default is to use mpic++ provided in your $PATH
 MPICC=mpic++
