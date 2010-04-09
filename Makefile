@@ -30,10 +30,10 @@
 # -g (debug code for gdb utilization)
 
 # debug options follow:
-CXXFLAGS=-Wall  -I. -O3  -g -DSHOW_SENT_MESSAGES -DSHOW_PROGRESS -DSHOW_FILTER -DDEBUG -DSHOW_TIP_LOST -DSHOW_CHOICE  -DSHOW_TRON
+#CXXFLAGS=-Wall  -I. -O3  -g -DSHOW_SENT_MESSAGES -DSHOW_PROGRESS -DSHOW_FILTER -DDEBUG -DSHOW_TIP_LOST -DSHOW_CHOICE  -DSHOW_TRON
 
 # production options follow:
-#CXXFLAGS=-I. -Wall -O3 
+CXXFLAGS=-I. -Wall -O3 
 
 # the default is to use mpic++ provided in your $PATH
 MPICC=mpic++
