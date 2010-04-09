@@ -170,6 +170,9 @@ CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>*distributionOfCo
 	}
 	m_minimumCoverage=x[bestI];
 	m_peakCoverage=x[maxI];
+	#ifdef SHOW_PROGRESS
+	cout<<"Peak="<<m_peakCoverage<<" and Min="<<m_minimumCoverage<<endl;
+	#endif
 }
 
 int CoverageDistribution::getPeakCoverage(){

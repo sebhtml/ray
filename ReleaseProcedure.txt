@@ -6,5 +6,5 @@
 *) do a tar.bz2, compile it to test it
 *) upload the tarball on sf
 *) update the wiki page
-*) post an email on the list (with new features based on closed tickets + svn log)
+*) post an email on the list (with new features based on closed tickets + svn log), including results on benchmarks
 *) post on seqanswers thread linking to the email on the list
