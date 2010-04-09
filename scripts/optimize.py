@@ -6,6 +6,10 @@ import sys
 import math
 import os
 
+if len(sys.argv)<2:
+	print "Usage: "+sys.argv[0]+" Ray-CoverageDistribution.txt"
+	sys.exit()
+
 # numerical integration from i to j, substract the triangle
 def score(x,y,i,j):
 	k=i+1
