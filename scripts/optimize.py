@@ -65,20 +65,22 @@ bestJ=0
 bestScore=0
 i=0
 
-theMax=255
+threshold=0.05
+
+theMax=len(x)-1
 while i<len(x)-30:
 	lower=0
 	higher=0
 	j=0
 	while j<30-2:
-		if smoothy[i+j]<smoothy[i+j+1] and smoothy[i+j+1] > smoothy[i+j+2]:
+		if smoothy[i+j]+threshold<smoothy[i+j+1] and smoothy[i+j+1] > smoothy[i+j+2]+threshold:
 			lower+=1
-		elif smoothy[i+j]>smoothy[i+j+1] and smoothy[i+j+1] < smoothy[i+j+2]:
+		elif smoothy[i+j]>smoothy[i+j+1]+threshold and smoothy[i+j+1]+threshold< smoothy[i+j+2]:
 			higher+=1
 		j+=1
 	j=0
 
-	if lower>7 and higher>7:
+	if lower>3 and higher>3:
 		theMax=i
 		break
 	i+=1
@@ -132,6 +134,7 @@ pdf(\""+file+".pdf\")\n\
 plot(r[[1]],log(r[[2]]),type=\"l\",col=\"black\",main=\"Coverage distribution\",xlab=\"Coverage\",ylab=\"Density\")\n\
 lines(c("+str(x[bestI])+","+str(x[bestJ])+"),c("+str(y[bestI])+","+str(y[bestJ])+"),col=\"red\")\n\
 points(c("+str(x[bestI])+","+str(x[bestJ])+","+str(x[maxI])+"),c("+str(y[bestI])+","+str(y[bestJ])+","+str(y[maxI])+"),col=\"red\")\n\
+points(c("+str(x[theMax])+"),c("+str(y[theMax])+"),col=\"green\")\n\
 dev.off()'|R --vanilla &>/dev/null")
 print "Wrote "+file+".pdf"
 

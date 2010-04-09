@@ -85,6 +85,7 @@ void smooth(double*y,double*smoothy,int c){
 
 int findChaos(double*smoothy,int c){
 	int i=0;
+	double threshold=0.05;
 	while(i<c-30){
 		int lower=0;
 		int higher=0;
@@ -93,14 +94,15 @@ int findChaos(double*smoothy,int c){
 			double ij=smoothy[i+j];
 			double ij1=smoothy[i+j+1];
 			double ij2=smoothy[i+j+2];
-			if(ij<ij1 and ij1>ij2)
+			if(ij+threshold<ij1 and ij1>ij2+threshold)
 				lower++;
-			if(ij>ij1 and ij1<ij2)
+			if(ij>ij1+threshold and ij1+threshold<ij2)
 				higher++;
 			j++;
 		}
-		if(lower>7 and higher>7)
+		if(lower>3 and higher>3){
 			return i;
+		}
 		i++;
 	}
 	return c-1;
