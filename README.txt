@@ -1,1 +1,1 @@
-see http://denovoassembler.sf.net/
+see http://denovoassembler.sf.net/ or Wiki.txt
