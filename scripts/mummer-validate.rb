@@ -15,7 +15,7 @@ output=ARGV[2]
 fileOutput=File.open output,"w+"
 prefix="#{output}_prefix"
 
-system "nucmer --prefix=#{prefix} #{reference} #{draft}"
+system "nucmer --prefix=#{prefix} #{reference} #{draft} "
 
 system "show-coords -rcl #{prefix}.delta  > #{prefix}.coords"
 file="#{prefix}.coords"
@@ -70,16 +70,24 @@ misassembled=0
 
 queries.each do |name,hits|
 	ok=false
+	filteredHits=[]
 	hits.each do |hit|
+		if hit.getQueryCoverage>=0.04
+			filteredHits<< hit
+		end
+	end
+	filteredHits.each do |hit|
 		#puts hit.getQueryCoverage.to_s
 		if hit.getQueryCoverage>=0.95
 			ok=true
 		end
 		mums<< hit
 	end
-	if ok==false and hits.size==2 and hits[0].getQueryCoverage+hits[1].getQueryCoverage >= 0.95
+	if ok==false and filteredHits.size==2 and filteredHits[0].getQueryCoverage+filteredHits[1].getQueryCoverage >= 0.95
 		# check if it is circular
-		if hits[0].getRefStart==1 and hits[1].getRefEnd==hits[1].getRefLength
+		puts "is circular?"
+		if filteredHits[0].getRefStart==1 and filteredHits[1].getRefEnd==filteredHits[1].getRefLength
+			puts "It is circular"
 			ok=true
 		end
 	end
