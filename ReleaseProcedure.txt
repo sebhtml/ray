@@ -1,5 +1,4 @@
-*) test on datasets and check logs
-	run run-on-datasets.sh
+*) use scripts/2010-04-02-1.sh to generate results
 *) svn cp trunk tags/<version>
 *) close the milestone in trac
 *) svn export
