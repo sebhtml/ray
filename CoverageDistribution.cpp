@@ -46,7 +46,7 @@ CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>*distributionOfCo
 		(distributionOfCoverage->count(coverage-1)==0||
 			(*distributionOfCoverage)[coverage-1]<=(*distributionOfCoverage)[coverage]) &&
 		(distributionOfCoverage->count(coverage+1)==0||
-			distributionOfCoverage[coverage+1]<=distributionOfCoverage[coverage]) &&
+			(*distributionOfCoverage)[coverage+1]<=(*distributionOfCoverage)[coverage]) &&
 		(*distributionOfCoverage)[coverage]>(*distributionOfCoverage)[m_peakCoverage]){
 			m_peakCoverage=coverage;
 		}
@@ -55,11 +55,11 @@ CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>*distributionOfCo
 	for(int coverage=1;coverage<=m_peakCoverage;coverage++){
 		if(
 		distributionOfCoverage->count(coverage-1)>0 &&
-			distributionOfCoverage[coverage-1]>=distributionOfCoverage[coverage] &&
+			(*distributionOfCoverage)[coverage-1]>=(*distributionOfCoverage)[coverage] &&
 		distributionOfCoverage->count(coverage+1)>0 &&
-			distributionOfCoverage[coverage+1]>=distributionOfCoverage[coverage] &&
+			(*distributionOfCoverage)[coverage+1]>=(*distributionOfCoverage)[coverage] &&
 
-		distributionOfCoverage[coverage]<distributionOfCoverage[m_minimumCoverage]&&
+		(*distributionOfCoverage)[coverage]<(*distributionOfCoverage)[m_minimumCoverage]&&
 		coverage < m_peakCoverage&&
 		(m_minimumCoverage==1|| coverage<m_minimumCoverage)){
 			m_minimumCoverage=coverage;
