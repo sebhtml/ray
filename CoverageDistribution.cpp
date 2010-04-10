@@ -27,6 +27,9 @@
 using namespace std;
 
 CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>*distributionOfCoverage,string*file){
+	COVERAGE_TYPE max=0;
+	max--;
+
 	m_peakCoverage=100;
 	m_minimumCoverage=1;
 	#ifdef WRITE_COVERAGE_DISTRIBUTION
@@ -41,6 +44,8 @@ CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>*distributionOfCo
 		f<<""<<i->first<<" "<<i->second<<endl;
 		#endif
 		int coverage=i->first;
+		if(coverage==max)
+			continue;
 		if(
 		coverage!=1&&
 		(distributionOfCoverage->count(coverage-1)==0||
@@ -74,7 +79,7 @@ CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>*distributionOfCo
 	cout<<"MinimumCoverage="<<m_minimumCoverage<<endl;
 	#endif
 	#ifdef WRITE_COVERAGE_DISTRIBUTION
-	cout<<"\rWriting "<<file<<""<<endl;
+	cout<<"\rWriting "<<*file<<""<<endl;
 	f.close();
 	#endif
 }
