@@ -202,7 +202,7 @@ int main(){
 	
 	test_vertex2();
 	test3();
-	test_coverageDistribution();
+	//test_coverageDistribution();
 
 	return 0;
 }
