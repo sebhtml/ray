@@ -1,0 +1,72 @@
+== 0.0.3 (23 tickets) ==
+ Path: tags/0.0.3
+ Repository UUID: c4dbc769-ac70-4648-87fb-c424638b46e6
+ Schedule: normal
+ Last Changed Rev: 3074
+ Last Changed Date: 2010-03-09 21:28:22 -0500 (Tue, 09 Mar 2010)
+
+* initial release, see
+https://sourceforge.net/mailarchive/forum.php?thread_name=C4217F2ABFA5D44BA8F3DCD899E5B0C8E42ED96EA7%40EXCH-MBX-F.ulaval.ca&forum_name=denovoassembler-users
+
+== 0.0.4 (12 tickets) ==
+ Path: tags/0.0.4
+ Repository UUID: c4dbc769-ac70-4648-87fb-c424638b46e6
+ Schedule: normal
+ Last Changed Rev: 3132
+ Last Changed Date: 2010-03-22 21:26:38 -0400 (Mon, 22 Mar 2010)
+
+* Fixed many bugs in Ray when k is lower than 25 (when k=21, in particular)
+(trac #88)
+* Fixed segmentation fault when loading helicos data (trac #86)
+* Made some changes after analyzing how the word length is impacting the
+assembly of the public dataset SRA001125 (trac #81)
+* Modified the Parallel_Ray_Engine (now version 0.0.4) to handle mixed
+datasets (tested on the public dataset SRA003611) (trac #79)
+* Implemented a dead-end detector for unpaired short reads (trac #20)
+* Fixed segmentation fault when no input is provided (trac #82)
+* Changed Ray's default behavior when no peak is observed in the coverage
+(trac #80)
+* Added public dataset links on the web page (trac #77)
+* Fixed a serious flaw in Parallel_Ray_Engine that led to segmentation faults
+(trac #76) (this flaw was kindly reported by Dr Torsten Seemann @  Victorian
+ Bioinformatics Consortium -- thank you!)
+* Changed the behavior of memory allocators in message passing --
+   Ray now reuses allocated memory for ingoing and outgoing messages
+   (10 MB for each).
+* Added a mummer validation script (r3090)
+
+== 0.0.5 (8 tickets) ==
+ Path: tags/0.0.5
+ Repository UUID: c4dbc769-ac70-4648-87fb-c424638b46e6
+ Schedule: normal
+ Last Changed Rev: 3171
+ Last Changed Date: 2010-03-29 10:15:17 -0400 (Mon, 29 Mar 2010)
+
+* Ray now outputs assemblies in AMOS format (with -a), (trac #58)
+* Ray commands can be provided with a commands file (like in 0.0.3 and 0.0.4)
+as well as with command-line arguments, (trac #94) and
+* Ray removes non-A-T-C-G letters at both ends of reads.
+
+== 0.0.6 (22 tickets) ==
+[boiseb01@ls30 Ray]$ svn info tags/0.0.6
+ Path: tags/0.0.6
+ Repository UUID: c4dbc769-ac70-4648-87fb-c424638b46e6
+ Schedule: normal
+ Last Changed Rev: 3269
+ Last Changed Date: 2010-04-10 08:38:09 -0400 (Sat, 10 Apr 2010)
+
+* 'make test' now perform unit tests (trac #83)
+* 'make simtools' compile simulation tools (trac #43)
+* ignore coverage at 255 or more in the coverage distribution (trac #105)
+* reduced number of contigs and error rates (trac #103 #106 #107 #110 #111
+#118)
+* MPI messages are grouped together in up-to-4096-bytes messages, when
+possible (trac #114)
+* unroll some loops to gain performance (trac #117)
+* scripts included to do benchmarks
+* improved AMOS file generation
+* corrected the loader for color-space reads (thanks to sparks from
+seqanswers.com)
+* some code refactoring to reduce the size of Machine.cpp
+* Comparison with other assemblers 
+
