@@ -19,7 +19,7 @@
 
 */
 
-#define _REPEATED_LENGTH_ALARM_THRESHOLD 50
+#define _REPEATED_LENGTH_ALARM_THRESHOLD 100
 
 #include<VerticesExtractor.h>
 #include<Machine.h>
