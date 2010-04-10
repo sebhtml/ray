@@ -48,7 +48,6 @@ as well as with command-line arguments, (trac #94) and
 * Ray removes non-A-T-C-G letters at both ends of reads.
 
 == 0.0.6 (22 tickets) ==
-[boiseb01@ls30 Ray]$ svn info tags/0.0.6
  Path: tags/0.0.6
  Repository UUID: c4dbc769-ac70-4648-87fb-c424638b46e6
  Schedule: normal
