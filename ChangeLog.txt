@@ -54,8 +54,8 @@ as well as with command-line arguments, (trac #94) and
  Last Changed Rev: 3269
  Last Changed Date: 2010-04-10 08:38:09 -0400 (Sat, 10 Apr 2010)
 
-* 'make test' now perform unit tests (trac #83)
-* 'make simtools' compile simulation tools (trac #43)
+* 'make test' now performs unit tests (trac #83)
+* 'make simtools' compiles simulation tools (trac #43)
 * ignore coverage at 255 or more in the coverage distribution (trac #105)
 * reduced number of contigs and error rates (trac #103 #106 #107 #110 #111
 #118)
