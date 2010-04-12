@@ -139,6 +139,7 @@ Machine::Machine(int argc,char**argv){
 	m_fusionData=new FusionData();
 	m_disData=new DistributionData();
 	m_ed=new ExtensionData();
+	m_sd=new ScaffolderData();
 	m_cd=new ChooserData();
 }
 
@@ -1937,6 +1938,16 @@ void Machine::processData(){
 			if(!m_reductionOccured or m_cycleNumber ==5){ // cycling is in development!
 				cout<<"\r"<<"Collecting fusions"<<endl;
 				m_master_mode=MODE_ASK_EXTENSIONS;
+
+				m_sd->m_computedTopology=false;
+
+				m_sd->m_pathId=0;
+				m_sd->m_visitedVertices.clear();
+				while(!m_sd->m_verticesToVisit.empty())
+					m_sd->m_verticesToVisit.pop();
+				while(!m_sd->m_depthsToVisit.empty())
+					m_sd->m_depthsToVisit.pop();
+				m_sd->m_processedLastVertex=false;
 				m_ed->m_EXTENSION_currentRankIsSet=false;
 				m_ed->m_EXTENSION_rank=-1;
 			}else{
@@ -1963,6 +1974,75 @@ void Machine::processData(){
 			m_ed->m_EXTENSION_rank++;
 		}
 		if(m_ed->m_EXTENSION_rank==getSize()){
+			#ifdef SHOW_SCAFFOLDER
+			#endif
+			if(false and !m_sd->m_computedTopology){ // in development.
+				// for each contig path, take the last vertex, and search for other contig paths 
+				// reachable from it.
+				if(m_sd->m_pathId<(int)m_allPaths.size()){
+					if(!m_sd->m_processedLastVertex){
+						m_sd->m_processedLastVertex=true;
+						VERTEX_TYPE lastVertex=m_allPaths[m_sd->m_pathId][m_allPaths[m_sd->m_pathId].size()-1];
+						m_sd->m_verticesToVisit.push(lastVertex);
+						m_sd->m_depthsToVisit.push(0);
+						m_SEEDING_edgesRequested=false;
+					}else if(!m_sd->m_verticesToVisit.empty()){
+						VERTEX_TYPE theVertex=m_sd->m_verticesToVisit.top();
+						int theDepth=m_sd->m_depthsToVisit.top();
+						if(!m_SEEDING_edgesRequested){
+							m_SEEDING_edgesReceived=false;
+							m_SEEDING_edgesRequested=true;
+							VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
+							message[0]=(VERTEX_TYPE)theVertex;
+							Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0]),TAG_REQUEST_VERTEX_OUTGOING_EDGES,getRank());
+							m_outbox.push_back(aMessage);
+							m_SEEDING_outgoingEdgeIndex=0;
+							m_Machine_getPaths_DONE=false;
+							m_Machine_getPaths_INITIALIZED=false;
+							m_Machine_getPaths_result.clear();
+						}else if(m_SEEDING_edgesReceived){
+							// for each of the arcs received,
+							if(m_SEEDING_outgoingEdgeIndex<(int)m_SEEDING_receivedOutgoingEdges.size()){
+								if(!m_Machine_getPaths_DONE){
+									getPaths(theVertex);
+								}else{
+									if(m_Machine_getPaths_result.size()>0){
+										m_sd->m_visitedVertices.insert(theVertex);// don't go there.
+										for(int i=0;i<(int)m_Machine_getPaths_result.size();i++){
+											#ifdef SHOW_SCAFFOLDER
+											cout<<"LINK ";
+											cout<<m_identifiers[m_sd->m_pathId];
+											cout<<" "<<m_Machine_getPaths_result[i].getWave()<<endl;
+											#endif
+										}
+									}else{
+									
+									}
+									m_SEEDING_outgoingEdgeIndex++;
+									m_Machine_getPaths_result.clear();
+									m_Machine_getPaths_DONE=false;
+									m_Machine_getPaths_INITIALIZED=false;
+								}
+							}else{
+								m_SEEDING_edgesRequested=false;
+								m_sd->m_verticesToVisit.pop();
+								m_sd->m_depthsToVisit.pop();
+								for(int i=0;i<(int)m_SEEDING_receivedOutgoingEdges.size();i++){
+									m_sd->m_verticesToVisit.push(m_SEEDING_receivedOutgoingEdges[i]);
+									m_sd->m_verticesToVisit.push(theDepth+1);
+								}
+							}
+						}
+					}else{
+						m_sd->m_processedLastVertex=false;
+						m_sd->m_pathId++;
+					}
+				}else{
+					m_sd->m_computedTopology=true;
+				}
+				return;
+			}
+
 			m_master_mode=MODE_DO_NOTHING;
 
 			

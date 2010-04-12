@@ -54,6 +54,15 @@ public:
 	map<int,int> m_statistics_bytes;
 };
 
+class ScaffolderData{
+public:
+	bool m_computedTopology;
+	int m_pathId;
+	stack<int> m_depthsToVisit;
+	stack<VERTEX_TYPE> m_verticesToVisit;
+	set<VERTEX_TYPE> m_visitedVertices;
+	bool m_processedLastVertex;
+};
 
 class DepthFirstSearchData{
 public:
@@ -78,6 +87,7 @@ using namespace std;
 
 
 class Machine{
+	ScaffolderData*m_sd;
 	VerticesExtractor m_verticesExtractor;
 	MessageProcessor m_mp;
 	int m_argc;
