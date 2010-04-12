@@ -2020,9 +2020,12 @@ void Machine::processData(){
 									if(m_sd->m_allIdentifiers.count(pathId)==0){
 										continue;
 									}
+									if(m_Machine_getPaths_result[i].getProgression()>0)
+										continue;
+
 									#ifdef SHOW_SCAFFOLDER
-									nextPaths.push_back(m_Machine_getPaths_result[i]);
 									#endif
+									nextPaths.push_back(m_Machine_getPaths_result[i]);
 								}
 
 								m_Machine_getPaths_result.clear();
