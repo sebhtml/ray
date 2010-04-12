@@ -22,10 +22,11 @@ see <http://www.gnu.org/licenses/>
 #ifndef _common_functions
 #define _common_functions
 
+#define u16 uint16_t
+#define u64 uint64_t
 
 
-
-#define VERTEX_TYPE uint64_t
+#define VERTEX_TYPE u64
 #include<stdint.h>
 #include<SplayTree.h>
 #include<stdlib.h>
@@ -37,8 +38,8 @@ see <http://www.gnu.org/licenses/>
 using namespace std;
 
 
-#define __PAIRED_MULTIPLIER 1.3
-#define __SINGLE_MULTIPLIER 1.3
+#define __PAIRED_MULTIPLIER 1
+#define __SINGLE_MULTIPLIER 1
 
 #define MAX_DEPTH 200
 #define MAX_VERTICES_TO_VISIT 500

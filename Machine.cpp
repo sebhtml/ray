@@ -1208,7 +1208,8 @@ void Machine::processMessages(){
 	&m_numberOfMachinesDoneSendingVertices,
 	&m_numberOfMachinesDoneSendingCoverage,
 	&m_ed->m_EXTENSION_reads_received,
-				&m_outbox);
+				&m_outbox,
+	&m_sd->m_allIdentifiers);
 
 	}
 	m_inbox.clear();
@@ -1976,11 +1977,14 @@ void Machine::processData(){
 		if(m_ed->m_EXTENSION_rank==getSize()){
 			#ifdef SHOW_SCAFFOLDER
 			#endif
-			if(false and !m_sd->m_computedTopology){ // in development.
+			if(!m_sd->m_computedTopology){ // in development.
 				// for each contig path, take the last vertex, and search for other contig paths 
 				// reachable from it.
 				if(m_sd->m_pathId<(int)m_allPaths.size()){
 					if(!m_sd->m_processedLastVertex){
+						#ifdef SHOW_SCAFFOLDER
+						//cout<<"push last vertex."<<endl;
+						#endif
 						m_sd->m_processedLastVertex=true;
 						VERTEX_TYPE lastVertex=m_allPaths[m_sd->m_pathId][m_allPaths[m_sd->m_pathId].size()-1];
 						m_sd->m_verticesToVisit.push(lastVertex);
@@ -1990,6 +1994,9 @@ void Machine::processData(){
 						VERTEX_TYPE theVertex=m_sd->m_verticesToVisit.top();
 						int theDepth=m_sd->m_depthsToVisit.top();
 						if(!m_SEEDING_edgesRequested){
+							#ifdef SHOW_SCAFFOLDER
+							//cout<<"Asking for arcs. "<<theVertex<<endl;
+							#endif
 							m_SEEDING_edgesReceived=false;
 							m_SEEDING_edgesRequested=true;
 							VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
@@ -2000,42 +2007,54 @@ void Machine::processData(){
 							m_Machine_getPaths_DONE=false;
 							m_Machine_getPaths_INITIALIZED=false;
 							m_Machine_getPaths_result.clear();
+							m_sd->m_visitedVertices.insert(theVertex);
 						}else if(m_SEEDING_edgesReceived){
-							// for each of the arcs received,
-							if(m_SEEDING_outgoingEdgeIndex<(int)m_SEEDING_receivedOutgoingEdges.size()){
-								if(!m_Machine_getPaths_DONE){
-									getPaths(theVertex);
-								}else{
-									if(m_Machine_getPaths_result.size()>0){
-										m_sd->m_visitedVertices.insert(theVertex);// don't go there.
-										for(int i=0;i<(int)m_Machine_getPaths_result.size();i++){
-											#ifdef SHOW_SCAFFOLDER
-											cout<<"LINK ";
-											cout<<m_identifiers[m_sd->m_pathId];
-											cout<<" "<<m_Machine_getPaths_result[i].getWave()<<endl;
-											#endif
-										}
-									}else{
-									
-									}
-									m_SEEDING_outgoingEdgeIndex++;
-									m_Machine_getPaths_result.clear();
-									m_Machine_getPaths_DONE=false;
-									m_Machine_getPaths_INITIALIZED=false;
-								}
+							if(!m_Machine_getPaths_DONE){
+								getPaths(theVertex);
 							}else{
-								m_SEEDING_edgesRequested=false;
+								vector<Direction> nextPaths;
+								for(int i=0;i<(int)m_Machine_getPaths_result.size();i++){
+									int pathId=m_Machine_getPaths_result[i].getWave();
+									if(pathId==m_identifiers[m_sd->m_pathId])
+										continue;
+									if(m_sd->m_allIdentifiers.count(pathId)==0){
+										continue;
+									}
+									#ifdef SHOW_SCAFFOLDER
+									nextPaths.push_back(m_Machine_getPaths_result[i]);
+									#endif
+								}
+
+								m_Machine_getPaths_result.clear();
+								m_Machine_getPaths_DONE=false;
+								m_Machine_getPaths_INITIALIZED=false;
 								m_sd->m_verticesToVisit.pop();
 								m_sd->m_depthsToVisit.pop();
-								for(int i=0;i<(int)m_SEEDING_receivedOutgoingEdges.size();i++){
-									m_sd->m_verticesToVisit.push(m_SEEDING_receivedOutgoingEdges[i]);
-									m_sd->m_verticesToVisit.push(theDepth+1);
+								m_SEEDING_edgesRequested=false;
+
+								if(nextPaths.size()>0){// we found a path
+									for(int i=0;i<(int)nextPaths.size();i++){
+										cout<<"contig-"<<m_identifiers[m_sd->m_pathId]<<" -> "<<"contig-"<<nextPaths[i].getWave()<<" ("<<theDepth<<","<<nextPaths[i].getProgression()<<")"<<endl;
+									}
+								}else{// continue the visit.
+									for(int i=0;i<(int)m_SEEDING_receivedOutgoingEdges.size();i++){
+										VERTEX_TYPE newVertex=m_SEEDING_receivedOutgoingEdges[i];
+										if(m_sd->m_visitedVertices.count(newVertex)>0)
+											continue;
+										m_sd->m_verticesToVisit.push(newVertex);
+										int d=theDepth+1;
+										m_sd->m_depthsToVisit.push(d);
+									}
 								}
+	
 							}
 						}
 					}else{
 						m_sd->m_processedLastVertex=false;
 						m_sd->m_pathId++;
+						#ifdef SHOW_SCAFFOLDER
+						//cout<<"Processing next."<<endl;
+						#endif
 					}
 				}else{
 					m_sd->m_computedTopology=true;

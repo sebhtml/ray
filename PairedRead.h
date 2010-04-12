@@ -22,6 +22,8 @@
 #ifndef _PairedRead
 #define _PairedRead
 
+#include<common_functions.h>
+
 /*
  *    LeftRead							RightRead
  * ------------>
@@ -31,10 +33,10 @@
  * <----------------------------------------------------------------->
  */
 class PairedRead{
-	int m_rank;
+	u16 m_rank;
 	int m_sequence_id;
-	int m_fragmentSize;
-	int m_deviation;
+	u16 m_fragmentSize;
+	u16 m_deviation;
 public:
 	PairedRead();
 	void constructor(int rank,int id, int fragmentSize,int deviation);

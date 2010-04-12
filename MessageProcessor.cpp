@@ -109,7 +109,8 @@ void MessageProcessor::processMessage(Message*message,
 	int*m_numberOfMachinesDoneSendingVertices,
 	int*m_numberOfMachinesDoneSendingCoverage,
 	bool*m_EXTENSION_reads_received,
-				vector<Message>*m_outbox
+				vector<Message>*m_outbox,
+	set<int>*m_allIdentifiers
 ){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
@@ -152,6 +153,7 @@ void MessageProcessor::processMessage(Message*message,
 		assert(rank<size);
 		#endif
 		(*m_identifiers).push_back(id);
+		(*m_allIdentifiers).insert(id);
 	}else if(tag==TAG_EXTENSION_END){
 	}else if(tag==TAG_START_FUSION){
 		(*m_mode)=MODE_FUSION;
