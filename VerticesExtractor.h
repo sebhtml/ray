@@ -33,7 +33,7 @@ class VerticesExtractor{
 				DistributionData*m_disData,
 				MyAllocator*m_outboxAllocator,
 				vector<Message>*m_outbox,
-				int rank
+				int rank,int size
 );
 public:
 	void process(int*m_mode_send_vertices_sequence_id,

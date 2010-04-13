@@ -145,46 +145,37 @@ Machine::Machine(int argc,char**argv){
 
 void Machine::flushIngoingEdges(int threshold){
 	// send messages
-	vector<int> toFlush;
-	for(map<int,vector<VERTEX_TYPE> >::iterator i=m_disData->m_messagesStockIn.begin();i!=m_disData->m_messagesStockIn.end();i++){
-		int destination=i->first;
-		int length=i->second.size();
+	for(int rankId=0;rankId<getSize();rankId++){
+		int destination=rankId;
+		int length=m_disData->m_messagesStockIn.size(rankId);
 		if(length<threshold)
 			continue;
-		toFlush.push_back(destination);
 		VERTEX_TYPE*data=(VERTEX_TYPE*)m_outboxAllocator.allocate(sizeof(VERTEX_TYPE)*(length));
-		for(int j=0;j<(int)i->second.size();j++){
-			data[j]=i->second[j];
+		for(int j=0;j<(int)length;j++){
+			data[j]=m_disData->m_messagesStockIn.getAt(rankId,j);
 		}
+		m_disData->m_messagesStockIn.reset(rankId);
 
 		Message aMessage(data, length, MPI_UNSIGNED_LONG_LONG,destination, TAG_IN_EDGES_DATA,getRank());
 		m_outbox.push_back(aMessage);
 	}
-	for(int i=0;i<(int)toFlush.size();i++){
-		m_disData->m_messagesStockIn[toFlush[i]].clear();
-	}
 }
 
 void Machine::flushOutgoingEdges(int threshold){
-	vector<int> toFlush;
-	for(map<int,vector<VERTEX_TYPE> >::iterator i=m_disData->m_messagesStockOut.begin();i!=m_disData->m_messagesStockOut.end();i++){
-		int destination=i->first;
-		int length=i->second.size();
+	for(int rankId=0;rankId<(int)getSize();rankId++){
+		int destination=rankId;
+		int length=m_disData->m_messagesStockOut.size(rankId);
 		if(length<threshold)
 			continue;
-		toFlush.push_back(destination);
 		#ifdef SHOW_PROGRESS
 		#endif
 		VERTEX_TYPE*data=(VERTEX_TYPE*)m_outboxAllocator.allocate(sizeof(VERTEX_TYPE)*(length));
-		for(int j=0;j<(int)i->second.size();j++){
-			data[j]=i->second[j];
+		for(int j=0;j<(int)length;j++){
+			data[j]=m_disData->m_messagesStockOut.getAt(rankId,j);
 		}
-
+		m_disData->m_messagesStockOut.reset(rankId);
 		Message aMessage(data, length, MPI_UNSIGNED_LONG_LONG,destination, TAG_OUT_EDGES_DATA,getRank());
 		m_outbox.push_back(aMessage);
-	}
-	for(int i=0;i<(int)toFlush.size();i++){
-		m_disData->m_messagesStockOut[toFlush[i]].clear();
 	}
 }
 
@@ -251,6 +242,7 @@ void Machine::start(){
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
 	MPI_Comm_size(MPI_COMM_WORLD,&m_size);
 
+	m_disData->constructor(getSize(),5000,&m_persistentAllocator);
 
 
 	if(isMaster()){
@@ -533,20 +525,20 @@ void Machine::attachReads(){
 		if(isValidDNA(vertexChar)){
 			VERTEX_TYPE vertex=wordId(vertexChar);
 			int sendTo=vertexRank(vertex);
-			m_disData->m_attachedSequence[sendTo].push_back(vertex);
-			m_disData->m_attachedSequence[sendTo].push_back(destination);
-			m_disData->m_attachedSequence[sendTo].push_back(sequenceIdOnDestination);
-			m_disData->m_attachedSequence[sendTo].push_back((VERTEX_TYPE)'F');
+			m_disData->m_attachedSequence.addAt(sendTo,vertex);
+			m_disData->m_attachedSequence.addAt(sendTo,destination);
+			m_disData->m_attachedSequence.addAt(sendTo,sequenceIdOnDestination);
+			m_disData->m_attachedSequence.addAt(sendTo,(VERTEX_TYPE)'F');
 		}
 		memcpy(vertexChar,sequence+strlen(sequence)-m_wordSize,m_wordSize);
 		vertexChar[m_wordSize]='\0';
 		if(isValidDNA(vertexChar)){
 			VERTEX_TYPE vertex=complementVertex(wordId(vertexChar),m_wordSize,m_colorSpaceMode);
 			int sendTo=vertexRank(vertex);
-			m_disData->m_attachedSequence[sendTo].push_back(vertex);
-			m_disData->m_attachedSequence[sendTo].push_back(destination);
-			m_disData->m_attachedSequence[sendTo].push_back(sequenceIdOnDestination);
-			m_disData->m_attachedSequence[sendTo].push_back((VERTEX_TYPE)'R');
+			m_disData->m_attachedSequence.addAt(sendTo,vertex);
+			m_disData->m_attachedSequence.addAt(sendTo,destination);
+			m_disData->m_attachedSequence.addAt(sendTo,sequenceIdOnDestination);
+			m_disData->m_attachedSequence.addAt(sendTo,(VERTEX_TYPE)'R');
 		}
 
 		flushAttachedSequences(MAX_UINT64_T_PER_MESSAGE);
@@ -558,22 +550,18 @@ void Machine::attachReads(){
 }
 
 void Machine::flushAttachedSequences(int threshold){
-	vector<int> toFlush;
-	for(map<int,vector<VERTEX_TYPE> >::iterator i=m_disData->m_attachedSequence.begin();
-		i!=m_disData->m_attachedSequence.end();i++){
-		int sendTo=i->first;
-		int count=i->second.size();
+	for(int rankId=0;rankId<getSize();rankId++){
+		int sendTo=rankId;
+		int count=m_disData->m_attachedSequence.size(rankId);
 		if(count<threshold)
 			continue;
 		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(count*sizeof(VERTEX_TYPE));
 		for(int j=0;j<count;j++)
-			message[j]=i->second[j];
+			message[j]=m_disData->m_attachedSequence.getAt(rankId,j);
 		Message aMessage(message,count, MPI_UNSIGNED_LONG_LONG,sendTo,TAG_ATTACH_SEQUENCE,getRank());
 		m_outbox.push_back(aMessage);
-		toFlush.push_back(sendTo);
+		m_disData->m_attachedSequence.reset(rankId);
 	}
-	for(int i=0;i<(int)toFlush.size();i++)
-		m_disData->m_attachedSequence[toFlush[i]].clear();
 }
 
 
@@ -1323,14 +1311,14 @@ void Machine::processData(){
 		cout<<"\r"<<"Connecting vertices"<<endl;
 		#endif
 		for(int i=0;i<getSize();i++){
-			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i, TAG_START_EDGES_DISTRIBUTION_ASK,getRank());
+			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i,TAG_START_EDGES_DISTRIBUTION_ASK,getRank());
 			m_outbox.push_back(aMessage);
 		}
 		m_startEdgeDistribution=false;
 	}else if(m_numberOfMachinesReadyForEdgesDistribution==getSize() and isMaster()){
 		m_numberOfMachinesReadyForEdgesDistribution=-1;
 		for(int i=0;i<getSize();i++){
-			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i, TAG_START_EDGES_DISTRIBUTION,getRank());
+			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i,TAG_START_EDGES_DISTRIBUTION,getRank());
 			m_outbox.push_back(aMessage);
 		}
 		m_messageSentForEdgesDistribution=true;
@@ -1494,7 +1482,7 @@ void Machine::processData(){
 			m_distributionOfCoverage.clear();
 		}
 
-	}else if(m_mode_send_outgoing_edges==true){ 
+	}else if(m_mode_send_outgoing_edges){ 
 		#ifdef SHOW_PROGRESS
 		if(m_mode_send_edge_sequence_id%100000==0 and m_mode_send_edge_sequence_id_position==0){
 			string strand="";
@@ -1536,39 +1524,37 @@ void Machine::processData(){
 				return;
 			}
 
-			for(int p=m_mode_send_edge_sequence_id_position;p<=m_mode_send_edge_sequence_id_position;p++){
-				memcpy(memory,readSequence+p,m_wordSize+1);
-				memory[m_wordSize+1]='\0';
-				if(isValidDNA(memory)){
-					char prefix[100];
-					char suffix[100];
-					strcpy(prefix,memory);
-					prefix[m_wordSize]='\0';
-					strcpy(suffix,memory+1);
-					VERTEX_TYPE a_1=wordId(prefix);
-					VERTEX_TYPE a_2=wordId(suffix);
-					if(m_reverseComplementEdge){
-						VERTEX_TYPE b_1=complementVertex(a_2,m_wordSize,m_colorSpaceMode);
-						VERTEX_TYPE b_2=complementVertex(a_1,m_wordSize,m_colorSpaceMode);
-
-						int rankB=vertexRank(b_1);
-						m_disData->m_messagesStockOut[rankB].push_back(b_1);
-						m_disData->m_messagesStockOut[rankB].push_back(b_2);
-					}else{
-						int rankA=vertexRank(a_1);
-						m_disData->m_messagesStockOut[rankA].push_back(a_1);
-						m_disData->m_messagesStockOut[rankA].push_back(a_2);
-					}
-					
+			int p=m_mode_send_edge_sequence_id_position;
+			memcpy(memory,readSequence+p,m_wordSize+1);
+			memory[m_wordSize+1]='\0';
+			if(isValidDNA(memory)){
+				char prefix[100];
+				char suffix[100];
+				strcpy(prefix,memory);
+				prefix[m_wordSize]='\0';
+				strcpy(suffix,memory+1);
+				VERTEX_TYPE a_1=wordId(prefix);
+				VERTEX_TYPE a_2=wordId(suffix);
+				if(m_reverseComplementEdge){
+					VERTEX_TYPE b_1=complementVertex(a_2,m_wordSize,m_colorSpaceMode);
+					VERTEX_TYPE b_2=complementVertex(a_1,m_wordSize,m_colorSpaceMode);
+					int rankB=vertexRank(b_1);
+					m_disData->m_messagesStockOut.addAt(rankB,b_1);
+					m_disData->m_messagesStockOut.addAt(rankB,b_2);
+				}else{
+					int rankA=vertexRank(a_1);
+					m_disData->m_messagesStockOut.addAt(rankA,a_1);
+					m_disData->m_messagesStockOut.addAt(rankA,a_2);
 				}
+				
+				flushOutgoingEdges(MAX_UINT64_T_PER_MESSAGE);
 			}
 			
-			flushOutgoingEdges(MAX_UINT64_T_PER_MESSAGE);
 			m_mode_send_edge_sequence_id_position++;
 
 
 		}
-	}else if(m_mode_send_ingoing_edges==true){ 
+	}else if(m_mode_send_ingoing_edges){ 
 
 		#ifdef SHOW_PROGRESS
 		if(m_mode_send_edge_sequence_id%100000==0 and m_mode_send_edge_sequence_id_position==0){
@@ -1612,35 +1598,35 @@ void Machine::processData(){
 				return;
 			}
 
-			for(int p=m_mode_send_edge_sequence_id_position;p<=m_mode_send_edge_sequence_id_position;p++){
-				memcpy(memory,readSequence+p,m_wordSize+1);
-				memory[m_wordSize+1]='\0';
-				if(isValidDNA(memory)){
-					char prefix[100];
-					char suffix[100];
-					strcpy(prefix,memory);
-					prefix[m_wordSize]='\0';
-					strcpy(suffix,memory+1);
-					VERTEX_TYPE a_1=wordId(prefix);
-					VERTEX_TYPE a_2=wordId(suffix);
-					if(m_reverseComplementEdge){
-						VERTEX_TYPE b_1=complementVertex(a_2,m_wordSize,m_colorSpaceMode);
-						VERTEX_TYPE b_2=complementVertex(a_1,m_wordSize,m_colorSpaceMode);
-						int rankB=vertexRank(b_2);
-						m_disData->m_messagesStockIn[rankB].push_back(b_1);
-						m_disData->m_messagesStockIn[rankB].push_back(b_2);
-					}else{
-						int rankA=vertexRank(a_2);
-						m_disData->m_messagesStockIn[rankA].push_back(a_1);
-						m_disData->m_messagesStockIn[rankA].push_back(a_2);
-					}
+				
+			memcpy(memory,readSequence+m_mode_send_edge_sequence_id_position,m_wordSize+1);
+			memory[m_wordSize+1]='\0';
+			if(isValidDNA(memory)){
+				char prefix[100];
+				char suffix[100];
+				strcpy(prefix,memory);
+				prefix[m_wordSize]='\0';
+				strcpy(suffix,memory+1);
+				VERTEX_TYPE a_1=wordId(prefix);
+				VERTEX_TYPE a_2=wordId(suffix);
+				if(m_reverseComplementEdge){
+					VERTEX_TYPE b_1=complementVertex(a_2,m_wordSize,m_colorSpaceMode);
+					VERTEX_TYPE b_2=complementVertex(a_1,m_wordSize,m_colorSpaceMode);
+					int rankB=vertexRank(b_2);
+					m_disData->m_messagesStockIn.addAt(rankB,b_1);
+					m_disData->m_messagesStockIn.addAt(rankB,b_2);
+				}else{
+					int rankA=vertexRank(a_2);
+					m_disData->m_messagesStockIn.addAt(rankA,a_1);
+					m_disData->m_messagesStockIn.addAt(rankA,a_2);
 				}
+
+				// flush data
+				flushIngoingEdges(MAX_UINT64_T_PER_MESSAGE);
 			}
 
 			m_mode_send_edge_sequence_id_position++;
 
-			// flush data
-			flushIngoingEdges(MAX_UINT64_T_PER_MESSAGE);
 
 			if(m_mode_send_edge_sequence_id_position>lll){
 				m_mode_send_edge_sequence_id++;
@@ -1977,19 +1963,32 @@ void Machine::processData(){
 		if(m_ed->m_EXTENSION_rank==getSize()){
 			#ifdef SHOW_SCAFFOLDER
 			#endif
+			int minimumLength=500;
 			if(!m_sd->m_computedTopology){ // in development.
 				// for each contig path, take the last vertex, and search for other contig paths 
 				// reachable from it.
-				if(m_sd->m_pathId<(int)m_allPaths.size()){
+				if(false and m_sd->m_pathId<(int)m_allPaths.size()){
+					int currentPathId=m_identifiers[m_sd->m_pathId];
 					if(!m_sd->m_processedLastVertex){
+						if((int)m_allPaths[m_sd->m_pathId].size()<minimumLength){
+							m_sd->m_pathId++;
+							return;
+						}
+					
 						#ifdef SHOW_SCAFFOLDER
 						//cout<<"push last vertex."<<endl;
 						#endif
 						m_sd->m_processedLastVertex=true;
-						VERTEX_TYPE lastVertex=m_allPaths[m_sd->m_pathId][m_allPaths[m_sd->m_pathId].size()-1];
+						int theLength=m_allPaths[m_sd->m_pathId].size();
+						VERTEX_TYPE lastVertex=m_allPaths[m_sd->m_pathId][theLength-1];
+						#ifdef SHOW_SCAFFOLDER
+						cout<<"contig-"<<currentPathId<<" Last="<<idToWord(lastVertex,m_wordSize)<<" "<<theLength<<" vertices"<<endl;
+		
+						#endif
 						m_sd->m_verticesToVisit.push(lastVertex);
 						m_sd->m_depthsToVisit.push(0);
 						m_SEEDING_edgesRequested=false;
+						m_sd->m_visitedVertices.clear();
 					}else if(!m_sd->m_verticesToVisit.empty()){
 						VERTEX_TYPE theVertex=m_sd->m_verticesToVisit.top();
 						int theDepth=m_sd->m_depthsToVisit.top();
@@ -2003,7 +2002,6 @@ void Machine::processData(){
 							message[0]=(VERTEX_TYPE)theVertex;
 							Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0]),TAG_REQUEST_VERTEX_OUTGOING_EDGES,getRank());
 							m_outbox.push_back(aMessage);
-							m_SEEDING_outgoingEdgeIndex=0;
 							m_Machine_getPaths_DONE=false;
 							m_Machine_getPaths_INITIALIZED=false;
 							m_Machine_getPaths_result.clear();
@@ -2013,39 +2011,53 @@ void Machine::processData(){
 								getPaths(theVertex);
 							}else{
 								vector<Direction> nextPaths;
+								#ifdef SHOW_SCAFFOLDER
+								if(nextPaths.size()>0){
+									cout<<"We have "<<nextPaths.size()<<" paths with "<<idToWord(theVertex,m_wordSize)<<endl;	
+								}
+								#endif
 								for(int i=0;i<(int)m_Machine_getPaths_result.size();i++){
 									int pathId=m_Machine_getPaths_result[i].getWave();
-									if(pathId==m_identifiers[m_sd->m_pathId])
+									if(pathId==currentPathId)
 										continue;
+									// this one is discarded.
 									if(m_sd->m_allIdentifiers.count(pathId)==0){
 										continue;
 									}
+									// not at the front.
 									if(m_Machine_getPaths_result[i].getProgression()>0)
 										continue;
+									int index=m_sd->m_allIdentifiers[pathId];
 
+									// too small to be relevant.
+									if((int)m_allPaths[index].size()<minimumLength)
+										continue;
+									
 									#ifdef SHOW_SCAFFOLDER
 									#endif
 									nextPaths.push_back(m_Machine_getPaths_result[i]);
 								}
 
-								m_Machine_getPaths_result.clear();
-								m_Machine_getPaths_DONE=false;
-								m_Machine_getPaths_INITIALIZED=false;
 								m_sd->m_verticesToVisit.pop();
 								m_sd->m_depthsToVisit.pop();
 								m_SEEDING_edgesRequested=false;
 
 								if(nextPaths.size()>0){// we found a path
 									for(int i=0;i<(int)nextPaths.size();i++){
-										cout<<"contig-"<<m_identifiers[m_sd->m_pathId]<<" -> "<<"contig-"<<nextPaths[i].getWave()<<" ("<<theDepth<<","<<nextPaths[i].getProgression()<<")"<<endl;
+										cout<<"contig-"<<m_identifiers[m_sd->m_pathId]<<" -> "<<"contig-"<<nextPaths[i].getWave()<<" ("<<theDepth<<","<<nextPaths[i].getProgression()<<") via "<<idToWord(theVertex,m_wordSize)<<endl;
+										#ifdef DEBUG
+										assert(m_sd->m_allIdentifiers.count(nextPaths[i].getWave())>0);
+										#endif
 									}
 								}else{// continue the visit.
 									for(int i=0;i<(int)m_SEEDING_receivedOutgoingEdges.size();i++){
 										VERTEX_TYPE newVertex=m_SEEDING_receivedOutgoingEdges[i];
 										if(m_sd->m_visitedVertices.count(newVertex)>0)
 											continue;
-										m_sd->m_verticesToVisit.push(newVertex);
 										int d=theDepth+1;
+										if(d>3000)
+											continue;
+										m_sd->m_verticesToVisit.push(newVertex);
 										m_sd->m_depthsToVisit.push(d);
 									}
 								}

@@ -62,7 +62,7 @@ public:
 	stack<VERTEX_TYPE> m_verticesToVisit;
 	set<VERTEX_TYPE> m_visitedVertices;
 	bool m_processedLastVertex;
-	set<int> m_allIdentifiers;
+	map<int,int> m_allIdentifiers;
 };
 
 class DepthFirstSearchData{

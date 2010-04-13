@@ -19,21 +19,15 @@
 
 */
 
-#ifndef _DistributionData
-#define _DistributionData
+#include<DistributionData.h>
 
-#include<common_functions.h>
-#include<BufferedData.h>
-
-class DistributionData{
-public:
-	
-	BufferedData m_messagesStock;
-	BufferedData m_messagesStockOut;
-	BufferedData m_messagesStockIn;
-	BufferedData m_attachedSequence;
-	BufferedData m_messagesStockPaired;
-	void constructor(int numberOrRanks,int capacity,MyAllocator*allocator);
-};
-
-#endif
+void DistributionData::constructor(int numberOfRanks,int capacity,MyAllocator*allocator){
+	#ifdef SHOW_PROGRESS
+	cout<<"N="<<numberOfRanks<<" CAP="<<capacity<<endl;
+	#endif
+	m_messagesStock.constructor(numberOfRanks,capacity,allocator);
+	m_messagesStockOut.constructor(numberOfRanks,capacity,allocator);
+	m_messagesStockIn.constructor(numberOfRanks,capacity,allocator);
+	m_attachedSequence.constructor(numberOfRanks,capacity,allocator);
+	m_messagesStockPaired.constructor(numberOfRanks,capacity,allocator);
+}

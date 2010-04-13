@@ -47,6 +47,6 @@ public:
 
 	void flushPairedStock(int threshold,vector<Message>*m_outbox,
 	MyAllocator*m_outboxAllocator,DistributionData*m_disData,
-int rank);
+int rank,int size);
 };
 #endif

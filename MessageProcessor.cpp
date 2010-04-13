@@ -110,7 +110,7 @@ void MessageProcessor::processMessage(Message*message,
 	int*m_numberOfMachinesDoneSendingCoverage,
 	bool*m_EXTENSION_reads_received,
 				vector<Message>*m_outbox,
-	set<int>*m_allIdentifiers
+	map<int,int>*m_allIdentifiers
 ){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
@@ -153,7 +153,7 @@ void MessageProcessor::processMessage(Message*message,
 		assert(rank<size);
 		#endif
 		(*m_identifiers).push_back(id);
-		(*m_allIdentifiers).insert(id);
+		(*m_allIdentifiers)[id]=m_identifiers->size()-1;
 	}else if(tag==TAG_EXTENSION_END){
 	}else if(tag==TAG_START_FUSION){
 		(*m_mode)=MODE_FUSION;
@@ -658,8 +658,8 @@ void MessageProcessor::processMessage(Message*message,
 		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, source, TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER,rank);
 		m_outbox->push_back(aMessage);
 	}else if(tag==TAG_START_EDGES_DISTRIBUTION){
-	(*m_mode_send_outgoing_edges)=true;
-	(*m_mode_send_edge_sequence_id)=0;
+		(*m_mode_send_outgoing_edges)=true;
+		(*m_mode_send_edge_sequence_id)=0;
 	}else if(tag==TAG_START_VERTICES_DISTRIBUTION){
 		#ifdef SHOW_PROGRESS
 		cout<<"TAG_START_VERTICES_DISTRIBUTION"<<endl;

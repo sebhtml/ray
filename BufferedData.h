@@ -19,21 +19,24 @@
 
 */
 
-#ifndef _DistributionData
-#define _DistributionData
+#ifndef _BufferedData
+#define _BufferedData
 
 #include<common_functions.h>
-#include<BufferedData.h>
+#include<MyAllocator.h>
 
-class DistributionData{
+class BufferedData{
+	int*m_sizes;
+	int m_ranks;
+	int m_capacity;
+	u64*m_data;
 public:
-	
-	BufferedData m_messagesStock;
-	BufferedData m_messagesStockOut;
-	BufferedData m_messagesStockIn;
-	BufferedData m_attachedSequence;
-	BufferedData m_messagesStockPaired;
-	void constructor(int numberOrRanks,int capacity,MyAllocator*allocator);
+	void constructor(int numberOfRanks,int capacity,MyAllocator*allocator);
+	int size(int i);
+	u64 getAt(int i,int j);
+	void addAt(int i,u64 k);
+	void reset(int i);
 };
 
 #endif
+

@@ -51,7 +51,7 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 	}
 	if((*m_distribution_file_id)>(int)allFiles.size()-1){
 		(*m_loadSequenceStep)=true;
-		flushPairedStock(1,m_outbox,m_outboxAllocator,m_disData,rank);
+		flushPairedStock(1,m_outbox,m_outboxAllocator,m_disData,rank,size);
 		for(int i=0;i<size;i++){
 			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, i, TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS,rank);
 			(*m_outbox).push_back(aMessage);
@@ -161,12 +161,12 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			int leftSequenceIdOnRank=leftSequenceGlobalId/size;
 			int averageFragmentLength=(*m_LOADER_averageFragmentLength);
 			int deviation=(*m_LOADER_deviation);
-			m_disData->m_messagesStockPaired[rightSequenceRank].push_back(rightSequenceIdOnRank);
-			m_disData->m_messagesStockPaired[rightSequenceRank].push_back(leftSequenceRank);
-			m_disData->m_messagesStockPaired[rightSequenceRank].push_back(leftSequenceIdOnRank);
-			m_disData->m_messagesStockPaired[rightSequenceRank].push_back(averageFragmentLength);
-			m_disData->m_messagesStockPaired[rightSequenceRank].push_back(deviation);
-			flushPairedStock(MAX_UINT64_T_PER_MESSAGE,m_outbox,m_outboxAllocator,m_disData,rank);
+			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,rightSequenceIdOnRank);
+			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,leftSequenceRank);
+			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,leftSequenceIdOnRank);
+			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,averageFragmentLength);
+			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,deviation);
+			flushPairedStock(MAX_UINT64_T_PER_MESSAGE,m_outbox,m_outboxAllocator,m_disData,rank,size);
 		}
 
 		(*m_distribution_currentSequenceId)++;
@@ -177,23 +177,18 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 
 void SequencesLoader::flushPairedStock(int threshold,vector<Message>*m_outbox,
 	MyAllocator*m_outboxAllocator,DistributionData*m_disData,
-			int rank){
-
-	vector<int> toFlush;
-	for(map<int,vector<VERTEX_TYPE> >::iterator i=m_disData->m_messagesStockPaired.begin();
-		i!=m_disData->m_messagesStockPaired.end();i++){
-		int rightSequenceRank=i->first;
-		int count=i->second.size();
+			int rank,int size){
+	for(int rankId=0;rankId<size;rankId++){
+		int rightSequenceRank=rankId;
+		int count=m_disData->m_messagesStockPaired.size(rankId);
 		if(count<threshold)
 			continue;
 
-		toFlush.push_back(rightSequenceRank);
 		VERTEX_TYPE*message=(VERTEX_TYPE*)(*m_outboxAllocator).allocate(count*sizeof(VERTEX_TYPE));
 		for(int j=0;j<count;j++)
-			message[j]=i->second[j];
+			message[j]=m_disData->m_messagesStockPaired.getAt(rankId,j);
 		Message aMessage(message,count,MPI_UNSIGNED_LONG_LONG,rightSequenceRank,TAG_INDEX_PAIRED_SEQUENCE,rank);
 		(*m_outbox).push_back(aMessage);
+		m_disData->m_messagesStockPaired.reset(rankId);
 	}
-	for(int i=0;i<(int)toFlush.size();i++)
-		m_disData->m_messagesStockPaired[toFlush[i]].clear();
 }

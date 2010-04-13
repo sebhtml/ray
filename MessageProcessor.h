@@ -113,7 +113,7 @@ public:
 	int*m_numberOfMachinesDoneSendingCoverage,
 	bool*m_EXTENSION_reads_received,
 				vector<Message>*m_outbox,
-		set<int>*m_allIdentifiers);
+		map<int,int>*m_allIdentifiers);
 };
 
 #endif

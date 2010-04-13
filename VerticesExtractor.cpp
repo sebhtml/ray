@@ -50,7 +50,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 	if(*m_mode_send_vertices_sequence_id>(int)m_myReads->size()-1){
 		if(*m_reverseComplementVertex==false){
 			// flush data
-			flushVertices(1,m_disData,m_outboxAllocator,m_outbox,rank);
+			flushVertices(1,m_disData,m_outboxAllocator,m_outbox,rank,size);
 
 			#ifdef SHOW_PROGRESS
 			cout<<"Rank "<<rank<<" is extracting vertices from sequences "<<*m_mode_send_vertices_sequence_id<<"/"<<m_myReads->size()<<" (DONE)"<<endl;
@@ -61,7 +61,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		}else{
 			// flush data
 
-			flushVertices(1,m_disData,m_outboxAllocator,m_outbox,rank);
+			flushVertices(1,m_disData,m_outboxAllocator,m_outbox,rank,size);
 			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_VERTICES_DISTRIBUTED,rank);
 			m_outbox->push_back(aMessage);
 			*m_mode_send_vertices=false;
@@ -84,15 +84,15 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			if(isValidDNA(memory)){
 				VERTEX_TYPE a=wordId(memory);
 				if(*m_reverseComplementVertex==false){
-					m_disData->m_messagesStock[vertexRank(a,size)].push_back(a);
+					m_disData->m_messagesStock.addAt(vertexRank(a,size),a);
 				}else{
 					VERTEX_TYPE b=complementVertex(a,m_wordSize,m_colorSpaceMode);
-					m_disData->m_messagesStock[vertexRank(b,size)].push_back(b);
+					m_disData->m_messagesStock.addAt(vertexRank(b,size),b);
 				}
 			}
 		}
 		(*m_mode_send_vertices_sequence_id_position)++;
-		flushVertices(MAX_UINT64_T_PER_MESSAGE,m_disData,m_outboxAllocator,m_outbox,rank);
+		flushVertices(MAX_UINT64_T_PER_MESSAGE,m_disData,m_outboxAllocator,m_outbox,rank,size);
 
 		if(*m_mode_send_vertices_sequence_id_position>lll){
 			(*m_mode_send_vertices_sequence_id)++;
@@ -105,31 +105,26 @@ void VerticesExtractor::flushVertices(int threshold,
 				DistributionData*m_disData,
 				MyAllocator*m_outboxAllocator,
 				vector<Message>*m_outbox,
-				int rank
+				int rank,int size
 ){
-	vector<int>indexesToClear;
 
 	// send messages
-	for(map<int,vector<VERTEX_TYPE> >::iterator i=m_disData->m_messagesStock.begin();i!=m_disData->m_messagesStock.end();i++){
-		int destination=i->first;
-		int length=i->second.size();
+	for(int rankId=0;rankId<size;rankId++){
+		int destination=rankId;
+		int length=m_disData->m_messagesStock.size(rankId);
 
 		// accumulate data.
 		if(length<threshold)
 			continue;
 
 		VERTEX_TYPE *data=(VERTEX_TYPE*)m_outboxAllocator->allocate(sizeof(VERTEX_TYPE)*length);
-		for(int j=0;j<(int)i->second.size();j++){
-			data[j]=i->second[j];
+		for(int j=0;j<(int)length;j++){
+			data[j]=m_disData->m_messagesStock.getAt(rankId,j);
 		}
-		
+		m_disData->m_messagesStock.reset(rankId);
+
 		Message aMessage(data, length, MPI_UNSIGNED_LONG_LONG,destination, TAG_VERTICES_DATA,rank);
 		m_outbox->push_back(aMessage);
-		indexesToClear.push_back(destination);
-	}
-
-	for(int i=0;i<(int)indexesToClear.size();i++){
-		m_disData->m_messagesStock[indexesToClear[i]].clear();
 	}
 }
 
