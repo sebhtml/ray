@@ -14,7 +14,7 @@ else
 	mkdir $i.dir -p
 	cd $i.dir
 	(time bash ../$i > Log) &> WallClockTime
-	print-latex.sh Reference.fasta Assembly.fasta $(cat Assembler.txt) > 1
+	print-latex.sh Reference.fasta Assembly.fasta $(cat Assembler.txt)|grep -v '%'> 1
 	assembler=$(cat 1|awk '{print $1}')
 	contigs=$(cat 1|awk '{print $3}')
 	bases=$(cat 1|awk '{print $5}')
