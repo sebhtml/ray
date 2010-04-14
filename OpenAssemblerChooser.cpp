@@ -34,8 +34,9 @@ void OpenAssemblerChooser::updateMultiplicators(int m_peakCoverage){
 	if(m_peakCoverage>=100){
 		m_singleEndMultiplicator=m_pairedEndMultiplicator=1.0;
 	}
-	// to debug 0mix14:
-	m_singleEndMultiplicator=m_pairedEndMultiplicator=2.0;
+	#ifdef SHOW_OA_CHOOSER
+	cout<<"According to data, m_s="<<m_singleEndMultiplicator<<" and m_p="<<m_pairedEndMultiplicator<<" ("<<m_peakCoverage<<")"<<endl;
+	#endif
 }
 
 void OpenAssemblerChooser::constructor(int m_peakCoverage){

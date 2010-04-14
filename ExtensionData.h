@@ -91,6 +91,7 @@ public:
 	map<int,vector<int> > m_EXTENSION_readPositionsForVertices;
 	map<int,vector<int> > m_EXTENSION_pairedReadPositionsForVertices;
 	map<int,int> m_EXTENSION_reads_startingPositionOnContig;
+	int m_currentCoverage;
 
 };
 

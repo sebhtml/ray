@@ -2665,6 +2665,7 @@ void Machine::doChoice(){
 					cout<<endl;
 					cout<<"*****************************************"<<endl;
 					cout<<"CurrentVertex="<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<" @"<<m_ed->m_EXTENSION_extension.size()<<endl;
+					cout<<"Coverage="<<m_ed->m_currentCoverage<<endl;
 					cout<<" # ReadsInRange: "<<m_ed->m_EXTENSION_readsInRange.size()<<endl;
 					cout<<m_ed->m_enumerateChoices_outgoingEdges.size()<<" arcs: ";
 					for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
@@ -2702,6 +2703,23 @@ void Machine::doChoice(){
 				}
 				#endif
 				
+				// watchdog for REPEATs -- the main source of misassemblies!
+				if(m_ed->m_currentCoverage==m_maxCoverage and
+				m_ed->m_EXTENSION_readsInRange.size()<m_minimumCoverage){
+
+					m_ed->m_doChoice_tips_Detected=false;
+					m_dfsData->m_doChoice_tips_Initiated=false;
+
+					#ifdef SHOW_REPEATED_VERTEX
+					cout<<"Watchdog says: "<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<" is a repeated region for sure!, probably a transposase if they exist in the genome. (VertexCoverage="<<m_ed->m_currentCoverage<<", MaxCoverage="<<m_maxCoverage<<" ReadsInRange="<<m_ed->m_EXTENSION_readsInRange.size()<<", MinimumCoverage="<<m_minimumCoverage<<")"<<endl;
+					#endif
+					#ifdef DEBUG
+					assert(m_ed->m_currentCoverage==m_maxCoverage);
+					assert(m_ed->m_EXTENSION_readsInRange.size()<m_minimumCoverage);
+					#endif
+					return;
+				}
+
 				// select chooser algorithm here.
 				#define USE_OPEN_ASSEMBLER_CHOOSER
 				//#define USE_TRON_CHOOSER 
@@ -3070,6 +3088,7 @@ void Machine::markCurrentVertexAsAssembled(){
 				}
 
 				m_ed->m_EXTENSION_extension.push_back(m_SEEDING_currentVertex);
+				m_ed->m_currentCoverage=m_SEEDING_receivedVertexCoverage;
 				// save wave progress.
 	
 				int waveId=m_ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+getRank();
@@ -3094,7 +3113,6 @@ void Machine::markCurrentVertexAsAssembled(){
 				message[0]=(VERTEX_TYPE)m_SEEDING_currentVertex;
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(m_SEEDING_currentVertex),TAG_REQUEST_READS,getRank());
 				m_outbox.push_back(aMessage);
-			
 			}else if(m_ed->m_EXTENSION_reads_received){
 				for(int i=0;i<(int)m_ed->m_EXTENSION_receivedReads.size();i++){
 					int uniqueId=m_ed->m_EXTENSION_receivedReads[i].getUniqueId();
