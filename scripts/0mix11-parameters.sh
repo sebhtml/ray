@@ -7,3 +7,4 @@ p2right=/data/users/boiseb01/PaperDatasets/SRA001125/200xSRR001666_2.fastq
 length2=480
 sd2=50
 mg1655=/home/boiseb01/nuccore/Ecoli-k12-mg1655.fasta
+ref=$mg1655

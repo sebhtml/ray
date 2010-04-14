@@ -1,5 +1,7 @@
 source ../0parameters.sh
 source ../0short3-parameters.sh
-velveth velvet $wordSize -short -fastq $reads &> log1
-velvetg velvet -cov_cutoff auto -exp_cov auto &> log2
-print-latex.sh $ref velvet/contigs.fa Velvet
+velveth velvet $wordSize -short -fastq $reads
+velvetg velvet -cov_cutoff 4 -exp_cov 19
+echo Velvet > Assembler.txt
+ln -s velvet/contigs.fa Assembly.fasta
+ln -s $ref Reference.fasta

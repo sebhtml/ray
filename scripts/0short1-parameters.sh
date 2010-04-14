@@ -4,4 +4,3 @@ length=390
 sd=30
 syrin=/home/boiseb01/nuccore/Pseudomonas-syringae-pv.-syringae-B728a.fasta
 paper=doi:10.1371/journal.pone.0008407
-ref=$syrin

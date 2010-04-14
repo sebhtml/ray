@@ -1,7 +1,6 @@
 #!/bin/bash
 for i in $(cat sets.txt|grep 'o '|awk '{print $2}')
 do
-	echo "========"
 	grep $i sets.txt
 	echo "%  & numberOfContigs & bases & meanSize  & n50  & max   & coverage   & misassembled & mismatches & indels"
 	for j in newbler euler-sr velvet ray abyss

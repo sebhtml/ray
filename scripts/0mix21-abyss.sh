@@ -1,5 +1,6 @@
 source ../0parameters.sh
 source ../0mix2-parameters.sh
-ABYSS -k$wordSize $file1illumina $file2illumina -o abyss-contigs &> log1
-print-latex.sh $adp1 abyss-contigs ABySS
+ABYSS -k$wordSize $file1illumina $file2illumina -o Assembly.fasta
+ln -s $ref Reference.fasta
+echo ABySS>Assembler.txt
 

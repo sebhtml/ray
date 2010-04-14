@@ -1,4 +1,6 @@
 source ../0parameters.sh
 source ../0sim3-parameters.sh
-mpirun $MPIOPTS -np $nproc Ray.0 -p $left $right $length $sd &> log
-print-latex.sh $ref Ray-Contigs.fasta Ray.0
+mpirun $MPIOPTS -np $nproc Ray.0 -p $left $right $length $sd
+echo Ray>Assembler.txt
+ln -s $ref Reference.fasta
+ln -s Ray-Contigs.fasta Assembly.fasta
