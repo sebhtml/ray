@@ -198,16 +198,12 @@ class Machine{
 	bool m_SEEDING_ingoingEdgesDone;
 	bool m_SEEDING_outgoingEdgesDone;
 
-
 	int m_mode_send_coverage_iterator;
 	vector<Message> m_outbox;
 	vector<Message> m_inbox;
 
-
 	ExtensionData*m_ed;
-	
 	ChooserData*m_cd;
-	
 
 	// coverage distribubtion
 	map<int,VERTEX_TYPE> m_coverageDistribution;

@@ -22,16 +22,24 @@
 #include<OpenAssemblerChooser.h>
 #include<Chooser.h>
 
-void OpenAssemblerChooser::constructor(int m_peakCoverage){
+void OpenAssemblerChooser::updateMultiplicators(int m_peakCoverage){
 	m_singleEndMultiplicator=3.0;
 	m_pairedEndMultiplicator=3.0;
-	if(m_peakCoverage>25){
+	if(m_peakCoverage>=20){
+		m_singleEndMultiplicator=m_pairedEndMultiplicator=2.0;
+	}
+	if(m_peakCoverage>=25){
 		m_singleEndMultiplicator=m_pairedEndMultiplicator=1.3;
 	}
-	if(m_peakCoverage>100){
-		m_singleEndMultiplicator=1.0;
-		m_pairedEndMultiplicator=1.0;
+	if(m_peakCoverage>=100){
+		m_singleEndMultiplicator=m_pairedEndMultiplicator=1.0;
 	}
+	// to debug 0mix14:
+	m_singleEndMultiplicator=m_pairedEndMultiplicator=2.0;
+}
+
+void OpenAssemblerChooser::constructor(int m_peakCoverage){
+	updateMultiplicators(m_peakCoverage);
 }
 
 int OpenAssemblerChooser::choose(

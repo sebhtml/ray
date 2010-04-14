@@ -31,6 +31,7 @@ class OpenAssemblerChooser{
 	double m_singleEndMultiplicator;
 	double m_pairedEndMultiplicator;
 	int proceedWithCoverages(int a,int b,ExtensionData*m_ed);
+	void updateMultiplicators(int a);
 public:
 	int choose(ExtensionData*m_ed,Chooser*m_c,int m_minimumCoverage,int m_maxCoverage,ChooserData*m_cd);
 	void constructor(int peak);
