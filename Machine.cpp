@@ -1622,9 +1622,9 @@ void Machine::processData(){
 		m_ed->m_EXTENSION_currentRankIsSet=false;
 	}else if(m_mode_AttachSequences){
 		m_si.attachReads(&m_outbox,&m_distribution_file_id,&m_distribution_sequence_id,
-			m_wordSize,&m_distribution_reads,getSize(),&m_distributionAllocator,
+			&m_wordSize,&m_distribution_reads,getSize(),&m_distributionAllocator,
 			&m_distribution_currentSequenceId,getRank(),m_disData,&m_mode_AttachSequences,
-			&m_parameters,&m_colorSpaceMode,&m_outboxAllocator);
+			&m_parameters,&m_colorSpaceMode,&m_outboxAllocator,&m_lastTime);
 	}else if(m_mode==MODE_EXTENSION_ASK and isMaster()){
 		
 		if(!m_ed->m_EXTENSION_currentRankIsSet){

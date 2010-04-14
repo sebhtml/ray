@@ -471,9 +471,6 @@ void MessageProcessor::processMessage(Message*message,
 			int sequenceIdOnDestination=(int)incoming[i+2];
 			char strand=(char)incoming[i+3];
 			#ifdef DEBUG
-			if(m_subgraph->find(vertex)==NULL){
-				cout<<"Strand="<<strand<<endl;
-			}
 			assert(m_subgraph->find(vertex)!=NULL);
 			#endif
 			m_subgraph->find(vertex)->getValue()->addRead(rank,sequenceIdOnDestination,strand,&(*m_persistentAllocator));

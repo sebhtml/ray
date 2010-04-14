@@ -51,4 +51,7 @@ void BufferedData::addAt(int i,u64 k){
 
 void BufferedData::reset(int i){
 	m_sizes[i]=0;
+	#ifdef DEBUG
+	assert(m_sizes[i]==0);
+	#endif
 }
