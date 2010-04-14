@@ -2705,7 +2705,7 @@ void Machine::doChoice(){
 				
 				// watchdog for REPEATs -- the main source of misassemblies!
 				if(m_ed->m_currentCoverage==m_maxCoverage and
-				m_ed->m_EXTENSION_readsInRange.size()<m_minimumCoverage){
+				(int)m_ed->m_EXTENSION_readsInRange.size()<m_minimumCoverage){
 
 					m_ed->m_doChoice_tips_Detected=false;
 					m_dfsData->m_doChoice_tips_Initiated=false;
@@ -2715,7 +2715,7 @@ void Machine::doChoice(){
 					#endif
 					#ifdef DEBUG
 					assert(m_ed->m_currentCoverage==m_maxCoverage);
-					assert(m_ed->m_EXTENSION_readsInRange.size()<m_minimumCoverage);
+					assert((int)m_ed->m_EXTENSION_readsInRange.size()<m_minimumCoverage);
 					#endif
 					return;
 				}
@@ -3104,7 +3104,14 @@ void Machine::markCurrentVertexAsAssembled(){
 				m_outbox.push_back(aMessage);
 				m_ed->m_EXTENSION_reverseVertexDone=true;
 				m_ed->m_EXTENSION_reads_requested=false;
-
+				
+				// we don't really need these reads
+				if(m_ed->m_EXTENSION_complementedSeed and 
+				m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_currentSeed.size()-1000){
+					m_ed->m_EXTENSION_reads_requested=true;
+					m_ed->m_EXTENSION_reads_received=true;
+					m_ed->m_EXTENSION_receivedReads.clear();
+				}
 			// get the reads starting at that position.
 			}else if(!m_ed->m_EXTENSION_reads_requested){
 				m_ed->m_EXTENSION_reads_requested=true;
