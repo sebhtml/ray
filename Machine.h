@@ -26,6 +26,7 @@
 #include<common_functions.h>
 #include<map>
 #include<vector>
+#include<SequencesIndexer.h>
 #include<TronChooser.h>
 #include<SequencesLoader.h>
 #include<Chooser.h>
@@ -118,6 +119,7 @@ class Machine{
 
 	COVERAGE_TYPE m_maxCoverage;
 	Chooser m_c;
+	SequencesIndexer m_si;
 
 	// clearing
 	int m_CLEAR_n;
@@ -313,7 +315,6 @@ class Machine{
 	int milliSeconds();
 	void enumerateChoices();
 	void killRanks();
-	void attachReads();
 	void printStatus();
 	void doChoice();
 	void checkIfCurrentVertexIsAssembled();
@@ -341,7 +342,6 @@ class Machine{
 	void showUsage();
 	void flushOutgoingEdges(int threshold);
 	void flushIngoingEdges(int threshold);
-	void flushAttachedSequences(int threshold);
 public:
 	/*
  * this is the only public bit

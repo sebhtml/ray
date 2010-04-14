@@ -448,121 +448,7 @@ int Machine::getRank(){
 	return m_rank;
 }
 
-void Machine::attachReads(){
-	vector<string> allFiles=m_parameters.getAllFiles();
-	if(m_distribution_reads.size()>0 and m_distribution_sequence_id>(int)m_distribution_reads.size()-1){
-		m_distribution_file_id++;
-		m_distribution_sequence_id=0;
-		m_distribution_reads.clear();
-	}
-	if(m_distribution_file_id>(int)allFiles.size()-1){
-		flushAttachedSequences(1);
-		for(int i=0;i<getSize();i++){
-			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, i, TAG_MASTER_IS_DONE_ATTACHING_READS,getRank());
-			m_outbox.push_back(aMessage);
-		}
-		m_distribution_reads.clear();
-		m_distributionAllocator.clear();
-		m_mode_AttachSequences=false;
-		return;
-	}
-	if(m_distribution_reads.size()==0){
-		Loader loader;
-		m_distribution_reads.clear();
-		m_distributionAllocator.clear();
-		m_distributionAllocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
-		#ifdef SHOW_PROGRESS
-		cout<<"Rank "<<getRank()<<" loads "<<allFiles[m_distribution_file_id]<<"."<<endl;
-		#else
-		cout<<"\r"<<"Loading "<<allFiles[m_distribution_file_id]<<""<<endl;
-		#endif
-		loader.load(allFiles[m_distribution_file_id],&m_distribution_reads,&m_distributionAllocator,&m_distributionAllocator);
-		
-		#ifdef SHOW_PROGRESS
-		cout<<"Rank "<<getRank()<<" "<<m_distribution_reads.size()<<" sequences to attach"<<endl;
-		#else
-		cout<<"Indexing sequences"<<endl;
-		#endif
-	}
-	#ifndef SHOW_PROGRESS
-	time_t tmp=time(NULL);
-	if(tmp>m_lastTime){
-		m_lastTime=tmp;
-		showProgress(m_lastTime);
-	}
-	#endif
 
-	for(int i=0;i<1;i++){
-		if(m_distribution_sequence_id>(int)m_distribution_reads.size()-1){
-			#ifdef SHOW_PROGRESS
-			cout<<"Rank "<<getRank()<<" attaches sequences, "<<m_distribution_reads.size()<<"/"<<m_distribution_reads.size()<<endl;
-			#endif
-			break;
-		}
-
-		int destination=m_distribution_currentSequenceId%getSize();
-		int sequenceIdOnDestination=m_distribution_currentSequenceId/getSize();
-
-		if(destination<0 or destination>getSize()-1){
-			cout<<destination<<" is bad"<<endl;
-		}
-
-		#ifdef SHOW_PROGRESS
-		if(m_distribution_sequence_id%1000000==0){
-			cout<<"Rank "<<getRank()<<" attaches sequences, "<<m_distribution_sequence_id<<"/"<<m_distribution_reads.size()<<endl;
-		}
-		#endif
-
-		char*sequence=(m_distribution_reads)[m_distribution_sequence_id]->getSeq();
-		if((int)strlen(sequence)<m_wordSize){
-			m_distribution_currentSequenceId++;
-			m_distribution_sequence_id++;
-			return;
-		}
-		char vertexChar[100];
-		memcpy(vertexChar,sequence,m_wordSize);
-		vertexChar[m_wordSize]='\0';
-		if(isValidDNA(vertexChar)){
-			VERTEX_TYPE vertex=wordId(vertexChar);
-			int sendTo=vertexRank(vertex);
-			m_disData->m_attachedSequence.addAt(sendTo,vertex);
-			m_disData->m_attachedSequence.addAt(sendTo,destination);
-			m_disData->m_attachedSequence.addAt(sendTo,sequenceIdOnDestination);
-			m_disData->m_attachedSequence.addAt(sendTo,(VERTEX_TYPE)'F');
-		}
-		memcpy(vertexChar,sequence+strlen(sequence)-m_wordSize,m_wordSize);
-		vertexChar[m_wordSize]='\0';
-		if(isValidDNA(vertexChar)){
-			VERTEX_TYPE vertex=complementVertex(wordId(vertexChar),m_wordSize,m_colorSpaceMode);
-			int sendTo=vertexRank(vertex);
-			m_disData->m_attachedSequence.addAt(sendTo,vertex);
-			m_disData->m_attachedSequence.addAt(sendTo,destination);
-			m_disData->m_attachedSequence.addAt(sendTo,sequenceIdOnDestination);
-			m_disData->m_attachedSequence.addAt(sendTo,(VERTEX_TYPE)'R');
-		}
-
-		flushAttachedSequences(MAX_UINT64_T_PER_MESSAGE);
-
-		m_distribution_currentSequenceId++;
-		m_distribution_sequence_id++;
-	}
-
-}
-
-void Machine::flushAttachedSequences(int threshold){
-	for(int rankId=0;rankId<getSize();rankId++){
-		int sendTo=rankId;
-		int count=m_disData->m_attachedSequence.size(rankId);
-		if(count<threshold)
-			continue;
-		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(count*sizeof(VERTEX_TYPE));
-		for(int j=0;j<count;j++)
-			message[j]=m_disData->m_attachedSequence.getAt(rankId,j);
-		Message aMessage(message,count, MPI_UNSIGNED_LONG_LONG,sendTo,TAG_ATTACH_SEQUENCE,getRank());
-		m_outbox.push_back(aMessage);
-		m_disData->m_attachedSequence.reset(rankId);
-	}
-}
 
 
 
@@ -1735,7 +1621,10 @@ void Machine::processData(){
 		m_ed->m_EXTENSION_rank=-1;
 		m_ed->m_EXTENSION_currentRankIsSet=false;
 	}else if(m_mode_AttachSequences){
-		attachReads();
+		m_si.attachReads(&m_outbox,&m_distribution_file_id,&m_distribution_sequence_id,
+			m_wordSize,&m_distribution_reads,getSize(),&m_distributionAllocator,
+			&m_distribution_currentSequenceId,getRank(),m_disData,&m_mode_AttachSequences,
+			&m_parameters,&m_colorSpaceMode,&m_outboxAllocator);
 	}else if(m_mode==MODE_EXTENSION_ASK and isMaster()){
 		
 		if(!m_ed->m_EXTENSION_currentRankIsSet){
