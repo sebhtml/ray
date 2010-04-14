@@ -3108,6 +3108,9 @@ void Machine::markCurrentVertexAsAssembled(){
 				// we don't really need these reads
 				if(m_ed->m_EXTENSION_complementedSeed and 
 				m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_currentSeed.size()-1000){
+					#ifdef SHOW_PROGRESS
+					cout<<"Skipping reads..."<<endl;
+					#endif
 					m_ed->m_EXTENSION_reads_requested=true;
 					m_ed->m_EXTENSION_reads_received=true;
 					m_ed->m_EXTENSION_receivedReads.clear();
