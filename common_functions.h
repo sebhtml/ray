@@ -38,8 +38,6 @@ see <http://www.gnu.org/licenses/>
 using namespace std;
 
 
-#define __PAIRED_MULTIPLIER 1.3
-#define __SINGLE_MULTIPLIER 1.3
 
 #define MAX_DEPTH 200
 #define MAX_VERTICES_TO_VISIT 500

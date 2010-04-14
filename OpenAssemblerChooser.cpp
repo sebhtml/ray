@@ -22,6 +22,18 @@
 #include<OpenAssemblerChooser.h>
 #include<Chooser.h>
 
+void OpenAssemblerChooser::constructor(int m_peakCoverage){
+	m_singleEndMultiplicator=3.0;
+	m_pairedEndMultiplicator=3.0;
+	if(m_peakCoverage>25){
+		m_singleEndMultiplicator=m_pairedEndMultiplicator=1.3;
+	}
+	if(m_peakCoverage>100){
+		m_singleEndMultiplicator=1.0;
+		m_pairedEndMultiplicator=1.0;
+	}
+}
+
 int OpenAssemblerChooser::choose(
 	ExtensionData*m_ed,
 	Chooser*m_c,
@@ -29,7 +41,7 @@ int OpenAssemblerChooser::choose(
 	int m_maxCoverage,
 	ChooserData*m_cd
 ){
-	int pairedChoice=m_c->chooseWithPairedReads(m_ed,m_cd,m_minimumCoverage,m_maxCoverage);
+	int pairedChoice=m_c->chooseWithPairedReads(m_ed,m_cd,m_minimumCoverage,m_maxCoverage,m_pairedEndMultiplicator);
 	if(pairedChoice!=IMPOSSIBLE_CHOICE){
 		#ifdef SHOW_CHOICE
 		if(m_ed->m_enumerateChoices_outgoingEdges.size()>1){
@@ -57,9 +69,9 @@ int OpenAssemblerChooser::choose(
 
 			if(m_ed->m_EXTENSION_coverages[j]<_MINIMUM_COVERAGE)
 				continue;
-			if((m_cd->m_CHOOSER_theMaxs[i] <= __SINGLE_MULTIPLIER*m_cd->m_CHOOSER_theMaxs[j]) 
-				or (m_cd->m_CHOOSER_theSums[i] <= __SINGLE_MULTIPLIER*m_cd->m_CHOOSER_theSums[j]) 
-				or (m_cd->m_CHOOSER_theNumbers[i] <= __SINGLE_MULTIPLIER*m_cd->m_CHOOSER_theNumbers[j])
+			if((m_cd->m_CHOOSER_theMaxs[i] <= m_singleEndMultiplicator*m_cd->m_CHOOSER_theMaxs[j]) 
+				or (m_cd->m_CHOOSER_theSums[i] <= m_singleEndMultiplicator*m_cd->m_CHOOSER_theSums[j]) 
+				or (m_cd->m_CHOOSER_theNumbers[i] <= m_singleEndMultiplicator*m_cd->m_CHOOSER_theNumbers[j])
 				){
 				winner=false;
 				break;

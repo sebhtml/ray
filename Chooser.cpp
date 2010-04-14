@@ -27,7 +27,8 @@
 int Chooser::chooseWithPairedReads(
 	ExtensionData*m_ed,
 	ChooserData*m_cd,
-	int m_minimumCoverage,int m_maxCoverage
+	int m_minimumCoverage,int m_maxCoverage,
+	double __PAIRED_MULTIPLIER
 ){
 	// win or lose with paired reads
 	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){

@@ -1197,7 +1197,7 @@ void Machine::processMessages(){
 	&m_numberOfMachinesDoneSendingCoverage,
 	&m_ed->m_EXTENSION_reads_received,
 				&m_outbox,
-	&m_sd->m_allIdentifiers);
+	&m_sd->m_allIdentifiers,&m_oa);
 
 	}
 	m_inbox.clear();

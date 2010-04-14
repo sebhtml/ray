@@ -110,7 +110,8 @@ void MessageProcessor::processMessage(Message*message,
 	int*m_numberOfMachinesDoneSendingCoverage,
 	bool*m_EXTENSION_reads_received,
 				vector<Message>*m_outbox,
-	map<int,int>*m_allIdentifiers
+	map<int,int>*m_allIdentifiers,
+	OpenAssemblerChooser*m_oa
 ){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
@@ -532,6 +533,7 @@ void MessageProcessor::processMessage(Message*message,
 		#endif
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_READY_TO_SEED,rank);
 		m_outbox->push_back(aMessage);
+		m_oa->constructor((*m_peakCoverage));
 	}else if(tag==TAG_READY_TO_SEED){
 		(*m_readyToSeed)++;
 	}else if(tag==TAG_OUT_EDGES_DATA){

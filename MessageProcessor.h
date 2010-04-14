@@ -22,6 +22,7 @@
 #ifndef _MessageProcessor
 #define _MessageProcessor
 
+#include<OpenAssemblerChooser.h>
 #include<Message.h>
 #include<vector>
 #include<SplayTree.h>
@@ -113,7 +114,7 @@ public:
 	int*m_numberOfMachinesDoneSendingCoverage,
 	bool*m_EXTENSION_reads_received,
 				vector<Message>*m_outbox,
-		map<int,int>*m_allIdentifiers);
+		map<int,int>*m_allIdentifiers,OpenAssemblerChooser*m_oa);
 };
 
 #endif

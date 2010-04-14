@@ -28,9 +28,12 @@
  * de Bruijn heuristic to choose extension direction in a graph, described in paper (in revision).
  */
 class OpenAssemblerChooser{
+	double m_singleEndMultiplicator;
+	double m_pairedEndMultiplicator;
 	int proceedWithCoverages(int a,int b,ExtensionData*m_ed);
 public:
 	int choose(ExtensionData*m_ed,Chooser*m_c,int m_minimumCoverage,int m_maxCoverage,ChooserData*m_cd);
+	void constructor(int peak);
 
 };
 
