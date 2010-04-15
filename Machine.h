@@ -28,6 +28,7 @@
 #include<vector>
 #include<DepthFirstSearchData.h>
 #include<SequencesIndexer.h>
+#include<SeedExtender.h>
 #include<TronChooser.h>
 #include<SequencesLoader.h>
 #include<Chooser.h>
@@ -103,6 +104,7 @@ class Machine{
 	COVERAGE_TYPE m_maxCoverage;
 	Chooser m_c;
 	SequencesIndexer m_si;
+	SeedExtender m_seedExtender;
 
 	// clearing
 	int m_CLEAR_n;

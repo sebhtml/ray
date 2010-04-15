@@ -25,6 +25,7 @@ see <http://www.gnu.org/licenses/>
 #define u16 uint16_t
 #define u64 uint64_t
 
+#define _REPEATED_LENGTH_ALARM_THRESHOLD 100
 
 #define VERTEX_TYPE u64
 #include<stdint.h>
