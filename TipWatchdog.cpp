@@ -33,7 +33,11 @@ bool TipWatchdog::getApproval(ExtensionData*ed,DepthFirstSearchData*dfsData,int 
 		// no luck..., yet.
 		return false;
 	}
+	if(idToWord(SEEDING_currentVertex,w)=="ATTGGCTTTTTTAGGATTATT"){
+		return false;
+	}
 
+	return true;
 
 	if(ed->m_enumerateChoices_outgoingEdges.size()==2 and
 		(int)ed->m_EXTENSION_readPositionsForVertices[0].size() < minimumCoverage and
