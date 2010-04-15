@@ -26,6 +26,7 @@
 #include<sstream>
 #include<Message.h>
 #include<time.h>
+#include<RepeatedVertexWatchdog.h>
 #include<TipWatchdog.h>
 #include<BubbleTool.h>
 #include<assert.h>
@@ -2705,19 +2706,12 @@ void Machine::doChoice(){
 				#endif
 				
 				// watchdog for REPEATs -- the main source of misassemblies!
-				if(m_ed->m_currentCoverage==m_maxCoverage and
-				(int)m_ed->m_EXTENSION_readsInRange.size()<m_minimumCoverage/2){
-
+				RepeatedVertexWatchdog watchdog;
+				bool approval=watchdog.getApproval(m_ed,m_wordSize,m_minimumCoverage,m_maxCoverage,
+		m_SEEDING_currentVertex);
+				if(!approval){
 					m_ed->m_doChoice_tips_Detected=false;
 					m_dfsData->m_doChoice_tips_Initiated=false;
-
-					#ifdef SHOW_REPEATED_VERTEX_WATCHDOG
-					cout<<"Watchdog says: "<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<" is a repeated region for sure!, probably a transposase if they exist in the genome. (VertexCoverage="<<m_ed->m_currentCoverage<<", MaxCoverage="<<m_maxCoverage<<" ReadsInRange="<<m_ed->m_EXTENSION_readsInRange.size()<<", MinimumCoverage="<<m_minimumCoverage<<")"<<endl;
-					#endif
-					#ifdef DEBUG
-					assert(m_ed->m_currentCoverage==m_maxCoverage);
-					assert((int)m_ed->m_EXTENSION_readsInRange.size()<m_minimumCoverage);
-					#endif
 					return;
 				}
 
