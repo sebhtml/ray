@@ -26,6 +26,7 @@
 #include<sstream>
 #include<Message.h>
 #include<time.h>
+#include<TipWatchdog.h>
 #include<BubbleTool.h>
 #include<assert.h>
 #include<common_functions.h>
@@ -2710,7 +2711,7 @@ void Machine::doChoice(){
 					m_ed->m_doChoice_tips_Detected=false;
 					m_dfsData->m_doChoice_tips_Initiated=false;
 
-					#ifdef SHOW_REPEATED_VERTEX
+					#ifdef SHOW_REPEATED_VERTEX_WATCHDOG
 					cout<<"Watchdog says: "<<idToWord(m_SEEDING_currentVertex,m_wordSize)<<" is a repeated region for sure!, probably a transposase if they exist in the genome. (VertexCoverage="<<m_ed->m_currentCoverage<<", MaxCoverage="<<m_maxCoverage<<" ReadsInRange="<<m_ed->m_EXTENSION_readsInRange.size()<<", MinimumCoverage="<<m_minimumCoverage<<")"<<endl;
 					#endif
 					#ifdef DEBUG
@@ -2803,12 +2804,13 @@ void Machine::doChoice(){
 				if(m_dfsData->m_doChoice_tips_newEdges.size()==1 and m_ed->m_EXTENSION_readsInRange.size()>0 
 		and m_ed->m_EXTENSION_readPositionsForVertices[m_dfsData->m_doChoice_tips_newEdges[0]].size()>0
 ){
-					int readsInFavorOfThis=m_ed->m_EXTENSION_readPositionsForVertices[m_dfsData->m_doChoice_tips_newEdges[0]].size();
-					int coverageAtTheVertexLocation=m_ed->m_EXTENSION_coverages[m_dfsData->m_doChoice_tips_newEdges[0]];
 
-					// reads are not supportive of this.
-					if(readsInFavorOfThis*10<coverageAtTheVertexLocation){
-						// no luck..., yet.
+					// tip watchdog!
+					// the watchdog watches Ray to be sure he is up to the task!
+					TipWatchdog watchdog;
+					bool opinion=watchdog.getApproval(m_ed,m_dfsData,m_minimumCoverage,
+						m_SEEDING_currentVertex,m_wordSize,m_bubbleData);
+					if(!opinion){
 						m_ed->m_doChoice_tips_Detected=true;
 						m_bubbleData->m_doChoice_bubbles_Detected=false;
 						m_bubbleData->m_doChoice_bubbles_Initiated=false;

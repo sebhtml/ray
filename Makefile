@@ -29,11 +29,13 @@
 # -DSHOW_SCAFFOLDER
 # -DSHOW_OA_CHOOSER (debug the OA-chooser (OA=OpenAssembler)
 # -DSHOW_REPEATED_VERTEX
+# -DSHOW_TIP_WATCHDOG
+# -DSHOW_REPEATED_VERTEX_WATCHDOG
 # -O3 (maximum optimization)
 # -g (debug code for gdb utilization)
 
 # debug options follow:
-CXXFLAGS=-Wall  -I. -O3  -g -DSHOW_SENT_MESSAGES -DSHOW_PROGRESS -DSHOW_FILTER -DDEBUG -DSHOW_TIP_LOST -DSHOW_CHOICE  -DSHOW_TRON -DSHOW_SCAFFOLDER -DWRITE_PARAMETERS -DWRITE_COVERAGE_DISTRIBUTION -DSHOW_SCAFFOLDER -DSHOW_OA_CHOOSER -DSHOW_REPEATED_VERTEX
+CXXFLAGS=-Wall  -I. -O3  -g -DSHOW_SENT_MESSAGES -DSHOW_PROGRESS -DSHOW_FILTER -DDEBUG -DSHOW_TIP_LOST -DSHOW_CHOICE  -DSHOW_TRON -DSHOW_SCAFFOLDER -DWRITE_PARAMETERS -DWRITE_COVERAGE_DISTRIBUTION -DSHOW_SCAFFOLDER -DSHOW_OA_CHOOSER -DSHOW_REPEATED_VERTEX -DSHOW_REPEATED_VERTEX_WATCHDOG -DSHOW_TIP_WATCHDOG
 
 # production options follow:
 #CXXFLAGS=-I. -Wall -O3 
@@ -46,7 +48,7 @@ TARGETS=Ray
 
 all: $(TARGETS)
 
-OBJECTS= Machine.o common_functions.o Loader.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o ReadAnnotation.o CoverageDistribution.o Message.o  Direction.o  PairedRead.o ColorSpaceDecoder.o ColorSpaceLoader.o VertexLinkedList.o BubbleTool.o VerticesExtractor.o MessageProcessor.o SequencesLoader.o Chooser.o OpenAssemblerChooser.o TronChooser.o ErrorSimulator.o BufferedData.o DistributionData.o SequencesIndexer.o
+OBJECTS= Machine.o common_functions.o Loader.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o ReadAnnotation.o CoverageDistribution.o Message.o  Direction.o  PairedRead.o ColorSpaceDecoder.o ColorSpaceLoader.o VertexLinkedList.o BubbleTool.o VerticesExtractor.o MessageProcessor.o SequencesLoader.o Chooser.o OpenAssemblerChooser.o TronChooser.o ErrorSimulator.o BufferedData.o DistributionData.o SequencesIndexer.o TipWatchdog.o
 
 %.o: %.cpp
 	@echo MPICC $<
