@@ -7,19 +7,19 @@
           o sim6 E. coli K-12 MG1655 50-nt reads @ 50X (nuccore/NC_000913)
           o sim7 Pseudo 40-nt reads @ 50 X (nuccore/NC_002516)
           o sim8 Pseudo 40-nt paired (250) reads @ 50 X (nuccore/NC_002516) 
-    * Mixed set 1: E. coli K-12 MG1655 (genome: nuccore/NC_000913, reads: sra/SRA001125 + sra/SRA001028)
-          o mix11 Illumina non-paired
-          o mix12 Illumina paired
-          o mix13 454
-          o mix14 454+ Illumina paired 
+    * Mixed set 1: E. coli K-12 MG1655
+          o mix11 Illumina non-paired (genome: nuccore/NC_000913, reads: sra/SRA001125 + sra/SRA001028)
+          o mix12 Illumina paired (genome: nuccore/NC_000913, reads: sra/SRA001125 + sra/SRA001028)
+          o mix13 454 (genome: nuccore/NC_000913, reads: sra/SRA001125 + sra/SRA001028)
+          o mix14 454+ Illumina paired  (genome: nuccore/NC_000913, reads: sra/SRA001125 + sra/SRA001028)
     * Mixed set 2: Acinetobacter sp. ADP1 (genome: nuccore/NC_005966, reads: sra/SRA003611)
-          o mix21 Illumina non-paired
-          o mix22 454
-          o mix23 454 + Illumina 
+          o mix21 Illumina non-paired (genome: nuccore/NC_000913, reads: sra/SRA001125 + sra/SRA001028)
+          o mix22 454 (genome: nuccore/NC_000913, reads: sra/SRA001125 + sra/SRA001028)
+          o mix23 454 + Illumina  (genome: nuccore/NC_000913, reads: sra/SRA001125 + sra/SRA001028)
     * Mixed set 3: Cryptobacterium curtum DSM 15641 (genome: nuccore/NC_013170, reads: sra/SRA008863)
-          o mix31 Illumina
-          o mix32 454
-          o mix33 454 + Illumina 
+          o mix31 Illumina (genome: nuccore/NC_000913, reads: sra/SRA001125 + sra/SRA001028)
+          o mix32 454 (genome: nuccore/NC_000913, reads: sra/SRA001125 + sra/SRA001028)
+          o mix33 454 + Illumina  (genome: nuccore/NC_000913, reads: sra/SRA001125 + sra/SRA001028)
     * Illumina-only paired datasets
           o short1 Pseudomonas syringae pathovar syringae B728a paired reads (genome: NC_007005.1 reads: era/ERA000095) (400/20)
           o short2 Pseudomonas syringae pathovar syringae B728a non-paired reads(genome: NC_007005.1 reads: era/ERA000095) (400/20)

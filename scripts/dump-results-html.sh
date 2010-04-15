@@ -7,7 +7,7 @@ for i in $(cat sets.txt|grep 'o '|awk '{print $2}')
 do
 	dataset=$(grep $i sets.txt)
 	echo "<tr><td colspan=\"11\">$dataset</td></tr>"
-	echo "<tr><td>Assembler</td><td>Contigs</td><td>Bases</td><td>Average length</td><td>N50</td><td>Largest length</td><td>Genome breadth of coverage</td><td>Misassembled contigs</td><td>Misassemblies</td><td>Indels</td><td>Running time</td></tr>"
+	echo "<tr><td>Assembler</td><td>Contigs</td><td>Bases</td><td>Average length</td><td>N50</td><td>Largest length</td><td>Genome breadth of coverage</td><td>Misassembled contigs</td><td>Mismatches</td><td>Indels</td><td>Running time</td></tr>"
 	for j in newbler euler-sr velvet ray abyss
 	do
 		file=0$i-$j.sh.res.html
