@@ -44,7 +44,10 @@ bool TipWatchdog::getApproval(ExtensionData*ed,DepthFirstSearchData*dfsData,int 
 			loser++;
 		int readsForWinner=ed->m_EXTENSION_readPositionsForVertices[winner].size();
 		int readsForLoser=ed->m_EXTENSION_readPositionsForVertices[loser].size();
-		if(readsForWinner < 2*readsForLoser){
+		int diff=readsForWinner-readsForLoser;
+		if(diff<0)
+			diff=-diff;
+		if(diff<2){
 			#ifdef SHOW_TIP_WATCHDOG
 			cout<<"Ray Oddity: The genome lacks coverage after "<<idToWord(SEEDING_currentVertex,w)<<"; Ray can't choose wisely if you don't provide enough data, be manly and rerun your sample!"<<endl;
 			#endif
