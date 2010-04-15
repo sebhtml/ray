@@ -39,6 +39,7 @@ Parameters::Parameters(){
 	m_wordSize=21;
 	m_colorSpaceMode=false;
 	m_amos=false;
+	m_error=false;
 }
 
 int Parameters::getWordSize(){
@@ -63,11 +64,19 @@ void Parameters::loadCommandsFromArguments(int argc,char**argv){
 }
 
 void Parameters::parseCommands(){
+	m_initiated=true;
 	int i=0;
 	while(i<(int)m_commands.size()){
 		string token=m_commands[i];
 		if(token=="LoadSingleEndReads" or token=="-s" or token=="--LoadSingleEndReads" or token=="-LoadSingleEndReads"){
 			i++;
+			int items=m_commands.size()-i;
+
+			if(items<1){
+				cout<<"Error: "<<token<<" needs 1 item, you provided only "<<items<<endl;
+				m_error=true;
+				return;
+			}
 			token=m_commands[i];
 			m_singleEndReadsFile.push_back(token);
 			if(token.find(".csfasta")!=string::npos){
@@ -75,6 +84,16 @@ void Parameters::parseCommands(){
 			}
 		}else if(token=="LoadPairedEndReads" or token=="-p" or token=="--LoadPairedEndReads" or token=="-LoadPairedEndReads"){
 			i++;
+			// make sure there is at least 4 elements left.
+			int items=m_commands.size()-i;
+			#ifdef SHOW_PROGRESS
+			cout<<"Left: "<<items<<endl;
+			#endif
+			if(items<4){
+				cout<<"Error: "<<token<<" needs 4 items, you provided only "<<items<<endl;
+				m_error=true;
+				return;
+			}
 			token=m_commands[i];
 			if(token.find(".csfasta")!=string::npos){
 				m_colorSpaceMode=true;
@@ -100,21 +119,12 @@ void Parameters::parseCommands(){
 			standardDeviation=atoi(token.c_str());
 			m_averageFragmentLengths[m_singleEndReadsFile.size()-1]=meanFragmentLength;
 			m_standardDeviations[m_singleEndReadsFile.size()-1]=standardDeviation;
-		}else if(token=="SetOutputDirectory"){
-			i++;
-			token=m_commands[i];
-			m_directory=token;
-		}else if(token=="SetWordSize" or token=="--SetWordSize" or token=="-w" or token=="-SetWordSize"){
-			i++;
-			token=m_commands[i];
-			m_wordSize=atoi(token.c_str());
 		}else if(token=="OutputAmosFile" or token=="--OutputAmosFile" or token=="-a" or token=="-OutputAmosFile"){
 			m_amos=true;
 		}
 		i++;
 	}
 
-	m_initiated=true;
 }
 
 void Parameters::load(int argc,char**argv){
@@ -205,4 +215,8 @@ string Parameters::getVersion(){
 
 vector<string> Parameters::getCommands(){
 	return m_commands;
+}
+
+bool Parameters::getError(){
+	return m_error;
 }

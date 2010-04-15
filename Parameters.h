@@ -36,6 +36,7 @@ using namespace std;
  *
  */
 class Parameters{
+	bool m_error;
 	bool m_amos;
 	bool m_initiated;
 	int m_numberOfSequences;
@@ -78,6 +79,7 @@ public:
 	string getEngineName();
 	string getVersion();
 	vector<string> getCommands();
+	bool getError();
 };
 
 #endif

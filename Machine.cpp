@@ -1141,6 +1141,10 @@ void Machine::processData(){
 			}
 		}
 		m_parameters.load(m_argc,m_argv);
+		if(m_parameters.getError()){
+			killRanks();
+			return;
+		}
 		if(m_parameters.useAmos()){
 			// empty the file.
 			cout<<"Preparing AMOS file "<<m_parameters.getAmosFile()<<endl;
