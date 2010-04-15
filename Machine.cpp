@@ -2705,7 +2705,7 @@ void Machine::doChoice(){
 				
 				// watchdog for REPEATs -- the main source of misassemblies!
 				if(m_ed->m_currentCoverage==m_maxCoverage and
-				(int)m_ed->m_EXTENSION_readsInRange.size()<m_minimumCoverage){
+				(int)m_ed->m_EXTENSION_readsInRange.size()<m_minimumCoverage/2){
 
 					m_ed->m_doChoice_tips_Detected=false;
 					m_dfsData->m_doChoice_tips_Initiated=false;
