@@ -42,19 +42,20 @@ public:
 	void enumerateChoices(bool*edgesRequested,ExtensionData*ed,bool*edgesReceived,MyAllocator*outboxAllocator,
 		int*outgoingEdgeIndex,vector<Message>*outbox,
 VERTEX_TYPE*currentVertex,int theRank,bool*vertexCoverageRequested,vector<VERTEX_TYPE>*receivedOutgoingEdges,
-bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,ChooserData*cd);
+bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,ChooserData*cd,
+int wordSize);
 
 
 	void checkIfCurrentVertexIsAssembled(ExtensionData*ed,vector<Message>*outbox,MyAllocator*outboxAllocator,
 	 int*outgoingEdgeIndex,int*last_value,u64*currentVertex,int theRank,bool*vertexCoverageRequested,
-	int wordSize,bool*colorSpaceMode,int size);
+	int wordSize,bool*colorSpaceMode,int size,vector<vector<VERTEX_TYPE> >*seeds);
 
 	void markCurrentVertexAsAssembled(u64*currentVertex,MyAllocator*outboxAllocator,int*outgoingEdgeIndex,
  vector<Message>*outbox,int size,int theRank,ExtensionData*ed,bool*vertexCoverageRequested,
 		bool*vertexCoverageReceived,int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,
 	bool*edgesRequested,
 vector<VERTEX_TYPE>*receivedOutgoingEdges,Chooser*chooser,ChooserData*cd,
-BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpaceMode);
+BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpaceMode,int wordSize);
 
 
 

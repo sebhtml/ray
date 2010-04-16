@@ -23,6 +23,9 @@
 #include<TipWatchdog.h>
 #include<SeedExtender.h>
 #include<Chooser.h>
+#ifdef DEBUG
+#include<assert.h>
+#endif
 #include<BubbleTool.h>
 
 void SeedExtender::extendSeeds(vector<vector<VERTEX_TYPE> >*seeds,ExtensionData*ed,int theRank,vector<Message>*outbox,
@@ -36,7 +39,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived
 ){
 	if((*seeds).size()==0){
 		#ifdef SHOW_PROGRESS
-		cout<<"Rank "<<getRank()<<": extending seeds "<<(*seeds).size()<<"/"<<(*seeds).size()<<" (DONE)"<<endl;
+		cout<<"Rank "<<theRank<<": extending seeds "<<(*seeds).size()<<"/"<<(*seeds).size()<<" (DONE)"<<endl;
 		#endif
 		ed->m_mode_EXTENSION=false;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_IS_DONE,theRank);
@@ -58,7 +61,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived
 		ed->m_EXTENSION_readsInRange.clear();
 	}else if(ed->m_EXTENSION_currentSeedIndex==(int)(*seeds).size()){
 		#ifdef SHOW_PROGRESS
-		cout<<"Rank "<<getRank()<<": extending seeds "<<(*seeds).size()<<"/"<<(*seeds).size()<<" (DONE)"<<endl;
+		cout<<"Rank "<<theRank<<": extending seeds "<<(*seeds).size()<<"/"<<(*seeds).size()<<" (DONE)"<<endl;
 		#endif
 		ed->m_mode_EXTENSION=false;
 		
@@ -70,7 +73,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived
 
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_IS_DONE,theRank);
 		#ifdef SHOW_PROGRESS
-		cout<<getRank()<<" TAG_EXTENSION_IS_DONE"<<endl;
+		cout<<theRank<<" TAG_EXTENSION_IS_DONE"<<endl;
 		#endif
 		(*outbox).push_back(aMessage);
 		return;
@@ -89,7 +92,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived
 	
 	if(!ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled){
 		checkIfCurrentVertexIsAssembled(ed,outbox,outboxAllocator,outgoingEdgeIndex,last_value,
-	currentVertex,theRank,vertexCoverageRequested,wordSize,colorSpaceMode,size);
+	currentVertex,theRank,vertexCoverageRequested,wordSize,colorSpaceMode,size,seeds);
 	}else if(ed->m_EXTENSION_vertexIsAssembledResult and ed->m_EXTENSION_currentPosition==0 and ed->m_EXTENSION_complementedSeed==false){
 		ed->m_EXTENSION_currentSeedIndex++;// skip the current one.
 		ed->m_EXTENSION_currentPosition=0;
@@ -109,11 +112,11 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived
 		markCurrentVertexAsAssembled(currentVertex,outboxAllocator,outgoingEdgeIndex,outbox,
 size,theRank,ed,vertexCoverageRequested,vertexCoverageReceived,receivedVertexCoverage,
 repeatedLength,maxCoverage,edgesRequested,receivedOutgoingEdges,chooser,cd,bubbleData,minimumCoverage,
-oa,colorSpaceMode);
+oa,colorSpaceMode,wordSize);
 	}else if(!ed->m_EXTENSION_enumerateChoices){
 		enumerateChoices(edgesRequested,ed,edgesReceived,outboxAllocator,outgoingEdgeIndex,outbox,
 		currentVertex,theRank,vertexCoverageRequested,receivedOutgoingEdges,
-		vertexCoverageReceived,size,receivedVertexCoverage,chooser,cd);
+		vertexCoverageReceived,size,receivedVertexCoverage,chooser,cd,wordSize);
 	}else if(!ed->m_EXTENSION_choose){
 		doChoice(outboxAllocator,outgoingEdgeIndex,outbox,currentVertex,cd,bubbleData,theRank,
 	dfsData,wordSize,
@@ -129,7 +132,7 @@ receivedOutgoingEdges);
 void SeedExtender::enumerateChoices(bool*edgesRequested,ExtensionData*ed,bool*edgesReceived,MyAllocator*outboxAllocator,
 	int*outgoingEdgeIndex,vector<Message>*outbox,
 VERTEX_TYPE*currentVertex,int theRank,bool*vertexCoverageRequested,vector<VERTEX_TYPE>*receivedOutgoingEdges,
-bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,ChooserData*cd
+bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,ChooserData*cd,int wordSize
 ){
 	if(!(*edgesRequested)){
 		ed->m_EXTENSION_coverages.clear();
@@ -480,7 +483,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 					cout<<endl;
 					cout<<"*****************************************"<<endl;
 					cout<<"CurrentVertex="<<idToWord((*currentVertex),wordSize)<<" @"<<ed->m_EXTENSION_extension.size()<<endl;
-					cout<<"Coverage="<<ed->(*chooser)urrentCoverage<<endl;
+					cout<<"Coverage="<<ed->m_currentCoverage<<endl;
 					cout<<" # ReadsInRange: "<<ed->m_EXTENSION_readsInRange.size()<<endl;
 					cout<<ed->m_enumerateChoices_outgoingEdges.size()<<" arcs: ";
 					for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
@@ -684,7 +687,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 		}else{
 			if(ed->m_EXTENSION_extension.size()>=100){
 				#ifdef SHOW_PROGRESS
-				cout<<"Rank "<<getRank()<<" stores an extension, "<<ed->m_EXTENSION_extension.size()<<" vertices."<<endl;
+				cout<<"Rank "<<theRank<<" stores an extension, "<<ed->m_EXTENSION_extension.size()<<" vertices."<<endl;
 				#endif
 				ed->m_EXTENSION_contigs.push_back(ed->m_EXTENSION_extension);
 
@@ -840,13 +843,13 @@ void SeedExtender::depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int maxDepth,
 
 void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,vector<Message>*outbox,MyAllocator*outboxAllocator,
   int*outgoingEdgeIndex,int*last_value,u64*currentVertex,int theRank,bool*vertexCoverageRequested,int wordSize,
- bool*colorSpaceMode,int size){
+ bool*colorSpaceMode,int size,vector<vector<VERTEX_TYPE> >*seeds){
 	if(!ed->m_EXTENSION_directVertexDone){
 		if(!ed->m_EXTENSION_VertexAssembled_requested){
 			if(ed->m_EXTENSION_currentSeedIndex%10==0 and ed->m_EXTENSION_currentPosition==0 and (*last_value)!=ed->m_EXTENSION_currentSeedIndex){
 				(*last_value)=ed->m_EXTENSION_currentSeedIndex;
 				#ifdef SHOW_PROGRESS
-				cout<<"Rank "<<getRank()<<": extending seeds "<<ed->m_EXTENSION_currentSeedIndex<<"/"<<(*seeds).size()<<endl;
+				cout<<"Rank "<<theRank<<": extending seeds "<<ed->m_EXTENSION_currentSeedIndex<<"/"<<(*seeds).size()<<endl;
 				#endif
 			}
 			ed->m_EXTENSION_VertexAssembled_requested=true;
@@ -891,7 +894,7 @@ void SeedExtender::markCurrentVertexAsAssembled(u64*currentVertex,MyAllocator*ou
 vector<Message>*outbox,int size,int theRank,ExtensionData*ed,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,bool*edgesRequested,
 vector<VERTEX_TYPE>*receivedOutgoingEdges,Chooser*chooser,ChooserData*cd,
-BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpaceMode
+BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpaceMode,int wordSize
 ){
 	if(!ed->m_EXTENSION_directVertexDone){
 		if(!(*vertexCoverageRequested)){
