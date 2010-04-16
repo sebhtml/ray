@@ -560,9 +560,6 @@ void Machine::finishFusions(){
 				m_fusionData->m_FUSION_pathLengthReceived=false;
 			}else if(m_fusionData->m_FUSION_pathLengthReceived){
 				m_FINISH_pathLengths[pathId]=m_fusionData->m_FUSION_receivedLength;
-				#ifdef SHOW_FUSION
-				cout<<"Ray says: extension-"<<m_ed->m_EXTENSION_identifiers[m_SEEDING_i]<<" ("<<m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()<<" vertices) and extension-"<<pathId<<" ("<<m_FINISH_pathLengths[pathId]<<" vertices) make a fusion."<<endl;
-				#endif
 			}
 		}else if(m_FINISH_pathLengths[pathId]!=(int)m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()){// avoid fusion of same length.
 			int nextPosition=progression+1;
@@ -593,6 +590,10 @@ void Machine::finishFusions(){
 					}
 				}
 			}else{
+				#ifdef SHOW_FUSION
+				cout<<"Ray says: extension-"<<m_ed->m_EXTENSION_identifiers[m_SEEDING_i]<<" ("<<m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()<<" vertices) and extension-"<<pathId<<" ("<<m_FINISH_pathLengths[pathId]<<" vertices) make a fusion, result: "<<m_FINISH_newFusions[m_FINISH_newFusions.size()-1].size()<<" vertices."<<endl;
+				#endif
+
 				done=true;
 			}
 		}else{

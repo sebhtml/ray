@@ -5,7 +5,6 @@ cd run
 addRun $r4541 
 addRun $r4542 
 addRun $r4543 
-sed -i 's/<largeGenome>false/<largeGenome>true/g' assembly/454AssemblyProject.xml # otherwise newbler hangs.
 runProject 
 cd ..
 ln -s $ref Reference.fasta
