@@ -33,9 +33,6 @@ bool TipWatchdog::getApproval(ExtensionData*ed,DepthFirstSearchData*dfsData,int 
 		// no luck..., yet.
 		return false;
 	}
-	if(idToWord(SEEDING_currentVertex,w)=="ATTGGCTTTTTTAGGATTATT"){
-		return false;
-	}
 
 	return true;
 
