@@ -31,7 +31,6 @@
 #include<stack>
 using namespace std;
 
-#define CHUNK_SIZE 10*1024*1024 // 10 MB
 
 /*
  * the splay tree is a binary tree. If a key is asked often, the key will be near the root, otherwise, it will be deeper.
@@ -48,10 +47,10 @@ class SplayTree{
 	VERTEX_TYPE m_size;
 	bool m_inserted;
 	void splay(KEY key);
-	MyAllocator m_allocator;
+	MyAllocator*m_allocator;
 public:
-
 	SplayTree();
+	void constructor(MyAllocator*allocator);
 	~SplayTree();
 	void remove(KEY key);
 	SplayNode<KEY,VALUE>*insert(KEY key);
@@ -66,7 +65,6 @@ public:
 template<class KEY,class VALUE>
 void SplayTree<KEY,VALUE>::clear(){
 	m_root=NULL;
-	m_allocator.clear();
 }
 
 template<class KEY,class VALUE>
@@ -84,7 +82,12 @@ SplayTree<KEY,VALUE>::SplayTree(){
 	m_root=NULL;
 	m_size=0;
 	m_inserted=false;
-	m_allocator.constructor(CHUNK_SIZE);
+	m_allocator=NULL;
+}
+
+template<class KEY,class VALUE>
+SplayTree<KEY,VALUE>::constructor(MyAllocator*allocator){
+	m_allocator=allocator;
 }
 
 template<class KEY,class VALUE>
@@ -112,7 +115,7 @@ template<class KEY,class VALUE>
 SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::insert(KEY key){
 	m_inserted=false;
 	if(m_root==NULL){
-		m_root=(SplayNode<KEY,VALUE>*)m_allocator.allocate(sizeof(SplayNode<KEY,VALUE>));
+		m_root=(SplayNode<KEY,VALUE>*)m_allocator->allocate(sizeof(SplayNode<KEY,VALUE>));
 		m_root->init(key);
 		m_inserted=true;
 		m_size++;
@@ -121,7 +124,7 @@ SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::insert(KEY key){
 	splay(key);
 	if(m_root->getKey()==key)
 		return m_root;
-	SplayNode<KEY,VALUE>*n=(SplayNode<KEY,VALUE>*)m_allocator.allocate(sizeof(SplayNode<KEY,VALUE>));
+	SplayNode<KEY,VALUE>*n=(SplayNode<KEY,VALUE>*)m_allocator->allocate(sizeof(SplayNode<KEY,VALUE>));
 	n->init(key);
 	
 	if(key<m_root->getKey()){
