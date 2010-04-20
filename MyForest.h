@@ -20,14 +20,29 @@
 */
 
 
-#ifndef _TronChooser
-#define _TronChooser
 
-#include<Chooser.h>
+#ifndef _MyForest
+#define _MyForest
 
-class TronChooser{
+#include<SplayTree.h>
+#include<Vertex.h>
+#include<MyAllocator.h>
+#include<common_functions.h>
+
+class MyForest{
+	int m_numberOfTrees;
+	u64 m_size;
+	SplayTree<VERTEX_TYPE,Vertex>*m_trees;
+	bool m_inserted;
 public:
-	int choose(ExtensionData*m_ed,Chooser*m_c,int m_minimumCoverage,int m_maxCoverage,ChooserData*m_cd);
+	void constructor(int count,MyAllocator*allocator);
+	int size();
+	int getNumberOfTrees();
+	SplayTree<VERTEX_TYPE,Vertex>*getTree(int i);
+	SplayNode<VERTEX_TYPE,Vertex>*find(VERTEX_TYPE key);
+	SplayNode<VERTEX_TYPE,Vertex>*insert(VERTEX_TYPE key);
+	bool inserted();
+	void freeze();
 };
 
 #endif

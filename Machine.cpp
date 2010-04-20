@@ -20,8 +20,8 @@
 */
 
 
-#include<VerticesExtractor.h>
 #include<Machine.h>
+#include<VerticesExtractor.h>
 #include<sstream>
 #include<Message.h>
 #include<time.h>
@@ -185,7 +185,7 @@ void Machine::start(){
 	m_maxCoverage=0;
 	m_maxCoverage--;// underflow.
 
-	m_subgraph.constructor(&m_persistentAllocator);
+	int numberOfTrees=_FOREST_SIZE;// like in Velvet.
 
 	#ifdef SHOW_PROGRESS
 	cout<<"ProcessIdentifier="<<getpid()<<endl;
@@ -244,9 +244,9 @@ void Machine::start(){
 	MPI_Init(&m_argc,&m_argv);
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
 	MPI_Comm_size(MPI_COMM_WORLD,&m_size);
-
 	m_disData->constructor(getSize(),5000,&m_persistentAllocator);
 
+	m_subgraph.constructor(numberOfTrees,&m_persistentAllocator);
 
 	if(isMaster()){
 		#ifdef SHOW_PROGRESS
@@ -1348,10 +1348,12 @@ void Machine::processData(){
 
 	if(m_mode_sendDistribution){
 		if(m_distributionOfCoverage.size()==0){
-			SplayTreeIterator<VERTEX_TYPE,Vertex> iterator(&m_subgraph);
-			while(iterator.hasNext()){
-				int coverage=iterator.next()->getValue()->getCoverage();
-				m_distributionOfCoverage[coverage]++;
+			for(int i=0;i<m_subgraph.getNumberOfTrees();i++){
+				SplayTreeIterator<VERTEX_TYPE,Vertex> iterator(m_subgraph.getTree(i));
+				while(iterator.hasNext()){
+					int coverage=iterator.next()->getValue()->getCoverage();
+					m_distributionOfCoverage[coverage]++;
+				}
 			}
 		}
 

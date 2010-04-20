@@ -33,7 +33,6 @@
 #include<ChooserData.h>
 #include<BubbleTool.h>
 #include<OpenAssemblerChooser.h>
-#include<TronChooser.h>
 
 using namespace std;
 

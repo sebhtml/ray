@@ -307,6 +307,16 @@ VERTEX_TYPE hash_VERTEX_TYPE(VERTEX_TYPE key){
 	return key;
 }
 
+u32 hash6432(u64 key){
+	key = (~key) + (key << 18); 
+	key = key ^ (key >> 31);
+	key = key * 21;
+	key = key ^ (key >> 11);
+	key = key + (key << 6);
+	key = key ^ (key >> 22);
+	return (u32) key;
+}
+
 /**
  * malloc with a memory verification.
  */

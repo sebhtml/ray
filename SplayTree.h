@@ -25,6 +25,7 @@
 
 #include<vector>
 #include<stdlib.h>
+#include<common_functions.h>
 #include<SplayNode.h>
 #include<iostream>
 #include<MyAllocator.h>
@@ -52,6 +53,7 @@ class SplayTree{
 public:
 	SplayTree();
 	void constructor(MyAllocator*allocator);
+	void constructor();
 	~SplayTree();
 	// freeze the splay tree.
 	void freeze();
@@ -82,6 +84,11 @@ bool SplayTree<KEY,VALUE>::inserted(){
 
 template<class KEY,class VALUE>
 SplayTree<KEY,VALUE>::SplayTree(){
+	constructor();
+}
+
+template<class KEY,class VALUE>
+void SplayTree<KEY,VALUE>::constructor(){
 	m_frozen=false;
 	m_root=NULL;
 	m_size=0;
@@ -208,6 +215,9 @@ void SplayTree<KEY,VALUE>::print(){
 
 template<class KEY,class VALUE>
 void SplayTree<KEY,VALUE>::freeze(){
+	#ifdef SHOW_FREEZE
+	cout<<"Freezing splay tree."<<endl;
+	#endif
 	m_frozen=true;
 }
 

@@ -28,6 +28,7 @@
 #include<SplayTree.h>
 #include<FusionData.h>
 #include<ReadAnnotation.h>
+#include<MyForest.h>
 #include<MyAllocator.h>
 #include<Vertex.h>
 using namespace std;
@@ -35,7 +36,7 @@ using namespace std;
 class MessageProcessor{
 public:
 	void processMessage(Message*message,
-			SplayTree<VERTEX_TYPE,Vertex>*m_subgraph,
+			MyForest*m_subgraph,
 			MyAllocator*m_outboxAllocator,
 				int rank,
 			vector<ReadAnnotation>*m_EXTENSION_receivedReads,

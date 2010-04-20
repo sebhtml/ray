@@ -24,12 +24,12 @@
 #define _Machine
 
 #include<common_functions.h>
+#include<MyForest.h>
 #include<map>
 #include<vector>
 #include<DepthFirstSearchData.h>
 #include<SequencesIndexer.h>
 #include<SeedExtender.h>
-#include<TronChooser.h>
 #include<SequencesLoader.h>
 #include<Chooser.h>
 #include<MessageProcessor.h>
@@ -205,7 +205,7 @@ class Machine{
 	vector<MPI_Request> m_pendingMpiRequest;
 	Parameters m_parameters;
 	int m_numberOfMachinesDoneSendingEdges;
-	SplayTree<VERTEX_TYPE,Vertex> m_subgraph;
+	MyForest m_subgraph;
 
 	// SEQUENCE DISTRIBUTION
 	bool m_reverseComplementVertex;
@@ -291,7 +291,6 @@ class Machine{
 	int m_repeatedLength;
 
 	OpenAssemblerChooser m_oa;
-	TronChooser m_tc;
 	// BUBBLE
 	BubbleData*m_bubbleData;
 

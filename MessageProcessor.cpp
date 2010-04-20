@@ -27,11 +27,12 @@
 #include<SplayTree.h>
 #include<Direction.h>
 #include<SplayNode.h>
+#include<MyForest.h>
 #include<SplayTreeIterator.h>
 #include<FusionData.h>
 
 void MessageProcessor::processMessage(Message*message,
-			SplayTree<VERTEX_TYPE,Vertex>*m_subgraph,
+			MyForest*m_subgraph,
 			MyAllocator*m_outboxAllocator,
 				int rank,
 			vector<ReadAnnotation>*m_EXTENSION_receivedReads,
@@ -183,10 +184,12 @@ void MessageProcessor::processMessage(Message*message,
 		(*m_Machine_getPaths_DONE)=false;
 	}else if(tag==TAG_COPY_DIRECTIONS){
 		(*m_mode)=MODE_COPY_DIRECTIONS;
-		SplayTreeIterator<VERTEX_TYPE,Vertex> seedingIterator(m_subgraph);
-		while(seedingIterator.hasNext()){
-			SplayNode<VERTEX_TYPE,Vertex>*node=seedingIterator.next();
-			(*m_SEEDING_nodes).push_back(node->getKey());
+		for(int i=0;i<m_subgraph->getNumberOfTrees();i++){
+			SplayTreeIterator<VERTEX_TYPE,Vertex> seedingIterator(m_subgraph->getTree(i));
+			while(seedingIterator.hasNext()){
+				SplayNode<VERTEX_TYPE,Vertex>*node=seedingIterator.next();
+				(*m_SEEDING_nodes).push_back(node->getKey());
+			}
 		}
 		(*m_SEEDING_i)=0;
 	}else if(tag==TAG_EXTENSION_IS_DONE){
@@ -199,12 +202,14 @@ void MessageProcessor::processMessage(Message*message,
 	}else if(tag==TAG_START_SEEDING){
 		(*m_mode)=MODE_START_SEEDING;
 		map<int,map<int,int> > edgesDistribution;
-
-		SplayTreeIterator<VERTEX_TYPE,Vertex> seedingIterator(m_subgraph);
-		while(seedingIterator.hasNext()){
-			SplayNode<VERTEX_TYPE,Vertex>*node=seedingIterator.next();
-			edgesDistribution[node->getValue()->getIngoingEdges(node->getKey(),(*m_wordSize)).size()][node->getValue()->getOutgoingEdges(node->getKey(),(*m_wordSize)).size()]++;
-			(*m_SEEDING_nodes).push_back(node->getKey());
+		
+		for(int i=0;i<m_subgraph->getNumberOfTrees();i++){
+			SplayTreeIterator<VERTEX_TYPE,Vertex> seedingIterator(m_subgraph->getTree(i));
+			while(seedingIterator.hasNext()){
+				SplayNode<VERTEX_TYPE,Vertex>*node=seedingIterator.next();
+				edgesDistribution[node->getValue()->getIngoingEdges(node->getKey(),(*m_wordSize)).size()][node->getValue()->getOutgoingEdges(node->getKey(),(*m_wordSize)).size()]++;
+				(*m_SEEDING_nodes).push_back(node->getKey());
+			}
 		}
 		#ifdef DEBUG
 		//cout<<"Ingoing and outgoing edges."<<endl;
@@ -227,9 +232,11 @@ void MessageProcessor::processMessage(Message*message,
 		(*m_FINISH_pathLengths).clear();
 
 		// clear graph
-		SplayTreeIterator<VERTEX_TYPE,Vertex> iterator(m_subgraph);
-		while(iterator.hasNext()){
-			iterator.next()->getValue()->clearDirections();
+		for(int i=0;i<m_subgraph->getNumberOfTrees();i++){
+			SplayTreeIterator<VERTEX_TYPE,Vertex> iterator(m_subgraph->getTree(i));
+			while(iterator.hasNext()){
+				iterator.next()->getValue()->clearDirections();
+			}
 		}
 		(*m_directionsAllocator).clear();
 		(*m_directionsAllocator).constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);

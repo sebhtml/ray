@@ -31,6 +31,8 @@
 # -DSHOW_REPEATED_VERTEX
 # -DSHOW_TIP_WATCHDOG
 # -DSHOW_REPEATED_VERTEX_WATCHDOG
+# -DSHOW_FREEZE
+# -DSHOW_FOREST
 # -O3 (maximum optimization)
 # -g (debug code for gdb utilization)
 
@@ -48,7 +50,7 @@ TARGETS=Ray
 
 all: $(TARGETS)
 
-OBJECTS= Machine.o common_functions.o Loader.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o ReadAnnotation.o CoverageDistribution.o Message.o  Direction.o  PairedRead.o ColorSpaceDecoder.o ColorSpaceLoader.o VertexLinkedList.o BubbleTool.o VerticesExtractor.o MessageProcessor.o SequencesLoader.o Chooser.o OpenAssemblerChooser.o TronChooser.o ErrorSimulator.o BufferedData.o DistributionData.o SequencesIndexer.o TipWatchdog.o RepeatedVertexWatchdog.o SeedExtender.o
+OBJECTS= Machine.o common_functions.o Loader.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o ReadAnnotation.o CoverageDistribution.o Message.o  Direction.o  PairedRead.o ColorSpaceDecoder.o ColorSpaceLoader.o VertexLinkedList.o BubbleTool.o VerticesExtractor.o MessageProcessor.o SequencesLoader.o Chooser.o OpenAssemblerChooser.o  ErrorSimulator.o BufferedData.o DistributionData.o SequencesIndexer.o TipWatchdog.o RepeatedVertexWatchdog.o SeedExtender.o MyForest.o
 
 %.o: %.cpp
 	@echo MPICC $<
