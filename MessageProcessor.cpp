@@ -641,6 +641,7 @@ void MessageProcessor::processMessage(Message*message,
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<rank<<" has "<<m_subgraph->size()<<" vertices (DONE)"<<endl;
 		#endif
+		m_subgraph->freeze();
 	}else if(tag==TAG_SEQUENCES_READY){
 		(*m_sequence_ready_machines)++;
 	}else if(tag==TAG_START_EDGES_DISTRIBUTION_ANSWER){

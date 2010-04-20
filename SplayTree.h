@@ -48,10 +48,13 @@ class SplayTree{
 	bool m_inserted;
 	void splay(KEY key);
 	MyAllocator*m_allocator;
+	bool m_frozen;
 public:
 	SplayTree();
 	void constructor(MyAllocator*allocator);
 	~SplayTree();
+	// freeze the splay tree.
+	void freeze();
 	void remove(KEY key);
 	SplayNode<KEY,VALUE>*insert(KEY key);
 	SplayNode<KEY,VALUE>*find(KEY key);
@@ -79,6 +82,7 @@ bool SplayTree<KEY,VALUE>::inserted(){
 
 template<class KEY,class VALUE>
 SplayTree<KEY,VALUE>::SplayTree(){
+	m_frozen=false;
 	m_root=NULL;
 	m_size=0;
 	m_inserted=false;
@@ -149,6 +153,20 @@ SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::insert(KEY key){
  */
 template<class KEY,class VALUE>
 SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::find(KEY key){
+	if(m_frozen){
+		SplayNode<KEY,VALUE>*t=m_root;
+		while(t!=NULL){
+			if(t->m_key==key){
+				return t;
+			}else if(key<t->m_key){
+				t=t->m_left;
+			}else{
+				t=t->m_right;
+			}
+		}
+		return NULL;
+	}
+
 	if(m_root==NULL)
 		return NULL;
 	splay(key);
@@ -186,6 +204,11 @@ void SplayTree<KEY,VALUE>::print(){
 		}
 	}
 	cout<<"}"<<endl;
+}
+
+template<class KEY,class VALUE>
+void SplayTree<KEY,VALUE>::freeze(){
+	m_frozen=true;
 }
 
 template<class KEY,class VALUE>
