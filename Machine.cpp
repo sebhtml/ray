@@ -185,7 +185,7 @@ void Machine::start(){
 	m_maxCoverage=0;
 	m_maxCoverage--;// underflow.
 
-	int numberOfTrees=_FOREST_SIZE;// like in Velvet.
+	int numberOfTrees=_FOREST_SIZE;
 
 	#ifdef SHOW_PROGRESS
 	cout<<"ProcessIdentifier="<<getpid()<<endl;
