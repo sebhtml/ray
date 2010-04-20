@@ -185,6 +185,8 @@ void Machine::start(){
 	m_maxCoverage=0;
 	m_maxCoverage--;// underflow.
 
+	m_subgraph.constructor(&m_persistentAllocator);
+
 	#ifdef SHOW_PROGRESS
 	cout<<"ProcessIdentifier="<<getpid()<<endl;
 	cout<<"sizeof(VERTEX_TYPE) "<<sizeof(VERTEX_TYPE)<<endl;

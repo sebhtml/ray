@@ -86,7 +86,7 @@ SplayTree<KEY,VALUE>::SplayTree(){
 }
 
 template<class KEY,class VALUE>
-SplayTree<KEY,VALUE>::constructor(MyAllocator*allocator){
+void SplayTree<KEY,VALUE>::constructor(MyAllocator*allocator){
 	m_allocator=allocator;
 }
 
