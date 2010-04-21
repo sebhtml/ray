@@ -156,7 +156,6 @@ class Machine{
 	VERTEX_TYPE m_SEEDING_currentVertex;
 	bool m_colorSpaceMode;
 
-
 	bool m_SEEDING_InedgesReceived;
 	bool m_SEEDING_InedgesRequested;
 	int m_SEEDING_outgoing_index;

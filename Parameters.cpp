@@ -19,6 +19,7 @@
 
 */
 
+#define _AUTOMATIC_DETECTION 65536
 
 #include<Parameters.h>
 #include<string>
@@ -66,6 +67,23 @@ void Parameters::loadCommandsFromArguments(int argc,char**argv){
 void Parameters::parseCommands(){
 	m_initiated=true;
 	int i=0;
+	set<string> commands;
+
+	commands.insert("LoadSingleEndReads");
+	commands.insert("-s");
+	commands.insert("--LoadSingleEndReads");
+	commands.insert("-LoadSingleEndReads");
+
+	commands.insert("LoadPairedEndReads");
+	commands.insert("-p");
+	commands.insert("--LoadPairedEndReads");
+	commands.insert("-LoadPairedEndReads");
+	
+	commands.insert("OutputAmosFile");
+	commands.insert("-a");
+	commands.insert("--OutputAmosFile");
+	commands.insert("-OutputAmosFile");
+
 	while(i<(int)m_commands.size()){
 		string token=m_commands[i];
 		if(token=="LoadSingleEndReads" or token=="-s" or token=="--LoadSingleEndReads" or token=="-LoadSingleEndReads"){
@@ -85,12 +103,19 @@ void Parameters::parseCommands(){
 		}else if(token=="LoadPairedEndReads" or token=="-p" or token=="--LoadPairedEndReads" or token=="-LoadPairedEndReads"){
 			i++;
 			// make sure there is at least 4 elements left.
-			int items=m_commands.size()-i;
+			int items=0;
+			for(int j=i;j<m_commands.size();j++){
+				if(commands.count(m_commands[j])==0){
+					items++;
+				}else{
+					break;
+				}
+			}
 			#ifdef SHOW_PROGRESS
 			cout<<"Left: "<<items<<endl;
 			#endif
-			if(items<4){
-				cout<<"Error: "<<token<<" needs 4 items, you provided only "<<items<<endl;
+			if(items!=2 and items!=4){
+				cout<<"Error: "<<token<<" needs 2 or 4 items, you provided "<<items<<endl;
 				m_error=true;
 				return;
 			}
@@ -109,14 +134,27 @@ void Parameters::parseCommands(){
 			string right=token;
 			m_rightFiles.insert(m_singleEndReadsFile.size());
 			m_singleEndReadsFile.push_back(right);
+
 			int meanFragmentLength;
 			int standardDeviation;
-			i++;
-			token=m_commands[i];
-			meanFragmentLength=atoi(token.c_str());
-			i++;
-			token=m_commands[i];
-			standardDeviation=atoi(token.c_str());
+			#ifdef DEBUG
+			assert(items==4 or items==2);
+			#endif
+			if(items==4){
+				i++;
+				token=m_commands[i];
+				meanFragmentLength=atoi(token.c_str());
+				i++;
+				token=m_commands[i];
+				standardDeviation=atoi(token.c_str());
+			}else if(items==2){
+				meanFragmentLength=m_averageFragmentLengths.size();
+				standardDeviation=_AUTOMATIC_DETECTION;
+			}else{
+				#ifdef DEBUG
+				assert(false);
+				#endif
+			}
 			m_averageFragmentLengths[m_singleEndReadsFile.size()-1]=meanFragmentLength;
 			m_standardDeviations[m_singleEndReadsFile.size()-1]=standardDeviation;
 		}else if(token=="OutputAmosFile" or token=="--OutputAmosFile" or token=="-a" or token=="-OutputAmosFile"){

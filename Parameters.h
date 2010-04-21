@@ -52,7 +52,7 @@ class Parameters{
 	bool m_colorSpaceMode;
 	string m_input;
 	vector<string> m_commands;
-
+	vector<vector<int>> m_observedDistances;
 	void loadCommandsFromArguments(int argc,char**argv);
 	void loadCommandsFromFile(char*file);
 	void parseCommands();
