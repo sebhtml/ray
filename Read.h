@@ -37,7 +37,7 @@ using namespace std;
  */
 class Read{
 	char*m_sequence;
-	PairedRead*m_pairedRead;
+	PairedRead*m_pairedRead;// the read on the left
 	char*trim(char*a,const char*b);
 public:
 	Read();

@@ -22,6 +22,10 @@
 #ifndef _Parameters
 
 #define _Parameters
+
+
+#define _AUTOMATIC_DETECTION 65535
+
 #include<map>
 #include<set>
 #include<string>
@@ -52,7 +56,9 @@ class Parameters{
 	bool m_colorSpaceMode;
 	string m_input;
 	vector<string> m_commands;
-	vector<vector<int>> m_observedDistances;
+	vector<vector<int> > m_observedDistances;
+	vector<int> m_observedAverageDistances;
+	vector<int> m_observedStandardDeviations;
 	void loadCommandsFromArguments(int argc,char**argv);
 	void loadCommandsFromFile(char*file);
 	void parseCommands();
@@ -80,6 +86,10 @@ public:
 	string getVersion();
 	vector<string> getCommands();
 	bool getError();
+	void addDistance(int library,int distance);
+	void computeAverageDistances();
+	int getObservedAverageDistance(int library);
+	int getObservedStandardDeviation(int library);
 };
 
 #endif

@@ -19,8 +19,10 @@
 
 */
 
-#define _AUTOMATIC_DETECTION 65536
-
+#ifdef DEBUG
+#include<assert.h>
+#endif
+#include<math.h>
 #include<Parameters.h>
 #include<string>
 #include<iostream>
@@ -50,9 +52,10 @@ int Parameters::getWordSize(){
 void Parameters::loadCommandsFromFile(char*file){
 	ifstream f(file);
 	while(!f.eof()){
-		string token;
+		string token="";
 		f>>token;
-		m_commands.push_back(token);
+		if(token!="")
+			m_commands.push_back(token);
 
 	}
 	f.close();
@@ -69,6 +72,11 @@ void Parameters::parseCommands(){
 	int i=0;
 	set<string> commands;
 
+	#ifdef DEBUG_PARAMETERS
+	for(int i=0;i<(int)m_commands.size();i++){
+		cout<<i<<" '"<<m_commands[i]<<"'"<<endl;
+	}
+	#endif
 	commands.insert("LoadSingleEndReads");
 	commands.insert("-s");
 	commands.insert("--LoadSingleEndReads");
@@ -87,6 +95,9 @@ void Parameters::parseCommands(){
 	while(i<(int)m_commands.size()){
 		string token=m_commands[i];
 		if(token=="LoadSingleEndReads" or token=="-s" or token=="--LoadSingleEndReads" or token=="-LoadSingleEndReads"){
+			#ifdef DEBUG_PARAMETERS
+			cout<<"OpCode="<<token<<endl;
+			#endif
 			i++;
 			int items=m_commands.size()-i;
 
@@ -101,17 +112,26 @@ void Parameters::parseCommands(){
 				m_colorSpaceMode=true;
 			}
 		}else if(token=="LoadPairedEndReads" or token=="-p" or token=="--LoadPairedEndReads" or token=="-LoadPairedEndReads"){
+			#ifdef DEBUG_PARAMETERS
+			cout<<"OpCode="<<token<<endl;
+			#endif
 			i++;
 			// make sure there is at least 4 elements left.
 			int items=0;
-			for(int j=i;j<m_commands.size();j++){
-				if(commands.count(m_commands[j])==0){
+			int k=0;
+			for(int j=i;j<(int)m_commands.size();j++){
+				string cmd=m_commands[j];
+				if(commands.count(cmd)==0){
+					#ifdef DEBUG_PARAMETERS
+					cout<<"Option"<<k<<"="<<"'"<<cmd<<"'"<<endl;
+					#endif
 					items++;
 				}else{
 					break;
 				}
+				k++;
 			}
-			#ifdef SHOW_PROGRESS
+			#ifdef DEBUG_PARAMETERS
 			cout<<"Left: "<<items<<endl;
 			#endif
 			if(items!=2 and items!=4){
@@ -135,21 +155,29 @@ void Parameters::parseCommands(){
 			m_rightFiles.insert(m_singleEndReadsFile.size());
 			m_singleEndReadsFile.push_back(right);
 
-			int meanFragmentLength;
-			int standardDeviation;
+			int meanFragmentLength=0;
+			int standardDeviation=0;
 			#ifdef DEBUG
 			assert(items==4 or items==2);
 			#endif
 			if(items==4){
+				#ifdef DEBUG_PARAMETERS
+				cout<<"PairedMode: UserProvidedDistance"<<endl;
+				#endif
 				i++;
 				token=m_commands[i];
 				meanFragmentLength=atoi(token.c_str());
 				i++;
 				token=m_commands[i];
 				standardDeviation=atoi(token.c_str());
-			}else if(items==2){
-				meanFragmentLength=m_averageFragmentLengths.size();
+			}else if(items==2){// automatic detection.
+				#ifdef DEBUG_PARAMETERS
+				cout<<"PairedMode: AutomaticDistanceDetection"<<endl;
+				#endif
+				meanFragmentLength=m_observedDistances.size();
 				standardDeviation=_AUTOMATIC_DETECTION;
+				vector<int> t;
+				m_observedDistances.push_back(t);
 			}else{
 				#ifdef DEBUG
 				assert(false);
@@ -157,6 +185,9 @@ void Parameters::parseCommands(){
 			}
 			m_averageFragmentLengths[m_singleEndReadsFile.size()-1]=meanFragmentLength;
 			m_standardDeviations[m_singleEndReadsFile.size()-1]=standardDeviation;
+			#ifdef DEBUG_PARAMETERS
+			cout<<"Library: "<<meanFragmentLength<<" : "<<standardDeviation<<endl;
+			#endif
 		}else if(token=="OutputAmosFile" or token=="--OutputAmosFile" or token=="-a" or token=="-OutputAmosFile"){
 			m_amos=true;
 		}
@@ -258,3 +289,48 @@ vector<string> Parameters::getCommands(){
 bool Parameters::getError(){
 	return m_error;
 }
+
+
+void Parameters::addDistance(int library,int distance){
+	m_observedDistances[library].push_back(distance);
+}
+
+void Parameters::computeAverageDistances(){
+	for(int i=0;i<(int)m_observedDistances.size();i++){
+		u64 sum=0;
+		int library=i;
+		int n=m_observedDistances[i].size();
+		for(int j=0;j<n;j++){
+			sum+=m_observedDistances[i][j];
+		}
+		int average;
+		int standardDeviation;
+		if(n>0){
+			average=sum/n;
+			sum=0;
+			for(int j=0;j<n;j++){
+				int diff=m_observedDistances[i][j]-average;
+				sum+=diff*diff;
+			}
+			sum/=n;
+			standardDeviation=sqrt(sum);
+		}else{
+			average=0;
+			standardDeviation=0;
+		}
+		m_observedAverageDistances.push_back(average);
+		m_observedStandardDeviations.push_back(standardDeviation);
+		#ifdef SHOW_LIBRARY_COMPUTATIONS
+		cout<<"Library"<<library<<": "<<average<<","<<standardDeviation<<endl;
+		#endif
+	}	
+}
+
+int Parameters::getObservedAverageDistance(int library){
+	return m_observedAverageDistances[library];
+}
+
+int Parameters::getObservedStandardDeviation(int library){
+	return m_observedStandardDeviations[library];
+}
+

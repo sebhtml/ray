@@ -29,6 +29,7 @@
 #include<FusionData.h>
 #include<ReadAnnotation.h>
 #include<MyForest.h>
+#include<Parameters.h>
 #include<MyAllocator.h>
 #include<Vertex.h>
 using namespace std;
@@ -36,6 +37,12 @@ using namespace std;
 class MessageProcessor{
 public:
 	void processMessage(Message*message,
+			ExtensionData*ed,
+			int*m_numberOfRanksDoneDetectingDistances,
+			int*m_numberOfRanksDoneSendingDistances,
+			Parameters*parameters,
+			int*m_libraryIterator,
+			int*m_libraryIndex,
 			MyForest*m_subgraph,
 			MyAllocator*m_outboxAllocator,
 				int rank,

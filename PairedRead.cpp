@@ -30,6 +30,8 @@ void PairedRead::constructor(int rank,int id, int fragmentSize,int deviation){
 	m_sequence_id=id;
 	m_fragmentSize=fragmentSize;
 	m_deviation=deviation;
+	#ifdef DEBUG_PARAMETERS
+	#endif
 }
 
 

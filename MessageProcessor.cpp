@@ -30,8 +30,15 @@
 #include<MyForest.h>
 #include<SplayTreeIterator.h>
 #include<FusionData.h>
+#include<Parameters.h>
 
 void MessageProcessor::processMessage(Message*message,
+		ExtensionData*ed,
+		int*m_numberOfRanksDoneDetectingDistances,
+		int*m_numberOfRanksDoneSendingDistances,
+		Parameters*parameters,
+			int*m_libraryIterator,
+			int*m_libraryIndex,
 			MyForest*m_subgraph,
 			MyAllocator*m_outboxAllocator,
 				int rank,
@@ -170,6 +177,14 @@ void MessageProcessor::processMessage(Message*message,
 		#ifdef DEBUG
 
 		#endif
+	}else if(tag==TAG_ASK_LIBRARY_DISTANCES_FINISHED){
+		(*m_numberOfRanksDoneSendingDistances)++;
+	}else if(tag==TAG_LIBRARY_DISTANCE){
+		parameters->addDistance(incoming[0],incoming[1]);
+	}else if(tag==TAG_ASK_LIBRARY_DISTANCES){
+		(*m_mode)=MODE_SEND_LIBRARY_DISTANCES;
+		(*m_libraryIterator)=0;
+		(*m_libraryIndex)=0;
 	}else if(tag==TAG_END_CALIBRATION){
 		(*m_mode)=MODE_DO_NOTHING;
 		(*m_calibration_MaxSpeed)=(*m_calibration_numberOfMessagesSent)/CALIBRATION_DURATION/size;
@@ -469,6 +484,13 @@ void MessageProcessor::processMessage(Message*message,
 		m_outbox->push_back(aMessage);
 	}else if(tag==TAG_GOOD_JOB_SEE_YOU_SOON){
 		(*m_alive)=false;
+	}else if(tag==TAG_AUTOMATIC_DISTANCE_DETECTION){
+		(*m_mode)=MODE_AUTOMATIC_DISTANCE_DETECTION;
+		(*m_SEEDING_i)=0;
+		(*m_EXTENSION_currentPosition)=0;
+		ed->m_EXTENSION_reads_requested=false;
+	}else if(tag==TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE){
+		(*m_numberOfRanksDoneDetectingDistances)++;
 	}else if(tag==TAG_SEEDING_IS_OVER){
 		(*m_numberOfRanksDoneSeeding)++;
 	}else if(tag==TAG_ATTACH_SEQUENCE){

@@ -185,6 +185,15 @@ class Machine{
 	bool m_SEEDING_outgoingEdgesDone;
 
 	int m_mode_send_coverage_iterator;
+
+
+
+	int m_numberOfRanksDoneDetectingDistances;
+	int m_numberOfRanksDoneSendingDistances;
+	map<int,vector<int> > m_libraryDistances;
+	int m_libraryIterator;
+	int m_libraryIndex;
+
 	vector<Message> m_outbox;
 	vector<Message> m_inbox;
 
@@ -293,6 +302,8 @@ class Machine{
 	// BUBBLE
 	BubbleData*m_bubbleData;
 
+	map<int,int> m_readsPositions;
+
 	DepthFirstSearchData*m_dfsData;
 
 	int milliSeconds();
@@ -325,6 +336,9 @@ class Machine{
 	void showUsage();
 	void flushOutgoingEdges(int threshold);
 	void flushIngoingEdges(int threshold);
+	
+	void detectDistances();
+	void sendLibraryDistances();
 public:
 	/*
  * this is the only public bit

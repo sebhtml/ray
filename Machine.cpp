@@ -78,6 +78,26 @@ void Machine::showUsage(){
 	cout<<endl;
 }
 
+void Machine::sendLibraryDistances(){
+	if(m_libraryIterator==(int)m_libraryDistances.size()){
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_ASK_LIBRARY_DISTANCES_FINISHED,getRank());
+		m_outbox.push_back(aMessage);
+		m_mode=MODE_DO_NOTHING;
+	}else if(m_libraryIndex==(int)m_libraryDistances[m_libraryIterator].size()){
+		m_libraryIterator++;
+		m_libraryIndex=0;
+	}else{
+		int library=m_libraryIterator;
+		int distance=m_libraryDistances[m_libraryIterator][m_libraryIndex];
+		u64*message=(u64*)m_outboxAllocator.allocate(2*sizeof(u64));
+		message[0]=library;
+		message[1]=distance;
+		Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_LIBRARY_DISTANCE,getRank());
+		m_outbox.push_back(aMessage);
+		m_libraryIndex++;
+	}
+}
+
 /*
  * get the Directions taken by a vertex.
  *
@@ -1011,6 +1031,12 @@ void Machine::makeFusions(){
 void Machine::processMessages(){
 	for(int i=0;i<(int)m_inbox.size();i++){
 		m_mp.processMessage(&(m_inbox[i]),
+			m_ed,
+			&m_numberOfRanksDoneDetectingDistances,
+			&m_numberOfRanksDoneSendingDistances,
+			&m_parameters,
+			&m_libraryIterator,
+			&m_libraryIndex,
 			&m_subgraph,
 			&m_outboxAllocator,
 			getRank(),
@@ -1097,7 +1123,127 @@ void Machine::processMessages(){
 	m_inboxAllocator.reset();
 }
 
+void Machine::detectDistances(){
+	if(m_SEEDING_i==(int)m_SEEDING_seeds.size()){
+		#ifdef SHOW_LIBRARY_DISTANCES
+		for(map<int,vector<int> >::iterator i=m_libraryDistances.begin();i!=m_libraryDistances.end();i++){
+			int library=i->first;
+			cout<<"Library"<<library<<endl;
+			for(vector<int>::iterator j=i->second.begin();j!=i->second.end();j++){
+				int d=*j;
+				cout<<" "<<d;
+			}
+			cout<<endl;
+		}
+		#endif
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE,getRank());
+		m_outbox.push_back(aMessage);
+		m_mode=MODE_DO_NOTHING;
+	}else if(m_ed->m_EXTENSION_currentPosition==(int)m_SEEDING_seeds[m_SEEDING_i].size()){
+		m_ed->m_EXTENSION_currentPosition=0;
+		m_SEEDING_i++;
+		m_readsPositions.clear();
+		#ifdef DEBUG_AUTO
+		cout<<"Next"<<endl;
+		#endif
+	}else{
+		if(!m_ed->m_EXTENSION_reads_requested){
+			#ifdef DEBUG_AUTO
+			cout<<"Requesting reads."<<endl;
+			#endif
+			m_ed->m_EXTENSION_reads_requested=true;
+			m_ed->m_EXTENSION_reads_received=false;
+			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
+			message[0]=m_SEEDING_seeds[m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0]),TAG_REQUEST_READS,getRank());
+			m_outbox.push_back(aMessage);
+			m_ed->m_EXTENSION_edgeIterator=0;// iterate over reads
+			m_ed->m_EXTENSION_hasPairedReadRequested=false;
+		}else if(m_ed->m_EXTENSION_reads_received){
+			if(m_ed->m_EXTENSION_edgeIterator<(int)m_ed->m_EXTENSION_receivedReads.size()){
+				ReadAnnotation annotation=m_ed->m_EXTENSION_receivedReads[m_ed->m_EXTENSION_edgeIterator];
+				if(!m_ed->m_EXTENSION_hasPairedReadRequested){
+					#ifdef DEBUG_AUTO
+					cout<<"Asking if pair exists"<<endl;
+					#endif
+					VERTEX_TYPE*message=(VERTEX_TYPE*)(m_outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
+					message[0]=annotation.getReadIndex();
+					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_HAS_PAIRED_READ,getRank());
+					(m_outbox).push_back(aMessage);
+					m_ed->m_EXTENSION_hasPairedReadRequested=true;
+					m_ed->m_EXTENSION_hasPairedReadReceived=false;
+					m_ed->m_EXTENSION_pairedSequenceRequested=false;
+					m_ed->m_EXTENSION_readLength_requested=false;
+				}else if(m_ed->m_EXTENSION_hasPairedReadReceived){
 
+					if(m_ed->m_EXTENSION_hasPairedReadAnswer){
+						if(!m_ed->m_EXTENSION_readLength_requested){
+							m_ed->m_EXTENSION_readLength_requested=true;
+							m_ed->m_EXTENSION_readLength_received=false;
+							VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
+							message[0]=annotation.getReadIndex();
+							Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_ASK_READ_LENGTH,getRank());
+							m_outbox.push_back(aMessage);
+						}else if(m_ed->m_EXTENSION_readLength_received){
+							if(!m_ed->m_EXTENSION_pairedSequenceRequested){
+								#ifdef DEBUG_AUTO
+								cout<<"Asking for pair."<<endl;
+								#endif
+								m_ed->m_EXTENSION_pairedSequenceRequested=true;
+								VERTEX_TYPE*message=(VERTEX_TYPE*)(m_outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
+								message[0]=annotation.getReadIndex();
+								Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_GET_PAIRED_READ,getRank());
+								(m_outbox).push_back(aMessage);
+								m_ed->m_EXTENSION_pairedSequenceReceived=false;
+							}else if(m_ed->m_EXTENSION_pairedSequenceReceived){
+								int expectedDeviation=m_ed->m_EXTENSION_pairedRead.getStandardDeviation();
+								#ifdef DEBUG_AUTO
+								cout<<"Received pair code="<<expectedDeviation<<endl;
+								#endif
+								if(expectedDeviation==_AUTOMATIC_DETECTION){
+									int rank=m_ed->m_EXTENSION_pairedRead.getRank();
+									int id=m_ed->m_EXTENSION_pairedRead.getId();
+									int uniqueReadIdentifier=id*MAX_NUMBER_OF_MPI_PROCESSES+rank;
+									if(m_readsPositions.count(uniqueReadIdentifier)>0){
+										int library=m_ed->m_EXTENSION_pairedRead.getAverageFragmentLength();
+										int p1=m_readsPositions[uniqueReadIdentifier];
+										int p2=m_ed->m_EXTENSION_currentPosition;
+										int d=p2-p1+m_ed->m_EXTENSION_receivedLength;
+										m_libraryDistances[library].push_back(d);
+										#ifdef DEBUG_AUTO
+										cout<<"Distance is "<<d<<" (library="<<library<<")"<<endl;
+										#endif
+									}else{
+										#ifdef DEBUG_AUTO
+										cout<<"Pair was not found."<<endl;
+										#endif
+									}
+								}
+							
+								m_ed->m_EXTENSION_edgeIterator++;
+								m_ed->m_EXTENSION_hasPairedReadRequested=false;
+							}
+						}
+					}else{
+						m_ed->m_EXTENSION_edgeIterator++;
+						m_ed->m_EXTENSION_hasPairedReadRequested=false;
+					}
+				}
+			}else{
+				#ifdef DEBUG_AUTO
+				cout<<"Adding reads in positions "<<m_ed->m_EXTENSION_currentPosition<<endl;
+				#endif
+				for(int i=0;i<(int)m_ed->m_EXTENSION_receivedReads.size();i++){
+					int uniqueId=m_ed->m_EXTENSION_receivedReads[i].getUniqueId();
+					m_readsPositions[uniqueId]=m_ed->m_EXTENSION_currentPosition;
+				}
+
+				m_ed->m_EXTENSION_currentPosition++;
+				m_ed->m_EXTENSION_reads_requested=false;
+			}
+		}
+	}
+}
 
 void Machine::processData(){
 	if(m_aborted){
@@ -1627,6 +1773,24 @@ void Machine::processData(){
 		}
 	}else if(m_numberOfRanksDoneSeeding==getSize()){
 		m_numberOfRanksDoneSeeding=-1;
+		for(int i=0;i<getSize();i++){
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_AUTOMATIC_DISTANCE_DETECTION,getRank());
+			m_outbox.push_back(aMessage);
+		}
+		m_numberOfRanksDoneDetectingDistances=0;
+	}else if(m_numberOfRanksDoneDetectingDistances==getSize()){
+		m_numberOfRanksDoneDetectingDistances=-1;
+		m_numberOfRanksDoneSendingDistances=0;
+		for(int i=0;i<getSize();i++){
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_ASK_LIBRARY_DISTANCES,getRank());
+			m_outbox.push_back(aMessage);
+		}
+	}else if(m_numberOfRanksDoneSendingDistances==getSize()){
+
+		m_parameters.computeAverageDistances();
+
+
+		m_numberOfRanksDoneSendingDistances=-1;
 		#ifndef SHOW_PROGRESS
 		cout<<"\r"<<"Extending seeds"<<endl;
 		#endif
@@ -1689,6 +1853,10 @@ void Machine::processData(){
 		}
 	}else if(m_mode==MODE_FUSION){
 		makeFusions();
+	}else if(m_mode==MODE_AUTOMATIC_DISTANCE_DETECTION){
+		detectDistances();
+	}else if(m_mode==MODE_SEND_LIBRARY_DISTANCES){
+		sendLibraryDistances();
 	}
 
 	if(m_ed->m_EXTENSION_numberOfRanksDone==getSize()){
@@ -2087,10 +2255,10 @@ void Machine::processData(){
 						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,readRank,TAG_ASK_READ_LENGTH,getRank());
 						m_outbox.push_back(aMessage);
 					}else if(m_ed->m_EXTENSION_readLength_received){
+						int readLength=m_ed->m_EXTENSION_receivedLength;
 						int globalIdentifier=idOnRank*getSize()+readRank;
 						FILE*fp=m_bubbleData->m_amos;
 						int start=0;
-						int readLength=m_ed->m_EXTENSION_receivedLength;
 						int theEnd=readLength-1;
 						int offset=m_mode_send_vertices_sequence_id_position;
 						if(strand=='R'){
