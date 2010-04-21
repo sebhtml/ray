@@ -1145,13 +1145,14 @@ void Machine::detectDistances(){
 		m_ed->m_EXTENSION_currentPosition=0;
 		m_SEEDING_i++;
 		m_readsPositions.clear();
+		m_readsStrands.clear();
 		#ifdef DEBUG_AUTO
-		cout<<"Next"<<endl;
+		cout<<"1 Next"<<endl;
 		#endif
 	}else{
 		if(!m_ed->m_EXTENSION_reads_requested){
 			#ifdef DEBUG_AUTO
-			cout<<"Requesting reads."<<endl;
+			cout<<"2 Requesting reads."<<endl;
 			#endif
 			m_ed->m_EXTENSION_reads_requested=true;
 			m_ed->m_EXTENSION_reads_received=false;
@@ -1166,7 +1167,7 @@ void Machine::detectDistances(){
 				ReadAnnotation annotation=m_ed->m_EXTENSION_receivedReads[m_ed->m_EXTENSION_edgeIterator];
 				if(!m_ed->m_EXTENSION_hasPairedReadRequested){
 					#ifdef DEBUG_AUTO
-					cout<<"Asking if pair exists"<<endl;
+					cout<<"3 Asking if pair exists "<<m_ed->m_EXTENSION_edgeIterator<<"/"<<m_ed->m_EXTENSION_receivedReads.size()<<endl;
 					#endif
 					VERTEX_TYPE*message=(VERTEX_TYPE*)(m_outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
 					message[0]=annotation.getReadIndex();
@@ -1174,30 +1175,32 @@ void Machine::detectDistances(){
 					(m_outbox).push_back(aMessage);
 					m_ed->m_EXTENSION_hasPairedReadRequested=true;
 					m_ed->m_EXTENSION_hasPairedReadReceived=false;
-					m_ed->m_EXTENSION_pairedSequenceRequested=false;
 					m_ed->m_EXTENSION_readLength_requested=false;
 				}else if(m_ed->m_EXTENSION_hasPairedReadReceived){
-
 					if(m_ed->m_EXTENSION_hasPairedReadAnswer){
 						if(!m_ed->m_EXTENSION_readLength_requested){
+							cout<<"4 requesting length."<<endl;
 							m_ed->m_EXTENSION_readLength_requested=true;
 							m_ed->m_EXTENSION_readLength_received=false;
 							VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
+							m_ed->m_EXTENSION_pairedSequenceRequested=false;
 							message[0]=annotation.getReadIndex();
 							Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_ASK_READ_LENGTH,getRank());
 							m_outbox.push_back(aMessage);
 						}else if(m_ed->m_EXTENSION_readLength_received){
 							if(!m_ed->m_EXTENSION_pairedSequenceRequested){
+								cout<<"5 requesting pair"<<endl;
 								#ifdef DEBUG_AUTO
 								cout<<"Asking for pair."<<endl;
 								#endif
+								m_ed->m_EXTENSION_pairedSequenceReceived=false;
 								m_ed->m_EXTENSION_pairedSequenceRequested=true;
 								VERTEX_TYPE*message=(VERTEX_TYPE*)(m_outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
 								message[0]=annotation.getReadIndex();
 								Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_GET_PAIRED_READ,getRank());
 								(m_outbox).push_back(aMessage);
-								m_ed->m_EXTENSION_pairedSequenceReceived=false;
 							}else if(m_ed->m_EXTENSION_pairedSequenceReceived){
+								cout<<"6 received pair."<<endl;
 								int expectedDeviation=m_ed->m_EXTENSION_pairedRead.getStandardDeviation();
 								#ifdef DEBUG_AUTO
 								cout<<"Received pair code="<<expectedDeviation<<endl;
@@ -1212,6 +1215,14 @@ void Machine::detectDistances(){
 										int p2=m_ed->m_EXTENSION_currentPosition;
 										int d=p2-p1+m_ed->m_EXTENSION_receivedLength;
 										m_libraryDistances[library].push_back(d);
+										if((d!=200 and d!=600)){
+											cout<<d<<" (LIBRARY"<<library<<") "<<m_ed->m_EXTENSION_edgeIterator<<endl;
+											char strand=m_readsStrands[uniqueReadIdentifier];
+											cout<<"left "<<uniqueReadIdentifier<<" "<<"("<<strand<<")"<<endl;
+											cout<<"right "<<annotation.getUniqueId()<<" ("<<annotation.getStrand()<<")"<<endl;
+											cout<<"p1 "<<p1<<endl<<"p2 "<<p2<<endl;
+											cout<<"length "<<m_ed->m_EXTENSION_receivedLength<<endl;
+										}
 										#ifdef DEBUG_AUTO
 										cout<<"Distance is "<<d<<" (library="<<library<<")"<<endl;
 										#endif
@@ -1237,7 +1248,11 @@ void Machine::detectDistances(){
 				#endif
 				for(int i=0;i<(int)m_ed->m_EXTENSION_receivedReads.size();i++){
 					int uniqueId=m_ed->m_EXTENSION_receivedReads[i].getUniqueId();
+					#ifdef DEBUG
+					assert(m_readsPositions.count(uniqueId)==0);
+					#endif
 					m_readsPositions[uniqueId]=m_ed->m_EXTENSION_currentPosition;
+					m_readsStrands[uniqueId]=m_ed->m_EXTENSION_receivedReads[i].getStrand();
 				}
 
 				m_ed->m_EXTENSION_currentPosition++;

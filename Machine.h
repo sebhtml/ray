@@ -189,6 +189,8 @@ class Machine{
 
 
 	int m_numberOfRanksDoneDetectingDistances;
+	map<int,int> m_readsPositions;
+	map<int,char> m_readsStrands;
 	int m_numberOfRanksDoneSendingDistances;
 	map<int,vector<int> > m_libraryDistances;
 	int m_libraryIterator;
@@ -305,7 +307,6 @@ class Machine{
 	// BUBBLE
 	BubbleData*m_bubbleData;
 
-	map<int,int> m_readsPositions;
 
 	DepthFirstSearchData*m_dfsData;
 

@@ -181,10 +181,11 @@ void Parameters::parseCommands(){
 				#ifdef DEBUG_PARAMETERS
 				cout<<"PairedMode: AutomaticDistanceDetection"<<endl;
 				#endif
-				meanFragmentLength=m_observedDistances.size();
+				int library=m_observedDistances.size();
+				meanFragmentLength=library;
 				standardDeviation=_AUTOMATIC_DETECTION;
 				vector<int> t;
-				m_automaticRightFiles[rightFile]=m_observedDistances.size();
+				m_automaticRightFiles[rightFile]=library;
 				m_observedDistances.push_back(t);
 			}else{
 				#ifdef DEBUG
@@ -322,7 +323,8 @@ void Parameters::computeAverageDistances(){
 		int library=i;
 		int n=m_observedDistances[i].size();
 		for(int j=0;j<n;j++){
-			sum+=m_observedDistances[i][j];
+			int d=m_observedDistances[i][j];
+			sum+=d;
 		}
 		int average;
 		int standardDeviation;
@@ -339,6 +341,7 @@ void Parameters::computeAverageDistances(){
 			average=0;
 			standardDeviation=0;
 		}
+
 		m_observedAverageDistances.push_back(average);
 		m_observedStandardDeviations.push_back(standardDeviation);
 		#define SHOW_LIBRARY_COMPUTATIONS
@@ -363,7 +366,7 @@ void Parameters::setNumberOfSequences(int n){
 
 int Parameters::getNumberOfSequences(int file){
 	#ifdef DEBUG
-	assert(file<m_numberOfSequencesInFile.size());
+	assert(file<(int)m_numberOfSequencesInFile.size());
 	#endif
 	return m_numberOfSequencesInFile[file];
 }
