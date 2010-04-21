@@ -310,6 +310,10 @@ void MessageProcessor::processMessage(Message*message,
 			t->constructor(incoming[i+1],incoming[i+2],incoming[i+3],incoming[i+4]);
 			(*m_myReads)[incoming[i+0]]->setPairedRead(t);
 		}
+	}else if(tag==TAG_UPDATE_LIBRARY_INFORMATION){
+		for(int i=0;i<count;i+=3){
+			(*m_myReads)[incoming[i+0]]->getPairedRead()->updateLibrary(incoming[i+1],incoming[i+2]);
+		}
 	}else if(tag==TAG_COMMUNICATION_STABILITY_MESSAGE){
 	}else if(tag==TAG_GET_PATH_VERTEX){
 		int id=incoming[0];

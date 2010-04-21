@@ -76,7 +76,9 @@ void Parameters::parseCommands(){
 	for(int i=0;i<(int)m_commands.size();i++){
 		cout<<i<<" '"<<m_commands[i]<<"'"<<endl;
 	}
+
 	#endif
+
 	commands.insert("LoadSingleEndReads");
 	commands.insert("-s");
 	commands.insert("--LoadSingleEndReads");
@@ -111,6 +113,9 @@ void Parameters::parseCommands(){
 			if(token.find(".csfasta")!=string::npos){
 				m_colorSpaceMode=true;
 			}
+			cout<<endl;
+			cout<<"LoadSingleEndReads"<<endl;
+			cout<<" Sequences: "<<token<<endl;
 		}else if(token=="LoadPairedEndReads" or token=="-p" or token=="--LoadPairedEndReads" or token=="-LoadPairedEndReads"){
 			#ifdef DEBUG_PARAMETERS
 			cout<<"OpCode="<<token<<endl;
@@ -145,14 +150,16 @@ void Parameters::parseCommands(){
 			}
 			string left=token;
 			// add left file
-			m_leftFiles.insert(m_singleEndReadsFile.size());
+			int leftFile=m_singleEndReadsFile.size();
+			m_leftFiles.insert(leftFile);
 			m_singleEndReadsFile.push_back(left);
 			i++;
 			token=m_commands[i];
 			
 			// add right file
 			string right=token;
-			m_rightFiles.insert(m_singleEndReadsFile.size());
+			int rightFile=m_singleEndReadsFile.size();
+			m_rightFiles.insert(rightFile);
 			m_singleEndReadsFile.push_back(right);
 
 			int meanFragmentLength=0;
@@ -177,6 +184,7 @@ void Parameters::parseCommands(){
 				meanFragmentLength=m_observedDistances.size();
 				standardDeviation=_AUTOMATIC_DETECTION;
 				vector<int> t;
+				m_automaticRightFiles[rightFile]=m_observedDistances.size();
 				m_observedDistances.push_back(t);
 			}else{
 				#ifdef DEBUG
@@ -185,15 +193,28 @@ void Parameters::parseCommands(){
 			}
 			m_averageFragmentLengths[m_singleEndReadsFile.size()-1]=meanFragmentLength;
 			m_standardDeviations[m_singleEndReadsFile.size()-1]=standardDeviation;
+			cout<<endl;
+			cout<<"LoadPairedEndReads"<<endl;
+			cout<<" Left sequences: "<<left<<endl;
+			cout<<" Right sequences: "<<right<<endl;
+			if(items==4){
+				cout<<" Average length: "<<meanFragmentLength<<endl;
+				cout<<" Standard deviation: "<<standardDeviation<<endl;
+			}else if(items==2){
+				cout<<" Average length: auto"<<endl;
+				cout<<" Standard deviation: auto"<<endl;
+			}
 			#ifdef DEBUG_PARAMETERS
 			cout<<"Library: "<<meanFragmentLength<<" : "<<standardDeviation<<endl;
 			#endif
 		}else if(token=="OutputAmosFile" or token=="--OutputAmosFile" or token=="-a" or token=="-OutputAmosFile"){
 			m_amos=true;
+			cout<<endl;
+			cout<<"OutputAmosFile"<<endl;
 		}
 		i++;
 	}
-
+	cout<<endl;
 }
 
 void Parameters::load(int argc,char**argv){
@@ -275,7 +296,7 @@ string Parameters::getAmosFile(){
 }
 
 string Parameters::getEngineName(){
-	return "Parallel_Ray_Engine";
+	return "Ray";
 }
 
 string Parameters::getVersion(){
@@ -320,10 +341,12 @@ void Parameters::computeAverageDistances(){
 		}
 		m_observedAverageDistances.push_back(average);
 		m_observedStandardDeviations.push_back(standardDeviation);
+		#define SHOW_LIBRARY_COMPUTATIONS
 		#ifdef SHOW_LIBRARY_COMPUTATIONS
-		cout<<"Library"<<library<<": "<<average<<","<<standardDeviation<<endl;
+		cout<<"\rLibrary"<<library<<": "<<average<<","<<standardDeviation<<endl;
 		#endif
 	}	
+	m_observedDistances.clear();
 }
 
 int Parameters::getObservedAverageDistance(int library){
@@ -334,3 +357,25 @@ int Parameters::getObservedStandardDeviation(int library){
 	return m_observedStandardDeviations[library];
 }
 
+void Parameters::setNumberOfSequences(int n){
+	m_numberOfSequencesInFile.push_back(n);
+}
+
+int Parameters::getNumberOfSequences(int file){
+	#ifdef DEBUG
+	assert(file<m_numberOfSequencesInFile.size());
+	#endif
+	return m_numberOfSequencesInFile[file];
+}
+
+int Parameters::getNumberOfFiles(){
+	return m_singleEndReadsFile.size();
+}
+
+bool Parameters::isAutomatic(int file){
+	return m_automaticRightFiles.count(file)>0;
+}
+
+int Parameters::getLibrary(int file){
+	return m_automaticRightFiles[file];
+}

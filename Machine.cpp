@@ -58,7 +58,7 @@ void Machine::showUsage(){
     	cout<<" LoadSingleEndReads <sequencesFile> "<<endl;
     	cout<<"  aliases: -s, LoadSingleEndReads, -LoadSingleEndReads, --LoadSingleEndReads"<<endl;
 	cout<<endl;
-	cout<<" LoadPairedEndReads <leftSequencesFile> <rightSequencesFile> <fragmentLength> <standardDeviation> "<<endl;
+	cout<<" LoadPairedEndReads <leftSequencesFile> <rightSequencesFile> [ <fragmentLength> <standardDeviation> ]"<<endl;
 	cout<<"  aliases: -p, LoadPairedEndReads, -LoadPairedEndReads, --LoadPairedEndReads"<<endl;
 	cout<<endl;
 	cout<<" OutputAmosFile "<<endl;
@@ -283,11 +283,14 @@ void Machine::start(){
 		#endif
 		#else
 
-		cout<<"Ray Copyright (C) 2010  Sébastien Boisvert, Jacques Corbeil, François Laviolette"<<endl;
- 		cout<<"http://denovoassembler.sf.net/"<<endl;
+		cout<<"**************************************************"<<endl;
     		cout<<"This program comes with ABSOLUTELY NO WARRANTY."<<endl;
     		cout<<"This is free software, and you are welcome to redistribute it"<<endl;
     		cout<<"under certain conditions; see \"gpl-3.0.txt\" for details."<<endl;
+		cout<<"**************************************************"<<endl;
+		cout<<endl;
+		cout<<"Ray Copyright (C) 2010  Sébastien Boisvert, Jacques Corbeil, François Laviolette"<<endl;
+ 		cout<<"http://denovoassembler.sf.net/"<<endl;
 
 		#endif
 	}
@@ -341,7 +344,6 @@ void Machine::run(){
 	#endif
 
 	if(isMaster()){
-		cout<<"Starting "<<m_parameters.getEngineName()<<" "<<m_parameters.getVersion()<<" on "<<getSize()<<" MPI processes"<<endl;
 	}
 	while(isAlive()){
 		receiveMessages(); 
@@ -1288,6 +1290,18 @@ void Machine::processData(){
 				return;
 			}
 		}
+
+		cout<<endl;
+		cout<<"AssemblyEngine: "<<m_parameters.getEngineName()<<" "<<m_parameters.getVersion()<<endl;
+		cout<<"NumberOfRanks: "<<getSize()<<endl;
+		#ifdef OMPI_MPI_H
+		cout<<"MPILibrary: Open-MPI "<<OMPI_MAJOR_VERSION<<"."<<OMPI_MINOR_VERSION<<"."<<OMPI_RELEASE_VERSION<<endl;
+		#endif
+		#ifdef __linux__
+		cout<<"OperatingSystem: Linux"<<endl;
+		#endif
+
+
 		m_parameters.load(m_argc,m_argv);
 		if(m_parameters.getError()){
 			killRanks();
@@ -1786,17 +1800,15 @@ void Machine::processData(){
 			m_outbox.push_back(aMessage);
 		}
 	}else if(m_numberOfRanksDoneSendingDistances==getSize()){
-
-		m_parameters.computeAverageDistances();
-
-
 		m_numberOfRanksDoneSendingDistances=-1;
-		#ifndef SHOW_PROGRESS
-		cout<<"\r"<<"Extending seeds"<<endl;
-		#endif
-		m_mode=MODE_EXTENSION_ASK;
-		m_ed->m_EXTENSION_rank=-1;
-		m_ed->m_EXTENSION_currentRankIsSet=false;
+		m_parameters.computeAverageDistances();
+		m_mode=MODE_DO_NOTHING;
+		m_master_mode=MODE_UPDATE_DISTANCES;
+		m_fileId=0;
+		m_sequence_idInFile=0;
+		m_sequence_id=0;
+
+
 	}else if(m_mode_AttachSequences){
 		m_si.attachReads(&m_outbox,&m_distribution_file_id,&m_distribution_sequence_id,
 			&m_wordSize,&m_distribution_reads,getSize(),&m_distributionAllocator,
@@ -1857,6 +1869,8 @@ void Machine::processData(){
 		detectDistances();
 	}else if(m_mode==MODE_SEND_LIBRARY_DISTANCES){
 		sendLibraryDistances();
+	}else if(m_master_mode==MODE_UPDATE_DISTANCES){
+		updateDistances();
 	}
 
 	if(m_ed->m_EXTENSION_numberOfRanksDone==getSize()){
@@ -2148,7 +2162,8 @@ void Machine::processData(){
 			}
 
 			m_master_mode=MODE_DO_NOTHING;
-
+	
+			int totalLength=0;
 			
 			#ifdef DEBUG
 			assert(m_allPaths.size()==m_identifiers.size());
@@ -2165,6 +2180,7 @@ void Machine::processData(){
 				assert(theRank<getSize());
 				#endif
 				f<<">contig-"<<id<<" "<<contig.length()<<" nucleotides"<<endl<<addLineBreaks(contig);
+				totalLength+=contig.length();
 			}
 			f.close();
 			#ifdef SHOW_PROGRESS
@@ -2172,6 +2188,7 @@ void Machine::processData(){
 			#else
 			cout<<"\r"<<"Writing "<<m_parameters.getOutputFile()<<endl;
 			#endif
+			cout<<m_allPaths.size()<<" contigs/"<<totalLength<<" nucleotides"<<endl;
 			if(m_parameters.useAmos()){
 				m_master_mode=MODE_AMOS;
 				m_SEEDING_i=0;
@@ -2468,4 +2485,49 @@ Machine::~Machine(){
 
 int Machine::vertexRank(VERTEX_TYPE a){
 	return hash_VERTEX_TYPE(a)%(getSize());
+}
+
+void Machine::updateDistances(){
+	if(m_fileId==m_parameters.getNumberOfFiles()){
+		#ifndef SHOW_PROGRESS
+		cout<<"\r"<<"Extending seeds"<<endl;
+		#endif
+		m_mode=MODE_EXTENSION_ASK;
+		m_ed->m_EXTENSION_rank=-1;
+		m_ed->m_EXTENSION_currentRankIsSet=false;
+		m_master_mode=MODE_DO_NOTHING;
+	}else{
+		if(m_parameters.isRightFile(m_fileId)){
+			if(m_parameters.isAutomatic(m_fileId)){
+				int library=m_parameters.getLibrary(m_fileId);
+				int averageLength=m_parameters.getObservedAverageDistance(library);
+				int standardDeviation=m_parameters.getObservedStandardDeviation(library);
+				if(m_sequence_idInFile<m_parameters.getNumberOfSequences(m_fileId)){
+					int sequenceRank=m_sequence_id%getSize();
+					int sequenceIndex=m_sequence_id/getSize();
+					u64*message=(u64*)m_outboxAllocator.allocate(3*sizeof(u64));
+					message[0]=sequenceIndex;
+					message[1]=averageLength;
+					message[2]=standardDeviation;
+					Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,sequenceRank,
+						TAG_UPDATE_LIBRARY_INFORMATION,getRank());
+					m_outbox.push_back(aMessage);
+
+					m_sequence_id++;
+					m_sequence_idInFile++;
+				}else{
+					m_sequence_idInFile=0;
+					m_fileId++;
+				}
+			}else{
+				m_sequence_id+=m_parameters.getNumberOfSequences(m_fileId);
+				m_fileId++;
+				m_sequence_idInFile=0;
+			}
+		}else{
+			m_sequence_id+=m_parameters.getNumberOfSequences(m_fileId);
+			m_fileId++;
+			m_sequence_idInFile=0;
+		}
+	}
 }

@@ -45,6 +45,8 @@ class Parameters{
 	bool m_initiated;
 	int m_numberOfSequences;
 	vector<string> m_singleEndReadsFile;
+	vector<int> m_numberOfSequencesInFile;
+	map<int,int> m_automaticRightFiles;// mapping from rightFileId to libraryId
 	string m_directory;
 	string m_outputFile;
 	int m_wordSize;
@@ -90,6 +92,11 @@ public:
 	void computeAverageDistances();
 	int getObservedAverageDistance(int library);
 	int getObservedStandardDeviation(int library);
+	int getNumberOfSequences(int n);
+	void setNumberOfSequences(int n);
+	int getNumberOfFiles();
+	bool isAutomatic(int file);
+	int getLibrary(int file);
 };
 
 #endif

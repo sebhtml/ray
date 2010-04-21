@@ -51,4 +51,7 @@ int PairedRead::getStandardDeviation(){
 	return m_deviation;
 }
 
-
+void PairedRead::updateLibrary(int d,int sd){
+	m_fragmentSize=d;
+	m_deviation=sd;
+}

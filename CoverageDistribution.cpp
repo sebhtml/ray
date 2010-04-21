@@ -74,10 +74,14 @@ CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>*distributionOfCo
 	if((*distributionOfCoverage)[m_peakCoverage]==0){
 		m_peakCoverage=0;
 	}
-	#ifdef DEBUG
+	#ifdef SHOW_PROGRESS
 	cout<<"PeakCoverage="<<m_peakCoverage<<endl;
 	cout<<"MinimumCoverage="<<m_minimumCoverage<<endl;
 	#endif
+
+	cout<<"\rMinimumCoverage: "<<m_minimumCoverage<<endl;
+	cout<<"\rPeakCoverage: "<<m_peakCoverage<<endl;
+
 	#ifdef WRITE_COVERAGE_DISTRIBUTION
 	cout<<"\rWriting "<<*file<<""<<endl;
 	f.close();

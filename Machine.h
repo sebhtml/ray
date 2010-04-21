@@ -252,6 +252,9 @@ class Machine{
 	int m_mode_send_vertices_sequence_id;
 	int m_mode_send_vertices_sequence_id_position;
 	int m_numberOfMachinesDoneSendingVertices;
+	int m_sequence_id;
+	int m_fileId;
+	int m_sequence_idInFile;
 
 	vector<vector<VERTEX_TYPE> > m_allPaths;
 	bool m_aborted;
@@ -339,6 +342,8 @@ class Machine{
 	
 	void detectDistances();
 	void sendLibraryDistances();
+
+	void updateDistances();
 public:
 	/*
  * this is the only public bit
