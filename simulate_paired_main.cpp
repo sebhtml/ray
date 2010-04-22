@@ -74,7 +74,7 @@ int main(int argc,char**argv){
 			if(j%1000==0){
 				cout<<".";
 			}
-			int start=ran_uniform()*(sequence.length()-fragmentSize+1);
+			int start=(int)(ran_uniform()*(sequence.length()-fragmentSize+1));
 			//int start=j;
 			if(start<0)
 				start=0;

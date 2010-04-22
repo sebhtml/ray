@@ -307,11 +307,17 @@ void MessageProcessor::processMessage(Message*message,
 	}else if(tag==TAG_INDEX_PAIRED_SEQUENCE){
 		for(int i=0;i<count;i+=5){
 			PairedRead*t=(PairedRead*)(*m_persistentAllocator).allocate(sizeof(PairedRead));
-			t->constructor(incoming[i+1],incoming[i+2],incoming[i+3],incoming[i+4]);
+			int length=incoming[i+3];
+			int deviation=incoming[i+4];
+
+			t->constructor(incoming[i+1],incoming[i+2],length,deviation);
 			(*m_myReads)[incoming[i+0]]->setPairedRead(t);
 		}
 	}else if(tag==TAG_UPDATE_LIBRARY_INFORMATION){
 		for(int i=0;i<count;i+=3){
+			#ifdef DEBUG
+			assert((*m_myReads)[incoming[i+0]]->hasPairedRead());
+			#endif
 			(*m_myReads)[incoming[i+0]]->getPairedRead()->updateLibrary(incoming[i+1],incoming[i+2]);
 		}
 	}else if(tag==TAG_COMMUNICATION_STABILITY_MESSAGE){
@@ -429,9 +435,9 @@ void MessageProcessor::processMessage(Message*message,
 		(*m_EXTENSION_currentPosition)=0;
 	}else if(tag==TAG_GET_PAIRED_READ){
 		PairedRead*t=(*m_myReads)[incoming[0]]->getPairedRead();
-		if(t==NULL){
-			cout<<"Fatal, no paired read."<<endl;
-		}
+		#ifdef DEBUG
+		assert(t!=NULL);
+		#endif
 		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(4*sizeof(VERTEX_TYPE));
 		message[0]=t->getRank();
 		message[1]=t->getId();

@@ -66,7 +66,7 @@ int main(int argc,char**argv){
 			if(j%100000==0){
 				cout<<".";
 			}
-			int start=ran_uniform()*(sequence.length()-fragmentSize+1);
+			int start=(int)(ran_uniform()*(sequence.length()-fragmentSize+1));
 
 			string fragment=sequence.substr(start,fragmentSize);
 

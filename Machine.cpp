@@ -1144,10 +1144,12 @@ void Machine::detectDistances(){
 	}else if(m_ed->m_EXTENSION_currentPosition==(int)m_SEEDING_seeds[m_SEEDING_i].size()){
 		m_ed->m_EXTENSION_currentPosition=0;
 		m_SEEDING_i++;
+		cout<<"Starting seed "<<m_SEEDING_i<<endl;
 		m_readsPositions.clear();
 		m_readsStrands.clear();
-		#ifdef DEBUG_AUTO
-		cout<<"1 Next"<<endl;
+		#ifdef DEBUG
+		assert(m_readsPositions.size()==0);
+		assert(m_readsStrands.size()==0);
 		#endif
 	}else{
 		if(!m_ed->m_EXTENSION_reads_requested){
@@ -1179,7 +1181,6 @@ void Machine::detectDistances(){
 				}else if(m_ed->m_EXTENSION_hasPairedReadReceived){
 					if(m_ed->m_EXTENSION_hasPairedReadAnswer){
 						if(!m_ed->m_EXTENSION_readLength_requested){
-							cout<<"4 requesting length."<<endl;
 							m_ed->m_EXTENSION_readLength_requested=true;
 							m_ed->m_EXTENSION_readLength_received=false;
 							VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
@@ -1189,7 +1190,6 @@ void Machine::detectDistances(){
 							m_outbox.push_back(aMessage);
 						}else if(m_ed->m_EXTENSION_readLength_received){
 							if(!m_ed->m_EXTENSION_pairedSequenceRequested){
-								cout<<"5 requesting pair"<<endl;
 								#ifdef DEBUG_AUTO
 								cout<<"Asking for pair."<<endl;
 								#endif
@@ -1200,7 +1200,6 @@ void Machine::detectDistances(){
 								Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_GET_PAIRED_READ,getRank());
 								(m_outbox).push_back(aMessage);
 							}else if(m_ed->m_EXTENSION_pairedSequenceReceived){
-								cout<<"6 received pair."<<endl;
 								int expectedDeviation=m_ed->m_EXTENSION_pairedRead.getStandardDeviation();
 								#ifdef DEBUG_AUTO
 								cout<<"Received pair code="<<expectedDeviation<<endl;
@@ -1215,7 +1214,10 @@ void Machine::detectDistances(){
 										int p2=m_ed->m_EXTENSION_currentPosition;
 										int d=p2-p1+m_ed->m_EXTENSION_receivedLength;
 										m_libraryDistances[library].push_back(d);
-										if((d!=200 and d!=600)){
+										if((d!=200 and d!=400)){
+											cout<<endl;
+											cout<<"Seed="<<m_SEEDING_i<<endl;
+											cout<<"Position="<<p2<<endl;
 											cout<<d<<" (LIBRARY"<<library<<") "<<m_ed->m_EXTENSION_edgeIterator<<endl;
 											char strand=m_readsStrands[uniqueReadIdentifier];
 											cout<<"left "<<uniqueReadIdentifier<<" "<<"("<<strand<<")"<<endl;

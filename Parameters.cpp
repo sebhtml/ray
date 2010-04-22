@@ -336,7 +336,7 @@ void Parameters::computeAverageDistances(){
 				sum+=diff*diff;
 			}
 			sum/=n;
-			standardDeviation=sqrt(sum);
+			standardDeviation=(int)sqrt(sum);
 		}else{
 			average=0;
 			standardDeviation=0;
