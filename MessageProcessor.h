@@ -42,7 +42,7 @@ public:
 			int*m_numberOfRanksDoneSendingDistances,
 			Parameters*parameters,
 			int*m_libraryIterator,
-			int*m_libraryIndex,
+			bool*m_libraryIndexInitiated,
 			MyForest*m_subgraph,
 			MyAllocator*m_outboxAllocator,
 				int rank,

@@ -184,7 +184,7 @@ void Parameters::parseCommands(){
 				int library=m_observedDistances.size();
 				meanFragmentLength=library;
 				standardDeviation=_AUTOMATIC_DETECTION;
-				vector<int> t;
+				map<int,int> t;
 				m_automaticRightFiles[rightFile]=library;
 				m_observedDistances.push_back(t);
 			}else{
@@ -314,27 +314,33 @@ bool Parameters::getError(){
 }
 
 
-void Parameters::addDistance(int library,int distance){
-	m_observedDistances[library].push_back(distance);
+void Parameters::addDistance(int library,int distance,int count){
+	m_observedDistances[library][distance]=count;
 }
 
 void Parameters::computeAverageDistances(){
 	for(int i=0;i<(int)m_observedDistances.size();i++){
 		u64 sum=0;
 		int library=i;
-		int n=m_observedDistances[i].size();
-		for(int j=0;j<n;j++){
-			int d=m_observedDistances[i][j];
-			sum+=d;
+		int n=0;
+		for(map<int,int>::iterator j=m_observedDistances[library].begin();
+			j!=m_observedDistances[library].end();j++){
+			int d=j->first;
+			int count=j->second;
+			sum+=d*count;
+			n+=count;
 		}
 		int average;
 		int standardDeviation;
 		if(n>0){
 			average=sum/n;
 			sum=0;
-			for(int j=0;j<n;j++){
-				int diff=m_observedDistances[i][j]-average;
-				sum+=diff*diff;
+			for(map<int,int>::iterator j=m_observedDistances[library].begin();
+				j!=m_observedDistances[library].end();j++){
+				int d=j->first;
+				int count=j->second;
+				int diff=d-average;
+				sum+=diff*diff*count;
 			}
 			sum/=n;
 			standardDeviation=(int)sqrt(sum);
@@ -347,7 +353,7 @@ void Parameters::computeAverageDistances(){
 		m_observedStandardDeviations.push_back(standardDeviation);
 		#define SHOW_LIBRARY_COMPUTATIONS
 		#ifdef SHOW_LIBRARY_COMPUTATIONS
-		cout<<"\rLibrary"<<library<<": "<<average<<","<<standardDeviation<<endl;
+		cout<<"\rLibrary"<<library<<": "<<average<<","<<standardDeviation<<" (n="<<n<<")"<<endl;
 		#endif
 	}	
 	m_observedDistances.clear();

@@ -83,16 +83,22 @@ void Machine::sendLibraryDistances(){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_ASK_LIBRARY_DISTANCES_FINISHED,getRank());
 		m_outbox.push_back(aMessage);
 		m_mode=MODE_DO_NOTHING;
-	}else if(m_libraryIndex==(int)m_libraryDistances[m_libraryIterator].size()){
+	}else if(m_libraryIndex==m_libraryDistances[m_libraryIterator].end()){
 		m_libraryIterator++;
-		m_libraryIndex=0;
+		m_libraryIndexInitiated=false;
 	}else{
+		if(!m_libraryIndexInitiated){
+			m_libraryIndexInitiated=true;
+			m_libraryIndex=m_libraryDistances[m_libraryIterator].begin();
+		}
 		int library=m_libraryIterator;
-		int distance=m_libraryDistances[m_libraryIterator][m_libraryIndex];
-		u64*message=(u64*)m_outboxAllocator.allocate(2*sizeof(u64));
+		int distance=m_libraryIndex->first;
+		int count=m_libraryIndex->second;
+		u64*message=(u64*)m_outboxAllocator.allocate(3*sizeof(u64));
 		message[0]=library;
 		message[1]=distance;
-		Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_LIBRARY_DISTANCE,getRank());
+		message[2]=count;
+		Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_LIBRARY_DISTANCE,getRank());
 		m_outbox.push_back(aMessage);
 		m_libraryIndex++;
 	}
@@ -1038,7 +1044,7 @@ void Machine::processMessages(){
 			&m_numberOfRanksDoneSendingDistances,
 			&m_parameters,
 			&m_libraryIterator,
-			&m_libraryIndex,
+			&m_libraryIndexInitiated,
 			&m_subgraph,
 			&m_outboxAllocator,
 			getRank(),
@@ -1127,17 +1133,6 @@ void Machine::processMessages(){
 
 void Machine::detectDistances(){
 	if(m_SEEDING_i==(int)m_SEEDING_seeds.size()){
-		#ifdef SHOW_LIBRARY_DISTANCES
-		for(map<int,vector<int> >::iterator i=m_libraryDistances.begin();i!=m_libraryDistances.end();i++){
-			int library=i->first;
-			cout<<"Library"<<library<<endl;
-			for(vector<int>::iterator j=i->second.begin();j!=i->second.end();j++){
-				int d=*j;
-				cout<<" "<<d;
-			}
-			cout<<endl;
-		}
-		#endif
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE,getRank());
 		m_outbox.push_back(aMessage);
 		m_mode=MODE_DO_NOTHING;
@@ -1201,7 +1196,7 @@ void Machine::detectDistances(){
 										int p1=m_readsPositions[uniqueReadIdentifier];
 										int p2=m_ed->m_EXTENSION_currentPosition;
 										int d=p2-p1+m_ed->m_EXTENSION_receivedLength;
-										m_libraryDistances[library].push_back(d);
+										m_libraryDistances[library][d]++;
 
 										#ifdef DEBUG_AUTO
 										cout<<"Distance is "<<d<<" (library="<<library<<")"<<endl;

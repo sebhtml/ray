@@ -38,7 +38,7 @@ void MessageProcessor::processMessage(Message*message,
 		int*m_numberOfRanksDoneSendingDistances,
 		Parameters*parameters,
 			int*m_libraryIterator,
-			int*m_libraryIndex,
+			bool*m_libraryIndexInitiated,
 			MyForest*m_subgraph,
 			MyAllocator*m_outboxAllocator,
 				int rank,
@@ -180,11 +180,13 @@ void MessageProcessor::processMessage(Message*message,
 	}else if(tag==TAG_ASK_LIBRARY_DISTANCES_FINISHED){
 		(*m_numberOfRanksDoneSendingDistances)++;
 	}else if(tag==TAG_LIBRARY_DISTANCE){
-		parameters->addDistance(incoming[0],incoming[1]);
+		for(int i=0;i<count;i+=3){
+			parameters->addDistance(incoming[i+0],incoming[i+1],incoming[i+2]);
+		}
 	}else if(tag==TAG_ASK_LIBRARY_DISTANCES){
 		(*m_mode)=MODE_SEND_LIBRARY_DISTANCES;
 		(*m_libraryIterator)=0;
-		(*m_libraryIndex)=0;
+		(*m_libraryIndexInitiated)=false;
 	}else if(tag==TAG_END_CALIBRATION){
 		(*m_mode)=MODE_DO_NOTHING;
 		(*m_calibration_MaxSpeed)=(*m_calibration_numberOfMessagesSent)/CALIBRATION_DURATION/size;

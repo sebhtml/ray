@@ -192,10 +192,10 @@ class Machine{
 	map<int,int> m_readsPositions;
 	map<int,char> m_readsStrands;
 	int m_numberOfRanksDoneSendingDistances;
-	map<int,vector<int> > m_libraryDistances;
+	map<int,map<int,int> > m_libraryDistances;
 	int m_libraryIterator;
-	int m_libraryIndex;
-
+	map<int,int>::iterator m_libraryIndex;
+	bool m_libraryIndexInitiated;
 	vector<Message> m_outbox;
 	vector<Message> m_inbox;
 

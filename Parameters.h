@@ -58,7 +58,7 @@ class Parameters{
 	bool m_colorSpaceMode;
 	string m_input;
 	vector<string> m_commands;
-	vector<vector<int> > m_observedDistances;
+	vector<map<int,int> > m_observedDistances;
 	vector<int> m_observedAverageDistances;
 	vector<int> m_observedStandardDeviations;
 	void loadCommandsFromArguments(int argc,char**argv);
@@ -88,7 +88,7 @@ public:
 	string getVersion();
 	vector<string> getCommands();
 	bool getError();
-	void addDistance(int library,int distance);
+	void addDistance(int library,int distance,int count);
 	void computeAverageDistances();
 	int getObservedAverageDistance(int library);
 	int getObservedStandardDeviation(int library);
