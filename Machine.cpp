@@ -1144,7 +1144,6 @@ void Machine::detectDistances(){
 	}else if(m_ed->m_EXTENSION_currentPosition==(int)m_SEEDING_seeds[m_SEEDING_i].size()){
 		m_ed->m_EXTENSION_currentPosition=0;
 		m_SEEDING_i++;
-		cout<<"Starting seed "<<m_SEEDING_i<<endl;
 		m_readsPositions.clear();
 		m_readsStrands.clear();
 		#ifdef DEBUG
@@ -1153,13 +1152,11 @@ void Machine::detectDistances(){
 		#endif
 	}else{
 		if(!m_ed->m_EXTENSION_reads_requested){
-			#ifdef DEBUG_AUTO
-			cout<<"2 Requesting reads."<<endl;
-			#endif
 			m_ed->m_EXTENSION_reads_requested=true;
 			m_ed->m_EXTENSION_reads_received=false;
 			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
-			message[0]=m_SEEDING_seeds[m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
+			VERTEX_TYPE vertex=m_SEEDING_seeds[m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
+			message[0]=vertex;
 			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0]),TAG_REQUEST_READS,getRank());
 			m_outbox.push_back(aMessage);
 			m_ed->m_EXTENSION_edgeIterator=0;// iterate over reads
@@ -1168,9 +1165,6 @@ void Machine::detectDistances(){
 			if(m_ed->m_EXTENSION_edgeIterator<(int)m_ed->m_EXTENSION_receivedReads.size()){
 				ReadAnnotation annotation=m_ed->m_EXTENSION_receivedReads[m_ed->m_EXTENSION_edgeIterator];
 				if(!m_ed->m_EXTENSION_hasPairedReadRequested){
-					#ifdef DEBUG_AUTO
-					cout<<"3 Asking if pair exists "<<m_ed->m_EXTENSION_edgeIterator<<"/"<<m_ed->m_EXTENSION_receivedReads.size()<<endl;
-					#endif
 					VERTEX_TYPE*message=(VERTEX_TYPE*)(m_outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
 					message[0]=annotation.getReadIndex();
 					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_HAS_PAIRED_READ,getRank());
@@ -1190,9 +1184,6 @@ void Machine::detectDistances(){
 							m_outbox.push_back(aMessage);
 						}else if(m_ed->m_EXTENSION_readLength_received){
 							if(!m_ed->m_EXTENSION_pairedSequenceRequested){
-								#ifdef DEBUG_AUTO
-								cout<<"Asking for pair."<<endl;
-								#endif
 								m_ed->m_EXTENSION_pairedSequenceReceived=false;
 								m_ed->m_EXTENSION_pairedSequenceRequested=true;
 								VERTEX_TYPE*message=(VERTEX_TYPE*)(m_outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
@@ -1201,9 +1192,6 @@ void Machine::detectDistances(){
 								(m_outbox).push_back(aMessage);
 							}else if(m_ed->m_EXTENSION_pairedSequenceReceived){
 								int expectedDeviation=m_ed->m_EXTENSION_pairedRead.getStandardDeviation();
-								#ifdef DEBUG_AUTO
-								cout<<"Received pair code="<<expectedDeviation<<endl;
-								#endif
 								if(expectedDeviation==_AUTOMATIC_DETECTION){
 									int rank=m_ed->m_EXTENSION_pairedRead.getRank();
 									int id=m_ed->m_EXTENSION_pairedRead.getId();
@@ -1214,17 +1202,7 @@ void Machine::detectDistances(){
 										int p2=m_ed->m_EXTENSION_currentPosition;
 										int d=p2-p1+m_ed->m_EXTENSION_receivedLength;
 										m_libraryDistances[library].push_back(d);
-										if((d!=200 and d!=400)){
-											cout<<endl;
-											cout<<"Seed="<<m_SEEDING_i<<endl;
-											cout<<"Position="<<p2<<endl;
-											cout<<d<<" (LIBRARY"<<library<<") "<<m_ed->m_EXTENSION_edgeIterator<<endl;
-											char strand=m_readsStrands[uniqueReadIdentifier];
-											cout<<"left "<<uniqueReadIdentifier<<" "<<"("<<strand<<")"<<endl;
-											cout<<"right "<<annotation.getUniqueId()<<" ("<<annotation.getStrand()<<")"<<endl;
-											cout<<"p1 "<<p1<<endl<<"p2 "<<p2<<endl;
-											cout<<"length "<<m_ed->m_EXTENSION_receivedLength<<endl;
-										}
+
 										#ifdef DEBUG_AUTO
 										cout<<"Distance is "<<d<<" (library="<<library<<")"<<endl;
 										#endif

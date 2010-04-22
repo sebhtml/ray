@@ -72,7 +72,6 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		#endif
 		loader.load(allFiles[(*m_distribution_file_id)],&(*m_distribution_reads),&(*m_distributionAllocator),&(*m_distributionAllocator));
 		m_parameters->setNumberOfSequences(m_distribution_reads->size());
-
 		if((*m_distribution_reads).size()==0){
 			return false;
 		}
@@ -93,6 +92,7 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			}
 		}
 
+		(*m_LOADER_isLeftFile)=(*m_LOADER_isRightFile)=false;
 		if((*m_parameters).isLeftFile((*m_distribution_file_id))){
 			(*m_LOADER_isLeftFile)=true;
 		}else if((*m_parameters).isRightFile((*m_distribution_file_id))){

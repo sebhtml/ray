@@ -216,6 +216,7 @@ void Parameters::parseCommands(){
 		i++;
 	}
 	cout<<endl;
+
 }
 
 void Parameters::load(int argc,char**argv){
