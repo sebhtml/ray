@@ -353,7 +353,7 @@ void Parameters::computeAverageDistances(){
 		m_observedStandardDeviations.push_back(standardDeviation);
 		#define SHOW_LIBRARY_COMPUTATIONS
 		#ifdef SHOW_LIBRARY_COMPUTATIONS
-		cout<<"\rLibrary"<<library<<": "<<average<<","<<standardDeviation<<" (n="<<n<<")"<<endl;
+		cout<<"\rLibrary"<<library<<": "<<average<<","<<standardDeviation<<endl;
 		#endif
 	}	
 	m_observedDistances.clear();
