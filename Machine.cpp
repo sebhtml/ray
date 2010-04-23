@@ -1140,10 +1140,8 @@ void Machine::detectDistances(){
 		m_ed->m_EXTENSION_currentPosition=0;
 		m_SEEDING_i++;
 		m_readsPositions.clear();
-		m_readsStrands.clear();
 		#ifdef DEBUG
 		assert(m_readsPositions.size()==0);
-		assert(m_readsStrands.size()==0);
 		#endif
 	}else{
 		if(!m_ed->m_EXTENSION_reads_requested){
@@ -1193,14 +1191,23 @@ void Machine::detectDistances(){
 									int uniqueReadIdentifier=id*MAX_NUMBER_OF_MPI_PROCESSES+rank;
 									if(m_readsPositions.count(uniqueReadIdentifier)>0){
 										int library=m_ed->m_EXTENSION_pairedRead.getAverageFragmentLength();
-										int p1=m_readsPositions[uniqueReadIdentifier];
-										int p2=m_ed->m_EXTENSION_currentPosition;
-										int d=p2-p1+m_ed->m_EXTENSION_receivedLength;
-										m_libraryDistances[library][d]++;
+										char currentStrand=annotation.getStrand();
+										char otherStrand='F';
+										if(currentStrand==otherStrand)
+											otherStrand='R';
+											
+										if(m_readsPositions[uniqueReadIdentifier].count(otherStrand)>0){
+											int p1=m_readsPositions[uniqueReadIdentifier][otherStrand];
+											
+										
+											int p2=m_ed->m_EXTENSION_currentPosition;
+											int d=p2-p1+m_ed->m_EXTENSION_receivedLength;
+											m_libraryDistances[library][d]++;
 
-										#ifdef DEBUG_AUTO
-										cout<<"Distance is "<<d<<" (library="<<library<<")"<<endl;
-										#endif
+											#ifdef DEBUG_AUTO
+											cout<<"Distance is "<<d<<" (library="<<library<<")"<<endl;
+											#endif
+										}
 									}else{
 										#ifdef DEBUG_AUTO
 										cout<<"Pair was not found."<<endl;
@@ -1223,11 +1230,10 @@ void Machine::detectDistances(){
 				#endif
 				for(int i=0;i<(int)m_ed->m_EXTENSION_receivedReads.size();i++){
 					int uniqueId=m_ed->m_EXTENSION_receivedReads[i].getUniqueId();
-					#ifdef DEBUG
-					assert(m_readsPositions.count(uniqueId)==0);
-					#endif
-					m_readsPositions[uniqueId]=m_ed->m_EXTENSION_currentPosition;
-					m_readsStrands[uniqueId]=m_ed->m_EXTENSION_receivedReads[i].getStrand();
+					int position=m_ed->m_EXTENSION_currentPosition;
+					char strand=m_ed->m_EXTENSION_receivedReads[i].getStrand();
+					// read, position, strand
+					m_readsPositions[uniqueId][strand]=position;
 				}
 
 				m_ed->m_EXTENSION_currentPosition++;
