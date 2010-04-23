@@ -150,11 +150,10 @@ void Parameters::parseCommands(){
 			#ifdef DEBUG_PARAMETERS
 			cout<<"OpCode="<<token<<endl;
 			#endif
-			i++;
 			// make sure there is at least 4 elements left.
 			int items=0;
 			int k=0;
-			for(int j=i;j<(int)m_commands.size();j++){
+			for(int j=i+1;j<(int)m_commands.size();j++){
 				string cmd=m_commands[j];
 				if(commands.count(cmd)==0){
 					#ifdef DEBUG_PARAMETERS
@@ -174,6 +173,7 @@ void Parameters::parseCommands(){
 				m_error=true;
 				return;
 			}
+			i++;
 			token=m_commands[i];
 			if(token.find(".csfasta")!=string::npos){
 				m_colorSpaceMode=true;
@@ -241,7 +241,7 @@ void Parameters::parseCommands(){
 		}else if(outputAmosCommands.count(token)>0){
 			int items=0;
 			int k=0;
-			for(int j=i;j<(int)m_commands.size();j++){
+			for(int j=i+1;j<(int)m_commands.size();j++){
 				string cmd=m_commands[j];
 				if(commands.count(cmd)==0){
 					#ifdef DEBUG_PARAMETERS
