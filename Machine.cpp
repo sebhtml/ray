@@ -2180,7 +2180,7 @@ void Machine::processData(){
 			#ifdef SHOW_PROGRESS
 			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<endl;
 			#else
-			cout<<"\r"<<endl<<"Writing "<<m_parameters.getOutputFile()<<endl;
+			cout<<"\r"<<"              "<<endl<<"Writing "<<m_parameters.getOutputFile()<<endl;
 			#endif
 			cout<<m_allPaths.size()<<" contigs/"<<totalLength<<" nucleotides"<<endl;
 			if(m_parameters.useAmos()){
