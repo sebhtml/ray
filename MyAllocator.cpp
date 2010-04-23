@@ -54,6 +54,9 @@ void*MyAllocator::allocate(int s){
 	// if addresses need to be aligned:
 	//s+=s%8;
 	#ifdef DEBUG
+	if(s>m_CHUNK_SIZE){
+		cout<<"Requested "<<s<<" -- only have "<<m_CHUNK_SIZE<<endl;
+	}
 	assert(s<=m_CHUNK_SIZE);
 	#endif
 	if(s>m_CHUNK_SIZE){
