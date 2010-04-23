@@ -41,6 +41,8 @@ using namespace std;
  */
 class Parameters{
 	bool m_error;
+	string m_contigsFile;
+	string m_amosFile;
 	bool m_amos;
 	bool m_initiated;
 	int m_numberOfSequences;

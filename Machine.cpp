@@ -45,15 +45,15 @@
 using namespace std;
 
 void Machine::showUsage(){
+	cout<<endl;
 	cout<<"Supported sequences file format: "<<endl;
 
 	cout<<".fasta, .fastq, .sff"<<endl;
 
 	cout<<endl;
 
-	cout<<"Usage:"<<endl;
+	cout<<"Arguments:"<<endl;
 	cout<<endl;
-	cout<<"Ray understands these commands:"<<endl;
 
     	cout<<" LoadSingleEndReads <sequencesFile> "<<endl;
     	cout<<"  aliases: -s, LoadSingleEndReads, -LoadSingleEndReads, --LoadSingleEndReads"<<endl;
@@ -61,18 +61,16 @@ void Machine::showUsage(){
 	cout<<" LoadPairedEndReads <leftSequencesFile> <rightSequencesFile> [ <fragmentLength> <standardDeviation> ]"<<endl;
 	cout<<"  aliases: -p, LoadPairedEndReads, -LoadPairedEndReads, --LoadPairedEndReads"<<endl;
 	cout<<endl;
-	cout<<" OutputAmosFile "<<endl;
+	cout<<" OutputFile <outputFile> (default: Ray-Contigs.fasta)"<<endl;
+	cout<<"  aliases: -o, OutputFile, -OutputFile, --OutputFile"<<endl;
+	cout<<endl;
+	cout<<" OutputAmosFile [ <amosFile> ] (default: Ray-Contigs.afg)"<<endl;
 	cout<<"  aliases: -a, OutputAmosFile, -OutputAmosFile, --OutputAmosFile"<<endl;
     	cout<<endl;
-	cout<<"Ray receives commands with command-line arguments or with a commands file. "<<endl;
 
-
-	cout<<endl;
 	cout<<"Outputs:"<<endl;
 	cout<<" "<<m_parameters.getContigsFile()<<endl;
 	cout<<" "<<m_parameters.getAmosFile()<<" (with OutputAmosFile)"<<endl;
-	cout<<" "<<m_parameters.getCoverageDistributionFile()<<""<<endl;
-	cout<<" "<<m_parameters.getParametersFile()<<endl;
 	cout<<endl;
 	cout<<"use --help to show this help"<<endl;
 	cout<<endl;

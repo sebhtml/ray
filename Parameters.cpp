@@ -36,6 +36,8 @@
 using namespace std;
 
 Parameters::Parameters(){
+	m_contigsFile="Ray-Contigs.fasta";
+	m_amosFile="Ray-Contigs.afg";
 	m_initiated=false;
 	m_directory="assembly";
 	m_minimumContigLength=100;
@@ -79,24 +81,42 @@ void Parameters::parseCommands(){
 
 	#endif
 
-	commands.insert("LoadSingleEndReads");
-	commands.insert("-s");
-	commands.insert("--LoadSingleEndReads");
-	commands.insert("-LoadSingleEndReads");
+	set<string> singleReadsCommands;
+	singleReadsCommands.insert("-s");
+	singleReadsCommands.insert("LoadSingleEndReads");
+	singleReadsCommands.insert("-LoadSingleEndReads");
+	singleReadsCommands.insert("--LoadSingleEndReads");
 
-	commands.insert("LoadPairedEndReads");
-	commands.insert("-p");
-	commands.insert("--LoadPairedEndReads");
-	commands.insert("-LoadPairedEndReads");
+	set<string> pairedReadsCommands;
+	pairedReadsCommands.insert("-p");
+	pairedReadsCommands.insert("LoadPairedEndReads");
+	pairedReadsCommands.insert("-LoadPairedEndReads");
+	pairedReadsCommands.insert("--LoadPairedEndReads");
 	
-	commands.insert("OutputAmosFile");
-	commands.insert("-a");
-	commands.insert("--OutputAmosFile");
-	commands.insert("-OutputAmosFile");
+	set<string> outputAmosCommands;
+	outputAmosCommands.insert("-a");
+	outputAmosCommands.insert("OutputAmosFile");
+	outputAmosCommands.insert("-OutputAmosFile");
+	outputAmosCommands.insert("--OutputAmosFile");
+
+	set<string> outputFileCommands;
+	outputFileCommands.insert("-o");
+	outputFileCommands.insert("OutputFile");
+	outputFileCommands.insert("-OutputFile");
+	outputFileCommands.insert("--OutputFile");
+	
+	vector<set<string> > toAdd;
+	toAdd.push_back(singleReadsCommands);
+	toAdd.push_back(pairedReadsCommands);
+	toAdd.push_back(outputAmosCommands);
+	toAdd.push_back(outputFileCommands);
+	for(int i=0;i<(int)toAdd.size();i++)
+		for(set<string>::iterator j=toAdd[i].begin();j!=toAdd[i].end();j++)
+			commands.insert(*j);
 
 	while(i<(int)m_commands.size()){
 		string token=m_commands[i];
-		if(token=="LoadSingleEndReads" or token=="-s" or token=="--LoadSingleEndReads" or token=="-LoadSingleEndReads"){
+		if(singleReadsCommands.count(token)>0){
 			#ifdef DEBUG_PARAMETERS
 			cout<<"OpCode="<<token<<endl;
 			#endif
@@ -116,7 +136,17 @@ void Parameters::parseCommands(){
 			cout<<endl;
 			cout<<"LoadSingleEndReads"<<endl;
 			cout<<" Sequences: "<<token<<endl;
-		}else if(token=="LoadPairedEndReads" or token=="-p" or token=="--LoadPairedEndReads" or token=="-LoadPairedEndReads"){
+		}else if(outputFileCommands.count(token)>0){
+			i++;
+			int items=m_commands.size()-i;
+			if(items<1){
+				cout<<"Error: "<<token<<" needs 1 item, you provided "<<items<<endl;
+				m_error=true;
+				return;
+			}
+			token=m_commands[i];
+			m_contigsFile=token;
+		}else if(pairedReadsCommands.count(token)>0){
 			#ifdef DEBUG_PARAMETERS
 			cout<<"OpCode="<<token<<endl;
 			#endif
@@ -208,10 +238,33 @@ void Parameters::parseCommands(){
 			#ifdef DEBUG_PARAMETERS
 			cout<<"Library: "<<meanFragmentLength<<" : "<<standardDeviation<<endl;
 			#endif
-		}else if(token=="OutputAmosFile" or token=="--OutputAmosFile" or token=="-a" or token=="-OutputAmosFile"){
-			m_amos=true;
-			cout<<endl;
-			cout<<"OutputAmosFile"<<endl;
+		}else if(outputAmosCommands.count(token)>0){
+			int items=0;
+			int k=0;
+			for(int j=i;j<(int)m_commands.size();j++){
+				string cmd=m_commands[j];
+				if(commands.count(cmd)==0){
+					#ifdef DEBUG_PARAMETERS
+					cout<<"Option"<<k<<"="<<"'"<<cmd<<"'"<<endl;
+					#endif
+					items++;
+				}else{
+					break;
+				}
+				k++;
+			}
+			if(items==0){
+				m_amos=true;
+			}else if(items==1){
+				m_amos=true;
+				i++;
+				token=m_commands[i];
+				m_amosFile=token;
+			}else{
+				cout<<"Error: "<<token<<" needs 0 or 1 item, you provided "<<items<<endl;
+				m_error=true;
+				return;
+			}
 		}
 		i++;
 	}
@@ -286,7 +339,7 @@ string Parameters::getParametersFile(){
 }
 
 string Parameters::getContigsFile(){
-	return "Ray-Contigs.fasta";
+	return m_contigsFile;
 }
 
 string Parameters::getCoverageDistributionFile(){
@@ -294,7 +347,7 @@ string Parameters::getCoverageDistributionFile(){
 }
 
 string Parameters::getAmosFile(){
-	return "Ray-Contigs.afg";
+	return m_amosFile;
 }
 
 string Parameters::getEngineName(){
