@@ -322,11 +322,17 @@ void Parameters::computeAverageDistances(){
 	for(int i=0;i<(int)m_observedDistances.size();i++){
 		u64 sum=0;
 		int library=i;
+		#ifdef DUMP_LIBRARIES
+		cout<<"LIBRARY"<<i<<endl;
+		#endif
 		int n=0;
 		for(map<int,int>::iterator j=m_observedDistances[library].begin();
 			j!=m_observedDistances[library].end();j++){
 			int d=j->first;
 			int count=j->second;
+			#ifdef DUMP_LIBRARIES
+			cout<<d<<"	"<<count<<endl;
+			#endif
 			sum+=d*count;
 			n+=count;
 		}
