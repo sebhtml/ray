@@ -1,4 +1,4 @@
-*) use scripts/2010-04-02-1.sh to generate results
+*) use scripts/run-all.sh to generate results
 *) update ChangeLog.txt
 *) svn cp trunk tags/<version>
 *) close the milestone in trac
