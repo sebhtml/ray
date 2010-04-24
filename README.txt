@@ -11,4 +11,4 @@ to output amos file:
  mpirun -np 25 Ray -s 1.fasta -p 21.fasta 22.fasta -a AMOS.amos -o MyContigs.fasta
 
 
-see http://denovoassembler.sf.net/ or Wiki.txt for complete information.
+see http://denovoassembler.sf.net/ for complete information.

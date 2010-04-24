@@ -19,10 +19,10 @@ datasets (tested on the public dataset SRA003611) (trac #79)
 * Added public dataset links on the web page (trac #77)
 * Fixed a serious flaw in Parallel_Ray_Engine that led to segmentation faults
 (trac #76) (this flaw was kindly reported by Dr Torsten Seemann @  Victorian
- Bioinformatics Consortium -- thank you!)
+Bioinformatics Consortium -- thank you!)
 * Changed the behavior of memory allocators in message passing --
-   Ray now reuses allocated memory for ingoing and outgoing messages
-   (10 MB for each).
+Ray now reuses allocated memory for ingoing and outgoing messages
+(10 MB for each).
 * Added a mummer validation script (r3090)
 
 == 0.0.5 (8 tickets) ==
@@ -51,22 +51,22 @@ seqanswers.com)
 
 
 == 0.0.7 (25 tickets) ==
- 
- * (Small) speed improvement in seed extension (trac #21)
- * Ray can now write to user-specified files -- Huge thanks to Matthew
- MacManes (University of California -- Berkeley) for suggesting this (trac #163)
- * Changed the allocator size to 0x1000000 (trac #162)
- * Ray can now estimate paired distances -- thanks to Torsten
- Seemann (Victorian Bioinformatics Consortium, Dept. Microbiology, Monash
- University, AUSTRALIA) for his expertise (trac #159 158 #156 #131)
- * Each MPI process now has a forest of 0x1000 splay trees, which are frozen
- (no more splay operations) after no more items are inserted. (trac #151 #150
- #149)
- * Added running times in comparisons, as wisely suggested by Matthew MacManes
- (University of California -- Berkeley) (trac #136)
- * Ray is now better with a large peak coverage, and is more careful
- otherwise. (trac #135 #134)
- * Some improvements on mix datasets (trac #132)
- * Ray is now robust when parsing arguments, and will complaint if something
- is messy -- thanks to Torsten Seemann (Victorian Bioinformatics Consortium, Dept. Microbiology, Monash 
- University, AUSTRALIA) for noticing the issue (trac #129)
+
+* (Small) speed improvement in seed extension (trac #21)
+* Ray can now write to user-specified files -- Huge thanks to Matthew
+MacManes (University of California -- Berkeley) for suggesting this (trac #163)
+* Changed the allocator size to 0x1000000 (trac #162)
+* Ray can now estimate paired distances -- thanks to Torsten
+Seemann (Victorian Bioinformatics Consortium, Dept. Microbiology, Monash
+University, AUSTRALIA) for his expertise (trac #159 158 #156 #131)
+* Each MPI process now has a forest of 0x1000 splay trees, which are frozen
+(no more splay operations) after no more items are inserted. (trac #151 #150
+#149)
+* Added running times in comparisons, as wisely suggested by Matthew MacManes
+(University of California -- Berkeley) (trac #136)
+* Ray is now better with a large peak coverage, and is more careful
+otherwise. (trac #135 #134)
+* Some improvements on mix datasets (trac #132)
+* Ray is now robust when parsing arguments, and will complaint if something
+is messy -- thanks to Torsten Seemann (Victorian Bioinformatics Consortium, Dept. Microbiology, Monash 
+University, AUSTRALIA) for noticing the issue (trac #129)
