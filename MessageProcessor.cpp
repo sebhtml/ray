@@ -682,6 +682,9 @@ void MessageProcessor::processMessage(Message*message,
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<rank<<" has "<<m_subgraph->size()<<" vertices (DONE)"<<endl;
 		#endif
+		#ifdef SHOW_FOREST_SIZE
+		cout<<"Rank "<<rank<<" has "<<m_subgraph->size()<<" vertices (DONE)"<<endl;
+		#endif
 		m_subgraph->freeze();
 	}else if(tag==TAG_SEQUENCES_READY){
 		(*m_sequence_ready_machines)++;
