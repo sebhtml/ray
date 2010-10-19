@@ -48,11 +48,20 @@ void MyAllocator::constructor(int chunkSize){
 }
 
 void*MyAllocator::allocate(int s){
+	// hopefully fix alignment issues on Itanium
+	int alignment=8;
+	if(s%8!=0){
+		s=((s/alignment)+1)*alignment;
+	}
+	#ifdef DEBUG
+	assert(s%8==0);
+	#endif
+
+
 	#ifdef DEBUG
 	assert(m_currentChunk!=NULL);
 	#endif
-	// if addresses need to be aligned:
-	//s+=s%8;
+
 	#ifdef DEBUG
 	if(s>m_CHUNK_SIZE){
 		cout<<"Requested "<<s<<" -- only have "<<m_CHUNK_SIZE<<endl;
