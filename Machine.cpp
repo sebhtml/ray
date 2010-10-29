@@ -41,6 +41,7 @@
 #include<MyAllocator.h>
 #include<unistd.h>
 
+#define SHOW_PROGRESS
 
 using namespace std;
 

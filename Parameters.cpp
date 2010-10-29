@@ -41,7 +41,7 @@ Parameters::Parameters(){
 	m_initiated=false;
 	m_directory="assembly";
 	m_minimumContigLength=100;
-	m_wordSize=21;
+	m_wordSize=17;
 	m_colorSpaceMode=false;
 	m_amos=false;
 	m_error=false;
