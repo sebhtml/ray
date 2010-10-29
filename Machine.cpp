@@ -52,25 +52,20 @@ void Machine::showUsage(){
 
 	cout<<endl;
 
-	cout<<"Arguments:"<<endl;
+	cout<<"Parameters:"<<endl;
 	cout<<endl;
 
-    	cout<<" LoadSingleEndReads <sequencesFile> "<<endl;
-    	cout<<"  aliases: -s, LoadSingleEndReads, -LoadSingleEndReads, --LoadSingleEndReads"<<endl;
+    	cout<<" -s <sequencesFile> "<<endl;
 	cout<<endl;
-	cout<<" LoadPairedEndReads <leftSequencesFile> <rightSequencesFile> [ <fragmentLength> <standardDeviation> ]"<<endl;
-	cout<<"  aliases: -p, LoadPairedEndReads, -LoadPairedEndReads, --LoadPairedEndReads"<<endl;
+	cout<<" -p <leftSequencesFile> <rightSequencesFile> [ <fragmentLength> <standardDeviation> ]"<<endl;
 	cout<<endl;
-	cout<<" OutputFile <outputFile> (default: Ray-Contigs.fasta)"<<endl;
-	cout<<"  aliases: -o, OutputFile, -OutputFile, --OutputFile"<<endl;
+	cout<<" -o <outputFile> (default: Ray-Contigs.fasta)"<<endl;
 	cout<<endl;
-	cout<<" OutputAmosFile [ <amosFile> ] (default: Ray-Contigs.afg)"<<endl;
-	cout<<"  aliases: -a, OutputAmosFile, -OutputAmosFile, --OutputAmosFile"<<endl;
+	cout<<" -a [ <amosFile> ] (default: Ray-Contigs.afg)"<<endl;
     	cout<<endl;
+	cout<<" -k <kmerSize> (default: 21)"<<endl;
+	cout<<endl;
 
-	cout<<"Outputs:"<<endl;
-	cout<<" "<<m_parameters.getContigsFile()<<endl;
-	cout<<" "<<m_parameters.getAmosFile()<<" (with OutputAmosFile)"<<endl;
 	cout<<endl;
 	cout<<"use --help to show this help"<<endl;
 	cout<<endl;

@@ -262,7 +262,6 @@ void MessageProcessor::processMessage(Message*message,
 		// add the FINISHING bits
 		for(int i=0;i<(int)(*m_FINISH_newFusions).size();i++){
 			#ifdef SHOW_PROGRESS
-			cout<<"Adding "<<(*m_FINISH_newFusions)[i].size()<<endl;
 			#endif
 			(*m_EXTENSION_contigs).push_back((*m_FINISH_newFusions)[i]);
 		}

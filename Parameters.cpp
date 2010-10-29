@@ -41,7 +41,7 @@ Parameters::Parameters(){
 	m_initiated=false;
 	m_directory="assembly";
 	m_minimumContigLength=100;
-	m_wordSize=17;
+	m_wordSize=21;
 	m_colorSpaceMode=false;
 	m_amos=false;
 	m_error=false;
@@ -105,11 +105,15 @@ void Parameters::parseCommands(){
 	outputFileCommands.insert("-OutputFile");
 	outputFileCommands.insert("--OutputFile");
 	
+	set<string> kmerSetting;
+	kmerSetting.insert("-k");
+
 	vector<set<string> > toAdd;
 	toAdd.push_back(singleReadsCommands);
 	toAdd.push_back(pairedReadsCommands);
 	toAdd.push_back(outputAmosCommands);
 	toAdd.push_back(outputFileCommands);
+	toAdd.push_back(kmerSetting);
 	for(int i=0;i<(int)toAdd.size();i++)
 		for(set<string>::iterator j=toAdd[i].begin();j!=toAdd[i].end();j++)
 			commands.insert(*j);
@@ -265,9 +269,33 @@ void Parameters::parseCommands(){
 				m_error=true;
 				return;
 			}
+		}else if(kmerSetting.count(token)>0){
+			i++;
+			int items=m_commands.size()-i;
+
+			if(items<1){
+				cout<<"Error: "<<token<<" needs 1 item, you provided only "<<items<<endl;
+				m_error=true;
+				return;
+			}
+			token=m_commands[i];
+			m_wordSize=atoi(token.c_str());
+			if(m_wordSize<15){
+				m_wordSize=15;
+			}
+			if(m_wordSize>32){
+				m_wordSize=32;
+			}
+			cout<<endl;
+			cout<<"-k (to set the k-mer size)"<<endl;
+			cout<<" Value: "<<m_wordSize<<endl;
+
 		}
 		i++;
 	}
+
+	cout<<endl;
+	cout<<"k-mer size: "<<m_wordSize<<endl;
 	cout<<endl;
 
 }
