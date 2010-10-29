@@ -19,6 +19,7 @@ Ray
 
 */
 
+#include<string.h>
 #include<SequencesLoader.h>
 #include<Message.h>
 #include<DistributionData.h>
@@ -42,6 +43,8 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 	vector<string> allFiles=(*m_parameters).getAllFiles();
 	if((*m_distribution_reads).size()>0 and (*m_distribution_sequence_id)>(int)(*m_distribution_reads).size()-1){
 		// we reached the end of the file.
+
+		cout<<"Rank "<<rank<<" distributes sequences, "<<(*m_distribution_reads).size()<<"/"<<(*m_distribution_reads).size()<<" (DONE)"<<endl;
 		(*m_distribution_file_id)++;
 		if((*m_LOADER_isLeftFile)){
 			(*m_LOADER_numberOfSequencesInLeftFile)=(*m_distribution_sequence_id);
@@ -66,9 +69,9 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		(*m_distributionAllocator).clear();
 		(*m_distributionAllocator).constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
 		#ifdef SHOW_PROGRESS
-		cout<<"Rank "<<rank<<" loads "<<allFiles[(*m_distribution_file_id)]<<"."<<endl;
+		cout<<endl<<"Rank "<<rank<<" loads "<<allFiles[(*m_distribution_file_id)]<<"."<<endl;
 		#else
-		cout<<"\r"<<"Loading "<<allFiles[(*m_distribution_file_id)]<<""<<endl;
+		cout<<endl<<"Loading "<<allFiles[(*m_distribution_file_id)]<<""<<endl;
 		#endif
 		loader.load(allFiles[(*m_distribution_file_id)],&(*m_distribution_reads),&(*m_distributionAllocator),&(*m_distributionAllocator));
 		m_parameters->setNumberOfSequences(m_distribution_reads->size());
@@ -121,7 +124,6 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 	for(int i=0;i<1*size;i++){
 		if((*m_distribution_sequence_id)>(int)(*m_distribution_reads).size()-1){
 			#ifdef SHOW_PROGRESS
-			cout<<"Rank "<<rank<<" distributes sequences, "<<(*m_distribution_reads).size()<<"/"<<(*m_distribution_reads).size()<<endl;
 			#endif
 			break;
 		}
@@ -133,7 +135,7 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		char*sequence=((*m_distribution_reads))[(*m_distribution_sequence_id)]->getSeq();
 		#ifdef SHOW_PROGRESS
 		if((*m_distribution_sequence_id)%1000000==0){
-			cout<<"Rank "<<rank<<" distributes sequences, "<<(*m_distribution_sequence_id)<<"/"<<(*m_distribution_reads).size()<<endl;
+			cout<<"Rank "<<rank<<" distributes sequences, "<<(*m_distribution_sequence_id)+1<<"/"<<(*m_distribution_reads).size()<<endl;
 		}
 		#endif
 		Message aMessage(sequence, strlen(sequence), MPI_BYTE, destination, TAG_SEND_SEQUENCE,rank);

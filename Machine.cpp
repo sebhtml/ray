@@ -41,7 +41,6 @@
 #include<MyAllocator.h>
 #include<unistd.h>
 
-#define SHOW_PROGRESS
 
 using namespace std;
 
@@ -213,11 +212,8 @@ void Machine::start(){
 	int numberOfTrees=_FOREST_SIZE;
 
 	#ifdef SHOW_PROGRESS
-	cout<<"ProcessIdentifier="<<getpid()<<endl;
-	cout<<"sizeof(VERTEX_TYPE) "<<sizeof(VERTEX_TYPE)<<endl;
-	cout<<"sizeof(Vertex) "<<sizeof(Vertex)<<endl;
 	#endif
-	time_t startingTime=time(NULL);
+	m_startingTime=time(NULL);
 	m_lastTime=time(NULL);
 	srand(m_lastTime);
 	m_fusionData->m_fusionStarted=false;
@@ -266,28 +262,22 @@ void Machine::start(){
 
 	m_ranksDoneAttachingReads=0;
 
+	char serverName[1000];
+	int len;
 	MPI_Init(&m_argc,&m_argv);
+	MPI_Get_processor_name(serverName,&len);
+
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
 	MPI_Comm_size(MPI_COMM_WORLD,&m_size);
 	m_disData->constructor(getSize(),5000,&m_persistentAllocator);
 
 	m_subgraph.constructor(numberOfTrees,&m_persistentAllocator);
+	
+	int version;
+	int subversion;
+	MPI_Get_version(&version,&subversion);
 
 	if(isMaster()){
-		#ifdef SHOW_PROGRESS
-		cout<<"Rank "<<getRank()<<" welcomes you to the MPI_COMM_WORLD."<<endl;
-		cout<<"Rank "<<getRank()<<": website -> http://denovoassembler.sf.net/"<<endl;
-		#ifdef MPICH2_VERSION
-		cout<<"Rank "<<getRank()<<": using MPICH2"<<endl;
-		#else
-			#ifdef OMPI_MPI_H
-			cout<<"Rank "<<getRank()<<": using Open-MPI"<<endl;
-			#else
-			cout<<"Rank "<<getRank()<<": Warning, unknown implementation of MPI"<<endl;
-			#endif
-		#endif
-		#else
-
 		cout<<"**************************************************"<<endl;
     		cout<<"This program comes with ABSOLUTELY NO WARRANTY."<<endl;
     		cout<<"This is free software, and you are welcome to redistribute it"<<endl;
@@ -295,10 +285,30 @@ void Machine::start(){
 		cout<<"**************************************************"<<endl;
 		cout<<endl;
 		cout<<"Ray Copyright (C) 2010  Sébastien Boisvert, Jacques Corbeil, François Laviolette"<<endl;
- 		cout<<"http://denovoassembler.sf.net/"<<endl;
+ 		cout<<"http://denovoassembler.sf.net/"<<endl<<endl;
 
+
+		cout<<"sizeof(VERTEX_TYPE) "<<sizeof(VERTEX_TYPE)<<endl;
+		cout<<"sizeof(Vertex) "<<sizeof(Vertex)<<endl;
+
+		#ifdef SHOW_PROGRESS
+		cout<<"Rank "<<getRank()<<" welcomes you to the MPI_COMM_WORLD."<<endl;
+		cout<<"Rank "<<getRank()<<": website -> http://denovoassembler.sf.net/"<<endl;
+		#ifdef MPICH2_VERSION
+		cout<<"Rank "<<getRank()<<": using MPICH2"<<endl;
+		#else
+			#ifdef OMPI_MPI_H
+			cout<<"Rank "<<getRank()<<": using Open-MPI "<<OMPI_MAJOR_VERSION<<"."<<OMPI_MINOR_VERSION<<"."<<OMPI_RELEASE_VERSION<<endl;
+
+			#else
+			cout<<"Rank "<<getRank()<<": Warning, unknown implementation of MPI"<<endl;
+			#endif
 		#endif
+		#endif
+
 	}
+
+	cout<<"Rank "<<getRank()<<" is running as UNIX process "<<getpid()<<" on "<<serverName<<" (MPI version "<<version<<"."<<subversion<<")"<<endl;
 	m_alive=true;
 	m_welcomeStep=true;
 	m_loadSequenceStep=false;
@@ -318,15 +328,7 @@ void Machine::start(){
 	MPI_Barrier(MPI_COMM_WORLD);
 
 	if(isMaster()){
-		time_t endingTime=time(NULL);
-		int difference=endingTime-startingTime;
-		int minutes=difference/60;
-		int seconds=difference%60;
-		int hours=minutes/60;
-		minutes=minutes%60;
-		int days=hours/24;
-		hours=hours%24;
-		cout<<"\rElapsed time: "<<days<<" d "<<hours<<" h "<<minutes<<" min "<<seconds<<" s"<<endl;
+		computeTime(m_startingTime);
 	}
 	MPI_Finalize();
 }
@@ -498,7 +500,6 @@ void Machine::finishFusions(){
 	int overlapMinimumLength=1000;
 	if((int)m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()<overlapMinimumLength){
 		#ifdef SHOW_PROGRESS
-		cout<<"No overlap possible m_SEEDING_i="<<m_SEEDING_i<<" size="<<m_ed->m_EXTENSION_contigs[m_SEEDING_i].size()<<endl;
 		#endif
 		m_SEEDING_i++;
 		m_FINISH_vertex_requested=false;
@@ -661,7 +662,11 @@ void Machine::makeFusions(){
 		m_outbox.push_back(aMessage);
 		m_mode=MODE_DO_NOTHING;
 		#ifdef SHOW_PROGRESS
-		cout<<"Rank "<<getRank()<<": fusion "<<m_SEEDING_i-1<<"/"<<m_ed->m_EXTENSION_contigs.size()<<" (DONE)"<<endl;
+		int seedIndex=m_SEEDING_i-1;
+		if(m_ed->m_EXTENSION_contigs.size()==0){
+			seedIndex++;
+		}
+		cout<<"Rank "<<getRank()<<": fusion "<<m_ed->m_EXTENSION_contigs.size()<<"/"<<m_ed->m_EXTENSION_contigs.size()<<" (DONE)"<<endl;
 		#endif
 		#ifdef DEBUG
 		//cout<<"Rank "<<getRank()<<" eliminated: "<<m_fusionData->m_FUSION_eliminated.size()<<endl;
@@ -1287,13 +1292,13 @@ void Machine::processData(){
 		}
 
 		cout<<endl;
-		cout<<"AssemblyEngine: "<<m_parameters.getEngineName()<<" "<<m_parameters.getVersion()<<endl;
+		cout<<"Ray version: "<<m_parameters.getEngineName()<<" "<<m_parameters.getVersion()<<endl;
 		cout<<"NumberOfRanks: "<<getSize()<<endl;
 		#ifdef OMPI_MPI_H
 		cout<<"MPILibrary: Open-MPI "<<OMPI_MAJOR_VERSION<<"."<<OMPI_MINOR_VERSION<<"."<<OMPI_RELEASE_VERSION<<endl;
 		#endif
 		#ifdef __linux__
-		cout<<"OperatingSystem: Linux"<<endl;
+		cout<<"OperatingSystem: Linux (during compilation)"<<endl;
 		#endif
 
 
@@ -1337,6 +1342,8 @@ void Machine::processData(){
 
 	}else if(m_loadSequenceStep==true && m_mode_send_vertices==false&&isMaster() and m_sequence_ready_machines==getSize()&&m_messageSentForVerticesDistribution==false){
 		#ifdef SHOW_PROGRESS
+		computeTime(m_startingTime);
+		cout<<endl;
 		cout<<"Rank "<<getRank()<<": starting vertices distribution."<<endl;
 		#else
 		cout<<"\r"<<"Counting vertices"<<endl;
@@ -1349,6 +1356,9 @@ void Machine::processData(){
 	}else if(m_numberOfMachinesDoneSendingVertices==getSize()){
 		m_numberOfMachinesReadyForEdgesDistribution=0;
 		m_numberOfMachinesDoneSendingVertices=-1;
+
+		computeTime(m_startingTime);
+		cout<<endl;
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, i, TAG_SHOW_VERTICES,getRank());
 			m_outbox.push_back(aMessage);
@@ -1368,6 +1378,9 @@ void Machine::processData(){
 		}
 		m_startEdgeDistribution=false;
 	}else if(m_numberOfMachinesReadyForEdgesDistribution==getSize() and isMaster()){
+		computeTime(m_startingTime);
+		cout<<endl;
+		cout<<"Rank 0 tells its friends to proceed with the distribution of edges."<<endl;
 		m_numberOfMachinesReadyForEdgesDistribution=-1;
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i,TAG_START_EDGES_DISTRIBUTION,getRank());
@@ -1384,9 +1397,6 @@ void Machine::processData(){
 
 		m_coverageDistribution.clear();
 
-		#ifdef SHOW_PROGRESS
-		cout<<"MaxCoverage="<<(int)m_maxCoverage<<endl;
-		#endif
 		#ifdef WRITE_PARAMETERS
 		ofstream f(m_parameters.getParametersFile().c_str());
 		f<<"Ray Command Line: ";
@@ -1542,7 +1552,7 @@ void Machine::processData(){
 			string strand="";
 			if(m_reverseComplementEdge)
 				strand="(reverse complement)";
-			cout<<"Rank "<<getRank()<<" is extracting outgoing edges "<<strand<<" "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<endl;
+			cout<<"Rank "<<getRank()<<" is extracting outgoing edges "<<strand<<" "<<m_mode_send_edge_sequence_id+1<<"/"<<m_myReads.size()<<endl;
 		}
 		#endif
 
@@ -1552,7 +1562,7 @@ void Machine::processData(){
 				m_reverseComplementEdge=true;
 				flushOutgoingEdges(1);
 				#ifdef SHOW_PROGRESS
-				cout<<"Rank "<<getRank()<<" is extracting outgoing edges "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
+				cout<<"Rank "<<getRank()<<" is extracting outgoing edges "<<m_myReads.size()<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
 				#endif
 				m_mode_send_edge_sequence_id=0;
 			}else{
@@ -1561,7 +1571,7 @@ void Machine::processData(){
 				m_mode_send_ingoing_edges=true;
 				m_mode_send_edge_sequence_id_position=0;
 				#ifdef SHOW_PROGRESS
-				cout<<"Rank "<<getRank()<<" is extracting outgoing edges (reverse complement) "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
+				cout<<"Rank "<<getRank()<<" is extracting outgoing edges (reverse complement) "<<m_myReads.size()<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
 				#endif
 				m_mode_send_edge_sequence_id=0;
 				m_reverseComplementEdge=false;
@@ -1615,7 +1625,7 @@ void Machine::processData(){
 			string strand="";
 			if(m_reverseComplementEdge)
 				strand="(reverse complement)";
-			cout<<"Rank "<<getRank()<<" is extracting ingoing edges "<<strand<<" "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<endl;
+			cout<<"Rank "<<getRank()<<" is extracting ingoing edges "<<strand<<" "<<m_mode_send_edge_sequence_id+1<<"/"<<m_myReads.size()<<endl;
 		}
 		#endif
 
@@ -1688,6 +1698,9 @@ void Machine::processData(){
 			}
 		}
 	}else if(m_readyToSeed==getSize()){
+		computeTime(m_startingTime);
+		cout<<endl;
+		cout<<"Rank 0 tells other ranks to calculate their seeds."<<endl;
 		m_readyToSeed=-1;
 		m_numberOfRanksDoneSeeding=0;
 		// tell everyone to seed now.
@@ -1702,7 +1715,7 @@ void Machine::processData(){
 			if(m_SEEDING_i==(int)m_subgraph.size()-1){
 				m_mode=MODE_DO_NOTHING;
 				#ifdef SHOW_PROGRESS
-				cout<<"Rank "<<getRank()<<" seeding vertices. "<<m_SEEDING_i<<"/"<<m_subgraph.size()<<" (DONE)"<<endl;
+				cout<<"Rank "<<getRank()<<" is seeding the very vertices it holds. "<<m_SEEDING_i+1<<"/"<<m_subgraph.size()<<" (DONE)"<<endl;
 				#endif
 				Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_SEEDING_IS_OVER,getRank());
 				m_SEEDING_nodes.clear();
@@ -1710,7 +1723,7 @@ void Machine::processData(){
 			}else{
 				#ifdef SHOW_PROGRESS
 				if(m_SEEDING_i % 100000 ==0){
-					cout<<"Rank "<<getRank()<<" seeding vertices. "<<m_SEEDING_i<<"/"<<m_subgraph.size()<<endl;
+					cout<<"Rank "<<getRank()<<" is seeding the very vertices it holds. "<<m_SEEDING_i+1<<"/"<<m_subgraph.size()<<endl;
 				}
 				#endif
 				m_SEEDING_currentVertex=m_SEEDING_nodes[m_SEEDING_i];
@@ -1781,6 +1794,9 @@ void Machine::processData(){
 			}
 		}
 	}else if(m_numberOfRanksDoneSeeding==getSize()){
+		computeTime(m_startingTime);
+		cout<<endl;
+		cout<<"Rank 0 asks others to approximate library sizes."<<endl;
 		m_numberOfRanksDoneSeeding=-1;
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_AUTOMATIC_DISTANCE_DETECTION,getRank());
@@ -1795,6 +1811,7 @@ void Machine::processData(){
 			m_outbox.push_back(aMessage);
 		}
 	}else if(m_numberOfRanksDoneSendingDistances==getSize()){
+
 		m_numberOfRanksDoneSendingDistances=-1;
 		m_parameters.computeAverageDistances();
 		m_mode=MODE_DO_NOTHING;
@@ -1910,7 +1927,7 @@ void Machine::processData(){
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<": fusion is done."<<endl;
 		#else
-		cout<<"\r"<<"Finishing fusions"<<endl;
+		cout<<"Rank "<<getRank()<<" is finishing fusions."<<endl;
 		#endif
 		m_fusionData->m_FUSION_numberOfRanksDone=-1;
 
@@ -1931,7 +1948,6 @@ void Machine::processData(){
 
 		if(!m_cycleStarted){
 			#ifdef SHOW_PROGRESS
-			cout<<"1 TAG_CLEAR_DIRECTIONS"<<endl;
 			#endif
 			m_nextReductionOccured=false;
 			m_cycleStarted=true;
@@ -1944,7 +1960,6 @@ void Machine::processData(){
 			m_CLEAR_n=0;
 		}else if(m_CLEAR_n==getSize() and !m_isFinalFusion){
 			#ifdef SHOW_PROGRESS
-			cout<<"2 TAG_DISTRIBUTE_FUSIONS"<<endl;
 			#endif
 			m_CLEAR_n=-1;
 
@@ -1955,7 +1970,6 @@ void Machine::processData(){
 			m_DISTRIBUTE_n=0;
 		}else if(m_DISTRIBUTE_n==getSize() and !m_isFinalFusion){
 			#ifdef SHOW_PROGRESS
-			cout<<"3 TAG_FINISH_FUSIONS"<<endl;
 			#endif
 			m_DISTRIBUTE_n=-1;
 			m_isFinalFusion=true;
@@ -1966,7 +1980,6 @@ void Machine::processData(){
 			m_FINISH_n=0;
 		}else if(m_FINISH_n==getSize() and m_isFinalFusion){
 			#ifdef SHOW_PROGRESS
-			cout<<"4 TAG_CLEAR_DIRECTIONS"<<endl;
 			#endif
 			for(int i=0;i<getSize();i++){
 				Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_CLEAR_DIRECTIONS,getRank());
@@ -1977,7 +1990,6 @@ void Machine::processData(){
 		}else if(m_CLEAR_n==getSize() and m_isFinalFusion){
 			m_CLEAR_n=-1;
 			#ifdef SHOW_PROGRESS
-			cout<<"5 TAG_DISTRIBUTE_FUSIONS"<<endl;
 			#endif
 
 			for(int i=0;i<getSize();i++){
@@ -1988,7 +2000,10 @@ void Machine::processData(){
 
 		}else if(m_DISTRIBUTE_n==getSize() and m_isFinalFusion){
 			#ifdef SHOW_PROGRESS
-			cout<<"6 TAG_START_FUSION"<<endl;
+			computeTime(m_startingTime);
+			cout<<endl;
+			cout<<"Rank 0 tells others to compute fusions."<<endl;
+
 			#endif
 			m_fusionData->m_FUSION_numberOfRanksDone=0;
 			m_master_mode=MODE_DO_NOTHING;
@@ -2002,7 +2017,9 @@ void Machine::processData(){
 			m_reductionOccured=m_nextReductionOccured;
 			m_fusionData->m_FUSION_numberOfRanksDone=-1;
 			if(!m_reductionOccured or m_cycleNumber ==5){ // cycling is in development!
-				cout<<"\r"<<"Collecting fusions"<<endl;
+				computeTime(m_startingTime);
+				cout<<endl;
+				cout<<"Rank 0 is "<<"collecting fusions"<<endl;
 				m_master_mode=MODE_ASK_EXTENSIONS;
 
 				m_sd->m_computedTopology=false;
@@ -2183,7 +2200,7 @@ void Machine::processData(){
 			#else
 			cout<<"\r"<<"              "<<endl<<"Writing "<<m_parameters.getOutputFile()<<endl;
 			#endif
-			cout<<m_allPaths.size()<<" contigs/"<<totalLength<<" nucleotides"<<endl;
+			cout<<"Rank 0: "<<m_allPaths.size()<<" contigs/"<<totalLength<<" nucleotides"<<endl;
 			if(m_parameters.useAmos()){
 				m_master_mode=MODE_AMOS;
 				m_SEEDING_i=0;
@@ -2197,7 +2214,7 @@ void Machine::processData(){
 		}else if(!m_ed->m_EXTENSION_currentRankIsStarted){
 			m_ed->m_EXTENSION_currentRankIsStarted=true;
 			#ifdef SHOW_PROGRESS
-			cout<<"Rank "<<getRank()<<" asks "<<m_ed->m_EXTENSION_rank<<" for its extensions."<<endl;
+			cout<<"Rank "<<getRank()<<" asks "<<m_ed->m_EXTENSION_rank<<" for its fusions."<<endl;
 			#endif
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_ed->m_EXTENSION_rank,TAG_ASK_EXTENSION_DATA,getRank());
 			m_outbox.push_back(aMessage);
@@ -2484,6 +2501,10 @@ int Machine::vertexRank(VERTEX_TYPE a){
 
 void Machine::updateDistances(){
 	if(m_fileId==m_parameters.getNumberOfFiles()){
+
+		computeTime(m_startingTime);
+		cout<<endl;
+		cout<<"Rank 0 asks others to extend their seeds."<<endl;
 		#ifndef SHOW_PROGRESS
 		cout<<"\r"<<"Extending seeds"<<endl;
 		#endif

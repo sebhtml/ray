@@ -355,7 +355,7 @@ string Parameters::getEngineName(){
 }
 
 string Parameters::getVersion(){
-	return "0.0.7";
+	return "0.1.0 codename 'Adenine'";
 }
 
 vector<string> Parameters::getCommands(){
@@ -412,7 +412,7 @@ void Parameters::computeAverageDistances(){
 		m_observedStandardDeviations.push_back(standardDeviation);
 		#define SHOW_LIBRARY_COMPUTATIONS
 		#ifdef SHOW_LIBRARY_COMPUTATIONS
-		cout<<"\rLibrary"<<library<<": "<<average<<","<<standardDeviation<<endl;
+		cout<<"Rank 0: Library"<<library<<": "<<average<<","<<standardDeviation<<endl;
 		#endif
 	}	
 	m_observedDistances.clear();

@@ -22,6 +22,10 @@ see <http://www.gnu.org/licenses/>
 #ifndef _common_functions
 #define _common_functions
 
+
+#define SHOW_PROGRESS
+#define WRITE_COVERAGE_DISTRIBUTION
+
 #define u16 uint16_t
 #define u32 uint32_t
 #define u64 uint64_t
@@ -324,5 +328,8 @@ int vertexRank(VERTEX_TYPE a,int _size);
 void showProgress(time_t m_lastTime);
 
 char*__basename(char*a);
+
+void computeTime(time_t startingTime);
+
 
 #endif

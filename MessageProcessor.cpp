@@ -534,7 +534,6 @@ void MessageProcessor::processMessage(Message*message,
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,rank);
 		m_outbox->push_back(aMessage);
 		#ifdef SHOW_PROGRESS
-		cout<<"Rank "<<rank<<" attaches sequences. "<<(*m_myReads).size()<<"/"<<(*m_myReads).size()<<" (DONE)"<<endl;
 		#endif
 	}else if(tag==TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY){
 		(*m_ranksDoneAttachingReads)++;
@@ -566,9 +565,6 @@ void MessageProcessor::processMessage(Message*message,
 		(*m_minimumCoverage)=incoming[0];
 		(*m_seedCoverage)=incoming[1];
 		(*m_peakCoverage)=incoming[2];
-		#ifdef SHOW_PROGRESS
-		cout<<"Min="<<*m_minimumCoverage<<" Seed="<<*m_seedCoverage<<" Peak="<<*m_peakCoverage<<endl;
-		#endif
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_READY_TO_SEED,rank);
 		m_outbox->push_back(aMessage);
 		m_oa->constructor((*m_peakCoverage));
@@ -705,9 +701,6 @@ void MessageProcessor::processMessage(Message*message,
 		(*m_mode_send_outgoing_edges)=true;
 		(*m_mode_send_edge_sequence_id)=0;
 	}else if(tag==TAG_START_VERTICES_DISTRIBUTION){
-		#ifdef SHOW_PROGRESS
-		cout<<"TAG_START_VERTICES_DISTRIBUTION"<<endl;
-		#endif
 		(*m_mode_send_vertices)=true;
 		(*m_mode_send_vertices_sequence_id)=0;
 	}else if(tag==TAG_VERTICES_DISTRIBUTED){

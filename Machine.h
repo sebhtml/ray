@@ -73,6 +73,7 @@ using namespace std;
 
 
 class Machine{
+	time_t m_startingTime;
 	ScaffolderData*m_sd;
 	VerticesExtractor m_verticesExtractor;
 	MessageProcessor m_mp;

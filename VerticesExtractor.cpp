@@ -43,7 +43,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		string reverse="";
 		if(*m_reverseComplementVertex==true)
 			reverse="(reverse complement) ";
-		cout<<"Rank "<<rank<<" is extracting vertices "<<reverse<<"from sequences "<<*m_mode_send_vertices_sequence_id<<"/"<<m_myReads->size()<<endl;
+		cout<<"Rank "<<rank<<" is extracting vertices "<<reverse<<"from sequences "<<*m_mode_send_vertices_sequence_id+1<<"/"<<m_myReads->size()<<endl;
 	}
 	#endif
 

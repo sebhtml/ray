@@ -22,9 +22,6 @@
 #include<DistributionData.h>
 
 void DistributionData::constructor(int numberOfRanks,int capacity,MyAllocator*allocator){
-	#ifdef SHOW_PROGRESS
-	cout<<"N="<<numberOfRanks<<" CAP="<<capacity<<endl;
-	#endif
 	m_messagesStock.constructor(numberOfRanks,capacity,allocator);
 	m_messagesStockOut.constructor(numberOfRanks,capacity,allocator);
 	m_messagesStockIn.constructor(numberOfRanks,capacity,allocator);

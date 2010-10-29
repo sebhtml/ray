@@ -43,6 +43,7 @@ void SequencesIndexer::attachReads(vector<Message>*m_outbox,int*m_distribution_f
 	#endif
 	vector<string> allFiles=(*m_parameters).getAllFiles();
 	if((*m_distribution_reads).size()>0 and (*m_distribution_sequence_id)>(int)(*m_distribution_reads).size()-1){
+		cout<<"Rank "<<rank<<" attaches sequences, "<<(*m_distribution_reads).size()<<"/"<<(*m_distribution_reads).size()<<" (DONE)"<<endl;
 		(*m_distribution_file_id)++;
 		(*m_distribution_sequence_id)=0;
 		(*m_distribution_reads).clear();
@@ -66,12 +67,12 @@ void SequencesIndexer::attachReads(vector<Message>*m_outbox,int*m_distribution_f
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<rank<<" loads "<<allFiles[(*m_distribution_file_id)]<<"."<<endl;
 		#else
-		cout<<"\r"<<"Loading "<<allFiles[(*m_distribution_file_id)]<<""<<endl;
+		cout<<"Loading "<<allFiles[(*m_distribution_file_id)]<<""<<endl;
 		#endif
 		loader.load(allFiles[(*m_distribution_file_id)],&(*m_distribution_reads),&(*m_distributionAllocator),&(*m_distributionAllocator));
 		
 		#ifdef SHOW_PROGRESS
-		cout<<"Rank "<<rank<<" "<<(*m_distribution_reads).size()<<" sequences to attach"<<endl;
+		cout<<"Rank "<<rank<<" has "<<(*m_distribution_reads).size()<<" sequences to attach"<<endl;
 		#else
 		cout<<"Indexing sequences"<<endl;
 		#endif
@@ -86,9 +87,6 @@ void SequencesIndexer::attachReads(vector<Message>*m_outbox,int*m_distribution_f
 
 	for(int i=0;i<1;i++){
 		if((*m_distribution_sequence_id)>(int)(*m_distribution_reads).size()-1){
-			#ifdef SHOW_PROGRESS
-			cout<<"Rank "<<rank<<" attaches sequences, "<<(*m_distribution_reads).size()<<"/"<<(*m_distribution_reads).size()<<endl;
-			#endif
 			break;
 		}
 
@@ -100,7 +98,7 @@ void SequencesIndexer::attachReads(vector<Message>*m_outbox,int*m_distribution_f
 
 		#ifdef SHOW_PROGRESS
 		if((*m_distribution_sequence_id)%1000000==0){
-			cout<<"Rank "<<rank<<" attaches sequences, "<<(*m_distribution_sequence_id)<<"/"<<(*m_distribution_reads).size()<<endl;
+			cout<<"Rank "<<rank<<" attaches sequences, "<<(*m_distribution_sequence_id)+1<<"/"<<(*m_distribution_reads).size()<<endl;
 		}
 		#endif
 

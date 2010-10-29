@@ -39,7 +39,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived
 ){
 	if((*seeds).size()==0){
 		#ifdef SHOW_PROGRESS
-		cout<<"Rank "<<theRank<<": extending seeds "<<(*seeds).size()<<"/"<<(*seeds).size()<<" (DONE)"<<endl;
+		cout<<"Rank "<<theRank<<" is extending its seeds. "<<(*seeds).size()<<"/"<<(*seeds).size()<<" (DONE)"<<endl;
 		#endif
 		ed->m_mode_EXTENSION=false;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_IS_DONE,theRank);
@@ -61,7 +61,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived
 		ed->m_EXTENSION_readsInRange.clear();
 	}else if(ed->m_EXTENSION_currentSeedIndex==(int)(*seeds).size()){
 		#ifdef SHOW_PROGRESS
-		cout<<"Rank "<<theRank<<": extending seeds "<<(*seeds).size()<<"/"<<(*seeds).size()<<" (DONE)"<<endl;
+		cout<<"Rank "<<theRank<<" is extending its seeds. "<<(*seeds).size()<<"/"<<(*seeds).size()<<" (DONE)"<<endl;
 		#endif
 		ed->m_mode_EXTENSION=false;
 		
@@ -73,7 +73,6 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived
 
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_IS_DONE,theRank);
 		#ifdef SHOW_PROGRESS
-		cout<<theRank<<" TAG_EXTENSION_IS_DONE"<<endl;
 		#endif
 		(*outbox).push_back(aMessage);
 		return;
@@ -282,7 +281,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 	// use seed information.
 	#ifdef SHOW_PROGRESS
 	if(ed->m_EXTENSION_currentPosition==1)
-		cout<<"Priming with seed length="<<ed->m_EXTENSION_currentSeed.size()<<endl;
+		cout<<"Rank "<<theRank<<""<<" starts on a seed, length="<<ed->m_EXTENSION_currentSeed.size()<<endl;
 	#endif
 	
 	// use the seed to extend the thing.
@@ -552,9 +551,6 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 
 				ed->m_doChoice_tips_Detected=false;
 				dfsData->m_doChoice_tips_Initiated=false;
-				#ifdef SHOW_PROGRESS
-				cout<<"Checking tips."<<endl;
-				#endif
 			}
 			return;
 		}else if(!ed->m_doChoice_tips_Detected and ed->m_EXTENSION_readsInRange.size()>0){
@@ -599,7 +595,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 						bubbleData->m_coverages.push_back(dfsData->m_coverages);
 						bubbleData->m_BUBBLE_visitedVerticesDepths.push_back(dfsData->m_depthFirstSearchVisitedVertices_depths);
 					}else{
-						#ifdef SHOW_PROGRESS
+						#ifdef SHOW_PROGRESS_DEBUG
 						cout<<"We have a tip "<<dfsData->m_depthFirstSearch_maxDepth<<" LIMIT="<<TIP_LIMIT<<"."<<endl;
 						#endif
 					}
@@ -609,7 +605,6 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 				}
 			}else{
 				#ifdef SHOW_PROGRESS
-				cout<<dfsData->m_doChoice_tips_newEdges.size()<<" new arcs."<<endl;
 				#endif
 				// we have a winner with tips investigation.
 				if(dfsData->m_doChoice_tips_newEdges.size()==1 and ed->m_EXTENSION_readsInRange.size()>0 
@@ -630,7 +625,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 
 					(*currentVertex)=ed->m_enumerateChoices_outgoingEdges[dfsData->m_doChoice_tips_newEdges[0]];
 					#ifdef SHOW_PROGRESS
-					cout<<"We have a win after tip elimination: "<<idToWord((*currentVertex),wordSize)<<endl;
+					//cout<<"We have a win after tip elimination: "<<idToWord((*currentVertex),wordSize)<<endl;
 					#endif
 					ed->m_EXTENSION_choose=true;
 					ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
@@ -666,8 +661,8 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 		// no choice possible...
 		// do it for the lulz
 		if(!ed->m_EXTENSION_complementedSeed){
-			#ifdef SHOW_PROGRESS
-			cout<<"Switching to reverse complement."<<endl;
+			#ifdef SHOW_PROGRESS_DEBUG
+			cout<<"Rank "<<theRank<<": Switching to reverse complement."<<endl;
 			#endif
 			ed->m_EXTENSION_complementedSeed=true;
 			vector<VERTEX_TYPE> complementedSeed;
@@ -849,7 +844,7 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,vector<Messa
 			if(ed->m_EXTENSION_currentSeedIndex%10==0 and ed->m_EXTENSION_currentPosition==0 and (*last_value)!=ed->m_EXTENSION_currentSeedIndex){
 				(*last_value)=ed->m_EXTENSION_currentSeedIndex;
 				#ifdef SHOW_PROGRESS
-				cout<<"Rank "<<theRank<<": extending seeds "<<ed->m_EXTENSION_currentSeedIndex<<"/"<<(*seeds).size()<<endl;
+				cout<<"Rank "<<theRank<<" is extending its seeds. "<<ed->m_EXTENSION_currentSeedIndex+1<<"/"<<(*seeds).size()<<endl;
 				#endif
 			}
 			ed->m_EXTENSION_VertexAssembled_requested=true;
@@ -937,7 +932,6 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				if(ed->m_EXTENSION_complementedSeed and 
 				ed->m_EXTENSION_currentPosition<(int)ed->m_EXTENSION_currentSeed.size()-1000){
 					#ifdef SHOW_PROGRESS
-					cout<<"Skipping reads..."<<endl;
 					#endif
 					ed->m_EXTENSION_reads_requested=true;
 					ed->m_EXTENSION_reads_received=true;
