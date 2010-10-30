@@ -454,9 +454,6 @@ int Machine::getRank(){
 }
 
 
-
-
-
 /*
  * finish hyper fusions now!
  */
