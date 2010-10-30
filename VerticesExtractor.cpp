@@ -74,21 +74,20 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		int len=strlen(readSequence);
 		char memory[100];
 		int lll=len-m_wordSize;
-		for(int p=(*m_mode_send_vertices_sequence_id_position);p<=(*m_mode_send_vertices_sequence_id_position);p++){
-			#ifdef DEBUG
-			assert(readSequence!=NULL);
-			assert(m_wordSize<=32);
-			#endif
-			memcpy(memory,readSequence+p,m_wordSize);
-			memory[m_wordSize]='\0';
-			if(isValidDNA(memory)){
-				VERTEX_TYPE a=wordId(memory);
-				if(*m_reverseComplementVertex==false){
-					m_disData->m_messagesStock.addAt(vertexRank(a,size),a);
-				}else{
-					VERTEX_TYPE b=complementVertex(a,m_wordSize,m_colorSpaceMode);
-					m_disData->m_messagesStock.addAt(vertexRank(b,size),b);
-				}
+		int p=(*m_mode_send_vertices_sequence_id_position);
+		#ifdef DEBUG
+		assert(readSequence!=NULL);
+		assert(m_wordSize<=32);
+		#endif
+		memcpy(memory,readSequence+p,m_wordSize);
+		memory[m_wordSize]='\0';
+		if(isValidDNA(memory)){
+			VERTEX_TYPE a=wordId(memory);
+			if(*m_reverseComplementVertex==false){
+				m_disData->m_messagesStock.addAt(vertexRank(a,size),a);
+			}else{
+				VERTEX_TYPE b=complementVertex(a,m_wordSize,m_colorSpaceMode);
+				m_disData->m_messagesStock.addAt(vertexRank(b,size),b);
 			}
 		}
 		(*m_mode_send_vertices_sequence_id_position)++;
