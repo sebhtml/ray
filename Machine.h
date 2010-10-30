@@ -25,6 +25,7 @@
 
 #include<common_functions.h>
 #include<MyForest.h>
+#include<EdgesExtractor.h>
 #include<map>
 #include<vector>
 #include<DepthFirstSearchData.h>
@@ -74,6 +75,7 @@ using namespace std;
 
 class Machine{
 	
+	EdgesExtractor m_edgesExtractor;
 	int m_numberOfRanksWithCoverageData;
 	time_t m_startingTime;
 	ScaffolderData*m_sd;
@@ -85,11 +87,8 @@ class Machine{
 	int m_last_value;
 	time_t m_lastTime;
 	bool m_mode_send_outgoing_edges;
-	int m_mode_send_edge_sequence_id;
-	int m_mode_send_edge_sequence_id_position;
 	int m_rank;
 	int m_size;
-	bool m_reverseComplementEdge;
 	int m_totalLetters;
 	bool m_alive;
 	bool m_welcomeStep;
@@ -341,8 +340,6 @@ class Machine{
 	void makeFusions();
 	void depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int b);
 	void showUsage();
-	void flushOutgoingEdges(int threshold);
-	void flushIngoingEdges(int threshold);
 	
 	void detectDistances();
 	void sendLibraryDistances();

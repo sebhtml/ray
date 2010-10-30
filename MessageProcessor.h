@@ -115,7 +115,6 @@ public:
 	int*m_numberOfMachinesReadyForEdgesDistribution,
 	int*m_numberOfMachinesReadyToSendDistribution,
 	bool*m_mode_send_outgoing_edges,
-	int*m_mode_send_edge_sequence_id,
 	int*m_mode_send_vertices_sequence_id,
 	bool*m_mode_send_vertices,
 	int*m_numberOfMachinesDoneSendingVertices,

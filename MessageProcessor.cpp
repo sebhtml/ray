@@ -111,7 +111,6 @@ void MessageProcessor::processMessage(Message*message,
 	int*m_numberOfMachinesReadyForEdgesDistribution,
 	int*m_numberOfMachinesReadyToSendDistribution,
 	bool*m_mode_send_outgoing_edges,
-	int*m_mode_send_edge_sequence_id,
 	int*m_mode_send_vertices_sequence_id,
 	bool*m_mode_send_vertices,
 	int*m_numberOfMachinesDoneSendingVertices,
@@ -694,7 +693,6 @@ int*m_numberOfRanksWithCoverageData
 		m_outbox->push_back(aMessage);
 	}else if(tag==TAG_START_EDGES_DISTRIBUTION){
 		(*m_mode_send_outgoing_edges)=true;
-		(*m_mode_send_edge_sequence_id)=0;
 	}else if(tag==TAG_START_VERTICES_DISTRIBUTION){
 		(*m_mode_send_vertices)=true;
 		(*m_mode_send_vertices_sequence_id)=0;

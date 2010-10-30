@@ -43,7 +43,8 @@
 #CXXFLAGS=-Wall  -I. -O3  -g  -DSHOW_PROGRESS -DSHOW_FILTER -DDEBUG -DSHOW_TIP_LOST -DSHOW_CHOICE  -DSHOW_TRON -DSHOW_SCAFFOLDER -DWRITE_PARAMETERS -DWRITE_COVERAGE_DISTRIBUTION -DSHOW_SCAFFOLDER -DSHOW_OA_CHOOSER -DSHOW_REPEATED_VERTEX -DSHOW_REPEATED_VERTEX_WATCHDOG -DSHOW_TIP_WATCHDOG -DSHOW_FUSION
 
 # production options follow:
-CXXFLAGS=-I. -Wall -O3
+#CXXFLAGS=-I. -Wall -O3
+CXXFLAGS=-g -I.
 
 # the default is to use mpic++ provided in your $PATH
 MPICC=mpic++
@@ -53,7 +54,7 @@ TARGETS=Ray
 
 all: $(TARGETS)
 
-OBJECTS= Machine.o common_functions.o Loader.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o ReadAnnotation.o CoverageDistribution.o Message.o  Direction.o  PairedRead.o ColorSpaceDecoder.o ColorSpaceLoader.o VertexLinkedList.o BubbleTool.o VerticesExtractor.o MessageProcessor.o SequencesLoader.o Chooser.o OpenAssemblerChooser.o  ErrorSimulator.o BufferedData.o DistributionData.o SequencesIndexer.o TipWatchdog.o RepeatedVertexWatchdog.o SeedExtender.o MyForest.o
+OBJECTS= Machine.o common_functions.o Loader.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o ReadAnnotation.o CoverageDistribution.o Message.o  Direction.o  PairedRead.o ColorSpaceDecoder.o ColorSpaceLoader.o VertexLinkedList.o BubbleTool.o VerticesExtractor.o MessageProcessor.o SequencesLoader.o Chooser.o OpenAssemblerChooser.o  ErrorSimulator.o BufferedData.o DistributionData.o SequencesIndexer.o TipWatchdog.o RepeatedVertexWatchdog.o SeedExtender.o MyForest.o EdgesExtractor.o
 
 %.o: %.cpp
 	@echo MPICC $<

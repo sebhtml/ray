@@ -19,7 +19,8 @@
 
 */
 
-
+#include<mpi.h>
+#include<EdgesExtractor.h>
 #include<Machine.h>
 #include<VerticesExtractor.h>
 #include<sstream>
@@ -35,7 +36,6 @@
 #include<CoverageDistribution.h>
 #include<string.h>
 #include<SplayTreeIterator.h>
-#include<mpi.h>
 #include<Read.h>
 #include<Loader.h>
 #include<MyAllocator.h>
@@ -163,41 +163,6 @@ Machine::Machine(int argc,char**argv){
 	m_cd=new ChooserData();
 }
 
-void Machine::flushIngoingEdges(int threshold){
-	// send messages
-	for(int rankId=0;rankId<getSize();rankId++){
-		int destination=rankId;
-		int length=m_disData->m_messagesStockIn.size(rankId);
-		if(length<threshold)
-			continue;
-		VERTEX_TYPE*data=(VERTEX_TYPE*)m_outboxAllocator.allocate(sizeof(VERTEX_TYPE)*(length));
-		for(int j=0;j<(int)length;j++){
-			data[j]=m_disData->m_messagesStockIn.getAt(rankId,j);
-		}
-		m_disData->m_messagesStockIn.reset(rankId);
-
-		Message aMessage(data, length, MPI_UNSIGNED_LONG_LONG,destination, TAG_IN_EDGES_DATA,getRank());
-		m_outbox.push_back(aMessage);
-	}
-}
-
-void Machine::flushOutgoingEdges(int threshold){
-	for(int rankId=0;rankId<(int)getSize();rankId++){
-		int destination=rankId;
-		int length=m_disData->m_messagesStockOut.size(rankId);
-		if(length<threshold)
-			continue;
-		#ifdef SHOW_PROGRESS
-		#endif
-		VERTEX_TYPE*data=(VERTEX_TYPE*)m_outboxAllocator.allocate(sizeof(VERTEX_TYPE)*(length));
-		for(int j=0;j<(int)length;j++){
-			data[j]=m_disData->m_messagesStockOut.getAt(rankId,j);
-		}
-		m_disData->m_messagesStockOut.reset(rankId);
-		Message aMessage(data, length, MPI_UNSIGNED_LONG_LONG,destination, TAG_OUT_EDGES_DATA,getRank());
-		m_outbox.push_back(aMessage);
-	}
-}
 
 void Machine::start(){
 	m_repeatedLength=0;
@@ -227,13 +192,11 @@ void Machine::start(){
 	m_reverseComplementVertex=false;
 	m_last_value=0;
 	m_mode_send_ingoing_edges=false;
-	m_mode_send_edge_sequence_id_position=0;
 	m_mode_send_vertices=false;
 	m_mode_sendDistribution=false;
 	m_mode_send_outgoing_edges=false;
 	m_mode_send_vertices_sequence_id=0;
 	m_mode_send_vertices_sequence_id_position=0;
-	m_reverseComplementEdge=false;
 	m_calibration_MaxSpeed=99999999; // initial speed limit before calibration
 	m_numberOfMachinesDoneSendingVertices=0;
 	m_numberOfMachinesDoneSendingEdges=0;
@@ -271,6 +234,16 @@ void Machine::start(){
 	int version;
 	int subversion;
 	MPI_Get_version(&version,&subversion);
+
+	m_edgesExtractor.m_disData=m_disData;
+	m_edgesExtractor.getRank=getRank();
+	m_edgesExtractor.getSize=getSize();
+	m_edgesExtractor.m_outboxAllocator=&m_outboxAllocator;
+	m_edgesExtractor.m_outbox=&m_outbox;
+	m_edgesExtractor.m_mode_send_outgoing_edges=&m_mode_send_outgoing_edges;
+	m_edgesExtractor.m_mode_send_ingoing_edges=&m_mode_send_ingoing_edges;
+	m_edgesExtractor.m_colorSpaceMode=m_colorSpaceMode;
+	m_edgesExtractor.m_myReads=&m_myReads;
 
 	if(isMaster()){
 		cout<<"**************************************************"<<endl;
@@ -1121,7 +1094,6 @@ void Machine::processMessages(){
 	&m_numberOfMachinesReadyForEdgesDistribution,
 	&m_numberOfMachinesReadyToSendDistribution,
 	&m_mode_send_outgoing_edges,
-	&m_mode_send_edge_sequence_id,
 	&m_mode_send_vertices_sequence_id,
 	&m_mode_send_vertices,
 	&m_numberOfMachinesDoneSendingVertices,
@@ -1313,6 +1285,7 @@ void Machine::processData(){
 			cout<<"Preparing AMOS file "<<m_parameters.getAmosFile()<<endl;
 			m_bubbleData->m_amos=fopen(m_parameters.getAmosFile().c_str(),"w");
 		}
+
 
 		for(int i=0;i<getSize();i++){
 			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
@@ -1551,156 +1524,10 @@ void Machine::processData(){
 		}
 
 	}else if(m_mode_send_outgoing_edges){ 
-		#ifdef SHOW_PROGRESS
-		if(m_mode_send_edge_sequence_id%100000==0 and m_mode_send_edge_sequence_id_position==0){
-			string strand="";
-			if(m_reverseComplementEdge)
-				strand="(reverse complement)";
-			cout<<"Rank "<<getRank()<<" is extracting outgoing edges "<<strand<<" "<<m_mode_send_edge_sequence_id+1<<"/"<<m_myReads.size()<<endl;
-		}
-		#endif
-
-		if(m_mode_send_edge_sequence_id>(int)m_myReads.size()-1){
-			if(m_reverseComplementEdge==false){
-				m_mode_send_edge_sequence_id_position=0;
-				m_reverseComplementEdge=true;
-				flushOutgoingEdges(1);
-				#ifdef SHOW_PROGRESS
-				cout<<"Rank "<<getRank()<<" is extracting outgoing edges "<<m_myReads.size()<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
-				#endif
-				m_mode_send_edge_sequence_id=0;
-			}else{
-				flushOutgoingEdges(1);
-				m_mode_send_outgoing_edges=false;
-				m_mode_send_ingoing_edges=true;
-				m_mode_send_edge_sequence_id_position=0;
-				#ifdef SHOW_PROGRESS
-				cout<<"Rank "<<getRank()<<" is extracting outgoing edges (reverse complement) "<<m_myReads.size()<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
-				#endif
-				m_mode_send_edge_sequence_id=0;
-				m_reverseComplementEdge=false;
-			}
-		}else{
-			char*readSequence=m_myReads[m_mode_send_edge_sequence_id]->getSeq();
-			int len=strlen(readSequence);
-
-			char memory[100];
-			int lll=len-m_wordSize-1;
-			if(m_mode_send_edge_sequence_id_position>lll){
-				m_mode_send_edge_sequence_id++;
-				m_mode_send_edge_sequence_id_position=0;
-				return;
-			}
-
-			int p=m_mode_send_edge_sequence_id_position;
-			memcpy(memory,readSequence+p,m_wordSize+1);
-			memory[m_wordSize+1]='\0';
-			if(isValidDNA(memory)){
-				char prefix[100];
-				char suffix[100];
-				strcpy(prefix,memory);
-				prefix[m_wordSize]='\0';
-				strcpy(suffix,memory+1);
-				VERTEX_TYPE a_1=wordId(prefix);
-				VERTEX_TYPE a_2=wordId(suffix);
-				if(m_reverseComplementEdge){
-					VERTEX_TYPE b_1=complementVertex(a_2,m_wordSize,m_colorSpaceMode);
-					VERTEX_TYPE b_2=complementVertex(a_1,m_wordSize,m_colorSpaceMode);
-					int rankB=vertexRank(b_1);
-					m_disData->m_messagesStockOut.addAt(rankB,b_1);
-					m_disData->m_messagesStockOut.addAt(rankB,b_2);
-				}else{
-					int rankA=vertexRank(a_1);
-					m_disData->m_messagesStockOut.addAt(rankA,a_1);
-					m_disData->m_messagesStockOut.addAt(rankA,a_2);
-				}
-				
-				flushOutgoingEdges(MAX_UINT64_T_PER_MESSAGE);
-			}
-			
-			m_mode_send_edge_sequence_id_position++;
-
-
-		}
+		m_edgesExtractor.m_wordSize=m_wordSize;
+		m_edgesExtractor.processOutgoingEdges();
 	}else if(m_mode_send_ingoing_edges){ 
-
-		#ifdef SHOW_PROGRESS
-		if(m_mode_send_edge_sequence_id%100000==0 and m_mode_send_edge_sequence_id_position==0){
-			string strand="";
-			if(m_reverseComplementEdge)
-				strand="(reverse complement)";
-			cout<<"Rank "<<getRank()<<" is extracting ingoing edges "<<strand<<" "<<m_mode_send_edge_sequence_id+1<<"/"<<m_myReads.size()<<endl;
-		}
-		#endif
-
-		if(m_mode_send_edge_sequence_id>(int)m_myReads.size()-1){
-			if(m_reverseComplementEdge==false){
-				m_reverseComplementEdge=true;
-				m_mode_send_edge_sequence_id_position=0;
-				flushIngoingEdges(1);
-				#ifdef SHOW_PROGRESS
-				cout<<"Rank "<<getRank()<<" is extracting ingoing edges "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
-				#endif
-				m_mode_send_edge_sequence_id=0;
-			}else{
-				flushIngoingEdges(1);
-				Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_EDGES_DISTRIBUTED,getRank());
-				m_outbox.push_back(aMessage);
-				m_mode_send_ingoing_edges=false;
-			
-				#ifdef SHOW_PROGRESS
-				cout<<"Rank "<<getRank()<<" is extracting ingoing edges (reverse complement) "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads.size()<<" (DONE)"<<endl;
-				#endif
-			}
-		}else{
-
-
-			char*readSequence=m_myReads[m_mode_send_edge_sequence_id]->getSeq();
-			int len=strlen(readSequence);
-			char memory[100];
-			int lll=len-m_wordSize-1;
-			
-			if(m_mode_send_edge_sequence_id_position>lll){
-				m_mode_send_edge_sequence_id++;
-				m_mode_send_edge_sequence_id_position=0;
-				return;
-			}
-
-				
-			memcpy(memory,readSequence+m_mode_send_edge_sequence_id_position,m_wordSize+1);
-			memory[m_wordSize+1]='\0';
-			if(isValidDNA(memory)){
-				char prefix[100];
-				char suffix[100];
-				strcpy(prefix,memory);
-				prefix[m_wordSize]='\0';
-				strcpy(suffix,memory+1);
-				VERTEX_TYPE a_1=wordId(prefix);
-				VERTEX_TYPE a_2=wordId(suffix);
-				if(m_reverseComplementEdge){
-					VERTEX_TYPE b_1=complementVertex(a_2,m_wordSize,m_colorSpaceMode);
-					VERTEX_TYPE b_2=complementVertex(a_1,m_wordSize,m_colorSpaceMode);
-					int rankB=vertexRank(b_2);
-					m_disData->m_messagesStockIn.addAt(rankB,b_1);
-					m_disData->m_messagesStockIn.addAt(rankB,b_2);
-				}else{
-					int rankA=vertexRank(a_2);
-					m_disData->m_messagesStockIn.addAt(rankA,a_1);
-					m_disData->m_messagesStockIn.addAt(rankA,a_2);
-				}
-
-				// flush data
-				flushIngoingEdges(MAX_UINT64_T_PER_MESSAGE);
-			}
-
-			m_mode_send_edge_sequence_id_position++;
-
-
-			if(m_mode_send_edge_sequence_id_position>lll){
-				m_mode_send_edge_sequence_id++;
-				m_mode_send_edge_sequence_id_position=0;
-			}
-		}
+		m_edgesExtractor.processIngoingEdges();
 	}else if(m_readyToSeed==getSize()){
 		computeTime(m_startingTime);
 		cout<<endl;
