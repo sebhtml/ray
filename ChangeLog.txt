@@ -1,7 +1,54 @@
-== 0.0.3 (23 tickets) ==
+== Ray v. 0.1.0 codename Adenine ==
 
-* initial release, see
-https://sourceforge.net/mailarchive/forum.php?thread_name=C4217F2ABFA5D44BA8F3DCD899E5B0C8E42ED96EA7%40EXCH-MBX-F.ulaval.ca&forum_name=denovoassembler-users
+
+
+== 0.0.7 (25 tickets) ==
+
+* (Small) speed improvement in seed extension (trac #21)
+* Ray can now write to user-specified files -- Huge thanks to Matthew
+MacManes (University of California -- Berkeley) for suggesting this (trac #163)
+* Changed the allocator size to 0x1000000 (trac #162)
+* Ray can now estimate paired distances -- thanks to Torsten
+Seemann (Victorian Bioinformatics Consortium, Dept. Microbiology, Monash
+University, AUSTRALIA) for his expertise (trac #159 158 #156 #131)
+* Each MPI process now has a forest of 0x1000 splay trees, which are frozen
+(no more splay operations) after no more items are inserted. (trac #151 #150
+#149)
+* Added running times in comparisons, as wisely suggested by Matthew MacManes
+(University of California -- Berkeley) (trac #136)
+* Ray is now better with a large peak coverage, and is more careful
+otherwise. (trac #135 #134)
+* Some improvements on mix datasets (trac #132)
+* Ray is now robust when parsing arguments, and will complaint if something
+is messy -- thanks to Torsten Seemann (Victorian Bioinformatics Consortium, Dept. Microbiology, Monash 
+University, AUSTRALIA) for noticing the issue (trac #129)
+
+
+== 0.0.6 (22 tickets) ==
+
+* 'make test' now performs unit tests (trac #83)
+* 'make simtools' compiles simulation tools (trac #43)
+* ignore coverage at 255 or more in the coverage distribution (trac #105)
+* reduced number of contigs and error rates (trac #103 #106 #107 #110 #111
+#118)
+* MPI messages are grouped together in up-to-4096-bytes messages, when
+possible (trac #114)
+* unroll some loops to gain performance (trac #117)
+* scripts included to do benchmarks
+* improved AMOS file generation
+* corrected the loader for color-space reads (thanks to sparks from
+seqanswers.com)
+* some code refactoring to reduce the size of Machine.cpp
+* Comparison with other assemblers 
+
+
+== 0.0.5 (8 tickets) ==
+
+* Ray now outputs assemblies in AMOS format (with -a), (trac #58)
+* Ray commands can be provided with a commands file (like in 0.0.3 and 0.0.4)
+as well as with command-line arguments, (trac #94) and
+* Ray removes non-A-T-C-G letters at both ends of reads.
+
 
 == 0.0.4 (12 tickets) ==
 
@@ -25,48 +72,9 @@ Ray now reuses allocated memory for ingoing and outgoing messages
 (10 MB for each).
 * Added a mummer validation script (r3090)
 
-== 0.0.5 (8 tickets) ==
 
-* Ray now outputs assemblies in AMOS format (with -a), (trac #58)
-* Ray commands can be provided with a commands file (like in 0.0.3 and 0.0.4)
-as well as with command-line arguments, (trac #94) and
-* Ray removes non-A-T-C-G letters at both ends of reads.
+== 0.0.3 (23 tickets) ==
 
-== 0.0.6 (22 tickets) ==
+* initial release, see
+https://sourceforge.net/mailarchive/forum.php?thread_name=C4217F2ABFA5D44BA8F3DCD899E5B0C8E42ED96EA7%40EXCH-MBX-F.ulaval.ca&forum_name=denovoassembler-users
 
-* 'make test' now performs unit tests (trac #83)
-* 'make simtools' compiles simulation tools (trac #43)
-* ignore coverage at 255 or more in the coverage distribution (trac #105)
-* reduced number of contigs and error rates (trac #103 #106 #107 #110 #111
-#118)
-* MPI messages are grouped together in up-to-4096-bytes messages, when
-possible (trac #114)
-* unroll some loops to gain performance (trac #117)
-* scripts included to do benchmarks
-* improved AMOS file generation
-* corrected the loader for color-space reads (thanks to sparks from
-seqanswers.com)
-* some code refactoring to reduce the size of Machine.cpp
-* Comparison with other assemblers 
-
-
-== 0.0.7 (25 tickets) ==
-
-* (Small) speed improvement in seed extension (trac #21)
-* Ray can now write to user-specified files -- Huge thanks to Matthew
-MacManes (University of California -- Berkeley) for suggesting this (trac #163)
-* Changed the allocator size to 0x1000000 (trac #162)
-* Ray can now estimate paired distances -- thanks to Torsten
-Seemann (Victorian Bioinformatics Consortium, Dept. Microbiology, Monash
-University, AUSTRALIA) for his expertise (trac #159 158 #156 #131)
-* Each MPI process now has a forest of 0x1000 splay trees, which are frozen
-(no more splay operations) after no more items are inserted. (trac #151 #150
-#149)
-* Added running times in comparisons, as wisely suggested by Matthew MacManes
-(University of California -- Berkeley) (trac #136)
-* Ray is now better with a large peak coverage, and is more careful
-otherwise. (trac #135 #134)
-* Some improvements on mix datasets (trac #132)
-* Ray is now robust when parsing arguments, and will complaint if something
-is messy -- thanks to Torsten Seemann (Victorian Bioinformatics Consortium, Dept. Microbiology, Monash 
-University, AUSTRALIA) for noticing the issue (trac #129)
