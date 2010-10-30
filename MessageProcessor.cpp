@@ -119,7 +119,8 @@ void MessageProcessor::processMessage(Message*message,
 	bool*m_EXTENSION_reads_received,
 				vector<Message>*m_outbox,
 	map<int,int>*m_allIdentifiers,
-	OpenAssemblerChooser*m_oa
+	OpenAssemblerChooser*m_oa,
+int*m_numberOfRanksWithCoverageData
 ){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
@@ -560,11 +561,13 @@ void MessageProcessor::processMessage(Message*message,
 			VERTEX_TYPE count=incoming[i+1];
 			(*m_coverageDistribution)[coverage]+=count;
 		}
+	}else if(tag==TAG_RECEIVED_COVERAGE_INFORMATION){
+		(*m_numberOfRanksWithCoverageData)++;
 	}else if(tag==TAG_SEND_COVERAGE_VALUES){
 		(*m_minimumCoverage)=incoming[0];
 		(*m_seedCoverage)=incoming[1];
 		(*m_peakCoverage)=incoming[2];
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_READY_TO_SEED,rank);
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_RECEIVED_COVERAGE_INFORMATION,rank);
 		m_outbox->push_back(aMessage);
 		m_oa->constructor((*m_peakCoverage));
 	}else if(tag==TAG_READY_TO_SEED){
@@ -673,14 +676,6 @@ void MessageProcessor::processMessage(Message*message,
 		#endif
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,TAG_SEQUENCES_READY,rank);
 		m_outbox->push_back(aMessage);
-	}else if(tag==TAG_SHOW_VERTICES){
-		#ifdef SHOW_PROGRESS
-		cout<<"Rank "<<rank<<" has "<<m_subgraph->size()<<" vertices (DONE)"<<endl;
-		#endif
-		#ifdef SHOW_FOREST_SIZE
-		cout<<"Rank "<<rank<<" has "<<m_subgraph->size()<<" vertices (DONE)"<<endl;
-		#endif
-		m_subgraph->freeze();
 	}else if(tag==TAG_SEQUENCES_READY){
 		(*m_sequence_ready_machines)++;
 	}else if(tag==TAG_START_EDGES_DISTRIBUTION_ANSWER){
@@ -694,6 +689,7 @@ void MessageProcessor::processMessage(Message*message,
 		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, source, TAG_START_EDGES_DISTRIBUTION_ANSWER,rank);
 		m_outbox->push_back(aMessage);
 	}else if(tag==TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION){
+		cout<<"Rank "<<rank<<" has "<<m_subgraph->size()<<" vertices (DONE)"<<endl;
 		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, source, TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER,rank);
 		m_outbox->push_back(aMessage);
 	}else if(tag==TAG_START_EDGES_DISTRIBUTION){

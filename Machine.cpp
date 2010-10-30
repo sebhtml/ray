@@ -219,7 +219,7 @@ void Machine::start(){
 	m_calibrationAskedCalibration=false;
 	m_calibrationIsDone=true; // set to false to perform a speed calibration.
 	m_master_mode=MODE_DO_NOTHING;
-	m_numberOfMachinesReadyForEdgesDistribution=-1;
+	m_numberOfMachinesReadyForEdgesDistribution=0;
 	m_ed->m_mode_EXTENSION=false;
 	m_aborted=false;
 	m_readyToSeed=0;
@@ -1128,7 +1128,8 @@ void Machine::processMessages(){
 	&m_numberOfMachinesDoneSendingCoverage,
 	&m_ed->m_EXTENSION_reads_received,
 				&m_outbox,
-	&m_sd->m_allIdentifiers,&m_oa);
+	&m_sd->m_allIdentifiers,&m_oa,
+	&m_numberOfRanksWithCoverageData);
 
 	}
 	m_inbox.clear();
@@ -1353,21 +1354,8 @@ void Machine::processData(){
 			m_outbox.push_back(aMessage);
 		}
 		m_messageSentForVerticesDistribution=true;
-	}else if(m_numberOfMachinesDoneSendingVertices==getSize()){
-		m_numberOfMachinesReadyForEdgesDistribution=0;
-		m_numberOfMachinesDoneSendingVertices=-1;
 
-		computeTime(m_startingTime);
-		cout<<endl;
-		for(int i=0;i<getSize();i++){
-			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, i, TAG_SHOW_VERTICES,getRank());
-			m_outbox.push_back(aMessage);
-		}
-
-
-		m_mode_AttachSequences=true;
-		m_distribution_file_id=m_distribution_sequence_id=m_distribution_currentSequenceId=0;
-		m_startEdgeDistribution=false;
+	
 	}else if(m_startEdgeDistribution){
 		#ifndef SHOW_PROGRESS
 		cout<<"\r"<<"Connecting vertices"<<endl;
@@ -1431,6 +1419,8 @@ void Machine::processData(){
 		buffer[0]=m_minimumCoverage;
 		buffer[1]=m_seedCoverage;
 		buffer[2]=m_peakCoverage;
+		
+		m_numberOfRanksWithCoverageData=0;
 		for(int i=0;i<getSize();i++){
 			Message aMessage(buffer,3,MPI_UNSIGNED_LONG_LONG,i,TAG_SEND_COVERAGE_VALUES,getRank());
 			m_outbox.push_back(aMessage);
@@ -1449,26 +1439,40 @@ void Machine::processData(){
 				&m_outboxAllocator,
 				m_colorSpaceMode
 			);
-
+	}else if(m_numberOfRanksWithCoverageData==getSize()){
+		m_numberOfRanksWithCoverageData=-1;
+		m_numberOfMachinesReadyForEdgesDistribution=getSize();
 	}else if(m_numberOfMachinesDoneSendingEdges==getSize()){
 		m_numberOfMachinesDoneSendingEdges=-9;
+
+		computeTime(m_startingTime);
+		cout<<endl;
+
+
+		m_mode_AttachSequences=true;
+		m_distribution_file_id=m_distribution_sequence_id=m_distribution_currentSequenceId=0;
+
+	}else if(m_numberOfMachinesDoneSendingVertices==getSize()){
+		m_numberOfMachinesDoneSendingVertices=-1;
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, i, TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION,getRank());
 			m_outbox.push_back(aMessage);
 		}
 	}else if(m_numberOfMachinesReadyToSendDistribution==getSize()){
-		if(m_machineRank<=m_numberOfMachinesDoneSendingCoverage){
-			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, m_machineRank, TAG_PREPARE_COVERAGE_DISTRIBUTION,getRank());
-			m_outbox.push_back(aMessage);
-			m_machineRank++;
-		}
 
-		if(m_machineRank==getSize()){
-			m_numberOfMachinesReadyToSendDistribution=-1;
+		m_numberOfMachinesReadyToSendDistribution=-1;
+		computeTime(m_startingTime);
+		cout<<endl;
+		cout<<"Rank 0 computes the coverage distribution."<<endl;
+
+
+		for(int i=0;i<getSize();i++){
+			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, i, TAG_PREPARE_COVERAGE_DISTRIBUTION,getRank());
+			m_outbox.push_back(aMessage);
 		}
 	}else if(m_ranksDoneAttachingReads==getSize()){
 		m_ranksDoneAttachingReads=-1;
-		m_startEdgeDistribution=true;
+		m_readyToSeed=getSize();
 	}
 
 	if(m_mode==MODE_ASSEMBLE_WAVES){

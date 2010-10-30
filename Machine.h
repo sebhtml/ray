@@ -73,6 +73,8 @@ using namespace std;
 
 
 class Machine{
+	
+	int m_numberOfRanksWithCoverageData;
 	time_t m_startingTime;
 	ScaffolderData*m_sd;
 	VerticesExtractor m_verticesExtractor;

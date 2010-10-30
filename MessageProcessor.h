@@ -122,7 +122,8 @@ public:
 	int*m_numberOfMachinesDoneSendingCoverage,
 	bool*m_EXTENSION_reads_received,
 				vector<Message>*m_outbox,
-		map<int,int>*m_allIdentifiers,OpenAssemblerChooser*m_oa);
+		map<int,int>*m_allIdentifiers,OpenAssemblerChooser*m_oa,
+int*m_numberOfRanksWithCoverageData);
 };
 
 #endif
