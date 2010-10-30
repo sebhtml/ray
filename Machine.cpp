@@ -282,9 +282,15 @@ void Machine::start(){
 		cout<<"Ray Copyright (C) 2010  Sébastien Boisvert, Jacques Corbeil, François Laviolette"<<endl;
  		cout<<"http://denovoassembler.sf.net/"<<endl<<endl;
 
+		cout<<"Reference to cite: "<<endl<<endl;
+		cout<<"Ray: simultaneous assembly of reads from a mix of high-throughput sequencing technologies."<<endl;
+		cout<<"Sébastien Boisvert, François Laviolette, and Jacques Corbeil."<<endl;
+		cout<<"Journal of Computational Biology (Mary Ann Liebert, Inc. publishers)."<<endl;
+		cout<<"-Not available-, ahead of print."<<endl;
+		cout<<"doi:10.1089/cmb.2009.0238"<<endl;
+		cout<<"http://dx.doi.org/doi:10.1089/cmb.2009.0238"<<endl;
+		cout<<endl;
 
-		cout<<"sizeof(VERTEX_TYPE) "<<sizeof(VERTEX_TYPE)<<endl;
-		cout<<"sizeof(Vertex) "<<sizeof(Vertex)<<endl;
 
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<" welcomes you to the MPI_COMM_WORLD."<<endl;
@@ -300,7 +306,6 @@ void Machine::start(){
 			#endif
 		#endif
 		#endif
-
 	}
 
 	cout<<"Rank "<<getRank()<<" is running as UNIX process "<<getpid()<<" on "<<serverName<<" (MPI version "<<version<<"."<<subversion<<")"<<endl;
