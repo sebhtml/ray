@@ -38,6 +38,13 @@ using namespace std;
 
 class SeedExtender{
 public:
+
+	map<int,string> m_sequences;
+	bool m_sequenceReceived;
+	bool m_sequenceRequested;
+	string m_receivedString;
+	int m_sequenceIndexToCache;
+
 	void enumerateChoices(bool*edgesRequested,ExtensionData*ed,bool*edgesReceived,MyAllocator*outboxAllocator,
 		int*outgoingEdgeIndex,vector<Message>*outbox,
 VERTEX_TYPE*currentVertex,int theRank,bool*vertexCoverageRequested,vector<VERTEX_TYPE>*receivedOutgoingEdges,

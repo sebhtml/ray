@@ -119,7 +119,8 @@ void MessageProcessor::processMessage(Message*message,
 				vector<Message>*m_outbox,
 	map<int,int>*m_allIdentifiers,
 	OpenAssemblerChooser*m_oa,
-int*m_numberOfRanksWithCoverageData
+int*m_numberOfRanksWithCoverageData,
+SeedExtender*seedExtender
 ){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
@@ -654,6 +655,14 @@ int*m_numberOfRanksWithCoverageData
 		}
 	}else if(tag==TAG_WELCOME){
 
+	}else if(tag==TAG_REQUEST_READ_SEQUENCE_REPLY){
+		seedExtender->m_receivedString=(char*)incoming;
+		seedExtender->m_sequenceReceived=true;
+	}else if(tag==TAG_REQUEST_READ_SEQUENCE){
+		int id=(int)incoming[0];
+		char*seq=m_myReads->at(id)->getSeq();
+		Message aMessage(seq,strlen(seq+1),MPI_BYTE,source,TAG_REQUEST_READ_SEQUENCE_REPLY,rank);
+		m_outbox->push_back(aMessage);
 	}else if(tag==TAG_SEND_SEQUENCE){
 		int length=count;
 		char*incoming=(char*)(*m_inboxAllocator).allocate(count*sizeof(char)+1);

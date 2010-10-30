@@ -26,6 +26,7 @@
 #include<Message.h>
 #include<vector>
 #include<SplayTree.h>
+#include<SeedExtender.h>
 #include<FusionData.h>
 #include<ReadAnnotation.h>
 #include<MyForest.h>
@@ -122,7 +123,8 @@ public:
 	bool*m_EXTENSION_reads_received,
 				vector<Message>*m_outbox,
 		map<int,int>*m_allIdentifiers,OpenAssemblerChooser*m_oa,
-int*m_numberOfRanksWithCoverageData);
+int*m_numberOfRanksWithCoverageData,
+SeedExtender*seedExtender);
 };
 
 #endif

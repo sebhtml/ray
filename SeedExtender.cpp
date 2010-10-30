@@ -945,38 +945,41 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				message[0]=(VERTEX_TYPE)(*currentVertex);
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank((*currentVertex),size),TAG_REQUEST_READS,theRank);
 				(*outbox).push_back(aMessage);
+				m_sequenceIndexToCache=0;
+				m_sequenceRequested=false;
 			}else if(ed->m_EXTENSION_reads_received){
-				for(int i=0;i<(int)ed->m_EXTENSION_receivedReads.size();i++){
-					int uniqueId=ed->m_EXTENSION_receivedReads[i].getUniqueId();
-					// check that the complete sequence of (*currentVertex) correspond to
-					// the one of the start of the read on the good strand.
-					// this is important when USE_DISTANT_SEGMENTS_GRAPH is set.
-
-					if(ed->m_EXTENSION_usedReads.count(uniqueId)==0 ){
-						// use all reads available.
-						// avoid vertices with too much coverage.
-						if((*(repeatedLength))<_REPEATED_LENGTH_ALARM_THRESHOLD){
-							ed->m_EXTENSION_usedReads.insert(uniqueId);
-							ed->m_EXTENSION_reads_startingPositionOnContig[uniqueId]=ed->m_EXTENSION_extension.size()-1;
-							ed->m_EXTENSION_readsInRange.insert(ed->m_EXTENSION_receivedReads[i]);
-							#ifdef DEBUG
-							assert(ed->m_EXTENSION_readsInRange.count(ed->m_EXTENSION_receivedReads[i])>0);
-							#endif
-						}else{
-							#ifdef SHOW_REPEATED_VERTEX
-							cout<<"Repeated vertex: "<<idToWord((*currentVertex),wordSize)<<endl;
-							#endif
-							#ifdef DEBUG
-							assert((*receivedVertexCoverage)>=(*maxCoverage));
-							#endif
-						}
+				if(m_sequenceIndexToCache<(int)ed->m_EXTENSION_receivedReads.size()){
+					int uniqueId=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache].getUniqueId();
+					if(ed->m_EXTENSION_usedReads.count(uniqueId)>0){
+						m_sequenceIndexToCache++;
+					}else if(*(repeatedLength)>=_REPEATED_LENGTH_ALARM_THRESHOLD){
+						m_sequenceIndexToCache++;
+					}else if(!m_sequenceRequested){
+						m_sequenceReceived=false;
+						m_sequenceRequested=true;
+						int sequenceRank=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache].getRank();
+						VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
+						message[0]=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache].getReadIndex();
+						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,sequenceRank,TAG_REQUEST_READ_SEQUENCE,theRank);
+						outbox->push_back(aMessage);
+					}else if(m_sequenceReceived){
+						m_sequences[uniqueId]=m_receivedString;
+						ed->m_EXTENSION_usedReads.insert(uniqueId);
+						ed->m_EXTENSION_reads_startingPositionOnContig[uniqueId]=ed->m_EXTENSION_extension.size()-1;
+						ed->m_EXTENSION_readsInRange.insert(ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache]);
+						#ifdef DEBUG
+						assert(ed->m_EXTENSION_readsInRange.count(ed->m_EXTENSION_receivedReads[i])>0);
+						#endif
+						m_sequenceRequested=false;
+						m_sequenceIndexToCache++;
 					}
+				}else{
+					ed->m_EXTENSION_directVertexDone=true;
+					ed->m_EXTENSION_VertexMarkAssembled_requested=false;
+					ed->m_EXTENSION_enumerateChoices=false;
+					(*edgesRequested)=false;
+					ed->m_EXTENSION_markedCurrentVertexAsAssembled=true;
 				}
-				ed->m_EXTENSION_directVertexDone=true;
-				ed->m_EXTENSION_VertexMarkAssembled_requested=false;
-				ed->m_EXTENSION_enumerateChoices=false;
-				(*edgesRequested)=false;
-				ed->m_EXTENSION_markedCurrentVertexAsAssembled=true;
 			}
 		}
 	}
