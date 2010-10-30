@@ -339,13 +339,11 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 				if(!ed->m_EXTENSION_readLength_done){
 					if(!ed->m_EXTENSION_readLength_requested){
 						ed->m_EXTENSION_readLength_requested=true;
-						ed->m_EXTENSION_readLength_received=false;
+						ed->m_EXTENSION_readLength_received=true;
 
 						ReadAnnotation annotation=*ed->m_EXTENSION_readIterator;
-						VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
-						message[0]=annotation.getReadIndex();
-						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_ASK_READ_LENGTH,theRank);
-						(*outbox).push_back(aMessage);
+						// use cache
+						ed->m_EXTENSION_receivedLength=m_sequences[annotation.getUniqueId()].length();
 					}else if(ed->m_EXTENSION_readLength_received){
 						ReadAnnotation annotation=*ed->m_EXTENSION_readIterator;
 
@@ -375,13 +373,13 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 						cout<<"The read has length="<<ed->m_EXTENSION_receivedLength<<endl;
 					}
 					int distance=ed->m_EXTENSION_extension.size()-startPosition;
-					VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(3*sizeof(VERTEX_TYPE));
-					message[0]=annotation.getReadIndex();
-					message[1]=distance;
-					message[2]=annotation.getStrand();
-					Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_ASK_READ_VERTEX_AT_POSITION,theRank);
-					(*outbox).push_back(aMessage);
-					ed->m_EXTENSION_read_vertex_received=false;
+
+
+					// use cache
+					const char*theSequence=m_sequences[annotation.getUniqueId()].c_str();
+					ed->m_EXTENSION_receivedReadVertex=kmerAtPosition(theSequence,distance,wordSize,annotation.getStrand(),*colorSpaceMode);
+					ed->m_EXTENSION_read_vertex_received=true;
+
 					ed->m_EXTENSION_edgeIterator=0;
 					ed->m_EXTENSION_hasPairedReadRequested=false;
 				}else if(ed->m_EXTENSION_read_vertex_received){
@@ -471,6 +469,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 			}else{
 				// remove reads that are no longer in-range.
 				for(int i=0;i<(int)ed->m_EXTENSION_readsOutOfRange.size();i++){
+					m_sequences.erase(ed->m_EXTENSION_readsOutOfRange[i].getUniqueId());
 					ed->m_EXTENSION_readsInRange.erase(ed->m_EXTENSION_readsOutOfRange[i]);
 				}
 				ed->m_EXTENSION_readsOutOfRange.clear();

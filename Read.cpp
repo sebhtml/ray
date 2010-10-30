@@ -100,36 +100,8 @@ int Read::length(){
  *           -----------------------------------
  *                     p p-1 p-2               0
  */
-VERTEX_TYPE Read::Vertex(int pos,int w,char strand,bool color){
-	if(pos>length()-w){
-		cout<<"Fatal: offset is too large."<<endl;
-		exit(0);
-	}
-	if(pos<0){
-		cout<<"Fatal: negative offset. "<<pos<<endl;
-		exit(0);
-	}
-	if(strand=='F'){
-		char sequence[40];
-		for(int i=0;i<w;i++){
-			sequence[i]=m_sequence[pos+i];
-		}
-		sequence[w]='\0';
-		VERTEX_TYPE v=wordId(sequence);
-		return v;
-	}else{
-		char sequence[40];
-		for(int i=0;i<w;i++){
-			char a=m_sequence[strlen(m_sequence)-pos-w+i];
-			sequence[i]=a;
-		}
-		sequence[w]='\0';
-		VERTEX_TYPE v=wordId(sequence);
-		return complementVertex(v,w,color);
-	}
-
-
-	return 0;
+VERTEX_TYPE Read::Vertex(int pos,int w,char strand,bool color) const {
+	return kmerAtPosition(m_sequence,pos,w,strand,color);
 }
 
 void Read::setPairedRead(PairedRead*t){

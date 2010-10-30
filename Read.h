@@ -45,7 +45,7 @@ public:
 	~Read();
 	char*getSeq();
 	int length();
-	VERTEX_TYPE Vertex(int pos,int w,char strand,bool color);
+	VERTEX_TYPE Vertex(int pos,int w,char strand,bool color)const;
 	void copy(const char*id,const char*sequence,MyAllocator*seqMyAllocator);
 	void setPairedRead(PairedRead*t);
 	bool hasPairedRead();
