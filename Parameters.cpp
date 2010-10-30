@@ -371,7 +371,7 @@ string Parameters::getContigsFile(){
 }
 
 string Parameters::getCoverageDistributionFile(){
-	return "Ray-CoverageDistribution.txt";
+	return getContigsFile()+"-TheCoverageDistribution.tab";
 }
 
 string Parameters::getAmosFile(){
