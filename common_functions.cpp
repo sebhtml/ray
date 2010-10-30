@@ -324,6 +324,9 @@ u32 hash6432(u64 key){
 void*__Malloc(int c){
 	void*a=NULL;
 	a=malloc(c);
+	if(a==NULL){
+		cout<<"Critical exception: The system is out of memory, malloc returned NULL."<<endl;
+	}
 	assert(a!=NULL);
 	return a;
 }

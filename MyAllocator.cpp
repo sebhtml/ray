@@ -69,6 +69,7 @@ void*MyAllocator::allocate(int s){
 	assert(s<=m_CHUNK_SIZE);
 	#endif
 	if(s>m_CHUNK_SIZE){
+		cout<<"Critical exception: The length of the requested memory exceeds the CHUNK_SIZE: "<<s<<" > "<<m_CHUNK_SIZE<<endl;
 		assert(false);
 		return NULL;// you asked too much.., this is critical..
 	}
