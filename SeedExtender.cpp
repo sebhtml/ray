@@ -344,7 +344,6 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 				// we received the vertex for that read,
 				// now check if it matches one of 
 				// the many choices we have
-				//cout<<"Position: "<<ed->m_EXTENSION_extension.size()<<" with "<<ed->m_enumerateChoices_outgoingEdges.size()<<" edges"<<endl;
 				ReadAnnotation annotation=*ed->m_EXTENSION_readIterator;
 				//cout<<"Checking read "<<annotation.getUniqueId()<<endl;
 				int startPosition=ed->m_EXTENSION_reads_startingPositionOnContig[annotation.getUniqueId()];
@@ -368,10 +367,8 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 				if(ed->m_EXTENSION_edgeIterator<(int)ed->m_enumerateChoices_outgoingEdges.size()){
 					//cout<<"Checking edge # "<<ed->m_EXTENSION_edgeIterator<<endl;
 					VERTEX_TYPE pathVertex=ed->m_enumerateChoices_outgoingEdges[ed->m_EXTENSION_edgeIterator];
-					//cout<<"Vertex path is "<<idToWord(pathVertex,wordSize)<<" Size="<<ed->m_EXTENSION_extension.size()<<endl;
 					// got a match!
 					if(ed->m_EXTENSION_receivedReadVertex==pathVertex){
-						//cout<<"Match!"<<endl;
 						// check if the current read has a paired read.
 						if(!ed->m_EXTENSION_hasPairedReadRequested){
 							//cout<<"Asking if there is a paired read"<<endl;
@@ -379,15 +376,14 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 							ed->m_EXTENSION_hasPairedReadRequested=true;
 							ed->m_EXTENSION_hasPairedReadReceived=true;
 							ed->m_EXTENSION_hasPairedReadAnswer=m_pairedReads.count(annotation.getUniqueId())>0;
-							ed->m_EXTENSION_pairedSequenceRequested=true;
-							ed->m_EXTENSION_pairedSequenceReceived=true;
-							ed->m_EXTENSION_pairedRead=m_pairedReads[annotation.getUniqueId()];
+							
+							ed->m_EXTENSION_pairedSequenceRequested=false;
 						}else if(ed->m_EXTENSION_hasPairedReadReceived){
 							//cout<<"Received answer"<<endl;
 							// vertex matches, but no paired end read found, at last.
 							if(!ed->m_EXTENSION_hasPairedReadAnswer){
+							
 								ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(distance);
-								//cout<<"Read "<<annotation.getUniqueId()<<" is not paired, distance is "<<distance<<endl;
 								_UPDATE_SINGLE_VALUES(distance);
 								//cout<<"Next read now."<<endl;
 								ed->m_EXTENSION_edgeIterator=0;
@@ -397,6 +393,9 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 								//cout<<"yes, there is a paired read"<<endl;
 								// get the paired end read.
 								if(!ed->m_EXTENSION_pairedSequenceRequested){
+									ed->m_EXTENSION_pairedSequenceRequested=true;
+									ed->m_EXTENSION_pairedSequenceReceived=true;
+									ed->m_EXTENSION_pairedRead=m_pairedReads[annotation.getUniqueId()];
 								}else if(ed->m_EXTENSION_pairedSequenceReceived){
 									int expectedFragmentLength=ed->m_EXTENSION_pairedRead.getAverageFragmentLength();
 									int expectedDeviation=ed->m_EXTENSION_pairedRead.getStandardDeviation();
@@ -552,7 +551,6 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 					if(ed->m_enumerateChoices_outgoingEdges.size()==1){
 						dfsData->m_doChoice_tips_dfs_done=true;
 					}else{
-						cout<<"DFS now "<<ed->m_enumerateChoices_outgoingEdges.size()<<endl;
 						depthFirstSearch((*currentVertex),ed->m_enumerateChoices_outgoingEdges[dfsData->m_doChoice_tips_i],maxDepth,dfsData,edgesRequested,vertexCoverageRequested,vertexCoverageReceived,outboxAllocator,
 size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage,edgesReceived);
 					}
@@ -948,13 +946,11 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 						outbox->push_back(aMessage);
 					}else if(m_sequenceReceived){
 						m_sequences[uniqueId]=m_receivedString;
-						ed->m_EXTENSION_usedReads.insert(uniqueId);
 						ed->m_EXTENSION_reads_startingPositionOnContig[uniqueId]=ed->m_EXTENSION_extension.size()-1;
 						ed->m_EXTENSION_readsInRange.insert(ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache]);
 						#ifdef DEBUG
-						assert(ed->m_EXTENSION_readsInRange.count(ed->m_EXTENSION_receivedReads[i])>0);
+						assert(ed->m_EXTENSION_readsInRange.count(ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache])>0);
 						#endif
-						m_sequenceRequested=false;
 						m_sequenceReceived=false;
 						ed->m_EXTENSION_hasPairedReadRequested=false;
 					}
@@ -962,6 +958,11 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 
 					// get its paired read too.
 					else if(!ed->m_EXTENSION_hasPairedReadRequested){
+						VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
+						message[0]=annotation.getReadIndex();
+						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_HAS_PAIRED_READ,theRank);
+						(*outbox).push_back(aMessage);
+
 						ed->m_EXTENSION_pairedSequenceRequested=false;
 						ed->m_EXTENSION_hasPairedReadReceived=false;
 						ed->m_EXTENSION_hasPairedReadRequested=true;
@@ -969,6 +970,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 						if(!ed->m_EXTENSION_hasPairedReadAnswer){
 							m_sequenceIndexToCache++;
 							m_sequenceRequested=false;
+							ed->m_EXTENSION_usedReads.insert(uniqueId);
 						}else if(!ed->m_EXTENSION_pairedSequenceRequested){
  							ed->m_EXTENSION_pairedSequenceRequested=true;
 							VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
@@ -979,6 +981,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 						}else if(ed->m_EXTENSION_pairedSequenceReceived){
 							m_pairedReads[annotation.getUniqueId()]=ed->m_EXTENSION_pairedRead;
 							m_sequenceIndexToCache++;
+							ed->m_EXTENSION_usedReads.insert(uniqueId);
 							m_sequenceRequested=false;
 						}
 					}

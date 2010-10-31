@@ -380,7 +380,11 @@ SeedExtender*seedExtender
 		(*m_DISTRIBUTE_n)++;
 	}else if(tag==TAG_HAS_PAIRED_READ){
 		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
-		message[0]=(*m_myReads)[incoming[0]]->hasPairedRead();
+		int index=incoming[0];
+		#ifdef DEBUG
+		assert(index<m_myReads->size());
+		#endif
+		message[0]=(*m_myReads)[index]->hasPairedRead();
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,source,TAG_HAS_PAIRED_READ_REPLY,rank);
 		m_outbox->push_back(aMessage);
 	}else if(tag==TAG_HAS_PAIRED_READ_REPLY){
@@ -436,7 +440,11 @@ SeedExtender*seedExtender
 		(*m_SEEDING_i)=0;
 		(*m_EXTENSION_currentPosition)=0;
 	}else if(tag==TAG_GET_PAIRED_READ){
-		PairedRead*t=(*m_myReads)[incoming[0]]->getPairedRead();
+		int index=incoming[0];
+		#ifdef DEBUG
+		assert(index<m_myReads->size());
+		#endif
+		PairedRead*t=(*m_myReads)[index]->getPairedRead();
 		#ifdef DEBUG
 		assert(t!=NULL);
 		#endif
