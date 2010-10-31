@@ -172,6 +172,10 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 			ed->m_EXTENSION_readPositionsForVertices.clear();
 			ed->m_EXTENSION_pairedReadPositionsForVertices.clear();
 			
+
+			ed->m_EXTENSION_edgeIterator=0;
+			ed->m_EXTENSION_hasPairedReadRequested=false;
+
 			(*chooser).clear(cd->m_CHOOSER_theSumsPaired,4);
 			#ifdef DEBUG
 			for(int i=0;i<4;i++){
@@ -336,6 +340,8 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 			// and cumulate the results in
 			// ed->m_EXTENSION_readPositions, which is a map<int,vector<int> > if one of the vertices match
 			if(ed->m_EXTENSION_readIterator!=ed->m_EXTENSION_readsInRange.end()){
+
+/*
 				if(!ed->m_EXTENSION_readLength_done){
 					if(!ed->m_EXTENSION_readLength_requested){
 						ed->m_EXTENSION_readLength_requested=true;
@@ -380,91 +386,99 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 					ed->m_EXTENSION_receivedReadVertex=kmerAtPosition(theSequence,distance,wordSize,annotation.getStrand(),*colorSpaceMode);
 					ed->m_EXTENSION_read_vertex_received=true;
 
+				}else if(ed->m_EXTENSION_read_vertex_received){
+*/
+				// we received the vertex for that read,
+				// now check if it matches one of 
+				// the many choices we have
+				ReadAnnotation annotation=*ed->m_EXTENSION_readIterator;
+				int startPosition=ed->m_EXTENSION_reads_startingPositionOnContig[annotation.getUniqueId()];
+				int distance=ed->m_EXTENSION_extension.size()-startPosition;
+				const char*theSequence=m_sequences[annotation.getUniqueId()].c_str();
+				ed->m_EXTENSION_receivedLength=strlen(theSequence);
+				if(distance>(ed->m_EXTENSION_receivedLength-wordSize)){
+					// the read is now out-of-range.
+					ed->m_EXTENSION_readsOutOfRange.push_back(annotation);
+					ed->m_EXTENSION_readIterator++;	
 					ed->m_EXTENSION_edgeIterator=0;
 					ed->m_EXTENSION_hasPairedReadRequested=false;
-				}else if(ed->m_EXTENSION_read_vertex_received){
-					// we received the vertex for that read,
-					// now check if it matches one of 
-					// the many choices we have
-					ReadAnnotation annotation=*ed->m_EXTENSION_readIterator;
-					int startPosition=ed->m_EXTENSION_reads_startingPositionOnContig[annotation.getUniqueId()];
-					int distance=ed->m_EXTENSION_extension.size()-startPosition;
+					return;
+				}
 
-					// process each edge separately.
-					if(ed->m_EXTENSION_edgeIterator<(int)ed->m_enumerateChoices_outgoingEdges.size()){
-						// got a match!
-						if(ed->m_EXTENSION_receivedReadVertex==ed->m_enumerateChoices_outgoingEdges[ed->m_EXTENSION_edgeIterator]){
-							ReadAnnotation annotation=*ed->m_EXTENSION_readIterator;
-							// check if the current read has a paired read.
-							if(!ed->m_EXTENSION_hasPairedReadRequested){
-								VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
-								message[0]=annotation.getReadIndex();
-								Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_HAS_PAIRED_READ,theRank);
-								(*outbox).push_back(aMessage);
-								ed->m_EXTENSION_hasPairedReadRequested=true;
-								ed->m_EXTENSION_hasPairedReadReceived=false;
-								ed->m_EXTENSION_pairedSequenceRequested=false;
-							}else if(ed->m_EXTENSION_hasPairedReadReceived){
-								// vertex matches, but no paired end read found, at last.
-								if(!ed->m_EXTENSION_hasPairedReadAnswer){
+
+				ed->m_EXTENSION_receivedReadVertex=kmerAtPosition(theSequence,distance,wordSize,annotation.getStrand(),*colorSpaceMode);
+				// process each edge separately.
+				if(ed->m_EXTENSION_edgeIterator<(int)ed->m_enumerateChoices_outgoingEdges.size()){
+					// got a match!
+					if(ed->m_EXTENSION_receivedReadVertex==ed->m_enumerateChoices_outgoingEdges[ed->m_EXTENSION_edgeIterator]){
+						ReadAnnotation annotation=*ed->m_EXTENSION_readIterator;
+						// check if the current read has a paired read.
+						if(!ed->m_EXTENSION_hasPairedReadRequested){
+							VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
+							message[0]=annotation.getReadIndex();
+							Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_HAS_PAIRED_READ,theRank);
+							(*outbox).push_back(aMessage);
+							ed->m_EXTENSION_hasPairedReadRequested=true;
+							ed->m_EXTENSION_hasPairedReadReceived=false;
+							ed->m_EXTENSION_pairedSequenceRequested=false;
+						}else if(ed->m_EXTENSION_hasPairedReadReceived){
+							// vertex matches, but no paired end read found, at last.
+							if(!ed->m_EXTENSION_hasPairedReadAnswer){
+								ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(distance);
+
+								_UPDATE_SINGLE_VALUES(distance);
+
+								ed->m_EXTENSION_edgeIterator++;
+								ed->m_EXTENSION_hasPairedReadRequested=false;
+							}else{
+								// get the paired end read.
+								if(!ed->m_EXTENSION_pairedSequenceRequested){
+									ed->m_EXTENSION_pairedSequenceRequested=true;
+									VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
+									message[0]=annotation.getReadIndex();
+									Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_GET_PAIRED_READ,theRank);
+									(*outbox).push_back(aMessage);
+									ed->m_EXTENSION_pairedSequenceReceived=false;
+								}else if(ed->m_EXTENSION_pairedSequenceReceived){
+									int expectedFragmentLength=ed->m_EXTENSION_pairedRead.getAverageFragmentLength();
+									int expectedDeviation=ed->m_EXTENSION_pairedRead.getStandardDeviation();
+									int rank=ed->m_EXTENSION_pairedRead.getRank();
+									int id=ed->m_EXTENSION_pairedRead.getId();
+									int uniqueReadIdentifier=id*MAX_NUMBER_OF_MPI_PROCESSES+rank;
+		
+									// it is mandatory for a read to start at 0. at position X on the path.
+									if(ed->m_EXTENSION_reads_startingPositionOnContig.count(uniqueReadIdentifier)>0){
+										int startingPositionOnPath=ed->m_EXTENSION_reads_startingPositionOnContig[uniqueReadIdentifier];
+										int observedFragmentLength=(startPosition-startingPositionOnPath)+ed->m_EXTENSION_receivedLength;
+										if(expectedFragmentLength-expectedDeviation<=observedFragmentLength and
+										observedFragmentLength <= expectedFragmentLength+expectedDeviation){
+										// it matches!
+											int theDistance=startPosition-startingPositionOnPath+distance;
+											ed->m_EXTENSION_pairedReadPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(theDistance);
+											if(theDistance>cd->m_CHOOSER_theMaxsPaired[ed->m_EXTENSION_edgeIterator])
+												cd->m_CHOOSER_theMaxsPaired[ed->m_EXTENSION_edgeIterator]=theDistance;
+											cd->m_CHOOSER_theNumbersPaired[ed->m_EXTENSION_edgeIterator]++;
+											cd->m_CHOOSER_theSumsPaired[ed->m_EXTENSION_edgeIterator]+=theDistance;
+										}
+
+									}
+									
+									// add it anyway as a single-end match too!
 									ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(distance);
+									ed->m_EXTENSION_hasPairedReadRequested=false;
 
 									_UPDATE_SINGLE_VALUES(distance);
-
 									ed->m_EXTENSION_edgeIterator++;
-									ed->m_EXTENSION_hasPairedReadRequested=false;
-								}else{
-									// get the paired end read.
-									if(!ed->m_EXTENSION_pairedSequenceRequested){
-										ed->m_EXTENSION_pairedSequenceRequested=true;
-										VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
-										message[0]=annotation.getReadIndex();
-										Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_GET_PAIRED_READ,theRank);
-										(*outbox).push_back(aMessage);
-										ed->m_EXTENSION_pairedSequenceReceived=false;
-									}else if(ed->m_EXTENSION_pairedSequenceReceived){
-										int expectedFragmentLength=ed->m_EXTENSION_pairedRead.getAverageFragmentLength();
-										int expectedDeviation=ed->m_EXTENSION_pairedRead.getStandardDeviation();
-										int rank=ed->m_EXTENSION_pairedRead.getRank();
-										int id=ed->m_EXTENSION_pairedRead.getId();
-										int uniqueReadIdentifier=id*MAX_NUMBER_OF_MPI_PROCESSES+rank;
-			
-										// it is mandatory for a read to start at 0. at position X on the path.
-										if(ed->m_EXTENSION_reads_startingPositionOnContig.count(uniqueReadIdentifier)>0){
-											int startingPositionOnPath=ed->m_EXTENSION_reads_startingPositionOnContig[uniqueReadIdentifier];
-											int observedFragmentLength=(startPosition-startingPositionOnPath)+ed->m_EXTENSION_receivedLength;
-											if(expectedFragmentLength-expectedDeviation<=observedFragmentLength and
-											observedFragmentLength <= expectedFragmentLength+expectedDeviation){
-											// it matches!
-												int theDistance=startPosition-startingPositionOnPath+distance;
-												ed->m_EXTENSION_pairedReadPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(theDistance);
-												if(theDistance>cd->m_CHOOSER_theMaxsPaired[ed->m_EXTENSION_edgeIterator])
-													cd->m_CHOOSER_theMaxsPaired[ed->m_EXTENSION_edgeIterator]=theDistance;
-												cd->m_CHOOSER_theNumbersPaired[ed->m_EXTENSION_edgeIterator]++;
-												cd->m_CHOOSER_theSumsPaired[ed->m_EXTENSION_edgeIterator]+=theDistance;
-											}
-
-										}
-										
-										// add it anyway as a single-end match too!
-										ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(distance);
-										ed->m_EXTENSION_hasPairedReadRequested=false;
-
-										_UPDATE_SINGLE_VALUES(distance);
-										ed->m_EXTENSION_edgeIterator++;
-									}
 								}
-							}else{
 							}
-						}else{// no match, too bad.
-							ed->m_EXTENSION_edgeIterator++;
-							ed->m_EXTENSION_hasPairedReadRequested=false;
 						}
-					}else{
-						ed->m_EXTENSION_readLength_done=false;
-						ed->m_EXTENSION_readLength_requested=false;
-						ed->m_EXTENSION_readIterator++;
+					}else{// no match, too bad.
+						ed->m_EXTENSION_edgeIterator++;
+						ed->m_EXTENSION_hasPairedReadRequested=false;
 					}
+				}else{
+					ed->m_EXTENSION_readIterator++;
+					ed->m_EXTENSION_edgeIterator=0;
 				}
 			}else{
 				// remove reads that are no longer in-range.
