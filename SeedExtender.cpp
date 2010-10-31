@@ -168,7 +168,6 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 			ed->m_EXTENSION_readIterator=ed->m_EXTENSION_readsInRange.begin();
 			ed->m_EXTENSION_readsOutOfRange.clear();
 			ed->m_EXTENSION_readLength_done=false;
-			ed->m_EXTENSION_readLength_requested=false;
 			ed->m_EXTENSION_readPositionsForVertices.clear();
 			ed->m_EXTENSION_pairedReadPositionsForVertices.clear();
 			
@@ -341,57 +340,13 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 			// ed->m_EXTENSION_readPositions, which is a map<int,vector<int> > if one of the vertices match
 			if(ed->m_EXTENSION_readIterator!=ed->m_EXTENSION_readsInRange.end()){
 
-/*
-				if(!ed->m_EXTENSION_readLength_done){
-					if(!ed->m_EXTENSION_readLength_requested){
-						ed->m_EXTENSION_readLength_requested=true;
-						ed->m_EXTENSION_readLength_received=true;
 
-						ReadAnnotation annotation=*ed->m_EXTENSION_readIterator;
-						// use cache
-						ed->m_EXTENSION_receivedLength=m_sequences[annotation.getUniqueId()].length();
-					}else if(ed->m_EXTENSION_readLength_received){
-						ReadAnnotation annotation=*ed->m_EXTENSION_readIterator;
-
-						int startPosition=ed->m_EXTENSION_reads_startingPositionOnContig[annotation.getUniqueId()];
-						int distance=ed->m_EXTENSION_extension.size()-startPosition;
-						if(distance>(ed->m_EXTENSION_receivedLength-wordSize)){
-							// the read is now out-of-range.
-							ed->m_EXTENSION_readsOutOfRange.push_back(annotation);
-							ed->m_EXTENSION_readLength_done=false;
-							ed->m_EXTENSION_readLength_requested=false;
-							ed->m_EXTENSION_readIterator++;
-						}else{
-							//the read is in-range
-							ed->m_EXTENSION_readLength_done=true;
-							ed->m_EXTENSION_read_vertex_requested=false;
-						}
-					}
-				}else if(!ed->m_EXTENSION_read_vertex_requested){
-					// request the vertex for the read
-					ed->m_EXTENSION_read_vertex_requested=true;
-					ReadAnnotation annotation=*ed->m_EXTENSION_readIterator;
-					int startPosition=ed->m_EXTENSION_reads_startingPositionOnContig[annotation.getUniqueId()];
-					if(!(0<=startPosition and startPosition<(int)ed->m_EXTENSION_extension.size())){
-						cout<<"FATAL"<<endl;
-						cout<<"The read started at "<<startPosition<<endl;
-						cout<<"The extension has "<<ed->m_EXTENSION_extension.size()<<" elements."<<endl;
-						cout<<"The read has length="<<ed->m_EXTENSION_receivedLength<<endl;
-					}
-					int distance=ed->m_EXTENSION_extension.size()-startPosition;
-
-
-					// use cache
-					const char*theSequence=m_sequences[annotation.getUniqueId()].c_str();
-					ed->m_EXTENSION_receivedReadVertex=kmerAtPosition(theSequence,distance,wordSize,annotation.getStrand(),*colorSpaceMode);
-					ed->m_EXTENSION_read_vertex_received=true;
-
-				}else if(ed->m_EXTENSION_read_vertex_received){
-*/
 				// we received the vertex for that read,
 				// now check if it matches one of 
 				// the many choices we have
+				//cout<<"Position: "<<ed->m_EXTENSION_extension.size()<<" with "<<ed->m_enumerateChoices_outgoingEdges.size()<<" edges"<<endl;
 				ReadAnnotation annotation=*ed->m_EXTENSION_readIterator;
+				//cout<<"Checking read "<<annotation.getUniqueId()<<endl;
 				int startPosition=ed->m_EXTENSION_reads_startingPositionOnContig[annotation.getUniqueId()];
 				int distance=ed->m_EXTENSION_extension.size()-startPosition;
 				const char*theSequence=m_sequences[annotation.getUniqueId()].c_str();
@@ -402,18 +357,24 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 					ed->m_EXTENSION_readIterator++;	
 					ed->m_EXTENSION_edgeIterator=0;
 					ed->m_EXTENSION_hasPairedReadRequested=false;
+					//cout<<"Read "<<annotation.getUniqueId()<<" not in range anymore."<<endl;
 					return;
 				}
 
-
+				//cout<<"TheSequence: "<<theSequence<<endl;
 				ed->m_EXTENSION_receivedReadVertex=kmerAtPosition(theSequence,distance,wordSize,annotation.getStrand(),*colorSpaceMode);
+				//cout<<"Vertex is "<<idToWord(ed->m_EXTENSION_receivedReadVertex,wordSize)<<endl;
 				// process each edge separately.
 				if(ed->m_EXTENSION_edgeIterator<(int)ed->m_enumerateChoices_outgoingEdges.size()){
+					//cout<<"Checking edge # "<<ed->m_EXTENSION_edgeIterator<<endl;
+					VERTEX_TYPE pathVertex=ed->m_enumerateChoices_outgoingEdges[ed->m_EXTENSION_edgeIterator];
+					//cout<<"Vertex path is "<<idToWord(pathVertex,wordSize)<<" Size="<<ed->m_EXTENSION_extension.size()<<endl;
 					// got a match!
-					if(ed->m_EXTENSION_receivedReadVertex==ed->m_enumerateChoices_outgoingEdges[ed->m_EXTENSION_edgeIterator]){
-						ReadAnnotation annotation=*ed->m_EXTENSION_readIterator;
+					if(ed->m_EXTENSION_receivedReadVertex==pathVertex){
+						//cout<<"Match!"<<endl;
 						// check if the current read has a paired read.
 						if(!ed->m_EXTENSION_hasPairedReadRequested){
+							//cout<<"Asking if there is a paired read"<<endl;
 							VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
 							message[0]=annotation.getReadIndex();
 							Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_HAS_PAIRED_READ,theRank);
@@ -422,15 +383,18 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 							ed->m_EXTENSION_hasPairedReadReceived=false;
 							ed->m_EXTENSION_pairedSequenceRequested=false;
 						}else if(ed->m_EXTENSION_hasPairedReadReceived){
+							//cout<<"Received answer"<<endl;
 							// vertex matches, but no paired end read found, at last.
 							if(!ed->m_EXTENSION_hasPairedReadAnswer){
 								ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(distance);
-
+								//cout<<"Read "<<annotation.getUniqueId()<<" is not paired, distance is "<<distance<<endl;
 								_UPDATE_SINGLE_VALUES(distance);
-
-								ed->m_EXTENSION_edgeIterator++;
+								//cout<<"Next read now."<<endl;
+								ed->m_EXTENSION_edgeIterator=0;
+								ed->m_EXTENSION_readIterator++;
 								ed->m_EXTENSION_hasPairedReadRequested=false;
 							}else{
+								//cout<<"yes, there is a paired read"<<endl;
 								// get the paired end read.
 								if(!ed->m_EXTENSION_pairedSequenceRequested){
 									ed->m_EXTENSION_pairedSequenceRequested=true;
@@ -473,12 +437,15 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 							}
 						}
 					}else{// no match, too bad.
+						//cout<<"The vertex does not match, going to the next one"<<endl;
 						ed->m_EXTENSION_edgeIterator++;
 						ed->m_EXTENSION_hasPairedReadRequested=false;
 					}
 				}else{
+					//cout<<"All edges were processed, trying next read"<<endl;
 					ed->m_EXTENSION_readIterator++;
 					ed->m_EXTENSION_edgeIterator=0;
+					ed->m_EXTENSION_hasPairedReadRequested=false;
 				}
 			}else{
 				// remove reads that are no longer in-range.

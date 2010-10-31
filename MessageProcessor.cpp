@@ -661,7 +661,7 @@ SeedExtender*seedExtender
 	}else if(tag==TAG_REQUEST_READ_SEQUENCE){
 		int id=(int)incoming[0];
 		char*seq=m_myReads->at(id)->getSeq();
-		Message aMessage(seq,strlen(seq+1),MPI_BYTE,source,TAG_REQUEST_READ_SEQUENCE_REPLY,rank);
+		Message aMessage(seq,strlen(seq)+1,MPI_BYTE,source,TAG_REQUEST_READ_SEQUENCE_REPLY,rank);
 		m_outbox->push_back(aMessage);
 	}else if(tag==TAG_SEND_SEQUENCE){
 		int length=count;
