@@ -937,8 +937,11 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 					}else if(*(repeatedLength)>=_REPEATED_LENGTH_ALARM_THRESHOLD){
 						m_sequenceIndexToCache++;
 					}else if(!m_sequenceRequested){
-						m_sequenceReceived=false;
 						m_sequenceRequested=true;
+						m_sequenceReceived=false;
+						ed->m_EXTENSION_hasPairedReadRequested=false;
+						ed->m_EXTENSION_pairedSequenceRequested=false;
+						ed->m_EXTENSION_hasPairedReadReceived=false;
 						int sequenceRank=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache].getRank();
 						VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
 						message[0]=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache].getReadIndex();
@@ -952,7 +955,9 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 						assert(ed->m_EXTENSION_readsInRange.count(ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache])>0);
 						#endif
 						m_sequenceReceived=false;
-						ed->m_EXTENSION_hasPairedReadRequested=false;
+						#ifdef DEBUG
+						assert(m_sequences.count(uniqueId)>0);
+						#endif
 					}
 
 
@@ -963,8 +968,6 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_HAS_PAIRED_READ,theRank);
 						(*outbox).push_back(aMessage);
 
-						ed->m_EXTENSION_pairedSequenceRequested=false;
-						ed->m_EXTENSION_hasPairedReadReceived=false;
 						ed->m_EXTENSION_hasPairedReadRequested=true;
 					}else if(ed->m_EXTENSION_hasPairedReadReceived){
 						if(!ed->m_EXTENSION_hasPairedReadAnswer){
@@ -972,6 +975,9 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 							m_sequenceRequested=false;
 							ed->m_EXTENSION_usedReads.insert(uniqueId);
 						}else if(!ed->m_EXTENSION_pairedSequenceRequested){
+							#ifdef DEBUG
+							assert(ed->m_EXTENSION_hasPairedReadAnswer);
+							#endif
  							ed->m_EXTENSION_pairedSequenceRequested=true;
 							VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
 							message[0]=annotation.getReadIndex();

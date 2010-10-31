@@ -382,7 +382,7 @@ SeedExtender*seedExtender
 		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
 		int index=incoming[0];
 		#ifdef DEBUG
-		assert(index<m_myReads->size());
+		assert(index<(int)m_myReads->size());
 		#endif
 		message[0]=(*m_myReads)[index]->hasPairedRead();
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,source,TAG_HAS_PAIRED_READ_REPLY,rank);
@@ -442,7 +442,7 @@ SeedExtender*seedExtender
 	}else if(tag==TAG_GET_PAIRED_READ){
 		int index=incoming[0];
 		#ifdef DEBUG
-		assert(index<m_myReads->size());
+		assert(index<(int)m_myReads->size());
 		#endif
 		PairedRead*t=(*m_myReads)[index]->getPairedRead();
 		#ifdef DEBUG
