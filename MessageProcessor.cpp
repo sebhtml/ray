@@ -445,6 +445,11 @@ SeedExtender*seedExtender
 		assert(index<(int)m_myReads->size());
 		#endif
 		PairedRead*t=(*m_myReads)[index]->getPairedRead();
+		PairedRead dummy;
+		dummy.constructor(0,0,0,0);
+		if(t==NULL){
+			t=&dummy;
+		}
 		#ifdef DEBUG
 		assert(t!=NULL);
 		#endif

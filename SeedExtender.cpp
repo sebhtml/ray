@@ -962,34 +962,24 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 
 
 					// get its paired read too.
-					else if(!ed->m_EXTENSION_hasPairedReadRequested){
+
+					else if(!ed->m_EXTENSION_pairedSequenceRequested){
+						#ifdef DEBUG
+						assert(ed->m_EXTENSION_hasPairedReadAnswer);
+						#endif
+ 						ed->m_EXTENSION_pairedSequenceRequested=true;
 						VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
 						message[0]=annotation.getReadIndex();
-						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_HAS_PAIRED_READ,theRank);
-						(*outbox).push_back(aMessage);
-
-						ed->m_EXTENSION_hasPairedReadRequested=true;
-					}else if(ed->m_EXTENSION_hasPairedReadReceived){
-						if(!ed->m_EXTENSION_hasPairedReadAnswer){
-							m_sequenceIndexToCache++;
-							m_sequenceRequested=false;
-							ed->m_EXTENSION_usedReads.insert(uniqueId);
-						}else if(!ed->m_EXTENSION_pairedSequenceRequested){
-							#ifdef DEBUG
-							assert(ed->m_EXTENSION_hasPairedReadAnswer);
-							#endif
- 							ed->m_EXTENSION_pairedSequenceRequested=true;
-							VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
-							message[0]=annotation.getReadIndex();
-							Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_GET_PAIRED_READ,theRank);
-							outbox->push_back(aMessage);
-							ed->m_EXTENSION_pairedSequenceReceived=false;
-						}else if(ed->m_EXTENSION_pairedSequenceReceived){
+						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_GET_PAIRED_READ,theRank);
+						outbox->push_back(aMessage);
+						ed->m_EXTENSION_pairedSequenceReceived=false;
+					}else if(ed->m_EXTENSION_pairedSequenceReceived){
+						if(ed->m_EXTENSION_pairedRead.getAverageFragmentLength()!=0){
 							m_pairedReads[annotation.getUniqueId()]=ed->m_EXTENSION_pairedRead;
-							m_sequenceIndexToCache++;
-							ed->m_EXTENSION_usedReads.insert(uniqueId);
-							m_sequenceRequested=false;
 						}
+						m_sequenceIndexToCache++;
+						ed->m_EXTENSION_usedReads.insert(uniqueId);
+						m_sequenceRequested=false;
 					}
 				}else{
 					ed->m_EXTENSION_directVertexDone=true;
