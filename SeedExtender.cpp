@@ -375,13 +375,13 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 						// check if the current read has a paired read.
 						if(!ed->m_EXTENSION_hasPairedReadRequested){
 							//cout<<"Asking if there is a paired read"<<endl;
-							VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
-							message[0]=annotation.getReadIndex();
-							Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_HAS_PAIRED_READ,theRank);
-							(*outbox).push_back(aMessage);
+
 							ed->m_EXTENSION_hasPairedReadRequested=true;
-							ed->m_EXTENSION_hasPairedReadReceived=false;
-							ed->m_EXTENSION_pairedSequenceRequested=false;
+							ed->m_EXTENSION_hasPairedReadReceived=true;
+							ed->m_EXTENSION_hasPairedReadAnswer=m_pairedReads.count(annotation.getUniqueId())>0;
+							ed->m_EXTENSION_pairedSequenceRequested=true;
+							ed->m_EXTENSION_pairedSequenceReceived=true;
+							ed->m_EXTENSION_pairedRead=m_pairedReads[annotation.getUniqueId()];
 						}else if(ed->m_EXTENSION_hasPairedReadReceived){
 							//cout<<"Received answer"<<endl;
 							// vertex matches, but no paired end read found, at last.
@@ -397,12 +397,6 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 								//cout<<"yes, there is a paired read"<<endl;
 								// get the paired end read.
 								if(!ed->m_EXTENSION_pairedSequenceRequested){
-									ed->m_EXTENSION_pairedSequenceRequested=true;
-									VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
-									message[0]=annotation.getReadIndex();
-									Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_GET_PAIRED_READ,theRank);
-									(*outbox).push_back(aMessage);
-									ed->m_EXTENSION_pairedSequenceReceived=false;
 								}else if(ed->m_EXTENSION_pairedSequenceReceived){
 									int expectedFragmentLength=ed->m_EXTENSION_pairedRead.getAverageFragmentLength();
 									int expectedDeviation=ed->m_EXTENSION_pairedRead.getStandardDeviation();
@@ -450,7 +444,11 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 			}else{
 				// remove reads that are no longer in-range.
 				for(int i=0;i<(int)ed->m_EXTENSION_readsOutOfRange.size();i++){
-					m_sequences.erase(ed->m_EXTENSION_readsOutOfRange[i].getUniqueId());
+					int uniqueId=ed->m_EXTENSION_readsOutOfRange[i].getUniqueId();
+					if(m_pairedReads.count(uniqueId)>0){
+						m_pairedReads.erase(uniqueId);
+					}
+					m_sequences.erase(uniqueId);
 					ed->m_EXTENSION_readsInRange.erase(ed->m_EXTENSION_readsOutOfRange[i]);
 				}
 				ed->m_EXTENSION_readsOutOfRange.clear();
@@ -929,7 +927,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				m_sequenceRequested=false;
 			}else if(ed->m_EXTENSION_reads_received){
 				if(m_sequenceIndexToCache<(int)ed->m_EXTENSION_receivedReads.size()){
-					int uniqueId=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache].getUniqueId();
+					ReadAnnotation annotation=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache];
+					int uniqueId=annotation.getUniqueId();
 					if(ed->m_EXTENSION_usedReads.count(uniqueId)>0){
 						m_sequenceIndexToCache++;
 					}else if(*(repeatedLength)>=_REPEATED_LENGTH_ALARM_THRESHOLD){
@@ -951,7 +950,32 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 						assert(ed->m_EXTENSION_readsInRange.count(ed->m_EXTENSION_receivedReads[i])>0);
 						#endif
 						m_sequenceRequested=false;
-						m_sequenceIndexToCache++;
+						m_sequenceReceived=false;
+						ed->m_EXTENSION_hasPairedReadRequested=false;
+					}
+
+
+					// get its paired read too.
+					else if(!ed->m_EXTENSION_hasPairedReadRequested){
+						ed->m_EXTENSION_pairedSequenceRequested=false;
+						ed->m_EXTENSION_hasPairedReadReceived=false;
+						ed->m_EXTENSION_hasPairedReadRequested=true;
+					}else if(ed->m_EXTENSION_hasPairedReadReceived){
+						if(!ed->m_EXTENSION_hasPairedReadAnswer){
+							m_sequenceIndexToCache++;
+							m_sequenceRequested=false;
+						}else if(!ed->m_EXTENSION_pairedSequenceRequested){
+ 							ed->m_EXTENSION_pairedSequenceRequested=true;
+							VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
+							message[0]=annotation.getReadIndex();
+							Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_GET_PAIRED_READ,theRank);
+							outbox->push_back(aMessage);
+							ed->m_EXTENSION_pairedSequenceReceived=false;
+						}else if(ed->m_EXTENSION_pairedSequenceReceived){
+							m_pairedReads[annotation.getUniqueId()]=ed->m_EXTENSION_pairedRead;
+							m_sequenceIndexToCache++;
+							m_sequenceRequested=false;
+						}
 					}
 				}else{
 					ed->m_EXTENSION_directVertexDone=true;

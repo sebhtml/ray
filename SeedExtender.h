@@ -45,6 +45,9 @@ public:
 	string m_receivedString;
 	int m_sequenceIndexToCache;
 
+
+	map<int,PairedRead> m_pairedReads;
+
 	void enumerateChoices(bool*edgesRequested,ExtensionData*ed,bool*edgesReceived,MyAllocator*outboxAllocator,
 		int*outgoingEdgeIndex,vector<Message>*outbox,
 VERTEX_TYPE*currentVertex,int theRank,bool*vertexCoverageRequested,vector<VERTEX_TYPE>*receivedOutgoingEdges,

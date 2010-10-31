@@ -44,6 +44,7 @@ public:
 	int getId();
 	int getAverageFragmentLength();
 	int getStandardDeviation();
+	int getUniqueId();
 	void updateLibrary(int distance,int standardDeviation);
 };
 

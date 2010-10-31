@@ -21,6 +21,7 @@
 
 
 #include<PairedRead.h>
+#include<common_functions.h>
 
 PairedRead::PairedRead(){
 }
@@ -52,4 +53,8 @@ int PairedRead::getStandardDeviation(){
 void PairedRead::updateLibrary(int d,int sd){
 	m_fragmentSize=d;
 	m_deviation=sd;
+}
+
+int PairedRead::getUniqueId(){
+	return m_sequence_id*MAX_NUMBER_OF_MPI_PROCESSES+m_rank;
 }
