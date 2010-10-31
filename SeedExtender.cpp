@@ -549,8 +549,13 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 
 			if(dfsData->m_doChoice_tips_i<(int)ed->m_enumerateChoices_outgoingEdges.size()){
 				if(!dfsData->m_doChoice_tips_dfs_done){
-					depthFirstSearch((*currentVertex),ed->m_enumerateChoices_outgoingEdges[dfsData->m_doChoice_tips_i],maxDepth,dfsData,edgesRequested,vertexCoverageRequested,vertexCoverageReceived,outboxAllocator,
+					if(ed->m_enumerateChoices_outgoingEdges.size()==1){
+						dfsData->m_doChoice_tips_dfs_done=true;
+					}else{
+						cout<<"DFS now "<<ed->m_enumerateChoices_outgoingEdges.size()<<endl;
+						depthFirstSearch((*currentVertex),ed->m_enumerateChoices_outgoingEdges[dfsData->m_doChoice_tips_i],maxDepth,dfsData,edgesRequested,vertexCoverageRequested,vertexCoverageReceived,outboxAllocator,
 size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage,edgesReceived);
+					}
 				}else{
 					#ifdef SHOW_CHOICE
 					cout<<"Choice #"<<dfsData->m_doChoice_tips_i+1<<" : visited "<<dfsData->m_depthFirstSearchVisitedVertices.size()<<", max depth is "<<dfsData->m_depthFirstSearch_maxDepth<<endl;
