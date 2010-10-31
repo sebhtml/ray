@@ -29,9 +29,8 @@
  * The read paths are restored using read annotations.
  */
 class ReadAnnotation{
-	int m_rank;
+	int m_uniqueId;
 	char m_strand;
-	int m_readIndex;
 	ReadAnnotation*m_next;
 public:
 	void constructor(int a,int b,char c);
