@@ -27,19 +27,17 @@ PairedRead::PairedRead(){
 }
 
 void PairedRead::constructor(int rank,int id, int fragmentSize,int deviation){
-	m_rank=rank;
-	m_sequence_id=id;
+	m_uniqueId=id*MAX_NUMBER_OF_MPI_PROCESSES+rank;
 	m_fragmentSize=fragmentSize;
 	m_deviation=deviation;
 }
 
-
 int PairedRead::getRank(){
-	return m_rank;
+	return m_uniqueId%MAX_NUMBER_OF_MPI_PROCESSES;
 }
 
 int PairedRead::getId(){
-	return m_sequence_id;
+	return m_uniqueId/MAX_NUMBER_OF_MPI_PROCESSES;
 }
 
 int PairedRead::getAverageFragmentLength(){
@@ -56,5 +54,5 @@ void PairedRead::updateLibrary(int d,int sd){
 }
 
 int PairedRead::getUniqueId(){
-	return m_sequence_id*MAX_NUMBER_OF_MPI_PROCESSES+m_rank;
+	return m_uniqueId;
 }

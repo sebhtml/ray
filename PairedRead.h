@@ -33,8 +33,7 @@
  * <----------------------------------------------------------------->
  */
 class PairedRead{
-	u16 m_rank;
-	int m_sequence_id;
+	int m_uniqueId;
 	u16 m_fragmentSize;
 	u16 m_deviation;
 public:
