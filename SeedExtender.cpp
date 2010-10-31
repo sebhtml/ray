@@ -211,7 +211,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 			}
 			#ifdef SHOW_PROGRESS
 			#endif
-			#ifdef SHOW_PROGRESS
+			#ifdef SHOW_PROGRESS_DEBUG
 			if(filteredCoverages.size()==0)
 				cout<<"Now Zero"<<endl;
 			#endif

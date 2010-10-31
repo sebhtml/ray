@@ -432,7 +432,7 @@ void Machine::receiveMessages(){
 		MPI_Datatype datatype=MPI_UNSIGNED_LONG_LONG;
 		int sizeOfType=8;
 		int tag=status.MPI_TAG;
-		if(tag==TAG_SEND_SEQUENCE || tag==TAG_REQUEST_READ_SEQUENCE){
+		if(tag==TAG_SEND_SEQUENCE || tag==TAG_REQUEST_READ_SEQUENCE_REPLY){
 			datatype=MPI_BYTE;
 			sizeOfType=1;
 		}
