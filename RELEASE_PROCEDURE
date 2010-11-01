@@ -1,5 +1,5 @@
 * use scripts/run-all.sh to generate results
-* update ChangeLog.txt
+* update NEWS (based on svn log and trac milestone)
 * svn cp trunk tags/<version>
 * close the milestone in trac
 * svn export
