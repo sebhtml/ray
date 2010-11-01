@@ -1,5 +1,5 @@
-CXXFLAGS=-I. -Wall -O3  #-pedantic  -std=c++98 
-#CXXFLAGS=-g -I. -DDEBUG
+CXXFLAGS=-Icode -Wall -O3  #-pedantic  -std=c++98 
+#CXXFLAGS=-g -Icode -DDEBUG
 
 MPICC=mpic++
 
@@ -7,7 +7,7 @@ TARGETS=Ray
 
 all: $(TARGETS)
 
-OBJECTS= Machine.o common_functions.o Loader.o Read.o MyAllocator.o SffLoader.o Parameters.o Vertex.o ReadAnnotation.o CoverageDistribution.o Message.o  Direction.o  PairedRead.o ColorSpaceDecoder.o ColorSpaceLoader.o VertexLinkedList.o BubbleTool.o VerticesExtractor.o MessageProcessor.o SequencesLoader.o Chooser.o OpenAssemblerChooser.o  ErrorSimulator.o BufferedData.o DistributionData.o SequencesIndexer.o TipWatchdog.o RepeatedVertexWatchdog.o SeedExtender.o MyForest.o EdgesExtractor.o TimePrinter.o
+OBJECTS= code/Machine.o code/common_functions.o code/Loader.o code/Read.o code/MyAllocator.o code/SffLoader.o code/Parameters.o code/Vertex.o code/ReadAnnotation.o code/CoverageDistribution.o code/Message.o code/Direction.o code/PairedRead.o code/ColorSpaceDecoder.o code/ColorSpaceLoader.o code/VertexLinkedList.o code/BubbleTool.o code/VerticesExtractor.o code/MessageProcessor.o code/SequencesLoader.o code/Chooser.o code/OpenAssemblerChooser.o code/ErrorSimulator.o code/BufferedData.o code/DistributionData.o code/SequencesIndexer.o code/TipWatchdog.o code/RepeatedVertexWatchdog.o code/SeedExtender.o code/MyForest.o code/EdgesExtractor.o code/TimePrinter.o
 
 %.o: %.cpp
 	@echo MPICC $<
@@ -15,25 +15,24 @@ OBJECTS= Machine.o common_functions.o Loader.o Read.o MyAllocator.o SffLoader.o 
 
 simtools: Ray-SimulateFragments Ray-SimulateErrors Ray-SimulatePairedReads
 
-
-Ray-SimulatePairedReads: simulate_paired_main.o $(OBJECTS)
+Ray-SimulatePairedReads: code/simulate_paired_main.o $(OBJECTS)
 	@echo A.OUT $@
 	@$(MPICC) $(CXXFLAGS) $^ -o $@
 
-Ray-SimulateErrors: simulateErrors_main.o $(OBJECTS)
+Ray-SimulateErrors: code/simulateErrors_main.o $(OBJECTS)
 	@echo A.OUT $@
 	@$(MPICC) $(CXXFLAGS) $^ -o $@
 
-Ray-SimulateFragments: simulate_fragments_main.o $(OBJECTS)
+Ray-SimulateFragments: code/simulate_fragments_main.o $(OBJECTS)
 	@echo A.OUT $@
 	@$(MPICC) $(CXXFLAGS) $^ -o $@
 
 
-Ray: ray_main.o $(OBJECTS)
+Ray: code/ray_main.o $(OBJECTS)
 	@echo A.OUT $@
 	@$(MPICC) $(CXXFLAGS) $^ -o $@
 
-test: test_main.o $(OBJECTS)
+test: code/test_main.o $(OBJECTS)
 	@echo TEST
 	@$(MPICC) $(CXXFLAGS) $^ -o $@
 	@$(MPIRUN) ./test
