@@ -55,6 +55,7 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 	if((*m_distribution_file_id)>(int)allFiles.size()-1){
 		(*m_loadSequenceStep)=true;
 		flushPairedStock(1,m_outbox,m_outboxAllocator,m_disData,rank,size);
+		cout<<"Rank 0 asks others to share their number of sequence reads"<<endl;
 		for(int i=0;i<size;i++){
 			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, i,TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS,rank);
 			(*m_outbox).push_back(aMessage);

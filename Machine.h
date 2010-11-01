@@ -75,7 +75,6 @@ using namespace std;
 
 
 class Machine{
-	
 	EdgesExtractor m_edgesExtractor;
 	int m_numberOfRanksWithCoverageData;
 	TimePrinter m_timePrinter;

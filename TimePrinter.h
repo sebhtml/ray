@@ -23,15 +23,22 @@
 #define _TimePrinter
 
 #include<time.h>
-
+#include<vector>
+#include<string>
+using namespace std;
 
 class TimePrinter{
 	time_t m_startingTime;
 	time_t m_lastTime;
 	time_t m_endingTime;
+	vector<string> m_descriptions;
+	vector<int> m_durations;
+
+	void printDifference(int s);
 public:
-	void printElapsedTime();
+	void printElapsedTime(string description);
 	TimePrinter();
+	void printDurations();
 };
 
 #endif

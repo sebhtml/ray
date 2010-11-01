@@ -301,7 +301,7 @@ void Parameters::parseCommands(){
 		result*=4;
 	}
 	cout<<" --> Number of k-mers of size "<<m_wordSize<<": "<<result<<endl;
-	cout<<" A lower size bounds the memory usage."<<endl;
+	cout<<"  *** Note: A lower k-mer size bounds the memory usage. ***"<<endl;
 	cout<<endl;
 
 }

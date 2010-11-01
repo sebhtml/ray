@@ -24,9 +24,24 @@
 #include<iostream>
 using namespace std;
 
-void TimePrinter::printElapsedTime(){
+void TimePrinter::printElapsedTime(string description){
+	m_lastTime=m_endingTime;
 	time_t m_endingTime=time(NULL);
-	int difference=m_endingTime-m_startingTime;
+	int difference=m_endingTime-m_lastTime;
+	cout<<"\nRank 0 reports the elapsed time\n"<<" ---> Step: "<<description<<"\n      Elapsed time: ";
+	printDifference(difference);
+	int differenceWithLast=m_endingTime-m_lastTime;
+	int totalSeconds=m_endingTime-m_startingTime;
+	cout<<"\n      Since beginning: "<<totalSeconds<<" seconds"<<endl;
+	m_descriptions.push_back(description);
+	m_durations.push_back(differenceWithLast);
+}
+
+TimePrinter::TimePrinter(){
+	m_startingTime=m_lastTime=m_endingTime=time(NULL);
+}
+
+void TimePrinter::printDifference(int difference){
 	int minutes=difference/60;
 	int seconds=difference%60;
 	int hours=minutes/60;
@@ -34,7 +49,6 @@ void TimePrinter::printElapsedTime(){
 	int days=hours/24;
 	hours=hours%24;
 	bool started=false;
-	cout<<"Rank 0: ELAPSED TIME: ";
 	if(days>0){
 		cout<<days<<" days";
 		if(!started){
@@ -61,12 +75,19 @@ void TimePrinter::printElapsedTime(){
 	if(seconds>0){
 		cout<<seconds<<" seconds";
 	}
-	int differenceWithLast=m_endingTime-m_lastTime;
-	cout<<" (+"<<differenceWithLast<<" seconds from last epoch)"<<endl;
-	
-	m_lastTime=m_endingTime;
+
 }
 
-TimePrinter::TimePrinter(){
-	m_startingTime=m_lastTime=m_endingTime=time(NULL);
+void TimePrinter::printDurations(){
+	m_descriptions.push_back("Completion of the assembly");
+	m_endingTime=time(NULL);
+	m_durations.push_back(m_endingTime-m_startingTime);
+	cout<<"\nElapsed time for each step:"<<endl;
+	for(int i=0;i<(int)m_descriptions.size();i++){
+		string text=m_descriptions[i];
+		int seconds=m_durations[i];
+		cout<<" "<<text<<": ";
+		printDifference(seconds);
+		cout<<endl;
+	}
 }

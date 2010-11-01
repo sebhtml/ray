@@ -17,6 +17,11 @@
     along with this program (gpl-3.0.txt).  
 	see <http://www.gnu.org/licenses/>
 
+
+ 	Funding:
+
+Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Research (Master's award: 200910MDR-215249-172830 and Doctoral award: 200902CGM-204212-172830).
+
 */
 
 #include<mpi.h>
@@ -225,6 +230,9 @@ void Machine::start(){
 
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
 	MPI_Comm_size(MPI_COMM_WORLD,&m_size);
+	if(isMaster()){
+		cout<<"Bienvenue !"<<endl;
+	}
 	m_disData->constructor(getSize(),5000,&m_persistentAllocator);
 
 	m_subgraph.constructor(numberOfTrees,&m_persistentAllocator);
@@ -244,13 +252,15 @@ void Machine::start(){
 	m_edgesExtractor.m_myReads=&m_myReads;
 
 	if(isMaster()){
-		cout<<"**************************************************"<<endl;
+		cout<<endl<<"**************************************************"<<endl;
     		cout<<"This program comes with ABSOLUTELY NO WARRANTY."<<endl;
     		cout<<"This is free software, and you are welcome to redistribute it"<<endl;
     		cout<<"under certain conditions; see \"gpl-3.0.txt\" for details."<<endl;
 		cout<<"**************************************************"<<endl;
 		cout<<endl;
 		cout<<"Ray Copyright (C) 2010  Sébastien Boisvert, Jacques Corbeil, François Laviolette"<<endl;
+		cout<<"Centre de recherche en infectiologie de l'Université Laval"<<endl;
+		cout<<"Project funded by the Canadian Institutes of Health Research (Doctoral award 200902CGM-204212-172830 to S.B.)"<<endl;
  		cout<<"http://denovoassembler.sf.net/"<<endl<<endl;
 
 		cout<<"Reference to cite: "<<endl<<endl;
@@ -299,7 +309,12 @@ void Machine::start(){
 	MPI_Barrier(MPI_COMM_WORLD);
 
 	if(isMaster()){
-		m_timePrinter.printElapsedTime();
+		m_timePrinter.printElapsedTime("Collection of fusions");
+		m_timePrinter.printDurations();
+		cout<<endl;
+		cout<<"Au revoir !"<<endl;
+
+		
 	}
 	MPI_Finalize();
 }
@@ -1264,13 +1279,9 @@ void Machine::processData(){
 		}
 
 		cout<<endl;
-		cout<<"Ray version: "<<m_parameters.getEngineName()<<" "<<m_parameters.getVersion()<<endl;
-		cout<<"NumberOfRanks: "<<getSize()<<endl;
-		#ifdef OMPI_MPI_H
-		cout<<"MPILibrary: Open-MPI "<<OMPI_MAJOR_VERSION<<"."<<OMPI_MINOR_VERSION<<"."<<OMPI_RELEASE_VERSION<<endl;
-		#endif
+		cout<<"Rank 0: Ray v. "<<""<<m_parameters.getVersion()<<" is running"<<endl;
 		#ifdef __linux__
-		cout<<"OperatingSystem: Linux (during compilation)"<<endl;
+		cout<<"Rank 0: operating system is Linux (during compilation)"<<endl;
 		#endif
 
 
@@ -1315,7 +1326,7 @@ void Machine::processData(){
 
 	}else if(m_loadSequenceStep==true && m_mode_send_vertices==false&&isMaster() and m_sequence_ready_machines==getSize()&&m_messageSentForVerticesDistribution==false){
 		#ifdef SHOW_PROGRESS
-		m_timePrinter.printElapsedTime();
+		m_timePrinter.printElapsedTime("Distribution of sequence reads");
 		cout<<endl;
 		cout<<"Rank "<<getRank()<<": starting vertices distribution."<<endl;
 		#else
@@ -1338,7 +1349,7 @@ void Machine::processData(){
 		}
 		m_startEdgeDistribution=false;
 	}else if(m_numberOfMachinesReadyForEdgesDistribution==getSize() and isMaster()){
-		m_timePrinter.printElapsedTime();
+		m_timePrinter.printElapsedTime("Calculation of coverage distribution");
 		cout<<endl;
 		cout<<"Rank 0 tells its friends to proceed with the distribution of edges."<<endl;
 		m_numberOfMachinesReadyForEdgesDistribution=-1;
@@ -1417,7 +1428,7 @@ void Machine::processData(){
 	}else if(m_numberOfMachinesDoneSendingEdges==getSize()){
 		m_numberOfMachinesDoneSendingEdges=-9;
 
-		m_timePrinter.printElapsedTime();
+		m_timePrinter.printElapsedTime("Distribution of edges");
 		cout<<endl;
 
 
@@ -1425,6 +1436,7 @@ void Machine::processData(){
 		m_distribution_file_id=m_distribution_sequence_id=m_distribution_currentSequenceId=0;
 
 	}else if(m_numberOfMachinesDoneSendingVertices==getSize()){
+		cout<<"Rank 0 asks other ranks to share their number of vertices"<<endl;
 		m_numberOfMachinesDoneSendingVertices=-1;
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, i, TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION,getRank());
@@ -1433,7 +1445,7 @@ void Machine::processData(){
 	}else if(m_numberOfMachinesReadyToSendDistribution==getSize()){
 
 		m_numberOfMachinesReadyToSendDistribution=-1;
-		m_timePrinter.printElapsedTime();
+		m_timePrinter.printElapsedTime("Distribution of vertices");
 		cout<<endl;
 		cout<<"Rank 0 computes the coverage distribution."<<endl;
 
@@ -1528,7 +1540,7 @@ void Machine::processData(){
 	}else if(m_mode_send_ingoing_edges){ 
 		m_edgesExtractor.processIngoingEdges();
 	}else if(m_readyToSeed==getSize()){
-		m_timePrinter.printElapsedTime();
+		m_timePrinter.printElapsedTime("Indexing of sequence reads");
 		cout<<endl;
 		cout<<"Rank 0 tells other ranks to calculate their seeds."<<endl;
 		m_readyToSeed=-1;
@@ -1624,7 +1636,7 @@ void Machine::processData(){
 			}
 		}
 	}else if(m_numberOfRanksDoneSeeding==getSize()){
-		m_timePrinter.printElapsedTime();
+		m_timePrinter.printElapsedTime("Computation of seeds");
 		cout<<endl;
 		cout<<"Rank 0 asks others to approximate library sizes."<<endl;
 		m_numberOfRanksDoneSeeding=-1;
@@ -1716,10 +1728,9 @@ void Machine::processData(){
 	}
 
 	if(m_ed->m_EXTENSION_numberOfRanksDone==getSize()){
+		m_timePrinter.printElapsedTime("Extension of seeds");
+		cout<<endl;
 
-		#ifndef SHOW_PROGRESS
-		cout<<"\r"<<"Computing fusions"<<endl;
-		#endif
 		// ask one at once to do the fusion
 		// because otherwise it may lead to hanging of the program for unknown reasons
 		m_ed->m_EXTENSION_numberOfRanksDone=-1;
@@ -1830,8 +1841,6 @@ void Machine::processData(){
 
 		}else if(m_DISTRIBUTE_n==getSize() and m_isFinalFusion){
 			#ifdef SHOW_PROGRESS
-			m_timePrinter.printElapsedTime();
-			cout<<endl;
 			cout<<"Rank 0 tells others to compute fusions."<<endl;
 
 			#endif
@@ -1847,7 +1856,7 @@ void Machine::processData(){
 			m_reductionOccured=m_nextReductionOccured;
 			m_fusionData->m_FUSION_numberOfRanksDone=-1;
 			if(!m_reductionOccured or m_cycleNumber ==5){ // cycling is in development!
-				m_timePrinter.printElapsedTime();
+				m_timePrinter.printElapsedTime("Computation of fusions");
 				cout<<endl;
 				cout<<"Rank 0 is "<<"collecting fusions"<<endl;
 				m_master_mode=MODE_ASK_EXTENSIONS;
@@ -2026,11 +2035,11 @@ void Machine::processData(){
 			}
 			f.close();
 			#ifdef SHOW_PROGRESS
-			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<endl;
 			#else
 			cout<<"\r"<<"              "<<endl<<"Writing "<<m_parameters.getOutputFile()<<endl;
 			#endif
-			cout<<"Rank 0: "<<m_allPaths.size()<<" contigs/"<<totalLength<<" nucleotides"<<endl;
+			cout<<endl<<"Rank 0: "<<m_allPaths.size()<<" contigs/"<<totalLength<<" nucleotides"<<endl;
+			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<endl;
 			if(m_parameters.useAmos()){
 				m_master_mode=MODE_AMOS;
 				m_SEEDING_i=0;
@@ -2332,7 +2341,7 @@ int Machine::vertexRank(VERTEX_TYPE a){
 void Machine::updateDistances(){
 	if(m_fileId==m_parameters.getNumberOfFiles()){
 
-		m_timePrinter.printElapsedTime();
+		m_timePrinter.printElapsedTime("Computation of library sizes");
 		cout<<endl;
 		cout<<"Rank 0 asks others to extend their seeds."<<endl;
 		#ifndef SHOW_PROGRESS
