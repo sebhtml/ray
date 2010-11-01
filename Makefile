@@ -7,10 +7,7 @@ MPIRUN=mpirun
 TARGETS=Ray
 
 
-all: print $(TARGETS)
-
-print:
-	@echo MPICC is $(MPICC)
+all: $(TARGETS)
 
 OBJECTS= code/Machine.o code/common_functions.o code/Loader.o code/Read.o code/MyAllocator.o \
 code/SffLoader.o code/Parameters.o code/Vertex.o code/ReadAnnotation.o code/CoverageDistribution.o \
@@ -21,33 +18,26 @@ code/BufferedData.o code/DistributionData.o code/SequencesIndexer.o code/TipWatc
 code/RepeatedVertexWatchdog.o code/SeedExtender.o code/MyForest.o code/EdgesExtractor.o code/TimePrinter.o
 
 %.o: %.cpp
-	@echo MPICC $< "->" $@
-	@$(MPICC) $(CXXFLAGS) -c $< -o $@
+	$(MPICC) $(CXXFLAGS) -c $< -o $@
 
 simtools: Ray-SimulateFragments Ray-SimulateErrors Ray-SimulatePairedReads
 
 Ray-SimulatePairedReads: code/simulate_paired_main.o $(OBJECTS)
-	@echo A.OUT $@
-	@$(MPICC) $(CXXFLAGS) $^ -o $@
+	$(MPICC) $(CXXFLAGS) $^ -o $@
 
 Ray-SimulateErrors: code/simulateErrors_main.o $(OBJECTS)
-	@echo A.OUT $@
-	@$(MPICC) $(CXXFLAGS) $^ -o $@
+	$(MPICC) $(CXXFLAGS) $^ -o $@
 
 Ray-SimulateFragments: code/simulate_fragments_main.o $(OBJECTS)
-	@echo A.OUT $@
-	@$(MPICC) $(CXXFLAGS) $^ -o $@
+	$(MPICC) $(CXXFLAGS) $^ -o $@
 
 
 Ray: code/ray_main.o $(OBJECTS)
-	@echo A.OUT $@
-	@$(MPICC) $(CXXFLAGS) $^ -o $@
+	$(MPICC) $(CXXFLAGS) $^ -o $@
 
 test: code/test_main.o $(OBJECTS)
-	@echo TEST
-	@$(MPICC) $(CXXFLAGS) $^ -o $@
-	@$(MPIRUN) ./test
+	$(MPICC) $(CXXFLAGS) $^ -o $@
+	$(MPIRUN) ./test
 clean:
-	@echo CLEAN
-	@rm -f $(OBJECTS) $(TARGETS) *.o
+	rm -f $(OBJECTS) $(TARGETS) *.o
 
