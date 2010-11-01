@@ -1,8 +1,9 @@
-0.1.0
+v. 0.1.0
 
 
 
-0.0.7
+v. 0.0.7
+r3372 | 2010-04-24 08:17:54 -0400
 
 * (Small) speed improvement in seed extension (trac #21)
 * Ray can now write to user-specified files -- Huge thanks to Matthew
@@ -24,7 +25,8 @@ is messy -- thanks to Torsten Seemann (Victorian Bioinformatics Consortium, Dept
 University, AUSTRALIA) for noticing the issue (trac #129)
 
 
-0.0.6
+v. 0.0.6
+r3269 | 2010-04-10 08:38:09 -0400
 
 * 'make test' now performs unit tests (trac #83)
 * 'make simtools' compiles simulation tools (trac #43)
@@ -42,7 +44,8 @@ seqanswers.com)
 * Comparison with other assemblers 
 
 
-0.0.5
+v. 0.0.5
+r3171 | 2010-03-29 10:15:17 -0400
 
 * Ray now outputs assemblies in AMOS format (with -a), (trac #58)
 * Ray commands can be provided with a commands file (like in 0.0.3 and 0.0.4)
@@ -50,7 +53,8 @@ as well as with command-line arguments, (trac #94) and
 * Ray removes non-A-T-C-G letters at both ends of reads.
 
 
-0.0.4
+v. 0.0.4
+r3132 | 2010-03-22 21:26:38 -0400
 
 * Fixed many bugs in Ray when k is lower than 25 (when k=21, in particular)
 (trac #88)
@@ -73,8 +77,25 @@ Ray now reuses allocated memory for ingoing and outgoing messages
 * Added a mummer validation script (r3090)
 
 
-0.0.3 
+v. 0.0.3 
+r3074 | 2010-03-09 21:28:22 -0500
 
-* initial release, see
-https://sourceforge.net/mailarchive/forum.php?thread_name=C4217F2ABFA5D44BA8F3DCD899E5B0C8E42ED96EA7%40EXCH-MBX-F.ulaval.ca&forum_name=denovoassembler-users
+* initial release
 
+
+v. 0.0.2
+r2964 | 2010-02-19 17:27:27 -0500
+
+* nothing noteworthy to report
+
+
+v. 0.0.1
+r2936 | 2010-02-10 15:14:40 -0500 
+
+* codenamed Osiris
+
+
+v. 0.0.0
+r2902 | 2010-01-29 16:46:40 -0500
+
+* codenamed crocodile
