@@ -86,8 +86,6 @@ public:
 	string getParametersFile();
 	string getContigsFile();
 	string getCoverageDistributionFile();
-	string getEngineName();
-	string getVersion();
 	vector<string> getCommands();
 	bool getError();
 	void addDistance(int library,int distance,int count);

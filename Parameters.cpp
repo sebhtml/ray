@@ -384,14 +384,6 @@ string Parameters::getAmosFile(){
 	return m_amosFile;
 }
 
-string Parameters::getEngineName(){
-	return "Ray";
-}
-
-string Parameters::getVersion(){
-	return "0.1.0 codename 'Adenine'";
-}
-
 vector<string> Parameters::getCommands(){
 	return m_commands;
 }

@@ -1287,7 +1287,7 @@ void Machine::processData(){
 		}
 
 		cout<<endl;
-		cout<<"Rank 0: Ray v. "<<""<<m_parameters.getVersion()<<" is running"<<endl;
+		cout<<"Rank 0: Ray 0.1.0 is running"<<endl;
 		#ifdef __linux__
 		cout<<"Rank 0: operating system is Linux (during compilation)"<<endl;
 		#endif
@@ -2097,11 +2097,9 @@ void Machine::processData(){
 					strcpy(qlt,seq.c_str());
 					for(int i=0;i<(int)strlen(qlt);i++)
 						qlt[i]='D';
-					fprintf(fp,"{CTG\niid:%i\neid:contig-%i\ncom:\nAssembly engine: %s %s\n.\nseq:\n%s\n.\nqlt:\n%s\n.\n",
+					fprintf(fp,"{CTG\niid:%i\neid:contig-%i\ncom:\nRay\n.\nseq:\n%s\n.\nqlt:\n%s\n.\n",
 						m_SEEDING_i+1,
 						m_identifiers[m_SEEDING_i],
-						m_parameters.getEngineName().c_str(),
-						m_parameters.getVersion().c_str(),
 						seq.c_str(),
 						qlt
 						);
