@@ -455,17 +455,7 @@ char*__basename(char*a){
 	return a+last+1;
 }
 
-void computeTime(time_t startingTime){
-	time_t endingTime=time(NULL);
-	int difference=endingTime-startingTime;
-	int minutes=difference/60;
-	int seconds=difference%60;
-	int hours=minutes/60;
-	minutes=minutes%60;
-	int days=hours/24;
-	hours=hours%24;
-	cout<<"Rank 0: "<<"Elapsed time: "<<days<<" d "<<hours<<" h "<<minutes<<" min "<<seconds<<" s"<<endl;
-}
+
 
 VERTEX_TYPE kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool color){
 	int length=strlen(m_sequence);

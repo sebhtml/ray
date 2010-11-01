@@ -29,6 +29,7 @@
 #include<map>
 #include<vector>
 #include<DepthFirstSearchData.h>
+#include<TimePrinter.h>
 #include<SequencesIndexer.h>
 #include<SeedExtender.h>
 #include<SequencesLoader.h>
@@ -77,7 +78,7 @@ class Machine{
 	
 	EdgesExtractor m_edgesExtractor;
 	int m_numberOfRanksWithCoverageData;
-	time_t m_startingTime;
+	TimePrinter m_timePrinter;
 	ScaffolderData*m_sd;
 	VerticesExtractor m_verticesExtractor;
 	MessageProcessor m_mp;

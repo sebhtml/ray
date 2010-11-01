@@ -446,7 +446,7 @@ void Parameters::computeAverageDistances(){
 		m_observedStandardDeviations.push_back(standardDeviation);
 		#define SHOW_LIBRARY_COMPUTATIONS
 		#ifdef SHOW_LIBRARY_COMPUTATIONS
-		cout<<"Rank 0: Library"<<library<<": "<<average<<","<<standardDeviation<<endl;
+		cout<<"Rank 0: library "<<library<<" has an average size of "<<average<<" with a standard variation of "<<standardDeviation<<endl;
 		#endif
 	}	
 	m_observedDistances.clear();

@@ -333,7 +333,6 @@ void showProgress(time_t m_lastTime);
 
 char*__basename(char*a);
 
-void computeTime(time_t startingTime);
 
 VERTEX_TYPE kmerAtPosition(const char*string,int pos,int w,char strand,bool color);
 

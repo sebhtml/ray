@@ -173,8 +173,6 @@ void Machine::start(){
 
 	#ifdef SHOW_PROGRESS
 	#endif
-	m_startingTime=time(NULL);
-	m_lastTime=time(NULL);
 	srand(m_lastTime);
 	m_fusionData->m_fusionStarted=false;
 	m_ed->m_EXTENSION_numberOfRanksDone=0;
@@ -301,7 +299,7 @@ void Machine::start(){
 	MPI_Barrier(MPI_COMM_WORLD);
 
 	if(isMaster()){
-		computeTime(m_startingTime);
+		m_timePrinter.printElapsedTime();
 	}
 	MPI_Finalize();
 }
@@ -1107,6 +1105,7 @@ void Machine::processMessages(){
 
 void Machine::detectDistances(){
 	if(m_SEEDING_i==(int)m_SEEDING_seeds.size()){
+		cout<<"Rank "<<getRank()<<" calculates library sizes "<<m_SEEDING_seeds.size()<<"/"<<m_SEEDING_seeds.size()<<" (DONE)"<<endl;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE,getRank());
 		m_outbox.push_back(aMessage);
 		m_mode=MODE_DO_NOTHING;
@@ -1119,6 +1118,9 @@ void Machine::detectDistances(){
 		#endif
 	}else{
 		if(!m_ed->m_EXTENSION_reads_requested){
+			if(m_ed->m_EXTENSION_currentPosition==0 && m_SEEDING_i%100==0){
+				cout<<"Rank "<<getRank()<<" calculates library sizes "<<m_SEEDING_i+1<<"/"<<m_SEEDING_seeds.size()<<" (DONE)"<<endl;
+			}
 			m_ed->m_EXTENSION_reads_requested=true;
 			m_ed->m_EXTENSION_reads_received=false;
 			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
@@ -1313,7 +1315,7 @@ void Machine::processData(){
 
 	}else if(m_loadSequenceStep==true && m_mode_send_vertices==false&&isMaster() and m_sequence_ready_machines==getSize()&&m_messageSentForVerticesDistribution==false){
 		#ifdef SHOW_PROGRESS
-		computeTime(m_startingTime);
+		m_timePrinter.printElapsedTime();
 		cout<<endl;
 		cout<<"Rank "<<getRank()<<": starting vertices distribution."<<endl;
 		#else
@@ -1336,7 +1338,7 @@ void Machine::processData(){
 		}
 		m_startEdgeDistribution=false;
 	}else if(m_numberOfMachinesReadyForEdgesDistribution==getSize() and isMaster()){
-		computeTime(m_startingTime);
+		m_timePrinter.printElapsedTime();
 		cout<<endl;
 		cout<<"Rank 0 tells its friends to proceed with the distribution of edges."<<endl;
 		m_numberOfMachinesReadyForEdgesDistribution=-1;
@@ -1415,7 +1417,7 @@ void Machine::processData(){
 	}else if(m_numberOfMachinesDoneSendingEdges==getSize()){
 		m_numberOfMachinesDoneSendingEdges=-9;
 
-		computeTime(m_startingTime);
+		m_timePrinter.printElapsedTime();
 		cout<<endl;
 
 
@@ -1431,7 +1433,7 @@ void Machine::processData(){
 	}else if(m_numberOfMachinesReadyToSendDistribution==getSize()){
 
 		m_numberOfMachinesReadyToSendDistribution=-1;
-		computeTime(m_startingTime);
+		m_timePrinter.printElapsedTime();
 		cout<<endl;
 		cout<<"Rank 0 computes the coverage distribution."<<endl;
 
@@ -1526,7 +1528,7 @@ void Machine::processData(){
 	}else if(m_mode_send_ingoing_edges){ 
 		m_edgesExtractor.processIngoingEdges();
 	}else if(m_readyToSeed==getSize()){
-		computeTime(m_startingTime);
+		m_timePrinter.printElapsedTime();
 		cout<<endl;
 		cout<<"Rank 0 tells other ranks to calculate their seeds."<<endl;
 		m_readyToSeed=-1;
@@ -1622,7 +1624,7 @@ void Machine::processData(){
 			}
 		}
 	}else if(m_numberOfRanksDoneSeeding==getSize()){
-		computeTime(m_startingTime);
+		m_timePrinter.printElapsedTime();
 		cout<<endl;
 		cout<<"Rank 0 asks others to approximate library sizes."<<endl;
 		m_numberOfRanksDoneSeeding=-1;
@@ -1828,7 +1830,7 @@ void Machine::processData(){
 
 		}else if(m_DISTRIBUTE_n==getSize() and m_isFinalFusion){
 			#ifdef SHOW_PROGRESS
-			computeTime(m_startingTime);
+			m_timePrinter.printElapsedTime();
 			cout<<endl;
 			cout<<"Rank 0 tells others to compute fusions."<<endl;
 
@@ -1845,7 +1847,7 @@ void Machine::processData(){
 			m_reductionOccured=m_nextReductionOccured;
 			m_fusionData->m_FUSION_numberOfRanksDone=-1;
 			if(!m_reductionOccured or m_cycleNumber ==5){ // cycling is in development!
-				computeTime(m_startingTime);
+				m_timePrinter.printElapsedTime();
 				cout<<endl;
 				cout<<"Rank 0 is "<<"collecting fusions"<<endl;
 				m_master_mode=MODE_ASK_EXTENSIONS;
@@ -2330,7 +2332,7 @@ int Machine::vertexRank(VERTEX_TYPE a){
 void Machine::updateDistances(){
 	if(m_fileId==m_parameters.getNumberOfFiles()){
 
-		computeTime(m_startingTime);
+		m_timePrinter.printElapsedTime();
 		cout<<endl;
 		cout<<"Rank 0 asks others to extend their seeds."<<endl;
 		#ifndef SHOW_PROGRESS
