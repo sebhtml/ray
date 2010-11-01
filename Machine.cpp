@@ -679,7 +679,7 @@ void Machine::makeFusions(){
 		if(!m_fusionData->m_FUSION_first_done){
 			if(!m_fusionData->m_FUSION_paths_requested){
 				#ifdef SHOW_PROGRESS
-				if(m_SEEDING_i%100==0){
+				if(m_SEEDING_i%10==0){
 					cout<<"Rank "<<getRank()<<": fusion "<<m_SEEDING_i<<"/"<<m_ed->m_EXTENSION_contigs.size()<<endl;
 				}
 				#endif
