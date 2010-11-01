@@ -8,5 +8,5 @@ nohup /software/openmpi-1.5/bin/mpirun -np 22 ../Ray \
  -s /home/boiseb01/nuccore/chr1-6.fa \
  -s /home/boiseb01/nuccore/chr1-7.fa \
  -s /home/boiseb01/nuccore/chr1-8.fa \
- -s /home/boiseb01/nuccore/chr1-9.fa
+ -s /home/boiseb01/nuccore/chr1-9.fa \
  -o /home/boiseb01/nuccore/chr1.fasta > chr1.log &
