@@ -14,7 +14,7 @@
     GNU General Public License for more details.
 
     You have received a copy of the GNU General Public License
-    along with this program (gpl-3.0.txt).  
+    along with this program (LICENSE).  
 	see <http://www.gnu.org/licenses/>
 
 
@@ -258,7 +258,7 @@ void Machine::start(){
 		cout<<endl<<"**************************************************"<<endl;
     		cout<<"This program comes with ABSOLUTELY NO WARRANTY."<<endl;
     		cout<<"This is free software, and you are welcome to redistribute it"<<endl;
-    		cout<<"under certain conditions; see \"gpl-3.0.txt\" for details."<<endl;
+    		cout<<"under certain conditions; see \"LICENSE\" for details."<<endl;
 		cout<<"**************************************************"<<endl;
 		cout<<endl;
 		cout<<"Ray Copyright (C) 2010  Sébastien Boisvert, Jacques Corbeil, François Laviolette"<<endl;
