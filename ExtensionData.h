@@ -84,13 +84,13 @@ public:
 	int m_EXTENSION_receivedLength;
 	bool m_EXTENSION_reverseVertexDone;
 	// reads used so far
-	set<int> m_EXTENSION_usedReads;
+	set<u64> m_EXTENSION_usedReads;
 	// reads to check (the ones "in range")
 	set<ReadAnnotation,ReadAnnotationComparator> m_EXTENSION_readsInRange;
 	bool m_EXTENSION_singleEndResolution;
 	map<int,vector<int> > m_EXTENSION_readPositionsForVertices;
 	map<int,vector<int> > m_EXTENSION_pairedReadPositionsForVertices;
-	map<int,int> m_EXTENSION_reads_startingPositionOnContig;
+	map<u64,int> m_EXTENSION_reads_startingPositionOnContig;
 	int m_currentCoverage;
 
 };

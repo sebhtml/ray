@@ -399,9 +399,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 								}else if(ed->m_EXTENSION_pairedSequenceReceived){
 									int expectedFragmentLength=ed->m_EXTENSION_pairedRead.getAverageFragmentLength();
 									int expectedDeviation=ed->m_EXTENSION_pairedRead.getStandardDeviation();
-									int rank=ed->m_EXTENSION_pairedRead.getRank();
-									int id=ed->m_EXTENSION_pairedRead.getId();
-									int uniqueReadIdentifier=id*MAX_NUMBER_OF_MPI_PROCESSES+rank;
+									u64 uniqueReadIdentifier=ed->m_EXTENSION_pairedRead.getUniqueId();
 		
 									// it is mandatory for a read to start at 0. at position X on the path.
 									if(ed->m_EXTENSION_reads_startingPositionOnContig.count(uniqueReadIdentifier)>0){
@@ -443,7 +441,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 			}else{
 				// remove reads that are no longer in-range.
 				for(int i=0;i<(int)ed->m_EXTENSION_readsOutOfRange.size();i++){
-					int uniqueId=ed->m_EXTENSION_readsOutOfRange[i].getUniqueId();
+					u64 uniqueId=ed->m_EXTENSION_readsOutOfRange[i].getUniqueId();
 					if(m_pairedReads.count(uniqueId)>0){
 						m_pairedReads.erase(uniqueId);
 					}
@@ -931,7 +929,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 			}else if(ed->m_EXTENSION_reads_received){
 				if(m_sequenceIndexToCache<(int)ed->m_EXTENSION_receivedReads.size()){
 					ReadAnnotation annotation=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache];
-					int uniqueId=annotation.getUniqueId();
+					u64 uniqueId=annotation.getUniqueId();
 					if(ed->m_EXTENSION_usedReads.count(uniqueId)>0){
 						m_sequenceIndexToCache++;
 					}else if(*(repeatedLength)>=_REPEATED_LENGTH_ALARM_THRESHOLD){
@@ -964,9 +962,6 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 					// get its paired read too.
 
 					else if(!ed->m_EXTENSION_pairedSequenceRequested){
-						#ifdef DEBUG
-						assert(ed->m_EXTENSION_hasPairedReadAnswer);
-						#endif
  						ed->m_EXTENSION_pairedSequenceRequested=true;
 						VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
 						message[0]=annotation.getReadIndex();

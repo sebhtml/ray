@@ -39,14 +39,14 @@ using namespace std;
 class SeedExtender{
 public:
 
-	map<int,string> m_sequences;
+	map<u64,string> m_sequences;
 	bool m_sequenceReceived;
 	bool m_sequenceRequested;
 	string m_receivedString;
 	int m_sequenceIndexToCache;
 
 
-	map<int,PairedRead> m_pairedReads;
+	map<u64,PairedRead> m_pairedReads;
 
 	void enumerateChoices(bool*edgesRequested,ExtensionData*ed,bool*edgesReceived,MyAllocator*outboxAllocator,
 		int*outgoingEdgeIndex,vector<Message>*outbox,

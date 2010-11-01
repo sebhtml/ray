@@ -22,22 +22,27 @@
 
 #include<PairedRead.h>
 #include<common_functions.h>
+#include<assert.h>
 
 PairedRead::PairedRead(){
 }
 
 void PairedRead::constructor(int rank,int id, int fragmentSize,int deviation){
-	m_uniqueId=id*MAX_NUMBER_OF_MPI_PROCESSES+rank;
+	m_rank=rank;
+	m_readIndex=id;
+	assert(fragmentSize<=MAX_U16);
+	assert(deviation<=MAX_U16);
+	
 	m_fragmentSize=fragmentSize;
 	m_deviation=deviation;
 }
 
 int PairedRead::getRank(){
-	return m_uniqueId%MAX_NUMBER_OF_MPI_PROCESSES;
+	return m_rank;
 }
 
 int PairedRead::getId(){
-	return m_uniqueId/MAX_NUMBER_OF_MPI_PROCESSES;
+	return m_readIndex;
 }
 
 int PairedRead::getAverageFragmentLength(){
@@ -53,6 +58,6 @@ void PairedRead::updateLibrary(int d,int sd){
 	m_deviation=sd;
 }
 
-int PairedRead::getUniqueId(){
-	return m_uniqueId;
+u64 PairedRead::getUniqueId(){
+	return m_readIndex*MAX_NUMBER_OF_MPI_PROCESSES+m_rank;
 }

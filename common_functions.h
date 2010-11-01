@@ -30,6 +30,9 @@ see <http://www.gnu.org/licenses/>
 #define u32 uint32_t
 #define u64 uint64_t
 
+#define MAX_U32 4294967295
+#define MAX_U16 65535
+
 #define _REPEATED_LENGTH_ALARM_THRESHOLD 100
 
 #define VERTEX_TYPE u64

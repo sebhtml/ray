@@ -33,7 +33,8 @@
  * <----------------------------------------------------------------->
  */
 class PairedRead{
-	int m_uniqueId;
+	u32 m_readIndex;
+	u16 m_rank;
 	u16 m_fragmentSize;
 	u16 m_deviation;
 public:
@@ -43,7 +44,7 @@ public:
 	int getId();
 	int getAverageFragmentLength();
 	int getStandardDeviation();
-	int getUniqueId();
+	u64 getUniqueId();
 	void updateLibrary(int distance,int standardDeviation);
 };
 

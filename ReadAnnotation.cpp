@@ -19,12 +19,14 @@
 
 */
 
+#include<assert.h>
 #include<ReadAnnotation.h>
 #include<cstdlib>
 #include<common_functions.h>
 
 void ReadAnnotation::constructor(int rank,int readIndex,char c){
-	m_uniqueId=readIndex*MAX_NUMBER_OF_MPI_PROCESSES+rank;
+	m_rank=rank;
+	m_readIndex=readIndex;
 	m_next=NULL; // xor on the next.
 	m_strand=c;
 }
@@ -34,11 +36,11 @@ char ReadAnnotation::getStrand()const{
 }
 
 int ReadAnnotation::getRank()const{
-	return m_uniqueId%MAX_NUMBER_OF_MPI_PROCESSES;
+	return m_rank;
 }
 
 int ReadAnnotation::getReadIndex()const{
-	return m_uniqueId/MAX_NUMBER_OF_MPI_PROCESSES;
+	return m_readIndex;
 }
 
 void ReadAnnotation::setNext(ReadAnnotation*a){
@@ -49,7 +51,7 @@ ReadAnnotation*ReadAnnotation::getNext()const{
 	return m_next;
 }
 
-int ReadAnnotation::getUniqueId()const{
-	return m_uniqueId;
+u64 ReadAnnotation::getUniqueId()const{
+	return m_readIndex*MAX_NUMBER_OF_MPI_PROCESSES+m_rank;
 }
 

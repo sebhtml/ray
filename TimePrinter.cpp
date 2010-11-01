@@ -25,12 +25,11 @@
 using namespace std;
 
 void TimePrinter::printElapsedTime(string description){
-	m_lastTime=m_endingTime;
 	time_t m_endingTime=time(NULL);
-	int difference=m_endingTime-m_lastTime;
-	cout<<"\nRank 0 reports the elapsed time\n"<<" ---> Step: "<<description<<"\n      Elapsed time: ";
-	printDifference(difference);
 	int differenceWithLast=m_endingTime-m_lastTime;
+	m_lastTime=m_endingTime;
+	cout<<"\nRank 0 reports the elapsed time\n"<<" ---> Step: "<<description<<"\n      Elapsed time: ";
+	printDifference(differenceWithLast);
 	int totalSeconds=m_endingTime-m_startingTime;
 	cout<<"\n      Since beginning: "<<totalSeconds<<" seconds"<<endl;
 	m_descriptions.push_back(description);
@@ -72,9 +71,7 @@ void TimePrinter::printDifference(int difference){
 		}
 
 	}
-	if(seconds>0){
-		cout<<seconds<<" seconds";
-	}
+	cout<<seconds<<" seconds";
 
 }
 

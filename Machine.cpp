@@ -230,6 +230,9 @@ void Machine::start(){
 
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
 	MPI_Comm_size(MPI_COMM_WORLD,&m_size);
+
+	assert(getSize()<=MAX_NUMBER_OF_MPI_PROCESSES);
+
 	if(isMaster()){
 		cout<<"Bienvenue !"<<endl;
 	}
@@ -400,6 +403,13 @@ void Machine::sendMessages(){
 			m_pendingMpiRequest.push_back(request);
 		}
 		#else // Open-MPI-1.4.1 sends message eagerly, which is just a better design.
+
+		#ifdef DEBUG
+		int theRank=aMessage->getDestination();
+		assert(theRank>=0);
+		assert(theRank<getSize());
+		#endif
+
 		MPI_Send(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD);
 		#endif
 	}
@@ -1177,9 +1187,7 @@ void Machine::detectDistances(){
 							}else if(m_ed->m_EXTENSION_pairedSequenceReceived){
 								int expectedDeviation=m_ed->m_EXTENSION_pairedRead.getStandardDeviation();
 								if(expectedDeviation==_AUTOMATIC_DETECTION){
-									int rank=m_ed->m_EXTENSION_pairedRead.getRank();
-									int id=m_ed->m_EXTENSION_pairedRead.getId();
-									int uniqueReadIdentifier=id*MAX_NUMBER_OF_MPI_PROCESSES+rank;
+									u64 uniqueReadIdentifier=m_ed->m_EXTENSION_pairedRead.getUniqueId();
 									if(m_readsPositions.count(uniqueReadIdentifier)>0){
 										int library=m_ed->m_EXTENSION_pairedRead.getAverageFragmentLength();
 										char currentStrand=annotation.getStrand();
@@ -1220,7 +1228,7 @@ void Machine::detectDistances(){
 				cout<<"Adding reads in positions "<<m_ed->m_EXTENSION_currentPosition<<endl;
 				#endif
 				for(int i=0;i<(int)m_ed->m_EXTENSION_receivedReads.size();i++){
-					int uniqueId=m_ed->m_EXTENSION_receivedReads[i].getUniqueId();
+					u64 uniqueId=m_ed->m_EXTENSION_receivedReads[i].getUniqueId();
 					int position=m_ed->m_EXTENSION_currentPosition;
 					char strand=m_ed->m_EXTENSION_receivedReads[i].getStrand();
 					// read, position, strand

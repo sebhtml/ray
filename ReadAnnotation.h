@@ -23,13 +23,16 @@
 #ifndef _ReadAnnotation
 #define _ReadAnnotation
 
+#include<common_functions.h>
+
 /*
  * implemented as linked lists, read annotations give 
  * information about read index in the graph.
  * The read paths are restored using read annotations.
  */
 class ReadAnnotation{
-	int m_uniqueId;
+	u32 m_readIndex;
+	u16 m_rank;
 	char m_strand;
 	ReadAnnotation*m_next;
 public:
@@ -39,7 +42,7 @@ public:
 	char getStrand()const;
 	ReadAnnotation*getNext()const;
 	void setNext(ReadAnnotation*a);
-	int getUniqueId() const;
+	u64 getUniqueId() const;
 };
 
 class ReadAnnotationComparator{
