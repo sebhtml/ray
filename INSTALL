@@ -1,12 +1,9 @@
-tar -xjf Ray-0.0.7.tar.bz2
-cd Ray-0.0.7
+tar -xjf Ray-version.tar.bz2
+cd Ray-version
 make
-
 
 You may provide your own MPICC too.
 
-tar -xjf Ray-0.0.7.tar.bz2
-cd Ray-0.0.7
 make MPICC=/software/openmpi-1.4.3/bin/mpic++
 
 
