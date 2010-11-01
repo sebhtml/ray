@@ -1579,10 +1579,6 @@ void Machine::processData(){
 				cout<<"Rank "<<getRank()<<" sorts its seeds"<<endl;
 				sort(m_SEEDING_seeds.begin(),m_SEEDING_seeds.end(),myComparator_sort);
 
-				for(int i=0;i<(int)m_SEEDING_seeds.size();i++){
-					cout<<"Rank "<<getRank()<<" seed # "<<i<<" : "<<m_SEEDING_seeds[i].size()<<endl;
-				}
-
 				m_mode=MODE_DO_NOTHING;
 				#ifdef SHOW_PROGRESS
 				cout<<"Rank "<<getRank()<<" is seeding the very vertices it holds. "<<m_SEEDING_i+1<<"/"<<m_subgraph.size()<<" (DONE)"<<endl;
