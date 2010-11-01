@@ -345,6 +345,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 				// now check if it matches one of 
 				// the many choices we have
 				ReadAnnotation annotation=*ed->m_EXTENSION_readIterator;
+				u64 uniqueId=annotation.getUniqueId();
 				//cout<<"Checking read "<<annotation.getUniqueId()<<endl;
 				int startPosition=ed->m_EXTENSION_reads_startingPositionOnContig[annotation.getUniqueId()];
 				int distance=ed->m_EXTENSION_extension.size()-startPosition;
@@ -369,63 +370,38 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 					VERTEX_TYPE pathVertex=ed->m_enumerateChoices_outgoingEdges[ed->m_EXTENSION_edgeIterator];
 					// got a match!
 					if(ed->m_EXTENSION_receivedReadVertex==pathVertex){
-						// check if the current read has a paired read.
-						if(!ed->m_EXTENSION_hasPairedReadRequested){
-							//cout<<"Asking if there is a paired read"<<endl;
+						if(m_pairedReads.count(uniqueId)==0){
+							ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(distance);
+							_UPDATE_SINGLE_VALUES(distance);
+							ed->m_EXTENSION_edgeIterator=0;
+							ed->m_EXTENSION_readIterator++;
+							ed->m_EXTENSION_hasPairedReadRequested=false;
+						}else{	
+							u64 uniqueReadIdentifier=ed->m_EXTENSION_pairedRead.getUniqueId();
+							int expectedFragmentLength=ed->m_EXTENSION_pairedRead.getAverageFragmentLength();
+							int expectedDeviation=ed->m_EXTENSION_pairedRead.getStandardDeviation();
 
-							ed->m_EXTENSION_hasPairedReadRequested=true;
-							ed->m_EXTENSION_hasPairedReadReceived=true;
-							ed->m_EXTENSION_hasPairedReadAnswer=m_pairedReads.count(annotation.getUniqueId())>0;
-							
-							ed->m_EXTENSION_pairedSequenceRequested=false;
-						}else if(ed->m_EXTENSION_hasPairedReadReceived){
-							//cout<<"Received answer"<<endl;
-							// vertex matches, but no paired end read found, at last.
-							if(!ed->m_EXTENSION_hasPairedReadAnswer){
-							
-								ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(distance);
-								_UPDATE_SINGLE_VALUES(distance);
-								//cout<<"Next read now."<<endl;
-								ed->m_EXTENSION_edgeIterator=0;
-								ed->m_EXTENSION_readIterator++;
-								ed->m_EXTENSION_hasPairedReadRequested=false;
-							}else{
-								//cout<<"yes, there is a paired read"<<endl;
-								// get the paired end read.
-								if(!ed->m_EXTENSION_pairedSequenceRequested){
-									ed->m_EXTENSION_pairedSequenceRequested=true;
-									ed->m_EXTENSION_pairedSequenceReceived=true;
-									ed->m_EXTENSION_pairedRead=m_pairedReads[annotation.getUniqueId()];
-								}else if(ed->m_EXTENSION_pairedSequenceReceived){
-									int expectedFragmentLength=ed->m_EXTENSION_pairedRead.getAverageFragmentLength();
-									int expectedDeviation=ed->m_EXTENSION_pairedRead.getStandardDeviation();
-									u64 uniqueReadIdentifier=ed->m_EXTENSION_pairedRead.getUniqueId();
-		
-									// it is mandatory for a read to start at 0. at position X on the path.
-									if(ed->m_EXTENSION_reads_startingPositionOnContig.count(uniqueReadIdentifier)>0){
-										int startingPositionOnPath=ed->m_EXTENSION_reads_startingPositionOnContig[uniqueReadIdentifier];
-										int observedFragmentLength=(startPosition-startingPositionOnPath)+ed->m_EXTENSION_receivedLength;
-										if(expectedFragmentLength-expectedDeviation<=observedFragmentLength and
-										observedFragmentLength <= expectedFragmentLength+expectedDeviation){
-										// it matches!
-											int theDistance=startPosition-startingPositionOnPath+distance;
-											ed->m_EXTENSION_pairedReadPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(theDistance);
-											if(theDistance>cd->m_CHOOSER_theMaxsPaired[ed->m_EXTENSION_edgeIterator])
-												cd->m_CHOOSER_theMaxsPaired[ed->m_EXTENSION_edgeIterator]=theDistance;
-											cd->m_CHOOSER_theNumbersPaired[ed->m_EXTENSION_edgeIterator]++;
-											cd->m_CHOOSER_theSumsPaired[ed->m_EXTENSION_edgeIterator]+=theDistance;
-										}
-
-									}
-									
-									// add it anyway as a single-end match too!
-									ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(distance);
-									ed->m_EXTENSION_hasPairedReadRequested=false;
-
-									_UPDATE_SINGLE_VALUES(distance);
-									ed->m_EXTENSION_edgeIterator++;
+							if(ed->m_EXTENSION_reads_startingPositionOnContig.count(uniqueReadIdentifier)>0){
+								int startingPositionOnPath=ed->m_EXTENSION_reads_startingPositionOnContig[uniqueReadIdentifier];
+								int observedFragmentLength=(startPosition-startingPositionOnPath)+ed->m_EXTENSION_receivedLength;
+								if(expectedFragmentLength-expectedDeviation<=observedFragmentLength and
+								observedFragmentLength <= expectedFragmentLength+expectedDeviation){
+								// it matches!
+								int theDistance=startPosition-startingPositionOnPath+distance;
+								ed->m_EXTENSION_pairedReadPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(theDistance);
+								if(theDistance>cd->m_CHOOSER_theMaxsPaired[ed->m_EXTENSION_edgeIterator])
+									cd->m_CHOOSER_theMaxsPaired[ed->m_EXTENSION_edgeIterator]=theDistance;
+									cd->m_CHOOSER_theNumbersPaired[ed->m_EXTENSION_edgeIterator]++;
+									cd->m_CHOOSER_theSumsPaired[ed->m_EXTENSION_edgeIterator]+=theDistance;
 								}
 							}
+									
+							// add it anyway as a single-end match too!
+							ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(distance);
+							ed->m_EXTENSION_hasPairedReadRequested=false;
+
+							_UPDATE_SINGLE_VALUES(distance);
+							ed->m_EXTENSION_edgeIterator++;
 						}
 					}else{// no match, too bad.
 						//cout<<"The vertex does not match, going to the next one"<<endl;
@@ -436,7 +412,6 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 					//cout<<"All edges were processed, trying next read"<<endl;
 					ed->m_EXTENSION_readIterator++;
 					ed->m_EXTENSION_edgeIterator=0;
-					ed->m_EXTENSION_hasPairedReadRequested=false;
 				}
 			}else{
 				// remove reads that are no longer in-range.
