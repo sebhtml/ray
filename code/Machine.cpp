@@ -1577,7 +1577,7 @@ void Machine::processData(){
 			if(m_SEEDING_i==(int)m_subgraph.size()-1){
 				// order the seeds with their length, the largest first.
 				cout<<"Rank "<<getRank()<<" sorts its seeds"<<endl;
-				sort(m_SEEDING_seeds.begin(),m_SEEDING_seeds.end(),myComparator_sort);
+				//sort(m_SEEDING_seeds.begin(),m_SEEDING_seeds.end(),myComparator_sort);
 
 				m_mode=MODE_DO_NOTHING;
 				#ifdef SHOW_PROGRESS
