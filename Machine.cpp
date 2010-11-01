@@ -24,6 +24,8 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 */
 
+
+
 #include<mpi.h>
 #include<EdgesExtractor.h>
 #include<Machine.h>
@@ -44,8 +46,12 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<Read.h>
 #include<Loader.h>
 #include<MyAllocator.h>
+#include<algorithm>
 #include<unistd.h>
 
+bool myComparator_sort(const vector<VERTEX_TYPE>&a,const vector<VERTEX_TYPE>&b){
+	return a.size()>b.size();
+}
 
 using namespace std;
 
@@ -1569,6 +1575,14 @@ void Machine::processData(){
 		// assign a first vertex
 		if(!m_SEEDING_NodeInitiated){
 			if(m_SEEDING_i==(int)m_subgraph.size()-1){
+				// order the seeds with their length, the largest first.
+				cout<<"Rank "<<getRank()<<" sorts its seeds"<<endl;
+				sort(m_SEEDING_seeds.begin(),m_SEEDING_seeds.end(),myComparator_sort);
+
+				for(int i=0;i<(int)m_SEEDING_seeds.size();i++){
+					cout<<"Rank "<<getRank()<<" seed # "<<i<<" : "<<m_SEEDING_seeds[i].size()<<endl;
+				}
+
 				m_mode=MODE_DO_NOTHING;
 				#ifdef SHOW_PROGRESS
 				cout<<"Rank "<<getRank()<<" is seeding the very vertices it holds. "<<m_SEEDING_i+1<<"/"<<m_subgraph.size()<<" (DONE)"<<endl;
