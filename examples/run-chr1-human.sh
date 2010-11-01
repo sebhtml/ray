@@ -1,4 +1,4 @@
-nohup /software/openmpi-1.5/bin/mpirun -np 22 ../Ray \
+nohup /software/openmpi-1.4.3/bin/mpirun -np 22 ../Ray \
  -s /home/boiseb01/nuccore/chr1-10.fa \
  -s /home/boiseb01/nuccore/chr1-1.fa \
  -s /home/boiseb01/nuccore/chr1-2.fa \
