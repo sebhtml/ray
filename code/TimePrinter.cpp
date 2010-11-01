@@ -49,32 +49,32 @@ void TimePrinter::printDifference(int difference){
 	minutes=minutes%60;
 	int days=hours/24;
 	hours=hours%24;
-	bool started=false;
+
+	bool printed=false;
+
 	if(days>0){
 		cout<<days<<" days";
-		if(!started){
-			started=true;
-			cout<<", ";
-		}
+		printed=true;
 	}
 	if(hours>0){
-		cout<<hours<<" hours";
-		if(!started){
-			started=true;
+		if(printed){
 			cout<<", ";
 		}
-
+		printed=true;
+		cout<<hours<<" hours";
 	}
 	if(minutes>0){
-		cout<<minutes<<" minutes";
-		if(!started){
-			started=true;
+		if(printed){
 			cout<<", ";
 		}
+		printed=true;
+		cout<<minutes<<" minutes";
+	}
 
+	if(printed){
+		cout<<", ";
 	}
 	cout<<seconds<<" seconds";
-
 }
 
 void TimePrinter::printDurations(){
