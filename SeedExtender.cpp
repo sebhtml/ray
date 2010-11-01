@@ -937,9 +937,6 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 					}else if(!m_sequenceRequested){
 						m_sequenceRequested=true;
 						m_sequenceReceived=false;
-						ed->m_EXTENSION_hasPairedReadRequested=false;
-						ed->m_EXTENSION_pairedSequenceRequested=false;
-						ed->m_EXTENSION_hasPairedReadReceived=false;
 						int sequenceRank=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache].getRank();
 						VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
 						message[0]=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache].getReadIndex();
@@ -956,22 +953,12 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 						#ifdef DEBUG
 						assert(m_sequences.count(uniqueId)>0);
 						#endif
-					}
 
-
-					// get its paired read too.
-
-					else if(!ed->m_EXTENSION_pairedSequenceRequested){
- 						ed->m_EXTENSION_pairedSequenceRequested=true;
-						VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
-						message[0]=annotation.getReadIndex();
-						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_GET_PAIRED_READ,theRank);
-						outbox->push_back(aMessage);
-						ed->m_EXTENSION_pairedSequenceReceived=false;
-					}else if(ed->m_EXTENSION_pairedSequenceReceived){
+						// received paired read too !
 						if(ed->m_EXTENSION_pairedRead.getAverageFragmentLength()!=0){
 							m_pairedReads[annotation.getUniqueId()]=ed->m_EXTENSION_pairedRead;
 						}
+	
 						m_sequenceIndexToCache++;
 						ed->m_EXTENSION_usedReads.insert(uniqueId);
 						m_sequenceRequested=false;

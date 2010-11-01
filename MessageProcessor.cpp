@@ -669,12 +669,38 @@ SeedExtender*seedExtender
 	}else if(tag==TAG_WELCOME){
 
 	}else if(tag==TAG_REQUEST_READ_SEQUENCE_REPLY){
-		seedExtender->m_receivedString=(char*)incoming;
+
+		(*m_EXTENSION_pairedRead).constructor(incoming[0],incoming[1],incoming[2],incoming[3]);
+		(*m_EXTENSION_pairedSequenceReceived)=true;
+
+		seedExtender->m_receivedString=(char*)(incoming+4);
 		seedExtender->m_sequenceReceived=true;
 	}else if(tag==TAG_REQUEST_READ_SEQUENCE){
-		int id=(int)incoming[0];
-		char*seq=m_myReads->at(id)->getSeq();
-		Message aMessage(seq,strlen(seq)+1,MPI_BYTE,source,TAG_REQUEST_READ_SEQUENCE_REPLY,rank);
+		int index=incoming[0];
+		#ifdef DEBUG
+		assert(index<(int)m_myReads->size());
+		#endif
+		PairedRead*t=(*m_myReads)[index]->getPairedRead();
+		PairedRead dummy;
+		dummy.constructor(0,0,0,0);
+		if(t==NULL){
+			t=&dummy;
+		}
+		#ifdef DEBUG
+		assert(t!=NULL);
+		#endif
+		char*seq=m_myReads->at(index)->getSeq();
+
+		int toAllocate=roundNumber(4*sizeof(VERTEX_TYPE)+strlen(seq)+1,8);
+
+		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(toAllocate);
+		message[0]=t->getRank();
+		message[1]=t->getId();
+		message[2]=t->getAverageFragmentLength();
+		message[3]=t->getStandardDeviation();
+		char*dest=(char*)(message+4);
+		strcpy(dest,seq);
+		Message aMessage(message,toAllocate,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READ_SEQUENCE_REPLY,rank);
 		m_outbox->push_back(aMessage);
 	}else if(tag==TAG_SEND_SEQUENCE){
 		int length=count;

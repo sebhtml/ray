@@ -487,3 +487,7 @@ VERTEX_TYPE kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool 
 	}
 	return 0;
 }
+
+int roundNumber(int s,int alignment){
+	return ((s/alignment)+1)*alignment;
+}

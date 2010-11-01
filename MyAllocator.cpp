@@ -51,7 +51,7 @@ void*MyAllocator::allocate(int s){
 	// hopefully fix alignment issues on Itanium
 	int alignment=8;
 	if(s%8!=0){
-		s=((s/alignment)+1)*alignment;
+		s=roundNumber(s,alignment);
 	}
 	#ifdef DEBUG
 	assert(s%8==0);

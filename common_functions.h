@@ -339,4 +339,6 @@ char*__basename(char*a);
 
 VERTEX_TYPE kmerAtPosition(const char*string,int pos,int w,char strand,bool color);
 
+int roundNumber(int number,int alignment);
+
 #endif
