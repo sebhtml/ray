@@ -377,10 +377,10 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 							ed->m_EXTENSION_readIterator++;
 							ed->m_EXTENSION_hasPairedReadRequested=false;
 						}else{	
-							u64 uniqueReadIdentifier=ed->m_EXTENSION_pairedRead.getUniqueId();
-							int expectedFragmentLength=ed->m_EXTENSION_pairedRead.getAverageFragmentLength();
-							int expectedDeviation=ed->m_EXTENSION_pairedRead.getStandardDeviation();
-
+							PairedRead pairedRead=m_pairedReads[uniqueId];
+							u64 uniqueReadIdentifier=pairedRead.getUniqueId();
+							int expectedFragmentLength=pairedRead.getAverageFragmentLength();
+							int expectedDeviation=pairedRead.getStandardDeviation();
 							if(ed->m_EXTENSION_reads_startingPositionOnContig.count(uniqueReadIdentifier)>0){
 								int startingPositionOnPath=ed->m_EXTENSION_reads_startingPositionOnContig[uniqueReadIdentifier];
 								int observedFragmentLength=(startPosition-startingPositionOnPath)+ed->m_EXTENSION_receivedLength;
