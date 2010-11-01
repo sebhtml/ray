@@ -60,17 +60,23 @@ void Machine::showUsage(){
 	cout<<"Parameters:"<<endl;
 	cout<<endl;
 
-    	cout<<" -s <sequencesFile> "<<endl;
+	cout<<"Single-end reads"<<endl;
+    	cout<<" -s <sequencesFile>"<<endl;
 	cout<<endl;
+	cout<<"Paired-end reads:"<<endl;
 	cout<<" -p <leftSequencesFile> <rightSequencesFile> [ <fragmentLength> <standardDeviation> ]"<<endl;
 	cout<<endl;
-	cout<<" -o <outputFile> (default: Ray-Contigs.fasta)"<<endl;
-	cout<<endl;
-	cout<<" -a [ <amosFile> ] (default: Ray-Contigs.afg)"<<endl;
+	cout<<"Output (default: Ray-Contigs.fasta)"<<endl;
+	cout<<" -o <outputFile>"<<endl;
+	cout<<endl;	
+	cout<<"AMOS output"<<endl;
+	cout<<" -a  "<<endl;
     	cout<<endl;
-	cout<<" -k <kmerSize> (default: 21)"<<endl;
+	cout<<"k-mer size (default: 21)"<<endl;
+	cout<<" -k <kmerSize>"<<endl;
 	cout<<endl;
-
+	cout<<"Ray writes a contigs file, a coverage distribution file, and an AMOS file (if -a is provided)."<<endl;
+	cout<<"The name of these files is based on the value provided with -o."<<endl;
 	cout<<endl;
 	cout<<"use --help to show this help"<<endl;
 	cout<<endl;
