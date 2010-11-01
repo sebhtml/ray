@@ -243,32 +243,7 @@ void Parameters::parseCommands(){
 			cout<<"Library: "<<meanFragmentLength<<" : "<<standardDeviation<<endl;
 			#endif
 		}else if(outputAmosCommands.count(token)>0){
-			int items=0;
-			int k=0;
-			for(int j=i+1;j<(int)m_commands.size();j++){
-				string cmd=m_commands[j];
-				if(commands.count(cmd)==0){
-					#ifdef DEBUG_PARAMETERS
-					cout<<"Option"<<k<<"="<<"'"<<cmd<<"'"<<endl;
-					#endif
-					items++;
-				}else{
-					break;
-				}
-				k++;
-			}
-			if(items==0){
-				m_amos=true;
-			}else if(items==1){
-				m_amos=true;
-				i++;
-				token=m_commands[i];
-				m_amosFile=token;
-			}else{
-				cout<<"Error: "<<token<<" needs 0 or 1 item, you provided "<<items<<endl;
-				m_error=true;
-				return;
-			}
+			m_amos=true;
 		}else if(kmerSetting.count(token)>0){
 			i++;
 			int items=m_commands.size()-i;
@@ -381,7 +356,7 @@ string Parameters::getCoverageDistributionFile(){
 }
 
 string Parameters::getAmosFile(){
-	return m_amosFile;
+	return getContigsFile()+"-AMOS.afg";
 }
 
 vector<string> Parameters::getCommands(){
