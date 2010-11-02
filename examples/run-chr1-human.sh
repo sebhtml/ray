@@ -3,7 +3,7 @@
 # 30 CPUs (of 32)
 # 128 GB memory
 
-nohup /software/openmpi-1.4.3/bin/mpirun -np 30 ../Ray \
+nohup /software/openmpi-1.4.3/bin/mpirun --mca btl ^sm -np 30 ../Ray \
  -s /home/boiseb01/nuccore/chr1-10.fa \
  -s /home/boiseb01/nuccore/chr1-1.fa \
  -s /home/boiseb01/nuccore/chr1-2.fa \
@@ -14,4 +14,4 @@ nohup /software/openmpi-1.4.3/bin/mpirun -np 30 ../Ray \
  -s /home/boiseb01/nuccore/chr1-7.fa \
  -s /home/boiseb01/nuccore/chr1-8.fa \
  -s /home/boiseb01/nuccore/chr1-9.fa \
- -o /home/boiseb01/nuccore/chr1.fasta > chr1.log &
+ -o /home/boiseb01/nuccore/chr1-$(hostname).fasta > chr1-$(hostname).log &
