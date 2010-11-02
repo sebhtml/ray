@@ -1,9 +1,9 @@
 # Ray 0.1.0
 # Open-MPI 1.4.3
-# 30 CPUs (of 32)
+# 26 CPUs (of 32)
 # 128 GB memory
 
-nohup /software/openmpi-1.4.3/bin/mpirun --mca btl ^sm -np 30 ../Ray \
+/software/openmpi-1.4.3/bin/mpirun -np 26 ../Ray \
  -s /home/boiseb01/nuccore/chr1-10.fa \
  -s /home/boiseb01/nuccore/chr1-1.fa \
  -s /home/boiseb01/nuccore/chr1-2.fa \
