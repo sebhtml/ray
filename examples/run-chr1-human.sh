@@ -14,4 +14,4 @@
  -s /home/boiseb01/nuccore/chr1-7.fa \
  -s /home/boiseb01/nuccore/chr1-8.fa \
  -s /home/boiseb01/nuccore/chr1-9.fa \
- -o /home/boiseb01/nuccore/chr1-$(hostname).fasta > chr1-$(hostname).log &
+ -o /home/boiseb01/nuccore/chr1-$(hostname).fasta| tee chr1-$(hostname).log 
