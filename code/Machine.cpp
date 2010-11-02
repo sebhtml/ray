@@ -247,6 +247,9 @@ void Machine::start(){
 
 	if(isMaster()){
 		cout<<"Bienvenue !"<<endl;
+		cout<<endl;
+		m_timePrinter.printElapsedTime("Beginning of computation");
+		cout<<endl;
 	}
 	m_disData->constructor(getSize(),5000,&m_persistentAllocator);
 

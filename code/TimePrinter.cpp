@@ -28,7 +28,9 @@ void TimePrinter::printElapsedTime(string description){
 	time_t m_endingTime=time(NULL);
 	int differenceWithLast=m_endingTime-m_lastTime;
 	m_lastTime=m_endingTime;
-	cout<<"\nRank 0 reports the elapsed time\n"<<" ---> Step: "<<description<<"\n      Elapsed time: ";
+	struct tm * timeinfo;
+	timeinfo=localtime(&m_endingTime);
+	cout<<"\nRank 0 reports the elapsed time, "<<asctime(timeinfo)<<""<<" ---> Step: "<<description<<"\n      Elapsed time: ";
 	printDifference(differenceWithLast);
 	int totalSeconds=m_endingTime-m_startingTime;
 	cout<<"\n      Since beginning: ";
@@ -78,10 +80,12 @@ void TimePrinter::printDifference(int difference){
 }
 
 void TimePrinter::printDurations(){
+	struct tm * timeinfo;
+	timeinfo=localtime(&m_endingTime);
 	m_descriptions.push_back("Completion of the assembly");
 	m_endingTime=time(NULL);
 	m_durations.push_back(m_endingTime-m_startingTime);
-	cout<<"\nElapsed time for each step:"<<endl;
+	cout<<"\nElapsed time for each step, "<<asctime(timeinfo)<<endl;
 	for(int i=0;i<(int)m_descriptions.size();i++){
 		string text=m_descriptions[i];
 		int seconds=m_durations[i];
