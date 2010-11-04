@@ -1,8 +1,32 @@
 v. 0.1.0
 2010-11-03
 
-* Moved some code from Machine.cpp to new files.
-
+* Moved some code from Machine.cpp to new files. (Ticket #116)
+* Improved the speed of the extension of seeds by reducing the number of messages sent. (Tickets #164 & #490)
+  Thanks to all the people who reported this on the list !
+* Ray is now verbose ! (Ticket #167)
+  Feature requested by Dr. Torsten Seemann (Victorian Bioinformatics Consortium, Dept. Microbiology, Monash
+University, AUSTRALIA)
+* The k-mer size can not be changed. Minimum value is 15 & maximum value is 32. (Tickets #169 & #483)
+  Feature requested by Dr. Torsten Seemann (Victorian Bioinformatics Consortium, Dept. Microbiology, Monash
+University, AUSTRALIA)
+* Ray should work now on architectures requiring alignments of address on 8 bytes such as Itanium. (Ticket #446)
+  Bug reported by Jordi Camps Puchades (Centre Nacional d'Anàlisi Genòmica/CNAG)
+* Added reference to the paper in stdout. (Ticket #479)
+* The coverage distribution is now always written. (Ticket #480)
+* The code for extracting edges is now in a separate file (Ticket #486)
+* Messages for paired reads are now grouped with messages for querying sequences in the extension of seeds. (Tickets #487 & #495)
+* Messages for sequence reads are now done only once, when the read is initially discovered. (Ticket #488)
+* Messages with tag TAG_HAS_PAIRED_READ are grouped with messages to get sequence reads. (Ticket #491)
+* Added TimePrinter to print the elapsed time at each step. (Ticket #494)
+* All generated files (AMOS, Contigs, and coverage distribution) are named following the -o parameter. (Ticket #426)
+  Feature requested by Jordi Camps Puchades (Centre Nacional d'Anàlisi Genòmica/CNAG)
+* Print an exception if requested memory exceeds CHUNK_SIZE. That should never happen. (r3690)
+* Print an exception if the system runs out of memory.
+* Ray informs you on the number of k-mers for a k-mer size. (r3691)
+* Unique IDs of sequence reads are now unsigned 64-bits integers. (r3710)
+* The code is now in code/, scripts are now in scripts/. Examples are in scripts/examples/. (r3712)
+* The compilation is more verbose. (r3714)
 
 
 v. 0.0.7
