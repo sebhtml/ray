@@ -1,5 +1,5 @@
 v. 0.1.0
-2010-11-03
+r3770 | 2010-11-03 22:48:58 -0400
 
 * Moved some code from Machine.cpp to new files. (Ticket #116)
 * Improved the speed of the extension of seeds by reducing the number of messages sent. (Tickets #164 & #490)
@@ -7,7 +7,7 @@ v. 0.1.0
 * Ray is now verbose ! (Ticket #167)
   Feature requested by Dr. Torsten Seemann (Victorian Bioinformatics Consortium, Dept. Microbiology, Monash
 University, AUSTRALIA)
-* The k-mer size can not be changed. Minimum value is 15 & maximum value is 32. (Tickets #169 & #483)
+* The k-mer size can now be changed. Minimum value is 15 & maximum value is 32. (Tickets #169 & #483)
   Feature requested by Dr. Torsten Seemann (Victorian Bioinformatics Consortium, Dept. Microbiology, Monash
 University, AUSTRALIA)
 * Ray should work now on architectures requiring alignments of address on 8 bytes such as Itanium. (Ticket #446)
