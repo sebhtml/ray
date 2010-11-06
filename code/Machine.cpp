@@ -1154,7 +1154,7 @@ void Machine::detectDistances(){
 	}else{
 		if(!m_ed->m_EXTENSION_reads_requested){
 			if(m_ed->m_EXTENSION_currentPosition==0 && m_SEEDING_i%100==0){
-				cout<<"Rank "<<getRank()<<" calculates library sizes "<<m_SEEDING_i+1<<"/"<<m_SEEDING_seeds.size()<<" (DONE)"<<endl;
+				cout<<"Rank "<<getRank()<<" calculates library sizes "<<m_SEEDING_i+1<<"/"<<m_SEEDING_seeds.size()<<""<<endl;
 			}
 			m_ed->m_EXTENSION_reads_requested=true;
 			m_ed->m_EXTENSION_reads_received=false;
