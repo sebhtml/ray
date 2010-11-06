@@ -23,8 +23,8 @@
 #include<BufferedData.h>
 
 void BufferedData::constructor(int numberOfRanks,int capacity,MyAllocator*allocator){
-	m_sizes=(int*)allocator->allocate(sizeof(int)*numberOfRanks);
-	m_data=(u64*)allocator->allocate(sizeof(u64)*capacity*numberOfRanks);
+	m_sizes=(int*)__Malloc(sizeof(int)*numberOfRanks);
+	m_data=(u64*)__Malloc(sizeof(u64)*capacity*numberOfRanks);
 	for(int i=0;i<(int)numberOfRanks;i++)
 		m_sizes[i]=0;
 	m_capacity=capacity;
