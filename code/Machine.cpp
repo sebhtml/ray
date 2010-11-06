@@ -1297,7 +1297,7 @@ void Machine::processData(){
 		}
 
 		cout<<endl;
-		cout<<"Rank 0: Ray 0.1.0 is running"<<endl;
+		cout<<"Rank 0: Ray 0.1.1 is running"<<endl;
 		#ifdef __linux__
 		cout<<"Rank 0: operating system is Linux (during compilation)"<<endl;
 		#endif
