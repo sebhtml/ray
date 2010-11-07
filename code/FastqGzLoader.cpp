@@ -36,7 +36,7 @@ void FastqGzLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAlloca
 			reads->push_back(t);
 		}
 		rotatingVariable++;
-		if(rotatingVariable==2){
+		if(rotatingVariable==4){
 			rotatingVariable=0;
 		}
 	}
