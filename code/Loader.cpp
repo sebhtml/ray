@@ -23,6 +23,11 @@
 #include<iostream>
 #include<FastaLoader.h>
 #include<FastqLoader.h>
+
+#ifdef HAVE_ZLIB_H
+#include<FastqGzLoader.h>
+#endif
+
 #include<string>
 #include<vector>
 #include<ColorSpaceLoader.h>
@@ -79,6 +84,15 @@ void Loader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyA
 		loader.load(file,reads,seqMyAllocator,readMyAllocator);
 		return;
 	}
+
+	#ifdef HAVE_ZLIB_H
+	if(file.substr(file.length()-9,9)==".fastq.gz"){
+		FastqGzLoader loader;
+		loader.load(file,reads,seqMyAllocator,readMyAllocator);
+		return;
+	}
+	#endif
+
 }
 
 int Loader::getBases(){

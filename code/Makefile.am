@@ -4,6 +4,8 @@ AM_CXXFLAGS=-O3 -Wall
 bin_PROGRAMS = Ray-SimulateFragments Ray-SimulateErrors Ray-SimulatePairedReads Ray
 
 Ray_SOURCES =  \
+FastqGzLoader.h \
+FastqGzLoader.cpp \
 FastaLoader.h \
 FastaLoader.cpp \
 FastqLoader.h \
@@ -85,6 +87,8 @@ VerticesExtractor.h
 
 
 Ray_SimulateFragments_SOURCES = \
+FastqGzLoader.h \
+FastqGzLoader.cpp \
 FastqLoader.h \
 FastqLoader.cpp \
 FastaLoader.h \
@@ -165,6 +169,8 @@ VerticesExtractor.cpp \
 VerticesExtractor.h 
 
 Ray_SimulateErrors_SOURCES = \
+FastqGzLoader.h \
+FastqGzLoader.cpp \
 FastqLoader.h \
 FastqLoader.cpp \
 FastaLoader.h \
@@ -245,6 +251,8 @@ VerticesExtractor.cpp \
 VerticesExtractor.h 
 
 Ray_SimulatePairedReads_SOURCES = \
+FastqGzLoader.h \
+FastqGzLoader.cpp \
 FastqLoader.h \
 FastqLoader.cpp \
 FastaLoader.h \
