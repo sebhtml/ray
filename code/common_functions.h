@@ -22,6 +22,13 @@ see <http://www.gnu.org/licenses/>
 #ifndef _common_functions
 #define _common_functions
 
+#ifdef HAVE_CONFIG_H
+#include<config.h>
+#endif
+
+#ifdef HAVE_ZLIB_H
+#include<zlib.h>
+#endif
 
 #define SHOW_PROGRESS
 #define WRITE_COVERAGE_DISTRIBUTION

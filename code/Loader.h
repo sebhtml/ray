@@ -23,6 +23,7 @@
 #ifndef _Loader
 #define _Loader
 
+#include<common_functions.h>
 #include<vector>
 #include<MyAllocator.h>
 #include<Read.h>

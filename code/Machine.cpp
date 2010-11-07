@@ -1169,7 +1169,9 @@ void Machine::detectDistances(){
 			if(m_ed->m_EXTENSION_edgeIterator<(int)m_ed->m_EXTENSION_receivedReads.size()){
 				ReadAnnotation annotation=m_ed->m_EXTENSION_receivedReads[m_ed->m_EXTENSION_edgeIterator];
 				int rightRead=annotation.getReadIndex();
+				#ifdef DEBUG_AUTO
 				u64 rightReadUniqueId=annotation.getUniqueId();
+				#endif
 				if(!m_ed->m_EXTENSION_hasPairedReadRequested){
 					VERTEX_TYPE*message=(VERTEX_TYPE*)(m_outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
 					message[0]=rightRead;
