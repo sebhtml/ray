@@ -22,6 +22,7 @@
 #include<sstream>
 #include<iostream>
 #include<FastaLoader.h>
+#include<FastqLoader.h>
 #include<string>
 #include<vector>
 #include<ColorSpaceLoader.h>
@@ -73,88 +74,15 @@ void Loader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyA
 		return;
 	}
 
-	ifstream f(file.c_str());
-	int fasta=0;
-	int fastq=1;
-	int type=fasta;
-	m_total=0;
-	string buffer;
-	f>>buffer;
-	if(buffer[0]=='>'){
-		type=fasta;
-	}else if(buffer[0]=='@'){
-		type=fastq;
-	}else{
-		(cout)<<"Format: unknown."<<endl;
+	if(file.substr(file.length()-6,6)==".fastq"){
+		FastqLoader loader;
+		loader.load(file,reads,seqMyAllocator,readMyAllocator);
+		return;
 	}
-	
-	f.seekg(0,ios_base::beg);
-	if(type==fastq){
-		string id;
-		ostringstream sequence;
-		ostringstream quality;
-		int seq=0;
-		int qual=1;
-		int mode=seq;
-		string buffer;
-		while(!f.eof()){
-			buffer="";
-			f>>buffer;
-			if(buffer=="")
-				continue;
-			if(buffer[0]=='@'&&!(mode==qual&&quality.str().length()==0)){
-				char bufferForLine[1024];
-				f.getline(bufferForLine,1024);
-				if(id!=""){
-					add(reads,&id,&sequence,&quality,seqMyAllocator,readMyAllocator);
-				}
-				id=buffer;
-				sequence.str("");
-				quality.str("");
-				mode=seq;
-			}else if(buffer[0]=='+'&&!(mode==qual&&quality.str().length()==0)){
-				char bufferForLine[1024];
-				f.getline(bufferForLine,1024);
-				mode=qual;
-			}else if(mode==qual){
-				quality<< buffer;
-			}else if(mode==seq){
-				sequence<< buffer;
-			}
-		}
-		add(reads,&id,&sequence,&quality,seqMyAllocator,readMyAllocator);
-	}
-	f.close();
 }
 
 int Loader::getBases(){
 	return m_bases;
 }
 
-void Loader::add(vector<Read*>*reads,string*id,ostringstream*sequence,ostringstream*quality,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator){
-	if(id->length()==0)
-		return;
-	if(sequence->str().length()==0){
-		(cout)<<"Empty sequence? "<<*id<<endl;
-		return;
-	}
-	if(sequence->str().length()!=quality->str().length()){
-		(cout)<<*id<<endl;
-		(cout)<<sequence->str()<<endl;
-		(cout)<<quality->str()<<endl;
 
-		(cout)<<"ERROR length"<<endl;
-		exit(0);
-	}
-	string sequenceStr=sequence->str();
-	string theId=*id;
-	if(theId[0]=='>')
-		theId=theId.substr(1);
-
-	
-	Read*read=(Read*)readMyAllocator->allocate(sizeof(Read));
-	read->copy(theId.c_str(),sequenceStr.c_str(),seqMyAllocator);
-	m_bases+=sequenceStr.length();
-	m_total++;
-	reads->push_back(read);
-}

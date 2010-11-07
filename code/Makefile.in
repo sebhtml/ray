@@ -48,8 +48,8 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_Ray_OBJECTS = FastaLoader.$(OBJEXT) BubbleTool.$(OBJEXT) \
-	BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
+am_Ray_OBJECTS = FastaLoader.$(OBJEXT) FastqLoader.$(OBJEXT) \
+	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	Direction.$(OBJEXT) DistributionData.$(OBJEXT) \
@@ -66,8 +66,9 @@ am_Ray_OBJECTS = FastaLoader.$(OBJEXT) BubbleTool.$(OBJEXT) \
 	VertexLinkedList.$(OBJEXT) VerticesExtractor.$(OBJEXT)
 Ray_OBJECTS = $(am_Ray_OBJECTS)
 Ray_LDADD = $(LDADD)
-am_Ray_SimulateErrors_OBJECTS = FastaLoader.$(OBJEXT) \
-	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
+am_Ray_SimulateErrors_OBJECTS = FastqLoader.$(OBJEXT) \
+	FastaLoader.$(OBJEXT) BubbleTool.$(OBJEXT) \
+	BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	Direction.$(OBJEXT) DistributionData.$(OBJEXT) \
@@ -84,8 +85,9 @@ am_Ray_SimulateErrors_OBJECTS = FastaLoader.$(OBJEXT) \
 	VertexLinkedList.$(OBJEXT) VerticesExtractor.$(OBJEXT)
 Ray_SimulateErrors_OBJECTS = $(am_Ray_SimulateErrors_OBJECTS)
 Ray_SimulateErrors_LDADD = $(LDADD)
-am_Ray_SimulateFragments_OBJECTS = FastaLoader.$(OBJEXT) \
-	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
+am_Ray_SimulateFragments_OBJECTS = FastqLoader.$(OBJEXT) \
+	FastaLoader.$(OBJEXT) BubbleTool.$(OBJEXT) \
+	BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	Direction.$(OBJEXT) DistributionData.$(OBJEXT) \
@@ -102,8 +104,9 @@ am_Ray_SimulateFragments_OBJECTS = FastaLoader.$(OBJEXT) \
 	VertexLinkedList.$(OBJEXT) VerticesExtractor.$(OBJEXT)
 Ray_SimulateFragments_OBJECTS = $(am_Ray_SimulateFragments_OBJECTS)
 Ray_SimulateFragments_LDADD = $(LDADD)
-am_Ray_SimulatePairedReads_OBJECTS = FastaLoader.$(OBJEXT) \
-	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
+am_Ray_SimulatePairedReads_OBJECTS = FastqLoader.$(OBJEXT) \
+	FastaLoader.$(OBJEXT) BubbleTool.$(OBJEXT) \
+	BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	Direction.$(OBJEXT) DistributionData.$(OBJEXT) \
@@ -233,6 +236,8 @@ AM_CXXFLAGS = -O3 -Wall
 Ray_SOURCES = \
 FastaLoader.h \
 FastaLoader.cpp \
+FastqLoader.h \
+FastqLoader.cpp \
 BubbleData.h \
 BubbleTool.cpp \
 BubbleTool.h \
@@ -309,6 +314,8 @@ VerticesExtractor.cpp \
 VerticesExtractor.h 
 
 Ray_SimulateFragments_SOURCES = \
+FastqLoader.h \
+FastqLoader.cpp \
 FastaLoader.h \
 FastaLoader.cpp \
 BubbleData.h \
@@ -387,6 +394,8 @@ VerticesExtractor.cpp \
 VerticesExtractor.h 
 
 Ray_SimulateErrors_SOURCES = \
+FastqLoader.h \
+FastqLoader.cpp \
 FastaLoader.h \
 FastaLoader.cpp \
 BubbleData.h \
@@ -465,6 +474,8 @@ VerticesExtractor.cpp \
 VerticesExtractor.h 
 
 Ray_SimulatePairedReads_SOURCES = \
+FastqLoader.h \
+FastqLoader.cpp \
 FastaLoader.h \
 FastaLoader.cpp \
 BubbleData.h \
@@ -661,6 +672,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/EdgesExtractor.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ErrorSimulator.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FastaLoader.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FastqLoader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Loader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Machine.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Message.Po@am__quote@

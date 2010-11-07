@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C)  2010  Sébastien Boisvert
+    Copyright (C) 2010  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -20,29 +20,23 @@
 */
 
 
-#ifndef _Loader
-#define _Loader
 
-#include<common_functions.h>
-#include<vector>
-#include<MyAllocator.h>
-#include<Read.h>
-#include<fstream>
+#ifndef _FastqLoader
+#define _FastqLoader
+
+#include<stdio.h>
 #include<string>
+#include<MyAllocator.h>
+#include<vector>
+#include<sstream>
+#include<Read.h>
 using namespace std;
 
-/*
- * Loader loads data files. Data can be formated as SFF, FASTA, and FASTQ.
- * Ray makes no use of quality values, so Their encoding is irrelevant.
- */
-class Loader{
-	int m_total;
-	int m_bases;
+
+class FastqLoader{
 public:
-	Loader();
 	void load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator);
-	int getBases();
-	int getReads();
 };
 
 #endif
+

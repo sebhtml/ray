@@ -6,6 +6,8 @@ bin_PROGRAMS = Ray-SimulateFragments Ray-SimulateErrors Ray-SimulatePairedReads 
 Ray_SOURCES =  \
 FastaLoader.h \
 FastaLoader.cpp \
+FastqLoader.h \
+FastqLoader.cpp \
 BubbleData.h \
 BubbleTool.cpp \
 BubbleTool.h \
@@ -83,6 +85,8 @@ VerticesExtractor.h
 
 
 Ray_SimulateFragments_SOURCES = \
+FastqLoader.h \
+FastqLoader.cpp \
 FastaLoader.h \
 FastaLoader.cpp \
 BubbleData.h \
@@ -161,6 +165,8 @@ VerticesExtractor.cpp \
 VerticesExtractor.h 
 
 Ray_SimulateErrors_SOURCES = \
+FastqLoader.h \
+FastqLoader.cpp \
 FastaLoader.h \
 FastaLoader.cpp \
 BubbleData.h \
@@ -239,6 +245,8 @@ VerticesExtractor.cpp \
 VerticesExtractor.h 
 
 Ray_SimulatePairedReads_SOURCES = \
+FastqLoader.h \
+FastqLoader.cpp \
 FastaLoader.h \
 FastaLoader.cpp \
 BubbleData.h \
