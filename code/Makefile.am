@@ -4,6 +4,8 @@ AM_CXXFLAGS=-O5 -Wall
 bin_PROGRAMS = Ray-SimulateFragments Ray-SimulateErrors Ray-SimulatePairedReads Ray
 
 Ray_SOURCES =  \
+FastaLoader.h \
+FastaLoader.cpp \
 BubbleData.h \
 BubbleTool.cpp \
 BubbleTool.h \
@@ -81,6 +83,8 @@ VerticesExtractor.h
 
 
 Ray_SimulateFragments_SOURCES = \
+FastaLoader.h \
+FastaLoader.cpp \
 BubbleData.h \
 BubbleTool.cpp \
 BubbleTool.h \
@@ -157,6 +161,8 @@ VerticesExtractor.cpp \
 VerticesExtractor.h 
 
 Ray_SimulateErrors_SOURCES = \
+FastaLoader.h \
+FastaLoader.cpp \
 BubbleData.h \
 BubbleTool.cpp \
 BubbleTool.h \
@@ -233,6 +239,8 @@ VerticesExtractor.cpp \
 VerticesExtractor.h 
 
 Ray_SimulatePairedReads_SOURCES = \
+FastaLoader.h \
+FastaLoader.cpp \
 BubbleData.h \
 BubbleTool.cpp \
 BubbleTool.h \

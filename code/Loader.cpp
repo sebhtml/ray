@@ -21,6 +21,7 @@
 */
 #include<sstream>
 #include<iostream>
+#include<FastaLoader.h>
 #include<string>
 #include<vector>
 #include<ColorSpaceLoader.h>
@@ -66,6 +67,11 @@ void Loader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyA
 		m_bases=sffLoader.getBases();
 		return;
 	}
+	if(file.substr(file.length()-6,6)==".fasta"){
+		FastaLoader loader;
+		loader.load(file,reads,seqMyAllocator,readMyAllocator);
+		return;
+	}
 
 	ifstream f(file.c_str());
 	int fasta=0;
@@ -83,40 +89,7 @@ void Loader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyA
 	}
 	
 	f.seekg(0,ios_base::beg);
-	if(type==fasta){
-		string id;
-		ostringstream sequence;
-		string buffer;
-		while(!f.eof()){
-			buffer="";
-			f>>buffer;
-			if(buffer=="")
-				continue;
-			if(buffer[0]=='>'){
-				char bufferForLine[1024];
-				f.getline(bufferForLine,1024);
-				if(id!=""){
-					string sequenceStr=sequence.str();
-					ostringstream quality;
-					for(int i=0;i<(int)sequenceStr.length();i++){
-						quality<< "F";
-					}
-					add(reads,&id,&sequence,&quality,seqMyAllocator,readMyAllocator);
-				}
-				id=buffer;
-				sequence.str("");
-			}else{
-				sequence<< buffer;
-			}
-		}
-		string sequenceStr=sequence.str();
-		ostringstream quality;
-		for(int i=0;i<(int)sequenceStr.length();i++){
-			quality<< "F";
-		}
-		add(reads,&id,&sequence,&quality,seqMyAllocator,readMyAllocator);
-		
-	}else if(type==fastq){
+	if(type==fastq){
 		string id;
 		ostringstream sequence;
 		ostringstream quality;
