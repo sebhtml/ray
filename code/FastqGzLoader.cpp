@@ -20,13 +20,14 @@
 */
 
 
-#include<FastqLoader.h>
+#include<FastqGzLoader.h>
 #include<fstream>
+#include<zlib.h>
 
+// a very simple and compact fastq.gz reader
 void FastqGzLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator){
-	gzFile*f=fopen(file.c_str(),"r");
+	gzFile f=gzopen(file.c_str(),"r");
 	char buffer[4096];
-
 	int rotatingVariable=0;
 	while(Z_NULL!=gzgets(f,buffer,4096)){
 		if(rotatingVariable==1){
