@@ -285,7 +285,7 @@ void Machine::start(){
 		cout<<"Ray: simultaneous assembly of reads from a mix of high-throughput sequencing technologies."<<endl;
 		cout<<"Sébastien Boisvert, François Laviolette, and Jacques Corbeil."<<endl;
 		cout<<"Journal of Computational Biology (Mary Ann Liebert, Inc. publishers)."<<endl;
-		cout<<"-Not available-, ahead of print."<<endl;
+		cout<<"ahead of print."<<endl;
 		cout<<"doi:10.1089/cmb.2009.0238"<<endl;
 		cout<<"http://dx.doi.org/doi:10.1089/cmb.2009.0238"<<endl;
 		cout<<endl;
@@ -1168,9 +1168,11 @@ void Machine::detectDistances(){
 		}else if(m_ed->m_EXTENSION_reads_received){
 			if(m_ed->m_EXTENSION_edgeIterator<(int)m_ed->m_EXTENSION_receivedReads.size()){
 				ReadAnnotation annotation=m_ed->m_EXTENSION_receivedReads[m_ed->m_EXTENSION_edgeIterator];
+				int rightRead=annotation.getReadIndex();
+				u64 rightReadUniqueId=annotation.getUniqueId();
 				if(!m_ed->m_EXTENSION_hasPairedReadRequested){
 					VERTEX_TYPE*message=(VERTEX_TYPE*)(m_outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
-					message[0]=annotation.getReadIndex();
+					message[0]=rightRead;
 					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_HAS_PAIRED_READ,getRank());
 					(m_outbox).push_back(aMessage);
 					m_ed->m_EXTENSION_hasPairedReadRequested=true;
@@ -1183,7 +1185,7 @@ void Machine::detectDistances(){
 							m_ed->m_EXTENSION_readLength_received=false;
 							VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 							m_ed->m_EXTENSION_pairedSequenceRequested=false;
-							message[0]=annotation.getReadIndex();
+							message[0]=rightRead;
 							Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_ASK_READ_LENGTH,getRank());
 							m_outbox.push_back(aMessage);
 						}else if(m_ed->m_EXTENSION_readLength_received){
@@ -1191,7 +1193,7 @@ void Machine::detectDistances(){
 								m_ed->m_EXTENSION_pairedSequenceReceived=false;
 								m_ed->m_EXTENSION_pairedSequenceRequested=true;
 								VERTEX_TYPE*message=(VERTEX_TYPE*)(m_outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
-								message[0]=annotation.getReadIndex();
+								message[0]=rightRead;
 								Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_GET_PAIRED_READ,getRank());
 								(m_outbox).push_back(aMessage);
 							}else if(m_ed->m_EXTENSION_pairedSequenceReceived){
@@ -1205,16 +1207,20 @@ void Machine::detectDistances(){
 										if(currentStrand==otherStrand)
 											otherStrand='R';
 											
-										if(m_readsPositions[uniqueReadIdentifier].count(otherStrand)>0){
+										if(m_readsPositions[uniqueReadIdentifier].count(otherStrand)>0&&
+										currentStrand=='R' && otherStrand=='F'){// make sure the orientation is OK
 											int p1=m_readsPositions[uniqueReadIdentifier][otherStrand];
 											
 										
 											int p2=m_ed->m_EXTENSION_currentPosition;
 											int d=p2-p1+m_ed->m_EXTENSION_receivedLength;
 											m_libraryDistances[library][d]++;
-
+											
 											#ifdef DEBUG_AUTO
-											cout<<"Distance is "<<d<<" (library="<<library<<")"<<endl;
+											if(d!=200 && d!=1000){
+												cout<<"Distance"<<endl;
+											}
+											cout<<"Distance is "<<d<<" (library="<<library<<") "<<uniqueReadIdentifier<<" "<<p1<<" "<<otherStrand<<", "<<rightReadUniqueId<<" "<<p2<<" "<<currentStrand<<" (length is "<<m_ed->m_EXTENSION_receivedLength<<endl;
 											#endif
 										}
 									}else{

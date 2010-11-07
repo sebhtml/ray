@@ -1,5 +1,4 @@
-CXXFLAGS=-Icode -Wall -O3
-#CXXFLAGS=-g -Icode -DDEBUG
+CXXFLAGS=-Icode -Wall -O3 
 
 MPICC=mpic++
 MPIRUN=mpirun
