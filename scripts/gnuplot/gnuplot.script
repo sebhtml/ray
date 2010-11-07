@@ -1,0 +1,83 @@
+set pm3d
+set term gif animate delay 10
+set output "SRA001125.gif"
+set xlabel 'k-mer size'
+set ylabel 'Coverage'
+set zlabel 'log(number of k-mers)' rotate right
+
+
+
+
+
+set view 65,0
+splot 'out' with pm3d
+set view 65,10
+splot 'out' with pm3d
+set view 65,20
+splot 'out' with pm3d
+set view 65,30
+splot 'out' with pm3d
+set view 65,40
+splot 'out' with pm3d
+set view 65,50
+splot 'out' with pm3d
+set view 65,60
+splot 'out' with pm3d
+set view 65,70
+splot 'out' with pm3d
+set view 65,80
+splot 'out' with pm3d
+set view 65,90
+splot 'out' with pm3d
+set view 65,100
+splot 'out' with pm3d
+set view 65,110
+splot 'out' with pm3d
+set view 65,120
+splot 'out' with pm3d
+set view 65,130
+splot 'out' with pm3d
+set view 65,140
+splot 'out' with pm3d
+set view 65,150
+splot 'out' with pm3d
+set view 65,160
+splot 'out' with pm3d
+set view 65,170
+splot 'out' with pm3d
+set view 65,180
+splot 'out' with pm3d
+set view 65,190
+splot 'out' with pm3d
+set view 65,200
+splot 'out' with pm3d
+set view 65,210
+splot 'out' with pm3d
+set view 65,220
+splot 'out' with pm3d
+set view 65,230
+splot 'out' with pm3d
+set view 65,240
+splot 'out' with pm3d
+set view 65,250
+splot 'out' with pm3d
+set view 65,260
+splot 'out' with pm3d
+set view 65,270
+splot 'out' with pm3d
+set view 65,280
+splot 'out' with pm3d
+set view 65,290
+splot 'out' with pm3d
+set view 65,300
+splot 'out' with pm3d
+set view 65,310
+splot 'out' with pm3d
+set view 65,320
+splot 'out' with pm3d
+set view 65,330
+splot 'out' with pm3d
+set view 65,340
+splot 'out' with pm3d
+set view 65,350
+splot 'out' with pm3d
