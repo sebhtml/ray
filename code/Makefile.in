@@ -48,8 +48,9 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_Ray_OBJECTS = FastaLoader.$(OBJEXT) FastqLoader.$(OBJEXT) \
-	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
+am_Ray_OBJECTS = FastqGzLoader.$(OBJEXT) FastaLoader.$(OBJEXT) \
+	FastqLoader.$(OBJEXT) BubbleTool.$(OBJEXT) \
+	BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	Direction.$(OBJEXT) DistributionData.$(OBJEXT) \
@@ -66,9 +67,9 @@ am_Ray_OBJECTS = FastaLoader.$(OBJEXT) FastqLoader.$(OBJEXT) \
 	VertexLinkedList.$(OBJEXT) VerticesExtractor.$(OBJEXT)
 Ray_OBJECTS = $(am_Ray_OBJECTS)
 Ray_LDADD = $(LDADD)
-am_Ray_SimulateErrors_OBJECTS = FastqLoader.$(OBJEXT) \
-	FastaLoader.$(OBJEXT) BubbleTool.$(OBJEXT) \
-	BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
+am_Ray_SimulateErrors_OBJECTS = FastqGzLoader.$(OBJEXT) \
+	FastqLoader.$(OBJEXT) FastaLoader.$(OBJEXT) \
+	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	Direction.$(OBJEXT) DistributionData.$(OBJEXT) \
@@ -85,9 +86,9 @@ am_Ray_SimulateErrors_OBJECTS = FastqLoader.$(OBJEXT) \
 	VertexLinkedList.$(OBJEXT) VerticesExtractor.$(OBJEXT)
 Ray_SimulateErrors_OBJECTS = $(am_Ray_SimulateErrors_OBJECTS)
 Ray_SimulateErrors_LDADD = $(LDADD)
-am_Ray_SimulateFragments_OBJECTS = FastqLoader.$(OBJEXT) \
-	FastaLoader.$(OBJEXT) BubbleTool.$(OBJEXT) \
-	BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
+am_Ray_SimulateFragments_OBJECTS = FastqGzLoader.$(OBJEXT) \
+	FastqLoader.$(OBJEXT) FastaLoader.$(OBJEXT) \
+	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	Direction.$(OBJEXT) DistributionData.$(OBJEXT) \
@@ -104,9 +105,9 @@ am_Ray_SimulateFragments_OBJECTS = FastqLoader.$(OBJEXT) \
 	VertexLinkedList.$(OBJEXT) VerticesExtractor.$(OBJEXT)
 Ray_SimulateFragments_OBJECTS = $(am_Ray_SimulateFragments_OBJECTS)
 Ray_SimulateFragments_LDADD = $(LDADD)
-am_Ray_SimulatePairedReads_OBJECTS = FastqLoader.$(OBJEXT) \
-	FastaLoader.$(OBJEXT) BubbleTool.$(OBJEXT) \
-	BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
+am_Ray_SimulatePairedReads_OBJECTS = FastqGzLoader.$(OBJEXT) \
+	FastqLoader.$(OBJEXT) FastaLoader.$(OBJEXT) \
+	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	Direction.$(OBJEXT) DistributionData.$(OBJEXT) \
@@ -234,6 +235,8 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_CXXFLAGS = -O3 -Wall
 Ray_SOURCES = \
+FastqGzLoader.h \
+FastqGzLoader.cpp \
 FastaLoader.h \
 FastaLoader.cpp \
 FastqLoader.h \
@@ -314,6 +317,8 @@ VerticesExtractor.cpp \
 VerticesExtractor.h 
 
 Ray_SimulateFragments_SOURCES = \
+FastqGzLoader.h \
+FastqGzLoader.cpp \
 FastqLoader.h \
 FastqLoader.cpp \
 FastaLoader.h \
@@ -394,6 +399,8 @@ VerticesExtractor.cpp \
 VerticesExtractor.h 
 
 Ray_SimulateErrors_SOURCES = \
+FastqGzLoader.h \
+FastqGzLoader.cpp \
 FastqLoader.h \
 FastqLoader.cpp \
 FastaLoader.h \
@@ -474,6 +481,8 @@ VerticesExtractor.cpp \
 VerticesExtractor.h 
 
 Ray_SimulatePairedReads_SOURCES = \
+FastqGzLoader.h \
+FastqGzLoader.cpp \
 FastqLoader.h \
 FastqLoader.cpp \
 FastaLoader.h \
@@ -672,6 +681,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/EdgesExtractor.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ErrorSimulator.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FastaLoader.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FastqGzLoader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FastqLoader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Loader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Machine.Po@am__quote@
