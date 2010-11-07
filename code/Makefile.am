@@ -1,5 +1,5 @@
 
-AM_CXXFLAGS=-O5 -Wall
+AM_CXXFLAGS=-O3 -Wall
 
 bin_PROGRAMS = Ray-SimulateFragments Ray-SimulateErrors Ray-SimulatePairedReads Ray
 

@@ -229,7 +229,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AM_CXXFLAGS = -O5 -Wall
+AM_CXXFLAGS = -O3 -Wall
 Ray_SOURCES = \
 FastaLoader.h \
 FastaLoader.cpp \
