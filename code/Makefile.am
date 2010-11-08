@@ -4,6 +4,7 @@ AM_CXXFLAGS=-O3 -Wall -lz
 bin_PROGRAMS = Ray-SimulateFragments Ray-SimulateErrors Ray-SimulatePairedReads Ray
 
 Ray_SOURCES =  \
+SeedingData.h \
 FastqGzLoader.h \
 FastqGzLoader.cpp \
 FastaLoader.h \

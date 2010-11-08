@@ -1,9 +1,12 @@
 tar -xjf Ray-version.tar.bz2
 cd Ray-version
+./configure --prefix=$(pwd)/build
 make
-
-You may provide your own MPICC too.
-
-make MPICC=/software/openmpi-1.4.3/bin/mpic++
+make install
 
 
+You may provide your own mpic++ too (note that you may have to provide LD_LIBRARY_PATH as well).
+
+./configure CXX=/software/openmpi-1.4.3/bin/mpic++ LD_LIBRARY_PATH=/software/openmpi-1.4.3/lib/ --prefix=$(pwd)/build
+make 
+make install
