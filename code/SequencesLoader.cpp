@@ -166,11 +166,19 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			int leftSequenceIdOnRank=leftSequenceGlobalId/size;
 			int averageFragmentLength=(*m_LOADER_averageFragmentLength);
 			int deviation=(*m_LOADER_deviation);
+
 			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,rightSequenceIdOnRank);
 			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,leftSequenceRank);
 			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,leftSequenceIdOnRank);
 			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,averageFragmentLength);
 			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,deviation);
+
+			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,leftSequenceIdOnRank);
+			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,rightSequenceRank);
+			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,rightSequenceIdOnRank);
+			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,averageFragmentLength);
+			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,deviation);
+
 			flushPairedStock(MAX_UINT64_T_PER_MESSAGE,m_outbox,m_outboxAllocator,m_disData,rank,size);
 		}
 
