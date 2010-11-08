@@ -389,32 +389,6 @@ void Machine::sendMessages(){
 			sizeOfElements=1;
 		}
 
-		#ifdef SHOW_SENT_MESSAGES
-		m_stats->m_statistics_messages[aMessage->getDestination()]++;
-		int bytes=sizeOfElements*aMessage->getCount();
-		m_stats->m_statistics_bytes[aMessage->getDestination()]+=bytes;
-		#endif
-
-
-		if(aMessage->getDestination()==getRank()){
-			void*newBuffer=m_inboxAllocator.allocate(sizeOfElements*aMessage->getCount());
-			memcpy(newBuffer,aMessage->getBuffer(),sizeOfElements*aMessage->getCount());
-			aMessage->setBuffer(newBuffer);
-			m_inbox.push_back(*aMessage);
-			continue;
-		}
-
-		#ifdef MPICH2_VERSION // MPICH2 waits for the response on the other end.
-		MPI_Request request;
-		MPI_Status status;
-		int flag;
-		MPI_Isend(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD,&request);
-		MPI_Test(&request,&flag,&status);
-		if(!flag){
-			m_pendingMpiRequest.push_back(request);
-		}
-		#else // Open-MPI-1.4.1 sends message eagerly, which is just a better design.
-
 		#ifdef DEBUG
 		int theRank=aMessage->getDestination();
 		assert(theRank>=0);
@@ -422,32 +396,10 @@ void Machine::sendMessages(){
 		#endif
 
 		MPI_Send(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD);
-		#endif
 	}
 
 	m_outbox.clear();
 	m_outboxAllocator.reset();
-	#ifdef SHOW_SENT_MESSAGES
-	time_t tmp=time(NULL);
-	if(tmp>m_stats->m_time_t_statistics){
-		m_stats->m_time_t_statistics=tmp;
-		cout<<"Time="<<tmp<<" Source="<<getRank()<<" ";
-		for(int i=0;i<getSize();i++){
-			int v=m_stats->m_statistics_bytes[i];
-			string units="B";
-			if(v>=1024){
-				v/=1024;
-				units="kiB";
-			}
-			
-			cout<<" "<<m_stats->m_statistics_messages[i]<<"("<<v<<units<<")";
-		}
-		cout<<endl;
-
-		m_stats->m_statistics_bytes.clear();
-		m_stats->m_statistics_messages.clear();
-	}
-	#endif
 }
 
 /*	
@@ -460,9 +412,7 @@ void Machine::receiveMessages(){
 	int flag;
 	MPI_Status status;
 	MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
-	int read=0;
 	while(flag){
-		read++;
 		MPI_Datatype datatype=MPI_UNSIGNED_LONG_LONG;
 		int sizeOfType=8;
 		int tag=status.MPI_TAG;
@@ -480,7 +430,6 @@ void Machine::receiveMessages(){
 		m_inbox.push_back(aMessage);
 		MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
 	}
-
 }
 
 int Machine::getRank(){

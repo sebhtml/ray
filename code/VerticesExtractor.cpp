@@ -22,6 +22,7 @@
 #include<VerticesExtractor.h>
 #include<assert.h>
 #include<Message.h>
+#include<time.h>
 #include<common_functions.h>
 #include<DistributionData.h>
 
@@ -38,6 +39,12 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 				MyAllocator*m_outboxAllocator,
 				bool m_colorSpaceMode
 				){
+	if(!m_started){
+		m_started=true;
+		m_firstClock=clock();
+		m_messagesSent=0;
+	}
+
 	#ifdef SHOW_PROGRESS
 	if(*m_mode_send_vertices_sequence_id%100000==0 and *m_mode_send_vertices_sequence_id_position==0){
 		string reverse="";
@@ -68,6 +75,12 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			#ifdef SHOW_PROGRESS
 			cout<<"Rank "<<rank<<" is extracting vertices (reverse complement) from sequences "<<*m_mode_send_vertices_sequence_id<<"/"<<m_myReads->size()<<" (DONE)"<<endl;
 			#endif
+
+			//int messagesSent=m_outbox.size();
+			clock_t currentClock=clock();
+
+			clock_t clockDifference=(currentClock-m_firstClock);
+			cout<<"Rank "<<rank<<": clocks= "<<clockDifference<<" & messages= "<<m_messagesSent<<endl;
 		}
 	}else{
 		char*readSequence=(*m_myReads)[(*m_mode_send_vertices_sequence_id)]->getSeq();
@@ -122,8 +135,12 @@ void VerticesExtractor::flushVertices(int threshold,
 		}
 		m_disData->m_messagesStock.reset(rankId);
 
+		m_messagesSent++;
 		Message aMessage(data, length, MPI_UNSIGNED_LONG_LONG,destination, TAG_VERTICES_DATA,rank);
 		m_outbox->push_back(aMessage);
 	}
 }
 
+VerticesExtractor::VerticesExtractor(){
+	m_started=false;
+}

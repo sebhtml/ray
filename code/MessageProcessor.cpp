@@ -742,6 +742,8 @@ SeedExtender*seedExtender
 	}else if(tag==TAG_START_EDGES_DISTRIBUTION){
 		(*m_mode_send_outgoing_edges)=true;
 	}else if(tag==TAG_START_VERTICES_DISTRIBUTION){
+		// wait for everyone
+		MPI_Barrier(MPI_COMM_WORLD);
 		(*m_mode_send_vertices)=true;
 		(*m_mode_send_vertices_sequence_id)=0;
 	}else if(tag==TAG_VERTICES_DISTRIBUTED){

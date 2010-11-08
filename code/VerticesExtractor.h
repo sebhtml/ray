@@ -29,6 +29,10 @@
 using namespace std;
 
 class VerticesExtractor{
+	bool m_started;
+	clock_t m_firstClock;
+	u64 m_messagesSent;
+
 	void flushVertices(int threshold,
 				DistributionData*m_disData,
 				MyAllocator*m_outboxAllocator,
@@ -36,6 +40,7 @@ class VerticesExtractor{
 				int rank,int size
 );
 public:
+	VerticesExtractor();
 	void process(int*m_mode_send_vertices_sequence_id,
 				vector<Read*>*m_myReads,
 				bool*m_reverseComplementVertex,
