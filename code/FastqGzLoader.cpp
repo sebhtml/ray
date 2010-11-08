@@ -25,7 +25,7 @@
 #include<zlib.h>
 
 // a very simple and compact fastq.gz reader
-void FastqGzLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator){
+void FastqGzLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator,int period){
 	gzFile f=gzopen(file.c_str(),"r");
 	char buffer[4096];
 	int rotatingVariable=0;
@@ -36,7 +36,7 @@ void FastqGzLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAlloca
 			reads->push_back(t);
 		}
 		rotatingVariable++;
-		if(rotatingVariable==4){
+		if(rotatingVariable==period){
 			rotatingVariable=0;
 		}
 	}

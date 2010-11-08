@@ -88,9 +88,17 @@ void Loader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyA
 	#ifdef HAVE_ZLIB_H
 	if(file.substr(file.length()-9,9)==".fastq.gz"){
 		FastqGzLoader loader;
-		loader.load(file,reads,seqMyAllocator,readMyAllocator);
+		loader.load(file,reads,seqMyAllocator,readMyAllocator,4);
 		return;
 	}
+
+	if(file.substr(file.length()-9,9)==".fasta.gz"){
+		FastqGzLoader loader;
+		loader.load(file,reads,seqMyAllocator,readMyAllocator,2);
+		return;
+	}
+
+
 	#endif
 
 }
