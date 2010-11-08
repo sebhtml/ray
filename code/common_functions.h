@@ -348,4 +348,7 @@ VERTEX_TYPE kmerAtPosition(const char*string,int pos,int w,char strand,bool colo
 
 int roundNumber(int number,int alignment);
 
+
+u64 getMilliSeconds();
+
 #endif

@@ -98,6 +98,9 @@ class Machine{
 	int m_sequence_ready_machines;
 	bool m_messageSentForVerticesDistribution;
 
+	int m_clocksPerMessages;
+
+	int*m_throughputs;
 	// speed calibration to make OpenMPI handle the communication in its shared memory.
 	int m_calibration_numberOfMessagesSent;
 	bool m_calibrationAskedCalibration;

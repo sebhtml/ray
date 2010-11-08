@@ -120,7 +120,9 @@ void MessageProcessor::processMessage(Message*message,
 	map<int,int>*m_allIdentifiers,
 	OpenAssemblerChooser*m_oa,
 int*m_numberOfRanksWithCoverageData,
-SeedExtender*seedExtender
+SeedExtender*seedExtender,
+int*m_clocksPerMessages,
+int*m_throughputs
 ){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
@@ -736,6 +738,8 @@ SeedExtender*seedExtender
 		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, source, TAG_START_EDGES_DISTRIBUTION_ANSWER,rank);
 		m_outbox->push_back(aMessage);
 	}else if(tag==TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION){
+		(*m_clocksPerMessages)=incoming[0];
+		cout<<"Rank "<<rank<<": "<<(*m_clocksPerMessages)<<" milliseconds/message is the minimum"<<endl;
 		cout<<"Rank "<<rank<<" has "<<m_subgraph->size()<<" vertices (DONE)"<<endl;
 		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, source, TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER,rank);
 		m_outbox->push_back(aMessage);
@@ -748,6 +752,7 @@ SeedExtender*seedExtender
 		(*m_mode_send_vertices_sequence_id)=0;
 	}else if(tag==TAG_VERTICES_DISTRIBUTED){
 		(*m_numberOfMachinesDoneSendingVertices)++;
+		m_throughputs[source]=incoming[0];
 	}else if(tag==TAG_COVERAGE_END){
 		(*m_numberOfMachinesDoneSendingCoverage)++;
 	}else if(tag==TAG_REQUEST_READS){

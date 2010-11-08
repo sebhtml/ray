@@ -306,6 +306,8 @@ void Machine::start(){
 			#endif
 		#endif
 		#endif
+
+		m_throughputs=(int*)malloc(sizeof(int)*getSize());
 	}
 
 	cout<<"Rank "<<getRank()<<" is running as UNIX process "<<getpid()<<" on "<<serverName<<" (MPI version "<<version<<"."<<subversion<<")"<<endl;
@@ -1081,7 +1083,7 @@ void Machine::processMessages(){
 	&m_ed->m_EXTENSION_reads_received,
 				&m_outbox,
 	&m_sd->m_allIdentifiers,&m_oa,
-	&m_numberOfRanksWithCoverageData,&m_seedExtender);
+	&m_numberOfRanksWithCoverageData,&m_seedExtender,&m_clocksPerMessages,m_throughputs);
 
 	}
 	m_inbox.clear();
@@ -1413,9 +1415,19 @@ void Machine::processData(){
 
 	}else if(m_numberOfMachinesDoneSendingVertices==getSize()){
 		cout<<"Rank 0 asks other ranks to share their number of vertices"<<endl;
+
+		int maximumThroughput=0;
+		for(int i=0;i<getSize();i++){
+			if(m_throughputs[i]>maximumThroughput){
+				maximumThroughput=m_throughputs[i];
+			}
+		}
+
+		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(sizeof(VERTEX_TYPE));
+		message[0]=maximumThroughput;
 		m_numberOfMachinesDoneSendingVertices=-1;
 		for(int i=0;i<getSize();i++){
-			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, i, TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION,getRank());
+			Message aMessage(message,1, MPI_UNSIGNED_LONG_LONG, i, TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION,getRank());
 			m_outbox.push_back(aMessage);
 		}
 	}else if(m_numberOfMachinesReadyToSendDistribution==getSize()){

@@ -41,7 +41,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 				){
 	if(!m_started){
 		m_started=true;
-		m_firstClock=clock();
+		m_firstClock=getMilliSeconds();
 		m_messagesSent=0;
 	}
 
@@ -67,20 +67,20 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			*m_reverseComplementVertex=true;
 		}else{
 			// flush data
-
 			flushVertices(1,m_disData,m_outboxAllocator,m_outbox,rank,size);
-			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_VERTICES_DISTRIBUTED,rank);
+			u64 currentClock=getMilliSeconds();
+			u64 clockDifference=(currentClock-m_firstClock);
+			int clocksPerMessage=clockDifference/m_messagesSent;
+			cout<<"Rank "<<rank<<": clocks= "<<clockDifference<<" & messages= "<<m_messagesSent<<" ("<<clocksPerMessage<<" milliseconds/message)"<<endl;
+			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+			message[0]=clocksPerMessage;
+			Message aMessage(message, 1, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_VERTICES_DISTRIBUTED,rank);
 			m_outbox->push_back(aMessage);
 			*m_mode_send_vertices=false;
 			#ifdef SHOW_PROGRESS
 			cout<<"Rank "<<rank<<" is extracting vertices (reverse complement) from sequences "<<*m_mode_send_vertices_sequence_id<<"/"<<m_myReads->size()<<" (DONE)"<<endl;
 			#endif
 
-			//int messagesSent=m_outbox.size();
-			clock_t currentClock=clock();
-
-			clock_t clockDifference=(currentClock-m_firstClock);
-			cout<<"Rank "<<rank<<": clocks= "<<clockDifference<<" & messages= "<<m_messagesSent<<endl;
 		}
 	}else{
 		char*readSequence=(*m_myReads)[(*m_mode_send_vertices_sequence_id)]->getSeq();

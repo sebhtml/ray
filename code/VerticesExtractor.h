@@ -23,6 +23,7 @@
 #define _VerticesExtractor
 
 #include<vector>
+#include<common_functions.h>
 #include<Message.h>
 #include<Read.h>
 #include<DistributionData.h>
@@ -30,8 +31,8 @@ using namespace std;
 
 class VerticesExtractor{
 	bool m_started;
-	clock_t m_firstClock;
-	u64 m_messagesSent;
+	u64 m_firstClock;
+	int m_messagesSent;
 
 	void flushVertices(int threshold,
 				DistributionData*m_disData,

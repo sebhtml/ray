@@ -20,6 +20,8 @@
 */
 
 #include<assert.h>
+#include<stdio.h>
+#include<sys/time.h>
 #include<vector>
 #include<fstream>
 #include<common_functions.h>
@@ -491,3 +493,15 @@ VERTEX_TYPE kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool 
 int roundNumber(int s,int alignment){
 	return ((s/alignment)+1)*alignment;
 }
+
+u64 getMilliSeconds(){
+	struct timeval tv;
+	struct timezone tz;
+	struct tm *tm;
+	gettimeofday(&tv,&tz);
+	tm=localtime(&tv.tv_sec);
+	printf("StartTime: %d:%02d:%02d %d \n", tm->tm_hour, tm->tm_min, tm->tm_sec, tv.tv_usec);
+	u64 milliSeconds=tm->tm_hour*60*60*1000+tm->tm_min*60*1000+tm->tm_sec*1000+tv.tv_usec/1000;
+	return milliSeconds;
+}
+

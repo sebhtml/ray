@@ -22,6 +22,7 @@ AC_CHECK_HEADERS(cstring)
 AC_CHECK_HEADERS(cstdlib)
 AC_CHECK_HEADERS(stack)
 
+AC_CHECK_HEADERS(sys/time.h)
 AC_CHECK_HEADERS(time.h)
 AC_CHECK_HEADERS(unistd.h)
 AC_CHECK_HEADERS(stdint.h)
