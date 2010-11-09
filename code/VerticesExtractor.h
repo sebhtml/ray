@@ -30,10 +30,6 @@
 using namespace std;
 
 class VerticesExtractor{
-	bool m_started;
-	u64 m_firstClock;
-	int m_messagesSent;
-
 	void flushVertices(int threshold,
 				DistributionData*m_disData,
 				MyAllocator*m_outboxAllocator,

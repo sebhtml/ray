@@ -98,11 +98,6 @@ class Machine{
 	int m_sequence_ready_machines;
 	bool m_messageSentForVerticesDistribution;
 
-	int m_clocksPerMessage;
-	bool m_regulatorIsActivated;
-	int*m_throughputs;
-	u64 m_lastMessageSending;
-
 	COVERAGE_TYPE m_maxCoverage;
 	Chooser m_c;
 	SequencesIndexer m_si;

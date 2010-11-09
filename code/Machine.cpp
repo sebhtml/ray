@@ -183,12 +183,8 @@ Machine::Machine(int argc,char**argv){
 
 
 void Machine::start(){
-	m_regulatorIsActivated=false;
-	m_repeatedLength=0;
-	m_clocksPerMessage=0;// no limit
 	m_maxCoverage=0;
 	m_maxCoverage--;// underflow.
-	m_lastMessageSending=getMicroSeconds();
 	int numberOfTrees=_FOREST_SIZE;
 
 	#ifdef SHOW_PROGRESS
@@ -305,8 +301,6 @@ void Machine::start(){
 			#endif
 		#endif
 		#endif
-
-		m_throughputs=(int*)malloc(sizeof(int)*getSize());
 	}
 
 	cout<<"Rank "<<getRank()<<" is running as UNIX process "<<getpid()<<" on "<<serverName<<" (MPI version "<<version<<"."<<subversion<<")"<<endl;
@@ -323,6 +317,9 @@ void Machine::start(){
 			showUsage();
 		}
 	}else{
+		if(isMaster()){
+			cout<<"Rank "<<getRank()<<": I am the master among "<<getSize()<<" ranks in the MPI_COMM_WORLD."<<endl;
+		}
 		run();
 	}
 
@@ -350,27 +347,10 @@ void Machine::start(){
  * 	5) send messages
  */
 void Machine::run(){
-	#ifdef SHOW_PROGRESS
-	if(isMaster()){
-		cout<<"Rank "<<getRank()<<": I am the master among "<<getSize()<<" ranks in the MPI_COMM_WORLD."<<endl;
-	}
-	#endif
-
 	while(isAlive()){
 		receiveMessages(); 
 		processMessages();
-		if(!m_regulatorIsActivated){
-			processData();
-		// below is a technology to regulate the tribe of messengers.
-		}else if((int)(getMicroSeconds()-m_lastMessageSending)>=m_clocksPerMessage){
-			int numberOfMessagesToSendBefore=m_outbox.size();
-			processData();
-			int numberOfMessagesToSendAfter=m_outbox.size();
-			int difference=numberOfMessagesToSendAfter-numberOfMessagesToSendBefore;
-			if(difference>0){
-				m_lastMessageSending=getMicroSeconds();
-			}
-		}
+		processData();
 		sendMessages();
 	}
 }
@@ -1095,7 +1075,7 @@ void Machine::processMessages(){
 	&m_ed->m_EXTENSION_reads_received,
 				&m_outbox,
 	&m_sd->m_allIdentifiers,&m_oa,
-	&m_numberOfRanksWithCoverageData,&m_seedExtender,&m_clocksPerMessage,m_throughputs,&m_regulatorIsActivated);
+	&m_numberOfRanksWithCoverageData,&m_seedExtender);
 
 	}
 	m_inbox.clear();
@@ -1427,30 +1407,9 @@ void Machine::processData(){
 
 	}else if(m_numberOfMachinesDoneSendingVertices==getSize()){
 		cout<<"Rank 0 asks other ranks to share their number of vertices"<<endl;
-
-		int minimumThroughput=99999999;
-		for(int i=0;i<getSize();i++){
-			if(m_throughputs[i]<minimumThroughput){
-				minimumThroughput=m_throughputs[i];
-			}
-		}
-		// http://en.wikipedia.org/wiki/InfiniBand
-		// 5 microseconds is slightly greater than the end-to-end latency (also point-to-point or MPI-rank-to-MPI-rank)
-		// WIKI:
-		// The end-to-end latency range ranges from 1.07 microseconds MPI  latency (Mellanox ConnectX QDR HCAs) to 1.29 microseconds MPI latency (Qlogic InfiniPath HCAs) to 2.6 microseconds (Mellanox InfiniHost DDR III HCAs).
-
-		// hardware-level latencies are way lower, but not representative:
-		// WIKI:
-		// The single data rate switch chips have a latency of 200 nanoseconds, DDR switch chips have a latency of 140 nanoseconds and QDR switch chips have a latency of 100 nanoseconds.
-		minimumThroughput=15;// microseconds, almost a real-time system LOL
-		
-		cout<<"Rank "<<getRank()<<": "<<minimumThroughput<<" microseconds/message is the minimum"<<endl;
-
-		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(sizeof(VERTEX_TYPE));
-		message[0]=minimumThroughput;
 		m_numberOfMachinesDoneSendingVertices=-1;
 		for(int i=0;i<getSize();i++){
-			Message aMessage(message,1, MPI_UNSIGNED_LONG_LONG, i, TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION,getRank());
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG, i, TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION,getRank());
 			m_outbox.push_back(aMessage);
 		}
 	}else if(m_numberOfMachinesReadyToSendDistribution==getSize()){
@@ -2169,7 +2128,7 @@ void Machine::processData(){
 		&m_last_value,&(m_seedingData->m_SEEDING_vertexCoverageRequested),m_wordSize,&m_colorSpaceMode,getSize(),&(m_seedingData->m_SEEDING_vertexCoverageReceived),
 		&(m_seedingData->m_SEEDING_receivedVertexCoverage),&m_repeatedLength,&maxCoverage,&(m_seedingData->m_SEEDING_receivedOutgoingEdges),&m_c,
 		m_cd,m_bubbleData,m_dfsData,
-	m_minimumCoverage,&m_oa,&(m_seedingData->m_SEEDING_edgesReceived),&m_regulatorIsActivated);
+	m_minimumCoverage,&m_oa,&(m_seedingData->m_SEEDING_edgesReceived));
 	}
 }
 

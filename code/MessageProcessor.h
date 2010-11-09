@@ -122,10 +122,7 @@ public:
 				vector<Message>*m_outbox,
 		map<int,int>*m_allIdentifiers,OpenAssemblerChooser*m_oa,
 int*m_numberOfRanksWithCoverageData,
-SeedExtender*seedExtender,
-int*m_clocksPerMessages,
-int*m_throughputs,
-bool*m_regulatorIsActivated
+SeedExtender*seedExtender
 );
 };
 

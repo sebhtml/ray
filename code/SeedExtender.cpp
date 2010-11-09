@@ -33,11 +33,7 @@ void SeedExtender::extendSeeds(vector<vector<VERTEX_TYPE> >*seeds,ExtensionData*
 int*last_value,bool*vertexCoverageRequested,int wordSize,bool*colorSpaceMode,int size,bool*vertexCoverageReceived,
 int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,vector<VERTEX_TYPE>*receivedOutgoingEdges,Chooser*chooser,
 ChooserData*cd,BubbleData*bubbleData,DepthFirstSearchData*dfsData,
-int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,
-bool*m_regulatorIsActivated
-
-
-){
+int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived){
 	if((*seeds).size()==0){
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<theRank<<" is extending its seeds. "<<(*seeds).size()<<"/"<<(*seeds).size()<<" (DONE)"<<endl;
@@ -45,7 +41,6 @@ bool*m_regulatorIsActivated
 		ed->m_mode_EXTENSION=false;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_IS_DONE,theRank);
 		(*outbox).push_back(aMessage);
-		(*m_regulatorIsActivated)=false;
 		return;
 	}
 	if(!ed->m_EXTENSION_initiated){
@@ -77,7 +72,6 @@ bool*m_regulatorIsActivated
 		#ifdef SHOW_PROGRESS
 		#endif
 		(*outbox).push_back(aMessage);
-		(*m_regulatorIsActivated)=false;
 		return;
 	}
 
