@@ -98,14 +98,10 @@ class Machine{
 	int m_sequence_ready_machines;
 	bool m_messageSentForVerticesDistribution;
 
-	int m_clocksPerMessages;
-
+	int m_clocksPerMessage;
+	bool m_regulatorIsActivated;
 	int*m_throughputs;
-	// speed calibration to make OpenMPI handle the communication in its shared memory.
-	int m_calibration_numberOfMessagesSent;
-	bool m_calibrationAskedCalibration;
-	int m_calibration_MaxSpeed;
-	bool m_calibrationIsDone;
+	u64 m_lastMessageSending;
 
 	COVERAGE_TYPE m_maxCoverage;
 	Chooser m_c;

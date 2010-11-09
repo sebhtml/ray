@@ -183,10 +183,12 @@ Machine::Machine(int argc,char**argv){
 
 
 void Machine::start(){
+	m_regulatorIsActivated=false;
 	m_repeatedLength=0;
+	m_clocksPerMessage=0;// no limit
 	m_maxCoverage=0;
 	m_maxCoverage--;// underflow.
-
+	m_lastMessageSending=getMicroSeconds();
 	int numberOfTrees=_FOREST_SIZE;
 
 	#ifdef SHOW_PROGRESS
@@ -197,8 +199,6 @@ void Machine::start(){
 	m_colorSpaceMode=false;
 	m_messageSentForEdgesDistribution=false;
 	m_numberOfRanksDoneSeeding=0;
-	m_calibrationAskedCalibration=false;
-	m_calibrationIsDone=true; // set to false to perform a speed calibration.
 	m_master_mode=MODE_DO_NOTHING;
 	m_numberOfMachinesReadyForEdgesDistribution=0;
 	m_ed->m_mode_EXTENSION=false;
@@ -213,7 +213,6 @@ void Machine::start(){
 	m_mode_send_outgoing_edges=false;
 	m_mode_send_vertices_sequence_id=0;
 	m_mode_send_vertices_sequence_id_position=0;
-	m_calibration_MaxSpeed=99999999; // initial speed limit before calibration
 	m_numberOfMachinesDoneSendingVertices=0;
 	m_numberOfMachinesDoneSendingEdges=0;
 	m_numberOfMachinesReadyToSendDistribution=0;
@@ -360,7 +359,18 @@ void Machine::run(){
 	while(isAlive()){
 		receiveMessages(); 
 		processMessages();
-		processData();
+		if(!m_regulatorIsActivated){
+			processData();
+		// below is a technology to regulate the tribe of messengers.
+		}else if((int)(getMicroSeconds()-m_lastMessageSending)>=m_clocksPerMessage){
+			int numberOfMessagesToSendBefore=m_outbox.size();
+			processData();
+			int numberOfMessagesToSendAfter=m_outbox.size();
+			int difference=numberOfMessagesToSendAfter-numberOfMessagesToSendBefore;
+			if(difference>0){
+				m_lastMessageSending=getMicroSeconds();
+			}
+		}
 		sendMessages();
 	}
 }
@@ -384,6 +394,10 @@ void Machine::checkRequests(){
  * if the message goes to self, do a memcpy!
  */
 void Machine::sendMessages(){
+	if(m_outbox.size()==0){
+		return;
+	}
+
 	for(int i=0;i<(int)m_outbox.size();i++){
 		Message*aMessage=&(m_outbox[i]);
 		int sizeOfElements=8;
@@ -1030,7 +1044,6 @@ void Machine::processMessages(){
 	&m_colorSpaceMode,
 	&m_FINISH_fusionOccured,
 	&m_Machine_getPaths_INITIALIZED,
-	&m_calibration_numberOfMessagesSent,
 	&m_mode,
 	&m_allPaths,
 	&m_ed->m_EXTENSION_VertexAssembled_received,
@@ -1050,7 +1063,6 @@ void Machine::processMessages(){
 	&(m_seedingData->m_SEEDING_vertexKeyAndCoverageReceived),
 	&(m_seedingData->m_SEEDING_receivedVertexCoverage),
 	&m_ed->m_EXTENSION_readLength_received,
-	&m_calibration_MaxSpeed,
 	&m_Machine_getPaths_DONE,
 	&m_CLEAR_n,
 	&m_FINISH_vertex_received,
@@ -1083,7 +1095,7 @@ void Machine::processMessages(){
 	&m_ed->m_EXTENSION_reads_received,
 				&m_outbox,
 	&m_sd->m_allIdentifiers,&m_oa,
-	&m_numberOfRanksWithCoverageData,&m_seedExtender,&m_clocksPerMessages,m_throughputs);
+	&m_numberOfRanksWithCoverageData,&m_seedExtender,&m_clocksPerMessage,m_throughputs,&m_regulatorIsActivated);
 
 	}
 	m_inbox.clear();
@@ -1416,15 +1428,26 @@ void Machine::processData(){
 	}else if(m_numberOfMachinesDoneSendingVertices==getSize()){
 		cout<<"Rank 0 asks other ranks to share their number of vertices"<<endl;
 
-		int maximumThroughput=0;
+		int minimumThroughput=99999999;
 		for(int i=0;i<getSize();i++){
-			if(m_throughputs[i]>maximumThroughput){
-				maximumThroughput=m_throughputs[i];
+			if(m_throughputs[i]<minimumThroughput){
+				minimumThroughput=m_throughputs[i];
 			}
 		}
+		// http://en.wikipedia.org/wiki/InfiniBand
+		// 5 microseconds is slightly greater than the end-to-end latency (also point-to-point or MPI-rank-to-MPI-rank)
+		// WIKI:
+		// The end-to-end latency range ranges from 1.07 microseconds MPI  latency (Mellanox ConnectX QDR HCAs) to 1.29 microseconds MPI latency (Qlogic InfiniPath HCAs) to 2.6 microseconds (Mellanox InfiniHost DDR III HCAs).
+
+		// hardware-level latencies are way lower, but not representative:
+		// WIKI:
+		// The single data rate switch chips have a latency of 200 nanoseconds, DDR switch chips have a latency of 140 nanoseconds and QDR switch chips have a latency of 100 nanoseconds.
+		minimumThroughput=5;// microseconds, almost a real-time system LOL
+		
+		cout<<"Rank "<<getRank()<<": "<<minimumThroughput<<" microseconds/message is the minimum"<<endl;
 
 		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(sizeof(VERTEX_TYPE));
-		message[0]=maximumThroughput;
+		message[0]=minimumThroughput;
 		m_numberOfMachinesDoneSendingVertices=-1;
 		for(int i=0;i<getSize();i++){
 			Message aMessage(message,1, MPI_UNSIGNED_LONG_LONG, i, TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION,getRank());
@@ -1459,7 +1482,6 @@ void Machine::processData(){
 		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rank,TAG_CALIBRATION_MESSAGE,getRank());
 		m_outbox.push_back(aMessage);
-		m_calibration_numberOfMessagesSent++;
 	}else if(m_mode==MODE_FINISH_FUSIONS){
 		finishFusions();
 	}else if(m_mode==MODE_DISTRIBUTE_FUSIONS){
@@ -2141,20 +2163,13 @@ void Machine::processData(){
 
 	if(m_ed->m_mode_EXTENSION){
 
-	void extendSeeds(vector<vector<VERTEX_TYPE> >*seeds,ExtensionData*ed,int theRank,vector<Message>*outbox,u64*currentVertex,
-	FusionData*fusionData,MyAllocator*outboxAllocator,bool*edgesRequested,int*outgoingEdgeIndex,
-int*last_value,bool*vertexCoverageRequested,int wordSize,bool*colorSpaceMode,int size,bool*vertexCoverageReceived,
-int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,vector<VERTEX_TYPE>*receivedOutgoingEdges,Chooser*chooser,
-ChooserData*cd,BubbleData*bubbleData,DepthFirstSearchData*dfsData,
-int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived);
-
 		int maxCoverage=m_maxCoverage;
 		m_seedExtender.extendSeeds(&(m_seedingData->m_SEEDING_seeds),m_ed,getRank(),&m_outbox,&(m_seedingData->m_SEEDING_currentVertex),
 		m_fusionData,&m_outboxAllocator,&(m_seedingData->m_SEEDING_edgesRequested),&(m_seedingData->m_SEEDING_outgoingEdgeIndex),
 		&m_last_value,&(m_seedingData->m_SEEDING_vertexCoverageRequested),m_wordSize,&m_colorSpaceMode,getSize(),&(m_seedingData->m_SEEDING_vertexCoverageReceived),
 		&(m_seedingData->m_SEEDING_receivedVertexCoverage),&m_repeatedLength,&maxCoverage,&(m_seedingData->m_SEEDING_receivedOutgoingEdges),&m_c,
 		m_cd,m_bubbleData,m_dfsData,
-	m_minimumCoverage,&m_oa,&(m_seedingData->m_SEEDING_edgesReceived));
+	m_minimumCoverage,&m_oa,&(m_seedingData->m_SEEDING_edgesReceived),&m_regulatorIsActivated);
 	}
 }
 

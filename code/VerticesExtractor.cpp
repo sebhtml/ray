@@ -41,7 +41,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 				){
 	if(!m_started){
 		m_started=true;
-		m_firstClock=getMilliSeconds();
+		m_firstClock=getMicroSeconds();
 		m_messagesSent=0;
 	}
 
@@ -68,10 +68,10 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		}else{
 			// flush data
 			flushVertices(1,m_disData,m_outboxAllocator,m_outbox,rank,size);
-			u64 currentClock=getMilliSeconds();
+			u64 currentClock=getMicroSeconds();
 			u64 clockDifference=(currentClock-m_firstClock);
 			int clocksPerMessage=clockDifference/m_messagesSent;
-			cout<<"Rank "<<rank<<": clocks= "<<clockDifference<<" & messages= "<<m_messagesSent<<" ("<<clocksPerMessage<<" milliseconds/message)"<<endl;
+			cout<<"Rank "<<rank<<": clocks= "<<clockDifference<<" & messages= "<<m_messagesSent<<" ("<<clocksPerMessage<<" microseconds/message)"<<endl;
 			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
 			message[0]=clocksPerMessage;
 			Message aMessage(message, 1, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_VERTICES_DISTRIBUTED,rank);

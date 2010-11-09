@@ -70,7 +70,6 @@ public:
 	bool*m_colorSpaceMode,
 	bool*m_FINISH_fusionOccured,
 	bool*m_Machine_getPaths_INITIALIZED,
-	int*m_calibration_numberOfMessagesSent,
 	int*m_mode,
 	vector<vector<VERTEX_TYPE> >*m_allPaths,
 	bool*m_EXTENSION_VertexAssembled_received,
@@ -90,7 +89,6 @@ public:
 	bool*m_SEEDING_vertexKeyAndCoverageReceived,
 	int*m_SEEDING_receivedVertexCoverage,
 	bool*m_EXTENSION_readLength_received,
-	int*m_calibration_MaxSpeed,
 	bool*m_Machine_getPaths_DONE,
 	int*m_CLEAR_n,
 	bool*m_FINISH_vertex_received,
@@ -126,7 +124,8 @@ public:
 int*m_numberOfRanksWithCoverageData,
 SeedExtender*seedExtender,
 int*m_clocksPerMessages,
-int*m_throughputs
+int*m_throughputs,
+bool*m_regulatorIsActivated
 );
 };
 

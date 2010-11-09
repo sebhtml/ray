@@ -73,7 +73,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 int*last_value,bool*vertexCoverageRequested,int wordSize,bool*colorSpaceMode,int size,bool*vertexCoverageReceived,
 int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,vector<VERTEX_TYPE>*receivedOutgoingEdges,Chooser*chooser,
 ChooserData*cd,BubbleData*bubbleData,DepthFirstSearchData*dfsData,
-int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived);
+int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,
+bool*m_regulatorIsActivated);
 
 
 

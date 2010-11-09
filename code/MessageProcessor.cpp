@@ -65,7 +65,6 @@ void MessageProcessor::processMessage(Message*message,
 	bool*m_colorSpaceMode,
 	bool*m_FINISH_fusionOccured,
 	bool*m_Machine_getPaths_INITIALIZED,
-	int*m_calibration_numberOfMessagesSent,
 	int*m_mode,
 	vector<vector<VERTEX_TYPE> >*m_allPaths,
 	bool*m_EXTENSION_VertexAssembled_received,
@@ -85,7 +84,6 @@ void MessageProcessor::processMessage(Message*message,
 	bool*m_SEEDING_vertexKeyAndCoverageReceived,
 	int*m_SEEDING_receivedVertexCoverage,
 	bool*m_EXTENSION_readLength_received,
-	int*m_calibration_MaxSpeed,
 	bool*m_Machine_getPaths_DONE,
 	int*m_CLEAR_n,
 	bool*m_FINISH_vertex_received,
@@ -121,8 +119,9 @@ void MessageProcessor::processMessage(Message*message,
 	OpenAssemblerChooser*m_oa,
 int*m_numberOfRanksWithCoverageData,
 SeedExtender*seedExtender,
-int*m_clocksPerMessages,
-int*m_throughputs
+int*m_clocksPerMessage,
+int*m_throughputs,
+bool*m_regulatorIsActivated
 ){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
@@ -174,12 +173,6 @@ int*m_throughputs
 		m_fusionData->m_FUSION_direct_fusionDone=false;
 		m_fusionData->m_FUSION_first_done=false;
 		m_fusionData->m_FUSION_paths_requested=false;
-	}else if(tag==TAG_BEGIN_CALIBRATION){
-		(*m_calibration_numberOfMessagesSent)=0;
-		(*m_mode)=MODE_PERFORM_CALIBRATION;
-		#ifdef DEBUG
-
-		#endif
 	}else if(tag==TAG_ASK_LIBRARY_DISTANCES_FINISHED){
 		(*m_numberOfRanksDoneSendingDistances)++;
 	}else if(tag==TAG_LIBRARY_DISTANCE){
@@ -190,10 +183,6 @@ int*m_throughputs
 		(*m_mode)=MODE_SEND_LIBRARY_DISTANCES;
 		(*m_libraryIterator)=0;
 		(*m_libraryIndexInitiated)=false;
-	}else if(tag==TAG_END_CALIBRATION){
-		(*m_mode)=MODE_DO_NOTHING;
-		(*m_calibration_MaxSpeed)=(*m_calibration_numberOfMessagesSent)/CALIBRATION_DURATION/size;
-		cout<<"Rank "<<rank<<" MaximumSpeed (point-to-point)="<<(*m_calibration_MaxSpeed)<<" messages/second"<<endl;
 	}else if(tag==TAG_FINISH_FUSIONS){
 		(*m_mode)=MODE_FINISH_FUSIONS;
 		(*m_FINISH_fusionOccured)=false;
@@ -404,7 +393,6 @@ int*m_throughputs
 		}
 		Message aMessage(message,ingoingEdges.size(),MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY,rank);
 		m_outbox->push_back(aMessage);
-	}else if(tag==TAG_CALIBRATION_MESSAGE){
 	}else if(tag==TAG_ASK_VERTEX_PATHS_SIZE){
 		#ifdef DEBUG
 		if(m_subgraph->find(incoming[0])==NULL){
@@ -479,6 +467,7 @@ int*m_throughputs
 	}else if(tag==TAG_FUSION_DONE){
 		m_fusionData->m_FUSION_numberOfRanksDone++;
 	}else if(tag==TAG_ASK_EXTENSION){
+		(*m_regulatorIsActivated)=true;
 		(*m_EXTENSION_initiated)=false;
 		(*m_mode_EXTENSION)=true;
 		(*m_last_value)=-1;
@@ -738,8 +727,7 @@ int*m_throughputs
 		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, source, TAG_START_EDGES_DISTRIBUTION_ANSWER,rank);
 		m_outbox->push_back(aMessage);
 	}else if(tag==TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION){
-		(*m_clocksPerMessages)=incoming[0];
-		cout<<"Rank "<<rank<<": "<<(*m_clocksPerMessages)<<" milliseconds/message is the minimum"<<endl;
+		(*m_clocksPerMessage)=incoming[0];
 		cout<<"Rank "<<rank<<" has "<<m_subgraph->size()<<" vertices (DONE)"<<endl;
 		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, source, TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER,rank);
 		m_outbox->push_back(aMessage);

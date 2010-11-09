@@ -494,14 +494,13 @@ int roundNumber(int s,int alignment){
 	return ((s/alignment)+1)*alignment;
 }
 
-u64 getMilliSeconds(){
+u64 getMicroSeconds(){
 	struct timeval tv;
 	struct timezone tz;
 	struct tm *tm;
 	gettimeofday(&tv,&tz);
 	tm=localtime(&tv.tv_sec);
-	printf("StartTime: %d:%02d:%02d %d \n", tm->tm_hour, tm->tm_min, tm->tm_sec, tv.tv_usec);
-	u64 milliSeconds=tm->tm_hour*60*60*1000+tm->tm_min*60*1000+tm->tm_sec*1000+tv.tv_usec/1000;
+	u64 milliSeconds=tm->tm_hour*60*60*1000*1000+tm->tm_min*60*1000*1000+tm->tm_sec*1000*1000+tv.tv_usec;
 	return milliSeconds;
 }
 
