@@ -37,6 +37,7 @@
 using namespace std;
 
 class SeedExtender{
+	bool m_skippedASeed;
 public:
 
 	map<u64,string> m_sequences;
@@ -45,6 +46,7 @@ public:
 	string m_receivedString;
 	int m_sequenceIndexToCache;
 
+	SeedExtender();
 
 	map<u64,PairedRead> m_pairedReads;
 
