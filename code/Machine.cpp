@@ -1652,7 +1652,7 @@ void Machine::processData(){
 			m_ed->m_EXTENSION_currentRankIsStarted=true;
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_ed->m_EXTENSION_rank,TAG_ASK_EXTENSION,getRank());
 			m_outbox.push_back(aMessage);
-			m_ed->m_EXTENSION_currentRankIsDone=true; // set to false for non-parallel extension.
+			m_ed->m_EXTENSION_currentRankIsDone=false; // set to false for non-parallel extension.
 		}else if(m_ed->m_EXTENSION_currentRankIsDone){
 			m_ed->m_EXTENSION_currentRankIsSet=false;
 		}

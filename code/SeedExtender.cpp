@@ -847,6 +847,10 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 			(*vertexCoverageRequested)=true;
 			(*vertexCoverageReceived)=false;
 			
+			if(ed->m_EXTENSION_extension.size()%1000==0){
+				cout<<"Rank "<<theRank<<": "<<ed->m_EXTENSION_extension.size()<<"vertices"<<endl;
+			}
+
 			VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
 			message[0]=(*currentVertex);
 			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0],size),
