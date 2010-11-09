@@ -1442,7 +1442,7 @@ void Machine::processData(){
 		// hardware-level latencies are way lower, but not representative:
 		// WIKI:
 		// The single data rate switch chips have a latency of 200 nanoseconds, DDR switch chips have a latency of 140 nanoseconds and QDR switch chips have a latency of 100 nanoseconds.
-		minimumThroughput=5;// microseconds, almost a real-time system LOL
+		minimumThroughput=15;// microseconds, almost a real-time system LOL
 		
 		cout<<"Rank "<<getRank()<<": "<<minimumThroughput<<" microseconds/message is the minimum"<<endl;
 
