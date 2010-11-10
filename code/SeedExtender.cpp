@@ -844,7 +844,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 			(*vertexCoverageReceived)=false;
 			
 			if(ed->m_EXTENSION_extension.size()%10000==0){
-				cout<<"Rank "<<theRank<<": "<<ed->m_EXTENSION_extension.size()<<"vertices"<<endl;
+				cout<<"Rank "<<theRank<<": "<<ed->m_EXTENSION_extension.size()<<" vertices"<<endl;
 			}
 
 			VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
