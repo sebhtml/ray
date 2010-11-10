@@ -36,6 +36,9 @@
 using namespace std;
 
 class MessageProcessor{
+	u64 m_sentinelValue;
+
+
 public:
 	void processMessage(Message*message,
 			ExtensionData*ed,
@@ -124,6 +127,8 @@ public:
 int*m_numberOfRanksWithCoverageData,
 SeedExtender*seedExtender
 );
+
+	MessageProcessor();
 };
 
 #endif

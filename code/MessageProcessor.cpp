@@ -741,14 +741,16 @@ SeedExtender*seedExtender
 		(*m_numberOfMachinesDoneSendingCoverage)++;
 	}else if(tag==TAG_REQUEST_READS){
 		ReadAnnotation*e=m_subgraph->find(incoming[0])->getValue()->getReads();
-		int maxToProcess=MPI_BTL_SM_EAGER_LIMIT/3/sizeof(VERTEX_TYPE);
+		int maxToProcess=MPI_BTL_SM_EAGER_LIMIT/3/sizeof(VERTEX_TYPE)-1;
 		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(4096);
 		int j=0;
 		int processed=0;
 		// send a maximum of maxToProcess individually
 
-		Message aMessageStart(NULL,0,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READS_REPLY_BEGIN,rank);
-		m_outbox->push_back(aMessageStart);
+		// pad the message with a sentinel value  sentinel/0/sentinel
+		message[j++]=m_sentinelValue;
+		message[j++]=0;
+		message[j++]=m_sentinelValue;
 		while(e!=NULL){
 			message[j++]=e->getRank();
 			message[j++]=e->getReadIndex();
@@ -758,6 +760,11 @@ SeedExtender*seedExtender
 			// if we reached the maximum of nothing is to be processed after
 			if(processed==maxToProcess or e==NULL){
 				// pop the message on the MPI collective
+
+				// end is sentinel/sentinel/sentinel
+				message[j++]=m_sentinelValue;
+				message[j++]=m_sentinelValue;
+				message[j++]=m_sentinelValue;
 				Message aMessage(message,processed,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READS_REPLY,rank);
 				m_outbox->push_back(aMessage);
 				// if more reads are to be sent
@@ -768,25 +775,35 @@ SeedExtender*seedExtender
 				}
 			}
 		}
-
-		Message aMessageEnd(NULL,0,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READS_REPLY_END,rank);
-		m_outbox->push_back(aMessageEnd);
-	}else if(tag==TAG_REQUEST_READS_REPLY_BEGIN){
-		m_EXTENSION_receivedReads->clear();
 	}else if(tag==TAG_REQUEST_READS_REPLY){
 		for(int i=0;i<count;i+=3){
-			int rank=incoming[i];
-			int index=incoming[i+1];
-			char strand=incoming[i+2];
-			ReadAnnotation e;
-			e.constructor(rank,index,strand);
-			m_EXTENSION_receivedReads->push_back(e);
+			// beginning of transmission, s,0,s
+			if(incoming[i]==m_sentinelValue 
+			&& incoming[i+1]==0
+			&& incoming[i+2]==m_sentinelValue){
+				m_EXTENSION_receivedReads->clear();
+			// end of transmission, s,s,s
+			}else if(incoming[i]==m_sentinelValue 
+			&& incoming[i+1]==m_sentinelValue
+			&& incoming[i+2]==m_sentinelValue){
+				(*m_EXTENSION_reads_received)=true;
+			}else{
+				int rank=incoming[i];
+				int index=incoming[i+1];
+				char strand=incoming[i+2];
+				ReadAnnotation e;
+				e.constructor(rank,index,strand);
+				m_EXTENSION_receivedReads->push_back(e);
+			}
 		}
-	}else if(tag==TAG_REQUEST_READS_REPLY_END){
-		(*m_EXTENSION_reads_received)=true;
 	}else if(tag==TAG_EDGES_DISTRIBUTED){
 		(*m_numberOfMachinesDoneSendingEdges)++;
 	}else{
 		assert(false);// tag is unknown
 	}
+}
+
+MessageProcessor::MessageProcessor(){
+	m_sentinelValue=0;
+	m_sentinelValue--;// overflow it in an obvious manner
 }
