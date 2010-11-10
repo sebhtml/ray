@@ -384,7 +384,8 @@ void Machine::sendMessages(){
 		if(aMessage->getTag()==TAG_SEND_SEQUENCE){
 			sizeOfElements=1;
 		}
-
+		int messageSize=sizeOfElements*aMessage->getCount();
+		assert(<=MPI_BTL_SM_EAGER_LIMIT);
 		#ifdef DEBUG
 		int theRank=aMessage->getDestination();
 		assert(theRank>=0);

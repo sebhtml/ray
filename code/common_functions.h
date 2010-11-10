@@ -68,6 +68,8 @@ using namespace std;
 #define _FILL_UP (0x1000-100)/0x8
 #define MAX_UINT64_T_PER_MESSAGE _FILL_UP
 
+#define MPI_BTL_SM_EAGER_LIMIT 0x1000
+
 // tags
 // these are the message types used by Ray
 // Ray instances like to communicate a lots!
