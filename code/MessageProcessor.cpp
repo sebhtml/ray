@@ -237,6 +237,7 @@ SeedExtender*seedExtender
 		// clearing old data too!.
 		(*m_FINISH_pathLengths).clear();
 
+		cout<<"Rank "<<rank<<" is clearing its directions"<<endl;
 		// clear graph
 		for(int i=0;i<m_subgraph->getNumberOfTrees();i++){
 			SplayTreeIterator<VERTEX_TYPE,Vertex> iterator(m_subgraph->getTree(i));
@@ -255,10 +256,10 @@ SeedExtender*seedExtender
 			(*m_EXTENSION_contigs).push_back((*m_FINISH_newFusions)[i]);
 		}
 
-
-
 		(*m_FINISH_newFusions).clear();
 
+
+		cout<<"Rank "<<rank<<" keeps unique fusions."<<endl;
 		vector<vector<VERTEX_TYPE> > fusions;
 		for(int i=0;i<(int)(*m_EXTENSION_contigs).size();i++){
 			int id=(*m_EXTENSION_identifiers)[i];
@@ -272,6 +273,7 @@ SeedExtender*seedExtender
 			}
 		}
 
+		cout<<"Rank "<<rank<<" renames its fusions."<<endl;
 		(*m_EXTENSION_identifiers).clear();
 		m_fusionData->m_FUSION_eliminated.clear();
 		for(int i=0;i<(int)fusions.size();i++){

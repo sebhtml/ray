@@ -1445,12 +1445,20 @@ void Machine::processData(){
 		finishFusions();
 	}else if(m_mode==MODE_DISTRIBUTE_FUSIONS){
 		if(m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
+			cout<<"Rank "<<getRank()<<" distributes its fusions. "<<m_ed->m_EXTENSION_contigs.size()<<"/"<<m_ed->m_EXTENSION_contigs.size()<<endl;
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_DISTRIBUTE_FUSIONS_FINISHED,getRank());
 			m_outbox.push_back(aMessage);
 			m_mode=MODE_DO_NOTHING;
 			return;
 		}
 	
+		if(m_ed->m_EXTENSION_currentPosition==0){
+			if(m_seedingData->m_SEEDING_i%10==0){
+				cout<<"Rank "<<getRank()<<" distributes its fusions. "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_ed->m_EXTENSION_contigs.size()<<endl;
+
+			}
+		}
+
 		VERTEX_TYPE vertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
 		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(3*sizeof(VERTEX_TYPE));
 		message[0]=vertex;
@@ -1639,24 +1647,11 @@ void Machine::processData(){
 			&m_distribution_currentSequenceId,getRank(),m_disData,&m_mode_AttachSequences,
 			&m_parameters,&m_colorSpaceMode,&m_outboxAllocator,&m_lastTime);
 	}else if(m_mode==MODE_EXTENSION_ASK and isMaster()){
-		
-		if(!m_ed->m_EXTENSION_currentRankIsSet){
-			m_ed->m_EXTENSION_currentRankIsSet=true;
-			m_ed->m_EXTENSION_currentRankIsStarted=false;
-			m_ed->m_EXTENSION_rank++;
-		}
-		if(m_ed->m_EXTENSION_rank==getSize()){
-			m_mode=MODE_DO_NOTHING;
-
-		}else if(!m_ed->m_EXTENSION_currentRankIsStarted){
-			m_ed->m_EXTENSION_currentRankIsStarted=true;
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_ed->m_EXTENSION_rank,TAG_ASK_EXTENSION,getRank());
+		for(int i=0;i<getSize();i++){
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_ASK_EXTENSION,getRank());
 			m_outbox.push_back(aMessage);
-			m_ed->m_EXTENSION_currentRankIsDone=true; // set to false for non-parallel extension.
-		}else if(m_ed->m_EXTENSION_currentRankIsDone){
-			m_ed->m_EXTENSION_currentRankIsSet=false;
 		}
-
+		m_mode=MODE_DO_NOTHING;
 	}else if(m_mode==MODE_SEND_EXTENSION_DATA){
 		if(m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
 			m_mode=MODE_DO_NOTHING;

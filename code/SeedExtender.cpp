@@ -57,23 +57,18 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived){
 		ed->m_EXTENSION_reads_startingPositionOnContig.clear();
 		ed->m_EXTENSION_readsInRange.clear();
 	}else if(ed->m_EXTENSION_currentSeedIndex==(int)(*seeds).size()){
-		if(m_skippedASeed){
-			m_skippedASeed=false;
-			ed->m_EXTENSION_initiated=true;// restart the whole thing. hehe
-		}else{
-			cout<<"Rank "<<theRank<<" is extending its seeds. "<<(*seeds).size()<<"/"<<(*seeds).size()<<" (DONE)"<<endl;
-			ed->m_mode_EXTENSION=false;
-		
-			// store the lengths.
-			for(int i=0;i<(int)ed->m_EXTENSION_identifiers.size();i++){
-				int id=ed->m_EXTENSION_identifiers[i];
-				fusionData->m_FUSION_identifier_map[id]=i;
-			}
+		cout<<"Rank "<<theRank<<" is extending its seeds. "<<(*seeds).size()<<"/"<<(*seeds).size()<<" (DONE)"<<endl;
+		ed->m_mode_EXTENSION=false;
 	
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_IS_DONE,theRank);
-			(*outbox).push_back(aMessage);
-			return;
+		// store the lengths.
+		for(int i=0;i<(int)ed->m_EXTENSION_identifiers.size();i++){
+			int id=ed->m_EXTENSION_identifiers[i];
+			fusionData->m_FUSION_identifier_map[id]=i;
 		}
+	
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_IS_DONE,theRank);
+		(*outbox).push_back(aMessage);
+		return;
 	}
 
 	
@@ -90,9 +85,8 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived){
 	if(!ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled){
 		checkIfCurrentVertexIsAssembled(ed,outbox,outboxAllocator,outgoingEdgeIndex,last_value,
 	currentVertex,theRank,vertexCoverageRequested,wordSize,colorSpaceMode,size,seeds);
-	}else if(ed->m_EXTENSION_vertexIsAssembledResult){//and ed->m_EXTENSION_currentPosition==0 and ed->m_EXTENSION_complementedSeed==false){
+	}else if(ed->m_EXTENSION_vertexIsAssembledResult and ed->m_EXTENSION_currentPosition==0 and ed->m_EXTENSION_complementedSeed==false){
 		ed->m_EXTENSION_currentSeedIndex++;// skip the current one.
-		m_skippedASeed=true;
 		ed->m_EXTENSION_currentPosition=0;
 		ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 		ed->m_EXTENSION_directVertexDone=false;
@@ -849,7 +843,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 			(*vertexCoverageRequested)=true;
 			(*vertexCoverageReceived)=false;
 			
-			if(ed->m_EXTENSION_extension.size()%1000==0){
+			if(ed->m_EXTENSION_extension.size()%10000==0){
 				cout<<"Rank "<<theRank<<": "<<ed->m_EXTENSION_extension.size()<<"vertices"<<endl;
 			}
 
