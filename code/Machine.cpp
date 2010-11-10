@@ -385,7 +385,7 @@ void Machine::sendMessages(){
 			sizeOfElements=1;
 		}
 		int messageSize=sizeOfElements*aMessage->getCount();
-		assert(<=MPI_BTL_SM_EAGER_LIMIT);
+		assert(messageSize<=MPI_BTL_SM_EAGER_LIMIT);
 		#ifdef DEBUG
 		int theRank=aMessage->getDestination();
 		assert(theRank>=0);

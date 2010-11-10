@@ -740,23 +740,40 @@ SeedExtender*seedExtender
 	}else if(tag==TAG_COVERAGE_END){
 		(*m_numberOfMachinesDoneSendingCoverage)++;
 	}else if(tag==TAG_REQUEST_READS){
-		vector<ReadAnnotation> reads;
 		ReadAnnotation*e=m_subgraph->find(incoming[0])->getValue()->getReads();
-		while(e!=NULL){
-			reads.push_back(*e);
-			e=e->getNext();
-		}
-		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(3*sizeof(VERTEX_TYPE)*reads.size());
+		int maxToProcess=MPI_BTL_SM_EAGER_LIMIT/3/sizeof(VERTEX_TYPE);
+		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(4096);
 		int j=0;
-		for(int i=0;i<(int)reads.size();i++){
-			message[j++]=reads[i].getRank();
-			message[j++]=reads[i].getReadIndex();
-			message[j++]=reads[i].getStrand();
+		int processed=0;
+		// send a maximum of maxToProcess individually
+
+		Message aMessageStart(NULL,0,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READS_REPLY_BEGIN,rank);
+		m_outbox->push_back(aMessageStart);
+		while(e!=NULL){
+			message[j++]=e->getRank();
+			message[j++]=e->getReadIndex();
+			message[j++]=e->getStrand();
+			e=e->getNext();
+			processed++;
+			// if we reached the maximum of nothing is to be processed after
+			if(processed==maxToProcess or e==NULL){
+				// pop the message on the MPI collective
+				Message aMessage(message,processed,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READS_REPLY,rank);
+				m_outbox->push_back(aMessage);
+				// if more reads are to be sent
+				if(e!=NULL){
+					//allocate another chunk
+					message=(VERTEX_TYPE*)m_outboxAllocator->allocate(4096);
+					processed=j=0;// reset counters
+				}
+			}
 		}
-		Message aMessage(message,3*reads.size(),MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READS_REPLY,rank);
-		m_outbox->push_back(aMessage);
-	}else if(tag==TAG_REQUEST_READS_REPLY){
+
+		Message aMessageEnd(NULL,0,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READS_REPLY_END,rank);
+		m_outbox->push_back(aMessageEnd);
+	}else if(tag==TAG_REQUEST_READS_REPLY_BEGIN){
 		m_EXTENSION_receivedReads->clear();
+	}else if(tag==TAG_REQUEST_READS_REPLY){
 		for(int i=0;i<count;i+=3){
 			int rank=incoming[i];
 			int index=incoming[i+1];
@@ -765,10 +782,11 @@ SeedExtender*seedExtender
 			e.constructor(rank,index,strand);
 			m_EXTENSION_receivedReads->push_back(e);
 		}
+	}else if(tag==TAG_REQUEST_READS_REPLY_END){
 		(*m_EXTENSION_reads_received)=true;
 	}else if(tag==TAG_EDGES_DISTRIBUTED){
 		(*m_numberOfMachinesDoneSendingEdges)++;
 	}else{
-		cout<<"Unknown tag"<<tag<<endl;
+		assert(false);// tag is unknown
 	}
 }
