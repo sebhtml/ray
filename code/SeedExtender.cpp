@@ -28,6 +28,10 @@
 #endif
 #include<BubbleTool.h>
 
+void debugMessage(int source,int destination,string message){
+	cout<<"Microseconds: "<<getMicroSeconds()<<" Source: "<<source<<" Destination: "<<destination<<" Message: "<<message<<endl;
+}
+
 void SeedExtender::extendSeeds(vector<vector<VERTEX_TYPE> >*seeds,ExtensionData*ed,int theRank,vector<Message>*outbox,
   u64*currentVertex,FusionData*fusionData,MyAllocator*outboxAllocator,bool*edgesRequested,int*outgoingEdgeIndex,
 int*last_value,bool*vertexCoverageRequested,int wordSize,bool*colorSpaceMode,int size,bool*vertexCoverageReceived,
@@ -39,6 +43,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived){
 		cout<<"Rank "<<theRank<<" is extending its seeds. "<<(*seeds).size()<<"/"<<(*seeds).size()<<" (DONE)"<<endl;
 		#endif
 		ed->m_mode_EXTENSION=false;
+		debugMessage(theRank,MASTER_RANK,"TAG_EXTENSION_IS_DONE");
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_IS_DONE,theRank);
 		(*outbox).push_back(aMessage);
 		return;
@@ -65,7 +70,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived){
 			int id=ed->m_EXTENSION_identifiers[i];
 			fusionData->m_FUSION_identifier_map[id]=i;
 		}
-	
+		debugMessage(theRank,MASTER_RANK,"TAG_EXTENSION_IS_DONE");
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_IS_DONE,theRank);
 		(*outbox).push_back(aMessage);
 		return;
@@ -132,7 +137,9 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 		(*edgesRequested)=true;
 		VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
 		message[0]=(VERTEX_TYPE)(*currentVertex);
-		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank((*currentVertex),size),TAG_REQUEST_VERTEX_OUTGOING_EDGES,theRank);
+		int dest=vertexRank((*currentVertex),size);
+		debugMessage(theRank,dest,"TAG_REQUEST_VERTEX_OUTGOING_EDGES");
+		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,dest,TAG_REQUEST_VERTEX_OUTGOING_EDGES,theRank);
 		(*outbox).push_back(aMessage);
 		ed->m_EXTENSION_currentPosition++;
 		(*vertexCoverageRequested)=false;
@@ -143,8 +150,9 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 			if(!(*vertexCoverageRequested)){
 				VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
 				message[0]=(VERTEX_TYPE)(*receivedOutgoingEdges)[(*outgoingEdgeIndex)];
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0],size),
-	TAG_REQUEST_VERTEX_COVERAGE,theRank);
+				int dest=vertexRank(message[0],size);
+				debugMessage(theRank,dest,"TAG_REQUEST_VERTEX_COVERAGE");
+				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,dest,TAG_REQUEST_VERTEX_COVERAGE,theRank);
 				(*outbox).push_back(aMessage);
 				(*vertexCoverageRequested)=true;
 				(*vertexCoverageReceived)=false;
@@ -693,8 +701,9 @@ void SeedExtender::depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int maxDepth,
 			
 			VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
 			message[0]=vertexToVisit;
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0],size),
-		TAG_REQUEST_VERTEX_COVERAGE,theRank);
+			int dest=vertexRank(message[0],size);
+			debugMessage(theRank,dest,"TAG_REQUEST_VERTEX_COVERAGE");
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,dest,TAG_REQUEST_VERTEX_COVERAGE,theRank);
 			(*outbox).push_back(aMessage);
 		}else if((*vertexCoverageReceived)){
 			if(!(*edgesRequested)){
@@ -727,8 +736,9 @@ void SeedExtender::depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int maxDepth,
 				// visit the vertex, and ask next edges.
 				VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
 				message[0]=vertexToVisit;
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(vertexToVisit,size),
-	TAG_REQUEST_VERTEX_OUTGOING_EDGES,theRank);
+				int destination=vertexRank(vertexToVisit,size);
+				debugMessage(theRank,destination,"TAG_REQUEST_VERTEX_OUTGOING_EDGES");
+				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,destination,TAG_REQUEST_VERTEX_OUTGOING_EDGES,theRank);
 			(*outbox).push_back(aMessage);
 				(*edgesRequested)=true;
 				(*edgesReceived)=false;
@@ -797,7 +807,9 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,vector<Messa
 			ed->m_EXTENSION_VertexAssembled_requested=true;
 			VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
 			message[0]=(VERTEX_TYPE)(*currentVertex);
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank((*currentVertex),size),TAG_ASK_IS_ASSEMBLED,theRank);
+			int destination=vertexRank((*currentVertex),size);
+			debugMessage(theRank,destination,"TAG_ASK_IS_ASSEMBLED");
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,destination,TAG_ASK_IS_ASSEMBLED,theRank);
 			(*outbox).push_back(aMessage);
 			ed->m_EXTENSION_VertexAssembled_received=false;
 		}else if(ed->m_EXTENSION_VertexAssembled_received){
@@ -819,8 +831,9 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,vector<Messa
 			ed->m_EXTENSION_VertexAssembled_requested=true;
 			VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
 			message[0]=(VERTEX_TYPE)complementVertex((*currentVertex),wordSize,(*colorSpaceMode));
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0],size),
-	TAG_ASK_IS_ASSEMBLED,theRank);
+			int destination=vertexRank(message[0],size);
+			debugMessage(theRank,destination,"TAG_ASK_IS_ASSEMBLED");
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,destination,TAG_ASK_IS_ASSEMBLED,theRank);
 			(*outbox).push_back(aMessage);
 			ed->m_EXTENSION_VertexAssembled_received=false;
 		}else if(ed->m_EXTENSION_VertexAssembled_received){
@@ -849,8 +862,9 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 
 			VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
 			message[0]=(*currentVertex);
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0],size),
-				TAG_REQUEST_VERTEX_COVERAGE,theRank);
+			int destination=vertexRank(message[0],size);
+			debugMessage(theRank,destination,"TAG_REQUEST_VERTEX_COVERAGE");
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,destination,TAG_REQUEST_VERTEX_COVERAGE,theRank);
 			(*outbox).push_back(aMessage);
 		}else if((*vertexCoverageReceived)){
 			if(!ed->m_EXTENSION_VertexMarkAssembled_requested){
@@ -874,7 +888,9 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				message[0]=(VERTEX_TYPE)(*currentVertex);
 				message[1]=waveId;
 				message[2]=progression;
-				Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,vertexRank((*currentVertex),size),TAG_SAVE_WAVE_PROGRESSION,theRank);
+				int destination=vertexRank((*currentVertex),size);
+				debugMessage(theRank,destination,"TAG_SAVE_WAVE_PROGRESSION");
+				Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,destination,TAG_SAVE_WAVE_PROGRESSION,theRank);
 				(*outbox).push_back(aMessage);
 				ed->m_EXTENSION_reverseVertexDone=true;
 				ed->m_EXTENSION_reads_requested=false;
@@ -894,7 +910,9 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				ed->m_EXTENSION_reads_received=false;
 				VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
 				message[0]=(VERTEX_TYPE)(*currentVertex);
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank((*currentVertex),size),TAG_REQUEST_READS,theRank);
+				int dest=vertexRank((*currentVertex),size);
+				debugMessage(theRank,dest,"TAG_REQUEST_READS");
+				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,dest,TAG_REQUEST_READS,theRank);
 				(*outbox).push_back(aMessage);
 				m_sequenceIndexToCache=0;
 				m_sequenceRequested=false;
@@ -912,6 +930,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 						int sequenceRank=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache].getRank();
 						VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
 						message[0]=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache].getReadIndex();
+						debugMessage(theRank,sequenceRank,"TAG_REQUEST_READ_SEQUENCE");
 						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,sequenceRank,TAG_REQUEST_READ_SEQUENCE,theRank);
 						outbox->push_back(aMessage);
 					}else if(m_sequenceReceived){
