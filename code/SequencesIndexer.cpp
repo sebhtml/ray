@@ -138,8 +138,8 @@ void SequencesIndexer::attachReads(vector<Message>*m_outbox,int*m_distribution_f
 			m_disData->m_attachedSequence.addAt(sendTo,sequenceIdOnDestination);
 			m_disData->m_attachedSequence.addAt(sendTo,(VERTEX_TYPE)'R');
 		}
-
-		flushAttachedSequences(MAX_UINT64_T_PER_MESSAGE,m_outbox,rank,size,m_disData,m_outboxAllocator);
+		// -4 ensures that it is always below 512*8 bytes
+		flushAttachedSequences(MAX_UINT64_T_PER_MESSAGE-4,m_outbox,rank,size,m_disData,m_outboxAllocator);
 
 		(*m_distribution_currentSequenceId)++;
 		(*m_distribution_sequence_id)++;
