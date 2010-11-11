@@ -65,10 +65,10 @@ using namespace std;
 // divide that by eight and you get the number of 64-bit integers 
 // allowed in a eager single communication
 #define _SINGLE_ELEMENT 1
-#define _FILL_UP (0x1000-100)/0x8
+#define MPI_BTL_SM_EAGER_LIMIT 0x1000 // 4096 bytes
+#define _FILL_UP MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE)
 #define MAX_UINT64_T_PER_MESSAGE _FILL_UP
 
-#define MPI_BTL_SM_EAGER_LIMIT 0x1000
 
 // tags
 // these are the message types used by Ray

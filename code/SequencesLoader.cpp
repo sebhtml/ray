@@ -179,7 +179,7 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,averageFragmentLength);
 			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,deviation);
 
-			flushPairedStock(MAX_UINT64_T_PER_MESSAGE,m_outbox,m_outboxAllocator,m_disData,rank,size);
+			flushPairedStock(MAX_UINT64_T_PER_MESSAGE-2,m_outbox,m_outboxAllocator,m_disData,rank,size);
 		}
 
 		(*m_distribution_currentSequenceId)++;
