@@ -751,6 +751,17 @@ SeedExtender*seedExtender
 		message[j++]=m_sentinelValue;
 		message[j++]=0;
 		message[j++]=m_sentinelValue;
+		processed++;
+		if(e==NULL){
+			// end is sentinel/sentinel/sentinel
+			message[j++]=m_sentinelValue;
+			message[j++]=m_sentinelValue;
+			message[j++]=m_sentinelValue;
+			processed++;
+
+			Message aMessage(message,processed,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READS_REPLY,rank);
+			m_outbox->push_back(aMessage);
+		}
 		while(e!=NULL){
 			message[j++]=e->getRank();
 			message[j++]=e->getReadIndex();
@@ -758,20 +769,23 @@ SeedExtender*seedExtender
 			e=e->getNext();
 			processed++;
 			// if we reached the maximum of nothing is to be processed after
-			if(processed==maxToProcess or e==NULL){
+			if(processed==maxToProcess || e==NULL){
 				// pop the message on the MPI collective
-
-				// end is sentinel/sentinel/sentinel
-				message[j++]=m_sentinelValue;
-				message[j++]=m_sentinelValue;
-				message[j++]=m_sentinelValue;
+				if(e==NULL){
+					// end is sentinel/sentinel/sentinel
+					message[j++]=m_sentinelValue;
+					message[j++]=m_sentinelValue;
+					message[j++]=m_sentinelValue;
+					processed++;
+				}
 				Message aMessage(message,processed,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READS_REPLY,rank);
 				m_outbox->push_back(aMessage);
 				// if more reads are to be sent
 				if(e!=NULL){
 					//allocate another chunk
 					message=(VERTEX_TYPE*)m_outboxAllocator->allocate(4096);
-					processed=j=0;// reset counters
+					processed=0;// reset counter
+					j=0;
 				}
 			}
 		}
