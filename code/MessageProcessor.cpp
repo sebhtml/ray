@@ -742,6 +742,7 @@ SeedExtender*seedExtender
 	}else if(tag==TAG_REQUEST_READS){
 		ReadAnnotation*e=m_subgraph->find(incoming[0])->getValue()->getReads();
 		int maxToProcess=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE)-3;
+		maxToProcess=maxToProcess-maxToProcess%3;
 		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(4096);
 		int j=0;
 		// send a maximum of maxToProcess individually
