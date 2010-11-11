@@ -741,25 +741,22 @@ SeedExtender*seedExtender
 		(*m_numberOfMachinesDoneSendingCoverage)++;
 	}else if(tag==TAG_REQUEST_READS){
 		ReadAnnotation*e=m_subgraph->find(incoming[0])->getValue()->getReads();
-		int maxToProcess=MPI_BTL_SM_EAGER_LIMIT/3/sizeof(VERTEX_TYPE)-1;
+		int maxToProcess=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE)-3;
 		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(4096);
 		int j=0;
-		int processed=0;
 		// send a maximum of maxToProcess individually
 
 		// pad the message with a sentinel value  sentinel/0/sentinel
 		message[j++]=m_sentinelValue;
 		message[j++]=0;
 		message[j++]=m_sentinelValue;
-		processed++;
 		if(e==NULL){
 			// end is sentinel/sentinel/sentinel
 			message[j++]=m_sentinelValue;
 			message[j++]=m_sentinelValue;
 			message[j++]=m_sentinelValue;
-			processed++;
 
-			Message aMessage(message,processed,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READS_REPLY,rank);
+			Message aMessage(message,j,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READS_REPLY,rank);
 			m_outbox->push_back(aMessage);
 		}
 		while(e!=NULL){
@@ -767,24 +764,21 @@ SeedExtender*seedExtender
 			message[j++]=e->getReadIndex();
 			message[j++]=e->getStrand();
 			e=e->getNext();
-			processed++;
 			// if we reached the maximum of nothing is to be processed after
-			if(processed==maxToProcess || e==NULL){
+			if(j==maxToProcess || e==NULL){
 				// pop the message on the MPI collective
 				if(e==NULL){
 					// end is sentinel/sentinel/sentinel
 					message[j++]=m_sentinelValue;
 					message[j++]=m_sentinelValue;
 					message[j++]=m_sentinelValue;
-					processed++;
 				}
-				Message aMessage(message,processed,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READS_REPLY,rank);
+				Message aMessage(message,j,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READS_REPLY,rank);
 				m_outbox->push_back(aMessage);
 				// if more reads are to be sent
 				if(e!=NULL){
 					//allocate another chunk
 					message=(VERTEX_TYPE*)m_outboxAllocator->allocate(4096);
-					processed=0;// reset counter
 					j=0;
 				}
 			}
