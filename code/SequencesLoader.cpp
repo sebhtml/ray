@@ -179,6 +179,9 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,averageFragmentLength);
 			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,deviation);
 
+			// 4096 bytes allow the sending of 512 64-bits integers.
+			// however, in this function m_messagesStockPaired contains multiple of 10.
+			// thus, the threshold must be 512-2
 			flushPairedStock(MAX_UINT64_T_PER_MESSAGE-2,m_outbox,m_outboxAllocator,m_disData,rank,size);
 		}
 
