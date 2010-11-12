@@ -32,94 +32,7 @@
 #include<FusionData.h>
 #include<Parameters.h>
 
-void MessageProcessor::processMessage(Message*message,
-		ExtensionData*ed,
-		int*m_numberOfRanksDoneDetectingDistances,
-		int*m_numberOfRanksDoneSendingDistances,
-		Parameters*parameters,
-			int*m_libraryIterator,
-			bool*m_libraryIndexInitiated,
-			MyForest*m_subgraph,
-			MyAllocator*m_outboxAllocator,
-				int rank,
-			vector<ReadAnnotation>*m_EXTENSION_receivedReads,
-			int*m_numberOfMachinesDoneSendingEdges,
-			FusionData*m_fusionData,
-			vector<vector<VERTEX_TYPE> >*m_EXTENSION_contigs,
-			int*m_wordSize,
-			int*m_minimumCoverage,
-			int*m_seedCoverage,
-			int*m_peakCoverage,
-			vector<Read*>*m_myReads,
-			bool*m_EXTENSION_currentRankIsDone,
-	vector<vector<VERTEX_TYPE> >*m_FINISH_newFusions,
-		int size,
-	MyAllocator*m_inboxAllocator,
-	MyAllocator*m_persistentAllocator,
-	vector<int>*m_identifiers,
-	bool*m_mode_sendDistribution,
-	bool*m_alive,
-	vector<VERTEX_TYPE>*m_SEEDING_receivedIngoingEdges,
-	VERTEX_TYPE*m_SEEDING_receivedKey,
-	int*m_SEEDING_i,
-	bool*m_colorSpaceMode,
-	bool*m_FINISH_fusionOccured,
-	bool*m_Machine_getPaths_INITIALIZED,
-	int*m_mode,
-	vector<vector<VERTEX_TYPE> >*m_allPaths,
-	bool*m_EXTENSION_VertexAssembled_received,
-	int*m_EXTENSION_numberOfRanksDone,
-	int*m_EXTENSION_currentPosition,
-	int*m_last_value,
-	vector<int>*m_EXTENSION_identifiers,
-	int*m_ranksDoneAttachingReads,
-	bool*m_SEEDING_edgesReceived,
-	PairedRead*m_EXTENSION_pairedRead,
-	bool*m_mode_EXTENSION,
-	vector<VERTEX_TYPE>*m_SEEDING_receivedOutgoingEdges,
-	int*m_DISTRIBUTE_n,
-	vector<VERTEX_TYPE>*m_SEEDING_nodes,
-	bool*m_EXTENSION_hasPairedReadReceived,
-	int*m_numberOfRanksDoneSeeding,
-	bool*m_SEEDING_vertexKeyAndCoverageReceived,
-	int*m_SEEDING_receivedVertexCoverage,
-	bool*m_EXTENSION_readLength_received,
-	bool*m_Machine_getPaths_DONE,
-	int*m_CLEAR_n,
-	bool*m_FINISH_vertex_received,
-	bool*m_EXTENSION_initiated,
-	int*m_readyToSeed,
-	bool*m_SEEDING_NodeInitiated,
-	int*m_FINISH_n,
-	bool*m_nextReductionOccured,
-	bool*m_EXTENSION_hasPairedReadAnswer,
-	MyAllocator*m_directionsAllocator,
-	map<int,int>*m_FINISH_pathLengths,
-	bool*m_EXTENSION_pairedSequenceReceived,
-	int*m_EXTENSION_receivedLength,
-	int*m_mode_send_coverage_iterator,
-	map<int,VERTEX_TYPE>*m_coverageDistribution,
-	VERTEX_TYPE*m_FINISH_received_vertex,
-	bool*m_EXTENSION_read_vertex_received,
-	int*m_sequence_ready_machines,
-	bool*m_SEEDING_InedgesReceived,
-	bool*m_EXTENSION_vertexIsAssembledResult,
-	bool*m_SEEDING_vertexCoverageReceived,
-	VERTEX_TYPE*m_EXTENSION_receivedReadVertex,
-	int*m_numberOfMachinesReadyForEdgesDistribution,
-	int*m_numberOfMachinesReadyToSendDistribution,
-	bool*m_mode_send_outgoing_edges,
-	int*m_mode_send_vertices_sequence_id,
-	bool*m_mode_send_vertices,
-	int*m_numberOfMachinesDoneSendingVertices,
-	int*m_numberOfMachinesDoneSendingCoverage,
-	bool*m_EXTENSION_reads_received,
-				vector<Message>*m_outbox,
-	map<int,int>*m_allIdentifiers,
-	OpenAssemblerChooser*m_oa,
-int*m_numberOfRanksWithCoverageData,
-SeedExtender*seedExtender
-){
+void MessageProcessor::processMessage(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
 	int tag=message->getTag();
@@ -812,7 +725,191 @@ SeedExtender*seedExtender
 	}
 }
 
+void MessageProcessor::call_TAG_WELCOME(Message*message){
+	
+}
+
+
 MessageProcessor::MessageProcessor(){
 	m_sentinelValue=0;
 	m_sentinelValue--;// overflow it in an obvious manner
+	
+	m_methods[TAG_WELCOME]=&MessageProcessor::call_TAG_WELCOME;
+	
+	FNMETHOD f=m_methods[TAG_WELCOME];
+	(this->*f)(NULL);
+}
+
+void MessageProcessor::constructor(ExtensionData*ed,
+			int*m_numberOfRanksDoneDetectingDistances,
+			int*m_numberOfRanksDoneSendingDistances,
+			Parameters*parameters,
+			int*m_libraryIterator,
+			bool*m_libraryIndexInitiated,
+			MyForest*m_subgraph,
+			MyAllocator*m_outboxAllocator,
+				int rank,
+			vector<ReadAnnotation>*m_EXTENSION_receivedReads,
+			int*m_numberOfMachinesDoneSendingEdges,
+			FusionData*m_fusionData,
+			vector<vector<VERTEX_TYPE> >*m_EXTENSION_contigs,
+			int*m_wordSize,
+			int*m_minimumCoverage,
+			int*m_seedCoverage,
+			int*m_peakCoverage,
+			vector<Read*>*m_myReads,
+			bool*m_EXTENSION_currentRankIsDone,
+	vector<vector<VERTEX_TYPE> >*m_FINISH_newFusions,
+		int size,
+	MyAllocator*m_inboxAllocator,
+	MyAllocator*m_persistentAllocator,
+	vector<int>*m_identifiers,
+	bool*m_mode_sendDistribution,
+	bool*m_alive,
+	vector<VERTEX_TYPE>*m_SEEDING_receivedIngoingEdges,
+	VERTEX_TYPE*m_SEEDING_receivedKey,
+	int*m_SEEDING_i,
+	bool*m_colorSpaceMode,
+	bool*m_FINISH_fusionOccured,
+	bool*m_Machine_getPaths_INITIALIZED,
+	int*m_mode,
+	vector<vector<VERTEX_TYPE> >*m_allPaths,
+	bool*m_EXTENSION_VertexAssembled_received,
+	int*m_EXTENSION_numberOfRanksDone,
+	int*m_EXTENSION_currentPosition,
+	int*m_last_value,
+	vector<int>*m_EXTENSION_identifiers,
+	int*m_ranksDoneAttachingReads,
+	bool*m_SEEDING_edgesReceived,
+	PairedRead*m_EXTENSION_pairedRead,
+	bool*m_mode_EXTENSION,
+	vector<VERTEX_TYPE>*m_SEEDING_receivedOutgoingEdges,
+	int*m_DISTRIBUTE_n,
+	vector<VERTEX_TYPE>*m_SEEDING_nodes,
+	bool*m_EXTENSION_hasPairedReadReceived,
+	int*m_numberOfRanksDoneSeeding,
+	bool*m_SEEDING_vertexKeyAndCoverageReceived,
+	int*m_SEEDING_receivedVertexCoverage,
+	bool*m_EXTENSION_readLength_received,
+	bool*m_Machine_getPaths_DONE,
+	int*m_CLEAR_n,
+	bool*m_FINISH_vertex_received,
+	bool*m_EXTENSION_initiated,
+	int*m_readyToSeed,
+	bool*m_SEEDING_NodeInitiated,
+	int*m_FINISH_n,
+	bool*m_nextReductionOccured,
+	bool*m_EXTENSION_hasPairedReadAnswer,
+	MyAllocator*m_directionsAllocator,
+	map<int,int>*m_FINISH_pathLengths,
+	bool*m_EXTENSION_pairedSequenceReceived,
+	int*m_EXTENSION_receivedLength,
+	int*m_mode_send_coverage_iterator,
+	map<int,VERTEX_TYPE>*m_coverageDistribution,
+	VERTEX_TYPE*m_FINISH_received_vertex,
+	bool*m_EXTENSION_read_vertex_received,
+	int*m_sequence_ready_machines,
+	bool*m_SEEDING_InedgesReceived,
+	bool*m_EXTENSION_vertexIsAssembledResult,
+	bool*m_SEEDING_vertexCoverageReceived,
+	VERTEX_TYPE*m_EXTENSION_receivedReadVertex,
+	int*m_numberOfMachinesReadyForEdgesDistribution,
+	int*m_numberOfMachinesReadyToSendDistribution,
+	bool*m_mode_send_outgoing_edges,
+	int*m_mode_send_vertices_sequence_id,
+	bool*m_mode_send_vertices,
+	int*m_numberOfMachinesDoneSendingVertices,
+	int*m_numberOfMachinesDoneSendingCoverage,
+	bool*m_EXTENSION_reads_received,
+				vector<Message>*m_outbox,
+		map<int,int>*m_allIdentifiers,OpenAssemblerChooser*m_oa,
+int*m_numberOfRanksWithCoverageData,
+SeedExtender*seedExtender){
+
+	this->ed=ed;
+	this->m_numberOfRanksDoneDetectingDistances=m_numberOfRanksDoneDetectingDistances;
+	this->m_numberOfRanksDoneSendingDistances=m_numberOfRanksDoneSendingDistances;
+	this->parameters=parameters;
+	this->m_libraryIterator=m_libraryIterator;
+	this->m_libraryIndexInitiated=m_libraryIndexInitiated;
+	this->m_subgraph=m_subgraph;
+	this->m_outboxAllocator=m_outboxAllocator;
+	this->rank=rank;
+	this->m_EXTENSION_receivedReads=m_EXTENSION_receivedReads;
+	this->m_numberOfMachinesDoneSendingEdges=m_numberOfMachinesDoneSendingEdges;
+	this->m_fusionData=m_fusionData;
+	this->m_EXTENSION_contigs=m_EXTENSION_contigs;
+	this->m_wordSize=m_wordSize;
+	this->m_minimumCoverage=m_minimumCoverage;
+	this->m_seedCoverage=m_seedCoverage;
+	this->m_peakCoverage=m_peakCoverage;
+	this->m_myReads=m_myReads;
+	this->m_EXTENSION_currentRankIsDone=m_EXTENSION_currentRankIsDone;
+	this->m_FINISH_newFusions=m_FINISH_newFusions;
+	this->size=size;
+	this->m_inboxAllocator=m_inboxAllocator;
+	this->m_persistentAllocator=m_persistentAllocator;
+	this->m_identifiers=m_identifiers;
+	this->m_mode_sendDistribution=m_mode_sendDistribution;
+	this->m_alive=m_alive;
+	this->m_SEEDING_receivedIngoingEdges=m_SEEDING_receivedIngoingEdges;
+	this->m_SEEDING_receivedKey=m_SEEDING_receivedKey;
+	this->m_SEEDING_i=m_SEEDING_i;
+	this->m_colorSpaceMode=m_colorSpaceMode;
+	this->m_FINISH_fusionOccured=m_FINISH_fusionOccured;
+	this->m_Machine_getPaths_INITIALIZED=m_Machine_getPaths_INITIALIZED;
+	this->m_mode=m_mode;
+	this->m_allPaths=m_allPaths;
+	this->m_EXTENSION_VertexAssembled_received=m_EXTENSION_VertexAssembled_received;
+	this->m_EXTENSION_numberOfRanksDone=m_EXTENSION_numberOfRanksDone;
+	this->m_EXTENSION_currentPosition=m_EXTENSION_currentPosition;
+	this->m_last_value=m_last_value;
+	this->m_EXTENSION_identifiers=m_EXTENSION_identifiers;
+	this->m_ranksDoneAttachingReads=m_ranksDoneAttachingReads;
+	this->m_SEEDING_edgesReceived=m_SEEDING_edgesReceived;
+	this->m_EXTENSION_pairedRead=m_EXTENSION_pairedRead;
+	this->m_mode_EXTENSION=m_mode_EXTENSION;
+	this->m_SEEDING_receivedOutgoingEdges=m_SEEDING_receivedOutgoingEdges;
+	this->m_DISTRIBUTE_n=m_DISTRIBUTE_n;
+	this->m_SEEDING_nodes=m_SEEDING_nodes;
+	this->m_EXTENSION_hasPairedReadReceived=m_EXTENSION_hasPairedReadReceived;
+	this->m_numberOfRanksDoneSeeding=m_numberOfRanksDoneSeeding;
+	this->m_SEEDING_vertexKeyAndCoverageReceived=m_SEEDING_vertexKeyAndCoverageReceived;
+	this->m_SEEDING_receivedVertexCoverage=m_SEEDING_receivedVertexCoverage;
+	this->m_EXTENSION_readLength_received=m_EXTENSION_readLength_received;
+	this->m_Machine_getPaths_DONE=m_Machine_getPaths_DONE;
+	this->m_CLEAR_n=m_CLEAR_n;
+	this->m_FINISH_vertex_received=m_FINISH_vertex_received;
+	this->m_EXTENSION_initiated=m_EXTENSION_initiated;
+	this->m_readyToSeed=m_readyToSeed;
+	this->m_SEEDING_NodeInitiated=m_SEEDING_NodeInitiated;
+	this->m_FINISH_n=m_FINISH_n;
+	this->m_nextReductionOccured=m_nextReductionOccured;
+	this->m_EXTENSION_hasPairedReadAnswer=m_EXTENSION_hasPairedReadAnswer;
+	this->m_directionsAllocator=m_directionsAllocator;
+	this->m_FINISH_pathLengths=m_FINISH_pathLengths;
+	this->m_EXTENSION_pairedSequenceReceived=m_EXTENSION_pairedSequenceReceived;
+	this->m_EXTENSION_receivedLength=m_EXTENSION_receivedLength;
+	this->m_mode_send_coverage_iterator=m_mode_send_coverage_iterator;
+	this->m_coverageDistribution=m_coverageDistribution;
+	this->m_FINISH_received_vertex=m_FINISH_received_vertex;
+	this->m_EXTENSION_read_vertex_received=m_EXTENSION_read_vertex_received;
+	this->m_sequence_ready_machines=m_sequence_ready_machines;
+	this->m_SEEDING_InedgesReceived=m_SEEDING_InedgesReceived;
+	this->m_EXTENSION_vertexIsAssembledResult=m_EXTENSION_vertexIsAssembledResult;
+	this->m_SEEDING_vertexCoverageReceived=m_SEEDING_vertexCoverageReceived;
+	this->m_EXTENSION_receivedReadVertex=m_EXTENSION_receivedReadVertex;
+	this->m_numberOfMachinesReadyForEdgesDistribution=m_numberOfMachinesReadyForEdgesDistribution;
+	this->m_numberOfMachinesReadyToSendDistribution=m_numberOfMachinesReadyToSendDistribution;
+	this->m_mode_send_outgoing_edges=m_mode_send_outgoing_edges;
+	this->m_mode_send_vertices_sequence_id=m_mode_send_vertices_sequence_id;
+	this->m_mode_send_vertices=m_mode_send_vertices;
+	this->m_numberOfMachinesDoneSendingVertices=m_numberOfMachinesDoneSendingVertices;
+	this->m_numberOfMachinesDoneSendingCoverage=m_numberOfMachinesDoneSendingCoverage;
+	this->m_EXTENSION_reads_received=m_EXTENSION_reads_received;
+	this->m_outbox=m_outbox;
+	this->m_allIdentifiers=m_allIdentifiers,
+	this->m_oa=m_oa;
+	this->m_numberOfRanksWithCoverageData=m_numberOfRanksWithCoverageData;
+	this->seedExtender=seedExtender;
 }
