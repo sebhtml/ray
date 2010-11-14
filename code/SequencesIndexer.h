@@ -22,6 +22,7 @@
 #ifndef _SequencesIndexer
 #define _SequencesIndexer
 
+#include<common_functions.h>
 #include<Message.h>
 #include<vector>
 #include<MyAllocator.h>

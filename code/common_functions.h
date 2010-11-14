@@ -22,6 +22,8 @@ see <http://www.gnu.org/licenses/>
 #ifndef _common_functions
 #define _common_functions
 
+#define DEBUG
+
 #ifdef HAVE_CONFIG_H
 #include<config.h>
 #endif

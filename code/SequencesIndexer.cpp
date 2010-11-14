@@ -18,6 +18,7 @@
 	see <http://www.gnu.org/licenses/>
 
 */
+#include<SequencesIndexer.h>
 
 #ifdef DEBUG
 #include<assert.h>
@@ -25,7 +26,6 @@
 #include<Parameters.h>
 #include<DistributionData.h>
 #include<Loader.h>
-#include<SequencesIndexer.h>
 #include<common_functions.h>
 #include<Message.h>
 

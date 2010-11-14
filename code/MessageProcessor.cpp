@@ -32,6 +32,7 @@
 #include<FusionData.h>
 #include<Parameters.h>
 
+#define DEBUG // remove me
 
 
 
@@ -212,7 +213,7 @@ void MessageProcessor::call_TAG_START_EDGES_DISTRIBUTION_ASK(Message*message){
 }
 
 void MessageProcessor::call_TAG_START_EDGES_DISTRIBUTION_ANSWER(Message*message){
-	(*m_numberOfMachinesReadyToSendDistribution)++;
+	(*m_numberOfMachinesReadyForEdgesDistribution)++;
 }
 
 void MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION(Message*message){
@@ -223,7 +224,7 @@ void MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION(Message*m
 }
 
 void MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER(Message*message){
-	(*m_numberOfMachinesReadyForEdgesDistribution)++;
+	(*m_numberOfMachinesReadyToSendDistribution)++;
 }
 
 void MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message){
@@ -431,6 +432,9 @@ void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED(Message*message){
 	int source=message->getSource();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
 	SplayNode<VERTEX_TYPE,Vertex>*node=m_subgraph->find(incoming[0]);
+	#ifdef DEBUG
+	assert(node!=NULL);
+	#endif
 	bool isAssembled=node->getValue()->isAssembled();
 	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
 	message2[0]=isAssembled;
@@ -502,7 +506,15 @@ void MessageProcessor::call_TAG_REQUEST_READS(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	ReadAnnotation*e=m_subgraph->find(incoming[0])->getValue()->getReads();
+	SplayNode<VERTEX_TYPE,Vertex>*node=m_subgraph->find(incoming[0]);
+	#ifdef DEBUG
+	assert(node!=NULL);
+	#endif
+	Vertex*theVertex=node->getValue();
+	#ifdef DEBUG
+	assert(theVertex!=NULL);
+	#endif
+	ReadAnnotation*e=theVertex->getReads();
 	int maxToProcess=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE)-3;
 	maxToProcess=maxToProcess-maxToProcess%3;
 	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(4096);
@@ -615,6 +627,9 @@ void MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 	void*buffer=message->getBuffer();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
 	SplayNode<VERTEX_TYPE,Vertex>*node=m_subgraph->find(incoming[0]);
+	#ifdef DEBUG
+	assert(node!=NULL);
+	#endif
 	int wave=incoming[1];
 	int progression=incoming[2];
 	node->getValue()->addDirection(wave,progression,&(*m_directionsAllocator));

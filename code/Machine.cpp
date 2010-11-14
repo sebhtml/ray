@@ -26,6 +26,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 
 
+
 #include<mpi.h>
 #include<EdgesExtractor.h>
 #include<Machine.h>
@@ -1114,6 +1115,9 @@ void Machine::detectDistances(){
 			m_ed->m_EXTENSION_reads_requested=true;
 			m_ed->m_EXTENSION_reads_received=false;
 			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
+			#ifdef DEBUG
+			assert(m_ed->m_EXTENSION_currentPosition<(int)m_seedingData->m_SEEDING_seeds[m_seedingData->m_SEEDING_i].size());
+			#endif
 			VERTEX_TYPE vertex=m_seedingData->m_SEEDING_seeds[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
 			message[0]=vertex;
 			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0]),TAG_REQUEST_READS,getRank());

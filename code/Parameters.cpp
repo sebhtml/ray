@@ -19,6 +19,7 @@
 
 */
 
+#include<common_functions.h>
 #ifdef DEBUG
 #include<assert.h>
 #endif
