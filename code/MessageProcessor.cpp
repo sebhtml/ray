@@ -107,6 +107,9 @@ void MessageProcessor::call_TAG_VERTICES_DATA(Message*message){
 
 void MessageProcessor::call_TAG_VERTICES_DISTRIBUTED(Message*message){
 	(*m_numberOfMachinesDoneSendingVertices)++;
+	if((*m_numberOfMachinesDoneSendingVertices)==size){
+		(*m_master_mode)=MASTER_MODE_PREPARE_DISTRIBUTIONS;
+	}
 }
 
 void MessageProcessor::call_TAG_VERTEX_PTR_REQUEST(Message*message){

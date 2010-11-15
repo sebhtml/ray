@@ -1290,7 +1290,7 @@ void Machine::call_MASTER_MODE_LOAD_SEQUENCES(){
 	&m_distribution_currentSequenceId,&m_LOADER_deviation,&m_loadSequenceStep,
 	m_bubbleData,
 	&m_lastTime,
-	&m_parameters
+	&m_parameters,&m_master_mode
 );
 	if(!res){
 		killRanks();
@@ -1430,6 +1430,7 @@ void Machine::call_MASTER_MODE_PREPARE_DISTRIBUTIONS(){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG, i, TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION,getRank());
 		m_outbox.push_back(aMessage);
 	}
+	m_master_mode=MASTER_MODE_DO_NOTHING;
 }
 
 void Machine::call_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS(){
@@ -2198,7 +2199,7 @@ void Machine::processData(){
 		call_MASTER_MODE_TRIGGER_EDGES();
 	}else if(m_numberOfMachinesDoneSendingEdges==getSize()){
 		call_MASTER_MODE_TRIGGER_INDEXING();
-	}else if(m_numberOfMachinesDoneSendingVertices==getSize()){
+	}else if(m_master_mode==MASTER_MODE_PREPARE_DISTRIBUTIONS){
 		call_MASTER_MODE_PREPARE_DISTRIBUTIONS();
 	}else if(m_numberOfMachinesReadyToSendDistribution==getSize()){
 		call_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS();

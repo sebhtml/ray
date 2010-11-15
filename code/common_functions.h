@@ -189,6 +189,8 @@ using namespace std;
 #define MASTER_MODE_ASK_EXTENSIONS 0x8
 #define MASTER_MODE_AMOS 0x9
 #define MASTER_MODE_ASSEMBLE_GRAPH 0xa
+#define MASTER_MODE_PREPARE_DISTRIBUTIONS 0xb
+
 
 // slave modes
 #define MODE_EXTENSION_ASK 0x0

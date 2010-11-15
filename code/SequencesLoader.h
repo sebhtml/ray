@@ -42,7 +42,7 @@ public:
 	int*m_distribution_currentSequenceId,int*m_LOADER_deviation,bool*m_loadSequenceStep,
 	BubbleData*m_bubbleData,
 	time_t*m_lastTime,
-	Parameters*m_parameters
+	Parameters*m_parameters,int*m_master_mode
 );
 
 	void flushPairedStock(int threshold,vector<Message>*m_outbox,

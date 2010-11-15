@@ -38,7 +38,7 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 	int*m_LOADER_numberOfSequencesInLeftFile,MyAllocator*m_outboxAllocator,
 	int*m_distribution_currentSequenceId,int*m_LOADER_deviation,bool*m_loadSequenceStep,BubbleData*m_bubbleData,
 	time_t*m_lastTime,
-	Parameters*m_parameters
+	Parameters*m_parameters,int*m_master_mode
 ){
 	vector<string> allFiles=(*m_parameters).getAllFiles();
 	if((*m_distribution_reads).size()>0 and (*m_distribution_sequence_id)>(int)(*m_distribution_reads).size()-1){
@@ -53,6 +53,7 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		(*m_distribution_reads).clear();
 	}
 	if((*m_distribution_file_id)>(int)allFiles.size()-1){
+		(*m_master_mode)=MASTER_MODE_DO_NOTHING;
 		(*m_loadSequenceStep)=true;
 		flushPairedStock(1,m_outbox,m_outboxAllocator,m_disData,rank,size);
 		cout<<"Rank 0 asks others to share their number of sequence reads"<<endl;
