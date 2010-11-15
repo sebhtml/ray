@@ -868,7 +868,10 @@ void MessageProcessor::call_TAG_CLEAR_DIRECTIONS(Message*message){
 	for(int i=0;i<(int)fusions.size();i++){
 		int id=i*MAX_NUMBER_OF_MPI_PROCESSES+rank;
 		#ifdef DEBUG
-		assert(id%MAX_NUMBER_OF_MPI_PROCESSES<size);
+		assert(rank<size);
+		assert(rank>=0);
+		assert(size>=1);
+		assert((id%MAX_NUMBER_OF_MPI_PROCESSES)<size);
 		#endif
 		(*m_EXTENSION_identifiers).push_back(id);
 	}
