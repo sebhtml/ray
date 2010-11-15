@@ -5,6 +5,7 @@ AM_CXXFLAGS=-O3 -Wall -lz
 bin_PROGRAMS = Ray-SimulateFragments Ray-SimulateErrors Ray-SimulatePairedReads Ray
 
 Ray_SOURCES =  \
+slave_modes.h master_modes.h mpi_tags.h \
 SeedingData.h \
 FastqGzLoader.h \
 FastqGzLoader.cpp \
@@ -89,6 +90,7 @@ VerticesExtractor.h
 
 
 Ray_SimulateFragments_SOURCES = \
+slave_modes.h master_modes.h mpi_tags.h \
 FastqGzLoader.h \
 FastqGzLoader.cpp \
 FastqLoader.h \
@@ -171,6 +173,7 @@ VerticesExtractor.cpp \
 VerticesExtractor.h 
 
 Ray_SimulateErrors_SOURCES = \
+slave_modes.h master_modes.h mpi_tags.h \
 FastqGzLoader.h \
 FastqGzLoader.cpp \
 FastqLoader.h \
@@ -253,6 +256,7 @@ VerticesExtractor.cpp \
 VerticesExtractor.h 
 
 Ray_SimulatePairedReads_SOURCES = \
+slave_modes.h master_modes.h mpi_tags.h \
 FastqGzLoader.h \
 FastqGzLoader.cpp \
 FastqLoader.h \

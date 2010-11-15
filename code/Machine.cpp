@@ -1388,6 +1388,13 @@ void Machine::call_MASTER_MODE_SEND_COVERAGE_VALUES(){
 		Message aMessage(buffer,3,MPI_UNSIGNED_LONG_LONG,i,TAG_SEND_COVERAGE_VALUES,getRank());
 		m_outbox.push_back(aMessage);
 	}
+	m_master_mode=MASTER_MODE_DO_NOTHING;
+}
+
+void Machine::call_MASTER_MODE_DO_NOTHING(){
+}
+
+void Machine::call_MODE_DO_NOTHING(){
 }
 
 void Machine::call_MODE_EXTRACT_VERTICES(){
@@ -1421,6 +1428,7 @@ void Machine::call_MASTER_MODE_TRIGGER_INDEXING(){
 
 	m_mode_AttachSequences=true;
 	m_distribution_file_id=m_distribution_sequence_id=m_distribution_currentSequenceId=0;
+	m_master_mode=MASTER_MODE_INDEX_SEQUENCES;
 }
 
 void Machine::call_MASTER_MODE_PREPARE_DISTRIBUTIONS(){
@@ -1550,6 +1558,7 @@ void Machine::call_MODE_PROCESS_INGOING_EDGES(){
 }
 
 void Machine::call_MASTER_MODE_TRIGGER_SEEDING(){
+	cout<<"call_MASTER_MODE_TRIGGER_SEEDING"<<endl;
 	m_timePrinter.printElapsedTime("Indexing of sequence reads");
 	cout<<endl;
 	cout<<"Rank 0 tells other ranks to calculate their seeds."<<endl;
@@ -1560,6 +1569,7 @@ void Machine::call_MASTER_MODE_TRIGGER_SEEDING(){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_START_SEEDING,getRank());
 		m_outbox.push_back(aMessage);
 	}
+	m_master_mode=MASTER_MODE_DO_NOTHING;
 }
 
 void Machine::call_MODE_START_SEEDING(){
@@ -2191,13 +2201,11 @@ void Machine::processData(){
 		call_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION();
 	}else if(m_master_mode==MASTER_MODE_START_EDGES_DISTRIBUTION){
 		call_MASTER_MODE_START_EDGES_DISTRIBUTION();
-	}else if(m_startEdgeDistribution){
-		call_MASTER_MODE_TRIGGER_EDGES_DISTRIBUTION();
-	}else if(m_numberOfMachinesDoneSendingCoverage==getSize()){
+	}else if(m_master_mode==MASTER_MODE_SEND_COVERAGE_VALUES){
 		call_MASTER_MODE_SEND_COVERAGE_VALUES();
-	}else if(m_numberOfRanksWithCoverageData==getSize()){
+	}else if(m_master_mode==MASTER_MODE_TRIGGER_EDGES){
 		call_MASTER_MODE_TRIGGER_EDGES();
-	}else if(m_numberOfMachinesDoneSendingEdges==getSize()){
+	}else if(m_master_mode==MASTER_MODE_TRIGGER_INDEXING){
 		call_MASTER_MODE_TRIGGER_INDEXING();
 	}else if(m_master_mode==MASTER_MODE_PREPARE_DISTRIBUTIONS){
 		call_MASTER_MODE_PREPARE_DISTRIBUTIONS();
@@ -2213,7 +2221,7 @@ void Machine::processData(){
 		call_MASTER_MODE_ASK_DISTANCES();
 	}else if(m_numberOfRanksDoneSendingDistances==getSize()){
 		call_MASTER_MODE_START_UPDATING_DISTANCES();
-	}else if(m_mode_AttachSequences){
+	}else if(m_master_mode==MASTER_MODE_INDEX_SEQUENCES){
 		call_MASTER_MODE_INDEX_SEQUENCES();
 	}else if(m_mode==MODE_EXTENSION_ASK and isMaster()){
 		call_MASTER_MODE_TRIGGER_EXTENSIONS();

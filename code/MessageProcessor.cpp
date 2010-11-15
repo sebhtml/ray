@@ -178,6 +178,9 @@ void MessageProcessor::call_TAG_START_VERTICES_DISTRIBUTION(Message*message){
 
 void MessageProcessor::call_TAG_EDGES_DISTRIBUTED(Message*message){
 	(*m_numberOfMachinesDoneSendingEdges)++;
+	if((*m_numberOfMachinesDoneSendingEdges)==size){
+		(*m_master_mode)=MASTER_MODE_TRIGGER_INDEXING;
+	}
 }
 
 void MessageProcessor::call_TAG_IN_EDGES_DATA(Message*message){
@@ -253,6 +256,9 @@ void MessageProcessor::call_TAG_COVERAGE_DATA(Message*message){
 
 void MessageProcessor::call_TAG_COVERAGE_END(Message*message){
 	(*m_numberOfMachinesDoneSendingCoverage)++;
+	if((*m_numberOfMachinesDoneSendingCoverage)==size){
+		(*m_master_mode)=MASTER_MODE_SEND_COVERAGE_VALUES;
+	}
 }
 
 void MessageProcessor::call_TAG_SEND_COVERAGE_VALUES(Message*message){
@@ -268,9 +274,11 @@ void MessageProcessor::call_TAG_SEND_COVERAGE_VALUES(Message*message){
 
 void MessageProcessor::call_TAG_READY_TO_SEED(Message*message){
 	(*m_readyToSeed)++;
+	cout<<"call_TAG_READY_TO_SEED "<<*m_readyToSeed<<endl;
 }
 
 void MessageProcessor::call_TAG_START_SEEDING(Message*message){
+	cout<<"call_TAG_START_SEEDING"<<endl;
 	(*m_mode)=MODE_START_SEEDING;
 	map<int,map<int,int> > edgesDistribution;
 	
@@ -1029,6 +1037,9 @@ void MessageProcessor::call_TAG_UPDATE_LIBRARY_INFORMATION(Message*message){
 
 void MessageProcessor::call_TAG_RECEIVED_COVERAGE_INFORMATION(Message*message){
 	(*m_numberOfRanksWithCoverageData)++;
+	if((*m_numberOfRanksWithCoverageData)==size){
+		(*m_master_mode)=MASTER_MODE_TRIGGER_EDGES;
+	}
 }
 
 void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE(Message*message){

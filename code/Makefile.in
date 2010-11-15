@@ -234,6 +234,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_CXXFLAGS = -O3 -Wall -lz
 Ray_SOURCES = \
+slave_modes.h master_modes.h mpi_tags.h \
 SeedingData.h \
 FastqGzLoader.h \
 FastqGzLoader.cpp \
@@ -317,6 +318,7 @@ VerticesExtractor.cpp \
 VerticesExtractor.h 
 
 Ray_SimulateFragments_SOURCES = \
+slave_modes.h master_modes.h mpi_tags.h \
 FastqGzLoader.h \
 FastqGzLoader.cpp \
 FastqLoader.h \
@@ -399,6 +401,7 @@ VerticesExtractor.cpp \
 VerticesExtractor.h 
 
 Ray_SimulateErrors_SOURCES = \
+slave_modes.h master_modes.h mpi_tags.h \
 FastqGzLoader.h \
 FastqGzLoader.cpp \
 FastqLoader.h \
@@ -481,6 +484,7 @@ VerticesExtractor.cpp \
 VerticesExtractor.h 
 
 Ray_SimulatePairedReads_SOURCES = \
+slave_modes.h master_modes.h mpi_tags.h \
 FastqGzLoader.h \
 FastqGzLoader.cpp \
 FastqLoader.h \
