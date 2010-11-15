@@ -185,6 +185,10 @@ using namespace std;
 #define MASTER_MODE_TRIGGER_EDGES_DISTRIBUTION 0x4
 #define MASTER_MODE_START_EDGES_DISTRIBUTION 0x5
 #define MASTER_MODE_DO_NOTHING 0x6
+#define MASTER_MODE_UPDATE_DISTANCES 0x7
+#define MASTER_MODE_ASK_EXTENSIONS 0x8
+#define MASTER_MODE_AMOS 0x9
+#define MASTER_MODE_ASSEMBLE_GRAPH 0xa
 
 // slave modes
 #define MODE_EXTENSION_ASK 0x0
@@ -356,3 +360,4 @@ int roundNumber(int number,int alignment);
 u64 getMicroSeconds();
 
 #endif
+

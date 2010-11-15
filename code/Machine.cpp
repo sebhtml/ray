@@ -204,7 +204,6 @@ void Machine::start(){
 	m_colorSpaceMode=false;
 	m_messageSentForEdgesDistribution=false;
 	m_numberOfRanksDoneSeeding=0;
-	m_master_mode=MODE_DO_NOTHING;
 	m_numberOfMachinesReadyForEdgesDistribution=0;
 	m_ed->m_mode_EXTENSION=false;
 	m_aborted=false;
@@ -236,6 +235,7 @@ void Machine::start(){
 
 
 	m_mode=MODE_DO_NOTHING;
+	m_master_mode=MASTER_MODE_DO_NOTHING;
 	m_mode_AttachSequences=false;
 	m_startEdgeDistribution=false;
 
@@ -418,6 +418,7 @@ void Machine::start(){
 	}else{
 		if(isMaster()){
 			cout<<"Rank "<<getRank()<<": I am the master among "<<getSize()<<" ranks in the MPI_COMM_WORLD."<<endl;
+			m_master_mode=MASTER_MODE_LOAD_CONFIG;
 		}
 		run();
 	}
@@ -1277,6 +1278,7 @@ void Machine::call_MASTER_MODE_LOAD_CONFIG(){
 		Message aMessage2(message2,1,MPI_UNSIGNED_LONG_LONG,i,TAG_SET_COLOR_MODE,getRank());
 		m_outbox.push_back(aMessage2);
 	}
+	m_master_mode=MASTER_MODE_LOAD_SEQUENCES;
 }
 
 void Machine::call_MASTER_MODE_LOAD_SEQUENCES(){
@@ -1668,7 +1670,7 @@ void Machine::call_MASTER_MODE_START_UPDATING_DISTANCES(){
 	m_numberOfRanksDoneSendingDistances=-1;
 	m_parameters.computeAverageDistances();
 	m_mode=MODE_DO_NOTHING;
-	m_master_mode=MODE_UPDATE_DISTANCES;
+	m_master_mode=MASTER_MODE_UPDATE_DISTANCES;
 	m_fileId=0;
 	m_sequence_idInFile=0;
 	m_sequence_id=0;
@@ -1744,7 +1746,7 @@ void Machine::call_MASTER_MODE_TRIGGER_FUSIONS(){
 	// ask one at once to do the fusion
 	// because otherwise it may lead to hanging of the program for unknown reasons
 	m_ed->m_EXTENSION_numberOfRanksDone=-1;
-	m_master_mode=MODE_DO_NOTHING;
+	m_master_mode=MASTER_MODE_DO_NOTHING;
 	m_fusionData->m_FUSION_numberOfRanksDone=0;
 	for(int i=0;i<(int)getSize();i++){// start fusion.
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_START_FUSION,getRank());
@@ -1834,7 +1836,7 @@ void Machine::call_MASTER_MODE_START_FUSION_CYCLE(){
 
 		#endif
 		m_fusionData->m_FUSION_numberOfRanksDone=0;
-		m_master_mode=MODE_DO_NOTHING;
+		m_master_mode=MASTER_MODE_DO_NOTHING;
 		m_DISTRIBUTE_n=-1;
 		for(int i=0;i<(int)getSize();i++){// start fusion.
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_START_FUSION,getRank());
@@ -1848,7 +1850,7 @@ void Machine::call_MASTER_MODE_START_FUSION_CYCLE(){
 			m_timePrinter.printElapsedTime("Computation of fusions");
 			cout<<endl;
 			cout<<"Rank 0 is "<<"collecting fusions"<<endl;
-			m_master_mode=MODE_ASK_EXTENSIONS;
+			m_master_mode=MASTER_MODE_ASK_EXTENSIONS;
 
 			m_sd->m_computedTopology=false;
 
@@ -2001,7 +2003,7 @@ void Machine::call_MASTER_MODE_ASK_EXTENSIONS(){
 			return;
 		}
 
-		m_master_mode=MODE_DO_NOTHING;
+		m_master_mode=MASTER_MODE_DO_NOTHING;
 
 		int totalLength=0;
 		
@@ -2030,7 +2032,7 @@ void Machine::call_MASTER_MODE_ASK_EXTENSIONS(){
 		cout<<endl<<"Rank 0: "<<m_allPaths.size()<<" contigs/"<<totalLength<<" nucleotides"<<endl;
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<endl;
 		if(m_parameters.useAmos()){
-			m_master_mode=MODE_AMOS;
+			m_master_mode=MASTER_MODE_AMOS;
 			m_seedingData->m_SEEDING_i=0;
 			m_mode_send_vertices_sequence_id_position=0;
 			m_ed->m_EXTENSION_reads_requested=false;
@@ -2062,7 +2064,7 @@ void Machine::call_MASTER_MODE_AMOS(){
 	*/
 	if(m_seedingData->m_SEEDING_i==(int)m_allPaths.size()){// all contigs are processed
 		killRanks();
-		m_master_mode=MODE_DO_NOTHING;
+		m_master_mode=MASTER_MODE_DO_NOTHING;
 		fclose(m_bubbleData->m_amos);
 	}else if(m_mode_send_vertices_sequence_id_position==(int)m_allPaths[m_seedingData->m_SEEDING_i].size()){// iterate over the next one
 		m_seedingData->m_SEEDING_i++;
@@ -2159,7 +2161,7 @@ void Machine::call_MASTER_MODE_ASSEMBLE_WAVES(){
 		m_ed->m_EXTENSION_rank++;
 	}
 	if(m_ed->m_EXTENSION_rank==getSize()){
-		m_master_mode=MODE_DO_NOTHING;
+		m_master_mode=MASTER_MODE_DO_NOTHING;
 		cout<<"Rank "<<getRank()<<" contigs computed."<<endl;
 		killRanks();
 	}else if(!m_ed->m_EXTENSION_currentRankIsStarted){
@@ -2174,9 +2176,11 @@ void Machine::call_MASTER_MODE_ASSEMBLE_WAVES(){
 
 void Machine::processData(){
 
-	if(!m_parameters.isInitiated()&&isMaster()){
+	// master tasks
+
+	if(m_master_mode==MASTER_MODE_LOAD_CONFIG){
 		call_MASTER_MODE_LOAD_CONFIG();
-	}else if(m_welcomeStep==true && m_loadSequenceStep==false&&isMaster()){
+	}else if(m_master_mode==MASTER_MODE_LOAD_SEQUENCES){
 		call_MASTER_MODE_LOAD_SEQUENCES();
 	}else if(m_loadSequenceStep==true && m_mode_send_vertices==false&&isMaster() and m_sequence_ready_machines==getSize()&&m_messageSentForVerticesDistribution==false){
 		call_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION();
@@ -2186,8 +2190,6 @@ void Machine::processData(){
 		call_MASTER_MODE_START_EDGES_DISTRIBUTION();
 	}else if(m_numberOfMachinesDoneSendingCoverage==getSize()){
 		call_MASTER_MODE_SEND_COVERAGE_VALUES();
-	}else if(m_mode_send_vertices==true){
-		call_MODE_EXTRACT_VERTICES();
 	}else if(m_numberOfRanksWithCoverageData==getSize()){
 		call_MASTER_MODE_TRIGGER_EDGES();
 	}else if(m_numberOfMachinesDoneSendingEdges==getSize()){
@@ -2198,28 +2200,8 @@ void Machine::processData(){
 		call_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS();
 	}else if(m_ranksDoneAttachingReads==getSize()){
 		call_MASTER_MODE_PREPARE_SEEDING();
-	}
-
-	if(m_mode==MODE_ASSEMBLE_WAVES){
-		call_MODE_ASSEMBLE_WAVES();
-	}else if(m_mode==MODE_PERFORM_CALIBRATION){
-		call_MODE_PERFORM_CALIBRATION();
-	}else if(m_mode==MODE_FINISH_FUSIONS){
-		call_MODE_FINISH_FUSIONS();
-	}else if(m_mode==MODE_DISTRIBUTE_FUSIONS){
-		call_MODE_DISTRIBUTE_FUSIONS();
-	}
-
-	if(m_mode_sendDistribution){
-		call_MODE_SEND_DISTRIBUTION();
-	}else if(m_mode_send_outgoing_edges){ 
-		call_MODE_PROCESS_OUTGOING_EDGES();
-	}else if(m_mode_send_ingoing_edges){ 
-		call_MODE_PROCESS_INGOING_EDGES();
 	}else if(m_readyToSeed==getSize()){
 		call_MASTER_MODE_TRIGGER_SEEDING();
-	}else if(m_mode==MODE_START_SEEDING){
-		call_MODE_START_SEEDING();
 	}else if(m_numberOfRanksDoneSeeding==getSize()){
 		call_MASTER_MODE_TRIGGER_DETECTION();
 	}else if(m_numberOfRanksDoneDetectingDistances==getSize()){
@@ -2230,6 +2212,42 @@ void Machine::processData(){
 		call_MASTER_MODE_INDEX_SEQUENCES();
 	}else if(m_mode==MODE_EXTENSION_ASK and isMaster()){
 		call_MASTER_MODE_TRIGGER_EXTENSIONS();
+	}else if(m_master_mode==MASTER_MODE_UPDATE_DISTANCES){
+		call_MASTER_MODE_UPDATE_DISTANCES();
+	}else if(m_ed->m_EXTENSION_numberOfRanksDone==getSize()){
+		call_MASTER_MODE_TRIGGER_FUSIONS();
+	}else if(m_master_mode==MASTER_MODE_ASSEMBLE_GRAPH){
+		call_MASTER_MODE_ASSEMBLE_WAVES();
+	}else if(m_fusionData->m_FUSION_numberOfRanksDone==getSize() and !m_isFinalFusion){
+		call_MASTER_MODE_TRIGGER_FIRST_FUSIONS();
+	}else if(m_reductionOccured){
+		call_MASTER_MODE_START_FUSION_CYCLE();
+	}else if(m_master_mode==MASTER_MODE_ASK_EXTENSIONS){
+		call_MASTER_MODE_ASK_EXTENSIONS();
+	}else if(m_master_mode==MASTER_MODE_AMOS){
+		call_MASTER_MODE_AMOS();
+	}
+
+	// slave tasks
+
+	if(m_mode_send_vertices==true){
+		call_MODE_EXTRACT_VERTICES();
+	}else if(m_mode==MODE_ASSEMBLE_WAVES){
+		call_MODE_ASSEMBLE_WAVES();
+	}else if(m_mode==MODE_PERFORM_CALIBRATION){
+		call_MODE_PERFORM_CALIBRATION();
+	}else if(m_mode==MODE_FINISH_FUSIONS){
+		call_MODE_FINISH_FUSIONS();
+	}else if(m_mode==MODE_DISTRIBUTE_FUSIONS){
+		call_MODE_DISTRIBUTE_FUSIONS();
+	}else if(m_mode_sendDistribution){
+		call_MODE_SEND_DISTRIBUTION();
+	}else if(m_mode_send_outgoing_edges){ 
+		call_MODE_PROCESS_OUTGOING_EDGES();
+	}else if(m_mode_send_ingoing_edges){ 
+		call_MODE_PROCESS_INGOING_EDGES();
+	}else if(m_mode==MODE_START_SEEDING){
+		call_MODE_START_SEEDING();
 	}else if(m_mode==MODE_SEND_EXTENSION_DATA){
 		call_MODE_SEND_EXTENSION_DATA();
 	}else if(m_mode==MODE_FUSION){
@@ -2238,33 +2256,7 @@ void Machine::processData(){
 		call_MODE_AUTOMATIC_DISTANCE_DETECTION();
 	}else if(m_mode==MODE_SEND_LIBRARY_DISTANCES){
 		call_MODE_SEND_LIBRARY_DISTANCES();
-	}else if(m_master_mode==MODE_UPDATE_DISTANCES){
-		call_MASTER_MODE_UPDATE_DISTANCES();
-	}
-
-	if(m_ed->m_EXTENSION_numberOfRanksDone==getSize()){
-		call_MASTER_MODE_TRIGGER_FUSIONS();
-	}
-
-	if(m_master_mode==MODE_ASSEMBLE_GRAPH){
-		call_MASTER_MODE_ASSEMBLE_WAVES();
-	}
-
-	if(m_fusionData->m_FUSION_numberOfRanksDone==getSize() and !m_isFinalFusion){
-		call_MASTER_MODE_TRIGGER_FIRST_FUSIONS();
-	}
-
-	if(m_reductionOccured){
-		call_MASTER_MODE_START_FUSION_CYCLE();
-	}
-
-	if(m_master_mode==MODE_ASK_EXTENSIONS){
-		call_MASTER_MODE_ASK_EXTENSIONS();
-	}else if(m_master_mode==MODE_AMOS){
-		call_MASTER_MODE_AMOS();
-	}
-
-	if(m_ed->m_mode_EXTENSION){
+	}else if(m_ed->m_mode_EXTENSION){
 		call_MODE_EXTENSION();
 	}
 }
@@ -2448,7 +2440,7 @@ void Machine::updateDistances(){
 		m_mode=MODE_EXTENSION_ASK;
 		m_ed->m_EXTENSION_rank=-1;
 		m_ed->m_EXTENSION_currentRankIsSet=false;
-		m_master_mode=MODE_DO_NOTHING;
+		m_master_mode=MASTER_MODE_DO_NOTHING;
 	}else{
 		if(m_parameters.isRightFile(m_fileId)){
 			if(m_parameters.isAutomatic(m_fileId)){
