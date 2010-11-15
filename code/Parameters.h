@@ -55,6 +55,7 @@ class Parameters{
 	int m_minimumContigLength;
 	set<int> m_leftFiles;
 	set<int> m_rightFiles;
+	set<int> m_interleavedFiles;
 	map<int,int> m_averageFragmentLengths;
 	map<int,int> m_standardDeviations;
 	bool m_colorSpaceMode;
@@ -97,6 +98,7 @@ public:
 	int getNumberOfFiles();
 	bool isAutomatic(int file);
 	int getLibrary(int file);
+	bool isInterleavedFile(int i);
 };
 
 #endif

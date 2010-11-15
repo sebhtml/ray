@@ -94,6 +94,9 @@ void Parameters::parseCommands(){
 	pairedReadsCommands.insert("-LoadPairedEndReads");
 	pairedReadsCommands.insert("--LoadPairedEndReads");
 	
+	set<string> interleavedCommands;
+	interleavedCommands.insert("-i");
+
 	set<string> outputAmosCommands;
 	outputAmosCommands.insert("-a");
 	outputAmosCommands.insert("OutputAmosFile");
@@ -115,6 +118,7 @@ void Parameters::parseCommands(){
 	toAdd.push_back(outputAmosCommands);
 	toAdd.push_back(outputFileCommands);
 	toAdd.push_back(kmerSetting);
+	toAdd.push_back(interleavedCommands);
 	for(int i=0;i<(int)toAdd.size();i++)
 		for(set<string>::iterator j=toAdd[i].begin();j!=toAdd[i].end();j++)
 			commands.insert(*j);
@@ -151,6 +155,89 @@ void Parameters::parseCommands(){
 			}
 			token=m_commands[i];
 			m_contigsFile=token;
+		}else if(interleavedCommands.count(token)>0){
+			#ifdef DEBUG_PARAMETERS
+			cout<<"OpCode="<<token<<endl;
+			#endif
+			// make sure there is at least 4 elements left.
+			int items=0;
+			int k=0;
+			for(int j=i+1;j<(int)m_commands.size();j++){
+				string cmd=m_commands[j];
+				if(commands.count(cmd)==0){
+					#ifdef DEBUG_PARAMETERS
+					cout<<"Option"<<k<<"="<<"'"<<cmd<<"'"<<endl;
+					#endif
+					items++;
+				}else{
+					break;
+				}
+				k++;
+			}
+			#ifdef DEBUG_PARAMETERS
+			cout<<"Left: "<<items<<endl;
+			#endif
+			if(items!=1 and items!=3){
+				cout<<"Error: "<<token<<" needs 1 or 3 items, you provided "<<items<<endl;
+				m_error=true;
+				return;
+			}
+			i++;
+			token=m_commands[i];
+			if(token.find(".csfasta")!=string::npos){
+				m_colorSpaceMode=true;
+			}
+
+			string interleavedFile=token;
+			int interleavedFileIndex=m_singleEndReadsFile.size();
+			m_interleavedFiles.insert(interleavedFileIndex);
+			m_singleEndReadsFile.push_back(interleavedFile);
+
+			int meanFragmentLength=0;
+			int standardDeviation=0;
+			#ifdef DEBUG
+			assert(items==1 or items==3);
+			#endif
+			if(items==3){
+				#ifdef DEBUG_PARAMETERS
+				cout<<"PairedMode: UserProvidedDistance"<<endl;
+				#endif
+				i++;
+				token=m_commands[i];
+				meanFragmentLength=atoi(token.c_str());
+				i++;
+				token=m_commands[i];
+				standardDeviation=atoi(token.c_str());
+			}else if(items==1){// automatic detection.
+				#ifdef DEBUG_PARAMETERS
+				cout<<"PairedMode: AutomaticDistanceDetection"<<endl;
+				#endif
+				int library=m_observedDistances.size();
+				meanFragmentLength=library;
+				standardDeviation=_AUTOMATIC_DETECTION;
+				map<int,int> t;
+				m_automaticRightFiles[interleavedFileIndex]=library;
+				m_observedDistances.push_back(t);
+			}else{
+				#ifdef DEBUG
+				assert(false);
+				#endif
+			}
+			m_averageFragmentLengths[m_singleEndReadsFile.size()-1]=meanFragmentLength;
+			m_standardDeviations[m_singleEndReadsFile.size()-1]=standardDeviation;
+			cout<<endl;
+			cout<<"-i"<<endl;
+			cout<<" Interleaved sequences: "<<interleavedFile<<endl;
+			if(items==3){
+				cout<<" Average length: "<<meanFragmentLength<<endl;
+				cout<<" Standard deviation: "<<standardDeviation<<endl;
+			}else if(items==1){
+				cout<<" Average length: auto"<<endl;
+				cout<<" Standard deviation: auto"<<endl;
+			}
+			#ifdef DEBUG_PARAMETERS
+			cout<<"Library: "<<meanFragmentLength<<" : "<<standardDeviation<<endl;
+			#endif
 		}else if(pairedReadsCommands.count(token)>0){
 			#ifdef DEBUG_PARAMETERS
 			cout<<"OpCode="<<token<<endl;
@@ -221,6 +308,7 @@ void Parameters::parseCommands(){
 				standardDeviation=_AUTOMATIC_DETECTION;
 				map<int,int> t;
 				m_automaticRightFiles[rightFile]=library;
+				m_automaticRightFiles[leftFile]=library;
 				m_observedDistances.push_back(t);
 			}else{
 				#ifdef DEBUG
@@ -449,4 +537,8 @@ bool Parameters::isAutomatic(int file){
 
 int Parameters::getLibrary(int file){
 	return m_automaticRightFiles[file];
+}
+
+bool Parameters::isInterleavedFile(int i){
+	return m_interleavedFiles.count(i)>0;
 }

@@ -107,6 +107,14 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		}else{
 			(*m_LOADER_isLeftFile)=(*m_LOADER_isRightFile)=false;
 		}
+		
+		if((*m_parameters).isInterleavedFile((*m_distribution_file_id))){
+			m_isInterleavedFile=true;
+			(*m_LOADER_averageFragmentLength)=(*m_parameters).getFragmentLength((*m_distribution_file_id));
+			(*m_LOADER_deviation)=(*m_parameters).getStandardDeviation((*m_distribution_file_id));
+		}else{
+			m_isInterleavedFile=false;
+		}
 
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<rank<<" has "<<(*m_distribution_reads).size()<<" sequences to distribute."<<endl;
@@ -163,6 +171,33 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			int rightSequenceRank=rightSequenceGlobalId%size;
 			int rightSequenceIdOnRank=rightSequenceGlobalId/size;
 			int leftSequenceGlobalId=rightSequenceGlobalId-(*m_LOADER_numberOfSequencesInLeftFile);
+			int leftSequenceRank=leftSequenceGlobalId%size;
+			int leftSequenceIdOnRank=leftSequenceGlobalId/size;
+			int averageFragmentLength=(*m_LOADER_averageFragmentLength);
+			int deviation=(*m_LOADER_deviation);
+
+			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,rightSequenceIdOnRank);
+			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,leftSequenceRank);
+			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,leftSequenceIdOnRank);
+			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,averageFragmentLength);
+			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,deviation);
+
+			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,leftSequenceIdOnRank);
+			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,rightSequenceRank);
+			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,rightSequenceIdOnRank);
+			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,averageFragmentLength);
+			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,deviation);
+
+			// 4096 bytes allow the sending of 512 64-bits integers.
+			// however, in this function m_messagesStockPaired contains multiple of 10.
+			// thus, the threshold must be 512-2
+			flushPairedStock(MAX_UINT64_T_PER_MESSAGE-2,m_outbox,m_outboxAllocator,m_disData,rank,size);
+		}else if(m_isInterleavedFile
+			&&((*m_distribution_sequence_id)%2)==1){// only the right sequence.
+			int rightSequenceGlobalId=(*m_distribution_currentSequenceId);
+			int rightSequenceRank=rightSequenceGlobalId%size;
+			int rightSequenceIdOnRank=rightSequenceGlobalId/size;
+			int leftSequenceGlobalId=rightSequenceGlobalId-1;
 			int leftSequenceRank=leftSequenceGlobalId%size;
 			int leftSequenceIdOnRank=leftSequenceGlobalId/size;
 			int averageFragmentLength=(*m_LOADER_averageFragmentLength);

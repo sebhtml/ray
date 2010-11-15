@@ -31,6 +31,7 @@
 using namespace std;
 
 class SequencesLoader{
+	bool m_isInterleavedFile;
 public:
 	/**
  *	load sequences from disk, and distribute them over the network.

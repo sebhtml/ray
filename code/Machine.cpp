@@ -73,6 +73,9 @@ void Machine::showUsage(){
 	cout<<"Paired-end reads:"<<endl;
 	cout<<" -p <leftSequencesFile> <rightSequencesFile> [ <fragmentLength> <standardDeviation> ]"<<endl;
 	cout<<endl;
+	cout<<"Paired-end reads:"<<endl;
+	cout<<" -i <interleavedFile> [ <fragmentLength> <standardDeviation> ]"<<endl;
+	cout<<endl;
 	cout<<"Output (default: Ray-Contigs.fasta)"<<endl;
 	cout<<" -o <outputFile>"<<endl;
 	cout<<endl;	
@@ -2419,7 +2422,9 @@ void Machine::updateDistances(){
 		m_ed->m_EXTENSION_rank=-1;
 		m_ed->m_EXTENSION_currentRankIsSet=false;
 	}else{
-		if(m_parameters.isRightFile(m_fileId)){
+		if(m_parameters.isLeftFile(m_fileId) 
+		||m_parameters.isRightFile(m_fileId) 
+		|| m_parameters.isInterleavedFile(m_fileId)){
 			if(m_parameters.isAutomatic(m_fileId)){
 				int library=m_parameters.getLibrary(m_fileId);
 				int averageLength=m_parameters.getObservedAverageDistance(library);
