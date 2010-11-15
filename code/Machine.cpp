@@ -181,13 +181,49 @@ Machine::Machine(int argc,char**argv){
 	m_sd=new ScaffolderData();
 	m_cd=new ChooserData();
 
-	// master modes
+
 	m_master_methods[MASTER_MODE_LOAD_CONFIG]=&Machine::call_MASTER_MODE_LOAD_CONFIG;
 	m_master_methods[MASTER_MODE_LOAD_SEQUENCES]=&Machine::call_MASTER_MODE_LOAD_SEQUENCES;
 	m_master_methods[MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION]=&Machine::call_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION;
 	m_master_methods[MASTER_MODE_SEND_COVERAGE_VALUES]=&Machine::call_MASTER_MODE_SEND_COVERAGE_VALUES;
 	m_master_methods[MASTER_MODE_TRIGGER_EDGES_DISTRIBUTION]=&Machine::call_MASTER_MODE_TRIGGER_EDGES_DISTRIBUTION;
 	m_master_methods[MASTER_MODE_START_EDGES_DISTRIBUTION]=&Machine::call_MASTER_MODE_START_EDGES_DISTRIBUTION;
+	m_master_methods[MASTER_MODE_DO_NOTHING]=&Machine::call_MASTER_MODE_DO_NOTHING;
+	m_master_methods[MASTER_MODE_UPDATE_DISTANCES]=&Machine::call_MASTER_MODE_UPDATE_DISTANCES;
+	m_master_methods[MASTER_MODE_ASK_EXTENSIONS]=&Machine::call_MASTER_MODE_ASK_EXTENSIONS;
+	m_master_methods[MASTER_MODE_AMOS]=&Machine::call_MASTER_MODE_AMOS;
+	m_master_methods[MASTER_MODE_PREPARE_DISTRIBUTIONS]=&Machine::call_MASTER_MODE_PREPARE_DISTRIBUTIONS;
+	m_master_methods[MASTER_MODE_TRIGGER_EDGES]=&Machine::call_MASTER_MODE_TRIGGER_EDGES;
+	m_master_methods[MASTER_MODE_TRIGGER_INDEXING]=&Machine::call_MASTER_MODE_TRIGGER_INDEXING;
+	m_master_methods[MASTER_MODE_INDEX_SEQUENCES]=&Machine::call_MASTER_MODE_INDEX_SEQUENCES;
+	m_master_methods[MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS]=&Machine::call_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS;
+	m_master_methods[MASTER_MODE_PREPARE_SEEDING]=&Machine::call_MASTER_MODE_PREPARE_SEEDING;
+	m_master_methods[MASTER_MODE_TRIGGER_SEEDING]=&Machine::call_MASTER_MODE_TRIGGER_SEEDING;
+	m_master_methods[MASTER_MODE_TRIGGER_DETECTION]=&Machine::call_MASTER_MODE_TRIGGER_DETECTION;
+	m_master_methods[MASTER_MODE_ASK_DISTANCES]=&Machine::call_MASTER_MODE_ASK_DISTANCES;
+	m_master_methods[MASTER_MODE_START_UPDATING_DISTANCES]=&Machine::call_MASTER_MODE_START_UPDATING_DISTANCES;
+	m_master_methods[MASTER_MODE_TRIGGER_EXTENSIONS]=&Machine::call_MASTER_MODE_TRIGGER_EXTENSIONS;
+	m_master_methods[MASTER_MODE_TRIGGER_FUSIONS]=&Machine::call_MASTER_MODE_TRIGGER_FUSIONS;
+	m_master_methods[MASTER_MODE_TRIGGER_FIRST_FUSIONS]=&Machine::call_MASTER_MODE_TRIGGER_FIRST_FUSIONS;
+	m_master_methods[MASTER_MODE_START_FUSION_CYCLE]=&Machine::call_MASTER_MODE_START_FUSION_CYCLE;
+
+	m_slave_methods[MODE_START_SEEDING]=&Machine::call_MODE_START_SEEDING;
+	m_slave_methods[MODE_DO_NOTHING]=&Machine::call_MODE_DO_NOTHING;
+	m_slave_methods[MODE_SEND_EXTENSION_DATA]=&Machine::call_MODE_SEND_EXTENSION_DATA;
+	m_slave_methods[MODE_ASSEMBLE_WAVES]=&Machine::call_MODE_ASSEMBLE_WAVES;
+	m_slave_methods[MODE_FUSION]=&Machine::call_MODE_FUSION;
+	m_slave_methods[MODE_PERFORM_CALIBRATION]=&Machine::call_MODE_PERFORM_CALIBRATION;
+	m_slave_methods[MODE_FINISH_FUSIONS]=&Machine::call_MODE_FINISH_FUSIONS;
+	m_slave_methods[MODE_DISTRIBUTE_FUSIONS]=&Machine::call_MODE_DISTRIBUTE_FUSIONS;
+	m_slave_methods[MODE_AUTOMATIC_DISTANCE_DETECTION]=&Machine::call_MODE_AUTOMATIC_DISTANCE_DETECTION;
+	m_slave_methods[MODE_SEND_LIBRARY_DISTANCES]=&Machine::call_MODE_SEND_LIBRARY_DISTANCES;
+	m_slave_methods[MODE_EXTRACT_VERTICES]=&Machine::call_MODE_EXTRACT_VERTICES;
+	m_slave_methods[MODE_SEND_DISTRIBUTION]=&Machine::call_MODE_SEND_DISTRIBUTION;
+	m_slave_methods[MODE_PROCESS_INGOING_EDGES]=&Machine::call_MODE_PROCESS_INGOING_EDGES;
+	m_slave_methods[MODE_PROCESS_OUTGOING_EDGES]=&Machine::call_MODE_PROCESS_OUTGOING_EDGES;
+	m_slave_methods[MODE_EXTENSION]=&Machine::call_MODE_EXTENSION;
+
+
 }
 
 
@@ -2197,88 +2233,10 @@ void Machine::call_MASTER_MODE_ASSEMBLE_WAVES(){
 }
 
 void Machine::processData(){
-
-	// master tasks
-
-	if(m_master_mode==MASTER_MODE_LOAD_CONFIG){
-		call_MASTER_MODE_LOAD_CONFIG();
-	}else if(m_master_mode==MASTER_MODE_LOAD_SEQUENCES){
-		call_MASTER_MODE_LOAD_SEQUENCES();
-	}else if(m_master_mode==MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION){
-		call_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION();
-	}else if(m_master_mode==MASTER_MODE_START_EDGES_DISTRIBUTION){
-		call_MASTER_MODE_START_EDGES_DISTRIBUTION();
-	}else if(m_master_mode==MASTER_MODE_SEND_COVERAGE_VALUES){
-		call_MASTER_MODE_SEND_COVERAGE_VALUES();
-	}else if(m_master_mode==MASTER_MODE_TRIGGER_EDGES){
-		call_MASTER_MODE_TRIGGER_EDGES();
-	}else if(m_master_mode==MASTER_MODE_TRIGGER_INDEXING){
-		call_MASTER_MODE_TRIGGER_INDEXING();
-	}else if(m_master_mode==MASTER_MODE_PREPARE_DISTRIBUTIONS){
-		call_MASTER_MODE_PREPARE_DISTRIBUTIONS();
-	}else if(m_master_mode==MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS){
-		call_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS();
-	}else if(m_master_mode==MASTER_MODE_PREPARE_SEEDING){
-		call_MASTER_MODE_PREPARE_SEEDING();
-	}else if(m_master_mode==MASTER_MODE_TRIGGER_SEEDING){
-		call_MASTER_MODE_TRIGGER_SEEDING();
-	}else if(m_master_mode==MASTER_MODE_TRIGGER_DETECTION){
-		call_MASTER_MODE_TRIGGER_DETECTION();
-	}else if(m_master_mode==MASTER_MODE_ASK_DISTANCES){
-		call_MASTER_MODE_ASK_DISTANCES();
-	}else if(m_master_mode==MASTER_MODE_START_UPDATING_DISTANCES){
-		call_MASTER_MODE_START_UPDATING_DISTANCES();
-	}else if(m_master_mode==MASTER_MODE_INDEX_SEQUENCES){
-		call_MASTER_MODE_INDEX_SEQUENCES();
-	}else if(m_master_mode==MASTER_MODE_TRIGGER_EXTENSIONS){
-		call_MASTER_MODE_TRIGGER_EXTENSIONS();
-	}else if(m_master_mode==MASTER_MODE_UPDATE_DISTANCES){
-		call_MASTER_MODE_UPDATE_DISTANCES();
-	}else if(m_master_mode==MASTER_MODE_TRIGGER_FUSIONS){
-		call_MASTER_MODE_TRIGGER_FUSIONS();
-	}else if(m_master_mode==MASTER_MODE_ASSEMBLE_GRAPH){
-		call_MASTER_MODE_ASSEMBLE_WAVES();
-	}else if(m_master_mode==MASTER_MODE_TRIGGER_FIRST_FUSIONS){
-		call_MASTER_MODE_TRIGGER_FIRST_FUSIONS();
-	}else if(m_master_mode==MASTER_MODE_START_FUSION_CYCLE){
-		call_MASTER_MODE_START_FUSION_CYCLE();
-	}else if(m_master_mode==MASTER_MODE_ASK_EXTENSIONS){
-		call_MASTER_MODE_ASK_EXTENSIONS();
-	}else if(m_master_mode==MASTER_MODE_AMOS){
-		call_MASTER_MODE_AMOS();
-	}
-
-	// slave tasks
-
-	if(m_mode==MODE_EXTRACT_VERTICES){
-		call_MODE_EXTRACT_VERTICES();
-	}else if(m_mode==MODE_ASSEMBLE_WAVES){
-		call_MODE_ASSEMBLE_WAVES();
-	}else if(m_mode==MODE_PERFORM_CALIBRATION){
-		call_MODE_PERFORM_CALIBRATION();
-	}else if(m_mode==MODE_FINISH_FUSIONS){
-		call_MODE_FINISH_FUSIONS();
-	}else if(m_mode==MODE_DISTRIBUTE_FUSIONS){
-		call_MODE_DISTRIBUTE_FUSIONS();
-	}else if(m_mode==MODE_SEND_DISTRIBUTION){
-		call_MODE_SEND_DISTRIBUTION();
-	}else if(m_mode==MODE_PROCESS_OUTGOING_EDGES){
-		call_MODE_PROCESS_OUTGOING_EDGES();
-	}else if(m_mode==MODE_PROCESS_INGOING_EDGES){ 
-		call_MODE_PROCESS_INGOING_EDGES();
-	}else if(m_mode==MODE_START_SEEDING){
-		call_MODE_START_SEEDING();
-	}else if(m_mode==MODE_SEND_EXTENSION_DATA){
-		call_MODE_SEND_EXTENSION_DATA();
-	}else if(m_mode==MODE_FUSION){
-		call_MODE_FUSION();
-	}else if(m_mode==MODE_AUTOMATIC_DISTANCE_DETECTION){
-		call_MODE_AUTOMATIC_DISTANCE_DETECTION();
-	}else if(m_mode==MODE_SEND_LIBRARY_DISTANCES){
-		call_MODE_SEND_LIBRARY_DISTANCES();
-	}else if(m_mode==MODE_EXTENSION){
-		call_MODE_EXTENSION();
-	}
+	MachineMethod masterMethod=m_master_methods[m_master_mode];
+	(this->*masterMethod)();
+	MachineMethod slaveMethod=m_slave_methods[m_mode];
+	(this->*slaveMethod)();
 }
 
 /*
@@ -2495,3 +2453,4 @@ void Machine::updateDistances(){
 		}
 	}
 }
+
