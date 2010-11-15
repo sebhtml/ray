@@ -33,7 +33,8 @@
 #include<Parameters.h>
 
 void MessageProcessor::processMessage(Message*message){
-	FNMETHOD f=m_methods[message->getTag()];
+	int tag=message->getTag();
+	FNMETHOD f=m_methods[tag];
 	(this->*f)(message);
 }
 
@@ -620,7 +621,6 @@ void MessageProcessor::call_TAG_ASK_READ_LENGTH_REPLY(Message*message){
 }
 
 void MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION(Message*message){
-	cout<<"call_TAG_SAVE_WAVE_PROGRESSION"<<endl;
 	void*buffer=message->getBuffer();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
 	SplayNode<VERTEX_TYPE,Vertex>*node=m_subgraph->find(incoming[0]);
@@ -673,13 +673,11 @@ void MessageProcessor::call_TAG_ASK_VERTEX_PATHS_SIZE(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	SplayNode<VERTEX_TYPE,Vertex>*node=m_subgraph->find(incoming[0]);
 	#ifdef DEBUG
-	if(m_subgraph->find(incoming[0])==NULL){
-		cout<<"Vertex "<<incoming[0]<<" is not here."<<endl;
-	}
-	assert(m_subgraph->find(incoming[0])!=NULL);
+	assert(node!=NULL);
 	#endif
-	vector<Direction> paths=m_subgraph->find(incoming[0])->getValue()->getDirections();
+	vector<Direction> paths=node->getValue()->getDirections();
 	m_fusionData->m_FUSION_cachedDirections[source]=paths;
 	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
 	message2[0]=paths.size();
@@ -1022,7 +1020,6 @@ void MessageProcessor::call_TAG_RECEIVED_COVERAGE_INFORMATION(Message*message){
 }
 
 void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE(Message*message){
-	cout<<"call_TAG_REQUEST_READ_SEQUENCE"<<endl;
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;

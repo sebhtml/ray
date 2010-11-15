@@ -42,7 +42,7 @@ typedef void (MessageProcessor::*FNMETHOD) (Message*message);
 
 class MessageProcessor{
 
-	FNMETHOD m_methods[200];
+	FNMETHOD m_methods[101];
 
 	u64 m_sentinelValue;
 

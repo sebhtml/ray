@@ -234,8 +234,8 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 
-#AM_CXXFLAGS=-O3 -Wall -lz
-AM_CXXFLAGS = -g -DDEBUG -lz -Wall
+AM_CXXFLAGS=-O3 -Wall -lz
+#AM_CXXFLAGS = -g -DDEBUG -lz -Wall
 Ray_SOURCES = \
 SeedingData.h \
 FastqGzLoader.h \
