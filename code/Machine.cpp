@@ -407,7 +407,8 @@ void Machine::start(){
 	&m_ed->m_EXTENSION_reads_received,
 				&m_outbox,
 	&m_sd->m_allIdentifiers,&m_oa,
-	&m_numberOfRanksWithCoverageData,&m_seedExtender);
+	&m_numberOfRanksWithCoverageData,&m_seedExtender,
+	&m_master_mode);
 
 
 
@@ -1306,10 +1307,11 @@ void Machine::call_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION(){
 	cout<<"\r"<<"Counting vertices"<<endl;
 	#endif
 	for(int i=0;i<getSize();i++){
-		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i, TAG_START_VERTICES_DISTRIBUTION,getRank());
+		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i,TAG_START_VERTICES_DISTRIBUTION,getRank());
 		m_outbox.push_back(aMessage);
 	}
 	m_messageSentForVerticesDistribution=true;
+	m_master_mode=MASTER_MODE_DO_NOTHING;
 }
 
 void Machine::call_MASTER_MODE_TRIGGER_EDGES_DISTRIBUTION(){
@@ -1333,6 +1335,7 @@ void Machine::call_MASTER_MODE_START_EDGES_DISTRIBUTION(){
 		m_outbox.push_back(aMessage);
 	}
 	m_messageSentForEdgesDistribution=true;
+	m_master_mode=MASTER_MODE_DO_NOTHING;
 }
 
 void Machine::call_MASTER_MODE_SEND_COVERAGE_VALUES(){
@@ -1406,6 +1409,7 @@ void Machine::call_MODE_EXTRACT_VERTICES(){
 void Machine::call_MASTER_MODE_TRIGGER_EDGES(){
 	m_numberOfRanksWithCoverageData=-1;
 	m_numberOfMachinesReadyForEdgesDistribution=getSize();
+	m_master_mode=MASTER_MODE_START_EDGES_DISTRIBUTION;
 }
 
 void Machine::call_MASTER_MODE_TRIGGER_INDEXING(){
@@ -2182,12 +2186,12 @@ void Machine::processData(){
 		call_MASTER_MODE_LOAD_CONFIG();
 	}else if(m_master_mode==MASTER_MODE_LOAD_SEQUENCES){
 		call_MASTER_MODE_LOAD_SEQUENCES();
-	}else if(m_loadSequenceStep==true && m_mode_send_vertices==false&&isMaster() and m_sequence_ready_machines==getSize()&&m_messageSentForVerticesDistribution==false){
+	}else if(m_master_mode==MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION){
 		call_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION();
+	}else if(m_master_mode==MASTER_MODE_START_EDGES_DISTRIBUTION){
+		call_MASTER_MODE_START_EDGES_DISTRIBUTION();
 	}else if(m_startEdgeDistribution){
 		call_MASTER_MODE_TRIGGER_EDGES_DISTRIBUTION();
-	}else if(m_numberOfMachinesReadyForEdgesDistribution==getSize() and isMaster()){
-		call_MASTER_MODE_START_EDGES_DISTRIBUTION();
 	}else if(m_numberOfMachinesDoneSendingCoverage==getSize()){
 		call_MASTER_MODE_SEND_COVERAGE_VALUES();
 	}else if(m_numberOfRanksWithCoverageData==getSize()){

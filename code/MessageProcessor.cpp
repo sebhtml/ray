@@ -63,6 +63,9 @@ void MessageProcessor::call_TAG_SEND_SEQUENCE(Message*message){
 
 void MessageProcessor::call_TAG_SEQUENCES_READY(Message*message){
 	(*m_sequence_ready_machines)++;
+	if(*m_sequence_ready_machines==size){
+		(*m_master_mode)=MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION;
+	}
 }
 
 void MessageProcessor::call_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS(Message*message){
@@ -211,6 +214,9 @@ void MessageProcessor::call_TAG_START_EDGES_DISTRIBUTION_ASK(Message*message){
 
 void MessageProcessor::call_TAG_START_EDGES_DISTRIBUTION_ANSWER(Message*message){
 	(*m_numberOfMachinesReadyForEdgesDistribution)++;
+	if(*m_numberOfMachinesReadyForEdgesDistribution==size){
+		(*m_master_mode)=MASTER_MODE_START_EDGES_DISTRIBUTION;
+	}
 }
 
 void MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION(Message*message){
@@ -1257,7 +1263,7 @@ void MessageProcessor::constructor(ExtensionData*ed,
 				vector<Message>*m_outbox,
 		map<int,int>*m_allIdentifiers,OpenAssemblerChooser*m_oa,
 int*m_numberOfRanksWithCoverageData,
-SeedExtender*seedExtender){
+SeedExtender*seedExtender,int*m_master_mode){
 
 	this->ed=ed;
 	this->m_numberOfRanksDoneDetectingDistances=m_numberOfRanksDoneDetectingDistances;
@@ -1345,4 +1351,5 @@ SeedExtender*seedExtender){
 	this->m_oa=m_oa;
 	this->m_numberOfRanksWithCoverageData=m_numberOfRanksWithCoverageData;
 	this->seedExtender=seedExtender;
+	this->m_master_mode=m_master_mode;
 }

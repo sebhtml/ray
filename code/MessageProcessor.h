@@ -49,6 +49,7 @@ class MessageProcessor{
 
 	// data for processing
 
+	int*m_master_mode;
 	ExtensionData*ed;
 	int*m_numberOfRanksDoneDetectingDistances;
 	int*m_numberOfRanksDoneSendingDistances;
@@ -222,7 +223,7 @@ public:
 				vector<Message>*m_outbox,
 		map<int,int>*m_allIdentifiers,OpenAssemblerChooser*m_oa,
 int*m_numberOfRanksWithCoverageData,
-SeedExtender*seedExtender
+SeedExtender*seedExtender,int*m_master_mode
 );
 
 
