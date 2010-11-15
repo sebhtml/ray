@@ -408,9 +408,7 @@ void Machine::start(){
 				&m_outbox,
 	&m_sd->m_allIdentifiers,&m_oa,
 	&m_numberOfRanksWithCoverageData,&m_seedExtender,
-	&m_master_mode);
-
-
+	&m_master_mode,&m_isFinalFusion);
 
 	if(m_argc==1 or ((string)m_argv[1])=="--help"){
 		if(isMaster()){
@@ -1452,11 +1450,13 @@ void Machine::call_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS(){
 		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, i, TAG_PREPARE_COVERAGE_DISTRIBUTION,getRank());
 		m_outbox.push_back(aMessage);
 	}
+	m_master_mode=MASTER_MODE_DO_NOTHING;
 }
 
 void Machine::call_MASTER_MODE_PREPARE_SEEDING(){
 	m_ranksDoneAttachingReads=-1;
 	m_readyToSeed=getSize();
+	m_master_mode=MASTER_MODE_TRIGGER_SEEDING;
 }
 
 void Machine::call_MODE_ASSEMBLE_WAVES(){
@@ -1558,7 +1558,6 @@ void Machine::call_MODE_PROCESS_INGOING_EDGES(){
 }
 
 void Machine::call_MASTER_MODE_TRIGGER_SEEDING(){
-	cout<<"call_MASTER_MODE_TRIGGER_SEEDING"<<endl;
 	m_timePrinter.printElapsedTime("Indexing of sequence reads");
 	cout<<endl;
 	cout<<"Rank 0 tells other ranks to calculate their seeds."<<endl;
@@ -1670,6 +1669,7 @@ void Machine::call_MASTER_MODE_TRIGGER_DETECTION(){
 		m_outbox.push_back(aMessage);
 	}
 	m_numberOfRanksDoneDetectingDistances=0;
+	m_master_mode=MASTER_MODE_DO_NOTHING;
 }
 
 void Machine::call_MASTER_MODE_ASK_DISTANCES(){
@@ -1679,6 +1679,7 @@ void Machine::call_MASTER_MODE_ASK_DISTANCES(){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_ASK_LIBRARY_DISTANCES,getRank());
 		m_outbox.push_back(aMessage);
 	}
+	m_master_mode=MASTER_MODE_DO_NOTHING;
 }
 
 void Machine::call_MASTER_MODE_START_UPDATING_DISTANCES(){
@@ -1695,7 +1696,7 @@ void Machine::call_MASTER_MODE_INDEX_SEQUENCES(){
 	m_si.attachReads(&m_outbox,&m_distribution_file_id,&m_distribution_sequence_id,
 		&m_wordSize,&m_distribution_reads,getSize(),&m_distributionAllocator,
 		&m_distribution_currentSequenceId,getRank(),m_disData,&m_mode_AttachSequences,
-		&m_parameters,&m_colorSpaceMode,&m_outboxAllocator,&m_lastTime);
+		&m_parameters,&m_colorSpaceMode,&m_outboxAllocator,&m_lastTime,&m_master_mode);
 }
 
 void Machine::call_MASTER_MODE_TRIGGER_EXTENSIONS(){
@@ -1703,7 +1704,7 @@ void Machine::call_MASTER_MODE_TRIGGER_EXTENSIONS(){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_ASK_EXTENSION,getRank());
 		m_outbox.push_back(aMessage);
 	}
-	m_mode=MODE_DO_NOTHING;
+	m_master_mode=MASTER_MODE_DO_NOTHING;
 }
 
 void Machine::call_MODE_SEND_EXTENSION_DATA(){
@@ -1768,6 +1769,7 @@ void Machine::call_MASTER_MODE_TRIGGER_FUSIONS(){
 		m_outbox.push_back(aMessage);
 	}
 	m_fusionData->m_fusionStarted=true;
+	m_master_mode=MASTER_MODE_DO_NOTHING;
 }
 
 void Machine::call_MASTER_MODE_TRIGGER_FIRST_FUSIONS(){
@@ -1776,9 +1778,9 @@ void Machine::call_MASTER_MODE_TRIGGER_FIRST_FUSIONS(){
 	#else
 	cout<<"Rank "<<getRank()<<" is finishing fusions."<<endl;
 	#endif
-	m_fusionData->m_FUSION_numberOfRanksDone=-1;
 
 	m_reductionOccured=true;
+	m_master_mode=MASTER_MODE_START_FUSION_CYCLE;
 	m_cycleStarted=false;
 	m_cycleNumber=0;
 }
@@ -1799,6 +1801,7 @@ void Machine::call_MASTER_MODE_START_FUSION_CYCLE(){
 		m_nextReductionOccured=false;
 		m_cycleStarted=true;
 		m_isFinalFusion=false;
+		
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_CLEAR_DIRECTIONS,getRank());
 			m_outbox.push_back(aMessage);
@@ -1861,7 +1864,7 @@ void Machine::call_MASTER_MODE_START_FUSION_CYCLE(){
 	}else if(m_fusionData->m_FUSION_numberOfRanksDone==getSize() and m_isFinalFusion){
 		m_reductionOccured=m_nextReductionOccured;
 		m_fusionData->m_FUSION_numberOfRanksDone=-1;
-		if(!m_reductionOccured or m_cycleNumber ==5){ // cycling is in development!
+		if(!m_reductionOccured or m_cycleNumber ==5){ 
 			m_timePrinter.printElapsedTime("Computation of fusions");
 			cout<<endl;
 			cout<<"Rank 0 is "<<"collecting fusions"<<endl;
@@ -1882,6 +1885,8 @@ void Machine::call_MASTER_MODE_START_FUSION_CYCLE(){
 			// we continue now!
 			m_cycleStarted=false;
 			m_cycleNumber++;
+			m_master_mode=MASTER_MODE_START_FUSION_CYCLE;
+			cout<<"MASTER_MODE_START_FUSION_CYCLE"<<endl;
 		}
 	}
 }
@@ -2209,31 +2214,31 @@ void Machine::processData(){
 		call_MASTER_MODE_TRIGGER_INDEXING();
 	}else if(m_master_mode==MASTER_MODE_PREPARE_DISTRIBUTIONS){
 		call_MASTER_MODE_PREPARE_DISTRIBUTIONS();
-	}else if(m_numberOfMachinesReadyToSendDistribution==getSize()){
+	}else if(m_master_mode==MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS){
 		call_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS();
-	}else if(m_ranksDoneAttachingReads==getSize()){
+	}else if(m_master_mode==MASTER_MODE_PREPARE_SEEDING){
 		call_MASTER_MODE_PREPARE_SEEDING();
-	}else if(m_readyToSeed==getSize()){
+	}else if(m_master_mode==MASTER_MODE_TRIGGER_SEEDING){
 		call_MASTER_MODE_TRIGGER_SEEDING();
-	}else if(m_numberOfRanksDoneSeeding==getSize()){
+	}else if(m_master_mode==MASTER_MODE_TRIGGER_DETECTION){
 		call_MASTER_MODE_TRIGGER_DETECTION();
-	}else if(m_numberOfRanksDoneDetectingDistances==getSize()){
+	}else if(m_master_mode==MASTER_MODE_ASK_DISTANCES){
 		call_MASTER_MODE_ASK_DISTANCES();
-	}else if(m_numberOfRanksDoneSendingDistances==getSize()){
+	}else if(m_master_mode==MASTER_MODE_START_UPDATING_DISTANCES){
 		call_MASTER_MODE_START_UPDATING_DISTANCES();
 	}else if(m_master_mode==MASTER_MODE_INDEX_SEQUENCES){
 		call_MASTER_MODE_INDEX_SEQUENCES();
-	}else if(m_mode==MODE_EXTENSION_ASK and isMaster()){
+	}else if(m_master_mode==MASTER_MODE_TRIGGER_EXTENSIONS){
 		call_MASTER_MODE_TRIGGER_EXTENSIONS();
 	}else if(m_master_mode==MASTER_MODE_UPDATE_DISTANCES){
 		call_MASTER_MODE_UPDATE_DISTANCES();
-	}else if(m_ed->m_EXTENSION_numberOfRanksDone==getSize()){
+	}else if(m_master_mode==MASTER_MODE_TRIGGER_FUSIONS){
 		call_MASTER_MODE_TRIGGER_FUSIONS();
 	}else if(m_master_mode==MASTER_MODE_ASSEMBLE_GRAPH){
 		call_MASTER_MODE_ASSEMBLE_WAVES();
-	}else if(m_fusionData->m_FUSION_numberOfRanksDone==getSize() and !m_isFinalFusion){
+	}else if(m_master_mode==MASTER_MODE_TRIGGER_FIRST_FUSIONS){
 		call_MASTER_MODE_TRIGGER_FIRST_FUSIONS();
-	}else if(m_reductionOccured){
+	}else if(/*m_reductionOccured */m_master_mode==MASTER_MODE_START_FUSION_CYCLE){
 		call_MASTER_MODE_START_FUSION_CYCLE();
 	}else if(m_master_mode==MASTER_MODE_ASK_EXTENSIONS){
 		call_MASTER_MODE_ASK_EXTENSIONS();
@@ -2450,10 +2455,9 @@ void Machine::updateDistances(){
 		#ifndef SHOW_PROGRESS
 		cout<<"\r"<<"Extending seeds"<<endl;
 		#endif
-		m_mode=MODE_EXTENSION_ASK;
+		m_master_mode=MASTER_MODE_TRIGGER_EXTENSIONS;
 		m_ed->m_EXTENSION_rank=-1;
 		m_ed->m_EXTENSION_currentRankIsSet=false;
-		m_master_mode=MASTER_MODE_DO_NOTHING;
 	}else{
 		if(m_parameters.isRightFile(m_fileId)){
 			if(m_parameters.isAutomatic(m_fileId)){

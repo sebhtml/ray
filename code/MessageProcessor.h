@@ -48,7 +48,8 @@ class MessageProcessor{
 
 
 	// data for processing
-
+	
+	bool*m_isFinalFusion;
 	int*m_master_mode;
 	ExtensionData*ed;
 	int*m_numberOfRanksDoneDetectingDistances;
@@ -223,7 +224,7 @@ public:
 				vector<Message>*m_outbox,
 		map<int,int>*m_allIdentifiers,OpenAssemblerChooser*m_oa,
 int*m_numberOfRanksWithCoverageData,
-SeedExtender*seedExtender,int*m_master_mode
+SeedExtender*seedExtender,int*m_master_mode,bool*m_isFinalFusion
 );
 
 

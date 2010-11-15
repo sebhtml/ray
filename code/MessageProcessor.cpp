@@ -234,6 +234,9 @@ void MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION(Message*m
 
 void MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER(Message*message){
 	(*m_numberOfMachinesReadyToSendDistribution)++;
+	if((*m_numberOfMachinesReadyToSendDistribution)==size){
+		(*m_master_mode)=MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS;
+	}
 }
 
 void MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message){
@@ -274,11 +277,12 @@ void MessageProcessor::call_TAG_SEND_COVERAGE_VALUES(Message*message){
 
 void MessageProcessor::call_TAG_READY_TO_SEED(Message*message){
 	(*m_readyToSeed)++;
-	cout<<"call_TAG_READY_TO_SEED "<<*m_readyToSeed<<endl;
+	if((*m_readyToSeed)==size){
+		(*m_master_mode)=MASTER_MODE_TRIGGER_SEEDING;
+	}
 }
 
 void MessageProcessor::call_TAG_START_SEEDING(Message*message){
-	cout<<"call_TAG_START_SEEDING"<<endl;
 	(*m_mode)=MODE_START_SEEDING;
 	map<int,map<int,int> > edgesDistribution;
 	
@@ -372,6 +376,9 @@ void MessageProcessor::call_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY(Message*mess
 
 void MessageProcessor::call_TAG_SEEDING_IS_OVER(Message*message){
 	(*m_numberOfRanksDoneSeeding)++;
+	if((*m_numberOfRanksDoneSeeding)==size){
+		(*m_master_mode)=MASTER_MODE_TRIGGER_DETECTION;
+	}
 }
 
 void MessageProcessor::call_TAG_GOOD_JOB_SEE_YOU_SOON(Message*message){
@@ -395,6 +402,9 @@ void MessageProcessor::call_TAG_MASTER_IS_DONE_ATTACHING_READS(Message*message){
 
 void MessageProcessor::call_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY(Message*message){
 	(*m_ranksDoneAttachingReads)++;
+	if((*m_ranksDoneAttachingReads)==size){
+		(*m_master_mode)=MASTER_MODE_PREPARE_SEEDING;
+	}
 }
 
 void MessageProcessor::call_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER(Message*message){
@@ -433,6 +443,9 @@ void MessageProcessor::call_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY(Message*messa
 void MessageProcessor::call_TAG_EXTENSION_IS_DONE(Message*message){
 	(*m_EXTENSION_numberOfRanksDone)++;
 	(*m_EXTENSION_currentRankIsDone)=true;
+	if((*m_EXTENSION_numberOfRanksDone)==size){
+		(*m_master_mode)=MASTER_MODE_TRIGGER_FUSIONS;
+	}
 }
 
 void MessageProcessor::call_TAG_ASK_EXTENSION(Message*message){
@@ -684,6 +697,9 @@ void MessageProcessor::call_TAG_START_FUSION(Message*message){
 
 void MessageProcessor::call_TAG_FUSION_DONE(Message*message){
 	m_fusionData->m_FUSION_numberOfRanksDone++;
+	if(m_fusionData->m_FUSION_numberOfRanksDone==size && !(*m_isFinalFusion)){
+		(*m_master_mode)=MASTER_MODE_TRIGGER_FIRST_FUSIONS;
+	}
 }
 
 void MessageProcessor::call_TAG_ASK_VERTEX_PATHS_SIZE(Message*message){
@@ -1002,6 +1018,9 @@ void MessageProcessor::call_TAG_AUTOMATIC_DISTANCE_DETECTION(Message*message){
 
 void MessageProcessor::call_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE(Message*message){
 	(*m_numberOfRanksDoneDetectingDistances)++;
+	if((*m_numberOfRanksDoneDetectingDistances)==size){
+		(*m_master_mode)=MASTER_MODE_ASK_DISTANCES;
+	}
 }
 
 void MessageProcessor::call_TAG_LIBRARY_DISTANCE(Message*message){
@@ -1021,6 +1040,9 @@ void MessageProcessor::call_TAG_ASK_LIBRARY_DISTANCES(Message*message){
 
 void MessageProcessor::call_TAG_ASK_LIBRARY_DISTANCES_FINISHED(Message*message){
 	(*m_numberOfRanksDoneSendingDistances)++;
+	if((*m_numberOfRanksDoneSendingDistances)==size){
+		(*m_master_mode)=MASTER_MODE_START_UPDATING_DISTANCES;
+	}
 }
 
 void MessageProcessor::call_TAG_UPDATE_LIBRARY_INFORMATION(Message*message){
@@ -1277,7 +1299,8 @@ void MessageProcessor::constructor(ExtensionData*ed,
 				vector<Message>*m_outbox,
 		map<int,int>*m_allIdentifiers,OpenAssemblerChooser*m_oa,
 int*m_numberOfRanksWithCoverageData,
-SeedExtender*seedExtender,int*m_master_mode){
+SeedExtender*seedExtender,int*m_master_mode,
+bool*m_isFinalFusion){
 
 	this->ed=ed;
 	this->m_numberOfRanksDoneDetectingDistances=m_numberOfRanksDoneDetectingDistances;
@@ -1366,4 +1389,5 @@ SeedExtender*seedExtender,int*m_master_mode){
 	this->m_numberOfRanksWithCoverageData=m_numberOfRanksWithCoverageData;
 	this->seedExtender=seedExtender;
 	this->m_master_mode=m_master_mode;
+	this->m_isFinalFusion=m_isFinalFusion;
 }

@@ -35,7 +35,7 @@ public:
 	void attachReads(std::vector<Message>*m_outbox,int*m_distribution_file_id,int*m_distribution_sequence_id,
 	int*m_wordSize,vector<Read*>*m_distribution_reads,int size,MyAllocator*m_distributionAllocator,
 	int*m_distribution_currentSequenceId,int rank,DistributionData*m_disData,bool*m_mode_AttachSequences,
-	Parameters*m_parameters,bool*m_colorSpaceMode,MyAllocator*m_outboxAllocator,time_t*m_lastTime
+	Parameters*m_parameters,bool*m_colorSpaceMode,MyAllocator*m_outboxAllocator,time_t*m_lastTime,int*m_master_mode
 );
 	void flushAttachedSequences(int threshold,std::vector<Message>*m_outbox,int rank,int size,DistributionData*m_disData,
 	MyAllocator*m_outboxAllocator);
