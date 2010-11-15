@@ -82,6 +82,8 @@ class Machine{
 	MachineMethod m_master_methods[32];
 	MachineMethod m_slave_methods[32];
 
+	int m_currentCycleStep;
+
 	EdgesExtractor m_edgesExtractor;
 	int m_numberOfRanksWithCoverageData;
 	TimePrinter m_timePrinter;

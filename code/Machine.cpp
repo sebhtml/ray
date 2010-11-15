@@ -1118,11 +1118,13 @@ void Machine::makeFusions(){
 				if(m_fusionData->m_FUSION_receivedLength==0){
 				}else if(m_fusionData->m_FUSION_matches[m_fusionData->m_FUSION_match_index]<currentId and m_fusionData->m_FUSION_receivedLength == (int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
 					m_fusionData->m_FUSION_eliminated.insert(currentId);
+					cout<<"Rank "<<getRank()<<" eliminates a path with "<<m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<<" vertices"<<endl;
 					m_fusionData->m_FUSION_direct_fusionDone=false;
 					m_fusionData->m_FUSION_first_done=false;
 					m_fusionData->m_FUSION_paths_requested=false;
 					m_seedingData->m_SEEDING_i++;
 				}else if(m_fusionData->m_FUSION_receivedLength>(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
+					cout<<"Rank "<<getRank()<<" eliminates a path with "<<m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<<" vertices"<<endl;
 					m_fusionData->m_FUSION_eliminated.insert(currentId);
 					m_fusionData->m_FUSION_direct_fusionDone=false;
 					m_fusionData->m_FUSION_first_done=false;
@@ -1803,7 +1805,6 @@ void Machine::call_MASTER_MODE_TRIGGER_FUSIONS(){
 	// ask one at once to do the fusion
 	// because otherwise it may lead to hanging of the program for unknown reasons
 	m_ed->m_EXTENSION_numberOfRanksDone=-1;
-	m_master_mode=MASTER_MODE_DO_NOTHING;
 	m_fusionData->m_FUSION_numberOfRanksDone=0;
 	for(int i=0;i<(int)getSize();i++){// start fusion.
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_START_FUSION,getRank());
@@ -1814,7 +1815,6 @@ void Machine::call_MASTER_MODE_TRIGGER_FUSIONS(){
 }
 
 void Machine::call_MASTER_MODE_TRIGGER_FIRST_FUSIONS(){
-	cout<<"call_MASTER_MODE_TRIGGER_FIRST_FUSIONS"<<endl;
 	#ifdef SHOW_PROGRESS
 	cout<<"Rank "<<getRank()<<": fusion is done."<<endl;
 	#else
@@ -1837,22 +1837,24 @@ void Machine::call_MASTER_MODE_START_FUSION_CYCLE(){
 	//  * a distribute cycle
 	//  * a fusion cycle
 
+
 	if(!m_cycleStarted){
 		#ifdef SHOW_PROGRESS
 		#endif
 		m_nextReductionOccured=false;
 		m_cycleStarted=true;
 		m_isFinalFusion=false;
-		
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_CLEAR_DIRECTIONS,getRank());
 			m_outbox.push_back(aMessage);
 		}
-
+		//cout<<"Cycle "<<m_cycleNumber<<" sending 1) TAG_CLEAR_DIRECTIONS"<<endl;
+		m_currentCycleStep=1;
 		m_CLEAR_n=0;
-	}else if(m_CLEAR_n==getSize() and !m_isFinalFusion){
+	}else if(m_CLEAR_n==getSize() and !m_isFinalFusion and m_currentCycleStep==1){
 		#ifdef SHOW_PROGRESS
 		#endif
+		m_currentCycleStep++;
 		m_CLEAR_n=-1;
 
 		for(int i=0;i<getSize();i++){
@@ -1860,27 +1862,33 @@ void Machine::call_MASTER_MODE_START_FUSION_CYCLE(){
 			m_outbox.push_back(aMessage);
 		}
 		m_DISTRIBUTE_n=0;
-	}else if(m_DISTRIBUTE_n==getSize() and !m_isFinalFusion){
+		//cout<<"Cycle "<<m_cycleNumber<<" sending 2) TAG_DISTRIBUTE_FUSIONS"<<endl;
+	}else if(m_DISTRIBUTE_n==getSize() and !m_isFinalFusion and m_currentCycleStep==2){
 		#ifdef SHOW_PROGRESS
 		#endif
+		m_currentCycleStep++;
 		m_DISTRIBUTE_n=-1;
 		m_isFinalFusion=true;
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_FINISH_FUSIONS,getRank());
 			m_outbox.push_back(aMessage);
 		}
+		//cout<<"Cycle "<<m_cycleNumber<<" sending 3) TAG_FINISH_FUSIONS"<<endl;
 		m_FINISH_n=0;
-	}else if(m_FINISH_n==getSize() and m_isFinalFusion){
+	}else if(m_FINISH_n==getSize() and m_isFinalFusion and m_currentCycleStep==3){
 		#ifdef SHOW_PROGRESS
 		#endif
+		m_currentCycleStep++;
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_CLEAR_DIRECTIONS,getRank());
 			m_outbox.push_back(aMessage);
 		}
+		//cout<<"Cycle "<<m_cycleNumber<<" sending 4) TAG_CLEAR_DIRECTIONS"<<endl;
 		m_FINISH_n=-1;
 		m_CLEAR_n=0;
-	}else if(m_CLEAR_n==getSize() and m_isFinalFusion){
+	}else if(m_CLEAR_n==getSize() and m_isFinalFusion && m_currentCycleStep==4){
 		m_CLEAR_n=-1;
+		m_currentCycleStep++;
 		#ifdef SHOW_PROGRESS
 		#endif
 
@@ -1889,21 +1897,23 @@ void Machine::call_MASTER_MODE_START_FUSION_CYCLE(){
 			m_outbox.push_back(aMessage);
 		}
 		m_DISTRIBUTE_n=0;
+		//cout<<"Cycle "<<m_cycleNumber<<" sending 5) TAG_DISTRIBUTE_FUSIONS"<<endl;
 
-	}else if(m_DISTRIBUTE_n==getSize() and m_isFinalFusion){
+	}else if(m_DISTRIBUTE_n==getSize() and m_isFinalFusion && m_currentCycleStep==5){
+		m_currentCycleStep++;
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank 0 tells others to compute fusions."<<endl;
 
 		#endif
 		m_fusionData->m_FUSION_numberOfRanksDone=0;
-		m_master_mode=MASTER_MODE_DO_NOTHING;
 		m_DISTRIBUTE_n=-1;
 		for(int i=0;i<(int)getSize();i++){// start fusion.
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_START_FUSION,getRank());
 			m_outbox.push_back(aMessage);
 		}
 		
-	}else if(m_fusionData->m_FUSION_numberOfRanksDone==getSize() and m_isFinalFusion){
+	}else if(m_fusionData->m_FUSION_numberOfRanksDone==getSize() && m_isFinalFusion && m_currentCycleStep==6){
+		
 		m_reductionOccured=m_nextReductionOccured;
 		m_fusionData->m_FUSION_numberOfRanksDone=-1;
 		if(!m_reductionOccured or m_cycleNumber ==5){ 
@@ -1927,8 +1937,6 @@ void Machine::call_MASTER_MODE_START_FUSION_CYCLE(){
 			// we continue now!
 			m_cycleStarted=false;
 			m_cycleNumber++;
-			m_master_mode=MASTER_MODE_START_FUSION_CYCLE;
-			cout<<"MASTER_MODE_START_FUSION_CYCLE"<<endl;
 		}
 	}
 }

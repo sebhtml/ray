@@ -890,6 +890,7 @@ void MessageProcessor::call_TAG_CLEAR_DIRECTIONS(Message*message){
 	for(int i=0;i<(int)(*m_EXTENSION_contigs).size();i++){
 		int id=(*m_EXTENSION_identifiers)[i];
 		if(m_fusionData->m_FUSION_eliminated.count(id)==0){
+			cout<<"rank="<<rank<<" keeps a path with "<<id<<""<<(*m_EXTENSION_contigs)[i].size()<<" vertices"<<endl;
 			fusions.push_back((*m_EXTENSION_contigs)[i]);
 			vector<VERTEX_TYPE> rc;
 			for(int j=(*m_EXTENSION_contigs)[i].size()-1;j>=0;j--){
@@ -944,7 +945,7 @@ void MessageProcessor::call_TAG_FINISH_FUSIONS_FINISHED(Message*message){
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
 	(*m_FINISH_n)++;
 	if(incoming[0]){
-		(*m_nextReductionOccured)=incoming[0];
+		(*m_nextReductionOccured)=true;
 	}
 }
 
