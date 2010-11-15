@@ -173,6 +173,7 @@ void MessageProcessor::call_TAG_START_VERTICES_DISTRIBUTION(Message*message){
 	// wait for everyone
 	MPI_Barrier(MPI_COMM_WORLD);
 	(*m_mode_send_vertices)=true;
+	(*m_mode)=MODE_EXTRACT_VERTICES;
 	(*m_mode_send_vertices_sequence_id)=0;
 }
 
@@ -210,6 +211,7 @@ void MessageProcessor::call_TAG_IN_EDGE_DATA_WITH_PTR(Message*message){
 
 void MessageProcessor::call_TAG_START_EDGES_DISTRIBUTION(Message*message){
 	(*m_mode_send_outgoing_edges)=true;
+	(*m_mode)=MODE_PROCESS_OUTGOING_EDGES;
 }
 
 void MessageProcessor::call_TAG_START_EDGES_DISTRIBUTION_ASK(Message*message){
@@ -242,6 +244,7 @@ void MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER(Message*mes
 void MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message){
 	(*m_mode_send_coverage_iterator)=0;
 	(*m_mode_sendDistribution)=true;
+	(*m_mode)=MODE_SEND_DISTRIBUTION;
 }
 
 void MessageProcessor::call_TAG_COVERAGE_DATA(Message*message){
@@ -451,6 +454,7 @@ void MessageProcessor::call_TAG_EXTENSION_IS_DONE(Message*message){
 void MessageProcessor::call_TAG_ASK_EXTENSION(Message*message){
 	(*m_EXTENSION_initiated)=false;
 	(*m_mode_EXTENSION)=true;
+	(*m_mode)=MODE_EXTENSION;
 	(*m_last_value)=-1;
 }
 

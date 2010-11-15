@@ -44,7 +44,7 @@ public:
 	bool*m_mode_send_ingoing_edges;
 	int m_wordSize;
 	bool m_colorSpaceMode;
-
+	int*m_mode;
 
 	void processOutgoingEdges();
 	void processIngoingEdges();

@@ -37,12 +37,13 @@ void SeedExtender::extendSeeds(vector<vector<VERTEX_TYPE> >*seeds,ExtensionData*
 int*last_value,bool*vertexCoverageRequested,int wordSize,bool*colorSpaceMode,int size,bool*vertexCoverageReceived,
 int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,vector<VERTEX_TYPE>*receivedOutgoingEdges,Chooser*chooser,
 ChooserData*cd,BubbleData*bubbleData,DepthFirstSearchData*dfsData,
-int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived){
+int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 	if((*seeds).size()==0){
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<theRank<<" is extending its seeds. "<<(*seeds).size()<<"/"<<(*seeds).size()<<" (DONE)"<<endl;
 		#endif
 		ed->m_mode_EXTENSION=false;
+		(*m_mode)=MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_IS_DONE,theRank);
 		(*outbox).push_back(aMessage);
 		return;
@@ -63,6 +64,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived){
 	}else if(ed->m_EXTENSION_currentSeedIndex==(int)(*seeds).size()){
 		cout<<"Rank "<<theRank<<" is extending its seeds. "<<(*seeds).size()<<"/"<<(*seeds).size()<<" (DONE)"<<endl;
 		ed->m_mode_EXTENSION=false;
+		(*m_mode)=MODE_DO_NOTHING;
 	
 		// store the lengths.
 		for(int i=0;i<(int)ed->m_EXTENSION_identifiers.size();i++){

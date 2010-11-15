@@ -47,6 +47,10 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #define MODE_AUTOMATIC_DISTANCE_DETECTION 0xe
 #define MODE_SEND_LIBRARY_DISTANCES 0xf
 #define MODE_UPDATE_DISTANCES 0x10
-
+#define MODE_EXTRACT_VERTICES			0x11
+#define MODE_SEND_DISTRIBUTION 			0x12
+#define MODE_PROCESS_INGOING_EDGES 		0x13
+#define MODE_PROCESS_OUTGOING_EDGES 		0x14
+#define MODE_EXTENSION				0x15
 
 #endif

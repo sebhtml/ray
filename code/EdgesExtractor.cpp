@@ -54,6 +54,7 @@ void EdgesExtractor::processOutgoingEdges(){
 		}else{
 			flushOutgoingEdges(1);
 			(*m_mode_send_outgoing_edges)=false;
+			(*m_mode)=MODE_PROCESS_INGOING_EDGES;
 			(*m_mode_send_ingoing_edges)=true;
 			(m_mode_send_edge_sequence_id_position)=0;
 			#ifdef SHOW_PROGRESS
@@ -147,7 +148,8 @@ void EdgesExtractor::processIngoingEdges(){
 			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_EDGES_DISTRIBUTED,getRank);
 			m_outbox->push_back(aMessage);
 			(*m_mode_send_ingoing_edges)=false;
-		
+			(*m_mode)=MODE_DO_NOTHING;
+
 			#ifdef SHOW_PROGRESS
 			cout<<"Rank "<<getRank<<" is extracting ingoing edges (reverse complement) "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads->size()<<" (DONE)"<<endl;
 			#endif

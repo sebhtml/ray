@@ -49,7 +49,7 @@ public:
 				DistributionData*m_disData,
 				int size,
 				MyAllocator*m_outboxAllocator,
-				bool m_colorSpaceMode
+				bool m_colorSpaceMode,int*m_mode
 			);
 
 };

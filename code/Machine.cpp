@@ -274,6 +274,7 @@ void Machine::start(){
 	m_edgesExtractor.m_mode_send_ingoing_edges=&m_mode_send_ingoing_edges;
 	m_edgesExtractor.m_colorSpaceMode=m_colorSpaceMode;
 	m_edgesExtractor.m_myReads=&m_myReads;
+	m_edgesExtractor.m_mode=&m_mode;
 
 	if(isMaster()){
 		cout<<endl<<"**************************************************"<<endl;
@@ -1407,7 +1408,7 @@ void Machine::call_MODE_EXTRACT_VERTICES(){
 			m_disData,
 			getSize(),
 			&m_outboxAllocator,
-			m_colorSpaceMode
+			m_colorSpaceMode,&m_mode
 		);
 }
 
@@ -1545,6 +1546,7 @@ void Machine::call_MODE_SEND_DISTRIBUTION(){
 		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,MASTER_RANK, TAG_COVERAGE_END,getRank());
 		m_outbox.push_back(aMessage);
 		m_distributionOfCoverage.clear();
+		m_mode=MODE_DO_NOTHING;
 	}
 }
 
@@ -2170,7 +2172,7 @@ void Machine::call_MODE_EXTENSION(){
 	&m_last_value,&(m_seedingData->m_SEEDING_vertexCoverageRequested),m_wordSize,&m_colorSpaceMode,getSize(),&(m_seedingData->m_SEEDING_vertexCoverageReceived),
 	&(m_seedingData->m_SEEDING_receivedVertexCoverage),&m_repeatedLength,&maxCoverage,&(m_seedingData->m_SEEDING_receivedOutgoingEdges),&m_c,
 	m_cd,m_bubbleData,m_dfsData,
-m_minimumCoverage,&m_oa,&(m_seedingData->m_SEEDING_edgesReceived));
+m_minimumCoverage,&m_oa,&(m_seedingData->m_SEEDING_edgesReceived),&m_mode);
 }
 
 void Machine::call_MASTER_MODE_ASSEMBLE_WAVES(){
@@ -2238,7 +2240,7 @@ void Machine::processData(){
 		call_MASTER_MODE_ASSEMBLE_WAVES();
 	}else if(m_master_mode==MASTER_MODE_TRIGGER_FIRST_FUSIONS){
 		call_MASTER_MODE_TRIGGER_FIRST_FUSIONS();
-	}else if(/*m_reductionOccured */m_master_mode==MASTER_MODE_START_FUSION_CYCLE){
+	}else if(m_master_mode==MASTER_MODE_START_FUSION_CYCLE){
 		call_MASTER_MODE_START_FUSION_CYCLE();
 	}else if(m_master_mode==MASTER_MODE_ASK_EXTENSIONS){
 		call_MASTER_MODE_ASK_EXTENSIONS();
@@ -2248,7 +2250,7 @@ void Machine::processData(){
 
 	// slave tasks
 
-	if(m_mode_send_vertices==true){
+	if(m_mode==MODE_EXTRACT_VERTICES){
 		call_MODE_EXTRACT_VERTICES();
 	}else if(m_mode==MODE_ASSEMBLE_WAVES){
 		call_MODE_ASSEMBLE_WAVES();
@@ -2258,11 +2260,11 @@ void Machine::processData(){
 		call_MODE_FINISH_FUSIONS();
 	}else if(m_mode==MODE_DISTRIBUTE_FUSIONS){
 		call_MODE_DISTRIBUTE_FUSIONS();
-	}else if(m_mode_sendDistribution){
+	}else if(m_mode==MODE_SEND_DISTRIBUTION){
 		call_MODE_SEND_DISTRIBUTION();
-	}else if(m_mode_send_outgoing_edges){ 
+	}else if(m_mode==MODE_PROCESS_OUTGOING_EDGES){
 		call_MODE_PROCESS_OUTGOING_EDGES();
-	}else if(m_mode_send_ingoing_edges){ 
+	}else if(m_mode==MODE_PROCESS_INGOING_EDGES){ 
 		call_MODE_PROCESS_INGOING_EDGES();
 	}else if(m_mode==MODE_START_SEEDING){
 		call_MODE_START_SEEDING();
@@ -2274,7 +2276,7 @@ void Machine::processData(){
 		call_MODE_AUTOMATIC_DISTANCE_DETECTION();
 	}else if(m_mode==MODE_SEND_LIBRARY_DISTANCES){
 		call_MODE_SEND_LIBRARY_DISTANCES();
-	}else if(m_ed->m_mode_EXTENSION){
+	}else if(m_mode==MODE_EXTENSION){
 		call_MODE_EXTENSION();
 	}
 }

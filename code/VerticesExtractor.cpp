@@ -37,7 +37,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 				DistributionData*m_disData,
 				int size,
 				MyAllocator*m_outboxAllocator,
-				bool m_colorSpaceMode
+				bool m_colorSpaceMode,int*m_mode
 				){
 	#ifdef SHOW_PROGRESS
 	if(*m_mode_send_vertices_sequence_id%100000==0 and *m_mode_send_vertices_sequence_id_position==0){
@@ -65,6 +65,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_VERTICES_DISTRIBUTED,rank);
 			m_outbox->push_back(aMessage);
 			*m_mode_send_vertices=false;
+			(*m_mode)=MODE_DO_NOTHING;
 			#ifdef SHOW_PROGRESS
 			cout<<"Rank "<<rank<<" is extracting vertices (reverse complement) from sequences "<<*m_mode_send_vertices_sequence_id<<"/"<<m_myReads->size()<<" (DONE)"<<endl;
 			#endif
