@@ -32,10 +32,6 @@
 #include<FusionData.h>
 #include<Parameters.h>
 
-#define DEBUG // remove me
-
-
-
 void MessageProcessor::processMessage(Message*message){
 	FNMETHOD f=m_methods[message->getTag()];
 	(this->*f)(message);
@@ -218,7 +214,7 @@ void MessageProcessor::call_TAG_START_EDGES_DISTRIBUTION_ANSWER(Message*message)
 
 void MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION(Message*message){
 	int source=message->getSource();
-	cout<<"Rank "<<rank<<" has "<<m_subgraph->size()<<" vertices (DONE)"<<endl;
+	cout<<"Rank "<<rank<<" has "<<m_subgraph->size()<<" vertices"<<endl;
 	Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, source, TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER,rank);
 	m_outbox->push_back(aMessage);
 }
@@ -624,6 +620,7 @@ void MessageProcessor::call_TAG_ASK_READ_LENGTH_REPLY(Message*message){
 }
 
 void MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION(Message*message){
+	cout<<"call_TAG_SAVE_WAVE_PROGRESSION"<<endl;
 	void*buffer=message->getBuffer();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
 	SplayNode<VERTEX_TYPE,Vertex>*node=m_subgraph->find(incoming[0]);
@@ -1025,6 +1022,7 @@ void MessageProcessor::call_TAG_RECEIVED_COVERAGE_INFORMATION(Message*message){
 }
 
 void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE(Message*message){
+	cout<<"call_TAG_REQUEST_READ_SEQUENCE"<<endl;
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
