@@ -177,7 +177,16 @@ using namespace std;
 
 #define MASTER_RANK 0x0
 
-// modes
+// master modes
+#define MASTER_MODE_LOAD_CONFIG 0x0
+#define MASTER_MODE_LOAD_SEQUENCES 0x1
+#define MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION 0x2
+#define MASTER_MODE_SEND_COVERAGE_VALUES 0x3
+#define MASTER_MODE_TRIGGER_EDGES_DISTRIBUTION 0x4
+#define MASTER_MODE_START_EDGES_DISTRIBUTION 0x5
+#define MASTER_MODE_DO_NOTHING 0x6
+
+// slave modes
 #define MODE_EXTENSION_ASK 0x0
 #define MODE_START_SEEDING 0x1
 #define MODE_DO_NOTHING 0x2
@@ -197,7 +206,6 @@ using namespace std;
 #define MODE_UPDATE_DISTANCES 0x10
 
 #define _FOREST_SIZE 0x1000
-//#define _FOREST_SIZE 20
 
 // allocators size
 // for MPI communications, memory is allocated and freed with OUTBOX_ALLOCATOR_CHUNK_SIZE and INBOX_ALLOCATOR_CHUNK_SIZE

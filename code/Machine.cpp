@@ -180,6 +180,14 @@ Machine::Machine(int argc,char**argv){
 	m_ed=new ExtensionData();
 	m_sd=new ScaffolderData();
 	m_cd=new ChooserData();
+
+	// master modes
+	m_master_methods[MASTER_MODE_LOAD_CONFIG]=&Machine::call_MASTER_MODE_LOAD_CONFIG;
+	m_master_methods[MASTER_MODE_LOAD_SEQUENCES]=&Machine::call_MASTER_MODE_LOAD_SEQUENCES;
+	m_master_methods[MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION]=&Machine::call_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION;
+	m_master_methods[MASTER_MODE_SEND_COVERAGE_VALUES]=&Machine::call_MASTER_MODE_SEND_COVERAGE_VALUES;
+	m_master_methods[MASTER_MODE_TRIGGER_EDGES_DISTRIBUTION]=&Machine::call_MASTER_MODE_TRIGGER_EDGES_DISTRIBUTION;
+	m_master_methods[MASTER_MODE_START_EDGES_DISTRIBUTION]=&Machine::call_MASTER_MODE_START_EDGES_DISTRIBUTION;
 }
 
 
@@ -442,6 +450,9 @@ void Machine::run(){
 	while(isAlive()){
 		receiveMessages(); 
 		processMessages();
+		if(m_aborted){
+			return;
+		}
 		processData();
 		sendMessages();
 		time_t theTime=time(NULL);
@@ -1223,83 +1234,53 @@ void Machine::detectDistances(){
 	}
 }
 
-void Machine::processData(){
-	if(m_aborted){
-		return;
-	}
-	
-	#ifndef SHOW_PROGRESS
-	if(m_readyToSeed==getSize()){
-		cout<<"\r"<<"Computing seeds"<<endl;
-	}
-
-	if(isMaster() and m_messageSentForVerticesDistribution and m_numberOfMachinesDoneSendingVertices<getSize()){
-		time_t tmp=time(NULL);
-		if(tmp>m_lastTime){
-			m_lastTime=tmp;
-			showProgress(m_lastTime);
-		}
-	}else if(isMaster() and m_messageSentForEdgesDistribution and m_numberOfMachinesDoneSendingEdges<getSize() and m_numberOfMachinesDoneSendingEdges!=-9){
-		time_t tmp=time(NULL);
-		if(tmp>m_lastTime){
-			m_lastTime=tmp;
-			showProgress(m_lastTime);
-		}
-	}else if(isMaster() and m_fusionData->m_fusionStarted  and m_fusionData->m_FUSION_numberOfRanksDone<getSize()){
-		time_t tmp=time(NULL);
-		if(tmp>m_lastTime){
-			m_lastTime=tmp;
-			showProgress(m_lastTime);
-		}
-
-	}
-	#endif
-
-	if(!m_parameters.isInitiated()&&isMaster()){
-		if(m_argc==2){
-			ifstream f(m_argv[1]);
-			if(!f){
-				cout<<"Rank "<<getRank()<<" invalid input file."<<endl;
-				m_aborted=true;
-				f.close();
-				killRanks();
-				return;
-			}
-		}
-
-		cout<<endl;
-		cout<<"Rank 0: Ray 0.1.1 is running"<<endl;
-		#ifdef __linux__
-		cout<<"Rank 0: operating system is Linux (during compilation)"<<endl;
-		#endif
-
-
-		m_parameters.load(m_argc,m_argv);
-		if(m_parameters.getError()){
+void Machine::call_MASTER_MODE_LOAD_CONFIG(){
+	if(m_argc==2){
+		ifstream f(m_argv[1]);
+		if(!f){
+			cout<<"Rank "<<getRank()<<" invalid input file."<<endl;
+			m_aborted=true;
+			f.close();
 			killRanks();
 			return;
 		}
-		if(m_parameters.useAmos()){
-			// empty the file.
-			cout<<"Preparing AMOS file "<<m_parameters.getAmosFile()<<endl;
-			m_bubbleData->m_amos=fopen(m_parameters.getAmosFile().c_str(),"w");
-		}
+	}
+
+	cout<<endl;
+	cout<<"Rank 0: Ray 0.1.1 is running"<<endl;
+	#ifdef __linux__
+	cout<<"Rank 0: operating system is Linux (during compilation)"<<endl;
+	#endif
 
 
-		for(int i=0;i<getSize();i++){
-			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
-			message[0]=m_parameters.getWordSize();
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,i,TAG_SET_WORD_SIZE,getRank());
-			m_outbox.push_back(aMessage);
-			
-			VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
+	m_parameters.load(m_argc,m_argv);
+	if(m_parameters.getError()){
+		killRanks();
+		return;
+	}
+	if(m_parameters.useAmos()){
+		// empty the file.
+		cout<<"Preparing AMOS file "<<m_parameters.getAmosFile()<<endl;
+		m_bubbleData->m_amos=fopen(m_parameters.getAmosFile().c_str(),"w");
+	}
 
-			message2[0]=m_parameters.getColorSpaceMode();
-			Message aMessage2(message2,1,MPI_UNSIGNED_LONG_LONG,i,TAG_SET_COLOR_MODE,getRank());
-			m_outbox.push_back(aMessage2);
-		}
-	}else if(m_welcomeStep==true && m_loadSequenceStep==false&&isMaster()){
-		bool res=m_sl.loadSequences(getRank(),getSize(),&m_distribution_reads,&m_distribution_sequence_id,
+
+	for(int i=0;i<getSize();i++){
+		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
+		message[0]=m_parameters.getWordSize();
+		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,i,TAG_SET_WORD_SIZE,getRank());
+		m_outbox.push_back(aMessage);
+		
+		VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
+
+		message2[0]=m_parameters.getColorSpaceMode();
+		Message aMessage2(message2,1,MPI_UNSIGNED_LONG_LONG,i,TAG_SET_COLOR_MODE,getRank());
+		m_outbox.push_back(aMessage2);
+	}
+}
+
+void Machine::call_MASTER_MODE_LOAD_SEQUENCES(){
+	bool res=m_sl.loadSequences(getRank(),getSize(),&m_distribution_reads,&m_distribution_sequence_id,
 	&m_LOADER_isLeftFile,&m_outbox,&m_distribution_file_id,
 	&m_distributionAllocator,&m_LOADER_isRightFile,&m_LOADER_averageFragmentLength,
 	m_disData,&m_LOADER_numberOfSequencesInLeftFile,&m_outboxAllocator,
@@ -1308,841 +1289,983 @@ void Machine::processData(){
 	&m_lastTime,
 	&m_parameters
 );
-		if(!res){
-			killRanks();
-			m_mode=MODE_DO_NOTHING;
-		}
+	if(!res){
+		killRanks();
+		m_mode=MODE_DO_NOTHING;
+	}
+}
 
-	}else if(m_loadSequenceStep==true && m_mode_send_vertices==false&&isMaster() and m_sequence_ready_machines==getSize()&&m_messageSentForVerticesDistribution==false){
-		#ifdef SHOW_PROGRESS
-		m_timePrinter.printElapsedTime("Distribution of sequence reads");
-		cout<<endl;
-		cout<<"Rank "<<getRank()<<": starting vertices distribution."<<endl;
-		#else
-		cout<<"\r"<<"Counting vertices"<<endl;
-		#endif
-		for(int i=0;i<getSize();i++){
-			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i, TAG_START_VERTICES_DISTRIBUTION,getRank());
-			m_outbox.push_back(aMessage);
-		}
-		m_messageSentForVerticesDistribution=true;
+void Machine::call_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION(){
+	#ifdef SHOW_PROGRESS
+	m_timePrinter.printElapsedTime("Distribution of sequence reads");
+	cout<<endl;
+	cout<<"Rank "<<getRank()<<": starting vertices distribution."<<endl;
+	#else
+	cout<<"\r"<<"Counting vertices"<<endl;
+	#endif
+	for(int i=0;i<getSize();i++){
+		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i, TAG_START_VERTICES_DISTRIBUTION,getRank());
+		m_outbox.push_back(aMessage);
+	}
+	m_messageSentForVerticesDistribution=true;
+}
 
-	
-	}else if(m_startEdgeDistribution){
-		#ifndef SHOW_PROGRESS
-		cout<<"\r"<<"Connecting vertices"<<endl;
-		#endif
-		for(int i=0;i<getSize();i++){
-			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i,TAG_START_EDGES_DISTRIBUTION_ASK,getRank());
-			m_outbox.push_back(aMessage);
-		}
-		m_startEdgeDistribution=false;
-	}else if(m_numberOfMachinesReadyForEdgesDistribution==getSize() and isMaster()){
-		m_timePrinter.printElapsedTime("Calculation of coverage distribution");
-		cout<<endl;
-		cout<<"Rank 0 tells its friends to proceed with the distribution of edges."<<endl;
-		m_numberOfMachinesReadyForEdgesDistribution=-1;
-		for(int i=0;i<getSize();i++){
-			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i,TAG_START_EDGES_DISTRIBUTION,getRank());
-			m_outbox.push_back(aMessage);
-		}
-		m_messageSentForEdgesDistribution=true;
-	}else if(m_numberOfMachinesDoneSendingCoverage==getSize()){
-		m_numberOfMachinesDoneSendingCoverage=-1;
-		string file=m_parameters.getCoverageDistributionFile();
-		CoverageDistribution distribution(&m_coverageDistribution,&file);
-		m_minimumCoverage=distribution.getMinimumCoverage();
-		m_peakCoverage=distribution.getPeakCoverage();
-		m_seedCoverage=(m_minimumCoverage+m_peakCoverage)/2;
+void Machine::call_MASTER_MODE_TRIGGER_EDGES_DISTRIBUTION(){
+	#ifndef SHOW_PROGRESS
+	cout<<"\r"<<"Connecting vertices"<<endl;
+	#endif
+	for(int i=0;i<getSize();i++){
+		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i,TAG_START_EDGES_DISTRIBUTION_ASK,getRank());
+		m_outbox.push_back(aMessage);
+	}
+	m_startEdgeDistribution=false;
+}
 
-		m_coverageDistribution.clear();
+void Machine::call_MASTER_MODE_START_EDGES_DISTRIBUTION(){
+	m_timePrinter.printElapsedTime("Calculation of coverage distribution");
+	cout<<endl;
+	cout<<"Rank 0 tells its friends to proceed with the distribution of edges."<<endl;
+	m_numberOfMachinesReadyForEdgesDistribution=-1;
+	for(int i=0;i<getSize();i++){
+		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i,TAG_START_EDGES_DISTRIBUTION,getRank());
+		m_outbox.push_back(aMessage);
+	}
+	m_messageSentForEdgesDistribution=true;
+}
 
-		#ifdef WRITE_PARAMETERS
-		ofstream f(m_parameters.getParametersFile().c_str());
-		f<<"Ray Command Line: ";
-		vector<string> commands=m_parameters.getCommands();
-		for(int i=0;i<(int)commands.size();i++){
-			f<<" "<<commands[i];
-		}
-		f<<endl;
-		f<<"Ray Assembly Engine: "<<m_parameters.getEngineName()<<"-"<<m_parameters.getVersion()<<endl;
-		f<<"Ray Word Size: "<<m_wordSize<<endl;
-		f<<"Ray Minimum Coverage: "<<m_minimumCoverage<<endl;
-		f<<"Ray Peak Coverage: "<<m_peakCoverage<<endl;
-		f<<"Ray Contigs File: "<<m_parameters.getContigsFile()<<endl;
-		if(m_parameters.useAmos()){
-			f<<"Ray AMOS File: "<<m_parameters.getAmosFile()<<endl;
-		}
-		f<<"Ray Parameters File: "<<m_parameters.getParametersFile()<<endl;
-		f<<"Ray Coverage Distribution File: "<<m_parameters.getCoverageDistributionFile()<<endl;
+void Machine::call_MASTER_MODE_SEND_COVERAGE_VALUES(){
+	m_numberOfMachinesDoneSendingCoverage=-1;
+	string file=m_parameters.getCoverageDistributionFile();
+	CoverageDistribution distribution(&m_coverageDistribution,&file);
+	m_minimumCoverage=distribution.getMinimumCoverage();
+	m_peakCoverage=distribution.getPeakCoverage();
+	m_seedCoverage=(m_minimumCoverage+m_peakCoverage)/2;
 
-		f.close();
-		cout<<"Writing "<<m_parameters.getParametersFile()<<""<<endl;
-		#endif
+	m_coverageDistribution.clear();
 
-		if(m_minimumCoverage > m_peakCoverage or m_peakCoverage==m_maxCoverage){
-			killRanks();
-			cout<<"Error: no enrichment observed."<<endl;
-			return;
-		}
+	#ifdef WRITE_PARAMETERS
+	ofstream f(m_parameters.getParametersFile().c_str());
+	f<<"Ray Command Line: ";
+	vector<string> commands=m_parameters.getCommands();
+	for(int i=0;i<(int)commands.size();i++){
+		f<<" "<<commands[i];
+	}
+	f<<endl;
+	f<<"Ray Assembly Engine: "<<m_parameters.getEngineName()<<"-"<<m_parameters.getVersion()<<endl;
+	f<<"Ray Word Size: "<<m_wordSize<<endl;
+	f<<"Ray Minimum Coverage: "<<m_minimumCoverage<<endl;
+	f<<"Ray Peak Coverage: "<<m_peakCoverage<<endl;
+	f<<"Ray Contigs File: "<<m_parameters.getContigsFile()<<endl;
+	if(m_parameters.useAmos()){
+		f<<"Ray AMOS File: "<<m_parameters.getAmosFile()<<endl;
+	}
+	f<<"Ray Parameters File: "<<m_parameters.getParametersFile()<<endl;
+	f<<"Ray Coverage Distribution File: "<<m_parameters.getCoverageDistributionFile()<<endl;
 
-		// see these values to everyone.
-		VERTEX_TYPE*buffer=(VERTEX_TYPE*)m_outboxAllocator.allocate(3*sizeof(VERTEX_TYPE));
-		buffer[0]=m_minimumCoverage;
-		buffer[1]=m_seedCoverage;
-		buffer[2]=m_peakCoverage;
-		
-		m_numberOfRanksWithCoverageData=0;
-		for(int i=0;i<getSize();i++){
-			Message aMessage(buffer,3,MPI_UNSIGNED_LONG_LONG,i,TAG_SEND_COVERAGE_VALUES,getRank());
-			m_outbox.push_back(aMessage);
-		}
-	}else if(m_mode_send_vertices==true){
-		m_verticesExtractor.process(&m_mode_send_vertices_sequence_id,
-				&m_myReads,
-				&m_reverseComplementVertex,
-				&m_mode_send_vertices_sequence_id_position,
-				getRank(),
-				&m_outbox,
-				&m_mode_send_vertices,
-				m_wordSize,
-				m_disData,
-				getSize(),
-				&m_outboxAllocator,
-				m_colorSpaceMode
-			);
-	}else if(m_numberOfRanksWithCoverageData==getSize()){
-		m_numberOfRanksWithCoverageData=-1;
-		m_numberOfMachinesReadyForEdgesDistribution=getSize();
-	}else if(m_numberOfMachinesDoneSendingEdges==getSize()){
-		m_numberOfMachinesDoneSendingEdges=-9;
+	f.close();
+	cout<<"Writing "<<m_parameters.getParametersFile()<<""<<endl;
+	#endif
 
-		m_timePrinter.printElapsedTime("Distribution of edges");
-		cout<<endl;
-
-
-		m_mode_AttachSequences=true;
-		m_distribution_file_id=m_distribution_sequence_id=m_distribution_currentSequenceId=0;
-
-	}else if(m_numberOfMachinesDoneSendingVertices==getSize()){
-		cout<<"Rank 0 asks other ranks to share their number of vertices"<<endl;
-		m_numberOfMachinesDoneSendingVertices=-1;
-		for(int i=0;i<getSize();i++){
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG, i, TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION,getRank());
-			m_outbox.push_back(aMessage);
-		}
-	}else if(m_numberOfMachinesReadyToSendDistribution==getSize()){
-
-		m_numberOfMachinesReadyToSendDistribution=-1;
-		m_timePrinter.printElapsedTime("Distribution of vertices");
-		cout<<endl;
-		cout<<"Rank 0 computes the coverage distribution."<<endl;
-
-
-		for(int i=0;i<getSize();i++){
-			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, i, TAG_PREPARE_COVERAGE_DISTRIBUTION,getRank());
-			m_outbox.push_back(aMessage);
-		}
-	}else if(m_ranksDoneAttachingReads==getSize()){
-		m_ranksDoneAttachingReads=-1;
-		m_readyToSeed=getSize();
+	if(m_minimumCoverage > m_peakCoverage or m_peakCoverage==m_maxCoverage){
+		killRanks();
+		cout<<"Error: no enrichment observed."<<endl;
+		return;
 	}
 
-	if(m_mode==MODE_ASSEMBLE_WAVES){
-		// take each seed, and extend it in both direction using previously obtained information.
-		if(m_seedingData->m_SEEDING_i==(int)m_seedingData->m_SEEDING_seeds.size()){
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_ASSEMBLE_WAVES_DONE,getRank());
+	// see these values to everyone.
+	VERTEX_TYPE*buffer=(VERTEX_TYPE*)m_outboxAllocator.allocate(3*sizeof(VERTEX_TYPE));
+	buffer[0]=m_minimumCoverage;
+	buffer[1]=m_seedCoverage;
+	buffer[2]=m_peakCoverage;
+	
+	m_numberOfRanksWithCoverageData=0;
+	for(int i=0;i<getSize();i++){
+		Message aMessage(buffer,3,MPI_UNSIGNED_LONG_LONG,i,TAG_SEND_COVERAGE_VALUES,getRank());
+		m_outbox.push_back(aMessage);
+	}
+}
+
+void Machine::call_MODE_EXTRACT_VERTICES(){
+	m_verticesExtractor.process(&m_mode_send_vertices_sequence_id,
+			&m_myReads,
+			&m_reverseComplementVertex,
+			&m_mode_send_vertices_sequence_id_position,
+			getRank(),
+			&m_outbox,
+			&m_mode_send_vertices,
+			m_wordSize,
+			m_disData,
+			getSize(),
+			&m_outboxAllocator,
+			m_colorSpaceMode
+		);
+}
+
+void Machine::call_MASTER_MODE_TRIGGER_EDGES(){
+	m_numberOfRanksWithCoverageData=-1;
+	m_numberOfMachinesReadyForEdgesDistribution=getSize();
+}
+
+void Machine::call_MASTER_MODE_TRIGGER_INDEXING(){
+	m_numberOfMachinesDoneSendingEdges=-9;
+
+	m_timePrinter.printElapsedTime("Distribution of edges");
+	cout<<endl;
+
+
+	m_mode_AttachSequences=true;
+	m_distribution_file_id=m_distribution_sequence_id=m_distribution_currentSequenceId=0;
+}
+
+void Machine::call_MASTER_MODE_PREPARE_DISTRIBUTIONS(){
+	cout<<"Rank 0 asks other ranks to share their number of vertices"<<endl;
+	m_numberOfMachinesDoneSendingVertices=-1;
+	for(int i=0;i<getSize();i++){
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG, i, TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION,getRank());
+		m_outbox.push_back(aMessage);
+	}
+}
+
+void Machine::call_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS(){
+	m_numberOfMachinesReadyToSendDistribution=-1;
+	m_timePrinter.printElapsedTime("Distribution of vertices");
+	cout<<endl;
+	cout<<"Rank 0 computes the coverage distribution."<<endl;
+
+
+	for(int i=0;i<getSize();i++){
+		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, i, TAG_PREPARE_COVERAGE_DISTRIBUTION,getRank());
+		m_outbox.push_back(aMessage);
+	}
+}
+
+void Machine::call_MASTER_MODE_PREPARE_SEEDING(){
+	m_ranksDoneAttachingReads=-1;
+	m_readyToSeed=getSize();
+}
+
+void Machine::call_MODE_ASSEMBLE_WAVES(){
+	// take each seed, and extend it in both direction using previously obtained information.
+	if(m_seedingData->m_SEEDING_i==(int)m_seedingData->m_SEEDING_seeds.size()){
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_ASSEMBLE_WAVES_DONE,getRank());
+		m_outbox.push_back(aMessage);
+	}else{
+	}
+}
+
+void Machine::call_MODE_PERFORM_CALIBRATION(){
+	int rank=rand()%getSize();
+	VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
+	Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rank,TAG_CALIBRATION_MESSAGE,getRank());
+	m_outbox.push_back(aMessage);
+}
+
+void Machine::call_MODE_FINISH_FUSIONS(){
+	finishFusions();
+}
+
+void Machine::call_MODE_DISTRIBUTE_FUSIONS(){
+	if(m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
+		cout<<"Rank "<<getRank()<<" distributes its fusions. "<<m_ed->m_EXTENSION_contigs.size()<<"/"<<m_ed->m_EXTENSION_contigs.size()<<endl;
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_DISTRIBUTE_FUSIONS_FINISHED,getRank());
+		m_outbox.push_back(aMessage);
+		m_mode=MODE_DO_NOTHING;
+		return;
+	}
+
+	if(m_ed->m_EXTENSION_currentPosition==0){
+		if(m_seedingData->m_SEEDING_i%10==0){
+			cout<<"Rank "<<getRank()<<" distributes its fusions. "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_ed->m_EXTENSION_contigs.size()<<endl;
+
+		}
+	}
+
+	VERTEX_TYPE vertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
+	VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(3*sizeof(VERTEX_TYPE));
+	message[0]=vertex;
+	message[1]=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
+	message[2]=m_ed->m_EXTENSION_currentPosition;
+	Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,vertexRank(vertex),TAG_SAVE_WAVE_PROGRESSION,getRank());
+	m_outbox.push_back(aMessage);
+
+	m_ed->m_EXTENSION_currentPosition++;
+
+	// the next one
+	if(m_ed->m_EXTENSION_currentPosition==(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
+		m_seedingData->m_SEEDING_i++;
+		m_ed->m_EXTENSION_currentPosition=0;
+	}
+}
+
+void Machine::call_MODE_SEND_DISTRIBUTION(){
+	if(m_distributionOfCoverage.size()==0){
+		for(int i=0;i<m_subgraph.getNumberOfTrees();i++){
+			SplayTreeIterator<VERTEX_TYPE,Vertex> iterator(m_subgraph.getTree(i));
+			while(iterator.hasNext()){
+				int coverage=iterator.next()->getValue()->getCoverage();
+				m_distributionOfCoverage[coverage]++;
+			}
+		}
+	}
+
+	int length=2;
+	VERTEX_TYPE*data=(VERTEX_TYPE*)m_outboxAllocator.allocate(sizeof(VERTEX_TYPE)*length);
+	int j=0;
+	for(map<int,VERTEX_TYPE>::iterator i=m_distributionOfCoverage.begin();i!=m_distributionOfCoverage.end();i++){
+		int coverage=i->first;
+		VERTEX_TYPE count=i->second;
+		if(m_mode_send_coverage_iterator==j){
+			data[0]=coverage;
+			data[1]=count;
+			break;
+		}
+		j++;
+	}
+	Message aMessage(data,length, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_COVERAGE_DATA,getRank());
+	m_outbox.push_back(aMessage);
+
+	m_mode_send_coverage_iterator++;
+	if(m_mode_send_coverage_iterator>=(int)m_distributionOfCoverage.size()){
+		m_mode_sendDistribution=false;
+		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,MASTER_RANK, TAG_COVERAGE_END,getRank());
+		m_outbox.push_back(aMessage);
+		m_distributionOfCoverage.clear();
+	}
+}
+
+void Machine::call_MODE_PROCESS_OUTGOING_EDGES(){
+	m_edgesExtractor.m_wordSize=m_wordSize;
+	m_edgesExtractor.processOutgoingEdges();
+}
+
+void Machine::call_MODE_PROCESS_INGOING_EDGES(){
+	m_edgesExtractor.processIngoingEdges();
+}
+
+void Machine::call_MASTER_MODE_TRIGGER_SEEDING(){
+	m_timePrinter.printElapsedTime("Indexing of sequence reads");
+	cout<<endl;
+	cout<<"Rank 0 tells other ranks to calculate their seeds."<<endl;
+	m_readyToSeed=-1;
+	m_numberOfRanksDoneSeeding=0;
+	// tell everyone to seed now.
+	for(int i=0;i<getSize();i++){
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_START_SEEDING,getRank());
+		m_outbox.push_back(aMessage);
+	}
+}
+
+void Machine::call_MODE_START_SEEDING(){
+	// assign a first vertex
+	if(!m_seedingData->m_SEEDING_NodeInitiated){
+		if(m_seedingData->m_SEEDING_i==(int)m_subgraph.size()-1){
+
+			m_mode=MODE_DO_NOTHING;
+			#ifdef SHOW_PROGRESS
+			cout<<"Rank "<<getRank()<<" is seeding the very vertices it holds. "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_subgraph.size()<<" (DONE)"<<endl;
+			#endif
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_SEEDING_IS_OVER,getRank());
+			m_seedingData->m_SEEDING_nodes.clear();
 			m_outbox.push_back(aMessage);
 		}else{
-		}
-	}else if(m_mode==MODE_PERFORM_CALIBRATION){
-		int rank=rand()%getSize();
-		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
-		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rank,TAG_CALIBRATION_MESSAGE,getRank());
-		m_outbox.push_back(aMessage);
-	}else if(m_mode==MODE_FINISH_FUSIONS){
-		finishFusions();
-	}else if(m_mode==MODE_DISTRIBUTE_FUSIONS){
-		if(m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
-			cout<<"Rank "<<getRank()<<" distributes its fusions. "<<m_ed->m_EXTENSION_contigs.size()<<"/"<<m_ed->m_EXTENSION_contigs.size()<<endl;
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_DISTRIBUTE_FUSIONS_FINISHED,getRank());
-			m_outbox.push_back(aMessage);
-			m_mode=MODE_DO_NOTHING;
-			return;
-		}
-	
-		if(m_ed->m_EXTENSION_currentPosition==0){
-			if(m_seedingData->m_SEEDING_i%10==0){
-				cout<<"Rank "<<getRank()<<" distributes its fusions. "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_ed->m_EXTENSION_contigs.size()<<endl;
-
+			#ifdef SHOW_PROGRESS
+			if(m_seedingData->m_SEEDING_i % 100000 ==0){
+				cout<<"Rank "<<getRank()<<" is seeding the very vertices it holds. "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_subgraph.size()<<endl;
 			}
-		}
-
-		VERTEX_TYPE vertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
-		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(3*sizeof(VERTEX_TYPE));
-		message[0]=vertex;
-		message[1]=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
-		message[2]=m_ed->m_EXTENSION_currentPosition;
-		Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,vertexRank(vertex),TAG_SAVE_WAVE_PROGRESSION,getRank());
-		m_outbox.push_back(aMessage);
-
-		m_ed->m_EXTENSION_currentPosition++;
-
-		// the next one
-		if(m_ed->m_EXTENSION_currentPosition==(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
+			#endif
+			m_seedingData->m_SEEDING_currentVertex=m_seedingData->m_SEEDING_nodes[m_seedingData->m_SEEDING_i];
+			m_seedingData->m_SEEDING_first=m_seedingData->m_SEEDING_currentVertex;
+			m_seedingData->m_SEEDING_testInitiated=false;
+			m_seedingData->m_SEEDING_1_1_test_done=false;
 			m_seedingData->m_SEEDING_i++;
-			m_ed->m_EXTENSION_currentPosition=0;
+			m_seedingData->m_SEEDING_NodeInitiated=true;
+			m_seedingData->m_SEEDING_firstVertexTestDone=false;
 		}
-	}
-
-	if(m_mode_sendDistribution){
-		if(m_distributionOfCoverage.size()==0){
-			for(int i=0;i<m_subgraph.getNumberOfTrees();i++){
-				SplayTreeIterator<VERTEX_TYPE,Vertex> iterator(m_subgraph.getTree(i));
-				while(iterator.hasNext()){
-					int coverage=iterator.next()->getValue()->getCoverage();
-					m_distributionOfCoverage[coverage]++;
-				}
-			}
-		}
-
-		int length=2;
-		VERTEX_TYPE*data=(VERTEX_TYPE*)m_outboxAllocator.allocate(sizeof(VERTEX_TYPE)*length);
-		int j=0;
-		for(map<int,VERTEX_TYPE>::iterator i=m_distributionOfCoverage.begin();i!=m_distributionOfCoverage.end();i++){
-			int coverage=i->first;
-			VERTEX_TYPE count=i->second;
-			if(m_mode_send_coverage_iterator==j){
-				data[0]=coverage;
-				data[1]=count;
-				break;
-			}
-			j++;
-		}
-		Message aMessage(data,length, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_COVERAGE_DATA,getRank());
-		m_outbox.push_back(aMessage);
-
-		m_mode_send_coverage_iterator++;
-		if(m_mode_send_coverage_iterator>=(int)m_distributionOfCoverage.size()){
-			m_mode_sendDistribution=false;
-			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,MASTER_RANK, TAG_COVERAGE_END,getRank());
-			m_outbox.push_back(aMessage);
-			m_distributionOfCoverage.clear();
-		}
-
-	}else if(m_mode_send_outgoing_edges){ 
-		m_edgesExtractor.m_wordSize=m_wordSize;
-		m_edgesExtractor.processOutgoingEdges();
-	}else if(m_mode_send_ingoing_edges){ 
-		m_edgesExtractor.processIngoingEdges();
-	}else if(m_readyToSeed==getSize()){
-		m_timePrinter.printElapsedTime("Indexing of sequence reads");
-		cout<<endl;
-		cout<<"Rank 0 tells other ranks to calculate their seeds."<<endl;
-		m_readyToSeed=-1;
-		m_numberOfRanksDoneSeeding=0;
-		// tell everyone to seed now.
-		for(int i=0;i<getSize();i++){
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_START_SEEDING,getRank());
-			m_outbox.push_back(aMessage);
-		}
-	}else if(m_mode==MODE_START_SEEDING){
-
-		// assign a first vertex
-		if(!m_seedingData->m_SEEDING_NodeInitiated){
-			if(m_seedingData->m_SEEDING_i==(int)m_subgraph.size()-1){
-
-				m_mode=MODE_DO_NOTHING;
-				#ifdef SHOW_PROGRESS
-				cout<<"Rank "<<getRank()<<" is seeding the very vertices it holds. "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_subgraph.size()<<" (DONE)"<<endl;
-				#endif
-				Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_SEEDING_IS_OVER,getRank());
-				m_seedingData->m_SEEDING_nodes.clear();
-				m_outbox.push_back(aMessage);
+	// check that this node has 1 ingoing edge and 1 outgoing edge.
+	}else if(!m_seedingData->m_SEEDING_firstVertexTestDone){
+		if(!m_seedingData->m_SEEDING_1_1_test_done){
+			do_1_1_test();
+		}else{
+			if(!m_seedingData->m_SEEDING_1_1_test_result){
+				m_seedingData->m_SEEDING_NodeInitiated=false;// abort
 			}else{
-				#ifdef SHOW_PROGRESS
-				if(m_seedingData->m_SEEDING_i % 100000 ==0){
-					cout<<"Rank "<<getRank()<<" is seeding the very vertices it holds. "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_subgraph.size()<<endl;
-				}
-				#endif
-				m_seedingData->m_SEEDING_currentVertex=m_seedingData->m_SEEDING_nodes[m_seedingData->m_SEEDING_i];
-				m_seedingData->m_SEEDING_first=m_seedingData->m_SEEDING_currentVertex;
+				m_seedingData->m_SEEDING_firstVertexParentTestDone=false;
+				m_seedingData->m_SEEDING_firstVertexTestDone=true;
+				m_seedingData->m_SEEDING_currentVertex=m_seedingData->m_SEEDING_currentParentVertex;
 				m_seedingData->m_SEEDING_testInitiated=false;
 				m_seedingData->m_SEEDING_1_1_test_done=false;
-				m_seedingData->m_SEEDING_i++;
-				m_seedingData->m_SEEDING_NodeInitiated=true;
-				m_seedingData->m_SEEDING_firstVertexTestDone=false;
 			}
-		// check that this node has 1 ingoing edge and 1 outgoing edge.
-		}else if(!m_seedingData->m_SEEDING_firstVertexTestDone){
-			if(!m_seedingData->m_SEEDING_1_1_test_done){
-				do_1_1_test();
-			}else{
-				if(!m_seedingData->m_SEEDING_1_1_test_result){
-					m_seedingData->m_SEEDING_NodeInitiated=false;// abort
-				}else{
-					m_seedingData->m_SEEDING_firstVertexParentTestDone=false;
-					m_seedingData->m_SEEDING_firstVertexTestDone=true;
-					m_seedingData->m_SEEDING_currentVertex=m_seedingData->m_SEEDING_currentParentVertex;
-					m_seedingData->m_SEEDING_testInitiated=false;
-					m_seedingData->m_SEEDING_1_1_test_done=false;
-				}
-			}
+		}
 
-		// check that the parent does not have 1 ingoing edge and 1 outgoing edge
-		}else if(!m_seedingData->m_SEEDING_firstVertexParentTestDone){
-			if(!m_seedingData->m_SEEDING_1_1_test_done){
-				do_1_1_test();
-			}else{
-				if(m_seedingData->m_SEEDING_1_1_test_result){
-					m_seedingData->m_SEEDING_NodeInitiated=false;//abort
-				}else{
-					m_seedingData->m_SEEDING_firstVertexParentTestDone=true;
-					m_seedingData->m_SEEDING_vertices.clear();
-					m_seedingData->m_SEEDING_seed.clear();
-					// restore original starter.
-					m_seedingData->m_SEEDING_currentVertex=m_seedingData->m_SEEDING_first;
-					m_seedingData->m_SEEDING_testInitiated=false;
-					m_seedingData->m_SEEDING_1_1_test_done=false;
-				}
-			}
-
-		// check if currentVertex has 1 ingoing edge and 1 outgoing edge, if yes, add it
+	// check that the parent does not have 1 ingoing edge and 1 outgoing edge
+	}else if(!m_seedingData->m_SEEDING_firstVertexParentTestDone){
+		if(!m_seedingData->m_SEEDING_1_1_test_done){
+			do_1_1_test();
 		}else{
-			// attempt to add m_SEEDING_currentVertex
-			if(!m_seedingData->m_SEEDING_1_1_test_done){
-				do_1_1_test();
+			if(m_seedingData->m_SEEDING_1_1_test_result){
+				m_seedingData->m_SEEDING_NodeInitiated=false;//abort
 			}else{
-				if(m_seedingData->m_SEEDING_vertices.count(m_seedingData->m_SEEDING_currentVertex)>0){
-					m_seedingData->m_SEEDING_1_1_test_result=false;
-				}
-				if(!m_seedingData->m_SEEDING_1_1_test_result){
-					m_seedingData->m_SEEDING_NodeInitiated=false;
-					int nucleotides=m_seedingData->m_SEEDING_seed.size()+m_wordSize-1;
-					// only consider the long ones.
-					if(nucleotides>=m_parameters.getMinimumContigLength()){
-						m_seedingData->m_SEEDING_seeds.push_back(m_seedingData->m_SEEDING_seed);
-					}
-				}else{
-					m_seedingData->m_SEEDING_seed.push_back(m_seedingData->m_SEEDING_currentVertex);
-					m_seedingData->m_SEEDING_vertices.insert(m_seedingData->m_SEEDING_currentVertex);
-					m_seedingData->m_SEEDING_currentVertex=m_seedingData->m_SEEDING_currentChildVertex;
-					m_seedingData->m_SEEDING_testInitiated=false;
-					m_seedingData->m_SEEDING_1_1_test_done=false;
-				}
+				m_seedingData->m_SEEDING_firstVertexParentTestDone=true;
+				m_seedingData->m_SEEDING_vertices.clear();
+				m_seedingData->m_SEEDING_seed.clear();
+				// restore original starter.
+				m_seedingData->m_SEEDING_currentVertex=m_seedingData->m_SEEDING_first;
+				m_seedingData->m_SEEDING_testInitiated=false;
+				m_seedingData->m_SEEDING_1_1_test_done=false;
 			}
 		}
-	}else if(m_numberOfRanksDoneSeeding==getSize()){
-		m_timePrinter.printElapsedTime("Computation of seeds");
-		cout<<endl;
-		cout<<"Rank 0 asks others to approximate library sizes."<<endl;
-		m_numberOfRanksDoneSeeding=-1;
-		for(int i=0;i<getSize();i++){
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_AUTOMATIC_DISTANCE_DETECTION,getRank());
-			m_outbox.push_back(aMessage);
-		}
-		m_numberOfRanksDoneDetectingDistances=0;
-	}else if(m_numberOfRanksDoneDetectingDistances==getSize()){
-		m_numberOfRanksDoneDetectingDistances=-1;
-		m_numberOfRanksDoneSendingDistances=0;
-		for(int i=0;i<getSize();i++){
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_ASK_LIBRARY_DISTANCES,getRank());
-			m_outbox.push_back(aMessage);
-		}
-	}else if(m_numberOfRanksDoneSendingDistances==getSize()){
 
-		m_numberOfRanksDoneSendingDistances=-1;
-		m_parameters.computeAverageDistances();
-		m_mode=MODE_DO_NOTHING;
-		m_master_mode=MODE_UPDATE_DISTANCES;
-		m_fileId=0;
-		m_sequence_idInFile=0;
-		m_sequence_id=0;
-
-
-	}else if(m_mode_AttachSequences){
-		m_si.attachReads(&m_outbox,&m_distribution_file_id,&m_distribution_sequence_id,
-			&m_wordSize,&m_distribution_reads,getSize(),&m_distributionAllocator,
-			&m_distribution_currentSequenceId,getRank(),m_disData,&m_mode_AttachSequences,
-			&m_parameters,&m_colorSpaceMode,&m_outboxAllocator,&m_lastTime);
-	}else if(m_mode==MODE_EXTENSION_ASK and isMaster()){
-		for(int i=0;i<getSize();i++){
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_ASK_EXTENSION,getRank());
-			m_outbox.push_back(aMessage);
-		}
-		m_mode=MODE_DO_NOTHING;
-	}else if(m_mode==MODE_SEND_EXTENSION_DATA){
-		if(m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
-			m_mode=MODE_DO_NOTHING;
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_DATA_END,getRank());
-			m_outbox.push_back(aMessage);
+	// check if currentVertex has 1 ingoing edge and 1 outgoing edge, if yes, add it
+	}else{
+		// attempt to add m_SEEDING_currentVertex
+		if(!m_seedingData->m_SEEDING_1_1_test_done){
+			do_1_1_test();
 		}else{
-			if(m_fusionData->m_FUSION_eliminated.count(m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i])>0){ // skip merged paths.
-				m_seedingData->m_SEEDING_i++;
-				m_ed->m_EXTENSION_currentPosition=0;
+			if(m_seedingData->m_SEEDING_vertices.count(m_seedingData->m_SEEDING_currentVertex)>0){
+				m_seedingData->m_SEEDING_1_1_test_result=false;
+			}
+			if(!m_seedingData->m_SEEDING_1_1_test_result){
+				m_seedingData->m_SEEDING_NodeInitiated=false;
+				int nucleotides=m_seedingData->m_SEEDING_seed.size()+m_wordSize-1;
+				// only consider the long ones.
+				if(nucleotides>=m_parameters.getMinimumContigLength()){
+					m_seedingData->m_SEEDING_seeds.push_back(m_seedingData->m_SEEDING_seed);
+				}
 			}else{
-				if(m_ed->m_EXTENSION_currentPosition==0){
-					VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(sizeof(VERTEX_TYPE)*1);
-					int theId=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
-					message[0]=theId;
-					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_START,getRank());
-					m_outbox.push_back(aMessage);
-				}
-				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(sizeof(VERTEX_TYPE)*1);
-				message[0]=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
-				m_ed->m_EXTENSION_currentPosition++;
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_DATA,getRank());
-				m_outbox.push_back(aMessage);
-				if(m_ed->m_EXTENSION_currentPosition==(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
-					Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_END,getRank());
-					m_outbox.push_back(aMessage);
-					m_seedingData->m_SEEDING_i++;
-					m_ed->m_EXTENSION_currentPosition=0;
-				}
+				m_seedingData->m_SEEDING_seed.push_back(m_seedingData->m_SEEDING_currentVertex);
+				m_seedingData->m_SEEDING_vertices.insert(m_seedingData->m_SEEDING_currentVertex);
+				m_seedingData->m_SEEDING_currentVertex=m_seedingData->m_SEEDING_currentChildVertex;
+				m_seedingData->m_SEEDING_testInitiated=false;
+				m_seedingData->m_SEEDING_1_1_test_done=false;
 			}
 		}
-	}else if(m_mode==MODE_FUSION){
-		makeFusions();
-	}else if(m_mode==MODE_AUTOMATIC_DISTANCE_DETECTION){
-		detectDistances();
-	}else if(m_mode==MODE_SEND_LIBRARY_DISTANCES){
-		sendLibraryDistances();
-	}else if(m_master_mode==MODE_UPDATE_DISTANCES){
-		updateDistances();
 	}
 
-	if(m_ed->m_EXTENSION_numberOfRanksDone==getSize()){
-		m_timePrinter.printElapsedTime("Extension of seeds");
-		cout<<endl;
+}
 
-		// ask one at once to do the fusion
-		// because otherwise it may lead to hanging of the program for unknown reasons
-		m_ed->m_EXTENSION_numberOfRanksDone=-1;
-		m_master_mode=MODE_DO_NOTHING;
+void Machine::call_MASTER_MODE_TRIGGER_DETECTION(){
+	m_timePrinter.printElapsedTime("Computation of seeds");
+	cout<<endl;
+	cout<<"Rank 0 asks others to approximate library sizes."<<endl;
+	m_numberOfRanksDoneSeeding=-1;
+	for(int i=0;i<getSize();i++){
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_AUTOMATIC_DISTANCE_DETECTION,getRank());
+		m_outbox.push_back(aMessage);
+	}
+	m_numberOfRanksDoneDetectingDistances=0;
+}
+
+void Machine::call_MASTER_MODE_ASK_DISTANCES(){
+	m_numberOfRanksDoneDetectingDistances=-1;
+	m_numberOfRanksDoneSendingDistances=0;
+	for(int i=0;i<getSize();i++){
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_ASK_LIBRARY_DISTANCES,getRank());
+		m_outbox.push_back(aMessage);
+	}
+}
+
+void Machine::call_MASTER_MODE_START_UPDATING_DISTANCES(){
+	m_numberOfRanksDoneSendingDistances=-1;
+	m_parameters.computeAverageDistances();
+	m_mode=MODE_DO_NOTHING;
+	m_master_mode=MODE_UPDATE_DISTANCES;
+	m_fileId=0;
+	m_sequence_idInFile=0;
+	m_sequence_id=0;
+}
+
+void Machine::call_MASTER_MODE_INDEX_SEQUENCES(){
+	m_si.attachReads(&m_outbox,&m_distribution_file_id,&m_distribution_sequence_id,
+		&m_wordSize,&m_distribution_reads,getSize(),&m_distributionAllocator,
+		&m_distribution_currentSequenceId,getRank(),m_disData,&m_mode_AttachSequences,
+		&m_parameters,&m_colorSpaceMode,&m_outboxAllocator,&m_lastTime);
+}
+
+void Machine::call_MASTER_MODE_TRIGGER_EXTENSIONS(){
+	for(int i=0;i<getSize();i++){
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_ASK_EXTENSION,getRank());
+		m_outbox.push_back(aMessage);
+	}
+	m_mode=MODE_DO_NOTHING;
+}
+
+void Machine::call_MODE_SEND_EXTENSION_DATA(){
+	if(m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
+		m_mode=MODE_DO_NOTHING;
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_DATA_END,getRank());
+		m_outbox.push_back(aMessage);
+	}else{
+		if(m_fusionData->m_FUSION_eliminated.count(m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i])>0){ // skip merged paths.
+			m_seedingData->m_SEEDING_i++;
+			m_ed->m_EXTENSION_currentPosition=0;
+		}else{
+			if(m_ed->m_EXTENSION_currentPosition==0){
+				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(sizeof(VERTEX_TYPE)*1);
+				int theId=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
+				message[0]=theId;
+				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_START,getRank());
+				m_outbox.push_back(aMessage);
+			}
+			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(sizeof(VERTEX_TYPE)*1);
+			message[0]=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
+			m_ed->m_EXTENSION_currentPosition++;
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_DATA,getRank());
+			m_outbox.push_back(aMessage);
+			if(m_ed->m_EXTENSION_currentPosition==(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
+				Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_END,getRank());
+				m_outbox.push_back(aMessage);
+				m_seedingData->m_SEEDING_i++;
+				m_ed->m_EXTENSION_currentPosition=0;
+			}
+		}
+	}
+}
+
+void Machine::call_MODE_FUSION(){
+	makeFusions();
+}
+
+void Machine::call_MODE_AUTOMATIC_DISTANCE_DETECTION(){
+	detectDistances();
+}
+
+void Machine::call_MODE_SEND_LIBRARY_DISTANCES(){
+	sendLibraryDistances();
+}
+
+void Machine::call_MASTER_MODE_UPDATE_DISTANCES(){
+		updateDistances();
+}
+
+void Machine::call_MASTER_MODE_TRIGGER_FUSIONS(){
+	m_timePrinter.printElapsedTime("Extension of seeds");
+	cout<<endl;
+
+	// ask one at once to do the fusion
+	// because otherwise it may lead to hanging of the program for unknown reasons
+	m_ed->m_EXTENSION_numberOfRanksDone=-1;
+	m_master_mode=MODE_DO_NOTHING;
+	m_fusionData->m_FUSION_numberOfRanksDone=0;
+	for(int i=0;i<(int)getSize();i++){// start fusion.
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_START_FUSION,getRank());
+		m_outbox.push_back(aMessage);
+	}
+	m_fusionData->m_fusionStarted=true;
+}
+
+void Machine::call_MASTER_MODE_TRIGGER_FIRST_FUSIONS(){
+	#ifdef SHOW_PROGRESS
+	cout<<"Rank "<<getRank()<<": fusion is done."<<endl;
+	#else
+	cout<<"Rank "<<getRank()<<" is finishing fusions."<<endl;
+	#endif
+	m_fusionData->m_FUSION_numberOfRanksDone=-1;
+
+	m_reductionOccured=true;
+	m_cycleStarted=false;
+	m_cycleNumber=0;
+}
+
+void Machine::call_MASTER_MODE_START_FUSION_CYCLE(){
+	// the finishing is
+	//
+	//  * a clear cycle
+	//  * a distribute cycle
+	//  * a finish cycle
+	//  * a clear cycle
+	//  * a distribute cycle
+	//  * a fusion cycle
+
+	if(!m_cycleStarted){
+		#ifdef SHOW_PROGRESS
+		#endif
+		m_nextReductionOccured=false;
+		m_cycleStarted=true;
+		m_isFinalFusion=false;
+		for(int i=0;i<getSize();i++){
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_CLEAR_DIRECTIONS,getRank());
+			m_outbox.push_back(aMessage);
+		}
+
+		m_CLEAR_n=0;
+	}else if(m_CLEAR_n==getSize() and !m_isFinalFusion){
+		#ifdef SHOW_PROGRESS
+		#endif
+		m_CLEAR_n=-1;
+
+		for(int i=0;i<getSize();i++){
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_DISTRIBUTE_FUSIONS,getRank());
+			m_outbox.push_back(aMessage);
+		}
+		m_DISTRIBUTE_n=0;
+	}else if(m_DISTRIBUTE_n==getSize() and !m_isFinalFusion){
+		#ifdef SHOW_PROGRESS
+		#endif
+		m_DISTRIBUTE_n=-1;
+		m_isFinalFusion=true;
+		for(int i=0;i<getSize();i++){
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_FINISH_FUSIONS,getRank());
+			m_outbox.push_back(aMessage);
+		}
+		m_FINISH_n=0;
+	}else if(m_FINISH_n==getSize() and m_isFinalFusion){
+		#ifdef SHOW_PROGRESS
+		#endif
+		for(int i=0;i<getSize();i++){
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_CLEAR_DIRECTIONS,getRank());
+			m_outbox.push_back(aMessage);
+		}
+		m_FINISH_n=-1;
+		m_CLEAR_n=0;
+	}else if(m_CLEAR_n==getSize() and m_isFinalFusion){
+		m_CLEAR_n=-1;
+		#ifdef SHOW_PROGRESS
+		#endif
+
+		for(int i=0;i<getSize();i++){
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_DISTRIBUTE_FUSIONS,getRank());
+			m_outbox.push_back(aMessage);
+		}
+		m_DISTRIBUTE_n=0;
+
+	}else if(m_DISTRIBUTE_n==getSize() and m_isFinalFusion){
+		#ifdef SHOW_PROGRESS
+		cout<<"Rank 0 tells others to compute fusions."<<endl;
+
+		#endif
 		m_fusionData->m_FUSION_numberOfRanksDone=0;
+		m_master_mode=MODE_DO_NOTHING;
+		m_DISTRIBUTE_n=-1;
 		for(int i=0;i<(int)getSize();i++){// start fusion.
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_START_FUSION,getRank());
 			m_outbox.push_back(aMessage);
 		}
-		m_fusionData->m_fusionStarted=true;
+		
+	}else if(m_fusionData->m_FUSION_numberOfRanksDone==getSize() and m_isFinalFusion){
+		m_reductionOccured=m_nextReductionOccured;
+		m_fusionData->m_FUSION_numberOfRanksDone=-1;
+		if(!m_reductionOccured or m_cycleNumber ==5){ // cycling is in development!
+			m_timePrinter.printElapsedTime("Computation of fusions");
+			cout<<endl;
+			cout<<"Rank 0 is "<<"collecting fusions"<<endl;
+			m_master_mode=MODE_ASK_EXTENSIONS;
+
+			m_sd->m_computedTopology=false;
+
+			m_sd->m_pathId=0;
+			m_sd->m_visitedVertices.clear();
+			while(!m_sd->m_verticesToVisit.empty())
+				m_sd->m_verticesToVisit.pop();
+			while(!m_sd->m_depthsToVisit.empty())
+				m_sd->m_depthsToVisit.pop();
+			m_sd->m_processedLastVertex=false;
+			m_ed->m_EXTENSION_currentRankIsSet=false;
+			m_ed->m_EXTENSION_rank=-1;
+		}else{
+			// we continue now!
+			m_cycleStarted=false;
+			m_cycleNumber++;
+		}
+	}
+}
+
+void Machine::call_MASTER_MODE_ASK_EXTENSIONS(){
+	#ifndef SHOW_PROGRESS
+	time_t tmp=time(NULL);
+	if(tmp>m_lastTime){
+		m_lastTime=tmp;
+		showProgress(m_lastTime);
+	}
+	#endif
+
+	// ask ranks to send their extensions.
+	if(!m_ed->m_EXTENSION_currentRankIsSet){
+		m_ed->m_EXTENSION_currentRankIsSet=true;
+		m_ed->m_EXTENSION_currentRankIsStarted=false;
+		m_ed->m_EXTENSION_rank++;
+	}
+	if(m_ed->m_EXTENSION_rank==getSize()){
+		#ifdef SHOW_SCAFFOLDER
+		#endif
+		int minimumLength=500;
+		if(!m_sd->m_computedTopology){ // in development.
+			// for each contig path, take the last vertex, and search for other contig paths 
+			// reachable from it.
+			if(false and m_sd->m_pathId<(int)m_allPaths.size()){
+				int currentPathId=m_identifiers[m_sd->m_pathId];
+				if(!m_sd->m_processedLastVertex){
+					if((int)m_allPaths[m_sd->m_pathId].size()<minimumLength){
+						m_sd->m_pathId++;
+						return;
+					}
+				
+					#ifdef SHOW_SCAFFOLDER
+					//cout<<"push last vertex."<<endl;
+					#endif
+					m_sd->m_processedLastVertex=true;
+					int theLength=m_allPaths[m_sd->m_pathId].size();
+					VERTEX_TYPE lastVertex=m_allPaths[m_sd->m_pathId][theLength-1];
+					#ifdef SHOW_SCAFFOLDER
+					cout<<"contig-"<<currentPathId<<" Last="<<idToWord(lastVertex,m_wordSize)<<" "<<theLength<<" vertices"<<endl;
+	
+					#endif
+					m_sd->m_verticesToVisit.push(lastVertex);
+					m_sd->m_depthsToVisit.push(0);
+					m_seedingData->m_SEEDING_edgesRequested=false;
+					m_sd->m_visitedVertices.clear();
+				}else if(!m_sd->m_verticesToVisit.empty()){
+					VERTEX_TYPE theVertex=m_sd->m_verticesToVisit.top();
+					int theDepth=m_sd->m_depthsToVisit.top();
+					if(!m_seedingData->m_SEEDING_edgesRequested){
+						#ifdef SHOW_SCAFFOLDER
+						//cout<<"Asking for arcs. "<<theVertex<<endl;
+						#endif
+						m_seedingData->m_SEEDING_edgesReceived=false;
+						m_seedingData->m_SEEDING_edgesRequested=true;
+						VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
+						message[0]=(VERTEX_TYPE)theVertex;
+						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0]),TAG_REQUEST_VERTEX_OUTGOING_EDGES,getRank());
+						m_outbox.push_back(aMessage);
+						m_Machine_getPaths_DONE=false;
+						m_Machine_getPaths_INITIALIZED=false;
+						m_Machine_getPaths_result.clear();
+						m_sd->m_visitedVertices.insert(theVertex);
+					}else if(m_seedingData->m_SEEDING_edgesReceived){
+						if(!m_Machine_getPaths_DONE){
+							getPaths(theVertex);
+						}else{
+							vector<Direction> nextPaths;
+							#ifdef SHOW_SCAFFOLDER
+							if(nextPaths.size()>0){
+								cout<<"We have "<<nextPaths.size()<<" paths with "<<idToWord(theVertex,m_wordSize)<<endl;	
+							}
+							#endif
+							for(int i=0;i<(int)m_Machine_getPaths_result.size();i++){
+								int pathId=m_Machine_getPaths_result[i].getWave();
+								if(pathId==currentPathId)
+									continue;
+								// this one is discarded.
+								if(m_sd->m_allIdentifiers.count(pathId)==0){
+									continue;
+								}
+								// not at the front.
+								if(m_Machine_getPaths_result[i].getProgression()>0)
+									continue;
+								int index=m_sd->m_allIdentifiers[pathId];
+
+								// too small to be relevant.
+								if((int)m_allPaths[index].size()<minimumLength)
+									continue;
+								
+								#ifdef SHOW_SCAFFOLDER
+								#endif
+								nextPaths.push_back(m_Machine_getPaths_result[i]);
+							}
+
+							m_sd->m_verticesToVisit.pop();
+							m_sd->m_depthsToVisit.pop();
+							m_seedingData->m_SEEDING_edgesRequested=false;
+
+							if(nextPaths.size()>0){// we found a path
+								for(int i=0;i<(int)nextPaths.size();i++){
+									cout<<"contig-"<<m_identifiers[m_sd->m_pathId]<<" -> "<<"contig-"<<nextPaths[i].getWave()<<" ("<<theDepth<<","<<nextPaths[i].getProgression()<<") via "<<idToWord(theVertex,m_wordSize)<<endl;
+									#ifdef DEBUG
+									assert(m_sd->m_allIdentifiers.count(nextPaths[i].getWave())>0);
+									#endif
+								}
+							}else{// continue the visit.
+								for(int i=0;i<(int)m_seedingData->m_SEEDING_receivedOutgoingEdges.size();i++){
+									VERTEX_TYPE newVertex=m_seedingData->m_SEEDING_receivedOutgoingEdges[i];
+									if(m_sd->m_visitedVertices.count(newVertex)>0)
+										continue;
+									int d=theDepth+1;
+									if(d>3000)
+										continue;
+									m_sd->m_verticesToVisit.push(newVertex);
+									m_sd->m_depthsToVisit.push(d);
+								}
+							}
+
+						}
+					}
+				}else{
+					m_sd->m_processedLastVertex=false;
+					m_sd->m_pathId++;
+					#ifdef SHOW_SCAFFOLDER
+					//cout<<"Processing next."<<endl;
+					#endif
+				}
+			}else{
+				m_sd->m_computedTopology=true;
+			}
+			return;
+		}
+
+		m_master_mode=MODE_DO_NOTHING;
+
+		int totalLength=0;
+		
+		#ifdef DEBUG
+		assert(m_allPaths.size()==m_identifiers.size());
+		#endif
+		ofstream f(m_parameters.getOutputFile().c_str());
+		for(int i=0;i<(int)m_allPaths.size();i++){
+			string contig=convertToString(&(m_allPaths[i]),m_wordSize);
+			#ifdef DEBUG
+			assert(i<(int)m_identifiers.size());
+			#endif
+			int id=m_identifiers[i];
+			#ifdef DEBUG
+			int theRank=id%MAX_NUMBER_OF_MPI_PROCESSES;
+			assert(theRank<getSize());
+			#endif
+			f<<">contig-"<<id<<" "<<contig.length()<<" nucleotides"<<endl<<addLineBreaks(contig);
+			totalLength+=contig.length();
+		}
+		f.close();
+		#ifdef SHOW_PROGRESS
+		#else
+		cout<<"\r"<<"              "<<endl<<"Writing "<<m_parameters.getOutputFile()<<endl;
+		#endif
+		cout<<endl<<"Rank 0: "<<m_allPaths.size()<<" contigs/"<<totalLength<<" nucleotides"<<endl;
+		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<endl;
+		if(m_parameters.useAmos()){
+			m_master_mode=MODE_AMOS;
+			m_seedingData->m_SEEDING_i=0;
+			m_mode_send_vertices_sequence_id_position=0;
+			m_ed->m_EXTENSION_reads_requested=false;
+			cout<<"\rCompleting "<<m_parameters.getAmosFile()<<endl;
+		}else{// we are done.
+			killRanks();
+		}
+		
+	}else if(!m_ed->m_EXTENSION_currentRankIsStarted){
+		m_ed->m_EXTENSION_currentRankIsStarted=true;
+		#ifdef SHOW_PROGRESS
+		cout<<"Rank "<<getRank()<<" asks "<<m_ed->m_EXTENSION_rank<<" for its fusions."<<endl;
+		#endif
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_ed->m_EXTENSION_rank,TAG_ASK_EXTENSION_DATA,getRank());
+		m_outbox.push_back(aMessage);
+		m_ed->m_EXTENSION_currentRankIsDone=false;
+	}else if(m_ed->m_EXTENSION_currentRankIsDone){
+		m_ed->m_EXTENSION_currentRankIsSet=false;
+	}
+}
+
+void Machine::call_MASTER_MODE_AMOS(){
+	// in development.
+	/*
+	* use m_allPaths and m_identifiers
+	*
+	* iterators: m_SEEDING_i: for the current contig
+	*            m_mode_send_vertices_sequence_id_position: for the current position in the current contig.
+	*/
+	if(m_seedingData->m_SEEDING_i==(int)m_allPaths.size()){// all contigs are processed
+		killRanks();
+		m_master_mode=MODE_DO_NOTHING;
+		fclose(m_bubbleData->m_amos);
+	}else if(m_mode_send_vertices_sequence_id_position==(int)m_allPaths[m_seedingData->m_SEEDING_i].size()){// iterate over the next one
+		m_seedingData->m_SEEDING_i++;
+		m_mode_send_vertices_sequence_id_position=0;
+		m_ed->m_EXTENSION_reads_requested=false;
+		
+		FILE*fp=m_bubbleData->m_amos;
+		fprintf(fp,"}\n");
+	}else{
+		if(!m_ed->m_EXTENSION_reads_requested){
+			if(m_mode_send_vertices_sequence_id_position==0){
+				FILE*fp=m_bubbleData->m_amos;
+				string seq=convertToString(&(m_allPaths[m_seedingData->m_SEEDING_i]),m_wordSize);
+				char*qlt=(char*)__Malloc(seq.length()+1);
+				strcpy(qlt,seq.c_str());
+				for(int i=0;i<(int)strlen(qlt);i++)
+					qlt[i]='D';
+				fprintf(fp,"{CTG\niid:%i\neid:contig-%i\ncom:\nRay\n.\nseq:\n%s\n.\nqlt:\n%s\n.\n",
+					m_seedingData->m_SEEDING_i+1,
+					m_identifiers[m_seedingData->m_SEEDING_i],
+					seq.c_str(),
+					qlt
+					);
+				__Free(qlt);
+			}
+
+			m_ed->m_EXTENSION_reads_requested=true;
+			m_ed->m_EXTENSION_reads_received=false;
+			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
+			message[0]=m_allPaths[m_seedingData->m_SEEDING_i][m_mode_send_vertices_sequence_id_position];
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0]),TAG_REQUEST_READS,getRank());
+			m_outbox.push_back(aMessage);
+
+			// iterator on reads
+			m_fusionData->m_FUSION_path_id=0;
+			m_ed->m_EXTENSION_readLength_requested=false;
+		}else if(m_ed->m_EXTENSION_reads_received){
+			if(m_fusionData->m_FUSION_path_id<(int)m_ed->m_EXTENSION_receivedReads.size()){
+				int readRank=m_ed->m_EXTENSION_receivedReads[m_fusionData->m_FUSION_path_id].getRank();
+				char strand=m_ed->m_EXTENSION_receivedReads[m_fusionData->m_FUSION_path_id].getStrand();
+				int idOnRank=m_ed->m_EXTENSION_receivedReads[m_fusionData->m_FUSION_path_id].getReadIndex();
+				if(!m_ed->m_EXTENSION_readLength_requested){
+					m_ed->m_EXTENSION_readLength_requested=true;
+					m_ed->m_EXTENSION_readLength_received=false;
+					VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
+					message[0]=idOnRank;
+					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,readRank,TAG_ASK_READ_LENGTH,getRank());
+					m_outbox.push_back(aMessage);
+				}else if(m_ed->m_EXTENSION_readLength_received){
+					int readLength=m_ed->m_EXTENSION_receivedLength;
+					int globalIdentifier=idOnRank*getSize()+readRank;
+					FILE*fp=m_bubbleData->m_amos;
+					int start=0;
+					int theEnd=readLength-1;
+					int offset=m_mode_send_vertices_sequence_id_position;
+					if(strand=='R'){
+						int t=start;
+						start=theEnd;
+						theEnd=t;
+						offset++;
+					}
+					fprintf(fp,"{TLE\nsrc:%i\noff:%i\nclr:%i,%i\n}\n",globalIdentifier+1,offset,
+						start,theEnd);
+		
+					// increment to get the next read.
+					m_fusionData->m_FUSION_path_id++;
+					m_ed->m_EXTENSION_readLength_requested=false;
+				}
+			}else{
+				// continue.
+				m_mode_send_vertices_sequence_id_position++;
+				m_ed->m_EXTENSION_reads_requested=false;
+			}
+		}
+
+	}
+}
+
+void Machine::call_MODE_EXTENSION(){
+	int maxCoverage=m_maxCoverage;
+	m_seedExtender.extendSeeds(&(m_seedingData->m_SEEDING_seeds),m_ed,getRank(),&m_outbox,&(m_seedingData->m_SEEDING_currentVertex),
+	m_fusionData,&m_outboxAllocator,&(m_seedingData->m_SEEDING_edgesRequested),&(m_seedingData->m_SEEDING_outgoingEdgeIndex),
+	&m_last_value,&(m_seedingData->m_SEEDING_vertexCoverageRequested),m_wordSize,&m_colorSpaceMode,getSize(),&(m_seedingData->m_SEEDING_vertexCoverageReceived),
+	&(m_seedingData->m_SEEDING_receivedVertexCoverage),&m_repeatedLength,&maxCoverage,&(m_seedingData->m_SEEDING_receivedOutgoingEdges),&m_c,
+	m_cd,m_bubbleData,m_dfsData,
+m_minimumCoverage,&m_oa,&(m_seedingData->m_SEEDING_edgesReceived));
+}
+
+void Machine::call_MASTER_MODE_ASSEMBLE_WAVES(){
+	// ask ranks to send their extensions.
+	if(!m_ed->m_EXTENSION_currentRankIsSet){
+		m_ed->m_EXTENSION_currentRankIsSet=true;
+		m_ed->m_EXTENSION_currentRankIsStarted=false;
+		m_ed->m_EXTENSION_rank++;
+	}
+	if(m_ed->m_EXTENSION_rank==getSize()){
+		m_master_mode=MODE_DO_NOTHING;
+		cout<<"Rank "<<getRank()<<" contigs computed."<<endl;
+		killRanks();
+	}else if(!m_ed->m_EXTENSION_currentRankIsStarted){
+		m_ed->m_EXTENSION_currentRankIsStarted=true;
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_ed->m_EXTENSION_rank,TAG_ASSEMBLE_WAVES,getRank());
+		m_outbox.push_back(aMessage);
+		m_ed->m_EXTENSION_currentRankIsDone=false;
+	}else if(m_ed->m_EXTENSION_currentRankIsDone){
+		m_ed->m_EXTENSION_currentRankIsSet=false;
+	}
+}
+
+void Machine::processData(){
+
+	if(!m_parameters.isInitiated()&&isMaster()){
+		call_MASTER_MODE_LOAD_CONFIG();
+	}else if(m_welcomeStep==true && m_loadSequenceStep==false&&isMaster()){
+		call_MASTER_MODE_LOAD_SEQUENCES();
+	}else if(m_loadSequenceStep==true && m_mode_send_vertices==false&&isMaster() and m_sequence_ready_machines==getSize()&&m_messageSentForVerticesDistribution==false){
+		call_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION();
+	}else if(m_startEdgeDistribution){
+		call_MASTER_MODE_TRIGGER_EDGES_DISTRIBUTION();
+	}else if(m_numberOfMachinesReadyForEdgesDistribution==getSize() and isMaster()){
+		call_MASTER_MODE_START_EDGES_DISTRIBUTION();
+	}else if(m_numberOfMachinesDoneSendingCoverage==getSize()){
+		call_MASTER_MODE_SEND_COVERAGE_VALUES();
+	}else if(m_mode_send_vertices==true){
+		call_MODE_EXTRACT_VERTICES();
+	}else if(m_numberOfRanksWithCoverageData==getSize()){
+		call_MASTER_MODE_TRIGGER_EDGES();
+	}else if(m_numberOfMachinesDoneSendingEdges==getSize()){
+		call_MASTER_MODE_TRIGGER_INDEXING();
+	}else if(m_numberOfMachinesDoneSendingVertices==getSize()){
+		call_MASTER_MODE_PREPARE_DISTRIBUTIONS();
+	}else if(m_numberOfMachinesReadyToSendDistribution==getSize()){
+		call_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS();
+	}else if(m_ranksDoneAttachingReads==getSize()){
+		call_MASTER_MODE_PREPARE_SEEDING();
+	}
+
+	if(m_mode==MODE_ASSEMBLE_WAVES){
+		call_MODE_ASSEMBLE_WAVES();
+	}else if(m_mode==MODE_PERFORM_CALIBRATION){
+		call_MODE_PERFORM_CALIBRATION();
+	}else if(m_mode==MODE_FINISH_FUSIONS){
+		call_MODE_FINISH_FUSIONS();
+	}else if(m_mode==MODE_DISTRIBUTE_FUSIONS){
+		call_MODE_DISTRIBUTE_FUSIONS();
+	}
+
+	if(m_mode_sendDistribution){
+		call_MODE_SEND_DISTRIBUTION();
+	}else if(m_mode_send_outgoing_edges){ 
+		call_MODE_PROCESS_OUTGOING_EDGES();
+	}else if(m_mode_send_ingoing_edges){ 
+		call_MODE_PROCESS_INGOING_EDGES();
+	}else if(m_readyToSeed==getSize()){
+		call_MASTER_MODE_TRIGGER_SEEDING();
+	}else if(m_mode==MODE_START_SEEDING){
+		call_MODE_START_SEEDING();
+	}else if(m_numberOfRanksDoneSeeding==getSize()){
+		call_MASTER_MODE_TRIGGER_DETECTION();
+	}else if(m_numberOfRanksDoneDetectingDistances==getSize()){
+		call_MASTER_MODE_ASK_DISTANCES();
+	}else if(m_numberOfRanksDoneSendingDistances==getSize()){
+		call_MASTER_MODE_START_UPDATING_DISTANCES();
+	}else if(m_mode_AttachSequences){
+		call_MASTER_MODE_INDEX_SEQUENCES();
+	}else if(m_mode==MODE_EXTENSION_ASK and isMaster()){
+		call_MASTER_MODE_TRIGGER_EXTENSIONS();
+	}else if(m_mode==MODE_SEND_EXTENSION_DATA){
+		call_MODE_SEND_EXTENSION_DATA();
+	}else if(m_mode==MODE_FUSION){
+		call_MODE_FUSION();
+	}else if(m_mode==MODE_AUTOMATIC_DISTANCE_DETECTION){
+		call_MODE_AUTOMATIC_DISTANCE_DETECTION();
+	}else if(m_mode==MODE_SEND_LIBRARY_DISTANCES){
+		call_MODE_SEND_LIBRARY_DISTANCES();
+	}else if(m_master_mode==MODE_UPDATE_DISTANCES){
+		call_MASTER_MODE_UPDATE_DISTANCES();
+	}
+
+	if(m_ed->m_EXTENSION_numberOfRanksDone==getSize()){
+		call_MASTER_MODE_TRIGGER_FUSIONS();
 	}
 
 	if(m_master_mode==MODE_ASSEMBLE_GRAPH){
-		// ask ranks to send their extensions.
-		if(!m_ed->m_EXTENSION_currentRankIsSet){
-			m_ed->m_EXTENSION_currentRankIsSet=true;
-			m_ed->m_EXTENSION_currentRankIsStarted=false;
-			m_ed->m_EXTENSION_rank++;
-		}
-		if(m_ed->m_EXTENSION_rank==getSize()){
-			m_master_mode=MODE_DO_NOTHING;
-			cout<<"Rank "<<getRank()<<" contigs computed."<<endl;
-			killRanks();
-		}else if(!m_ed->m_EXTENSION_currentRankIsStarted){
-			m_ed->m_EXTENSION_currentRankIsStarted=true;
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_ed->m_EXTENSION_rank,TAG_ASSEMBLE_WAVES,getRank());
-			m_outbox.push_back(aMessage);
-			m_ed->m_EXTENSION_currentRankIsDone=false;
-		}else if(m_ed->m_EXTENSION_currentRankIsDone){
-			m_ed->m_EXTENSION_currentRankIsSet=false;
-		}
+		call_MASTER_MODE_ASSEMBLE_WAVES();
 	}
 
 	if(m_fusionData->m_FUSION_numberOfRanksDone==getSize() and !m_isFinalFusion){
-		#ifdef SHOW_PROGRESS
-		cout<<"Rank "<<getRank()<<": fusion is done."<<endl;
-		#else
-		cout<<"Rank "<<getRank()<<" is finishing fusions."<<endl;
-		#endif
-		m_fusionData->m_FUSION_numberOfRanksDone=-1;
-
-		m_reductionOccured=true;
-		m_cycleStarted=false;
-		m_cycleNumber=0;
+		call_MASTER_MODE_TRIGGER_FIRST_FUSIONS();
 	}
 
 	if(m_reductionOccured){
-		// the finishing is
-		//
-		//  * a clear cycle
-		//  * a distribute cycle
-		//  * a finish cycle
-		//  * a clear cycle
-		//  * a distribute cycle
-		//  * a fusion cycle
-
-		if(!m_cycleStarted){
-			#ifdef SHOW_PROGRESS
-			#endif
-			m_nextReductionOccured=false;
-			m_cycleStarted=true;
-			m_isFinalFusion=false;
-			for(int i=0;i<getSize();i++){
-				Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_CLEAR_DIRECTIONS,getRank());
-				m_outbox.push_back(aMessage);
-			}
-	
-			m_CLEAR_n=0;
-		}else if(m_CLEAR_n==getSize() and !m_isFinalFusion){
-			#ifdef SHOW_PROGRESS
-			#endif
-			m_CLEAR_n=-1;
-
-			for(int i=0;i<getSize();i++){
-				Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_DISTRIBUTE_FUSIONS,getRank());
-				m_outbox.push_back(aMessage);
-			}
-			m_DISTRIBUTE_n=0;
-		}else if(m_DISTRIBUTE_n==getSize() and !m_isFinalFusion){
-			#ifdef SHOW_PROGRESS
-			#endif
-			m_DISTRIBUTE_n=-1;
-			m_isFinalFusion=true;
-			for(int i=0;i<getSize();i++){
-				Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_FINISH_FUSIONS,getRank());
-				m_outbox.push_back(aMessage);
-			}
-			m_FINISH_n=0;
-		}else if(m_FINISH_n==getSize() and m_isFinalFusion){
-			#ifdef SHOW_PROGRESS
-			#endif
-			for(int i=0;i<getSize();i++){
-				Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_CLEAR_DIRECTIONS,getRank());
-				m_outbox.push_back(aMessage);
-			}
-			m_FINISH_n=-1;
-			m_CLEAR_n=0;
-		}else if(m_CLEAR_n==getSize() and m_isFinalFusion){
-			m_CLEAR_n=-1;
-			#ifdef SHOW_PROGRESS
-			#endif
-
-			for(int i=0;i<getSize();i++){
-				Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_DISTRIBUTE_FUSIONS,getRank());
-				m_outbox.push_back(aMessage);
-			}
-			m_DISTRIBUTE_n=0;
-
-		}else if(m_DISTRIBUTE_n==getSize() and m_isFinalFusion){
-			#ifdef SHOW_PROGRESS
-			cout<<"Rank 0 tells others to compute fusions."<<endl;
-
-			#endif
-			m_fusionData->m_FUSION_numberOfRanksDone=0;
-			m_master_mode=MODE_DO_NOTHING;
-			m_DISTRIBUTE_n=-1;
-			for(int i=0;i<(int)getSize();i++){// start fusion.
-				Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_START_FUSION,getRank());
-				m_outbox.push_back(aMessage);
-			}
-			
-		}else if(m_fusionData->m_FUSION_numberOfRanksDone==getSize() and m_isFinalFusion){
-			m_reductionOccured=m_nextReductionOccured;
-			m_fusionData->m_FUSION_numberOfRanksDone=-1;
-			if(!m_reductionOccured or m_cycleNumber ==5){ // cycling is in development!
-				m_timePrinter.printElapsedTime("Computation of fusions");
-				cout<<endl;
-				cout<<"Rank 0 is "<<"collecting fusions"<<endl;
-				m_master_mode=MODE_ASK_EXTENSIONS;
-
-				m_sd->m_computedTopology=false;
-
-				m_sd->m_pathId=0;
-				m_sd->m_visitedVertices.clear();
-				while(!m_sd->m_verticesToVisit.empty())
-					m_sd->m_verticesToVisit.pop();
-				while(!m_sd->m_depthsToVisit.empty())
-					m_sd->m_depthsToVisit.pop();
-				m_sd->m_processedLastVertex=false;
-				m_ed->m_EXTENSION_currentRankIsSet=false;
-				m_ed->m_EXTENSION_rank=-1;
-			}else{
-				// we continue now!
-				m_cycleStarted=false;
-				m_cycleNumber++;
-			}
-		}
+		call_MASTER_MODE_START_FUSION_CYCLE();
 	}
 
 	if(m_master_mode==MODE_ASK_EXTENSIONS){
-		#ifndef SHOW_PROGRESS
-		time_t tmp=time(NULL);
-		if(tmp>m_lastTime){
-			m_lastTime=tmp;
-			showProgress(m_lastTime);
-		}
-		#endif
-
-		// ask ranks to send their extensions.
-		if(!m_ed->m_EXTENSION_currentRankIsSet){
-			m_ed->m_EXTENSION_currentRankIsSet=true;
-			m_ed->m_EXTENSION_currentRankIsStarted=false;
-			m_ed->m_EXTENSION_rank++;
-		}
-		if(m_ed->m_EXTENSION_rank==getSize()){
-			#ifdef SHOW_SCAFFOLDER
-			#endif
-			int minimumLength=500;
-			if(!m_sd->m_computedTopology){ // in development.
-				// for each contig path, take the last vertex, and search for other contig paths 
-				// reachable from it.
-				if(false and m_sd->m_pathId<(int)m_allPaths.size()){
-					int currentPathId=m_identifiers[m_sd->m_pathId];
-					if(!m_sd->m_processedLastVertex){
-						if((int)m_allPaths[m_sd->m_pathId].size()<minimumLength){
-							m_sd->m_pathId++;
-							return;
-						}
-					
-						#ifdef SHOW_SCAFFOLDER
-						//cout<<"push last vertex."<<endl;
-						#endif
-						m_sd->m_processedLastVertex=true;
-						int theLength=m_allPaths[m_sd->m_pathId].size();
-						VERTEX_TYPE lastVertex=m_allPaths[m_sd->m_pathId][theLength-1];
-						#ifdef SHOW_SCAFFOLDER
-						cout<<"contig-"<<currentPathId<<" Last="<<idToWord(lastVertex,m_wordSize)<<" "<<theLength<<" vertices"<<endl;
-		
-						#endif
-						m_sd->m_verticesToVisit.push(lastVertex);
-						m_sd->m_depthsToVisit.push(0);
-						m_seedingData->m_SEEDING_edgesRequested=false;
-						m_sd->m_visitedVertices.clear();
-					}else if(!m_sd->m_verticesToVisit.empty()){
-						VERTEX_TYPE theVertex=m_sd->m_verticesToVisit.top();
-						int theDepth=m_sd->m_depthsToVisit.top();
-						if(!m_seedingData->m_SEEDING_edgesRequested){
-							#ifdef SHOW_SCAFFOLDER
-							//cout<<"Asking for arcs. "<<theVertex<<endl;
-							#endif
-							m_seedingData->m_SEEDING_edgesReceived=false;
-							m_seedingData->m_SEEDING_edgesRequested=true;
-							VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
-							message[0]=(VERTEX_TYPE)theVertex;
-							Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0]),TAG_REQUEST_VERTEX_OUTGOING_EDGES,getRank());
-							m_outbox.push_back(aMessage);
-							m_Machine_getPaths_DONE=false;
-							m_Machine_getPaths_INITIALIZED=false;
-							m_Machine_getPaths_result.clear();
-							m_sd->m_visitedVertices.insert(theVertex);
-						}else if(m_seedingData->m_SEEDING_edgesReceived){
-							if(!m_Machine_getPaths_DONE){
-								getPaths(theVertex);
-							}else{
-								vector<Direction> nextPaths;
-								#ifdef SHOW_SCAFFOLDER
-								if(nextPaths.size()>0){
-									cout<<"We have "<<nextPaths.size()<<" paths with "<<idToWord(theVertex,m_wordSize)<<endl;	
-								}
-								#endif
-								for(int i=0;i<(int)m_Machine_getPaths_result.size();i++){
-									int pathId=m_Machine_getPaths_result[i].getWave();
-									if(pathId==currentPathId)
-										continue;
-									// this one is discarded.
-									if(m_sd->m_allIdentifiers.count(pathId)==0){
-										continue;
-									}
-									// not at the front.
-									if(m_Machine_getPaths_result[i].getProgression()>0)
-										continue;
-									int index=m_sd->m_allIdentifiers[pathId];
-
-									// too small to be relevant.
-									if((int)m_allPaths[index].size()<minimumLength)
-										continue;
-									
-									#ifdef SHOW_SCAFFOLDER
-									#endif
-									nextPaths.push_back(m_Machine_getPaths_result[i]);
-								}
-
-								m_sd->m_verticesToVisit.pop();
-								m_sd->m_depthsToVisit.pop();
-								m_seedingData->m_SEEDING_edgesRequested=false;
-
-								if(nextPaths.size()>0){// we found a path
-									for(int i=0;i<(int)nextPaths.size();i++){
-										cout<<"contig-"<<m_identifiers[m_sd->m_pathId]<<" -> "<<"contig-"<<nextPaths[i].getWave()<<" ("<<theDepth<<","<<nextPaths[i].getProgression()<<") via "<<idToWord(theVertex,m_wordSize)<<endl;
-										#ifdef DEBUG
-										assert(m_sd->m_allIdentifiers.count(nextPaths[i].getWave())>0);
-										#endif
-									}
-								}else{// continue the visit.
-									for(int i=0;i<(int)m_seedingData->m_SEEDING_receivedOutgoingEdges.size();i++){
-										VERTEX_TYPE newVertex=m_seedingData->m_SEEDING_receivedOutgoingEdges[i];
-										if(m_sd->m_visitedVertices.count(newVertex)>0)
-											continue;
-										int d=theDepth+1;
-										if(d>3000)
-											continue;
-										m_sd->m_verticesToVisit.push(newVertex);
-										m_sd->m_depthsToVisit.push(d);
-									}
-								}
-	
-							}
-						}
-					}else{
-						m_sd->m_processedLastVertex=false;
-						m_sd->m_pathId++;
-						#ifdef SHOW_SCAFFOLDER
-						//cout<<"Processing next."<<endl;
-						#endif
-					}
-				}else{
-					m_sd->m_computedTopology=true;
-				}
-				return;
-			}
-
-			m_master_mode=MODE_DO_NOTHING;
-	
-			int totalLength=0;
-			
-			#ifdef DEBUG
-			assert(m_allPaths.size()==m_identifiers.size());
-			#endif
-			ofstream f(m_parameters.getOutputFile().c_str());
-			for(int i=0;i<(int)m_allPaths.size();i++){
-				string contig=convertToString(&(m_allPaths[i]),m_wordSize);
-				#ifdef DEBUG
-				assert(i<(int)m_identifiers.size());
-				#endif
-				int id=m_identifiers[i];
-				#ifdef DEBUG
-				int theRank=id%MAX_NUMBER_OF_MPI_PROCESSES;
-				assert(theRank<getSize());
-				#endif
-				f<<">contig-"<<id<<" "<<contig.length()<<" nucleotides"<<endl<<addLineBreaks(contig);
-				totalLength+=contig.length();
-			}
-			f.close();
-			#ifdef SHOW_PROGRESS
-			#else
-			cout<<"\r"<<"              "<<endl<<"Writing "<<m_parameters.getOutputFile()<<endl;
-			#endif
-			cout<<endl<<"Rank 0: "<<m_allPaths.size()<<" contigs/"<<totalLength<<" nucleotides"<<endl;
-			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<endl;
-			if(m_parameters.useAmos()){
-				m_master_mode=MODE_AMOS;
-				m_seedingData->m_SEEDING_i=0;
-				m_mode_send_vertices_sequence_id_position=0;
-				m_ed->m_EXTENSION_reads_requested=false;
-				cout<<"\rCompleting "<<m_parameters.getAmosFile()<<endl;
-			}else{// we are done.
-				killRanks();
-			}
-			
-		}else if(!m_ed->m_EXTENSION_currentRankIsStarted){
-			m_ed->m_EXTENSION_currentRankIsStarted=true;
-			#ifdef SHOW_PROGRESS
-			cout<<"Rank "<<getRank()<<" asks "<<m_ed->m_EXTENSION_rank<<" for its fusions."<<endl;
-			#endif
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_ed->m_EXTENSION_rank,TAG_ASK_EXTENSION_DATA,getRank());
-			m_outbox.push_back(aMessage);
-			m_ed->m_EXTENSION_currentRankIsDone=false;
-		}else if(m_ed->m_EXTENSION_currentRankIsDone){
-			m_ed->m_EXTENSION_currentRankIsSet=false;
-		}
+		call_MASTER_MODE_ASK_EXTENSIONS();
 	}else if(m_master_mode==MODE_AMOS){
-		// in development.
-		/*
- 		* use m_allPaths and m_identifiers
- 		*
- 		* iterators: m_SEEDING_i: for the current contig
- 		*            m_mode_send_vertices_sequence_id_position: for the current position in the current contig.
- 		*/
-		if(m_seedingData->m_SEEDING_i==(int)m_allPaths.size()){// all contigs are processed
-			killRanks();
-			m_master_mode=MODE_DO_NOTHING;
-			fclose(m_bubbleData->m_amos);
-		}else if(m_mode_send_vertices_sequence_id_position==(int)m_allPaths[m_seedingData->m_SEEDING_i].size()){// iterate over the next one
-			m_seedingData->m_SEEDING_i++;
-			m_mode_send_vertices_sequence_id_position=0;
-			m_ed->m_EXTENSION_reads_requested=false;
-			
-			FILE*fp=m_bubbleData->m_amos;
-			fprintf(fp,"}\n");
-		}else{
-			if(!m_ed->m_EXTENSION_reads_requested){
-				if(m_mode_send_vertices_sequence_id_position==0){
-					FILE*fp=m_bubbleData->m_amos;
-					string seq=convertToString(&(m_allPaths[m_seedingData->m_SEEDING_i]),m_wordSize);
-					char*qlt=(char*)__Malloc(seq.length()+1);
-					strcpy(qlt,seq.c_str());
-					for(int i=0;i<(int)strlen(qlt);i++)
-						qlt[i]='D';
-					fprintf(fp,"{CTG\niid:%i\neid:contig-%i\ncom:\nRay\n.\nseq:\n%s\n.\nqlt:\n%s\n.\n",
-						m_seedingData->m_SEEDING_i+1,
-						m_identifiers[m_seedingData->m_SEEDING_i],
-						seq.c_str(),
-						qlt
-						);
-					__Free(qlt);
-				}
-
-				m_ed->m_EXTENSION_reads_requested=true;
-				m_ed->m_EXTENSION_reads_received=false;
-				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
-				message[0]=m_allPaths[m_seedingData->m_SEEDING_i][m_mode_send_vertices_sequence_id_position];
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0]),TAG_REQUEST_READS,getRank());
-				m_outbox.push_back(aMessage);
-
-				// iterator on reads
-				m_fusionData->m_FUSION_path_id=0;
-				m_ed->m_EXTENSION_readLength_requested=false;
-			}else if(m_ed->m_EXTENSION_reads_received){
-				if(m_fusionData->m_FUSION_path_id<(int)m_ed->m_EXTENSION_receivedReads.size()){
-					int readRank=m_ed->m_EXTENSION_receivedReads[m_fusionData->m_FUSION_path_id].getRank();
-					char strand=m_ed->m_EXTENSION_receivedReads[m_fusionData->m_FUSION_path_id].getStrand();
-					int idOnRank=m_ed->m_EXTENSION_receivedReads[m_fusionData->m_FUSION_path_id].getReadIndex();
-					if(!m_ed->m_EXTENSION_readLength_requested){
-						m_ed->m_EXTENSION_readLength_requested=true;
-						m_ed->m_EXTENSION_readLength_received=false;
-						VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
-						message[0]=idOnRank;
-						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,readRank,TAG_ASK_READ_LENGTH,getRank());
-						m_outbox.push_back(aMessage);
-					}else if(m_ed->m_EXTENSION_readLength_received){
-						int readLength=m_ed->m_EXTENSION_receivedLength;
-						int globalIdentifier=idOnRank*getSize()+readRank;
-						FILE*fp=m_bubbleData->m_amos;
-						int start=0;
-						int theEnd=readLength-1;
-						int offset=m_mode_send_vertices_sequence_id_position;
-						if(strand=='R'){
-							int t=start;
-							start=theEnd;
-							theEnd=t;
-							offset++;
-						}
-						fprintf(fp,"{TLE\nsrc:%i\noff:%i\nclr:%i,%i\n}\n",globalIdentifier+1,offset,
-							start,theEnd);
-			
-						// increment to get the next read.
-						m_fusionData->m_FUSION_path_id++;
-						m_ed->m_EXTENSION_readLength_requested=false;
-					}
-				}else{
-					// continue.
-					m_mode_send_vertices_sequence_id_position++;
-					m_ed->m_EXTENSION_reads_requested=false;
-				}
-			}
-
-		}
+		call_MASTER_MODE_AMOS();
 	}
 
 	if(m_ed->m_mode_EXTENSION){
-
-		int maxCoverage=m_maxCoverage;
-		m_seedExtender.extendSeeds(&(m_seedingData->m_SEEDING_seeds),m_ed,getRank(),&m_outbox,&(m_seedingData->m_SEEDING_currentVertex),
-		m_fusionData,&m_outboxAllocator,&(m_seedingData->m_SEEDING_edgesRequested),&(m_seedingData->m_SEEDING_outgoingEdgeIndex),
-		&m_last_value,&(m_seedingData->m_SEEDING_vertexCoverageRequested),m_wordSize,&m_colorSpaceMode,getSize(),&(m_seedingData->m_SEEDING_vertexCoverageReceived),
-		&(m_seedingData->m_SEEDING_receivedVertexCoverage),&m_repeatedLength,&maxCoverage,&(m_seedingData->m_SEEDING_receivedOutgoingEdges),&m_c,
-		m_cd,m_bubbleData,m_dfsData,
-	m_minimumCoverage,&m_oa,&(m_seedingData->m_SEEDING_edgesReceived));
+		call_MODE_EXTENSION();
 	}
 }
 

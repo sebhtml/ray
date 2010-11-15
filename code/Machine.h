@@ -75,7 +75,13 @@ public:
 using namespace std;
 
 
+class Machine;
+typedef void (Machine::*MachineMethod) ();
+
 class Machine{
+	MachineMethod m_master_methods[32];
+	MachineMethod m_slave_methods[32];
+
 	EdgesExtractor m_edgesExtractor;
 	int m_numberOfRanksWithCoverageData;
 	TimePrinter m_timePrinter;
@@ -289,6 +295,46 @@ class Machine{
 	void sendLibraryDistances();
 
 	void updateDistances();
+
+	void call_MASTER_MODE_LOAD_CONFIG();
+	void call_MASTER_MODE_LOAD_SEQUENCES();
+	void call_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION();
+	void call_MASTER_MODE_SEND_COVERAGE_VALUES();
+	void call_MASTER_MODE_TRIGGER_EDGES_DISTRIBUTION();
+	void call_MASTER_MODE_START_EDGES_DISTRIBUTION();
+	void call_MODE_EXTRACT_VERTICES();
+	void call_MASTER_MODE_TRIGGER_EDGES();
+	void call_MASTER_MODE_TRIGGER_INDEXING();
+	void call_MASTER_MODE_PREPARE_DISTRIBUTIONS();
+	void call_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS();
+	void call_MASTER_MODE_PREPARE_SEEDING();
+	void call_MODE_ASSEMBLE_WAVES();
+	void call_MODE_PERFORM_CALIBRATION();
+	void call_MODE_FINISH_FUSIONS();
+	void call_MODE_DISTRIBUTE_FUSIONS();
+	void call_MODE_SEND_DISTRIBUTION();
+	void call_MODE_PROCESS_OUTGOING_EDGES();
+	void call_MODE_PROCESS_INGOING_EDGES();
+	void call_MASTER_MODE_TRIGGER_SEEDING();
+	void call_MODE_START_SEEDING();
+	void call_MASTER_MODE_TRIGGER_DETECTION();
+	void call_MASTER_MODE_ASK_DISTANCES();
+	void call_MASTER_MODE_START_UPDATING_DISTANCES();
+	void call_MASTER_MODE_INDEX_SEQUENCES();
+	void call_MASTER_MODE_TRIGGER_EXTENSIONS();
+	void call_MODE_SEND_EXTENSION_DATA();
+	void call_MODE_FUSION();
+	void call_MODE_AUTOMATIC_DISTANCE_DETECTION();
+	void call_MODE_SEND_LIBRARY_DISTANCES();
+	void call_MASTER_MODE_UPDATE_DISTANCES();
+	void call_MASTER_MODE_TRIGGER_FUSIONS();
+	void call_MASTER_MODE_ASSEMBLE_WAVES();
+	void call_MASTER_MODE_TRIGGER_FIRST_FUSIONS();
+	void call_MASTER_MODE_START_FUSION_CYCLE();
+	void call_MASTER_MODE_ASK_EXTENSIONS();
+	void call_MASTER_MODE_AMOS();
+	void call_MODE_EXTENSION();
+
 public:
 	/*
  * this is the only public bit
@@ -300,4 +346,5 @@ public:
 
 
 #endif
+
 
