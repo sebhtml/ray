@@ -1521,7 +1521,7 @@ void Machine::call_MODE_FINISH_FUSIONS(){
 
 void Machine::call_MODE_DISTRIBUTE_FUSIONS(){
 	if(m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
-		cout<<"Rank "<<getRank()<<" distributes its fusions. "<<m_ed->m_EXTENSION_contigs.size()<<"/"<<m_ed->m_EXTENSION_contigs.size()<<endl;
+		cout<<"Rank "<<getRank()<<" distributes its fusions. "<<m_ed->m_EXTENSION_contigs.size()<<"/"<<m_ed->m_EXTENSION_contigs.size()<<" (DONE)"<<endl;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_DISTRIBUTE_FUSIONS_FINISHED,getRank());
 		m_outbox.push_back(aMessage);
 		m_mode=MODE_DO_NOTHING;

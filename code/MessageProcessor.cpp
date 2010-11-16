@@ -954,6 +954,7 @@ void MessageProcessor::call_TAG_DISTRIBUTE_FUSIONS(Message*message){
 
 void MessageProcessor::call_TAG_DISTRIBUTE_FUSIONS_FINISHED(Message*message){
 	(*m_DISTRIBUTE_n)++;
+	cout<<"call_TAG_DISTRIBUTE_FUSIONS_FINISHED "<<*m_DISTRIBUTE_n<<endl;
 }
 
 void MessageProcessor::call_TAG_EXTENSION_START(Message*message){
