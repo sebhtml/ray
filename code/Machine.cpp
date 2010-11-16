@@ -1118,13 +1118,11 @@ void Machine::makeFusions(){
 				if(m_fusionData->m_FUSION_receivedLength==0){
 				}else if(m_fusionData->m_FUSION_matches[m_fusionData->m_FUSION_match_index]<currentId and m_fusionData->m_FUSION_receivedLength == (int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
 					m_fusionData->m_FUSION_eliminated.insert(currentId);
-					cout<<"Rank "<<getRank()<<" eliminates a path with "<<m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<<" vertices"<<endl;
 					m_fusionData->m_FUSION_direct_fusionDone=false;
 					m_fusionData->m_FUSION_first_done=false;
 					m_fusionData->m_FUSION_paths_requested=false;
 					m_seedingData->m_SEEDING_i++;
 				}else if(m_fusionData->m_FUSION_receivedLength>(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
-					cout<<"Rank "<<getRank()<<" eliminates a path with "<<m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<<" vertices"<<endl;
 					m_fusionData->m_FUSION_eliminated.insert(currentId);
 					m_fusionData->m_FUSION_direct_fusionDone=false;
 					m_fusionData->m_FUSION_first_done=false;
