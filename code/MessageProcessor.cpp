@@ -885,12 +885,10 @@ void MessageProcessor::call_TAG_CLEAR_DIRECTIONS(Message*message){
 	(*m_FINISH_newFusions).clear();
 
 
-	cout<<"Rank "<<rank<<" keeps unique fusions."<<endl;
 	vector<vector<VERTEX_TYPE> > fusions;
 	for(int i=0;i<(int)(*m_EXTENSION_contigs).size();i++){
 		int id=(*m_EXTENSION_identifiers)[i];
 		if(m_fusionData->m_FUSION_eliminated.count(id)==0){
-			cout<<"rank="<<rank<<" keeps a path with "<<id<<""<<(*m_EXTENSION_contigs)[i].size()<<" vertices"<<endl;
 			fusions.push_back((*m_EXTENSION_contigs)[i]);
 			vector<VERTEX_TYPE> rc;
 			for(int j=(*m_EXTENSION_contigs)[i].size()-1;j>=0;j--){
@@ -900,7 +898,6 @@ void MessageProcessor::call_TAG_CLEAR_DIRECTIONS(Message*message){
 		}
 	}
 
-	cout<<"Rank "<<rank<<" renames its fusions."<<endl;
 	(*m_EXTENSION_identifiers).clear();
 	m_fusionData->m_FUSION_eliminated.clear();
 	for(int i=0;i<(int)fusions.size();i++){
