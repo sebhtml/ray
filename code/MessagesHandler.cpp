@@ -24,7 +24,6 @@
 
 /*
  * send messages,
- * if the message goes to self, do a memcpy!
  */
 void MessagesHandler::sendMessages(vector<Message>*outbox,MyAllocator*outboxAllocator){
 	if(outbox->size()==0){
@@ -48,7 +47,7 @@ void MessagesHandler::sendMessages(vector<Message>*outbox,MyAllocator*outboxAllo
 	freeRequests(outboxAllocator);
 }
 
-// O(1) add
+// O(1) add, add it to the root
 void MessagesHandler::addRequest(MPI_Request*request){
 	Request*newRequest=(Request*)__Malloc(sizeof(Request));
 	newRequest->m_mpiRequest=request;
@@ -56,7 +55,7 @@ void MessagesHandler::addRequest(MPI_Request*request){
 	m_root=newRequest;
 }
 
-// O(n) freeing
+// O(n) freeing, pass through everything and free stuff that are completed.
 void MessagesHandler::freeRequests(MyAllocator*outboxAllocator){
 	
 	// free m_root
