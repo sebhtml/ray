@@ -19,6 +19,7 @@
 
 */
 
+#include<string.h>
 #include<assert.h>
 #include<Read.h>
 #include<MessageProcessor.h>

@@ -19,6 +19,8 @@
 
 */
 
+#include<string.h>
+#include<stdlib.h>
 #include<VerticesExtractor.h>
 #include<assert.h>
 #include<Message.h>

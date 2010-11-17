@@ -18,7 +18,10 @@
 	see <http://www.gnu.org/licenses/>
 
 */
+
 #include<SequencesIndexer.h>
+#include<string.h>
+#include<stdlib.h>
 
 #ifdef DEBUG
 #include<assert.h>
