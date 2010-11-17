@@ -30,6 +30,7 @@
 #include<SeedingData.h>
 #include<map>
 #include<vector>
+#include<OutboxAllocator.h>
 #include<DepthFirstSearchData.h>
 #include<TimePrinter.h>
 #include<SequencesIndexer.h>
@@ -189,7 +190,7 @@ class Machine{
 	// cleaned everynow and then.
 	
 	// allocator for outgoing messages
-	MyAllocator m_outboxAllocator;
+	OutboxAllocator m_outboxAllocator;
 	
 	// allocator for ingoing messages
 	MyAllocator m_inboxAllocator;

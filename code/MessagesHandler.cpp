@@ -28,7 +28,7 @@
 /*
  * send messages,
  */
-void MessagesHandler::sendMessages(vector<Message>*outbox,MyAllocator*outboxAllocator){
+void MessagesHandler::sendMessages(vector<Message>*outbox,OutboxAllocator*outboxAllocator){
 	if(outbox->size()==0){
 		return;
 	}
@@ -50,26 +50,28 @@ void MessagesHandler::sendMessages(vector<Message>*outbox,MyAllocator*outboxAllo
 		#else
 		MPI_Issend(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD,&request);
 		#endif
-		addRequest(&request);
+		addRequest(&request,aMessage->getBuffer());
 	}
 
 	outbox->clear();
-	
+	freeRequests(outboxAllocator);
 }
 
 // O(1) add, add it to the root
-void MessagesHandler::addRequest(MPI_Request*request){
-	if(*request!=MPI_REQUEST_NULL){
-		return; // Open-MPI is blazing fast, just amazing.
+void MessagesHandler::addRequest(MPI_Request*request,void*buffer){
+	if(buffer==NULL){
+		MPI_Request_free(request);
+		return;
 	}
-	Request*newRequest=(Request*)__Malloc(sizeof(Request));
+	PendingRequest*newRequest=(PendingRequest*)__Malloc(sizeof(PendingRequest));
 	newRequest->m_mpiRequest=request;
+	newRequest->m_buffer=buffer;
 	newRequest->m_next=m_root;
 	m_root=newRequest;
 }
 
 // O(n) freeing, pass through everything and free stuff that are completed.
-void MessagesHandler::freeRequests(MyAllocator*outboxAllocator){
+void MessagesHandler::freeRequests(OutboxAllocator*outboxAllocator){
 	
 	// free m_root
 	//
@@ -81,15 +83,19 @@ void MessagesHandler::freeRequests(MyAllocator*outboxAllocator){
 
 	while(m_root!=NULL){
 		MPI_Request*request=m_root->m_mpiRequest;
-		int flag;
+		int flag=0;
 		#ifdef DEBUG_MPI
 		assert(*request!=MPI_REQUEST_NULL);
 		#endif
-		cout<<"MPI_REQUEST_NULL = "<<MPI_REQUEST_NULL<<endl;
-		cout<<"MPI_Test root "<<request<<" "<<*request<<endl;
-		MPI_Test(request,&flag,MPI_STATUS_IGNORE);
+		
+		if(*request==MPI_REQUEST_NULL){// Open-MPI is blazing fast, just amazing.
+			flag=1;
+		}else{
+			MPI_Test(request,&flag,MPI_STATUS_IGNORE);
+		}
 		if(flag){
-			Request*next=m_root->m_next;
+			PendingRequest*next=m_root->m_next;
+			outboxAllocator->free(m_root->m_buffer);
 			__Free(m_root);
 			m_root=next;
 		}else{
@@ -98,12 +104,11 @@ void MessagesHandler::freeRequests(MyAllocator*outboxAllocator){
 	}
 
 	if(m_root==NULL){// everyone is happy, nothing to do further
-		outboxAllocator->reset();
 		return;
 	}
 
-	Request*previous=m_root;
-	Request*current=previous->m_next;
+	PendingRequest*previous=m_root;
+	PendingRequest*current=previous->m_next;
 
 	// m_root is not completed to this point, if it is not NULL
 	// current is the next
@@ -116,11 +121,15 @@ void MessagesHandler::freeRequests(MyAllocator*outboxAllocator){
 
 	while(current!=NULL){
 		MPI_Request*request=current->m_mpiRequest;
-		int flag;
-		cout<<"MPI_Test current"<<endl;
-		MPI_Test(request,&flag,MPI_STATUS_IGNORE);
-		Request*next=current->m_next;
+		int flag=0;
+		if(*request==MPI_REQUEST_NULL){// Open-MPI is impressive
+			flag=1;
+		}else{
+			MPI_Test(request,&flag,MPI_STATUS_IGNORE);
+		}
+		PendingRequest*next=current->m_next;
 		if(flag){
+			outboxAllocator->free(current->m_buffer);
 			__Free(current);
 			previous->m_next=next;
 		}else{
@@ -166,7 +175,7 @@ MessagesHandler::MessagesHandler(){
 }
 
 void MessagesHandler::printRequests(){
-	Request*a=m_root;
+	PendingRequest*a=m_root;
 	cout<<"Requests"<<endl;
 	while(a!=NULL){
 		cout<<a->m_mpiRequest<<endl;

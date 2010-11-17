@@ -38,7 +38,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 				int m_wordSize,
 				DistributionData*m_disData,
 				int size,
-				MyAllocator*m_outboxAllocator,
+				OutboxAllocator*m_outboxAllocator,
 				bool m_colorSpaceMode,int*m_mode
 				){
 	#ifdef SHOW_PROGRESS
@@ -106,7 +106,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 
 void VerticesExtractor::flushVertices(int threshold,
 				DistributionData*m_disData,
-				MyAllocator*m_outboxAllocator,
+				OutboxAllocator*m_outboxAllocator,
 				vector<Message>*m_outbox,
 				int rank,int size
 ){

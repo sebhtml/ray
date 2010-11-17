@@ -22,7 +22,7 @@
 #ifndef _MessageProcessor
 #define _MessageProcessor
 
-
+#include<OutboxAllocator.h>
 #include<OpenAssemblerChooser.h>
 #include<Message.h>
 #include<vector>
@@ -58,7 +58,7 @@ class MessageProcessor{
 	int*m_libraryIterator;
 	bool*m_libraryIndexInitiated;
 	MyForest*m_subgraph;
-	MyAllocator*m_outboxAllocator;
+	OutboxAllocator*m_outboxAllocator;
 	int rank;
 	vector<ReadAnnotation>*m_EXTENSION_receivedReads;
 	int*m_numberOfMachinesDoneSendingEdges;
@@ -147,7 +147,7 @@ public:
 			int*m_libraryIterator,
 			bool*m_libraryIndexInitiated,
 			MyForest*m_subgraph,
-			MyAllocator*m_outboxAllocator,
+			OutboxAllocator*m_outboxAllocator,
 				int rank,
 			vector<ReadAnnotation>*m_EXTENSION_receivedReads,
 			int*m_numberOfMachinesDoneSendingEdges,

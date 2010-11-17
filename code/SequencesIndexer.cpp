@@ -35,7 +35,7 @@
 void SequencesIndexer::attachReads(vector<Message>*m_outbox,int*m_distribution_file_id,int*m_distribution_sequence_id,
 	int*m_wordSize,vector<Read*>*m_distribution_reads,int size,MyAllocator*m_distributionAllocator,int*m_distribution_currentSequenceId,
 	int rank,DistributionData*m_disData,bool*m_mode_AttachSequences,Parameters*m_parameters,bool*m_colorSpaceMode,
-	MyAllocator*m_outboxAllocator,time_t*m_lastTime,int*m_master_mode){
+	OutboxAllocator*m_outboxAllocator,time_t*m_lastTime,int*m_master_mode){
 	#ifdef DEBUG
 	if(*m_wordSize<15){
 		cout<<*m_wordSize<<endl;
@@ -152,7 +152,7 @@ void SequencesIndexer::attachReads(vector<Message>*m_outbox,int*m_distribution_f
 }
 
 void SequencesIndexer::flushAttachedSequences(int threshold,vector<Message>*m_outbox,int rank,int size,DistributionData*m_disData,
-	MyAllocator*m_outboxAllocator){
+	OutboxAllocator*m_outboxAllocator){
 	#ifdef DEBUG
 	assert(rank<size);
 	#endif

@@ -17,29 +17,24 @@
     along with this program (LICENSE).  
 	see <http://www.gnu.org/licenses/>
 
+
+ 	Funding:
+
+Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Research (Master's award: 200910MDR-215249-172830 and Doctoral award: 200902CGM-204212-172830).
+
 */
 
-#ifndef _MessagesHandler
-#define _MessagesHandler
 
-#include<vector>
-#include<MyAllocator.h>
-#include<Message.h>
-#include<OutboxAllocator.h>
-#include<PendingRequest.h>
-using namespace std;
+#ifndef _PendingRequest
+#define _PendingRequest
 
+#include<mpi.h>
 
-class MessagesHandler{
-	PendingRequest*m_root;
-	void printRequests();
+class PendingRequest{
 public:
-
-	void sendMessages(vector<Message>*outbox,OutboxAllocator*outboxAllocator);
-	void receiveMessages(vector<Message>*inbox,MyAllocator*inboxAllocator);
-	void addRequest(MPI_Request*request,void*buffer);
-	void freeRequests(OutboxAllocator*outboxAllocator);
-	MessagesHandler();
+	MPI_Request*m_mpiRequest;
+	PendingRequest*m_next;
+	void*m_buffer;
 };
 
 #endif

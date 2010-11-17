@@ -265,7 +265,6 @@ void Machine::start(){
 	m_sequence_ready_machines=0;
 	m_isFinalFusion=false;
 
-	m_outboxAllocator.constructor(OUTBOX_ALLOCATOR_CHUNK_SIZE);
 	m_inboxAllocator.constructor(INBOX_ALLOCATOR_CHUNK_SIZE);
 	m_distributionAllocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
 	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
