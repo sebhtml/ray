@@ -39,6 +39,7 @@ public:
 	void printElapsedTime(string description);
 	TimePrinter();
 	void printDurations();
+	void printDifferenceFromStart();
 };
 
 #endif

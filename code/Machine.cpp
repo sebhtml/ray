@@ -340,16 +340,6 @@ void Machine::start(){
 		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<" welcomes you to the MPI_COMM_WORLD."<<endl;
 		cout<<"Rank "<<getRank()<<": website -> http://denovoassembler.sf.net/"<<endl;
-		#ifdef MPICH2_VERSION
-		cout<<"Rank "<<getRank()<<": using MPICH2"<<endl;
-		#else
-			#ifdef OMPI_MPI_H
-			cout<<"Rank "<<getRank()<<": using Open-MPI "<<OMPI_MAJOR_VERSION<<"."<<OMPI_MINOR_VERSION<<"."<<OMPI_RELEASE_VERSION<<endl;
-
-			#else
-			cout<<"Rank "<<getRank()<<": Warning, unknown implementation of MPI"<<endl;
-			#endif
-		#endif
 		#endif
 	}
 
@@ -361,7 +351,6 @@ void Machine::start(){
 	m_distribution_file_id=m_distribution_sequence_id=m_distribution_currentSequenceId=0;
 
 	MPI_Barrier(MPI_COMM_WORLD);
-
 
 	m_mp.constructor(
 			m_ed,
@@ -480,13 +469,11 @@ void Machine::start(){
  *
  * it
  * 	1) receives messages
- * 	2) free Request if any (only with MPICH2, Open-MPI is better designed and send small messages more efficiently!)
  * 	3) process message. The function that deals with a message is selected with the message's tag
  * 	4) process data, this depends on the master-mode and slave-mode states.
  * 	5) send messages
  */
 void Machine::run(){
-	time_t last=time(NULL);
 	while(isAlive()){
 		receiveMessages(); 
 		processMessages();
@@ -495,13 +482,7 @@ void Machine::run(){
 		}
 		processData();
 		sendMessages();
-		time_t theTime=time(NULL);
-		if(theTime%60==0 && theTime!=last){
-			struct tm*timeinfo;
-			timeinfo=localtime(&theTime);
-			cout<<"Rank "<<getRank()<<": "<<asctime(timeinfo)<<endl;
-			last=theTime;
-		}
+		m_timePrinter.printDifferenceFromStart();
 	}
 }
 

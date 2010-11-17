@@ -35,6 +35,7 @@ public:
 
 class MessagesHandler{
 	Request*m_root;
+	void printRequests();
 public:
 
 	void sendMessages(vector<Message>*outbox,MyAllocator*outboxAllocator);

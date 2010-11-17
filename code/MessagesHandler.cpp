@@ -21,6 +21,9 @@
 
 #include<MessagesHandler.h>
 #include<common_functions.h>
+#include<assert.h>
+
+//#define DEBUG_MPI
 
 /*
  * send messages,
@@ -32,24 +35,33 @@ void MessagesHandler::sendMessages(vector<Message>*outbox,MyAllocator*outboxAllo
 
 	for(int i=0;i<(int)outbox->size();i++){
 		Message*aMessage=&((*outbox)[i]);
-		#ifdef DEBUG
+		#ifdef DEBUG_MPI
 		int theRank=aMessage->getDestination();
 		assert(theRank>=0);
-		assert(theRank<getSize());
 		#endif
 
 		MPI_Request request;
 		//cout<<"MPI_Isend"<<endl;
-		MPI_Isend(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD,&request);
+		//  MPI_Issend
+		//      Synchronous nonblocking. Note that a Wait/Test will complete only when the matching receive is posted
+		#ifdef DEBUG_MPI
+		int value=MPI_Issend(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD,&request);
+		assert(value==MPI_SUCCESS);
+		#else
+		MPI_Issend(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD,&request);
+		#endif
 		addRequest(&request);
 	}
 
 	outbox->clear();
-	freeRequests(outboxAllocator);
+	
 }
 
 // O(1) add, add it to the root
 void MessagesHandler::addRequest(MPI_Request*request){
+	if(*request!=MPI_REQUEST_NULL){
+		return; // Open-MPI is blazing fast, just amazing.
+	}
 	Request*newRequest=(Request*)__Malloc(sizeof(Request));
 	newRequest->m_mpiRequest=request;
 	newRequest->m_next=m_root;
@@ -60,12 +72,22 @@ void MessagesHandler::addRequest(MPI_Request*request){
 void MessagesHandler::freeRequests(MyAllocator*outboxAllocator){
 	
 	// free m_root
+	//
+	//
+	// m_root ----------------> Request
+	//                              > MPI_Request*m_mpiRequest
+	//                              > Request*m_next
+	
+
 	while(m_root!=NULL){
 		MPI_Request*request=m_root->m_mpiRequest;
-		MPI_Status status;
 		int flag;
-		//cout<<"MPI_Test"<<endl;
-		MPI_Test(request,&flag,&status);
+		#ifdef DEBUG_MPI
+		assert(*request!=MPI_REQUEST_NULL);
+		#endif
+		cout<<"MPI_REQUEST_NULL = "<<MPI_REQUEST_NULL<<endl;
+		cout<<"MPI_Test root "<<request<<" "<<*request<<endl;
+		MPI_Test(request,&flag,MPI_STATUS_IGNORE);
 		if(flag){
 			Request*next=m_root->m_next;
 			__Free(m_root);
@@ -75,30 +97,36 @@ void MessagesHandler::freeRequests(MyAllocator*outboxAllocator){
 		}
 	}
 
-	Request*previous=NULL;
-	Request*current=NULL;
-	if(m_root!=NULL){
-		current=m_root->m_next;
+	if(m_root==NULL){// everyone is happy, nothing to do further
+		outboxAllocator->reset();
+		return;
 	}
+
+	Request*previous=m_root;
+	Request*current=previous->m_next;
+
+	// m_root is not completed to this point, if it is not NULL
+	// current is the next
+	
+	// m_root ----------------> Request  (this is previous)
+	//                              > MPI_Request*m_mpiRequest
+	//                              > Request*m_next           ----------------> Request  (This one is current)
+	//                                                                             > MPI_Request*m_mpiRequest
+	//                                                                             > Request*m_next  (this is next)
 
 	while(current!=NULL){
 		MPI_Request*request=current->m_mpiRequest;
-		MPI_Status status;
 		int flag;
-		MPI_Test(request,&flag,&status);
+		cout<<"MPI_Test current"<<endl;
+		MPI_Test(request,&flag,MPI_STATUS_IGNORE);
 		Request*next=current->m_next;
 		if(flag){
 			__Free(current);
-			if(previous!=NULL){
-				previous->m_next=next;
-			}
+			previous->m_next=next;
 		}else{
 			previous=current;
 		}
 		current=next;
-	}
-	if(m_root==NULL){
-		outboxAllocator->reset();
 	}
 }
 
@@ -125,16 +153,25 @@ void MessagesHandler::receiveMessages(vector<Message>*inbox,MyAllocator*inboxAll
 		int length;
 		MPI_Get_count(&status,datatype,&length);
 		void*incoming=(void*)inboxAllocator->allocate(length*sizeOfType);
-		MPI_Status status2;
-		//cout<<"MPI_Recv"<<endl;
-		MPI_Recv(incoming,length,datatype,source,tag,MPI_COMM_WORLD,&status2);
+		MPI_Recv(incoming,length,datatype,source,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
 		Message aMessage(incoming,length,datatype,source,tag,source);
 		inbox->push_back(aMessage);
-		//cout<<"MPI_Iprobe"<<endl;
 		MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
 	}
+
 }
 
 MessagesHandler::MessagesHandler(){
 	m_root=NULL;
 }
+
+void MessagesHandler::printRequests(){
+	Request*a=m_root;
+	cout<<"Requests"<<endl;
+	while(a!=NULL){
+		cout<<a->m_mpiRequest<<endl;
+		a=a->m_next;
+	}
+	cout<<"End of Requests"<<endl;
+}
+

@@ -40,6 +40,16 @@ void TimePrinter::printElapsedTime(string description){
 	m_durations.push_back(differenceWithLast);
 }
 
+void TimePrinter::printDifferenceFromStart(){
+	time_t endingTime=time(NULL);
+	if(endingTime%60!=0){
+		return;
+	}
+	int differenceWithLast=endingTime-m_startingTime;
+	printDifference(differenceWithLast);
+	cout<<endl;
+}
+
 TimePrinter::TimePrinter(){
 	m_startingTime=m_lastTime=m_endingTime=time(NULL);
 }
