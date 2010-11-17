@@ -80,10 +80,10 @@ void TimePrinter::printDifference(int difference){
 }
 
 void TimePrinter::printDurations(){
+	m_endingTime=time(NULL);
 	struct tm * timeinfo;
 	timeinfo=localtime(&m_endingTime);
 	m_descriptions.push_back("Completion of the assembly");
-	m_endingTime=time(NULL);
 	m_durations.push_back(m_endingTime-m_startingTime);
 	cout<<"\nElapsed time for each step, "<<asctime(timeinfo)<<endl;
 	for(int i=0;i<(int)m_descriptions.size();i++){
