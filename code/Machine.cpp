@@ -589,10 +589,10 @@ int Machine::getRank(){
  * finish hyper fusions now!
  */
 void Machine::finishFusions(){
-	// finishing is broken?
 	if(m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
 		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 		message[0]=m_FINISH_fusionOccured;
+		cout<<"Rank "<<getRank()<<" is finishing its fusions "<<m_ed->m_EXTENSION_contigs.size()<<"/"<<m_ed->m_EXTENSION_contigs.size()<<" (DONE)"<<endl;
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_FINISH_FUSIONS_FINISHED,getRank());
 		m_outbox.push_back(aMessage);
 		m_mode=MODE_DO_NOTHING;
@@ -635,6 +635,10 @@ void Machine::finishFusions(){
 			}
 			m_FINISH_pathsForPosition.push_back(a);
 			if(m_ed->m_EXTENSION_currentPosition==0){
+				if(m_seedingData->m_SEEDING_i%10==0){
+					cout<<"Rank "<<getRank()<<" is finishing its fusions "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_ed->m_EXTENSION_contigs.size()<<endl;
+
+				}
 				vector<VERTEX_TYPE> a;
 				m_FINISH_newFusions.push_back(a);
 				m_FINISH_vertex_requested=false;
@@ -653,6 +657,22 @@ void Machine::finishFusions(){
 		vector<Direction> directions1=m_FINISH_pathsForPosition[m_FINISH_pathsForPosition.size()-1];
 		vector<Direction> directions2=m_FINISH_pathsForPosition[m_FINISH_pathsForPosition.size()-overlapMinimumLength];
 		int hits=0;
+
+		// the complexity of this thing is silly.
+		// basically, directions1 contains the paths at a particular vertex in the path
+		// directions2 contains the paths at another vertex in the path
+		// both vertices are distanced by overlapMinimumLength, or so
+		// basically, here we say we have a hit if and only if
+		// there is a pair x,y with x in directions1 ad y in directions2
+		// with the property that the difference of progressions are exactly overlapMinimumLength (progressions
+		// are simply positions of these vertices on another path.)
+		// 
+		// new algorithm:
+		// index the  directions2 with their 'otherProgression'
+		// then, simply iterate over those of directions1, and check if there is one in the index of directions2
+		// with a otherProgression=+1+progression-overlapMinimumLength
+
+
 		for(int i=0;i<(int)directions1.size();i++){
 			for(int j=0;j<(int)directions2.size();j++){
 				if(directions1[i].getWave()==directions2[j].getWave()){
@@ -1529,7 +1549,7 @@ void Machine::call_MODE_DISTRIBUTE_FUSIONS(){
 	}
 
 	if(m_ed->m_EXTENSION_currentPosition==0){
-		if(m_seedingData->m_SEEDING_i%10==0){
+		if(m_seedingData->m_SEEDING_i%100==0){
 			cout<<"Rank "<<getRank()<<" distributes its fusions. "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_ed->m_EXTENSION_contigs.size()<<endl;
 
 		}

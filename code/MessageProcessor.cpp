@@ -928,6 +928,7 @@ void MessageProcessor::call_TAG_CLEAR_DIRECTIONS_REPLY(Message*message){
 }
 
 void MessageProcessor::call_TAG_FINISH_FUSIONS(Message*message){
+	cout<<"Rank "<<rank<<" call_TAG_FINISH_FUSIONS"<<endl;
 	(*m_mode)=MODE_FINISH_FUSIONS;
 	(*m_FINISH_fusionOccured)=false;
 	(*m_SEEDING_i)=0;
