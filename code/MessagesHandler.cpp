@@ -39,6 +39,7 @@ void MessagesHandler::sendMessages(vector<Message>*outbox,MyAllocator*outboxAllo
 		#endif
 
 		MPI_Request request;
+		//cout<<"MPI_Isend"<<endl;
 		MPI_Isend(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD,&request);
 		addRequest(&request);
 	}
@@ -63,6 +64,7 @@ void MessagesHandler::freeRequests(MyAllocator*outboxAllocator){
 		MPI_Request*request=m_root->m_mpiRequest;
 		MPI_Status status;
 		int flag;
+		//cout<<"MPI_Test"<<endl;
 		MPI_Test(request,&flag,&status);
 		if(flag){
 			Request*next=m_root->m_next;
@@ -109,6 +111,7 @@ void MessagesHandler::freeRequests(MyAllocator*outboxAllocator){
 void MessagesHandler::receiveMessages(vector<Message>*inbox,MyAllocator*inboxAllocator){
 	int flag;
 	MPI_Status status;
+	//cout<<"MPI_Iprobe"<<endl;
 	MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
 	while(flag){
 		MPI_Datatype datatype=MPI_UNSIGNED_LONG_LONG;
@@ -123,9 +126,11 @@ void MessagesHandler::receiveMessages(vector<Message>*inbox,MyAllocator*inboxAll
 		MPI_Get_count(&status,datatype,&length);
 		void*incoming=(void*)inboxAllocator->allocate(length*sizeOfType);
 		MPI_Status status2;
+		//cout<<"MPI_Recv"<<endl;
 		MPI_Recv(incoming,length,datatype,source,tag,MPI_COMM_WORLD,&status2);
 		Message aMessage(incoming,length,datatype,source,tag,source);
 		inbox->push_back(aMessage);
+		//cout<<"MPI_Iprobe"<<endl;
 		MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
 	}
 }
