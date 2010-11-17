@@ -672,19 +672,29 @@ void Machine::finishFusions(){
 		// then, simply iterate over those of directions1, and check if there is one in the index of directions2
 		// with a otherProgression=+1+progression-overlapMinimumLength
 
+		// first key: waveId, second key: otherProgression, values: j such that j has a progression equal to otherProgression
 
+		// index
+		map<int,map<int,int > > indexOnDirections2;
+		for(int j=0;j<(int)directions2.size();j++){
+			int otherProgression=directions2[j].getProgression();
+			int wave=directions2[j].getWave();
+			indexOnDirections2[wave][otherProgression]=j;
+		}
+
+		// search
 		for(int i=0;i<(int)directions1.size();i++){
-			for(int j=0;j<(int)directions2.size();j++){
-				if(directions1[i].getWave()==directions2[j].getWave()){
-					int progression=directions1[i].getProgression();
-					int otherProgression=directions2[j].getProgression();
-					if(progression-otherProgression+1==overlapMinimumLength){
-						// this is 
-						done=false;
-						hits++;
-						m_selectedPath=directions1[i].getWave();
-						m_selectedPosition=directions1[i].getProgression();
-					}
+			int myWave=directions1[i].getWave();
+			if(indexOnDirections2.count(myWave)>0){
+				int progression=directions1[i].getProgression();
+				int otherProgression=1+progression-overlapMinimumLength; 
+				if(indexOnDirections2[myWave].count(otherProgression)>0){
+					// this is 
+					done=false;
+					hits++;
+					m_selectedPath=myWave;
+					m_selectedPosition=progression;
+					break;
 				}
 			}
 		}
