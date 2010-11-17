@@ -23,6 +23,7 @@
 #ifndef _Machine
 #define _Machine
 
+#include<MessagesHandler.h>
 #include<common_functions.h>
 #include<MyForest.h>
 #include<EdgesExtractor.h>
@@ -83,6 +84,7 @@ class Machine{
 	MachineMethod m_slave_methods[32];
 
 	int m_currentCycleStep;
+	MessagesHandler m_messagesHandler;
 
 	EdgesExtractor m_edgesExtractor;
 	int m_numberOfRanksWithCoverageData;

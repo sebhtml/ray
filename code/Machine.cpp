@@ -505,82 +505,9 @@ void Machine::run(){
 	}
 }
 
-/*
- * free the memory of Requests
- */
-void Machine::checkRequests(){
-	MPI_Request theRequests[1024];
-	MPI_Status theStatus[1024];
-	
-	for(int i=0;i<(int)m_pendingMpiRequest.size();i++){
-		theRequests[i]=m_pendingMpiRequest[i];
-	}
-	MPI_Waitall(m_pendingMpiRequest.size(),theRequests,theStatus);
-	m_pendingMpiRequest.clear();
-}
 
-/*
- * send messages,
- * if the message goes to self, do a memcpy!
- */
-void Machine::sendMessages(){
-	if(m_outbox.size()==0){
-		return;
-	}
 
-	for(int i=0;i<(int)m_outbox.size();i++){
-		Message*aMessage=&(m_outbox[i]);
-		int sizeOfElements=8;
-		if(aMessage->getTag()==TAG_SEND_SEQUENCE){
-			sizeOfElements=1;
-		}
-		int messageSize=sizeOfElements*aMessage->getCount();
-		if(messageSize>MPI_BTL_SM_EAGER_LIMIT){
-			cout<<"Size= "<<messageSize<<" Tag="<<aMessage->getTag()<<endl;
-			assert(false);
-		}
-		#ifdef DEBUG
-		int theRank=aMessage->getDestination();
-		assert(theRank>=0);
-		assert(theRank<getSize());
-		#endif
 
-		MPI_Send(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD);
-	}
-
-	m_outbox.clear();
-	m_outboxAllocator.reset();
-}
-
-/*	
- * using Iprobe, probe for new messages as they arrive
- * if no more message are available, return.
- * messages are kept in the inbox.
- */
-
-void Machine::receiveMessages(){
-	int flag;
-	MPI_Status status;
-	MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
-	while(flag){
-		MPI_Datatype datatype=MPI_UNSIGNED_LONG_LONG;
-		int sizeOfType=8;
-		int tag=status.MPI_TAG;
-		if(tag==TAG_SEND_SEQUENCE || tag==TAG_REQUEST_READ_SEQUENCE_REPLY){
-			datatype=MPI_BYTE;
-			sizeOfType=1;
-		}
-		int source=status.MPI_SOURCE;
-		int length;
-		MPI_Get_count(&status,datatype,&length);
-		void*incoming=(void*)m_inboxAllocator.allocate(length*sizeOfType);
-		MPI_Status status2;
-		MPI_Recv(incoming,length,datatype,source,tag,MPI_COMM_WORLD,&status2);
-		Message aMessage(incoming,length,datatype,source,tag,source);
-		m_inbox.push_back(aMessage);
-		MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
-	}
-}
 
 int Machine::getRank(){
 	return m_rank;
@@ -1179,6 +1106,14 @@ void Machine::processMessages(){
 	}
 	m_inbox.clear();
 	m_inboxAllocator.reset();
+}
+
+void Machine::sendMessages(){
+	m_messagesHandler.sendMessages(&m_outbox,&m_outboxAllocator);
+}
+
+void Machine::receiveMessages(){
+	m_messagesHandler.receiveMessages(&m_inbox,&m_inboxAllocator);
 }
 
 void Machine::detectDistances(){
