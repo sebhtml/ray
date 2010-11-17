@@ -40,7 +40,7 @@ public:
 	void sendMessages(vector<Message>*outbox,MyAllocator*outboxAllocator);
 	void receiveMessages(vector<Message>*inbox,MyAllocator*inboxAllocator);
 	void addRequest(MPI_Request*request);
-	void freeRequests();
+	void freeRequests(MyAllocator*outboxAllocator);
 	MessagesHandler();
 };
 

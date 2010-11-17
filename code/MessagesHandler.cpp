@@ -32,7 +32,7 @@ void MessagesHandler::sendMessages(vector<Message>*outbox,MyAllocator*outboxAllo
 	}
 
 	for(int i=0;i<(int)outbox->size();i++){
-		Message*aMessage=&((*m_outbox)[i]);
+		Message*aMessage=&((*outbox)[i]);
 		#ifdef DEBUG
 		int theRank=aMessage->getDestination();
 		assert(theRank>=0);
@@ -46,7 +46,6 @@ void MessagesHandler::sendMessages(vector<Message>*outbox,MyAllocator*outboxAllo
 
 	outbox->clear();
 	freeRequests(outboxAllocator);
-	outboxAllocator->reset();
 }
 
 // O(1) add
@@ -58,9 +57,29 @@ void MessagesHandler::addRequest(MPI_Request*request){
 }
 
 // O(n) freeing
-void MessagesHandler::freeRequests(){
+void MessagesHandler::freeRequests(MyAllocator*outboxAllocator){
+	
+	// free m_root
+	while(m_root!=NULL){
+		MPI_Request*request=m_root->m_mpiRequest;
+		MPI_Status status;
+		int flag;
+		MPI_Test(request,&flag,&status);
+		if(flag){
+			Request*next=m_root->m_next;
+			__Free(m_root);
+			m_root=next;
+		}else{
+			break;// root is not ready to be freed
+		}
+	}
+
 	Request*previous=NULL;
-	Request*current=m_root;
+	Request*current=NULL;
+	if(m_root!=NULL){
+		current=m_root->m_next;
+	}
+
 	while(current!=NULL){
 		MPI_Request*request=current->m_mpiRequest;
 		MPI_Status status;
@@ -68,11 +87,17 @@ void MessagesHandler::freeRequests(){
 		MPI_Test(request,&flag,&status);
 		Request*next=current->m_next;
 		if(flag){
-			MPI_Request_free(request);
 			__Free(current);
-			previous->m_next=next;
+			if(previous!=NULL){
+				previous->m_next=next;
+			}
+		}else{
+			previous=current;
 		}
 		current=next;
+	}
+	if(m_root==NULL){
+		outboxAllocator->reset();
 	}
 }
 
@@ -107,5 +132,5 @@ void MessagesHandler::receiveMessages(vector<Message>*inbox,MyAllocator*inboxAll
 }
 
 MessagesHandler::MessagesHandler(){
-	m_requests=NULL;
+	m_root=NULL;
 }
