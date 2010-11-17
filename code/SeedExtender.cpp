@@ -794,7 +794,7 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,vector<Messa
  bool*colorSpaceMode,int size,vector<vector<VERTEX_TYPE> >*seeds){
 	if(!ed->m_EXTENSION_directVertexDone){
 		if(!ed->m_EXTENSION_VertexAssembled_requested){
-			if(ed->m_EXTENSION_currentSeedIndex%10==0 and ed->m_EXTENSION_currentPosition==0 and (*last_value)!=ed->m_EXTENSION_currentSeedIndex){
+			if(ed->m_EXTENSION_currentSeedIndex%50==0 and ed->m_EXTENSION_currentPosition==0 and (*last_value)!=ed->m_EXTENSION_currentSeedIndex){
 				(*last_value)=ed->m_EXTENSION_currentSeedIndex;
 				#ifdef SHOW_PROGRESS
 				cout<<"Rank "<<theRank<<" is extending its seeds. "<<ed->m_EXTENSION_currentSeedIndex+1<<"/"<<(*seeds).size()<<endl;

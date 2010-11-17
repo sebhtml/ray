@@ -497,7 +497,9 @@ void Machine::run(){
 		sendMessages();
 		time_t theTime=time(NULL);
 		if(theTime%60==0 && theTime!=last){
-			cout<<"Rank "<<getRank()<<": "<<theTime<<" seconds since Unix epoch"<<endl;
+			struct tm*timeinfo;
+			timeinfo=localtime(&theTime);
+			cout<<"Rank "<<getRank()<<": "<<asctime(timeinfo)<<endl;
 			last=theTime;
 		}
 	}

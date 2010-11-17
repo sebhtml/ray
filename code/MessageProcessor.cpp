@@ -863,7 +863,7 @@ void MessageProcessor::call_TAG_CLEAR_DIRECTIONS(Message*message){
 	// clearing old data too!.
 	(*m_FINISH_pathLengths).clear();
 
-	cout<<"Rank "<<rank<<" is clearing its directions"<<endl;
+	//cout<<"Rank "<<rank<<" is clearing its directions"<<endl;
 	// clear graph
 	for(int i=0;i<m_subgraph->getNumberOfTrees();i++){
 		SplayTreeIterator<VERTEX_TYPE,Vertex> iterator(m_subgraph->getTree(i));
@@ -928,7 +928,7 @@ void MessageProcessor::call_TAG_CLEAR_DIRECTIONS_REPLY(Message*message){
 }
 
 void MessageProcessor::call_TAG_FINISH_FUSIONS(Message*message){
-	cout<<"Rank "<<rank<<" call_TAG_FINISH_FUSIONS"<<endl;
+	//cout<<"Rank "<<rank<<" call_TAG_FINISH_FUSIONS"<<endl;
 	(*m_mode)=MODE_FINISH_FUSIONS;
 	(*m_FINISH_fusionOccured)=false;
 	(*m_SEEDING_i)=0;
@@ -955,7 +955,7 @@ void MessageProcessor::call_TAG_DISTRIBUTE_FUSIONS(Message*message){
 
 void MessageProcessor::call_TAG_DISTRIBUTE_FUSIONS_FINISHED(Message*message){
 	(*m_DISTRIBUTE_n)++;
-	cout<<"call_TAG_DISTRIBUTE_FUSIONS_FINISHED "<<*m_DISTRIBUTE_n<<endl;
+	//cout<<"call_TAG_DISTRIBUTE_FUSIONS_FINISHED "<<*m_DISTRIBUTE_n<<endl;
 }
 
 void MessageProcessor::call_TAG_EXTENSION_START(Message*message){
