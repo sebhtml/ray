@@ -283,10 +283,6 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,int
 int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoingEdges
 ){
 	// use seed information.
-	#ifdef SHOW_PROGRESS
-	if(ed->m_EXTENSION_currentPosition==1)
-		cout<<"Rank "<<theRank<<""<<" starts on a seed, length="<<ed->m_EXTENSION_currentSeed.size()<<endl;
-	#endif
 	
 	// use the seed to extend the thing.
 	if(ed->m_EXTENSION_currentPosition<(int)ed->m_EXTENSION_currentSeed.size()){
@@ -636,9 +632,6 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			ed->m_EXTENSION_readsInRange.clear();
 		}else{
 			if(ed->m_EXTENSION_extension.size()>=100){
-				#ifdef SHOW_PROGRESS
-				cout<<"Rank "<<theRank<<" stores an extension, "<<ed->m_EXTENSION_extension.size()<<" vertices."<<endl;
-				#endif
 				ed->m_EXTENSION_contigs.push_back(ed->m_EXTENSION_extension);
 
 				int id=ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+theRank;
@@ -796,7 +789,7 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
  bool*colorSpaceMode,int size,vector<vector<VERTEX_TYPE> >*seeds){
 	if(!ed->m_EXTENSION_directVertexDone){
 		if(!ed->m_EXTENSION_VertexAssembled_requested){
-			if(ed->m_EXTENSION_currentSeedIndex%50==0 and ed->m_EXTENSION_currentPosition==0 and (*last_value)!=ed->m_EXTENSION_currentSeedIndex){
+			if(ed->m_EXTENSION_currentSeedIndex%10==0 and ed->m_EXTENSION_currentPosition==0 and (*last_value)!=ed->m_EXTENSION_currentSeedIndex){
 				(*last_value)=ed->m_EXTENSION_currentSeedIndex;
 				#ifdef SHOW_PROGRESS
 				cout<<"Rank "<<theRank<<" is extending its seeds. "<<ed->m_EXTENSION_currentSeedIndex+1<<"/"<<(*seeds).size()<<endl;

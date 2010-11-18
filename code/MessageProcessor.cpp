@@ -665,13 +665,23 @@ void MessageProcessor::call_TAG_ASK_READ_LENGTH_REPLY(Message*message){
 void MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 	void*buffer=message->getBuffer();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	SplayNode<VERTEX_TYPE,Vertex>*node=m_subgraph->find(incoming[0]);
-	#ifdef DEBUG
-	assert(node!=NULL);
-	#endif
-	int wave=incoming[1];
-	int progression=incoming[2];
-	node->getValue()->addDirection(wave,progression,&(*m_directionsAllocator));
+	int count=message->getCount();
+	for(int i=0;i<count;i+=3){
+		SplayNode<VERTEX_TYPE,Vertex>*node=m_subgraph->find(incoming[i+0]);
+		#ifdef DEBUG
+		assert(node!=NULL);
+		#endif
+		int wave=incoming[i+1];
+		int progression=incoming[i+2];
+		node->getValue()->addDirection(wave,progression,&(*m_directionsAllocator));
+	}
+	
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_SAVE_WAVE_PROGRESSION_REPLY,rank);
+	m_outbox->push_back(aMessage);
+}
+
+void MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION_REPLY(Message*message){
+	m_fusionData->setReadiness();
 }
 
 void MessageProcessor::call_TAG_COPY_DIRECTIONS(Message*message){
@@ -1197,6 +1207,7 @@ MessageProcessor::MessageProcessor(){
 	m_methods[TAG_ASK_READ_LENGTH]=&MessageProcessor::call_TAG_ASK_READ_LENGTH;
 	m_methods[TAG_ASK_READ_LENGTH_REPLY]=&MessageProcessor::call_TAG_ASK_READ_LENGTH_REPLY;
 	m_methods[TAG_SAVE_WAVE_PROGRESSION]=&MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION;
+	m_methods[TAG_SAVE_WAVE_PROGRESSION_REPLY]=&MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION_REPLY;
 	m_methods[TAG_COPY_DIRECTIONS]=&MessageProcessor::call_TAG_COPY_DIRECTIONS;
 	m_methods[TAG_ASSEMBLE_WAVES]=&MessageProcessor::call_TAG_ASSEMBLE_WAVES;
 	m_methods[TAG_SAVE_WAVE_PROGRESSION_REVERSE]=&MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION_REVERSE;

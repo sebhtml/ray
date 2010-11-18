@@ -43,6 +43,7 @@ ErrorSimulator.cpp \
 ErrorSimulator.h \
 ExtensionData.h \
 FusionData.h \
+FusionData.cpp \
 Loader.cpp \
 Loader.h \
 Machine.cpp \
@@ -129,6 +130,7 @@ ErrorSimulator.cpp \
 ErrorSimulator.h \
 ExtensionData.h \
 FusionData.h \
+FusionData.cpp \
 Loader.cpp \
 Loader.h \
 Machine.cpp \
@@ -214,6 +216,7 @@ ErrorSimulator.cpp \
 ErrorSimulator.h \
 ExtensionData.h \
 FusionData.h \
+FusionData.cpp \
 Loader.cpp \
 Loader.h \
 Machine.cpp \
@@ -299,6 +302,7 @@ ErrorSimulator.cpp \
 ErrorSimulator.h \
 ExtensionData.h \
 FusionData.h \
+FusionData.cpp \
 Loader.cpp \
 Loader.h \
 Machine.cpp \

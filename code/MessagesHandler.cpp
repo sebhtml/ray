@@ -27,7 +27,7 @@
 /*
  * send messages,
  */
-void MessagesHandler::sendMessages(StaticVector*outbox){
+void MessagesHandler::sendMessages(StaticVector*outbox,int source){
 	for(int i=0;i<(int)outbox->size();i++){
 		Message*aMessage=((*outbox)[i]);
 		#ifdef DEBUG
@@ -60,7 +60,7 @@ void MessagesHandler::sendMessages(StaticVector*outbox){
  * messages are kept in the inbox.
  */
 
-void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator){
+void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator,int destination){
 	int flag;
 	MPI_Status status;
 	MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
@@ -77,7 +77,6 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 		inbox->push_back(aMessage);
 		MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
 	}
-
 }
 
 

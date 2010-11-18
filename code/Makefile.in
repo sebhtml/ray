@@ -56,10 +56,11 @@ am_Ray_OBJECTS = RingAllocator.$(OBJEXT) StaticVector.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	Direction.$(OBJEXT) DistributionData.$(OBJEXT) \
 	EdgesExtractor.$(OBJEXT) ErrorSimulator.$(OBJEXT) \
-	Loader.$(OBJEXT) Machine.$(OBJEXT) Message.$(OBJEXT) \
-	MessageProcessor.$(OBJEXT) MyAllocator.$(OBJEXT) \
-	MyForest.$(OBJEXT) OpenAssemblerChooser.$(OBJEXT) \
-	PairedRead.$(OBJEXT) Parameters.$(OBJEXT) ray_main.$(OBJEXT) \
+	FusionData.$(OBJEXT) Loader.$(OBJEXT) Machine.$(OBJEXT) \
+	Message.$(OBJEXT) MessageProcessor.$(OBJEXT) \
+	MyAllocator.$(OBJEXT) MyForest.$(OBJEXT) \
+	OpenAssemblerChooser.$(OBJEXT) PairedRead.$(OBJEXT) \
+	Parameters.$(OBJEXT) ray_main.$(OBJEXT) \
 	ReadAnnotation.$(OBJEXT) Read.$(OBJEXT) \
 	RepeatedVertexWatchdog.$(OBJEXT) SeedExtender.$(OBJEXT) \
 	SequencesIndexer.$(OBJEXT) SequencesLoader.$(OBJEXT) \
@@ -77,11 +78,11 @@ am_Ray_SimulateErrors_OBJECTS = RingAllocator.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	Direction.$(OBJEXT) DistributionData.$(OBJEXT) \
 	EdgesExtractor.$(OBJEXT) ErrorSimulator.$(OBJEXT) \
-	Loader.$(OBJEXT) Machine.$(OBJEXT) Message.$(OBJEXT) \
-	MessageProcessor.$(OBJEXT) MyAllocator.$(OBJEXT) \
-	MyForest.$(OBJEXT) OpenAssemblerChooser.$(OBJEXT) \
-	PairedRead.$(OBJEXT) Parameters.$(OBJEXT) \
-	ReadAnnotation.$(OBJEXT) Read.$(OBJEXT) \
+	FusionData.$(OBJEXT) Loader.$(OBJEXT) Machine.$(OBJEXT) \
+	Message.$(OBJEXT) MessageProcessor.$(OBJEXT) \
+	MyAllocator.$(OBJEXT) MyForest.$(OBJEXT) \
+	OpenAssemblerChooser.$(OBJEXT) PairedRead.$(OBJEXT) \
+	Parameters.$(OBJEXT) ReadAnnotation.$(OBJEXT) Read.$(OBJEXT) \
 	RepeatedVertexWatchdog.$(OBJEXT) SeedExtender.$(OBJEXT) \
 	SequencesIndexer.$(OBJEXT) SequencesLoader.$(OBJEXT) \
 	SffLoader.$(OBJEXT) simulateErrors_main.$(OBJEXT) \
@@ -98,11 +99,11 @@ am_Ray_SimulateFragments_OBJECTS = RingAllocator.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	Direction.$(OBJEXT) DistributionData.$(OBJEXT) \
 	EdgesExtractor.$(OBJEXT) ErrorSimulator.$(OBJEXT) \
-	Loader.$(OBJEXT) Machine.$(OBJEXT) Message.$(OBJEXT) \
-	MessageProcessor.$(OBJEXT) MyAllocator.$(OBJEXT) \
-	MyForest.$(OBJEXT) OpenAssemblerChooser.$(OBJEXT) \
-	PairedRead.$(OBJEXT) Parameters.$(OBJEXT) \
-	ReadAnnotation.$(OBJEXT) Read.$(OBJEXT) \
+	FusionData.$(OBJEXT) Loader.$(OBJEXT) Machine.$(OBJEXT) \
+	Message.$(OBJEXT) MessageProcessor.$(OBJEXT) \
+	MyAllocator.$(OBJEXT) MyForest.$(OBJEXT) \
+	OpenAssemblerChooser.$(OBJEXT) PairedRead.$(OBJEXT) \
+	Parameters.$(OBJEXT) ReadAnnotation.$(OBJEXT) Read.$(OBJEXT) \
 	RepeatedVertexWatchdog.$(OBJEXT) SeedExtender.$(OBJEXT) \
 	SequencesIndexer.$(OBJEXT) SequencesLoader.$(OBJEXT) \
 	SffLoader.$(OBJEXT) simulate_fragments_main.$(OBJEXT) \
@@ -119,11 +120,11 @@ am_Ray_SimulatePairedReads_OBJECTS = RingAllocator.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	Direction.$(OBJEXT) DistributionData.$(OBJEXT) \
 	EdgesExtractor.$(OBJEXT) ErrorSimulator.$(OBJEXT) \
-	Loader.$(OBJEXT) Machine.$(OBJEXT) Message.$(OBJEXT) \
-	MessageProcessor.$(OBJEXT) MyAllocator.$(OBJEXT) \
-	MyForest.$(OBJEXT) OpenAssemblerChooser.$(OBJEXT) \
-	PairedRead.$(OBJEXT) Parameters.$(OBJEXT) \
-	ReadAnnotation.$(OBJEXT) Read.$(OBJEXT) \
+	FusionData.$(OBJEXT) Loader.$(OBJEXT) Machine.$(OBJEXT) \
+	Message.$(OBJEXT) MessageProcessor.$(OBJEXT) \
+	MyAllocator.$(OBJEXT) MyForest.$(OBJEXT) \
+	OpenAssemblerChooser.$(OBJEXT) PairedRead.$(OBJEXT) \
+	Parameters.$(OBJEXT) ReadAnnotation.$(OBJEXT) Read.$(OBJEXT) \
 	RepeatedVertexWatchdog.$(OBJEXT) SeedExtender.$(OBJEXT) \
 	SequencesIndexer.$(OBJEXT) SequencesLoader.$(OBJEXT) \
 	SffLoader.$(OBJEXT) simulate_paired_main.$(OBJEXT) \
@@ -279,6 +280,7 @@ ErrorSimulator.cpp \
 ErrorSimulator.h \
 ExtensionData.h \
 FusionData.h \
+FusionData.cpp \
 Loader.cpp \
 Loader.h \
 Machine.cpp \
@@ -364,6 +366,7 @@ ErrorSimulator.cpp \
 ErrorSimulator.h \
 ExtensionData.h \
 FusionData.h \
+FusionData.cpp \
 Loader.cpp \
 Loader.h \
 Machine.cpp \
@@ -449,6 +452,7 @@ ErrorSimulator.cpp \
 ErrorSimulator.h \
 ExtensionData.h \
 FusionData.h \
+FusionData.cpp \
 Loader.cpp \
 Loader.h \
 Machine.cpp \
@@ -534,6 +538,7 @@ ErrorSimulator.cpp \
 ErrorSimulator.h \
 ExtensionData.h \
 FusionData.h \
+FusionData.cpp \
 Loader.cpp \
 Loader.h \
 Machine.cpp \
@@ -702,6 +707,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FastaLoader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FastqGzLoader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FastqLoader.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FusionData.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Loader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Machine.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Message.Po@am__quote@

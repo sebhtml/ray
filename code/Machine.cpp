@@ -287,6 +287,8 @@ void Machine::start(){
 	MPI_Comm_size(MPI_COMM_WORLD,&m_size);
 
 	assert(getSize()<=MAX_NUMBER_OF_MPI_PROCESSES);
+	
+	m_fusionData->constructor(getSize(),MPI_BTL_SM_EAGER_LIMIT);
 
 	if(isMaster()){
 		cout<<"Bienvenue !"<<endl;
@@ -294,7 +296,7 @@ void Machine::start(){
 		m_timePrinter.printElapsedTime("Beginning of computation");
 		cout<<endl;
 	}
-	m_disData->constructor(getSize(),5000,&m_persistentAllocator);
+	m_disData->constructor(getSize(),MPI_BTL_SM_EAGER_LIMIT,&m_persistentAllocator);
 
 	m_subgraph.constructor(numberOfTrees,&m_persistentAllocator);
 	
@@ -483,10 +485,6 @@ void Machine::run(){
 		m_timePrinter.printDifferenceFromStart(getRank());
 	}
 }
-
-
-
-
 
 int Machine::getRank(){
 	return m_rank;
@@ -1087,11 +1085,11 @@ void Machine::processMessages(){
 }
 
 void Machine::sendMessages(){
-	m_messagesHandler.sendMessages(&m_outbox);
+	m_messagesHandler.sendMessages(&m_outbox,getRank());
 }
 
 void Machine::receiveMessages(){
-	m_messagesHandler.receiveMessages(&m_inbox,&m_inboxAllocator);
+	m_messagesHandler.receiveMessages(&m_inbox,&m_inboxAllocator,getRank());
 }
 
 void Machine::detectDistances(){
@@ -1250,15 +1248,14 @@ void Machine::call_MASTER_MODE_LOAD_CONFIG(){
 	}
 
 
+	VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
+	message[0]=m_parameters.getWordSize();
+	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
+	message2[0]=m_parameters.getColorSpaceMode();
 	for(int i=0;i<getSize();i++){
-		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
-		message[0]=m_parameters.getWordSize();
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,i,TAG_SET_WORD_SIZE,getRank());
 		m_outbox.push_back(aMessage);
 		
-		VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
-
-		message2[0]=m_parameters.getColorSpaceMode();
 		Message aMessage2(message2,1,MPI_UNSIGNED_LONG_LONG,i,TAG_SET_COLOR_MODE,getRank());
 		m_outbox.push_back(aMessage2);
 	}
@@ -1362,12 +1359,12 @@ void Machine::call_MASTER_MODE_SEND_COVERAGE_VALUES(){
 
 	// see these values to everyone.
 	
+	VERTEX_TYPE*buffer=(VERTEX_TYPE*)m_outboxAllocator.allocate(3*sizeof(VERTEX_TYPE));
+	buffer[0]=m_minimumCoverage;
+	buffer[1]=m_seedCoverage;
+	buffer[2]=m_peakCoverage;
 	m_numberOfRanksWithCoverageData=0;
 	for(int i=0;i<getSize();i++){
-		VERTEX_TYPE*buffer=(VERTEX_TYPE*)m_outboxAllocator.allocate(3*sizeof(VERTEX_TYPE));
-		buffer[0]=m_minimumCoverage;
-		buffer[1]=m_seedCoverage;
-		buffer[2]=m_peakCoverage;
 		Message aMessage(buffer,3,MPI_UNSIGNED_LONG_LONG,i,TAG_SEND_COVERAGE_VALUES,getRank());
 		m_outbox.push_back(aMessage);
 	}
@@ -1465,36 +1462,7 @@ void Machine::call_MODE_FINISH_FUSIONS(){
 }
 
 void Machine::call_MODE_DISTRIBUTE_FUSIONS(){
-	if(m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
-		cout<<"Rank "<<getRank()<<" distributes its fusions. "<<m_ed->m_EXTENSION_contigs.size()<<"/"<<m_ed->m_EXTENSION_contigs.size()<<" (DONE)"<<endl;
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_DISTRIBUTE_FUSIONS_FINISHED,getRank());
-		m_outbox.push_back(aMessage);
-		m_mode=MODE_DO_NOTHING;
-		return;
-	}
-
-	if(m_ed->m_EXTENSION_currentPosition==0){
-		if(m_seedingData->m_SEEDING_i%10==0){
-			cout<<"Rank "<<getRank()<<" distributes its fusions. "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_ed->m_EXTENSION_contigs.size()<<endl;
-
-		}
-	}
-
-	VERTEX_TYPE vertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
-	VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(3*sizeof(VERTEX_TYPE));
-	message[0]=vertex;
-	message[1]=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
-	message[2]=m_ed->m_EXTENSION_currentPosition;
-	Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,vertexRank(vertex),TAG_SAVE_WAVE_PROGRESSION,getRank());
-	m_outbox.push_back(aMessage);
-
-	m_ed->m_EXTENSION_currentPosition++;
-
-	// the next one
-	if(m_ed->m_EXTENSION_currentPosition==(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
-		m_seedingData->m_SEEDING_i++;
-		m_ed->m_EXTENSION_currentPosition=0;
-	}
+	m_fusionData->distribute(m_seedingData,m_ed,m_rank,&m_outboxAllocator,&m_outbox,getSize(),&m_mode);
 }
 
 void Machine::call_MODE_SEND_DISTRIBUTION(){
@@ -1563,18 +1531,14 @@ void Machine::call_MODE_START_SEEDING(){
 		if(m_seedingData->m_SEEDING_i==(int)m_subgraph.size()-1){
 
 			m_mode=MODE_DO_NOTHING;
-			#ifdef SHOW_PROGRESS
-			cout<<"Rank "<<getRank()<<" is seeding the very vertices it holds. "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_subgraph.size()<<" (DONE)"<<endl;
-			#endif
+			cout<<"Rank "<<getRank()<<" is creating seeds. "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_subgraph.size()<<" (DONE)"<<endl;
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_SEEDING_IS_OVER,getRank());
 			m_seedingData->m_SEEDING_nodes.clear();
 			m_outbox.push_back(aMessage);
 		}else{
-			#ifdef SHOW_PROGRESS
-			if(m_seedingData->m_SEEDING_i % 100000 ==0){
-				cout<<"Rank "<<getRank()<<" is seeding the very vertices it holds. "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_subgraph.size()<<endl;
+			if(m_seedingData->m_SEEDING_i % 30000 ==0){
+				cout<<"Rank "<<getRank()<<" is creating seeds. "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_subgraph.size()<<endl;
 			}
-			#endif
 			m_seedingData->m_SEEDING_currentVertex=m_seedingData->m_SEEDING_nodes[m_seedingData->m_SEEDING_i];
 			m_seedingData->m_SEEDING_first=m_seedingData->m_SEEDING_currentVertex;
 			m_seedingData->m_SEEDING_testInitiated=false;

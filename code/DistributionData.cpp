@@ -22,9 +22,9 @@
 #include<DistributionData.h>
 
 void DistributionData::constructor(int numberOfRanks,int capacity,MyAllocator*allocator){
-	m_messagesStock.constructor(numberOfRanks,capacity,allocator);
-	m_messagesStockOut.constructor(numberOfRanks,capacity,allocator);
-	m_messagesStockIn.constructor(numberOfRanks,capacity,allocator);
-	m_attachedSequence.constructor(numberOfRanks,capacity,allocator);
-	m_messagesStockPaired.constructor(numberOfRanks,capacity,allocator);
+	m_messagesStock.constructor(numberOfRanks,capacity);
+	m_messagesStockOut.constructor(numberOfRanks,capacity);
+	m_messagesStockIn.constructor(numberOfRanks,capacity);
+	m_attachedSequence.constructor(numberOfRanks,capacity);
+	m_messagesStockPaired.constructor(numberOfRanks,capacity);
 }

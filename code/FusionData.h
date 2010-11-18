@@ -25,10 +25,18 @@
 #include<Direction.h>
 #include<vector>
 #include<set>
+#include<StaticVector.h>
 #include<map>
+#include<SeedingData.h>
+#include<ExtensionData.h>
+#include<RingAllocator.h>
+#include<BufferedData.h>
 using namespace std;
 
 class FusionData{
+	BufferedData m_buffers;
+	bool m_ready;
+
 public:
 	// FUSION
 	bool m_fusionStarted;
@@ -57,6 +65,12 @@ public:
 	Direction m_FUSION_receivedPath;
 	map<int,int> m_FUSION_identifier_map;
 	set<int> m_FUSION_eliminated;
+
+	void distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int getRank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox,int getSize,int*m_mode);
+	void constructor(int size,int rank);
+	void setReadiness();
+	bool isReady();
+	FusionData();
 };
 
 #endif

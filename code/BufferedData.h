@@ -24,6 +24,8 @@
 
 #include<common_functions.h>
 #include<MyAllocator.h>
+#include<StaticVector.h>
+#include<RingAllocator.h>
 
 class BufferedData{
 	int*m_sizes;
@@ -31,11 +33,13 @@ class BufferedData{
 	int m_capacity;
 	u64*m_data;
 public:
-	void constructor(int numberOfRanks,int capacity,MyAllocator*allocator);
+	void constructor(int numberOfRanks,int capacity);
 	int size(int i);
 	u64 getAt(int i,int j);
 	void addAt(int i,u64 k);
 	void reset(int i);
+	/* return true if flushed something */
+	bool flush(int period,int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank,bool force);
 };
 
 #endif

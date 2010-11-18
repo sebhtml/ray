@@ -21,12 +21,15 @@
 
 #include<assert.h>
 #include<BufferedData.h>
+#include<RingAllocator.h>
+#include<StaticVector.h>
 
-void BufferedData::constructor(int numberOfRanks,int capacity,MyAllocator*allocator){
+void BufferedData::constructor(int numberOfRanks,int capacity){
 	m_sizes=(int*)__Malloc(sizeof(int)*numberOfRanks);
 	m_data=(u64*)__Malloc(sizeof(u64)*capacity*numberOfRanks);
-	for(int i=0;i<(int)numberOfRanks;i++)
+	for(int i=0;i<(int)numberOfRanks;i++){
 		m_sizes[i]=0;
+	}
 	m_capacity=capacity;
 	m_ranks=numberOfRanks;
 }
@@ -54,4 +57,27 @@ void BufferedData::reset(int i){
 	#ifdef DEBUG
 	assert(m_sizes[i]==0);
 	#endif
+}
+
+bool BufferedData::flush(int period,int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank,bool force){
+	int threshold=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE)/period*period;
+	bool flushed=false;
+	for(int destination=0;destination<m_ranks;destination++){
+		int amount=size(destination);
+		if(!force && amount<threshold){
+			continue;
+		}
+		if(amount==0){
+			continue;
+		}
+		VERTEX_TYPE*message=(VERTEX_TYPE*)outboxAllocator->allocate(amount*sizeof(VERTEX_TYPE));
+		for(int i=0;i<amount;i++){
+			message[i]=getAt(destination,i);
+		}
+		Message aMessage(message,amount,MPI_UNSIGNED_LONG_LONG,destination,tag,rank);
+		outbox->push_back(aMessage);
+		reset(destination);
+		flushed=true;
+	}
+	return flushed;
 }

@@ -335,6 +335,7 @@ SeedExtender*seedExtender,int*m_master_mode,bool*m_isFinalFusion
 	void call_TAG_RECEIVED_COVERAGE_INFORMATION(Message*message);
 	void call_TAG_REQUEST_READ_SEQUENCE(Message*message);
 	void call_TAG_REQUEST_READ_SEQUENCE_REPLY(Message*message);
+	void call_TAG_SAVE_WAVE_PROGRESSION_REPLY(Message*message);
 
 	void processMessage(Message*message);
 	MessageProcessor();

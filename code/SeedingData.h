@@ -26,6 +26,7 @@
 
 #include<SplayTreeIterator.h>
 #include<SplayNode.h>
+#include<Vertex.h>
 #include<set>
 #include<common_functions.h>
 using namespace std;

@@ -34,8 +34,8 @@ using namespace std;
 class MessagesHandler{
 public:
 
-	void sendMessages(StaticVector*outbox);
-	void receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator);
+	void sendMessages(StaticVector*outbox,int source);
+	void receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator,int destination);
 };
 
 #endif
