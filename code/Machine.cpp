@@ -265,13 +265,11 @@ void Machine::start(){
 	m_sequence_ready_machines=0;
 	m_isFinalFusion=false;
 
-	m_outboxAllocator.constructor(MAX_ALLOCATED_MESSAGES,4096);
-	m_inboxAllocator.constructor(MAX_ALLOCATED_MESSAGES,4096);
+	m_outboxAllocator.constructor(MAX_ALLOCATED_MESSAGES_IN_OUTBOX,MPI_BTL_SM_EAGER_LIMIT);
+	m_inboxAllocator.constructor(MAX_ALLOCATED_MESSAGES_IN_INBOX,MPI_BTL_SM_EAGER_LIMIT);
 	m_distributionAllocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
 	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
 	m_directionsAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
-
-
 
 	m_mode=MODE_DO_NOTHING;
 	m_master_mode=MASTER_MODE_DO_NOTHING;
@@ -352,7 +350,7 @@ void Machine::start(){
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	m_mp.constructor(
+	m_mp.constructor(&m_sl,
 			m_ed,
 			&m_numberOfRanksDoneDetectingDistances,
 			&m_numberOfRanksDoneSendingDistances,

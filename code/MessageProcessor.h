@@ -29,6 +29,7 @@
 #include<SplayTree.h>
 #include<StaticVector.h>
 #include<SeedExtender.h>
+#include<SequencesLoader.h>
 #include<FusionData.h>
 #include<ReadAnnotation.h>
 #include<MyForest.h>
@@ -42,8 +43,9 @@ class MessageProcessor;
 typedef void (MessageProcessor::*FNMETHOD) (Message*message);
 
 class MessageProcessor{
+	SequencesLoader*m_sequencesLoader;
 
-	FNMETHOD m_methods[101];
+	FNMETHOD m_methods[200];
 
 	u64 m_sentinelValue;
 
@@ -141,7 +143,8 @@ class MessageProcessor{
 
 
 public:
-	void constructor(ExtensionData*ed,
+	void constructor(SequencesLoader*m_sequencesLoader,
+ExtensionData*ed,
 			int*m_numberOfRanksDoneDetectingDistances,
 			int*m_numberOfRanksDoneSendingDistances,
 			Parameters*parameters,
@@ -232,6 +235,7 @@ SeedExtender*seedExtender,int*m_master_mode,bool*m_isFinalFusion
 
 	void call_TAG_WELCOME(Message*message);
 	void call_TAG_SEND_SEQUENCE(Message*message);
+	void call_TAG_SEND_SEQUENCE_REPLY(Message*message);
 	void call_TAG_SEQUENCES_READY(Message*message);
 	void call_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS(Message*message);
 	void call_TAG_VERTICES_DATA(Message*message);

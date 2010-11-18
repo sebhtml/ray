@@ -57,6 +57,13 @@ void MessageProcessor::call_TAG_SEND_SEQUENCE(Message*message){
 		cout<<"Rank "<<rank<<" has "<<(*m_myReads).size()<<" sequences"<<endl;
 	}
 	#endif
+
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_SEND_SEQUENCE_REPLY,rank);
+	m_outbox->push_back(aMessage);
+}
+
+void MessageProcessor::call_TAG_SEND_SEQUENCE_REPLY(Message*message){
+	m_sequencesLoader->setReadiness();
 }
 
 void MessageProcessor::call_TAG_SEQUENCES_READY(Message*message){
@@ -1129,9 +1136,9 @@ MessageProcessor::MessageProcessor(){
 	m_sentinelValue=0;
 	m_sentinelValue--;// overflow it in an obvious manner
 	
-	
 	m_methods[TAG_WELCOME]=&MessageProcessor::call_TAG_WELCOME;
 	m_methods[TAG_SEND_SEQUENCE]=&MessageProcessor::call_TAG_SEND_SEQUENCE;
+	m_methods[TAG_SEND_SEQUENCE_REPLY]=&MessageProcessor::call_TAG_SEND_SEQUENCE_REPLY;
 	m_methods[TAG_SEQUENCES_READY]=&MessageProcessor::call_TAG_SEQUENCES_READY;
 	m_methods[TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS]=&MessageProcessor::call_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS;
 	m_methods[TAG_VERTICES_DATA]=&MessageProcessor::call_TAG_VERTICES_DATA;
@@ -1234,7 +1241,7 @@ MessageProcessor::MessageProcessor(){
 
 }
 
-void MessageProcessor::constructor(ExtensionData*ed,
+void MessageProcessor::constructor(SequencesLoader*sequencesLoader,ExtensionData*ed,
 			int*m_numberOfRanksDoneDetectingDistances,
 			int*m_numberOfRanksDoneSendingDistances,
 			Parameters*parameters,
@@ -1320,7 +1327,7 @@ void MessageProcessor::constructor(ExtensionData*ed,
 int*m_numberOfRanksWithCoverageData,
 SeedExtender*seedExtender,int*m_master_mode,
 bool*m_isFinalFusion){
-
+	this->m_sequencesLoader=sequencesLoader;
 	this->ed=ed;
 	this->m_numberOfRanksDoneDetectingDistances=m_numberOfRanksDoneDetectingDistances;
 	this->m_numberOfRanksDoneSendingDistances=m_numberOfRanksDoneSendingDistances;

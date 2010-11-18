@@ -48,6 +48,11 @@ void*RingAllocator::allocate(int a){
 	#endif
 	void*address=(void*)(m_memory+m_current*m_max);
 	m_current++;
+/*
+	if(m_current==m_chunks){
+		cout<<"Ring completed."<<endl;
+	}
+*/
 	if(m_current==m_chunks){
 		m_current=0;
 	}

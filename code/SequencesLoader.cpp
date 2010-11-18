@@ -40,6 +40,9 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 	time_t*m_lastTime,
 	Parameters*m_parameters,int*m_master_mode
 ){
+	if(!m_ready){
+		return true;
+	}
 	vector<string> allFiles=(*m_parameters).getAllFiles();
 	if((*m_distribution_reads).size()>0 and (*m_distribution_sequence_id)>(int)(*m_distribution_reads).size()-1){
 		// we reached the end of the file.
@@ -131,7 +134,7 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 	}
 	#endif
 
-	for(int i=0;i<1*size;i++){
+	for(int i=0;i<1;i++){
 		if((*m_distribution_sequence_id)>(int)(*m_distribution_reads).size()-1){
 			#ifdef SHOW_PROGRESS
 			#endif
@@ -155,6 +158,7 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		Message aMessage(message,cells,MPI_UNSIGNED_LONG_LONG,destination,TAG_SEND_SEQUENCE,rank);
 		(*m_outbox).push_back(aMessage);
 
+		m_ready=false;
 		// add paired information here..
 		// algorithm follows.
 		// check if current file is in a right file.
@@ -241,10 +245,20 @@ void SequencesLoader::flushPairedStock(int threshold,StaticVector*m_outbox,
 			continue;
 
 		VERTEX_TYPE*message=(VERTEX_TYPE*)(*m_outboxAllocator).allocate(count*sizeof(VERTEX_TYPE));
-		for(int j=0;j<count;j++)
+		for(int j=0;j<count;j++){
 			message[j]=m_disData->m_messagesStockPaired.getAt(rankId,j);
+		}
+
 		Message aMessage(message,count,MPI_UNSIGNED_LONG_LONG,rightSequenceRank,TAG_INDEX_PAIRED_SEQUENCE,rank);
 		(*m_outbox).push_back(aMessage);
 		m_disData->m_messagesStockPaired.reset(rankId);
 	}
+}
+
+SequencesLoader::SequencesLoader(){
+	setReadiness();
+}
+
+void SequencesLoader::setReadiness(){
+	m_ready=true;
 }

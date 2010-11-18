@@ -34,6 +34,7 @@ using namespace std;
 
 class SequencesLoader{
 	bool m_isInterleavedFile;
+	bool m_ready;
 public:
 	/**
  *	load sequences from disk, and distribute them over the network.
@@ -46,10 +47,13 @@ public:
 	BubbleData*m_bubbleData,
 	time_t*m_lastTime,
 	Parameters*m_parameters,int*m_master_mode
+	
 );
 
 	void flushPairedStock(int threshold,StaticVector*m_outbox,
 	RingAllocator*m_outboxAllocator,DistributionData*m_disData,
 int rank,int size);
+	SequencesLoader();
+	void setReadiness();
 };
 #endif
