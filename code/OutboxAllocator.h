@@ -31,6 +31,10 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<stdint.h>
 using namespace std;
 
+/*
+ * this is an allocator that can allocate up to <m_chunks> allocations of exactly <m_max> bytes.
+ * allocation and free are done both in constant time (yeah!)
+ */
 class OutboxAllocator{
 	int m_chunks;
 	int m_max;

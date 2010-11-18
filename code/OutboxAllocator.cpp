@@ -28,7 +28,11 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<common_functions.h>
 #include<assert.h>
 
-
+/*
+ * make a list of available chunks.
+ *
+ *
+ */
 void OutboxAllocator::constructor(int chunks,int size){
 	m_chunks=chunks;
 	m_max=size;
@@ -45,15 +49,23 @@ void OutboxAllocator::constructor(int chunks,int size){
 OutboxAllocator::OutboxAllocator(){
 }
 
+/*
+ * allocate a chunk of m_max bytes in constant time
+ */
 void*OutboxAllocator::allocate(int a){
+	#ifdef DEBUG
 	assert(m_numberOfAvailableChunks!=0);
 	assert(a<=m_max);
+	#endif
 	m_numberOfAvailableChunks--;
 	int i=m_availableChunks[m_numberOfAvailableChunks];
 	void*address=(void*)(m_memory+i*m_max);
 	return address;
 }
 
+/*
+ * free a chunk in constant time
+ */
 void OutboxAllocator::free(void*a){
 	if(a==NULL){
 		return;
@@ -64,8 +76,10 @@ void OutboxAllocator::free(void*a){
 	int differenceInBytes=toBeFreed-start;
 	int i=differenceInBytes/m_max;
 
-	if(i>=0 && i<m_chunks){// else this chunk is not from this allocator.
-		m_availableChunks[m_numberOfAvailableChunks]=i;
-		m_numberOfAvailableChunks++;
-	}
+	#ifdef DEBUG
+	assert(i>=0 && i<m_chunks);// else this chunk is not from this allocator.
+	#endif
+
+	m_availableChunks[m_numberOfAvailableChunks]=i;
+	m_numberOfAvailableChunks++;
 }
