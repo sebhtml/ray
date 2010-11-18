@@ -1,6 +1,6 @@
 
-#AM_CXXFLAGS=-O3 -Wall -lz
-AM_CXXFLAGS=-g -DDEBUG -lz -Wall
+AM_CXXFLAGS=-O3 -Wall -lz
+#AM_CXXFLAGS=-g -DDEBUG -lz -Wall
 
 bin_PROGRAMS = Ray-SimulateFragments Ray-SimulateErrors Ray-SimulatePairedReads Ray
 

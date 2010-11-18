@@ -131,8 +131,9 @@ void MessageProcessor::call_TAG_OUT_EDGES_DATA(Message*message){
 		vector<VERTEX_TYPE> newEdges=m_subgraph->find(prefix)->getValue()->getOutgoingEdges(prefix,(*m_wordSize));
 		bool found=false;
 		for(int i=0;i<(int)newEdges.size();i++){
-			if(newEdges[i]==suffix)
+			if(newEdges[i]==suffix){
 				found=true;
+			}
 		}
 		if(newEdges.size()==0){
 			cout<<"prefix,suffix"<<endl;
@@ -143,18 +144,17 @@ void MessageProcessor::call_TAG_OUT_EDGES_DATA(Message*message){
 		}
 		assert(newEdges.size()>0);
 		if(!found){
-			cout<<"prefix,suffix"<<endl;
+		
+			cout<<"prefix,suffix received ."<<endl;
 			coutBIN(prefix);
 			coutBIN(suffix);
 			cout<<idToWord(prefix,(*m_wordSize))<<endl;
 			cout<<idToWord(suffix,(*m_wordSize))<<endl;
 
-			cout<<" ARC"<<endl;
-			coutBIN(prefix);
-			coutBIN(suffix);
-			cout<<"EDges."<<endl;
+			cout<<"Arcs in the graph."<<endl;
 			for(int i=0;i<(int)newEdges.size();i++){
 				coutBIN(newEdges[i]);
+				cout<<idToWord(newEdges[i],(*m_wordSize))<<endl;
 			}
 
 		}
@@ -190,6 +190,9 @@ void MessageProcessor::call_TAG_IN_EDGES_DATA(Message*message){
 	for(int i=0;i<(int)length;i+=2){
 		VERTEX_TYPE prefix=incoming[i+0];
 		VERTEX_TYPE suffix=incoming[i+1];
+		#ifdef DEBUG
+		assert(m_subgraph->find(suffix)!=NULL);
+		#endif
 		m_subgraph->find(suffix)->getValue()->addIngoingEdge(prefix,(*m_wordSize),&(*m_persistentAllocator));
 		#ifdef DEBUG
 		bool found=false;
@@ -796,8 +799,20 @@ void MessageProcessor::call_TAG_INDEX_PAIRED_SEQUENCE(Message*message){
 		int length=incoming[i+3];
 		int deviation=incoming[i+4];
 
-		t->constructor(incoming[i+1],incoming[i+2],length,deviation);
-		(*m_myReads)[incoming[i+0]]->setPairedRead(t);
+		int otherRank=incoming[i+1];
+		#ifdef DEBUG
+		assert(otherRank<size);
+		#endif
+
+		int otherId=incoming[i+2];
+		int currentReadId=incoming[i+0];
+		cout<<" Other read: "<<otherRank<<" "<<otherId<<" and currentId="<<currentReadId<<" localReads="<<m_myReads->size()<<endl;
+		t->constructor(otherRank,otherId,length,deviation);
+		#ifdef DEBUG
+		assert(currentReadId<(int)m_myReads->size());
+		#endif
+
+		(*m_myReads)[currentReadId]->setPairedRead(t);
 	}
 }
 

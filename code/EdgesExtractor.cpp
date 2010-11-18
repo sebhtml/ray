@@ -219,7 +219,7 @@ void EdgesExtractor::flushIngoingEdges(int threshold){
 		}
 		m_disData->m_messagesStockIn.reset(rankId);
 
-		Message aMessage(data, length, MPI_UNSIGNED_LONG_LONG,destination, TAG_IN_EDGES_DATA,getRank);
+		Message aMessage(data,length,MPI_UNSIGNED_LONG_LONG,destination,TAG_IN_EDGES_DATA,getRank);
 		m_outbox->push_back(aMessage);
 	}
 }
