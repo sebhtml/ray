@@ -57,11 +57,8 @@ void*OutboxAllocator::allocate(int a){
 	assert(m_numberOfAvailableChunks!=0);
 	assert(a<=m_max);
 	#endif
-	cout<<"Before="<<m_numberOfAvailableChunks<<endl;
 	m_numberOfAvailableChunks--;
 	int i=m_availableChunks[m_numberOfAvailableChunks];
-	cout<<"Allocate "<<i<<" size="<<a<<endl;
-	cout<<"After="<<m_numberOfAvailableChunks<<endl;
 	void*address=(void*)(m_memory+i*m_max);
 	return address;
 }
@@ -78,7 +75,6 @@ void OutboxAllocator::free(void*a){
 	uint64_t toBeFreed=(uint64_t)a;
 	int differenceInBytes=toBeFreed-start;
 	int i=differenceInBytes/m_max;
-	cout<<"Free "<<i<<endl;
 	#ifdef DEBUG
 	assert(i>=0 && i<m_chunks);// else this chunk is not from this allocator.
 	#endif
