@@ -23,29 +23,29 @@
 #include<common_functions.h>
 #include<assert.h>
 
-//#define DEBUG_MPI
 
 /*
  * send messages,
  */
-void MessagesHandler::sendMessages(vector<Message>*outbox,OutboxAllocator*outboxAllocator){
+void MessagesHandler::sendMessages(vector<Message>*outbox,OutboxAllocator*outboxAllocator,vector<Message>*inbox,int rank,MyAllocator*inboxAllocator){
 	if(outbox->size()==0){
 		return;
 	}
 
 	for(int i=0;i<(int)outbox->size();i++){
 		Message*aMessage=&((*outbox)[i]);
-		#ifdef DEBUG_MPI
-		int theRank=aMessage->getDestination();
-		assert(theRank>=0);
+		#ifdef DEBUG
+		int destination=aMessage->getDestination();
+		assert(destination>=0);
 		#endif
 
 		MPI_Request request;
-		//cout<<"MPI_Isend"<<endl;
 		//  MPI_Issend
 		//      Synchronous nonblocking. Note that a Wait/Test will complete only when the matching receive is posted
-		#ifdef DEBUG_MPI
-		int value=MPI_Issend(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD,&request);
+
+		#ifdef DEBUG
+		assert(!(aMessage->getBuffer()==NULL && aMessage->getCount()>0));
+		int value=MPI_Issend(aMessage->getBuffer(),aMessage->getCount(),aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(),MPI_COMM_WORLD,&request);
 		assert(value==MPI_SUCCESS);
 		#else
 		MPI_Issend(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD,&request);
@@ -54,16 +54,12 @@ void MessagesHandler::sendMessages(vector<Message>*outbox,OutboxAllocator*outbox
 	}
 
 	outbox->clear();
-	freeRequests(outboxAllocator);
+	freeRequests(outboxAllocator); 
 }
 
 // O(1) add, add it to the root
 void MessagesHandler::addRequest(MPI_Request*request,void*buffer){
-	if(buffer==NULL){
-		MPI_Request_free(request);
-		return;
-	}
-	PendingRequest*newRequest=(PendingRequest*)__Malloc(sizeof(PendingRequest));
+	PendingRequest*newRequest=(PendingRequest*)m_customAllocator.allocate(sizeof(PendingRequest));
 	newRequest->m_mpiRequest=request;
 	newRequest->m_buffer=buffer;
 	newRequest->m_next=m_root;
@@ -72,14 +68,12 @@ void MessagesHandler::addRequest(MPI_Request*request,void*buffer){
 
 // O(n) freeing, pass through everything and free stuff that are completed.
 void MessagesHandler::freeRequests(OutboxAllocator*outboxAllocator){
-	
 	// free m_root
 	//
 	//
 	// m_root ----------------> Request
 	//                              > MPI_Request*m_mpiRequest
 	//                              > Request*m_next
-	
 
 	while(m_root!=NULL){
 		MPI_Request*request=m_root->m_mpiRequest;
@@ -95,8 +89,9 @@ void MessagesHandler::freeRequests(OutboxAllocator*outboxAllocator){
 		}
 		if(flag){
 			PendingRequest*next=m_root->m_next;
+			//cout<<"Freeing root "<<m_root->m_buffer<<endl;
 			outboxAllocator->free(m_root->m_buffer);
-			__Free(m_root);
+			m_customAllocator.free(m_root);
 			m_root=next;
 		}else{
 			break;// root is not ready to be freed
@@ -130,7 +125,8 @@ void MessagesHandler::freeRequests(OutboxAllocator*outboxAllocator){
 		PendingRequest*next=current->m_next;
 		if(flag){
 			outboxAllocator->free(current->m_buffer);
-			__Free(current);
+			//cout<<"Freeing current "<<current->m_buffer<<endl;
+			m_customAllocator.free(current);
 			previous->m_next=next;
 		}else{
 			previous=current;
@@ -154,10 +150,6 @@ void MessagesHandler::receiveMessages(vector<Message>*inbox,MyAllocator*inboxAll
 		MPI_Datatype datatype=MPI_UNSIGNED_LONG_LONG;
 		int sizeOfType=8;
 		int tag=status.MPI_TAG;
-		if(tag==TAG_SEND_SEQUENCE || tag==TAG_REQUEST_READ_SEQUENCE_REPLY){
-			datatype=MPI_BYTE;
-			sizeOfType=1;
-		}
 		int source=status.MPI_SOURCE;
 		int length;
 		MPI_Get_count(&status,datatype,&length);
@@ -172,6 +164,7 @@ void MessagesHandler::receiveMessages(vector<Message>*inbox,MyAllocator*inboxAll
 
 MessagesHandler::MessagesHandler(){
 	m_root=NULL;
+	m_customAllocator.constructor(MAX_ALLOCATED_MESSAGES,sizeof(PendingRequest));
 }
 
 void MessagesHandler::printRequests(){

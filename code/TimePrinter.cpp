@@ -40,12 +40,17 @@ void TimePrinter::printElapsedTime(string description){
 	m_durations.push_back(differenceWithLast);
 }
 
-void TimePrinter::printDifferenceFromStart(){
+void TimePrinter::printDifferenceFromStart(int rank){
 	time_t endingTime=time(NULL);
+	if(endingTime==m_last){
+		return;
+	}
 	if(endingTime%60!=0){
 		return;
 	}
+	m_last=endingTime;
 	int differenceWithLast=endingTime-m_startingTime;
+	cout<<"Rank "<<rank<<": ";
 	printDifference(differenceWithLast);
 	cout<<endl;
 }

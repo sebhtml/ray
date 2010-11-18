@@ -143,12 +143,16 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		assert(destination<size);
 		#endif
 		char*sequence=((*m_distribution_reads))[(*m_distribution_sequence_id)]->getSeq();
+		int cells=roundNumber(strlen(sequence)+1,8);
+		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(cells);
+		char*destinationBuffer=(char*)message;
+		strcpy(destinationBuffer,sequence);
 		#ifdef SHOW_PROGRESS
 		if((*m_distribution_sequence_id)%1000000==0){
 			cout<<"Rank "<<rank<<" distributes sequences, "<<(*m_distribution_sequence_id)+1<<"/"<<(*m_distribution_reads).size()<<endl;
 		}
 		#endif
-		Message aMessage(sequence, strlen(sequence), MPI_BYTE, destination, TAG_SEND_SEQUENCE,rank);
+		Message aMessage(message,cells,MPI_UNSIGNED_LONG_LONG,destination,TAG_SEND_SEQUENCE,rank);
 		(*m_outbox).push_back(aMessage);
 
 		// add paired information here..

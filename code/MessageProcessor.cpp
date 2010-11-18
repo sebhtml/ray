@@ -44,14 +44,10 @@ void MessageProcessor::call_TAG_WELCOME(Message*message){
 }
 
 void MessageProcessor::call_TAG_SEND_SEQUENCE(Message*message){
-	void*buffer=message->getBuffer();
-	int count=message->getCount();
-	int length=count;
-	char*incoming=(char*)(*m_inboxAllocator).allocate(count*sizeof(char)+1);
-	for(int i=0;i<(int)length;i++)
-		incoming[i]=((char*)buffer)[i];
+	char*buffer=(char*)message->getBuffer();
+	char*incoming=(char*)(*m_inboxAllocator).allocate(sizeof(char)*(strlen(buffer)+1));
+	strcpy(incoming,buffer);
 
-	incoming[length]='\0';
 	Read*myRead=(Read*)(*m_persistentAllocator).allocate(sizeof(Read));
 	myRead->copy(NULL,incoming,&(*m_persistentAllocator));
 	(*m_myReads).push_back(myRead);
@@ -1088,7 +1084,9 @@ void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE(Message*message){
 	#endif
 	char*seq=m_myReads->at(index)->getSeq();
 
-	int toAllocate=roundNumber(4*sizeof(VERTEX_TYPE)+strlen(seq)+1,8);
+	int beforeRounding=4*sizeof(VERTEX_TYPE)+strlen(seq)+1;
+	int toAllocate=roundNumber(beforeRounding,8);
+	//cout<<" seq is "<<strlen(seq)<<" +1 +4*8="<<beforeRounding<<", rounded: "<<toAllocate<<endl;
 
 	VERTEX_TYPE*messageBytes=(VERTEX_TYPE*)m_outboxAllocator->allocate(toAllocate);
 	messageBytes[0]=t->getRank();
@@ -1097,7 +1095,8 @@ void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE(Message*message){
 	messageBytes[3]=t->getStandardDeviation();
 	char*dest=(char*)(messageBytes+4);
 	strcpy(dest,seq);
-	Message aMessage(messageBytes,toAllocate,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READ_SEQUENCE_REPLY,rank);
+	//cout<<"dest="<<dest<<endl;
+	Message aMessage(messageBytes,toAllocate/8,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READ_SEQUENCE_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 

@@ -32,10 +32,11 @@ using namespace std;
 
 class MessagesHandler{
 	PendingRequest*m_root;
+	OutboxAllocator m_customAllocator;
 	void printRequests();
 public:
 
-	void sendMessages(vector<Message>*outbox,OutboxAllocator*outboxAllocator);
+	void sendMessages(vector<Message>*outbox,OutboxAllocator*outboxAllocator,vector<Message>*inbox,int rank,MyAllocator*inboxAllocator);
 	void receiveMessages(vector<Message>*inbox,MyAllocator*inboxAllocator);
 	void addRequest(MPI_Request*request,void*buffer);
 	void freeRequests(OutboxAllocator*outboxAllocator);

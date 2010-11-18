@@ -28,6 +28,7 @@
 using namespace std;
 
 class TimePrinter{
+	time_t m_last;
 	time_t m_startingTime;
 	time_t m_lastTime;
 	time_t m_endingTime;
@@ -39,7 +40,7 @@ public:
 	void printElapsedTime(string description);
 	TimePrinter();
 	void printDurations();
-	void printDifferenceFromStart();
+	void printDifferenceFromStart(int rank);
 };
 
 #endif

@@ -28,23 +28,29 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<common_functions.h>
 #include<assert.h>
 
-#define DEBUG
 
-OutboxAllocator::OutboxAllocator(){
-	m_chunks=10000;
-	m_max=4096;
+void OutboxAllocator::constructor(int chunks,int size){
+	m_chunks=chunks;
+	m_max=size;
+	m_numberOfBytes=m_chunks*m_max;
 	m_memory=(uint8_t*)__Malloc(sizeof(uint8_t)*m_chunks*m_max);
-	for(int i=0;i<m_chunks;i++){
-		m_availableChunks.insert(i);
+	m_availableChunks=(uint16_t*)__Malloc(sizeof(uint16_t)*m_chunks);
+	m_numberOfAvailableChunks=0;
+	while(m_numberOfAvailableChunks<m_chunks){
+		m_availableChunks[m_numberOfAvailableChunks]=m_numberOfAvailableChunks;
+		m_numberOfAvailableChunks++;
 	}
 }
 
+OutboxAllocator::OutboxAllocator(){
+}
+
 void*OutboxAllocator::allocate(int a){
-	assert(m_availableChunks.size()!=0);
-	int i=*(m_availableChunks.begin());
-	m_availableChunks.erase(i);
+	assert(m_numberOfAvailableChunks!=0);
+	assert(a<=m_max);
+	m_numberOfAvailableChunks--;
+	int i=m_availableChunks[m_numberOfAvailableChunks];
 	void*address=(void*)(m_memory+i*m_max);
-	cout<<"Allocate "<<i<<" "<<address<<endl;
 	return address;
 }
 
@@ -52,18 +58,14 @@ void OutboxAllocator::free(void*a){
 	if(a==NULL){
 		return;
 	}
+
 	uint64_t start=(uint64_t)m_memory;
 	uint64_t toBeFreed=(uint64_t)a;
 	int differenceInBytes=toBeFreed-start;
 	int i=differenceInBytes/m_max;
-	cout<<"Freeing "<<i<<" "<<a<<endl;
-	
-	#ifdef DEBUG
-	assert(differenceInBytes>=0);
-	assert(differenceInBytes<=m_chunks*m_max);
-	assert(i>=0);
-	assert(i<=m_chunks);
-	assert(m_availableChunks.count(i)==0);
-	#endif
-	m_availableChunks.insert(i);
+
+	if(i>=0 && i<m_chunks){// else this chunk is not from this allocator.
+		m_availableChunks[m_numberOfAvailableChunks]=i;
+		m_numberOfAvailableChunks++;
+	}
 }

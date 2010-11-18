@@ -35,9 +35,12 @@ class OutboxAllocator{
 	int m_chunks;
 	int m_max;
 	uint8_t*m_memory;
-	set<int> m_availableChunks;
+	uint16_t*m_availableChunks;
+	int m_numberOfAvailableChunks;
+	int m_numberOfBytes;
 public:
 	OutboxAllocator();
+	void constructor(int chunks,int size);
 	void*allocate(int a);
 	void free(void*a);
 };

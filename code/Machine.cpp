@@ -265,6 +265,7 @@ void Machine::start(){
 	m_sequence_ready_machines=0;
 	m_isFinalFusion=false;
 
+	m_outboxAllocator.constructor(MAX_ALLOCATED_MESSAGES,4096);
 	m_inboxAllocator.constructor(INBOX_ALLOCATOR_CHUNK_SIZE);
 	m_distributionAllocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
 	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
@@ -481,7 +482,7 @@ void Machine::run(){
 		}
 		processData();
 		sendMessages();
-		m_timePrinter.printDifferenceFromStart();
+		m_timePrinter.printDifferenceFromStart(getRank());
 	}
 }
 
@@ -1089,7 +1090,7 @@ void Machine::processMessages(){
 }
 
 void Machine::sendMessages(){
-	m_messagesHandler.sendMessages(&m_outbox,&m_outboxAllocator);
+	m_messagesHandler.sendMessages(&m_outbox,&m_outboxAllocator,&m_inbox,getRank(),&m_inboxAllocator);
 }
 
 void Machine::receiveMessages(){
@@ -1363,13 +1364,13 @@ void Machine::call_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	}
 
 	// see these values to everyone.
-	VERTEX_TYPE*buffer=(VERTEX_TYPE*)m_outboxAllocator.allocate(3*sizeof(VERTEX_TYPE));
-	buffer[0]=m_minimumCoverage;
-	buffer[1]=m_seedCoverage;
-	buffer[2]=m_peakCoverage;
 	
 	m_numberOfRanksWithCoverageData=0;
 	for(int i=0;i<getSize();i++){
+		VERTEX_TYPE*buffer=(VERTEX_TYPE*)m_outboxAllocator.allocate(3*sizeof(VERTEX_TYPE));
+		buffer[0]=m_minimumCoverage;
+		buffer[1]=m_seedCoverage;
+		buffer[2]=m_peakCoverage;
 		Message aMessage(buffer,3,MPI_UNSIGNED_LONG_LONG,i,TAG_SEND_COVERAGE_VALUES,getRank());
 		m_outbox.push_back(aMessage);
 	}
