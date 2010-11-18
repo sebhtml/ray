@@ -1474,7 +1474,7 @@ void Machine::call_MODE_DISTRIBUTE_FUSIONS(){
 	}
 
 	if(m_ed->m_EXTENSION_currentPosition==0){
-		if(m_seedingData->m_SEEDING_i%100==0){
+		if(m_seedingData->m_SEEDING_i%10==0){
 			cout<<"Rank "<<getRank()<<" distributes its fusions. "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_ed->m_EXTENSION_contigs.size()<<endl;
 
 		}
