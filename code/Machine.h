@@ -31,7 +31,7 @@
 #include<SeedingData.h>
 #include<map>
 #include<vector>
-#include<OutboxAllocator.h>
+#include<RingAllocator.h>
 #include<DepthFirstSearchData.h>
 #include<TimePrinter.h>
 #include<SequencesIndexer.h>
@@ -191,10 +191,10 @@ class Machine{
 	// cleaned everynow and then.
 	
 	// allocator for outgoing messages
-	OutboxAllocator m_outboxAllocator;
+	RingAllocator m_outboxAllocator;
 	
 	// allocator for ingoing messages
-	MyAllocator m_inboxAllocator;
+	RingAllocator m_inboxAllocator;
 	
 	// allocator for persistent data
 	MyAllocator m_persistentAllocator;

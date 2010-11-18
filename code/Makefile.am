@@ -5,7 +5,7 @@ AM_CXXFLAGS=-O3 -Wall -lz
 bin_PROGRAMS = Ray-SimulateFragments Ray-SimulateErrors Ray-SimulatePairedReads Ray
 
 Ray_SOURCES =  \
-PendingRequest.h OutboxAllocator.cpp OutboxAllocator.h StaticVector.cpp StaticVector.h \
+PendingRequest.h RingAllocator.cpp RingAllocator.h StaticVector.cpp StaticVector.h \
 MessagesHandler.h MessagesHandler.cpp \
 slave_modes.h master_modes.h mpi_tags.h \
 SeedingData.h \
@@ -92,7 +92,7 @@ VerticesExtractor.h
 
 
 Ray_SimulateFragments_SOURCES = \
- PendingRequest.h OutboxAllocator.cpp OutboxAllocator.h  StaticVector.cpp StaticVector.h \
+ PendingRequest.h RingAllocator.cpp RingAllocator.h  StaticVector.cpp StaticVector.h \
 MessagesHandler.h MessagesHandler.cpp \
 slave_modes.h master_modes.h mpi_tags.h \
 FastqGzLoader.h \
@@ -177,7 +177,7 @@ VerticesExtractor.cpp \
 VerticesExtractor.h 
 
 Ray_SimulateErrors_SOURCES = \
- PendingRequest.h OutboxAllocator.cpp OutboxAllocator.h  StaticVector.cpp StaticVector.h \
+ PendingRequest.h RingAllocator.cpp RingAllocator.h  StaticVector.cpp StaticVector.h \
 MessagesHandler.h MessagesHandler.cpp \
 slave_modes.h master_modes.h mpi_tags.h \
 FastqGzLoader.h \
@@ -262,7 +262,7 @@ VerticesExtractor.cpp \
 VerticesExtractor.h 
 
 Ray_SimulatePairedReads_SOURCES = \
- PendingRequest.h OutboxAllocator.cpp OutboxAllocator.h StaticVector.cpp StaticVector.h \
+ PendingRequest.h RingAllocator.cpp RingAllocator.h StaticVector.cpp StaticVector.h \
 MessagesHandler.h MessagesHandler.cpp \
 slave_modes.h master_modes.h mpi_tags.h \
 FastqGzLoader.h \

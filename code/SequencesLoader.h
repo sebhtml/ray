@@ -23,7 +23,7 @@
 #define _SequencesLoader
 #include<Parameters.h>
 #include<DistributionData.h>
-#include<OutboxAllocator.h>
+#include<RingAllocator.h>
 #include<StaticVector.h>
 #include<vector>
 #include<Message.h>
@@ -41,7 +41,7 @@ public:
 	bool loadSequences(int rank,int size,vector<Read*>*m_distribution_reads,int*m_distribution_sequence_id,
 	bool*m_LOADER_isLeftFile,StaticVector*m_outbox,int*m_distribution_file_id,
 	MyAllocator*m_distributionAllocator,bool*m_LOADER_isRightFile,int*m_LOADER_averageFragmentLength,
-	DistributionData*m_disData,int*m_LOADER_numberOfSequencesInLeftFile,OutboxAllocator*m_outboxAllocator,
+	DistributionData*m_disData,int*m_LOADER_numberOfSequencesInLeftFile,RingAllocator*m_outboxAllocator,
 	int*m_distribution_currentSequenceId,int*m_LOADER_deviation,bool*m_loadSequenceStep,
 	BubbleData*m_bubbleData,
 	time_t*m_lastTime,
@@ -49,7 +49,7 @@ public:
 );
 
 	void flushPairedStock(int threshold,StaticVector*m_outbox,
-	OutboxAllocator*m_outboxAllocator,DistributionData*m_disData,
+	RingAllocator*m_outboxAllocator,DistributionData*m_disData,
 int rank,int size);
 };
 #endif

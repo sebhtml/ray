@@ -25,7 +25,7 @@
 #include<DistributionData.h>
 #include<Message.h>
 #include<StaticVector.h>
-#include<OutboxAllocator.h>
+#include<RingAllocator.h>
 #include<vector>
 #include<Read.h>
 using namespace std;
@@ -37,7 +37,7 @@ public:
 	DistributionData*m_disData;
 	int getRank;
 	int getSize;
-	OutboxAllocator*m_outboxAllocator;
+	RingAllocator*m_outboxAllocator;
 	StaticVector*m_outbox;
 	int m_mode_send_edge_sequence_id;
 	int m_mode_send_edge_sequence_id_position;

@@ -807,7 +807,6 @@ void MessageProcessor::call_TAG_INDEX_PAIRED_SEQUENCE(Message*message){
 
 		int otherId=incoming[i+2];
 		int currentReadId=incoming[i+0];
-		cout<<" Other read: "<<otherRank<<" "<<otherId<<" and currentId="<<currentReadId<<" localReads="<<m_myReads->size()<<endl;
 		t->constructor(otherRank,otherId,length,deviation);
 		#ifdef DEBUG
 		assert(currentReadId<(int)m_myReads->size());
@@ -1242,7 +1241,7 @@ void MessageProcessor::constructor(ExtensionData*ed,
 			int*m_libraryIterator,
 			bool*m_libraryIndexInitiated,
 			MyForest*m_subgraph,
-			OutboxAllocator*m_outboxAllocator,
+			RingAllocator*m_outboxAllocator,
 				int rank,
 			vector<ReadAnnotation>*m_EXTENSION_receivedReads,
 			int*m_numberOfMachinesDoneSendingEdges,
@@ -1256,7 +1255,7 @@ void MessageProcessor::constructor(ExtensionData*ed,
 			bool*m_EXTENSION_currentRankIsDone,
 	vector<vector<VERTEX_TYPE> >*m_FINISH_newFusions,
 		int size,
-	MyAllocator*m_inboxAllocator,
+	RingAllocator*m_inboxAllocator,
 	MyAllocator*m_persistentAllocator,
 	vector<int>*m_identifiers,
 	bool*m_mode_sendDistribution,

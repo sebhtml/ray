@@ -17,25 +17,36 @@
     along with this program (LICENSE).  
 	see <http://www.gnu.org/licenses/>
 
+
+ 	Funding:
+
+Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Research (Master's award: 200910MDR-215249-172830 and Doctoral award: 200902CGM-204212-172830).
+
 */
 
-#ifndef _MessagesHandler
-#define _MessagesHandler
+#ifndef _RingAllocator
+#define _RingAllocator
 
-#include<vector>
-#include<MyAllocator.h>
-#include<Message.h>
-#include<RingAllocator.h>
-#include<StaticVector.h>
-#include<PendingRequest.h>
+#include<set>
+#include<stdint.h>
 using namespace std;
 
-
-class MessagesHandler{
+/*
+ * this is an allocator that can allocate up to <m_chunks> allocations of exactly <m_max> bytes.
+ * allocation and free are done both in constant time (yeah!)
+ */
+class RingAllocator{
+	int m_chunks;
+	int m_numberOfBytes;
+	int m_max;
+	uint8_t*m_memory;
+	int m_current;
 public:
-
-	void sendMessages(StaticVector*outbox);
-	void receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator);
+	RingAllocator();
+	void constructor(int chunks,int size);
+	void*allocate(int a);
 };
 
+
 #endif
+

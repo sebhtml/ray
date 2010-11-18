@@ -27,7 +27,7 @@
 #include<StaticVector.h>
 #include<vector>
 #include<MyAllocator.h>
-#include<OutboxAllocator.h>
+#include<RingAllocator.h>
 #include<Read.h>
 #include<DistributionData.h>
 #include<Parameters.h>
@@ -37,10 +37,10 @@ public:
 	void attachReads(StaticVector*m_outbox,int*m_distribution_file_id,int*m_distribution_sequence_id,
 	int*m_wordSize,vector<Read*>*m_distribution_reads,int size,MyAllocator*m_distributionAllocator,
 	int*m_distribution_currentSequenceId,int rank,DistributionData*m_disData,bool*m_mode_AttachSequences,
-	Parameters*m_parameters,bool*m_colorSpaceMode,OutboxAllocator*m_outboxAllocator,time_t*m_lastTime,int*m_master_mode
+	Parameters*m_parameters,bool*m_colorSpaceMode,RingAllocator*m_outboxAllocator,time_t*m_lastTime,int*m_master_mode
 );
 	void flushAttachedSequences(int threshold,StaticVector*m_outbox,int rank,int size,DistributionData*m_disData,
-	OutboxAllocator*m_outboxAllocator);
+	RingAllocator*m_outboxAllocator);
 };
 
 #endif

@@ -26,7 +26,7 @@
 #include<vector>
 #include<common_functions.h>
 #include<Message.h>
-#include<OutboxAllocator.h>
+#include<RingAllocator.h>
 #include<Read.h>
 #include<DistributionData.h>
 using namespace std;
@@ -34,7 +34,7 @@ using namespace std;
 class VerticesExtractor{
 	void flushVertices(int threshold,
 				DistributionData*m_disData,
-				OutboxAllocator*m_outboxAllocator,
+				RingAllocator*m_outboxAllocator,
 				StaticVector*m_outbox,
 				int rank,int size
 );
@@ -50,7 +50,7 @@ public:
 				int m_wordSize,
 				DistributionData*m_disData,
 				int size,
-				OutboxAllocator*m_outboxAllocator,
+				RingAllocator*m_outboxAllocator,
 				bool m_colorSpaceMode,int*m_mode
 			);
 

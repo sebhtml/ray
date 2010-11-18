@@ -24,31 +24,34 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 */
 
-#ifndef _OutboxAllocator
-#define _OutboxAllocator
+#include<RingAllocator.h>
+#include<common_functions.h>
+#include<assert.h>
 
-#include<set>
-#include<stdint.h>
-using namespace std;
+void RingAllocator::constructor(int chunks,int size){
+	m_chunks=chunks;
+	m_max=size;
+	m_numberOfBytes=m_chunks*m_max;
+	m_memory=(uint8_t*)__Malloc(sizeof(uint8_t)*m_chunks*m_max);
+	m_current=0;
+}
+
+RingAllocator::RingAllocator(){
+}
 
 /*
- * this is an allocator that can allocate up to <m_chunks> allocations of exactly <m_max> bytes.
- * allocation and free are done both in constant time (yeah!)
+ * allocate a chunk of m_max bytes in constant time
  */
-class OutboxAllocator{
-	int m_chunks;
-	int m_max;
-	uint8_t*m_memory;
-	uint16_t*m_availableChunks;
-	int m_numberOfAvailableChunks;
-	int m_numberOfBytes;
-public:
-	OutboxAllocator();
-	void constructor(int chunks,int size);
-	void*allocate(int a);
-	void free(void*a);
-};
+void*RingAllocator::allocate(int a){
+	#ifdef DEBUG
+	assert(a<=m_max);
+	#endif
+	void*address=(void*)(m_memory+m_current*m_max);
+	m_current++;
+	if(m_current==m_chunks){
+		m_current=0;
+	}
+	return address;
+}
 
-
-#endif
 

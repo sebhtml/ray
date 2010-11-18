@@ -22,7 +22,7 @@
 #ifndef _MessageProcessor
 #define _MessageProcessor
 
-#include<OutboxAllocator.h>
+#include<RingAllocator.h>
 #include<OpenAssemblerChooser.h>
 #include<Message.h>
 #include<vector>
@@ -59,7 +59,7 @@ class MessageProcessor{
 	int*m_libraryIterator;
 	bool*m_libraryIndexInitiated;
 	MyForest*m_subgraph;
-	OutboxAllocator*m_outboxAllocator;
+	RingAllocator*m_outboxAllocator;
 	int rank;
 	vector<ReadAnnotation>*m_EXTENSION_receivedReads;
 	int*m_numberOfMachinesDoneSendingEdges;
@@ -73,7 +73,7 @@ class MessageProcessor{
 	bool*m_EXTENSION_currentRankIsDone;
 	vector<vector<VERTEX_TYPE> >*m_FINISH_newFusions;
 	int size;
-	MyAllocator*m_inboxAllocator;
+	RingAllocator*m_inboxAllocator;
 	MyAllocator*m_persistentAllocator;
 	vector<int>*m_identifiers;
 	bool*m_mode_sendDistribution;
@@ -148,7 +148,7 @@ public:
 			int*m_libraryIterator,
 			bool*m_libraryIndexInitiated,
 			MyForest*m_subgraph,
-			OutboxAllocator*m_outboxAllocator,
+			RingAllocator*m_outboxAllocator,
 				int rank,
 			vector<ReadAnnotation>*m_EXTENSION_receivedReads,
 			int*m_numberOfMachinesDoneSendingEdges,
@@ -162,7 +162,7 @@ public:
 			bool*m_EXTENSION_currentRankIsDone,
 	vector<vector<VERTEX_TYPE> >*m_FINISH_newFusions,
 		int size,
-	MyAllocator*m_inboxAllocator,
+	RingAllocator*m_inboxAllocator,
 	MyAllocator*m_persistentAllocator,
 	vector<int>*m_identifiers,
 	bool*m_mode_sendDistribution,

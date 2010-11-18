@@ -266,7 +266,7 @@ void Machine::start(){
 	m_isFinalFusion=false;
 
 	m_outboxAllocator.constructor(MAX_ALLOCATED_MESSAGES,4096);
-	m_inboxAllocator.constructor(INBOX_ALLOCATOR_CHUNK_SIZE);
+	m_inboxAllocator.constructor(MAX_ALLOCATED_MESSAGES,4096);
 	m_distributionAllocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
 	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
 	m_directionsAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
@@ -1086,11 +1086,10 @@ void Machine::processMessages(){
 		m_mp.processMessage((m_inbox[i]));
 	}
 	m_inbox.clear();
-	m_inboxAllocator.reset();
 }
 
 void Machine::sendMessages(){
-	m_messagesHandler.sendMessages(&m_outbox,&m_outboxAllocator,&m_inbox,getRank(),&m_inboxAllocator);
+	m_messagesHandler.sendMessages(&m_outbox);
 }
 
 void Machine::receiveMessages(){
