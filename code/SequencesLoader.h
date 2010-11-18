@@ -24,6 +24,7 @@
 #include<Parameters.h>
 #include<DistributionData.h>
 #include<OutboxAllocator.h>
+#include<StaticVector.h>
 #include<vector>
 #include<Message.h>
 #include<Read.h>
@@ -38,7 +39,7 @@ public:
  *	load sequences from disk, and distribute them over the network.
  */
 	bool loadSequences(int rank,int size,vector<Read*>*m_distribution_reads,int*m_distribution_sequence_id,
-	bool*m_LOADER_isLeftFile,vector<Message>*m_outbox,int*m_distribution_file_id,
+	bool*m_LOADER_isLeftFile,StaticVector*m_outbox,int*m_distribution_file_id,
 	MyAllocator*m_distributionAllocator,bool*m_LOADER_isRightFile,int*m_LOADER_averageFragmentLength,
 	DistributionData*m_disData,int*m_LOADER_numberOfSequencesInLeftFile,OutboxAllocator*m_outboxAllocator,
 	int*m_distribution_currentSequenceId,int*m_LOADER_deviation,bool*m_loadSequenceStep,
@@ -47,7 +48,7 @@ public:
 	Parameters*m_parameters,int*m_master_mode
 );
 
-	void flushPairedStock(int threshold,vector<Message>*m_outbox,
+	void flushPairedStock(int threshold,StaticVector*m_outbox,
 	OutboxAllocator*m_outboxAllocator,DistributionData*m_disData,
 int rank,int size);
 };

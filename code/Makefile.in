@@ -48,10 +48,10 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_Ray_OBJECTS = OutboxAllocator.$(OBJEXT) MessagesHandler.$(OBJEXT) \
-	FastqGzLoader.$(OBJEXT) FastaLoader.$(OBJEXT) \
-	FastqLoader.$(OBJEXT) BubbleTool.$(OBJEXT) \
-	BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
+am_Ray_OBJECTS = OutboxAllocator.$(OBJEXT) StaticVector.$(OBJEXT) \
+	MessagesHandler.$(OBJEXT) FastqGzLoader.$(OBJEXT) \
+	FastaLoader.$(OBJEXT) FastqLoader.$(OBJEXT) \
+	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	Direction.$(OBJEXT) DistributionData.$(OBJEXT) \
@@ -69,9 +69,10 @@ am_Ray_OBJECTS = OutboxAllocator.$(OBJEXT) MessagesHandler.$(OBJEXT) \
 Ray_OBJECTS = $(am_Ray_OBJECTS)
 Ray_LDADD = $(LDADD)
 am_Ray_SimulateErrors_OBJECTS = OutboxAllocator.$(OBJEXT) \
-	MessagesHandler.$(OBJEXT) FastqGzLoader.$(OBJEXT) \
-	FastqLoader.$(OBJEXT) FastaLoader.$(OBJEXT) \
-	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
+	StaticVector.$(OBJEXT) MessagesHandler.$(OBJEXT) \
+	FastqGzLoader.$(OBJEXT) FastqLoader.$(OBJEXT) \
+	FastaLoader.$(OBJEXT) BubbleTool.$(OBJEXT) \
+	BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	Direction.$(OBJEXT) DistributionData.$(OBJEXT) \
@@ -89,9 +90,10 @@ am_Ray_SimulateErrors_OBJECTS = OutboxAllocator.$(OBJEXT) \
 Ray_SimulateErrors_OBJECTS = $(am_Ray_SimulateErrors_OBJECTS)
 Ray_SimulateErrors_LDADD = $(LDADD)
 am_Ray_SimulateFragments_OBJECTS = OutboxAllocator.$(OBJEXT) \
-	MessagesHandler.$(OBJEXT) FastqGzLoader.$(OBJEXT) \
-	FastqLoader.$(OBJEXT) FastaLoader.$(OBJEXT) \
-	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
+	StaticVector.$(OBJEXT) MessagesHandler.$(OBJEXT) \
+	FastqGzLoader.$(OBJEXT) FastqLoader.$(OBJEXT) \
+	FastaLoader.$(OBJEXT) BubbleTool.$(OBJEXT) \
+	BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	Direction.$(OBJEXT) DistributionData.$(OBJEXT) \
@@ -109,9 +111,10 @@ am_Ray_SimulateFragments_OBJECTS = OutboxAllocator.$(OBJEXT) \
 Ray_SimulateFragments_OBJECTS = $(am_Ray_SimulateFragments_OBJECTS)
 Ray_SimulateFragments_LDADD = $(LDADD)
 am_Ray_SimulatePairedReads_OBJECTS = OutboxAllocator.$(OBJEXT) \
-	MessagesHandler.$(OBJEXT) FastqGzLoader.$(OBJEXT) \
-	FastqLoader.$(OBJEXT) FastaLoader.$(OBJEXT) \
-	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
+	StaticVector.$(OBJEXT) MessagesHandler.$(OBJEXT) \
+	FastqGzLoader.$(OBJEXT) FastqLoader.$(OBJEXT) \
+	FastaLoader.$(OBJEXT) BubbleTool.$(OBJEXT) \
+	BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	Direction.$(OBJEXT) DistributionData.$(OBJEXT) \
@@ -238,7 +241,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_CXXFLAGS = -O3 -Wall -lz
 Ray_SOURCES = \
-PendingRequest.h OutboxAllocator.cpp OutboxAllocator.h \
+PendingRequest.h OutboxAllocator.cpp OutboxAllocator.h StaticVector.cpp StaticVector.h \
 MessagesHandler.h MessagesHandler.cpp \
 slave_modes.h master_modes.h mpi_tags.h \
 SeedingData.h \
@@ -324,7 +327,7 @@ VerticesExtractor.cpp \
 VerticesExtractor.h 
 
 Ray_SimulateFragments_SOURCES = \
- PendingRequest.h OutboxAllocator.cpp OutboxAllocator.h \
+ PendingRequest.h OutboxAllocator.cpp OutboxAllocator.h  StaticVector.cpp StaticVector.h \
 MessagesHandler.h MessagesHandler.cpp \
 slave_modes.h master_modes.h mpi_tags.h \
 FastqGzLoader.h \
@@ -409,7 +412,7 @@ VerticesExtractor.cpp \
 VerticesExtractor.h 
 
 Ray_SimulateErrors_SOURCES = \
- PendingRequest.h OutboxAllocator.cpp OutboxAllocator.h \
+ PendingRequest.h OutboxAllocator.cpp OutboxAllocator.h  StaticVector.cpp StaticVector.h \
 MessagesHandler.h MessagesHandler.cpp \
 slave_modes.h master_modes.h mpi_tags.h \
 FastqGzLoader.h \
@@ -494,7 +497,7 @@ VerticesExtractor.cpp \
 VerticesExtractor.h 
 
 Ray_SimulatePairedReads_SOURCES = \
- PendingRequest.h OutboxAllocator.cpp OutboxAllocator.h \
+ PendingRequest.h OutboxAllocator.cpp OutboxAllocator.h StaticVector.cpp StaticVector.h \
 MessagesHandler.h MessagesHandler.cpp \
 slave_modes.h master_modes.h mpi_tags.h \
 FastqGzLoader.h \
@@ -717,6 +720,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SequencesIndexer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SequencesLoader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SffLoader.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/StaticVector.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TimePrinter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TipWatchdog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Vertex.Po@am__quote@

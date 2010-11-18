@@ -23,6 +23,7 @@
 #include<assert.h>
 #include<Read.h>
 #include<MessageProcessor.h>
+#include<StaticVector.h>
 #include<common_functions.h>
 #include<ReadAnnotation.h>
 #include<SplayTree.h>
@@ -1315,7 +1316,7 @@ void MessageProcessor::constructor(ExtensionData*ed,
 	int*m_numberOfMachinesDoneSendingVertices,
 	int*m_numberOfMachinesDoneSendingCoverage,
 	bool*m_EXTENSION_reads_received,
-				vector<Message>*m_outbox,
+				StaticVector*m_outbox,
 		map<int,int>*m_allIdentifiers,OpenAssemblerChooser*m_oa,
 int*m_numberOfRanksWithCoverageData,
 SeedExtender*seedExtender,int*m_master_mode,

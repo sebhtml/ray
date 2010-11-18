@@ -25,6 +25,7 @@
 #include<assert.h>
 #include<Message.h>
 #include<time.h>
+#include<StaticVector.h>
 #include<common_functions.h>
 #include<DistributionData.h>
 
@@ -33,7 +34,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 				bool*m_reverseComplementVertex,
 				int*m_mode_send_vertices_sequence_id_position,
 				int rank,
-				vector<Message>*m_outbox,
+				StaticVector*m_outbox,
 				bool*m_mode_send_vertices,
 				int m_wordSize,
 				DistributionData*m_disData,
@@ -107,7 +108,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 void VerticesExtractor::flushVertices(int threshold,
 				DistributionData*m_disData,
 				OutboxAllocator*m_outboxAllocator,
-				vector<Message>*m_outbox,
+				StaticVector*m_outbox,
 				int rank,int size
 ){
 

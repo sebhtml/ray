@@ -24,6 +24,7 @@
 
 #include<common_functions.h>
 #include<Message.h>
+#include<StaticVector.h>
 #include<vector>
 #include<MyAllocator.h>
 #include<OutboxAllocator.h>
@@ -33,12 +34,12 @@
 
 class SequencesIndexer{
 public:
-	void attachReads(std::vector<Message>*m_outbox,int*m_distribution_file_id,int*m_distribution_sequence_id,
+	void attachReads(StaticVector*m_outbox,int*m_distribution_file_id,int*m_distribution_sequence_id,
 	int*m_wordSize,vector<Read*>*m_distribution_reads,int size,MyAllocator*m_distributionAllocator,
 	int*m_distribution_currentSequenceId,int rank,DistributionData*m_disData,bool*m_mode_AttachSequences,
 	Parameters*m_parameters,bool*m_colorSpaceMode,OutboxAllocator*m_outboxAllocator,time_t*m_lastTime,int*m_master_mode
 );
-	void flushAttachedSequences(int threshold,std::vector<Message>*m_outbox,int rank,int size,DistributionData*m_disData,
+	void flushAttachedSequences(int threshold,StaticVector*m_outbox,int rank,int size,DistributionData*m_disData,
 	OutboxAllocator*m_outboxAllocator);
 };
 

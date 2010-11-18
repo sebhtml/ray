@@ -1083,7 +1083,7 @@ void Machine::makeFusions(){
 
 void Machine::processMessages(){
 	for(int i=0;i<(int)m_inbox.size();i++){
-		m_mp.processMessage(&(m_inbox[i]));
+		m_mp.processMessage((m_inbox[i]));
 	}
 	m_inbox.clear();
 	m_inboxAllocator.reset();

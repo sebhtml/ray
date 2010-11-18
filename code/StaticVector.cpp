@@ -17,31 +17,41 @@
     along with this program (LICENSE).  
 	see <http://www.gnu.org/licenses/>
 
+
+ 	Funding:
+
+Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Research (Master's award: 200910MDR-215249-172830 and Doctoral award: 200902CGM-204212-172830).
+
 */
 
-#ifndef _MessagesHandler
-#define _MessagesHandler
-
-#include<vector>
-#include<MyAllocator.h>
-#include<Message.h>
-#include<OutboxAllocator.h>
 #include<StaticVector.h>
-#include<PendingRequest.h>
-using namespace std;
+#include<assert.h>
+#include<common_functions.h>
+
+StaticVector::StaticVector(){
+	m_maxSize=1000;
+	m_messages=(Message*)__Malloc(sizeof(Message)*m_maxSize);
+	m_size=0;
+}
+
+Message*StaticVector::operator[](int i){
+	#ifdef DEBUG
+	assert(i<m_size);
+	#endif
+	return m_messages+i;
+}
+
+void StaticVector::push_back(Message a){
+	m_messages[m_size++]=a;
+}
+
+int StaticVector::size(){
+	return m_size;
+}
+
+void StaticVector::clear(){
+	m_size=0;
+}
 
 
-class MessagesHandler{
-	PendingRequest*m_root;
-	OutboxAllocator m_customAllocator;
-	void printRequests();
-public:
 
-	void sendMessages(StaticVector*outbox,OutboxAllocator*outboxAllocator,StaticVector*inbox,int rank,MyAllocator*inboxAllocator);
-	void receiveMessages(StaticVector*inbox,MyAllocator*inboxAllocator);
-	void addRequest(MPI_Request*request,void*buffer);
-	void freeRequests(OutboxAllocator*outboxAllocator);
-	MessagesHandler();
-};
-
-#endif

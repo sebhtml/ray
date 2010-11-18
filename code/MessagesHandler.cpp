@@ -27,13 +27,13 @@
 /*
  * send messages,
  */
-void MessagesHandler::sendMessages(vector<Message>*outbox,OutboxAllocator*outboxAllocator,vector<Message>*inbox,int rank,MyAllocator*inboxAllocator){
+void MessagesHandler::sendMessages(StaticVector*outbox,OutboxAllocator*outboxAllocator,StaticVector*inbox,int rank,MyAllocator*inboxAllocator){
 	if(outbox->size()==0){
 		return;
 	}
 
 	for(int i=0;i<(int)outbox->size();i++){
-		Message*aMessage=&((*outbox)[i]);
+		Message*aMessage=((*outbox)[i]);
 		#ifdef DEBUG
 		int destination=aMessage->getDestination();
 		assert(destination>=0);
@@ -141,7 +141,7 @@ void MessagesHandler::freeRequests(OutboxAllocator*outboxAllocator){
  * messages are kept in the inbox.
  */
 
-void MessagesHandler::receiveMessages(vector<Message>*inbox,MyAllocator*inboxAllocator){
+void MessagesHandler::receiveMessages(StaticVector*inbox,MyAllocator*inboxAllocator){
 	int flag;
 	MPI_Status status;
 	//cout<<"MPI_Iprobe"<<endl;

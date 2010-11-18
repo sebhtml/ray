@@ -22,6 +22,7 @@
 #ifndef _VerticesExtractor
 #define _VerticesExtractor
 
+#include<StaticVector.h>
 #include<vector>
 #include<common_functions.h>
 #include<Message.h>
@@ -34,7 +35,7 @@ class VerticesExtractor{
 	void flushVertices(int threshold,
 				DistributionData*m_disData,
 				OutboxAllocator*m_outboxAllocator,
-				vector<Message>*m_outbox,
+				StaticVector*m_outbox,
 				int rank,int size
 );
 public:
@@ -44,7 +45,7 @@ public:
 				bool*m_reverseComplementVertex,
 				int*m_mode_send_vertices_sequence_id_position,
 				int rank,
-				vector<Message>*m_outbox,
+				StaticVector*m_outbox,
 				bool*m_mode_send_vertices,
 				int m_wordSize,
 				DistributionData*m_disData,

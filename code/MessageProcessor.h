@@ -27,6 +27,7 @@
 #include<Message.h>
 #include<vector>
 #include<SplayTree.h>
+#include<StaticVector.h>
 #include<SeedExtender.h>
 #include<FusionData.h>
 #include<ReadAnnotation.h>
@@ -132,7 +133,7 @@ class MessageProcessor{
 	int*m_numberOfMachinesDoneSendingVertices;
 	int*m_numberOfMachinesDoneSendingCoverage;
 	bool*m_EXTENSION_reads_received;
-	vector<Message>*m_outbox;
+	StaticVector*m_outbox;
 	map<int,int>*m_allIdentifiers;
 	OpenAssemblerChooser*m_oa;
 	int*m_numberOfRanksWithCoverageData;
@@ -221,7 +222,7 @@ public:
 	int*m_numberOfMachinesDoneSendingVertices,
 	int*m_numberOfMachinesDoneSendingCoverage,
 	bool*m_EXTENSION_reads_received,
-				vector<Message>*m_outbox,
+				StaticVector*m_outbox,
 		map<int,int>*m_allIdentifiers,OpenAssemblerChooser*m_oa,
 int*m_numberOfRanksWithCoverageData,
 SeedExtender*seedExtender,int*m_master_mode,bool*m_isFinalFusion

@@ -27,6 +27,7 @@
 #include<common_functions.h>
 #include<MyForest.h>
 #include<EdgesExtractor.h>
+#include<StaticVector.h>
 #include<SeedingData.h>
 #include<map>
 #include<vector>
@@ -152,8 +153,8 @@ class Machine{
 	int m_libraryIterator;
 	map<int,int>::iterator m_libraryIndex;
 	bool m_libraryIndexInitiated;
-	vector<Message> m_outbox;
-	vector<Message> m_inbox;
+	StaticVector m_outbox;
+	StaticVector m_inbox;
 
 	ExtensionData*m_ed;
 	ChooserData*m_cd;
