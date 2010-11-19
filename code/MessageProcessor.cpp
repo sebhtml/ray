@@ -44,6 +44,12 @@ void MessageProcessor::processMessage(Message*message){
 void MessageProcessor::call_TAG_WELCOME(Message*message){
 }
 
+void MessageProcessor::call_TAG_SEND_SEQUENCE_REGULATOR(Message*message){
+	call_TAG_SEND_SEQUENCE(message);
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_SEND_SEQUENCE_REPLY,rank);
+	m_outbox->push_back(aMessage);
+}
+
 void MessageProcessor::call_TAG_SEND_SEQUENCE(Message*message){
 	char*buffer=(char*)message->getBuffer();
 	char*incoming=(char*)(*m_inboxAllocator).allocate(sizeof(char)*(strlen(buffer)+1));
@@ -58,8 +64,6 @@ void MessageProcessor::call_TAG_SEND_SEQUENCE(Message*message){
 	}
 	#endif
 
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_SEND_SEQUENCE_REPLY,rank);
-	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_SEND_SEQUENCE_REPLY(Message*message){
@@ -676,8 +680,10 @@ void MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 		node->getValue()->addDirection(wave,progression,&(*m_directionsAllocator));
 	}
 	
+	/* not in use right now.
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_SAVE_WAVE_PROGRESSION_REPLY,rank);
 	m_outbox->push_back(aMessage);
+	*/
 }
 
 void MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION_REPLY(Message*message){
@@ -1148,6 +1154,7 @@ MessageProcessor::MessageProcessor(){
 	
 	m_methods[TAG_WELCOME]=&MessageProcessor::call_TAG_WELCOME;
 	m_methods[TAG_SEND_SEQUENCE]=&MessageProcessor::call_TAG_SEND_SEQUENCE;
+	m_methods[TAG_SEND_SEQUENCE_REGULATOR]=&MessageProcessor::call_TAG_SEND_SEQUENCE_REGULATOR;
 	m_methods[TAG_SEND_SEQUENCE_REPLY]=&MessageProcessor::call_TAG_SEND_SEQUENCE_REPLY;
 	m_methods[TAG_SEQUENCES_READY]=&MessageProcessor::call_TAG_SEQUENCES_READY;
 	m_methods[TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS]=&MessageProcessor::call_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS;

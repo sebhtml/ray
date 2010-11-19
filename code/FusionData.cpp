@@ -51,7 +51,7 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 
 	bool flushed=m_buffers.flush(3,TAG_SAVE_WAVE_PROGRESSION,m_outboxAllocator,m_outbox,getRank,false);
 	if(flushed){
-		m_ready=false;
+		//m_ready=false;
 	}
 	m_ed->m_EXTENSION_currentPosition++;
 

@@ -41,7 +41,7 @@ see <http://www.gnu.org/licenses/>
 #define u32 uint32_t
 #define u64 uint64_t
 
-#define MAX_ALLOCATED_MESSAGES_IN_OUTBOX 10000
+#define MAX_ALLOCATED_MESSAGES_IN_OUTBOX 20000
 #define MAX_ALLOCATED_MESSAGES_IN_INBOX 10000
 
 #define MAX_U32 4294967295

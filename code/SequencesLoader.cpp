@@ -151,14 +151,24 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		char*destinationBuffer=(char*)message;
 		strcpy(destinationBuffer,sequence);
 		#ifdef SHOW_PROGRESS
-		if((*m_distribution_sequence_id)%1000000==0){
+		if((*m_distribution_sequence_id)%100000==0){
 			cout<<"Rank "<<rank<<" distributes sequences, "<<(*m_distribution_sequence_id)+1<<"/"<<(*m_distribution_reads).size()<<endl;
 		}
 		#endif
-		Message aMessage(message,cells,MPI_UNSIGNED_LONG_LONG,destination,TAG_SEND_SEQUENCE,rank);
-		(*m_outbox).push_back(aMessage);
 
-		m_ready=false;
+ 		// make it wait some times
+ 		// this avoids spinning too fast in the memory ring of the outbox <
+ 		// allocator
+		if((*m_distribution_sequence_id)%10000==0){
+
+			Message aMessage(message,cells,MPI_UNSIGNED_LONG_LONG,destination,TAG_SEND_SEQUENCE_REGULATOR,rank);
+			(*m_outbox).push_back(aMessage);
+			m_ready=false;
+		}else{
+			Message aMessage(message,cells,MPI_UNSIGNED_LONG_LONG,destination,TAG_SEND_SEQUENCE,rank);
+			(*m_outbox).push_back(aMessage);
+
+		}
 		// add paired information here..
 		// algorithm follows.
 		// check if current file is in a right file.
