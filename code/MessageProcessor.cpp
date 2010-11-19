@@ -51,6 +51,14 @@ void MessageProcessor::call_TAG_SEND_SEQUENCE_REGULATOR(Message*message){
 }
 
 void MessageProcessor::call_TAG_SEND_SEQUENCE(Message*message){
+	time_t theTime=time(NULL);
+	if(theTime!=m_last){
+		//cout<<m_last<<" RING CONSUME "<<m_consumed<<endl;
+		m_consumed=0;
+		m_last=theTime;
+	}
+	m_consumed++;
+
 	char*buffer=(char*)message->getBuffer();
 	char*incoming=(char*)(*m_inboxAllocator).allocate(sizeof(char)*(strlen(buffer)+1));
 	strcpy(incoming,buffer);
@@ -1149,6 +1157,8 @@ void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE_REPLY(Message*message){
 }
 
 MessageProcessor::MessageProcessor(){
+	m_last=time(NULL);
+	m_consumed=0;
 	m_sentinelValue=0;
 	m_sentinelValue--;// overflow it in an obvious manner
 	

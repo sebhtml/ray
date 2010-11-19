@@ -160,6 +160,14 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
  		// this avoids spinning too fast in the memory ring of the outbox <
  		// allocator
 
+		time_t theTime=time(NULL);
+		if(theTime!=m_last){
+			//cout<<m_last<<" RING PRODUCE "<<m_produced<<endl;
+			m_produced=0;
+			m_last=theTime;
+		}
+		m_produced++;
+
 		if((*m_distribution_sequence_id)%500==0){
 			Message aMessage(message,cells,MPI_UNSIGNED_LONG_LONG,destination,TAG_SEND_SEQUENCE_REGULATOR,rank);
 			(*m_outbox).push_back(aMessage);
@@ -267,6 +275,8 @@ void SequencesLoader::flushPairedStock(int threshold,StaticVector*m_outbox,
 
 SequencesLoader::SequencesLoader(){
 	setReadiness();
+	m_produced=0;
+	m_last=time(NULL);
 }
 
 void SequencesLoader::setReadiness(){

@@ -52,6 +52,9 @@ class MessageProcessor{
 
 	// data for processing
 	
+	int m_consumed;
+	time_t m_last;
+
 	bool*m_isFinalFusion;
 	int*m_master_mode;
 	ExtensionData*ed;
