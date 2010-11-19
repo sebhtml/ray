@@ -37,6 +37,7 @@
 #include<SequencesIndexer.h>
 #include<SeedExtender.h>
 #include<SequencesLoader.h>
+#include<Library.h>
 #include<Chooser.h>
 #include<MessageProcessor.h>
 #include<ChooserData.h>
@@ -85,6 +86,8 @@ class Machine{
 	MachineMethod m_master_methods[32];
 	MachineMethod m_slave_methods[32];
 
+	BufferedData m_bufferedData;
+	Library m_library;
 	int m_currentCycleStep;
 	MessagesHandler m_messagesHandler;
 

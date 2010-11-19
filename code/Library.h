@@ -24,4 +24,49 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 */
 
+#ifndef _Library
+#define _Library
 
+#include<BufferedData.h>
+#include<ExtensionData.h>
+#include<common_functions.h>
+#include<map>
+#include<StaticVector.h>
+#include<TimePrinter.h>
+#include<Parameters.h>
+#include<SeedingData.h>
+#include<RingAllocator.h>
+using namespace std;
+
+class Library{
+	BufferedData*m_bufferedData;
+	int m_rank;
+	StaticVector*m_outbox;
+	int*m_sequence_id;
+	int*m_sequence_idInFile;
+	ExtensionData*m_ed;
+	map<u64,map<char,int> >*m_readsPositions;
+	RingAllocator*m_outboxAllocator;
+	int m_size;
+	TimePrinter*m_timePrinter;
+	int*m_mode;
+	int*m_master_mode;
+	Parameters*m_parameters;
+	int*m_fileId;
+	SeedingData*m_seedingData;
+	map<int,map<int,int> >*m_libraryDistances;
+
+public:
+	void updateDistances();
+	int getRank();
+	int getSize();
+	void detectDistances();
+	void constructor(int m_rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator,BufferedData*m_bufferedData,
+	int*m_sequence_id,int*m_sequence_idInFile,ExtensionData*m_ed,map<u64,map<char,int> >*m_readsPositions,int m_size,
+TimePrinter*m_timePrinter,int*m_mode,int*m_master_mode,
+Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,map<int,map<int,int> >*m_libraryDistances
+
+);
+};
+
+#endif

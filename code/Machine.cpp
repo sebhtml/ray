@@ -297,6 +297,11 @@ void Machine::start(){
 		cout<<endl;
 	}
 	m_disData->constructor(getSize(),MPI_BTL_SM_EAGER_LIMIT,&m_persistentAllocator);
+	m_bufferedData.constructor(getSize(),MPI_BTL_SM_EAGER_LIMIT);
+	m_library.constructor(getRank(),&m_outbox,&m_outboxAllocator,&m_bufferedData,&m_sequence_id,&m_sequence_idInFile,
+		m_ed,&m_readsPositions,getSize(),&m_timePrinter,&m_mode,&m_master_mode,
+	&m_parameters,&m_fileId,m_seedingData,&m_libraryDistances);
+
 
 	m_subgraph.constructor(numberOfTrees,&m_persistentAllocator);
 	
@@ -1571,7 +1576,7 @@ void Machine::call_MODE_FUSION(){
 }
 
 void Machine::call_MODE_AUTOMATIC_DISTANCE_DETECTION(){
-	detectDistances();
+	m_library.detectDistances();
 }
 
 void Machine::call_MODE_SEND_LIBRARY_DISTANCES(){
@@ -1579,7 +1584,7 @@ void Machine::call_MODE_SEND_LIBRARY_DISTANCES(){
 }
 
 void Machine::call_MASTER_MODE_UPDATE_DISTANCES(){
-		updateDistances();
+	m_library.updateDistances();
 }
 
 void Machine::call_MASTER_MODE_TRIGGER_FUSIONS(){

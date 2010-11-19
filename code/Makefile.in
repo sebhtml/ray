@@ -49,9 +49,10 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_Ray_OBJECTS = RingAllocator.$(OBJEXT) StaticVector.$(OBJEXT) \
-	MessagesHandler.$(OBJEXT) FastqGzLoader.$(OBJEXT) \
-	FastaLoader.$(OBJEXT) FastqLoader.$(OBJEXT) \
-	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
+	MessagesHandler.$(OBJEXT) Library.$(OBJEXT) \
+	FastqGzLoader.$(OBJEXT) FastaLoader.$(OBJEXT) \
+	FastqLoader.$(OBJEXT) BubbleTool.$(OBJEXT) \
+	BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	Direction.$(OBJEXT) DistributionData.$(OBJEXT) \
@@ -70,10 +71,10 @@ am_Ray_OBJECTS = RingAllocator.$(OBJEXT) StaticVector.$(OBJEXT) \
 Ray_OBJECTS = $(am_Ray_OBJECTS)
 Ray_LDADD = $(LDADD)
 am_Ray_SimulateErrors_OBJECTS = RingAllocator.$(OBJEXT) \
-	StaticVector.$(OBJEXT) MessagesHandler.$(OBJEXT) \
-	FastqGzLoader.$(OBJEXT) FastqLoader.$(OBJEXT) \
-	FastaLoader.$(OBJEXT) BubbleTool.$(OBJEXT) \
-	BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
+	StaticVector.$(OBJEXT) Library.$(OBJEXT) \
+	MessagesHandler.$(OBJEXT) FastqGzLoader.$(OBJEXT) \
+	FastqLoader.$(OBJEXT) FastaLoader.$(OBJEXT) \
+	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	Direction.$(OBJEXT) DistributionData.$(OBJEXT) \
@@ -92,9 +93,9 @@ Ray_SimulateErrors_OBJECTS = $(am_Ray_SimulateErrors_OBJECTS)
 Ray_SimulateErrors_LDADD = $(LDADD)
 am_Ray_SimulateFragments_OBJECTS = RingAllocator.$(OBJEXT) \
 	StaticVector.$(OBJEXT) MessagesHandler.$(OBJEXT) \
-	FastqGzLoader.$(OBJEXT) FastqLoader.$(OBJEXT) \
-	FastaLoader.$(OBJEXT) BubbleTool.$(OBJEXT) \
-	BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
+	Library.$(OBJEXT) FastqGzLoader.$(OBJEXT) \
+	FastqLoader.$(OBJEXT) FastaLoader.$(OBJEXT) \
+	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	Direction.$(OBJEXT) DistributionData.$(OBJEXT) \
@@ -113,9 +114,9 @@ Ray_SimulateFragments_OBJECTS = $(am_Ray_SimulateFragments_OBJECTS)
 Ray_SimulateFragments_LDADD = $(LDADD)
 am_Ray_SimulatePairedReads_OBJECTS = RingAllocator.$(OBJEXT) \
 	StaticVector.$(OBJEXT) MessagesHandler.$(OBJEXT) \
-	FastqGzLoader.$(OBJEXT) FastqLoader.$(OBJEXT) \
-	FastaLoader.$(OBJEXT) BubbleTool.$(OBJEXT) \
-	BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
+	Library.$(OBJEXT) FastqGzLoader.$(OBJEXT) \
+	FastqLoader.$(OBJEXT) FastaLoader.$(OBJEXT) \
+	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	Direction.$(OBJEXT) DistributionData.$(OBJEXT) \
@@ -246,6 +247,7 @@ PendingRequest.h RingAllocator.cpp RingAllocator.h StaticVector.cpp StaticVector
 MessagesHandler.h MessagesHandler.cpp \
 slave_modes.h master_modes.h mpi_tags.h \
 SeedingData.h \
+Library.h Library.cpp \
 FastqGzLoader.h \
 FastqGzLoader.cpp \
 FastaLoader.h \
@@ -331,6 +333,7 @@ VerticesExtractor.h
 Ray_SimulateFragments_SOURCES = \
  PendingRequest.h RingAllocator.cpp RingAllocator.h  StaticVector.cpp StaticVector.h \
 MessagesHandler.h MessagesHandler.cpp \
+Library.h Library.cpp \
 slave_modes.h master_modes.h mpi_tags.h \
 FastqGzLoader.h \
 FastqGzLoader.cpp \
@@ -416,6 +419,7 @@ VerticesExtractor.h
 
 Ray_SimulateErrors_SOURCES = \
  PendingRequest.h RingAllocator.cpp RingAllocator.h  StaticVector.cpp StaticVector.h \
+Library.h Library.cpp \
 MessagesHandler.h MessagesHandler.cpp \
 slave_modes.h master_modes.h mpi_tags.h \
 FastqGzLoader.h \
@@ -505,6 +509,7 @@ Ray_SimulatePairedReads_SOURCES = \
 MessagesHandler.h MessagesHandler.cpp \
 slave_modes.h master_modes.h mpi_tags.h \
 FastqGzLoader.h \
+Library.h Library.cpp \
 FastqGzLoader.cpp \
 FastqLoader.h \
 FastqLoader.cpp \
@@ -708,6 +713,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FastqGzLoader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FastqLoader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FusionData.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Library.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Loader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Machine.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Message.Po@am__quote@
