@@ -159,16 +159,16 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
  		// make it wait some times
  		// this avoids spinning too fast in the memory ring of the outbox <
  		// allocator
-		if((*m_distribution_sequence_id)%10000==0){
 
+		if((*m_distribution_sequence_id)%500==0){
 			Message aMessage(message,cells,MPI_UNSIGNED_LONG_LONG,destination,TAG_SEND_SEQUENCE_REGULATOR,rank);
 			(*m_outbox).push_back(aMessage);
 			m_ready=false;
 		}else{
 			Message aMessage(message,cells,MPI_UNSIGNED_LONG_LONG,destination,TAG_SEND_SEQUENCE,rank);
 			(*m_outbox).push_back(aMessage);
-
 		}
+
 		// add paired information here..
 		// algorithm follows.
 		// check if current file is in a right file.

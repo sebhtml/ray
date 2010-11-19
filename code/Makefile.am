@@ -9,6 +9,7 @@ PendingRequest.h RingAllocator.cpp RingAllocator.h StaticVector.cpp StaticVector
 MessagesHandler.h MessagesHandler.cpp \
 slave_modes.h master_modes.h mpi_tags.h \
 SeedingData.h \
+Library.h Library.cpp \
 FastqGzLoader.h \
 FastqGzLoader.cpp \
 FastaLoader.h \
@@ -95,6 +96,7 @@ VerticesExtractor.h
 Ray_SimulateFragments_SOURCES = \
  PendingRequest.h RingAllocator.cpp RingAllocator.h  StaticVector.cpp StaticVector.h \
 MessagesHandler.h MessagesHandler.cpp \
+Library.h Library.cpp \
 slave_modes.h master_modes.h mpi_tags.h \
 FastqGzLoader.h \
 FastqGzLoader.cpp \
@@ -180,6 +182,7 @@ VerticesExtractor.h
 
 Ray_SimulateErrors_SOURCES = \
  PendingRequest.h RingAllocator.cpp RingAllocator.h  StaticVector.cpp StaticVector.h \
+Library.h Library.cpp \
 MessagesHandler.h MessagesHandler.cpp \
 slave_modes.h master_modes.h mpi_tags.h \
 FastqGzLoader.h \
@@ -269,6 +272,7 @@ Ray_SimulatePairedReads_SOURCES = \
 MessagesHandler.h MessagesHandler.cpp \
 slave_modes.h master_modes.h mpi_tags.h \
 FastqGzLoader.h \
+Library.h Library.cpp \
 FastqGzLoader.cpp \
 FastqLoader.h \
 FastqLoader.cpp \
