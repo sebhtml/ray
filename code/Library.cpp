@@ -27,10 +27,13 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<ReadAnnotation.h>
 #include<Library.h>
 #include<common_functions.h>
+#include<assert.h>
 #include<Parameters.h>
 
 void Library::updateDistances(){
 	if((*m_fileId)==(*m_parameters).getNumberOfFiles()){
+		// flush
+		m_bufferedData->flush(3,TAG_UPDATE_LIBRARY_INFORMATION,m_outboxAllocator,m_outbox,getRank(),true);
 
 		m_timePrinter->printElapsedTime("Computation of library sizes");
 		cout<<endl;
@@ -52,13 +55,11 @@ void Library::updateDistances(){
 				if((*m_sequence_idInFile)<(*m_parameters).getNumberOfSequences(*m_fileId)){
 					int sequenceRank=(*m_sequence_id)%getSize();
 					int sequenceIndex=(*m_sequence_id)/getSize();
-					u64*message=(u64*)m_outboxAllocator->allocate(3*sizeof(u64));
-					message[0]=sequenceIndex;
-					message[1]=averageLength;
-					message[2]=standardDeviation;
-					Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,sequenceRank,
-						TAG_UPDATE_LIBRARY_INFORMATION,getRank());
-					m_outbox->push_back(aMessage);
+					m_bufferedData->addAt(sequenceRank,sequenceIndex);
+					m_bufferedData->addAt(sequenceRank,averageLength);
+					m_bufferedData->addAt(sequenceRank,standardDeviation);
+
+					m_bufferedData->flush(3,TAG_UPDATE_LIBRARY_INFORMATION,m_outboxAllocator,m_outbox,getRank(),false);
 
 					(*m_sequence_id)++;
 					(*m_sequence_idInFile)++;
@@ -210,7 +211,10 @@ Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,map<int,map<int,i
 ){
 	this->m_rank=m_rank;
 	this->m_outbox=m_outbox;
-	this->m_outbox=m_outbox;
+	this->m_outboxAllocator=m_outboxAllocator;
+	#ifdef DEBUG
+	assert(this->m_outboxAllocator!=NULL);
+	#endif
 	this->m_bufferedData=m_bufferedData;
 	this->m_sequence_id=m_sequence_id;
 	this->m_sequence_idInFile=m_sequence_idInFile;
