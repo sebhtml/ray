@@ -57,7 +57,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			flushVertices(1,m_disData,m_outboxAllocator,m_outbox,rank,size);
 
 			#ifdef SHOW_PROGRESS
-			cout<<"Rank "<<rank<<" is extracting vertices from sequences "<<*m_mode_send_vertices_sequence_id<<"/"<<m_myReads->size()<<" (DONE)"<<endl;
+			cout<<"Rank "<<rank<<" is extracting vertices from sequences "<<*m_mode_send_vertices_sequence_id<<"/"<<m_myReads->size()<<" (completed)"<<endl;
 			#endif
 			(*m_mode_send_vertices_sequence_id)=0;
 			*m_mode_send_vertices_sequence_id_position=0;
@@ -70,7 +70,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			*m_mode_send_vertices=false;
 			(*m_mode)=MODE_DO_NOTHING;
 			#ifdef SHOW_PROGRESS
-			cout<<"Rank "<<rank<<" is extracting vertices (reverse complement) from sequences "<<*m_mode_send_vertices_sequence_id<<"/"<<m_myReads->size()<<" (DONE)"<<endl;
+			cout<<"Rank "<<rank<<" is extracting vertices (reverse complement) from sequences "<<*m_mode_send_vertices_sequence_id<<"/"<<m_myReads->size()<<" (completed)"<<endl;
 			#endif
 
 		}

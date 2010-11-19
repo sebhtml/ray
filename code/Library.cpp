@@ -82,7 +82,7 @@ void Library::updateDistances(){
 
 void Library::detectDistances(){
 	if(m_seedingData->m_SEEDING_i==(int)m_seedingData->m_SEEDING_seeds.size()){
-		cout<<"Rank "<<getRank()<<" calculates library sizes "<<m_seedingData->m_SEEDING_seeds.size()<<"/"<<m_seedingData->m_SEEDING_seeds.size()<<" (DONE)"<<endl;
+		cout<<"Rank "<<getRank()<<" calculates library sizes "<<m_seedingData->m_SEEDING_seeds.size()<<"/"<<m_seedingData->m_SEEDING_seeds.size()<<" (completed)"<<endl;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE,getRank());
 		m_outbox->push_back(aMessage);
 		(*m_mode)=MODE_DO_NOTHING;

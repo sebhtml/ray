@@ -344,6 +344,7 @@ class Machine{
 	void call_MODE_EXTENSION();
 	void call_MASTER_MODE_DO_NOTHING();
 	void call_MODE_DO_NOTHING();
+	void call_MODE_INDEX_SEQUENCES();
 
 public:
 	/*

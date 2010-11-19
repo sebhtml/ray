@@ -216,6 +216,7 @@ Machine::Machine(int argc,char**argv){
 	m_slave_methods[MODE_ASSEMBLE_WAVES]=&Machine::call_MODE_ASSEMBLE_WAVES;
 	m_slave_methods[MODE_FUSION]=&Machine::call_MODE_FUSION;
 	m_slave_methods[MODE_PERFORM_CALIBRATION]=&Machine::call_MODE_PERFORM_CALIBRATION;
+	m_slave_methods[MODE_INDEX_SEQUENCES]=&Machine::call_MODE_INDEX_SEQUENCES;
 	m_slave_methods[MODE_FINISH_FUSIONS]=&Machine::call_MODE_FINISH_FUSIONS;
 	m_slave_methods[MODE_DISTRIBUTE_FUSIONS]=&Machine::call_MODE_DISTRIBUTE_FUSIONS;
 	m_slave_methods[MODE_AUTOMATIC_DISTANCE_DETECTION]=&Machine::call_MODE_AUTOMATIC_DISTANCE_DETECTION;
@@ -503,7 +504,7 @@ void Machine::finishFusions(){
 	if(m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
 		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 		message[0]=m_FINISH_fusionOccured;
-		cout<<"Rank "<<getRank()<<" is finishing its fusions "<<m_ed->m_EXTENSION_contigs.size()<<"/"<<m_ed->m_EXTENSION_contigs.size()<<" (DONE)"<<endl;
+		cout<<"Rank "<<getRank()<<" is finishing its fusions "<<m_ed->m_EXTENSION_contigs.size()<<"/"<<m_ed->m_EXTENSION_contigs.size()<<" (completed)"<<endl;
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_FINISH_FUSIONS_FINISHED,getRank());
 		m_outbox.push_back(aMessage);
 		m_mode=MODE_DO_NOTHING;
@@ -708,7 +709,7 @@ void Machine::makeFusions(){
 		if(m_ed->m_EXTENSION_contigs.size()==0){
 			seedIndex++;
 		}
-		cout<<"Rank "<<getRank()<<": fusion "<<m_ed->m_EXTENSION_contigs.size()<<"/"<<m_ed->m_EXTENSION_contigs.size()<<" (DONE)"<<endl;
+		cout<<"Rank "<<getRank()<<": fusion "<<m_ed->m_EXTENSION_contigs.size()<<"/"<<m_ed->m_EXTENSION_contigs.size()<<" (completed)"<<endl;
 		#endif
 		#ifdef DEBUG
 		//cout<<"Rank "<<getRank()<<" eliminated: "<<m_fusionData->m_FUSION_eliminated.size()<<endl;
@@ -1283,14 +1284,13 @@ void Machine::call_MASTER_MODE_TRIGGER_EDGES(){
 
 void Machine::call_MASTER_MODE_TRIGGER_INDEXING(){
 	m_numberOfMachinesDoneSendingEdges=-9;
-
+	m_master_mode=MASTER_MODE_DO_NOTHING;
 	m_timePrinter.printElapsedTime("Distribution of edges");
 	cout<<endl;
-
-
-	m_mode_AttachSequences=true;
-	m_distribution_file_id=m_distribution_sequence_id=m_distribution_currentSequenceId=0;
-	m_master_mode=MASTER_MODE_INDEX_SEQUENCES;
+	for(int i=0;i<getSize();i++){
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_START_INDEXING_SEQUENCES,getRank());
+		m_outbox.push_back(aMessage);
+	}
 }
 
 void Machine::call_MASTER_MODE_PREPARE_DISTRIBUTIONS(){
@@ -1413,7 +1413,7 @@ void Machine::call_MODE_START_SEEDING(){
 		if(m_seedingData->m_SEEDING_i==(int)m_subgraph.size()-1){
 
 			m_mode=MODE_DO_NOTHING;
-			cout<<"Rank "<<getRank()<<" is creating seeds. "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_subgraph.size()<<" (DONE)"<<endl;
+			cout<<"Rank "<<getRank()<<" is creating seeds. "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_subgraph.size()<<" (completed)"<<endl;
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_SEEDING_IS_OVER,getRank());
 			m_seedingData->m_SEEDING_nodes.clear();
 			m_outbox.push_back(aMessage);
@@ -1525,10 +1525,11 @@ void Machine::call_MASTER_MODE_START_UPDATING_DISTANCES(){
 }
 
 void Machine::call_MASTER_MODE_INDEX_SEQUENCES(){
-	m_si.attachReads(&m_outbox,&m_distribution_file_id,&m_distribution_sequence_id,
-		&m_wordSize,&m_distribution_reads,getSize(),&m_distributionAllocator,
-		&m_distribution_currentSequenceId,getRank(),m_disData,&m_mode_AttachSequences,
-		&m_parameters,&m_colorSpaceMode,&m_outboxAllocator,&m_lastTime,&m_master_mode);
+}
+
+void Machine::call_MODE_INDEX_SEQUENCES(){
+	m_si.attachReads(&m_myReads,&m_outboxAllocator,&m_outbox,&m_mode,m_wordSize,
+	&m_bufferedData,m_size,m_rank,m_colorSpaceMode);
 }
 
 void Machine::call_MASTER_MODE_TRIGGER_EXTENSIONS(){

@@ -50,6 +50,10 @@ void MessageProcessor::call_TAG_SEND_SEQUENCE_REGULATOR(Message*message){
 	m_outbox->push_back(aMessage);
 }
 
+void MessageProcessor::call_TAG_START_INDEXING_SEQUENCES(Message*message){
+	(*m_mode)=MODE_INDEX_SEQUENCES;
+}
+
 void MessageProcessor::call_TAG_SEND_SEQUENCE(Message*message){
 	time_t theTime=time(NULL);
 	if(theTime!=m_last){
@@ -1246,6 +1250,7 @@ MessageProcessor::MessageProcessor(){
 	m_methods[TAG_HAS_PAIRED_READ_REPLY]=&MessageProcessor::call_TAG_HAS_PAIRED_READ_REPLY;
 	m_methods[TAG_GET_PAIRED_READ]=&MessageProcessor::call_TAG_GET_PAIRED_READ;
 	m_methods[TAG_GET_PAIRED_READ_REPLY]=&MessageProcessor::call_TAG_GET_PAIRED_READ_REPLY;
+	m_methods[TAG_START_INDEXING_SEQUENCES]=&MessageProcessor::call_TAG_START_INDEXING_SEQUENCES;
 	m_methods[TAG_CLEAR_DIRECTIONS]=&MessageProcessor::call_TAG_CLEAR_DIRECTIONS;
 	m_methods[TAG_CLEAR_DIRECTIONS_REPLY]=&MessageProcessor::call_TAG_CLEAR_DIRECTIONS_REPLY;
 	m_methods[TAG_FINISH_FUSIONS]=&MessageProcessor::call_TAG_FINISH_FUSIONS;

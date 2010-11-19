@@ -33,14 +33,21 @@
 #include<Parameters.h>
 
 class SequencesIndexer{
+	int m_theSequenceId;
+
 public:
-	void attachReads(StaticVector*m_outbox,int*m_distribution_file_id,int*m_distribution_sequence_id,
-	int*m_wordSize,vector<Read*>*m_distribution_reads,int size,MyAllocator*m_distributionAllocator,
-	int*m_distribution_currentSequenceId,int rank,DistributionData*m_disData,bool*m_mode_AttachSequences,
-	Parameters*m_parameters,bool*m_colorSpaceMode,RingAllocator*m_outboxAllocator,time_t*m_lastTime,int*m_master_mode
+	void attachReads(
+vector<Read*>*m_myReads,
+				RingAllocator*m_outboxAllocator,
+				StaticVector*m_outbox,
+				int*m_mode,
+				int m_wordSize,
+				BufferedData*m_bufferedData,
+				int m_size,
+				int m_rank,
+				bool m_colorSpaceMode
 );
-	void flushAttachedSequences(int threshold,StaticVector*m_outbox,int rank,int size,DistributionData*m_disData,
-	RingAllocator*m_outboxAllocator);
+
 };
 
 #endif

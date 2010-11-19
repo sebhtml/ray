@@ -42,7 +42,7 @@ ChooserData*cd,BubbleData*bubbleData,DepthFirstSearchData*dfsData,
 int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 	if((*seeds).size()==0){
 		#ifdef SHOW_PROGRESS
-		cout<<"Rank "<<theRank<<" is extending its seeds. "<<(*seeds).size()<<"/"<<(*seeds).size()<<" (DONE)"<<endl;
+		cout<<"Rank "<<theRank<<" is extending its seeds. "<<(*seeds).size()<<"/"<<(*seeds).size()<<" (completed)"<<endl;
 		#endif
 		ed->m_mode_EXTENSION=false;
 		(*m_mode)=MODE_DO_NOTHING;
@@ -64,7 +64,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		ed->m_EXTENSION_reads_startingPositionOnContig.clear();
 		ed->m_EXTENSION_readsInRange.clear();
 	}else if(ed->m_EXTENSION_currentSeedIndex==(int)(*seeds).size()){
-		cout<<"Rank "<<theRank<<" is extending its seeds. "<<(*seeds).size()<<"/"<<(*seeds).size()<<" (DONE)"<<endl;
+		cout<<"Rank "<<theRank<<" is extending its seeds. "<<(*seeds).size()<<"/"<<(*seeds).size()<<" (completed)"<<endl;
 		ed->m_mode_EXTENSION=false;
 		(*m_mode)=MODE_DO_NOTHING;
 	

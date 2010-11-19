@@ -45,7 +45,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #define MASTER_MODE_PREPARE_DISTRIBUTIONS 0xb
 #define MASTER_MODE_TRIGGER_EDGES 0xc
 #define MASTER_MODE_TRIGGER_INDEXING 0xd
-#define MASTER_MODE_INDEX_SEQUENCES 			0xe
+#define MASTER_MODE_INDEX_SEQUENCES 			0xe   // defunct
 #define MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS 	0xf
 #define MASTER_MODE_PREPARE_SEEDING 			0x10
 #define MASTER_MODE_TRIGGER_SEEDING			0x11

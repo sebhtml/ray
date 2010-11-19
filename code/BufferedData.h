@@ -40,6 +40,9 @@ public:
 	void reset(int i);
 	/* return true if flushed something */
 	bool flush(int period,int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank,bool force);
+	#ifdef DEBUG
+	void inspect();
+	#endif
 };
 
 #endif

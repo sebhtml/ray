@@ -47,7 +47,7 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 	if((*m_distribution_reads).size()>0 and (*m_distribution_sequence_id)>(int)(*m_distribution_reads).size()-1){
 		// we reached the end of the file.
 
-		cout<<"Rank "<<rank<<" distributes sequences, "<<(*m_distribution_reads).size()<<"/"<<(*m_distribution_reads).size()<<" (DONE)"<<endl;
+		cout<<"Rank "<<rank<<" distributes sequences, "<<(*m_distribution_reads).size()<<"/"<<(*m_distribution_reads).size()<<" (completed)"<<endl;
 		(*m_distribution_file_id)++;
 		if((*m_LOADER_isLeftFile)){
 			(*m_LOADER_numberOfSequencesInLeftFile)=(*m_distribution_sequence_id);

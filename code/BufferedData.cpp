@@ -81,3 +81,12 @@ bool BufferedData::flush(int period,int tag,RingAllocator*outboxAllocator,Static
 	}
 	return flushed;
 }
+
+#ifdef DEBUG
+void BufferedData::inspect(){
+	for(int i=0;i<m_ranks;i++){
+		assert(m_sizes[i]==0);
+	}
+}
+
+#endif

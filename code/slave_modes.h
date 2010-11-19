@@ -52,5 +52,6 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #define MODE_PROCESS_INGOING_EDGES 		0x13
 #define MODE_PROCESS_OUTGOING_EDGES 		0x14
 #define MODE_EXTENSION				0x15
+#define MODE_INDEX_SEQUENCES                	0x16 // new!
 
 #endif
