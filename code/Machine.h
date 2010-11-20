@@ -118,6 +118,8 @@ class Machine{
 	SequencesIndexer m_si;
 	SeedExtender m_seedExtender;
 
+	bool m_ready;
+
 	// clearing
 	int m_CLEAR_n;
 	int m_readyToSeed;

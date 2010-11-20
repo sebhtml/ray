@@ -551,10 +551,20 @@ void MessageProcessor::call_TAG_ASK_EXTENSION_DATA(Message*message){
 	(*m_EXTENSION_currentPosition)=0;
 }
 
+void MessageProcessor::call_TAG_EXTENSION_DATA_REPLY(Message*message){
+	(*m_ready)=true;
+}
+
 void MessageProcessor::call_TAG_EXTENSION_DATA(Message*message){
 	void*buffer=message->getBuffer();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	(*m_allPaths)[(*m_allPaths).size()-1].push_back(incoming[0]);
+	int count=message->getCount();
+	for(int i=0;i<count;i++){
+		(*m_allPaths)[(*m_allPaths).size()-1].push_back(incoming[i+0]);
+	}
+
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_EXTENSION_DATA_REPLY,rank);
+	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_EXTENSION_END(Message*message){
@@ -1247,6 +1257,7 @@ MessageProcessor::MessageProcessor(){
 	m_methods[TAG_MARK_AS_ASSEMBLED]=&MessageProcessor::call_TAG_MARK_AS_ASSEMBLED;
 	m_methods[TAG_ASK_EXTENSION_DATA]=&MessageProcessor::call_TAG_ASK_EXTENSION_DATA;
 	m_methods[TAG_EXTENSION_DATA]=&MessageProcessor::call_TAG_EXTENSION_DATA;
+	m_methods[TAG_EXTENSION_DATA_REPLY]=&MessageProcessor::call_TAG_EXTENSION_DATA_REPLY;
 	m_methods[TAG_EXTENSION_END]=&MessageProcessor::call_TAG_EXTENSION_END;
 	m_methods[TAG_EXTENSION_DATA_END]=&MessageProcessor::call_TAG_EXTENSION_DATA_END;
 	m_methods[TAG_ATTACH_SEQUENCE]=&MessageProcessor::call_TAG_ATTACH_SEQUENCE;
@@ -1308,6 +1319,7 @@ MessageProcessor::MessageProcessor(){
 }
 
 void MessageProcessor::constructor(
+bool*m_ready,
 VerticesExtractor*m_verticesExtractor,
 EdgesExtractor*m_edgesExtractor,
 SequencesLoader*sequencesLoader,ExtensionData*ed,
@@ -1487,4 +1499,5 @@ bool*m_isFinalFusion){
 	this->seedExtender=seedExtender;
 	this->m_master_mode=m_master_mode;
 	this->m_isFinalFusion=m_isFinalFusion;
+	this->m_ready=m_ready;
 }

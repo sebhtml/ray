@@ -53,7 +53,7 @@ class MessageProcessor{
 
 
 	// data for processing
-	
+	bool*m_ready;
 	int m_consumed;
 	time_t m_last;
 
@@ -151,6 +151,7 @@ class MessageProcessor{
 
 public:
 	void constructor(
+bool*m_ready,
 VerticesExtractor*m_verticesExtractor,
 EdgesExtractor*m_edgesExtractor,
 SequencesLoader*m_sequencesLoader,
@@ -352,7 +353,8 @@ SeedExtender*seedExtender,int*m_master_mode,bool*m_isFinalFusion
 	void call_TAG_IN_EDGES_DATA_REPLY(Message*message);
 	void call_TAG_OUT_EDGES_DATA_REPLY(Message*message);
 	void call_TAG_INDEX_PAIRED_SEQUENCE_REPLY(Message*message);
-	
+	void call_TAG_EXTENSION_DATA_REPLY(Message*message);
+
 	void processMessage(Message*message);
 	MessageProcessor();
 };

@@ -232,6 +232,7 @@ Machine::Machine(int argc,char**argv){
 
 
 void Machine::start(){
+	m_ready=true;
 	m_maxCoverage=0;
 	m_maxCoverage--;// underflow.
 	int numberOfTrees=_FOREST_SIZE;
@@ -355,7 +356,8 @@ void Machine::start(){
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	m_mp.constructor(&m_verticesExtractor,
+	m_mp.constructor(&m_ready,
+&m_verticesExtractor,
 &m_edgesExtractor,
 &m_sl,
 			m_ed,
@@ -1526,6 +1528,9 @@ void Machine::call_MASTER_MODE_TRIGGER_EXTENSIONS(){
 }
 
 void Machine::call_MODE_SEND_EXTENSION_DATA(){
+	if(!m_ready){
+		return;
+	}
 	if(m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
 		m_mode=MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_DATA_END,getRank());
@@ -1542,11 +1547,21 @@ void Machine::call_MODE_SEND_EXTENSION_DATA(){
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_START,getRank());
 				m_outbox.push_back(aMessage);
 			}
-			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(sizeof(VERTEX_TYPE)*1);
-			message[0]=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
-			m_ed->m_EXTENSION_currentPosition++;
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_DATA,getRank());
+			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(MPI_BTL_SM_EAGER_LIMIT);
+
+			int count=0;
+			for(int i=0;i<(int)(MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE));i++){
+				if(m_ed->m_EXTENSION_currentPosition==(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
+					break;
+				}
+				message[i+0]=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
+				m_ed->m_EXTENSION_currentPosition++;
+				count++;
+			}
+			
+			Message aMessage(message,count,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_DATA,getRank());
 			m_outbox.push_back(aMessage);
+			m_ready=false;
 			if(m_ed->m_EXTENSION_currentPosition==(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
 				Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_END,getRank());
 				m_outbox.push_back(aMessage);
