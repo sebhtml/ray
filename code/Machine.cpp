@@ -1353,30 +1353,20 @@ void Machine::call_MODE_SEND_DISTRIBUTION(){
 		}
 	}
 
-	int length=2;
-	VERTEX_TYPE*data=(VERTEX_TYPE*)m_outboxAllocator.allocate(sizeof(VERTEX_TYPE)*length);
+	int*data=(int*)m_outboxAllocator.allocate(sizeof(int)*2*m_maxCoverage);
 	int j=0;
+	data[j++]=m_distributionOfCoverage.size();
 	for(map<int,VERTEX_TYPE>::iterator i=m_distributionOfCoverage.begin();i!=m_distributionOfCoverage.end();i++){
 		int coverage=i->first;
 		VERTEX_TYPE count=i->second;
-		if(m_mode_send_coverage_iterator==j){
-			data[0]=coverage;
-			data[1]=count;
-			break;
-		}
-		j++;
+		data[j++]=coverage;
+		data[j++]=count;
 	}
-	Message aMessage(data,length, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_COVERAGE_DATA,getRank());
+	Message aMessage(data,MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE), MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_COVERAGE_DATA,getRank());
 	m_outbox.push_back(aMessage);
 
-	m_mode_send_coverage_iterator++;
-	if(m_mode_send_coverage_iterator>=(int)m_distributionOfCoverage.size()){
-		m_mode_sendDistribution=false;
-		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,MASTER_RANK, TAG_COVERAGE_END,getRank());
-		m_outbox.push_back(aMessage);
-		m_distributionOfCoverage.clear();
-		m_mode=MODE_DO_NOTHING;
-	}
+	m_distributionOfCoverage.clear();
+	m_mode=MODE_DO_NOTHING;
 }
 
 void Machine::call_MODE_PROCESS_OUTGOING_EDGES(){

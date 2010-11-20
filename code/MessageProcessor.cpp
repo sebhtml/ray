@@ -296,15 +296,15 @@ void MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message){
 
 void MessageProcessor::call_TAG_COVERAGE_DATA(Message*message){
 	void*buffer=message->getBuffer();
-	int count=message->getCount();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	int length=count;
+	int*incoming=(int*)buffer;
+	int count=incoming[0];
 
-	for(int i=0;i<length;i+=2){
-		int coverage=incoming[i+0];
-		VERTEX_TYPE count=incoming[i+1];
+	for(int i=0;i<count;i++){
+		int coverage=incoming[1+2*i+0];
+		VERTEX_TYPE count=incoming[1+2*i+1];
 		(*m_coverageDistribution)[coverage]+=count;
 	}
+	call_TAG_COVERAGE_END(message);
 }
 
 void MessageProcessor::call_TAG_COVERAGE_END(Message*message){
