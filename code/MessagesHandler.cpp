@@ -30,7 +30,7 @@
 void MessagesHandler::sendMessages(StaticVector*outbox,int source){
 	for(int i=0;i<(int)outbox->size();i++){
 		Message*aMessage=((*outbox)[i]);
-		#ifdef DEBUG
+		#ifdef ASSERT
 		int destination=aMessage->getDestination();
 		assert(destination>=0);
 		#endif
@@ -38,15 +38,21 @@ void MessagesHandler::sendMessages(StaticVector*outbox,int source){
 		MPI_Request request;
 		//  MPI_Issend
 		//      Synchronous nonblocking. Note that a Wait/Test will complete only when the matching receive is posted
-
-		#ifdef DEBUG
+		#ifdef ASSERT
 		assert(!(aMessage->getBuffer()==NULL && aMessage->getCount()>0));
-		int value=MPI_Isend(aMessage->getBuffer(),aMessage->getCount(),aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(),MPI_COMM_WORLD,&request);
-		assert(value==MPI_SUCCESS);
-		#else
-		MPI_Isend(aMessage->getBuffer(), aMessage->getCount(), aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(), MPI_COMM_WORLD,&request);
 		#endif
+
+		int value=MPI_Isend(aMessage->getBuffer(),aMessage->getCount(),aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(),MPI_COMM_WORLD,&request);
+		
+		#ifdef ASSERT
+		assert(value==MPI_SUCCESS);
+		#endif
+		
 		MPI_Request_free(&request);
+
+		#ifdef ASSERT
+		assert(request==MPI_REQUEST_NULL);
+		#endif
 	}
 
 	outbox->clear();

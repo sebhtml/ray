@@ -712,7 +712,7 @@ void Machine::makeFusions(){
 		}
 		cout<<"Rank "<<getRank()<<" is computing fusions "<<m_ed->m_EXTENSION_contigs.size()<<"/"<<m_ed->m_EXTENSION_contigs.size()<<" (completed)"<<endl;
 		#endif
-		#ifdef DEBUG
+		#ifdef ASSERT
 		//cout<<"Rank "<<getRank()<<" eliminated: "<<m_fusionData->m_FUSION_eliminated.size()<<endl;
 		#endif
 		return;
@@ -735,7 +735,7 @@ void Machine::makeFusions(){
 				}
 				#endif
 				// get the paths going on the first vertex
-				#ifdef DEBUG
+				#ifdef ASSERT
 				assert((int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()>END_LENGTH);
 				#endif
 				VERTEX_TYPE theVertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][END_LENGTH];
@@ -767,7 +767,7 @@ void Machine::makeFusions(){
 					m_fusionData->m_FUSION_paths_requested=false;
 					m_fusionData->m_FUSION_last_done=false;
 					m_fusionData->m_FUSION_firstPaths=m_fusionData->m_FUSION_receivedPaths;
-					#ifdef DEBUG
+					#ifdef ASSERT
 					assert(m_fusionData->m_FUSION_numberOfPaths==(int)m_fusionData->m_FUSION_firstPaths.size());
 					#endif
 				}
@@ -777,7 +777,7 @@ void Machine::makeFusions(){
 
 			if(!m_fusionData->m_FUSION_paths_requested){
 				// get the paths going on the lastvertex<
-				#ifdef DEBUG
+				#ifdef ASSERT
 				assert((int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()>=END_LENGTH);
 				#endif
 				VERTEX_TYPE theVertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-END_LENGTH];
@@ -811,7 +811,7 @@ void Machine::makeFusions(){
 					m_fusionData->m_FUSION_matches_done=false;
 					m_fusionData->m_FUSION_matches.clear();
 
-					#ifdef DEBUG
+					#ifdef ASSERT
 					assert(m_fusionData->m_FUSION_numberOfPaths==(int)m_fusionData->m_FUSION_lastPaths.size());
 					#endif
 				}
@@ -946,7 +946,7 @@ void Machine::makeFusions(){
 					m_fusionData->m_FUSION_paths_requested=false;
 					m_fusionData->m_FUSION_last_done=false;
 					m_fusionData->m_FUSION_firstPaths=m_fusionData->m_FUSION_receivedPaths;
-					#ifdef DEBUG
+					#ifdef ASSERT
 					assert(m_fusionData->m_FUSION_numberOfPaths==(int)m_fusionData->m_FUSION_firstPaths.size());
 					#endif
 				}
@@ -987,7 +987,7 @@ void Machine::makeFusions(){
 					m_fusionData->m_FUSION_matches_done=false;
 					m_fusionData->m_FUSION_matches.clear();
 
-					#ifdef DEBUG
+					#ifdef ASSERT
 					assert(m_fusionData->m_FUSION_numberOfPaths==(int)m_fusionData->m_FUSION_lastPaths.size());
 					#endif
 				}
@@ -1826,7 +1826,7 @@ void Machine::call_MASTER_MODE_ASK_EXTENSIONS(){
 							if(nextPaths.size()>0){// we found a path
 								for(int i=0;i<(int)nextPaths.size();i++){
 									cout<<"contig-"<<m_identifiers[m_sd->m_pathId]<<" -> "<<"contig-"<<nextPaths[i].getWave()<<" ("<<theDepth<<","<<nextPaths[i].getProgression()<<") via "<<idToWord(theVertex,m_wordSize)<<endl;
-									#ifdef DEBUG
+									#ifdef ASSERT
 									assert(m_sd->m_allIdentifiers.count(nextPaths[i].getWave())>0);
 									#endif
 								}
@@ -1862,17 +1862,17 @@ void Machine::call_MASTER_MODE_ASK_EXTENSIONS(){
 
 		int totalLength=0;
 		
-		#ifdef DEBUG
+		#ifdef ASSERT
 		assert(m_allPaths.size()==m_identifiers.size());
 		#endif
 		ofstream f(m_parameters.getOutputFile().c_str());
 		for(int i=0;i<(int)m_allPaths.size();i++){
 			string contig=convertToString(&(m_allPaths[i]),m_wordSize);
-			#ifdef DEBUG
+			#ifdef ASSERT
 			assert(i<(int)m_identifiers.size());
 			#endif
 			int id=m_identifiers[i];
-			#ifdef DEBUG
+			#ifdef ASSERT
 			int theRank=id%MAX_NUMBER_OF_MPI_PROCESSES;
 			assert(theRank<getSize());
 			#endif

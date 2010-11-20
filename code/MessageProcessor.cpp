@@ -116,14 +116,14 @@ void MessageProcessor::call_TAG_VERTICES_DATA(Message*message){
 		}
 		#endif
 		SplayNode<VERTEX_TYPE,Vertex>*tmp=m_subgraph->insert(l);
-		#ifdef DEBUG
+		#ifdef ASSERT
 		assert(tmp!=NULL);
 		#endif
 		if(m_subgraph->inserted()){
 			tmp->getValue()->constructor(); 
 		}
 		tmp->getValue()->setCoverage(tmp->getValue()->getCoverage()+1);
-		#ifdef DEBUG
+		#ifdef ASSERT
 		assert(tmp->getValue()->getCoverage()>0);
 		#endif
 	}
@@ -160,11 +160,11 @@ void MessageProcessor::call_TAG_OUT_EDGES_DATA(Message*message){
 	for(int i=0;i<(int)length;i+=2){
 		VERTEX_TYPE prefix=incoming[i+0];
 		VERTEX_TYPE suffix=incoming[i+1];
-		#ifdef DEBUG
+		#ifdef ASSERT
 		assert(m_subgraph->find(prefix)!=NULL);
 		#endif
 		m_subgraph->find(prefix)->getValue()->addOutgoingEdge(suffix,(*m_wordSize),&(*m_persistentAllocator));
-		#ifdef DEBUG
+		#ifdef ASSERT
 		vector<VERTEX_TYPE> newEdges=m_subgraph->find(prefix)->getValue()->getOutgoingEdges(prefix,(*m_wordSize));
 		bool found=false;
 		for(int i=0;i<(int)newEdges.size();i++){
@@ -234,11 +234,11 @@ void MessageProcessor::call_TAG_IN_EDGES_DATA(Message*message){
 	for(int i=0;i<(int)length;i+=2){
 		VERTEX_TYPE prefix=incoming[i+0];
 		VERTEX_TYPE suffix=incoming[i+1];
-		#ifdef DEBUG
+		#ifdef ASSERT
 		assert(m_subgraph->find(suffix)!=NULL);
 		#endif
 		m_subgraph->find(suffix)->getValue()->addIngoingEdge(prefix,(*m_wordSize),&(*m_persistentAllocator));
-		#ifdef DEBUG
+		#ifdef ASSERT
 		bool found=false;
 		vector<VERTEX_TYPE> edges=m_subgraph->find(suffix)->getValue()->getIngoingEdges(suffix,(*m_wordSize));
 		for(int i=0;i<(int)edges.size();i++){
@@ -344,7 +344,7 @@ void MessageProcessor::call_TAG_START_SEEDING(Message*message){
 			(*m_SEEDING_nodes).push_back(node->getKey());
 		}
 	}
-	#ifdef DEBUG
+	#ifdef ASSERT
 	//cout<<"Ingoing and outgoing edges."<<endl;
 	for(map<int,map<int,int> >::iterator i=edgesDistribution.begin();i!=edgesDistribution.end();++i){
 		for(map<int,int>::iterator j=i->second.begin();j!=i->second.end();++j){
@@ -361,7 +361,7 @@ void MessageProcessor::call_TAG_REQUEST_VERTEX_COVERAGE(Message*message){
 	int source=message->getSource();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
 	SplayNode<VERTEX_TYPE,Vertex>*node=m_subgraph->find(incoming[0]);
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(node!=NULL);
 	#endif
 	VERTEX_TYPE coverage=node->getValue()->getCoverage();
@@ -467,7 +467,7 @@ void MessageProcessor::call_TAG_REQUEST_VERTEX_INGOING_EDGES(Message*message){
 	int source=message->getSource();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
 	SplayNode<VERTEX_TYPE,Vertex>*node=m_subgraph->find(incoming[0]);
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(node!=NULL);
 	#endif
 	vector<VERTEX_TYPE> ingoingEdges=node->getValue()->getIngoingEdges(incoming[0],*m_wordSize);
@@ -510,7 +510,7 @@ void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED(Message*message){
 	int source=message->getSource();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
 	SplayNode<VERTEX_TYPE,Vertex>*node=m_subgraph->find(incoming[0]);
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(node!=NULL);
 	#endif
 	bool isAssembled=node->getValue()->isAssembled();
@@ -583,7 +583,7 @@ void MessageProcessor::call_TAG_ATTACH_SEQUENCE(Message*message){
 		int rank=incoming[i+1];
 		int sequenceIdOnDestination=(int)incoming[i+2];
 		char strand=(char)incoming[i+3];
-		#ifdef DEBUG
+		#ifdef ASSERT
 		assert(m_subgraph->find(vertex)!=NULL);
 		#endif
 		m_subgraph->find(vertex)->getValue()->addRead(rank,sequenceIdOnDestination,strand,&(*m_persistentAllocator));
@@ -595,11 +595,11 @@ void MessageProcessor::call_TAG_REQUEST_READS(Message*message){
 	int source=message->getSource();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
 	SplayNode<VERTEX_TYPE,Vertex>*node=m_subgraph->find(incoming[0]);
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(node!=NULL);
 	#endif
 	Vertex*theVertex=node->getValue();
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(theVertex!=NULL);
 	#endif
 	ReadAnnotation*e=theVertex->getReads();
@@ -717,7 +717,7 @@ void MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 	int count=message->getCount();
 	for(int i=0;i<count;i+=3){
 		SplayNode<VERTEX_TYPE,Vertex>*node=m_subgraph->find(incoming[i+0]);
-		#ifdef DEBUG
+		#ifdef ASSERT
 		assert(node!=NULL);
 		#endif
 		int wave=incoming[i+1];
@@ -780,7 +780,7 @@ void MessageProcessor::call_TAG_ASK_VERTEX_PATHS_SIZE(Message*message){
 	int source=message->getSource();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
 	SplayNode<VERTEX_TYPE,Vertex>*node=m_subgraph->find(incoming[0]);
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(node!=NULL);
 	#endif
 	vector<Direction> paths=node->getValue()->getDirections();
@@ -805,14 +805,14 @@ void MessageProcessor::call_TAG_GET_PATH_LENGTH(Message*message){
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
 	int id=incoming[0];
 	int length=0;
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(m_fusionData->m_FUSION_identifier_map.count(id)>0);
 	#endif
 	if(m_fusionData->m_FUSION_identifier_map.count(id)>0){
 		length=(*m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size();
 	}
 
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(length>0);
 	#endif
 	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(sizeof(VERTEX_TYPE));
@@ -873,14 +873,14 @@ void MessageProcessor::call_TAG_INDEX_PAIRED_SEQUENCE(Message*message){
 		int deviation=incoming[i+4];
 
 		int otherRank=incoming[i+1];
-		#ifdef DEBUG
+		#ifdef ASSERT
 		assert(otherRank<size);
 		#endif
 
 		int otherId=incoming[i+2];
 		int currentReadId=incoming[i+0];
 		t->constructor(otherRank,otherId,length,deviation);
-		#ifdef DEBUG
+		#ifdef ASSERT
 		assert(currentReadId<(int)m_myReads->size());
 		#endif
 
@@ -896,7 +896,7 @@ void MessageProcessor::call_TAG_HAS_PAIRED_READ(Message*message){
 	void*buffer=message->getBuffer();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
 	int index=incoming[0];
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(index<(int)m_myReads->size());
 	#endif
 	message2[0]=(*m_myReads)[index]->hasPairedRead();
@@ -916,7 +916,7 @@ void MessageProcessor::call_TAG_GET_PAIRED_READ(Message*message){
 	int source=message->getSource();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
 	int index=incoming[0];
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(index<(int)m_myReads->size());
 	#endif
 	PairedRead*t=(*m_myReads)[index]->getPairedRead();
@@ -925,7 +925,7 @@ void MessageProcessor::call_TAG_GET_PAIRED_READ(Message*message){
 	if(t==NULL){
 		t=&dummy;
 	}
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(t!=NULL);
 	#endif
 	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(4*sizeof(VERTEX_TYPE));
@@ -988,7 +988,7 @@ void MessageProcessor::call_TAG_CLEAR_DIRECTIONS(Message*message){
 	m_fusionData->m_FUSION_eliminated.clear();
 	for(int i=0;i<(int)fusions.size();i++){
 		int id=i*MAX_NUMBER_OF_MPI_PROCESSES+rank;
-		#ifdef DEBUG
+		#ifdef ASSERT
 		assert(rank<size);
 		assert(rank>=0);
 		assert(size>=1);
@@ -1050,7 +1050,7 @@ void MessageProcessor::call_TAG_EXTENSION_START(Message*message){
 	vector<VERTEX_TYPE> a;
 	(*m_allPaths).push_back(a);
 	int id=incoming[0];
-	#ifdef DEBUG
+	#ifdef ASSERT
 	int rank=id%MAX_NUMBER_OF_MPI_PROCESSES;
 	assert(rank<size);
 	#endif
@@ -1071,10 +1071,10 @@ void MessageProcessor::call_TAG_GET_PATH_VERTEX(Message*message){
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
 	int id=incoming[0];
 	int position=incoming[1];
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(m_fusionData->m_FUSION_identifier_map.count(id)>0);
 	#endif
-	#ifdef DEBUG
+	#ifdef ASSERT
 	if(position>=(int)(*m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size()){
 		cout<<"Pos="<<position<<" Length="<<(*m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size()<<endl;
 	}
@@ -1140,7 +1140,7 @@ void MessageProcessor::call_TAG_UPDATE_LIBRARY_INFORMATION(Message*message){
 	int count=message->getCount();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
 	for(int i=0;i<count;i+=3){
-		#ifdef DEBUG
+		#ifdef ASSERT
 		assert((*m_myReads)[incoming[i+0]]->hasPairedRead());
 		#endif
 		(*m_myReads)[incoming[i+0]]->getPairedRead()->updateLibrary(incoming[i+1],incoming[i+2]);
@@ -1159,7 +1159,7 @@ void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE(Message*message){
 	int source=message->getSource();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
 	int index=incoming[0];
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(index<(int)m_myReads->size());
 	#endif
 	PairedRead*t=(*m_myReads)[index]->getPairedRead();
@@ -1168,7 +1168,7 @@ void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE(Message*message){
 	if(t==NULL){
 		t=&dummy;
 	}
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(t!=NULL);
 	#endif
 	char*seq=m_myReads->at(index)->getSeq();

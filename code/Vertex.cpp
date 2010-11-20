@@ -160,7 +160,7 @@ void Vertex::addOutgoingEdge(VERTEX_TYPE a,int k,MyAllocator*m){
 
 void Vertex::addRead(int rank,int i,char c,MyAllocator*allocator){
 	ReadAnnotation*e=(ReadAnnotation*)allocator->allocate(sizeof(ReadAnnotation));
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(e!=NULL);
 	#endif
 	e->constructor(rank,i,c);

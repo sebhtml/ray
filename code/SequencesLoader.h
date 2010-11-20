@@ -34,12 +34,14 @@ using namespace std;
 
 class SequencesLoader{
 	bool m_isInterleavedFile;
-	bool m_ready;
 	time_t m_last;
 	int m_produced;
+	int m_waitingNumber;
 
 	char*m_buffers;
 	int*m_entries;
+	int*m_numberOfSequences;
+
 	int m_size;
 
 	bool m_send_sequences_done;
@@ -54,6 +56,8 @@ public:
 	/**
  *	load sequences from disk, and distribute them over the network.
  */
+
+	bool isReady();
 	bool loadSequences(int rank,int size,vector<Read*>*m_distribution_reads,int*m_distribution_sequence_id,
 	bool*m_LOADER_isLeftFile,StaticVector*m_outbox,int*m_distribution_file_id,
 	MyAllocator*m_distributionAllocator,bool*m_LOADER_isRightFile,int*m_LOADER_averageFragmentLength,

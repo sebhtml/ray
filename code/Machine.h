@@ -239,7 +239,7 @@ class Machine{
 	int m_FINISH_hit;
 	int m_selectedPath;
 	int m_selectedPosition;
-	#ifdef DEBUG
+	#ifdef ASSERT
 	set<int> m_collisions;
 	#endif
 	int m_FINISH_positionStart;

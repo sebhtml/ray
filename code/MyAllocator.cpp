@@ -40,7 +40,7 @@ void MyAllocator::reset(){
 void MyAllocator::constructor(int chunkSize){
 	m_CHUNK_SIZE=chunkSize; 
 	m_currentChunk=(void*)__Malloc(m_CHUNK_SIZE);
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(m_currentChunk!=NULL);
 	#endif
 	m_chunks.push_back(m_currentChunk);
@@ -53,16 +53,16 @@ void*MyAllocator::allocate(int s){
 	if(s%8!=0){
 		s=roundNumber(s,alignment);
 	}
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(s%8==0);
 	#endif
 
 
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(m_currentChunk!=NULL);
 	#endif
 
-	#ifdef DEBUG
+	#ifdef ASSERT
 	if(s>m_CHUNK_SIZE){
 		cout<<"Requested "<<s<<" -- only have "<<m_CHUNK_SIZE<<endl;
 	}
@@ -77,7 +77,7 @@ void*MyAllocator::allocate(int s){
 	int left=m_CHUNK_SIZE-m_currentPosition;
 	if(s>left){
 		m_currentChunk=__Malloc(m_CHUNK_SIZE);
-		#ifdef DEBUG
+		#ifdef ASSERT
 		assert(m_currentChunk!=NULL);
 		#endif
 		m_chunks.push_back(m_currentChunk);

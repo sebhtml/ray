@@ -68,7 +68,7 @@ char*Read::trim(char*buffer,const char*sequence){
 }
 
 void Read::copy(const char*id,const char*sequence,MyAllocator*seqMyAllocator){
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(strlen(sequence)<4096);// +1 for \0
 	#endif
 	if(strlen(sequence)<4096){

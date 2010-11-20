@@ -36,7 +36,7 @@ void BufferedData::constructor(int numberOfRanks,int capacity){
 
 
 int BufferedData::size(int i){
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(i<m_ranks);
 	#endif
 	return m_sizes[i];
@@ -54,30 +54,34 @@ void BufferedData::addAt(int i,u64 k){
 
 void BufferedData::reset(int i){
 	m_sizes[i]=0;
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(m_sizes[i]==0);
 	#endif
 }
 
 
-bool BufferedData::flushAll(int period,int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank){
-	bool flushed=false;
+int BufferedData::flushAll(int period,int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank){
+	int flushed=0;
 	for(int i=0;i<m_ranks;i++){
 		if(flush(i,period,tag,outboxAllocator,outbox,rank,true)){
-			flushed=true;
+			flushed++;
 		}
+		#ifdef ASSERT
+		assert(size(i)==0);
+		#endif
 	}
 	return flushed;
 }
 
-bool BufferedData::needsFlushing(int destination,int period){
-	int threshold=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE)/period*period;
-	int amount=size(destination);
-	return amount>=threshold;
-}
+
 
 bool BufferedData::flush(int destination,int period,int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank,bool force){
 	int threshold=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE)/period*period;
+
+	#ifdef ASSERT
+	assert(threshold<MPI_BTL_SM_EAGER_LIMIT);
+	#endif
+
 	int amount=size(destination);
 	if(!force && amount<threshold){
 		return false;
@@ -85,6 +89,9 @@ bool BufferedData::flush(int destination,int period,int tag,RingAllocator*outbox
 	if(amount==0){
 		return false;
 	}
+	#ifdef ASSERT
+	assert(amount>0);
+	#endif
 	VERTEX_TYPE*message=(VERTEX_TYPE*)outboxAllocator->allocate(amount*sizeof(VERTEX_TYPE));
 	for(int i=0;i<amount;i++){
 		message[i]=getAt(destination,i);
@@ -95,11 +102,4 @@ bool BufferedData::flush(int destination,int period,int tag,RingAllocator*outbox
 	return true;
 }
 
-#ifdef DEBUG
-void BufferedData::inspect(){
-	for(int i=0;i<m_ranks;i++){
-		assert(m_sizes[i]==0);
-	}
-}
 
-#endif

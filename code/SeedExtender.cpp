@@ -25,7 +25,7 @@
 #include<TipWatchdog.h>
 #include<SeedExtender.h>
 #include<Chooser.h>
-#ifdef DEBUG
+#ifdef ASSERT
 #include<assert.h>
 #endif
 #include<BubbleTool.h>
@@ -177,7 +177,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 			ed->m_EXTENSION_hasPairedReadRequested=false;
 
 			(*chooser).clear(cd->m_CHOOSER_theSumsPaired,4);
-			#ifdef DEBUG
+			#ifdef ASSERT
 			for(int i=0;i<4;i++){
 				assert(cd->m_CHOOSER_theSumsPaired[i]==0);
 			}
@@ -219,7 +219,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 			if(filteredCoverages.size()==0)
 				cout<<"Now Zero"<<endl;
 			#endif
-			#ifdef DEBUG
+			#ifdef ASSERT
 			assert(filteredCoverages.size()==filteredVertices.size());
 			assert(ed->m_EXTENSION_coverages.size()==(*receivedOutgoingEdges).size());
 			assert(ed->m_enumerateChoices_outgoingEdges.size()==(*receivedOutgoingEdges).size());
@@ -241,13 +241,13 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 			}
 			cout<<" ."<<endl;
 			#endif
-			#ifdef DEBUG
+			#ifdef ASSERT
 			assert(filteredVertices.size()<=ed->m_enumerateChoices_outgoingEdges.size());
 			assert(filteredCoverages.size()<=ed->m_EXTENSION_coverages.size());
 			#endif
 			ed->m_EXTENSION_coverages=filteredCoverages;
 			ed->m_enumerateChoices_outgoingEdges=filteredVertices;
-			#ifdef DEBUG
+			#ifdef ASSERT
 			assert(ed->m_EXTENSION_coverages.size()==ed->m_enumerateChoices_outgoingEdges.size());
 			#endif
 		}
@@ -313,7 +313,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 		cout<<endl;
 		#endif
 
-		#ifdef DEBUG
+		#ifdef ASSERT
 		assert(false);
 		#endif
 
@@ -736,7 +736,7 @@ void SeedExtender::depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int maxDepth,
 			}else if((*edgesReceived)){
 				VERTEX_TYPE vertexToVisit=dfsData->m_depthFirstSearchVerticesToVisit.top();
 				int theDepth=dfsData->m_depthFirstSearchDepths.top();
-				#ifdef DEBUG
+				#ifdef ASSERT
 				assert(theDepth>=0);
 				assert(theDepth<=maxDepth);
 				#endif
@@ -918,11 +918,11 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 						m_sequences[uniqueId]=m_receivedString;
 						ed->m_EXTENSION_reads_startingPositionOnContig[uniqueId]=ed->m_EXTENSION_extension.size()-1;
 						ed->m_EXTENSION_readsInRange.insert(ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache]);
-						#ifdef DEBUG
+						#ifdef ASSERT
 						assert(ed->m_EXTENSION_readsInRange.count(ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache])>0);
 						#endif
 						m_sequenceReceived=false;
-						#ifdef DEBUG
+						#ifdef ASSERT
 						assert(m_sequences.count(uniqueId)>0);
 						#endif
 

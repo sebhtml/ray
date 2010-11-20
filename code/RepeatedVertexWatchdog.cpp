@@ -21,7 +21,7 @@
 
 #include<RepeatedVertexWatchdog.h>
 #include<iostream>
-#ifdef DEBUG
+#ifdef ASSERT
 #include<assert.h>
 #endif
 using namespace std;
@@ -35,7 +35,7 @@ bool RepeatedVertexWatchdog::getApproval(ExtensionData*ed,int wordSize,int minim
 		#ifdef SHOW_REPEATED_VERTEX_WATCHDOG
 		cout<<"Watchdog says: "<<idToWord(currentVertex,wordSize)<<" is a repeated region for sure!, probably a transposase if they exist in the genome. (VertexCoverage="<<ed->m_currentCoverage<<", MaxCoverage="<<maxCoverage<<" ReadsInRange="<<ed->m_EXTENSION_readsInRange.size()<<", MinimumCoverage="<<minimumCoverage<<")"<<endl;
 		#endif
-		#ifdef DEBUG
+		#ifdef ASSERT
 		assert(ed->m_currentCoverage==maxCoverage);
 		assert((int)ed->m_EXTENSION_readsInRange.size()<minimumCoverage);
 		#endif

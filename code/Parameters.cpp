@@ -20,7 +20,7 @@
 */
 
 #include<common_functions.h>
-#ifdef DEBUG
+#ifdef ASSERT
 #include<assert.h>
 #endif
 #include<math.h>
@@ -75,7 +75,7 @@ void Parameters::parseCommands(){
 	int i=0;
 	set<string> commands;
 
-	#ifdef DEBUG_PARAMETERS
+	#ifdef ASSERT_PARAMETERS
 	for(int i=0;i<(int)m_commands.size();i++){
 		cout<<i<<" '"<<m_commands[i]<<"'"<<endl;
 	}
@@ -126,7 +126,7 @@ void Parameters::parseCommands(){
 	while(i<(int)m_commands.size()){
 		string token=m_commands[i];
 		if(singleReadsCommands.count(token)>0){
-			#ifdef DEBUG_PARAMETERS
+			#ifdef ASSERT_PARAMETERS
 			cout<<"OpCode="<<token<<endl;
 			#endif
 			i++;
@@ -156,7 +156,7 @@ void Parameters::parseCommands(){
 			token=m_commands[i];
 			m_contigsFile=token;
 		}else if(interleavedCommands.count(token)>0){
-			#ifdef DEBUG_PARAMETERS
+			#ifdef ASSERT_PARAMETERS
 			cout<<"OpCode="<<token<<endl;
 			#endif
 			// make sure there is at least 4 elements left.
@@ -165,7 +165,7 @@ void Parameters::parseCommands(){
 			for(int j=i+1;j<(int)m_commands.size();j++){
 				string cmd=m_commands[j];
 				if(commands.count(cmd)==0){
-					#ifdef DEBUG_PARAMETERS
+					#ifdef ASSERT_PARAMETERS
 					cout<<"Option"<<k<<"="<<"'"<<cmd<<"'"<<endl;
 					#endif
 					items++;
@@ -174,7 +174,7 @@ void Parameters::parseCommands(){
 				}
 				k++;
 			}
-			#ifdef DEBUG_PARAMETERS
+			#ifdef ASSERT_PARAMETERS
 			cout<<"Left: "<<items<<endl;
 			#endif
 			if(items!=1 and items!=3){
@@ -195,11 +195,11 @@ void Parameters::parseCommands(){
 
 			int meanFragmentLength=0;
 			int standardDeviation=0;
-			#ifdef DEBUG
+			#ifdef ASSERT
 			assert(items==1 or items==3);
 			#endif
 			if(items==3){
-				#ifdef DEBUG_PARAMETERS
+				#ifdef ASSERT_PARAMETERS
 				cout<<"PairedMode: UserProvidedDistance"<<endl;
 				#endif
 				i++;
@@ -209,7 +209,7 @@ void Parameters::parseCommands(){
 				token=m_commands[i];
 				standardDeviation=atoi(token.c_str());
 			}else if(items==1){// automatic detection.
-				#ifdef DEBUG_PARAMETERS
+				#ifdef ASSERT_PARAMETERS
 				cout<<"PairedMode: AutomaticDistanceDetection"<<endl;
 				#endif
 				int library=m_observedDistances.size();
@@ -219,7 +219,7 @@ void Parameters::parseCommands(){
 				m_automaticRightFiles[interleavedFileIndex]=library;
 				m_observedDistances.push_back(t);
 			}else{
-				#ifdef DEBUG
+				#ifdef ASSERT
 				assert(false);
 				#endif
 			}
@@ -235,11 +235,11 @@ void Parameters::parseCommands(){
 				cout<<" Average length: auto"<<endl;
 				cout<<" Standard deviation: auto"<<endl;
 			}
-			#ifdef DEBUG_PARAMETERS
+			#ifdef ASSERT_PARAMETERS
 			cout<<"Library: "<<meanFragmentLength<<" : "<<standardDeviation<<endl;
 			#endif
 		}else if(pairedReadsCommands.count(token)>0){
-			#ifdef DEBUG_PARAMETERS
+			#ifdef ASSERT_PARAMETERS
 			cout<<"OpCode="<<token<<endl;
 			#endif
 			// make sure there is at least 4 elements left.
@@ -248,7 +248,7 @@ void Parameters::parseCommands(){
 			for(int j=i+1;j<(int)m_commands.size();j++){
 				string cmd=m_commands[j];
 				if(commands.count(cmd)==0){
-					#ifdef DEBUG_PARAMETERS
+					#ifdef ASSERT_PARAMETERS
 					cout<<"Option"<<k<<"="<<"'"<<cmd<<"'"<<endl;
 					#endif
 					items++;
@@ -257,7 +257,7 @@ void Parameters::parseCommands(){
 				}
 				k++;
 			}
-			#ifdef DEBUG_PARAMETERS
+			#ifdef ASSERT_PARAMETERS
 			cout<<"Left: "<<items<<endl;
 			#endif
 			if(items!=2 and items!=4){
@@ -286,11 +286,11 @@ void Parameters::parseCommands(){
 
 			int meanFragmentLength=0;
 			int standardDeviation=0;
-			#ifdef DEBUG
+			#ifdef ASSERT
 			assert(items==4 or items==2);
 			#endif
 			if(items==4){
-				#ifdef DEBUG_PARAMETERS
+				#ifdef ASSERT_PARAMETERS
 				cout<<"PairedMode: UserProvidedDistance"<<endl;
 				#endif
 				i++;
@@ -300,7 +300,7 @@ void Parameters::parseCommands(){
 				token=m_commands[i];
 				standardDeviation=atoi(token.c_str());
 			}else if(items==2){// automatic detection.
-				#ifdef DEBUG_PARAMETERS
+				#ifdef ASSERT_PARAMETERS
 				cout<<"PairedMode: AutomaticDistanceDetection"<<endl;
 				#endif
 				int library=m_observedDistances.size();
@@ -311,7 +311,7 @@ void Parameters::parseCommands(){
 				m_automaticRightFiles[leftFile]=library;
 				m_observedDistances.push_back(t);
 			}else{
-				#ifdef DEBUG
+				#ifdef ASSERT
 				assert(false);
 				#endif
 			}
@@ -328,7 +328,7 @@ void Parameters::parseCommands(){
 				cout<<" Average length: auto"<<endl;
 				cout<<" Standard deviation: auto"<<endl;
 			}
-			#ifdef DEBUG_PARAMETERS
+			#ifdef ASSERT_PARAMETERS
 			cout<<"Library: "<<meanFragmentLength<<" : "<<standardDeviation<<endl;
 			#endif
 		}else if(outputAmosCommands.count(token)>0){
@@ -519,7 +519,7 @@ void Parameters::setNumberOfSequences(int n){
 }
 
 int Parameters::getNumberOfSequences(int file){
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(file<(int)m_numberOfSequencesInFile.size());
 	#endif
 	return m_numberOfSequencesInFile[file];

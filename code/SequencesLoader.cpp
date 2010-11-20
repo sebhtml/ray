@@ -40,20 +40,32 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 	time_t*m_lastTime,
 	Parameters*m_parameters,int*m_master_mode
 ){
-	if(!m_ready){
+	if(!isReady()){
 		return true;
 	}
+
 	vector<string> allFiles=(*m_parameters).getAllFiles();
-	if((*m_distribution_reads).size()>0 and (*m_distribution_sequence_id)>(int)(*m_distribution_reads).size()-1){
+
+	#ifdef ASSERT
+	assert(allFiles.size()>0);
+	#endif
+
+	if((*m_distribution_reads).size()>0 && (*m_distribution_sequence_id)==(int)(*m_distribution_reads).size()){
 		// we reached the end of the file.
-		if(m_send_sequences_done==false){
+		if(!m_send_sequences_done){
 			m_send_sequences_done=true;
 			(*m_distribution_sequence_id)=0;
 			flushAll(m_outboxAllocator,m_outbox);
+
+			#ifdef ASSERT
+			for(int i=0;i<m_size;i++){
+				assert(m_entries[i]==0);
+				cout<<"INFO "<<i<<" "<<m_numberOfSequences[i]<<endl;
+			}
+			#endif
 			cout<<"Rank "<<rank<<" is assigning sequence reads "<<(*m_distribution_reads).size()<<"/"<<(*m_distribution_reads).size()<<" (completed)"<<endl;
 		}else{
-
-			m_disData->m_messagesStockPaired.flushAll(10,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank);
+			m_waitingNumber+=m_disData->m_messagesStockPaired.flushAll(5,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank);
 			cout<<"Rank "<<rank<<" is sending paired information "<<(*m_distribution_reads).size()<<"/"<<(*m_distribution_reads).size()<<" (completed)"<<endl;
 
 			(*m_distribution_file_id)++;
@@ -63,20 +75,17 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			(*m_distribution_sequence_id)=0;
 			(*m_distribution_reads).clear();
 		}
-	}
-	if((*m_distribution_file_id)>(int)allFiles.size()-1){
+	}else if((*m_distribution_file_id)>(int)allFiles.size()-1){
 		(*m_master_mode)=MASTER_MODE_DO_NOTHING;
 		(*m_loadSequenceStep)=true;
 
 		for(int i=0;i<size;i++){
 			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, i,TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS,rank);
-			(*m_outbox).push_back(aMessage);
+			m_outbox->push_back(aMessage);
 		}
 		(*m_distributionAllocator).clear();
 		(*m_distribution_reads).clear();
-		return true;
-	}
-	if((*m_distribution_reads).size()==0){
+	}else if((*m_distribution_reads).size()==0){
 		m_send_sequences_done=false;
 		Loader loader;
 		(*m_distribution_reads).clear();
@@ -109,46 +118,53 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			}
 		}
 
-		(*m_LOADER_isLeftFile)=(*m_LOADER_isRightFile)=false;
+		m_isInterleavedFile=(*m_LOADER_isLeftFile)=(*m_LOADER_isRightFile)=false;
 		if((*m_parameters).isLeftFile((*m_distribution_file_id))){
 			(*m_LOADER_isLeftFile)=true;
+			(*m_LOADER_averageFragmentLength)=(*m_parameters).getFragmentLength((*m_distribution_file_id));
+			(*m_LOADER_deviation)=(*m_parameters).getStandardDeviation((*m_distribution_file_id));
 		}else if((*m_parameters).isRightFile((*m_distribution_file_id))){
 			(*m_LOADER_isRightFile)=true;
 			(*m_LOADER_averageFragmentLength)=(*m_parameters).getFragmentLength((*m_distribution_file_id));
 			(*m_LOADER_deviation)=(*m_parameters).getStandardDeviation((*m_distribution_file_id));
-		}else{
-			(*m_LOADER_isLeftFile)=(*m_LOADER_isRightFile)=false;
-		}
-		
-		if((*m_parameters).isInterleavedFile((*m_distribution_file_id))){
+		}else if((*m_parameters).isInterleavedFile((*m_distribution_file_id))){
 			m_isInterleavedFile=true;
 			(*m_LOADER_averageFragmentLength)=(*m_parameters).getFragmentLength((*m_distribution_file_id));
 			(*m_LOADER_deviation)=(*m_parameters).getStandardDeviation((*m_distribution_file_id));
-		}else{
-			m_isInterleavedFile=false;
 		}
-	}
-
-	#ifndef SHOW_PROGRESS
-	time_t tmp=time(NULL);
-	if(tmp>(*m_lastTime)){
-		(*m_lastTime)=tmp;
-		showProgress(*m_lastTime);
-	}
-	#endif
-
-	for(int i=0;i<1;i++){
-		if((*m_distribution_sequence_id)>(int)(*m_distribution_reads).size()-1){
-			#ifdef SHOW_PROGRESS
-			#endif
-			break;
+	}else{
+		#ifdef ASSERT
+		if(m_send_sequences_done && (*m_distribution_sequence_id)==0){
+			for(int i=0;i<m_size;i++){
+				assert(m_entries[i]==0);
+			}
 		}
-		int destination=(*m_distribution_currentSequenceId+(*m_distribution_sequence_id))%size;
-		#ifdef DEBUG
-		assert(destination>=0);
-		assert(destination<size);
 		#endif
-		char*sequence=((*m_distribution_reads))[(*m_distribution_sequence_id)]->getSeq();
+
+ 		// make it wait some times
+ 		// this avoids spinning too fast in the memory ring of the outbox <
+ 		// allocator
+
+		if(!m_send_sequences_done){
+			int destination=((*m_distribution_currentSequenceId)+(*m_distribution_sequence_id))%size;
+			#ifdef ASSERT
+			assert(destination>=0);
+			assert(destination<size);
+			#endif
+
+			int theSpaceLeft=getSpaceLeft(destination);
+			char*sequence=((*m_distribution_reads))[(*m_distribution_sequence_id)]->getSeq();
+			int spaceNeeded=strlen(sequence)+1;
+			if(spaceNeeded>theSpaceLeft){
+				flush(destination,m_outboxAllocator,m_outbox);
+				return true;
+			}
+			#ifdef ASSERT
+			assert(spaceNeeded<=getSpaceLeft(destination));
+			#endif
+			
+			appendSequence(destination,sequence);
+		}
 
 		if((*m_distribution_sequence_id)%100000==0){
 			if(!m_send_sequences_done){
@@ -157,19 +173,6 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 				cout<<"Rank "<<rank<<" is sending paired information "<<(*m_distribution_sequence_id)+1<<"/"<<(*m_distribution_reads).size()<<endl;
 
 			}
-		}
-
- 		// make it wait some times
- 		// this avoids spinning too fast in the memory ring of the outbox <
- 		// allocator
-
-		if(!m_send_sequences_done){
-			int theSpaceLeft=getSpaceLeft(destination);
-			int spaceNeeded=strlen(sequence)+1;
-			if(spaceNeeded>theSpaceLeft){
-				flush(destination,m_outboxAllocator,m_outbox);
-			}
-			appendSequence(destination,sequence);
 		}
 
 		// add paired information here..
@@ -193,6 +196,11 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			int rightSequenceRank=rightSequenceGlobalId%size;
 			int rightSequenceIdOnRank=rightSequenceGlobalId/size;
 			int leftSequenceGlobalId=rightSequenceGlobalId-(*m_LOADER_numberOfSequencesInLeftFile);
+
+			#ifdef ASSERT
+			assert(rightSequenceIdOnRank<m_numberOfSequences[rightSequenceRank]);
+			#endif
+
 			int leftSequenceRank=leftSequenceGlobalId%size;
 			int leftSequenceIdOnRank=leftSequenceGlobalId/size;
 			int averageFragmentLength=(*m_LOADER_averageFragmentLength);
@@ -204,26 +212,52 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,averageFragmentLength);
 			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,deviation);
 
+			if(m_disData->m_messagesStockPaired.flush(rightSequenceRank,5,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+				m_waitingNumber++;
+			}
+		}else if(m_send_sequences_done && (*m_LOADER_isLeftFile)){
+			#ifdef ASSERT
+
+			#endif
+			int rightSequenceGlobalId=(*m_distribution_currentSequenceId)+(*m_LOADER_numberOfSequencesInLeftFile);
+			int rightSequenceRank=rightSequenceGlobalId%size;
+			int rightSequenceIdOnRank=rightSequenceGlobalId/size;
+			int leftSequenceGlobalId=(*m_distribution_currentSequenceId);
+
+			int leftSequenceRank=leftSequenceGlobalId%size;
+			int leftSequenceIdOnRank=leftSequenceGlobalId/size;
+			int averageFragmentLength=(*m_LOADER_averageFragmentLength);
+			int deviation=(*m_LOADER_deviation);
+
 			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,leftSequenceIdOnRank);
 			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,rightSequenceRank);
 			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,rightSequenceIdOnRank);
 			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,averageFragmentLength);
 			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,deviation);
 
-			// must flush the sequence before flushing its paired read or else
-			// it will fault
-			//
-			// unfortunately, it means that the buffer is not necessarily full 
-
-			// 4096 bytes allow the sending of 512 64-bits integers.
-			// however, in this function m_messagesStockPaired contains multiple of 10.
-			// thus, the threshold must be 512-2
-
-			if(m_disData->m_messagesStockPaired.flush(leftSequenceRank,10,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
-				m_ready=false;
+			if(m_disData->m_messagesStockPaired.flush(leftSequenceRank,5,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+				m_waitingNumber++;
 			}
-			if(m_disData->m_messagesStockPaired.flush(rightSequenceRank,10,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
-				m_ready=false;
+		}else if(m_send_sequences_done
+	&& m_isInterleavedFile && ((*m_distribution_sequence_id)%2)==0){// left sequence
+			int rightSequenceGlobalId=(*m_distribution_currentSequenceId)+1;
+			int rightSequenceRank=rightSequenceGlobalId%size;
+			int rightSequenceIdOnRank=rightSequenceGlobalId/size;
+
+			int leftSequenceGlobalId=rightSequenceGlobalId-1;
+			int leftSequenceRank=leftSequenceGlobalId%size;
+			int leftSequenceIdOnRank=leftSequenceGlobalId/size;
+			int averageFragmentLength=(*m_LOADER_averageFragmentLength);
+			int deviation=(*m_LOADER_deviation);
+
+			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,leftSequenceIdOnRank);
+			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,rightSequenceRank);
+			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,rightSequenceIdOnRank);
+			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,averageFragmentLength);
+			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,deviation);
+
+			if(m_disData->m_messagesStockPaired.flush(leftSequenceRank,5,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+				m_waitingNumber++;
 			}
 		}else if(m_send_sequences_done
 	&& m_isInterleavedFile
@@ -243,26 +277,8 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,averageFragmentLength);
 			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,deviation);
 
-			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,leftSequenceIdOnRank);
-			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,rightSequenceRank);
-			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,rightSequenceIdOnRank);
-			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,averageFragmentLength);
-			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,deviation);
-
-			// must flush the sequence before flushing its paired read or else
-			// it will fault
-			//
-			// unfortunately, it means that the buffer is not necessarily full 
-
-			// 4096 bytes allow the sending of 512 64-bits integers.
-			// however, in this function m_messagesStockPaired contains multiple of 10.
-			// thus, the threshold must be 512-2
-
-			if(m_disData->m_messagesStockPaired.flush(leftSequenceRank,10,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
-				m_ready=false;
-			}
-			if(m_disData->m_messagesStockPaired.flush(rightSequenceRank,10,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
-				m_ready=false;
+			if(m_disData->m_messagesStockPaired.flush(rightSequenceRank,5,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+				m_waitingNumber++;
 			}
 		}
 		if(m_send_sequences_done){
@@ -273,24 +289,33 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 	return true;
 }
 
-
 SequencesLoader::SequencesLoader(){
-	setReadiness();
+	m_waitingNumber=0;
 	m_produced=0;
 	m_last=time(NULL);
 }
 
 void SequencesLoader::setReadiness(){
-	m_ready=true;
+	m_waitingNumber--;
+}
+
+bool SequencesLoader::isReady(){
+	return m_waitingNumber==0;
 }
 
 void SequencesLoader::constructor(int size){
 	m_size=size;
 	m_buffers=(char*)__Malloc(m_size*MPI_BTL_SM_EAGER_LIMIT*sizeof(char));
 	m_entries=(int*)__Malloc(m_size*sizeof(int));
+	m_numberOfSequences=(int*)__Malloc(m_size*sizeof(int));
 	for(int i=0;i<m_size;i++){
 		m_entries[i]=0;
+		m_numberOfSequences[i]=0;
 	}
+	#ifdef ASSERT
+	assert(m_buffers!=NULL);
+	assert(m_entries!=NULL);
+	#endif
 }
 
 int SequencesLoader::getSpaceLeft(int rank){
@@ -305,8 +330,20 @@ void SequencesLoader::appendSequence(int rank,char*sequence){
 	char*destination=m_buffers+rank*MPI_BTL_SM_EAGER_LIMIT+m_entries[rank];
 	strcpy(destination,sequence);
 	m_entries[rank]+=(strlen(sequence)+1);
+	#ifdef ASSERT
+	assert(m_entries[rank]<=MPI_BTL_SM_EAGER_LIMIT);
+	#endif
+	m_numberOfSequences[rank]++;
 }
 
+/*
+ * seq1: length 2
+ * seq2: length 2
+ * F: final 0
+ *
+ * 0 1 2 3 4 5 6
+ * 1 1 1 2 2 2 F
+ */
 void SequencesLoader::flush(int rank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox){
 	if(m_entries[rank]==0){
 		return;// nothing to flush down the toilet.
@@ -325,10 +362,13 @@ void SequencesLoader::flush(int rank,RingAllocator*m_outboxAllocator,StaticVecto
 	Message aMessage(message,MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE),MPI_UNSIGNED_LONG_LONG,rank,TAG_SEND_SEQUENCE_REGULATOR,rank);
 	m_outbox->push_back(aMessage);
 	m_entries[rank]=0;
-	m_ready=false;
+	m_waitingNumber++;
 }
 
 void SequencesLoader::flushAll(RingAllocator*m_outboxAllocator,StaticVector*m_outbox){
+	#ifdef ASSERT
+	assert(m_size!=0);
+	#endif
 	for(int i=0;i<m_size;i++){
 		flush(i,m_outboxAllocator,m_outbox);
 	}

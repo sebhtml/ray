@@ -35,7 +35,7 @@ StaticVector::StaticVector(){
 }
 
 Message*StaticVector::operator[](int i){
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(i<m_size);
 	#endif
 	return m_messages+i;

@@ -43,7 +43,7 @@ RingAllocator::RingAllocator(){
  * allocate a chunk of m_max bytes in constant time
  */
 void*RingAllocator::allocate(int a){
-	#ifdef DEBUG
+	#ifdef ASSERT
 	if(a>m_max){
 		cout<<a<<endl;
 	}

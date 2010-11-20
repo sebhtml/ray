@@ -82,7 +82,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		char memory[100];
 		int lll=len-m_wordSize;
 		int p=(*m_mode_send_vertices_sequence_id_position);
-		#ifdef DEBUG
+		#ifdef ASSERT
 		assert(readSequence!=NULL);
 		assert(m_wordSize<=32);
 		#endif

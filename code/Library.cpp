@@ -90,7 +90,7 @@ void Library::detectDistances(){
 		m_ed->m_EXTENSION_currentPosition=0;
 		m_seedingData->m_SEEDING_i++;
 		(*m_readsPositions).clear();
-		#ifdef DEBUG
+		#ifdef ASSERT
 		assert((*m_readsPositions).size()==0);
 		#endif
 	}else{
@@ -101,7 +101,7 @@ void Library::detectDistances(){
 			m_ed->m_EXTENSION_reads_requested=true;
 			m_ed->m_EXTENSION_reads_received=false;
 			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
-			#ifdef DEBUG
+			#ifdef ASSERT
 			assert(m_ed->m_EXTENSION_currentPosition<(int)m_seedingData->m_SEEDING_seeds[m_seedingData->m_SEEDING_i].size());
 			#endif
 			VERTEX_TYPE vertex=m_seedingData->m_SEEDING_seeds[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
@@ -114,7 +114,7 @@ void Library::detectDistances(){
 			if(m_ed->m_EXTENSION_edgeIterator<(int)m_ed->m_EXTENSION_receivedReads.size()){
 				ReadAnnotation annotation=m_ed->m_EXTENSION_receivedReads[m_ed->m_EXTENSION_edgeIterator];
 				int rightRead=annotation.getReadIndex();
-				#ifdef DEBUG_AUTO
+				#ifdef ASSERT_AUTO
 				u64 rightReadUniqueId=annotation.getUniqueId();
 				#endif
 				if(!m_ed->m_EXTENSION_hasPairedReadRequested){
@@ -163,7 +163,7 @@ void Library::detectDistances(){
 											int d=p2-p1+m_ed->m_EXTENSION_receivedLength;
 											(*m_libraryDistances)[library][d]++;
 											
-											#ifdef DEBUG_AUTO
+											#ifdef ASSERT_AUTO
 											if(d!=200 && d!=1000){
 												cout<<"Distance"<<endl;
 											}
@@ -171,7 +171,7 @@ void Library::detectDistances(){
 											#endif
 										}
 									}else{
-										#ifdef DEBUG_AUTO
+										#ifdef ASSERT_AUTO
 										cout<<"Pair was not found."<<endl;
 										#endif
 									}
@@ -187,7 +187,7 @@ void Library::detectDistances(){
 					}
 				}
 			}else{
-				#ifdef DEBUG_AUTO
+				#ifdef ASSERT_AUTO
 				cout<<"Adding reads in positions "<<m_ed->m_EXTENSION_currentPosition<<endl;
 				#endif
 				for(int i=0;i<(int)m_ed->m_EXTENSION_receivedReads.size();i++){
@@ -212,7 +212,7 @@ Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,map<int,map<int,i
 	this->m_rank=m_rank;
 	this->m_outbox=m_outbox;
 	this->m_outboxAllocator=m_outboxAllocator;
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(this->m_outboxAllocator!=NULL);
 	#endif
 	this->m_bufferedData=m_bufferedData;

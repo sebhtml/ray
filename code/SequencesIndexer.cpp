@@ -23,7 +23,7 @@
 #include<string.h>
 #include<stdlib.h>
 
-#ifdef DEBUG
+#ifdef ASSERT
 #include<assert.h>
 #endif
 #include<Parameters.h>
@@ -42,11 +42,6 @@ void SequencesIndexer::attachReads(vector<Read*>*m_myReads,
 				int m_rank,
 				bool m_colorSpaceMode
 			){
-	#ifdef DEBUG
-	if(m_theSequenceId==0){
-		m_bufferedData->inspect();
-	}
-	#endif
 	// when done: call_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY to root
 	// the tag: TAG_ATTACH_SEQUENCE
 
@@ -59,7 +54,7 @@ void SequencesIndexer::attachReads(vector<Read*>*m_myReads,
 		m_outbox->push_back(aMessage);
 		return;
 	}
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(m_theSequenceId<(int)m_myReads->size());
 	#endif
 	char*sequence=m_myReads->at(m_theSequenceId)->getSeq();
@@ -68,7 +63,7 @@ void SequencesIndexer::attachReads(vector<Read*>*m_myReads,
 		m_theSequenceId++;
 		return;
 	}
-	#ifdef DEBUG
+	#ifdef ASSERT
 	assert(theLength>=m_wordSize);
 	#endif
 	char vertexChar[100];
