@@ -98,7 +98,7 @@ void SequencesIndexer::attachReads(vector<Read*>*m_myReads,
 
 	m_bufferedData->flush(4,TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank,false);
 
-	if(m_theSequenceId%100000==0){
+	if(m_theSequenceId%30000==0){
 		cout<<"Rank "<<m_rank<<" is indexing its sequences. "<<m_theSequenceId+1<<"/"<<m_myReads->size()<<endl;
 	}
 	m_theSequenceId++;
