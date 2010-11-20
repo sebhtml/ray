@@ -25,7 +25,12 @@
 #include<string.h>
 #include<common_functions.h>
 
+void EdgesExtractor::setReadiness(){
+	m_ready=true;
+}
+
 EdgesExtractor::EdgesExtractor(){
+	setReadiness();
 	m_mode_send_edge_sequence_id=0;
 	m_reverseComplementEdge=false;
 	m_mode_send_edge_sequence_id_position=0;
@@ -46,13 +51,13 @@ void EdgesExtractor::processOutgoingEdges(){
 		if(m_reverseComplementEdge==false){
 			(m_mode_send_edge_sequence_id_position)=0;
 			m_reverseComplementEdge=true;
-			flushOutgoingEdges(1);
+			m_disData->m_messagesStockOut.flush(2,TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,true);
 			#ifdef SHOW_PROGRESS
 			cout<<"Rank "<<getRank<<" is extracting outgoing edges "<<m_myReads->size()<<"/"<<m_myReads->size()<<" (completed)"<<endl;
 			#endif
 			(m_mode_send_edge_sequence_id)=0;
 		}else{
-			flushOutgoingEdges(1);
+			m_disData->m_messagesStockOut.flush(2,TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,true);
 			(*m_mode_send_outgoing_edges)=false;
 			(*m_mode)=MODE_PROCESS_INGOING_EDGES;
 			(*m_mode_send_ingoing_edges)=true;
@@ -97,7 +102,9 @@ void EdgesExtractor::processOutgoingEdges(){
 				m_disData->m_messagesStockOut.addAt(rankA,a_2);
 			}
 			
-			flushOutgoingEdges(MAX_UINT64_T_PER_MESSAGE);
+			if(m_disData->m_messagesStockOut.flush(2,TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,false)){
+				m_ready=false;
+			}
 		}
 		
 		(m_mode_send_edge_sequence_id_position)++;
@@ -106,23 +113,7 @@ void EdgesExtractor::processOutgoingEdges(){
 	}
 }
 
-void EdgesExtractor::flushOutgoingEdges(int threshold){
-	for(int rankId=0;rankId<(int)getSize;rankId++){
-		int destination=rankId;
-		int length=m_disData->m_messagesStockOut.size(rankId);
-		if(length<threshold)
-			continue;
-		#ifdef SHOW_PROGRESS
-		#endif
-		VERTEX_TYPE*data=(VERTEX_TYPE*)(*m_outboxAllocator).allocate(sizeof(VERTEX_TYPE)*(length));
-		for(int j=0;j<(int)length;j++){
-			data[j]=m_disData->m_messagesStockOut.getAt(rankId,j);
-		}
-		m_disData->m_messagesStockOut.reset(rankId);
-		Message aMessage(data, length, MPI_UNSIGNED_LONG_LONG,destination, TAG_OUT_EDGES_DATA,getRank);
-		(*m_outbox).push_back(aMessage);
-	}
-}
+
 
 void EdgesExtractor::processIngoingEdges(){
 	#ifdef SHOW_PROGRESS
@@ -138,13 +129,14 @@ void EdgesExtractor::processIngoingEdges(){
 		if(m_reverseComplementEdge==false){
 			m_reverseComplementEdge=true;
 			m_mode_send_edge_sequence_id_position=0;
-			flushIngoingEdges(1);
+			m_disData->m_messagesStockIn.flush(2,TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,true);
+		
 			#ifdef SHOW_PROGRESS
 			cout<<"Rank "<<getRank<<" is extracting ingoing edges "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads->size()<<" (completed)"<<endl;
 			#endif
 			m_mode_send_edge_sequence_id=0;
 		}else{
-			flushIngoingEdges(1);
+			m_disData->m_messagesStockIn.flush(2,TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,true);
 			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_EDGES_DISTRIBUTED,getRank);
 			m_outbox->push_back(aMessage);
 			(*m_mode_send_ingoing_edges)=false;
@@ -192,7 +184,10 @@ void EdgesExtractor::processIngoingEdges(){
 			}
 
 			// flush data
-			flushIngoingEdges(MAX_UINT64_T_PER_MESSAGE);
+
+			if(m_disData->m_messagesStockIn.flush(2,TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,false)){
+				m_ready=false;
+			}
 		}
 
 		m_mode_send_edge_sequence_id_position++;
@@ -202,25 +197,6 @@ void EdgesExtractor::processIngoingEdges(){
 			m_mode_send_edge_sequence_id++;
 			m_mode_send_edge_sequence_id_position=0;
 		}
-	}
-}
-
-
-void EdgesExtractor::flushIngoingEdges(int threshold){
-	// send messages
-	for(int rankId=0;rankId<getSize;rankId++){
-		int destination=rankId;
-		int length=m_disData->m_messagesStockIn.size(rankId);
-		if(length<threshold)
-			continue;
-		VERTEX_TYPE*data=(VERTEX_TYPE*)m_outboxAllocator->allocate(sizeof(VERTEX_TYPE)*(length));
-		for(int j=0;j<(int)length;j++){
-			data[j]=m_disData->m_messagesStockIn.getAt(rankId,j);
-		}
-		m_disData->m_messagesStockIn.reset(rankId);
-
-		Message aMessage(data,length,MPI_UNSIGNED_LONG_LONG,destination,TAG_IN_EDGES_DATA,getRank);
-		m_outbox->push_back(aMessage);
 	}
 }
 

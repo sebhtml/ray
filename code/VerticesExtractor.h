@@ -32,12 +32,7 @@
 using namespace std;
 
 class VerticesExtractor{
-	void flushVertices(int threshold,
-				DistributionData*m_disData,
-				RingAllocator*m_outboxAllocator,
-				StaticVector*m_outbox,
-				int rank,int size
-);
+	bool m_ready;
 public:
 	VerticesExtractor();
 	void process(int*m_mode_send_vertices_sequence_id,
@@ -53,7 +48,7 @@ public:
 				RingAllocator*m_outboxAllocator,
 				bool m_colorSpaceMode,int*m_mode
 			);
-
+	void setReadiness();
 };
 
 #endif

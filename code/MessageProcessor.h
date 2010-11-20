@@ -22,6 +22,7 @@
 #ifndef _MessageProcessor
 #define _MessageProcessor
 
+#include<EdgesExtractor.h>
 #include<RingAllocator.h>
 #include<OpenAssemblerChooser.h>
 #include<Message.h>
@@ -32,6 +33,7 @@
 #include<SequencesLoader.h>
 #include<FusionData.h>
 #include<ReadAnnotation.h>
+#include<VerticesExtractor.h>
 #include<MyForest.h>
 #include<Parameters.h>
 #include<MyAllocator.h>
@@ -136,6 +138,8 @@ class MessageProcessor{
 	int*m_mode_send_vertices_sequence_id;
 	bool*m_mode_send_vertices;
 	int*m_numberOfMachinesDoneSendingVertices;
+	VerticesExtractor*m_verticesExtractor;
+	EdgesExtractor*m_edgesExtractor;
 	int*m_numberOfMachinesDoneSendingCoverage;
 	bool*m_EXTENSION_reads_received;
 	StaticVector*m_outbox;
@@ -146,7 +150,10 @@ class MessageProcessor{
 
 
 public:
-	void constructor(SequencesLoader*m_sequencesLoader,
+	void constructor(
+VerticesExtractor*m_verticesExtractor,
+EdgesExtractor*m_edgesExtractor,
+SequencesLoader*m_sequencesLoader,
 ExtensionData*ed,
 			int*m_numberOfRanksDoneDetectingDistances,
 			int*m_numberOfRanksDoneSendingDistances,
@@ -341,7 +348,10 @@ SeedExtender*seedExtender,int*m_master_mode,bool*m_isFinalFusion
 	void call_TAG_SAVE_WAVE_PROGRESSION_REPLY(Message*message);
 	void call_TAG_SEND_SEQUENCE_REGULATOR(Message*message);
 	void call_TAG_START_INDEXING_SEQUENCES(Message*message);
-
+	void call_TAG_VERTICES_DATA_REPLY(Message*message);
+	void call_TAG_IN_EDGES_DATA_REPLY(Message*message);
+	void call_TAG_OUT_EDGES_DATA_REPLY(Message*message);
+	
 	void processMessage(Message*message);
 	MessageProcessor();
 };

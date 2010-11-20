@@ -358,7 +358,9 @@ void Machine::start(){
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	m_mp.constructor(&m_sl,
+	m_mp.constructor(&m_verticesExtractor,
+&m_edgesExtractor,
+&m_sl,
 			m_ed,
 			&m_numberOfRanksDoneDetectingDistances,
 			&m_numberOfRanksDoneSendingDistances,
@@ -1261,7 +1263,7 @@ void Machine::call_MODE_DO_NOTHING(){
 }
 
 void Machine::call_MODE_EXTRACT_VERTICES(){
-	m_verticesExtractor.process(&m_mode_send_vertices_sequence_id,
+	m_verticesExtractor.process(		&m_mode_send_vertices_sequence_id,
 			&m_myReads,
 			&m_reverseComplementVertex,
 			&m_mode_send_vertices_sequence_id_position,

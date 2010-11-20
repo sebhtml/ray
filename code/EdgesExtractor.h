@@ -31,6 +31,7 @@
 using namespace std;
 
 class EdgesExtractor{
+	bool m_ready;
 public:
 	vector<Read*>*m_myReads;
 	bool m_reverseComplementEdge;
@@ -49,9 +50,8 @@ public:
 
 	void processOutgoingEdges();
 	void processIngoingEdges();
-	void flushOutgoingEdges(int threshold);
-	void flushIngoingEdges(int threshold);
 	EdgesExtractor();
+	void setReadiness();
 };
 
 #endif

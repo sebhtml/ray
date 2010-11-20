@@ -42,6 +42,9 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 				RingAllocator*m_outboxAllocator,
 				bool m_colorSpaceMode,int*m_mode
 				){
+	if(!m_ready){
+		return;
+	}
 	#ifdef SHOW_PROGRESS
 	if(*m_mode_send_vertices_sequence_id%100000==0 and *m_mode_send_vertices_sequence_id_position==0){
 		string reverse="";
@@ -54,7 +57,9 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 	if(*m_mode_send_vertices_sequence_id>(int)m_myReads->size()-1){
 		if(*m_reverseComplementVertex==false){
 			// flush data
-			flushVertices(1,m_disData,m_outboxAllocator,m_outbox,rank,size);
+			if(m_disData->m_messagesStock.flush(1,TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,false)){
+				m_ready=false;
+			}
 
 			#ifdef SHOW_PROGRESS
 			cout<<"Rank "<<rank<<" is extracting vertices from sequences "<<*m_mode_send_vertices_sequence_id<<"/"<<m_myReads->size()<<" (completed)"<<endl;
@@ -64,7 +69,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			*m_reverseComplementVertex=true;
 		}else{
 			// flush data
-			flushVertices(1,m_disData,m_outboxAllocator,m_outbox,rank,size);
+			m_disData->m_messagesStock.flush(1,TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true);
 			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_VERTICES_DISTRIBUTED,rank);
 			m_outbox->push_back(aMessage);
 			*m_mode_send_vertices=false;
@@ -96,8 +101,10 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			}
 		}
 		(*m_mode_send_vertices_sequence_id_position)++;
-		flushVertices(MAX_UINT64_T_PER_MESSAGE,m_disData,m_outboxAllocator,m_outbox,rank,size);
 
+		if(m_disData->m_messagesStock.flush(1,TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,false)){
+			m_ready=false;
+		}
 		if(*m_mode_send_vertices_sequence_id_position>lll){
 			(*m_mode_send_vertices_sequence_id)++;
 			(*m_mode_send_vertices_sequence_id_position)=0;
@@ -105,32 +112,11 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 	}
 }
 
-void VerticesExtractor::flushVertices(int threshold,
-				DistributionData*m_disData,
-				RingAllocator*m_outboxAllocator,
-				StaticVector*m_outbox,
-				int rank,int size
-){
-
-	// send messages
-	for(int rankId=0;rankId<size;rankId++){
-		int destination=rankId;
-		int length=m_disData->m_messagesStock.size(rankId);
-
-		// accumulate data.
-		if(length<threshold)
-			continue;
-
-		VERTEX_TYPE *data=(VERTEX_TYPE*)m_outboxAllocator->allocate(sizeof(VERTEX_TYPE)*length);
-		for(int j=0;j<(int)length;j++){
-			data[j]=m_disData->m_messagesStock.getAt(rankId,j);
-		}
-		m_disData->m_messagesStock.reset(rankId);
-
-		Message aMessage(data, length, MPI_UNSIGNED_LONG_LONG,destination, TAG_VERTICES_DATA,rank);
-		m_outbox->push_back(aMessage);
-	}
-}
 
 VerticesExtractor::VerticesExtractor(){
+	setReadiness();
+}
+
+void VerticesExtractor::setReadiness(){
+	m_ready=true;
 }

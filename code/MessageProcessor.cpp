@@ -124,6 +124,12 @@ void MessageProcessor::call_TAG_VERTICES_DATA(Message*message){
 		assert(tmp->getValue()->getCoverage()>0);
 		#endif
 	}
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_VERTICES_DATA_REPLY,rank);
+	m_outbox->push_back(aMessage);
+}
+
+void MessageProcessor::call_TAG_VERTICES_DATA_REPLY(Message*message){
+	m_verticesExtractor->setReadiness();
 }
 
 void MessageProcessor::call_TAG_VERTICES_DISTRIBUTED(Message*message){
@@ -136,6 +142,10 @@ void MessageProcessor::call_TAG_VERTICES_DISTRIBUTED(Message*message){
 void MessageProcessor::call_TAG_VERTEX_PTR_REQUEST(Message*message){
 }
 void MessageProcessor::call_TAG_OUT_EDGE_DATA_WITH_PTR(Message*message){
+}
+
+void MessageProcessor::call_TAG_OUT_EDGES_DATA_REPLY(Message*message){
+	m_edgesExtractor->setReadiness();
 }
 
 void MessageProcessor::call_TAG_OUT_EDGES_DATA(Message*message){
@@ -185,6 +195,9 @@ void MessageProcessor::call_TAG_OUT_EDGES_DATA(Message*message){
 		assert(found);
 		#endif
 	}
+
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_OUT_EDGES_DATA_REPLY,rank);
+	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_SHOW_VERTICES(Message*message){
@@ -203,6 +216,10 @@ void MessageProcessor::call_TAG_EDGES_DISTRIBUTED(Message*message){
 	if((*m_numberOfMachinesDoneSendingEdges)==size){
 		(*m_master_mode)=MASTER_MODE_TRIGGER_INDEXING;
 	}
+}
+
+void MessageProcessor::call_TAG_IN_EDGES_DATA_REPLY(Message*message){
+	m_edgesExtractor->setReadiness();
 }
 
 void MessageProcessor::call_TAG_IN_EDGES_DATA(Message*message){
@@ -228,6 +245,9 @@ void MessageProcessor::call_TAG_IN_EDGES_DATA(Message*message){
 		assert(found);
 		#endif
 	}
+
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_IN_EDGES_DATA_REPLY,rank);
+	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_IN_EDGE_DATA_WITH_PTR(Message*message){
@@ -1238,6 +1258,7 @@ MessageProcessor::MessageProcessor(){
 	m_methods[TAG_ASK_VERTEX_PATHS_SIZE]=&MessageProcessor::call_TAG_ASK_VERTEX_PATHS_SIZE;
 	m_methods[TAG_ASK_VERTEX_PATHS_SIZE_REPLY]=&MessageProcessor::call_TAG_ASK_VERTEX_PATHS_SIZE_REPLY;
 	m_methods[TAG_GET_PATH_LENGTH]=&MessageProcessor::call_TAG_GET_PATH_LENGTH;
+	m_methods[TAG_VERTICES_DATA_REPLY]=&MessageProcessor::call_TAG_VERTICES_DATA_REPLY;
 	m_methods[TAG_GET_PATH_LENGTH_REPLY]=&MessageProcessor::call_TAG_GET_PATH_LENGTH_REPLY;
 	m_methods[TAG_CALIBRATION_MESSAGE]=&MessageProcessor::call_TAG_CALIBRATION_MESSAGE;
 	m_methods[TAG_BEGIN_CALIBRATION]=&MessageProcessor::call_TAG_BEGIN_CALIBRATION;
@@ -1271,10 +1292,15 @@ MessageProcessor::MessageProcessor(){
 	m_methods[TAG_RECEIVED_COVERAGE_INFORMATION]=&MessageProcessor::call_TAG_RECEIVED_COVERAGE_INFORMATION;
 	m_methods[TAG_REQUEST_READ_SEQUENCE]=&MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE;
 	m_methods[TAG_REQUEST_READ_SEQUENCE_REPLY]=&MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE_REPLY;
+	m_methods[TAG_IN_EDGES_DATA_REPLY]=&MessageProcessor::call_TAG_IN_EDGES_DATA_REPLY;
+	m_methods[TAG_OUT_EDGES_DATA_REPLY]=&MessageProcessor::call_TAG_OUT_EDGES_DATA_REPLY;
 
 }
 
-void MessageProcessor::constructor(SequencesLoader*sequencesLoader,ExtensionData*ed,
+void MessageProcessor::constructor(
+VerticesExtractor*m_verticesExtractor,
+EdgesExtractor*m_edgesExtractor,
+SequencesLoader*sequencesLoader,ExtensionData*ed,
 			int*m_numberOfRanksDoneDetectingDistances,
 			int*m_numberOfRanksDoneSendingDistances,
 			Parameters*parameters,
@@ -1361,6 +1387,7 @@ int*m_numberOfRanksWithCoverageData,
 SeedExtender*seedExtender,int*m_master_mode,
 bool*m_isFinalFusion){
 	this->m_sequencesLoader=sequencesLoader;
+	this->m_verticesExtractor=m_verticesExtractor;
 	this->ed=ed;
 	this->m_numberOfRanksDoneDetectingDistances=m_numberOfRanksDoneDetectingDistances;
 	this->m_numberOfRanksDoneSendingDistances=m_numberOfRanksDoneSendingDistances;
@@ -1368,6 +1395,7 @@ bool*m_isFinalFusion){
 	this->m_libraryIterator=m_libraryIterator;
 	this->m_libraryIndexInitiated=m_libraryIndexInitiated;
 	this->m_subgraph=m_subgraph;
+	this->m_edgesExtractor=m_edgesExtractor;
 	this->m_outboxAllocator=m_outboxAllocator;
 	this->rank=rank;
 	this->m_EXTENSION_receivedReads=m_EXTENSION_receivedReads;
