@@ -34,7 +34,7 @@ EdgesExtractor::EdgesExtractor(){
 void EdgesExtractor::processOutgoingEdges(){
 
 	#ifdef SHOW_PROGRESS
-	if((m_mode_send_edge_sequence_id)%30000==0 and (m_mode_send_edge_sequence_id_position)==0){
+	if((m_mode_send_edge_sequence_id)%100000==0 and (m_mode_send_edge_sequence_id_position)==0){
 		string strand="";
 		if(m_reverseComplementEdge)
 			strand="(reverse complement)";
@@ -126,7 +126,7 @@ void EdgesExtractor::flushOutgoingEdges(int threshold){
 
 void EdgesExtractor::processIngoingEdges(){
 	#ifdef SHOW_PROGRESS
-	if(m_mode_send_edge_sequence_id%30000==0 and m_mode_send_edge_sequence_id_position==0){
+	if(m_mode_send_edge_sequence_id%100000==0 and m_mode_send_edge_sequence_id_position==0){
 		string strand="";
 		if(m_reverseComplementEdge)
 			strand="(reverse complement)";

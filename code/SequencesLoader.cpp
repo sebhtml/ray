@@ -151,7 +151,7 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		char*destinationBuffer=(char*)message;
 		strcpy(destinationBuffer,sequence);
 		#ifdef SHOW_PROGRESS
-		if((*m_distribution_sequence_id)%100==0){
+		if((*m_distribution_sequence_id)%100000==0){
 			cout<<"Rank "<<rank<<" distributes sequences, "<<(*m_distribution_sequence_id)+1<<"/"<<(*m_distribution_reads).size()<<endl;
 		}
 		#endif
@@ -168,7 +168,7 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		}
 		m_produced++;
 
-		if((*m_distribution_sequence_id)%500==0){
+		if((*m_distribution_sequence_id)%50==0){
 			Message aMessage(message,cells,MPI_UNSIGNED_LONG_LONG,destination,TAG_SEND_SEQUENCE_REGULATOR,rank);
 			(*m_outbox).push_back(aMessage);
 			m_ready=false;
