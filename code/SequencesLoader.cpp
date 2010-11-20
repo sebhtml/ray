@@ -50,11 +50,11 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			m_send_sequences_done=true;
 			(*m_distribution_sequence_id)=0;
 			flushAll(m_outboxAllocator,m_outbox);
-			cout<<"Rank "<<rank<<" is assigning sequence reads. "<<(*m_distribution_reads).size()<<"/"<<(*m_distribution_reads).size()<<" (completed)"<<endl;
+			cout<<"Rank "<<rank<<" is assigning sequence reads "<<(*m_distribution_reads).size()<<"/"<<(*m_distribution_reads).size()<<" (completed)"<<endl;
 		}else{
 
 			m_disData->m_messagesStockPaired.flushAll(10,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank);
-			cout<<"Rank "<<rank<<" is sending paired information. "<<(*m_distribution_reads).size()<<"/"<<(*m_distribution_reads).size()<<" (completed)"<<endl;
+			cout<<"Rank "<<rank<<" is sending paired information "<<(*m_distribution_reads).size()<<"/"<<(*m_distribution_reads).size()<<" (completed)"<<endl;
 
 			(*m_distribution_file_id)++;
 			if((*m_LOADER_isLeftFile)){
@@ -68,7 +68,6 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		(*m_master_mode)=MASTER_MODE_DO_NOTHING;
 		(*m_loadSequenceStep)=true;
 
-		cout<<"Rank 0 asks others to share their number of sequence reads"<<endl;
 		for(int i=0;i<size;i++){
 			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, i,TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS,rank);
 			(*m_outbox).push_back(aMessage);
@@ -84,7 +83,7 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		(*m_distributionAllocator).clear();
 		(*m_distributionAllocator).constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
 		#ifdef SHOW_PROGRESS
-		cout<<endl<<"Rank "<<rank<<" loads "<<allFiles[(*m_distribution_file_id)]<<"."<<endl;
+		cout<<endl<<"Rank "<<rank<<" is loading "<<allFiles[(*m_distribution_file_id)]<<""<<endl;
 		#else
 		cout<<endl<<"Loading "<<allFiles[(*m_distribution_file_id)]<<""<<endl;
 		#endif
@@ -128,12 +127,6 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		}else{
 			m_isInterleavedFile=false;
 		}
-
-		#ifdef SHOW_PROGRESS
-		cout<<"Rank "<<rank<<" has "<<(*m_distribution_reads).size()<<" sequences to distribute."<<endl;
-		#else
-		cout<<"Distributing sequences"<<endl;
-		#endif
 	}
 
 	#ifndef SHOW_PROGRESS
@@ -159,9 +152,9 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 
 		if((*m_distribution_sequence_id)%100000==0){
 			if(!m_send_sequences_done){
-				cout<<"Rank "<<rank<<" is assigning sequence reads. "<<(*m_distribution_sequence_id)+1<<"/"<<(*m_distribution_reads).size()<<endl;
+				cout<<"Rank "<<rank<<" is assigning sequence reads "<<(*m_distribution_sequence_id)+1<<"/"<<(*m_distribution_reads).size()<<endl;
 			}else{
-				cout<<"Rank "<<rank<<" is sending paired information. "<<(*m_distribution_sequence_id)+1<<"/"<<(*m_distribution_reads).size()<<endl;
+				cout<<"Rank "<<rank<<" is sending paired information "<<(*m_distribution_sequence_id)+1<<"/"<<(*m_distribution_reads).size()<<endl;
 
 			}
 		}

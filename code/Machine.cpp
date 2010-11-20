@@ -341,7 +341,7 @@ void Machine::start(){
 
 
 		#ifdef SHOW_PROGRESS
-		cout<<"Rank "<<getRank()<<" welcomes you to the MPI_COMM_WORLD."<<endl;
+		cout<<"Rank "<<getRank()<<" welcomes you to the MPI_COMM_WORLD"<<endl;
 		cout<<"Rank "<<getRank()<<": website -> http://denovoassembler.sf.net/"<<endl;
 		#endif
 	}
@@ -503,7 +503,7 @@ void Machine::finishFusions(){
 	if(m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
 		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 		message[0]=m_FINISH_fusionOccured;
-		cout<<"Rank "<<getRank()<<" is finishing its fusions "<<m_ed->m_EXTENSION_contigs.size()<<"/"<<m_ed->m_EXTENSION_contigs.size()<<" (completed)"<<endl;
+		cout<<"Rank "<<getRank()<<" is finishing fusions "<<m_ed->m_EXTENSION_contigs.size()<<"/"<<m_ed->m_EXTENSION_contigs.size()<<" (completed)"<<endl;
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_FINISH_FUSIONS_FINISHED,getRank());
 		m_outbox.push_back(aMessage);
 		m_mode=MODE_DO_NOTHING;
@@ -547,7 +547,7 @@ void Machine::finishFusions(){
 			m_FINISH_pathsForPosition.push_back(a);
 			if(m_ed->m_EXTENSION_currentPosition==0){
 				if(m_seedingData->m_SEEDING_i%10==0){
-					cout<<"Rank "<<getRank()<<" is finishing its fusions "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_ed->m_EXTENSION_contigs.size()<<endl;
+					cout<<"Rank "<<getRank()<<" is finishing fusions "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_ed->m_EXTENSION_contigs.size()<<endl;
 
 				}
 				vector<VERTEX_TYPE> a;
@@ -708,7 +708,7 @@ void Machine::makeFusions(){
 		if(m_ed->m_EXTENSION_contigs.size()==0){
 			seedIndex++;
 		}
-		cout<<"Rank "<<getRank()<<": fusion "<<m_ed->m_EXTENSION_contigs.size()<<"/"<<m_ed->m_EXTENSION_contigs.size()<<" (completed)"<<endl;
+		cout<<"Rank "<<getRank()<<" is computing fusions "<<m_ed->m_EXTENSION_contigs.size()<<"/"<<m_ed->m_EXTENSION_contigs.size()<<" (completed)"<<endl;
 		#endif
 		#ifdef DEBUG
 		//cout<<"Rank "<<getRank()<<" eliminated: "<<m_fusionData->m_FUSION_eliminated.size()<<endl;
@@ -729,7 +729,7 @@ void Machine::makeFusions(){
 			if(!m_fusionData->m_FUSION_paths_requested){
 				#ifdef SHOW_PROGRESS
 				if(m_seedingData->m_SEEDING_i%10==0){
-					cout<<"Rank "<<getRank()<<": fusion "<<m_seedingData->m_SEEDING_i<<"/"<<m_ed->m_EXTENSION_contigs.size()<<endl;
+					cout<<"Rank "<<getRank()<<" is computing fusions "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_ed->m_EXTENSION_contigs.size()<<endl;
 				}
 				#endif
 				// get the paths going on the first vertex
@@ -1112,7 +1112,7 @@ void Machine::call_MASTER_MODE_LOAD_CONFIG(){
 	}
 
 	cout<<endl;
-	cout<<"Rank 0: Ray 0.1.1 is running"<<endl;
+	cout<<"Rank 0: Ray 1.0.0 is running"<<endl;
 
 
 	m_parameters.load(m_argc,m_argv);
@@ -1290,7 +1290,6 @@ void Machine::call_MASTER_MODE_TRIGGER_INDEXING(){
 }
 
 void Machine::call_MASTER_MODE_PREPARE_DISTRIBUTIONS(){
-	cout<<"Rank 0 asks other ranks to share their number of vertices"<<endl;
 	m_numberOfMachinesDoneSendingVertices=-1;
 	for(int i=0;i<getSize();i++){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG, i, TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION,getRank());
@@ -1409,13 +1408,13 @@ void Machine::call_MODE_START_SEEDING(){
 		if(m_seedingData->m_SEEDING_i==(int)m_subgraph.size()-1){
 
 			m_mode=MODE_DO_NOTHING;
-			cout<<"Rank "<<getRank()<<" is creating seeds. "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_subgraph.size()<<" (completed)"<<endl;
+			cout<<"Rank "<<getRank()<<" is creating seeds "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_subgraph.size()<<" (completed)"<<endl;
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_SEEDING_IS_OVER,getRank());
 			m_seedingData->m_SEEDING_nodes.clear();
 			m_outbox.push_back(aMessage);
 		}else{
 			if(m_seedingData->m_SEEDING_i % 100000 ==0){
-				cout<<"Rank "<<getRank()<<" is creating seeds. "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_subgraph.size()<<endl;
+				cout<<"Rank "<<getRank()<<" is creating seeds "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_subgraph.size()<<endl;
 			}
 			m_seedingData->m_SEEDING_currentVertex=m_seedingData->m_SEEDING_nodes[m_seedingData->m_SEEDING_i];
 			m_seedingData->m_SEEDING_first=m_seedingData->m_SEEDING_currentVertex;
@@ -1601,11 +1600,6 @@ void Machine::call_MASTER_MODE_TRIGGER_FUSIONS(){
 }
 
 void Machine::call_MASTER_MODE_TRIGGER_FIRST_FUSIONS(){
-	#ifdef SHOW_PROGRESS
-	cout<<"Rank "<<getRank()<<": fusion is done."<<endl;
-	#else
-	cout<<"Rank "<<getRank()<<" is finishing fusions."<<endl;
-	#endif
 
 	m_reductionOccured=true;
 	m_master_mode=MASTER_MODE_START_FUSION_CYCLE;
@@ -1900,7 +1894,7 @@ void Machine::call_MASTER_MODE_ASK_EXTENSIONS(){
 	}else if(!m_ed->m_EXTENSION_currentRankIsStarted){
 		m_ed->m_EXTENSION_currentRankIsStarted=true;
 		#ifdef SHOW_PROGRESS
-		cout<<"Rank "<<getRank()<<" asks "<<m_ed->m_EXTENSION_rank<<" for its fusions."<<endl;
+		cout<<"Rank "<<getRank()<<" asks "<<m_ed->m_EXTENSION_rank<<" its fusions"<<endl;
 		#endif
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_ed->m_EXTENSION_rank,TAG_ASK_EXTENSION_DATA,getRank());
 		m_outbox.push_back(aMessage);

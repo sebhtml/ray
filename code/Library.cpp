@@ -82,7 +82,7 @@ void Library::updateDistances(){
 
 void Library::detectDistances(){
 	if(m_seedingData->m_SEEDING_i==(int)m_seedingData->m_SEEDING_seeds.size()){
-		cout<<"Rank "<<getRank()<<" is calculating library sizes. "<<m_seedingData->m_SEEDING_seeds.size()<<"/"<<m_seedingData->m_SEEDING_seeds.size()<<" (completed)"<<endl;
+		cout<<"Rank "<<getRank()<<" is calculating library sizes "<<m_seedingData->m_SEEDING_seeds.size()<<"/"<<m_seedingData->m_SEEDING_seeds.size()<<" (completed)"<<endl;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE,getRank());
 		m_outbox->push_back(aMessage);
 		(*m_mode)=MODE_DO_NOTHING;
@@ -96,7 +96,7 @@ void Library::detectDistances(){
 	}else{
 		if(!m_ed->m_EXTENSION_reads_requested){
 			if(m_ed->m_EXTENSION_currentPosition==0 && m_seedingData->m_SEEDING_i%30==0){
-				cout<<"Rank "<<getRank()<<" is calculating library sizes. "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_seedingData->m_SEEDING_seeds.size()<<""<<endl;
+				cout<<"Rank "<<getRank()<<" is calculating library sizes "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_seedingData->m_SEEDING_seeds.size()<<""<<endl;
 			}
 			m_ed->m_EXTENSION_reads_requested=true;
 			m_ed->m_EXTENSION_reads_received=false;

@@ -70,7 +70,7 @@ void MessageProcessor::call_TAG_SEND_SEQUENCE(Message*message){
 		myRead->copy(NULL,buffer+currentPosition,&(*m_persistentAllocator));
 		(*m_myReads).push_back(myRead);
 		if((*m_myReads).size()%100000==0){
-			cout<<"Rank "<<rank<<" has "<<(*m_myReads).size()<<" sequences"<<endl;
+			cout<<"Rank "<<rank<<" has "<<(*m_myReads).size()<<" sequence reads"<<endl;
 		}
 
 		// move currentPosition after the first \0 encountered.
@@ -95,7 +95,7 @@ void MessageProcessor::call_TAG_SEQUENCES_READY(Message*message){
 void MessageProcessor::call_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS(Message*message){
 	int source=message->getSource();
 	#ifdef SHOW_PROGRESS
-	cout<<"Rank "<<rank<<" has "<<(*m_myReads).size()<<" sequences"<<endl;
+	cout<<"Rank "<<rank<<" has "<<(*m_myReads).size()<<" sequence reads"<<endl;
 	#endif
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,TAG_SEQUENCES_READY,rank);
 	m_outbox->push_back(aMessage);

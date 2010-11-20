@@ -50,7 +50,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		string reverse="";
 		if(*m_reverseComplementVertex==true)
 			reverse="(reverse complement) ";
-		cout<<"Rank "<<rank<<" is computing vertices "<<reverse<<". "<<*m_mode_send_vertices_sequence_id+1<<"/"<<m_myReads->size()<<endl;
+		cout<<"Rank "<<rank<<" is computing vertices "<<reverse<<""<<*m_mode_send_vertices_sequence_id+1<<"/"<<m_myReads->size()<<endl;
 	}
 	#endif
 
@@ -59,7 +59,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			// flush data
 
 			#ifdef SHOW_PROGRESS
-			cout<<"Rank "<<rank<<" is computing vertices. "<<*m_mode_send_vertices_sequence_id<<"/"<<m_myReads->size()<<" (completed)"<<endl;
+			cout<<"Rank "<<rank<<" is computing vertices "<<*m_mode_send_vertices_sequence_id<<"/"<<m_myReads->size()<<" (completed)"<<endl;
 			#endif
 			(*m_mode_send_vertices_sequence_id)=0;
 			*m_mode_send_vertices_sequence_id_position=0;
@@ -72,7 +72,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			*m_mode_send_vertices=false;
 			(*m_mode)=MODE_DO_NOTHING;
 			#ifdef SHOW_PROGRESS
-			cout<<"Rank "<<rank<<" is computing vertices (reverse complement). "<<*m_mode_send_vertices_sequence_id<<"/"<<m_myReads->size()<<" (completed)"<<endl;
+			cout<<"Rank "<<rank<<" is computing vertices (reverse complement) "<<*m_mode_send_vertices_sequence_id<<"/"<<m_myReads->size()<<" (completed)"<<endl;
 			#endif
 
 		}

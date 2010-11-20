@@ -42,8 +42,8 @@ void EdgesExtractor::processOutgoingEdges(){
 	if((m_mode_send_edge_sequence_id)%100000==0 and (m_mode_send_edge_sequence_id_position)==0){
 		string strand="";
 		if(m_reverseComplementEdge)
-			strand="(reverse complement)";
-		cout<<"Rank "<<getRank<<" is extracting outgoing edges "<<strand<<" "<<(m_mode_send_edge_sequence_id)+1<<"/"<<m_myReads->size()<<endl;
+			strand="(reverse complement) ";
+		cout<<"Rank "<<getRank<<" is adding outgoing edges "<<strand<<""<<(m_mode_send_edge_sequence_id)+1<<"/"<<m_myReads->size()<<endl;
 	}
 	#endif
 
@@ -53,7 +53,7 @@ void EdgesExtractor::processOutgoingEdges(){
 			m_reverseComplementEdge=true;
 			m_disData->m_messagesStockOut.flushAll(2,TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
 			#ifdef SHOW_PROGRESS
-			cout<<"Rank "<<getRank<<" is extracting outgoing edges "<<m_myReads->size()<<"/"<<m_myReads->size()<<" (completed)"<<endl;
+			cout<<"Rank "<<getRank<<" is adding outgoing edges "<<m_myReads->size()<<"/"<<m_myReads->size()<<" (completed)"<<endl;
 			#endif
 			(m_mode_send_edge_sequence_id)=0;
 		}else{
@@ -63,7 +63,7 @@ void EdgesExtractor::processOutgoingEdges(){
 			(*m_mode_send_ingoing_edges)=true;
 			(m_mode_send_edge_sequence_id_position)=0;
 			#ifdef SHOW_PROGRESS
-			cout<<"Rank "<<getRank<<" is extracting outgoing edges (reverse complement) "<<m_myReads->size()<<"/"<<m_myReads->size()<<" (completed)"<<endl;
+			cout<<"Rank "<<getRank<<" is adding outgoing edges (reverse complement) "<<m_myReads->size()<<"/"<<m_myReads->size()<<" (completed)"<<endl;
 			#endif
 			(m_mode_send_edge_sequence_id)=0;
 			m_reverseComplementEdge=false;
@@ -123,8 +123,8 @@ void EdgesExtractor::processIngoingEdges(){
 	if(m_mode_send_edge_sequence_id%100000==0 and m_mode_send_edge_sequence_id_position==0){
 		string strand="";
 		if(m_reverseComplementEdge)
-			strand="(reverse complement)";
-		cout<<"Rank "<<getRank<<" is extracting ingoing edges "<<strand<<" "<<m_mode_send_edge_sequence_id+1<<"/"<<m_myReads->size()<<endl;
+			strand="(reverse complement) ";
+		cout<<"Rank "<<getRank<<" is adding ingoing edges "<<strand<<""<<m_mode_send_edge_sequence_id+1<<"/"<<m_myReads->size()<<endl;
 	}
 	#endif
 
@@ -135,7 +135,7 @@ void EdgesExtractor::processIngoingEdges(){
 			m_disData->m_messagesStockIn.flushAll(2,TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
 		
 			#ifdef SHOW_PROGRESS
-			cout<<"Rank "<<getRank<<" is extracting ingoing edges "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads->size()<<" (completed)"<<endl;
+			cout<<"Rank "<<getRank<<" is adding ingoing edges "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads->size()<<" (completed)"<<endl;
 			#endif
 			m_mode_send_edge_sequence_id=0;
 		}else{
@@ -146,7 +146,7 @@ void EdgesExtractor::processIngoingEdges(){
 			(*m_mode)=MODE_DO_NOTHING;
 
 			#ifdef SHOW_PROGRESS
-			cout<<"Rank "<<getRank<<" is extracting ingoing edges (reverse complement) "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads->size()<<" (completed)"<<endl;
+			cout<<"Rank "<<getRank<<" is adding ingoing edges (reverse complement) "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads->size()<<" (completed)"<<endl;
 			#endif
 		}
 	}else{

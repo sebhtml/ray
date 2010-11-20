@@ -45,12 +45,12 @@ void TimePrinter::printDifferenceFromStart(int rank){
 	if(endingTime==m_last){
 		return;
 	}
-	if(endingTime%60!=0){
+	if(endingTime%3600!=0){
 		return;
 	}
 	m_last=endingTime;
 	int differenceWithLast=endingTime-m_startingTime;
-	cout<<"Rank "<<rank<<": ";
+	cout<<"Rank "<<rank<<": I am still running... ";
 	printDifference(differenceWithLast);
 	cout<<endl;
 }

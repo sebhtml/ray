@@ -52,7 +52,7 @@ void SequencesIndexer::attachReads(vector<Read*>*m_myReads,
 
 	if(m_theSequenceId==(int)m_myReads->size()){
 
-		cout<<"Rank "<<m_rank<<" is indexing its sequences. "<<m_myReads->size()<<"/"<<m_myReads->size()<<" (completed!)"<<endl;
+		cout<<"Rank "<<m_rank<<" is indexing sequence reads "<<m_myReads->size()<<"/"<<m_myReads->size()<<" (completed)"<<endl;
 		m_bufferedData->flushAll(4,TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank);
 		(*m_mode)=MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,m_rank);
@@ -100,7 +100,7 @@ void SequencesIndexer::attachReads(vector<Read*>*m_myReads,
 
 
 	if(m_theSequenceId%100000==0){
-		cout<<"Rank "<<m_rank<<" is indexing its sequences. "<<m_theSequenceId+1<<"/"<<m_myReads->size()<<endl;
+		cout<<"Rank "<<m_rank<<" is indexing sequence reads "<<m_theSequenceId+1<<"/"<<m_myReads->size()<<endl;
 	}
 	m_theSequenceId++;
 }
