@@ -59,27 +59,34 @@ void BufferedData::reset(int i){
 	#endif
 }
 
-bool BufferedData::flush(int period,int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank,bool force){
-	int threshold=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE)/period*period;
+
+bool BufferedData::flushAll(int period,int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank){
 	bool flushed=false;
-	for(int destination=0;destination<m_ranks;destination++){
-		int amount=size(destination);
-		if(!force && amount<threshold){
-			continue;
+	for(int i=0;i<m_ranks;i++){
+		if(flush(i,period,tag,outboxAllocator,outbox,rank,true)){
+			flushed=true;
 		}
-		if(amount==0){
-			continue;
-		}
-		VERTEX_TYPE*message=(VERTEX_TYPE*)outboxAllocator->allocate(amount*sizeof(VERTEX_TYPE));
-		for(int i=0;i<amount;i++){
-			message[i]=getAt(destination,i);
-		}
-		Message aMessage(message,amount,MPI_UNSIGNED_LONG_LONG,destination,tag,rank);
-		outbox->push_back(aMessage);
-		reset(destination);
-		flushed=true;
 	}
 	return flushed;
+}
+
+bool BufferedData::flush(int destination,int period,int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank,bool force){
+	int threshold=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE)/period*period;
+	int amount=size(destination);
+	if(!force && amount<threshold){
+		return false;
+	}
+	if(amount==0){
+		return false;
+	}
+	VERTEX_TYPE*message=(VERTEX_TYPE*)outboxAllocator->allocate(amount*sizeof(VERTEX_TYPE));
+	for(int i=0;i<amount;i++){
+		message[i]=getAt(destination,i);
+	}
+	Message aMessage(message,amount,MPI_UNSIGNED_LONG_LONG,destination,tag,rank);
+	outbox->push_back(aMessage);
+	reset(destination);
+	return true;
 }
 
 #ifdef DEBUG

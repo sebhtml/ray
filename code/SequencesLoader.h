@@ -64,9 +64,6 @@ public:
 	
 );
 
-	void flushPairedStock(int threshold,StaticVector*m_outbox,
-	RingAllocator*m_outboxAllocator,DistributionData*m_disData,
-int rank,int size);
 	SequencesLoader();
 	void setReadiness();
 	void constructor(int size);

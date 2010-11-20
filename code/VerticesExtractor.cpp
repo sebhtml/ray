@@ -57,9 +57,6 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 	if(*m_mode_send_vertices_sequence_id>(int)m_myReads->size()-1){
 		if(*m_reverseComplementVertex==false){
 			// flush data
-			if(m_disData->m_messagesStock.flush(1,TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,false)){
-				m_ready=false;
-			}
 
 			#ifdef SHOW_PROGRESS
 			cout<<"Rank "<<rank<<" is extracting vertices from sequences "<<*m_mode_send_vertices_sequence_id<<"/"<<m_myReads->size()<<" (completed)"<<endl;
@@ -69,7 +66,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			*m_reverseComplementVertex=true;
 		}else{
 			// flush data
-			m_disData->m_messagesStock.flush(1,TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true);
+			m_disData->m_messagesStock.flushAll(1,TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank);
 			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_VERTICES_DISTRIBUTED,rank);
 			m_outbox->push_back(aMessage);
 			*m_mode_send_vertices=false;
@@ -93,18 +90,23 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		memory[m_wordSize]='\0';
 		if(isValidDNA(memory)){
 			VERTEX_TYPE a=wordId(memory);
+			int rankToFlush=0;
 			if(*m_reverseComplementVertex==false){
-				m_disData->m_messagesStock.addAt(vertexRank(a,size),a);
+				rankToFlush=vertexRank(a,size);
+				m_disData->m_messagesStock.addAt(rankToFlush,a);
 			}else{
 				VERTEX_TYPE b=complementVertex(a,m_wordSize,m_colorSpaceMode);
-				m_disData->m_messagesStock.addAt(vertexRank(b,size),b);
+				rankToFlush=vertexRank(b,size);
+				m_disData->m_messagesStock.addAt(rankToFlush,b);
 			}
+
+			if(m_disData->m_messagesStock.flush(rankToFlush,1,TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,false)){
+				m_ready=false;
+			}
+
 		}
 		(*m_mode_send_vertices_sequence_id_position)++;
 
-		if(m_disData->m_messagesStock.flush(1,TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,false)){
-			m_ready=false;
-		}
 		if(*m_mode_send_vertices_sequence_id_position>lll){
 			(*m_mode_send_vertices_sequence_id)++;
 			(*m_mode_send_vertices_sequence_id_position)=0;

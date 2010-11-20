@@ -53,7 +53,7 @@ void SequencesIndexer::attachReads(vector<Read*>*m_myReads,
 	if(m_theSequenceId==(int)m_myReads->size()){
 
 		cout<<"Rank "<<m_rank<<" is indexing its sequences. "<<m_myReads->size()<<"/"<<m_myReads->size()<<" (completed!)"<<endl;
-		m_bufferedData->flush(4,TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank,true);
+		m_bufferedData->flushAll(4,TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank);
 		(*m_mode)=MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,m_rank);
 		m_outbox->push_back(aMessage);
@@ -81,9 +81,10 @@ void SequencesIndexer::attachReads(vector<Read*>*m_myReads,
 		m_bufferedData->addAt(sendTo,m_rank);
 		m_bufferedData->addAt(sendTo,m_theSequenceId);
 		m_bufferedData->addAt(sendTo,(VERTEX_TYPE)'F');
+
+		m_bufferedData->flush(sendTo,4,TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank,false);
 	}
 
-	m_bufferedData->flush(4,TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank,false);
 
 	memcpy(vertexChar,sequence+strlen(sequence)-(m_wordSize),m_wordSize);
 	vertexChar[m_wordSize]='\0';
@@ -94,9 +95,9 @@ void SequencesIndexer::attachReads(vector<Read*>*m_myReads,
 		m_bufferedData->addAt(sendTo,m_rank);
 		m_bufferedData->addAt(sendTo,m_theSequenceId);
 		m_bufferedData->addAt(sendTo,(VERTEX_TYPE)'R');
+		m_bufferedData->flush(sendTo,4,TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank,false);
 	}
 
-	m_bufferedData->flush(4,TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank,false);
 
 	if(m_theSequenceId%30000==0){
 		cout<<"Rank "<<m_rank<<" is indexing its sequences. "<<m_theSequenceId+1<<"/"<<m_myReads->size()<<endl;

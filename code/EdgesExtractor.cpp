@@ -51,13 +51,13 @@ void EdgesExtractor::processOutgoingEdges(){
 		if(m_reverseComplementEdge==false){
 			(m_mode_send_edge_sequence_id_position)=0;
 			m_reverseComplementEdge=true;
-			m_disData->m_messagesStockOut.flush(2,TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,true);
+			m_disData->m_messagesStockOut.flushAll(2,TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
 			#ifdef SHOW_PROGRESS
 			cout<<"Rank "<<getRank<<" is extracting outgoing edges "<<m_myReads->size()<<"/"<<m_myReads->size()<<" (completed)"<<endl;
 			#endif
 			(m_mode_send_edge_sequence_id)=0;
 		}else{
-			m_disData->m_messagesStockOut.flush(2,TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,true);
+			m_disData->m_messagesStockOut.flushAll(2,TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
 			(*m_mode_send_outgoing_edges)=false;
 			(*m_mode)=MODE_PROCESS_INGOING_EDGES;
 			(*m_mode_send_ingoing_edges)=true;
@@ -90,19 +90,22 @@ void EdgesExtractor::processOutgoingEdges(){
 			strcpy(suffix,memory+1);
 			VERTEX_TYPE a_1=wordId(prefix);
 			VERTEX_TYPE a_2=wordId(suffix);
+			int rankToFlush=0;
 			if(m_reverseComplementEdge){
 				VERTEX_TYPE b_1=complementVertex(a_2,m_wordSize,m_colorSpaceMode);
 				VERTEX_TYPE b_2=complementVertex(a_1,m_wordSize,m_colorSpaceMode);
 				int rankB=vertexRank(b_1,getSize);
+				rankToFlush=rankB;
 				m_disData->m_messagesStockOut.addAt(rankB,b_1);
 				m_disData->m_messagesStockOut.addAt(rankB,b_2);
 			}else{
 				int rankA=vertexRank(a_1,getSize);
+				rankToFlush=rankA;
 				m_disData->m_messagesStockOut.addAt(rankA,a_1);
 				m_disData->m_messagesStockOut.addAt(rankA,a_2);
 			}
 			
-			if(m_disData->m_messagesStockOut.flush(2,TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,false)){
+			if(m_disData->m_messagesStockOut.flush(rankToFlush,2,TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,false)){
 				m_ready=false;
 			}
 		}
@@ -129,14 +132,14 @@ void EdgesExtractor::processIngoingEdges(){
 		if(m_reverseComplementEdge==false){
 			m_reverseComplementEdge=true;
 			m_mode_send_edge_sequence_id_position=0;
-			m_disData->m_messagesStockIn.flush(2,TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,true);
+			m_disData->m_messagesStockIn.flushAll(2,TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
 		
 			#ifdef SHOW_PROGRESS
 			cout<<"Rank "<<getRank<<" is extracting ingoing edges "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads->size()<<" (completed)"<<endl;
 			#endif
 			m_mode_send_edge_sequence_id=0;
 		}else{
-			m_disData->m_messagesStockIn.flush(2,TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,true);
+			m_disData->m_messagesStockIn.flushAll(2,TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
 			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_EDGES_DISTRIBUTED,getRank);
 			m_outbox->push_back(aMessage);
 			(*m_mode_send_ingoing_edges)=false;
@@ -171,21 +174,24 @@ void EdgesExtractor::processIngoingEdges(){
 			strcpy(suffix,memory+1);
 			VERTEX_TYPE a_1=wordId(prefix);
 			VERTEX_TYPE a_2=wordId(suffix);
+			int rankToFlush=0;
 			if(m_reverseComplementEdge){
 				VERTEX_TYPE b_1=complementVertex(a_2,m_wordSize,m_colorSpaceMode);
 				VERTEX_TYPE b_2=complementVertex(a_1,m_wordSize,m_colorSpaceMode);
 				int rankB=vertexRank(b_2,getSize);
+				rankToFlush=rankB;
 				m_disData->m_messagesStockIn.addAt(rankB,b_1);
 				m_disData->m_messagesStockIn.addAt(rankB,b_2);
 			}else{
 				int rankA=vertexRank(a_2,getSize);
+				rankToFlush=rankA;
 				m_disData->m_messagesStockIn.addAt(rankA,a_1);
 				m_disData->m_messagesStockIn.addAt(rankA,a_2);
 			}
 
 			// flush data
 
-			if(m_disData->m_messagesStockIn.flush(2,TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,false)){
+			if(m_disData->m_messagesStockIn.flush(rankToFlush,2,TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,false)){
 				m_ready=false;
 			}
 		}

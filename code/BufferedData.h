@@ -56,7 +56,8 @@ public:
  *  The result is mainly utilized to wait for a reply to regulate the communication in order 
  *  to not exaust resources such as the RingAllocator.
  * */
-	bool flush(int period,int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank,bool force);
+	bool flush(int destination,int period,int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank,bool force);
+	bool flushAll(int period,int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank);
 	#ifdef DEBUG
 	void inspect();
 	#endif

@@ -594,7 +594,7 @@ void MessageProcessor::call_TAG_REQUEST_READS(Message*message){
 	ReadAnnotation*e=theVertex->getReads();
 	int maxToProcess=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE)-3;
 	maxToProcess=maxToProcess-maxToProcess%3;
-	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(4096);
+	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(MPI_BTL_SM_EAGER_LIMIT);
 	int j=0;
 	// send a maximum of maxToProcess individually
 

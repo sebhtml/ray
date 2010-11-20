@@ -33,7 +33,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 void Library::updateDistances(){
 	if((*m_fileId)==(*m_parameters).getNumberOfFiles()){
 		// flush
-		m_bufferedData->flush(3,TAG_UPDATE_LIBRARY_INFORMATION,m_outboxAllocator,m_outbox,getRank(),true);
+		m_bufferedData->flushAll(3,TAG_UPDATE_LIBRARY_INFORMATION,m_outboxAllocator,m_outbox,getRank());
 
 		m_timePrinter->printElapsedTime("Computation of library sizes");
 		cout<<endl;
@@ -59,7 +59,7 @@ void Library::updateDistances(){
 					m_bufferedData->addAt(sequenceRank,averageLength);
 					m_bufferedData->addAt(sequenceRank,standardDeviation);
 
-					m_bufferedData->flush(3,TAG_UPDATE_LIBRARY_INFORMATION,m_outboxAllocator,m_outbox,getRank(),false);
+					m_bufferedData->flush(sequenceRank,3,TAG_UPDATE_LIBRARY_INFORMATION,m_outboxAllocator,m_outbox,getRank(),false);
 
 					(*m_sequence_id)++;
 					(*m_sequence_idInFile)++;

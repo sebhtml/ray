@@ -59,7 +59,9 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		(*m_master_mode)=MASTER_MODE_DO_NOTHING;
 		(*m_loadSequenceStep)=true;
 		flushAll(m_outboxAllocator,m_outbox);
-		flushPairedStock(1,m_outbox,m_outboxAllocator,m_disData,rank,size);
+
+		m_disData->m_messagesStockPaired.flushAll(10,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank);
+
 		cout<<"Rank 0 asks others to share their number of sequence reads"<<endl;
 		for(int i=0;i<size;i++){
 			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, i,TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS,rank);
@@ -215,7 +217,10 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			// 4096 bytes allow the sending of 512 64-bits integers.
 			// however, in this function m_messagesStockPaired contains multiple of 10.
 			// thus, the threshold must be 512-2
-			flushPairedStock(MAX_UINT64_T_PER_MESSAGE-2,m_outbox,m_outboxAllocator,m_disData,rank,size);
+
+			m_disData->m_messagesStockPaired.flush(leftSequenceRank,10,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false);
+			m_disData->m_messagesStockPaired.flush(rightSequenceRank,10,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false);
+
 		}else if(m_isInterleavedFile
 			&&((*m_distribution_sequence_id)%2)==1){// only the right sequence.
 			int rightSequenceGlobalId=(*m_distribution_currentSequenceId);
@@ -250,7 +255,9 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			// 4096 bytes allow the sending of 512 64-bits integers.
 			// however, in this function m_messagesStockPaired contains multiple of 10.
 			// thus, the threshold must be 512-2
-			flushPairedStock(MAX_UINT64_T_PER_MESSAGE-2,m_outbox,m_outboxAllocator,m_disData,rank,size);
+
+			m_disData->m_messagesStockPaired.flush(leftSequenceRank,10,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false);
+			m_disData->m_messagesStockPaired.flush(rightSequenceRank,10,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false);
 		}
 
 		(*m_distribution_currentSequenceId)++;
@@ -259,26 +266,6 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 	return true;
 }
 
-void SequencesLoader::flushPairedStock(int threshold,StaticVector*m_outbox,
-	RingAllocator*m_outboxAllocator,DistributionData*m_disData,
-			int rank,int size){
-	for(int rankId=0;rankId<size;rankId++){
-		int rightSequenceRank=rankId;
-		int count=m_disData->m_messagesStockPaired.size(rankId);
-		if(count<threshold)
-			continue;
-
-		VERTEX_TYPE*message=(VERTEX_TYPE*)(*m_outboxAllocator).allocate(count*sizeof(VERTEX_TYPE));
-		for(int j=0;j<count;j++){
-			message[j]=m_disData->m_messagesStockPaired.getAt(rankId,j);
-		}
-
-		Message aMessage(message,count,MPI_UNSIGNED_LONG_LONG,rightSequenceRank,TAG_INDEX_PAIRED_SEQUENCE,rank);
-		(*m_outbox).push_back(aMessage);
-		m_disData->m_messagesStockPaired.reset(rankId);
-		m_ready=false;
-	}
-}
 
 SequencesLoader::SequencesLoader(){
 	setReadiness();

@@ -68,6 +68,9 @@ char*Read::trim(char*buffer,const char*sequence){
 }
 
 void Read::copy(const char*id,const char*sequence,MyAllocator*seqMyAllocator){
+	#ifdef DEBUG
+	assert(strlen(sequence)<4096);// +1 for \0
+	#endif
 	if(strlen(sequence)<4096){
 		char buffer[4096];
 		char*corrected=trim(buffer,sequence);
