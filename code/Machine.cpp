@@ -1420,7 +1420,7 @@ void Machine::call_MODE_START_SEEDING(){
 			m_seedingData->m_SEEDING_nodes.clear();
 			m_outbox.push_back(aMessage);
 		}else{
-			if(m_seedingData->m_SEEDING_i % 30000 ==0){
+			if(m_seedingData->m_SEEDING_i % 100000 ==0){
 				cout<<"Rank "<<getRank()<<" is creating seeds. "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_subgraph.size()<<endl;
 			}
 			m_seedingData->m_SEEDING_currentVertex=m_seedingData->m_SEEDING_nodes[m_seedingData->m_SEEDING_i];
