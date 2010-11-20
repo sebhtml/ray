@@ -219,9 +219,12 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			// however, in this function m_messagesStockPaired contains multiple of 10.
 			// thus, the threshold must be 512-2
 
-			m_disData->m_messagesStockPaired.flush(leftSequenceRank,10,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false);
-			m_disData->m_messagesStockPaired.flush(rightSequenceRank,10,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false);
-
+			if(m_disData->m_messagesStockPaired.flush(leftSequenceRank,10,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+				m_ready=false;
+			}
+			if(m_disData->m_messagesStockPaired.flush(rightSequenceRank,10,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+				m_ready=false;
+			}
 		}else if(m_send_sequences_done
 	&& m_isInterleavedFile
 			&&((*m_distribution_sequence_id)%2)==1){// only the right sequence.
@@ -255,8 +258,12 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			// however, in this function m_messagesStockPaired contains multiple of 10.
 			// thus, the threshold must be 512-2
 
-			m_disData->m_messagesStockPaired.flush(leftSequenceRank,10,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false);
-			m_disData->m_messagesStockPaired.flush(rightSequenceRank,10,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false);
+			if(m_disData->m_messagesStockPaired.flush(leftSequenceRank,10,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+				m_ready=false;
+			}
+			if(m_disData->m_messagesStockPaired.flush(rightSequenceRank,10,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+				m_ready=false;
+			}
 		}
 		if(m_send_sequences_done){
 			(*m_distribution_currentSequenceId)++;
