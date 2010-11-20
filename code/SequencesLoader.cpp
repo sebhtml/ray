@@ -151,7 +151,7 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		char*destinationBuffer=(char*)message;
 		strcpy(destinationBuffer,sequence);
 		#ifdef SHOW_PROGRESS
-		if((*m_distribution_sequence_id)%100000==0){
+		if((*m_distribution_sequence_id)%100==0){
 			cout<<"Rank "<<rank<<" distributes sequences, "<<(*m_distribution_sequence_id)+1<<"/"<<(*m_distribution_reads).size()<<endl;
 		}
 		#endif
