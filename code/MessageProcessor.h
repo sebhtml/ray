@@ -351,6 +351,7 @@ SeedExtender*seedExtender,int*m_master_mode,bool*m_isFinalFusion
 	void call_TAG_VERTICES_DATA_REPLY(Message*message);
 	void call_TAG_IN_EDGES_DATA_REPLY(Message*message);
 	void call_TAG_OUT_EDGES_DATA_REPLY(Message*message);
+	void call_TAG_INDEX_PAIRED_SEQUENCE_REPLY(Message*message);
 	
 	void processMessage(Message*message);
 	MessageProcessor();

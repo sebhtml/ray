@@ -54,28 +54,30 @@ void MessageProcessor::call_TAG_START_INDEXING_SEQUENCES(Message*message){
 	(*m_mode)=MODE_INDEX_SEQUENCES;
 }
 
+/*
+ * seq1.........\0 seq2.......\0 \0  <--------second \0 indicates end of stream
+ *
+ *
+ *
+ */
 void MessageProcessor::call_TAG_SEND_SEQUENCE(Message*message){
-	time_t theTime=time(NULL);
-	if(theTime!=m_last){
-		//cout<<m_last<<" RING CONSUME "<<m_consumed<<endl;
-		m_consumed=0;
-		m_last=theTime;
-	}
-	m_consumed++;
-
 	char*buffer=(char*)message->getBuffer();
-	char*incoming=(char*)(*m_inboxAllocator).allocate(sizeof(char)*(strlen(buffer)+1));
-	strcpy(incoming,buffer);
+	int currentPosition=0;
+	while(buffer[currentPosition]!='\0'){
+		Read*myRead=(Read*)(*m_persistentAllocator).allocate(sizeof(Read));
+		myRead->copy(NULL,buffer+currentPosition,&(*m_persistentAllocator));
+		(*m_myReads).push_back(myRead);
 
-	Read*myRead=(Read*)(*m_persistentAllocator).allocate(sizeof(Read));
-	myRead->copy(NULL,incoming,&(*m_persistentAllocator));
-	(*m_myReads).push_back(myRead);
-	#ifdef SHOW_PROGRESS
-	if((*m_myReads).size()%100000==0){
-		cout<<"Rank "<<rank<<" has "<<(*m_myReads).size()<<" sequences"<<endl;
+		if((*m_myReads).size()%100000==0){
+			cout<<"Rank "<<rank<<" has "<<(*m_myReads).size()<<" sequences"<<endl;
+		}
+
+		// move currentPosition after the first \0 encountered.
+		while(buffer[currentPosition]!='\0'){
+			currentPosition++;
+		}
+		currentPosition++;
 	}
-	#endif
-
 }
 
 void MessageProcessor::call_TAG_SEND_SEQUENCE_REPLY(Message*message){
@@ -846,6 +848,10 @@ void MessageProcessor::call_TAG_ASK_VERTEX_PATH_REPLY(Message*message){
 	m_fusionData->m_FUSION_receivedPath.constructor(pathId,position);
 }
 
+void MessageProcessor::call_TAG_INDEX_PAIRED_SEQUENCE_REPLY(Message*message){
+	m_sequencesLoader->setReadiness();
+}
+
 void MessageProcessor::call_TAG_INDEX_PAIRED_SEQUENCE(Message*message){
 	int count=message->getCount();
 	void*buffer=message->getBuffer();
@@ -869,6 +875,8 @@ void MessageProcessor::call_TAG_INDEX_PAIRED_SEQUENCE(Message*message){
 
 		(*m_myReads)[currentReadId]->setPairedRead(t);
 	}
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_INDEX_PAIRED_SEQUENCE_REPLY,rank);
+	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_HAS_PAIRED_READ(Message*message){
@@ -1267,6 +1275,7 @@ MessageProcessor::MessageProcessor(){
 	m_methods[TAG_ASK_VERTEX_PATH]=&MessageProcessor::call_TAG_ASK_VERTEX_PATH;
 	m_methods[TAG_ASK_VERTEX_PATH_REPLY]=&MessageProcessor::call_TAG_ASK_VERTEX_PATH_REPLY;
 	m_methods[TAG_INDEX_PAIRED_SEQUENCE]=&MessageProcessor::call_TAG_INDEX_PAIRED_SEQUENCE;
+	m_methods[TAG_INDEX_PAIRED_SEQUENCE_REPLY]=&MessageProcessor::call_TAG_INDEX_PAIRED_SEQUENCE_REPLY;
 	m_methods[TAG_HAS_PAIRED_READ]=&MessageProcessor::call_TAG_HAS_PAIRED_READ;
 	m_methods[TAG_HAS_PAIRED_READ_REPLY]=&MessageProcessor::call_TAG_HAS_PAIRED_READ_REPLY;
 	m_methods[TAG_GET_PAIRED_READ]=&MessageProcessor::call_TAG_GET_PAIRED_READ;

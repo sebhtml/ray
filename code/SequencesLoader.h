@@ -37,6 +37,18 @@ class SequencesLoader{
 	bool m_ready;
 	time_t m_last;
 	int m_produced;
+
+	char*m_buffers;
+	int*m_entries;
+	int m_size;
+
+
+	void flushAll(RingAllocator*m_outboxAllocator,StaticVector*m_outbox);
+	void flush(int rank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox);
+	void appendSequence(int rank,char*sequence);
+	int getUsedSpace(int rank);
+	int getSpaceLeft(int rank);
+
 public:
 	/**
  *	load sequences from disk, and distribute them over the network.
@@ -57,5 +69,6 @@ public:
 int rank,int size);
 	SequencesLoader();
 	void setReadiness();
+	void constructor(int size);
 };
 #endif

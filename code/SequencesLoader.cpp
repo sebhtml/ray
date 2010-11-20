@@ -58,6 +58,7 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 	if((*m_distribution_file_id)>(int)allFiles.size()-1){
 		(*m_master_mode)=MASTER_MODE_DO_NOTHING;
 		(*m_loadSequenceStep)=true;
+		flushAll(m_outboxAllocator,m_outbox);
 		flushPairedStock(1,m_outbox,m_outboxAllocator,m_disData,rank,size);
 		cout<<"Rank 0 asks others to share their number of sequence reads"<<endl;
 		for(int i=0;i<size;i++){
@@ -146,10 +147,7 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		assert(destination<size);
 		#endif
 		char*sequence=((*m_distribution_reads))[(*m_distribution_sequence_id)]->getSeq();
-		int cells=roundNumber(strlen(sequence)+1,8);
-		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(cells);
-		char*destinationBuffer=(char*)message;
-		strcpy(destinationBuffer,sequence);
+
 		#ifdef SHOW_PROGRESS
 		if((*m_distribution_sequence_id)%100000==0){
 			cout<<"Rank "<<rank<<" distributes sequences, "<<(*m_distribution_sequence_id)+1<<"/"<<(*m_distribution_reads).size()<<endl;
@@ -160,22 +158,14 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
  		// this avoids spinning too fast in the memory ring of the outbox <
  		// allocator
 
-		time_t theTime=time(NULL);
-		if(theTime!=m_last){
-			//cout<<m_last<<" RING PRODUCE "<<m_produced<<endl;
-			m_produced=0;
-			m_last=theTime;
+		int theSpaceLeft=getSpaceLeft(destination);
+		int spaceNeeded=strlen(sequence)+1;
+		bool flushed=false;
+		if(spaceNeeded>theSpaceLeft){
+			flush(destination,m_outboxAllocator,m_outbox);
+			flushed=true;
 		}
-		m_produced++;
-
-		if((*m_distribution_sequence_id)%50==0){
-			Message aMessage(message,cells,MPI_UNSIGNED_LONG_LONG,destination,TAG_SEND_SEQUENCE_REGULATOR,rank);
-			(*m_outbox).push_back(aMessage);
-			m_ready=false;
-		}else{
-			Message aMessage(message,cells,MPI_UNSIGNED_LONG_LONG,destination,TAG_SEND_SEQUENCE,rank);
-			(*m_outbox).push_back(aMessage);
-		}
+		appendSequence(destination,sequence);
 
 		// add paired information here..
 		// algorithm follows.
@@ -214,6 +204,14 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,averageFragmentLength);
 			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,deviation);
 
+			// must flush the sequence before flushing its paired read or else
+			// it will fault
+			//
+			// unfortunately, it means that the buffer is not necessarily full 
+			if(!flushed){
+				flush(destination,m_outboxAllocator,m_outbox);
+			}
+
 			// 4096 bytes allow the sending of 512 64-bits integers.
 			// however, in this function m_messagesStockPaired contains multiple of 10.
 			// thus, the threshold must be 512-2
@@ -240,6 +238,14 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,rightSequenceIdOnRank);
 			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,averageFragmentLength);
 			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,deviation);
+
+			// must flush the sequence before flushing its paired read or else
+			// it will fault
+			//
+			// unfortunately, it means that the buffer is not necessarily full 
+			if(!flushed){
+				flush(destination,m_outboxAllocator,m_outbox);
+			}
 
 			// 4096 bytes allow the sending of 512 64-bits integers.
 			// however, in this function m_messagesStockPaired contains multiple of 10.
@@ -270,6 +276,7 @@ void SequencesLoader::flushPairedStock(int threshold,StaticVector*m_outbox,
 		Message aMessage(message,count,MPI_UNSIGNED_LONG_LONG,rightSequenceRank,TAG_INDEX_PAIRED_SEQUENCE,rank);
 		(*m_outbox).push_back(aMessage);
 		m_disData->m_messagesStockPaired.reset(rankId);
+		m_ready=false;
 	}
 }
 
@@ -281,4 +288,49 @@ SequencesLoader::SequencesLoader(){
 
 void SequencesLoader::setReadiness(){
 	m_ready=true;
+}
+
+void SequencesLoader::constructor(int size){
+	m_size=size;
+	m_buffers=(char*)__Malloc(m_size*MPI_BTL_SM_EAGER_LIMIT*sizeof(char));
+	m_entries=(int*)__Malloc(m_size*sizeof(int));
+	for(int i=0;i<m_size;i++){
+		m_entries[i]=0;
+	}
+}
+
+int SequencesLoader::getSpaceLeft(int rank){
+	return MPI_BTL_SM_EAGER_LIMIT-getUsedSpace(rank)-1;// -1 for the extra space for \0
+}
+
+int SequencesLoader::getUsedSpace(int rank){
+	return m_entries[rank];
+}
+
+void SequencesLoader::appendSequence(int rank,char*sequence){
+	char*destination=m_buffers+rank*MPI_BTL_SM_EAGER_LIMIT+m_entries[rank];
+	strcpy(destination,sequence);
+	m_entries[rank]+=(strlen(sequence)+1);
+}
+
+void SequencesLoader::flush(int rank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox){
+	if(m_entries[rank]==0){
+		return;// nothing to flush down the toilet.
+	}
+	int cells=getUsedSpace(rank)+1;// + 1 for the supplementary \0
+	char*message=(char*)m_outboxAllocator->allocate(cells);
+	for(int i=0;i<m_entries[rank];i++){
+		message[i]=m_buffers[rank*MPI_BTL_SM_EAGER_LIMIT+i];
+	}
+	message[cells-1]='\0';
+	Message aMessage(message,(cells/sizeof(VERTEX_TYPE)),MPI_UNSIGNED_LONG_LONG,rank,TAG_SEND_SEQUENCE_REGULATOR,rank);
+	m_outbox->push_back(aMessage);
+	m_entries[rank]=0;
+	m_ready=false;
+}
+
+void SequencesLoader::flushAll(RingAllocator*m_outboxAllocator,StaticVector*m_outbox){
+	for(int i=0;i<m_size;i++){
+		flush(i,m_outboxAllocator,m_outbox);
+	}
 }

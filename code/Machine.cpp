@@ -286,6 +286,7 @@ void Machine::start(){
 
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
 	MPI_Comm_size(MPI_COMM_WORLD,&m_size);
+	m_sl.constructor(m_size);
 
 	assert(getSize()<=MAX_NUMBER_OF_MPI_PROCESSES);
 	
