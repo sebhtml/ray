@@ -42,6 +42,7 @@ class SequencesLoader{
 	int*m_entries;
 	int m_size;
 
+	bool m_send_sequences_done;
 
 	void flushAll(RingAllocator*m_outboxAllocator,StaticVector*m_outbox);
 	void flush(int rank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox);

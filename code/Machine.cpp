@@ -307,10 +307,6 @@ void Machine::start(){
 
 	m_subgraph.constructor(numberOfTrees,&m_persistentAllocator);
 	
-	int version;
-	int subversion;
-	MPI_Get_version(&version,&subversion);
-
 	m_edgesExtractor.m_disData=m_disData;
 	m_edgesExtractor.getRank=getRank();
 	m_edgesExtractor.getSize=getSize();
@@ -350,7 +346,7 @@ void Machine::start(){
 		#endif
 	}
 
-	cout<<"Rank "<<getRank()<<" is running as UNIX process "<<getpid()<<" on "<<serverName<<" (MPI version "<<version<<"."<<subversion<<")"<<endl;
+	cout<<"Rank "<<getRank()<<" is running as UNIX process "<<getpid()<<" on "<<serverName<<endl;
 	m_alive=true;
 	m_welcomeStep=true;
 	m_loadSequenceStep=false;
@@ -1117,9 +1113,6 @@ void Machine::call_MASTER_MODE_LOAD_CONFIG(){
 
 	cout<<endl;
 	cout<<"Rank 0: Ray 0.1.1 is running"<<endl;
-	#ifdef __linux__
-	cout<<"Rank 0: operating system is Linux (during compilation)"<<endl;
-	#endif
 
 
 	m_parameters.load(m_argc,m_argv);

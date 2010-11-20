@@ -46,21 +46,27 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 	vector<string> allFiles=(*m_parameters).getAllFiles();
 	if((*m_distribution_reads).size()>0 and (*m_distribution_sequence_id)>(int)(*m_distribution_reads).size()-1){
 		// we reached the end of the file.
+		if(m_send_sequences_done==false){
+			m_send_sequences_done=true;
+			(*m_distribution_sequence_id)=0;
+			flushAll(m_outboxAllocator,m_outbox);
+			cout<<"Rank "<<rank<<" is assigning sequence reads. "<<(*m_distribution_reads).size()<<"/"<<(*m_distribution_reads).size()<<" (completed)"<<endl;
+		}else{
 
-		cout<<"Rank "<<rank<<" distributes sequences, "<<(*m_distribution_reads).size()<<"/"<<(*m_distribution_reads).size()<<" (completed)"<<endl;
-		(*m_distribution_file_id)++;
-		if((*m_LOADER_isLeftFile)){
-			(*m_LOADER_numberOfSequencesInLeftFile)=(*m_distribution_sequence_id);
+			m_disData->m_messagesStockPaired.flushAll(10,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank);
+			cout<<"Rank "<<rank<<" is sending paired information. "<<(*m_distribution_reads).size()<<"/"<<(*m_distribution_reads).size()<<" (completed)"<<endl;
+
+			(*m_distribution_file_id)++;
+			if((*m_LOADER_isLeftFile)){
+				(*m_LOADER_numberOfSequencesInLeftFile)=(*m_distribution_sequence_id);
+			}
+			(*m_distribution_sequence_id)=0;
+			(*m_distribution_reads).clear();
 		}
-		(*m_distribution_sequence_id)=0;
-		(*m_distribution_reads).clear();
 	}
 	if((*m_distribution_file_id)>(int)allFiles.size()-1){
 		(*m_master_mode)=MASTER_MODE_DO_NOTHING;
 		(*m_loadSequenceStep)=true;
-		flushAll(m_outboxAllocator,m_outbox);
-
-		m_disData->m_messagesStockPaired.flushAll(10,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank);
 
 		cout<<"Rank 0 asks others to share their number of sequence reads"<<endl;
 		for(int i=0;i<size;i++){
@@ -72,6 +78,7 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		return true;
 	}
 	if((*m_distribution_reads).size()==0){
+		m_send_sequences_done=false;
 		Loader loader;
 		(*m_distribution_reads).clear();
 		(*m_distributionAllocator).clear();
@@ -143,29 +150,34 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			#endif
 			break;
 		}
-		int destination=(*m_distribution_currentSequenceId)%size;
+		int destination=(*m_distribution_currentSequenceId+(*m_distribution_sequence_id))%size;
 		#ifdef DEBUG
 		assert(destination>=0);
 		assert(destination<size);
 		#endif
 		char*sequence=((*m_distribution_reads))[(*m_distribution_sequence_id)]->getSeq();
 
-		#ifdef SHOW_PROGRESS
 		if((*m_distribution_sequence_id)%100000==0){
-			cout<<"Rank "<<rank<<" distributes sequences, "<<(*m_distribution_sequence_id)+1<<"/"<<(*m_distribution_reads).size()<<endl;
+			if(!m_send_sequences_done){
+				cout<<"Rank "<<rank<<" is assigning sequence reads. "<<(*m_distribution_sequence_id)+1<<"/"<<(*m_distribution_reads).size()<<endl;
+			}else{
+				cout<<"Rank "<<rank<<" is sending paired information. "<<(*m_distribution_sequence_id)+1<<"/"<<(*m_distribution_reads).size()<<endl;
+
+			}
 		}
-		#endif
 
  		// make it wait some times
  		// this avoids spinning too fast in the memory ring of the outbox <
  		// allocator
 
-		int theSpaceLeft=getSpaceLeft(destination);
-		int spaceNeeded=strlen(sequence)+1;
-		if(spaceNeeded>theSpaceLeft){
-			flush(destination,m_outboxAllocator,m_outbox);
+		if(!m_send_sequences_done){
+			int theSpaceLeft=getSpaceLeft(destination);
+			int spaceNeeded=strlen(sequence)+1;
+			if(spaceNeeded>theSpaceLeft){
+				flush(destination,m_outboxAllocator,m_outbox);
+			}
+			appendSequence(destination,sequence);
 		}
-		appendSequence(destination,sequence);
 
 		// add paired information here..
 		// algorithm follows.
@@ -182,7 +194,8 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		// leftSequenceRank:= leftSequenceGlobalId%getSize
 		// leftSequenceIdOnRank:= leftSequenceGlobalId/getSize
 		// averageFragmentLength:= ask the pairedFiles in (*m_parameters).
-		if((*m_LOADER_isRightFile)){
+		
+		if(m_send_sequences_done &&(*m_LOADER_isRightFile)){
 			int rightSequenceGlobalId=(*m_distribution_currentSequenceId);
 			int rightSequenceRank=rightSequenceGlobalId%size;
 			int rightSequenceIdOnRank=rightSequenceGlobalId/size;
@@ -208,10 +221,6 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			// it will fault
 			//
 			// unfortunately, it means that the buffer is not necessarily full 
-			if(m_disData->m_messagesStockPaired.needsFlushing(rightSequenceRank,10)
-|| m_disData->m_messagesStockPaired.needsFlushing(leftSequenceRank,10)){
-				flushAll(m_outboxAllocator,m_outbox);
-			}
 
 			// 4096 bytes allow the sending of 512 64-bits integers.
 			// however, in this function m_messagesStockPaired contains multiple of 10.
@@ -220,7 +229,8 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			m_disData->m_messagesStockPaired.flush(leftSequenceRank,10,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false);
 			m_disData->m_messagesStockPaired.flush(rightSequenceRank,10,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false);
 
-		}else if(m_isInterleavedFile
+		}else if(m_send_sequences_done
+	&& m_isInterleavedFile
 			&&((*m_distribution_sequence_id)%2)==1){// only the right sequence.
 			int rightSequenceGlobalId=(*m_distribution_currentSequenceId);
 			int rightSequenceRank=rightSequenceGlobalId%size;
@@ -247,11 +257,6 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			// it will fault
 			//
 			// unfortunately, it means that the buffer is not necessarily full 
-			if(m_disData->m_messagesStockPaired.needsFlushing(rightSequenceRank,10) 
-|| m_disData->m_messagesStockPaired.needsFlushing(leftSequenceRank,10)){
-				flushAll(m_outboxAllocator,m_outbox);
-
-			}
 
 			// 4096 bytes allow the sending of 512 64-bits integers.
 			// however, in this function m_messagesStockPaired contains multiple of 10.
@@ -260,8 +265,9 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			m_disData->m_messagesStockPaired.flush(leftSequenceRank,10,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false);
 			m_disData->m_messagesStockPaired.flush(rightSequenceRank,10,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false);
 		}
-
-		(*m_distribution_currentSequenceId)++;
+		if(m_send_sequences_done){
+			(*m_distribution_currentSequenceId)++;
+		}
 		(*m_distribution_sequence_id)++;
 	}
 	return true;
