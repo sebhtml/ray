@@ -162,10 +162,8 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 
 		int theSpaceLeft=getSpaceLeft(destination);
 		int spaceNeeded=strlen(sequence)+1;
-		bool flushed=false;
 		if(spaceNeeded>theSpaceLeft){
 			flush(destination,m_outboxAllocator,m_outbox);
-			flushed=true;
 		}
 		appendSequence(destination,sequence);
 
@@ -210,8 +208,9 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			// it will fault
 			//
 			// unfortunately, it means that the buffer is not necessarily full 
-			if(!flushed){
-				flush(destination,m_outboxAllocator,m_outbox);
+			if(m_disData->m_messagesStockPaired.needsFlushing(rightSequenceRank,10)
+|| m_disData->m_messagesStockPaired.needsFlushing(leftSequenceRank,10)){
+				flushAll(m_outboxAllocator,m_outbox);
 			}
 
 			// 4096 bytes allow the sending of 512 64-bits integers.
@@ -248,8 +247,10 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			// it will fault
 			//
 			// unfortunately, it means that the buffer is not necessarily full 
-			if(!flushed){
-				flush(destination,m_outboxAllocator,m_outbox);
+			if(m_disData->m_messagesStockPaired.needsFlushing(rightSequenceRank,10) 
+|| m_disData->m_messagesStockPaired.needsFlushing(leftSequenceRank,10)){
+				flushAll(m_outboxAllocator,m_outbox);
+
 			}
 
 			// 4096 bytes allow the sending of 512 64-bits integers.
@@ -305,12 +306,17 @@ void SequencesLoader::flush(int rank,RingAllocator*m_outboxAllocator,StaticVecto
 		return;// nothing to flush down the toilet.
 	}
 	int cells=getUsedSpace(rank)+1;// + 1 for the supplementary \0
-	char*message=(char*)m_outboxAllocator->allocate(cells);
+	char*message=(char*)m_outboxAllocator->allocate(cells*sizeof(char));
+	int n=0;
 	for(int i=0;i<m_entries[rank];i++){
-		message[i]=m_buffers[rank*MPI_BTL_SM_EAGER_LIMIT+i];
+		char bufferChar=m_buffers[rank*MPI_BTL_SM_EAGER_LIMIT+i];
+		if(bufferChar=='\0'){
+			n++;
+		}
+		message[i]=bufferChar;
 	}
 	message[cells-1]='\0';
-	Message aMessage(message,(cells/sizeof(VERTEX_TYPE)),MPI_UNSIGNED_LONG_LONG,rank,TAG_SEND_SEQUENCE_REGULATOR,rank);
+	Message aMessage(message,MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE),MPI_UNSIGNED_LONG_LONG,rank,TAG_SEND_SEQUENCE_REGULATOR,rank);
 	m_outbox->push_back(aMessage);
 	m_entries[rank]=0;
 	m_ready=false;

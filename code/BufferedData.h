@@ -57,6 +57,7 @@ public:
  *  to not exaust resources such as the RingAllocator.
  * */
 	bool flush(int destination,int period,int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank,bool force);
+	bool needsFlushing(int destination,int period);
 	bool flushAll(int period,int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank);
 	#ifdef DEBUG
 	void inspect();

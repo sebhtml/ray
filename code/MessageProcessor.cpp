@@ -63,11 +63,12 @@ void MessageProcessor::call_TAG_START_INDEXING_SEQUENCES(Message*message){
 void MessageProcessor::call_TAG_SEND_SEQUENCE(Message*message){
 	char*buffer=(char*)message->getBuffer();
 	int currentPosition=0;
+	int n=0;
 	while(buffer[currentPosition]!='\0'){
+		n++;
 		Read*myRead=(Read*)(*m_persistentAllocator).allocate(sizeof(Read));
 		myRead->copy(NULL,buffer+currentPosition,&(*m_persistentAllocator));
 		(*m_myReads).push_back(myRead);
-
 		if((*m_myReads).size()%100000==0){
 			cout<<"Rank "<<rank<<" has "<<(*m_myReads).size()<<" sequences"<<endl;
 		}

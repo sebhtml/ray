@@ -19,7 +19,7 @@
 
 */
 
-
+#include<assert.h>
 #include<common_functions.h>
 #include<Read.h>
 #include<cstdlib>

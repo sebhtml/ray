@@ -366,8 +366,6 @@ void Parameters::parseCommands(){
 	}
 	cout<<" --> Number of k-mers of size "<<m_wordSize<<": "<<result<<endl;
 	cout<<"  *** Note: A lower k-mer size bounds the memory usage. ***"<<endl;
-	cout<<endl;
-
 }
 
 void Parameters::load(int argc,char**argv){

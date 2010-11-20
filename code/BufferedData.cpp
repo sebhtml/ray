@@ -70,6 +70,12 @@ bool BufferedData::flushAll(int period,int tag,RingAllocator*outboxAllocator,Sta
 	return flushed;
 }
 
+bool BufferedData::needsFlushing(int destination,int period){
+	int threshold=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE)/period*period;
+	int amount=size(destination);
+	return amount>=threshold;
+}
+
 bool BufferedData::flush(int destination,int period,int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank,bool force){
 	int threshold=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE)/period*period;
 	int amount=size(destination);
