@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# interleave two fasta files.
+# interleave two fastq files.
 
 import sys
 file1=sys.argv[1]
@@ -13,8 +13,12 @@ while True:
 	if len(line1a)==0:
 		break
 	line1b=f1.readline()
+	f1.readline()
+	f1.readline()
 	line2a=f2.readline()
 	line2b=f2.readline()
+	f2.readline()
+	f2.readline()
 	print line1a.strip()
 	print line1b.strip()
 	print line2a.strip()

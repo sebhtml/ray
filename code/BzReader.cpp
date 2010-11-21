@@ -24,8 +24,11 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 */
 
+#define __BzReader_MAXIMUM_LENGTH 2*4096
+
 #include<BzReader.h>
 #include<stdlib.h>
+#include<assert.h>
 
 void BzReader::open(const char*file){
 	int error;
@@ -33,12 +36,15 @@ void BzReader::open(const char*file){
 	int verbosity=0;
 	int small=0;
 	m_bzFile=BZ2_bzReadOpen(&error,m_file,verbosity,small,NULL,0);
-	m_buffer=(char*)malloc(2*4096*sizeof(char));
+	m_buffer=(char*)malloc(__BzReader_MAXIMUM_LENGTH*sizeof(char));
 	m_bufferSize=0;
 	m_bufferPosition=0;
 }
 
 char*BzReader::readLine(char*s, int n){
+	#ifdef ASSERT
+	assert(n<=__BzReader_MAXIMUM_LENGTH);
+	#endif
 	int pos=-1;
 	for(int i=m_bufferPosition;i<m_bufferSize;i++){
 		if(m_buffer[i]=='\n'){
@@ -74,7 +80,7 @@ char*BzReader::readLine(char*s, int n){
 	/* read some bytes from the compressed file */
 	m_bufferPosition=0;
 	int error;
-	m_bufferSize=BZ2_bzRead(&error,m_bzFile,m_buffer,2*4096);
+	m_bufferSize=BZ2_bzRead(&error,m_bzFile,m_buffer,__BzReader_MAXIMUM_LENGTH);
 	if(m_bufferSize==0){
 		return NULL;
 	}

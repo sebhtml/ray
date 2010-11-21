@@ -56,7 +56,7 @@ int Loader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAl
 		bool exists=f;
 		f.close();
 		if(!exists){
-			cout<<"Ray: cannot access "<<file<<": No such file or directory"<<endl;
+			cout<<"Ray: cannot access '"<<file<<"': No such file or directory"<<endl;
 			return EXIT_FAILURE;// ERROR
 		}
 	}
