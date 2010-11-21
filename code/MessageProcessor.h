@@ -30,6 +30,7 @@
 #include<SplayTree.h>
 #include<StaticVector.h>
 #include<SeedExtender.h>
+#include<MessagesHandler.h>
 #include<SequencesLoader.h>
 #include<FusionData.h>
 #include<ReadAnnotation.h>
@@ -57,6 +58,7 @@ class MessageProcessor{
 	int m_consumed;
 	time_t m_last;
 
+	MessagesHandler*m_messagesHandler;
 	bool*m_isFinalFusion;
 	int*m_master_mode;
 	ExtensionData*ed;
@@ -151,6 +153,7 @@ class MessageProcessor{
 
 public:
 	void constructor(
+MessagesHandler*m_messagesHandler,
 bool*m_ready,
 VerticesExtractor*m_verticesExtractor,
 EdgesExtractor*m_edgesExtractor,

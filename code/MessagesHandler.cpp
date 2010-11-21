@@ -42,7 +42,7 @@ void MessagesHandler::sendMessages(StaticVector*outbox,int source){
 		assert(!(aMessage->getBuffer()==NULL && aMessage->getCount()>0));
 		#endif
 
-		
+		m_messagesSent++;
 		#ifndef ASSERT
 		MPI_Isend(aMessage->getBuffer(),aMessage->getCount(),aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(),MPI_COMM_WORLD,&request);
 		#else
@@ -81,10 +81,18 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 		MPI_Get_count(&status,datatype,&length);
 		void*incoming=(void*)inboxAllocator->allocate(length*sizeOfType);
 		MPI_Recv(incoming,length,datatype,source,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+		m_messagesReceived++;
 		Message aMessage(incoming,length,datatype,source,tag,source);
 		inbox->push_back(aMessage);
 		MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
 	}
 }
 
+MessagesHandler::MessagesHandler(){
+	m_messagesSent=0;
+	m_messagesReceived=0;
+}
 
+void MessagesHandler::showStats(int rank){
+	cout<<"Rank "<<rank<<": "<<m_messagesSent<<" messages sent, "<<m_messagesReceived<<" messages received."<<endl;
+}

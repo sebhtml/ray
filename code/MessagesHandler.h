@@ -32,8 +32,11 @@ using namespace std;
 
 
 class MessagesHandler{
+	int m_messagesSent;
+	int m_messagesReceived;
 public:
-
+	MessagesHandler();
+	void showStats(int rank);
 	void sendMessages(StaticVector*outbox,int source);
 	void receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator,int destination);
 };

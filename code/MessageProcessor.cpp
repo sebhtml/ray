@@ -445,6 +445,7 @@ void MessageProcessor::call_TAG_SEEDING_IS_OVER(Message*message){
 }
 
 void MessageProcessor::call_TAG_GOOD_JOB_SEE_YOU_SOON(Message*message){
+	m_messagesHandler->showStats(rank);
 	(*m_alive)=false;
 }
 
@@ -1346,6 +1347,7 @@ MessageProcessor::MessageProcessor(){
 }
 
 void MessageProcessor::constructor(
+MessagesHandler*m_messagesHandler,
 bool*m_ready,
 VerticesExtractor*m_verticesExtractor,
 EdgesExtractor*m_edgesExtractor,
@@ -1469,6 +1471,7 @@ bool*m_isFinalFusion){
 	this->m_SEEDING_i=m_SEEDING_i;
 	this->m_colorSpaceMode=m_colorSpaceMode;
 	this->m_FINISH_fusionOccured=m_FINISH_fusionOccured;
+	this->m_messagesHandler=m_messagesHandler;
 	this->m_Machine_getPaths_INITIALIZED=m_Machine_getPaths_INITIALIZED;
 	this->m_mode=m_mode;
 	this->m_allPaths=m_allPaths;

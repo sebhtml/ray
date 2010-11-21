@@ -396,7 +396,8 @@ void Machine::start(){
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	m_mp.constructor(&m_ready,
+	m_mp.constructor(&m_messagesHandler,
+&m_ready,
 &m_verticesExtractor,
 &m_edgesExtractor,
 &m_sl,
