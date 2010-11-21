@@ -881,6 +881,9 @@ void MessageProcessor::call_TAG_INDEX_PAIRED_SEQUENCE(Message*message){
 		int currentReadId=incoming[i+0];
 		t->constructor(otherRank,otherId,length,deviation);
 		#ifdef ASSERT
+		if(currentReadId>=(int)m_myReads->size()){
+			cout<<"currentReadId="<<currentReadId<<" size="<<m_myReads->size()<<endl;
+		}
 		assert(currentReadId<(int)m_myReads->size());
 		#endif
 
