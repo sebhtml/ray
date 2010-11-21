@@ -60,11 +60,11 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			m_send_sequences_done=true;
 			(*m_distribution_sequence_id)=0;
 			flushAll(m_outboxAllocator,m_outbox);
-
+			
 			#ifdef ASSERT
 			for(int i=0;i<m_size;i++){
 				assert(m_entries[i]==0);
-				//cout<<"INFO "<<i<<" "<<m_numberOfSequences[i]<<endl;
+				//cout<<"INFO "<<i<<" "<<m_numberOfSequences[i]<<" flushed: "<<m_numberOfFlushedSequences[i]<<endl;
 			}
 			#endif
 			cout<<"Rank "<<rank<<" is assigning sequence reads "<<(*m_distribution_reads).size()<<"/"<<(*m_distribution_reads).size()<<" (completed)"<<endl;
@@ -161,7 +161,7 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		char*sequence=((*m_distribution_reads))[(*m_distribution_sequence_id)]->getSeq();
 		int spaceNeeded=strlen(sequence)+1;
 		if(spaceNeeded>theSpaceLeft){
-			flush(destination,m_outboxAllocator,m_outbox);
+			flush(destination,m_outboxAllocator,m_outbox,false);
 		}else{
 			#ifdef ASSERT
 			assert(spaceNeeded<=getSpaceLeft(destination));
@@ -176,6 +176,7 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		}
 	}else if(m_send_sequences_done){
 		#ifdef ASSERT
+		assert(m_waitingNumber==0);
 		if((*m_distribution_sequence_id)==0){
 			for(int i=0;i<m_size;i++){
 				assert(m_entries[i]==0);
@@ -240,6 +241,9 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			int leftSequenceGlobalId=rightSequenceGlobalId-(*m_LOADER_numberOfSequencesInLeftFile);
 
 			#ifdef ASSERT
+			if(rightSequenceIdOnRank>=m_numberOfSequences[rightSequenceRank]){
+				cout<<"rightSequenceIdOnRank="<<rightSequenceIdOnRank<<" but size="<<m_numberOfSequences[rightSequenceRank]<<" rank is "<<rightSequenceRank<<endl;
+			}
 			assert(rightSequenceIdOnRank<m_numberOfSequences[rightSequenceRank]);
 			#endif
 
@@ -326,10 +330,16 @@ void SequencesLoader::constructor(int size){
 	m_size=size;
 	m_buffers=(char*)__Malloc(m_size*MPI_BTL_SM_EAGER_LIMIT*sizeof(char));
 	m_entries=(int*)__Malloc(m_size*sizeof(int));
+	#ifdef ASSERT
 	m_numberOfSequences=(int*)__Malloc(m_size*sizeof(int));
+	m_numberOfFlushedSequences=(int*)__Malloc(m_size*sizeof(int));
+	#endif
 	for(int i=0;i<m_size;i++){
 		m_entries[i]=0;
+		#ifdef ASSERT
 		m_numberOfSequences[i]=0;
+		m_numberOfFlushedSequences[i]=0;
+		#endif
 	}
 	#ifdef ASSERT
 	assert(m_buffers!=NULL);
@@ -352,7 +362,9 @@ void SequencesLoader::appendSequence(int rank,char*sequence){
 	#ifdef ASSERT
 	assert(m_entries[rank]<=MPI_BTL_SM_EAGER_LIMIT);
 	#endif
+	#ifdef ASSERT
 	m_numberOfSequences[rank]++;
+	#endif
 }
 
 /*
@@ -363,21 +375,30 @@ void SequencesLoader::appendSequence(int rank,char*sequence){
  * 0 1 2 3 4 5 6
  * 1 1 1 2 2 2 F
  */
-void SequencesLoader::flush(int rank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox){
-	if(m_entries[rank]==0){
-		return;// nothing to flush down the toilet.
+void SequencesLoader::flush(int rank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox,bool forceNothing){
+	if(m_entries[rank]==0 && !forceNothing){
+		return;
 	}
 	int cells=getUsedSpace(rank)+1;// + 1 for the supplementary \0
-	char*message=(char*)m_outboxAllocator->allocate(cells*sizeof(char));
+	char*message=(char*)m_outboxAllocator->allocate(MPI_BTL_SM_EAGER_LIMIT*sizeof(char));
+	#ifdef ASSERT
 	int n=0;
+	#endif
 	for(int i=0;i<m_entries[rank];i++){
 		char bufferChar=m_buffers[rank*MPI_BTL_SM_EAGER_LIMIT+i];
+		#ifdef ASSERT
 		if(bufferChar=='\0'){
 			n++;
 		}
+		#endif
 		message[i]=bufferChar;
 	}
-	message[cells-1]='\0';
+	#ifdef ASSERT
+	assert(n>0);
+	m_numberOfFlushedSequences[rank]+=n;
+	#endif
+	//cout<<"sending "<<n<<" sequences to "<<rank<<endl;
+	message[cells-1]=ASCII_END_OF_TRANSMISSION;
 	Message aMessage(message,MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE),MPI_UNSIGNED_LONG_LONG,rank,TAG_SEND_SEQUENCE_REGULATOR,rank);
 	m_outbox->push_back(aMessage);
 	m_entries[rank]=0;
@@ -389,6 +410,6 @@ void SequencesLoader::flushAll(RingAllocator*m_outboxAllocator,StaticVector*m_ou
 	assert(m_size!=0);
 	#endif
 	for(int i=0;i<m_size;i++){
-		flush(i,m_outboxAllocator,m_outbox);
+		flush(i,m_outboxAllocator,m_outbox,false);
 	}
 }

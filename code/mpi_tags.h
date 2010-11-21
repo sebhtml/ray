@@ -143,6 +143,8 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #define TAG_OUT_EDGES_DATA_REPLY 		0x6b
 #define TAG_INDEX_PAIRED_SEQUENCE_REPLY		0x6c
 #define TAG_EXTENSION_DATA_REPLY 		0x6d
+#define TAG_BARRIER				0x6e
+#define TAG_SHOW_SEQUENCES			0x6f
 
 #endif
 

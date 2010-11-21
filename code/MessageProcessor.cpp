@@ -44,6 +44,10 @@ void MessageProcessor::processMessage(Message*message){
 void MessageProcessor::call_TAG_WELCOME(Message*message){
 }
 
+void MessageProcessor::call_TAG_BARRIER(Message*message){
+	MPI_Barrier(MPI_COMM_WORLD);
+}
+
 void MessageProcessor::call_TAG_SEND_SEQUENCE_REGULATOR(Message*message){
 	call_TAG_SEND_SEQUENCE(message);
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_SEND_SEQUENCE_REPLY,rank);
@@ -64,21 +68,30 @@ void MessageProcessor::call_TAG_SEND_SEQUENCE(Message*message){
 	char*buffer=(char*)message->getBuffer();
 	int currentPosition=0;
 	int n=0;
-	while(buffer[currentPosition]!='\0'){
+	#ifdef ASSERT
+	while(buffer[currentPosition]!=ASCII_END_OF_TRANSMISSION){
+		currentPosition+=(strlen(buffer+currentPosition)+1);
 		n++;
+	}
+	currentPosition=0;
+	assert(n>0);
+	#endif
+
+
+	while(buffer[currentPosition]!='\0'){
 		Read*myRead=(Read*)(*m_persistentAllocator).allocate(sizeof(Read));
 		myRead->copy(NULL,buffer+currentPosition,&(*m_persistentAllocator));
-		(*m_myReads).push_back(myRead);
+		m_myReads->push_back(myRead);
 		if((*m_myReads).size()%100000==0){
 			cout<<"Rank "<<rank<<" has "<<(*m_myReads).size()<<" sequence reads"<<endl;
 		}
-
 		// move currentPosition after the first \0 encountered.
-		while(buffer[currentPosition]!='\0'){
-			currentPosition++;
-		}
-		currentPosition++;
+		currentPosition+=(strlen(buffer+currentPosition)+1);
 	}
+}
+
+void MessageProcessor::call_TAG_SHOW_SEQUENCES(Message*message){
+	cout<<"Rank "<<rank<<" has "<<m_myReads->size()<<" sequences"<<endl;
 }
 
 void MessageProcessor::call_TAG_SEND_SEQUENCE_REPLY(Message*message){
@@ -1288,6 +1301,8 @@ MessageProcessor::MessageProcessor(){
 	m_methods[TAG_END_CALIBRATION]=&MessageProcessor::call_TAG_END_CALIBRATION;
 	m_methods[TAG_COMMUNICATION_STABILITY_MESSAGE]=&MessageProcessor::call_TAG_COMMUNICATION_STABILITY_MESSAGE;
 	m_methods[TAG_ASK_VERTEX_PATH]=&MessageProcessor::call_TAG_ASK_VERTEX_PATH;
+	m_methods[TAG_SHOW_SEQUENCES]=&MessageProcessor::call_TAG_SHOW_SEQUENCES;
+	m_methods[TAG_BARRIER]=&MessageProcessor::call_TAG_BARRIER;
 	m_methods[TAG_ASK_VERTEX_PATH_REPLY]=&MessageProcessor::call_TAG_ASK_VERTEX_PATH_REPLY;
 	m_methods[TAG_INDEX_PAIRED_SEQUENCE]=&MessageProcessor::call_TAG_INDEX_PAIRED_SEQUENCE;
 	m_methods[TAG_INDEX_PAIRED_SEQUENCE_REPLY]=&MessageProcessor::call_TAG_INDEX_PAIRED_SEQUENCE_REPLY;

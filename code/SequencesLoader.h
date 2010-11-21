@@ -41,13 +41,14 @@ class SequencesLoader{
 	char*m_buffers;
 	int*m_entries;
 	int*m_numberOfSequences;
+	int*m_numberOfFlushedSequences;
 
 	int m_size;
 
 	bool m_send_sequences_done;
 
 	void flushAll(RingAllocator*m_outboxAllocator,StaticVector*m_outbox);
-	void flush(int rank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox);
+	void flush(int rank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox,bool forceNothing);
 	void appendSequence(int rank,char*sequence);
 	int getUsedSpace(int rank);
 	int getSpaceLeft(int rank);
