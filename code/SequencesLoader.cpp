@@ -108,7 +108,10 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		#else
 		cout<<endl<<"Loading "<<allFiles[(*m_distribution_file_id)]<<""<<endl;
 		#endif
-		loader.load(allFiles[(*m_distribution_file_id)],&(*m_distribution_reads),&(*m_distributionAllocator),&(*m_distributionAllocator));
+		int res=loader.load(allFiles[(*m_distribution_file_id)],&(*m_distribution_reads),&(*m_distributionAllocator),&(*m_distributionAllocator));
+		if(res==EXIT_FAILURE){
+			return false;
+		}
 		m_parameters->setNumberOfSequences(m_distribution_reads->size());
 		if((*m_distribution_reads).size()==0){
 			return false;

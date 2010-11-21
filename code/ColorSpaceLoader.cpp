@@ -37,7 +37,7 @@ ColorSpaceLoader::ColorSpaceLoader(){
 
 }
 
-void ColorSpaceLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator){
+int ColorSpaceLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator){
 	ifstream f(file.c_str());
 	char bufferForLine[1024];
 	int i=0;
@@ -66,5 +66,6 @@ void ColorSpaceLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAll
 		}
 	}
 	f.close();
+	return EXIT_SUCCESS;
 }
 

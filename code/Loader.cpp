@@ -46,61 +46,55 @@ int Loader::getReads(){
 	return m_total;
 }
 
-void Loader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator){
+int Loader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator){
 	{
 		ifstream f(file.c_str());
 		bool exists=f;
 		f.close();
 		if(!exists){
 			cout<<"Ray: cannot access "<<file<<": No such file or directory"<<endl;
-			return;
+			return EXIT_FAILURE;// ERROR
 		}
 	}
 	if(file.length()<4){
 		(cout)<<"Error: "<<file<<endl;
-		exit(0);
+		return EXIT_FAILURE;
 	}
 	string csfastaExtension=".csfasta";
 	if(file.length()>=csfastaExtension.length() and
 		file.substr(file.length()-csfastaExtension.length(),csfastaExtension.length())==csfastaExtension){
 		ColorSpaceLoader loader;
-		loader.load(file,reads,seqMyAllocator,readMyAllocator);
-		return;
+		return loader.load(file,reads,seqMyAllocator,readMyAllocator);
 	}
 	if(file.substr(file.length()-4,4)==".sff"){
 		SffLoader sffLoader;
 		sffLoader.load(file,reads,seqMyAllocator,readMyAllocator);
-		m_bases=sffLoader.getBases();
-		return;
+		return m_bases=sffLoader.getBases();
 	}
 	if(file.substr(file.length()-6,6)==".fasta"){
 		FastaLoader loader;
-		loader.load(file,reads,seqMyAllocator,readMyAllocator);
-		return;
+		return loader.load(file,reads,seqMyAllocator,readMyAllocator);
 	}
 
 	if(file.substr(file.length()-6,6)==".fastq"){
 		FastqLoader loader;
-		loader.load(file,reads,seqMyAllocator,readMyAllocator);
-		return;
+		return loader.load(file,reads,seqMyAllocator,readMyAllocator);
 	}
 
 	#ifdef HAVE_ZLIB_H
 	if(file.substr(file.length()-9,9)==".fastq.gz"){
 		FastqGzLoader loader;
-		loader.load(file,reads,seqMyAllocator,readMyAllocator,4);
-		return;
+		return loader.load(file,reads,seqMyAllocator,readMyAllocator,4);
 	}
 
 	if(file.substr(file.length()-9,9)==".fasta.gz"){
 		FastqGzLoader loader;
-		loader.load(file,reads,seqMyAllocator,readMyAllocator,2);
-		return;
+		return loader.load(file,reads,seqMyAllocator,readMyAllocator,2);
 	}
 
 
 	#endif
-
+	return EXIT_FAILURE;
 }
 
 int Loader::getBases(){

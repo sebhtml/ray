@@ -460,7 +460,7 @@ void Machine::start(){
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	if(isMaster()){
+	if(isMaster() && !m_aborted){
 		m_timePrinter.printElapsedTime("Collection of fusions");
 		m_timePrinter.printDurations();
 		cout<<endl;
@@ -484,19 +484,14 @@ void Machine::run(){
 	while(isAlive()){
 		receiveMessages(); 
 		processMessages();
-		if(m_aborted){
-			return;
-		}
 		processData();
 		sendMessages();
-		m_timePrinter.printDifferenceFromStart(getRank());
 	}
 }
 
 int Machine::getRank(){
 	return m_rank;
 }
-
 
 /*
  * finish hyper fusions now!
@@ -1106,6 +1101,7 @@ void Machine::call_MASTER_MODE_LOAD_CONFIG(){
 		ifstream f(m_argv[1]);
 		if(!f){
 			cout<<"Rank "<<getRank()<<" invalid input file."<<endl;
+			m_alive=false;
 			m_aborted=true;
 			f.close();
 			killRanks();
@@ -1119,6 +1115,8 @@ void Machine::call_MASTER_MODE_LOAD_CONFIG(){
 
 	m_parameters.load(m_argc,m_argv);
 	if(m_parameters.getError()){
+		m_master_mode=MASTER_MODE_DO_NOTHING;
+		m_aborted=true;
 		killRanks();
 		return;
 	}
@@ -1154,8 +1152,10 @@ void Machine::call_MASTER_MODE_LOAD_SEQUENCES(){
 	&m_parameters,&m_master_mode
 );
 	if(!res){
+		m_aborted=true;
 		killRanks();
 		m_mode=MODE_DO_NOTHING;
+		m_master_mode=MASTER_MODE_DO_NOTHING;
 	}
 }
 

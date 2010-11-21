@@ -31,7 +31,7 @@ using namespace std;
 
 class FastqGzLoader{
 public:
-	void load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator,int period);
+	int load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator,int period);
 };
 
 #endif

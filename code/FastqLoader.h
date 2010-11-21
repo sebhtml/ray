@@ -35,7 +35,7 @@ using namespace std;
 
 class FastqLoader{
 public:
-	void load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator);
+	int load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator);
 };
 
 #endif

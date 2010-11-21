@@ -22,7 +22,7 @@
 #include<FastqLoader.h>
 #include<fstream>
 
-void FastqLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator){
+int FastqLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator){
 	ifstream f(file.c_str());
 	string id;
 	ostringstream sequence;
@@ -62,5 +62,6 @@ void FastqLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocato
 	t->copy(NULL,sequence.str().c_str(),readMyAllocator);// remove the leading T & first color
 	reads->push_back(t);
 	f.close();
+	return EXIT_SUCCESS;
 }
 
