@@ -14,7 +14,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You have received a copy of the GNU General Public License
-along with this program (LICENSE).  
+along with this program (COPYING).  
 see <http://www.gnu.org/licenses/>
 
 */
@@ -36,6 +36,8 @@ see <http://www.gnu.org/licenses/>
 #define u16 uint16_t
 #define u32 uint32_t
 #define u64 uint64_t
+
+#define RAY_VERSION "1.0.0"
 
 #define ASCII_END_OF_TRANSMISSION 0x04
 

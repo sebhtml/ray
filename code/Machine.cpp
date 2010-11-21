@@ -14,7 +14,7 @@
     GNU General Public License for more details.
 
     You have received a copy of the GNU General Public License
-    along with this program (LICENSE).  
+    along with this program (COPYING).  
 	see <http://www.gnu.org/licenses/>
 
 
@@ -320,6 +320,8 @@ void Machine::start(){
 		cout<<"Bienvenue !"<<endl;
 		cout<<endl;
 
+		cout<<"Rank 0: Ray "<<RAY_VERSION<<endl;
+
 		#ifdef MPICH2
                 cout<<"Rank 0: compiled with MPICH2 "<<MPICH2_VERSION<<endl;
 		#endif
@@ -363,7 +365,7 @@ void Machine::start(){
 		cout<<endl<<"**************************************************"<<endl;
     		cout<<"This program comes with ABSOLUTELY NO WARRANTY."<<endl;
     		cout<<"This is free software, and you are welcome to redistribute it"<<endl;
-    		cout<<"under certain conditions; see \"LICENSE\" for details."<<endl;
+    		cout<<"under certain conditions; see \"COPYING\" for details."<<endl;
 		cout<<"**************************************************"<<endl;
 		cout<<endl;
 		cout<<"Ray Copyright (C) 2010  Sébastien Boisvert, Jacques Corbeil, François Laviolette"<<endl;
@@ -380,11 +382,7 @@ void Machine::start(){
 		cout<<"http://dx.doi.org/doi:10.1089/cmb.2009.0238"<<endl;
 		cout<<endl;
 
-
-		#ifdef SHOW_PROGRESS
 		cout<<"Rank "<<getRank()<<" welcomes you to the MPI_COMM_WORLD"<<endl;
-		cout<<"Rank "<<getRank()<<": website -> http://denovoassembler.sf.net/"<<endl;
-		#endif
 	}
 
 	cout<<"Rank "<<getRank()<<" is running as UNIX process "<<getpid()<<" on "<<serverName<<endl;
@@ -1151,8 +1149,6 @@ void Machine::call_MASTER_MODE_LOAD_CONFIG(){
 		}
 	}
 
-	cout<<endl;
-	cout<<"Rank 0: Ray 1.0.0 is running"<<endl;
 
 
 	m_parameters.load(m_argc,m_argv);

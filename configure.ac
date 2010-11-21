@@ -1,7 +1,7 @@
 dnl Sébastien Boisvert
 dnl autoconf script for Ray
 
-AC_INIT(Ray,0.1.1)
+AC_INIT(Ray,1.0.0)
 
 if test x"${CXXFLAGS+set}" = xset; then
   # the user set CXXFLAGS; don't override it.

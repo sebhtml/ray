@@ -1,3 +1,6 @@
+You need a C++ compiler (g++ will do) and a MPI implementation (MPICH2 or Open-MPI will do).
+
+
 1 ) using autoconf/automake
 
 tar -xjf Ray-version.tar.bz2
