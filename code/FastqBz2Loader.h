@@ -17,33 +17,21 @@
     along with this program (LICENSE).  
 	see <http://www.gnu.org/licenses/>
 
-
- 	Funding:
-
-Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Research (Master's award: 200910MDR-215249-172830 and Doctoral award: 200902CGM-204212-172830).
-
 */
 
 
+#ifndef _FastqBz2Loader
+#define _FastqBz2Loader
 
+#include<string>
+#include<vector>
+#include<Read.h>
+#include<MyAllocator.h>
+using namespace std;
 
-#ifndef _BzReader
-#define _BzReader
-
-#include<bzlib.h>
-#include<stdio.h>
-
-class BzReader{
-	BZFILE*m_bzFile;
-	FILE*m_file;
-	char*m_buffer;
-	int m_bufferSize;
-	int m_bufferPosition;
-	
+class FastqBz2Loader{
 public:
-	void open(const char*file);
-	char*readLine(char*s, int n);
-	void close();
+	int load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator,int period);
 };
 
 #endif

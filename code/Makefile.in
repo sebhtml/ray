@@ -15,6 +15,7 @@
 
 @SET_MAKE@
 
+
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
@@ -32,9 +33,19 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+@HAVE_ZLIB_TRUE@am__append_1 = FastqGzLoader.cpp FastqGzLoader.h
+@HAVE_BZ2_TRUE@am__append_2 = FastqBz2Loader.cpp FastqBz2Loader.h BzReader.h BzReader.cpp
 bin_PROGRAMS = Ray-SimulateFragments$(EXEEXT) \
 	Ray-SimulateErrors$(EXEEXT) Ray-SimulatePairedReads$(EXEEXT) \
 	Ray$(EXEEXT)
+@HAVE_ZLIB_TRUE@am__append_3 = -lz
+@HAVE_ZLIB_TRUE@am__append_4 = -lz
+@HAVE_ZLIB_TRUE@am__append_5 = -lz
+@HAVE_ZLIB_TRUE@am__append_6 = -lz
+@HAVE_BZ2_TRUE@am__append_7 = -lbz2
+@HAVE_BZ2_TRUE@am__append_8 = -lbz2
+@HAVE_BZ2_TRUE@am__append_9 = -lbz2
+@HAVE_BZ2_TRUE@am__append_10 = -lbz2
 subdir = code
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/config.h.in
@@ -46,13 +57,46 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__installdirs = "$(DESTDIR)$(bindir)"
-PROGRAMS = $(bin_PROGRAMS)
-am_Ray_OBJECTS = RingAllocator.$(OBJEXT) StaticVector.$(OBJEXT) \
+LIBRARIES = $(noinst_LIBRARIES)
+AR = ar
+ARFLAGS = cru
+libRay_a_AR = $(AR) $(ARFLAGS)
+libRay_a_LIBADD =
+am__libRay_a_SOURCES_DIST = PendingRequest.h RingAllocator.cpp \
+	RingAllocator.h StaticVector.cpp StaticVector.h \
+	MessagesHandler.h MessagesHandler.cpp slave_modes.h \
+	master_modes.h mpi_tags.h SeedingData.h Library.h Library.cpp \
+	FastaLoader.h FastaLoader.cpp FastqLoader.h FastqLoader.cpp \
+	BubbleData.h BubbleTool.cpp BubbleTool.h BufferedData.cpp \
+	BufferedData.h Chooser.cpp ChooserData.h Chooser.h \
+	ColorSpaceDecoder.cpp ColorSpaceDecoder.h ColorSpaceLoader.cpp \
+	ColorSpaceLoader.h common_functions.cpp common_functions.h \
+	config.h CoverageDistribution.cpp CoverageDistribution.h \
+	DepthFirstSearchData.h Direction.cpp Direction.h \
+	DistributionData.cpp DistributionData.h EdgesExtractor.cpp \
+	EdgesExtractor.h ErrorSimulator.cpp ErrorSimulator.h \
+	ExtensionData.h FusionData.h FusionData.cpp Loader.cpp \
+	Loader.hi Machine.cpp Machine.h Message.cpp Message.h \
+	MessageProcessor.cpp MessageProcessor.h MyAllocator.cpp \
+	MyAllocator.h MyForest.cpp MyForest.h OpenAssemblerChooser.cpp \
+	OpenAssemblerChooser.h PairedRead.cpp PairedRead.h \
+	Parameters.cpp Parameters.h ReadAnnotation.cpp \
+	ReadAnnotation.h Read.cpp Read.h RepeatedVertexWatchdog.cpp \
+	RepeatedVertexWatchdog.h SeedExtender.cpp SeedExtender.h \
+	SequencesIndexer.cpp SequencesIndexer.h SequencesLoader.cpp \
+	SequencesLoader.h SffLoader.cpp SffLoader.h SplayNode.h \
+	SplayTree.h SplayTreeIterator.h TimePrinter.cpp TimePrinter.h \
+	TipWatchdog.cpp TipWatchdog.h Vertex.cpp Vertex.h \
+	VertexLinkedList.cpp VertexLinkedList.h VerticesExtractor.cpp \
+	VerticesExtractor.h FastqGzLoader.cpp FastqGzLoader.h \
+	FastqBz2Loader.cpp FastqBz2Loader.h BzReader.h BzReader.cpp
+@HAVE_ZLIB_TRUE@am__objects_1 = FastqGzLoader.$(OBJEXT)
+@HAVE_BZ2_TRUE@am__objects_2 = FastqBz2Loader.$(OBJEXT) \
+@HAVE_BZ2_TRUE@	BzReader.$(OBJEXT)
+am_libRay_a_OBJECTS = RingAllocator.$(OBJEXT) StaticVector.$(OBJEXT) \
 	MessagesHandler.$(OBJEXT) Library.$(OBJEXT) \
-	FastqGzLoader.$(OBJEXT) FastaLoader.$(OBJEXT) \
-	FastqLoader.$(OBJEXT) BubbleTool.$(OBJEXT) \
-	BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
+	FastaLoader.$(OBJEXT) FastqLoader.$(OBJEXT) \
+	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	Direction.$(OBJEXT) DistributionData.$(OBJEXT) \
@@ -61,79 +105,34 @@ am_Ray_OBJECTS = RingAllocator.$(OBJEXT) StaticVector.$(OBJEXT) \
 	Message.$(OBJEXT) MessageProcessor.$(OBJEXT) \
 	MyAllocator.$(OBJEXT) MyForest.$(OBJEXT) \
 	OpenAssemblerChooser.$(OBJEXT) PairedRead.$(OBJEXT) \
-	Parameters.$(OBJEXT) ray_main.$(OBJEXT) \
-	ReadAnnotation.$(OBJEXT) Read.$(OBJEXT) \
+	Parameters.$(OBJEXT) ReadAnnotation.$(OBJEXT) Read.$(OBJEXT) \
 	RepeatedVertexWatchdog.$(OBJEXT) SeedExtender.$(OBJEXT) \
 	SequencesIndexer.$(OBJEXT) SequencesLoader.$(OBJEXT) \
 	SffLoader.$(OBJEXT) TimePrinter.$(OBJEXT) \
 	TipWatchdog.$(OBJEXT) Vertex.$(OBJEXT) \
-	VertexLinkedList.$(OBJEXT) VerticesExtractor.$(OBJEXT)
+	VertexLinkedList.$(OBJEXT) VerticesExtractor.$(OBJEXT) \
+	$(am__objects_1) $(am__objects_2)
+libRay_a_OBJECTS = $(am_libRay_a_OBJECTS)
+am__installdirs = "$(DESTDIR)$(bindir)"
+PROGRAMS = $(bin_PROGRAMS)
+am_Ray_OBJECTS = ray_main.$(OBJEXT)
 Ray_OBJECTS = $(am_Ray_OBJECTS)
-Ray_LDADD = $(LDADD)
-am_Ray_SimulateErrors_OBJECTS = RingAllocator.$(OBJEXT) \
-	StaticVector.$(OBJEXT) Library.$(OBJEXT) \
-	MessagesHandler.$(OBJEXT) FastqGzLoader.$(OBJEXT) \
-	FastqLoader.$(OBJEXT) FastaLoader.$(OBJEXT) \
-	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
-	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
-	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
-	Direction.$(OBJEXT) DistributionData.$(OBJEXT) \
-	EdgesExtractor.$(OBJEXT) ErrorSimulator.$(OBJEXT) \
-	FusionData.$(OBJEXT) Loader.$(OBJEXT) Machine.$(OBJEXT) \
-	Message.$(OBJEXT) MessageProcessor.$(OBJEXT) \
-	MyAllocator.$(OBJEXT) MyForest.$(OBJEXT) \
-	OpenAssemblerChooser.$(OBJEXT) PairedRead.$(OBJEXT) \
-	Parameters.$(OBJEXT) ReadAnnotation.$(OBJEXT) Read.$(OBJEXT) \
-	RepeatedVertexWatchdog.$(OBJEXT) SeedExtender.$(OBJEXT) \
-	SequencesIndexer.$(OBJEXT) SequencesLoader.$(OBJEXT) \
-	SffLoader.$(OBJEXT) simulateErrors_main.$(OBJEXT) \
-	TimePrinter.$(OBJEXT) TipWatchdog.$(OBJEXT) Vertex.$(OBJEXT) \
-	VertexLinkedList.$(OBJEXT) VerticesExtractor.$(OBJEXT)
+am__DEPENDENCIES_1 =
+Ray_DEPENDENCIES = libRay.a $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
+am_Ray_SimulateErrors_OBJECTS = simulateErrors_main.$(OBJEXT)
 Ray_SimulateErrors_OBJECTS = $(am_Ray_SimulateErrors_OBJECTS)
-Ray_SimulateErrors_LDADD = $(LDADD)
-am_Ray_SimulateFragments_OBJECTS = RingAllocator.$(OBJEXT) \
-	StaticVector.$(OBJEXT) MessagesHandler.$(OBJEXT) \
-	Library.$(OBJEXT) FastqGzLoader.$(OBJEXT) \
-	FastqLoader.$(OBJEXT) FastaLoader.$(OBJEXT) \
-	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
-	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
-	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
-	Direction.$(OBJEXT) DistributionData.$(OBJEXT) \
-	EdgesExtractor.$(OBJEXT) ErrorSimulator.$(OBJEXT) \
-	FusionData.$(OBJEXT) Loader.$(OBJEXT) Machine.$(OBJEXT) \
-	Message.$(OBJEXT) MessageProcessor.$(OBJEXT) \
-	MyAllocator.$(OBJEXT) MyForest.$(OBJEXT) \
-	OpenAssemblerChooser.$(OBJEXT) PairedRead.$(OBJEXT) \
-	Parameters.$(OBJEXT) ReadAnnotation.$(OBJEXT) Read.$(OBJEXT) \
-	RepeatedVertexWatchdog.$(OBJEXT) SeedExtender.$(OBJEXT) \
-	SequencesIndexer.$(OBJEXT) SequencesLoader.$(OBJEXT) \
-	SffLoader.$(OBJEXT) simulate_fragments_main.$(OBJEXT) \
-	TimePrinter.$(OBJEXT) TipWatchdog.$(OBJEXT) Vertex.$(OBJEXT) \
-	VertexLinkedList.$(OBJEXT) VerticesExtractor.$(OBJEXT)
+Ray_SimulateErrors_DEPENDENCIES = libRay.a $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
+am_Ray_SimulateFragments_OBJECTS = simulate_fragments_main.$(OBJEXT)
 Ray_SimulateFragments_OBJECTS = $(am_Ray_SimulateFragments_OBJECTS)
-Ray_SimulateFragments_LDADD = $(LDADD)
-am_Ray_SimulatePairedReads_OBJECTS = RingAllocator.$(OBJEXT) \
-	StaticVector.$(OBJEXT) MessagesHandler.$(OBJEXT) \
-	Library.$(OBJEXT) FastqGzLoader.$(OBJEXT) \
-	FastqLoader.$(OBJEXT) FastaLoader.$(OBJEXT) \
-	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
-	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
-	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
-	Direction.$(OBJEXT) DistributionData.$(OBJEXT) \
-	EdgesExtractor.$(OBJEXT) ErrorSimulator.$(OBJEXT) \
-	FusionData.$(OBJEXT) Loader.$(OBJEXT) Machine.$(OBJEXT) \
-	Message.$(OBJEXT) MessageProcessor.$(OBJEXT) \
-	MyAllocator.$(OBJEXT) MyForest.$(OBJEXT) \
-	OpenAssemblerChooser.$(OBJEXT) PairedRead.$(OBJEXT) \
-	Parameters.$(OBJEXT) ReadAnnotation.$(OBJEXT) Read.$(OBJEXT) \
-	RepeatedVertexWatchdog.$(OBJEXT) SeedExtender.$(OBJEXT) \
-	SequencesIndexer.$(OBJEXT) SequencesLoader.$(OBJEXT) \
-	SffLoader.$(OBJEXT) simulate_paired_main.$(OBJEXT) \
-	TimePrinter.$(OBJEXT) TipWatchdog.$(OBJEXT) Vertex.$(OBJEXT) \
-	VertexLinkedList.$(OBJEXT) VerticesExtractor.$(OBJEXT)
+Ray_SimulateFragments_DEPENDENCIES = libRay.a $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
+am_Ray_SimulatePairedReads_OBJECTS = simulate_paired_main.$(OBJEXT)
 Ray_SimulatePairedReads_OBJECTS =  \
 	$(am_Ray_SimulatePairedReads_OBJECTS)
-Ray_SimulatePairedReads_LDADD = $(LDADD)
+Ray_SimulatePairedReads_DEPENDENCIES = libRay.a $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -147,11 +146,11 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(Ray_SOURCES) $(Ray_SimulateErrors_SOURCES) \
-	$(Ray_SimulateFragments_SOURCES) \
+SOURCES = $(libRay_a_SOURCES) $(Ray_SOURCES) \
+	$(Ray_SimulateErrors_SOURCES) $(Ray_SimulateFragments_SOURCES) \
 	$(Ray_SimulatePairedReads_SOURCES)
-DIST_SOURCES = $(Ray_SOURCES) $(Ray_SimulateErrors_SOURCES) \
-	$(Ray_SimulateFragments_SOURCES) \
+DIST_SOURCES = $(am__libRay_a_SOURCES_DIST) $(Ray_SOURCES) \
+	$(Ray_SimulateErrors_SOURCES) $(Ray_SimulateFragments_SOURCES) \
 	$(Ray_SimulatePairedReads_SOURCES)
 ETAGS = etags
 CTAGS = ctags
@@ -195,6 +194,7 @@ PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+RANLIB = @RANLIB@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -241,356 +241,45 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AM_CXXFLAGS = -O3 -Wall -lz
-Ray_SOURCES = \
-PendingRequest.h RingAllocator.cpp RingAllocator.h StaticVector.cpp StaticVector.h \
-MessagesHandler.h MessagesHandler.cpp \
-slave_modes.h master_modes.h mpi_tags.h \
-SeedingData.h \
-Library.h Library.cpp \
-FastqGzLoader.h \
-FastqGzLoader.cpp \
-FastaLoader.h \
-FastaLoader.cpp \
-FastqLoader.h \
-FastqLoader.cpp \
-BubbleData.h \
-BubbleTool.cpp \
-BubbleTool.h \
-BufferedData.cpp \
-BufferedData.h \
-Chooser.cpp \
-ChooserData.h \
-Chooser.h \
-ColorSpaceDecoder.cpp \
-ColorSpaceDecoder.h \
-ColorSpaceLoader.cpp \
-ColorSpaceLoader.h \
-common_functions.cpp \
-common_functions.h \
-config.h \
-CoverageDistribution.cpp \
-CoverageDistribution.h \
-DepthFirstSearchData.h \
-Direction.cpp \
-Direction.h \
-DistributionData.cpp \
-DistributionData.h \
-EdgesExtractor.cpp \
-EdgesExtractor.h \
-ErrorSimulator.cpp \
-ErrorSimulator.h \
-ExtensionData.h \
-FusionData.h \
-FusionData.cpp \
-Loader.cpp \
-Loader.h \
-Machine.cpp \
-Machine.h \
-Message.cpp \
-Message.h \
-MessageProcessor.cpp \
-MessageProcessor.h \
-MyAllocator.cpp \
-MyAllocator.h \
-MyForest.cpp \
-MyForest.h \
-OpenAssemblerChooser.cpp \
-OpenAssemblerChooser.h \
-PairedRead.cpp \
-PairedRead.h \
-Parameters.cpp \
-Parameters.h \
-ray_main.cpp \
-ReadAnnotation.cpp \
-ReadAnnotation.h \
-Read.cpp \
-Read.h \
-RepeatedVertexWatchdog.cpp \
-RepeatedVertexWatchdog.h \
-SeedExtender.cpp \
-SeedExtender.h \
-SequencesIndexer.cpp \
-SequencesIndexer.h \
-SequencesLoader.cpp \
-SequencesLoader.h \
-SffLoader.cpp \
-SffLoader.h \
-SplayNode.h \
-SplayTree.h \
-SplayTreeIterator.h \
-TimePrinter.cpp \
-TimePrinter.h \
-TipWatchdog.cpp \
-TipWatchdog.h \
-Vertex.cpp \
-Vertex.h \
-VertexLinkedList.cpp \
-VertexLinkedList.h \
-VerticesExtractor.cpp \
-VerticesExtractor.h 
-
-Ray_SimulateFragments_SOURCES = \
- PendingRequest.h RingAllocator.cpp RingAllocator.h  StaticVector.cpp StaticVector.h \
-MessagesHandler.h MessagesHandler.cpp \
-Library.h Library.cpp \
-slave_modes.h master_modes.h mpi_tags.h \
-FastqGzLoader.h \
-FastqGzLoader.cpp \
-FastqLoader.h \
-FastqLoader.cpp \
-FastaLoader.h \
-FastaLoader.cpp \
-BubbleData.h \
-BubbleTool.cpp \
-BubbleTool.h \
-BufferedData.cpp \
-BufferedData.h \
-Chooser.cpp \
-ChooserData.h \
-Chooser.h \
-ColorSpaceDecoder.cpp \
-ColorSpaceDecoder.h \
-ColorSpaceLoader.cpp \
-ColorSpaceLoader.h \
-common_functions.cpp \
-common_functions.h \
-config.h \
-CoverageDistribution.cpp \
-CoverageDistribution.h \
-DepthFirstSearchData.h \
-Direction.cpp \
-Direction.h \
-DistributionData.cpp \
-DistributionData.h \
-EdgesExtractor.cpp \
-EdgesExtractor.h \
-ErrorSimulator.cpp \
-ErrorSimulator.h \
-ExtensionData.h \
-FusionData.h \
-FusionData.cpp \
-Loader.cpp \
-Loader.h \
-Machine.cpp \
-Machine.h \
-Message.cpp \
-Message.h \
-MessageProcessor.cpp \
-MessageProcessor.h \
-MyAllocator.cpp \
-MyAllocator.h \
-MyForest.cpp \
-MyForest.h \
-OpenAssemblerChooser.cpp \
-OpenAssemblerChooser.h \
-PairedRead.cpp \
-PairedRead.h \
-Parameters.cpp \
-Parameters.h \
-ReadAnnotation.cpp \
-ReadAnnotation.h \
-Read.cpp \
-Read.h \
-RepeatedVertexWatchdog.cpp \
-RepeatedVertexWatchdog.h \
-SeedExtender.cpp \
-SeedExtender.h \
-SequencesIndexer.cpp \
-SequencesIndexer.h \
-SequencesLoader.cpp \
-SequencesLoader.h \
-SffLoader.cpp \
-SffLoader.h \
-simulate_fragments_main.cpp \
-SplayNode.h \
-SplayTree.h \
-SplayTreeIterator.h \
-TimePrinter.cpp \
-TimePrinter.h \
-TipWatchdog.cpp \
-TipWatchdog.h \
-Vertex.cpp \
-Vertex.h \
-VertexLinkedList.cpp \
-VertexLinkedList.h \
-VerticesExtractor.cpp \
-VerticesExtractor.h 
-
-Ray_SimulateErrors_SOURCES = \
- PendingRequest.h RingAllocator.cpp RingAllocator.h  StaticVector.cpp StaticVector.h \
-Library.h Library.cpp \
-MessagesHandler.h MessagesHandler.cpp \
-slave_modes.h master_modes.h mpi_tags.h \
-FastqGzLoader.h \
-FastqGzLoader.cpp \
-FastqLoader.h \
-FastqLoader.cpp \
-FastaLoader.h \
-FastaLoader.cpp \
-BubbleData.h \
-BubbleTool.cpp \
-BubbleTool.h \
-BufferedData.cpp \
-BufferedData.h \
-Chooser.cpp \
-ChooserData.h \
-Chooser.h \
-ColorSpaceDecoder.cpp \
-ColorSpaceDecoder.h \
-ColorSpaceLoader.cpp \
-ColorSpaceLoader.h \
-common_functions.cpp \
-common_functions.h \
-config.h \
-CoverageDistribution.cpp \
-CoverageDistribution.h \
-DepthFirstSearchData.h \
-Direction.cpp \
-Direction.h \
-DistributionData.cpp \
-DistributionData.h \
-EdgesExtractor.cpp \
-EdgesExtractor.h \
-ErrorSimulator.cpp \
-ErrorSimulator.h \
-ExtensionData.h \
-FusionData.h \
-FusionData.cpp \
-Loader.cpp \
-Loader.h \
-Machine.cpp \
-Machine.h \
-Message.cpp \
-Message.h \
-MessageProcessor.cpp \
-MessageProcessor.h \
-MyAllocator.cpp \
-MyAllocator.h \
-MyForest.cpp \
-MyForest.h \
-OpenAssemblerChooser.cpp \
-OpenAssemblerChooser.h \
-PairedRead.cpp \
-PairedRead.h \
-Parameters.cpp \
-Parameters.h \
-ReadAnnotation.cpp \
-ReadAnnotation.h \
-Read.cpp \
-Read.h \
-RepeatedVertexWatchdog.cpp \
-RepeatedVertexWatchdog.h \
-SeedExtender.cpp \
-SeedExtender.h \
-SequencesIndexer.cpp \
-SequencesIndexer.h \
-SequencesLoader.cpp \
-SequencesLoader.h \
-SffLoader.cpp \
-SffLoader.h \
-simulateErrors_main.cpp \
-SplayNode.h \
-SplayTree.h \
-SplayTreeIterator.h \
-TimePrinter.cpp \
-TimePrinter.h \
-TipWatchdog.cpp \
-TipWatchdog.h \
-Vertex.cpp \
-Vertex.h \
-VertexLinkedList.cpp \
-VertexLinkedList.h \
-VerticesExtractor.cpp \
-VerticesExtractor.h 
-
-Ray_SimulatePairedReads_SOURCES = \
- PendingRequest.h RingAllocator.cpp RingAllocator.h StaticVector.cpp StaticVector.h \
-MessagesHandler.h MessagesHandler.cpp \
-slave_modes.h master_modes.h mpi_tags.h \
-FastqGzLoader.h \
-Library.h Library.cpp \
-FastqGzLoader.cpp \
-FastqLoader.h \
-FastqLoader.cpp \
-FastaLoader.h \
-FastaLoader.cpp \
-BubbleData.h \
-BubbleTool.cpp \
-BubbleTool.h \
-BufferedData.cpp \
-BufferedData.h \
-Chooser.cpp \
-ChooserData.h \
-Chooser.h \
-ColorSpaceDecoder.cpp \
-ColorSpaceDecoder.h \
-ColorSpaceLoader.cpp \
-ColorSpaceLoader.h \
-common_functions.cpp \
-common_functions.h \
-config.h \
-CoverageDistribution.cpp \
-CoverageDistribution.h \
-DepthFirstSearchData.h \
-Direction.cpp \
-Direction.h \
-DistributionData.cpp \
-DistributionData.h \
-EdgesExtractor.cpp \
-EdgesExtractor.h \
-ErrorSimulator.cpp \
-ErrorSimulator.h \
-ExtensionData.h \
-FusionData.h \
-FusionData.cpp \
-Loader.cpp \
-Loader.h \
-Machine.cpp \
-Machine.h \
-Message.cpp \
-Message.h \
-MessageProcessor.cpp \
-MessageProcessor.h \
-MyAllocator.cpp \
-MyAllocator.h \
-MyForest.cpp \
-MyForest.h \
-OpenAssemblerChooser.cpp \
-OpenAssemblerChooser.h \
-PairedRead.cpp \
-PairedRead.h \
-Parameters.cpp \
-Parameters.h \
-ReadAnnotation.cpp \
-ReadAnnotation.h \
-Read.cpp \
-Read.h \
-RepeatedVertexWatchdog.cpp \
-RepeatedVertexWatchdog.h \
-SeedExtender.cpp \
-SeedExtender.h \
-SequencesIndexer.cpp \
-SequencesIndexer.h \
-SequencesLoader.cpp \
-SequencesLoader.h \
-SffLoader.cpp \
-SffLoader.h \
-simulate_paired_main.cpp \
-SplayNode.h \
-SplayTree.h \
-SplayTreeIterator.h \
-TimePrinter.cpp \
-TimePrinter.h \
-TipWatchdog.cpp \
-TipWatchdog.h \
-Vertex.cpp \
-Vertex.h \
-VertexLinkedList.cpp \
-VertexLinkedList.h \
-VerticesExtractor.cpp \
-VerticesExtractor.h 
-
+AM_CXXFLAGS = -O3 -Wall
+LDADD = ""
+noinst_LIBRARIES = libRay.a
+libRay_a_SOURCES = PendingRequest.h RingAllocator.cpp RingAllocator.h \
+	StaticVector.cpp StaticVector.h MessagesHandler.h \
+	MessagesHandler.cpp slave_modes.h master_modes.h mpi_tags.h \
+	SeedingData.h Library.h Library.cpp FastaLoader.h \
+	FastaLoader.cpp FastqLoader.h FastqLoader.cpp BubbleData.h \
+	BubbleTool.cpp BubbleTool.h BufferedData.cpp BufferedData.h \
+	Chooser.cpp ChooserData.h Chooser.h ColorSpaceDecoder.cpp \
+	ColorSpaceDecoder.h ColorSpaceLoader.cpp ColorSpaceLoader.h \
+	common_functions.cpp common_functions.h config.h \
+	CoverageDistribution.cpp CoverageDistribution.h \
+	DepthFirstSearchData.h Direction.cpp Direction.h \
+	DistributionData.cpp DistributionData.h EdgesExtractor.cpp \
+	EdgesExtractor.h ErrorSimulator.cpp ErrorSimulator.h \
+	ExtensionData.h FusionData.h FusionData.cpp Loader.cpp \
+	Loader.hi Machine.cpp Machine.h Message.cpp Message.h \
+	MessageProcessor.cpp MessageProcessor.h MyAllocator.cpp \
+	MyAllocator.h MyForest.cpp MyForest.h OpenAssemblerChooser.cpp \
+	OpenAssemblerChooser.h PairedRead.cpp PairedRead.h \
+	Parameters.cpp Parameters.h ReadAnnotation.cpp \
+	ReadAnnotation.h Read.cpp Read.h RepeatedVertexWatchdog.cpp \
+	RepeatedVertexWatchdog.h SeedExtender.cpp SeedExtender.h \
+	SequencesIndexer.cpp SequencesIndexer.h SequencesLoader.cpp \
+	SequencesLoader.h SffLoader.cpp SffLoader.h SplayNode.h \
+	SplayTree.h SplayTreeIterator.h TimePrinter.cpp TimePrinter.h \
+	TipWatchdog.cpp TipWatchdog.h Vertex.cpp Vertex.h \
+	VertexLinkedList.cpp VertexLinkedList.h VerticesExtractor.cpp \
+	VerticesExtractor.h $(am__append_1) $(am__append_2)
+Ray_SOURCES = ray_main.cpp 
+Ray_LDADD = libRay.a $(am__append_3) $(am__append_7)
+Ray_SimulateFragments_SOURCES = simulate_fragments_main.cpp 
+Ray_SimulateFragments_LDADD = libRay.a $(am__append_4) $(am__append_8)
+Ray_SimulateErrors_SOURCES = simulateErrors_main.cpp 
+Ray_SimulateErrors_LDADD = libRay.a $(am__append_5) $(am__append_9)
+Ray_SimulatePairedReads_SOURCES = simulate_paired_main.cpp 
+Ray_SimulatePairedReads_LDADD = libRay.a $(am__append_6) \
+	$(am__append_10)
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -643,6 +332,13 @@ $(srcdir)/config.h.in:  $(am__configure_deps)
 
 distclean-hdr:
 	-rm -f config.h stamp-h1
+
+clean-noinstLIBRARIES:
+	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
+libRay.a: $(libRay_a_OBJECTS) $(libRay_a_DEPENDENCIES) 
+	-rm -f libRay.a
+	$(libRay_a_AR) libRay.a $(libRay_a_OBJECTS) $(libRay_a_LIBADD)
+	$(RANLIB) libRay.a
 install-binPROGRAMS: $(bin_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	test -z "$(bindir)" || $(MKDIR_P) "$(DESTDIR)$(bindir)"
@@ -701,6 +397,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/BubbleTool.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/BufferedData.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/BzReader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Chooser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ColorSpaceDecoder.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ColorSpaceLoader.Po@am__quote@
@@ -710,6 +407,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/EdgesExtractor.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ErrorSimulator.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FastaLoader.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FastqBz2Loader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FastqGzLoader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FastqLoader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FusionData.Po@am__quote@
@@ -842,7 +540,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS) config.h
+all-am: Makefile $(LIBRARIES) $(PROGRAMS) config.h
 installdirs:
 	for dir in "$(DESTDIR)$(bindir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
@@ -874,7 +572,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-binPROGRAMS clean-generic mostlyclean-am
+clean-am: clean-binPROGRAMS clean-generic clean-noinstLIBRARIES \
+	mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -944,17 +643,18 @@ uninstall-am: uninstall-binPROGRAMS
 .MAKE: all install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-binPROGRAMS \
-	clean-generic ctags distclean distclean-compile \
-	distclean-generic distclean-hdr distclean-tags distdir dvi \
-	dvi-am html html-am info info-am install install-am \
-	install-binPROGRAMS install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-binPROGRAMS
+	clean-generic clean-noinstLIBRARIES ctags distclean \
+	distclean-compile distclean-generic distclean-hdr \
+	distclean-tags distdir dvi dvi-am html html-am info info-am \
+	install install-am install-binPROGRAMS install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-man install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
+	uninstall-am uninstall-binPROGRAMS
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

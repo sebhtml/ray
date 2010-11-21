@@ -17,33 +17,30 @@
     along with this program (LICENSE).  
 	see <http://www.gnu.org/licenses/>
 
-
- 	Funding:
-
-Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Research (Master's award: 200910MDR-215249-172830 and Doctoral award: 200902CGM-204212-172830).
-
 */
 
+#include<FastqBz2Loader.h>
+#include<fstream>
+#include<BzReader.h>
 
+// a very simple and compact fastq.gz reader
+int FastqBz2Loader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator,int period){
+	BzReader reader;
+	reader.open(file.c_str());
+	char buffer[4096];
+	int rotatingVariable=0;
+	while(NULL!=reader.readLine(buffer,4096)){
+		if(rotatingVariable==1){
+			Read*t=(Read*)readMyAllocator->allocate(sizeof(Read));
+			t->copy(NULL,buffer,readMyAllocator);
+			reads->push_back(t);
+		}
+		rotatingVariable++;
+		if(rotatingVariable==period){
+			rotatingVariable=0;
+		}
+	}
+	reader.close();
+	return EXIT_SUCCESS;
+}
 
-
-#ifndef _BzReader
-#define _BzReader
-
-#include<bzlib.h>
-#include<stdio.h>
-
-class BzReader{
-	BZFILE*m_bzFile;
-	FILE*m_file;
-	char*m_buffer;
-	int m_bufferSize;
-	int m_bufferPosition;
-	
-public:
-	void open(const char*file);
-	char*readLine(char*s, int n);
-	void close();
-};
-
-#endif

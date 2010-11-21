@@ -27,7 +27,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<BzReader.h>
 #include<stdlib.h>
 
-void BzReader::open(char*file){
+void BzReader::open(const char*file){
 	int error;
 	m_file=fopen(file,"r");
 	int verbosity=0;

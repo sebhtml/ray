@@ -24,8 +24,12 @@
 #include<FastaLoader.h>
 #include<FastqLoader.h>
 
-#ifdef HAVE_ZLIB_H
+#ifdef HAVE_ZLIB
 #include<FastqGzLoader.h>
+#endif
+
+#ifdef HAVE_LIBBZ2
+#include<FastqBz2Loader.h>
 #endif
 
 #include<string>
@@ -81,7 +85,7 @@ int Loader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAl
 		return loader.load(file,reads,seqMyAllocator,readMyAllocator);
 	}
 
-	#ifdef HAVE_ZLIB_H
+	#ifdef HAVE_ZLIB
 	if(file.substr(file.length()-9,9)==".fastq.gz"){
 		FastqGzLoader loader;
 		return loader.load(file,reads,seqMyAllocator,readMyAllocator,4);
@@ -92,8 +96,22 @@ int Loader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAl
 		return loader.load(file,reads,seqMyAllocator,readMyAllocator,2);
 	}
 
+	#endif
+
+
+	#ifdef HAVE_LIBBZ2
+	if(file.substr(file.length()-10,10)==".fastq.bz2"){
+		FastqBz2Loader loader;
+		return loader.load(file,reads,seqMyAllocator,readMyAllocator,4);
+	}
+
+	if(file.substr(file.length()-10,10)==".fasta.bz2"){
+		FastqBz2Loader loader;
+		return loader.load(file,reads,seqMyAllocator,readMyAllocator,2);
+	}
 
 	#endif
+	
 	return EXIT_FAILURE;
 }
 

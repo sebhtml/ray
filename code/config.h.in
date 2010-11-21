@@ -6,6 +6,9 @@
 /* Define to 1 if you have the <assert.h> header file. */
 #undef HAVE_ASSERT_H
 
+/* Define to 1 if you have the <bzlib.h> header file. */
+#undef HAVE_BZLIB_H
+
 /* Define to 1 if you have the <cstdlib> header file. */
 #undef HAVE_CSTDLIB
 
@@ -20,6 +23,9 @@
 
 /* Define to 1 if you have the <iostream> header file. */
 #undef HAVE_IOSTREAM
+
+/* Have libbz2 */
+#undef HAVE_LIBBZ2
 
 /* Define to 1 if you have the <map> header file. */
 #undef HAVE_MAP
