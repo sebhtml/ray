@@ -42,9 +42,11 @@ void MessagesHandler::sendMessages(StaticVector*outbox,int source){
 		assert(!(aMessage->getBuffer()==NULL && aMessage->getCount()>0));
 		#endif
 
-		int value=MPI_Isend(aMessage->getBuffer(),aMessage->getCount(),aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(),MPI_COMM_WORLD,&request);
 		
-		#ifdef ASSERT
+		#ifndef ASSERT
+		MPI_Isend(aMessage->getBuffer(),aMessage->getCount(),aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(),MPI_COMM_WORLD,&request);
+		#else
+		int value=MPI_Isend(aMessage->getBuffer(),aMessage->getCount(),aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(),MPI_COMM_WORLD,&request);
 		assert(value==MPI_SUCCESS);
 		#endif
 		

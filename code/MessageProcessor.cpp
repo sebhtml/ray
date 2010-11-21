@@ -67,8 +67,9 @@ void MessageProcessor::call_TAG_START_INDEXING_SEQUENCES(Message*message){
 void MessageProcessor::call_TAG_SEND_SEQUENCE(Message*message){
 	char*buffer=(char*)message->getBuffer();
 	int currentPosition=0;
-	int n=0;
+
 	#ifdef ASSERT
+	int n=0;
 	while(buffer[currentPosition]!=ASCII_END_OF_TRANSMISSION){
 		currentPosition+=(strlen(buffer+currentPosition)+1);
 		n++;
@@ -77,8 +78,7 @@ void MessageProcessor::call_TAG_SEND_SEQUENCE(Message*message){
 	assert(n>0);
 	#endif
 
-
-	while(buffer[currentPosition]!='\0'){
+	while(buffer[currentPosition]!=ASCII_END_OF_TRANSMISSION){
 		Read*myRead=(Read*)(*m_persistentAllocator).allocate(sizeof(Read));
 		myRead->copy(NULL,buffer+currentPosition,&(*m_persistentAllocator));
 		m_myReads->push_back(myRead);
