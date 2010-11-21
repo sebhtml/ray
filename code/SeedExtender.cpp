@@ -632,6 +632,8 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			ed->m_EXTENSION_readsInRange.clear();
 		}else{
 			if(ed->m_EXTENSION_extension.size()>=100){
+				int theCurrentSize=ed->m_EXTENSION_extension.size();
+				cout<<"Rank "<<theRank<<" reached "<<theCurrentSize<<" vertices (completed)"<<endl;
 				ed->m_EXTENSION_contigs.push_back(ed->m_EXTENSION_extension);
 
 				int id=ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+theRank;
@@ -858,7 +860,10 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				}else{
 					(*(repeatedLength))=0;
 				}
-
+				int theCurrentSize=ed->m_EXTENSION_extension.size();
+				if(theCurrentSize%1000==0){
+					cout<<"Rank "<<theRank<<" reached "<<theCurrentSize<<" vertices"<<endl;
+				}
 				ed->m_EXTENSION_extension.push_back((*currentVertex));
 				ed->m_currentCoverage=(*receivedVertexCoverage);
 				// save wave progress.
