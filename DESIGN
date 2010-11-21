@@ -1,0 +1,121 @@
+== Master modes, slave modes, master methods & slave methods ==
+
+One MPI rank has a master mode and a slave mode. The master mode is set initially to MASTER_MODE_DO_NOTHING for all MPI ranks except the 0, which is the only master. The slave mode is set initially to MODE_DO_NOTHING.
+
+Not that the master is also a slave, so given n MPI ranks, there is 1 master and n slaves.
+
+In Machine.cpp, functions with a name starting with call_MASTER_MODE_ are master methods. There are 25 such methods.
+
+In the same file, functions with a name starting with call_MODE_ are slave methods. There are 16 such methods.
+
+Two arrays, namely m_master_methods and m_slave_methods, contain pointers two master and slave methods, respectively.
+
+Selecting the master method given the master mode is done in constant time, and so is the selection of the slave method.
+
+
+== MPI message tags ==
+
+
+There are over one hundred MPI tags in Ray (113 to be exact).
+
+In MessageProcessor.cpp, function with a name starting with call_TAG_ are message handlers. There are 113 such methods.
+
+In the same file, there is an array indexing the message handlers so that given a message, the correct message handler is selected in constant time.
+
+== Implementation ==
+
+* 53 C++ classes
+* 48 .cpp files
+* 55 .h files
+
+== libRay.a ==
+
+This is the Ray library.
+
+<pre>
+# with MPICH2 (MPICH2 is a static library)
+
+[boi@ls30 code]$ file libRay.a 
+libRay.a: current ar archive
+
+[boi@ls30 code]$ ls -l libRay.a 
+-rw-rw-r-- 1 boiseb01 boiseb01 798910 2010-11-21 17:45 libRay.a
+
+</pre>
+
+<pre>
+# with Open-MPI (Open-MPI is a shared library)
+[boi@ls30 code]$ file libRay.a 
+libRay.a: current ar archive
+
+[boi@ls30 code]$ ls -l libRay.a  
+-rw-rw-r-- 1 boiseb01 boiseb01 2835066 2010-11-21 17:39 libRay.a
+</pre>
+
+== the Ray a.out (executable) ==
+
+Ray is the sole executable necessary for assembling data.
+
+<pre>
+# with MPICH2
+
+[boi@ls30 code]$ file Ray
+Ray: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked (uses shared libs), for GNU/Linux 2.6.18, not stripped
+
+[boi@ls30 code]$ ls -l Ray
+-rwxrwxr-x 1 boiseb01 boiseb01 1176749 2010-11-21 17:45 Ray
+
+</pre>
+
+<pre>
+# with Open-MPI
+
+[boi@ls30 code]$ file Ray
+Ray: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked (uses shared libs), for GNU/Linux 2.6.18, not stripped
+
+[boi@ls30 code]$ ls -l Ray
+-rwxrwxr-x 1 boiseb01 boiseb01 464782 2010-11-21 17:39 Ray
+
+</pre>
+
+== External libraries ==
+
+It is linked with several libraries.
+
+<pre>
+# with MPICH2
+
+[boi@ls30 code]$ ldd Ray
+	linux-vdso.so.1 =>  (0x00007fff733ff000)
+	libz.so.1 => /lib64/libz.so.1 (0x00000033f6600000)
+	libbz2.so.1 => /lib64/libbz2.so.1 (0x0000003403e00000)
+	librt.so.1 => /lib64/librt.so.1 (0x00000033f6e00000)
+	libpthread.so.0 => /lib64/libpthread.so.0 (0x00000033f5e00000)
+	libstdc++.so.6 => /usr/lib64/libstdc++.so.6 (0x0000003404600000)
+	libm.so.6 => /lib64/libm.so.6 (0x00000033f5600000)
+	libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x0000003401a00000)
+	libc.so.6 => /lib64/libc.so.6 (0x00000033f5200000)
+	/lib64/ld-linux-x86-64.so.2 (0x00000033f4e00000)
+</pre>
+
+<pre>
+# with Open-MPI
+
+[boi@ls30 code]$ ldd Ray
+	linux-vdso.so.1 =>  (0x00007fff74347000)
+	libz.so.1 => /lib64/libz.so.1 (0x00000033f6600000)
+	libbz2.so.1 => /lib64/libbz2.so.1 (0x0000003403e00000)
+	libmpi_cxx.so.0 => /home/boiseb01/software/ompi-1.4.1-gcc/lib/libmpi_cxx.so.0 (0x00007f35ec545000)
+	libmpi.so.0 => /home/boiseb01/software/ompi-1.4.1-gcc/lib/libmpi.so.0 (0x00007f35ec2a4000)
+	libopen-rte.so.0 => /home/boiseb01/software/ompi-1.4.1-gcc/lib/libopen-rte.so.0 (0x00007f35ec059000)
+	libopen-pal.so.0 => /home/boiseb01/software/ompi-1.4.1-gcc/lib/libopen-pal.so.0 (0x00007f35ebde7000)
+	libdl.so.2 => /lib64/libdl.so.2 (0x00000033f5a00000)
+	libnsl.so.1 => /lib64/libnsl.so.1 (0x0000003404a00000)
+	libutil.so.1 => /lib64/libutil.so.1 (0x0000003402200000)
+	libstdc++.so.6 => /usr/lib64/libstdc++.so.6 (0x0000003404600000)
+	libm.so.6 => /lib64/libm.so.6 (0x00000033f5600000)
+	libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x0000003401a00000)
+	libpthread.so.0 => /lib64/libpthread.so.0 (0x00000033f5e00000)
+	libc.so.6 => /lib64/libc.so.6 (0x00000033f5200000)
+	/lib64/ld-linux-x86-64.so.2 (0x00000033f4e00000)
+</pre>
