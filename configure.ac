@@ -50,10 +50,6 @@ AC_CHECK_LIB(bz2, BZ2_decompress,
 
 AC_CONFIG_HEADERS([code/config.h])
 AC_CONFIG_FILES([Makefile
-		scripts/Makefile
-		scripts/examples/Makefile
-		scripts/gnuplot/Makefile
-		scripts/comparisons/Makefile
 		code/Makefile])
 AM_INIT_AUTOMAKE
 AC_OUTPUT
