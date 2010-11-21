@@ -6094,9 +6094,9 @@ fi
 done
 
 
-{ $as_echo "$as_me:$LINENO: checking for inflate1 in -lz" >&5
-$as_echo_n "checking for inflate1 in -lz... " >&6; }
-if test "${ac_cv_lib_z_inflate1+set}" = set; then
+{ $as_echo "$as_me:$LINENO: checking for inflate in -lz" >&5
+$as_echo_n "checking for inflate in -lz... " >&6; }
+if test "${ac_cv_lib_z_inflate+set}" = set; then
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -6114,11 +6114,11 @@ cat >>conftest.$ac_ext <<_ACEOF
 #ifdef __cplusplus
 extern "C"
 #endif
-char inflate1 ();
+char inflate ();
 int
 main ()
 {
-return inflate1 ();
+return inflate ();
   ;
   return 0;
 }
@@ -6144,12 +6144,12 @@ $as_echo "$ac_try_echo") >&5
 	 test "$cross_compiling" = yes ||
 	 $as_test_x conftest$ac_exeext
        }; then
-  ac_cv_lib_z_inflate1=yes
+  ac_cv_lib_z_inflate=yes
 else
   $as_echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-	ac_cv_lib_z_inflate1=no
+	ac_cv_lib_z_inflate=no
 fi
 
 rm -rf conftest.dSYM
@@ -6157,9 +6157,9 @@ rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
       conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:$LINENO: result: $ac_cv_lib_z_inflate1" >&5
-$as_echo "$ac_cv_lib_z_inflate1" >&6; }
-if test "x$ac_cv_lib_z_inflate1" = x""yes; then
+{ $as_echo "$as_me:$LINENO: result: $ac_cv_lib_z_inflate" >&5
+$as_echo "$ac_cv_lib_z_inflate" >&6; }
+if test "x$ac_cv_lib_z_inflate" = x""yes; then
 
 for ac_header in zlib.h
 do
@@ -6339,9 +6339,9 @@ fi
 fi
 
 
-{ $as_echo "$as_me:$LINENO: checking for BZ2_decompress1 in -lbz2" >&5
-$as_echo_n "checking for BZ2_decompress1 in -lbz2... " >&6; }
-if test "${ac_cv_lib_bz2_BZ2_decompress1+set}" = set; then
+{ $as_echo "$as_me:$LINENO: checking for BZ2_decompress in -lbz2" >&5
+$as_echo_n "checking for BZ2_decompress in -lbz2... " >&6; }
+if test "${ac_cv_lib_bz2_BZ2_decompress+set}" = set; then
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -6359,11 +6359,11 @@ cat >>conftest.$ac_ext <<_ACEOF
 #ifdef __cplusplus
 extern "C"
 #endif
-char BZ2_decompress1 ();
+char BZ2_decompress ();
 int
 main ()
 {
-return BZ2_decompress1 ();
+return BZ2_decompress ();
   ;
   return 0;
 }
@@ -6389,12 +6389,12 @@ $as_echo "$ac_try_echo") >&5
 	 test "$cross_compiling" = yes ||
 	 $as_test_x conftest$ac_exeext
        }; then
-  ac_cv_lib_bz2_BZ2_decompress1=yes
+  ac_cv_lib_bz2_BZ2_decompress=yes
 else
   $as_echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-	ac_cv_lib_bz2_BZ2_decompress1=no
+	ac_cv_lib_bz2_BZ2_decompress=no
 fi
 
 rm -rf conftest.dSYM
@@ -6402,9 +6402,9 @@ rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
       conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:$LINENO: result: $ac_cv_lib_bz2_BZ2_decompress1" >&5
-$as_echo "$ac_cv_lib_bz2_BZ2_decompress1" >&6; }
-if test "x$ac_cv_lib_bz2_BZ2_decompress1" = x""yes; then
+{ $as_echo "$as_me:$LINENO: result: $ac_cv_lib_bz2_BZ2_decompress" >&5
+$as_echo "$ac_cv_lib_bz2_BZ2_decompress" >&6; }
+if test "x$ac_cv_lib_bz2_BZ2_decompress" = x""yes; then
 
 for ac_header in bzlib.h
 do
