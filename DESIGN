@@ -1,40 +1,39 @@
-== Master modes, slave modes, master methods & slave methods ==
+= Master modes, slave modes, master methods & slave methods =
 
 One MPI rank has a master mode and a slave mode. The master mode is set initially to MASTER_MODE_DO_NOTHING for all MPI ranks except the 0, which is the only master. The slave mode is set initially to MODE_DO_NOTHING.
 
-Not that the master is also a slave, so given n MPI ranks, there is 1 master and n slaves.
+Note that the master is also a slave, so given n MPI ranks, there is 1 master and n slaves.
 
 In Machine.cpp, functions with a name starting with call_MASTER_MODE_ are master methods. There are 25 such methods.
 
 In the same file, functions with a name starting with call_MODE_ are slave methods. There are 16 such methods.
 
-Two arrays, namely m_master_methods and m_slave_methods, contain pointers two master and slave methods, respectively.
+Two arrays, namely m_master_methods and m_slave_methods, contain pointers to master and slave methods, respectively.
 
 Selecting the master method given the master mode is done in constant time, and so is the selection of the slave method.
 
 
-== MPI message tags ==
+= MPI message tags =
 
 
 There are over one hundred MPI tags in Ray (113 to be exact).
 
-In MessageProcessor.cpp, function with a name starting with call_TAG_ are message handlers. There are 113 such methods.
+In MessageProcessor.cpp, functions with a name starting with call_TAG_ are message handlers. There are 113 such methods.
 
 In the same file, there is an array indexing the message handlers so that given a message, the correct message handler is selected in constant time.
 
-== Implementation ==
+= Implementation =
 
 * 53 C++ classes
 * 48 .cpp files
 * 55 .h files
 
-== libRay.a ==
+= libRay.a =
 
 This is the Ray library.
 
+== with MPICH2 (MPICH2 is a static library) ==
 <pre>
-# with MPICH2 (MPICH2 is a static library)
-
 [boi@ls30 code]$ file libRay.a 
 libRay.a: current ar archive
 
@@ -43,8 +42,8 @@ libRay.a: current ar archive
 
 </pre>
 
+==  with Open-MPI (Open-MPI is a shared library) ==
 <pre>
-# with Open-MPI (Open-MPI is a shared library)
 [boi@ls30 code]$ file libRay.a 
 libRay.a: current ar archive
 
@@ -52,12 +51,12 @@ libRay.a: current ar archive
 -rw-rw-r-- 1 boiseb01 boiseb01 2835066 2010-11-21 17:39 libRay.a
 </pre>
 
-== the Ray a.out (executable) ==
+= the Ray a.out (executable) =
 
 Ray is the sole executable necessary for assembling data.
 
+== with MPICH2 ==
 <pre>
-# with MPICH2
 
 [boi@ls30 code]$ file Ray
 Ray: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked (uses shared libs), for GNU/Linux 2.6.18, not stripped
@@ -67,8 +66,9 @@ Ray: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked (us
 
 </pre>
 
+== with Open-MPI ==
+
 <pre>
-# with Open-MPI
 
 [boi@ls30 code]$ file Ray
 Ray: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked (uses shared libs), for GNU/Linux 2.6.18, not stripped
@@ -78,13 +78,12 @@ Ray: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked (us
 
 </pre>
 
-== External libraries ==
+= External libraries =
 
 It is linked with several libraries.
 
+== with MPICH2 ==
 <pre>
-# with MPICH2
-
 [boi@ls30 code]$ ldd Ray
 	linux-vdso.so.1 =>  (0x00007fff733ff000)
 	libz.so.1 => /lib64/libz.so.1 (0x00000033f6600000)
@@ -98,9 +97,9 @@ It is linked with several libraries.
 	/lib64/ld-linux-x86-64.so.2 (0x00000033f4e00000)
 </pre>
 
-<pre>
-# with Open-MPI
+== with Open-MPI ==
 
+<pre>
 [boi@ls30 code]$ ldd Ray
 	linux-vdso.so.1 =>  (0x00007fff74347000)
 	libz.so.1 => /lib64/libz.so.1 (0x00000033f6600000)
