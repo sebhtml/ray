@@ -321,19 +321,19 @@ void Machine::start(){
 		cout<<endl;
 
 		#ifdef MPICH2
-                cout<<"Rank 0: compiled with MPICH2 "<<MPICH2_VERSION<<" (MPICH2_VERSION)"<<endl;
+                cout<<"Rank 0: compiled with MPICH2 "<<MPICH2_VERSION<<endl;
 		#endif
 
 		#ifdef OMPI_MPI_H
-                cout<<"Rank 0: compiled with Open-MPI "<<OMPI_MAJOR_VERSION<<"."<<OMPI_MINOR_VERSION<<"."<<OMPI_RELEASE_VERSION<<" (OMPI_MPI_H)"<<endl;
+                cout<<"Rank 0: compiled with Open-MPI "<<OMPI_MAJOR_VERSION<<"."<<OMPI_MINOR_VERSION<<"."<<OMPI_RELEASE_VERSION<<endl;
 		#endif
 
 		#ifdef HAVE_ZLIB
-		cout<<"Rank 0: compiled with GZIP (HAVE_ZLIB)"<<endl;
+		cout<<"Rank 0: compiled with GZIP"<<endl;
 		#endif
 
 		#ifdef HAVE_LIBBZ2
-		cout<<"Rank 0: compiled with BZIP2 (HAVE_LIBBZ2)"<<endl;
+		cout<<"Rank 0: compiled with BZIP2"<<endl;
 		#endif
 		cout<<endl;
 		m_timePrinter.printElapsedTime("Beginning of computation");
