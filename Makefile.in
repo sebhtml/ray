@@ -66,6 +66,7 @@ AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
 	distdir dist dist-all distcheck
 ETAGS = etags
 CTAGS = ctags
+DIST_SUBDIRS = $(SUBDIRS)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -188,9 +189,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-SUBDIRS = code scripts
-DIST_SUBDIRS = scripts 
-EXTRA_DIST = FUNDING NEWS RELEASE_PROCEDURE AUTHORS INSTALL README COPYING
+SUBDIRS = code # scripts
 all: all-recursive
 
 .SUFFIXES:
@@ -656,6 +655,8 @@ uninstall-am:
 	maintainer-clean-generic mostlyclean mostlyclean-generic pdf \
 	pdf-am ps ps-am tags tags-recursive uninstall uninstall-am
 
+#DIST_SUBDIRS = scripts 
+#EXTRA_DIST = FUNDING NEWS RELEASE_PROCEDURE AUTHORS INSTALL README COPYING
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
