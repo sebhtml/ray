@@ -45,7 +45,7 @@ void TimePrinter::printDifferenceFromStart(int rank){
 	if(endingTime==m_last){
 		return;
 	}
-	if(endingTime%600!=0){
+	if((endingTime-m_startingTime)%3600!=0){
 		return;
 	}
 	m_last=endingTime;
