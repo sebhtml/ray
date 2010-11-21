@@ -73,16 +73,15 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 	MPI_Status status;
 	MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
 	while(flag){
-		MPI_Datatype datatype=MPI_UNSIGNED_LONG_LONG;
 		int sizeOfType=8;
 		int tag=status.MPI_TAG;
 		int source=status.MPI_SOURCE;
 		int length;
-		MPI_Get_count(&status,datatype,&length);
+		MPI_Get_count(&status,MPI_UNSIGNED_LONG_LONG,&length);
 		void*incoming=(void*)inboxAllocator->allocate(length*sizeOfType);
-		MPI_Recv(incoming,length,datatype,source,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+		MPI_Recv(incoming,length,MPI_UNSIGNED_LONG_LONG,source,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
 		m_messagesReceived++;
-		Message aMessage(incoming,length,datatype,source,tag,source);
+		Message aMessage(incoming,length,MPI_UNSIGNED_LONG_LONG,source,tag,source);
 		inbox->push_back(aMessage);
 		MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
 	}

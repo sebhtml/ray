@@ -1,0 +1,102 @@
+== MPI ==
+
+MPI (Message Passing Interface) is a standard. It describes various functions that allow communication between MPI ranks. Given n MPI ranks, they are numbered from 0 to n-1. A message sent from a rank to another can transit on various media such as memory, shared memory, TCP/IP, Infiniband and others. However, the precise way that is utilized for the transfer is opaque to the programmer.
+
+In Ray, starting from version 1.0.0, the standard MPI 2.2 is used.
+
+
+
+
+No assumption is done in the code regarding the MPI implementation used, only
+the standard MPI 2.2 is considered.
+
+MPI 2.2  
+http://www.mpi-forum.org/docs/mpi-2.2/mpi22-report.pdf (PDF, 647 pages)
+
+== MPI 2.2 and Ray ==
+
+=== Chapter 2, MPI Terms and Conventions ===
+
+MPI_Init
+MPI_Get_processor_name
+MPI_Comm_rank
+MPI_Comm_size
+MPI_Finalize
+
+=== Chapter 3, Point to Point Communication ===
+
+MPI_Isend
+MPI_Recv
+MPI_Iprobe
+MPI_Get_count
+MPI_Request_free
+
+=== Chapter 4, Datatypes ===
+
+MPI_UNSIGNED_LONG_LONG
+MPI_Request
+MPI_Status
+
+=== Chapter 5, Collective Communications ===
+
+MPI_Barrier
+
+=== Chapter 6, Groups, Contexts, Communicators, and Caching ===
+
+MPI_COMM_WORLD
+
+== MPI implementations ==
+
+The code is tested with MPICH2 and Open-MPI, the two main implementations of the MPI standard.
+As I understand it, all other proprietary MPI libraries are based on MPICH2.
+
+MVAPICH2 is based too on MPICH2.
+
+Ray runs faster with MPICH2 than with Open-MPI.
+
+=== MPICH2 ===
+
+MPICH2
+http://www.mcs.anl.gov/research/projects/mpich2/
+License: BSD-like
+http://www.mcs.anl.gov/research/projects/mpich2/downloads/license.txt
+
+=== Open-MPI ===
+
+Open-MPI
+http://www.open-mpi.org/
+License: BSD 
+http://www.opensource.org/licenses/bsd-license.php
+
+
+== How messages are communicated around in Ray ? ==
+
+MPI_Isend is utilized to send messages. MPI_Recv is utilized to receive them.
+MPI_Iprobe is utilized to check for incoming messages.
+
+All the MPI messages are sent and received exclusively in MessagesHandler.cpp.
+After MPI_Isend, the MPI_Request is immediately freed using MPI_Request_free.
+
+A ring buffer (RingAllocator.cpp) is utilized to allocate space for message buffers.
+This allocated space never exceeds 4096 bytes. This is a design decision.
+
+For many part of the code, messages are buffered with instances of BufferedData.cpp.
+When the threshold is reached, buffers are flushed and resetted.
+
+In the cases where an MPI rank just send MPI messages without requiring answers from other MPI ranks, the MPI rank waits for a reply before sending the next message. This strategy ensures that the ring buffer is not abused. Furthermore, the motivation for this is that resources for accomodating incoming messages in the MPI library side are very finite.
+
+== I want to learn more on MPI ! ==
+
+RS/6000 SP: Practical MPI Programming
+http://www.redbooks.ibm.com/redbooks/pdfs/sg245380.pdf
+
+IBM MPI Programming Guide
+http://www.pik-potsdam.de/~bloh/pdffile/pe_mpi_prog_guide_v3r10.pdf
+
+Best books to learn MPI programming
+http://stackoverflow.com/questions/1617624/best-books-to-learn-mpi-programming
+
+MPI 2.2  
+http://www.mpi-forum.org/docs/mpi-2.2/mpi22-report.pdf (PDF, 647 pages)
+
+
