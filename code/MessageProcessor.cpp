@@ -1129,6 +1129,11 @@ void MessageProcessor::call_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE(Message*mes
 	}
 }
 
+
+void MessageProcessor::call_TAG_LIBRARY_DISTANCE_REPLY(Message*message){
+	(*m_ready)=true;
+}
+
 void MessageProcessor::call_TAG_LIBRARY_DISTANCE(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
@@ -1136,6 +1141,9 @@ void MessageProcessor::call_TAG_LIBRARY_DISTANCE(Message*message){
 	for(int i=0;i<count;i+=3){
 		parameters->addDistance(incoming[i+0],incoming[i+1],incoming[i+2]);
 	}
+
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_LIBRARY_DISTANCE_REPLY,rank);
+	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_ASK_LIBRARY_DISTANCES(Message*message){
@@ -1325,6 +1333,7 @@ MessageProcessor::MessageProcessor(){
 	m_methods[TAG_AUTOMATIC_DISTANCE_DETECTION]=&MessageProcessor::call_TAG_AUTOMATIC_DISTANCE_DETECTION;
 	m_methods[TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE]=&MessageProcessor::call_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE;
 	m_methods[TAG_LIBRARY_DISTANCE]=&MessageProcessor::call_TAG_LIBRARY_DISTANCE;
+	m_methods[TAG_LIBRARY_DISTANCE_REPLY]=&MessageProcessor::call_TAG_LIBRARY_DISTANCE_REPLY;
 	m_methods[TAG_ASK_LIBRARY_DISTANCES]=&MessageProcessor::call_TAG_ASK_LIBRARY_DISTANCES;
 	m_methods[TAG_ASK_LIBRARY_DISTANCES_FINISHED]=&MessageProcessor::call_TAG_ASK_LIBRARY_DISTANCES_FINISHED;
 	m_methods[TAG_UPDATE_LIBRARY_INFORMATION]=&MessageProcessor::call_TAG_UPDATE_LIBRARY_INFORMATION;

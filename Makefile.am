@@ -1,1 +1,2 @@
 SUBDIRS = code
+dist_doc_DATA= scripts FUNDING NEWS RELEASE_PROCEDURE

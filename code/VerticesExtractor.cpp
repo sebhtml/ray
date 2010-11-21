@@ -66,7 +66,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			*m_reverseComplementVertex=true;
 		}else{
 			// flush data
-			m_disData->m_messagesStock.flushAll(1,TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank);
+			m_disData->m_messagesStock.flushAll(TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank);
 			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_VERTICES_DISTRIBUTED,rank);
 			m_outbox->push_back(aMessage);
 			*m_mode_send_vertices=false;

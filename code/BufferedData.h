@@ -61,7 +61,7 @@ public:
 	/*
  *		returns the number of flushed devices.
  */
-	int flushAll(int period,int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank);
+	int flushAll(int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank);
 };
 
 #endif

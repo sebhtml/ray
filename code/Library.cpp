@@ -33,7 +33,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 void Library::updateDistances(){
 	if((*m_fileId)==(*m_parameters).getNumberOfFiles()){
 		// flush
-		m_bufferedData->flushAll(3,TAG_UPDATE_LIBRARY_INFORMATION,m_outboxAllocator,m_outbox,getRank());
+		m_bufferedData->flushAll(TAG_UPDATE_LIBRARY_INFORMATION,m_outboxAllocator,m_outbox,getRank());
 
 		m_timePrinter->printElapsedTime("Computation of library sizes");
 		cout<<endl;

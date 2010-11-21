@@ -58,9 +58,16 @@ using namespace std;
 
 void Machine::showUsage(){
 	cout<<endl;
+	cout<<"Usage:"<<endl<<endl;
 	cout<<"Supported sequences file format: "<<endl;
 
-	cout<<".fasta, .fastq, .sff"<<endl;
+	cout<<".fasta"<<endl;
+	cout<<".fasta.gz"<<endl;
+	cout<<".fasta.bz2"<<endl;
+	cout<<".fastq"<<endl;
+	cout<<".fastq.gz"<<endl;
+	cout<<".fastq.bz2"<<endl;
+	cout<<".sff (paired reads must be extracted manually)"<<endl;
 
 	cout<<endl;
 
@@ -93,7 +100,13 @@ void Machine::showUsage(){
 }
 
 void Machine::sendLibraryDistances(){
+	if(!m_ready){
+		return;
+	}
 	if(m_libraryIterator==(int)m_libraryDistances.size()){
+
+		m_bufferedData.flushAll(TAG_LIBRARY_DISTANCE,&m_outboxAllocator,&m_outbox,getRank());
+
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_ASK_LIBRARY_DISTANCES_FINISHED,getRank());
 		m_outbox.push_back(aMessage);
 		m_mode=MODE_DO_NOTHING;
@@ -108,12 +121,14 @@ void Machine::sendLibraryDistances(){
 		int library=m_libraryIterator;
 		int distance=m_libraryIndex->first;
 		int count=m_libraryIndex->second;
-		u64*message=(u64*)m_outboxAllocator.allocate(3*sizeof(u64));
-		message[0]=library;
-		message[1]=distance;
-		message[2]=count;
-		Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_LIBRARY_DISTANCE,getRank());
-		m_outbox.push_back(aMessage);
+		m_bufferedData.addAt(MASTER_RANK,library);
+		m_bufferedData.addAt(MASTER_RANK,distance);
+		m_bufferedData.addAt(MASTER_RANK,count);
+		if(m_bufferedData.flush(MASTER_RANK,3,TAG_LIBRARY_DISTANCE,&m_outboxAllocator,&m_outbox,getRank(),false)){
+
+			m_ready=false;
+		}
+
 		m_libraryIndex++;
 	}
 }
@@ -296,6 +311,13 @@ void Machine::start(){
 	if(isMaster()){
 		cout<<"Bienvenue !"<<endl;
 		cout<<endl;
+		#ifdef HAVE_ZLIB
+		cout<<"gz files enabled ! (HAVE_ZLIB)"<<endl<<endl;
+		#endif
+
+		#ifdef HAVE_LIBBZ2
+		cout<<"bz2 files enabled ! (HAVE_LIBBZ2)"<<endl<<endl;
+		#endif
 		m_timePrinter.printElapsedTime("Beginning of computation");
 		cout<<endl;
 	}
@@ -448,6 +470,7 @@ void Machine::start(){
 
 	if(m_argc==1 or ((string)m_argv[1])=="--help"){
 		if(isMaster()){
+			m_aborted=true;
 			showUsage();
 		}
 	}else{
