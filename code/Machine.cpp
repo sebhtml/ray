@@ -319,13 +319,23 @@ void Machine::start(){
 	if(isMaster()){
 		cout<<"Bienvenue !"<<endl;
 		cout<<endl;
+
+		#ifdef MPICH2
+                cout<<"Rank 0: compiled with MPICH2 "<<MPICH2_VERSION<<" (MPICH2_VERSION)"<<endl;
+		#endif
+
+		#ifdef OMPI_MPI_H
+                cout<<"Rank 0: compiled with Open-MPI "<<OMPI_MAJOR_VERSION<<"."<<OMPI_MINOR_VERSION<<"."<<OMPI_RELEASE_VERSION<<" (OMPI_MPI_H)"<<endl;
+		#endif
+
 		#ifdef HAVE_ZLIB
-		cout<<"gz files enabled ! (HAVE_ZLIB)"<<endl<<endl;
+		cout<<"Rank 0: compiled with GZIP (HAVE_ZLIB)"<<endl;
 		#endif
 
 		#ifdef HAVE_LIBBZ2
-		cout<<"bz2 files enabled ! (HAVE_LIBBZ2)"<<endl<<endl;
+		cout<<"Rank 0: compiled with BZIP2 (HAVE_LIBBZ2)"<<endl;
 		#endif
+		cout<<endl;
 		m_timePrinter.printElapsedTime("Beginning of computation");
 		cout<<endl;
 	}
