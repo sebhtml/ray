@@ -1,3 +1,8 @@
+# primary Makefile.am
+# Author: Sébastien Boisvert
+# Centre de recherche en infectiologie, Université Laval
+# Copyright 2010, or so
+
 
 AM_CXXFLAGS=-O3 -Wall
 LDADD=""

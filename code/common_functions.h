@@ -26,10 +26,6 @@ see <http://www.gnu.org/licenses/>
 #include<config.h>
 #endif
 
-#ifdef HAVE_ZLIB_H
-#include<zlib.h>
-#endif
-
 #include<master_modes.h>
 #include<slave_modes.h>
 #include<mpi_tags.h>

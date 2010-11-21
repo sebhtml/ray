@@ -4,6 +4,8 @@
 # Copyright 2010, or so
 
 
-SUBDIRS = code scripts
-DIST_SUBDIRS = scripts 
-EXTRA_DIST = FUNDING NEWS RELEASE_PROCEDURE AUTHORS INSTALL README COPYING
+EXTRA_DIST = gnuplot2.script \
+gnuplot.script \
+Makefile.am \
+plot.sh \
+toGnuPlot.py 

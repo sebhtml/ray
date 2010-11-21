@@ -15,6 +15,11 @@
 
 @SET_MAKE@
 
+# primary Makefile.am
+# Author: Sébastien Boisvert
+# Centre de recherche en infectiologie, Université Laval
+# Copyright 2010, or so
+
 
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@

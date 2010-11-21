@@ -6586,9 +6586,7 @@ fi
 
 ac_config_headers="$ac_config_headers code/config.h"
 
-ac_config_files="$ac_config_files Makefile"
-
-ac_config_files="$ac_config_files code/Makefile"
+ac_config_files="$ac_config_files Makefile scripts/Makefile scripts/examples/Makefile scripts/gnuplot/Makefile scripts/comparisons/Makefile code/Makefile"
 
 am__api_version='1.11'
 
@@ -7971,6 +7969,10 @@ do
   case $ac_config_target in
     "code/config.h") CONFIG_HEADERS="$CONFIG_HEADERS code/config.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+    "scripts/Makefile") CONFIG_FILES="$CONFIG_FILES scripts/Makefile" ;;
+    "scripts/examples/Makefile") CONFIG_FILES="$CONFIG_FILES scripts/examples/Makefile" ;;
+    "scripts/gnuplot/Makefile") CONFIG_FILES="$CONFIG_FILES scripts/gnuplot/Makefile" ;;
+    "scripts/comparisons/Makefile") CONFIG_FILES="$CONFIG_FILES scripts/comparisons/Makefile" ;;
     "code/Makefile") CONFIG_FILES="$CONFIG_FILES code/Makefile" ;;
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
 

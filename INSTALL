@@ -1,12 +1,27 @@
+1 ) using autoconf/automake
+
 tar -xjf Ray-version.tar.bz2
 cd Ray-version
-./configure --prefix=$(pwd)/build
-make
-make install
-
-
-You may provide your own mpic++ too (note that you may have to provide LD_LIBRARY_PATH as well).
-
-./configure CXX=/software/openmpi-1.4.3/bin/mpic++ LD_LIBRARY_PATH=/software/openmpi-1.4.3/lib/ --prefix=$(pwd)/build
+./configure --prefix=~/software/Ray-version
 make 
 make install
+
+
+The installer will use the first mpic++ found in your PATH.
+
+GZIP and BZIP2 support is detected automatically.
+
+
+2 ) using mpic++ manually (always works, but less handy)
+
+
+If the above don't work for you (for various reasons), compile Ray using the following command:
+
+
+	mpic++ -O3 -Wall $(ls code/*.cpp|grep -v main|grep -v Gz|grep -v Bz) code/ray_main.cpp -Icode -o Ray
+
+
+with GZIP and BZIP2 support (if you have these libraries):
+
+
+	mpic++ -DHAVE_ZLIB -DHAVE_LIBBZ2 -O3 -Wall $(ls code/*.cpp|grep -v main) code/ray_main.cpp -Icode -o Ray -lz -lbz2

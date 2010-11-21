@@ -62,11 +62,19 @@ void Machine::showUsage(){
 	cout<<"Supported sequences file format: "<<endl;
 
 	cout<<".fasta"<<endl;
+	#ifdef HAVE_ZLIB
 	cout<<".fasta.gz"<<endl;
+	#endif
+	#ifdef HAVE_LIBBZ2
 	cout<<".fasta.bz2"<<endl;
+	#endif
 	cout<<".fastq"<<endl;
+	#ifdef HAVE_ZLIB
 	cout<<".fastq.gz"<<endl;
+	#endif
+	#ifdef HAVE_LIBBZ2
 	cout<<".fastq.bz2"<<endl;
+	#endif
 	cout<<".sff (paired reads must be extracted manually)"<<endl;
 
 	cout<<endl;
