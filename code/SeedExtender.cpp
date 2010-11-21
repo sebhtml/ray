@@ -861,7 +861,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 					(*(repeatedLength))=0;
 				}
 				int theCurrentSize=ed->m_EXTENSION_extension.size();
-				if(theCurrentSize%1000==0){
+				if(theCurrentSize%10000==0){
 					cout<<"Rank "<<theRank<<" reached "<<theCurrentSize<<" vertices"<<endl;
 				}
 				ed->m_EXTENSION_extension.push_back((*currentVertex));

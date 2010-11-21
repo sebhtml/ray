@@ -53,6 +53,9 @@ void Library::updateDistances(){
 				int averageLength=(*m_parameters).getObservedAverageDistance(library);
 				int standardDeviation=(*m_parameters).getObservedStandardDeviation(library);
 				if((*m_sequence_idInFile)<(*m_parameters).getNumberOfSequences(*m_fileId)){
+					if((*m_sequence_idInFile)%100000==0){
+						cout<<"Rank 0 is updating distances "<<(*m_sequence_idInFile)<<"/"<<(*m_parameters).getNumberOfSequences(*m_fileId)<<endl;
+					}
 					int sequenceRank=(*m_sequence_id)%getSize();
 					int sequenceIndex=(*m_sequence_id)/getSize();
 					m_bufferedData->addAt(sequenceRank,sequenceIndex);
@@ -64,6 +67,8 @@ void Library::updateDistances(){
 					(*m_sequence_id)++;
 					(*m_sequence_idInFile)++;
 				}else{
+					cout<<"Rank 0 is updating distances "<<(*m_parameters).getNumberOfSequences(*m_fileId)<<"/"<<(*m_parameters).getNumberOfSequences(*m_fileId)<<" (completed)"<<endl;
+
 					(*m_sequence_idInFile)=0;
 					(*m_fileId)++;
 				}
