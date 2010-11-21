@@ -1,0 +1,5 @@
+
+The standard MPI 2.2 is used.
+
+The code is tested with MPICH2 and Open-MPI.
+

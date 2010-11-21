@@ -1,3 +1,6 @@
+dnl Sébastien Boisvert
+dnl autoconf script for Ray
+
 AC_INIT(Ray,0.1.1)
 
 if test x"${CXXFLAGS+set}" = xset; then
