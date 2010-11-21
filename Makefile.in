@@ -210,7 +210,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = code
-dist_doc_DATA = scripts FUNDING NEWS RELEASE_PROCEDURE
+dist_doc_DATA = FUNDING NEWS RELEASE_PROCEDURE AUTHORS INSTALL README
 all: all-recursive
 
 .SUFFIXES:
