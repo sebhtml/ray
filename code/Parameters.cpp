@@ -37,7 +37,7 @@
 using namespace std;
 
 Parameters::Parameters(){
-	m_contigsFile="RayOutput";
+	m_prefix="RayOutput";
 	m_initiated=false;
 	m_directory="assembly";
 	m_minimumContigLength=100;
@@ -153,7 +153,7 @@ void Parameters::parseCommands(){
 				return;
 			}
 			token=m_commands[i];
-			m_contigsFile=token;
+			m_prefix=token;
 		}else if(interleavedCommands.count(token)>0){
 			#ifdef ASSERT_PARAMETERS
 			cout<<"OpCode="<<token<<endl;
@@ -393,7 +393,7 @@ string Parameters::getDirectory(){
 }
 
 string Parameters::getOutputFile(){
-	return getContigsFile()+".fasta";
+	return getPrefix()+".fasta";
 }
 
 int Parameters::getMinimumContigLength(){
@@ -433,16 +433,16 @@ string Parameters::getParametersFile(){
 	return "Ray-Parameters.txt";
 }
 
-string Parameters::getContigsFile(){
-	return m_contigsFile;
+string Parameters::getPrefix(){
+	return m_prefix;
 }
 
 string Parameters::getCoverageDistributionFile(){
-	return getContigsFile()+"-TheCoverageDistribution.tab";
+	return getPrefix()+".CoverageDistribution.txt";
 }
 
 string Parameters::getAmosFile(){
-	return getContigsFile()+"-AMOS.afg";
+	return getPrefix()+".AMOS.afg";
 }
 
 vector<string> Parameters::getCommands(){
@@ -543,6 +543,6 @@ bool Parameters::isInterleavedFile(int i){
 }
 
 string Parameters::getReceivedMessagesFile(){
-	string outputForMessages=getOutputFile()+".ReceivedMessages.txt";
+	string outputForMessages=getPrefix()+".ReceivedMessages.txt";
 	return outputForMessages;
 }

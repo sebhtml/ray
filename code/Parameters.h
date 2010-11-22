@@ -41,7 +41,7 @@ using namespace std;
  */
 class Parameters{
 	bool m_error;
-	string m_contigsFile;
+	string m_prefix;
 	bool m_amos;
 	bool m_initiated;
 	int m_numberOfSequences;
@@ -67,7 +67,7 @@ class Parameters{
 	void loadCommandsFromFile(char*file);
 	void parseCommands();
 
-	string getContigsFile();
+	string getPrefix();
 
 public:
 	Parameters();
