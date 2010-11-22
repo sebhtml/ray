@@ -80,7 +80,7 @@ void MessageProcessor::call_TAG_SEND_SEQUENCE(Message*message){
 
 	while(buffer[currentPosition]!=ASCII_END_OF_TRANSMISSION){
 		Read*myRead=(Read*)(*m_persistentAllocator).allocate(sizeof(Read));
-		myRead->copy(NULL,buffer+currentPosition,&(*m_persistentAllocator));
+		myRead->copy(NULL,buffer+currentPosition,&(*m_persistentAllocator),false); // no trimming
 		m_myReads->push_back(myRead);
 		if((*m_myReads).size()%100000==0){
 			cout<<"Rank "<<rank<<" has "<<(*m_myReads).size()<<" sequence reads"<<endl;
@@ -444,18 +444,31 @@ void MessageProcessor::call_TAG_SEEDING_IS_OVER(Message*message){
 	}
 }
 
+
+void MessageProcessor::call_TAG_RECEIVED_MESSAGES_REPLY(Message*message){
+	if(rank!=MASTER_RANK){
+		cout<<"Rank "<<rank<<" dies"<<endl;
+		(*m_alive)=false; // Rest In Peace.
+	}
+}
+
 void MessageProcessor::call_TAG_RECEIVED_MESSAGES(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	cout<<"Received "<<count<<" elements"<<endl;
 	for(int i=0;i<count;i++){
 		m_messagesHandler->addCount(message->getSource(),incoming[i]);
 	}
+	if(m_messagesHandler->isFinished(message->getSource())){
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_RECEIVED_MESSAGES_REPLY,rank);
+		m_outbox->push_back(aMessage);
+	}
 	if(m_messagesHandler->isFinished()){
+		cout<<"Rank "<<rank<<" dies"<<endl;
 		(*m_alive)=false;
 	}
 }
-
 
 void MessageProcessor::call_TAG_GOOD_JOB_SEE_YOU_SOON(Message*message){
 	// send stats to master
@@ -468,14 +481,10 @@ void MessageProcessor::call_TAG_GOOD_JOB_SEE_YOU_SOON(Message*message){
 			data[j]=m_messagesHandler->getReceivedMessages()[i+j];
 			j++;
 		}
+		cout<<"Sending "<<j<<" elements"<<endl;
 		Message aMessage(data,j,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_RECEIVED_MESSAGES,rank);
 		m_outbox->push_back(aMessage);
 		i+=maxToProcess;
-	}
-
-	// master dies later on in the night.
-	if(rank!=MASTER_RANK){
-		(*m_alive)=false;
 	}
 }
 
@@ -1382,6 +1391,7 @@ MessageProcessor::MessageProcessor(){
 	m_methods[TAG_IN_EDGES_DATA_REPLY]=&MessageProcessor::call_TAG_IN_EDGES_DATA_REPLY;
 	m_methods[TAG_OUT_EDGES_DATA_REPLY]=&MessageProcessor::call_TAG_OUT_EDGES_DATA_REPLY;
 	m_methods[TAG_RECEIVED_MESSAGES]=&MessageProcessor::call_TAG_RECEIVED_MESSAGES;
+	m_methods[TAG_RECEIVED_MESSAGES_REPLY]=&MessageProcessor::call_TAG_RECEIVED_MESSAGES_REPLY;
 }
 
 void MessageProcessor::constructor(

@@ -102,9 +102,13 @@ void MessagesHandler::addCount(int rank,int count){
 	m_allCounts[rank]++;
 }
 
+bool MessagesHandler::isFinished(int rank){
+	return m_allCounts[rank]==m_size;
+}
+
 bool MessagesHandler::isFinished(){
 	for(int i=0;i<m_size;i++){
-		if(m_allCounts[i]!=m_size){
+		if(!isFinished(i)){
 			return false;
 		}
 	}	

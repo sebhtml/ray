@@ -510,11 +510,13 @@ void Machine::start(){
 		cout<<"Au revoir !"<<endl;
 		cout<<endl;
 	}
+	
+	if(isMaster()){
+		string outputForMessages=m_parameters.getOutputFile()+".ReceivedMessages.txt";
+		m_messagesHandler.writeStats(outputForMessages.c_str());
+	}
 
 	MPI_Finalize();
-	
-	string outputForMessages=m_parameters.getOutputFile()+".ReceivedMessages.txt";
-	m_messagesHandler.writeStats(outputForMessages.c_str());
 }
 
 /*

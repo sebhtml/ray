@@ -366,6 +366,7 @@ SeedExtender*seedExtender,int*m_master_mode,bool*m_isFinalFusion
 	void call_TAG_LIBRARY_DISTANCE_REPLY(Message*message);
 	void call_TAG_UPDATE_LIBRARY_INFORMATION_REPLY(Message*message);
 	void call_TAG_RECEIVED_MESSAGES(Message*message);
+	void call_TAG_RECEIVED_MESSAGES_REPLY(Message*message);
 
 	void processMessage(Message*message);
 	MessageProcessor();

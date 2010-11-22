@@ -148,6 +148,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #define TAG_LIBRARY_DISTANCE_REPLY 		0x70
 #define TAG_UPDATE_LIBRARY_INFORMATION_REPLY    0x71
 #define TAG_RECEIVED_MESSAGES			0x72
+#define TAG_RECEIVED_MESSAGES_REPLY		0x73
 
 #endif
 

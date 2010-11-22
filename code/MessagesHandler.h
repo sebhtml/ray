@@ -50,6 +50,7 @@ public:
 	void addCount(int rank,int count);
 	void writeStats(const char*file);
 	bool isFinished();
+	bool isFinished(int rank);
 };
 
 #endif
