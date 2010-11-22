@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# encoding:utf8
 # author: Sébastien Boisvert
 # part of Ray distribution
 # this script takes two fasta files and interleave them.
