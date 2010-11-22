@@ -1,4 +1,4 @@
-/software/openmpi-1.4.3/bin/mpirun --mca btl ^sm -np 31 ./code/Ray \
+/software/openmpi-1.4.3/bin/mpirun ^sm -np 31 ~/Ray/trunk/code/Ray  \
 -p ~/nuccore/Pseud,200b,2x50b,50X_1.fasta ~/nuccore/Pseud,200b,2x50b,50X_2.fasta \
 -o pseudo.fasta |& tee pseudomonas-p.log
 
