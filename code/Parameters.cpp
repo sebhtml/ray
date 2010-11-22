@@ -227,6 +227,7 @@ void Parameters::parseCommands(){
 			m_standardDeviations[m_singleEndReadsFile.size()-1]=standardDeviation;
 			cout<<endl;
 			cout<<"-i (paired-end interleaved sequences)"<<endl;
+			cout<<" Sequences: "<<token<<endl;
 			if(items==3){
 				cout<<" Average length: "<<meanFragmentLength<<endl;
 				cout<<" Standard deviation: "<<standardDeviation<<endl;
