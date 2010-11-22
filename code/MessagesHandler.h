@@ -25,6 +25,7 @@
 #include<vector>
 #include<MyAllocator.h>
 #include<Message.h>
+#include<common_functions.h>
 #include<RingAllocator.h>
 #include<StaticVector.h>
 #include<PendingRequest.h>
@@ -32,13 +33,23 @@ using namespace std;
 
 
 class MessagesHandler{
-	int m_messagesSent;
-	int m_messagesReceived;
+	u64*m_receivedMessages;
+	int m_rank;
+	int m_size;
+
+	u64*m_allReceivedMessages;
+	int*m_allCounts;
+
 public:
 	MessagesHandler();
-	void showStats(int rank);
+	void constructor(int rank,int size);
+	void showStats();
 	void sendMessages(StaticVector*outbox,int source);
 	void receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator,int destination);
+	u64*getReceivedMessages();
+	void addCount(int rank,int count);
+	void writeStats(const char*file);
+	bool isFinished();
 };
 
 #endif

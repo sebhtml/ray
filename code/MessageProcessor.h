@@ -68,6 +68,9 @@ class MessageProcessor{
 	Parameters*parameters;
 	int*m_libraryIterator;
 	bool*m_libraryIndexInitiated;
+
+	MessagesHandler*m_messagesHandler;
+
 	MyForest*m_subgraph;
 	RingAllocator*m_outboxAllocator;
 	int rank;
@@ -153,7 +156,7 @@ class MessageProcessor{
 
 
 public:
-	void constructor(
+	void constructor(MessagesHandler*m_messagesHandler,
 Library*m_library,
 bool*m_ready,
 VerticesExtractor*m_verticesExtractor,
@@ -362,6 +365,7 @@ SeedExtender*seedExtender,int*m_master_mode,bool*m_isFinalFusion
 	void call_TAG_SHOW_SEQUENCES(Message*message);
 	void call_TAG_LIBRARY_DISTANCE_REPLY(Message*message);
 	void call_TAG_UPDATE_LIBRARY_INFORMATION_REPLY(Message*message);
+	void call_TAG_RECEIVED_MESSAGES(Message*message);
 
 	void processMessage(Message*message);
 	MessageProcessor();

@@ -444,8 +444,39 @@ void MessageProcessor::call_TAG_SEEDING_IS_OVER(Message*message){
 	}
 }
 
+void MessageProcessor::call_TAG_RECEIVED_MESSAGES(Message*message){
+	void*buffer=message->getBuffer();
+	int count=message->getCount();
+	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	for(int i=0;i<count;i++){
+		m_messagesHandler->addCount(message->getSource(),incoming[i]);
+	}
+	if(m_messagesHandler->isFinished()){
+		(*m_alive)=false;
+	}
+}
+
+
 void MessageProcessor::call_TAG_GOOD_JOB_SEE_YOU_SOON(Message*message){
-	(*m_alive)=false;
+	// send stats to master
+	int i=0;
+	while(i<size){
+		VERTEX_TYPE*data=(VERTEX_TYPE*)m_outboxAllocator->allocate(MPI_BTL_SM_EAGER_LIMIT);
+		int j=0;
+		int maxToProcess=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE);
+		while(i+j<size &&j<maxToProcess){
+			data[j]=m_messagesHandler->getReceivedMessages()[i+j];
+			j++;
+		}
+		Message aMessage(data,j,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_RECEIVED_MESSAGES,rank);
+		m_outbox->push_back(aMessage);
+		i+=maxToProcess;
+	}
+
+	// master dies later on in the night.
+	if(rank!=MASTER_RANK){
+		(*m_alive)=false;
+	}
 }
 
 void MessageProcessor::call_TAG_I_GO_NOW(Message*message){
@@ -1350,10 +1381,11 @@ MessageProcessor::MessageProcessor(){
 	m_methods[TAG_REQUEST_READ_SEQUENCE_REPLY]=&MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE_REPLY;
 	m_methods[TAG_IN_EDGES_DATA_REPLY]=&MessageProcessor::call_TAG_IN_EDGES_DATA_REPLY;
 	m_methods[TAG_OUT_EDGES_DATA_REPLY]=&MessageProcessor::call_TAG_OUT_EDGES_DATA_REPLY;
-
+	m_methods[TAG_RECEIVED_MESSAGES]=&MessageProcessor::call_TAG_RECEIVED_MESSAGES;
 }
 
 void MessageProcessor::constructor(
+MessagesHandler*m_messagesHandler,
 Library*m_library,
 bool*m_ready,
 VerticesExtractor*m_verticesExtractor,
@@ -1479,6 +1511,7 @@ bool*m_isFinalFusion){
 	this->m_SEEDING_i=m_SEEDING_i;
 	this->m_colorSpaceMode=m_colorSpaceMode;
 	this->m_FINISH_fusionOccured=m_FINISH_fusionOccured;
+	this->m_messagesHandler=m_messagesHandler;
 	this->m_Machine_getPaths_INITIALIZED=m_Machine_getPaths_INITIALIZED;
 	this->m_mode=m_mode;
 	this->m_allPaths=m_allPaths;

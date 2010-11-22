@@ -42,7 +42,6 @@ void MessagesHandler::sendMessages(StaticVector*outbox,int source){
 		assert(!(aMessage->getBuffer()==NULL && aMessage->getCount()>0));
 		#endif
 
-		m_messagesSent++;
 		#ifndef ASSERT
 		MPI_Isend(aMessage->getBuffer(),aMessage->getCount(),aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(),MPI_COMM_WORLD,&request);
 		#else
@@ -80,7 +79,7 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 		MPI_Get_count(&status,MPI_UNSIGNED_LONG_LONG,&length);
 		void*incoming=(void*)inboxAllocator->allocate(length*sizeOfType);
 		MPI_Recv(incoming,length,MPI_UNSIGNED_LONG_LONG,source,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
-		m_messagesReceived++;
+		m_receivedMessages[source]++;
 		Message aMessage(incoming,length,MPI_UNSIGNED_LONG_LONG,source,tag,source);
 		inbox->push_back(aMessage);
 		MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
@@ -88,10 +87,66 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 }
 
 MessagesHandler::MessagesHandler(){
-	m_messagesSent=0;
-	m_messagesReceived=0;
 }
 
-void MessagesHandler::showStats(int rank){
-	cout<<"Rank "<<rank<<": "<<m_messagesSent<<" messages sent & "<<m_messagesReceived<<" messages received"<<endl;
+void MessagesHandler::showStats(){
+	cout<<"Rank "<<m_rank;
+	for(int i=0;i<m_size;i++){
+		cout<<" "<<m_receivedMessages[i];
+	}
+	cout<<endl;
+}
+
+void MessagesHandler::addCount(int rank,int count){
+	m_receivedMessages[rank*m_size+m_allCounts[rank]]=count;
+	m_allCounts[rank]++;
+}
+
+bool MessagesHandler::isFinished(){
+	for(int i=0;i<m_size;i++){
+		if(m_allCounts[i]!=m_size){
+			return false;
+		}
+	}	
+
+	// update the counts for root, because it was updated.
+	for(int i=0;i<m_size;i++){
+		m_allCounts[MASTER_RANK*m_size+i]=m_receivedMessages[i];
+	}
+
+	return true;
+}
+
+void MessagesHandler::writeStats(const char*file){
+	FILE*f=fopen(file,"w+");
+	for(int i=0;i<m_size;i++){
+		fprintf(f,"%i",i);
+		for(int j=0;j<m_size;i++){
+			fprintf(f,"\t%lu",m_allReceivedMessages[i*m_size+j]);
+		}
+		fprintf(f,"\n");
+	}
+	fclose(f);
+	cout<<"Rank "<<MASTER_RANK<<" wrote "<<file<<endl;
+}
+
+void MessagesHandler::constructor(int rank,int size){
+	m_rank=rank;
+	m_size=size;
+	m_receivedMessages=(u64*)__Malloc(sizeof(u64)*m_size);
+	if(rank==MASTER_RANK){
+		m_allReceivedMessages=(u64*)__Malloc(sizeof(u64)*m_size*m_size);
+		m_allCounts=(int*)__Malloc(sizeof(int)*m_size);
+	}
+
+	for(int i=0;i<m_size;i++){
+		m_receivedMessages[i]=0;
+		if(rank==MASTER_RANK){
+			m_allCounts[i]=0;
+		}
+	}
+}
+
+u64*MessagesHandler::getReceivedMessages(){
+	return m_receivedMessages;
 }

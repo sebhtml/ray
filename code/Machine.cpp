@@ -394,7 +394,9 @@ void Machine::start(){
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	m_mp.constructor(&m_library,&m_ready,
+	m_mp.constructor(
+&m_messagesHandler,
+&m_library,&m_ready,
 &m_verticesExtractor,
 &m_edgesExtractor,
 &m_sl,
@@ -484,6 +486,7 @@ void Machine::start(){
 	&m_numberOfRanksWithCoverageData,&m_seedExtender,
 	&m_master_mode,&m_isFinalFusion);
 
+	m_messagesHandler.constructor(getRank(),getSize());
 	if(m_argc==1 or ((string)m_argv[1])=="--help"){
 		if(isMaster()){
 			m_aborted=true;
@@ -509,8 +512,9 @@ void Machine::start(){
 	}
 
 	MPI_Finalize();
-
-	m_messagesHandler.showStats(getRank());
+	
+	string outputForMessages=m_parameters.getOutputFile()+".ReceivedMessages.txt";
+	m_messagesHandler.writeStats(outputForMessages.c_str());
 }
 
 /*
