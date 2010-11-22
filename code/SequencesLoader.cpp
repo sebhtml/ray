@@ -209,7 +209,7 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		// right sequence in a right file, obviously
 
 		// left sequence in a left file, obviously
-		if(false&& (*m_LOADER_isLeftFile)){
+		if(false && (*m_LOADER_isLeftFile)){
 			int rightSequenceGlobalId=(*m_distribution_currentSequenceId)+(*m_LOADER_numberOfSequencesInLeftFile);
 			int rightSequenceRank=rightSequenceGlobalId%size;
 			int rightSequenceIdOnRank=rightSequenceGlobalId/size;
