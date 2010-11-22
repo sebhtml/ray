@@ -58,26 +58,28 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		// distribution of reads is completed.
 		if(!m_send_sequences_done){
 			m_send_sequences_done=true;
+			if((*m_LOADER_isLeftFile)){
+				(*m_LOADER_numberOfSequencesInLeftFile)=(*m_distribution_sequence_id);
+			}
+
 			(*m_distribution_sequence_id)=0;
 			flushAll(m_outboxAllocator,m_outbox);
 			
 			#ifdef ASSERT
 			for(int i=0;i<m_size;i++){
 				assert(m_entries[i]==0);
-				//cout<<"INFO "<<i<<" "<<m_numberOfSequences[i]<<" flushed: "<<m_numberOfFlushedSequences[i]<<endl;
 			}
 			#endif
 			cout<<"Rank "<<rank<<" is assigning sequence reads "<<(*m_distribution_reads).size()<<"/"<<(*m_distribution_reads).size()<<" (completed)"<<endl;
 
+	
 		// distribution of paired information is completed
 		}else{
 			m_waitingNumber+=m_disData->m_messagesStockPaired.flushAll(TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank);
 			cout<<"Rank "<<rank<<" is sending paired information "<<(*m_distribution_reads).size()<<"/"<<(*m_distribution_reads).size()<<" (completed)"<<endl;
 
 			(*m_distribution_file_id)++;  // go with the next file.
-			if((*m_LOADER_isLeftFile)){
-				(*m_LOADER_numberOfSequencesInLeftFile)=(*m_distribution_sequence_id);
-			}
+
 			(*m_distribution_sequence_id)=0;
 			(*m_distribution_reads).clear();  // clear the hideout of reads.
 		}
@@ -217,7 +219,7 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			int leftSequenceIdOnRank=leftSequenceGlobalId/size;
 			int averageFragmentLength=(*m_LOADER_averageFragmentLength);
 			int deviation=(*m_LOADER_deviation);
-			//cout<<"Adding "<<leftSequenceIdOnRank<<" on Rank "<<leftSequenceRank<<endl;
+
 			#ifdef ASSERT
 			if(leftSequenceIdOnRank>=m_numberOfSequences[leftSequenceRank]){
 				cout<<"leftSequenceIdOnRank="<<leftSequenceIdOnRank<<" but size="<<m_numberOfSequences[leftSequenceRank]<<endl;

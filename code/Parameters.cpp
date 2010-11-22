@@ -143,7 +143,7 @@ void Parameters::parseCommands(){
 				m_colorSpaceMode=true;
 			}
 			cout<<endl;
-			cout<<"LoadSingleEndReads"<<endl;
+			cout<<"-s (single sequences)"<<endl;
 			cout<<" Sequences: "<<token<<endl;
 		}else if(outputFileCommands.count(token)>0){
 			i++;
@@ -226,8 +226,7 @@ void Parameters::parseCommands(){
 			m_averageFragmentLengths[m_singleEndReadsFile.size()-1]=meanFragmentLength;
 			m_standardDeviations[m_singleEndReadsFile.size()-1]=standardDeviation;
 			cout<<endl;
-			cout<<"-i"<<endl;
-			cout<<" Interleaved sequences: "<<interleavedFile<<endl;
+			cout<<"-i (paired-end interleaved sequences)"<<endl;
 			if(items==3){
 				cout<<" Average length: "<<meanFragmentLength<<endl;
 				cout<<" Standard deviation: "<<standardDeviation<<endl;
@@ -318,7 +317,7 @@ void Parameters::parseCommands(){
 			m_averageFragmentLengths[m_singleEndReadsFile.size()-1]=meanFragmentLength;
 			m_standardDeviations[m_singleEndReadsFile.size()-1]=standardDeviation;
 			cout<<endl;
-			cout<<"LoadPairedEndReads"<<endl;
+			cout<<"-p (paired-end sequences)"<<endl;
 			cout<<" Left sequences: "<<left<<endl;
 			cout<<" Right sequences: "<<right<<endl;
 			if(items==4){

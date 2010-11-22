@@ -93,5 +93,5 @@ MessagesHandler::MessagesHandler(){
 }
 
 void MessagesHandler::showStats(int rank){
-	cout<<"Rank "<<rank<<": "<<m_messagesSent<<" messages sent, "<<m_messagesReceived<<" messages received."<<endl;
+	cout<<"Rank "<<rank<<": "<<m_messagesSent<<" messages sent & "<<m_messagesReceived<<" messages received"<<endl;
 }
