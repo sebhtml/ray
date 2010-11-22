@@ -508,7 +508,10 @@ void Machine::start(){
 
 		
 	}
+
 	MPI_Finalize();
+
+	m_messagesHandler.showStats(getRank());
 }
 
 /*

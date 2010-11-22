@@ -445,7 +445,6 @@ void MessageProcessor::call_TAG_SEEDING_IS_OVER(Message*message){
 }
 
 void MessageProcessor::call_TAG_GOOD_JOB_SEE_YOU_SOON(Message*message){
-	m_messagesHandler->showStats(rank);
 	(*m_alive)=false;
 }
 
