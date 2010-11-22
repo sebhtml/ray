@@ -91,8 +91,8 @@ void Machine::showUsage(){
 	cout<<"Paired-end reads:"<<endl;
 	cout<<" -i <interleavedFile> [ <fragmentLength> <standardDeviation> ]"<<endl;
 	cout<<endl;
-	cout<<"Output (default: Ray-Contigs.fasta)"<<endl;
-	cout<<" -o <outputFile>"<<endl;
+	cout<<"Output (default: RayOutput)"<<endl;
+	cout<<" -o <outputPrefix>"<<endl;
 	cout<<endl;	
 	cout<<"AMOS output"<<endl;
 	cout<<" -a  "<<endl;
@@ -500,21 +500,25 @@ void Machine::start(){
 		run();
 	}
 
-	MPI_Barrier(MPI_COMM_WORLD);
-
 	if(isMaster() && !m_aborted){
 		m_timePrinter.printElapsedTime("Collection of fusions");
 		m_timePrinter.printDurations();
-		cout<<endl;
 
-		cout<<"Au revoir !"<<endl;
 		cout<<endl;
+		string file=m_parameters.getReceivedMessagesFile();
+		const char*tmp=file.c_str();
+		m_messagesHandler.writeStats(tmp);
+
+		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getCoverageDistributionFile()<<""<<endl;
+		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<endl;
+		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getReceivedMessagesFile()<<endl;
+		cout<<"MPI ranks wrote many things in the standard output too !"<<endl;
+
+		cout<<endl;
+		cout<<"Au revoir !"<<endl;
 	}
-	
-	if(isMaster()){
-		string outputForMessages=m_parameters.getOutputFile()+".ReceivedMessages.txt";
-		m_messagesHandler.writeStats(outputForMessages.c_str());
-	}
+
+	MPI_Barrier(MPI_COMM_WORLD);
 
 	MPI_Finalize();
 }
@@ -1255,28 +1259,6 @@ void Machine::call_MASTER_MODE_SEND_COVERAGE_VALUES(){
 
 	m_coverageDistribution.clear();
 
-	#ifdef WRITE_PARAMETERS
-	ofstream f(m_parameters.getParametersFile().c_str());
-	f<<"Ray Command Line: ";
-	vector<string> commands=m_parameters.getCommands();
-	for(int i=0;i<(int)commands.size();i++){
-		f<<" "<<commands[i];
-	}
-	f<<endl;
-	f<<"Ray Assembly Engine: "<<m_parameters.getEngineName()<<"-"<<m_parameters.getVersion()<<endl;
-	f<<"Ray Word Size: "<<m_wordSize<<endl;
-	f<<"Ray Minimum Coverage: "<<m_minimumCoverage<<endl;
-	f<<"Ray Peak Coverage: "<<m_peakCoverage<<endl;
-	f<<"Ray Contigs File: "<<m_parameters.getContigsFile()<<endl;
-	if(m_parameters.useAmos()){
-		f<<"Ray AMOS File: "<<m_parameters.getAmosFile()<<endl;
-	}
-	f<<"Ray Parameters File: "<<m_parameters.getParametersFile()<<endl;
-	f<<"Ray Coverage Distribution File: "<<m_parameters.getCoverageDistributionFile()<<endl;
-
-	f.close();
-	cout<<"Writing "<<m_parameters.getParametersFile()<<""<<endl;
-	#endif
 
 	if(m_minimumCoverage > m_peakCoverage or m_peakCoverage==m_maxCoverage){
 		killRanks();
@@ -1931,7 +1913,6 @@ void Machine::call_MASTER_MODE_ASK_EXTENSIONS(){
 		cout<<"\r"<<"              "<<endl<<"Writing "<<m_parameters.getOutputFile()<<endl;
 		#endif
 		cout<<endl<<"Rank 0: "<<m_allPaths.size()<<" contigs/"<<totalLength<<" nucleotides"<<endl;
-		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<endl;
 		if(m_parameters.useAmos()){
 			m_master_mode=MASTER_MODE_AMOS;
 			m_seedingData->m_SEEDING_i=0;
@@ -2202,7 +2183,7 @@ void Machine::do_1_1_test(){
 }
 
 void Machine::killRanks(){
-	for(int i=0;i<getSize();i++){
+	for(int i=getSize()-1;i>=0;i--){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_GOOD_JOB_SEE_YOU_SOON,getRank());
 		m_outbox.push_back(aMessage);
 	}

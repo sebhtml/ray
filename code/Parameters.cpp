@@ -37,8 +37,7 @@
 using namespace std;
 
 Parameters::Parameters(){
-	m_contigsFile="Ray-Contigs.fasta";
-	m_amosFile="Ray-Contigs.afg";
+	m_contigsFile="RayOutput";
 	m_initiated=false;
 	m_directory="assembly";
 	m_minimumContigLength=100;
@@ -394,7 +393,7 @@ string Parameters::getDirectory(){
 }
 
 string Parameters::getOutputFile(){
-	return getContigsFile();
+	return getContigsFile()+".fasta";
 }
 
 int Parameters::getMinimumContigLength(){
@@ -460,6 +459,7 @@ void Parameters::addDistance(int library,int distance,int count){
 }
 
 void Parameters::computeAverageDistances(){
+	cout<<endl;
 	for(int i=0;i<(int)m_observedDistances.size();i++){
 		u64 sum=0;
 		int library=i;
@@ -504,6 +504,7 @@ void Parameters::computeAverageDistances(){
 		#endif
 	}	
 	m_observedDistances.clear();
+	cout<<endl;
 }
 
 int Parameters::getObservedAverageDistance(int library){
@@ -539,4 +540,9 @@ int Parameters::getLibrary(int file){
 
 bool Parameters::isInterleavedFile(int i){
 	return m_interleavedFiles.count(i)>0;
+}
+
+string Parameters::getReceivedMessagesFile(){
+	string outputForMessages=getOutputFile()+".ReceivedMessages.txt";
+	return outputForMessages;
 }

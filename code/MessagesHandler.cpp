@@ -97,7 +97,8 @@ void MessagesHandler::showStats(){
 	cout<<endl;
 }
 
-void MessagesHandler::addCount(int rank,int count){
+void MessagesHandler::addCount(int rank,u64 count){
+	cout<<"Adding count of rank "<<m_allCounts[rank]<<" to rank "<<rank<<" val="<<count<<endl;
 	m_receivedMessages[rank*m_size+m_allCounts[rank]]=count;
 	m_allCounts[rank]++;
 }
@@ -111,7 +112,7 @@ bool MessagesHandler::isFinished(){
 		if(!isFinished(i)){
 			return false;
 		}
-	}	
+	}
 
 	// update the counts for root, because it was updated.
 	for(int i=0;i<m_size;i++){
@@ -125,13 +126,12 @@ void MessagesHandler::writeStats(const char*file){
 	FILE*f=fopen(file,"w+");
 	for(int i=0;i<m_size;i++){
 		fprintf(f,"%i",i);
-		for(int j=0;j<m_size;i++){
+		for(int j=0;j<m_size;j++){
 			fprintf(f,"\t%lu",m_allReceivedMessages[i*m_size+j]);
 		}
 		fprintf(f,"\n");
 	}
 	fclose(f);
-	cout<<"Rank "<<MASTER_RANK<<" wrote "<<file<<endl;
 }
 
 void MessagesHandler::constructor(int rank,int size){

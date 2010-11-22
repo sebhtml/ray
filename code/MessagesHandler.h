@@ -47,7 +47,7 @@ public:
 	void sendMessages(StaticVector*outbox,int source);
 	void receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator,int destination);
 	u64*getReceivedMessages();
-	void addCount(int rank,int count);
+	void addCount(int rank,u64 count);
 	void writeStats(const char*file);
 	bool isFinished();
 	bool isFinished(int rank);

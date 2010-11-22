@@ -42,7 +42,6 @@ using namespace std;
 class Parameters{
 	bool m_error;
 	string m_contigsFile;
-	string m_amosFile;
 	bool m_amos;
 	bool m_initiated;
 	int m_numberOfSequences;
@@ -67,8 +66,12 @@ class Parameters{
 	void loadCommandsFromArguments(int argc,char**argv);
 	void loadCommandsFromFile(char*file);
 	void parseCommands();
+
+	string getContigsFile();
+
 public:
 	Parameters();
+	string getReceivedMessagesFile();
 	void load(int argc,char**argv);
 	bool isInitiated();
 	vector<string> getAllFiles();
@@ -85,7 +88,6 @@ public:
 	string getInputFile();
 	string getAmosFile();
 	string getParametersFile();
-	string getContigsFile();
 	string getCoverageDistributionFile();
 	vector<string> getCommands();
 	bool getError();

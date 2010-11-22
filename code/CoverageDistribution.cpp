@@ -77,10 +77,7 @@ CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>*distributionOfCo
 	#endif
 
 
-	#ifdef WRITE_COVERAGE_DISTRIBUTION
-	cout<<"Rank 0 wrote "<<*file<<""<<endl;
 	f.close();
-	#endif
 }
 
 int CoverageDistribution::getPeakCoverage(){
