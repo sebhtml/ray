@@ -12,14 +12,14 @@ while True:
 	line=f1.readline()
 	if len(line)==0:
 		break
-	print line
+	print line.strip()
 	i=0
 	while i<3:
-		print f1.readline()
+		print f1.readline().strip()
 	
 	i=0
 	while i<4:
-		print f2.readline()
+		print f2.readline().strip()
 
 f2.close()
 f1.close()
