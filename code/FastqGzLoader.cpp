@@ -31,7 +31,7 @@ int FastqGzLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocat
 	while(Z_NULL!=gzgets(f,buffer,4096)){
 		if(rotatingVariable==1){
 			Read*t=(Read*)readMyAllocator->allocate(sizeof(Read));
-			t->copy(NULL,buffer,readMyAllocator);
+			t->copy(NULL,buffer,readMyAllocator,true);
 			reads->push_back(t);
 		}
 		rotatingVariable++;

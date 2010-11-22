@@ -181,7 +181,7 @@ void SffLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,
 			continue;
 		}
 		Read*read=(Read*)readMyAllocator->allocate(sizeof(Read));
-		read->copy(Name,sequence.substr(first-1,last-first+1).c_str(),seqMyAllocator);
+		read->copy(Name,sequence.substr(first-1,last-first+1).c_str(),seqMyAllocator,true);
 		reads->push_back(read);
 		m_bases+=strlen(read->getSeq());
 		__Free(Name);

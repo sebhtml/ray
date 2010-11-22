@@ -67,11 +67,11 @@ char*Read::trim(char*buffer,const char*sequence){
 	return corrected;
 }
 
-void Read::copy(const char*id,const char*sequence,MyAllocator*seqMyAllocator){
+void Read::copy(const char*id,const char*sequence,MyAllocator*seqMyAllocator,bool trimFlag){
 	#ifdef ASSERT
 	assert(strlen(sequence)<4096);// +1 for \0
 	#endif
-	if(strlen(sequence)<4096){
+	if(trimFlag && strlen(sequence)<4096){
 		char buffer[4096];
 		char*corrected=trim(buffer,sequence);
 		m_sequence=(char*)seqMyAllocator->allocate(strlen(corrected)+1);
@@ -84,7 +84,7 @@ void Read::copy(const char*id,const char*sequence,MyAllocator*seqMyAllocator){
 }
 
 Read::Read(const char*id,const char*sequence,MyAllocator*seqMyAllocator){
-	copy(id,sequence,seqMyAllocator);
+	copy(id,sequence,seqMyAllocator,true);
 }
 
 Read::~Read(){

@@ -32,7 +32,7 @@ int FastqBz2Loader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAlloca
 	while(NULL!=reader.readLine(buffer,4096)){
 		if(rotatingVariable==1){
 			Read*t=(Read*)readMyAllocator->allocate(sizeof(Read));
-			t->copy(NULL,buffer,readMyAllocator);
+			t->copy(NULL,buffer,readMyAllocator,true);
 			reads->push_back(t);
 		}
 		rotatingVariable++;

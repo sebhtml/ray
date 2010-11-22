@@ -39,7 +39,7 @@ int FastaLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator
 				string sequenceStr=sequence.str();
 
 				Read*t=(Read*)readMyAllocator->allocate(sizeof(Read));
-				t->copy(NULL,sequenceStr.c_str(),readMyAllocator);// remove the leading T & first color
+				t->copy(NULL,sequenceStr.c_str(),readMyAllocator,true);// remove the leading T & first color
 				reads->push_back(t);
 			}
 			id=buffer;
@@ -54,7 +54,7 @@ int FastaLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator
 		quality<< "F";
 	}
 	Read*t=(Read*)readMyAllocator->allocate(sizeof(Read));
-	t->copy(NULL,sequenceStr.c_str(),readMyAllocator);// remove the leading T & first color
+	t->copy(NULL,sequenceStr.c_str(),readMyAllocator,true);// remove the leading T & first color
 	reads->push_back(t);
 
 	f.close();

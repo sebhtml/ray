@@ -41,7 +41,7 @@ int FastqLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator
 			f.getline(bufferForLine,1024);
 			if(id!=""){
 				Read*t=(Read*)readMyAllocator->allocate(sizeof(Read));
-				t->copy(NULL,sequence.str().c_str(),readMyAllocator);// remove the leading T & first color
+				t->copy(NULL,sequence.str().c_str(),readMyAllocator,true);// remove the leading T & first color
 				reads->push_back(t);
 			}
 			id=buffer;
@@ -59,7 +59,7 @@ int FastqLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator
 		}
 	}
 	Read*t=(Read*)readMyAllocator->allocate(sizeof(Read));
-	t->copy(NULL,sequence.str().c_str(),readMyAllocator);// remove the leading T & first color
+	t->copy(NULL,sequence.str().c_str(),readMyAllocator,true);// remove the leading T & first color
 	reads->push_back(t);
 	f.close();
 	return EXIT_SUCCESS;
