@@ -504,17 +504,13 @@ void Machine::start(){
 		m_timePrinter.printDurations();
 		cout<<endl;
 
-		
+		cout<<"Au revoir !"<<endl;
+		cout<<endl;
 	}
 
 	MPI_Finalize();
 
 	m_messagesHandler.showStats(getRank());
-
-	if(isMaster()){
-		cout<<endl;
-		cout<<"Au revoir !"<<endl;
-	}
 }
 
 /*
