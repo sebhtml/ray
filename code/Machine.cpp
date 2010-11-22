@@ -512,7 +512,6 @@ void Machine::start(){
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getCoverageDistributionFile()<<""<<endl;
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<endl;
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getReceivedMessagesFile()<<endl;
-		cout<<"MPI ranks wrote many things in the standard output too !"<<endl;
 
 		cout<<endl;
 		cout<<"Au revoir !"<<endl;
