@@ -209,7 +209,7 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		// right sequence in a right file, obviously
 
 		// left sequence in a left file, obviously
-		if((*m_LOADER_isLeftFile)){
+		if(false && (*m_LOADER_isLeftFile)){
 			int rightSequenceGlobalId=(*m_distribution_currentSequenceId)+(*m_LOADER_numberOfSequencesInLeftFile);
 			int rightSequenceRank=rightSequenceGlobalId%size;
 			int rightSequenceIdOnRank=rightSequenceGlobalId/size;
@@ -266,7 +266,7 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 
 
 		// left sequence in interleaved file
-		}else if(m_isInterleavedFile && ((*m_distribution_sequence_id)%2)==0){
+		}else if(false && m_isInterleavedFile && ((*m_distribution_sequence_id)%2)==0){
 			int rightSequenceGlobalId=(*m_distribution_currentSequenceId)+1;
 			int rightSequenceRank=rightSequenceGlobalId%size;
 			int rightSequenceIdOnRank=rightSequenceGlobalId/size;

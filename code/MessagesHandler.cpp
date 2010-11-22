@@ -98,8 +98,7 @@ void MessagesHandler::showStats(){
 }
 
 void MessagesHandler::addCount(int rank,u64 count){
-	cout<<"Adding count of rank "<<m_allCounts[rank]<<" to rank "<<rank<<" val="<<count<<endl;
-	m_receivedMessages[rank*m_size+m_allCounts[rank]]=count;
+	m_allReceivedMessages[rank*m_size+m_allCounts[rank]]=count;
 	m_allCounts[rank]++;
 }
 
