@@ -3,5 +3,5 @@
 -o pseudo.fasta |& tee pseudomonas-p-bz2-gz.log
 
 ~/Ray/trunk/scripts/print-latex.sh \
-Pseudomonas-aeruginosa-PAO1,-complete-genome.fasta pseudo.fasta Ray | tee -a  pseudomonas-p-bz2-gz.log
+~/nuccore/Pseudomonas-aeruginosa-PAO1,-complete-genome.fasta pseudo.fasta Ray | tee -a  pseudomonas-p-bz2-gz.log
 
