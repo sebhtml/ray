@@ -1,24 +1,25 @@
 #!/usr/bin/python
-
-# interleave two fasta files.
+# author: Sébastien Boisvert
+# part of Ray distribution
+# this script takes two fasta files and interleave them.
 
 import sys
-file1=sys.argv[1]
-file2=sys.argv[2]
-f1=open(file1)
-f2=open(file2)
+
+if len(sys.argv)==1:
+	print "Provide 2 fasta files..."
+	sys.exit()
+
+f1=open(sys.argv[1])
+f2=open(sys.argv[2])
 
 while True:
-	line1a=f1.readline()
-	if len(line1a)==0:
+	line=f1.readline()
+	if len(line)==0:
 		break
-	line1b=f1.readline()
-	line2a=f2.readline()
-	line2b=f2.readline()
-	print line1a.strip()
-	print line1b.strip()
-	print line2a.strip()
-	print line2b.strip()
+	print line.strip()
+	print f1.readline().strip()
+	print f2.readline().strip()
+	print f2.readline().strip()
 
 f2.close()
 f1.close()
