@@ -11,3 +11,4 @@ ls -lh pseudomonas.log
 Pseudomonas.fasta \
 RayTheMighty
 
+pseudomonas-interleaved-bz2.sh

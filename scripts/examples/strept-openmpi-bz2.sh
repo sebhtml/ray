@@ -6,3 +6,4 @@
 
 ls -lh strept-openmpi-bz2.log
 ~/Ray/trunk/scripts/print-latex.sh ~/nuccore/Streptococcus-pneumoniae-R6.fasta Ray-Contigs.fasta Ray
+strept-openmpi-bz2.sh

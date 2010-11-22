@@ -10,3 +10,4 @@ nohup /software/openmpi-1.3.4/bin/mpirun --mca btl ^sm -np 29 ../../Ray \
  -s /home/boiseb01/nuccore/chr1-8.fa \
  -s /home/boiseb01/nuccore/chr1-9.fa \
  -o /home/boiseb01/nuccore/chr1-$(hostname).fasta>chr1-$(hostname).log &
+run-chr1-human.sh

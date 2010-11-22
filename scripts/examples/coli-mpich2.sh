@@ -7,6 +7,5 @@
 -o ecoli.fasta \
 |& tee coli-mpich2.log
 
-ls -lh coli-mpich2.log
+~/Ray/trunk/scripts/print-latex.sh ~/nuccore/Ecoli-k12-mg1655.fasta ecoli.fasta |& tee -a coli-mpich2.log
 
-~/Ray/trunk/scripts/print-latex.sh ~/nuccore/Ecoli-k12-mg1655.fasta ecoli.fasta

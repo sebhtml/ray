@@ -6,3 +6,4 @@
 
 ls -lh strept-mpich2.log
 ~/Ray/trunk/scripts/print-latex.sh ~/nuccore/Streptococcus-pneumoniae-R6.fasta Ray-Contigs.fasta Ray
+strept-mpich2.sh
