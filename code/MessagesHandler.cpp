@@ -123,6 +123,13 @@ bool MessagesHandler::isFinished(){
 
 void MessagesHandler::writeStats(const char*file){
 	FILE*f=fopen(file,"w+");
+	
+	for(int i=0;i<m_size;i++){
+		fprintf(f,"\t%i",i);
+	}
+
+	fprintf(f,"\n");
+	
 	for(int i=0;i<m_size;i++){
 		fprintf(f,"%i",i);
 		for(int j=0;j<m_size;j++){
