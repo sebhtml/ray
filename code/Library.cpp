@@ -31,6 +31,9 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<Parameters.h>
 
 void Library::updateDistances(){
+	if(!m_ready){
+		return;
+	}
 	if((*m_fileId)==(*m_parameters).getNumberOfFiles()){
 		// flush
 		m_bufferedData->flushAll(TAG_UPDATE_LIBRARY_INFORMATION,m_outboxAllocator,m_outbox,getRank());
@@ -58,11 +61,14 @@ void Library::updateDistances(){
 					}
 					int sequenceRank=(*m_sequence_id)%getSize();
 					int sequenceIndex=(*m_sequence_id)/getSize();
+
 					m_bufferedData->addAt(sequenceRank,sequenceIndex);
 					m_bufferedData->addAt(sequenceRank,averageLength);
 					m_bufferedData->addAt(sequenceRank,standardDeviation);
 
-					m_bufferedData->flush(sequenceRank,3,TAG_UPDATE_LIBRARY_INFORMATION,m_outboxAllocator,m_outbox,getRank(),false);
+					if(m_bufferedData->flush(sequenceRank,3,TAG_UPDATE_LIBRARY_INFORMATION,m_outboxAllocator,m_outbox,getRank(),false)){
+						m_ready=false;
+					}
 
 					(*m_sequence_id)++;
 					(*m_sequence_idInFile)++;
@@ -233,6 +239,11 @@ Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,map<int,map<int,i
 	this->m_fileId=m_fileId;
 	this->m_seedingData=m_seedingData;
 	this->m_libraryDistances=m_libraryDistances;
+	setReadiness();
+}
+
+void Library::setReadiness(){
+	m_ready=true;
 }
 
 int Library::getRank(){

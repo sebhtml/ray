@@ -40,6 +40,7 @@ using namespace std;
 
 class Library{
 	BufferedData*m_bufferedData;
+	bool m_ready;
 	int m_rank;
 	StaticVector*m_outbox;
 	int*m_sequence_id;
@@ -58,6 +59,7 @@ class Library{
 
 public:
 	void updateDistances();
+	void setReadiness();
 	int getRank();
 	int getSize();
 	void detectDistances();

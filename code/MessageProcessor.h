@@ -24,6 +24,7 @@
 
 #include<EdgesExtractor.h>
 #include<RingAllocator.h>
+#include<Library.h>
 #include<OpenAssemblerChooser.h>
 #include<Message.h>
 #include<vector>
@@ -58,7 +59,7 @@ class MessageProcessor{
 	int m_consumed;
 	time_t m_last;
 
-	MessagesHandler*m_messagesHandler;
+	Library*m_library;
 	bool*m_isFinalFusion;
 	int*m_master_mode;
 	ExtensionData*ed;
@@ -153,7 +154,7 @@ class MessageProcessor{
 
 public:
 	void constructor(
-MessagesHandler*m_messagesHandler,
+Library*m_library,
 bool*m_ready,
 VerticesExtractor*m_verticesExtractor,
 EdgesExtractor*m_edgesExtractor,
@@ -360,6 +361,7 @@ SeedExtender*seedExtender,int*m_master_mode,bool*m_isFinalFusion
 	void call_TAG_BARRIER(Message*message);
 	void call_TAG_SHOW_SEQUENCES(Message*message);
 	void call_TAG_LIBRARY_DISTANCE_REPLY(Message*message);
+	void call_TAG_UPDATE_LIBRARY_INFORMATION_REPLY(Message*message);
 
 	void processMessage(Message*message);
 	MessageProcessor();

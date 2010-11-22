@@ -1159,6 +1159,10 @@ void MessageProcessor::call_TAG_ASK_LIBRARY_DISTANCES_FINISHED(Message*message){
 	}
 }
 
+void MessageProcessor::call_TAG_UPDATE_LIBRARY_INFORMATION_REPLY(Message*message){
+	m_library->setReadiness();
+}
+
 void MessageProcessor::call_TAG_UPDATE_LIBRARY_INFORMATION(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
@@ -1169,6 +1173,9 @@ void MessageProcessor::call_TAG_UPDATE_LIBRARY_INFORMATION(Message*message){
 		#endif
 		(*m_myReads)[incoming[i+0]]->getPairedRead()->updateLibrary(incoming[i+1],incoming[i+2]);
 	}
+
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_UPDATE_LIBRARY_INFORMATION_REPLY,rank);
+	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_RECEIVED_COVERAGE_INFORMATION(Message*message){
@@ -1337,6 +1344,7 @@ MessageProcessor::MessageProcessor(){
 	m_methods[TAG_ASK_LIBRARY_DISTANCES]=&MessageProcessor::call_TAG_ASK_LIBRARY_DISTANCES;
 	m_methods[TAG_ASK_LIBRARY_DISTANCES_FINISHED]=&MessageProcessor::call_TAG_ASK_LIBRARY_DISTANCES_FINISHED;
 	m_methods[TAG_UPDATE_LIBRARY_INFORMATION]=&MessageProcessor::call_TAG_UPDATE_LIBRARY_INFORMATION;
+	m_methods[TAG_UPDATE_LIBRARY_INFORMATION_REPLY]=&MessageProcessor::call_TAG_UPDATE_LIBRARY_INFORMATION_REPLY;
 	m_methods[TAG_RECEIVED_COVERAGE_INFORMATION]=&MessageProcessor::call_TAG_RECEIVED_COVERAGE_INFORMATION;
 	m_methods[TAG_REQUEST_READ_SEQUENCE]=&MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE;
 	m_methods[TAG_REQUEST_READ_SEQUENCE_REPLY]=&MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE_REPLY;
@@ -1346,7 +1354,7 @@ MessageProcessor::MessageProcessor(){
 }
 
 void MessageProcessor::constructor(
-MessagesHandler*m_messagesHandler,
+Library*m_library,
 bool*m_ready,
 VerticesExtractor*m_verticesExtractor,
 EdgesExtractor*m_edgesExtractor,
@@ -1444,6 +1452,7 @@ bool*m_isFinalFusion){
 	this->parameters=parameters;
 	this->m_libraryIterator=m_libraryIterator;
 	this->m_libraryIndexInitiated=m_libraryIndexInitiated;
+	this->m_library=m_library;
 	this->m_subgraph=m_subgraph;
 	this->m_edgesExtractor=m_edgesExtractor;
 	this->m_outboxAllocator=m_outboxAllocator;
@@ -1470,7 +1479,6 @@ bool*m_isFinalFusion){
 	this->m_SEEDING_i=m_SEEDING_i;
 	this->m_colorSpaceMode=m_colorSpaceMode;
 	this->m_FINISH_fusionOccured=m_FINISH_fusionOccured;
-	this->m_messagesHandler=m_messagesHandler;
 	this->m_Machine_getPaths_INITIALIZED=m_Machine_getPaths_INITIALIZED;
 	this->m_mode=m_mode;
 	this->m_allPaths=m_allPaths;

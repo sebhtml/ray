@@ -394,8 +394,7 @@ void Machine::start(){
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	m_mp.constructor(&m_messagesHandler,
-&m_ready,
+	m_mp.constructor(&m_library,&m_ready,
 &m_verticesExtractor,
 &m_edgesExtractor,
 &m_sl,
@@ -504,7 +503,6 @@ void Machine::start(){
 		m_timePrinter.printElapsedTime("Collection of fusions");
 		m_timePrinter.printDurations();
 		cout<<endl;
-		cout<<"Au revoir !"<<endl;
 
 		
 	}
@@ -512,6 +510,11 @@ void Machine::start(){
 	MPI_Finalize();
 
 	m_messagesHandler.showStats(getRank());
+
+	if(isMaster()){
+		cout<<endl;
+		cout<<"Au revoir !"<<endl;
+	}
 }
 
 /*
