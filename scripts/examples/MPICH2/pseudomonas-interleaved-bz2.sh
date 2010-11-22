@@ -1,4 +1,4 @@
-/software/mpich2-1.3/bin/mpirun -np 30 \
+/software/mpich2-1.3/bin/mpirun -np 31 \
 ~/Ray/trunk/code/Ray \
 -i /home/boiseb01/nuccore/inter.fasta.bz2 \
 -o Pseudomonas.fasta \

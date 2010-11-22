@@ -1,4 +1,4 @@
-/software/mpich2-1.3/bin/mpirun -np 28 \
+/software/mpich2-1.3/bin/mpirun -np 31 \
 ~/Ray/trunk/code/Ray \
 -p /data/users/sra/SRA001125/sdata/SRR001665_1.fastq.gz \
    /data/users/sra/SRA001125/sdata/SRR001665_2.fastq.gz \
