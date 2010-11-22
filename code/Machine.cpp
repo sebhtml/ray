@@ -374,10 +374,10 @@ void Machine::start(){
  		cout<<"http://denovoassembler.sf.net/"<<endl<<endl;
 
 		cout<<"Reference to cite: "<<endl<<endl;
+		cout<<"Sébastien Boisvert, François Laviolette & Jacques Corbeil."<<endl;
 		cout<<"Ray: simultaneous assembly of reads from a mix of high-throughput sequencing technologies."<<endl;
-		cout<<"Sébastien Boisvert, François Laviolette, and Jacques Corbeil."<<endl;
-		cout<<"Journal of Computational Biology (Mary Ann Liebert, Inc. publishers)."<<endl;
-		cout<<"ahead of print."<<endl;
+		cout<<"Journal of Computational Biology (Mary Ann Liebert, Inc. publishers, New York, U.S.A.)."<<endl;
+		cout<<"November 2010, Volume 17, Issue 11, Pages 1519-1533."<<endl;
 		cout<<"doi:10.1089/cmb.2009.0238"<<endl;
 		cout<<"http://dx.doi.org/doi:10.1089/cmb.2009.0238"<<endl;
 		cout<<endl;
