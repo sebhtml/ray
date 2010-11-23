@@ -553,7 +553,8 @@ void Machine::finishFusions(){
 		message[0]=m_FINISH_fusionOccured;
 		cout<<"Rank "<<getRank()<<" is finishing fusions "<<m_ed->m_EXTENSION_contigs.size()<<"/"<<m_ed->m_EXTENSION_contigs.size()<<" (completed)"<<endl;
 
-
+	
+		/*
 		char number[10];
 		sprintf(number,"%d",m_rank);
 		string theNumber=number;
@@ -565,7 +566,7 @@ void Machine::finishFusions(){
 			f<<">contig-"<<i<<" "<<contig.length()<<" nucleotides"<<endl<<addLineBreaks(contig);
 		}
 		f.close();
-
+		*/
 
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_FINISH_FUSIONS_FINISHED,getRank());
 		m_outbox.push_back(aMessage);
