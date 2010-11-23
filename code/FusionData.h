@@ -35,7 +35,7 @@ using namespace std;
 
 class FusionData{
 	BufferedData m_buffers;
-	bool m_ready;
+	int m_ready;
 
 public:
 	// FUSION

@@ -62,6 +62,7 @@ public:
  *		returns the number of flushed devices.
  */
 	int flushAll(int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank);
+	bool isEmpty();
 };
 
 #endif

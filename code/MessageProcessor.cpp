@@ -760,6 +760,12 @@ void MessageProcessor::call_TAG_ASK_READ_LENGTH_REPLY(Message*message){
 	(*m_EXTENSION_receivedLength)=incoming[0];
 }
 
+void MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY(Message*message){
+	call_TAG_SAVE_WAVE_PROGRESSION(message);
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_SAVE_WAVE_PROGRESSION_REPLY,rank);
+	m_outbox->push_back(aMessage);
+}
+
 void MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 	void*buffer=message->getBuffer();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
@@ -774,10 +780,6 @@ void MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 		node->getValue()->addDirection(wave,progression,&(*m_directionsAllocator));
 	}
 	
-	/* not in use right now.
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_SAVE_WAVE_PROGRESSION_REPLY,rank);
-	m_outbox->push_back(aMessage);
-	*/
 }
 
 void MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION_REPLY(Message*message){
@@ -1091,9 +1093,16 @@ void MessageProcessor::call_TAG_DISTRIBUTE_FUSIONS(Message*message){
 	(*m_EXTENSION_currentPosition)=0;
 }
 
+void MessageProcessor::call_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY(Message*message){
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY,rank);
+	m_outbox->push_back(aMessage);
+}
+
+void MessageProcessor::call_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY(Message*message){
+}
+
 void MessageProcessor::call_TAG_DISTRIBUTE_FUSIONS_FINISHED(Message*message){
 	(*m_DISTRIBUTE_n)++;
-	//cout<<"call_TAG_DISTRIBUTE_FUSIONS_FINISHED "<<*m_DISTRIBUTE_n<<endl;
 }
 
 void MessageProcessor::call_TAG_EXTENSION_START(Message*message){
@@ -1335,6 +1344,7 @@ MessageProcessor::MessageProcessor(){
 	m_methods[TAG_ASK_READ_LENGTH]=&MessageProcessor::call_TAG_ASK_READ_LENGTH;
 	m_methods[TAG_ASK_READ_LENGTH_REPLY]=&MessageProcessor::call_TAG_ASK_READ_LENGTH_REPLY;
 	m_methods[TAG_SAVE_WAVE_PROGRESSION]=&MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION;
+	m_methods[TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY]=&MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY;
 	m_methods[TAG_SAVE_WAVE_PROGRESSION_REPLY]=&MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION_REPLY;
 	m_methods[TAG_COPY_DIRECTIONS]=&MessageProcessor::call_TAG_COPY_DIRECTIONS;
 	m_methods[TAG_ASSEMBLE_WAVES]=&MessageProcessor::call_TAG_ASSEMBLE_WAVES;
@@ -1372,6 +1382,8 @@ MessageProcessor::MessageProcessor(){
 	m_methods[TAG_ELIMINATE_PATH]=&MessageProcessor::call_TAG_ELIMINATE_PATH;
 	m_methods[TAG_GET_PATH_VERTEX]=&MessageProcessor::call_TAG_GET_PATH_VERTEX;
 	m_methods[TAG_GET_PATH_VERTEX_REPLY]=&MessageProcessor::call_TAG_GET_PATH_VERTEX_REPLY;
+	m_methods[TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY]=&MessageProcessor::call_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY;
+	m_methods[TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY]=&MessageProcessor::call_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY;
 	m_methods[TAG_SET_COLOR_MODE]=&MessageProcessor::call_TAG_SET_COLOR_MODE;
 	m_methods[TAG_AUTOMATIC_DISTANCE_DETECTION]=&MessageProcessor::call_TAG_AUTOMATIC_DISTANCE_DETECTION;
 	m_methods[TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE]=&MessageProcessor::call_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE;

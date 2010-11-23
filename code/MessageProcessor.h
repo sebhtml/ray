@@ -367,6 +367,9 @@ SeedExtender*seedExtender,int*m_master_mode,bool*m_isFinalFusion
 	void call_TAG_UPDATE_LIBRARY_INFORMATION_REPLY(Message*message);
 	void call_TAG_RECEIVED_MESSAGES(Message*message);
 	void call_TAG_RECEIVED_MESSAGES_REPLY(Message*message);
+	void call_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY(Message*message);
+	void call_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY(Message*message);
+	void call_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY(Message*message);
 
 	void processMessage(Message*message);
 	MessageProcessor();

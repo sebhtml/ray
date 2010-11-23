@@ -552,6 +552,21 @@ void Machine::finishFusions(){
 		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 		message[0]=m_FINISH_fusionOccured;
 		cout<<"Rank "<<getRank()<<" is finishing fusions "<<m_ed->m_EXTENSION_contigs.size()<<"/"<<m_ed->m_EXTENSION_contigs.size()<<" (completed)"<<endl;
+
+
+		char number[10];
+		sprintf(number,"%d",m_rank);
+		string theNumber=number;
+		string file="Rank_"+theNumber+".fasta";
+		ofstream f(file.c_str());
+
+		for(int i=0;i<(int)m_FINISH_newFusions.size();i++){
+			string contig=convertToString(&(m_FINISH_newFusions[i]),m_wordSize);
+			f<<">contig-"<<i<<" "<<contig.length()<<" nucleotides"<<endl<<addLineBreaks(contig);
+		}
+		f.close();
+
+
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_FINISH_FUSIONS_FINISHED,getRank());
 		m_outbox.push_back(aMessage);
 		m_mode=MODE_DO_NOTHING;
@@ -612,12 +627,6 @@ void Machine::finishFusions(){
 			m_Machine_getPaths_INITIALIZED=false;
 		}
 	}else if(!m_checkedValidity){
-		done=true;
-		vector<Direction> directions1=m_FINISH_pathsForPosition[m_FINISH_pathsForPosition.size()-1];
-		vector<Direction> directions2=m_FINISH_pathsForPosition[m_FINISH_pathsForPosition.size()-overlapMinimumLength];
-		int hits=0;
-
-		// the complexity of this thing is silly.
 		// basically, directions1 contains the paths at a particular vertex in the path
 		// directions2 contains the paths at another vertex in the path
 		// both vertices are distanced by overlapMinimumLength, or so
@@ -626,34 +635,23 @@ void Machine::finishFusions(){
 		// with the property that the difference of progressions are exactly overlapMinimumLength (progressions
 		// are simply positions of these vertices on another path.)
 		// 
-		// new algorithm:
-		// index the  directions2 with their 'otherProgression'
-		// then, simply iterate over those of directions1, and check if there is one in the index of directions2
-		// with a otherProgression=+1+progression-overlapMinimumLength
+		int hits=0;
 
-		// first key: waveId, second key: otherProgression, values: j such that j has a progression equal to otherProgression
-
-		// index
-		map<int,map<int,int > > indexOnDirections2;
-		for(int j=0;j<(int)directions2.size();j++){
-			int otherProgression=directions2[j].getProgression();
-			int wave=directions2[j].getWave();
-			indexOnDirections2[wave][otherProgression]=j;
-		}
-
-		// search
+		done=true;
+		vector<Direction> directions1=m_FINISH_pathsForPosition[m_FINISH_pathsForPosition.size()-1];
+		vector<Direction> directions2=m_FINISH_pathsForPosition[m_FINISH_pathsForPosition.size()-overlapMinimumLength];
 		for(int i=0;i<(int)directions1.size();i++){
-			int myWave=directions1[i].getWave();
-			if(indexOnDirections2.count(myWave)>0){
-				int progression=directions1[i].getProgression();
-				int otherProgression=1+progression-overlapMinimumLength; 
-				if(indexOnDirections2[myWave].count(otherProgression)>0){
-					// this is 
-					done=false;
-					hits++;
-					m_selectedPath=myWave;
-					m_selectedPosition=progression;
-					break;
+			for(int j=0;j<(int)directions2.size();j++){
+				if(directions1[i].getWave()==directions2[j].getWave()){
+					int progression=directions1[i].getProgression();
+					int otherProgression=directions2[j].getProgression();
+					if(progression-otherProgression+1==overlapMinimumLength){
+						// this is 
+						done=false;
+						hits++;
+						m_selectedPath=directions1[i].getWave();
+						m_selectedPosition=directions1[i].getProgression();
+					}
 				}
 			}
 		}
@@ -661,6 +659,7 @@ void Machine::finishFusions(){
 			done=true;
 		}
 		m_checkedValidity=true;
+
 	}else{
 		// check if it is there for at least overlapMinimumLength
 		int pathId=m_selectedPath;
@@ -748,6 +747,11 @@ void Machine::makeFusions(){
 		}
 	}
 	if(m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
+
+
+
+
+
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_FUSION_DONE,getRank());
 		m_outbox.push_back(aMessage);
 		m_mode=MODE_DO_NOTHING;

@@ -59,6 +59,14 @@ void BufferedData::reset(int i){
 	#endif
 }
 
+bool BufferedData::isEmpty(){
+	for(int i=0;i<m_ranks;i++){
+		if(size(i)!=0){
+			return false;
+		}
+	}
+	return true;
+}
 
 int BufferedData::flushAll(int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank){
 	int flushed=0;

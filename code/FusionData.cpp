@@ -27,8 +27,10 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 	if(!isReady()){
 		return;
 	}
-	if(m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
-		m_buffers.flushAll(TAG_SAVE_WAVE_PROGRESSION,m_outboxAllocator,m_outbox,getRank);
+	if(!m_buffers.isEmpty() && m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
+		m_ready+=m_buffers.flushAll(TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY,m_outboxAllocator,m_outbox,getRank);
+		return;
+	}else if(m_buffers.isEmpty() && m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
 		cout<<"Rank "<<getRank<<" is distributing fusions "<<m_ed->m_EXTENSION_contigs.size()<<"/"<<m_ed->m_EXTENSION_contigs.size()<<" (completed)"<<endl;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_DISTRIBUTE_FUSIONS_FINISHED,getRank);
 		m_outbox->push_back(aMessage);
@@ -49,10 +51,10 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 	m_buffers.addAt(destination,m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i]);
 	m_buffers.addAt(destination,m_ed->m_EXTENSION_currentPosition);
 
-	bool flushed=m_buffers.flush(destination,3,TAG_SAVE_WAVE_PROGRESSION,m_outboxAllocator,m_outbox,getRank,false);
-	if(flushed){
-		//m_ready=false;
+	if(m_buffers.flush(destination,3,TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY,m_outboxAllocator,m_outbox,getRank,false)){
+		m_ready++;
 	}
+
 	m_ed->m_EXTENSION_currentPosition++;
 
 	// the next one
@@ -67,13 +69,13 @@ void FusionData::constructor(int size,int max){
 }
 
 FusionData::FusionData(){
-	setReadiness();
+	m_ready=0;
 }
 
 void FusionData::setReadiness(){
-	m_ready=true;
+	m_ready--;
 }
 
 bool FusionData::isReady(){
-	return m_ready;
+	return m_ready==0;
 }
