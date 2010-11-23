@@ -462,7 +462,7 @@ void Parameters::addDistance(int library,int distance,int count){
 string Parameters::getLibraryFile(int library){
 	ostringstream s;
 	s<<getPrefix();
-	s<<"."<<"Library"<<library<<".txt"<<endl;
+	s<<"."<<"Library"<<library<<".txt";
 	return s.str();
 }
 
@@ -509,7 +509,6 @@ void Parameters::computeAverageDistances(){
 		cout<<"Rank 0: library "<<library<<" has an average size of "<<average<<" with a standard variation of "<<standardDeviation<<endl;
 		#endif
 	}	
-	m_observedDistances.clear();
 	cout<<endl;
 }
 
