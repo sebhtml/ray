@@ -509,8 +509,8 @@ void Machine::start(){
 		m_messagesHandler.writeStats(tmp);
 
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getCoverageDistributionFile()<<""<<endl;
-		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<endl;
 		m_parameters.printFinalMessage();
+		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<endl;
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getReceivedMessagesFile()<<endl;
 
 		cout<<endl;
