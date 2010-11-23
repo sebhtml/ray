@@ -4,4 +4,4 @@
    /home/boiseb01/nuccore/200xStreptococcus-pneumoniae-R6.fasta_fragments_2.fasta \
  |& tee strept-mpich2.log
 
-~/Ray/trunk/scripts/print-latex.sh ~/nuccore/Streptococcus-pneumoniae-R6.fasta Ray-Contigs.fasta Ray |& tee -a strept-mpich2.log
+~/Ray/trunk/scripts/print-latex.sh ~/nuccore/Streptococcus-pneumoniae-R6.fasta RayOutput.fasta Ray |& tee -a strept-mpich2.log

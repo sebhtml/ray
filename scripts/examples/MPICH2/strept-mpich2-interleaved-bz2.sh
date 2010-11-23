@@ -4,5 +4,4 @@
  |& tee log
 
 ls -lh log
-~/Ray/trunk/scripts/print-latex.sh ~/nuccore/Streptococcus-pneumoniae-R6.fasta Ray-Contigs.fasta Ray
-strept-mpich2-interleaved-bz2.sh
+~/Ray/trunk/scripts/print-latex.sh ~/nuccore/Streptococcus-pneumoniae-R6.fasta RayOutput.fasta Ray |& tee -a strept-mpich2-interleaved-bz2.log

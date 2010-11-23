@@ -49,9 +49,9 @@ void Library::updateDistances(){
 		m_ed->m_EXTENSION_currentRankIsSet=false;
 	}else{
 		if(
-/*		(*m_parameters).isLeftFile(*m_fileId) */ // left files
-/*		||*/ (*m_parameters).isRightFile(*m_fileId)  // right files 
-		|| ((*m_parameters).isInterleavedFile(*m_fileId) && (*m_sequence_idInFile)%2==1)){ // interleaved file, but only the right sequence.
+		(*m_parameters).isLeftFile(*m_fileId)  // left files
+		|| (*m_parameters).isRightFile(*m_fileId)  // right files 
+		|| (*m_parameters).isInterleavedFile(*m_fileId) ){ // interleaved file, but only the right sequence.
 			if((*m_parameters).isAutomatic(*m_fileId)){
 				int library=(*m_parameters).getLibrary(*m_fileId);
 				int averageLength=(*m_parameters).getObservedAverageDistance(library);
