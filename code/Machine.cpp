@@ -640,21 +640,40 @@ void Machine::finishFusions(){
 		done=true;
 		vector<Direction> directions1=m_FINISH_pathsForPosition[m_FINISH_pathsForPosition.size()-1];
 		vector<Direction> directions2=m_FINISH_pathsForPosition[m_FINISH_pathsForPosition.size()-overlapMinimumLength];
+
+		map<int,vector<int> > indexOnDirection2;
+		
+		for(int j=0;j<(int)directions2.size();j++){
+			int waveId=directions2[j].getWave();
+			if(indexOnDirection2.count(waveId)==0){
+				vector<int> emptyVector;
+				indexOnDirection2[waveId]=emptyVector;
+			}
+			indexOnDirection2[waveId].push_back(j);
+		}
+
 		for(int i=0;i<(int)directions1.size();i++){
-			for(int j=0;j<(int)directions2.size();j++){
-				if(directions1[i].getWave()==directions2[j].getWave()){
-					int progression=directions1[i].getProgression();
-					int otherProgression=directions2[j].getProgression();
-					if(progression-otherProgression+1==overlapMinimumLength){
-						// this is 
-						done=false;
-						hits++;
-						m_selectedPath=directions1[i].getWave();
-						m_selectedPosition=directions1[i].getProgression();
-					}
+			int wave1=directions1[i].getWave();
+			if(indexOnDirection2.count(wave1)==0){
+				continue;
+			}
+			vector<int> searchResults=indexOnDirection2[wave1];
+			int progression1=directions1[i].getProgression();
+			for(int j=0;j<(int)searchResults.size();j++){
+				int index2=searchResults[j];
+				int otherProgression=directions2[index2].getProgression();
+				if(progression1-otherProgression+1==overlapMinimumLength){
+					// this is 
+					done=false;
+					hits++;
+					m_selectedPath=wave1;
+					m_selectedPosition=progression1;
 				}
 			}
 		}
+
+		indexOnDirection2.clear();
+
 		if(hits>1){// we don't support that right now.
 			done=true;
 		}
