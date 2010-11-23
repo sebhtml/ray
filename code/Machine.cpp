@@ -133,7 +133,6 @@ void Machine::sendLibraryDistances(){
 		m_bufferedData.addAt(MASTER_RANK,distance);
 		m_bufferedData.addAt(MASTER_RANK,count);
 		if(m_bufferedData.flush(MASTER_RANK,3,TAG_LIBRARY_DISTANCE,&m_outboxAllocator,&m_outbox,getRank(),false)){
-
 			m_ready=false;
 		}
 
@@ -511,8 +510,8 @@ void Machine::start(){
 
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getCoverageDistributionFile()<<""<<endl;
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<endl;
-		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getReceivedMessagesFile()<<endl;
 		m_parameters.printFinalMessage();
+		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getReceivedMessagesFile()<<endl;
 
 		cout<<endl;
 		cout<<"Au revoir !"<<endl;

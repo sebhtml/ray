@@ -175,12 +175,6 @@ void Library::detectDistances(){
 											int d=p2-p1+m_ed->m_EXTENSION_receivedLength;
 											(*m_libraryDistances)[library][d]++;
 											
-											#ifdef ASSERT_AUTO
-											if(d!=200 && d!=1000){
-												cout<<"Distance"<<endl;
-											}
-											cout<<"Distance is "<<d<<" (library="<<library<<") "<<uniqueReadIdentifier<<" "<<p1<<" "<<otherStrand<<", "<<rightReadUniqueId<<" "<<p2<<" "<<currentStrand<<" (length is "<<m_ed->m_EXTENSION_receivedLength<<endl;
-											#endif
 										}
 									}else{
 										#ifdef ASSERT_AUTO
