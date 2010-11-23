@@ -26,6 +26,7 @@
 #include<math.h>
 #include<Parameters.h>
 #include<string>
+#include<sstream>
 #include<iostream>
 #include<vector>
 #include<cstdlib>
@@ -458,25 +459,30 @@ void Parameters::addDistance(int library,int distance,int count){
 	m_observedDistances[library][distance]=count;
 }
 
+string Parameters::getLibraryFile(int library){
+	ostringstream s;
+	s<<getPrefix();
+	s<<"."<<"Library"<<library<<".txt"<<endl;
+	return s.str();
+}
+
 void Parameters::computeAverageDistances(){
 	cout<<endl;
 	for(int i=0;i<(int)m_observedDistances.size();i++){
 		u64 sum=0;
 		int library=i;
-		#ifdef DUMP_LIBRARIES
-		cout<<"LIBRARY"<<i<<endl;
-		#endif
 		int n=0;
+		string fileName=getLibraryFile(library);
+		ofstream f(fileName.c_str());
 		for(map<int,int>::iterator j=m_observedDistances[library].begin();
 			j!=m_observedDistances[library].end();j++){
 			int d=j->first;
 			int count=j->second;
-			#ifdef DUMP_LIBRARIES
-			cout<<d<<"	"<<count<<endl;
-			#endif
+			f<<d<<"\t"<<count<<endl;
 			sum+=d*count;
 			n+=count;
 		}
+		f.close();
 		int average;
 		int standardDeviation;
 		if(n>0){
@@ -545,4 +551,10 @@ bool Parameters::isInterleavedFile(int i){
 string Parameters::getReceivedMessagesFile(){
 	string outputForMessages=getPrefix()+".ReceivedMessages.txt";
 	return outputForMessages;
+}
+
+void Parameters::printFinalMessage(){
+	for(int i=0;i<(int)m_observedDistances.size();i++){
+		cout<<"Rank "<<MASTER_RANK<<" wrote "<<getLibraryFile(i)<<endl;
+	}
 }

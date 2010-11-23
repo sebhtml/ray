@@ -68,6 +68,7 @@ class Parameters{
 	void parseCommands();
 
 	string getPrefix();
+	string getLibraryFile(int library);
 
 public:
 	Parameters();
@@ -100,6 +101,7 @@ public:
 	int getNumberOfFiles();
 	bool isAutomatic(int file);
 	int getLibrary(int file);
+	void printFinalMessage();
 	bool isInterleavedFile(int i);
 };
 

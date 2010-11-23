@@ -512,6 +512,7 @@ void Machine::start(){
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getCoverageDistributionFile()<<""<<endl;
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<endl;
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getReceivedMessagesFile()<<endl;
+		m_parameters.printFinalMessage();
 
 		cout<<endl;
 		cout<<"Au revoir !"<<endl;
