@@ -116,6 +116,10 @@ Retrovirology 2008, 5:110doi:10.1186/1742-4690-5-110
  */
 #define _SEGMENT_LENGTH 5
 
+
+
+#define _AUTOMATIC_DETECTION 65535
+
 /*
  * this is the type used to store coverage values
  * default is 8 bits, unsigned.

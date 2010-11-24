@@ -24,7 +24,6 @@
 #define _Parameters
 
 
-#define _AUTOMATIC_DETECTION 65535
 
 #include<map>
 #include<set>
