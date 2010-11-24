@@ -1,5 +1,5 @@
 
-suffix=$(date +%Y-%m-%d-%H-%M-%S-%s).txt
+suffix=$(date +%Y-%m-%d-%H-%M-%S).txt
 
 (
 echo "BEGIN LIST OF REGRESSIONS"

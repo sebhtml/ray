@@ -34,6 +34,8 @@ void Library::updateDistances(){
 	if(!m_ready){
 		return;
 	}
+
+	// we are done.
 	if((*m_fileId)==(*m_parameters).getNumberOfFiles()){
 		// flush
 		m_bufferedData->flushAll(TAG_UPDATE_LIBRARY_INFORMATION,m_outboxAllocator,m_outbox,getRank());
@@ -47,50 +49,42 @@ void Library::updateDistances(){
 		(*m_master_mode)=MASTER_MODE_TRIGGER_EXTENSIONS;
 		m_ed->m_EXTENSION_rank=-1;
 		m_ed->m_EXTENSION_currentRankIsSet=false;
+
+	// skip the file.
+	}else if(!(*m_parameters).isAutomatic(*m_fileId) ||m_parameters->isLeftFile(*m_fileId)){
+		(*m_fileId)++;
+		(*m_sequence_id)+=(*m_parameters).getNumberOfSequences(*m_fileId);
+	// the file is finished loading.
+	}else if((*m_sequence_idInFile)==(*m_parameters).getNumberOfSequences(*m_fileId)){
+		cout<<"Rank 0 is updating distances "<<(*m_parameters).getNumberOfSequences(*m_fileId)<<"/"<<(*m_parameters).getNumberOfSequences(*m_fileId)<<" (completed)"<<endl;
+		(*m_fileId)++;
+		(*m_sequence_idInFile)=0;
+	// we can process the sequence.
+	// the file is set to be automatic.
 	}else{
-		if(((*m_parameters).isRightFile(*m_fileId))  // right files 
-		|| ((*m_parameters).isInterleavedFile(*m_fileId)) ){ // interleaved file, but only the right sequence.
-			if((*m_parameters).isAutomatic(*m_fileId)){
-				int library=(*m_parameters).getLibrary(*m_fileId);
-				int averageLength=(*m_parameters).getObservedAverageDistance(library);
-				int standardDeviation=(*m_parameters).getObservedStandardDeviation(library);
-				if((*m_sequence_idInFile)<(*m_parameters).getNumberOfSequences(*m_fileId)){
-					if((*m_sequence_idInFile)%1000000==0){
-						cout<<"Rank 0 is updating distances "<<(*m_sequence_idInFile)+1<<"/"<<(*m_parameters).getNumberOfSequences(*m_fileId)<<endl;
-					}
-					int sequenceRank=(*m_sequence_id)%getSize();
-					int sequenceIndex=(*m_sequence_id)/getSize();
+		int sequenceRank=(*m_sequence_id)%getSize();
+		int sequenceIndex=(*m_sequence_id)/getSize();
 
-					// only update the left sequence.
-					if(((*m_parameters).isRightFile(*m_fileId))  // index all in the right file
-					|| (((*m_sequence_idInFile)%2==1) )){ // only index the right sequences in the interleaved files.
-						m_bufferedData->addAt(sequenceRank,sequenceIndex);
-						m_bufferedData->addAt(sequenceRank,averageLength);
-						m_bufferedData->addAt(sequenceRank,standardDeviation);
-
-						if(m_bufferedData->flush(sequenceRank,3,TAG_UPDATE_LIBRARY_INFORMATION,m_outboxAllocator,m_outbox,getRank(),false)){
-							m_ready=false;
-						}
-					}
-
-					(*m_sequence_id)++;
-					(*m_sequence_idInFile)++;
-				}else{
-					cout<<"Rank 0 is updating distances "<<(*m_parameters).getNumberOfSequences(*m_fileId)<<"/"<<(*m_parameters).getNumberOfSequences(*m_fileId)<<" (completed)"<<endl;
-
-					(*m_sequence_idInFile)=0;
-					(*m_fileId)++;
-				}
-			}else{
-				(*m_sequence_id)+=(*m_parameters).getNumberOfSequences(*m_fileId);
-				(*m_fileId)++;
-				(*m_sequence_idInFile)=0;
-			}
-		}else{
-			(*m_sequence_id)+=(*m_parameters).getNumberOfSequences((*m_fileId));
-			(*m_fileId)++;
-			(*m_sequence_idInFile)=0;
+		if((*m_sequence_idInFile)%1000000==0){
+			cout<<"Rank 0 is updating distances "<<(*m_sequence_idInFile)+1<<"/"<<(*m_parameters).getNumberOfSequences(*m_fileId)<<endl;
 		}
+
+		if(m_parameters->isRightFile(*m_fileId) || (m_parameters->isInterleavedFile(*m_fileId) &&(*m_sequence_idInFile)%2==1)){
+			int library=(*m_parameters).getLibrary(*m_fileId);
+			int averageLength=(*m_parameters).getObservedAverageDistance(library);
+			int standardDeviation=(*m_parameters).getObservedStandardDeviation(library);
+
+			m_bufferedData->addAt(sequenceRank,sequenceIndex);
+			m_bufferedData->addAt(sequenceRank,averageLength);
+			m_bufferedData->addAt(sequenceRank,standardDeviation);
+
+			if(m_bufferedData->flush(sequenceRank,3,TAG_UPDATE_LIBRARY_INFORMATION,m_outboxAllocator,m_outbox,getRank(),false)){
+				m_ready=false;
+			}
+		}
+
+		(*m_sequence_id)++;
+		(*m_sequence_idInFile)++;
 	}
 }
 

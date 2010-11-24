@@ -220,7 +220,7 @@ void Parameters::parseCommands(){
 				meanFragmentLength=library;
 				standardDeviation=_AUTOMATIC_DETECTION;
 				map<int,int> t;
-				m_automaticRightFiles[interleavedFileIndex]=library;
+				m_automaticFiles[interleavedFileIndex]=library;
 				m_observedDistances.push_back(t);
 			}else{
 				#ifdef ASSERT
@@ -312,8 +312,8 @@ void Parameters::parseCommands(){
 				meanFragmentLength=library;
 				standardDeviation=_AUTOMATIC_DETECTION;
 				map<int,int> t;
-				m_automaticRightFiles[rightFile]=library;
-				m_automaticRightFiles[leftFile]=library;
+				m_automaticFiles[rightFile]=library;
+				m_automaticFiles[leftFile]=library;
 				m_observedDistances.push_back(t);
 			}else{
 				#ifdef ASSERT
@@ -547,11 +547,11 @@ int Parameters::getNumberOfFiles(){
 }
 
 bool Parameters::isAutomatic(int file){
-	return m_automaticRightFiles.count(file)>0;
+	return m_automaticFiles.count(file)>0;
 }
 
 int Parameters::getLibrary(int file){
-	return m_automaticRightFiles[file];
+	return m_automaticFiles[file];
 }
 
 bool Parameters::isInterleavedFile(int i){

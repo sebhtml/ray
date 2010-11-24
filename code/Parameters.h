@@ -46,7 +46,7 @@ class Parameters{
 	int m_numberOfSequences;
 	vector<string> m_singleEndReadsFile;
 	vector<int> m_numberOfSequencesInFile;
-	map<int,int> m_automaticRightFiles;// mapping from rightFileId to libraryId
+	map<int,int> m_automaticFiles;// mapping from rightFileId to libraryId
 	string m_directory;
 	string m_outputFile;
 	int m_wordSize;

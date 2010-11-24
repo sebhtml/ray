@@ -65,8 +65,6 @@ case the configure script gets tricky. (Ticket #577)
 * Added a received messages file. This is pretty useless unless you want to
 see if the received messages are uniform ! (Ticket #582).
 * Added bits to write the fragment length distribution of each library. (#585)
-* Added bits so now the library length estimation use both versions of each
-pair of reads. (Ticket #584).
 * Changed the definition of MPI tags: they are now defined with a enum.
 (Ticket #590) Thanks to Élénie Godzaridis for the suggestion.
 * Changed the definition of slave modes: they are now defined with a enum.
