@@ -1,5 +1,5 @@
-$i=$1
-$suffix=$2
+i=$1
+suffix=$2
 
 (
 echo "RegressionTest"
