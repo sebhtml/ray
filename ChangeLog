@@ -14,7 +14,8 @@ with the message tag is done in O(1) (Ticket #539)
 support and explanation on the eagerness of Open-MPI: George Bosilca (University of Tennessee), Jeff Squyres (Cisco), Eugene Loh (Oracle)
 * Moved some code for the extension of seeds. (Ticket #114)
 * Grouped messages for library updates. (Ticket #157)
-* Added support for paired-end interleaved sequencing reads (Ticket #165)
+* Added support for paired-end interleaved sequencing reads (-i option)
+(Tickets #165, #575)
 Thanks to Dr. Torsten Seemann (Victorian Bioinformatics Consortium, Dept.
 Microbiology, Monash University, AUSTRALIA) for suggesting the feature !
 * Moved detectDistances & updateDistances in their own C++ file. (Ticket
@@ -39,11 +40,44 @@ chunks. (Ticket #538)
 * Used a sentinel to remove two messages, coupled with TAG_REQUEST_READS.
 (Ticket #540)
 * Stress-tested with MPICH2: it is faster than with Open-MPI. (Tickets #553,
-#554, #555, #556, #557)
+#554, #555, #556, #557, #572, #573, #574)
 * Implemented a ring allocator for inboxes and outboxes. (Ticket #559)
 * Changed flushing so that all use <flush> & <flushAll> in BufferedData.
 (Ticket #563)
-
+* Changed the maximum message size from 4096 to 4000 to send messages eagerly
+more often (if it happens). Thanks to Open-MPI developpers for their
+support and explanation on the eagerness of Open-MPI: George Bosilca
+(University of Tennessee), Jeff Squyres (Cisco), Eugene Loh (Oracle) (Ticket
+#600)
+* Changed the way sequencing reads are indexed: before the master was
+reloading (again !) files to do so, now no files are loaded and every MPI ranks
+participate in the task. (Ticket #568)
+* Modified the way sequences are distributed. These are now appended to fill the buffer, and
+the sentinel called 'End of transmission' is used. (Ticket #569) Thanks to
+Élénie Godzaridis for pointing out that '\0' is not a valid sentinel for
+strings !
+* Optimized the flushing in BufferedData: flush is now destination-specific
+(O(1) instead of O(n) where n is the number of MPI ranks). (Ticket #570)
+* Optimized the extension: paired information is appended in the buffer in
+which the sequence itself is. (Ticket #571)
+* Added support for .fasta.bz2 & .fastq.bz2. This needs LIBBZ2 (-lbz2) (Ticket #576)
+* Added instructions in the INSTALL file for manually compiling the source in
+case the configure script gets tricky. (Ticket #577)
+* Evaluated regression tests. (Tickets #579, #580, #581)
+* Added a received messages file. This is pretty useless unless you want to
+see if the received messages are uniform ! (Ticket #582).
+* Added bits to write the fragment length distribution of each library. (#585)
+* Added bits so now the library length estimation use both versions of each
+pair of reads. (Ticket #584).
+* Changed the definition of MPI tags: they are now defined with a enum.
+(Ticket #590) Thanks to Élénie Godzaridis for the suggestion.
+* Changed the definition of slave modes: they are now defined with a enum.
+(Ticket #589) Thanks to Élénie Godzaridis for the suggestion.
+* Changed the definition of master modes: they are now defined with a enum.
+(Ticket #588) Thanks to Élénie Godzaridis for the suggestion.
+* Optimized finishFusions: complexity changed from O(N*M) to O(N log M).
+(Ticket #591)
+* Designed a beautiful logo with Inkscape. (Ticket #593)
 
 
 

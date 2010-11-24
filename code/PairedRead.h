@@ -37,7 +37,7 @@ class PairedRead{
 	u16 m_rank;
 	u16 m_fragmentSize;
 	u16 m_deviation;
-	bool m_isLeftRead;
+	//bool m_isLeftRead;
 public:
 	PairedRead();
 	void constructor(int rank,int id, int fragmentSize,int deviation,bool m_isLeftRead);

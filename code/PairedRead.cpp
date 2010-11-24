@@ -28,7 +28,7 @@ PairedRead::PairedRead(){
 }
 
 void PairedRead::constructor(int rank,int id, int fragmentSize,int deviation,bool isLeftRead){
-	m_isLeftRead=isLeftRead;
+	//m_isLeftRead=isLeftRead;
 	m_rank=rank;
 	m_readIndex=id;
 	assert(fragmentSize<=MAX_U16);
@@ -67,5 +67,5 @@ u64 PairedRead::getUniqueId(){
 }
 
 bool PairedRead::isLeftRead(){
-	return m_isLeftRead;
+	return false;
 }
