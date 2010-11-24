@@ -64,7 +64,8 @@ void Library::updateDistances(){
 					int sequenceIndex=(*m_sequence_id)/getSize();
 
 					// only update the left sequence.
-					if((*m_sequence_idInFile)%2==1){
+					if((*m_parameters).isRightFile(*m_fileId)  // index all in the right file
+					|| ((*m_sequence_idInFile)%2==1 )){ // only index the right sequences in the interleaved files.
 						m_bufferedData->addAt(sequenceRank,sequenceIndex);
 						m_bufferedData->addAt(sequenceRank,averageLength);
 						m_bufferedData->addAt(sequenceRank,standardDeviation);
