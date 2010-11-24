@@ -78,6 +78,19 @@ pair of reads. (Ticket #584).
 * Optimized finishFusions: complexity changed from O(N*M) to O(N log M).
 (Ticket #591)
 * Designed a beautiful logo with Inkscape. (Ticket #593)
+* Added a script for regression tests. (Ticket #583)
+* Changed bits so that a paired read is not updated if it does not need it
+(Ticket #602)
+* Changed the meaning of the -o parameter: it is now a prefix. (Ticket #603)
+* Added examples with MPICH2, Open-MPI, and Open-MPI/SunGridEngine.
+* Changed DEBUG for ASSERT as it activates assertions.
+* Updated the citation in the standard output.
+* Corrected the interleave-fastq python script.
+* Changed the license file from LICENSE to COPYING.
+* Removed the trimming of reads if they are not read from a file.
+* Increased the verbosity of the extension step.
+* Added gnuplot scripts.
+* Changed the file name for changes: from NEWS to ChangeLog.
 
 
 
