@@ -51,7 +51,7 @@ void Library::updateDistances(){
 		if(
 		/*(*m_parameters).isLeftFile(*m_fileId)*/  // left files
 	/*	|| */(*m_parameters).isRightFile(*m_fileId)  // right files 
-		||( (*m_parameters).isInterleavedFile(*m_fileId) && (*m_sequence_idInFile)%2==1)){ // interleaved file, but only the right sequence.
+		|| (*m_parameters).isInterleavedFile(*m_fileId) ){ // interleaved file, but only the right sequence.
 			if((*m_parameters).isAutomatic(*m_fileId)){
 				int library=(*m_parameters).getLibrary(*m_fileId);
 				int averageLength=(*m_parameters).getObservedAverageDistance(library);
@@ -63,12 +63,15 @@ void Library::updateDistances(){
 					int sequenceRank=(*m_sequence_id)%getSize();
 					int sequenceIndex=(*m_sequence_id)/getSize();
 
-					m_bufferedData->addAt(sequenceRank,sequenceIndex);
-					m_bufferedData->addAt(sequenceRank,averageLength);
-					m_bufferedData->addAt(sequenceRank,standardDeviation);
+					// only update the left sequence.
+					if((*m_sequence_idInFile)%2==1){
+						m_bufferedData->addAt(sequenceRank,sequenceIndex);
+						m_bufferedData->addAt(sequenceRank,averageLength);
+						m_bufferedData->addAt(sequenceRank,standardDeviation);
 
-					if(m_bufferedData->flush(sequenceRank,3,TAG_UPDATE_LIBRARY_INFORMATION,m_outboxAllocator,m_outbox,getRank(),false)){
-						m_ready=false;
+						if(m_bufferedData->flush(sequenceRank,3,TAG_UPDATE_LIBRARY_INFORMATION,m_outboxAllocator,m_outbox,getRank(),false)){
+							m_ready=false;
+						}
 					}
 
 					(*m_sequence_id)++;
