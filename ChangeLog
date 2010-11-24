@@ -5,11 +5,11 @@ rXXXX | 2010-11-24 (scheduled)
 (Ticket #558)
 * Added master and slave modes
 * Added an array of master methods (pointers): selecting the master method
-with the master mode is done in O(1) (Tickets #545 & #546)
+with the master mode is done in O(1). (Tickets #545 & #546)
 * Added an array of slave methods (pointers): selecting the slave method
-with the master mode is done in O(1) (Tickets #545 & #546)
+with the master mode is done in O(1). (Tickets #545 & #546)
 * Added an array of message handlers (pointers): selecting the message handler method
-with the message tag is done in O(1) (Ticket #539)
+with the message tag is done in O(1). (Ticket #539)
 * Replaced MPI_Send by MPI_Isend. Thanks to Open-MPI developpers for their
 support and explanation on the eagerness of Open-MPI: George Bosilca (University of Tennessee), Jeff Squyres (Cisco), Eugene Loh (Oracle)
 * Moved some code for the extension of seeds. (Ticket #114)
@@ -18,12 +18,10 @@ support and explanation on the eagerness of Open-MPI: George Bosilca (University
 (Tickets #165, #575)
 Thanks to Dr. Torsten Seemann (Victorian Bioinformatics Consortium, Dept.
 Microbiology, Monash University, AUSTRALIA) for suggesting the feature !
-* Moved detectDistances & updateDistances in their own C++ file. (Ticket
-#497)
+* Moved detectDistances & updateDistances in their own C++ file. (Ticket #497)
 * Updated the Wiki (Ticket #508)
 * Decided that the next release was 1.0.0 (Ticket #510)
-* Added support for .fasta.gz and .fastq.gz files, using libz (GZIP) (Ticket
-#512) Thanks to Dr. Torsten Seemann (Victorian Bioinformatics Consortium,
+* Added support for .fasta.gz and .fastq.gz files, using libz (GZIP) (Ticket #512) Thanks to Dr. Torsten Seemann (Victorian Bioinformatics Consortium,
 Dept. Microbiology, Monash University, AUSTRALIA) for suggesting the feature !
 * Tested with k=17: it uses less memory, but is less precise. (Ticket #518)
 * Fixed a memory allocation bug when the code runs on 512 cores and more.
