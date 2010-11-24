@@ -48,10 +48,8 @@ void Library::updateDistances(){
 		m_ed->m_EXTENSION_rank=-1;
 		m_ed->m_EXTENSION_currentRankIsSet=false;
 	}else{
-		if(
-		/*(*m_parameters).isLeftFile(*m_fileId)*/  // left files
-	/*	|| */(*m_parameters).isRightFile(*m_fileId)  // right files 
-		|| (*m_parameters).isInterleavedFile(*m_fileId) ){ // interleaved file, but only the right sequence.
+		if(((*m_parameters).isRightFile(*m_fileId))  // right files 
+		|| ((*m_parameters).isInterleavedFile(*m_fileId)) ){ // interleaved file, but only the right sequence.
 			if((*m_parameters).isAutomatic(*m_fileId)){
 				int library=(*m_parameters).getLibrary(*m_fileId);
 				int averageLength=(*m_parameters).getObservedAverageDistance(library);
@@ -64,8 +62,8 @@ void Library::updateDistances(){
 					int sequenceIndex=(*m_sequence_id)/getSize();
 
 					// only update the left sequence.
-					if((*m_parameters).isRightFile(*m_fileId)  // index all in the right file
-					|| ((*m_sequence_idInFile)%2==1 )){ // only index the right sequences in the interleaved files.
+					if(((*m_parameters).isRightFile(*m_fileId))  // index all in the right file
+					|| (((*m_sequence_idInFile)%2==1) )){ // only index the right sequences in the interleaved files.
 						m_bufferedData->addAt(sequenceRank,sequenceIndex);
 						m_bufferedData->addAt(sequenceRank,averageLength);
 						m_bufferedData->addAt(sequenceRank,standardDeviation);
