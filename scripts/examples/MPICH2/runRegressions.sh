@@ -1,15 +1,29 @@
-j=1
 
 log=Regressions-$(date +%Y-%m-%d-%H-%M-%S-%s).txt
 
-for i in $(ls *.sh)
+(
+j=1
+echo "BEGIN LIST OF REGRESSIONS"
+for i in $(ls *.sh|grep -v runRegressions)
 do
-	echo "RegressionTest Number $j"
+	echo "RegressionTest Number $j -> $i"
+	j=$(($j+1))
+done
+echo "END^^ LIST OF REGRESSIONS"
+echo ""
+echo ""
+
+j=1
+
+for i in $(ls *.sh|grep -v runRegressions)
+do
+	echo "RegressionTest Number $j -> $i"
 	j=$(($j+1))
 	echo ""
 	echo "FILE = $i"
+	date
 	echo ""
-	echo "OH HAI $(date)"
+	echo "OH HAI"
 	echo ""
 	echo "======== BEGIN >>>"
 	echo ""
@@ -17,8 +31,11 @@ do
 	echo ""
 	echo "======== END^^ >>>"
 	echo ""
-	echo "K THX BYE $(date)"
+	echo "K THX BYE"
 	echo ""
 	echo "..."
+	date
 	echo ""
-done |tee $log
+done 
+
+) |tee $log

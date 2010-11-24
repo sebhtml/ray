@@ -5,5 +5,4 @@
    /data/users/sra/SRA001125/sdata/SRR001666_2.fastq.gz \
 -o ecoli 
 
-~/Ray/trunk/scripts/print-latex.sh ~/nuccore/Ecoli-k12-mg1655.fasta ecoli.fasta 
-
+~/Ray/trunk/scripts/print-latex.sh ~/nuccore/Ecoli-k12-mg1655.fasta ecoli.fasta Ray_THEONE
