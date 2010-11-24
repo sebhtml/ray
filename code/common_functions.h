@@ -72,7 +72,15 @@ using namespace std;
 // divide that by eight and you get the number of 64-bit integers 
 // allowed in a eager single communication
 #define _SINGLE_ELEMENT 1
-#define MPI_BTL_SM_EAGER_LIMIT 0x1000 // 4096 bytes
+
+
+
+/*
+ * "4096 is rendezvous. For eager, try 4000 or lower. "
+ *  --Eugene Loh  (Oracle)
+ *  http://www.open-mpi.org/community/lists/devel/2010/11/8700.php
+ */
+#define MPI_BTL_SM_EAGER_LIMIT 4000
 #define _FILL_UP MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE)
 #define MAX_UINT64_T_PER_MESSAGE _FILL_UP
 

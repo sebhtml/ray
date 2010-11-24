@@ -381,15 +381,15 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 							int expectedFragmentLength=pairedRead.getAverageFragmentLength();
 							int expectedDeviation=pairedRead.getStandardDeviation();
 							char rightStrand=annotation.getStrand();
-							bool leftReadIsLeftInThePair=pairedRead.isLeftRead();
+							//bool leftReadIsLeftInThePair=pairedRead.isLeftRead();
 							if(ed->m_EXTENSION_reads_startingPositionOnContig.count(uniqueReadIdentifier)>0){
 								char leftStrand=m_readsStrands[uniqueReadIdentifier];
 								int startingPositionOnPath=ed->m_EXTENSION_reads_startingPositionOnContig[uniqueReadIdentifier];
 								int observedFragmentLength=(startPosition-startingPositionOnPath)+ed->m_EXTENSION_receivedLength;
 								if(expectedFragmentLength-expectedDeviation<=observedFragmentLength and
 								observedFragmentLength <= expectedFragmentLength+expectedDeviation 
-					&& ((leftReadIsLeftInThePair&&rightStrand=='F' && leftStrand=='R')
-							||(leftReadIsLeftInThePair&&rightStrand=='R' && leftStrand=='F'))){
+					&& ((rightStrand=='F' && leftStrand=='R')
+							||(rightStrand=='R' && leftStrand=='F'))){
 								// it matches!
 									int theDistance=startPosition-startingPositionOnPath+distance;
 									ed->m_EXTENSION_pairedReadPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(theDistance);
