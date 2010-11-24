@@ -54,8 +54,11 @@ int PairedRead::getStandardDeviation(){
 }
 
 void PairedRead::updateLibrary(int d,int sd){
-	m_fragmentSize=d;
-	m_deviation=sd;
+	// otherwise there is no need to update...
+	if(m_deviation==_AUTOMATIC_DETECTION){
+		m_fragmentSize=d;
+		m_deviation=sd;
+	}
 }
 
 u64 PairedRead::getUniqueId(){
