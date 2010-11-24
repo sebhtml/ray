@@ -690,7 +690,7 @@ void MessageProcessor::call_TAG_REQUEST_READS(Message*message){
 			// if more reads are to be sent
 			if(e!=NULL){
 				//allocate another chunk
-				message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(4096);
+				message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(maxToProcess*sizeof(VERTEX_TYPE));
 				j=0;
 			}
 		}
