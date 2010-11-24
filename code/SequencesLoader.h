@@ -24,6 +24,7 @@
 #include<Parameters.h>
 #include<DistributionData.h>
 #include<RingAllocator.h>
+#include<MyAllocator.h>
 #include<StaticVector.h>
 #include<vector>
 #include<Message.h>
@@ -33,6 +34,21 @@
 using namespace std;
 
 class SequencesLoader{
+	int m_distribution_currentSequenceId;
+	// allocator for distribution of data, not persistent.
+	MyAllocator m_distributionAllocator;
+	int m_distribution_file_id;
+	int m_distribution_sequence_id;
+	bool m_LOADER_isLeftFile;
+	bool m_LOADER_isRightFile;
+	int m_LOADER_numberOfSequencesInLeftFile;
+	int m_LOADER_averageFragmentLength;
+	int m_LOADER_deviation;
+
+
+
+	vector<Read*>m_distribution_reads;
+
 	bool m_isInterleavedFile;
 	time_t m_last;
 	int m_produced;
@@ -59,11 +75,9 @@ public:
  */
 
 	bool isReady();
-	bool loadSequences(int rank,int size,vector<Read*>*m_distribution_reads,int*m_distribution_sequence_id,
-	bool*m_LOADER_isLeftFile,StaticVector*m_outbox,int*m_distribution_file_id,
-	MyAllocator*m_distributionAllocator,bool*m_LOADER_isRightFile,int*m_LOADER_averageFragmentLength,
-	DistributionData*m_disData,int*m_LOADER_numberOfSequencesInLeftFile,RingAllocator*m_outboxAllocator,
-	int*m_distribution_currentSequenceId,int*m_LOADER_deviation,bool*m_loadSequenceStep,
+	bool loadSequences(int rank,int size,StaticVector*m_outbox,
+	DistributionData*m_disData,RingAllocator*m_outboxAllocator,
+	bool*m_loadSequenceStep,
 	BubbleData*m_bubbleData,
 	time_t*m_lastTime,
 	Parameters*m_parameters,int*m_master_mode

@@ -180,15 +180,6 @@ class Machine{
 
 	// SEQUENCE DISTRIBUTION
 	bool m_reverseComplementVertex;
-	int m_distribution_currentSequenceId;
-	int m_distribution_file_id;
-	int m_distribution_sequence_id;
-	bool m_LOADER_isLeftFile;
-	bool m_LOADER_isRightFile;
-	int m_LOADER_numberOfSequencesInLeftFile;
-	vector<Read*>m_distribution_reads;
-	int m_LOADER_averageFragmentLength;
-	int m_LOADER_deviation;
 
 	// memory allocators
 	// m_outboxAllocator, m_inboxAllocator, and m_distributionAllocator are
@@ -206,8 +197,6 @@ class Machine{
 	// allocator for directions in the de Bruijn graph
 	MyAllocator m_directionsAllocator;
 
-	// allocator for distribution of data, not persistent.
-	MyAllocator m_distributionAllocator;
 
 	vector<Read*> m_myReads;
 

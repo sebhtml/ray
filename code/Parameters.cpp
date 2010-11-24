@@ -75,12 +75,16 @@ void Parameters::parseCommands(){
 	int i=0;
 	set<string> commands;
 
-	#ifdef ASSERT_PARAMETERS
-	for(int i=0;i<(int)m_commands.size();i++){
-		cout<<i<<" '"<<m_commands[i]<<"'"<<endl;
-	}
+	cout<<endl;
+	cout<<"Ray command:"<<endl<<endl;
 
-	#endif
+	for(int i=0;i<(int)m_commands.size();i++){
+		if(i!=(int)m_commands.size()-1){
+			cout<<m_commands[i]<<" \\"<<endl;
+		}else{
+			cout<<m_commands[i]<<endl;
+		}
+	}
 
 	set<string> singleReadsCommands;
 	singleReadsCommands.insert("-s");
@@ -284,6 +288,7 @@ void Parameters::parseCommands(){
 			m_rightFiles.insert(rightFile);
 			m_singleEndReadsFile.push_back(right);
 
+
 			int meanFragmentLength=0;
 			int standardDeviation=0;
 			#ifdef ASSERT
@@ -315,8 +320,14 @@ void Parameters::parseCommands(){
 				assert(false);
 				#endif
 			}
-			m_averageFragmentLengths[m_singleEndReadsFile.size()-1]=meanFragmentLength;
-			m_standardDeviations[m_singleEndReadsFile.size()-1]=standardDeviation;
+
+
+			m_averageFragmentLengths[leftFile]=meanFragmentLength;
+			m_standardDeviations[leftFile]=standardDeviation;
+
+			m_averageFragmentLengths[rightFile]=meanFragmentLength;
+			m_standardDeviations[rightFile]=standardDeviation;
+
 			cout<<endl;
 			cout<<"-p (paired-end sequences)"<<endl;
 			cout<<" Left sequences: "<<left<<endl;

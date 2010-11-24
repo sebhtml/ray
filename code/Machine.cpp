@@ -291,7 +291,6 @@ void Machine::start(){
 
 	m_outboxAllocator.constructor(MAX_ALLOCATED_MESSAGES_IN_OUTBOX,MPI_BTL_SM_EAGER_LIMIT);
 	m_inboxAllocator.constructor(MAX_ALLOCATED_MESSAGES_IN_INBOX,MPI_BTL_SM_EAGER_LIMIT);
-	m_distributionAllocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
 	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
 	m_directionsAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
 
@@ -389,7 +388,6 @@ void Machine::start(){
 	m_welcomeStep=true;
 	m_loadSequenceStep=false;
 	m_totalLetters=0;
-	m_distribution_file_id=m_distribution_sequence_id=m_distribution_currentSequenceId=0;
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
@@ -1215,11 +1213,10 @@ void Machine::call_MASTER_MODE_LOAD_CONFIG(){
 }
 
 void Machine::call_MASTER_MODE_LOAD_SEQUENCES(){
-	bool res=m_sl.loadSequences(getRank(),getSize(),&m_distribution_reads,&m_distribution_sequence_id,
-	&m_LOADER_isLeftFile,&m_outbox,&m_distribution_file_id,
-	&m_distributionAllocator,&m_LOADER_isRightFile,&m_LOADER_averageFragmentLength,
-	m_disData,&m_LOADER_numberOfSequencesInLeftFile,&m_outboxAllocator,
-	&m_distribution_currentSequenceId,&m_LOADER_deviation,&m_loadSequenceStep,
+	bool res=m_sl.loadSequences(getRank(),getSize(),
+	&m_outbox,
+	m_disData,&m_outboxAllocator,
+	&m_loadSequenceStep,
 	m_bubbleData,
 	&m_lastTime,
 	&m_parameters,&m_master_mode

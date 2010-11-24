@@ -32,11 +32,11 @@ Ray
 #include<iostream>
 using namespace std;
 
-bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distribution_reads,int*m_distribution_sequence_id,
-	bool*m_LOADER_isLeftFile,StaticVector*m_outbox,int*m_distribution_file_id,MyAllocator*m_distributionAllocator,
-	bool*m_LOADER_isRightFile,int*m_LOADER_averageFragmentLength,DistributionData*m_disData,	
-	int*m_LOADER_numberOfSequencesInLeftFile,RingAllocator*m_outboxAllocator,
-	int*m_distribution_currentSequenceId,int*m_LOADER_deviation,bool*m_loadSequenceStep,BubbleData*m_bubbleData,
+bool SequencesLoader::loadSequences(int rank,int size,
+	StaticVector*m_outbox,
+	DistributionData*m_disData,	
+	RingAllocator*m_outboxAllocator,
+	bool*m_loadSequenceStep,BubbleData*m_bubbleData,
 	time_t*m_lastTime,
 	Parameters*m_parameters,int*m_master_mode
 ){
@@ -54,15 +54,12 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 	// case 1: it was distributing reads
 	// case 2: it was distributing paired information
 	//  -/-
-	if((*m_distribution_reads).size()>0 && (*m_distribution_sequence_id)==(int)(*m_distribution_reads).size()){
+	if(m_distribution_reads.size()>0 && m_distribution_sequence_id==(int)m_distribution_reads.size()){
 		// distribution of reads is completed.
 		if(!m_send_sequences_done){
 			m_send_sequences_done=true;
-			if((*m_LOADER_isLeftFile)){
-				(*m_LOADER_numberOfSequencesInLeftFile)=(*m_distribution_sequence_id);
-			}
 
-			(*m_distribution_sequence_id)=0;
+			(m_distribution_sequence_id)=0;
 			flushAll(m_outboxAllocator,m_outbox);
 			
 			#ifdef ASSERT
@@ -70,22 +67,22 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 				assert(m_entries[i]==0);
 			}
 			#endif
-			cout<<"Rank "<<rank<<" is assigning sequence reads "<<(*m_distribution_reads).size()<<"/"<<(*m_distribution_reads).size()<<" (completed)"<<endl;
+			cout<<"Rank "<<rank<<" is assigning sequence reads "<<(m_distribution_reads).size()<<"/"<<(m_distribution_reads).size()<<" (completed)"<<endl;
 
 	
 		// distribution of paired information is completed
 		}else{
 			m_waitingNumber+=m_disData->m_messagesStockPaired.flushAll(TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank);
-			cout<<"Rank "<<rank<<" is sending paired information "<<(*m_distribution_reads).size()<<"/"<<(*m_distribution_reads).size()<<" (completed)"<<endl;
+			cout<<"Rank "<<rank<<" is sending paired information "<<(m_distribution_reads).size()<<"/"<<(m_distribution_reads).size()<<" (completed)"<<endl;
 
-			(*m_distribution_file_id)++;  // go with the next file.
+			(m_distribution_file_id)++;  // go with the next file.
 
-			(*m_distribution_sequence_id)=0;
-			(*m_distribution_reads).clear();  // clear the hideout of reads.
+			(m_distribution_sequence_id)=0;
+			(m_distribution_reads).clear();  // clear the hideout of reads.
 		}
 
 	// -->  all files were processed.
-	}else if((*m_distribution_file_id)>(int)allFiles.size()-1){
+	}else if((m_distribution_file_id)>(int)allFiles.size()-1){
 		(*m_master_mode)=MASTER_MODE_DO_NOTHING;
 		(*m_loadSequenceStep)=true;
 
@@ -94,37 +91,37 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			m_outbox->push_back(aMessage);
 		}
 
-		(*m_distributionAllocator).clear();
-		(*m_distribution_reads).clear();
+		(m_distributionAllocator).clear();
+		(m_distribution_reads).clear();
 
 	// fileID is set, but reads are not read yet.
 	//
-	}else if((*m_distribution_reads).size()==0){
+	}else if((m_distribution_reads).size()==0){
 		m_send_sequences_done=false;
 		Loader loader;
-		(*m_distribution_reads).clear();
-		(*m_distributionAllocator).clear();
-		(*m_distributionAllocator).constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
+		(m_distributionAllocator).clear();
+		(m_distributionAllocator).constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
 		#ifdef SHOW_PROGRESS
-		cout<<endl<<"Rank "<<rank<<" is loading "<<allFiles[(*m_distribution_file_id)]<<""<<endl;
+		cout<<endl<<"Rank "<<rank<<" is loading "<<allFiles[(m_distribution_file_id)]<<""<<endl;
 		#else
-		cout<<endl<<"Loading "<<allFiles[(*m_distribution_file_id)]<<""<<endl;
+		cout<<endl<<"Loading "<<allFiles[(m_distribution_file_id)]<<""<<endl;
 		#endif
-		int res=loader.load(allFiles[(*m_distribution_file_id)],&(*m_distribution_reads),&(*m_distributionAllocator),&(*m_distributionAllocator));
+		int res=loader.load(allFiles[(m_distribution_file_id)],&(m_distribution_reads),&(m_distributionAllocator),&(m_distributionAllocator));
 		if(res==EXIT_FAILURE){
 			return false;
 		}
-		m_parameters->setNumberOfSequences(m_distribution_reads->size());
-		if((*m_distribution_reads).size()==0){
+		m_parameters->setNumberOfSequences(m_distribution_reads.size());
+	
+		if((m_distribution_reads).size()==0){
 			return false;
 		}
 
 		// write Reads in AMOS format.
 		if((*m_parameters).useAmos()){
 			FILE*fp=(*m_bubbleData).m_amos;
-			for(int i=0;i<(int)(*m_distribution_reads).size();i++){
-				int iid=(*m_distribution_currentSequenceId)+i;
-				char*seq=(*m_distribution_reads).at(i)->getSeq();
+			for(int i=0;i<(int)(m_distribution_reads).size();i++){
+				int iid=(m_distribution_currentSequenceId)+i;
+				char*seq=(m_distribution_reads).at(i)->getSeq();
 				char*qlt=(char*)__Malloc(strlen(seq)+1);
 				strcpy(qlt,seq);
 				// spec: https://sourceforge.net/apps/mediawiki/amos/index.php?title=Message_Types#Sequence_t_:_Universal_t
@@ -135,32 +132,32 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			}
 		}
 
-		m_isInterleavedFile=(*m_LOADER_isLeftFile)=(*m_LOADER_isRightFile)=false;
-		if((*m_parameters).isLeftFile((*m_distribution_file_id))){
-			(*m_LOADER_isLeftFile)=true;
-			(*m_LOADER_averageFragmentLength)=(*m_parameters).getFragmentLength((*m_distribution_file_id));
-			(*m_LOADER_deviation)=(*m_parameters).getStandardDeviation((*m_distribution_file_id));
-		}else if((*m_parameters).isRightFile((*m_distribution_file_id))){
-			(*m_LOADER_isRightFile)=true;
-			(*m_LOADER_averageFragmentLength)=(*m_parameters).getFragmentLength((*m_distribution_file_id));
-			(*m_LOADER_deviation)=(*m_parameters).getStandardDeviation((*m_distribution_file_id));
-		}else if((*m_parameters).isInterleavedFile((*m_distribution_file_id))){
+		m_isInterleavedFile=(m_LOADER_isLeftFile)=(m_LOADER_isRightFile)=false;
+		if((*m_parameters).isLeftFile((m_distribution_file_id))){
+			(m_LOADER_isLeftFile)=true;
+			(m_LOADER_averageFragmentLength)=(*m_parameters).getFragmentLength((m_distribution_file_id));
+			(m_LOADER_deviation)=(*m_parameters).getStandardDeviation((m_distribution_file_id));
+		}else if((*m_parameters).isRightFile((m_distribution_file_id))){
+			(m_LOADER_isRightFile)=true;
+			(m_LOADER_averageFragmentLength)=(*m_parameters).getFragmentLength((m_distribution_file_id));
+			(m_LOADER_deviation)=(*m_parameters).getStandardDeviation((m_distribution_file_id));
+		}else if((*m_parameters).isInterleavedFile((m_distribution_file_id))){
 			m_isInterleavedFile=true;
-			(*m_LOADER_averageFragmentLength)=(*m_parameters).getFragmentLength((*m_distribution_file_id));
-			(*m_LOADER_deviation)=(*m_parameters).getStandardDeviation((*m_distribution_file_id));
+			(m_LOADER_averageFragmentLength)=(*m_parameters).getFragmentLength((m_distribution_file_id));
+			(m_LOADER_deviation)=(*m_parameters).getStandardDeviation((m_distribution_file_id));
 		}
 
 	// else process a sequencing read
 	}else if(!m_send_sequences_done){
 		// case 1: send sequencing reads
-		int destination=((*m_distribution_currentSequenceId)+(*m_distribution_sequence_id))%size;
+		int destination=((m_distribution_currentSequenceId)+(m_distribution_sequence_id))%size;
 		#ifdef ASSERT
 		assert(destination>=0);
 		assert(destination<size);
 		#endif
 
 		int theSpaceLeft=getSpaceLeft(destination);
-		char*sequence=((*m_distribution_reads))[(*m_distribution_sequence_id)]->getSeq();
+		char*sequence=((m_distribution_reads))[(m_distribution_sequence_id)]->getSeq();
 		int spaceNeeded=strlen(sequence)+1;
 		if(spaceNeeded>theSpaceLeft){
 			flush(destination,m_outboxAllocator,m_outbox,false);
@@ -170,24 +167,24 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			#endif
 
 			appendSequence(destination,sequence);
-			(*m_distribution_sequence_id)++;
+			(m_distribution_sequence_id)++;
 		}
 
-		if((*m_distribution_sequence_id)%100000==0){
-			cout<<"Rank "<<rank<<" is assigning sequence reads "<<(*m_distribution_sequence_id)+1<<"/"<<(*m_distribution_reads).size()<<endl;
+		if((m_distribution_sequence_id)%100000==0){
+			cout<<"Rank "<<rank<<" is assigning sequence reads "<<(m_distribution_sequence_id)+1<<"/"<<(m_distribution_reads).size()<<endl;
 		}
 	}else if(m_send_sequences_done){
 		#ifdef ASSERT
 		assert(m_waitingNumber==0);
-		if((*m_distribution_sequence_id)==0){
+		if((m_distribution_sequence_id)==0){
 			for(int i=0;i<m_size;i++){
 				assert(m_entries[i]==0);
 			}
 		}
 		#endif
 
-		if((*m_distribution_sequence_id)%1000000==0){
-			cout<<"Rank "<<rank<<" is sending paired information "<<(*m_distribution_sequence_id)+1<<"/"<<(*m_distribution_reads).size()<<endl;
+		if((m_distribution_sequence_id)%1000000==0){
+			cout<<"Rank "<<rank<<" is sending paired information "<<(m_distribution_sequence_id)+1<<"/"<<(m_distribution_reads).size()<<endl;
 		}
 
 		// add paired information here..
@@ -209,18 +206,36 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 		// right sequence in a right file, obviously
 
 		// left sequence in a left file, obviously
-		if(*m_LOADER_isLeftFile){
-			int rightSequenceGlobalId=(*m_distribution_currentSequenceId)+(*m_LOADER_numberOfSequencesInLeftFile);
-			int rightSequenceRank=rightSequenceGlobalId%size;
-			int rightSequenceIdOnRank=rightSequenceGlobalId/size;
-			int leftSequenceGlobalId=(*m_distribution_currentSequenceId);
-
+		if(m_LOADER_isLeftFile){
+			int leftSequenceGlobalId=m_distribution_currentSequenceId;
 			int leftSequenceRank=leftSequenceGlobalId%size;
 			int leftSequenceIdOnRank=leftSequenceGlobalId/size;
-			int averageFragmentLength=(*m_LOADER_averageFragmentLength);
-			int deviation=(*m_LOADER_deviation);
 
 			#ifdef ASSERT
+			assert(m_distribution_reads.size()!=0);
+			#endif
+
+			int rightSequenceGlobalId=leftSequenceGlobalId+m_distribution_reads.size();
+
+			#ifdef ASSERT
+			assert(leftSequenceGlobalId<rightSequenceGlobalId);
+			#endif
+
+			int rightSequenceRank=rightSequenceGlobalId%size;
+
+			#ifdef ASSERT
+			assert(rightSequenceRank<size);
+			#endif
+
+			int rightSequenceIdOnRank=rightSequenceGlobalId/size;
+
+			int averageFragmentLength=(m_LOADER_averageFragmentLength);
+			int deviation=(m_LOADER_deviation);
+
+			#ifdef ASSERT
+			assert(deviation!=0);
+			assert(averageFragmentLength>=0);
+		
 			if(leftSequenceIdOnRank>=m_numberOfSequences[leftSequenceRank]){
 				cout<<"leftSequenceIdOnRank="<<leftSequenceIdOnRank<<" but size="<<m_numberOfSequences[leftSequenceRank]<<endl;
 			}
@@ -233,14 +248,20 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,averageFragmentLength);
 			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,deviation);
 
+
 			if(m_disData->m_messagesStockPaired.flush(leftSequenceRank,5,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
 			}
-		}else if(*m_LOADER_isRightFile){
-			int rightSequenceGlobalId=(*m_distribution_currentSequenceId);
+		}else if(m_LOADER_isRightFile){
+
+			#ifdef ASSERT
+			assert(m_distribution_reads.size()!=0);
+			#endif
+
+			int rightSequenceGlobalId=(m_distribution_currentSequenceId);
 			int rightSequenceRank=rightSequenceGlobalId%size;
 			int rightSequenceIdOnRank=rightSequenceGlobalId/size;
-			int leftSequenceGlobalId=rightSequenceGlobalId-(*m_LOADER_numberOfSequencesInLeftFile);
+			int leftSequenceGlobalId=rightSequenceGlobalId-m_distribution_reads.size();
 
 			#ifdef ASSERT
 			if(rightSequenceIdOnRank>=m_numberOfSequences[rightSequenceRank]){
@@ -251,8 +272,8 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 
 			int leftSequenceRank=leftSequenceGlobalId%size;
 			int leftSequenceIdOnRank=leftSequenceGlobalId/size;
-			int averageFragmentLength=(*m_LOADER_averageFragmentLength);
-			int deviation=(*m_LOADER_deviation);
+			int averageFragmentLength=(m_LOADER_averageFragmentLength);
+			int deviation=(m_LOADER_deviation);
 
 			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,rightSequenceIdOnRank);
 			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,leftSequenceRank);
@@ -263,19 +284,27 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			if(m_disData->m_messagesStockPaired.flush(rightSequenceRank,5,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
 			}
-
+			#ifdef DEBUG
+			assert(deviation!=0);
+			assert(averageFragmentLength>=0);
+			#endif
 
 		// left sequence in interleaved file
-		}else if(m_isInterleavedFile && ((*m_distribution_sequence_id)%2)==0){
-			int rightSequenceGlobalId=(*m_distribution_currentSequenceId)+1;
+		}else if(m_isInterleavedFile && ((m_distribution_sequence_id)%2)==0){
+			int rightSequenceGlobalId=(m_distribution_currentSequenceId)+1;
 			int rightSequenceRank=rightSequenceGlobalId%size;
 			int rightSequenceIdOnRank=rightSequenceGlobalId/size;
 
 			int leftSequenceGlobalId=rightSequenceGlobalId-1;
 			int leftSequenceRank=leftSequenceGlobalId%size;
 			int leftSequenceIdOnRank=leftSequenceGlobalId/size;
-			int averageFragmentLength=(*m_LOADER_averageFragmentLength);
-			int deviation=(*m_LOADER_deviation);
+			int averageFragmentLength=(m_LOADER_averageFragmentLength);
+			int deviation=(m_LOADER_deviation);
+
+			#ifdef DEBUG
+			assert(deviation!=0);
+			assert(averageFragmentLength>=0);
+			#endif
 
 			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,leftSequenceIdOnRank);
 			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,rightSequenceRank);
@@ -288,15 +317,15 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			}
 
 		// only the right sequence.
-		}else if(m_isInterleavedFile &&((*m_distribution_sequence_id)%2)==1){
-			int rightSequenceGlobalId=(*m_distribution_currentSequenceId);
+		}else if(m_isInterleavedFile &&((m_distribution_sequence_id)%2)==1){
+			int rightSequenceGlobalId=(m_distribution_currentSequenceId);
 			int rightSequenceRank=rightSequenceGlobalId%size;
 			int rightSequenceIdOnRank=rightSequenceGlobalId/size;
 			int leftSequenceGlobalId=rightSequenceGlobalId-1;
 			int leftSequenceRank=leftSequenceGlobalId%size;
 			int leftSequenceIdOnRank=leftSequenceGlobalId/size;
-			int averageFragmentLength=(*m_LOADER_averageFragmentLength);
-			int deviation=(*m_LOADER_deviation);
+			int averageFragmentLength=(m_LOADER_averageFragmentLength);
+			int deviation=(m_LOADER_deviation);
 
 			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,rightSequenceIdOnRank);
 			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,leftSequenceRank);
@@ -307,17 +336,25 @@ bool SequencesLoader::loadSequences(int rank,int size,vector<Read*>*m_distributi
 			if(m_disData->m_messagesStockPaired.flush(rightSequenceRank,5,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
 			}
+
+			#ifdef DEBUG
+			assert(deviation!=0);
+			assert(averageFragmentLength>=0);
+			#endif
+
 		}
-		(*m_distribution_currentSequenceId)++;
-		(*m_distribution_sequence_id)++;
+		(m_distribution_currentSequenceId)++;
+		(m_distribution_sequence_id)++;
 	}
 	return true;
 }
 
 SequencesLoader::SequencesLoader(){
+	m_distribution_file_id=m_distribution_sequence_id=m_distribution_currentSequenceId=0;
 	m_waitingNumber=0;
 	m_produced=0;
 	m_last=time(NULL);
+	m_distributionAllocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
 }
 
 void SequencesLoader::setReadiness(){

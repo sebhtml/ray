@@ -39,7 +39,12 @@ see <http://www.gnu.org/licenses/>
 
 #define RAY_VERSION "1.0.0"
 
-#define ASCII_END_OF_TRANSMISSION 0x04
+#define PROGRAMMER "Sébastien Boisvert"
+#define DOI "doi:10.1089/cmb.2009.0238"
+#define FUNDING "CIHR:200902CGM-204212-172830"
+
+#define ASCII_END_OF_TRANSMISSION 0x04 // end of transmission.
+
 
 #define MAX_ALLOCATED_MESSAGES_IN_OUTBOX 20000
 #define MAX_ALLOCATED_MESSAGES_IN_INBOX 10000
@@ -92,6 +97,23 @@ using namespace std;
 #define INBOX_ALLOCATOR_CHUNK_SIZE         0x1000000
 #define PERSISTENT_ALLOCATOR_CHUNK_SIZE    0x1000000
 
+/* for DS-style vertices,
+ * in development
+ *
+ *
+ *HIV-1 coreceptor usage prediction without multiple alignments: an application of string kernels
+
+Sébastien Boisvert1 email, Mario Marchand2 email, François Laviolette2 email and Jacques Corbeil1 email
+
+1  Centre de recherche du centre hospitalier de l'Université Laval, Québec (QC), Canada
+
+2  Département d'informatique et de génie logiciel, Université Laval, Québec (QC), Canada
+
+author email corresponding author email
+
+Retrovirology 2008, 5:110doi:10.1186/1742-4690-5-110
+ *
+ */
 #define _SEGMENT_LENGTH 5
 
 /*
