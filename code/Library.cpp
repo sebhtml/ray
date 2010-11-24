@@ -102,6 +102,7 @@ void Library::detectDistances(){
 		m_ed->m_EXTENSION_currentPosition=0;
 		m_seedingData->m_SEEDING_i++;
 		(*m_readsPositions).clear();
+		m_readsStrands.clear();
 		#ifdef ASSERT
 		assert((*m_readsPositions).size()==0);
 		#endif
@@ -161,14 +162,12 @@ void Library::detectDistances(){
 									u64 uniqueReadIdentifier=m_ed->m_EXTENSION_pairedRead.getUniqueId();
 									if((*m_readsPositions).count(uniqueReadIdentifier)>0){
 										int library=m_ed->m_EXTENSION_pairedRead.getAverageFragmentLength();
-										char currentStrand=annotation.getStrand();
-										char otherStrand='F';
-										if(currentStrand==otherStrand)
-											otherStrand='R';
+										char rightStrand=annotation.getStrand();
+										char leftStrand=m_readsStrands[uniqueReadIdentifier];
 											
-										if((*m_readsPositions)[uniqueReadIdentifier].count(otherStrand)>0&&
-										currentStrand=='R' && otherStrand=='F'){// make sure the orientation is OK
-											int p1=(*m_readsPositions)[uniqueReadIdentifier][otherStrand];
+										if((rightStrand=='R' && leftStrand=='F')
+										||(rightStrand=='F' && leftStrand=='R')){// make sure the orientation is OK
+											int p1=(*m_readsPositions)[uniqueReadIdentifier];
 											
 										
 											int p2=m_ed->m_EXTENSION_currentPosition;
@@ -201,7 +200,8 @@ void Library::detectDistances(){
 					int position=m_ed->m_EXTENSION_currentPosition;
 					char strand=m_ed->m_EXTENSION_receivedReads[i].getStrand();
 					// read, position, strand
-					(*m_readsPositions)[uniqueId][strand]=position;
+					(*m_readsPositions)[uniqueId]=position;
+					m_readsStrands[uniqueId]=strand;
 				}
 
 				m_ed->m_EXTENSION_currentPosition++;
@@ -211,7 +211,8 @@ void Library::detectDistances(){
 	}
 }
 
-void Library::constructor(int m_rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator,BufferedData*m_bufferedData,int*m_sequence_id,int*m_sequence_idInFile,ExtensionData*m_ed,map<u64,map<char,int> >*m_readsPositions,int m_size,
+void Library::constructor(int m_rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator,BufferedData*m_bufferedData,int*m_sequence_id,int*m_sequence_idInFile,ExtensionData*m_ed,
+map<u64,int >*m_readsPositions,int m_size,
 TimePrinter*m_timePrinter,int*m_mode,int*m_master_mode,
 Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,map<int,map<int,int> >*m_libraryDistances
 ){

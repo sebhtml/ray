@@ -62,6 +62,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		ed->m_EXTENSION_extension.clear();
 		ed->m_EXTENSION_complementedSeed=false;
 		ed->m_EXTENSION_reads_startingPositionOnContig.clear();
+		m_readsStrands.clear();
 		ed->m_EXTENSION_readsInRange.clear();
 	}else if(ed->m_EXTENSION_currentSeedIndex==(int)(*seeds).size()){
 		cout<<"Rank "<<theRank<<" is extending seeds "<<(*seeds).size()<<"/"<<(*seeds).size()<<" (completed)"<<endl;
@@ -106,6 +107,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		ed->m_EXTENSION_complementedSeed=false;
 		ed->m_EXTENSION_extension.clear();
 		ed->m_EXTENSION_reads_startingPositionOnContig.clear();
+		m_readsStrands.clear();
 		ed->m_EXTENSION_readsInRange.clear();
 	}else if(!ed->m_EXTENSION_markedCurrentVertexAsAssembled){
 		markCurrentVertexAsAssembled(currentVertex,outboxAllocator,outgoingEdgeIndex,outbox,
@@ -378,18 +380,24 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 							u64 uniqueReadIdentifier=pairedRead.getUniqueId();
 							int expectedFragmentLength=pairedRead.getAverageFragmentLength();
 							int expectedDeviation=pairedRead.getStandardDeviation();
+							char rightStrand=annotation.getStrand();
+							bool leftReadIsLeftInThePair=pairedRead.isLeftRead();
 							if(ed->m_EXTENSION_reads_startingPositionOnContig.count(uniqueReadIdentifier)>0){
+								char leftStrand=m_readsStrands[uniqueReadIdentifier];
 								int startingPositionOnPath=ed->m_EXTENSION_reads_startingPositionOnContig[uniqueReadIdentifier];
 								int observedFragmentLength=(startPosition-startingPositionOnPath)+ed->m_EXTENSION_receivedLength;
 								if(expectedFragmentLength-expectedDeviation<=observedFragmentLength and
-								observedFragmentLength <= expectedFragmentLength+expectedDeviation){
+								observedFragmentLength <= expectedFragmentLength+expectedDeviation 
+					&& ((leftReadIsLeftInThePair&&rightStrand=='F' && leftStrand=='R')
+							||(leftReadIsLeftInThePair&&rightStrand=='R' && leftStrand=='F'))){
 								// it matches!
-								int theDistance=startPosition-startingPositionOnPath+distance;
-								ed->m_EXTENSION_pairedReadPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(theDistance);
-								if(theDistance>cd->m_CHOOSER_theMaxsPaired[ed->m_EXTENSION_edgeIterator])
-									cd->m_CHOOSER_theMaxsPaired[ed->m_EXTENSION_edgeIterator]=theDistance;
-									cd->m_CHOOSER_theNumbersPaired[ed->m_EXTENSION_edgeIterator]++;
-									cd->m_CHOOSER_theSumsPaired[ed->m_EXTENSION_edgeIterator]+=theDistance;
+									int theDistance=startPosition-startingPositionOnPath+distance;
+									ed->m_EXTENSION_pairedReadPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(theDistance);
+									if(theDistance>cd->m_CHOOSER_theMaxsPaired[ed->m_EXTENSION_edgeIterator]){
+										cd->m_CHOOSER_theMaxsPaired[ed->m_EXTENSION_edgeIterator]=theDistance;
+										cd->m_CHOOSER_theNumbersPaired[ed->m_EXTENSION_edgeIterator]++;
+										cd->m_CHOOSER_theSumsPaired[ed->m_EXTENSION_edgeIterator]+=theDistance;
+									}
 								}
 							}
 									
@@ -629,6 +637,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			ed->m_EXTENSION_directVertexDone=false;
 			ed->m_EXTENSION_VertexAssembled_requested=false;
 			ed->m_EXTENSION_reads_startingPositionOnContig.clear();
+			m_readsStrands.clear();
 			ed->m_EXTENSION_readsInRange.clear();
 		}else{
 			if(ed->m_EXTENSION_extension.size()>=100){
@@ -648,6 +657,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 			ed->m_EXTENSION_extension.clear();
 			ed->m_EXTENSION_reads_startingPositionOnContig.clear();
+			m_readsStrands.clear();
 			ed->m_EXTENSION_readsInRange.clear();
 			ed->m_EXTENSION_usedReads.clear();
 			ed->m_EXTENSION_directVertexDone=false;
@@ -922,6 +932,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 					}else if(m_sequenceReceived){
 						m_sequences[uniqueId]=m_receivedString;
 						ed->m_EXTENSION_reads_startingPositionOnContig[uniqueId]=ed->m_EXTENSION_extension.size()-1;
+						m_readsStrands[uniqueId]=annotation.getStrand();
 						ed->m_EXTENSION_readsInRange.insert(ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache]);
 						#ifdef ASSERT
 						assert(ed->m_EXTENSION_readsInRange.count(ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache])>0);

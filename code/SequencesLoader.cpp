@@ -247,9 +247,10 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,rightSequenceIdOnRank);
 			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,averageFragmentLength);
 			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,deviation);
+			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,false);
 
 
-			if(m_disData->m_messagesStockPaired.flush(leftSequenceRank,5,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_disData->m_messagesStockPaired.flush(leftSequenceRank,6,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
 			}
 		}else if(m_LOADER_isRightFile){
@@ -280,8 +281,9 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,leftSequenceIdOnRank);
 			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,averageFragmentLength);
 			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,deviation);
+			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,true);
 
-			if(m_disData->m_messagesStockPaired.flush(rightSequenceRank,5,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_disData->m_messagesStockPaired.flush(rightSequenceRank,6,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
 			}
 			#ifdef DEBUG
@@ -311,8 +313,9 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,rightSequenceIdOnRank);
 			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,averageFragmentLength);
 			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,deviation);
+			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,false);
 
-			if(m_disData->m_messagesStockPaired.flush(leftSequenceRank,5,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_disData->m_messagesStockPaired.flush(leftSequenceRank,6,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
 			}
 
@@ -332,8 +335,9 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,leftSequenceIdOnRank);
 			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,averageFragmentLength);
 			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,deviation);
+			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,true);
 
-			if(m_disData->m_messagesStockPaired.flush(rightSequenceRank,5,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_disData->m_messagesStockPaired.flush(rightSequenceRank,6,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
 			}
 

@@ -39,6 +39,7 @@ using namespace std;
 
 class SeedExtender{
 	bool m_skippedASeed;
+	map<u64,char> m_readsStrands;
 public:
 
 	

@@ -26,25 +26,20 @@ see <http://www.gnu.org/licenses/>
 #include<config.h>
 #endif
 
+#define RAY_VERSION "1.0.0"
+
 #include<master_modes.h>
 #include<slave_modes.h>
 #include<mpi_tags.h>
 
 #define SHOW_PROGRESS
-#define WRITE_COVERAGE_DISTRIBUTION
 
 #define u16 uint16_t
 #define u32 uint32_t
 #define u64 uint64_t
 
-#define RAY_VERSION "1.0.0"
-
-#define PROGRAMMER "Sébastien Boisvert"
-#define DOI "doi:10.1089/cmb.2009.0238"
-#define FUNDING "CIHR:200902CGM-204212-172830"
 
 #define ASCII_END_OF_TRANSMISSION 0x04 // end of transmission.
-
 
 #define MAX_ALLOCATED_MESSAGES_IN_OUTBOX 20000
 #define MAX_ALLOCATED_MESSAGES_IN_INBOX 10000
@@ -81,11 +76,7 @@ using namespace std;
 #define _FILL_UP MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE)
 #define MAX_UINT64_T_PER_MESSAGE _FILL_UP
 
-
-
 #define MASTER_RANK 0x0
-
-
 
 #define _FOREST_SIZE 0x1000
 
@@ -119,6 +110,7 @@ Retrovirology 2008, 5:110doi:10.1186/1742-4690-5-110
 
 
 #define _AUTOMATIC_DETECTION 65535
+
 
 /*
  * this is the type used to store coverage values

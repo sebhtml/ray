@@ -151,7 +151,7 @@ class Machine{
 
 	int m_numberOfRanksDoneDetectingDistances;
 	// read, strand, position
-	map<u64,map<char,int> > m_readsPositions;
+	map<u64,int > m_readsPositions;
 	int m_numberOfRanksDoneSendingDistances;
 	map<int,map<int,int> > m_libraryDistances;
 	int m_libraryIterator;

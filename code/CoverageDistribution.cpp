@@ -32,14 +32,10 @@ CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>*distributionOfCo
 
 	m_peakCoverage=100;
 	m_minimumCoverage=1;
-	#ifdef WRITE_COVERAGE_DISTRIBUTION
 	ofstream f(file->c_str());
 	f<<"#Coverage NumberOfVertices"<<endl;
-	#endif
 	for(map<int,VERTEX_TYPE>::iterator i=distributionOfCoverage->begin();i!=distributionOfCoverage->end();i++){
-		#ifdef WRITE_COVERAGE_DISTRIBUTION
 		f<<""<<i->first<<" "<<i->second<<endl;
-		#endif
 		int coverage=i->first;
 		if(coverage==max)
 			continue;
@@ -71,11 +67,8 @@ CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>*distributionOfCo
 	if((*distributionOfCoverage)[m_peakCoverage]==0){
 		m_peakCoverage=0;
 	}
-	#ifdef SHOW_PROGRESS
 	cout<<"Rank 0 informs you that MinimumCoverage="<<m_minimumCoverage<<endl;
 	cout<<"Rank 0 informs you that PeakCoverage="<<m_peakCoverage<<endl;
-	#endif
-
 
 	f.close();
 }

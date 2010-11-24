@@ -918,11 +918,11 @@ void MessageProcessor::call_TAG_INDEX_PAIRED_SEQUENCE(Message*message){
 	int count=message->getCount();
 	void*buffer=message->getBuffer();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	for(int i=0;i<count;i+=5){
+	for(int i=0;i<count;i+=6){
 		PairedRead*t=(PairedRead*)(*m_persistentAllocator).allocate(sizeof(PairedRead));
 		int length=incoming[i+3];
 		int deviation=incoming[i+4];
-
+		bool isLeftRead=incoming[i+5];
 		int otherRank=incoming[i+1];
 		#ifdef ASSERT
 		assert(otherRank<size);
@@ -930,7 +930,7 @@ void MessageProcessor::call_TAG_INDEX_PAIRED_SEQUENCE(Message*message){
 
 		int otherId=incoming[i+2];
 		int currentReadId=incoming[i+0];
-		t->constructor(otherRank,otherId,length,deviation);
+		t->constructor(otherRank,otherId,length,deviation,isLeftRead);
 		#ifdef ASSERT
 		if(currentReadId>=(int)m_myReads->size()){
 			cout<<"currentReadId="<<currentReadId<<" size="<<m_myReads->size()<<endl;
@@ -975,26 +975,27 @@ void MessageProcessor::call_TAG_GET_PAIRED_READ(Message*message){
 	#endif
 	PairedRead*t=(*m_myReads)[index]->getPairedRead();
 	PairedRead dummy;
-	dummy.constructor(0,0,0,0);
+	dummy.constructor(0,0,0,0,0);
 	if(t==NULL){
 		t=&dummy;
 	}
 	#ifdef ASSERT
 	assert(t!=NULL);
 	#endif
-	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(4*sizeof(VERTEX_TYPE));
+	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(5*sizeof(VERTEX_TYPE));
 	message2[0]=t->getRank();
 	message2[1]=t->getId();
 	message2[2]=t->getAverageFragmentLength();
 	message2[3]=t->getStandardDeviation();
-	Message aMessage(message2,4,MPI_UNSIGNED_LONG_LONG,source,TAG_GET_PAIRED_READ_REPLY,rank);
+	message2[4]=t->isLeftRead();
+	Message aMessage(message2,5,MPI_UNSIGNED_LONG_LONG,source,TAG_GET_PAIRED_READ_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_GET_PAIRED_READ_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	(*m_EXTENSION_pairedRead).constructor(incoming[0],incoming[1],incoming[2],incoming[3]);
+	(*m_EXTENSION_pairedRead).constructor(incoming[0],incoming[1],incoming[2],incoming[3],incoming[4]);
 	(*m_EXTENSION_pairedSequenceReceived)=true;
 }
 
@@ -1240,7 +1241,7 @@ void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE(Message*message){
 	#endif
 	PairedRead*t=(*m_myReads)[index]->getPairedRead();
 	PairedRead dummy;
-	dummy.constructor(0,0,0,0);
+	dummy.constructor(0,0,0,0,0);
 	if(t==NULL){
 		t=&dummy;
 	}
@@ -1249,7 +1250,7 @@ void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE(Message*message){
 	#endif
 	char*seq=m_myReads->at(index)->getSeq();
 
-	int beforeRounding=4*sizeof(VERTEX_TYPE)+strlen(seq)+1;
+	int beforeRounding=5*sizeof(VERTEX_TYPE)+strlen(seq)+1;
 	int toAllocate=roundNumber(beforeRounding,8);
 	//cout<<" seq is "<<strlen(seq)<<" +1 +4*8="<<beforeRounding<<", rounded: "<<toAllocate<<endl;
 
@@ -1258,7 +1259,8 @@ void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE(Message*message){
 	messageBytes[1]=t->getId();
 	messageBytes[2]=t->getAverageFragmentLength();
 	messageBytes[3]=t->getStandardDeviation();
-	char*dest=(char*)(messageBytes+4);
+	messageBytes[4]=t->isLeftRead();
+	char*dest=(char*)(messageBytes+5);
 	strcpy(dest,seq);
 	//cout<<"dest="<<dest<<endl;
 	Message aMessage(messageBytes,toAllocate/8,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READ_SEQUENCE_REPLY,rank);
@@ -1268,10 +1270,10 @@ void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE(Message*message){
 void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	(*m_EXTENSION_pairedRead).constructor(incoming[0],incoming[1],incoming[2],incoming[3]);
+	(*m_EXTENSION_pairedRead).constructor(incoming[0],incoming[1],incoming[2],incoming[3],incoming[4]);
 	(*m_EXTENSION_pairedSequenceReceived)=true;
 
-	seedExtender->m_receivedString=(char*)(incoming+4);
+	seedExtender->m_receivedString=(char*)(incoming+5);
 	seedExtender->m_sequenceReceived=true;
 }
 

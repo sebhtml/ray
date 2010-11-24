@@ -24,9 +24,6 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 */
 
-
-
-
 #include<mpi.h>
 #include<EdgesExtractor.h>
 #include<Machine.h>
@@ -642,6 +639,7 @@ void Machine::finishFusions(){
 
 		map<int,vector<int> > indexOnDirection2;
 		
+		// index the index for each wave
 		for(int j=0;j<(int)directions2.size();j++){
 			int waveId=directions2[j].getWave();
 			if(indexOnDirection2.count(waveId)==0){
@@ -651,6 +649,8 @@ void Machine::finishFusions(){
 			indexOnDirection2[waveId].push_back(j);
 		}
 
+		// find all hits
+		//
 		for(int i=0;i<(int)directions1.size();i++){
 			int wave1=directions1[i].getWave();
 			if(indexOnDirection2.count(wave1)==0){
@@ -673,6 +673,10 @@ void Machine::finishFusions(){
 
 		indexOnDirection2.clear();
 
+		/**
+ *		if there is more than one hit, they must be repeated regions. (?)
+ *
+ */
 		if(hits>1){// we don't support that right now.
 			done=true;
 		}

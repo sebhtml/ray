@@ -46,7 +46,8 @@ class Library{
 	int*m_sequence_id;
 	int*m_sequence_idInFile;
 	ExtensionData*m_ed;
-	map<u64,map<char,int> >*m_readsPositions;
+	map<u64,int>*m_readsPositions;
+	map<u64,char> m_readsStrands;
 	RingAllocator*m_outboxAllocator;
 	int m_size;
 	TimePrinter*m_timePrinter;
@@ -64,7 +65,7 @@ public:
 	int getSize();
 	void detectDistances();
 	void constructor(int m_rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator,BufferedData*m_bufferedData,
-	int*m_sequence_id,int*m_sequence_idInFile,ExtensionData*m_ed,map<u64,map<char,int> >*m_readsPositions,int m_size,
+	int*m_sequence_id,int*m_sequence_idInFile,ExtensionData*m_ed,map<u64,int >*m_readsPositions,int m_size,
 TimePrinter*m_timePrinter,int*m_mode,int*m_master_mode,
 Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,map<int,map<int,int> >*m_libraryDistances
 

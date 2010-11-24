@@ -27,7 +27,8 @@
 PairedRead::PairedRead(){
 }
 
-void PairedRead::constructor(int rank,int id, int fragmentSize,int deviation){
+void PairedRead::constructor(int rank,int id, int fragmentSize,int deviation,bool isLeftRead){
+	m_isLeftRead=isLeftRead;
 	m_rank=rank;
 	m_readIndex=id;
 	assert(fragmentSize<=MAX_U16);
@@ -63,4 +64,8 @@ void PairedRead::updateLibrary(int d,int sd){
 
 u64 PairedRead::getUniqueId(){
 	return m_readIndex*MAX_NUMBER_OF_MPI_PROCESSES+m_rank;
+}
+
+bool PairedRead::isLeftRead(){
+	return m_isLeftRead;
 }
