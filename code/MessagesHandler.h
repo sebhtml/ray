@@ -33,6 +33,11 @@ using namespace std;
 
 
 class MessagesHandler{
+	int m_ringSize;
+	int m_head;
+	MPI_Request*m_ring;
+	char*m_buffers;
+
 	u64*m_receivedMessages;
 	int m_rank;
 	int m_size;
@@ -51,6 +56,7 @@ public:
 	void writeStats(const char*file);
 	bool isFinished();
 	bool isFinished(int rank);
+	void freeLeftovers();
 };
 
 #endif

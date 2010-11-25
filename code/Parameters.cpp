@@ -80,7 +80,7 @@ void Parameters::parseCommands(){
 
 	for(int i=0;i<(int)m_commands.size();i++){
 		if(i!=(int)m_commands.size()-1){
-			cout<<m_commands[i]<<" \\"<<endl;
+			cout<<m_commands[i]<<" \\"<<endl;
 		}else{
 			cout<<m_commands[i]<<endl;
 		}

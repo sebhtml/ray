@@ -41,7 +41,6 @@ void MessagesHandler::sendMessages(StaticVector*outbox,int source){
 		#ifdef ASSERT
 		assert(!(aMessage->getBuffer()==NULL && aMessage->getCount()>0));
 		#endif
-
 		#ifndef ASSERT
 		MPI_Isend(aMessage->getBuffer(),aMessage->getCount(),aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(),MPI_COMM_WORLD,&request);
 		#else
@@ -70,19 +69,33 @@ void MessagesHandler::sendMessages(StaticVector*outbox,int source){
 void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator,int destination){
 	int flag;
 	MPI_Status status;
-	MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
-	while(flag){
-		int sizeOfType=8;
+	MPI_Test(m_ring+m_head,&flag,&status);
+
+	if(flag){
+		// get the length of the message
 		int tag=status.MPI_TAG;
 		int source=status.MPI_SOURCE;
 		int length;
 		MPI_Get_count(&status,MPI_UNSIGNED_LONG_LONG,&length);
-		void*incoming=(void*)inboxAllocator->allocate(length*sizeOfType);
-		MPI_Recv(incoming,length,MPI_UNSIGNED_LONG_LONG,source,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
-		m_receivedMessages[source]++;
+		u64*incoming=(u64*)inboxAllocator->allocate(length*sizeof(u64));
+		// copy it in a safe buffer
+		u64*filledBuffer=(u64*)m_buffers+m_head*MPI_BTL_SM_EAGER_LIMIT/sizeof(u64);
+		for(int i=0;i<length;i++){
+			incoming[i]=filledBuffer[i];
+		}
+		// the request can start again
+		MPI_Start(m_ring+m_head);
+	
+		// add the message in the inbox
 		Message aMessage(incoming,length,MPI_UNSIGNED_LONG_LONG,source,tag,source);
 		inbox->push_back(aMessage);
-		MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
+		m_receivedMessages[source]++;
+
+		// increment the head
+		m_head++;
+		if(m_head==m_ringSize){
+			m_head=0;
+		}
 	}
 }
 
@@ -155,8 +168,29 @@ void MessagesHandler::constructor(int rank,int size){
 			m_allCounts[i]=0;
 		}
 	}
+	m_ringSize=128;
+	m_ring=(MPI_Request*)__Malloc(sizeof(MPI_Request)*m_ringSize);
+	m_buffers=(char*)__Malloc(MPI_BTL_SM_EAGER_LIMIT*m_ringSize);
+	m_head=0;
+
+	// post a few receives.
+	for(int i=0;i<m_ringSize;i++){
+		void*buffer=m_buffers+i*MPI_BTL_SM_EAGER_LIMIT;
+		MPI_Recv_init(buffer,MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE),MPI_UNSIGNED_LONG_LONG,
+			MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,m_ring+i);
+		MPI_Start(m_ring+i);
+	}
 }
 
 u64*MessagesHandler::getReceivedMessages(){
 	return m_receivedMessages;
+}
+
+void MessagesHandler::freeLeftovers(){
+	for(int i=0;i<m_ringSize;i++){
+		MPI_Cancel(m_ring+i);
+		MPI_Request_free(m_ring+i);
+	}
+	__Free(m_ring);
+	__Free(m_buffers);
 }

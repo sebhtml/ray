@@ -83,10 +83,10 @@ void Machine::showUsage(){
     	cout<<" -s <sequencesFile>"<<endl;
 	cout<<endl;
 	cout<<"Paired-end reads:"<<endl;
-	cout<<" -p <leftSequencesFile> <rightSequencesFile> [ <fragmentLength> <standardDeviation> ]"<<endl;
+	cout<<" -p <leftSequencesFile> <rightSequencesFile> [ <fragmentLength> <standardDeviation> ]"<<endl;
 	cout<<endl;
 	cout<<"Paired-end reads:"<<endl;
-	cout<<" -i <interleavedFile> [ <fragmentLength> <standardDeviation> ]"<<endl;
+	cout<<" -i <interleavedFile> [ <fragmentLength> <standardDeviation> ]"<<endl;
 	cout<<endl;
 	cout<<"Output (default: RayOutput)"<<endl;
 	cout<<" -o <outputPrefix>"<<endl;
@@ -513,6 +513,7 @@ void Machine::start(){
 	}
 
 	MPI_Barrier(MPI_COMM_WORLD);
+	m_messagesHandler.freeLeftovers();
 
 	MPI_Finalize();
 }
