@@ -21,8 +21,9 @@
 
 #include<MessagesHandler.h>
 #include<common_functions.h>
+#include<fstream>
 #include<assert.h>
-
+using namespace std;
 
 /*
  * send messages,
@@ -150,23 +151,21 @@ bool MessagesHandler::isFinished(){
 }
 
 void MessagesHandler::writeStats(const char*file){
-	FILE*f=fopen(file,"w+");
+	ofstream f(file);
 	
 	for(int i=0;i<m_size;i++){
-		fprintf(f,"\t%i",i);
+		f<<"\t"<<i;
 	}
+	cout<<endl;
 
-	fprintf(f,"\n");
-	
 	for(int i=0;i<m_size;i++){
-		fprintf(f,"%i",i);
+		cout<<i;
 		for(int j=0;j<m_size;j++){
-			// will pop a warning on SPARC.
-			fprintf(f,"\t%lu",m_allReceivedMessages[i*m_size+j]);
+			cout<<"\t"<<m_allReceivedMessages[i*m_size+j];
 		}
-		fprintf(f,"\n");
+		cout<<endl;
 	}
-	fclose(f);
+	f.close();
 }
 
 void MessagesHandler::constructor(int rank,int size){
