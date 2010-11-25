@@ -1,14 +1,27 @@
-IA64/Itanium
-
-x86 
-	Genuine Intel(R) CPU           T2400  @ 1.83GHz
-
-AMD64 & Intel64 (x86_64)
+= AMD64 (x86_64) =
 
 	Six-Core AMD Opteron(tm) Processor 8435
+	Quad-Core AMD Opteron(tm) Processor 8378
+	Dual Core AMD Opteron(tm) Processor 880
+	AMD Opteron(tm) Processor 248
+
+
+= IA64/Itanium =
+
+	GenuineIntel IA-64 Madison
+
+
+= Intel64 (x86_64) =
+
 	Intel(R) Core(TM) i3 CPU         540  @ 3.07GHz
 	Intel(R) Xeon(R) CPU           X5560  @ 2.80GHz
+	Intel(R) Core(TM)2 Quad CPU    Q6600  @ 2.40GHz
 
-SPARC
+
+= x86 =
+	Genuine Intel(R) CPU           T2400  @ 1.83GHz
+
+
+= SPARC V9 =
 
 	TI UltraSparc IIe (Hummingbird)
