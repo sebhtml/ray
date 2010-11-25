@@ -46,7 +46,6 @@ class MessagesHandler{
 	int*m_allCounts;
 
 public:
-	MessagesHandler();
 	void constructor(int rank,int size);
 	void showStats();
 	void sendMessages(StaticVector*outbox,int source);

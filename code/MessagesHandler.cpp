@@ -61,9 +61,23 @@ void MessagesHandler::sendMessages(StaticVector*outbox,int source){
 
 
 /*	
- * using Iprobe, probe for new messages as they arrive
- * if no more message are available, return.
- * messages are kept in the inbox.
+ * receiveMessages is implemented as recommanded by Mr. George Bosilca from
+the University of Tennessee (via the Open-MPI mailing list)
+
+De: George Bosilca <bosilca@…>
+Reply-to: Open MPI Developers <devel@…>
+À: Open MPI Developers <devel@…>
+Sujet: Re: [OMPI devel] Simple program (103 lines) makes Open-1.4.3 hang
+Date: 2010-11-23 18:03:04
+
+If you know the max size of the receives I would take a different approach. 
+Post few persistent receives, and manage them in a circular buffer. 
+Instead of doing an MPI_Iprobe, use MPI_Test on the current head of your circular buffer. 
+Once you use the data related to the receive, just do an MPI_Start on your request.
+This approach will minimize the unexpected messages, and drain the connections faster. 
+Moreover, at the end it is very easy to MPI_Cancel all the receives not yet matched.
+
+    george. 
  */
 
 void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator,int destination){
@@ -73,16 +87,20 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 
 	if(flag){
 		// get the length of the message
+		// it is not necessary the same as the one posted with MPI_Recv_init
+		// that one was a lower bound
 		int tag=status.MPI_TAG;
 		int source=status.MPI_SOURCE;
 		int length;
 		MPI_Get_count(&status,MPI_UNSIGNED_LONG_LONG,&length);
-		u64*incoming=(u64*)inboxAllocator->allocate(length*sizeof(u64));
-		// copy it in a safe buffer
 		u64*filledBuffer=(u64*)m_buffers+m_head*MPI_BTL_SM_EAGER_LIMIT/sizeof(u64);
+
+		// copy it in a safe buffer
+		u64*incoming=(u64*)inboxAllocator->allocate(length*sizeof(u64));
 		for(int i=0;i<length;i++){
 			incoming[i]=filledBuffer[i];
 		}
+
 		// the request can start again
 		MPI_Start(m_ring+m_head);
 	
@@ -97,9 +115,6 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 			m_head=0;
 		}
 	}
-}
-
-MessagesHandler::MessagesHandler(){
 }
 
 void MessagesHandler::showStats(){
@@ -168,6 +183,8 @@ void MessagesHandler::constructor(int rank,int size){
 			m_allCounts[i]=0;
 		}
 	}
+
+	// the ring contains 128 elements.
 	m_ringSize=128;
 	m_ring=(MPI_Request*)__Malloc(sizeof(MPI_Request)*m_ringSize);
 	m_buffers=(char*)__Malloc(MPI_BTL_SM_EAGER_LIMIT*m_ringSize);
