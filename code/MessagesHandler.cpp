@@ -156,14 +156,14 @@ void MessagesHandler::writeStats(const char*file){
 	for(int i=0;i<m_size;i++){
 		f<<"\t"<<i;
 	}
-	cout<<endl;
+	f<<endl;
 
 	for(int i=0;i<m_size;i++){
-		cout<<i;
+		f<<i;
 		for(int j=0;j<m_size;j++){
-			cout<<"\t"<<m_allReceivedMessages[i*m_size+j];
+			f<<"\t"<<m_allReceivedMessages[i*m_size+j];
 		}
-		cout<<endl;
+		f<<endl;
 	}
 	f.close();
 }

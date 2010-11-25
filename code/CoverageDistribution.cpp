@@ -33,7 +33,7 @@ CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>*distributionOfCo
 	m_peakCoverage=100;
 	m_minimumCoverage=1;
 	ofstream f(file->c_str());
-	f<<"#Coverage NumberOfVertices"<<endl;
+
 	for(map<int,VERTEX_TYPE>::iterator i=distributionOfCoverage->begin();i!=distributionOfCoverage->end();i++){
 		f<<""<<i->first<<" "<<i->second<<endl;
 		int coverage=i->first;
