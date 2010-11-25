@@ -1,83 +1,73 @@
 = v. 1.0.0 =
-rXXXX | 2010-11-24 (scheduled)
+r4038 | 2010-11-25
 
 * Made a lots of changes to make Ray compliant with the standard MPI 2.2
-(Ticket #558)
-* Added master and slave modes
+* Added master and slave modes.
 * Added an array of master methods (pointers): selecting the master method
-with the master mode is done in O(1). (Tickets #545 & #546)
+with the master mode is done in O(1).
 * Added an array of slave methods (pointers): selecting the slave method
-with the master mode is done in O(1). (Tickets #545 & #546)
+with the master mode is done in O(1).
 * Added an array of message handlers (pointers): selecting the message handler method
-with the message tag is done in O(1). (Ticket #539)
+with the message tag is done in O(1).
 * Replaced MPI_Send by MPI_Isend. Thanks to Open-MPI developpers for their
 support and explanation on the eagerness of Open-MPI: George Bosilca (University of Tennessee), Jeff Squyres (Cisco), Eugene Loh (Oracle)
-* Moved some code for the extension of seeds. (Ticket #114)
-* Grouped messages for library updates. (Ticket #157)
+* Moved some code for the extension of seeds.
+* Grouped messages for library updates.
 * Added support for paired-end interleaved sequencing reads (-i option)
-(Tickets #165, #575)
 Thanks to Dr. Torsten Seemann (Victorian Bioinformatics Consortium, Dept.
 Microbiology, Monash University, AUSTRALIA) for suggesting the feature !
-* Moved detectDistances & updateDistances in their own C++ file. (Ticket #497)
-* Updated the Wiki (Ticket #508)
-* Decided that the next release was 1.0.0 (Ticket #510)
-* Added support for .fasta.gz and .fastq.gz files, using libz (GZIP) (Ticket #512) Thanks to Dr. Torsten Seemann (Victorian Bioinformatics Consortium,
+* Moved detectDistances & updateDistances in their own C++ file.
+* Updated the Wiki.
+* Decided that the next release was 1.0.0.
+* Added support for .fasta.gz and .fastq.gz files, using libz (GZIP).
+Thanks to Dr. Torsten Seemann (Victorian Bioinformatics Consortium,
 Dept. Microbiology, Monash University, AUSTRALIA) for suggesting the feature !
-* Tested with k=17: it uses less memory, but is less precise. (Ticket #518)
+* Tested with k=17: it uses less memory, but is less precise.
 * Fixed a memory allocation bug when the code runs on 512 cores and more.
-(Ticket #520)
-* Added configure script using automake & autoconf. (Ticket #522)
+* Added configure script using automake & autoconf.
 Note that if that fails, read the INSTALL file !
-* Moved the code that loads fasta files in FastaLoader (Ticket #523)
-* Moved the code that loads fastq files in FastqLoader (Ticket #524)
-* Regulated the communication in the MPI 'tribe'. (Ticket #528)
+* Moved the code that loads fasta files in FastaLoader.
+* Moved the code that loads fastq files in FastqLoader.
+* Regulated the communication in the MPI 'tribe'.
 * Added an assertion to verify the message buffer length before sending it.
-(Ticket #537)
 * Modified bits so that if a message is more than 4096 bytes, split it in
-chunks. (Ticket #538)
+chunks.
 * Used a sentinel to remove two messages, coupled with TAG_REQUEST_READS.
-(Ticket #540)
-* Stress-tested with MPICH2: it is faster than with Open-MPI. (Tickets #553,
-#554, #555, #556, #557, #572, #573, #574)
-* Implemented a ring allocator for inboxes and outboxes. (Ticket #559)
+* Stress-tested with MPICH2.
+* Implemented a ring allocator for inboxes and outboxes.
 * Changed flushing so that all use <flush> & <flushAll> in BufferedData.
-(Ticket #563)
 * Changed the maximum message size from 4096 to 4000 to send messages eagerly
 more often (if it happens). Thanks to Open-MPI developpers for their
-support and explanation on the eagerness of Open-MPI: George Bosilca
-(University of Tennessee), Jeff Squyres (Cisco), Eugene Loh (Oracle) (Ticket
-#600)
+support and explanation on the eagerness of Open-MPI: Eugene Loh (Oracle), George Bosilca
+(University of Tennessee), Jeff Squyres (Cisco).
 * Changed the way sequencing reads are indexed: before the master was
 reloading (again !) files to do so, now no files are loaded and every MPI ranks
-participate in the task. (Ticket #568)
+participate in the task.
 * Modified the way sequences are distributed. These are now appended to fill the buffer, and
-the sentinel called 'End of transmission' is used. (Ticket #569) Thanks to
+the sentinel called 'End of transmission' is used. Thanks to
 Élénie Godzaridis for pointing out that '\0' is not a valid sentinel for
 strings !
-* Optimized the flushing in BufferedData: flush is now destination-specific
-(O(1) instead of O(n) where n is the number of MPI ranks). (Ticket #570)
+* Optimized the flushing in BufferedData: flush is now destination-specific.
+O(1) instead of O(n) where n is the number of MPI ranks.
 * Optimized the extension: paired information is appended in the buffer in
-which the sequence itself is. (Ticket #571)
-* Added support for .fasta.bz2 & .fastq.bz2. This needs LIBBZ2 (-lbz2) (Ticket #576)
+which the sequence itself is.
+* Added support for .fasta.bz2 & .fastq.bz2. This needs LIBBZ2 (-lbz2)
 * Added instructions in the INSTALL file for manually compiling the source in
-case the configure script gets tricky. (Ticket #577)
-* Evaluated regression tests. (Tickets #579, #580, #581)
+case the configure script gets tricky (cat INSTALL).
 * Added a received messages file. This is pretty useless unless you want to
-see if the received messages are uniform ! (Ticket #582).
-* Added bits to write the fragment length distribution of each library. (#585)
+see if the received messages are uniform !.
+* Added bits to write the fragment length distribution of each library.
 * Changed the definition of MPI tags: they are now defined with a enum.
-(Ticket #590) Thanks to Élénie Godzaridis for the suggestion.
+Thanks to Élénie Godzaridis for the suggestion.
 * Changed the definition of slave modes: they are now defined with a enum.
-(Ticket #589) Thanks to Élénie Godzaridis for the suggestion.
+Thanks to Élénie Godzaridis for the suggestion.
 * Changed the definition of master modes: they are now defined with a enum.
-(Ticket #588) Thanks to Élénie Godzaridis for the suggestion.
+Thanks to Élénie Godzaridis for the suggestion.
 * Optimized finishFusions: complexity changed from O(N*M) to O(N log M).
-(Ticket #591)
-* Designed a beautiful logo with Inkscape. (Ticket #593)
-* Added a script for regression tests. (Ticket #583)
+* Designed a beautiful logo with Inkscape.
+* Added a script for regression tests. 
 * Changed bits so that a paired read is not updated if it does not need it
-(Ticket #602)
-* Changed the meaning of the -o parameter: it is now a prefix. (Ticket #603)
+* Changed the meaning of the -o parameter: it is now a prefix.
 * Added examples with MPICH2, Open-MPI, and Open-MPI/SunGridEngine.
 * Changed DEBUG for ASSERT as it activates assertions.
 * Updated the citation in the standard output.
@@ -88,7 +78,14 @@ see if the received messages are uniform ! (Ticket #582).
 * Added gnuplot scripts.
 * Changed the file name for changes: from NEWS to ChangeLog.
 * Optimized the MPI layer: replaced MPI_Iprobe by MPI_Recv_init+MPI_Start.
+see MessagesHandler.cpp !
 (Thanks to George Bosilca (University of Tennessee) for the suggestion !
+* Compiled and tested on architecture SPARC V9 (sparc64).
+* Compiled and tested on architecture Intel Itanium (ia64).
+* Compiled and tested on architecture Intel64 (x86_64).
+* Compiled and tested on architecture AMD64 (x86_64).
+* Compiled and tested on Intel architecture (x86/ia32).
+* Evaluated regression tests.
 
 
 = v. 0.1.0 =
