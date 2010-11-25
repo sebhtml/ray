@@ -161,7 +161,7 @@ void MessagesHandler::writeStats(const char*file){
 	for(int i=0;i<m_size;i++){
 		fprintf(f,"%i",i);
 		for(int j=0;j<m_size;j++){
-			fprintf(f,"\t%lu",m_allReceivedMessages[i*m_size+j]);
+			fprintf(f,"\t%llu",m_allReceivedMessages[i*m_size+j]);
 		}
 		fprintf(f,"\n");
 	}
