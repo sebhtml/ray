@@ -3,7 +3,7 @@ suffix=$(date +%Y-%m-%d-%H-%M-%S).txt
 
 (
 echo "BEGIN LIST OF REGRESSIONS"
-for i in $(ls *.sh|grep -v runRegressions)
+for i in $(ls *.sh|grep -v runRegression)
 do
 	echo "RegressionTest Number $j -> $i"
 done
