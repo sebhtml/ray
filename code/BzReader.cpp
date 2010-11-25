@@ -55,16 +55,19 @@ char*BzReader::readLine(char*s, int n){
 		int i=0;
 		while(m_buffer[m_bufferPosition]!='\n' && m_bufferPosition<m_bufferSize){
 			if(i==n){
+				s[i]='\0';
 				return s;
 			}
 			s[i++]=m_buffer[m_bufferPosition++];
 		}
 		if(i==n){
+			s[i]='\0';
 			return s;
 		}
 		if(m_bufferPosition<m_bufferSize){
 			s[i++]=m_buffer[m_bufferPosition++];
 		}
+		s[i]='\0';
 		return s;
 	}
 
@@ -72,6 +75,7 @@ char*BzReader::readLine(char*s, int n){
 	int i=0;
 	while(m_bufferPosition<m_bufferSize){
 		if(i==n){
+			s[i]='\0';
 			return s;
 		}
 		s[i++]=m_buffer[m_bufferPosition++];
@@ -87,16 +91,19 @@ char*BzReader::readLine(char*s, int n){
 	/* copy up to \n (including it) into secondaryBuffer */
 	while(m_buffer[m_bufferPosition]!='\n' && m_bufferPosition<m_bufferSize){
 		if(i==n){
+			s[i]='\0';
 			return s;
 		}
 		s[i++]=m_buffer[m_bufferPosition++];
 	}
 	if(i==n){
+		s[i]='\0';
 		return s;
 	}
 	if(m_bufferPosition<m_bufferSize){
 		s[i++]=m_buffer[m_bufferPosition++];
 	}
+	s[i]='\0';
 	return s;
 }
 
