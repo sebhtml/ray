@@ -87,7 +87,8 @@ see if the received messages are uniform ! (Ticket #582).
 * Increased the verbosity of the extension step.
 * Added gnuplot scripts.
 * Changed the file name for changes: from NEWS to ChangeLog.
-
+* Optimized the MPI layer: replaced MPI_Iprobe by MPI_Recv_init+MPI_Start.
+(Thanks to George Bosilca (University of Tennessee) for the suggestion !
 
 
 = v. 0.1.0 =
