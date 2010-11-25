@@ -20,10 +20,10 @@ GZIP and BZIP2 support is detected automatically.
 
 If the above don't work for you (for various reasons), compile Ray using the following command:
 
-mpic++ -O3 -Wall $(ls code/*.cpp|grep -v main|grep -v Gz|grep -v Bz) code/ray_main.cpp -Icode -o Ray
+mpic++ -O3 -Wall $(ls code/*.cpp|grep -v main|grep -v Gz|grep -v Bz) code/ray_main.cpp -Icode -o code/Ray
 
 
 
 If you want GZIP and BZIP2 support:
 
-mpic++ -DHAVE_ZLIB -DHAVE_LIBBZ2 -O3 -Wall $(ls code/*.cpp|grep -v main) code/ray_main.cpp -Icode -o Ray -lz -lbz2
+mpic++ -DHAVE_ZLIB -DHAVE_LIBBZ2 -O3 -Wall $(ls code/*.cpp|grep -v main) code/ray_main.cpp -Icode -o code/Ray -lz -lbz2
