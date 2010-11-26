@@ -1517,7 +1517,27 @@ void Machine::call_MODE_START_SEEDING(){
 				int nucleotides=m_seedingData->m_SEEDING_seed.size()+m_wordSize-1;
 				// only consider the long ones.
 				if(nucleotides>=m_parameters.getMinimumContigLength()){
-					m_seedingData->m_SEEDING_seeds.push_back(m_seedingData->m_SEEDING_seed);
+					u64 firstVertex=m_seedingData->m_SEEDING_seed[0];
+					u64 lastVertex=m_seedingData->m_SEEDING_seed[m_seedingData->m_SEEDING_seed.size()-1];
+					u64 lastVertexReverse=complementVertex(lastVertex,m_wordSize,m_colorSpaceMode);
+					int aRank=vertexRank(firstVertex);
+					int bRank=vertexRank(lastVertexReverse);
+		
+					// if both seeds are on the same rank
+					// dump the reverse and keep the forward
+
+					if(aRank==bRank){
+						if(m_eliminatedSeeds.count(firstVertex)==0 && m_eliminatedSeeds.count(lastVertexReverse)==0){
+							m_eliminatedSeeds.insert(lastVertexReverse);
+							m_seedingData->m_SEEDING_seeds.push_back(m_seedingData->m_SEEDING_seed);
+						}
+					// if they are on two ranks,
+					// keep the one on the rank with the lower number.
+					}else if((aRank+bRank)%2==0 && aRank<bRank){
+						m_seedingData->m_SEEDING_seeds.push_back(m_seedingData->m_SEEDING_seed);
+					}else if(((aRank+bRank)%2==1 && aRank>bRank)){
+						m_seedingData->m_SEEDING_seeds.push_back(m_seedingData->m_SEEDING_seed);
+					}
 				}
 			}else{
 				m_seedingData->m_SEEDING_seed.push_back(m_seedingData->m_SEEDING_currentVertex);

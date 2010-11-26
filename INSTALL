@@ -17,13 +17,19 @@ GZIP and BZIP2 support is detected automatically.
 2 ) using mpic++ manually (always works, but less handy)
 
 
-
 If the above don't work for you (for various reasons), compile Ray using the following command:
 
-mpic++ -O3 -Wall $(ls code/*.cpp|grep -v main|grep -v Gz|grep -v Bz) code/ray_main.cpp -Icode -o code/Ray
+
+make -f makefile.alternate
+
+
+If you don't have libz and libbz2:
 
 
 
-If you want GZIP and BZIP2 support:
+make -f makefile.alternate nocompression
 
-mpic++ -DHAVE_ZLIB -DHAVE_LIBBZ2 -O3 -Wall $(ls code/*.cpp|grep -v main) code/ray_main.cpp -Icode -o code/Ray -lz -lbz2
+
+
+
+

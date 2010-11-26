@@ -160,6 +160,8 @@ class Machine{
 	StaticVector m_outbox;
 	StaticVector m_inbox;
 
+	set<u64> m_eliminatedSeeds;
+
 	ExtensionData*m_ed;
 	ChooserData*m_cd;
 
