@@ -9,6 +9,7 @@ LDADD=""
 
 noinst_LIBRARIES = libRay.a
 libRay_a_SOURCES = \
+EarlyStoppingTechnology.h EarlyStoppingTechnology.cpp \
 PendingRequest.h RingAllocator.cpp RingAllocator.h StaticVector.cpp StaticVector.h \
 MessagesHandler.h MessagesHandler.cpp slave_modes.h master_modes.h mpi_tags.h \
 SeedingData.h Library.h Library.cpp FastaLoader.h FastaLoader.cpp FastqLoader.h \

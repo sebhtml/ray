@@ -34,10 +34,14 @@
 #include<ChooserData.h>
 #include<BubbleTool.h>
 #include<OpenAssemblerChooser.h>
+#include<EarlyStoppingTechnology.h>
+
 
 using namespace std;
 
 class SeedExtender{
+	vector<Direction>m_receivedDirections;
+	EarlyStoppingTechnology m_earlyStoppingTechnology;
 	bool m_skippedASeed;
 	map<u64,char> m_readsStrands;
 public:
@@ -99,7 +103,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 		int*receivedVertexCoverage,vector<VERTEX_TYPE>*receivedOutgoingEdges,
 		int minimumCoverage,bool*edgesReceived);
 
-
+	vector<Direction>*getDirections();
 };
 
 #endif

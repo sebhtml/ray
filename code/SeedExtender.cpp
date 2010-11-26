@@ -51,6 +51,8 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		return;
 	}
 	if(!ed->m_EXTENSION_initiated){
+		int waveId=ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+theRank;
+		m_earlyStoppingTechnology.constructor(waveId);
 		ed->m_EXTENSION_initiated=true;
 		ed->m_EXTENSION_currentSeedIndex=0;
 		ed->m_EXTENSION_currentPosition=0;
@@ -93,9 +95,15 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 	if(!ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled){
 		checkIfCurrentVertexIsAssembled(ed,outbox,outboxAllocator,outgoingEdgeIndex,last_value,
 	currentVertex,theRank,vertexCoverageRequested,wordSize,colorSpaceMode,size,seeds);
-	}else if(ed->m_EXTENSION_vertexIsAssembledResult and ed->m_EXTENSION_currentPosition==0 and ed->m_EXTENSION_complementedSeed==false){
+	}else if((ed->m_EXTENSION_vertexIsAssembledResult and ed->m_EXTENSION_currentPosition==0 and ed->m_EXTENSION_complementedSeed==false)
+		|| m_earlyStoppingTechnology.isAlarmed()){
 		ed->m_EXTENSION_currentSeedIndex++;// skip the current one.
 		ed->m_EXTENSION_currentPosition=0;
+
+
+		int waveId=ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+theRank;
+		m_earlyStoppingTechnology.constructor(waveId);
+
 		ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 		ed->m_EXTENSION_directVertexDone=false;
 		ed->m_EXTENSION_VertexAssembled_requested=false;
@@ -620,14 +628,16 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 		// no choice possible...
 		// do it for the lulz
 		if(!ed->m_EXTENSION_complementedSeed){
-			#ifdef SHOW_PROGRESS_DEBUG
 			cout<<"Rank "<<theRank<<": Switching to reverse complement."<<endl;
-			#endif
 			ed->m_EXTENSION_complementedSeed=true;
 			vector<VERTEX_TYPE> complementedSeed;
 			for(int i=ed->m_EXTENSION_extension.size()-1;i>=0;i--){
 				complementedSeed.push_back(complementVertex(ed->m_EXTENSION_extension[i],wordSize,(*colorSpaceMode)));
 			}
+
+			int waveId=ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+theRank;
+			m_earlyStoppingTechnology.constructor(waveId);
+
 			ed->m_EXTENSION_currentPosition=0;
 			ed->m_EXTENSION_currentSeed=complementedSeed;
 			ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
@@ -649,6 +659,11 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 				ed->m_EXTENSION_identifiers.push_back(id);
 			}
 			ed->m_EXTENSION_currentSeedIndex++;
+
+
+			int waveId=ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+theRank;
+			m_earlyStoppingTechnology.constructor(waveId);
+
 			ed->m_EXTENSION_currentPosition=0;
 			if(ed->m_EXTENSION_currentSeedIndex<(int)(*seeds).size()){
 				ed->m_EXTENSION_currentSeed=(*seeds)[ed->m_EXTENSION_currentSeedIndex];
@@ -801,6 +816,7 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
  bool*colorSpaceMode,int size,vector<vector<VERTEX_TYPE> >*seeds){
 	if(!ed->m_EXTENSION_directVertexDone){
 		if(!ed->m_EXTENSION_VertexAssembled_requested){
+			m_receivedDirections.clear();
 			if(ed->m_EXTENSION_currentSeedIndex%10==0 and ed->m_EXTENSION_currentPosition==0 and (*last_value)!=ed->m_EXTENSION_currentSeedIndex){
 				(*last_value)=ed->m_EXTENSION_currentSeedIndex;
 				#ifdef SHOW_PROGRESS
@@ -815,6 +831,9 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			(*outbox).push_back(aMessage);
 			ed->m_EXTENSION_VertexAssembled_received=false;
 		}else if(ed->m_EXTENSION_VertexAssembled_received){
+			cout<<"Adding directions, pos="<<ed->m_EXTENSION_currentPosition<<endl;
+			m_earlyStoppingTechnology.addDirections(&m_receivedDirections);
+
 			ed->m_EXTENSION_reverseVertexDone=false;
 			ed->m_EXTENSION_directVertexDone=true;
 			ed->m_EXTENSION_VertexMarkAssembled_requested=false;
@@ -838,6 +857,8 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			(*outbox).push_back(aMessage);
 			ed->m_EXTENSION_VertexAssembled_received=false;
 		}else if(ed->m_EXTENSION_VertexAssembled_received){
+			// we don't need them
+			m_receivedDirections.clear();
 			ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
 			ed->m_EXTENSION_markedCurrentVertexAsAssembled=false;
 			ed->m_EXTENSION_directVertexDone=false;
@@ -965,4 +986,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 
 SeedExtender::SeedExtender(){
 	m_skippedASeed=false;
+}
+
+vector<Direction>*SeedExtender::getDirections(){
+	return &m_receivedDirections;
 }

@@ -67,7 +67,8 @@ AR = ar
 ARFLAGS = cru
 libRay_a_AR = $(AR) $(ARFLAGS)
 libRay_a_LIBADD =
-am__libRay_a_SOURCES_DIST = PendingRequest.h RingAllocator.cpp \
+am__libRay_a_SOURCES_DIST = EarlyStoppingTechnology.h \
+	EarlyStoppingTechnology.cpp PendingRequest.h RingAllocator.cpp \
 	RingAllocator.h StaticVector.cpp StaticVector.h \
 	MessagesHandler.h MessagesHandler.cpp slave_modes.h \
 	master_modes.h mpi_tags.h SeedingData.h Library.h Library.cpp \
@@ -98,7 +99,8 @@ am__libRay_a_SOURCES_DIST = PendingRequest.h RingAllocator.cpp \
 @HAVE_ZLIB_TRUE@am__objects_1 = FastqGzLoader.$(OBJEXT)
 @HAVE_BZ2_TRUE@am__objects_2 = FastqBz2Loader.$(OBJEXT) \
 @HAVE_BZ2_TRUE@	BzReader.$(OBJEXT)
-am_libRay_a_OBJECTS = RingAllocator.$(OBJEXT) StaticVector.$(OBJEXT) \
+am_libRay_a_OBJECTS = EarlyStoppingTechnology.$(OBJEXT) \
+	RingAllocator.$(OBJEXT) StaticVector.$(OBJEXT) \
 	MessagesHandler.$(OBJEXT) Library.$(OBJEXT) \
 	FastaLoader.$(OBJEXT) FastqLoader.$(OBJEXT) \
 	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
@@ -249,16 +251,17 @@ top_srcdir = @top_srcdir@
 AM_CXXFLAGS = -O3 -Wall
 LDADD = ""
 noinst_LIBRARIES = libRay.a
-libRay_a_SOURCES = PendingRequest.h RingAllocator.cpp RingAllocator.h \
-	StaticVector.cpp StaticVector.h MessagesHandler.h \
-	MessagesHandler.cpp slave_modes.h master_modes.h mpi_tags.h \
-	SeedingData.h Library.h Library.cpp FastaLoader.h \
-	FastaLoader.cpp FastqLoader.h FastqLoader.cpp BubbleData.h \
-	BubbleTool.cpp BubbleTool.h BufferedData.cpp BufferedData.h \
-	Chooser.cpp ChooserData.h Chooser.h ColorSpaceDecoder.cpp \
-	ColorSpaceDecoder.h ColorSpaceLoader.cpp ColorSpaceLoader.h \
-	common_functions.cpp common_functions.h config.h \
-	CoverageDistribution.cpp CoverageDistribution.h \
+libRay_a_SOURCES = EarlyStoppingTechnology.h \
+	EarlyStoppingTechnology.cpp PendingRequest.h RingAllocator.cpp \
+	RingAllocator.h StaticVector.cpp StaticVector.h \
+	MessagesHandler.h MessagesHandler.cpp slave_modes.h \
+	master_modes.h mpi_tags.h SeedingData.h Library.h Library.cpp \
+	FastaLoader.h FastaLoader.cpp FastqLoader.h FastqLoader.cpp \
+	BubbleData.h BubbleTool.cpp BubbleTool.h BufferedData.cpp \
+	BufferedData.h Chooser.cpp ChooserData.h Chooser.h \
+	ColorSpaceDecoder.cpp ColorSpaceDecoder.h ColorSpaceLoader.cpp \
+	ColorSpaceLoader.h common_functions.cpp common_functions.h \
+	config.h CoverageDistribution.cpp CoverageDistribution.h \
 	DepthFirstSearchData.h Direction.cpp Direction.h \
 	DistributionData.cpp DistributionData.h EdgesExtractor.cpp \
 	EdgesExtractor.h ErrorSimulator.cpp ErrorSimulator.h \
@@ -409,6 +412,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoverageDistribution.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Direction.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DistributionData.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/EarlyStoppingTechnology.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/EdgesExtractor.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ErrorSimulator.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FastaLoader.Po@am__quote@

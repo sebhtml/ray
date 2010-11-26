@@ -370,6 +370,7 @@ SeedExtender*seedExtender,int*m_master_mode,bool*m_isFinalFusion
 	void call_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY(Message*message);
 	void call_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY(Message*message);
 	void call_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY(Message*message);
+	void call_TAG_ASK_IS_ASSEMBLED_REPLY_END(Message*message);
 
 	void processMessage(Message*message);
 	MessageProcessor();

@@ -562,10 +562,29 @@ void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED(Message*message){
 	#ifdef ASSERT
 	assert(node!=NULL);
 	#endif
-	bool isAssembled=node->getValue()->isAssembled();
-	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
-	message2[0]=isAssembled;
-	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_IS_ASSEMBLED_REPLY,rank);
+	vector<Direction> directions=node->getValue()->getDirections();
+
+	int i=0;
+
+	int maxSize=directions.size();
+	cout<<"source="<<source<<" self="<<rank<<" MessageProcessor::call_TAG_ASK_IS_ASSEMBLED directions="<<maxSize<<endl;
+
+	int periodIncrement=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE);
+	while(i<maxSize){
+		VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(MPI_BTL_SM_EAGER_LIMIT);
+		int j=0;
+		int p=0;
+		while((i+j)<maxSize && p<periodIncrement){
+			message2[p++]=directions[i+j].getWave();
+			message2[p++]=directions[i+j].getProgression();
+		}
+
+		Message aMessage(message2,p,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_IS_ASSEMBLED_REPLY,rank);
+		m_outbox->push_back(aMessage);
+		i+=periodIncrement;
+	}
+		
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_IS_ASSEMBLED_REPLY_END,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -584,11 +603,24 @@ void MessageProcessor::call_TAG_ASK_REVERSE_COMPLEMENT(Message*message){
 void MessageProcessor::call_TAG_REQUEST_VERTEX_POINTER(Message*message){
 }
 
+
+void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY_END(Message*message){
+	(*m_EXTENSION_VertexAssembled_received)=true;
+	(*m_EXTENSION_vertexIsAssembledResult)=seedExtender->getDirections()->size()>0;
+	cout<<"source="<<message->getSource()<<" self="<<rank<<" MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY_END directions="<<seedExtender->getDirections()->size()<<endl;
+}
+
 void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	(*m_EXTENSION_VertexAssembled_received)=true;
-	(*m_EXTENSION_vertexIsAssembledResult)=(bool)incoming[0];
+	int count=message->getCount();
+	for(int i=0;i<count;i+=2){
+		int wave=incoming[i+0];
+		int progression=incoming[i+1];
+		Direction a;
+		a.constructor(wave,progression);
+		seedExtender->getDirections()->push_back(a);
+	}
 }
 
 void MessageProcessor::call_TAG_MARK_AS_ASSEMBLED(Message*message){
@@ -1332,6 +1364,7 @@ MessageProcessor::MessageProcessor(){
 	m_methods[TAG_ASK_REVERSE_COMPLEMENT]=&MessageProcessor::call_TAG_ASK_REVERSE_COMPLEMENT;
 	m_methods[TAG_REQUEST_VERTEX_POINTER]=&MessageProcessor::call_TAG_REQUEST_VERTEX_POINTER;
 	m_methods[TAG_ASK_IS_ASSEMBLED_REPLY]=&MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY;
+	m_methods[TAG_ASK_IS_ASSEMBLED_REPLY_END]=&MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY_END;
 	m_methods[TAG_MARK_AS_ASSEMBLED]=&MessageProcessor::call_TAG_MARK_AS_ASSEMBLED;
 	m_methods[TAG_ASK_EXTENSION_DATA]=&MessageProcessor::call_TAG_ASK_EXTENSION_DATA;
 	m_methods[TAG_EXTENSION_DATA]=&MessageProcessor::call_TAG_EXTENSION_DATA;
