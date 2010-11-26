@@ -48,9 +48,10 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 	#ifdef SHOW_PROGRESS
 	if(*m_mode_send_vertices_sequence_id%100000==0 and *m_mode_send_vertices_sequence_id_position==0){
 		string reverse="";
-		if(*m_reverseComplementVertex==true)
+		if(*m_reverseComplementVertex==true){
 			reverse="(reverse complement) ";
-		cout<<"Rank "<<rank<<" is computing vertices "<<reverse<<""<<*m_mode_send_vertices_sequence_id+1<<"/"<<m_myReads->size()<<endl;
+		}
+		printf("Rank %i is computing vertices %s%i/%i\n",rank,reverse.c_str(),(int)*m_mode_send_vertices_sequence_id+1,(int)m_myReads->size());
 	}
 	#endif
 

@@ -83,7 +83,7 @@ void MessageProcessor::call_TAG_SEND_SEQUENCE(Message*message){
 		myRead->copy(NULL,buffer+currentPosition,&(*m_persistentAllocator),false); // no trimming
 		m_myReads->push_back(myRead);
 		if((*m_myReads).size()%100000==0){
-			cout<<"Rank "<<rank<<" has "<<(*m_myReads).size()<<" sequence reads"<<endl;
+			printf("Rank %i has %i sequence reads\n",rank,(int)(*m_myReads).size());
 		}
 		// move currentPosition after the first \0 encountered.
 		currentPosition+=(strlen(buffer+currentPosition)+1);

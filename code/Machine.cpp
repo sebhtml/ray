@@ -380,7 +380,7 @@ void Machine::start(){
 		cout<<"Rank "<<getRank()<<" welcomes you to the MPI_COMM_WORLD"<<endl;
 	}
 
-	cout<<"Rank "<<getRank()<<" is running as UNIX process "<<getpid()<<" on "<<serverName<<endl;
+	printf("Rank %i is running as UNIX process %i on %s\n",getRank(),getpid(),serverName);
 	m_alive=true;
 	m_welcomeStep=true;
 	m_loadSequenceStep=false;
