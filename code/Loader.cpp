@@ -112,6 +112,8 @@ int Loader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAl
 
 	#endif
 	
+	cout<<file<<": unknown extension, exiting. (see Ray --help for valid extensions)"<<endl;
+
 	return EXIT_FAILURE;
 }
 
