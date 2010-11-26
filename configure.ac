@@ -1,3 +1,5 @@
+AC_PREREQ(2.59)
+
 dnl Sébastien Boisvert
 dnl autoconf script for Ray
 
@@ -26,6 +28,12 @@ AC_CHECK_HEADERS(algorithm)
 AC_CHECK_HEADERS(cstring)
 AC_CHECK_HEADERS(cstdlib)
 AC_CHECK_HEADERS(stack)
+AC_TYPE_UINT8_T
+AC_TYPE_UINT16_T
+AC_TYPE_UINT32_T
+AC_TYPE_UINT64_T
+
+
 
 AC_CHECK_HEADERS(sys/time.h)
 AC_CHECK_HEADERS(time.h)
