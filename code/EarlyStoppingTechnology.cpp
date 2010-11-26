@@ -19,41 +19,68 @@
 
 */
 
-
 #include<set>
 #include<iostream>
 #include<EarlyStoppingTechnology.h>
 using namespace std;
 
 void EarlyStoppingTechnology::addDirections(vector<Direction>*directions){
-	cout<<"EarlyStoppingTechnology::addDirections m_selfWave="<<m_selfWave<<endl;
-	cout<<"CachedStoreSize="<<m_observations.size()<<endl;
-	// for each direction, add it if it is not there, and increment the observations
-	for(int i=0;i<(int)directions->size();i++){
-		cout<<directions->at(i).getWave()<<" "<<directions->at(i).getProgression()<<endl;
-	}
-	cout<<endl;
+	forwardTechnology(directions);
+	reverseTechnology(directions);
+}
+
+/*
+ *    --------------------------------------------------------------->
+ *                                          <-----------------------------------------------------------
+ */
+void EarlyStoppingTechnology::reverseTechnology(vector<Direction>*directions){ 
 	for(int i=0;i<(int)directions->size();i++){
 		int pathWave=directions->at(i).getWave();
 		int progression=directions->at(i).getProgression();
 
 		// must follow 
-		if(m_observations.count(pathWave)>0 && m_observations[pathWave][m_observations[pathWave].size()-1]!=progression-1){
-			cout<<"skipping last="<< m_observations[pathWave][m_observations[pathWave].size()-1]<<" but progression="<<progression<<" pathWave="<<pathWave<<endl;
+		if(m_reverseObservations.count(pathWave)>0 
+		&& ((m_reverseObservations[pathWave][m_reverseObservations[pathWave].size()-1]!=progression+1))){
 			continue;
 		}
 
-		m_observations[pathWave].push_back(progression);
-		cout<<"adding progression="<<progression<<" to pathWave="<<pathWave<<endl;
+		m_reverseObservations[pathWave].push_back(progression);
 
-		if((int)m_observations[pathWave].size()>=m_lengthThreshold && pathWave!=m_selfWave){
-			cout<<"checking... pathWaveSize="<<m_observations[pathWave].size()<<" pathWave="<<pathWave<<" selfWave="<<m_selfWave<<" selfWaveSize="<<m_observations[m_selfWave].size()<<endl;
-			int lastForSelf=m_observations[m_selfWave][m_observations[m_selfWave].size()-1];
-			int lastForOther=m_observations[pathWave][m_observations[pathWave].size()-1];
-			int distance=lastForOther-lastForSelf;
-			if(distance>m_distanceThreshold){
-				m_alarm=true;
-			}
+		if((int)m_reverseObservations[pathWave].size()>=m_reverseThreshold
+		&& pathWave > m_selfWave){
+			cout<<"Rank "<<m_rank<<": Ray Early-Stopping Technology was triggered, Case 3: Forward-Reverse."<<endl;
+			m_alarm=true;
+		}
+	}
+}
+
+/*
+ *
+ *   --------------------------------------------------------------------->
+ *   						--------------------------------------------->
+ *
+ */
+void EarlyStoppingTechnology::forwardTechnology(vector<Direction>*directions){
+	for(int i=0;i<(int)directions->size();i++){
+		int pathWave=directions->at(i).getWave();
+		int progression=directions->at(i).getProgression();
+
+		// must follow 
+		if(m_forwardObservations.count(pathWave)>0 
+		&& ((m_forwardObservations[pathWave][m_forwardObservations[pathWave].size()-1]!=progression-1))){
+			continue;
+		}
+
+		// must start at 0
+		if(m_forwardObservations.count(pathWave)==0 && progression!=0){
+			continue;
+		}
+
+		m_forwardObservations[pathWave].push_back(progression);
+
+		if((int)m_forwardObservations[pathWave].size()>=m_forwardThreshold){
+			cout<<"Rank "<<m_rank<<": Ray Early-Stopping Technology was triggered, Case 2: Forward-Forward ."<<endl;
+			m_alarm=true;
 		}
 	}
 }
@@ -63,16 +90,16 @@ bool EarlyStoppingTechnology::isAlarmed(){
 	// 1000 vertices.A
 	//
 	// current position is the last.
-	if(m_alarm){
-		cout<<"AH !"<<endl;
-	}
+	//return false;
 	return m_alarm;
 }
 
-void EarlyStoppingTechnology::constructor(int selfWave){
-	m_observations.clear();
+void EarlyStoppingTechnology::constructor(int selfWave,int rank){
+	m_rank=rank;
+	m_forwardObservations.clear();
+	m_reverseObservations.clear();
 	m_selfWave=selfWave;
-	m_lengthThreshold=500;
-	m_distanceThreshold=500;
+	m_forwardThreshold=3000; // overlap threshold is 1000
+	m_reverseThreshold=5000;
 	m_alarm=false;
 }

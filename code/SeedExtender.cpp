@@ -52,7 +52,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 	}
 	if(!ed->m_EXTENSION_initiated){
 		int waveId=ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+theRank;
-		m_earlyStoppingTechnology.constructor(waveId);
+		m_earlyStoppingTechnology.constructor(waveId,theRank);
 		ed->m_EXTENSION_initiated=true;
 		ed->m_EXTENSION_currentSeedIndex=0;
 		ed->m_EXTENSION_currentPosition=0;
@@ -95,14 +95,14 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 	if(!ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled){
 		checkIfCurrentVertexIsAssembled(ed,outbox,outboxAllocator,outgoingEdgeIndex,last_value,
 	currentVertex,theRank,vertexCoverageRequested,wordSize,colorSpaceMode,size,seeds);
-	}else if((ed->m_EXTENSION_vertexIsAssembledResult and ed->m_EXTENSION_currentPosition==0 and ed->m_EXTENSION_complementedSeed==false)
-		|| m_earlyStoppingTechnology.isAlarmed()){
+	}else if((ed->m_EXTENSION_vertexIsAssembledResult and ed->m_EXTENSION_currentPosition==0 and ed->m_EXTENSION_complementedSeed==false)){
+		cout<<"Rank "<<theRank<<": Ray Early-Stopping Technology was triggered, Case 1: seed is already processed at p=0."<<endl;
 		ed->m_EXTENSION_currentSeedIndex++;// skip the current one.
 		ed->m_EXTENSION_currentPosition=0;
 
 
 		int waveId=ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+theRank;
-		m_earlyStoppingTechnology.constructor(waveId);
+		m_earlyStoppingTechnology.constructor(waveId,theRank);
 
 		ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 		ed->m_EXTENSION_directVertexDone=false;
@@ -117,6 +117,10 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		ed->m_EXTENSION_reads_startingPositionOnContig.clear();
 		m_readsStrands.clear();
 		ed->m_EXTENSION_readsInRange.clear();
+	}else if(m_earlyStoppingTechnology.isAlarmed()){
+
+		storeExtensionAndGetNextOne(ed,theRank,seeds,currentVertex);
+
 	}else if(!ed->m_EXTENSION_markedCurrentVertexAsAssembled){
 		markCurrentVertexAsAssembled(currentVertex,outboxAllocator,outgoingEdgeIndex,outbox,
 size,theRank,ed,vertexCoverageRequested,vertexCoverageReceived,receivedVertexCoverage,
@@ -636,7 +640,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			}
 
 			int waveId=ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+theRank;
-			m_earlyStoppingTechnology.constructor(waveId);
+			m_earlyStoppingTechnology.constructor(waveId,theRank);
 
 			ed->m_EXTENSION_currentPosition=0;
 			ed->m_EXTENSION_currentSeed=complementedSeed;
@@ -650,36 +654,41 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			m_readsStrands.clear();
 			ed->m_EXTENSION_readsInRange.clear();
 		}else{
-			if(ed->m_EXTENSION_extension.size()>=100){
-				int theCurrentSize=ed->m_EXTENSION_extension.size();
-				cout<<"Rank "<<theRank<<" reached "<<theCurrentSize<<" vertices (completed)"<<endl;
-				ed->m_EXTENSION_contigs.push_back(ed->m_EXTENSION_extension);
-
-				int id=ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+theRank;
-				ed->m_EXTENSION_identifiers.push_back(id);
-			}
-			ed->m_EXTENSION_currentSeedIndex++;
-
-
-			int waveId=ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+theRank;
-			m_earlyStoppingTechnology.constructor(waveId);
-
-			ed->m_EXTENSION_currentPosition=0;
-			if(ed->m_EXTENSION_currentSeedIndex<(int)(*seeds).size()){
-				ed->m_EXTENSION_currentSeed=(*seeds)[ed->m_EXTENSION_currentSeedIndex];
-				(*currentVertex)=ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition];
-			}
-			ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
-			ed->m_EXTENSION_extension.clear();
-			ed->m_EXTENSION_reads_startingPositionOnContig.clear();
-			m_readsStrands.clear();
-			ed->m_EXTENSION_readsInRange.clear();
-			ed->m_EXTENSION_usedReads.clear();
-			ed->m_EXTENSION_directVertexDone=false;
-			ed->m_EXTENSION_complementedSeed=false;
-			ed->m_EXTENSION_VertexAssembled_requested=false;
+			storeExtensionAndGetNextOne(ed,theRank,seeds,currentVertex);
 		}
 	}
+}
+
+void SeedExtender::storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<vector<VERTEX_TYPE> >*seeds,
+u64*currentVertex){
+	if(ed->m_EXTENSION_extension.size()>=100){
+		int theCurrentSize=ed->m_EXTENSION_extension.size();
+		cout<<"Rank "<<theRank<<" reached "<<theCurrentSize<<" vertices (completed)"<<endl;
+		ed->m_EXTENSION_contigs.push_back(ed->m_EXTENSION_extension);
+
+		int id=ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+theRank;
+		ed->m_EXTENSION_identifiers.push_back(id);
+	}
+	ed->m_EXTENSION_currentSeedIndex++;
+
+
+	int waveId=ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+theRank;
+	m_earlyStoppingTechnology.constructor(waveId,theRank);
+
+	ed->m_EXTENSION_currentPosition=0;
+	if(ed->m_EXTENSION_currentSeedIndex<(int)(*seeds).size()){
+		ed->m_EXTENSION_currentSeed=(*seeds)[ed->m_EXTENSION_currentSeedIndex];
+		(*currentVertex)=ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition];
+	}
+	ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
+	ed->m_EXTENSION_extension.clear();
+	ed->m_EXTENSION_reads_startingPositionOnContig.clear();
+	m_readsStrands.clear();
+	ed->m_EXTENSION_readsInRange.clear();
+	ed->m_EXTENSION_usedReads.clear();
+	ed->m_EXTENSION_directVertexDone=false;
+	ed->m_EXTENSION_complementedSeed=false;
+	ed->m_EXTENSION_VertexAssembled_requested=false;
 }
 
 /*
@@ -831,7 +840,7 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			(*outbox).push_back(aMessage);
 			ed->m_EXTENSION_VertexAssembled_received=false;
 		}else if(ed->m_EXTENSION_VertexAssembled_received){
-			cout<<"Adding directions, pos="<<ed->m_EXTENSION_currentPosition<<endl;
+			//cout<<"Adding directions, pos="<<ed->m_EXTENSION_currentPosition<<endl;
 			m_earlyStoppingTechnology.addDirections(&m_receivedDirections);
 
 			ed->m_EXTENSION_reverseVertexDone=false;
@@ -849,6 +858,7 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 		}
 	}else if(!ed->m_EXTENSION_reverseVertexDone){
 		if(!ed->m_EXTENSION_VertexAssembled_requested){
+			m_receivedDirections.clear();
 			ed->m_EXTENSION_VertexAssembled_requested=true;
 			VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
 			message[0]=(VERTEX_TYPE)complementVertex((*currentVertex),wordSize,(*colorSpaceMode));
@@ -857,8 +867,7 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			(*outbox).push_back(aMessage);
 			ed->m_EXTENSION_VertexAssembled_received=false;
 		}else if(ed->m_EXTENSION_VertexAssembled_received){
-			// we don't need them
-			m_receivedDirections.clear();
+			m_earlyStoppingTechnology.addDirections(&m_receivedDirections);
 			ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
 			ed->m_EXTENSION_markedCurrentVertexAsAssembled=false;
 			ed->m_EXTENSION_directVertexDone=false;

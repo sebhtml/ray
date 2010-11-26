@@ -567,7 +567,7 @@ void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED(Message*message){
 	int i=0;
 
 	int maxSize=directions.size();
-	cout<<"source="<<source<<" self="<<rank<<" MessageProcessor::call_TAG_ASK_IS_ASSEMBLED directions="<<maxSize<<endl;
+	//cout<<"source="<<source<<" self="<<rank<<" MessageProcessor::call_TAG_ASK_IS_ASSEMBLED directions="<<maxSize<<endl;
 
 	int periodIncrement=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE);
 	while(i<maxSize){
@@ -577,8 +577,10 @@ void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED(Message*message){
 		while((i+j)<maxSize && p<periodIncrement){
 			message2[p++]=directions[i+j].getWave();
 			message2[p++]=directions[i+j].getProgression();
+			j++;
 		}
 
+		//cout<<"p="<<p<<endl;
 		Message aMessage(message2,p,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_IS_ASSEMBLED_REPLY,rank);
 		m_outbox->push_back(aMessage);
 		i+=periodIncrement;
@@ -607,7 +609,7 @@ void MessageProcessor::call_TAG_REQUEST_VERTEX_POINTER(Message*message){
 void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY_END(Message*message){
 	(*m_EXTENSION_VertexAssembled_received)=true;
 	(*m_EXTENSION_vertexIsAssembledResult)=seedExtender->getDirections()->size()>0;
-	cout<<"source="<<message->getSource()<<" self="<<rank<<" MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY_END directions="<<seedExtender->getDirections()->size()<<endl;
+	//cout<<"source="<<message->getSource()<<" self="<<rank<<" MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY_END directions="<<seedExtender->getDirections()->size()<<endl;
 }
 
 void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY(Message*message){

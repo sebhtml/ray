@@ -30,17 +30,22 @@ using namespace std;
 
 class EarlyStoppingTechnology{
 	bool m_alarm;
-
-	map<int,vector<int> > m_observations;
+	int m_rank;
+	map<int,vector<int> > m_forwardObservations;
+	map<int,vector<int> > m_reverseObservations;
 	int m_selfWave;
-	int m_distanceThreshold;
-	int m_lengthThreshold;
 
+	int m_forwardThreshold;
+	int m_reverseThreshold;
+
+	void forwardTechnology(vector<Direction>*directions);
+	void reverseTechnology(vector<Direction>*directions);
 public:
 	void addDirections(vector<Direction>*directions);
 	bool isAlarmed();
 	void clear();
-	void constructor(int selfWave);
+	void constructor(int selfWave,int rank);
+	
 };
 
 #endif

@@ -104,6 +104,8 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 		int minimumCoverage,bool*edgesReceived);
 
 	vector<Direction>*getDirections();
+
+	void storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<vector<VERTEX_TYPE> >*seeds,u64*currentVertex);
 };
 
 #endif
