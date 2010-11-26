@@ -1,4 +1,4 @@
-/software/mpich2-1.3/bin/mpirun -np 31 ~/Ray/trunk/code/Ray \
+/software/mpich2-1.3/bin/mpirun -prepend-rank -np 25 ~/Ray/trunk/code/Ray \
 -p /home/boiseb01/nuccore/200xStreptococcus-pneumoniae-R6.fasta_fragments_1.fasta \
    /home/boiseb01/nuccore/200xStreptococcus-pneumoniae-R6.fasta_fragments_2.fasta \
 -o strept-mpich2
