@@ -1,5 +1,10 @@
+= v. 1.2.0 =
+2010-12-XX
+
+
+
 = v. 1.0.0 =
-r4038 | 2010-11-25
+2010-11-25
 
 * Made a lots of changes to make Ray compliant with the standard MPI 2.2
 * Added master and slave modes.
@@ -89,7 +94,7 @@ see MessagesHandler.cpp !
 
 
 = v. 0.1.0 =
-r3770 | 2010-11-03 22:48:58 -0400
+2010-11-03 22:48:58 -0400
 
 * Moved some code from Machine.cpp to new files. (Ticket #116)
 * Improved the speed of the extension of seeds by reducing the number of messages sent. (Tickets #164 & #490)
@@ -120,7 +125,7 @@ Feature requested by Jordi Camps Puchades (Centre Nacional d'Anàlisi Genòmica/
 
 
 = v. 0.0.7 =
-r3372 | 2010-04-24 08:17:54 -0400
+2010-04-24 08:17:54 -0400
 
 * (Small) speed improvement in seed extension (trac #21)
 * Ray can now write to user-specified files -- Huge thanks to Matthew
@@ -143,7 +148,7 @@ University, AUSTRALIA) for noticing the issue (trac #129)
 
 
 = v. 0.0.6 =
-r3269 | 2010-04-10 08:38:09 -0400
+2010-04-10 08:38:09 -0400
 
 * 'make test' now performs unit tests (trac #83)
 * 'make simtools' compiles simulation tools (trac #43)
@@ -162,7 +167,7 @@ seqanswers.com)
 
 
 = v. 0.0.5 =
-r3171 | 2010-03-29 10:15:17 -0400
+2010-03-29 10:15:17 -0400
 
 * Ray now outputs assemblies in AMOS format (with -a), (trac #58)
 * Ray commands can be provided with a commands file (like in 0.0.3 and 0.0.4)
@@ -171,7 +176,7 @@ as well as with command-line arguments, (trac #94) and
 
 
 = v. 0.0.4 =
-r3132 | 2010-03-22 21:26:38 -0400
+2010-03-22 21:26:38 -0400
 
 * Fixed many bugs in Ray when k is lower than 25 (when k=21, in particular)
 (trac #88)
@@ -195,19 +200,19 @@ Ray now reuses allocated memory for ingoing and outgoing messages
 
 
 = v. 0.0.3 =
-r3074 | 2010-03-09 21:28:22 -0500
+2010-03-09 21:28:22 -0500
 
 * initial release
 
 
 = v. 0.0.2 =
-r2964 | 2010-02-19 17:27:27 -0500
+2010-02-19 17:27:27 -0500
 
 * nothing noteworthy to report
 
 
 = v. 0.0.1 =
-r2936 | 2010-02-10 15:14:40 -0500 
+2010-02-10 15:14:40 -0500 
 
 * codenamed Osiris
 
