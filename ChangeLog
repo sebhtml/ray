@@ -1,7 +1,8 @@
 = v. 1.2.0 =
 2010-12-XX
 
-
+* Added an error message for an invalid extension. Thanks to Jean-Francois
+Pombert (University of British Columbia) for the feature request.
 
 = v. 1.0.0 =
 2010-11-25
