@@ -86,6 +86,7 @@ Thanks to Élénie Godzaridis for the suggestion.
 see MessagesHandler.cpp !
 (Thanks to George Bosilca (University of Tennessee) for the suggestion !
 * Compiled and tested on architecture SPARC V9 (sparc64).
+Thanks to René Paradis for handing me the hardware.
 * Compiled and tested on architecture Intel Itanium (ia64).
 * Compiled and tested on architecture Intel64 (x86_64).
 * Compiled and tested on architecture AMD64 (x86_64).
