@@ -48,7 +48,7 @@ void EarlyStoppingTechnology::reverseTechnology(vector<Direction>*directions){
 
 		if((int)m_reverseObservations[pathWave].size()>=m_reverseThreshold
 		&& pathWave > m_selfWave){
-			cout<<"Rank "<<m_rank<<": Ray Early-Stopping Technology was triggered, Case 3: Forward-Reverse."<<endl;
+			//cout<<"Rank "<<m_rank<<": Ray Early-Stopping Technology was triggered, Case 3: Forward-Reverse."<<endl;
 			m_alarm=true;
 		}
 	}
@@ -79,7 +79,7 @@ void EarlyStoppingTechnology::forwardTechnology(vector<Direction>*directions){
 		m_forwardObservations[pathWave].push_back(progression);
 
 		if((int)m_forwardObservations[pathWave].size()>=m_forwardThreshold){
-			cout<<"Rank "<<m_rank<<": Ray Early-Stopping Technology was triggered, Case 2: Forward-Forward ."<<endl;
+			//cout<<"Rank "<<m_rank<<": Ray Early-Stopping Technology was triggered, Case 2: Forward-Forward ."<<endl;
 			m_alarm=true;
 		}
 	}
@@ -99,7 +99,7 @@ void EarlyStoppingTechnology::constructor(int selfWave,int rank){
 	m_forwardObservations.clear();
 	m_reverseObservations.clear();
 	m_selfWave=selfWave;
-	m_forwardThreshold=3000; // overlap threshold is 1000
-	m_reverseThreshold=5000;
+	m_forwardThreshold=1000000; // overlap threshold is 1000
+	m_reverseThreshold=1000000;
 	m_alarm=false;
 }

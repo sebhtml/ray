@@ -96,7 +96,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		checkIfCurrentVertexIsAssembled(ed,outbox,outboxAllocator,outgoingEdgeIndex,last_value,
 	currentVertex,theRank,vertexCoverageRequested,wordSize,colorSpaceMode,size,seeds);
 	}else if((ed->m_EXTENSION_vertexIsAssembledResult and ed->m_EXTENSION_currentPosition==0 and ed->m_EXTENSION_complementedSeed==false)){
-		cout<<"Rank "<<theRank<<": Ray Early-Stopping Technology was triggered, Case 1: seed is already processed at p=0."<<endl;
+		//cout<<"Rank "<<theRank<<": Ray Early-Stopping Technology was triggered, Case 1: seed is already processed at p=0."<<endl;
 		ed->m_EXTENSION_currentSeedIndex++;// skip the current one.
 		ed->m_EXTENSION_currentPosition=0;
 
@@ -632,7 +632,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 		// no choice possible...
 		// do it for the lulz
 		if(!ed->m_EXTENSION_complementedSeed){
-			cout<<"Rank "<<theRank<<": Switching to reverse complement."<<endl;
+			//cout<<"Rank "<<theRank<<": Switching to reverse complement."<<endl;
 			ed->m_EXTENSION_complementedSeed=true;
 			vector<VERTEX_TYPE> complementedSeed;
 			for(int i=ed->m_EXTENSION_extension.size()-1;i>=0;i--){
