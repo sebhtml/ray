@@ -63,7 +63,7 @@ class Loader{
 	FastqGzLoader m_fastqgz;
 	#endif
 
-	#if HAVE_LIBBZ2
+	#ifdef HAVE_LIBBZ2
 	FastqBz2Loader m_fastqbz2;
 	#endif
 
