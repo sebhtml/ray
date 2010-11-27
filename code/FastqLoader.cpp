@@ -22,7 +22,7 @@
 #include<FastqLoader.h>
 #include<fstream>
 
-int FastqLoader::load(string file,vector<Read>*reads,MyAllocator*seqMyAllocator){
+int FastqLoader::load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
 	ifstream f(file.c_str());
 	string id;
 	ostringstream sequence;
@@ -42,7 +42,7 @@ int FastqLoader::load(string file,vector<Read>*reads,MyAllocator*seqMyAllocator)
 			if(id!=""){
 				Read t;
 				t.copy(NULL,sequence.str().c_str(),seqMyAllocator,true);
-				reads->push_back(t);
+				reads->push_back(&t);
 			}
 			id=buffer;
 			sequence.str("");
@@ -60,7 +60,7 @@ int FastqLoader::load(string file,vector<Read>*reads,MyAllocator*seqMyAllocator)
 	}
 	Read t;
 	t.copy(NULL,sequence.str().c_str(),seqMyAllocator,true);
-	reads->push_back(t);
+	reads->push_back(&t);
 	f.close();
 	return EXIT_SUCCESS;
 }

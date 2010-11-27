@@ -28,6 +28,7 @@
 #include<MyAllocator.h>
 #include<Read.h>
 #include<fstream>
+#include<ArrayOfReads.h>
 #include<string>
 
 #ifdef HAVE_ZLIB
@@ -51,7 +52,7 @@ using namespace std;
  */
 class Loader{
 	int DISTRIBUTION_ALLOCATOR_CHUNK_SIZE;
-	vector<Read>m_reads;
+	ArrayOfReads m_reads;
 	MyAllocator m_allocator;
 
 	SffLoader m_sff;

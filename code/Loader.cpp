@@ -90,7 +90,7 @@ int Loader::load(string file){
 }
 
 Read*Loader::at(int i){
-	return &m_reads.at(i);
+	return m_reads.at(i);
 }
 
 int Loader::size(){

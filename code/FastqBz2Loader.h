@@ -25,13 +25,14 @@
 
 #include<string>
 #include<vector>
+#include<ArrayOfReads.h>
 #include<Read.h>
 #include<MyAllocator.h>
 using namespace std;
 
 class FastqBz2Loader{
 public:
-	int load(string file,vector<Read>*reads,MyAllocator*seqMyAllocator,int period);
+	int load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period);
 };
 
 #endif

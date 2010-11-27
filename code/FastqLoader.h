@@ -27,6 +27,7 @@
 #include<stdio.h>
 #include<string>
 #include<MyAllocator.h>
+#include<ArrayOfReads.h>
 #include<vector>
 #include<sstream>
 #include<Read.h>
@@ -35,7 +36,7 @@ using namespace std;
 
 class FastqLoader{
 public:
-	int load(string file,vector<Read>*reads,MyAllocator*seqMyAllocator);
+	int load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
 };
 
 #endif

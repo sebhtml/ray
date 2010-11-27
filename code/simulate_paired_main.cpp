@@ -39,7 +39,6 @@ int main(int argc,char**argv){
 		return 0;
 	}
 	ran_seed();
-	vector<Read*> sequences;
 	string genomeFile=argv[1];
 	int fragmentSize=atoi(argv[2]);
 	int readSize=atoi(argv[4]);

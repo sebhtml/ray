@@ -67,7 +67,7 @@ void EdgesExtractor::processOutgoingEdges(){
 			m_reverseComplementEdge=false;
 		}
 	}else{
-		char*readSequence=(*m_myReads)[(m_mode_send_edge_sequence_id)].getSeq();
+		char*readSequence=(*m_myReads)[(m_mode_send_edge_sequence_id)]->getSeq();
 		int len=strlen(readSequence);
 		char memory[100];
 		int lll=len-m_wordSize-1;
@@ -146,7 +146,7 @@ void EdgesExtractor::processIngoingEdges(){
 	}else{
 
 
-		char*readSequence=(*m_myReads)[m_mode_send_edge_sequence_id].getSeq();
+		char*readSequence=(*m_myReads)[m_mode_send_edge_sequence_id]->getSeq();
 		int len=strlen(readSequence);
 		char memory[100];
 		int lll=len-m_wordSize-1;

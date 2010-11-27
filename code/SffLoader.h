@@ -27,6 +27,7 @@
 #include<vector>
 #include<Read.h>
 #include<fstream>
+#include<ArrayOfReads.h>
 #include<MyAllocator.h>
 using namespace std;
 
@@ -39,7 +40,7 @@ class SffLoader{
 public:
 	SffLoader();
 	int getBases();
-	int load(string file,vector<Read>*reads,MyAllocator*seqMyAllocator);
+	int load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
 };
 
 #endif

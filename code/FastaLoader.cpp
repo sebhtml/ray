@@ -22,7 +22,7 @@
 #include<FastaLoader.h>
 #include<fstream>
 
-int FastaLoader::load(string file,vector<Read>*reads,MyAllocator*seqMyAllocator){
+int FastaLoader::load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
 	string id;
 	ostringstream sequence;
 	string buffer;
@@ -40,7 +40,7 @@ int FastaLoader::load(string file,vector<Read>*reads,MyAllocator*seqMyAllocator)
 
 				Read t;
 				t.copy(NULL,sequenceStr.c_str(),seqMyAllocator,true);
-				reads->push_back(t);
+				reads->push_back(&t);
 			}
 			id=buffer;
 			sequence.str("");
@@ -55,7 +55,7 @@ int FastaLoader::load(string file,vector<Read>*reads,MyAllocator*seqMyAllocator)
 	}
 	Read t;
 	t.copy(NULL,sequenceStr.c_str(),seqMyAllocator,true);
-	reads->push_back(t);
+	reads->push_back(&t);
 
 	f.close();
 	return EXIT_SUCCESS;

@@ -24,7 +24,7 @@
 #include<BzReader.h>
 
 // a very simple and compact fastq.gz reader
-int FastqBz2Loader::load(string file,vector<Read>*reads,MyAllocator*seqMyAllocator,int period){
+int FastqBz2Loader::load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period){
 	BzReader reader;
 	reader.open(file.c_str());
 	char buffer[4096];
@@ -33,7 +33,7 @@ int FastqBz2Loader::load(string file,vector<Read>*reads,MyAllocator*seqMyAllocat
 		if(rotatingVariable==1){
 			Read t;
 			t.copy(NULL,buffer,seqMyAllocator,true);
-			reads->push_back(t);
+			reads->push_back(&t);
 		}
 		rotatingVariable++;
 		if(rotatingVariable==period){

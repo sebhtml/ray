@@ -81,7 +81,7 @@ void MessageProcessor::call_TAG_SEND_SEQUENCE(Message*message){
 	while(buffer[currentPosition]!=ASCII_END_OF_TRANSMISSION){
 		Read myRead;
 		myRead.copy(NULL,buffer+currentPosition,&(*m_persistentAllocator),false); // no trimming
-		m_myReads->push_back(myRead);
+		m_myReads->push_back(&myRead);
 		if((*m_myReads).size()%100000==0){
 			printf("Rank %i has %i sequence reads\n",rank,(int)(*m_myReads).size());
 		}
@@ -762,7 +762,7 @@ void MessageProcessor::call_TAG_ASK_READ_VERTEX_AT_POSITION(Message*message){
 	int source=message->getSource();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
 	char strand=incoming[2];
-	VERTEX_TYPE vertex=(*m_myReads)[incoming[0]].getVertex(incoming[1],(*m_wordSize),strand,(*m_colorSpaceMode));
+	VERTEX_TYPE vertex=(*m_myReads)[incoming[0]]->getVertex(incoming[1],(*m_wordSize),strand,(*m_colorSpaceMode));
 	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
 	message2[0]=vertex;
 	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_READ_VERTEX_AT_POSITION_REPLY,rank);
@@ -779,7 +779,7 @@ void MessageProcessor::call_TAG_ASK_READ_LENGTH(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	int length=(*m_myReads)[incoming[0]].length();
+	int length=(*m_myReads)[incoming[0]]->length();
 	
 	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
 	message2[0]=length;
@@ -972,7 +972,7 @@ void MessageProcessor::call_TAG_INDEX_PAIRED_SEQUENCE(Message*message){
 		assert(currentReadId<(int)m_myReads->size());
 		#endif
 
-		(*m_myReads)[currentReadId].setPairedRead(t);
+		(*m_myReads)[currentReadId]->setPairedRead(t);
 	}
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_INDEX_PAIRED_SEQUENCE_REPLY,rank);
 	m_outbox->push_back(aMessage);
@@ -987,7 +987,7 @@ void MessageProcessor::call_TAG_HAS_PAIRED_READ(Message*message){
 	#ifdef ASSERT
 	assert(index<(int)m_myReads->size());
 	#endif
-	message2[0]=(*m_myReads)[index].hasPairedRead();
+	message2[0]=(*m_myReads)[index]->hasPairedRead();
 	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,TAG_HAS_PAIRED_READ_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
@@ -1007,7 +1007,7 @@ void MessageProcessor::call_TAG_GET_PAIRED_READ(Message*message){
 	#ifdef ASSERT
 	assert(index<(int)m_myReads->size());
 	#endif
-	PairedRead*t=(*m_myReads)[index].getPairedRead();
+	PairedRead*t=(*m_myReads)[index]->getPairedRead();
 	PairedRead dummy;
 	dummy.constructor(0,0,0,0,0);
 	if(t==NULL){
@@ -1251,7 +1251,7 @@ void MessageProcessor::call_TAG_UPDATE_LIBRARY_INFORMATION(Message*message){
 		#ifdef ASSERT
 		assert((*m_myReads)[incoming[i+0]]->hasPairedRead());
 		#endif
-		(*m_myReads)[incoming[i+0]].getPairedRead()->updateLibrary(incoming[i+1],incoming[i+2]);
+		(*m_myReads)[incoming[i+0]]->getPairedRead()->updateLibrary(incoming[i+1],incoming[i+2]);
 	}
 
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_UPDATE_LIBRARY_INFORMATION_REPLY,rank);
@@ -1271,9 +1271,9 @@ void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE(Message*message){
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
 	int index=incoming[0];
 	#ifdef ASSERT
-	assert(index<(int)m_myReads.size());
+	assert(index<(int)m_myReads->size());
 	#endif
-	PairedRead*t=(*m_myReads)[index].getPairedRead();
+	PairedRead*t=(*m_myReads)[index]->getPairedRead();
 	PairedRead dummy;
 	dummy.constructor(0,0,0,0,0);
 	if(t==NULL){
@@ -1282,7 +1282,7 @@ void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE(Message*message){
 	#ifdef ASSERT
 	assert(t!=NULL);
 	#endif
-	char*seq=m_myReads->at(index).getSeq();
+	char*seq=m_myReads->at(index)->getSeq();
 
 	int beforeRounding=5*sizeof(VERTEX_TYPE)+strlen(seq)+1;
 	int toAllocate=roundNumber(beforeRounding,8);
@@ -1462,7 +1462,7 @@ SequencesLoader*sequencesLoader,ExtensionData*ed,
 			int*m_minimumCoverage,
 			int*m_seedCoverage,
 			int*m_peakCoverage,
-			vector<Read>*m_myReads,
+			ArrayOfReads*m_myReads,
 			bool*m_EXTENSION_currentRankIsDone,
 	vector<vector<VERTEX_TYPE> >*m_FINISH_newFusions,
 		int size,

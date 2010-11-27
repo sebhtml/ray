@@ -26,6 +26,7 @@
 #include<RingAllocator.h>
 #include<Library.h>
 #include<OpenAssemblerChooser.h>
+#include<ArrayOfReads.h>
 #include<Message.h>
 #include<vector>
 #include<SplayTree.h>
@@ -82,7 +83,7 @@ class MessageProcessor{
 	int*m_minimumCoverage;
 	int*m_seedCoverage;
 	int*m_peakCoverage;
-	vector<Read>*m_myReads;
+	ArrayOfReads*m_myReads;
 	bool*m_EXTENSION_currentRankIsDone;
 	vector<vector<VERTEX_TYPE> >*m_FINISH_newFusions;
 	int size;
@@ -179,7 +180,7 @@ ExtensionData*ed,
 			int*m_minimumCoverage,
 			int*m_seedCoverage,
 			int*m_peakCoverage,
-			vector<Read>*m_myReads,
+			ArrayOfReads*m_myReads,
 			bool*m_EXTENSION_currentRankIsDone,
 	vector<vector<VERTEX_TYPE> >*m_FINISH_newFusions,
 		int size,

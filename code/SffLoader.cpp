@@ -67,7 +67,7 @@ void invert64(VERTEX_TYPE*c){
 // page 445-448
 // or 
 // http://blog.malde.org/index.php/2008/11/14/454-sequencing-and-parsing-the-sff-binary-format/
-int SffLoader::load(string file,vector<Read>*reads,MyAllocator*seqMyAllocator){
+int SffLoader::load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
 	uint32_t magic_number;
 	uint32_t version;
 	VERTEX_TYPE index_offset;
@@ -182,7 +182,7 @@ int SffLoader::load(string file,vector<Read>*reads,MyAllocator*seqMyAllocator){
 		}
 		Read read;
 		read.copy(Name,sequence.substr(first-1,last-first+1).c_str(),seqMyAllocator,true);
-		reads->push_back(read);
+		reads->push_back(&read);
 		m_bases+=strlen(read.getSeq());
 		__Free(Name);
 		__Free(Bases);

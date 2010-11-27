@@ -24,6 +24,7 @@
 #ifndef _FastaLoader
 #define _FastaLoader
 
+#include<ArrayOfReads.h>
 #include<stdio.h>
 #include<string>
 #include<MyAllocator.h>
@@ -35,7 +36,7 @@ using namespace std;
 
 class FastaLoader{
 public:
-	int load(string file,vector<Read>*reads,MyAllocator*seqMyAllocator);
+	int load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
 };
 
 #endif

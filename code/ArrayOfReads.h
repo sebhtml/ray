@@ -19,24 +19,23 @@
 
 */
 
+#ifndef _ArrayOfReads
+#define _ArrayOfReads
 
-#ifndef _ColorSpaceLoader
-#define _ColorSpaceLoader
-
-#include<string>
-#include<vector>
-#include<ArrayOfReads.h>
-#include<MyAllocator.h>
-#include<ColorSpaceDecoder.h>
 #include<Read.h>
-using namespace std;
 
-class ColorSpaceLoader{
-	ColorSpaceDecoder m_decoder;
+class ArrayOfReads{
+	Read*m_array;
+	int m_maxSize;
+	int m_elements;
+	int m_allocationPeriod;
 public:
-	ColorSpaceLoader();
-	int load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
+	void push_back(Read*a);
+	Read*at(int i);
+	Read*operator[](int i);
+	int size();
+	void clear();
+	ArrayOfReads();
 };
-
 
 #endif

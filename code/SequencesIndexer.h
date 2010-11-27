@@ -26,6 +26,7 @@
 #include<Message.h>
 #include<StaticVector.h>
 #include<vector>
+#include<ArrayOfReads.h>
 #include<MyAllocator.h>
 #include<RingAllocator.h>
 #include<Read.h>
@@ -37,7 +38,7 @@ class SequencesIndexer{
 
 public:
 	void attachReads(
-vector<Read>*m_myReads,
+ArrayOfReads*m_myReads,
 				RingAllocator*m_outboxAllocator,
 				StaticVector*m_outbox,
 				int*m_mode,

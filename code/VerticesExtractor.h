@@ -25,6 +25,7 @@
 #include<StaticVector.h>
 #include<vector>
 #include<common_functions.h>
+#include<ArrayOfReads.h>
 #include<Message.h>
 #include<RingAllocator.h>
 #include<Read.h>
@@ -36,7 +37,7 @@ class VerticesExtractor{
 public:
 	VerticesExtractor();
 	void process(int*m_mode_send_vertices_sequence_id,
-				vector<Read>*m_myReads,
+				ArrayOfReads*m_myReads,
 				bool*m_reverseComplementVertex,
 				int*m_mode_send_vertices_sequence_id_position,
 				int rank,

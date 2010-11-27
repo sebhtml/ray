@@ -68,16 +68,17 @@ ARFLAGS = cru
 libRay_a_AR = $(AR) $(ARFLAGS)
 libRay_a_LIBADD =
 am__libRay_a_SOURCES_DIST = EarlyStoppingTechnology.h \
-	EarlyStoppingTechnology.cpp PendingRequest.h RingAllocator.cpp \
-	RingAllocator.h StaticVector.cpp StaticVector.h \
-	MessagesHandler.h MessagesHandler.cpp slave_modes.h \
-	master_modes.h mpi_tags.h SeedingData.h Library.h Library.cpp \
-	FastaLoader.h FastaLoader.cpp FastqLoader.h FastqLoader.cpp \
-	BubbleData.h BubbleTool.cpp BubbleTool.h BufferedData.cpp \
-	BufferedData.h Chooser.cpp ChooserData.h Chooser.h \
-	ColorSpaceDecoder.cpp ColorSpaceDecoder.h ColorSpaceLoader.cpp \
-	ColorSpaceLoader.h common_functions.cpp common_functions.h \
-	config.h CoverageDistribution.cpp CoverageDistribution.h \
+	EarlyStoppingTechnology.cpp ArrayOfReads.h ArrayOfReads.cpp \
+	PendingRequest.h RingAllocator.cpp RingAllocator.h \
+	StaticVector.cpp StaticVector.h MessagesHandler.h \
+	MessagesHandler.cpp slave_modes.h master_modes.h mpi_tags.h \
+	SeedingData.h Library.h Library.cpp FastaLoader.h \
+	FastaLoader.cpp FastqLoader.h FastqLoader.cpp BubbleData.h \
+	BubbleTool.cpp BubbleTool.h BufferedData.cpp BufferedData.h \
+	Chooser.cpp ChooserData.h Chooser.h ColorSpaceDecoder.cpp \
+	ColorSpaceDecoder.h ColorSpaceLoader.cpp ColorSpaceLoader.h \
+	common_functions.cpp common_functions.h config.h \
+	CoverageDistribution.cpp CoverageDistribution.h \
 	DepthFirstSearchData.h Direction.cpp Direction.h \
 	DistributionData.cpp DistributionData.h EdgesExtractor.cpp \
 	EdgesExtractor.h ErrorSimulator.cpp ErrorSimulator.h \
@@ -100,9 +101,9 @@ am__libRay_a_SOURCES_DIST = EarlyStoppingTechnology.h \
 @HAVE_BZ2_TRUE@am__objects_2 = FastqBz2Loader.$(OBJEXT) \
 @HAVE_BZ2_TRUE@	BzReader.$(OBJEXT)
 am_libRay_a_OBJECTS = EarlyStoppingTechnology.$(OBJEXT) \
-	RingAllocator.$(OBJEXT) StaticVector.$(OBJEXT) \
-	MessagesHandler.$(OBJEXT) Library.$(OBJEXT) \
-	FastaLoader.$(OBJEXT) FastqLoader.$(OBJEXT) \
+	ArrayOfReads.$(OBJEXT) RingAllocator.$(OBJEXT) \
+	StaticVector.$(OBJEXT) MessagesHandler.$(OBJEXT) \
+	Library.$(OBJEXT) FastaLoader.$(OBJEXT) FastqLoader.$(OBJEXT) \
 	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
@@ -252,16 +253,17 @@ AM_CXXFLAGS = -O3 -Wall
 LDADD = ""
 noinst_LIBRARIES = libRay.a
 libRay_a_SOURCES = EarlyStoppingTechnology.h \
-	EarlyStoppingTechnology.cpp PendingRequest.h RingAllocator.cpp \
-	RingAllocator.h StaticVector.cpp StaticVector.h \
-	MessagesHandler.h MessagesHandler.cpp slave_modes.h \
-	master_modes.h mpi_tags.h SeedingData.h Library.h Library.cpp \
-	FastaLoader.h FastaLoader.cpp FastqLoader.h FastqLoader.cpp \
-	BubbleData.h BubbleTool.cpp BubbleTool.h BufferedData.cpp \
-	BufferedData.h Chooser.cpp ChooserData.h Chooser.h \
-	ColorSpaceDecoder.cpp ColorSpaceDecoder.h ColorSpaceLoader.cpp \
-	ColorSpaceLoader.h common_functions.cpp common_functions.h \
-	config.h CoverageDistribution.cpp CoverageDistribution.h \
+	EarlyStoppingTechnology.cpp ArrayOfReads.h ArrayOfReads.cpp \
+	PendingRequest.h RingAllocator.cpp RingAllocator.h \
+	StaticVector.cpp StaticVector.h MessagesHandler.h \
+	MessagesHandler.cpp slave_modes.h master_modes.h mpi_tags.h \
+	SeedingData.h Library.h Library.cpp FastaLoader.h \
+	FastaLoader.cpp FastqLoader.h FastqLoader.cpp BubbleData.h \
+	BubbleTool.cpp BubbleTool.h BufferedData.cpp BufferedData.h \
+	Chooser.cpp ChooserData.h Chooser.h ColorSpaceDecoder.cpp \
+	ColorSpaceDecoder.h ColorSpaceLoader.cpp ColorSpaceLoader.h \
+	common_functions.cpp common_functions.h config.h \
+	CoverageDistribution.cpp CoverageDistribution.h \
 	DepthFirstSearchData.h Direction.cpp Direction.h \
 	DistributionData.cpp DistributionData.h EdgesExtractor.cpp \
 	EdgesExtractor.h ErrorSimulator.cpp ErrorSimulator.h \
@@ -403,6 +405,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ArrayOfReads.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/BubbleTool.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/BufferedData.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/BzReader.Po@am__quote@

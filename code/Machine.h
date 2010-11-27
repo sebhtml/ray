@@ -27,6 +27,7 @@
 #include<common_functions.h>
 #include<MyForest.h>
 #include<EdgesExtractor.h>
+#include<ArrayOfReads.h>
 #include<StaticVector.h>
 #include<SeedingData.h>
 #include<map>
@@ -175,7 +176,6 @@ class Machine{
 	string m_VERSION;
 	bool m_mode_sendDistribution;
 
-	vector<MPI_Request> m_pendingMpiRequest;
 	Parameters m_parameters;
 	int m_numberOfMachinesDoneSendingEdges;
 	MyForest m_subgraph;
@@ -200,7 +200,7 @@ class Machine{
 	MyAllocator m_directionsAllocator;
 
 
-	vector<Read> m_myReads;
+	ArrayOfReads m_myReads;
 
 	bool m_mode_send_vertices;
 	int m_mode_send_vertices_sequence_id;

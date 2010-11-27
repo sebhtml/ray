@@ -30,7 +30,7 @@
 #include<DistributionData.h>
 
 void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
-				vector<Read>*m_myReads,
+				ArrayOfReads*m_myReads,
 				bool*m_reverseComplementVertex,
 				int*m_mode_send_vertices_sequence_id_position,
 				int rank,
@@ -75,7 +75,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			printf("Rank %i is computing vertices (reverse complement) %i/%i (completed)\n",rank,(int)*m_mode_send_vertices_sequence_id,(int)m_myReads->size());
 		}
 	}else{
-		char*readSequence=(*m_myReads)[(*m_mode_send_vertices_sequence_id)].getSeq();
+		char*readSequence=(*m_myReads)[(*m_mode_send_vertices_sequence_id)]->getSeq();
 		int len=strlen(readSequence);
 		char memory[100];
 		int lll=len-m_wordSize;

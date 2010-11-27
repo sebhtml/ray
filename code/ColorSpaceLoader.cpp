@@ -36,7 +36,7 @@ using namespace std;
 ColorSpaceLoader::ColorSpaceLoader(){
 }
 
-int ColorSpaceLoader::load(string file,vector<Read>*reads,MyAllocator*seqMyAllocator){
+int ColorSpaceLoader::load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
 	ifstream f(file.c_str());
 	char bufferForLine[1024];
 	int i=0;
@@ -60,7 +60,7 @@ int ColorSpaceLoader::load(string file,vector<Read>*reads,MyAllocator*seqMyAlloc
 			}
 			Read t;
 			t.copy(NULL,bufferForLine+2,seqMyAllocator,true);// remove the leading T & first color
-			reads->push_back(t);
+			reads->push_back(&t);
 			i++;
 		}
 	}
