@@ -885,7 +885,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				}
 				int theCurrentSize=ed->m_EXTENSION_extension.size();
 				if(theCurrentSize%10000==0){
-					printf("Rank %i reached %i vertices (completed)\n",theRank,theCurrentSize);
+					printf("Rank %i reached %i vertices\n",theRank,theCurrentSize);
 				}
 				ed->m_EXTENSION_extension.push_back((*currentVertex));
 				ed->m_currentCoverage=(*receivedVertexCoverage);

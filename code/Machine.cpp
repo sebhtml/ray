@@ -1533,6 +1533,10 @@ void Machine::call_MODE_START_SEEDING(){
 					// if both seeds are on the same rank
 					// dump the reverse and keep the forward
 
+					m_seedingData->m_SEEDING_seeds.push_back(m_seedingData->m_SEEDING_seed);
+		/*
+ * 		this is now working:
+ *
 					if(aRank==bRank){
 						if(m_eliminatedSeeds.count(firstVertex)==0 && m_eliminatedSeeds.count(lastVertexReverse)==0){
 							m_eliminatedSeeds.insert(lastVertexReverse);
@@ -1545,6 +1549,7 @@ void Machine::call_MODE_START_SEEDING(){
 					}else if(((aRank+bRank)%2==1 && aRank>bRank)){
 						m_seedingData->m_SEEDING_seeds.push_back(m_seedingData->m_SEEDING_seed);
 					}
+		*/
 				}
 			}else{
 				m_seedingData->m_SEEDING_seed.push_back(m_seedingData->m_SEEDING_currentVertex);

@@ -90,7 +90,7 @@ bool EarlyStoppingTechnology::isAlarmed(){
 	// 1000 vertices.A
 	//
 	// current position is the last.
-	//return false;
+	return false;
 	return m_alarm;
 }
 
