@@ -29,13 +29,7 @@ ArrayOfReads::ArrayOfReads(){
 
 void ArrayOfReads::push_back(Read*a){
 	if(m_array==NULL){
-/*
- * irb(main):021:0> (2**22)*16/1024/1024
- * => 64
- *
- * sizeof(Read)=16
- */
-		m_allocationPeriod=4194304;// 128 MB
+		m_allocationPeriod=100000;
 		m_maxSize=m_allocationPeriod;
 		m_elements=0;
 		m_array=(Read*)malloc(m_maxSize*sizeof(Read));

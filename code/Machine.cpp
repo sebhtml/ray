@@ -624,6 +624,15 @@ void Machine::finishFusions(){
 			m_Machine_getPaths_INITIALIZED=false;
 		}
 	}else if(!m_checkedValidity){
+		done=true;
+		vector<Direction> directions1=m_FINISH_pathsForPosition[m_FINISH_pathsForPosition.size()-1];
+		vector<Direction> directions2=m_FINISH_pathsForPosition[m_FINISH_pathsForPosition.size()-overlapMinimumLength];
+
+		// no hits are possible.
+		if(directions1.size()==0 || directions2.size()==0){
+			m_checkedValidity=true;
+		}else{
+
 		// basically, directions1 contains the paths at a particular vertex in the path
 		// directions2 contains the paths at another vertex in the path
 		// both vertices are distanced by overlapMinimumLength, or so
@@ -632,57 +641,55 @@ void Machine::finishFusions(){
 		// with the property that the difference of progressions are exactly overlapMinimumLength (progressions
 		// are simply positions of these vertices on another path.)
 		// 
-		int hits=0;
 
-		done=true;
-		vector<Direction> directions1=m_FINISH_pathsForPosition[m_FINISH_pathsForPosition.size()-1];
-		vector<Direction> directions2=m_FINISH_pathsForPosition[m_FINISH_pathsForPosition.size()-overlapMinimumLength];
-
-		map<int,vector<int> > indexOnDirection2;
+			int hits=0;
+			map<int,vector<int> > indexOnDirection2;
 		
-		// index the index for each wave
-		for(int j=0;j<(int)directions2.size();j++){
-			int waveId=directions2[j].getWave();
-			if(indexOnDirection2.count(waveId)==0){
-				vector<int> emptyVector;
-				indexOnDirection2[waveId]=emptyVector;
-			}
-			indexOnDirection2[waveId].push_back(j);
-		}
+			cout<<"Rank "<<getRank()<<" directions1="<<directions1.size()<<" directions2="<<directions2.size()<<endl;
 
-		// find all hits
-		//
-		for(int i=0;i<(int)directions1.size();i++){
-			int wave1=directions1[i].getWave();
-			if(indexOnDirection2.count(wave1)==0){
-				continue;
+			// index the index for each wave
+			for(int j=0;j<(int)directions2.size();j++){
+				int waveId=directions2[j].getWave();
+				if(indexOnDirection2.count(waveId)==0){
+					vector<int> emptyVector;
+					indexOnDirection2[waveId]=emptyVector;
+				}
+				indexOnDirection2[waveId].push_back(j);
 			}
-			vector<int> searchResults=indexOnDirection2[wave1];
-			int progression1=directions1[i].getProgression();
-			for(int j=0;j<(int)searchResults.size();j++){
-				int index2=searchResults[j];
-				int otherProgression=directions2[index2].getProgression();
-				if(progression1-otherProgression+1==overlapMinimumLength){
-					// this is 
-					done=false;
-					hits++;
-					m_selectedPath=wave1;
-					m_selectedPosition=progression1;
+	
+			// find all hits
+			//
+			for(int i=0;i<(int)directions1.size();i++){
+				int wave1=directions1[i].getWave();
+				if(indexOnDirection2.count(wave1)==0){
+					continue;
+				}
+				vector<int> searchResults=indexOnDirection2[wave1];
+				int progression1=directions1[i].getProgression();
+				for(int j=0;j<(int)searchResults.size();j++){
+					int index2=searchResults[j];
+					int otherProgression=directions2[index2].getProgression();
+					if(progression1-otherProgression+1==overlapMinimumLength){
+						// this is 
+						done=false;
+						hits++;
+						m_selectedPath=wave1;
+						m_selectedPosition=progression1;
+					}
 				}
 			}
+
+			indexOnDirection2.clear();
+	
+			/**
+ 	*		if there is more than one hit, they must be repeated regions. (?)
+ 	*
+ 	*/
+			if(hits>1){// we don't support that right now.
+				done=true;
+			}	
+			m_checkedValidity=true;
 		}
-
-		indexOnDirection2.clear();
-
-		/**
- *		if there is more than one hit, they must be repeated regions. (?)
- *
- */
-		if(hits>1){// we don't support that right now.
-			done=true;
-		}
-		m_checkedValidity=true;
-
 	}else{
 		// check if it is there for at least overlapMinimumLength
 		int pathId=m_selectedPath;

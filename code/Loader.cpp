@@ -32,10 +32,10 @@ using namespace std;
 
 Loader::Loader(){
 	DISTRIBUTION_ALLOCATOR_CHUNK_SIZE=300000000;
-	m_allocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
 }
 
 int Loader::load(string file){
+	m_allocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
 	ifstream f(file.c_str());
 	bool exists=f;
 	f.close();
@@ -99,4 +99,5 @@ int Loader::size(){
 
 void Loader::clear(){
 	m_reads.clear();
+	m_allocator.clear();
 }
