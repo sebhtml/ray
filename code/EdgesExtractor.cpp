@@ -41,9 +41,10 @@ void EdgesExtractor::processOutgoingEdges(){
 	#ifdef SHOW_PROGRESS
 	if((m_mode_send_edge_sequence_id)%100000==0 and (m_mode_send_edge_sequence_id_position)==0){
 		string strand="";
-		if(m_reverseComplementEdge)
+		if(m_reverseComplementEdge){
 			strand="(reverse complement) ";
-		cout<<"Rank "<<getRank<<" is adding outgoing edges "<<strand<<""<<(m_mode_send_edge_sequence_id)+1<<"/"<<m_myReads->size()<<endl;
+		}
+		printf("Rank %i is adding outgoing edges %s%i/%i\n",getRank,strand.c_str(),(int)(m_mode_send_edge_sequence_id)+1,(int)m_myReads->size());
 	}
 	#endif
 

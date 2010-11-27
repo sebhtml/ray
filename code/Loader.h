@@ -59,7 +59,7 @@ class Loader{
 	FastaLoader m_fasta;
 	FastqLoader m_fastq;	
 
-	#ifdef HAVE_ZLIB_H
+	#ifdef HAVE_ZLIB
 	FastqGzLoader m_fastqgz;
 	#endif
 
