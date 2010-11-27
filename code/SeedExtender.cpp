@@ -41,9 +41,8 @@ int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,vector<VERTEX_TYPE
 ChooserData*cd,BubbleData*bubbleData,DepthFirstSearchData*dfsData,
 int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 	if((*seeds).size()==0){
-		#ifdef SHOW_PROGRESS
-		cout<<"Rank "<<theRank<<" is extending seeds "<<(*seeds).size()<<"/"<<(*seeds).size()<<" (completed)"<<endl;
-		#endif
+
+		printf("Rank %i is extending seeds %i/%i (completed)\n",theRank,(int)(*seeds).size(),(int)(*seeds).size());
 		ed->m_mode_EXTENSION=false;
 		(*m_mode)=MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_IS_DONE,theRank);
@@ -67,7 +66,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		m_readsStrands.clear();
 		ed->m_EXTENSION_readsInRange.clear();
 	}else if(ed->m_EXTENSION_currentSeedIndex==(int)(*seeds).size()){
-		cout<<"Rank "<<theRank<<" is extending seeds "<<(*seeds).size()<<"/"<<(*seeds).size()<<" (completed)"<<endl;
+		printf("Rank %i is extending seeds %i/%i (completed)\n",theRank,(int)(*seeds).size(),(int)(*seeds).size());
 		ed->m_mode_EXTENSION=false;
 		(*m_mode)=MODE_DO_NOTHING;
 	
@@ -77,11 +76,9 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 			fusionData->m_FUSION_identifier_map[id]=i;
 		}
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_IS_DONE,theRank);
-		(*outbox).push_back(aMessage);
+		outbox->push_back(aMessage);
 		return;
 	}
-
-	
 
 	// algorithms here.
 	// if the current vertex is assembled or if its reverse complement is assembled, return
@@ -99,7 +96,6 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		//cout<<"Rank "<<theRank<<": Ray Early-Stopping Technology was triggered, Case 1: seed is already processed at p=0."<<endl;
 		ed->m_EXTENSION_currentSeedIndex++;// skip the current one.
 		ed->m_EXTENSION_currentPosition=0;
-
 
 		int waveId=ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+theRank;
 		m_earlyStoppingTechnology.constructor(waveId,theRank);
@@ -185,7 +181,6 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 			ed->m_EXTENSION_readLength_done=false;
 			ed->m_EXTENSION_readPositionsForVertices.clear();
 			ed->m_EXTENSION_pairedReadPositionsForVertices.clear();
-			
 
 			ed->m_EXTENSION_edgeIterator=0;
 			ed->m_EXTENSION_hasPairedReadRequested=false;
@@ -203,11 +198,11 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 			(*chooser).clear(cd->m_CHOOSER_theSums,4);
 
 			ed->m_enumerateChoices_outgoingEdges=(*receivedOutgoingEdges);
-			
 
 			// nothing to trim...
-			if(ed->m_enumerateChoices_outgoingEdges.size()<=1)
+			if(ed->m_enumerateChoices_outgoingEdges.size()<=1){
 				return;
+			}
 
 			// avoid unecessary machine instructions
 			if(ed->m_EXTENSION_currentPosition<(int)ed->m_EXTENSION_currentSeed.size()){
@@ -220,15 +215,11 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 			for(int i=0;i<(int)(*receivedOutgoingEdges).size();i++){
 				int coverage=ed->m_EXTENSION_coverages[i];
 				VERTEX_TYPE aVertex=(*receivedOutgoingEdges)[i];
-				#ifdef SHOW_PROGRESS
-				#endif
 				if(coverage>=_MINIMUM_COVERAGE){
 					filteredCoverages.push_back(coverage);
 					filteredVertices.push_back(aVertex);
 				}
 			}
-			#ifdef SHOW_PROGRESS
-			#endif
 			#ifdef SHOW_PROGRESS_DEBUG
 			if(filteredCoverages.size()==0)
 				cout<<"Now Zero"<<endl;
@@ -274,7 +265,6 @@ if(distance>cd->m_CHOOSER_theMaxs[ed->m_EXTENSION_edgeIterator])\
 	cd->m_CHOOSER_theMaxs[ed->m_EXTENSION_edgeIterator]=distance;\
 cd->m_CHOOSER_theNumbers[ed->m_EXTENSION_edgeIterator]++;\
 cd->m_CHOOSER_theSums[ed->m_EXTENSION_edgeIterator]+=distance;
-
 
 /**
  *
@@ -350,7 +340,6 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 			// and cumulate the results in
 			// ed->m_EXTENSION_readPositions, which is a map<int,vector<int> > if one of the vertices match
 			if(ed->m_EXTENSION_readIterator!=ed->m_EXTENSION_readsInRange.end()){
-
 
 				// we received the vertex for that read,
 				// now check if it matches one of 
@@ -581,7 +570,6 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 				if(dfsData->m_doChoice_tips_newEdges.size()==1 and ed->m_EXTENSION_readsInRange.size()>0 
 		and ed->m_EXTENSION_readPositionsForVertices[dfsData->m_doChoice_tips_newEdges[0]].size()>0
 ){
-
 					// tip watchdog!
 					// the watchdog watches Ray to be sure he is up to the task!
 					TipWatchdog watchdog;
@@ -663,7 +651,7 @@ void SeedExtender::storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vect
 u64*currentVertex){
 	if(ed->m_EXTENSION_extension.size()>=100){
 		int theCurrentSize=ed->m_EXTENSION_extension.size();
-		cout<<"Rank "<<theRank<<" reached "<<theCurrentSize<<" vertices (completed)"<<endl;
+		printf("Rank %i reached %i vertices (completed)\n",theRank,theCurrentSize);
 		ed->m_EXTENSION_contigs.push_back(ed->m_EXTENSION_extension);
 
 		int id=ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+theRank;
@@ -781,7 +769,6 @@ void SeedExtender::depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int maxDepth,
 				dfsData->m_depthFirstSearchVerticesToVisit.pop();
 				dfsData->m_depthFirstSearchDepths.pop();
 
-
 				#ifdef SHOW_MINI_GRAPH
 				if(dfsData->(*chooser)overages[vertexToVisit]>=minimumCoverage/2){
 					string b=idToWord(vertexToVisit,wordSize);
@@ -828,9 +815,8 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			m_receivedDirections.clear();
 			if(ed->m_EXTENSION_currentSeedIndex%10==0 and ed->m_EXTENSION_currentPosition==0 and (*last_value)!=ed->m_EXTENSION_currentSeedIndex){
 				(*last_value)=ed->m_EXTENSION_currentSeedIndex;
-				#ifdef SHOW_PROGRESS
-				cout<<"Rank "<<theRank<<" is extending seeds "<<ed->m_EXTENSION_currentSeedIndex+1<<"/"<<(*seeds).size()<<endl;
-				#endif
+				printf("Rank %i is extending seeds %i/%i (completed)\n",theRank,(int)ed->m_EXTENSION_currentSeedIndex+1,(int)(*seeds).size());
+				
 			}
 			ed->m_EXTENSION_VertexAssembled_requested=true;
 			VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
@@ -852,9 +838,7 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 				ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
 				ed->m_EXTENSION_markedCurrentVertexAsAssembled=false;
 				ed->m_EXTENSION_directVertexDone=false;
-			}else{
 			}
-		}else{
 		}
 	}else if(!ed->m_EXTENSION_reverseVertexDone){
 		if(!ed->m_EXTENSION_VertexAssembled_requested){
@@ -871,7 +855,6 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
 			ed->m_EXTENSION_markedCurrentVertexAsAssembled=false;
 			ed->m_EXTENSION_directVertexDone=false;
-		}else{
 		}
 	}
 }
@@ -902,7 +885,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				}
 				int theCurrentSize=ed->m_EXTENSION_extension.size();
 				if(theCurrentSize%10000==0){
-					cout<<"Rank "<<theRank<<" reached "<<theCurrentSize<<" vertices"<<endl;
+					printf("Rank %i reached %i vertices (completed)\n",theRank,theCurrentSize);
 				}
 				ed->m_EXTENSION_extension.push_back((*currentVertex));
 				ed->m_currentCoverage=(*receivedVertexCoverage);
