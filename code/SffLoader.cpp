@@ -67,7 +67,7 @@ void invert64(VERTEX_TYPE*c){
 // page 445-448
 // or 
 // http://blog.malde.org/index.php/2008/11/14/454-sequencing-and-parsing-the-sff-binary-format/
-void SffLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator){
+int SffLoader::load(string file,vector<Read>*reads,MyAllocator*seqMyAllocator){
 	uint32_t magic_number;
 	uint32_t version;
 	VERTEX_TYPE index_offset;
@@ -85,16 +85,16 @@ void SffLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,
 		(cout)<<"Error: incorrect magic number "<<endl;
 		printf("%x\n",magic_number);
 		printf("%x\n",MAGIC);
-		return;
+		return EXIT_FAILURE;
 	}
 	if(_VERSION!=version){
 		(cout)<<"Error: incorrect version"<<endl;
-		return;
+		return EXIT_FAILURE;
 	}
 	fread_result=fread((char*)&index_offset,1,sizeof(VERTEX_TYPE),fp);
 	invert64(&index_offset);
-	(cout)<<"Using clip values"<<endl;
-	(cout)<<"Index offset: "<<index_offset<<endl;
+	//(cout)<<"Using clip values"<<endl;
+	//(cout)<<"Index offset: "<<index_offset<<endl;
 	fread_result=fread((char*)&index_length,1,sizeof(uint32_t),fp);
 	fread_result=fread((char*)&number_of_reads,1,sizeof(uint32_t),fp);
 	invert32(&index_length);
@@ -180,10 +180,10 @@ void SffLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,
 			(cout)<<"Not KEY, was "<<sequence.substr(0,key_length)<<" expected "<<key<<endl;
 			continue;
 		}
-		Read*read=(Read*)readMyAllocator->allocate(sizeof(Read));
-		read->copy(Name,sequence.substr(first-1,last-first+1).c_str(),seqMyAllocator,true);
+		Read read;
+		read.copy(Name,sequence.substr(first-1,last-first+1).c_str(),seqMyAllocator,true);
 		reads->push_back(read);
-		m_bases+=strlen(read->getSeq());
+		m_bases+=strlen(read.getSeq());
 		__Free(Name);
 		__Free(Bases);
 	}
@@ -191,6 +191,8 @@ void SffLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,
 	delete[] key_sequence;
 	delete[] flow_chars;
 	fclose(fp);
+
+	return EXIT_SUCCESS;
 }
 
 SffLoader::SffLoader(){

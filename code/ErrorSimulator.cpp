@@ -31,10 +31,9 @@ using namespace std;
 
 void ErrorSimulator::simulateErrors(string inputFile,string outputFile){
 	Loader loader;
-	vector<Read*> reads;
 	MyAllocator a;
 	a.constructor(4096);
-	loader.load(inputFile,&reads,&a,&a);
+	loader.load(inputFile);
 	double insertionProbability=0.005;
 	srand(time(NULL));
 	double deletionProbability=0.005;
@@ -42,8 +41,8 @@ void ErrorSimulator::simulateErrors(string inputFile,string outputFile){
 	double unknownBaseProbability=0.005;
 	int probabilityPrecision=100000;
 	ofstream f(outputFile.c_str());
-	for(int i=0;i<(int)reads.size();i++){
-		string sequence=reads.at(i)->getSeq();
+	for(int i=0;i<loader.size();i++){
+		string sequence=loader.at(i)->getSeq();
 		if(i%10000==0)
 			cout<<".";
 		for(int position=0;position<(int)sequence.length();position++){

@@ -200,7 +200,7 @@ class Machine{
 	MyAllocator m_directionsAllocator;
 
 
-	vector<Read*> m_myReads;
+	vector<Read> m_myReads;
 
 	bool m_mode_send_vertices;
 	int m_mode_send_vertices_sequence_id;

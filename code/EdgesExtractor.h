@@ -33,7 +33,7 @@ using namespace std;
 class EdgesExtractor{
 	bool m_ready;
 public:
-	vector<Read*>*m_myReads;
+	vector<Read>*m_myReads;
 	bool m_reverseComplementEdge;
 	DistributionData*m_disData;
 	int getRank;

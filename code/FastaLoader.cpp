@@ -22,7 +22,7 @@
 #include<FastaLoader.h>
 #include<fstream>
 
-int FastaLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator){
+int FastaLoader::load(string file,vector<Read>*reads,MyAllocator*seqMyAllocator){
 	string id;
 	ostringstream sequence;
 	string buffer;
@@ -38,8 +38,8 @@ int FastaLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator
 			if(id!=""){
 				string sequenceStr=sequence.str();
 
-				Read*t=(Read*)readMyAllocator->allocate(sizeof(Read));
-				t->copy(NULL,sequenceStr.c_str(),readMyAllocator,true);// remove the leading T & first color
+				Read t;
+				t.copy(NULL,sequenceStr.c_str(),seqMyAllocator,true);
 				reads->push_back(t);
 			}
 			id=buffer;
@@ -53,8 +53,8 @@ int FastaLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator
 	for(int i=0;i<(int)sequenceStr.length();i++){
 		quality<< "F";
 	}
-	Read*t=(Read*)readMyAllocator->allocate(sizeof(Read));
-	t->copy(NULL,sequenceStr.c_str(),readMyAllocator,true);// remove the leading T & first color
+	Read t;
+	t.copy(NULL,sequenceStr.c_str(),seqMyAllocator,true);
 	reads->push_back(t);
 
 	f.close();

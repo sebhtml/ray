@@ -4,6 +4,8 @@
 * Added an error message for an invalid extension. Thanks to Jean-Francois
 Pombert (University of British Columbia) for the feature request.
 * Removed comparison scripts -- if you want them, download a previous version.
+* Now half of the seeds are destroyed before the extension as they are totally
+useless.
 
 = v. 1.0.0 =
 2010-11-25

@@ -43,11 +43,9 @@ int main(int argc,char**argv){
 	string genomeFile=argv[1];
 	int fragmentSize=atoi(argv[2]);
 	int readSize=atoi(argv[4]);
-	MyAllocator allocator;
-	allocator.constructor(300000000);
 	Loader l;
-	l.load(genomeFile,&sequences,&allocator,&allocator);
-	if(sequences.size()==0)
+	l.load(genomeFile);
+	if(l.size()==0)
 		return 0;
 	int coverage=atoi(argv[3]);
 
@@ -67,8 +65,8 @@ int main(int argc,char**argv){
 	f2Name<<"_2.fasta";
 	ofstream f2(f2Name.str().c_str());
 	int theReadNumber=0;
-	for(int i=0;i<(int)sequences.size();i++){
-		string sequence=sequences.at(i)->getSeq();
+	for(int i=0;i<(int)l.size();i++){
+		string sequence=l.at(i)->getSeq();
 		int numberOfReads=sequence.length()*coverage/(2*readSize);
 		for(int j=0;j<numberOfReads;j++){
 			if(j%1000==0){

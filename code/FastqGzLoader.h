@@ -19,7 +19,6 @@
 
 */
 
-
 #ifndef _FastqGzLoader
 #define _FastqGzLoader
 
@@ -31,7 +30,7 @@ using namespace std;
 
 class FastqGzLoader{
 public:
-	int load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator,int period);
+	int load(string file,vector<Read>*reads,MyAllocator*seqMyAllocator,int period);
 };
 
 #endif

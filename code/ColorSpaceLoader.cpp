@@ -34,10 +34,9 @@ using namespace std;
 #define _ENCODING_CHAR_G '3'
 
 ColorSpaceLoader::ColorSpaceLoader(){
-
 }
 
-int ColorSpaceLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator){
+int ColorSpaceLoader::load(string file,vector<Read>*reads,MyAllocator*seqMyAllocator){
 	ifstream f(file.c_str());
 	char bufferForLine[1024];
 	int i=0;
@@ -59,8 +58,8 @@ int ColorSpaceLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllo
 					bufferForLine[j]='G';
 				}
 			}
-			Read*t=(Read*)readMyAllocator->allocate(sizeof(Read));
-			t->copy(NULL,bufferForLine+2,readMyAllocator,true);// remove the leading T & first color
+			Read t;
+			t.copy(NULL,bufferForLine+2,seqMyAllocator,true);// remove the leading T & first color
 			reads->push_back(t);
 			i++;
 		}

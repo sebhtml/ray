@@ -24,6 +24,7 @@
 #include<Parameters.h>
 #include<DistributionData.h>
 #include<RingAllocator.h>
+#include<Loader.h>
 #include<MyAllocator.h>
 #include<StaticVector.h>
 #include<vector>
@@ -35,8 +36,6 @@ using namespace std;
 
 class SequencesLoader{
 	int m_distribution_currentSequenceId;
-	// allocator for distribution of data, not persistent.
-	MyAllocator m_distributionAllocator;
 	int m_distribution_file_id;
 	int m_distribution_sequence_id;
 	bool m_LOADER_isLeftFile;
@@ -45,6 +44,7 @@ class SequencesLoader{
 	int m_LOADER_averageFragmentLength;
 	int m_LOADER_deviation;
 
+	Loader m_loader;
 
 
 	vector<Read*>m_distribution_reads;

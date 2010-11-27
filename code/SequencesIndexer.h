@@ -37,7 +37,7 @@ class SequencesIndexer{
 
 public:
 	void attachReads(
-vector<Read*>*m_myReads,
+vector<Read>*m_myReads,
 				RingAllocator*m_outboxAllocator,
 				StaticVector*m_outbox,
 				int*m_mode,

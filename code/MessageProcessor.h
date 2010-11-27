@@ -82,7 +82,7 @@ class MessageProcessor{
 	int*m_minimumCoverage;
 	int*m_seedCoverage;
 	int*m_peakCoverage;
-	vector<Read*>*m_myReads;
+	vector<Read>*m_myReads;
 	bool*m_EXTENSION_currentRankIsDone;
 	vector<vector<VERTEX_TYPE> >*m_FINISH_newFusions;
 	int size;
@@ -179,7 +179,7 @@ ExtensionData*ed,
 			int*m_minimumCoverage,
 			int*m_seedCoverage,
 			int*m_peakCoverage,
-			vector<Read*>*m_myReads,
+			vector<Read>*m_myReads,
 			bool*m_EXTENSION_currentRankIsDone,
 	vector<vector<VERTEX_TYPE> >*m_FINISH_newFusions,
 		int size,

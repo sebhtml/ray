@@ -45,10 +45,8 @@ int main(int argc,char**argv){
 	string genomeFile=argv[1];
 	int fragmentSize=atoi(argv[2]);
 	
-	MyAllocator a;
-	a.constructor(300000000);
 	Loader l;
-	l.load(genomeFile,&sequences,&a,&a);
+	l.load(genomeFile);
 	int coverage=atoi(argv[3]);
 	char theName[3000];
 	strcpy(theName,argv[1]);

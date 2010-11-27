@@ -32,7 +32,7 @@
 #include<common_functions.h>
 #include<Message.h>
 
-void SequencesIndexer::attachReads(vector<Read*>*m_myReads,
+void SequencesIndexer::attachReads(vector<Read>*m_myReads,
 				RingAllocator*m_outboxAllocator,
 				StaticVector*m_outbox,
 				int*m_mode,
@@ -57,7 +57,7 @@ void SequencesIndexer::attachReads(vector<Read*>*m_myReads,
 	#ifdef ASSERT
 	assert(m_theSequenceId<(int)m_myReads->size());
 	#endif
-	char*sequence=m_myReads->at(m_theSequenceId)->getSeq();
+	char*sequence=m_myReads->at(m_theSequenceId).getSeq();
 	int theLength=strlen(sequence);
 	if((int)theLength<m_wordSize){
 		m_theSequenceId++;

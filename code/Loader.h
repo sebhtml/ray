@@ -29,6 +29,20 @@
 #include<Read.h>
 #include<fstream>
 #include<string>
+
+#ifdef HAVE_ZLIB
+#include<FastqGzLoader.h>
+#endif
+
+#ifdef HAVE_LIBBZ2
+#include<FastqBz2Loader.h>
+#endif
+
+#include<FastaLoader.h>
+#include<FastqLoader.h>
+#include<ColorSpaceLoader.h>
+#include<SffLoader.h>
+
 using namespace std;
 
 /*
@@ -36,13 +50,29 @@ using namespace std;
  * Ray makes no use of quality values, so Their encoding is irrelevant.
  */
 class Loader{
-	int m_total;
-	int m_bases;
+	int DISTRIBUTION_ALLOCATOR_CHUNK_SIZE;
+	vector<Read>m_reads;
+	MyAllocator m_allocator;
+
+	SffLoader m_sff;
+	ColorSpaceLoader m_color;
+	FastaLoader m_fasta;
+	FastqLoader m_fastq;	
+
+	#ifdef HAVE_ZLIB_H
+	FastqGzLoader m_fastqgz;
+	#endif
+
+	#if HAVE_LIBBZ2
+	FastqBz2Loader m_fastqbz2;
+	#endif
+
 public:
 	Loader();
-	int load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator);
-	int getBases();
-	int getReads();
+	int load(string file);
+	int size();
+	Read*at(int i);
+	void clear();
 };
 
 #endif

@@ -54,7 +54,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 	// case 1: it was distributing reads
 	// case 2: it was distributing paired information
 	//  -/-
-	if(m_distribution_reads.size()>0 && m_distribution_sequence_id==(int)m_distribution_reads.size()){
+	if(m_loader.size()>0 && m_distribution_sequence_id==(int)m_loader.size()){
 		// distribution of reads is completed.
 		if(!m_send_sequences_done){
 			m_send_sequences_done=true;
@@ -67,18 +67,18 @@ bool SequencesLoader::loadSequences(int rank,int size,
 				assert(m_entries[i]==0);
 			}
 			#endif
-			cout<<"Rank "<<rank<<" is assigning sequence reads "<<(m_distribution_reads).size()<<"/"<<(m_distribution_reads).size()<<" (completed)"<<endl;
+			cout<<"Rank "<<rank<<" is assigning sequence reads "<<m_loader.size()<<"/"<<m_loader.size()<<" (completed)"<<endl;
 
 	
 		// distribution of paired information is completed
 		}else{
 			m_waitingNumber+=m_disData->m_messagesStockPaired.flushAll(TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank);
-			cout<<"Rank "<<rank<<" is sending paired information "<<(m_distribution_reads).size()<<"/"<<(m_distribution_reads).size()<<" (completed)"<<endl;
+			cout<<"Rank "<<rank<<" is sending paired information "<<m_loader.size()<<"/"<<m_loader.size()<<" (completed)"<<endl;
 
 			(m_distribution_file_id)++;  // go with the next file.
 
 			(m_distribution_sequence_id)=0;
-			(m_distribution_reads).clear();  // clear the hideout of reads.
+			m_loader.clear();  // clear the hideout of reads.
 		}
 
 	// -->  all files were processed.
@@ -91,37 +91,33 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			m_outbox->push_back(aMessage);
 		}
 
-		(m_distributionAllocator).clear();
-		(m_distribution_reads).clear();
+		m_loader.clear();
 
 	// fileID is set, but reads are not read yet.
 	//
-	}else if((m_distribution_reads).size()==0){
+	}else if(m_loader.size()==0){
 		m_send_sequences_done=false;
-		Loader loader;
-		(m_distributionAllocator).clear();
-		(m_distributionAllocator).constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
 		#ifdef SHOW_PROGRESS
 		cout<<endl<<"Rank "<<rank<<" is loading "<<allFiles[(m_distribution_file_id)]<<""<<endl;
 		#else
 		cout<<endl<<"Loading "<<allFiles[(m_distribution_file_id)]<<""<<endl;
 		#endif
-		int res=loader.load(allFiles[(m_distribution_file_id)],&(m_distribution_reads),&(m_distributionAllocator),&(m_distributionAllocator));
+		int res=m_loader.load(allFiles[(m_distribution_file_id)]);
 		if(res==EXIT_FAILURE){
 			return false;
 		}
-		m_parameters->setNumberOfSequences(m_distribution_reads.size());
+		m_parameters->setNumberOfSequences(m_loader.size());
 	
-		if((m_distribution_reads).size()==0){
+		if(m_loader.size()==0){
 			return false;
 		}
 
 		// write Reads in AMOS format.
 		if((*m_parameters).useAmos()){
 			FILE*fp=(*m_bubbleData).m_amos;
-			for(int i=0;i<(int)(m_distribution_reads).size();i++){
+			for(int i=0;i<(int)m_loader.size();i++){
 				int iid=(m_distribution_currentSequenceId)+i;
-				char*seq=(m_distribution_reads).at(i)->getSeq();
+				char*seq=m_loader.at(i)->getSeq();
 				char*qlt=(char*)__Malloc(strlen(seq)+1);
 				strcpy(qlt,seq);
 				// spec: https://sourceforge.net/apps/mediawiki/amos/index.php?title=Message_Types#Sequence_t_:_Universal_t
@@ -157,7 +153,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 		#endif
 
 		int theSpaceLeft=getSpaceLeft(destination);
-		char*sequence=((m_distribution_reads))[(m_distribution_sequence_id)]->getSeq();
+		char*sequence=m_loader.at(m_distribution_sequence_id)->getSeq();
 		int spaceNeeded=strlen(sequence)+1;
 		if(spaceNeeded>theSpaceLeft){
 			flush(destination,m_outboxAllocator,m_outbox,false);
@@ -171,7 +167,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 		}
 
 		if((m_distribution_sequence_id)%100000==0){
-			cout<<"Rank "<<rank<<" is assigning sequence reads "<<(m_distribution_sequence_id)+1<<"/"<<(m_distribution_reads).size()<<endl;
+			cout<<"Rank "<<rank<<" is assigning sequence reads "<<(m_distribution_sequence_id)+1<<"/"<<m_loader.size()<<endl;
 		}
 	}else if(m_send_sequences_done){
 		#ifdef ASSERT
@@ -184,7 +180,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 		#endif
 
 		if((m_distribution_sequence_id)%1000000==0){
-			cout<<"Rank "<<rank<<" is sending paired information "<<(m_distribution_sequence_id)+1<<"/"<<(m_distribution_reads).size()<<endl;
+			cout<<"Rank "<<rank<<" is sending paired information "<<(m_distribution_sequence_id)+1<<"/"<<m_loader.size()<<endl;
 		}
 
 		// add paired information here..
@@ -212,10 +208,10 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			int leftSequenceIdOnRank=leftSequenceGlobalId/size;
 
 			#ifdef ASSERT
-			assert(m_distribution_reads.size()!=0);
+			assert(m_loader.size()!=0);
 			#endif
 
-			int rightSequenceGlobalId=leftSequenceGlobalId+m_distribution_reads.size();
+			int rightSequenceGlobalId=leftSequenceGlobalId+m_loader.size();
 
 			#ifdef ASSERT
 			assert(leftSequenceGlobalId<rightSequenceGlobalId);
@@ -256,13 +252,13 @@ bool SequencesLoader::loadSequences(int rank,int size,
 		}else if(m_LOADER_isRightFile){
 
 			#ifdef ASSERT
-			assert(m_distribution_reads.size()!=0);
+			assert(m_loader.size()!=0);
 			#endif
 
 			int rightSequenceGlobalId=(m_distribution_currentSequenceId);
 			int rightSequenceRank=rightSequenceGlobalId%size;
 			int rightSequenceIdOnRank=rightSequenceGlobalId/size;
-			int leftSequenceGlobalId=rightSequenceGlobalId-m_distribution_reads.size();
+			int leftSequenceGlobalId=rightSequenceGlobalId-m_loader.size();
 
 			#ifdef ASSERT
 			if(rightSequenceIdOnRank>=m_numberOfSequences[rightSequenceRank]){
@@ -358,7 +354,6 @@ SequencesLoader::SequencesLoader(){
 	m_waitingNumber=0;
 	m_produced=0;
 	m_last=time(NULL);
-	m_distributionAllocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
 }
 
 void SequencesLoader::setReadiness(){

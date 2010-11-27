@@ -34,7 +34,7 @@ class ColorSpaceLoader{
 	ColorSpaceDecoder m_decoder;
 public:
 	ColorSpaceLoader();
-	int load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator);
+	int load(string file,vector<Read>*reads,MyAllocator*seqMyAllocator);
 };
 
 

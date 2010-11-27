@@ -36,7 +36,7 @@ class VerticesExtractor{
 public:
 	VerticesExtractor();
 	void process(int*m_mode_send_vertices_sequence_id,
-				vector<Read*>*m_myReads,
+				vector<Read>*m_myReads,
 				bool*m_reverseComplementVertex,
 				int*m_mode_send_vertices_sequence_id_position,
 				int rank,

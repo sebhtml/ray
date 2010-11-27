@@ -24,14 +24,14 @@
 #include<zlib.h>
 
 // a very simple and compact fastq.gz reader
-int FastqGzLoader::load(string file,vector<Read*>*reads,MyAllocator*seqMyAllocator,MyAllocator*readMyAllocator,int period){
+int FastqGzLoader::load(string file,vector<Read>*reads,MyAllocator*seqMyAllocator,int period){
 	gzFile f=gzopen(file.c_str(),"r");
 	char buffer[4096];
 	int rotatingVariable=0;
 	while(Z_NULL!=gzgets(f,buffer,4096)){
 		if(rotatingVariable==1){
-			Read*t=(Read*)readMyAllocator->allocate(sizeof(Read));
-			t->copy(NULL,buffer,readMyAllocator,true);
+			Read t;
+			t.copy(NULL,buffer,seqMyAllocator,true);
 			reads->push_back(t);
 		}
 		rotatingVariable++;
