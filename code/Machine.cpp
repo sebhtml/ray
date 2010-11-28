@@ -596,8 +596,14 @@ void Machine::finishFusions(){
 	bool done=false;
 	if(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
 		if(!m_Machine_getPaths_DONE){
-			getPaths(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition]);
+			if(m_ed->m_EXTENSION_currentPosition!=(int)m_FINISH_pathsForPosition.size()-1
+			&& m_ed->m_EXTENSION_currentPosition!=(int)m_FINISH_pathsForPosition.size()-overlapMinimumLength){
+				m_Machine_getPaths_DONE=true;
+			}else{
+				getPaths(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition]);
+			}
 		}else{
+			// remove selfId.
 			vector<Direction> a;
 			for(int i=0;i<(int)m_Machine_getPaths_result.size();i++){
 				if(m_Machine_getPaths_result[i].getWave()!=currentId){
@@ -1524,17 +1530,17 @@ void Machine::call_MODE_START_SEEDING(){
 				int nucleotides=m_seedingData->m_SEEDING_seed.size()+m_wordSize-1;
 				// only consider the long ones.
 				if(nucleotides>=m_parameters.getMinimumContigLength()){
-					u64 firstVertex=m_seedingData->m_SEEDING_seed[0];
-					u64 lastVertex=m_seedingData->m_SEEDING_seed[m_seedingData->m_SEEDING_seed.size()-1];
-					u64 lastVertexReverse=complementVertex(lastVertex,m_wordSize,m_colorSpaceMode);
-					int aRank=vertexRank(firstVertex);
-					int bRank=vertexRank(lastVertexReverse);
 		
 					// if both seeds are on the same rank
 					// dump the reverse and keep the forward
 
 					m_seedingData->m_SEEDING_seeds.push_back(m_seedingData->m_SEEDING_seed);
 		/*
+					u64 firstVertex=m_seedingData->m_SEEDING_seed[0];
+					u64 lastVertex=m_seedingData->m_SEEDING_seed[m_seedingData->m_SEEDING_seed.size()-1];
+					u64 lastVertexReverse=complementVertex(lastVertex,m_wordSize,m_colorSpaceMode);
+					int aRank=vertexRank(firstVertex);
+					int bRank=vertexRank(lastVertexReverse);
  * 		this is now working:
  *
 					if(aRank==bRank){

@@ -89,9 +89,19 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 	// 	else
 	// 		use read paths or pairs of reads to resolve the repeat.
 	
+	// only check that at bootstrap.
+
 	if(!ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled){
-		checkIfCurrentVertexIsAssembled(ed,outbox,outboxAllocator,outgoingEdgeIndex,last_value,
+		if(ed->m_EXTENSION_currentPosition>0){
+			ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
+			ed->m_EXTENSION_markedCurrentVertexAsAssembled=false;
+			ed->m_EXTENSION_directVertexDone=false;
+			ed->m_EXTENSION_VertexMarkAssembled_requested=false;
+			(*vertexCoverageRequested)=false;
+		}else{
+			checkIfCurrentVertexIsAssembled(ed,outbox,outboxAllocator,outgoingEdgeIndex,last_value,
 	currentVertex,theRank,vertexCoverageRequested,wordSize,colorSpaceMode,size,seeds);
+		}
 	}else if((ed->m_EXTENSION_vertexIsAssembledResult and ed->m_EXTENSION_currentPosition==0 and ed->m_EXTENSION_complementedSeed==false)){
 		//cout<<"Rank "<<theRank<<": Ray Early-Stopping Technology was triggered, Case 1: seed is already processed at p=0."<<endl;
 		ed->m_EXTENSION_currentSeedIndex++;// skip the current one.
@@ -113,10 +123,10 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		ed->m_EXTENSION_reads_startingPositionOnContig.clear();
 		m_readsStrands.clear();
 		ed->m_EXTENSION_readsInRange.clear();
-	}else if(m_earlyStoppingTechnology.isAlarmed()){
+	/*}else if(m_earlyStoppingTechnology.isAlarmed()){
 
 		storeExtensionAndGetNextOne(ed,theRank,seeds,currentVertex);
-
+*/
 	}else if(!ed->m_EXTENSION_markedCurrentVertexAsAssembled){
 		markCurrentVertexAsAssembled(currentVertex,outboxAllocator,outgoingEdgeIndex,outbox,
 size,theRank,ed,vertexCoverageRequested,vertexCoverageReceived,receivedVertexCoverage,
@@ -827,7 +837,7 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			ed->m_EXTENSION_VertexAssembled_received=false;
 		}else if(ed->m_EXTENSION_VertexAssembled_received){
 			//cout<<"Adding directions, pos="<<ed->m_EXTENSION_currentPosition<<endl;
-			m_earlyStoppingTechnology.addDirections(&m_receivedDirections);
+			//m_earlyStoppingTechnology.addDirections(&m_receivedDirections);
 
 			ed->m_EXTENSION_reverseVertexDone=false;
 			ed->m_EXTENSION_directVertexDone=true;
@@ -851,7 +861,7 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			(*outbox).push_back(aMessage);
 			ed->m_EXTENSION_VertexAssembled_received=false;
 		}else if(ed->m_EXTENSION_VertexAssembled_received){
-			m_earlyStoppingTechnology.addDirections(&m_receivedDirections);
+			//m_earlyStoppingTechnology.addDirections(&m_receivedDirections);
 			ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
 			ed->m_EXTENSION_markedCurrentVertexAsAssembled=false;
 			ed->m_EXTENSION_directVertexDone=false;
