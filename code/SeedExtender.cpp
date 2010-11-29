@@ -43,6 +43,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 	if((*seeds).size()==0){
 
 		printf("Rank %i is extending seeds %i/%i (completed)\n",theRank,(int)(*seeds).size(),(int)(*seeds).size());
+		fflush(stdout);
 		ed->m_mode_EXTENSION=false;
 		(*m_mode)=MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_IS_DONE,theRank);
@@ -67,6 +68,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		ed->m_EXTENSION_readsInRange.clear();
 	}else if(ed->m_EXTENSION_currentSeedIndex==(int)(*seeds).size()){
 		printf("Rank %i is extending seeds %i/%i (completed)\n",theRank,(int)(*seeds).size(),(int)(*seeds).size());
+		fflush(stdout);
 		ed->m_mode_EXTENSION=false;
 		(*m_mode)=MODE_DO_NOTHING;
 	
@@ -662,6 +664,7 @@ u64*currentVertex){
 	if(ed->m_EXTENSION_extension.size()>=100){
 		int theCurrentSize=ed->m_EXTENSION_extension.size();
 		printf("Rank %i reached %i vertices (completed)\n",theRank,theCurrentSize);
+		fflush(stdout);
 		ed->m_EXTENSION_contigs.push_back(ed->m_EXTENSION_extension);
 
 		int id=ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+theRank;
@@ -825,14 +828,16 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			m_receivedDirections.clear();
 			if(ed->m_EXTENSION_currentSeedIndex%10==0 and ed->m_EXTENSION_currentPosition==0 and (*last_value)!=ed->m_EXTENSION_currentSeedIndex){
 				(*last_value)=ed->m_EXTENSION_currentSeedIndex;
-				printf("Rank %i is extending seeds %i/%i (completed)\n",theRank,(int)ed->m_EXTENSION_currentSeedIndex+1,(int)(*seeds).size());
+				printf("Rank %i is extending seeds %i/%i \n",theRank,(int)ed->m_EXTENSION_currentSeedIndex+1,(int)(*seeds).size());
+				fflush(stdout);
 				
 			}
 			ed->m_EXTENSION_VertexAssembled_requested=true;
-			VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
+			VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(2*sizeof(VERTEX_TYPE));
 			message[0]=(VERTEX_TYPE)(*currentVertex);
+			message[1]=0;
 			int destination=vertexRank((*currentVertex),size);
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,destination,TAG_ASK_IS_ASSEMBLED,theRank);
+			Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,destination,TAG_ASK_IS_ASSEMBLED,theRank);
 			(*outbox).push_back(aMessage);
 			ed->m_EXTENSION_VertexAssembled_received=false;
 		}else if(ed->m_EXTENSION_VertexAssembled_received){
@@ -854,10 +859,11 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 		if(!ed->m_EXTENSION_VertexAssembled_requested){
 			m_receivedDirections.clear();
 			ed->m_EXTENSION_VertexAssembled_requested=true;
-			VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(1*sizeof(VERTEX_TYPE));
+			VERTEX_TYPE*message=(VERTEX_TYPE*)(*outboxAllocator).allocate(2*sizeof(VERTEX_TYPE));
 			message[0]=(VERTEX_TYPE)complementVertex((*currentVertex),wordSize,(*colorSpaceMode));
+			message[1]=0;
 			int destination=vertexRank(message[0],size);
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,destination,TAG_ASK_IS_ASSEMBLED,theRank);
+			Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,destination,TAG_ASK_IS_ASSEMBLED,theRank);
 			(*outbox).push_back(aMessage);
 			ed->m_EXTENSION_VertexAssembled_received=false;
 		}else if(ed->m_EXTENSION_VertexAssembled_received){
@@ -896,6 +902,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				int theCurrentSize=ed->m_EXTENSION_extension.size();
 				if(theCurrentSize%10000==0){
 					printf("Rank %i reached %i vertices\n",theRank,theCurrentSize);
+					fflush(stdout);
 				}
 				ed->m_EXTENSION_extension.push_back((*currentVertex));
 				ed->m_currentCoverage=(*receivedVertexCoverage);

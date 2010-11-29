@@ -52,6 +52,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			reverse="(reverse complement) ";
 		}
 		printf("Rank %i is computing vertices %s%i/%i\n",rank,reverse.c_str(),(int)*m_mode_send_vertices_sequence_id+1,(int)m_myReads->size());
+		fflush(stdout);
 	}
 	#endif
 
@@ -73,6 +74,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			*m_mode_send_vertices=false;
 			(*m_mode)=MODE_DO_NOTHING;
 			printf("Rank %i is computing vertices (reverse complement) %i/%i (completed)\n",rank,(int)*m_mode_send_vertices_sequence_id,(int)m_myReads->size());
+			fflush(stdout);
 		}
 	}else{
 		char*readSequence=(*m_myReads)[(*m_mode_send_vertices_sequence_id)]->getSeq();

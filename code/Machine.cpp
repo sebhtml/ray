@@ -381,6 +381,7 @@ void Machine::start(){
 	}
 
 	printf("Rank %i is running as UNIX process %i on %s\n",getRank(),getpid(),serverName);
+	fflush(stdout);
 	m_alive=true;
 	m_welcomeStep=true;
 	m_loadSequenceStep=false;
@@ -657,7 +658,7 @@ void Machine::finishFusions(){
 				in1.insert(waveId);
 			}
 
-			cout<<"Rank "<<getRank()<<" directions1="<<directions1.size()<<" directions2="<<directions2.size()<<endl;
+			//cout<<"Rank "<<getRank()<<" directions1="<<directions1.size()<<" directions2="<<directions2.size()<<endl;
 
 			// index the index for each wave
 			for(int j=0;j<(int)directions2.size();j++){

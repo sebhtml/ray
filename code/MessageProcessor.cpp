@@ -84,6 +84,7 @@ void MessageProcessor::call_TAG_SEND_SEQUENCE(Message*message){
 		m_myReads->push_back(&myRead);
 		if((*m_myReads).size()%100000==0){
 			printf("Rank %i has %i sequence reads\n",rank,(int)(*m_myReads).size());
+			fflush(stdout);
 		}
 		// move currentPosition after the first \0 encountered.
 		currentPosition+=(strlen(buffer+currentPosition)+1);
@@ -565,29 +566,28 @@ void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED(Message*message){
 	#endif
 	vector<Direction> directions=node->getValue()->getDirections();
 
-	int i=offset;
-
 	int maxSize=directions.size();
 	//cout<<"source="<<source<<" self="<<rank<<" MessageProcessor::call_TAG_ASK_IS_ASSEMBLED directions="<<maxSize<<endl;
 
-	int maxToProcess=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE)/2-2; // -2 because we need to track the offset and the vertex too
+	int maxToProcess=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE)/2-1; // -1 because we need to track the offset and the vertex too
 	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(MPI_BTL_SM_EAGER_LIMIT);
 	message2[0]=incoming[0];
 	int p=2; // 0 is vertex, 1 is offset
-	while(i<maxToProcess){
-		message2[p++]=directions[i].getWave();
-		message2[p++]=directions[i].getProgression();
-
-		i++;
+	int processed=0;
+	while(processed<maxToProcess && offset+processed<maxSize){
+		message2[p++]=directions[offset+processed].getWave();
+		message2[p++]=directions[offset+processed].getProgression();
+		processed++;
 	}
 
-	message2[1]=i;
+	int nextOffset=offset+processed;
+	message2[1]=nextOffset;
 
-	if(i==maxSize){
-		Message aMessage(message2,2*i+2,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_IS_ASSEMBLED_REPLY_END,rank);
+	if(nextOffset==maxSize){
+		Message aMessage(message2,2*processed+2,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_IS_ASSEMBLED_REPLY_END,rank);
 		m_outbox->push_back(aMessage);
 	}else{
-		Message aMessage(message2,2*i+2,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_IS_ASSEMBLED_REPLY,rank);
+		Message aMessage(message2,2*processed+2,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_IS_ASSEMBLED_REPLY,rank);
 		m_outbox->push_back(aMessage);
 	}
 }
@@ -612,7 +612,7 @@ void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY_END(Message*message){
 	void*buffer=message->getBuffer();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
 	int count=message->getCount();
-	for(int i=1;i<count;i+=2){
+	for(int i=2;i<count;i+=2){
 		int wave=incoming[i+0];
 		int progression=incoming[i+1];
 		Direction a;
@@ -630,7 +630,7 @@ void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY(Message*message){
 	int source=message->getSource();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
 	int count=message->getCount();
-	for(int i=1;i<count;i+=2){
+	for(int i=2;i<count;i+=2){
 		int wave=incoming[i+0];
 		int progression=incoming[i+1];
 		Direction a;

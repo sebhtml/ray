@@ -37,15 +37,14 @@ EdgesExtractor::EdgesExtractor(){
 
 void EdgesExtractor::processOutgoingEdges(){
 
-	#ifdef SHOW_PROGRESS
 	if((m_mode_send_edge_sequence_id)%100000==0 and (m_mode_send_edge_sequence_id_position)==0){
 		string strand="";
 		if(m_reverseComplementEdge){
 			strand="(reverse complement) ";
 		}
 		printf("Rank %i is adding outgoing edges %s%i/%i\n",getRank,strand.c_str(),(int)(m_mode_send_edge_sequence_id)+1,(int)m_myReads->size());
+		fflush(stdout);
 	}
-	#endif
 
 	if((m_mode_send_edge_sequence_id)>(int)m_myReads->size()-1){
 		if(m_reverseComplementEdge==false){
@@ -53,6 +52,7 @@ void EdgesExtractor::processOutgoingEdges(){
 			m_reverseComplementEdge=true;
 			m_disData->m_messagesStockOut.flushAll(TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
 			printf("Rank %i is adding outgoing edges %i/%i (completed)\n",getRank,(int)m_myReads->size(),(int)m_myReads->size());
+			fflush(stdout);
 			(m_mode_send_edge_sequence_id)=0;
 		}else{
 			m_disData->m_messagesStockOut.flushAll(TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
@@ -60,9 +60,8 @@ void EdgesExtractor::processOutgoingEdges(){
 			(*m_mode)=MODE_PROCESS_INGOING_EDGES;
 			(*m_mode_send_ingoing_edges)=true;
 			(m_mode_send_edge_sequence_id_position)=0;
-			#ifdef SHOW_PROGRESS
 			printf("Rank %i is adding outgoing edges (reverse complement) %i/%i (completed)\n",getRank,(int)m_myReads->size(),(int)m_myReads->size());
-			#endif
+			fflush(stdout);
 			(m_mode_send_edge_sequence_id)=0;
 			m_reverseComplementEdge=false;
 		}
