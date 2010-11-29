@@ -565,7 +565,7 @@ void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED(Message*message){
 	assert(node!=NULL);
 	#endif
 	vector<Direction> directions=node->getValue()->getDirections();
-	cout<<"directions="<<directions.size()<<endl;
+	//cout<<"directions="<<directions.size()<<endl;
 	int maxSize=directions.size();
 	//cout<<"source="<<source<<" self="<<rank<<" MessageProcessor::call_TAG_ASK_IS_ASSEMBLED directions="<<maxSize<<endl;
 
@@ -590,7 +590,7 @@ void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED(Message*message){
 	}
 	#endif
 
-	cout<<"processed "<<processed<<endl;
+	//cout<<"processed "<<processed<<endl;
 
 	if(nextOffset==maxSize){
 		Message aMessage(message2,2*processed+2,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_IS_ASSEMBLED_REPLY_END,rank);
