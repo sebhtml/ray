@@ -569,6 +569,7 @@ void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED(Message*message){
 	int maxSize=directions.size();
 	//cout<<"source="<<source<<" self="<<rank<<" MessageProcessor::call_TAG_ASK_IS_ASSEMBLED directions="<<maxSize<<endl;
 
+	// each one of them takes 2 elements.
 	int maxToProcess=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE)/2-1; // -1 because we need to track the offset and the vertex too
 	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(MPI_BTL_SM_EAGER_LIMIT);
 	message2[0]=incoming[0];

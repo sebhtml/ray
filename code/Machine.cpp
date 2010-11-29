@@ -806,7 +806,8 @@ void Machine::makeFusions(){
 		if(m_ed->m_EXTENSION_contigs.size()==0){
 			seedIndex++;
 		}
-		cout<<"Rank "<<getRank()<<" is computing fusions "<<m_ed->m_EXTENSION_contigs.size()<<"/"<<m_ed->m_EXTENSION_contigs.size()<<" (completed)"<<endl;
+		printf("Rank %i is computing fusions %i/%i (completed)\n",getRank(),(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
+		fflush(stdout);
 		#endif
 		#ifdef ASSERT
 		//cout<<"Rank "<<getRank()<<" eliminated: "<<m_fusionData->m_FUSION_eliminated.size()<<endl;
@@ -827,7 +828,8 @@ void Machine::makeFusions(){
 			if(!m_fusionData->m_FUSION_paths_requested){
 				#ifdef SHOW_PROGRESS
 				if(m_seedingData->m_SEEDING_i%10==0){
-					cout<<"Rank "<<getRank()<<" is computing fusions "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_ed->m_EXTENSION_contigs.size()<<endl;
+					printf("Rank %i is computing fusions %i/%i\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_ed->m_EXTENSION_contigs.size());
+					fflush(stdout);
 				}
 				#endif
 				// get the paths going on the first vertex
