@@ -1250,7 +1250,10 @@ void MessageProcessor::call_TAG_LIBRARY_DISTANCE(Message*message){
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
 	for(int i=0;i<count;i+=3){
 		parameters->addDistance(incoming[i+0],incoming[i+1],incoming[i+2]);
+		//cout<<"SourceSays "<<message->getSource()<<" "<<incoming[i+0]<<" "<<incoming[i+1]<<" "<<incoming[i+2]<<endl;
+		//fflush(stdout);
 	}
+	//cout<<"Received "<<count/3<<" lengths from "<<message->getSource()<<endl;
 
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_LIBRARY_DISTANCE_REPLY,rank);
 	m_outbox->push_back(aMessage);

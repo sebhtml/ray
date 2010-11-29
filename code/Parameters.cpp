@@ -467,7 +467,7 @@ bool Parameters::getError(){
 
 
 void Parameters::addDistance(int library,int distance,int count){
-	m_observedDistances[library][distance]=count;
+	m_observedDistances[library][distance]+=count;
 }
 
 string Parameters::getLibraryFile(int library){
