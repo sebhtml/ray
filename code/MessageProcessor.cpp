@@ -559,35 +559,37 @@ void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED(Message*message){
 	int source=message->getSource();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
 	SplayNode<VERTEX_TYPE,Vertex>*node=m_subgraph->find(incoming[0]);
+	int offset=incoming[1];
 	#ifdef ASSERT
 	assert(node!=NULL);
 	#endif
 	vector<Direction> directions=node->getValue()->getDirections();
 
-	int i=0;
+	int i=offset;
 
 	int maxSize=directions.size();
 	//cout<<"source="<<source<<" self="<<rank<<" MessageProcessor::call_TAG_ASK_IS_ASSEMBLED directions="<<maxSize<<endl;
 
-	int periodIncrement=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE);
-	while(i<maxSize){
-		VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(MPI_BTL_SM_EAGER_LIMIT);
-		int j=0;
-		int p=0;
-		while((i+j)<maxSize && p<periodIncrement){
-			message2[p++]=directions[i+j].getWave();
-			message2[p++]=directions[i+j].getProgression();
-			j++;
-		}
+	int maxToProcess=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE)/2-2; // -2 because we need to track the offset and the vertex too
+	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(MPI_BTL_SM_EAGER_LIMIT);
+	message2[0]=incoming[0];
+	int p=2; // 0 is vertex, 1 is offset
+	while(i<maxToProcess){
+		message2[p++]=directions[i].getWave();
+		message2[p++]=directions[i].getProgression();
 
-		//cout<<"p="<<p<<endl;
-		Message aMessage(message2,p,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_IS_ASSEMBLED_REPLY,rank);
-		m_outbox->push_back(aMessage);
-		i+=periodIncrement;
+		i++;
 	}
-		
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_IS_ASSEMBLED_REPLY_END,rank);
-	m_outbox->push_back(aMessage);
+
+	message2[1]=i;
+
+	if(i==maxSize){
+		Message aMessage(message2,2*i+2,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_IS_ASSEMBLED_REPLY_END,rank);
+		m_outbox->push_back(aMessage);
+	}else{
+		Message aMessage(message2,2*i+2,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_IS_ASSEMBLED_REPLY,rank);
+		m_outbox->push_back(aMessage);
+	}
 }
 
 void MessageProcessor::call_TAG_ASK_REVERSE_COMPLEMENT(Message*message){
@@ -607,6 +609,17 @@ void MessageProcessor::call_TAG_REQUEST_VERTEX_POINTER(Message*message){
 
 
 void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY_END(Message*message){
+	void*buffer=message->getBuffer();
+	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	int count=message->getCount();
+	for(int i=1;i<count;i+=2){
+		int wave=incoming[i+0];
+		int progression=incoming[i+1];
+		Direction a;
+		a.constructor(wave,progression);
+		seedExtender->getDirections()->push_back(a);
+	}
+
 	(*m_EXTENSION_VertexAssembled_received)=true;
 	(*m_EXTENSION_vertexIsAssembledResult)=seedExtender->getDirections()->size()>0;
 	//cout<<"source="<<message->getSource()<<" self="<<rank<<" MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY_END directions="<<seedExtender->getDirections()->size()<<endl;
@@ -614,15 +627,23 @@ void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY_END(Message*message){
 
 void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY(Message*message){
 	void*buffer=message->getBuffer();
+	int source=message->getSource();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
 	int count=message->getCount();
-	for(int i=0;i<count;i+=2){
+	for(int i=1;i<count;i+=2){
 		int wave=incoming[i+0];
 		int progression=incoming[i+1];
 		Direction a;
 		a.constructor(wave,progression);
 		seedExtender->getDirections()->push_back(a);
 	}
+	
+	// ask for the next data chunk
+	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(2*sizeof(VERTEX_TYPE));
+	message2[0]=incoming[0];
+	message2[1]=incoming[1];
+	Message aMessage(message2,2,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_IS_ASSEMBLED,rank);
+	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_MARK_AS_ASSEMBLED(Message*message){
