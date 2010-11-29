@@ -39,6 +39,8 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 using namespace std;
 
 class Library{
+	int m_detectedDistances;
+
 	BufferedData*m_bufferedData;
 	bool m_ready;
 	int m_rank;
@@ -59,6 +61,7 @@ class Library{
 	map<int,map<int,int> >*m_libraryDistances;
 
 public:
+	Library();
 	void updateDistances();
 	void setReadiness();
 	int getRank();

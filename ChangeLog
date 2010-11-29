@@ -6,6 +6,12 @@ Pombert (University of British Columbia) for the feature request.
 * Removed comparison scripts -- if you want them, download a previous version.
 * Added makefile.alternate to compile Ray if the configure script fails.
 'make -f makefile.alternate'
+* Added ArrayOfReads, a dynamic array that free is memory on clearing. (unline vector in stl, apparently.)
+* Fixed a division by zero. (in BufferedData.cpp)
+* Reduced the computation time of 'Finishing fusions' from 5+ hours to 3 minutes or so for 
+the chromosome 1 of the human genome, simulated with two libraries: 200 & 400. In v. 1.0.0, many messages were unecessary for this
+step of this algorithm.
+
 
 = v. 1.0.0 =
 2010-11-25

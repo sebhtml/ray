@@ -651,13 +651,13 @@ void Machine::finishFusions(){
 
 			int hits=0;
 			map<int,vector<int> > indexOnDirection2;
+
 			set<int> in1;
 			
 			for(int j=0;j<(int)directions1.size();j++){
 				int waveId=directions1[j].getWave();
 				in1.insert(waveId);
 			}
-
 			//cout<<"Rank "<<getRank()<<" directions1="<<directions1.size()<<" directions2="<<directions2.size()<<endl;
 
 			// index the index for each wave

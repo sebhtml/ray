@@ -100,4 +100,7 @@ int Loader::size(){
 void Loader::clear(){
 	m_reads.clear();
 	m_allocator.clear();
+	#ifdef ASSERT
+	assert(m_reads.size()==0);
+	#endif
 }

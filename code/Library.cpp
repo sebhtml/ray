@@ -169,7 +169,7 @@ void Library::detectDistances(){
 											int p2=m_ed->m_EXTENSION_currentPosition;
 											int d=p2-p1+m_ed->m_EXTENSION_receivedLength;
 											(*m_libraryDistances)[library][d]++;
-											
+											m_detectedDistances++;
 										}
 									}else{
 										#ifdef ASSERT_AUTO
@@ -244,4 +244,8 @@ int Library::getRank(){
 
 int Library::getSize(){
 	return m_size;
+}
+
+Library::Library(){
+	m_detectedDistances=0;
 }

@@ -565,11 +565,11 @@ void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED(Message*message){
 	assert(node!=NULL);
 	#endif
 	vector<Direction> directions=node->getValue()->getDirections();
-
+	cout<<"directions="<<directions.size()<<endl;
 	int maxSize=directions.size();
 	//cout<<"source="<<source<<" self="<<rank<<" MessageProcessor::call_TAG_ASK_IS_ASSEMBLED directions="<<maxSize<<endl;
 
-	// each one of them takes 2 elements.
+	// each one of them takes 2 elements., this is 4000/8/2-1 = 249
 	int maxToProcess=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE)/2-1; // -1 because we need to track the offset and the vertex too
 	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(MPI_BTL_SM_EAGER_LIMIT);
 	message2[0]=incoming[0];
@@ -583,6 +583,14 @@ void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED(Message*message){
 
 	int nextOffset=offset+processed;
 	message2[1]=nextOffset;
+
+	#ifdef ASSERT
+	if(directions.size()==0){
+		assert(nextOffset==0);
+	}
+	#endif
+
+	cout<<"processed "<<processed<<endl;
 
 	if(nextOffset==maxSize){
 		Message aMessage(message2,2*processed+2,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_IS_ASSEMBLED_REPLY_END,rank);

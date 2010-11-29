@@ -84,7 +84,16 @@ int BufferedData::flushAll(int tag,RingAllocator*outboxAllocator,StaticVector*ou
 
 
 bool BufferedData::flush(int destination,int period,int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank,bool force){
-	int threshold=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE)/period*period;
+	#ifdef ASSERT
+	if(!force){
+		assert(period!=0);
+	}
+	#endif
+
+	int threshold=0;
+	if(!force){
+		threshold=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE)/period*period;
+	}
 
 	#ifdef ASSERT
 	assert(threshold<MPI_BTL_SM_EAGER_LIMIT);
