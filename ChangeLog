@@ -13,6 +13,8 @@ the chromosome 1 of the human genome, simulated with two libraries: 200 & 400. I
 step of this algorithm.
 * Now the approximation of fragment lengths for libraries is deterministic, no matter the order of the files
 and the number of MPI ranks (Critical Bug Fix).
+* Added two useful scripts to check resources on supercomputers with Sun Grid Engine: qhost.py and add-color-to-qhost.py.
+-> qhost.py 1072283|add-color-to-qhost.py > Ray.html
 
 = v. 1.0.0 =
 2010-11-25
