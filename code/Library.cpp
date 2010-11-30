@@ -56,7 +56,7 @@ void Library::updateDistances(){
 		(*m_sequence_id)+=(*m_parameters).getNumberOfSequences(*m_fileId);
 	// the file is finished loading.
 	}else if((*m_sequence_idInFile)==(*m_parameters).getNumberOfSequences(*m_fileId)){
-		cout<<"Rank 0 is updating distances "<<(*m_parameters).getNumberOfSequences(*m_fileId)<<"/"<<(*m_parameters).getNumberOfSequences(*m_fileId)<<" (completed)"<<endl;
+		cout<<"Rank 0 is updating library lengths "<<(*m_parameters).getNumberOfSequences(*m_fileId)<<"/"<<(*m_parameters).getNumberOfSequences(*m_fileId)<<" (completed)"<<endl;
 		(*m_fileId)++;
 		(*m_sequence_idInFile)=0;
 	// we can process the sequence.
@@ -66,7 +66,7 @@ void Library::updateDistances(){
 		int sequenceIndex=(*m_sequence_id)/getSize();
 
 		if((*m_sequence_idInFile)%1000000==0){
-			cout<<"Rank 0 is updating distances "<<(*m_sequence_idInFile)+1<<"/"<<(*m_parameters).getNumberOfSequences(*m_fileId)<<endl;
+			cout<<"Rank 0 is updating library lengths "<<(*m_sequence_idInFile)+1<<"/"<<(*m_parameters).getNumberOfSequences(*m_fileId)<<endl;
 		}
 
 		if(m_parameters->isRightFile(*m_fileId) || (m_parameters->isInterleavedFile(*m_fileId) &&(*m_sequence_idInFile)%2==1)){
@@ -90,9 +90,11 @@ void Library::updateDistances(){
 
 void Library::detectDistances(){
 	if(m_seedingData->m_SEEDING_i==(int)m_seedingData->m_SEEDING_seeds.size()){
-		printf("Rank %i detected %i distances.\n",getRank(),m_detectedDistances);
+		printf("Rank %i detected %i library lengths\n",getRank(),m_detectedDistances);
 		fflush(stdout);
-		cout<<"Rank "<<getRank()<<" is calculating library sizes "<<m_seedingData->m_SEEDING_seeds.size()<<"/"<<m_seedingData->m_SEEDING_seeds.size()<<" (completed)"<<endl;
+		printf("Rank %i is calculating library lengths %i/%i (completed)\n",getRank(),(int)m_seedingData->m_SEEDING_seeds.size(),(int)m_seedingData->m_SEEDING_seeds.size());
+		fflush(stdout);
+		
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE,getRank());
 		m_outbox->push_back(aMessage);
 		(*m_mode)=MODE_DO_NOTHING;
@@ -107,7 +109,8 @@ void Library::detectDistances(){
 	}else{
 		if(!m_ed->m_EXTENSION_reads_requested){
 			if(m_ed->m_EXTENSION_currentPosition==0 && m_seedingData->m_SEEDING_i%30==0){
-				cout<<"Rank "<<getRank()<<" is calculating library sizes "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_seedingData->m_SEEDING_seeds.size()<<""<<endl;
+				printf("Rank %i is calculating library lengths %i/%i (completed)\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_seedingData->m_SEEDING_seeds.size());
+				fflush(stdout);
 			}
 			m_ed->m_EXTENSION_reads_requested=true;
 			m_ed->m_EXTENSION_reads_received=false;

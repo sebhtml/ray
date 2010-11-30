@@ -597,8 +597,8 @@ void Machine::finishFusions(){
 	bool done=false;
 	if(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
 		if(!m_Machine_getPaths_DONE){
-			if(m_ed->m_EXTENSION_currentPosition!=(int)m_FINISH_pathsForPosition.size()-1
-			&& m_ed->m_EXTENSION_currentPosition!=(int)m_FINISH_pathsForPosition.size()-overlapMinimumLength){
+			if(m_ed->m_EXTENSION_currentPosition!=(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-1
+			&& m_ed->m_EXTENSION_currentPosition!=(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-overlapMinimumLength){
 				m_Machine_getPaths_DONE=true;
 			}else{
 				getPaths(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition]);
@@ -742,17 +742,18 @@ void Machine::finishFusions(){
 					m_FINISH_vertex_requested=true;
 					m_FINISH_vertex_received=false;
 				}else if(m_FINISH_vertex_received){
-					if(!m_Machine_getPaths_DONE){
+					/*if(!m_Machine_getPaths_DONE){
 						getPaths(m_FINISH_received_vertex);
 					}else{
-						m_FINISH_pathsForPosition.push_back(m_Machine_getPaths_result);
-						m_FINISH_newFusions[m_FINISH_newFusions.size()-1].push_back(m_FINISH_received_vertex);
-						m_FINISH_vertex_requested=false;
-						m_Machine_getPaths_INITIALIZED=false;
-						m_Machine_getPaths_DONE=false;
-						m_selectedPosition++;
-						m_FINISH_fusionOccured=true;
-					}
+					*/
+					//m_FINISH_pathsForPosition.push_back(m_Machine_getPaths_result);
+					m_FINISH_newFusions[m_FINISH_newFusions.size()-1].push_back(m_FINISH_received_vertex);
+					m_FINISH_vertex_requested=false;
+					//m_Machine_getPaths_INITIALIZED=false;
+					//m_Machine_getPaths_DONE=false;
+					m_selectedPosition++;
+					m_FINISH_fusionOccured=true;
+					//}
 				}
 			}else{
 				#ifdef SHOW_FUSION
@@ -774,8 +775,8 @@ void Machine::finishFusions(){
 		m_Machine_getPaths_INITIALIZED=false;
 		m_Machine_getPaths_DONE=false;
 		m_checkedValidity=false;
+		m_FINISH_pathsForPosition.clear();
 	}
-
 }
 
 void Machine::makeFusions(){
