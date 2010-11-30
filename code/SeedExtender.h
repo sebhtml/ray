@@ -44,6 +44,8 @@ class SeedExtender{
 	EarlyStoppingTechnology m_earlyStoppingTechnology;
 	bool m_skippedASeed;
 	map<u64,char> m_readsStrands;
+
+	set<u64> m_eliminatedSeeds;
 public:
 
 	
@@ -106,6 +108,8 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 	vector<Direction>*getDirections();
 
 	void storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<vector<VERTEX_TYPE> >*seeds,u64*currentVertex);
+
+	set<u64>*getEliminatedSeeds();
 };
 
 #endif

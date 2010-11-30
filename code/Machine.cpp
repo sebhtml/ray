@@ -1479,13 +1479,15 @@ void Machine::call_MODE_START_SEEDING(){
 		if(m_seedingData->m_SEEDING_i==(int)m_subgraph.size()-1){
 
 			m_mode=MODE_DO_NOTHING;
-			cout<<"Rank "<<getRank()<<" is creating seeds "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_subgraph.size()<<" (completed)"<<endl;
+			printf("Rank %i is creating seeds %i/%i (completed)\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_subgraph.size());
+			fflush(stdout);
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_SEEDING_IS_OVER,getRank());
 			m_seedingData->m_SEEDING_nodes.clear();
 			m_outbox.push_back(aMessage);
 		}else{
 			if(m_seedingData->m_SEEDING_i % 100000 ==0){
-				cout<<"Rank "<<getRank()<<" is creating seeds "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_subgraph.size()<<endl;
+				printf("Rank %i is creating seeds %i/%i\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_subgraph.size());
+				fflush(stdout);
 			}
 			m_seedingData->m_SEEDING_currentVertex=m_seedingData->m_SEEDING_nodes[m_seedingData->m_SEEDING_i];
 			m_seedingData->m_SEEDING_first=m_seedingData->m_SEEDING_currentVertex;
@@ -1548,27 +1550,24 @@ void Machine::call_MODE_START_SEEDING(){
 					// dump the reverse and keep the forward
 
 					m_seedingData->m_SEEDING_seeds.push_back(m_seedingData->m_SEEDING_seed);
-		/*
 					u64 firstVertex=m_seedingData->m_SEEDING_seed[0];
 					u64 lastVertex=m_seedingData->m_SEEDING_seed[m_seedingData->m_SEEDING_seed.size()-1];
 					u64 lastVertexReverse=complementVertex(lastVertex,m_wordSize,m_colorSpaceMode);
 					int aRank=vertexRank(firstVertex);
 					int bRank=vertexRank(lastVertexReverse);
- * 		this is now working:
- *
+
 					if(aRank==bRank){
-						if(m_eliminatedSeeds.count(firstVertex)==0 && m_eliminatedSeeds.count(lastVertexReverse)==0){
-							m_eliminatedSeeds.insert(lastVertexReverse);
-							m_seedingData->m_SEEDING_seeds.push_back(m_seedingData->m_SEEDING_seed);
+						if(m_seedExtender.getEliminatedSeeds()->count(firstVertex)==0 && m_seedExtender.getEliminatedSeeds()->count(lastVertexReverse)==0){
+							m_seedExtender.getEliminatedSeeds()->insert(firstVertex);
+							//m_seedingData->m_SEEDING_seeds.push_back(m_seedingData->m_SEEDING_seed);
 						}
 					// if they are on two ranks,
 					// keep the one on the rank with the lower number.
 					}else if((aRank+bRank)%2==0 && aRank<bRank){
-						m_seedingData->m_SEEDING_seeds.push_back(m_seedingData->m_SEEDING_seed);
+						m_seedExtender.getEliminatedSeeds()->insert(firstVertex);
 					}else if(((aRank+bRank)%2==1 && aRank>bRank)){
-						m_seedingData->m_SEEDING_seeds.push_back(m_seedingData->m_SEEDING_seed);
+						m_seedExtender.getEliminatedSeeds()->insert(firstVertex);
 					}
-		*/
 				}
 			}else{
 				m_seedingData->m_SEEDING_seed.push_back(m_seedingData->m_SEEDING_currentVertex);

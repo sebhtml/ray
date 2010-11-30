@@ -104,7 +104,8 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 			checkIfCurrentVertexIsAssembled(ed,outbox,outboxAllocator,outgoingEdgeIndex,last_value,
 	currentVertex,theRank,vertexCoverageRequested,wordSize,colorSpaceMode,size,seeds);
 		}
-	}else if((ed->m_EXTENSION_vertexIsAssembledResult and ed->m_EXTENSION_currentPosition==0 and ed->m_EXTENSION_complementedSeed==false)){
+	}else if((ed->m_EXTENSION_currentPosition==0 && m_eliminatedSeeds.count(ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition])>0)
+	|| (ed->m_EXTENSION_vertexIsAssembledResult and ed->m_EXTENSION_currentPosition==0 and ed->m_EXTENSION_complementedSeed==false)){
 		//cout<<"Rank "<<theRank<<": Ray Early-Stopping Technology was triggered, Case 1: seed is already processed at p=0."<<endl;
 		ed->m_EXTENSION_currentSeedIndex++;// skip the current one.
 		ed->m_EXTENSION_currentPosition=0;
@@ -999,4 +1000,8 @@ SeedExtender::SeedExtender(){
 
 vector<Direction>*SeedExtender::getDirections(){
 	return &m_receivedDirections;
+}
+
+set<u64>*SeedExtender::getEliminatedSeeds(){
+	return &m_eliminatedSeeds;
 }
