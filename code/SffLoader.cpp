@@ -63,20 +63,22 @@ void invert64(VERTEX_TYPE*c){
 	}
 }
 
-// see manual http://sequence.otago.ac.nz/download/GS_FLX_Software_Manual.pdf,
-// page 445-448
-// or 
-// http://blog.malde.org/index.php/2008/11/14/454-sequencing-and-parsing-the-sff-binary-format/
-int SffLoader::load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
+int SffLoader::open(string file){
+	m_size=0;
+	m_loaded=0;
+	return openSff(file);
+}
+
+int SffLoader::openSff(string file){
 	uint32_t magic_number;
 	uint32_t version;
 	VERTEX_TYPE index_offset;
 	uint32_t index_length;
 	uint32_t number_of_reads;
-	FILE*fp=fopen(file.c_str(),"r");
+	m_fp=fopen(file.c_str(),"r");
 	size_t fread_result;
-	fread_result=fread((char*)&magic_number,1,sizeof(uint32_t),fp);
-	fread_result=fread((char*)&version,1,sizeof(uint32_t),fp);
+	fread_result=fread((char*)&magic_number,1,sizeof(uint32_t),m_fp);
+	fread_result=fread((char*)&version,1,sizeof(uint32_t),m_fp);
 	invert32(&magic_number);
 	invert32(&version);
 	uint32_t MAGIC=0x2e736666;
@@ -91,84 +93,96 @@ int SffLoader::load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
 		(cout)<<"Error: incorrect version"<<endl;
 		return EXIT_FAILURE;
 	}
-	fread_result=fread((char*)&index_offset,1,sizeof(VERTEX_TYPE),fp);
+	fread_result=fread((char*)&index_offset,1,sizeof(VERTEX_TYPE),m_fp);
 	invert64(&index_offset);
 	//(cout)<<"Using clip values"<<endl;
 	//(cout)<<"Index offset: "<<index_offset<<endl;
-	fread_result=fread((char*)&index_length,1,sizeof(uint32_t),fp);
-	fread_result=fread((char*)&number_of_reads,1,sizeof(uint32_t),fp);
+	fread_result=fread((char*)&index_length,1,sizeof(uint32_t),m_fp);
+	fread_result=fread((char*)&number_of_reads,1,sizeof(uint32_t),m_fp);
 	invert32(&index_length);
 	invert32(&number_of_reads);
-	uint16_t header_length;
-	fread_result=fread((char*)&header_length,1,sizeof(uint16_t),fp);
-	invert16(&header_length);
-	uint16_t key_length;
 	
-	fread_result=fread((char*)&key_length,1,sizeof(uint16_t),fp);
+	m_size=number_of_reads;
+
+	uint16_t header_length;
+	fread_result=fread((char*)&header_length,1,sizeof(uint16_t),m_fp);
+	invert16(&header_length);
+	
+	fread_result=fread((char*)&key_length,1,sizeof(uint16_t),m_fp);
 	invert16(&key_length);
-	uint16_t number_of_flows_per_read;
-	fread_result=fread((char*)&number_of_flows_per_read,1,sizeof(uint16_t),fp);
-	invert16(&number_of_flows_per_read);
+	fread_result=fread((char*)&m_number_of_flows_per_read,1,sizeof(uint16_t),m_fp);
+	invert16(&m_number_of_flows_per_read);
 	uint8_t flowgram_format_code;
-	fread_result=fread((char*)&flowgram_format_code,1,sizeof(uint8_t),fp);
-	char*flow_chars=(char*)__Malloc(number_of_flows_per_read+1);
-	fread_result=fread(flow_chars,1,number_of_flows_per_read,fp);
-	flow_chars[number_of_flows_per_read]='\0';
-	char*key_sequence=(char*)__Malloc(key_length+1);
-	fread_result=fread(key_sequence,1,key_length,fp);
+	fread_result=fread((char*)&flowgram_format_code,1,sizeof(uint8_t),m_fp);
+	flow_chars=(char*)__Malloc(m_number_of_flows_per_read+1);
+	fread_result=fread(flow_chars,1,m_number_of_flows_per_read,m_fp);
+	flow_chars[m_number_of_flows_per_read]='\0';
+	key_sequence=(char*)__Malloc(key_length+1);
+	fread_result=fread(key_sequence,1,key_length,m_fp);
 	key_sequence[key_length]='\0';
 	
-	
 	// padding
-	while(ftell(fp)%8!=0)
-		fgetc(fp);
+	while(ftell(m_fp)%8!=0){
+		fgetc(m_fp);
+	}
+	return EXIT_SUCCESS;
+}
 
-	for(int readId=0;readId<(int)number_of_reads;readId++){
+// see manual http://sequence.otago.ac.nz/download/GS_FLX_Software_Manual.pdf,
+// page 445-448
+// or 
+// http://blog.malde.org/index.php/2008/11/14/454-sequencing-and-parsing-the-sff-binary-format/
+void SffLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
+
+	int loadedSequences=0;
+	size_t fread_result;
+
+	while(m_loaded<m_size && loadedSequences<maxToLoad){
 		uint16_t read_header_length;
-		fread_result=fread((char*)&read_header_length,1,sizeof(uint16_t),fp);
+		fread_result=fread((char*)&read_header_length,1,sizeof(uint16_t),m_fp);
 		invert16(&read_header_length);
 		uint16_t name_length;
-		fread_result=fread((char*)&name_length,1,sizeof(uint16_t),fp);
+		fread_result=fread((char*)&name_length,1,sizeof(uint16_t),m_fp);
 		invert16(&name_length);
 		uint32_t number_of_bases;
-		fread_result=fread((char*)&number_of_bases,1,sizeof(uint32_t),fp);
+		fread_result=fread((char*)&number_of_bases,1,sizeof(uint32_t),m_fp);
 		invert32(&number_of_bases);
 		uint16_t clip_qual_left;
-		fread_result=fread((char*)&clip_qual_left,1,sizeof(uint16_t),fp);
+		fread_result=fread((char*)&clip_qual_left,1,sizeof(uint16_t),m_fp);
 		invert16(&clip_qual_left);
 		uint16_t clip_qual_right;
-		fread_result=fread((char*)&clip_qual_right,1,sizeof(uint16_t),fp);
+		fread_result=fread((char*)&clip_qual_right,1,sizeof(uint16_t),m_fp);
 		invert16(&clip_qual_right);
 		uint16_t clip_adaptor_left;
-		fread_result=fread((char*)&clip_adaptor_left,1,sizeof(uint16_t),fp);
+		fread_result=fread((char*)&clip_adaptor_left,1,sizeof(uint16_t),m_fp);
 		invert16(&clip_adaptor_left);
 		uint16_t clip_adaptor_right;
-		fread_result=fread((char*)&clip_adaptor_right,1,sizeof(uint16_t),fp);
+		fread_result=fread((char*)&clip_adaptor_right,1,sizeof(uint16_t),m_fp);
 		invert16(&clip_adaptor_right);
 		char*Name=(char*)__Malloc(name_length+1);
-		fread_result=fread(Name,1,name_length,fp);
+		fread_result=fread(Name,1,name_length,m_fp);
 		Name[name_length]='\0';
 
 		// padding
-		while(ftell(fp)%8!=0)
-			fgetc(fp);
+		while(ftell(m_fp)%8!=0)
+			fgetc(m_fp);
 
-		int skip=number_of_flows_per_read*sizeof(uint16_t);
+		int skip=m_number_of_flows_per_read*sizeof(uint16_t);
 		for(int i=0;i<skip;i++)
-			fgetc(fp);
+			fgetc(m_fp);
 		skip=number_of_bases*sizeof(uint8_t);
 		for(int i=0;i<skip;i++)
-			fgetc(fp);
+			fgetc(m_fp);
 		char*Bases=(char*)__Malloc(number_of_bases+1);
-		fread_result=fread(Bases,1,number_of_bases,fp);
+		fread_result=fread(Bases,1,number_of_bases,m_fp);
 		Bases[number_of_bases]='\0';
 		skip=number_of_bases*sizeof(uint8_t);
 		for(int i=0;i<skip;i++)
-			fgetc(fp);
+			fgetc(m_fp);
 
 		// padding
-		while(ftell(fp)%8!=0)
-			fgetc(fp);
+		while(ftell(m_fp)%8!=0)
+			fgetc(m_fp);
 
 		int first=max(1,max(clip_qual_left,clip_adaptor_left));
 		int last=min((clip_qual_right==0?number_of_bases:clip_qual_right),
@@ -183,22 +197,21 @@ int SffLoader::load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
 		Read read;
 		read.copy(Name,sequence.substr(first-1,last-first+1).c_str(),seqMyAllocator,true);
 		reads->push_back(&read);
-		m_bases+=strlen(read.getSeq());
+	
+		loadedSequences++;
+		m_loaded++;
+
 		__Free(Name);
 		__Free(Bases);
 	}
 
-	delete[] key_sequence;
-	delete[] flow_chars;
-	fclose(fp);
-
-	return EXIT_SUCCESS;
+	if(m_loaded==m_size){
+		delete[] key_sequence;
+		delete[] flow_chars;
+		fclose(m_fp);
+	}
 }
 
-SffLoader::SffLoader(){
-	m_bases=0;
-}
-
-int SffLoader::getBases(){
-	return m_bases;
+int SffLoader::getSize(){
+	return m_size;
 }

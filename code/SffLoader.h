@@ -26,6 +26,7 @@
 #include<string>
 #include<vector>
 #include<Read.h>
+#include<stdio.h>
 #include<fstream>
 #include<ArrayOfReads.h>
 #include<MyAllocator.h>
@@ -36,11 +37,20 @@ using namespace std;
  * see http://454.com
  */
 class SffLoader{
-	int m_bases;
+	int m_size;
+	int m_loaded;
+	FILE*m_fp;
+	uint16_t m_number_of_flows_per_read;
+	char*key_sequence;
+	uint16_t key_length;
+	char*flow_chars;
+
+	int openSff(string file);
+
 public:
-	SffLoader();
-	int getBases();
-	int load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
+	int open(string file);
+	int getSize();
+	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
 };
 
 #endif

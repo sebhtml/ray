@@ -75,6 +75,8 @@ bool SequencesLoader::loadSequences(int rank,int size,
 		}else{
 			m_waitingNumber+=m_disData->m_messagesStockPaired.flushAll(TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank);
 			cout<<"Rank "<<rank<<" is sending paired information "<<m_loader.size()<<"/"<<m_loader.size()<<" (completed)"<<endl;
+			cout<<endl;
+			cout.flush();
 
 			(m_distribution_file_id)++;  // go with the next file.
 
