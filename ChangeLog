@@ -4,17 +4,18 @@
 * Added an error message for an invalid extension. Thanks to Jean-Francois
 Pombert (University of British Columbia) for the feature request.
 * Removed comparison scripts -- if you want them, download a previous version.
-* Added makefile.alternate to compile Ray if the configure script fails.
-'make -f makefile.alternate'
-* Added ArrayOfReads, a dynamic array that free is memory on clearing. (unline vector in stl, apparently.)
+* Fixed configure script.
+* Added ArrayOfReads, a dynamic array that free its memory on clearing. (unline vector in stl, apparently.)
 * Fixed a division by zero. (in BufferedData.cpp)
 * Reduced the computation time of 'Finishing fusions' from 5+ hours to 3 minutes or so for 
 the chromosome 1 of the human genome, simulated with two libraries: 200 & 400. In v. 1.0.0, many messages were unecessary for this
-step of this algorithm.
+step in the algorithm.
 * Now the approximation of fragment lengths for libraries is deterministic, no matter the order of the files
-and the number of MPI ranks (Critical Bug Fix).
+and the number of MPI ranks.
 * Added two useful scripts to check resources on supercomputers with Sun Grid Engine: qhost.py and add-color-to-qhost.py.
 -> qhost.py 1072283|add-color-to-qhost.py > Ray.html
+* Added makefile.alternate to compile Ray if the configure script fails.
+'make -f makefile.alternate'
 
 = v. 1.0.0 =
 2010-11-25

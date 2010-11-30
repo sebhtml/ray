@@ -26,7 +26,7 @@ see <http://www.gnu.org/licenses/>
 #include<config.h>
 #endif
 
-#define RAY_VERSION "1.0.0"
+#define RAY_VERSION "1.2.0"
 
 #include<master_modes.h>
 #include<slave_modes.h>

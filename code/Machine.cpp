@@ -305,6 +305,11 @@ void Machine::start(){
 
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
 	MPI_Comm_size(MPI_COMM_WORLD,&m_size);
+
+/*
+	printf("Rank %i is running as UNIX process %i on %s\n",getRank(),getpid(),serverName);
+	fflush(stdout);
+*/
 	m_sl.constructor(m_size);
 
 	assert(getSize()<=MAX_NUMBER_OF_MPI_PROCESSES);
@@ -380,8 +385,6 @@ void Machine::start(){
 		cout<<"Rank "<<getRank()<<" welcomes you to the MPI_COMM_WORLD"<<endl;
 	}
 
-	printf("Rank %i is running as UNIX process %i on %s\n",getRank(),getpid(),serverName);
-	fflush(stdout);
 	m_alive=true;
 	m_welcomeStep=true;
 	m_loadSequenceStep=false;
@@ -489,7 +492,6 @@ void Machine::start(){
 		}
 	}else{
 		if(isMaster()){
-			cout<<"Rank "<<getRank()<<": I am the master among "<<getSize()<<" ranks in the MPI_COMM_WORLD."<<endl;
 			m_master_mode=MASTER_MODE_LOAD_CONFIG;
 		}
 		run();
@@ -549,7 +551,7 @@ void Machine::finishFusions(){
 		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 		message[0]=m_FINISH_fusionOccured;
 		cout<<"Rank "<<getRank()<<" is finishing fusions "<<m_ed->m_EXTENSION_contigs.size()<<"/"<<m_ed->m_EXTENSION_contigs.size()<<" (completed)"<<endl;
-
+		cout.flush();
 	
 		/*
 		char number[10];
@@ -615,7 +617,7 @@ void Machine::finishFusions(){
 			if(m_ed->m_EXTENSION_currentPosition==0){
 				if(m_seedingData->m_SEEDING_i%10==0){
 					cout<<"Rank "<<getRank()<<" is finishing fusions "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_ed->m_EXTENSION_contigs.size()<<endl;
-
+					cout.flush();
 				}
 				vector<VERTEX_TYPE> a;
 				m_FINISH_newFusions.push_back(a);
@@ -1261,13 +1263,11 @@ void Machine::call_MASTER_MODE_LOAD_SEQUENCES(){
 }
 
 void Machine::call_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION(){
-	#ifdef SHOW_PROGRESS
 	m_timePrinter.printElapsedTime("Distribution of sequence reads");
 	cout<<endl;
-	cout<<"Rank "<<getRank()<<": starting vertices distribution."<<endl;
-	#else
-	cout<<"\r"<<"Counting vertices"<<endl;
-	#endif
+	
+	cout<<"Rank "<<getRank()<<" tells others to compute vertices"<<endl;
+
 	for(int i=0;i<getSize();i++){
 		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i,TAG_START_VERTICES_DISTRIBUTION,getRank());
 		m_outbox.push_back(aMessage);

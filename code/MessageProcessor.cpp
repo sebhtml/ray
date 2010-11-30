@@ -92,7 +92,8 @@ void MessageProcessor::call_TAG_SEND_SEQUENCE(Message*message){
 }
 
 void MessageProcessor::call_TAG_SHOW_SEQUENCES(Message*message){
-	cout<<"Rank "<<rank<<" has "<<m_myReads->size()<<" sequences"<<endl;
+	printf("Rank %i has %i sequence reads\n",rank,(int)(*m_myReads).size());
+	fflush(stdout);
 }
 
 void MessageProcessor::call_TAG_SEND_SEQUENCE_REPLY(Message*message){
@@ -108,13 +109,15 @@ void MessageProcessor::call_TAG_SEQUENCES_READY(Message*message){
 
 void MessageProcessor::call_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS(Message*message){
 	int source=message->getSource();
-	#ifdef SHOW_PROGRESS
-	cout<<"Rank "<<rank<<" has "<<(*m_myReads).size()<<" sequence reads"<<endl;
-	#endif
+	printf("Rank %i has %i sequence reads\n",rank,(int)(*m_myReads).size());
+	fflush(stdout);
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,TAG_SEQUENCES_READY,rank);
 	m_outbox->push_back(aMessage);
 }
 
+/*
+ * receive vertices (data)
+ */
 void MessageProcessor::call_TAG_VERTICES_DATA(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
@@ -123,12 +126,12 @@ void MessageProcessor::call_TAG_VERTICES_DATA(Message*message){
 	for(int i=0;i<length;i++){
 		VERTEX_TYPE l=incoming[i];
 
-		#ifdef SHOW_PROGRESS
 		if((*m_last_value)!=(int)m_subgraph->size() and (int)m_subgraph->size()%100000==0){
 			(*m_last_value)=m_subgraph->size();
-			cout<<"Rank "<<rank<<" has "<<m_subgraph->size()<<" vertices "<<endl;
+			printf("Rank %i has %i vertices\n",rank,(int)m_subgraph->size());
+			fflush(stdout);
 		}
-		#endif
+
 		SplayNode<VERTEX_TYPE,Vertex>*tmp=m_subgraph->insert(l);
 		#ifdef ASSERT
 		assert(tmp!=NULL);
@@ -290,7 +293,9 @@ void MessageProcessor::call_TAG_START_EDGES_DISTRIBUTION_ANSWER(Message*message)
 
 void MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION(Message*message){
 	int source=message->getSource();
-	cout<<"Rank "<<rank<<" has "<<m_subgraph->size()<<" vertices"<<endl;
+	printf("Rank %i has %i vertices\n",rank,(int)m_subgraph->size());
+	fflush(stdout);
+
 	Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, source, TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER,rank);
 	m_outbox->push_back(aMessage);
 }

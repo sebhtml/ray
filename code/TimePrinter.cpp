@@ -19,7 +19,7 @@
 
 */
 
-
+#include<stdio.h>
 #include<TimePrinter.h>
 #include<iostream>
 using namespace std;
@@ -38,6 +38,7 @@ void TimePrinter::printElapsedTime(string description){
 	cout<<endl;
 	m_descriptions.push_back(description);
 	m_durations.push_back(differenceWithLast);
+	fflush(stdout);
 }
 
 void TimePrinter::printDifferenceFromStart(int rank){

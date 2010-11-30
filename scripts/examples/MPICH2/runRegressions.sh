@@ -1,3 +1,4 @@
+rm *.fasta
 
 suffix=$(date +%Y-%m-%d-%H-%M-%S).txt
 
@@ -17,4 +18,4 @@ do
 	bash runRegression.sh $i $suffix
 done 
 
-) |tee Regressions-$suffix
+) | tee Regressions-$suffix

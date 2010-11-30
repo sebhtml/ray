@@ -68,7 +68,8 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			}
 			#endif
 			cout<<"Rank "<<rank<<" is assigning sequence reads "<<m_loader.size()<<"/"<<m_loader.size()<<" (completed)"<<endl;
-
+			cout<<endl;
+			cout.flush();
 	
 		// distribution of paired information is completed
 		}else{
@@ -97,11 +98,8 @@ bool SequencesLoader::loadSequences(int rank,int size,
 	//
 	}else if(m_loader.size()==0){
 		m_send_sequences_done=false;
-		#ifdef SHOW_PROGRESS
-		cout<<endl<<"Rank "<<rank<<" is loading "<<allFiles[(m_distribution_file_id)]<<""<<endl;
-		#else
-		cout<<endl<<"Loading "<<allFiles[(m_distribution_file_id)]<<""<<endl;
-		#endif
+		printf("Rank %i is loading %s\n\n",rank,allFiles[(m_distribution_file_id)].c_str());
+		fflush(stdout);
 		int res=m_loader.load(allFiles[(m_distribution_file_id)]);
 		if(res==EXIT_FAILURE){
 			return false;
