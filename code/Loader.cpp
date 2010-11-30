@@ -31,7 +31,10 @@
 using namespace std;
 
 Loader::Loader(){
-	DISTRIBUTION_ALLOCATOR_CHUNK_SIZE=300000000;
+	DISTRIBUTION_ALLOCATOR_CHUNK_SIZE=10000000;
+	m_maxToLoad=100000;
+	m_currentOffset=0;
+	m_type=FORMAT_NULL;
 }
 
 int Loader::load(string file){
@@ -51,36 +54,61 @@ int Loader::load(string file){
 	string csfastaExtension=".csfasta";
 	if(file.length()>=csfastaExtension.length() &&
 		file.substr(file.length()-csfastaExtension.length(),csfastaExtension.length())==csfastaExtension){
-		return m_color.load(file,&m_reads,&m_allocator);
+		m_type=FORMAT_CSFASTA;
+		int ret=m_color.open(file);
+		m_size=m_color.getSize();
+		return ret;
 	}
 	if(file.substr(file.length()-4,4)==".sff"){
-		return m_sff.load(file,&m_reads,&m_allocator);
+		m_type=FORMAT_SFF;
+		int ret=m_sff.open(file);
+		m_size=m_sff.getSize();
+		return ret;
+		
 	}
 	if(file.substr(file.length()-6,6)==".fasta"){
-		return m_fasta.load(file,&m_reads,&m_allocator);
+		m_type=FORMAT_FASTA;
+		int ret=m_fasta.open(file);
+		m_size=m_fasta.getSize();
+		return ret;
 	}
 
 	if(file.substr(file.length()-6,6)==".fastq"){
-		return m_fastq.load(file,&m_reads,&m_allocator);
+		m_type=FORMAT_FASTQ;
+		int ret=m_fastq.open(file);
+		m_size=m_fastq.getSize();
+		return ret;
 	}
 
 	#ifdef HAVE_ZLIB
 	if(file.substr(file.length()-9,9)==".fastq.gz"){
-		return m_fastqgz.load(file,&m_reads,&m_allocator,4);
+		m_type=FORMAT_FASTQ_GZ;
+		int ret=m_fastqgz.open(file,4);
+		m_size=m_fastqgz.getSize();
+		return ret;
 	}
 
 	if(file.substr(file.length()-9,9)==".fasta.gz"){
-		return m_fastqgz.load(file,&m_reads,&m_allocator,2);
+		m_type=FORMAT_FASTA_GZ;
+		int ret=m_fastqgz.open(file,2);
+		m_size=m_fastqgz.getSize();
+		return ret;
 	}
 	#endif
 
 	#ifdef HAVE_LIBBZ2
 	if(file.substr(file.length()-10,10)==".fastq.bz2"){
-		return m_fastqbz2.load(file,&m_reads,&m_allocator,4);
+		m_type=FORMAT_FASTQ_BZ2;
+		int ret=m_fastqbz2.open(file,4);
+		m_size=m_fastqbz2.getSize();
+		return ret;
 	}
 
 	if(file.substr(file.length()-10,10)==".fasta.bz2"){
-		return m_fastqbz2.load(file,&m_reads,&m_allocator,2);
+		m_type=FORMAT_FASTA_BZ2;
+		int ret=m_fastqbz2.open(file,2);
+		m_size=m_fastqbz2.getSize();
+		return ret;
 	}
 	#endif
 	
@@ -90,17 +118,50 @@ int Loader::load(string file){
 }
 
 Read*Loader::at(int i){
-	return m_reads.at(i);
+	if(i>=m_currentOffset+m_reads.size()){
+		loadSequences();
+	}
+	return m_reads.at(i-m_currentOffset);
 }
 
 int Loader::size(){
-	return m_reads.size();
+	return m_size;
 }
 
 void Loader::clear(){
 	m_reads.clear();
 	m_allocator.clear();
+	m_size=0;
+	m_currentOffset=0;
+	m_type=FORMAT_NULL;
+
 	#ifdef ASSERT
 	assert(m_reads.size()==0);
 	#endif
+}
+
+void Loader::loadSequences(){
+	m_currentOffset+=m_reads.size();
+	//cout<<"Offset= "<<m_currentOffset<<endl;
+	m_reads.clear();
+	m_allocator.clear();
+	m_allocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
+
+	if(m_type==FORMAT_FASTQ_GZ){
+		m_fastqgz.load(m_maxToLoad,&m_reads,&m_allocator,4);
+	}else if(m_type==FORMAT_FASTQ){
+		m_fastq.load(m_maxToLoad,&m_reads,&m_allocator);
+	}else if(m_type==FORMAT_FASTQ_BZ2){
+		m_fastqbz2.load(m_maxToLoad,&m_reads,&m_allocator,4);
+	}else if(m_type==FORMAT_CSFASTA){
+		m_color.load(m_maxToLoad,&m_reads,&m_allocator);
+	}else if(m_type==FORMAT_SFF){
+		m_sff.load(m_maxToLoad,&m_reads,&m_allocator);
+	}else if(m_type==FORMAT_FASTA){
+		m_fasta.load(m_maxToLoad,&m_reads,&m_allocator);
+	}else if(m_type==FORMAT_FASTA_BZ2){
+		m_fastqbz2.load(m_maxToLoad,&m_reads,&m_allocator,2);
+	}else if(m_type==FORMAT_FASTA_GZ){
+		m_fastqgz.load(m_maxToLoad,&m_reads,&m_allocator,2);
+	}
 }

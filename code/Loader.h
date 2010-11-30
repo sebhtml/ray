@@ -46,14 +46,31 @@
 
 using namespace std;
 
+enum{
+FORMAT_NULL,
+FORMAT_CSFASTA,
+FORMAT_SFF,
+FORMAT_FASTA,
+FORMAT_FASTQ,
+FORMAT_FASTA_GZ,
+FORMAT_FASTQ_GZ,
+FORMAT_FASTA_BZ2,
+FORMAT_FASTQ_BZ2
+};
+
 /*
  * Loader loads data files. Data can be formated as SFF, FASTA, and FASTQ.
  * Ray makes no use of quality values, so Their encoding is irrelevant.
  */
 class Loader{
+	int m_type;
 	int DISTRIBUTION_ALLOCATOR_CHUNK_SIZE;
 	ArrayOfReads m_reads;
 	MyAllocator m_allocator;
+
+	int m_currentOffset;
+	int m_maxToLoad;
+	int m_size;
 
 	SffLoader m_sff;
 	ColorSpaceLoader m_color;
@@ -67,6 +84,8 @@ class Loader{
 	#ifdef HAVE_LIBBZ2
 	FastqBz2Loader m_fastqbz2;
 	#endif
+
+	void loadSequences();
 
 public:
 	Loader();

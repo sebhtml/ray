@@ -22,20 +22,41 @@
 #include<FastaLoader.h>
 #include<fstream>
 
-int FastaLoader::load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
+int FastaLoader::open(string file){
+	m_f.open(file.c_str());
+	m_size=0;
+
+	string buffer;
+	while(!m_f.eof()){
+		buffer="";
+		m_f>>buffer;
+		if(buffer=="")
+			continue;
+		if(buffer[0]=='>'){
+			m_size++;
+		}
+	}
+	m_f.close();
+	m_f.open(file.c_str());
+	return EXIT_SUCCESS;
+}
+
+void FastaLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
 	string id;
 	ostringstream sequence;
 	string buffer;
-	ifstream f(file.c_str());
-	while(!f.eof()){
+	int loadedSequences=0;
+
+	while(!m_f.eof() && loadedSequences<maxToLoad-1){
 		buffer="";
-		f>>buffer;
+		m_f>>buffer;
 		if(buffer=="")
 			continue;
 		if(buffer[0]=='>'){
 			char bufferForLine[1024];
-			f.getline(bufferForLine,1024);
+			m_f.getline(bufferForLine,1024);
 			if(id!=""){
+				loadedSequences++;
 				string sequenceStr=sequence.str();
 
 				Read t;
@@ -48,15 +69,18 @@ int FastaLoader::load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator)
 			sequence<< buffer;
 		}
 	}
-	string sequenceStr=sequence.str();
-	ostringstream quality;
-	for(int i=0;i<(int)sequenceStr.length();i++){
-		quality<< "F";
+
+	if(m_f.eof()){
+		m_f.close();
 	}
+
+	string sequenceStr=sequence.str();
+
 	Read t;
 	t.copy(NULL,sequenceStr.c_str(),seqMyAllocator,true);
 	reads->push_back(&t);
+}
 
-	f.close();
-	return EXIT_SUCCESS;
+int FastaLoader::getSize(){
+	return m_size;
 }
