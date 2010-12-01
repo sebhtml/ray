@@ -2350,7 +2350,7 @@ am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
 
 
 
-ac_config_headers="$ac_config_headers code/config.h"
+ac_config_headers="$ac_config_headers config.h"
 
 
 if test x"${CXXFLAGS+set}" = xset; then
@@ -8818,7 +8818,7 @@ cat >>$CONFIG_STATUS <<\_ACEOF || ac_write_fail=1
 for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
-    "code/config.h") CONFIG_HEADERS="$CONFIG_HEADERS code/config.h" ;;
+    "config.h") CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "code/Makefile") CONFIG_FILES="$CONFIG_FILES code/Makefile" ;;
