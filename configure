@@ -641,7 +641,6 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
-AM_CXXFLAGS
 HAVE_BZ2_FALSE
 HAVE_BZ2_TRUE
 HAVE_ZLIB_FALSE
@@ -2354,13 +2353,13 @@ am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
 ac_config_headers="$ac_config_headers code/config.h"
 
 
-#if test x"${CXXFLAGS+set}" = xset; then
+if test x"${CXXFLAGS+set}" = xset; then
   # the user set CXXFLAGS; don't override it.
-#  flags_were_set=true
-#else
-#  flags_were_set=false
-#  CXXFLAGS=""
-#fi
+  flags_were_set=true
+else
+  flags_were_set=false
+  CXXFLAGS=""
+fi
 
 if test -n "$ac_tool_prefix"; then
   # Extract the first word of "${ac_tool_prefix}ranlib", so it can be a program name with args.
@@ -8148,13 +8147,7 @@ fi
 fi
 
 
-
-AM_CXXFLAGS='-O3 -Wall -Wextra -Werror'
-
-
-
 ac_config_files="$ac_config_files Makefile code/Makefile"
-
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
