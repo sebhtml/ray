@@ -32,13 +32,11 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<Parameters.h>
 
 void Library::updateDistances(){
-	cout<<"updateDistances"<<endl;
 	VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	int libraries=m_parameters->getNumberOfLibraries();
 	int*intMessage=(int*)message;
 	intMessage[0]=libraries;
 
-	cout<<"L="<<libraries<<endl;
 
 	for(int i=0;i<libraries;i++){
 		int average=m_parameters->getFragmentLength(i);
@@ -82,7 +80,7 @@ void Library::detectDistances(){
 	}else{
 		if(!m_ed->m_EXTENSION_reads_requested){
 			if(m_ed->m_EXTENSION_currentPosition==0 && m_seedingData->m_SEEDING_i%30==0){
-				printf("Rank %i is calculating library lengths %i/%i (completed)\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_seedingData->m_SEEDING_seeds.size());
+				printf("Rank %i is calculating library lengths %i/%i\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_seedingData->m_SEEDING_seeds.size());
 				fflush(stdout);
 			}
 			m_ed->m_EXTENSION_reads_requested=true;

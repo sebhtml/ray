@@ -1248,7 +1248,7 @@ void MessageProcessor::call_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE(Message*mes
 
 
 void MessageProcessor::call_TAG_LIBRARY_DISTANCE_REPLY(Message*message){
-	(*m_ready)=true;
+	m_library->setReadiness();
 }
 
 void MessageProcessor::call_TAG_LIBRARY_DISTANCE(Message*message){
