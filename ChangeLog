@@ -19,6 +19,12 @@ and the number of MPI ranks.
 * Added makefile.alternate to compile Ray if the configure script fails.
 'make -f makefile.alternate'
 * Added an fflush call after calls to printf to have a beautiful output in stdout with MPICH2.
+* Removed DistributionData.
+* PairedRead now contains m_readIndex (u32), m_rank (u16) and m_library (u8)
+instead of m_readIndex (u32), m_rank (u16), m_fragmentSize (u16) and
+m_deviation (u16). That means storing one paired read needs 6 bytes instead of
+20 bytes. Library information are stored in Parameters.
+
 
 
 = v. 1.0.0 =

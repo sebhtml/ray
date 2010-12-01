@@ -26,6 +26,7 @@
 
 
 #include<map>
+#include<common_functions.h>
 #include<set>
 #include<string>
 #include<vector>
@@ -39,6 +40,12 @@ using namespace std;
  *
  */
 class Parameters{
+	int m_rank;
+
+	int m_libraryAverageLength[MAXIMUM_NUMBER_OF_LIBRARIES];
+	int m_libraryDeviation[MAXIMUM_NUMBER_OF_LIBRARIES];
+	int m_numberOfLibraries;
+
 	bool m_error;
 	string m_prefix;
 	bool m_amos;
@@ -46,7 +53,9 @@ class Parameters{
 	int m_numberOfSequences;
 	vector<string> m_singleEndReadsFile;
 	vector<int> m_numberOfSequencesInFile;
-	map<int,int> m_automaticFiles;// mapping from rightFileId to libraryId
+	map<int,int> m_fileLibrary;
+	set<int> m_automaticLibraries;
+
 	string m_directory;
 	string m_outputFile;
 	int m_wordSize;
@@ -54,12 +63,11 @@ class Parameters{
 	set<int> m_leftFiles;
 	set<int> m_rightFiles;
 	set<int> m_interleavedFiles;
-	map<int,int> m_averageFragmentLengths;
-	map<int,int> m_standardDeviations;
+
 	bool m_colorSpaceMode;
 	string m_input;
 	vector<string> m_commands;
-	vector<map<int,int> > m_observedDistances;
+	map<int,map<int,int> >  m_observedDistances;
 	vector<int> m_observedAverageDistances;
 	vector<int> m_observedStandardDeviations;
 	void loadCommandsFromArguments(int argc,char**argv);
@@ -72,7 +80,7 @@ class Parameters{
 public:
 	Parameters();
 	string getReceivedMessagesFile();
-	void load(int argc,char**argv);
+	void constructor(int argc,char**argv,int rank);
 	bool isInitiated();
 	vector<string> getAllFiles();
 	string getDirectory();
@@ -98,10 +106,13 @@ public:
 	int getNumberOfSequences(int n);
 	void setNumberOfSequences(int n);
 	int getNumberOfFiles();
-	bool isAutomatic(int file);
+	bool isAutomatic(int library);
 	int getLibrary(int file);
 	void printFinalMessage();
 	bool isInterleavedFile(int i);
+
+	void addLibraryData(int library,int average,int deviation);
+	int getNumberOfLibraries();
 };
 
 #endif

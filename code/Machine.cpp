@@ -24,6 +24,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 */
 
+#include<SplayNode.h>
 #include<mpi.h>
 #include<EdgesExtractor.h>
 #include<Machine.h>
@@ -219,13 +220,15 @@ Machine::Machine(int argc,char**argv){
 
 
 void Machine::start(){
+
+
 	m_ready=true;
 	m_maxCoverage=0;
 	m_maxCoverage--;// underflow.
 	int numberOfTrees=_FOREST_SIZE;
 
-	#ifdef SHOW_PROGRESS
-	#endif
+	m_seedExtender.constructor(&m_parameters);
+
 	srand(m_lastTime);
 	m_fusionData->m_fusionStarted=false;
 	m_ed->m_EXTENSION_numberOfRanksDone=0;
@@ -254,8 +257,8 @@ void Machine::start(){
 	m_sequence_ready_machines=0;
 	m_isFinalFusion=false;
 
-	m_outboxAllocator.constructor(MAX_ALLOCATED_MESSAGES_IN_OUTBOX,MPI_BTL_SM_EAGER_LIMIT);
-	m_inboxAllocator.constructor(MAX_ALLOCATED_MESSAGES_IN_INBOX,MPI_BTL_SM_EAGER_LIMIT);
+	m_outboxAllocator.constructor(MAX_ALLOCATED_MESSAGES_IN_OUTBOX,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	m_inboxAllocator.constructor(MAX_ALLOCATED_MESSAGES_IN_INBOX,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
 	m_directionsAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
 
@@ -274,6 +277,9 @@ void Machine::start(){
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
 	MPI_Comm_size(MPI_COMM_WORLD,&m_size);
 
+
+	m_parameters.constructor(m_argc,m_argv,getRank());
+
 /*
 	printf("Rank %i is running as UNIX process %i on %s\n",getRank(),getpid(),serverName);
 	fflush(stdout);
@@ -282,29 +288,30 @@ void Machine::start(){
 
 	assert(getSize()<=MAX_NUMBER_OF_MPI_PROCESSES);
 	
-	m_fusionData->constructor(getSize(),MPI_BTL_SM_EAGER_LIMIT);
+	m_fusionData->constructor(getSize(),MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
 	if(isMaster()){
 		cout<<"Bienvenue !"<<endl;
 		cout<<endl;
 
-		cout<<"Rank 0: Ray "<<RAY_VERSION<<endl;
+		cout<<"Rank "<<MASTER_RANK<<": Ray "<<RAY_VERSION<<endl;
 
 		#ifdef MPICH2
-                cout<<"Rank 0: compiled with MPICH2 "<<MPICH2_VERSION<<endl;
+                cout<<"Rank "<<MASTER_RANK<<": compiled with MPICH2 "<<MPICH2_VERSION<<endl;
 		#endif
 
 		#ifdef OMPI_MPI_H
-                cout<<"Rank 0: compiled with Open-MPI "<<OMPI_MAJOR_VERSION<<"."<<OMPI_MINOR_VERSION<<"."<<OMPI_RELEASE_VERSION<<endl;
+                cout<<"Rank "<<MASTER_RANK<<": compiled with Open-MPI "<<OMPI_MAJOR_VERSION<<"."<<OMPI_MINOR_VERSION<<"."<<OMPI_RELEASE_VERSION<<endl;
 		#endif
 
 		#ifdef HAVE_ZLIB
-		cout<<"Rank 0: compiled with GZIP"<<endl;
+		cout<<"Rank "<<MASTER_RANK<<": compiled with GZIP"<<endl;
 		#endif
 
 		#ifdef HAVE_LIBBZ2
-		cout<<"Rank 0: compiled with BZIP2"<<endl;
+		cout<<"Rank "<<MASTER_RANK<<": compiled with BZIP2"<<endl;
 		#endif
+
 		cout<<endl;
 		m_timePrinter.printElapsedTime("Beginning of computation");
 		cout<<endl;
@@ -1181,7 +1188,6 @@ void Machine::call_MASTER_MODE_LOAD_CONFIG(){
 
 
 
-	m_parameters.load(m_argc,m_argv);
 	if(m_parameters.getError()){
 		m_master_mode=MASTER_MODE_DO_NOTHING;
 		m_aborted=true;
@@ -1406,7 +1412,7 @@ void Machine::call_MODE_SEND_DISTRIBUTION(){
 		data[j++]=coverage;
 		data[j++]=count;
 	}
-	Message aMessage(data,MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE), MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_COVERAGE_DATA,getRank());
+	Message aMessage(data,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(VERTEX_TYPE), MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_COVERAGE_DATA,getRank());
 	m_outbox.push_back(aMessage);
 
 	m_distributionOfCoverage.clear();
@@ -1613,10 +1619,10 @@ void Machine::call_MODE_SEND_EXTENSION_DATA(){
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_START,getRank());
 				m_outbox.push_back(aMessage);
 			}
-			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(MPI_BTL_SM_EAGER_LIMIT);
+			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
 			int count=0;
-			for(int i=0;i<(int)(MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE));i++){
+			for(int i=0;i<(int)(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(VERTEX_TYPE));i++){
 				if(m_ed->m_EXTENSION_currentPosition==(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
 					break;
 				}
@@ -2253,8 +2259,6 @@ void Machine::printStatus(){
 	cout<<"Outbox: "<<m_outbox.size()<<endl;
 }
 
-
-
 Machine::~Machine(){
 	// do nothing.
 	delete m_dfsData;
@@ -2262,7 +2266,6 @@ Machine::~Machine(){
 	m_dfsData=NULL;
 	m_bubbleData=NULL;
 }
-
 
 int Machine::vertexRank(VERTEX_TYPE a){
 	return hash_VERTEX_TYPE(a)%(getSize());

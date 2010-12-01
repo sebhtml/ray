@@ -26,6 +26,7 @@
 #include<Message.h>
 #include<vector>
 #include<ExtensionData.h>
+#include<Parameters.h>
 #include<RingAllocator.h>
 #include<MyAllocator.h>
 #include<FusionData.h>
@@ -44,8 +45,9 @@ class SeedExtender{
 	EarlyStoppingTechnology m_earlyStoppingTechnology;
 	bool m_skippedASeed;
 	map<u64,char> m_readsStrands;
-
 	set<u64> m_eliminatedSeeds;
+	Parameters*m_parameters;
+
 public:
 
 	
@@ -110,6 +112,8 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 	void storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<vector<VERTEX_TYPE> >*seeds,u64*currentVertex);
 
 	set<u64>*getEliminatedSeeds();
+
+	void constructor(Parameters*parameters);
 };
 
 #endif

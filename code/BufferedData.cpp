@@ -102,11 +102,11 @@ bool BufferedData::flush(int destination,int period,int tag,RingAllocator*outbox
 
 	int threshold=0;
 	if(!force){
-		threshold=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE)/period*period;
+		threshold=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(VERTEX_TYPE)/period*period;
 	}
 
 	#ifdef ASSERT
-	assert(threshold<MPI_BTL_SM_EAGER_LIMIT);
+	assert(threshold<MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	#endif
 
 	int amount=size(destination);

@@ -36,7 +36,7 @@ EdgesExtractor::EdgesExtractor(){
 }
 
 void EdgesExtractor::constructor(int size){
-	m_bufferedData.constructor(size,MPI_BTL_SM_EAGER_LIMIT);
+	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 }
 
 void EdgesExtractor::processOutgoingEdges(){

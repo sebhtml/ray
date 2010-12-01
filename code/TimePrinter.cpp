@@ -30,14 +30,22 @@ void TimePrinter::printElapsedTime(string description){
 	m_lastTime=m_endingTime;
 	struct tm * timeinfo;
 	timeinfo=localtime(&m_endingTime);
-	cout<<"\nRank 0 reports the elapsed time, "<<asctime(timeinfo)<<""<<" ---> Step: "<<description<<"\n      Elapsed time: ";
+	cout<<endl;
+	cout<<"//////////////////////---------------------------\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"<<endl;
+               
+	cout<<endl<<"Rank 0 reports the elapsed time, "<<asctime(timeinfo)<<""<<"Step: "<<description<<"Elapsed time: ";
 	printDifference(differenceWithLast);
 	int totalSeconds=m_endingTime-m_startingTime;
-	cout<<"\n      Since beginning: ";
+	cout<<"\nSince beginning: ";
 	printDifference(totalSeconds);
 	cout<<endl;
 	m_descriptions.push_back(description);
 	m_durations.push_back(differenceWithLast);
+
+	cout<<endl;
+	cout<<"\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\---------------------------//////////////////////"<<endl;
+	cout<<endl;
+
 	fflush(stdout);
 }
 

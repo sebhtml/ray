@@ -99,5 +99,5 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 }
 
 void SequencesIndexer::constructor(int m_size){
-	m_bufferedData.constructor(m_size,MPI_BTL_SM_EAGER_LIMIT);
+	m_bufferedData.constructor(m_size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 }

@@ -32,62 +32,33 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<Parameters.h>
 
 void Library::updateDistances(){
-	if(!m_ready){
-		return;
+	cout<<"updateDistances"<<endl;
+	VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	int libraries=m_parameters->getNumberOfLibraries();
+	int*intMessage=(int*)message;
+	intMessage[0]=libraries;
+
+	cout<<"L="<<libraries<<endl;
+
+	for(int i=0;i<libraries;i++){
+		int average=m_parameters->getFragmentLength(i);
+		int deviation=m_parameters->getStandardDeviation(i);
+		intMessage[2*i+0+1]=average;
+		intMessage[2*i+1+1]=deviation;
 	}
 
-	// we are done.
-	if((*m_fileId)==(*m_parameters).getNumberOfFiles()){
-		// flush
-		m_bufferedData.flushAll(TAG_UPDATE_LIBRARY_INFORMATION,m_outboxAllocator,m_outbox,getRank());
-		m_bufferedData.clear();
-
-		m_timePrinter->printElapsedTime("Computation of library sizes");
-		cout<<endl;
-		cout<<"Rank 0 asks others to extend their seeds."<<endl;
-		#ifndef SHOW_PROGRESS
-		cout<<"\r"<<"Extending seeds"<<endl;
-		#endif
-		(*m_master_mode)=MASTER_MODE_TRIGGER_EXTENSIONS;
-		m_ed->m_EXTENSION_rank=-1;
-		m_ed->m_EXTENSION_currentRankIsSet=false;
-
-	// skip the file.
-	}else if(!(*m_parameters).isAutomatic(*m_fileId) ||m_parameters->isLeftFile(*m_fileId)){
-		(*m_fileId)++;
-		(*m_sequence_id)+=(*m_parameters).getNumberOfSequences(*m_fileId);
-	// the file is finished loading.
-	}else if((*m_sequence_idInFile)==(*m_parameters).getNumberOfSequences(*m_fileId)){
-		cout<<"Rank 0 is updating library lengths "<<(*m_parameters).getNumberOfSequences(*m_fileId)<<"/"<<(*m_parameters).getNumberOfSequences(*m_fileId)<<" (completed)"<<endl;
-		(*m_fileId)++;
-		(*m_sequence_idInFile)=0;
-	// we can process the sequence.
-	// the file is set to be automatic.
-	}else{
-		int sequenceRank=(*m_sequence_id)%getSize();
-		int sequenceIndex=(*m_sequence_id)/getSize();
-
-		if((*m_sequence_idInFile)%1000000==0){
-			cout<<"Rank 0 is updating library lengths "<<(*m_sequence_idInFile)+1<<"/"<<(*m_parameters).getNumberOfSequences(*m_fileId)<<endl;
-		}
-
-		if(m_parameters->isRightFile(*m_fileId) || (m_parameters->isInterleavedFile(*m_fileId) &&(*m_sequence_idInFile)%2==1)){
-			int library=(*m_parameters).getLibrary(*m_fileId);
-			int averageLength=(*m_parameters).getObservedAverageDistance(library);
-			int standardDeviation=(*m_parameters).getObservedStandardDeviation(library);
-
-			m_bufferedData.addAt(sequenceRank,sequenceIndex);
-			m_bufferedData.addAt(sequenceRank,averageLength);
-			m_bufferedData.addAt(sequenceRank,standardDeviation);
-
-			if(m_bufferedData.flush(sequenceRank,3,TAG_UPDATE_LIBRARY_INFORMATION,m_outboxAllocator,m_outbox,getRank(),false)){
-				m_ready=false;
-			}
-		}
-
-		(*m_sequence_id)++;
-		(*m_sequence_idInFile)++;
+	for(int i=0;i<m_size;i++){
+		Message aMessage(intMessage,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(VERTEX_TYPE),MPI_UNSIGNED_LONG_LONG,i,TAG_UPDATE_LIBRARY_INFORMATION,m_rank);
+		m_outbox->push_back(aMessage);
 	}
+
+	m_timePrinter->printElapsedTime("Computation of library sizes");
+	cout<<endl;
+	cout<<"Rank 0 asks others to extend their seeds."<<endl;
+
+	(*m_master_mode)=MASTER_MODE_TRIGGER_EXTENSIONS;
+	m_ed->m_EXTENSION_rank=-1;
+	m_ed->m_EXTENSION_currentRankIsSet=false;
 }
 
 void Library::detectDistances(){
@@ -160,11 +131,12 @@ void Library::detectDistances(){
 								Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_GET_PAIRED_READ,getRank());
 								(m_outbox)->push_back(aMessage);
 							}else if(m_ed->m_EXTENSION_pairedSequenceReceived){
-								int expectedDeviation=m_ed->m_EXTENSION_pairedRead.getStandardDeviation();
-								if(expectedDeviation==_AUTOMATIC_DETECTION){
+								int library=m_ed->m_EXTENSION_pairedRead.getLibrary();
+								bool isAutomatic=m_parameters->isAutomatic(library);
+								if(isAutomatic){
 									u64 uniqueReadIdentifier=m_ed->m_EXTENSION_pairedRead.getUniqueId();
 									if((*m_readsPositions).count(uniqueReadIdentifier)>0){
-										int library=m_ed->m_EXTENSION_pairedRead.getAverageFragmentLength();
+										int library=m_ed->m_EXTENSION_pairedRead.getLibrary();
 										char rightStrand=annotation.getStrand();
 										char leftStrand=m_readsStrands[uniqueReadIdentifier];
 											
@@ -256,7 +228,7 @@ Library::Library(){
 }
 
 void Library::allocateBuffers(){
-	m_bufferedData.constructor(m_size,MPI_BTL_SM_EAGER_LIMIT);
+	m_bufferedData.constructor(m_size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	(m_libraryIterator)=0;
 	(m_libraryIndexInitiated)=false;
 }

@@ -94,7 +94,7 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 		int source=status.MPI_SOURCE;
 		int length;
 		MPI_Get_count(&status,MPI_UNSIGNED_LONG_LONG,&length);
-		u64*filledBuffer=(u64*)m_buffers+m_head*MPI_BTL_SM_EAGER_LIMIT/sizeof(u64);
+		u64*filledBuffer=(u64*)m_buffers+m_head*MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(u64);
 
 		// copy it in a safe buffer
 		u64*incoming=(u64*)inboxAllocator->allocate(length*sizeof(u64));
@@ -185,15 +185,15 @@ void MessagesHandler::constructor(int rank,int size){
 	}
 
 	// the ring contains 128 elements.
-	m_ringSize=512;
+	m_ringSize=NUMBER_OF_PERSISTENT_REQUESTS_IN_RING;
 	m_ring=(MPI_Request*)__Malloc(sizeof(MPI_Request)*m_ringSize);
-	m_buffers=(char*)__Malloc(MPI_BTL_SM_EAGER_LIMIT*m_ringSize);
+	m_buffers=(char*)__Malloc(MAXIMUM_MESSAGE_SIZE_IN_BYTES*m_ringSize);
 	m_head=0;
 
 	// post a few receives.
 	for(int i=0;i<m_ringSize;i++){
-		void*buffer=m_buffers+i*MPI_BTL_SM_EAGER_LIMIT;
-		MPI_Recv_init(buffer,MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE),MPI_UNSIGNED_LONG_LONG,
+		void*buffer=m_buffers+i*MAXIMUM_MESSAGE_SIZE_IN_BYTES;
+		MPI_Recv_init(buffer,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(VERTEX_TYPE),MPI_UNSIGNED_LONG_LONG,
 			MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,m_ring+i);
 		MPI_Start(m_ring+i);
 	}

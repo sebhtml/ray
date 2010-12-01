@@ -26,6 +26,9 @@ see <http://www.gnu.org/licenses/>
 #include<config.h>
 #endif
 
+#define MAXIMUM_NUMBER_OF_LIBRARIES 256
+#define DUMMY_LIBRARY 255
+
 #define RAY_VERSION "1.2.0"
 
 #include<master_modes.h>
@@ -34,6 +37,7 @@ see <http://www.gnu.org/licenses/>
 
 #define SHOW_PROGRESS
 
+#define u8 uint8_t
 #define u16 uint16_t
 #define u32 uint32_t
 #define u64 uint64_t
@@ -41,7 +45,7 @@ see <http://www.gnu.org/licenses/>
 
 #define ASCII_END_OF_TRANSMISSION 0x04 // end of transmission.
 
-#define MAX_ALLOCATED_MESSAGES_IN_OUTBOX 20000
+#define MAX_ALLOCATED_MESSAGES_IN_OUTBOX 10000
 #define MAX_ALLOCATED_MESSAGES_IN_INBOX 10000
 
 #define MAX_U32 4294967295
@@ -80,9 +84,9 @@ using namespace std;
  *  --Eugene Loh  (Oracle)
  *  http://www.open-mpi.org/community/lists/devel/2010/11/8700.php
  */
-#define MPI_BTL_SM_EAGER_LIMIT 4000
-#define _FILL_UP MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE)
-#define MAX_UINT64_T_PER_MESSAGE _FILL_UP
+#define MAXIMUM_MESSAGE_SIZE_IN_BYTES 4000
+#define NUMBER_OF_PERSISTENT_REQUESTS_IN_RING 128
+
 
 #define MASTER_RANK 0x0
 
@@ -97,25 +101,9 @@ using namespace std;
  * in development
  *
  *
- *HIV-1 coreceptor usage prediction without multiple alignments: an application of string kernels
-
-Sébastien Boisvert1 email, Mario Marchand2 email, François Laviolette2 email and Jacques Corbeil1 email
-
-1  Centre de recherche du centre hospitalier de l'Université Laval, Québec (QC), Canada
-
-2  Département d'informatique et de génie logiciel, Université Laval, Québec (QC), Canada
-
-author email corresponding author email
-
-Retrovirology 2008, 5:110doi:10.1186/1742-4690-5-110
  *
  */
 #define _SEGMENT_LENGTH 5
-
-
-
-#define _AUTOMATIC_DETECTION 65535
-
 
 /*
  * this is the type used to store coverage values

@@ -58,9 +58,9 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		if(*m_reverseComplementVertex==false){
 			// flush data
 
-			#ifdef SHOW_PROGRESS
-			cout<<"Rank "<<rank<<" is computing vertices "<<*m_mode_send_vertices_sequence_id<<"/"<<m_myReads->size()<<" (completed)"<<endl;
-			#endif
+
+			printf("Rank %i is computing vertices %i/%i (completed)\n",rank,(int)*m_mode_send_vertices_sequence_id,(int)m_myReads->size());
+			fflush(stdout);
 			(*m_mode_send_vertices_sequence_id)=0;
 			*m_mode_send_vertices_sequence_id_position=0;
 			*m_reverseComplementVertex=true;
@@ -114,7 +114,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 }
 
 void VerticesExtractor::constructor(int size){
-	m_bufferedData.constructor(size,MPI_BTL_SM_EAGER_LIMIT);
+	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	setReadiness();
 }
 

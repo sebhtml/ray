@@ -27,15 +27,10 @@
 PairedRead::PairedRead(){
 }
 
-void PairedRead::constructor(int rank,int id, int fragmentSize,int deviation,bool isLeftRead){
-	//m_isLeftRead=isLeftRead;
+void PairedRead::constructor(int rank,int id,int library){
 	m_rank=rank;
 	m_readIndex=id;
-	assert(fragmentSize<=MAX_U16);
-	assert(deviation<=MAX_U16);
-	
-	m_fragmentSize=fragmentSize;
-	m_deviation=deviation;
+	m_library=library;
 }
 
 int PairedRead::getRank(){
@@ -46,26 +41,10 @@ int PairedRead::getId(){
 	return m_readIndex;
 }
 
-int PairedRead::getAverageFragmentLength(){
-	return m_fragmentSize;
-}
-
-int PairedRead::getStandardDeviation(){
-	return m_deviation;
-}
-
-void PairedRead::updateLibrary(int d,int sd){
-	// otherwise there is no need to update...
-	if(m_deviation==_AUTOMATIC_DETECTION){
-		m_fragmentSize=d;
-		m_deviation=sd;
-	}
-}
-
 u64 PairedRead::getUniqueId(){
 	return m_readIndex*MAX_NUMBER_OF_MPI_PROCESSES+m_rank;
 }
 
-bool PairedRead::isLeftRead(){
-	return false;
+int PairedRead::getLibrary(){
+	return m_library;
 }

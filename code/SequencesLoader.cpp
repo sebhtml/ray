@@ -224,12 +224,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 
 			int rightSequenceIdOnRank=rightSequenceGlobalId/size;
 
-			int averageFragmentLength=(m_LOADER_averageFragmentLength);
-			int deviation=(m_LOADER_deviation);
-
 			#ifdef ASSERT
-			assert(deviation!=0);
-			assert(averageFragmentLength>=0);
 		
 			if(leftSequenceIdOnRank>=m_numberOfSequences[leftSequenceRank]){
 				cout<<"leftSequenceIdOnRank="<<leftSequenceIdOnRank<<" but size="<<m_numberOfSequences[leftSequenceRank]<<endl;
@@ -240,12 +235,9 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			m_bufferedData.addAt(leftSequenceRank,leftSequenceIdOnRank);
 			m_bufferedData.addAt(leftSequenceRank,rightSequenceRank);
 			m_bufferedData.addAt(leftSequenceRank,rightSequenceIdOnRank);
-			m_bufferedData.addAt(leftSequenceRank,averageFragmentLength);
-			m_bufferedData.addAt(leftSequenceRank,deviation);
-			m_bufferedData.addAt(leftSequenceRank,false);
+			m_bufferedData.addAt(leftSequenceRank,m_parameters->getLibrary(m_distribution_file_id));
 
-
-			if(m_bufferedData.flush(leftSequenceRank,6,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_bufferedData.flush(leftSequenceRank,4,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
 			}
 		}else if(m_LOADER_isRightFile){
@@ -268,17 +260,13 @@ bool SequencesLoader::loadSequences(int rank,int size,
 
 			int leftSequenceRank=leftSequenceGlobalId%size;
 			int leftSequenceIdOnRank=leftSequenceGlobalId/size;
-			int averageFragmentLength=(m_LOADER_averageFragmentLength);
-			int deviation=(m_LOADER_deviation);
 
 			m_bufferedData.addAt(rightSequenceRank,rightSequenceIdOnRank);
 			m_bufferedData.addAt(rightSequenceRank,leftSequenceRank);
 			m_bufferedData.addAt(rightSequenceRank,leftSequenceIdOnRank);
-			m_bufferedData.addAt(rightSequenceRank,averageFragmentLength);
-			m_bufferedData.addAt(rightSequenceRank,deviation);
-			m_bufferedData.addAt(rightSequenceRank,true);
+			m_bufferedData.addAt(rightSequenceRank,m_parameters->getLibrary(m_distribution_file_id));
 
-			if(m_bufferedData.flush(rightSequenceRank,6,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_bufferedData.flush(rightSequenceRank,4,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
 			}
 			#ifdef DEBUG
@@ -295,8 +283,6 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			int leftSequenceGlobalId=rightSequenceGlobalId-1;
 			int leftSequenceRank=leftSequenceGlobalId%size;
 			int leftSequenceIdOnRank=leftSequenceGlobalId/size;
-			int averageFragmentLength=(m_LOADER_averageFragmentLength);
-			int deviation=(m_LOADER_deviation);
 
 			#ifdef DEBUG
 			assert(deviation!=0);
@@ -306,11 +292,9 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			m_bufferedData.addAt(leftSequenceRank,leftSequenceIdOnRank);
 			m_bufferedData.addAt(leftSequenceRank,rightSequenceRank);
 			m_bufferedData.addAt(leftSequenceRank,rightSequenceIdOnRank);
-			m_bufferedData.addAt(leftSequenceRank,averageFragmentLength);
-			m_bufferedData.addAt(leftSequenceRank,deviation);
-			m_bufferedData.addAt(leftSequenceRank,false);
+			m_bufferedData.addAt(leftSequenceRank,m_parameters->getLibrary(m_distribution_file_id));
 
-			if(m_bufferedData.flush(leftSequenceRank,6,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_bufferedData.flush(leftSequenceRank,4,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
 			}
 
@@ -322,17 +306,13 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			int leftSequenceGlobalId=rightSequenceGlobalId-1;
 			int leftSequenceRank=leftSequenceGlobalId%size;
 			int leftSequenceIdOnRank=leftSequenceGlobalId/size;
-			int averageFragmentLength=(m_LOADER_averageFragmentLength);
-			int deviation=(m_LOADER_deviation);
 
 			m_bufferedData.addAt(rightSequenceRank,rightSequenceIdOnRank);
 			m_bufferedData.addAt(rightSequenceRank,leftSequenceRank);
 			m_bufferedData.addAt(rightSequenceRank,leftSequenceIdOnRank);
-			m_bufferedData.addAt(rightSequenceRank,averageFragmentLength);
-			m_bufferedData.addAt(rightSequenceRank,deviation);
-			m_bufferedData.addAt(rightSequenceRank,true);
+			m_bufferedData.addAt(rightSequenceRank,m_parameters->getLibrary(m_distribution_file_id));
 
-			if(m_bufferedData.flush(rightSequenceRank,6,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_bufferedData.flush(rightSequenceRank,4,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
 			}
 
@@ -364,9 +344,9 @@ bool SequencesLoader::isReady(){
 }
 
 void SequencesLoader::constructor(int size){
-	m_bufferedData.constructor(size,MPI_BTL_SM_EAGER_LIMIT);
+	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	m_size=size;
-	m_buffers=(char*)__Malloc(m_size*MPI_BTL_SM_EAGER_LIMIT*sizeof(char));
+	m_buffers=(char*)__Malloc(m_size*MAXIMUM_MESSAGE_SIZE_IN_BYTES*sizeof(char));
 	m_entries=(int*)__Malloc(m_size*sizeof(int));
 	#ifdef ASSERT
 	m_numberOfSequences=(int*)__Malloc(m_size*sizeof(int));
@@ -386,7 +366,7 @@ void SequencesLoader::constructor(int size){
 }
 
 int SequencesLoader::getSpaceLeft(int rank){
-	return MPI_BTL_SM_EAGER_LIMIT-getUsedSpace(rank)-1;// -1 for the extra space for \0
+	return MAXIMUM_MESSAGE_SIZE_IN_BYTES-getUsedSpace(rank)-1;// -1 for the extra space for \0
 }
 
 int SequencesLoader::getUsedSpace(int rank){
@@ -394,11 +374,11 @@ int SequencesLoader::getUsedSpace(int rank){
 }
 
 void SequencesLoader::appendSequence(int rank,char*sequence){
-	char*destination=m_buffers+rank*MPI_BTL_SM_EAGER_LIMIT+m_entries[rank];
+	char*destination=m_buffers+rank*MAXIMUM_MESSAGE_SIZE_IN_BYTES+m_entries[rank];
 	strcpy(destination,sequence);
 	m_entries[rank]+=(strlen(sequence)+1);
 	#ifdef ASSERT
-	assert(m_entries[rank]<=MPI_BTL_SM_EAGER_LIMIT);
+	assert(m_entries[rank]<=MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	#endif
 	#ifdef ASSERT
 	m_numberOfSequences[rank]++;
@@ -418,12 +398,12 @@ void SequencesLoader::flush(int rank,RingAllocator*m_outboxAllocator,StaticVecto
 		return;
 	}
 	int cells=getUsedSpace(rank)+1;// + 1 for the supplementary \0
-	char*message=(char*)m_outboxAllocator->allocate(MPI_BTL_SM_EAGER_LIMIT*sizeof(char));
+	char*message=(char*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES*sizeof(char));
 	#ifdef ASSERT
 	int n=0;
 	#endif
 	for(int i=0;i<m_entries[rank];i++){
-		char bufferChar=m_buffers[rank*MPI_BTL_SM_EAGER_LIMIT+i];
+		char bufferChar=m_buffers[rank*MAXIMUM_MESSAGE_SIZE_IN_BYTES+i];
 		#ifdef ASSERT
 		if(bufferChar=='\0'){
 			n++;
@@ -437,7 +417,7 @@ void SequencesLoader::flush(int rank,RingAllocator*m_outboxAllocator,StaticVecto
 	#endif
 	//cout<<"sending "<<n<<" sequences to "<<rank<<endl;
 	message[cells-1]=ASCII_END_OF_TRANSMISSION;
-	Message aMessage(message,MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE),MPI_UNSIGNED_LONG_LONG,rank,TAG_SEND_SEQUENCE_REGULATOR,rank);
+	Message aMessage(message,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(VERTEX_TYPE),MPI_UNSIGNED_LONG_LONG,rank,TAG_SEND_SEQUENCE_REGULATOR,rank);
 	m_outbox->push_back(aMessage);
 	m_entries[rank]=0;
 	m_waitingNumber++;

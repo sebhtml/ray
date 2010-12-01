@@ -35,19 +35,14 @@
 class PairedRead{
 	u32 m_readIndex;
 	u16 m_rank;
-	u16 m_fragmentSize;
-	u16 m_deviation;
-	//bool m_isLeftRead;
+	u8 m_library;
 public:
 	PairedRead();
-	void constructor(int rank,int id, int fragmentSize,int deviation,bool m_isLeftRead);
+	void constructor(int rank,int id,int library);
 	int getRank();
 	int getId();
-	int getAverageFragmentLength();
-	int getStandardDeviation();
 	u64 getUniqueId();
-	bool isLeftRead();
-	void updateLibrary(int distance,int standardDeviation);
+	int getLibrary();
 };
 
 #endif

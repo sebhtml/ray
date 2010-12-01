@@ -481,9 +481,9 @@ void MessageProcessor::call_TAG_GOOD_JOB_SEE_YOU_SOON(Message*message){
 	// send stats to master
 	int i=0;
 	while(i<size){
-		VERTEX_TYPE*data=(VERTEX_TYPE*)m_outboxAllocator->allocate(MPI_BTL_SM_EAGER_LIMIT);
+		VERTEX_TYPE*data=(VERTEX_TYPE*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 		int j=0;
-		int maxToProcess=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE);
+		int maxToProcess=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(VERTEX_TYPE);
 		while(i+j<size &&j<maxToProcess){
 			data[j]=m_messagesHandler->getReceivedMessages()[i+j];
 			j++;
@@ -579,8 +579,8 @@ void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED(Message*message){
 	//cout<<"source="<<source<<" self="<<rank<<" MessageProcessor::call_TAG_ASK_IS_ASSEMBLED directions="<<maxSize<<endl;
 
 	// each one of them takes 2 elements., this is 4000/8/2-1 = 249
-	int maxToProcess=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE)/2-1; // -1 because we need to track the offset and the vertex too
-	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(MPI_BTL_SM_EAGER_LIMIT);
+	int maxToProcess=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(VERTEX_TYPE)/2-1; // -1 because we need to track the offset and the vertex too
+	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	message2[0]=incoming[0];
 	int p=2; // 0 is vertex, 1 is offset
 	int processed=0;
@@ -725,9 +725,9 @@ void MessageProcessor::call_TAG_REQUEST_READS(Message*message){
 	assert(theVertex!=NULL);
 	#endif
 	ReadAnnotation*e=theVertex->getReads();
-	int maxToProcess=MPI_BTL_SM_EAGER_LIMIT/sizeof(VERTEX_TYPE)-3;
+	int maxToProcess=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(VERTEX_TYPE)-3;
 	maxToProcess=maxToProcess-maxToProcess%3;
-	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(MPI_BTL_SM_EAGER_LIMIT);
+	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	int j=0;
 	// send a maximum of maxToProcess individually
 
@@ -991,19 +991,18 @@ void MessageProcessor::call_TAG_INDEX_PAIRED_SEQUENCE(Message*message){
 	int count=message->getCount();
 	void*buffer=message->getBuffer();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	for(int i=0;i<count;i+=6){
-		PairedRead*t=(PairedRead*)(*m_persistentAllocator).allocate(sizeof(PairedRead));
-		int length=incoming[i+3];
-		int deviation=incoming[i+4];
-		bool isLeftRead=incoming[i+5];
+	for(int i=0;i<count;i+=4){
+		int currentReadId=incoming[i+0];
 		int otherRank=incoming[i+1];
+		int otherId=incoming[i+2];
+		int library=incoming[i+3];
+		PairedRead*t=(PairedRead*)(*m_persistentAllocator).allocate(sizeof(PairedRead));
 		#ifdef ASSERT
 		assert(otherRank<size);
 		#endif
 
-		int otherId=incoming[i+2];
-		int currentReadId=incoming[i+0];
-		t->constructor(otherRank,otherId,length,deviation,isLeftRead);
+		t->constructor(otherRank,otherId,library);
+
 		#ifdef ASSERT
 		if(currentReadId>=(int)m_myReads->size()){
 			cout<<"currentReadId="<<currentReadId<<" size="<<m_myReads->size()<<endl;
@@ -1046,29 +1045,28 @@ void MessageProcessor::call_TAG_GET_PAIRED_READ(Message*message){
 	#ifdef ASSERT
 	assert(index<(int)m_myReads->size());
 	#endif
+
 	PairedRead*t=(*m_myReads)[index]->getPairedRead();
 	PairedRead dummy;
-	dummy.constructor(0,0,0,0,0);
+	dummy.constructor(0,0,DUMMY_LIBRARY);
 	if(t==NULL){
 		t=&dummy;
 	}
 	#ifdef ASSERT
 	assert(t!=NULL);
 	#endif
-	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(5*sizeof(VERTEX_TYPE));
+	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(3*sizeof(VERTEX_TYPE));
 	message2[0]=t->getRank();
 	message2[1]=t->getId();
-	message2[2]=t->getAverageFragmentLength();
-	message2[3]=t->getStandardDeviation();
-	message2[4]=t->isLeftRead();
-	Message aMessage(message2,5,MPI_UNSIGNED_LONG_LONG,source,TAG_GET_PAIRED_READ_REPLY,rank);
+	message2[2]=t->getLibrary();
+	Message aMessage(message2,3,MPI_UNSIGNED_LONG_LONG,source,TAG_GET_PAIRED_READ_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_GET_PAIRED_READ_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	(*m_EXTENSION_pairedRead).constructor(incoming[0],incoming[1],incoming[2],incoming[3],incoming[4]);
+	(*m_EXTENSION_pairedRead).constructor(incoming[0],incoming[1],incoming[2]);
 	(*m_EXTENSION_pairedSequenceReceived)=true;
 }
 
@@ -1280,23 +1278,16 @@ void MessageProcessor::call_TAG_ASK_LIBRARY_DISTANCES_FINISHED(Message*message){
 	}
 }
 
-void MessageProcessor::call_TAG_UPDATE_LIBRARY_INFORMATION_REPLY(Message*message){
-	m_library->setReadiness();
-}
-
 void MessageProcessor::call_TAG_UPDATE_LIBRARY_INFORMATION(Message*message){
 	void*buffer=message->getBuffer();
-	int count=message->getCount();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	for(int i=0;i<count;i+=3){
-		#ifdef ASSERT
-		assert((*m_myReads)[incoming[i+0]]->hasPairedRead());
-		#endif
-		(*m_myReads)[incoming[i+0]]->getPairedRead()->updateLibrary(incoming[i+1],incoming[i+2]);
+	int*data=(int*)incoming;
+	int libraries=data[0];
+	for(int i=0;i<libraries;i++){
+		int average=data[2*i+1+0];
+		int deviation=data[2*i+1+1];
+		parameters->addLibraryData(i,average,deviation);
 	}
-
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_UPDATE_LIBRARY_INFORMATION_REPLY,rank);
-	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_RECEIVED_COVERAGE_INFORMATION(Message*message){
@@ -1316,7 +1307,7 @@ void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE(Message*message){
 	#endif
 	PairedRead*t=(*m_myReads)[index]->getPairedRead();
 	PairedRead dummy;
-	dummy.constructor(0,0,0,0,0);
+	dummy.constructor(0,0,DUMMY_LIBRARY);
 	if(t==NULL){
 		t=&dummy;
 	}
@@ -1325,30 +1316,28 @@ void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE(Message*message){
 	#endif
 	char*seq=m_myReads->at(index)->getSeq();
 
-	int beforeRounding=5*sizeof(VERTEX_TYPE)+strlen(seq)+1;
-	int toAllocate=roundNumber(beforeRounding,8);
+	int beforeRounding=3*sizeof(VERTEX_TYPE)+strlen(seq)+1;
+	int toAllocate=roundNumber(beforeRounding,sizeof(VERTEX_TYPE));
 	//cout<<" seq is "<<strlen(seq)<<" +1 +4*8="<<beforeRounding<<", rounded: "<<toAllocate<<endl;
 
 	VERTEX_TYPE*messageBytes=(VERTEX_TYPE*)m_outboxAllocator->allocate(toAllocate);
 	messageBytes[0]=t->getRank();
 	messageBytes[1]=t->getId();
-	messageBytes[2]=t->getAverageFragmentLength();
-	messageBytes[3]=t->getStandardDeviation();
-	messageBytes[4]=t->isLeftRead();
-	char*dest=(char*)(messageBytes+5);
+	messageBytes[2]=t->getLibrary();
+	char*dest=(char*)(messageBytes+3);
 	strcpy(dest,seq);
 	//cout<<"dest="<<dest<<endl;
-	Message aMessage(messageBytes,toAllocate/8,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READ_SEQUENCE_REPLY,rank);
+	Message aMessage(messageBytes,toAllocate/sizeof(VERTEX_TYPE),MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READ_SEQUENCE_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	(*m_EXTENSION_pairedRead).constructor(incoming[0],incoming[1],incoming[2],incoming[3],incoming[4]);
+	(*m_EXTENSION_pairedRead).constructor(incoming[0],incoming[1],incoming[2]);
 	(*m_EXTENSION_pairedSequenceReceived)=true;
 
-	seedExtender->m_receivedString=(char*)(incoming+5);
+	seedExtender->m_receivedString=(char*)(incoming+3);
 	seedExtender->m_sequenceReceived=true;
 }
 
@@ -1470,7 +1459,6 @@ MessageProcessor::MessageProcessor(){
 	m_methods[TAG_ASK_LIBRARY_DISTANCES]=&MessageProcessor::call_TAG_ASK_LIBRARY_DISTANCES;
 	m_methods[TAG_ASK_LIBRARY_DISTANCES_FINISHED]=&MessageProcessor::call_TAG_ASK_LIBRARY_DISTANCES_FINISHED;
 	m_methods[TAG_UPDATE_LIBRARY_INFORMATION]=&MessageProcessor::call_TAG_UPDATE_LIBRARY_INFORMATION;
-	m_methods[TAG_UPDATE_LIBRARY_INFORMATION_REPLY]=&MessageProcessor::call_TAG_UPDATE_LIBRARY_INFORMATION_REPLY;
 	m_methods[TAG_RECEIVED_COVERAGE_INFORMATION]=&MessageProcessor::call_TAG_RECEIVED_COVERAGE_INFORMATION;
 	m_methods[TAG_REQUEST_READ_SEQUENCE]=&MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE;
 	m_methods[TAG_REQUEST_READ_SEQUENCE_REPLY]=&MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE_REPLY;

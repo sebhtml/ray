@@ -392,8 +392,9 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 						}else{	
 							PairedRead pairedRead=m_pairedReads[uniqueId];
 							u64 uniqueReadIdentifier=pairedRead.getUniqueId();
-							int expectedFragmentLength=pairedRead.getAverageFragmentLength();
-							int expectedDeviation=pairedRead.getStandardDeviation();
+							int library=pairedRead.getLibrary();
+							int expectedFragmentLength=m_parameters->getFragmentLength(library);
+							int expectedDeviation=m_parameters->getStandardDeviation(library);
 							char rightStrand=annotation.getStrand();
 							//bool leftReadIsLeftInThePair=pairedRead.isLeftRead();
 							if(ed->m_EXTENSION_reads_startingPositionOnContig.count(uniqueReadIdentifier)>0){
@@ -974,7 +975,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 						#endif
 
 						// received paired read too !
-						if(ed->m_EXTENSION_pairedRead.getAverageFragmentLength()!=0){
+						if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
 							m_pairedReads[annotation.getUniqueId()]=ed->m_EXTENSION_pairedRead;
 						}
 	
@@ -1004,4 +1005,8 @@ vector<Direction>*SeedExtender::getDirections(){
 
 set<u64>*SeedExtender::getEliminatedSeeds(){
 	return &m_eliminatedSeeds;
+}
+
+void SeedExtender::constructor(Parameters*parameters){
+	m_parameters=parameters;
 }
