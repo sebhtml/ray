@@ -1,0 +1,7 @@
+For color space:
+
+* For sequencing reads, the starting nucleotide and first color are removed and the remaining colors are 'double-encoded'.
+
+* The reverse-complement of a vertex is just its reverse.
+
+* The resulting assembly is in color-space.
