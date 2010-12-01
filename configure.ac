@@ -7,14 +7,15 @@ AC_INIT(Ray, 1.2.0, denovoassembler-users@lists.sourceforge.net, ray, http://den
 
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR(code/MessageProcessor.cpp)
+AC_CONFIG_HEADERS([code/config.h])
 
-if test x"${CXXFLAGS+set}" = xset; then
+#if test x"${CXXFLAGS+set}" = xset; then
   # the user set CXXFLAGS; don't override it.
-  flags_were_set=true
-else
-  flags_were_set=false
-  CXXFLAGS=""
-fi 
+#  flags_were_set=true
+#else
+#  flags_were_set=false
+#  CXXFLAGS=""
+#fi 
 
 AC_PROG_RANLIB
 
@@ -67,7 +68,10 @@ AC_CHECK_LIB(bz2, BZ2_decompress,
          AM_CONDITIONAL(HAVE_BZ2, false))],
          AM_CONDITIONAL(HAVE_BZ2, false))
 
-AC_CONFIG_HEADERS([code/config.h])
-AC_CONFIG_FILES([Makefile
-		code/Makefile])
+
+AC_SUBST(AM_CXXFLAGS, '-O3 -Wall -Wextra -Werror')
+
+
+AC_CONFIG_FILES([Makefile code/Makefile])
+
 AC_OUTPUT
