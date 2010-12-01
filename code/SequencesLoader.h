@@ -21,11 +21,12 @@
 
 #ifndef _SequencesLoader
 #define _SequencesLoader
+
 #include<Parameters.h>
-#include<DistributionData.h>
 #include<RingAllocator.h>
 #include<Loader.h>
 #include<MyAllocator.h>
+#include<BufferedData.h>
 #include<StaticVector.h>
 #include<vector>
 #include<Message.h>
@@ -35,6 +36,8 @@
 using namespace std;
 
 class SequencesLoader{
+	BufferedData m_bufferedData;
+
 	int m_distribution_currentSequenceId;
 	int m_distribution_file_id;
 	int m_distribution_sequence_id;
@@ -76,7 +79,7 @@ public:
 
 	bool isReady();
 	bool loadSequences(int rank,int size,StaticVector*m_outbox,
-	DistributionData*m_disData,RingAllocator*m_outboxAllocator,
+	RingAllocator*m_outboxAllocator,
 	bool*m_loadSequenceStep,
 	BubbleData*m_bubbleData,
 	time_t*m_lastTime,

@@ -22,9 +22,9 @@
 #ifndef _EdgesExtractor
 #define _EdgesExtractor
 
-#include<DistributionData.h>
 #include<Message.h>
 #include<ArrayOfReads.h>
+#include<BufferedData.h>
 #include<StaticVector.h>
 #include<RingAllocator.h>
 #include<vector>
@@ -33,10 +33,11 @@ using namespace std;
 
 class EdgesExtractor{
 	bool m_ready;
+	BufferedData m_bufferedData;
+
 public:
 	ArrayOfReads*m_myReads;
 	bool m_reverseComplementEdge;
-	DistributionData*m_disData;
 	int getRank;
 	int getSize;
 	RingAllocator*m_outboxAllocator;
@@ -49,6 +50,8 @@ public:
 	bool m_colorSpaceMode;
 	int*m_mode;
 
+
+	void constructor(int size);
 	void processOutgoingEdges();
 	void processIngoingEdges();
 	EdgesExtractor();

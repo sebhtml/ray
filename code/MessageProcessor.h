@@ -25,6 +25,7 @@
 #include<EdgesExtractor.h>
 #include<RingAllocator.h>
 #include<Library.h>
+#include<SequencesIndexer.h>
 #include<OpenAssemblerChooser.h>
 #include<ArrayOfReads.h>
 #include<Message.h>
@@ -67,8 +68,6 @@ class MessageProcessor{
 	int*m_numberOfRanksDoneDetectingDistances;
 	int*m_numberOfRanksDoneSendingDistances;
 	Parameters*parameters;
-	int*m_libraryIterator;
-	bool*m_libraryIndexInitiated;
 
 	MessagesHandler*m_messagesHandler;
 
@@ -87,6 +86,8 @@ class MessageProcessor{
 	bool*m_EXTENSION_currentRankIsDone;
 	vector<vector<VERTEX_TYPE> >*m_FINISH_newFusions;
 	int size;
+	SequencesIndexer*m_si;
+
 	RingAllocator*m_inboxAllocator;
 	MyAllocator*m_persistentAllocator;
 	vector<int>*m_identifiers;
@@ -167,8 +168,6 @@ ExtensionData*ed,
 			int*m_numberOfRanksDoneDetectingDistances,
 			int*m_numberOfRanksDoneSendingDistances,
 			Parameters*parameters,
-			int*m_libraryIterator,
-			bool*m_libraryIndexInitiated,
 			MyForest*m_subgraph,
 			RingAllocator*m_outboxAllocator,
 				int rank,
@@ -247,7 +246,8 @@ ExtensionData*ed,
 				StaticVector*m_outbox,
 		map<int,int>*m_allIdentifiers,OpenAssemblerChooser*m_oa,
 int*m_numberOfRanksWithCoverageData,
-SeedExtender*seedExtender,int*m_master_mode,bool*m_isFinalFusion
+SeedExtender*seedExtender,int*m_master_mode,bool*m_isFinalFusion,
+SequencesIndexer*m_si
 );
 
 

@@ -26,6 +26,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 #include<ReadAnnotation.h>
 #include<Library.h>
+#include<mpi_tags.h>
 #include<common_functions.h>
 #include<assert.h>
 #include<Parameters.h>
@@ -38,7 +39,8 @@ void Library::updateDistances(){
 	// we are done.
 	if((*m_fileId)==(*m_parameters).getNumberOfFiles()){
 		// flush
-		m_bufferedData->flushAll(TAG_UPDATE_LIBRARY_INFORMATION,m_outboxAllocator,m_outbox,getRank());
+		m_bufferedData.flushAll(TAG_UPDATE_LIBRARY_INFORMATION,m_outboxAllocator,m_outbox,getRank());
+		m_bufferedData.clear();
 
 		m_timePrinter->printElapsedTime("Computation of library sizes");
 		cout<<endl;
@@ -74,11 +76,11 @@ void Library::updateDistances(){
 			int averageLength=(*m_parameters).getObservedAverageDistance(library);
 			int standardDeviation=(*m_parameters).getObservedStandardDeviation(library);
 
-			m_bufferedData->addAt(sequenceRank,sequenceIndex);
-			m_bufferedData->addAt(sequenceRank,averageLength);
-			m_bufferedData->addAt(sequenceRank,standardDeviation);
+			m_bufferedData.addAt(sequenceRank,sequenceIndex);
+			m_bufferedData.addAt(sequenceRank,averageLength);
+			m_bufferedData.addAt(sequenceRank,standardDeviation);
 
-			if(m_bufferedData->flush(sequenceRank,3,TAG_UPDATE_LIBRARY_INFORMATION,m_outboxAllocator,m_outbox,getRank(),false)){
+			if(m_bufferedData.flush(sequenceRank,3,TAG_UPDATE_LIBRARY_INFORMATION,m_outboxAllocator,m_outbox,getRank(),false)){
 				m_ready=false;
 			}
 		}
@@ -173,7 +175,7 @@ void Library::detectDistances(){
 										
 											int p2=m_ed->m_EXTENSION_currentPosition;
 											int d=p2-p1+m_ed->m_EXTENSION_receivedLength;
-											(*m_libraryDistances)[library][d]++;
+											(m_libraryDistances)[library][d]++;
 											m_detectedDistances++;
 										}
 									}else{
@@ -212,10 +214,10 @@ void Library::detectDistances(){
 	}
 }
 
-void Library::constructor(int m_rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator,BufferedData*m_bufferedData,int*m_sequence_id,int*m_sequence_idInFile,ExtensionData*m_ed,
+void Library::constructor(int m_rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator,int*m_sequence_id,int*m_sequence_idInFile,ExtensionData*m_ed,
 map<u64,int >*m_readsPositions,int m_size,
 TimePrinter*m_timePrinter,int*m_mode,int*m_master_mode,
-Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,map<int,map<int,int> >*m_libraryDistances
+Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData
 ){
 	this->m_rank=m_rank;
 	this->m_outbox=m_outbox;
@@ -223,7 +225,6 @@ Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,map<int,map<int,i
 	#ifdef ASSERT
 	assert(this->m_outboxAllocator!=NULL);
 	#endif
-	this->m_bufferedData=m_bufferedData;
 	this->m_sequence_id=m_sequence_id;
 	this->m_sequence_idInFile=m_sequence_idInFile;
 	this->m_ed=m_ed;
@@ -235,7 +236,6 @@ Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,map<int,map<int,i
 	this->m_parameters=m_parameters;
 	this->m_fileId=m_fileId;
 	this->m_seedingData=m_seedingData;
-	this->m_libraryDistances=m_libraryDistances;
 	setReadiness();
 }
 
@@ -253,4 +253,43 @@ int Library::getSize(){
 
 Library::Library(){
 	m_detectedDistances=0;
+}
+
+void Library::allocateBuffers(){
+	m_bufferedData.constructor(m_size,MPI_BTL_SM_EAGER_LIMIT);
+	(m_libraryIterator)=0;
+	(m_libraryIndexInitiated)=false;
+}
+
+void Library::sendLibraryDistances(){
+	if(!m_ready){
+		return;
+	}
+	if(m_libraryIterator==(int)m_libraryDistances.size()){
+
+		m_bufferedData.flushAll(TAG_LIBRARY_DISTANCE,m_outboxAllocator,m_outbox,getRank());
+
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_ASK_LIBRARY_DISTANCES_FINISHED,getRank());
+		m_outbox->push_back(aMessage);
+		(*m_mode)=MODE_DO_NOTHING;
+	}else if(m_libraryIndex==m_libraryDistances[m_libraryIterator].end()){
+		m_libraryIterator++;
+		m_libraryIndexInitiated=false;
+	}else{
+		if(!m_libraryIndexInitiated){
+			m_libraryIndexInitiated=true;
+			m_libraryIndex=m_libraryDistances[m_libraryIterator].begin();
+		}
+		int library=m_libraryIterator;
+		int distance=m_libraryIndex->first;
+		int count=m_libraryIndex->second;
+		m_bufferedData.addAt(MASTER_RANK,library);
+		m_bufferedData.addAt(MASTER_RANK,distance);
+		m_bufferedData.addAt(MASTER_RANK,count);
+		if(m_bufferedData.flush(MASTER_RANK,3,TAG_LIBRARY_DISTANCE,m_outboxAllocator,m_outbox,getRank(),false)){
+			m_ready=false;
+		}
+
+		m_libraryIndex++;
+	}
 }

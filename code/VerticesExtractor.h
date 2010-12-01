@@ -23,19 +23,20 @@
 #define _VerticesExtractor
 
 #include<StaticVector.h>
+#include<BufferedData.h>
 #include<vector>
 #include<common_functions.h>
 #include<ArrayOfReads.h>
 #include<Message.h>
 #include<RingAllocator.h>
 #include<Read.h>
-#include<DistributionData.h>
 using namespace std;
 
 class VerticesExtractor{
 	bool m_ready;
+	BufferedData m_bufferedData;
 public:
-	VerticesExtractor();
+	void constructor(int size);
 	void process(int*m_mode_send_vertices_sequence_id,
 				ArrayOfReads*m_myReads,
 				bool*m_reverseComplementVertex,
@@ -44,7 +45,6 @@ public:
 				StaticVector*m_outbox,
 				bool*m_mode_send_vertices,
 				int m_wordSize,
-				DistributionData*m_disData,
 				int size,
 				RingAllocator*m_outboxAllocator,
 				bool m_colorSpaceMode,int*m_mode

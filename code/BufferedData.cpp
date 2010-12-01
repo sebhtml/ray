@@ -34,6 +34,16 @@ void BufferedData::constructor(int numberOfRanks,int capacity){
 	m_ranks=numberOfRanks;
 }
 
+void BufferedData::clear(){
+	if(m_sizes!=NULL){
+		__Free(m_sizes);
+		m_sizes=NULL;
+	}
+	if(m_data!=NULL){
+		__Free(m_data);
+		m_data=NULL;
+	}
+}
 
 int BufferedData::size(int i){
 	#ifdef ASSERT

@@ -35,6 +35,10 @@ EdgesExtractor::EdgesExtractor(){
 	m_mode_send_edge_sequence_id_position=0;
 }
 
+void EdgesExtractor::constructor(int size){
+	m_bufferedData.constructor(size,MPI_BTL_SM_EAGER_LIMIT);
+}
+
 void EdgesExtractor::processOutgoingEdges(){
 
 	if((m_mode_send_edge_sequence_id)%100000==0 and (m_mode_send_edge_sequence_id_position)==0){
@@ -50,12 +54,12 @@ void EdgesExtractor::processOutgoingEdges(){
 		if(m_reverseComplementEdge==false){
 			(m_mode_send_edge_sequence_id_position)=0;
 			m_reverseComplementEdge=true;
-			m_disData->m_messagesStockOut.flushAll(TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
+			m_bufferedData.flushAll(TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
 			printf("Rank %i is adding outgoing edges %i/%i (completed)\n",getRank,(int)m_myReads->size(),(int)m_myReads->size());
 			fflush(stdout);
 			(m_mode_send_edge_sequence_id)=0;
 		}else{
-			m_disData->m_messagesStockOut.flushAll(TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
+			m_bufferedData.flushAll(TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
 			(*m_mode_send_outgoing_edges)=false;
 			(*m_mode)=MODE_PROCESS_INGOING_EDGES;
 			(*m_mode_send_ingoing_edges)=true;
@@ -93,16 +97,16 @@ void EdgesExtractor::processOutgoingEdges(){
 				VERTEX_TYPE b_2=complementVertex(a_1,m_wordSize,m_colorSpaceMode);
 				int rankB=vertexRank(b_1,getSize);
 				rankToFlush=rankB;
-				m_disData->m_messagesStockOut.addAt(rankB,b_1);
-				m_disData->m_messagesStockOut.addAt(rankB,b_2);
+				m_bufferedData.addAt(rankB,b_1);
+				m_bufferedData.addAt(rankB,b_2);
 			}else{
 				int rankA=vertexRank(a_1,getSize);
 				rankToFlush=rankA;
-				m_disData->m_messagesStockOut.addAt(rankA,a_1);
-				m_disData->m_messagesStockOut.addAt(rankA,a_2);
+				m_bufferedData.addAt(rankA,a_1);
+				m_bufferedData.addAt(rankA,a_2);
 			}
 			
-			if(m_disData->m_messagesStockOut.flush(rankToFlush,2,TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,false)){
+			if(m_bufferedData.flush(rankToFlush,2,TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,false)){
 				m_ready=false;
 			}
 		}
@@ -125,14 +129,14 @@ void EdgesExtractor::processIngoingEdges(){
 		if(m_reverseComplementEdge==false){
 			m_reverseComplementEdge=true;
 			m_mode_send_edge_sequence_id_position=0;
-			m_disData->m_messagesStockIn.flushAll(TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
+			m_bufferedData.flushAll(TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
 		
 			#ifdef SHOW_PROGRESS
 			cout<<"Rank "<<getRank<<" is adding ingoing edges "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads->size()<<" (completed)"<<endl;
 			#endif
 			m_mode_send_edge_sequence_id=0;
 		}else{
-			m_disData->m_messagesStockIn.flushAll(TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
+			m_bufferedData.flushAll(TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
 			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_EDGES_DISTRIBUTED,getRank);
 			m_outbox->push_back(aMessage);
 			(*m_mode_send_ingoing_edges)=false;
@@ -141,6 +145,7 @@ void EdgesExtractor::processIngoingEdges(){
 			#ifdef SHOW_PROGRESS
 			cout<<"Rank "<<getRank<<" is adding ingoing edges (reverse complement) "<<m_mode_send_edge_sequence_id<<"/"<<m_myReads->size()<<" (completed)"<<endl;
 			#endif
+			m_bufferedData.clear();
 		}
 	}else{
 
@@ -173,18 +178,18 @@ void EdgesExtractor::processIngoingEdges(){
 				VERTEX_TYPE b_2=complementVertex(a_1,m_wordSize,m_colorSpaceMode);
 				int rankB=vertexRank(b_2,getSize);
 				rankToFlush=rankB;
-				m_disData->m_messagesStockIn.addAt(rankB,b_1);
-				m_disData->m_messagesStockIn.addAt(rankB,b_2);
+				m_bufferedData.addAt(rankB,b_1);
+				m_bufferedData.addAt(rankB,b_2);
 			}else{
 				int rankA=vertexRank(a_2,getSize);
 				rankToFlush=rankA;
-				m_disData->m_messagesStockIn.addAt(rankA,a_1);
-				m_disData->m_messagesStockIn.addAt(rankA,a_2);
+				m_bufferedData.addAt(rankA,a_1);
+				m_bufferedData.addAt(rankA,a_2);
 			}
 
 			// flush data
 
-			if(m_disData->m_messagesStockIn.flush(rankToFlush,2,TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,false)){
+			if(m_bufferedData.flush(rankToFlush,2,TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,false)){
 				m_ready=false;
 			}
 		}

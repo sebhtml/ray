@@ -22,12 +22,8 @@
 #include<SequencesIndexer.h>
 #include<string.h>
 #include<stdlib.h>
-
-#ifdef ASSERT
 #include<assert.h>
-#endif
 #include<Parameters.h>
-#include<DistributionData.h>
 #include<Loader.h>
 #include<common_functions.h>
 #include<Message.h>
@@ -37,7 +33,6 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 				StaticVector*m_outbox,
 				int*m_mode,
 				int m_wordSize,
-				BufferedData*m_bufferedData,
 				int m_size,
 				int m_rank,
 				bool m_colorSpaceMode
@@ -48,10 +43,12 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 	if(m_theSequenceId==(int)m_myReads->size()){
 		printf("Rank %i is indexing sequence reads %i/%i (completed)\n",m_rank,(int)m_myReads->size(),(int)m_myReads->size());
 		fflush(stdout);
-		m_bufferedData->flushAll(TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank);
+		m_bufferedData.flushAll(TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank);
 		(*m_mode)=MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,m_rank);
 		m_outbox->push_back(aMessage);
+		m_bufferedData.clear();
+
 		return;
 	}
 	#ifdef ASSERT
@@ -72,12 +69,12 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 	if(isValidDNA(vertexChar)){
 		VERTEX_TYPE vertex=wordId(vertexChar);
 		int sendTo=vertexRank(vertex,m_size);
-		m_bufferedData->addAt(sendTo,vertex);
-		m_bufferedData->addAt(sendTo,m_rank);
-		m_bufferedData->addAt(sendTo,m_theSequenceId);
-		m_bufferedData->addAt(sendTo,(VERTEX_TYPE)'F');
+		m_bufferedData.addAt(sendTo,vertex);
+		m_bufferedData.addAt(sendTo,m_rank);
+		m_bufferedData.addAt(sendTo,m_theSequenceId);
+		m_bufferedData.addAt(sendTo,(VERTEX_TYPE)'F');
 
-		m_bufferedData->flush(sendTo,4,TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank,false);
+		m_bufferedData.flush(sendTo,4,TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank,false);
 	}
 
 
@@ -86,11 +83,11 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 	if(isValidDNA(vertexChar)){
 		VERTEX_TYPE vertex=complementVertex(wordId(vertexChar),m_wordSize,(m_colorSpaceMode));
 		int sendTo=vertexRank(vertex,m_size);
-		m_bufferedData->addAt(sendTo,vertex);
-		m_bufferedData->addAt(sendTo,m_rank);
-		m_bufferedData->addAt(sendTo,m_theSequenceId);
-		m_bufferedData->addAt(sendTo,(VERTEX_TYPE)'R');
-		m_bufferedData->flush(sendTo,4,TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank,false);
+		m_bufferedData.addAt(sendTo,vertex);
+		m_bufferedData.addAt(sendTo,m_rank);
+		m_bufferedData.addAt(sendTo,m_theSequenceId);
+		m_bufferedData.addAt(sendTo,(VERTEX_TYPE)'R');
+		m_bufferedData.flush(sendTo,4,TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank,false);
 	}
 
 
@@ -101,3 +98,6 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 	m_theSequenceId++;
 }
 
+void SequencesIndexer::constructor(int m_size){
+	m_bufferedData.constructor(m_size,MPI_BTL_SM_EAGER_LIMIT);
+}

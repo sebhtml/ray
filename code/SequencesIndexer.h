@@ -27,28 +27,29 @@
 #include<StaticVector.h>
 #include<vector>
 #include<ArrayOfReads.h>
+#include<BufferedData.h>
 #include<MyAllocator.h>
 #include<RingAllocator.h>
 #include<Read.h>
-#include<DistributionData.h>
 #include<Parameters.h>
 
 class SequencesIndexer{
 	int m_theSequenceId;
-
+	BufferedData m_bufferedData;
 public:
+
 	void attachReads(
 ArrayOfReads*m_myReads,
 				RingAllocator*m_outboxAllocator,
 				StaticVector*m_outbox,
 				int*m_mode,
 				int m_wordSize,
-				BufferedData*m_bufferedData,
 				int m_size,
 				int m_rank,
 				bool m_colorSpaceMode
 );
 
+	void constructor(int size);
 };
 
 #endif

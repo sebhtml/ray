@@ -27,7 +27,6 @@
 #include<time.h>
 #include<StaticVector.h>
 #include<common_functions.h>
-#include<DistributionData.h>
 
 void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 				ArrayOfReads*m_myReads,
@@ -37,7 +36,6 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 				StaticVector*m_outbox,
 				bool*m_mode_send_vertices,
 				int m_wordSize,
-				DistributionData*m_disData,
 				int size,
 				RingAllocator*m_outboxAllocator,
 				bool m_colorSpaceMode,int*m_mode
@@ -68,13 +66,14 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			*m_reverseComplementVertex=true;
 		}else{
 			// flush data
-			m_disData->m_messagesStock.flushAll(TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank);
+			m_bufferedData.flushAll(TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank);
 			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_VERTICES_DISTRIBUTED,rank);
 			m_outbox->push_back(aMessage);
 			*m_mode_send_vertices=false;
 			(*m_mode)=MODE_DO_NOTHING;
 			printf("Rank %i is computing vertices (reverse complement) %i/%i (completed)\n",rank,(int)*m_mode_send_vertices_sequence_id,(int)m_myReads->size());
 			fflush(stdout);
+			m_bufferedData.clear();
 		}
 	}else{
 		char*readSequence=(*m_myReads)[(*m_mode_send_vertices_sequence_id)]->getSeq();
@@ -93,14 +92,14 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			int rankToFlush=0;
 			if(*m_reverseComplementVertex==false){
 				rankToFlush=vertexRank(a,size);
-				m_disData->m_messagesStock.addAt(rankToFlush,a);
+				m_bufferedData.addAt(rankToFlush,a);
 			}else{
 				VERTEX_TYPE b=complementVertex(a,m_wordSize,m_colorSpaceMode);
 				rankToFlush=vertexRank(b,size);
-				m_disData->m_messagesStock.addAt(rankToFlush,b);
+				m_bufferedData.addAt(rankToFlush,b);
 			}
 
-			if(m_disData->m_messagesStock.flush(rankToFlush,1,TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_bufferedData.flush(rankToFlush,1,TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,false)){
 				m_ready=false;
 			}
 
@@ -114,8 +113,8 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 	}
 }
 
-
-VerticesExtractor::VerticesExtractor(){
+void VerticesExtractor::constructor(int size){
+	m_bufferedData.constructor(size,MPI_BTL_SM_EAGER_LIMIT);
 	setReadiness();
 }
 

@@ -79,14 +79,13 @@ am__libRay_a_SOURCES_DIST = EarlyStoppingTechnology.h \
 	common_functions.cpp common_functions.h config.h \
 	CoverageDistribution.cpp CoverageDistribution.h \
 	DepthFirstSearchData.h Direction.cpp Direction.h \
-	DistributionData.cpp DistributionData.h EdgesExtractor.cpp \
-	EdgesExtractor.h ErrorSimulator.cpp ErrorSimulator.h \
-	ExtensionData.h FusionData.h FusionData.cpp Loader.cpp \
-	Loader.hi Machine.cpp Machine.h Message.cpp Message.h \
-	MessageProcessor.cpp MessageProcessor.h MyAllocator.cpp \
-	MyAllocator.h MyForest.cpp MyForest.h OpenAssemblerChooser.cpp \
-	OpenAssemblerChooser.h PairedRead.cpp PairedRead.h \
-	Parameters.cpp Parameters.h ReadAnnotation.cpp \
+	EdgesExtractor.cpp EdgesExtractor.h ErrorSimulator.cpp \
+	ErrorSimulator.h ExtensionData.h FusionData.h FusionData.cpp \
+	Loader.cpp Loader.hi Machine.cpp Machine.h Message.cpp \
+	Message.h MessageProcessor.cpp MessageProcessor.h \
+	MyAllocator.cpp MyAllocator.h MyForest.cpp MyForest.h \
+	OpenAssemblerChooser.cpp OpenAssemblerChooser.h PairedRead.cpp \
+	PairedRead.h Parameters.cpp Parameters.h ReadAnnotation.cpp \
 	ReadAnnotation.h Read.cpp Read.h RepeatedVertexWatchdog.cpp \
 	RepeatedVertexWatchdog.h SeedExtender.cpp SeedExtender.h \
 	SequencesIndexer.cpp SequencesIndexer.h SequencesLoader.cpp \
@@ -106,10 +105,9 @@ am_libRay_a_OBJECTS = EarlyStoppingTechnology.$(OBJEXT) \
 	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
-	Direction.$(OBJEXT) DistributionData.$(OBJEXT) \
-	EdgesExtractor.$(OBJEXT) ErrorSimulator.$(OBJEXT) \
-	FusionData.$(OBJEXT) Loader.$(OBJEXT) Machine.$(OBJEXT) \
-	Message.$(OBJEXT) MessageProcessor.$(OBJEXT) \
+	Direction.$(OBJEXT) EdgesExtractor.$(OBJEXT) \
+	ErrorSimulator.$(OBJEXT) FusionData.$(OBJEXT) Loader.$(OBJEXT) \
+	Machine.$(OBJEXT) Message.$(OBJEXT) MessageProcessor.$(OBJEXT) \
 	MyAllocator.$(OBJEXT) MyForest.$(OBJEXT) \
 	OpenAssemblerChooser.$(OBJEXT) PairedRead.$(OBJEXT) \
 	Parameters.$(OBJEXT) ReadAnnotation.$(OBJEXT) Read.$(OBJEXT) \
@@ -264,14 +262,13 @@ libRay_a_SOURCES = EarlyStoppingTechnology.h \
 	common_functions.cpp common_functions.h config.h \
 	CoverageDistribution.cpp CoverageDistribution.h \
 	DepthFirstSearchData.h Direction.cpp Direction.h \
-	DistributionData.cpp DistributionData.h EdgesExtractor.cpp \
-	EdgesExtractor.h ErrorSimulator.cpp ErrorSimulator.h \
-	ExtensionData.h FusionData.h FusionData.cpp Loader.cpp \
-	Loader.hi Machine.cpp Machine.h Message.cpp Message.h \
-	MessageProcessor.cpp MessageProcessor.h MyAllocator.cpp \
-	MyAllocator.h MyForest.cpp MyForest.h OpenAssemblerChooser.cpp \
-	OpenAssemblerChooser.h PairedRead.cpp PairedRead.h \
-	Parameters.cpp Parameters.h ReadAnnotation.cpp \
+	EdgesExtractor.cpp EdgesExtractor.h ErrorSimulator.cpp \
+	ErrorSimulator.h ExtensionData.h FusionData.h FusionData.cpp \
+	Loader.cpp Loader.hi Machine.cpp Machine.h Message.cpp \
+	Message.h MessageProcessor.cpp MessageProcessor.h \
+	MyAllocator.cpp MyAllocator.h MyForest.cpp MyForest.h \
+	OpenAssemblerChooser.cpp OpenAssemblerChooser.h PairedRead.cpp \
+	PairedRead.h Parameters.cpp Parameters.h ReadAnnotation.cpp \
 	ReadAnnotation.h Read.cpp Read.h RepeatedVertexWatchdog.cpp \
 	RepeatedVertexWatchdog.h SeedExtender.cpp SeedExtender.h \
 	SequencesIndexer.cpp SequencesIndexer.h SequencesLoader.cpp \
@@ -395,7 +392,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ColorSpaceLoader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoverageDistribution.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Direction.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DistributionData.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/EarlyStoppingTechnology.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/EdgesExtractor.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ErrorSimulator.Po@am__quote@

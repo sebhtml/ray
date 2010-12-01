@@ -17,7 +17,7 @@ FastqLoader.cpp BubbleData.h BubbleTool.cpp BubbleTool.h BufferedData.cpp \
 BufferedData.h Chooser.cpp ChooserData.h Chooser.h ColorSpaceDecoder.cpp \
 ColorSpaceDecoder.h ColorSpaceLoader.cpp ColorSpaceLoader.h common_functions.cpp \
 common_functions.h config.h CoverageDistribution.cpp CoverageDistribution.h \
-DepthFirstSearchData.h Direction.cpp Direction.h DistributionData.cpp DistributionData.h \
+DepthFirstSearchData.h Direction.cpp Direction.h \
 EdgesExtractor.cpp EdgesExtractor.h  ErrorSimulator.cpp ErrorSimulator.h ExtensionData.h \
 FusionData.h FusionData.cpp Loader.cpp Loader.hi Machine.cpp Machine.h Message.cpp Message.h \
 MessageProcessor.cpp MessageProcessor.h MyAllocator.cpp MyAllocator.h MyForest.cpp \

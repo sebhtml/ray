@@ -56,6 +56,7 @@ void MessageProcessor::call_TAG_SEND_SEQUENCE_REGULATOR(Message*message){
 
 void MessageProcessor::call_TAG_START_INDEXING_SEQUENCES(Message*message){
 	(*m_mode)=MODE_INDEX_SEQUENCES;
+	m_si->constructor(size);
 }
 
 /*
@@ -228,6 +229,8 @@ void MessageProcessor::call_TAG_START_VERTICES_DISTRIBUTION(Message*message){
 	MPI_Barrier(MPI_COMM_WORLD);
 	(*m_mode_send_vertices)=true;
 	(*m_mode)=MODE_EXTRACT_VERTICES;
+	m_verticesExtractor->constructor(size);
+
 	(*m_mode_send_vertices_sequence_id)=0;
 }
 
@@ -276,6 +279,7 @@ void MessageProcessor::call_TAG_IN_EDGE_DATA_WITH_PTR(Message*message){
 void MessageProcessor::call_TAG_START_EDGES_DISTRIBUTION(Message*message){
 	(*m_mode_send_outgoing_edges)=true;
 	(*m_mode)=MODE_PROCESS_OUTGOING_EDGES;
+	m_edgesExtractor->constructor(size);
 }
 
 void MessageProcessor::call_TAG_START_EDGES_DISTRIBUTION_ASK(Message*message){
@@ -1266,8 +1270,7 @@ void MessageProcessor::call_TAG_LIBRARY_DISTANCE(Message*message){
 
 void MessageProcessor::call_TAG_ASK_LIBRARY_DISTANCES(Message*message){
 	(*m_mode)=MODE_SEND_LIBRARY_DISTANCES;
-	(*m_libraryIterator)=0;
-	(*m_libraryIndexInitiated)=false;
+	m_library->allocateBuffers();
 }
 
 void MessageProcessor::call_TAG_ASK_LIBRARY_DISTANCES_FINISHED(Message*message){
@@ -1487,8 +1490,6 @@ SequencesLoader*sequencesLoader,ExtensionData*ed,
 			int*m_numberOfRanksDoneDetectingDistances,
 			int*m_numberOfRanksDoneSendingDistances,
 			Parameters*parameters,
-			int*m_libraryIterator,
-			bool*m_libraryIndexInitiated,
 			MyForest*m_subgraph,
 			RingAllocator*m_outboxAllocator,
 				int rank,
@@ -1568,15 +1569,14 @@ SequencesLoader*sequencesLoader,ExtensionData*ed,
 		map<int,int>*m_allIdentifiers,OpenAssemblerChooser*m_oa,
 int*m_numberOfRanksWithCoverageData,
 SeedExtender*seedExtender,int*m_master_mode,
-bool*m_isFinalFusion){
+bool*m_isFinalFusion,
+SequencesIndexer*m_si){
 	this->m_sequencesLoader=sequencesLoader;
 	this->m_verticesExtractor=m_verticesExtractor;
 	this->ed=ed;
 	this->m_numberOfRanksDoneDetectingDistances=m_numberOfRanksDoneDetectingDistances;
 	this->m_numberOfRanksDoneSendingDistances=m_numberOfRanksDoneSendingDistances;
 	this->parameters=parameters;
-	this->m_libraryIterator=m_libraryIterator;
-	this->m_libraryIndexInitiated=m_libraryIndexInitiated;
 	this->m_library=m_library;
 	this->m_subgraph=m_subgraph;
 	this->m_edgesExtractor=m_edgesExtractor;
@@ -1595,6 +1595,7 @@ bool*m_isFinalFusion){
 	this->m_FINISH_newFusions=m_FINISH_newFusions;
 	this->size=size;
 	this->m_inboxAllocator=m_inboxAllocator;
+	this->m_si=m_si;
 	this->m_persistentAllocator=m_persistentAllocator;
 	this->m_identifiers=m_identifiers;
 	this->m_mode_sendDistribution=m_mode_sendDistribution;

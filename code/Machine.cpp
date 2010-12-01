@@ -104,38 +104,7 @@ void Machine::showUsage(){
 	cout<<endl;
 }
 
-void Machine::sendLibraryDistances(){
-	if(!m_ready){
-		return;
-	}
-	if(m_libraryIterator==(int)m_libraryDistances.size()){
 
-		m_bufferedData.flushAll(TAG_LIBRARY_DISTANCE,&m_outboxAllocator,&m_outbox,getRank());
-
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_ASK_LIBRARY_DISTANCES_FINISHED,getRank());
-		m_outbox.push_back(aMessage);
-		m_mode=MODE_DO_NOTHING;
-	}else if(m_libraryIndex==m_libraryDistances[m_libraryIterator].end()){
-		m_libraryIterator++;
-		m_libraryIndexInitiated=false;
-	}else{
-		if(!m_libraryIndexInitiated){
-			m_libraryIndexInitiated=true;
-			m_libraryIndex=m_libraryDistances[m_libraryIterator].begin();
-		}
-		int library=m_libraryIterator;
-		int distance=m_libraryIndex->first;
-		int count=m_libraryIndex->second;
-		m_bufferedData.addAt(MASTER_RANK,library);
-		m_bufferedData.addAt(MASTER_RANK,distance);
-		m_bufferedData.addAt(MASTER_RANK,count);
-		if(m_bufferedData.flush(MASTER_RANK,3,TAG_LIBRARY_DISTANCE,&m_outboxAllocator,&m_outbox,getRank(),false)){
-			m_ready=false;
-		}
-
-		m_libraryIndex++;
-	}
-}
 
 /*
  * get the Directions taken by a vertex.
@@ -197,7 +166,6 @@ Machine::Machine(int argc,char**argv){
 	#endif
 	m_dfsData=new DepthFirstSearchData();
 	m_fusionData=new FusionData();
-	m_disData=new DistributionData();
 	m_seedingData=new SeedingData();
 	m_ed=new ExtensionData();
 	m_sd=new ScaffolderData();
@@ -341,16 +309,13 @@ void Machine::start(){
 		m_timePrinter.printElapsedTime("Beginning of computation");
 		cout<<endl;
 	}
-	m_disData->constructor(getSize(),MPI_BTL_SM_EAGER_LIMIT,&m_persistentAllocator);
-	m_bufferedData.constructor(getSize(),MPI_BTL_SM_EAGER_LIMIT);
-	m_library.constructor(getRank(),&m_outbox,&m_outboxAllocator,&m_bufferedData,&m_sequence_id,&m_sequence_idInFile,
+	m_library.constructor(getRank(),&m_outbox,&m_outboxAllocator,&m_sequence_id,&m_sequence_idInFile,
 		m_ed,&m_readsPositions,getSize(),&m_timePrinter,&m_mode,&m_master_mode,
-	&m_parameters,&m_fileId,m_seedingData,&m_libraryDistances);
+	&m_parameters,&m_fileId,m_seedingData);
 
 
 	m_subgraph.constructor(numberOfTrees,&m_persistentAllocator);
 	
-	m_edgesExtractor.m_disData=m_disData;
 	m_edgesExtractor.getRank=getRank();
 	m_edgesExtractor.getSize=getSize();
 	m_edgesExtractor.m_outboxAllocator=&m_outboxAllocator;
@@ -402,8 +367,6 @@ void Machine::start(){
 			&m_numberOfRanksDoneDetectingDistances,
 			&m_numberOfRanksDoneSendingDistances,
 			&m_parameters,
-			&m_libraryIterator,
-			&m_libraryIndexInitiated,
 			&m_subgraph,
 			&m_outboxAllocator,
 			getRank(),
@@ -482,7 +445,7 @@ void Machine::start(){
 				&m_outbox,
 	&m_sd->m_allIdentifiers,&m_oa,
 	&m_numberOfRanksWithCoverageData,&m_seedExtender,
-	&m_master_mode,&m_isFinalFusion);
+	&m_master_mode,&m_isFinalFusion,&m_si);
 
 	m_messagesHandler.constructor(getRank(),getSize());
 	if(m_argc==1 or ((string)m_argv[1])=="--help"){
@@ -493,6 +456,7 @@ void Machine::start(){
 	}else{
 		if(isMaster()){
 			m_master_mode=MASTER_MODE_LOAD_CONFIG;
+			m_sl.constructor(getSize());
 		}
 		run();
 	}
@@ -1248,7 +1212,7 @@ void Machine::call_MASTER_MODE_LOAD_CONFIG(){
 void Machine::call_MASTER_MODE_LOAD_SEQUENCES(){
 	bool res=m_sl.loadSequences(getRank(),getSize(),
 	&m_outbox,
-	m_disData,&m_outboxAllocator,
+	&m_outboxAllocator,
 	&m_loadSequenceStep,
 	m_bubbleData,
 	&m_lastTime,
@@ -1346,7 +1310,6 @@ void Machine::call_MODE_EXTRACT_VERTICES(){
 			&m_outbox,
 			&m_mode_send_vertices,
 			m_wordSize,
-			m_disData,
 			getSize(),
 			&m_outboxAllocator,
 			m_colorSpaceMode,&m_mode
@@ -1619,7 +1582,7 @@ void Machine::call_MASTER_MODE_INDEX_SEQUENCES(){
 
 void Machine::call_MODE_INDEX_SEQUENCES(){
 	m_si.attachReads(&m_myReads,&m_outboxAllocator,&m_outbox,&m_mode,m_wordSize,
-	&m_bufferedData,m_size,m_rank,m_colorSpaceMode);
+	m_size,m_rank,m_colorSpaceMode);
 }
 
 void Machine::call_MASTER_MODE_TRIGGER_EXTENSIONS(){
@@ -1684,7 +1647,7 @@ void Machine::call_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 }
 
 void Machine::call_MODE_SEND_LIBRARY_DISTANCES(){
-	sendLibraryDistances();
+	m_library.sendLibraryDistances();
 }
 
 void Machine::call_MASTER_MODE_UPDATE_DISTANCES(){

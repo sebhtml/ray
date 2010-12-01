@@ -87,7 +87,6 @@ class Machine{
 	MachineMethod m_master_methods[32];
 	MachineMethod m_slave_methods[32];
 
-	BufferedData m_bufferedData;
 	Library m_library;
 	int m_currentCycleStep;
 	MessagesHandler m_messagesHandler;
@@ -143,7 +142,7 @@ class Machine{
 	map<int,VERTEX_TYPE> m_distributionOfCoverage;
 
 	FusionData*m_fusionData;
-	DistributionData*m_disData;
+
 	int m_machineRank;
 
 	int m_mode_send_coverage_iterator;
@@ -154,10 +153,8 @@ class Machine{
 	// read, strand, position
 	map<u64,int > m_readsPositions;
 	int m_numberOfRanksDoneSendingDistances;
-	map<int,map<int,int> > m_libraryDistances;
-	int m_libraryIterator;
-	map<int,int>::iterator m_libraryIndex;
-	bool m_libraryIndexInitiated;
+
+
 	StaticVector m_outbox;
 	StaticVector m_inbox;
 
@@ -291,10 +288,6 @@ class Machine{
 	void depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int b);
 	void showUsage();
 	
-	void detectDistances();
-	void sendLibraryDistances();
-
-	void updateDistances();
 
 	void call_MASTER_MODE_LOAD_CONFIG();
 	void call_MASTER_MODE_LOAD_SEQUENCES();

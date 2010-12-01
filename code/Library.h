@@ -41,7 +41,7 @@ using namespace std;
 class Library{
 	int m_detectedDistances;
 
-	BufferedData*m_bufferedData;
+	BufferedData m_bufferedData;
 	bool m_ready;
 	int m_rank;
 	StaticVector*m_outbox;
@@ -58,21 +58,28 @@ class Library{
 	Parameters*m_parameters;
 	int*m_fileId;
 	SeedingData*m_seedingData;
-	map<int,map<int,int> >*m_libraryDistances;
+	int m_libraryIterator;
+	map<int,map<int,int> > m_libraryDistances;
+	map<int,int>::iterator m_libraryIndex;
+	bool m_libraryIndexInitiated;
 
 public:
 	Library();
+	void allocateBuffers();
 	void updateDistances();
 	void setReadiness();
 	int getRank();
 	int getSize();
 	void detectDistances();
-	void constructor(int m_rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator,BufferedData*m_bufferedData,
+
+	void sendLibraryDistances();
+
+	void constructor(int m_rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator,
 	int*m_sequence_id,int*m_sequence_idInFile,ExtensionData*m_ed,map<u64,int >*m_readsPositions,int m_size,
 TimePrinter*m_timePrinter,int*m_mode,int*m_master_mode,
-Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,map<int,map<int,int> >*m_libraryDistances
-
+Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData
 );
+
 };
 
 #endif

@@ -35,7 +35,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 // Ray instances like to communicate a lots!
 //
 
-enum{
+enum {
 TAG_WELCOME,
 TAG_SEND_SEQUENCE,
 TAG_SEQUENCES_READY,

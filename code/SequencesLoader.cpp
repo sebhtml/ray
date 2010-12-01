@@ -22,7 +22,6 @@ Ray
 #include<string.h>
 #include<SequencesLoader.h>
 #include<Message.h>
-#include<DistributionData.h>
 #include<BubbleData.h>
 #include<assert.h>
 #include<vector>
@@ -34,7 +33,6 @@ using namespace std;
 
 bool SequencesLoader::loadSequences(int rank,int size,
 	StaticVector*m_outbox,
-	DistributionData*m_disData,	
 	RingAllocator*m_outboxAllocator,
 	bool*m_loadSequenceStep,BubbleData*m_bubbleData,
 	time_t*m_lastTime,
@@ -73,7 +71,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 	
 		// distribution of paired information is completed
 		}else{
-			m_waitingNumber+=m_disData->m_messagesStockPaired.flushAll(TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank);
+			m_waitingNumber+=m_bufferedData.flushAll(TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank);
 			cout<<"Rank "<<rank<<" is sending paired information "<<m_loader.size()<<"/"<<m_loader.size()<<" (completed)"<<endl;
 			cout<<endl;
 			cout.flush();
@@ -95,6 +93,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 		}
 
 		m_loader.clear();
+		m_bufferedData.clear();
 
 	// fileID is set, but reads are not read yet.
 	//
@@ -238,15 +237,15 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			assert(leftSequenceIdOnRank<m_numberOfSequences[leftSequenceRank]);
 			#endif
 
-			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,leftSequenceIdOnRank);
-			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,rightSequenceRank);
-			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,rightSequenceIdOnRank);
-			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,averageFragmentLength);
-			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,deviation);
-			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,false);
+			m_bufferedData.addAt(leftSequenceRank,leftSequenceIdOnRank);
+			m_bufferedData.addAt(leftSequenceRank,rightSequenceRank);
+			m_bufferedData.addAt(leftSequenceRank,rightSequenceIdOnRank);
+			m_bufferedData.addAt(leftSequenceRank,averageFragmentLength);
+			m_bufferedData.addAt(leftSequenceRank,deviation);
+			m_bufferedData.addAt(leftSequenceRank,false);
 
 
-			if(m_disData->m_messagesStockPaired.flush(leftSequenceRank,6,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_bufferedData.flush(leftSequenceRank,6,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
 			}
 		}else if(m_LOADER_isRightFile){
@@ -272,14 +271,14 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			int averageFragmentLength=(m_LOADER_averageFragmentLength);
 			int deviation=(m_LOADER_deviation);
 
-			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,rightSequenceIdOnRank);
-			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,leftSequenceRank);
-			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,leftSequenceIdOnRank);
-			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,averageFragmentLength);
-			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,deviation);
-			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,true);
+			m_bufferedData.addAt(rightSequenceRank,rightSequenceIdOnRank);
+			m_bufferedData.addAt(rightSequenceRank,leftSequenceRank);
+			m_bufferedData.addAt(rightSequenceRank,leftSequenceIdOnRank);
+			m_bufferedData.addAt(rightSequenceRank,averageFragmentLength);
+			m_bufferedData.addAt(rightSequenceRank,deviation);
+			m_bufferedData.addAt(rightSequenceRank,true);
 
-			if(m_disData->m_messagesStockPaired.flush(rightSequenceRank,6,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_bufferedData.flush(rightSequenceRank,6,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
 			}
 			#ifdef DEBUG
@@ -304,14 +303,14 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			assert(averageFragmentLength>=0);
 			#endif
 
-			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,leftSequenceIdOnRank);
-			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,rightSequenceRank);
-			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,rightSequenceIdOnRank);
-			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,averageFragmentLength);
-			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,deviation);
-			m_disData->m_messagesStockPaired.addAt(leftSequenceRank,false);
+			m_bufferedData.addAt(leftSequenceRank,leftSequenceIdOnRank);
+			m_bufferedData.addAt(leftSequenceRank,rightSequenceRank);
+			m_bufferedData.addAt(leftSequenceRank,rightSequenceIdOnRank);
+			m_bufferedData.addAt(leftSequenceRank,averageFragmentLength);
+			m_bufferedData.addAt(leftSequenceRank,deviation);
+			m_bufferedData.addAt(leftSequenceRank,false);
 
-			if(m_disData->m_messagesStockPaired.flush(leftSequenceRank,6,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_bufferedData.flush(leftSequenceRank,6,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
 			}
 
@@ -326,14 +325,14 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			int averageFragmentLength=(m_LOADER_averageFragmentLength);
 			int deviation=(m_LOADER_deviation);
 
-			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,rightSequenceIdOnRank);
-			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,leftSequenceRank);
-			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,leftSequenceIdOnRank);
-			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,averageFragmentLength);
-			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,deviation);
-			m_disData->m_messagesStockPaired.addAt(rightSequenceRank,true);
+			m_bufferedData.addAt(rightSequenceRank,rightSequenceIdOnRank);
+			m_bufferedData.addAt(rightSequenceRank,leftSequenceRank);
+			m_bufferedData.addAt(rightSequenceRank,leftSequenceIdOnRank);
+			m_bufferedData.addAt(rightSequenceRank,averageFragmentLength);
+			m_bufferedData.addAt(rightSequenceRank,deviation);
+			m_bufferedData.addAt(rightSequenceRank,true);
 
-			if(m_disData->m_messagesStockPaired.flush(rightSequenceRank,6,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_bufferedData.flush(rightSequenceRank,6,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
 			}
 
@@ -365,6 +364,7 @@ bool SequencesLoader::isReady(){
 }
 
 void SequencesLoader::constructor(int size){
+	m_bufferedData.constructor(size,MPI_BTL_SM_EAGER_LIMIT);
 	m_size=size;
 	m_buffers=(char*)__Malloc(m_size*MPI_BTL_SM_EAGER_LIMIT*sizeof(char));
 	m_entries=(int*)__Malloc(m_size*sizeof(int));
