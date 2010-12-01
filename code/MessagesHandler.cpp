@@ -185,7 +185,7 @@ void MessagesHandler::constructor(int rank,int size){
 	}
 
 	// the ring contains 128 elements.
-	m_ringSize=128;
+	m_ringSize=512;
 	m_ring=(MPI_Request*)__Malloc(sizeof(MPI_Request)*m_ringSize);
 	m_buffers=(char*)__Malloc(MPI_BTL_SM_EAGER_LIMIT*m_ringSize);
 	m_head=0;
