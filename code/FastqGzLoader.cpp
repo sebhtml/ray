@@ -55,12 +55,14 @@ void FastqGzLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAlloc
 			Read t;
 			t.copy(NULL,buffer,seqMyAllocator,true);
 			reads->push_back(&t);
-			loadedSequences++;
-			m_loaded++;
 		}
 		rotatingVariable++;
+
+		// a period is reached for each read.
 		if(rotatingVariable==period){
 			rotatingVariable=0;
+			loadedSequences++;
+			m_loaded++;
 		}
 	}
 	if(m_loaded==m_size){

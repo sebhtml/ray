@@ -3,6 +3,8 @@ rm *.fasta
 suffix=$(date +%Y-%m-%d-%H-%M-%S).txt
 
 (
+echo "StartingTime= $(date)"
+
 echo "BEGIN LIST OF REGRESSIONS"
 for i in $(ls *.sh|bash listRegressions.sh)
 do
@@ -18,4 +20,5 @@ do
 	bash runRegression.sh $i $suffix
 done 
 
+echo "EndingTime= $(date)"
 ) | tee Regressions-$suffix

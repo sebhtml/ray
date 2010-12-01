@@ -59,12 +59,15 @@ void FastqBz2Loader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllo
 			Read t;
 			t.copy(NULL,buffer,seqMyAllocator,true);
 			reads->push_back(&t);
-			m_loaded++;
-			loadedSequences++;
 		}
+
 		rotatingVariable++;
+
+		// a period is reached for each sequence.
 		if(rotatingVariable==period){
 			rotatingVariable=0;
+			m_loaded++;
+			loadedSequences++;
 		}
 	}
 	if(m_loaded==m_size){

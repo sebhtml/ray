@@ -54,12 +54,14 @@ void FastqLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocat
 			t.copy(NULL,buffer,seqMyAllocator,true);
 			//cout<<buffer<<endl;
 			reads->push_back(&t);
-			loadedSequences++;
-			m_loaded++;
 		}
 		rotatingVariable++;
+
+		// a period is reached for each read.
 		if(rotatingVariable==period){
 			rotatingVariable=0;
+			loadedSequences++;
+			m_loaded++;
 		}
 	}
 

@@ -57,13 +57,13 @@ int ColorSpaceLoader::open(string file){
 
 void ColorSpaceLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
 	char bufferForLine[1024];
-	int i=0;
 	int loadedSequences=0;
 	while(m_loaded<m_size&& loadedSequences<maxToLoad){
 		m_f.getline(bufferForLine,1024);
 		if(bufferForLine[0]=='#'){
 			continue;// skip csfasta comment
 		}
+		// read two lines
 		if(bufferForLine[0]=='>'){
 			m_f.getline(bufferForLine,1024);
 			for(int j=0;j<(int)strlen(bufferForLine);j++){
@@ -82,10 +82,9 @@ void ColorSpaceLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAl
 			reads->push_back(&t);
 			loadedSequences++;
 			m_loaded++;
-			i++;
 		}
 	}
-	if(m_f.eof()){
+	if(m_loaded==m_size){
 		m_f.close();
 	}
 }
