@@ -68,6 +68,5 @@ AC_CHECK_LIB(bz2, BZ2_decompress,
          AM_CONDITIONAL(HAVE_BZ2, false))],
          AM_CONDITIONAL(HAVE_BZ2, false))
 
-AC_CONFIG_FILES([Makefile
-		code/Makefile])
+AC_CONFIG_FILES([Makefile code/Makefile])
 AC_OUTPUT
