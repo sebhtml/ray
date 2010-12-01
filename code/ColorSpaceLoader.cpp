@@ -33,20 +33,37 @@ using namespace std;
 #define _ENCODING_CHAR_C '2'
 #define _ENCODING_CHAR_G '3'
 
-ColorSpaceLoader::ColorSpaceLoader(){
-}
-
-int ColorSpaceLoader::load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
-	ifstream f(file.c_str());
+int ColorSpaceLoader::open(string file){
+	m_f.open(file.c_str());
+	m_size=0;
 	char bufferForLine[1024];
-	int i=0;
-	while(!f.eof()){
-		f.getline(bufferForLine,1024);
+	while(!m_f.eof()){
+		m_f.getline(bufferForLine,1024);
 		if(bufferForLine[0]=='#'){
 			continue;// skip csfasta comment
 		}
 		if(bufferForLine[0]=='>'){
-			f.getline(bufferForLine,1024);
+			m_f.getline(bufferForLine,1024);
+			m_size++;
+		}
+	}
+
+	m_f.close();
+	m_f.open(file.c_str());
+	return EXIT_SUCCESS;
+}
+
+void ColorSpaceLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
+	char bufferForLine[1024];
+	int i=0;
+	int loadedSequences=0;
+	while(!m_f.eof() && loadedSequences<maxToLoad){
+		m_f.getline(bufferForLine,1024);
+		if(bufferForLine[0]=='#'){
+			continue;// skip csfasta comment
+		}
+		if(bufferForLine[0]=='>'){
+			m_f.getline(bufferForLine,1024);
 			for(int j=0;j<(int)strlen(bufferForLine);j++){
 				if(bufferForLine[j]==_ENCODING_CHAR_A){
 					bufferForLine[j]='A';
@@ -61,10 +78,15 @@ int ColorSpaceLoader::load(string file,ArrayOfReads*reads,MyAllocator*seqMyAlloc
 			Read t;
 			t.copy(NULL,bufferForLine+2,seqMyAllocator,true);// remove the leading T & first color
 			reads->push_back(&t);
+			loadedSequences++;
 			i++;
 		}
 	}
-	f.close();
-	return EXIT_SUCCESS;
+	if(m_f.eof()){
+		m_f.close();
+	}
 }
 
+int ColorSpaceLoader::getSize(){
+	return m_size;
+}

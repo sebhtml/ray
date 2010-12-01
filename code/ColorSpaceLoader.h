@@ -26,6 +26,7 @@
 #include<string>
 #include<vector>
 #include<ArrayOfReads.h>
+#include<fstream>
 #include<MyAllocator.h>
 #include<ColorSpaceDecoder.h>
 #include<Read.h>
@@ -33,9 +34,12 @@ using namespace std;
 
 class ColorSpaceLoader{
 	ColorSpaceDecoder m_decoder;
+	ifstream m_f;
+	int m_size;
 public:
-	ColorSpaceLoader();
-	int load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
+	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
+	int open(string file);
+	int getSize();
 };
 
 
