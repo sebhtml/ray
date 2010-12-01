@@ -30,7 +30,7 @@
 using namespace std;
 
 Loader::Loader(){
-	m_maxToLoad=100000;
+	m_maxToLoad=1000000;
 	DISTRIBUTION_ALLOCATOR_CHUNK_SIZE=m_maxToLoad*100;
 	m_currentOffset=0;
 	m_type=FORMAT_NULL;
