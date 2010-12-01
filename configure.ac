@@ -17,6 +17,8 @@ AC_PROG_RANLIB
 
 AC_LANG([C++])
 AC_PROG_CXX(mpic++)
+
+
 AC_CHECK_HEADERS(iostream)
 AC_CHECK_HEADERS(string)
 AC_CHECK_HEADERS(vector)
