@@ -1,13 +1,9 @@
 AC_PREREQ(2.59)
-
-dnl Sébastien Boisvert
-dnl autoconf script for Ray
-
 AC_INIT(Ray, 1.2.0, denovoassembler-users@lists.sourceforge.net, ray, http://denovoassembler.sf.net)
 
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_SRCDIR(code/MessageProcessor.cpp)
-AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_HEADER([config.h])
 
 if test x"${CXXFLAGS+set}" = xset; then
   # the user set CXXFLAGS; don't override it.
