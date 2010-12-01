@@ -23,24 +23,53 @@
 #include<fstream>
 #include<BzReader.h>
 
-// a very simple and compact fastq.gz reader
-int FastqBz2Loader::load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period){
-	BzReader reader;
-	reader.open(file.c_str());
+int FastqBz2Loader::getSize(){
+	return m_size;
+}
+
+int FastqBz2Loader::open(string file,int period){
+	m_reader.open(file.c_str());
 	char buffer[4096];
+	m_loaded=0;
+	m_size=0;
+
 	int rotatingVariable=0;
-	while(NULL!=reader.readLine(buffer,4096)){
+	while(NULL!=m_reader.readLine(buffer,4096)){
 		if(rotatingVariable==1){
-			Read t;
-			t.copy(NULL,buffer,seqMyAllocator,true);
-			reads->push_back(&t);
+			m_size++;
 		}
 		rotatingVariable++;
 		if(rotatingVariable==period){
 			rotatingVariable=0;
 		}
 	}
-	reader.close();
+	m_reader.close();
+
+	m_reader.open(file.c_str());
 	return EXIT_SUCCESS;
 }
+
+// a very simple and compact fastq.gz reader
+void FastqBz2Loader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period){
+	char buffer[4096];
+	int rotatingVariable=0;
+	int loadedSequences=0;
+	while(loadedSequences<maxToLoad&&NULL!=m_reader.readLine(buffer,4096)){
+		if(rotatingVariable==1){
+			Read t;
+			t.copy(NULL,buffer,seqMyAllocator,true);
+			reads->push_back(&t);
+			m_loaded++;
+			loadedSequences++;
+		}
+		rotatingVariable++;
+		if(rotatingVariable==period){
+			rotatingVariable=0;
+		}
+	}
+	if(m_loaded==m_size){
+		m_reader.close();
+	}
+}
+
 

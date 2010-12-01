@@ -22,46 +22,52 @@
 #include<FastqLoader.h>
 #include<fstream>
 
-int FastqLoader::load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
-	ifstream f(file.c_str());
-	string id;
-	ostringstream sequence;
-	ostringstream quality;
-	int seq=0;
-	int qual=1;
-	int mode=seq;
-	string buffer;
-	while(!f.eof()){
-		buffer="";
-		f>>buffer;
-		if(buffer=="")
-			continue;
-		if(buffer[0]=='@'&&!(mode==qual&&quality.str().length()==0)){
-			char bufferForLine[1024];
-			f.getline(bufferForLine,1024);
-			if(id!=""){
-				Read t;
-				t.copy(NULL,sequence.str().c_str(),seqMyAllocator,true);
-				reads->push_back(&t);
-			}
-			id=buffer;
-			sequence.str("");
-			quality.str("");
-			mode=seq;
-		}else if(buffer[0]=='+'&&!(mode==qual&&quality.str().length()==0)){
-			char bufferForLine[1024];
-			f.getline(bufferForLine,1024);
-			mode=qual;
-		}else if(mode==qual){
-			quality<< buffer;
-		}else if(mode==seq){
-			sequence<< buffer;
+int FastqLoader::open(string file,int period){
+	m_f=fopen(file.c_str(),"r");
+	m_size=0;
+	m_loaded=0;
+	int rotatingVariable=0;
+	char buffer[4096];
+	while(NULL!=fgets(buffer,4096,m_f)){
+		if(rotatingVariable==1){
+			m_size++;
+		}
+		rotatingVariable++;
+		if(rotatingVariable==period){
+			rotatingVariable=0;
 		}
 	}
-	Read t;
-	t.copy(NULL,sequence.str().c_str(),seqMyAllocator,true);
-	reads->push_back(&t);
-	f.close();
+
+	fclose(m_f);
+	m_f=fopen(file.c_str(),"r");
 	return EXIT_SUCCESS;
 }
 
+void FastqLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period){
+	char buffer[4096];
+	int rotatingVariable=0;
+	int loadedSequences=0;
+
+	while(loadedSequences<maxToLoad && NULL!=fgets(buffer,4096,m_f)){
+		if(rotatingVariable==1){
+			Read t;
+			t.copy(NULL,buffer,seqMyAllocator,true);
+			//cout<<buffer<<endl;
+			reads->push_back(&t);
+			loadedSequences++;
+			m_loaded++;
+		}
+		rotatingVariable++;
+		if(rotatingVariable==period){
+			rotatingVariable=0;
+		}
+	}
+
+	if(m_loaded==m_size){
+		fclose(m_f);
+	}
+}
+
+int FastqLoader::getSize(){
+	return m_size;
+}

@@ -36,6 +36,8 @@ using namespace std;
 int ColorSpaceLoader::open(string file){
 	m_f.open(file.c_str());
 	m_size=0;
+	m_loaded=0;
+
 	char bufferForLine[1024];
 	while(!m_f.eof()){
 		m_f.getline(bufferForLine,1024);
@@ -57,7 +59,7 @@ void ColorSpaceLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAl
 	char bufferForLine[1024];
 	int i=0;
 	int loadedSequences=0;
-	while(!m_f.eof() && loadedSequences<maxToLoad){
+	while(m_loaded<m_size&& loadedSequences<maxToLoad){
 		m_f.getline(bufferForLine,1024);
 		if(bufferForLine[0]=='#'){
 			continue;// skip csfasta comment
@@ -79,6 +81,7 @@ void ColorSpaceLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAl
 			t.copy(NULL,bufferForLine+2,seqMyAllocator,true);// remove the leading T & first color
 			reads->push_back(&t);
 			loadedSequences++;
+			m_loaded++;
 			i++;
 		}
 	}

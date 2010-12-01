@@ -27,12 +27,18 @@
 #include<vector>
 #include<ArrayOfReads.h>
 #include<Read.h>
+#include<BzReader.h>
 #include<MyAllocator.h>
 using namespace std;
 
 class FastqBz2Loader{
+	int m_loaded;
+	int m_size;
+	BzReader m_reader;
 public:
-	int load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period);
+	int open(string file,int period);
+	int getSize();
+	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period);
 };
 
 #endif

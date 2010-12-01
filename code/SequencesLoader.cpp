@@ -102,7 +102,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 		m_send_sequences_done=false;
 		printf("Rank %i is loading %s\n\n",rank,allFiles[(m_distribution_file_id)].c_str());
 		fflush(stdout);
-		int res=m_loader.load(allFiles[(m_distribution_file_id)]);
+		int res=m_loader.load(allFiles[(m_distribution_file_id)],false);
 		if(res==EXIT_FAILURE){
 			return false;
 		}

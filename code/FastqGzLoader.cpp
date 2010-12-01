@@ -23,23 +23,51 @@
 #include<fstream>
 #include<zlib.h>
 
-// a very simple and compact fastq.gz reader
-int FastqGzLoader::load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period){
-	gzFile f=gzopen(file.c_str(),"r");
+int FastqGzLoader::open(string file,int period){
+	m_f=gzopen(file.c_str(),"r");
 	char buffer[4096];
+	m_size=0;
+	m_loaded=0;
+
 	int rotatingVariable=0;
-	while(Z_NULL!=gzgets(f,buffer,4096)){
+	while(Z_NULL!=gzgets(m_f,buffer,4096)){
 		if(rotatingVariable==1){
-			Read t;
-			t.copy(NULL,buffer,seqMyAllocator,true);
-			reads->push_back(&t);
+			m_size++;
 		}
 		rotatingVariable++;
 		if(rotatingVariable==period){
 			rotatingVariable=0;
 		}
 	}
-	gzclose(f);
+	gzclose(m_f);
+	m_f=gzopen(file.c_str(),"r");
 	return EXIT_SUCCESS;
 }
 
+// a very simple and compact fastq.gz reader
+void FastqGzLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period){
+	char buffer[4096];
+	int rotatingVariable=0;
+	int loadedSequences=0;
+
+	while(loadedSequences<maxToLoad && Z_NULL!=gzgets(m_f,buffer,4096)){
+		if(rotatingVariable==1){
+			Read t;
+			t.copy(NULL,buffer,seqMyAllocator,true);
+			reads->push_back(&t);
+			loadedSequences++;
+			m_loaded++;
+		}
+		rotatingVariable++;
+		if(rotatingVariable==period){
+			rotatingVariable=0;
+		}
+	}
+	if(m_loaded==m_size){
+		gzclose(m_f);
+	}
+}
+
+int FastqGzLoader::getSize(){
+	return m_size;
+}

@@ -33,7 +33,7 @@ void ErrorSimulator::simulateErrors(string inputFile,string outputFile){
 	Loader loader;
 	MyAllocator a;
 	a.constructor(4096);
-	loader.load(inputFile);
+	loader.load(inputFile,false);
 	double insertionProbability=0.005;
 	srand(time(NULL));
 	double deletionProbability=0.005;

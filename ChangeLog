@@ -1,6 +1,8 @@
 = v. 1.2.0 =
 2010-12-XX
 
+* Implemented lazy loading of files (sequences in any files are loaded in
+small batches instead of loading the whole file.)
 * Added an error message for an invalid extension. Thanks to Jean-Francois
 Pombert (University of British Columbia) for the feature request.
 * Removed comparison scripts -- if you want them, download a previous version.
@@ -16,6 +18,8 @@ and the number of MPI ranks.
 -> qhost.py 1072283|add-color-to-qhost.py > Ray.html
 * Added makefile.alternate to compile Ray if the configure script fails.
 'make -f makefile.alternate'
+* Added an fflush call after calls to printf to have a beautiful output in stdout with MPICH2.
+
 
 = v. 1.0.0 =
 2010-11-25

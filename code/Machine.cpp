@@ -550,8 +550,8 @@ void Machine::finishFusions(){
 	if(m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
 		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
 		message[0]=m_FINISH_fusionOccured;
-		cout<<"Rank "<<getRank()<<" is finishing fusions "<<m_ed->m_EXTENSION_contigs.size()<<"/"<<m_ed->m_EXTENSION_contigs.size()<<" (completed)"<<endl;
-		cout.flush();
+		printf("Rank %i is finishing fusions %i/%i (completed)\n",getRank(),(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
+		fflush(stdout);
 	
 		/*
 		char number[10];
@@ -616,8 +616,8 @@ void Machine::finishFusions(){
 			m_FINISH_pathsForPosition.push_back(a);
 			if(m_ed->m_EXTENSION_currentPosition==0){
 				if(m_seedingData->m_SEEDING_i%10==0){
-					cout<<"Rank "<<getRank()<<" is finishing fusions "<<m_seedingData->m_SEEDING_i+1<<"/"<<m_ed->m_EXTENSION_contigs.size()<<endl;
-					cout.flush();
+					printf("Rank %i is finishing fusions %i/%i\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_ed->m_EXTENSION_contigs.size());
+					fflush(stdout);
 				}
 				vector<VERTEX_TYPE> a;
 				m_FINISH_newFusions.push_back(a);

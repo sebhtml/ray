@@ -27,16 +27,21 @@
 #include<stdio.h>
 #include<string>
 #include<MyAllocator.h>
+#include<fstream>
 #include<ArrayOfReads.h>
 #include<vector>
 #include<sstream>
 #include<Read.h>
 using namespace std;
 
-
 class FastqLoader{
+	int m_loaded;
+	int m_size;
+	FILE*m_f;
 public:
-	int load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
+	int open(string file,int period);
+	int getSize();
+	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period);
 };
 
 #endif

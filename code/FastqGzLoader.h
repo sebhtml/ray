@@ -26,12 +26,18 @@
 #include<vector>
 #include<Read.h>
 #include<ArrayOfReads.h>
+#include<zlib.h>
 #include<MyAllocator.h>
 using namespace std;
 
 class FastqGzLoader{
+	gzFile m_f;
+	int m_size;
+	int m_loaded;
 public:
-	int load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period);
+	int open(string file,int period);
+	int getSize();
+	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period);
 };
 
 #endif

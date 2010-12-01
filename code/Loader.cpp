@@ -21,8 +21,7 @@
 */
 #include<sstream>
 #include<iostream>
-
-
+#include<assert.h>
 #include<string>
 #include<vector>
 #include<Loader.h>
@@ -31,13 +30,13 @@
 using namespace std;
 
 Loader::Loader(){
-	DISTRIBUTION_ALLOCATOR_CHUNK_SIZE=10000000;
 	m_maxToLoad=100000;
+	DISTRIBUTION_ALLOCATOR_CHUNK_SIZE=m_maxToLoad*100;
 	m_currentOffset=0;
 	m_type=FORMAT_NULL;
 }
 
-int Loader::load(string file){
+int Loader::load(string file,bool isGenome){
 	m_allocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
 	ifstream f(file.c_str());
 	bool exists=f;
@@ -51,12 +50,18 @@ int Loader::load(string file){
 		(cout)<<"Error: "<<file<<endl;
 		return EXIT_FAILURE;
 	}
+
+	if(isGenome){
+		m_fasta.load(file,&m_reads,&m_allocator);
+		return EXIT_SUCCESS;
+	}
+
 	string csfastaExtension=".csfasta";
 	if(file.length()>=csfastaExtension.length() &&
 		file.substr(file.length()-csfastaExtension.length(),csfastaExtension.length())==csfastaExtension){
 		m_type=FORMAT_CSFASTA;
 		int ret=m_color.open(file);
-		m_size=m_color.getSize();
+		m_size=m_color.getSize();	
 		return ret;
 	}
 	if(file.substr(file.length()-4,4)==".sff"){
@@ -68,14 +73,14 @@ int Loader::load(string file){
 	}
 	if(file.substr(file.length()-6,6)==".fasta"){
 		m_type=FORMAT_FASTA;
-		int ret=m_fasta.open(file);
-		m_size=m_fasta.getSize();
+		int ret=m_fastq.open(file,2);
+		m_size=m_fastq.getSize();
 		return ret;
 	}
 
 	if(file.substr(file.length()-6,6)==".fastq"){
 		m_type=FORMAT_FASTQ;
-		int ret=m_fastq.open(file);
+		int ret=m_fastq.open(file,4);
 		m_size=m_fastq.getSize();
 		return ret;
 	}
@@ -118,9 +123,17 @@ int Loader::load(string file){
 }
 
 Read*Loader::at(int i){
+	//cout<<"at "<<i<<endl;
 	if(i>=m_currentOffset+m_reads.size()){
 		loadSequences();
+		//cout<<"Loaded "<<m_reads.size()<<endl;
 	}
+	#ifdef ASSERT
+	if(i>=m_currentOffset+m_reads.size()){
+		cout<<"i="<<i<<" offset="<<m_currentOffset<<" Loaded="<<m_reads.size()<<endl;
+	}
+	assert(i<m_currentOffset+m_reads.size());
+	#endif
 	return m_reads.at(i-m_currentOffset);
 }
 
@@ -142,7 +155,6 @@ void Loader::clear(){
 
 void Loader::loadSequences(){
 	m_currentOffset+=m_reads.size();
-	//cout<<"Offset= "<<m_currentOffset<<endl;
 	m_reads.clear();
 	m_allocator.clear();
 	m_allocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
@@ -150,7 +162,7 @@ void Loader::loadSequences(){
 	if(m_type==FORMAT_FASTQ_GZ){
 		m_fastqgz.load(m_maxToLoad,&m_reads,&m_allocator,4);
 	}else if(m_type==FORMAT_FASTQ){
-		m_fastq.load(m_maxToLoad,&m_reads,&m_allocator);
+		m_fastq.load(m_maxToLoad,&m_reads,&m_allocator,4);
 	}else if(m_type==FORMAT_FASTQ_BZ2){
 		m_fastqbz2.load(m_maxToLoad,&m_reads,&m_allocator,4);
 	}else if(m_type==FORMAT_CSFASTA){
@@ -158,10 +170,11 @@ void Loader::loadSequences(){
 	}else if(m_type==FORMAT_SFF){
 		m_sff.load(m_maxToLoad,&m_reads,&m_allocator);
 	}else if(m_type==FORMAT_FASTA){
-		m_fasta.load(m_maxToLoad,&m_reads,&m_allocator);
+		m_fastq.load(m_maxToLoad,&m_reads,&m_allocator,2);
 	}else if(m_type==FORMAT_FASTA_BZ2){
 		m_fastqbz2.load(m_maxToLoad,&m_reads,&m_allocator,2);
 	}else if(m_type==FORMAT_FASTA_GZ){
 		m_fastqgz.load(m_maxToLoad,&m_reads,&m_allocator,2);
 	}
+	//cout<<"Offset= "<<m_currentOffset<<" "<<m_reads.size()<<endl;
 }

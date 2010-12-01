@@ -36,6 +36,7 @@ class ColorSpaceLoader{
 	ColorSpaceDecoder m_decoder;
 	ifstream m_f;
 	int m_size;
+	int m_loaded;
 public:
 	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
 	int open(string file);

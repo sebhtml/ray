@@ -74,8 +74,8 @@ class Loader{
 
 	SffLoader m_sff;
 	ColorSpaceLoader m_color;
-	FastaLoader m_fasta;
 	FastqLoader m_fastq;	
+	FastaLoader m_fasta;	
 
 	#ifdef HAVE_ZLIB
 	FastqGzLoader m_fastqgz;
@@ -89,7 +89,7 @@ class Loader{
 
 public:
 	Loader();
-	int load(string file);
+	int load(string file,bool isGenome);
 	int size();
 	Read*at(int i);
 	void clear();

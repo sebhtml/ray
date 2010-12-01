@@ -30,18 +30,13 @@
 #include<MyAllocator.h>
 #include<vector>
 #include<sstream>
-#include<fstream>
 #include<Read.h>
 using namespace std;
 
 
 class FastaLoader{
-	ifstream m_f;
-	int m_size;
 public:
-	int open(string file);
-	int getSize();
-	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
+	int load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
 };
 
 #endif

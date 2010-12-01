@@ -46,7 +46,7 @@ int main(int argc,char**argv){
 	int fragmentSize=atoi(argv[2]);
 	
 	Loader l;
-	l.load(genomeFile);
+	l.load(genomeFile,true);
 	int coverage=atoi(argv[3]);
 	char theName[3000];
 	strcpy(theName,argv[1]);

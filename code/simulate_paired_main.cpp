@@ -43,7 +43,7 @@ int main(int argc,char**argv){
 	int fragmentSize=atoi(argv[2]);
 	int readSize=atoi(argv[4]);
 	Loader l;
-	l.load(genomeFile);
+	l.load(genomeFile,true);
 	if(l.size()==0)
 		return 0;
 	int coverage=atoi(argv[3]);
