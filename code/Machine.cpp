@@ -277,24 +277,28 @@ void Machine::start(){
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
 	MPI_Comm_size(MPI_COMM_WORLD,&m_size);
 
-
-	m_parameters.constructor(m_argc,m_argv,getRank());
-
-/*
 	printf("Rank %i is running as UNIX process %i on %s\n",getRank(),getpid(),serverName);
 	fflush(stdout);
-*/
+
+	MPI_Barrier(MPI_COMM_WORLD);
+
 	m_sl.constructor(m_size);
 
 	assert(getSize()<=MAX_NUMBER_OF_MPI_PROCESSES);
 	
 	m_fusionData->constructor(getSize(),MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
+	int version;
+	int subversion;
+	MPI_Get_version(&version,&subversion);
+
 	if(isMaster()){
+		cout<<endl;
 		cout<<"Bienvenue !"<<endl;
 		cout<<endl;
 
 		cout<<"Rank "<<MASTER_RANK<<": Ray "<<RAY_VERSION<<endl;
+		cout<<endl;
 
 		#ifdef MPICH2
                 cout<<"Rank "<<MASTER_RANK<<": compiled with MPICH2 "<<MPICH2_VERSION<<endl;
@@ -304,6 +308,9 @@ void Machine::start(){
                 cout<<"Rank "<<MASTER_RANK<<": compiled with Open-MPI "<<OMPI_MAJOR_VERSION<<"."<<OMPI_MINOR_VERSION<<"."<<OMPI_RELEASE_VERSION<<endl;
 		#endif
 
+		cout<<"Rank "<<MASTER_RANK<<": MPI library implements the standard MPI "<<version<<"."<<subversion<<""<<endl;
+
+		cout<<endl;
 		#ifdef HAVE_ZLIB
 		cout<<"Rank "<<MASTER_RANK<<": compiled with GZIP"<<endl;
 		#endif
@@ -316,6 +323,9 @@ void Machine::start(){
 		m_timePrinter.printElapsedTime("Beginning of computation");
 		cout<<endl;
 	}
+
+	m_parameters.constructor(m_argc,m_argv,getRank());
+
 	m_library.constructor(getRank(),&m_outbox,&m_outboxAllocator,&m_sequence_id,&m_sequence_idInFile,
 		m_ed,&m_readsPositions,getSize(),&m_timePrinter,&m_mode,&m_master_mode,
 	&m_parameters,&m_fileId,m_seedingData);

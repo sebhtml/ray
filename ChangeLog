@@ -22,8 +22,8 @@ and the number of MPI ranks.
 * Removed DistributionData.
 * PairedRead now contains m_readIndex (u32), m_rank (u16) and m_library (u8)
 instead of m_readIndex (u32), m_rank (u16), m_fragmentSize (u16) and
-m_deviation (u16). That means storing one paired read needs 6 bytes instead of
-20 bytes. Library information are stored in Parameters.
+m_deviation (u16). That means storing one paired read needs 7 bytes instead of
+10 bytes. Library information are stored in Parameters.
 
 
 
