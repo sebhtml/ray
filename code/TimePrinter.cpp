@@ -33,7 +33,7 @@ void TimePrinter::printElapsedTime(string description){
 	cout<<endl;
 	cout<<"//////////////////////---------------------------\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"<<endl;
                
-	cout<<endl<<"Rank 0 reports the elapsed time, "<<asctime(timeinfo)<<""<<"Step: "<<description<<"Elapsed time: ";
+	cout<<endl<<"Rank 0 reports the elapsed time, "<<asctime(timeinfo)<<""<<"Step: "<<description<<endl<<"Elapsed time: ";
 	printDifference(differenceWithLast);
 	int totalSeconds=m_endingTime-m_startingTime;
 	cout<<"\nSince beginning: ";
