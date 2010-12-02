@@ -20,6 +20,26 @@ system "nucmer --prefix=#{prefix} #{reference} #{draft} "
 system "show-coords -rcl #{prefix}.delta  > #{prefix}.coords"
 file="#{prefix}.coords"
 
+system "show-snps -Clr #{prefix}.delta > #{prefix}.snps"
+
+theMismatches=0
+indels=0
+lineNumber=0
+snpfile=File.new("#{prefix}.snps","r")
+while(line=snpfile.gets)
+	if lineNumber>=5
+		tokens=line.split
+		if tokens[1]=='.' || tokens[2]=='.'
+			indels+=1
+		else
+			theMismatches+=1
+		end
+	end
+	lineNumber+=1
+end
+
+snpfile.close
+
 class MummerCoordLine
 	def initialize line
 		@line=line
@@ -145,5 +165,6 @@ fileOutput.puts "totalBases=#{totalBases}"
 fileOutput.puts "totalBasesNotCovered=#{totalBasesNotCovered}"
 fileOutput.puts "All #{totalBases} #{totalBasesNotCovered} "
 fileOutput.puts "Coverage=#{1.0-totalBasesNotCovered.to_f/totalBases}"
-
+fileOutput.puts "totalGaps=#{indels}"
+fileOutput.puts "totalMismatches=#{theMismatches}"
 fileOutput.close

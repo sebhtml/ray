@@ -22,9 +22,7 @@ max=$(getlengths $assembly500|awk '{print $2}'|sort -n|tail -n1)
 coverage=$(printf %2.4f $(grep Coverage= mums|sed 's/Coverage=//'))
 misassembled=$(grep Misas mums|awk '{print $3}')
 
-
-extract-error-rates.py $reference $assembly500 > newMetrics.txt
-mismatches=$(cat newMetrics.txt|grep totalMismatches=|sed 's/totalMismatches=//')
-gaps=$(cat newMetrics.txt|grep totalGaps=|sed 's/totalGaps=//')
+mismatches=$(grep totalMismatches mums|sed 's/totalMismatches=//g')
+gaps=$(cat mums|grep totalGaps=|sed 's/totalGaps=//')
 echo "        %  & numberOfContigs & bases & meanSize  & n50  & max   & coverage   & misassembled & mismatches & indels"
 echo " $assembler & $numberOfContigs & $bases & $meanSize & $n50 &  $max &  $coverage & $misassembled & $mismatches & $gaps \\\\"
