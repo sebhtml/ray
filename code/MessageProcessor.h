@@ -84,7 +84,6 @@ class MessageProcessor{
 	int*m_peakCoverage;
 	ArrayOfReads*m_myReads;
 	bool*m_EXTENSION_currentRankIsDone;
-	vector<vector<VERTEX_TYPE> >*m_FINISH_newFusions;
 	int size;
 	SequencesIndexer*m_si;
 
@@ -97,8 +96,6 @@ class MessageProcessor{
 	VERTEX_TYPE*m_SEEDING_receivedKey;
 	int*m_SEEDING_i;
 	bool*m_colorSpaceMode;
-	bool*m_FINISH_fusionOccured;
-	bool*m_Machine_getPaths_INITIALIZED;
 	int*m_mode;
 	vector<vector<VERTEX_TYPE> >*m_allPaths;
 	bool*m_EXTENSION_VertexAssembled_received;
@@ -118,9 +115,7 @@ class MessageProcessor{
 	bool*m_SEEDING_vertexKeyAndCoverageReceived;
 	int*m_SEEDING_receivedVertexCoverage;
 	bool*m_EXTENSION_readLength_received;
-	bool*m_Machine_getPaths_DONE;
 	int*m_CLEAR_n;
-	bool*m_FINISH_vertex_received;
 	bool*m_EXTENSION_initiated;
 	int*m_readyToSeed;
 	bool*m_SEEDING_NodeInitiated;
@@ -128,12 +123,10 @@ class MessageProcessor{
 	bool*m_nextReductionOccured;
 	bool*m_EXTENSION_hasPairedReadAnswer;
 	MyAllocator*m_directionsAllocator;
-	map<int,int>*m_FINISH_pathLengths;
 	bool*m_EXTENSION_pairedSequenceReceived;
 	int*m_EXTENSION_receivedLength;
 	int*m_mode_send_coverage_iterator;
 	map<int,VERTEX_TYPE>*m_coverageDistribution;
-	VERTEX_TYPE*m_FINISH_received_vertex;
 	bool*m_EXTENSION_read_vertex_received;
 	int*m_sequence_ready_machines;
 	bool*m_SEEDING_InedgesReceived;
@@ -181,7 +174,6 @@ ExtensionData*ed,
 			int*m_peakCoverage,
 			ArrayOfReads*m_myReads,
 			bool*m_EXTENSION_currentRankIsDone,
-	vector<vector<VERTEX_TYPE> >*m_FINISH_newFusions,
 		int size,
 	RingAllocator*m_inboxAllocator,
 	MyAllocator*m_persistentAllocator,
@@ -192,8 +184,6 @@ ExtensionData*ed,
 	VERTEX_TYPE*m_SEEDING_receivedKey,
 	int*m_SEEDING_i,
 	bool*m_colorSpaceMode,
-	bool*m_FINISH_fusionOccured,
-	bool*m_Machine_getPaths_INITIALIZED,
 	int*m_mode,
 	vector<vector<VERTEX_TYPE> >*m_allPaths,
 	bool*m_EXTENSION_VertexAssembled_received,
@@ -213,9 +203,7 @@ ExtensionData*ed,
 	bool*m_SEEDING_vertexKeyAndCoverageReceived,
 	int*m_SEEDING_receivedVertexCoverage,
 	bool*m_EXTENSION_readLength_received,
-	bool*m_Machine_getPaths_DONE,
 	int*m_CLEAR_n,
-	bool*m_FINISH_vertex_received,
 	bool*m_EXTENSION_initiated,
 	int*m_readyToSeed,
 	bool*m_SEEDING_NodeInitiated,
@@ -223,12 +211,10 @@ ExtensionData*ed,
 	bool*m_nextReductionOccured,
 	bool*m_EXTENSION_hasPairedReadAnswer,
 	MyAllocator*m_directionsAllocator,
-	map<int,int>*m_FINISH_pathLengths,
 	bool*m_EXTENSION_pairedSequenceReceived,
 	int*m_EXTENSION_receivedLength,
 	int*m_mode_send_coverage_iterator,
 	map<int,VERTEX_TYPE>*m_coverageDistribution,
-	VERTEX_TYPE*m_FINISH_received_vertex,
 	bool*m_EXTENSION_read_vertex_received,
 	int*m_sequence_ready_machines,
 	bool*m_SEEDING_InedgesReceived,

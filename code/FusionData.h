@@ -34,10 +34,42 @@
 using namespace std;
 
 class FusionData{
+	bool m_checkedValidity;
+	int*m_mode;
+
+
+	SeedingData*m_seedingData;
+	int m_wordSize;
+	bool m_FINISH_vertex_requested;
+	bool m_colorSpaceMode;
+	int m_size;
+	int m_rank;
+	ExtensionData*m_ed;
+	StaticVector*m_outbox;
+	RingAllocator*m_outboxAllocator;
 	BufferedData m_buffers;
 	int m_ready;
+	vector<vector<Direction> > m_FINISH_pathsForPosition;
+
+
+	int m_FINISH_positionStart;
+	bool m_FINISH_hasHit;
+
+	int m_selectedPath;
+	int m_selectedPosition;
 
 public:
+
+	bool m_FINISH_vertex_received;
+	bool m_FINISH_fusionOccured;
+	vector<vector<VERTEX_TYPE> > m_FINISH_newFusions;
+	map<int,int> m_FINISH_pathLengths;
+	VERTEX_TYPE m_FINISH_received_vertex;
+
+	bool m_Machine_getPaths_INITIALIZED;
+	bool m_Machine_getPaths_DONE;
+	vector<Direction> m_Machine_getPaths_result;
+
 	// FUSION
 	bool m_fusionStarted;
 	bool m_FUSION_direct_fusionDone;
@@ -67,10 +99,22 @@ public:
 	set<int> m_FUSION_eliminated;
 
 	void distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int getRank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox,int getSize,int*m_mode);
-	void constructor(int size,int rank);
+
+	void constructor(int size,int maxSize,int rank,StaticVector*m_outbox,
+		RingAllocator*m_outboxAllocator,int wordSize,bool colorSpaceMode,
+	ExtensionData*ed,SeedingData*seedingData,int*m_mode);
+
 	void setReadiness();
 	bool isReady();
 	FusionData();
+
+	int getRank();
+	int getSize();
+	void finishFusions();
+	void makeFusions();
+
+
+	void getPaths(VERTEX_TYPE vertex);
 };
 
 #endif

@@ -35,7 +35,6 @@ void MessagesHandler::sendMessages(StaticVector*outbox,int source){
 		int destination=aMessage->getDestination();
 		assert(destination>=0);
 		#endif
-
 		MPI_Request request;
 		//  MPI_Issend
 		//      Synchronous nonblocking. Note that a Wait/Test will complete only when the matching receive is posted
