@@ -3,7 +3,7 @@
 # Centre de recherche en infectiologie, Université Laval
 # Copyright 2010, or so
 
+SUBDIRS = code scripts
+docdir = $(datadir)/doc/$(PACKAGE)
+dist_doc_DATA= README AUTHORS MPI COLOR_SPACE ChangeLog DESIGN FUNDING COPYING INSTALL PAIRED_READS RELEASE_PROCEDURE TESTED_ARCHITECTURES NEWS VERSION logo/logo.svg logo/logo.png
 
-SUBDIRS = code # scripts
-#DIST_SUBDIRS = scripts 
-#EXTRA_DIST = FUNDING NEWS RELEASE_PROCEDURE AUTHORS INSTALL README COPYING

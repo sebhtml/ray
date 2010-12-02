@@ -8149,7 +8149,9 @@ fi
 fi
 
 
-ac_config_files="$ac_config_files Makefile code/Makefile"
+ac_config_files="$ac_config_files code/Makefile Makefile scripts/gnuplot/Makefile scripts/examples/MPICH2/Makefile scripts/examples/Makefile scripts/examples/Open-MPI/Makefile scripts/examples/SunGridEngine,Open-MPI/Makefile scripts/Makefile"
+
+
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -8822,8 +8824,14 @@ do
   case $ac_config_target in
     "config.h") CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
-    "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "code/Makefile") CONFIG_FILES="$CONFIG_FILES code/Makefile" ;;
+    "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+    "scripts/gnuplot/Makefile") CONFIG_FILES="$CONFIG_FILES scripts/gnuplot/Makefile" ;;
+    "scripts/examples/MPICH2/Makefile") CONFIG_FILES="$CONFIG_FILES scripts/examples/MPICH2/Makefile" ;;
+    "scripts/examples/Makefile") CONFIG_FILES="$CONFIG_FILES scripts/examples/Makefile" ;;
+    "scripts/examples/Open-MPI/Makefile") CONFIG_FILES="$CONFIG_FILES scripts/examples/Open-MPI/Makefile" ;;
+    "scripts/examples/SunGridEngine,Open-MPI/Makefile") CONFIG_FILES="$CONFIG_FILES scripts/examples/SunGridEngine,Open-MPI/Makefile" ;;
+    "scripts/Makefile") CONFIG_FILES="$CONFIG_FILES scripts/Makefile" ;;
 
   *) { { $as_echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 $as_echo "$as_me: error: invalid argument: $ac_config_target" >&2;}

@@ -3,9 +3,10 @@
 # Centre de recherche en infectiologie, Université Laval
 # Copyright 2010, or so
 
+gnuplotdir = $(docdir)/scripts/gnuplot
 
-EXTRA_DIST = gnuplot2.script \
+dist_gnuplot_DATA = gnuplot2.script \
 gnuplot.script \
-Makefile.am \
 plot.sh \
 toGnuPlot.py 
+

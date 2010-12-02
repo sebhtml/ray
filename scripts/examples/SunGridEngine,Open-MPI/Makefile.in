@@ -15,11 +15,6 @@
 
 @SET_MAKE@
 
-# primary Makefile.am
-# Author: Sébastien Boisvert
-# Centre de recherche en infectiologie, Université Laval
-# Copyright 2010, or so
-
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
@@ -37,8 +32,8 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-subdir = scripts/gnuplot
-DIST_COMMON = $(dist_gnuplot_DATA) $(srcdir)/Makefile.am \
+subdir = scripts/examples/SunGridEngine,Open-MPI
+DIST_COMMON = $(dist_sge_DATA) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -71,8 +66,8 @@ am__nobase_list = $(am__nobase_strip_setup); \
 am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-am__installdirs = "$(DESTDIR)$(gnuplotdir)"
-DATA = $(dist_gnuplot_DATA)
+am__installdirs = "$(DESTDIR)$(sgedir)"
+DATA = $(dist_sge_DATA)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
@@ -160,11 +155,10 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-gnuplotdir = $(docdir)/scripts/gnuplot
-dist_gnuplot_DATA = gnuplot2.script \
-gnuplot.script \
-plot.sh \
-toGnuPlot.py 
+sgedir = $(docdir)/scripts/examples/sge+open-mpi
+dist_sge_DATA = Human-chr1-ompi-1.3.4-gcc.sh \
+qsub-pseudomonas.sh \
+qsub-SRA001125-openmpi.sh 
 
 all: all-am
 
@@ -178,9 +172,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign scripts/gnuplot/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign scripts/examples/SunGridEngine,Open-MPI/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign scripts/gnuplot/Makefile
+	  $(AUTOMAKE) --foreign scripts/examples/SunGridEngine,Open-MPI/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -199,26 +193,26 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
-install-dist_gnuplotDATA: $(dist_gnuplot_DATA)
+install-dist_sgeDATA: $(dist_sge_DATA)
 	@$(NORMAL_INSTALL)
-	test -z "$(gnuplotdir)" || $(MKDIR_P) "$(DESTDIR)$(gnuplotdir)"
-	@list='$(dist_gnuplot_DATA)'; test -n "$(gnuplotdir)" || list=; \
+	test -z "$(sgedir)" || $(MKDIR_P) "$(DESTDIR)$(sgedir)"
+	@list='$(dist_sge_DATA)'; test -n "$(sgedir)" || list=; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(gnuplotdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(gnuplotdir)" || exit $$?; \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(sgedir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(sgedir)" || exit $$?; \
 	done
 
-uninstall-dist_gnuplotDATA:
+uninstall-dist_sgeDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(dist_gnuplot_DATA)'; test -n "$(gnuplotdir)" || list=; \
+	@list='$(dist_sge_DATA)'; test -n "$(sgedir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(gnuplotdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(gnuplotdir)" && rm -f $$files
+	echo " ( cd '$(DESTDIR)$(sgedir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(sgedir)" && rm -f $$files
 tags: TAGS
 TAGS:
 
@@ -260,7 +254,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(gnuplotdir)"; do \
+	for dir in "$(DESTDIR)$(sgedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -308,7 +302,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-dist_gnuplotDATA
+install-data-am: install-dist_sgeDATA
 
 install-dvi: install-dvi-am
 
@@ -352,21 +346,20 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-dist_gnuplotDATA
+uninstall-am: uninstall-dist_sgeDATA
 
 .MAKE: install-am install-strip
 
 .PHONY: all all-am check check-am clean clean-generic distclean \
 	distclean-generic distdir dvi dvi-am html html-am info info-am \
 	install install-am install-data install-data-am \
-	install-dist_gnuplotDATA install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
+	install-dist_sgeDATA install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-man install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-generic pdf \
-	pdf-am ps ps-am uninstall uninstall-am \
-	uninstall-dist_gnuplotDATA
+	pdf-am ps ps-am uninstall uninstall-am uninstall-dist_sgeDATA
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

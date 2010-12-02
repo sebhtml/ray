@@ -66,5 +66,14 @@ AC_CHECK_LIB(bz2, BZ2_decompress,
          AM_CONDITIONAL(HAVE_BZ2, false))],
          AM_CONDITIONAL(HAVE_BZ2, false))
 
-AC_CONFIG_FILES([Makefile code/Makefile])
+AC_CONFIG_FILES([code/Makefile
+Makefile
+scripts/gnuplot/Makefile
+scripts/examples/MPICH2/Makefile
+scripts/examples/Makefile
+scripts/examples/Open-MPI/Makefile
+scripts/examples/SunGridEngine,Open-MPI/Makefile
+scripts/Makefile])
+
+
 AC_OUTPUT

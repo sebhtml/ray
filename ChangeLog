@@ -24,7 +24,7 @@ and the number of MPI ranks.
 instead of m_readIndex (u32), m_rank (u16), m_fragmentSize (u16) and
 m_deviation (u16). That means storing one paired read needs 7 bytes instead of
 10 bytes. Library information are stored in Parameters.
-
+* 'make install' also installs documentation and examples now.
 
 
 = v. 1.0.0 =
