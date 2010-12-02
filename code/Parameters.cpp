@@ -455,7 +455,7 @@ bool Parameters::getError(){
 
 
 void Parameters::addDistance(int library,int distance,int count){
-	cout<<"addDistance "<<library<<" "<<distance<<" "<<count<<endl;
+	//cout<<"addDistance "<<library<<" "<<distance<<" "<<count<<endl;
 	m_observedDistances[library][distance]+=count;
 }
 
