@@ -585,13 +585,9 @@ void FusionData::makeFusions(){
 				assert(thePosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size());
 				#endif
 				VERTEX_TYPE theMainVertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][thePosition];
-				cout<<"The vertex is "<<theMainVertex<<endl;
 				VERTEX_TYPE theVertex=complementVertex(theMainVertex,m_wordSize,m_colorSpaceMode);
-				cout<<"W="<<m_wordSize<<" COLOR="<<m_colorSpaceMode<<endl;
-				cout<<"The reverse if "<<theVertex<<endl;
 				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
 				message[0]=theVertex;
-				cout<<"TAG_ASK_VERTEX_PATHS_SIZE #3 "<<theVertex<<endl;
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize()),TAG_ASK_VERTEX_PATHS_SIZE,getRank());
 				m_outbox->push_back(aMessage);
 				m_FUSION_paths_requested=true;

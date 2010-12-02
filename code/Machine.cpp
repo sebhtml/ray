@@ -229,6 +229,30 @@ void Machine::start(){
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
+	if(isMaster()){
+		cout<<endl<<"**************************************************"<<endl;
+    		cout<<"This program comes with ABSOLUTELY NO WARRANTY."<<endl;
+    		cout<<"This is free software, and you are welcome to redistribute it"<<endl;
+    		cout<<"under certain conditions; see \"COPYING\" for details."<<endl;
+		cout<<"**************************************************"<<endl;
+		cout<<endl;
+		cout<<"Ray Copyright (C) 2010  Sébastien Boisvert, Jacques Corbeil, François Laviolette"<<endl;
+		cout<<"Centre de recherche en infectiologie de l'Université Laval"<<endl;
+		cout<<"Project funded by the Canadian Institutes of Health Research (Doctoral award 200902CGM-204212-172830 to S.B.)"<<endl;
+ 		cout<<"http://denovoassembler.sf.net/"<<endl<<endl;
+
+		cout<<"Reference to cite: "<<endl<<endl;
+		cout<<"Sébastien Boisvert, François Laviolette & Jacques Corbeil."<<endl;
+		cout<<"Ray: simultaneous assembly of reads from a mix of high-throughput sequencing technologies."<<endl;
+		cout<<"Journal of Computational Biology (Mary Ann Liebert, Inc. publishers, New York, U.S.A.)."<<endl;
+		cout<<"November 2010, Volume 17, Issue 11, Pages 1519-1533."<<endl;
+		cout<<"doi:10.1089/cmb.2009.0238"<<endl;
+		cout<<"http://dx.doi.org/doi:10.1089/cmb.2009.0238"<<endl;
+		cout<<endl;
+	}
+
+
+	MPI_Barrier(MPI_COMM_WORLD);
 	m_sl.constructor(m_size);
 
 	assert(getSize()<=MAX_NUMBER_OF_MPI_PROCESSES);
@@ -294,27 +318,8 @@ void Machine::start(){
 	m_edgesExtractor.m_mode=&m_mode;
 
 	if(isMaster()){
-		cout<<endl<<"**************************************************"<<endl;
-    		cout<<"This program comes with ABSOLUTELY NO WARRANTY."<<endl;
-    		cout<<"This is free software, and you are welcome to redistribute it"<<endl;
-    		cout<<"under certain conditions; see \"COPYING\" for details."<<endl;
-		cout<<"**************************************************"<<endl;
-		cout<<endl;
-		cout<<"Ray Copyright (C) 2010  Sébastien Boisvert, Jacques Corbeil, François Laviolette"<<endl;
-		cout<<"Centre de recherche en infectiologie de l'Université Laval"<<endl;
-		cout<<"Project funded by the Canadian Institutes of Health Research (Doctoral award 200902CGM-204212-172830 to S.B.)"<<endl;
- 		cout<<"http://denovoassembler.sf.net/"<<endl<<endl;
 
-		cout<<"Reference to cite: "<<endl<<endl;
-		cout<<"Sébastien Boisvert, François Laviolette & Jacques Corbeil."<<endl;
-		cout<<"Ray: simultaneous assembly of reads from a mix of high-throughput sequencing technologies."<<endl;
-		cout<<"Journal of Computational Biology (Mary Ann Liebert, Inc. publishers, New York, U.S.A.)."<<endl;
-		cout<<"November 2010, Volume 17, Issue 11, Pages 1519-1533."<<endl;
-		cout<<"doi:10.1089/cmb.2009.0238"<<endl;
-		cout<<"http://dx.doi.org/doi:10.1089/cmb.2009.0238"<<endl;
-		cout<<endl;
-
-		cout<<"Rank "<<getRank()<<" welcomes you to the MPI_COMM_WORLD"<<endl;
+		cout<<"Rank "<<getRank()<<" welcomes you to the MPI_COMM_WORLD"<<endl<<endl;
 	}
 
 	m_alive=true;
