@@ -71,13 +71,13 @@ am__libRay_a_SOURCES_DIST = EarlyStoppingTechnology.h \
 	PendingRequest.h RingAllocator.cpp RingAllocator.h \
 	StaticVector.cpp StaticVector.h MessagesHandler.h \
 	MessagesHandler.cpp slave_modes.h master_modes.h mpi_tags.h \
-	SeedingData.h Library.h Library.cpp FastaLoader.h \
-	FastaLoader.cpp FastqLoader.h FastqLoader.cpp BubbleData.h \
-	BubbleTool.cpp BubbleTool.h BufferedData.cpp BufferedData.h \
-	Chooser.cpp ChooserData.h Chooser.h ColorSpaceDecoder.cpp \
-	ColorSpaceDecoder.h ColorSpaceLoader.cpp ColorSpaceLoader.h \
-	common_functions.cpp common_functions.h config.h \
-	CoverageDistribution.cpp CoverageDistribution.h \
+	SeedingData.cpp SeedingData.h Library.h Library.cpp \
+	FastaLoader.h FastaLoader.cpp FastqLoader.h FastqLoader.cpp \
+	BubbleData.h BubbleTool.cpp BubbleTool.h BufferedData.cpp \
+	BufferedData.h Chooser.cpp ChooserData.h Chooser.h \
+	ColorSpaceDecoder.cpp ColorSpaceDecoder.h ColorSpaceLoader.cpp \
+	ColorSpaceLoader.h common_functions.cpp common_functions.h \
+	config.h CoverageDistribution.cpp CoverageDistribution.h \
 	DepthFirstSearchData.h Direction.cpp Direction.h \
 	EdgesExtractor.cpp EdgesExtractor.h ErrorSimulator.cpp \
 	ErrorSimulator.h ExtensionData.h FusionData.h FusionData.cpp \
@@ -101,8 +101,9 @@ am__libRay_a_SOURCES_DIST = EarlyStoppingTechnology.h \
 am_libRay_a_OBJECTS = EarlyStoppingTechnology.$(OBJEXT) \
 	ArrayOfReads.$(OBJEXT) RingAllocator.$(OBJEXT) \
 	StaticVector.$(OBJEXT) MessagesHandler.$(OBJEXT) \
-	Library.$(OBJEXT) FastaLoader.$(OBJEXT) FastqLoader.$(OBJEXT) \
-	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
+	SeedingData.$(OBJEXT) Library.$(OBJEXT) FastaLoader.$(OBJEXT) \
+	FastqLoader.$(OBJEXT) BubbleTool.$(OBJEXT) \
+	BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	Direction.$(OBJEXT) EdgesExtractor.$(OBJEXT) \
@@ -254,13 +255,13 @@ libRay_a_SOURCES = EarlyStoppingTechnology.h \
 	PendingRequest.h RingAllocator.cpp RingAllocator.h \
 	StaticVector.cpp StaticVector.h MessagesHandler.h \
 	MessagesHandler.cpp slave_modes.h master_modes.h mpi_tags.h \
-	SeedingData.h Library.h Library.cpp FastaLoader.h \
-	FastaLoader.cpp FastqLoader.h FastqLoader.cpp BubbleData.h \
-	BubbleTool.cpp BubbleTool.h BufferedData.cpp BufferedData.h \
-	Chooser.cpp ChooserData.h Chooser.h ColorSpaceDecoder.cpp \
-	ColorSpaceDecoder.h ColorSpaceLoader.cpp ColorSpaceLoader.h \
-	common_functions.cpp common_functions.h config.h \
-	CoverageDistribution.cpp CoverageDistribution.h \
+	SeedingData.cpp SeedingData.h Library.h Library.cpp \
+	FastaLoader.h FastaLoader.cpp FastqLoader.h FastqLoader.cpp \
+	BubbleData.h BubbleTool.cpp BubbleTool.h BufferedData.cpp \
+	BufferedData.h Chooser.cpp ChooserData.h Chooser.h \
+	ColorSpaceDecoder.cpp ColorSpaceDecoder.h ColorSpaceLoader.cpp \
+	ColorSpaceLoader.h common_functions.cpp common_functions.h \
+	config.h CoverageDistribution.cpp CoverageDistribution.h \
 	DepthFirstSearchData.h Direction.cpp Direction.h \
 	EdgesExtractor.cpp EdgesExtractor.h ErrorSimulator.cpp \
 	ErrorSimulator.h ExtensionData.h FusionData.h FusionData.cpp \
@@ -416,6 +417,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RepeatedVertexWatchdog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RingAllocator.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SeedExtender.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SeedingData.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SequencesIndexer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SequencesLoader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SffLoader.Po@am__quote@

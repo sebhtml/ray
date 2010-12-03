@@ -46,7 +46,10 @@ for line in sys.stdin:
 	elif lastType!="MASTER":
 		count+=1
 
-	load=float(tokens[5])
+	loadToken=tokens[5]
+	if loadToken=="-":
+		loadToken="-1"
+	load=float(loadToken)
 	processors=float(tokens[6])
 	color="green"
 

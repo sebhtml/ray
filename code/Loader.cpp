@@ -160,11 +160,15 @@ void Loader::loadSequences(){
 	m_allocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
 
 	if(m_type==FORMAT_FASTQ_GZ){
+		#ifdef HAVE_ZLIB
 		m_fastqgz.load(m_maxToLoad,&m_reads,&m_allocator,4);
+		#endif
 	}else if(m_type==FORMAT_FASTQ){
 		m_fastq.load(m_maxToLoad,&m_reads,&m_allocator,4);
 	}else if(m_type==FORMAT_FASTQ_BZ2){
+		#ifdef HAVE_LIBBZ2
 		m_fastqbz2.load(m_maxToLoad,&m_reads,&m_allocator,4);
+		#endif
 	}else if(m_type==FORMAT_CSFASTA){
 		m_color.load(m_maxToLoad,&m_reads,&m_allocator);
 	}else if(m_type==FORMAT_SFF){
@@ -172,9 +176,13 @@ void Loader::loadSequences(){
 	}else if(m_type==FORMAT_FASTA){
 		m_fastq.load(m_maxToLoad,&m_reads,&m_allocator,2);
 	}else if(m_type==FORMAT_FASTA_BZ2){
+		#ifdef HAVE_LIBBZ2
 		m_fastqbz2.load(m_maxToLoad,&m_reads,&m_allocator,2);
+		#endif
 	}else if(m_type==FORMAT_FASTA_GZ){
+		#ifdef HAVE_ZLIB
 		m_fastqgz.load(m_maxToLoad,&m_reads,&m_allocator,2);
+		#endif
 	}
 	//cout<<"Offset= "<<m_currentOffset<<" "<<m_reads.size()<<endl;
 }

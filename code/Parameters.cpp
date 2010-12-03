@@ -86,6 +86,9 @@ void Parameters::parseCommands(){
 				cout<<m_commands[i]<<endl;
 			}
 		}
+		cout<<endl;
+		cout<<endl;
+		cout<<endl;
 	}
 
 	set<string> singleReadsCommands;
@@ -343,8 +346,12 @@ void Parameters::parseCommands(){
 
 			if(m_rank==MASTER_RANK){
 				cout<<endl;
+				cout<<endl;
+				cout<<endl;
 				cout<<"-k (to set the k-mer size)"<<endl;
 				cout<<" Value: "<<m_wordSize<<endl;
+				cout<<endl;
+				cout<<endl;
 			}
 		}
 		i++;

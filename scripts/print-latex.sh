@@ -11,18 +11,23 @@ assembler=$3
 reference=$1
 assembly=$2
 assembly500=$assembly.500.fa
+mummerFile=$assembly.500.mums
 
 filter-contigs.py $assembly 500 $assembly500
-mummer-validate.rb $reference  $assembly500 mums &> /dev/null
+mummer-validate.rb $reference  $assembly500 $mummerFile &> /dev/null
 numberOfContigs=$(grep '>' $assembly500|wc -l)
 bases=$(getlengths $assembly500|awk '{sum+= $2} END {print sum}')
 meanSize=$(getN50 $assembly500|head -n2|tail -n1|awk '{print $2}'| sed 's/\..*//')
 n50=$(getN50 $assembly500|head -n3|tail -n1|awk '{print $2}')
 max=$(getlengths $assembly500|awk '{print $2}'|sort -n|tail -n1)
-coverage=$(printf %2.4f $(grep Coverage= mums|sed 's/Coverage=//'))
-misassembled=$(grep Misas mums|awk '{print $3}')
+coverage=$(printf %2.4f $(grep Coverage= $mummerFile|sed 's/Coverage=//'))
+misassembled=$(grep Misas $mummerFile|awk '{print $3}')
 
-mismatches=$(grep totalMismatches mums|sed 's/totalMismatches=//g')
-gaps=$(cat mums|grep totalGaps=|sed 's/totalGaps=//')
+mismatches=$(grep totalMismatches $mummerFile|sed 's/totalMismatches=//g')
+gaps=$(cat $mummerFile|grep totalGaps=|sed 's/totalGaps=//')
+
+rm -f $mummerFile
+rm -f $assembly500
+
 echo "        %  & numberOfContigs & bases & meanSize  & n50  & max   & coverage   & misassembled & mismatches & indels"
 echo " $assembler & $numberOfContigs & $bases & $meanSize & $n50 &  $max &  $coverage & $misassembled & $mismatches & $gaps \\\\"

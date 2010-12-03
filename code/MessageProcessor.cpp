@@ -359,12 +359,16 @@ void MessageProcessor::call_TAG_START_SEEDING(Message*message){
 	(*m_mode)=MODE_START_SEEDING;
 	map<int,map<int,int> > edgesDistribution;
 	
+	#ifdef ASSERT
+	assert(m_subgraph!=NULL);
+	#endif
+
 	for(int i=0;i<m_subgraph->getNumberOfTrees();i++){
 		SplayTreeIterator<VERTEX_TYPE,Vertex> seedingIterator(m_subgraph->getTree(i));
 		while(seedingIterator.hasNext()){
 			SplayNode<VERTEX_TYPE,Vertex>*node=seedingIterator.next();
 			edgesDistribution[node->getValue()->getIngoingEdges(node->getKey(),(*m_wordSize)).size()][node->getValue()->getOutgoingEdges(node->getKey(),(*m_wordSize)).size()]++;
-			(*m_SEEDING_nodes).push_back(node->getKey());
+			(m_seedingData->m_SEEDING_nodes).push_back(node->getKey());
 		}
 	}
 	#ifdef ASSERT
@@ -375,8 +379,8 @@ void MessageProcessor::call_TAG_START_SEEDING(Message*message){
 		}
 	}
 	#endif
-	(*m_SEEDING_NodeInitiated)=false;
-	(*m_SEEDING_i)=0;
+	(m_seedingData->m_SEEDING_NodeInitiated)=false;
+	(m_seedingData->m_SEEDING_i)=0;
 }
 
 void MessageProcessor::call_TAG_REQUEST_VERTEX_COVERAGE(Message*message){
@@ -397,8 +401,8 @@ void MessageProcessor::call_TAG_REQUEST_VERTEX_COVERAGE(Message*message){
 void MessageProcessor::call_TAG_REQUEST_VERTEX_COVERAGE_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	(*m_SEEDING_receivedVertexCoverage)=incoming[0];
-	(*m_SEEDING_vertexCoverageReceived)=true;
+	(m_seedingData->m_SEEDING_receivedVertexCoverage)=incoming[0];
+	(m_seedingData->m_SEEDING_vertexCoverageReceived)=true;
 }
 
 void MessageProcessor::call_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE(Message*message){
@@ -418,9 +422,9 @@ void MessageProcessor::call_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE(Message*message)
 void MessageProcessor::call_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	(*m_SEEDING_receivedKey)=incoming[0];
-	(*m_SEEDING_receivedVertexCoverage)=incoming[1];
-	(*m_SEEDING_vertexKeyAndCoverageReceived)=true;
+	(m_seedingData->m_SEEDING_receivedKey)=incoming[0];
+	(m_seedingData->m_SEEDING_receivedVertexCoverage)=incoming[1];
+	(m_seedingData->m_SEEDING_vertexKeyAndCoverageReceived)=true;
 }
 
 void MessageProcessor::call_TAG_REQUEST_VERTEX_OUTGOING_EDGES(Message*message){
@@ -440,11 +444,11 @@ void MessageProcessor::call_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY(Message*mess
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	(*m_SEEDING_receivedOutgoingEdges).clear();
+	(m_seedingData->m_SEEDING_receivedOutgoingEdges).clear();
 	for(int i=0;i<count;i++){
-		(*m_SEEDING_receivedOutgoingEdges).push_back(incoming[i]);
+		(m_seedingData->m_SEEDING_receivedOutgoingEdges).push_back(incoming[i]);
 	}
-	(*m_SEEDING_edgesReceived)=true;
+	(m_seedingData->m_SEEDING_edgesReceived)=true;
 }
 
 void MessageProcessor::call_TAG_SEEDING_IS_OVER(Message*message){
@@ -542,24 +546,23 @@ void MessageProcessor::call_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY(Message*messa
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	(*m_SEEDING_receivedIngoingEdges).clear();
+	(m_seedingData->m_SEEDING_receivedIngoingEdges).clear();
 	for(int i=0;i<count;i++){
-		(*m_SEEDING_receivedIngoingEdges).push_back(incoming[i]);
+		(m_seedingData->m_SEEDING_receivedIngoingEdges).push_back(incoming[i]);
 	}
-	(*m_SEEDING_InedgesReceived)=true;
+	(m_seedingData->m_SEEDING_InedgesReceived)=true;
 }
 
 void MessageProcessor::call_TAG_EXTENSION_IS_DONE(Message*message){
-	(*m_EXTENSION_numberOfRanksDone)++;
-	(*m_EXTENSION_currentRankIsDone)=true;
-	if((*m_EXTENSION_numberOfRanksDone)==size){
+	(m_ed->m_EXTENSION_numberOfRanksDone)++;
+	(m_ed->m_EXTENSION_currentRankIsDone)=true;
+	if((m_ed->m_EXTENSION_numberOfRanksDone)==size){
 		(*m_master_mode)=MASTER_MODE_TRIGGER_FUSIONS;
 	}
 }
 
 void MessageProcessor::call_TAG_ASK_EXTENSION(Message*message){
-	(*m_EXTENSION_initiated)=false;
-	(*m_mode_EXTENSION)=true;
+	(m_ed->m_EXTENSION_initiated)=false;
 	(*m_mode)=MODE_EXTENSION;
 	(*m_last_value)=-1;
 }
@@ -638,8 +641,8 @@ void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY_END(Message*message){
 		seedExtender->getDirections()->push_back(a);
 	}
 
-	(*m_EXTENSION_VertexAssembled_received)=true;
-	(*m_EXTENSION_vertexIsAssembledResult)=seedExtender->getDirections()->size()>0;
+	(m_ed->m_EXTENSION_VertexAssembled_received)=true;
+	(m_ed->m_EXTENSION_vertexIsAssembledResult)=seedExtender->getDirections()->size()>0;
 	//cout<<"source="<<message->getSource()<<" self="<<rank<<" MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY_END directions="<<seedExtender->getDirections()->size()<<endl;
 }
 
@@ -669,8 +672,8 @@ void MessageProcessor::call_TAG_MARK_AS_ASSEMBLED(Message*message){
 
 void MessageProcessor::call_TAG_ASK_EXTENSION_DATA(Message*message){
 	(*m_mode)=MODE_SEND_EXTENSION_DATA;
-	(*m_SEEDING_i)=0;
-	(*m_EXTENSION_currentPosition)=0;
+	(m_seedingData->m_SEEDING_i)=0;
+	(m_ed->m_EXTENSION_currentPosition)=0;
 }
 
 void MessageProcessor::call_TAG_EXTENSION_DATA_REPLY(Message*message){
@@ -693,7 +696,7 @@ void MessageProcessor::call_TAG_EXTENSION_END(Message*message){
 }
 
 void MessageProcessor::call_TAG_EXTENSION_DATA_END(Message*message){
-	(*m_EXTENSION_currentRankIsDone)=true;
+	(m_ed->m_EXTENSION_currentRankIsDone)=true;
 }
 
 void MessageProcessor::call_TAG_ATTACH_SEQUENCE(Message*message){
@@ -779,19 +782,19 @@ void MessageProcessor::call_TAG_REQUEST_READS_REPLY(Message*message){
 		if(incoming[i]==m_sentinelValue 
 		&& incoming[i+1]==0
 		&& incoming[i+2]==m_sentinelValue){
-			m_EXTENSION_receivedReads->clear();
+			m_ed->m_EXTENSION_receivedReads.clear();
 		// end of transmission, s,s,s
 		}else if(incoming[i]==m_sentinelValue 
 		&& incoming[i+1]==m_sentinelValue
 		&& incoming[i+2]==m_sentinelValue){
-			(*m_EXTENSION_reads_received)=true;
+			(m_ed->m_EXTENSION_reads_received)=true;
 		}else{
 			int rank=incoming[i];
 			int index=incoming[i+1];
 			char strand=incoming[i+2];
 			ReadAnnotation e;
 			e.constructor(rank,index,strand);
-			m_EXTENSION_receivedReads->push_back(e);
+			m_ed->m_EXTENSION_receivedReads.push_back(e);
 		}
 	}
 }
@@ -810,8 +813,8 @@ void MessageProcessor::call_TAG_ASK_READ_VERTEX_AT_POSITION(Message*message){
 
 void MessageProcessor::call_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY(Message*message){
 	void*buffer=message->getBuffer();
-	(*m_EXTENSION_read_vertex_received)=true;
-	(*m_EXTENSION_receivedReadVertex)=((VERTEX_TYPE*)buffer)[0];
+	(m_ed->m_EXTENSION_read_vertex_received)=true;
+	(m_ed->m_EXTENSION_receivedReadVertex)=((VERTEX_TYPE*)buffer)[0];
 }
 
 void MessageProcessor::call_TAG_ASK_READ_LENGTH(Message*message){
@@ -829,8 +832,8 @@ void MessageProcessor::call_TAG_ASK_READ_LENGTH(Message*message){
 void MessageProcessor::call_TAG_ASK_READ_LENGTH_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	(*m_EXTENSION_readLength_received)=true;
-	(*m_EXTENSION_receivedLength)=incoming[0];
+	(m_ed->m_EXTENSION_readLength_received)=true;
+	(m_ed->m_EXTENSION_receivedLength)=incoming[0];
 }
 
 void MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY(Message*message){
@@ -865,27 +868,27 @@ void MessageProcessor::call_TAG_COPY_DIRECTIONS(Message*message){
 		SplayTreeIterator<VERTEX_TYPE,Vertex> seedingIterator(m_subgraph->getTree(i));
 		while(seedingIterator.hasNext()){
 			SplayNode<VERTEX_TYPE,Vertex>*node=seedingIterator.next();
-			(*m_SEEDING_nodes).push_back(node->getKey());
+			(m_seedingData->m_SEEDING_nodes).push_back(node->getKey());
 		}
 	}
-	(*m_SEEDING_i)=0;
+	(m_seedingData->m_SEEDING_i)=0;
 }
 
 void MessageProcessor::call_TAG_ASSEMBLE_WAVES(Message*message){
 	(*m_mode)=MODE_ASSEMBLE_WAVES;
-	(*m_SEEDING_i)=0;
+	(m_seedingData->m_SEEDING_i)=0;
 }
 
 void MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION_REVERSE(Message*message){
 }
 
 void MessageProcessor::call_TAG_ASSEMBLE_WAVES_DONE(Message*message){
-	(*m_EXTENSION_currentRankIsDone)=true;
+	(m_ed->m_EXTENSION_currentRankIsDone)=true;
 }
 
 void MessageProcessor::call_TAG_START_FUSION(Message*message){
 	(*m_mode)=MODE_FUSION;
-	(*m_SEEDING_i)=0;
+	(m_seedingData->m_SEEDING_i)=0;
 
 	m_fusionData->m_FUSION_direct_fusionDone=false;
 	m_fusionData->m_FUSION_first_done=false;
@@ -933,7 +936,7 @@ void MessageProcessor::call_TAG_GET_PATH_LENGTH(Message*message){
 	assert(m_fusionData->m_FUSION_identifier_map.count(id)>0);
 	#endif
 	if(m_fusionData->m_FUSION_identifier_map.count(id)>0){
-		length=(*m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size();
+		length=(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size();
 	}
 
 	#ifdef ASSERT
@@ -1033,8 +1036,8 @@ void MessageProcessor::call_TAG_HAS_PAIRED_READ(Message*message){
 void MessageProcessor::call_TAG_HAS_PAIRED_READ_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	(*m_EXTENSION_hasPairedReadAnswer)=incoming[0];
-	(*m_EXTENSION_hasPairedReadReceived)=true;
+	(m_ed->m_EXTENSION_hasPairedReadAnswer)=incoming[0];
+	(m_ed->m_EXTENSION_hasPairedReadReceived)=true;
 }
 
 void MessageProcessor::call_TAG_GET_PAIRED_READ(Message*message){
@@ -1066,14 +1069,14 @@ void MessageProcessor::call_TAG_GET_PAIRED_READ(Message*message){
 void MessageProcessor::call_TAG_GET_PAIRED_READ_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	(*m_EXTENSION_pairedRead).constructor(incoming[0],incoming[1],incoming[2]);
-	(*m_EXTENSION_pairedSequenceReceived)=true;
+	(m_ed->m_EXTENSION_pairedRead).constructor(incoming[0],incoming[1],incoming[2]);
+	(m_ed->m_EXTENSION_pairedSequenceReceived)=true;
 }
 
 void MessageProcessor::call_TAG_CLEAR_DIRECTIONS(Message*message){
 	int source=message->getSource();
 	// clearing old data too!.
-	(*m_FINISH_pathLengths).clear();
+	m_fusionData->m_FINISH_pathLengths.clear();
 
 	//cout<<"Rank "<<rank<<" is clearing its directions"<<endl;
 	// clear graph
@@ -1088,29 +1091,29 @@ void MessageProcessor::call_TAG_CLEAR_DIRECTIONS(Message*message){
 
 
 	// add the FINISHING bits
-	for(int i=0;i<(int)(*m_FINISH_newFusions).size();i++){
+	for(int i=0;i<(int)m_fusionData->m_FINISH_newFusions.size();i++){
 		#ifdef SHOW_PROGRESS
 		#endif
-		(*m_EXTENSION_contigs).push_back((*m_FINISH_newFusions)[i]);
+		(m_ed->m_EXTENSION_contigs).push_back((m_fusionData->m_FINISH_newFusions)[i]);
 	}
 
-	(*m_FINISH_newFusions).clear();
+	m_fusionData->m_FINISH_newFusions.clear();
 
 
 	vector<vector<VERTEX_TYPE> > fusions;
-	for(int i=0;i<(int)(*m_EXTENSION_contigs).size();i++){
-		int id=(*m_EXTENSION_identifiers)[i];
+	for(int i=0;i<(int)(m_ed->m_EXTENSION_contigs).size();i++){
+		int id=(m_ed->m_EXTENSION_identifiers)[i];
 		if(m_fusionData->m_FUSION_eliminated.count(id)==0){
-			fusions.push_back((*m_EXTENSION_contigs)[i]);
+			fusions.push_back((m_ed->m_EXTENSION_contigs)[i]);
 			vector<VERTEX_TYPE> rc;
-			for(int j=(*m_EXTENSION_contigs)[i].size()-1;j>=0;j--){
-				rc.push_back(complementVertex((*m_EXTENSION_contigs)[i][j],*m_wordSize,(*m_colorSpaceMode)));
+			for(int j=(m_ed->m_EXTENSION_contigs)[i].size()-1;j>=0;j--){
+				rc.push_back(complementVertex((m_ed->m_EXTENSION_contigs)[i][j],*m_wordSize,(*m_colorSpaceMode)));
 			}
 			fusions.push_back(rc);
 		}
 	}
 
-	(*m_EXTENSION_identifiers).clear();
+	(m_ed->m_EXTENSION_identifiers).clear();
 	m_fusionData->m_FUSION_eliminated.clear();
 	for(int i=0;i<(int)fusions.size();i++){
 		int id=i*MAX_NUMBER_OF_MPI_PROCESSES+rank;
@@ -1120,16 +1123,16 @@ void MessageProcessor::call_TAG_CLEAR_DIRECTIONS(Message*message){
 		assert(size>=1);
 		assert((id%MAX_NUMBER_OF_MPI_PROCESSES)<size);
 		#endif
-		(*m_EXTENSION_identifiers).push_back(id);
+		(m_ed->m_EXTENSION_identifiers).push_back(id);
 	}
 
-	for(int i=0;i<(int)(*m_EXTENSION_identifiers).size();i++){
-		int id=(*m_EXTENSION_identifiers)[i];
+	for(int i=0;i<(int)(m_ed->m_EXTENSION_identifiers).size();i++){
+		int id=(m_ed->m_EXTENSION_identifiers)[i];
 		m_fusionData->m_FUSION_identifier_map[id]=i;
 	}
 
-	(*m_EXTENSION_contigs).clear();
-	(*m_EXTENSION_contigs)=fusions;
+	(m_ed->m_EXTENSION_contigs).clear();
+	(m_ed->m_EXTENSION_contigs)=fusions;
 
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,TAG_CLEAR_DIRECTIONS_REPLY,rank);
 	m_outbox->push_back(aMessage);
@@ -1142,12 +1145,12 @@ void MessageProcessor::call_TAG_CLEAR_DIRECTIONS_REPLY(Message*message){
 void MessageProcessor::call_TAG_FINISH_FUSIONS(Message*message){
 	//cout<<"Rank "<<rank<<" call_TAG_FINISH_FUSIONS"<<endl;
 	(*m_mode)=MODE_FINISH_FUSIONS;
-	(*m_FINISH_fusionOccured)=false;
-	(*m_SEEDING_i)=0;
-	(*m_EXTENSION_currentPosition)=0;
+	m_fusionData->m_FINISH_fusionOccured=false;
+	(m_seedingData->m_SEEDING_i)=0;
+	(m_ed->m_EXTENSION_currentPosition)=0;
 	m_fusionData->m_FUSION_first_done=false;
-	(*m_Machine_getPaths_INITIALIZED)=false;
-	(*m_Machine_getPaths_DONE)=false;
+	m_fusionData->m_Machine_getPaths_INITIALIZED=false;
+	m_fusionData->m_Machine_getPaths_DONE=false;
 }
 
 void MessageProcessor::call_TAG_FINISH_FUSIONS_FINISHED(Message*message){
@@ -1161,8 +1164,8 @@ void MessageProcessor::call_TAG_FINISH_FUSIONS_FINISHED(Message*message){
 
 void MessageProcessor::call_TAG_DISTRIBUTE_FUSIONS(Message*message){
 	(*m_mode)=MODE_DISTRIBUTE_FUSIONS;
-	(*m_SEEDING_i)=0;
-	(*m_EXTENSION_currentPosition)=0;
+	(m_seedingData->m_SEEDING_i)=0;
+	(m_ed->m_EXTENSION_currentPosition)=0;
 }
 
 void MessageProcessor::call_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY(Message*message){
@@ -1208,13 +1211,13 @@ void MessageProcessor::call_TAG_GET_PATH_VERTEX(Message*message){
 	assert(m_fusionData->m_FUSION_identifier_map.count(id)>0);
 	#endif
 	#ifdef ASSERT
-	if(position>=(int)(*m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size()){
-		cout<<"Pos="<<position<<" Length="<<(*m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size()<<endl;
+	if(position>=(int)(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size()){
+		cout<<"Pos="<<position<<" Length="<<(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size()<<endl;
 	}
-	assert(position<(int)(*m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size());
+	assert(position<(int)(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size());
 	#endif
 	VERTEX_TYPE*messageBytes=(VERTEX_TYPE*)m_outboxAllocator->allocate(sizeof(VERTEX_TYPE));
-	messageBytes[0]=(*m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]][position];
+	messageBytes[0]=(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]][position];
 	Message aMessage(messageBytes,1,MPI_UNSIGNED_LONG_LONG,source,TAG_GET_PATH_VERTEX_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
@@ -1222,8 +1225,8 @@ void MessageProcessor::call_TAG_GET_PATH_VERTEX(Message*message){
 void MessageProcessor::call_TAG_GET_PATH_VERTEX_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	(*m_FINISH_vertex_received)=true;
-	(*m_FINISH_received_vertex)=incoming[0];
+	m_fusionData->m_FINISH_vertex_received=true;
+	m_fusionData->m_FINISH_received_vertex=incoming[0];
 }
 
 void MessageProcessor::call_TAG_SET_COLOR_MODE(Message*message){
@@ -1234,9 +1237,9 @@ void MessageProcessor::call_TAG_SET_COLOR_MODE(Message*message){
 
 void MessageProcessor::call_TAG_AUTOMATIC_DISTANCE_DETECTION(Message*message){
 	(*m_mode)=MODE_AUTOMATIC_DISTANCE_DETECTION;
-	(*m_SEEDING_i)=0;
-	(*m_EXTENSION_currentPosition)=0;
-	ed->m_EXTENSION_reads_requested=false;
+	(m_seedingData->m_SEEDING_i)=0;
+	(m_ed->m_EXTENSION_currentPosition)=0;
+	m_ed->m_EXTENSION_reads_requested=false;
 }
 
 void MessageProcessor::call_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE(Message*message){
@@ -1334,8 +1337,8 @@ void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE(Message*message){
 void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	(*m_EXTENSION_pairedRead).constructor(incoming[0],incoming[1],incoming[2]);
-	(*m_EXTENSION_pairedSequenceReceived)=true;
+	(m_ed->m_EXTENSION_pairedRead).constructor(incoming[0],incoming[1],incoming[2]);
+	(m_ed->m_EXTENSION_pairedSequenceReceived)=true;
 
 	seedExtender->m_receivedString=(char*)(incoming+3);
 	seedExtender->m_sequenceReceived=true;
@@ -1470,6 +1473,7 @@ MessageProcessor::MessageProcessor(){
 
 void MessageProcessor::constructor(
 MessagesHandler*m_messagesHandler,
+SeedingData*seedingData,
 Library*m_library,
 bool*m_ready,
 VerticesExtractor*m_verticesExtractor,
@@ -1481,70 +1485,34 @@ SequencesLoader*sequencesLoader,ExtensionData*ed,
 			MyForest*m_subgraph,
 			RingAllocator*m_outboxAllocator,
 				int rank,
-			vector<ReadAnnotation>*m_EXTENSION_receivedReads,
 			int*m_numberOfMachinesDoneSendingEdges,
 			FusionData*m_fusionData,
-			vector<vector<VERTEX_TYPE> >*m_EXTENSION_contigs,
 			int*m_wordSize,
 			int*m_minimumCoverage,
 			int*m_seedCoverage,
 			int*m_peakCoverage,
 			ArrayOfReads*m_myReads,
-			bool*m_EXTENSION_currentRankIsDone,
-	vector<vector<VERTEX_TYPE> >*m_FINISH_newFusions,
 		int size,
 	RingAllocator*m_inboxAllocator,
 	MyAllocator*m_persistentAllocator,
 	vector<int>*m_identifiers,
 	bool*m_mode_sendDistribution,
 	bool*m_alive,
-	vector<VERTEX_TYPE>*m_SEEDING_receivedIngoingEdges,
-	VERTEX_TYPE*m_SEEDING_receivedKey,
-	int*m_SEEDING_i,
 	bool*m_colorSpaceMode,
-	bool*m_FINISH_fusionOccured,
-	bool*m_Machine_getPaths_INITIALIZED,
 	int*m_mode,
 	vector<vector<VERTEX_TYPE> >*m_allPaths,
-	bool*m_EXTENSION_VertexAssembled_received,
-	int*m_EXTENSION_numberOfRanksDone,
-	int*m_EXTENSION_currentPosition,
 	int*m_last_value,
-	vector<int>*m_EXTENSION_identifiers,
 	int*m_ranksDoneAttachingReads,
-	bool*m_SEEDING_edgesReceived,
-	PairedRead*m_EXTENSION_pairedRead,
-	bool*m_mode_EXTENSION,
-	vector<VERTEX_TYPE>*m_SEEDING_receivedOutgoingEdges,
 	int*m_DISTRIBUTE_n,
-	vector<VERTEX_TYPE>*m_SEEDING_nodes,
-	bool*m_EXTENSION_hasPairedReadReceived,
 	int*m_numberOfRanksDoneSeeding,
-	bool*m_SEEDING_vertexKeyAndCoverageReceived,
-	int*m_SEEDING_receivedVertexCoverage,
-	bool*m_EXTENSION_readLength_received,
-	bool*m_Machine_getPaths_DONE,
 	int*m_CLEAR_n,
-	bool*m_FINISH_vertex_received,
-	bool*m_EXTENSION_initiated,
 	int*m_readyToSeed,
-	bool*m_SEEDING_NodeInitiated,
 	int*m_FINISH_n,
 	bool*m_nextReductionOccured,
-	bool*m_EXTENSION_hasPairedReadAnswer,
 	MyAllocator*m_directionsAllocator,
-	map<int,int>*m_FINISH_pathLengths,
-	bool*m_EXTENSION_pairedSequenceReceived,
-	int*m_EXTENSION_receivedLength,
 	int*m_mode_send_coverage_iterator,
 	map<int,VERTEX_TYPE>*m_coverageDistribution,
-	VERTEX_TYPE*m_FINISH_received_vertex,
-	bool*m_EXTENSION_read_vertex_received,
 	int*m_sequence_ready_machines,
-	bool*m_SEEDING_InedgesReceived,
-	bool*m_EXTENSION_vertexIsAssembledResult,
-	bool*m_SEEDING_vertexCoverageReceived,
-	VERTEX_TYPE*m_EXTENSION_receivedReadVertex,
 	int*m_numberOfMachinesReadyForEdgesDistribution,
 	int*m_numberOfMachinesReadyToSendDistribution,
 	bool*m_mode_send_outgoing_edges,
@@ -1552,7 +1520,6 @@ SequencesLoader*sequencesLoader,ExtensionData*ed,
 	bool*m_mode_send_vertices,
 	int*m_numberOfMachinesDoneSendingVertices,
 	int*m_numberOfMachinesDoneSendingCoverage,
-	bool*m_EXTENSION_reads_received,
 				StaticVector*m_outbox,
 		map<int,int>*m_allIdentifiers,OpenAssemblerChooser*m_oa,
 int*m_numberOfRanksWithCoverageData,
@@ -1561,7 +1528,7 @@ bool*m_isFinalFusion,
 SequencesIndexer*m_si){
 	this->m_sequencesLoader=sequencesLoader;
 	this->m_verticesExtractor=m_verticesExtractor;
-	this->ed=ed;
+	this->m_ed=ed;
 	this->m_numberOfRanksDoneDetectingDistances=m_numberOfRanksDoneDetectingDistances;
 	this->m_numberOfRanksDoneSendingDistances=m_numberOfRanksDoneSendingDistances;
 	this->parameters=parameters;
@@ -1570,17 +1537,13 @@ SequencesIndexer*m_si){
 	this->m_edgesExtractor=m_edgesExtractor;
 	this->m_outboxAllocator=m_outboxAllocator;
 	this->rank=rank;
-	this->m_EXTENSION_receivedReads=m_EXTENSION_receivedReads;
 	this->m_numberOfMachinesDoneSendingEdges=m_numberOfMachinesDoneSendingEdges;
 	this->m_fusionData=m_fusionData;
-	this->m_EXTENSION_contigs=m_EXTENSION_contigs;
 	this->m_wordSize=m_wordSize;
 	this->m_minimumCoverage=m_minimumCoverage;
 	this->m_seedCoverage=m_seedCoverage;
 	this->m_peakCoverage=m_peakCoverage;
 	this->m_myReads=m_myReads;
-	this->m_EXTENSION_currentRankIsDone=m_EXTENSION_currentRankIsDone;
-	this->m_FINISH_newFusions=m_FINISH_newFusions;
 	this->size=size;
 	this->m_inboxAllocator=m_inboxAllocator;
 	this->m_si=m_si;
@@ -1588,54 +1551,22 @@ SequencesIndexer*m_si){
 	this->m_identifiers=m_identifiers;
 	this->m_mode_sendDistribution=m_mode_sendDistribution;
 	this->m_alive=m_alive;
-	this->m_SEEDING_receivedIngoingEdges=m_SEEDING_receivedIngoingEdges;
-	this->m_SEEDING_receivedKey=m_SEEDING_receivedKey;
-	this->m_SEEDING_i=m_SEEDING_i;
 	this->m_colorSpaceMode=m_colorSpaceMode;
-	this->m_FINISH_fusionOccured=m_FINISH_fusionOccured;
 	this->m_messagesHandler=m_messagesHandler;
-	this->m_Machine_getPaths_INITIALIZED=m_Machine_getPaths_INITIALIZED;
 	this->m_mode=m_mode;
 	this->m_allPaths=m_allPaths;
-	this->m_EXTENSION_VertexAssembled_received=m_EXTENSION_VertexAssembled_received;
-	this->m_EXTENSION_numberOfRanksDone=m_EXTENSION_numberOfRanksDone;
-	this->m_EXTENSION_currentPosition=m_EXTENSION_currentPosition;
 	this->m_last_value=m_last_value;
-	this->m_EXTENSION_identifiers=m_EXTENSION_identifiers;
 	this->m_ranksDoneAttachingReads=m_ranksDoneAttachingReads;
-	this->m_SEEDING_edgesReceived=m_SEEDING_edgesReceived;
-	this->m_EXTENSION_pairedRead=m_EXTENSION_pairedRead;
-	this->m_mode_EXTENSION=m_mode_EXTENSION;
-	this->m_SEEDING_receivedOutgoingEdges=m_SEEDING_receivedOutgoingEdges;
 	this->m_DISTRIBUTE_n=m_DISTRIBUTE_n;
-	this->m_SEEDING_nodes=m_SEEDING_nodes;
-	this->m_EXTENSION_hasPairedReadReceived=m_EXTENSION_hasPairedReadReceived;
 	this->m_numberOfRanksDoneSeeding=m_numberOfRanksDoneSeeding;
-	this->m_SEEDING_vertexKeyAndCoverageReceived=m_SEEDING_vertexKeyAndCoverageReceived;
-	this->m_SEEDING_receivedVertexCoverage=m_SEEDING_receivedVertexCoverage;
-	this->m_EXTENSION_readLength_received=m_EXTENSION_readLength_received;
-	this->m_Machine_getPaths_DONE=m_Machine_getPaths_DONE;
 	this->m_CLEAR_n=m_CLEAR_n;
-	this->m_FINISH_vertex_received=m_FINISH_vertex_received;
-	this->m_EXTENSION_initiated=m_EXTENSION_initiated;
 	this->m_readyToSeed=m_readyToSeed;
-	this->m_SEEDING_NodeInitiated=m_SEEDING_NodeInitiated;
 	this->m_FINISH_n=m_FINISH_n;
 	this->m_nextReductionOccured=m_nextReductionOccured;
-	this->m_EXTENSION_hasPairedReadAnswer=m_EXTENSION_hasPairedReadAnswer;
 	this->m_directionsAllocator=m_directionsAllocator;
-	this->m_FINISH_pathLengths=m_FINISH_pathLengths;
-	this->m_EXTENSION_pairedSequenceReceived=m_EXTENSION_pairedSequenceReceived;
-	this->m_EXTENSION_receivedLength=m_EXTENSION_receivedLength;
 	this->m_mode_send_coverage_iterator=m_mode_send_coverage_iterator;
 	this->m_coverageDistribution=m_coverageDistribution;
-	this->m_FINISH_received_vertex=m_FINISH_received_vertex;
-	this->m_EXTENSION_read_vertex_received=m_EXTENSION_read_vertex_received;
 	this->m_sequence_ready_machines=m_sequence_ready_machines;
-	this->m_SEEDING_InedgesReceived=m_SEEDING_InedgesReceived;
-	this->m_EXTENSION_vertexIsAssembledResult=m_EXTENSION_vertexIsAssembledResult;
-	this->m_SEEDING_vertexCoverageReceived=m_SEEDING_vertexCoverageReceived;
-	this->m_EXTENSION_receivedReadVertex=m_EXTENSION_receivedReadVertex;
 	this->m_numberOfMachinesReadyForEdgesDistribution=m_numberOfMachinesReadyForEdgesDistribution;
 	this->m_numberOfMachinesReadyToSendDistribution=m_numberOfMachinesReadyToSendDistribution;
 	this->m_mode_send_outgoing_edges=m_mode_send_outgoing_edges;
@@ -1643,7 +1574,6 @@ SequencesIndexer*m_si){
 	this->m_mode_send_vertices=m_mode_send_vertices;
 	this->m_numberOfMachinesDoneSendingVertices=m_numberOfMachinesDoneSendingVertices;
 	this->m_numberOfMachinesDoneSendingCoverage=m_numberOfMachinesDoneSendingCoverage;
-	this->m_EXTENSION_reads_received=m_EXTENSION_reads_received;
 	this->m_outbox=m_outbox;
 	this->m_allIdentifiers=m_allIdentifiers,
 	this->m_oa=m_oa;
@@ -1652,4 +1582,5 @@ SequencesIndexer*m_si){
 	this->m_master_mode=m_master_mode;
 	this->m_isFinalFusion=m_isFinalFusion;
 	this->m_ready=m_ready;
+	m_seedingData=seedingData;
 }

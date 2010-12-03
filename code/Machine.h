@@ -215,34 +215,19 @@ class Machine{
 	vector<int> m_identifiers;
 	// FINISHING.
 	int m_cycleNumber;
-	bool m_FINISH_fusionOccured;
-	vector<vector<Direction> > m_FINISH_pathsForPosition;
-	map<int,int> m_FINISH_pathLengths;
-	bool m_checkedValidity;
 	int m_FINISH_n;
 	int m_DISTRIBUTE_n;
 	bool m_isFinalFusion;
 	bool m_FINISH_hits_computed;
 	int m_FINISH_hit;
-	int m_selectedPath;
-	int m_selectedPosition;
+
 	#ifdef ASSERT
 	set<int> m_collisions;
 	#endif
-	int m_FINISH_positionStart;
-	bool m_FINISH_hasHit;
-	vector<vector<VERTEX_TYPE> > m_FINISH_newFusions;
-	bool m_FINISH_vertex_received;
-	VERTEX_TYPE m_FINISH_received_vertex;
 	bool m_nextReductionOccured;
 	bool m_cycleStarted;
 	bool m_reductionOccured;
-	bool m_FINISH_vertex_requested;
 
-	// getPaths
-	bool m_Machine_getPaths_INITIALIZED;
-	bool m_Machine_getPaths_DONE;
-	vector<Direction> m_Machine_getPaths_result;
 
 	#ifdef SHOW_SENT_MESSAGES
 	StatisticsData*m_stats;

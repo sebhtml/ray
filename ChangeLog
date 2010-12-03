@@ -1,5 +1,5 @@
-= v. 1.2.0 =
-2010-12-XX
+= 1.2.0 =
+2010-12-03
 
 * Implemented lazy loading of files (sequences in any files are loaded in
 small batches instead of loading the whole file.)
@@ -25,9 +25,12 @@ instead of m_readIndex (u32), m_rank (u16), m_fragmentSize (u16) and
 m_deviation (u16). That means storing one paired read needs 7 bytes instead of
 10 bytes. Library information are stored in Parameters.
 * 'make install' also installs documentation and examples now.
+* Moved finishFusion & makeFusion in FusionData.cpp
+* Moved seed creation in SeedingData.cpp
+* Now print-latex.sh, the script that calculates metrics for an assembly, uses
+only MUMmer and AMOS commands (no more BLAST).
 
-
-= v. 1.0.0 =
+= 1.0.0 =
 2010-11-25
 
 * Made a lots of changes to make Ray compliant with the standard MPI 2.2
@@ -118,8 +121,8 @@ Thanks to René Paradis for handing me the hardware.
 * Evaluated regression tests.
 
 
-= v. 0.1.0 =
-2010-11-03 22:48:58 -0400
+= 0.1.0 =
+2010-11-03
 
 * Moved some code from Machine.cpp to new files. (Ticket #116)
 * Improved the speed of the extension of seeds by reducing the number of messages sent. (Tickets #164 & #490)
@@ -149,8 +152,8 @@ Feature requested by Jordi Camps Puchades (Centre Nacional d'Anàlisi Genòmica/
 * The compilation is more verbose. (r3714)
 
 
-= v. 0.0.7 =
-2010-04-24 08:17:54 -0400
+=  0.0.7 =
+2010-04-24 
 
 * (Small) speed improvement in seed extension (trac #21)
 * Ray can now write to user-specified files -- Huge thanks to Matthew
@@ -172,8 +175,8 @@ is messy -- thanks to Torsten Seemann (Victorian Bioinformatics Consortium, Dept
 University, AUSTRALIA) for noticing the issue (trac #129)
 
 
-= v. 0.0.6 =
-2010-04-10 08:38:09 -0400
+= 0.0.6 =
+2010-04-10
 
 * 'make test' now performs unit tests (trac #83)
 * 'make simtools' compiles simulation tools (trac #43)
@@ -191,8 +194,8 @@ seqanswers.com)
 * Comparison with other assemblers 
 
 
-= v. 0.0.5 =
-2010-03-29 10:15:17 -0400
+= 0.0.5 =
+2010-03-29 
 
 * Ray now outputs assemblies in AMOS format (with -a), (trac #58)
 * Ray commands can be provided with a commands file (like in 0.0.3 and 0.0.4)
@@ -200,8 +203,8 @@ as well as with command-line arguments, (trac #94) and
 * Ray removes non-A-T-C-G letters at both ends of reads.
 
 
-= v. 0.0.4 =
-2010-03-22 21:26:38 -0400
+= 0.0.4 =
+2010-03-22
 
 * Fixed many bugs in Ray when k is lower than 25 (when k=21, in particular)
 (trac #88)
@@ -224,25 +227,25 @@ Ray now reuses allocated memory for ingoing and outgoing messages
 * Added a mummer validation script (r3090)
 
 
-= v. 0.0.3 =
-2010-03-09 21:28:22 -0500
+= 0.0.3 =
+2010-03-09
 
 * initial release
 
 
-= v. 0.0.2 =
-2010-02-19 17:27:27 -0500
+= 0.0.2 =
+2010-02-19 
 
 * nothing noteworthy to report
 
 
-= v. 0.0.1 =
-2010-02-10 15:14:40 -0500 
+= 0.0.1 =
+2010-02-10
 
 * codenamed Osiris
 
 
-= v. 0.0.0 =
-r2902 | 2010-01-29 16:46:40 -0500
+= 0.0.0 =
+2010-01-29 
 
 * codenamed crocodile

@@ -12,7 +12,7 @@ libRay_a_SOURCES = \
 EarlyStoppingTechnology.h EarlyStoppingTechnology.cpp ArrayOfReads.h ArrayOfReads.cpp \
 PendingRequest.h RingAllocator.cpp RingAllocator.h StaticVector.cpp StaticVector.h \
 MessagesHandler.h MessagesHandler.cpp slave_modes.h master_modes.h mpi_tags.h \
-SeedingData.h Library.h Library.cpp FastaLoader.h FastaLoader.cpp FastqLoader.h \
+SeedingData.cpp SeedingData.h Library.h Library.cpp FastaLoader.h FastaLoader.cpp FastqLoader.h \
 FastqLoader.cpp BubbleData.h BubbleTool.cpp BubbleTool.h BufferedData.cpp \
 BufferedData.h Chooser.cpp ChooserData.h Chooser.h ColorSpaceDecoder.cpp \
 ColorSpaceDecoder.h ColorSpaceLoader.cpp ColorSpaceLoader.h common_functions.cpp \

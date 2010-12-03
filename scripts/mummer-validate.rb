@@ -161,6 +161,10 @@ totalBasesNotCovered+=missingBases
 	fileOutput.puts "#{refName} #{refBases} #{missingBases} #{1.0-missingBases.to_f/refBases}"
 end
 
+system "rm #{prefix}.coords"
+system "rm #{prefix}.snps"
+system "rm #{prefix}.delta"
+
 fileOutput.puts "totalBases=#{totalBases}"
 fileOutput.puts "totalBasesNotCovered=#{totalBasesNotCovered}"
 fileOutput.puts "All #{totalBases} #{totalBasesNotCovered} "
