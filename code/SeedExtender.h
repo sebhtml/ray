@@ -22,6 +22,8 @@
 #ifndef _SeedExtender
 #define _SeedExtender
 
+class FusionData;
+
 #include<common_functions.h>
 #include<Message.h>
 #include<vector>

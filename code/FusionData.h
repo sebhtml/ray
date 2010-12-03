@@ -22,6 +22,8 @@
 #ifndef _FusionData
 #define _FusionData
 
+class SeedingData;
+
 #include<Direction.h>
 #include<vector>
 #include<set>

@@ -24,14 +24,31 @@
 #ifndef _SeedingData
 #define _SeedingData
 
+class SeedExtender;
+
+#include<SeedExtender.h>
 #include<SplayTreeIterator.h>
 #include<SplayNode.h>
 #include<Vertex.h>
+#include<MyForest.h>
 #include<set>
 #include<common_functions.h>
 using namespace std;
 
 class SeedingData{
+	bool m_initialized;
+
+	bool*m_colorSpaceMode;
+	int m_rank;
+	int m_size;
+	RingAllocator*m_outboxAllocator;
+	StaticVector*m_outbox;
+	int*m_seedCoverage;
+	int*m_mode;
+	int*m_wordSize;
+	Parameters*m_parameters;
+	MyForest*m_subgraph;
+	
 public:
 	SplayTreeIterator<VERTEX_TYPE,Vertex>*m_SEEDING_iterator;
 	SplayNode<VERTEX_TYPE,Vertex>*m_SEEDING_node;
@@ -83,7 +100,15 @@ public:
 	bool m_SEEDING_firstVertexParentTestDone;	
 	bool m_SEEDING_ingoingEdgesDone;
 	bool m_SEEDING_outgoingEdgesDone;
+	
+	SeedExtender*m_seedExtender;
+	int getRank();
+	int getSize();
+	void computeSeeds();
+	void do_1_1_test();
 
+	void constructor(SeedExtender*seedExtender,int rank,int size,StaticVector*outbox,RingAllocator*outboxAllocator,
+		int*seedCoverage,int*mode,Parameters*parameters,int*wordSize,MyForest*subgraph,bool*colorSpaceMode);
 };
 
 #endif

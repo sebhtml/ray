@@ -26,6 +26,7 @@
 #include<RingAllocator.h>
 #include<Library.h>
 #include<SequencesIndexer.h>
+#include<SeedingData.h>
 #include<OpenAssemblerChooser.h>
 #include<ArrayOfReads.h>
 #include<Message.h>
@@ -55,6 +56,7 @@ class MessageProcessor{
 
 	u64 m_sentinelValue;
 
+	SeedingData*m_seedingData;
 
 	// data for processing
 	bool*m_ready;
@@ -64,7 +66,7 @@ class MessageProcessor{
 	Library*m_library;
 	bool*m_isFinalFusion;
 	int*m_master_mode;
-	ExtensionData*ed;
+	ExtensionData*m_ed;
 	int*m_numberOfRanksDoneDetectingDistances;
 	int*m_numberOfRanksDoneSendingDistances;
 	Parameters*parameters;
@@ -74,16 +76,13 @@ class MessageProcessor{
 	MyForest*m_subgraph;
 	RingAllocator*m_outboxAllocator;
 	int rank;
-	vector<ReadAnnotation>*m_EXTENSION_receivedReads;
 	int*m_numberOfMachinesDoneSendingEdges;
 	FusionData*m_fusionData;
-	vector<vector<VERTEX_TYPE> >*m_EXTENSION_contigs;
 	int*m_wordSize;
 	int*m_minimumCoverage;
 	int*m_seedCoverage;
 	int*m_peakCoverage;
 	ArrayOfReads*m_myReads;
-	bool*m_EXTENSION_currentRankIsDone;
 	int size;
 	SequencesIndexer*m_si;
 
@@ -92,47 +91,21 @@ class MessageProcessor{
 	vector<int>*m_identifiers;
 	bool*m_mode_sendDistribution;
 	bool*m_alive;
-	vector<VERTEX_TYPE>*m_SEEDING_receivedIngoingEdges;
-	VERTEX_TYPE*m_SEEDING_receivedKey;
-	int*m_SEEDING_i;
 	bool*m_colorSpaceMode;
 	int*m_mode;
 	vector<vector<VERTEX_TYPE> >*m_allPaths;
-	bool*m_EXTENSION_VertexAssembled_received;
-	int*m_EXTENSION_numberOfRanksDone;
-	int*m_EXTENSION_currentPosition;
 	int*m_last_value;
-	vector<int>*m_EXTENSION_identifiers;
 	int*m_ranksDoneAttachingReads;
-	bool*m_SEEDING_edgesReceived;
-	PairedRead*m_EXTENSION_pairedRead;
-	bool*m_mode_EXTENSION;
-	vector<VERTEX_TYPE>*m_SEEDING_receivedOutgoingEdges;
 	int*m_DISTRIBUTE_n;
-	vector<VERTEX_TYPE>*m_SEEDING_nodes;
-	bool*m_EXTENSION_hasPairedReadReceived;
 	int*m_numberOfRanksDoneSeeding;
-	bool*m_SEEDING_vertexKeyAndCoverageReceived;
-	int*m_SEEDING_receivedVertexCoverage;
-	bool*m_EXTENSION_readLength_received;
 	int*m_CLEAR_n;
-	bool*m_EXTENSION_initiated;
 	int*m_readyToSeed;
-	bool*m_SEEDING_NodeInitiated;
 	int*m_FINISH_n;
 	bool*m_nextReductionOccured;
-	bool*m_EXTENSION_hasPairedReadAnswer;
 	MyAllocator*m_directionsAllocator;
-	bool*m_EXTENSION_pairedSequenceReceived;
-	int*m_EXTENSION_receivedLength;
 	int*m_mode_send_coverage_iterator;
 	map<int,VERTEX_TYPE>*m_coverageDistribution;
-	bool*m_EXTENSION_read_vertex_received;
 	int*m_sequence_ready_machines;
-	bool*m_SEEDING_InedgesReceived;
-	bool*m_EXTENSION_vertexIsAssembledResult;
-	bool*m_SEEDING_vertexCoverageReceived;
-	VERTEX_TYPE*m_EXTENSION_receivedReadVertex;
 	int*m_numberOfMachinesReadyForEdgesDistribution;
 	int*m_numberOfMachinesReadyToSendDistribution;
 	bool*m_mode_send_outgoing_edges;
@@ -142,16 +115,15 @@ class MessageProcessor{
 	VerticesExtractor*m_verticesExtractor;
 	EdgesExtractor*m_edgesExtractor;
 	int*m_numberOfMachinesDoneSendingCoverage;
-	bool*m_EXTENSION_reads_received;
 	StaticVector*m_outbox;
 	map<int,int>*m_allIdentifiers;
 	OpenAssemblerChooser*m_oa;
 	int*m_numberOfRanksWithCoverageData;
 	SeedExtender*seedExtender;
 
-
 public:
 	void constructor(MessagesHandler*m_messagesHandler,
+SeedingData*seedingData,
 Library*m_library,
 bool*m_ready,
 VerticesExtractor*m_verticesExtractor,
@@ -164,63 +136,34 @@ ExtensionData*ed,
 			MyForest*m_subgraph,
 			RingAllocator*m_outboxAllocator,
 				int rank,
-			vector<ReadAnnotation>*m_EXTENSION_receivedReads,
 			int*m_numberOfMachinesDoneSendingEdges,
 			FusionData*m_fusionData,
-			vector<vector<VERTEX_TYPE> >*m_EXTENSION_contigs,
 			int*m_wordSize,
 			int*m_minimumCoverage,
 			int*m_seedCoverage,
 			int*m_peakCoverage,
 			ArrayOfReads*m_myReads,
-			bool*m_EXTENSION_currentRankIsDone,
 		int size,
 	RingAllocator*m_inboxAllocator,
 	MyAllocator*m_persistentAllocator,
 	vector<int>*m_identifiers,
 	bool*m_mode_sendDistribution,
 	bool*m_alive,
-	vector<VERTEX_TYPE>*m_SEEDING_receivedIngoingEdges,
-	VERTEX_TYPE*m_SEEDING_receivedKey,
-	int*m_SEEDING_i,
 	bool*m_colorSpaceMode,
 	int*m_mode,
 	vector<vector<VERTEX_TYPE> >*m_allPaths,
-	bool*m_EXTENSION_VertexAssembled_received,
-	int*m_EXTENSION_numberOfRanksDone,
-	int*m_EXTENSION_currentPosition,
 	int*m_last_value,
-	vector<int>*m_EXTENSION_identifiers,
 	int*m_ranksDoneAttachingReads,
-	bool*m_SEEDING_edgesReceived,
-	PairedRead*m_EXTENSION_pairedRead,
-	bool*m_mode_EXTENSION,
-	vector<VERTEX_TYPE>*m_SEEDING_receivedOutgoingEdges,
 	int*m_DISTRIBUTE_n,
-	vector<VERTEX_TYPE>*m_SEEDING_nodes,
-	bool*m_EXTENSION_hasPairedReadReceived,
 	int*m_numberOfRanksDoneSeeding,
-	bool*m_SEEDING_vertexKeyAndCoverageReceived,
-	int*m_SEEDING_receivedVertexCoverage,
-	bool*m_EXTENSION_readLength_received,
 	int*m_CLEAR_n,
-	bool*m_EXTENSION_initiated,
 	int*m_readyToSeed,
-	bool*m_SEEDING_NodeInitiated,
 	int*m_FINISH_n,
 	bool*m_nextReductionOccured,
-	bool*m_EXTENSION_hasPairedReadAnswer,
 	MyAllocator*m_directionsAllocator,
-	bool*m_EXTENSION_pairedSequenceReceived,
-	int*m_EXTENSION_receivedLength,
 	int*m_mode_send_coverage_iterator,
 	map<int,VERTEX_TYPE>*m_coverageDistribution,
-	bool*m_EXTENSION_read_vertex_received,
 	int*m_sequence_ready_machines,
-	bool*m_SEEDING_InedgesReceived,
-	bool*m_EXTENSION_vertexIsAssembledResult,
-	bool*m_SEEDING_vertexCoverageReceived,
-	VERTEX_TYPE*m_EXTENSION_receivedReadVertex,
 	int*m_numberOfMachinesReadyForEdgesDistribution,
 	int*m_numberOfMachinesReadyToSendDistribution,
 	bool*m_mode_send_outgoing_edges,
@@ -228,7 +171,6 @@ ExtensionData*ed,
 	bool*m_mode_send_vertices,
 	int*m_numberOfMachinesDoneSendingVertices,
 	int*m_numberOfMachinesDoneSendingCoverage,
-	bool*m_EXTENSION_reads_received,
 				StaticVector*m_outbox,
 		map<int,int>*m_allIdentifiers,OpenAssemblerChooser*m_oa,
 int*m_numberOfRanksWithCoverageData,

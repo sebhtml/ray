@@ -118,10 +118,10 @@ Machine::Machine(int argc,char**argv){
 	m_dfsData=new DepthFirstSearchData();
 	m_fusionData=new FusionData();
 	m_seedingData=new SeedingData();
+
 	m_ed=new ExtensionData();
 	m_sd=new ScaffolderData();
 	m_cd=new ChooserData();
-
 
 	m_master_methods[MASTER_MODE_LOAD_CONFIG]=&Machine::call_MASTER_MODE_LOAD_CONFIG;
 	m_master_methods[MASTER_MODE_LOAD_SEQUENCES]=&Machine::call_MASTER_MODE_LOAD_SEQUENCES;
@@ -224,6 +224,8 @@ void Machine::start(){
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
 	MPI_Comm_size(MPI_COMM_WORLD,&m_size);
 
+
+
 	printf("Rank %i is running as UNIX process %i on %s\n",getRank(),getpid(),serverName);
 	fflush(stdout);
 
@@ -300,6 +302,7 @@ void Machine::start(){
 	m_parameters.getColorSpaceMode(),
 		m_ed,m_seedingData,&m_mode);
 
+
 	m_library.constructor(getRank(),&m_outbox,&m_outboxAllocator,&m_sequence_id,&m_sequence_idInFile,
 		m_ed,&m_readsPositions,getSize(),&m_timePrinter,&m_mode,&m_master_mode,
 	&m_parameters,&m_fileId,m_seedingData);
@@ -307,6 +310,9 @@ void Machine::start(){
 
 	m_subgraph.constructor(numberOfTrees,&m_persistentAllocator);
 	
+	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),&m_outbox,&m_outboxAllocator,&m_seedCoverage,&m_mode,&m_parameters,&m_wordSize,&m_subgraph,
+		&m_colorSpaceMode);
+
 	m_edgesExtractor.getRank=getRank();
 	m_edgesExtractor.getSize=getSize();
 	m_edgesExtractor.m_outboxAllocator=&m_outboxAllocator;
@@ -331,6 +337,7 @@ void Machine::start(){
 
 	m_mp.constructor(
 &m_messagesHandler,
+m_seedingData,
 &m_library,&m_ready,
 &m_verticesExtractor,
 &m_edgesExtractor,
@@ -342,63 +349,34 @@ void Machine::start(){
 			&m_subgraph,
 			&m_outboxAllocator,
 			getRank(),
-			&m_ed->m_EXTENSION_receivedReads,
 			&m_numberOfMachinesDoneSendingEdges,
 			m_fusionData,
-			&m_ed->m_EXTENSION_contigs,
 			&m_wordSize,
 			&m_minimumCoverage,
 			&m_seedCoverage,
 			&m_peakCoverage,
 			&m_myReads,
-			&m_ed->m_EXTENSION_currentRankIsDone,
 		getSize(),
 	&m_inboxAllocator,
 	&m_persistentAllocator,
 	&m_identifiers,
 	&m_mode_sendDistribution,
 	&m_alive,
-	&(m_seedingData->m_SEEDING_receivedIngoingEdges),
-	&(m_seedingData->m_SEEDING_receivedKey),
-	&(m_seedingData->m_SEEDING_i),
 	&m_colorSpaceMode,
 	&m_mode,
 	&m_allPaths,
-	&m_ed->m_EXTENSION_VertexAssembled_received,
-	&m_ed->m_EXTENSION_numberOfRanksDone,
-	&m_ed->m_EXTENSION_currentPosition,
 	&m_last_value,
-	&m_ed->m_EXTENSION_identifiers,
 	&m_ranksDoneAttachingReads,
-	&(m_seedingData->m_SEEDING_edgesReceived),
-	&m_ed->m_EXTENSION_pairedRead,
-	&m_ed->m_mode_EXTENSION,
-	&(m_seedingData->m_SEEDING_receivedOutgoingEdges),
 	&m_DISTRIBUTE_n,
-	&(m_seedingData->m_SEEDING_nodes),
-	&m_ed->m_EXTENSION_hasPairedReadReceived,
 	&m_numberOfRanksDoneSeeding,
-	&(m_seedingData->m_SEEDING_vertexKeyAndCoverageReceived),
-	&(m_seedingData->m_SEEDING_receivedVertexCoverage),
-	&m_ed->m_EXTENSION_readLength_received,
 	&m_CLEAR_n,
-	&m_ed->m_EXTENSION_initiated,
 	&m_readyToSeed,
-	&(m_seedingData->m_SEEDING_NodeInitiated),
 	&m_FINISH_n,
 	&m_nextReductionOccured,
-	&m_ed->m_EXTENSION_hasPairedReadAnswer,
 	&m_directionsAllocator,
-	&m_ed->m_EXTENSION_pairedSequenceReceived,
-	&m_ed->m_EXTENSION_receivedLength,
 	&m_mode_send_coverage_iterator,
 	&m_coverageDistribution,
-	&m_ed->m_EXTENSION_read_vertex_received,
 	&m_sequence_ready_machines,
-	&(m_seedingData->m_SEEDING_InedgesReceived),
-	&m_ed->m_EXTENSION_vertexIsAssembledResult,
-	&(m_seedingData->m_SEEDING_vertexCoverageReceived),
-	&m_ed->m_EXTENSION_receivedReadVertex,
 	&m_numberOfMachinesReadyForEdgesDistribution,
 	&m_numberOfMachinesReadyToSendDistribution,
 	&m_mode_send_outgoing_edges,
@@ -406,7 +384,6 @@ void Machine::start(){
 	&m_mode_send_vertices,
 	&m_numberOfMachinesDoneSendingVertices,
 	&m_numberOfMachinesDoneSendingCoverage,
-	&m_ed->m_EXTENSION_reads_received,
 				&m_outbox,
 	&m_sd->m_allIdentifiers,&m_oa,
 	&m_numberOfRanksWithCoverageData,&m_seedExtender,
@@ -737,6 +714,7 @@ void Machine::call_MODE_SEND_DISTRIBUTION(){
 }
 
 void Machine::call_MODE_PROCESS_OUTGOING_EDGES(){
+
 	m_edgesExtractor.m_wordSize=m_wordSize;
 	m_edgesExtractor.processOutgoingEdges();
 }
@@ -760,111 +738,7 @@ void Machine::call_MASTER_MODE_TRIGGER_SEEDING(){
 }
 
 void Machine::call_MODE_START_SEEDING(){
-	// assign a first vertex
-	if(!m_seedingData->m_SEEDING_NodeInitiated){
-		if(m_seedingData->m_SEEDING_i==(int)m_subgraph.size()-1){
-
-			m_mode=MODE_DO_NOTHING;
-			printf("Rank %i is creating seeds %i/%i (completed)\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_subgraph.size());
-			fflush(stdout);
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_SEEDING_IS_OVER,getRank());
-			m_seedingData->m_SEEDING_nodes.clear();
-			m_outbox.push_back(aMessage);
-		}else{
-			if(m_seedingData->m_SEEDING_i % 100000 ==0){
-				printf("Rank %i is creating seeds %i/%i\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_subgraph.size());
-				fflush(stdout);
-			}
-			m_seedingData->m_SEEDING_currentVertex=m_seedingData->m_SEEDING_nodes[m_seedingData->m_SEEDING_i];
-			m_seedingData->m_SEEDING_first=m_seedingData->m_SEEDING_currentVertex;
-			m_seedingData->m_SEEDING_testInitiated=false;
-			m_seedingData->m_SEEDING_1_1_test_done=false;
-			m_seedingData->m_SEEDING_i++;
-			m_seedingData->m_SEEDING_NodeInitiated=true;
-			m_seedingData->m_SEEDING_firstVertexTestDone=false;
-		}
-	// check that this node has 1 ingoing edge and 1 outgoing edge.
-	}else if(!m_seedingData->m_SEEDING_firstVertexTestDone){
-		if(!m_seedingData->m_SEEDING_1_1_test_done){
-			do_1_1_test();
-		}else{
-			if(!m_seedingData->m_SEEDING_1_1_test_result){
-				m_seedingData->m_SEEDING_NodeInitiated=false;// abort
-			}else{
-				m_seedingData->m_SEEDING_firstVertexParentTestDone=false;
-				m_seedingData->m_SEEDING_firstVertexTestDone=true;
-				m_seedingData->m_SEEDING_currentVertex=m_seedingData->m_SEEDING_currentParentVertex;
-				m_seedingData->m_SEEDING_testInitiated=false;
-				m_seedingData->m_SEEDING_1_1_test_done=false;
-			}
-		}
-
-	// check that the parent does not have 1 ingoing edge and 1 outgoing edge
-	}else if(!m_seedingData->m_SEEDING_firstVertexParentTestDone){
-		if(!m_seedingData->m_SEEDING_1_1_test_done){
-			do_1_1_test();
-		}else{
-			if(m_seedingData->m_SEEDING_1_1_test_result){
-				m_seedingData->m_SEEDING_NodeInitiated=false;//abort
-			}else{
-				m_seedingData->m_SEEDING_firstVertexParentTestDone=true;
-				m_seedingData->m_SEEDING_vertices.clear();
-				m_seedingData->m_SEEDING_seed.clear();
-				// restore original starter.
-				m_seedingData->m_SEEDING_currentVertex=m_seedingData->m_SEEDING_first;
-				m_seedingData->m_SEEDING_testInitiated=false;
-				m_seedingData->m_SEEDING_1_1_test_done=false;
-			}
-		}
-
-	// check if currentVertex has 1 ingoing edge and 1 outgoing edge, if yes, add it
-	}else{
-		// attempt to add m_SEEDING_currentVertex
-		if(!m_seedingData->m_SEEDING_1_1_test_done){
-			do_1_1_test();
-		}else{
-			if(m_seedingData->m_SEEDING_vertices.count(m_seedingData->m_SEEDING_currentVertex)>0){
-				m_seedingData->m_SEEDING_1_1_test_result=false;
-			}
-			if(!m_seedingData->m_SEEDING_1_1_test_result){
-				m_seedingData->m_SEEDING_NodeInitiated=false;
-				int nucleotides=m_seedingData->m_SEEDING_seed.size()+m_wordSize-1;
-				// only consider the long ones.
-				if(nucleotides>=m_parameters.getMinimumContigLength()){
-		
-					// if both seeds are on the same rank
-					// dump the reverse and keep the forward
-
-					m_seedingData->m_SEEDING_seeds.push_back(m_seedingData->m_SEEDING_seed);
-					u64 firstVertex=m_seedingData->m_SEEDING_seed[0];
-					u64 lastVertex=m_seedingData->m_SEEDING_seed[m_seedingData->m_SEEDING_seed.size()-1];
-					u64 lastVertexReverse=complementVertex(lastVertex,m_wordSize,m_colorSpaceMode);
-					int aRank=vertexRank(firstVertex);
-					int bRank=vertexRank(lastVertexReverse);
-
-					if(aRank==bRank){
-						if(m_seedExtender.getEliminatedSeeds()->count(firstVertex)==0 && m_seedExtender.getEliminatedSeeds()->count(lastVertexReverse)==0){
-							m_seedExtender.getEliminatedSeeds()->insert(firstVertex);
-							//m_seedingData->m_SEEDING_seeds.push_back(m_seedingData->m_SEEDING_seed);
-						}
-					// if they are on two ranks,
-					// keep the one on the rank with the lower number.
-					}else if((aRank+bRank)%2==0 && aRank<bRank){
-						m_seedExtender.getEliminatedSeeds()->insert(firstVertex);
-					}else if(((aRank+bRank)%2==1 && aRank>bRank)){
-						m_seedExtender.getEliminatedSeeds()->insert(firstVertex);
-					}
-				}
-			}else{
-				m_seedingData->m_SEEDING_seed.push_back(m_seedingData->m_SEEDING_currentVertex);
-				m_seedingData->m_SEEDING_vertices.insert(m_seedingData->m_SEEDING_currentVertex);
-				m_seedingData->m_SEEDING_currentVertex=m_seedingData->m_SEEDING_currentChildVertex;
-				m_seedingData->m_SEEDING_testInitiated=false;
-				m_seedingData->m_SEEDING_1_1_test_done=false;
-			}
-		}
-	}
-
+	m_seedingData->computeSeeds();
 }
 
 void Machine::call_MASTER_MODE_TRIGGER_DETECTION(){
@@ -1420,125 +1294,6 @@ void Machine::processData(){
 	(this->*masterMethod)();
 	MachineMethod slaveMethod=m_slave_methods[m_mode];
 	(this->*slaveMethod)();
-}
-
-/*
- * check if (m_SEEDING_currentRank,m_SEEDING_currentPointer) has
- * 1 ingoing edge and 1 outgoing edge
- *
- * before entering the first call, m_SEEDING_testInitiated and m_SEEDING_1_1_test_done must be false
- *
- * outputs:
- *
- *  m_SEEDING_1_1_test_done
- *  m_SEEDING_currentChildVertex
- *  m_SEEDING_currentChildRank
- *  m_SEEDING_currentChildPointer
- *  m_SEEDING_currentParentRank
- *  m_SEEDING_currentParentPointer
- *
- *
- *  internals:
- *
- *  m_SEEDING_InedgesRequested
- *  m_SEEDING_InedgesReceived
- *  m_SEEDING_Inedge
- *  m_SEEDING_edgesRequested
- *  m_SEEDING_edgesReceived
- */
-void Machine::do_1_1_test(){
-	if(m_seedingData->m_SEEDING_1_1_test_done){
-		return;
-	}else if(!m_seedingData->m_SEEDING_testInitiated){
-		m_seedingData->m_SEEDING_testInitiated=true;
-		m_seedingData->m_SEEDING_ingoingEdgesDone=false;
-		m_seedingData->m_SEEDING_InedgesRequested=false;
-	}else if(!m_seedingData->m_SEEDING_ingoingEdgesDone){
-		if(!m_seedingData->m_SEEDING_InedgesRequested){
-			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
-			message[0]=(VERTEX_TYPE)m_seedingData->m_SEEDING_currentVertex;
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(m_seedingData->m_SEEDING_currentVertex),TAG_REQUEST_VERTEX_INGOING_EDGES,getRank());
-			m_outbox.push_back(aMessage);
-			m_seedingData->m_SEEDING_numberOfIngoingEdges=0;
-			m_seedingData->m_SEEDING_numberOfIngoingEdgesWithSeedCoverage=0;
-			m_seedingData->m_SEEDING_vertexCoverageRequested=false;
-			m_seedingData->m_SEEDING_InedgesReceived=false;
-			m_seedingData->m_SEEDING_InedgesRequested=true;
-			m_seedingData->m_SEEDING_ingoingEdgeIndex=0;
-		}else if(m_seedingData->m_SEEDING_InedgesReceived){
-			if(m_seedingData->m_SEEDING_ingoingEdgeIndex<(int)m_seedingData->m_SEEDING_receivedIngoingEdges.size()){
-				if(!m_seedingData->m_SEEDING_vertexCoverageRequested){
-					VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
-					message[0]=(VERTEX_TYPE)m_seedingData->m_SEEDING_receivedIngoingEdges[m_seedingData->m_SEEDING_ingoingEdgeIndex];
-					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0]),TAG_REQUEST_VERTEX_COVERAGE,getRank());
-					m_outbox.push_back(aMessage);
-					m_seedingData->m_SEEDING_vertexCoverageRequested=true;
-					m_seedingData->m_SEEDING_vertexCoverageReceived=false;
-					m_seedingData->m_SEEDING_receivedVertexCoverage=-1;
-				}else if(m_seedingData->m_SEEDING_vertexCoverageReceived){
-					if(m_seedingData->m_SEEDING_receivedIngoingEdges.size()==1){//there is only one anyway
-						m_seedingData->m_SEEDING_currentParentVertex=m_seedingData->m_SEEDING_receivedIngoingEdges[m_seedingData->m_SEEDING_ingoingEdgeIndex];
-					}
-					if(m_seedingData->m_SEEDING_receivedVertexCoverage>=m_seedCoverage){
-						m_seedingData->m_SEEDING_currentParentVertex=m_seedingData->m_SEEDING_receivedIngoingEdges[m_seedingData->m_SEEDING_ingoingEdgeIndex];
-						m_seedingData->m_SEEDING_numberOfIngoingEdgesWithSeedCoverage++;
-					}
-					m_seedingData->m_SEEDING_ingoingEdgeIndex++;
-					m_seedingData->m_SEEDING_numberOfIngoingEdges++;
-					m_seedingData->m_SEEDING_vertexCoverageRequested=false;
-				}
-			}else{// done analyzing ingoing edges.
-				m_seedingData->m_SEEDING_ingoingEdgesDone=true;
-				m_seedingData->m_SEEDING_outgoingEdgesDone=false;
-				m_seedingData->m_SEEDING_edgesRequested=false;
-			}
-		}
-	}else if(!m_seedingData->m_SEEDING_outgoingEdgesDone){
-		if(!m_seedingData->m_SEEDING_edgesRequested){
-			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
-			message[0]=(VERTEX_TYPE)m_seedingData->m_SEEDING_currentVertex;
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(m_seedingData->m_SEEDING_currentVertex),TAG_REQUEST_VERTEX_OUTGOING_EDGES,getRank());
-			m_outbox.push_back(aMessage);
-			m_seedingData->m_SEEDING_edgesRequested=true;
-			m_seedingData->m_SEEDING_numberOfOutgoingEdges=0;
-			m_seedingData->m_SEEDING_numberOfOutgoingEdgesWithSeedCoverage=0;
-			m_seedingData->m_SEEDING_vertexCoverageRequested=false;
-			m_seedingData->m_SEEDING_edgesReceived=false;
-			m_seedingData->m_SEEDING_outgoingEdgeIndex=0;
-		}else if(m_seedingData->m_SEEDING_edgesReceived){
-			if(m_seedingData->m_SEEDING_outgoingEdgeIndex<(int)m_seedingData->m_SEEDING_receivedOutgoingEdges.size()){
-				// TODO: don't check the coverage if there is only one
-				if(!m_seedingData->m_SEEDING_vertexCoverageRequested){
-					VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator.allocate(1*sizeof(VERTEX_TYPE));
-					message[0]=(VERTEX_TYPE)m_seedingData->m_SEEDING_receivedOutgoingEdges[m_seedingData->m_SEEDING_outgoingEdgeIndex];
-					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0]),TAG_REQUEST_VERTEX_COVERAGE,getRank());
-					m_outbox.push_back(aMessage);
-					m_seedingData->m_SEEDING_vertexCoverageRequested=true;
-					m_seedingData->m_SEEDING_vertexCoverageReceived=false;
-					m_seedingData->m_SEEDING_receivedVertexCoverage=-1;
-				}else if(m_seedingData->m_SEEDING_vertexCoverageReceived){
-					if(m_seedingData->m_SEEDING_receivedOutgoingEdges.size()==1){//there is only one anyway
-						m_seedingData->m_SEEDING_currentChildVertex=m_seedingData->m_SEEDING_receivedOutgoingEdges[m_seedingData->m_SEEDING_outgoingEdgeIndex];
-					}
-					if(m_seedingData->m_SEEDING_receivedVertexCoverage>=m_seedCoverage){
-						m_seedingData->m_SEEDING_currentChildVertex=m_seedingData->m_SEEDING_receivedOutgoingEdges[m_seedingData->m_SEEDING_outgoingEdgeIndex];
-						m_seedingData->m_SEEDING_numberOfOutgoingEdgesWithSeedCoverage++;
-					}
-					m_seedingData->m_SEEDING_outgoingEdgeIndex++;
-					m_seedingData->m_SEEDING_numberOfOutgoingEdges++;
-					m_seedingData->m_SEEDING_vertexCoverageRequested=false;
-				}
-			}else{// done analyzing ingoing edges.
-				m_seedingData->m_SEEDING_outgoingEdgesDone=true;
-			}
-		}
-
-
-	}else{
-		m_seedingData->m_SEEDING_1_1_test_done=true;
-		m_seedingData->m_SEEDING_1_1_test_result=(m_seedingData->m_SEEDING_numberOfIngoingEdgesWithSeedCoverage==1)and
-			(m_seedingData->m_SEEDING_numberOfOutgoingEdgesWithSeedCoverage==1);
-	}
 }
 
 void Machine::killRanks(){
