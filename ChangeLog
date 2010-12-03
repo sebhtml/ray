@@ -27,7 +27,8 @@ m_deviation (u16). That means storing one paired read needs 7 bytes instead of
 * 'make install' also installs documentation and examples now.
 * Moved finishFusion & makeFusion in FusionData.cpp
 * Moved seed creation in SeedingData.cpp
-
+* Now print-latex.sh, the script that calculates metrics for an assembly, uses
+only MUMmer and AMOS commands (no more BLAST).
 
 = 1.0.0 =
 2010-11-25

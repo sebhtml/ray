@@ -163,6 +163,7 @@ end
 
 system "rm #{prefix}.coords"
 system "rm #{prefix}.snps"
+system "rm #{prefix}.delta"
 
 fileOutput.puts "totalBases=#{totalBases}"
 fileOutput.puts "totalBasesNotCovered=#{totalBasesNotCovered}"
