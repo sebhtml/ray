@@ -54,8 +54,6 @@ for line in sys.stdin:
 	color="green"
 
 	full=""
-	if int(tokens[6])==count:
-		full=" <b><u>FULL !</u></b> "
 
 	if load>processors*1.03:
 		color="red"

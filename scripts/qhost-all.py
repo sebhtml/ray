@@ -2,11 +2,6 @@
 
 import sys
 
-if len(sys.argv)!=2:
-	print "Provide a SGE Job-ID."
-	sys.exit()
-
-jobId=sys.argv[1]
 import os
 from xml.dom.minidom import parse, parseString
 
@@ -26,6 +21,6 @@ for host in dom.getElementsByTagName("host"):
 			name=jobvalue.getAttribute("name")
 			value=jobvalue.childNodes[0].nodeValue
 			jobValues[name]=value
-		if job.getAttribute("name")==jobId:
-			print jobValues["queue_name"]+"\t"+jobValues["pe_master"]+"\t"+jobValues["job_name"]+"\t"+job.getAttribute("name")+"\t"+host.getAttribute("name")+"\t"+hostValues["load_avg"]+"\t"+hostValues["num_proc"]+"\t"+hostValues["mem_used"]+"\t"+hostValues["mem_total"]
+		owner=jobValues["job_owner"]
+		print jobValues["queue_name"]+"\t"+jobValues["pe_master"]+"\t"+jobValues["job_name"]+"\t"+job.getAttribute("name")+"\t"+host.getAttribute("name")+"\t"+hostValues["load_avg"]+"\t"+hostValues["num_proc"]+"\t"+hostValues["mem_used"]+"\t"+hostValues["mem_total"]
 
