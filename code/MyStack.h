@@ -23,7 +23,49 @@
 #ifndef _MyStack
 #define _MyStack
 
-template<
+template<class TYPE>
+class MyStack{
+	TYPE m_array[1024]; // maximum size 
+	int m_size;
+public:
+	TYPE top();
+	void pop();
+	int size();
+	void push(TYPE a);
+	MyStack();
+	bool empty();
+};
+
+
+template<class TYPE>
+bool MyStack<TYPE>::empty(){
+	return m_size==0;
+}
+
+template<class TYPE>
+MyStack<TYPE>::MyStack(){
+	m_size=0;
+}
+
+template<class TYPE>
+TYPE MyStack<TYPE>::top(){
+	return m_array[m_size-1];
+}
+
+template<class TYPE>
+void MyStack<TYPE>::pop(){
+	m_size--;
+}
+
+template<class TYPE>
+int MyStack<TYPE>::size(){
+	return m_size;
+}
+
+template<class TYPE>
+void MyStack<TYPE>::push(TYPE a){
+	m_array[m_size++]=a;
+}
 
 #endif
 

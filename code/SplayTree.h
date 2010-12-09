@@ -23,6 +23,7 @@
 #ifndef _SplayTree
 #define _SplayTree
 
+#include<MyStack.h>
 #include<vector>
 #include<stdlib.h>
 #include<common_functions.h>
@@ -184,8 +185,8 @@ SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::find(KEY key){
 template<class KEY,class VALUE>
 void SplayTree<KEY,VALUE>::print(){
 	cout<<"digraph{"<<endl;
-	stack<SplayNode<KEY,VALUE>*> vertices;
-	stack<int> depths;
+	MyStack<SplayNode<KEY,VALUE>*> vertices;
+	MyStack<int> depths;
 	if(m_root!=NULL){
 		vertices.push(m_root);
 		depths.push(0);

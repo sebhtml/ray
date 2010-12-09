@@ -68,8 +68,8 @@ class ScaffolderData{
 public:
 	bool m_computedTopology;
 	int m_pathId;
-	stack<int> m_depthsToVisit;
-	stack<VERTEX_TYPE> m_verticesToVisit;
+	MyStack<int> m_depthsToVisit;
+	MyStack<VERTEX_TYPE> m_verticesToVisit;
 	set<VERTEX_TYPE> m_visitedVertices;
 	bool m_processedLastVertex;
 	map<int,int> m_allIdentifiers;

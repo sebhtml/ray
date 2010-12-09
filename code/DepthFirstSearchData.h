@@ -23,6 +23,7 @@
 #define _DepthFirstSearchData
 
 #include<vector>
+#include<MyStack.h>
 #include<map>
 #include<set>
 #include<common_functions.h>
@@ -34,12 +35,12 @@ public:
 	bool m_doChoice_tips_Initiated;
 	bool m_doChoice_tips_dfs_done;
 	int m_depthFirstSearch_maxDepth;
-	stack<int> m_depthFirstSearchDepths;
+	MyStack<int> m_depthFirstSearchDepths;
 	int m_doChoice_tips_i;
 	vector<int> m_doChoice_tips_newEdges;
 	bool m_doChoice_tips_dfs_initiated;
 	set<VERTEX_TYPE> m_depthFirstSearchVisitedVertices;
-	stack<VERTEX_TYPE> m_depthFirstSearchVerticesToVisit;
+	MyStack<VERTEX_TYPE> m_depthFirstSearchVerticesToVisit;
 	vector<VERTEX_TYPE> m_depthFirstSearchVisitedVertices_vector;
 	vector<int> m_depthFirstSearchVisitedVertices_depths;
 	map<VERTEX_TYPE,int> m_coverages;

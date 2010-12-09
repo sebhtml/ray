@@ -23,6 +23,7 @@
 #ifndef _SplayTreeIterator
 #define _SplayTreeIterator
 
+#include<MyStack.h>
 #include<SplayNode.h>
 #include<SplayTree.h>
 #include<stdlib.h>
@@ -34,7 +35,7 @@
 
 template<class AVL_KEY,class AVL_VALUE>
 class SplayTreeIterator{
-	stack<SplayNode<AVL_KEY,AVL_VALUE>*>m_stack;
+	MyStack<SplayNode<AVL_KEY,AVL_VALUE>*>m_stack;
 public:
 	SplayTreeIterator(SplayTree<AVL_KEY,AVL_VALUE>*tree);
 	void constructor(SplayTree<AVL_KEY,AVL_VALUE>*tree);
@@ -55,10 +56,8 @@ SplayTreeIterator<AVL_KEY,AVL_VALUE>::SplayTreeIterator(SplayTree<AVL_KEY,AVL_VA
 
 template<class AVL_KEY,class AVL_VALUE>
 void SplayTreeIterator<AVL_KEY,AVL_VALUE>::constructor(SplayTree<AVL_KEY,AVL_VALUE>*tree){
-	SplayNode<AVL_KEY,AVL_VALUE>*node=tree->getRoot();
-	while(node!=NULL){
-		m_stack.push(node);
-		node=node->getLeft();
+	if(tree->getRoot()!=NULL){
+		m_stack.push(tree->getRoot());
 	}
 }
 
@@ -72,9 +71,11 @@ SplayNode<AVL_KEY,AVL_VALUE>*SplayTreeIterator<AVL_KEY,AVL_VALUE>::next(){
 	if(hasNext()){
 		SplayNode<AVL_KEY,AVL_VALUE>*c=m_stack.top();
 		m_stack.pop();
-		SplayNode<AVL_KEY,AVL_VALUE>*node=c->getRight();
-		if(node!=NULL){
-			m_stack.push(node);
+		if(c->getLeft()!=NULL){
+			m_stack.push(c->getLeft());
+		}
+		if(c->getRight()!=NULL){
+			m_stack.push(c->getRight());
 		}
 		return c;
 	}else{
