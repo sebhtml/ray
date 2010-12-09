@@ -26,50 +26,74 @@
 #include<MyStack.h>
 #include<SplayNode.h>
 #include<SplayTree.h>
+#include<assert.h>
 #include<stdlib.h>
 
-// based on
-// http://www.liafa.jussieu.fr/~carton/Enseignement/Algorithmique/LicenceMathInfo/Programmation/Tree/parcours.html
-// http://www.liafa.jussieu.fr/~carton/Enseignement/Algorithmique/Programmation/Tree/Sources/Tree.java
-// iterator infixe (from the lowest to the greatest.)
-
-template<class AVL_KEY,class AVL_VALUE>
+template<class TREE_KEY_TYPE,class TREE_VALUE_TYPE>
 class SplayTreeIterator{
-	MyStack<SplayNode<AVL_KEY,AVL_VALUE>*>m_stack;
+	MyStack<SplayNode<TREE_KEY_TYPE,TREE_VALUE_TYPE>*>m_stack;
+	SplayTree<TREE_KEY_TYPE,TREE_VALUE_TYPE>*m_tree;
+	int m_processed;
+	int m_id;
+	int m_rank;
+	int m_treeSize;
 public:
-	SplayTreeIterator(SplayTree<AVL_KEY,AVL_VALUE>*tree);
-	void constructor(SplayTree<AVL_KEY,AVL_VALUE>*tree);
+	SplayTreeIterator(SplayTree<TREE_KEY_TYPE,TREE_VALUE_TYPE>*tree);
+	void constructor(SplayTree<TREE_KEY_TYPE,TREE_VALUE_TYPE>*tree);
 	SplayTreeIterator();
-	bool hasNext();
-	SplayNode<AVL_KEY,AVL_VALUE>*next();
+	bool hasNext() const;
+	SplayNode<TREE_KEY_TYPE,TREE_VALUE_TYPE>*next();
+	void setId(int a);
+	void setRank(int i);
 };
 
 
-template<class AVL_KEY,class AVL_VALUE>
-SplayTreeIterator<AVL_KEY,AVL_VALUE>::SplayTreeIterator(){
+template<class TREE_KEY_TYPE,class TREE_VALUE_TYPE>
+SplayTreeIterator<TREE_KEY_TYPE,TREE_VALUE_TYPE>::SplayTreeIterator(){
+	m_tree=NULL;
+	m_processed=-1;
+	m_id=-1;
+	m_treeSize=-1;
 }
 
-template<class AVL_KEY,class AVL_VALUE>
-SplayTreeIterator<AVL_KEY,AVL_VALUE>::SplayTreeIterator(SplayTree<AVL_KEY,AVL_VALUE>*tree){
+template<class TREE_KEY_TYPE,class TREE_VALUE_TYPE>
+SplayTreeIterator<TREE_KEY_TYPE,TREE_VALUE_TYPE>::SplayTreeIterator(SplayTree<TREE_KEY_TYPE,TREE_VALUE_TYPE>*tree){
 	constructor(tree);
 }
 
-template<class AVL_KEY,class AVL_VALUE>
-void SplayTreeIterator<AVL_KEY,AVL_VALUE>::constructor(SplayTree<AVL_KEY,AVL_VALUE>*tree){
-	if(tree->getRoot()!=NULL){
+template<class TREE_KEY_TYPE,class TREE_VALUE_TYPE>
+void SplayTreeIterator<TREE_KEY_TYPE,TREE_VALUE_TYPE>::constructor(SplayTree<TREE_KEY_TYPE,TREE_VALUE_TYPE>*tree){
+	#ifdef ASSERT
+	assert(m_stack.size()==0);
+	#endif
+	m_tree=tree;
+	m_processed=0;
+	m_treeSize=m_tree->size();
+	if(m_tree!=NULL && m_tree->getRoot()!=NULL){
+		//cout<<"Root is "<<m_tree->getRoot()->getKey()<<endl;
 		m_stack.push(tree->getRoot());
 	}
 }
 
-template<class AVL_KEY,class AVL_VALUE>
-bool SplayTreeIterator<AVL_KEY,AVL_VALUE>::hasNext(){
+template<class TREE_KEY_TYPE,class TREE_VALUE_TYPE>
+bool SplayTreeIterator<TREE_KEY_TYPE,TREE_VALUE_TYPE>::hasNext()const{
+	#ifdef ASSERT
+	if(m_stack.size()==0 && m_tree!=NULL){
+		if(m_processed!=(int)m_tree->size()){
+			//cout<<"Second version."<<endl;
+			cout<<"Rank="<<m_rank<<" id="<<m_id<<" Processed="<<m_processed<<" Tree="<<m_tree->size()<<" onRecord="<<m_treeSize<<endl;
+			//m_tree->print();
+		}
+		assert(m_processed==(int)m_tree->size());
+	}
+	#endif
 	return m_stack.size()>0;
 }
 
-template<class AVL_KEY,class AVL_VALUE>
-SplayNode<AVL_KEY,AVL_VALUE>*SplayTreeIterator<AVL_KEY,AVL_VALUE>::next(){
+template<class TREE_KEY_TYPE,class TREE_VALUE_TYPE>
+SplayNode<TREE_KEY_TYPE,TREE_VALUE_TYPE>*SplayTreeIterator<TREE_KEY_TYPE,TREE_VALUE_TYPE>::next(){
 	if(hasNext()){
-		SplayNode<AVL_KEY,AVL_VALUE>*c=m_stack.top();
+		SplayNode<TREE_KEY_TYPE,TREE_VALUE_TYPE>*c=m_stack.top();
 		m_stack.pop();
 		if(c->getLeft()!=NULL){
 			m_stack.push(c->getLeft());
@@ -77,12 +101,21 @@ SplayNode<AVL_KEY,AVL_VALUE>*SplayTreeIterator<AVL_KEY,AVL_VALUE>::next(){
 		if(c->getRight()!=NULL){
 			m_stack.push(c->getRight());
 		}
+		m_processed++;
 		return c;
 	}else{
 		return NULL;
 	}
 }
 
+template<class TREE_KEY_TYPE,class TREE_VALUE_TYPE>
+void SplayTreeIterator<TREE_KEY_TYPE,TREE_VALUE_TYPE>::setId(int a){
+	m_id=a;
+}
 
+template<class TREE_KEY_TYPE,class TREE_VALUE_TYPE>
+void SplayTreeIterator<TREE_KEY_TYPE,TREE_VALUE_TYPE>::setRank(int rank){
+	m_rank=rank;
+}
 
 #endif

@@ -62,11 +62,7 @@ bool MyForest::inserted(){
 }
 
 void MyForest::freeze(){
-	for(int i=0;i<m_numberOfTrees;i++)
+	for(int i=0;i<m_numberOfTrees;i++){
 		m_trees[i].freeze();
-
-	#ifdef SHOW_FOREST
-	for(int i=0;i<m_numberOfTrees;i++)
-		cout<<"Tree "<<i<<" has "<<m_trees[i].size()<<" items."<<endl;
-	#endif
+	}
 }

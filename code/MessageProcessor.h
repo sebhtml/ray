@@ -241,7 +241,6 @@ SequencesIndexer*m_si
 	void call_TAG_ASK_READ_LENGTH(Message*message);
 	void call_TAG_ASK_READ_LENGTH_REPLY(Message*message);
 	void call_TAG_SAVE_WAVE_PROGRESSION(Message*message);
-	void call_TAG_COPY_DIRECTIONS(Message*message);
 	void call_TAG_ASSEMBLE_WAVES(Message*message);
 	void call_TAG_SAVE_WAVE_PROGRESSION_REVERSE(Message*message);
 	void call_TAG_ASSEMBLE_WAVES_DONE(Message*message);

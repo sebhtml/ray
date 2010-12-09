@@ -296,6 +296,8 @@ void MessageProcessor::call_TAG_START_EDGES_DISTRIBUTION_ANSWER(Message*message)
 }
 
 void MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION(Message*message){
+	// freeze the forest. icy winter ahead.
+	m_subgraph->freeze();
 	int source=message->getSource();
 	printf("Rank %i has %i vertices\n",rank,(int)m_subgraph->size());
 	fflush(stdout);
@@ -363,15 +365,18 @@ void MessageProcessor::call_TAG_START_SEEDING(Message*message){
 	assert(m_subgraph!=NULL);
 	#endif
 
+	int size=0;
 	for(int i=0;i<m_subgraph->getNumberOfTrees();i++){
 		SplayTreeIterator<VERTEX_TYPE,Vertex> seedingIterator(m_subgraph->getTree(i));
 		while(seedingIterator.hasNext()){
+			size++;
 			SplayNode<VERTEX_TYPE,Vertex>*node=seedingIterator.next();
 			edgesDistribution[node->getValue()->getIngoingEdges(node->getKey(),(*m_wordSize)).size()][node->getValue()->getOutgoingEdges(node->getKey(),(*m_wordSize)).size()]++;
-			(m_seedingData->m_SEEDING_nodes).push_back(node->getKey());
+			//(m_seedingData->m_SEEDING_nodes).push_back(node->getKey());
 		}
 	}
 	#ifdef ASSERT
+	assert(m_subgraph->size()==size);
 	//cout<<"Ingoing and outgoing edges."<<endl;
 	for(map<int,map<int,int> >::iterator i=edgesDistribution.begin();i!=edgesDistribution.end();++i){
 		for(map<int,int>::iterator j=i->second.begin();j!=i->second.end();++j){
@@ -379,8 +384,6 @@ void MessageProcessor::call_TAG_START_SEEDING(Message*message){
 		}
 	}
 	#endif
-	(m_seedingData->m_SEEDING_NodeInitiated)=false;
-	(m_seedingData->m_SEEDING_i)=0;
 }
 
 void MessageProcessor::call_TAG_REQUEST_VERTEX_COVERAGE(Message*message){
@@ -860,18 +863,6 @@ void MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 
 void MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION_REPLY(Message*message){
 	m_fusionData->setReadiness();
-}
-
-void MessageProcessor::call_TAG_COPY_DIRECTIONS(Message*message){
-	(*m_mode)=MODE_COPY_DIRECTIONS;
-	for(int i=0;i<m_subgraph->getNumberOfTrees();i++){
-		SplayTreeIterator<VERTEX_TYPE,Vertex> seedingIterator(m_subgraph->getTree(i));
-		while(seedingIterator.hasNext()){
-			SplayNode<VERTEX_TYPE,Vertex>*node=seedingIterator.next();
-			(m_seedingData->m_SEEDING_nodes).push_back(node->getKey());
-		}
-	}
-	(m_seedingData->m_SEEDING_i)=0;
 }
 
 void MessageProcessor::call_TAG_ASSEMBLE_WAVES(Message*message){
@@ -1416,7 +1407,6 @@ MessageProcessor::MessageProcessor(){
 	m_methods[TAG_SAVE_WAVE_PROGRESSION]=&MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION;
 	m_methods[TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY]=&MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY;
 	m_methods[TAG_SAVE_WAVE_PROGRESSION_REPLY]=&MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION_REPLY;
-	m_methods[TAG_COPY_DIRECTIONS]=&MessageProcessor::call_TAG_COPY_DIRECTIONS;
 	m_methods[TAG_ASSEMBLE_WAVES]=&MessageProcessor::call_TAG_ASSEMBLE_WAVES;
 	m_methods[TAG_SAVE_WAVE_PROGRESSION_REVERSE]=&MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION_REVERSE;
 	m_methods[TAG_ASSEMBLE_WAVES_DONE]=&MessageProcessor::call_TAG_ASSEMBLE_WAVES_DONE;

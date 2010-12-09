@@ -90,7 +90,7 @@ using namespace std;
 
 #define MASTER_RANK 0x0
 
-#define _FOREST_SIZE 0x1000
+#define _FOREST_SIZE 1 // 16384
 
 // allocators size
 // for MPI communications, memory is allocated and freed with OUTBOX_ALLOCATOR_CHUNK_SIZE and INBOX_ALLOCATOR_CHUNK_SIZE

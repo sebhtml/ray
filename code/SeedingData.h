@@ -37,7 +37,7 @@ using namespace std;
 
 class SeedingData{
 	bool m_initialized;
-
+	bool m_initiatedIterator;
 	bool*m_colorSpaceMode;
 	int m_rank;
 	int m_size;
@@ -48,8 +48,11 @@ class SeedingData{
 	int*m_wordSize;
 	Parameters*m_parameters;
 	MyForest*m_subgraph;
-	
+	int m_currentTreeIndex;
+	SplayTreeIterator<VERTEX_TYPE,Vertex> m_splayTreeIterator;
+
 public:
+	SeedingData();
 	SplayTreeIterator<VERTEX_TYPE,Vertex>*m_SEEDING_iterator;
 	SplayNode<VERTEX_TYPE,Vertex>*m_SEEDING_node;
 	bool m_SEEDING_edgesReceived;
@@ -58,7 +61,6 @@ public:
 	VERTEX_TYPE m_SEEDING_currentParentVertex;
 	VERTEX_TYPE m_SEEDING_receivedKey;
 	bool m_SEEDING_vertexKeyAndCoverageReceived;
-	vector<VERTEX_TYPE> m_SEEDING_nodes;
 	VERTEX_TYPE m_SEEDING_first;
 	int m_SEEDING_receivedVertexCoverage;
 	bool m_SEEDING_vertexCoverageReceived;

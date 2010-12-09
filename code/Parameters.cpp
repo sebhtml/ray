@@ -368,7 +368,6 @@ void Parameters::parseCommands(){
 	}
 	if(m_rank==MASTER_RANK){
 		cout<<" --> Number of k-mers of size "<<m_wordSize<<": "<<result<<endl;
-		cout<<"  *** Note: A lower k-mer size bounds the memory usage. ***"<<endl;
 		cout<<endl;
 	}
 }

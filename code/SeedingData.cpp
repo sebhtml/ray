@@ -24,28 +24,82 @@
 #include<Message.h>
 
 void SeedingData::computeSeeds(){
-	// assign a first vertex
-	if(!m_SEEDING_NodeInitiated){
-		if(m_SEEDING_i==(int)m_subgraph->size()-1){
+	if(!m_initiatedIterator){
+		#ifdef ASSERT
+		SplayTreeIterator<VERTEX_TYPE,Vertex> iter0;
+		iter0.constructor(m_subgraph->getTree(0));
+		int n=m_subgraph->getTree(0)->size();
+		int oo=0;
+		while(iter0.hasNext()){
+			iter0.next();
+			oo++;
+		}
+		assert(n==oo);
+		//cout<<"N="<<n<<endl;
+		#endif
 
+		m_SEEDING_i=0;
+		m_currentTreeIndex=0;
+
+		#ifdef ASSERT
+		assert(!m_splayTreeIterator.hasNext());
+		#endif
+
+		m_splayTreeIterator.constructor(m_subgraph->getTree(m_currentTreeIndex));
+		m_splayTreeIterator.setId(m_currentTreeIndex);
+		m_splayTreeIterator.setRank(getRank());
+		m_SEEDING_NodeInitiated=false;
+		m_initiatedIterator=true;
+
+		#ifdef ASSERT
+		m_splayTreeIterator.hasNext();
+		#endif
+	}
+	// assign a first vertex
+	else if(!m_SEEDING_NodeInitiated){
+		if(m_SEEDING_i==(int)m_subgraph->size()){
 			(*m_mode)=MODE_DO_NOTHING;
 			printf("Rank %i is creating seeds %i/%i (completed)\n",getRank(),(int)m_SEEDING_i+1,(int)m_subgraph->size());
 			fflush(stdout);
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_SEEDING_IS_OVER,getRank());
-			m_SEEDING_nodes.clear();
 			m_outbox->push_back(aMessage);
+		}else if(!m_splayTreeIterator.hasNext()){
+			m_currentTreeIndex++;
+			#ifdef ASSERT
+			assert(m_SEEDING_i<m_subgraph->size());
+			assert(m_currentTreeIndex<m_subgraph->getNumberOfTrees());
+			#endif
+
+			#ifdef ASSERT
+			assert(m_subgraph->getNumberOfTrees()>1);
+			#endif
+
+			m_splayTreeIterator.constructor(m_subgraph->getTree(m_currentTreeIndex));
+			m_splayTreeIterator.setId(m_currentTreeIndex);
+			m_splayTreeIterator.setRank(getRank());
 		}else{
 			if(m_SEEDING_i % 100000 ==0){
 				printf("Rank %i is creating seeds %i/%i\n",getRank(),(int)m_SEEDING_i+1,(int)m_subgraph->size());
 				fflush(stdout);
 			}
-			m_SEEDING_currentVertex=m_SEEDING_nodes[m_SEEDING_i];
+			#ifdef ASSERT
+			assert(m_splayTreeIterator.hasNext());
+			#endif
+
+			//cout<<"Calling next SeedingI="<<m_SEEDING_i<<endl;
+			SplayNode<VERTEX_TYPE,Vertex>*node=m_splayTreeIterator.next();
+			m_SEEDING_currentVertex=node->getKey();
+
 			m_SEEDING_first=m_SEEDING_currentVertex;
 			m_SEEDING_testInitiated=false;
 			m_SEEDING_1_1_test_done=false;
 			m_SEEDING_i++;
 			m_SEEDING_NodeInitiated=true;
 			m_SEEDING_firstVertexTestDone=false;
+
+			#ifdef ASSERT
+			m_splayTreeIterator.hasNext();
+			#endif
 		}
 	// check that this node has 1 ingoing edge and 1 outgoing edge.
 	}else if(!m_SEEDING_firstVertexTestDone){
@@ -262,6 +316,7 @@ void SeedingData::constructor(SeedExtender*seedExtender,int rank,int size,Static
 	m_wordSize=wordSize;
 	m_subgraph=subgraph;
 	m_colorSpaceMode=colorSpaceMode;
+	m_initiatedIterator=false;
 }
 
 int SeedingData::getRank(){
@@ -270,4 +325,7 @@ int SeedingData::getRank(){
 
 int SeedingData::getSize(){
 	return m_size;
+}
+
+SeedingData::SeedingData(){
 }

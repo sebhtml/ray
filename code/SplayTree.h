@@ -215,14 +215,15 @@ void SplayTree<KEY,VALUE>::print(){
 
 template<class KEY,class VALUE>
 void SplayTree<KEY,VALUE>::freeze(){
-	#ifdef SHOW_FREEZE
-	cout<<"Freezing splay tree."<<endl;
-	#endif
 	m_frozen=true;
 }
 
 template<class KEY,class VALUE>
 void SplayTree<KEY,VALUE>::splay(KEY key){
+	#ifdef ASSERT
+	assert(!m_frozen);
+	#endif
+
 	SplayNode<KEY,VALUE> header;
 	SplayNode<KEY,VALUE>*l;
 	SplayNode<KEY,VALUE>*r;

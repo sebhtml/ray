@@ -32,7 +32,6 @@ using namespace std;
 template<class KEY,class VALUE>
 class SplayNode{
 public:
-
 	KEY m_key;
 	VALUE m_value;
 	SplayNode<KEY,VALUE>*m_left;
@@ -41,11 +40,10 @@ public:
 	SplayNode();
 	void setLeft(SplayNode<KEY,VALUE>*vertex);
 	void setRight(SplayNode<KEY,VALUE>*vertex);
-	KEY getKey();
+	KEY getKey()const;
 	void init(KEY key);
-	SplayNode<KEY,VALUE>*getLeft();
-	SplayNode<KEY,VALUE>*getRight();
-	SplayNode<KEY,VALUE>*getParent();
+	SplayNode<KEY,VALUE>*getLeft()const;
+	SplayNode<KEY,VALUE>*getRight()const;
 	VALUE*getValue();
 	void setValue(VALUE v);
 };
@@ -61,12 +59,12 @@ void SplayNode<KEY,VALUE>::setValue(VALUE v){
 }
 
 template<class KEY,class VALUE>
-SplayNode<KEY,VALUE>*SplayNode<KEY,VALUE>::getRight(){
+SplayNode<KEY,VALUE>*SplayNode<KEY,VALUE>::getRight()const{
 	return m_right;
 }
 
 template<class KEY,class VALUE>
-SplayNode<KEY,VALUE>*SplayNode<KEY,VALUE>::getLeft(){
+SplayNode<KEY,VALUE>*SplayNode<KEY,VALUE>::getLeft()const{
 	return m_left;
 }
 
@@ -79,7 +77,7 @@ void SplayNode<KEY,VALUE>::init(KEY key){
 }
 
 template<class KEY,class VALUE>
-KEY SplayNode<KEY,VALUE>::getKey(){
+KEY SplayNode<KEY,VALUE>::getKey()const{
 	return m_key;
 }
 

@@ -23,22 +23,26 @@
 #ifndef _MyStack
 #define _MyStack
 
+#include<assert.h>
+
+#define _MAX_STACK_SIZE 1024
+
 template<class TYPE>
 class MyStack{
-	TYPE m_array[1024]; // maximum size 
+	TYPE m_array[_MAX_STACK_SIZE]; // maximum size 
 	int m_size;
 public:
-	TYPE top();
+	TYPE top()const;
 	void pop();
-	int size();
+	int size()const;
 	void push(TYPE a);
 	MyStack();
-	bool empty();
+	bool empty()const;
 };
 
 
 template<class TYPE>
-bool MyStack<TYPE>::empty(){
+bool MyStack<TYPE>::empty()const{
 	return m_size==0;
 }
 
@@ -48,7 +52,7 @@ MyStack<TYPE>::MyStack(){
 }
 
 template<class TYPE>
-TYPE MyStack<TYPE>::top(){
+TYPE MyStack<TYPE>::top()const{
 	return m_array[m_size-1];
 }
 
@@ -58,12 +62,15 @@ void MyStack<TYPE>::pop(){
 }
 
 template<class TYPE>
-int MyStack<TYPE>::size(){
+int MyStack<TYPE>::size() const{
 	return m_size;
 }
 
 template<class TYPE>
 void MyStack<TYPE>::push(TYPE a){
+	#ifdef ASSERT
+	assert(m_size!=_MAX_STACK_SIZE);
+	#endif
 	m_array[m_size++]=a;
 }
 
