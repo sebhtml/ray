@@ -54,7 +54,6 @@
 #include<Parameters.h>
 #include<MyAllocator.h>
 #include<mpi.h>
-#include<stack>
 #include<VerticesExtractor.h>
 
 

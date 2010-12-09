@@ -29,7 +29,6 @@
 #include<SplayNode.h>
 #include<iostream>
 #include<MyAllocator.h>
-#include<stack>
 using namespace std;
 
 

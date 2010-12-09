@@ -55,8 +55,10 @@ SplayTreeIterator<AVL_KEY,AVL_VALUE>::SplayTreeIterator(SplayTree<AVL_KEY,AVL_VA
 
 template<class AVL_KEY,class AVL_VALUE>
 void SplayTreeIterator<AVL_KEY,AVL_VALUE>::constructor(SplayTree<AVL_KEY,AVL_VALUE>*tree){
-	for(SplayNode<AVL_KEY,AVL_VALUE>*node=tree->getRoot();node!=NULL;node=node->getLeft()){
+	SplayNode<AVL_KEY,AVL_VALUE>*node=tree->getRoot();
+	while(node!=NULL){
 		m_stack.push(node);
+		node=node->getLeft();
 	}
 }
 
@@ -70,7 +72,8 @@ SplayNode<AVL_KEY,AVL_VALUE>*SplayTreeIterator<AVL_KEY,AVL_VALUE>::next(){
 	if(hasNext()){
 		SplayNode<AVL_KEY,AVL_VALUE>*c=m_stack.top();
 		m_stack.pop();
-		for(SplayNode<AVL_KEY,AVL_VALUE>*node=c->getRight();node!=NULL;node=node->getLeft()){
+		SplayNode<AVL_KEY,AVL_VALUE>*node=c->getRight();
+		if(node!=NULL){
 			m_stack.push(node);
 		}
 		return c;

@@ -22,7 +22,6 @@
 #ifndef _DepthFirstSearchData
 #define _DepthFirstSearchData
 
-#include<stack>
 #include<vector>
 #include<map>
 #include<set>

@@ -41,7 +41,6 @@ public:
 	SplayNode();
 	void setLeft(SplayNode<KEY,VALUE>*vertex);
 	void setRight(SplayNode<KEY,VALUE>*vertex);
-	void setParent(SplayNode<KEY,VALUE>*vertex);
 	KEY getKey();
 	void init(KEY key);
 	SplayNode<KEY,VALUE>*getLeft();
@@ -87,16 +86,12 @@ KEY SplayNode<KEY,VALUE>::getKey(){
 template<class KEY,class VALUE>
 void SplayNode<KEY,VALUE>::setLeft(SplayNode<KEY,VALUE>*vertex){
 	m_left=vertex;
-	if(vertex!=NULL)
-		vertex->setParent(this);
 }
 
 
 template<class KEY,class VALUE>
 void SplayNode<KEY,VALUE>::setRight(SplayNode<KEY,VALUE>*vertex){
 	m_right=vertex;
-	if(vertex!=NULL)
-		vertex->setParent(this);
 }
 
 template<class KEY,class VALUE>
