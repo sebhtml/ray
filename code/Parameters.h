@@ -41,6 +41,7 @@ using namespace std;
  */
 class Parameters{
 	int m_rank;
+	int m_peakCoverage;
 
 	int m_libraryAverageLength[MAXIMUM_NUMBER_OF_LIBRARIES];
 	int m_libraryDeviation[MAXIMUM_NUMBER_OF_LIBRARIES];
@@ -110,7 +111,8 @@ public:
 	int getLibrary(int file);
 	void printFinalMessage();
 	bool isInterleavedFile(int i);
-
+	void setPeakCoverage(int a);
+	int getPeakCoverage();
 	void addLibraryData(int library,int average,int deviation);
 	int getNumberOfLibraries();
 };

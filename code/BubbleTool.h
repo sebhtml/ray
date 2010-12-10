@@ -24,11 +24,24 @@
 
 #include<vector>
 #include<common_functions.h>
+#include<map>
+#include<Parameters.h>
 using namespace std;
 
 class BubbleTool{
+	map<int,double> m_chiSquaredTableAt0Point05;
+	Parameters*m_parameters;
+	VERTEX_TYPE m_choice;
+
+	void printStuff(VERTEX_TYPE root, vector<vector<VERTEX_TYPE> >*trees,
+map<VERTEX_TYPE,int>*coverages);
+
 public:
-	bool isGenuineBubble(VERTEX_TYPE root, vector<vector<VERTEX_TYPE> >*trees);
+	bool isGenuineBubble(VERTEX_TYPE root, vector<vector<VERTEX_TYPE> >*trees,
+map<VERTEX_TYPE,int>*coverages);
+	void constructor(Parameters*p);
+
+	VERTEX_TYPE getTraversalStartingPoint();
 };
 
 #endif

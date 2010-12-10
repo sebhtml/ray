@@ -9,6 +9,10 @@ storing them in an array (takes too much memory).
 that as usual, each MPI rank has its own forest. Furthermore, the forest freezes when vertices distribution is properly
 finished -- which means no more splaying in the splay trees is to occur. The process
 ensures that vertices with low redundancy remain at leaves.
+* Bubble traversal based on Chi-square test ensures no misassemblies as
+polymorphic positions (substitution, and indels) are assembled !!!
+* Now works on 454 data too (Ray sees 454 reproducible homopolymer errors as
+polymorphisms.)
 
 
 = 1.2.0 =

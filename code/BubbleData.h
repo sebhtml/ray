@@ -28,6 +28,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<set>
+using namespace std;
 
 /*
  * put some members in this class or else g++ don't like it. it makes otherwise the program segfault!
@@ -41,7 +42,7 @@ public:
 	bool m_doChoice_bubbles_Detected;
 	bool m_doChoice_bubbles_Initiated;
 	std::vector<std::vector<int> > m_BUBBLE_visitedVerticesDepths;
-	std::vector<std::map<VERTEX_TYPE,int> > m_coverages;
+	map<VERTEX_TYPE,int> m_coverages;
 	FILE*m_amos;
 };
 

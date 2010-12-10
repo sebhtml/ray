@@ -53,6 +53,7 @@ int Loader::load(string file,bool isGenome){
 
 	if(isGenome){
 		m_fasta.load(file,&m_reads,&m_allocator);
+		m_size=m_reads.size();
 		return EXIT_SUCCESS;
 	}
 

@@ -66,7 +66,7 @@ using namespace std;
 
 #define __max(a,b) (((a)>(b)) ? (a) : (b))
 
-#define MAX_DEPTH 200
+#define MAX_DEPTH 60
 #define MAX_VERTICES_TO_VISIT 500
 #define TIP_LIMIT 40
 #define _MINIMUM_COVERAGE 2

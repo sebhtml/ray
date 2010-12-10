@@ -46,6 +46,9 @@ int main(int argc,char**argv){
 	l.load(genomeFile,true);
 	if(l.size()==0)
 		return 0;
+
+	cout<<"Sequences: "<<l.size()<<endl;
+
 	int coverage=atoi(argv[3]);
 
 	char theName[4024];
@@ -66,6 +69,7 @@ int main(int argc,char**argv){
 	int theReadNumber=0;
 	for(int i=0;i<(int)l.size();i++){
 		string sequence=l.at(i)->getSeq();
+		cout<<"Length="<<sequence.length()<<endl;
 		int numberOfReads=sequence.length()*coverage/(2*readSize);
 		for(int j=0;j<numberOfReads;j++){
 			if(j%1000==0){

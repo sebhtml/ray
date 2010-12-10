@@ -459,7 +459,6 @@ bool Parameters::getError(){
 	return m_error;
 }
 
-
 void Parameters::addDistance(int library,int distance,int count){
 	//cout<<"addDistance "<<library<<" "<<distance<<" "<<count<<endl;
 	m_observedDistances[library][distance]+=count;
@@ -473,7 +472,6 @@ string Parameters::getLibraryFile(int library){
 }
 
 void Parameters::computeAverageDistances(){
-	cout<<"computeAverageDistances"<<endl;
 	cout<<endl;
 	for(int i=0;i<(int)m_observedDistances.size();i++){
 		u64 sum=0;
@@ -561,4 +559,12 @@ void Parameters::printFinalMessage(){
 	for(int i=0;i<(int)m_observedDistances.size();i++){
 		cout<<"Rank "<<MASTER_RANK<<" wrote "<<getLibraryFile(i)<<endl;
 	}
+}
+
+void Parameters::setPeakCoverage(int a){
+	m_peakCoverage=a;
+}
+
+int Parameters::getPeakCoverage(){
+	return m_peakCoverage;
 }

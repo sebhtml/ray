@@ -49,6 +49,7 @@ class SeedExtender{
 	map<u64,char> m_readsStrands;
 	set<u64> m_eliminatedSeeds;
 	Parameters*m_parameters;
+	BubbleTool m_bubbleTool;
 
 public:
 

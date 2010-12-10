@@ -537,6 +537,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 				bubbleData->m_visitedVertices.clear();
 				bubbleData->m_BUBBLE_visitedVerticesDepths.clear();
 				bubbleData->m_coverages.clear();
+			bubbleData->m_coverages[(*currentVertex)]=ed->m_currentCoverage;
 			}
 
 			if(dfsData->m_doChoice_tips_i<(int)ed->m_enumerateChoices_outgoingEdges.size()){
@@ -566,7 +567,10 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 						bubbleData->m_visitedVertices.push_back(dfsData->m_depthFirstSearchVisitedVertices);
 						// store visited vertices for bubble detection purposes.
 						bubbleData->m_BUBBLE_visitedVertices.push_back(dfsData->m_depthFirstSearchVisitedVertices_vector);
-						bubbleData->m_coverages.push_back(dfsData->m_coverages);
+						for(map<VERTEX_TYPE,int>::iterator i=dfsData->m_coverages.begin();
+							i!=dfsData->m_coverages.end();i++){
+							bubbleData->m_coverages[i->first]=i->second;
+						}
 						bubbleData->m_BUBBLE_visitedVerticesDepths.push_back(dfsData->m_depthFirstSearchVisitedVertices_depths);
 					}else{
 						#ifdef SHOW_PROGRESS_DEBUG
@@ -615,13 +619,15 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			return;
 		// bubbles detection aims polymorphisms and homopolymers stretches.
 		}else if(!bubbleData->m_doChoice_bubbles_Detected and ed->m_EXTENSION_readsInRange.size()>0){
-			BubbleTool tool;
-			bool isGenuineBubble=tool.isGenuineBubble((*currentVertex),&bubbleData->m_BUBBLE_visitedVertices);
+			
+			bool isGenuineBubble=m_bubbleTool.isGenuineBubble((*currentVertex),&bubbleData->m_BUBBLE_visitedVertices,
+				&bubbleData->m_coverages);
 
 			// support indels of 1 as well as mismatch polymorphisms.
 			if(isGenuineBubble){
-				cout<<"Forcing next choice "<<endl;
-				(*currentVertex)=ed->m_enumerateChoices_outgoingEdges[dfsData->m_doChoice_tips_newEdges[0]];
+
+				(*currentVertex)=m_bubbleTool.getTraversalStartingPoint();
+
 				ed->m_EXTENSION_choose=true;
 				ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 				ed->m_EXTENSION_directVertexDone=false;
@@ -1009,4 +1015,5 @@ set<u64>*SeedExtender::getEliminatedSeeds(){
 
 void SeedExtender::constructor(Parameters*parameters){
 	m_parameters=parameters;
+	m_bubbleTool.constructor(parameters);
 }
