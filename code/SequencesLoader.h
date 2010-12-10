@@ -38,6 +38,7 @@ using namespace std;
 class SequencesLoader{
 	BufferedData m_bufferedData;
 
+	int m_lastPrintedId;
 	int m_distribution_currentSequenceId;
 	int m_distribution_file_id;
 	int m_distribution_sequence_id;

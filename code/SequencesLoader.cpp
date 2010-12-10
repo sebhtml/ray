@@ -165,8 +165,9 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			(m_distribution_sequence_id)++;
 		}
 
-		if((m_distribution_sequence_id)%100000==0){
+		if((m_distribution_sequence_id)%100000==0 && m_distribution_sequence_id!=m_lastPrintedId){
 			cout<<"Rank "<<rank<<" is assigning sequence reads "<<(m_distribution_sequence_id)+1<<"/"<<m_loader.size()<<endl;
+			m_lastPrintedId=m_distribution_sequence_id;
 		}
 	}else if(m_send_sequences_done){
 		#ifdef ASSERT
@@ -329,6 +330,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 }
 
 SequencesLoader::SequencesLoader(){
+	m_lastPrintedId=-1;
 	m_distribution_file_id=m_distribution_sequence_id=m_distribution_currentSequenceId=0;
 	m_waitingNumber=0;
 	m_produced=0;
