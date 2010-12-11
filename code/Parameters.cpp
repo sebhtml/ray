@@ -366,10 +366,6 @@ void Parameters::parseCommands(){
 	for(int p=0;p<m_wordSize;p++){
 		result*=4;
 	}
-	if(m_rank==MASTER_RANK){
-		cout<<" --> Number of k-mers of size "<<m_wordSize<<": "<<result<<endl;
-		cout<<endl;
-	}
 }
 
 void Parameters::constructor(int argc,char**argv,int rank){
