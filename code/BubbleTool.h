@@ -33,8 +33,6 @@ class BubbleTool{
 	Parameters*m_parameters;
 	VERTEX_TYPE m_choice;
 
-	void printStuff(VERTEX_TYPE root, vector<vector<VERTEX_TYPE> >*trees,
-map<VERTEX_TYPE,int>*coverages);
 
 public:
 	bool isGenuineBubble(VERTEX_TYPE root, vector<vector<VERTEX_TYPE> >*trees,
@@ -42,6 +40,9 @@ map<VERTEX_TYPE,int>*coverages);
 	void constructor(Parameters*p);
 
 	VERTEX_TYPE getTraversalStartingPoint();
+
+	void printStuff(VERTEX_TYPE root, vector<vector<VERTEX_TYPE> >*trees,
+map<VERTEX_TYPE,int>*coverages);
 };
 
 #endif

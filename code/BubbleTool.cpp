@@ -30,9 +30,15 @@ using namespace std;
 void BubbleTool::printStuff(VERTEX_TYPE root,vector<vector<VERTEX_TYPE> >*trees,
 map<VERTEX_TYPE,int>*coverages){
 	int m_wordSize=m_parameters->getWordSize();
+	cout<<"Trees="<<trees->size()<<endl;
+	cout<<"root="<<idToWord(root,m_wordSize)<<endl;
+	if(trees->size()==2){
+		cout<<"b1="<<idToWord(trees->at(0).at(0),m_wordSize)<<endl;
+		cout<<"b2="<<idToWord(trees->at(1).at(0),m_wordSize)<<endl;
+	}
 	cout<<"digraph{"<<endl;
 	map<VERTEX_TYPE,set<VERTEX_TYPE> > printedEdges;
-
+	
 	for(map<VERTEX_TYPE,int>::iterator i=coverages->begin();i!=coverages->end();i++){
 		cout<<idToWord(i->first,m_wordSize)<<" [label=\""<<idToWord(i->first,m_wordSize)<<" "<<i->second<<"\"]"<<endl;
 	}
@@ -57,6 +63,20 @@ map<VERTEX_TYPE,int>*coverages){
  */
 bool BubbleTool::isGenuineBubble(VERTEX_TYPE root,vector<vector<VERTEX_TYPE> >*trees,
 map<VERTEX_TYPE,int>*coverages){
+	int m_wordSize=m_parameters->getWordSize();
+
+	#ifdef ASSERT
+	for(int i=0;i<(int)trees->size();i++){
+		for(int j=0;j<(int)trees->at(i).size();j+=2){
+			VERTEX_TYPE a=trees->at(i).at(j+0);
+			VERTEX_TYPE b=trees->at(i).at(j+1);
+			string as=idToWord(a,m_wordSize);
+			string bs=idToWord(b,m_wordSize);
+			assert(as.substr(1,m_wordSize-1)==bs.substr(0,m_wordSize-1));
+		}
+	}
+	#endif
+
 	if(trees->size()<2){
 		return false;
 	}
@@ -65,7 +85,6 @@ map<VERTEX_TYPE,int>*coverages){
 		return false;// we don'T support that right now ! triploid stuff are awesome.
 	}
 
-	//printStuff(root,trees,coverages);
 
 	// given the word size
 	// check that they join.
@@ -80,7 +99,8 @@ map<VERTEX_TYPE,int>*coverages){
 	bool foundTarget=false;
 	for(int j=0;j<(int)trees->size();j++){
 		for(int i=0;i<(int)trees->at(j).size();i+=2){
-			VERTEX_TYPE a=trees->at(j).at(i+0);
+			VERTEX_TYPE a=trees->at(j).at(i+1);
+			//cout<<"Tree="<<j<<" Visiting "<<idToWord(a,m_wordSize)<<endl;
 			coveringNumber[a]++;
 			if(!foundTarget && coveringNumber[a]==2){
 				foundTarget=true;
@@ -91,15 +111,23 @@ map<VERTEX_TYPE,int>*coverages){
 	}
 
 	if(!foundTarget){
+
+		#ifdef DEBUG_BUBBLES
+		if(idToWord(root,m_wordSize)=="CTCAAATCGCCTTGGTATTTT"){
+			cout<<"No target found for CTCAAATCGCCTTGGTATTTT"<<endl;
+		}
+		#endif
 		return false;
 	}
 
 	double multiplicator=1.5;
 
+	// the two alternative paths must have less redundancy.
 	if((*coverages)[target]>=multiplicator*m_parameters->getPeakCoverage() 
 	&&(*coverages)[root]>=multiplicator*m_parameters->getPeakCoverage()){
 		return false;
 	}
+
 	vector<map<VERTEX_TYPE,VERTEX_TYPE> > parents;
 
 	for(int j=0;j<(int)trees->size();j++){
@@ -122,8 +150,6 @@ map<VERTEX_TYPE,int>*coverages){
  *        ---- * --------* ------ *
  *
  */
-	int expected=((*coverages)[target]+(*coverages)[root])/4;
-	
 	// accumulate observed values
 	// and stop when encountering
 	for(int j=0;j<(int)trees->size();j++){
@@ -145,56 +171,43 @@ map<VERTEX_TYPE,int>*coverages){
 			current=theParent;
 		}
 	}
+	#ifdef DEBUG_BUBBLES
+	cout<<"root="<<idToWord(root,m_wordSize)<<" target="<<idToWord(target,m_wordSize)<<endl;
+	#endif
 
-
+	#ifdef DEBUG_BUBBLES
 	cout<<"O1="<<observedValues[0].size()<<" O2="<<observedValues[1].size()<<endl;
-	printStuff(root,trees,coverages);
+	#endif
 
-	double chiSquare1=0;
 	int sum1=0;
 	for(int i=0;i<(int)observedValues[0].size();i++){
-		chiSquare1+=(observedValues[0][i]-expected)*(observedValues[0][i]-expected)/(expected+0.0);
 		sum1+=observedValues[0][i];
 	}
 
 	#ifdef DEBUG_BUBBLES
-	cout<<"Path1: "<<observedValues[0].size()<<", CHISQ="<<chiSquare1<<endl;
-	cout<<"Expected "<<expected<<" values: ";
+	cout<<"O1Values= ";
 	for(int i=0;i<(int)observedValues[0].size();i++){
 		cout<<observedValues[0][i]<<" ";
 	}
 	cout<<endl;
 	#endif
-	int df1=observedValues[0].size()-1;
-	double thresold1=m_chiSquaredTableAt0Point05[df1];
 
-	double chiSquare2=0;
 	int sum2=0;
 	for(int i=0;i<(int)observedValues[1].size();i++){
-		chiSquare2+=(observedValues[1][i]-expected)*(observedValues[1][i]-expected)/(expected+0.0);
 		sum2+=observedValues[1][i];
 	}
 	
 	#ifdef DEBUG_BUBBLES
-	cout<<"Path2: "<<observedValues[1].size()<<", CHISQ="<<chiSquare2<<endl;
-	cout<<"Expected "<<expected<<" values: ";
+	cout<<"O2Values= ";
 	for(int i=0;i<(int)observedValues[1].size();i++){
 		cout<<observedValues[1][i]<<" ";
 	}
 	cout<<endl;
 
 	#endif
-	int df2=observedValues[1].size()-1;
-	double thresold2=m_chiSquaredTableAt0Point05[df2];
 
-	int d=observedValues[0].size()-observedValues[1].size();
-	if(d<0){
-		d=-d;
-	}
-	#ifdef DEBUG_BUBBLES
-	cout<<"d="<<d<<endl;
-	#endif
-	if(chiSquare1<thresold1 && chiSquare2<thresold2){
+	if((int)observedValues[0].size()<2*m_parameters->getWordSize()
+	&& (int)observedValues[1].size()<2*m_parameters->getWordSize()){
 		if(sum1>sum2){
 			m_choice=trees->at(0).at(0);
 		}else if(sum2>sum1){
@@ -202,18 +215,26 @@ map<VERTEX_TYPE,int>*coverages){
 
 		// this will not happen often
 		}else if(sum1==sum2){
+			// take the shortest, if any
 			if(observedValues[0].size()<observedValues[1].size()){
 				m_choice=trees->at(0).at(0);
 			}else if(observedValues[1].size()<observedValues[0].size()){
 				m_choice=trees->at(1).at(0);
-			}else{// same length and same sum, won't happen very often anyway
+			// same length and same sum, won't happen very often anyway
+			}else{
 				m_choice=trees->at(0).at(0);
 			}
 		}
-
+		#ifdef DEBUG_BUBBLES
 		cout<<"This is a genuine bubble with according to two chi-squared test."<<endl;
+		#endif
 		return true;
 	}
+
+	#ifdef DEBUG_BUBBLES
+	cout<<"False at last"<<endl;
+	printStuff(root,trees,coverages);
+	#endif
 
 	return false;
 }

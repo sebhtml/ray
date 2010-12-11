@@ -112,7 +112,8 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoi
 
 	vector<Direction>*getDirections();
 
-	void storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<vector<VERTEX_TYPE> >*seeds,u64*currentVertex);
+	void storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<vector<VERTEX_TYPE> >*seeds,u64*currentVertex,
+		BubbleData*bubbleData);
 
 	set<u64>*getEliminatedSeeds();
 

@@ -566,6 +566,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 						dfsData->m_doChoice_tips_newEdges.push_back(dfsData->m_doChoice_tips_i);
 						bubbleData->m_visitedVertices.push_back(dfsData->m_depthFirstSearchVisitedVertices);
 						// store visited vertices for bubble detection purposes.
+
 						bubbleData->m_BUBBLE_visitedVertices.push_back(dfsData->m_depthFirstSearchVisitedVertices_vector);
 						for(map<VERTEX_TYPE,int>::iterator i=dfsData->m_coverages.begin();
 							i!=dfsData->m_coverages.end();i++){
@@ -662,17 +663,23 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			m_readsStrands.clear();
 			ed->m_EXTENSION_readsInRange.clear();
 		}else{
-			storeExtensionAndGetNextOne(ed,theRank,seeds,currentVertex);
+			storeExtensionAndGetNextOne(ed,theRank,seeds,currentVertex,bubbleData);
 		}
 	}
 }
 
 void SeedExtender::storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<vector<VERTEX_TYPE> >*seeds,
-u64*currentVertex){
+u64*currentVertex,BubbleData*bubbleData){
 	if(ed->m_EXTENSION_extension.size()>=100){
+
 		int theCurrentSize=ed->m_EXTENSION_extension.size();
 		printf("Rank %i reached %i vertices (completed)\n",theRank,theCurrentSize);
 		fflush(stdout);
+
+		cout<<"Stopped at:"<<endl;
+		m_bubbleTool.printStuff((*currentVertex),&bubbleData->m_BUBBLE_visitedVertices,
+				&bubbleData->m_coverages);
+
 		ed->m_EXTENSION_contigs.push_back(ed->m_EXTENSION_extension);
 
 		int id=ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+theRank;
@@ -805,7 +812,19 @@ void SeedExtender::depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int maxDepth,
 						continue;
 					dfsData->m_depthFirstSearchVerticesToVisit.push(nextVertex);
 					dfsData->m_depthFirstSearchDepths.push(newDepth);
-					if(dfsData->m_coverages[vertexToVisit]>=minimumCoverage/2){
+					//if(dfsData->m_coverages[vertexToVisit]>=minimumCoverage/2){
+						#ifdef ASSERT
+						int m_wordSize=m_parameters->getWordSize();
+						VERTEX_TYPE a=vertexToVisit;
+						VERTEX_TYPE b=nextVertex;
+						string as=idToWord(a,m_wordSize);
+						string bs=idToWord(b,m_wordSize);
+						if(!(as.substr(1,m_wordSize-1)==bs.substr(0,m_wordSize-1))){
+							cout<<as<<" -> "<<bs<<endl;
+						}
+						assert(as.substr(1,m_wordSize-1)==bs.substr(0,m_wordSize-1));
+						#endif
+
 						dfsData->m_depthFirstSearchVisitedVertices_vector.push_back(vertexToVisit);
 						dfsData->m_depthFirstSearchVisitedVertices_vector.push_back(nextVertex);
 						dfsData->m_depthFirstSearchVisitedVertices_depths.push_back(newDepth);
@@ -813,7 +832,7 @@ void SeedExtender::depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int maxDepth,
 						#ifdef SHOW_MINI_GRAPH
 						cout<<idToWord(vertexToVisit,wordSize)<<" -> "<<idToWord(nextVertex,wordSize)<<endl;
 						#endif
-					}
+					//}
 				}
 				(*edgesRequested)=false;
 				(*vertexCoverageRequested)=false;
