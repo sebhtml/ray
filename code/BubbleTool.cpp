@@ -249,11 +249,11 @@ map<VERTEX_TYPE,int>*coverages){
 				m_choice=trees->at(0).at(0);
 			}
 		}
-		//#ifdef DEBUG_BUBBLES
+		#ifdef DEBUG_BUBBLES
 		cout<<"This is a genuine bubble"<<endl;
 		cout<<"root="<<idToWord(root,m_wordSize)<<" target="<<idToWord(target,m_wordSize)<<endl;
 		printStuff(root,trees,coverages);
-		//#endif
+		#endif
 		return true;
 	}
 
@@ -271,39 +271,4 @@ VERTEX_TYPE BubbleTool::getTraversalStartingPoint(){
 
 void BubbleTool::constructor(Parameters*parameters){
 	m_parameters=parameters;
-	int df=1;
-
-	// chi-squared table. with p-value=5%
-	m_chiSquaredTableAt0Point05[df++]=3.841;
-	m_chiSquaredTableAt0Point05[df++]=5.991;
-	m_chiSquaredTableAt0Point05[df++]=7.815;
-	m_chiSquaredTableAt0Point05[df++]=9.488;
-	m_chiSquaredTableAt0Point05[df++]=11.070;
-	m_chiSquaredTableAt0Point05[df++]=12.592;
-	m_chiSquaredTableAt0Point05[df++]=14.067;
-	m_chiSquaredTableAt0Point05[df++]=15.507;
-	m_chiSquaredTableAt0Point05[df++]=16.919;
-	m_chiSquaredTableAt0Point05[df++]=18.307;
-	m_chiSquaredTableAt0Point05[df++]=19.675;
-	m_chiSquaredTableAt0Point05[df++]=21.026;
-	m_chiSquaredTableAt0Point05[df++]=22.362;
-	m_chiSquaredTableAt0Point05[df++]=23.685;
-	m_chiSquaredTableAt0Point05[df++]=24.996;
-	m_chiSquaredTableAt0Point05[df++]=26.296;
-	m_chiSquaredTableAt0Point05[df++]=27.587;
-	m_chiSquaredTableAt0Point05[df++]=28.869;
-	m_chiSquaredTableAt0Point05[df++]=30.144;
-	m_chiSquaredTableAt0Point05[df++]=31.410;
-	m_chiSquaredTableAt0Point05[df++]=32.671;
-	m_chiSquaredTableAt0Point05[df++]=33.924;
-	m_chiSquaredTableAt0Point05[df++]=35.172;
-	m_chiSquaredTableAt0Point05[df++]=36.415;
-	m_chiSquaredTableAt0Point05[df++]=37.652;
-	m_chiSquaredTableAt0Point05[df++]=38.885;
-	m_chiSquaredTableAt0Point05[df++]=40.113;
-	m_chiSquaredTableAt0Point05[df++]=41.337;
-	m_chiSquaredTableAt0Point05[df++]=42.557;
-	m_chiSquaredTableAt0Point05[df++]=43.773;
-	m_chiSquaredTableAt0Point05[df++]=55.758;
-	m_chiSquaredTableAt0Point05[df++]=67.505;
 }

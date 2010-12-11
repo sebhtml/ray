@@ -29,11 +29,8 @@
 using namespace std;
 
 class BubbleTool{
-	map<int,double> m_chiSquaredTableAt0Point05;
 	Parameters*m_parameters;
 	VERTEX_TYPE m_choice;
-
-
 public:
 	bool isGenuineBubble(VERTEX_TYPE root, vector<vector<VERTEX_TYPE> >*trees,
 map<VERTEX_TYPE,int>*coverages);
