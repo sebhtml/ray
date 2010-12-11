@@ -22,5 +22,6 @@ for host in dom.getElementsByTagName("host"):
 			value=jobvalue.childNodes[0].nodeValue
 			jobValues[name]=value
 		owner=jobValues["job_owner"]
-		print jobValues["queue_name"]+"\t"+jobValues["pe_master"]+"\t"+jobValues["job_name"]+"\t"+job.getAttribute("name")+"\t"+host.getAttribute("name")+"\t"+hostValues["load_avg"]+"\t"+hostValues["num_proc"]+"\t"+hostValues["mem_used"]+"\t"+hostValues["mem_total"]
+		jobName=jobValues["job_name"][0:10]
+		print jobValues["queue_name"]+"\t"+jobValues["pe_master"]+"\t"+jobName+"\t"+job.getAttribute("name")+"\t"+host.getAttribute("name")+"\t"+hostValues["load_avg"]+"\t"+hostValues["num_proc"]+"\t"+hostValues["mem_used"]+"\t"+hostValues["mem_total"]
 

@@ -66,7 +66,9 @@ map<VERTEX_TYPE,int>*coverages){
 	if((*coverages)[root]==m_parameters->getMaxCoverage()){
 		return false;
 	}
+	#ifdef DEBUG_BUBBLES
 	int m_wordSize=m_parameters->getWordSize();
+	#endif
 
 	#ifdef ASSERT
 	for(int i=0;i<(int)trees->size();i++){
@@ -139,7 +141,7 @@ map<VERTEX_TYPE,int>*coverages){
 
 	double multiplicator=1.5;
 	int peak=m_parameters->getPeakCoverage();
-	int multiplicatorThreshold=multiplicator*peak;
+	int multiplicatorThreshold=(int)multiplicator*peak;
 
 	// the two alternative paths must have less redundancy.
 	if((*coverages)[target]>=multiplicatorThreshold
