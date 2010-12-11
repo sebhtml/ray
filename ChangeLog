@@ -1,7 +1,6 @@
 = 1.2.1 =
 2010-12-XX
 
-* Changed version to 1.2.1.
 * SplayTreeIterator now iterates in preorder instead inorder.
 * Now the SplayTreeIterator is utilized to iterate on the vertices instead of
 storing them in an array (takes too much memory).
@@ -11,6 +10,8 @@ finished -- which means no more splaying in the splay trees is to occur. The pro
 ensures that vertices with low redundancy remain at leaves.
 * Bubble traversal ensures no misassemblies as
 polymorphic positions (substitution, and indels) are assembled !!!
+* Works with 454 data too (454 homopolymers error are interpreted as
+polymorphic positions).
 
 
 = 1.2.0 =
