@@ -369,6 +369,9 @@ void Parameters::parseCommands(){
 }
 
 void Parameters::constructor(int argc,char**argv,int rank){
+	m_maxCoverage=0;
+	m_maxCoverage--;// underflow.
+
 	m_rank=rank;
 	if(argc==2){
 		m_input=argv[1];
@@ -563,4 +566,8 @@ void Parameters::setPeakCoverage(int a){
 
 int Parameters::getPeakCoverage(){
 	return m_peakCoverage;
+}
+
+int Parameters::getMaxCoverage(){
+	return m_maxCoverage;
 }

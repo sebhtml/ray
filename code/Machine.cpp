@@ -170,8 +170,6 @@ Machine::Machine(int argc,char**argv){
 
 void Machine::start(){
 	m_ready=true;
-	m_maxCoverage=0;
-	m_maxCoverage--;// underflow.
 	int numberOfTrees=_FOREST_SIZE;
 
 	m_seedExtender.constructor(&m_parameters);
@@ -575,7 +573,7 @@ void Machine::call_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	m_coverageDistribution.clear();
 
 
-	if(m_minimumCoverage > m_peakCoverage or m_peakCoverage==m_maxCoverage){
+	if(m_minimumCoverage > m_peakCoverage or m_peakCoverage==m_parameters.getMaxCoverage()){
 		killRanks();
 		cout<<"Error: no enrichment observed."<<endl;
 		return;
@@ -697,7 +695,7 @@ void Machine::call_MODE_SEND_DISTRIBUTION(){
 		}
 	}
 
-	int*data=(int*)m_outboxAllocator.allocate(sizeof(int)*2*m_maxCoverage);
+	int*data=(int*)m_outboxAllocator.allocate(sizeof(int)*2*m_parameters.getMaxCoverage());
 	int j=0;
 	data[j++]=m_distributionOfCoverage.size();
 	for(map<int,VERTEX_TYPE>::iterator i=m_distributionOfCoverage.begin();i!=m_distributionOfCoverage.end();i++){
@@ -1259,7 +1257,7 @@ void Machine::call_MASTER_MODE_AMOS(){
 }
 
 void Machine::call_MODE_EXTENSION(){
-	int maxCoverage=m_maxCoverage;
+	int maxCoverage=m_parameters.getMaxCoverage();
 	m_seedExtender.extendSeeds(&(m_seedingData->m_SEEDING_seeds),m_ed,getRank(),&m_outbox,&(m_seedingData->m_SEEDING_currentVertex),
 	m_fusionData,&m_outboxAllocator,&(m_seedingData->m_SEEDING_edgesRequested),&(m_seedingData->m_SEEDING_outgoingEdgeIndex),
 	&m_last_value,&(m_seedingData->m_SEEDING_vertexCoverageRequested),m_wordSize,&m_colorSpaceMode,getSize(),&(m_seedingData->m_SEEDING_vertexCoverageReceived),

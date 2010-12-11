@@ -63,11 +63,10 @@ map<VERTEX_TYPE,int>*coverages){
  */
 bool BubbleTool::isGenuineBubble(VERTEX_TYPE root,vector<vector<VERTEX_TYPE> >*trees,
 map<VERTEX_TYPE,int>*coverages){
-	int m_wordSize=m_parameters->getWordSize();
-
-	if(idToWord(root,m_wordSize)=="CCTATTATTGAAAAAACGGGA"){
-		cout<<"root=CCTATTATTGAAAAAACGGGA"<<endl;
+	if((*coverages)[root]==m_parameters->getMaxCoverage()){
+		return false;
 	}
+	int m_wordSize=m_parameters->getWordSize();
 
 	#ifdef ASSERT
 	for(int i=0;i<(int)trees->size();i++){
@@ -82,16 +81,20 @@ map<VERTEX_TYPE,int>*coverages){
 	#endif
 
 	if(trees->size()<2){
+		#ifdef DEBUG_BUBBLES
 		if(idToWord(root,m_wordSize)=="CCTATTATTGAAAAAACGGGA"){
 			cout<<"<2"<<endl;
 		}
+		#endif
 		return false;
 	}
 
 	if(trees->size()!=2){
+		#ifdef DEBUG_BUBBLES
 		if(idToWord(root,m_wordSize)=="CCTATTATTGAAAAAACGGGA"){
 			cout<<"!=2"<<endl;
 		}
+		#endif
 		return false;// we don'T support that right now ! triploid stuff are awesome.
 	}
 
@@ -130,6 +133,10 @@ map<VERTEX_TYPE,int>*coverages){
 		return false;
 	}
 
+	if((*coverages)[target]==m_parameters->getMaxCoverage()){
+		return false;
+	}
+
 	double multiplicator=1.5;
 	int peak=m_parameters->getPeakCoverage();
 	int multiplicatorThreshold=multiplicator*peak;
@@ -137,10 +144,6 @@ map<VERTEX_TYPE,int>*coverages){
 	// the two alternative paths must have less redundancy.
 	if((*coverages)[target]>=multiplicatorThreshold
 	&&(*coverages)[root]>=multiplicatorThreshold){
-		if(idToWord(root,m_wordSize)=="CCTATTATTGAAAAAACGGGA"){
-			cout<<"multiplicator issue, threshold="<<multiplicatorThreshold<<" peak="<<peak<<endl;
-			cout<<"root="<<idToWord(root,m_wordSize)<<" target="<<idToWord(target,m_wordSize)<<endl;
-		}
 		return false;
 	}
 
@@ -178,14 +181,17 @@ map<VERTEX_TYPE,int>*coverages){
 
 		while(current!=startingPoint){
 			if(visited.count(current)>0){
-				if(idToWord(root,m_wordSize)=="CCTATTATTGAAAAAACGGGA"){
-					cout<<"Found a loop"<<endl;
-				}
 				return false;
 			}
 			visited.insert(current);
 			VERTEX_TYPE theParent=parents[j][current];
-			observedValues[j].push_back((*coverages)[theParent]);
+			int coverageValue=(*coverages)[theParent];
+
+			if(coverageValue>m_parameters->getPeakCoverage()){
+				return false;
+			}
+
+			observedValues[j].push_back(coverageValue);
 			current=theParent;
 		}
 	}
@@ -243,9 +249,11 @@ map<VERTEX_TYPE,int>*coverages){
 				m_choice=trees->at(0).at(0);
 			}
 		}
-		#ifdef DEBUG_BUBBLES
+		//#ifdef DEBUG_BUBBLES
 		cout<<"This is a genuine bubble"<<endl;
-		#endif
+		cout<<"root="<<idToWord(root,m_wordSize)<<" target="<<idToWord(target,m_wordSize)<<endl;
+		printStuff(root,trees,coverages);
+		//#endif
 		return true;
 	}
 

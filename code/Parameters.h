@@ -40,6 +40,8 @@ using namespace std;
  *
  */
 class Parameters{
+
+	COVERAGE_TYPE m_maxCoverage;
 	int m_rank;
 	int m_peakCoverage;
 
@@ -115,6 +117,8 @@ public:
 	int getPeakCoverage();
 	void addLibraryData(int library,int average,int deviation);
 	int getNumberOfLibraries();
+
+	int getMaxCoverage();
 };
 
 #endif

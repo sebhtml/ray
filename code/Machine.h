@@ -112,7 +112,6 @@ class Machine{
 	int m_sequence_ready_machines;
 	bool m_messageSentForVerticesDistribution;
 
-	COVERAGE_TYPE m_maxCoverage;
 	Chooser m_c;
 	SequencesIndexer m_si;
 	SeedExtender m_seedExtender;
