@@ -4,7 +4,7 @@
 # Copyright 2010, or so
 
 
-AM_CXXFLAGS=-O3 -Wall -DASSERT
+AM_CXXFLAGS=-O3 -Wall
 LDADD=""
 
 noinst_LIBRARIES = libRay.a

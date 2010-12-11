@@ -348,6 +348,7 @@ void MessageProcessor::call_TAG_SEND_COVERAGE_VALUES(Message*message){
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_RECEIVED_COVERAGE_INFORMATION,rank);
 	m_outbox->push_back(aMessage);
 	m_oa->constructor((*m_peakCoverage));
+	parameters->setPeakCoverage(*m_peakCoverage);
 }
 
 void MessageProcessor::call_TAG_READY_TO_SEED(Message*message){

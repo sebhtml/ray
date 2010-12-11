@@ -570,7 +570,6 @@ void Machine::call_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	CoverageDistribution distribution(&m_coverageDistribution,&file);
 	m_minimumCoverage=distribution.getMinimumCoverage();
 	m_peakCoverage=distribution.getPeakCoverage();
-	m_parameters.setPeakCoverage(m_peakCoverage);
 	m_seedCoverage=(m_minimumCoverage+m_peakCoverage)/2;
 
 	m_coverageDistribution.clear();

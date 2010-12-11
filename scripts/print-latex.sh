@@ -26,7 +26,7 @@ misassembled=$(grep Misas $mummerFile|awk '{print $3}')
 mismatches=$(grep totalMismatches $mummerFile|sed 's/totalMismatches=//g')
 gaps=$(cat $mummerFile|grep totalGaps=|sed 's/totalGaps=//')
 
-rm -f $mummerFile
+#rm -f $mummerFile
 rm -f $assembly500
 
 echo "        %  & numberOfContigs & bases & meanSize  & n50  & max   & coverage   & misassembled & mismatches & indels"

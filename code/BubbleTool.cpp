@@ -25,7 +25,7 @@
 #include<set>
 using namespace std;
 
-#define DEBUG_BUBBLES
+//#define DEBUG_BUBBLES
 
 void BubbleTool::printStuff(VERTEX_TYPE root,vector<vector<VERTEX_TYPE> >*trees,
 map<VERTEX_TYPE,int>*coverages){
@@ -65,6 +65,10 @@ bool BubbleTool::isGenuineBubble(VERTEX_TYPE root,vector<vector<VERTEX_TYPE> >*t
 map<VERTEX_TYPE,int>*coverages){
 	int m_wordSize=m_parameters->getWordSize();
 
+	if(idToWord(root,m_wordSize)=="CCTATTATTGAAAAAACGGGA"){
+		cout<<"root=CCTATTATTGAAAAAACGGGA"<<endl;
+	}
+
 	#ifdef ASSERT
 	for(int i=0;i<(int)trees->size();i++){
 		for(int j=0;j<(int)trees->at(i).size();j+=2){
@@ -78,10 +82,16 @@ map<VERTEX_TYPE,int>*coverages){
 	#endif
 
 	if(trees->size()<2){
+		if(idToWord(root,m_wordSize)=="CCTATTATTGAAAAAACGGGA"){
+			cout<<"<2"<<endl;
+		}
 		return false;
 	}
 
 	if(trees->size()!=2){
+		if(idToWord(root,m_wordSize)=="CCTATTATTGAAAAAACGGGA"){
+			cout<<"!=2"<<endl;
+		}
 		return false;// we don'T support that right now ! triploid stuff are awesome.
 	}
 
@@ -113,18 +123,24 @@ map<VERTEX_TYPE,int>*coverages){
 	if(!foundTarget){
 
 		#ifdef DEBUG_BUBBLES
-		if(idToWord(root,m_wordSize)=="CTCAAATCGCCTTGGTATTTT"){
-			cout<<"No target found for CTCAAATCGCCTTGGTATTTT"<<endl;
+		if(idToWord(root,m_wordSize)=="CCTATTATTGAAAAAACGGGA"){
+			cout<<"No target found for CCTATTATTGAAAAAACGGGA"<<endl;
 		}
 		#endif
 		return false;
 	}
 
 	double multiplicator=1.5;
+	int peak=m_parameters->getPeakCoverage();
+	int multiplicatorThreshold=multiplicator*peak;
 
 	// the two alternative paths must have less redundancy.
-	if((*coverages)[target]>=multiplicator*m_parameters->getPeakCoverage() 
-	&&(*coverages)[root]>=multiplicator*m_parameters->getPeakCoverage()){
+	if((*coverages)[target]>=multiplicatorThreshold
+	&&(*coverages)[root]>=multiplicatorThreshold){
+		if(idToWord(root,m_wordSize)=="CCTATTATTGAAAAAACGGGA"){
+			cout<<"multiplicator issue, threshold="<<multiplicatorThreshold<<" peak="<<peak<<endl;
+			cout<<"root="<<idToWord(root,m_wordSize)<<" target="<<idToWord(target,m_wordSize)<<endl;
+		}
 		return false;
 	}
 
@@ -162,7 +178,9 @@ map<VERTEX_TYPE,int>*coverages){
 
 		while(current!=startingPoint){
 			if(visited.count(current)>0){
-				//cout<<"Found a loop"<<endl;
+				if(idToWord(root,m_wordSize)=="CCTATTATTGAAAAAACGGGA"){
+					cout<<"Found a loop"<<endl;
+				}
 				return false;
 			}
 			visited.insert(current);
@@ -226,7 +244,7 @@ map<VERTEX_TYPE,int>*coverages){
 			}
 		}
 		#ifdef DEBUG_BUBBLES
-		cout<<"This is a genuine bubble with according to two chi-squared test."<<endl;
+		cout<<"This is a genuine bubble"<<endl;
 		#endif
 		return true;
 	}

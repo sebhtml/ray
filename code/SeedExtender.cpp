@@ -675,10 +675,11 @@ u64*currentVertex,BubbleData*bubbleData){
 		int theCurrentSize=ed->m_EXTENSION_extension.size();
 		printf("Rank %i reached %i vertices (completed)\n",theRank,theCurrentSize);
 		fflush(stdout);
-
+/*
 		cout<<"Stopped at:"<<endl;
 		m_bubbleTool.printStuff((*currentVertex),&bubbleData->m_BUBBLE_visitedVertices,
 				&bubbleData->m_coverages);
+*/
 
 		ed->m_EXTENSION_contigs.push_back(ed->m_EXTENSION_extension);
 

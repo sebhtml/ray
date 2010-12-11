@@ -41,7 +41,6 @@ int main(int argc,char**argv){
 
 	ran_seed();
 
-	vector<Read*> sequences;
 	string genomeFile=argv[1];
 	int fragmentSize=atoi(argv[2]);
 	
@@ -57,8 +56,8 @@ int main(int argc,char**argv){
 	f1Name<<base<<",1x"<<fragmentSize<<"b,"<<coverage<<"X.fasta";
 	ofstream f1(f1Name.str().c_str());
 	int theReadNumber=0;
-	for(int i=0;i<(int)sequences.size();i++){
-		string sequence=sequences.at(i)->getSeq();
+	for(int i=0;i<(int)l.size();i++){
+		string sequence=l.at(i)->getSeq();
 		int numberOfReads=sequence.length()*coverage/fragmentSize;
 		for(int j=0;j<numberOfReads;j++){
 			if(j%100000==0){
