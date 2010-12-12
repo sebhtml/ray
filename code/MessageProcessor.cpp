@@ -1236,11 +1236,11 @@ void MessageProcessor::call_TAG_AUTOMATIC_DISTANCE_DETECTION(Message*message){
 
 void MessageProcessor::call_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE(Message*message){
 	(*m_numberOfRanksDoneDetectingDistances)++;
+	cout<<"TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE "<<(*m_numberOfRanksDoneDetectingDistances)<<endl;
 	if((*m_numberOfRanksDoneDetectingDistances)==size){
 		(*m_master_mode)=MASTER_MODE_ASK_DISTANCES;
 	}
 }
-
 
 void MessageProcessor::call_TAG_LIBRARY_DISTANCE_REPLY(Message*message){
 	m_library->setReadiness();
@@ -1268,6 +1268,7 @@ void MessageProcessor::call_TAG_ASK_LIBRARY_DISTANCES(Message*message){
 
 void MessageProcessor::call_TAG_ASK_LIBRARY_DISTANCES_FINISHED(Message*message){
 	(*m_numberOfRanksDoneSendingDistances)++;
+	cout<<"TAG_ASK_LIBRARY_DISTANCES_FINISHED "<<(*m_numberOfRanksDoneSendingDistances)<<endl;
 	if((*m_numberOfRanksDoneSendingDistances)==size){
 		(*m_master_mode)=MASTER_MODE_START_UPDATING_DISTANCES;
 	}

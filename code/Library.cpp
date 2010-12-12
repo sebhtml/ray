@@ -236,7 +236,6 @@ void Library::sendLibraryDistances(){
 		return;
 	}
 	if(m_libraryIterator==(int)m_libraryDistances.size()){
-
 		m_bufferedData.flushAll(TAG_LIBRARY_DISTANCE,m_outboxAllocator,m_outbox,getRank());
 
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_ASK_LIBRARY_DISTANCES_FINISHED,getRank());

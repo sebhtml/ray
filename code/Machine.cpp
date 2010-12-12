@@ -764,7 +764,9 @@ void Machine::call_MASTER_MODE_ASK_DISTANCES(){
 
 void Machine::call_MASTER_MODE_START_UPDATING_DISTANCES(){
 	m_numberOfRanksDoneSendingDistances=-1;
+	cout<<"call_MASTER_MODE_START_UPDATING_DISTANCES"<<endl;
 	m_parameters.computeAverageDistances();
+	cout<<"DONE: m_parameters.computeAverageDistances()"<<endl;
 	m_mode=MODE_DO_NOTHING;
 	m_master_mode=MASTER_MODE_UPDATE_DISTANCES;
 	m_fileId=0;
