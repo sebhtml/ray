@@ -59,7 +59,7 @@ void SeedingData::computeSeeds(){
 	else if(!m_SEEDING_NodeInitiated){
 		if(m_SEEDING_i==(int)m_subgraph->size()){
 			(*m_mode)=MODE_DO_NOTHING;
-			printf("Rank %i is creating seeds %i/%i (completed)\n",getRank(),(int)m_SEEDING_i+1,(int)m_subgraph->size());
+			printf("Rank %i is creating seeds [%i/%i] (completed)\n",getRank(),(int)m_SEEDING_i,(int)m_subgraph->size());
 			fflush(stdout);
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_SEEDING_IS_OVER,getRank());
 			m_outbox->push_back(aMessage);
@@ -79,7 +79,7 @@ void SeedingData::computeSeeds(){
 			m_splayTreeIterator.setRank(getRank());
 		}else{
 			if(m_SEEDING_i % 100000 ==0){
-				printf("Rank %i is creating seeds %i/%i\n",getRank(),(int)m_SEEDING_i+1,(int)m_subgraph->size());
+				printf("Rank %i is creating seeds [%i/%i]\n",getRank(),(int)m_SEEDING_i+1,(int)m_subgraph->size());
 				fflush(stdout);
 			}
 			#ifdef ASSERT

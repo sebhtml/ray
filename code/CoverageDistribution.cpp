@@ -67,8 +67,8 @@ CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>*distributionOfCo
 	if((*distributionOfCoverage)[m_peakCoverage]==0){
 		m_peakCoverage=0;
 	}
-	cout<<"Rank "<<MASTER_RANK<<" informs you that MinimumCoverage= "<<m_minimumCoverage<<endl;
-	cout<<"Rank "<<MASTER_RANK<<" informs you that PeakCoverage= "<<m_peakCoverage<<endl;
+	cout<<"Rank "<<MASTER_RANK<<" informs you that the minimum coverage is "<<m_minimumCoverage<<endl;
+	cout<<"Rank "<<MASTER_RANK<<" informs you that the peak coverage is "<<m_peakCoverage<<endl;
 
 	f.close();
 }

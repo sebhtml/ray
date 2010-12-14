@@ -31,7 +31,7 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 		m_ready+=m_buffers.flushAll(TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY,m_outboxAllocator,m_outbox,getRank);
 		return;
 	}else if(m_buffers.isEmpty() && m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
-		printf("Rank %i is distributing fusions %i/%i (completed)\n",getRank,(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
+		printf("Rank %i is distributing fusions [%i/%i] (completed)\n",getRank,(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
 		fflush(stdout);
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_DISTRIBUTE_FUSIONS_FINISHED,getRank);
 		m_outbox->push_back(aMessage);
@@ -41,7 +41,7 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 
 	if(m_ed->m_EXTENSION_currentPosition==0){
 		if(m_seedingData->m_SEEDING_i%10==0){
-			printf("Rank %i is distributing fusions %i/%i (completed)\n",getRank,m_seedingData->m_SEEDING_i+1,(int)m_ed->m_EXTENSION_contigs.size());
+			printf("Rank %i is distributing fusions [%i/%i] (completed)\n",getRank,m_seedingData->m_SEEDING_i+1,(int)m_ed->m_EXTENSION_contigs.size());
 			fflush(stdout);
 
 		}
@@ -111,7 +111,7 @@ void FusionData::finishFusions(){
 	if(m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
 		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
 		message[0]=m_FINISH_fusionOccured;
-		printf("Rank %i is finishing fusions %i/%i (completed)\n",getRank(),(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
+		printf("Rank %i is finishing fusions [%i/%i] (completed)\n",getRank(),(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
 		fflush(stdout);
 	
 		/*
@@ -177,7 +177,7 @@ void FusionData::finishFusions(){
 			m_FINISH_pathsForPosition.push_back(a);
 			if(m_ed->m_EXTENSION_currentPosition==0){
 				if(m_seedingData->m_SEEDING_i%10==0){
-					printf("Rank %i is finishing fusions %i/%i\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_ed->m_EXTENSION_contigs.size());
+					printf("Rank %i is finishing fusions [%i/%i]\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_ed->m_EXTENSION_contigs.size());
 					fflush(stdout);
 				}
 				vector<VERTEX_TYPE> a;
@@ -370,7 +370,7 @@ void FusionData::makeFusions(){
 		if(m_ed->m_EXTENSION_contigs.size()==0){
 			seedIndex++;
 		}
-		printf("Rank %i is computing fusions %i/%i (completed)\n",getRank(),(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
+		printf("Rank %i is computing fusions [%i/%i] (completed)\n",getRank(),(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
 		fflush(stdout);
 		#endif
 		#ifdef ASSERT
@@ -392,7 +392,7 @@ void FusionData::makeFusions(){
 			if(!m_FUSION_paths_requested){
 				#ifdef SHOW_PROGRESS
 				if(m_seedingData->m_SEEDING_i%10==0){
-					printf("Rank %i is computing fusions %i/%i\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_ed->m_EXTENSION_contigs.size());
+					printf("Rank %i is computing fusions [%i/%i]\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_ed->m_EXTENSION_contigs.size());
 					fflush(stdout);
 				}
 				#endif

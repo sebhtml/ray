@@ -65,14 +65,14 @@ bool SequencesLoader::loadSequences(int rank,int size,
 				assert(m_entries[i]==0);
 			}
 			#endif
-			cout<<"Rank "<<rank<<" is assigning sequence reads "<<m_loader.size()<<"/"<<m_loader.size()<<" (completed)"<<endl;
+			cout<<"Rank "<<rank<<" is assigning sequence reads ["<<m_loader.size()<<"/"<<m_loader.size()<<"] (completed)"<<endl;
 			cout<<endl;
 			cout.flush();
 	
 		// distribution of paired information is completed
 		}else{
 			m_waitingNumber+=m_bufferedData.flushAll(TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank);
-			cout<<"Rank "<<rank<<" is sending paired information "<<m_loader.size()<<"/"<<m_loader.size()<<" (completed)"<<endl;
+			cout<<"Rank "<<rank<<" is sending paired information ["<<m_loader.size()<<"/"<<m_loader.size()<<"] (completed)"<<endl;
 			cout<<endl;
 			cout.flush();
 
@@ -99,7 +99,9 @@ bool SequencesLoader::loadSequences(int rank,int size,
 	//
 	}else if(m_loader.size()==0){
 		m_send_sequences_done=false;
-		printf("Rank %i is loading %s\n\n",rank,allFiles[(m_distribution_file_id)].c_str());
+		int fileId=m_distribution_file_id+1;
+		int totalFiles=m_parameters->getNumberOfFiles();
+		printf("Rank %i is loading %s [%i/%i]\n\n",rank,allFiles[(m_distribution_file_id)].c_str(),fileId,totalFiles);
 		fflush(stdout);
 		int res=m_loader.load(allFiles[(m_distribution_file_id)],false);
 		if(res==EXIT_FAILURE){
@@ -166,7 +168,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 		}
 
 		if((m_distribution_sequence_id)%100000==0 && m_distribution_sequence_id!=m_lastPrintedId){
-			cout<<"Rank "<<rank<<" is assigning sequence reads "<<(m_distribution_sequence_id)+1<<"/"<<m_loader.size()<<endl;
+			cout<<"Rank "<<rank<<" is assigning sequence reads ["<<(m_distribution_sequence_id)+1<<"/"<<m_loader.size()<<"]"<<endl;
 			m_lastPrintedId=m_distribution_sequence_id;
 		}
 	}else if(m_send_sequences_done){
@@ -180,7 +182,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 		#endif
 
 		if((m_distribution_sequence_id)%1000000==0){
-			cout<<"Rank "<<rank<<" is sending paired information "<<(m_distribution_sequence_id)+1<<"/"<<m_loader.size()<<endl;
+			cout<<"Rank "<<rank<<" is sending paired information "<<"["<<(m_distribution_sequence_id)+1<<"/"<<m_loader.size()<<"]"<<endl;
 		}
 
 		// add paired information here..

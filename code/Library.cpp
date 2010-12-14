@@ -63,7 +63,7 @@ void Library::detectDistances(){
 	if(m_seedingData->m_SEEDING_i==(int)m_seedingData->m_SEEDING_seeds.size()){
 		printf("Rank %i detected %i library lengths\n",getRank(),m_detectedDistances);
 		fflush(stdout);
-		printf("Rank %i is calculating library lengths %i/%i (completed)\n",getRank(),(int)m_seedingData->m_SEEDING_seeds.size(),(int)m_seedingData->m_SEEDING_seeds.size());
+		printf("Rank %i is calculating library lengths [%i/%i] (completed)\n",getRank(),(int)m_seedingData->m_SEEDING_seeds.size(),(int)m_seedingData->m_SEEDING_seeds.size());
 		fflush(stdout);
 		
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE,getRank());
@@ -80,7 +80,7 @@ void Library::detectDistances(){
 	}else{
 		if(!m_ed->m_EXTENSION_reads_requested){
 			if(m_ed->m_EXTENSION_currentPosition==0 && m_seedingData->m_SEEDING_i%30==0){
-				printf("Rank %i is calculating library lengths %i/%i\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_seedingData->m_SEEDING_seeds.size());
+				printf("Rank %i is calculating library lengths [%i/%i]\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_seedingData->m_SEEDING_seeds.size());
 				fflush(stdout);
 			}
 			m_ed->m_EXTENSION_reads_requested=true;

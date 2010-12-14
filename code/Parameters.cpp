@@ -360,6 +360,7 @@ void Parameters::parseCommands(){
 	if(m_rank==MASTER_RANK){
 		cout<<endl;
 		cout<<"k-mer size: "<<m_wordSize<<endl;
+		cout<<endl;
 	}
 
 	uint64_t result=1;

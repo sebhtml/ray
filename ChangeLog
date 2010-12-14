@@ -12,6 +12,7 @@ ensures that vertices with low redundancy remain at leaves.
 polymorphic positions (substitution, and indels) are assembled !!!
 * Works with 454 data too (454 homopolymers error are interpreted as
 polymorphic positions).
+* Added numeric indicator for files. (example: [1/9])
 
 
 = 1.2.0 =
