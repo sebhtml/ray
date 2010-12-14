@@ -27,6 +27,7 @@
 #include<Message.h>
 #include<common_functions.h>
 #include<RingAllocator.h>
+#include<map>
 #include<StaticVector.h>
 #include<PendingRequest.h>
 using namespace std;
@@ -44,6 +45,8 @@ class MessagesHandler{
 
 	u64*m_allReceivedMessages;
 	int*m_allCounts;
+
+	map<int,map<int,int> > m_buckets;
 
 public:
 	void constructor(int rank,int size);
