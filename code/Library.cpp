@@ -227,34 +227,41 @@ Library::Library(){
 
 void Library::allocateBuffers(){
 	m_bufferedData.constructor(m_size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-	(m_libraryIterator)=0;
+	cout<<getRank()<<" Library::allocateBuffers() m_libraryDistances.size() "<<m_libraryDistances.size()<<endl;
 	(m_libraryIndexInitiated)=false;
+	(m_libraryIterator)=0;
+	for(map<int,map<int,int> >::iterator i=m_libraryDistances.begin();
+		i!=m_libraryDistances.end();i++){
+		int libraryName=i->first;
+		m_libraryIndexes.push_back(libraryName);
+	}
 }
 
 void Library::sendLibraryDistances(){
 	if(!m_ready){
 		return;
 	}
-	if(m_libraryIterator==(int)m_libraryDistances.size()){
+
+	if(!m_libraryIndexInitiated){
+			m_libraryIndexInitiated=true;
+			m_libraryIndex=m_libraryDistances[m_libraryIndexes[m_libraryIterator]].begin();
+	}else if(m_libraryIterator==(int)m_libraryIndexes.size()){
 		m_bufferedData.flushAll(TAG_LIBRARY_DISTANCE,m_outboxAllocator,m_outbox,getRank());
 
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_ASK_LIBRARY_DISTANCES_FINISHED,getRank());
 		m_outbox->push_back(aMessage);
 		(*m_mode)=MODE_DO_NOTHING;
-	}else if(m_libraryIndex==m_libraryDistances[m_libraryIterator].end()){
+	}else if(m_libraryIndex==m_libraryDistances[m_libraryIndexes[m_libraryIterator]].end()){
 		m_libraryIterator++;
 		m_libraryIndexInitiated=false;
 	}else{
-		if(!m_libraryIndexInitiated){
-			m_libraryIndexInitiated=true;
-			m_libraryIndex=m_libraryDistances[m_libraryIterator].begin();
-		}
-		int library=m_libraryIterator;
+		int library=m_libraryIndexes[m_libraryIterator];
 		int distance=m_libraryIndex->first;
 		int count=m_libraryIndex->second;
 		m_bufferedData.addAt(MASTER_RANK,library);
 		m_bufferedData.addAt(MASTER_RANK,distance);
 		m_bufferedData.addAt(MASTER_RANK,count);
+		cout<<getRank()<<" addAt "<<library<<" "<<distance<<" "<<count<<endl;
 		if(m_bufferedData.flush(MASTER_RANK,3,TAG_LIBRARY_DISTANCE,m_outboxAllocator,m_outbox,getRank(),false)){
 			m_ready=false;
 		}

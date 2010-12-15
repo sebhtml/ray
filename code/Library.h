@@ -40,6 +40,7 @@ using namespace std;
 
 class Library{
 	int m_detectedDistances;
+	vector<int> m_libraryIndexes;
 
 	BufferedData m_bufferedData;
 	bool m_ready;

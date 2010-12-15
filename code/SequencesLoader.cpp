@@ -181,7 +181,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 		}
 		#endif
 
-		if((m_distribution_sequence_id)%1000000==0){
+		if((m_distribution_sequence_id)%200000==0){
 			cout<<"Rank "<<rank<<" is sending paired information "<<"["<<(m_distribution_sequence_id)+1<<"/"<<m_loader.size()<<"]"<<endl;
 		}
 
