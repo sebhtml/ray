@@ -13,6 +13,8 @@ polymorphic positions (substitution, and indels) are assembled !!!
 * Works with 454 data too (454 homopolymers error are interpreted as
 polymorphic positions).
 * Added numeric indicator for files. (example: [1/9])
+* Corrected a bug in library lengths messaging that leaded to hanging and/or
+Bus Error.
 
 
 = 1.2.0 =
