@@ -20,6 +20,8 @@
 */
 
 #include<MyForest.h>
+#include<crypto.h>
+#include<stdio.h>
 
 void MyForest::constructor(int count,MyAllocator*allocator){
 	m_trees=(SplayTree<VERTEX_TYPE,Vertex>*)allocator->allocate(sizeof(SplayTree<VERTEX_TYPE,Vertex>)*count);
@@ -44,12 +46,16 @@ SplayTree<VERTEX_TYPE,Vertex>*MyForest::getTree(int i){
 	return m_trees+i;
 }
 
+int MyForest::getTreeIndex(VERTEX_TYPE i){
+	return uniform_hashing_function_2_64_64(i)%m_numberOfTrees;
+}
+
 SplayNode<VERTEX_TYPE,Vertex>*MyForest::find(VERTEX_TYPE key){
-	return m_trees[hash6432(key)%m_numberOfTrees].find(key);
+	return m_trees[getTreeIndex(key)].find(key);
 }
 
 SplayNode<VERTEX_TYPE,Vertex>*MyForest::insert(VERTEX_TYPE key){
-	int tree=hash6432(key)%m_numberOfTrees;
+	int tree=getTreeIndex(key);
 	SplayNode<VERTEX_TYPE,Vertex>*n=m_trees[tree].insert(key);
 	m_inserted=m_trees[tree].inserted();
 	if(m_inserted)
@@ -64,5 +70,13 @@ bool MyForest::inserted(){
 void MyForest::freeze(){
 	for(int i=0;i<m_numberOfTrees;i++){
 		m_trees[i].freeze();
+	}
+}
+
+void MyForest::show(){
+	cout<<"MyForest::show()"<<endl;
+	for(int i=0;i<m_numberOfTrees;i++){
+		printf("%i %li\n",i,getTree(i)->size());
+		fflush(stdout);
 	}
 }

@@ -21,31 +21,12 @@
 
 
 
-#ifndef _MyForest
-#define _MyForest
+#ifndef _crypto
+#define _crypto
 
-#include<SplayTree.h>
-#include<Vertex.h>
-#include<MyAllocator.h>
-#include<common_functions.h>
+#include<stdint.h>
 
-class MyForest{
-	int m_numberOfTrees;
-	u64 m_size;
-	SplayTree<VERTEX_TYPE,Vertex>*m_trees;
-	bool m_inserted;
-	int getTreeIndex(VERTEX_TYPE i);
-
-public:
-	void constructor(int count,MyAllocator*allocator);
-	int size();
-	int getNumberOfTrees();
-	SplayTree<VERTEX_TYPE,Vertex>*getTree(int i);
-	SplayNode<VERTEX_TYPE,Vertex>*find(VERTEX_TYPE key);
-	SplayNode<VERTEX_TYPE,Vertex>*insert(VERTEX_TYPE key);
-	bool inserted();
-	void freeze();
-	void show();
-};
+uint64_t uniform_hashing_function_1_64_64(uint64_t key);
+uint64_t uniform_hashing_function_2_64_64(uint64_t key);
 
 #endif

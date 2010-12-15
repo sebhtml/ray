@@ -24,6 +24,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 */
 
+#include<crypto.h>
 #include<SplayNode.h>
 #include<mpi.h>
 #include<EdgesExtractor.h>
@@ -1338,7 +1339,7 @@ Machine::~Machine(){
 }
 
 int Machine::vertexRank(VERTEX_TYPE a){
-	return hash_VERTEX_TYPE(a)%(getSize());
+	return uniform_hashing_function_1_64_64(a)%getSize();
 }
 
 

@@ -298,6 +298,9 @@ void MessageProcessor::call_TAG_START_EDGES_DISTRIBUTION_ANSWER(Message*message)
 void MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION(Message*message){
 	// freeze the forest. icy winter ahead.
 	m_subgraph->freeze();
+	if(rank==MASTER_RANK){
+		m_subgraph->show();
+	}
 	int source=message->getSource();
 	printf("Rank %i has %i vertices\n",rank,(int)m_subgraph->size());
 	fflush(stdout);

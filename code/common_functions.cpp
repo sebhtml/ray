@@ -19,6 +19,7 @@
 
 */
 
+#include<crypto.h>
 #include<assert.h>
 #include<stdio.h>
 #include<sys/time.h>
@@ -291,35 +292,6 @@ string addLineBreaks(string dna){
 }
 
 
-/*
- * Basically, we take a 64-bit unsigned integer (the sign does not matter..)
- * and we compute the image corresponding to a uniform distribution.
- *
- * This uses some magic, of course!
- */
-// see http://www.concentric.net/~Ttwang/tech/inthash.htm 64 bit Mix Functions
-VERTEX_TYPE hash_VERTEX_TYPE(VERTEX_TYPE key){
-	// some magic here and there.
-	key = (~key) + (key << 21); 
-	key = key ^ (key >> 24);
-	key = (key + (key << 3)) + (key << 8); 
-	key = key ^ (key >> 14);
-	key = (key + (key << 2)) + (key << 4); 
-	key = key ^ (key >> 28);
-	key = key + (key << 31);
-	return key;
-}
-
-u32 hash6432(u64 key){
-	key = (~key) + (key << 18); 
-	key = key ^ (key >> 31);
-	key = key * 21;
-	key = key ^ (key >> 11);
-	key = key + (key << 6);
-	key = key ^ (key >> 22);
-	return (u32) key;
-}
-
 /**
  * malloc with a memory verification.
  */
@@ -423,7 +395,7 @@ string convertToString(vector<VERTEX_TYPE>*b,int m_wordSize){
 }
 
 int vertexRank(VERTEX_TYPE a,int _size){
-	return hash_VERTEX_TYPE(a)%(_size);
+	return uniform_hashing_function_1_64_64(a)%(_size);
 }
 
 /*

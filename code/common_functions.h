@@ -90,7 +90,7 @@ using namespace std;
 
 #define MASTER_RANK 0x0
 
-#define _FOREST_SIZE 1 // 16384
+#define _FOREST_SIZE 16384
 
 // allocators size
 // for MPI communications, memory is allocated and freed with OUTBOX_ALLOCATOR_CHUNK_SIZE and INBOX_ALLOCATOR_CHUNK_SIZE
@@ -190,14 +190,8 @@ VERTEX_TYPE complementVertex(VERTEX_TYPE a,int m_wordSize,bool useColorSpace);
  */
 string addLineBreaks(string sequence);
 
-/*
- * hash a VERTEX_TYPE in a uniform way.
- */
-VERTEX_TYPE hash_VERTEX_TYPE(VERTEX_TYPE a);
-
 void*__Malloc(int c);
 void __Free(void*a);
-
 
 /*
  * compute the reverse complement in color space (it is just the same, but reverse)
@@ -221,8 +215,6 @@ uint8_t getSecondSegmentFirstCode(VERTEX_TYPE v,int segmentLength,int totalLengt
 uint8_t getSecondSegmentLastCode(VERTEX_TYPE v,int segmentLength,int totalLength);
 
 uint8_t charToCode(char a);
-
-u32 hash6432(u64 key);
 
 char codeToChar(uint8_t a);
 
