@@ -26,9 +26,8 @@
  * Basically, we take a 64-bit unsigned integer (the sign does not matter..)
  * and we compute the image corresponding to a uniform distribution.
  *
- * This uses some magic, of course!
+ * see http://www.concentric.net/~Ttwang/tech/inthash.htm 64 bit Mix Functions
  */
-// see http://www.concentric.net/~Ttwang/tech/inthash.htm 64 bit Mix Functions
 uint64_t uniform_hashing_function_1_64_64(uint64_t key){
 	// some magic here and there.
 	key = (~key) + (key << 21); 
@@ -41,13 +40,17 @@ uint64_t uniform_hashing_function_1_64_64(uint64_t key){
 	return key;
 }
 
+/*
+ * based on uniform_hashing_function_1_64_64, but with different values
+ */
 uint64_t uniform_hashing_function_2_64_64(uint64_t key){
-	key = (~key) + (key << 18); 
-	key = key ^ (key >> 31);
-	key = key * 21;
-	key = key ^ (key >> 11);
+	key = (~key) + (key << 31); 
+	key = key ^ (key >> 14);
+	key = (key + (key << 7)) + (key << 11); 
+	key = key ^ (key >> 13);
+	key = (key + (key << 4)) + (key << 8); 
+	key = key ^ (key >> 44);
 	key = key + (key << 6);
-	key = key ^ (key >> 22);
 	return key;
 }
 

@@ -77,7 +77,6 @@ class Parameters{
 	void loadCommandsFromFile(char*file);
 	void parseCommands();
 
-	string getPrefix();
 	string getLibraryFile(int library);
 
 public:
@@ -119,6 +118,7 @@ public:
 	int getNumberOfLibraries();
 
 	int getMaxCoverage();
+	string getPrefix();
 };
 
 #endif

@@ -22,6 +22,8 @@
 #include<MyForest.h>
 #include<crypto.h>
 #include<stdio.h>
+#include<sstream>
+using namespace std;
 
 void MyForest::constructor(int count,MyAllocator*allocator){
 	m_trees=(SplayTree<VERTEX_TYPE,Vertex>*)allocator->allocate(sizeof(SplayTree<VERTEX_TYPE,Vertex>)*count);
@@ -73,10 +75,13 @@ void MyForest::freeze(){
 	}
 }
 
-void MyForest::show(){
+void MyForest::show(int rank,const char*prefix){
 	cout<<"MyForest::show()"<<endl;
+	ostringstream a;
+	a<<prefix<<".Forest.Rank_"<<rank<<".txt";
+	FILE*f=fopen(a.str().c_str(),"w+");
 	for(int i=0;i<m_numberOfTrees;i++){
-		printf("%i %li\n",i,getTree(i)->size());
-		fflush(stdout);
+		fprintf(f,"%i %li\n",i,getTree(i)->size());
 	}
+	fclose(f);
 }
