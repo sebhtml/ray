@@ -50,7 +50,7 @@ void MessageProcessor::call_TAG_BARRIER(Message*message){
 
 void MessageProcessor::call_TAG_SEND_SEQUENCE_REGULATOR(Message*message){
 	call_TAG_SEND_SEQUENCE(message);
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_SEND_SEQUENCE_REPLY,rank);
+	Message aMessage(NULL,0,MPI_UINT64_T,message->getSource(),TAG_SEND_SEQUENCE_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -112,7 +112,7 @@ void MessageProcessor::call_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS(M
 	int source=message->getSource();
 	printf("Rank %i has %i sequence reads\n",rank,(int)(*m_myReads).size());
 	fflush(stdout);
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,TAG_SEQUENCES_READY,rank);
+	Message aMessage(NULL,0,MPI_UINT64_T,source,TAG_SEQUENCES_READY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -122,10 +122,10 @@ void MessageProcessor::call_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS(M
 void MessageProcessor::call_TAG_VERTICES_DATA(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	int length=count;
 	for(int i=0;i<length;i++){
-		VERTEX_TYPE l=incoming[i];
+		uint64_t l=incoming[i];
 
 		if((*m_last_value)!=(int)m_subgraph->size() and (int)m_subgraph->size()%100000==0){
 			(*m_last_value)=m_subgraph->size();
@@ -133,7 +133,7 @@ void MessageProcessor::call_TAG_VERTICES_DATA(Message*message){
 			fflush(stdout);
 		}
 
-		SplayNode<VERTEX_TYPE,Vertex>*tmp=m_subgraph->insert(l);
+		SplayNode<uint64_t,Vertex>*tmp=m_subgraph->insert(l);
 		#ifdef ASSERT
 		assert(tmp!=NULL);
 		#endif
@@ -145,7 +145,7 @@ void MessageProcessor::call_TAG_VERTICES_DATA(Message*message){
 		assert(tmp->getValue()->getCoverage()>0);
 		#endif
 	}
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_VERTICES_DATA_REPLY,rank);
+	Message aMessage(NULL,0,MPI_UINT64_T,message->getSource(),TAG_VERTICES_DATA_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -172,18 +172,18 @@ void MessageProcessor::call_TAG_OUT_EDGES_DATA_REPLY(Message*message){
 void MessageProcessor::call_TAG_OUT_EDGES_DATA(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	int length=count;
 
 	for(int i=0;i<(int)length;i+=2){
-		VERTEX_TYPE prefix=incoming[i+0];
-		VERTEX_TYPE suffix=incoming[i+1];
+		uint64_t prefix=incoming[i+0];
+		uint64_t suffix=incoming[i+1];
 		#ifdef ASSERT
 		assert(m_subgraph->find(prefix)!=NULL);
 		#endif
 		m_subgraph->find(prefix)->getValue()->addOutgoingEdge(suffix,(*m_wordSize),&(*m_persistentAllocator));
 		#ifdef ASSERT
-		vector<VERTEX_TYPE> newEdges=m_subgraph->find(prefix)->getValue()->getOutgoingEdges(prefix,(*m_wordSize));
+		vector<uint64_t> newEdges=m_subgraph->find(prefix)->getValue()->getOutgoingEdges(prefix,(*m_wordSize));
 		bool found=false;
 		for(int i=0;i<(int)newEdges.size();i++){
 			if(newEdges[i]==suffix){
@@ -217,7 +217,7 @@ void MessageProcessor::call_TAG_OUT_EDGES_DATA(Message*message){
 		#endif
 	}
 
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_OUT_EDGES_DATA_REPLY,rank);
+	Message aMessage(NULL,0,MPI_UINT64_T,message->getSource(),TAG_OUT_EDGES_DATA_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -248,19 +248,19 @@ void MessageProcessor::call_TAG_IN_EDGES_DATA_REPLY(Message*message){
 void MessageProcessor::call_TAG_IN_EDGES_DATA(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	int length=count;
 
 	for(int i=0;i<(int)length;i+=2){
-		VERTEX_TYPE prefix=incoming[i+0];
-		VERTEX_TYPE suffix=incoming[i+1];
+		uint64_t prefix=incoming[i+0];
+		uint64_t suffix=incoming[i+1];
 		#ifdef ASSERT
 		assert(m_subgraph->find(suffix)!=NULL);
 		#endif
 		m_subgraph->find(suffix)->getValue()->addIngoingEdge(prefix,(*m_wordSize),&(*m_persistentAllocator));
 		#ifdef ASSERT
 		bool found=false;
-		vector<VERTEX_TYPE> edges=m_subgraph->find(suffix)->getValue()->getIngoingEdges(suffix,(*m_wordSize));
+		vector<uint64_t> edges=m_subgraph->find(suffix)->getValue()->getIngoingEdges(suffix,(*m_wordSize));
 		for(int i=0;i<(int)edges.size();i++){
 			if(edges[i]==prefix)
 				found=true;
@@ -269,7 +269,7 @@ void MessageProcessor::call_TAG_IN_EDGES_DATA(Message*message){
 		#endif
 	}
 
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_IN_EDGES_DATA_REPLY,rank);
+	Message aMessage(NULL,0,MPI_UINT64_T,message->getSource(),TAG_IN_EDGES_DATA_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -284,7 +284,7 @@ void MessageProcessor::call_TAG_START_EDGES_DISTRIBUTION(Message*message){
 
 void MessageProcessor::call_TAG_START_EDGES_DISTRIBUTION_ASK(Message*message){
 	int source=message->getSource();
-	Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, source, TAG_START_EDGES_DISTRIBUTION_ANSWER,rank);
+	Message aMessage(NULL, 0, MPI_UINT64_T, source, TAG_START_EDGES_DISTRIBUTION_ANSWER,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -303,7 +303,7 @@ void MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION(Message*m
 	printf("Rank %i has %i vertices\n",rank,(int)m_subgraph->size());
 	fflush(stdout);
 
-	Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, source, TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER,rank);
+	Message aMessage(NULL, 0, MPI_UINT64_T, source, TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -327,7 +327,7 @@ void MessageProcessor::call_TAG_COVERAGE_DATA(Message*message){
 
 	for(int i=0;i<count;i++){
 		int coverage=incoming[1+2*i+0];
-		VERTEX_TYPE count=incoming[1+2*i+1];
+		uint64_t count=incoming[1+2*i+1];
 		(*m_coverageDistribution)[coverage]+=count;
 	}
 	call_TAG_COVERAGE_END(message);
@@ -342,11 +342,11 @@ void MessageProcessor::call_TAG_COVERAGE_END(Message*message){
 
 void MessageProcessor::call_TAG_SEND_COVERAGE_VALUES(Message*message){
 	void*buffer=message->getBuffer();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	(*m_minimumCoverage)=incoming[0];
 	(*m_seedCoverage)=incoming[1];
 	(*m_peakCoverage)=incoming[2];
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_RECEIVED_COVERAGE_INFORMATION,rank);
+	Message aMessage(NULL,0,MPI_UINT64_T,MASTER_RANK,TAG_RECEIVED_COVERAGE_INFORMATION,rank);
 	m_outbox->push_back(aMessage);
 	m_oa->constructor((*m_peakCoverage));
 	parameters->setPeakCoverage(*m_peakCoverage);
@@ -369,10 +369,10 @@ void MessageProcessor::call_TAG_START_SEEDING(Message*message){
 
 	int size=0;
 	for(int i=0;i<m_subgraph->getNumberOfTrees();i++){
-		SplayTreeIterator<VERTEX_TYPE,Vertex> seedingIterator(m_subgraph->getTree(i));
+		SplayTreeIterator<uint64_t,Vertex> seedingIterator(m_subgraph->getTree(i));
 		while(seedingIterator.hasNext()){
 			size++;
-			SplayNode<VERTEX_TYPE,Vertex>*node=seedingIterator.next();
+			SplayNode<uint64_t,Vertex>*node=seedingIterator.next();
 			edgesDistribution[node->getValue()->getIngoingEdges(node->getKey(),(*m_wordSize)).size()][node->getValue()->getOutgoingEdges(node->getKey(),(*m_wordSize)).size()]++;
 			//(m_seedingData->m_SEEDING_nodes).push_back(node->getKey());
 		}
@@ -391,21 +391,21 @@ void MessageProcessor::call_TAG_START_SEEDING(Message*message){
 void MessageProcessor::call_TAG_REQUEST_VERTEX_COVERAGE(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	SplayNode<VERTEX_TYPE,Vertex>*node=m_subgraph->find(incoming[0]);
+	uint64_t*incoming=(uint64_t*)buffer;
+	SplayNode<uint64_t,Vertex>*node=m_subgraph->find(incoming[0]);
 	#ifdef ASSERT
 	assert(node!=NULL);
 	#endif
-	VERTEX_TYPE coverage=node->getValue()->getCoverage();
-	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+	uint64_t coverage=node->getValue()->getCoverage();
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 	message2[0]=coverage;
-	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_VERTEX_COVERAGE_REPLY,rank);
+	Message aMessage(message2,1,MPI_UINT64_T,source,TAG_REQUEST_VERTEX_COVERAGE_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_REQUEST_VERTEX_COVERAGE_REPLY(Message*message){
 	void*buffer=message->getBuffer();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	(m_seedingData->m_SEEDING_receivedVertexCoverage)=incoming[0];
 	(m_seedingData->m_SEEDING_vertexCoverageReceived)=true;
 }
@@ -413,20 +413,20 @@ void MessageProcessor::call_TAG_REQUEST_VERTEX_COVERAGE_REPLY(Message*message){
 void MessageProcessor::call_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	SplayNode<VERTEX_TYPE,Vertex>*node=(SplayNode<VERTEX_TYPE,Vertex>*)incoming[0];
-	VERTEX_TYPE key=node->getKey();
-	VERTEX_TYPE coverage=node->getValue()->getCoverage();
-	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(2*sizeof(VERTEX_TYPE));
+	uint64_t*incoming=(uint64_t*)buffer;
+	SplayNode<uint64_t,Vertex>*node=(SplayNode<uint64_t,Vertex>*)incoming[0];
+	uint64_t key=node->getKey();
+	uint64_t coverage=node->getValue()->getCoverage();
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
 	message2[0]=key;
 	message2[1]=coverage;
-	Message aMessage(message2,2,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_VERTEX_KEY_AND_COVERAGE_REPLY,rank);
+	Message aMessage(message2,2,MPI_UINT64_T,source,TAG_REQUEST_VERTEX_KEY_AND_COVERAGE_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE_REPLY(Message*message){
 	void*buffer=message->getBuffer();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	(m_seedingData->m_SEEDING_receivedKey)=incoming[0];
 	(m_seedingData->m_SEEDING_receivedVertexCoverage)=incoming[1];
 	(m_seedingData->m_SEEDING_vertexKeyAndCoverageReceived)=true;
@@ -435,20 +435,20 @@ void MessageProcessor::call_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE_REPLY(Message*me
 void MessageProcessor::call_TAG_REQUEST_VERTEX_OUTGOING_EDGES(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	vector<VERTEX_TYPE> outgoingEdges=m_subgraph->find(incoming[0])->getValue()->getOutgoingEdges(incoming[0],*m_wordSize);
-	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(outgoingEdges.size()*sizeof(VERTEX_TYPE));
+	uint64_t*incoming=(uint64_t*)buffer;
+	vector<uint64_t> outgoingEdges=m_subgraph->find(incoming[0])->getValue()->getOutgoingEdges(incoming[0],*m_wordSize);
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(outgoingEdges.size()*sizeof(uint64_t));
 	for(int i=0;i<(int)outgoingEdges.size();i++){
 		message2[i]=outgoingEdges[i];
 	}
-	Message aMessage(message2,outgoingEdges.size(),MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY,rank);
+	Message aMessage(message2,outgoingEdges.size(),MPI_UINT64_T,source,TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	(m_seedingData->m_SEEDING_receivedOutgoingEdges).clear();
 	for(int i=0;i<count;i++){
 		(m_seedingData->m_SEEDING_receivedOutgoingEdges).push_back(incoming[i]);
@@ -473,12 +473,12 @@ void MessageProcessor::call_TAG_RECEIVED_MESSAGES_REPLY(Message*message){
 void MessageProcessor::call_TAG_RECEIVED_MESSAGES(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	for(int i=0;i<count;i++){
 		m_messagesHandler->addCount(message->getSource(),incoming[i]);
 	}
 	if(message->getSource()!=MASTER_RANK && m_messagesHandler->isFinished(message->getSource())){
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_RECEIVED_MESSAGES_REPLY,rank);
+		Message aMessage(NULL,0,MPI_UINT64_T,message->getSource(),TAG_RECEIVED_MESSAGES_REPLY,rank);
 		m_outbox->push_back(aMessage);
 	}
 	if(m_messagesHandler->isFinished()){
@@ -490,14 +490,14 @@ void MessageProcessor::call_TAG_GOOD_JOB_SEE_YOU_SOON(Message*message){
 	// send stats to master
 	int i=0;
 	while(i<size){
-		VERTEX_TYPE*data=(VERTEX_TYPE*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+		uint64_t*data=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 		int j=0;
-		int maxToProcess=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(VERTEX_TYPE);
+		int maxToProcess=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t);
 		while(i+j<size &&j<maxToProcess){
 			data[j]=m_messagesHandler->getReceivedMessages()[i+j];
 			j++;
 		}
-		Message aMessage(data,j,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_RECEIVED_MESSAGES,rank);
+		Message aMessage(data,j,MPI_UINT64_T,MASTER_RANK,TAG_RECEIVED_MESSAGES,rank);
 		m_outbox->push_back(aMessage);
 		i+=maxToProcess;
 	}
@@ -508,13 +508,13 @@ void MessageProcessor::call_TAG_I_GO_NOW(Message*message){
 
 void MessageProcessor::call_TAG_SET_WORD_SIZE(Message*message){
 	void*buffer=message->getBuffer();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	(*m_wordSize)=incoming[0];
 }
 
 void MessageProcessor::call_TAG_MASTER_IS_DONE_ATTACHING_READS(Message*message){
 	int source=message->getSource();
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,rank);
+	Message aMessage(NULL,0,MPI_UINT64_T,source,TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -533,24 +533,24 @@ void MessageProcessor::call_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER_REPLY(Message
 void MessageProcessor::call_TAG_REQUEST_VERTEX_INGOING_EDGES(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	SplayNode<VERTEX_TYPE,Vertex>*node=m_subgraph->find(incoming[0]);
+	uint64_t*incoming=(uint64_t*)buffer;
+	SplayNode<uint64_t,Vertex>*node=m_subgraph->find(incoming[0]);
 	#ifdef ASSERT
 	assert(node!=NULL);
 	#endif
-	vector<VERTEX_TYPE> ingoingEdges=node->getValue()->getIngoingEdges(incoming[0],*m_wordSize);
-	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(ingoingEdges.size()*sizeof(VERTEX_TYPE));
+	vector<uint64_t> ingoingEdges=node->getValue()->getIngoingEdges(incoming[0],*m_wordSize);
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(ingoingEdges.size()*sizeof(uint64_t));
 	for(int i=0;i<(int)ingoingEdges.size();i++){
 		message2[i]=ingoingEdges[i];
 	}
-	Message aMessage(message2,ingoingEdges.size(),MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY,rank);
+	Message aMessage(message2,ingoingEdges.size(),MPI_UINT64_T,source,TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	(m_seedingData->m_SEEDING_receivedIngoingEdges).clear();
 	for(int i=0;i<count;i++){
 		(m_seedingData->m_SEEDING_receivedIngoingEdges).push_back(incoming[i]);
@@ -575,8 +575,8 @@ void MessageProcessor::call_TAG_ASK_EXTENSION(Message*message){
 void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	SplayNode<VERTEX_TYPE,Vertex>*node=m_subgraph->find(incoming[0]);
+	uint64_t*incoming=(uint64_t*)buffer;
+	SplayNode<uint64_t,Vertex>*node=m_subgraph->find(incoming[0]);
 	int offset=incoming[1];
 	#ifdef ASSERT
 	assert(node!=NULL);
@@ -587,8 +587,8 @@ void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED(Message*message){
 	//cout<<"source="<<source<<" self="<<rank<<" MessageProcessor::call_TAG_ASK_IS_ASSEMBLED directions="<<maxSize<<endl;
 
 	// each one of them takes 2 elements., this is 4000/8/2-1 = 249
-	int maxToProcess=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(VERTEX_TYPE)/2-1; // -1 because we need to track the offset and the vertex too
-	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	int maxToProcess=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)/2-1; // -1 because we need to track the offset and the vertex too
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	message2[0]=incoming[0];
 	int p=2; // 0 is vertex, 1 is offset
 	int processed=0;
@@ -610,23 +610,23 @@ void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED(Message*message){
 	//cout<<"processed "<<processed<<endl;
 
 	if(nextOffset==maxSize){
-		Message aMessage(message2,2*processed+2,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_IS_ASSEMBLED_REPLY_END,rank);
+		Message aMessage(message2,2*processed+2,MPI_UINT64_T,source,TAG_ASK_IS_ASSEMBLED_REPLY_END,rank);
 		m_outbox->push_back(aMessage);
 	}else{
-		Message aMessage(message2,2*processed+2,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_IS_ASSEMBLED_REPLY,rank);
+		Message aMessage(message2,2*processed+2,MPI_UINT64_T,source,TAG_ASK_IS_ASSEMBLED_REPLY,rank);
 		m_outbox->push_back(aMessage);
 	}
 }
 
 void MessageProcessor::call_TAG_ASK_REVERSE_COMPLEMENT(Message*message){
 	void*buffer=message->getBuffer();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	SplayNode<VERTEX_TYPE,Vertex>*node=(SplayNode<VERTEX_TYPE,Vertex>*)incoming[0];
-	VERTEX_TYPE value=node->getKey();
-	VERTEX_TYPE reverseComplement=complementVertex(value,*m_wordSize,(*m_colorSpaceMode));
+	uint64_t*incoming=(uint64_t*)buffer;
+	SplayNode<uint64_t,Vertex>*node=(SplayNode<uint64_t,Vertex>*)incoming[0];
+	uint64_t value=node->getKey();
+	uint64_t reverseComplement=complementVertex(value,*m_wordSize,(*m_colorSpaceMode));
 	int rank=vertexRank(reverseComplement,size);
-	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(2*sizeof(VERTEX_TYPE));
-	Message aMessage(message2,2,MPI_UNSIGNED_LONG_LONG,rank,TAG_REQUEST_VERTEX_POINTER,rank);
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
+	Message aMessage(message2,2,MPI_UINT64_T,rank,TAG_REQUEST_VERTEX_POINTER,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -636,7 +636,7 @@ void MessageProcessor::call_TAG_REQUEST_VERTEX_POINTER(Message*message){
 
 void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY_END(Message*message){
 	void*buffer=message->getBuffer();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	int count=message->getCount();
 	for(int i=2;i<count;i+=2){
 		int wave=incoming[i+0];
@@ -654,7 +654,7 @@ void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY_END(Message*message){
 void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	int count=message->getCount();
 	for(int i=2;i<count;i+=2){
 		int wave=incoming[i+0];
@@ -665,10 +665,10 @@ void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY(Message*message){
 	}
 	
 	// ask for the next data chunk
-	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(2*sizeof(VERTEX_TYPE));
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
 	message2[0]=incoming[0];
 	message2[1]=incoming[1];
-	Message aMessage(message2,2,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_IS_ASSEMBLED,rank);
+	Message aMessage(message2,2,MPI_UINT64_T,source,TAG_ASK_IS_ASSEMBLED,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -687,13 +687,13 @@ void MessageProcessor::call_TAG_EXTENSION_DATA_REPLY(Message*message){
 
 void MessageProcessor::call_TAG_EXTENSION_DATA(Message*message){
 	void*buffer=message->getBuffer();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	int count=message->getCount();
 	for(int i=0;i<count;i++){
 		(*m_allPaths)[(*m_allPaths).size()-1].push_back(incoming[i+0]);
 	}
 
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_EXTENSION_DATA_REPLY,rank);
+	Message aMessage(NULL,0,MPI_UINT64_T,message->getSource(),TAG_EXTENSION_DATA_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -707,9 +707,9 @@ void MessageProcessor::call_TAG_EXTENSION_DATA_END(Message*message){
 void MessageProcessor::call_TAG_ATTACH_SEQUENCE(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	for(int i=0;i<count;i+=4){
-		VERTEX_TYPE vertex=incoming[i+0];
+		uint64_t vertex=incoming[i+0];
 		int rank=incoming[i+1];
 		int sequenceIdOnDestination=(int)incoming[i+2];
 		char strand=(char)incoming[i+3];
@@ -723,8 +723,8 @@ void MessageProcessor::call_TAG_ATTACH_SEQUENCE(Message*message){
 void MessageProcessor::call_TAG_REQUEST_READS(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	SplayNode<VERTEX_TYPE,Vertex>*node=m_subgraph->find(incoming[0]);
+	uint64_t*incoming=(uint64_t*)buffer;
+	SplayNode<uint64_t,Vertex>*node=m_subgraph->find(incoming[0]);
 	#ifdef ASSERT
 	assert(node!=NULL);
 	#endif
@@ -733,9 +733,9 @@ void MessageProcessor::call_TAG_REQUEST_READS(Message*message){
 	assert(theVertex!=NULL);
 	#endif
 	ReadAnnotation*e=theVertex->getReads();
-	int maxToProcess=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(VERTEX_TYPE)-3;
+	int maxToProcess=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)-3;
 	maxToProcess=maxToProcess-maxToProcess%3;
-	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	int j=0;
 	// send a maximum of maxToProcess individually
 
@@ -749,7 +749,7 @@ void MessageProcessor::call_TAG_REQUEST_READS(Message*message){
 		message2[j++]=m_sentinelValue;
 		message2[j++]=m_sentinelValue;
 
-		Message aMessage(message2,j,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READS_REPLY,rank);
+		Message aMessage(message2,j,MPI_UINT64_T,source,TAG_REQUEST_READS_REPLY,rank);
 		m_outbox->push_back(aMessage);
 	}
 	while(e!=NULL){
@@ -766,12 +766,12 @@ void MessageProcessor::call_TAG_REQUEST_READS(Message*message){
 				message2[j++]=m_sentinelValue;
 				message2[j++]=m_sentinelValue;
 			}
-			Message aMessage(message2,j,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READS_REPLY,rank);
+			Message aMessage(message2,j,MPI_UINT64_T,source,TAG_REQUEST_READS_REPLY,rank);
 			m_outbox->push_back(aMessage);
 			// if more reads are to be sent
 			if(e!=NULL){
 				//allocate another chunk
-				message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(maxToProcess*sizeof(VERTEX_TYPE));
+				message2=(uint64_t*)m_outboxAllocator->allocate(maxToProcess*sizeof(uint64_t));
 				j=0;
 			}
 		}
@@ -781,7 +781,7 @@ void MessageProcessor::call_TAG_REQUEST_READS(Message*message){
 void MessageProcessor::call_TAG_REQUEST_READS_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	for(int i=0;i<count;i+=3){
 		// beginning of transmission, s,0,s
 		if(incoming[i]==m_sentinelValue 
@@ -807,52 +807,52 @@ void MessageProcessor::call_TAG_REQUEST_READS_REPLY(Message*message){
 void MessageProcessor::call_TAG_ASK_READ_VERTEX_AT_POSITION(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	char strand=incoming[2];
-	VERTEX_TYPE vertex=(*m_myReads)[incoming[0]]->getVertex(incoming[1],(*m_wordSize),strand,(*m_colorSpaceMode));
-	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+	uint64_t vertex=(*m_myReads)[incoming[0]]->getVertex(incoming[1],(*m_wordSize),strand,(*m_colorSpaceMode));
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 	message2[0]=vertex;
-	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_READ_VERTEX_AT_POSITION_REPLY,rank);
+	Message aMessage(message2,1,MPI_UINT64_T,source,TAG_ASK_READ_VERTEX_AT_POSITION_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	(m_ed->m_EXTENSION_read_vertex_received)=true;
-	(m_ed->m_EXTENSION_receivedReadVertex)=((VERTEX_TYPE*)buffer)[0];
+	(m_ed->m_EXTENSION_receivedReadVertex)=((uint64_t*)buffer)[0];
 }
 
 void MessageProcessor::call_TAG_ASK_READ_LENGTH(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	int length=(*m_myReads)[incoming[0]]->length();
 	
-	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 	message2[0]=length;
-	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_READ_LENGTH_REPLY,rank);
+	Message aMessage(message2,1,MPI_UINT64_T,source,TAG_ASK_READ_LENGTH_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_ASK_READ_LENGTH_REPLY(Message*message){
 	void*buffer=message->getBuffer();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	(m_ed->m_EXTENSION_readLength_received)=true;
 	(m_ed->m_EXTENSION_receivedLength)=incoming[0];
 }
 
 void MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY(Message*message){
 	call_TAG_SAVE_WAVE_PROGRESSION(message);
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_SAVE_WAVE_PROGRESSION_REPLY,rank);
+	Message aMessage(NULL,0,MPI_UINT64_T,message->getSource(),TAG_SAVE_WAVE_PROGRESSION_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 	void*buffer=message->getBuffer();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	int count=message->getCount();
 	for(int i=0;i<count;i+=3){
-		SplayNode<VERTEX_TYPE,Vertex>*node=m_subgraph->find(incoming[i+0]);
+		SplayNode<uint64_t,Vertex>*node=m_subgraph->find(incoming[i+0]);
 		#ifdef ASSERT
 		assert(node!=NULL);
 		#endif
@@ -898,22 +898,22 @@ void MessageProcessor::call_TAG_FUSION_DONE(Message*message){
 void MessageProcessor::call_TAG_ASK_VERTEX_PATHS_SIZE(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	SplayNode<VERTEX_TYPE,Vertex>*node=m_subgraph->find(incoming[0]);
+	uint64_t*incoming=(uint64_t*)buffer;
+	SplayNode<uint64_t,Vertex>*node=m_subgraph->find(incoming[0]);
 	#ifdef ASSERT
 	assert(node!=NULL);
 	#endif
 	vector<Direction> paths=node->getValue()->getDirections();
 	m_fusionData->m_FUSION_cachedDirections[source]=paths;
-	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 	message2[0]=paths.size();
-	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_VERTEX_PATHS_SIZE_REPLY,rank);
+	Message aMessage(message2,1,MPI_UINT64_T,source,TAG_ASK_VERTEX_PATHS_SIZE_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_ASK_VERTEX_PATHS_SIZE_REPLY(Message*message){
 	void*buffer=message->getBuffer();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	m_fusionData->m_FUSION_paths_received=true;
 	m_fusionData->m_FUSION_receivedPaths.clear();
 	m_fusionData->m_FUSION_numberOfPaths=incoming[0];
@@ -922,7 +922,7 @@ void MessageProcessor::call_TAG_ASK_VERTEX_PATHS_SIZE_REPLY(Message*message){
 void MessageProcessor::call_TAG_GET_PATH_LENGTH(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	int id=incoming[0];
 	int length=0;
 	#ifdef ASSERT
@@ -935,15 +935,15 @@ void MessageProcessor::call_TAG_GET_PATH_LENGTH(Message*message){
 	#ifdef ASSERT
 	assert(length>0);
 	#endif
-	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(sizeof(VERTEX_TYPE));
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t));
 	message2[0]=length;
-	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,TAG_GET_PATH_LENGTH_REPLY,rank);
+	Message aMessage(message2,1,MPI_UINT64_T,source,TAG_GET_PATH_LENGTH_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_GET_PATH_LENGTH_REPLY(Message*message){
 	void*buffer=message->getBuffer();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	m_fusionData->m_FUSION_receivedLength=incoming[0];
 	m_fusionData->m_FUSION_pathLengthReceived=true;
 }
@@ -960,19 +960,19 @@ void MessageProcessor::call_TAG_COMMUNICATION_STABILITY_MESSAGE(Message*message)
 void MessageProcessor::call_TAG_ASK_VERTEX_PATH(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	int i=incoming[0];
 	Direction d=m_fusionData->m_FUSION_cachedDirections[source][i];
-	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(2*sizeof(VERTEX_TYPE));
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
 	message2[0]=d.getWave();
 	message2[1]=d.getProgression();
-	Message aMessage(message2,2,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_VERTEX_PATH_REPLY,rank);
+	Message aMessage(message2,2,MPI_UINT64_T,source,TAG_ASK_VERTEX_PATH_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_ASK_VERTEX_PATH_REPLY(Message*message){
 	void*buffer=message->getBuffer();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	m_fusionData->m_FUSION_path_received=true;
 	int pathId=incoming[0];
 	int position=incoming[1];
@@ -986,7 +986,7 @@ void MessageProcessor::call_TAG_INDEX_PAIRED_SEQUENCE_REPLY(Message*message){
 void MessageProcessor::call_TAG_INDEX_PAIRED_SEQUENCE(Message*message){
 	int count=message->getCount();
 	void*buffer=message->getBuffer();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	for(int i=0;i<count;i+=4){
 		int currentReadId=incoming[i+0];
 		int otherRank=incoming[i+1];
@@ -1008,27 +1008,27 @@ void MessageProcessor::call_TAG_INDEX_PAIRED_SEQUENCE(Message*message){
 
 		(*m_myReads)[currentReadId]->setPairedRead(t);
 	}
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_INDEX_PAIRED_SEQUENCE_REPLY,rank);
+	Message aMessage(NULL,0,MPI_UINT64_T,message->getSource(),TAG_INDEX_PAIRED_SEQUENCE_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_HAS_PAIRED_READ(Message*message){
 	int source=message->getSource();
-	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 	void*buffer=message->getBuffer();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	int index=incoming[0];
 	#ifdef ASSERT
 	assert(index<(int)m_myReads->size());
 	#endif
 	message2[0]=(*m_myReads)[index]->hasPairedRead();
-	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,TAG_HAS_PAIRED_READ_REPLY,rank);
+	Message aMessage(message2,1,MPI_UINT64_T,source,TAG_HAS_PAIRED_READ_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_HAS_PAIRED_READ_REPLY(Message*message){
 	void*buffer=message->getBuffer();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	(m_ed->m_EXTENSION_hasPairedReadAnswer)=incoming[0];
 	(m_ed->m_EXTENSION_hasPairedReadReceived)=true;
 }
@@ -1036,7 +1036,7 @@ void MessageProcessor::call_TAG_HAS_PAIRED_READ_REPLY(Message*message){
 void MessageProcessor::call_TAG_GET_PAIRED_READ(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	int index=incoming[0];
 	#ifdef ASSERT
 	assert(index<(int)m_myReads->size());
@@ -1051,17 +1051,17 @@ void MessageProcessor::call_TAG_GET_PAIRED_READ(Message*message){
 	#ifdef ASSERT
 	assert(t!=NULL);
 	#endif
-	VERTEX_TYPE*message2=(VERTEX_TYPE*)m_outboxAllocator->allocate(3*sizeof(VERTEX_TYPE));
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(3*sizeof(uint64_t));
 	message2[0]=t->getRank();
 	message2[1]=t->getId();
 	message2[2]=t->getLibrary();
-	Message aMessage(message2,3,MPI_UNSIGNED_LONG_LONG,source,TAG_GET_PAIRED_READ_REPLY,rank);
+	Message aMessage(message2,3,MPI_UINT64_T,source,TAG_GET_PAIRED_READ_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_GET_PAIRED_READ_REPLY(Message*message){
 	void*buffer=message->getBuffer();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	(m_ed->m_EXTENSION_pairedRead).constructor(incoming[0],incoming[1],incoming[2]);
 	(m_ed->m_EXTENSION_pairedSequenceReceived)=true;
 }
@@ -1074,7 +1074,7 @@ void MessageProcessor::call_TAG_CLEAR_DIRECTIONS(Message*message){
 	//cout<<"Rank "<<rank<<" is clearing its directions"<<endl;
 	// clear graph
 	for(int i=0;i<m_subgraph->getNumberOfTrees();i++){
-		SplayTreeIterator<VERTEX_TYPE,Vertex> iterator(m_subgraph->getTree(i));
+		SplayTreeIterator<uint64_t,Vertex> iterator(m_subgraph->getTree(i));
 		while(iterator.hasNext()){
 			iterator.next()->getValue()->clearDirections();
 		}
@@ -1093,12 +1093,12 @@ void MessageProcessor::call_TAG_CLEAR_DIRECTIONS(Message*message){
 	m_fusionData->m_FINISH_newFusions.clear();
 
 
-	vector<vector<VERTEX_TYPE> > fusions;
+	vector<vector<uint64_t> > fusions;
 	for(int i=0;i<(int)(m_ed->m_EXTENSION_contigs).size();i++){
 		int id=(m_ed->m_EXTENSION_identifiers)[i];
 		if(m_fusionData->m_FUSION_eliminated.count(id)==0){
 			fusions.push_back((m_ed->m_EXTENSION_contigs)[i]);
-			vector<VERTEX_TYPE> rc;
+			vector<uint64_t> rc;
 			for(int j=(m_ed->m_EXTENSION_contigs)[i].size()-1;j>=0;j--){
 				rc.push_back(complementVertex((m_ed->m_EXTENSION_contigs)[i][j],*m_wordSize,(*m_colorSpaceMode)));
 			}
@@ -1127,7 +1127,7 @@ void MessageProcessor::call_TAG_CLEAR_DIRECTIONS(Message*message){
 	(m_ed->m_EXTENSION_contigs).clear();
 	(m_ed->m_EXTENSION_contigs)=fusions;
 
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,TAG_CLEAR_DIRECTIONS_REPLY,rank);
+	Message aMessage(NULL,0,MPI_UINT64_T,source,TAG_CLEAR_DIRECTIONS_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -1148,7 +1148,7 @@ void MessageProcessor::call_TAG_FINISH_FUSIONS(Message*message){
 
 void MessageProcessor::call_TAG_FINISH_FUSIONS_FINISHED(Message*message){
 	void*buffer=message->getBuffer();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	(*m_FINISH_n)++;
 	if(incoming[0]){
 		(*m_nextReductionOccured)=true;
@@ -1162,7 +1162,7 @@ void MessageProcessor::call_TAG_DISTRIBUTE_FUSIONS(Message*message){
 }
 
 void MessageProcessor::call_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY(Message*message){
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY,rank);
+	Message aMessage(NULL,0,MPI_UINT64_T,message->getSource(),TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -1175,8 +1175,8 @@ void MessageProcessor::call_TAG_DISTRIBUTE_FUSIONS_FINISHED(Message*message){
 
 void MessageProcessor::call_TAG_EXTENSION_START(Message*message){
 	void*buffer=message->getBuffer();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
-	vector<VERTEX_TYPE> a;
+	uint64_t*incoming=(uint64_t*)buffer;
+	vector<uint64_t> a;
 	(*m_allPaths).push_back(a);
 	int id=incoming[0];
 	#ifdef ASSERT
@@ -1190,14 +1190,14 @@ void MessageProcessor::call_TAG_EXTENSION_START(Message*message){
 
 void MessageProcessor::call_TAG_ELIMINATE_PATH(Message*message){
 	void*buffer=message->getBuffer();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	m_fusionData->m_FUSION_eliminated.insert(incoming[0]);
 }
 
 void MessageProcessor::call_TAG_GET_PATH_VERTEX(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	int id=incoming[0];
 	int position=incoming[1];
 	#ifdef ASSERT
@@ -1209,22 +1209,22 @@ void MessageProcessor::call_TAG_GET_PATH_VERTEX(Message*message){
 	}
 	assert(position<(int)(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size());
 	#endif
-	VERTEX_TYPE*messageBytes=(VERTEX_TYPE*)m_outboxAllocator->allocate(sizeof(VERTEX_TYPE));
+	uint64_t*messageBytes=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t));
 	messageBytes[0]=(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]][position];
-	Message aMessage(messageBytes,1,MPI_UNSIGNED_LONG_LONG,source,TAG_GET_PATH_VERTEX_REPLY,rank);
+	Message aMessage(messageBytes,1,MPI_UINT64_T,source,TAG_GET_PATH_VERTEX_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_GET_PATH_VERTEX_REPLY(Message*message){
 	void*buffer=message->getBuffer();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	m_fusionData->m_FINISH_vertex_received=true;
 	m_fusionData->m_FINISH_received_vertex=incoming[0];
 }
 
 void MessageProcessor::call_TAG_SET_COLOR_MODE(Message*message){
 	void*buffer=message->getBuffer();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	(*m_colorSpaceMode)=incoming[0];
 }
 
@@ -1250,7 +1250,7 @@ void MessageProcessor::call_TAG_LIBRARY_DISTANCE_REPLY(Message*message){
 void MessageProcessor::call_TAG_LIBRARY_DISTANCE(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	for(int i=0;i<count;i+=3){
 		parameters->addDistance(incoming[i+0],incoming[i+1],incoming[i+2]);
 		//cout<<"SourceSays "<<message->getSource()<<" "<<incoming[i+0]<<" "<<incoming[i+1]<<" "<<incoming[i+2]<<endl;
@@ -1258,7 +1258,7 @@ void MessageProcessor::call_TAG_LIBRARY_DISTANCE(Message*message){
 	}
 	//cout<<"Received "<<count/3<<" lengths from "<<message->getSource()<<endl;
 
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_LIBRARY_DISTANCE_REPLY,rank);
+	Message aMessage(NULL,0,MPI_UINT64_T,message->getSource(),TAG_LIBRARY_DISTANCE_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -1277,7 +1277,7 @@ void MessageProcessor::call_TAG_ASK_LIBRARY_DISTANCES_FINISHED(Message*message){
 
 void MessageProcessor::call_TAG_UPDATE_LIBRARY_INFORMATION(Message*message){
 	void*buffer=message->getBuffer();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	int*data=(int*)incoming;
 	int libraries=data[0];
 	for(int i=0;i<libraries;i++){
@@ -1297,7 +1297,7 @@ void MessageProcessor::call_TAG_RECEIVED_COVERAGE_INFORMATION(Message*message){
 void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	int index=incoming[0];
 	#ifdef ASSERT
 	assert(index<(int)m_myReads->size());
@@ -1313,24 +1313,24 @@ void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE(Message*message){
 	#endif
 	char*seq=m_myReads->at(index)->getSeq();
 
-	int beforeRounding=3*sizeof(VERTEX_TYPE)+strlen(seq)+1;
-	int toAllocate=roundNumber(beforeRounding,sizeof(VERTEX_TYPE));
+	int beforeRounding=3*sizeof(uint64_t)+strlen(seq)+1;
+	int toAllocate=roundNumber(beforeRounding,sizeof(uint64_t));
 	//cout<<" seq is "<<strlen(seq)<<" +1 +4*8="<<beforeRounding<<", rounded: "<<toAllocate<<endl;
 
-	VERTEX_TYPE*messageBytes=(VERTEX_TYPE*)m_outboxAllocator->allocate(toAllocate);
+	uint64_t*messageBytes=(uint64_t*)m_outboxAllocator->allocate(toAllocate);
 	messageBytes[0]=t->getRank();
 	messageBytes[1]=t->getId();
 	messageBytes[2]=t->getLibrary();
 	char*dest=(char*)(messageBytes+3);
 	strcpy(dest,seq);
 	//cout<<"dest="<<dest<<endl;
-	Message aMessage(messageBytes,toAllocate/sizeof(VERTEX_TYPE),MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READ_SEQUENCE_REPLY,rank);
+	Message aMessage(messageBytes,toAllocate/sizeof(uint64_t),MPI_UINT64_T,source,TAG_REQUEST_READ_SEQUENCE_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE_REPLY(Message*message){
 	void*buffer=message->getBuffer();
-	VERTEX_TYPE*incoming=(VERTEX_TYPE*)buffer;
+	uint64_t*incoming=(uint64_t*)buffer;
 	(m_ed->m_EXTENSION_pairedRead).constructor(incoming[0],incoming[1],incoming[2]);
 	(m_ed->m_EXTENSION_pairedSequenceReceived)=true;
 
@@ -1493,7 +1493,7 @@ SequencesLoader*sequencesLoader,ExtensionData*ed,
 	bool*m_alive,
 	bool*m_colorSpaceMode,
 	int*m_mode,
-	vector<vector<VERTEX_TYPE> >*m_allPaths,
+	vector<vector<uint64_t> >*m_allPaths,
 	int*m_last_value,
 	int*m_ranksDoneAttachingReads,
 	int*m_DISTRIBUTE_n,
@@ -1504,7 +1504,7 @@ SequencesLoader*sequencesLoader,ExtensionData*ed,
 	bool*m_nextReductionOccured,
 	MyAllocator*m_directionsAllocator,
 	int*m_mode_send_coverage_iterator,
-	map<int,VERTEX_TYPE>*m_coverageDistribution,
+	map<int,uint64_t>*m_coverageDistribution,
 	int*m_sequence_ready_machines,
 	int*m_numberOfMachinesReadyForEdgesDistribution,
 	int*m_numberOfMachinesReadyToSendDistribution,

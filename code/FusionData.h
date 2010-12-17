@@ -64,9 +64,9 @@ public:
 
 	bool m_FINISH_vertex_received;
 	bool m_FINISH_fusionOccured;
-	vector<vector<VERTEX_TYPE> > m_FINISH_newFusions;
+	vector<vector<uint64_t> > m_FINISH_newFusions;
 	map<int,int> m_FINISH_pathLengths;
-	VERTEX_TYPE m_FINISH_received_vertex;
+	uint64_t m_FINISH_received_vertex;
 
 	bool m_Machine_getPaths_INITIALIZED;
 	bool m_Machine_getPaths_DONE;
@@ -116,7 +116,7 @@ public:
 	void makeFusions();
 
 
-	void getPaths(VERTEX_TYPE vertex);
+	void getPaths(uint64_t vertex);
 };
 
 #endif

@@ -89,12 +89,12 @@ void EdgesExtractor::processOutgoingEdges(){
 			strcpy(prefix,memory);
 			prefix[m_wordSize]='\0';
 			strcpy(suffix,memory+1);
-			VERTEX_TYPE a_1=wordId(prefix);
-			VERTEX_TYPE a_2=wordId(suffix);
+			uint64_t a_1=wordId(prefix);
+			uint64_t a_2=wordId(suffix);
 			int rankToFlush=0;
 			if(m_reverseComplementEdge){
-				VERTEX_TYPE b_1=complementVertex(a_2,m_wordSize,m_colorSpaceMode);
-				VERTEX_TYPE b_2=complementVertex(a_1,m_wordSize,m_colorSpaceMode);
+				uint64_t b_1=complementVertex(a_2,m_wordSize,m_colorSpaceMode);
+				uint64_t b_2=complementVertex(a_1,m_wordSize,m_colorSpaceMode);
 				int rankB=vertexRank(b_1,getSize);
 				rankToFlush=rankB;
 				m_bufferedData.addAt(rankB,b_1);
@@ -139,7 +139,7 @@ void EdgesExtractor::processIngoingEdges(){
 			m_mode_send_edge_sequence_id=0;
 		}else{
 			m_bufferedData.flushAll(TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
-			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_EDGES_DISTRIBUTED,getRank);
+			Message aMessage(NULL,0, MPI_UINT64_T, MASTER_RANK, TAG_EDGES_DISTRIBUTED,getRank);
 			m_outbox->push_back(aMessage);
 			(*m_mode_send_ingoing_edges)=false;
 			(*m_mode)=MODE_DO_NOTHING;
@@ -173,12 +173,12 @@ void EdgesExtractor::processIngoingEdges(){
 			strcpy(prefix,memory);
 			prefix[m_wordSize]='\0';
 			strcpy(suffix,memory+1);
-			VERTEX_TYPE a_1=wordId(prefix);
-			VERTEX_TYPE a_2=wordId(suffix);
+			uint64_t a_1=wordId(prefix);
+			uint64_t a_2=wordId(suffix);
 			int rankToFlush=0;
 			if(m_reverseComplementEdge){
-				VERTEX_TYPE b_1=complementVertex(a_2,m_wordSize,m_colorSpaceMode);
-				VERTEX_TYPE b_2=complementVertex(a_1,m_wordSize,m_colorSpaceMode);
+				uint64_t b_1=complementVertex(a_2,m_wordSize,m_colorSpaceMode);
+				uint64_t b_2=complementVertex(a_1,m_wordSize,m_colorSpaceMode);
 				int rankB=vertexRank(b_2,getSize);
 				rankToFlush=rankB;
 				m_bufferedData.addAt(rankB,b_1);

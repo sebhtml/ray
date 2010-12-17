@@ -53,7 +53,6 @@ see <http://www.gnu.org/licenses/>
 
 #define _REPEATED_LENGTH_ALARM_THRESHOLD 100
 
-#define VERTEX_TYPE u64
 #include<stdint.h>
 #include<SplayTree.h>
 #include<stdlib.h>
@@ -138,16 +137,16 @@ using namespace std;
 string reverseComplement(string a);
 
 /*
- * convert a char* to VERTEX_TYPE
+ * convert a char* to uint64_t
  * A=00, T=01, C=10, G=11
  */
-VERTEX_TYPE wordId(const char*a);
-VERTEX_TYPE wordId_Classic(const char*a);
+uint64_t wordId(const char*a);
+uint64_t wordId_Classic(const char*a);
 
 /*
  * convert a 64-bit integer to a string
  */
-string idToWord(VERTEX_TYPE i,int wordSize);
+string idToWord(uint64_t i,int wordSize);
 
 /*
  * verify that x has only A,T,C, and G
@@ -155,35 +154,35 @@ string idToWord(VERTEX_TYPE i,int wordSize);
 bool isValidDNA(const char*x);
 
 /*
- * get the first letter of a VERTEX_TYPE
+ * get the first letter of a uint64_t
  */
-char getFirstSymbol(VERTEX_TYPE i,int k);
+char getFirstSymbol(uint64_t i,int k);
 
 /*
- * get the last letter of a VERTEX_TYPE
+ * get the last letter of a uint64_t
  */
-char getLastSymbol(VERTEX_TYPE i,int w);
+char getLastSymbol(uint64_t i,int w);
 
 /*
  * output in stdout the binary view of a 64-bit integer.
  */
-void coutBIN(VERTEX_TYPE a);
+void coutBIN(uint64_t a);
 void coutBIN8(uint8_t a);
 
 /*
  * get the prefix
  */
-VERTEX_TYPE getKPrefix(VERTEX_TYPE a,int k);
+uint64_t getKPrefix(uint64_t a,int k);
 
 /*
  * get the suffix
  */
-VERTEX_TYPE getKSuffix(VERTEX_TYPE a,int k);
+uint64_t getKSuffix(uint64_t a,int k);
 
 /*
  * complement a vertex, and return another one
  */
-VERTEX_TYPE complementVertex(VERTEX_TYPE a,int m_wordSize,bool useColorSpace);
+uint64_t complementVertex(uint64_t a,int m_wordSize,bool useColorSpace);
 
 /*
  * add line breaks to a string
@@ -197,38 +196,38 @@ void __Free(void*a);
  * compute the reverse complement in color space (it is just the same, but reverse)
  */
 
-VERTEX_TYPE complementVertex_colorSpace(VERTEX_TYPE a,int b);
+uint64_t complementVertex_colorSpace(uint64_t a,int b);
 
 /*
  * complement vertex, normal.
  */
-VERTEX_TYPE complementVertex_normal(VERTEX_TYPE a,int m_wordSize);
+uint64_t complementVertex_normal(uint64_t a,int m_wordSize);
 
 /*
  * use mini distant segments here.
  */
-VERTEX_TYPE wordId_DistantSegments(const char*a);
+uint64_t wordId_DistantSegments(const char*a);
 
-uint8_t getFirstSegmentLastCode(VERTEX_TYPE v,int segmentLength,int totalLength);
-uint8_t getFirstSegmentFirstCode(VERTEX_TYPE v,int segmentLength,int totalLength);
-uint8_t getSecondSegmentFirstCode(VERTEX_TYPE v,int segmentLength,int totalLength);
-uint8_t getSecondSegmentLastCode(VERTEX_TYPE v,int segmentLength,int totalLength);
+uint8_t getFirstSegmentLastCode(uint64_t v,int segmentLength,int totalLength);
+uint8_t getFirstSegmentFirstCode(uint64_t v,int segmentLength,int totalLength);
+uint8_t getSecondSegmentFirstCode(uint64_t v,int segmentLength,int totalLength);
+uint8_t getSecondSegmentLastCode(uint64_t v,int segmentLength,int totalLength);
 
 uint8_t charToCode(char a);
 
 char codeToChar(uint8_t a);
 
-string convertToString(vector<VERTEX_TYPE>*b,int m_wordSize);
+string convertToString(vector<uint64_t>*b,int m_wordSize);
 
 
-int vertexRank(VERTEX_TYPE a,int _size);
+int vertexRank(uint64_t a,int _size);
 
 void showProgress(time_t m_lastTime);
 
 char*__basename(char*a);
 
 
-VERTEX_TYPE kmerAtPosition(const char*string,int pos,int w,char strand,bool color);
+uint64_t kmerAtPosition(const char*string,int pos,int w,char strand,bool color);
 
 int roundNumber(int number,int alignment);
 

@@ -39,11 +39,11 @@ public:
 	int m_doChoice_tips_i;
 	vector<int> m_doChoice_tips_newEdges;
 	bool m_doChoice_tips_dfs_initiated;
-	set<VERTEX_TYPE> m_depthFirstSearchVisitedVertices;
-	MyStack<VERTEX_TYPE> m_depthFirstSearchVerticesToVisit;
-	vector<VERTEX_TYPE> m_depthFirstSearchVisitedVertices_vector;
+	set<uint64_t> m_depthFirstSearchVisitedVertices;
+	MyStack<uint64_t> m_depthFirstSearchVerticesToVisit;
+	vector<uint64_t> m_depthFirstSearchVisitedVertices_vector;
 	vector<int> m_depthFirstSearchVisitedVertices_depths;
-	map<VERTEX_TYPE,int> m_coverages;
+	map<uint64_t,int> m_coverages;
 
 };
 

@@ -49,19 +49,19 @@ class SeedingData{
 	Parameters*m_parameters;
 	MyForest*m_subgraph;
 	int m_currentTreeIndex;
-	SplayTreeIterator<VERTEX_TYPE,Vertex> m_splayTreeIterator;
+	SplayTreeIterator<uint64_t,Vertex> m_splayTreeIterator;
 
 public:
 	SeedingData();
-	SplayTreeIterator<VERTEX_TYPE,Vertex>*m_SEEDING_iterator;
-	SplayNode<VERTEX_TYPE,Vertex>*m_SEEDING_node;
+	SplayTreeIterator<uint64_t,Vertex>*m_SEEDING_iterator;
+	SplayNode<uint64_t,Vertex>*m_SEEDING_node;
 	bool m_SEEDING_edgesReceived;
 	int m_SEEDING_numberOfOutgoingEdgesWithSeedCoverage;
-	VERTEX_TYPE m_SEEDING_currentChildVertex;
-	VERTEX_TYPE m_SEEDING_currentParentVertex;
-	VERTEX_TYPE m_SEEDING_receivedKey;
+	uint64_t m_SEEDING_currentChildVertex;
+	uint64_t m_SEEDING_currentParentVertex;
+	uint64_t m_SEEDING_receivedKey;
 	bool m_SEEDING_vertexKeyAndCoverageReceived;
-	VERTEX_TYPE m_SEEDING_first;
+	uint64_t m_SEEDING_first;
 	int m_SEEDING_receivedVertexCoverage;
 	bool m_SEEDING_vertexCoverageReceived;
 	int m_SEEDING_currentChildRank;
@@ -73,7 +73,7 @@ public:
 	bool m_SEEDING_passedParentsTest;
 	bool m_SEEDING_Extended;
 	int m_SEEDING_i;
-	VERTEX_TYPE m_SEEDING_currentVertex;
+	uint64_t m_SEEDING_currentVertex;
 
 	bool m_SEEDING_InedgesReceived;
 	bool m_SEEDING_InedgesRequested;
@@ -84,15 +84,15 @@ public:
 	int m_SEEDING_ingoingEdgeIndex;
 	int m_SEEDING_outgoingEdgeIndex;
 	int m_SEEDING_currentRank;
-	vector<vector<VERTEX_TYPE> > m_SEEDING_seeds;
-	vector<VERTEX_TYPE> m_SEEDING_seed;
-	vector<VERTEX_TYPE> m_SEEDING_receivedIngoingEdges;
-	vector<VERTEX_TYPE> m_SEEDING_receivedOutgoingEdges;
+	vector<vector<uint64_t> > m_SEEDING_seeds;
+	vector<uint64_t> m_SEEDING_seed;
+	vector<uint64_t> m_SEEDING_receivedIngoingEdges;
+	vector<uint64_t> m_SEEDING_receivedOutgoingEdges;
 	vector<int> m_SEEDING_outgoingCoverages;
-	vector<VERTEX_TYPE> m_SEEDING_outgoingKeys;
+	vector<uint64_t> m_SEEDING_outgoingKeys;
 	bool m_SEEDING_vertexKeyAndCoverageRequested;
 	int m_SEEDING_numberOfIngoingEdges;
-	set<VERTEX_TYPE> m_SEEDING_vertices;
+	set<uint64_t> m_SEEDING_vertices;
 	int m_SEEDING_numberOfOutgoingEdges;
 	bool m_SEEDING_testInitiated;
 	bool m_SEEDING_1_1_test_result;

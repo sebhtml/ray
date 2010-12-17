@@ -33,7 +33,7 @@ using namespace std;
 class ExtensionData{
 public:
 	// EXTENSION MODE
-	vector<VERTEX_TYPE> m_enumerateChoices_outgoingEdges;
+	vector<uint64_t> m_enumerateChoices_outgoingEdges;
 	bool m_doChoice_tips_Detected;
 	PairedRead m_EXTENSION_pairedRead;
 	bool m_EXTENSION_pairedSequenceRequested;
@@ -43,12 +43,12 @@ public:
 	bool m_EXTENSION_hasPairedReadRequested;
 	bool m_EXTENSION_hasPairedReadReceived;
 	vector<int> m_EXTENSION_identifiers;
-	vector<VERTEX_TYPE> m_EXTENSION_extension;
+	vector<uint64_t> m_EXTENSION_extension;
 	vector<int> m_EXTENSION_coverages;
 	bool m_EXTENSION_complementedSeed;
-	vector<VERTEX_TYPE> m_EXTENSION_currentSeed;
+	vector<uint64_t> m_EXTENSION_currentSeed;
 	int m_EXTENSION_numberOfRanksDone;
-	vector<vector<VERTEX_TYPE> > m_EXTENSION_contigs;
+	vector<vector<uint64_t> > m_EXTENSION_contigs;
 	bool m_EXTENSION_checkedIfCurrentVertexIsAssembled;
 	bool m_EXTENSION_VertexMarkAssembled_requested;
 	bool m_EXTENSION_reverseComplement_requested;
@@ -59,7 +59,7 @@ public:
 	bool m_EXTENSION_readLength_done;
 	bool m_EXTENSION_read_vertex_received;
 	bool m_EXTENSION_read_vertex_requested;
-	VERTEX_TYPE m_EXTENSION_receivedReadVertex;
+	uint64_t m_EXTENSION_receivedReadVertex;
 	bool m_mode_EXTENSION;
 	bool m_EXTENSION_currentRankIsDone;
 	bool m_EXTENSION_currentRankIsSet;

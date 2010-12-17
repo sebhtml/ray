@@ -69,8 +69,8 @@ public:
 	bool m_computedTopology;
 	int m_pathId;
 	MyStack<int> m_depthsToVisit;
-	MyStack<VERTEX_TYPE> m_verticesToVisit;
-	set<VERTEX_TYPE> m_visitedVertices;
+	MyStack<uint64_t> m_verticesToVisit;
+	set<uint64_t> m_visitedVertices;
 	bool m_processedLastVertex;
 	map<int,int> m_allIdentifiers;
 };
@@ -137,7 +137,7 @@ class Machine{
 	int m_numberOfMachinesReadyToSendDistribution;
 	int m_numberOfRanksDoneSeeding;
 	int m_numberOfRanksGone;
-	map<int,VERTEX_TYPE> m_distributionOfCoverage;
+	map<int,uint64_t> m_distributionOfCoverage;
 
 	FusionData*m_fusionData;
 
@@ -161,7 +161,7 @@ class Machine{
 	ChooserData*m_cd;
 
 	// coverage distribubtion
-	map<int,VERTEX_TYPE> m_coverageDistribution;
+	map<int,uint64_t> m_coverageDistribution;
 	int m_minimumCoverage;
 	int m_peakCoverage;
 	int m_seedCoverage;
@@ -204,7 +204,7 @@ class Machine{
 	int m_fileId;
 	int m_sequence_idInFile;
 
-	vector<vector<VERTEX_TYPE> > m_allPaths;
+	vector<vector<uint64_t> > m_allPaths;
 	bool m_aborted;
 
 	bool m_messageSentForEdgesDistribution;
@@ -263,12 +263,12 @@ class Machine{
 	void processData();
 	int getRank();
 	void receiveWelcomeMessage(MPI_Status*status);
-	int vertexRank(VERTEX_TYPE a);
-	void getPaths(VERTEX_TYPE vertex);
+	int vertexRank(uint64_t a);
+	void getPaths(uint64_t vertex);
 	void extendSeeds();
 	void finishFusions();
 	void makeFusions();
-	void depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int b);
+	void depthFirstSearch(uint64_t root,uint64_t a,int b);
 	void showUsage();
 	
 

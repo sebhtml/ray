@@ -38,8 +38,8 @@ class CoverageDistribution{
 	int m_minimumCoverage;
 	int m_peakCoverage;
 public:
-	void writeFile(map<int,VERTEX_TYPE>*distributionOfCoverage,string*file);
-	CoverageDistribution(map<int,VERTEX_TYPE>*distributionOfCoverage,string*file);
+	void writeFile(map<int,uint64_t>*distributionOfCoverage,string*file);
+	CoverageDistribution(map<int,uint64_t>*distributionOfCoverage,string*file);
 	int getMinimumCoverage();
 	int getPeakCoverage();
 };

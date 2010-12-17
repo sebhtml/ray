@@ -26,7 +26,7 @@
 using namespace std;
 
 void MyForest::constructor(int count,MyAllocator*allocator){
-	m_trees=(SplayTree<VERTEX_TYPE,Vertex>*)allocator->allocate(sizeof(SplayTree<VERTEX_TYPE,Vertex>)*count);
+	m_trees=(SplayTree<uint64_t,Vertex>*)allocator->allocate(sizeof(SplayTree<uint64_t,Vertex>)*count);
 	for(int i=0;i<count;i++){
 		m_trees[i].constructor();
 		m_trees[i].constructor(allocator);
@@ -44,21 +44,21 @@ int MyForest::getNumberOfTrees(){
 	return m_numberOfTrees;
 }
 
-SplayTree<VERTEX_TYPE,Vertex>*MyForest::getTree(int i){
+SplayTree<uint64_t,Vertex>*MyForest::getTree(int i){
 	return m_trees+i;
 }
 
-int MyForest::getTreeIndex(VERTEX_TYPE i){
+int MyForest::getTreeIndex(uint64_t i){
 	return uniform_hashing_function_2_64_64(i)%m_numberOfTrees;
 }
 
-SplayNode<VERTEX_TYPE,Vertex>*MyForest::find(VERTEX_TYPE key){
+SplayNode<uint64_t,Vertex>*MyForest::find(uint64_t key){
 	return m_trees[getTreeIndex(key)].find(key);
 }
 
-SplayNode<VERTEX_TYPE,Vertex>*MyForest::insert(VERTEX_TYPE key){
+SplayNode<uint64_t,Vertex>*MyForest::insert(uint64_t key){
 	int tree=getTreeIndex(key);
-	SplayNode<VERTEX_TYPE,Vertex>*n=m_trees[tree].insert(key);
+	SplayNode<uint64_t,Vertex>*n=m_trees[tree].insert(key);
 	m_inserted=m_trees[tree].inserted();
 	if(m_inserted)
 		m_size++;

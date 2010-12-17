@@ -45,7 +45,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 		fflush(stdout);
 		m_bufferedData.flushAll(TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank);
 		(*m_mode)=MODE_DO_NOTHING;
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,m_rank);
+		Message aMessage(NULL,0,MPI_UINT64_T,MASTER_RANK,TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,m_rank);
 		m_outbox->push_back(aMessage);
 		m_bufferedData.clear();
 
@@ -67,12 +67,12 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 	memcpy(vertexChar,sequence,m_wordSize);
 	vertexChar[m_wordSize]='\0';
 	if(isValidDNA(vertexChar)){
-		VERTEX_TYPE vertex=wordId(vertexChar);
+		uint64_t vertex=wordId(vertexChar);
 		int sendTo=vertexRank(vertex,m_size);
 		m_bufferedData.addAt(sendTo,vertex);
 		m_bufferedData.addAt(sendTo,m_rank);
 		m_bufferedData.addAt(sendTo,m_theSequenceId);
-		m_bufferedData.addAt(sendTo,(VERTEX_TYPE)'F');
+		m_bufferedData.addAt(sendTo,(uint64_t)'F');
 
 		m_bufferedData.flush(sendTo,4,TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank,false);
 	}
@@ -81,12 +81,12 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 	memcpy(vertexChar,sequence+strlen(sequence)-(m_wordSize),m_wordSize);
 	vertexChar[m_wordSize]='\0';
 	if(isValidDNA(vertexChar)){
-		VERTEX_TYPE vertex=complementVertex(wordId(vertexChar),m_wordSize,(m_colorSpaceMode));
+		uint64_t vertex=complementVertex(wordId(vertexChar),m_wordSize,(m_colorSpaceMode));
 		int sendTo=vertexRank(vertex,m_size);
 		m_bufferedData.addAt(sendTo,vertex);
 		m_bufferedData.addAt(sendTo,m_rank);
 		m_bufferedData.addAt(sendTo,m_theSequenceId);
-		m_bufferedData.addAt(sendTo,(VERTEX_TYPE)'R');
+		m_bufferedData.addAt(sendTo,(uint64_t)'R');
 		m_bufferedData.flush(sendTo,4,TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank,false);
 	}
 

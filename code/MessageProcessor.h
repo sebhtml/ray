@@ -93,7 +93,7 @@ class MessageProcessor{
 	bool*m_alive;
 	bool*m_colorSpaceMode;
 	int*m_mode;
-	vector<vector<VERTEX_TYPE> >*m_allPaths;
+	vector<vector<uint64_t> >*m_allPaths;
 	int*m_last_value;
 	int*m_ranksDoneAttachingReads;
 	int*m_DISTRIBUTE_n;
@@ -104,7 +104,7 @@ class MessageProcessor{
 	bool*m_nextReductionOccured;
 	MyAllocator*m_directionsAllocator;
 	int*m_mode_send_coverage_iterator;
-	map<int,VERTEX_TYPE>*m_coverageDistribution;
+	map<int,uint64_t>*m_coverageDistribution;
 	int*m_sequence_ready_machines;
 	int*m_numberOfMachinesReadyForEdgesDistribution;
 	int*m_numberOfMachinesReadyToSendDistribution;
@@ -151,7 +151,7 @@ ExtensionData*ed,
 	bool*m_alive,
 	bool*m_colorSpaceMode,
 	int*m_mode,
-	vector<vector<VERTEX_TYPE> >*m_allPaths,
+	vector<vector<uint64_t> >*m_allPaths,
 	int*m_last_value,
 	int*m_ranksDoneAttachingReads,
 	int*m_DISTRIBUTE_n,
@@ -162,7 +162,7 @@ ExtensionData*ed,
 	bool*m_nextReductionOccured,
 	MyAllocator*m_directionsAllocator,
 	int*m_mode_send_coverage_iterator,
-	map<int,VERTEX_TYPE>*m_coverageDistribution,
+	map<int,uint64_t>*m_coverageDistribution,
 	int*m_sequence_ready_machines,
 	int*m_numberOfMachinesReadyForEdgesDistribution,
 	int*m_numberOfMachinesReadyToSendDistribution,

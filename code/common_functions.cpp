@@ -69,8 +69,8 @@ string reverseComplement(string a){
 	return j;
 }
 
-// convert k-mer to VERTEX_TYPE
-VERTEX_TYPE wordId(const char*a){
+// convert k-mer to uint64_t
+uint64_t wordId(const char*a){
 	#ifdef USE_DISTANT_SEGMENTS_GRAPH
 	return wordId_DistantSegments(a);
 	#endif
@@ -78,10 +78,10 @@ VERTEX_TYPE wordId(const char*a){
 
 }
 
-VERTEX_TYPE wordId_Classic(const char*a){
-	VERTEX_TYPE i=0;
+uint64_t wordId_Classic(const char*a){
+	uint64_t i=0;
 	for(int j=0;j<(int)strlen(a);j++){
-		VERTEX_TYPE k=_ENCODING_A; // default is A
+		uint64_t k=_ENCODING_A; // default is A
 		char h=a[j];
 		switch(h){
 			case 'T':
@@ -100,11 +100,11 @@ VERTEX_TYPE wordId_Classic(const char*a){
 
 }
 
-VERTEX_TYPE wordId_DistantSegments(const char*a){
-	VERTEX_TYPE i=0;
+uint64_t wordId_DistantSegments(const char*a){
+	uint64_t i=0;
 	int len=strlen(a);
 	for(int j=0;j<(int)strlen(a);j++){
-		VERTEX_TYPE k=_ENCODING_A; // default is A
+		uint64_t k=_ENCODING_A; // default is A
 		char h='A';
 		if(j<_SEGMENT_LENGTH or j>len-_SEGMENT_LENGTH-1){
 			h=a[j];
@@ -126,10 +126,10 @@ VERTEX_TYPE wordId_DistantSegments(const char*a){
 
 }
 
-string idToWord(VERTEX_TYPE i,int wordSize){
+string idToWord(uint64_t i,int wordSize){
 	char a[1000];
 	for(int p=0;p<wordSize;p++){
-		VERTEX_TYPE j=(i<<(sizeof(VERTEX_TYPE)*8-2-2*p))>>(sizeof(VERTEX_TYPE)*8-2); // clear the bits.
+		uint64_t j=(i<<(sizeof(uint64_t)*8-2-2*p))>>(sizeof(uint64_t)*8-2); // clear the bits.
 		switch(j){
 			case _ENCODING_A:
 				a[p]='A';
@@ -152,10 +152,10 @@ string idToWord(VERTEX_TYPE i,int wordSize){
 	return b;
 }
 
-//  63 (sizeof(VERTEX_TYPE)*8-2) ... 1 0
+//  63 (sizeof(uint64_t)*8-2) ... 1 0
 //              
-char getFirstSymbol(VERTEX_TYPE i,int k){
-	i=(i<<((sizeof(VERTEX_TYPE)*8-2)))>>(sizeof(VERTEX_TYPE)*8-2); // clear bits
+char getFirstSymbol(uint64_t i,int k){
+	i=(i<<((sizeof(uint64_t)*8-2)))>>(sizeof(uint64_t)*8-2); // clear bits
         if((int)i==_ENCODING_A)
                 return 'A';
         if((int)i==_ENCODING_T)
@@ -167,8 +167,8 @@ char getFirstSymbol(VERTEX_TYPE i,int k){
 	return '0';
 }
 
-char getLastSymbol(VERTEX_TYPE i,int m_wordSize){
-	i=(i<<(sizeof(VERTEX_TYPE)*8-2*m_wordSize))>>(sizeof(VERTEX_TYPE)*8-2); // clecar bits
+char getLastSymbol(uint64_t i,int m_wordSize){
+	i=(i<<(sizeof(uint64_t)*8-2*m_wordSize))>>(sizeof(uint64_t)*8-2); // clecar bits
         if((int)i==_ENCODING_A)
                 return 'A';
         if((int)i==_ENCODING_T)
@@ -194,13 +194,13 @@ bool isValidDNA(const char*x){
 
 /*
  * 
- *   63 (sizeof(VERTEX_TYPE)*8-2) ... 1 0
+ *   63 (sizeof(uint64_t)*8-2) ... 1 0
  *
  */
 
-void coutBIN(VERTEX_TYPE a){
-	for(int i=sizeof(VERTEX_TYPE)*8-1;i>=0;i--){
-		cout<<(int)((a<<(sizeof(VERTEX_TYPE)*8-1-i))>>(sizeof(VERTEX_TYPE)*8-1));
+void coutBIN(uint64_t a){
+	for(int i=sizeof(uint64_t)*8-1;i>=0;i--){
+		cout<<(int)((a<<(sizeof(uint64_t)*8-1-i))>>(sizeof(uint64_t)*8-1));
 	}
 	cout<<endl;
 }
@@ -212,25 +212,25 @@ void coutBIN8(uint8_t a){
 }
 
 
-VERTEX_TYPE getKPrefix(VERTEX_TYPE a,int k){
-	return (a<<(sizeof(VERTEX_TYPE)*8-2*(k+1)+2))>>(sizeof(VERTEX_TYPE)*8-2*(k+1)+2); // move things around...
+uint64_t getKPrefix(uint64_t a,int k){
+	return (a<<(sizeof(uint64_t)*8-2*(k+1)+2))>>(sizeof(uint64_t)*8-2*(k+1)+2); // move things around...
 }
 
-VERTEX_TYPE getKSuffix(VERTEX_TYPE a,int k){
+uint64_t getKSuffix(uint64_t a,int k){
 	return a>>2;
 }
 
-VERTEX_TYPE complementVertex(VERTEX_TYPE a,int b,bool colorSpace){
+uint64_t complementVertex(uint64_t a,int b,bool colorSpace){
 	if(colorSpace)
 		return complementVertex_colorSpace(a,b);
 	return complementVertex_normal(a,b);
 }
 
-VERTEX_TYPE complementVertex_colorSpace(VERTEX_TYPE a,int wordSize){
-	VERTEX_TYPE output=0;
+uint64_t complementVertex_colorSpace(uint64_t a,int wordSize){
+	uint64_t output=0;
 	int position2=0;
 	for(int positionInMer=wordSize-1;positionInMer>=0;positionInMer--){
-		VERTEX_TYPE complementVertex=(a<<((sizeof(VERTEX_TYPE)*8-2)-2*positionInMer))>>(sizeof(VERTEX_TYPE)*8-2);
+		uint64_t complementVertex=(a<<((sizeof(uint64_t)*8-2)-2*positionInMer))>>(sizeof(uint64_t)*8-2);
 		output=(output|(complementVertex<<(position2<<1)));
 		position2++;
 	}
@@ -238,12 +238,12 @@ VERTEX_TYPE complementVertex_colorSpace(VERTEX_TYPE a,int wordSize){
 	return output;
 }
 
-VERTEX_TYPE complementVertex_normal(VERTEX_TYPE a,int m_wordSize){
-	VERTEX_TYPE output=0;
+uint64_t complementVertex_normal(uint64_t a,int m_wordSize){
+	uint64_t output=0;
 	int position2=0;
 	for(int positionInMer=m_wordSize-1;positionInMer>=0;positionInMer--){
-		VERTEX_TYPE j=(a<<((sizeof(VERTEX_TYPE)*8-2)-2*positionInMer))>>(sizeof(VERTEX_TYPE)*8-2);
-		VERTEX_TYPE complementVertex=0;
+		uint64_t j=(a<<((sizeof(uint64_t)*8-2)-2*positionInMer))>>(sizeof(uint64_t)*8-2);
+		uint64_t complementVertex=0;
 		switch(j){
 			case _ENCODING_A:
 				complementVertex=_ENCODING_T;
@@ -311,41 +311,41 @@ void __Free(void*a){
 
 
 
-uint8_t getFirstSegmentLastCode(VERTEX_TYPE v,int totalLength,int segmentLength){
+uint8_t getFirstSegmentLastCode(uint64_t v,int totalLength,int segmentLength){
 	// ATCAGTTGCAGTACTGCAATCTACG
 	// 0000000000000011100001100100000000000000000000000001011100100100
 	//                                                   6 5 4 3 2 1 0
-	v=(v<<(sizeof(VERTEX_TYPE)*8-(segmentLength*2)));// clear garbage
-	v=(v>>(sizeof(VERTEX_TYPE)*8-2));// restore state
+	v=(v<<(sizeof(uint64_t)*8-(segmentLength*2)));// clear garbage
+	v=(v>>(sizeof(uint64_t)*8-2));// restore state
 	return v;
 }
 
-uint8_t getSecondSegmentLastCode(VERTEX_TYPE v,int totalLength,int segmentLength){
+uint8_t getSecondSegmentLastCode(uint64_t v,int totalLength,int segmentLength){
 	// ATCAGTTGCAGTACTGCAATCTACG
 	// 0000000000000011100001100100000000000000000000000001011100100100
 	//               6 5 4 3 2 1 0
-	v=v<<(sizeof(VERTEX_TYPE)*8-(totalLength*2));
-	v=(v>>(sizeof(VERTEX_TYPE)*8-2));// restore state
+	v=v<<(sizeof(uint64_t)*8-(totalLength*2));
+	v=(v>>(sizeof(uint64_t)*8-2));// restore state
 	
 	return v;
 }
 
-uint8_t getFirstSegmentFirstCode(VERTEX_TYPE v,int totalLength,int segmentLength){
+uint8_t getFirstSegmentFirstCode(uint64_t v,int totalLength,int segmentLength){
 	// ATCAGTTGCAGTACTGCAATCTACG
 	// 0000000000000011100001100100000000000000000000000001011100100100
 	//                                                   6 5 4 3 2 1 0
-	v=v<<(sizeof(VERTEX_TYPE)*8-2);
-	v=v>>(sizeof(VERTEX_TYPE)*8-2);
+	v=v<<(sizeof(uint64_t)*8-2);
+	v=v>>(sizeof(uint64_t)*8-2);
 	return v;
 }
 
-uint8_t getSecondSegmentFirstCode(VERTEX_TYPE v,int totalLength,int segmentLength){
+uint8_t getSecondSegmentFirstCode(uint64_t v,int totalLength,int segmentLength){
 	// ATCAGTTGCAGTACTGCAATCTACG
 	// 0000000000000011100001100100000000000000000000000001011100100100
 	//               6 5 4 3 2 1 0
 	int extra=(2*segmentLength-2);
-	v=v<<(sizeof(VERTEX_TYPE)*8-2*totalLength+extra);
-	v=v>>(sizeof(VERTEX_TYPE)*8-2);
+	v=v<<(sizeof(uint64_t)*8-2*totalLength+extra);
+	v=v>>(sizeof(uint64_t)*8-2);
 	return v;
 }
 
@@ -373,7 +373,7 @@ char codeToChar(uint8_t a){
 	return 'A';
 }
 
-string convertToString(vector<VERTEX_TYPE>*b,int m_wordSize){
+string convertToString(vector<uint64_t>*b,int m_wordSize){
 	ostringstream a;
 	#ifdef USE_DISTANT_SEGMENTS_GRAPH
 	//
@@ -394,7 +394,7 @@ string convertToString(vector<VERTEX_TYPE>*b,int m_wordSize){
 	return contig;
 }
 
-int vertexRank(VERTEX_TYPE a,int _size){
+int vertexRank(uint64_t a,int _size){
 	return uniform_hashing_function_1_64_64(a)%(_size);
 }
 
@@ -431,7 +431,7 @@ char*__basename(char*a){
 
 
 
-VERTEX_TYPE kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool color){
+uint64_t kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool color){
 	int length=strlen(m_sequence);
 	if(pos>length-w){
 		cout<<"Fatal: offset is too large."<<endl;
@@ -447,7 +447,7 @@ VERTEX_TYPE kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool 
 			sequence[i]=m_sequence[pos+i];
 		}
 		sequence[w]='\0';
-		VERTEX_TYPE v=wordId(sequence);
+		uint64_t v=wordId(sequence);
 		return v;
 	}else{
 		char sequence[40];
@@ -456,7 +456,7 @@ VERTEX_TYPE kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool 
 			sequence[i]=a;
 		}
 		sequence[w]='\0';
-		VERTEX_TYPE v=wordId(sequence);
+		uint64_t v=wordId(sequence);
 		return complementVertex(v,w,color);
 	}
 	return 0;

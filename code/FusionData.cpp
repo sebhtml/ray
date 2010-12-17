@@ -33,7 +33,7 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 	}else if(m_buffers.isEmpty() && m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
 		printf("Rank %i is distributing fusions [%i/%i] (completed)\n",getRank,(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
 		fflush(stdout);
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_DISTRIBUTE_FUSIONS_FINISHED,getRank);
+		Message aMessage(NULL,0,MPI_UINT64_T,MASTER_RANK,TAG_DISTRIBUTE_FUSIONS_FINISHED,getRank);
 		m_outbox->push_back(aMessage);
 		(*m_mode)=MODE_DO_NOTHING;
 		return;
@@ -47,7 +47,7 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 		}
 	}
 
-	VERTEX_TYPE vertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
+	uint64_t vertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
 	int destination=vertexRank(vertex,getSize());
 	m_buffers.addAt(destination,vertex);
 	m_buffers.addAt(destination,m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i]);
@@ -109,7 +109,7 @@ bool FusionData::isReady(){
  */
 void FusionData::finishFusions(){
 	if(m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
-		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 		message[0]=m_FINISH_fusionOccured;
 		printf("Rank %i is finishing fusions [%i/%i] (completed)\n",getRank(),(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
 		fflush(stdout);
@@ -128,7 +128,7 @@ void FusionData::finishFusions(){
 		f.close();
 		*/
 
-		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_FINISH_FUSIONS_FINISHED,getRank());
+		Message aMessage(message,1,MPI_UINT64_T,MASTER_RANK,TAG_FINISH_FUSIONS_FINISHED,getRank());
 		m_outbox->push_back(aMessage);
 		(*m_mode)=MODE_DO_NOTHING;
 		return;
@@ -180,14 +180,14 @@ void FusionData::finishFusions(){
 					printf("Rank %i is finishing fusions [%i/%i]\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_ed->m_EXTENSION_contigs.size());
 					fflush(stdout);
 				}
-				vector<VERTEX_TYPE> a;
+				vector<uint64_t> a;
 				m_FINISH_newFusions.push_back(a);
 				m_FINISH_vertex_requested=false;
 				m_FUSION_eliminated.insert(currentId);
 				m_FUSION_pathLengthRequested=false;
 				m_checkedValidity=false;
 			}
-			VERTEX_TYPE vertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
+			uint64_t vertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
 			m_FINISH_newFusions[m_FINISH_newFusions.size()-1].push_back(vertex);
 			m_ed->m_EXTENSION_currentPosition++;
 			m_Machine_getPaths_DONE=false;
@@ -280,9 +280,9 @@ void FusionData::finishFusions(){
 		if(m_FINISH_pathLengths.count(pathId)==0){
 			if(!m_FUSION_pathLengthRequested){
 				int rankId=pathId%MAX_NUMBER_OF_MPI_PROCESSES;
-				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(sizeof(VERTEX_TYPE));
+				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t));
 				message[0]=pathId;
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rankId,TAG_GET_PATH_LENGTH,getRank());
+				Message aMessage(message,1,MPI_UINT64_T,rankId,TAG_GET_PATH_LENGTH,getRank());
 				m_outbox->push_back(aMessage);
 				m_FUSION_pathLengthRequested=true;
 				m_FUSION_pathLengthReceived=false;
@@ -297,10 +297,10 @@ void FusionData::finishFusions(){
 				// and continue...
 				if(!m_FINISH_vertex_requested){
 					int rankId=pathId%MAX_NUMBER_OF_MPI_PROCESSES;
-					VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(sizeof(VERTEX_TYPE)*2);
+					uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t)*2);
 					message[0]=pathId;
 					message[1]=nextPosition;
-					Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,rankId,TAG_GET_PATH_VERTEX,getRank());
+					Message aMessage(message,2,MPI_UINT64_T,rankId,TAG_GET_PATH_VERTEX,getRank());
 					m_outbox->push_back(aMessage);
 					m_FINISH_vertex_requested=true;
 					m_FINISH_vertex_received=false;
@@ -362,7 +362,7 @@ void FusionData::makeFusions(){
 
 
 
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_FUSION_DONE,getRank());
+		Message aMessage(NULL,0,MPI_UINT64_T,MASTER_RANK,TAG_FUSION_DONE,getRank());
 		m_outbox->push_back(aMessage);
 		(*m_mode)=MODE_DO_NOTHING;
 		#ifdef SHOW_PROGRESS
@@ -400,10 +400,10 @@ void FusionData::makeFusions(){
 				#ifdef ASSERT
 				assert((int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()>END_LENGTH);
 				#endif
-				VERTEX_TYPE theVertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][END_LENGTH];
-				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+				uint64_t theVertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][END_LENGTH];
+				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 				message[0]=theVertex;
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize()),TAG_ASK_VERTEX_PATHS_SIZE,getRank());
+				Message aMessage(message,1,MPI_UINT64_T,vertexRank(theVertex,getSize()),TAG_ASK_VERTEX_PATHS_SIZE,getRank());
 				m_outbox->push_back(aMessage);
 				m_FUSION_paths_requested=true;
 				m_FUSION_paths_received=false;
@@ -412,10 +412,10 @@ void FusionData::makeFusions(){
 			}else if(m_FUSION_paths_received){
 				if(m_FUSION_path_id<m_FUSION_numberOfPaths){
 					if(!m_FUSION_path_requested){
-						VERTEX_TYPE theVertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][END_LENGTH];
-						VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+						uint64_t theVertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][END_LENGTH];
+						uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 						message[0]=m_FUSION_path_id;
-						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize()),TAG_ASK_VERTEX_PATH,getRank());
+						Message aMessage(message,1,MPI_UINT64_T,vertexRank(theVertex,getSize()),TAG_ASK_VERTEX_PATH,getRank());
 						m_outbox->push_back(aMessage);
 						m_FUSION_path_requested=true;
 						m_FUSION_path_received=false;
@@ -442,10 +442,10 @@ void FusionData::makeFusions(){
 				#ifdef ASSERT
 				assert((int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()>=END_LENGTH);
 				#endif
-				VERTEX_TYPE theVertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-END_LENGTH];
-				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+				uint64_t theVertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-END_LENGTH];
+				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 				message[0]=theVertex;
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize()),TAG_ASK_VERTEX_PATHS_SIZE,getRank());
+				Message aMessage(message,1,MPI_UINT64_T,vertexRank(theVertex,getSize()),TAG_ASK_VERTEX_PATHS_SIZE,getRank());
 				m_outbox->push_back(aMessage);
 				m_FUSION_paths_requested=true;
 				m_FUSION_paths_received=false;
@@ -454,10 +454,10 @@ void FusionData::makeFusions(){
 			}else if(m_FUSION_paths_received){
 				if(m_FUSION_path_id<m_FUSION_numberOfPaths){
 					if(!m_FUSION_path_requested){
-						VERTEX_TYPE theVertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-END_LENGTH];
-						VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+						uint64_t theVertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-END_LENGTH];
+						uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 						message[0]=m_FUSION_path_id;
-						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize()),TAG_ASK_VERTEX_PATH,getRank());
+						Message aMessage(message,1,MPI_UINT64_T,vertexRank(theVertex,getSize()),TAG_ASK_VERTEX_PATH,getRank());
 						m_outbox->push_back(aMessage);
 						m_FUSION_path_requested=true;
 						m_FUSION_path_received=false;
@@ -544,9 +544,9 @@ void FusionData::makeFusions(){
 			}else if(!m_FUSION_pathLengthRequested){
 				int uniquePathId=m_FUSION_matches[m_FUSION_match_index];
 				int rankId=uniquePathId%MAX_NUMBER_OF_MPI_PROCESSES;
-				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(sizeof(VERTEX_TYPE));
+				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t));
 				message[0]=uniquePathId;
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rankId,TAG_GET_PATH_LENGTH,getRank());
+				Message aMessage(message,1,MPI_UINT64_T,rankId,TAG_GET_PATH_LENGTH,getRank());
 				m_outbox->push_back(aMessage);
 				m_FUSION_pathLengthRequested=true;
 				m_FUSION_pathLengthReceived=false;
@@ -584,11 +584,11 @@ void FusionData::makeFusions(){
 				assert(m_seedingData->m_SEEDING_i<(int)m_ed->m_EXTENSION_contigs.size());
 				assert(thePosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size());
 				#endif
-				VERTEX_TYPE theMainVertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][thePosition];
-				VERTEX_TYPE theVertex=complementVertex(theMainVertex,m_wordSize,m_colorSpaceMode);
-				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+				uint64_t theMainVertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][thePosition];
+				uint64_t theVertex=complementVertex(theMainVertex,m_wordSize,m_colorSpaceMode);
+				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 				message[0]=theVertex;
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize()),TAG_ASK_VERTEX_PATHS_SIZE,getRank());
+				Message aMessage(message,1,MPI_UINT64_T,vertexRank(theVertex,getSize()),TAG_ASK_VERTEX_PATHS_SIZE,getRank());
 				m_outbox->push_back(aMessage);
 				m_FUSION_paths_requested=true;
 				m_FUSION_paths_received=false;
@@ -597,10 +597,10 @@ void FusionData::makeFusions(){
 			}else if(m_FUSION_paths_received){
 				if(m_FUSION_path_id<m_FUSION_numberOfPaths){
 					if(!m_FUSION_path_requested){
-						VERTEX_TYPE theVertex=complementVertex(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-END_LENGTH],m_wordSize,m_colorSpaceMode);
-						VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+						uint64_t theVertex=complementVertex(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-END_LENGTH],m_wordSize,m_colorSpaceMode);
+						uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 						message[0]=m_FUSION_path_id;
-						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize()),TAG_ASK_VERTEX_PATH,getRank());
+						Message aMessage(message,1,MPI_UINT64_T,vertexRank(theVertex,getSize()),TAG_ASK_VERTEX_PATH,getRank());
 						m_outbox->push_back(aMessage);
 						m_FUSION_path_requested=true;
 						m_FUSION_path_received=false;
@@ -624,10 +624,10 @@ void FusionData::makeFusions(){
 
 			if(!m_FUSION_paths_requested){
 				// get the paths going on the first vertex
-				VERTEX_TYPE theVertex=complementVertex(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][END_LENGTH],m_wordSize,m_colorSpaceMode);
-				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+				uint64_t theVertex=complementVertex(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][END_LENGTH],m_wordSize,m_colorSpaceMode);
+				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 				message[0]=theVertex;
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize()),TAG_ASK_VERTEX_PATHS_SIZE,getRank());
+				Message aMessage(message,1,MPI_UINT64_T,vertexRank(theVertex,getSize()),TAG_ASK_VERTEX_PATHS_SIZE,getRank());
 				m_outbox->push_back(aMessage);
 				m_FUSION_paths_requested=true;
 				m_FUSION_paths_received=false;
@@ -636,10 +636,10 @@ void FusionData::makeFusions(){
 			}else if(m_FUSION_paths_received){
 				if(m_FUSION_path_id<m_FUSION_numberOfPaths){
 					if(!m_FUSION_path_requested){
-						VERTEX_TYPE theVertex=complementVertex(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][END_LENGTH],m_wordSize,m_colorSpaceMode);
-						VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+						uint64_t theVertex=complementVertex(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][END_LENGTH],m_wordSize,m_colorSpaceMode);
+						uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 						message[0]=m_FUSION_path_id;
-						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize()),TAG_ASK_VERTEX_PATH,getRank());
+						Message aMessage(message,1,MPI_UINT64_T,vertexRank(theVertex,getSize()),TAG_ASK_VERTEX_PATH,getRank());
 						m_outbox->push_back(aMessage);
 						m_FUSION_path_requested=true;
 						m_FUSION_path_received=false;
@@ -719,9 +719,9 @@ void FusionData::makeFusions(){
 			}else if(!m_FUSION_pathLengthRequested){
 				int uniquePathId=m_FUSION_matches[m_FUSION_match_index];
 				int rankId=uniquePathId%MAX_NUMBER_OF_MPI_PROCESSES;
-				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(sizeof(VERTEX_TYPE));
+				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t));
 				message[0]=uniquePathId;
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rankId,TAG_GET_PATH_LENGTH,getRank());
+				Message aMessage(message,1,MPI_UINT64_T,rankId,TAG_GET_PATH_LENGTH,getRank());
 				m_outbox->push_back(aMessage);
 				m_FUSION_pathLengthRequested=true;
 				m_FUSION_pathLengthReceived=false;
@@ -762,7 +762,7 @@ void FusionData::makeFusions(){
  * and
  * the result is in m_Machine_getPaths_result (a vector<Direction>)
  */
-void FusionData::getPaths(VERTEX_TYPE vertex){
+void FusionData::getPaths(uint64_t vertex){
 	if(!m_Machine_getPaths_INITIALIZED){
 		m_Machine_getPaths_INITIALIZED=true;
 		m_FUSION_paths_requested=false;
@@ -772,10 +772,10 @@ void FusionData::getPaths(VERTEX_TYPE vertex){
 	}
 
 	if(!m_FUSION_paths_requested){
-		VERTEX_TYPE theVertex=vertex;
-		VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+		uint64_t theVertex=vertex;
+		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 		message[0]=theVertex;
-		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize()),TAG_ASK_VERTEX_PATHS_SIZE,getRank());
+		Message aMessage(message,1,MPI_UINT64_T,vertexRank(theVertex,getSize()),TAG_ASK_VERTEX_PATHS_SIZE,getRank());
 		m_outbox->push_back(aMessage);
 		m_FUSION_paths_requested=true;
 		m_FUSION_paths_received=false;
@@ -785,10 +785,10 @@ void FusionData::getPaths(VERTEX_TYPE vertex){
 	}else if(m_FUSION_paths_received){
 		if(m_FUSION_path_id<m_FUSION_numberOfPaths){
 			if(!m_FUSION_path_requested){
-				VERTEX_TYPE theVertex=vertex;
-				VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+				uint64_t theVertex=vertex;
+				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 				message[0]=m_FUSION_path_id;
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize()),TAG_ASK_VERTEX_PATH,getRank());
+				Message aMessage(message,1,MPI_UINT64_T,vertexRank(theVertex,getSize()),TAG_ASK_VERTEX_PATH,getRank());
 				m_outbox->push_back(aMessage);
 				m_FUSION_path_requested=true;
 				m_FUSION_path_received=false;

@@ -66,28 +66,28 @@ public:
 
 	void enumerateChoices(bool*edgesRequested,ExtensionData*ed,bool*edgesReceived,RingAllocator*outboxAllocator,
 		int*outgoingEdgeIndex,StaticVector*outbox,
-VERTEX_TYPE*currentVertex,int theRank,bool*vertexCoverageRequested,vector<VERTEX_TYPE>*receivedOutgoingEdges,
+uint64_t*currentVertex,int theRank,bool*vertexCoverageRequested,vector<uint64_t>*receivedOutgoingEdges,
 bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,ChooserData*cd,
 int wordSize);
 
 
 	void checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector*outbox,RingAllocator*outboxAllocator,
 	 int*outgoingEdgeIndex,int*last_value,u64*currentVertex,int theRank,bool*vertexCoverageRequested,
-	int wordSize,bool*colorSpaceMode,int size,vector<vector<VERTEX_TYPE> >*seeds);
+	int wordSize,bool*colorSpaceMode,int size,vector<vector<uint64_t> >*seeds);
 
 	void markCurrentVertexAsAssembled(u64*currentVertex,RingAllocator*outboxAllocator,int*outgoingEdgeIndex,
  StaticVector*outbox,int size,int theRank,ExtensionData*ed,bool*vertexCoverageRequested,
 		bool*vertexCoverageReceived,int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,
 	bool*edgesRequested,
-vector<VERTEX_TYPE>*receivedOutgoingEdges,Chooser*chooser,ChooserData*cd,
+vector<uint64_t>*receivedOutgoingEdges,Chooser*chooser,ChooserData*cd,
 BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpaceMode,int wordSize);
 
 
 
-	void extendSeeds(vector<vector<VERTEX_TYPE> >*seeds,ExtensionData*ed,int theRank,StaticVector*outbox,u64*currentVertex,
+	void extendSeeds(vector<vector<uint64_t> >*seeds,ExtensionData*ed,int theRank,StaticVector*outbox,u64*currentVertex,
 	FusionData*fusionData,RingAllocator*outboxAllocator,bool*edgesRequested,int*outgoingEdgeIndex,
 int*last_value,bool*vertexCoverageRequested,int wordSize,bool*colorSpaceMode,int size,bool*vertexCoverageReceived,
-int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,vector<VERTEX_TYPE>*receivedOutgoingEdges,Chooser*chooser,
+int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,vector<uint64_t>*receivedOutgoingEdges,Chooser*chooser,
 ChooserData*cd,BubbleData*bubbleData,DepthFirstSearchData*dfsData,
 int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode);
 
@@ -96,23 +96,23 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode);
 	void doChoice(RingAllocator*outboxAllocator,int*outgoingEdgeIndex,StaticVector*outbox,u64*currentVertex,
 ChooserData*cd,BubbleData*bubbleData,int theRank,DepthFirstSearchData*dfsData,int wordSize,
 ExtensionData*ed,int minimumCoverage,int maxCoverage,OpenAssemblerChooser*oa,Chooser*chooser,bool*colorSpaceMode,
-	vector<vector<VERTEX_TYPE> >*seeds,
+	vector<vector<uint64_t> >*seeds,
 bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,int size,
-int*receivedVertexCoverage,bool*edgesReceived,vector<VERTEX_TYPE>*receivedOutgoingEdges);
+int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingEdges);
 
 
 
 
 
-	void depthFirstSearch(VERTEX_TYPE root,VERTEX_TYPE a,int maxDepth,DepthFirstSearchData*dfsData,
+	void depthFirstSearch(uint64_t root,uint64_t a,int maxDepth,DepthFirstSearchData*dfsData,
 		bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 		RingAllocator*outboxAllocator,int size,int theRank,StaticVector*outbox,
-		int*receivedVertexCoverage,vector<VERTEX_TYPE>*receivedOutgoingEdges,
+		int*receivedVertexCoverage,vector<uint64_t>*receivedOutgoingEdges,
 		int minimumCoverage,bool*edgesReceived);
 
 	vector<Direction>*getDirections();
 
-	void storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<vector<VERTEX_TYPE> >*seeds,u64*currentVertex,
+	void storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<vector<uint64_t> >*seeds,u64*currentVertex,
 		BubbleData*bubbleData);
 
 	set<u64>*getEliminatedSeeds();

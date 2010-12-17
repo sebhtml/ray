@@ -32,7 +32,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<Parameters.h>
 
 void Library::updateDistances(){
-	VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	int libraries=m_parameters->getNumberOfLibraries();
 	int*intMessage=(int*)message;
 	intMessage[0]=libraries;
@@ -46,7 +46,7 @@ void Library::updateDistances(){
 	}
 
 	for(int i=0;i<m_size;i++){
-		Message aMessage(intMessage,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(VERTEX_TYPE),MPI_UNSIGNED_LONG_LONG,i,TAG_UPDATE_LIBRARY_INFORMATION,m_rank);
+		Message aMessage(intMessage,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),MPI_UINT64_T,i,TAG_UPDATE_LIBRARY_INFORMATION,m_rank);
 		m_outbox->push_back(aMessage);
 	}
 
@@ -66,7 +66,7 @@ void Library::detectDistances(){
 		printf("Rank %i is calculating library lengths [%i/%i] (completed)\n",getRank(),(int)m_seedingData->m_SEEDING_seeds.size(),(int)m_seedingData->m_SEEDING_seeds.size());
 		fflush(stdout);
 		
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE,getRank());
+		Message aMessage(NULL,0,MPI_UINT64_T,MASTER_RANK,TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE,getRank());
 		m_outbox->push_back(aMessage);
 		(*m_mode)=MODE_DO_NOTHING;
 	}else if(m_ed->m_EXTENSION_currentPosition==(int)m_seedingData->m_SEEDING_seeds[m_seedingData->m_SEEDING_i].size()){
@@ -85,13 +85,13 @@ void Library::detectDistances(){
 			}
 			m_ed->m_EXTENSION_reads_requested=true;
 			m_ed->m_EXTENSION_reads_received=false;
-			VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 			#ifdef ASSERT
 			assert(m_ed->m_EXTENSION_currentPosition<(int)m_seedingData->m_SEEDING_seeds[m_seedingData->m_SEEDING_i].size());
 			#endif
-			VERTEX_TYPE vertex=m_seedingData->m_SEEDING_seeds[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
+			uint64_t vertex=m_seedingData->m_SEEDING_seeds[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
 			message[0]=vertex;
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0],getSize()),TAG_REQUEST_READS,getRank());
+			Message aMessage(message,1,MPI_UINT64_T,vertexRank(message[0],getSize()),TAG_REQUEST_READS,getRank());
 			m_outbox->push_back(aMessage);
 			m_ed->m_EXTENSION_edgeIterator=0;// iterate over reads
 			m_ed->m_EXTENSION_hasPairedReadRequested=false;
@@ -103,9 +103,9 @@ void Library::detectDistances(){
 				u64 rightReadUniqueId=annotation.getUniqueId();
 				#endif
 				if(!m_ed->m_EXTENSION_hasPairedReadRequested){
-					VERTEX_TYPE*message=(VERTEX_TYPE*)(m_outboxAllocator)->allocate(1*sizeof(VERTEX_TYPE));
+					uint64_t*message=(uint64_t*)(m_outboxAllocator)->allocate(1*sizeof(uint64_t));
 					message[0]=rightRead;
-					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_HAS_PAIRED_READ,getRank());
+					Message aMessage(message,1,MPI_UINT64_T,annotation.getRank(),TAG_HAS_PAIRED_READ,getRank());
 					(m_outbox)->push_back(aMessage);
 					m_ed->m_EXTENSION_hasPairedReadRequested=true;
 					m_ed->m_EXTENSION_hasPairedReadReceived=false;
@@ -115,18 +115,18 @@ void Library::detectDistances(){
 						if(!m_ed->m_EXTENSION_readLength_requested){
 							m_ed->m_EXTENSION_readLength_requested=true;
 							m_ed->m_EXTENSION_readLength_received=false;
-							VERTEX_TYPE*message=(VERTEX_TYPE*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+							uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 							m_ed->m_EXTENSION_pairedSequenceRequested=false;
 							message[0]=rightRead;
-							Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_ASK_READ_LENGTH,getRank());
+							Message aMessage(message,1,MPI_UINT64_T,annotation.getRank(),TAG_ASK_READ_LENGTH,getRank());
 							m_outbox->push_back(aMessage);
 						}else if(m_ed->m_EXTENSION_readLength_received){
 							if(!m_ed->m_EXTENSION_pairedSequenceRequested){
 								m_ed->m_EXTENSION_pairedSequenceReceived=false;
 								m_ed->m_EXTENSION_pairedSequenceRequested=true;
-								VERTEX_TYPE*message=(VERTEX_TYPE*)(m_outboxAllocator)->allocate(1*sizeof(VERTEX_TYPE));
+								uint64_t*message=(uint64_t*)(m_outboxAllocator)->allocate(1*sizeof(uint64_t));
 								message[0]=rightRead;
-								Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_GET_PAIRED_READ,getRank());
+								Message aMessage(message,1,MPI_UINT64_T,annotation.getRank(),TAG_GET_PAIRED_READ,getRank());
 								(m_outbox)->push_back(aMessage);
 							}else if(m_ed->m_EXTENSION_pairedSequenceReceived){
 								int library=m_ed->m_EXTENSION_pairedRead.getLibrary();
@@ -248,7 +248,7 @@ void Library::sendLibraryDistances(){
 	}else if(m_libraryIterator==(int)m_libraryIndexes.size()){
 		m_bufferedData.flushAll(TAG_LIBRARY_DISTANCE,m_outboxAllocator,m_outbox,getRank());
 
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_ASK_LIBRARY_DISTANCES_FINISHED,getRank());
+		Message aMessage(NULL,0,MPI_UINT64_T,MASTER_RANK,TAG_ASK_LIBRARY_DISTANCES_FINISHED,getRank());
 		m_outbox->push_back(aMessage);
 		(*m_mode)=MODE_DO_NOTHING;
 	}else if(m_libraryIndex==m_libraryDistances[m_libraryIndexes[m_libraryIterator]].end()){

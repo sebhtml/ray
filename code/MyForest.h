@@ -32,17 +32,17 @@
 class MyForest{
 	int m_numberOfTrees;
 	u64 m_size;
-	SplayTree<VERTEX_TYPE,Vertex>*m_trees;
+	SplayTree<uint64_t,Vertex>*m_trees;
 	bool m_inserted;
-	int getTreeIndex(VERTEX_TYPE i);
+	int getTreeIndex(uint64_t i);
 
 public:
 	void constructor(int count,MyAllocator*allocator);
 	int size();
 	int getNumberOfTrees();
-	SplayTree<VERTEX_TYPE,Vertex>*getTree(int i);
-	SplayNode<VERTEX_TYPE,Vertex>*find(VERTEX_TYPE key);
-	SplayNode<VERTEX_TYPE,Vertex>*insert(VERTEX_TYPE key);
+	SplayTree<uint64_t,Vertex>*getTree(int i);
+	SplayNode<uint64_t,Vertex>*find(uint64_t key);
+	SplayNode<uint64_t,Vertex>*insert(uint64_t key);
 	bool inserted();
 	void freeze();
 	void show(int rank,const char*a);

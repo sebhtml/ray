@@ -26,7 +26,7 @@
 #include<map>
 using namespace std;
 
-CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>*distributionOfCoverage,string*file){
+CoverageDistribution::CoverageDistribution(map<int,uint64_t>*distributionOfCoverage,string*file){
 	COVERAGE_TYPE max=0;
 	max--;
 
@@ -34,7 +34,7 @@ CoverageDistribution::CoverageDistribution(map<int,VERTEX_TYPE>*distributionOfCo
 	m_minimumCoverage=1;
 	ofstream f(file->c_str());
 
-	for(map<int,VERTEX_TYPE>::iterator i=distributionOfCoverage->begin();i!=distributionOfCoverage->end();i++){
+	for(map<int,uint64_t>::iterator i=distributionOfCoverage->begin();i!=distributionOfCoverage->end();i++){
 		f<<""<<i->first<<" "<<i->second<<endl;
 		int coverage=i->first;
 		if(coverage==max)

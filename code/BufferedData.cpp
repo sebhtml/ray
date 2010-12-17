@@ -102,7 +102,7 @@ bool BufferedData::flush(int destination,int period,int tag,RingAllocator*outbox
 
 	int threshold=0;
 	if(!force){
-		threshold=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(VERTEX_TYPE)/period*period;
+		threshold=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)/period*period;
 	}
 
 	#ifdef ASSERT
@@ -119,11 +119,11 @@ bool BufferedData::flush(int destination,int period,int tag,RingAllocator*outbox
 	#ifdef ASSERT
 	assert(amount>0);
 	#endif
-	VERTEX_TYPE*message=(VERTEX_TYPE*)outboxAllocator->allocate(amount*sizeof(VERTEX_TYPE));
+	uint64_t*message=(uint64_t*)outboxAllocator->allocate(amount*sizeof(uint64_t));
 	for(int i=0;i<amount;i++){
 		message[i]=getAt(destination,i);
 	}
-	Message aMessage(message,amount,MPI_UNSIGNED_LONG_LONG,destination,tag,rank);
+	Message aMessage(message,amount,MPI_UINT64_T,destination,tag,rank);
 	outbox->push_back(aMessage);
 	reset(destination);
 	return true;

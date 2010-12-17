@@ -27,8 +27,8 @@ using namespace std;
 
 //#define DEBUG_BUBBLES
 
-void BubbleTool::printStuff(VERTEX_TYPE root,vector<vector<VERTEX_TYPE> >*trees,
-map<VERTEX_TYPE,int>*coverages){
+void BubbleTool::printStuff(uint64_t root,vector<vector<uint64_t> >*trees,
+map<uint64_t,int>*coverages){
 	int m_wordSize=m_parameters->getWordSize();
 	cout<<"Trees="<<trees->size()<<endl;
 	cout<<"root="<<idToWord(root,m_wordSize)<<endl;
@@ -37,16 +37,16 @@ map<VERTEX_TYPE,int>*coverages){
 		cout<<"b2="<<idToWord(trees->at(1).at(0),m_wordSize)<<endl;
 	}
 	cout<<"digraph{"<<endl;
-	map<VERTEX_TYPE,set<VERTEX_TYPE> > printedEdges;
+	map<uint64_t,set<uint64_t> > printedEdges;
 	
-	for(map<VERTEX_TYPE,int>::iterator i=coverages->begin();i!=coverages->end();i++){
+	for(map<uint64_t,int>::iterator i=coverages->begin();i!=coverages->end();i++){
 		cout<<idToWord(i->first,m_wordSize)<<" [label=\""<<idToWord(i->first,m_wordSize)<<" "<<i->second<<"\"]"<<endl;
 	}
 	for(int j=0;j<(int)trees->size();j++){
 		cout<<idToWord(root,m_wordSize)<<" -> "<<idToWord(trees->at(j).at(0),m_wordSize)<<endl;
 		for(int i=0;i<(int)trees->at(j).size();i+=2){
-			VERTEX_TYPE a=trees->at(j).at(i+0);
-			VERTEX_TYPE b=trees->at(j).at(i+1);
+			uint64_t a=trees->at(j).at(i+0);
+			uint64_t b=trees->at(j).at(i+1);
 			if(printedEdges.count(a)>0 && printedEdges[a].count(b)>0){
 				continue;
 			}
@@ -61,8 +61,8 @@ map<VERTEX_TYPE,int>*coverages){
 /**
  *
  */
-bool BubbleTool::isGenuineBubble(VERTEX_TYPE root,vector<vector<VERTEX_TYPE> >*trees,
-map<VERTEX_TYPE,int>*coverages){
+bool BubbleTool::isGenuineBubble(uint64_t root,vector<vector<uint64_t> >*trees,
+map<uint64_t,int>*coverages){
 	if((*coverages)[root]==m_parameters->getMaxCoverage()){
 		return false;
 	}
@@ -73,8 +73,8 @@ map<VERTEX_TYPE,int>*coverages){
 	#ifdef ASSERT
 	for(int i=0;i<(int)trees->size();i++){
 		for(int j=0;j<(int)trees->at(i).size();j+=2){
-			VERTEX_TYPE a=trees->at(i).at(j+0);
-			VERTEX_TYPE b=trees->at(i).at(j+1);
+			uint64_t a=trees->at(i).at(j+0);
+			uint64_t b=trees->at(i).at(j+1);
 			string as=idToWord(a,m_wordSize);
 			string bs=idToWord(b,m_wordSize);
 			assert(as.substr(1,m_wordSize-1)==bs.substr(0,m_wordSize-1));
@@ -108,13 +108,13 @@ map<VERTEX_TYPE,int>*coverages){
 	// del is 1, 2, or 3
 
 
-	map<VERTEX_TYPE,int> coveringNumber;
+	map<uint64_t,int> coveringNumber;
 
-	VERTEX_TYPE target=0;
+	uint64_t target=0;
 	bool foundTarget=false;
 	for(int j=0;j<(int)trees->size();j++){
 		for(int i=0;i<(int)trees->at(j).size();i+=2){
-			VERTEX_TYPE a=trees->at(j).at(i+1);
+			uint64_t a=trees->at(j).at(i+1);
 			//cout<<"Tree="<<j<<" Visiting "<<idToWord(a,m_wordSize)<<endl;
 			coveringNumber[a]++;
 			if(!foundTarget && coveringNumber[a]==2){
@@ -149,14 +149,14 @@ map<VERTEX_TYPE,int>*coverages){
 		return false;
 	}
 
-	vector<map<VERTEX_TYPE,VERTEX_TYPE> > parents;
+	vector<map<uint64_t,uint64_t> > parents;
 
 	for(int j=0;j<(int)trees->size();j++){
-		map<VERTEX_TYPE,VERTEX_TYPE> aVector;
+		map<uint64_t,uint64_t> aVector;
 		parents.push_back(aVector);
 		for(int i=0;i<(int)trees->at(j).size();i+=2){
-			VERTEX_TYPE a=trees->at(j).at(i+0);
-			VERTEX_TYPE b=trees->at(j).at(i+1);
+			uint64_t a=trees->at(j).at(i+0);
+			uint64_t b=trees->at(j).at(i+1);
 			parents[j][b]=a;
 		}
 	}
@@ -176,17 +176,17 @@ map<VERTEX_TYPE,int>*coverages){
 	for(int j=0;j<(int)trees->size();j++){
 		vector<int> aVector;
 		observedValues.push_back(aVector);
-		set<VERTEX_TYPE> visited;
+		set<uint64_t> visited;
 		
-		VERTEX_TYPE startingPoint=trees->at(j).at(0);
-		VERTEX_TYPE current=target;
+		uint64_t startingPoint=trees->at(j).at(0);
+		uint64_t current=target;
 
 		while(current!=startingPoint){
 			if(visited.count(current)>0){
 				return false;
 			}
 			visited.insert(current);
-			VERTEX_TYPE theParent=parents[j][current];
+			uint64_t theParent=parents[j][current];
 			int coverageValue=(*coverages)[theParent];
 
 			if(coverageValue>m_parameters->getPeakCoverage()){
@@ -267,7 +267,7 @@ map<VERTEX_TYPE,int>*coverages){
 	return false;
 }
 
-VERTEX_TYPE BubbleTool::getTraversalStartingPoint(){
+uint64_t BubbleTool::getTraversalStartingPoint(){
 	return m_choice;
 }
 

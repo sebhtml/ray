@@ -104,7 +104,7 @@ int Read::length(){
  *           -----------------------------------
  *                     p p-1 p-2               0
  */
-VERTEX_TYPE Read::getVertex(int pos,int w,char strand,bool color) const {
+uint64_t Read::getVertex(int pos,int w,char strand,bool color) const {
 	return kmerAtPosition(m_sequence,pos,w,strand,color);
 }
 

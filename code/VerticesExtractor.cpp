@@ -67,7 +67,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		}else{
 			// flush data
 			m_bufferedData.flushAll(TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank);
-			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_VERTICES_DISTRIBUTED,rank);
+			Message aMessage(NULL,0, MPI_UINT64_T, MASTER_RANK, TAG_VERTICES_DISTRIBUTED,rank);
 			m_outbox->push_back(aMessage);
 			*m_mode_send_vertices=false;
 			(*m_mode)=MODE_DO_NOTHING;
@@ -88,13 +88,13 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		memcpy(memory,readSequence+p,m_wordSize);
 		memory[m_wordSize]='\0';
 		if(isValidDNA(memory)){
-			VERTEX_TYPE a=wordId(memory);
+			uint64_t a=wordId(memory);
 			int rankToFlush=0;
 			if(*m_reverseComplementVertex==false){
 				rankToFlush=vertexRank(a,size);
 				m_bufferedData.addAt(rankToFlush,a);
 			}else{
-				VERTEX_TYPE b=complementVertex(a,m_wordSize,m_colorSpaceMode);
+				uint64_t b=complementVertex(a,m_wordSize,m_colorSpaceMode);
 				rankToFlush=vertexRank(b,size);
 				m_bufferedData.addAt(rankToFlush,b);
 			}

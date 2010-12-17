@@ -30,16 +30,16 @@ using namespace std;
 
 class BubbleTool{
 	Parameters*m_parameters;
-	VERTEX_TYPE m_choice;
+	uint64_t m_choice;
 public:
-	bool isGenuineBubble(VERTEX_TYPE root, vector<vector<VERTEX_TYPE> >*trees,
-map<VERTEX_TYPE,int>*coverages);
+	bool isGenuineBubble(uint64_t root, vector<vector<uint64_t> >*trees,
+map<uint64_t,int>*coverages);
 	void constructor(Parameters*p);
 
-	VERTEX_TYPE getTraversalStartingPoint();
+	uint64_t getTraversalStartingPoint();
 
-	void printStuff(VERTEX_TYPE root, vector<vector<VERTEX_TYPE> >*trees,
-map<VERTEX_TYPE,int>*coverages);
+	void printStuff(uint64_t root, vector<vector<uint64_t> >*trees,
+map<uint64_t,int>*coverages);
 };
 
 #endif

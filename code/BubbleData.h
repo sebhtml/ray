@@ -36,13 +36,13 @@ using namespace std;
 class BubbleData{
 public:
 	// arcs with good coverage
-	std::vector<std::vector<VERTEX_TYPE> > m_BUBBLE_visitedVertices;
+	std::vector<std::vector<uint64_t> > m_BUBBLE_visitedVertices;
 	// all vertices.
-	std::vector<std::set<VERTEX_TYPE> > m_visitedVertices;
+	std::vector<std::set<uint64_t> > m_visitedVertices;
 	bool m_doChoice_bubbles_Detected;
 	bool m_doChoice_bubbles_Initiated;
 	std::vector<std::vector<int> > m_BUBBLE_visitedVerticesDepths;
-	map<VERTEX_TYPE,int> m_coverages;
+	map<uint64_t,int> m_coverages;
 	FILE*m_amos;
 };
 

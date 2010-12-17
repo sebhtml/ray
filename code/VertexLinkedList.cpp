@@ -25,7 +25,7 @@
 VertexLinkedList::VertexLinkedList(){
 
 }
-void VertexLinkedList::constructor(VERTEX_TYPE a){
+void VertexLinkedList::constructor(uint64_t a){
 	m_vertex=a;
 	m_next=NULL;
 }
@@ -35,7 +35,7 @@ void VertexLinkedList::setNext(VertexLinkedList*a){
 }
 
 
-VERTEX_TYPE VertexLinkedList::getVertex(){
+uint64_t VertexLinkedList::getVertex(){
 	return m_vertex;
 }
 

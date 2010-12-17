@@ -26,13 +26,13 @@
 #include<MyAllocator.h>
 
 class VertexLinkedList{
-	VERTEX_TYPE m_vertex;
+	uint64_t m_vertex;
 	VertexLinkedList*m_next;
 public:
 	VertexLinkedList();
-	void constructor(VERTEX_TYPE a);
+	void constructor(uint64_t a);
 	void setNext(VertexLinkedList*a);
-	VERTEX_TYPE getVertex();
+	uint64_t getVertex();
 	VertexLinkedList*getNext();
 };
 
