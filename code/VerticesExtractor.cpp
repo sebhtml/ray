@@ -67,7 +67,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		}else{
 			// flush data
 			m_bufferedData.flushAll(TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank);
-			Message aMessage(NULL,0, MPI_UINT64_T, MASTER_RANK, TAG_VERTICES_DISTRIBUTED,rank);
+			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_VERTICES_DISTRIBUTED,rank);
 			m_outbox->push_back(aMessage);
 			*m_mode_send_vertices=false;
 			(*m_mode)=MODE_DO_NOTHING;

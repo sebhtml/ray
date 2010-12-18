@@ -20,6 +20,7 @@
 */
 
 #include<assert.h>
+#include<mpi.h>
 #include<BufferedData.h>
 #include<RingAllocator.h>
 #include<StaticVector.h>
@@ -123,7 +124,7 @@ bool BufferedData::flush(int destination,int period,int tag,RingAllocator*outbox
 	for(int i=0;i<amount;i++){
 		message[i]=getAt(destination,i);
 	}
-	Message aMessage(message,amount,MPI_UINT64_T,destination,tag,rank);
+	Message aMessage(message,amount,MPI_UNSIGNED_LONG_LONG,destination,tag,rank);
 	outbox->push_back(aMessage);
 	reset(destination);
 	return true;

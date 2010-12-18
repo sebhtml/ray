@@ -22,6 +22,7 @@
 #include<EdgesExtractor.h>
 #include<Message.h>
 #include<string.h>
+#include<mpi.h>
 #include<common_functions.h>
 
 void EdgesExtractor::setReadiness(){
@@ -139,7 +140,7 @@ void EdgesExtractor::processIngoingEdges(){
 			m_mode_send_edge_sequence_id=0;
 		}else{
 			m_bufferedData.flushAll(TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
-			Message aMessage(NULL,0, MPI_UINT64_T, MASTER_RANK, TAG_EDGES_DISTRIBUTED,getRank);
+			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_EDGES_DISTRIBUTED,getRank);
 			m_outbox->push_back(aMessage);
 			(*m_mode_send_ingoing_edges)=false;
 			(*m_mode)=MODE_DO_NOTHING;

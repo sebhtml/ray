@@ -88,7 +88,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 		(*m_loadSequenceStep)=true;
 
 		for(int i=0;i<size;i++){
-			Message aMessage(NULL, 0, MPI_UINT64_T, i,TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS,rank);
+			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, i,TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS,rank);
 			m_outbox->push_back(aMessage);
 		}
 
@@ -421,7 +421,7 @@ void SequencesLoader::flush(int rank,RingAllocator*m_outboxAllocator,StaticVecto
 	#endif
 	//cout<<"sending "<<n<<" sequences to "<<rank<<endl;
 	message[cells-1]=ASCII_END_OF_TRANSMISSION;
-	Message aMessage(message,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),MPI_UINT64_T,rank,TAG_SEND_SEQUENCE_REGULATOR,rank);
+	Message aMessage(message,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),MPI_UNSIGNED_LONG_LONG,rank,TAG_SEND_SEQUENCE_REGULATOR,rank);
 	m_outbox->push_back(aMessage);
 	m_entries[rank]=0;
 	m_waitingNumber++;

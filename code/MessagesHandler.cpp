@@ -149,8 +149,7 @@ const char*__TAG_NAMES[]={
 "TAG_ASK_IS_ASSEMBLED_REPLY_END"
 };
 
-
-
+#define ASSERT 
 
 /*
  * send messages,
@@ -166,6 +165,9 @@ void MessagesHandler::sendMessages(StaticVector*outbox,int source){
 		//  MPI_Issend
 		//      Synchronous nonblocking. Note that a Wait/Test will complete only when the matching receive is posted
 		#ifdef ASSERT
+		if(aMessage->getBuffer()==NULL && aMessage->getCount()>0){
+			cout<<"tag="<<__TAG_NAMES[aMessage->getTag()]<<endl;
+		}
 		assert(!(aMessage->getBuffer()==NULL && aMessage->getCount()>0));
 		#endif
 		#ifndef ASSERT
@@ -220,7 +222,7 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 		int tag=status.MPI_TAG;
 		int source=status.MPI_SOURCE;
 		int length;
-		MPI_Get_count(&status,MPI_UINT64_T,&length);
+		MPI_Get_count(&status,MPI_UNSIGNED_LONG_LONG,&length);
 		u64*filledBuffer=(u64*)m_buffers+m_head*MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(u64);
 
 		// copy it in a safe buffer
@@ -233,7 +235,7 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 		MPI_Start(m_ring+m_head);
 	
 		// add the message in the inbox
-		Message aMessage(incoming,length,MPI_UINT64_T,source,tag,source);
+		Message aMessage(incoming,length,MPI_UNSIGNED_LONG_LONG,source,tag,source);
 		inbox->push_back(aMessage);
 		m_receivedMessages[source]++;
 		
@@ -342,7 +344,7 @@ void MessagesHandler::constructor(int rank,int size){
 	// post a few receives.
 	for(int i=0;i<m_ringSize;i++){
 		void*buffer=m_buffers+i*MAXIMUM_MESSAGE_SIZE_IN_BYTES;
-		MPI_Recv_init(buffer,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),MPI_UINT64_T,
+		MPI_Recv_init(buffer,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),MPI_UNSIGNED_LONG_LONG,
 			MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,m_ring+i);
 		MPI_Start(m_ring+i);
 	}

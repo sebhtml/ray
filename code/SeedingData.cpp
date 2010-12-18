@@ -22,6 +22,7 @@
 #include<assert.h>
 #include<SeedingData.h>
 #include<Message.h>
+#include<mpi.h>
 
 void SeedingData::computeSeeds(){
 	if(!m_initiatedIterator){
@@ -61,7 +62,7 @@ void SeedingData::computeSeeds(){
 			(*m_mode)=MODE_DO_NOTHING;
 			printf("Rank %i is creating seeds [%i/%i] (completed)\n",getRank(),(int)m_SEEDING_i,(int)m_subgraph->size());
 			fflush(stdout);
-			Message aMessage(NULL,0,MPI_UINT64_T,MASTER_RANK,TAG_SEEDING_IS_OVER,getRank());
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_SEEDING_IS_OVER,getRank());
 			m_outbox->push_back(aMessage);
 		}else if(!m_splayTreeIterator.hasNext()){
 			m_currentTreeIndex++;
@@ -219,7 +220,7 @@ void SeedingData::do_1_1_test(){
 		if(!m_SEEDING_InedgesRequested){
 			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 			message[0]=(uint64_t)m_SEEDING_currentVertex;
-			Message aMessage(message,1,MPI_UINT64_T,vertexRank(m_SEEDING_currentVertex,getSize()),TAG_REQUEST_VERTEX_INGOING_EDGES,getRank());
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(m_SEEDING_currentVertex,getSize()),TAG_REQUEST_VERTEX_INGOING_EDGES,getRank());
 			m_outbox->push_back(aMessage);
 			m_SEEDING_numberOfIngoingEdges=0;
 			m_SEEDING_numberOfIngoingEdgesWithSeedCoverage=0;
@@ -232,7 +233,7 @@ void SeedingData::do_1_1_test(){
 				if(!m_SEEDING_vertexCoverageRequested){
 					uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 					message[0]=(uint64_t)m_SEEDING_receivedIngoingEdges[m_SEEDING_ingoingEdgeIndex];
-					Message aMessage(message,1,MPI_UINT64_T,vertexRank(message[0],getSize()),TAG_REQUEST_VERTEX_COVERAGE,getRank());
+					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0],getSize()),TAG_REQUEST_VERTEX_COVERAGE,getRank());
 					m_outbox->push_back(aMessage);
 					m_SEEDING_vertexCoverageRequested=true;
 					m_SEEDING_vertexCoverageReceived=false;
@@ -259,7 +260,7 @@ void SeedingData::do_1_1_test(){
 		if(!m_SEEDING_edgesRequested){
 			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 			message[0]=(uint64_t)m_SEEDING_currentVertex;
-			Message aMessage(message,1,MPI_UINT64_T,vertexRank(m_SEEDING_currentVertex,getSize()),TAG_REQUEST_VERTEX_OUTGOING_EDGES,getRank());
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(m_SEEDING_currentVertex,getSize()),TAG_REQUEST_VERTEX_OUTGOING_EDGES,getRank());
 			m_outbox->push_back(aMessage);
 			m_SEEDING_edgesRequested=true;
 			m_SEEDING_numberOfOutgoingEdges=0;
@@ -273,7 +274,7 @@ void SeedingData::do_1_1_test(){
 				if(!m_SEEDING_vertexCoverageRequested){
 					uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 					message[0]=(uint64_t)m_SEEDING_receivedOutgoingEdges[m_SEEDING_outgoingEdgeIndex];
-					Message aMessage(message,1,MPI_UINT64_T,vertexRank(message[0],getSize()),TAG_REQUEST_VERTEX_COVERAGE,getRank());
+					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0],getSize()),TAG_REQUEST_VERTEX_COVERAGE,getRank());
 					m_outbox->push_back(aMessage);
 					m_SEEDING_vertexCoverageRequested=true;
 					m_SEEDING_vertexCoverageReceived=false;
