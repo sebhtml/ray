@@ -66,8 +66,8 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			*m_reverseComplementVertex=true;
 		}else{
 			// flush data
-			m_bufferedData.flushAll(TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank);
-			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_VERTICES_DISTRIBUTED,rank);
+			m_bufferedData.flushAll(RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank);
+			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, RAY_MPI_TAG_VERTICES_DISTRIBUTED,rank);
 			m_outbox->push_back(aMessage);
 			*m_mode_send_vertices=false;
 			(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
@@ -99,7 +99,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 				m_bufferedData.addAt(rankToFlush,b);
 			}
 
-			if(m_bufferedData.flush(rankToFlush,1,TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_bufferedData.flush(rankToFlush,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,false)){
 				m_ready=false;
 			}
 

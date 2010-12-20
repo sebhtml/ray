@@ -71,7 +71,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 	
 		// distribution of paired information is completed
 		}else{
-			m_waitingNumber+=m_bufferedData.flushAll(TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank);
+			m_waitingNumber+=m_bufferedData.flushAll(RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank);
 			cout<<"Rank "<<rank<<" is sending paired information ["<<m_loader.size()<<"/"<<m_loader.size()<<"] (completed)"<<endl;
 			cout<<endl;
 			cout.flush();
@@ -88,7 +88,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 		(*m_loadSequenceStep)=true;
 
 		for(int i=0;i<size;i++){
-			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, i,TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS,rank);
+			Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, i,RAY_MPI_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS,rank);
 			m_outbox->push_back(aMessage);
 		}
 
@@ -240,7 +240,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			m_bufferedData.addAt(leftSequenceRank,rightSequenceIdOnRank);
 			m_bufferedData.addAt(leftSequenceRank,m_parameters->getLibrary(m_distribution_file_id));
 
-			if(m_bufferedData.flush(leftSequenceRank,4,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_bufferedData.flush(leftSequenceRank,4,RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
 			}
 		}else if(m_LOADER_isRightFile){
@@ -269,7 +269,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			m_bufferedData.addAt(rightSequenceRank,leftSequenceIdOnRank);
 			m_bufferedData.addAt(rightSequenceRank,m_parameters->getLibrary(m_distribution_file_id));
 
-			if(m_bufferedData.flush(rightSequenceRank,4,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_bufferedData.flush(rightSequenceRank,4,RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
 			}
 			#ifdef DEBUG
@@ -297,7 +297,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			m_bufferedData.addAt(leftSequenceRank,rightSequenceIdOnRank);
 			m_bufferedData.addAt(leftSequenceRank,m_parameters->getLibrary(m_distribution_file_id));
 
-			if(m_bufferedData.flush(leftSequenceRank,4,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_bufferedData.flush(leftSequenceRank,4,RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
 			}
 
@@ -315,7 +315,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			m_bufferedData.addAt(rightSequenceRank,leftSequenceIdOnRank);
 			m_bufferedData.addAt(rightSequenceRank,m_parameters->getLibrary(m_distribution_file_id));
 
-			if(m_bufferedData.flush(rightSequenceRank,4,TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_bufferedData.flush(rightSequenceRank,4,RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
 			}
 
@@ -421,7 +421,7 @@ void SequencesLoader::flush(int rank,RingAllocator*m_outboxAllocator,StaticVecto
 	#endif
 	//cout<<"sending "<<n<<" sequences to "<<rank<<endl;
 	message[cells-1]=ASCII_END_OF_TRANSMISSION;
-	Message aMessage(message,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),MPI_UNSIGNED_LONG_LONG,rank,TAG_SEND_SEQUENCE_REGULATOR,rank);
+	Message aMessage(message,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),MPI_UNSIGNED_LONG_LONG,rank,RAY_MPI_TAG_SEND_SEQUENCE_REGULATOR,rank);
 	m_outbox->push_back(aMessage);
 	m_entries[rank]=0;
 	m_waitingNumber++;

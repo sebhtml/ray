@@ -40,7 +40,7 @@ void MessageProcessor::processMessage(Message*message){
 	(this->*f)(message);
 }
 
-void MessageProcessor::call_TAG_ASK_BEGIN_REDUCTION_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY(Message*message){
 	m_verticesExtractor->incrementRanksReadyForReduction();
 	if(m_verticesExtractor->readyForReduction()){
 		(*m_master_mode)=MASTER_MODE_START_REDUCTION;
@@ -48,12 +48,12 @@ void MessageProcessor::call_TAG_ASK_BEGIN_REDUCTION_REPLY(Message*message){
 	}
 }
 
-void MessageProcessor::call_TAG_RESUME_VERTEX_DISTRIBUTION(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_RESUME_VERTEX_DISTRIBUTION(Message*message){
 	(*m_mode)=RAY_SLAVE_MODE_EXTRACT_VERTICES;
 	m_verticesExtractor->removeTrigger();
 }
 
-void MessageProcessor::call_TAG_REDUCE_MEMORY_CONSUMPTION_DONE(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_REDUCE_MEMORY_CONSUMPTION_DONE(Message*message){
 	m_verticesExtractor->incrementRanksDoneWithReduction();
 	if(m_verticesExtractor->reductionIsDone()){
 		(*m_master_mode)=MASTER_MODE_RESUME_VERTEX_DISTRIBUTION;
@@ -61,17 +61,17 @@ void MessageProcessor::call_TAG_REDUCE_MEMORY_CONSUMPTION_DONE(Message*message){
 	}
 }
 
-void MessageProcessor::call_TAG_START_REDUCTION(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_START_REDUCTION(Message*message){
 	(*m_mode)=RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION;
 }
 
-void MessageProcessor::call_TAG_ASK_BEGIN_REDUCTION(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION(Message*message){
 	(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_ASK_BEGIN_REDUCTION_REPLY,rank);
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_MUST_RUN_REDUCER(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_MUST_RUN_REDUCER(Message*message){
 	int rank=message->getSource();
 	m_verticesExtractor->addRankForReduction(rank);
 	if(m_verticesExtractor->mustRunReducer()){
@@ -80,20 +80,20 @@ void MessageProcessor::call_TAG_MUST_RUN_REDUCER(Message*message){
 	}
 }
 
-void MessageProcessor::call_TAG_WELCOME(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_WELCOME(Message*message){
 }
 
-void MessageProcessor::call_TAG_BARRIER(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_BARRIER(Message*message){
 	MPI_Barrier(MPI_COMM_WORLD);
 }
 
-void MessageProcessor::call_TAG_SEND_SEQUENCE_REGULATOR(Message*message){
-	call_TAG_SEND_SEQUENCE(message);
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_SEND_SEQUENCE_REPLY,rank);
+void MessageProcessor::call_RAY_MPI_TAG_SEND_SEQUENCE_REGULATOR(Message*message){
+	call_RAY_MPI_TAG_SEND_SEQUENCE(message);
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_SEND_SEQUENCE_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_START_INDEXING_SEQUENCES(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message){
 	(*m_mode)=RAY_SLAVE_MODE_INDEX_SEQUENCES;
 	m_si->constructor(size);
 }
@@ -104,7 +104,7 @@ void MessageProcessor::call_TAG_START_INDEXING_SEQUENCES(Message*message){
  *
  *
  */
-void MessageProcessor::call_TAG_SEND_SEQUENCE(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_SEND_SEQUENCE(Message*message){
 	char*buffer=(char*)message->getBuffer();
 	int currentPosition=0;
 
@@ -131,34 +131,34 @@ void MessageProcessor::call_TAG_SEND_SEQUENCE(Message*message){
 	}
 }
 
-void MessageProcessor::call_TAG_SHOW_SEQUENCES(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_SHOW_SEQUENCES(Message*message){
 	printf("Rank %i has %i sequence reads\n",rank,(int)(*m_myReads).size());
 	fflush(stdout);
 }
 
-void MessageProcessor::call_TAG_SEND_SEQUENCE_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_SEND_SEQUENCE_REPLY(Message*message){
 	m_sequencesLoader->setReadiness();
 }
 
-void MessageProcessor::call_TAG_SEQUENCES_READY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_SEQUENCES_READY(Message*message){
 	(*m_sequence_ready_machines)++;
 	if(*m_sequence_ready_machines==size){
 		(*m_master_mode)=MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION;
 	}
 }
 
-void MessageProcessor::call_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS(Message*message){
 	int source=message->getSource();
 	printf("Rank %i has %i sequence reads\n",rank,(int)(*m_myReads).size());
 	fflush(stdout);
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,TAG_SEQUENCES_READY,rank);
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_SEQUENCES_READY,rank);
 	m_outbox->push_back(aMessage);
 }
 
 /*
  * receive vertices (data)
  */
-void MessageProcessor::call_TAG_VERTICES_DATA(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -185,37 +185,37 @@ void MessageProcessor::call_TAG_VERTICES_DATA(Message*message){
 		assert(tmp->getValue()->getCoverage()>0);
 		#endif
 	}
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_VERTICES_DATA_REPLY,rank);
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_VERTICES_DATA_REPLY,rank);
 	m_outbox->push_back(aMessage);
 
 	if(m_subgraph->size()>=m_verticesExtractor->getThreshold() && !m_verticesExtractor->isTriggered()){
 		m_verticesExtractor->trigger();
-		Message aMessage2(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_MUST_RUN_REDUCER,rank);
+		Message aMessage2(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_MUST_RUN_REDUCER,rank);
 		m_outbox->push_back(aMessage2);
 	}
 }
 
-void MessageProcessor::call_TAG_VERTICES_DATA_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA_REPLY(Message*message){
 	m_verticesExtractor->setReadiness();
 }
 
-void MessageProcessor::call_TAG_VERTICES_DISTRIBUTED(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DISTRIBUTED(Message*message){
 	(*m_numberOfMachinesDoneSendingVertices)++;
 	if((*m_numberOfMachinesDoneSendingVertices)==size){
 		(*m_master_mode)=MASTER_MODE_PREPARE_DISTRIBUTIONS;
 	}
 }
 
-void MessageProcessor::call_TAG_VERTEX_PTR_REQUEST(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_VERTEX_PTR_REQUEST(Message*message){
 }
-void MessageProcessor::call_TAG_OUT_EDGE_DATA_WITH_PTR(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_OUT_EDGE_DATA_WITH_PTR(Message*message){
 }
 
-void MessageProcessor::call_TAG_OUT_EDGES_DATA_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA_REPLY(Message*message){
 	m_edgesExtractor->setReadiness();
 }
 
-void MessageProcessor::call_TAG_OUT_EDGES_DATA(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -263,14 +263,14 @@ void MessageProcessor::call_TAG_OUT_EDGES_DATA(Message*message){
 		#endif
 	}
 
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_OUT_EDGES_DATA_REPLY,rank);
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_OUT_EDGES_DATA_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_SHOW_VERTICES(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_SHOW_VERTICES(Message*message){
 }
 
-void MessageProcessor::call_TAG_START_VERTICES_DISTRIBUTION(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_START_VERTICES_DISTRIBUTION(Message*message){
 	// wait for everyone
 	MPI_Barrier(MPI_COMM_WORLD);
 	(*m_mode_send_vertices)=true;
@@ -280,18 +280,18 @@ void MessageProcessor::call_TAG_START_VERTICES_DISTRIBUTION(Message*message){
 	(*m_mode_send_vertices_sequence_id)=0;
 }
 
-void MessageProcessor::call_TAG_EDGES_DISTRIBUTED(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_EDGES_DISTRIBUTED(Message*message){
 	(*m_numberOfMachinesDoneSendingEdges)++;
 	if((*m_numberOfMachinesDoneSendingEdges)==size){
 		(*m_master_mode)=MASTER_MODE_TRIGGER_INDEXING;
 	}
 }
 
-void MessageProcessor::call_TAG_IN_EDGES_DATA_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA_REPLY(Message*message){
 	m_edgesExtractor->setReadiness();
 }
 
-void MessageProcessor::call_TAG_IN_EDGES_DATA(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -315,33 +315,33 @@ void MessageProcessor::call_TAG_IN_EDGES_DATA(Message*message){
 		#endif
 	}
 
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_IN_EDGES_DATA_REPLY,rank);
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_IN_EDGES_DATA_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_IN_EDGE_DATA_WITH_PTR(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_IN_EDGE_DATA_WITH_PTR(Message*message){
 }
 
-void MessageProcessor::call_TAG_START_EDGES_DISTRIBUTION(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_START_EDGES_DISTRIBUTION(Message*message){
 	(*m_mode_send_outgoing_edges)=true;
 	(*m_mode)=RAY_SLAVE_MODE_PROCESS_OUTGOING_EDGES;
 	m_edgesExtractor->constructor(size);
 }
 
-void MessageProcessor::call_TAG_START_EDGES_DISTRIBUTION_ASK(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_START_EDGES_DISTRIBUTION_ASK(Message*message){
 	int source=message->getSource();
-	Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, source, TAG_START_EDGES_DISTRIBUTION_ANSWER,rank);
+	Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, source, RAY_MPI_TAG_START_EDGES_DISTRIBUTION_ANSWER,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_START_EDGES_DISTRIBUTION_ANSWER(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_START_EDGES_DISTRIBUTION_ANSWER(Message*message){
 	(*m_numberOfMachinesReadyForEdgesDistribution)++;
 	if(*m_numberOfMachinesReadyForEdgesDistribution==size){
 		(*m_master_mode)=MASTER_MODE_START_EDGES_DISTRIBUTION;
 	}
 }
 
-void MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION(Message*message){
 	// freeze the forest. icy winter ahead.
 	m_subgraph->freeze();
 	//m_subgraph->show(rank,parameters->getPrefix().c_str());
@@ -349,24 +349,24 @@ void MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION(Message*m
 	printf("Rank %i has %i vertices (completed)\n",rank,(int)m_subgraph->size());
 	fflush(stdout);
 
-	Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, source, TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER,rank);
+	Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, source, RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER(Message*message){
 	(*m_numberOfMachinesReadyToSendDistribution)++;
 	if((*m_numberOfMachinesReadyToSendDistribution)==size){
 		(*m_master_mode)=MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS;
 	}
 }
 
-void MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message){
 	(*m_mode_send_coverage_iterator)=0;
 	(*m_mode_sendDistribution)=true;
 	(*m_mode)=RAY_SLAVE_MODE_SEND_DISTRIBUTION;
 }
 
-void MessageProcessor::call_TAG_COVERAGE_DATA(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_COVERAGE_DATA(Message*message){
 	void*buffer=message->getBuffer();
 	int*incoming=(int*)buffer;
 	int count=incoming[0];
@@ -376,36 +376,36 @@ void MessageProcessor::call_TAG_COVERAGE_DATA(Message*message){
 		uint64_t count=incoming[1+2*i+1];
 		(*m_coverageDistribution)[coverage]+=count;
 	}
-	call_TAG_COVERAGE_END(message);
+	call_RAY_MPI_TAG_COVERAGE_END(message);
 }
 
-void MessageProcessor::call_TAG_COVERAGE_END(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_COVERAGE_END(Message*message){
 	(*m_numberOfMachinesDoneSendingCoverage)++;
 	if((*m_numberOfMachinesDoneSendingCoverage)==size){
 		(*m_master_mode)=MASTER_MODE_SEND_COVERAGE_VALUES;
 	}
 }
 
-void MessageProcessor::call_TAG_SEND_COVERAGE_VALUES(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_SEND_COVERAGE_VALUES(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	(*m_minimumCoverage)=incoming[0];
 	(*m_seedCoverage)=incoming[1];
 	(*m_peakCoverage)=incoming[2];
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_RECEIVED_COVERAGE_INFORMATION,rank);
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_RECEIVED_COVERAGE_INFORMATION,rank);
 	m_outbox->push_back(aMessage);
 	m_oa->constructor((*m_peakCoverage));
 	parameters->setPeakCoverage(*m_peakCoverage);
 }
 
-void MessageProcessor::call_TAG_READY_TO_SEED(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_READY_TO_SEED(Message*message){
 	(*m_readyToSeed)++;
 	if((*m_readyToSeed)==size){
 		(*m_master_mode)=MASTER_MODE_TRIGGER_SEEDING;
 	}
 }
 
-void MessageProcessor::call_TAG_START_SEEDING(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 	(*m_mode)=RAY_SLAVE_MODE_START_SEEDING;
 	map<int,map<int,int> > edgesDistribution;
 	
@@ -434,7 +434,7 @@ void MessageProcessor::call_TAG_START_SEEDING(Message*message){
 	#endif
 }
 
-void MessageProcessor::call_TAG_REQUEST_VERTEX_COVERAGE(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -445,18 +445,18 @@ void MessageProcessor::call_TAG_REQUEST_VERTEX_COVERAGE(Message*message){
 	uint64_t coverage=node->getValue()->getCoverage();
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 	message2[0]=coverage;
-	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_VERTEX_COVERAGE_REPLY,rank);
+	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_REQUEST_VERTEX_COVERAGE_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	(m_seedingData->m_SEEDING_receivedVertexCoverage)=incoming[0];
 	(m_seedingData->m_SEEDING_vertexCoverageReceived)=true;
 }
 
-void MessageProcessor::call_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -466,11 +466,11 @@ void MessageProcessor::call_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE(Message*message)
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
 	message2[0]=key;
 	message2[1]=coverage;
-	Message aMessage(message2,2,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_VERTEX_KEY_AND_COVERAGE_REPLY,rank);
+	Message aMessage(message2,2,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	(m_seedingData->m_SEEDING_receivedKey)=incoming[0];
@@ -478,7 +478,7 @@ void MessageProcessor::call_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE_REPLY(Message*me
 	(m_seedingData->m_SEEDING_vertexKeyAndCoverageReceived)=true;
 }
 
-void MessageProcessor::call_TAG_REQUEST_VERTEX_OUTGOING_EDGES(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -487,11 +487,11 @@ void MessageProcessor::call_TAG_REQUEST_VERTEX_OUTGOING_EDGES(Message*message){
 	for(int i=0;i<(int)outgoingEdges.size();i++){
 		message2[i]=outgoingEdges[i];
 	}
-	Message aMessage(message2,outgoingEdges.size(),MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY,rank);
+	Message aMessage(message2,outgoingEdges.size(),MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -502,7 +502,7 @@ void MessageProcessor::call_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY(Message*mess
 	(m_seedingData->m_SEEDING_edgesReceived)=true;
 }
 
-void MessageProcessor::call_TAG_SEEDING_IS_OVER(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_SEEDING_IS_OVER(Message*message){
 	(*m_numberOfRanksDoneSeeding)++;
 	if((*m_numberOfRanksDoneSeeding)==size){
 		(*m_master_mode)=MASTER_MODE_TRIGGER_DETECTION;
@@ -510,13 +510,13 @@ void MessageProcessor::call_TAG_SEEDING_IS_OVER(Message*message){
 }
 
 
-void MessageProcessor::call_TAG_RECEIVED_MESSAGES_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_RECEIVED_MESSAGES_REPLY(Message*message){
 	if(rank!=MASTER_RANK){
 		(*m_alive)=false; // Rest In Peace.
 	}
 }
 
-void MessageProcessor::call_TAG_RECEIVED_MESSAGES(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_RECEIVED_MESSAGES(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -524,7 +524,7 @@ void MessageProcessor::call_TAG_RECEIVED_MESSAGES(Message*message){
 		m_messagesHandler->addCount(message->getSource(),incoming[i]);
 	}
 	if(message->getSource()!=MASTER_RANK && m_messagesHandler->isFinished(message->getSource())){
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_RECEIVED_MESSAGES_REPLY,rank);
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_RECEIVED_MESSAGES_REPLY,rank);
 		m_outbox->push_back(aMessage);
 	}
 	if(m_messagesHandler->isFinished()){
@@ -532,7 +532,7 @@ void MessageProcessor::call_TAG_RECEIVED_MESSAGES(Message*message){
 	}
 }
 
-void MessageProcessor::call_TAG_GOOD_JOB_SEE_YOU_SOON(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON(Message*message){
 	// send stats to master
 	int i=0;
 	while(i<size){
@@ -543,40 +543,40 @@ void MessageProcessor::call_TAG_GOOD_JOB_SEE_YOU_SOON(Message*message){
 			data[j]=m_messagesHandler->getReceivedMessages()[i+j];
 			j++;
 		}
-		Message aMessage(data,j,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_RECEIVED_MESSAGES,rank);
+		Message aMessage(data,j,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_RECEIVED_MESSAGES,rank);
 		m_outbox->push_back(aMessage);
 		i+=maxToProcess;
 	}
 }
 
-void MessageProcessor::call_TAG_I_GO_NOW(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_I_GO_NOW(Message*message){
 }
 
-void MessageProcessor::call_TAG_SET_WORD_SIZE(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_SET_WORD_SIZE(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	(*m_wordSize)=incoming[0];
 }
 
-void MessageProcessor::call_TAG_MASTER_IS_DONE_ATTACHING_READS(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS(Message*message){
 	int source=message->getSource();
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,rank);
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY(Message*message){
 	(*m_ranksDoneAttachingReads)++;
 	if((*m_ranksDoneAttachingReads)==size){
 		(*m_master_mode)=MASTER_MODE_PREPARE_SEEDING;
 	}
 }
 
-void MessageProcessor::call_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER(Message*message){
 }
-void MessageProcessor::call_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER_REPLY(Message*message){
 }
 
-void MessageProcessor::call_TAG_REQUEST_VERTEX_INGOING_EDGES(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -589,11 +589,11 @@ void MessageProcessor::call_TAG_REQUEST_VERTEX_INGOING_EDGES(Message*message){
 	for(int i=0;i<(int)ingoingEdges.size();i++){
 		message2[i]=ingoingEdges[i];
 	}
-	Message aMessage(message2,ingoingEdges.size(),MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY,rank);
+	Message aMessage(message2,ingoingEdges.size(),MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -604,7 +604,7 @@ void MessageProcessor::call_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY(Message*messa
 	(m_seedingData->m_SEEDING_InedgesReceived)=true;
 }
 
-void MessageProcessor::call_TAG_EXTENSION_IS_DONE(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_EXTENSION_IS_DONE(Message*message){
 	(m_ed->m_EXTENSION_numberOfRanksDone)++;
 	(m_ed->m_EXTENSION_currentRankIsDone)=true;
 	if((m_ed->m_EXTENSION_numberOfRanksDone)==size){
@@ -612,13 +612,13 @@ void MessageProcessor::call_TAG_EXTENSION_IS_DONE(Message*message){
 	}
 }
 
-void MessageProcessor::call_TAG_ASK_EXTENSION(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_ASK_EXTENSION(Message*message){
 	(m_ed->m_EXTENSION_initiated)=false;
 	(*m_mode)=RAY_SLAVE_MODE_EXTENSION;
 	(*m_last_value)=-1;
 }
 
-void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -630,7 +630,7 @@ void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED(Message*message){
 	vector<Direction> directions=node->getValue()->getDirections();
 	//cout<<"directions="<<directions.size()<<endl;
 	int maxSize=directions.size();
-	//cout<<"source="<<source<<" self="<<rank<<" MessageProcessor::call_TAG_ASK_IS_ASSEMBLED directions="<<maxSize<<endl;
+	//cout<<"source="<<source<<" self="<<rank<<" MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED directions="<<maxSize<<endl;
 
 	// each one of them takes 2 elements., this is 4000/8/2-1 = 249
 	int maxToProcess=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)/2-1; // -1 because we need to track the offset and the vertex too
@@ -656,15 +656,15 @@ void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED(Message*message){
 	//cout<<"processed "<<processed<<endl;
 
 	if(nextOffset==maxSize){
-		Message aMessage(message2,2*processed+2,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_IS_ASSEMBLED_REPLY_END,rank);
+		Message aMessage(message2,2*processed+2,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY_END,rank);
 		m_outbox->push_back(aMessage);
 	}else{
-		Message aMessage(message2,2*processed+2,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_IS_ASSEMBLED_REPLY,rank);
+		Message aMessage(message2,2*processed+2,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY,rank);
 		m_outbox->push_back(aMessage);
 	}
 }
 
-void MessageProcessor::call_TAG_ASK_REVERSE_COMPLEMENT(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_ASK_REVERSE_COMPLEMENT(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	SplayNode<uint64_t,Vertex>*node=(SplayNode<uint64_t,Vertex>*)incoming[0];
@@ -672,15 +672,15 @@ void MessageProcessor::call_TAG_ASK_REVERSE_COMPLEMENT(Message*message){
 	uint64_t reverseComplement=complementVertex(value,*m_wordSize,(*m_colorSpaceMode));
 	int rank=vertexRank(reverseComplement,size);
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
-	Message aMessage(message2,2,MPI_UNSIGNED_LONG_LONG,rank,TAG_REQUEST_VERTEX_POINTER,rank);
+	Message aMessage(message2,2,MPI_UNSIGNED_LONG_LONG,rank,RAY_MPI_TAG_REQUEST_VERTEX_POINTER,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_REQUEST_VERTEX_POINTER(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_POINTER(Message*message){
 }
 
 
-void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY_END(Message*message){
+void MessageProcessor::call_RAY_MPI_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY_END(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	int count=message->getCount();
@@ -694,10 +694,10 @@ void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY_END(Message*message){
 
 	(m_ed->m_EXTENSION_VertexAssembled_received)=true;
 	(m_ed->m_EXTENSION_vertexIsAssembledResult)=seedExtender->getDirections()->size()>0;
-	//cout<<"source="<<message->getSource()<<" self="<<rank<<" MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY_END directions="<<seedExtender->getDirections()->size()<<endl;
+	//cout<<"source="<<message->getSource()<<" self="<<rank<<" MessageProcessor::call_RAY_MPI_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY_END directions="<<seedExtender->getDirections()->size()<<endl;
 }
 
-void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -714,24 +714,24 @@ void MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY(Message*message){
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
 	message2[0]=incoming[0];
 	message2[1]=incoming[1];
-	Message aMessage(message2,2,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_IS_ASSEMBLED,rank);
+	Message aMessage(message2,2,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_IS_ASSEMBLED,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_MARK_AS_ASSEMBLED(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_MARK_AS_ASSEMBLED(Message*message){
 }
 
-void MessageProcessor::call_TAG_ASK_EXTENSION_DATA(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_ASK_EXTENSION_DATA(Message*message){
 	(*m_mode)=RAY_SLAVE_MODE_SEND_EXTENSION_DATA;
 	(m_seedingData->m_SEEDING_i)=0;
 	(m_ed->m_EXTENSION_currentPosition)=0;
 }
 
-void MessageProcessor::call_TAG_EXTENSION_DATA_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_EXTENSION_DATA_REPLY(Message*message){
 	(*m_ready)=true;
 }
 
-void MessageProcessor::call_TAG_EXTENSION_DATA(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_EXTENSION_DATA(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	int count=message->getCount();
@@ -739,18 +739,18 @@ void MessageProcessor::call_TAG_EXTENSION_DATA(Message*message){
 		(*m_allPaths)[(*m_allPaths).size()-1].push_back(incoming[i+0]);
 	}
 
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_EXTENSION_DATA_REPLY,rank);
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_EXTENSION_DATA_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_EXTENSION_END(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_EXTENSION_END(Message*message){
 }
 
-void MessageProcessor::call_TAG_EXTENSION_DATA_END(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_EXTENSION_DATA_END(Message*message){
 	(m_ed->m_EXTENSION_currentRankIsDone)=true;
 }
 
-void MessageProcessor::call_TAG_ATTACH_SEQUENCE(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -766,7 +766,7 @@ void MessageProcessor::call_TAG_ATTACH_SEQUENCE(Message*message){
 	}
 }
 
-void MessageProcessor::call_TAG_REQUEST_READS(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -795,7 +795,7 @@ void MessageProcessor::call_TAG_REQUEST_READS(Message*message){
 		message2[j++]=m_sentinelValue;
 		message2[j++]=m_sentinelValue;
 
-		Message aMessage(message2,j,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READS_REPLY,rank);
+		Message aMessage(message2,j,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_READS_REPLY,rank);
 		m_outbox->push_back(aMessage);
 	}
 	while(e!=NULL){
@@ -812,7 +812,7 @@ void MessageProcessor::call_TAG_REQUEST_READS(Message*message){
 				message2[j++]=m_sentinelValue;
 				message2[j++]=m_sentinelValue;
 			}
-			Message aMessage(message2,j,MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READS_REPLY,rank);
+			Message aMessage(message2,j,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_READS_REPLY,rank);
 			m_outbox->push_back(aMessage);
 			// if more reads are to be sent
 			if(e!=NULL){
@@ -824,7 +824,7 @@ void MessageProcessor::call_TAG_REQUEST_READS(Message*message){
 	}
 }
 
-void MessageProcessor::call_TAG_REQUEST_READS_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -850,7 +850,7 @@ void MessageProcessor::call_TAG_REQUEST_READS_REPLY(Message*message){
 	}
 }
 
-void MessageProcessor::call_TAG_ASK_READ_VERTEX_AT_POSITION(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -858,17 +858,17 @@ void MessageProcessor::call_TAG_ASK_READ_VERTEX_AT_POSITION(Message*message){
 	uint64_t vertex=(*m_myReads)[incoming[0]]->getVertex(incoming[1],(*m_wordSize),strand,(*m_colorSpaceMode));
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 	message2[0]=vertex;
-	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_READ_VERTEX_AT_POSITION_REPLY,rank);
+	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	(m_ed->m_EXTENSION_read_vertex_received)=true;
 	(m_ed->m_EXTENSION_receivedReadVertex)=((uint64_t*)buffer)[0];
 }
 
-void MessageProcessor::call_TAG_ASK_READ_LENGTH(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_ASK_READ_LENGTH(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -876,24 +876,24 @@ void MessageProcessor::call_TAG_ASK_READ_LENGTH(Message*message){
 	
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 	message2[0]=length;
-	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_READ_LENGTH_REPLY,rank);
+	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_READ_LENGTH_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_ASK_READ_LENGTH_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_ASK_READ_LENGTH_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	(m_ed->m_EXTENSION_readLength_received)=true;
 	(m_ed->m_EXTENSION_receivedLength)=incoming[0];
 }
 
-void MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY(Message*message){
-	call_TAG_SAVE_WAVE_PROGRESSION(message);
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_SAVE_WAVE_PROGRESSION_REPLY,rank);
+void MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY(Message*message){
+	call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION(message);
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	int count=message->getCount();
@@ -909,23 +909,23 @@ void MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 	
 }
 
-void MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REPLY(Message*message){
 	m_fusionData->setReadiness();
 }
 
-void MessageProcessor::call_TAG_ASSEMBLE_WAVES(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_ASSEMBLE_WAVES(Message*message){
 	(*m_mode)=RAY_SLAVE_MODE_ASSEMBLE_WAVES;
 	(m_seedingData->m_SEEDING_i)=0;
 }
 
-void MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION_REVERSE(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REVERSE(Message*message){
 }
 
-void MessageProcessor::call_TAG_ASSEMBLE_WAVES_DONE(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_ASSEMBLE_WAVES_DONE(Message*message){
 	(m_ed->m_EXTENSION_currentRankIsDone)=true;
 }
 
-void MessageProcessor::call_TAG_START_FUSION(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_START_FUSION(Message*message){
 	(*m_mode)=RAY_SLAVE_MODE_FUSION;
 	(m_seedingData->m_SEEDING_i)=0;
 
@@ -934,14 +934,14 @@ void MessageProcessor::call_TAG_START_FUSION(Message*message){
 	m_fusionData->m_FUSION_paths_requested=false;
 }
 
-void MessageProcessor::call_TAG_FUSION_DONE(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_FUSION_DONE(Message*message){
 	m_fusionData->m_FUSION_numberOfRanksDone++;
 	if(m_fusionData->m_FUSION_numberOfRanksDone==size && !(*m_isFinalFusion)){
 		(*m_master_mode)=MASTER_MODE_TRIGGER_FIRST_FUSIONS;
 	}
 }
 
-void MessageProcessor::call_TAG_ASK_VERTEX_PATHS_SIZE(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -953,11 +953,11 @@ void MessageProcessor::call_TAG_ASK_VERTEX_PATHS_SIZE(Message*message){
 	m_fusionData->m_FUSION_cachedDirections[source]=paths;
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 	message2[0]=paths.size();
-	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_VERTEX_PATHS_SIZE_REPLY,rank);
+	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_ASK_VERTEX_PATHS_SIZE_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	m_fusionData->m_FUSION_paths_received=true;
@@ -965,7 +965,7 @@ void MessageProcessor::call_TAG_ASK_VERTEX_PATHS_SIZE_REPLY(Message*message){
 	m_fusionData->m_FUSION_numberOfPaths=incoming[0];
 }
 
-void MessageProcessor::call_TAG_GET_PATH_LENGTH(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_GET_PATH_LENGTH(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -983,27 +983,27 @@ void MessageProcessor::call_TAG_GET_PATH_LENGTH(Message*message){
 	#endif
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t));
 	message2[0]=length;
-	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,TAG_GET_PATH_LENGTH_REPLY,rank);
+	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_GET_PATH_LENGTH_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_GET_PATH_LENGTH_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_GET_PATH_LENGTH_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	m_fusionData->m_FUSION_receivedLength=incoming[0];
 	m_fusionData->m_FUSION_pathLengthReceived=true;
 }
 
-void MessageProcessor::call_TAG_CALIBRATION_MESSAGE(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_CALIBRATION_MESSAGE(Message*message){
 }
-void MessageProcessor::call_TAG_BEGIN_CALIBRATION(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_BEGIN_CALIBRATION(Message*message){
 }
-void MessageProcessor::call_TAG_END_CALIBRATION(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_END_CALIBRATION(Message*message){
 }
-void MessageProcessor::call_TAG_COMMUNICATION_STABILITY_MESSAGE(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_COMMUNICATION_STABILITY_MESSAGE(Message*message){
 }
 
-void MessageProcessor::call_TAG_ASK_VERTEX_PATH(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -1012,11 +1012,11 @@ void MessageProcessor::call_TAG_ASK_VERTEX_PATH(Message*message){
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
 	message2[0]=d.getWave();
 	message2[1]=d.getProgression();
-	Message aMessage(message2,2,MPI_UNSIGNED_LONG_LONG,source,TAG_ASK_VERTEX_PATH_REPLY,rank);
+	Message aMessage(message2,2,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_ASK_VERTEX_PATH_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	m_fusionData->m_FUSION_path_received=true;
@@ -1025,11 +1025,11 @@ void MessageProcessor::call_TAG_ASK_VERTEX_PATH_REPLY(Message*message){
 	m_fusionData->m_FUSION_receivedPath.constructor(pathId,position);
 }
 
-void MessageProcessor::call_TAG_INDEX_PAIRED_SEQUENCE_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE_REPLY(Message*message){
 	m_sequencesLoader->setReadiness();
 }
 
-void MessageProcessor::call_TAG_INDEX_PAIRED_SEQUENCE(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE(Message*message){
 	int count=message->getCount();
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -1054,11 +1054,11 @@ void MessageProcessor::call_TAG_INDEX_PAIRED_SEQUENCE(Message*message){
 
 		(*m_myReads)[currentReadId]->setPairedRead(t);
 	}
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_INDEX_PAIRED_SEQUENCE_REPLY,rank);
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_HAS_PAIRED_READ(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_HAS_PAIRED_READ(Message*message){
 	int source=message->getSource();
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 	void*buffer=message->getBuffer();
@@ -1068,18 +1068,18 @@ void MessageProcessor::call_TAG_HAS_PAIRED_READ(Message*message){
 	assert(index<(int)m_myReads->size());
 	#endif
 	message2[0]=(*m_myReads)[index]->hasPairedRead();
-	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,TAG_HAS_PAIRED_READ_REPLY,rank);
+	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_HAS_PAIRED_READ_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_HAS_PAIRED_READ_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_HAS_PAIRED_READ_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	(m_ed->m_EXTENSION_hasPairedReadAnswer)=incoming[0];
 	(m_ed->m_EXTENSION_hasPairedReadReceived)=true;
 }
 
-void MessageProcessor::call_TAG_GET_PAIRED_READ(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_GET_PAIRED_READ(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -1101,18 +1101,18 @@ void MessageProcessor::call_TAG_GET_PAIRED_READ(Message*message){
 	message2[0]=t->getRank();
 	message2[1]=t->getId();
 	message2[2]=t->getLibrary();
-	Message aMessage(message2,3,MPI_UNSIGNED_LONG_LONG,source,TAG_GET_PAIRED_READ_REPLY,rank);
+	Message aMessage(message2,3,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_GET_PAIRED_READ_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_GET_PAIRED_READ_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_GET_PAIRED_READ_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	(m_ed->m_EXTENSION_pairedRead).constructor(incoming[0],incoming[1],incoming[2]);
 	(m_ed->m_EXTENSION_pairedSequenceReceived)=true;
 }
 
-void MessageProcessor::call_TAG_CLEAR_DIRECTIONS(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 	int source=message->getSource();
 	// clearing old data too!.
 	m_fusionData->m_FINISH_pathLengths.clear();
@@ -1173,16 +1173,16 @@ void MessageProcessor::call_TAG_CLEAR_DIRECTIONS(Message*message){
 	(m_ed->m_EXTENSION_contigs).clear();
 	(m_ed->m_EXTENSION_contigs)=fusions;
 
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,TAG_CLEAR_DIRECTIONS_REPLY,rank);
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_CLEAR_DIRECTIONS_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY(Message*message){
 	(*m_CLEAR_n)++;
 }
 
-void MessageProcessor::call_TAG_FINISH_FUSIONS(Message*message){
-	//cout<<"Rank "<<rank<<" call_TAG_FINISH_FUSIONS"<<endl;
+void MessageProcessor::call_RAY_MPI_TAG_FINISH_FUSIONS(Message*message){
+	//cout<<"Rank "<<rank<<" call_RAY_MPI_TAG_FINISH_FUSIONS"<<endl;
 	(*m_mode)=RAY_SLAVE_MODE_FINISH_FUSIONS;
 	m_fusionData->m_FINISH_fusionOccured=false;
 	(m_seedingData->m_SEEDING_i)=0;
@@ -1192,7 +1192,7 @@ void MessageProcessor::call_TAG_FINISH_FUSIONS(Message*message){
 	m_fusionData->m_Machine_getPaths_DONE=false;
 }
 
-void MessageProcessor::call_TAG_FINISH_FUSIONS_FINISHED(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_FINISH_FUSIONS_FINISHED(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	(*m_FINISH_n)++;
@@ -1201,25 +1201,25 @@ void MessageProcessor::call_TAG_FINISH_FUSIONS_FINISHED(Message*message){
 	}
 }
 
-void MessageProcessor::call_TAG_DISTRIBUTE_FUSIONS(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_DISTRIBUTE_FUSIONS(Message*message){
 	(*m_mode)=RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS;
 	(m_seedingData->m_SEEDING_i)=0;
 	(m_ed->m_EXTENSION_currentPosition)=0;
 }
 
-void MessageProcessor::call_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY(Message*message){
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY,rank);
+void MessageProcessor::call_RAY_MPI_RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY(Message*message){
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY(Message*message){
 }
 
-void MessageProcessor::call_TAG_DISTRIBUTE_FUSIONS_FINISHED(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED(Message*message){
 	(*m_DISTRIBUTE_n)++;
 }
 
-void MessageProcessor::call_TAG_EXTENSION_START(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_EXTENSION_START(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	vector<uint64_t> a;
@@ -1234,13 +1234,13 @@ void MessageProcessor::call_TAG_EXTENSION_START(Message*message){
 
 }
 
-void MessageProcessor::call_TAG_ELIMINATE_PATH(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_ELIMINATE_PATH(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	m_fusionData->m_FUSION_eliminated.insert(incoming[0]);
 }
 
-void MessageProcessor::call_TAG_GET_PATH_VERTEX(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_GET_PATH_VERTEX(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -1257,42 +1257,42 @@ void MessageProcessor::call_TAG_GET_PATH_VERTEX(Message*message){
 	#endif
 	uint64_t*messageBytes=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t));
 	messageBytes[0]=(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]][position];
-	Message aMessage(messageBytes,1,MPI_UNSIGNED_LONG_LONG,source,TAG_GET_PATH_VERTEX_REPLY,rank);
+	Message aMessage(messageBytes,1,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_GET_PATH_VERTEX_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_GET_PATH_VERTEX_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_GET_PATH_VERTEX_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	m_fusionData->m_FINISH_vertex_received=true;
 	m_fusionData->m_FINISH_received_vertex=incoming[0];
 }
 
-void MessageProcessor::call_TAG_SET_COLOR_MODE(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_SET_COLOR_MODE(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	(*m_colorSpaceMode)=incoming[0];
 }
 
-void MessageProcessor::call_TAG_AUTOMATIC_DISTANCE_DETECTION(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION(Message*message){
 	(*m_mode)=RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION;
 	(m_seedingData->m_SEEDING_i)=0;
 	(m_ed->m_EXTENSION_currentPosition)=0;
 	m_ed->m_EXTENSION_reads_requested=false;
 }
 
-void MessageProcessor::call_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE(Message*message){
 	(*m_numberOfRanksDoneDetectingDistances)++;
 	if((*m_numberOfRanksDoneDetectingDistances)==size){
 		(*m_master_mode)=MASTER_MODE_ASK_DISTANCES;
 	}
 }
 
-void MessageProcessor::call_TAG_LIBRARY_DISTANCE_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY(Message*message){
 	m_library->setReadiness();
 }
 
-void MessageProcessor::call_TAG_LIBRARY_DISTANCE(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_LIBRARY_DISTANCE(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -1303,24 +1303,24 @@ void MessageProcessor::call_TAG_LIBRARY_DISTANCE(Message*message){
 	}
 	//cout<<"Received "<<count/3<<" lengths from "<<message->getSource()<<endl;
 
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_LIBRARY_DISTANCE_REPLY,rank);
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_ASK_LIBRARY_DISTANCES(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_ASK_LIBRARY_DISTANCES(Message*message){
 	(*m_mode)=RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES;
 	m_library->allocateBuffers();
 }
 
-void MessageProcessor::call_TAG_ASK_LIBRARY_DISTANCES_FINISHED(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED(Message*message){
 	(*m_numberOfRanksDoneSendingDistances)++;
-	//cout<<"TAG_ASK_LIBRARY_DISTANCES_FINISHED "<<(*m_numberOfRanksDoneSendingDistances)<<endl;
+	//cout<<"RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED "<<(*m_numberOfRanksDoneSendingDistances)<<endl;
 	if((*m_numberOfRanksDoneSendingDistances)==size){
 		(*m_master_mode)=MASTER_MODE_START_UPDATING_DISTANCES;
 	}
 }
 
-void MessageProcessor::call_TAG_UPDATE_LIBRARY_INFORMATION(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	int*data=(int*)incoming;
@@ -1332,14 +1332,14 @@ void MessageProcessor::call_TAG_UPDATE_LIBRARY_INFORMATION(Message*message){
 	}
 }
 
-void MessageProcessor::call_TAG_RECEIVED_COVERAGE_INFORMATION(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_RECEIVED_COVERAGE_INFORMATION(Message*message){
 	(*m_numberOfRanksWithCoverageData)++;
 	if((*m_numberOfRanksWithCoverageData)==size){
 		(*m_master_mode)=MASTER_MODE_TRIGGER_EDGES;
 	}
 }
 
-void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -1369,11 +1369,11 @@ void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE(Message*message){
 	char*dest=(char*)(messageBytes+3);
 	strcpy(dest,seq);
 	//cout<<"dest="<<dest<<endl;
-	Message aMessage(messageBytes,toAllocate/sizeof(uint64_t),MPI_UNSIGNED_LONG_LONG,source,TAG_REQUEST_READ_SEQUENCE_REPLY,rank);
+	Message aMessage(messageBytes,toAllocate/sizeof(uint64_t),MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	(m_ed->m_EXTENSION_pairedRead).constructor(incoming[0],incoming[1],incoming[2]);
@@ -1507,128 +1507,128 @@ MessageProcessor::MessageProcessor(){
 }
 
 void MessageProcessor::assignHandlers(){
-	m_methods[TAG_WELCOME]=&MessageProcessor::call_TAG_WELCOME;
-	m_methods[TAG_SEND_SEQUENCE]=&MessageProcessor::call_TAG_SEND_SEQUENCE;
-	m_methods[TAG_SEND_SEQUENCE_REGULATOR]=&MessageProcessor::call_TAG_SEND_SEQUENCE_REGULATOR;
-	m_methods[TAG_SEND_SEQUENCE_REPLY]=&MessageProcessor::call_TAG_SEND_SEQUENCE_REPLY;
-	m_methods[TAG_SEQUENCES_READY]=&MessageProcessor::call_TAG_SEQUENCES_READY;
-	m_methods[TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS]=&MessageProcessor::call_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS;
-	m_methods[TAG_VERTICES_DATA]=&MessageProcessor::call_TAG_VERTICES_DATA;
-	m_methods[TAG_VERTICES_DISTRIBUTED]=&MessageProcessor::call_TAG_VERTICES_DISTRIBUTED;
-	m_methods[TAG_VERTEX_PTR_REQUEST]=&MessageProcessor::call_TAG_VERTEX_PTR_REQUEST;
-	m_methods[TAG_OUT_EDGE_DATA_WITH_PTR]=&MessageProcessor::call_TAG_OUT_EDGE_DATA_WITH_PTR;
-	m_methods[TAG_OUT_EDGES_DATA]=&MessageProcessor::call_TAG_OUT_EDGES_DATA;
-	m_methods[TAG_SHOW_VERTICES]=&MessageProcessor::call_TAG_SHOW_VERTICES;
-	m_methods[TAG_START_VERTICES_DISTRIBUTION]=&MessageProcessor::call_TAG_START_VERTICES_DISTRIBUTION;
-	m_methods[TAG_EDGES_DISTRIBUTED]=&MessageProcessor::call_TAG_EDGES_DISTRIBUTED;
-	m_methods[TAG_IN_EDGES_DATA]=&MessageProcessor::call_TAG_IN_EDGES_DATA;
-	m_methods[TAG_IN_EDGE_DATA_WITH_PTR]=&MessageProcessor::call_TAG_IN_EDGE_DATA_WITH_PTR;
-	m_methods[TAG_START_EDGES_DISTRIBUTION]=&MessageProcessor::call_TAG_START_EDGES_DISTRIBUTION;
-	m_methods[TAG_START_EDGES_DISTRIBUTION_ASK]=&MessageProcessor::call_TAG_START_EDGES_DISTRIBUTION_ASK;
-	m_methods[TAG_START_EDGES_DISTRIBUTION_ANSWER]=&MessageProcessor::call_TAG_START_EDGES_DISTRIBUTION_ANSWER;
-	m_methods[TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION]=&MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION;
-	m_methods[TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER]=&MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER;
-	m_methods[TAG_PREPARE_COVERAGE_DISTRIBUTION]=&MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION;
-	m_methods[TAG_COVERAGE_DATA]=&MessageProcessor::call_TAG_COVERAGE_DATA;
-	m_methods[TAG_COVERAGE_END]=&MessageProcessor::call_TAG_COVERAGE_END;
-	m_methods[TAG_SEND_COVERAGE_VALUES]=&MessageProcessor::call_TAG_SEND_COVERAGE_VALUES;
-	m_methods[TAG_READY_TO_SEED]=&MessageProcessor::call_TAG_READY_TO_SEED;
-	m_methods[TAG_START_SEEDING]=&MessageProcessor::call_TAG_START_SEEDING;
-	m_methods[TAG_REQUEST_VERTEX_COVERAGE]=&MessageProcessor::call_TAG_REQUEST_VERTEX_COVERAGE;
-	m_methods[TAG_REQUEST_VERTEX_COVERAGE_REPLY]=&MessageProcessor::call_TAG_REQUEST_VERTEX_COVERAGE_REPLY;
-	m_methods[TAG_REQUEST_VERTEX_KEY_AND_COVERAGE]=&MessageProcessor::call_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE;
-	m_methods[TAG_REQUEST_VERTEX_KEY_AND_COVERAGE_REPLY]=&MessageProcessor::call_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE_REPLY;
-	m_methods[TAG_REQUEST_VERTEX_OUTGOING_EDGES]=&MessageProcessor::call_TAG_REQUEST_VERTEX_OUTGOING_EDGES;
-	m_methods[TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY]=&MessageProcessor::call_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY;
-	m_methods[TAG_SEEDING_IS_OVER]=&MessageProcessor::call_TAG_SEEDING_IS_OVER;
-	m_methods[TAG_GOOD_JOB_SEE_YOU_SOON]=&MessageProcessor::call_TAG_GOOD_JOB_SEE_YOU_SOON;
-	m_methods[TAG_I_GO_NOW]=&MessageProcessor::call_TAG_I_GO_NOW;
-	m_methods[TAG_SET_WORD_SIZE]=&MessageProcessor::call_TAG_SET_WORD_SIZE;
-	m_methods[TAG_MASTER_IS_DONE_ATTACHING_READS]=&MessageProcessor::call_TAG_MASTER_IS_DONE_ATTACHING_READS;
-	m_methods[TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY]=&MessageProcessor::call_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY;
-	m_methods[TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER]=&MessageProcessor::call_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER;
-	m_methods[TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER_REPLY]=&MessageProcessor::call_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER_REPLY;
-	m_methods[TAG_REQUEST_VERTEX_INGOING_EDGES]=&MessageProcessor::call_TAG_REQUEST_VERTEX_INGOING_EDGES;
-	m_methods[TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY]=&MessageProcessor::call_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY;
-	m_methods[TAG_EXTENSION_IS_DONE]=&MessageProcessor::call_TAG_EXTENSION_IS_DONE;
-	m_methods[TAG_ASK_EXTENSION]=&MessageProcessor::call_TAG_ASK_EXTENSION;
-	m_methods[TAG_ASK_IS_ASSEMBLED]=&MessageProcessor::call_TAG_ASK_IS_ASSEMBLED;
-	m_methods[TAG_ASK_REVERSE_COMPLEMENT]=&MessageProcessor::call_TAG_ASK_REVERSE_COMPLEMENT;
-	m_methods[TAG_REQUEST_VERTEX_POINTER]=&MessageProcessor::call_TAG_REQUEST_VERTEX_POINTER;
-	m_methods[TAG_ASK_IS_ASSEMBLED_REPLY]=&MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY;
-	m_methods[TAG_ASK_IS_ASSEMBLED_REPLY_END]=&MessageProcessor::call_TAG_ASK_IS_ASSEMBLED_REPLY_END;
-	m_methods[TAG_MARK_AS_ASSEMBLED]=&MessageProcessor::call_TAG_MARK_AS_ASSEMBLED;
-	m_methods[TAG_ASK_EXTENSION_DATA]=&MessageProcessor::call_TAG_ASK_EXTENSION_DATA;
-	m_methods[TAG_EXTENSION_DATA]=&MessageProcessor::call_TAG_EXTENSION_DATA;
-	m_methods[TAG_EXTENSION_DATA_REPLY]=&MessageProcessor::call_TAG_EXTENSION_DATA_REPLY;
-	m_methods[TAG_EXTENSION_END]=&MessageProcessor::call_TAG_EXTENSION_END;
-	m_methods[TAG_EXTENSION_DATA_END]=&MessageProcessor::call_TAG_EXTENSION_DATA_END;
-	m_methods[TAG_ATTACH_SEQUENCE]=&MessageProcessor::call_TAG_ATTACH_SEQUENCE;
-	m_methods[TAG_REQUEST_READS]=&MessageProcessor::call_TAG_REQUEST_READS;
-	m_methods[TAG_REQUEST_READS_REPLY]=&MessageProcessor::call_TAG_REQUEST_READS_REPLY;
-	m_methods[TAG_ASK_READ_VERTEX_AT_POSITION]=&MessageProcessor::call_TAG_ASK_READ_VERTEX_AT_POSITION;
-	m_methods[TAG_ASK_READ_VERTEX_AT_POSITION_REPLY]=&MessageProcessor::call_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY;
-	m_methods[TAG_ASK_READ_LENGTH]=&MessageProcessor::call_TAG_ASK_READ_LENGTH;
-	m_methods[TAG_ASK_READ_LENGTH_REPLY]=&MessageProcessor::call_TAG_ASK_READ_LENGTH_REPLY;
-	m_methods[TAG_SAVE_WAVE_PROGRESSION]=&MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION;
-	m_methods[TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY]=&MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY;
-	m_methods[TAG_SAVE_WAVE_PROGRESSION_REPLY]=&MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION_REPLY;
-	m_methods[TAG_ASSEMBLE_WAVES]=&MessageProcessor::call_TAG_ASSEMBLE_WAVES;
-	m_methods[TAG_SAVE_WAVE_PROGRESSION_REVERSE]=&MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION_REVERSE;
-	m_methods[TAG_ASSEMBLE_WAVES_DONE]=&MessageProcessor::call_TAG_ASSEMBLE_WAVES_DONE;
-	m_methods[TAG_START_FUSION]=&MessageProcessor::call_TAG_START_FUSION;
-	m_methods[TAG_FUSION_DONE]=&MessageProcessor::call_TAG_FUSION_DONE;
-	m_methods[TAG_ASK_VERTEX_PATHS_SIZE]=&MessageProcessor::call_TAG_ASK_VERTEX_PATHS_SIZE;
-	m_methods[TAG_ASK_VERTEX_PATHS_SIZE_REPLY]=&MessageProcessor::call_TAG_ASK_VERTEX_PATHS_SIZE_REPLY;
-	m_methods[TAG_GET_PATH_LENGTH]=&MessageProcessor::call_TAG_GET_PATH_LENGTH;
-	m_methods[TAG_VERTICES_DATA_REPLY]=&MessageProcessor::call_TAG_VERTICES_DATA_REPLY;
-	m_methods[TAG_GET_PATH_LENGTH_REPLY]=&MessageProcessor::call_TAG_GET_PATH_LENGTH_REPLY;
-	m_methods[TAG_CALIBRATION_MESSAGE]=&MessageProcessor::call_TAG_CALIBRATION_MESSAGE;
-	m_methods[TAG_BEGIN_CALIBRATION]=&MessageProcessor::call_TAG_BEGIN_CALIBRATION;
-	m_methods[TAG_END_CALIBRATION]=&MessageProcessor::call_TAG_END_CALIBRATION;
-	m_methods[TAG_COMMUNICATION_STABILITY_MESSAGE]=&MessageProcessor::call_TAG_COMMUNICATION_STABILITY_MESSAGE;
-	m_methods[TAG_ASK_VERTEX_PATH]=&MessageProcessor::call_TAG_ASK_VERTEX_PATH;
-	m_methods[TAG_SHOW_SEQUENCES]=&MessageProcessor::call_TAG_SHOW_SEQUENCES;
-	m_methods[TAG_BARRIER]=&MessageProcessor::call_TAG_BARRIER;
-	m_methods[TAG_ASK_VERTEX_PATH_REPLY]=&MessageProcessor::call_TAG_ASK_VERTEX_PATH_REPLY;
-	m_methods[TAG_INDEX_PAIRED_SEQUENCE]=&MessageProcessor::call_TAG_INDEX_PAIRED_SEQUENCE;
-	m_methods[TAG_INDEX_PAIRED_SEQUENCE_REPLY]=&MessageProcessor::call_TAG_INDEX_PAIRED_SEQUENCE_REPLY;
-	m_methods[TAG_HAS_PAIRED_READ]=&MessageProcessor::call_TAG_HAS_PAIRED_READ;
-	m_methods[TAG_HAS_PAIRED_READ_REPLY]=&MessageProcessor::call_TAG_HAS_PAIRED_READ_REPLY;
-	m_methods[TAG_GET_PAIRED_READ]=&MessageProcessor::call_TAG_GET_PAIRED_READ;
-	m_methods[TAG_GET_PAIRED_READ_REPLY]=&MessageProcessor::call_TAG_GET_PAIRED_READ_REPLY;
-	m_methods[TAG_START_INDEXING_SEQUENCES]=&MessageProcessor::call_TAG_START_INDEXING_SEQUENCES;
-	m_methods[TAG_CLEAR_DIRECTIONS]=&MessageProcessor::call_TAG_CLEAR_DIRECTIONS;
-	m_methods[TAG_CLEAR_DIRECTIONS_REPLY]=&MessageProcessor::call_TAG_CLEAR_DIRECTIONS_REPLY;
-	m_methods[TAG_FINISH_FUSIONS]=&MessageProcessor::call_TAG_FINISH_FUSIONS;
-	m_methods[TAG_FINISH_FUSIONS_FINISHED]=&MessageProcessor::call_TAG_FINISH_FUSIONS_FINISHED;
-	m_methods[TAG_DISTRIBUTE_FUSIONS]=&MessageProcessor::call_TAG_DISTRIBUTE_FUSIONS;
-	m_methods[TAG_DISTRIBUTE_FUSIONS_FINISHED]=&MessageProcessor::call_TAG_DISTRIBUTE_FUSIONS_FINISHED;
-	m_methods[TAG_EXTENSION_START]=&MessageProcessor::call_TAG_EXTENSION_START;
-	m_methods[TAG_ELIMINATE_PATH]=&MessageProcessor::call_TAG_ELIMINATE_PATH;
-	m_methods[TAG_GET_PATH_VERTEX]=&MessageProcessor::call_TAG_GET_PATH_VERTEX;
-	m_methods[TAG_GET_PATH_VERTEX_REPLY]=&MessageProcessor::call_TAG_GET_PATH_VERTEX_REPLY;
-	m_methods[TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY]=&MessageProcessor::call_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY;
-	m_methods[TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY]=&MessageProcessor::call_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY;
-	m_methods[TAG_SET_COLOR_MODE]=&MessageProcessor::call_TAG_SET_COLOR_MODE;
-	m_methods[TAG_AUTOMATIC_DISTANCE_DETECTION]=&MessageProcessor::call_TAG_AUTOMATIC_DISTANCE_DETECTION;
-	m_methods[TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE]=&MessageProcessor::call_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE;
-	m_methods[TAG_LIBRARY_DISTANCE]=&MessageProcessor::call_TAG_LIBRARY_DISTANCE;
-	m_methods[TAG_LIBRARY_DISTANCE_REPLY]=&MessageProcessor::call_TAG_LIBRARY_DISTANCE_REPLY;
-	m_methods[TAG_ASK_LIBRARY_DISTANCES]=&MessageProcessor::call_TAG_ASK_LIBRARY_DISTANCES;
-	m_methods[TAG_ASK_LIBRARY_DISTANCES_FINISHED]=&MessageProcessor::call_TAG_ASK_LIBRARY_DISTANCES_FINISHED;
-	m_methods[TAG_UPDATE_LIBRARY_INFORMATION]=&MessageProcessor::call_TAG_UPDATE_LIBRARY_INFORMATION;
-	m_methods[TAG_RECEIVED_COVERAGE_INFORMATION]=&MessageProcessor::call_TAG_RECEIVED_COVERAGE_INFORMATION;
-	m_methods[TAG_REQUEST_READ_SEQUENCE]=&MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE;
-	m_methods[TAG_REQUEST_READ_SEQUENCE_REPLY]=&MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE_REPLY;
-	m_methods[TAG_IN_EDGES_DATA_REPLY]=&MessageProcessor::call_TAG_IN_EDGES_DATA_REPLY;
-	m_methods[TAG_OUT_EDGES_DATA_REPLY]=&MessageProcessor::call_TAG_OUT_EDGES_DATA_REPLY;
-	m_methods[TAG_RECEIVED_MESSAGES]=&MessageProcessor::call_TAG_RECEIVED_MESSAGES;
-	m_methods[TAG_RECEIVED_MESSAGES_REPLY]=&MessageProcessor::call_TAG_RECEIVED_MESSAGES_REPLY;
-	m_methods[TAG_MUST_RUN_REDUCER]=&MessageProcessor::call_TAG_MUST_RUN_REDUCER;
-	m_methods[TAG_ASK_BEGIN_REDUCTION_REPLY]=&MessageProcessor::call_TAG_ASK_BEGIN_REDUCTION_REPLY;
-	m_methods[TAG_ASK_BEGIN_REDUCTION]=&MessageProcessor::call_TAG_ASK_BEGIN_REDUCTION;
-	m_methods[TAG_RESUME_VERTEX_DISTRIBUTION]=&MessageProcessor::call_TAG_RESUME_VERTEX_DISTRIBUTION;
-	m_methods[TAG_REDUCE_MEMORY_CONSUMPTION_DONE]=&MessageProcessor::call_TAG_REDUCE_MEMORY_CONSUMPTION_DONE;
-	m_methods[TAG_START_REDUCTION]=&MessageProcessor::call_TAG_START_REDUCTION;
+	m_methods[RAY_MPI_TAG_WELCOME]=&MessageProcessor::call_RAY_MPI_TAG_WELCOME;
+	m_methods[RAY_MPI_TAG_SEND_SEQUENCE]=&MessageProcessor::call_RAY_MPI_TAG_SEND_SEQUENCE;
+	m_methods[RAY_MPI_TAG_SEND_SEQUENCE_REGULATOR]=&MessageProcessor::call_RAY_MPI_TAG_SEND_SEQUENCE_REGULATOR;
+	m_methods[RAY_MPI_TAG_SEND_SEQUENCE_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_SEND_SEQUENCE_REPLY;
+	m_methods[RAY_MPI_TAG_SEQUENCES_READY]=&MessageProcessor::call_RAY_MPI_TAG_SEQUENCES_READY;
+	m_methods[RAY_MPI_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS]=&MessageProcessor::call_RAY_MPI_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS;
+	m_methods[RAY_MPI_TAG_VERTICES_DATA]=&MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA;
+	m_methods[RAY_MPI_TAG_VERTICES_DISTRIBUTED]=&MessageProcessor::call_RAY_MPI_TAG_VERTICES_DISTRIBUTED;
+	m_methods[RAY_MPI_TAG_VERTEX_PTR_REQUEST]=&MessageProcessor::call_RAY_MPI_TAG_VERTEX_PTR_REQUEST;
+	m_methods[RAY_MPI_TAG_OUT_EDGE_DATA_WITH_PTR]=&MessageProcessor::call_RAY_MPI_TAG_OUT_EDGE_DATA_WITH_PTR;
+	m_methods[RAY_MPI_TAG_OUT_EDGES_DATA]=&MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA;
+	m_methods[RAY_MPI_TAG_SHOW_VERTICES]=&MessageProcessor::call_RAY_MPI_TAG_SHOW_VERTICES;
+	m_methods[RAY_MPI_TAG_START_VERTICES_DISTRIBUTION]=&MessageProcessor::call_RAY_MPI_TAG_START_VERTICES_DISTRIBUTION;
+	m_methods[RAY_MPI_TAG_EDGES_DISTRIBUTED]=&MessageProcessor::call_RAY_MPI_TAG_EDGES_DISTRIBUTED;
+	m_methods[RAY_MPI_TAG_IN_EDGES_DATA]=&MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA;
+	m_methods[RAY_MPI_TAG_IN_EDGE_DATA_WITH_PTR]=&MessageProcessor::call_RAY_MPI_TAG_IN_EDGE_DATA_WITH_PTR;
+	m_methods[RAY_MPI_TAG_START_EDGES_DISTRIBUTION]=&MessageProcessor::call_RAY_MPI_TAG_START_EDGES_DISTRIBUTION;
+	m_methods[RAY_MPI_TAG_START_EDGES_DISTRIBUTION_ASK]=&MessageProcessor::call_RAY_MPI_TAG_START_EDGES_DISTRIBUTION_ASK;
+	m_methods[RAY_MPI_TAG_START_EDGES_DISTRIBUTION_ANSWER]=&MessageProcessor::call_RAY_MPI_TAG_START_EDGES_DISTRIBUTION_ANSWER;
+	m_methods[RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION]=&MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION;
+	m_methods[RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER]=&MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER;
+	m_methods[RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION]=&MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION;
+	m_methods[RAY_MPI_TAG_COVERAGE_DATA]=&MessageProcessor::call_RAY_MPI_TAG_COVERAGE_DATA;
+	m_methods[RAY_MPI_TAG_COVERAGE_END]=&MessageProcessor::call_RAY_MPI_TAG_COVERAGE_END;
+	m_methods[RAY_MPI_TAG_SEND_COVERAGE_VALUES]=&MessageProcessor::call_RAY_MPI_TAG_SEND_COVERAGE_VALUES;
+	m_methods[RAY_MPI_TAG_READY_TO_SEED]=&MessageProcessor::call_RAY_MPI_TAG_READY_TO_SEED;
+	m_methods[RAY_MPI_TAG_START_SEEDING]=&MessageProcessor::call_RAY_MPI_TAG_START_SEEDING;
+	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE;
+	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY;
+	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE;
+	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE_REPLY;
+	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES;
+	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY;
+	m_methods[RAY_MPI_TAG_SEEDING_IS_OVER]=&MessageProcessor::call_RAY_MPI_TAG_SEEDING_IS_OVER;
+	m_methods[RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON]=&MessageProcessor::call_RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON;
+	m_methods[RAY_MPI_TAG_I_GO_NOW]=&MessageProcessor::call_RAY_MPI_TAG_I_GO_NOW;
+	m_methods[RAY_MPI_TAG_SET_WORD_SIZE]=&MessageProcessor::call_RAY_MPI_TAG_SET_WORD_SIZE;
+	m_methods[RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS]=&MessageProcessor::call_RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS;
+	m_methods[RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY;
+	m_methods[RAY_MPI_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER]=&MessageProcessor::call_RAY_MPI_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER;
+	m_methods[RAY_MPI_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER_REPLY;
+	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES;
+	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY;
+	m_methods[RAY_MPI_TAG_EXTENSION_IS_DONE]=&MessageProcessor::call_RAY_MPI_TAG_EXTENSION_IS_DONE;
+	m_methods[RAY_MPI_TAG_ASK_EXTENSION]=&MessageProcessor::call_RAY_MPI_TAG_ASK_EXTENSION;
+	m_methods[RAY_MPI_TAG_ASK_IS_ASSEMBLED]=&MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED;
+	m_methods[RAY_MPI_TAG_ASK_REVERSE_COMPLEMENT]=&MessageProcessor::call_RAY_MPI_TAG_ASK_REVERSE_COMPLEMENT;
+	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_POINTER]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_POINTER;
+	m_methods[RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY;
+	m_methods[RAY_MPI_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY_END]=&MessageProcessor::call_RAY_MPI_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY_END;
+	m_methods[RAY_MPI_TAG_MARK_AS_ASSEMBLED]=&MessageProcessor::call_RAY_MPI_TAG_MARK_AS_ASSEMBLED;
+	m_methods[RAY_MPI_TAG_ASK_EXTENSION_DATA]=&MessageProcessor::call_RAY_MPI_TAG_ASK_EXTENSION_DATA;
+	m_methods[RAY_MPI_TAG_EXTENSION_DATA]=&MessageProcessor::call_RAY_MPI_TAG_EXTENSION_DATA;
+	m_methods[RAY_MPI_TAG_EXTENSION_DATA_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_EXTENSION_DATA_REPLY;
+	m_methods[RAY_MPI_TAG_EXTENSION_END]=&MessageProcessor::call_RAY_MPI_TAG_EXTENSION_END;
+	m_methods[RAY_MPI_TAG_EXTENSION_DATA_END]=&MessageProcessor::call_RAY_MPI_TAG_EXTENSION_DATA_END;
+	m_methods[RAY_MPI_TAG_ATTACH_SEQUENCE]=&MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE;
+	m_methods[RAY_MPI_TAG_REQUEST_READS]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS;
+	m_methods[RAY_MPI_TAG_REQUEST_READS_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS_REPLY;
+	m_methods[RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION]=&MessageProcessor::call_RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION;
+	m_methods[RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY;
+	m_methods[RAY_MPI_TAG_ASK_READ_LENGTH]=&MessageProcessor::call_RAY_MPI_TAG_ASK_READ_LENGTH;
+	m_methods[RAY_MPI_TAG_ASK_READ_LENGTH_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_ASK_READ_LENGTH_REPLY;
+	m_methods[RAY_MPI_TAG_SAVE_WAVE_PROGRESSION]=&MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION;
+	m_methods[RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY;
+	m_methods[RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REPLY;
+	m_methods[RAY_MPI_TAG_ASSEMBLE_WAVES]=&MessageProcessor::call_RAY_MPI_TAG_ASSEMBLE_WAVES;
+	m_methods[RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REVERSE]=&MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REVERSE;
+	m_methods[RAY_MPI_TAG_ASSEMBLE_WAVES_DONE]=&MessageProcessor::call_RAY_MPI_TAG_ASSEMBLE_WAVES_DONE;
+	m_methods[RAY_MPI_TAG_START_FUSION]=&MessageProcessor::call_RAY_MPI_TAG_START_FUSION;
+	m_methods[RAY_MPI_TAG_FUSION_DONE]=&MessageProcessor::call_RAY_MPI_TAG_FUSION_DONE;
+	m_methods[RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE]=&MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE;
+	m_methods[RAY_MPI_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY]=&MessageProcessor::call_RAY_MPI_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY;
+	m_methods[RAY_MPI_TAG_GET_PATH_LENGTH]=&MessageProcessor::call_RAY_MPI_TAG_GET_PATH_LENGTH;
+	m_methods[RAY_MPI_TAG_VERTICES_DATA_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA_REPLY;
+	m_methods[RAY_MPI_TAG_GET_PATH_LENGTH_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_GET_PATH_LENGTH_REPLY;
+	m_methods[RAY_MPI_TAG_CALIBRATION_MESSAGE]=&MessageProcessor::call_RAY_MPI_TAG_CALIBRATION_MESSAGE;
+	m_methods[RAY_MPI_TAG_BEGIN_CALIBRATION]=&MessageProcessor::call_RAY_MPI_TAG_BEGIN_CALIBRATION;
+	m_methods[RAY_MPI_TAG_END_CALIBRATION]=&MessageProcessor::call_RAY_MPI_TAG_END_CALIBRATION;
+	m_methods[RAY_MPI_TAG_COMMUNICATION_STABILITY_MESSAGE]=&MessageProcessor::call_RAY_MPI_TAG_COMMUNICATION_STABILITY_MESSAGE;
+	m_methods[RAY_MPI_TAG_ASK_VERTEX_PATH]=&MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH;
+	m_methods[RAY_MPI_TAG_SHOW_SEQUENCES]=&MessageProcessor::call_RAY_MPI_TAG_SHOW_SEQUENCES;
+	m_methods[RAY_MPI_TAG_BARRIER]=&MessageProcessor::call_RAY_MPI_TAG_BARRIER;
+	m_methods[RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY;
+	m_methods[RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE]=&MessageProcessor::call_RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE;
+	m_methods[RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE_REPLY;
+	m_methods[RAY_MPI_TAG_HAS_PAIRED_READ]=&MessageProcessor::call_RAY_MPI_TAG_HAS_PAIRED_READ;
+	m_methods[RAY_MPI_TAG_HAS_PAIRED_READ_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_HAS_PAIRED_READ_REPLY;
+	m_methods[RAY_MPI_TAG_GET_PAIRED_READ]=&MessageProcessor::call_RAY_MPI_TAG_GET_PAIRED_READ;
+	m_methods[RAY_MPI_TAG_GET_PAIRED_READ_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_GET_PAIRED_READ_REPLY;
+	m_methods[RAY_MPI_TAG_START_INDEXING_SEQUENCES]=&MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES;
+	m_methods[RAY_MPI_TAG_CLEAR_DIRECTIONS]=&MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS;
+	m_methods[RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY;
+	m_methods[RAY_MPI_TAG_FINISH_FUSIONS]=&MessageProcessor::call_RAY_MPI_TAG_FINISH_FUSIONS;
+	m_methods[RAY_MPI_TAG_FINISH_FUSIONS_FINISHED]=&MessageProcessor::call_RAY_MPI_TAG_FINISH_FUSIONS_FINISHED;
+	m_methods[RAY_MPI_TAG_DISTRIBUTE_FUSIONS]=&MessageProcessor::call_RAY_MPI_TAG_DISTRIBUTE_FUSIONS;
+	m_methods[RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED]=&MessageProcessor::call_RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED;
+	m_methods[RAY_MPI_TAG_EXTENSION_START]=&MessageProcessor::call_RAY_MPI_TAG_EXTENSION_START;
+	m_methods[RAY_MPI_TAG_ELIMINATE_PATH]=&MessageProcessor::call_RAY_MPI_TAG_ELIMINATE_PATH;
+	m_methods[RAY_MPI_TAG_GET_PATH_VERTEX]=&MessageProcessor::call_RAY_MPI_TAG_GET_PATH_VERTEX;
+	m_methods[RAY_MPI_TAG_GET_PATH_VERTEX_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_GET_PATH_VERTEX_REPLY;
+	m_methods[RAY_MPI_RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY]=&MessageProcessor::call_RAY_MPI_RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY;
+	m_methods[RAY_MPI_RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY]=&MessageProcessor::call_RAY_MPI_RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY;
+	m_methods[RAY_MPI_TAG_SET_COLOR_MODE]=&MessageProcessor::call_RAY_MPI_TAG_SET_COLOR_MODE;
+	m_methods[RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION]=&MessageProcessor::call_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION;
+	m_methods[RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE]=&MessageProcessor::call_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE;
+	m_methods[RAY_MPI_TAG_LIBRARY_DISTANCE]=&MessageProcessor::call_RAY_MPI_TAG_LIBRARY_DISTANCE;
+	m_methods[RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY;
+	m_methods[RAY_MPI_TAG_ASK_LIBRARY_DISTANCES]=&MessageProcessor::call_RAY_MPI_TAG_ASK_LIBRARY_DISTANCES;
+	m_methods[RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED]=&MessageProcessor::call_RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED;
+	m_methods[RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION]=&MessageProcessor::call_RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION;
+	m_methods[RAY_MPI_TAG_RECEIVED_COVERAGE_INFORMATION]=&MessageProcessor::call_RAY_MPI_TAG_RECEIVED_COVERAGE_INFORMATION;
+	m_methods[RAY_MPI_TAG_REQUEST_READ_SEQUENCE]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE;
+	m_methods[RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY;
+	m_methods[RAY_MPI_TAG_IN_EDGES_DATA_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA_REPLY;
+	m_methods[RAY_MPI_TAG_OUT_EDGES_DATA_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA_REPLY;
+	m_methods[RAY_MPI_TAG_RECEIVED_MESSAGES]=&MessageProcessor::call_RAY_MPI_TAG_RECEIVED_MESSAGES;
+	m_methods[RAY_MPI_TAG_RECEIVED_MESSAGES_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_RECEIVED_MESSAGES_REPLY;
+	m_methods[RAY_MPI_TAG_MUST_RUN_REDUCER]=&MessageProcessor::call_RAY_MPI_TAG_MUST_RUN_REDUCER;
+	m_methods[RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY;
+	m_methods[RAY_MPI_TAG_ASK_BEGIN_REDUCTION]=&MessageProcessor::call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION;
+	m_methods[RAY_MPI_TAG_RESUME_VERTEX_DISTRIBUTION]=&MessageProcessor::call_RAY_MPI_TAG_RESUME_VERTEX_DISTRIBUTION;
+	m_methods[RAY_MPI_TAG_REDUCE_MEMORY_CONSUMPTION_DONE]=&MessageProcessor::call_RAY_MPI_TAG_REDUCE_MEMORY_CONSUMPTION_DONE;
+	m_methods[RAY_MPI_TAG_START_REDUCTION]=&MessageProcessor::call_RAY_MPI_TAG_START_REDUCTION;
 }

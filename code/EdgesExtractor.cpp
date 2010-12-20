@@ -55,12 +55,12 @@ void EdgesExtractor::processOutgoingEdges(){
 		if(m_reverseComplementEdge==false){
 			(m_mode_send_edge_sequence_id_position)=0;
 			m_reverseComplementEdge=true;
-			m_bufferedData.flushAll(TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
+			m_bufferedData.flushAll(RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
 			printf("Rank %i is adding outgoing edges [%i/%i] (completed)\n",getRank,(int)m_myReads->size(),(int)m_myReads->size());
 			fflush(stdout);
 			(m_mode_send_edge_sequence_id)=0;
 		}else{
-			m_bufferedData.flushAll(TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
+			m_bufferedData.flushAll(RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
 			(*m_mode_send_outgoing_edges)=false;
 			(*m_mode)=RAY_SLAVE_MODE_PROCESS_INGOING_EDGES;
 			(*m_mode_send_ingoing_edges)=true;
@@ -107,7 +107,7 @@ void EdgesExtractor::processOutgoingEdges(){
 				m_bufferedData.addAt(rankA,a_2);
 			}
 			
-			if(m_bufferedData.flush(rankToFlush,2,TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,false)){
+			if(m_bufferedData.flush(rankToFlush,2,RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,false)){
 				m_ready=false;
 			}
 		}
@@ -133,14 +133,14 @@ void EdgesExtractor::processIngoingEdges(){
 		if(m_reverseComplementEdge==false){
 			m_reverseComplementEdge=true;
 			m_mode_send_edge_sequence_id_position=0;
-			m_bufferedData.flushAll(TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
+			m_bufferedData.flushAll(RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
 		
 			printf("Rank %i is adding ingoing edges [%i/%i] (completed)\n",getRank,(int)m_myReads->size(),(int)m_myReads->size());
 			fflush(stdout);
 			m_mode_send_edge_sequence_id=0;
 		}else{
-			m_bufferedData.flushAll(TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
-			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_EDGES_DISTRIBUTED,getRank);
+			m_bufferedData.flushAll(RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
+			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, RAY_MPI_TAG_EDGES_DISTRIBUTED,getRank);
 			m_outbox->push_back(aMessage);
 			(*m_mode_send_ingoing_edges)=false;
 			(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
@@ -193,7 +193,7 @@ void EdgesExtractor::processIngoingEdges(){
 
 			// flush data
 
-			if(m_bufferedData.flush(rankToFlush,2,TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,false)){
+			if(m_bufferedData.flush(rankToFlush,2,RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,false)){
 				m_ready=false;
 			}
 		}

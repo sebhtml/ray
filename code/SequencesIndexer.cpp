@@ -37,15 +37,15 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 				int m_rank,
 				bool m_colorSpaceMode
 			){
-	// when done: call_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY to root
-	// the tag: TAG_ATTACH_SEQUENCE
+	// when done: call_RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY to root
+	// the tag: RAY_MPI_TAG_ATTACH_SEQUENCE
 
 	if(m_theSequenceId==(int)m_myReads->size()){
 		printf("Rank %i is indexing sequence reads [%i/%i] (completed)\n",m_rank,(int)m_myReads->size(),(int)m_myReads->size());
 		fflush(stdout);
-		m_bufferedData.flushAll(TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank);
+		m_bufferedData.flushAll(RAY_MPI_TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,m_rank);
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,m_rank);
 		m_outbox->push_back(aMessage);
 		m_bufferedData.clear();
 
@@ -74,7 +74,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 		m_bufferedData.addAt(sendTo,m_theSequenceId);
 		m_bufferedData.addAt(sendTo,(uint64_t)'F');
 
-		m_bufferedData.flush(sendTo,4,TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank,false);
+		m_bufferedData.flush(sendTo,4,RAY_MPI_TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank,false);
 	}
 
 
@@ -87,7 +87,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 		m_bufferedData.addAt(sendTo,m_rank);
 		m_bufferedData.addAt(sendTo,m_theSequenceId);
 		m_bufferedData.addAt(sendTo,(uint64_t)'R');
-		m_bufferedData.flush(sendTo,4,TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank,false);
+		m_bufferedData.flush(sendTo,4,RAY_MPI_TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank,false);
 	}
 
 

@@ -46,7 +46,7 @@ void Library::updateDistances(){
 	}
 
 	for(int i=0;i<m_size;i++){
-		Message aMessage(intMessage,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),MPI_UNSIGNED_LONG_LONG,i,TAG_UPDATE_LIBRARY_INFORMATION,m_rank);
+		Message aMessage(intMessage,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION,m_rank);
 		m_outbox->push_back(aMessage);
 	}
 
@@ -66,7 +66,7 @@ void Library::detectDistances(){
 		printf("Rank %i is calculating library lengths [%i/%i] (completed)\n",getRank(),(int)m_seedingData->m_SEEDING_seeds.size(),(int)m_seedingData->m_SEEDING_seeds.size());
 		fflush(stdout);
 		
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE,getRank());
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE,getRank());
 		m_outbox->push_back(aMessage);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 	}else if(m_ed->m_EXTENSION_currentPosition==(int)m_seedingData->m_SEEDING_seeds[m_seedingData->m_SEEDING_i].size()){
@@ -91,7 +91,7 @@ void Library::detectDistances(){
 			#endif
 			uint64_t vertex=m_seedingData->m_SEEDING_seeds[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
 			message[0]=vertex;
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0],getSize()),TAG_REQUEST_READS,getRank());
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0],getSize()),RAY_MPI_TAG_REQUEST_READS,getRank());
 			m_outbox->push_back(aMessage);
 			m_ed->m_EXTENSION_edgeIterator=0;// iterate over reads
 			m_ed->m_EXTENSION_hasPairedReadRequested=false;
@@ -105,7 +105,7 @@ void Library::detectDistances(){
 				if(!m_ed->m_EXTENSION_hasPairedReadRequested){
 					uint64_t*message=(uint64_t*)(m_outboxAllocator)->allocate(1*sizeof(uint64_t));
 					message[0]=rightRead;
-					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_HAS_PAIRED_READ,getRank());
+					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),RAY_MPI_TAG_HAS_PAIRED_READ,getRank());
 					(m_outbox)->push_back(aMessage);
 					m_ed->m_EXTENSION_hasPairedReadRequested=true;
 					m_ed->m_EXTENSION_hasPairedReadReceived=false;
@@ -118,7 +118,7 @@ void Library::detectDistances(){
 							uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 							m_ed->m_EXTENSION_pairedSequenceRequested=false;
 							message[0]=rightRead;
-							Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_ASK_READ_LENGTH,getRank());
+							Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),RAY_MPI_TAG_ASK_READ_LENGTH,getRank());
 							m_outbox->push_back(aMessage);
 						}else if(m_ed->m_EXTENSION_readLength_received){
 							if(!m_ed->m_EXTENSION_pairedSequenceRequested){
@@ -126,7 +126,7 @@ void Library::detectDistances(){
 								m_ed->m_EXTENSION_pairedSequenceRequested=true;
 								uint64_t*message=(uint64_t*)(m_outboxAllocator)->allocate(1*sizeof(uint64_t));
 								message[0]=rightRead;
-								Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),TAG_GET_PAIRED_READ,getRank());
+								Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),RAY_MPI_TAG_GET_PAIRED_READ,getRank());
 								(m_outbox)->push_back(aMessage);
 							}else if(m_ed->m_EXTENSION_pairedSequenceReceived){
 								int library=m_ed->m_EXTENSION_pairedRead.getLibrary();
@@ -246,9 +246,9 @@ void Library::sendLibraryDistances(){
 			m_libraryIndexInitiated=true;
 			m_libraryIndex=m_libraryDistances[m_libraryIndexes[m_libraryIterator]].begin();
 	}else if(m_libraryIterator==(int)m_libraryIndexes.size()){
-		m_bufferedData.flushAll(TAG_LIBRARY_DISTANCE,m_outboxAllocator,m_outbox,getRank());
+		m_bufferedData.flushAll(RAY_MPI_TAG_LIBRARY_DISTANCE,m_outboxAllocator,m_outbox,getRank());
 
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_ASK_LIBRARY_DISTANCES_FINISHED,getRank());
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED,getRank());
 		m_outbox->push_back(aMessage);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 	}else if(m_libraryIndex==m_libraryDistances[m_libraryIndexes[m_libraryIterator]].end()){
@@ -262,7 +262,7 @@ void Library::sendLibraryDistances(){
 		m_bufferedData.addAt(MASTER_RANK,distance);
 		m_bufferedData.addAt(MASTER_RANK,count);
 
-		if(m_bufferedData.flush(MASTER_RANK,3,TAG_LIBRARY_DISTANCE,m_outboxAllocator,m_outbox,getRank(),false)){
+		if(m_bufferedData.flush(MASTER_RANK,3,RAY_MPI_TAG_LIBRARY_DISTANCE,m_outboxAllocator,m_outbox,getRank(),false)){
 			m_ready=false;
 		}
 
