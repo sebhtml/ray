@@ -59,7 +59,7 @@ void SeedingData::computeSeeds(){
 	// assign a first vertex
 	else if(!m_SEEDING_NodeInitiated){
 		if(m_SEEDING_i==(int)m_subgraph->size()){
-			(*m_mode)=MODE_DO_NOTHING;
+			(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 			printf("Rank %i is creating seeds [%i/%i] (completed)\n",getRank(),(int)m_SEEDING_i,(int)m_subgraph->size());
 			fflush(stdout);
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_SEEDING_IS_OVER,getRank());

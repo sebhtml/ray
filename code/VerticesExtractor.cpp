@@ -70,7 +70,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_VERTICES_DISTRIBUTED,rank);
 			m_outbox->push_back(aMessage);
 			*m_mode_send_vertices=false;
-			(*m_mode)=MODE_DO_NOTHING;
+			(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 			printf("Rank %i is computing vertices (reverse complement) [%i/%i] (completed)\n",rank,(int)*m_mode_send_vertices_sequence_id,(int)m_myReads->size());
 			fflush(stdout);
 			m_bufferedData.clear();

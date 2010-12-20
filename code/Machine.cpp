@@ -167,8 +167,8 @@ void Machine::start(){
 	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
 	m_directionsAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
 
-	m_mode=MODE_DO_NOTHING;
-	m_master_mode=MASTER_MODE_DO_NOTHING;
+	m_mode=RAY_SLAVE_MODE_DO_NOTHING;
+	m_master_mode=MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 	m_mode_AttachSequences=false;
 	m_startEdgeDistribution=false;
 
@@ -441,7 +441,7 @@ void Machine::call_MASTER_MODE_LOAD_CONFIG(){
 
 
 	if(m_parameters.getError()){
-		m_master_mode=MASTER_MODE_DO_NOTHING;
+		m_master_mode=MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 		m_aborted=true;
 		killRanks();
 		return;
@@ -479,8 +479,8 @@ void Machine::call_MASTER_MODE_LOAD_SEQUENCES(){
 	if(!res){
 		m_aborted=true;
 		killRanks();
-		m_mode=MODE_DO_NOTHING;
-		m_master_mode=MASTER_MODE_DO_NOTHING;
+		m_mode=RAY_SLAVE_MODE_DO_NOTHING;
+		m_master_mode=MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 	}
 }
 
@@ -495,7 +495,7 @@ void Machine::call_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION(){
 		m_outbox.push_back(aMessage);
 	}
 	m_messageSentForVerticesDistribution=true;
-	m_master_mode=MASTER_MODE_DO_NOTHING;
+	m_master_mode=MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 }
 
 void Machine::call_MASTER_MODE_TRIGGER_EDGES_DISTRIBUTION(){
@@ -519,7 +519,7 @@ void Machine::call_MASTER_MODE_START_EDGES_DISTRIBUTION(){
 		m_outbox.push_back(aMessage);
 	}
 	m_messageSentForEdgesDistribution=true;
-	m_master_mode=MASTER_MODE_DO_NOTHING;
+	m_master_mode=MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 }
 
 void Machine::call_MASTER_MODE_SEND_COVERAGE_VALUES(){
@@ -550,16 +550,16 @@ void Machine::call_MASTER_MODE_SEND_COVERAGE_VALUES(){
 		Message aMessage(buffer,3,MPI_UNSIGNED_LONG_LONG,i,TAG_SEND_COVERAGE_VALUES,getRank());
 		m_outbox.push_back(aMessage);
 	}
-	m_master_mode=MASTER_MODE_DO_NOTHING;
+	m_master_mode=MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 }
 
-void Machine::call_MASTER_MODE_DO_NOTHING(){
+void Machine::call_MASTER_RAY_SLAVE_MODE_DO_NOTHING(){
 }
 
-void Machine::call_MODE_DO_NOTHING(){
+void Machine::call_RAY_SLAVE_MODE_DO_NOTHING(){
 }
 
-void Machine::call_MODE_EXTRACT_VERTICES(){
+void Machine::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 	m_verticesExtractor.process(		&m_mode_send_vertices_sequence_id,
 			&m_myReads,
 			&m_reverseComplementVertex,
@@ -582,7 +582,7 @@ void Machine::call_MASTER_MODE_TRIGGER_EDGES(){
 
 void Machine::call_MASTER_MODE_TRIGGER_INDEXING(){
 	m_numberOfMachinesDoneSendingEdges=-9;
-	m_master_mode=MASTER_MODE_DO_NOTHING;
+	m_master_mode=MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 	m_timePrinter.printElapsedTime("Distribution of edges");
 	cout<<endl;
 	for(int i=0;i<getSize();i++){
@@ -598,7 +598,7 @@ void Machine::call_MASTER_MODE_PREPARE_DISTRIBUTIONS(){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG, i, TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION,getRank());
 		m_outbox.push_back(aMessage);
 	}
-	m_master_mode=MASTER_MODE_DO_NOTHING;
+	m_master_mode=MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 }
 
 void Machine::call_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS(){
@@ -612,7 +612,7 @@ void Machine::call_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS(){
 		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, i, TAG_PREPARE_COVERAGE_DISTRIBUTION,getRank());
 		m_outbox.push_back(aMessage);
 	}
-	m_master_mode=MASTER_MODE_DO_NOTHING;
+	m_master_mode=MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 }
 
 void Machine::call_MASTER_MODE_PREPARE_SEEDING(){
@@ -621,7 +621,7 @@ void Machine::call_MASTER_MODE_PREPARE_SEEDING(){
 	m_master_mode=MASTER_MODE_TRIGGER_SEEDING;
 }
 
-void Machine::call_MODE_ASSEMBLE_WAVES(){
+void Machine::call_RAY_SLAVE_MODE_ASSEMBLE_WAVES(){
 	// take each seed, and extend it in both direction using previously obtained information.
 	if(m_seedingData->m_SEEDING_i==(int)m_seedingData->m_SEEDING_seeds.size()){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_ASSEMBLE_WAVES_DONE,getRank());
@@ -630,22 +630,22 @@ void Machine::call_MODE_ASSEMBLE_WAVES(){
 	}
 }
 
-void Machine::call_MODE_PERFORM_CALIBRATION(){
+void Machine::call_RAY_SLAVE_MODE_PERFORM_CALIBRATION(){
 	int rank=rand()%getSize();
 	uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
 	Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rank,TAG_CALIBRATION_MESSAGE,getRank());
 	m_outbox.push_back(aMessage);
 }
 
-void Machine::call_MODE_FINISH_FUSIONS(){
+void Machine::call_RAY_SLAVE_MODE_FINISH_FUSIONS(){
 	m_fusionData->finishFusions();
 }
 
-void Machine::call_MODE_DISTRIBUTE_FUSIONS(){
+void Machine::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
 	m_fusionData->distribute(m_seedingData,m_ed,m_rank,&m_outboxAllocator,&m_outbox,getSize(),&m_mode);
 }
 
-void Machine::call_MODE_SEND_DISTRIBUTION(){
+void Machine::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
 	if(m_distributionOfCoverage.size()==0){
 		for(int i=0;i<m_subgraph.getNumberOfTrees();i++){
 			SplayTreeIterator<uint64_t,Vertex> iterator(m_subgraph.getTree(i));
@@ -669,16 +669,16 @@ void Machine::call_MODE_SEND_DISTRIBUTION(){
 	m_outbox.push_back(aMessage);
 
 	m_distributionOfCoverage.clear();
-	m_mode=MODE_DO_NOTHING;
+	m_mode=RAY_SLAVE_MODE_DO_NOTHING;
 }
 
-void Machine::call_MODE_PROCESS_OUTGOING_EDGES(){
+void Machine::call_RAY_SLAVE_MODE_PROCESS_OUTGOING_EDGES(){
 
 	m_edgesExtractor.m_wordSize=m_wordSize;
 	m_edgesExtractor.processOutgoingEdges();
 }
 
-void Machine::call_MODE_PROCESS_INGOING_EDGES(){
+void Machine::call_RAY_SLAVE_MODE_PROCESS_INGOING_EDGES(){
 	m_edgesExtractor.processIngoingEdges();
 }
 
@@ -693,10 +693,10 @@ void Machine::call_MASTER_MODE_TRIGGER_SEEDING(){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_START_SEEDING,getRank());
 		m_outbox.push_back(aMessage);
 	}
-	m_master_mode=MASTER_MODE_DO_NOTHING;
+	m_master_mode=MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 }
 
-void Machine::call_MODE_START_SEEDING(){
+void Machine::call_RAY_SLAVE_MODE_START_SEEDING(){
 	m_seedingData->computeSeeds();
 }
 
@@ -710,7 +710,7 @@ void Machine::call_MASTER_MODE_TRIGGER_DETECTION(){
 		m_outbox.push_back(aMessage);
 	}
 	m_numberOfRanksDoneDetectingDistances=0;
-	m_master_mode=MASTER_MODE_DO_NOTHING;
+	m_master_mode=MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 }
 
 void Machine::call_MASTER_MODE_ASK_DISTANCES(){
@@ -720,23 +720,23 @@ void Machine::call_MASTER_MODE_ASK_DISTANCES(){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_ASK_LIBRARY_DISTANCES,getRank());
 		m_outbox.push_back(aMessage);
 	}
-	m_master_mode=MASTER_MODE_DO_NOTHING;
+	m_master_mode=MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 }
 
 void Machine::call_MASTER_MODE_START_UPDATING_DISTANCES(){
 	m_numberOfRanksDoneSendingDistances=-1;
 	m_parameters.computeAverageDistances();
-	m_mode=MODE_DO_NOTHING;
-	m_master_mode=MASTER_MODE_UPDATE_DISTANCES;
+	m_mode=RAY_SLAVE_MODE_DO_NOTHING;
+	m_master_mode=MASTER_RAY_SLAVE_MODE_UPDATE_DISTANCES;
 	m_fileId=0;
 	m_sequence_idInFile=0;
 	m_sequence_id=0;
 }
 
-void Machine::call_MASTER_MODE_INDEX_SEQUENCES(){
+void Machine::call_MASTER_RAY_SLAVE_MODE_INDEX_SEQUENCES(){
 }
 
-void Machine::call_MODE_INDEX_SEQUENCES(){
+void Machine::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(){
 	m_si.attachReads(&m_myReads,&m_outboxAllocator,&m_outbox,&m_mode,m_wordSize,
 	m_size,m_rank,m_colorSpaceMode);
 }
@@ -746,15 +746,15 @@ void Machine::call_MASTER_MODE_TRIGGER_EXTENSIONS(){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_ASK_EXTENSION,getRank());
 		m_outbox.push_back(aMessage);
 	}
-	m_master_mode=MASTER_MODE_DO_NOTHING;
+	m_master_mode=MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 }
 
-void Machine::call_MODE_SEND_EXTENSION_DATA(){
+void Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 	if(!m_ready){
 		return;
 	}
 	if(m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
-		m_mode=MODE_DO_NOTHING;
+		m_mode=RAY_SLAVE_MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_DATA_END,getRank());
 		m_outbox.push_back(aMessage);
 	}else{
@@ -794,19 +794,19 @@ void Machine::call_MODE_SEND_EXTENSION_DATA(){
 	}
 }
 
-void Machine::call_MODE_FUSION(){
+void Machine::call_RAY_SLAVE_MODE_FUSION(){
 	m_fusionData->makeFusions();
 }
 
-void Machine::call_MODE_AUTOMATIC_DISTANCE_DETECTION(){
+void Machine::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 	m_library.detectDistances();
 }
 
-void Machine::call_MODE_SEND_LIBRARY_DISTANCES(){
+void Machine::call_RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES(){
 	m_library.sendLibraryDistances();
 }
 
-void Machine::call_MASTER_MODE_UPDATE_DISTANCES(){
+void Machine::call_MASTER_RAY_SLAVE_MODE_UPDATE_DISTANCES(){
 	m_library.updateDistances();
 }
 
@@ -823,7 +823,7 @@ void Machine::call_MASTER_MODE_TRIGGER_FUSIONS(){
 		m_outbox.push_back(aMessage);
 	}
 	m_fusionData->m_fusionStarted=true;
-	m_master_mode=MASTER_MODE_DO_NOTHING;
+	m_master_mode=MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 }
 
 void Machine::call_MASTER_MODE_TRIGGER_FIRST_FUSIONS(){
@@ -927,7 +927,7 @@ void Machine::call_MASTER_MODE_START_FUSION_CYCLE(){
 			m_timePrinter.printElapsedTime("Computation of fusions");
 			cout<<endl;
 			cout<<"Rank 0 is "<<"collecting fusions"<<endl;
-			m_master_mode=MASTER_MODE_ASK_EXTENSIONS;
+			m_master_mode=MASTER_RAY_SLAVE_MODE_ASK_EXTENSIONS;
 
 			m_sd->m_computedTopology=false;
 
@@ -948,7 +948,7 @@ void Machine::call_MASTER_MODE_START_FUSION_CYCLE(){
 	}
 }
 
-void Machine::call_MASTER_MODE_ASK_EXTENSIONS(){
+void Machine::call_MASTER_RAY_SLAVE_MODE_ASK_EXTENSIONS(){
 	#ifndef SHOW_PROGRESS
 	time_t tmp=time(NULL);
 	if(tmp>m_lastTime){
@@ -1078,7 +1078,7 @@ void Machine::call_MASTER_MODE_ASK_EXTENSIONS(){
 			return;
 		}
 
-		m_master_mode=MASTER_MODE_DO_NOTHING;
+		m_master_mode=MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 
 		int totalLength=0;
 		
@@ -1106,7 +1106,7 @@ void Machine::call_MASTER_MODE_ASK_EXTENSIONS(){
 		#endif
 		cout<<endl<<"Rank 0: "<<m_allPaths.size()<<" contigs/"<<totalLength<<" nucleotides"<<endl;
 		if(m_parameters.useAmos()){
-			m_master_mode=MASTER_MODE_AMOS;
+			m_master_mode=MASTER_RAY_SLAVE_MODE_AMOS;
 			m_seedingData->m_SEEDING_i=0;
 			m_mode_send_vertices_sequence_id_position=0;
 			m_ed->m_EXTENSION_reads_requested=false;
@@ -1128,7 +1128,7 @@ void Machine::call_MASTER_MODE_ASK_EXTENSIONS(){
 	}
 }
 
-void Machine::call_MASTER_MODE_AMOS(){
+void Machine::call_MASTER_RAY_SLAVE_MODE_AMOS(){
 	// in development.
 	/*
 	* use m_allPaths and m_identifiers
@@ -1138,7 +1138,7 @@ void Machine::call_MASTER_MODE_AMOS(){
 	*/
 	if(m_seedingData->m_SEEDING_i==(int)m_allPaths.size()){// all contigs are processed
 		killRanks();
-		m_master_mode=MASTER_MODE_DO_NOTHING;
+		m_master_mode=MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 		fclose(m_bubbleData->m_amos);
 	}else if(m_mode_send_vertices_sequence_id_position==(int)m_allPaths[m_seedingData->m_SEEDING_i].size()){// iterate over the next one
 		m_seedingData->m_SEEDING_i++;
@@ -1217,7 +1217,7 @@ void Machine::call_MASTER_MODE_AMOS(){
 	}
 }
 
-void Machine::call_MODE_EXTENSION(){
+void Machine::call_RAY_SLAVE_MODE_EXTENSION(){
 	int maxCoverage=m_parameters.getMaxCoverage();
 	m_seedExtender.extendSeeds(&(m_seedingData->m_SEEDING_seeds),m_ed,getRank(),&m_outbox,&(m_seedingData->m_SEEDING_currentVertex),
 	m_fusionData,&m_outboxAllocator,&(m_seedingData->m_SEEDING_edgesRequested),&(m_seedingData->m_SEEDING_outgoingEdgeIndex),
@@ -1227,7 +1227,7 @@ void Machine::call_MODE_EXTENSION(){
 m_minimumCoverage,&m_oa,&(m_seedingData->m_SEEDING_edgesReceived),&m_mode);
 }
 
-void Machine::call_MASTER_MODE_ASSEMBLE_WAVES(){
+void Machine::call_MASTER_RAY_SLAVE_MODE_ASSEMBLE_WAVES(){
 	// ask ranks to send their extensions.
 	if(!m_ed->m_EXTENSION_currentRankIsSet){
 		m_ed->m_EXTENSION_currentRankIsSet=true;
@@ -1235,7 +1235,7 @@ void Machine::call_MASTER_MODE_ASSEMBLE_WAVES(){
 		m_ed->m_EXTENSION_rank++;
 	}
 	if(m_ed->m_EXTENSION_rank==getSize()){
-		m_master_mode=MASTER_MODE_DO_NOTHING;
+		m_master_mode=MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 		cout<<"Rank "<<getRank()<<" contigs computed."<<endl;
 		killRanks();
 	}else if(!m_ed->m_EXTENSION_currentRankIsStarted){
@@ -1305,7 +1305,7 @@ void Machine::call_MASTER_MODE_ASK_BEGIN_REDUCTION(){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_ASK_BEGIN_REDUCTION,getRank());
 		m_outbox.push_back(aMessage);
 	}
-	m_master_mode=MASTER_MODE_DO_NOTHING;
+	m_master_mode=MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 }
 
 void Machine::call_MASTER_MODE_START_REDUCTION(){
@@ -1315,12 +1315,12 @@ void Machine::call_MASTER_MODE_START_REDUCTION(){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_START_REDUCTION,getRank());
 		m_outbox.push_back(aMessage);
 	}
-	m_master_mode=MASTER_MODE_DO_NOTHING;
+	m_master_mode=MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 }
 
-void Machine::call_MODE_REDUCE_MEMORY_CONSUMPTION(){
+void Machine::call_RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION(){
 	if(m_reducer.reduce(&m_subgraph)){
-		m_mode=MODE_DO_NOTHING;
+		m_mode=RAY_SLAVE_MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_REDUCE_MEMORY_CONSUMPTION_DONE,getRank());
 		m_outbox.push_back(aMessage);
 		if(m_reducer.getNumberOfRemovedVertices()>0){
@@ -1336,7 +1336,7 @@ void Machine::call_MASTER_MODE_RESUME_VERTEX_DISTRIBUTION(){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_RESUME_VERTEX_DISTRIBUTION,getRank());
 		m_outbox.push_back(aMessage);
 	}
-	m_master_mode=MASTER_MODE_DO_NOTHING;
+	m_master_mode=MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 }
 
 void Machine::assignMasterHandlers(){
@@ -1346,14 +1346,14 @@ void Machine::assignMasterHandlers(){
 	m_master_methods[MASTER_MODE_SEND_COVERAGE_VALUES]=&Machine::call_MASTER_MODE_SEND_COVERAGE_VALUES;
 	m_master_methods[MASTER_MODE_TRIGGER_EDGES_DISTRIBUTION]=&Machine::call_MASTER_MODE_TRIGGER_EDGES_DISTRIBUTION;
 	m_master_methods[MASTER_MODE_START_EDGES_DISTRIBUTION]=&Machine::call_MASTER_MODE_START_EDGES_DISTRIBUTION;
-	m_master_methods[MASTER_MODE_DO_NOTHING]=&Machine::call_MASTER_MODE_DO_NOTHING;
-	m_master_methods[MASTER_MODE_UPDATE_DISTANCES]=&Machine::call_MASTER_MODE_UPDATE_DISTANCES;
-	m_master_methods[MASTER_MODE_ASK_EXTENSIONS]=&Machine::call_MASTER_MODE_ASK_EXTENSIONS;
-	m_master_methods[MASTER_MODE_AMOS]=&Machine::call_MASTER_MODE_AMOS;
+	m_master_methods[MASTER_RAY_SLAVE_MODE_DO_NOTHING]=&Machine::call_MASTER_RAY_SLAVE_MODE_DO_NOTHING;
+	m_master_methods[MASTER_RAY_SLAVE_MODE_UPDATE_DISTANCES]=&Machine::call_MASTER_RAY_SLAVE_MODE_UPDATE_DISTANCES;
+	m_master_methods[MASTER_RAY_SLAVE_MODE_ASK_EXTENSIONS]=&Machine::call_MASTER_RAY_SLAVE_MODE_ASK_EXTENSIONS;
+	m_master_methods[MASTER_RAY_SLAVE_MODE_AMOS]=&Machine::call_MASTER_RAY_SLAVE_MODE_AMOS;
 	m_master_methods[MASTER_MODE_PREPARE_DISTRIBUTIONS]=&Machine::call_MASTER_MODE_PREPARE_DISTRIBUTIONS;
 	m_master_methods[MASTER_MODE_TRIGGER_EDGES]=&Machine::call_MASTER_MODE_TRIGGER_EDGES;
 	m_master_methods[MASTER_MODE_TRIGGER_INDEXING]=&Machine::call_MASTER_MODE_TRIGGER_INDEXING;
-	m_master_methods[MASTER_MODE_INDEX_SEQUENCES]=&Machine::call_MASTER_MODE_INDEX_SEQUENCES;
+	m_master_methods[MASTER_RAY_SLAVE_MODE_INDEX_SEQUENCES]=&Machine::call_MASTER_RAY_SLAVE_MODE_INDEX_SEQUENCES;
 	m_master_methods[MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS]=&Machine::call_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS;
 	m_master_methods[MASTER_MODE_PREPARE_SEEDING]=&Machine::call_MASTER_MODE_PREPARE_SEEDING;
 	m_master_methods[MASTER_MODE_TRIGGER_SEEDING]=&Machine::call_MASTER_MODE_TRIGGER_SEEDING;
@@ -1370,21 +1370,21 @@ void Machine::assignMasterHandlers(){
 }
 
 void Machine::assignSlaveHandlers(){
-	m_slave_methods[MODE_START_SEEDING]=&Machine::call_MODE_START_SEEDING;
-	m_slave_methods[MODE_DO_NOTHING]=&Machine::call_MODE_DO_NOTHING;
-	m_slave_methods[MODE_SEND_EXTENSION_DATA]=&Machine::call_MODE_SEND_EXTENSION_DATA;
-	m_slave_methods[MODE_ASSEMBLE_WAVES]=&Machine::call_MODE_ASSEMBLE_WAVES;
-	m_slave_methods[MODE_FUSION]=&Machine::call_MODE_FUSION;
-	m_slave_methods[MODE_PERFORM_CALIBRATION]=&Machine::call_MODE_PERFORM_CALIBRATION;
-	m_slave_methods[MODE_INDEX_SEQUENCES]=&Machine::call_MODE_INDEX_SEQUENCES;
-	m_slave_methods[MODE_FINISH_FUSIONS]=&Machine::call_MODE_FINISH_FUSIONS;
-	m_slave_methods[MODE_DISTRIBUTE_FUSIONS]=&Machine::call_MODE_DISTRIBUTE_FUSIONS;
-	m_slave_methods[MODE_AUTOMATIC_DISTANCE_DETECTION]=&Machine::call_MODE_AUTOMATIC_DISTANCE_DETECTION;
-	m_slave_methods[MODE_SEND_LIBRARY_DISTANCES]=&Machine::call_MODE_SEND_LIBRARY_DISTANCES;
-	m_slave_methods[MODE_EXTRACT_VERTICES]=&Machine::call_MODE_EXTRACT_VERTICES;
-	m_slave_methods[MODE_SEND_DISTRIBUTION]=&Machine::call_MODE_SEND_DISTRIBUTION;
-	m_slave_methods[MODE_PROCESS_INGOING_EDGES]=&Machine::call_MODE_PROCESS_INGOING_EDGES;
-	m_slave_methods[MODE_PROCESS_OUTGOING_EDGES]=&Machine::call_MODE_PROCESS_OUTGOING_EDGES;
-	m_slave_methods[MODE_EXTENSION]=&Machine::call_MODE_EXTENSION;
-	m_slave_methods[MODE_REDUCE_MEMORY_CONSUMPTION]=&Machine::call_MODE_REDUCE_MEMORY_CONSUMPTION;
+	m_slave_methods[RAY_SLAVE_MODE_START_SEEDING]=&Machine::call_RAY_SLAVE_MODE_START_SEEDING;
+	m_slave_methods[RAY_SLAVE_MODE_DO_NOTHING]=&Machine::call_RAY_SLAVE_MODE_DO_NOTHING;
+	m_slave_methods[RAY_SLAVE_MODE_SEND_EXTENSION_DATA]=&Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA;
+	m_slave_methods[RAY_SLAVE_MODE_ASSEMBLE_WAVES]=&Machine::call_RAY_SLAVE_MODE_ASSEMBLE_WAVES;
+	m_slave_methods[RAY_SLAVE_MODE_FUSION]=&Machine::call_RAY_SLAVE_MODE_FUSION;
+	m_slave_methods[RAY_SLAVE_MODE_PERFORM_CALIBRATION]=&Machine::call_RAY_SLAVE_MODE_PERFORM_CALIBRATION;
+	m_slave_methods[RAY_SLAVE_MODE_INDEX_SEQUENCES]=&Machine::call_RAY_SLAVE_MODE_INDEX_SEQUENCES;
+	m_slave_methods[RAY_SLAVE_MODE_FINISH_FUSIONS]=&Machine::call_RAY_SLAVE_MODE_FINISH_FUSIONS;
+	m_slave_methods[RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS]=&Machine::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS;
+	m_slave_methods[RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION]=&Machine::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION;
+	m_slave_methods[RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES]=&Machine::call_RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES;
+	m_slave_methods[RAY_SLAVE_MODE_EXTRACT_VERTICES]=&Machine::call_RAY_SLAVE_MODE_EXTRACT_VERTICES;
+	m_slave_methods[RAY_SLAVE_MODE_SEND_DISTRIBUTION]=&Machine::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION;
+	m_slave_methods[RAY_SLAVE_MODE_PROCESS_INGOING_EDGES]=&Machine::call_RAY_SLAVE_MODE_PROCESS_INGOING_EDGES;
+	m_slave_methods[RAY_SLAVE_MODE_PROCESS_OUTGOING_EDGES]=&Machine::call_RAY_SLAVE_MODE_PROCESS_OUTGOING_EDGES;
+	m_slave_methods[RAY_SLAVE_MODE_EXTENSION]=&Machine::call_RAY_SLAVE_MODE_EXTENSION;
+	m_slave_methods[RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION]=&Machine::call_RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION;
 }

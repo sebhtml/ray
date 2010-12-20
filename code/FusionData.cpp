@@ -35,7 +35,7 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 		fflush(stdout);
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_DISTRIBUTE_FUSIONS_FINISHED,getRank);
 		m_outbox->push_back(aMessage);
-		(*m_mode)=MODE_DO_NOTHING;
+		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		return;
 	}
 
@@ -130,7 +130,7 @@ void FusionData::finishFusions(){
 
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_FINISH_FUSIONS_FINISHED,getRank());
 		m_outbox->push_back(aMessage);
-		(*m_mode)=MODE_DO_NOTHING;
+		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		return;
 	}
 	int overlapMinimumLength=1000;
@@ -364,7 +364,7 @@ void FusionData::makeFusions(){
 
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_FUSION_DONE,getRank());
 		m_outbox->push_back(aMessage);
-		(*m_mode)=MODE_DO_NOTHING;
+		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		#ifdef SHOW_PROGRESS
 		int seedIndex=m_seedingData->m_SEEDING_i-1;
 		if(m_ed->m_EXTENSION_contigs.size()==0){

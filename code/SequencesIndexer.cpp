@@ -44,7 +44,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 		printf("Rank %i is indexing sequence reads [%i/%i] (completed)\n",m_rank,(int)m_myReads->size(),(int)m_myReads->size());
 		fflush(stdout);
 		m_bufferedData.flushAll(TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank);
-		(*m_mode)=MODE_DO_NOTHING;
+		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,m_rank);
 		m_outbox->push_back(aMessage);
 		m_bufferedData.clear();

@@ -45,7 +45,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		printf("Rank %i is extending seeds [%i/%i] (completed)\n",theRank,(int)(*seeds).size(),(int)(*seeds).size());
 		fflush(stdout);
 		ed->m_mode_EXTENSION=false;
-		(*m_mode)=MODE_DO_NOTHING;
+		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_EXTENSION_IS_DONE,theRank);
 		(*outbox).push_back(aMessage);
 		return;
@@ -70,7 +70,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		printf("Rank %i is extending seeds [%i/%i] (completed)\n",theRank,(int)(*seeds).size(),(int)(*seeds).size());
 		fflush(stdout);
 		ed->m_mode_EXTENSION=false;
-		(*m_mode)=MODE_DO_NOTHING;
+		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 	
 		// store the lengths.
 		for(int i=0;i<(int)ed->m_EXTENSION_identifiers.size();i++){

@@ -62,7 +62,7 @@ void EdgesExtractor::processOutgoingEdges(){
 		}else{
 			m_bufferedData.flushAll(TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
 			(*m_mode_send_outgoing_edges)=false;
-			(*m_mode)=MODE_PROCESS_INGOING_EDGES;
+			(*m_mode)=RAY_SLAVE_MODE_PROCESS_INGOING_EDGES;
 			(*m_mode_send_ingoing_edges)=true;
 			(m_mode_send_edge_sequence_id_position)=0;
 			printf("Rank %i is adding outgoing edges (reverse complement) [%i/%i] (completed)\n",getRank,(int)m_myReads->size(),(int)m_myReads->size());
@@ -143,7 +143,7 @@ void EdgesExtractor::processIngoingEdges(){
 			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, TAG_EDGES_DISTRIBUTED,getRank);
 			m_outbox->push_back(aMessage);
 			(*m_mode_send_ingoing_edges)=false;
-			(*m_mode)=MODE_DO_NOTHING;
+			(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 
 
 			printf("Rank %i is adding ingoing edges (reverse complement) [%i/%i] (completed)\n",getRank,m_mode_send_edge_sequence_id,(int)m_myReads->size());

@@ -68,7 +68,7 @@ void Library::detectDistances(){
 		
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE,getRank());
 		m_outbox->push_back(aMessage);
-		(*m_mode)=MODE_DO_NOTHING;
+		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 	}else if(m_ed->m_EXTENSION_currentPosition==(int)m_seedingData->m_SEEDING_seeds[m_seedingData->m_SEEDING_i].size()){
 		m_ed->m_EXTENSION_currentPosition=0;
 		m_seedingData->m_SEEDING_i++;
@@ -250,7 +250,7 @@ void Library::sendLibraryDistances(){
 
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_ASK_LIBRARY_DISTANCES_FINISHED,getRank());
 		m_outbox->push_back(aMessage);
-		(*m_mode)=MODE_DO_NOTHING;
+		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 	}else if(m_libraryIndex==m_libraryDistances[m_libraryIndexes[m_libraryIterator]].end()){
 		m_libraryIterator++;
 		m_libraryIndexInitiated=false;

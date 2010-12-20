@@ -49,7 +49,7 @@ void MessageProcessor::call_TAG_ASK_BEGIN_REDUCTION_REPLY(Message*message){
 }
 
 void MessageProcessor::call_TAG_RESUME_VERTEX_DISTRIBUTION(Message*message){
-	(*m_mode)=MODE_EXTRACT_VERTICES;
+	(*m_mode)=RAY_SLAVE_MODE_EXTRACT_VERTICES;
 	m_verticesExtractor->removeTrigger();
 }
 
@@ -62,11 +62,11 @@ void MessageProcessor::call_TAG_REDUCE_MEMORY_CONSUMPTION_DONE(Message*message){
 }
 
 void MessageProcessor::call_TAG_START_REDUCTION(Message*message){
-	(*m_mode)=MODE_REDUCE_MEMORY_CONSUMPTION;
+	(*m_mode)=RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION;
 }
 
 void MessageProcessor::call_TAG_ASK_BEGIN_REDUCTION(Message*message){
-	(*m_mode)=MODE_DO_NOTHING;
+	(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_ASK_BEGIN_REDUCTION_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
@@ -94,7 +94,7 @@ void MessageProcessor::call_TAG_SEND_SEQUENCE_REGULATOR(Message*message){
 }
 
 void MessageProcessor::call_TAG_START_INDEXING_SEQUENCES(Message*message){
-	(*m_mode)=MODE_INDEX_SEQUENCES;
+	(*m_mode)=RAY_SLAVE_MODE_INDEX_SEQUENCES;
 	m_si->constructor(size);
 }
 
@@ -274,7 +274,7 @@ void MessageProcessor::call_TAG_START_VERTICES_DISTRIBUTION(Message*message){
 	// wait for everyone
 	MPI_Barrier(MPI_COMM_WORLD);
 	(*m_mode_send_vertices)=true;
-	(*m_mode)=MODE_EXTRACT_VERTICES;
+	(*m_mode)=RAY_SLAVE_MODE_EXTRACT_VERTICES;
 	m_verticesExtractor->constructor(size);
 
 	(*m_mode_send_vertices_sequence_id)=0;
@@ -324,7 +324,7 @@ void MessageProcessor::call_TAG_IN_EDGE_DATA_WITH_PTR(Message*message){
 
 void MessageProcessor::call_TAG_START_EDGES_DISTRIBUTION(Message*message){
 	(*m_mode_send_outgoing_edges)=true;
-	(*m_mode)=MODE_PROCESS_OUTGOING_EDGES;
+	(*m_mode)=RAY_SLAVE_MODE_PROCESS_OUTGOING_EDGES;
 	m_edgesExtractor->constructor(size);
 }
 
@@ -363,7 +363,7 @@ void MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER(Message*mes
 void MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message){
 	(*m_mode_send_coverage_iterator)=0;
 	(*m_mode_sendDistribution)=true;
-	(*m_mode)=MODE_SEND_DISTRIBUTION;
+	(*m_mode)=RAY_SLAVE_MODE_SEND_DISTRIBUTION;
 }
 
 void MessageProcessor::call_TAG_COVERAGE_DATA(Message*message){
@@ -406,7 +406,7 @@ void MessageProcessor::call_TAG_READY_TO_SEED(Message*message){
 }
 
 void MessageProcessor::call_TAG_START_SEEDING(Message*message){
-	(*m_mode)=MODE_START_SEEDING;
+	(*m_mode)=RAY_SLAVE_MODE_START_SEEDING;
 	map<int,map<int,int> > edgesDistribution;
 	
 	#ifdef ASSERT
@@ -614,7 +614,7 @@ void MessageProcessor::call_TAG_EXTENSION_IS_DONE(Message*message){
 
 void MessageProcessor::call_TAG_ASK_EXTENSION(Message*message){
 	(m_ed->m_EXTENSION_initiated)=false;
-	(*m_mode)=MODE_EXTENSION;
+	(*m_mode)=RAY_SLAVE_MODE_EXTENSION;
 	(*m_last_value)=-1;
 }
 
@@ -722,7 +722,7 @@ void MessageProcessor::call_TAG_MARK_AS_ASSEMBLED(Message*message){
 }
 
 void MessageProcessor::call_TAG_ASK_EXTENSION_DATA(Message*message){
-	(*m_mode)=MODE_SEND_EXTENSION_DATA;
+	(*m_mode)=RAY_SLAVE_MODE_SEND_EXTENSION_DATA;
 	(m_seedingData->m_SEEDING_i)=0;
 	(m_ed->m_EXTENSION_currentPosition)=0;
 }
@@ -914,7 +914,7 @@ void MessageProcessor::call_TAG_SAVE_WAVE_PROGRESSION_REPLY(Message*message){
 }
 
 void MessageProcessor::call_TAG_ASSEMBLE_WAVES(Message*message){
-	(*m_mode)=MODE_ASSEMBLE_WAVES;
+	(*m_mode)=RAY_SLAVE_MODE_ASSEMBLE_WAVES;
 	(m_seedingData->m_SEEDING_i)=0;
 }
 
@@ -926,7 +926,7 @@ void MessageProcessor::call_TAG_ASSEMBLE_WAVES_DONE(Message*message){
 }
 
 void MessageProcessor::call_TAG_START_FUSION(Message*message){
-	(*m_mode)=MODE_FUSION;
+	(*m_mode)=RAY_SLAVE_MODE_FUSION;
 	(m_seedingData->m_SEEDING_i)=0;
 
 	m_fusionData->m_FUSION_direct_fusionDone=false;
@@ -1183,7 +1183,7 @@ void MessageProcessor::call_TAG_CLEAR_DIRECTIONS_REPLY(Message*message){
 
 void MessageProcessor::call_TAG_FINISH_FUSIONS(Message*message){
 	//cout<<"Rank "<<rank<<" call_TAG_FINISH_FUSIONS"<<endl;
-	(*m_mode)=MODE_FINISH_FUSIONS;
+	(*m_mode)=RAY_SLAVE_MODE_FINISH_FUSIONS;
 	m_fusionData->m_FINISH_fusionOccured=false;
 	(m_seedingData->m_SEEDING_i)=0;
 	(m_ed->m_EXTENSION_currentPosition)=0;
@@ -1202,7 +1202,7 @@ void MessageProcessor::call_TAG_FINISH_FUSIONS_FINISHED(Message*message){
 }
 
 void MessageProcessor::call_TAG_DISTRIBUTE_FUSIONS(Message*message){
-	(*m_mode)=MODE_DISTRIBUTE_FUSIONS;
+	(*m_mode)=RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS;
 	(m_seedingData->m_SEEDING_i)=0;
 	(m_ed->m_EXTENSION_currentPosition)=0;
 }
@@ -1275,7 +1275,7 @@ void MessageProcessor::call_TAG_SET_COLOR_MODE(Message*message){
 }
 
 void MessageProcessor::call_TAG_AUTOMATIC_DISTANCE_DETECTION(Message*message){
-	(*m_mode)=MODE_AUTOMATIC_DISTANCE_DETECTION;
+	(*m_mode)=RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION;
 	(m_seedingData->m_SEEDING_i)=0;
 	(m_ed->m_EXTENSION_currentPosition)=0;
 	m_ed->m_EXTENSION_reads_requested=false;
@@ -1308,7 +1308,7 @@ void MessageProcessor::call_TAG_LIBRARY_DISTANCE(Message*message){
 }
 
 void MessageProcessor::call_TAG_ASK_LIBRARY_DISTANCES(Message*message){
-	(*m_mode)=MODE_SEND_LIBRARY_DISTANCES;
+	(*m_mode)=RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES;
 	m_library->allocateBuffers();
 }
 
