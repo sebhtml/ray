@@ -167,7 +167,7 @@ void Machine::start(){
 	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
 	m_directionsAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
 
-	m_mode=RAY_SLAVE_MODE_DO_NOTHING;
+	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
 	m_master_mode=RAY_MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 	m_mode_AttachSequences=false;
 	m_startEdgeDistribution=false;
@@ -258,17 +258,17 @@ void Machine::start(){
 
 	m_fusionData->constructor(getSize(),MAXIMUM_MESSAGE_SIZE_IN_BYTES,getRank(),&m_outbox,&m_outboxAllocator,m_parameters.getWordSize(),
 	m_parameters.getColorSpaceMode(),
-		m_ed,m_seedingData,&m_mode);
+		m_ed,m_seedingData,&m_slave_mode);
 
 
 	m_library.constructor(getRank(),&m_outbox,&m_outboxAllocator,&m_sequence_id,&m_sequence_idInFile,
-		m_ed,&m_readsPositions,getSize(),&m_timePrinter,&m_mode,&m_master_mode,
+		m_ed,&m_readsPositions,getSize(),&m_timePrinter,&m_slave_mode,&m_master_mode,
 	&m_parameters,&m_fileId,m_seedingData);
 
 
 	m_subgraph.constructor(numberOfTrees,&m_persistentAllocator);
 	
-	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),&m_outbox,&m_outboxAllocator,&m_seedCoverage,&m_mode,&m_parameters,&m_wordSize,&m_subgraph,
+	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),&m_outbox,&m_outboxAllocator,&m_seedCoverage,&m_slave_mode,&m_parameters,&m_wordSize,&m_subgraph,
 		&m_colorSpaceMode);
 
 	m_edgesExtractor.getRank=getRank();
@@ -279,7 +279,7 @@ void Machine::start(){
 	m_edgesExtractor.m_mode_send_ingoing_edges=&m_mode_send_ingoing_edges;
 	m_edgesExtractor.m_colorSpaceMode=m_colorSpaceMode;
 	m_edgesExtractor.m_myReads=&m_myReads;
-	m_edgesExtractor.m_mode=&m_mode;
+	m_edgesExtractor.m_mode=&m_slave_mode;
 
 	if(isMaster()){
 
@@ -321,7 +321,7 @@ m_seedingData,
 	&m_mode_sendDistribution,
 	&m_alive,
 	&m_colorSpaceMode,
-	&m_mode,
+	&m_slave_mode,
 	&m_allPaths,
 	&m_last_value,
 	&m_ranksDoneAttachingReads,
@@ -479,7 +479,7 @@ void Machine::call_RAY_MASTER_MODE_LOAD_SEQUENCES(){
 	if(!res){
 		m_aborted=true;
 		killRanks();
-		m_mode=RAY_SLAVE_MODE_DO_NOTHING;
+		m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
 		m_master_mode=RAY_MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 	}
 }
@@ -570,7 +570,7 @@ void Machine::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 			m_wordSize,
 			getSize(),
 			&m_outboxAllocator,
-			m_colorSpaceMode,&m_mode
+			m_colorSpaceMode,&m_slave_mode
 		);
 }
 
@@ -642,7 +642,7 @@ void Machine::call_RAY_SLAVE_MODE_FINISH_FUSIONS(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
-	m_fusionData->distribute(m_seedingData,m_ed,m_rank,&m_outboxAllocator,&m_outbox,getSize(),&m_mode);
+	m_fusionData->distribute(m_seedingData,m_ed,m_rank,&m_outboxAllocator,&m_outbox,getSize(),&m_slave_mode);
 }
 
 void Machine::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
@@ -669,7 +669,7 @@ void Machine::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
 	m_outbox.push_back(aMessage);
 
 	m_distributionOfCoverage.clear();
-	m_mode=RAY_SLAVE_MODE_DO_NOTHING;
+	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
 }
 
 void Machine::call_RAY_SLAVE_MODE_PROCESS_OUTGOING_EDGES(){
@@ -726,7 +726,7 @@ void Machine::call_RAY_MASTER_MODE_ASK_DISTANCES(){
 void Machine::call_RAY_MASTER_MODE_START_UPDATING_DISTANCES(){
 	m_numberOfRanksDoneSendingDistances=-1;
 	m_parameters.computeAverageDistances();
-	m_mode=RAY_SLAVE_MODE_DO_NOTHING;
+	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
 	m_master_mode=RAY_MASTER_RAY_SLAVE_MODE_UPDATE_DISTANCES;
 	m_fileId=0;
 	m_sequence_idInFile=0;
@@ -737,7 +737,7 @@ void Machine::call_RAY_MASTER_RAY_SLAVE_MODE_INDEX_SEQUENCES(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(){
-	m_si.attachReads(&m_myReads,&m_outboxAllocator,&m_outbox,&m_mode,m_wordSize,
+	m_si.attachReads(&m_myReads,&m_outboxAllocator,&m_outbox,&m_slave_mode,m_wordSize,
 	m_size,m_rank,m_colorSpaceMode);
 }
 
@@ -754,7 +754,7 @@ void Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 		return;
 	}
 	if(m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
-		m_mode=RAY_SLAVE_MODE_DO_NOTHING;
+		m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_EXTENSION_DATA_END,getRank());
 		m_outbox.push_back(aMessage);
 	}else{
@@ -1224,7 +1224,7 @@ void Machine::call_RAY_SLAVE_MODE_EXTENSION(){
 	&m_last_value,&(m_seedingData->m_SEEDING_vertexCoverageRequested),m_wordSize,&m_colorSpaceMode,getSize(),&(m_seedingData->m_SEEDING_vertexCoverageReceived),
 	&(m_seedingData->m_SEEDING_receivedVertexCoverage),&m_repeatedLength,&maxCoverage,&(m_seedingData->m_SEEDING_receivedOutgoingEdges),&m_c,
 	m_cd,m_bubbleData,m_dfsData,
-m_minimumCoverage,&m_oa,&(m_seedingData->m_SEEDING_edgesReceived),&m_mode);
+m_minimumCoverage,&m_oa,&(m_seedingData->m_SEEDING_edgesReceived),&m_slave_mode);
 }
 
 void Machine::call_MASTER_RAY_SLAVE_MODE_ASSEMBLE_WAVES(){
@@ -1251,7 +1251,7 @@ void Machine::call_MASTER_RAY_SLAVE_MODE_ASSEMBLE_WAVES(){
 void Machine::processData(){
 	MachineMethod masterMethod=m_master_methods[m_master_mode];
 	(this->*masterMethod)();
-	MachineMethod slaveMethod=m_slave_methods[m_mode];
+	MachineMethod slaveMethod=m_slave_methods[m_slave_mode];
 	(this->*slaveMethod)();
 }
 
@@ -1320,7 +1320,7 @@ void Machine::call_RAY_MASTER_MODE_START_REDUCTION(){
 
 void Machine::call_RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION(){
 	if(m_reducer.reduce(&m_subgraph)){
-		m_mode=RAY_SLAVE_MODE_DO_NOTHING;
+		m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_REDUCE_MEMORY_CONSUMPTION_DONE,getRank());
 		m_outbox.push_back(aMessage);
 		if(m_reducer.getNumberOfRemovedVertices()>0){

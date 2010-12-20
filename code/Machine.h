@@ -125,7 +125,7 @@ class Machine{
 	bool m_showMessages;
 	bool m_mode_send_ingoing_edges;
 
-	int m_mode;
+	int m_slave_mode;
 	int m_master_mode;
 
 	MemoryConsumptionReducer m_reducer;
