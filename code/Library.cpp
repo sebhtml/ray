@@ -54,7 +54,7 @@ void Library::updateDistances(){
 	cout<<endl;
 	cout<<"Rank 0 asks others to extend their seeds."<<endl;
 
-	(*m_master_mode)=MASTER_MODE_TRIGGER_EXTENSIONS;
+	(*m_master_mode)=RAY_MASTER_MODE_TRIGGER_EXTENSIONS;
 	m_ed->m_EXTENSION_rank=-1;
 	m_ed->m_EXTENSION_currentRankIsSet=false;
 }

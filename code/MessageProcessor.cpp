@@ -43,7 +43,7 @@ void MessageProcessor::processMessage(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY(Message*message){
 	m_verticesExtractor->incrementRanksReadyForReduction();
 	if(m_verticesExtractor->readyForReduction()){
-		(*m_master_mode)=MASTER_MODE_START_REDUCTION;
+		(*m_master_mode)=RAY_MASTER_MODE_START_REDUCTION;
 		m_verticesExtractor->resetRanksReadyForReduction();
 	}
 }
@@ -56,7 +56,7 @@ void MessageProcessor::call_RAY_MPI_TAG_RESUME_VERTEX_DISTRIBUTION(Message*messa
 void MessageProcessor::call_RAY_MPI_TAG_REDUCE_MEMORY_CONSUMPTION_DONE(Message*message){
 	m_verticesExtractor->incrementRanksDoneWithReduction();
 	if(m_verticesExtractor->reductionIsDone()){
-		(*m_master_mode)=MASTER_MODE_RESUME_VERTEX_DISTRIBUTION;
+		(*m_master_mode)=RAY_MASTER_MODE_RESUME_VERTEX_DISTRIBUTION;
 		m_verticesExtractor->resetRanksDoneForReduction();
 	}
 }
@@ -75,7 +75,7 @@ void MessageProcessor::call_RAY_MPI_TAG_MUST_RUN_REDUCER(Message*message){
 	int rank=message->getSource();
 	m_verticesExtractor->addRankForReduction(rank);
 	if(m_verticesExtractor->mustRunReducer()){
-		(*m_master_mode)=MASTER_MODE_ASK_BEGIN_REDUCTION;
+		(*m_master_mode)=RAY_MASTER_MODE_ASK_BEGIN_REDUCTION;
 		m_verticesExtractor->resetRanksForReduction();
 	}
 }
@@ -143,7 +143,7 @@ void MessageProcessor::call_RAY_MPI_TAG_SEND_SEQUENCE_REPLY(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_SEQUENCES_READY(Message*message){
 	(*m_sequence_ready_machines)++;
 	if(*m_sequence_ready_machines==size){
-		(*m_master_mode)=MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION;
+		(*m_master_mode)=RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION;
 	}
 }
 
@@ -202,7 +202,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA_REPLY(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DISTRIBUTED(Message*message){
 	(*m_numberOfMachinesDoneSendingVertices)++;
 	if((*m_numberOfMachinesDoneSendingVertices)==size){
-		(*m_master_mode)=MASTER_MODE_PREPARE_DISTRIBUTIONS;
+		(*m_master_mode)=RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS;
 	}
 }
 
@@ -283,7 +283,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_VERTICES_DISTRIBUTION(Message*mess
 void MessageProcessor::call_RAY_MPI_TAG_EDGES_DISTRIBUTED(Message*message){
 	(*m_numberOfMachinesDoneSendingEdges)++;
 	if((*m_numberOfMachinesDoneSendingEdges)==size){
-		(*m_master_mode)=MASTER_MODE_TRIGGER_INDEXING;
+		(*m_master_mode)=RAY_MASTER_MODE_TRIGGER_INDEXING;
 	}
 }
 
@@ -337,7 +337,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_EDGES_DISTRIBUTION_ASK(Message*mes
 void MessageProcessor::call_RAY_MPI_TAG_START_EDGES_DISTRIBUTION_ANSWER(Message*message){
 	(*m_numberOfMachinesReadyForEdgesDistribution)++;
 	if(*m_numberOfMachinesReadyForEdgesDistribution==size){
-		(*m_master_mode)=MASTER_MODE_START_EDGES_DISTRIBUTION;
+		(*m_master_mode)=RAY_MASTER_MODE_START_EDGES_DISTRIBUTION;
 	}
 }
 
@@ -356,7 +356,7 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION(M
 void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER(Message*message){
 	(*m_numberOfMachinesReadyToSendDistribution)++;
 	if((*m_numberOfMachinesReadyToSendDistribution)==size){
-		(*m_master_mode)=MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS;
+		(*m_master_mode)=RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS;
 	}
 }
 
@@ -382,7 +382,7 @@ void MessageProcessor::call_RAY_MPI_TAG_COVERAGE_DATA(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_COVERAGE_END(Message*message){
 	(*m_numberOfMachinesDoneSendingCoverage)++;
 	if((*m_numberOfMachinesDoneSendingCoverage)==size){
-		(*m_master_mode)=MASTER_MODE_SEND_COVERAGE_VALUES;
+		(*m_master_mode)=RAY_MASTER_MODE_SEND_COVERAGE_VALUES;
 	}
 }
 
@@ -401,7 +401,7 @@ void MessageProcessor::call_RAY_MPI_TAG_SEND_COVERAGE_VALUES(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_READY_TO_SEED(Message*message){
 	(*m_readyToSeed)++;
 	if((*m_readyToSeed)==size){
-		(*m_master_mode)=MASTER_MODE_TRIGGER_SEEDING;
+		(*m_master_mode)=RAY_MASTER_MODE_TRIGGER_SEEDING;
 	}
 }
 
@@ -505,7 +505,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY(Mess
 void MessageProcessor::call_RAY_MPI_TAG_SEEDING_IS_OVER(Message*message){
 	(*m_numberOfRanksDoneSeeding)++;
 	if((*m_numberOfRanksDoneSeeding)==size){
-		(*m_master_mode)=MASTER_MODE_TRIGGER_DETECTION;
+		(*m_master_mode)=RAY_MASTER_MODE_TRIGGER_DETECTION;
 	}
 }
 
@@ -567,7 +567,7 @@ void MessageProcessor::call_RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS(Message*m
 void MessageProcessor::call_RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY(Message*message){
 	(*m_ranksDoneAttachingReads)++;
 	if((*m_ranksDoneAttachingReads)==size){
-		(*m_master_mode)=MASTER_MODE_PREPARE_SEEDING;
+		(*m_master_mode)=RAY_MASTER_MODE_PREPARE_SEEDING;
 	}
 }
 
@@ -608,7 +608,7 @@ void MessageProcessor::call_RAY_MPI_TAG_EXTENSION_IS_DONE(Message*message){
 	(m_ed->m_EXTENSION_numberOfRanksDone)++;
 	(m_ed->m_EXTENSION_currentRankIsDone)=true;
 	if((m_ed->m_EXTENSION_numberOfRanksDone)==size){
-		(*m_master_mode)=MASTER_MODE_TRIGGER_FUSIONS;
+		(*m_master_mode)=RAY_MASTER_MODE_TRIGGER_FUSIONS;
 	}
 }
 
@@ -937,7 +937,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_FUSION(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_FUSION_DONE(Message*message){
 	m_fusionData->m_FUSION_numberOfRanksDone++;
 	if(m_fusionData->m_FUSION_numberOfRanksDone==size && !(*m_isFinalFusion)){
-		(*m_master_mode)=MASTER_MODE_TRIGGER_FIRST_FUSIONS;
+		(*m_master_mode)=RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS;
 	}
 }
 
@@ -1284,7 +1284,7 @@ void MessageProcessor::call_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION(Message*mes
 void MessageProcessor::call_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE(Message*message){
 	(*m_numberOfRanksDoneDetectingDistances)++;
 	if((*m_numberOfRanksDoneDetectingDistances)==size){
-		(*m_master_mode)=MASTER_MODE_ASK_DISTANCES;
+		(*m_master_mode)=RAY_MASTER_MODE_ASK_DISTANCES;
 	}
 }
 
@@ -1316,7 +1316,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED(Message*m
 	(*m_numberOfRanksDoneSendingDistances)++;
 	//cout<<"RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED "<<(*m_numberOfRanksDoneSendingDistances)<<endl;
 	if((*m_numberOfRanksDoneSendingDistances)==size){
-		(*m_master_mode)=MASTER_MODE_START_UPDATING_DISTANCES;
+		(*m_master_mode)=RAY_MASTER_MODE_START_UPDATING_DISTANCES;
 	}
 }
 
@@ -1335,7 +1335,7 @@ void MessageProcessor::call_RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION(Message*messa
 void MessageProcessor::call_RAY_MPI_TAG_RECEIVED_COVERAGE_INFORMATION(Message*message){
 	(*m_numberOfRanksWithCoverageData)++;
 	if((*m_numberOfRanksWithCoverageData)==size){
-		(*m_master_mode)=MASTER_MODE_TRIGGER_EDGES;
+		(*m_master_mode)=RAY_MASTER_MODE_TRIGGER_EDGES;
 	}
 }
 
