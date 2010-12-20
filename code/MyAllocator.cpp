@@ -28,6 +28,10 @@
 using namespace std;
 
 MyAllocator::MyAllocator(){
+	m_addressesToReuse=NULL;
+	m_numberOfAddressesToReuse=0;
+	m_growthRate=1000;
+	m_maxSize=0;
 }
 
 /**
@@ -48,6 +52,10 @@ void MyAllocator::constructor(int chunkSize){
 }
 
 void*MyAllocator::allocate(int s){
+	if(hasAddressesToReuse()){
+		return reuseAddress();
+	}
+
 	// hopefully fix alignment issues on Itanium
 	int alignment=8;
 	if(s%8!=0){
@@ -116,4 +124,27 @@ void MyAllocator::print(){
 
 int MyAllocator::getNumberOfChunks(){
 	return m_chunks.size();
+}
+
+bool MyAllocator::hasAddressesToReuse(){
+	return m_numberOfAddressesToReuse>0;
+}
+
+void*MyAllocator::reuseAddress(){
+	m_numberOfAddressesToReuse--;
+	void*ptr=m_addressesToReuse[m_numberOfAddressesToReuse];
+	if(m_numberOfAddressesToReuse==0){
+		free(m_addressesToReuse);
+		m_addressesToReuse=NULL;
+	}
+	return ptr;
+}
+
+void MyAllocator::addAddressToReuse(void*ptr){
+	if(m_numberOfAddressesToReuse==m_maxSize || m_addressesToReuse==NULL){
+		m_maxSize+=m_growthRate;
+		m_addressesToReuse=(void**)__Realloc(m_addressesToReuse,m_maxSize*sizeof(void*));
+	}
+	m_addressesToReuse[m_numberOfAddressesToReuse]=ptr;
+	m_numberOfAddressesToReuse++;
 }

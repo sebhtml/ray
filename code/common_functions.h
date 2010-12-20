@@ -191,6 +191,7 @@ string addLineBreaks(string sequence);
 
 void*__Malloc(int c);
 void __Free(void*a);
+void*__Realloc(void*a,int c);
 
 /*
  * compute the reverse complement in color space (it is just the same, but reverse)

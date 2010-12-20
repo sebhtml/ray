@@ -39,6 +39,11 @@ class MyAllocator{
 	void*m_currentChunk;
 	int m_currentPosition;
 	int m_CHUNK_SIZE;
+
+	void**m_addressesToReuse;
+	int m_numberOfAddressesToReuse;
+	int m_growthRate;
+	int m_maxSize;
 public:
 	/*
  * allocator.
@@ -58,6 +63,9 @@ public:
 	~MyAllocator();
 	int getChunkSize();
 	int getNumberOfChunks();
+	void addAddressToReuse(void*ptr);
+	bool hasAddressesToReuse();
+	void*reuseAddress();
 };
 
 

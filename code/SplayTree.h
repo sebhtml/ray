@@ -107,10 +107,49 @@ SplayTree<KEY,VALUE>::~SplayTree(){
 }
 
 /*
- *  currently not implemented.
+ *
+ * based on http://www.cs.umbc.edu/courses/undergraduate/341/fall98/frey/ClassNotes/Class17/splay.html
  */
 template<class KEY,class VALUE>
 void SplayTree<KEY,VALUE>::remove(KEY key){
+	// can't remove from an empty tree
+	if(m_root==NULL){
+		return;
+	}
+	// make the node with key at root
+	splay(key);
+
+	// the key is not in the tree
+	if(m_root->getKey()!=key){
+		return;
+	}
+	SplayNode<KEY,VALUE>*leftSubTree=m_root->getLeft();
+	SplayNode<KEY,VALUE>*rightSubTree=m_root->getRight();
+	SplayNode<KEY,VALUE>*toRemove=m_root;
+
+	if(leftSubTree!=NULL){
+		// we only work on the left subtree
+		m_root=leftSubTree;
+
+		// find the max node in left tree
+		SplayNode<KEY,VALUE>*maxNodeInLeftTree=leftSubTree;
+		while(maxNodeInLeftTree->getRight()!=NULL){
+			maxNodeInLeftTree=maxNodeInLeftTree->getRight();
+		}
+
+		// make it the root of the subtree
+		splay(maxNodeInLeftTree->getKey());
+
+		// set the right subtree to the right tree of the root
+		m_root->setRight(rightSubTree);
+	}else{
+		m_root=rightSubTree;
+	}
+
+	m_size--;
+
+	// reuse the pointer 
+	m_allocator->addAddressToReuse(toRemove);
 }
 
 template<class KEY,class VALUE>

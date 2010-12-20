@@ -305,6 +305,15 @@ void*__Malloc(int c){
 	return a;
 }
 
+void*__Realloc(void*a,int b){
+	a=realloc(a,b);
+	if(a==NULL){
+		cout<<"Critical exception: The system is out of memory, malloc returned NULL."<<endl;
+	}
+	assert(a!=NULL);
+	return a;
+}
+
 void __Free(void*a){
 	free(a);
 }

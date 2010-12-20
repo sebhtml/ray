@@ -5,6 +5,33 @@
 #include<stdlib.h>
 #include<assert.h>
 
+void test_remove(){
+	MyAllocator allocator;
+	allocator.constructor(1000);
+	SplayTree<int,int> a;
+	a.constructor(&allocator);
+	for(int k=0;k<100;k++){
+		a.insert(k);
+		assert(a.find(k)!=NULL);
+	}
+	assert(a.size()==100);
+
+	a.remove(9);
+	assert(a.size()==99);
+	assert(a.find(9)==NULL);
+
+	a.remove(50);
+	assert(a.size()==98);
+	assert(a.find(50)==NULL);
+
+	a.remove(50);
+	assert(a.size()==98);
+	assert(a.find(50)==NULL);
+
+	a.remove(-1);
+
+	assert(a.size()==98);
+}
 
 int main(){
 	MyAllocator allocator;
@@ -39,6 +66,8 @@ int main(){
 	}
 	assert(i==n);
 	assert(n==lol.size());
+
+	test_remove();
 
 	return 0;
 }
