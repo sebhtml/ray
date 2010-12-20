@@ -36,7 +36,7 @@ void MyForest::constructor(int count,MyAllocator*allocator){
 	m_size=0;
 }
 
-int MyForest::size(){
+uint64_t MyForest::size(){
 	return m_size;
 }
 

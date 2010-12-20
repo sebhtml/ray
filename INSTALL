@@ -20,14 +20,15 @@ GZIP and BZIP2 support is detected automatically.
 If the above don't work for you (for various reasons), compile Ray using the following command:
 
 
-make -f makefile.alternate
+	make -f makefile.alternate
 
 
 If you don't have libz and libbz2:
 
 
+	sed 's/-DHAVE_ZLIB -DHAVE_LIBBZ2//g' makefile.alternate > makefile2
+	make -f makefile2
 
-make -f makefile.alternate nocompression
 
 
 

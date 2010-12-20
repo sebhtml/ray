@@ -28,13 +28,25 @@
 #include<common_functions.h>
 #include<ArrayOfReads.h>
 #include<Message.h>
+#include<MyForest.h>
 #include<RingAllocator.h>
+#include<set>
 #include<Read.h>
 using namespace std;
 
 class VerticesExtractor{
 	bool m_ready;
 	BufferedData m_bufferedData;
+	set<int> m_ranksThatMustRunReducer;
+	int m_size;
+
+	int m_ranksReadyForReduction;
+	int m_ranksDoneWithReduction;
+
+	uint64_t m_thresholdForReduction;
+	int m_reductionPeriod;
+
+	bool m_triggered;
 public:
 	void constructor(int size);
 	void process(int*m_mode_send_vertices_sequence_id,
@@ -50,6 +62,24 @@ public:
 				bool m_colorSpaceMode,int*m_mode
 			);
 	void setReadiness();
+	bool mustRunReducer();
+	void addRankForReduction(int a);
+	void resetRanksForReduction();
+	
+	void incrementRanksReadyForReduction();
+	bool readyForReduction();
+
+	void incrementRanksDoneWithReduction();
+	bool reductionIsDone();
+
+	void resetRanksReadyForReduction();
+	void resetRanksDoneForReduction();
+
+	uint64_t getThreshold();
+	void updateThreshold(MyForest*a);
+	bool isTriggered();
+	void trigger();
+	void removeTrigger();
 };
 
 #endif

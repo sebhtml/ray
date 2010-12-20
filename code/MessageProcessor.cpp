@@ -40,6 +40,45 @@ void MessageProcessor::processMessage(Message*message){
 	(this->*f)(message);
 }
 
+void MessageProcessor::call_TAG_ASK_BEGIN_REDUCTION_REPLY(Message*message){
+	m_verticesExtractor->incrementRanksReadyForReduction();
+	if(m_verticesExtractor->readyForReduction()){
+		(*m_master_mode)=MASTER_MODE_START_REDUCTION;
+		m_verticesExtractor->resetRanksReadyForReduction();
+	}
+}
+
+void MessageProcessor::call_TAG_RESUME_VERTEX_DISTRIBUTION(Message*message){
+	(*m_mode)=MODE_EXTRACT_VERTICES;
+	m_verticesExtractor->removeTrigger();
+}
+
+void MessageProcessor::call_TAG_REDUCE_MEMORY_CONSUMPTION_DONE(Message*message){
+	m_verticesExtractor->incrementRanksDoneWithReduction();
+	if(m_verticesExtractor->reductionIsDone()){
+		(*m_master_mode)=MASTER_MODE_RESUME_VERTEX_DISTRIBUTION;
+		m_verticesExtractor->resetRanksDoneForReduction();
+	}
+}
+
+void MessageProcessor::call_TAG_START_REDUCTION(Message*message){
+	(*m_mode)=MODE_REDUCE_MEMORY_CONSUMPTION;
+}
+
+void MessageProcessor::call_TAG_ASK_BEGIN_REDUCTION(Message*message){
+	(*m_mode)=MODE_DO_NOTHING;
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_ASK_BEGIN_REDUCTION_REPLY,rank);
+	m_outbox->push_back(aMessage);
+}
+
+void MessageProcessor::call_TAG_MUST_RUN_REDUCER(Message*message){
+	int rank=message->getSource();
+	m_verticesExtractor->addRankForReduction(rank);
+	if(m_verticesExtractor->mustRunReducer()){
+		(*m_master_mode)=MASTER_MODE_ASK_BEGIN_REDUCTION;
+		m_verticesExtractor->resetRanksForReduction();
+	}
+}
 
 void MessageProcessor::call_TAG_WELCOME(Message*message){
 }
@@ -124,6 +163,7 @@ void MessageProcessor::call_TAG_VERTICES_DATA(Message*message){
 	int count=message->getCount();
 	uint64_t*incoming=(uint64_t*)buffer;
 	int length=count;
+
 	for(int i=0;i<length;i++){
 		uint64_t l=incoming[i];
 
@@ -147,6 +187,12 @@ void MessageProcessor::call_TAG_VERTICES_DATA(Message*message){
 	}
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),TAG_VERTICES_DATA_REPLY,rank);
 	m_outbox->push_back(aMessage);
+
+	if(m_subgraph->size()>=m_verticesExtractor->getThreshold() && !m_verticesExtractor->isTriggered()){
+		m_verticesExtractor->trigger();
+		Message aMessage2(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_MUST_RUN_REDUCER,rank);
+		m_outbox->push_back(aMessage2);
+	}
 }
 
 void MessageProcessor::call_TAG_VERTICES_DATA_REPLY(Message*message){
@@ -300,7 +346,7 @@ void MessageProcessor::call_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION(Message*m
 	m_subgraph->freeze();
 	//m_subgraph->show(rank,parameters->getPrefix().c_str());
 	int source=message->getSource();
-	printf("Rank %i has %i vertices\n",rank,(int)m_subgraph->size());
+	printf("Rank %i has %i vertices (completed)\n",rank,(int)m_subgraph->size());
 	fflush(stdout);
 
 	Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, source, TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER,rank);
@@ -1237,7 +1283,6 @@ void MessageProcessor::call_TAG_AUTOMATIC_DISTANCE_DETECTION(Message*message){
 
 void MessageProcessor::call_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE(Message*message){
 	(*m_numberOfRanksDoneDetectingDistances)++;
-	cout<<"TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE "<<(*m_numberOfRanksDoneDetectingDistances)<<endl;
 	if((*m_numberOfRanksDoneDetectingDistances)==size){
 		(*m_master_mode)=MASTER_MODE_ASK_DISTANCES;
 	}
@@ -1338,12 +1383,130 @@ void MessageProcessor::call_TAG_REQUEST_READ_SEQUENCE_REPLY(Message*message){
 	seedExtender->m_sequenceReceived=true;
 }
 
+void MessageProcessor::constructor(
+MessagesHandler*m_messagesHandler,
+SeedingData*seedingData,
+Library*m_library,
+bool*m_ready,
+VerticesExtractor*m_verticesExtractor,
+EdgesExtractor*m_edgesExtractor,
+SequencesLoader*sequencesLoader,ExtensionData*ed,
+			int*m_numberOfRanksDoneDetectingDistances,
+			int*m_numberOfRanksDoneSendingDistances,
+			Parameters*parameters,
+			MyForest*m_subgraph,
+			RingAllocator*m_outboxAllocator,
+				int rank,
+			int*m_numberOfMachinesDoneSendingEdges,
+			FusionData*m_fusionData,
+			int*m_wordSize,
+			int*m_minimumCoverage,
+			int*m_seedCoverage,
+			int*m_peakCoverage,
+			ArrayOfReads*m_myReads,
+		int size,
+	RingAllocator*m_inboxAllocator,
+	MyAllocator*m_persistentAllocator,
+	vector<int>*m_identifiers,
+	bool*m_mode_sendDistribution,
+	bool*m_alive,
+	bool*m_colorSpaceMode,
+	int*m_mode,
+	vector<vector<uint64_t> >*m_allPaths,
+	int*m_last_value,
+	int*m_ranksDoneAttachingReads,
+	int*m_DISTRIBUTE_n,
+	int*m_numberOfRanksDoneSeeding,
+	int*m_CLEAR_n,
+	int*m_readyToSeed,
+	int*m_FINISH_n,
+	bool*m_nextReductionOccured,
+	MyAllocator*m_directionsAllocator,
+	int*m_mode_send_coverage_iterator,
+	map<int,uint64_t>*m_coverageDistribution,
+	int*m_sequence_ready_machines,
+	int*m_numberOfMachinesReadyForEdgesDistribution,
+	int*m_numberOfMachinesReadyToSendDistribution,
+	bool*m_mode_send_outgoing_edges,
+	int*m_mode_send_vertices_sequence_id,
+	bool*m_mode_send_vertices,
+	int*m_numberOfMachinesDoneSendingVertices,
+	int*m_numberOfMachinesDoneSendingCoverage,
+				StaticVector*m_outbox,
+		map<int,int>*m_allIdentifiers,OpenAssemblerChooser*m_oa,
+int*m_numberOfRanksWithCoverageData,
+SeedExtender*seedExtender,int*m_master_mode,
+bool*m_isFinalFusion,
+SequencesIndexer*m_si){
+	this->m_sequencesLoader=sequencesLoader;
+	this->m_verticesExtractor=m_verticesExtractor;
+	this->m_ed=ed;
+	this->m_numberOfRanksDoneDetectingDistances=m_numberOfRanksDoneDetectingDistances;
+	this->m_numberOfRanksDoneSendingDistances=m_numberOfRanksDoneSendingDistances;
+	this->parameters=parameters;
+	this->m_library=m_library;
+	this->m_subgraph=m_subgraph;
+	this->m_edgesExtractor=m_edgesExtractor;
+	this->m_outboxAllocator=m_outboxAllocator;
+	this->rank=rank;
+	this->m_numberOfMachinesDoneSendingEdges=m_numberOfMachinesDoneSendingEdges;
+	this->m_fusionData=m_fusionData;
+	this->m_wordSize=m_wordSize;
+	this->m_minimumCoverage=m_minimumCoverage;
+	this->m_seedCoverage=m_seedCoverage;
+	this->m_peakCoverage=m_peakCoverage;
+	this->m_myReads=m_myReads;
+	this->size=size;
+	this->m_inboxAllocator=m_inboxAllocator;
+	this->m_si=m_si;
+	this->m_persistentAllocator=m_persistentAllocator;
+	this->m_identifiers=m_identifiers;
+	this->m_mode_sendDistribution=m_mode_sendDistribution;
+	this->m_alive=m_alive;
+	this->m_colorSpaceMode=m_colorSpaceMode;
+	this->m_messagesHandler=m_messagesHandler;
+	this->m_mode=m_mode;
+	this->m_allPaths=m_allPaths;
+	this->m_last_value=m_last_value;
+	this->m_ranksDoneAttachingReads=m_ranksDoneAttachingReads;
+	this->m_DISTRIBUTE_n=m_DISTRIBUTE_n;
+	this->m_numberOfRanksDoneSeeding=m_numberOfRanksDoneSeeding;
+	this->m_CLEAR_n=m_CLEAR_n;
+	this->m_readyToSeed=m_readyToSeed;
+	this->m_FINISH_n=m_FINISH_n;
+	this->m_nextReductionOccured=m_nextReductionOccured;
+	this->m_directionsAllocator=m_directionsAllocator;
+	this->m_mode_send_coverage_iterator=m_mode_send_coverage_iterator;
+	this->m_coverageDistribution=m_coverageDistribution;
+	this->m_sequence_ready_machines=m_sequence_ready_machines;
+	this->m_numberOfMachinesReadyForEdgesDistribution=m_numberOfMachinesReadyForEdgesDistribution;
+	this->m_numberOfMachinesReadyToSendDistribution=m_numberOfMachinesReadyToSendDistribution;
+	this->m_mode_send_outgoing_edges=m_mode_send_outgoing_edges;
+	this->m_mode_send_vertices_sequence_id=m_mode_send_vertices_sequence_id;
+	this->m_mode_send_vertices=m_mode_send_vertices;
+	this->m_numberOfMachinesDoneSendingVertices=m_numberOfMachinesDoneSendingVertices;
+	this->m_numberOfMachinesDoneSendingCoverage=m_numberOfMachinesDoneSendingCoverage;
+	this->m_outbox=m_outbox;
+	this->m_allIdentifiers=m_allIdentifiers,
+	this->m_oa=m_oa;
+	this->m_numberOfRanksWithCoverageData=m_numberOfRanksWithCoverageData;
+	this->seedExtender=seedExtender;
+	this->m_master_mode=m_master_mode;
+	this->m_isFinalFusion=m_isFinalFusion;
+	this->m_ready=m_ready;
+	m_seedingData=seedingData;
+}
+
 MessageProcessor::MessageProcessor(){
 	m_last=time(NULL);
 	m_consumed=0;
 	m_sentinelValue=0;
 	m_sentinelValue--;// overflow it in an obvious manner
 	
+	assignHandlers();
+}
+
+void MessageProcessor::assignHandlers(){
 	m_methods[TAG_WELCOME]=&MessageProcessor::call_TAG_WELCOME;
 	m_methods[TAG_SEND_SEQUENCE]=&MessageProcessor::call_TAG_SEND_SEQUENCE;
 	m_methods[TAG_SEND_SEQUENCE_REGULATOR]=&MessageProcessor::call_TAG_SEND_SEQUENCE_REGULATOR;
@@ -1462,118 +1625,10 @@ MessageProcessor::MessageProcessor(){
 	m_methods[TAG_OUT_EDGES_DATA_REPLY]=&MessageProcessor::call_TAG_OUT_EDGES_DATA_REPLY;
 	m_methods[TAG_RECEIVED_MESSAGES]=&MessageProcessor::call_TAG_RECEIVED_MESSAGES;
 	m_methods[TAG_RECEIVED_MESSAGES_REPLY]=&MessageProcessor::call_TAG_RECEIVED_MESSAGES_REPLY;
-}
-
-void MessageProcessor::constructor(
-MessagesHandler*m_messagesHandler,
-SeedingData*seedingData,
-Library*m_library,
-bool*m_ready,
-VerticesExtractor*m_verticesExtractor,
-EdgesExtractor*m_edgesExtractor,
-SequencesLoader*sequencesLoader,ExtensionData*ed,
-			int*m_numberOfRanksDoneDetectingDistances,
-			int*m_numberOfRanksDoneSendingDistances,
-			Parameters*parameters,
-			MyForest*m_subgraph,
-			RingAllocator*m_outboxAllocator,
-				int rank,
-			int*m_numberOfMachinesDoneSendingEdges,
-			FusionData*m_fusionData,
-			int*m_wordSize,
-			int*m_minimumCoverage,
-			int*m_seedCoverage,
-			int*m_peakCoverage,
-			ArrayOfReads*m_myReads,
-		int size,
-	RingAllocator*m_inboxAllocator,
-	MyAllocator*m_persistentAllocator,
-	vector<int>*m_identifiers,
-	bool*m_mode_sendDistribution,
-	bool*m_alive,
-	bool*m_colorSpaceMode,
-	int*m_mode,
-	vector<vector<uint64_t> >*m_allPaths,
-	int*m_last_value,
-	int*m_ranksDoneAttachingReads,
-	int*m_DISTRIBUTE_n,
-	int*m_numberOfRanksDoneSeeding,
-	int*m_CLEAR_n,
-	int*m_readyToSeed,
-	int*m_FINISH_n,
-	bool*m_nextReductionOccured,
-	MyAllocator*m_directionsAllocator,
-	int*m_mode_send_coverage_iterator,
-	map<int,uint64_t>*m_coverageDistribution,
-	int*m_sequence_ready_machines,
-	int*m_numberOfMachinesReadyForEdgesDistribution,
-	int*m_numberOfMachinesReadyToSendDistribution,
-	bool*m_mode_send_outgoing_edges,
-	int*m_mode_send_vertices_sequence_id,
-	bool*m_mode_send_vertices,
-	int*m_numberOfMachinesDoneSendingVertices,
-	int*m_numberOfMachinesDoneSendingCoverage,
-				StaticVector*m_outbox,
-		map<int,int>*m_allIdentifiers,OpenAssemblerChooser*m_oa,
-int*m_numberOfRanksWithCoverageData,
-SeedExtender*seedExtender,int*m_master_mode,
-bool*m_isFinalFusion,
-SequencesIndexer*m_si){
-	this->m_sequencesLoader=sequencesLoader;
-	this->m_verticesExtractor=m_verticesExtractor;
-	this->m_ed=ed;
-	this->m_numberOfRanksDoneDetectingDistances=m_numberOfRanksDoneDetectingDistances;
-	this->m_numberOfRanksDoneSendingDistances=m_numberOfRanksDoneSendingDistances;
-	this->parameters=parameters;
-	this->m_library=m_library;
-	this->m_subgraph=m_subgraph;
-	this->m_edgesExtractor=m_edgesExtractor;
-	this->m_outboxAllocator=m_outboxAllocator;
-	this->rank=rank;
-	this->m_numberOfMachinesDoneSendingEdges=m_numberOfMachinesDoneSendingEdges;
-	this->m_fusionData=m_fusionData;
-	this->m_wordSize=m_wordSize;
-	this->m_minimumCoverage=m_minimumCoverage;
-	this->m_seedCoverage=m_seedCoverage;
-	this->m_peakCoverage=m_peakCoverage;
-	this->m_myReads=m_myReads;
-	this->size=size;
-	this->m_inboxAllocator=m_inboxAllocator;
-	this->m_si=m_si;
-	this->m_persistentAllocator=m_persistentAllocator;
-	this->m_identifiers=m_identifiers;
-	this->m_mode_sendDistribution=m_mode_sendDistribution;
-	this->m_alive=m_alive;
-	this->m_colorSpaceMode=m_colorSpaceMode;
-	this->m_messagesHandler=m_messagesHandler;
-	this->m_mode=m_mode;
-	this->m_allPaths=m_allPaths;
-	this->m_last_value=m_last_value;
-	this->m_ranksDoneAttachingReads=m_ranksDoneAttachingReads;
-	this->m_DISTRIBUTE_n=m_DISTRIBUTE_n;
-	this->m_numberOfRanksDoneSeeding=m_numberOfRanksDoneSeeding;
-	this->m_CLEAR_n=m_CLEAR_n;
-	this->m_readyToSeed=m_readyToSeed;
-	this->m_FINISH_n=m_FINISH_n;
-	this->m_nextReductionOccured=m_nextReductionOccured;
-	this->m_directionsAllocator=m_directionsAllocator;
-	this->m_mode_send_coverage_iterator=m_mode_send_coverage_iterator;
-	this->m_coverageDistribution=m_coverageDistribution;
-	this->m_sequence_ready_machines=m_sequence_ready_machines;
-	this->m_numberOfMachinesReadyForEdgesDistribution=m_numberOfMachinesReadyForEdgesDistribution;
-	this->m_numberOfMachinesReadyToSendDistribution=m_numberOfMachinesReadyToSendDistribution;
-	this->m_mode_send_outgoing_edges=m_mode_send_outgoing_edges;
-	this->m_mode_send_vertices_sequence_id=m_mode_send_vertices_sequence_id;
-	this->m_mode_send_vertices=m_mode_send_vertices;
-	this->m_numberOfMachinesDoneSendingVertices=m_numberOfMachinesDoneSendingVertices;
-	this->m_numberOfMachinesDoneSendingCoverage=m_numberOfMachinesDoneSendingCoverage;
-	this->m_outbox=m_outbox;
-	this->m_allIdentifiers=m_allIdentifiers,
-	this->m_oa=m_oa;
-	this->m_numberOfRanksWithCoverageData=m_numberOfRanksWithCoverageData;
-	this->seedExtender=seedExtender;
-	this->m_master_mode=m_master_mode;
-	this->m_isFinalFusion=m_isFinalFusion;
-	this->m_ready=m_ready;
-	m_seedingData=seedingData;
+	m_methods[TAG_MUST_RUN_REDUCER]=&MessageProcessor::call_TAG_MUST_RUN_REDUCER;
+	m_methods[TAG_ASK_BEGIN_REDUCTION_REPLY]=&MessageProcessor::call_TAG_ASK_BEGIN_REDUCTION_REPLY;
+	m_methods[TAG_ASK_BEGIN_REDUCTION]=&MessageProcessor::call_TAG_ASK_BEGIN_REDUCTION;
+	m_methods[TAG_RESUME_VERTEX_DISTRIBUTION]=&MessageProcessor::call_TAG_RESUME_VERTEX_DISTRIBUTION;
+	m_methods[TAG_REDUCE_MEMORY_CONSUMPTION_DONE]=&MessageProcessor::call_TAG_REDUCE_MEMORY_CONSUMPTION_DONE;
+	m_methods[TAG_START_REDUCTION]=&MessageProcessor::call_TAG_START_REDUCTION;
 }

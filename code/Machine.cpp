@@ -124,49 +124,8 @@ Machine::Machine(int argc,char**argv){
 	m_sd=new ScaffolderData();
 	m_cd=new ChooserData();
 
-	m_master_methods[MASTER_MODE_LOAD_CONFIG]=&Machine::call_MASTER_MODE_LOAD_CONFIG;
-	m_master_methods[MASTER_MODE_LOAD_SEQUENCES]=&Machine::call_MASTER_MODE_LOAD_SEQUENCES;
-	m_master_methods[MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION]=&Machine::call_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION;
-	m_master_methods[MASTER_MODE_SEND_COVERAGE_VALUES]=&Machine::call_MASTER_MODE_SEND_COVERAGE_VALUES;
-	m_master_methods[MASTER_MODE_TRIGGER_EDGES_DISTRIBUTION]=&Machine::call_MASTER_MODE_TRIGGER_EDGES_DISTRIBUTION;
-	m_master_methods[MASTER_MODE_START_EDGES_DISTRIBUTION]=&Machine::call_MASTER_MODE_START_EDGES_DISTRIBUTION;
-	m_master_methods[MASTER_MODE_DO_NOTHING]=&Machine::call_MASTER_MODE_DO_NOTHING;
-	m_master_methods[MASTER_MODE_UPDATE_DISTANCES]=&Machine::call_MASTER_MODE_UPDATE_DISTANCES;
-	m_master_methods[MASTER_MODE_ASK_EXTENSIONS]=&Machine::call_MASTER_MODE_ASK_EXTENSIONS;
-	m_master_methods[MASTER_MODE_AMOS]=&Machine::call_MASTER_MODE_AMOS;
-	m_master_methods[MASTER_MODE_PREPARE_DISTRIBUTIONS]=&Machine::call_MASTER_MODE_PREPARE_DISTRIBUTIONS;
-	m_master_methods[MASTER_MODE_TRIGGER_EDGES]=&Machine::call_MASTER_MODE_TRIGGER_EDGES;
-	m_master_methods[MASTER_MODE_TRIGGER_INDEXING]=&Machine::call_MASTER_MODE_TRIGGER_INDEXING;
-	m_master_methods[MASTER_MODE_INDEX_SEQUENCES]=&Machine::call_MASTER_MODE_INDEX_SEQUENCES;
-	m_master_methods[MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS]=&Machine::call_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS;
-	m_master_methods[MASTER_MODE_PREPARE_SEEDING]=&Machine::call_MASTER_MODE_PREPARE_SEEDING;
-	m_master_methods[MASTER_MODE_TRIGGER_SEEDING]=&Machine::call_MASTER_MODE_TRIGGER_SEEDING;
-	m_master_methods[MASTER_MODE_TRIGGER_DETECTION]=&Machine::call_MASTER_MODE_TRIGGER_DETECTION;
-	m_master_methods[MASTER_MODE_ASK_DISTANCES]=&Machine::call_MASTER_MODE_ASK_DISTANCES;
-	m_master_methods[MASTER_MODE_START_UPDATING_DISTANCES]=&Machine::call_MASTER_MODE_START_UPDATING_DISTANCES;
-	m_master_methods[MASTER_MODE_TRIGGER_EXTENSIONS]=&Machine::call_MASTER_MODE_TRIGGER_EXTENSIONS;
-	m_master_methods[MASTER_MODE_TRIGGER_FUSIONS]=&Machine::call_MASTER_MODE_TRIGGER_FUSIONS;
-	m_master_methods[MASTER_MODE_TRIGGER_FIRST_FUSIONS]=&Machine::call_MASTER_MODE_TRIGGER_FIRST_FUSIONS;
-	m_master_methods[MASTER_MODE_START_FUSION_CYCLE]=&Machine::call_MASTER_MODE_START_FUSION_CYCLE;
-
-	m_slave_methods[MODE_START_SEEDING]=&Machine::call_MODE_START_SEEDING;
-	m_slave_methods[MODE_DO_NOTHING]=&Machine::call_MODE_DO_NOTHING;
-	m_slave_methods[MODE_SEND_EXTENSION_DATA]=&Machine::call_MODE_SEND_EXTENSION_DATA;
-	m_slave_methods[MODE_ASSEMBLE_WAVES]=&Machine::call_MODE_ASSEMBLE_WAVES;
-	m_slave_methods[MODE_FUSION]=&Machine::call_MODE_FUSION;
-	m_slave_methods[MODE_PERFORM_CALIBRATION]=&Machine::call_MODE_PERFORM_CALIBRATION;
-	m_slave_methods[MODE_INDEX_SEQUENCES]=&Machine::call_MODE_INDEX_SEQUENCES;
-	m_slave_methods[MODE_FINISH_FUSIONS]=&Machine::call_MODE_FINISH_FUSIONS;
-	m_slave_methods[MODE_DISTRIBUTE_FUSIONS]=&Machine::call_MODE_DISTRIBUTE_FUSIONS;
-	m_slave_methods[MODE_AUTOMATIC_DISTANCE_DETECTION]=&Machine::call_MODE_AUTOMATIC_DISTANCE_DETECTION;
-	m_slave_methods[MODE_SEND_LIBRARY_DISTANCES]=&Machine::call_MODE_SEND_LIBRARY_DISTANCES;
-	m_slave_methods[MODE_EXTRACT_VERTICES]=&Machine::call_MODE_EXTRACT_VERTICES;
-	m_slave_methods[MODE_SEND_DISTRIBUTION]=&Machine::call_MODE_SEND_DISTRIBUTION;
-	m_slave_methods[MODE_PROCESS_INGOING_EDGES]=&Machine::call_MODE_PROCESS_INGOING_EDGES;
-	m_slave_methods[MODE_PROCESS_OUTGOING_EDGES]=&Machine::call_MODE_PROCESS_OUTGOING_EDGES;
-	m_slave_methods[MODE_EXTENSION]=&Machine::call_MODE_EXTENSION;
-
-
+	assignMasterHandlers();
+	assignSlaveHandlers();
 }
 
 void Machine::start(){
@@ -633,6 +592,7 @@ void Machine::call_MASTER_MODE_TRIGGER_INDEXING(){
 }
 
 void Machine::call_MASTER_MODE_PREPARE_DISTRIBUTIONS(){
+	cout<<endl;
 	m_numberOfMachinesDoneSendingVertices=-1;
 	for(int i=0;i<getSize();i++){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG, i, TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION,getRank());
@@ -765,9 +725,7 @@ void Machine::call_MASTER_MODE_ASK_DISTANCES(){
 
 void Machine::call_MASTER_MODE_START_UPDATING_DISTANCES(){
 	m_numberOfRanksDoneSendingDistances=-1;
-	cout<<"call_MASTER_MODE_START_UPDATING_DISTANCES"<<endl;
 	m_parameters.computeAverageDistances();
-	cout<<"DONE: m_parameters.computeAverageDistances()"<<endl;
 	m_mode=MODE_DO_NOTHING;
 	m_master_mode=MASTER_MODE_UPDATE_DISTANCES;
 	m_fileId=0;
@@ -1342,4 +1300,91 @@ int Machine::vertexRank(uint64_t a){
 	return uniform_hashing_function_1_64_64(a)%getSize();
 }
 
+void Machine::call_MASTER_MODE_ASK_BEGIN_REDUCTION(){
+	for(int i=0;i<getSize();i++){
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_ASK_BEGIN_REDUCTION,getRank());
+		m_outbox.push_back(aMessage);
+	}
+	m_master_mode=MASTER_MODE_DO_NOTHING;
+}
 
+void Machine::call_MASTER_MODE_START_REDUCTION(){
+	printf("Rank %i asks all ranks to reduce memory consumption\n",getRank());
+	fflush(stdout);
+	for(int i=0;i<getSize();i++){
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_START_REDUCTION,getRank());
+		m_outbox.push_back(aMessage);
+	}
+	m_master_mode=MASTER_MODE_DO_NOTHING;
+}
+
+void Machine::call_MODE_REDUCE_MEMORY_CONSUMPTION(){
+	if(m_reducer.reduce(&m_subgraph)){
+		m_mode=MODE_DO_NOTHING;
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,TAG_REDUCE_MEMORY_CONSUMPTION_DONE,getRank());
+		m_outbox.push_back(aMessage);
+		if(m_reducer.getNumberOfRemovedVertices()>0){
+			printf("Rank %i removed %i vertices to reduce memory consumption preemptively\n",getRank(),m_reducer.getNumberOfRemovedVertices());
+			fflush(stdout);
+		}
+		m_verticesExtractor.updateThreshold(&m_subgraph);
+	}
+}
+
+void Machine::call_MASTER_MODE_RESUME_VERTEX_DISTRIBUTION(){
+	for(int i=0;i<getSize();i++){
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,TAG_RESUME_VERTEX_DISTRIBUTION,getRank());
+		m_outbox.push_back(aMessage);
+	}
+	m_master_mode=MASTER_MODE_DO_NOTHING;
+}
+
+void Machine::assignMasterHandlers(){
+	m_master_methods[MASTER_MODE_LOAD_CONFIG]=&Machine::call_MASTER_MODE_LOAD_CONFIG;
+	m_master_methods[MASTER_MODE_LOAD_SEQUENCES]=&Machine::call_MASTER_MODE_LOAD_SEQUENCES;
+	m_master_methods[MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION]=&Machine::call_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION;
+	m_master_methods[MASTER_MODE_SEND_COVERAGE_VALUES]=&Machine::call_MASTER_MODE_SEND_COVERAGE_VALUES;
+	m_master_methods[MASTER_MODE_TRIGGER_EDGES_DISTRIBUTION]=&Machine::call_MASTER_MODE_TRIGGER_EDGES_DISTRIBUTION;
+	m_master_methods[MASTER_MODE_START_EDGES_DISTRIBUTION]=&Machine::call_MASTER_MODE_START_EDGES_DISTRIBUTION;
+	m_master_methods[MASTER_MODE_DO_NOTHING]=&Machine::call_MASTER_MODE_DO_NOTHING;
+	m_master_methods[MASTER_MODE_UPDATE_DISTANCES]=&Machine::call_MASTER_MODE_UPDATE_DISTANCES;
+	m_master_methods[MASTER_MODE_ASK_EXTENSIONS]=&Machine::call_MASTER_MODE_ASK_EXTENSIONS;
+	m_master_methods[MASTER_MODE_AMOS]=&Machine::call_MASTER_MODE_AMOS;
+	m_master_methods[MASTER_MODE_PREPARE_DISTRIBUTIONS]=&Machine::call_MASTER_MODE_PREPARE_DISTRIBUTIONS;
+	m_master_methods[MASTER_MODE_TRIGGER_EDGES]=&Machine::call_MASTER_MODE_TRIGGER_EDGES;
+	m_master_methods[MASTER_MODE_TRIGGER_INDEXING]=&Machine::call_MASTER_MODE_TRIGGER_INDEXING;
+	m_master_methods[MASTER_MODE_INDEX_SEQUENCES]=&Machine::call_MASTER_MODE_INDEX_SEQUENCES;
+	m_master_methods[MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS]=&Machine::call_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS;
+	m_master_methods[MASTER_MODE_PREPARE_SEEDING]=&Machine::call_MASTER_MODE_PREPARE_SEEDING;
+	m_master_methods[MASTER_MODE_TRIGGER_SEEDING]=&Machine::call_MASTER_MODE_TRIGGER_SEEDING;
+	m_master_methods[MASTER_MODE_TRIGGER_DETECTION]=&Machine::call_MASTER_MODE_TRIGGER_DETECTION;
+	m_master_methods[MASTER_MODE_ASK_DISTANCES]=&Machine::call_MASTER_MODE_ASK_DISTANCES;
+	m_master_methods[MASTER_MODE_START_UPDATING_DISTANCES]=&Machine::call_MASTER_MODE_START_UPDATING_DISTANCES;
+	m_master_methods[MASTER_MODE_TRIGGER_EXTENSIONS]=&Machine::call_MASTER_MODE_TRIGGER_EXTENSIONS;
+	m_master_methods[MASTER_MODE_TRIGGER_FUSIONS]=&Machine::call_MASTER_MODE_TRIGGER_FUSIONS;
+	m_master_methods[MASTER_MODE_TRIGGER_FIRST_FUSIONS]=&Machine::call_MASTER_MODE_TRIGGER_FIRST_FUSIONS;
+	m_master_methods[MASTER_MODE_START_FUSION_CYCLE]=&Machine::call_MASTER_MODE_START_FUSION_CYCLE;
+	m_master_methods[MASTER_MODE_ASK_BEGIN_REDUCTION]=&Machine::call_MASTER_MODE_ASK_BEGIN_REDUCTION;
+	m_master_methods[MASTER_MODE_RESUME_VERTEX_DISTRIBUTION]=&Machine::call_MASTER_MODE_RESUME_VERTEX_DISTRIBUTION;
+	m_master_methods[MASTER_MODE_START_REDUCTION]=&Machine::call_MASTER_MODE_START_REDUCTION;
+}
+
+void Machine::assignSlaveHandlers(){
+	m_slave_methods[MODE_START_SEEDING]=&Machine::call_MODE_START_SEEDING;
+	m_slave_methods[MODE_DO_NOTHING]=&Machine::call_MODE_DO_NOTHING;
+	m_slave_methods[MODE_SEND_EXTENSION_DATA]=&Machine::call_MODE_SEND_EXTENSION_DATA;
+	m_slave_methods[MODE_ASSEMBLE_WAVES]=&Machine::call_MODE_ASSEMBLE_WAVES;
+	m_slave_methods[MODE_FUSION]=&Machine::call_MODE_FUSION;
+	m_slave_methods[MODE_PERFORM_CALIBRATION]=&Machine::call_MODE_PERFORM_CALIBRATION;
+	m_slave_methods[MODE_INDEX_SEQUENCES]=&Machine::call_MODE_INDEX_SEQUENCES;
+	m_slave_methods[MODE_FINISH_FUSIONS]=&Machine::call_MODE_FINISH_FUSIONS;
+	m_slave_methods[MODE_DISTRIBUTE_FUSIONS]=&Machine::call_MODE_DISTRIBUTE_FUSIONS;
+	m_slave_methods[MODE_AUTOMATIC_DISTANCE_DETECTION]=&Machine::call_MODE_AUTOMATIC_DISTANCE_DETECTION;
+	m_slave_methods[MODE_SEND_LIBRARY_DISTANCES]=&Machine::call_MODE_SEND_LIBRARY_DISTANCES;
+	m_slave_methods[MODE_EXTRACT_VERTICES]=&Machine::call_MODE_EXTRACT_VERTICES;
+	m_slave_methods[MODE_SEND_DISTRIBUTION]=&Machine::call_MODE_SEND_DISTRIBUTION;
+	m_slave_methods[MODE_PROCESS_INGOING_EDGES]=&Machine::call_MODE_PROCESS_INGOING_EDGES;
+	m_slave_methods[MODE_PROCESS_OUTGOING_EDGES]=&Machine::call_MODE_PROCESS_OUTGOING_EDGES;
+	m_slave_methods[MODE_EXTENSION]=&Machine::call_MODE_EXTENSION;
+	m_slave_methods[MODE_REDUCE_MEMORY_CONSUMPTION]=&Machine::call_MODE_REDUCE_MEMORY_CONSUMPTION;
+}

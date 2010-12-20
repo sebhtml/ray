@@ -116,8 +116,70 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 void VerticesExtractor::constructor(int size){
 	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	setReadiness();
+	m_size=size;
+	m_ranksDoneWithReduction=0;
+	m_ranksReadyForReduction=0;
+	m_reductionPeriod=100000; // 2000000
+	m_thresholdForReduction=m_reductionPeriod;
+	m_triggered=false;
 }
 
 void VerticesExtractor::setReadiness(){
 	m_ready=true;
+}
+
+bool VerticesExtractor::mustRunReducer(){
+	return (int)m_ranksThatMustRunReducer.size()==m_size;
+}
+
+void VerticesExtractor::addRankForReduction(int a){
+	m_ranksThatMustRunReducer.insert(a);
+}
+
+void VerticesExtractor::resetRanksForReduction(){
+	m_ranksThatMustRunReducer.clear();
+}
+
+void VerticesExtractor::incrementRanksReadyForReduction(){
+	m_ranksReadyForReduction++;
+}
+
+bool VerticesExtractor::readyForReduction(){
+	return m_size==m_ranksReadyForReduction;
+}
+
+void VerticesExtractor::incrementRanksDoneWithReduction(){
+	m_ranksDoneWithReduction++;
+}
+
+bool VerticesExtractor::reductionIsDone(){
+	return m_size==m_ranksDoneWithReduction;
+}
+
+void VerticesExtractor::resetRanksReadyForReduction(){
+	m_ranksReadyForReduction=0;
+}
+
+void VerticesExtractor::resetRanksDoneForReduction(){
+	m_ranksDoneWithReduction=0;
+}
+
+void VerticesExtractor::updateThreshold(MyForest*a){
+	m_thresholdForReduction=a->size()+m_reductionPeriod;
+}
+
+uint64_t VerticesExtractor::getThreshold(){
+	return m_thresholdForReduction;
+}
+
+bool VerticesExtractor::isTriggered(){
+	return m_triggered;
+}
+
+void VerticesExtractor::trigger(){
+	m_triggered=true;
+}
+
+void VerticesExtractor::removeTrigger(){
+	m_triggered=false;
 }

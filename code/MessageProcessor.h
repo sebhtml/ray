@@ -121,64 +121,7 @@ class MessageProcessor{
 	int*m_numberOfRanksWithCoverageData;
 	SeedExtender*seedExtender;
 
-public:
-	void constructor(MessagesHandler*m_messagesHandler,
-SeedingData*seedingData,
-Library*m_library,
-bool*m_ready,
-VerticesExtractor*m_verticesExtractor,
-EdgesExtractor*m_edgesExtractor,
-SequencesLoader*m_sequencesLoader,
-ExtensionData*ed,
-			int*m_numberOfRanksDoneDetectingDistances,
-			int*m_numberOfRanksDoneSendingDistances,
-			Parameters*parameters,
-			MyForest*m_subgraph,
-			RingAllocator*m_outboxAllocator,
-				int rank,
-			int*m_numberOfMachinesDoneSendingEdges,
-			FusionData*m_fusionData,
-			int*m_wordSize,
-			int*m_minimumCoverage,
-			int*m_seedCoverage,
-			int*m_peakCoverage,
-			ArrayOfReads*m_myReads,
-		int size,
-	RingAllocator*m_inboxAllocator,
-	MyAllocator*m_persistentAllocator,
-	vector<int>*m_identifiers,
-	bool*m_mode_sendDistribution,
-	bool*m_alive,
-	bool*m_colorSpaceMode,
-	int*m_mode,
-	vector<vector<uint64_t> >*m_allPaths,
-	int*m_last_value,
-	int*m_ranksDoneAttachingReads,
-	int*m_DISTRIBUTE_n,
-	int*m_numberOfRanksDoneSeeding,
-	int*m_CLEAR_n,
-	int*m_readyToSeed,
-	int*m_FINISH_n,
-	bool*m_nextReductionOccured,
-	MyAllocator*m_directionsAllocator,
-	int*m_mode_send_coverage_iterator,
-	map<int,uint64_t>*m_coverageDistribution,
-	int*m_sequence_ready_machines,
-	int*m_numberOfMachinesReadyForEdgesDistribution,
-	int*m_numberOfMachinesReadyToSendDistribution,
-	bool*m_mode_send_outgoing_edges,
-	int*m_mode_send_vertices_sequence_id,
-	bool*m_mode_send_vertices,
-	int*m_numberOfMachinesDoneSendingVertices,
-	int*m_numberOfMachinesDoneSendingCoverage,
-				StaticVector*m_outbox,
-		map<int,int>*m_allIdentifiers,OpenAssemblerChooser*m_oa,
-int*m_numberOfRanksWithCoverageData,
-SeedExtender*seedExtender,int*m_master_mode,bool*m_isFinalFusion,
-SequencesIndexer*m_si
-);
-
-
+	void assignHandlers();
 
 	void call_TAG_WELCOME(Message*message);
 	void call_TAG_SEND_SEQUENCE(Message*message);
@@ -299,6 +242,69 @@ SequencesIndexer*m_si
 	void call_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY(Message*message);
 	void call_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY(Message*message);
 	void call_TAG_ASK_IS_ASSEMBLED_REPLY_END(Message*message);
+	void call_TAG_MUST_RUN_REDUCER(Message*message);
+	void call_TAG_ASK_BEGIN_REDUCTION(Message*message);
+	void call_TAG_ASK_BEGIN_REDUCTION_REPLY(Message*message);
+	void call_TAG_RESUME_VERTEX_DISTRIBUTION(Message*message);
+	void call_TAG_REDUCE_MEMORY_CONSUMPTION_DONE(Message*message);
+	void call_TAG_START_REDUCTION(Message*message);
+
+public:
+	void constructor(MessagesHandler*m_messagesHandler,
+SeedingData*seedingData,
+Library*m_library,
+bool*m_ready,
+VerticesExtractor*m_verticesExtractor,
+EdgesExtractor*m_edgesExtractor,
+SequencesLoader*m_sequencesLoader,
+ExtensionData*ed,
+			int*m_numberOfRanksDoneDetectingDistances,
+			int*m_numberOfRanksDoneSendingDistances,
+			Parameters*parameters,
+			MyForest*m_subgraph,
+			RingAllocator*m_outboxAllocator,
+				int rank,
+			int*m_numberOfMachinesDoneSendingEdges,
+			FusionData*m_fusionData,
+			int*m_wordSize,
+			int*m_minimumCoverage,
+			int*m_seedCoverage,
+			int*m_peakCoverage,
+			ArrayOfReads*m_myReads,
+		int size,
+	RingAllocator*m_inboxAllocator,
+	MyAllocator*m_persistentAllocator,
+	vector<int>*m_identifiers,
+	bool*m_mode_sendDistribution,
+	bool*m_alive,
+	bool*m_colorSpaceMode,
+	int*m_mode,
+	vector<vector<uint64_t> >*m_allPaths,
+	int*m_last_value,
+	int*m_ranksDoneAttachingReads,
+	int*m_DISTRIBUTE_n,
+	int*m_numberOfRanksDoneSeeding,
+	int*m_CLEAR_n,
+	int*m_readyToSeed,
+	int*m_FINISH_n,
+	bool*m_nextReductionOccured,
+	MyAllocator*m_directionsAllocator,
+	int*m_mode_send_coverage_iterator,
+	map<int,uint64_t>*m_coverageDistribution,
+	int*m_sequence_ready_machines,
+	int*m_numberOfMachinesReadyForEdgesDistribution,
+	int*m_numberOfMachinesReadyToSendDistribution,
+	bool*m_mode_send_outgoing_edges,
+	int*m_mode_send_vertices_sequence_id,
+	bool*m_mode_send_vertices,
+	int*m_numberOfMachinesDoneSendingVertices,
+	int*m_numberOfMachinesDoneSendingCoverage,
+				StaticVector*m_outbox,
+		map<int,int>*m_allIdentifiers,OpenAssemblerChooser*m_oa,
+int*m_numberOfRanksWithCoverageData,
+SeedExtender*seedExtender,int*m_master_mode,bool*m_isFinalFusion,
+SequencesIndexer*m_si
+);
 
 	void processMessage(Message*message);
 	MessageProcessor();

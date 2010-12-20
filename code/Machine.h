@@ -28,6 +28,7 @@
 #include<MyForest.h>
 #include<EdgesExtractor.h>
 #include<ArrayOfReads.h>
+#include<MemoryConsumptionReducer.h>
 #include<StaticVector.h>
 #include<SeedingData.h>
 #include<map>
@@ -126,6 +127,8 @@ class Machine{
 
 	int m_mode;
 	int m_master_mode;
+
+	MemoryConsumptionReducer m_reducer;
 
 	// TODO: merge all m_mode_* variables with m_mode and m_master_mode.
 	bool m_startEdgeDistribution;
@@ -271,6 +274,8 @@ class Machine{
 	void depthFirstSearch(uint64_t root,uint64_t a,int b);
 	void showUsage();
 	
+	void assignMasterHandlers();
+	void assignSlaveHandlers();
 
 	void call_MASTER_MODE_LOAD_CONFIG();
 	void call_MASTER_MODE_LOAD_SEQUENCES();
@@ -284,6 +289,10 @@ class Machine{
 	void call_MASTER_MODE_PREPARE_DISTRIBUTIONS();
 	void call_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS();
 	void call_MASTER_MODE_PREPARE_SEEDING();
+	void call_MASTER_MODE_ASK_BEGIN_REDUCTION();
+	void call_MASTER_MODE_RESUME_VERTEX_DISTRIBUTION();
+	void call_MASTER_MODE_START_REDUCTION();
+
 	void call_MODE_ASSEMBLE_WAVES();
 	void call_MODE_PERFORM_CALIBRATION();
 	void call_MODE_FINISH_FUSIONS();
@@ -313,6 +322,7 @@ class Machine{
 	void call_MASTER_MODE_DO_NOTHING();
 	void call_MODE_DO_NOTHING();
 	void call_MODE_INDEX_SEQUENCES();
+	void call_MODE_REDUCE_MEMORY_CONSUMPTION();
 
 public:
 	/*

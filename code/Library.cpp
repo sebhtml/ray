@@ -261,7 +261,7 @@ void Library::sendLibraryDistances(){
 		m_bufferedData.addAt(MASTER_RANK,library);
 		m_bufferedData.addAt(MASTER_RANK,distance);
 		m_bufferedData.addAt(MASTER_RANK,count);
-		cout<<getRank()<<" addAt "<<library<<" "<<distance<<" "<<count<<endl;
+
 		if(m_bufferedData.flush(MASTER_RANK,3,TAG_LIBRARY_DISTANCE,m_outboxAllocator,m_outbox,getRank(),false)){
 			m_ready=false;
 		}

@@ -19,33 +19,27 @@
 
 */
 
+#include<MemoryConsumptionReducer.h>
 
+MemoryConsumptionReducer::MemoryConsumptionReducer(){
+	m_initiated=false;
+}
 
-#ifndef _MyForest
-#define _MyForest
+bool MemoryConsumptionReducer::reduce(MyForest*a){
+	if(!m_initiated){
+		m_iterator.constructor(a);
+		m_initiated=true;
+		m_removedVertices=0;
+		return false;
+	}else if(m_iterator.hasNext()){
+		m_iterator.next();
+		return false;
+	}else{
+		m_initiated=false;
+		return true;
+	}
+}
 
-#include<SplayTree.h>
-#include<Vertex.h>
-#include<MyAllocator.h>
-#include<common_functions.h>
-
-class MyForest{
-	int m_numberOfTrees;
-	uint64_t m_size;
-	SplayTree<uint64_t,Vertex>*m_trees;
-	bool m_inserted;
-	int getTreeIndex(uint64_t i);
-
-public:
-	void constructor(int count,MyAllocator*allocator);
-	uint64_t size();
-	int getNumberOfTrees();
-	SplayTree<uint64_t,Vertex>*getTree(int i);
-	SplayNode<uint64_t,Vertex>*find(uint64_t key);
-	SplayNode<uint64_t,Vertex>*insert(uint64_t key);
-	bool inserted();
-	void freeze();
-	void show(int rank,const char*a);
-};
-
-#endif
+int MemoryConsumptionReducer::getNumberOfRemovedVertices(){
+	return m_removedVertices;
+}

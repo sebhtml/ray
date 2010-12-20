@@ -19,33 +19,23 @@
 
 */
 
+#ifndef _MemoryConsumptionReducer
+#define _MemoryConsumptionReducer
 
+#include<MyForestIterator.h>
+#include<MyForest.h>
 
-#ifndef _MyForest
-#define _MyForest
-
-#include<SplayTree.h>
-#include<Vertex.h>
-#include<MyAllocator.h>
-#include<common_functions.h>
-
-class MyForest{
-	int m_numberOfTrees;
-	uint64_t m_size;
-	SplayTree<uint64_t,Vertex>*m_trees;
-	bool m_inserted;
-	int getTreeIndex(uint64_t i);
-
+class MemoryConsumptionReducer{
+	MyForestIterator m_iterator;
+	bool m_initiated;
+	int m_removedVertices;
 public:
-	void constructor(int count,MyAllocator*allocator);
-	uint64_t size();
-	int getNumberOfTrees();
-	SplayTree<uint64_t,Vertex>*getTree(int i);
-	SplayNode<uint64_t,Vertex>*find(uint64_t key);
-	SplayNode<uint64_t,Vertex>*insert(uint64_t key);
-	bool inserted();
-	void freeze();
-	void show(int rank,const char*a);
+	MemoryConsumptionReducer();
+	/*
+ 	* returns true if done
+ 	*/
+	bool reduce(MyForest*a);
+	int getNumberOfRemovedVertices();
 };
 
 #endif

@@ -146,7 +146,8 @@ const char*__TAG_NAMES[]={
 "TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY",
 "TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY",
 "TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY",
-"TAG_ASK_IS_ASSEMBLED_REPLY_END"
+"TAG_ASK_IS_ASSEMBLED_REPLY_END",
+"TAG_MUST_RUN_REDUCER"
 };
 
 #define ASSERT 
@@ -166,7 +167,7 @@ void MessagesHandler::sendMessages(StaticVector*outbox,int source){
 		//      Synchronous nonblocking. Note that a Wait/Test will complete only when the matching receive is posted
 		#ifdef ASSERT
 		if(aMessage->getBuffer()==NULL && aMessage->getCount()>0){
-			cout<<"tag="<<__TAG_NAMES[aMessage->getTag()]<<endl;
+			//cout<<"tag="<<__TAG_NAMES[aMessage->getTag()]<<endl;
 		}
 		assert(!(aMessage->getBuffer()==NULL && aMessage->getCount()>0));
 		#endif
@@ -244,9 +245,9 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 
 		if(m_rank==0 && source==0){
 			if(tag==TAG_REQUEST_VERTEX_INGOING_EDGES){
-				cout<<"Self="<<m_rank<<" Source="<<source<<" Tag="<<__TAG_NAMES[tag]<<" Vertex="<<incoming[0]<<endl;
+				//cout<<"Self="<<m_rank<<" Source="<<source<<" Tag="<<__TAG_NAMES[tag]<<" Vertex="<<incoming[0]<<endl;
 			}else if(tag==TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY){
-				cout<<"Self="<<m_rank<<" Source="<<source<<" Tag="<<__TAG_NAMES[tag]<<endl;
+				//cout<<"Self="<<m_rank<<" Source="<<source<<" Tag="<<__TAG_NAMES[tag]<<endl;
 			}
 		}
 		#endif
@@ -269,9 +270,9 @@ void MessagesHandler::showStats(){
 		int source=i->first;
 		cout<<" source="<<source<<endl;
 		for(map<int,int>::iterator j=i->second.begin();j!=i->second.end();j++){
-			int tag=j->first;
-			int count=j->second;
-			cout<<__TAG_NAMES[tag]<<" "<<count<<endl;
+			//int tag=j->first;
+			//int count=j->second;
+			//cout<<__TAG_NAMES[tag]<<" "<<count<<endl;
 		}
 	}
 	cout<<endl;
