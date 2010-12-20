@@ -759,10 +759,12 @@ void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message){
 		int rank=incoming[i+1];
 		int sequenceIdOnDestination=(int)incoming[i+2];
 		char strand=(char)incoming[i+3];
-		#ifdef ASSERT
-		assert(m_subgraph->find(vertex)!=NULL);
-		#endif
-		m_subgraph->find(vertex)->getValue()->addRead(rank,sequenceIdOnDestination,strand,&(*m_persistentAllocator));
+		SplayNode<uint64_t,Vertex>*node=m_subgraph->find(vertex);
+
+		if(node==NULL){
+			continue;
+		}
+		node->getValue()->addRead(rank,sequenceIdOnDestination,strand,&(*m_persistentAllocator));
 	}
 }
 
