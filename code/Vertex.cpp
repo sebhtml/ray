@@ -103,7 +103,7 @@ void Vertex::addIngoingEdge_ClassicMethod(uint64_t a,int k){
 }
 #endif
 
-void Vertex::addIngoingEdge(uint64_t a,int k,MyAllocator*m){
+void Vertex::addIngoingEdge(uint64_t a,int k){
 	#ifdef USE_DISTANT_SEGMENTS_GRAPH
 	VertexLinkedList*t=m_ingoingEdges;
 	while(t!=NULL){
@@ -139,7 +139,7 @@ void Vertex::addOutgoingEdge_ClassicMethod(uint64_t a,int k){
 
 #endif
 
-void Vertex::addOutgoingEdge(uint64_t a,int k,MyAllocator*m){
+void Vertex::addOutgoingEdge(uint64_t a,int k){
 	#ifdef USE_DISTANT_SEGMENTS_GRAPH
 	VertexLinkedList*t=m_outgoingEdges;
 	while(t!=NULL){

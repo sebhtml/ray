@@ -248,6 +248,10 @@ class MessageProcessor{
 	void call_RAY_MPI_TAG_RESUME_VERTEX_DISTRIBUTION(Message*message);
 	void call_RAY_MPI_TAG_REDUCE_MEMORY_CONSUMPTION_DONE(Message*message);
 	void call_RAY_MPI_TAG_START_REDUCTION(Message*message);
+	void call_RAY_MPI_TAG_OUT_EDGES_DATA_VERIFIED(Message*message);
+	void call_RAY_MPI_TAG_OUT_EDGES_DATA_VERIFY(Message*message);
+	void call_RAY_MPI_TAG_IN_EDGES_DATA_VERIFY(Message*message);
+	void call_RAY_MPI_TAG_IN_EDGES_DATA_VERIFIED(Message*message);
 
 public:
 	void constructor(MessagesHandler*m_messagesHandler,

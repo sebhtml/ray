@@ -192,6 +192,7 @@ class Machine{
 	
 	// allocator for persistent data
 	MyAllocator m_persistentAllocator;
+	MyAllocator m_treeAllocator;
 
 	// allocator for directions in the de Bruijn graph
 	MyAllocator m_directionsAllocator;

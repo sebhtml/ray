@@ -80,8 +80,8 @@ public:
 	void constructor();
 	void setCoverage(int coverage);
 	int getCoverage();
-	void addOutgoingEdge(uint64_t a,int k,MyAllocator*m);
-	void addIngoingEdge(uint64_t a,int k,MyAllocator*m);
+	void addOutgoingEdge(uint64_t a,int k);
+	void addIngoingEdge(uint64_t a,int k);
 	void addRead(int rank,int i,char c,MyAllocator*allocator);
 	bool isAssembled();
 	void assemble();

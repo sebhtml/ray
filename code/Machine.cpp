@@ -167,6 +167,8 @@ void Machine::start(){
 	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
 	m_directionsAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
 
+	m_treeAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
+
 	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
 	m_master_mode=RAY_MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 	m_mode_AttachSequences=false;
@@ -266,7 +268,7 @@ void Machine::start(){
 	&m_parameters,&m_fileId,m_seedingData);
 
 
-	m_subgraph.constructor(numberOfTrees,&m_persistentAllocator);
+	m_subgraph.constructor(numberOfTrees,&m_treeAllocator);
 	
 	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),&m_outbox,&m_outboxAllocator,&m_seedCoverage,&m_slave_mode,&m_parameters,&m_wordSize,&m_subgraph,
 		&m_colorSpaceMode);
