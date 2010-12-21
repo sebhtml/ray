@@ -66,11 +66,9 @@ map<uint64_t,int>*coverages){
 	if((*coverages)[root]==m_parameters->getMaxCoverage()){
 		return false;
 	}
-	#ifdef DEBUG_BUBBLES
-	int m_wordSize=m_parameters->getWordSize();
-	#endif
 
 	#ifdef ASSERT
+	int m_wordSize=m_parameters->getWordSize();
 	for(int i=0;i<(int)trees->size();i++){
 		for(int j=0;j<(int)trees->at(i).size();j+=2){
 			uint64_t a=trees->at(i).at(j+0);

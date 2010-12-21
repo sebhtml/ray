@@ -130,14 +130,10 @@ class MessageProcessor{
 	void call_RAY_MPI_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS(Message*message);
 	void call_RAY_MPI_TAG_VERTICES_DATA(Message*message);
 	void call_RAY_MPI_TAG_VERTICES_DISTRIBUTED(Message*message);
-	void call_RAY_MPI_TAG_VERTEX_PTR_REQUEST(Message*message);
-	void call_RAY_MPI_TAG_OUT_EDGE_DATA_WITH_PTR(Message*message);
 	void call_RAY_MPI_TAG_OUT_EDGES_DATA(Message*message);
-	void call_RAY_MPI_TAG_SHOW_VERTICES(Message*message);
 	void call_RAY_MPI_TAG_START_VERTICES_DISTRIBUTION(Message*message);
 	void call_RAY_MPI_TAG_EDGES_DISTRIBUTED(Message*message);
 	void call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message);
-	void call_RAY_MPI_TAG_IN_EDGE_DATA_WITH_PTR(Message*message);
 	void call_RAY_MPI_TAG_START_EDGES_DISTRIBUTION(Message*message);
 	void call_RAY_MPI_TAG_START_EDGES_DISTRIBUTION_ASK(Message*message);
 	void call_RAY_MPI_TAG_START_EDGES_DISTRIBUTION_ANSWER(Message*message);
@@ -161,15 +157,11 @@ class MessageProcessor{
 	void call_RAY_MPI_TAG_SET_WORD_SIZE(Message*message);
 	void call_RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS(Message*message);
 	void call_RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY(Message*message);
-	void call_RAY_MPI_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER(Message*message);
-	void call_RAY_MPI_TAG_FORWARD_TO_ATTACH_SEQUENCE_POINTER_REPLY(Message*message);
 	void call_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES(Message*message);
 	void call_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY(Message*message);
 	void call_RAY_MPI_TAG_EXTENSION_IS_DONE(Message*message);
 	void call_RAY_MPI_TAG_ASK_EXTENSION(Message*message);
 	void call_RAY_MPI_TAG_ASK_IS_ASSEMBLED(Message*message);
-	void call_RAY_MPI_TAG_ASK_REVERSE_COMPLEMENT(Message*message);
-	void call_RAY_MPI_TAG_REQUEST_VERTEX_POINTER(Message*message);
 	void call_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY(Message*message);
 	void call_RAY_MPI_TAG_MARK_AS_ASSEMBLED(Message*message);
 	void call_RAY_MPI_TAG_ASK_EXTENSION_DATA(Message*message);
@@ -248,10 +240,14 @@ class MessageProcessor{
 	void call_RAY_MPI_TAG_RESUME_VERTEX_DISTRIBUTION(Message*message);
 	void call_RAY_MPI_TAG_REDUCE_MEMORY_CONSUMPTION_DONE(Message*message);
 	void call_RAY_MPI_TAG_START_REDUCTION(Message*message);
-	void call_RAY_MPI_TAG_OUT_EDGES_DATA_VERIFIED(Message*message);
-	void call_RAY_MPI_TAG_OUT_EDGES_DATA_VERIFY(Message*message);
-	void call_RAY_MPI_TAG_IN_EDGES_DATA_VERIFY(Message*message);
-	void call_RAY_MPI_TAG_IN_EDGES_DATA_VERIFIED(Message*message);
+	void call_RAY_MPI_TAG_VERIFY_INGOING_EDGES(Message*message);
+	void call_RAY_MPI_TAG_VERIFY_INGOING_EDGES_REPLY(Message*message);
+	void call_RAY_MPI_TAG_VERIFY_OUTGOING_EDGES_REPLY(Message*message);
+	void call_RAY_MPI_TAG_VERIFY_OUTGOING_EDGES(Message*message);
+	void call_RAY_MPI_TAG_VERIFY_INGOING_EDGES_FORCE(Message*message);
+	void call_RAY_MPI_TAG_VERIFY_INGOING_EDGES_REPLY_FORCE(Message*message);
+	void call_RAY_MPI_TAG_VERIFY_OUTGOING_EDGES_REPLY_FORCE(Message*message);
+	void call_RAY_MPI_TAG_VERIFY_OUTGOING_EDGES_FORCE(Message*message);
 
 public:
 	void constructor(MessagesHandler*m_messagesHandler,

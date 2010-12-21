@@ -33,7 +33,11 @@ using namespace std;
 
 class EdgesExtractor{
 	bool m_ready;
-	BufferedData m_bufferedData;
+
+	BufferedData m_bufferedDataForVerifications;
+	BufferedData m_bufferedDataForEdges;
+
+	int m_last;
 
 public:
 	ArrayOfReads*m_myReads;
@@ -56,6 +60,8 @@ public:
 	void processIngoingEdges();
 	EdgesExtractor();
 	void setReadiness();
+	void receiveIngoingEdges(uint64_t*a,int b,bool force);
+	void receiveOutgoingEdges(uint64_t*a,int b,bool force);
 };
 
 #endif

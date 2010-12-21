@@ -37,12 +37,16 @@ EdgesExtractor::EdgesExtractor(){
 }
 
 void EdgesExtractor::constructor(int size){
-	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	m_last=-1;
+	m_bufferedDataForVerifications.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	m_bufferedDataForEdges.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 }
 
 void EdgesExtractor::processOutgoingEdges(){
 
-	if((m_mode_send_edge_sequence_id)%100000==0 and (m_mode_send_edge_sequence_id_position)==0){
+	if((m_mode_send_edge_sequence_id)%100000==0 and (m_mode_send_edge_sequence_id_position)==0 
+		&& m_last!=m_mode_send_edge_sequence_id){
+		m_last=m_mode_send_edge_sequence_id;
 		string strand="";
 		if(m_reverseComplementEdge){
 			strand="(reverse complement) ";
@@ -55,12 +59,16 @@ void EdgesExtractor::processOutgoingEdges(){
 		if(m_reverseComplementEdge==false){
 			(m_mode_send_edge_sequence_id_position)=0;
 			m_reverseComplementEdge=true;
-			m_bufferedData.flushAll(RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
+			if(m_bufferedDataForVerifications.flushAll(RAY_MPI_TAG_VERIFY_OUTGOING_EDGES_FORCE,m_outboxAllocator,m_outbox,getRank)){
+				m_ready=false;
+			}
 			printf("Rank %i is adding outgoing edges [%i/%i] (completed)\n",getRank,(int)m_myReads->size(),(int)m_myReads->size());
 			fflush(stdout);
 			(m_mode_send_edge_sequence_id)=0;
 		}else{
-			m_bufferedData.flushAll(RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
+			if(m_bufferedDataForVerifications.flushAll(RAY_MPI_TAG_VERIFY_OUTGOING_EDGES_FORCE,m_outboxAllocator,m_outbox,getRank)){
+				m_ready=false;
+			}
 			(*m_mode_send_outgoing_edges)=false;
 			(*m_mode)=RAY_SLAVE_MODE_PROCESS_INGOING_EDGES;
 			(*m_mode_send_ingoing_edges)=true;
@@ -96,18 +104,18 @@ void EdgesExtractor::processOutgoingEdges(){
 			if(m_reverseComplementEdge){
 				uint64_t b_1=complementVertex(a_2,m_wordSize,m_colorSpaceMode);
 				uint64_t b_2=complementVertex(a_1,m_wordSize,m_colorSpaceMode);
-				int rankB=vertexRank(b_1,getSize);
-				rankToFlush=rankB;
-				m_bufferedData.addAt(rankB,b_1);
-				m_bufferedData.addAt(rankB,b_2);
+				rankToFlush=vertexRank(b_2,getSize);
+		
+				m_bufferedDataForVerifications.addAt(rankToFlush,b_1);
+				m_bufferedDataForVerifications.addAt(rankToFlush,b_2);
 			}else{
-				int rankA=vertexRank(a_1,getSize);
-				rankToFlush=rankA;
-				m_bufferedData.addAt(rankA,a_1);
-				m_bufferedData.addAt(rankA,a_2);
+				rankToFlush=vertexRank(a_2,getSize);
+
+				m_bufferedDataForVerifications.addAt(rankToFlush,a_1);
+				m_bufferedDataForVerifications.addAt(rankToFlush,a_2);
 			}
 			
-			if(m_bufferedData.flush(rankToFlush,2,RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,false)){
+			if(m_bufferedDataForVerifications.flush(rankToFlush,2,RAY_MPI_TAG_VERIFY_OUTGOING_EDGES,m_outboxAllocator,m_outbox,getRank,false)){
 				m_ready=false;
 			}
 		}
@@ -118,7 +126,9 @@ void EdgesExtractor::processOutgoingEdges(){
 
 void EdgesExtractor::processIngoingEdges(){
 	#ifdef SHOW_PROGRESS
-	if(m_mode_send_edge_sequence_id%100000==0 and m_mode_send_edge_sequence_id_position==0){
+	if(m_mode_send_edge_sequence_id%100000==0 and m_mode_send_edge_sequence_id_position==0
+	&& m_last!=m_mode_send_edge_sequence_id){
+		m_last=m_mode_send_edge_sequence_id;
 		string strand="";
 		if(m_reverseComplementEdge){
 			strand="(reverse complement) ";
@@ -133,23 +143,25 @@ void EdgesExtractor::processIngoingEdges(){
 		if(m_reverseComplementEdge==false){
 			m_reverseComplementEdge=true;
 			m_mode_send_edge_sequence_id_position=0;
-			m_bufferedData.flushAll(RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
+			if(m_bufferedDataForVerifications.flushAll(RAY_MPI_TAG_VERIFY_INGOING_EDGES_FORCE,m_outboxAllocator,m_outbox,getRank)){
+				m_ready=false;
+			}
 		
 			printf("Rank %i is adding ingoing edges [%i/%i] (completed)\n",getRank,(int)m_myReads->size(),(int)m_myReads->size());
 			fflush(stdout);
 			m_mode_send_edge_sequence_id=0;
 		}else{
-			m_bufferedData.flushAll(RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank);
+			if(m_bufferedDataForVerifications.flushAll(RAY_MPI_TAG_VERIFY_INGOING_EDGES_FORCE,m_outboxAllocator,m_outbox,getRank)){
+				m_ready=false;
+			}
+
 			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, RAY_MPI_TAG_EDGES_DISTRIBUTED,getRank);
 			m_outbox->push_back(aMessage);
 			(*m_mode_send_ingoing_edges)=false;
 			(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 
-
 			printf("Rank %i is adding ingoing edges (reverse complement) [%i/%i] (completed)\n",getRank,m_mode_send_edge_sequence_id,(int)m_myReads->size());
 			fflush(stdout);
-
-			m_bufferedData.clear();
 		}
 	}else{
 
@@ -165,7 +177,6 @@ void EdgesExtractor::processIngoingEdges(){
 			return;
 		}
 
-			
 		memcpy(memory,readSequence+m_mode_send_edge_sequence_id_position,m_wordSize+1);
 		memory[m_wordSize+1]='\0';
 		if(isValidDNA(memory)){
@@ -180,26 +191,25 @@ void EdgesExtractor::processIngoingEdges(){
 			if(m_reverseComplementEdge){
 				uint64_t b_1=complementVertex(a_2,m_wordSize,m_colorSpaceMode);
 				uint64_t b_2=complementVertex(a_1,m_wordSize,m_colorSpaceMode);
-				int rankB=vertexRank(b_2,getSize);
-				rankToFlush=rankB;
-				m_bufferedData.addAt(rankB,b_1);
-				m_bufferedData.addAt(rankB,b_2);
+				rankToFlush=vertexRank(b_1,getSize);
+
+				m_bufferedDataForVerifications.addAt(rankToFlush,b_1);
+				m_bufferedDataForVerifications.addAt(rankToFlush,b_2);
 			}else{
-				int rankA=vertexRank(a_2,getSize);
-				rankToFlush=rankA;
-				m_bufferedData.addAt(rankA,a_1);
-				m_bufferedData.addAt(rankA,a_2);
+				rankToFlush=vertexRank(a_1,getSize);
+
+				m_bufferedDataForVerifications.addAt(rankToFlush,a_1);
+				m_bufferedDataForVerifications.addAt(rankToFlush,a_2);
 			}
 
 			// flush data
 
-			if(m_bufferedData.flush(rankToFlush,2,RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,false)){
+			if(m_bufferedDataForVerifications.flush(rankToFlush,2,RAY_MPI_TAG_VERIFY_INGOING_EDGES,m_outboxAllocator,m_outbox,getRank,false)){
 				m_ready=false;
 			}
 		}
 
 		m_mode_send_edge_sequence_id_position++;
-
 
 		if(m_mode_send_edge_sequence_id_position>lll){
 			m_mode_send_edge_sequence_id++;
@@ -208,5 +218,36 @@ void EdgesExtractor::processIngoingEdges(){
 	}
 }
 
+void EdgesExtractor::receiveOutgoingEdges(uint64_t*a,int b,bool force){
+	m_ready=true;
+	for(int i=0;i<b;i+=2){
+		uint64_t prefix=a[i+0];
+		uint64_t suffix=a[i+1];
+		int destination=vertexRank(prefix,getSize);
+		m_bufferedDataForEdges.addAt(destination,prefix);
+		m_bufferedDataForEdges.addAt(destination,suffix);
+		if(m_bufferedDataForEdges.flush(destination,2,RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,false)){
+			m_ready=false;
+		}
+	}
+	if(force && m_bufferedDataForEdges.flushAll(RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,getRank)){
+		m_ready=false;
+	}
+}
 
-
+void EdgesExtractor::receiveIngoingEdges(uint64_t*a,int b,bool force){
+	m_ready=true;
+	for(int i=0;i<b;i+=2){
+		uint64_t prefix=a[i+0];
+		uint64_t suffix=a[i+1];
+		int destination=vertexRank(suffix,getSize);
+		m_bufferedDataForEdges.addAt(destination,prefix);
+		m_bufferedDataForEdges.addAt(destination,suffix);
+		if(m_bufferedDataForEdges.flush(destination,2,RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank,false)){
+			m_ready=false;
+		}
+	}
+	if(force && m_bufferedDataForEdges.flushAll(RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,getRank)){
+		m_ready=false;
+	}
+}

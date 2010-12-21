@@ -48,6 +48,9 @@ void*RingAllocator::allocate(int a){
 		cout<<a<<endl;
 	}
 	#endif
+	if(a>m_max){
+		cout<<a<<endl;
+	}
 	assert(a<=m_max);
 	void*address=(void*)(m_memory+m_current*m_max);
 	m_current++;
