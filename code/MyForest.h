@@ -45,6 +45,7 @@ public:
 	SplayNode<uint64_t,Vertex>*insert(uint64_t key);
 	bool inserted();
 	void freeze();
+	void unfreeze();
 	void show(int rank,const char*a);
 };
 

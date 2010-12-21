@@ -248,6 +248,7 @@ class MessageProcessor{
 	void call_RAY_MPI_TAG_VERIFY_INGOING_EDGES_REPLY_FORCE(Message*message);
 	void call_RAY_MPI_TAG_VERIFY_OUTGOING_EDGES_REPLY_FORCE(Message*message);
 	void call_RAY_MPI_TAG_VERIFY_OUTGOING_EDGES_FORCE(Message*message);
+	void call_RAY_MPI_TAG_REQUEST_VERTEX_EDGES(Message*message);
 
 public:
 	void constructor(MessagesHandler*m_messagesHandler,

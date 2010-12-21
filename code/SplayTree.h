@@ -57,6 +57,7 @@ public:
 	~SplayTree();
 	// freeze the splay tree.
 	void freeze();
+	void unfreeze();
 	void remove(KEY key);
 	SplayNode<KEY,VALUE>*insert(KEY key);
 	SplayNode<KEY,VALUE>*find(KEY key);
@@ -255,6 +256,11 @@ void SplayTree<KEY,VALUE>::print(){
 template<class KEY,class VALUE>
 void SplayTree<KEY,VALUE>::freeze(){
 	m_frozen=true;
+}
+
+template<class KEY,class VALUE>
+void SplayTree<KEY,VALUE>::unfreeze(){
+	m_frozen=false;
 }
 
 template<class KEY,class VALUE>

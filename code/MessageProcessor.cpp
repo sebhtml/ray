@@ -129,7 +129,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERIFY_OUTGOING_EDGES_REPLY(Message*mess
 	m_edgesExtractor->receiveOutgoingEdges(incoming,count,false);
 }
 
-void MessageProcessor::call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY(Message*aMessage){
 	m_verticesExtractor->incrementRanksReadyForReduction();
 	if(m_verticesExtractor->readyForReduction()){
 		(*m_master_mode)=RAY_MASTER_MODE_START_REDUCTION;
@@ -153,10 +153,14 @@ void MessageProcessor::call_RAY_MPI_TAG_REDUCE_MEMORY_CONSUMPTION_DONE(Message*m
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_START_REDUCTION(Message*message){
+	#ifdef ASSERT
+	m_verticesExtractor->assertBuffersAreEmpty();
+	#endif
 	(*m_mode)=RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION;
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION(Message*message){
+	m_verticesExtractor->flushAll(m_outboxAllocator,m_outbox,rank);
 	(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY,rank);
 	m_outbox->push_back(aMessage);
@@ -299,6 +303,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DISTRIBUTED(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA_REPLY(Message*message){
 	m_edgesExtractor->setReadiness();
+	m_verticesExtractor->setReadiness();
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA(Message*message){
@@ -343,6 +348,7 @@ void MessageProcessor::call_RAY_MPI_TAG_EDGES_DISTRIBUTED(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA_REPLY(Message*message){
 	m_edgesExtractor->setReadiness();
+	m_verticesExtractor->setReadiness();
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){
@@ -486,6 +492,9 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message)
 	uint64_t*incoming=(uint64_t*)buffer;
 	SplayNode<uint64_t,Vertex>*node=m_subgraph->find(incoming[0]);
 	#ifdef ASSERT
+	if(node==NULL){
+		cout<<idToWord(incoming[0],(*m_wordSize))<<endl;
+	}
 	assert(node!=NULL);
 	#endif
 	uint64_t coverage=node->getValue()->getCoverage();
@@ -534,6 +543,36 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES(Message*me
 		message2[i]=outgoingEdges[i];
 	}
 	Message aMessage(message2,outgoingEdges.size(),MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY,rank);
+	m_outbox->push_back(aMessage);
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_EDGES(Message*message){
+	void*buffer=message->getBuffer();
+	int source=message->getSource();
+	uint64_t*incoming=(uint64_t*)buffer;
+	SplayNode<uint64_t,Vertex>*node=m_subgraph->find(incoming[0]);
+	#ifdef ASSERT
+	assert(node!=NULL);
+	#endif
+	vector<uint64_t> outgoingEdges=node->getValue()->getOutgoingEdges(incoming[0],*m_wordSize);
+	vector<uint64_t> ingoingEdges=node->getValue()->getIngoingEdges(incoming[0],*m_wordSize);
+	int toAllocate=(2+outgoingEdges.size()+ingoingEdges.size());
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(toAllocate*sizeof(uint64_t));
+	int k=0;
+	message2[k++]=outgoingEdges.size();
+	for(int i=0;i<(int)outgoingEdges.size();i++){
+		message2[k++]=outgoingEdges[i];
+	}
+	message2[k++]=ingoingEdges.size();
+	for(int i=0;i<(int)ingoingEdges.size();i++){
+		message2[k++]=ingoingEdges[i];
+	}
+
+	#ifdef ASSERT
+	assert(k==(int)(outgoingEdges.size()+ingoingEdges.size()+2));
+	#endif
+
+	Message aMessage(message2,k,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -1657,4 +1696,5 @@ void MessageProcessor::assignHandlers(){
 	m_methods[RAY_MPI_TAG_VERIFY_INGOING_EDGES_REPLY_FORCE]=&MessageProcessor::call_RAY_MPI_TAG_VERIFY_INGOING_EDGES_REPLY_FORCE;
 	m_methods[RAY_MPI_TAG_VERIFY_OUTGOING_EDGES_REPLY_FORCE]=&MessageProcessor::call_RAY_MPI_TAG_VERIFY_OUTGOING_EDGES_REPLY_FORCE;
 	m_methods[RAY_MPI_TAG_VERIFY_OUTGOING_EDGES_FORCE]=&MessageProcessor::call_RAY_MPI_TAG_VERIFY_OUTGOING_EDGES_FORCE;
+	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_EDGES]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_EDGES;
 }

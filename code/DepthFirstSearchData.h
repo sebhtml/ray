@@ -32,7 +32,13 @@
 using namespace std;
 
 class DepthFirstSearchData{
+	bool m_outgoingEdgesDone;
+
 public:
+
+	bool m_maxDepthReached;
+	bool m_doChoice_tips_dfs_initiated;
+
 	// depth first search
 	bool m_doChoice_tips_Initiated;
 	bool m_doChoice_tips_dfs_done;
@@ -41,7 +47,6 @@ public:
 	MyStack<int> m_depthFirstSearchDepths;
 	int m_doChoice_tips_i;
 	vector<int> m_doChoice_tips_newEdges;
-	bool m_doChoice_tips_dfs_initiated;
 	set<uint64_t> m_depthFirstSearchVisitedVertices;
 	MyStack<uint64_t> m_depthFirstSearchVerticesToVisit;
 	vector<uint64_t> m_depthFirstSearchVisitedVertices_vector;
@@ -54,6 +59,15 @@ public:
 	RingAllocator*outboxAllocator,int size,int theRank,StaticVector*outbox,
  int*receivedVertexCoverage,vector<uint64_t>*receivedOutgoingEdges,
 		int minimumCoverage,bool*edgesReceived);
+
+	void depthFirstSearchBidirectional(uint64_t root,uint64_t a,int maxDepth,
+	bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
+	RingAllocator*outboxAllocator,int size,int theRank,StaticVector*outbox,
+ int*receivedVertexCoverage,vector<uint64_t>*receivedOutgoingEdges,
+		int minimumCoverage,bool*edgesReceived);
+
+
+
 
 };
 

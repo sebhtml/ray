@@ -585,7 +585,7 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_EDGES(){
 void Machine::call_RAY_MASTER_MODE_TRIGGER_INDEXING(){
 	m_numberOfMachinesDoneSendingEdges=-9;
 	m_master_mode=RAY_MASTER_RAY_SLAVE_MODE_DO_NOTHING;
-	m_timePrinter.printElapsedTime("Distribution of edges");
+	//m_timePrinter.printElapsedTime("Distribution of edges");
 	cout<<endl;
 	for(int i=0;i<getSize();i++){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_START_INDEXING_SEQUENCES,getRank());
@@ -605,7 +605,7 @@ void Machine::call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS(){
 
 void Machine::call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS(){
 	m_numberOfMachinesReadyToSendDistribution=-1;
-	m_timePrinter.printElapsedTime("Distribution of vertices");
+	m_timePrinter.printElapsedTime("Distribution of vertices and edges");
 	cout<<endl;
 	cout<<"Rank 0 computes the coverage distribution."<<endl;
 
@@ -1321,7 +1321,12 @@ void Machine::call_RAY_MASTER_MODE_START_REDUCTION(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION(){
-	if(m_reducer.reduce(&m_subgraph)){
+	if(m_reducer.reduce(&m_subgraph,&m_parameters,
+&(m_seedingData->m_SEEDING_edgesRequested),&(m_seedingData->m_SEEDING_vertexCoverageRequested),&(m_seedingData->m_SEEDING_vertexCoverageReceived),
+	&m_outboxAllocator,getSize(),getRank(),&m_outbox,
+&(m_seedingData->m_SEEDING_receivedVertexCoverage),&(m_seedingData->m_SEEDING_receivedOutgoingEdges),
+m_minimumCoverage,&(m_seedingData->m_SEEDING_edgesReceived)
+)){
 		m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_REDUCE_MEMORY_CONSUMPTION_DONE,getRank());
 		m_outbox.push_back(aMessage);

@@ -24,17 +24,37 @@
 
 #include<MyForestIterator.h>
 #include<MyForest.h>
+#include<Parameters.h>
+#include<RingAllocator.h>
+#include<vector>
+#include<DepthFirstSearchData.h>
+#include<StaticVector.h>
+using namespace std;
 
 class MemoryConsumptionReducer{
 	MyForestIterator m_iterator;
 	bool m_initiated;
 	int m_removedVertices;
+
+	bool m_currentVertexIsDone;
+	bool m_hasSetVertex;
+	bool m_doneWithOutgoingEdges;
+	
+	DepthFirstSearchData m_dfsDataOutgoing;
+	SplayNode<uint64_t,Vertex>*m_firstVertex;
+
 public:
 	MemoryConsumptionReducer();
 	/*
  	* returns true if done
  	*/
-	bool reduce(MyForest*a);
+	bool reduce(MyForest*a,Parameters*parameters,
+bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
+	RingAllocator*outboxAllocator,int size,int theRank,StaticVector*outbox,
+ int*receivedVertexCoverage,vector<uint64_t>*receivedOutgoingEdges,
+		int minimumCoverage,bool*edgesReceived
+);
+
 	int getNumberOfRemovedVertices();
 };
 

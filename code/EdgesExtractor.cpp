@@ -43,6 +43,13 @@ void EdgesExtractor::constructor(int size){
 }
 
 void EdgesExtractor::processOutgoingEdges(){
+	// not necessary
+	Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, RAY_MPI_TAG_EDGES_DISTRIBUTED,getRank);
+	m_outbox->push_back(aMessage);
+	(*m_mode_send_ingoing_edges)=false;
+	(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
+	return;
+
 
 	if((m_mode_send_edge_sequence_id)%100000==0 and (m_mode_send_edge_sequence_id_position)==0 
 		&& m_last!=m_mode_send_edge_sequence_id){

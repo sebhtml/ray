@@ -49,7 +49,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		if(*m_reverseComplementVertex==true){
 			reverse="(reverse complement) ";
 		}
-		printf("Rank %i is computing vertices %s[%i/%i]\n",rank,reverse.c_str(),(int)*m_mode_send_vertices_sequence_id+1,(int)m_myReads->size());
+		printf("Rank %i is computing vertices & edges %s[%i/%i]\n",rank,reverse.c_str(),(int)*m_mode_send_vertices_sequence_id+1,(int)m_myReads->size());
 		fflush(stdout);
 	}
 	#endif
@@ -59,23 +59,20 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			// flush data
 
 
-			printf("Rank %i is computing vertices [%i/%i] (completed)\n",rank,(int)*m_mode_send_vertices_sequence_id,(int)m_myReads->size());
+			printf("Rank %i is computing vertices & edges [%i/%i] (completed)\n",rank,(int)*m_mode_send_vertices_sequence_id,(int)m_myReads->size());
 			fflush(stdout);
 			(*m_mode_send_vertices_sequence_id)=0;
 			*m_mode_send_vertices_sequence_id_position=0;
 			*m_reverseComplementVertex=true;
 		}else{
 			// flush data
-			if(m_bufferedData.flushAll(RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank)){
-				m_ready=false;
-				return;
-			}
+			flushAll(m_outboxAllocator,m_outbox,rank);
 
 			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, RAY_MPI_TAG_VERTICES_DISTRIBUTED,rank);
 			m_outbox->push_back(aMessage);
 			*m_mode_send_vertices=false;
 			(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
-			printf("Rank %i is computing vertices (reverse complement) [%i/%i] (completed)\n",rank,(int)*m_mode_send_vertices_sequence_id,(int)m_myReads->size());
+			printf("Rank %i is computing vertices & edges (reverse complement) [%i/%i] (completed)\n",rank,(int)*m_mode_send_vertices_sequence_id,(int)m_myReads->size());
 			fflush(stdout);
 			m_bufferedData.clear();
 			m_finished=true;
@@ -98,28 +95,75 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			if(*m_reverseComplementVertex==false){
 				rankToFlush=vertexRank(a,size);
 				m_bufferedData.addAt(rankToFlush,a);
+
+				if(m_bufferedData.flush(rankToFlush,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,false)){
+					m_ready=false;
+				}
+
+				if(m_hasPreviousVertex){
+					int outgoingRank=vertexRank(m_previousVertex,size);
+					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,m_previousVertex);
+					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,a);
+					if(m_bufferedDataForOutgoingEdges.flush(outgoingRank,2,RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,rank,false)){
+						m_ready=false;
+					}
+					int ingoingRank=vertexRank(a,size);
+					m_bufferedDataForIngoingEdges.addAt(ingoingRank,m_previousVertex);
+					m_bufferedDataForIngoingEdges.addAt(ingoingRank,a);
+					if(m_bufferedDataForIngoingEdges.flush(ingoingRank,2,RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,rank,false)){
+						m_ready=false;
+					}
+				}
+				m_hasPreviousVertex=true;
+				m_previousVertex=a;
 			}else{
 				uint64_t b=complementVertex(a,m_wordSize,m_colorSpaceMode);
+
 				rankToFlush=vertexRank(b,size);
 				m_bufferedData.addAt(rankToFlush,b);
-			}
 
-			if(m_bufferedData.flush(rankToFlush,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,false)){
-				m_ready=false;
-			}
+				if(m_bufferedData.flush(rankToFlush,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,false)){
+					m_ready=false;
+				}
 
+				if(m_hasPreviousVertex){
+					int outgoingRank=vertexRank(b,size);
+					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,b);
+					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,m_previousVertex);
+					if(m_bufferedDataForOutgoingEdges.flush(outgoingRank,2,RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,rank,false)){
+						m_ready=false;
+					}
+					int ingoingRank=vertexRank(m_previousVertex,size);
+					m_bufferedDataForIngoingEdges.addAt(ingoingRank,b);
+					m_bufferedDataForIngoingEdges.addAt(ingoingRank,m_previousVertex);
+					if(m_bufferedDataForIngoingEdges.flush(ingoingRank,2,RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,rank,false)){
+						m_ready=false;
+					}
+				}
+
+				m_hasPreviousVertex=true;
+				m_previousVertex=b;
+			}
+		}else{
+			m_hasPreviousVertex=false;
 		}
+
 		(*m_mode_send_vertices_sequence_id_position)++;
 
 		if(*m_mode_send_vertices_sequence_id_position>lll){
 			(*m_mode_send_vertices_sequence_id)++;
 			(*m_mode_send_vertices_sequence_id_position)=0;
+			m_hasPreviousVertex=false;
 		}
 	}
 }
 
 void VerticesExtractor::constructor(int size){
+	m_hasPreviousVertex=false;
 	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	m_bufferedDataForOutgoingEdges.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	m_bufferedDataForIngoingEdges.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	
 	setReadiness();
 	m_size=size;
 	m_ranksDoneWithReduction=0;
@@ -186,10 +230,30 @@ void VerticesExtractor::trigger(){
 	m_triggered=true;
 }
 
+void VerticesExtractor::flushAll(RingAllocator*m_outboxAllocator,StaticVector*m_outbox,int rank){
+	if(m_bufferedData.flushAll(RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank)){
+		m_ready=false;
+	}
+
+	if(m_bufferedDataForOutgoingEdges.flushAll(RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,rank)){
+		m_ready=false;
+	}
+
+	if(m_bufferedDataForIngoingEdges.flushAll(RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,rank)){
+		m_ready=false;
+	}
+}
+
 void VerticesExtractor::removeTrigger(){
 	m_triggered=false;
 }
 
 bool VerticesExtractor::finished(){
 	return m_finished;
+}
+
+void VerticesExtractor::assertBuffersAreEmpty(){
+	assert(m_bufferedData.isEmpty());
+	assert(m_bufferedDataForOutgoingEdges.isEmpty());
+	assert(m_bufferedDataForIngoingEdges.isEmpty());
 }

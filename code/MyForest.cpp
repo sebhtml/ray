@@ -75,6 +75,12 @@ void MyForest::freeze(){
 	}
 }
 
+void MyForest::unfreeze(){
+	for(int i=0;i<m_numberOfTrees;i++){
+		m_trees[i].unfreeze();
+	}
+}
+
 void MyForest::show(int rank,const char*prefix){
 	cout<<"MyForest::show()"<<endl;
 	ostringstream a;

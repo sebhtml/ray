@@ -383,6 +383,10 @@ void Parameters::constructor(int argc,char**argv,int rank){
 	parseCommands();
 }
 
+int Parameters::getRank(){
+	return m_rank;
+}
+
 bool Parameters::isInitiated(){
 	return m_initiated;
 }

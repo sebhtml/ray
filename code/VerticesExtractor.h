@@ -35,6 +35,12 @@
 using namespace std;
 
 class VerticesExtractor{
+	bool m_hasPreviousVertex;
+	uint64_t m_previousVertex;
+
+	BufferedData m_bufferedDataForOutgoingEdges;
+	BufferedData m_bufferedDataForIngoingEdges;
+
 	bool m_ready;
 	BufferedData m_bufferedData;
 	set<int> m_ranksThatMustRunReducer;
@@ -49,6 +55,8 @@ class VerticesExtractor{
 	bool m_triggered;
 
 	bool m_finished;
+
+
 public:
 	void constructor(int size);
 	void process(int*m_mode_send_vertices_sequence_id,
@@ -83,6 +91,8 @@ public:
 	void trigger();
 	void removeTrigger();
 	bool finished();
+	void flushAll(RingAllocator*m_outboxAllocator,StaticVector*m_outbox,int rank);
+	void assertBuffersAreEmpty();
 };
 
 #endif

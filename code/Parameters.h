@@ -119,6 +119,7 @@ public:
 
 	int getMaxCoverage();
 	string getPrefix();
+	int getRank();
 };
 
 #endif
