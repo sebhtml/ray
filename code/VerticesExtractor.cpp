@@ -66,7 +66,11 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			*m_reverseComplementVertex=true;
 		}else{
 			// flush data
-			m_bufferedData.flushAll(RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank);
+			if(m_bufferedData.flushAll(RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank)){
+				m_ready=false;
+				return;
+			}
+
 			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, RAY_MPI_TAG_VERTICES_DISTRIBUTED,rank);
 			m_outbox->push_back(aMessage);
 			*m_mode_send_vertices=false;
@@ -74,6 +78,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			printf("Rank %i is computing vertices (reverse complement) [%i/%i] (completed)\n",rank,(int)*m_mode_send_vertices_sequence_id,(int)m_myReads->size());
 			fflush(stdout);
 			m_bufferedData.clear();
+			m_finished=true;
 		}
 	}else{
 		char*readSequence=(*m_myReads)[(*m_mode_send_vertices_sequence_id)]->getSeq();
@@ -122,6 +127,7 @@ void VerticesExtractor::constructor(int size){
 	m_reductionPeriod=100000; // 2000000
 	m_thresholdForReduction=m_reductionPeriod;
 	m_triggered=false;
+	m_finished=false;
 }
 
 void VerticesExtractor::setReadiness(){
@@ -182,4 +188,8 @@ void VerticesExtractor::trigger(){
 
 void VerticesExtractor::removeTrigger(){
 	m_triggered=false;
+}
+
+bool VerticesExtractor::finished(){
+	return m_finished;
 }

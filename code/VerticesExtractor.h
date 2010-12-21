@@ -47,6 +47,8 @@ class VerticesExtractor{
 	int m_reductionPeriod;
 
 	bool m_triggered;
+
+	bool m_finished;
 public:
 	void constructor(int size);
 	void process(int*m_mode_send_vertices_sequence_id,
@@ -80,6 +82,7 @@ public:
 	bool isTriggered();
 	void trigger();
 	void removeTrigger();
+	bool finished();
 };
 
 #endif

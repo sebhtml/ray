@@ -39,31 +39,30 @@ if HAVE_BZ2
 libRay_a_SOURCES += FastqBz2Loader.cpp FastqBz2Loader.h BzReader.h BzReader.cpp
 endif
 
-bin_PROGRAMS = Ray-SimulateFragments Ray-SimulateErrors Ray-SimulatePairedReads Ray
+bin_PROGRAMS = SimulateFragments SimulateErrors SimulatePairedReads Ray
 
 Ray_SOURCES =  ray_main.cpp 
 Ray_LDADD = libRay.a
 
-Ray_SimulateFragments_SOURCES = simulate_fragments_main.cpp 
-Ray_SimulateFragments_LDADD = libRay.a
+SimulateFragments_SOURCES = simulate_fragments_main.cpp 
+SimulateFragments_LDADD = libRay.a
 
-Ray_SimulateErrors_SOURCES = simulateErrors_main.cpp 
-Ray_SimulateErrors_LDADD = libRay.a
+SimulateErrors_SOURCES = simulateErrors_main.cpp 
+SimulateErrors_LDADD = libRay.a
 
-Ray_SimulatePairedReads_SOURCES = simulate_paired_main.cpp 
-Ray_SimulatePairedReads_LDADD = libRay.a
+SimulatePairedReads_SOURCES = simulate_paired_main.cpp 
+SimulatePairedReads_LDADD = libRay.a
 
 if HAVE_ZLIB
 Ray_LDADD += -lz
-Ray_SimulateFragments_LDADD += -lz
-Ray_SimulateErrors_LDADD += -lz
-Ray_SimulatePairedReads_LDADD += -lz
+SimulateFragments_LDADD += -lz
+SimulateErrors_LDADD += -lz
+SimulatePairedReads_LDADD += -lz
 endif
 
 if HAVE_BZ2
 Ray_LDADD += -lbz2
-Ray_SimulateFragments_LDADD += -lbz2
-Ray_SimulateErrors_LDADD += -lbz2
-Ray_SimulatePairedReads_LDADD += -lbz2
-
+SimulateFragments_LDADD += -lbz2
+SimulateErrors_LDADD += -lbz2
+SimulatePairedReads_LDADD += -lbz2
 endif

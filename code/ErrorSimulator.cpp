@@ -34,11 +34,18 @@ void ErrorSimulator::simulateErrors(string inputFile,string outputFile){
 	MyAllocator a;
 	a.constructor(4096);
 	loader.load(inputFile,false);
-	double insertionProbability=0.005;
 	srand(time(NULL));
+
+	double insertionProbability=0.005;
 	double deletionProbability=0.005;
 	double mismatchProbability=0.01;
 	double unknownBaseProbability=0.005;
+
+	cout<<"Insertion probability: "<<insertionProbability<<endl;
+	cout<<"Deletion probability: "<<deletionProbability<<endl;
+	cout<<"Mismatch base probability: "<<mismatchProbability<<endl;
+	cout<<"Unknown base probability: "<<unknownBaseProbability<<endl;
+
 	int probabilityPrecision=100000;
 	ofstream f(outputFile.c_str());
 	for(int i=0;i<loader.size();i++){

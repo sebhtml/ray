@@ -138,8 +138,10 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY(Message*messag
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_RESUME_VERTEX_DISTRIBUTION(Message*message){
-	(*m_mode)=RAY_SLAVE_MODE_EXTRACT_VERTICES;
-	m_verticesExtractor->removeTrigger();
+	if(!m_verticesExtractor->finished()){
+		(*m_mode)=RAY_SLAVE_MODE_EXTRACT_VERTICES;
+		m_verticesExtractor->removeTrigger();
+	}
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_REDUCE_MEMORY_CONSUMPTION_DONE(Message*message){
@@ -468,7 +470,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 		}
 	}
 	#ifdef ASSERT
-	assert(m_subgraph->size()==size);
+	//assert((int)m_subgraph->size()==size);
 	//cout<<"Ingoing and outgoing edges."<<endl;
 	for(map<int,map<int,int> >::iterator i=edgesDistribution.begin();i!=edgesDistribution.end();++i){
 		for(map<int,int>::iterator j=i->second.begin();j!=i->second.end();++j){
