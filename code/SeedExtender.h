@@ -100,16 +100,6 @@ ExtensionData*ed,int minimumCoverage,int maxCoverage,OpenAssemblerChooser*oa,Cho
 bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,int size,
 int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingEdges);
 
-
-
-
-
-	void depthFirstSearch(uint64_t root,uint64_t a,int maxDepth,DepthFirstSearchData*dfsData,
-		bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
-		RingAllocator*outboxAllocator,int size,int theRank,StaticVector*outbox,
-		int*receivedVertexCoverage,vector<uint64_t>*receivedOutgoingEdges,
-		int minimumCoverage,bool*edgesReceived);
-
 	vector<Direction>*getDirections();
 
 	void storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<vector<uint64_t> >*seeds,u64*currentVertex,

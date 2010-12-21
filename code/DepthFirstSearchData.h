@@ -26,6 +26,8 @@
 #include<MyStack.h>
 #include<map>
 #include<set>
+#include<RingAllocator.h>
+#include<StaticVector.h>
 #include<common_functions.h>
 using namespace std;
 
@@ -34,6 +36,7 @@ public:
 	// depth first search
 	bool m_doChoice_tips_Initiated;
 	bool m_doChoice_tips_dfs_done;
+
 	int m_depthFirstSearch_maxDepth;
 	MyStack<int> m_depthFirstSearchDepths;
 	int m_doChoice_tips_i;
@@ -44,6 +47,13 @@ public:
 	vector<uint64_t> m_depthFirstSearchVisitedVertices_vector;
 	vector<int> m_depthFirstSearchVisitedVertices_depths;
 	map<uint64_t,int> m_coverages;
+
+
+	void depthFirstSearch(uint64_t root,uint64_t a,int maxDepth,
+	bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
+	RingAllocator*outboxAllocator,int size,int theRank,StaticVector*outbox,
+ int*receivedVertexCoverage,vector<uint64_t>*receivedOutgoingEdges,
+		int minimumCoverage,bool*edgesReceived);
 
 };
 

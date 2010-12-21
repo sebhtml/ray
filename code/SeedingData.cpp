@@ -67,7 +67,7 @@ void SeedingData::computeSeeds(){
 		}else if(!m_splayTreeIterator.hasNext()){
 			m_currentTreeIndex++;
 			#ifdef ASSERT
-			assert(m_SEEDING_i<m_subgraph->size());
+			assert(m_SEEDING_i<(int)m_subgraph->size());
 			assert(m_currentTreeIndex<m_subgraph->getNumberOfTrees());
 			#endif
 

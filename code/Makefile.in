@@ -80,19 +80,20 @@ am__libRay_a_SOURCES_DIST = MemoryConsumptionReducer.h \
 	ColorSpaceDecoder.h ColorSpaceLoader.cpp ColorSpaceLoader.h \
 	common_functions.cpp common_functions.h config.h \
 	CoverageDistribution.cpp CoverageDistribution.h \
-	DepthFirstSearchData.h Direction.cpp Direction.h \
-	EdgesExtractor.cpp EdgesExtractor.h ErrorSimulator.cpp \
-	ErrorSimulator.h ExtensionData.h FusionData.h FusionData.cpp \
-	Loader.cpp Loader.hi Machine.cpp Machine.h Message.cpp \
-	Message.h MessageProcessor.cpp MessageProcessor.h \
-	MyAllocator.cpp MyAllocator.h MyForest.cpp MyForest.h \
-	OpenAssemblerChooser.cpp OpenAssemblerChooser.h PairedRead.cpp \
-	PairedRead.h Parameters.cpp Parameters.h ReadAnnotation.cpp \
-	ReadAnnotation.h Read.cpp Read.h RepeatedVertexWatchdog.cpp \
-	RepeatedVertexWatchdog.h SeedExtender.cpp SeedExtender.h \
-	SequencesIndexer.cpp SequencesIndexer.h SequencesLoader.cpp \
-	SequencesLoader.h SffLoader.cpp SffLoader.h SplayNode.h \
-	SplayTree.h SplayTreeIterator.h TimePrinter.cpp TimePrinter.h \
+	DepthFirstSearchData.cpp DepthFirstSearchData.h Direction.cpp \
+	Direction.h EdgesExtractor.cpp EdgesExtractor.h \
+	ErrorSimulator.cpp ErrorSimulator.h ExtensionData.h \
+	FusionData.h FusionData.cpp Loader.cpp Loader.hi Machine.cpp \
+	Machine.h Message.cpp Message.h MessageProcessor.cpp \
+	MessageProcessor.h MyAllocator.cpp MyAllocator.h MyForest.cpp \
+	MyForest.h OpenAssemblerChooser.cpp OpenAssemblerChooser.h \
+	PairedRead.cpp PairedRead.h Parameters.cpp Parameters.h \
+	ReadAnnotation.cpp ReadAnnotation.h Read.cpp Read.h \
+	RepeatedVertexWatchdog.cpp RepeatedVertexWatchdog.h \
+	SeedExtender.cpp SeedExtender.h SequencesIndexer.cpp \
+	SequencesIndexer.h SequencesLoader.cpp SequencesLoader.h \
+	SffLoader.cpp SffLoader.h SplayNode.h SplayTree.h \
+	SplayTreeIterator.h TimePrinter.cpp TimePrinter.h \
 	TipWatchdog.cpp TipWatchdog.h Vertex.cpp Vertex.h \
 	VertexLinkedList.cpp VertexLinkedList.h VerticesExtractor.cpp \
 	VerticesExtractor.h FastqGzLoader.cpp FastqGzLoader.h \
@@ -109,9 +110,10 @@ am_libRay_a_OBJECTS = MemoryConsumptionReducer.$(OBJEXT) \
 	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
-	Direction.$(OBJEXT) EdgesExtractor.$(OBJEXT) \
-	ErrorSimulator.$(OBJEXT) FusionData.$(OBJEXT) Loader.$(OBJEXT) \
-	Machine.$(OBJEXT) Message.$(OBJEXT) MessageProcessor.$(OBJEXT) \
+	DepthFirstSearchData.$(OBJEXT) Direction.$(OBJEXT) \
+	EdgesExtractor.$(OBJEXT) ErrorSimulator.$(OBJEXT) \
+	FusionData.$(OBJEXT) Loader.$(OBJEXT) Machine.$(OBJEXT) \
+	Message.$(OBJEXT) MessageProcessor.$(OBJEXT) \
 	MyAllocator.$(OBJEXT) MyForest.$(OBJEXT) \
 	OpenAssemblerChooser.$(OBJEXT) PairedRead.$(OBJEXT) \
 	Parameters.$(OBJEXT) ReadAnnotation.$(OBJEXT) Read.$(OBJEXT) \
@@ -266,19 +268,20 @@ libRay_a_SOURCES = MemoryConsumptionReducer.h \
 	ColorSpaceDecoder.h ColorSpaceLoader.cpp ColorSpaceLoader.h \
 	common_functions.cpp common_functions.h config.h \
 	CoverageDistribution.cpp CoverageDistribution.h \
-	DepthFirstSearchData.h Direction.cpp Direction.h \
-	EdgesExtractor.cpp EdgesExtractor.h ErrorSimulator.cpp \
-	ErrorSimulator.h ExtensionData.h FusionData.h FusionData.cpp \
-	Loader.cpp Loader.hi Machine.cpp Machine.h Message.cpp \
-	Message.h MessageProcessor.cpp MessageProcessor.h \
-	MyAllocator.cpp MyAllocator.h MyForest.cpp MyForest.h \
-	OpenAssemblerChooser.cpp OpenAssemblerChooser.h PairedRead.cpp \
-	PairedRead.h Parameters.cpp Parameters.h ReadAnnotation.cpp \
-	ReadAnnotation.h Read.cpp Read.h RepeatedVertexWatchdog.cpp \
-	RepeatedVertexWatchdog.h SeedExtender.cpp SeedExtender.h \
-	SequencesIndexer.cpp SequencesIndexer.h SequencesLoader.cpp \
-	SequencesLoader.h SffLoader.cpp SffLoader.h SplayNode.h \
-	SplayTree.h SplayTreeIterator.h TimePrinter.cpp TimePrinter.h \
+	DepthFirstSearchData.cpp DepthFirstSearchData.h Direction.cpp \
+	Direction.h EdgesExtractor.cpp EdgesExtractor.h \
+	ErrorSimulator.cpp ErrorSimulator.h ExtensionData.h \
+	FusionData.h FusionData.cpp Loader.cpp Loader.hi Machine.cpp \
+	Machine.h Message.cpp Message.h MessageProcessor.cpp \
+	MessageProcessor.h MyAllocator.cpp MyAllocator.h MyForest.cpp \
+	MyForest.h OpenAssemblerChooser.cpp OpenAssemblerChooser.h \
+	PairedRead.cpp PairedRead.h Parameters.cpp Parameters.h \
+	ReadAnnotation.cpp ReadAnnotation.h Read.cpp Read.h \
+	RepeatedVertexWatchdog.cpp RepeatedVertexWatchdog.h \
+	SeedExtender.cpp SeedExtender.h SequencesIndexer.cpp \
+	SequencesIndexer.h SequencesLoader.cpp SequencesLoader.h \
+	SffLoader.cpp SffLoader.h SplayNode.h SplayTree.h \
+	SplayTreeIterator.h TimePrinter.cpp TimePrinter.h \
 	TipWatchdog.cpp TipWatchdog.h Vertex.cpp Vertex.h \
 	VertexLinkedList.cpp VertexLinkedList.h VerticesExtractor.cpp \
 	VerticesExtractor.h $(am__append_1) $(am__append_2)
@@ -395,6 +398,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ColorSpaceDecoder.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ColorSpaceLoader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoverageDistribution.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DepthFirstSearchData.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Direction.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/EarlyStoppingTechnology.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/EdgesExtractor.Po@am__quote@
