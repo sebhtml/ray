@@ -34,7 +34,6 @@ using namespace std;
 class MemoryConsumptionReducer{
 	MyForestIterator m_iterator;
 	bool m_initiated;
-	int m_removedVertices;
 
 	bool m_currentVertexIsDone;
 	bool m_hasSetVertex;
@@ -43,6 +42,9 @@ class MemoryConsumptionReducer{
 	DepthFirstSearchData m_dfsDataOutgoing;
 	SplayNode<uint64_t,Vertex>*m_firstVertex;
 
+	vector<uint64_t> m_toRemove;
+
+	bool isCandidate(SplayNode<uint64_t,Vertex>*node,int wordSize);
 public:
 	MemoryConsumptionReducer();
 	/*

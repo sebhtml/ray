@@ -605,7 +605,7 @@ void Machine::call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS(){
 
 void Machine::call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS(){
 	m_numberOfMachinesReadyToSendDistribution=-1;
-	m_timePrinter.printElapsedTime("Distribution of vertices and edges");
+	m_timePrinter.printElapsedTime("Distribution of vertices & edges");
 	cout<<endl;
 	cout<<"Rank 0 computes the coverage distribution."<<endl;
 

@@ -31,10 +31,11 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
  int*receivedVertexCoverage,vector<uint64_t>*receivedOutgoingEdges,
 		int minimumCoverage,bool*edgesReceived
 ){
+	int wordSize=parameters->getWordSize();
 	if(!m_initiated){
 		m_iterator.constructor(a);
 		m_initiated=true;
-		m_removedVertices=0;
+		m_toRemove.clear();
 		m_currentVertexIsDone=false;
 		m_hasSetVertex=false;
 		a->freeze();
@@ -46,16 +47,25 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 				return true;
 			}
 			m_firstVertex=m_iterator.next();
+
+			while(!isCandidate(m_firstVertex,wordSize)){
+				if(!m_iterator.hasNext()){
+					return false;
+				}
+				m_firstVertex=m_iterator.next();
+			}
+
 			m_hasSetVertex=true;
 			m_doneWithOutgoingEdges=false;
 			m_dfsDataOutgoing.m_doChoice_tips_dfs_done=false;
 			m_dfsDataOutgoing.m_doChoice_tips_dfs_initiated=false;
+		}else if(!isCandidate(m_firstVertex,wordSize)){
+			m_hasSetVertex=false;
 		}else if(!m_doneWithOutgoingEdges){
 			uint64_t key=m_firstVertex->getKey();
-			int wordSize=parameters->getWordSize();
 			vector<uint64_t> parents=m_firstVertex->getValue()->getIngoingEdges(key,wordSize);
 			vector<uint64_t> children=m_firstVertex->getValue()->getOutgoingEdges(key,wordSize);
-			int maximumDepth=200;
+			int maximumDepth=wordSize+1;
 
 			uint64_t next=0;
 			if(children.size()==1){
@@ -64,18 +74,7 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 				next=parents[0];
 			}
 
-
-			//m_doneWithOutgoingEdges=true;
-			//return false;
-
-			if((!(parents.size()==0
-			&& children.size()==1))
-			 &&
-			(!(parents.size()==1
-			&& children.size()==0))){
-				// skip this one
-				m_doneWithOutgoingEdges=true;
-			}else if(!m_dfsDataOutgoing.m_doChoice_tips_dfs_done){
+			if(!m_dfsDataOutgoing.m_doChoice_tips_dfs_done){
 				//cout<<"visit. "<<endl;
 				m_dfsDataOutgoing.depthFirstSearchBidirectional(key,next,maximumDepth,
 edgesRequested,
@@ -91,6 +90,8 @@ minimumCoverage,
 edgesReceived
 );
 			}else{
+				#define _SHOW_GRAPH
+				#ifdef _SHOW_GRAPH
 				if(parameters->getRank()==MASTER_RANK
 				&& m_dfsDataOutgoing.m_maxDepthReached
 				&& m_firstVertex->getValue()->getCoverage()==1){
@@ -99,18 +100,70 @@ edgesReceived
 					cout<<"Children: "<<children.size()<<endl;
 					cout<<m_dfsDataOutgoing.m_depthFirstSearchVisitedVertices_vector.size()/2<<" edges."<<endl;
 			
-					if(children.size()==1){
-						cout<<idToWord(key,wordSize)<<" ("<<m_firstVertex->getValue()->getCoverage()<<") -> "<<idToWord(next,wordSize)<<" ("<<m_dfsDataOutgoing.m_coverages[next]<<")"<<endl;
-					}else{
-
-						cout<<" -> "<<idToWord(next,wordSize)<<" ("<<m_dfsDataOutgoing.m_coverages[next]<<")"<<idToWord(key,wordSize)<<" ("<<m_firstVertex->getValue()->getCoverage()<<")"<<endl;
+					cout<<"digraph{"<<endl;
+					for(map<uint64_t,int>::iterator p=m_dfsDataOutgoing.m_coverages.begin();
+						p!=m_dfsDataOutgoing.m_coverages.end();p++){
+						cout<<idToWord(p->first,wordSize)<<" [label=\""<<idToWord(p->first,wordSize)<<" "<<p->second<<"\"]"<<endl;
 					}
+
 					for(int j=0;j<(int)m_dfsDataOutgoing.m_depthFirstSearchVisitedVertices_vector.size();j+=2){
 						uint64_t prefix=m_dfsDataOutgoing.m_depthFirstSearchVisitedVertices_vector[j+0];
 						uint64_t suffix=m_dfsDataOutgoing.m_depthFirstSearchVisitedVertices_vector[j+1];
-						cout<<idToWord(prefix,wordSize)<<" ("<<m_dfsDataOutgoing.m_coverages[prefix]<<") -> "<<idToWord(suffix,wordSize)<<" ("<<m_dfsDataOutgoing.m_coverages[suffix]<<")"<<endl;
+						cout<<idToWord(prefix,wordSize)<<" -> "<<idToWord(suffix,wordSize)<<endl;
+					}
+					cout<<"}"<<endl;
+				}
+				#endif
+
+				// 1 and 10
+				// 2 and 15
+				// 3 and 20
+
+				int originRedundancy=m_firstVertex->getValue()->getCoverage();
+				int destinationRedundancy=6;
+				if(originRedundancy==1){
+					destinationRedundancy=10;
+				}else if(originRedundancy==2){
+					destinationRedundancy=10;
+				}else if(originRedundancy==3){
+					destinationRedundancy=15;
+				}
+
+				// find the first probably-good vertex 
+				map<uint64_t,uint64_t> nextVertex;
+				for(int j=0;j<(int)m_dfsDataOutgoing.m_depthFirstSearchVisitedVertices_vector.size();j+=2){
+					uint64_t prefix=m_dfsDataOutgoing.m_depthFirstSearchVisitedVertices_vector[j+0];
+					uint64_t suffix=m_dfsDataOutgoing.m_depthFirstSearchVisitedVertices_vector[j+1];
+					nextVertex[prefix]=suffix;
+				}
+				
+				uint64_t current=key;
+				vector<uint64_t> path;
+				bool foundDestination=false;
+
+				while(1){
+					int theCoverage=m_dfsDataOutgoing.m_coverages[current];
+					if(theCoverage>=destinationRedundancy){
+						foundDestination=true;
+						break;
+					}else{
+						path.push_back(current);
+						if(nextVertex.count(current)>0){
+							current=nextVertex[current];
+						}else{
+							break;
+						}
 					}
 				}
+				if(foundDestination){
+					if(parameters->getRank()==MASTER_RANK){
+						cout<<"removed "<<path.size()<<endl;
+					}
+					for(int u=0;u<(int)path.size();u++){
+						m_toRemove.push_back(path[u]);
+					}
+				}
+
 				m_doneWithOutgoingEdges=true;
 			}
 		}else{
@@ -122,5 +175,13 @@ edgesReceived
 }
 
 int MemoryConsumptionReducer::getNumberOfRemovedVertices(){
-	return m_removedVertices;
+	return m_toRemove.size();
+}
+
+bool MemoryConsumptionReducer::isCandidate(SplayNode<uint64_t,Vertex>*m_firstVertex,int wordSize){
+	uint64_t key=m_firstVertex->getKey();
+	vector<uint64_t> parents=m_firstVertex->getValue()->getIngoingEdges(key,wordSize);
+	vector<uint64_t> children=m_firstVertex->getValue()->getOutgoingEdges(key,wordSize);
+	int coverage=m_firstVertex->getValue()->getCoverage();
+	return ((parents.size()==1&&children.size()==0)||(parents.size()==0&&children.size()==1))&&coverage<=3;
 }

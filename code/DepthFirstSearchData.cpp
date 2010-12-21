@@ -191,7 +191,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t root,uint64_t 
 		}else if((*vertexCoverageReceived)){
 			if(!(*edgesRequested)){
 				m_coverages[vertexToVisit]=(*receivedVertexCoverage);
-				if((*receivedVertexCoverage)>1){
+				if((*receivedVertexCoverage)>0){
 					m_depthFirstSearchVisitedVertices.insert(vertexToVisit);
 				}else{
 					// don't visit it.

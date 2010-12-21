@@ -33,6 +33,28 @@ void test_remove(){
 	assert(a.size()==98);
 }
 
+void test_iterator(){
+	MyAllocator allocator;
+	allocator.constructor(1000);
+	SplayTree<int,int> a;
+	a.constructor(&allocator);
+	SplayTreeIterator<int,int> b;
+	b.constructor(&a);
+	b.hasNext();
+	b.hasNext();
+	b.hasNext();
+	b.next();
+	a.insert(1);
+
+	b.constructor(&a);
+	b.hasNext();
+	b.hasNext();
+	b.hasNext();
+	b.next();
+	b.hasNext();
+	b.hasNext();
+}
+
 int main(){
 	MyAllocator allocator;
 	allocator.constructor(1000);
@@ -68,6 +90,6 @@ int main(){
 	assert(n==lol.size());
 
 	test_remove();
-
+	test_iterator();
 	return 0;
 }

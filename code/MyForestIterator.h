@@ -39,7 +39,7 @@ class MyForestIterator{
 	int m_treeId;
 public:
 	void constructor(MyForest*a);
-	bool hasNext();
+	bool hasNext() const;
 	SplayNode<uint64_t,Vertex>*next();
 };
 

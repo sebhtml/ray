@@ -30,19 +30,28 @@ void MyForestIterator::constructor(MyForest*a){
 	m_forest=a;
 	m_treeId=0;
 	m_iterator.constructor(m_forest->getTree(m_treeId));
-}
-
-bool MyForestIterator::hasNext(){
 	while(!m_iterator.hasNext()){
 		m_treeId++;
 		if(m_treeId==m_forest->getNumberOfTrees()){
-			return false;
+			break;
 		}
 		m_iterator.constructor(m_forest->getTree(m_treeId));
 	}
-	return true;
+}
+
+bool MyForestIterator::hasNext() const{
+	return m_iterator.hasNext();
 }
 
 SplayNode<uint64_t,Vertex>*MyForestIterator::next(){
-	return m_iterator.next();
+	SplayNode<uint64_t,Vertex>*node=m_iterator.next();
+
+	while(!m_iterator.hasNext()){
+		m_treeId++;
+		if(m_treeId==m_forest->getNumberOfTrees()){
+			break;
+		}
+		m_iterator.constructor(m_forest->getTree(m_treeId));
+	}
+	return node;
 }
