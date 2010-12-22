@@ -44,6 +44,7 @@ class MemoryConsumptionReducer{
 
 	vector<uint64_t> m_toRemove;
 
+	int m_maximumDepth;
 	bool isCandidate(SplayNode<uint64_t,Vertex>*node,int wordSize);
 public:
 	MemoryConsumptionReducer();
