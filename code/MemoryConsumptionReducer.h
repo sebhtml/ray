@@ -32,6 +32,8 @@
 using namespace std;
 
 class MemoryConsumptionReducer{
+	uint64_t m_counter;
+
 	MyForestIterator m_iterator;
 	bool m_initiated;
 
@@ -46,6 +48,9 @@ class MemoryConsumptionReducer{
 
 	int m_maximumDepth;
 	bool isCandidate(SplayNode<uint64_t,Vertex>*node,int wordSize);
+	
+	void printCounter(Parameters*parameters,MyForest*a);
+
 public:
 	MemoryConsumptionReducer();
 	/*

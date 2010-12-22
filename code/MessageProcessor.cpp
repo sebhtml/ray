@@ -259,6 +259,10 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 	uint64_t*incoming=(uint64_t*)buffer;
 	int length=count;
 
+	#ifdef ASSERT
+	assert(!m_subgraph->frozen());
+	#endif
+
 	for(int i=0;i<length;i++){
 		uint64_t l=incoming[i];
 
@@ -318,9 +322,9 @@ void MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA(Message*message){
 
 		SplayNode<uint64_t,Vertex>*node=m_subgraph->find(prefix);
 
-		if(node==NULL){
-			continue;
-		}
+		#ifdef ASSERT
+		assert(node!=NULL);
+		#endif
 
 		node->getValue()->addOutgoingEdge(suffix,(*m_wordSize));
 	}
@@ -360,13 +364,13 @@ void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){
 	for(int i=0;i<(int)length;i+=2){
 		uint64_t prefix=incoming[i+0];
 		uint64_t suffix=incoming[i+1];
-
+	
 		SplayNode<uint64_t,Vertex>*node=m_subgraph->find(suffix);
 
-		if(node==NULL){
-			continue;
-		}
-	
+		#ifdef ASSERT
+		assert(node!=NULL);
+		#endif
+
 		node->getValue()->addIngoingEdge(prefix,(*m_wordSize));
 	}
 

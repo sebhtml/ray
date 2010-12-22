@@ -528,8 +528,13 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	m_numberOfMachinesDoneSendingCoverage=-1;
 	string file=m_parameters.getCoverageDistributionFile();
 	CoverageDistribution distribution(&m_coverageDistribution,&file);
+
 	m_minimumCoverage=distribution.getMinimumCoverage();
 	m_peakCoverage=distribution.getPeakCoverage();
+
+	cout<<"Rank "<<getRank()<<" informs you that the minimum coverage is "<<m_minimumCoverage<<endl;
+	cout<<"Rank "<<getRank()<<" informs you that the peak coverage is "<<m_peakCoverage<<endl;
+
 	m_seedCoverage=(m_minimumCoverage+m_peakCoverage)/2;
 
 	m_coverageDistribution.clear();
@@ -1331,7 +1336,8 @@ m_minimumCoverage,&(m_seedingData->m_SEEDING_edgesReceived)
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_REDUCE_MEMORY_CONSUMPTION_DONE,getRank());
 		m_outbox.push_back(aMessage);
 		if(m_reducer.getNumberOfRemovedVertices()>0){
-			printf("Rank %i removed %i vertices to reduce memory consumption preemptively\n",getRank(),m_reducer.getNumberOfRemovedVertices());
+			double ratio=m_reducer.getNumberOfRemovedVertices()/(0.0+m_subgraph.size());
+			printf("Rank %i removed %i vertices to reduce memory consumption preemptively (%.4f)\n",getRank(),m_reducer.getNumberOfRemovedVertices(),ratio);
 			fflush(stdout);
 		}
 		m_verticesExtractor.updateThreshold(&m_subgraph);

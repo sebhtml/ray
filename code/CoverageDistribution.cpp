@@ -32,10 +32,15 @@ CoverageDistribution::CoverageDistribution(map<int,uint64_t>*distributionOfCover
 
 	m_peakCoverage=100;
 	m_minimumCoverage=1;
-	ofstream f(file->c_str());
+	ofstream f;
+	if(file!=NULL){
+		f.open(file->c_str());
+	}
 
 	for(map<int,uint64_t>::iterator i=distributionOfCoverage->begin();i!=distributionOfCoverage->end();i++){
-		f<<""<<i->first<<" "<<i->second<<endl;
+		if(file!=NULL){
+			f<<""<<i->first<<" "<<i->second<<endl;
+		}
 		int coverage=i->first;
 		if(coverage==max)
 			continue;
@@ -67,10 +72,10 @@ CoverageDistribution::CoverageDistribution(map<int,uint64_t>*distributionOfCover
 	if((*distributionOfCoverage)[m_peakCoverage]==0){
 		m_peakCoverage=0;
 	}
-	cout<<"Rank "<<MASTER_RANK<<" informs you that the minimum coverage is "<<m_minimumCoverage<<endl;
-	cout<<"Rank "<<MASTER_RANK<<" informs you that the peak coverage is "<<m_peakCoverage<<endl;
 
-	f.close();
+	if(file!=NULL){
+		f.close();
+	}
 }
 
 int CoverageDistribution::getPeakCoverage(){

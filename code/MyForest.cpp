@@ -73,12 +73,14 @@ void MyForest::freeze(){
 	for(int i=0;i<m_numberOfTrees;i++){
 		m_trees[i].freeze();
 	}
+	m_frozen=true;
 }
 
 void MyForest::unfreeze(){
 	for(int i=0;i<m_numberOfTrees;i++){
 		m_trees[i].unfreeze();
 	}
+	m_frozen=false;
 }
 
 void MyForest::show(int rank,const char*prefix){
@@ -90,4 +92,8 @@ void MyForest::show(int rank,const char*prefix){
 		fprintf(f,"%i %li\n",i,getTree(i)->size());
 	}
 	fclose(f);
+}
+
+bool MyForest::frozen(){
+	return m_frozen;
 }

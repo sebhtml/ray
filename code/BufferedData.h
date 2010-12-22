@@ -64,6 +64,8 @@ public:
 	int flushAll(int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank);
 	bool isEmpty();
 	void clear();
+
+	bool needsFlushing(int destination,int period);
 };
 
 #endif

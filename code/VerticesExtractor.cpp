@@ -104,12 +104,23 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 					int outgoingRank=vertexRank(m_previousVertex,size);
 					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,m_previousVertex);
 					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,a);
+
+					if(m_bufferedDataForOutgoingEdges.needsFlushing(outgoingRank,2)){
+						m_bufferedData.flush(outgoingRank,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true);
+					}
+
 					if(m_bufferedDataForOutgoingEdges.flush(outgoingRank,2,RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,rank,false)){
 						m_ready=false;
 					}
+
 					int ingoingRank=vertexRank(a,size);
 					m_bufferedDataForIngoingEdges.addAt(ingoingRank,m_previousVertex);
 					m_bufferedDataForIngoingEdges.addAt(ingoingRank,a);
+
+					if(m_bufferedDataForIngoingEdges.needsFlushing(ingoingRank,2)){
+						m_bufferedData.flush(ingoingRank,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true);
+					}
+
 					if(m_bufferedDataForIngoingEdges.flush(ingoingRank,2,RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,rank,false)){
 						m_ready=false;
 					}
@@ -130,12 +141,23 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 					int outgoingRank=vertexRank(b,size);
 					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,b);
 					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,m_previousVertex);
+
+					if(m_bufferedDataForOutgoingEdges.needsFlushing(outgoingRank,2)){
+						m_bufferedData.flush(outgoingRank,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true);
+					}
+
 					if(m_bufferedDataForOutgoingEdges.flush(outgoingRank,2,RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,rank,false)){
 						m_ready=false;
 					}
+
 					int ingoingRank=vertexRank(m_previousVertex,size);
 					m_bufferedDataForIngoingEdges.addAt(ingoingRank,b);
 					m_bufferedDataForIngoingEdges.addAt(ingoingRank,m_previousVertex);
+
+					if(m_bufferedDataForIngoingEdges.needsFlushing(ingoingRank,2)){
+						m_bufferedData.flush(ingoingRank,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true);
+					}
+
 					if(m_bufferedDataForIngoingEdges.flush(ingoingRank,2,RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,rank,false)){
 						m_ready=false;
 					}
@@ -168,7 +190,7 @@ void VerticesExtractor::constructor(int size){
 	m_size=size;
 	m_ranksDoneWithReduction=0;
 	m_ranksReadyForReduction=0;
-	m_reductionPeriod=600000;
+	m_reductionPeriod=200000;
 	m_thresholdForReduction=m_reductionPeriod;
 	m_triggered=false;
 	m_finished=false;

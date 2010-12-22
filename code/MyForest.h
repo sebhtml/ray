@@ -36,6 +36,8 @@ class MyForest{
 	bool m_inserted;
 	int getTreeIndex(uint64_t i);
 
+	bool m_frozen;
+
 public:
 	void constructor(int count,MyAllocator*allocator);
 	uint64_t size();
@@ -47,6 +49,7 @@ public:
 	void freeze();
 	void unfreeze();
 	void show(int rank,const char*a);
+	bool frozen();
 };
 
 #endif

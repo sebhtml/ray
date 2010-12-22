@@ -130,4 +130,8 @@ bool BufferedData::flush(int destination,int period,int tag,RingAllocator*outbox
 	return true;
 }
 
-
+bool BufferedData::needsFlushing(int destination,int period){
+	int threshold=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)/period*period;
+	int amount=size(destination);
+	return amount>=threshold;
+}

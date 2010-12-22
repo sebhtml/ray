@@ -20,6 +20,7 @@
 */
 
 #include<MemoryConsumptionReducer.h>
+#include<CoverageDistribution.h>
 #include<stack>
 using namespace std;
 
@@ -35,27 +36,44 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 ){
 	int wordSize=parameters->getWordSize();
 	if(!m_initiated){
-		m_iterator.constructor(a);
+		m_counter=0;
 		m_initiated=true;
 		m_toRemove.clear();
 		m_currentVertexIsDone=false;
 		m_hasSetVertex=false;
 		a->freeze();
 		m_maximumDepth=2*wordSize+1;
+
+/*
+		m_iterator.constructor(a);
+		map<int,uint64_t> distribution;
+		while(m_iterator.hasNext()){
+			distribution[m_iterator.next()->getValue()->getCoverage()]++;
+		}
+		CoverageDistribution dis(&distribution,NULL);
+		printf("Rank %i: peak coverage is %i\n",parameters->getRank(),dis.getPeakCoverage());
+*/
+		m_iterator.constructor(a);
 	}else if(!m_currentVertexIsDone){
 		if(!m_hasSetVertex){
+			printCounter(parameters,a);
 			if(!m_iterator.hasNext()){
 				m_initiated=false;
 				a->unfreeze();
+				printCounter(parameters,a);
+				
 				return true;
 			}
 			m_firstVertex=m_iterator.next();
+			m_counter++;
 
 			while(!isCandidate(m_firstVertex,wordSize)){
 				if(!m_iterator.hasNext()){
 					return false;
 				}
+				printCounter(parameters,a);
 				m_firstVertex=m_iterator.next();
+				m_counter++;
 			}
 
 			m_hasSetVertex=true;
@@ -99,10 +117,11 @@ edgesReceived
 				vector<uint64_t> path;
 				bool foundDestination=false;
 
+				bool foundJunction=false;
 				set<uint64_t> visited;
+				int maximumDepth=0;
 
 				if(parents.size()==0){
-					bool foundJunction=false;
 					uint64_t current=key;
 					while(1){
 						if(visited.count(current)>0){
@@ -110,8 +129,9 @@ edgesReceived
 						}else if(theParents[current].size()>1||theChildren[current].size()>1){
 							foundJunction=true;
 							break;
-						}else if(theChildren.count(current)>0&&theChildren[current].size()==1){
-							visited.insert(current);
+						}
+						visited.insert(current);
+						if(theChildren.count(current)>0&&theChildren[current].size()==1){
 							path.push_back(current);
 							current=theChildren[current][0];
 						}else{
@@ -123,7 +143,6 @@ edgesReceived
 						stack<int> depths;
 						depths.push(0);
 						nodes.push(current);
-						int maximumDepth=0;
 						while(!nodes.empty()){
 							uint64_t node=nodes.top();
 							visited.insert(node);
@@ -152,12 +171,22 @@ edgesReceived
 							}
 						}
 						//cout<<"Depth reached: "<<maximumDepth<<" vs "<<path.size()<<endl;
-						if(maximumDepth+(int)path.size()==m_maximumDepth&&(int)path.size()<=wordSize){
+						if(maximumDepth+(int)path.size()>=m_maximumDepth&&(int)path.size()<=wordSize){
+							foundDestination=true;
+						}
+					}else{
+						bool aloneBits=true;
+						for(int o=0;o<(int)path.size();o++){
+							if(m_dfsDataOutgoing.m_coverages[path[o]]!=1){
+								aloneBits=false;
+								break;
+							}
+						}
+						if(aloneBits&&(int)path.size()<=2*wordSize-1){
 							foundDestination=true;
 						}
 					}
 				}else if(children.size()==0){
-					bool foundJunction=false;
 					uint64_t current=key;
 					while(1){
 						if(visited.count(current)>0){
@@ -165,8 +194,10 @@ edgesReceived
 						}else if(theParents[current].size()>1||theChildren[current].size()>1){
 							foundJunction=true;
 							break;
-						}else if(theParents.count(current)>0&&theParents[current].size()==1){
-							visited.insert(current);
+						}
+						visited.insert(current);
+
+						if(theParents.count(current)>0&&theParents[current].size()==1){
 							path.push_back(current);
 							current=theParents[current][0];
 						}else{
@@ -178,7 +209,6 @@ edgesReceived
 						stack<int> depths;
 						depths.push(0);
 						nodes.push(current);
-						int maximumDepth=0;
 						while(!nodes.empty()){
 							uint64_t node=nodes.top();
 							visited.insert(node);
@@ -209,8 +239,19 @@ edgesReceived
 						}
 						//cout<<"Depth reached: "<<maximumDepth<<" vs "<<path.size()<<" MAX="<<m_maximumDepth<<endl;
 
-						if(maximumDepth+(int)path.size()==m_maximumDepth&&(int)path.size()<=wordSize){
+						if(maximumDepth+(int)path.size()>=m_maximumDepth&&(int)path.size()<=wordSize){
 							//cout<<"deleting "<<path.size()<<endl;
+							foundDestination=true;
+						}
+					}else{
+						bool aloneBits=true;
+						for(int o=0;o<(int)path.size();o++){
+							if(m_dfsDataOutgoing.m_coverages[path[o]]!=1){
+								aloneBits=false;
+								break;
+							}
+						}
+						if(aloneBits&&(int)path.size()<=2*wordSize-1){
 							foundDestination=true;
 						}
 					}
@@ -219,7 +260,7 @@ edgesReceived
 				bool processed=false;
 				if(foundDestination){
 					if(processed&&parameters->getRank()==MASTER_RANK){
-						//cout<<"removed "<<path.size()<<endl;
+						cout<<"removed "<<path.size()<<endl;
 					}
 					for(int u=0;u<(int)path.size();u++){
 						m_toRemove.push_back(path[u]);
@@ -227,12 +268,14 @@ edgesReceived
 				}else{
 					processed=true;
 					if(processed&&parameters->getRank()==MASTER_RANK){
-				#define _SHOW_GRAPH
+				//#define _SHOW_GRAPH
 				#ifdef _SHOW_GRAPH
-				if(parameters->getRank()==MASTER_RANK
-				&& m_dfsDataOutgoing.m_maxDepthReached){
+				if(parameters->getRank()==MASTER_RANK 
+				//&& m_dfsDataOutgoing.m_maxDepthReached &&
+				){
 					processed=true;
 					cout<<"BEGIN"<<endl;
+					cout<<"Depth reached: "<<maximumDepth<<" vs "<<path.size()<<" MAX="<<m_maximumDepth<<endl;
 					cout<<"root="<<idToWord(key,wordSize)<<endl;
 					cout<<"Parents: "<<parents.size()<<endl;
 					cout<<"Children: "<<children.size()<<endl;
@@ -242,7 +285,7 @@ edgesReceived
 					for(map<uint64_t,int>::iterator p=m_dfsDataOutgoing.m_coverages.begin();
 						p!=m_dfsDataOutgoing.m_coverages.end();p++){
 						if(key==p->first){
-							cout<<idToWord(p->first,wordSize)<<" [label=\""<<idToWord(p->first,wordSize)<<" "<<p->second<<" root\"]"<<endl;
+							cout<<idToWord(p->first,wordSize)<<" [label=\""<<idToWord(p->first,wordSize)<<" "<<p->second<<"\" color=deepskyblue]"<<endl;
 						}else{
 							cout<<idToWord(p->first,wordSize)<<" [label=\""<<idToWord(p->first,wordSize)<<" "<<p->second<<"\"]"<<endl;
 						}
@@ -284,4 +327,12 @@ bool MemoryConsumptionReducer::isCandidate(SplayNode<uint64_t,Vertex>*m_firstVer
 	vector<uint64_t> children=m_firstVertex->getValue()->getOutgoingEdges(key,wordSize);
 	int coverage=m_firstVertex->getValue()->getCoverage();
 	return ((parents.size()==1&&children.size()==0)||(parents.size()==0&&children.size()==1))&&coverage<=3;
+}
+
+void MemoryConsumptionReducer::printCounter(Parameters*parameters,MyForest*forest){
+	if(m_counter==forest->size()){
+		printf("Rank %i is reducing memory usage [%lu/%lu] (completed)\n",parameters->getRank(),m_counter,forest->size());
+	}else if(m_counter%40000==0){
+		printf("Rank %i is reducing memory usage [%lu/%lu]\n",parameters->getRank(),m_counter+1,forest->size());
+	}
 }
