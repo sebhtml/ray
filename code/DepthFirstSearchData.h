@@ -60,7 +60,7 @@ public:
  int*receivedVertexCoverage,vector<uint64_t>*receivedOutgoingEdges,
 		int minimumCoverage,bool*edgesReceived);
 
-	void depthFirstSearchBidirectional(uint64_t root,uint64_t a,int maxDepth,
+	void depthFirstSearchBidirectional(uint64_t a,int maxDepth,
 	bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	RingAllocator*outboxAllocator,int size,int theRank,StaticVector*outbox,
  int*receivedVertexCoverage,vector<uint64_t>*receivedOutgoingEdges,

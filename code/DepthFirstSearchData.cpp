@@ -147,7 +147,7 @@ void DepthFirstSearchData::depthFirstSearch(uint64_t root,uint64_t a,int maxDept
 	}
 }
 
-void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t root,uint64_t a,int maxDepth,
+void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth,
 	bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	RingAllocator*outboxAllocator,int size,int theRank,StaticVector*outbox,
  int*receivedVertexCoverage,vector<uint64_t>*receivedOutgoingEdges,
@@ -172,10 +172,6 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t root,uint64_t 
 		m_coverages.clear();
 		(*edgesRequested)=false;
 		(*vertexCoverageRequested)=false;
-		#ifdef SHOW_MINI_GRAPH
-		cout<<"<MiniGraph>"<<endl;
-		cout<<idToWord(root,wordSize)<<" -> "<<idToWord(a,wordSize)<<endl;
-		#endif
 	}
 	if(m_depthFirstSearchVerticesToVisit.size()>0){
 		uint64_t vertexToVisit=m_depthFirstSearchVerticesToVisit.top();
