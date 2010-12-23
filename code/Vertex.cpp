@@ -107,7 +107,8 @@ void Vertex::deleteIngoingEdge(uint64_t a,int k){
 	uint8_t s1First=getFirstSegmentFirstCode(a,k,_SEGMENT_LENGTH);
 	// delete s1First from edges.
 	uint8_t newBits=(1<<(s1First));
-	m_edges=m_edges^newBits;
+	newBits=~newBits;
+	m_edges=m_edges&newBits;
 }
 
 void Vertex::addIngoingEdge(uint64_t a,int k){
@@ -149,7 +150,8 @@ void Vertex::addOutgoingEdge_ClassicMethod(uint64_t a,int k){
 void Vertex::deleteOutgoingEdge(uint64_t a,int k){
 	uint8_t s2Last=getSecondSegmentLastCode(a,k,_SEGMENT_LENGTH);
 	uint64_t newBits=1<<(4+s2Last);
-	m_edges=m_edges^newBits;
+	newBits=~newBits;
+	m_edges=m_edges&newBits;
 }
 
 
