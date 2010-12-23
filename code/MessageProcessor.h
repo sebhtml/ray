@@ -41,6 +41,7 @@
 #include<VerticesExtractor.h>
 #include<MyForest.h>
 #include<Parameters.h>
+#include<BufferedData.h>
 #include<MyAllocator.h>
 #include<Vertex.h>
 using namespace std;
@@ -50,6 +51,11 @@ class MessageProcessor;
 typedef void (MessageProcessor::*FNMETHOD) (Message*message);
 
 class MessageProcessor{
+	BufferedData m_buffersForIngoingEdgesToDelete;
+	BufferedData m_buffersForOutgoingEdgesToDelete;
+
+	uint64_t m_lastSize;
+
 	SequencesLoader*m_sequencesLoader;
 
 	FNMETHOD m_methods[200];
@@ -249,6 +255,15 @@ class MessageProcessor{
 	void call_RAY_MPI_TAG_VERIFY_OUTGOING_EDGES_REPLY_FORCE(Message*message);
 	void call_RAY_MPI_TAG_VERIFY_OUTGOING_EDGES_FORCE(Message*message);
 	void call_RAY_MPI_TAG_REQUEST_VERTEX_EDGES(Message*message);
+	void call_RAY_MPI_TAG_DELETE_VERTICES(Message*message);
+	void call_RAY_MPI_TAG_DELETE_VERTICES_DONE(Message*message);
+	void call_RAY_MPI_TAG_UPDATE_THRESHOLD(Message*message);
+	void call_RAY_MPI_TAG_UPDATE_THRESHOLD_REPLY(Message*message);
+	void call_RAY_MPI_TAG_DELETE_VERTEX(Message*message);
+	void call_RAY_MPI_TAG_DELETE_INGOING_EDGE(Message*message);
+	void call_RAY_MPI_TAG_DELETE_OUTGOING_EDGE(Message*message);
+	void call_RAY_MPI_TAG_DELETE_VERTEX_REPLY(Message*message);
+
 
 public:
 	void constructor(MessagesHandler*m_messagesHandler,
@@ -309,6 +324,8 @@ SequencesIndexer*m_si
 
 	void processMessage(Message*message);
 	MessageProcessor();
+
+	void flushBuffers();
 };
 
 #endif

@@ -60,8 +60,9 @@ SplayNode<uint64_t,Vertex>*MyForest::insert(uint64_t key){
 	int tree=getTreeIndex(key);
 	SplayNode<uint64_t,Vertex>*n=m_trees[tree].insert(key);
 	m_inserted=m_trees[tree].inserted();
-	if(m_inserted)
+	if(m_inserted){
 		m_size++;
+	}
 	return n;
 }
 
@@ -96,4 +97,11 @@ void MyForest::show(int rank,const char*prefix){
 
 bool MyForest::frozen(){
 	return m_frozen;
+}
+
+void MyForest::remove(uint64_t a){
+	int tree=getTreeIndex(a);
+	if(m_trees[tree].remove(a)){
+		m_size--;
+	}
 }

@@ -50,6 +50,7 @@ public:
 	void unfreeze();
 	void show(int rank,const char*a);
 	bool frozen();
+	void remove(uint64_t a);
 };
 
 #endif

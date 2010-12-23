@@ -35,6 +35,9 @@
 using namespace std;
 
 class VerticesExtractor{
+	bool m_deletionsInitiated;
+	uint64_t m_deletionIterator;
+
 	bool m_hasPreviousVertex;
 	uint64_t m_previousVertex;
 
@@ -97,6 +100,12 @@ public:
 	void assertBuffersAreEmpty();
 	bool mustTriggerReduction();
 	void scheduleReduction();
+
+	bool deleteVertices(vector<uint64_t>*verticesToRemove,MyForest*subgraph,
+int size,int rank,RingAllocator*m_outboxAllocator,
+	StaticVector*m_outbox
+);
+	void prepareDeletions();
 };
 
 #endif

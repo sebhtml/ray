@@ -91,6 +91,8 @@ public:
 	void addDirection(int wave,int progression,MyAllocator*a);
 	vector<Direction> getDirections();
 	void clearDirections();
+	void deleteIngoingEdge(uint64_t a,int k);
+	void deleteOutgoingEdge(uint64_t a,int k);
 };
 
 #endif

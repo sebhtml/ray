@@ -302,3 +302,37 @@ bool VerticesExtractor::mustTriggerReduction(){
 void VerticesExtractor::scheduleReduction(){
 	m_mustTriggerReduction=true;
 }
+
+/*
+ * send the vertices to the owners for permanent deletions
+ *
+ */
+bool VerticesExtractor::deleteVertices(vector<uint64_t>*verticesToRemove,MyForest*subgraph,int size,int rank,RingAllocator*m_outboxAllocator,
+	StaticVector*m_outbox
+){
+	if(m_pendingMessages!=0){
+		return false;
+	}
+
+	if(!m_deletionsInitiated){
+		m_deletionsInitiated=true;
+		m_deletionIterator=0;
+	}else if(m_deletionIterator<(uint64_t)verticesToRemove->size()){
+		uint64_t vertex=verticesToRemove->at(m_deletionIterator);
+		m_deletionIterator++;
+		int rankToFlush=vertexRank(vertex,size);
+		m_bufferedData.addAt(rankToFlush,vertex);
+
+		if(m_bufferedData.flush(rankToFlush,1,RAY_MPI_TAG_DELETE_VERTEX,m_outboxAllocator,m_outbox,rank,false)){
+			m_pendingMessages++;
+		}
+	}else{
+		m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_DELETE_VERTEX,m_outboxAllocator,m_outbox,rank);
+		return true;
+	}
+	return false;
+}
+
+void VerticesExtractor::prepareDeletions(){
+	m_deletionsInitiated=false;
+}

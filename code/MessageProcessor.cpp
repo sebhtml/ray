@@ -57,6 +57,100 @@ void MessageProcessor::call_RAY_MPI_TAG_VERIFY_INGOING_EDGES_FORCE(Message*messa
 	m_outbox->push_back(aMessage);
 }
 
+void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTEX(Message*message){
+	uint64_t*incoming=(uint64_t*)message->getBuffer();
+	int count=message->getCount();
+	for(int i=0;i<count;i++){
+		uint64_t vertex=incoming[i];
+		SplayNode<uint64_t,Vertex>*node=m_subgraph->find(vertex);
+		#ifdef ASSERT
+		assert(node!=NULL);
+		#endif
+
+		// using ingoing edges, tell parents to delete the associated outgoing edge
+		vector<uint64_t> ingoingEdges=node->getValue()->getIngoingEdges(vertex,*m_wordSize);
+		for(int j=0;j<(int)ingoingEdges.size();j++){
+			uint64_t prefix=ingoingEdges[j];
+			uint64_t suffix=vertex;
+			int rankToFlush=vertexRank(prefix,size);
+			m_buffersForOutgoingEdgesToDelete.addAt(rankToFlush,prefix);
+			m_buffersForOutgoingEdgesToDelete.addAt(rankToFlush,suffix);
+			m_buffersForOutgoingEdgesToDelete.flush(rankToFlush,2,RAY_MPI_TAG_DELETE_OUTGOING_EDGE,m_outboxAllocator,m_outbox,rank,false);
+		}
+
+		// using outgoing edges, tell children to delete the associated ingoing edge
+		vector<uint64_t> outgoingEdges=node->getValue()->getOutgoingEdges(vertex,*m_wordSize);
+		for(int j=0;j<(int)outgoingEdges.size();j++){
+			uint64_t prefix=vertex;
+			uint64_t suffix=outgoingEdges[j];
+			int rankToFlush=vertexRank(suffix,size);
+			m_buffersForIngoingEdgesToDelete.addAt(rankToFlush,prefix);
+			m_buffersForIngoingEdgesToDelete.addAt(rankToFlush,suffix);
+			m_buffersForIngoingEdgesToDelete.flush(rankToFlush,2,RAY_MPI_TAG_DELETE_INGOING_EDGE,m_outboxAllocator,m_outbox,rank,false);
+		}
+
+		// delete the vertex
+		m_subgraph->remove(vertex);
+	}
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_DELETE_VERTEX_REPLY,rank);
+	m_outbox->push_back(aMessage);
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_DELETE_INGOING_EDGE(Message*message){
+	uint64_t*incoming=(uint64_t*)message->getBuffer();
+	int count=message->getCount();
+	for(int i=0;i<count;i+=2){
+		uint64_t prefix=incoming[i+0];
+		uint64_t suffix=incoming[i+1];
+		SplayNode<uint64_t,Vertex>*node=m_subgraph->find(suffix);
+
+		if(node==NULL){ // node already deleted, don't need to delete the edges.
+			continue;
+		}
+
+		#ifdef ASSERT
+		int before=node->getValue()->getIngoingEdges(suffix,*m_wordSize).size();
+		#endif
+
+		node->getValue()->deleteIngoingEdge(prefix,*m_wordSize);
+
+		#ifdef ASSERT
+		int after=node->getValue()->getIngoingEdges(suffix,*m_wordSize).size();
+		assert(after+1==before);
+		#endif
+	}
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_DELETE_OUTGOING_EDGE(Message*message){
+	uint64_t*incoming=(uint64_t*)message->getBuffer();
+	int count=message->getCount();
+	for(int i=0;i<count;i+=2){
+		uint64_t prefix=incoming[i+0];
+		uint64_t suffix=incoming[i+1];
+		SplayNode<uint64_t,Vertex>*node=m_subgraph->find(prefix);
+
+		if(node==NULL){ // node already deleted, don't need to delete the edges.
+			continue;
+		}
+	
+		#ifdef ASSERT
+		int before=node->getValue()->getOutgoingEdges(prefix,*m_wordSize).size();
+		#endif
+
+		node->getValue()->deleteOutgoingEdge(suffix,*m_wordSize);
+
+		#ifdef ASSERT
+		int after=node->getValue()->getOutgoingEdges(prefix,*m_wordSize).size();
+		assert(after+1==before);
+		#endif
+
+	}
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTEX_REPLY(Message*message){
+	m_verticesExtractor->setReadiness(m_outbox,rank);
+}
+
 void MessageProcessor::call_RAY_MPI_TAG_VERIFY_INGOING_EDGES_REPLY_FORCE(Message*message){
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
 	int count=message->getCount();
@@ -139,12 +233,48 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY(Message*aMessa
 
 void MessageProcessor::call_RAY_MPI_TAG_RESUME_VERTEX_DISTRIBUTION(Message*message){
 	if(!m_verticesExtractor->finished()){
+		cout<<"Rank "<<rank<<": "<<m_lastSize<<" -> "<<m_subgraph->size()<<endl;
 		(*m_mode)=RAY_SLAVE_MODE_EXTRACT_VERTICES;
 		m_verticesExtractor->removeTrigger();
 	}
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_REDUCE_MEMORY_CONSUMPTION_DONE(Message*message){
+	m_verticesExtractor->incrementRanksDoneWithReduction();
+	if(m_verticesExtractor->reductionIsDone()){
+		for(int i=0;i<size;i++){
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_DELETE_VERTICES,rank);
+			m_outbox->push_back(aMessage);
+		}
+		m_verticesExtractor->resetRanksDoneForReduction();
+	}
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTICES(Message*message){
+	m_lastSize=m_subgraph->size();
+	(*m_mode)=RAY_SLAVE_MODE_DELETE_VERTICES;
+	m_subgraph->unfreeze();
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTICES_DONE(Message*message){
+	m_verticesExtractor->incrementRanksDoneWithReduction();
+	if(m_verticesExtractor->reductionIsDone()){
+		for(int i=0;i<size;i++){
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_UPDATE_THRESHOLD,rank);
+			m_outbox->push_back(aMessage);
+		}
+		m_verticesExtractor->resetRanksDoneForReduction();
+	}
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_UPDATE_THRESHOLD(Message*message){
+	m_verticesExtractor->updateThreshold(m_subgraph);
+
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_UPDATE_THRESHOLD_REPLY,rank);
+	m_outbox->push_back(aMessage);
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_UPDATE_THRESHOLD_REPLY(Message*message){
 	m_verticesExtractor->incrementRanksDoneWithReduction();
 	if(m_verticesExtractor->reductionIsDone()){
 		(*m_master_mode)=RAY_MASTER_MODE_RESUME_VERTEX_DISTRIBUTION;
@@ -319,6 +449,9 @@ void MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA(Message*message){
 		uint64_t suffix=incoming[i+1];
 
 		SplayNode<uint64_t,Vertex>*node=m_subgraph->find(prefix);
+		if(node==NULL){
+			continue;
+		}
 
 		#ifdef ASSERT
 		assert(node!=NULL);
@@ -363,7 +496,9 @@ void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){
 		uint64_t suffix=incoming[i+1];
 	
 		SplayNode<uint64_t,Vertex>*node=m_subgraph->find(suffix);
-
+		if(node==NULL){
+			continue;
+		}
 		#ifdef ASSERT
 		assert(node!=NULL);
 		#endif
@@ -1561,6 +1696,14 @@ SequencesIndexer*m_si){
 	this->m_isFinalFusion=m_isFinalFusion;
 	this->m_ready=m_ready;
 	m_seedingData=seedingData;
+
+	m_buffersForOutgoingEdgesToDelete.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	m_buffersForIngoingEdgesToDelete.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+}
+
+void MessageProcessor::flushBuffers(){
+	m_buffersForIngoingEdgesToDelete.flushAll(RAY_MPI_TAG_DELETE_INGOING_EDGE,m_outboxAllocator,m_outbox,rank);
+	m_buffersForOutgoingEdgesToDelete.flushAll(RAY_MPI_TAG_DELETE_OUTGOING_EDGE,m_outboxAllocator,m_outbox,rank);
 }
 
 MessageProcessor::MessageProcessor(){
@@ -1698,4 +1841,14 @@ void MessageProcessor::assignHandlers(){
 	m_methods[RAY_MPI_TAG_VERIFY_OUTGOING_EDGES_REPLY_FORCE]=&MessageProcessor::call_RAY_MPI_TAG_VERIFY_OUTGOING_EDGES_REPLY_FORCE;
 	m_methods[RAY_MPI_TAG_VERIFY_OUTGOING_EDGES_FORCE]=&MessageProcessor::call_RAY_MPI_TAG_VERIFY_OUTGOING_EDGES_FORCE;
 	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_EDGES]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_EDGES;
+	m_methods[RAY_MPI_TAG_DELETE_VERTICES]=&MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTICES;
+	m_methods[RAY_MPI_TAG_DELETE_VERTICES_DONE]=&MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTICES_DONE;
+	m_methods[RAY_MPI_TAG_UPDATE_THRESHOLD]=&MessageProcessor::call_RAY_MPI_TAG_UPDATE_THRESHOLD;
+	m_methods[RAY_MPI_TAG_UPDATE_THRESHOLD_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_UPDATE_THRESHOLD_REPLY;
+	m_methods[RAY_MPI_TAG_DELETE_VERTEX]=&MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTEX;
+	m_methods[RAY_MPI_TAG_DELETE_INGOING_EDGE]=&MessageProcessor::call_RAY_MPI_TAG_DELETE_INGOING_EDGE;
+	m_methods[RAY_MPI_TAG_DELETE_OUTGOING_EDGE]=&MessageProcessor::call_RAY_MPI_TAG_DELETE_OUTGOING_EDGE;
+	m_methods[RAY_MPI_TAG_DELETE_VERTEX_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTEX_REPLY;
 }
+
+

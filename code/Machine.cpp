@@ -1234,24 +1234,16 @@ void Machine::call_RAY_SLAVE_MODE_EXTENSION(){
 m_minimumCoverage,&m_oa,&(m_seedingData->m_SEEDING_edgesReceived),&m_slave_mode);
 }
 
-void Machine::call_MASTER_RAY_SLAVE_MODE_ASSEMBLE_WAVES(){
-	// ask ranks to send their extensions.
-	if(!m_ed->m_EXTENSION_currentRankIsSet){
-		m_ed->m_EXTENSION_currentRankIsSet=true;
-		m_ed->m_EXTENSION_currentRankIsStarted=false;
-		m_ed->m_EXTENSION_rank++;
-	}
-	if(m_ed->m_EXTENSION_rank==getSize()){
-		m_master_mode=RAY_MASTER_RAY_SLAVE_MODE_DO_NOTHING;
-		cout<<"Rank "<<getRank()<<" contigs computed."<<endl;
-		killRanks();
-	}else if(!m_ed->m_EXTENSION_currentRankIsStarted){
-		m_ed->m_EXTENSION_currentRankIsStarted=true;
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_ed->m_EXTENSION_rank,RAY_MPI_TAG_ASSEMBLE_WAVES,getRank());
+void Machine::call_RAY_SLAVE_MODE_DELETE_VERTICES(){
+	if(m_verticesExtractor.deleteVertices(m_reducer.getVerticesToRemove(),&m_subgraph,
+getSize(),getRank(),&m_outboxAllocator,&m_outbox
+)){
+		// flush
+		m_mp.flushBuffers();
+
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_DELETE_VERTICES_DONE,getRank());
 		m_outbox.push_back(aMessage);
-		m_ed->m_EXTENSION_currentRankIsDone=false;
-	}else if(m_ed->m_EXTENSION_currentRankIsDone){
-		m_ed->m_EXTENSION_currentRankIsSet=false;
+		m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
 	}
 }
 
@@ -1335,12 +1327,7 @@ m_minimumCoverage,&(m_seedingData->m_SEEDING_edgesReceived)
 		m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_REDUCE_MEMORY_CONSUMPTION_DONE,getRank());
 		m_outbox.push_back(aMessage);
-		if(m_reducer.getNumberOfRemovedVertices()>0){
-			double ratio=m_reducer.getNumberOfRemovedVertices()/(0.0+m_subgraph.size());
-			printf("Rank %i removed %i vertices to reduce memory consumption preemptively (%.4f)\n",getRank(),m_reducer.getNumberOfRemovedVertices(),ratio);
-			fflush(stdout);
-		}
-		m_verticesExtractor.updateThreshold(&m_subgraph);
+		m_verticesExtractor.prepareDeletions();
 	}
 }
 
@@ -1400,4 +1387,5 @@ void Machine::assignSlaveHandlers(){
 	m_slave_methods[RAY_SLAVE_MODE_PROCESS_OUTGOING_EDGES]=&Machine::call_RAY_SLAVE_MODE_PROCESS_OUTGOING_EDGES;
 	m_slave_methods[RAY_SLAVE_MODE_EXTENSION]=&Machine::call_RAY_SLAVE_MODE_EXTENSION;
 	m_slave_methods[RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION]=&Machine::call_RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION;
+	m_slave_methods[RAY_SLAVE_MODE_DELETE_VERTICES]=&Machine::call_RAY_SLAVE_MODE_DELETE_VERTICES;
 }

@@ -64,6 +64,7 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 );
 
 	int getNumberOfRemovedVertices();
+	vector<uint64_t>*getVerticesToRemove();
 };
 
 #endif

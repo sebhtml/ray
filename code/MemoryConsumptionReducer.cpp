@@ -246,18 +246,8 @@ edgesReceived
 							//cout<<"deleting "<<path.size()<<endl;
 							foundDestination=true;
 						}
-					}else{
-						bool aloneBits=true;
-						for(int o=0;o<(int)path.size();o++){
-							if(m_dfsDataOutgoing.m_coverages[path[o]]!=1){
-								aloneBits=false;
-								break;
-							}
-						}
-						if(aloneBits&&(int)path.size()<=2*wordSize-1){
-							foundDestination=true;
-						}
 					}
+					// alone bits are only detected by the other folk.
 				}
 
 				bool processed=false;
@@ -338,4 +328,8 @@ void MemoryConsumptionReducer::printCounter(Parameters*parameters,MyForest*fores
 	}else if(m_counter%40000==0){
 		printf("Rank %i is reducing memory usage [%lu/%lu]\n",parameters->getRank(),m_counter+1,forest->size());
 	}
+}
+
+vector<uint64_t>*MemoryConsumptionReducer::getVerticesToRemove(){
+	return &m_toRemove;
 }
