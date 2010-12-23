@@ -50,8 +50,6 @@ class MessageProcessor;
 typedef void (MessageProcessor::*FNMETHOD) (Message*message);
 
 class MessageProcessor{
-	BufferedData m_buffersForIngoingEdgesToDelete;
-	BufferedData m_buffersForOutgoingEdgesToDelete;
 
 	uint64_t m_lastSize;
 
@@ -261,6 +259,8 @@ class MessageProcessor{
 	void call_RAY_MPI_TAG_DELETE_INGOING_EDGE(Message*message);
 	void call_RAY_MPI_TAG_DELETE_OUTGOING_EDGE(Message*message);
 	void call_RAY_MPI_TAG_DELETE_VERTEX_REPLY(Message*message);
+	void call_RAY_MPI_TAG_DELETE_OUTGOING_EDGE_REPLY(Message*message);
+	void call_RAY_MPI_TAG_DELETE_INGOING_EDGE_REPLY(Message*message);
 
 
 public:

@@ -64,6 +64,11 @@ class VerticesExtractor{
 	bool m_mustTriggerReduction;
 
 public:
+
+	BufferedData m_buffersForIngoingEdgesToDelete;
+	BufferedData m_buffersForOutgoingEdgesToDelete;
+
+
 	void constructor(int size);
 	void process(int*m_mode_send_vertices_sequence_id,
 				ArrayOfReads*m_myReads,
@@ -107,6 +112,9 @@ int size,int rank,RingAllocator*m_outboxAllocator,
 	StaticVector*m_outbox
 );
 	void prepareDeletions();
+
+	void flushBuffers(int rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator);
+	void incrementPendingMessages();
 };
 
 #endif

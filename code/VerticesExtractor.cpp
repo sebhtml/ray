@@ -188,6 +188,9 @@ void VerticesExtractor::constructor(int size){
 	m_bufferedDataForOutgoingEdges.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	m_bufferedDataForIngoingEdges.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	
+	m_buffersForOutgoingEdgesToDelete.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	m_buffersForIngoingEdgesToDelete.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+
 	m_pendingMessages=0;
 	m_size=size;
 	m_ranksDoneWithReduction=0;
@@ -326,4 +329,13 @@ bool VerticesExtractor::deleteVertices(vector<uint64_t>*verticesToRemove,MyFores
 
 void VerticesExtractor::prepareDeletions(){
 	m_deletionsInitiated=false;
+}
+
+void VerticesExtractor::flushBuffers(int rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator){
+	m_pendingMessages+=m_buffersForIngoingEdgesToDelete.flushAll(RAY_MPI_TAG_DELETE_INGOING_EDGE,m_outboxAllocator,m_outbox,rank);
+	m_pendingMessages+=m_buffersForOutgoingEdgesToDelete.flushAll(RAY_MPI_TAG_DELETE_OUTGOING_EDGE,m_outboxAllocator,m_outbox,rank);
+}
+
+void VerticesExtractor::incrementPendingMessages(){
+	m_pendingMessages++;
 }

@@ -55,7 +55,6 @@ void*MyAllocator::allocate(int s){
 	if(hasAddressesToReuse()){
 		return reuseAddress();
 	}
-
 	// hopefully fix alignment issues on Itanium
 	int alignment=8;
 	if(s%8!=0){
