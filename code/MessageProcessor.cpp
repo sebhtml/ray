@@ -44,9 +44,9 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTEX(Message*message){
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
 	int count=message->getCount();
 	for(int i=0;i<count;i++){
-		break;
 		uint64_t vertex=incoming[i];
 		SplayNode<uint64_t,Vertex>*node=m_subgraph->find(vertex);
+
 		#ifdef ASSERT
 		assert(node!=NULL);
 		#endif
@@ -60,6 +60,10 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTEX(Message*message){
 			m_buffersForOutgoingEdgesToDelete.addAt(rankToFlush,prefix);
 			m_buffersForOutgoingEdgesToDelete.addAt(rankToFlush,suffix);
 			m_buffersForOutgoingEdgesToDelete.flush(rankToFlush,2,RAY_MPI_TAG_DELETE_OUTGOING_EDGE,m_outboxAllocator,m_outbox,rank,false);
+
+			if(idToWord(vertex,*m_wordSize)=="ACTGCTAAAAAATTTCTATAA"){
+				cout<<"RAY_MPI_TAG_DELETE_OUTGOING_EDGE for ACTGCTAAAAAATTTCTATAA"<<endl;
+			}
 		}
 
 		// using outgoing edges, tell children to delete the associated ingoing edge
@@ -71,10 +75,23 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTEX(Message*message){
 			m_buffersForIngoingEdgesToDelete.addAt(rankToFlush,prefix);
 			m_buffersForIngoingEdgesToDelete.addAt(rankToFlush,suffix);
 			m_buffersForIngoingEdgesToDelete.flush(rankToFlush,2,RAY_MPI_TAG_DELETE_INGOING_EDGE,m_outboxAllocator,m_outbox,rank,false);
+
+			if(idToWord(vertex,*m_wordSize)=="ACTGCTAAAAAATTTCTATAA"){
+				cout<<"RAY_MPI_TAG_DELETE_INGOING_EDGE for ACTGCTAAAAAATTTCTATAA"<<endl;
+			}
 		}
+
+		if(idToWord(vertex,*m_wordSize)=="ACTGCTAAAAAATTTCTATAA"){
+			cout<<"deleting ACTGCTAAAAAATTTCTATAA "<<ingoingEdges.size()<<" "<<outgoingEdges.size()<<endl;
+		}
+
 
 		// delete the vertex
 		m_subgraph->remove(vertex);
+
+		#ifdef ASSERT
+		assert(m_subgraph->find(vertex)==NULL);
+		#endif
 	}
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_DELETE_VERTEX_REPLY,rank);
 	m_outbox->push_back(aMessage);
@@ -86,6 +103,11 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_INGOING_EDGE(Message*message){
 	for(int i=0;i<count;i+=2){
 		uint64_t prefix=incoming[i+0];
 		uint64_t suffix=incoming[i+1];
+
+		if(idToWord(prefix,*m_wordSize)=="ACTGCTAAAAAATTTCTATAA"){
+			cout<<"deleting ingoing edge."<<endl;
+		}
+
 		SplayNode<uint64_t,Vertex>*node=m_subgraph->find(suffix);
 
 		if(node==NULL){ // node already deleted, don't need to delete the edges.
@@ -112,6 +134,11 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_OUTGOING_EDGE(Message*message){
 		uint64_t prefix=incoming[i+0];
 		uint64_t suffix=incoming[i+1];
 		SplayNode<uint64_t,Vertex>*node=m_subgraph->find(prefix);
+
+		if(idToWord(suffix,*m_wordSize)=="ACTGCTAAAAAATTTCTATAA"){
+			cout<<"deleting ingoing edge."<<endl;
+		}
+
 
 		if(node==NULL){ // node already deleted, don't need to delete the edges.
 			continue;
