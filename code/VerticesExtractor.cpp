@@ -40,7 +40,10 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 				RingAllocator*m_outboxAllocator,
 				bool m_colorSpaceMode,int*m_mode
 				){
-	if(!m_ready){
+	#ifdef ASSERT
+	assert(m_pendingMessages>=0);
+	#endif
+	if(m_pendingMessages!=0){
 		return;
 	}
 	#ifdef SHOW_PROGRESS
@@ -97,7 +100,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 				m_bufferedData.addAt(rankToFlush,a);
 
 				if(m_bufferedData.flush(rankToFlush,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,false)){
-					m_ready=false;
+					m_pendingMessages++;
 				}
 
 				if(m_hasPreviousVertex){
@@ -106,11 +109,13 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,a);
 
 					if(m_bufferedDataForOutgoingEdges.needsFlushing(outgoingRank,2)){
-						m_bufferedData.flush(outgoingRank,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true);
+						if(m_bufferedData.flush(outgoingRank,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true)){
+							m_pendingMessages++;
+						}
 					}
 
 					if(m_bufferedDataForOutgoingEdges.flush(outgoingRank,2,RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,rank,false)){
-						m_ready=false;
+						m_pendingMessages++;
 					}
 
 					int ingoingRank=vertexRank(a,size);
@@ -118,11 +123,13 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 					m_bufferedDataForIngoingEdges.addAt(ingoingRank,a);
 
 					if(m_bufferedDataForIngoingEdges.needsFlushing(ingoingRank,2)){
-						m_bufferedData.flush(ingoingRank,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true);
+						if(m_bufferedData.flush(ingoingRank,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true)){
+							m_pendingMessages++;
+						}
 					}
 
 					if(m_bufferedDataForIngoingEdges.flush(ingoingRank,2,RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,rank,false)){
-						m_ready=false;
+						m_pendingMessages++;
 					}
 				}
 				m_hasPreviousVertex=true;
@@ -134,7 +141,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 				m_bufferedData.addAt(rankToFlush,b);
 
 				if(m_bufferedData.flush(rankToFlush,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,false)){
-					m_ready=false;
+					m_pendingMessages++;
 				}
 
 				if(m_hasPreviousVertex){
@@ -143,11 +150,13 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,m_previousVertex);
 
 					if(m_bufferedDataForOutgoingEdges.needsFlushing(outgoingRank,2)){
-						m_bufferedData.flush(outgoingRank,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true);
+						if(m_bufferedData.flush(outgoingRank,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true)){
+							m_pendingMessages++;
+						}
 					}
 
 					if(m_bufferedDataForOutgoingEdges.flush(outgoingRank,2,RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,rank,false)){
-						m_ready=false;
+						m_pendingMessages++;
 					}
 
 					int ingoingRank=vertexRank(m_previousVertex,size);
@@ -155,11 +164,13 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 					m_bufferedDataForIngoingEdges.addAt(ingoingRank,m_previousVertex);
 
 					if(m_bufferedDataForIngoingEdges.needsFlushing(ingoingRank,2)){
-						m_bufferedData.flush(ingoingRank,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true);
+						if(m_bufferedData.flush(ingoingRank,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true)){
+							m_pendingMessages++;
+						}
 					}
 
 					if(m_bufferedDataForIngoingEdges.flush(ingoingRank,2,RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,rank,false)){
-						m_ready=false;
+						m_pendingMessages++;
 					}
 				}
 
@@ -186,7 +197,7 @@ void VerticesExtractor::constructor(int size){
 	m_bufferedDataForOutgoingEdges.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	m_bufferedDataForIngoingEdges.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	
-	setReadiness();
+	m_pendingMessages=0;
 	m_size=size;
 	m_ranksDoneWithReduction=0;
 	m_ranksReadyForReduction=0;
@@ -194,10 +205,20 @@ void VerticesExtractor::constructor(int size){
 	m_thresholdForReduction=m_reductionPeriod;
 	m_triggered=false;
 	m_finished=false;
+	m_mustTriggerReduction=false;
 }
 
-void VerticesExtractor::setReadiness(){
-	m_ready=true;
+void VerticesExtractor::setReadiness(StaticVector*outbox,int rank){
+	#ifdef ASSERT
+	assert(m_pendingMessages>0);
+	#endif
+	m_pendingMessages--;
+
+	if(m_pendingMessages==0 && mustTriggerReduction()){
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY,rank);
+		outbox->push_back(aMessage);
+		m_mustTriggerReduction=false;
+	}
 }
 
 bool VerticesExtractor::mustRunReducer(){
@@ -253,17 +274,11 @@ void VerticesExtractor::trigger(){
 }
 
 void VerticesExtractor::flushAll(RingAllocator*m_outboxAllocator,StaticVector*m_outbox,int rank){
-	if(m_bufferedData.flushAll(RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank)){
-		m_ready=false;
-	}
+	m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank);
 
-	if(m_bufferedDataForOutgoingEdges.flushAll(RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,rank)){
-		m_ready=false;
-	}
+	m_pendingMessages+=m_bufferedDataForOutgoingEdges.flushAll(RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,rank);
 
-	if(m_bufferedDataForIngoingEdges.flushAll(RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,rank)){
-		m_ready=false;
-	}
+	m_pendingMessages+=m_bufferedDataForIngoingEdges.flushAll(RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,rank);
 }
 
 void VerticesExtractor::removeTrigger(){
@@ -278,4 +293,12 @@ void VerticesExtractor::assertBuffersAreEmpty(){
 	assert(m_bufferedData.isEmpty());
 	assert(m_bufferedDataForOutgoingEdges.isEmpty());
 	assert(m_bufferedDataForIngoingEdges.isEmpty());
+}
+
+bool VerticesExtractor::mustTriggerReduction(){
+	return m_mustTriggerReduction;
+}
+
+void VerticesExtractor::scheduleReduction(){
+	m_mustTriggerReduction=true;
 }

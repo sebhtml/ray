@@ -41,7 +41,8 @@ class VerticesExtractor{
 	BufferedData m_bufferedDataForOutgoingEdges;
 	BufferedData m_bufferedDataForIngoingEdges;
 
-	bool m_ready;
+	int m_pendingMessages;
+
 	BufferedData m_bufferedData;
 	set<int> m_ranksThatMustRunReducer;
 	int m_size;
@@ -56,6 +57,7 @@ class VerticesExtractor{
 
 	bool m_finished;
 
+	bool m_mustTriggerReduction;
 
 public:
 	void constructor(int size);
@@ -71,7 +73,7 @@ public:
 				RingAllocator*m_outboxAllocator,
 				bool m_colorSpaceMode,int*m_mode
 			);
-	void setReadiness();
+	void setReadiness(StaticVector*outbox,int rank);
 	bool mustRunReducer();
 	void addRankForReduction(int a);
 	void resetRanksForReduction();
@@ -93,6 +95,8 @@ public:
 	bool finished();
 	void flushAll(RingAllocator*m_outboxAllocator,StaticVector*m_outbox,int rank);
 	void assertBuffersAreEmpty();
+	bool mustTriggerReduction();
+	void scheduleReduction();
 };
 
 #endif

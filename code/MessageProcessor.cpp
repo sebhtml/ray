@@ -161,9 +161,8 @@ void MessageProcessor::call_RAY_MPI_TAG_START_REDUCTION(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION(Message*message){
 	m_verticesExtractor->flushAll(m_outboxAllocator,m_outbox,rank);
+	m_verticesExtractor->scheduleReduction();
 	(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY,rank);
-	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_MUST_RUN_REDUCER(Message*message){
@@ -295,7 +294,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA_REPLY(Message*message){
-	m_verticesExtractor->setReadiness();
+	m_verticesExtractor->setReadiness(m_outbox,rank);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DISTRIBUTED(Message*message){
@@ -306,8 +305,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DISTRIBUTED(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA_REPLY(Message*message){
-	m_edgesExtractor->setReadiness();
-	m_verticesExtractor->setReadiness();
+	m_verticesExtractor->setReadiness(m_outbox,rank);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA(Message*message){
@@ -351,8 +349,7 @@ void MessageProcessor::call_RAY_MPI_TAG_EDGES_DISTRIBUTED(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA_REPLY(Message*message){
-	m_edgesExtractor->setReadiness();
-	m_verticesExtractor->setReadiness();
+	m_verticesExtractor->setReadiness(m_outbox,rank);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){
