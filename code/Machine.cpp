@@ -27,7 +27,6 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<crypto.h>
 #include<SplayNode.h>
 #include<mpi.h>
-#include<EdgesExtractor.h>
 #include<Machine.h>
 #include<VerticesExtractor.h>
 #include<sstream>
@@ -273,16 +272,6 @@ void Machine::start(){
 	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),&m_outbox,&m_outboxAllocator,&m_seedCoverage,&m_slave_mode,&m_parameters,&m_wordSize,&m_subgraph,
 		&m_colorSpaceMode);
 
-	m_edgesExtractor.getRank=getRank();
-	m_edgesExtractor.getSize=getSize();
-	m_edgesExtractor.m_outboxAllocator=&m_outboxAllocator;
-	m_edgesExtractor.m_outbox=&m_outbox;
-	m_edgesExtractor.m_mode_send_outgoing_edges=&m_mode_send_outgoing_edges;
-	m_edgesExtractor.m_mode_send_ingoing_edges=&m_mode_send_ingoing_edges;
-	m_edgesExtractor.m_colorSpaceMode=m_colorSpaceMode;
-	m_edgesExtractor.m_myReads=&m_myReads;
-	m_edgesExtractor.m_mode=&m_slave_mode;
-
 	if(isMaster()){
 
 		cout<<"Rank "<<getRank()<<" welcomes you to the MPI_COMM_WORLD"<<endl<<endl;
@@ -300,7 +289,6 @@ void Machine::start(){
 m_seedingData,
 &m_library,&m_ready,
 &m_verticesExtractor,
-&m_edgesExtractor,
 &m_sl,
 			m_ed,
 			&m_numberOfRanksDoneDetectingDistances,
@@ -500,28 +488,8 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION(){
 	m_master_mode=RAY_MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 }
 
-void Machine::call_RAY_MASTER_MODE_TRIGGER_EDGES_DISTRIBUTION(){
-	#ifndef SHOW_PROGRESS
-	cout<<"\r"<<"Connecting vertices"<<endl;
-	#endif
-	for(int i=0;i<getSize();i++){
-		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_START_EDGES_DISTRIBUTION_ASK,getRank());
-		m_outbox.push_back(aMessage);
-	}
-	m_startEdgeDistribution=false;
-}
-
 void Machine::call_RAY_MASTER_MODE_START_EDGES_DISTRIBUTION(){
-	m_timePrinter.printElapsedTime("Calculation of coverage distribution");
-	cout<<endl;
-	cout<<"Rank 0 tells its friends to proceed with the distribution of edges."<<endl;
 	m_numberOfMachinesReadyForEdgesDistribution=-1;
-	for(int i=0;i<getSize();i++){
-		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_START_EDGES_DISTRIBUTION,getRank());
-		m_outbox.push_back(aMessage);
-	}
-	m_messageSentForEdgesDistribution=true;
-	m_master_mode=RAY_MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 }
 
 void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
@@ -581,16 +549,13 @@ void Machine::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 		);
 }
 
-void Machine::call_RAY_MASTER_MODE_TRIGGER_EDGES(){
-	m_numberOfRanksWithCoverageData=-1;
-	m_numberOfMachinesReadyForEdgesDistribution=getSize();
-	m_master_mode=RAY_MASTER_MODE_START_EDGES_DISTRIBUTION;
-}
-
 void Machine::call_RAY_MASTER_MODE_TRIGGER_INDEXING(){
 	m_numberOfMachinesDoneSendingEdges=-9;
 	m_master_mode=RAY_MASTER_RAY_SLAVE_MODE_DO_NOTHING;
-	//m_timePrinter.printElapsedTime("Distribution of edges");
+	m_timePrinter.printElapsedTime("Calculation of coverage distribution");
+	cout<<endl;
+	cout<<"Rank 0 tells its friends to proceed with the distribution of edges."<<endl;
+
 	cout<<endl;
 	for(int i=0;i<getSize();i++){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_START_INDEXING_SEQUENCES,getRank());
@@ -677,16 +642,6 @@ void Machine::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
 
 	m_distributionOfCoverage.clear();
 	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
-}
-
-void Machine::call_RAY_SLAVE_MODE_PROCESS_OUTGOING_EDGES(){
-
-	m_edgesExtractor.m_wordSize=m_wordSize;
-	m_edgesExtractor.processOutgoingEdges();
-}
-
-void Machine::call_RAY_SLAVE_MODE_PROCESS_INGOING_EDGES(){
-	m_edgesExtractor.processIngoingEdges();
 }
 
 void Machine::call_RAY_MASTER_MODE_TRIGGER_SEEDING(){
@@ -1344,14 +1299,11 @@ void Machine::assignMasterHandlers(){
 	m_master_methods[RAY_MASTER_MODE_LOAD_SEQUENCES]=&Machine::call_RAY_MASTER_MODE_LOAD_SEQUENCES;
 	m_master_methods[RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION]=&Machine::call_RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION;
 	m_master_methods[RAY_MASTER_MODE_SEND_COVERAGE_VALUES]=&Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES;
-	m_master_methods[RAY_MASTER_MODE_TRIGGER_EDGES_DISTRIBUTION]=&Machine::call_RAY_MASTER_MODE_TRIGGER_EDGES_DISTRIBUTION;
-	m_master_methods[RAY_MASTER_MODE_START_EDGES_DISTRIBUTION]=&Machine::call_RAY_MASTER_MODE_START_EDGES_DISTRIBUTION;
 	m_master_methods[RAY_MASTER_RAY_SLAVE_MODE_DO_NOTHING]=&Machine::call_RAY_MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 	m_master_methods[RAY_MASTER_RAY_SLAVE_MODE_UPDATE_DISTANCES]=&Machine::call_RAY_MASTER_RAY_SLAVE_MODE_UPDATE_DISTANCES;
 	m_master_methods[RAY_MASTER_RAY_SLAVE_MODE_ASK_EXTENSIONS]=&Machine::call_RAY_MASTER_RAY_SLAVE_MODE_ASK_EXTENSIONS;
 	m_master_methods[RAY_MASTER_RAY_SLAVE_MODE_AMOS]=&Machine::call_RAY_MASTER_RAY_SLAVE_MODE_AMOS;
 	m_master_methods[RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS]=&Machine::call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS;
-	m_master_methods[RAY_MASTER_MODE_TRIGGER_EDGES]=&Machine::call_RAY_MASTER_MODE_TRIGGER_EDGES;
 	m_master_methods[RAY_MASTER_MODE_TRIGGER_INDEXING]=&Machine::call_RAY_MASTER_MODE_TRIGGER_INDEXING;
 	m_master_methods[RAY_MASTER_RAY_SLAVE_MODE_INDEX_SEQUENCES]=&Machine::call_RAY_MASTER_RAY_SLAVE_MODE_INDEX_SEQUENCES;
 	m_master_methods[RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS]=&Machine::call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS;
@@ -1383,8 +1335,6 @@ void Machine::assignSlaveHandlers(){
 	m_slave_methods[RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES]=&Machine::call_RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES;
 	m_slave_methods[RAY_SLAVE_MODE_EXTRACT_VERTICES]=&Machine::call_RAY_SLAVE_MODE_EXTRACT_VERTICES;
 	m_slave_methods[RAY_SLAVE_MODE_SEND_DISTRIBUTION]=&Machine::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION;
-	m_slave_methods[RAY_SLAVE_MODE_PROCESS_INGOING_EDGES]=&Machine::call_RAY_SLAVE_MODE_PROCESS_INGOING_EDGES;
-	m_slave_methods[RAY_SLAVE_MODE_PROCESS_OUTGOING_EDGES]=&Machine::call_RAY_SLAVE_MODE_PROCESS_OUTGOING_EDGES;
 	m_slave_methods[RAY_SLAVE_MODE_EXTENSION]=&Machine::call_RAY_SLAVE_MODE_EXTENSION;
 	m_slave_methods[RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION]=&Machine::call_RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION;
 	m_slave_methods[RAY_SLAVE_MODE_DELETE_VERTICES]=&Machine::call_RAY_SLAVE_MODE_DELETE_VERTICES;

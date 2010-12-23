@@ -26,7 +26,6 @@
 #include<MessagesHandler.h>
 #include<common_functions.h>
 #include<MyForest.h>
-#include<EdgesExtractor.h>
 #include<ArrayOfReads.h>
 #include<MemoryConsumptionReducer.h>
 #include<StaticVector.h>
@@ -91,7 +90,6 @@ class Machine{
 	int m_currentCycleStep;
 	MessagesHandler m_messagesHandler;
 
-	EdgesExtractor m_edgesExtractor;
 	int m_numberOfRanksWithCoverageData;
 	TimePrinter m_timePrinter;
 	ScaffolderData*m_sd;
@@ -299,8 +297,6 @@ class Machine{
 	void call_RAY_SLAVE_MODE_FINISH_FUSIONS();
 	void call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS();
 	void call_RAY_SLAVE_MODE_SEND_DISTRIBUTION();
-	void call_RAY_SLAVE_MODE_PROCESS_OUTGOING_EDGES();
-	void call_RAY_SLAVE_MODE_PROCESS_INGOING_EDGES();
 	void call_RAY_MASTER_MODE_TRIGGER_SEEDING();
 	void call_RAY_SLAVE_MODE_START_SEEDING();
 	void call_RAY_MASTER_MODE_TRIGGER_DETECTION();

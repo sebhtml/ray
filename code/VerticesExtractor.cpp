@@ -58,44 +58,37 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 	#endif
 
 	if(*m_mode_send_vertices_sequence_id>(int)m_myReads->size()-1){
-		if(*m_reverseComplementVertex==false){
-			// flush data
+		// flush data
+		flushAll(m_outboxAllocator,m_outbox,rank);
 
-
-			printf("Rank %i is computing vertices & edges [%i/%i] (completed)\n",rank,(int)*m_mode_send_vertices_sequence_id,(int)m_myReads->size());
-			fflush(stdout);
-			(*m_mode_send_vertices_sequence_id)=0;
-			*m_mode_send_vertices_sequence_id_position=0;
-			*m_reverseComplementVertex=true;
-		}else{
-			// flush data
-			flushAll(m_outboxAllocator,m_outbox,rank);
-
-			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, RAY_MPI_TAG_VERTICES_DISTRIBUTED,rank);
-			m_outbox->push_back(aMessage);
-			*m_mode_send_vertices=false;
-			(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
-			printf("Rank %i is computing vertices & edges (reverse complement) [%i/%i] (completed)\n",rank,(int)*m_mode_send_vertices_sequence_id,(int)m_myReads->size());
-			fflush(stdout);
-			m_bufferedData.clear();
-			m_finished=true;
-		}
+		Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, RAY_MPI_TAG_VERTICES_DISTRIBUTED,rank);
+		m_outbox->push_back(aMessage);
+		*m_mode_send_vertices=false;
+		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
+		printf("Rank %i is computing vertices & edges [%i/%i] (completed)\n",rank,(int)*m_mode_send_vertices_sequence_id,(int)m_myReads->size());
+		fflush(stdout);
+		m_bufferedData.clear();
+		m_finished=true;
 	}else{
 		char*readSequence=(*m_myReads)[(*m_mode_send_vertices_sequence_id)]->getSeq();
 		int len=strlen(readSequence);
 		char memory[100];
 		int lll=len-m_wordSize;
-		int p=(*m_mode_send_vertices_sequence_id_position);
+		
 		#ifdef ASSERT
 		assert(readSequence!=NULL);
 		assert(m_wordSize<=32);
 		#endif
-		memcpy(memory,readSequence+p,m_wordSize);
-		memory[m_wordSize]='\0';
-		if(isValidDNA(memory)){
-			uint64_t a=wordId(memory);
-			int rankToFlush=0;
-			if(*m_reverseComplementVertex==false){
+
+		m_hasPreviousVertex=false;
+
+		for(int p=0;p<lll;p++){
+			memcpy(memory,readSequence+p,m_wordSize);
+			memory[m_wordSize]='\0';
+			if(isValidDNA(memory)){
+				uint64_t a=wordId(memory);
+				int rankToFlush=0;
+
 				rankToFlush=vertexRank(a,size);
 				m_bufferedData.addAt(rankToFlush,a);
 
@@ -104,6 +97,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 				}
 
 				if(m_hasPreviousVertex){
+					// outgoing edge
 					int outgoingRank=vertexRank(m_previousVertex,size);
 					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,m_previousVertex);
 					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,a);
@@ -118,6 +112,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 						m_pendingMessages++;
 					}
 
+					// ingoing edge
 					int ingoingRank=vertexRank(a,size);
 					m_bufferedDataForIngoingEdges.addAt(ingoingRank,m_previousVertex);
 					m_bufferedDataForIngoingEdges.addAt(ingoingRank,a);
@@ -132,9 +127,8 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 						m_pendingMessages++;
 					}
 				}
-				m_hasPreviousVertex=true;
-				m_previousVertex=a;
-			}else{
+
+				// reverse complement
 				uint64_t b=complementVertex(a,m_wordSize,m_colorSpaceMode);
 
 				rankToFlush=vertexRank(b,size);
@@ -145,9 +139,10 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 				}
 
 				if(m_hasPreviousVertex){
+					// outgoing edge
 					int outgoingRank=vertexRank(b,size);
 					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,b);
-					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,m_previousVertex);
+					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,m_previousVertexRC);
 
 					if(m_bufferedDataForOutgoingEdges.needsFlushing(outgoingRank,2)){
 						if(m_bufferedData.flush(outgoingRank,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true)){
@@ -159,9 +154,10 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 						m_pendingMessages++;
 					}
 
-					int ingoingRank=vertexRank(m_previousVertex,size);
+					// ingoing edge
+					int ingoingRank=vertexRank(m_previousVertexRC,size);
 					m_bufferedDataForIngoingEdges.addAt(ingoingRank,b);
-					m_bufferedDataForIngoingEdges.addAt(ingoingRank,m_previousVertex);
+					m_bufferedDataForIngoingEdges.addAt(ingoingRank,m_previousVertexRC);
 
 					if(m_bufferedDataForIngoingEdges.needsFlushing(ingoingRank,2)){
 						if(m_bufferedData.flush(ingoingRank,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true)){
@@ -174,20 +170,15 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 					}
 				}
 
+				// there is a previous vertex.
 				m_hasPreviousVertex=true;
-				m_previousVertex=b;
+				m_previousVertex=a;
+				m_previousVertexRC=b;
+			}else{
+				m_hasPreviousVertex=false;
 			}
-		}else{
-			m_hasPreviousVertex=false;
 		}
-
-		(*m_mode_send_vertices_sequence_id_position)++;
-
-		if(*m_mode_send_vertices_sequence_id_position>lll){
-			(*m_mode_send_vertices_sequence_id)++;
-			(*m_mode_send_vertices_sequence_id_position)=0;
-			m_hasPreviousVertex=false;
-		}
+		(*m_mode_send_vertices_sequence_id)++;
 	}
 }
 

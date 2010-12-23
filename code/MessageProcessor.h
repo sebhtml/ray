@@ -22,7 +22,6 @@
 #ifndef _MessageProcessor
 #define _MessageProcessor
 
-#include<EdgesExtractor.h>
 #include<RingAllocator.h>
 #include<Library.h>
 #include<SequencesIndexer.h>
@@ -119,7 +118,6 @@ class MessageProcessor{
 	bool*m_mode_send_vertices;
 	int*m_numberOfMachinesDoneSendingVertices;
 	VerticesExtractor*m_verticesExtractor;
-	EdgesExtractor*m_edgesExtractor;
 	int*m_numberOfMachinesDoneSendingCoverage;
 	StaticVector*m_outbox;
 	map<int,int>*m_allIdentifiers;
@@ -271,7 +269,6 @@ SeedingData*seedingData,
 Library*m_library,
 bool*m_ready,
 VerticesExtractor*m_verticesExtractor,
-EdgesExtractor*m_edgesExtractor,
 SequencesLoader*m_sequencesLoader,
 ExtensionData*ed,
 			int*m_numberOfRanksDoneDetectingDistances,

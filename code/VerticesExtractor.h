@@ -40,6 +40,7 @@ class VerticesExtractor{
 
 	bool m_hasPreviousVertex;
 	uint64_t m_previousVertex;
+	uint64_t m_previousVertexRC;
 
 	BufferedData m_bufferedDataForOutgoingEdges;
 	BufferedData m_bufferedDataForIngoingEdges;
