@@ -114,7 +114,7 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_INGOING_EDGE(Message*message){
 		uint64_t suffix=incoming[i+1];
 
 		if(idToWord(prefix,*m_wordSize)=="ACTGCTAAAAAATTTCTATAA"){
-			cout<<"SENDS deleting ingoing edge ACTGCTAAAAAATTTCTATAA"<<endl;
+			cout<<"receives deleting ingoing edge ACTGCTAAAAAATTTCTATAA"<<endl;
 		}
 
 		SplayNode<uint64_t,Vertex>*node=m_subgraph->find(suffix);
@@ -155,9 +155,8 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_OUTGOING_EDGE(Message*message){
 		SplayNode<uint64_t,Vertex>*node=m_subgraph->find(prefix);
 
 		if(idToWord(suffix,*m_wordSize)=="ACTGCTAAAAAATTTCTATAA"){
-			cout<<"RECEIVES deleting ingoing edge."<<endl;
+			cout<<"receives deleting outgoing edge."<<endl;
 		}
-
 
 		if(node==NULL){ // node already deleted, don't need to delete the edges.
 			continue;
@@ -193,6 +192,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY(Message*aMessa
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_RESUME_VERTEX_DISTRIBUTION(Message*message){
+	m_verticesExtractor->updateThreshold(m_subgraph);
 	if(!m_verticesExtractor->finished()){
 		cout<<"Rank "<<rank<<": "<<m_lastSize<<" -> "<<m_subgraph->size()<<endl;
 		(*m_mode)=RAY_SLAVE_MODE_EXTRACT_VERTICES;
@@ -229,7 +229,7 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTICES_DONE(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_UPDATE_THRESHOLD(Message*message){
-	m_verticesExtractor->updateThreshold(m_subgraph);
+	m_verticesExtractor->flushBuffers(rank,m_outbox,m_outboxAllocator);
 
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_UPDATE_THRESHOLD_REPLY,rank);
 	m_outbox->push_back(aMessage);

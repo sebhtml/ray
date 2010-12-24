@@ -322,7 +322,10 @@ bool VerticesExtractor::deleteVertices(vector<uint64_t>*verticesToRemove,MyFores
 		}
 	}else{
 		m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_DELETE_VERTEX,m_outboxAllocator,m_outbox,rank);
-		return true;
+
+		if(m_pendingMessages==0){
+			return true;
+		}
 	}
 	return false;
 }
@@ -332,6 +335,7 @@ void VerticesExtractor::prepareDeletions(){
 }
 
 void VerticesExtractor::flushBuffers(int rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator){
+	cout<<"flushBuffers"<<endl;
 	m_pendingMessages+=m_buffersForIngoingEdgesToDelete.flushAll(RAY_MPI_TAG_DELETE_INGOING_EDGE,m_outboxAllocator,m_outbox,rank);
 	m_pendingMessages+=m_buffersForOutgoingEdgesToDelete.flushAll(RAY_MPI_TAG_DELETE_OUTGOING_EDGE,m_outboxAllocator,m_outbox,rank);
 }

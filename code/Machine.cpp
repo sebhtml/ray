@@ -1194,7 +1194,7 @@ void Machine::call_RAY_SLAVE_MODE_DELETE_VERTICES(){
 getSize(),getRank(),&m_outboxAllocator,&m_outbox
 )){
 		// flush
-		m_verticesExtractor.flushBuffers(getRank(),&m_outbox,&m_outboxAllocator);
+
 
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_DELETE_VERTICES_DONE,getRank());
 		m_outbox.push_back(aMessage);
