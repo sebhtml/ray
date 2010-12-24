@@ -307,23 +307,18 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 		cout<<"Extending with seed, p="<<ed->m_EXTENSION_currentPosition<<endl;
 		#endif
 
-		// a speedy test follows, using mighty MACROs
-		#define _UNROLLED_LOOP(i) if(ed->m_enumerateChoices_outgoingEdges.size()>=(i+1)){ \
-			if(ed->m_enumerateChoices_outgoingEdges[i]==ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition]){ \
-				(*currentVertex)=ed->m_enumerateChoices_outgoingEdges[i]; \
-				ed->m_EXTENSION_choose=true; \
-				ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false; \
-				ed->m_EXTENSION_directVertexDone=false; \
-				ed->m_EXTENSION_VertexAssembled_requested=false; \
-				return; \
-			}\
+		for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
+			(*currentVertex)=ed->m_enumerateChoices_outgoingEdges[i]; 
+			ed->m_EXTENSION_choose=true; 
+			ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false; 
+			ed->m_EXTENSION_directVertexDone=false; 
+			ed->m_EXTENSION_VertexAssembled_requested=false; 
+			return; 
 		}
-		_UNROLLED_LOOP(0);
-		_UNROLLED_LOOP(1);
-		_UNROLLED_LOOP(2);
-		_UNROLLED_LOOP(3);
+
+		#define SHOW_EXTEND_WITH_SEED
 		#ifdef SHOW_EXTEND_WITH_SEED
-		cout<<"What the hell? position="<<ed->m_EXTENSION_currentPosition<<" "<<idToWord(ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition],wordSize)<<" with choices ";
+		cout<<"What the hell? position="<<ed->m_EXTENSION_currentPosition<<" "<<idToWord(ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition],wordSize)<<" with "<<ed->m_enumerateChoices_outgoingEdges.size()<<" choices ";
 		for(int j=0;j<(int)ed->m_enumerateChoices_outgoingEdges.size();j++){
 			cout<<" "<<idToWord(ed->m_enumerateChoices_outgoingEdges[j],wordSize)<<endl;
 		}

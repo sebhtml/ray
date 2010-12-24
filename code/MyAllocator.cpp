@@ -147,3 +147,10 @@ void MyAllocator::addAddressToReuse(void*ptr){
 	m_addressesToReuse[m_numberOfAddressesToReuse]=ptr;
 	m_numberOfAddressesToReuse++;
 }
+
+void MyAllocator::printMemoryUsage(int rank,const char*description){
+	uint64_t bytes=m_CHUNK_SIZE*m_chunks.size();
+	int megaCount=bytes/1000/1000;
+
+	cout<<"Rank "<<rank<<": memory usage for "<<description<<" is "<<megaCount<<" MB (10^6)"<<endl;
+}

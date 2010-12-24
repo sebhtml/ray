@@ -47,6 +47,10 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTEX(Message*message){
 		uint64_t vertex=incoming[i];
 		SplayNode<uint64_t,Vertex>*node=m_subgraph->find(vertex);
 
+		if(node==NULL){
+			continue;
+		}
+
 		if(idToWord(vertex,*m_wordSize)=="ACTGCTAAAAAATTTCTATAA"){
 			cout<<"BEGIN"<<endl;
 		}

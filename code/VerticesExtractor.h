@@ -25,6 +25,7 @@
 #include<StaticVector.h>
 #include<BufferedData.h>
 #include<vector>
+#include<Parameters.h>
 #include<common_functions.h>
 #include<ArrayOfReads.h>
 #include<Message.h>
@@ -108,7 +109,7 @@ public:
 	void scheduleReduction();
 
 	bool deleteVertices(vector<uint64_t>*verticesToRemove,MyForest*subgraph,
-int size,int rank,RingAllocator*m_outboxAllocator,
+Parameters*parameters,RingAllocator*m_outboxAllocator,
 	StaticVector*m_outbox
 );
 	void prepareDeletions();

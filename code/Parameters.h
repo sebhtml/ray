@@ -40,7 +40,7 @@ using namespace std;
  *
  */
 class Parameters{
-
+	int m_size;
 	COVERAGE_TYPE m_maxCoverage;
 	int m_rank;
 	int m_peakCoverage;
@@ -120,6 +120,8 @@ public:
 	int getMaxCoverage();
 	string getPrefix();
 	int getRank();
+	int getSize();
+	void setSize(int a);
 };
 
 #endif

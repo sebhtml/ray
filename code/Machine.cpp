@@ -256,6 +256,7 @@ void Machine::start(){
 	}
 
 	m_parameters.constructor(m_argc,m_argv,getRank());
+	m_parameters.setSize(getSize());
 
 	m_fusionData->constructor(getSize(),MAXIMUM_MESSAGE_SIZE_IN_BYTES,getRank(),&m_outbox,&m_outboxAllocator,m_parameters.getWordSize(),
 	m_parameters.getColorSpaceMode(),
@@ -368,6 +369,11 @@ m_seedingData,
 		cout<<endl;
 		cout<<"Au revoir !"<<endl;
 	}
+
+	MPI_Barrier(MPI_COMM_WORLD);
+
+	m_persistentAllocator.printMemoryUsage(getRank(),"sequencing reads");
+	m_treeAllocator.printMemoryUsage(getRank(),"k-mers");
 
 	MPI_Barrier(MPI_COMM_WORLD);
 	m_messagesHandler.freeLeftovers();
@@ -1191,7 +1197,7 @@ m_minimumCoverage,&m_oa,&(m_seedingData->m_SEEDING_edgesReceived),&m_slave_mode)
 
 void Machine::call_RAY_SLAVE_MODE_DELETE_VERTICES(){
 	if(m_verticesExtractor.deleteVertices(m_reducer.getVerticesToRemove(),&m_subgraph,
-getSize(),getRank(),&m_outboxAllocator,&m_outbox
+&m_parameters,&m_outboxAllocator,&m_outbox
 )){
 		// flush
 

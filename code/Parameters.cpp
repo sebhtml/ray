@@ -576,3 +576,11 @@ int Parameters::getPeakCoverage(){
 int Parameters::getMaxCoverage(){
 	return m_maxCoverage;
 }
+
+int Parameters::getSize(){
+	return m_size;
+}
+
+void Parameters::setSize(int a){
+	m_size=a;
+}

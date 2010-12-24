@@ -301,12 +301,17 @@ void VerticesExtractor::scheduleReduction(){
  * send the vertices to the owners for permanent deletions
  *
  */
-bool VerticesExtractor::deleteVertices(vector<uint64_t>*verticesToRemove,MyForest*subgraph,int size,int rank,RingAllocator*m_outboxAllocator,
+bool VerticesExtractor::deleteVertices(vector<uint64_t>*verticesToRemove,MyForest*subgraph,Parameters*parameters,RingAllocator*m_outboxAllocator,
 	StaticVector*m_outbox
 ){
 	if(m_pendingMessages!=0){
 		return false;
 	}
+
+	int size=parameters->getSize();
+	int rank=parameters->getRank();
+	bool color=parameters->getColorSpaceMode();
+	int wordSize=parameters->getWordSize();
 
 	if(!m_deletionsInitiated){
 		m_deletionsInitiated=true;
@@ -316,6 +321,14 @@ bool VerticesExtractor::deleteVertices(vector<uint64_t>*verticesToRemove,MyFores
 		m_deletionIterator++;
 		int rankToFlush=vertexRank(vertex,size);
 		m_bufferedData.addAt(rankToFlush,vertex);
+
+		if(m_bufferedData.flush(rankToFlush,1,RAY_MPI_TAG_DELETE_VERTEX,m_outboxAllocator,m_outbox,rank,false)){
+			m_pendingMessages++;
+		}
+
+		uint64_t rcVertex=complementVertex(vertex,wordSize,color);
+		rankToFlush=vertexRank(rcVertex,size);
+		m_bufferedData.addAt(rankToFlush,rcVertex);
 
 		if(m_bufferedData.flush(rankToFlush,1,RAY_MPI_TAG_DELETE_VERTEX,m_outboxAllocator,m_outbox,rank,false)){
 			m_pendingMessages++;
