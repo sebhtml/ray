@@ -198,7 +198,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY(Message*aMessa
 void MessageProcessor::call_RAY_MPI_TAG_RESUME_VERTEX_DISTRIBUTION(Message*message){
 	m_verticesExtractor->updateThreshold(m_subgraph);
 	if(!m_verticesExtractor->finished()){
-		//cout<<"Rank "<<rank<<": "<<m_lastSize<<" -> "<<m_subgraph->size()<<endl;
+		cout<<"Rank "<<rank<<": "<<m_lastSize<<" -> "<<m_subgraph->size()<<endl;
 		(*m_mode)=RAY_SLAVE_MODE_EXTRACT_VERTICES;
 		m_verticesExtractor->removeTrigger();
 	}

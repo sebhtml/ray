@@ -26,6 +26,7 @@
 #include<MyForest.h>
 #include<Parameters.h>
 #include<RingAllocator.h>
+#include<set>
 #include<vector>
 #include<DepthFirstSearchData.h>
 #include<StaticVector.h>
@@ -51,6 +52,9 @@ class MemoryConsumptionReducer{
 	
 	void printCounter(Parameters*parameters,MyForest*a);
 
+	bool isJunction(uint64_t vertex,map<uint64_t,vector<uint64_t> >*edges,int wordSize);
+	vector<uint64_t> computePath(map<uint64_t,vector<uint64_t> >*edges,uint64_t start,uint64_t end,set<uint64_t>*visited);
+
 public:
 	MemoryConsumptionReducer();
 	/*
@@ -65,6 +69,7 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 
 	int getNumberOfRemovedVertices();
 	vector<uint64_t>*getVerticesToRemove();
+
 };
 
 #endif

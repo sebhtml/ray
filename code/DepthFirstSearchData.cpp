@@ -190,6 +190,9 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 				if((*receivedVertexCoverage)>0){
 					m_depthFirstSearchVisitedVertices.insert(vertexToVisit);
 				}else{
+					#ifdef ASSERT
+					assert(false);
+					#endif
 					// don't visit it.
 					m_depthFirstSearchVerticesToVisit.pop();
 					m_depthFirstSearchDepths.pop();
@@ -198,16 +201,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 					return;
 				}
 				int theDepth=m_depthFirstSearchDepths.top();
-				if(m_depthFirstSearchVisitedVertices.size()>=MAX_VERTICES_TO_VISIT){
-					// quit this strange place.
-	
-					m_doChoice_tips_dfs_done=true;
-					#ifdef SHOW_TIP_LOST
-					cout<<"Exiting, I am lost. "<<m_depthFirstSearchVisitedVertices.size()<<""<<endl;
-					#endif
-					return;
-				}
-				// too far away.
+
 				if(theDepth> m_depthFirstSearch_maxDepth){
 					m_depthFirstSearch_maxDepth=theDepth;
 				}
@@ -248,6 +242,9 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 				assert(numberOfOutgoingEdges>=0 && numberOfOutgoingEdges<=4);
 				#endif
 				for(int i=0;i<numberOfOutgoingEdges;i++){
+					if(m_depthFirstSearchVisitedVertices.size()>=MAX_VERTICES_TO_VISIT){
+						break;
+					}
 					uint64_t nextVertex=(*receivedOutgoingEdges)[outgoingEdgesOffset+1+i];
 					if(m_depthFirstSearchVisitedVertices.count(nextVertex)>0){
 						continue;
@@ -271,6 +268,9 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 				#endif
 
 				for(int i=0;i<numberOfIngoingEdges;i++){
+					if(m_depthFirstSearchVisitedVertices.size()>=MAX_VERTICES_TO_VISIT){
+						break;
+					}
 					uint64_t nextVertex=(*receivedOutgoingEdges)[ingoingEdgesOffset+1+i];
 					if(m_depthFirstSearchVisitedVertices.count(nextVertex)>0){
 						continue;

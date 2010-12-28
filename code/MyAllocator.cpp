@@ -53,7 +53,6 @@ void MyAllocator::constructor(int chunkSize){
 
 void*MyAllocator::allocate(int s){
 	if(hasAddressesToReuse()){
-		cout<<"reuse"<<endl;
 		return reuseAddress();
 	}
 

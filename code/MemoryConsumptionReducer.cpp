@@ -22,10 +22,101 @@
 #include<MemoryConsumptionReducer.h>
 #include<CoverageDistribution.h>
 #include<stack>
+#include<set>
 using namespace std;
 
+
+/*
+ * algorithm:
+ *
+ * junction
+ *
+ * root
+ *
+ * from root to junction (junction is excluded), store the maximum coverage encountered A
+ *
+ * from junction to the vertex at maximum depth in the other child, store the minimum coverage encountered B
+ *
+ * to remove a path, the maximum A must be lower than the minimum B
+ *
+ */
 MemoryConsumptionReducer::MemoryConsumptionReducer(){
 	m_initiated=false;
+}
+
+vector<uint64_t> MemoryConsumptionReducer::computePath(map<uint64_t,vector<uint64_t> >*edges,uint64_t start,uint64_t end,set<uint64_t>*visited){
+	vector<uint64_t> path;
+	if(visited->count(start)>0){
+		return path;
+	}
+	visited->insert(start);
+	if(start==end){
+		path.push_back(start);
+		return path;
+	}
+	if(edges->count(start)==0){
+		return path;
+	}
+	vector<uint64_t> nextVertices=(*edges)[start];
+	for(int j=0;j<(int)nextVertices.size();j++){
+		uint64_t vertex=nextVertices[j];
+		vector<uint64_t> aPath=computePath(edges,vertex,end,visited);
+		if(aPath.size()>0){
+			path.push_back(start);
+			for(int l=0;l<(int)aPath.size();l++){
+				path.push_back(aPath[l]);
+			}
+			return path;
+		}
+	}
+	return path;
+}
+
+bool MemoryConsumptionReducer::isJunction(uint64_t vertex,map<uint64_t,vector<uint64_t> >*edges,int wordSize){
+	if(edges->count(vertex)==0){
+		return false;
+	}
+	if((*edges)[vertex].size()<2){
+		return false;
+	}
+	// compute the depth at each depth
+	// one leads to the root, and another must be longer than wordSize (not a tip)
+	
+	vector<uint64_t> nextVertices=(*edges)[vertex];
+	for(int i=0;i<(int)nextVertices.size();i++){
+		uint64_t current=nextVertices[i];
+		stack<uint64_t> vertices;
+		stack<int> depths;
+		set<uint64_t> visited;
+		vertices.push(current);
+		depths.push(1);
+
+		while(!vertices.empty()){
+			uint64_t topVertex=vertices.top();
+			vertices.pop();
+			int topDepth=depths.top();
+			depths.pop();
+			if(visited.count(topVertex)){
+				continue;
+			}
+			visited.insert(topVertex);
+
+			if(topDepth>wordSize){
+				//cout<<"is Junction"<<endl;
+				return true;
+			}
+			if(edges->count(topVertex)==0){
+				continue;
+			}
+			vector<uint64_t> nextBits=(*edges)[topVertex];
+			int newDepth=topDepth+1;
+			for(int j=0;j<(int)nextBits.size();j++){
+				vertices.push(nextBits[j]);
+				depths.push(newDepth);
+			}
+		}
+	}
+	return false;
 }
 
 bool MemoryConsumptionReducer::reduce(MyForest*a,Parameters*parameters,
@@ -42,7 +133,13 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 		m_currentVertexIsDone=false;
 		m_hasSetVertex=false;
 		a->freeze();
-		m_maximumDepth=2*wordSize+1;
+
+		// wordSize for the hanging tip
+		// wordSize+1 for the correct path
+		// 1 for the junction
+		// total: 2k+2
+		m_maximumDepth=2*wordSize+2;
+
 /*
 		m_iterator.constructor(a);
 		map<int,uint64_t> distribution;
@@ -121,53 +218,75 @@ edgesReceived
 
 				vector<uint64_t> path;
 				bool foundDestination=false;
-
 				bool foundJunction=false;
 				set<uint64_t> visited;
-				int maximumDepth=0;
+				int maximumDepth=-99;
+				int coverageAtMaxDepth=0;
+				uint64_t vertexAtMaxDepth=0;
+				uint64_t junction=0;
+				int maximumCoverageInPath=0;
+				int minimumCoverageInOtherPath=999;
+				bool isLow=false;
+				set<uint64_t> bestVertices;
 
-				if(parents.size()==0){
+				if((parents.size()==0||children.size()==0)&&!(parents.size()==0&&children.size()==0)){
+					map<uint64_t,vector<uint64_t> >*theEdges=&theParents;
+					map<uint64_t,vector<uint64_t> >*otherEdges=&theChildren;
+					if(parents.size()==0){
+						theEdges=&theChildren;
+						otherEdges=&theParents;
+					}
+
 					uint64_t current=key;
 					while(1){
 						if(visited.count(current)>0){
 							break;
-						}else if(theParents[current].size()>1||theChildren[current].size()>1){
+						}else if(isJunction(current,otherEdges,wordSize)){
+							junction=current;
 							foundJunction=true;
 							break;
 						}
 						visited.insert(current);
-						if(theChildren.count(current)>0&&theChildren[current].size()==1){
+
+						if(theEdges->count(current)>0&&(*theEdges)[current].size()==1){
 							path.push_back(current);
-							current=theChildren[current][0];
+							int theCoverageOfCurrent=m_dfsDataOutgoing.m_coverages[current];
+							if(theCoverageOfCurrent>maximumCoverageInPath){
+								maximumCoverageInPath=theCoverageOfCurrent;
+							}	
+							current=(*theEdges)[current][0];
 						}else{
 							break;
 						}
 					}
+
 					if(foundJunction){
 						stack<uint64_t> nodes;
 						stack<int> depths;
+
 						depths.push(0);
-						nodes.push(current);
+						nodes.push(junction);
 						while(!nodes.empty()){
 							uint64_t node=nodes.top();
+
+							int theCoverageOfCurrent=m_dfsDataOutgoing.m_coverages[node];
+
 							visited.insert(node);
 							nodes.pop();
 							int nodeDepth=depths.top();
 							depths.pop();
-							if(nodeDepth>maximumDepth){
+							
+							if(nodeDepth>maximumDepth
+							||(nodeDepth==maximumDepth &&theCoverageOfCurrent>coverageAtMaxDepth)){
 								maximumDepth=nodeDepth;
+								coverageAtMaxDepth=theCoverageOfCurrent;
+								vertexAtMaxDepth=node;
 							}
+
 							int newDepth=nodeDepth+1;
-							for(int k=0;k<(int)theParents[node].size();k++){
-								uint64_t nextVertex=theParents[node][k];
-								if(visited.count(nextVertex)>0){
-									continue;
-								}
-								nodes.push(nextVertex);
-								depths.push(newDepth);
-							}
-							for(int k=0;k<(int)theChildren[node].size();k++){
-								uint64_t nextVertex=theChildren[node][k];
+
+							for(int k=0;k<(int)(*otherEdges)[node].size();k++){
+								uint64_t nextVertex=(*otherEdges)[node][k];
 								if(visited.count(nextVertex)>0){
 									continue;
 								}
@@ -175,9 +294,25 @@ edgesReceived
 								depths.push(newDepth);
 							}
 						}
+			
+						set<uint64_t> visited;
+						vector<uint64_t> bestPath=computePath(otherEdges,junction,vertexAtMaxDepth,&visited);
+						for(int u=0;u<(int)bestPath.size();u++){
+							uint64_t node=bestPath[u];
+							int theCoverageOfCurrent=m_dfsDataOutgoing.m_coverages[node];
+							if(theCoverageOfCurrent<minimumCoverageInOtherPath){
+								minimumCoverageInOtherPath=theCoverageOfCurrent;
+							}
+							bestVertices.insert(node);
+						}
+
 						//cout<<"Depth reached: "<<maximumDepth<<" vs "<<path.size()<<endl;
-						if(maximumDepth+(int)path.size()>=m_maximumDepth&&(int)path.size()<=wordSize){
+						if(maximumDepth>wordSize&&(int)path.size()<=wordSize){
 							foundDestination=true;
+						}
+						if(maximumCoverageInPath>=minimumCoverageInOtherPath){
+							isLow=true;
+							foundDestination=false;
 						}
 					}else{
 /*
@@ -193,65 +328,6 @@ edgesReceived
 						}
 */
 					}
-				}else if(children.size()==0){
-					uint64_t current=key;
-					while(1){
-						if(visited.count(current)>0){
-							break;
-						}else if(theParents[current].size()>1||theChildren[current].size()>1){
-							foundJunction=true;
-							break;
-						}
-						visited.insert(current);
-
-						if(theParents.count(current)>0&&theParents[current].size()==1){
-							path.push_back(current);
-							current=theParents[current][0];
-						}else{
-							break;
-						}
-					}
-					if(foundJunction){
-						stack<uint64_t> nodes;
-						stack<int> depths;
-						depths.push(0);
-						nodes.push(current);
-						while(!nodes.empty()){
-							uint64_t node=nodes.top();
-							visited.insert(node);
-							nodes.pop();
-							int nodeDepth=depths.top();
-							depths.pop();
-							if(nodeDepth>maximumDepth){
-								maximumDepth=nodeDepth;
-							}
-							int newDepth=nodeDepth+1;
-							for(int k=0;k<(int)theParents[node].size();k++){
-								uint64_t nextVertex=theParents[node][k];
-								if(visited.count(nextVertex)>0){
-									continue;
-								}
-								nodes.push(nextVertex);
-								depths.push(newDepth);
-							}
-
-							for(int k=0;k<(int)theChildren[node].size();k++){
-								uint64_t nextVertex=theChildren[node][k];
-								if(visited.count(nextVertex)>0){
-									continue;
-								}
-								nodes.push(nextVertex);
-								depths.push(newDepth);
-							}
-						}
-						//cout<<"Depth reached: "<<maximumDepth<<" vs "<<path.size()<<" MAX="<<m_maximumDepth<<endl;
-
-						if(maximumDepth+(int)path.size()>=m_maximumDepth&&(int)path.size()<=wordSize){
-							//cout<<"deleting "<<path.size()<<endl;
-							foundDestination=true;
-						}
-					}
-					// alone bits are only detected by the other folk.
 				}
 
 				bool processed=false;
@@ -262,14 +338,17 @@ edgesReceived
 					for(int u=0;u<(int)path.size();u++){
 						m_toRemove.push_back(path[u]);
 					}
-				}else{
-					processed=true;
-					if(processed&&parameters->getRank()==MASTER_RANK){
-				//#define _SHOW_GRAPH
-				#ifdef _SHOW_GRAPH
+				}
+				//#define PRINT_GRAPHVIZ
+				#ifdef PRINT_GRAPHVIZ
 				if(parameters->getRank()==MASTER_RANK 
-				//&& m_dfsDataOutgoing.m_maxDepthReached &&
-				){
+				&&foundJunction&&foundDestination){
+					set<uint64_t> removed;
+					for(int p=0;p<(int)path.size();p++){
+						if(foundDestination){
+							removed.insert(path[p]);
+						}
+					}
 					processed=true;
 					cout<<"BEGIN"<<endl;
 					cout<<"Depth reached: "<<maximumDepth<<" vs "<<path.size()<<" MAX="<<m_maximumDepth<<endl;
@@ -277,32 +356,51 @@ edgesReceived
 					cout<<"Parents: "<<parents.size()<<endl;
 					cout<<"Children: "<<children.size()<<endl;
 					cout<<m_dfsDataOutgoing.m_depthFirstSearchVisitedVertices_vector.size()/2<<" edges."<<endl;
+					cout<<"MaximumCoverageInPath="<<maximumCoverageInPath<<endl;
+					cout<<"MinimumCoverageInOtherPath="<<minimumCoverageInOtherPath<<endl;
 			
 					cout<<"digraph{"<<endl;
+					cout<<"node [color=lightblue2 style=filled]"<<endl;
 					for(map<uint64_t,int>::iterator p=m_dfsDataOutgoing.m_coverages.begin();
 						p!=m_dfsDataOutgoing.m_coverages.end();p++){
+						cout<<idToWord(p->first,wordSize)<<" [label=\""<<idToWord(p->first,wordSize)<<" "<<p->second;
 						if(key==p->first){
-							cout<<idToWord(p->first,wordSize)<<" [label=\""<<idToWord(p->first,wordSize)<<" "<<p->second<<"\" color=deepskyblue]"<<endl;
-						}else{
-							cout<<idToWord(p->first,wordSize)<<" [label=\""<<idToWord(p->first,wordSize)<<" "<<p->second<<"\"]"<<endl;
+							cout<<" (root) ";
 						}
+						if(junction==p->first){
+							cout<<" (junction) ";
+						}
+
+						if(vertexAtMaxDepth==p->first){
+							cout<<" (deepest vertex) ";
+						}
+
+						cout<<"\" ";
+						if(removed.count(p->first)>0){
+							cout<<" color=salmon2";
+						}
+
+						if(bestVertices.count(p->first)>0){
+							cout<<" color=greenyellow";
+						}
+						cout<<" ] "<<endl;
 					}
 
 					for(int j=0;j<(int)m_dfsDataOutgoing.m_depthFirstSearchVisitedVertices_vector.size();j+=2){
 						uint64_t prefix=m_dfsDataOutgoing.m_depthFirstSearchVisitedVertices_vector[j+0];
 						uint64_t suffix=m_dfsDataOutgoing.m_depthFirstSearchVisitedVertices_vector[j+1];
 						cout<<idToWord(prefix,wordSize)<<" -> "<<idToWord(suffix,wordSize)<<endl;
+						#ifdef ASSERT
+						assert(m_dfsDataOutgoing.m_coverages.count(prefix)>0);
+						assert(m_dfsDataOutgoing.m_coverages.count(suffix)>0);
+						#endif
 					}
 					cout<<"}"<<endl;
 
 
-					cout<<"no destination found"<<endl;
 					cout<<"END"<<endl;
 				}
 				#endif
-
-					}
-				}
 
 				m_doneWithOutgoingEdges=true;
 			}
