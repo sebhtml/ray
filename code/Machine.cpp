@@ -433,8 +433,11 @@ int Machine::getRank(){
 	return m_rank;
 }
 
-
 void Machine::processMessages(){
+	#ifdef ASSERT
+	assert(m_inbox.size()<=1);
+	#endif
+
 	for(int i=0;i<(int)m_inbox.size();i++){
 		m_mp.processMessage((m_inbox[i]));
 	}
@@ -448,8 +451,6 @@ void Machine::sendMessages(){
 void Machine::receiveMessages(){
 	m_messagesHandler.receiveMessages(&m_inbox,&m_inboxAllocator,getRank());
 }
-
-
 
 void Machine::call_RAY_MASTER_MODE_LOAD_CONFIG(){
 	if(m_argc==2){
