@@ -53,8 +53,10 @@ void MyAllocator::constructor(int chunkSize){
 
 void*MyAllocator::allocate(int s){
 	if(hasAddressesToReuse()){
+		cout<<"reuse"<<endl;
 		return reuseAddress();
 	}
+
 	// hopefully fix alignment issues on Itanium
 	int alignment=8;
 	if(s%8!=0){

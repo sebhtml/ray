@@ -180,6 +180,7 @@ edgesReceived
 							foundDestination=true;
 						}
 					}else{
+/*
 						bool aloneBits=true;
 						for(int o=0;o<(int)path.size();o++){
 							if(m_dfsDataOutgoing.m_coverages[path[o]]!=1){
@@ -190,6 +191,7 @@ edgesReceived
 						if(aloneBits&&(int)path.size()<=2*wordSize-1){
 							foundDestination=true;
 						}
+*/
 					}
 				}else if(children.size()==0){
 					uint64_t current=key;
