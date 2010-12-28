@@ -43,7 +43,7 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 		m_hasSetVertex=false;
 		a->freeze();
 		m_maximumDepth=2*wordSize+1;
-
+/*
 		m_iterator.constructor(a);
 		map<int,uint64_t> distribution;
 		while(m_iterator.hasNext()){
@@ -53,9 +53,11 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 		//printf("Rank %i: peak coverage is %i\n",parameters->getRank(),dis.getPeakCoverage());
 		if(parameters->getRank()==MASTER_RANK){
 			for(map<int,uint64_t>::iterator i=distribution.begin();i!=distribution.end();i++){
-				cout<<i->first<<" -> "<<i->second<<endl;
+				//cout<<i->first<<" -> "<<i->second<<endl;
 			}
 		}
+*/
+
 		m_iterator.constructor(a);
 	}else if(!m_currentVertexIsDone){
 		if(!m_hasSetVertex){

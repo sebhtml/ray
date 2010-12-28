@@ -116,6 +116,8 @@ Parameters*parameters,RingAllocator*m_outboxAllocator,
 
 	void flushBuffers(int rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator);
 	void incrementPendingMessages();
+
+	void showBuffers();
 };
 
 #endif

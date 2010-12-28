@@ -154,6 +154,9 @@ void SeedingData::computeSeeds(){
 					// if both seeds are on the same rank
 					// dump the reverse and keep the forward
 
+					printf("Rank %i has a seed %i\n",getRank(),m_SEEDING_seed.size());
+					fflush(stdout);
+
 					m_SEEDING_seeds.push_back(m_SEEDING_seed);
 					u64 firstVertex=m_SEEDING_seed[0];
 					u64 lastVertex=m_SEEDING_seed[m_SEEDING_seed.size()-1];

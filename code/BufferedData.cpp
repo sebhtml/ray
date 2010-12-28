@@ -71,6 +71,10 @@ void BufferedData::reset(int i){
 }
 
 bool BufferedData::isEmpty(){
+	if(m_sizes==NULL&&m_data==NULL){
+		return true;
+	}
+
 	for(int i=0;i<m_ranks;i++){
 		if(size(i)!=0){
 			return false;

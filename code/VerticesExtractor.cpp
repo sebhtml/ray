@@ -60,15 +60,16 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 	if(*m_mode_send_vertices_sequence_id>(int)m_myReads->size()-1){
 		// flush data
 		flushAll(m_outboxAllocator,m_outbox,rank);
-
-		Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, RAY_MPI_TAG_VERTICES_DISTRIBUTED,rank);
-		m_outbox->push_back(aMessage);
-		*m_mode_send_vertices=false;
-		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
-		printf("Rank %i is computing vertices & edges [%i/%i] (completed)\n",rank,(int)*m_mode_send_vertices_sequence_id,(int)m_myReads->size());
-		fflush(stdout);
-		m_bufferedData.clear();
-		m_finished=true;
+		if(m_pendingMessages==0){
+			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, RAY_MPI_TAG_VERTICES_DISTRIBUTED,rank);
+			m_outbox->push_back(aMessage);
+			*m_mode_send_vertices=false;
+			(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
+			printf("Rank %i is computing vertices & edges [%i/%i] (completed)\n",rank,(int)*m_mode_send_vertices_sequence_id,(int)m_myReads->size());
+			fflush(stdout);
+			m_bufferedData.clear();
+			m_finished=true;
+		}
 	}else{
 		char*readSequence=(*m_myReads)[(*m_mode_send_vertices_sequence_id)]->getSeq();
 		int len=strlen(readSequence);
@@ -195,7 +196,8 @@ void VerticesExtractor::constructor(int size){
 	m_size=size;
 	m_ranksDoneWithReduction=0;
 	m_ranksReadyForReduction=0;
-	m_reductionPeriod=200000;
+	//m_reductionPeriod=200000;
+	m_reductionPeriod=20000000;
 	m_thresholdForReduction=m_reductionPeriod;
 	m_triggered=false;
 	m_finished=false;
@@ -348,11 +350,20 @@ void VerticesExtractor::prepareDeletions(){
 }
 
 void VerticesExtractor::flushBuffers(int rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator){
-	cout<<"flushBuffers"<<endl;
 	m_pendingMessages+=m_buffersForIngoingEdgesToDelete.flushAll(RAY_MPI_TAG_DELETE_INGOING_EDGE,m_outboxAllocator,m_outbox,rank);
 	m_pendingMessages+=m_buffersForOutgoingEdgesToDelete.flushAll(RAY_MPI_TAG_DELETE_OUTGOING_EDGE,m_outboxAllocator,m_outbox,rank);
 }
 
 void VerticesExtractor::incrementPendingMessages(){
 	m_pendingMessages++;
+}
+
+void VerticesExtractor::showBuffers(){
+	#ifdef ASSERT
+	assert(m_buffersForOutgoingEdgesToDelete.isEmpty());
+	assert(m_buffersForIngoingEdgesToDelete.isEmpty());
+	assert(m_bufferedData.isEmpty());
+	assert(m_bufferedDataForOutgoingEdges.isEmpty());
+	assert(m_bufferedDataForIngoingEdges.isEmpty());
+	#endif
 }

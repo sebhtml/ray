@@ -249,7 +249,6 @@ void Library::sendLibraryDistances(){
 		m_outbox->push_back(aMessage);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 	}else if(!m_libraryIndexInitiated){
-		cout<<"Init"<<endl;
 		m_libraryIndexInitiated=true;
 		m_libraryIndex=m_libraryDistances[m_libraryIndexes[m_libraryIterator]].begin();
 	}else if(m_libraryIndex==m_libraryDistances[m_libraryIndexes[m_libraryIterator]].end()){
