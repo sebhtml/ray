@@ -308,21 +308,27 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 		#endif
 
 		for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
-			(*currentVertex)=ed->m_enumerateChoices_outgoingEdges[i]; 
-			ed->m_EXTENSION_choose=true; 
-			ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false; 
-			ed->m_EXTENSION_directVertexDone=false; 
-			ed->m_EXTENSION_VertexAssembled_requested=false; 
-			return; 
+			if(ed->m_enumerateChoices_outgoingEdges[i]==ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition]){
+				(*currentVertex)=ed->m_enumerateChoices_outgoingEdges[i]; 
+				ed->m_EXTENSION_choose=true; 
+				ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false; 
+				ed->m_EXTENSION_directVertexDone=false; 
+				ed->m_EXTENSION_VertexAssembled_requested=false; 
+				return; 
+			}
 		}
 
 		#define SHOW_EXTEND_WITH_SEED
 		#ifdef SHOW_EXTEND_WITH_SEED
 		cout<<"What the hell? position="<<ed->m_EXTENSION_currentPosition<<" "<<idToWord(ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition],wordSize)<<" with "<<ed->m_enumerateChoices_outgoingEdges.size()<<" choices ";
+		cout<<endl;
+		cout<<"seed size= "<<ed->m_EXTENSION_currentSeed.size()<<endl;
 		for(int j=0;j<(int)ed->m_enumerateChoices_outgoingEdges.size();j++){
 			cout<<" "<<idToWord(ed->m_enumerateChoices_outgoingEdges[j],wordSize)<<endl;
 		}
 		cout<<endl;
+		cout<<"ComplementSeed="<<ed->m_EXTENSION_complementedSeed<<endl;
+
 		#endif
 
 		#ifdef ASSERT

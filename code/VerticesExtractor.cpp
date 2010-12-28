@@ -196,8 +196,8 @@ void VerticesExtractor::constructor(int size){
 	m_size=size;
 	m_ranksDoneWithReduction=0;
 	m_ranksReadyForReduction=0;
-	//m_reductionPeriod=200000;
-	m_reductionPeriod=20000000;
+	m_reductionPeriod=200000;
+	//m_reductionPeriod=20000000;
 	m_thresholdForReduction=m_reductionPeriod;
 	m_triggered=false;
 	m_finished=false;
