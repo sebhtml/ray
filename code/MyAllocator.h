@@ -67,7 +67,6 @@ public:
 	int getChunkSize();
 	int getNumberOfChunks();
 	void addAddressToReuse(void*ptr);
-	void printMemoryUsage(int rank,const char*description);
 };
 
 

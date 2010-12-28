@@ -161,13 +161,16 @@ void Machine::start(){
 	m_sequence_ready_machines=0;
 	m_isFinalFusion=false;
 
+	//
+
 	m_outboxAllocator.constructor(MAX_ALLOCATED_MESSAGES_IN_OUTBOX,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	m_inboxAllocator.constructor(MAX_ALLOCATED_MESSAGES_IN_INBOX,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
 	m_directionsAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
-
 	m_treeAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
 
+	//
+	
 	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
 	m_master_mode=RAY_MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 	m_mode_AttachSequences=false;
@@ -185,7 +188,8 @@ void Machine::start(){
 
 
 
-	printf("Rank %i is running as UNIX process %i on %s\n",getRank(),getpid(),serverName);
+	int pid=getpid();
+	printf("Rank %i is running as UNIX process %i on %s\n",getRank(),pid,serverName);
 	fflush(stdout);
 
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -349,8 +353,12 @@ m_seedingData,
 			m_master_mode=RAY_MASTER_MODE_LOAD_CONFIG;
 			m_sl.constructor(getSize());
 		}
+
+
 		run();
 	}
+
+
 
 	if(isMaster() && !m_aborted){
 		m_timePrinter.printElapsedTime("Collection of fusions");
@@ -361,6 +369,30 @@ m_seedingData,
 		const char*tmp=file.c_str();
 		m_messagesHandler.writeStats(tmp);
 
+	}
+
+	MPI_Barrier(MPI_COMM_WORLD);
+
+	#ifdef linux
+	ifstream f("/proc/self/status");
+	while(!f.eof()){
+		string key;
+		f>>key;
+		if(key=="VmSize:"){
+			uint64_t count;
+			f>>count;
+			printf("Rank %i: VmSize= %lu KiB (from /proc)\n",getRank(),count);
+			fflush(stdout);
+			break;
+		}
+	}
+	f.close();
+	#endif
+
+	MPI_Barrier(MPI_COMM_WORLD);
+
+	if(isMaster() && !m_aborted){
+		cout<<endl;
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getCoverageDistributionFile()<<""<<endl;
 		m_parameters.printFinalMessage();
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<endl;
@@ -368,12 +400,10 @@ m_seedingData,
 
 		cout<<endl;
 		cout<<"Au revoir !"<<endl;
+		cout<<endl;
 	}
 
-	MPI_Barrier(MPI_COMM_WORLD);
 
-	m_persistentAllocator.printMemoryUsage(getRank(),"sequencing reads");
-	m_treeAllocator.printMemoryUsage(getRank(),"k-mers");
 
 	MPI_Barrier(MPI_COMM_WORLD);
 	m_messagesHandler.freeLeftovers();

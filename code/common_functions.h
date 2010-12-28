@@ -42,11 +42,13 @@ see <http://www.gnu.org/licenses/>
 #define u32 uint32_t
 #define u64 uint64_t
 
-
 #define ASCII_END_OF_TRANSMISSION 0x04 // end of transmission.
 
-#define MAX_ALLOCATED_MESSAGES_IN_OUTBOX 10000
-#define MAX_ALLOCATED_MESSAGES_IN_INBOX 10000
+// the maximum of processes is utilized to construct unique hyperfusions IDs
+#define MAX_NUMBER_OF_MPI_PROCESSES 2000
+
+#define MAX_ALLOCATED_MESSAGES_IN_OUTBOX 5*MAX_NUMBER_OF_MPI_PROCESSES
+#define MAX_ALLOCATED_MESSAGES_IN_INBOX 5*MAX_NUMBER_OF_MPI_PROCESSES
 
 #define MAX_U32 4294967295
 #define MAX_U16 65535
@@ -111,8 +113,6 @@ using namespace std;
 #define COVERAGE_TYPE unsigned char
 
 
-// the maximum of processes is utilized to construct unique hyperfusions IDs
-#define MAX_NUMBER_OF_MPI_PROCESSES 10000
 
 // unlock the power of Ray here!
 // currently not working...
