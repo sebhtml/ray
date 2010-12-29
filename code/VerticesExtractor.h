@@ -64,6 +64,8 @@ class VerticesExtractor{
 
 	bool m_mustTriggerReduction;
 
+
+	void checkPendingMessagesForReduction(StaticVector*outbox,int rank);
 public:
 
 	BufferedData m_buffersForIngoingEdgesToDelete;
@@ -106,7 +108,7 @@ public:
 	void flushAll(RingAllocator*m_outboxAllocator,StaticVector*m_outbox,int rank);
 	void assertBuffersAreEmpty();
 	bool mustTriggerReduction();
-	void scheduleReduction();
+	void scheduleReduction(StaticVector*outbox,int rank);
 
 	bool deleteVertices(vector<uint64_t>*verticesToRemove,MyForest*subgraph,
 Parameters*parameters,RingAllocator*m_outboxAllocator,

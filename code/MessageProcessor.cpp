@@ -256,7 +256,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_REDUCTION(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION(Message*message){
 	m_verticesExtractor->flushAll(m_outboxAllocator,m_outbox,rank);
-	m_verticesExtractor->scheduleReduction();
+	m_verticesExtractor->scheduleReduction(m_outbox,rank);
 	(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 }
 

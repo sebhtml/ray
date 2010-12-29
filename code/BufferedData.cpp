@@ -84,6 +84,9 @@ bool BufferedData::isEmpty(){
 }
 
 int BufferedData::flushAll(int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank){
+	if(isEmpty()){
+		return 0;
+	}
 	int flushed=0;
 	for(int i=0;i<m_ranks;i++){
 		if(flush(i,0,tag,outboxAllocator,outbox,rank,true)){

@@ -210,11 +210,7 @@ void VerticesExtractor::setReadiness(StaticVector*outbox,int rank){
 	#endif
 	m_pendingMessages--;
 
-	if(m_pendingMessages==0 && mustTriggerReduction()){
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY,rank);
-		outbox->push_back(aMessage);
-		m_mustTriggerReduction=false;
-	}
+	checkPendingMessagesForReduction(outbox,rank);
 }
 
 bool VerticesExtractor::mustRunReducer(){
@@ -295,8 +291,21 @@ bool VerticesExtractor::mustTriggerReduction(){
 	return m_mustTriggerReduction;
 }
 
-void VerticesExtractor::scheduleReduction(){
+void VerticesExtractor::scheduleReduction(StaticVector*outbox,int rank){
 	m_mustTriggerReduction=true;
+
+	checkPendingMessagesForReduction(outbox,rank);
+}
+
+void VerticesExtractor::checkPendingMessagesForReduction(StaticVector*outbox,int rank){
+	if(m_pendingMessages==0 && mustTriggerReduction()){
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY,rank);
+		outbox->push_back(aMessage);
+		m_mustTriggerReduction=false;
+	}
+	#ifdef ASSERT
+	assert(m_pendingMessages==0||m_mustTriggerReduction==true);
+	#endif
 }
 
 /*
