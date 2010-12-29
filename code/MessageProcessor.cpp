@@ -106,7 +106,7 @@ void MessageProcessor::call_RAY_MPI_TAG_CHECK_VERTEX(Message*message){
 			int parents=node->getValue()->getIngoingEdges(vertex,(*m_wordSize)).size();
 			int children=node->getValue()->getOutgoingEdges(vertex,(*m_wordSize)).size();
 			int coverage=node->getValue()->getCoverage();
-			if(parents>0&&children>0&&coverage>1){
+			if(parents>0&&children>0&&coverage>5){
 				outgoingMessage[outgoingCount++]=task;
 			}
 		}
@@ -166,10 +166,6 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_OUTGOING_EDGE(Message*message){
 		uint64_t prefix=incoming[i+0];
 		uint64_t suffix=incoming[i+1];
 		SplayNode<uint64_t,Vertex>*node=m_subgraph->find(prefix);
-
-		if(idToWord(suffix,*m_wordSize)=="ACTGCTAAAAAATTTCTATAA"){
-			cout<<"receives deleting outgoing edge."<<endl;
-		}
 
 		if(node==NULL){ // node already deleted, don't need to delete the edges.
 			continue;
