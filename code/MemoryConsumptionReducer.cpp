@@ -339,10 +339,10 @@ edgesReceived
 						m_toRemove.push_back(path[u]);
 					}
 				}
-				//#define PRINT_GRAPHVIZ
+				#define PRINT_GRAPHVIZ
 				#ifdef PRINT_GRAPHVIZ
 				if(parameters->getRank()==MASTER_RANK 
-				&&foundJunction&&foundDestination){
+				&&foundJunction&&!foundDestination){
 					set<uint64_t> removed;
 					for(int p=0;p<(int)path.size();p++){
 						if(foundDestination){
