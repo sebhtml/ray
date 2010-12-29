@@ -29,6 +29,7 @@
 #include<common_functions.h>
 #include<ArrayOfReads.h>
 #include<Message.h>
+#include<MemoryConsumptionReducer.h>
 #include<MyForest.h>
 #include<RingAllocator.h>
 #include<set>
@@ -120,6 +121,7 @@ Parameters*parameters,RingAllocator*m_outboxAllocator,
 	void incrementPendingMessages();
 
 	void showBuffers();
+
 };
 
 #endif

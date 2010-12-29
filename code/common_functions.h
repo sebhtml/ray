@@ -96,7 +96,7 @@ using namespace std;
 // allocators size
 // for MPI communications, memory is allocated and freed with OUTBOX_ALLOCATOR_CHUNK_SIZE and INBOX_ALLOCATOR_CHUNK_SIZE
 // persistant memory are stored with PERSISTENT_ALLOCATOR_CHUNK_SIZE
-#define PERSISTENT_ALLOCATOR_CHUNK_SIZE    0x1000000
+#define PERSISTENT_ALLOCATOR_CHUNK_SIZE   4194304 // 4 MiB
 
 /* for DS-style vertices,
  * in development

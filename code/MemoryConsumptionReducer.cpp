@@ -25,6 +25,38 @@
 #include<set>
 using namespace std;
 
+void MemoryConsumptionReducer::getPermutations(uint64_t kmer,int length,vector<uint64_t>*output,int wordSize){
+	#ifdef ASSERT
+	assert(output->size()==0);
+	assert(length<=wordSize);
+	#endif
+	string stringVersion=idToWord(kmer,wordSize);
+	char buffer[50];
+	strcpy(buffer,stringVersion.c_str());
+	vector<char> changes;
+	changes.push_back('A');
+	changes.push_back('T');
+	changes.push_back('C');
+	changes.push_back('G');
+
+	for(int i=0;i<length;i++){
+		for(int j=0;j<(int)changes.size();j++){
+			char oldNucleotide=buffer[i];
+			char newNucleotide=changes[j];
+			if(oldNucleotide==newNucleotide){
+				continue;
+			}
+			buffer[i]=newNucleotide;
+			uint64_t a=wordId(buffer);
+			buffer[i]=oldNucleotide;
+			output->push_back(a);
+		}
+	}
+
+	#ifdef ASSERT
+	assert((int)output->size()==length*3);
+	#endif
+}
 
 /*
  * algorithm:
@@ -125,11 +157,21 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
  int*receivedVertexCoverage,vector<uint64_t>*receivedOutgoingEdges,
 		int minimumCoverage,bool*edgesReceived
 ){
+	#ifdef ASSERT
+	assert(m_pendingMessages>=0);
+	#endif
+
+	if(m_pendingMessages>0){
+		return false;
+	}
 	int wordSize=parameters->getWordSize();
 	if(!m_initiated){
 		m_counter=0;
 		m_initiated=true;
 		m_toRemove.clear();
+		m_processedTasks.clear();
+		m_confettiToCheck.clear();
+
 		m_currentVertexIsDone=false;
 		m_hasSetVertex=false;
 		a->freeze();
@@ -142,24 +184,31 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 
 /*
 		m_iterator.constructor(a);
+
 		map<int,uint64_t> distribution;
 		while(m_iterator.hasNext()){
 			distribution[m_iterator.next()->getValue()->getCoverage()]++;
 		}
 		CoverageDistribution dis(&distribution,NULL);
+		int peak=dis.getPeakCoverage();
 		//printf("Rank %i: peak coverage is %i\n",parameters->getRank(),dis.getPeakCoverage());
 		if(parameters->getRank()==MASTER_RANK){
 			for(map<int,uint64_t>::iterator i=distribution.begin();i!=distribution.end();i++){
-				//cout<<i->first<<" -> "<<i->second<<endl;
+				cout<<i->first<<" -> "<<i->second<<endl;
 			}
+			cout<<"Peak is "<<peak<<endl;
 		}
 */
-
+		
 		m_iterator.constructor(a);
 	}else if(!m_currentVertexIsDone){
 		if(!m_hasSetVertex){
 			printCounter(parameters,a);
 			if(!m_iterator.hasNext()){
+				m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_CHECK_VERTEX,outboxAllocator,outbox,theRank);
+				if(m_pendingMessages>0){
+					return false;
+				}
 				m_initiated=false;
 				a->unfreeze();
 				printCounter(parameters,a);
@@ -314,8 +363,9 @@ edgesReceived
 							isLow=true;
 							foundDestination=false;
 						}
-					}else{
-/*
+
+					// confetti in the graph
+					}else if(children.size()==0){
 						bool aloneBits=true;
 						for(int o=0;o<(int)path.size();o++){
 							if(m_dfsDataOutgoing.m_coverages[path[o]]!=1){
@@ -323,10 +373,44 @@ edgesReceived
 								break;
 							}
 						}
-						if(aloneBits&&(int)path.size()<=2*wordSize-1){
-							foundDestination=true;
+						int maxReadLength=2*wordSize-1;
+						int maxPathSize=maxReadLength-wordSize; // k-1
+
+						if(aloneBits&&(int)path.size()<=maxPathSize){
+							//foundDestination=true;
+							//
+							// example:
+							//
+							// read length: 36
+							// k: 21
+							// number of vertices in the path: 36-21=15
+							//
+							// length of the zone to check: 21-15=6
+							//
+							// so in general: pathSize-kMerSize is the number of position to change at the beginning of the root,
+							// with the root being the last k-mer
+							//
+							// add the path in the storage section
+							// request the validity of the <path.size()
+							
+							int positionsToCheck=wordSize-path.size();
+							int uniqueId=m_confettiToCheck.size();
+							m_confettiToCheck.push_back(path);
+							uint64_t root=path[0];
+							vector<uint64_t> kMersToCheck;
+							getPermutations(root,positionsToCheck,&kMersToCheck,wordSize);
+							
+							// push queries in a buffer
+							for(int i=0;i<(int)kMersToCheck.size();i++){
+								uint64_t kmer=kMersToCheck[i];
+								int destination=vertexRank(kmer,size);
+								m_bufferedData.addAt(destination,uniqueId);
+								m_bufferedData.addAt(destination,kmer);
+								if(m_bufferedData.flush(destination,2,RAY_MPI_TAG_CHECK_VERTEX,outboxAllocator,outbox,theRank,false)){
+									m_pendingMessages++;
+								}
+							}
 						}
-*/
 					}
 				}
 
@@ -339,10 +423,10 @@ edgesReceived
 						m_toRemove.push_back(path[u]);
 					}
 				}
-				#define PRINT_GRAPHVIZ
+				//#define PRINT_GRAPHVIZ
 				#ifdef PRINT_GRAPHVIZ
 				if(parameters->getRank()==MASTER_RANK 
-				&&foundJunction&&!foundDestination){
+				&&!foundJunction){
 					set<uint64_t> removed;
 					for(int p=0;p<(int)path.size();p++){
 						if(foundDestination){
@@ -351,6 +435,7 @@ edgesReceived
 					}
 					processed=true;
 					cout<<"BEGIN"<<endl;
+					cout<<"No Junction Found"<<endl;
 					cout<<"Depth reached: "<<maximumDepth<<" vs "<<path.size()<<" MAX="<<m_maximumDepth<<endl;
 					cout<<"root="<<idToWord(key,wordSize)<<endl;
 					cout<<"Parents: "<<parents.size()<<endl;
@@ -434,4 +519,24 @@ void MemoryConsumptionReducer::printCounter(Parameters*parameters,MyForest*fores
 
 vector<uint64_t>*MemoryConsumptionReducer::getVerticesToRemove(){
 	return &m_toRemove;
+}
+
+void MemoryConsumptionReducer::constructor(int size){
+	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	m_pendingMessages=0;
+}
+
+void MemoryConsumptionReducer::processConfetti(uint64_t*a,int b){
+	for(int i=0;i<b;i++){
+		int task=a[i];
+		if(m_processedTasks.count(task)>0){
+			continue;
+		}
+		m_processedTasks.insert(task);
+		vector<uint64_t>*vertices=&m_confettiToCheck[task];
+		for(int j=0;j<(int)vertices->size();j++){
+			m_toRemove.push_back(vertices->at(j));
+		}
+	}
+	m_pendingMessages--;
 }

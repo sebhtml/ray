@@ -26,6 +26,7 @@
 #include<MyForest.h>
 #include<Parameters.h>
 #include<RingAllocator.h>
+#include<BufferedData.h>
 #include<set>
 #include<vector>
 #include<DepthFirstSearchData.h>
@@ -33,6 +34,10 @@
 using namespace std;
 
 class MemoryConsumptionReducer{
+	int m_pendingMessages;
+	set<int> m_processedTasks;
+	BufferedData m_bufferedData;
+
 	uint64_t m_counter;
 
 	MyForestIterator m_iterator;
@@ -55,6 +60,10 @@ class MemoryConsumptionReducer{
 	bool isJunction(uint64_t vertex,map<uint64_t,vector<uint64_t> >*edges,int wordSize);
 	vector<uint64_t> computePath(map<uint64_t,vector<uint64_t> >*edges,uint64_t start,uint64_t end,set<uint64_t>*visited);
 
+	vector<vector<uint64_t> > m_confettiToCheck;
+
+	void getPermutations(uint64_t kmer,int length,vector<uint64_t>*output,int wordSize);
+
 public:
 	MemoryConsumptionReducer();
 	/*
@@ -70,6 +79,9 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	int getNumberOfRemovedVertices();
 	vector<uint64_t>*getVerticesToRemove();
 
+	void constructor(int size);
+
+	void processConfetti(uint64_t*a,int b);
 };
 
 #endif

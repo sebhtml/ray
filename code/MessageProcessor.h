@@ -40,6 +40,7 @@
 #include<VerticesExtractor.h>
 #include<MyForest.h>
 #include<Parameters.h>
+#include<MemoryConsumptionReducer.h>
 #include<BufferedData.h>
 #include<MyAllocator.h>
 #include<Vertex.h>
@@ -50,7 +51,7 @@ class MessageProcessor;
 typedef void (MessageProcessor::*FNMETHOD) (Message*message);
 
 class MessageProcessor{
-
+	MemoryConsumptionReducer*m_reducer;
 	uint64_t m_lastSize;
 
 	SequencesLoader*m_sequencesLoader;
@@ -261,7 +262,8 @@ class MessageProcessor{
 	void call_RAY_MPI_TAG_DELETE_VERTEX_REPLY(Message*message);
 	void call_RAY_MPI_TAG_DELETE_OUTGOING_EDGE_REPLY(Message*message);
 	void call_RAY_MPI_TAG_DELETE_INGOING_EDGE_REPLY(Message*message);
-
+	void call_RAY_MPI_TAG_CHECK_VERTEX(Message*message);
+	void call_RAY_MPI_TAG_CHECK_VERTEX_REPLY(Message*message);
 
 public:
 	void constructor(MessagesHandler*m_messagesHandler,
@@ -323,6 +325,7 @@ SequencesIndexer*m_si
 	MessageProcessor();
 
 	void flushBuffers();
+	void setReducer(MemoryConsumptionReducer*reducer);
 };
 
 #endif

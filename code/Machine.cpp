@@ -180,6 +180,7 @@ void Machine::start(){
 
 	char serverName[1000];
 	int len;
+
 	MPI_Init(&m_argc,&m_argv);
 	MPI_Get_processor_name(serverName,&len);
 
@@ -187,6 +188,7 @@ void Machine::start(){
 	MPI_Comm_size(MPI_COMM_WORLD,&m_size);
 
 
+	m_reducer.constructor(getSize());
 
 	int pid=getpid();
 	printf("Rank %i is running as UNIX process %i on %s\n",getRank(),pid,serverName);
@@ -289,6 +291,8 @@ void Machine::start(){
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
+	m_mp.setReducer(&m_reducer);
+
 	m_mp.constructor(
 &m_messagesHandler,
 m_seedingData,
@@ -378,10 +382,10 @@ m_seedingData,
 	while(!f.eof()){
 		string key;
 		f>>key;
-		if(key=="VmSize:"){
+		if(key=="VmData:"){
 			uint64_t count;
 			f>>count;
-			printf("Rank %i: VmSize= %lu KiB (from /proc)\n",getRank(),count);
+			printf("Rank %i: VmData= %lu KiB (from /proc)\n",getRank(),count);
 			fflush(stdout);
 			break;
 		}
