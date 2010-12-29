@@ -303,9 +303,6 @@ void VerticesExtractor::checkPendingMessagesForReduction(StaticVector*outbox,int
 		outbox->push_back(aMessage);
 		m_mustTriggerReduction=false;
 	}
-	#ifdef ASSERT
-	assert(m_pendingMessages==0||m_mustTriggerReduction==true);
-	#endif
 }
 
 /*
