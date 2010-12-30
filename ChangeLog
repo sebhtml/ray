@@ -1,8 +1,13 @@
+= 1.2.2 'X-ray' =
+2011-01-XX
+
+
+
 = 1.2.1 'stringray' =
 2010-12-30
 
-* SplayTreeIterator now iterates in preorder instead inorder.
-* Now the SplayTreeIterator is utilized to iterate on the vertices instead of
+* SplayTreeIterator now iterates in preorder instead of inorder.
+* Now the SplayTreeIterator is utilized to iterate over the vertices instead of
 storing them in an array (takes too much memory).
 * The forest of splay trees now contains 16384 trees instead of 4096. Note
 that as usual, each MPI rank has its own forest. Furthermore, the forest freezes when vertices distribution is properly
