@@ -25,6 +25,8 @@
 #include<set>
 using namespace std;
 
+//#define _VERBOSE
+
 void MemoryConsumptionReducer::getPermutations(uint64_t kmer,int length,vector<uint64_t>*output,int wordSize){
 	#ifdef ASSERT
 	assert(output->size()==0);
@@ -388,7 +390,9 @@ edgesReceived
 								break;
 							}
 							if(m_dfsDataOutgoing.m_coverages[path[o]]!=1){
+								#ifdef _VERBOSE
 								cout<<path.size()<<" vertices, no junction, and a vertex has a coverage greater than 1"<<endl;
+								#endif
 								aloneBits=false;
 								break;
 							}
@@ -442,7 +446,9 @@ edgesReceived
 						m_toRemove.push_back(path[u]);
 					}
 				}
+				#ifdef _VERBOSE
 				#define PRINT_GRAPHVIZ
+				#endif
 				#ifdef PRINT_GRAPHVIZ
 				if(parameters->getRank()==MASTER_RANK 
 				&&!foundJunction&&!aloneBits&&children.size()==0&&(int)path.size()<=maxPathSize){

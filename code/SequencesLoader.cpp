@@ -113,20 +113,30 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			return false;
 		}
 
+		#ifdef ASSERT
+		assert(m_loader.size()!=0);
+		#endif
+
 		// write Reads in AMOS format.
 		if((*m_parameters).useAmos()){
 			FILE*fp=(*m_bubbleData).m_amos;
 			for(int i=0;i<(int)m_loader.size();i++){
 				int iid=(m_distribution_currentSequenceId)+i;
 				char*seq=m_loader.at(i)->getSeq();
+				#ifdef ASSERT
+				assert(seq!=NULL);
+				#endif
 				char*qlt=(char*)__Malloc(strlen(seq)+1);
 				strcpy(qlt,seq);
 				// spec: https://sourceforge.net/apps/mediawiki/amos/index.php?title=Message_Types#Sequence_t_:_Universal_t
-				for(int j=0;j<(int)strlen(qlt);j++)
+				for(int j=0;j<(int)strlen(qlt);j++){
 					qlt[j]='D';
+				}
 				fprintf(fp,"{RED\niid:%i\neid:%i\nseq:\n%s\n.\nqlt:\n%s\n.\n}\n",iid+1,iid+1,seq,qlt);
 				__Free(qlt);
 			}
+			m_loader.clear();
+			m_loader.load(allFiles[(m_distribution_file_id)],false);
 		}
 
 		m_isInterleavedFile=(m_LOADER_isLeftFile)=(m_LOADER_isRightFile)=false;

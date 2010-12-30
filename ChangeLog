@@ -15,6 +15,13 @@ polymorphic positions).
 * Added numeric indicator for files. (example: [1/9])
 * Corrected a bug in library lengths messaging that leaded to hanging and/or
 Bus Error.
+* Fixed a segmentation fault when the -a (output AMOS) is provided. Thanks to
+Daniel Brami from J. Craig Venter Institute (La Jolla, CA) for the timely
+report.
+* Preliminary version of an algorithm for preemptively reduce the memory usage
+while building the distributed graph.
+* Under GNU/Linux platforms, Ray outputs the virtual memory (VmData from
+/proc, that is the heap) utilized before exiting.
 
 
 = 1.2.0 =
