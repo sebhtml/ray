@@ -169,8 +169,17 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 		m_counter=0;
 		m_initiated=true;
 		m_toRemove.clear();
+
+/*
+		if((int)m_confettiToCheck.size()>0){
+			int remaining=m_confettiToCheck.size()-m_processedTasks.size();
+			cout<<remaining<<" confetti were held back."<<endl;
+		}
+*/
+
 		m_processedTasks.clear();
 		m_confettiToCheck.clear();
+		m_confettiMaxCoverage.clear();
 
 		m_currentVertexIsDone=false;
 		m_hasSetVertex=false;
@@ -277,6 +286,9 @@ edgesReceived
 				int minimumCoverageInOtherPath=999;
 				bool isLow=false;
 				set<uint64_t> bestVertices;
+				bool aloneBits=false;
+				int maxReadLength=2*wordSize-1;
+				int maxPathSize=maxReadLength-wordSize; // k-1
 
 				if((parents.size()==0||children.size()==0)&&!(parents.size()==0&&children.size()==0)){
 					map<uint64_t,vector<uint64_t> >*theEdges=&theParents;
@@ -366,15 +378,21 @@ edgesReceived
 
 					// confetti in the graph
 					}else if(children.size()==0){
-						bool aloneBits=true;
+						aloneBits=true;
+						if(!((int)path.size()<=maxPathSize)){
+							aloneBits=false;
+						}
+
 						for(int o=0;o<(int)path.size();o++){
+							if(!aloneBits){
+								break;
+							}
 							if(m_dfsDataOutgoing.m_coverages[path[o]]!=1){
+								cout<<path.size()<<" vertices, no junction, and a vertex has a coverage greater than 1"<<endl;
 								aloneBits=false;
 								break;
 							}
 						}
-						int maxReadLength=2*wordSize-1;
-						int maxPathSize=maxReadLength-wordSize; // k-1
 
 						if(aloneBits&&(int)path.size()<=maxPathSize){
 							//foundDestination=true;
@@ -396,6 +414,7 @@ edgesReceived
 							int positionsToCheck=wordSize-path.size();
 							int uniqueId=m_confettiToCheck.size();
 							m_confettiToCheck.push_back(path);
+							m_confettiMaxCoverage.push_back(maximumCoverageInPath);
 							uint64_t root=path[0];
 							vector<uint64_t> kMersToCheck;
 							getPermutations(root,positionsToCheck,&kMersToCheck,wordSize);
@@ -423,10 +442,10 @@ edgesReceived
 						m_toRemove.push_back(path[u]);
 					}
 				}
-				//#define PRINT_GRAPHVIZ
+				#define PRINT_GRAPHVIZ
 				#ifdef PRINT_GRAPHVIZ
 				if(parameters->getRank()==MASTER_RANK 
-				&&!foundJunction){
+				&&!foundJunction&&!aloneBits&&children.size()==0&&(int)path.size()<=maxPathSize){
 					set<uint64_t> removed;
 					for(int p=0;p<(int)path.size();p++){
 						if(foundDestination){
@@ -435,7 +454,9 @@ edgesReceived
 					}
 					processed=true;
 					cout<<"BEGIN"<<endl;
-					cout<<"No Junction Found"<<endl;
+					cout<<"foundJunction="<<foundJunction<<endl;
+					cout<<"foundDestination="<<foundDestination<<endl;
+					cout<<"aloneBits="<<aloneBits<<endl;
 					cout<<"Depth reached: "<<maximumDepth<<" vs "<<path.size()<<" MAX="<<m_maximumDepth<<endl;
 					cout<<"root="<<idToWord(key,wordSize)<<endl;
 					cout<<"Parents: "<<parents.size()<<endl;
@@ -527,13 +548,18 @@ void MemoryConsumptionReducer::constructor(int size){
 }
 
 void MemoryConsumptionReducer::processConfetti(uint64_t*a,int b){
-	for(int i=0;i<b;i++){
-		int task=a[i];
+	for(int i=0;i<b;i+=2){
+		int task=a[i+0];
+		int coverage=a[i+1];
 		if(m_processedTasks.count(task)>0){
 			continue;
 		}
 		m_processedTasks.insert(task);
 		vector<uint64_t>*vertices=&m_confettiToCheck[task];
+		int maxCoverage=m_confettiMaxCoverage[task];
+		if(coverage<maxCoverage){
+			continue;
+		}
 		for(int j=0;j<(int)vertices->size();j++){
 			m_toRemove.push_back(vertices->at(j));
 		}

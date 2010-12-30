@@ -61,6 +61,7 @@ class MemoryConsumptionReducer{
 	vector<uint64_t> computePath(map<uint64_t,vector<uint64_t> >*edges,uint64_t start,uint64_t end,set<uint64_t>*visited);
 
 	vector<vector<uint64_t> > m_confettiToCheck;
+	vector<int> m_confettiMaxCoverage;
 
 	void getPermutations(uint64_t kmer,int length,vector<uint64_t>*output,int wordSize);
 

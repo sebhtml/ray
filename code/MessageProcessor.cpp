@@ -106,8 +106,9 @@ void MessageProcessor::call_RAY_MPI_TAG_CHECK_VERTEX(Message*message){
 			int parents=node->getValue()->getIngoingEdges(vertex,(*m_wordSize)).size();
 			int children=node->getValue()->getOutgoingEdges(vertex,(*m_wordSize)).size();
 			int coverage=node->getValue()->getCoverage();
-			if(parents>0&&children>0&&coverage>5){
+			if(parents>0&&children>0&&coverage>3){
 				outgoingMessage[outgoingCount++]=task;
+				outgoingMessage[outgoingCount++]=coverage;
 			}
 		}
 	}
@@ -128,7 +129,6 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_INGOING_EDGE(Message*message){
 	for(int i=0;i<count;i+=2){
 		uint64_t prefix=incoming[i+0];
 		uint64_t suffix=incoming[i+1];
-
 
 		SplayNode<uint64_t,Vertex>*node=m_subgraph->find(suffix);
 
