@@ -40,6 +40,7 @@ using namespace std;
  *
  */
 class Parameters{
+	bool m_reducerIsActivated;
 	int m_size;
 	COVERAGE_TYPE m_maxCoverage;
 	int m_rank;
@@ -122,6 +123,8 @@ public:
 	int getRank();
 	int getSize();
 	void setSize(int a);
+	bool runReducer();
+	void showUsage();
 };
 
 #endif

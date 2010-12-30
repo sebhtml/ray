@@ -437,6 +437,9 @@ void MessageProcessor::call_RAY_MPI_TAG_START_VERTICES_DISTRIBUTION(Message*mess
 	(*m_mode_send_vertices)=true;
 	(*m_mode)=RAY_SLAVE_MODE_EXTRACT_VERTICES;
 	m_verticesExtractor->constructor(size);
+	if(parameters->runReducer()){
+		m_verticesExtractor->enableReducer();
+	}
 
 	(*m_mode_send_vertices_sequence_id)=0;
 }

@@ -54,56 +54,7 @@ bool myComparator_sort(const vector<uint64_t>&a,const vector<uint64_t>&b){
 
 using namespace std;
 
-void Machine::showUsage(){
-	cout<<endl;
-	cout<<"Usage:"<<endl<<endl;
-	cout<<"Supported sequences file format: "<<endl;
 
-	cout<<".fasta"<<endl;
-	#ifdef HAVE_ZLIB
-	cout<<".fasta.gz"<<endl;
-	#endif
-	#ifdef HAVE_LIBBZ2
-	cout<<".fasta.bz2"<<endl;
-	#endif
-	cout<<".fastq"<<endl;
-	#ifdef HAVE_ZLIB
-	cout<<".fastq.gz"<<endl;
-	#endif
-	#ifdef HAVE_LIBBZ2
-	cout<<".fastq.bz2"<<endl;
-	#endif
-	cout<<".sff (paired reads must be extracted manually)"<<endl;
-
-	cout<<endl;
-
-	cout<<"Parameters:"<<endl;
-	cout<<endl;
-
-	cout<<"Single-end reads"<<endl;
-    	cout<<" -s <sequencesFile>"<<endl;
-	cout<<endl;
-	cout<<"Paired-end reads:"<<endl;
-	cout<<" -p <leftSequencesFile> <rightSequencesFile> [ <fragmentLength> <standardDeviation> ]"<<endl;
-	cout<<endl;
-	cout<<"Paired-end reads:"<<endl;
-	cout<<" -i <interleavedFile> [ <fragmentLength> <standardDeviation> ]"<<endl;
-	cout<<endl;
-	cout<<"Output (default: RayOutput)"<<endl;
-	cout<<" -o <outputPrefix>"<<endl;
-	cout<<endl;	
-	cout<<"AMOS output"<<endl;
-	cout<<" -a  "<<endl;
-    	cout<<endl;
-	cout<<"k-mer size (default: 21)"<<endl;
-	cout<<" -k <kmerSize>"<<endl;
-	cout<<endl;
-	cout<<"Ray writes a contigs file, a coverage distribution file, and an AMOS file (if -a is provided)."<<endl;
-	cout<<"The name of these files is based on the value provided with -o."<<endl;
-	cout<<endl;
-	cout<<"use --help to show this help"<<endl;
-	cout<<endl;
-}
 
 
 
@@ -161,9 +112,21 @@ void Machine::start(){
 	m_sequence_ready_machines=0;
 	m_isFinalFusion=false;
 
+	MPI_Init(&m_argc,&m_argv);
+
+	char serverName[1000];
+	int len;
+	MPI_Get_processor_name(serverName,&len);
+
+	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
+	MPI_Comm_size(MPI_COMM_WORLD,&m_size);
+
 	//
 
+	int MAX_ALLOCATED_MESSAGES_IN_OUTBOX=5*getSize();
 	m_outboxAllocator.constructor(MAX_ALLOCATED_MESSAGES_IN_OUTBOX,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	
+	int MAX_ALLOCATED_MESSAGES_IN_INBOX=1;
 	m_inboxAllocator.constructor(MAX_ALLOCATED_MESSAGES_IN_INBOX,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
 	m_directionsAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
@@ -177,16 +140,6 @@ void Machine::start(){
 	m_startEdgeDistribution=false;
 
 	m_ranksDoneAttachingReads=0;
-
-	char serverName[1000];
-	int len;
-
-	MPI_Init(&m_argc,&m_argv);
-	MPI_Get_processor_name(serverName,&len);
-
-	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
-	MPI_Comm_size(MPI_COMM_WORLD,&m_size);
-
 
 	m_reducer.constructor(getSize());
 
@@ -256,6 +209,10 @@ void Machine::start(){
 		cout<<"Rank "<<MASTER_RANK<<": compiled with BZIP2"<<endl;
 		#endif
 
+		#ifdef linux
+		cout<<"Rank "<<MASTER_RANK<<": compiled for GNU/Linux, using /proc for memory usage data"<<endl;
+		#endif
+
 		cout<<endl;
 		m_timePrinter.printElapsedTime("Beginning of computation");
 		cout<<endl;
@@ -290,7 +247,16 @@ void Machine::start(){
 	m_totalLetters=0;
 
 	MPI_Barrier(MPI_COMM_WORLD);
+	printf("Rank %i initiates its communication buffers\n",m_rank);
 
+	MPI_Barrier(MPI_COMM_WORLD);
+	showMemoryUsage(getRank());
+
+	MPI_Barrier(MPI_COMM_WORLD);
+
+	if(isMaster()){
+		cout<<endl;
+	}
 	m_mp.setReducer(&m_reducer);
 
 	m_mp.constructor(
@@ -350,7 +316,7 @@ m_seedingData,
 	if(m_argc==1 or ((string)m_argv[1])=="--help"){
 		if(isMaster()){
 			m_aborted=true;
-			showUsage();
+			m_parameters.showUsage();
 		}
 	}else{
 		if(isMaster()){
@@ -377,31 +343,19 @@ m_seedingData,
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	#ifdef linux
-	ifstream f("/proc/self/status");
-	while(!f.eof()){
-		string key;
-		f>>key;
-		if(key=="VmData:"){
-			uint64_t count;
-			f>>count;
-			printf("Rank %i: VmData= %lu KiB (from /proc)\n",getRank(),count);
-			fflush(stdout);
-			break;
-		}
-	}
-	f.close();
-	#endif
+	showMemoryUsage(getRank());
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
 	if(isMaster() && !m_aborted){
 		cout<<endl;
-		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getCoverageDistributionFile()<<""<<endl;
+		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getCoverageDistributionFile()<<" (how redundant are the k-mers)"<<endl;
 		m_parameters.printFinalMessage();
-		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<endl;
-		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getReceivedMessagesFile()<<endl;
-
+		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<" (contiguous sequences in FASTA format) "<<endl;
+		if(m_parameters.useAmos()){
+			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getAmosFile()<<" (reads mapped onto contiguous sequences in AMOS format)"<<endl;
+		}
+		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getReceivedMessagesFile()<<" (MPI communication matrix) "<<endl;
 		cout<<endl;
 		cout<<"Au revoir !"<<endl;
 		cout<<endl;
@@ -479,7 +433,7 @@ void Machine::call_RAY_MASTER_MODE_LOAD_CONFIG(){
 	}
 	if(m_parameters.useAmos()){
 		// empty the file.
-		cout<<"Preparing AMOS file "<<m_parameters.getAmosFile()<<endl;
+		cout<<"Rank "<<getRank()<<" is preparing "<<m_parameters.getAmosFile()<<endl<<endl;
 		m_bubbleData->m_amos=fopen(m_parameters.getAmosFile().c_str(),"w");
 	}
 
@@ -595,7 +549,6 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_INDEXING(){
 	m_master_mode=RAY_MASTER_RAY_SLAVE_MODE_DO_NOTHING;
 	m_timePrinter.printElapsedTime("Calculation of coverage distribution");
 	cout<<endl;
-	cout<<"Rank 0 tells its friends to proceed with the distribution of edges."<<endl;
 
 	cout<<endl;
 	for(int i=0;i<getSize();i++){
@@ -1113,7 +1066,7 @@ void Machine::call_RAY_MASTER_RAY_SLAVE_MODE_ASK_EXTENSIONS(){
 			m_seedingData->m_SEEDING_i=0;
 			m_mode_send_vertices_sequence_id_position=0;
 			m_ed->m_EXTENSION_reads_requested=false;
-			cout<<"\rCompleting "<<m_parameters.getAmosFile()<<endl;
+			cout<<"Rank "<<getRank()<<" is completing "<<m_parameters.getAmosFile()<<endl;
 		}else{// we are done.
 			killRanks();
 		}

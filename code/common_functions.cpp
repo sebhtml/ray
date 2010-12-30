@@ -485,5 +485,22 @@ u64 getMicroSeconds(){
 	return milliSeconds;
 }
 
+void showMemoryUsage(int rank){
+	#ifdef linux
+	ifstream f("/proc/self/status");
+	while(!f.eof()){
+		string key;
+		f>>key;
+		if(key=="VmData:"){
+			uint64_t count;
+			f>>count;
+			printf("Rank %i: VmData= %lu KiB (from /proc)\n",rank,count);
+			fflush(stdout);
+			break;
+		}
+	}
+	f.close();
+	#endif
+}
 
 

@@ -196,12 +196,16 @@ void VerticesExtractor::constructor(int size){
 	m_ranksDoneWithReduction=0;
 	m_ranksReadyForReduction=0;
 	//m_reductionPeriod=200000;
-	//m_reductionPeriod=999999999;
-	m_reductionPeriod=635000;
+	m_reductionPeriod=999999999999999;
+	//m_reductionPeriod=635000;
 	m_thresholdForReduction=m_reductionPeriod;
 	m_triggered=false;
 	m_finished=false;
 	m_mustTriggerReduction=false;
+}
+
+void VerticesExtractor::enableReducer(){
+	m_reductionPeriod=635000;
 }
 
 void VerticesExtractor::setReadiness(StaticVector*outbox,int rank){

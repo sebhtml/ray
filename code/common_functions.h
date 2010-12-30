@@ -47,9 +47,6 @@ see <http://www.gnu.org/licenses/>
 // the maximum of processes is utilized to construct unique hyperfusions IDs
 #define MAX_NUMBER_OF_MPI_PROCESSES 2000
 
-#define MAX_ALLOCATED_MESSAGES_IN_OUTBOX 5*MAX_NUMBER_OF_MPI_PROCESSES
-#define MAX_ALLOCATED_MESSAGES_IN_INBOX 1 // only one !
-
 #define MAX_U32 4294967295
 #define MAX_U16 65535
 
@@ -235,6 +232,7 @@ int roundNumber(int number,int alignment);
 
 u64 getMicroSeconds();
 
+void showMemoryUsage(int rank);
 
 #endif
 

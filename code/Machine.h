@@ -271,7 +271,6 @@ class Machine{
 	void finishFusions();
 	void makeFusions();
 	void depthFirstSearch(uint64_t root,uint64_t a,int b);
-	void showUsage();
 	
 	void assignMasterHandlers();
 	void assignSlaveHandlers();

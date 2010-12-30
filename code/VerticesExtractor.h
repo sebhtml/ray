@@ -57,7 +57,7 @@ class VerticesExtractor{
 	int m_ranksDoneWithReduction;
 
 	uint64_t m_thresholdForReduction;
-	int m_reductionPeriod;
+	uint64_t m_reductionPeriod;
 
 	bool m_triggered;
 
@@ -121,7 +121,7 @@ Parameters*parameters,RingAllocator*m_outboxAllocator,
 	void incrementPendingMessages();
 
 	void showBuffers();
-
+	void enableReducer();
 };
 
 #endif

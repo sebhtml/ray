@@ -44,6 +44,7 @@ Parameters::Parameters(){
 	m_minimumContigLength=100;
 	m_wordSize=21;
 	m_colorSpaceMode=false;
+	m_reducerIsActivated=false;
 	m_amos=false;
 	m_error=false;
 }
@@ -121,6 +122,9 @@ void Parameters::parseCommands(){
 	set<string> kmerSetting;
 	kmerSetting.insert("-k");
 
+	set<string> reduceMemoryUsage;
+	reduceMemoryUsage.insert("-r");
+
 	vector<set<string> > toAdd;
 	toAdd.push_back(singleReadsCommands);
 	toAdd.push_back(pairedReadsCommands);
@@ -128,6 +132,8 @@ void Parameters::parseCommands(){
 	toAdd.push_back(outputFileCommands);
 	toAdd.push_back(kmerSetting);
 	toAdd.push_back(interleavedCommands);
+	toAdd.push_back(reduceMemoryUsage);
+
 	for(int i=0;i<(int)toAdd.size();i++){
 		for(set<string>::iterator j=toAdd[i].begin();j!=toAdd[i].end();j++){
 			commands.insert(*j);
@@ -228,8 +234,8 @@ void Parameters::parseCommands(){
 				map<int,int> t;
 				m_automaticLibraries.insert(m_numberOfLibraries);
 				if(m_rank==MASTER_RANK){
-					cout<<" Average length: auto"<<endl;
-					cout<<" Standard deviation: auto"<<endl;
+					cout<<" Average length: automatic detection"<<endl;
+					cout<<" Standard deviation: automatic detection"<<endl;
 				}
 			}else{
 				#ifdef ASSERT
@@ -310,8 +316,8 @@ void Parameters::parseCommands(){
 			}else if(items==2){// automatic detection.
 				m_automaticLibraries.insert(m_numberOfLibraries);
 				if(m_rank==MASTER_RANK){
-					cout<<" Average length: auto"<<endl;
-					cout<<" Standard deviation: auto"<<endl;
+					cout<<" Average length: automatic detection"<<endl;
+					cout<<" Standard deviation: automatic detection"<<endl;
 				}
 			}
 
@@ -324,6 +330,8 @@ void Parameters::parseCommands(){
 			m_numberOfLibraries++;
 		}else if(outputAmosCommands.count(token)>0){
 			m_amos=true;
+		}else if(reduceMemoryUsage.count(token)>0){
+			m_reducerIsActivated=true;
 		}else if(kmerSetting.count(token)>0){
 			i++;
 			int items=m_commands.size()-i;
@@ -583,4 +591,62 @@ int Parameters::getSize(){
 
 void Parameters::setSize(int a){
 	m_size=a;
+}
+
+bool Parameters::runReducer(){
+	return m_reducerIsActivated;
+}
+
+void Parameters::showUsage(){
+	cout<<endl;
+	cout<<"Usage:"<<endl<<endl;
+	cout<<"Supported sequences file format: "<<endl;
+
+	cout<<".fasta"<<endl;
+	#ifdef HAVE_ZLIB
+	cout<<".fasta.gz"<<endl;
+	#endif
+	#ifdef HAVE_LIBBZ2
+	cout<<".fasta.bz2"<<endl;
+	#endif
+	cout<<".fastq"<<endl;
+	#ifdef HAVE_ZLIB
+	cout<<".fastq.gz"<<endl;
+	#endif
+	#ifdef HAVE_LIBBZ2
+	cout<<".fastq.bz2"<<endl;
+	#endif
+	cout<<".sff (paired reads must be extracted manually)"<<endl;
+
+	cout<<endl;
+
+	cout<<"Parameters:"<<endl;
+	cout<<endl;
+
+	cout<<"Single-end reads"<<endl;
+    	cout<<" -s <sequencesFile>"<<endl;
+	cout<<endl;
+	cout<<"Paired-end reads:"<<endl;
+	cout<<" -p <leftSequencesFile> <rightSequencesFile> [ <fragmentLength> <standardDeviation> ]"<<endl;
+	cout<<endl;
+	cout<<"Paired-end reads:"<<endl;
+	cout<<" -i <interleavedFile> [ <fragmentLength> <standardDeviation> ]"<<endl;
+	cout<<endl;
+	cout<<"Output (default: RayOutput)"<<endl;
+	cout<<" -o <outputPrefix>"<<endl;
+	cout<<endl;	
+	cout<<"AMOS output"<<endl;
+	cout<<" -a  "<<endl;
+    	cout<<endl;
+	cout<<"k-mer size (default: 21)"<<endl;
+	cout<<" -k <kmerSize>"<<endl;
+	cout<<endl;
+	cout<<"Memory Usage Reducer (experimental, disabled by default)"<<endl;
+	cout<<" -r "<<endl;
+	cout<<endl;
+	cout<<"Ray writes a contigs file, a coverage distribution file, and an AMOS file (if -a is provided)."<<endl;
+	cout<<"The name of these files is based on the value provided with -o."<<endl;
+	cout<<endl;
+	cout<<"use --help to show this help"<<endl;
+	cout<<endl;
 }
