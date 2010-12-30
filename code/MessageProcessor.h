@@ -185,7 +185,7 @@ class MessageProcessor{
 	void call_RAY_MPI_TAG_START_FUSION(Message*message);
 	void call_RAY_MPI_TAG_FUSION_DONE(Message*message);
 	void call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE(Message*message);
-	void call_RAY_MPI_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY(Message*message);
+	void call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY(Message*message);
 	void call_RAY_MPI_TAG_GET_PATH_LENGTH(Message*message);
 	void call_RAY_MPI_TAG_GET_PATH_LENGTH_REPLY(Message*message);
 	void call_RAY_MPI_TAG_CALIBRATION_MESSAGE(Message*message);
@@ -233,10 +233,10 @@ class MessageProcessor{
 	void call_RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION_REPLY(Message*message);
 	void call_RAY_MPI_TAG_RECEIVED_MESSAGES(Message*message);
 	void call_RAY_MPI_TAG_RECEIVED_MESSAGES_REPLY(Message*message);
-	void call_RAY_MPI_RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY(Message*message);
-	void call_RAY_MPI_RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY(Message*message);
+	void call_RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY(Message*message);
+	void call_RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY(Message*message);
 	void call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY(Message*message);
-	void call_RAY_MPI_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY_END(Message*message);
+	void call_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY_END(Message*message);
 	void call_RAY_MPI_TAG_MUST_RUN_REDUCER(Message*message);
 	void call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION(Message*message);
 	void call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY(Message*message);

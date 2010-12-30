@@ -37,25 +37,25 @@ const char*__TAG_NAMES[]={
 void MessagesHandler::sendMessages(StaticVector*outbox,int source){
 	for(int i=0;i<(int)outbox->size();i++){
 		Message*aMessage=((*outbox)[i]);
-		#ifdef ASSERT
 		int destination=aMessage->getDestination();
+		void*buffer=aMessage->getBuffer();
+		int count=aMessage->getCount();
+		MPI_Datatype type=aMessage->getMPIDatatype();
+		int tag=aMessage->getTag();
+
+		#ifdef ASSERT
 		assert(destination>=0);
+		assert(destination<m_size);
+		assert(!(buffer==NULL && count>0));
+		assert(count<=(int)(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)));
+		assert(type==MPI_UNSIGNED_LONG_LONG);
 		#endif
+
 		MPI_Request request;
+
 		//  MPI_Issend
 		//      Synchronous nonblocking. Note that a Wait/Test will complete only when the matching receive is posted
-		#ifdef ASSERT
-		if(aMessage->getBuffer()==NULL && aMessage->getCount()>0){
-			//cout<<"tag="<<__TAG_NAMES[aMessage->getTag()]<<endl;
-		}
-		assert(!(aMessage->getBuffer()==NULL && aMessage->getCount()>0));
-		#endif
-		#ifndef ASSERT
-		MPI_Isend(aMessage->getBuffer(),aMessage->getCount(),aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(),MPI_COMM_WORLD,&request);
-		#else
-		int value=MPI_Isend(aMessage->getBuffer(),aMessage->getCount(),aMessage->getMPIDatatype(),aMessage->getDestination(),aMessage->getTag(),MPI_COMM_WORLD,&request);
-		assert(value==MPI_SUCCESS);
-		#endif
+		MPI_Isend(buffer,count,type,destination,tag,MPI_COMM_WORLD,&request);
 		
 		MPI_Request_free(&request);
 
@@ -66,8 +66,6 @@ void MessagesHandler::sendMessages(StaticVector*outbox,int source){
 
 	outbox->clear();
 }
-
-
 
 /*	
  * receiveMessages is implemented as recommanded by Mr. George Bosilca from
@@ -90,7 +88,6 @@ Moreover, at the end it is very easy to MPI_Cancel all the receives not yet matc
  */
 
 void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator,int destination){
-
 	int flag;
 	MPI_Status status;
 	MPI_Test(m_ring+m_head,&flag,&status);

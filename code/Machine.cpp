@@ -190,6 +190,7 @@ void Machine::start(){
 		cout<<"Rank "<<MASTER_RANK<<": Ray "<<RAY_VERSION<<endl;
 		cout<<endl;
 
+
 		#ifdef MPICH2
                 cout<<"Rank "<<MASTER_RANK<<": compiled with MPICH2 "<<MPICH2_VERSION<<endl;
 		#endif
@@ -215,6 +216,10 @@ void Machine::start(){
 
 		#ifdef linux
 		cout<<"Rank "<<MASTER_RANK<<": compiled for GNU/Linux, using /proc for memory usage data"<<endl;
+		#endif
+
+		#ifdef ASSERT
+		cout<<"Rank "<<MASTER_RANK<<": compiled with assertions"<<endl;
 		#endif
 
 		cout<<endl;
