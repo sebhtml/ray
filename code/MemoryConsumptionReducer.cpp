@@ -368,7 +368,6 @@ edgesReceived
 					}else if(children.size()==0){
 						bool aloneBits=true;
 						for(int o=0;o<(int)path.size();o++){
-							break;
 							if(m_dfsDataOutgoing.m_coverages[path[o]]!=1){
 								aloneBits=false;
 								break;
