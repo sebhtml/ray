@@ -22,6 +22,7 @@
 #include<MemoryConsumptionReducer.h>
 #include<CoverageDistribution.h>
 #include<stack>
+#include<string.h>
 #include<set>
 using namespace std;
 
