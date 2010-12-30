@@ -1,10 +1,11 @@
 * run regressions
 * update ChangedLog (based on svn log and trac milestone)
+* check version in common_functions.h + configure.ac
 * svn cp trunk tags/<version>
 * close the milestone in trac
 * svn export
 * do a tar.bz2, compile it to test it
 * upload the tarball on sf
-* update the wiki page
+* update the wiki page (front page + ChangeLog)
 * post an email on the list including changes (ChangeLog) and results of regressions (compressed)
 * update the seqanswer thread
