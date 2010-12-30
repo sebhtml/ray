@@ -41,10 +41,10 @@ void ErrorSimulator::simulateErrors(string inputFile,string outputFile){
 	double mismatchProbability=0.01;
 	double unknownBaseProbability=0.005;
 
-	cout<<"Insertion probability: "<<insertionProbability<<endl;
-	cout<<"Deletion probability: "<<deletionProbability<<endl;
+	//cout<<"Insertion probability: "<<insertionProbability<<endl;
+	//cout<<"Deletion probability: "<<deletionProbability<<endl;
 	cout<<"Mismatch base probability: "<<mismatchProbability<<endl;
-	cout<<"Unknown base probability: "<<unknownBaseProbability<<endl;
+	//cout<<"Unknown base probability: "<<unknownBaseProbability<<endl;
 
 	int probabilityPrecision=100000;
 	ofstream f(outputFile.c_str());

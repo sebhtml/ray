@@ -18,6 +18,7 @@ echo ""
 for i in $(bash listRegressions.sh)
 do
 	bash runRegression.sh $i $suffix
+	rm *.fasta
 done 
 
 echo "EndingTime= $(date)"
