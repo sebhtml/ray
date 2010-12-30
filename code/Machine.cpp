@@ -201,6 +201,8 @@ void Machine::start(){
 		cout<<"Rank "<<MASTER_RANK<<": MPI library implements the standard MPI "<<version<<"."<<subversion<<""<<endl;
 
 		cout<<endl;
+
+		// show libraries
 		#ifdef HAVE_ZLIB
 		cout<<"Rank "<<MASTER_RANK<<": compiled with GZIP"<<endl;
 		#endif
@@ -208,6 +210,8 @@ void Machine::start(){
 		#ifdef HAVE_LIBBZ2
 		cout<<"Rank "<<MASTER_RANK<<": compiled with BZIP2"<<endl;
 		#endif
+
+		// show OS, only Linux
 
 		#ifdef linux
 		cout<<"Rank "<<MASTER_RANK<<": compiled for GNU/Linux, using /proc for memory usage data"<<endl;
