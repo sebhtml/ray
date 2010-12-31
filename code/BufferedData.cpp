@@ -36,6 +36,10 @@ void BufferedData::constructor(int numberOfRanks,int capacity){
 }
 
 void BufferedData::clear(){
+	#ifdef ASSERT
+	assert(isEmpty());
+	#endif
+
 	if(m_sizes!=NULL){
 		__Free(m_sizes);
 		m_sizes=NULL;
@@ -46,7 +50,7 @@ void BufferedData::clear(){
 	}
 }
 
-int BufferedData::size(int i){
+int BufferedData::size(int i)const{
 	#ifdef ASSERT
 	assert(i<m_ranks);
 	#endif
@@ -70,7 +74,7 @@ void BufferedData::reset(int i){
 	#endif
 }
 
-bool BufferedData::isEmpty(){
+bool BufferedData::isEmpty()const{
 	if(m_sizes==NULL&&m_data==NULL){
 		return true;
 	}

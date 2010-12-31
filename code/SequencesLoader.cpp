@@ -362,6 +362,10 @@ void SequencesLoader::setReadiness(){
 }
 
 bool SequencesLoader::isReady(){
+	#ifdef ASSERT
+	assert(m_waitingNumber>=0);
+	#endif
+
 	return m_waitingNumber==0;
 }
 

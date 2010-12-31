@@ -37,6 +37,13 @@
 using namespace std;
 
 class VerticesExtractor{
+	int m_rank;
+	RingAllocator*m_outboxAllocator;
+	StaticVector*m_outbox;
+	bool m_mustFlushBuffers;
+	int*m_mode;
+	int m_mode_send_vertices_sequence_id_position;
+
 	bool m_deletionsInitiated;
 	uint64_t m_deletionIterator;
 
@@ -77,7 +84,6 @@ public:
 	void process(int*m_mode_send_vertices_sequence_id,
 				ArrayOfReads*m_myReads,
 				bool*m_reverseComplementVertex,
-				int*m_mode_send_vertices_sequence_id_position,
 				int rank,
 				StaticVector*m_outbox,
 				bool*m_mode_send_vertices,
@@ -86,7 +92,7 @@ public:
 				RingAllocator*m_outboxAllocator,
 				bool m_colorSpaceMode,int*m_mode
 			);
-	void setReadiness(RingAllocator*outboxAllocator,StaticVector*outbox,int rank);
+	void setReadiness();
 	bool mustRunReducer();
 	void addRankForReduction(int a);
 	void resetRanksForReduction();

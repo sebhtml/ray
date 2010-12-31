@@ -34,6 +34,8 @@
 #include<FusionData.h>
 #include<Parameters.h>
 
+
+
 void MessageProcessor::processMessage(Message*message){
 	int tag=message->getTag();
 	FNMETHOD f=m_methods[tag];
@@ -159,11 +161,11 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_INGOING_EDGE(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_DELETE_OUTGOING_EDGE_REPLY(Message*message){
-	m_verticesExtractor->setReadiness(m_outboxAllocator,m_outbox,rank);
+	m_verticesExtractor->setReadiness();
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_DELETE_INGOING_EDGE_REPLY(Message*message){
-	m_verticesExtractor->setReadiness(m_outboxAllocator,m_outbox,rank);
+	m_verticesExtractor->setReadiness();
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_DELETE_OUTGOING_EDGE(Message*message){
@@ -196,7 +198,7 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_OUTGOING_EDGE(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTEX_REPLY(Message*message){
-	m_verticesExtractor->setReadiness(m_outboxAllocator,m_outbox,rank);
+	m_verticesExtractor->setReadiness();
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY(Message*aMessage){
@@ -247,8 +249,6 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTICES_DONE(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_UPDATE_THRESHOLD(Message*message){
 	m_verticesExtractor->flushBuffers(rank,m_outbox,m_outboxAllocator);
 
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_UPDATE_THRESHOLD_REPLY,rank);
-	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_UPDATE_THRESHOLD_REPLY(Message*message){
@@ -267,13 +267,13 @@ void MessageProcessor::call_RAY_MPI_TAG_START_REDUCTION(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION(Message*message){
-	m_verticesExtractor->flushAll(m_outboxAllocator,m_outbox,rank);
+	//cout<<"Source="<<message->getSource()<<" Destination="<<rank<<" RAY_MPI_TAG_ASK_BEGIN_REDUCTION"<<endl;
 	m_verticesExtractor->scheduleReduction(m_outbox,rank);
-	(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_MUST_RUN_REDUCER(Message*message){
 	int rank=message->getSource();
+	//cout<<"Source="<<rank<<" Destination="<<rank<<" RAY_MPI_TAG_MUST_RUN_REDUCER"<<endl;
 	m_verticesExtractor->addRankForReduction(rank);
 	if(m_verticesExtractor->mustRunReducer()){
 		(*m_master_mode)=RAY_MASTER_MODE_ASK_BEGIN_REDUCTION;
@@ -401,7 +401,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA_REPLY(Message*message){
-	m_verticesExtractor->setReadiness(m_outboxAllocator,m_outbox,rank);
+	m_verticesExtractor->setReadiness();
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DISTRIBUTED(Message*message){
@@ -412,7 +412,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DISTRIBUTED(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA_REPLY(Message*message){
-	m_verticesExtractor->setReadiness(m_outboxAllocator,m_outbox,rank);
+	m_verticesExtractor->setReadiness();
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA(Message*message){
@@ -459,7 +459,7 @@ void MessageProcessor::call_RAY_MPI_TAG_EDGES_DISTRIBUTED(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA_REPLY(Message*message){
-	m_verticesExtractor->setReadiness(m_outboxAllocator,m_outbox,rank);
+	m_verticesExtractor->setReadiness();
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){

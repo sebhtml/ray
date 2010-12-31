@@ -47,7 +47,7 @@ public:
  *	the is numberOfRanks MPI ranks, and messages have a capacity of capacity.
  */
 	void constructor(int numberOfRanks,int capacity);
-	int size(int i);
+	int size(int i)const;
 	u64 getAt(int i,int j);
 	void addAt(int i,u64 k);
 	void reset(int i);
@@ -62,7 +62,7 @@ public:
  *		returns the number of flushed devices.
  */
 	int flushAll(int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank);
-	bool isEmpty();
+	bool isEmpty()const;
 	void clear();
 
 	bool needsFlushing(int destination,int period);

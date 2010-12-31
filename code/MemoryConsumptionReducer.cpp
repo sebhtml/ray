@@ -215,7 +215,6 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 		m_iterator.constructor(a);
 	}else if(!m_currentVertexIsDone){
 		if(!m_hasSetVertex){
-			printCounter(parameters,a);
 			if(!m_iterator.hasNext()){
 				if(!m_bufferedData.isEmpty()){
 					m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_CHECK_VERTEX,outboxAllocator,outbox,theRank);
@@ -227,6 +226,7 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 				
 				return true;
 			}
+			printCounter(parameters,a);
 			m_firstVertex=m_iterator.next();
 			m_counter++;
 

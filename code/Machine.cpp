@@ -125,7 +125,7 @@ void Machine::start(){
 
 	m_maxNumberOfSentMessages=0;
 	MAX_ALLOCATED_MESSAGES_IN_OUTBOX=getSize();
-	int minimumMaximum=64;
+	int minimumMaximum=6;
 
 	if(MAX_ALLOCATED_MESSAGES_IN_OUTBOX<minimumMaximum){
 		MAX_ALLOCATED_MESSAGES_IN_OUTBOX=minimumMaximum;
@@ -361,8 +361,8 @@ m_seedingData,
 
 	showMemoryUsage(getRank());
 
-	//MPI_Barrier(MPI_COMM_WORLD);
-	//printf("Rank %i: v=%i m=%i\n",getRank(),m_maxNumberOfSentMessages,MAX_ALLOCATED_MESSAGES_IN_OUTBOX);
+	MPI_Barrier(MPI_COMM_WORLD);
+	printf("Rank %i: v=%i m=%i\n",getRank(),m_maxNumberOfSentMessages,MAX_ALLOCATED_MESSAGES_IN_OUTBOX);
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
@@ -428,7 +428,7 @@ void Machine::sendMessages(){
 	}
 	#ifdef ASSERT
 	if(messagesToSend>MAX_ALLOCATED_MESSAGES_IN_OUTBOX){
-		cout<<"Tag="<<m_outbox[0]->getTag()<<endl;
+		cout<<"Tag="<<m_outbox[0]->getTag()<<" n="<<messagesToSend<<" max="<<MAX_ALLOCATED_MESSAGES_IN_OUTBOX<<endl;
 	}
 	assert(messagesToSend<=MAX_ALLOCATED_MESSAGES_IN_OUTBOX);
 	#endif
@@ -564,7 +564,6 @@ void Machine::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 	m_verticesExtractor.process(		&m_mode_send_vertices_sequence_id,
 			&m_myReads,
 			&m_reverseComplementVertex,
-			&m_mode_send_vertices_sequence_id_position,
 			getRank(),
 			&m_outbox,
 			&m_mode_send_vertices,
@@ -1236,6 +1235,11 @@ void Machine::processData(){
 
 	MachineMethod masterMethod=m_master_methods[m_master_mode];
 	(this->*masterMethod)();
+
+	if(m_outbox.size()!=0){
+		return;
+	}
+
 	MachineMethod slaveMethod=m_slave_methods[m_slave_mode];
 	(this->*slaveMethod)();
 }
