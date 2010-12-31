@@ -91,8 +91,16 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 	}else{
 		char*readSequence=(*m_myReads)[(*m_mode_send_vertices_sequence_id)]->getSeq();
 		int len=strlen(readSequence);
+
+		if(len<m_wordSize){
+			m_hasPreviousVertex=false;
+			(*m_mode_send_vertices_sequence_id)++;
+			(m_mode_send_vertices_sequence_id_position)=0;
+			return;
+		}
+
 		char memory[100];
-		int lll=len-m_wordSize;
+		int lll=len-m_wordSize+1;
 		
 		#ifdef ASSERT
 		assert(readSequence!=NULL);
