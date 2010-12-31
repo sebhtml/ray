@@ -209,7 +209,6 @@ class MessageProcessor{
 	void call_RAY_MPI_TAG_ELIMINATE_PATH(Message*message);
 	void call_RAY_MPI_TAG_GET_PATH_VERTEX(Message*message);
 	void call_RAY_MPI_TAG_GET_PATH_VERTEX_REPLY(Message*message);
-	void call_RAY_MPI_TAG_SET_COLOR_MODE(Message*message);
 	void call_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION(Message*message);
 	void call_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE(Message*message);
 	void call_RAY_MPI_TAG_LIBRARY_DISTANCE(Message*message);
@@ -264,6 +263,7 @@ class MessageProcessor{
 	void call_RAY_MPI_TAG_DELETE_INGOING_EDGE_REPLY(Message*message);
 	void call_RAY_MPI_TAG_CHECK_VERTEX(Message*message);
 	void call_RAY_MPI_TAG_CHECK_VERTEX_REPLY(Message*message);
+	void call_RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY(Message*message);
 
 public:
 	void constructor(MessagesHandler*m_messagesHandler,

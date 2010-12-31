@@ -55,11 +55,15 @@ bool SequencesLoader::loadSequences(int rank,int size,
 	if(m_loader.size()>0 && m_distribution_sequence_id==(int)m_loader.size()){
 		// distribution of reads is completed.
 		if(!m_send_sequences_done){
+			if(!isEmpty()){
+				m_waitingNumber+=flushAll(m_outboxAllocator,m_outbox);
+				return true;
+			}
+			
 			m_send_sequences_done=true;
 
 			(m_distribution_sequence_id)=0;
-			flushAll(m_outboxAllocator,m_outbox);
-			
+
 			#ifdef ASSERT
 			for(int i=0;i<m_size;i++){
 				assert(m_entries[i]==0);
@@ -71,7 +75,10 @@ bool SequencesLoader::loadSequences(int rank,int size,
 	
 		// distribution of paired information is completed
 		}else{
-			m_waitingNumber+=m_bufferedData.flushAll(RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank);
+			if(!m_bufferedData.isEmpty()){
+				m_waitingNumber+=m_bufferedData.flushAll(RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank);
+				return true;
+			}
 			cout<<"Rank "<<rank<<" is sending paired information ["<<m_loader.size()<<"/"<<m_loader.size()<<"] (completed)"<<endl;
 			cout<<endl;
 			cout.flush();
@@ -167,7 +174,8 @@ bool SequencesLoader::loadSequences(int rank,int size,
 		char*sequence=m_loader.at(m_distribution_sequence_id)->getSeq();
 		int spaceNeeded=strlen(sequence)+1;
 		if(spaceNeeded>theSpaceLeft){
-			flush(destination,m_outboxAllocator,m_outbox,false);
+			flush(destination,m_outboxAllocator,m_outbox);
+			m_waitingNumber++;
 		}else{
 			#ifdef ASSERT
 			assert(spaceNeeded<=getSpaceLeft(destination));
@@ -407,8 +415,8 @@ void SequencesLoader::appendSequence(int rank,char*sequence){
  * 0 1 2 3 4 5 6
  * 1 1 1 2 2 2 F
  */
-void SequencesLoader::flush(int rank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox,bool forceNothing){
-	if(m_entries[rank]==0 && !forceNothing){
+void SequencesLoader::flush(int rank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox){
+	if(m_entries[rank]==0){
 		return;
 	}
 	int cells=getUsedSpace(rank)+1;// + 1 for the supplementary \0
@@ -434,14 +442,29 @@ void SequencesLoader::flush(int rank,RingAllocator*m_outboxAllocator,StaticVecto
 	Message aMessage(message,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),MPI_UNSIGNED_LONG_LONG,rank,RAY_MPI_TAG_SEND_SEQUENCE_REGULATOR,rank);
 	m_outbox->push_back(aMessage);
 	m_entries[rank]=0;
-	m_waitingNumber++;
 }
 
-void SequencesLoader::flushAll(RingAllocator*m_outboxAllocator,StaticVector*m_outbox){
+int SequencesLoader::flushAll(RingAllocator*m_outboxAllocator,StaticVector*m_outbox){
 	#ifdef ASSERT
 	assert(m_size!=0);
 	#endif
+	int flushed=0;
 	for(int i=0;i<m_size;i++){
-		flush(i,m_outboxAllocator,m_outbox,false);
+		if(getUsedSpace(i)!=0){
+			flush(i,m_outboxAllocator,m_outbox);
+			m_waitingNumber++;
+			flushed++;
+			return flushed;
+		}
 	}
+	return flushed;
+}
+
+bool SequencesLoader::isEmpty(){
+	for(int i=0;i<m_size;i++){
+		if(getUsedSpace(i)!=0){
+			return false;
+		}
+	}
+	return true;
 }

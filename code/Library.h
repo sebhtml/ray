@@ -43,7 +43,7 @@ class Library{
 	vector<int> m_libraryIndexes;
 
 	BufferedData m_bufferedData;
-	bool m_ready;
+	int m_ready;
 	int m_rank;
 	StaticVector*m_outbox;
 	int*m_sequence_id;

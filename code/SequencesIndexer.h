@@ -34,6 +34,8 @@
 #include<Parameters.h>
 
 class SequencesIndexer{
+	int m_pendingMessages;
+
 	int m_theSequenceId;
 	BufferedData m_bufferedData;
 public:
@@ -50,6 +52,7 @@ ArrayOfReads*m_myReads,
 );
 
 	void constructor(int size);
+	void setReadiness();
 };
 
 #endif

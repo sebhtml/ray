@@ -86,6 +86,12 @@ class Machine{
 	MachineMethod m_master_methods[32];
 	MachineMethod m_slave_methods[32];
 
+	int MAX_ALLOCATED_MESSAGES_IN_OUTBOX;
+	
+	// always 1
+	int MAX_ALLOCATED_MESSAGES_IN_INBOX;
+	int m_maxNumberOfSentMessages;
+
 	Library m_library;
 	int m_currentCycleStep;
 	MessagesHandler m_messagesHandler;

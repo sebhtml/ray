@@ -86,7 +86,7 @@ public:
 				RingAllocator*m_outboxAllocator,
 				bool m_colorSpaceMode,int*m_mode
 			);
-	void setReadiness(StaticVector*outbox,int rank);
+	void setReadiness(RingAllocator*outboxAllocator,StaticVector*outbox,int rank);
 	bool mustRunReducer();
 	void addRankForReduction(int a);
 	void resetRanksForReduction();

@@ -91,6 +91,7 @@ int BufferedData::flushAll(int tag,RingAllocator*outboxAllocator,StaticVector*ou
 	for(int i=0;i<m_ranks;i++){
 		if(flush(i,0,tag,outboxAllocator,outbox,rank,true)){
 			flushed++;
+			return flushed;
 		}
 		#ifdef ASSERT
 		assert(size(i)==0);

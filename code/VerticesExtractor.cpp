@@ -207,11 +207,16 @@ void VerticesExtractor::enableReducer(){
 	m_thresholdForReduction=m_reductionPeriod;
 }
 
-void VerticesExtractor::setReadiness(StaticVector*outbox,int rank){
+void VerticesExtractor::setReadiness(RingAllocator*outboxAllocator,StaticVector*outbox,int rank){
 	#ifdef ASSERT
 	assert(m_pendingMessages>0);
 	#endif
 	m_pendingMessages--;
+
+	// flush other buffers
+	if(m_pendingMessages==0&&mustTriggerReduction()){
+		flushAll(outboxAllocator,outbox,rank);
+	}
 
 	checkPendingMessagesForReduction(outbox,rank);
 }
@@ -269,11 +274,18 @@ void VerticesExtractor::trigger(){
 }
 
 void VerticesExtractor::flushAll(RingAllocator*m_outboxAllocator,StaticVector*m_outbox,int rank){
-	m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank);
-
-	m_pendingMessages+=m_bufferedDataForOutgoingEdges.flushAll(RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,rank);
-
-	m_pendingMessages+=m_bufferedDataForIngoingEdges.flushAll(RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,rank);
+	if(!m_bufferedData.isEmpty()){
+		m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank);
+		return;
+	}
+	if(!m_bufferedDataForOutgoingEdges.isEmpty()){
+		m_pendingMessages+=m_bufferedDataForOutgoingEdges.flushAll(RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,rank);
+		return;
+	}
+	if(!m_bufferedDataForIngoingEdges.isEmpty()){
+		m_pendingMessages+=m_bufferedDataForIngoingEdges.flushAll(RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,rank);
+		return;
+	}
 }
 
 void VerticesExtractor::removeTrigger(){

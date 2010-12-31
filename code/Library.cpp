@@ -206,11 +206,11 @@ Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData
 	this->m_parameters=m_parameters;
 	this->m_fileId=m_fileId;
 	this->m_seedingData=m_seedingData;
-	setReadiness();
+	m_ready=0;
 }
 
 void Library::setReadiness(){
-	m_ready=true;
+	m_ready--;
 }
 
 int Library::getRank(){
@@ -238,13 +238,15 @@ void Library::allocateBuffers(){
 }
 
 void Library::sendLibraryDistances(){
-	if(!m_ready){
+	if(m_ready!=0){
 		return;
 	}
 
 	if(m_libraryIterator==(int)m_libraryIndexes.size()){
-		m_bufferedData.flushAll(RAY_MPI_TAG_LIBRARY_DISTANCE,m_outboxAllocator,m_outbox,getRank());
-
+		if(!m_bufferedData.isEmpty()){
+			m_ready+=m_bufferedData.flushAll(RAY_MPI_TAG_LIBRARY_DISTANCE,m_outboxAllocator,m_outbox,getRank());
+			return;
+		}
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED,getRank());
 		m_outbox->push_back(aMessage);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
@@ -263,7 +265,7 @@ void Library::sendLibraryDistances(){
 		m_bufferedData.addAt(MASTER_RANK,count);
 
 		if(m_bufferedData.flush(MASTER_RANK,3,RAY_MPI_TAG_LIBRARY_DISTANCE,m_outboxAllocator,m_outbox,getRank(),false)){
-			m_ready=false;
+			m_ready++;
 		}
 
 		m_libraryIndex++;

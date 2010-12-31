@@ -67,11 +67,13 @@ class SequencesLoader{
 
 	bool m_send_sequences_done;
 
-	void flushAll(RingAllocator*m_outboxAllocator,StaticVector*m_outbox);
-	void flush(int rank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox,bool forceNothing);
+	int flushAll(RingAllocator*m_outboxAllocator,StaticVector*m_outbox);
+	void flush(int rank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox);
 	void appendSequence(int rank,char*sequence);
 	int getUsedSpace(int rank);
 	int getSpaceLeft(int rank);
+
+	bool isEmpty();
 
 public:
 	/**

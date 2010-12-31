@@ -217,8 +217,8 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 		if(!m_hasSetVertex){
 			printCounter(parameters,a);
 			if(!m_iterator.hasNext()){
-				m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_CHECK_VERTEX,outboxAllocator,outbox,theRank);
-				if(m_pendingMessages>0){
+				if(!m_bufferedData.isEmpty()){
+					m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_CHECK_VERTEX,outboxAllocator,outbox,theRank);
 					return false;
 				}
 				m_initiated=false;

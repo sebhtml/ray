@@ -37,13 +37,21 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 				int m_rank,
 				bool m_colorSpaceMode
 			){
+	if(m_pendingMessages!=0){
+		return;
+	}
+
 	// when done: call_RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY to root
 	// the tag: RAY_MPI_TAG_ATTACH_SEQUENCE
 
 	if(m_theSequenceId==(int)m_myReads->size()){
+		if(!m_bufferedData.isEmpty()){
+			m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank);
+			return;
+		}
+
 		printf("Rank %i is indexing sequence reads [%i/%i] (completed)\n",m_rank,(int)m_myReads->size(),(int)m_myReads->size());
 		fflush(stdout);
-		m_bufferedData.flushAll(RAY_MPI_TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,m_rank);
 		m_outbox->push_back(aMessage);
@@ -71,10 +79,18 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 		int sendTo=vertexRank(vertex,m_size);
 		m_bufferedData.addAt(sendTo,vertex);
 		m_bufferedData.addAt(sendTo,m_rank);
+
+		#ifdef ASSERT
+		assert(m_rank<m_size);
+		assert(m_rank>=0);
+		#endif
+
 		m_bufferedData.addAt(sendTo,m_theSequenceId);
 		m_bufferedData.addAt(sendTo,(uint64_t)'F');
 
-		m_bufferedData.flush(sendTo,4,RAY_MPI_TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank,false);
+		if(m_bufferedData.flush(sendTo,4,RAY_MPI_TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank,false)){
+			m_pendingMessages++;
+		}
 	}
 
 
@@ -87,7 +103,9 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 		m_bufferedData.addAt(sendTo,m_rank);
 		m_bufferedData.addAt(sendTo,m_theSequenceId);
 		m_bufferedData.addAt(sendTo,(uint64_t)'R');
-		m_bufferedData.flush(sendTo,4,RAY_MPI_TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank,false);
+		if(m_bufferedData.flush(sendTo,4,RAY_MPI_TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank,false)){
+			m_pendingMessages++;
+		}
 	}
 
 
@@ -100,4 +118,9 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 
 void SequencesIndexer::constructor(int m_size){
 	m_bufferedData.constructor(m_size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	m_pendingMessages=0;
+}
+
+void SequencesIndexer::setReadiness(){
+	m_pendingMessages--;
 }
