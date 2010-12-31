@@ -925,14 +925,18 @@ void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS(Message*message){
-	void*buffer=message->getBuffer();
+	uint64_t*incoming=(uint64_t*)message->getBuffer();
 	int source=message->getSource();
 	int count=message->getCount();
-	uint64_t*incoming=(uint64_t*)buffer;
 
 	// keep 3 for the sentinels or the pointer.
 	int maxToProcess=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)-3;
 	maxToProcess=maxToProcess-maxToProcess%3;
+	
+	#ifdef ASSERT
+	assert(maxToProcess%3==0);
+	#endif
+
 	ReadAnnotation*e=NULL;
 
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
@@ -964,25 +968,34 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS(Message*message){
 		message2[j++]=m_sentinelValue;
 		message2[j++]=0;
 		message2[j++]=m_sentinelValue;
+		
+		#ifdef ASSERT
+		assert(j==3);
+		#endif
 
 	// use the pointer provided, count is 2, but only the first element is good.
 	}else{
 		e=(ReadAnnotation*)incoming[0];
+
+		#ifdef ASSERT
+		assert(e!=NULL);
+		assert(j==0);
+		#endif
 	}
 
 	while(e!=NULL&&j!=maxToProcess){
 		#ifdef ASSERT
+		assert(e!=NULL);
 		assert(e->getRank()>=0);
 		assert(e->getRank()<size);
+		assert(j<=(maxToProcess-3));
+		assert(e->getStrand()=='F'||e->getStrand()=='R');
+		assert((uint64_t)e->getReadIndex()!=m_sentinelValue);
 		#endif
 
 		message2[j++]=e->getRank();
 		message2[j++]=e->getReadIndex();
 		message2[j++]=e->getStrand();
-
-		#ifdef ASSERT
-		assert(e->getStrand()=='F'||e->getStrand()=='R');
-		#endif
 
 		e=e->getNext();
 
@@ -996,23 +1009,40 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS(Message*message){
 		message2[j++]=m_sentinelValue;
 		message2[j++]=m_sentinelValue;
 		message2[j++]=m_sentinelValue;
+
+		#ifdef ASSERT
+		assert(j%3==0);
+		#endif
 	}else{
 		// pad with the pointer
 		message2[j++]=(uint64_t)e;
+
+		#ifdef ASSERT
+		assert(j%3==1);
+		#endif
 	}
+
+	#ifdef ASSERT
+	assert((e==NULL&&j%3==0)||(e!=NULL&&j%3==1));
+	#endif
 
 	Message aMessage(message2,j,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_READS_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS_REPLY(Message*message){
-	void*buffer=message->getBuffer();
+	uint64_t*incoming=(uint64_t*)message->getBuffer();
 	int count=message->getCount();
-	uint64_t*incoming=(uint64_t*)buffer;
+	int count3=count-(count%3);
 
-	for(int i=0;i<count;i+=3){
+	#ifdef ASSERT
+	assert(count3%3==0);
+	assert(incoming!=NULL);
+	#endif
+
+	for(int i=0;i<count3;i+=3){
 		// beginning of transmission, s,0,s
-		if(incoming[i]==m_sentinelValue 
+		if(incoming[i+0]==m_sentinelValue 
 		&& incoming[i+1]==0
 		&& incoming[i+2]==m_sentinelValue){
 			#ifdef ASSERT
@@ -1021,16 +1051,16 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS_REPLY(Message*message){
 
 			m_ed->m_EXTENSION_receivedReads.clear();
 		// end of transmission, s,s,s
-		}else if(incoming[i]==m_sentinelValue 
+		}else if(incoming[i+0]==m_sentinelValue 
 		&& incoming[i+1]==m_sentinelValue
 		&& incoming[i+2]==m_sentinelValue){
 			(m_ed->m_EXTENSION_reads_received)=true;
 		}else{
 			#ifdef ASSERT
-			if(m_ed->m_EXTENSION_reads_received){
-				cout<<"Already received "<<m_ed->m_EXTENSION_receivedReads.size()<<endl;
-			}
 			assert(m_ed->m_EXTENSION_reads_received==false);
+			assert(incoming[i+0]!=m_sentinelValue);
+			assert(incoming[i+1]!=m_sentinelValue);
+			assert(incoming[i+2]!=m_sentinelValue);
 			#endif
 
 			int theRank=incoming[i];
@@ -1038,9 +1068,9 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS_REPLY(Message*message){
 			char strand=incoming[i+2];
 
 			#ifdef ASSERT
-			assert(strand=='F'||strand=='R');
 			assert(theRank>=0);
 			assert(theRank<size);
+			assert(strand=='F'||strand=='R');
 			#endif
 
 			ReadAnnotation e;
@@ -1053,9 +1083,12 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS_REPLY(Message*message){
 		// pointer is 64 bits, assuming 64-bit architecture
 		uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 		void*ptr=(void*)incoming[count-1];
+
 		#ifdef ASSERT
+		assert(count==count3+1);
 		assert(ptr!=NULL);
 		#endif
+
 		message2[0]=(uint64_t)ptr;
 		Message aMessage(message2,2,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_REQUEST_READS,rank);
 		m_outbox->push_back(aMessage);

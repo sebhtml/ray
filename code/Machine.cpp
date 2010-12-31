@@ -363,6 +363,7 @@ m_seedingData,
 
 	MPI_Barrier(MPI_COMM_WORLD);
 	printf("Rank %i: v=%i m=%i\n",getRank(),m_maxNumberOfSentMessages,MAX_ALLOCATED_MESSAGES_IN_OUTBOX);
+	fflush(stdout);
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
