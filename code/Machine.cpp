@@ -438,9 +438,9 @@ void Machine::sendMessages(){
 
 void Machine::receiveMessages(){
 	m_messagesHandler.receiveMessages(&m_inbox,&m_inboxAllocator,getRank());
-	int receivedMessages=m_inbox.size();
 
 	#ifdef ASSERT
+	int receivedMessages=m_inbox.size();
 	assert(receivedMessages<=MAX_ALLOCATED_MESSAGES_IN_INBOX);
 	#endif
 }
