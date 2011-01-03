@@ -1192,6 +1192,10 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE(Message*message){
 	uint64_t*incoming=(uint64_t*)buffer;
 	SplayNode<uint64_t,Vertex>*node=m_subgraph->find(incoming[0]);
 	#ifdef ASSERT
+	if(node==NULL){
+		cout<<idToWord(incoming[0],*m_wordSize)<<" does not exist, aborting"<<endl;
+		cout.flush();
+	}
 	assert(node!=NULL);
 	#endif
 	vector<Direction> paths=node->getValue()->getDirections();

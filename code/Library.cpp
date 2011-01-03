@@ -79,7 +79,7 @@ void Library::detectDistances(){
 		#endif
 	}else{
 		if(!m_ed->m_EXTENSION_reads_requested){
-			if(m_ed->m_EXTENSION_currentPosition==0 && m_seedingData->m_SEEDING_i%30==0){
+			if(m_ed->m_EXTENSION_currentPosition==0 && m_seedingData->m_SEEDING_i%200==0){
 				printf("Rank %i is calculating library lengths [%i/%i]\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_seedingData->m_SEEDING_seeds.size());
 				fflush(stdout);
 			}
