@@ -6,6 +6,8 @@
 equal to the number of MPI ranks.
 * Fixed a ring buffer overflow when requesting the reads starting on a
 highly-repetitive vertex.
+* Implemented a chunk allocator for the arrays of sequencing reads locally
+stored on compute nodes.
 
 
 = 1.2.1 'stringray' =

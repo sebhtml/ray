@@ -25,10 +25,11 @@
 #include<Read.h>
 
 class ArrayOfReads{
-	Read*m_array;
-	int m_maxSize;
+	int m_CHUNK_SIZE;
+	Read**m_chunks;
+	int m_numberOfChunks;
 	int m_elements;
-	int m_allocationPeriod;
+	int m_maxSize;
 public:
 	void push_back(Read*a);
 	Read*at(int i);

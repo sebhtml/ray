@@ -50,9 +50,6 @@ class SequencesLoader{
 
 	Loader m_loader;
 
-
-	vector<Read*>m_distribution_reads;
-
 	bool m_isInterleavedFile;
 	time_t m_last;
 	int m_produced;
