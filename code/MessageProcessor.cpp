@@ -1289,11 +1289,15 @@ void MessageProcessor::call_RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE(Message*message){
 	int count=message->getCount();
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
-	for(int i=0;i<count;i+=4){
-		int currentReadId=incoming[i+0];
-		int otherRank=incoming[i+1];
-		int otherId=incoming[i+2];
-		int library=incoming[i+3];
+	for(int i=0;i<count;i+=2){
+		uint32_t*ptr1=(uint32_t*)incoming+i+0;
+		uint32_t*ptr2=(uint32_t*)incoming+i+1;
+
+		int currentReadId=ptr1[0];
+		int otherRank=ptr1[1];
+		int otherId=ptr2[0];
+		int library=ptr2[1];
+
 		PairedRead*t=(PairedRead*)(*m_persistentAllocator).allocate(sizeof(PairedRead));
 		#ifdef ASSERT
 		assert(otherRank<size);

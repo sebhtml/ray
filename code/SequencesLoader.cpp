@@ -31,6 +31,11 @@ Ray
 #include<iostream>
 using namespace std;
 
+union PaddedData{
+	uint64_t large[2];
+	uint32_t medium[4];
+};
+
 bool SequencesLoader::loadSequences(int rank,int size,
 	StaticVector*m_outbox,
 	RingAllocator*m_outboxAllocator,
@@ -253,12 +258,21 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			assert(leftSequenceIdOnRank<m_numberOfSequences[leftSequenceRank]);
 			#endif
 
-			m_bufferedData.addAt(leftSequenceRank,leftSequenceIdOnRank);
-			m_bufferedData.addAt(leftSequenceRank,rightSequenceRank);
-			m_bufferedData.addAt(leftSequenceRank,rightSequenceIdOnRank);
-			m_bufferedData.addAt(leftSequenceRank,m_parameters->getLibrary(m_distribution_file_id));
+			// pack values together
+			uint64_t val1;
+			uint32_t*val1PTR=(uint32_t*)&val1;
+			val1PTR[0]=leftSequenceIdOnRank;
+			val1PTR[1]=rightSequenceRank;
 
-			if(m_bufferedData.flush(leftSequenceRank,4,RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+			uint64_t val2;
+			uint32_t*val2PTR=(uint32_t*)&val2;
+			val2PTR[0]=rightSequenceIdOnRank;
+			val2PTR[1]=m_parameters->getLibrary(m_distribution_file_id);
+
+			m_bufferedData.addAt(leftSequenceRank,val1);
+			m_bufferedData.addAt(leftSequenceRank,val2);
+
+			if(m_bufferedData.flush(leftSequenceRank,2,RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
 			}
 		}else if(m_LOADER_isRightFile){
@@ -282,14 +296,21 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			int leftSequenceRank=leftSequenceGlobalId%size;
 			int leftSequenceIdOnRank=leftSequenceGlobalId/size;
 
-			m_bufferedData.addAt(rightSequenceRank,rightSequenceIdOnRank);
-			m_bufferedData.addAt(rightSequenceRank,leftSequenceRank);
-			m_bufferedData.addAt(rightSequenceRank,leftSequenceIdOnRank);
-			m_bufferedData.addAt(rightSequenceRank,m_parameters->getLibrary(m_distribution_file_id));
+			// pack data together.
+			PaddedData values;
+	
+			values.medium[0]=rightSequenceIdOnRank;
+			values.medium[1]=leftSequenceRank;
+			values.medium[2]=leftSequenceIdOnRank;
+			values.medium[3]=m_parameters->getLibrary(m_distribution_file_id);
 
-			if(m_bufferedData.flush(rightSequenceRank,4,RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+			m_bufferedData.addAt(rightSequenceRank,values.large[0]);
+			m_bufferedData.addAt(rightSequenceRank,values.large[1]);
+
+			if(m_bufferedData.flush(rightSequenceRank,2,RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
 			}
+
 			#ifdef DEBUG
 			assert(deviation!=0);
 			assert(averageFragmentLength>=0);
@@ -310,12 +331,21 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			assert(averageFragmentLength>=0);
 			#endif
 
-			m_bufferedData.addAt(leftSequenceRank,leftSequenceIdOnRank);
-			m_bufferedData.addAt(leftSequenceRank,rightSequenceRank);
-			m_bufferedData.addAt(leftSequenceRank,rightSequenceIdOnRank);
-			m_bufferedData.addAt(leftSequenceRank,m_parameters->getLibrary(m_distribution_file_id));
+			// pack values together
+			uint64_t val1;
+			uint32_t*val1PTR=(uint32_t*)&val1;
+			val1PTR[0]=leftSequenceIdOnRank;
+			val1PTR[1]=rightSequenceRank;
 
-			if(m_bufferedData.flush(leftSequenceRank,4,RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+			uint64_t val2;
+			uint32_t*val2PTR=(uint32_t*)&val2;
+			val2PTR[0]=rightSequenceIdOnRank;
+			val2PTR[1]=m_parameters->getLibrary(m_distribution_file_id);
+
+			m_bufferedData.addAt(leftSequenceRank,val1);
+			m_bufferedData.addAt(leftSequenceRank,val2);
+
+			if(m_bufferedData.flush(leftSequenceRank,2,RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
 			}
 
@@ -328,12 +358,19 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			int leftSequenceRank=leftSequenceGlobalId%size;
 			int leftSequenceIdOnRank=leftSequenceGlobalId/size;
 
-			m_bufferedData.addAt(rightSequenceRank,rightSequenceIdOnRank);
-			m_bufferedData.addAt(rightSequenceRank,leftSequenceRank);
-			m_bufferedData.addAt(rightSequenceRank,leftSequenceIdOnRank);
-			m_bufferedData.addAt(rightSequenceRank,m_parameters->getLibrary(m_distribution_file_id));
+			// pack data together.
+			PaddedData values;
+	
+			values.medium[0]=rightSequenceIdOnRank;
+			values.medium[1]=leftSequenceRank;
+			values.medium[2]=leftSequenceIdOnRank;
+			values.medium[3]=m_parameters->getLibrary(m_distribution_file_id);
 
-			if(m_bufferedData.flush(rightSequenceRank,4,RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+			m_bufferedData.addAt(rightSequenceRank,values.large[0]);
+			m_bufferedData.addAt(rightSequenceRank,values.large[1]);
+
+
+			if(m_bufferedData.flush(rightSequenceRank,2,RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
 			}
 
