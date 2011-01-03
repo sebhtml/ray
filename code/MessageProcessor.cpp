@@ -106,7 +106,7 @@ void MessageProcessor::call_RAY_MPI_TAG_CHECK_VERTEX(Message*message){
 	int count=message->getCount();
 	
 	int outgoingCount=0;
-	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAX_NUMBER_OF_MPI_PROCESSES);
+	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	for(int i=0;i<count;i+=2){
 		int task=incoming[i+0];
 		uint64_t vertex=incoming[i+1];
