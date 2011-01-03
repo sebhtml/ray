@@ -45,7 +45,7 @@ see <http://www.gnu.org/licenses/>
 #define ASCII_END_OF_TRANSMISSION 0x04 // end of transmission.
 
 // the maximum of processes is utilized to construct unique hyperfusions IDs
-#define MAX_NUMBER_OF_MPI_PROCESSES 2000
+#define MAX_NUMBER_OF_MPI_PROCESSES 100000
 
 #define MAX_U32 4294967295
 #define MAX_U16 65535

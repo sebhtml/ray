@@ -372,6 +372,12 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 	for(int i=0;i<length;i++){
 		uint64_t l=incoming[i];
 
+		#ifdef ASSERT
+		if(idToWord(l,*m_wordSize)=="GTGGCAACATTTTCCTCTACC"){
+			//cout<<"Source="<<message->getSource()<<" Destination="<<rank<<" call_RAY_MPI_TAG_VERTICES_DATA GTGGCAACATTTTCCTCTACC"<<endl;
+		}
+		#endif
+
 		if((*m_last_value)!=(int)m_subgraph->size() and (int)m_subgraph->size()%100000==0){
 			(*m_last_value)=m_subgraph->size();
 			printf("Rank %i has %i vertices\n",rank,(int)m_subgraph->size());
@@ -1187,17 +1193,18 @@ void MessageProcessor::call_RAY_MPI_TAG_FUSION_DONE(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE(Message*message){
-	void*buffer=message->getBuffer();
 	int source=message->getSource();
-	uint64_t*incoming=(uint64_t*)buffer;
+	uint64_t*incoming=(uint64_t*)message->getBuffer();
 	SplayNode<uint64_t,Vertex>*node=m_subgraph->find(incoming[0]);
+
 	#ifdef ASSERT
 	if(node==NULL){
-		cout<<idToWord(incoming[0],*m_wordSize)<<" does not exist, aborting"<<endl;
+		cout<<"Source="<<message->getSource()<<" Destination="<<rank<<" "<<idToWord(incoming[0],*m_wordSize)<<" does not exist, aborting"<<endl;
 		cout.flush();
 	}
 	assert(node!=NULL);
 	#endif
+
 	vector<Direction> paths=node->getValue()->getDirections();
 	m_fusionData->m_FUSION_cachedDirections[source]=paths;
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));

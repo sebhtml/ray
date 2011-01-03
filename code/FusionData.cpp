@@ -403,6 +403,7 @@ void FusionData::makeFusions(){
 				uint64_t theVertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][END_LENGTH];
 				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 				message[0]=theVertex;
+
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize()),RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,getRank());
 				m_outbox->push_back(aMessage);
 				m_FUSION_paths_requested=true;
@@ -445,6 +446,7 @@ void FusionData::makeFusions(){
 				uint64_t theVertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-END_LENGTH];
 				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 				message[0]=theVertex;
+
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize()),RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,getRank());
 				m_outbox->push_back(aMessage);
 				m_FUSION_paths_requested=true;
@@ -588,6 +590,7 @@ void FusionData::makeFusions(){
 				uint64_t theVertex=complementVertex(theMainVertex,m_wordSize,m_colorSpaceMode);
 				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 				message[0]=theVertex;
+
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize()),RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,getRank());
 				m_outbox->push_back(aMessage);
 				m_FUSION_paths_requested=true;
@@ -627,7 +630,12 @@ void FusionData::makeFusions(){
 				uint64_t theVertex=complementVertex(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][END_LENGTH],m_wordSize,m_colorSpaceMode);
 				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 				message[0]=theVertex;
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize()),RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,getRank());
+				int destination=vertexRank(theVertex,getSize());
+				if(idToWord(theVertex,m_wordSize)=="GTGGCAACATTTTCCTCTACC"){
+					cout<<"Source="<<getRank()<<" Destination="<<destination<<" 4x Requesting paths for GTGGCAACATTTTCCTCTACC"<<endl;
+				}
+
+				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,getRank());
 				m_outbox->push_back(aMessage);
 				m_FUSION_paths_requested=true;
 				m_FUSION_paths_received=false;

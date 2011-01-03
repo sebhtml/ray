@@ -59,7 +59,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		return;
 	}
 	
-	if(*m_mode_send_vertices_sequence_id%100000==0 and m_mode_send_vertices_sequence_id_position==0){
+	if(*m_mode_send_vertices_sequence_id%100000==0 &&m_mode_send_vertices_sequence_id_position==0){
 		string reverse="";
 		if(*m_reverseComplementVertex==true){
 			reverse="(reverse complement) ";
@@ -107,12 +107,19 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		assert(m_wordSize<=32);
 		#endif
 
-
 		int p=(m_mode_send_vertices_sequence_id_position);
 		memcpy(memory,readSequence+p,m_wordSize);
 		memory[m_wordSize]='\0';
 		if(isValidDNA(memory)){
 			uint64_t a=wordId(memory);
+
+			#ifdef ASSERT
+			bool hit=false;
+			if(idToWord(a,m_wordSize)=="GGTAGAGGAAAATGTTGCCAC"){
+				hit=true;
+			}
+			#endif
+
 			int rankToFlush=0;
 
 			rankToFlush=vertexRank(a,size);
@@ -156,6 +163,16 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 
 			// reverse complement
 			uint64_t b=complementVertex(a,m_wordSize,m_colorSpaceMode);
+
+			#ifdef ASSERT
+			if(hit){
+				if(!(idToWord(b,m_wordSize)=="GTGGCAACATTTTCCTCTACC")){
+					cout<<idToWord(a,m_wordSize)<<" and "<<idToWord(b,m_wordSize)<<" color="<<m_colorSpaceMode<<endl;
+				}
+				assert(idToWord(b,m_wordSize)=="GTGGCAACATTTTCCTCTACC");
+			}
+			#endif
+
 
 			rankToFlush=vertexRank(b,size);
 			m_bufferedData.addAt(rankToFlush,b);

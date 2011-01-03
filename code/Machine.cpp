@@ -362,10 +362,6 @@ m_seedingData,
 	showMemoryUsage(getRank());
 
 	MPI_Barrier(MPI_COMM_WORLD);
-	printf("Rank %i: v=%i m=%i\n",getRank(),m_maxNumberOfSentMessages,MAX_ALLOCATED_MESSAGES_IN_OUTBOX);
-	fflush(stdout);
-
-	MPI_Barrier(MPI_COMM_WORLD);
 
 	if(isMaster() && !m_aborted){
 		cout<<endl;
@@ -423,16 +419,17 @@ void Machine::processMessages(){
 }
 
 void Machine::sendMessages(){
+	#ifdef ASSERT
 	int messagesToSend=m_outbox.size();
+	assert(messagesToSend<=MAX_ALLOCATED_MESSAGES_IN_OUTBOX);
 	if(messagesToSend>m_maxNumberOfSentMessages){
 		m_maxNumberOfSentMessages=messagesToSend;
 	}
-	#ifdef ASSERT
 	if(messagesToSend>MAX_ALLOCATED_MESSAGES_IN_OUTBOX){
 		cout<<"Tag="<<m_outbox[0]->getTag()<<" n="<<messagesToSend<<" max="<<MAX_ALLOCATED_MESSAGES_IN_OUTBOX<<endl;
 	}
-	assert(messagesToSend<=MAX_ALLOCATED_MESSAGES_IN_OUTBOX);
 	#endif
+
 	m_messagesHandler.sendMessages(&m_outbox,getRank());
 }
 
@@ -477,7 +474,7 @@ void Machine::call_RAY_MASTER_MODE_LOAD_CONFIG(){
 	message[1]=m_parameters.getColorSpaceMode();
 
 	for(int i=0;i<getSize();i++){
-		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_SET_WORD_SIZE,getRank());
+		Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_SET_WORD_SIZE,getRank());
 		m_outbox.push_back(aMessage);
 	}
 
@@ -647,7 +644,16 @@ void Machine::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
 		for(int i=0;i<m_subgraph.getNumberOfTrees();i++){
 			SplayTreeIterator<uint64_t,Vertex> iterator(m_subgraph.getTree(i));
 			while(iterator.hasNext()){
-				int coverage=iterator.next()->getValue()->getCoverage();
+				SplayNode<uint64_t,Vertex>*node=iterator.next();
+
+				#ifdef ASSERT
+				uint64_t vertexKey=node->getKey();
+				if(idToWord(vertexKey,m_wordSize)=="GTGGCAACATTTTCCTCTACC"){
+					cout<<"Rank="<<getRank()<<" has GTGGCAACATTTTCCTCTACC"<<endl;
+				}
+				#endif
+
+				int coverage=node->getValue()->getCoverage();
 				m_distributionOfCoverage[coverage]++;
 			}
 		}
