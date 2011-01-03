@@ -263,9 +263,6 @@ void Machine::start(){
 	m_totalLetters=0;
 
 	MPI_Barrier(MPI_COMM_WORLD);
-	printf("Rank %i initiates its communication buffers\n",m_rank);
-
-	MPI_Barrier(MPI_COMM_WORLD);
 	showMemoryUsage(getRank());
 
 	MPI_Barrier(MPI_COMM_WORLD);
