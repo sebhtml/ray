@@ -521,8 +521,11 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	m_minimumCoverage=distribution.getMinimumCoverage();
 	m_peakCoverage=distribution.getPeakCoverage();
 
-	cout<<"Rank "<<getRank()<<" informs you that the minimum coverage is "<<m_minimumCoverage<<endl;
-	cout<<"Rank "<<getRank()<<" informs you that the peak coverage is "<<m_peakCoverage<<endl;
+	printf("\n");
+	fflush(stdout);
+
+	cout<<"Rank "<<getRank()<<": the minimum coverage is "<<m_minimumCoverage<<endl;
+	cout<<"Rank "<<getRank()<<": the peak coverage is "<<m_peakCoverage<<endl;
 
 	m_seedCoverage=(m_minimumCoverage+m_peakCoverage)/2;
 
@@ -1302,7 +1305,7 @@ void Machine::call_RAY_MASTER_MODE_ASK_BEGIN_REDUCTION(){
 }
 
 void Machine::call_RAY_MASTER_MODE_START_REDUCTION(){
-	printf("Rank %i asks all ranks to reduce memory consumption\n",getRank());
+	printf("\nRank %i asks all ranks to reduce memory consumption\n",getRank());
 	fflush(stdout);
 	for(int i=0;i<getSize();i++){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_START_REDUCTION,getRank());

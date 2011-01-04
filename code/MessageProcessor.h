@@ -264,6 +264,7 @@ class MessageProcessor{
 	void call_RAY_MPI_TAG_CHECK_VERTEX(Message*message);
 	void call_RAY_MPI_TAG_CHECK_VERTEX_REPLY(Message*message);
 	void call_RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY(Message*message);
+	void call_RAY_MPI_TAG_MUST_RUN_REDUCER_FROM_MASTER(Message*message);
 
 public:
 	void constructor(MessagesHandler*m_messagesHandler,

@@ -231,6 +231,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 }
 
 void VerticesExtractor::constructor(int size){
+m_distributionIsCompleted=false;
 	m_outbox=NULL;
 	m_mustFlushBuffers=false;
 	m_mode_send_vertices_sequence_id_position=0;
@@ -248,6 +249,7 @@ void VerticesExtractor::constructor(int size){
 	m_ranksReadyForReduction=0;
 	//m_reductionPeriod=635000;
 	m_reductionPeriod=200000;
+	
 	m_triggered=false;
 	m_finished=false;
 	m_mustTriggerReduction=false;
@@ -484,4 +486,12 @@ void VerticesExtractor::showBuffers(){
 	assert(m_bufferedDataForOutgoingEdges.isEmpty());
 	assert(m_bufferedDataForIngoingEdges.isEmpty());
 	#endif
+}
+
+bool VerticesExtractor::isDistributionCompleted(){
+	return m_distributionIsCompleted;
+}
+
+void VerticesExtractor::setDistributionAsCompleted(){
+	m_distributionIsCompleted=true;
 }

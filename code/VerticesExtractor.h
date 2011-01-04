@@ -37,6 +37,8 @@
 using namespace std;
 
 class VerticesExtractor{
+	bool m_distributionIsCompleted;
+
 	int m_rank;
 	RingAllocator*m_outboxAllocator;
 	StaticVector*m_outbox;
@@ -128,6 +130,9 @@ Parameters*parameters,RingAllocator*m_outboxAllocator,
 
 	void showBuffers();
 	void enableReducer();
+
+	bool isDistributionCompleted();
+	void setDistributionAsCompleted();
 };
 
 #endif

@@ -540,7 +540,7 @@ bool MemoryConsumptionReducer::isCandidate(SplayNode<uint64_t,Vertex>*m_firstVer
 void MemoryConsumptionReducer::printCounter(Parameters*parameters,MyForest*forest){
 	if(m_counter==forest->size()){
 		printf("Rank %i is reducing memory usage [%lu/%lu] (completed)\n",parameters->getRank(),m_counter,forest->size());
-	}else if(m_counter%40000==0){
+	}else if(m_counter%20000==0){
 		printf("Rank %i is reducing memory usage [%lu/%lu]\n",parameters->getRank(),m_counter+1,forest->size());
 	}
 }

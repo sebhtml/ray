@@ -210,9 +210,11 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY(Message*aMessa
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_RESUME_VERTEX_DISTRIBUTION(Message*message){
-	m_verticesExtractor->updateThreshold(m_subgraph);
-	if(!m_verticesExtractor->finished()){
+	if(parameters->runReducer()){
+		m_verticesExtractor->updateThreshold(m_subgraph);
 		printf("Rank %i: %lu -> %lu\n",rank,m_lastSize,m_subgraph->size());
+	}
+	if(!m_verticesExtractor->finished()){
 		(*m_mode)=RAY_SLAVE_MODE_EXTRACT_VERTICES;
 		m_verticesExtractor->removeTrigger();
 	}
@@ -237,7 +239,10 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTICES(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTICES_DONE(Message*message){
 	m_verticesExtractor->incrementRanksDoneWithReduction();
+
 	if(m_verticesExtractor->reductionIsDone()){
+		printf("\n");
+		fflush(stdout);
 		for(int i=0;i<size;i++){
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_UPDATE_THRESHOLD,rank);
 			m_outbox->push_back(aMessage);
@@ -254,8 +259,12 @@ void MessageProcessor::call_RAY_MPI_TAG_UPDATE_THRESHOLD(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_UPDATE_THRESHOLD_REPLY(Message*message){
 	m_verticesExtractor->incrementRanksDoneWithReduction();
 	if(m_verticesExtractor->reductionIsDone()){
-		(*m_master_mode)=RAY_MASTER_MODE_RESUME_VERTEX_DISTRIBUTION;
-		m_verticesExtractor->resetRanksDoneForReduction();
+		if(m_verticesExtractor->isDistributionCompleted()){
+			(*m_master_mode)=RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS;
+		}else{
+			(*m_master_mode)=RAY_MASTER_MODE_RESUME_VERTEX_DISTRIBUTION;
+			m_verticesExtractor->resetRanksDoneForReduction();
+		}
 	}
 }
 
@@ -413,8 +422,22 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA_REPLY(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DISTRIBUTED(Message*message){
 	(*m_numberOfMachinesDoneSendingVertices)++;
 	if((*m_numberOfMachinesDoneSendingVertices)==size){
-		(*m_master_mode)=RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS;
+		m_verticesExtractor->setDistributionAsCompleted();
+		if(parameters->runReducer()){
+			for(int i=0;i<size;i++){
+				Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_MUST_RUN_REDUCER_FROM_MASTER,rank);
+				m_outbox->push_back(aMessage);
+			}
+		}else{
+			(*m_master_mode)=RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS;
+		}
 	}
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_MUST_RUN_REDUCER_FROM_MASTER(Message*message){
+	m_verticesExtractor->trigger();
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_MUST_RUN_REDUCER,rank);
+	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA_REPLY(Message*message){
@@ -492,12 +515,15 @@ void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION(Message*message){
+	if(parameters->runReducer()){
+		m_verticesExtractor->updateThreshold(m_subgraph);
+		printf("Rank %i: %lu -> %lu\n",rank,m_lastSize,m_subgraph->size());
+	}
+
 	// freeze the forest. icy winter ahead.
 	m_subgraph->freeze();
 	//m_subgraph->show(rank,parameters->getPrefix().c_str());
 	int source=message->getSource();
-	printf("Rank %i has %i vertices (completed)\n",rank,(int)m_subgraph->size());
-	fflush(stdout);
 
 	Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, source, RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER,rank);
 	m_outbox->push_back(aMessage);
@@ -511,6 +537,9 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER(Mes
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message){
+	printf("Rank %i has %i vertices (completed)\n",rank,(int)m_subgraph->size());
+	fflush(stdout);
+
 	(*m_mode_send_coverage_iterator)=0;
 	(*m_mode_sendDistribution)=true;
 	(*m_mode)=RAY_SLAVE_MODE_SEND_DISTRIBUTION;
@@ -1889,6 +1918,7 @@ void MessageProcessor::assignHandlers(){
 	m_methods[RAY_MPI_TAG_CHECK_VERTEX_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_CHECK_VERTEX_REPLY;
 	m_methods[RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY;
 	m_methods[RAY_MPI_TAG_SET_WORD_SIZE]=&MessageProcessor::call_RAY_MPI_TAG_SET_WORD_SIZE;
+	m_methods[RAY_MPI_TAG_MUST_RUN_REDUCER_FROM_MASTER]=&MessageProcessor::call_RAY_MPI_TAG_MUST_RUN_REDUCER_FROM_MASTER;
 }
 
 
