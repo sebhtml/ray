@@ -73,7 +73,6 @@ void Parameters::loadCommandsFromArguments(int argc,char**argv){
 
 void Parameters::parseCommands(){
 	m_initiated=true;
-	int i=0;
 	set<string> commands;
 
 	if(m_rank==MASTER_RANK){
@@ -142,7 +141,7 @@ void Parameters::parseCommands(){
 
 	m_numberOfLibraries=0;
 
-	while(i<(int)m_commands.size()){
+	for(int i=0;i<(int)m_commands.size();i++){
 		string token=m_commands[i];
 		if(singleReadsCommands.count(token)>0){
 			i++;
@@ -331,7 +330,30 @@ void Parameters::parseCommands(){
 		}else if(outputAmosCommands.count(token)>0){
 			m_amos=true;
 		}else if(reduceMemoryUsage.count(token)>0){
+			int items=0;
+			for(int j=i+1;j<(int)m_commands.size();j++){
+				string cmd=m_commands[j];
+				if(commands.count(cmd)==0){
+					items++;
+				}else{
+					break;
+				}
+			}
+
+			if(!(items==0||items==1)){
+				if(m_rank==MASTER_RANK){
+					cout<<"Error: "<<token<<" needs 0 or 1 item, you provided "<<items<<endl;
+				}
+				m_error=true;
+				return;
+			}
+
 			m_reducerIsActivated=true;
+			m_reducerPeriod=10000000;
+			
+			if(items==1){
+				m_reducerPeriod=atoi(m_commands[i+1].c_str());
+			}
 		}else if(kmerSetting.count(token)>0){
 			i++;
 			int items=m_commands.size()-i;
@@ -362,12 +384,15 @@ void Parameters::parseCommands(){
 				cout<<endl;
 			}
 		}
-		i++;
 	}
 
 	if(m_rank==MASTER_RANK){
 		cout<<endl;
 		cout<<"k-mer size: "<<m_wordSize<<endl;
+
+		if(m_reducerIsActivated){
+			cout<<"Memory Consumption Reducer is enabled, threshold="<<m_reducerPeriod<<endl;
+		}
 		cout<<endl;
 	}
 
@@ -642,11 +667,15 @@ void Parameters::showUsage(){
 	cout<<" -k <kmerSize>"<<endl;
 	cout<<endl;
 	cout<<"Memory Usage Reducer (experimental, disabled by default)"<<endl;
-	cout<<" -r "<<endl;
+	cout<<" -r [Minimum Number of vertices necessary to trigger the subsystem]"<<endl;
 	cout<<endl;
 	cout<<"Ray writes a contigs file, a coverage distribution file, and an AMOS file (if -a is provided)."<<endl;
 	cout<<"The name of these files is based on the value provided with -o."<<endl;
 	cout<<endl;
 	cout<<"use --help to show this help"<<endl;
 	cout<<endl;
+}
+
+int Parameters::getReducerValue(){
+	return m_reducerPeriod;
 }

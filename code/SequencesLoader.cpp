@@ -31,11 +31,6 @@ Ray
 #include<iostream>
 using namespace std;
 
-union PaddedData{
-	uint64_t large[2];
-	uint32_t medium[4];
-};
-
 bool SequencesLoader::loadSequences(int rank,int size,
 	StaticVector*m_outbox,
 	RingAllocator*m_outboxAllocator,
@@ -294,11 +289,11 @@ bool SequencesLoader::loadSequences(int rank,int size,
 
 			// pack data together.
 			PaddedData values;
-	
+			int library=m_parameters->getLibrary(m_distribution_file_id);
 			values.medium[0]=rightSequenceIdOnRank;
 			values.medium[1]=leftSequenceRank;
 			values.medium[2]=leftSequenceIdOnRank;
-			values.medium[3]=m_parameters->getLibrary(m_distribution_file_id);
+			values.medium[3]=library;
 
 			m_bufferedData.addAt(rightSequenceRank,values.large[0]);
 			m_bufferedData.addAt(rightSequenceRank,values.large[1]);

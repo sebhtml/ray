@@ -35,6 +35,13 @@
 #include<time.h>
 using namespace std;
 
+union PaddedData{
+	uint64_t large[2];
+	uint32_t medium[4];
+};
+
+
+
 class SequencesLoader{
 	BufferedData m_bufferedData;
 

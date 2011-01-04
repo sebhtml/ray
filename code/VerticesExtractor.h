@@ -82,7 +82,7 @@ public:
 	BufferedData m_buffersForOutgoingEdgesToDelete;
 
 
-	void constructor(int size);
+	void constructor(int size,Parameters*parameters);
 	void process(int*m_mode_send_vertices_sequence_id,
 				ArrayOfReads*m_myReads,
 				bool*m_reverseComplementVertex,

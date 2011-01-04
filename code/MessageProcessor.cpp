@@ -472,7 +472,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_VERTICES_DISTRIBUTION(Message*mess
 	MPI_Barrier(MPI_COMM_WORLD);
 	(*m_mode_send_vertices)=true;
 	(*m_mode)=RAY_SLAVE_MODE_EXTRACT_VERTICES;
-	m_verticesExtractor->constructor(size);
+	m_verticesExtractor->constructor(size,parameters);
 	if(parameters->runReducer()){
 		m_verticesExtractor->enableReducer();
 	}
@@ -1319,13 +1319,14 @@ void MessageProcessor::call_RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	for(int i=0;i<count;i+=2){
-		uint32_t*ptr1=(uint32_t*)incoming+i+0;
-		uint32_t*ptr2=(uint32_t*)incoming+i+1;
+		PaddedData padded;
+		padded.large[0]=incoming[i+0];
+		padded.large[1]=incoming[i+1];
 
-		int currentReadId=ptr1[0];
-		int otherRank=ptr1[1];
-		int otherId=ptr2[0];
-		int library=ptr2[1];
+		int currentReadId=padded.medium[0];
+		int otherRank=padded.medium[1];
+		int otherId=padded.medium[2];
+		int library=padded.medium[3];
 
 		PairedRead*t=(PairedRead*)(*m_persistentAllocator).allocate(sizeof(PairedRead));
 		#ifdef ASSERT

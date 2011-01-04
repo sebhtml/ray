@@ -230,7 +230,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 	}
 }
 
-void VerticesExtractor::constructor(int size){
+void VerticesExtractor::constructor(int size,Parameters*parameters){
 m_distributionIsCompleted=false;
 	m_outbox=NULL;
 	m_mustFlushBuffers=false;
@@ -248,7 +248,7 @@ m_distributionIsCompleted=false;
 	m_ranksDoneWithReduction=0;
 	m_ranksReadyForReduction=0;
 
-	m_reductionPeriod=10000000; // 10M
+	m_reductionPeriod=parameters->getReducerValue();
 	
 	m_triggered=false;
 	m_finished=false;
