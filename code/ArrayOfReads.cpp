@@ -120,7 +120,7 @@ void ArrayOfReads::clear(){
 		for(int i=0;i<(int)m_numberOfChunks;i++){
 			__Free(m_chunks[i]);
 		}
-		free(m_chunks);
+		__Free(m_chunks);
 		m_chunks=NULL;
 		m_elements=0;
 		m_numberOfChunks=0;
