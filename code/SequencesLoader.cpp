@@ -259,18 +259,14 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			#endif
 
 			// pack values together
-			uint64_t val1;
-			uint32_t*val1PTR=(uint32_t*)&val1;
-			val1PTR[0]=leftSequenceIdOnRank;
-			val1PTR[1]=rightSequenceRank;
+			PaddedData values;
+			values.medium[0]=leftSequenceIdOnRank;
+			values.medium[1]=rightSequenceRank;
+			values.medium[2]=rightSequenceIdOnRank;
+			values.medium[3]=m_parameters->getLibrary(m_distribution_file_id);
 
-			uint64_t val2;
-			uint32_t*val2PTR=(uint32_t*)&val2;
-			val2PTR[0]=rightSequenceIdOnRank;
-			val2PTR[1]=m_parameters->getLibrary(m_distribution_file_id);
-
-			m_bufferedData.addAt(leftSequenceRank,val1);
-			m_bufferedData.addAt(leftSequenceRank,val2);
+			m_bufferedData.addAt(leftSequenceRank,values.large[0]);
+			m_bufferedData.addAt(leftSequenceRank,values.large[1]);
 
 			if(m_bufferedData.flush(leftSequenceRank,2,RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
@@ -332,18 +328,14 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			#endif
 
 			// pack values together
-			uint64_t val1;
-			uint32_t*val1PTR=(uint32_t*)&val1;
-			val1PTR[0]=leftSequenceIdOnRank;
-			val1PTR[1]=rightSequenceRank;
+			PaddedData values;
+			values.medium[0]=leftSequenceIdOnRank;
+			values.medium[1]=rightSequenceRank;
+			values.medium[2]=rightSequenceIdOnRank;
+			values.medium[3]=m_parameters->getLibrary(m_distribution_file_id);
 
-			uint64_t val2;
-			uint32_t*val2PTR=(uint32_t*)&val2;
-			val2PTR[0]=rightSequenceIdOnRank;
-			val2PTR[1]=m_parameters->getLibrary(m_distribution_file_id);
-
-			m_bufferedData.addAt(leftSequenceRank,val1);
-			m_bufferedData.addAt(leftSequenceRank,val2);
+			m_bufferedData.addAt(leftSequenceRank,values.large[0]);
+			m_bufferedData.addAt(leftSequenceRank,values.large[1]);
 
 			if(m_bufferedData.flush(leftSequenceRank,2,RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
