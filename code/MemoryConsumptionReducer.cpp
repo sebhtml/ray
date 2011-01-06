@@ -385,7 +385,7 @@ edgesReceived
 						if(!((int)path.size()<=maxPathSize)){
 							aloneBits=false;
 						}
-
+			
 						for(int o=0;o<(int)path.size();o++){
 							if(!aloneBits){
 								break;
@@ -535,6 +535,7 @@ bool MemoryConsumptionReducer::isCandidate(SplayNode<uint64_t,Vertex>*m_firstVer
 	vector<uint64_t> children=m_firstVertex->getValue()->getOutgoingEdges(key,wordSize);
 	int coverage=m_firstVertex->getValue()->getCoverage();
 	return ((parents.size()==1&&children.size()==0)||(parents.size()==0&&children.size()==1))&&coverage<=3;
+	//return parents.size()==1&&children.size()==0&&coverage<=3;
 }
 
 void MemoryConsumptionReducer::printCounter(Parameters*parameters,MyForest*forest){

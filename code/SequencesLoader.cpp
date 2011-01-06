@@ -286,19 +286,23 @@ bool SequencesLoader::loadSequences(int rank,int size,
 
 			int leftSequenceRank=leftSequenceGlobalId%size;
 			int leftSequenceIdOnRank=leftSequenceGlobalId/size;
+			int library=m_parameters->getLibrary(m_distribution_file_id);
 
 			// pack data together.
+
+/*
 			PaddedData values;
-			int library=m_parameters->getLibrary(m_distribution_file_id);
 			values.medium[0]=rightSequenceIdOnRank;
 			values.medium[1]=leftSequenceRank;
 			values.medium[2]=leftSequenceIdOnRank;
 			values.medium[3]=library;
+*/
+			m_bufferedData.addAt(rightSequenceRank,rightSequenceIdOnRank);
+			m_bufferedData.addAt(rightSequenceRank,leftSequenceRank);
+			m_bufferedData.addAt(rightSequenceRank,leftSequenceIdOnRank);
+			m_bufferedData.addAt(rightSequenceRank,library);
 
-			m_bufferedData.addAt(rightSequenceRank,values.large[0]);
-			m_bufferedData.addAt(rightSequenceRank,values.large[1]);
-
-			if(m_bufferedData.flush(rightSequenceRank,2,RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_bufferedData.flush(rightSequenceRank,4,RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
 			}
 
@@ -355,7 +359,6 @@ bool SequencesLoader::loadSequences(int rank,int size,
 
 			m_bufferedData.addAt(rightSequenceRank,values.large[0]);
 			m_bufferedData.addAt(rightSequenceRank,values.large[1]);
-
 
 			if(m_bufferedData.flush(rightSequenceRank,2,RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE,m_outboxAllocator,m_outbox,rank,false)){
 				m_waitingNumber++;
