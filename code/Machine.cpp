@@ -125,7 +125,9 @@ void Machine::start(){
 
 	m_maxNumberOfSentMessages=0;
 	MAX_ALLOCATED_MESSAGES_IN_OUTBOX=getSize();
-	int minimumMaximum=6;
+
+	// this peak is attained in VerticesExtractor::deleteVertices
+	int minimumMaximum=17; 
 
 	if(MAX_ALLOCATED_MESSAGES_IN_OUTBOX<minimumMaximum){
 		MAX_ALLOCATED_MESSAGES_IN_OUTBOX=minimumMaximum;
@@ -418,6 +420,15 @@ void Machine::processMessages(){
 void Machine::sendMessages(){
 	#ifdef ASSERT
 	int messagesToSend=m_outbox.size();
+	if(messagesToSend>MAX_ALLOCATED_MESSAGES_IN_OUTBOX){
+		cout<<"Fatal: "<<messagesToSend<<" messages to send, but max is "<<MAX_ALLOCATED_MESSAGES_IN_OUTBOX<<endl;
+		cout<<"tags=";
+		for(int i=0;i<(int)m_outbox.size();i++){
+			cout<<" "<<m_outbox[i]->getTag();
+		}
+		cout<<endl;
+	}
+
 	assert(messagesToSend<=MAX_ALLOCATED_MESSAGES_IN_OUTBOX);
 	if(messagesToSend>m_maxNumberOfSentMessages){
 		m_maxNumberOfSentMessages=messagesToSend;
@@ -646,13 +657,6 @@ void Machine::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
 			while(iterator.hasNext()){
 				SplayNode<uint64_t,Vertex>*node=iterator.next();
 
-				#ifdef ASSERT
-				uint64_t vertexKey=node->getKey();
-				if(idToWord(vertexKey,m_wordSize)=="GTGGCAACATTTTCCTCTACC"){
-					cout<<"Rank="<<getRank()<<" has GTGGCAACATTTTCCTCTACC"<<endl;
-				}
-				#endif
-
 				int coverage=node->getValue()->getCoverage();
 				m_distributionOfCoverage[coverage]++;
 			}
@@ -690,6 +694,11 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_SEEDING(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_START_SEEDING(){
+
+	#ifdef ASSERT
+	assert(m_subgraph.frozen());
+	#endif
+
 	m_seedingData->computeSeeds();
 }
 
@@ -1222,7 +1231,8 @@ m_minimumCoverage,&m_oa,&(m_seedingData->m_SEEDING_edgesReceived),&m_slave_mode)
 
 void Machine::call_RAY_SLAVE_MODE_DELETE_VERTICES(){
 	if(m_verticesExtractor.deleteVertices(m_reducer.getVerticesToRemove(),&m_subgraph,
-&m_parameters,&m_outboxAllocator,&m_outbox
+&m_parameters,&m_outboxAllocator,&m_outbox,
+m_reducer.getIngoingEdges(),m_reducer.getOutgoingEdges()
 )){
 		// flush
 

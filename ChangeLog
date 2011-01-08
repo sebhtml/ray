@@ -3,7 +3,7 @@
 
 * The number of messages in the inbox of any MPI rank is always 0 or 1.
 * The number of messages in the outbox of any MPI rank is always lower than or
-equal to max(6,number of MPI ranks).
+equal to max(17,number of MPI ranks).
 * Fixed a ring buffer overflow when requesting the reads starting on a
 highly-repetitive vertex.
 * Implemented a chunk allocator for the arrays of sequencing reads locally

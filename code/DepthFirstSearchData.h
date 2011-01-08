@@ -26,6 +26,7 @@
 #include<MyStack.h>
 #include<map>
 #include<set>
+#include<Parameters.h>
 #include<RingAllocator.h>
 #include<StaticVector.h>
 #include<common_functions.h>
@@ -33,6 +34,9 @@ using namespace std;
 
 class DepthFirstSearchData{
 	bool m_outgoingEdgesDone;
+
+	map<uint64_t,vector<uint64_t> > m_outgoingEdges;
+	map<uint64_t,vector<uint64_t> > m_ingoingEdges;
 
 public:
 
@@ -64,9 +68,11 @@ public:
 	bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	RingAllocator*outboxAllocator,int size,int theRank,StaticVector*outbox,
  int*receivedVertexCoverage,vector<uint64_t>*receivedOutgoingEdges,
-		int minimumCoverage,bool*edgesReceived);
+		int minimumCoverage,bool*edgesReceived,Parameters*parameters);
 
-
+	
+	map<uint64_t,vector<uint64_t> >*getIngoingEdges();
+	map<uint64_t,vector<uint64_t> >*getOutgoingEdges();
 
 
 };

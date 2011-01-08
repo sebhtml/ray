@@ -100,6 +100,10 @@ bool MyForest::frozen(){
 }
 
 void MyForest::remove(uint64_t a){
+	#ifdef ASSERT
+	assert(!frozen());
+	#endif
+
 	int tree=getTreeIndex(a);
 	if(m_trees[tree].remove(a)){
 		m_size--;

@@ -42,7 +42,6 @@ class VerticesExtractor{
 	int m_rank;
 	RingAllocator*m_outboxAllocator;
 	StaticVector*m_outbox;
-	bool m_mustFlushBuffers;
 	int*m_mode;
 	int m_mode_send_vertices_sequence_id_position;
 
@@ -121,11 +120,10 @@ public:
 
 	bool deleteVertices(vector<uint64_t>*verticesToRemove,MyForest*subgraph,
 Parameters*parameters,RingAllocator*m_outboxAllocator,
-	StaticVector*m_outbox
+	StaticVector*m_outbox,map<uint64_t,vector<uint64_t> >*ingoingEdges,map<uint64_t,vector<uint64_t> >*outgoingEdges
 );
 	void prepareDeletions();
 
-	void flushBuffers(int rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator);
 	void incrementPendingMessages();
 
 	void showBuffers();

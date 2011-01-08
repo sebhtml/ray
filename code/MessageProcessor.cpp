@@ -50,45 +50,32 @@ void MessageProcessor::call_RAY_MPI_TAG_SET_WORD_SIZE(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTEX(Message*message){
+
+	#ifdef ASSERT
+	assert(!m_subgraph->frozen());
+	#endif
+
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
 	int count=message->getCount();
 	for(int i=0;i<count;i++){
 		uint64_t vertex=incoming[i];
 		SplayNode<uint64_t,Vertex>*node=m_subgraph->find(vertex);
 
+
 		if(node==NULL){
 			continue;
 		}
 
 		#ifdef ASSERT
-		assert(node!=NULL);
+		if(idToWord(vertex,*m_wordSize)=="GCGGCTAGTTTTCTAGTTTGA"){
+			cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<"  GCGGCTAGTTTTCTAGTTTGA IN="<<node->getValue()->getIngoingEdges(vertex,*m_wordSize).size()<<" OUT="<<node->getValue()->getOutgoingEdges(vertex,*m_wordSize).size()<<endl;
+
+		}
 		#endif
 
-		// using ingoing edges, tell parents to delete the associated outgoing edge
-		vector<uint64_t> ingoingEdges=node->getValue()->getIngoingEdges(vertex,*m_wordSize);
-		for(int j=0;j<(int)ingoingEdges.size();j++){
-			uint64_t prefix=ingoingEdges[j];
-			uint64_t suffix=vertex;
-			int rankToFlush=vertexRank(prefix,size);
-			m_verticesExtractor->m_buffersForOutgoingEdgesToDelete.addAt(rankToFlush,prefix);
-			m_verticesExtractor->m_buffersForOutgoingEdgesToDelete.addAt(rankToFlush,suffix);
-			if(m_verticesExtractor->m_buffersForOutgoingEdgesToDelete.flush(rankToFlush,2,RAY_MPI_TAG_DELETE_OUTGOING_EDGE,m_outboxAllocator,m_outbox,rank,false)){
-				m_verticesExtractor->incrementPendingMessages();
-			}
-		}
-
-		// using outgoing edges, tell children to delete the associated ingoing edge
-		vector<uint64_t> outgoingEdges=node->getValue()->getOutgoingEdges(vertex,*m_wordSize);
-		for(int j=0;j<(int)outgoingEdges.size();j++){
-			uint64_t prefix=vertex;
-			uint64_t suffix=outgoingEdges[j];
-			int rankToFlush=vertexRank(suffix,size);
-			m_verticesExtractor->m_buffersForIngoingEdgesToDelete.addAt(rankToFlush,prefix);
-			m_verticesExtractor->m_buffersForIngoingEdgesToDelete.addAt(rankToFlush,suffix);
-			if(m_verticesExtractor->m_buffersForIngoingEdgesToDelete.flush(rankToFlush,2,RAY_MPI_TAG_DELETE_INGOING_EDGE,m_outboxAllocator,m_outbox,rank,false)){
-				m_verticesExtractor->incrementPendingMessages();
-			}
-		}
+		#ifdef ASSERT
+		assert(node!=NULL);
+		#endif
 
 		// delete the vertex
 		m_subgraph->remove(vertex);
@@ -133,6 +120,11 @@ void MessageProcessor::call_RAY_MPI_TAG_CHECK_VERTEX_REPLY(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_DELETE_INGOING_EDGE(Message*message){
+
+	#ifdef ASSERT
+	assert(!m_subgraph->frozen());
+	#endif
+
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
 	int count=message->getCount();
 	for(int i=0;i<count;i+=2){
@@ -146,16 +138,26 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_INGOING_EDGE(Message*message){
 		}
 
 		#ifdef ASSERT
-		int before=node->getValue()->getIngoingEdges(suffix,*m_wordSize).size();
+		assert(node!=NULL);
+		int before=node->getValue()->getOutgoingEdges(suffix,*m_wordSize).size();
 		#endif
 
-		node->getValue()->deleteIngoingEdge(prefix,*m_wordSize);
+		/* the edge might already be deleted if the tip is within another tip. */
 
 		#ifdef ASSERT
-		int after=node->getValue()->getIngoingEdges(suffix,*m_wordSize).size();
-		assert(after+1==before);
+		if(idToWord(prefix,*m_wordSize)=="GCGGCTAGTTTTCTAGTTTGA"){
+			cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" removing InEdge GCGGCTAGTTTTCTAGTTTGA->???"<<endl;
+		}
+		#endif
+
+		node->getValue()->deleteIngoingEdge(prefix,(*m_wordSize));
+
+		#ifdef ASSERT
+		int after=node->getValue()->getOutgoingEdges(suffix,*m_wordSize).size();
+		assert(after<=before);
 		#endif
 	}
+
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_DELETE_INGOING_EDGE_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
@@ -169,6 +171,11 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_INGOING_EDGE_REPLY(Message*messag
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_DELETE_OUTGOING_EDGE(Message*message){
+
+	#ifdef ASSERT
+	assert(!m_subgraph->frozen());
+	#endif
+
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
 	int count=message->getCount();
 	for(int i=0;i<count;i+=2){
@@ -181,16 +188,22 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_OUTGOING_EDGE(Message*message){
 		}
 	
 		#ifdef ASSERT
-		int before=node->getValue()->getOutgoingEdges(prefix,*m_wordSize).size();
+
+		if(idToWord(suffix,*m_wordSize)=="GCGGCTAGTTTTCTAGTTTGA"){
+			cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" deleting outgoing edge ...->GCGGCTAGTTTTCTAGTTTGA"<<endl;
+		}
+
+		assert(node!=NULL);
+		int before=node->getValue()->getOutgoingEdges(suffix,*m_wordSize).size();
 		#endif
 
-		node->getValue()->deleteOutgoingEdge(suffix,*m_wordSize);
-
+		/* the edge might already be deleted if the tip is within another tip. */
+		node->getValue()->deleteOutgoingEdge(suffix,(*m_wordSize));
+		
 		#ifdef ASSERT
-		int after=node->getValue()->getOutgoingEdges(prefix,*m_wordSize).size();
-		assert(after+1==before);
+		int after=node->getValue()->getOutgoingEdges(suffix,*m_wordSize).size();
+		assert(after<=before);
 		#endif
-
 	}
 
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_DELETE_OUTGOING_EDGE_REPLY,rank);
@@ -232,9 +245,17 @@ void MessageProcessor::call_RAY_MPI_TAG_REDUCE_MEMORY_CONSUMPTION_DONE(Message*m
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTICES(Message*message){
+	#ifdef ASSERT
+	assert(m_subgraph->frozen());
+	#endif
+
 	m_lastSize=m_subgraph->size();
 	(*m_mode)=RAY_SLAVE_MODE_DELETE_VERTICES;
 	m_subgraph->unfreeze();
+
+	#ifdef ASSERT
+	assert(!m_subgraph->frozen());
+	#endif
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTICES_DONE(Message*message){
@@ -252,8 +273,8 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTICES_DONE(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_UPDATE_THRESHOLD(Message*message){
-	m_verticesExtractor->flushBuffers(rank,m_outbox,m_outboxAllocator);
-
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_UPDATE_THRESHOLD_REPLY,rank);
+	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_UPDATE_THRESHOLD_REPLY(Message*message){
@@ -269,8 +290,11 @@ void MessageProcessor::call_RAY_MPI_TAG_UPDATE_THRESHOLD_REPLY(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_START_REDUCTION(Message*message){
+	m_subgraph->freeze();
+
 	#ifdef ASSERT
 	m_verticesExtractor->assertBuffersAreEmpty();
+	assert(m_subgraph->frozen());
 	#endif
 	(*m_mode)=RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION;
 }
@@ -422,6 +446,10 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA_REPLY(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DISTRIBUTED(Message*message){
 	(*m_numberOfMachinesDoneSendingVertices)++;
 	if((*m_numberOfMachinesDoneSendingVertices)==size){
+		// XXX content below is to be removed
+		//(*m_master_mode)=RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS;
+		//return;
+
 		m_verticesExtractor->setDistributionAsCompleted();
 		if(parameters->runReducer()){
 			for(int i=0;i<size;i++){
@@ -435,6 +463,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DISTRIBUTED(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_MUST_RUN_REDUCER_FROM_MASTER(Message*message){
+
 	m_verticesExtractor->trigger();
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_MUST_RUN_REDUCER,rank);
 	m_outbox->push_back(aMessage);
@@ -515,6 +544,10 @@ void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION(Message*message){
+	#ifdef ASSERT
+	m_verticesExtractor->assertBuffersAreEmpty();
+	#endif
+
 	if(parameters->runReducer()){
 		m_verticesExtractor->updateThreshold(m_subgraph);
 		printf("Rank %i: %lu -> %lu\n",rank,m_lastSize,m_subgraph->size());
@@ -620,7 +653,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message)
 	SplayNode<uint64_t,Vertex>*node=m_subgraph->find(incoming[0]);
 	#ifdef ASSERT
 	if(node==NULL){
-		cout<<idToWord(incoming[0],(*m_wordSize))<<endl;
+		cout<<idToWord(incoming[0],(*m_wordSize))<<" does not exist"<<endl;
 	}
 	assert(node!=NULL);
 	#endif
@@ -677,19 +710,25 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_EDGES(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
-	SplayNode<uint64_t,Vertex>*node=m_subgraph->find(incoming[0]);
+	uint64_t vertex=incoming[0];
+
+	SplayNode<uint64_t,Vertex>*node=m_subgraph->find(vertex);
+
 	#ifdef ASSERT
 	assert(node!=NULL);
 	#endif
-	vector<uint64_t> outgoingEdges=node->getValue()->getOutgoingEdges(incoming[0],*m_wordSize);
-	vector<uint64_t> ingoingEdges=node->getValue()->getIngoingEdges(incoming[0],*m_wordSize);
+
+	vector<uint64_t> outgoingEdges=node->getValue()->getOutgoingEdges(vertex,*m_wordSize);
+	vector<uint64_t> ingoingEdges=node->getValue()->getIngoingEdges(vertex,*m_wordSize);
 	int toAllocate=(2+outgoingEdges.size()+ingoingEdges.size());
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(toAllocate*sizeof(uint64_t));
 	int k=0;
+
 	message2[k++]=outgoingEdges.size();
 	for(int i=0;i<(int)outgoingEdges.size();i++){
 		message2[k++]=outgoingEdges[i];
 	}
+
 	message2[k++]=ingoingEdges.size();
 	for(int i=0;i<(int)ingoingEdges.size();i++){
 		message2[k++]=ingoingEdges[i];
@@ -697,7 +736,13 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_EDGES(Message*message){
 
 	#ifdef ASSERT
 	assert(k==(int)(outgoingEdges.size()+ingoingEdges.size()+2));
+
+	if(idToWord(vertex,*m_wordSize)=="GCGGCTAGTTTTCTAGTTTGA"){
+		cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" vertex=GCGGCTAGTTTTCTAGTTTGA IN="<<ingoingEdges.size()<<" OUT="<<outgoingEdges.size()<<endl;
+	}
+
 	#endif
+
 
 	Message aMessage(message2,k,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY,rank);
 	m_outbox->push_back(aMessage);

@@ -151,8 +151,14 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 	bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	RingAllocator*outboxAllocator,int size,int theRank,StaticVector*outbox,
  int*receivedVertexCoverage,vector<uint64_t>*receivedOutgoingEdges,
-		int minimumCoverage,bool*edgesReceived){
+		int minimumCoverage,bool*edgesReceived,Parameters*parameters){
+
+	int wordSize=parameters->getWordSize();
+
 	if(!m_doChoice_tips_dfs_initiated){
+		m_outgoingEdges.clear();
+		m_ingoingEdges.clear();
+
 		m_depthFirstSearchVisitedVertices.clear();
 		m_depthFirstSearchVisitedVertices_vector.clear();
 		m_depthFirstSearchVisitedVertices_depths.clear();
@@ -164,7 +170,6 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 		}
 		m_maxDepthReached=false;
 		m_depthFirstSearchVerticesToVisit.push(a);
-		m_depthFirstSearchVisitedVertices.insert(a);
 		m_depthFirstSearchDepths.push(0);
 		m_depthFirstSearch_maxDepth=0;
 		m_doChoice_tips_dfs_initiated=true;
@@ -175,7 +180,15 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 	}
 	if(m_depthFirstSearchVerticesToVisit.size()>0){
 		uint64_t vertexToVisit=m_depthFirstSearchVerticesToVisit.top();
+
 		if(!(*vertexCoverageRequested)){
+
+			if(m_depthFirstSearchVisitedVertices.count(vertexToVisit)>0){
+				m_depthFirstSearchVerticesToVisit.pop();
+				m_depthFirstSearchDepths.pop();
+				return;
+			}
+
 			(*vertexCoverageRequested)=true;
 			(*vertexCoverageReceived)=false;
 			
@@ -187,6 +200,15 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 		}else if((*vertexCoverageReceived)){
 			if(!(*edgesRequested)){
 				m_coverages[vertexToVisit]=(*receivedVertexCoverage);
+
+				#ifdef ASSERT
+				if(m_depthFirstSearchVisitedVertices.count(vertexToVisit)>0){
+					cout<<"Already visited: "<<idToWord(vertexToVisit,wordSize)<<" root is "<<idToWord(a,wordSize)<<endl;
+				}
+				assert(m_depthFirstSearchVisitedVertices.count(vertexToVisit)==0);
+				assert(*receivedVertexCoverage>0);
+				#endif
+
 				if((*receivedVertexCoverage)>0){
 					m_depthFirstSearchVisitedVertices.insert(vertexToVisit);
 				}else{
@@ -217,10 +239,17 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 			}else if((*edgesReceived)){
 				uint64_t vertexToVisit=m_depthFirstSearchVerticesToVisit.top();
 				int theDepth=m_depthFirstSearchDepths.top();
+
 				#ifdef ASSERT
+	
+				if(idToWord(vertexToVisit,wordSize)=="GCGGCTAGTTTTCTAGTTTGA"){
+					cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" Vertex=GCGGCTAGTTTTCTAGTTTGA Output="<<receivedOutgoingEdges->size()<<endl;
+				}
+
 				assert(theDepth>=0);
 				assert(theDepth<=maxDepth);
 				#endif
+
 				int newDepth=theDepth+1;
 
 				m_depthFirstSearchVerticesToVisit.pop();
@@ -236,16 +265,22 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 				assert((*receivedOutgoingEdges).size()>=2);
 				#endif
 
+				vector<uint64_t> outgoingEdges;
 				int outgoingEdgesOffset=0;
 				int numberOfOutgoingEdges=(*receivedOutgoingEdges)[outgoingEdgesOffset];
+
 				#ifdef ASSERT
 				assert(numberOfOutgoingEdges>=0 && numberOfOutgoingEdges<=4);
 				#endif
+
 				for(int i=0;i<numberOfOutgoingEdges;i++){
-					if(m_depthFirstSearchVisitedVertices.size()>=MAX_VERTICES_TO_VISIT){
-						break;
-					}
 					uint64_t nextVertex=(*receivedOutgoingEdges)[outgoingEdgesOffset+1+i];
+
+					outgoingEdges.push_back(nextVertex);
+
+					if(m_depthFirstSearchVisitedVertices.size()>=MAX_VERTICES_TO_VISIT){
+						continue;
+					}
 					if(m_depthFirstSearchVisitedVertices.count(nextVertex)>0){
 						continue;
 					}
@@ -255,7 +290,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 					}
 					m_depthFirstSearchVerticesToVisit.push(nextVertex);
 					m_depthFirstSearchDepths.push(newDepth);
-
+		
 					m_depthFirstSearchVisitedVertices_vector.push_back(vertexToVisit);
 					m_depthFirstSearchVisitedVertices_vector.push_back(nextVertex);
 					m_depthFirstSearchVisitedVertices_depths.push_back(newDepth);
@@ -267,11 +302,24 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 				assert(numberOfIngoingEdges>=0 && numberOfIngoingEdges<=4);
 				#endif
 
+				#ifdef ASSERT
+				if(m_outgoingEdges.count(vertexToVisit)>0){
+					cout<<idToWord(vertexToVisit,wordSize)<<" is already in the data structure "<<m_outgoingEdges[vertexToVisit].size()<<" v. "<<outgoingEdges.size()<<endl;
+				}
+				assert(m_outgoingEdges.count(vertexToVisit)==0);
+				#endif
+
+				m_outgoingEdges[vertexToVisit]=outgoingEdges;
+
+				vector<uint64_t> ingoingEdges;
+
 				for(int i=0;i<numberOfIngoingEdges;i++){
-					if(m_depthFirstSearchVisitedVertices.size()>=MAX_VERTICES_TO_VISIT){
-						break;
-					}
 					uint64_t nextVertex=(*receivedOutgoingEdges)[ingoingEdgesOffset+1+i];
+					ingoingEdges.push_back(nextVertex);
+
+					if(m_depthFirstSearchVisitedVertices.size()>=MAX_VERTICES_TO_VISIT){
+						continue;
+					}
 					if(m_depthFirstSearchVisitedVertices.count(nextVertex)>0){
 						continue;
 					}
@@ -282,6 +330,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 					m_depthFirstSearchVerticesToVisit.push(nextVertex);
 					m_depthFirstSearchDepths.push(newDepth);
 
+
 					// reverse the order.
 					m_depthFirstSearchVisitedVertices_vector.push_back(nextVertex);
 					m_depthFirstSearchVisitedVertices_vector.push_back(vertexToVisit);
@@ -290,6 +339,16 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 
 				(*edgesRequested)=false;
 				(*vertexCoverageRequested)=false;
+
+				#ifdef ASSERT
+				assert(m_ingoingEdges.count(vertexToVisit)==0);
+	
+				if(idToWord(vertexToVisit,wordSize)=="GCGGCTAGTTTTCTAGTTTGA"){
+					cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" Vertex=GCGGCTAGTTTTCTAGTTTGA IN="<<ingoingEdges.size()<<" OUT="<<outgoingEdges.size()<<endl;
+				}
+				#endif
+
+				m_ingoingEdges[vertexToVisit]=ingoingEdges;
 			}
 		}
 	}else{
@@ -299,3 +358,12 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 		#endif
 	}
 }
+
+map<uint64_t,vector<uint64_t> >*DepthFirstSearchData::getIngoingEdges(){
+	return &m_ingoingEdges;
+}
+
+map<uint64_t,vector<uint64_t> >*DepthFirstSearchData::getOutgoingEdges(){
+	return &m_outgoingEdges;
+}
+

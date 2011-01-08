@@ -631,9 +631,6 @@ void FusionData::makeFusions(){
 				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 				message[0]=theVertex;
 				int destination=vertexRank(theVertex,getSize());
-				if(idToWord(theVertex,m_wordSize)=="GTGGCAACATTTTCCTCTACC"){
-					cout<<"Source="<<getRank()<<" Destination="<<destination<<" 4x Requesting paths for GTGGCAACATTTTCCTCTACC"<<endl;
-				}
 
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,getRank());
 				m_outbox->push_back(aMessage);

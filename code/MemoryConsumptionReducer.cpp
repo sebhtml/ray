@@ -162,6 +162,7 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 ){
 	#ifdef ASSERT
 	assert(m_pendingMessages>=0);
+	assert(a->frozen());
 	#endif
 
 	if(m_pendingMessages>0){
@@ -172,6 +173,8 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 		m_counter=0;
 		m_initiated=true;
 		m_toRemove.clear();
+		m_ingoingEdges.clear();
+		m_outgoingEdges.clear();
 
 /*
 		if((int)m_confettiToCheck.size()>0){
@@ -186,7 +189,6 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 
 		m_currentVertexIsDone=false;
 		m_hasSetVertex=false;
-		a->freeze();
 
 		// wordSize for the hanging tip
 		// wordSize+1 for the correct path
@@ -221,7 +223,6 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 					return false;
 				}
 				m_initiated=false;
-				a->unfreeze();
 				printCounter(parameters,a);
 				
 				return true;
@@ -263,7 +264,7 @@ outbox,
 receivedVertexCoverage,
 receivedOutgoingEdges,
 minimumCoverage,
-edgesReceived
+edgesReceived,parameters
 );
 			}else{
 				// find the first probably-good vertex 
@@ -392,7 +393,7 @@ edgesReceived
 							}
 							if(m_dfsDataOutgoing.m_coverages[path[o]]!=1){
 								#ifdef _VERBOSE
-								cout<<path.size()<<" vertices, no junction, and a vertex has a coverage greater than 1"<<endl;
+								//cout<<path.size()<<" vertices, no junction, and a vertex has a coverage greater than 1"<<endl;
 								#endif
 								aloneBits=false;
 								break;
@@ -424,6 +425,12 @@ edgesReceived
 							vector<uint64_t> kMersToCheck;
 							getPermutations(root,positionsToCheck,&kMersToCheck,wordSize);
 							
+							for(int u=0;u<(int)path.size();u++){	
+								uint64_t kmer=path[u];
+								m_ingoingEdges[kmer]=(*(m_dfsDataOutgoing.getIngoingEdges()))[kmer];
+								m_outgoingEdges[kmer]=(*(m_dfsDataOutgoing.getOutgoingEdges()))[kmer];
+							}
+
 							// push queries in a buffer
 							for(int i=0;i<(int)kMersToCheck.size();i++){
 								uint64_t kmer=kMersToCheck[i];
@@ -445,14 +452,27 @@ edgesReceived
 					}
 					for(int u=0;u<(int)path.size();u++){
 						m_toRemove.push_back(path[u]);
+						uint64_t vertex=path[u];
+			
+						m_ingoingEdges[vertex]=(*(m_dfsDataOutgoing.getIngoingEdges()))[vertex];
+
+						m_outgoingEdges[vertex]=(*(m_dfsDataOutgoing.getOutgoingEdges()))[vertex];
+
+						#ifdef ASSERT
+						if(idToWord(vertex,wordSize)=="GCGGCTAGTTTTCTAGTTTGA"){
+							cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" Vertex="<<vertex<<" IN="<<m_ingoingEdges[vertex].size()<<" OUT="<<m_outgoingEdges[vertex].size()<<endl;
+						}
+						#endif
+
 					}
 				}
 				#ifdef _VERBOSE
 				#define PRINT_GRAPHVIZ
 				#endif
 				#ifdef PRINT_GRAPHVIZ
-				if(parameters->getRank()==MASTER_RANK 
-				&&!foundJunction&&!aloneBits&&children.size()==0&&(int)path.size()<=maxPathSize){
+				if(/*parameters->getRank()==MASTER_RANK 
+				&&!foundJunction&&!aloneBits&&children.size()==0&&(int)path.size()<=maxPathSize*/
+				forcePrint){
 					set<uint64_t> removed;
 					for(int p=0;p<(int)path.size();p++){
 						if(foundDestination){
@@ -486,6 +506,10 @@ edgesReceived
 
 						if(vertexAtMaxDepth==p->first){
 							cout<<" (deepest vertex) ";
+						}
+
+						if("GAAACGCGACCAAGTAATGGG"==idToWord(p->first,wordSize)){
+							cout<<" (culprit) ";
 						}
 
 						cout<<"\" ";
@@ -534,7 +558,7 @@ bool MemoryConsumptionReducer::isCandidate(SplayNode<uint64_t,Vertex>*m_firstVer
 	vector<uint64_t> parents=m_firstVertex->getValue()->getIngoingEdges(key,wordSize);
 	vector<uint64_t> children=m_firstVertex->getValue()->getOutgoingEdges(key,wordSize);
 	int coverage=m_firstVertex->getValue()->getCoverage();
-	return ((parents.size()==1&&children.size()==0)||(parents.size()==0&&children.size()==1))&&coverage<=3;
+	return ((parents.size()==1&&children.size()==0)||(parents.size()==0&&children.size()==1))&&coverage==1;
 	//return parents.size()==1&&children.size()==0&&coverage<=3;
 }
 
@@ -569,8 +593,17 @@ void MemoryConsumptionReducer::processConfetti(uint64_t*a,int b){
 			continue;
 		}
 		for(int j=0;j<(int)vertices->size();j++){
-			m_toRemove.push_back(vertices->at(j));
+			uint64_t vertex=vertices->at(j);
+			m_toRemove.push_back(vertex);
 		}
 	}
 	m_pendingMessages--;
+}
+
+map<uint64_t,vector<uint64_t> >*MemoryConsumptionReducer::getIngoingEdges(){
+	return &m_ingoingEdges;
+}
+
+map<uint64_t,vector<uint64_t> >*MemoryConsumptionReducer::getOutgoingEdges(){
+	return &m_outgoingEdges;
 }

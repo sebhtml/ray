@@ -51,6 +51,8 @@ class MemoryConsumptionReducer{
 	SplayNode<uint64_t,Vertex>*m_firstVertex;
 
 	vector<uint64_t> m_toRemove;
+	map<uint64_t,vector<uint64_t> >m_ingoingEdges;
+	map<uint64_t,vector<uint64_t> >m_outgoingEdges;
 
 	int m_maximumDepth;
 	bool isCandidate(SplayNode<uint64_t,Vertex>*node,int wordSize);
@@ -83,6 +85,9 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	void constructor(int size);
 
 	void processConfetti(uint64_t*a,int b);
+
+	map<uint64_t,vector<uint64_t> >*getIngoingEdges();
+	map<uint64_t,vector<uint64_t> >*getOutgoingEdges();
 };
 
 #endif

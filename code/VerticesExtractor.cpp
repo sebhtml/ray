@@ -59,6 +59,10 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		return;
 	}
 	
+	if(m_finished){
+		return;
+	}
+
 	if(*m_mode_send_vertices_sequence_id%100000==0 &&m_mode_send_vertices_sequence_id_position==0){
 		string reverse="";
 		if(*m_reverseComplementVertex==true){
@@ -82,11 +86,9 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 
 			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, RAY_MPI_TAG_VERTICES_DISTRIBUTED,rank);
 			m_outbox->push_back(aMessage);
-			*m_mode_send_vertices=false;
-			(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
+			m_finished=true;
 			printf("Rank %i is computing vertices & edges [%i/%i] (completed)\n",rank,(int)*m_mode_send_vertices_sequence_id,(int)m_myReads->size());
 			fflush(stdout);
-			m_finished=true;
 		}
 	}else{
 		char*readSequence=(*m_myReads)[(*m_mode_send_vertices_sequence_id)]->getSeq();
@@ -231,9 +233,9 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 }
 
 void VerticesExtractor::constructor(int size,Parameters*parameters){
-m_distributionIsCompleted=false;
+	m_finished=false;
+	m_distributionIsCompleted=false;
 	m_outbox=NULL;
-	m_mustFlushBuffers=false;
 	m_mode_send_vertices_sequence_id_position=0;
 	m_hasPreviousVertex=false;
 	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
@@ -251,7 +253,6 @@ m_distributionIsCompleted=false;
 	m_reductionPeriod=parameters->getReducerValue();
 	
 	m_triggered=false;
-	m_finished=false;
 	m_mustTriggerReduction=false;
 	m_thresholdForReduction=9999999999999;
 }
@@ -265,10 +266,6 @@ void VerticesExtractor::setReadiness(){
 	assert(m_pendingMessages>0);
 	#endif
 	m_pendingMessages--;
-
-	if(m_mustFlushBuffers){
-		flushBuffers(m_rank,m_outbox,m_outboxAllocator);
-	}
 }
 
 bool VerticesExtractor::mustRunReducer(){
@@ -389,22 +386,36 @@ void VerticesExtractor::checkPendingMessagesForReduction(StaticVector*outbox,int
  *
  */
 bool VerticesExtractor::deleteVertices(vector<uint64_t>*verticesToRemove,MyForest*subgraph,Parameters*parameters,RingAllocator*m_outboxAllocator,
-	StaticVector*m_outbox
+	StaticVector*m_outbox,map<uint64_t,vector<uint64_t> >*ingoingEdges,map<uint64_t,vector<uint64_t> >*outgoingEdges
 ){
+	#ifdef ASSERT
+	assert(m_pendingMessages>=0);
+	#endif
+
 	if(m_pendingMessages!=0){
 		return false;
 	}
 
+	#ifdef ASSERT
+	assert(m_bufferedDataForIngoingEdges.isEmpty());
+	assert(m_bufferedDataForOutgoingEdges.isEmpty());
+	#endif
+
 	int size=parameters->getSize();
 	int rank=parameters->getRank();
+	//int m_wordSize=parameters->getWordSize();
+
 	bool color=parameters->getColorSpaceMode();
 	int wordSize=parameters->getWordSize();
 
 	if(!m_deletionsInitiated){
 		m_deletionsInitiated=true;
 		m_deletionIterator=0;
+
 		#ifdef ASSERT
 		assert(m_bufferedData.isEmpty());
+		assert(m_buffersForIngoingEdgesToDelete.isEmpty());
+		assert(m_buffersForOutgoingEdgesToDelete.isEmpty());
 		#endif
 	}else if(m_deletionIterator<(uint64_t)verticesToRemove->size()){
 		uint64_t vertex=verticesToRemove->at(m_deletionIterator);
@@ -423,16 +434,112 @@ bool VerticesExtractor::deleteVertices(vector<uint64_t>*verticesToRemove,MyFores
 		if(m_bufferedData.flush(rankToFlush,1,RAY_MPI_TAG_DELETE_VERTEX,m_outboxAllocator,m_outbox,rank,false)){
 			m_pendingMessages++;
 		}
+
+		// using ingoing edges, tell parents to delete the associated outgoing edge
+		// a maximum of 4 messages will be released
+
+		vector<uint64_t>ingoingEdgesForDirect=(*ingoingEdges)[vertex];
+
+		#ifdef ASSERT
+		assert(ingoingEdgesForDirect.size()>=0);
+		assert(ingoingEdgesForDirect.size()<=4);
+		#endif
+
+		for(int j=0;j<(int)ingoingEdgesForDirect.size();j++){
+			uint64_t prefix=ingoingEdgesForDirect[j];
+			uint64_t suffix=vertex;
+			int rankToFlush=vertexRank(prefix,size);
+			m_buffersForOutgoingEdgesToDelete.addAt(rankToFlush,prefix);
+			m_buffersForOutgoingEdgesToDelete.addAt(rankToFlush,suffix);
+
+			if(m_buffersForOutgoingEdgesToDelete.flush(rankToFlush,2,RAY_MPI_TAG_DELETE_OUTGOING_EDGE,m_outboxAllocator,m_outbox,rank,false)){
+				incrementPendingMessages();
+			}
+
+			// flush RC too
+			// XXX: I am not sure that this procedure works too for color space, must verify.
+			prefix=rcVertex;
+			suffix=complementVertex(ingoingEdgesForDirect[j],wordSize,color);
+			rankToFlush=vertexRank(suffix,size);
+
+			m_buffersForIngoingEdgesToDelete.addAt(rankToFlush,prefix);
+			m_buffersForIngoingEdgesToDelete.addAt(rankToFlush,suffix);
+
+			if(m_buffersForIngoingEdgesToDelete.flush(rankToFlush,2,RAY_MPI_TAG_DELETE_INGOING_EDGE,m_outboxAllocator,m_outbox,rank,false)){
+				incrementPendingMessages();
+			}
+
+		}
+
+		vector<uint64_t>outgoingEdgesForDirect=(*outgoingEdges)[vertex];
+
+		#ifdef ASSERT
+		assert(outgoingEdgesForDirect.size()>=0);
+		assert(outgoingEdgesForDirect.size()<=4);
+
+		if(idToWord(vertex,wordSize)=="GCGGCTAGTTTTCTAGTTTGA"){
+			cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" processed Direct GCGGCTAGTTTTCTAGTTTGA IN="<<ingoingEdgesForDirect.size()<<" OUT="<<outgoingEdgesForDirect.size()<<" OutStorage="<<outgoingEdges->size()<<" InStorage="<<ingoingEdges->size()<<endl;
+		}
+
+		if(idToWord(rcVertex,wordSize)=="GCGGCTAGTTTTCTAGTTTGA"){
+			cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" processed Reverse GCGGCTAGTTTTCTAGTTTGA IN="<<ingoingEdgesForDirect.size()<<" OUT="<<outgoingEdgesForDirect.size()<<endl;
+			
+		}
+		#endif
+
+		// using outgoing edges, tell children to delete the associated ingoing edge
+		// a maximum of 4 messages will be released
+		for(int j=0;j<(int)outgoingEdgesForDirect.size();j++){
+			uint64_t prefix=vertex;
+			uint64_t suffix=outgoingEdgesForDirect[j];
+			int rankToFlush=vertexRank(suffix,size);
+			m_buffersForIngoingEdgesToDelete.addAt(rankToFlush,prefix);
+			m_buffersForIngoingEdgesToDelete.addAt(rankToFlush,suffix);
+
+			if(m_buffersForIngoingEdgesToDelete.flush(rankToFlush,2,RAY_MPI_TAG_DELETE_INGOING_EDGE,m_outboxAllocator,m_outbox,rank,false)){
+				incrementPendingMessages();
+			}
+
+			// flush RC too
+			// XXX: I am not sure that this procedure works too for color space, must verify.
+			prefix=complementVertex(outgoingEdgesForDirect[j],wordSize,color);
+			suffix=rcVertex;
+			rankToFlush=vertexRank(prefix,size);
+
+			m_buffersForOutgoingEdgesToDelete.addAt(rankToFlush,prefix);
+			m_buffersForOutgoingEdgesToDelete.addAt(rankToFlush,suffix);
+
+			if(m_buffersForOutgoingEdgesToDelete.flush(rankToFlush,2,RAY_MPI_TAG_DELETE_OUTGOING_EDGE,m_outboxAllocator,m_outbox,rank,false)){
+				incrementPendingMessages();
+			}
+		}
+
+		// a a maximum of 17 messages will be released in total.
 	}else{
 		if(!m_bufferedData.isEmpty()){
 			m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_DELETE_VERTEX,m_outboxAllocator,m_outbox,rank);
+			return false;
+		}
+
+		if(!m_buffersForIngoingEdgesToDelete.isEmpty()){
+			m_pendingMessages+=m_buffersForIngoingEdgesToDelete.flushAll(RAY_MPI_TAG_DELETE_INGOING_EDGE,m_outboxAllocator,m_outbox,rank);
+			return false;
+		}
+	
+		if(!m_buffersForOutgoingEdgesToDelete.isEmpty()){
+			m_pendingMessages+=m_buffersForOutgoingEdgesToDelete.flushAll(RAY_MPI_TAG_DELETE_OUTGOING_EDGE,m_outboxAllocator,m_outbox,rank);
+			return false;
 		}
 
 		if(m_pendingMessages==0){
+
 			#ifdef ASSERT
 			assert(m_pendingMessages==0);
 			assert(m_bufferedData.isEmpty());
+			assert(m_buffersForOutgoingEdgesToDelete.isEmpty());
+			assert(m_buffersForIngoingEdgesToDelete.isEmpty());
 			#endif
+
 			return true;
 		}
 	}
@@ -441,37 +548,6 @@ bool VerticesExtractor::deleteVertices(vector<uint64_t>*verticesToRemove,MyFores
 
 void VerticesExtractor::prepareDeletions(){
 	m_deletionsInitiated=false;
-}
-
-void VerticesExtractor::flushBuffers(int rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator){
-	m_mustFlushBuffers=true;
-	if(!m_buffersForIngoingEdgesToDelete.isEmpty()){// not empty
-		m_pendingMessages+=m_buffersForIngoingEdgesToDelete.flushAll(RAY_MPI_TAG_DELETE_INGOING_EDGE,m_outboxAllocator,m_outbox,rank);
-		#ifdef ASSERT
-		assert(m_pendingMessages>0); // flushed something
-		#endif
-		return;
-	}
-
-	if(!m_buffersForOutgoingEdgesToDelete.isEmpty()){// not empty
-		m_pendingMessages+=m_buffersForOutgoingEdgesToDelete.flushAll(RAY_MPI_TAG_DELETE_OUTGOING_EDGE,m_outboxAllocator,m_outbox,rank);
-		#ifdef ASSERT
-		assert(m_pendingMessages>0);// flushed something
-		#endif
-		return;
-	}
-
-	if(m_pendingMessages==0){
-		#ifdef ASSERT
-		assert(m_pendingMessages==0);
-		assert(m_buffersForOutgoingEdgesToDelete.isEmpty());
-		assert(m_buffersForIngoingEdgesToDelete.isEmpty());
-		#endif
-
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_UPDATE_THRESHOLD_REPLY,rank);
-		m_outbox->push_back(aMessage);
-		m_mustFlushBuffers=false;
-	}
 }
 
 void VerticesExtractor::incrementPendingMessages(){

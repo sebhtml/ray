@@ -233,6 +233,13 @@ void SeedingData::do_1_1_test(){
 				if(!m_SEEDING_vertexCoverageRequested){
 					uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 					message[0]=(uint64_t)m_SEEDING_receivedIngoingEdges[m_SEEDING_ingoingEdgeIndex];
+			
+					#ifdef ASSERT
+					if(idToWord(message[0],*m_wordSize)=="GCGGCTAGTTTTCTAGTTTGA"){
+						cout<<__FILE__<<" "<<__LINE__<< "Got GCGGCTAGTTTTCTAGTTTGA in IN"<<endl;
+					}
+					#endif
+
 					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0],getSize()),RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,getRank());
 					m_outbox->push_back(aMessage);
 					m_SEEDING_vertexCoverageRequested=true;
@@ -274,6 +281,13 @@ void SeedingData::do_1_1_test(){
 				if(!m_SEEDING_vertexCoverageRequested){
 					uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 					message[0]=(uint64_t)m_SEEDING_receivedOutgoingEdges[m_SEEDING_outgoingEdgeIndex];
+
+					#ifdef ASSERT
+					if(idToWord(message[0],*m_wordSize)=="GCGGCTAGTTTTCTAGTTTGA"){
+						cout<<__FILE__<<" "<<__LINE__<<" GOT GCGGCTAGTTTTCTAGTTTGA from OUT"<<endl;
+					}
+					#endif
+
 					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0],getSize()),RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,getRank());
 					m_outbox->push_back(aMessage);
 					m_SEEDING_vertexCoverageRequested=true;

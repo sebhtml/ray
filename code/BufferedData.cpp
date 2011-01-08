@@ -119,7 +119,7 @@ bool BufferedData::flush(int destination,int period,int tag,RingAllocator*outbox
 	}
 
 	#ifdef ASSERT
-	assert(threshold<MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	assert(threshold<=(int)(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)));
 	#endif
 
 	int amount=size(destination);
@@ -131,7 +131,12 @@ bool BufferedData::flush(int destination,int period,int tag,RingAllocator*outbox
 	}
 	#ifdef ASSERT
 	assert(amount>0);
+	if(!force && amount>threshold){
+		cout<<"Threshold is exceeded "<<amount<<" & "<<threshold<<" tag="<<tag<<endl;
+	}
+	assert(force || amount<=threshold);
 	#endif
+
 	uint64_t*message=(uint64_t*)outboxAllocator->allocate(amount*sizeof(uint64_t));
 	for(int i=0;i<amount;i++){
 		message[i]=getAt(destination,i);
