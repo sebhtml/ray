@@ -91,7 +91,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 
 	// -->  all files were processed.
 	}else if((m_distribution_file_id)>(int)allFiles.size()-1){
-		(*m_master_mode)=RAY_MASTER_RAY_SLAVE_MODE_DO_NOTHING;
+		(*m_master_mode)=RAY_MASTER_MODE_DO_NOTHING;
 		(*m_loadSequenceStep)=true;
 
 		for(int i=0;i<size;i++){
