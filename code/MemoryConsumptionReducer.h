@@ -35,7 +35,7 @@ using namespace std;
 
 class MemoryConsumptionReducer{
 	int m_pendingMessages;
-	set<int> m_processedTasks;
+	set<int>*m_processedTasks;
 	BufferedData m_bufferedData;
 
 	uint64_t m_counter;
@@ -50,20 +50,22 @@ class MemoryConsumptionReducer{
 	DepthFirstSearchData m_dfsDataOutgoing;
 	SplayNode<uint64_t,Vertex>*m_firstVertex;
 
-	vector<uint64_t> m_toRemove;
-	map<uint64_t,vector<uint64_t> >m_ingoingEdges;
-	map<uint64_t,vector<uint64_t> >m_outgoingEdges;
+	vector<uint64_t>*m_toRemove;
+	map<uint64_t,vector<uint64_t> >*m_ingoingEdges;
+	map<uint64_t,vector<uint64_t> >*m_outgoingEdges;
+
+
+	vector<vector<uint64_t> >*m_confettiToCheck;
+	vector<int>*m_confettiMaxCoverage;
 
 	int m_maximumDepth;
+
 	bool isCandidate(SplayNode<uint64_t,Vertex>*node,int wordSize);
 	
 	void printCounter(Parameters*parameters,MyForest*a);
 
 	bool isJunction(uint64_t vertex,map<uint64_t,vector<uint64_t> >*edges,int wordSize);
 	vector<uint64_t> computePath(map<uint64_t,vector<uint64_t> >*edges,uint64_t start,uint64_t end,set<uint64_t>*visited);
-
-	vector<vector<uint64_t> > m_confettiToCheck;
-	vector<int> m_confettiMaxCoverage;
 
 	void getPermutations(uint64_t kmer,int length,vector<uint64_t>*output,int wordSize);
 
@@ -88,6 +90,9 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 
 	map<uint64_t,vector<uint64_t> >*getIngoingEdges();
 	map<uint64_t,vector<uint64_t> >*getOutgoingEdges();
+
+	void constructor();
+	void destructor();
 };
 
 #endif

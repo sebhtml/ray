@@ -172,9 +172,8 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	if(!m_initiated){
 		m_counter=0;
 		m_initiated=true;
-		m_toRemove.clear();
-		m_ingoingEdges.clear();
-		m_outgoingEdges.clear();
+
+		constructor();
 
 /*
 		if((int)m_confettiToCheck.size()>0){
@@ -183,9 +182,6 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 		}
 */
 
-		m_processedTasks.clear();
-		m_confettiToCheck.clear();
-		m_confettiMaxCoverage.clear();
 
 		m_currentVertexIsDone=false;
 		m_hasSetVertex=false;
@@ -375,7 +371,8 @@ edgesReceived,parameters
 						if(maximumDepth>wordSize&&(int)path.size()<=wordSize){
 							foundDestination=true;
 						}
-						if(maximumCoverageInPath>=minimumCoverageInOtherPath){
+						if(maximumCoverageInPath>=minimumCoverageInOtherPath
+							|| maximumCoverageInPath>3){
 							isLow=true;
 							foundDestination=false;
 						}
@@ -418,17 +415,18 @@ edgesReceived,parameters
 							// request the validity of the <path.size()
 							
 							int positionsToCheck=wordSize-path.size();
-							int uniqueId=m_confettiToCheck.size();
-							m_confettiToCheck.push_back(path);
-							m_confettiMaxCoverage.push_back(maximumCoverageInPath);
+							int uniqueId=m_confettiToCheck->size();
+							m_confettiToCheck->push_back(path);
+							m_confettiMaxCoverage->push_back(maximumCoverageInPath);
+
 							uint64_t root=path[0];
 							vector<uint64_t> kMersToCheck;
 							getPermutations(root,positionsToCheck,&kMersToCheck,wordSize);
 							
 							for(int u=0;u<(int)path.size();u++){	
 								uint64_t kmer=path[u];
-								m_ingoingEdges[kmer]=(*(m_dfsDataOutgoing.getIngoingEdges()))[kmer];
-								m_outgoingEdges[kmer]=(*(m_dfsDataOutgoing.getOutgoingEdges()))[kmer];
+								(*m_ingoingEdges)[kmer]=(*(m_dfsDataOutgoing.getIngoingEdges()))[kmer];
+								(*m_outgoingEdges)[kmer]=(*(m_dfsDataOutgoing.getOutgoingEdges()))[kmer];
 							}
 
 							// push queries in a buffer
@@ -446,21 +444,22 @@ edgesReceived,parameters
 				}
 
 				bool processed=false;
+
 				if(foundDestination){
 					if(processed&&parameters->getRank()==MASTER_RANK){
 						cout<<"removed "<<path.size()<<endl;
 					}
 					for(int u=0;u<(int)path.size();u++){
-						m_toRemove.push_back(path[u]);
+						m_toRemove->push_back(path[u]);
 						uint64_t vertex=path[u];
 			
-						m_ingoingEdges[vertex]=(*(m_dfsDataOutgoing.getIngoingEdges()))[vertex];
+						(*m_ingoingEdges)[vertex]=(*(m_dfsDataOutgoing.getIngoingEdges()))[vertex];
 
-						m_outgoingEdges[vertex]=(*(m_dfsDataOutgoing.getOutgoingEdges()))[vertex];
+						(*m_outgoingEdges)[vertex]=(*(m_dfsDataOutgoing.getOutgoingEdges()))[vertex];
 
 						#ifdef ASSERT
 						if(idToWord(vertex,wordSize)=="GCGGCTAGTTTTCTAGTTTGA"){
-							cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" Vertex="<<vertex<<" IN="<<m_ingoingEdges[vertex].size()<<" OUT="<<m_outgoingEdges[vertex].size()<<endl;
+							cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" Vertex="<<vertex<<" IN="<<(*m_ingoingEdges)[vertex].size()<<" OUT="<<(*m_outgoingEdges)[vertex].size()<<endl;
 						}
 						#endif
 
@@ -550,7 +549,7 @@ edgesReceived,parameters
 }
 
 int MemoryConsumptionReducer::getNumberOfRemovedVertices(){
-	return m_toRemove.size();
+	return m_toRemove->size();
 }
 
 bool MemoryConsumptionReducer::isCandidate(SplayNode<uint64_t,Vertex>*m_firstVertex,int wordSize){
@@ -571,7 +570,7 @@ void MemoryConsumptionReducer::printCounter(Parameters*parameters,MyForest*fores
 }
 
 vector<uint64_t>*MemoryConsumptionReducer::getVerticesToRemove(){
-	return &m_toRemove;
+	return m_toRemove;
 }
 
 void MemoryConsumptionReducer::constructor(int size){
@@ -583,27 +582,45 @@ void MemoryConsumptionReducer::processConfetti(uint64_t*a,int b){
 	for(int i=0;i<b;i+=2){
 		int task=a[i+0];
 		int coverage=a[i+1];
-		if(m_processedTasks.count(task)>0){
+		if(m_processedTasks->count(task)>0){
 			continue;
 		}
-		m_processedTasks.insert(task);
-		vector<uint64_t>*vertices=&m_confettiToCheck[task];
-		int maxCoverage=m_confettiMaxCoverage[task];
+		m_processedTasks->insert(task);
+		vector<uint64_t>*vertices=&(*m_confettiToCheck)[task];
+		int maxCoverage=(*m_confettiMaxCoverage)[task];
 		if(coverage<maxCoverage){
 			continue;
 		}
 		for(int j=0;j<(int)vertices->size();j++){
 			uint64_t vertex=vertices->at(j);
-			m_toRemove.push_back(vertex);
+			m_toRemove->push_back(vertex);
 		}
 	}
 	m_pendingMessages--;
 }
 
 map<uint64_t,vector<uint64_t> >*MemoryConsumptionReducer::getIngoingEdges(){
-	return &m_ingoingEdges;
+	return m_ingoingEdges;
 }
 
 map<uint64_t,vector<uint64_t> >*MemoryConsumptionReducer::getOutgoingEdges(){
-	return &m_outgoingEdges;
+	return m_outgoingEdges;
+}
+
+void MemoryConsumptionReducer::destructor(){
+	delete m_toRemove;
+	delete m_ingoingEdges;
+	delete m_outgoingEdges;
+	delete m_processedTasks;
+	delete m_confettiToCheck;
+	delete m_confettiMaxCoverage;
+}
+
+void MemoryConsumptionReducer::constructor(){
+	m_toRemove=new vector<uint64_t>;
+	m_ingoingEdges=new map<uint64_t,vector<uint64_t> >;
+	m_outgoingEdges=new map<uint64_t,vector<uint64_t> >;
+	m_processedTasks=new set<int>;
+	m_confettiToCheck=new vector<vector<uint64_t> >;
+	m_confettiMaxCoverage=new vector<int>;
 }

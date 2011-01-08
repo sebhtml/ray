@@ -1240,6 +1240,7 @@ m_reducer.getIngoingEdges(),m_reducer.getOutgoingEdges()
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_DELETE_VERTICES_DONE,getRank());
 		m_outbox.push_back(aMessage);
 		m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
+		m_reducer.destructor();
 	}
 }
 
