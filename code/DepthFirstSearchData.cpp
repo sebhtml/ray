@@ -153,7 +153,9 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
  int*receivedVertexCoverage,vector<uint64_t>*receivedOutgoingEdges,
 		int minimumCoverage,bool*edgesReceived,Parameters*parameters){
 
-	//int wordSize=parameters->getWordSize();
+	#ifdef ASSERT
+	int wordSize=parameters->getWordSize();
+	#endif
 
 	if(!m_doChoice_tips_dfs_initiated){
 		m_outgoingEdges.clear();
