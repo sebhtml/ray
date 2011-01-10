@@ -51,6 +51,8 @@ class MessageProcessor;
 typedef void (MessageProcessor::*FNMETHOD) (Message*message);
 
 class MessageProcessor{
+	int m_count;
+
 	MemoryConsumptionReducer*m_reducer;
 	uint64_t m_lastSize;
 

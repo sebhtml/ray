@@ -284,7 +284,7 @@ string addLineBreaks(string dna){
 	return output.str();
 }
 
-//#define MALLOC_DEBUG
+#define MALLOC_DEBUG
 
 // malloc with a memory verification.
 void*__Malloc(int c){
@@ -298,7 +298,7 @@ void*__Malloc(int c){
 	assert(c!=0);
 
 	#ifdef MALLOC_DEBUG
-	printf("allocating %i bytes, returning %p\n",c,a);
+	printf("%s %i %s %i bytes, ret %p\n",__FILE__,__LINE__,__func__,c,a);
 	fflush(stdout);
 	#endif
 	return a;
@@ -312,7 +312,7 @@ void*__Realloc(void*a,int b){
 	assert(a!=NULL);
 
 	#ifdef MALLOC_DEBUG
-	printf("reallocating %i bytes, returning %p\n",b,a);
+	printf("%s %i %s %i bytes, ret %p\n",__FILE__,__LINE__,__func__,b,a);
 	fflush(stdout);
 	#endif
 
@@ -321,7 +321,7 @@ void*__Realloc(void*a,int b){
 
 void __Free(void*a){
 	#ifdef MALLOC_DEBUG
-	printf("freeing %p\n",a);
+	printf("%s %i %s %p\n",__FILE__,__LINE__,__func__,a);
 	fflush(stdout);
 	#endif
 

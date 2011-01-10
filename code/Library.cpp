@@ -37,7 +37,6 @@ void Library::updateDistances(){
 	int*intMessage=(int*)message;
 	intMessage[0]=libraries;
 
-
 	for(int i=0;i<libraries;i++){
 		int average=m_parameters->getFragmentLength(i);
 		int deviation=m_parameters->getStandardDeviation(i);

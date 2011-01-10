@@ -373,6 +373,7 @@ void MessageProcessor::call_RAY_MPI_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_
 
 	int source=message->getSource();
 	printf("Rank %i has %i sequence reads\n",rank,(int)(*m_myReads).size());
+	//printf("%i\n",m_count);
 	fflush(stdout);
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_SEQUENCES_READY,rank);
 	m_outbox->push_back(aMessage);
@@ -973,6 +974,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message){
 	int count=message->getCount();
 	uint64_t*incoming=(uint64_t*)buffer;
 	for(int i=0;i<count;i+=4){
+		m_count++;
 		uint64_t vertex=incoming[i+0];
 		int rank=incoming[i+1];
 		int sequenceIdOnDestination=(int)incoming[i+2];
@@ -1354,7 +1356,7 @@ void MessageProcessor::call_RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE(Message*message){
 		PaddedData padded;
 		padded.large[0]=incoming[i+0];
 		padded.large[1]=incoming[i+1];
-
+		
 		int currentReadId=padded.medium[0];
 		int otherRank=padded.medium[1];
 		int otherId=padded.medium[2];
@@ -1759,6 +1761,8 @@ int*m_numberOfRanksWithCoverageData,
 SeedExtender*seedExtender,int*m_master_mode,
 bool*m_isFinalFusion,
 SequencesIndexer*m_si){
+	m_count=0;
+
 	this->m_sequencesLoader=sequencesLoader;
 	this->m_verticesExtractor=m_verticesExtractor;
 	this->m_ed=ed;
