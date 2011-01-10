@@ -125,7 +125,7 @@ bool BufferedData::flush(int destination,int period,int tag,RingAllocator*outbox
 
 	int threshold=0;
 	if(!force){
-		threshold=m_capacity/period*period;
+		threshold=(m_capacity/period)*period;
 	}
 
 	#ifdef ASSERT
@@ -158,7 +158,7 @@ bool BufferedData::flush(int destination,int period,int tag,RingAllocator*outbox
 }
 
 bool BufferedData::needsFlushing(int destination,int period){
-	int threshold=m_capacity/period*period;
+	int threshold=(m_capacity/period)*period;
 	int amount=size(destination);
 	return amount>=threshold;
 }

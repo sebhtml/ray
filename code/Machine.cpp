@@ -135,6 +135,12 @@ void Machine::start(){
 	m_inboxAllocator.constructor(MAX_ALLOCATED_MESSAGES_IN_INBOX,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	m_outboxAllocator.constructor(m_maximumAllocatedOutputBuffers,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
+	printf("m_inboxAllocator: %i\n",MAX_ALLOCATED_MESSAGES_IN_INBOX);
+	printf("m_outboxAllocator: %i\n",m_maximumAllocatedOutputBuffers);
+	printf("inbox: %i\n",MAX_ALLOCATED_MESSAGES_IN_INBOX);
+	printf("outbox: %i\n",MAX_ALLOCATED_MESSAGES_IN_OUTBOX);
+	fflush(stdout);
+
 	m_inbox.constructor(MAX_ALLOCATED_MESSAGES_IN_INBOX);
 	m_outbox.constructor(MAX_ALLOCATED_MESSAGES_IN_OUTBOX);
 
