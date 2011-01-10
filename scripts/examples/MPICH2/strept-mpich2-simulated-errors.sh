@@ -1,5 +1,7 @@
 # run reducer too.
 
+rm -f strept-mpich2.fasta
+
 mpirun -np 31 ~/Ray/trunk/code/Ray \
 -p /home/boiseb01/nuccore/Left-errors.fasta \
    /home/boiseb01/nuccore/Right-errors.fasta \

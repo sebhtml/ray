@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -90,7 +90,6 @@ class Machine{
 	
 	// always 1
 	int MAX_ALLOCATED_MESSAGES_IN_INBOX;
-	int m_maxNumberOfSentMessages;
 
 	Library m_library;
 	int m_currentCycleStep;
@@ -156,7 +155,7 @@ class Machine{
 
 	int m_numberOfRanksDoneDetectingDistances;
 	// read, strand, position
-	map<u64,int > m_readsPositions;
+	map<uint64_t,int > m_readsPositions;
 	int m_numberOfRanksDoneSendingDistances;
 
 

@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -155,9 +155,9 @@ void SeedingData::computeSeeds(){
 					// dump the reverse and keep the forward
 
 					m_SEEDING_seeds.push_back(m_SEEDING_seed);
-					u64 firstVertex=m_SEEDING_seed[0];
-					u64 lastVertex=m_SEEDING_seed[m_SEEDING_seed.size()-1];
-					u64 lastVertexReverse=complementVertex(lastVertex,(*m_wordSize),(*m_colorSpaceMode));
+					uint64_t firstVertex=m_SEEDING_seed[0];
+					uint64_t lastVertex=m_SEEDING_seed[m_SEEDING_seed.size()-1];
+					uint64_t lastVertexReverse=complementVertex(lastVertex,(*m_wordSize),(*m_colorSpaceMode));
 					int aRank=vertexRank(firstVertex,getSize());
 					int bRank=vertexRank(lastVertexReverse,getSize());
 

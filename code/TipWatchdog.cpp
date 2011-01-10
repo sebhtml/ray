@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -23,7 +23,7 @@
 
 #include<TipWatchdog.h>
 
-bool TipWatchdog::getApproval(ExtensionData*ed,DepthFirstSearchData*dfsData,int minimumCoverage,u64 SEEDING_currentVertex,
+bool TipWatchdog::getApproval(ExtensionData*ed,DepthFirstSearchData*dfsData,int minimumCoverage,uint64_t SEEDING_currentVertex,
 	int w,BubbleData*bubbleData){
 	int readsInFavorOfThis=ed->m_EXTENSION_readPositionsForVertices[dfsData->m_doChoice_tips_newEdges[0]].size();
 	int coverageAtTheVertexLocation=ed->m_EXTENSION_coverages[dfsData->m_doChoice_tips_newEdges[0]];

@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -235,6 +235,8 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 				message[0]=vertexToVisit;
 				int destination=vertexRank(vertexToVisit,size);
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_REQUEST_VERTEX_EDGES,theRank);
+				//cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" RAY_MPI_TAG_REQUEST_VERTEX_EDGES "<<idToWord(vertexToVisit,wordSize)<<endl;
+
 				(*outbox).push_back(aMessage);
 				(*edgesRequested)=true;
 				(*edgesReceived)=false;
@@ -244,9 +246,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 
 				#ifdef ASSERT
 	
-				if(idToWord(vertexToVisit,wordSize)=="GCGGCTAGTTTTCTAGTTTGA"){
-					cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" Vertex=GCGGCTAGTTTTCTAGTTTGA Output="<<receivedOutgoingEdges->size()<<endl;
-				}
+				//cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" Vertex=GCGGCTAGTTTTCTAGTTTGA Output="<<receivedOutgoingEdges->size()<<endl;
 
 				assert(theDepth>=0);
 				assert(theDepth<=maxDepth);
@@ -345,9 +345,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 				#ifdef ASSERT
 				assert(m_ingoingEdges.count(vertexToVisit)==0);
 	
-				if(idToWord(vertexToVisit,wordSize)=="GCGGCTAGTTTTCTAGTTTGA"){
-					cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" Vertex=GCGGCTAGTTTTCTAGTTTGA IN="<<ingoingEdges.size()<<" OUT="<<outgoingEdges.size()<<endl;
-				}
+				//cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" Vertex=GCGGCTAGTTTTCTAGTTTGA IN="<<ingoingEdges.size()<<" OUT="<<outgoingEdges.size()<<endl;
 				#endif
 
 				m_ingoingEdges[vertexToVisit]=ingoingEdges;

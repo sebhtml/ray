@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -191,7 +191,6 @@ bool isValidDNA(const char*x){
 	return true;
 }
 
-
 /*
  * 
  *   63 (sizeof(uint64_t)*8-2) ... 1 0
@@ -274,12 +273,6 @@ uint64_t complementVertex_normal(uint64_t a,int m_wordSize){
 	return output;
 }
 
-
-
-
-
-
-
 string addLineBreaks(string dna){
 	ostringstream output;
 	int j=0;
@@ -291,17 +284,23 @@ string addLineBreaks(string dna){
 	return output.str();
 }
 
+//#define MALLOC_DEBUG
 
-/**
- * malloc with a memory verification.
- */
+// malloc with a memory verification.
 void*__Malloc(int c){
+
 	void*a=NULL;
 	a=malloc(c);
 	if(a==NULL){
 		cout<<"Critical exception: The system is out of memory, malloc returned NULL."<<endl;
 	}
 	assert(a!=NULL);
+	assert(c!=0);
+
+	#ifdef MALLOC_DEBUG
+	printf("allocating %i bytes, returning %p\n",c,a);
+	fflush(stdout);
+	#endif
 	return a;
 }
 
@@ -311,14 +310,23 @@ void*__Realloc(void*a,int b){
 		cout<<"Critical exception: The system is out of memory, malloc returned NULL."<<endl;
 	}
 	assert(a!=NULL);
+
+	#ifdef MALLOC_DEBUG
+	printf("reallocating %i bytes, returning %p\n",b,a);
+	fflush(stdout);
+	#endif
+
 	return a;
 }
 
 void __Free(void*a){
+	#ifdef MALLOC_DEBUG
+	printf("freeing %p\n",a);
+	fflush(stdout);
+	#endif
+
 	free(a);
 }
-
-
 
 uint8_t getFirstSegmentLastCode(uint64_t v,int totalLength,int segmentLength){
 	// ATCAGTTGCAGTACTGCAATCTACG
@@ -438,8 +446,6 @@ char*__basename(char*a){
 	return a+last+1;
 }
 
-
-
 uint64_t kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool color){
 	int length=strlen(m_sequence);
 	if(pos>length-w){
@@ -475,13 +481,13 @@ int roundNumber(int s,int alignment){
 	return ((s/alignment)+1)*alignment;
 }
 
-u64 getMicroSeconds(){
+uint64_t getMicroSeconds(){
 	struct timeval tv;
 	struct timezone tz;
 	struct tm *tm;
 	gettimeofday(&tv,&tz);
 	tm=localtime(&tv.tv_sec);
-	u64 milliSeconds=tm->tm_hour*60*60*1000*1000+tm->tm_min*60*1000*1000+tm->tm_sec*1000*1000+tv.tv_usec;
+	uint64_t milliSeconds=tm->tm_hour*60*60*1000*1000+tm->tm_min*60*1000*1000+tm->tm_sec*1000*1000+tv.tv_usec;
 	return milliSeconds;
 }
 

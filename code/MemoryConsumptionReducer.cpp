@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -574,7 +574,7 @@ vector<uint64_t>*MemoryConsumptionReducer::getVerticesToRemove(){
 }
 
 void MemoryConsumptionReducer::constructor(int size){
-	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t));
 	m_pendingMessages=0;
 }
 

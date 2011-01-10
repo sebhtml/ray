@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -46,15 +46,15 @@ class SeedExtender{
 	vector<Direction>m_receivedDirections;
 	EarlyStoppingTechnology m_earlyStoppingTechnology;
 	bool m_skippedASeed;
-	map<u64,char> m_readsStrands;
-	set<u64> m_eliminatedSeeds;
+	map<uint64_t,char> m_readsStrands;
+	set<uint64_t> m_eliminatedSeeds;
 	Parameters*m_parameters;
 	BubbleTool m_bubbleTool;
 
 public:
 
 	
-	map<u64,string> m_sequences;
+	map<uint64_t,string> m_sequences;
 	bool m_sequenceReceived;
 	bool m_sequenceRequested;
 	string m_receivedString;
@@ -62,7 +62,7 @@ public:
 
 	SeedExtender();
 
-	map<u64,PairedRead> m_pairedReads;
+	map<uint64_t,PairedRead> m_pairedReads;
 
 	void enumerateChoices(bool*edgesRequested,ExtensionData*ed,bool*edgesReceived,RingAllocator*outboxAllocator,
 		int*outgoingEdgeIndex,StaticVector*outbox,
@@ -72,10 +72,10 @@ int wordSize);
 
 
 	void checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector*outbox,RingAllocator*outboxAllocator,
-	 int*outgoingEdgeIndex,int*last_value,u64*currentVertex,int theRank,bool*vertexCoverageRequested,
+	 int*outgoingEdgeIndex,int*last_value,uint64_t*currentVertex,int theRank,bool*vertexCoverageRequested,
 	int wordSize,bool*colorSpaceMode,int size,vector<vector<uint64_t> >*seeds);
 
-	void markCurrentVertexAsAssembled(u64*currentVertex,RingAllocator*outboxAllocator,int*outgoingEdgeIndex,
+	void markCurrentVertexAsAssembled(uint64_t*currentVertex,RingAllocator*outboxAllocator,int*outgoingEdgeIndex,
  StaticVector*outbox,int size,int theRank,ExtensionData*ed,bool*vertexCoverageRequested,
 		bool*vertexCoverageReceived,int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,
 	bool*edgesRequested,
@@ -84,7 +84,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 
 
 
-	void extendSeeds(vector<vector<uint64_t> >*seeds,ExtensionData*ed,int theRank,StaticVector*outbox,u64*currentVertex,
+	void extendSeeds(vector<vector<uint64_t> >*seeds,ExtensionData*ed,int theRank,StaticVector*outbox,uint64_t*currentVertex,
 	FusionData*fusionData,RingAllocator*outboxAllocator,bool*edgesRequested,int*outgoingEdgeIndex,
 int*last_value,bool*vertexCoverageRequested,int wordSize,bool*colorSpaceMode,int size,bool*vertexCoverageReceived,
 int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,vector<uint64_t>*receivedOutgoingEdges,Chooser*chooser,
@@ -93,7 +93,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode);
 
 
 
-	void doChoice(RingAllocator*outboxAllocator,int*outgoingEdgeIndex,StaticVector*outbox,u64*currentVertex,
+	void doChoice(RingAllocator*outboxAllocator,int*outgoingEdgeIndex,StaticVector*outbox,uint64_t*currentVertex,
 ChooserData*cd,BubbleData*bubbleData,int theRank,DepthFirstSearchData*dfsData,int wordSize,
 ExtensionData*ed,int minimumCoverage,int maxCoverage,OpenAssemblerChooser*oa,Chooser*chooser,bool*colorSpaceMode,
 	vector<vector<uint64_t> >*seeds,
@@ -102,10 +102,10 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 
 	vector<Direction>*getDirections();
 
-	void storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<vector<uint64_t> >*seeds,u64*currentVertex,
+	void storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<vector<uint64_t> >*seeds,uint64_t*currentVertex,
 		BubbleData*bubbleData);
 
-	set<u64>*getEliminatedSeeds();
+	set<uint64_t>*getEliminatedSeeds();
 
 	void constructor(Parameters*parameters);
 };

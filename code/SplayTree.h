@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -70,7 +70,9 @@ public:
 
 template<class KEY,class VALUE>
 void SplayTree<KEY,VALUE>::clear(){
+	// the allocator will be released elsewhere
 	m_root=NULL;
+	m_allocator=NULL;
 }
 
 template<class KEY,class VALUE>

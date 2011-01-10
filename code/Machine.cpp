@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -80,7 +80,9 @@ Machine::Machine(int argc,char**argv){
 
 void Machine::start(){
 	m_ready=true;
-	int numberOfTrees=_FOREST_SIZE;
+	
+ 	// the number of splay trees in a forest.
+	int numberOfTrees=16384;
 
 	m_seedExtender.constructor(&m_parameters);
 
@@ -117,40 +119,38 @@ void Machine::start(){
 	char serverName[1000];
 	int len;
 	MPI_Get_processor_name(serverName,&len);
-
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
 	MPI_Comm_size(MPI_COMM_WORLD,&m_size);
 
-	//
-
-	m_maxNumberOfSentMessages=0;
 	MAX_ALLOCATED_MESSAGES_IN_OUTBOX=getSize();
+	MAX_ALLOCATED_MESSAGES_IN_INBOX=1;
 
 	// this peak is attained in VerticesExtractor::deleteVertices
-	int minimumMaximum=17; 
+	int m_maximumAllocatedOutputBuffers=17; 
 
-	if(MAX_ALLOCATED_MESSAGES_IN_OUTBOX<minimumMaximum){
-		MAX_ALLOCATED_MESSAGES_IN_OUTBOX=minimumMaximum;
+	if(MAX_ALLOCATED_MESSAGES_IN_OUTBOX<m_maximumAllocatedOutputBuffers){
+		MAX_ALLOCATED_MESSAGES_IN_OUTBOX=m_maximumAllocatedOutputBuffers;
 	}
 
-	m_outboxAllocator.constructor(MAX_ALLOCATED_MESSAGES_IN_OUTBOX,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-	
-	MAX_ALLOCATED_MESSAGES_IN_INBOX=1;
 	m_inboxAllocator.constructor(MAX_ALLOCATED_MESSAGES_IN_INBOX,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	m_outboxAllocator.constructor(m_maximumAllocatedOutputBuffers,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+
+	m_inbox.constructor(MAX_ALLOCATED_MESSAGES_IN_INBOX);
+	m_outbox.constructor(MAX_ALLOCATED_MESSAGES_IN_OUTBOX);
+
+	int PERSISTENT_ALLOCATOR_CHUNK_SIZE=16777216; // 16 MiB
 	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
-	m_directionsAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
 	m_treeAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
 
-	//
-	
+	int directionAllocatorChunkSize=4194304; // 4 MiB
+	m_directionsAllocator.constructor(directionAllocatorChunkSize);
+
 	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
 	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
 	m_mode_AttachSequences=false;
 	m_startEdgeDistribution=false;
 
 	m_ranksDoneAttachingReads=0;
-
-	m_reducer.constructor(getSize());
 
 	int pid=getpid();
 	printf("Rank %i is running as UNIX process %i on %s\n",getRank(),pid,serverName);
@@ -165,7 +165,7 @@ void Machine::start(){
     		cout<<"under certain conditions; see \"COPYING\" for details."<<endl;
 		cout<<"**************************************************"<<endl;
 		cout<<endl;
-		cout<<"Ray Copyright (C) 2010  Sébastien Boisvert, Jacques Corbeil, François Laviolette"<<endl;
+		cout<<"Ray Copyright (C) 2010, 2011  Sébastien Boisvert, Jacques Corbeil, François Laviolette"<<endl;
 		cout<<"Centre de recherche en infectiologie de l'Université Laval"<<endl;
 		cout<<"Project funded by the Canadian Institutes of Health Research (Doctoral award 200902CGM-204212-172830 to S.B.)"<<endl;
  		cout<<"http://denovoassembler.sf.net/"<<endl<<endl;
@@ -184,8 +184,11 @@ void Machine::start(){
 	MPI_Barrier(MPI_COMM_WORLD);
 	m_sl.constructor(m_size);
 
-	assert(getSize()<=MAX_NUMBER_OF_MPI_PROCESSES);
-	
+	int maximumNumberOfProcesses=65536;
+	if(getSize()>maximumNumberOfProcesses){
+		cout<<"The maximum number of processes is "<<maximumNumberOfProcesses<<" (this can be changed in the code)"<<endl;
+	}
+	assert(getSize()<=maximumNumberOfProcesses);
 
 	int version;
 	int subversion;
@@ -231,6 +234,7 @@ void Machine::start(){
 		cout<<"Rank "<<MASTER_RANK<<": compiled with assertions"<<endl;
 		#endif
 
+		cout<<"Rank "<<MASTER_RANK<<": the maximum size of a message is "<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<" bytes"<<endl;
 		cout<<endl;
 		m_timePrinter.printElapsedTime("Beginning of computation");
 		cout<<endl;
@@ -430,12 +434,23 @@ void Machine::sendMessages(){
 	}
 
 	assert(messagesToSend<=MAX_ALLOCATED_MESSAGES_IN_OUTBOX);
-	if(messagesToSend>m_maxNumberOfSentMessages){
-		m_maxNumberOfSentMessages=messagesToSend;
-	}
 	if(messagesToSend>MAX_ALLOCATED_MESSAGES_IN_OUTBOX){
 		cout<<"Tag="<<m_outbox[0]->getTag()<<" n="<<messagesToSend<<" max="<<MAX_ALLOCATED_MESSAGES_IN_OUTBOX<<endl;
 	}
+
+	set<uint64_t> pointers;
+
+	for(int i=0;i<(int)m_outbox.size();i++){
+		void*buffer=m_outbox.at(i)->getBuffer();
+		if(buffer!=NULL){
+			uint64_t val=(uint64_t)buffer;
+			pointers.insert(val);
+		}
+	}
+	int uniquePointers=pointers.size();
+	
+	// make sure no overflow occur.
+	assert(uniquePointers<=m_outboxAllocator.getSize());
 	#endif
 
 	m_messagesHandler.sendMessages(&m_outbox,getRank());

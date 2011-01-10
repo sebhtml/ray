@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -41,7 +41,7 @@ int PairedRead::getId(){
 	return m_readIndex;
 }
 
-u64 PairedRead::getUniqueId(){
+uint64_t PairedRead::getUniqueId(){
 	return m_readIndex*MAX_NUMBER_OF_MPI_PROCESSES+m_rank;
 }
 

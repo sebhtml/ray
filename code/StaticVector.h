@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -36,9 +36,11 @@ class StaticVector{
 public:
 	StaticVector();
 	Message*operator[](int i);
+	Message*at(int i);
 	void push_back(Message a);
 	int size();
 	void clear();
+	void constructor(int size);
 };
 
 #endif

@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -28,7 +28,7 @@
 
 class TipWatchdog{
 public:
-	bool getApproval(ExtensionData*ed,DepthFirstSearchData*dfsData,int minimumCoverage,u64 currentVertex,int w,
+	bool getApproval(ExtensionData*ed,DepthFirstSearchData*dfsData,int minimumCoverage,uint64_t currentVertex,int w,
 		BubbleData*bubbleData);
 };
 

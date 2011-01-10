@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -51,7 +51,7 @@ ReadAnnotation*ReadAnnotation::getNext()const{
 	return m_next;
 }
 
-u64 ReadAnnotation::getUniqueId()const{
+uint64_t ReadAnnotation::getUniqueId()const{
 	return m_readIndex*MAX_NUMBER_OF_MPI_PROCESSES+m_rank;
 }
 

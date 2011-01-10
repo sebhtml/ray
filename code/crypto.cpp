@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -20,7 +20,6 @@
 */
 
 #include<crypto.h>
-
 
 /*
  * Basically, we take a 64-bit unsigned integer (the sign does not matter..)

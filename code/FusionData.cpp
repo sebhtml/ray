@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -72,7 +72,7 @@ void FusionData::constructor(int size,int max,int rank,StaticVector*outbox,
 	m_seedingData=seedingData;
 	m_mode=mode;
 	m_ed=ed;
-	m_buffers.constructor(size,max);
+	m_buffers.constructor(size,max/sizeof(uint64_t));
 	m_size=size;
 	m_rank=rank;
 	m_outbox=outbox;

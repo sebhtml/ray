@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -25,9 +25,16 @@
 #include<RingAllocator.h>
 #include<StaticVector.h>
 
+#define DEBUG_BUFFERS
+// the capacity is measured in uint64_t
 void BufferedData::constructor(int numberOfRanks,int capacity){
+	#ifdef DEBUG_BUFFERS
+	printf("BufferedData::constructor\n");
+	fflush(stdout);
+	#endif
+
 	m_sizes=(int*)__Malloc(sizeof(int)*numberOfRanks);
-	m_data=(u64*)__Malloc(sizeof(u64)*capacity*numberOfRanks);
+	m_data=(uint64_t*)__Malloc(sizeof(uint64_t)*capacity*numberOfRanks);
 	for(int i=0;i<(int)numberOfRanks;i++){
 		m_sizes[i]=0;
 	}
@@ -52,16 +59,19 @@ void BufferedData::clear(){
 
 int BufferedData::size(int i)const{
 	#ifdef ASSERT
+	if(i>=m_ranks){
+		cout<<"i="<<i<<" m_ranks="<<m_ranks<<endl;
+	}
 	assert(i<m_ranks);
 	#endif
 	return m_sizes[i];
 }
 
-u64 BufferedData::getAt(int i,int j){
+uint64_t BufferedData::getAt(int i,int j){
 	return m_data[i*m_capacity+j];
 }
 
-void BufferedData::addAt(int i,u64 k){
+void BufferedData::addAt(int i,uint64_t k){
 	int j=size(i);
 	m_data[i*m_capacity+j]=k;
 	m_sizes[i]++;
@@ -115,11 +125,11 @@ bool BufferedData::flush(int destination,int period,int tag,RingAllocator*outbox
 
 	int threshold=0;
 	if(!force){
-		threshold=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)/period*period;
+		threshold=m_capacity/period*period;
 	}
 
 	#ifdef ASSERT
-	assert(threshold<=(int)(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)));
+	assert(threshold<=m_capacity);
 	#endif
 
 	int amount=size(destination);
@@ -148,7 +158,7 @@ bool BufferedData::flush(int destination,int period,int tag,RingAllocator*outbox
 }
 
 bool BufferedData::needsFlushing(int destination,int period){
-	int threshold=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)/period*period;
+	int threshold=m_capacity/period*period;
 	int amount=size(destination);
 	return amount>=threshold;
 }

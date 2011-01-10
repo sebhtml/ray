@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -58,7 +58,7 @@ class MessageProcessor{
 
 	FNMETHOD m_methods[200];
 
-	u64 m_sentinelValue;
+	uint64_t m_sentinelValue;
 
 	SeedingData*m_seedingData;
 
@@ -226,8 +226,6 @@ class MessageProcessor{
 	void call_RAY_MPI_TAG_OUT_EDGES_DATA_REPLY(Message*message);
 	void call_RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE_REPLY(Message*message);
 	void call_RAY_MPI_TAG_EXTENSION_DATA_REPLY(Message*message);
-	void call_RAY_MPI_TAG_BARRIER(Message*message);
-	void call_RAY_MPI_TAG_SHOW_SEQUENCES(Message*message);
 	void call_RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY(Message*message);
 	void call_RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION_REPLY(Message*message);
 	void call_RAY_MPI_TAG_RECEIVED_MESSAGES(Message*message);

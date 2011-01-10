@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -31,8 +31,8 @@
  * The read paths are restored using read annotations.
  */
 class ReadAnnotation{
-	u32 m_readIndex;
-	u16 m_rank;
+	uint32_t m_readIndex;
+	uint16_t m_rank;
 	char m_strand;
 	ReadAnnotation*m_next;
 public:
@@ -42,7 +42,7 @@ public:
 	char getStrand()const;
 	ReadAnnotation*getNext()const;
 	void setNext(ReadAnnotation*a);
-	u64 getUniqueId() const;
+	uint64_t getUniqueId() const;
 };
 
 class ReadAnnotationComparator{

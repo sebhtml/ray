@@ -1,6 +1,6 @@
 /*
 Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -394,7 +394,7 @@ bool SequencesLoader::isReady(){
 }
 
 void SequencesLoader::constructor(int size){
-	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t));
 	m_size=size;
 	m_buffers=(char*)__Malloc(m_size*MAXIMUM_MESSAGE_SIZE_IN_BYTES*sizeof(char));
 	m_entries=(int*)__Malloc(m_size*sizeof(int));

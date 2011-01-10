@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -17,20 +17,15 @@
     along with this program (COPYING).  
 	see <http://www.gnu.org/licenses/>
 
-
  	Funding:
-
 Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Research (Master's award: 200910MDR-215249-172830 and Doctoral award: 200902CGM-204212-172830).
 
 */
 
-
-
-
 #ifndef _mpi_tags
 #define _mpi_tags
 
-// tags
+// tags for MPI
 // these are the message types used by Ray
 // Ray instances like to communicate a lots!
 //
@@ -134,8 +129,6 @@ RAY_MPI_TAG_IN_EDGES_DATA_REPLY,
 RAY_MPI_TAG_OUT_EDGES_DATA_REPLY,
 RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE_REPLY,
 RAY_MPI_TAG_EXTENSION_DATA_REPLY,
-RAY_MPI_TAG_BARRIER,
-RAY_MPI_TAG_SHOW_SEQUENCES,
 RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY,
 RAY_MPI_TAG_RECEIVED_MESSAGES,
 RAY_MPI_TAG_RECEIVED_MESSAGES_REPLY,
@@ -166,11 +159,6 @@ RAY_MPI_TAG_CHECK_VERTEX_REPLY,
 RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY,
 RAY_MPI_TAG_SET_WORD_SIZE,
 RAY_MPI_TAG_MUST_RUN_REDUCER_FROM_MASTER
-
-
 };
-
-
-
 
 #endif

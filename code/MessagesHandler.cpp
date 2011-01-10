@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -100,10 +100,10 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 		int source=status.MPI_SOURCE;
 		int length;
 		MPI_Get_count(&status,MPI_UNSIGNED_LONG_LONG,&length);
-		u64*filledBuffer=(u64*)m_buffers+m_head*MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(u64);
+		uint64_t*filledBuffer=(uint64_t*)m_buffers+m_head*MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t);
 
 		// copy it in a safe buffer
-		u64*incoming=(u64*)inboxAllocator->allocate(length*sizeof(u64));
+		uint64_t*incoming=(uint64_t*)inboxAllocator->allocate(length*sizeof(uint64_t));
 		for(int i=0;i<length;i++){
 			incoming[i]=filledBuffer[i];
 		}
@@ -154,7 +154,7 @@ void MessagesHandler::showStats(){
 	cout<<endl;
 }
 
-void MessagesHandler::addCount(int rank,u64 count){
+void MessagesHandler::addCount(int rank,uint64_t count){
 	m_allReceivedMessages[rank*m_size+m_allCounts[rank]]=count;
 	m_allCounts[rank]++;
 }
@@ -199,9 +199,9 @@ void MessagesHandler::writeStats(const char*file){
 void MessagesHandler::constructor(int rank,int size){
 	m_rank=rank;
 	m_size=size;
-	m_receivedMessages=(u64*)__Malloc(sizeof(u64)*m_size);
+	m_receivedMessages=(uint64_t*)__Malloc(sizeof(uint64_t)*m_size);
 	if(rank==MASTER_RANK){
-		m_allReceivedMessages=(u64*)__Malloc(sizeof(u64)*m_size*m_size);
+		m_allReceivedMessages=(uint64_t*)__Malloc(sizeof(uint64_t)*m_size*m_size);
 		m_allCounts=(int*)__Malloc(sizeof(int)*m_size);
 	}
 
@@ -212,8 +212,9 @@ void MessagesHandler::constructor(int rank,int size){
 		}
 	}
 
-	// the ring contains 128 elements.
-	m_ringSize=NUMBER_OF_PERSISTENT_REQUESTS_IN_RING;
+	// the ring itself  contain requests ready to receive messages
+	m_ringSize=128;
+
 	m_ring=(MPI_Request*)__Malloc(sizeof(MPI_Request)*m_ringSize);
 	m_buffers=(char*)__Malloc(MAXIMUM_MESSAGE_SIZE_IN_BYTES*m_ringSize);
 	m_head=0;
@@ -227,7 +228,7 @@ void MessagesHandler::constructor(int rank,int size){
 	}
 }
 
-u64*MessagesHandler::getReceivedMessages(){
+uint64_t*MessagesHandler::getReceivedMessages(){
 	return m_receivedMessages;
 }
 

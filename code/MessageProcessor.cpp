@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -34,8 +34,6 @@
 #include<FusionData.h>
 #include<Parameters.h>
 
-
-
 void MessageProcessor::processMessage(Message*message){
 	int tag=message->getTag();
 	FNMETHOD f=m_methods[tag];
@@ -50,7 +48,6 @@ void MessageProcessor::call_RAY_MPI_TAG_SET_WORD_SIZE(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTEX(Message*message){
-
 	#ifdef ASSERT
 	assert(!m_subgraph->frozen());
 	#endif
@@ -120,7 +117,6 @@ void MessageProcessor::call_RAY_MPI_TAG_CHECK_VERTEX_REPLY(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_DELETE_INGOING_EDGE(Message*message){
-
 	#ifdef ASSERT
 	assert(!m_subgraph->frozen());
 	#endif
@@ -317,10 +313,6 @@ void MessageProcessor::call_RAY_MPI_TAG_MUST_RUN_REDUCER(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_WELCOME(Message*message){
 }
 
-void MessageProcessor::call_RAY_MPI_TAG_BARRIER(Message*message){
-	MPI_Barrier(MPI_COMM_WORLD);
-}
-
 void MessageProcessor::call_RAY_MPI_TAG_SEND_SEQUENCE_REGULATOR(Message*message){
 	call_RAY_MPI_TAG_SEND_SEQUENCE(message);
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_SEND_SEQUENCE_REPLY,rank);
@@ -365,11 +357,6 @@ void MessageProcessor::call_RAY_MPI_TAG_SEND_SEQUENCE(Message*message){
 	}
 }
 
-void MessageProcessor::call_RAY_MPI_TAG_SHOW_SEQUENCES(Message*message){
-	printf("Rank %i has %i sequence reads\n",rank,(int)(*m_myReads).size());
-	fflush(stdout);
-}
-
 void MessageProcessor::call_RAY_MPI_TAG_SEND_SEQUENCE_REPLY(Message*message){
 	m_sequencesLoader->setReadiness();
 }
@@ -382,6 +369,8 @@ void MessageProcessor::call_RAY_MPI_TAG_SEQUENCES_READY(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS(Message*message){
+	m_reducer->constructor(size);
+
 	int source=message->getSource();
 	printf("Rank %i has %i sequence reads\n",rank,(int)(*m_myReads).size());
 	fflush(stdout);
@@ -737,9 +726,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_EDGES(Message*message){
 	#ifdef ASSERT
 	assert(k==(int)(outgoingEdges.size()+ingoingEdges.size()+2));
 
-	if(idToWord(vertex,*m_wordSize)=="GCGGCTAGTTTTCTAGTTTGA"){
-		cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" vertex=GCGGCTAGTTTTCTAGTTTGA IN="<<ingoingEdges.size()<<" OUT="<<outgoingEdges.size()<<endl;
-	}
+	//cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" "<<idToWord(vertex,*m_wordSize)<<" IN="<<ingoingEdges.size()<<" OUT="<<outgoingEdges.size()<<endl;
 
 	#endif
 
@@ -1463,9 +1450,8 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 			iterator.next()->getValue()->clearDirections();
 		}
 	}
-	(*m_directionsAllocator).clear();
-	(*m_directionsAllocator).constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
 
+	m_directionsAllocator->resetMemory();
 
 	// add the FINISHING bits
 	for(int i=0;i<(int)m_fusionData->m_FINISH_newFusions.size();i++){
@@ -1910,8 +1896,6 @@ void MessageProcessor::assignHandlers(){
 	m_methods[RAY_MPI_TAG_END_CALIBRATION]=&MessageProcessor::call_RAY_MPI_TAG_END_CALIBRATION;
 	m_methods[RAY_MPI_TAG_COMMUNICATION_STABILITY_MESSAGE]=&MessageProcessor::call_RAY_MPI_TAG_COMMUNICATION_STABILITY_MESSAGE;
 	m_methods[RAY_MPI_TAG_ASK_VERTEX_PATH]=&MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH;
-	m_methods[RAY_MPI_TAG_SHOW_SEQUENCES]=&MessageProcessor::call_RAY_MPI_TAG_SHOW_SEQUENCES;
-	m_methods[RAY_MPI_TAG_BARRIER]=&MessageProcessor::call_RAY_MPI_TAG_BARRIER;
 	m_methods[RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY;
 	m_methods[RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE]=&MessageProcessor::call_RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE;
 	m_methods[RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE_REPLY;

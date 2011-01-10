@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -33,15 +33,15 @@
  * <----------------------------------------------------------------->
  */
 class PairedRead{
-	u32 m_readIndex;
-	u16 m_rank;
-	u8 m_library;
+	uint64_t m_readIndex;
+	uint16_t m_rank;
+	uint8_t m_library;
 public:
 	PairedRead();
 	void constructor(int rank,int id,int library);
 	int getRank();
 	int getId();
-	u64 getUniqueId();
+	uint64_t getUniqueId();
 	int getLibrary();
 };
 

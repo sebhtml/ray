@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -35,7 +35,7 @@ void debugMessage(int source,int destination,string message){
 }
 
 void SeedExtender::extendSeeds(vector<vector<uint64_t> >*seeds,ExtensionData*ed,int theRank,StaticVector*outbox,
-  u64*currentVertex,FusionData*fusionData,RingAllocator*outboxAllocator,bool*edgesRequested,int*outgoingEdgeIndex,
+  uint64_t*currentVertex,FusionData*fusionData,RingAllocator*outboxAllocator,bool*edgesRequested,int*outgoingEdgeIndex,
 int*last_value,bool*vertexCoverageRequested,int wordSize,bool*colorSpaceMode,int size,bool*vertexCoverageReceived,
 int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,vector<uint64_t>*receivedOutgoingEdges,Chooser*chooser,
 ChooserData*cd,BubbleData*bubbleData,DepthFirstSearchData*dfsData,
@@ -359,7 +359,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				// now check if it matches one of 
 				// the many choices we have
 				ReadAnnotation annotation=*ed->m_EXTENSION_readIterator;
-				u64 uniqueId=annotation.getUniqueId();
+				uint64_t uniqueId=annotation.getUniqueId();
 				//cout<<"Checking read "<<annotation.getUniqueId()<<endl;
 				int startPosition=ed->m_EXTENSION_reads_startingPositionOnContig[annotation.getUniqueId()];
 				int distance=ed->m_EXTENSION_extension.size()-startPosition;
@@ -392,7 +392,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 							ed->m_EXTENSION_hasPairedReadRequested=false;
 						}else{	
 							PairedRead pairedRead=m_pairedReads[uniqueId];
-							u64 uniqueReadIdentifier=pairedRead.getUniqueId();
+							uint64_t uniqueReadIdentifier=pairedRead.getUniqueId();
 							int library=pairedRead.getLibrary();
 							int expectedFragmentLength=m_parameters->getFragmentLength(library);
 							int expectedDeviation=m_parameters->getStandardDeviation(library);
@@ -437,7 +437,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 			}else{
 				// remove reads that are no longer in-range.
 				for(int i=0;i<(int)ed->m_EXTENSION_readsOutOfRange.size();i++){
-					u64 uniqueId=ed->m_EXTENSION_readsOutOfRange[i].getUniqueId();
+					uint64_t uniqueId=ed->m_EXTENSION_readsOutOfRange[i].getUniqueId();
 					if(m_pairedReads.count(uniqueId)>0){
 						m_pairedReads.erase(uniqueId);
 					}
@@ -670,7 +670,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 }
 
 void SeedExtender::storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<vector<uint64_t> >*seeds,
-u64*currentVertex,BubbleData*bubbleData){
+uint64_t*currentVertex,BubbleData*bubbleData){
 	if(ed->m_EXTENSION_extension.size()>=100){
 
 		int theCurrentSize=ed->m_EXTENSION_extension.size();
@@ -710,7 +710,7 @@ u64*currentVertex,BubbleData*bubbleData){
 }
 
 void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector*outbox,RingAllocator*outboxAllocator,
-  int*outgoingEdgeIndex,int*last_value,u64*currentVertex,int theRank,bool*vertexCoverageRequested,int wordSize,
+  int*outgoingEdgeIndex,int*last_value,uint64_t*currentVertex,int theRank,bool*vertexCoverageRequested,int wordSize,
  bool*colorSpaceMode,int size,vector<vector<uint64_t> >*seeds){
 	if(!ed->m_EXTENSION_directVertexDone){
 		if(!ed->m_EXTENSION_VertexAssembled_requested){
@@ -764,7 +764,7 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 	}
 }
 
-void SeedExtender::markCurrentVertexAsAssembled(u64*currentVertex,RingAllocator*outboxAllocator,int*outgoingEdgeIndex, 
+void SeedExtender::markCurrentVertexAsAssembled(uint64_t*currentVertex,RingAllocator*outboxAllocator,int*outgoingEdgeIndex, 
 StaticVector*outbox,int size,int theRank,ExtensionData*ed,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,bool*edgesRequested,
 vector<uint64_t>*receivedOutgoingEdges,Chooser*chooser,ChooserData*cd,
@@ -835,7 +835,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 			}else if(ed->m_EXTENSION_reads_received){
 				if(m_sequenceIndexToCache<(int)ed->m_EXTENSION_receivedReads.size()){
 					ReadAnnotation annotation=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache];
-					u64 uniqueId=annotation.getUniqueId();
+					uint64_t uniqueId=annotation.getUniqueId();
 					if(ed->m_EXTENSION_usedReads.count(uniqueId)>0){
 						m_sequenceIndexToCache++;
 					}else if(*(repeatedLength)>=_REPEATED_LENGTH_ALARM_THRESHOLD){
@@ -894,7 +894,7 @@ vector<Direction>*SeedExtender::getDirections(){
 	return &m_receivedDirections;
 }
 
-set<u64>*SeedExtender::getEliminatedSeeds(){
+set<uint64_t>*SeedExtender::getEliminatedSeeds(){
 	return &m_eliminatedSeeds;
 }
 

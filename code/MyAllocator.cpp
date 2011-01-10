@@ -19,18 +19,18 @@
 
 */
 
-
 #include<common_functions.h>
 #include<MyAllocator.h>
 #include<stdlib.h>
 #include<iostream>
+#include<stdio.h>
 #include<assert.h>
 using namespace std;
 
 MyAllocator::MyAllocator(){
 	m_addressesToReuse=NULL;
 	m_numberOfAddressesToReuse=0;
-	m_growthRate=1000;
+	m_growthRate=130000;
 	m_maxSize=0;
 }
 
@@ -100,9 +100,14 @@ void*MyAllocator::allocate(int s){
 	return r;
 }
 
-
 MyAllocator::~MyAllocator(){
+	printf("destructor\n");
 	clear();
+}
+
+void MyAllocator::resetMemory(){
+	clear();
+	constructor(m_CHUNK_SIZE);
 }
 
 void MyAllocator::clear(){
@@ -148,5 +153,4 @@ void MyAllocator::addAddressToReuse(void*ptr){
 	m_addressesToReuse[m_numberOfAddressesToReuse]=ptr;
 	m_numberOfAddressesToReuse++;
 }
-
 

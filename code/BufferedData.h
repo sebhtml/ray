@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -40,16 +40,20 @@
 class BufferedData{
 	int*m_sizes;
 	int m_ranks;
+
+	// the capacity is measured in uint64_t
 	int m_capacity;
-	u64*m_data;
+	uint64_t *m_data;
 public:
 	/*
  *	the is numberOfRanks MPI ranks, and messages have a capacity of capacity.
+ *
+	// the capacity is measured in uint64_t
  */
 	void constructor(int numberOfRanks,int capacity);
 	int size(int i)const;
-	u64 getAt(int i,int j);
-	void addAt(int i,u64 k);
+	uint64_t getAt(int i,int j);
+	void addAt(int i,uint64_t k);
 	void reset(int i);
 
 	/* return true if flushed something 

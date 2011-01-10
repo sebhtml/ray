@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -39,11 +39,11 @@ class MessagesHandler{
 	MPI_Request*m_ring;
 	char*m_buffers;
 
-	u64*m_receivedMessages;
+	uint64_t*m_receivedMessages;
 	int m_rank;
 	int m_size;
 
-	u64*m_allReceivedMessages;
+	uint64_t*m_allReceivedMessages;
 	int*m_allCounts;
 
 	map<int,map<int,int> > m_buckets;
@@ -53,8 +53,8 @@ public:
 	void showStats();
 	void sendMessages(StaticVector*outbox,int source);
 	void receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator,int destination);
-	u64*getReceivedMessages();
-	void addCount(int rank,u64 count);
+	uint64_t*getReceivedMessages();
+	void addCount(int rank,uint64_t count);
 	void writeStats(const char*file);
 	bool isFinished();
 	bool isFinished(int rank);

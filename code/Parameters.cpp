@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -511,7 +511,7 @@ string Parameters::getLibraryFile(int library){
 void Parameters::computeAverageDistances(){
 	cout<<endl;
 	for(int i=0;i<(int)m_observedDistances.size();i++){
-		u64 sum=0;
+		uint64_t sum=0;
 		int library=i;
 		int n=0;
 		string fileName=getLibraryFile(library);

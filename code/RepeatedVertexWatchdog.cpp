@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -27,7 +27,7 @@
 using namespace std;
 
 bool RepeatedVertexWatchdog::getApproval(ExtensionData*ed,int wordSize,int minimumCoverage,int maxCoverage,
-		u64 currentVertex){
+		uint64_t currentVertex){
 	if(ed->m_currentCoverage==maxCoverage and
 	(int)ed->m_EXTENSION_readsInRange.size()<minimumCoverage/2){
 

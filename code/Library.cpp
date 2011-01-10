@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -100,7 +100,7 @@ void Library::detectDistances(){
 				ReadAnnotation annotation=m_ed->m_EXTENSION_receivedReads[m_ed->m_EXTENSION_edgeIterator];
 				int rightRead=annotation.getReadIndex();
 				#ifdef ASSERT_AUTO
-				u64 rightReadUniqueId=annotation.getUniqueId();
+				uint64_t rightReadUniqueId=annotation.getUniqueId();
 				#endif
 				if(!m_ed->m_EXTENSION_hasPairedReadRequested){
 					uint64_t*message=(uint64_t*)(m_outboxAllocator)->allocate(1*sizeof(uint64_t));
@@ -132,7 +132,7 @@ void Library::detectDistances(){
 								int library=m_ed->m_EXTENSION_pairedRead.getLibrary();
 								bool isAutomatic=m_parameters->isAutomatic(library);
 								if(isAutomatic){
-									u64 uniqueReadIdentifier=m_ed->m_EXTENSION_pairedRead.getUniqueId();
+									uint64_t uniqueReadIdentifier=m_ed->m_EXTENSION_pairedRead.getUniqueId();
 									if((*m_readsPositions).count(uniqueReadIdentifier)>0){
 										int library=m_ed->m_EXTENSION_pairedRead.getLibrary();
 										char rightStrand=annotation.getStrand();
@@ -169,7 +169,7 @@ void Library::detectDistances(){
 				cout<<"Adding reads in positions "<<m_ed->m_EXTENSION_currentPosition<<endl;
 				#endif
 				for(int i=0;i<(int)m_ed->m_EXTENSION_receivedReads.size();i++){
-					u64 uniqueId=m_ed->m_EXTENSION_receivedReads[i].getUniqueId();
+					uint64_t uniqueId=m_ed->m_EXTENSION_receivedReads[i].getUniqueId();
 					int position=m_ed->m_EXTENSION_currentPosition;
 					char strand=m_ed->m_EXTENSION_receivedReads[i].getStrand();
 					// read, position, strand
@@ -185,7 +185,7 @@ void Library::detectDistances(){
 }
 
 void Library::constructor(int m_rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator,int*m_sequence_id,int*m_sequence_idInFile,ExtensionData*m_ed,
-map<u64,int >*m_readsPositions,int m_size,
+map<uint64_t,int >*m_readsPositions,int m_size,
 TimePrinter*m_timePrinter,int*m_mode,int*m_master_mode,
 Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData
 ){
@@ -227,7 +227,6 @@ Library::Library(){
 
 void Library::allocateBuffers(){
 	m_bufferedData.constructor(m_size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-	//cout<<getRank()<<" Library::allocateBuffers() m_libraryDistances.size() "<<m_libraryDistances.size()<<endl;
 	(m_libraryIndexInitiated)=false;
 	(m_libraryIterator)=0;
 	for(map<int,map<int,int> >::iterator i=m_libraryDistances.begin();

@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -29,12 +29,23 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<common_functions.h>
 
 StaticVector::StaticVector(){
-	m_maxSize=1000;
+}
+
+void StaticVector::constructor(int size){
+	#ifdef ASSERT
+	assert(size!=0);
+	#endif
+
+	m_maxSize=size;
 	m_messages=(Message*)__Malloc(sizeof(Message)*m_maxSize);
 	m_size=0;
 }
 
 Message*StaticVector::operator[](int i){
+	return at(i);
+}
+
+Message*StaticVector::at(int i){
 	#ifdef ASSERT
 	assert(i<m_size);
 	#endif

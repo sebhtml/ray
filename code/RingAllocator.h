@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010  Sébastien Boisvert
+    Copyright (C) 2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -45,6 +45,7 @@ public:
 	RingAllocator();
 	void constructor(int chunks,int size);
 	void*allocate(int a);
+	int getSize();
 };
 
 
