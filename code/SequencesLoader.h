@@ -39,35 +39,19 @@ class SequencesLoader{
 	MyAllocator*m_persistentAllocator;
 	ArrayOfReads*m_myReads;
 	Parameters*m_parameters;
-
-	int m_lastPrintedId;
-	int m_distribution_currentSequenceId;
+	uint64_t m_distribution_currentSequenceId;
 	int m_distribution_file_id;
-	int m_distribution_sequence_id;
+	uint64_t m_distribution_sequence_id;
 	bool m_LOADER_isLeftFile;
 	bool m_LOADER_isRightFile;
-	int m_LOADER_numberOfSequencesInLeftFile;
-	int m_LOADER_averageFragmentLength;
-	int m_LOADER_deviation;
-
 	Loader m_loader;
-
 	bool m_isInterleavedFile;
-	time_t m_last;
-	int m_produced;
-	int m_waitingNumber;
-
 	int m_rank;
 	int m_size;
 
-	bool m_send_sequences_done;
 	void registerSequence();
 
 public:
-	/**
- *	load sequences from disk, and distribute them over the network.
- */
-
 	bool loadSequences(int rank,int size,StaticVector*m_outbox,
 	RingAllocator*m_outboxAllocator,
 	bool*m_loadSequenceStep,

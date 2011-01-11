@@ -12,6 +12,8 @@ stored on compute nodes.
 * Some improvements on the experimental memory consumption reducer.
 * Sequence reads are now encoded: each nucleotide is stored with 2 bits
 instead of 8 bits.
+* Fixed bugs when there are more than 4294967296 (2^32) sequence reads in
+total, the maximum now is 18446744073709551616 (2^64).
 
 
 = 1.2.1 'stringray' =

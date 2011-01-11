@@ -48,7 +48,7 @@ void ErrorSimulator::simulateErrors(string inputFile,string outputFile){
 
 	int probabilityPrecision=100000;
 	ofstream f(outputFile.c_str());
-	for(int i=0;i<loader.size();i++){
+	for(uint64_t i=0;i<loader.size();i++){
 		string sequence=loader.at(i)->getSeq();
 		if(i%10000==0)
 			cout<<".";

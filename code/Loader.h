@@ -68,9 +68,9 @@ class Loader{
 	ArrayOfReads m_reads;
 	MyAllocator m_allocator;
 
-	int m_currentOffset;
+	uint64_t m_currentOffset;
 	int m_maxToLoad;
-	int m_size;
+	uint64_t m_size;
 
 	SffLoader m_sff;
 	ColorSpaceLoader m_color;
@@ -90,8 +90,8 @@ class Loader{
 public:
 	Loader();
 	int load(string file,bool isGenome);
-	int size();
-	Read*at(int i);
+	uint64_t size();
+	Read*at(uint64_t i);
 	void clear();
 };
 

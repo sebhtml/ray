@@ -33,8 +33,8 @@ using namespace std;
 
 void SequencesLoader::registerSequence(){
 	if(m_myReads->size()%100000==0){
-		int amount=m_myReads->size();
-		printf("Rank %i has %i sequence reads\n",m_rank,amount);
+		uint64_t amount=m_myReads->size();
+		printf("Rank %i has %lu sequence reads\n",m_rank,amount);
 		fflush(stdout);
 	}
 	#ifdef ASSERT
@@ -50,14 +50,14 @@ void SequencesLoader::registerSequence(){
 	m_myReads->push_back(&myRead);
 
 	if(false && m_LOADER_isLeftFile){
-		int leftSequenceGlobalId=m_distribution_currentSequenceId;
-		int leftSequenceIdOnRank=m_myReads->size()-1;
+		uint64_t leftSequenceGlobalId=m_distribution_currentSequenceId;
+		uint64_t leftSequenceIdOnRank=m_myReads->size()-1;
 
 		#ifdef ASSERT
 		assert(m_loader.size()!=0);
 		#endif
 
-		int rightSequenceGlobalId=leftSequenceGlobalId+m_loader.size();
+		uint64_t rightSequenceGlobalId=leftSequenceGlobalId+m_loader.size();
 
 		#ifdef ASSERT
 		assert(leftSequenceGlobalId<rightSequenceGlobalId);
@@ -69,7 +69,7 @@ void SequencesLoader::registerSequence(){
 		assert(rightSequenceRank<m_size);
 		#endif
 
-		int rightSequenceIdOnRank=m_parameters->getIdFromGlobalId(rightSequenceGlobalId);
+		uint64_t rightSequenceIdOnRank=m_parameters->getIdFromGlobalId(rightSequenceGlobalId);
 
 		int library=m_parameters->getLibrary(m_distribution_file_id);
 
@@ -83,9 +83,9 @@ void SequencesLoader::registerSequence(){
 		assert(m_loader.size()!=0);
 		#endif
 
-		int rightSequenceGlobalId=(m_distribution_currentSequenceId);
-		int rightSequenceIdOnRank=m_myReads->size()-1;
-		int leftSequenceGlobalId=rightSequenceGlobalId-m_loader.size();
+		uint64_t rightSequenceGlobalId=(m_distribution_currentSequenceId);
+		uint64_t rightSequenceIdOnRank=m_myReads->size()-1;
+		uint64_t leftSequenceGlobalId=rightSequenceGlobalId-m_loader.size();
 
 		int leftSequenceRank=m_parameters->getRankFromGlobalId(leftSequenceGlobalId);
 		#ifdef ASSERT
@@ -94,7 +94,7 @@ void SequencesLoader::registerSequence(){
 		}
 		assert(leftSequenceRank<m_size);
 		#endif
-		int leftSequenceIdOnRank=m_parameters->getIdFromGlobalId(leftSequenceGlobalId);
+		uint64_t leftSequenceIdOnRank=m_parameters->getIdFromGlobalId(leftSequenceGlobalId);
 		int library=m_parameters->getLibrary(m_distribution_file_id);
 
 		PairedRead*t=(PairedRead*)(*m_persistentAllocator).allocate(sizeof(PairedRead));
@@ -103,11 +103,11 @@ void SequencesLoader::registerSequence(){
 
 	// left sequence in interleaved file
 	}else if(false && m_isInterleavedFile && ((m_distribution_sequence_id)%2)==0){
-		int rightSequenceGlobalId=(m_distribution_currentSequenceId)+1;
+		uint64_t rightSequenceGlobalId=(m_distribution_currentSequenceId)+1;
 		int rightSequenceRank=m_parameters->getRankFromGlobalId(rightSequenceGlobalId);
-		int rightSequenceIdOnRank=m_parameters->getIdFromGlobalId(rightSequenceGlobalId);
+		uint64_t rightSequenceIdOnRank=m_parameters->getIdFromGlobalId(rightSequenceGlobalId);
 
-		int leftSequenceIdOnRank=m_myReads->size()-1;
+		uint64_t leftSequenceIdOnRank=m_myReads->size()-1;
 
 		int library=m_parameters->getLibrary(m_distribution_file_id);
 
@@ -117,11 +117,11 @@ void SequencesLoader::registerSequence(){
 
 	// only the right sequence.
 	}else if(m_isInterleavedFile &&((m_distribution_sequence_id)%2)==1){
-		int rightSequenceGlobalId=(m_distribution_currentSequenceId);
-		int rightSequenceIdOnRank=m_myReads->size()-1;
-		int leftSequenceGlobalId=rightSequenceGlobalId-1;
+		uint64_t rightSequenceGlobalId=(m_distribution_currentSequenceId);
+		uint64_t rightSequenceIdOnRank=m_myReads->size()-1;
+		uint64_t leftSequenceGlobalId=rightSequenceGlobalId-1;
 		int leftSequenceRank=m_parameters->getRankFromGlobalId(leftSequenceGlobalId);
-		int leftSequenceIdOnRank=m_parameters->getIdFromGlobalId(leftSequenceGlobalId);
+		uint64_t leftSequenceIdOnRank=m_parameters->getIdFromGlobalId(leftSequenceGlobalId);
 		int library=m_parameters->getLibrary(m_distribution_file_id);
 
 		PairedRead*t=(PairedRead*)(*m_persistentAllocator).allocate(sizeof(PairedRead));
@@ -148,15 +148,15 @@ bool SequencesLoader::computePartition(int rank,int size,
 			return false;
 		}
 		m_parameters->setNumberOfSequences(m_loader.size());
-		printf("Rank %i: %s -> %i\n",m_rank,allFiles[(m_distribution_file_id)].c_str(),m_loader.size());
+		printf("Rank %i: %s -> %lu\n",m_rank,allFiles[(m_distribution_file_id)].c_str(),m_loader.size());
 		fflush(stdout);
 
 		// write Reads in AMOS format.
 		if(rank==MASTER_RANK&&m_parameters->useAmos()){
 			FILE*fp=(*m_bubbleData).m_amos;
 			char qlt[20000];
-			for(int i=0;i<(int)m_loader.size();i++){
-				int iid=m_distribution_currentSequenceId+i;
+			for(uint64_t i=0;i<m_loader.size();i++){
+				uint64_t iid=m_distribution_currentSequenceId+i;
 				string aSeq=m_loader.at(i)->getSeq();
 				const char*seq=aSeq.c_str();
 				#ifdef ASSERT
@@ -167,7 +167,7 @@ bool SequencesLoader::computePartition(int rank,int size,
 				for(int j=0;j<(int)strlen(qlt);j++){
 					qlt[j]='D';
 				}
-				fprintf(fp,"{RED\niid:%i\neid:%i\nseq:\n%s\n.\nqlt:\n%s\n.\n}\n",iid+1,iid+1,seq,qlt);
+				fprintf(fp,"{RED\niid:%lu\neid:%lu\nseq:\n%s\n.\nqlt:\n%s\n.\n}\n",iid+1,iid+1,seq,qlt);
 			}
 			m_loader.clear();
 			m_loader.load(allFiles[(m_distribution_file_id)],false);
@@ -194,16 +194,16 @@ bool SequencesLoader::loadSequences(int rank,int size,
 	// count the number of sequences in all files.
 	vector<string> allFiles=(*m_parameters).getAllFiles();
 	
-	int totalNumberOfSequences=0;
+	uint64_t totalNumberOfSequences=0;
 	for(int i=0;i<(int)m_parameters->getNumberOfFiles();i++){
 		totalNumberOfSequences+=m_parameters->getNumberOfSequences(i);
 	}
 
-	int sequencesPerRank=totalNumberOfSequences/size;
-	int sequencesOnRanksBeforeThisOne=rank*sequencesPerRank;
+	uint64_t sequencesPerRank=totalNumberOfSequences/size;
+	uint64_t sequencesOnRanksBeforeThisOne=rank*sequencesPerRank;
 	
-	int startingSequenceId=sequencesOnRanksBeforeThisOne;
-	int endingSequenceId=startingSequenceId+sequencesPerRank-1;
+	uint64_t startingSequenceId=sequencesOnRanksBeforeThisOne;
+	uint64_t endingSequenceId=startingSequenceId+sequencesPerRank-1;
 
 	if(rank==size-1){
 		endingSequenceId=totalNumberOfSequences-1;
@@ -220,7 +220,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 	for(m_distribution_file_id=0;m_distribution_file_id<(int)allFiles.size();
 		m_distribution_file_id++){
 
-		int sequencesInFile=m_parameters->getNumberOfSequences(m_distribution_file_id);
+		uint64_t sequencesInFile=m_parameters->getNumberOfSequences(m_distribution_file_id);
 
 		if(!(startingSequenceId<m_distribution_currentSequenceId+sequencesInFile)){
 			m_distribution_currentSequenceId+=sequencesInFile;
@@ -286,8 +286,8 @@ bool SequencesLoader::loadSequences(int rank,int size,
 
 	(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 
-	int amount=m_myReads->size();
-	printf("Rank %i has %i sequence reads (completed)\n",m_rank,amount);
+	uint64_t amount=m_myReads->size();
+	printf("Rank %i has %lu sequence reads (completed)\n",m_rank,amount);
 	fflush(stdout);
 
 	return true;

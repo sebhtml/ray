@@ -24,9 +24,6 @@
 #include<common_functions.h>
 #include<assert.h>
 
-PairedRead::PairedRead(){
-}
-
 void PairedRead::constructor(int rank,int id,int library){
 	m_rank=rank;
 	m_readIndex=id;
@@ -37,7 +34,7 @@ int PairedRead::getRank(){
 	return m_rank;
 }
 
-int PairedRead::getId(){
+uint32_t PairedRead::getId(){
 	return m_readIndex;
 }
 

@@ -56,7 +56,6 @@ class Parameters{
 	string m_prefix;
 	bool m_amos;
 	bool m_initiated;
-	int m_numberOfSequences;
 	vector<string> m_singleEndReadsFile;
 	vector<uint64_t> m_numberOfSequencesInFile;
 	uint64_t m_totalNumberOfSequences;

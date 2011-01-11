@@ -123,7 +123,7 @@ int Loader::load(string file,bool isGenome){
 	return EXIT_FAILURE;
 }
 
-Read*Loader::at(int i){
+Read*Loader::at(uint64_t i){
 	#ifdef ASSERT
 	assert(i<m_size);
 	#endif
@@ -142,7 +142,7 @@ Read*Loader::at(int i){
 	return m_reads.at(i-m_currentOffset);
 }
 
-int Loader::size(){
+uint64_t Loader::size(){
 	return m_size;
 }
 

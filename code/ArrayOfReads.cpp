@@ -83,7 +83,7 @@ int ArrayOfReads::size(){
 	return m_elements;
 }
 
-Read*ArrayOfReads::at(int i){
+Read*ArrayOfReads::at(uint64_t i){
 	#ifdef ASSERT
 	assert(m_maxSize!=0);
 	assert(m_numberOfChunks!=0);
@@ -111,7 +111,7 @@ Read*ArrayOfReads::at(int i){
 	return theRead;
 }
 
-Read*ArrayOfReads::operator[](int i){
+Read*ArrayOfReads::operator[](uint64_t i){
 	return at(i);
 }
 

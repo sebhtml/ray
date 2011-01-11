@@ -28,12 +28,12 @@ class ArrayOfReads{
 	int m_CHUNK_SIZE;
 	Read**m_chunks;
 	int m_numberOfChunks;
-	int m_elements;
-	int m_maxSize;
+	uint64_t m_elements;
+	uint64_t m_maxSize;
 public:
 	void push_back(Read*a);
-	Read*at(int i);
-	Read*operator[](int i);
+	Read*at(uint64_t i);
+	Read*operator[](uint64_t i);
 	int size();
 	void clear();
 	ArrayOfReads();
