@@ -40,16 +40,21 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 @HAVE_ZLIB_TRUE@am__append_1 = FastqGzLoader.cpp FastqGzLoader.h
 @HAVE_BZ2_TRUE@am__append_2 = FastqBz2Loader.cpp FastqBz2Loader.h BzReader.h BzReader.cpp
-bin_PROGRAMS = SimulateFragments$(EXEEXT) SimulateErrors$(EXEEXT) \
-	SimulatePairedReads$(EXEEXT) Ray$(EXEEXT)
+bin_PROGRAMS = Ray$(EXEEXT)
+
+#SimulateFragments_SOURCES = simulate_fragments_main.cpp 
+#SimulateFragments_LDADD = libRay.a
+
+#SimulateErrors_SOURCES = simulateErrors_main.cpp 
+#SimulateErrors_LDADD = libRay.a
+
+#SimulatePairedReads_SOURCES = simulate_paired_main.cpp 
+#SimulatePairedReads_LDADD = libRay.a
 @HAVE_ZLIB_TRUE@am__append_3 = -lz
-@HAVE_ZLIB_TRUE@am__append_4 = -lz
-@HAVE_ZLIB_TRUE@am__append_5 = -lz
-@HAVE_ZLIB_TRUE@am__append_6 = -lz
-@HAVE_BZ2_TRUE@am__append_7 = -lbz2
-@HAVE_BZ2_TRUE@am__append_8 = -lbz2
-@HAVE_BZ2_TRUE@am__append_9 = -lbz2
-@HAVE_BZ2_TRUE@am__append_10 = -lbz2
+#SimulateFragments_LDADD += -lz
+#SimulateErrors_LDADD += -lz
+#SimulatePairedReads_LDADD += -lz
+@HAVE_BZ2_TRUE@am__append_4 = -lbz2
 subdir = code
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -129,18 +134,6 @@ Ray_OBJECTS = $(am_Ray_OBJECTS)
 am__DEPENDENCIES_1 =
 Ray_DEPENDENCIES = libRay.a $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
-am_SimulateErrors_OBJECTS = simulateErrors_main.$(OBJEXT)
-SimulateErrors_OBJECTS = $(am_SimulateErrors_OBJECTS)
-SimulateErrors_DEPENDENCIES = libRay.a $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
-am_SimulateFragments_OBJECTS = simulate_fragments_main.$(OBJEXT)
-SimulateFragments_OBJECTS = $(am_SimulateFragments_OBJECTS)
-SimulateFragments_DEPENDENCIES = libRay.a $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
-am_SimulatePairedReads_OBJECTS = simulate_paired_main.$(OBJEXT)
-SimulatePairedReads_OBJECTS = $(am_SimulatePairedReads_OBJECTS)
-SimulatePairedReads_DEPENDENCIES = libRay.a $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -154,11 +147,8 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(libRay_a_SOURCES) $(Ray_SOURCES) $(SimulateErrors_SOURCES) \
-	$(SimulateFragments_SOURCES) $(SimulatePairedReads_SOURCES)
-DIST_SOURCES = $(am__libRay_a_SOURCES_DIST) $(Ray_SOURCES) \
-	$(SimulateErrors_SOURCES) $(SimulateFragments_SOURCES) \
-	$(SimulatePairedReads_SOURCES)
+SOURCES = $(libRay_a_SOURCES) $(Ray_SOURCES)
+DIST_SOURCES = $(am__libRay_a_SOURCES_DIST) $(Ray_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -283,13 +273,7 @@ libRay_a_SOURCES = MemoryConsumptionReducer.h \
 	VertexLinkedList.cpp VertexLinkedList.h VerticesExtractor.cpp \
 	VerticesExtractor.h $(am__append_1) $(am__append_2)
 Ray_SOURCES = ray_main.cpp 
-Ray_LDADD = libRay.a $(am__append_3) $(am__append_7)
-SimulateFragments_SOURCES = simulate_fragments_main.cpp 
-SimulateFragments_LDADD = libRay.a $(am__append_4) $(am__append_8)
-SimulateErrors_SOURCES = simulateErrors_main.cpp 
-SimulateErrors_LDADD = libRay.a $(am__append_5) $(am__append_9)
-SimulatePairedReads_SOURCES = simulate_paired_main.cpp 
-SimulatePairedReads_LDADD = libRay.a $(am__append_6) $(am__append_10)
+Ray_LDADD = libRay.a $(am__append_3) $(am__append_4)
 all: all-am
 
 .SUFFIXES:
@@ -371,15 +355,6 @@ clean-binPROGRAMS:
 Ray$(EXEEXT): $(Ray_OBJECTS) $(Ray_DEPENDENCIES) 
 	@rm -f Ray$(EXEEXT)
 	$(CXXLINK) $(Ray_OBJECTS) $(Ray_LDADD) $(LIBS)
-SimulateErrors$(EXEEXT): $(SimulateErrors_OBJECTS) $(SimulateErrors_DEPENDENCIES) 
-	@rm -f SimulateErrors$(EXEEXT)
-	$(CXXLINK) $(SimulateErrors_OBJECTS) $(SimulateErrors_LDADD) $(LIBS)
-SimulateFragments$(EXEEXT): $(SimulateFragments_OBJECTS) $(SimulateFragments_DEPENDENCIES) 
-	@rm -f SimulateFragments$(EXEEXT)
-	$(CXXLINK) $(SimulateFragments_OBJECTS) $(SimulateFragments_LDADD) $(LIBS)
-SimulatePairedReads$(EXEEXT): $(SimulatePairedReads_OBJECTS) $(SimulatePairedReads_DEPENDENCIES) 
-	@rm -f SimulatePairedReads$(EXEEXT)
-	$(CXXLINK) $(SimulatePairedReads_OBJECTS) $(SimulatePairedReads_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -435,9 +410,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/common_functions.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypto.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ray_main.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/simulateErrors_main.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/simulate_fragments_main.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/simulate_paired_main.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -652,6 +624,9 @@ uninstall-am: uninstall-binPROGRAMS
 	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
 	tags uninstall uninstall-am uninstall-binPROGRAMS
 
+#SimulateFragments_LDADD += -lbz2
+#SimulateErrors_LDADD += -lbz2
+#SimulatePairedReads_LDADD += -lbz2
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
