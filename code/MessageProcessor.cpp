@@ -72,13 +72,6 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTEX(Message*message){
 		}
 
 		#ifdef ASSERT
-		if(idToWord(vertex,*m_wordSize)=="GCGGCTAGTTTTCTAGTTTGA"){
-			cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<"  GCGGCTAGTTTTCTAGTTTGA IN="<<node->getValue()->getIngoingEdges(vertex,*m_wordSize).size()<<" OUT="<<node->getValue()->getOutgoingEdges(vertex,*m_wordSize).size()<<endl;
-
-		}
-		#endif
-
-		#ifdef ASSERT
 		assert(node!=NULL);
 		#endif
 
@@ -148,12 +141,6 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_INGOING_EDGE(Message*message){
 
 		/* the edge might already be deleted if the tip is within another tip. */
 
-		#ifdef ASSERT
-		if(idToWord(prefix,*m_wordSize)=="GCGGCTAGTTTTCTAGTTTGA"){
-			cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" removing InEdge GCGGCTAGTTTTCTAGTTTGA->???"<<endl;
-		}
-		#endif
-
 		node->getValue()->deleteIngoingEdge(prefix,(*m_wordSize));
 
 		#ifdef ASSERT
@@ -192,11 +179,6 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_OUTGOING_EDGE(Message*message){
 		}
 	
 		#ifdef ASSERT
-
-		if(idToWord(suffix,*m_wordSize)=="GCGGCTAGTTTTCTAGTTTGA"){
-			cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" deleting outgoing edge ...->GCGGCTAGTTTTCTAGTTTGA"<<endl;
-		}
-
 		assert(node!=NULL);
 		int before=node->getValue()->getOutgoingEdges(suffix,*m_wordSize).size();
 		#endif
@@ -691,11 +673,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_EDGES(Message*message){
 
 	#ifdef ASSERT
 	assert(k==(int)(outgoingEdges.size()+ingoingEdges.size()+2));
-
-	//cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" "<<idToWord(vertex,*m_wordSize)<<" IN="<<ingoingEdges.size()<<" OUT="<<outgoingEdges.size()<<endl;
-
 	#endif
-
 
 	Message aMessage(message2,k,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY,rank);
 	m_outbox->push_back(aMessage);

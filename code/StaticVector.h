@@ -34,7 +34,6 @@ class StaticVector{
 	int m_size;
 	int m_maxSize;
 public:
-	StaticVector();
 	Message*operator[](int i);
 	Message*at(int i);
 	void push_back(Message a);

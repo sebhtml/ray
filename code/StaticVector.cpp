@@ -28,9 +28,6 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<assert.h>
 #include<common_functions.h>
 
-StaticVector::StaticVector(){
-}
-
 void StaticVector::constructor(int size){
 	#ifdef ASSERT
 	assert(size!=0);

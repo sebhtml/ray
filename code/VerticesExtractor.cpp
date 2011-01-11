@@ -477,15 +477,6 @@ bool VerticesExtractor::deleteVertices(vector<uint64_t>*verticesToRemove,MyFores
 		#ifdef ASSERT
 		assert(outgoingEdgesForDirect.size()>=0);
 		assert(outgoingEdgesForDirect.size()<=4);
-
-		if(idToWord(vertex,wordSize)=="GCGGCTAGTTTTCTAGTTTGA"){
-			cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" processed Direct GCGGCTAGTTTTCTAGTTTGA IN="<<ingoingEdgesForDirect.size()<<" OUT="<<outgoingEdgesForDirect.size()<<" OutStorage="<<outgoingEdges->size()<<" InStorage="<<ingoingEdges->size()<<endl;
-		}
-
-		if(idToWord(rcVertex,wordSize)=="GCGGCTAGTTTTCTAGTTTGA"){
-			cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" processed Reverse GCGGCTAGTTTTCTAGTTTGA IN="<<ingoingEdgesForDirect.size()<<" OUT="<<outgoingEdgesForDirect.size()<<endl;
-			
-		}
 		#endif
 
 		// using outgoing edges, tell children to delete the associated ingoing edge
