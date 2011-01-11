@@ -224,7 +224,7 @@ Library::Library(){
 }
 
 void Library::allocateBuffers(){
-	m_bufferedData.constructor(m_size,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	m_bufferedData.constructor(m_size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t));
 	(m_libraryIndexInitiated)=false;
 	(m_libraryIterator)=0;
 	for(map<int,map<int,int> >::iterator i=m_libraryDistances.begin();

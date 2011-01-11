@@ -32,7 +32,6 @@ void TimePrinter::printElapsedTime(string description){
 	timeinfo=localtime(&m_endingTime);
 	cout<<endl;
 	cout<<"***"<<endl;
-               
 	cout<<"Step: "<<description<<endl;
 	cout<<"Date: "<<asctime(timeinfo);
 	cout<<"Elapsed time: ";
@@ -44,11 +43,8 @@ void TimePrinter::printElapsedTime(string description){
 	cout<<endl;
 	m_descriptions.push_back(description);
 	m_durations.push_back(differenceWithLast);
-
-	cout<<endl;
 	cout<<"***"<<endl;
 	cout<<endl;
-
 	fflush(stdout);
 }
 
