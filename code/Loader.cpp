@@ -124,6 +124,10 @@ int Loader::load(string file,bool isGenome){
 }
 
 Read*Loader::at(int i){
+	#ifdef ASSERT
+	assert(i<m_size);
+	#endif
+
 	//cout<<"at "<<i<<endl;
 	if(i>=m_currentOffset+m_reads.size()){
 		loadSequences();

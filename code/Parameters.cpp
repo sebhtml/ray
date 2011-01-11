@@ -407,6 +407,7 @@ void Parameters::parseCommands(){
 }
 
 void Parameters::constructor(int argc,char**argv,int rank){
+	m_totalNumberOfSequences=0;
 	m_maxCoverage=0;
 	m_maxCoverage--;// underflow.
 
@@ -560,7 +561,11 @@ void Parameters::addLibraryData(int library,int average,int deviation){
 	m_libraryDeviation[library]=deviation;
 }
 
-void Parameters::setNumberOfSequences(int n){
+void Parameters::setNumberOfSequences(uint64_t n){
+	if((int)m_numberOfSequencesInFile.size()<getNumberOfFiles()){
+		m_totalNumberOfSequences+=n;
+	}
+
 	m_numberOfSequencesInFile.push_back(n);
 }
 
@@ -568,7 +573,7 @@ int Parameters::getNumberOfLibraries(){
 	return m_numberOfLibraries;
 }
 
-int Parameters::getNumberOfSequences(int file){
+uint64_t Parameters::getNumberOfSequences(int file){
 	#ifdef ASSERT
 	assert(file<(int)m_numberOfSequencesInFile.size());
 	#endif
@@ -683,3 +688,16 @@ void Parameters::showUsage(){
 int Parameters::getReducerValue(){
 	return m_reducerPeriod;
 }
+
+int Parameters::getRankFromGlobalId(uint64_t a){
+	uint64_t x=m_totalNumberOfSequences/m_size;
+	return a/x;
+}
+
+int Parameters::getIdFromGlobalId(uint64_t a){
+	int bin=getRankFromGlobalId(a);
+	uint64_t x=m_totalNumberOfSequences/m_size;
+	return a-bin*x;
+}
+
+

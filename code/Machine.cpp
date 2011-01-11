@@ -165,7 +165,7 @@ void Machine::start(){
     		cout<<"under certain conditions; see \"COPYING\" for details."<<endl;
 		cout<<"**************************************************"<<endl;
 		cout<<endl;
-		cout<<"Ray Copyright (C) 2010, 2011  Sébastien Boisvert, Jacques Corbeil, François Laviolette"<<endl;
+		cout<<"Ray Copyright (C) 2010, 2011  Sébastien Boisvert, François Laviolette, Jacques Corbeil"<<endl;
 		cout<<"Centre de recherche en infectiologie de l'Université Laval"<<endl;
 		cout<<"Project funded by the Canadian Institutes of Health Research (Doctoral award 200902CGM-204212-172830 to S.B.)"<<endl;
  		cout<<"http://denovoassembler.sf.net/"<<endl<<endl;
@@ -195,13 +195,7 @@ void Machine::start(){
 	MPI_Get_version(&version,&subversion);
 
 	if(isMaster()){
-		cout<<endl;
-		cout<<"Bienvenue !"<<endl;
-		cout<<endl;
-
 		cout<<"Rank "<<MASTER_RANK<<": Ray "<<RAY_VERSION<<endl;
-		cout<<endl;
-
 
 		#ifdef MPICH2
                 cout<<"Rank "<<MASTER_RANK<<": compiled with MPICH2 "<<MPICH2_VERSION<<endl;
@@ -212,8 +206,6 @@ void Machine::start(){
 		#endif
 
 		cout<<"Rank "<<MASTER_RANK<<": MPI library implements the standard MPI "<<version<<"."<<subversion<<""<<endl;
-
-		cout<<endl;
 
 		// show libraries
 		#ifdef HAVE_ZLIB
@@ -257,11 +249,6 @@ void Machine::start(){
 	
 	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),&m_outbox,&m_outboxAllocator,&m_seedCoverage,&m_slave_mode,&m_parameters,&m_wordSize,&m_subgraph,
 		&m_colorSpaceMode);
-
-	if(isMaster()){
-
-		cout<<"Rank "<<getRank()<<" welcomes you to the MPI_COMM_WORLD"<<endl<<endl;
-	}
 
 	m_alive=true;
 	m_welcomeStep=true;
@@ -376,9 +363,6 @@ m_seedingData,
 			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getAmosFile()<<" (reads mapped onto contiguous sequences in AMOS format)"<<endl;
 		}
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getReceivedMessagesFile()<<" (MPI communication matrix) "<<endl;
-		cout<<endl;
-		cout<<"Au revoir !"<<endl;
-		cout<<endl;
 	}
 
 
@@ -506,15 +490,7 @@ void Machine::call_RAY_MASTER_MODE_LOAD_CONFIG(){
 }
 
 void Machine::call_RAY_MASTER_MODE_LOAD_SEQUENCES(){
-	for(int i=0;i<getSize();i++){
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_LOAD_SEQUENCES,getRank());
-		m_outbox.push_back(aMessage);
-	}
-	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
-}
-
-void Machine::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
-	bool res=m_sl.loadSequences(getRank(),getSize(),
+	bool res=m_sl.computePartition(getRank(),getSize(),
 	&m_outbox,
 	&m_outboxAllocator,
 	&m_loadSequenceStep,
@@ -522,20 +498,44 @@ void Machine::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
 	&m_lastTime,
 	&m_parameters,&m_master_mode,&m_slave_mode
 );
-	if(isMaster()&&!res){
+	if(!res){
 		m_aborted=true;
 		killRanks();
 		m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
 		m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
 	}
+
+	uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	uint32_t*messageInInts=(uint32_t*)message;
+	messageInInts[0]=m_parameters.getNumberOfFiles();
+
+	for(int i=0;i<(int)m_parameters.getNumberOfFiles();i++){
+		messageInInts[1+i]=m_parameters.getNumberOfSequences(i);
+	}
+	
+	for(int i=0;i<getSize();i++){
+		Message aMessage(message,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
+			MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_LOAD_SEQUENCES,getRank());
+		m_outbox.push_back(aMessage);
+	}
+	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+}
+
+void Machine::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
+	m_sl.loadSequences(getRank(),getSize(),
+	&m_outbox,
+	&m_outboxAllocator,
+	&m_loadSequenceStep,
+	m_bubbleData,
+	&m_lastTime,
+	&m_parameters,&m_master_mode,&m_slave_mode
+);
 }
 
 void Machine::call_RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION(){
 	m_timePrinter.printElapsedTime("Distribution of sequence reads");
 	cout<<endl;
 	
-	cout<<"Rank "<<getRank()<<" tells others to compute vertices"<<endl;
-
 	for(int i=0;i<getSize();i++){
 		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_START_VERTICES_DISTRIBUTION,getRank());
 		m_outbox.push_back(aMessage);
@@ -634,8 +634,6 @@ void Machine::call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS(){
 	m_numberOfMachinesReadyToSendDistribution=-1;
 	m_timePrinter.printElapsedTime("Distribution of vertices & edges");
 	cout<<endl;
-	cout<<"Rank 0 computes the coverage distribution."<<endl;
-
 
 	for(int i=0;i<getSize();i++){
 		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, i, RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION,getRank());
@@ -706,7 +704,6 @@ void Machine::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
 void Machine::call_RAY_MASTER_MODE_TRIGGER_SEEDING(){
 	m_timePrinter.printElapsedTime("Indexing of sequence reads");
 	cout<<endl;
-	cout<<"Rank 0 tells other ranks to calculate their seeds."<<endl;
 	m_readyToSeed=-1;
 	m_numberOfRanksDoneSeeding=0;
 	// tell everyone to seed now.
@@ -729,7 +726,6 @@ void Machine::call_RAY_SLAVE_MODE_START_SEEDING(){
 void Machine::call_RAY_MASTER_MODE_TRIGGER_DETECTION(){
 	m_timePrinter.printElapsedTime("Computation of seeds");
 	cout<<endl;
-	cout<<"Rank 0 asks others to approximate library sizes."<<endl;
 	m_numberOfRanksDoneSeeding=-1;
 	for(int i=0;i<getSize();i++){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION,getRank());

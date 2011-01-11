@@ -35,6 +35,10 @@
 #include<Parameters.h>
 
 void MessageProcessor::call_RAY_MPI_TAG_LOAD_SEQUENCES(Message*message){
+	uint32_t*incoming=(uint32_t*)message->getBuffer();
+	for(int i=0;i<(int)incoming[0];i++){
+		parameters->setNumberOfSequences(incoming[1+i]);
+	}
 	(*m_mode)=RAY_SLAVE_MODE_LOAD_SEQUENCES;
 }
 

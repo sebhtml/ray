@@ -586,17 +586,29 @@ void MemoryConsumptionReducer::processConfetti(uint64_t*a,int b){
 			continue;
 		}
 		m_processedTasks->insert(task);
+
+		#ifdef ASSERT
+		assert(task<(int)m_confettiToCheck->size());
+		assert(task<(int)m_confettiMaxCoverage->size());
+		#endif
+
 		vector<uint64_t>*vertices=&(*m_confettiToCheck)[task];
 		int maxCoverage=(*m_confettiMaxCoverage)[task];
 		if(coverage<maxCoverage){
 			continue;
 		}
+		#ifdef ASSERT
+		assert(vertices->size()>0);
+		#endif
 		for(int j=0;j<(int)vertices->size();j++){
 			uint64_t vertex=vertices->at(j);
 			m_toRemove->push_back(vertex);
 		}
 	}
 	m_pendingMessages--;
+	#ifdef ASSERT
+	assert(m_pendingMessages>=0);
+	#endif
 }
 
 map<uint64_t,vector<uint64_t> >*MemoryConsumptionReducer::getIngoingEdges(){

@@ -58,7 +58,8 @@ class Parameters{
 	bool m_initiated;
 	int m_numberOfSequences;
 	vector<string> m_singleEndReadsFile;
-	vector<int> m_numberOfSequencesInFile;
+	vector<uint64_t> m_numberOfSequencesInFile;
+	uint64_t m_totalNumberOfSequences;
 	map<int,int> m_fileLibrary;
 	set<int> m_automaticLibraries;
 
@@ -108,8 +109,8 @@ public:
 	void computeAverageDistances();
 	int getObservedAverageDistance(int library);
 	int getObservedStandardDeviation(int library);
-	int getNumberOfSequences(int n);
-	void setNumberOfSequences(int n);
+	uint64_t getNumberOfSequences(int n);
+	void setNumberOfSequences(uint64_t n);
 	int getNumberOfFiles();
 	bool isAutomatic(int library);
 	int getLibrary(int file);
@@ -128,6 +129,9 @@ public:
 	bool runReducer();
 	void showUsage();
 	int getReducerValue();
+
+	int getRankFromGlobalId(uint64_t a);
+	int getIdFromGlobalId(uint64_t a);
 };
 
 #endif

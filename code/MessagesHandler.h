@@ -29,23 +29,18 @@
 #include<RingAllocator.h>
 #include<map>
 #include<StaticVector.h>
-#include<PendingRequest.h>
 using namespace std;
-
 
 class MessagesHandler{
 	int m_ringSize;
 	int m_head;
 	MPI_Request*m_ring;
 	char*m_buffers;
-
 	uint64_t*m_receivedMessages;
 	int m_rank;
 	int m_size;
-
 	uint64_t*m_allReceivedMessages;
 	int*m_allCounts;
-
 	map<int,map<int,int> > m_buckets;
 
 public:

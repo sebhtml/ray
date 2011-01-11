@@ -51,7 +51,6 @@ void Library::updateDistances(){
 
 	m_timePrinter->printElapsedTime("Computation of library sizes");
 	cout<<endl;
-	cout<<"Rank 0 asks others to extend their seeds."<<endl;
 
 	(*m_master_mode)=RAY_MASTER_MODE_TRIGGER_EXTENSIONS;
 	m_ed->m_EXTENSION_rank=-1;

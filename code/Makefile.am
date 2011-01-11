@@ -12,7 +12,7 @@ libRay_a_SOURCES = \
 MemoryConsumptionReducer.h MemoryConsumptionReducer.cpp \
 MyForestIterator.cpp MyForestIterator.h crypto.cpp crypto.h \
 MyStack.h EarlyStoppingTechnology.h EarlyStoppingTechnology.cpp ArrayOfReads.h ArrayOfReads.cpp \
-PendingRequest.h RingAllocator.cpp RingAllocator.h StaticVector.cpp StaticVector.h \
+RingAllocator.cpp RingAllocator.h StaticVector.cpp StaticVector.h \
 MessagesHandler.h MessagesHandler.cpp slave_modes.h master_modes.h mpi_tags.h \
 SeedingData.cpp SeedingData.h Library.h Library.cpp FastaLoader.h FastaLoader.cpp FastqLoader.h \
 FastqLoader.cpp BubbleData.h BubbleTool.cpp BubbleTool.h BufferedData.cpp \

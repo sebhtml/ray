@@ -31,19 +31,22 @@ void TimePrinter::printElapsedTime(string description){
 	struct tm * timeinfo;
 	timeinfo=localtime(&m_endingTime);
 	cout<<endl;
-	cout<<"//////////////////////---------------------------\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"<<endl;
+	cout<<"***"<<endl;
                
-	cout<<endl<<"Rank 0 reports the elapsed time, "<<asctime(timeinfo)<<""<<"Step: "<<description<<endl<<"Elapsed time: ";
+	cout<<"Step: "<<description<<endl;
+	cout<<"Date: "<<asctime(timeinfo);
+	cout<<"Elapsed time: ";
 	printDifference(differenceWithLast);
 	int totalSeconds=m_endingTime-m_startingTime;
-	cout<<"\nSince beginning: ";
+	cout<<endl;
+	cout<<"Since beginning: ";
 	printDifference(totalSeconds);
 	cout<<endl;
 	m_descriptions.push_back(description);
 	m_durations.push_back(differenceWithLast);
 
 	cout<<endl;
-	cout<<"\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\---------------------------//////////////////////"<<endl;
+	cout<<"***"<<endl;
 	cout<<endl;
 
 	fflush(stdout);
