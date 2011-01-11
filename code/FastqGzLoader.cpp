@@ -53,7 +53,7 @@ void FastqGzLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAlloc
 	while(loadedSequences<maxToLoad && Z_NULL!=gzgets(m_f,buffer,4096)){
 		if(rotatingVariable==1){
 			Read t;
-			t.copy(NULL,buffer,seqMyAllocator,true);
+			t.constructor(buffer,seqMyAllocator,true);
 			reads->push_back(&t);
 		}
 		rotatingVariable++;

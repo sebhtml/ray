@@ -39,7 +39,7 @@ int FastaLoader::load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator)
 				string sequenceStr=sequence.str();
 
 				Read t;
-				t.copy(NULL,sequenceStr.c_str(),seqMyAllocator,true);
+				t.constructor(sequenceStr.c_str(),seqMyAllocator,true);
 				reads->push_back(&t);
 			}
 			id=buffer;
@@ -54,7 +54,7 @@ int FastaLoader::load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator)
 		quality<< "F";
 	}
 	Read t;
-	t.copy(NULL,sequenceStr.c_str(),seqMyAllocator,true);
+	t.constructor(sequenceStr.c_str(),seqMyAllocator,true);
 	reads->push_back(&t);
 
 	f.close();

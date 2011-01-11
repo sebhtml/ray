@@ -42,10 +42,11 @@ void SequencesLoader::registerSequence(){
 	#endif
 
 	Read*theRead=m_loader.at(m_distribution_sequence_id);
-	char*read=theRead->getSeq();
+	string aSeq=theRead->getSeq();
+	const char*read=aSeq.c_str();
 
 	Read myRead;
-	myRead.copy(NULL,read,&(*m_persistentAllocator),true);
+	myRead.constructor(read,&(*m_persistentAllocator),true);
 	m_myReads->push_back(&myRead);
 
 	if(false && m_LOADER_isLeftFile){
@@ -156,7 +157,8 @@ bool SequencesLoader::computePartition(int rank,int size,
 			char qlt[20000];
 			for(int i=0;i<(int)m_loader.size();i++){
 				int iid=m_distribution_currentSequenceId+i;
-				char*seq=m_loader.at(i)->getSeq();
+				string aSeq=m_loader.at(i)->getSeq();
+				const char*seq=aSeq.c_str();
 				#ifdef ASSERT
 				assert(seq!=NULL);
 				#endif

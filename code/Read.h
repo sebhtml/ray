@@ -36,21 +36,19 @@ using namespace std;
  * and a (possible) link to paired information.
  */
 class Read{
-	char*m_sequence;
+	uint16_t m_length;
+	uint8_t *m_sequence;
 	PairedRead*m_pairedRead;// the read on the left
 
 	char*trim(char*a,const char*b);
 public:
-	Read();
-	Read(const char*id,const char*sequence,MyAllocator*seqMyAllocator);
-	~Read();
-	char*getSeq();
-	int length();
+	void constructor(const char*sequence,MyAllocator*seqMyAllocator,bool trim);
+	string getSeq()const;
+	int length()const;
 	uint64_t getVertex(int pos,int w,char strand,bool color)const;
-	void copy(const char*id,const char*sequence,MyAllocator*seqMyAllocator,bool trim);
 	void setPairedRead(PairedRead*t);
-	bool hasPairedRead();
-	PairedRead*getPairedRead();
+	bool hasPairedRead()const;
+	PairedRead*getPairedRead()const;
 };
 
 #endif

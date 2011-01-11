@@ -10,6 +10,8 @@ highly-repetitive vertex.
 stored on compute nodes.
 * Parallel reading of sequence files.
 * Some improvements on the experimental memory consumption reducer.
+* Sequence reads are now encoded: each nucleotide is stored with 2 bits
+instead of 8 bits.
 
 
 = 1.2.1 'stringray' =

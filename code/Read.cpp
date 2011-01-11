@@ -28,10 +28,7 @@
 
 using namespace  std;
 
-Read::Read(){
-	m_sequence=NULL;
-	m_pairedRead=NULL;
-}
+// #define __READ_VERBOSITY
 
 char*Read::trim(char*buffer,const char*sequence){
 	int theLen=strlen(sequence);
@@ -67,32 +64,94 @@ char*Read::trim(char*buffer,const char*sequence){
 	return corrected;
 }
 
-void Read::copy(const char*id,const char*sequence,MyAllocator*seqMyAllocator,bool trimFlag){
+void Read::constructor(const char*sequence,MyAllocator*seqMyAllocator,bool trimFlag){
+	#ifdef __READ_VERBOSITY
+	cout<<"In="<<sequence<<endl;
+	#endif
 	if(trimFlag && strlen(sequence)<4096){
 		char buffer[4096];
-		char*corrected=trim(buffer,sequence);
-		m_sequence=(char*)seqMyAllocator->allocate(strlen(corrected)+1);
-		strcpy(m_sequence,corrected); // memcpy + \0
-	}else{
-		m_sequence=(char*)seqMyAllocator->allocate(strlen(sequence)+1);
-		strcpy(m_sequence,sequence); // memcpy + \0
+		sequence=trim(buffer,sequence);
 	}
+	int length=strlen(sequence);
+	int requiredBits=2*length;
+	int modulo=requiredBits%8;
+	if(modulo!=0){
+		int bitsToAdd=8-modulo;
+		requiredBits+=bitsToAdd;
+	}
+
+	#ifdef ASSERT
+	assert(requiredBits%8==0);
+	#endif
+
+	int requiredBytes=requiredBits/8;
+
+	uint8_t workingBuffer[4096];
+	for(int i=0;i<requiredBytes;i++){
+		workingBuffer[i]=0;
+	}
+
+	for(int position=0;position<length;position++){
+		char nucleotide=sequence[position];
+		if(nucleotide!='A'&&nucleotide!='T'&&nucleotide!='C'&&nucleotide!='G'){
+			nucleotide='A';
+		}
+		uint8_t code=charToCode(nucleotide);
+		#ifdef __READ_VERBOSITY
+		if(position%4==0){
+			cout<<"|";
+		}
+		cout<<" "<<(int)code;
+		#endif
+		int positionInWorkingBuffer=position/4;
+		int codePositionInWord=position%4;
+		uint8_t wordToUpdate=workingBuffer[positionInWorkingBuffer];
+		// shift the code and or with the word to update
+		code=(code<<(codePositionInWord*2));
+		wordToUpdate=wordToUpdate|code;
+		workingBuffer[positionInWorkingBuffer]=wordToUpdate;
+	}
+	#ifdef __READ_VERBOSITY
+	cout<<endl;
+	for(int i=0;i<requiredBytes;i++){
+		cout<<" "<<(int)workingBuffer[i];
+	}
+
+	cout<<endl;
+	#endif
+
+	m_length=length;
+
+	m_sequence=(uint8_t*)seqMyAllocator->allocate(requiredBytes*sizeof(uint8_t));
+	memcpy(m_sequence,workingBuffer,requiredBytes);
 	m_pairedRead=NULL;
+
+	#ifdef __READ_VERBOSITY
+	cout<<"Out="<<getSeq()<<endl;
+	cout<<endl;
+	#endif
 }
 
-Read::Read(const char*id,const char*sequence,MyAllocator*seqMyAllocator){
-	copy(id,sequence,seqMyAllocator,true);
+string Read::getSeq() const{
+	char workingBuffer[4096];
+
+	for(int position=0;position<m_length;position++){
+		int positionInWorkingBuffer=position/4;
+		uint8_t word=m_sequence[positionInWorkingBuffer];
+		int codePositionInWord=position%4;
+		uint8_t code=(word<<(6-codePositionInWord*2));//eliminate bits before
+		code=(code>>6);
+		char nucleotide=codeToChar(code);
+		workingBuffer[position]=nucleotide;
+	}
+	workingBuffer[m_length]='\0';
+	string aString(workingBuffer);
+
+	return aString;
 }
 
-Read::~Read(){
-}
-
-char*Read::getSeq(){
-	return m_sequence;
-}
-
-int Read::length(){
-	return strlen(m_sequence);
+int Read::length()const{
+	return getSeq().length();
 }
 
 /*                      
@@ -101,18 +160,19 @@ int Read::length(){
  *                     p p-1 p-2               0
  */
 uint64_t Read::getVertex(int pos,int w,char strand,bool color) const {
-	return kmerAtPosition(m_sequence,pos,w,strand,color);
+	string seq=getSeq();
+	return kmerAtPosition(seq.c_str(),pos,w,strand,color);
 }
 
 void Read::setPairedRead(PairedRead*t){
 	m_pairedRead=t;
 }
 
-bool Read::hasPairedRead(){
+bool Read::hasPairedRead()const{
 	return m_pairedRead!=NULL;
 }
 
-PairedRead*Read::getPairedRead(){
+PairedRead*Read::getPairedRead()const{
 	return m_pairedRead;
 }
 

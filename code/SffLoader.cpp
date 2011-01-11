@@ -195,7 +195,7 @@ void SffLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator
 			continue;
 		}
 		Read read;
-		read.copy(Name,sequence.substr(first-1,last-first+1).c_str(),seqMyAllocator,true);
+		read.constructor(sequence.substr(first-1,last-first+1).c_str(),seqMyAllocator,true);
 		reads->push_back(&read);
 	
 		loadedSequences++;

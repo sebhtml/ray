@@ -57,7 +57,7 @@ void FastqBz2Loader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllo
 	while(loadedSequences<maxToLoad&&NULL!=m_reader.readLine(buffer,4096)){
 		if(rotatingVariable==1){
 			Read t;
-			t.copy(NULL,buffer,seqMyAllocator,true);
+			t.constructor(buffer,seqMyAllocator,true);
 			reads->push_back(&t);
 		}
 

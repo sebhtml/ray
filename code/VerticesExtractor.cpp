@@ -91,7 +91,8 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			fflush(stdout);
 		}
 	}else{
-		char*readSequence=(*m_myReads)[(*m_mode_send_vertices_sequence_id)]->getSeq();
+		string aSeq=(*m_myReads)[(*m_mode_send_vertices_sequence_id)]->getSeq();
+		const char*readSequence=aSeq.c_str();
 		int len=strlen(readSequence);
 
 		if(len<m_wordSize){

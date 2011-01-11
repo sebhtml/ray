@@ -1604,7 +1604,8 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE(Message*message){
 	#ifdef ASSERT
 	assert(t!=NULL);
 	#endif
-	char*seq=m_myReads->at(index)->getSeq();
+	string aSeq=m_myReads->at(index)->getSeq();
+	const char*seq=aSeq.c_str();
 
 	int beforeRounding=3*sizeof(uint64_t)+strlen(seq)+1;
 	int toAllocate=roundNumber(beforeRounding,sizeof(uint64_t));

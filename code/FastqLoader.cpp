@@ -51,7 +51,7 @@ void FastqLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocat
 	while(loadedSequences<maxToLoad && NULL!=fgets(buffer,4096,m_f)){
 		if(rotatingVariable==1){
 			Read t;
-			t.copy(NULL,buffer,seqMyAllocator,true);
+			t.constructor(buffer,seqMyAllocator,true);
 			//cout<<buffer<<endl;
 			reads->push_back(&t);
 		}

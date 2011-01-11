@@ -62,7 +62,8 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 	#ifdef ASSERT
 	assert(m_theSequenceId<(int)m_myReads->size());
 	#endif
-	char*sequence=m_myReads->at(m_theSequenceId)->getSeq();
+	string aSeq=m_myReads->at(m_theSequenceId)->getSeq();
+	const char*sequence=aSeq.c_str();
 	int theLength=strlen(sequence);
 	if((int)theLength<m_wordSize){
 		m_theSequenceId++;
