@@ -5,7 +5,7 @@ suffix=$2
 echo ""
 echo "BEGIN $i $(date)"
 echo ""
-rm *.fasta *.afg
+rm -f *.fasta *.afg
 bash $i
 echo ""
 echo "END^^ $i $(date)"
