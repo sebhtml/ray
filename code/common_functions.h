@@ -46,8 +46,6 @@ using namespace std;
 
 #define SHOW_PROGRESS
 
-#define ASCII_END_OF_TRANSMISSION 0x04 // end of transmission.
-
 // the maximum of processes is utilized to construct unique hyperfusions IDs
 #define MAX_NUMBER_OF_MPI_PROCESSES 100000
 
@@ -72,8 +70,8 @@ using namespace std;
  *
  */
 
-#define MAXIMUM_MESSAGE_SIZE_IN_BYTES     131072 // 128 KiB
-//#define MAXIMUM_MESSAGE_SIZE_IN_BYTES 4000
+//#define MAXIMUM_MESSAGE_SIZE_IN_BYTES     131072 // 128 KiB
+#define MAXIMUM_MESSAGE_SIZE_IN_BYTES 4000
 
 #define MASTER_RANK 0x0
 

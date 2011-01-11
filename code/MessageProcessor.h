@@ -129,8 +129,6 @@ class MessageProcessor{
 	void assignHandlers();
 
 	void call_RAY_MPI_TAG_WELCOME(Message*message);
-	void call_RAY_MPI_TAG_SEND_SEQUENCE(Message*message);
-	void call_RAY_MPI_TAG_SEND_SEQUENCE_REPLY(Message*message);
 	void call_RAY_MPI_TAG_SEQUENCES_READY(Message*message);
 	void call_RAY_MPI_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS(Message*message);
 	void call_RAY_MPI_TAG_VERTICES_DATA(Message*message);
@@ -196,7 +194,6 @@ class MessageProcessor{
 	void call_RAY_MPI_TAG_COMMUNICATION_STABILITY_MESSAGE(Message*message);
 	void call_RAY_MPI_TAG_ASK_VERTEX_PATH(Message*message);
 	void call_RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY(Message*message);
-	void call_RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE(Message*message);
 	void call_RAY_MPI_TAG_HAS_PAIRED_READ(Message*message);
 	void call_RAY_MPI_TAG_HAS_PAIRED_READ_REPLY(Message*message);
 	void call_RAY_MPI_TAG_GET_PAIRED_READ(Message*message);
@@ -221,12 +218,10 @@ class MessageProcessor{
 	void call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE(Message*message);
 	void call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY(Message*message);
 	void call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REPLY(Message*message);
-	void call_RAY_MPI_TAG_SEND_SEQUENCE_REGULATOR(Message*message);
 	void call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message);
 	void call_RAY_MPI_TAG_VERTICES_DATA_REPLY(Message*message);
 	void call_RAY_MPI_TAG_IN_EDGES_DATA_REPLY(Message*message);
 	void call_RAY_MPI_TAG_OUT_EDGES_DATA_REPLY(Message*message);
-	void call_RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE_REPLY(Message*message);
 	void call_RAY_MPI_TAG_EXTENSION_DATA_REPLY(Message*message);
 	void call_RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY(Message*message);
 	void call_RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION_REPLY(Message*message);
@@ -265,6 +260,7 @@ class MessageProcessor{
 	void call_RAY_MPI_TAG_CHECK_VERTEX_REPLY(Message*message);
 	void call_RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY(Message*message);
 	void call_RAY_MPI_TAG_MUST_RUN_REDUCER_FROM_MASTER(Message*message);
+	void call_RAY_MPI_TAG_LOAD_SEQUENCES(Message*message);
 
 public:
 	void constructor(MessagesHandler*m_messagesHandler,

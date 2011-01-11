@@ -25,7 +25,7 @@
 #include<RingAllocator.h>
 #include<StaticVector.h>
 
-#define DEBUG_BUFFERS
+//#define DEBUG_BUFFERS
 // the capacity is measured in uint64_t
 void BufferedData::constructor(int numberOfRanks,int capacity){
 	#ifdef DEBUG_BUFFERS

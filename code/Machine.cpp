@@ -135,12 +135,6 @@ void Machine::start(){
 	m_inboxAllocator.constructor(MAX_ALLOCATED_MESSAGES_IN_INBOX,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	m_outboxAllocator.constructor(m_maximumAllocatedOutputBuffers,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
-	printf("m_inboxAllocator: %i\n",MAX_ALLOCATED_MESSAGES_IN_INBOX);
-	printf("m_outboxAllocator: %i\n",m_maximumAllocatedOutputBuffers);
-	printf("inbox: %i\n",MAX_ALLOCATED_MESSAGES_IN_INBOX);
-	printf("outbox: %i\n",MAX_ALLOCATED_MESSAGES_IN_OUTBOX);
-	fflush(stdout);
-
 	m_inbox.constructor(MAX_ALLOCATED_MESSAGES_IN_INBOX);
 	m_outbox.constructor(MAX_ALLOCATED_MESSAGES_IN_OUTBOX);
 
@@ -188,7 +182,7 @@ void Machine::start(){
 
 
 	MPI_Barrier(MPI_COMM_WORLD);
-	m_sl.constructor(m_size);
+	m_sl.constructor(m_size,&m_persistentAllocator,&m_myReads);
 
 	int maximumNumberOfProcesses=65536;
 	if(getSize()>maximumNumberOfProcesses){
@@ -346,7 +340,8 @@ m_seedingData,
 	}else{
 		if(isMaster()){
 			m_master_mode=RAY_MASTER_MODE_LOAD_CONFIG;
-			m_sl.constructor(getSize());
+			m_sl.constructor(getSize(),&m_persistentAllocator,
+				&m_myReads);
 		}
 
 
@@ -511,15 +506,23 @@ void Machine::call_RAY_MASTER_MODE_LOAD_CONFIG(){
 }
 
 void Machine::call_RAY_MASTER_MODE_LOAD_SEQUENCES(){
+	for(int i=0;i<getSize();i++){
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_LOAD_SEQUENCES,getRank());
+		m_outbox.push_back(aMessage);
+	}
+	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+}
+
+void Machine::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
 	bool res=m_sl.loadSequences(getRank(),getSize(),
 	&m_outbox,
 	&m_outboxAllocator,
 	&m_loadSequenceStep,
 	m_bubbleData,
 	&m_lastTime,
-	&m_parameters,&m_master_mode
+	&m_parameters,&m_master_mode,&m_slave_mode
 );
-	if(!res){
+	if(isMaster()&&!res){
 		m_aborted=true;
 		killRanks();
 		m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
@@ -1412,4 +1415,5 @@ void Machine::assignSlaveHandlers(){
 	m_slave_methods[RAY_SLAVE_MODE_EXTENSION]=&Machine::call_RAY_SLAVE_MODE_EXTENSION;
 	m_slave_methods[RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION]=&Machine::call_RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION;
 	m_slave_methods[RAY_SLAVE_MODE_DELETE_VERTICES]=&Machine::call_RAY_SLAVE_MODE_DELETE_VERTICES;
+	m_slave_methods[RAY_SLAVE_MODE_LOAD_SEQUENCES]=&Machine::call_RAY_SLAVE_MODE_LOAD_SEQUENCES;
 }

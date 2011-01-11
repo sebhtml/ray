@@ -32,7 +32,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 // slave modes
 
 enum{
-
+RAY_SLAVE_MODE_LOAD_SEQUENCES,
 RAY_SLAVE_MODE_EXTENSION_ASK,
 RAY_SLAVE_MODE_START_SEEDING,
 RAY_SLAVE_MODE_DO_NOTHING,

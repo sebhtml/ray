@@ -324,6 +324,7 @@ class Machine{
 	void call_RAY_SLAVE_MODE_INDEX_SEQUENCES();
 	void call_RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION();
 	void call_RAY_SLAVE_MODE_DELETE_VERTICES();
+	void call_RAY_SLAVE_MODE_LOAD_SEQUENCES();
 
 public:
 	/*

@@ -8,7 +8,7 @@ equal to max(17,number of MPI ranks).
 highly-repetitive vertex.
 * Implemented a chunk allocator for the arrays of sequencing reads locally
 stored on compute nodes.
-
+* Parallel reading of sequence files.
 
 = 1.2.1 'stringray' =
 2010-12-30

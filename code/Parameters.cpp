@@ -396,6 +396,10 @@ void Parameters::parseCommands(){
 		cout<<endl;
 	}
 
+	int maximumNumberOfFiles=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint32_t);
+	
+	assert((int)m_singleEndReadsFile.size()<=maximumNumberOfFiles);
+
 	uint64_t result=1;
 	for(int p=0;p<m_wordSize;p++){
 		result*=4;

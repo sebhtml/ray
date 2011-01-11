@@ -35,15 +35,10 @@
 #include<time.h>
 using namespace std;
 
-union PaddedData{
-	uint64_t large[2];
-	uint32_t medium[4];
-};
-
-
-
 class SequencesLoader{
-	BufferedData m_bufferedData;
+	MyAllocator*m_persistentAllocator;
+	ArrayOfReads*m_myReads;
+	Parameters*m_parameters;
 
 	int m_lastPrintedId;
 	int m_distribution_currentSequenceId;
@@ -62,40 +57,26 @@ class SequencesLoader{
 	int m_produced;
 	int m_waitingNumber;
 
-	char*m_buffers;
-	int*m_entries;
-	int*m_numberOfSequences;
-	int*m_numberOfFlushedSequences;
-
+	int m_rank;
 	int m_size;
 
 	bool m_send_sequences_done;
-
-	int flushAll(RingAllocator*m_outboxAllocator,StaticVector*m_outbox);
-	void flush(int rank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox);
-	void appendSequence(int rank,char*sequence);
-	int getUsedSpace(int rank);
-	int getSpaceLeft(int rank);
-
-	bool isEmpty();
+	void registerSequence();
 
 public:
 	/**
  *	load sequences from disk, and distribute them over the network.
  */
 
-	bool isReady();
 	bool loadSequences(int rank,int size,StaticVector*m_outbox,
 	RingAllocator*m_outboxAllocator,
 	bool*m_loadSequenceStep,
 	BubbleData*m_bubbleData,
 	time_t*m_lastTime,
-	Parameters*m_parameters,int*m_master_mode
-	
+	Parameters*m_parameters,int*m_master_mode,int*m_mode
 );
 
-	SequencesLoader();
-	void setReadiness();
-	void constructor(int size);
+	void constructor(int size,MyAllocator*m_persistentAllocator,
+		ArrayOfReads*m_myReads);
 };
 #endif

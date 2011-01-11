@@ -34,6 +34,10 @@
 #include<FusionData.h>
 #include<Parameters.h>
 
+void MessageProcessor::call_RAY_MPI_TAG_LOAD_SEQUENCES(Message*message){
+	(*m_mode)=RAY_SLAVE_MODE_LOAD_SEQUENCES;
+}
+
 void MessageProcessor::processMessage(Message*message){
 	int tag=message->getTag();
 	FNMETHOD f=m_methods[tag];
@@ -313,52 +317,9 @@ void MessageProcessor::call_RAY_MPI_TAG_MUST_RUN_REDUCER(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_WELCOME(Message*message){
 }
 
-void MessageProcessor::call_RAY_MPI_TAG_SEND_SEQUENCE_REGULATOR(Message*message){
-	call_RAY_MPI_TAG_SEND_SEQUENCE(message);
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_SEND_SEQUENCE_REPLY,rank);
-	m_outbox->push_back(aMessage);
-}
-
 void MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message){
 	(*m_mode)=RAY_SLAVE_MODE_INDEX_SEQUENCES;
 	m_si->constructor(size);
-}
-
-/*
- * seq1.........\0 seq2.......\0 \0  <--------second \0 indicates end of stream
- *
- *
- *
- */
-void MessageProcessor::call_RAY_MPI_TAG_SEND_SEQUENCE(Message*message){
-	char*buffer=(char*)message->getBuffer();
-	int currentPosition=0;
-
-	#ifdef ASSERT
-	int n=0;
-	while(buffer[currentPosition]!=ASCII_END_OF_TRANSMISSION){
-		currentPosition+=(strlen(buffer+currentPosition)+1);
-		n++;
-	}
-	currentPosition=0;
-	assert(n>0);
-	#endif
-
-	while(buffer[currentPosition]!=ASCII_END_OF_TRANSMISSION){
-		Read myRead;
-		myRead.copy(NULL,buffer+currentPosition,&(*m_persistentAllocator),false); // no trimming
-		m_myReads->push_back(&myRead);
-		if((*m_myReads).size()%100000==0){
-			printf("Rank %i has %i sequence reads\n",rank,(int)(*m_myReads).size());
-			fflush(stdout);
-		}
-		// move currentPosition after the first \0 encountered.
-		currentPosition+=(strlen(buffer+currentPosition)+1);
-	}
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_SEND_SEQUENCE_REPLY(Message*message){
-	m_sequencesLoader->setReadiness();
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_SEQUENCES_READY(Message*message){
@@ -1344,47 +1305,6 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY(Message*message){
 	m_fusionData->m_FUSION_receivedPath.constructor(pathId,position);
 }
 
-void MessageProcessor::call_RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE_REPLY(Message*message){
-	m_sequencesLoader->setReadiness();
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE(Message*message){
-	int count=message->getCount();
-	void*buffer=message->getBuffer();
-	uint64_t*incoming=(uint64_t*)buffer;
-	for(int i=0;i<count;i+=2){
-		PaddedData padded;
-		padded.large[0]=incoming[i+0];
-		padded.large[1]=incoming[i+1];
-		
-		int currentReadId=padded.medium[0];
-		int otherRank=padded.medium[1];
-		int otherId=padded.medium[2];
-		int library=padded.medium[3];
-
-		PairedRead*t=(PairedRead*)(*m_persistentAllocator).allocate(sizeof(PairedRead));
-		#ifdef ASSERT
-		if(otherRank>=size){
-			cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" otherRank="<<otherRank<<" size="<<size<<endl;
-		}
-		assert(otherRank<size);
-		#endif
-
-		t->constructor(otherRank,otherId,library);
-
-		#ifdef ASSERT
-		if(currentReadId>=(int)m_myReads->size()){
-			cout<<"currentReadId="<<currentReadId<<" size="<<m_myReads->size()<<endl;
-		}
-		assert(currentReadId<(int)m_myReads->size());
-		#endif
-
-		(*m_myReads)[currentReadId]->setPairedRead(t);
-	}
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE_REPLY,rank);
-	m_outbox->push_back(aMessage);
-}
-
 void MessageProcessor::call_RAY_MPI_TAG_HAS_PAIRED_READ(Message*message){
 	int source=message->getSource();
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
@@ -1833,9 +1753,6 @@ MessageProcessor::MessageProcessor(){
 
 void MessageProcessor::assignHandlers(){
 	m_methods[RAY_MPI_TAG_WELCOME]=&MessageProcessor::call_RAY_MPI_TAG_WELCOME;
-	m_methods[RAY_MPI_TAG_SEND_SEQUENCE]=&MessageProcessor::call_RAY_MPI_TAG_SEND_SEQUENCE;
-	m_methods[RAY_MPI_TAG_SEND_SEQUENCE_REGULATOR]=&MessageProcessor::call_RAY_MPI_TAG_SEND_SEQUENCE_REGULATOR;
-	m_methods[RAY_MPI_TAG_SEND_SEQUENCE_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_SEND_SEQUENCE_REPLY;
 	m_methods[RAY_MPI_TAG_SEQUENCES_READY]=&MessageProcessor::call_RAY_MPI_TAG_SEQUENCES_READY;
 	m_methods[RAY_MPI_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS]=&MessageProcessor::call_RAY_MPI_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS;
 	m_methods[RAY_MPI_TAG_VERTICES_DATA]=&MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA;
@@ -1901,8 +1818,6 @@ void MessageProcessor::assignHandlers(){
 	m_methods[RAY_MPI_TAG_COMMUNICATION_STABILITY_MESSAGE]=&MessageProcessor::call_RAY_MPI_TAG_COMMUNICATION_STABILITY_MESSAGE;
 	m_methods[RAY_MPI_TAG_ASK_VERTEX_PATH]=&MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH;
 	m_methods[RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY;
-	m_methods[RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE]=&MessageProcessor::call_RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE;
-	m_methods[RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_INDEX_PAIRED_SEQUENCE_REPLY;
 	m_methods[RAY_MPI_TAG_HAS_PAIRED_READ]=&MessageProcessor::call_RAY_MPI_TAG_HAS_PAIRED_READ;
 	m_methods[RAY_MPI_TAG_HAS_PAIRED_READ_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_HAS_PAIRED_READ_REPLY;
 	m_methods[RAY_MPI_TAG_GET_PAIRED_READ]=&MessageProcessor::call_RAY_MPI_TAG_GET_PAIRED_READ;
@@ -1956,6 +1871,7 @@ void MessageProcessor::assignHandlers(){
 	m_methods[RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY;
 	m_methods[RAY_MPI_TAG_SET_WORD_SIZE]=&MessageProcessor::call_RAY_MPI_TAG_SET_WORD_SIZE;
 	m_methods[RAY_MPI_TAG_MUST_RUN_REDUCER_FROM_MASTER]=&MessageProcessor::call_RAY_MPI_TAG_MUST_RUN_REDUCER_FROM_MASTER;
+	m_methods[RAY_MPI_TAG_LOAD_SEQUENCES]=&MessageProcessor::call_RAY_MPI_TAG_LOAD_SEQUENCES;
 }
 
 
