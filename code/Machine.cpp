@@ -151,6 +151,7 @@ void Machine::start(){
 	m_startEdgeDistribution=false;
 
 	m_ranksDoneAttachingReads=0;
+	m_reducer.constructor(getSize());
 
 	int pid=getpid();
 	printf("Rank %i is running as UNIX process %i on %s\n",getRank(),pid,serverName);

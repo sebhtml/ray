@@ -2,23 +2,13 @@ i=$1
 suffix=$2
 
 (
-echo "RegressionTest"
 echo ""
-echo "FILE = $i"
-date
+echo "BEGIN $i $(date)"
 echo ""
-echo "OH HAI"
-echo ""
-echo "======== BEGIN >>>"
-echo ""
+rm *.fasta *.afg
 bash $i
 echo ""
-echo "======== END^^ >>>"
+echo "END^^ $i $(date)"
 echo ""
-echo "K THX BYE"
-echo ""
-echo "..."
-date
-echo ""
-)|tee $i-$suffix
+)|& tee $i-$suffix
 
