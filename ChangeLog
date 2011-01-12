@@ -3,6 +3,7 @@
 
 * Fixed a bug leading to a segmentation fault when providing an invalid file
 or no file at all. This bug was introduced in Ray 1.2.2.
+* Fixed a bug leading to a hang when providing invalid arguments.
 
 
 = 1.2.2 'X-ray' =
