@@ -509,6 +509,7 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER(Mes
 void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message){
 	printf("Rank %i has %i vertices (completed)\n",rank,(int)m_subgraph->size());
 	fflush(stdout);
+	showMemoryUsage(rank);
 
 	(*m_mode_send_coverage_iterator)=0;
 	(*m_mode_sendDistribution)=true;
@@ -555,6 +556,8 @@ void MessageProcessor::call_RAY_MPI_TAG_READY_TO_SEED(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
+	showMemoryUsage(rank);
+
 	(*m_mode)=RAY_SLAVE_MODE_START_SEEDING;
 	map<int,map<int,int> > edgesDistribution;
 	
@@ -1497,6 +1500,7 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_PATH_VERTEX_REPLY(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION(Message*message){
+	showMemoryUsage(rank);
 	(*m_mode)=RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION;
 	(m_seedingData->m_SEEDING_i)=0;
 	(m_ed->m_EXTENSION_currentPosition)=0;
