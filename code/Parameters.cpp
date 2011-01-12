@@ -58,9 +58,9 @@ void Parameters::loadCommandsFromFile(char*file){
 	while(!f.eof()){
 		string token="";
 		f>>token;
-		if(token!="")
+		if(token!=""){
 			m_commands.push_back(token);
-
+		}
 	}
 	f.close();
 }
@@ -77,13 +77,15 @@ void Parameters::parseCommands(){
 
 	if(m_rank==MASTER_RANK){
 		cout<<endl;
+		cout<<"Number of MPI ranks: "<<m_size<<endl;
+		cout<<endl;
 		cout<<"Ray command:"<<endl<<endl;
 
 		for(int i=0;i<(int)m_commands.size();i++){
 			if(i!=(int)m_commands.size()-1){
-				cout<<m_commands[i]<<" \\"<<endl;
+				cout<<" "<<m_commands[i]<<" \\"<<endl;
 			}else{
-				cout<<m_commands[i]<<endl;
+				cout<<" "<<m_commands[i]<<endl;
 			}
 		}
 		cout<<endl;
@@ -412,7 +414,14 @@ void Parameters::constructor(int argc,char**argv,int rank){
 	m_maxCoverage--;// underflow.
 
 	m_rank=rank;
+	bool hasCommandFile=false;
 	if(argc==2){
+		ifstream f(argv[1]);
+		hasCommandFile=f;
+		f.close();
+	}
+
+	if(argc==2&&hasCommandFile){
 		m_input=argv[1];
 		loadCommandsFromFile(argv[1]);
 	}else{

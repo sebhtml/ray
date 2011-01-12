@@ -26,10 +26,10 @@ see <http://www.gnu.org/licenses/>
 #include<config.h>
 #endif
 
-#define MAXIMUM_NUMBER_OF_LIBRARIES 256
+#define MAXIMUM_NUMBER_OF_LIBRARIES 250
 #define DUMMY_LIBRARY 255
 
-#define RAY_VERSION "1.2.2"
+#define RAY_VERSION "1.2.3"
 
 #include<master_modes.h>
 #include<slave_modes.h>

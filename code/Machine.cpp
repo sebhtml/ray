@@ -79,6 +79,7 @@ Machine::Machine(int argc,char**argv){
 }
 
 void Machine::start(){
+	m_killed=false;
 	m_ready=true;
 	
  	// the number of splay trees in a forest.
@@ -122,6 +123,7 @@ void Machine::start(){
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
 	MPI_Comm_size(MPI_COMM_WORLD,&m_size);
 
+	m_parameters.setSize(getSize());
 	MAX_ALLOCATED_MESSAGES_IN_OUTBOX=getSize();
 	MAX_ALLOCATED_MESSAGES_IN_INBOX=1;
 
@@ -234,7 +236,6 @@ void Machine::start(){
 	}
 
 	m_parameters.constructor(m_argc,m_argv,getRank());
-	m_parameters.setSize(getSize());
 
 	m_fusionData->constructor(getSize(),MAXIMUM_MESSAGE_SIZE_IN_BYTES,getRank(),&m_outbox,&m_outboxAllocator,m_parameters.getWordSize(),
 	m_parameters.getColorSpaceMode(),
@@ -320,7 +321,8 @@ m_seedingData,
 	&m_master_mode,&m_isFinalFusion,&m_si);
 
 	m_messagesHandler.constructor(getRank(),getSize());
-	if(m_argc==1 or ((string)m_argv[1])=="--help"){
+
+	if(m_argc==1||((string)m_argv[1])=="--help"){
 		if(isMaster()){
 			m_aborted=true;
 			m_parameters.showUsage();
@@ -456,10 +458,11 @@ void Machine::call_RAY_MASTER_MODE_LOAD_CONFIG(){
 		ifstream f(m_argv[1]);
 		if(!f){
 			cout<<"Rank "<<getRank()<<" invalid input file."<<endl;
-			m_alive=false;
+			m_parameters.showUsage();
 			m_aborted=true;
 			f.close();
 			killRanks();
+			m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
 			return;
 		}
 	}
@@ -504,6 +507,7 @@ void Machine::call_RAY_MASTER_MODE_LOAD_SEQUENCES(){
 		killRanks();
 		m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
 		m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+		return;
 	}
 
 	uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
@@ -1284,6 +1288,12 @@ void Machine::processData(){
 }
 
 void Machine::killRanks(){
+	if(m_killed){
+		return;
+	}
+
+
+	m_killed=true;
 	for(int i=getSize()-1;i>=0;i--){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON,getRank());
 		m_outbox.push_back(aMessage);
@@ -1294,15 +1304,9 @@ bool Machine::isMaster(){
 	return getRank()==MASTER_RANK;
 }
 
-
-
-
-
 int Machine::getSize(){
 	return m_size;
 }
-
-
 
 bool Machine::isAlive(){
 	return m_alive;

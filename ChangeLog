@@ -1,3 +1,10 @@
+= 1.2.3 'cRAYfish' =
+2011-01-XX
+
+* Fixed a bug leading to a segmentation fault when providing an invalid file
+or no file at all. This bug was introduced in Ray 1.2.2.
+
+
 = 1.2.2 'X-ray' =
 2011-01-11
 
