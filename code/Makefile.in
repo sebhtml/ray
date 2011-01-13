@@ -41,19 +41,7 @@ POST_UNINSTALL = :
 @HAVE_ZLIB_TRUE@am__append_1 = FastqGzLoader.cpp FastqGzLoader.h
 @HAVE_BZ2_TRUE@am__append_2 = FastqBz2Loader.cpp FastqBz2Loader.h BzReader.h BzReader.cpp
 bin_PROGRAMS = Ray$(EXEEXT)
-
-#SimulateFragments_SOURCES = simulate_fragments_main.cpp 
-#SimulateFragments_LDADD = libRay.a
-
-#SimulateErrors_SOURCES = simulateErrors_main.cpp 
-#SimulateErrors_LDADD = libRay.a
-
-#SimulatePairedReads_SOURCES = simulate_paired_main.cpp 
-#SimulatePairedReads_LDADD = libRay.a
 @HAVE_ZLIB_TRUE@am__append_3 = -lz
-#SimulateFragments_LDADD += -lz
-#SimulateErrors_LDADD += -lz
-#SimulatePairedReads_LDADD += -lz
 @HAVE_BZ2_TRUE@am__append_4 = -lbz2
 subdir = code
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
@@ -86,13 +74,12 @@ am__libRay_a_SOURCES_DIST = MemoryConsumptionReducer.h \
 	common_functions.cpp common_functions.h config.h \
 	CoverageDistribution.cpp CoverageDistribution.h \
 	DepthFirstSearchData.cpp DepthFirstSearchData.h Direction.cpp \
-	Direction.h ErrorSimulator.cpp ErrorSimulator.h \
-	ExtensionData.h FusionData.h FusionData.cpp Loader.cpp \
-	Loader.hi Machine.cpp Machine.h Message.cpp Message.h \
-	MessageProcessor.cpp MessageProcessor.h MyAllocator.cpp \
-	MyAllocator.h MyForest.cpp MyForest.h OpenAssemblerChooser.cpp \
-	OpenAssemblerChooser.h PairedRead.cpp PairedRead.h \
-	Parameters.cpp Parameters.h ReadAnnotation.cpp \
+	Direction.h ExtensionData.h FusionData.h FusionData.cpp \
+	Loader.cpp Loader.hi Machine.cpp Machine.h Message.cpp \
+	Message.h MessageProcessor.cpp MessageProcessor.h \
+	MyAllocator.cpp MyAllocator.h MyForest.cpp MyForest.h \
+	OpenAssemblerChooser.cpp OpenAssemblerChooser.h PairedRead.cpp \
+	PairedRead.h Parameters.cpp Parameters.h ReadAnnotation.cpp \
 	ReadAnnotation.h Read.cpp Read.h RepeatedVertexWatchdog.cpp \
 	RepeatedVertexWatchdog.h SeedExtender.cpp SeedExtender.h \
 	SequencesIndexer.cpp SequencesIndexer.h SequencesLoader.cpp \
@@ -115,8 +102,8 @@ am_libRay_a_OBJECTS = MemoryConsumptionReducer.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	DepthFirstSearchData.$(OBJEXT) Direction.$(OBJEXT) \
-	ErrorSimulator.$(OBJEXT) FusionData.$(OBJEXT) Loader.$(OBJEXT) \
-	Machine.$(OBJEXT) Message.$(OBJEXT) MessageProcessor.$(OBJEXT) \
+	FusionData.$(OBJEXT) Loader.$(OBJEXT) Machine.$(OBJEXT) \
+	Message.$(OBJEXT) MessageProcessor.$(OBJEXT) \
 	MyAllocator.$(OBJEXT) MyForest.$(OBJEXT) \
 	OpenAssemblerChooser.$(OBJEXT) PairedRead.$(OBJEXT) \
 	Parameters.$(OBJEXT) ReadAnnotation.$(OBJEXT) Read.$(OBJEXT) \
@@ -257,13 +244,12 @@ libRay_a_SOURCES = MemoryConsumptionReducer.h \
 	common_functions.cpp common_functions.h config.h \
 	CoverageDistribution.cpp CoverageDistribution.h \
 	DepthFirstSearchData.cpp DepthFirstSearchData.h Direction.cpp \
-	Direction.h ErrorSimulator.cpp ErrorSimulator.h \
-	ExtensionData.h FusionData.h FusionData.cpp Loader.cpp \
-	Loader.hi Machine.cpp Machine.h Message.cpp Message.h \
-	MessageProcessor.cpp MessageProcessor.h MyAllocator.cpp \
-	MyAllocator.h MyForest.cpp MyForest.h OpenAssemblerChooser.cpp \
-	OpenAssemblerChooser.h PairedRead.cpp PairedRead.h \
-	Parameters.cpp Parameters.h ReadAnnotation.cpp \
+	Direction.h ExtensionData.h FusionData.h FusionData.cpp \
+	Loader.cpp Loader.hi Machine.cpp Machine.h Message.cpp \
+	Message.h MessageProcessor.cpp MessageProcessor.h \
+	MyAllocator.cpp MyAllocator.h MyForest.cpp MyForest.h \
+	OpenAssemblerChooser.cpp OpenAssemblerChooser.h PairedRead.cpp \
+	PairedRead.h Parameters.cpp Parameters.h ReadAnnotation.cpp \
 	ReadAnnotation.h Read.cpp Read.h RepeatedVertexWatchdog.cpp \
 	RepeatedVertexWatchdog.h SeedExtender.cpp SeedExtender.h \
 	SequencesIndexer.cpp SequencesIndexer.h SequencesLoader.cpp \
@@ -373,7 +359,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DepthFirstSearchData.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Direction.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/EarlyStoppingTechnology.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ErrorSimulator.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FastaLoader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FastqBz2Loader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FastqGzLoader.Po@am__quote@
@@ -624,9 +609,6 @@ uninstall-am: uninstall-binPROGRAMS
 	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
 	tags uninstall uninstall-am uninstall-binPROGRAMS
 
-#SimulateFragments_LDADD += -lbz2
-#SimulateErrors_LDADD += -lbz2
-#SimulatePairedReads_LDADD += -lbz2
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

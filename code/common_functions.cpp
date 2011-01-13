@@ -415,37 +415,6 @@ int vertexRank(uint64_t a,int _size){
 	return uniform_hashing_function_1_64_64(a)%(_size);
 }
 
-/*
- *
- * show progress on-screen.
- */
-void showProgress(time_t m_lastTime){
-	printf("\r");
-	int columns=10;
-	int nn=m_lastTime%columns;
-	
-	for(int i=0;i<nn;i++){
-		printf(".");
-	}
-	for(int i=0;i<columns-nn;i++){
-		printf(" ");
-	}
-	fflush(stdout);
-
-}
-
-char*__basename(char*a){
-	int i=0;
-	int last=-1;
-	int len=strlen(a);
-	while(i<len){
-		if(a[i]=='/')
-			last=i;
-		i++;
-	}
-	return a+last+1;
-}
-
 uint64_t kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool color){
 	int length=strlen(m_sequence);
 	if(pos>length-w){

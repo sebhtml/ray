@@ -83,18 +83,6 @@ using namespace std;
  */
 #define COVERAGE_TYPE uint8_t
 
-// uniform random numbers
-// from Heng Li's code (LGPL)
-// http://maq.svn.sourceforge.net/viewvc/maq/trunk/maq/genran.h?view=markup
-
-#ifdef _WIN32
-#define ran_seed() srand(time(NULL))
-#define ran_uniform() rand()/(RAND_MAX+0.0)
-#else
-#define ran_seed() srand48(time(NULL)*(long)getpid())
-#define ran_uniform() drand48()
-#endif
-
 /*
  *  complement the sequence of a biological thing
  */
@@ -185,10 +173,6 @@ char codeToChar(uint8_t a);
 string convertToString(vector<uint64_t>*b,int m_wordSize);
 
 int vertexRank(uint64_t a,int _size);
-
-void showProgress(time_t m_lastTime);
-
-char*__basename(char*a);
 
 uint64_t kmerAtPosition(const char*string,int pos,int w,char strand,bool color);
 

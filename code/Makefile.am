@@ -20,7 +20,7 @@ BufferedData.h Chooser.cpp ChooserData.h Chooser.h ColorSpaceDecoder.cpp \
 ColorSpaceDecoder.h ColorSpaceLoader.cpp ColorSpaceLoader.h common_functions.cpp \
 common_functions.h config.h CoverageDistribution.cpp CoverageDistribution.h \
 DepthFirstSearchData.cpp DepthFirstSearchData.h Direction.cpp Direction.h \
- ErrorSimulator.cpp ErrorSimulator.h ExtensionData.h \
+  ExtensionData.h \
 FusionData.h FusionData.cpp Loader.cpp Loader.hi Machine.cpp Machine.h Message.cpp Message.h \
 MessageProcessor.cpp MessageProcessor.h MyAllocator.cpp MyAllocator.h MyForest.cpp \
 MyForest.h OpenAssemblerChooser.cpp OpenAssemblerChooser.h PairedRead.cpp \
@@ -44,25 +44,10 @@ bin_PROGRAMS = Ray
 Ray_SOURCES =  ray_main.cpp 
 Ray_LDADD = libRay.a
 
-#SimulateFragments_SOURCES = simulate_fragments_main.cpp 
-#SimulateFragments_LDADD = libRay.a
-
-#SimulateErrors_SOURCES = simulateErrors_main.cpp 
-#SimulateErrors_LDADD = libRay.a
-
-#SimulatePairedReads_SOURCES = simulate_paired_main.cpp 
-#SimulatePairedReads_LDADD = libRay.a
-
 if HAVE_ZLIB
 Ray_LDADD += -lz
-#SimulateFragments_LDADD += -lz
-#SimulateErrors_LDADD += -lz
-#SimulatePairedReads_LDADD += -lz
 endif
 
 if HAVE_BZ2
 Ray_LDADD += -lbz2
-#SimulateFragments_LDADD += -lbz2
-#SimulateErrors_LDADD += -lbz2
-#SimulatePairedReads_LDADD += -lbz2
 endif
