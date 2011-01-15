@@ -25,7 +25,7 @@ FusionData.h FusionData.cpp Loader.cpp Loader.hi Machine.cpp Machine.h Message.c
 MessageProcessor.cpp MessageProcessor.h MyAllocator.cpp MyAllocator.h MyForest.cpp \
 MyForest.h OpenAssemblerChooser.cpp OpenAssemblerChooser.h PairedRead.cpp \
 PairedRead.h Parameters.cpp Parameters.h ReadAnnotation.cpp ReadAnnotation.h \
-Read.cpp Read.h RepeatedVertexWatchdog.cpp RepeatedVertexWatchdog.h SeedExtender.cpp \
+Read.cpp Read.h SeedExtender.cpp \
 SeedExtender.h SequencesIndexer.cpp SequencesIndexer.h SequencesLoader.cpp SequencesLoader.h \
 SffLoader.cpp SffLoader.h SplayNode.h SplayTree.h SplayTreeIterator.h TimePrinter.cpp \
 TimePrinter.h TipWatchdog.cpp TipWatchdog.h Vertex.cpp Vertex.h VertexLinkedList.cpp \

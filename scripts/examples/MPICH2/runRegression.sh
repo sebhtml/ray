@@ -8,7 +8,7 @@ echo ""
 rm -f *.fasta *.afg
 bash $i
 echo ""
-echo "END^^ $i $(date)"
+echo "THE_END $i $(date)"
 echo ""
 )|& tee $i-$suffix
 

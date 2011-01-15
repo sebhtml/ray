@@ -32,7 +32,6 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<sstream>
 #include<Message.h>
 #include<time.h>
-#include<RepeatedVertexWatchdog.h>
 #include<TipWatchdog.h>
 #include<BubbleTool.h>
 #include<assert.h>

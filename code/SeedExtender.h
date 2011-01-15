@@ -51,6 +51,7 @@ class SeedExtender{
 	Parameters*m_parameters;
 	BubbleTool m_bubbleTool;
 
+	void inspect(ExtensionData*ed,uint64_t*currentVertex);
 public:
 
 	

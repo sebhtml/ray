@@ -20,15 +20,14 @@
 */
 
 #include<string.h>
-#include<RepeatedVertexWatchdog.h>
 #include<StaticVector.h>
 #include<TipWatchdog.h>
 #include<SeedExtender.h>
 #include<Chooser.h>
-#ifdef ASSERT
 #include<assert.h>
-#endif
 #include<BubbleTool.h>
+
+#define SHOW_CHOICE
 
 void debugMessage(int source,int destination,string message){
 	cout<<"Microseconds: "<<getMicroSeconds()<<" Source: "<<source<<" Destination: "<<destination<<" Message: "<<message<<endl;
@@ -62,7 +61,9 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		ed->m_EXTENSION_directVertexDone=false;
 		ed->m_EXTENSION_VertexAssembled_requested=false;
 		ed->m_EXTENSION_extension.clear();
+		ed->m_extensionCoverageValues.clear();
 		ed->m_EXTENSION_complementedSeed=false;
+		ed->m_EXTENSION_complementedSeed2=false;
 		ed->m_EXTENSION_reads_startingPositionOnContig.clear();
 		m_readsStrands.clear();
 		ed->m_EXTENSION_readsInRange.clear();
@@ -122,7 +123,9 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		}
 		// TODO: check if the position !=0
 		ed->m_EXTENSION_complementedSeed=false;
+		ed->m_EXTENSION_complementedSeed2=false;
 		ed->m_EXTENSION_extension.clear();
+		ed->m_extensionCoverageValues.clear();
 		ed->m_EXTENSION_reads_startingPositionOnContig.clear();
 		m_readsStrands.clear();
 		ed->m_EXTENSION_readsInRange.clear();
@@ -363,6 +366,15 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				//cout<<"Checking read "<<annotation.getUniqueId()<<endl;
 				int startPosition=ed->m_EXTENSION_reads_startingPositionOnContig[annotation.getUniqueId()];
 				int distance=ed->m_EXTENSION_extension.size()-startPosition;
+
+				#ifdef ASSERT
+				assert(startPosition<(int)ed->m_extensionCoverageValues.size());
+				#endif
+
+				int coverageOfStartingVertex=ed->m_extensionCoverageValues[startPosition];
+				#ifdef ASSERT
+				assert(coverageOfStartingVertex>0);
+				#endif
 				const char*theSequence=m_sequences[annotation.getUniqueId()].c_str();
 				ed->m_EXTENSION_receivedLength=strlen(theSequence);
 				if(distance>(ed->m_EXTENSION_receivedLength-wordSize)){
@@ -385,8 +397,11 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 					// got a match!
 					if(ed->m_EXTENSION_receivedReadVertex==pathVertex){
 						if(m_pairedReads.count(uniqueId)==0){
-							ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(distance);
-							_UPDATE_SINGLE_VALUES(distance);
+							ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(distance);	
+							if(coverageOfStartingVertex<maxCoverage){
+								_UPDATE_SINGLE_VALUES(distance);
+							}
+
 							ed->m_EXTENSION_edgeIterator=0;
 							ed->m_EXTENSION_readIterator++;
 							ed->m_EXTENSION_hasPairedReadRequested=false;
@@ -396,24 +411,35 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 							int library=pairedRead.getLibrary();
 							int expectedFragmentLength=m_parameters->getFragmentLength(library);
 							int expectedDeviation=m_parameters->getStandardDeviation(library);
-							char rightStrand=annotation.getStrand();
+							char leftStrand=annotation.getStrand();
 							//bool leftReadIsLeftInThePair=pairedRead.isLeftRead();
 							if(ed->m_EXTENSION_reads_startingPositionOnContig.count(uniqueReadIdentifier)>0){
-								char leftStrand=m_readsStrands[uniqueReadIdentifier];
+								char rightStrand=m_readsStrands[uniqueReadIdentifier];
 								int startingPositionOnPath=ed->m_EXTENSION_reads_startingPositionOnContig[uniqueReadIdentifier];
+								#ifdef ASSERT
+								assert(startingPositionOnPath<(int)ed->m_extensionCoverageValues.size());
+								#endif
+			
+								int coverageOfLeftVertex=ed->m_extensionCoverageValues[startingPositionOnPath];
+								#ifdef ASSERT
+								assert(coverageOfLeftVertex>0);
+								#endif
+
 								int observedFragmentLength=(startPosition-startingPositionOnPath)+ed->m_EXTENSION_receivedLength;
 								if(expectedFragmentLength-expectedDeviation<=observedFragmentLength and
 								observedFragmentLength <= expectedFragmentLength+expectedDeviation 
 					&& ((rightStrand=='F' && leftStrand=='R')
-							||(rightStrand=='R' && leftStrand=='F'))){
+							||(rightStrand=='R' && leftStrand=='F'))
+						&& coverageOfLeftVertex<maxCoverage){
 								// it matches!
 									int theDistance=startPosition-startingPositionOnPath+distance;
+									
 									ed->m_EXTENSION_pairedReadPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(theDistance);
 									if(theDistance>cd->m_CHOOSER_theMaxsPaired[ed->m_EXTENSION_edgeIterator]){
 										cd->m_CHOOSER_theMaxsPaired[ed->m_EXTENSION_edgeIterator]=theDistance;
-										cd->m_CHOOSER_theNumbersPaired[ed->m_EXTENSION_edgeIterator]++;
-										cd->m_CHOOSER_theSumsPaired[ed->m_EXTENSION_edgeIterator]+=theDistance;
 									}
+									cd->m_CHOOSER_theNumbersPaired[ed->m_EXTENSION_edgeIterator]++;
+									cd->m_CHOOSER_theSumsPaired[ed->m_EXTENSION_edgeIterator]+=theDistance;
 								}
 							}
 									
@@ -421,7 +447,9 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 							ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(distance);
 							ed->m_EXTENSION_hasPairedReadRequested=false;
 
-							_UPDATE_SINGLE_VALUES(distance);
+							//if(coverageOfStartingVertex<maxCoverage){
+								_UPDATE_SINGLE_VALUES(distance);
+							//}
 							ed->m_EXTENSION_edgeIterator++;
 						}
 					}else{// no match, too bad.
@@ -447,71 +475,13 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				ed->m_EXTENSION_readsOutOfRange.clear();
 				ed->m_EXTENSION_singleEndResolution=true;
 
-				// show on-screen dump debug
-				#ifdef SHOW_CHOICE
-				if(ed->m_enumerateChoices_outgoingEdges.size()>1){
-					cout<<endl;
-					cout<<"*****************************************"<<endl;
-					cout<<"CurrentVertex="<<idToWord((*currentVertex),wordSize)<<" @"<<ed->m_EXTENSION_extension.size()<<endl;
-					cout<<"Coverage="<<ed->m_currentCoverage<<endl;
-					cout<<" # ReadsInRange: "<<ed->m_EXTENSION_readsInRange.size()<<endl;
-					cout<<ed->m_enumerateChoices_outgoingEdges.size()<<" arcs: ";
-					for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
-						string vertex=idToWord(ed->m_enumerateChoices_outgoingEdges[i],wordSize);
-						char letter=vertex[wordSize-1];
-						int index=i;
-						int coverage=ed->m_EXTENSION_coverages[i];
-						int singleEnds=ed->m_EXTENSION_readPositionsForVertices[i].size();
-						int pairedEnds=ed->m_EXTENSION_pairedReadPositionsForVertices[i].size();
-						cout<<" "<<index<<"/"<<letter<<"/"<<coverage<<"/"<<singleEnds<<"/"<<pairedEnds;
-					}
-					cout<<endl;
-					for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
-						string vertex=idToWord(ed->m_enumerateChoices_outgoingEdges[i],wordSize);
-						cout<<endl;
-						cout<<"Choice #"<<i+1<<endl;
-						cout<<"Vertex: "<<vertex<<endl;
-						cout<<"Coverage="<<ed->m_EXTENSION_coverages[i]<<endl;
-						cout<<"New letter: "<<vertex[wordSize-1]<<endl;
-						cout<<"Single-end reads: ("<<ed->m_EXTENSION_readPositionsForVertices[i].size()<<")"<<endl;
-						for(int j=0;j<(int)ed->m_EXTENSION_readPositionsForVertices[i].size();j++){
-							if(j!=0)
-								cout<<" ";
-							cout<<ed->m_EXTENSION_readPositionsForVertices[i][j];
-						}
-						cout<<endl;
-						cout<<"Paired-end reads: ("<<ed->m_EXTENSION_pairedReadPositionsForVertices[i].size()<<")"<<endl;
-						for(int j=0;j<(int)ed->m_EXTENSION_pairedReadPositionsForVertices[i].size();j++){
-							if(j!=0)
-								cout<<" ";
-							cout<<ed->m_EXTENSION_pairedReadPositionsForVertices[i][j];
-						}
-						cout<<endl;
-					}
-				}
-				#endif
-				
-				// watchdog for REPEATs -- the main source of misassemblies!
-				RepeatedVertexWatchdog watchdog;
-				bool approval=watchdog.getApproval(ed,wordSize,minimumCoverage,(maxCoverage),
-		(*currentVertex));
-				if(!approval){
-					ed->m_doChoice_tips_Detected=false;
-					dfsData->m_doChoice_tips_Initiated=false;
-					return;
-				}
-
-				// select chooser algorithm here.
-				#define USE_OPEN_ASSEMBLER_CHOOSER
-				//#define USE_TRON_CHOOSER 
-
-				#ifdef USE_OPEN_ASSEMBLER_CHOOSER
 				int choice=(*oa).choose(ed,&(*chooser),minimumCoverage,(maxCoverage),cd);
-				#endif
-				#ifdef USE_TRON_CHOOSER
-				int choice=m_tc.choose(ed,&(*chooser),minimumCoverage,(maxCoverage),cd);
-				#endif
 				if(choice!=IMPOSSIBLE_CHOICE){
+					if(theRank==8&&ed->m_EXTENSION_currentSeedIndex==0
+					&&ed->m_enumerateChoices_outgoingEdges.size()>1){
+						cout<<"Selected: "<<choice+1<<endl;
+						inspect(ed,currentVertex);
+					}
 					(*currentVertex)=ed->m_enumerateChoices_outgoingEdges[choice];
 					ed->m_EXTENSION_choose=true;
 					ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
@@ -641,9 +611,14 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 
 		// no choice possible...
 		// do it for the lulz
-		if(!ed->m_EXTENSION_complementedSeed){
+		if(!ed->m_EXTENSION_complementedSeed /*|| !ed->m_EXTENSION_complementedSeed2*/){
 			//cout<<"Rank "<<theRank<<": Switching to reverse complement."<<endl;
-			ed->m_EXTENSION_complementedSeed=true;
+			if(!ed->m_EXTENSION_complementedSeed){
+				ed->m_EXTENSION_complementedSeed=true;
+			}/*else if(!ed->m_EXTENSION_complementedSeed2){
+				ed->m_EXTENSION_complementedSeed2=true;
+			}*/
+
 			vector<uint64_t> complementedSeed;
 			for(int i=ed->m_EXTENSION_extension.size()-1;i>=0;i--){
 				complementedSeed.push_back(complementVertex(ed->m_EXTENSION_extension[i],wordSize,(*colorSpaceMode)));
@@ -657,6 +632,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 			(*currentVertex)=ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition];
 			ed->m_EXTENSION_extension.clear();
+			ed->m_extensionCoverageValues.clear();
 			ed->m_EXTENSION_usedReads.clear();
 			ed->m_EXTENSION_directVertexDone=false;
 			ed->m_EXTENSION_VertexAssembled_requested=false;
@@ -674,13 +650,9 @@ uint64_t*currentVertex,BubbleData*bubbleData){
 	if(ed->m_EXTENSION_extension.size()>=100){
 
 		int theCurrentSize=ed->m_EXTENSION_extension.size();
-		printf("Rank %i reached %i vertices (completed)\n",theRank,theCurrentSize);
+		printf("Rank %i reached %i vertices from seed %i (completed)\n",theRank,theCurrentSize,
+			ed->m_EXTENSION_currentSeedIndex);
 		fflush(stdout);
-/*
-		cout<<"Stopped at:"<<endl;
-		m_bubbleTool.printStuff((*currentVertex),&bubbleData->m_BUBBLE_visitedVertices,
-				&bubbleData->m_coverages);
-*/
 
 		ed->m_EXTENSION_contigs.push_back(ed->m_EXTENSION_extension);
 
@@ -700,12 +672,14 @@ uint64_t*currentVertex,BubbleData*bubbleData){
 	}
 	ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 	ed->m_EXTENSION_extension.clear();
+	ed->m_extensionCoverageValues.clear();
 	ed->m_EXTENSION_reads_startingPositionOnContig.clear();
 	m_readsStrands.clear();
 	ed->m_EXTENSION_readsInRange.clear();
 	ed->m_EXTENSION_usedReads.clear();
 	ed->m_EXTENSION_directVertexDone=false;
 	ed->m_EXTENSION_complementedSeed=false;
+	ed->m_EXTENSION_complementedSeed2=false;
 	ed->m_EXTENSION_VertexAssembled_requested=false;
 }
 
@@ -782,18 +756,13 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 			(*outbox).push_back(aMessage);
 		}else if((*vertexCoverageReceived)){
 			if(!ed->m_EXTENSION_VertexMarkAssembled_requested){
-				// watch out for repeats!!!
-				if((*receivedVertexCoverage)==(*maxCoverage)){
-					(*(repeatedLength))++;
-				}else{
-					(*(repeatedLength))=0;
-				}
 				int theCurrentSize=ed->m_EXTENSION_extension.size();
 				if(theCurrentSize%10000==0){
 					printf("Rank %i reached %i vertices\n",theRank,theCurrentSize);
 					fflush(stdout);
 				}
 				ed->m_EXTENSION_extension.push_back((*currentVertex));
+				ed->m_extensionCoverageValues.push_back(*receivedVertexCoverage);
 				ed->m_currentCoverage=(*receivedVertexCoverage);
 				// save wave progress.
 	
@@ -812,15 +781,17 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				ed->m_EXTENSION_reverseVertexDone=true;
 				ed->m_EXTENSION_reads_requested=false;
 				
+				int maximumLibrarySize=m_parameters->getMaximumDistance()+1000;
+
 				// we don't really need these reads
-				if(ed->m_EXTENSION_complementedSeed and 
-				ed->m_EXTENSION_currentPosition<(int)ed->m_EXTENSION_currentSeed.size()-1000){
+				if(ed->m_EXTENSION_currentPosition<(int)ed->m_EXTENSION_currentSeed.size()-maximumLibrarySize){
 					#ifdef SHOW_PROGRESS
 					#endif
 					ed->m_EXTENSION_reads_requested=true;
 					ed->m_EXTENSION_reads_received=true;
 					ed->m_EXTENSION_receivedReads.clear();
 				}
+
 			// get the reads starting at that position.
 			}else if(!ed->m_EXTENSION_reads_requested){
 				ed->m_EXTENSION_reads_requested=true;
@@ -838,16 +809,14 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 					uint64_t uniqueId=annotation.getUniqueId();
 					if(ed->m_EXTENSION_usedReads.count(uniqueId)>0){
 						m_sequenceIndexToCache++;
-					}else if(*(repeatedLength)>=_REPEATED_LENGTH_ALARM_THRESHOLD){
-						m_sequenceIndexToCache++;
 					}else if(!m_sequenceRequested){
 						m_sequenceRequested=true;
 						m_sequenceReceived=false;
 						int sequenceRank=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache].getRank();
 						#ifdef ASSERT
 						assert(sequenceRank>=0);
-						assert(sequenceRank<size);
-						#endif
+					assert(sequenceRank<size);
+					#endif
 						uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
 						message[0]=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache].getReadIndex();
 						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,sequenceRank,RAY_MPI_TAG_REQUEST_READ_SEQUENCE,theRank);
@@ -901,4 +870,38 @@ set<uint64_t>*SeedExtender::getEliminatedSeeds(){
 void SeedExtender::constructor(Parameters*parameters){
 	m_parameters=parameters;
 	m_bubbleTool.constructor(parameters);
+}
+
+void SeedExtender::inspect(ExtensionData*ed,uint64_t*currentVertex){
+	int wordSize=m_parameters->getWordSize();
+	cout<<endl;
+	cout<<"*****************************************"<<endl;
+	cout<<"CurrentVertex="<<idToWord(*currentVertex,wordSize)<<" @"<<ed->m_EXTENSION_extension.size()<<endl;
+	cout<<"Coverage="<<ed->m_currentCoverage<<endl;
+	cout<<" # ReadsInRange: "<<ed->m_EXTENSION_readsInRange.size()<<endl;
+	cout<<ed->m_enumerateChoices_outgoingEdges.size()<<" choices ";
+
+	cout<<endl;
+	for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
+		string vertex=idToWord(ed->m_enumerateChoices_outgoingEdges[i],wordSize);
+		cout<<endl;
+		cout<<"Choice #"<<i+1<<endl;
+		cout<<"Vertex: "<<vertex<<endl;
+		cout<<"Coverage="<<ed->m_EXTENSION_coverages[i]<<endl;
+		cout<<"New letter: "<<vertex[wordSize-1]<<endl;
+		cout<<"Single-end reads: ("<<ed->m_EXTENSION_readPositionsForVertices[i].size()<<")"<<endl;
+		for(int j=0;j<(int)ed->m_EXTENSION_readPositionsForVertices[i].size();j++){
+			if(j!=0)
+				cout<<" ";
+			cout<<ed->m_EXTENSION_readPositionsForVertices[i][j];
+		}
+		cout<<endl;
+		cout<<"Paired-end reads: ("<<ed->m_EXTENSION_pairedReadPositionsForVertices[i].size()<<")"<<endl;
+		for(int j=0;j<(int)ed->m_EXTENSION_pairedReadPositionsForVertices[i].size();j++){
+			if(j!=0)
+				cout<<" ";
+			cout<<ed->m_EXTENSION_pairedReadPositionsForVertices[i][j];
+		}
+		cout<<endl;
+	}
 }

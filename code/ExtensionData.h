@@ -46,6 +46,7 @@ public:
 	vector<uint64_t> m_EXTENSION_extension;
 	vector<int> m_EXTENSION_coverages;
 	bool m_EXTENSION_complementedSeed;
+	bool m_EXTENSION_complementedSeed2;
 	vector<uint64_t> m_EXTENSION_currentSeed;
 	int m_EXTENSION_numberOfRanksDone;
 	vector<vector<uint64_t> > m_EXTENSION_contigs;
@@ -92,7 +93,8 @@ public:
 	map<int,vector<int> > m_EXTENSION_pairedReadPositionsForVertices;
 	map<uint64_t,int> m_EXTENSION_reads_startingPositionOnContig;
 	int m_currentCoverage;
-
+	
+	vector<int> m_extensionCoverageValues;
 };
 
 #endif

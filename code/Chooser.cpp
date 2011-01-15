@@ -24,47 +24,40 @@
 #include<common_functions.h>
 #include<ChooserData.h>
 
-int Chooser::chooseWithPairedReads(
-	ExtensionData*m_ed,
+void Chooser::chooseWithPairedReads(ExtensionData*m_ed,
 	ChooserData*m_cd,
 	int m_minimumCoverage,int m_maxCoverage,
-	double __PAIRED_MULTIPLIER
+	double __PAIRED_MULTIPLIER,
+vector<set<int> >*battleVictories
 ){
-	// win or lose with paired reads
-	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
-		bool winner=true;
-		int coverageI=m_ed->m_EXTENSION_coverages[i];
-		//int singleReadsI=m_ed->m_EXTENSION_readPositionsForVertices[i].size();
-		if(coverageI<_MINIMUM_COVERAGE)
-			continue;
-		if(m_cd->m_CHOOSER_theNumbers[i]==0 or m_cd->m_CHOOSER_theNumbersPaired[i]==0)
-			continue;
-		for(int j=0;j<(int)m_ed->m_enumerateChoices_outgoingEdges.size();j++){
-			if(i==j)
-				continue;
-			int coverageJ=m_ed->m_EXTENSION_coverages[j];
-			if(coverageJ<_MINIMUM_COVERAGE)
-				continue;
-			if((m_cd->m_CHOOSER_theMaxsPaired[i] <= __PAIRED_MULTIPLIER*m_cd->m_CHOOSER_theMaxsPaired[j]) or
-		 (m_cd->m_CHOOSER_theSumsPaired[i] <= __PAIRED_MULTIPLIER*m_cd->m_CHOOSER_theSumsPaired[j]) or
-		 (m_cd->m_CHOOSER_theNumbersPaired[i] <= __PAIRED_MULTIPLIER*m_cd->m_CHOOSER_theNumbersPaired[j])) {
 
-				winner=false;
-				break;
-			}
-	
-			// if the winner does not have too much coverage.
-			if(m_ed->m_EXTENSION_coverages[i]<m_minimumCoverage and 
-		m_cd->m_CHOOSER_theNumbers[i] < m_cd->m_CHOOSER_theNumbers[j]){// make sure that it also has more single-end reads
-				winner=false;
-				break;
+	vector<int> minimumValues;
+	vector<int> counts;
+
+	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
+		int minimum=999999;
+		counts.push_back(m_ed->m_EXTENSION_pairedReadPositionsForVertices[i].size());
+		for(int j=0;j<(int)m_ed->m_EXTENSION_pairedReadPositionsForVertices[i].size();j++){
+			int value=m_ed->m_EXTENSION_pairedReadPositionsForVertices[i][j];
+			if(value<minimum){
+				minimum=value;
 			}
 		}
-		if(winner==true){
-			return i;
+		minimumValues.push_back(minimum);
+	}
+
+	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
+		for(int j=0;j<(int)m_ed->m_enumerateChoices_outgoingEdges.size();j++){
+			if((m_cd->m_CHOOSER_theMaxsPaired[i] > __PAIRED_MULTIPLIER*m_cd->m_CHOOSER_theMaxsPaired[j])){
+				(*battleVictories)[i].insert(j);
+			}
+
+			if((m_cd->m_CHOOSER_theMaxsPaired[i] <= __PAIRED_MULTIPLIER*m_cd->m_CHOOSER_theMaxsPaired[j])
+			&& minimumValues[i] < 0.5 * minimumValues[j]){
+				(*battleVictories)[i].insert(j);
+			}
 		}
 	}
-	return IMPOSSIBLE_CHOICE;
 }
 
 void Chooser::clear(int*a,int b){

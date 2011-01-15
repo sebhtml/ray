@@ -1,4 +1,3 @@
-rm *.fasta
 
 suffix=$(date +%Y-%m-%d-%H-%M-%S).txt
 

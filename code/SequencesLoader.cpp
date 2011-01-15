@@ -49,7 +49,7 @@ void SequencesLoader::registerSequence(){
 	myRead.constructor(read,&(*m_persistentAllocator),true);
 	m_myReads->push_back(&myRead);
 
-	if(false && m_LOADER_isLeftFile){
+	if(m_LOADER_isLeftFile){
 		uint64_t leftSequenceGlobalId=m_distribution_currentSequenceId;
 		uint64_t leftSequenceIdOnRank=m_myReads->size()-1;
 
@@ -66,7 +66,10 @@ void SequencesLoader::registerSequence(){
 		int rightSequenceRank=m_parameters->getRankFromGlobalId(rightSequenceGlobalId);
 
 		#ifdef ASSERT
-		assert(rightSequenceRank<m_size);
+		if(rightSequenceRank>=m_size){
+			cout<<"m_distribution_currentSequenceId="<<m_distribution_currentSequenceId<<" m_distribution_sequence_id="<<m_distribution_sequence_id<<" LoaderSize="<<m_loader.size()<<" Rank="<<rightSequenceRank<<" Size="<<m_size<<endl;
+			assert(rightSequenceRank<m_size);
+		}
 		#endif
 
 		uint64_t rightSequenceIdOnRank=m_parameters->getIdFromGlobalId(rightSequenceGlobalId);
@@ -102,7 +105,7 @@ void SequencesLoader::registerSequence(){
 		(*m_myReads)[rightSequenceIdOnRank]->setPairedRead(t);
 
 	// left sequence in interleaved file
-	}else if(false && m_isInterleavedFile && ((m_distribution_sequence_id)%2)==0){
+	}else if(m_isInterleavedFile && ((m_distribution_sequence_id)%2)==0){
 		uint64_t rightSequenceGlobalId=(m_distribution_currentSequenceId)+1;
 		int rightSequenceRank=m_parameters->getRankFromGlobalId(rightSequenceGlobalId);
 		uint64_t rightSequenceIdOnRank=m_parameters->getIdFromGlobalId(rightSequenceGlobalId);

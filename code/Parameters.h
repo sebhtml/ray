@@ -41,10 +41,11 @@ using namespace std;
  */
 class Parameters{
 	int m_reducerPeriod;
+	int m_maximumDistance;
 
 	bool m_reducerIsActivated;
 	int m_size;
-	COVERAGE_TYPE m_maxCoverage;
+	int m_maxCoverage;
 	int m_rank;
 	int m_peakCoverage;
 
@@ -131,6 +132,7 @@ public:
 
 	int getRankFromGlobalId(uint64_t a);
 	int getIdFromGlobalId(uint64_t a);
+	int getMaximumDistance();
 };
 
 #endif

@@ -39,7 +39,9 @@ uint32_t PairedRead::getId(){
 }
 
 uint64_t PairedRead::getUniqueId(){
-	return m_readIndex*MAX_NUMBER_OF_MPI_PROCESSES+m_rank;
+	uint64_t a=m_readIndex;
+	a=a*MAX_NUMBER_OF_MPI_PROCESSES+m_rank;
+	return a;
 }
 
 int PairedRead::getLibrary(){

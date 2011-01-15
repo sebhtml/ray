@@ -23,6 +23,8 @@
 #include<FusionData.h>
 #include<Message.h>
 
+#define SHOW_FUSION
+
 void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int getRank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox,int getSize1,int*m_mode){
 	if(!isReady()){
 		return;
@@ -133,7 +135,7 @@ void FusionData::finishFusions(){
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		return;
 	}
-	int overlapMinimumLength=1000;
+	int overlapMinimumLength=1200;
 	if((int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<overlapMinimumLength){
 		#ifdef SHOW_PROGRESS
 		#endif

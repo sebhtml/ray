@@ -231,6 +231,10 @@ void Parameters::parseCommands(){
 					cout<<" Average length: "<<meanFragmentLength<<endl;
 					cout<<" Standard deviation: "<<standardDeviation<<endl;
 				}
+				int distance=meanFragmentLength+standardDeviation;
+				if(distance>m_maximumDistance){
+					m_maximumDistance=distance;
+				}
 			}else if(items==1){// automatic detection.
 				map<int,int> t;
 				m_automaticLibraries.insert(m_numberOfLibraries);
@@ -313,6 +317,10 @@ void Parameters::parseCommands(){
 				if(m_rank==MASTER_RANK){
 					cout<<" Average length: "<<meanFragmentLength<<endl;
 					cout<<" Standard deviation: "<<standardDeviation<<endl;
+				}
+				int distance=meanFragmentLength+standardDeviation;
+				if(distance>m_maximumDistance){
+					m_maximumDistance=distance;
 				}
 			}else if(items==2){// automatic detection.
 				m_automaticLibraries.insert(m_numberOfLibraries);
@@ -409,9 +417,8 @@ void Parameters::parseCommands(){
 }
 
 void Parameters::constructor(int argc,char**argv,int rank){
+	m_maximumDistance=0;
 	m_totalNumberOfSequences=0;
-	m_maxCoverage=0;
-	m_maxCoverage--;// underflow.
 
 	m_rank=rank;
 	bool hasCommandFile=false;
@@ -568,6 +575,11 @@ void Parameters::computeAverageDistances(){
 void Parameters::addLibraryData(int library,int average,int deviation){
 	m_libraryAverageLength[library]=average;
 	m_libraryDeviation[library]=deviation;
+	
+	int distance=average+deviation;
+	if(distance>m_maximumDistance){
+		m_maximumDistance=distance;
+	}
 }
 
 void Parameters::setNumberOfSequences(uint64_t n){
@@ -618,6 +630,8 @@ void Parameters::printFinalMessage(){
 
 void Parameters::setPeakCoverage(int a){
 	m_peakCoverage=a;
+	//m_maxCoverage=3*m_peakCoverage;
+	m_maxCoverage=999999;
 }
 
 int Parameters::getPeakCoverage(){
@@ -699,8 +713,18 @@ int Parameters::getReducerValue(){
 }
 
 int Parameters::getRankFromGlobalId(uint64_t a){
-	uint64_t x=m_totalNumberOfSequences/m_size;
-	return a/x;
+	uint64_t elementsPerRank=m_totalNumberOfSequences/m_size;
+	int rank=a/elementsPerRank;
+	if(rank==m_size){
+		rank--;
+	}
+	#ifdef ASSERT
+	if(rank>=m_size){
+		cout<<"GlobalIdentifier="<<a<<" Total="<<m_totalNumberOfSequences<<" Size="<<m_size<<" Rank="<<rank<<endl;
+	}
+	assert(rank<m_size);
+	#endif
+	return rank;
 }
 
 int Parameters::getIdFromGlobalId(uint64_t a){
@@ -709,4 +733,6 @@ int Parameters::getIdFromGlobalId(uint64_t a){
 	return a-bin*x;
 }
 
-
+int Parameters::getMaximumDistance(){
+	return m_maximumDistance;
+}

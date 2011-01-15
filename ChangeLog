@@ -6,6 +6,11 @@ or no file at all. This bug was introduced in Ray 1.2.2.
 * Fixed a bug leading to a hang when providing invalid arguments.
 * Added reporting of memory usage after loading sequences and after
 distributing vertices.
+* Removed read simulators because samtools include one called 'wgsim'.
+* Changed the paired-end heuristics to accomodate larger distances.
+* Removed RepeatedVertexWatchdog.
+* Changed the RepeatedThreshold from 255 to 3*peakCoverage
+* Now both versions of read pairs are utilized.
 
 
 = 1.2.2 'X-ray' =

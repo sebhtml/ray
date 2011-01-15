@@ -31,7 +31,8 @@
  */
 class Chooser{
 public:
-	int chooseWithPairedReads(ExtensionData*m_ed,ChooserData*m_cd,int m_minimumCoverage,int m_maxCoverage,double m);
+	void chooseWithPairedReads(ExtensionData*m_ed,ChooserData*m_cd,int m_minimumCoverage,int m_maxCoverage,double m,
+		vector<set<int> >*battleVictories);
 	void clear(int*a,int b);
 };
 

@@ -34,23 +34,32 @@ void OpenAssemblerChooser::updateMultiplicators(int m_peakCoverage){
 	if(m_peakCoverage>=100){
 		//m_singleEndMultiplicator=m_pairedEndMultiplicator=1.0;
 	}
-	#ifdef SHOW_OA_CHOOSER
-	cout<<"According to data, m_s="<<m_singleEndMultiplicator<<" and m_p="<<m_pairedEndMultiplicator<<" ("<<m_peakCoverage<<")"<<endl;
-	#endif
 }
 
 void OpenAssemblerChooser::constructor(int m_peakCoverage){
 	updateMultiplicators(m_peakCoverage);
 }
 
-int OpenAssemblerChooser::choose(
-	ExtensionData*m_ed,
-	Chooser*m_c,
-	int m_minimumCoverage,
-	int m_maxCoverage,
-	ChooserData*m_cd
-){
-	int pairedChoice=m_c->chooseWithPairedReads(m_ed,m_cd,m_minimumCoverage,m_maxCoverage,m_pairedEndMultiplicator);
+int OpenAssemblerChooser::choose(ExtensionData*m_ed,Chooser*m_c,int m_minimumCoverage,int m_maxCoverage,ChooserData*m_cd){
+	vector<set<int> > battleVictories;
+
+	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
+		set<int> victories;
+		battleVictories.push_back(victories);
+	}
+
+	m_c->chooseWithPairedReads(m_ed,m_cd,m_minimumCoverage,m_maxCoverage,m_pairedEndMultiplicator,&battleVictories);
+	
+	int pairedChoice=getWinner(&battleVictories,m_ed->m_enumerateChoices_outgoingEdges.size());
+
+	battleVictories.clear();
+
+	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
+		set<int> victories;
+		battleVictories.push_back(victories);
+	}
+
+
 	if(pairedChoice!=IMPOSSIBLE_CHOICE){
 		#ifdef SHOW_CHOICE
 		if(m_ed->m_enumerateChoices_outgoingEdges.size()>1){
@@ -62,53 +71,38 @@ int OpenAssemblerChooser::choose(
 
 	// win or lose with single-end reads
 	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
-		bool winner=true;
-		if(m_cd->m_CHOOSER_theMaxs[i]<5)
-			winner=false;
+		set<int> victories;
 
-		//int singleReadsI=m_ed->m_EXTENSION_readPositionsForVertices[i].size();
-		int coverageI=m_ed->m_EXTENSION_coverages[i];
-		if(coverageI<_MINIMUM_COVERAGE)
+		if(m_cd->m_CHOOSER_theMaxs[i]<5){
 			continue;
-		if(m_cd->m_CHOOSER_theNumbers[i]==0)
-			continue;
+		}
+
 		for(int j=0;j<(int)m_ed->m_enumerateChoices_outgoingEdges.size();j++){
-			if(i==j)
-				continue;
-
-			if(m_ed->m_EXTENSION_coverages[j]<_MINIMUM_COVERAGE)
-				continue;
-			if((m_cd->m_CHOOSER_theMaxs[i] <= m_singleEndMultiplicator*m_cd->m_CHOOSER_theMaxs[j]) 
-				or (m_cd->m_CHOOSER_theSums[i] <= m_singleEndMultiplicator*m_cd->m_CHOOSER_theSums[j]) 
-				or (m_cd->m_CHOOSER_theNumbers[i] <= m_singleEndMultiplicator*m_cd->m_CHOOSER_theNumbers[j])
+			if((m_cd->m_CHOOSER_theMaxs[i] > m_singleEndMultiplicator*m_cd->m_CHOOSER_theMaxs[j]) 
+				&& (m_cd->m_CHOOSER_theSums[i] > m_singleEndMultiplicator*m_cd->m_CHOOSER_theSums[j]) 
+				&& (m_cd->m_CHOOSER_theNumbers[i] > m_singleEndMultiplicator*m_cd->m_CHOOSER_theNumbers[j])
 				){
-				winner=false;
-				break;
-			}
-			if(m_ed->m_EXTENSION_coverages[i]<m_minimumCoverage/4 and m_ed->m_EXTENSION_coverages[j]>2*m_minimumCoverage){
-				winner=false;
-				break;
+				battleVictories[i].insert(j);
 			}
 		}
-		if(winner==true){
-			#ifdef SHOW_CHOICE
-			if(m_ed->m_enumerateChoices_outgoingEdges.size()>1){
-				cout<<"Choice "<<i+1<<" wins with single-end reads."<<endl;
-			}
-			#endif
-			return i;
-		}
+	}
+
+	int finalWinner=getWinner(&battleVictories,m_ed->m_enumerateChoices_outgoingEdges.size());
+
+	if(finalWinner!=IMPOSSIBLE_CHOICE){
+		return finalWinner;
 	}
 
 	// try to use the coverage to choose.
 	// stick around novel minimum coverages
 	int i=proceedWithCoverages(m_minimumCoverage/2,m_minimumCoverage,m_ed);
-	if(i>=0){
+	if(i!=IMPOSSIBLE_CHOICE){
 		return i;
 	}
 	i=proceedWithCoverages(m_minimumCoverage,2*m_minimumCoverage,m_ed);
-	if(i>=0)
+	if(i!=IMPOSSIBLE_CHOICE){
 		return i;
+	}
 	return IMPOSSIBLE_CHOICE;
 }
 
@@ -169,3 +163,12 @@ int OpenAssemblerChooser::proceedWithCoverages(int a,int b,
 	return IMPOSSIBLE_CHOICE;
 }
 
+int OpenAssemblerChooser::getWinner(vector<set<int> >*battleVictories,int choices){
+	for(int winner=0;winner<(int)battleVictories->size();winner++){
+		int wins=battleVictories->at(winner).size();
+		if(wins+1==choices){
+			return winner;
+		}
+	}
+	return IMPOSSIBLE_CHOICE;
+}

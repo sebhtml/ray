@@ -80,15 +80,15 @@ am__libRay_a_SOURCES_DIST = MemoryConsumptionReducer.h \
 	MyAllocator.cpp MyAllocator.h MyForest.cpp MyForest.h \
 	OpenAssemblerChooser.cpp OpenAssemblerChooser.h PairedRead.cpp \
 	PairedRead.h Parameters.cpp Parameters.h ReadAnnotation.cpp \
-	ReadAnnotation.h Read.cpp Read.h RepeatedVertexWatchdog.cpp \
-	RepeatedVertexWatchdog.h SeedExtender.cpp SeedExtender.h \
-	SequencesIndexer.cpp SequencesIndexer.h SequencesLoader.cpp \
-	SequencesLoader.h SffLoader.cpp SffLoader.h SplayNode.h \
-	SplayTree.h SplayTreeIterator.h TimePrinter.cpp TimePrinter.h \
-	TipWatchdog.cpp TipWatchdog.h Vertex.cpp Vertex.h \
-	VertexLinkedList.cpp VertexLinkedList.h VerticesExtractor.cpp \
-	VerticesExtractor.h FastqGzLoader.cpp FastqGzLoader.h \
-	FastqBz2Loader.cpp FastqBz2Loader.h BzReader.h BzReader.cpp
+	ReadAnnotation.h Read.cpp Read.h SeedExtender.cpp \
+	SeedExtender.h SequencesIndexer.cpp SequencesIndexer.h \
+	SequencesLoader.cpp SequencesLoader.h SffLoader.cpp \
+	SffLoader.h SplayNode.h SplayTree.h SplayTreeIterator.h \
+	TimePrinter.cpp TimePrinter.h TipWatchdog.cpp TipWatchdog.h \
+	Vertex.cpp Vertex.h VertexLinkedList.cpp VertexLinkedList.h \
+	VerticesExtractor.cpp VerticesExtractor.h FastqGzLoader.cpp \
+	FastqGzLoader.h FastqBz2Loader.cpp FastqBz2Loader.h BzReader.h \
+	BzReader.cpp
 @HAVE_ZLIB_TRUE@am__objects_1 = FastqGzLoader.$(OBJEXT)
 @HAVE_BZ2_TRUE@am__objects_2 = FastqBz2Loader.$(OBJEXT) \
 @HAVE_BZ2_TRUE@	BzReader.$(OBJEXT)
@@ -107,10 +107,9 @@ am_libRay_a_OBJECTS = MemoryConsumptionReducer.$(OBJEXT) \
 	MyAllocator.$(OBJEXT) MyForest.$(OBJEXT) \
 	OpenAssemblerChooser.$(OBJEXT) PairedRead.$(OBJEXT) \
 	Parameters.$(OBJEXT) ReadAnnotation.$(OBJEXT) Read.$(OBJEXT) \
-	RepeatedVertexWatchdog.$(OBJEXT) SeedExtender.$(OBJEXT) \
-	SequencesIndexer.$(OBJEXT) SequencesLoader.$(OBJEXT) \
-	SffLoader.$(OBJEXT) TimePrinter.$(OBJEXT) \
-	TipWatchdog.$(OBJEXT) Vertex.$(OBJEXT) \
+	SeedExtender.$(OBJEXT) SequencesIndexer.$(OBJEXT) \
+	SequencesLoader.$(OBJEXT) SffLoader.$(OBJEXT) \
+	TimePrinter.$(OBJEXT) TipWatchdog.$(OBJEXT) Vertex.$(OBJEXT) \
 	VertexLinkedList.$(OBJEXT) VerticesExtractor.$(OBJEXT) \
 	$(am__objects_1) $(am__objects_2)
 libRay_a_OBJECTS = $(am_libRay_a_OBJECTS)
@@ -250,14 +249,14 @@ libRay_a_SOURCES = MemoryConsumptionReducer.h \
 	MyAllocator.cpp MyAllocator.h MyForest.cpp MyForest.h \
 	OpenAssemblerChooser.cpp OpenAssemblerChooser.h PairedRead.cpp \
 	PairedRead.h Parameters.cpp Parameters.h ReadAnnotation.cpp \
-	ReadAnnotation.h Read.cpp Read.h RepeatedVertexWatchdog.cpp \
-	RepeatedVertexWatchdog.h SeedExtender.cpp SeedExtender.h \
-	SequencesIndexer.cpp SequencesIndexer.h SequencesLoader.cpp \
-	SequencesLoader.h SffLoader.cpp SffLoader.h SplayNode.h \
-	SplayTree.h SplayTreeIterator.h TimePrinter.cpp TimePrinter.h \
-	TipWatchdog.cpp TipWatchdog.h Vertex.cpp Vertex.h \
-	VertexLinkedList.cpp VertexLinkedList.h VerticesExtractor.cpp \
-	VerticesExtractor.h $(am__append_1) $(am__append_2)
+	ReadAnnotation.h Read.cpp Read.h SeedExtender.cpp \
+	SeedExtender.h SequencesIndexer.cpp SequencesIndexer.h \
+	SequencesLoader.cpp SequencesLoader.h SffLoader.cpp \
+	SffLoader.h SplayNode.h SplayTree.h SplayTreeIterator.h \
+	TimePrinter.cpp TimePrinter.h TipWatchdog.cpp TipWatchdog.h \
+	Vertex.cpp Vertex.h VertexLinkedList.cpp VertexLinkedList.h \
+	VerticesExtractor.cpp VerticesExtractor.h $(am__append_1) \
+	$(am__append_2)
 Ray_SOURCES = ray_main.cpp 
 Ray_LDADD = libRay.a $(am__append_3) $(am__append_4)
 all: all-am
@@ -379,7 +378,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Parameters.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Read.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ReadAnnotation.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RepeatedVertexWatchdog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RingAllocator.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SeedExtender.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SeedingData.Po@am__quote@
