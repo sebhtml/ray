@@ -128,7 +128,7 @@ void FusionData::finishFusions(){
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		return;
 	}
-	int overlapMinimumLength=5000;
+	int overlapMinimumLength=1000;
 	if((int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<overlapMinimumLength){
 		m_seedingData->m_SEEDING_i++;
 		m_FINISH_vertex_requested=false;
@@ -153,8 +153,7 @@ void FusionData::finishFusions(){
 	bool done=false;
 	if(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
 		if(!m_Machine_getPaths_DONE){
-			if(m_ed->m_EXTENSION_currentPosition!=(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-1
-			&& m_ed->m_EXTENSION_currentPosition!=(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-overlapMinimumLength){
+			if(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-overlapMinimumLength){
 				m_Machine_getPaths_DONE=true;
 			}else{
 				getPaths(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition]);
