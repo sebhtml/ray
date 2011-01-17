@@ -11,6 +11,11 @@ distributing vertices.
 * Removed RepeatedVertexWatchdog.
 * Changed the RepeatedThreshold from 255 to 3*peakCoverage
 * Now both versions of read pairs are utilized.
+* Removed heuristics based solely on coverage.
+* Paired reads are utilized if the distance falls in mean-3 standard
+deviation;mean+3 standard deviation. (3 instead of 1 as described in the
+paper).
+
 
 
 = 1.2.2 'X-ray' =

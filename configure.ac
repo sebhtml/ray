@@ -69,9 +69,7 @@ AC_CHECK_LIB(bz2, BZ2_decompress,
 AC_CONFIG_FILES([code/Makefile
 Makefile
 scripts/gnuplot/Makefile
-scripts/examples/MPICH2/Makefile
 scripts/examples/Makefile
-scripts/examples/Open-MPI/Makefile
 scripts/examples/SunGridEngine,Open-MPI/Makefile
 scripts/Makefile])
 

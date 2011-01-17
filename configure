@@ -8149,7 +8149,7 @@ fi
 fi
 
 
-ac_config_files="$ac_config_files code/Makefile Makefile scripts/gnuplot/Makefile scripts/examples/MPICH2/Makefile scripts/examples/Makefile scripts/examples/Open-MPI/Makefile scripts/examples/SunGridEngine,Open-MPI/Makefile scripts/Makefile"
+ac_config_files="$ac_config_files code/Makefile Makefile scripts/gnuplot/Makefile scripts/examples/Makefile scripts/examples/SunGridEngine,Open-MPI/Makefile scripts/Makefile"
 
 
 
@@ -8827,9 +8827,7 @@ do
     "code/Makefile") CONFIG_FILES="$CONFIG_FILES code/Makefile" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "scripts/gnuplot/Makefile") CONFIG_FILES="$CONFIG_FILES scripts/gnuplot/Makefile" ;;
-    "scripts/examples/MPICH2/Makefile") CONFIG_FILES="$CONFIG_FILES scripts/examples/MPICH2/Makefile" ;;
     "scripts/examples/Makefile") CONFIG_FILES="$CONFIG_FILES scripts/examples/Makefile" ;;
-    "scripts/examples/Open-MPI/Makefile") CONFIG_FILES="$CONFIG_FILES scripts/examples/Open-MPI/Makefile" ;;
     "scripts/examples/SunGridEngine,Open-MPI/Makefile") CONFIG_FILES="$CONFIG_FILES scripts/examples/SunGridEngine,Open-MPI/Makefile" ;;
     "scripts/Makefile") CONFIG_FILES="$CONFIG_FILES scripts/Makefile" ;;
 
