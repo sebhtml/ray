@@ -57,7 +57,7 @@ class FusionData{
 	int m_FINISH_positionStart;
 	bool m_FINISH_hasHit;
 
-	int m_selectedPath;
+	uint64_t m_selectedPath;
 	int m_selectedPosition;
 
 public:
@@ -88,7 +88,7 @@ public:
 	int m_FUSION_receivedLength;
 	bool m_FUSION_reverse_fusionDone;
 	vector<Direction> m_FUSION_lastPaths;
-	vector<int> m_FUSION_matches;
+	vector<uint64_t> m_FUSION_matches;
 	bool m_FUSION_matches_done;
 	bool m_FUSION_pathLengthReceived;
 	bool m_FUSION_matches_length_done;

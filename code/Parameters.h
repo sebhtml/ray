@@ -93,8 +93,8 @@ public:
 	int getMinimumContigLength();
 	string getOutputFile();
 	int getWordSize();
-	int getFragmentLength(int i);
-	int getStandardDeviation(int i);
+	int getLibraryAverageLength(int i);
+	int getLibraryStandardDeviation(int i);
 	bool isLeftFile(int i);
 	bool isRightFile(int i);
 	bool getColorSpaceMode();

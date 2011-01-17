@@ -23,6 +23,8 @@
 #ifndef _Direction
 #define _Direction
 
+#include<stdint.h>
+
 /*
  * a direction is a wave and a progression.
  *
@@ -30,12 +32,12 @@
  * directions of the flow are stored with Directions. (as linked lists).
  */
 class Direction{
-	int m_wave; // the path Identifier, as a wave for itself.
+	uint64_t m_wave; // the path Identifier, as a wave for itself.
 	int m_progression; // the position in the path.
 	Direction*m_next;
 public:
-	void constructor(int wave,int progression);
-	int getWave();
+	void constructor(uint64_t wave,int progression);
+	uint64_t getWave();
 	int getProgression();
 	Direction*getNext();
 	void setNext(Direction*e);

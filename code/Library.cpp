@@ -38,8 +38,8 @@ void Library::updateDistances(){
 	intMessage[0]=libraries;
 
 	for(int i=0;i<libraries;i++){
-		int average=m_parameters->getFragmentLength(i);
-		int deviation=m_parameters->getStandardDeviation(i);
+		int average=m_parameters->getLibraryAverageLength(i);
+		int deviation=m_parameters->getLibraryStandardDeviation(i);
 		intMessage[2*i+0+1]=average;
 		intMessage[2*i+1+1]=deviation;
 	}
@@ -77,7 +77,7 @@ void Library::detectDistances(){
 		#endif
 	}else{
 		if(!m_ed->m_EXTENSION_reads_requested){
-			if(m_ed->m_EXTENSION_currentPosition==0 && m_seedingData->m_SEEDING_i%200==0){
+			if(m_ed->m_EXTENSION_currentPosition==0 && m_seedingData->m_SEEDING_i%10==0){
 				printf("Rank %i is calculating library lengths [%i/%i]\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_seedingData->m_SEEDING_seeds.size());
 				fflush(stdout);
 			}

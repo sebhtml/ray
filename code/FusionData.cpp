@@ -107,7 +107,14 @@ bool FusionData::isReady(){
 }
 
 /*
- * finish hyper fusions now!
+ * find overlap between extensions
+ *
+ * example:
+ *
+ *
+ *
+ *         ----------------------->
+ *                          ----------------------->
  */
 void FusionData::finishFusions(){
 	if(m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
@@ -116,29 +123,13 @@ void FusionData::finishFusions(){
 		printf("Rank %i is finishing fusions [%i/%i] (completed)\n",getRank(),(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
 		fflush(stdout);
 	
-		/*
-		char number[10];
-		sprintf(number,"%d",m_rank);
-		string theNumber=number;
-		string file="Rank_"+theNumber+".fasta";
-		ofstream f(file.c_str());
-
-		for(int i=0;i<(int)m_FINISH_newFusions.size();i++){
-			string contig=convertToString(&(m_FINISH_newFusions[i]),m_wordSize);
-			f<<">contig-"<<i<<" "<<contig.length()<<" nucleotides"<<endl<<addLineBreaks(contig);
-		}
-		f.close();
-		*/
-
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_FINISH_FUSIONS_FINISHED,getRank());
 		m_outbox->push_back(aMessage);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		return;
 	}
-	int overlapMinimumLength=1200;
+	int overlapMinimumLength=5000;
 	if((int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<overlapMinimumLength){
-		#ifdef SHOW_PROGRESS
-		#endif
 		m_seedingData->m_SEEDING_i++;
 		m_FINISH_vertex_requested=false;
 		m_ed->m_EXTENSION_currentPosition=0;
@@ -150,7 +141,7 @@ void FusionData::finishFusions(){
 	}
 	// check if the path begins with someone else.
 	
-	int currentId=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
+	uint64_t currentId=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
 	// don't do it if it is removed.
 
 	// start threading the extension
@@ -169,6 +160,7 @@ void FusionData::finishFusions(){
 				getPaths(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition]);
 			}
 		}else{
+			// at this point, we have the paths that has the said vertex in them.
 			// remove selfId.
 			vector<Direction> a;
 			for(int i=0;i<(int)m_Machine_getPaths_result.size();i++){
@@ -241,7 +233,7 @@ void FusionData::finishFusions(){
 			// find all hits
 			//
 			for(int i=0;i<(int)directions1.size();i++){
-				int wave1=directions1[i].getWave();
+				uint64_t wave1=directions1[i].getWave();
 				if(indexOnDirection2.count(wave1)==0){
 					continue;
 				}
@@ -269,6 +261,31 @@ void FusionData::finishFusions(){
 			if(hits>1){// we don't support that right now.
 				done=true;
 			}	
+
+			// make sure that all positions from 
+			// <m_FINISH_pathsForPosition.size()-1> up to 
+			//     <m_FINISH_pathsForPosition.size()-overlapMinimumLength>
+			//     contain m_selectedPath.
+			//
+			//     if it is not the case, we might have a degenerated repeated region !
+			//     therefore, we must be cautious.
+			int thePosition=m_FINISH_pathsForPosition.size()-1;
+			while(thePosition>=(int)m_FINISH_pathsForPosition.size()-overlapMinimumLength){
+				bool found=false;
+				for(int j=0;j<(int)m_FINISH_pathsForPosition[thePosition].size();j++){
+					if(m_FINISH_pathsForPosition[thePosition][j].getWave()==m_selectedPath){
+						found=true;
+						break;
+					}
+				}
+				if(!found){
+					// this is a degenerated repeated region, aborting now.
+					done=true;
+					break;
+				}
+				thePosition--;
+			}
+
 			m_checkedValidity=true;
 		}
 	}else{
@@ -389,7 +406,7 @@ void FusionData::makeFusions(){
 		m_seedingData->m_SEEDING_i++;
 		return;
 	}else if(!m_FUSION_direct_fusionDone){
-		int currentId=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
+		uint64_t currentId=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
 		if(!m_FUSION_first_done){
 			if(!m_FUSION_paths_requested){
 				#ifdef SHOW_PROGRESS
@@ -486,9 +503,9 @@ void FusionData::makeFusions(){
 
 		}else if(!m_FUSION_matches_done){
 			m_FUSION_matches_done=true;
-			map<int,int> index;
-			map<int,vector<int> > starts;
-			map<int,vector<int> > ends;
+			map<uint64_t,int> index;
+			map<uint64_t,vector<int> > starts;
+			map<uint64_t,vector<int> > ends;
 
 
 			// extract those that are on both starting and ending vertices.
@@ -504,15 +521,15 @@ void FusionData::makeFusions(){
 			for(int i=0;i<(int)m_FUSION_lastPaths.size();i++){
 				index[m_FUSION_lastPaths[i].getWave()]++;
 				
-				int pathId=m_FUSION_lastPaths[i].getWave();
+				uint64_t pathId=m_FUSION_lastPaths[i].getWave();
 				int progression=m_FUSION_lastPaths[i].getProgression();
 				ends[pathId].push_back(progression);
 			}
 			
 
 			
-			for(map<int,int>::iterator i=index.begin();i!=index.end();++i){
-				int otherPathId=i->first;
+			for(map<uint64_t,int>::iterator i=index.begin();i!=index.end();++i){
+				uint64_t otherPathId=i->first;
 				if(i->second>=2 and otherPathId != currentId){
 					// try to find a match with the current size.
 					for(int k=0;k<(int)starts[otherPathId].size();k++){
@@ -542,11 +559,11 @@ void FusionData::makeFusions(){
 			m_FUSION_match_index=0;
 			m_FUSION_pathLengthRequested=false;
 		}else if(!m_FUSION_matches_length_done){
-			int currentId=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
+			uint64_t currentId=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
 			if(m_FUSION_match_index==(int)m_FUSION_matches.size()){// tested all matches, and nothing was found.
 				m_FUSION_matches_length_done=true;
 			}else if(!m_FUSION_pathLengthRequested){
-				int uniquePathId=m_FUSION_matches[m_FUSION_match_index];
+				uint64_t uniquePathId=m_FUSION_matches[m_FUSION_match_index];
 				int rankId=uniquePathId%MAX_NUMBER_OF_MPI_PROCESSES;
 				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t));
 				message[0]=uniquePathId;
@@ -579,7 +596,7 @@ void FusionData::makeFusions(){
 			m_FUSION_paths_requested=false;
 		}
 	}else if(!m_FUSION_reverse_fusionDone){
-		int currentId=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
+		uint64_t currentId=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
 		if(!m_FUSION_first_done){
 			if(!m_FUSION_paths_requested){
 				// get the paths going on the first vertex
@@ -672,25 +689,25 @@ void FusionData::makeFusions(){
 
 		}else if(!m_FUSION_matches_done){
 			m_FUSION_matches_done=true;
-			map<int,int> index;
-			map<int,vector<int> > starts;
-			map<int,vector<int> > ends;
+			map<uint64_t,int> index;
+			map<uint64_t,vector<int> > starts;
+			map<uint64_t,vector<int> > ends;
 			for(int i=0;i<(int)m_FUSION_firstPaths.size();i++){
 				index[m_FUSION_firstPaths[i].getWave()]++;
-				int pathId=m_FUSION_firstPaths[i].getWave();
+				uint64_t pathId=m_FUSION_firstPaths[i].getWave();
 				int progression=m_FUSION_firstPaths[i].getProgression();
 				starts[pathId].push_back(progression);
 			}
 			for(int i=0;i<(int)m_FUSION_lastPaths.size();i++){
 				index[m_FUSION_lastPaths[i].getWave()]++;
 				
-				int pathId=m_FUSION_lastPaths[i].getWave();
+				uint64_t pathId=m_FUSION_lastPaths[i].getWave();
 				int progression=m_FUSION_lastPaths[i].getProgression();
 				ends[pathId].push_back(progression);
 			}
 			vector<int> matches;
-			for(map<int,int>::iterator i=index.begin();i!=index.end();++i){
-				int otherPathId=i->first;
+			for(map<uint64_t,int>::iterator i=index.begin();i!=index.end();++i){
+				uint64_t otherPathId=i->first;
 				if(i->second>=2 and i->first != currentId){
 					// try to find a match with the current size.
 					for(int k=0;k<(int)starts[otherPathId].size();k++){
@@ -720,7 +737,7 @@ void FusionData::makeFusions(){
 			m_FUSION_match_index=0;
 			m_FUSION_pathLengthRequested=false;
 		}else if(!m_FUSION_matches_length_done){
-			int currentId=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
+			uint64_t currentId=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
 			if(m_FUSION_match_index==(int)m_FUSION_matches.size()){
 				m_FUSION_matches_length_done=true;
 			}else if(!m_FUSION_pathLengthRequested){

@@ -42,7 +42,7 @@ public:
 	int m_EXTENSION_edgeIterator;
 	bool m_EXTENSION_hasPairedReadRequested;
 	bool m_EXTENSION_hasPairedReadReceived;
-	vector<int> m_EXTENSION_identifiers;
+	vector<uint64_t> m_EXTENSION_identifiers;
 	vector<uint64_t> m_EXTENSION_extension;
 	vector<int> m_EXTENSION_coverages;
 	bool m_EXTENSION_complementedSeed;

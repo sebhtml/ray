@@ -71,8 +71,6 @@ int OpenAssemblerChooser::choose(ExtensionData*m_ed,Chooser*m_c,int m_minimumCov
 
 	// win or lose with single-end reads
 	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
-		set<int> victories;
-
 		if(m_cd->m_CHOOSER_theMaxs[i]<5){
 			continue;
 		}
@@ -93,16 +91,6 @@ int OpenAssemblerChooser::choose(ExtensionData*m_ed,Chooser*m_c,int m_minimumCov
 		return finalWinner;
 	}
 
-	// try to use the coverage to choose.
-	// stick around novel minimum coverages
-	int i=proceedWithCoverages(m_minimumCoverage/2,m_minimumCoverage,m_ed);
-	if(i!=IMPOSSIBLE_CHOICE){
-		return i;
-	}
-	i=proceedWithCoverages(m_minimumCoverage,2*m_minimumCoverage,m_ed);
-	if(i!=IMPOSSIBLE_CHOICE){
-		return i;
-	}
 	return IMPOSSIBLE_CHOICE;
 }
 

@@ -217,7 +217,8 @@ void Parameters::parseCommands(){
 
 			if(m_rank==MASTER_RANK){
 				cout<<endl;
-				cout<<"-i (paired-end interleaved sequences)"<<endl;
+				cout<<"Paired library # "<<m_numberOfLibraries<<endl;
+				cout<<" -i (paired-end interleaved sequences)"<<endl;
 				cout<<" Sequences: "<<token<<endl;
 			}
 			if(items==3){
@@ -250,8 +251,7 @@ void Parameters::parseCommands(){
 
 			m_fileLibrary[interleavedFileIndex]=m_numberOfLibraries;
 
-			m_libraryAverageLength[m_numberOfLibraries]=meanFragmentLength;
-			m_libraryDeviation[m_numberOfLibraries]=standardDeviation;
+			addLibraryData(m_numberOfLibraries,meanFragmentLength,standardDeviation);
 
 			m_numberOfLibraries++;
 		}else if(pairedReadsCommands.count(token)>0){
@@ -302,7 +302,8 @@ void Parameters::parseCommands(){
 
 			if(m_rank==MASTER_RANK){
 				cout<<endl;
-				cout<<"-p (paired-end sequences)"<<endl;
+				cout<<"Paired library # "<<m_numberOfLibraries<<endl;
+				cout<<" -p (paired-end sequences)"<<endl;
 				cout<<" Left sequences: "<<left<<endl;
 				cout<<" Right sequences: "<<right<<endl;
 			}
@@ -333,8 +334,7 @@ void Parameters::parseCommands(){
 			m_fileLibrary[rightFile]=m_numberOfLibraries;
 			m_fileLibrary[leftFile]=m_numberOfLibraries;
 
-			m_libraryAverageLength[m_numberOfLibraries]=meanFragmentLength;
-			m_libraryDeviation[m_numberOfLibraries]=standardDeviation;
+			addLibraryData(m_numberOfLibraries,meanFragmentLength,standardDeviation);
 
 			m_numberOfLibraries++;
 		}else if(outputAmosCommands.count(token)>0){
@@ -472,11 +472,11 @@ bool Parameters::isRightFile(int i){
 	return m_rightFiles.count(i)>0;
 }
 
-int Parameters::getFragmentLength(int i){
+int Parameters::getLibraryAverageLength(int i){
 	return m_libraryAverageLength[i];
 }
 
-int Parameters::getStandardDeviation(int i){
+int Parameters::getLibraryStandardDeviation(int i){
 	return m_libraryDeviation[i];
 }
 
@@ -567,9 +567,20 @@ void Parameters::computeAverageDistances(){
 
 		addLibraryData(library,average,standardDeviation);
 
-		cout<<"Rank 0: library "<<library<<" has an average size of "<<average<<" with a standard variation of "<<standardDeviation<<endl;
 	}	
 	cout<<endl;
+	cout<<endl;
+
+	for(int i=0;i<(int)m_numberOfLibraries;i++){
+		int library=i;
+		string type="Manual";
+		if(m_automaticLibraries.count(library)>0){
+			type="Automatic";
+		}
+		int average=getLibraryAverageLength(library);
+		int standardDeviation=getLibraryStandardDeviation(library);
+		cout<<"Library # "<<library<<" ("<<type<<") -> average length: "<<average<<" and standard variation: "<<standardDeviation<<endl;
+	}
 }
 
 void Parameters::addLibraryData(int library,int average,int deviation){

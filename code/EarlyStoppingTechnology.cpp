@@ -35,7 +35,7 @@ void EarlyStoppingTechnology::addDirections(vector<Direction>*directions){
  */
 void EarlyStoppingTechnology::reverseTechnology(vector<Direction>*directions){ 
 	for(int i=0;i<(int)directions->size();i++){
-		int pathWave=directions->at(i).getWave();
+		uint64_t pathWave=directions->at(i).getWave();
 		int progression=directions->at(i).getProgression();
 
 		// must follow 
@@ -94,7 +94,7 @@ bool EarlyStoppingTechnology::isAlarmed(){
 	return m_alarm;
 }
 
-void EarlyStoppingTechnology::constructor(int selfWave,int rank){
+void EarlyStoppingTechnology::constructor(uint64_t selfWave,int rank){
 	m_rank=rank;
 	m_forwardObservations.clear();
 	m_reverseObservations.clear();

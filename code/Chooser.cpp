@@ -19,7 +19,6 @@
 
 */
 
-
 #include<Chooser.h>
 #include<common_functions.h>
 #include<ChooserData.h>
@@ -54,6 +53,14 @@ vector<set<int> >*battleVictories
 
 			if((m_cd->m_CHOOSER_theMaxsPaired[i] <= __PAIRED_MULTIPLIER*m_cd->m_CHOOSER_theMaxsPaired[j])
 			&& minimumValues[i] < 0.5 * minimumValues[j]){
+				(*battleVictories)[i].insert(j);
+			}
+
+			// same maximum
+			if((m_cd->m_CHOOSER_theMaxsPaired[i] <= __PAIRED_MULTIPLIER*m_cd->m_CHOOSER_theMaxsPaired[j])
+			&& (m_cd->m_CHOOSER_theMaxsPaired[j] <= __PAIRED_MULTIPLIER*m_cd->m_CHOOSER_theMaxsPaired[i])
+			&& counts[i]>20*counts[j]){
+				// dodge sequencing errors.
 				(*battleVictories)[i].insert(j);
 			}
 		}

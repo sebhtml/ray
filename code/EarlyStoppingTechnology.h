@@ -26,6 +26,7 @@
 #include<map>
 #include<vector>
 #include<Direction.h>
+#include<stdint.h>
 using namespace std;
 
 class EarlyStoppingTechnology{
@@ -33,7 +34,7 @@ class EarlyStoppingTechnology{
 	int m_rank;
 	map<int,vector<int> > m_forwardObservations;
 	map<int,vector<int> > m_reverseObservations;
-	int m_selfWave;
+	uint64_t m_selfWave;
 
 	int m_forwardThreshold;
 	int m_reverseThreshold;
@@ -44,7 +45,7 @@ public:
 	void addDirections(vector<Direction>*directions);
 	bool isAlarmed();
 	void clear();
-	void constructor(int selfWave,int rank);
+	void constructor(uint64_t selfWave,int rank);
 	
 };
 
