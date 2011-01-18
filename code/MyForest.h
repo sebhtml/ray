@@ -35,7 +35,7 @@ class MyForest{
 	SplayTree<uint64_t,Vertex>*m_trees;
 	bool m_inserted;
 	int getTreeIndex(uint64_t i);
-
+	MyAllocator*m_allocator;
 	bool m_frozen;
 
 public:
@@ -51,6 +51,7 @@ public:
 	void show(int rank,const char*a);
 	bool frozen();
 	void remove(uint64_t a);
+	MyAllocator*getAllocator();
 };
 
 #endif

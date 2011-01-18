@@ -26,6 +26,7 @@
 using namespace std;
 
 void MyForest::constructor(int count,MyAllocator*allocator){
+	m_allocator=allocator;
 	m_trees=(SplayTree<uint64_t,Vertex>*)allocator->allocate(sizeof(SplayTree<uint64_t,Vertex>)*count);
 	for(int i=0;i<count;i++){
 		m_trees[i].constructor();
@@ -108,4 +109,8 @@ void MyForest::remove(uint64_t a){
 	if(m_trees[tree].remove(a)){
 		m_size--;
 	}
+}
+
+MyAllocator*MyForest::getAllocator(){
+	return m_allocator;
 }

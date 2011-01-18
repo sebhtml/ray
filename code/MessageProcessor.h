@@ -130,7 +130,6 @@ class MessageProcessor{
 
 	void call_RAY_MPI_TAG_WELCOME(Message*message);
 	void call_RAY_MPI_TAG_SEQUENCES_READY(Message*message);
-	void call_RAY_MPI_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS(Message*message);
 	void call_RAY_MPI_TAG_VERTICES_DATA(Message*message);
 	void call_RAY_MPI_TAG_VERTICES_DISTRIBUTED(Message*message);
 	void call_RAY_MPI_TAG_OUT_EDGES_DATA(Message*message);

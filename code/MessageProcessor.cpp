@@ -315,17 +315,6 @@ void MessageProcessor::call_RAY_MPI_TAG_SEQUENCES_READY(Message*message){
 	}
 }
 
-void MessageProcessor::call_RAY_MPI_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS(Message*message){
-	m_reducer->constructor(size);
-
-	int source=message->getSource();
-	printf("Rank %i has %i sequence reads\n",rank,(int)(*m_myReads).size());
-	//printf("%i\n",m_count);
-	fflush(stdout);
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_SEQUENCES_READY,rank);
-	m_outbox->push_back(aMessage);
-}
-
 /*
  * receive vertices (data)
  */
@@ -510,6 +499,15 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*me
 	printf("Rank %i has %i vertices (completed)\n",rank,(int)m_subgraph->size());
 	fflush(stdout);
 	showMemoryUsage(rank);
+	fflush(stdout);
+
+	m_subgraph->getAllocator()->freeAddressesToReuse();
+
+	int chunks=m_subgraph->getAllocator()->getNumberOfChunks();
+	int chunkSize=m_subgraph->getAllocator()->getChunkSize();
+	uint64_t totalBytes=chunks*chunkSize;
+	printf("Rank %i: memory usage for vertices is %i * %i = %lu\n",rank,chunks,chunkSize,totalBytes);
+	fflush(stdout);
 
 	(*m_mode_send_coverage_iterator)=0;
 	(*m_mode_sendDistribution)=true;
@@ -1741,7 +1739,6 @@ MessageProcessor::MessageProcessor(){
 void MessageProcessor::assignHandlers(){
 	m_methods[RAY_MPI_TAG_WELCOME]=&MessageProcessor::call_RAY_MPI_TAG_WELCOME;
 	m_methods[RAY_MPI_TAG_SEQUENCES_READY]=&MessageProcessor::call_RAY_MPI_TAG_SEQUENCES_READY;
-	m_methods[RAY_MPI_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS]=&MessageProcessor::call_RAY_MPI_TAG_MASTER_IS_DONE_SENDING_ITS_SEQUENCES_TO_OTHERS;
 	m_methods[RAY_MPI_TAG_VERTICES_DATA]=&MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA;
 	m_methods[RAY_MPI_TAG_VERTICES_DISTRIBUTED]=&MessageProcessor::call_RAY_MPI_TAG_VERTICES_DISTRIBUTED;
 	m_methods[RAY_MPI_TAG_OUT_EDGES_DATA]=&MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA;

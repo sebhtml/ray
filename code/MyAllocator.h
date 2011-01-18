@@ -67,6 +67,7 @@ public:
 	int getChunkSize();
 	int getNumberOfChunks();
 	void addAddressToReuse(void*ptr);
+	void freeAddressesToReuse();
 	void resetMemory();
 };
 

@@ -354,6 +354,7 @@ m_seedingData,
 
 	showMemoryUsage(getRank());
 
+	
 	MPI_Barrier(MPI_COMM_WORLD);
 
 	if(isMaster() && !m_aborted){

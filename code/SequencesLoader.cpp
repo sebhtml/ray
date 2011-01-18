@@ -292,6 +292,13 @@ bool SequencesLoader::loadSequences(int rank,int size,
 	uint64_t amount=m_myReads->size();
 	printf("Rank %i has %lu sequence reads (completed)\n",m_rank,amount);
 	fflush(stdout);
+
+	int chunks=m_persistentAllocator->getNumberOfChunks();
+	int chunkSize=m_persistentAllocator->getChunkSize();
+	uint64_t totalBytes=chunks*chunkSize;
+	printf("Rank %i: memory usage for sequence reads is %i * %i = %lu\n",m_rank,chunks,chunkSize,totalBytes);
+	fflush(stdout);
+
 	showMemoryUsage(m_rank);
 
 	return true;

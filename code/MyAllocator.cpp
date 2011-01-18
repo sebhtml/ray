@@ -154,3 +154,10 @@ void MyAllocator::addAddressToReuse(void*ptr){
 	m_numberOfAddressesToReuse++;
 }
 
+void MyAllocator::freeAddressesToReuse(){
+	if(m_numberOfAddressesToReuse!=0){
+		free(m_addressesToReuse);
+		m_addressesToReuse=NULL;
+		m_numberOfAddressesToReuse=0;
+	}
+}
