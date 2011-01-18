@@ -27,7 +27,8 @@
 #include<assert.h>
 #include<BubbleTool.h>
 
-#define SHOW_CHOICE
+// uncomment to display how Ray chooses things.
+//#define SHOW_CHOICE
 
 void debugMessage(int source,int destination,string message){
 	cout<<"Microseconds: "<<getMicroSeconds()<<" Source: "<<source<<" Destination: "<<destination<<" Message: "<<message<<endl;
@@ -477,6 +478,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 
 				int choice=(*oa).choose(ed,&(*chooser),minimumCoverage,(maxCoverage),cd);
 				if(choice!=IMPOSSIBLE_CHOICE){
+					#ifdef SHOW_CHOICE
 					if(ed->m_enumerateChoices_outgoingEdges.size()>1){
 						cout<<"Choosing..."<<endl;
 						inspect(ed,currentVertex);
@@ -485,6 +487,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 						cout<<endl;
 						cout<<endl;
 					}
+					#endif
 
 					(*currentVertex)=ed->m_enumerateChoices_outgoingEdges[choice];
 					ed->m_EXTENSION_choose=true;
@@ -653,9 +656,11 @@ void SeedExtender::storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vect
 uint64_t*currentVertex,BubbleData*bubbleData){
 	if(ed->m_EXTENSION_extension.size()>=100){
 
+		#ifdef SHOW_CHOICE
 		cout<<"Choosing... (impossible!)"<<endl;
 		inspect(ed,currentVertex);
 		cout<<"Stopping extension..."<<endl;
+		#endif
 
 		int theCurrentSize=ed->m_EXTENSION_extension.size();
 		printf("Rank %i reached %i vertices from seed %i (completed)\n",theRank,theCurrentSize,
