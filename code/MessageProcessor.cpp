@@ -506,13 +506,12 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*me
 	showMemoryUsage(rank);
 	fflush(stdout);
 
-	#ifdef OUTPUT_ALLOCATOR_PROFILES
 	int chunks=m_subgraph->getAllocator()->getNumberOfChunks();
 	int chunkSize=m_subgraph->getAllocator()->getChunkSize();
 	uint64_t totalBytes=chunks*chunkSize;
-	printf("Rank %i: memory usage for vertices is %i * %i = %lu\n",rank,chunks,chunkSize,totalBytes);
+	uint64_t kibibytes=totalBytes/1024;
+	printf("Rank %i: memory usage for vertices is %lu KiB\n",rank,kibibytes);
 	fflush(stdout);
-	#endif
 
 	(*m_mode_send_coverage_iterator)=0;
 	(*m_mode_sendDistribution)=true;

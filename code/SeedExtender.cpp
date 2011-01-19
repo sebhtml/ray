@@ -585,13 +585,12 @@ uint64_t*currentVertex,BubbleData*bubbleData){
 		fflush(stdout);
 		showMemoryUsage(theRank);
 
-		#ifdef OUTPUT_ALLOCATOR_PROFILES
 		int chunks=m_directionsAllocator->getNumberOfChunks();
 		int chunkSize=m_directionsAllocator->getChunkSize();
 		uint64_t totalBytes=chunks*chunkSize;
-		printf("Rank %i: memory usage for directions is %i * %i = %lu\n",theRank,chunks,chunkSize,totalBytes);
+		uint64_t kibibytes=totalBytes/1024;
+		printf("Rank %i: memory usage for directions is %lu KiB\n",theRank,kibibytes);
 		fflush(stdout);
-		#endif
 
 		ed->m_EXTENSION_contigs.push_back(*(ed->m_EXTENSION_extension));
 	
