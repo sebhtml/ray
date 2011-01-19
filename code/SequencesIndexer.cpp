@@ -57,6 +57,8 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 		m_outbox->push_back(aMessage);
 		m_bufferedData.clear();
 
+		showMemoryUsage(m_rank);
+
 		return;
 	}
 	#ifdef ASSERT

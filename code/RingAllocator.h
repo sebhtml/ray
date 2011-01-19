@@ -46,6 +46,7 @@ public:
 	void constructor(int chunks,int size);
 	void*allocate(int a);
 	int getSize();
+	void clear();
 };
 
 

@@ -106,6 +106,28 @@ MyAllocator::~MyAllocator(){
 }
 
 void MyAllocator::resetMemory(){
+	// just reuse the chunk if there is only one.
+	if(getNumberOfChunks()==1){
+		m_currentPosition=0;
+		return;
+	}
+/*
+	// keep the first CHUNK
+	if(getNumberOfChunks()>1){
+		for(int i=1;i<(int)m_chunks.size();i++){
+			__Free(m_chunks[i]);
+		}
+		void*first=m_chunks[0];
+		m_chunks.clear();
+		m_chunks.push_back(first);
+		m_currentPosition=0;
+		return;
+	}
+*/
+	// to this point, we know there are no chunks anyway,
+	// but we know we won't reach this line
+	// because there is alway one chunk if the object is not cleared.
+	//
 	clear();
 	constructor(m_CHUNK_SIZE);
 }

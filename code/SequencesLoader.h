@@ -26,7 +26,6 @@
 #include<RingAllocator.h>
 #include<Loader.h>
 #include<MyAllocator.h>
-#include<BufferedData.h>
 #include<StaticVector.h>
 #include<vector>
 #include<Message.h>
@@ -64,11 +63,8 @@ public:
 	bool*m_loadSequenceStep,
 	BubbleData*m_bubbleData,
 	time_t*m_lastTime,
-	Parameters*m_parameters,int*m_master_mode,int*m_mode
-);
+	Parameters*m_parameters,int*m_master_mode,int*m_mode);
 
-
-	void constructor(int size,MyAllocator*m_persistentAllocator,
-		ArrayOfReads*m_myReads);
+	void constructor(int size,MyAllocator*m_persistentAllocator,ArrayOfReads*m_myReads);
 };
 #endif

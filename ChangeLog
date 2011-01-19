@@ -16,7 +16,9 @@ distributing vertices.
 deviation;mean+3 standard deviation. (3 instead of 1 as described in the
 paper).
 * Fusions are computed more cautiously.
-* Added reporting of memory usage for sequence reads and for vertices.
+* Added reporting of memory usage for sequence reads and for vertices. And for
+a few other places too.
+* Improved memory usage for the extensions.
 
 
 = 1.2.2 'X-ray' =

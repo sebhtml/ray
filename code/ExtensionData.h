@@ -23,15 +23,35 @@
 #define _ExtensionData
 
 #include<vector>
-using namespace std;
 #include<PairedRead.h>
 #include<set>
+#include<Read.h>
 #include<map>
 #include<ReadAnnotation.h>
 #include<common_functions.h>
+using namespace std;
+
+class ExtensionElement{
+public:
+	Read m_read;
+	int m_position;
+	char m_strand;
+};
 
 class ExtensionData{
+	SplayTree<uint64_t,ExtensionElement> m_database;
+
+	MyAllocator m_allocator;
+
+	void createStructures();
+	void destroyStructures();
+
 public:
+
+	vector<int>*m_EXTENSION_coverages;
+	vector<uint64_t>*m_EXTENSION_extension;
+	vector<int>*m_extensionCoverageValues;
+
 	// EXTENSION MODE
 	vector<uint64_t> m_enumerateChoices_outgoingEdges;
 	bool m_doChoice_tips_Detected;
@@ -43,8 +63,6 @@ public:
 	bool m_EXTENSION_hasPairedReadRequested;
 	bool m_EXTENSION_hasPairedReadReceived;
 	vector<uint64_t> m_EXTENSION_identifiers;
-	vector<uint64_t> m_EXTENSION_extension;
-	vector<int> m_EXTENSION_coverages;
 	bool m_EXTENSION_complementedSeed;
 	bool m_EXTENSION_complementedSeed2;
 	vector<uint64_t> m_EXTENSION_currentSeed;
@@ -54,7 +72,6 @@ public:
 	bool m_EXTENSION_VertexMarkAssembled_requested;
 	bool m_EXTENSION_reverseComplement_requested;
 	bool m_EXTENSION_vertexIsAssembledResult;
-	set<ReadAnnotation,ReadAnnotationComparator>::iterator m_EXTENSION_readIterator;
 	bool m_EXTENSION_readLength_requested;
 	bool m_EXTENSION_readLength_received;
 	bool m_EXTENSION_readLength_done;
@@ -81,20 +98,37 @@ public:
 	vector<ReadAnnotation> m_EXTENSION_receivedReads;
 	bool m_EXTENSION_reads_requested;
 	bool m_EXTENSION_reads_received;
-	vector<ReadAnnotation> m_EXTENSION_readsOutOfRange;
+	vector<uint64_t> m_EXTENSION_readsOutOfRange;
 	int m_EXTENSION_receivedLength;
 	bool m_EXTENSION_reverseVertexDone;
 	// reads used so far
-	set<uint64_t> m_EXTENSION_usedReads;
 	// reads to check (the ones "in range")
-	set<ReadAnnotation,ReadAnnotationComparator> m_EXTENSION_readsInRange;
 	bool m_EXTENSION_singleEndResolution;
+	set<uint64_t>::iterator m_EXTENSION_readIterator;
 	map<int,vector<int> > m_EXTENSION_readPositionsForVertices;
 	map<int,vector<int> > m_EXTENSION_pairedReadPositionsForVertices;
-	map<uint64_t,int> m_EXTENSION_reads_startingPositionOnContig;
 	int m_currentCoverage;
-	
-	vector<int> m_extensionCoverageValues;
+
+	set<uint64_t>*m_EXTENSION_readsInRange;
+
+
+	void resetStructures();
+	bool isUsedRead(uint64_t a);
+	void addUsedRead(uint64_t a);
+	bool hasPairedRead(uint64_t a);
+	PairedRead getPairedRead(uint64_t a);
+	void removePairedRead(uint64_t a);
+	void setPairedRead(uint64_t a,PairedRead b);
+	void setStrand(uint64_t a,char b);
+	void setStartingPosition(uint64_t a, int b);
+	int getStartingPosition(uint64_t a);
+	void setSequence(uint64_t a,string b);
+	void constructor();
+	void removeSequence(uint64_t a);
+	string getSequence(uint64_t a);
+	char getStrand(uint64_t a);
+
+	void destructor();
 };
 
 #endif

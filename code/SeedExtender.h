@@ -46,16 +46,14 @@ class SeedExtender{
 	vector<Direction>m_receivedDirections;
 	EarlyStoppingTechnology m_earlyStoppingTechnology;
 	bool m_skippedASeed;
-	map<uint64_t,char> m_readsStrands;
-	set<uint64_t> m_eliminatedSeeds;
 	Parameters*m_parameters;
 	BubbleTool m_bubbleTool;
 
+	MyAllocator*m_directionsAllocator;
+
+	set<uint64_t> m_eliminatedSeeds;
 	void inspect(ExtensionData*ed,uint64_t*currentVertex);
 public:
-
-	
-	map<uint64_t,string> m_sequences;
 	bool m_sequenceReceived;
 	bool m_sequenceRequested;
 	string m_receivedString;
@@ -63,7 +61,6 @@ public:
 
 	SeedExtender();
 
-	map<uint64_t,PairedRead> m_pairedReads;
 
 	void enumerateChoices(bool*edgesRequested,ExtensionData*ed,bool*edgesReceived,RingAllocator*outboxAllocator,
 		int*outgoingEdgeIndex,StaticVector*outbox,
@@ -108,7 +105,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 
 	set<uint64_t>*getEliminatedSeeds();
 
-	void constructor(Parameters*parameters);
+	void constructor(Parameters*parameters,MyAllocator*m_directionsAllocator);
 };
 
 #endif

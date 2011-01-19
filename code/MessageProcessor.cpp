@@ -341,6 +341,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 			(*m_last_value)=m_subgraph->size();
 			printf("Rank %i has %i vertices\n",rank,(int)m_subgraph->size());
 			fflush(stdout);
+			showMemoryUsage(rank);
 		}
 
 		SplayNode<uint64_t,Vertex>*tmp=m_subgraph->insert(l);
@@ -496,18 +497,22 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER(Mes
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message){
+
+	m_subgraph->getAllocator()->freeAddressesToReuse();
+
+
 	printf("Rank %i has %i vertices (completed)\n",rank,(int)m_subgraph->size());
 	fflush(stdout);
 	showMemoryUsage(rank);
 	fflush(stdout);
 
-	m_subgraph->getAllocator()->freeAddressesToReuse();
-
+	#ifdef OUTPUT_ALLOCATOR_PROFILES
 	int chunks=m_subgraph->getAllocator()->getNumberOfChunks();
 	int chunkSize=m_subgraph->getAllocator()->getChunkSize();
 	uint64_t totalBytes=chunks*chunkSize;
 	printf("Rank %i: memory usage for vertices is %i * %i = %lu\n",rank,chunks,chunkSize,totalBytes);
 	fflush(stdout);
+	#endif
 
 	(*m_mode_send_coverage_iterator)=0;
 	(*m_mode_sendDistribution)=true;
@@ -554,7 +559,6 @@ void MessageProcessor::call_RAY_MPI_TAG_READY_TO_SEED(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
-	showMemoryUsage(rank);
 
 	(*m_mode)=RAY_SLAVE_MODE_START_SEEDING;
 	map<int,map<int,int> > edgesDistribution;
@@ -795,6 +799,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_EXTENSION(Message*message){
 	(*m_mode)=RAY_SLAVE_MODE_EXTENSION;
 	(*m_last_value)=-1;
 	m_verticesExtractor->showBuffers();
+
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED(Message*message){
@@ -1164,7 +1169,6 @@ void MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 		int progression=incoming[i+2];
 		node->getValue()->addDirection(wave,progression,&(*m_directionsAllocator));
 	}
-	
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REPLY(Message*message){
@@ -1213,7 +1217,6 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE(Message*message){
 	#endif
 
 	vector<Direction> paths=node->getValue()->getDirections();
-	m_fusionData->m_FUSION_cachedDirections[source]=paths;
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 	message2[0]=paths.size();
 	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY,rank);
@@ -1270,8 +1273,13 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
-	int i=incoming[0];
-	Direction d=m_fusionData->m_FUSION_cachedDirections[source][i];
+	SplayNode<uint64_t,Vertex>*node=m_subgraph->find(incoming[0]);
+	#ifdef ASSERT
+	assert(node!=NULL);
+	#endif
+	vector<Direction> paths=node->getValue()->getDirections();
+	int i=incoming[1];
+	Direction d=paths[i];
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
 	message2[0]=d.getWave();
 	message2[1]=d.getProgression();
@@ -1395,7 +1403,7 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 	}
 
 	for(int i=0;i<(int)(m_ed->m_EXTENSION_identifiers).size();i++){
-		int id=(m_ed->m_EXTENSION_identifiers)[i];
+		uint64_t id=(m_ed->m_EXTENSION_identifiers)[i];
 		m_fusionData->m_FUSION_identifier_map[id]=i;
 	}
 
@@ -1411,7 +1419,6 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_FINISH_FUSIONS(Message*message){
-	//cout<<"Rank "<<rank<<" call_RAY_MPI_TAG_FINISH_FUSIONS"<<endl;
 	(*m_mode)=RAY_SLAVE_MODE_FINISH_FUSIONS;
 	m_fusionData->m_FINISH_fusionOccured=false;
 	(m_seedingData->m_SEEDING_i)=0;
@@ -1431,6 +1438,7 @@ void MessageProcessor::call_RAY_MPI_TAG_FINISH_FUSIONS_FINISHED(Message*message)
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_DISTRIBUTE_FUSIONS(Message*message){
+	m_fusionData->readyBuffers();
 	(*m_mode)=RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS;
 	(m_seedingData->m_SEEDING_i)=0;
 	(m_ed->m_EXTENSION_currentPosition)=0;
@@ -1498,7 +1506,6 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_PATH_VERTEX_REPLY(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION(Message*message){
-	showMemoryUsage(rank);
 	(*m_mode)=RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION;
 	(m_seedingData->m_SEEDING_i)=0;
 	(m_ed->m_EXTENSION_currentPosition)=0;

@@ -51,8 +51,7 @@ class FusionData{
 	RingAllocator*m_outboxAllocator;
 	BufferedData m_buffers;
 	int m_ready;
-	vector<vector<Direction> > m_FINISH_pathsForPosition;
-
+	vector<vector<Direction> >*m_FINISH_pathsForPosition;
 
 	int m_FINISH_positionStart;
 	bool m_FINISH_hasHit;
@@ -65,7 +64,7 @@ public:
 	bool m_FINISH_vertex_received;
 	bool m_FINISH_fusionOccured;
 	vector<vector<uint64_t> > m_FINISH_newFusions;
-	map<int,int> m_FINISH_pathLengths;
+	map<uint64_t,int> m_FINISH_pathLengths;
 	uint64_t m_FINISH_received_vertex;
 
 	bool m_Machine_getPaths_INITIALIZED;
@@ -84,7 +83,6 @@ public:
 	bool m_FUSION_paths_received;
 	vector<Direction> m_FUSION_firstPaths;
 	bool m_FUSION_path_received;
-	map<int,vector<Direction> > m_FUSION_cachedDirections;
 	int m_FUSION_receivedLength;
 	bool m_FUSION_reverse_fusionDone;
 	vector<Direction> m_FUSION_lastPaths;
@@ -97,7 +95,9 @@ public:
 	vector<Direction> m_FUSION_receivedPaths;
 	bool m_FUSION_path_requested;
 	Direction m_FUSION_receivedPath;
+
 	map<int,int> m_FUSION_identifier_map;
+
 	set<int> m_FUSION_eliminated;
 
 	void distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int getRank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox,int getSize,int*m_mode);
@@ -114,8 +114,7 @@ public:
 	int getSize();
 	void finishFusions();
 	void makeFusions();
-
-
+	void readyBuffers();
 	void getPaths(uint64_t vertex);
 };
 

@@ -65,3 +65,8 @@ void*RingAllocator::allocate(int a){
 int RingAllocator::getSize(){
 	return m_max;
 }
+
+void RingAllocator::clear(){
+	__Free(m_memory);
+	m_memory=NULL;
+}

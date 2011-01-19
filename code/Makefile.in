@@ -74,9 +74,9 @@ am__libRay_a_SOURCES_DIST = MemoryConsumptionReducer.h \
 	common_functions.cpp common_functions.h config.h \
 	CoverageDistribution.cpp CoverageDistribution.h \
 	DepthFirstSearchData.cpp DepthFirstSearchData.h Direction.cpp \
-	Direction.h ExtensionData.h FusionData.h FusionData.cpp \
-	Loader.cpp Loader.hi Machine.cpp Machine.h Message.cpp \
-	Message.h MessageProcessor.cpp MessageProcessor.h \
+	Direction.h ExtensionData.cpp ExtensionData.h FusionData.h \
+	FusionData.cpp Loader.cpp Loader.hi Machine.cpp Machine.h \
+	Message.cpp Message.h MessageProcessor.cpp MessageProcessor.h \
 	MyAllocator.cpp MyAllocator.h MyForest.cpp MyForest.h \
 	OpenAssemblerChooser.cpp OpenAssemblerChooser.h PairedRead.cpp \
 	PairedRead.h Parameters.cpp Parameters.h ReadAnnotation.cpp \
@@ -102,8 +102,8 @@ am_libRay_a_OBJECTS = MemoryConsumptionReducer.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	DepthFirstSearchData.$(OBJEXT) Direction.$(OBJEXT) \
-	FusionData.$(OBJEXT) Loader.$(OBJEXT) Machine.$(OBJEXT) \
-	Message.$(OBJEXT) MessageProcessor.$(OBJEXT) \
+	ExtensionData.$(OBJEXT) FusionData.$(OBJEXT) Loader.$(OBJEXT) \
+	Machine.$(OBJEXT) Message.$(OBJEXT) MessageProcessor.$(OBJEXT) \
 	MyAllocator.$(OBJEXT) MyForest.$(OBJEXT) \
 	OpenAssemblerChooser.$(OBJEXT) PairedRead.$(OBJEXT) \
 	Parameters.$(OBJEXT) ReadAnnotation.$(OBJEXT) Read.$(OBJEXT) \
@@ -243,9 +243,9 @@ libRay_a_SOURCES = MemoryConsumptionReducer.h \
 	common_functions.cpp common_functions.h config.h \
 	CoverageDistribution.cpp CoverageDistribution.h \
 	DepthFirstSearchData.cpp DepthFirstSearchData.h Direction.cpp \
-	Direction.h ExtensionData.h FusionData.h FusionData.cpp \
-	Loader.cpp Loader.hi Machine.cpp Machine.h Message.cpp \
-	Message.h MessageProcessor.cpp MessageProcessor.h \
+	Direction.h ExtensionData.cpp ExtensionData.h FusionData.h \
+	FusionData.cpp Loader.cpp Loader.hi Machine.cpp Machine.h \
+	Message.cpp Message.h MessageProcessor.cpp MessageProcessor.h \
 	MyAllocator.cpp MyAllocator.h MyForest.cpp MyForest.h \
 	OpenAssemblerChooser.cpp OpenAssemblerChooser.h PairedRead.cpp \
 	PairedRead.h Parameters.cpp Parameters.h ReadAnnotation.cpp \
@@ -358,6 +358,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DepthFirstSearchData.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Direction.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/EarlyStoppingTechnology.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ExtensionData.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FastaLoader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FastqBz2Loader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FastqGzLoader.Po@am__quote@

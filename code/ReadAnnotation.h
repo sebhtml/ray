@@ -19,7 +19,6 @@
 
 */
 
-
 #ifndef _ReadAnnotation
 #define _ReadAnnotation
 
@@ -44,14 +43,6 @@ public:
 	void setNext(ReadAnnotation*a);
 	uint64_t getUniqueId() const;
 };
-
-class ReadAnnotationComparator{
-public:
-	bool operator()(const ReadAnnotation&a,const ReadAnnotation&b)const{
-		return a.getUniqueId()<b.getUniqueId();
-	}
-};
-
 
 #endif
 

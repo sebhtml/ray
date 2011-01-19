@@ -84,7 +84,7 @@ void Machine::start(){
  	// the number of splay trees in a forest.
 	int numberOfTrees=16384;
 
-	m_seedExtender.constructor(&m_parameters);
+	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator);
 
 	srand(m_lastTime);
 	m_fusionData->m_fusionStarted=false;
@@ -121,7 +121,37 @@ void Machine::start(){
 	MPI_Get_processor_name(serverName,&len);
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
 	MPI_Comm_size(MPI_COMM_WORLD,&m_size);
+	
+	MPI_Barrier(MPI_COMM_WORLD);
 
+	if(isMaster()){
+		cout<<endl<<"**************************************************"<<endl;
+    		cout<<"This program comes with ABSOLUTELY NO WARRANTY."<<endl;
+    		cout<<"This is free software, and you are welcome to redistribute it"<<endl;
+    		cout<<"under certain conditions; see \"COPYING\" for details."<<endl;
+		cout<<"**************************************************"<<endl;
+		cout<<endl;
+		cout<<"Ray Copyright (C) 2010, 2011  Sébastien Boisvert, François Laviolette, Jacques Corbeil"<<endl;
+		cout<<"Centre de recherche en infectiologie de l'Université Laval"<<endl;
+		cout<<"Project funded by the Canadian Institutes of Health Research (Doctoral award 200902CGM-204212-172830 to S.B.)"<<endl;
+ 		cout<<"http://denovoassembler.sf.net/"<<endl<<endl;
+
+		cout<<"Reference to cite: "<<endl<<endl;
+		cout<<"Sébastien Boisvert, François Laviolette & Jacques Corbeil."<<endl;
+		cout<<"Ray: simultaneous assembly of reads from a mix of high-throughput sequencing technologies."<<endl;
+		cout<<"Journal of Computational Biology (Mary Ann Liebert, Inc. publishers, New York, U.S.A.)."<<endl;
+		cout<<"November 2010, Volume 17, Issue 11, Pages 1519-1533."<<endl;
+		cout<<"doi:10.1089/cmb.2009.0238"<<endl;
+		cout<<"http://dx.doi.org/doi:10.1089/cmb.2009.0238"<<endl;
+		cout<<endl;
+	}
+
+	MPI_Barrier(MPI_COMM_WORLD);
+
+	showMemoryUsage(m_rank);
+
+	MPI_Barrier(MPI_COMM_WORLD);
+	
 	m_parameters.setSize(getSize());
 	MAX_ALLOCATED_MESSAGES_IN_OUTBOX=getSize();
 	MAX_ALLOCATED_MESSAGES_IN_INBOX=1;
@@ -160,30 +190,6 @@ void Machine::start(){
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	if(isMaster()){
-		cout<<endl<<"**************************************************"<<endl;
-    		cout<<"This program comes with ABSOLUTELY NO WARRANTY."<<endl;
-    		cout<<"This is free software, and you are welcome to redistribute it"<<endl;
-    		cout<<"under certain conditions; see \"COPYING\" for details."<<endl;
-		cout<<"**************************************************"<<endl;
-		cout<<endl;
-		cout<<"Ray Copyright (C) 2010, 2011  Sébastien Boisvert, François Laviolette, Jacques Corbeil"<<endl;
-		cout<<"Centre de recherche en infectiologie de l'Université Laval"<<endl;
-		cout<<"Project funded by the Canadian Institutes of Health Research (Doctoral award 200902CGM-204212-172830 to S.B.)"<<endl;
- 		cout<<"http://denovoassembler.sf.net/"<<endl<<endl;
-
-		cout<<"Reference to cite: "<<endl<<endl;
-		cout<<"Sébastien Boisvert, François Laviolette & Jacques Corbeil."<<endl;
-		cout<<"Ray: simultaneous assembly of reads from a mix of high-throughput sequencing technologies."<<endl;
-		cout<<"Journal of Computational Biology (Mary Ann Liebert, Inc. publishers, New York, U.S.A.)."<<endl;
-		cout<<"November 2010, Volume 17, Issue 11, Pages 1519-1533."<<endl;
-		cout<<"doi:10.1089/cmb.2009.0238"<<endl;
-		cout<<"http://dx.doi.org/doi:10.1089/cmb.2009.0238"<<endl;
-		cout<<endl;
-	}
-
-
-	MPI_Barrier(MPI_COMM_WORLD);
 	m_sl.constructor(m_size,&m_persistentAllocator,&m_myReads);
 
 	int maximumNumberOfProcesses=65536;
@@ -197,6 +203,7 @@ void Machine::start(){
 	MPI_Get_version(&version,&subversion);
 
 	if(isMaster()){
+		cout<<endl;
 		cout<<"Rank "<<MASTER_RANK<<": Ray "<<RAY_VERSION<<endl;
 
 		#ifdef MPICH2
@@ -354,6 +361,13 @@ m_seedingData,
 
 	showMemoryUsage(getRank());
 
+	#ifdef OUTPUT_ALLOCATOR_PROFILES
+	int chunks=m_directionsAllocator.getNumberOfChunks();
+	int chunkSize=m_directionsAllocator.getChunkSize();
+	uint64_t totalBytes=chunks*chunkSize;
+	printf("Rank %i: memory usage for directions is %i * %i = %lu\n",m_rank,chunks,chunkSize,totalBytes);
+	fflush(stdout);
+	#endif
 	
 	MPI_Barrier(MPI_COMM_WORLD);
 
@@ -372,6 +386,14 @@ m_seedingData,
 
 	MPI_Barrier(MPI_COMM_WORLD);
 	m_messagesHandler.freeLeftovers();
+	m_persistentAllocator.clear();
+	m_treeAllocator.clear();
+	m_directionsAllocator.clear();
+	m_inboxAllocator.clear();
+	m_outboxAllocator.clear();
+
+	MPI_Barrier(MPI_COMM_WORLD);
+	showMemoryUsage(m_rank);
 
 	MPI_Finalize();
 }

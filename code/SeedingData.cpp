@@ -64,6 +64,9 @@ void SeedingData::computeSeeds(){
 			fflush(stdout);
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_SEEDING_IS_OVER,getRank());
 			m_outbox->push_back(aMessage);
+
+			showMemoryUsage(m_rank);
+
 		}else if(!m_splayTreeIterator.hasNext()){
 			m_currentTreeIndex++;
 			#ifdef ASSERT

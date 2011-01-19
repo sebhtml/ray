@@ -119,7 +119,7 @@ int OpenAssemblerChooser::proceedWithCoverages(int a,int b,
 
 	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
 		bool isBetter=true;
-		int coverageI=m_ed->m_EXTENSION_coverages[i];
+		int coverageI=(*m_ed->m_EXTENSION_coverages)[i];
 		int singleReadsI=m_ed->m_EXTENSION_readPositionsForVertices[i].size();
 		if(counts2[i]==0)
 			continue;
