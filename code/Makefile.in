@@ -58,7 +58,8 @@ AR = ar
 ARFLAGS = cru
 libRay_a_AR = $(AR) $(ARFLAGS)
 libRay_a_LIBADD =
-am__libRay_a_SOURCES_DIST = MemoryConsumptionReducer.h \
+am__libRay_a_SOURCES_DIST = VirtualCommunicator.h \
+	VirtualCommunicator.cpp MemoryConsumptionReducer.h \
 	MemoryConsumptionReducer.cpp MyForestIterator.cpp \
 	MyForestIterator.h crypto.cpp crypto.h MyStack.h \
 	EarlyStoppingTechnology.h EarlyStoppingTechnology.cpp \
@@ -92,13 +93,14 @@ am__libRay_a_SOURCES_DIST = MemoryConsumptionReducer.h \
 @HAVE_ZLIB_TRUE@am__objects_1 = FastqGzLoader.$(OBJEXT)
 @HAVE_BZ2_TRUE@am__objects_2 = FastqBz2Loader.$(OBJEXT) \
 @HAVE_BZ2_TRUE@	BzReader.$(OBJEXT)
-am_libRay_a_OBJECTS = MemoryConsumptionReducer.$(OBJEXT) \
-	MyForestIterator.$(OBJEXT) crypto.$(OBJEXT) \
-	EarlyStoppingTechnology.$(OBJEXT) ArrayOfReads.$(OBJEXT) \
-	RingAllocator.$(OBJEXT) StaticVector.$(OBJEXT) \
-	MessagesHandler.$(OBJEXT) SeedingData.$(OBJEXT) \
-	Library.$(OBJEXT) FastaLoader.$(OBJEXT) FastqLoader.$(OBJEXT) \
-	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
+am_libRay_a_OBJECTS = VirtualCommunicator.$(OBJEXT) \
+	MemoryConsumptionReducer.$(OBJEXT) MyForestIterator.$(OBJEXT) \
+	crypto.$(OBJEXT) EarlyStoppingTechnology.$(OBJEXT) \
+	ArrayOfReads.$(OBJEXT) RingAllocator.$(OBJEXT) \
+	StaticVector.$(OBJEXT) MessagesHandler.$(OBJEXT) \
+	SeedingData.$(OBJEXT) Library.$(OBJEXT) FastaLoader.$(OBJEXT) \
+	FastqLoader.$(OBJEXT) BubbleTool.$(OBJEXT) \
+	BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	DepthFirstSearchData.$(OBJEXT) Direction.$(OBJEXT) \
@@ -227,18 +229,18 @@ top_srcdir = @top_srcdir@
 AM_CXXFLAGS = -O3 -Wall
 LDADD = ""
 noinst_LIBRARIES = libRay.a
-libRay_a_SOURCES = MemoryConsumptionReducer.h \
-	MemoryConsumptionReducer.cpp MyForestIterator.cpp \
-	MyForestIterator.h crypto.cpp crypto.h MyStack.h \
-	EarlyStoppingTechnology.h EarlyStoppingTechnology.cpp \
-	ArrayOfReads.h ArrayOfReads.cpp RingAllocator.cpp \
-	RingAllocator.h StaticVector.cpp StaticVector.h \
-	MessagesHandler.h MessagesHandler.cpp slave_modes.h \
-	master_modes.h mpi_tags.h SeedingData.cpp SeedingData.h \
-	Library.h Library.cpp FastaLoader.h FastaLoader.cpp \
-	FastqLoader.h FastqLoader.cpp BubbleData.h BubbleTool.cpp \
-	BubbleTool.h BufferedData.cpp BufferedData.h Chooser.cpp \
-	ChooserData.h Chooser.h ColorSpaceDecoder.cpp \
+libRay_a_SOURCES = VirtualCommunicator.h VirtualCommunicator.cpp \
+	MemoryConsumptionReducer.h MemoryConsumptionReducer.cpp \
+	MyForestIterator.cpp MyForestIterator.h crypto.cpp crypto.h \
+	MyStack.h EarlyStoppingTechnology.h \
+	EarlyStoppingTechnology.cpp ArrayOfReads.h ArrayOfReads.cpp \
+	RingAllocator.cpp RingAllocator.h StaticVector.cpp \
+	StaticVector.h MessagesHandler.h MessagesHandler.cpp \
+	slave_modes.h master_modes.h mpi_tags.h SeedingData.cpp \
+	SeedingData.h Library.h Library.cpp FastaLoader.h \
+	FastaLoader.cpp FastqLoader.h FastqLoader.cpp BubbleData.h \
+	BubbleTool.cpp BubbleTool.h BufferedData.cpp BufferedData.h \
+	Chooser.cpp ChooserData.h Chooser.h ColorSpaceDecoder.cpp \
 	ColorSpaceDecoder.h ColorSpaceLoader.cpp ColorSpaceLoader.h \
 	common_functions.cpp common_functions.h config.h \
 	CoverageDistribution.cpp CoverageDistribution.h \
@@ -391,6 +393,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Vertex.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VertexLinkedList.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VerticesExtractor.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VirtualCommunicator.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/common_functions.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypto.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ray_main.Po@am__quote@

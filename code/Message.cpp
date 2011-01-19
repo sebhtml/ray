@@ -19,11 +19,7 @@
 
 */
 
-
-
-
 #include<Message.h>
-
 
 Message::Message(void*b,int c,MPI_Datatype d,int dest,int tag,int source){
 	// buffer must be allocated or else it will CORE DUMP.
@@ -34,7 +30,6 @@ Message::Message(void*b,int c,MPI_Datatype d,int dest,int tag,int source){
 	m_tag=tag;
 	m_source=source;
 }
-
 
 void*Message::getBuffer(){
 	return m_buffer;

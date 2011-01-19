@@ -428,7 +428,6 @@ void Machine::processMessages(){
 	for(int i=0;i<(int)m_inbox.size();i++){
 		m_mp.processMessage((m_inbox[i]));
 	}
-	m_inbox.clear();
 }
 
 void Machine::sendMessages(){
@@ -467,6 +466,7 @@ void Machine::sendMessages(){
 }
 
 void Machine::receiveMessages(){
+	m_inbox.clear();
 	m_messagesHandler.receiveMessages(&m_inbox,&m_inboxAllocator,getRank());
 
 	#ifdef ASSERT

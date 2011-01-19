@@ -639,11 +639,12 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES(Message*me
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
 	vector<uint64_t> outgoingEdges=m_subgraph->find(incoming[0])->getValue()->getOutgoingEdges(incoming[0],*m_wordSize);
-	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(outgoingEdges.size()*sizeof(uint64_t));
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(5*sizeof(uint64_t));
+	message2[0]=outgoingEdges.size();
 	for(int i=0;i<(int)outgoingEdges.size();i++){
-		message2[i]=outgoingEdges[i];
+		message2[1+i]=outgoingEdges[i];
 	}
-	Message aMessage(message2,outgoingEdges.size(),MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY,rank);
+	Message aMessage(message2,5,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -685,11 +686,10 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_EDGES(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY(Message*message){
 	void*buffer=message->getBuffer();
-	int count=message->getCount();
 	uint64_t*incoming=(uint64_t*)buffer;
 	(m_seedingData->m_SEEDING_receivedOutgoingEdges).clear();
-	for(int i=0;i<count;i++){
-		(m_seedingData->m_SEEDING_receivedOutgoingEdges).push_back(incoming[i]);
+	for(int i=0;i<(int)incoming[0];i++){
+		(m_seedingData->m_SEEDING_receivedOutgoingEdges).push_back(incoming[1+i]);
 	}
 	(m_seedingData->m_SEEDING_edgesReceived)=true;
 }
@@ -766,21 +766,21 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES(Message*mes
 	assert(node!=NULL);
 	#endif
 	vector<uint64_t> ingoingEdges=node->getValue()->getIngoingEdges(incoming[0],*m_wordSize);
-	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(ingoingEdges.size()*sizeof(uint64_t));
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(5*sizeof(uint64_t));
+	message2[0]=ingoingEdges.size();
 	for(int i=0;i<(int)ingoingEdges.size();i++){
-		message2[i]=ingoingEdges[i];
+		message2[1+i]=ingoingEdges[i];
 	}
-	Message aMessage(message2,ingoingEdges.size(),MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY,rank);
+	Message aMessage(message2,5,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY(Message*message){
 	void*buffer=message->getBuffer();
-	int count=message->getCount();
 	uint64_t*incoming=(uint64_t*)buffer;
 	(m_seedingData->m_SEEDING_receivedIngoingEdges).clear();
-	for(int i=0;i<count;i++){
-		(m_seedingData->m_SEEDING_receivedIngoingEdges).push_back(incoming[i]);
+	for(int i=0;i<(int)incoming[0];i++){
+		(m_seedingData->m_SEEDING_receivedIngoingEdges).push_back(incoming[1+i]);
 	}
 	(m_seedingData->m_SEEDING_InedgesReceived)=true;
 }
