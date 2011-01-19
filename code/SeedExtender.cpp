@@ -308,10 +308,6 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				assert(startPosition<(int)ed->m_extensionCoverageValues->size());
 				#endif
 
-				//int coverageOfStartingVertex=ed->m_extensionCoverageValues[startPosition];
-				#ifdef ASSERT
-				assert(coverageOfStartingVertex>0);
-				#endif
 				string aSeq=ed->getSequence(uniqueId);
 				const char*theSequence=aSeq.c_str();
 				ed->m_EXTENSION_receivedLength=strlen(theSequence);
@@ -353,11 +349,6 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 								char rightStrand=ed->getStrand(uniqueReadIdentifier);
 								int startingPositionOnPath=ed->getStartingPosition(uniqueReadIdentifier);
 			
-								//int coverageOfLeftVertex=ed->m_extensionCoverageValues[startingPositionOnPath];
-								#ifdef ASSERT
-								assert(coverageOfLeftVertex>0);
-								#endif
-
 								int observedFragmentLength=(startPosition-startingPositionOnPath)+ed->m_EXTENSION_receivedLength;
 								if(expectedFragmentLength-3*expectedDeviation<=observedFragmentLength and
 								observedFragmentLength <= expectedFragmentLength+3*expectedDeviation 
@@ -764,13 +755,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 						ed->setStartingPosition(uniqueId,ed->m_EXTENSION_extension->size()-1);
 						ed->setStrand(uniqueId,annotation.getStrand());
 					ed->m_EXTENSION_readsInRange->insert(uniqueId);
-						#ifdef ASSERT
-						assert(ed->m_EXTENSION_readsInRange->count(ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache])>0);
-						#endif
 						m_sequenceReceived=false;
-						#ifdef ASSERT
-						assert(m_sequences.count(uniqueId)>0);
-						#endif
 
 						// received paired read too !
 						if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
