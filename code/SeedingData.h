@@ -49,11 +49,17 @@ class SeedingData{
 	StaticVector*m_outbox;
 	int*m_seedCoverage;
 	int*m_mode;
-	int*m_wordSize;
+	set<int> m_activeWorkers;
+	set<int>::iterator m_activeWorkerIterator;
+	map<int,SeedWorker> m_aliveWorkers;
+	bool m_communicatorWasTriggered;
+	vector<int> m_workersDone;
+	vector<int> m_waitingWorkers;
 	Parameters*m_parameters;
 	MyForest*m_subgraph;
 	MyForestIterator m_splayTreeIterator;
 	SeedWorker m_worker;
+	int m_wordSize;
 
 public:
 

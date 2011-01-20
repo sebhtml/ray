@@ -27,7 +27,7 @@ void VirtualCommunicator::setElementsPerQuery(int tag,int size){
 }
 
 void VirtualCommunicator::setReplyType(int query,int reply){
-	m_replyTypes[query]=reply;
+	m_replyTagToQueryTag[reply]=query;
 }
 
 void VirtualCommunicator::pushMessage(int workerId,Message*message){
@@ -43,15 +43,24 @@ void VirtualCommunicator::pushMessage(int workerId,Message*message){
 		uint64_t element=buffer[i];
 		m_messageContent[tag][destination].push_back(element);
 	}
-	m_workerIdentifiers[tag][destination].push_back(workerId);
+	if(m_workerIdentifiers[tag][destination].empty()){
+		vector<int> workers;
+		m_workerIdentifiers[tag][destination].push(workers);
+	}
+	m_workerIdentifiers[tag][destination].back().push_back(workerId);
 
-	int currentSize=m_messageContent[tag][destination].size();
-	int threshold=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t);
 	int period=m_elementSizes[tag];
-	threshold/=period;
-	threshold*=period;
+	int currentSize=m_messageContent[tag][destination].size();
+	int threshold=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)/period;
+	#ifdef ASSERT
+	assert(m_elementSizes.count(tag)>0);
+	#endif
+	#ifdef ASSERT
+	assert(period>=1);
+	#endif
 	#ifdef ASSERT
 	assert(threshold<=(int)(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)));
+	assert(currentSize<=threshold);
 	#endif
 	if(currentSize>=threshold){
 		// must flush the message
@@ -63,8 +72,13 @@ void VirtualCommunicator::flushMessage(int tag,int destination){
 	int currentSize=m_messageContent[tag][destination].size();
 	#ifdef ASSERT
 	assert(currentSize>0);
+	int requiredResponseLength=currentSize*m_elementSizes[tag]*sizeof(uint64_t);
+	assert(requiredResponseLength<=MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	#endif
+	//cout<<"Capacity: "<<requiredResponseLength<<"/"<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<endl;
+
 	uint64_t*messageContent=(uint64_t*)m_outboxAllocator->allocate(currentSize*sizeof(uint64_t));
+
 	for(int j=0;j<currentSize;j++){
 		messageContent[j]=m_messageContent[tag][destination][j];
 	}
@@ -72,6 +86,7 @@ void VirtualCommunicator::flushMessage(int tag,int destination){
 	Message aMessage(messageContent,currentSize,MPI_UNSIGNED_LONG_LONG,destination,tag,m_rank);
 	m_outbox->push_back(aMessage);
 	m_pendingMessages++;
+	
 	m_activeTag=tag;
 	m_activeDestination=destination;
 }
@@ -103,37 +118,41 @@ void VirtualCommunicator::constructor(int rank,int size,RingAllocator*outboxAllo
 	m_messagesWereAdded=false;
 }
 
-bool VirtualCommunicator::isReady(){
-	m_messagesWereAdded=false;// reset the counter 
+void VirtualCommunicator::processInbox(set<int>*activeWorkers){
+	m_messagesWereAdded=false;
 	if(m_pendingMessages>0&&m_inbox->size()>0){// we have mail
 		Message*message=m_inbox->at(0);
 		int incomingTag=message->getTag();
 		int source=message->getSource();
-		int replyType=m_replyTypes[m_activeTag];
-		if(incomingTag==replyType&&source==m_activeDestination){
+		int queryTag=m_replyTagToQueryTag[incomingTag];
+		if(m_workerIdentifiers.count(queryTag)>0
+		&& m_workerIdentifiers[queryTag].count(source)>0){
 			m_pendingMessages--;
 			uint64_t*buffer=(uint64_t*)message->getBuffer();
 			int elementsPerWorker=m_elementSizes[m_activeTag];
-			int workers=m_workerIdentifiers[m_activeTag][m_activeDestination].size();
+			vector<int> workers=m_workerIdentifiers[m_activeTag][m_activeDestination].front();
+			m_workerIdentifiers[m_activeTag][m_activeDestination].pop();
 			#ifdef ASSERT
 			int count=message->getCount();
-			assert(count==workers*elementsPerWorker);
+			if(count!=(int)workers.size()*elementsPerWorker){
+				cout<<"Count="<<count<<" Workers="<<workers.size()<<" ElementsPerWorker="<<elementsPerWorker<<endl;
+			}
+			assert(count==(int)workers.size()*elementsPerWorker);
 			#endif
-			for(int i=0;i<workers;i++){
-				int workerId=m_workerIdentifiers[m_activeTag][m_activeDestination][i];
+			for(int i=0;i<(int)workers.size();i++){
+				int workerId=workers[i];
+				activeWorkers->insert(workerId);
 				int basePosition=i*elementsPerWorker;
 				for(int j=0;j<elementsPerWorker;j++){
 					uint64_t element=buffer[basePosition+j];
 					m_elementsForWorkers[workerId].push_back(element);
 				}
 			}
-			m_workerIdentifiers[m_activeTag][m_activeDestination].clear();
 		}
 	}
 	#ifdef ASSERT
 	assert(m_pendingMessages>=0);
 	#endif
-	return m_pendingMessages==0;
 }
 
 void VirtualCommunicator::forceFlushIfNothingWasAppended(){

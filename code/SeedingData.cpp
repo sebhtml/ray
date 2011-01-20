@@ -28,9 +28,7 @@
 #include <SeedWorker.h>
 
 void SeedingData::computeSeeds(){
-	if(!m_virtualCommunicator.isReady()){
-		return;
-	}
+	m_virtualCommunicator.processInbox(&m_activeWorkers);
 
 	if(!m_initiatedIterator){
 		#ifdef ASSERT
@@ -52,6 +50,8 @@ void SeedingData::computeSeeds(){
 		assert(!m_splayTreeIterator.hasNext());
 		#endif
 
+		m_activeWorkerIterator=m_activeWorkers.begin();
+		m_communicatorWasTriggered=false;
 		m_splayTreeIterator.constructor(m_subgraph);
 		m_SEEDING_NodeInitiated=false;
 		m_initiatedIterator=true;
@@ -60,47 +60,17 @@ void SeedingData::computeSeeds(){
 		m_splayTreeIterator.hasNext();
 		#endif
 	}
-	// assign a first vertex
-	else if(!m_SEEDING_NodeInitiated){
-		if(m_SEEDING_i==(int)m_subgraph->size()){
-			(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
-			printf("Rank %i is creating seeds [%i/%i] (completed)\n",getRank(),(int)m_SEEDING_i,(int)m_subgraph->size());
-			fflush(stdout);
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_SEEDING_IS_OVER,getRank());
-			m_outbox->push_back(aMessage);
 
-			showMemoryUsage(m_rank);
+	// 1. iterate on active workers
+	if(m_activeWorkerIterator!=m_activeWorkers.end()){
+		int workerId=*m_activeWorkerIterator;
+		m_aliveWorkers[workerId].work();
 
-		}else{
-			m_SEEDING_NodeInitiated=true;
+		if(m_aliveWorkers[workerId].isDone()){
+			m_workersDone.push_back(workerId);
+			vector<uint64_t> seed=m_aliveWorkers[workerId].getSeed();
 
-			if(m_SEEDING_i % 100000 ==0){
-				printf("Rank %i is creating seeds [%i/%i]\n",getRank(),(int)m_SEEDING_i+1,(int)m_subgraph->size());
-				fflush(stdout);
-				showMemoryUsage(m_rank);
-			}
-			#ifdef ASSERT
-			assert(m_splayTreeIterator.hasNext());
-			#endif
-
-			//cout<<"Calling next SeedingI="<<m_SEEDING_i<<endl;
-			SplayNode<uint64_t,Vertex>*node=m_splayTreeIterator.next();
-			m_worker.constructor(node->getKey(),m_parameters,m_outboxAllocator,&m_virtualCommunicator,m_SEEDING_i);
-
-			m_SEEDING_i++;
-
-			#ifdef ASSERT
-			m_splayTreeIterator.hasNext();
-			#endif
-		}
-	}else{
-		m_worker.work();
-		if(m_worker.isDone()){
-			m_SEEDING_NodeInitiated=false;
-
-			vector<uint64_t> seed=m_worker.getSeed();
-
-			int nucleotides=seed.size()+(*m_wordSize)-1;
+			int nucleotides=seed.size()+(m_wordSize)-1;
 			// only consider the long ones.
 			if(nucleotides>=m_parameters->getMinimumContigLength()){
 	
@@ -114,7 +84,7 @@ void SeedingData::computeSeeds(){
 
 				uint64_t firstVertex=seed[0];
 				uint64_t lastVertex=seed[seed.size()-1];
-				uint64_t lastVertexReverse=complementVertex(lastVertex,(*m_wordSize),(*m_colorSpaceMode));
+				uint64_t lastVertexReverse=complementVertex(lastVertex,(m_wordSize),(*m_colorSpaceMode));
 				int aRank=vertexRank(firstVertex,getSize());
 				int bRank=vertexRank(lastVertexReverse,getSize());
 
@@ -131,9 +101,60 @@ void SeedingData::computeSeeds(){
 					m_seedExtender->getEliminatedSeeds()->insert(firstVertex);
 				}
 			}
+		}else{
+			m_waitingWorkers.push_back(workerId);
 		}
+		m_activeWorkerIterator++;
+	}else{
+		// erase completed jobs
+		for(int i=0;i<(int)m_workersDone.size();i++){
+			m_activeWorkers.erase(m_workersDone[i]);
+			m_aliveWorkers.erase(m_workersDone[i]);
+		}
+		m_workersDone.clear();
+
+		for(int i=0;i<(int)m_waitingWorkers.size();i++){
+			m_activeWorkers.erase(m_waitingWorkers[i]);
+		}
+		m_waitingWorkers.clear();
+
+		//  add one worker to active workers
+		//  reason is that those already in the pool don't communicate anymore -- 
+		//  as for they need responses.
+		if(!m_communicatorWasTriggered){
+			if(m_SEEDING_i<(int)m_subgraph->size()){
+				if(m_SEEDING_i % 100000 ==0){
+					printf("Rank %i is creating seeds [%i/%i]\n",getRank(),(int)m_SEEDING_i+1,(int)m_subgraph->size());
+					fflush(stdout);
+					showMemoryUsage(m_rank);
+				}
+
+				cout<<"Adding worker WorkerId="<<m_SEEDING_i<<" ActiveWorkers="<<m_activeWorkers.size()<<" AliveWorker="<<m_aliveWorkers.size()<<endl;
+				SplayNode<uint64_t,Vertex>*node=m_splayTreeIterator.next();
+				m_aliveWorkers[m_SEEDING_i].constructor(node->getKey(),m_parameters,m_outboxAllocator,&m_virtualCommunicator,m_SEEDING_i);
+				m_activeWorkers.insert(m_SEEDING_i);
+				m_SEEDING_i++;
+			}else{
+				// must flush buffers manually because no more workers are to be created
+				m_virtualCommunicator.forceFlushIfNothingWasAppended();
+			}
+		}
+
+		// brace yourself for the next round
+		m_activeWorkerIterator=m_activeWorkers.begin();
+		m_communicatorWasTriggered=false;
 	}
-	m_virtualCommunicator.forceFlushIfNothingWasAppended();
+
+	if(m_SEEDING_i==(int)m_subgraph->size()&&m_aliveWorkers.empty()){
+		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
+		printf("Rank %i is creating seeds [%i/%i] (completed)\n",getRank(),(int)m_SEEDING_i,(int)m_subgraph->size());
+		fflush(stdout);
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_SEEDING_IS_OVER,getRank());
+		m_outbox->push_back(aMessage);
+
+		showMemoryUsage(m_rank);
+	}
+
 }
 
 void SeedingData::constructor(SeedExtender*seedExtender,int rank,int size,StaticVector*outbox,RingAllocator*outboxAllocator,int*seedCoverage,int*mode,
@@ -146,7 +167,7 @@ void SeedingData::constructor(SeedExtender*seedExtender,int rank,int size,Static
 	m_seedCoverage=seedCoverage;
 	m_mode=mode;
 	m_parameters=parameters;
-	m_wordSize=wordSize;
+	m_wordSize=*wordSize;
 	m_subgraph=subgraph;
 	m_colorSpaceMode=colorSpaceMode;
 	m_initiatedIterator=false;

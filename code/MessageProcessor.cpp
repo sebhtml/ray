@@ -591,17 +591,20 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message)
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
-	SplayNode<uint64_t,Vertex>*node=m_subgraph->find(incoming[0]);
-	#ifdef ASSERT
-	if(node==NULL){
-		cout<<idToWord(incoming[0],(*m_wordSize))<<" does not exist"<<endl;
+	int count=message->getCount();
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(count*1*sizeof(uint64_t));
+	for(int i=0;i<count;i++){
+		SplayNode<uint64_t,Vertex>*node=m_subgraph->find(incoming[i+0]);
+		#ifdef ASSERT
+		if(node==NULL){
+			cout<<idToWord(incoming[i+0],(*m_wordSize))<<" does not exist"<<endl;
+		}
+		assert(node!=NULL);
+		#endif
+		uint64_t coverage=node->getValue()->getCoverage();
+		message2[i+0]=coverage;
 	}
-	assert(node!=NULL);
-	#endif
-	uint64_t coverage=node->getValue()->getCoverage();
-	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
-	message2[0]=coverage;
-	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY,rank);
+	Message aMessage(message2,count*1,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -638,13 +641,16 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES(Message*me
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
-	vector<uint64_t> outgoingEdges=m_subgraph->find(incoming[0])->getValue()->getOutgoingEdges(incoming[0],*m_wordSize);
-	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(5*sizeof(uint64_t));
-	message2[0]=outgoingEdges.size();
-	for(int i=0;i<(int)outgoingEdges.size();i++){
-		message2[1+i]=outgoingEdges[i];
+	int count=message->getCount();
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(count*5*sizeof(uint64_t));
+	for(int i=0;i<count;i++){
+		vector<uint64_t> outgoingEdges=m_subgraph->find(incoming[i+0])->getValue()->getOutgoingEdges(incoming[i+0],*m_wordSize);
+		message2[5*i+0]=outgoingEdges.size();
+		for(int j=0;j<(int)outgoingEdges.size();j++){
+			message2[5*i+1+j]=outgoingEdges[j];
+		}
 	}
-	Message aMessage(message2,5,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY,rank);
+	Message aMessage(message2,count*5,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -761,20 +767,29 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES(Message*mes
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
-	SplayNode<uint64_t,Vertex>*node=m_subgraph->find(incoming[0]);
+	int count=message->getCount();
 	#ifdef ASSERT
-	if(node==NULL){
-		cout<<idToWord(incoming[0],*m_wordSize)<<" does not exist."<<endl;
+	if(count*5*sizeof(uint64_t)>MAXIMUM_MESSAGE_SIZE_IN_BYTES){
+		cout<<"Count="<<count<<endl;
 	}
-	assert(node!=NULL);
+	assert(count*5*sizeof(uint64_t)<=MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	#endif
-	vector<uint64_t> ingoingEdges=node->getValue()->getIngoingEdges(incoming[0],*m_wordSize);
-	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(5*sizeof(uint64_t));
-	message2[0]=ingoingEdges.size();
-	for(int i=0;i<(int)ingoingEdges.size();i++){
-		message2[1+i]=ingoingEdges[i];
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(count*5*sizeof(uint64_t));
+	for(int i=0;i<count;i++){
+		SplayNode<uint64_t,Vertex>*node=m_subgraph->find(incoming[0+i]);
+		#ifdef ASSERT
+		if(node==NULL){
+			cout<<idToWord(incoming[i+0],*m_wordSize)<<" does not exist."<<endl;
+		}
+		assert(node!=NULL);
+		#endif 
+		vector<uint64_t> ingoingEdges=node->getValue()->getIngoingEdges(incoming[i+0],*m_wordSize);
+		message2[i*5+0]=ingoingEdges.size();
+		for(int j=0;j<(int)ingoingEdges.size();j++){
+			message2[i*5+1+j]=ingoingEdges[j];
+		}
 	}
-	Message aMessage(message2,5,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY,rank);
+	Message aMessage(message2,count*5,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -1399,7 +1414,7 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 		assert(rank<size);
 		assert(rank>=0);
 		assert(size>=1);
-		assert((id%MAX_NUMBER_OF_MPI_PROCESSES)<size);
+		assert((int)(id%MAX_NUMBER_OF_MPI_PROCESSES)<size);
 		#endif
 		(m_ed->m_EXTENSION_identifiers).push_back(id);
 	}

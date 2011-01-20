@@ -30,6 +30,7 @@
 #include <Message.h>
 #include <stdint.h>
 #include <MyAllocator.h>
+#include <queue>
 using namespace std;
 
 /*
@@ -53,7 +54,7 @@ class VirtualCommunicator{
 	map<int,int> m_elementSizes;
 
 	// indicates to who belongs each elements to communicate, grouped according to m_elementSizes
-	map<int,map<int,vector<int> > > m_workerIdentifiers;
+	map<int,map<int,queue<vector<int> > > > m_workerIdentifiers;
 
 	// the message contents
 	// first key: MPI tag
@@ -65,7 +66,7 @@ class VirtualCommunicator{
 	map<int,vector<uint64_t> > m_elementsForWorkers;
 
 	// reply types.
-	map<int,int> m_replyTypes;
+	map<int,int> m_replyTagToQueryTag;
 
 	int m_rank;
 	int m_size;
@@ -95,11 +96,8 @@ public:
 	// called once
 	void setElementsPerQuery(int tag,int size);
 	
-	// check if readiness is OK.
-	// if ready, process the received message and populate the elements for workers
-	// called in data processing, before iterating on some of the workers
-	bool isReady();
-	
+	void processInbox(set<int>*activeWorkers);
+
 	// push a worker message
 	// may not be sent instantaneously
 	// called once per iteration on workers
