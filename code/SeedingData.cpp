@@ -64,8 +64,11 @@ void SeedingData::computeSeeds(){
 	// 1. iterate on active workers
 	if(m_activeWorkerIterator!=m_activeWorkers.end()){
 		int workerId=*m_activeWorkerIterator;
+		m_virtualCommunicator.resetPushedMessageSlot();
 		m_aliveWorkers[workerId].work();
-
+		if(m_virtualCommunicator.getPushedMessageSlot()){
+			m_waitingWorkers.push_back(workerId);
+		}
 		if(m_aliveWorkers[workerId].isDone()){
 			m_workersDone.push_back(workerId);
 			vector<uint64_t> seed=m_aliveWorkers[workerId].getSeed();
@@ -101,8 +104,6 @@ void SeedingData::computeSeeds(){
 					m_seedExtender->getEliminatedSeeds()->insert(firstVertex);
 				}
 			}
-		}else{
-			m_waitingWorkers.push_back(workerId);
 		}
 		m_activeWorkerIterator++;
 	}else{
@@ -128,8 +129,12 @@ void SeedingData::computeSeeds(){
 					fflush(stdout);
 					showMemoryUsage(m_rank);
 				}
+/*
+				if(m_SEEDING_i%1000==0){
+					cout<<"Rank "<<m_rank<<" Adding worker WorkerId="<<m_SEEDING_i<<" ActiveWorkers="<<m_activeWorkers.size()<<" AliveWorker="<<m_aliveWorkers.size()<<endl;
+				}
+*/
 
-				cout<<"Adding worker WorkerId="<<m_SEEDING_i<<" ActiveWorkers="<<m_activeWorkers.size()<<" AliveWorker="<<m_aliveWorkers.size()<<endl;
 				SplayNode<uint64_t,Vertex>*node=m_splayTreeIterator.next();
 				m_aliveWorkers[m_SEEDING_i].constructor(node->getKey(),m_parameters,m_outboxAllocator,&m_virtualCommunicator,m_SEEDING_i);
 				m_activeWorkers.insert(m_SEEDING_i);

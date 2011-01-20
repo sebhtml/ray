@@ -46,6 +46,8 @@ using namespace std;
 * this class is event-driven and tag-specific and destination-specific
 */
 class VirtualCommunicator{
+	bool m_pushedMessageSlot;
+
 	// associates an MPI tag with a length reservation.
 	// for instance, asking the coverage is 1 but asking ingoing edges is 5
 	// key: MPI tag
@@ -55,6 +57,8 @@ class VirtualCommunicator{
 
 	// indicates to who belongs each elements to communicate, grouped according to m_elementSizes
 	map<int,map<int,queue<vector<int> > > > m_workerIdentifiers;
+
+	map<int,map<int,vector<int> > > m_workerCurrentIdentifiers;
 
 	// the message contents
 	// first key: MPI tag
@@ -75,8 +79,6 @@ class VirtualCommunicator{
 	StaticVector*m_outbox;
 	bool m_messagesWereAdded;
 	int m_pendingMessages;
-	int m_activeTag;
-	int m_activeDestination;
 	
 	// flush a message associated to a tag and a destination
 	void flushMessage(int tag,int destination);
@@ -96,6 +98,8 @@ public:
 	// called once
 	void setElementsPerQuery(int tag,int size);
 	
+	// this method must be called before calling workers.
+	// it will fetch messages from inbox according to ongoing queries.
 	void processInbox(set<int>*activeWorkers);
 
 	// push a worker message
@@ -119,6 +123,12 @@ public:
 	// none of the buffer is full, then this forces the flushing of the first
 	// non-empty buffer.
 	void forceFlushIfNothingWasAppended();
+
+	// set the slot to false. The slot says yes if a message was pushed
+	void resetPushedMessageSlot();
+
+	// get the slot.
+	bool getPushedMessageSlot();
 };
 
 #endif

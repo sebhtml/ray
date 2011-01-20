@@ -31,6 +31,7 @@ void VirtualCommunicator::setReplyType(int query,int reply){
 }
 
 void VirtualCommunicator::pushMessage(int workerId,Message*message){
+	m_pushedMessageSlot=true;
 	m_messagesWereAdded=true;
 	int destination=message->getDestination();
 	int tag=message->getTag();
@@ -43,11 +44,8 @@ void VirtualCommunicator::pushMessage(int workerId,Message*message){
 		uint64_t element=buffer[i];
 		m_messageContent[tag][destination].push_back(element);
 	}
-	if(m_workerIdentifiers[tag][destination].empty()){
-		vector<int> workers;
-		m_workerIdentifiers[tag][destination].push(workers);
-	}
-	m_workerIdentifiers[tag][destination].back().push_back(workerId);
+
+	m_workerCurrentIdentifiers[tag][destination].push_back(workerId);
 
 	int period=m_elementSizes[tag];
 	int currentSize=m_messageContent[tag][destination].size();
@@ -73,8 +71,10 @@ void VirtualCommunicator::flushMessage(int tag,int destination){
 	#ifdef ASSERT
 	assert(currentSize>0);
 	int requiredResponseLength=currentSize*m_elementSizes[tag]*sizeof(uint64_t);
+	//cout<<__func__<<" "<<requiredResponseLength<<endl;
 	assert(requiredResponseLength<=MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	#endif
+
 	//cout<<"Capacity: "<<requiredResponseLength<<"/"<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<endl;
 
 	uint64_t*messageContent=(uint64_t*)m_outboxAllocator->allocate(currentSize*sizeof(uint64_t));
@@ -86,9 +86,8 @@ void VirtualCommunicator::flushMessage(int tag,int destination){
 	Message aMessage(messageContent,currentSize,MPI_UNSIGNED_LONG_LONG,destination,tag,m_rank);
 	m_outbox->push_back(aMessage);
 	m_pendingMessages++;
-	
-	m_activeTag=tag;
-	m_activeDestination=destination;
+	m_workerIdentifiers[tag][destination].push(m_workerCurrentIdentifiers[tag][destination]);
+	m_workerCurrentIdentifiers[tag][destination].clear();
 }
 
 bool VirtualCommunicator::isMessageProcessed(int workerId){
@@ -107,8 +106,16 @@ vector<uint64_t> VirtualCommunicator::getResponseElements(int workerId){
 	return elements;
 }
 
+void VirtualCommunicator::resetPushedMessageSlot(){
+	m_pushedMessageSlot=false;
+}
+
+bool VirtualCommunicator::getPushedMessageSlot(){
+	return m_pushedMessageSlot;
+}
 
 void VirtualCommunicator::constructor(int rank,int size,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox){
+	resetPushedMessageSlot();
 	m_rank=rank;
 	m_size=size;
 	m_outboxAllocator=outboxAllocator;
@@ -126,16 +133,21 @@ void VirtualCommunicator::processInbox(set<int>*activeWorkers){
 		int source=message->getSource();
 		int queryTag=m_replyTagToQueryTag[incomingTag];
 		if(m_workerIdentifiers.count(queryTag)>0
-		&& m_workerIdentifiers[queryTag].count(source)>0){
+		&& m_workerIdentifiers[queryTag].count(source)>0
+		&& !m_workerIdentifiers[queryTag][source].empty()){
 			m_pendingMessages--;
 			uint64_t*buffer=(uint64_t*)message->getBuffer();
-			int elementsPerWorker=m_elementSizes[m_activeTag];
-			vector<int> workers=m_workerIdentifiers[m_activeTag][m_activeDestination].front();
-			m_workerIdentifiers[m_activeTag][m_activeDestination].pop();
+			int elementsPerWorker=m_elementSizes[queryTag];
+			vector<int> workers=m_workerIdentifiers[queryTag][source].front();
+			
+			#ifdef ASSERT
+			assert(workers.size()>0);
+			#endif
+
 			#ifdef ASSERT
 			int count=message->getCount();
 			if(count!=(int)workers.size()*elementsPerWorker){
-				cout<<"Count="<<count<<" Workers="<<workers.size()<<" ElementsPerWorker="<<elementsPerWorker<<endl;
+				cout<<"Rank="<<m_rank<<" Count="<<count<<" Workers="<<workers.size()<<" ElementsPerWorker="<<elementsPerWorker<<" OngoingQueries="<<m_workerIdentifiers[queryTag][source].size()<<endl;
 			}
 			assert(count==(int)workers.size()*elementsPerWorker);
 			#endif
@@ -148,6 +160,8 @@ void VirtualCommunicator::processInbox(set<int>*activeWorkers){
 					m_elementsForWorkers[workerId].push_back(element);
 				}
 			}
+
+			m_workerIdentifiers[queryTag][source].pop();
 		}
 	}
 	#ifdef ASSERT
