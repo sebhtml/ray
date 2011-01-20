@@ -19,6 +19,8 @@ paper).
 * Added reporting of memory usage for sequence reads and for vertices. And for
 a few other places too.
 * Improved memory usage for the extensions.
+* Messages are grouped in the computation of seeds, using VirtualCommunicator.
+* Added a Doxygen configuration file.
 
 
 = 1.2.2 'X-ray' =

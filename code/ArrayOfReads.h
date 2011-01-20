@@ -24,8 +24,8 @@
 
 #include<Read.h>
 
-/*
- * \brief  This class holds reads. These are stored in chunks, which are utterly linked in chains.
+/*!
+ * This class holds reads. These are stored in chunks, which are utterly linked in chains.
  * When a chunk is full, another one is added, and linked to the full one aforementionned.
  */
 class ArrayOfReads{
