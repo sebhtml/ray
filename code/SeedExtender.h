@@ -19,6 +19,8 @@
 
 */
 
+// TYPE: ALGORITHM
+
 #ifndef _SeedExtender
 #define _SeedExtender
 

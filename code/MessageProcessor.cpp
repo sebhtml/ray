@@ -763,6 +763,9 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES(Message*mes
 	uint64_t*incoming=(uint64_t*)buffer;
 	SplayNode<uint64_t,Vertex>*node=m_subgraph->find(incoming[0]);
 	#ifdef ASSERT
+	if(node==NULL){
+		cout<<idToWord(incoming[0],*m_wordSize)<<" does not exist."<<endl;
+	}
 	assert(node!=NULL);
 	#endif
 	vector<uint64_t> ingoingEdges=node->getValue()->getIngoingEdges(incoming[0],*m_wordSize);
@@ -1234,7 +1237,7 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_PATH_LENGTH(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
-	int id=incoming[0];
+	uint64_t id=incoming[0];
 	int length=0;
 	#ifdef ASSERT
 	assert(m_fusionData->m_FUSION_identifier_map.count(id)>0);
@@ -1391,7 +1394,7 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 	(m_ed->m_EXTENSION_identifiers).clear();
 	m_fusionData->m_FUSION_eliminated.clear();
 	for(int i=0;i<(int)fusions.size();i++){
-		int id=i*MAX_NUMBER_OF_MPI_PROCESSES+rank;
+		uint64_t id=i*MAX_NUMBER_OF_MPI_PROCESSES+rank;
 		#ifdef ASSERT
 		assert(rank<size);
 		assert(rank>=0);

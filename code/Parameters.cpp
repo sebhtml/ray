@@ -747,3 +747,11 @@ int Parameters::getIdFromGlobalId(uint64_t a){
 int Parameters::getMaximumDistance(){
 	return m_maximumDistance;
 }
+
+void Parameters::setSeedCoverage(int a){
+	m_seedCoverage=a;
+}
+
+int Parameters::getSeedCoverage(){
+	return m_seedCoverage;
+}

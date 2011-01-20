@@ -256,7 +256,7 @@ void Machine::start(){
 	m_subgraph.constructor(numberOfTrees,&m_treeAllocator);
 	
 	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),&m_outbox,&m_outboxAllocator,&m_seedCoverage,&m_slave_mode,&m_parameters,&m_wordSize,&m_subgraph,
-		&m_colorSpaceMode);
+		&m_colorSpaceMode,&m_inbox);
 
 	m_alive=true;
 	m_welcomeStep=true;
@@ -344,8 +344,6 @@ m_seedingData,
 		run();
 	}
 
-
-
 	if(isMaster() && !m_aborted){
 		m_timePrinter.printElapsedTime("Collection of fusions");
 		m_timePrinter.printDurations();
@@ -361,14 +359,6 @@ m_seedingData,
 
 	showMemoryUsage(getRank());
 
-	#ifdef OUTPUT_ALLOCATOR_PROFILES
-	int chunks=m_directionsAllocator.getNumberOfChunks();
-	int chunkSize=m_directionsAllocator.getChunkSize();
-	uint64_t totalBytes=chunks*chunkSize;
-	printf("Rank %i: memory usage for directions is %i * %i = %lu\n",m_rank,chunks,chunkSize,totalBytes);
-	fflush(stdout);
-	#endif
-	
 	MPI_Barrier(MPI_COMM_WORLD);
 
 	if(isMaster() && !m_aborted){

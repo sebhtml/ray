@@ -19,6 +19,8 @@
 
 */
 
+// TYPE: ALGORITHM
+
 #ifndef _SequencesIndexer
 #define _SequencesIndexer
 

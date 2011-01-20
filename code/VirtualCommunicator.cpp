@@ -36,7 +36,7 @@ void VirtualCommunicator::pushMessage(int workerId,Message*message){
 	int tag=message->getTag();
 	int count=message->getCount();
 	#ifdef ASSERT
-	asset(count>0);
+	assert(count>0);
 	#endif
 	uint64_t*buffer=(uint64_t*)message->getBuffer();
 	for(int i=0;i<count;i++){// count is probably 1...
@@ -51,7 +51,7 @@ void VirtualCommunicator::pushMessage(int workerId,Message*message){
 	threshold/=period;
 	threshold*=period;
 	#ifdef ASSERT
-	assert(threshold<MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t));
+	assert(threshold<=(int)(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)));
 	#endif
 	if(currentSize>=threshold){
 		// must flush the message
@@ -86,6 +86,9 @@ vector<uint64_t> VirtualCommunicator::getResponseElements(int workerId){
 	#endif
 	vector<uint64_t> elements=m_elementsForWorkers[workerId];
 	m_elementsForWorkers.erase(workerId);
+	#ifdef ASSERT
+	assert(!isMessageProcessed(workerId));
+	#endif
 	return elements;
 }
 
@@ -106,12 +109,17 @@ bool VirtualCommunicator::isReady(){
 		Message*message=m_inbox->at(0);
 		int incomingTag=message->getTag();
 		int source=message->getSource();
-		int replyType=m_replyTypes[incomingTag];
+		int replyType=m_replyTypes[m_activeTag];
 		if(incomingTag==replyType&&source==m_activeDestination){
 			m_pendingMessages--;
 			uint64_t*buffer=(uint64_t*)message->getBuffer();
-			int elementsPerWorker=m_elementSizes[incomingTag];
-			for(int i=0;i<(int)m_workerIdentifiers[m_activeTag][m_activeDestination].size();i++){
+			int elementsPerWorker=m_elementSizes[m_activeTag];
+			int workers=m_workerIdentifiers[m_activeTag][m_activeDestination].size();
+			#ifdef ASSERT
+			int count=message->getCount();
+			assert(count==workers*elementsPerWorker);
+			#endif
+			for(int i=0;i<workers;i++){
 				int workerId=m_workerIdentifiers[m_activeTag][m_activeDestination][i];
 				int basePosition=i*elementsPerWorker;
 				for(int j=0;j<elementsPerWorker;j++){
@@ -122,10 +130,16 @@ bool VirtualCommunicator::isReady(){
 			m_workerIdentifiers[m_activeTag][m_activeDestination].clear();
 		}
 	}
+	#ifdef ASSERT
+	assert(m_pendingMessages>=0);
+	#endif
 	return m_pendingMessages==0;
 }
 
 void VirtualCommunicator::forceFlushIfNothingWasAppended(){
+	if(m_messagesWereAdded){
+		return;
+	}
 	for(map<int,map<int,vector<uint64_t> > >::iterator i=m_messageContent.begin();i!=m_messageContent.end();i++){
 		int tag=i->first;
 		for(map<int,vector<uint64_t> >::iterator j=i->second.begin();j!=i->second.end();j++){

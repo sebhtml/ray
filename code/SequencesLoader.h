@@ -19,6 +19,8 @@
 
 */
 
+// TYPE: ALGORITHM
+
 #ifndef _SequencesLoader
 #define _SequencesLoader
 

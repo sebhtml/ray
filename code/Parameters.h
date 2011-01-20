@@ -19,11 +19,11 @@
 
 */
 
+// TYPE: FRAMEWORK
+
 #ifndef _Parameters
 
 #define _Parameters
-
-
 
 #include<map>
 #include<common_functions.h>
@@ -70,7 +70,7 @@ class Parameters{
 	set<int> m_leftFiles;
 	set<int> m_rightFiles;
 	set<int> m_interleavedFiles;
-
+	int m_seedCoverage;
 	bool m_colorSpaceMode;
 	string m_input;
 	vector<string> m_commands;
@@ -122,6 +122,8 @@ public:
 	int getNumberOfLibraries();
 
 	int getMaxCoverage();
+	int getSeedCoverage();
+	void setSeedCoverage(int a);
 	string getPrefix();
 	int getRank();
 	int getSize();

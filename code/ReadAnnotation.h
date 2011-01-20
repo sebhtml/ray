@@ -19,6 +19,8 @@
 
 */
 
+// TYPE: FRAMEWORK
+
 #ifndef _ReadAnnotation
 #define _ReadAnnotation
 

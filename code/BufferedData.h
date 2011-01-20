@@ -19,6 +19,8 @@
 
 */
 
+// TYPE: COMMUNICATION
+
 #ifndef _BufferedData
 #define _BufferedData
 
