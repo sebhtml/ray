@@ -51,11 +51,11 @@ void SeedingData::computeSeeds(){
 		#endif
 
 		m_activeWorkerIterator=m_activeWorkers.begin();
-		m_communicatorWasTriggered=false;
 		m_splayTreeIterator.constructor(m_subgraph);
 		m_SEEDING_NodeInitiated=false;
 		m_initiatedIterator=true;
-
+		m_completedJobs=0;
+		m_maximumAliveWorker=m_size;
 		#ifdef ASSERT
 		m_splayTreeIterator.hasNext();
 		#endif
@@ -70,6 +70,7 @@ void SeedingData::computeSeeds(){
 			m_waitingWorkers.push_back(workerId);
 		}
 		if(m_aliveWorkers[workerId].isDone()){
+			m_completedJobs++;
 			m_workersDone.push_back(workerId);
 			vector<uint64_t> seed=m_aliveWorkers[workerId].getSeed();
 
@@ -79,10 +80,11 @@ void SeedingData::computeSeeds(){
 	
 				// if both seeds are on the same rank
 				// dump the reverse and keep the forward
+				/*
 				printf("Rank %i added a seed with %i vertices\n",m_rank,(int)seed.size());
 				fflush(stdout);
 				showMemoryUsage(m_rank);
-
+				*/
 				m_SEEDING_seeds.push_back(seed);
 
 				uint64_t firstVertex=seed[0];
@@ -122,19 +124,16 @@ void SeedingData::computeSeeds(){
 		//  add one worker to active workers
 		//  reason is that those already in the pool don't communicate anymore -- 
 		//  as for they need responses.
-		if(!m_communicatorWasTriggered){
-			if(m_SEEDING_i<(int)m_subgraph->size()){
+		if(!m_virtualCommunicator.getGlobalSlot()){
+			if(m_SEEDING_i<(int)m_subgraph->size()&&(int)m_aliveWorkers.size()<m_maximumAliveWorker){
 				if(m_SEEDING_i % 100000 ==0){
 					printf("Rank %i is creating seeds [%i/%i]\n",getRank(),(int)m_SEEDING_i+1,(int)m_subgraph->size());
 					fflush(stdout);
 					showMemoryUsage(m_rank);
 				}
-/*
 				if(m_SEEDING_i%1000==0){
-					cout<<"Rank "<<m_rank<<" Adding worker WorkerId="<<m_SEEDING_i<<" ActiveWorkers="<<m_activeWorkers.size()<<" AliveWorker="<<m_aliveWorkers.size()<<endl;
+					cout<<"Rank "<<m_rank<<" Adding worker WorkerId="<<m_SEEDING_i<<" ActiveWorkers="<<m_activeWorkers.size()<<" AliveWorkers="<<m_aliveWorkers.size()<<" CompletedJobs="<<m_completedJobs<<endl;
 				}
-*/
-
 				SplayNode<uint64_t,Vertex>*node=m_splayTreeIterator.next();
 				m_aliveWorkers[m_SEEDING_i].constructor(node->getKey(),m_parameters,m_outboxAllocator,&m_virtualCommunicator,m_SEEDING_i);
 				m_activeWorkers.insert(m_SEEDING_i);
@@ -147,10 +146,10 @@ void SeedingData::computeSeeds(){
 
 		// brace yourself for the next round
 		m_activeWorkerIterator=m_activeWorkers.begin();
-		m_communicatorWasTriggered=false;
+		m_virtualCommunicator.resetPushedMessageGlobalSlot();
 	}
 
-	if(m_SEEDING_i==(int)m_subgraph->size()&&m_aliveWorkers.empty()){
+	if((int)m_subgraph->size()==m_completedJobs){
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		printf("Rank %i is creating seeds [%i/%i] (completed)\n",getRank(),(int)m_SEEDING_i,(int)m_subgraph->size());
 		fflush(stdout);
@@ -159,7 +158,11 @@ void SeedingData::computeSeeds(){
 
 		showMemoryUsage(m_rank);
 	}
-
+/*
+	if(m_SEEDING_i==(int)m_subgraph->size()){
+		cout<<"Rank "<<m_rank<<" ActiveWorkers="<<m_activeWorkers.size()<<" AliveWorkers="<<m_aliveWorkers.size()<<" CompletedJobs="<<m_completedJobs<<endl;
+	}
+*/
 }
 
 void SeedingData::constructor(SeedExtender*seedExtender,int rank,int size,StaticVector*outbox,RingAllocator*outboxAllocator,int*seedCoverage,int*mode,

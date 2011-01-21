@@ -129,6 +129,11 @@ public:
 
 	// get the slot.
 	bool getPushedMessageSlot();
+
+	// reset the global slot
+	void resetPushedMessageGlobalSlot();
+
+	bool getGlobalSlot();
 };
 
 #endif

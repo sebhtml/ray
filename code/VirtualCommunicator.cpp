@@ -126,7 +126,6 @@ void VirtualCommunicator::constructor(int rank,int size,RingAllocator*outboxAllo
 }
 
 void VirtualCommunicator::processInbox(set<int>*activeWorkers){
-	m_messagesWereAdded=false;
 	if(m_pendingMessages>0&&m_inbox->size()>0){// we have mail
 		Message*message=m_inbox->at(0);
 		int incomingTag=message->getTag();
@@ -183,4 +182,12 @@ void VirtualCommunicator::forceFlushIfNothingWasAppended(){
 			}
 		}
 	}
+}
+
+bool VirtualCommunicator::getGlobalSlot(){
+	return m_messagesWereAdded;
+}
+
+void VirtualCommunicator::resetPushedMessageGlobalSlot(){
+	m_messagesWereAdded=false;
 }

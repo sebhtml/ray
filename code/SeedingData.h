@@ -60,7 +60,8 @@ class SeedingData{
 	MyForestIterator m_splayTreeIterator;
 	SeedWorker m_worker;
 	int m_wordSize;
-
+	int m_completedJobs;
+	int m_maximumAliveWorker;
 public:
 
 	bool m_SEEDING_edgesRequested;
