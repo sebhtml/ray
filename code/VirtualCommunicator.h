@@ -46,7 +46,6 @@ using namespace std;
 * this class is event-driven and tag-specific and destination-specific
 */
 class VirtualCommunicator{
-	bool m_pushedMessageSlot;
 
 	// associates an MPI tag with a length reservation.
 	// for instance, asking the coverage is 1 but asking ingoing edges is 5
@@ -56,9 +55,10 @@ class VirtualCommunicator{
 	map<int,int> m_elementSizes;
 
 	// indicates to who belongs each elements to communicate, grouped according to m_elementSizes
-	map<int,map<int,queue<vector<int> > > > m_workerIdentifiers;
+	map<int,map<int,queue<vector<uint64_t> > > > m_workerIdentifiers;
 
-	map<int,map<int,vector<int> > > m_workerCurrentIdentifiers;
+	map<int,map<int,vector<uint64_t> > > m_workerCurrentIdentifiers;
+
 
 	// the message contents
 	// first key: MPI tag
@@ -67,7 +67,7 @@ class VirtualCommunicator{
 	map<int,map<int,vector<uint64_t> > > m_messageContent;
 
 	// response to give to workers
-	map<int,vector<uint64_t> > m_elementsForWorkers;
+	map<uint64_t,vector<uint64_t> > m_elementsForWorkers;
 
 	// reply types.
 	map<int,int> m_replyTagToQueryTag;
@@ -77,9 +77,12 @@ class VirtualCommunicator{
 	RingAllocator*m_outboxAllocator;
 	StaticVector*m_inbox;
 	StaticVector*m_outbox;
-	bool m_messagesWereAdded;
+
+	map<int,int> m_messages;
 	int m_pendingMessages;
-	
+
+	bool m_localPushedMessageStatus;
+	bool m_globalPushedMessageStatus;
 	// flush a message associated to a tag and a destination
 	void flushMessage(int tag,int destination);
 
@@ -100,7 +103,7 @@ public:
 	
 	// this method must be called before calling workers.
 	// it will fetch messages from inbox according to ongoing queries.
-	void processInbox(set<int>*activeWorkers);
+	void processInbox(set<uint64_t>*activeWorkers);
 
 	// push a worker message
 	// may not be sent instantaneously
@@ -110,30 +113,32 @@ public:
 	// to do so, isReady is called before calling each worker.
 	// if a called calls pushMessage and because of that a buffer becomes full, then isReady will return false 
 	// for the next call
-	void pushMessage(int workerId,Message*message);
+	void pushMessage(uint64_t workerId,Message*message);
 
 	// return true if the response is ready to be read
-	bool isMessageProcessed(int workerId);
+	bool isMessageProcessed(uint64_t workerId);
 	
 	// after reading the response, it is erased from
 	// the current object
-	vector<uint64_t> getResponseElements(int workerId);
+	vector<uint64_t> getResponseElements(uint64_t workerId);
 	
 	// if all workers are awaiting responses and 
 	// none of the buffer is full, then this forces the flushing of the first
 	// non-empty buffer.
-	void forceFlushIfNothingWasAppended();
+	void forceFlush(bool value);
 
 	// set the slot to false. The slot says yes if a message was pushed
-	void resetPushedMessageSlot();
+	void resetLocalPushedMessageStatus();
 
 	// get the slot.
-	bool getPushedMessageSlot();
+	bool getLocalPushedMessageStatus();
 
 	// reset the global slot
-	void resetPushedMessageGlobalSlot();
+	void resetGlobalPushedMessageStatus();
 
-	bool getGlobalSlot();
+	bool getGlobalPushedMessageStatus();
+
+	bool isReady();
 };
 
 #endif

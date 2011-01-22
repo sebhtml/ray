@@ -29,6 +29,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<assert.h>
 
 void RingAllocator::constructor(int chunks,int size){
+	resetCount();
 	m_chunks=chunks;
 	m_max=size;
 	m_numberOfBytes=m_chunks*m_max;
@@ -44,6 +45,7 @@ RingAllocator::RingAllocator(){
  */
 void*RingAllocator::allocate(int a){
 	#ifdef ASSERT
+	m_count++;
 	if(a>m_max){
 		cout<<"Request "<<a<<" but maximum is "<<m_max<<endl;
 	}
@@ -69,4 +71,12 @@ int RingAllocator::getSize(){
 void RingAllocator::clear(){
 	__Free(m_memory);
 	m_memory=NULL;
+}
+
+void RingAllocator::resetCount(){
+	m_count=0;
+}
+
+int RingAllocator::getCount(){
+	return m_count;
 }

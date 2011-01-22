@@ -49,19 +49,19 @@ class SeedingData{
 	StaticVector*m_outbox;
 	int*m_seedCoverage;
 	int*m_mode;
-	set<int> m_activeWorkers;
-	set<int>::iterator m_activeWorkerIterator;
-	map<int,SeedWorker> m_aliveWorkers;
+	set<uint64_t> m_activeWorkers;
+	set<uint64_t>::iterator m_activeWorkerIterator;
+	map<uint64_t,SeedWorker> m_aliveWorkers;
 	bool m_communicatorWasTriggered;
-	vector<int> m_workersDone;
-	vector<int> m_waitingWorkers;
+	vector<uint64_t> m_workersDone;
+	vector<uint64_t> m_waitingWorkers;
 	Parameters*m_parameters;
 	MyForest*m_subgraph;
 	MyForestIterator m_splayTreeIterator;
-	SeedWorker m_worker;
 	int m_wordSize;
 	int m_completedJobs;
 	int m_maximumAliveWorker;
+	time_t m_last;
 public:
 
 	bool m_SEEDING_edgesRequested;
@@ -86,7 +86,7 @@ public:
 	bool m_SEEDING_passedParentsTest;
 	bool m_SEEDING_Extended;
 	bool m_SEEDING_edgesReceived;
-	int m_SEEDING_i;
+	uint64_t m_SEEDING_i;
 
 	int m_SEEDING_outgoing_index;
 	bool m_SEEDING_outgoing_choice_done;

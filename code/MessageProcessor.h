@@ -94,7 +94,7 @@ class MessageProcessor{
 
 	RingAllocator*m_inboxAllocator;
 	MyAllocator*m_persistentAllocator;
-	vector<int>*m_identifiers;
+	vector<uint64_t>*m_identifiers;
 	bool*m_mode_sendDistribution;
 	bool*m_alive;
 	bool*m_colorSpaceMode;
@@ -285,7 +285,7 @@ ExtensionData*ed,
 		int size,
 	RingAllocator*m_inboxAllocator,
 	MyAllocator*m_persistentAllocator,
-	vector<int>*m_identifiers,
+	vector<uint64_t>*m_identifiers,
 	bool*m_mode_sendDistribution,
 	bool*m_alive,
 	bool*m_colorSpaceMode,

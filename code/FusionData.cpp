@@ -29,10 +29,10 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 	if(!isReady()){
 		return;
 	}
-	if(!m_buffers.isEmpty() && m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
+	if(!m_buffers.isEmpty() && m_seedingData->m_SEEDING_i==(uint64_t)m_ed->m_EXTENSION_contigs.size()){
 		m_ready+=m_buffers.flushAll(RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY,m_outboxAllocator,m_outbox,getRank);
 		return;
-	}else if(m_buffers.isEmpty() && m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
+	}else if(m_buffers.isEmpty() && m_seedingData->m_SEEDING_i==(uint64_t)m_ed->m_EXTENSION_contigs.size()){
 		printf("Rank %i is distributing fusions [%i/%i] (completed)\n",getRank,(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
 		fflush(stdout);
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED,getRank);
@@ -46,7 +46,7 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 
 	if(m_ed->m_EXTENSION_currentPosition==0){
 		if(m_seedingData->m_SEEDING_i%10==0){
-			printf("Rank %i is distributing fusions [%i/%i]\n",getRank,m_seedingData->m_SEEDING_i+1,(int)m_ed->m_EXTENSION_contigs.size());
+			printf("Rank %i is distributing fusions [%i/%i]\n",getRank,(int)(m_seedingData->m_SEEDING_i+1),(int)m_ed->m_EXTENSION_contigs.size());
 			fflush(stdout);
 		}
 	}
@@ -127,7 +127,7 @@ void FusionData::finishFusions(){
 	if(m_FINISH_pathsForPosition==NULL){
 		m_FINISH_pathsForPosition=new vector<vector<Direction> >;
 	}
-	if(m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
+	if(m_seedingData->m_SEEDING_i==(uint64_t)m_ed->m_EXTENSION_contigs.size()){
 		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 		message[0]=m_FINISH_fusionOccured;
 		printf("Rank %i is finishing fusions [%i/%i] (completed)\n",getRank(),(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
@@ -387,16 +387,12 @@ void FusionData::makeFusions(){
 	
 	int END_LENGTH=100;
 	// avoid duplication of contigs.
-	if(m_seedingData->m_SEEDING_i<(int)m_ed->m_EXTENSION_contigs.size()){
+	if(m_seedingData->m_SEEDING_i<(uint64_t)m_ed->m_EXTENSION_contigs.size()){
 		if((int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<=END_LENGTH){
 			END_LENGTH=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-1;
 		}
 	}
-	if(m_seedingData->m_SEEDING_i==(int)m_ed->m_EXTENSION_contigs.size()){
-
-
-
-
+	if(m_seedingData->m_SEEDING_i==(uint64_t)m_ed->m_EXTENSION_contigs.size()){
 
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_FUSION_DONE,getRank());
 		m_outbox->push_back(aMessage);
@@ -618,7 +614,7 @@ void FusionData::makeFusions(){
 				// get the paths going on the first vertex
 				int thePosition=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-END_LENGTH;
 				#ifdef ASSERT
-				assert(m_seedingData->m_SEEDING_i<(int)m_ed->m_EXTENSION_contigs.size());
+				assert(m_seedingData->m_SEEDING_i<(uint64_t)m_ed->m_EXTENSION_contigs.size());
 				assert(thePosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size());
 				#endif
 				uint64_t theMainVertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][thePosition];

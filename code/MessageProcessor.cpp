@@ -597,7 +597,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message)
 		SplayNode<uint64_t,Vertex>*node=m_subgraph->find(incoming[i+0]);
 		#ifdef ASSERT
 		if(node==NULL){
-			cout<<idToWord(incoming[i+0],(*m_wordSize))<<" does not exist"<<endl;
+			cout<<"Rank="<<rank<<" "<<__func__<<" "<<idToWord(incoming[i+0],(*m_wordSize))<<" does not exist"<<endl;
 		}
 		assert(node!=NULL);
 		#endif
@@ -779,7 +779,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES(Message*mes
 		SplayNode<uint64_t,Vertex>*node=m_subgraph->find(incoming[0+i]);
 		#ifdef ASSERT
 		if(node==NULL){
-			cout<<idToWord(incoming[i+0],*m_wordSize)<<" does not exist."<<endl;
+			cout<<"Rank="<<rank<<" "<<idToWord(incoming[i+0],*m_wordSize)<<" does not exist."<<endl;
 		}
 		assert(node!=NULL);
 		#endif 
@@ -1659,7 +1659,7 @@ SequencesLoader*sequencesLoader,ExtensionData*ed,
 		int size,
 	RingAllocator*m_inboxAllocator,
 	MyAllocator*m_persistentAllocator,
-	vector<int>*m_identifiers,
+	vector<uint64_t>*m_identifiers,
 	bool*m_mode_sendDistribution,
 	bool*m_alive,
 	bool*m_colorSpaceMode,

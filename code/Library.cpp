@@ -58,7 +58,7 @@ void Library::updateDistances(){
 }
 
 void Library::detectDistances(){
-	if(m_seedingData->m_SEEDING_i==(int)m_seedingData->m_SEEDING_seeds.size()){
+	if(m_seedingData->m_SEEDING_i==(uint64_t)m_seedingData->m_SEEDING_seeds.size()){
 		printf("Rank %i detected %i library lengths\n",getRank(),m_detectedDistances);
 		fflush(stdout);
 		printf("Rank %i is calculating library lengths [%i/%i] (completed)\n",getRank(),(int)m_seedingData->m_SEEDING_seeds.size(),(int)m_seedingData->m_SEEDING_seeds.size());

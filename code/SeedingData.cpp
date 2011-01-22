@@ -28,9 +28,8 @@
 #include <SeedWorker.h>
 
 void SeedingData::computeSeeds(){
-	m_virtualCommunicator.processInbox(&m_activeWorkers);
-
 	if(!m_initiatedIterator){
+		m_last=time(NULL);
 		#ifdef ASSERT
 		SplayTreeIterator<uint64_t,Vertex> iter0;
 		iter0.constructor(m_subgraph->getTree(0));
@@ -52,7 +51,6 @@ void SeedingData::computeSeeds(){
 
 		m_activeWorkerIterator=m_activeWorkers.begin();
 		m_splayTreeIterator.constructor(m_subgraph);
-		m_SEEDING_NodeInitiated=false;
 		m_initiatedIterator=true;
 		m_completedJobs=0;
 		m_maximumAliveWorker=m_size;
@@ -61,16 +59,25 @@ void SeedingData::computeSeeds(){
 		#endif
 	}
 
+	m_virtualCommunicator.processInbox(&m_activeWorkers);
+
+	if(!m_virtualCommunicator.isReady()){
+		return;
+	}
+
 	// 1. iterate on active workers
 	if(m_activeWorkerIterator!=m_activeWorkers.end()){
-		int workerId=*m_activeWorkerIterator;
-		m_virtualCommunicator.resetPushedMessageSlot();
+		uint64_t workerId=*m_activeWorkerIterator;
+		#ifdef ASSERT
+		assert(m_aliveWorkers.count(workerId)>0);
+		assert(!m_aliveWorkers[workerId].isDone());
+		#endif
+		m_virtualCommunicator.resetLocalPushedMessageStatus();
 		m_aliveWorkers[workerId].work();
-		if(m_virtualCommunicator.getPushedMessageSlot()){
+		if(m_virtualCommunicator.getLocalPushedMessageStatus()){
 			m_waitingWorkers.push_back(workerId);
 		}
 		if(m_aliveWorkers[workerId].isDone()){
-			m_completedJobs++;
 			m_workersDone.push_back(workerId);
 			vector<uint64_t> seed=m_aliveWorkers[workerId].getSeed();
 
@@ -111,43 +118,72 @@ void SeedingData::computeSeeds(){
 	}else{
 		// erase completed jobs
 		for(int i=0;i<(int)m_workersDone.size();i++){
-			m_activeWorkers.erase(m_workersDone[i]);
-			m_aliveWorkers.erase(m_workersDone[i]);
+			uint64_t workerId=m_workersDone[i];
+			#ifdef ASSERT
+			assert(m_activeWorkers.count(workerId)>0);
+			assert(m_aliveWorkers.count(workerId)>0);
+			#endif
+			m_activeWorkers.erase(workerId);
+			m_aliveWorkers.erase(workerId);
+			m_completedJobs++;
 		}
 		m_workersDone.clear();
 
 		for(int i=0;i<(int)m_waitingWorkers.size();i++){
-			m_activeWorkers.erase(m_waitingWorkers[i]);
+			uint64_t workerId=m_waitingWorkers[i];
+			#ifdef ASSERT
+			assert(m_activeWorkers.count(workerId)>0);
+			#endif
+			m_activeWorkers.erase(workerId);
+			//cout<<"Rank "<<m_rank<<" Worker="<<workerId<<" SET STATE SLEEPY"<<endl;
 		}
 		m_waitingWorkers.clear();
 
 		//  add one worker to active workers
 		//  reason is that those already in the pool don't communicate anymore -- 
 		//  as for they need responses.
-		if(!m_virtualCommunicator.getGlobalSlot()){
-			if(m_SEEDING_i<(int)m_subgraph->size()&&(int)m_aliveWorkers.size()<m_maximumAliveWorker){
+		if(!m_virtualCommunicator.getGlobalPushedMessageStatus()){
+			// there is at least one worker to start
+			// AND
+			// the number of alive workers is below the maximum
+			if(m_SEEDING_i<(uint64_t)m_subgraph->size()&&(int)m_aliveWorkers.size()<m_maximumAliveWorker){
 				if(m_SEEDING_i % 100000 ==0){
 					printf("Rank %i is creating seeds [%i/%i]\n",getRank(),(int)m_SEEDING_i+1,(int)m_subgraph->size());
 					fflush(stdout);
 					showMemoryUsage(m_rank);
 				}
-				if(m_SEEDING_i%1000==0){
+				if(m_SEEDING_i%10000==0){
 					cout<<"Rank "<<m_rank<<" Adding worker WorkerId="<<m_SEEDING_i<<" ActiveWorkers="<<m_activeWorkers.size()<<" AliveWorkers="<<m_aliveWorkers.size()<<" CompletedJobs="<<m_completedJobs<<endl;
 				}
+				#ifdef ASSERT
+				if(m_SEEDING_i==0){
+					assert(m_completedJobs==0&&m_activeWorkers.size()==0&&m_aliveWorkers.size()==0);
+				}
+				#endif
 				SplayNode<uint64_t,Vertex>*node=m_splayTreeIterator.next();
 				m_aliveWorkers[m_SEEDING_i].constructor(node->getKey(),m_parameters,m_outboxAllocator,&m_virtualCommunicator,m_SEEDING_i);
 				m_activeWorkers.insert(m_SEEDING_i);
 				m_SEEDING_i++;
+				if(m_SEEDING_i==(uint64_t)m_subgraph->size()){
+					cout<<"Rank "<<m_rank<<": no more workers to start."<<endl;
+					cout.flush();
+				}
 			}else{
+				// no worker to start OR the maximum is reached
 				// must flush buffers manually because no more workers are to be created
-				m_virtualCommunicator.forceFlushIfNothingWasAppended();
+				m_virtualCommunicator.forceFlush(m_SEEDING_i==(uint64_t)m_subgraph->size());
+
 			}
 		}
 
 		// brace yourself for the next round
 		m_activeWorkerIterator=m_activeWorkers.begin();
-		m_virtualCommunicator.resetPushedMessageGlobalSlot();
+		m_virtualCommunicator.resetGlobalPushedMessageStatus();
 	}
+
+	#ifdef ASSERT
+	assert((int)m_aliveWorkers.size()<=m_maximumAliveWorker);
+	#endif
 
 	if((int)m_subgraph->size()==m_completedJobs){
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
@@ -157,12 +193,19 @@ void SeedingData::computeSeeds(){
 		m_outbox->push_back(aMessage);
 
 		showMemoryUsage(m_rank);
+		#ifdef ASSERT
+		if(m_aliveWorkers.size()!=0){
+			cout<<"Total="<<m_subgraph->size()<<" Completed="<<m_completedJobs<<" Alive="<<m_aliveWorkers.size()<<" Active="<<m_activeWorkers.size()<<endl;
+		}
+		assert(m_aliveWorkers.size()==0);
+		assert(m_activeWorkers.size()==0);
+		#endif
 	}
-/*
-	if(m_SEEDING_i==(int)m_subgraph->size()){
-		cout<<"Rank "<<m_rank<<" ActiveWorkers="<<m_activeWorkers.size()<<" AliveWorkers="<<m_aliveWorkers.size()<<" CompletedJobs="<<m_completedJobs<<endl;
+	time_t t=time(NULL);
+	if(t!=m_last){
+		cout<<"Rank "<<m_rank<<" ActiveWorkers="<<m_activeWorkers.size()<<" AliveWorkers="<<m_aliveWorkers.size()<<" CompletedJobs="<<m_completedJobs<<"/"<<m_subgraph->size()<<endl;
+		m_last=t;
 	}
-*/
 }
 
 void SeedingData::constructor(SeedExtender*seedExtender,int rank,int size,StaticVector*outbox,RingAllocator*outboxAllocator,int*seedCoverage,int*mode,
@@ -175,7 +218,10 @@ void SeedingData::constructor(SeedExtender*seedExtender,int rank,int size,Static
 	m_seedCoverage=seedCoverage;
 	m_mode=mode;
 	m_parameters=parameters;
-	m_wordSize=*wordSize;
+	m_wordSize=m_parameters->getWordSize();
+	#ifdef ASSERT
+	assert(m_wordSize>=15&&m_wordSize<=32);
+	#endif
 	m_subgraph=subgraph;
 	m_colorSpaceMode=colorSpaceMode;
 	m_initiatedIterator=false;

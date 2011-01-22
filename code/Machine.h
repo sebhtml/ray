@@ -218,7 +218,7 @@ class Machine{
 	bool m_messageSentForEdgesDistribution;
 
 	// COLLECTING things.
-	vector<int> m_identifiers;
+	vector<uint64_t> m_identifiers;
 	// FINISHING.
 	int m_cycleNumber;
 	int m_FINISH_n;

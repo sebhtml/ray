@@ -38,6 +38,8 @@ using namespace std;
  * allocation and free are done both in constant time (yeah!)
  */
 class RingAllocator{
+
+	int m_count;
 	int m_chunks;
 	int m_numberOfBytes;
 	int m_max;
@@ -49,6 +51,8 @@ public:
 	void*allocate(int a);
 	int getSize();
 	void clear();
+	void resetCount();
+	int getCount();
 };
 
 
