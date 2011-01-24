@@ -73,8 +73,14 @@ void SeedingData::computeSeeds(){
 		assert(!m_aliveWorkers[workerId].isDone());
 		#endif
 		m_virtualCommunicator.resetLocalPushedMessageStatus();
+
 		//cout<<"Rank "<<m_rank<<" Worker="<<workerId<<" work()"<<endl;
-		m_aliveWorkers[workerId].work();
+		//
+		//force the worker to work until he finishes or pushes something on the stack
+		while(!m_aliveWorkers[workerId].isDone()&&!m_virtualCommunicator.getLocalPushedMessageStatus()){
+			m_aliveWorkers[workerId].work();
+		}
+
 		if(m_virtualCommunicator.getLocalPushedMessageStatus()){
 			m_waitingWorkers.push_back(workerId);
 		}

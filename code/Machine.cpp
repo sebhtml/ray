@@ -583,7 +583,6 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 
 	m_coverageDistribution.clear();
 
-
 	if(m_minimumCoverage > m_peakCoverage or m_peakCoverage==m_parameters.getMaxCoverage()){
 		killRanks();
 		cout<<"Error: no enrichment observed."<<endl;
@@ -591,7 +590,6 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	}
 
 	// see these values to everyone.
-	
 	uint64_t*buffer=(uint64_t*)m_outboxAllocator.allocate(3*sizeof(uint64_t));
 	buffer[0]=m_minimumCoverage;
 	buffer[1]=m_seedCoverage;

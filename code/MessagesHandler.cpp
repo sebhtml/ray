@@ -27,10 +27,6 @@ using namespace std;
 
 //#define DEBUG_MESSAGES
 
-const char*__TAG_NAMES[]={
-"RAY_MPI_TAG_WELCOME"
-};
-
 /*
  * send messages,
  */

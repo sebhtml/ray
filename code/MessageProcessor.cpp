@@ -548,6 +548,7 @@ void MessageProcessor::call_RAY_MPI_TAG_SEND_COVERAGE_VALUES(Message*message){
 	m_outbox->push_back(aMessage);
 	m_oa->constructor((*m_peakCoverage));
 	parameters->setPeakCoverage(*m_peakCoverage);
+	parameters->setSeedCoverage(*m_seedCoverage);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_READY_TO_SEED(Message*message){

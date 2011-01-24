@@ -218,19 +218,19 @@ void VirtualCommunicator::forceFlush(bool value){
 		for(map<int,vector<uint64_t> >::iterator j=i->second.begin();j!=i->second.end();j++){
 			int destination=j->first;
 			int size=j->second.size();
+
 			if(size>0&&size>maxSize){
 				maxSize=size;
 				foundOne=true;
 				selectedTag=tag;
 				selectedDestination=destination;
-				flushMessage(selectedTag,selectedDestination);
-				return;
 			}
 		}
 	}
 	if(foundOne){
 		//cout<<"Rank "<<m_rank<<" "<<__func__<<" Tag="<<selectedTag<<" Destination="<<selectedDestination<<" Count="<<maxSize<<endl;
-		//return;
+		flushMessage(selectedTag,selectedDestination);
+		return;
 	}
 }
 
