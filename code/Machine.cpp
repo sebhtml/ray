@@ -157,7 +157,7 @@ void Machine::start(){
 	MAX_ALLOCATED_MESSAGES_IN_INBOX=1;
 
 	// this peak is attained in VerticesExtractor::deleteVertices
-	int m_maximumAllocatedOutputBuffers=17; 
+	m_maximumAllocatedOutputBuffers=17; 
 
 	if(MAX_ALLOCATED_MESSAGES_IN_OUTBOX<m_maximumAllocatedOutputBuffers){
 		MAX_ALLOCATED_MESSAGES_IN_OUTBOX=m_maximumAllocatedOutputBuffers;
@@ -398,11 +398,23 @@ m_seedingData,
  * 	5) send messages
  */
 void Machine::run(){
+	//m_lastTime=time(NULL);
 	while(isAlive()){
+		//uint64_t startingClock=getMicroSeconds();
 		receiveMessages(); 
 		processMessages();
 		processData();
 		sendMessages();
+		/*
+		uint64_t endingClock=getMicroSeconds();
+		int elapsedTime=endingClock-startingClock;
+		time_t theTime=time(NULL);
+		if(theTime!=m_lastTime){
+			printf("Rank %i: %i microseconds\n",m_rank,elapsedTime);
+			fflush(stdout);
+			m_lastTime=theTime;
+		}
+		*/
 	}
 }
 
@@ -422,7 +434,7 @@ void Machine::processMessages(){
 
 void Machine::sendMessages(){
 	#ifdef ASSERT
-	assert(m_outboxAllocator.getCount()<=MAX_ALLOCATED_MESSAGES_IN_OUTBOX);
+	assert(m_outboxAllocator.getCount()<=m_maximumAllocatedOutputBuffers);
 	m_outboxAllocator.resetCount();
 	int messagesToSend=m_outbox.size();
 	if(messagesToSend>MAX_ALLOCATED_MESSAGES_IN_OUTBOX){
@@ -976,13 +988,6 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 }
 
 void Machine::call_RAY_MASTER_MODE_ASK_EXTENSIONS(){
-	#ifndef SHOW_PROGRESS
-	time_t tmp=time(NULL);
-	if(tmp>m_lastTime){
-		m_lastTime=tmp;
-		showProgress(m_lastTime);
-	}
-	#endif
 
 	// ask ranks to send their extensions.
 	if(!m_ed->m_EXTENSION_currentRankIsSet){

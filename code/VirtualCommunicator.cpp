@@ -91,7 +91,10 @@ void VirtualCommunicator::flushMessage(int tag,int destination){
 	assert(requiredResponseLength<=MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	#endif
 
-	//cout<<"Capacity: "<<requiredResponseLength<<"/"<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<endl;
+	//cout<<"Rank "<<m_rank<<" "<<__func__<<" Capacity: "<<requiredResponseLength<<"/"<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<endl;
+	//if(requiredResponseLength!=MAXIMUM_MESSAGE_SIZE_IN_BYTES){
+		//cout<<"Rank "<<m_rank<<" "<<__func__<<" Under Capacity: "<<requiredResponseLength<<"/"<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<endl;
+	//}
 
 	uint64_t*messageContent=(uint64_t*)m_outboxAllocator->allocate(currentSize*sizeof(uint64_t));
 
@@ -145,7 +148,7 @@ void VirtualCommunicator::constructor(int rank,int size,RingAllocator*outboxAllo
 	resetGlobalPushedMessageStatus();
 }
 
-void VirtualCommunicator::processInbox(set<uint64_t>*activeWorkers){
+void VirtualCommunicator::processInbox(vector<uint64_t>*activeWorkers){
 	if(m_pendingMessages>0&&m_inbox->size()>0){// we have mail
 		Message*message=m_inbox->at(0);// there is 0 or 1 message in the inbox
 		int incomingTag=message->getTag();
@@ -184,8 +187,7 @@ void VirtualCommunicator::processInbox(set<uint64_t>*activeWorkers){
 			#endif
 			for(int i=0;i<(int)workers.size();i++){
 				uint64_t workerId=workers[i];
-				activeWorkers->insert(workerId);
-				//cout<<"Rank "<<m_rank<<" Worker="<<workerId<<" SET STATE ACTIVE"<<endl;
+				activeWorkers->push_back(workerId);
 				int basePosition=i*elementsPerWorker;
 				#ifdef ASSERT
 				assert(m_elementsForWorkers.count(workerId)==0);
@@ -207,17 +209,28 @@ void VirtualCommunicator::processInbox(set<uint64_t>*activeWorkers){
 
 // force the first encountered thing
 void VirtualCommunicator::forceFlush(bool value){
+	int selectedTag=-1;
+	int selectedDestination=-1;
+	int maxSize=-999;
+	bool foundOne=false;
 	for(map<int,map<int,vector<uint64_t> > >::iterator i=m_messageContent.begin();i!=m_messageContent.end();i++){
 		int tag=i->first;
 		for(map<int,vector<uint64_t> >::iterator j=i->second.begin();j!=i->second.end();j++){
 			int destination=j->first;
 			int size=j->second.size();
-			if(size>0){
-				//cout<<"Rank "<<m_rank<<" "<<__func__<<" Tag="<<tag<<" Destination="<<destination<<" Count="<<j->second.size()<<endl;
-				flushMessage(tag,destination);
+			if(size>0&&size>maxSize){
+				maxSize=size;
+				foundOne=true;
+				selectedTag=tag;
+				selectedDestination=destination;
+				flushMessage(selectedTag,selectedDestination);
 				return;
 			}
 		}
+	}
+	if(foundOne){
+		//cout<<"Rank "<<m_rank<<" "<<__func__<<" Tag="<<selectedTag<<" Destination="<<selectedDestination<<" Count="<<maxSize<<endl;
+		//return;
 	}
 }
 

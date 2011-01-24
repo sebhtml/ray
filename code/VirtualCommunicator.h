@@ -103,7 +103,7 @@ public:
 	
 	// this method must be called before calling workers.
 	// it will fetch messages from inbox according to ongoing queries.
-	void processInbox(set<uint64_t>*activeWorkers);
+	void processInbox(vector<uint64_t>*activeWorkers);
 
 	// push a worker message
 	// may not be sent instantaneously

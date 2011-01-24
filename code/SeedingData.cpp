@@ -53,13 +53,13 @@ void SeedingData::computeSeeds(){
 		m_splayTreeIterator.constructor(m_subgraph);
 		m_initiatedIterator=true;
 		m_completedJobs=0;
-		m_maximumAliveWorker=m_size;
+		m_maximumAliveWorker=m_size*100;
 		#ifdef ASSERT
 		m_splayTreeIterator.hasNext();
 		#endif
 	}
 
-	m_virtualCommunicator.processInbox(&m_activeWorkers);
+	m_virtualCommunicator.processInbox(&m_activeWorkersToRestore);
 
 	if(!m_virtualCommunicator.isReady()){
 		return;
@@ -73,6 +73,7 @@ void SeedingData::computeSeeds(){
 		assert(!m_aliveWorkers[workerId].isDone());
 		#endif
 		m_virtualCommunicator.resetLocalPushedMessageStatus();
+		//cout<<"Rank "<<m_rank<<" Worker="<<workerId<<" work()"<<endl;
 		m_aliveWorkers[workerId].work();
 		if(m_virtualCommunicator.getLocalPushedMessageStatus()){
 			m_waitingWorkers.push_back(workerId);
@@ -139,6 +140,13 @@ void SeedingData::computeSeeds(){
 		}
 		m_waitingWorkers.clear();
 
+		for(int i=0;i<(int)m_activeWorkersToRestore.size();i++){
+			uint64_t workerId=m_activeWorkersToRestore[i];
+			m_activeWorkers.insert(workerId);
+			//cout<<"Rank "<<m_rank<<" Worker="<<workerId<<" SET STATE ACTIVE"<<endl;
+		}
+		m_activeWorkersToRestore.clear();
+
 		//  add one worker to active workers
 		//  reason is that those already in the pool don't communicate anymore -- 
 		//  as for they need responses.
@@ -152,9 +160,6 @@ void SeedingData::computeSeeds(){
 					fflush(stdout);
 					showMemoryUsage(m_rank);
 				}
-				if(m_SEEDING_i%10000==0){
-					cout<<"Rank "<<m_rank<<" Adding worker WorkerId="<<m_SEEDING_i<<" ActiveWorkers="<<m_activeWorkers.size()<<" AliveWorkers="<<m_aliveWorkers.size()<<" CompletedJobs="<<m_completedJobs<<endl;
-				}
 				#ifdef ASSERT
 				if(m_SEEDING_i==0){
 					assert(m_completedJobs==0&&m_activeWorkers.size()==0&&m_aliveWorkers.size()==0);
@@ -163,18 +168,31 @@ void SeedingData::computeSeeds(){
 				SplayNode<uint64_t,Vertex>*node=m_splayTreeIterator.next();
 				m_aliveWorkers[m_SEEDING_i].constructor(node->getKey(),m_parameters,m_outboxAllocator,&m_virtualCommunicator,m_SEEDING_i);
 				m_activeWorkers.insert(m_SEEDING_i);
+
+				//if(m_SEEDING_i%10000==0){
+					//cout<<"Rank "<<m_rank<<" Adding worker WorkerId="<<m_SEEDING_i<<" ActiveWorkers="<<m_activeWorkers.size()<<" AliveWorkers="<<m_aliveWorkers.size()<<" CompletedJobs="<<m_completedJobs<<endl;
+				//}
+
 				m_SEEDING_i++;
+/*
 				if(m_SEEDING_i==(uint64_t)m_subgraph->size()){
+					cout<<"Rank "<<m_rank<<" ActiveWorkers="<<m_activeWorkers.size()<<" AliveWorkers="<<m_aliveWorkers.size()<<" CompletedJobs="<<m_completedJobs<<"/"<<m_subgraph->size()<<endl;
 					cout<<"Rank "<<m_rank<<": no more workers to start."<<endl;
 					cout.flush();
 				}
+*/
+
 			}else{
+				//cout<<"Rank "<<m_rank<<" forceFlush()"<<endl;
 				// no worker to start OR the maximum is reached
 				// must flush buffers manually because no more workers are to be created
 				m_virtualCommunicator.forceFlush(m_SEEDING_i==(uint64_t)m_subgraph->size());
 
 			}
 		}
+
+		//cout<<"Rank "<<m_rank<<" RestartingIterator."<<endl;
+		//cout<<"Rank "<<m_rank<<" ActiveWorkers="<<m_activeWorkers.size()<<" AliveWorkers="<<m_aliveWorkers.size()<<" CompletedJobs="<<m_completedJobs<<"/"<<m_subgraph->size()<<endl;
 
 		// brace yourself for the next round
 		m_activeWorkerIterator=m_activeWorkers.begin();
@@ -194,18 +212,22 @@ void SeedingData::computeSeeds(){
 
 		showMemoryUsage(m_rank);
 		#ifdef ASSERT
+/*
 		if(m_aliveWorkers.size()!=0){
 			cout<<"Total="<<m_subgraph->size()<<" Completed="<<m_completedJobs<<" Alive="<<m_aliveWorkers.size()<<" Active="<<m_activeWorkers.size()<<endl;
 		}
+*/
 		assert(m_aliveWorkers.size()==0);
 		assert(m_activeWorkers.size()==0);
 		#endif
 	}
+/*
 	time_t t=time(NULL);
 	if(t!=m_last){
 		cout<<"Rank "<<m_rank<<" ActiveWorkers="<<m_activeWorkers.size()<<" AliveWorkers="<<m_aliveWorkers.size()<<" CompletedJobs="<<m_completedJobs<<"/"<<m_subgraph->size()<<endl;
 		m_last=t;
 	}
+*/
 }
 
 void SeedingData::constructor(SeedExtender*seedExtender,int rank,int size,StaticVector*outbox,RingAllocator*outboxAllocator,int*seedCoverage,int*mode,

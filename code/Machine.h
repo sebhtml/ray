@@ -216,7 +216,7 @@ class Machine{
 	bool m_aborted;
 
 	bool m_messageSentForEdgesDistribution;
-
+	int m_maximumAllocatedOutputBuffers;
 	// COLLECTING things.
 	vector<uint64_t> m_identifiers;
 	// FINISHING.

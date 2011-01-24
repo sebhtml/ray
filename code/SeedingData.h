@@ -55,6 +55,7 @@ class SeedingData{
 	bool m_communicatorWasTriggered;
 	vector<uint64_t> m_workersDone;
 	vector<uint64_t> m_waitingWorkers;
+	vector<uint64_t> m_activeWorkersToRestore;
 	Parameters*m_parameters;
 	MyForest*m_subgraph;
 	MyForestIterator m_splayTreeIterator;
