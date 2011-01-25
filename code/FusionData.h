@@ -96,9 +96,9 @@ public:
 	bool m_FUSION_path_requested;
 	Direction m_FUSION_receivedPath;
 
-	map<int,int> m_FUSION_identifier_map;
+	map<uint64_t,int> m_FUSION_identifier_map;
 
-	set<int> m_FUSION_eliminated;
+	set<uint64_t> m_FUSION_eliminated;
 
 	void distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int getRank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox,int getSize,int*m_mode);
 

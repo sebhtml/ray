@@ -1432,7 +1432,7 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 
 	vector<vector<uint64_t> > fusions;
 	for(int i=0;i<(int)(m_ed->m_EXTENSION_contigs).size();i++){
-		int id=(m_ed->m_EXTENSION_identifiers)[i];
+		uint64_t id=(m_ed->m_EXTENSION_identifiers)[i];
 		if(m_fusionData->m_FUSION_eliminated.count(id)==0){
 			fusions.push_back((m_ed->m_EXTENSION_contigs)[i]);
 			vector<uint64_t> rc;
