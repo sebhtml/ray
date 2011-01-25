@@ -37,6 +37,7 @@ void VirtualCommunicator::setReplyType(int query,int reply){
 }
 
 void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
+	m_pushedMessages++;
 	#ifdef ASSERT
 	assert(m_elementsForWorkers.count(workerId)==0);
 	#endif
@@ -51,7 +52,20 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 	#ifdef ASSERT
 	assert(m_elementSizes.count(tag)>0);
 	#endif
+
+	uint64_t elementId=tag*MAX_NUMBER_OF_MPI_PROCESSES+destination;
+	int oldPriority=0;
+	// delete old priority
+	if(m_messageContent.count(tag)>0&&m_messageContent[tag].count(destination)>0){
+		oldPriority=m_messageContent[tag][destination].size();
+		m_priorityQueue[oldPriority].erase(elementId);
+		if(m_priorityQueue[oldPriority].size()==0){
+			m_priorityQueue.erase(oldPriority);
+		}
+	}
 	int count=message->getCount();
+	int newPriority=oldPriority+count;
+	m_priorityQueue[newPriority].insert(elementId);
 	//cout<<"Rank "<<m_rank<<" "<<__func__<<" Worker="<<workerId<<" Tag="<<tag<<" Destination="<<destination<<endl;
 	#ifdef ASSERT
 	assert(count>0);
@@ -67,8 +81,9 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 	#ifdef ASSERT
 	assert(m_elementSizes.count(tag)>0);
 	#endif
-	int period=m_elementSizes[tag];
 	int currentSize=m_messageContent[tag][destination].size();
+
+	int period=m_elementSizes[tag];
 	int threshold=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)/period;
 	#ifdef ASSERT
 	assert(m_elementSizes.count(tag)>0);
@@ -83,15 +98,34 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 }
 
 void VirtualCommunicator::flushMessage(int tag,int destination){
-	int currentSize=m_messageContent[tag][destination].size();
+	m_flushedMessages++;
 	#ifdef ASSERT
+	assert(m_messageContent.count(tag)>0&&m_messageContent[tag].count(destination)>0);
+	#endif
+	int priority=m_messageContent[tag][destination].size();
+	uint64_t elementId=tag*MAX_NUMBER_OF_MPI_PROCESSES+destination;
+	m_priorityQueue[priority].erase(elementId);
+	if(m_priorityQueue[priority].size()==0){
+		m_priorityQueue.erase(priority);
+	}
+	m_activeDestination=destination;
+	m_activeTag=tag;
+	int currentSize=priority;
+	#ifdef ASSERT
+	if(currentSize==0){
+		cout<<"Cannot flush empty buffer!"<<endl;
+	}
 	assert(currentSize>0);
 	int requiredResponseLength=currentSize*m_elementSizes[tag]*sizeof(uint64_t);
+	m_distribution[requiredResponseLength]++;
 	//cout<<"Rank "<<m_rank<<" "<<__func__<<" RequiredResponseLength="<<requiredResponseLength<<" Tag="<<tag<<" Destination="<<destination<<endl;
 	assert(requiredResponseLength<=MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	#endif
 
-	//cout<<"Rank "<<m_rank<<" "<<__func__<<" Capacity: "<<requiredResponseLength<<"/"<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<endl;
+/*
+	cout<<"Rank "<<m_rank<<" "<<__func__<<" Tag="<<tag<<" Destination="<<destination<<" Capacity: "<<requiredResponseLength<<" / "<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<endl;
+	cout.flush();
+*/
 	//if(requiredResponseLength!=MAXIMUM_MESSAGE_SIZE_IN_BYTES){
 		//cout<<"Rank "<<m_rank<<" "<<__func__<<" Under Capacity: "<<requiredResponseLength<<"/"<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<endl;
 	//}
@@ -102,22 +136,18 @@ void VirtualCommunicator::flushMessage(int tag,int destination){
 		messageContent[j]=m_messageContent[tag][destination][j];
 	}
 
-	m_messageContent[tag][destination].clear();
+	m_messageContent[tag].erase(destination);
+	if(m_messageContent[tag].size()==0){
+		m_messageContent.erase(tag);
+	}
 
 	Message aMessage(messageContent,currentSize,MPI_UNSIGNED_LONG_LONG,destination,tag,m_rank);
 	m_outbox->push_back(aMessage);
 
 	m_pendingMessages++;
-	m_messages[destination]++;
 
 	//cout<<"Rank "<<m_rank<<" "<<__func__<<" Tag="<<tag<<" Destination="<<destination<<" CurrentSize="<<currentSize<<" PendingMessages="<<m_messages[destination]<<" TotalPending="<<m_pendingMessages<<endl;
 	//cout.flush();
-
-	// save the list of workers
-	m_workerIdentifiers[tag][destination].push(m_workerCurrentIdentifiers[tag][destination]);
-	
-	// clear the list of workers
-	m_workerCurrentIdentifiers[tag][destination].clear();
 }
 
 bool VirtualCommunicator::isMessageProcessed(uint64_t workerId){
@@ -137,6 +167,7 @@ vector<uint64_t> VirtualCommunicator::getResponseElements(uint64_t workerId){
 }
 
 void VirtualCommunicator::constructor(int rank,int size,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox){
+	m_pushedMessages=0;
 	m_rank=rank;
 	m_size=size;
 	m_outboxAllocator=outboxAllocator;
@@ -160,21 +191,18 @@ void VirtualCommunicator::processInbox(vector<uint64_t>*activeWorkers){
 		assert(m_replyTagToQueryTag.count(incomingTag)>0);
 		#endif
 		int queryTag=m_replyTagToQueryTag[incomingTag];
-		if(m_workerIdentifiers.count(queryTag)>0
-		&& m_workerIdentifiers[queryTag].count(source)>0
-		&& !m_workerIdentifiers[queryTag][source].empty()){
+		if(m_activeTag==queryTag&&m_activeDestination==source){
 			m_pendingMessages--;
-			m_messages[source]--;
-			//cout<<"Rank "<<m_rank<<" "<<__func__<<" QueryTag="<<queryTag<<" Source="<<source<<" PendingMessages="<<m_messages[source]<<" TotalPending="<<m_pendingMessages<<endl;
-			//cout.flush();
+			//cout<<"Rank "<<m_rank<<" "<<__func__<<" QueryTag="<<queryTag<<" Source="<<source<<" TotalPending="<<m_pendingMessages<<endl;
+			cout.flush();
 			uint64_t*buffer=(uint64_t*)message->getBuffer();
 			#ifdef ASSERT
 			assert(m_elementSizes.count(queryTag)>0);
 			#endif
 			int elementsPerWorker=m_elementSizes[queryTag];
-			vector<uint64_t> workers=m_workerIdentifiers[queryTag][source].front();
-			m_workerIdentifiers[queryTag][source].pop();
-
+			vector<uint64_t> workers=m_workerCurrentIdentifiers[m_activeTag][m_activeDestination];
+			m_workerCurrentIdentifiers[m_activeTag][m_activeDestination].clear();
+			
 			#ifdef ASSERT
 			assert(workers.size()>0);
 			assert(elementsPerWorker>0);
@@ -207,33 +235,6 @@ void VirtualCommunicator::processInbox(vector<uint64_t>*activeWorkers){
 	#endif
 }
 
-// force the first encountered thing
-void VirtualCommunicator::forceFlush(bool value){
-	int selectedTag=-1;
-	int selectedDestination=-1;
-	int maxSize=-999;
-	bool foundOne=false;
-	for(map<int,map<int,vector<uint64_t> > >::iterator i=m_messageContent.begin();i!=m_messageContent.end();i++){
-		int tag=i->first;
-		for(map<int,vector<uint64_t> >::iterator j=i->second.begin();j!=i->second.end();j++){
-			int destination=j->first;
-			int size=j->second.size();
-
-			if(size>0&&size>maxSize){
-				maxSize=size;
-				foundOne=true;
-				selectedTag=tag;
-				selectedDestination=destination;
-			}
-		}
-	}
-	if(foundOne){
-		//cout<<"Rank "<<m_rank<<" "<<__func__<<" Tag="<<selectedTag<<" Destination="<<selectedDestination<<" Count="<<maxSize<<endl;
-		flushMessage(selectedTag,selectedDestination);
-		return;
-	}
-}
-
 bool VirtualCommunicator::getLocalPushedMessageStatus(){
 	return m_localPushedMessageStatus;
 }
@@ -252,4 +253,59 @@ bool VirtualCommunicator::getGlobalPushedMessageStatus(){
 
 bool VirtualCommunicator::isReady(){
 	return m_pendingMessages==0;
+}
+
+// force the first encountered thing
+void VirtualCommunicator::forceFlush(){
+	if(m_priorityQueue.size()==0){
+		return;
+	}
+	#ifdef ASSERT
+	assert(!m_priorityQueue.rbegin()->second.empty());
+	#endif
+	uint64_t elementId=*(m_priorityQueue.rbegin()->second.begin());
+	int selectedDestination=elementId%MAX_NUMBER_OF_MPI_PROCESSES;
+	int selectedTag=elementId/MAX_NUMBER_OF_MPI_PROCESSES;
+	#ifdef ASSERT
+	assert(m_messageContent.count(selectedTag)>0&&m_messageContent[selectedTag].count(selectedDestination)>0);
+	assert(!m_messageContent[selectedTag][selectedDestination].empty());
+	#endif
+	//cout<<"Rank "<<m_rank<<" "<<__func__<<" Tag="<<selectedTag<<" Destination="<<selectedDestination<<" Count="<<maxSize<<endl;
+	flushMessage(selectedTag,selectedDestination);
+}
+
+bool VirtualCommunicator::hasMessagesToFlush(){
+	return !m_messageContent.empty();
+}
+
+bool VirtualCommunicator::nextIsAlmostFull(){
+	if(m_priorityQueue.empty()){
+		return false;
+	}
+	
+	uint64_t elementId=*(m_priorityQueue.rbegin()->second.begin());
+	int selectedDestination=elementId%MAX_NUMBER_OF_MPI_PROCESSES;
+	int selectedTag=elementId/MAX_NUMBER_OF_MPI_PROCESSES;
+	
+	int period=m_elementSizes[selectedTag];
+	int currentSize=m_messageContent[selectedTag][selectedDestination].size();
+	int threshold=MAXIMUM_MESSAGE_SIZE_IN_BYTES/8;
+	int value=currentSize*period;
+	return value>=threshold;
+}
+
+void VirtualCommunicator::printStatistics(){
+	printf("Rank %i VirtualCommunicator Statistics\n",m_rank);
+	fflush(stdout);
+	uint64_t total=0;
+	for(map<int,uint64_t>::iterator i=m_distribution.begin();i!=m_distribution.end();i++){
+		break;
+		int size=i->first;
+		uint64_t count=i->second;
+		total+=count;
+		printf("Rank %i Size: %i Count: %lu\n",m_rank,size,count);
+		fflush(stdout);
+	}
+	printf("Rank %i: %lu virtual messages for %lu pushed messages\n",m_rank,m_flushedMessages,m_pushedMessages);
+	fflush(stdout);
 }

@@ -150,7 +150,7 @@ void DepthFirstSearchData::depthFirstSearch(uint64_t root,uint64_t a,int maxDept
 void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth,
 	bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	RingAllocator*outboxAllocator,int size,int theRank,StaticVector*outbox,
- int*receivedVertexCoverage,vector<uint64_t>*receivedOutgoingEdges,
+ int*receivedVertexCoverage,SeedingData*seedingData,
 		int minimumCoverage,bool*edgesReceived,Parameters*parameters){
 
 	#ifdef ASSERT
@@ -263,22 +263,10 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 				// following is the number of ingoing edges
 				// following are the ingoing edges.
 
-				#ifdef ASSERT
-				assert((*receivedOutgoingEdges).size()>=2);
-				#endif
+				vector<uint64_t> outgoingEdges=seedingData->m_SEEDING_receivedOutgoingEdges;
 
-				vector<uint64_t> outgoingEdges;
-				int outgoingEdgesOffset=0;
-				int numberOfOutgoingEdges=(*receivedOutgoingEdges)[outgoingEdgesOffset];
-
-				#ifdef ASSERT
-				assert(numberOfOutgoingEdges>=0 && numberOfOutgoingEdges<=4);
-				#endif
-
-				for(int i=0;i<numberOfOutgoingEdges;i++){
-					uint64_t nextVertex=(*receivedOutgoingEdges)[outgoingEdgesOffset+1+i];
-
-					outgoingEdges.push_back(nextVertex);
+				for(int i=0;i<(int)outgoingEdges.size();i++){
+					uint64_t nextVertex=outgoingEdges[i];
 
 					if(m_depthFirstSearchVisitedVertices.size()>=MAX_VERTICES_TO_VISIT){
 						continue;
@@ -298,12 +286,6 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 					m_depthFirstSearchVisitedVertices_depths.push_back(newDepth);
 				}
 
-				int ingoingEdgesOffset=outgoingEdgesOffset+numberOfOutgoingEdges+1;
-				int numberOfIngoingEdges=(*receivedOutgoingEdges)[ingoingEdgesOffset];
-				#ifdef ASSERT
-				assert(numberOfIngoingEdges>=0 && numberOfIngoingEdges<=4);
-				#endif
-
 				#ifdef ASSERT
 				if(m_outgoingEdges.count(vertexToVisit)>0){
 					cout<<idToWord(vertexToVisit,wordSize)<<" is already in the data structure "<<m_outgoingEdges[vertexToVisit].size()<<" v. "<<outgoingEdges.size()<<endl;
@@ -313,11 +295,10 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 
 				m_outgoingEdges[vertexToVisit]=outgoingEdges;
 
-				vector<uint64_t> ingoingEdges;
+				vector<uint64_t> ingoingEdges=seedingData->m_SEEDING_receivedIngoingEdges;
 
-				for(int i=0;i<numberOfIngoingEdges;i++){
-					uint64_t nextVertex=(*receivedOutgoingEdges)[ingoingEdgesOffset+1+i];
-					ingoingEdges.push_back(nextVertex);
+				for(int i=0;i<(int)ingoingEdges.size();i++){
+					uint64_t nextVertex=ingoingEdges[i];
 
 					if(m_depthFirstSearchVisitedVertices.size()>=MAX_VERTICES_TO_VISIT){
 						continue;
@@ -331,7 +312,6 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 					}
 					m_depthFirstSearchVerticesToVisit.push(nextVertex);
 					m_depthFirstSearchDepths.push(newDepth);
-
 
 					// reverse the order.
 					m_depthFirstSearchVisitedVertices_vector.push_back(nextVertex);

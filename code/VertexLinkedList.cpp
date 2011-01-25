@@ -43,4 +43,3 @@ VertexLinkedList*VertexLinkedList::getNext(){
 	return m_next;
 }
 
-

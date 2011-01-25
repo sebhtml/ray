@@ -476,4 +476,27 @@ void showMemoryUsage(int rank){
 	#endif
 }
 
+vector<uint64_t> _getOutgoingEdges(uint64_t a,uint8_t edges,int k){
+	vector<uint64_t> b;
+	for(int i=0;i<4;i++){
+		int j=((((uint64_t)edges)<<(sizeof(uint64_t)*8-5-i))>>(sizeof(uint64_t)*8-1));
+		if(j==1){
+			uint64_t l=(a>>2)|(((uint64_t)i)<<(2*(k-1)));
+			b.push_back(l);
+		}
+	}
 
+	return b;
+}
+
+vector<uint64_t> _getIngoingEdges(uint64_t a,uint8_t edges,int k){
+	vector<uint64_t> b;
+	for(int i=0;i<4;i++){
+		int j=((((uint64_t)edges)<<((sizeof(uint64_t)*8-1)-i))>>(sizeof(uint64_t)*8-1));
+		if(j==1){
+			uint64_t l=((a<<(sizeof(uint64_t)*8-2*k+2))>>(sizeof(uint64_t)*8-2*k))|((uint64_t)i);
+			b.push_back(l);
+		}
+	}
+	return b;
+}

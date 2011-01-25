@@ -39,6 +39,7 @@ class SeedExtender;
 using namespace std;
 
 class SeedingData{
+	bool m_flushAllMode;
 	VirtualCommunicator m_virtualCommunicator;
 	bool m_initialized;
 	bool m_initiatedIterator;
@@ -61,7 +62,8 @@ class SeedingData{
 	MyForestIterator m_splayTreeIterator;
 	int m_wordSize;
 	int m_completedJobs;
-	int m_maximumAliveWorker;
+	int m_maximumAliveWorkers;
+	int m_maximumWorkers;
 	time_t m_last;
 public:
 
@@ -75,7 +77,6 @@ public:
 	int m_SEEDING_outgoingEdgeIndex;
 	bool m_SEEDING_vertexCoverageRequested;
 	bool m_SEEDING_vertexCoverageReceived;
-	SeedingData();
 	SplayTreeIterator<uint64_t,Vertex>*m_SEEDING_iterator;
 	SplayNode<uint64_t,Vertex>*m_SEEDING_node;
 	uint64_t m_SEEDING_receivedKey;
@@ -106,6 +107,7 @@ public:
 	void constructor(SeedExtender*seedExtender,int rank,int size,StaticVector*outbox,RingAllocator*outboxAllocator,
 		int*seedCoverage,int*mode,Parameters*parameters,int*wordSize,MyForest*subgraph,bool*colorSpaceMode,
 		StaticVector*inbox);
+	void updateStates();
 };
 
 #endif

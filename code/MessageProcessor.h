@@ -245,6 +245,9 @@ class MessageProcessor{
 	void call_RAY_MPI_TAG_VERIFY_OUTGOING_EDGES_REPLY_FORCE(Message*message);
 	void call_RAY_MPI_TAG_VERIFY_OUTGOING_EDGES_FORCE(Message*message);
 	void call_RAY_MPI_TAG_REQUEST_VERTEX_EDGES(Message*message);
+	void call_RAY_MPI_TAG_REQUEST_VERTEX_EDGES_REPLY(Message*message);
+	void call_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT(Message*message);
+	void call_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY(Message*message);
 	void call_RAY_MPI_TAG_DELETE_VERTICES(Message*message);
 	void call_RAY_MPI_TAG_DELETE_VERTICES_DONE(Message*message);
 	void call_RAY_MPI_TAG_UPDATE_THRESHOLD(Message*message);

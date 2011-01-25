@@ -31,6 +31,7 @@
 #include<vector>
 #include<DepthFirstSearchData.h>
 #include<StaticVector.h>
+#include <SeedingData.h>
 using namespace std;
 
 class MemoryConsumptionReducer{
@@ -77,7 +78,7 @@ public:
 	bool reduce(MyForest*a,Parameters*parameters,
 bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	RingAllocator*outboxAllocator,int size,int theRank,StaticVector*outbox,
- int*receivedVertexCoverage,vector<uint64_t>*receivedOutgoingEdges,
+ int*receivedVertexCoverage,SeedingData*seedingData,
 		int minimumCoverage,bool*edgesReceived
 );
 

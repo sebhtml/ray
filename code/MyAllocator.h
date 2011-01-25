@@ -48,7 +48,7 @@ class MyAllocator{
 	bool hasAddressesToReuse();
 	void*reuseAddress();
 public:
-	/*
+	/**
  * allocator.
  */
 	MyAllocator();
@@ -58,7 +58,7 @@ public:
  	*/
 	void reset();
 	void clear();
-	/*
+	/**
  * assign a size to the allocator.
  */
 	void constructor(int a);

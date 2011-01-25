@@ -182,6 +182,9 @@ uint64_t getMicroSeconds();
 
 void showMemoryUsage(int rank);
 
+vector<uint64_t> _getOutgoingEdges(uint64_t a,uint8_t edges,int k);
+vector<uint64_t> _getIngoingEdges(uint64_t a,uint8_t edges,int k);
+
 #endif
 
 

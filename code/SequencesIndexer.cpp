@@ -96,7 +96,6 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 		}
 	}
 
-
 	memcpy(vertexChar,sequence+strlen(sequence)-(m_wordSize),m_wordSize);
 	vertexChar[m_wordSize]='\0';
 	if(isValidDNA(vertexChar)){
@@ -111,8 +110,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 		}
 	}
 
-
-	if(m_theSequenceId%1000000==0){
+	if(m_theSequenceId%100000==0){
 		printf("Rank %i is indexing sequence reads [%i/%i]\n",m_rank,m_theSequenceId+1,(int)m_myReads->size());
 		fflush(stdout);
 	}

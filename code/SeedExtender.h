@@ -25,6 +25,7 @@
 #define _SeedExtender
 
 class FusionData;
+class DepthFirstSearchData;
 
 #include<common_functions.h>
 #include<Message.h>

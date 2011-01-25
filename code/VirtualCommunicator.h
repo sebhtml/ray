@@ -46,6 +46,12 @@ using namespace std;
 * this class is event-driven and tag-specific and destination-specific
 */
 class VirtualCommunicator{
+	uint64_t m_pushedMessages;
+	uint64_t m_flushedMessages;
+	map<int,uint64_t> m_distribution;
+
+	// priority, elementId, QueueElement
+	map<int,set<uint64_t> > m_priorityQueue;
 
 	// associates an MPI tag with a length reservation.
 	// for instance, asking the coverage is 1 but asking ingoing edges is 5
@@ -55,10 +61,7 @@ class VirtualCommunicator{
 	map<int,int> m_elementSizes;
 
 	// indicates to who belongs each elements to communicate, grouped according to m_elementSizes
-	map<int,map<int,queue<vector<uint64_t> > > > m_workerIdentifiers;
-
 	map<int,map<int,vector<uint64_t> > > m_workerCurrentIdentifiers;
-
 
 	// the message contents
 	// first key: MPI tag
@@ -77,8 +80,8 @@ class VirtualCommunicator{
 	RingAllocator*m_outboxAllocator;
 	StaticVector*m_inbox;
 	StaticVector*m_outbox;
-
-	map<int,int> m_messages;
+	int m_activeDestination;
+	int m_activeTag;
 	int m_pendingMessages;
 
 	bool m_localPushedMessageStatus;
@@ -87,58 +90,105 @@ class VirtualCommunicator{
 	void flushMessage(int tag,int destination);
 
 public:
-	// initiate the object
-	// called once
+	/**
+ * initiate the object
+ * called once
+ * time complexity: constant
+ */ 
 	void constructor(int rank,int size,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox);
 	
-	// associate a resonse tag to a query tag
-	// called once
+	/**
+ * associate a resonse tag to a query tag
+ * called once
+ * time complexity: constant
+ */
 	void setReplyType(int tag,int reply);
 
-	// associate a period size to a tag type
-	// this is bounded by the maximum between the query size and the reply size for
-	// a single message
-	// called once
+	/**
+ * associate a period size to a tag type
+ * this is bounded by the maximum between the query size and the reply size for
+ * a single message
+ * called once
+ * time complexity: constant
+ */
 	void setElementsPerQuery(int tag,int size);
 	
-	// this method must be called before calling workers.
-	// it will fetch messages from inbox according to ongoing queries.
+	/**
+ * this method must be called before calling workers.
+ * it will fetch messages from inbox according to ongoing queries.
+ * time complexity: linear in the number of workers to set active (in general about one hundred
+ */
 	void processInbox(vector<uint64_t>*activeWorkers);
 
-	// push a worker message
-	// may not be sent instantaneously
-	// called once per iteration on workers
-	// if a worker calls it, then the iteration is stopped and won't be resumed until
-	// the VirtualCommunicator is ready.
-	// to do so, isReady is called before calling each worker.
-	// if a called calls pushMessage and because of that a buffer becomes full, then isReady will return false 
-	// for the next call
+	/**
+ * push a worker message
+ * may not be sent instantaneously
+ * called once per iteration on workers
+ * if a worker calls it, then the iteration is stopped and won't be resumed until
+ * the VirtualCommunicator is ready.
+ * to do so, isReady is called before calling each worker.
+ * if a called calls pushMessage and because of that a buffer becomes full, then isReady will return false 
+ * for the next call
+ * time complexity: log (number of tags) + log(number of MPI ranks)
+ */
+	
 	void pushMessage(uint64_t workerId,Message*message);
 
-	// return true if the response is ready to be read
+	/**
+ * return true if the response is ready to be read
+ * time complexity: log(number of workers)
+ */
 	bool isMessageProcessed(uint64_t workerId);
 	
-	// after reading the response, it is erased from
-	// the current object
+	/**
+ * after reading the response, it is erased from
+ * the current object
+ * time complexity: log(number of workers)
+ */
 	vector<uint64_t> getResponseElements(uint64_t workerId);
 	
-	// if all workers are awaiting responses and 
-	// none of the buffer is full, then this forces the flushing of the first
-	// non-empty buffer.
-	void forceFlush(bool value);
+/**
+ * if all workers are awaiting responses and 
+ * none of the buffer is full, then this forces the flushing of a buffer
+ * non-empty buffer.
+ * time complexity: log(number of priority values)
+ */
+	void forceFlush();
 
-	// set the slot to false. The slot says yes if a message was pushed
+	/**
+ * set the slot to false. The slot says yes if a message was pushed
+ * time complexity: constant
+ */
 	void resetLocalPushedMessageStatus();
 
-	// get the slot.
+	/** get the slot.
+ * time complexity: constant
+ */
 	bool getLocalPushedMessageStatus();
 
-	// reset the global slot
+	/**
+ * reset the global slot
+ * time complexity: constant
+ */
 	void resetGlobalPushedMessageStatus();
 
+	/** get the slot.
+ * time complexity: constant
+ */
 	bool getGlobalPushedMessageStatus();
 
+	/** check if the communicator is ready
+ * time complexity: constant
+ */
 	bool isReady();
+
+/** check if the communicator has messages to flush
+ * time complexity: constant
+ */
+	bool hasMessagesToFlush();
+
+	bool nextIsAlmostFull();
+	void printStatistics();
 };
 
 #endif

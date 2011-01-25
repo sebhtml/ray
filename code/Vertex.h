@@ -87,6 +87,7 @@ public:
 	void assemble();
 	vector<uint64_t> getIngoingEdges(uint64_t a,int k);
 	vector<uint64_t> getOutgoingEdges(uint64_t a,int k);
+	uint8_t getEdges();
 	ReadAnnotation*getReads();
 	void addDirection(int wave,int progression,MyAllocator*a);
 	vector<Direction> getDirections();

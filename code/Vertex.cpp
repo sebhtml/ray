@@ -54,7 +54,6 @@ int Vertex::getCoverage(){
 }
 
 vector<uint64_t> Vertex::getIngoingEdges(uint64_t a,int k){
-	vector<uint64_t> b;
 	#ifdef USE_DISTANT_SEGMENTS_GRAPH
 	VertexLinkedList*t=m_ingoingEdges;
 	while(t!=NULL){
@@ -62,19 +61,11 @@ vector<uint64_t> Vertex::getIngoingEdges(uint64_t a,int k){
 		t=t->getNext();
 	}
 	#else
-	for(int i=0;i<4;i++){
-		int j=((((uint64_t)m_edges)<<((sizeof(uint64_t)*8-1)-i))>>(sizeof(uint64_t)*8-1));
-		if(j==1){
-			uint64_t l=((a<<(sizeof(uint64_t)*8-2*k+2))>>(sizeof(uint64_t)*8-2*k))|((uint64_t)i);
-			b.push_back(l);
-		}
-	}
+	return _getIngoingEdges(a,m_edges,k);
 	#endif
-	return b;
 }
 
 vector<uint64_t> Vertex::getOutgoingEdges(uint64_t a,int k){
-	vector<uint64_t> b;
 	#ifdef USE_DISTANT_SEGMENTS_GRAPH
 	VertexLinkedList*t=m_outgoingEdges;
 	while(t!=NULL){
@@ -82,16 +73,8 @@ vector<uint64_t> Vertex::getOutgoingEdges(uint64_t a,int k){
 		t=t->getNext();
 	}
 	#else
-	for(int i=0;i<4;i++){
-		int j=((((uint64_t)m_edges)<<(sizeof(uint64_t)*8-5-i))>>(sizeof(uint64_t)*8-1));
-		if(j==1){
-			uint64_t l=(a>>2)|(((uint64_t)i)<<(2*(k-1)));
-			b.push_back(l);
-		}
-	}
-
+	return _getOutgoingEdges(a,m_edges,k);
 	#endif
-	return b;
 }
 
 #ifndef USE_DISTANT_SEGMENTS_GRAPH
@@ -218,4 +201,8 @@ vector<Direction> Vertex::getDirections(){
 
 void Vertex::clearDirections(){
 	m_direction=NULL;
+}
+
+uint8_t Vertex::getEdges(){
+	return m_edges;
 }

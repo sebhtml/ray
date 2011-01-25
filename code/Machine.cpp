@@ -1347,7 +1347,7 @@ void Machine::call_RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION(){
 	if(m_reducer.reduce(&m_subgraph,&m_parameters,
 &(m_seedingData->m_SEEDING_edgesRequested),&(m_seedingData->m_SEEDING_vertexCoverageRequested),&(m_seedingData->m_SEEDING_vertexCoverageReceived),
 	&m_outboxAllocator,getSize(),getRank(),&m_outbox,
-&(m_seedingData->m_SEEDING_receivedVertexCoverage),&(m_seedingData->m_SEEDING_receivedOutgoingEdges),
+&(m_seedingData->m_SEEDING_receivedVertexCoverage),m_seedingData,
 m_minimumCoverage,&(m_seedingData->m_SEEDING_edgesReceived)
 )){
 		m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;

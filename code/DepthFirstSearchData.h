@@ -25,6 +25,7 @@
 #include<vector>
 #include<MyStack.h>
 #include<map>
+#include <SeedingData.h>
 #include<set>
 #include<Parameters.h>
 #include<RingAllocator.h>
@@ -67,7 +68,7 @@ public:
 	void depthFirstSearchBidirectional(uint64_t a,int maxDepth,
 	bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	RingAllocator*outboxAllocator,int size,int theRank,StaticVector*outbox,
- int*receivedVertexCoverage,vector<uint64_t>*receivedOutgoingEdges,
+ int*receivedVertexCoverage,SeedingData*seedingData,
 		int minimumCoverage,bool*edgesReceived,Parameters*parameters);
 
 	

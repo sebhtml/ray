@@ -157,7 +157,7 @@ bool MemoryConsumptionReducer::isJunction(uint64_t vertex,map<uint64_t,vector<ui
 bool MemoryConsumptionReducer::reduce(MyForest*a,Parameters*parameters,
 bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	RingAllocator*outboxAllocator,int size,int theRank,StaticVector*outbox,
- int*receivedVertexCoverage,vector<uint64_t>*receivedOutgoingEdges,
+ int*receivedVertexCoverage,SeedingData*seedingData,
 		int minimumCoverage,bool*edgesReceived
 ){
 	#ifdef ASSERT
@@ -258,7 +258,7 @@ size,
 theRank,
 outbox,
 receivedVertexCoverage,
-receivedOutgoingEdges,
+seedingData,
 minimumCoverage,
 edgesReceived,parameters
 );
