@@ -18,9 +18,14 @@ paper).
 * Fusions are computed more cautiously.
 * Added reporting of memory usage for sequence reads and for vertices. And for
 a few other places too.
-* Improved memory usage for the extensions.
+* Improved memory usage for the extensions. Now calling destructors instead of
+clear() because the latter does not free memory.
 * Messages are grouped in the computation of seeds, using VirtualCommunicator.
 * Added a Doxygen configuration file.
+* The paths in the distributed graph are now numbered with an integer of 64
+bits. This fixes a segmentation fault occuring with large genomes -- when
+identifiers overflow on 32 bits.
+
 
 
 = 1.2.2 'X-ray' =
