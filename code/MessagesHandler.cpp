@@ -151,7 +151,9 @@ void MessagesHandler::showStats(){
 }
 
 void MessagesHandler::addCount(int rank,uint64_t count){
-	m_allReceivedMessages[rank*m_size+m_allCounts[rank]]=count;
+	int source=m_allCounts[rank];
+	int destination=rank;
+	m_allReceivedMessages[destination*m_size+source]=count;
 	m_allCounts[rank]++;
 }
 
@@ -182,10 +184,10 @@ void MessagesHandler::writeStats(const char*file){
 	}
 	f<<endl;
 
-	for(int i=0;i<m_size;i++){
-		f<<i;
-		for(int j=0;j<m_size;j++){
-			f<<"\t"<<m_allReceivedMessages[i*m_size+j];
+	for(int destination=0;destination<m_size;destination++){
+		f<<destination;
+		for(int source=0;source<m_size;source++){
+			f<<"\t"<<m_allReceivedMessages[destination*m_size+source];
 		}
 		f<<endl;
 	}

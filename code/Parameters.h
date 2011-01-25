@@ -135,6 +135,7 @@ public:
 	int getRankFromGlobalId(uint64_t a);
 	int getIdFromGlobalId(uint64_t a);
 	int getMaximumDistance();
+	uint64_t getGlobalIdFromRankAndLocalId(int rank,int id);
 };
 
 #endif

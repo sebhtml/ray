@@ -368,11 +368,11 @@ m_seedingData,
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<" (contiguous sequences in FASTA format) "<<endl;
 		if(m_parameters.useAmos()){
 			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getAmosFile()<<" (reads mapped onto contiguous sequences in AMOS format)"<<endl;
+
 		}
-		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getReceivedMessagesFile()<<" (MPI communication matrix) "<<endl;
+		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getReceivedMessagesFile()<<" (MPI communication matrix; rows=destinations, columns=sources) "<<endl;
+		cout<<endl;
 	}
-
-
 
 	MPI_Barrier(MPI_COMM_WORLD);
 	m_messagesHandler.freeLeftovers();
@@ -398,23 +398,11 @@ m_seedingData,
  * 	5) send messages
  */
 void Machine::run(){
-	//m_lastTime=time(NULL);
 	while(isAlive()){
-		//uint64_t startingClock=getMicroSeconds();
 		receiveMessages(); 
 		processMessages();
 		processData();
 		sendMessages();
-		/*
-		uint64_t endingClock=getMicroSeconds();
-		int elapsedTime=endingClock-startingClock;
-		time_t theTime=time(NULL);
-		if(theTime!=m_lastTime){
-			printf("Rank %i: %i microseconds\n",m_rank,elapsedTime);
-			fflush(stdout);
-			m_lastTime=theTime;
-		}
-		*/
 	}
 }
 
@@ -479,18 +467,11 @@ void Machine::call_RAY_MASTER_MODE_LOAD_CONFIG(){
 		}
 	}
 
-
-
 	if(m_parameters.getError()){
 		m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
 		m_aborted=true;
 		killRanks();
 		return;
-	}
-	if(m_parameters.useAmos()){
-		// empty the file.
-		cout<<"Rank "<<getRank()<<" is preparing "<<m_parameters.getAmosFile()<<endl<<endl;
-		m_bubbleData->m_amos=fopen(m_parameters.getAmosFile().c_str(),"w");
 	}
 
 	uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(2*sizeof(uint64_t));
@@ -795,15 +776,18 @@ void Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 	}else{
 		fp=fopen(output.c_str(),"a+");
 	}
+	int total=0;
 	for(int i=0;i<(int)m_ed->m_EXTENSION_contigs.size();i++){
 		uint64_t uniqueId=m_ed->m_EXTENSION_identifiers[i];
 		if(m_fusionData->m_FUSION_eliminated.count(uniqueId)>0){
 			continue;
 		}
+		total++;
 		string contig=convertToString(&(m_ed->m_EXTENSION_contigs[i]),m_parameters.getWordSize());
 		string withLineBreaks=addLineBreaks(contig);
 		fprintf(fp,">contig-%lu %i nucleotides\n%s",uniqueId,(int)contig.length(),withLineBreaks.c_str());
 	}
+	cout<<"Rank "<<m_rank<<" appended "<<total<<" elements"<<endl;
 	fclose(fp);
 
 	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
@@ -1089,12 +1073,15 @@ void Machine::call_RAY_MASTER_MODE_ASK_EXTENSIONS(){
 
 		m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
 
-		if(false && m_parameters.useAmos()){
+		if(m_parameters.useAmos()){
 			m_master_mode=RAY_MASTER_MODE_AMOS;
+			m_ed->m_EXTENSION_currentRankIsStarted=false;
+			m_ed->m_EXTENSION_currentPosition=0;
+			m_ed->m_EXTENSION_rank=0;
 			m_seedingData->m_SEEDING_i=0;
 			m_mode_send_vertices_sequence_id_position=0;
 			m_ed->m_EXTENSION_reads_requested=false;
-			cout<<"Rank "<<getRank()<<" is completing "<<m_parameters.getAmosFile()<<endl;
+			cout<<endl;
 		}else{// we are done.
 			killRanks();
 		}
@@ -1110,47 +1097,88 @@ void Machine::call_RAY_MASTER_MODE_ASK_EXTENSIONS(){
 }
 
 void Machine::call_RAY_MASTER_MODE_AMOS(){
-	// in development.
+	if(!m_ed->m_EXTENSION_currentRankIsStarted){
+		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
+		message[0]=m_ed->m_EXTENSION_currentPosition;
+		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,m_ed->m_EXTENSION_rank,RAY_MPI_TAG_WRITE_AMOS,getRank());
+		m_outbox.push_back(aMessage);
+		m_ed->m_EXTENSION_rank++;
+		m_ed->m_EXTENSION_currentRankIsDone=false;
+		m_ed->m_EXTENSION_currentRankIsStarted=true;
+	}else if(m_ed->m_EXTENSION_currentRankIsDone){
+		if(m_ed->m_EXTENSION_rank<getSize()){
+			m_ed->m_EXTENSION_currentRankIsStarted=false;
+		}else{
+			killRanks();
+			m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+		}
+	}
+}
+
+void Machine::call_RAY_SLAVE_MODE_AMOS(){
+	if(!m_ed->m_EXTENSION_initiated){
+		cout<<"Rank "<<m_rank<<" is appending positions to "<<m_parameters.getAmosFile()<<endl;
+		m_amosFile=fopen(m_parameters.getAmosFile().c_str(),"a+");
+		m_seedingData->m_SEEDING_i=0;
+		m_mode_send_vertices_sequence_id_position=0;
+		m_ed->m_EXTENSION_initiated=true;
+		m_ed->m_EXTENSION_reads_requested=false;
+		m_sequence_id=0;
+	}
 	/*
 	* use m_allPaths and m_identifiers
 	*
 	* iterators: m_SEEDING_i: for the current contig
 	*            m_mode_send_vertices_sequence_id_position: for the current position in the current contig.
 	*/
-	if(m_seedingData->m_SEEDING_i==(uint64_t)m_allPaths.size()){// all contigs are processed
-		killRanks();
-		m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
-		fclose(m_bubbleData->m_amos);
-	}else if(m_mode_send_vertices_sequence_id_position==(int)m_allPaths[m_seedingData->m_SEEDING_i].size()){// iterate over the next one
+
+	if(m_seedingData->m_SEEDING_i==(uint64_t)m_ed->m_EXTENSION_contigs.size()){// all contigs are processed
+		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
+		message[0]=m_ed->m_EXTENSION_currentPosition;
+		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_WRITE_AMOS_REPLY,getRank());
+		m_outbox.push_back(aMessage);
+		fclose(m_amosFile);
+		m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
+		cout<<"Rank "<<m_rank<<" appended "<<m_sequence_id<<" elements"<<endl;
+	// iterate over the next one
+	}else if(m_fusionData->m_FUSION_eliminated.count(m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i])>0){
+		m_seedingData->m_SEEDING_i++;
+		m_mode_send_vertices_sequence_id_position=0;
+		m_ed->m_EXTENSION_reads_requested=false;
+	}else if(m_mode_send_vertices_sequence_id_position==(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
 		m_seedingData->m_SEEDING_i++;
 		m_mode_send_vertices_sequence_id_position=0;
 		m_ed->m_EXTENSION_reads_requested=false;
 		
-		FILE*fp=m_bubbleData->m_amos;
-		fprintf(fp,"}\n");
+		fprintf(m_amosFile,"}\n");
 	}else{
 		if(!m_ed->m_EXTENSION_reads_requested){
 			if(m_mode_send_vertices_sequence_id_position==0){
-				FILE*fp=m_bubbleData->m_amos;
-				string seq=convertToString(&(m_allPaths[m_seedingData->m_SEEDING_i]),m_wordSize);
+				string seq=convertToString(&(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i]),m_wordSize);
 				char*qlt=(char*)__Malloc(seq.length()+1);
 				strcpy(qlt,seq.c_str());
-				for(int i=0;i<(int)strlen(qlt);i++)
+				for(int i=0;i<(int)strlen(qlt);i++){
 					qlt[i]='D';
-				fprintf(fp,"{CTG\niid:%lu\neid:contig-%lu\ncom:\nRay\n.\nseq:\n%s\n.\nqlt:\n%s\n.\n",
-					m_seedingData->m_SEEDING_i+1,
-					m_identifiers[m_seedingData->m_SEEDING_i],
+				}
+				m_sequence_id++;
+				fprintf(m_amosFile,"{CTG\niid:%u\neid:contig-%lu\ncom:\nSoftware: Ray, MPI rank: %i\n.\nseq:\n%s\n.\nqlt:\n%s\n.\n",
+					m_ed->m_EXTENSION_currentPosition+1,
+					m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i],
+					m_rank,
 					seq.c_str(),
 					qlt
 					);
+
+				m_ed->m_EXTENSION_currentPosition++;
 				__Free(qlt);
 			}
 
 			m_ed->m_EXTENSION_reads_requested=true;
 			m_ed->m_EXTENSION_reads_received=false;
 			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
-			message[0]=m_allPaths[m_seedingData->m_SEEDING_i][m_mode_send_vertices_sequence_id_position];
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0]),RAY_MPI_TAG_REQUEST_READS,getRank());
+			uint64_t vertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_mode_send_vertices_sequence_id_position];
+			message[0]=vertex;
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(vertex),RAY_MPI_TAG_REQUEST_READS,getRank());
 			m_outbox.push_back(aMessage);
 
 			// iterator on reads
@@ -1170,8 +1198,7 @@ void Machine::call_RAY_MASTER_MODE_AMOS(){
 					m_outbox.push_back(aMessage);
 				}else if(m_ed->m_EXTENSION_readLength_received){
 					int readLength=m_ed->m_EXTENSION_receivedLength;
-					int globalIdentifier=idOnRank*getSize()+readRank;
-					FILE*fp=m_bubbleData->m_amos;
+					int globalIdentifier=m_parameters.getGlobalIdFromRankAndLocalId(readRank,idOnRank);
 					int start=0;
 					int theEnd=readLength-1;
 					int offset=m_mode_send_vertices_sequence_id_position;
@@ -1181,7 +1208,7 @@ void Machine::call_RAY_MASTER_MODE_AMOS(){
 						theEnd=t;
 						offset++;
 					}
-					fprintf(fp,"{TLE\nsrc:%i\noff:%i\nclr:%i,%i\n}\n",globalIdentifier+1,offset,
+					fprintf(m_amosFile,"{TLE\nsrc:%i\noff:%i\nclr:%i,%i\n}\n",globalIdentifier+1,offset,
 						start,theEnd);
 		
 					// increment to get the next read.
@@ -1361,4 +1388,5 @@ void Machine::assignSlaveHandlers(){
 	m_slave_methods[RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION]=&Machine::call_RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION;
 	m_slave_methods[RAY_SLAVE_MODE_DELETE_VERTICES]=&Machine::call_RAY_SLAVE_MODE_DELETE_VERTICES;
 	m_slave_methods[RAY_SLAVE_MODE_LOAD_SEQUENCES]=&Machine::call_RAY_SLAVE_MODE_LOAD_SEQUENCES;
+	m_slave_methods[RAY_SLAVE_MODE_AMOS]=&Machine::call_RAY_SLAVE_MODE_AMOS;
 }

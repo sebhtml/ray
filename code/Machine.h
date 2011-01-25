@@ -83,6 +83,7 @@ class Machine;
 typedef void (Machine::*MachineMethod) ();
 
 class Machine{
+	FILE*m_amosFile;
 	bool m_killed;
 	MachineMethod m_master_methods[64];
 	MachineMethod m_slave_methods[64];
@@ -326,6 +327,7 @@ class Machine{
 	void call_RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION();
 	void call_RAY_SLAVE_MODE_DELETE_VERTICES();
 	void call_RAY_SLAVE_MODE_LOAD_SEQUENCES();
+	void call_RAY_SLAVE_MODE_AMOS();
 
 public:
 	/*

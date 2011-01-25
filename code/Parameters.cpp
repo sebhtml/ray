@@ -748,6 +748,11 @@ int Parameters::getMaximumDistance(){
 	return m_maximumDistance;
 }
 
+uint64_t Parameters::getGlobalIdFromRankAndLocalId(int rank,int id){
+	uint64_t x=m_totalNumberOfSequences/m_size;
+	return rank*x+id;
+}
+
 void Parameters::setSeedCoverage(int a){
 	m_seedCoverage=a;
 }

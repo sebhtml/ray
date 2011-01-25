@@ -26,7 +26,10 @@ clear() because the latter does not free memory.
 bits. This fixes a segmentation fault occuring with large genomes -- when
 identifiers overflow on 32 bits.
 * The partition on sequence reads is outputted.
-
+* Instead of having the Rank 0 (master) to request the contigs of each every
+other rank, now each rank appends its fusions to the contigs file and also to
+the AMOS file.
+* Fixed a bug in the numbering of reads in the AMOS file.
 
 = 1.2.2 'X-ray' =
 2011-01-11

@@ -43,7 +43,6 @@ public:
 	bool m_doChoice_bubbles_Initiated;
 	std::vector<std::vector<int> > m_BUBBLE_visitedVerticesDepths;
 	map<uint64_t,int> m_coverages;
-	FILE*m_amos;
 };
 
 #endif

@@ -183,6 +183,8 @@ class MessageProcessor{
 	void call_RAY_MPI_TAG_ASSEMBLE_WAVES_DONE(Message*message);
 	void call_RAY_MPI_TAG_START_FUSION(Message*message);
 	void call_RAY_MPI_TAG_FUSION_DONE(Message*message);
+	void call_RAY_MPI_TAG_WRITE_AMOS(Message*message);
+	void call_RAY_MPI_TAG_WRITE_AMOS_REPLY(Message*message);
 	void call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE(Message*message);
 	void call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY(Message*message);
 	void call_RAY_MPI_TAG_GET_PATH_LENGTH(Message*message);

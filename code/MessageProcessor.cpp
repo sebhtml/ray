@@ -1559,6 +1559,17 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_PATH_VERTEX_REPLY(Message*message){
 	m_fusionData->m_FINISH_received_vertex=incoming[0];
 }
 
+void MessageProcessor::call_RAY_MPI_TAG_WRITE_AMOS(Message*message){
+	(*m_mode)=RAY_SLAVE_MODE_AMOS;
+	m_ed->m_EXTENSION_initiated=false;
+	m_ed->m_EXTENSION_currentPosition=((uint64_t*)message->getBuffer())[0];
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_WRITE_AMOS_REPLY(Message*message){
+	m_ed->m_EXTENSION_currentRankIsDone=true;
+	m_ed->m_EXTENSION_currentPosition=((uint64_t*)message->getBuffer())[0];
+}
+
 void MessageProcessor::call_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION(Message*message){
 	(*m_mode)=RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION;
 	(m_seedingData->m_SEEDING_i)=0;
@@ -1920,6 +1931,8 @@ void MessageProcessor::assignHandlers(){
 	m_methods[RAY_MPI_TAG_SET_WORD_SIZE]=&MessageProcessor::call_RAY_MPI_TAG_SET_WORD_SIZE;
 	m_methods[RAY_MPI_TAG_MUST_RUN_REDUCER_FROM_MASTER]=&MessageProcessor::call_RAY_MPI_TAG_MUST_RUN_REDUCER_FROM_MASTER;
 	m_methods[RAY_MPI_TAG_LOAD_SEQUENCES]=&MessageProcessor::call_RAY_MPI_TAG_LOAD_SEQUENCES;
+	m_methods[RAY_MPI_TAG_WRITE_AMOS]=&MessageProcessor::call_RAY_MPI_TAG_WRITE_AMOS;
+	m_methods[RAY_MPI_TAG_WRITE_AMOS_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_WRITE_AMOS_REPLY;
 }
 
 

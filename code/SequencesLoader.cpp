@@ -145,6 +145,13 @@ bool SequencesLoader::computePartition(int rank,int size,
 	fflush(stdout);
 	uint64_t counted=0;
 
+	FILE*fp=fopen(m_parameters->getAmosFile().c_str(),"w+");
+
+	if(m_parameters->useAmos()){
+		// empty the file.
+		cout<<"Rank "<<m_rank<<" is adding sequences to "<<m_parameters->getAmosFile()<<endl<<endl;
+	}
+	m_distribution_sequence_id=0;
 	vector<string> allFiles=(*m_parameters).getAllFiles();
 	for(m_distribution_file_id=0;m_distribution_file_id<(int)allFiles.size();
 		m_distribution_file_id++){
@@ -158,10 +165,10 @@ bool SequencesLoader::computePartition(int rank,int size,
 		counted+=m_loader.size();
 		// write Reads in AMOS format.
 		if(rank==MASTER_RANK&&m_parameters->useAmos()){
-			FILE*fp=(*m_bubbleData).m_amos;
 			char qlt[20000];
 			for(uint64_t i=0;i<m_loader.size();i++){
-				uint64_t iid=m_distribution_currentSequenceId+i;
+				uint64_t iid=m_distribution_currentSequenceId;
+				m_distribution_currentSequenceId++;
 				string aSeq=m_loader.at(i)->getSeq();
 				const char*seq=aSeq.c_str();
 				#ifdef ASSERT
@@ -178,6 +185,7 @@ bool SequencesLoader::computePartition(int rank,int size,
 			m_loader.load(allFiles[(m_distribution_file_id)],false);
 		}
 	}
+	fclose(fp);
 	printf("Rank %i: global partition is [%i;%lu], %lu sequence reads\n",m_rank,0,counted-1,counted);
 	printf("\n");
 	return true;
