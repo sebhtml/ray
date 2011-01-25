@@ -143,6 +143,7 @@ bool SequencesLoader::computePartition(int rank,int size,
 ){
 	printf("Rank %i is computing the partition\n",m_rank);
 	fflush(stdout);
+	uint64_t counted=0;
 
 	vector<string> allFiles=(*m_parameters).getAllFiles();
 	for(m_distribution_file_id=0;m_distribution_file_id<(int)allFiles.size();
@@ -152,9 +153,9 @@ bool SequencesLoader::computePartition(int rank,int size,
 			return false;
 		}
 		m_parameters->setNumberOfSequences(m_loader.size());
-		printf("Rank %i: %s -> %lu\n",m_rank,allFiles[(m_distribution_file_id)].c_str(),m_loader.size());
+		printf("Rank %i: %s -> partition is [%lu;%lu], %lu sequence reads\n",m_rank,allFiles[(m_distribution_file_id)].c_str(),counted,counted+m_loader.size()-1,m_loader.size());
 		fflush(stdout);
-
+		counted+=m_loader.size();
 		// write Reads in AMOS format.
 		if(rank==MASTER_RANK&&m_parameters->useAmos()){
 			FILE*fp=(*m_bubbleData).m_amos;
@@ -177,6 +178,7 @@ bool SequencesLoader::computePartition(int rank,int size,
 			m_loader.load(allFiles[(m_distribution_file_id)],false);
 		}
 	}
+	printf("Rank %i: global partition is [%i;%lu], %lu sequence reads\n",m_rank,0,counted-1,counted);
 	printf("\n");
 	return true;
 }
@@ -213,11 +215,10 @@ bool SequencesLoader::loadSequences(int rank,int size,
 		endingSequenceId=totalNumberOfSequences-1;
 	}
 
-	/*
-	printf("Rank %i: partition: %i-%i from 1-%i\n",m_rank,startingSequenceId+1,endingSequenceId+1,
-		totalNumberOfSequences);
+	uint64_t sequences=endingSequenceId-startingSequenceId+1;
+	printf("Rank %i: partition is [%lu;%lu], %lu sequence reads\n",m_rank,startingSequenceId+1,endingSequenceId+1,
+		sequences);
 	fflush(stdout);
-	*/
 
 	m_distribution_currentSequenceId=0;
 	//int files=allFiles.size();

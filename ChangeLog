@@ -25,7 +25,7 @@ clear() because the latter does not free memory.
 * The paths in the distributed graph are now numbered with an integer of 64
 bits. This fixes a segmentation fault occuring with large genomes -- when
 identifiers overflow on 32 bits.
-
+* The partition on sequence reads is outputted.
 
 
 = 1.2.2 'X-ray' =

@@ -787,48 +787,28 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_EXTENSIONS(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
-	if(!m_ready){
-		return;
-	}
-	if(m_seedingData->m_SEEDING_i==(uint64_t)m_ed->m_EXTENSION_contigs.size()){
-		m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_EXTENSION_DATA_END,getRank());
-		m_outbox.push_back(aMessage);
+	cout<<"Rank "<<m_rank<< " is appending its fusions"<<endl;
+	string output=m_parameters.getOutputFile();
+	FILE*fp;
+	if(m_rank==0){
+		fp=fopen(output.c_str(),"w+");
 	}else{
-		if(m_fusionData->m_FUSION_eliminated.count(m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i])>0){ // skip merged paths.
-			m_seedingData->m_SEEDING_i++;
-			m_ed->m_EXTENSION_currentPosition=0;
-		}else{
-			if(m_ed->m_EXTENSION_currentPosition==0){
-				uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(sizeof(uint64_t)*1);
-				int theId=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
-				message[0]=theId;
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_EXTENSION_START,getRank());
-				m_outbox.push_back(aMessage);
-			}
-			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-
-			int count=0;
-			for(int i=0;i<(int)(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t));i++){
-				if(m_ed->m_EXTENSION_currentPosition==(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
-					break;
-				}
-				message[i+0]=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
-				m_ed->m_EXTENSION_currentPosition++;
-				count++;
-			}
-			
-			Message aMessage(message,count,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_EXTENSION_DATA,getRank());
-			m_outbox.push_back(aMessage);
-			m_ready=false;
-			if(m_ed->m_EXTENSION_currentPosition==(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
-				Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_EXTENSION_END,getRank());
-				m_outbox.push_back(aMessage);
-				m_seedingData->m_SEEDING_i++;
-				m_ed->m_EXTENSION_currentPosition=0;
-			}
-		}
+		fp=fopen(output.c_str(),"a+");
 	}
+	for(int i=0;i<(int)m_ed->m_EXTENSION_contigs.size();i++){
+		uint64_t uniqueId=m_ed->m_EXTENSION_identifiers[i];
+		if(m_fusionData->m_FUSION_eliminated.count(uniqueId)>0){
+			continue;
+		}
+		string contig=convertToString(&(m_ed->m_EXTENSION_contigs[i]),m_parameters.getWordSize());
+		string withLineBreaks=addLineBreaks(contig);
+		fprintf(fp,">contig-%lu %i nucleotides\n%s",uniqueId,(int)contig.length(),withLineBreaks.c_str());
+	}
+	fclose(fp);
+
+	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_EXTENSION_DATA_END,getRank());
+	m_outbox.push_back(aMessage);
 }
 
 void Machine::call_RAY_SLAVE_MODE_FUSION(){
@@ -963,7 +943,6 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		if(!m_reductionOccured or m_cycleNumber ==5){ 
 			m_timePrinter.printElapsedTime("Computation of fusions");
 			cout<<endl;
-			cout<<"Rank 0 is "<<"collecting fusions"<<endl;
 			m_master_mode=RAY_MASTER_MODE_ASK_EXTENSIONS;
 
 			m_sd->m_computedTopology=false;
@@ -1110,32 +1089,7 @@ void Machine::call_RAY_MASTER_MODE_ASK_EXTENSIONS(){
 
 		m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
 
-		int totalLength=0;
-		
-		#ifdef ASSERT
-		assert(m_allPaths.size()==m_identifiers.size());
-		#endif
-		ofstream f(m_parameters.getOutputFile().c_str());
-		for(int i=0;i<(int)m_allPaths.size();i++){
-			string contig=convertToString(&(m_allPaths[i]),m_wordSize);
-			#ifdef ASSERT
-			assert(i<(int)m_identifiers.size());
-			#endif
-			int id=m_identifiers[i];
-			#ifdef ASSERT
-			int theRank=id%MAX_NUMBER_OF_MPI_PROCESSES;
-			assert(theRank<getSize());
-			#endif
-			f<<">contig-"<<id<<" "<<contig.length()<<" nucleotides"<<endl<<addLineBreaks(contig);
-			totalLength+=contig.length();
-		}
-		f.close();
-		#ifdef SHOW_PROGRESS
-		#else
-		cout<<"\r"<<"              "<<endl<<"Writing "<<m_parameters.getOutputFile()<<endl;
-		#endif
-		cout<<endl<<"Rank 0: "<<m_allPaths.size()<<" contigs/"<<totalLength<<" nucleotides"<<endl;
-		if(m_parameters.useAmos()){
+		if(false && m_parameters.useAmos()){
 			m_master_mode=RAY_MASTER_MODE_AMOS;
 			m_seedingData->m_SEEDING_i=0;
 			m_mode_send_vertices_sequence_id_position=0;
@@ -1147,9 +1101,6 @@ void Machine::call_RAY_MASTER_MODE_ASK_EXTENSIONS(){
 		
 	}else if(!m_ed->m_EXTENSION_currentRankIsStarted){
 		m_ed->m_EXTENSION_currentRankIsStarted=true;
-		#ifdef SHOW_PROGRESS
-		cout<<"Rank "<<getRank()<<" asks "<<m_ed->m_EXTENSION_rank<<" its fusions"<<endl;
-		#endif
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_ed->m_EXTENSION_rank,RAY_MPI_TAG_ASK_EXTENSION_DATA,getRank());
 		m_outbox.push_back(aMessage);
 		m_ed->m_EXTENSION_currentRankIsDone=false;
