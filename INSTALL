@@ -26,7 +26,7 @@ If the above don't work for you (for various reasons), compile Ray using the fol
 If you don't have libz and libbz2:
 
 
-	sed 's/-DHAVE_ZLIB -DHAVE_LIBBZ2//g' makefile.alternate > makefile2
+	sed 's/-DHAVE_ZLIB -DHAVE_LIBBZ2//g' makefile.alternate|sed 's/ -lz -lbz2//g' > makefile2
 	make -f makefile2
 
 
