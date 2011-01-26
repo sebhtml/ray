@@ -52,7 +52,7 @@ void SeedingData::computeSeeds(){
 		m_activeWorkerIterator=m_activeWorkers.begin();
 		m_splayTreeIterator.constructor(m_subgraph);
 		m_initiatedIterator=true;
-		m_maximumAliveWorkers=m_size*1000;
+		m_maximumAliveWorkers=30000;
 		#ifdef ASSERT
 		m_splayTreeIterator.hasNext();
 		#endif
