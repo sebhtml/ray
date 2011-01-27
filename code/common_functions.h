@@ -174,7 +174,7 @@ string convertToString(vector<uint64_t>*b,int m_wordSize);
 
 int vertexRank(uint64_t a,int _size);
 
-uint64_t kmerAtPosition(const char*string,int pos,int w,char strand,bool color);
+uint64_t kmerAtPosition(char*string,int pos,int w,char strand,bool color);
 
 int roundNumber(int number,int alignment);
 
@@ -184,6 +184,8 @@ void showMemoryUsage(int rank);
 
 vector<uint64_t> _getOutgoingEdges(uint64_t a,uint8_t edges,int k);
 vector<uint64_t> _getIngoingEdges(uint64_t a,uint8_t edges,int k);
+
+char complementNucleotide(char c);
 
 #endif
 

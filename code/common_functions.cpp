@@ -44,29 +44,28 @@ string reverseComplement(string a){
 	int i=0;
 	for(int p=a.length()-1;p>=0;p--){
 		char c=a[p];
-		switch(c){
-			case 'A':
-				rev[i]='T';
-				break;
-			case 'T':
-				rev[i]='A';
-				break;
-			case 'G':
-				rev[i]='C';	
-				break;
-			case 'C':
-				rev[i]='G';
-				break;
-			default:
-				rev[i]=c;
-				break;
-		}
+		rev[i]=complementNucleotide(c);
 		i++;
 	}
 	rev[a.length()]='\0';
 	string j(rev);
 	__Free(rev);
 	return j;
+}
+
+char complementNucleotide(char c){
+	switch(c){
+		case 'A':
+			return 'T';
+		case 'T':
+			return 'A';
+		case 'G':
+			return 'C';
+		case 'C':
+			return 'G';
+		default:
+			return c;
+	}
 }
 
 // convert k-mer to uint64_t
@@ -220,8 +219,9 @@ uint64_t getKSuffix(uint64_t a,int k){
 }
 
 uint64_t complementVertex(uint64_t a,int b,bool colorSpace){
-	if(colorSpace)
+	if(colorSpace){
 		return complementVertex_colorSpace(a,b);
+	}
 	return complementVertex_normal(a,b);
 }
 
@@ -415,7 +415,7 @@ int vertexRank(uint64_t a,int _size){
 	return uniform_hashing_function_1_64_64(a)%(_size);
 }
 
-uint64_t kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool color){
+uint64_t kmerAtPosition(char*m_sequence,int pos,int w,char strand,bool color){
 	int length=strlen(m_sequence);
 	if(pos>length-w){
 		cout<<"Fatal: offset is too large."<<endl;
@@ -426,21 +426,18 @@ uint64_t kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool col
 		exit(0);
 	}
 	if(strand=='F'){
-		char sequence[40];
-		for(int i=0;i<w;i++){
-			sequence[i]=m_sequence[pos+i];
-		}
+		char*sequence=m_sequence+pos;
+		char tmp=sequence[w];
 		sequence[w]='\0';
 		uint64_t v=wordId(sequence);
+		sequence[w]=tmp;
 		return v;
-	}else{
-		char sequence[40];
-		for(int i=0;i<w;i++){
-			char a=m_sequence[strlen(m_sequence)-pos-w+i];
-			sequence[i]=a;
-		}
+	}else if(strand=='R'){
+		char*sequence=m_sequence+length-pos-w;
+		char tmp=sequence[w];
 		sequence[w]='\0';
 		uint64_t v=wordId(sequence);
+		sequence[w]=tmp;
 		return complementVertex(v,w,color);
 	}
 	return 0;
