@@ -56,7 +56,6 @@
 #include<mpi.h>
 #include<VerticesExtractor.h>
 
-
 class StatisticsData{
 public:
 	time_t m_time_t_statistics;
@@ -75,9 +74,7 @@ public:
 	map<int,int> m_allIdentifiers;
 };
 
-
 using namespace std;
-
 
 class Machine;
 typedef void (Machine::*MachineMethod) ();

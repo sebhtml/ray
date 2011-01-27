@@ -113,7 +113,6 @@ public:
 
 	set<uint64_t>*m_EXTENSION_readsInRange;
 
-
 	void resetStructures();
 	bool isUsedRead(uint64_t a);
 	void addUsedRead(uint64_t a);

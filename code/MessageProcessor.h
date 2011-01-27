@@ -58,7 +58,7 @@ class MessageProcessor{
 
 	SequencesLoader*m_sequencesLoader;
 
-	FNMETHOD m_methods[200];
+	FNMETHOD m_methods[256];
 
 	uint64_t m_sentinelValue;
 
@@ -149,8 +149,6 @@ class MessageProcessor{
 	void call_RAY_MPI_TAG_START_SEEDING(Message*message);
 	void call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message);
 	void call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY(Message*message);
-	void call_RAY_MPI_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE(Message*message);
-	void call_RAY_MPI_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE_REPLY(Message*message);
 	void call_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES(Message*message);
 	void call_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY(Message*message);
 	void call_RAY_MPI_TAG_SEEDING_IS_OVER(Message*message);

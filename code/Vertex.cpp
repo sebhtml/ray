@@ -169,7 +169,7 @@ void Vertex::addRead(int rank,int i,char c,MyAllocator*allocator){
 	m_readsStartingHere=e;
 }
 
-void Vertex::addDirection(int wave,int progression,MyAllocator*allocator){
+void Vertex::addDirection(uint64_t wave,int progression,MyAllocator*allocator){
 	Direction*e=(Direction*)allocator->allocate(sizeof(Direction));
 	e->constructor(wave,progression);
 	if(m_direction!=NULL){

@@ -223,19 +223,19 @@ void FusionData::finishFusions(){
 		// 
 
 			int hits=0;
-			map<int,vector<int> > indexOnDirection2;
+			map<uint64_t,vector<int> > indexOnDirection2;
 
-			set<int> in1;
+			set<uint64_t> in1;
 			
 			for(int j=0;j<(int)directions1.size();j++){
-				int waveId=directions1[j].getWave();
+				uint64_t waveId=directions1[j].getWave();
 				in1.insert(waveId);
 			}
 			//cout<<"Rank "<<getRank()<<" directions1="<<directions1.size()<<" directions2="<<directions2.size()<<endl;
 
 			// index the index for each wave
 			for(int j=0;j<(int)directions2.size();j++){
-				int waveId=directions2[j].getWave();
+				uint64_t waveId=directions2[j].getWave();
 				if(in1.count(waveId)==0){
 					continue;
 				}
@@ -340,18 +340,10 @@ void FusionData::finishFusions(){
 					m_FINISH_vertex_requested=true;
 					m_FINISH_vertex_received=false;
 				}else if(m_FINISH_vertex_received){
-					/*if(!m_Machine_getPaths_DONE){
-						getPaths(m_FINISH_received_vertex);
-					}else{
-					*/
-					//m_FINISH_pathsForPosition.push_back(m_Machine_getPaths_result);
 					m_FINISH_newFusions[m_FINISH_newFusions.size()-1].push_back(m_FINISH_received_vertex);
 					m_FINISH_vertex_requested=false;
-					//m_Machine_getPaths_INITIALIZED=false;
-					//m_Machine_getPaths_DONE=false;
 					m_selectedPosition++;
 					m_FINISH_fusionOccured=true;
-					//}
 				}
 			}else{
 				#ifdef SHOW_FUSION
@@ -519,16 +511,13 @@ void FusionData::makeFusions(){
 			map<uint64_t,vector<int> > starts;
 			map<uint64_t,vector<int> > ends;
 
-
 			// extract those that are on both starting and ending vertices.
 			for(int i=0;i<(int)m_FUSION_firstPaths.size();i++){
 				index[m_FUSION_firstPaths[i].getWave()]++;
-				int pathId=m_FUSION_firstPaths[i].getWave();
+				uint64_t pathId=m_FUSION_firstPaths[i].getWave();
 				int progression=m_FUSION_firstPaths[i].getProgression();
 				starts[pathId].push_back(progression);
 			}
-
-			vector<int> matches;
 
 			for(int i=0;i<(int)m_FUSION_lastPaths.size();i++){
 				index[m_FUSION_lastPaths[i].getWave()]++;
@@ -556,8 +545,9 @@ void FusionData::makeFusions(){
 								break;
 							}
 						}
-						if(found)
+						if(found){
 							break;
+						}
 					}
 				}
 			}
@@ -698,9 +688,6 @@ void FusionData::makeFusions(){
 					#endif
 				}
 			}
-
-
-
 		}else if(!m_FUSION_matches_done){
 			m_FUSION_matches_done=true;
 			map<uint64_t,int> index;
@@ -719,7 +706,6 @@ void FusionData::makeFusions(){
 				int progression=m_FUSION_lastPaths[i].getProgression();
 				ends[pathId].push_back(progression);
 			}
-			vector<int> matches;
 			for(map<uint64_t,int>::iterator i=index.begin();i!=index.end();++i){
 				uint64_t otherPathId=i->first;
 				if(i->second>=2 and i->first != currentId){
@@ -755,7 +741,7 @@ void FusionData::makeFusions(){
 			if(m_FUSION_match_index==(int)m_FUSION_matches.size()){
 				m_FUSION_matches_length_done=true;
 			}else if(!m_FUSION_pathLengthRequested){
-				int uniquePathId=m_FUSION_matches[m_FUSION_match_index];
+				uint64_t uniquePathId=m_FUSION_matches[m_FUSION_match_index];
 				int rankId=uniquePathId%MAX_NUMBER_OF_MPI_PROCESSES;
 				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t));
 				message[0]=uniquePathId;

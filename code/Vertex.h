@@ -19,8 +19,6 @@
 
 */
 
-
-
 #ifndef _Vertex
 
 #define _Vertex
@@ -32,8 +30,6 @@
 #include<common_functions.h>
 #include<vector>
 using namespace std;
-
-
 
 /*
  * the vertex is important in the algorithm
@@ -89,7 +85,7 @@ public:
 	vector<uint64_t> getOutgoingEdges(uint64_t a,int k);
 	uint8_t getEdges();
 	ReadAnnotation*getReads();
-	void addDirection(int wave,int progression,MyAllocator*a);
+	void addDirection(uint64_t wave,int progression,MyAllocator*a);
 	vector<Direction> getDirections();
 	void clearDirections();
 	void deleteIngoingEdge(uint64_t a,int k);

@@ -79,7 +79,7 @@ void ArrayOfReads::push_back(Read*a){
 	#endif
 }
 
-int ArrayOfReads::size(){
+uint64_t ArrayOfReads::size(){
 	return m_elements;
 }
 

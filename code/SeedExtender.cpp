@@ -707,7 +707,12 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				ed->m_currentCoverage=(*receivedVertexCoverage);
 
 				// save wave progress.
-				int waveId=ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+theRank;
+				uint64_t waveId=ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+theRank;
+				#ifdef ASSERT
+				assert((int)(waveId/MAX_NUMBER_OF_MPI_PROCESSES)==ed->m_EXTENSION_currentSeedIndex);
+				assert((int)(waveId%MAX_NUMBER_OF_MPI_PROCESSES)==theRank);
+				#endif
+
 				int progression=ed->m_EXTENSION_extension->size()-1;
 			
 				ed->m_EXTENSION_VertexMarkAssembled_requested=true;

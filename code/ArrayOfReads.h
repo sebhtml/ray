@@ -38,7 +38,7 @@ public:
 	void push_back(Read*a);
 	Read*at(uint64_t i);
 	Read*operator[](uint64_t i);
-	int size();
+	uint64_t size();
 	void clear();
 	ArrayOfReads();
 };

@@ -66,7 +66,6 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTEX(Message*message){
 		uint64_t vertex=incoming[i];
 		SplayNode<uint64_t,Vertex>*node=m_subgraph->find(vertex);
 
-
 		if(node==NULL){
 			continue;
 		}
@@ -99,7 +98,6 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT(Message*message
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY(Message*message){
-	
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_CHECK_VERTEX(Message*message){
@@ -347,12 +345,6 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 	for(int i=0;i<length;i++){
 		uint64_t l=incoming[i];
 
-		#ifdef ASSERT
-		if(idToWord(l,*m_wordSize)=="GTGGCAACATTTTCCTCTACC"){
-			//cout<<"Source="<<message->getSource()<<" Destination="<<rank<<" call_RAY_MPI_TAG_VERTICES_DATA GTGGCAACATTTTCCTCTACC"<<endl;
-		}
-		#endif
-
 		if((*m_last_value)!=(int)m_subgraph->size() and (int)m_subgraph->size()%100000==0){
 			(*m_last_value)=m_subgraph->size();
 			printf("Rank %i has %i vertices\n",rank,(int)m_subgraph->size());
@@ -389,10 +381,6 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA_REPLY(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DISTRIBUTED(Message*message){
 	(*m_numberOfMachinesDoneSendingVertices)++;
 	if((*m_numberOfMachinesDoneSendingVertices)==size){
-		// XXX content below is to be removed
-		//(*m_master_mode)=RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS;
-		//return;
-
 		m_verticesExtractor->setDistributionAsCompleted();
 		if(parameters->runReducer()){
 			for(int i=0;i<size;i++){
@@ -406,7 +394,6 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DISTRIBUTED(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_MUST_RUN_REDUCER_FROM_MASTER(Message*message){
-
 	m_verticesExtractor->trigger();
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_MUST_RUN_REDUCER,rank);
 	m_outbox->push_back(aMessage);
@@ -513,9 +500,7 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER(Mes
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message){
-
 	m_subgraph->getAllocator()->freeAddressesToReuse();
-
 
 	printf("Rank %i has %i vertices (completed)\n",rank,(int)m_subgraph->size());
 	fflush(stdout);
@@ -575,7 +560,6 @@ void MessageProcessor::call_RAY_MPI_TAG_READY_TO_SEED(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
-
 	(*m_mode)=RAY_SLAVE_MODE_START_SEEDING;
 	map<int,map<int,int> > edgesDistribution;
 	
@@ -630,28 +614,6 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY(Message*me
 	uint64_t*incoming=(uint64_t*)buffer;
 	(m_seedingData->m_SEEDING_receivedVertexCoverage)=incoming[0];
 	(m_seedingData->m_SEEDING_vertexCoverageReceived)=true;
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE(Message*message){
-	void*buffer=message->getBuffer();
-	int source=message->getSource();
-	uint64_t*incoming=(uint64_t*)buffer;
-	SplayNode<uint64_t,Vertex>*node=(SplayNode<uint64_t,Vertex>*)incoming[0];
-	uint64_t key=node->getKey();
-	uint64_t coverage=node->getValue()->getCoverage();
-	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
-	message2[0]=key;
-	message2[1]=coverage;
-	Message aMessage(message2,2,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE_REPLY,rank);
-	m_outbox->push_back(aMessage);
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE_REPLY(Message*message){
-	void*buffer=message->getBuffer();
-	uint64_t*incoming=(uint64_t*)buffer;
-	(m_seedingData->m_SEEDING_receivedKey)=incoming[0];
-	(m_seedingData->m_SEEDING_receivedVertexCoverage)=incoming[1];
-	(m_seedingData->m_SEEDING_vertexKeyAndCoverageReceived)=true;
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES(Message*message){
@@ -907,7 +869,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY_END(Message*messa
 	uint64_t*incoming=(uint64_t*)buffer;
 	int count=message->getCount();
 	for(int i=2;i<count;i+=2){
-		int wave=incoming[i+0];
+		uint64_t wave=incoming[i+0];
 		int progression=incoming[i+1];
 		Direction a;
 		a.constructor(wave,progression);
@@ -925,7 +887,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY(Message*message){
 	uint64_t*incoming=(uint64_t*)buffer;
 	int count=message->getCount();
 	for(int i=2;i<count;i+=2){
-		int wave=incoming[i+0];
+		uint64_t wave=incoming[i+0];
 		int progression=incoming[i+1];
 		Direction a;
 		a.constructor(wave,progression);
@@ -1219,7 +1181,7 @@ void MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 		#ifdef ASSERT
 		assert(node!=NULL);
 		#endif
-		int wave=incoming[i+1];
+		uint64_t wave=incoming[i+1];
 		int progression=incoming[i+2];
 		node->getValue()->addDirection(wave,progression,&(*m_directionsAllocator));
 	}
@@ -1515,7 +1477,7 @@ void MessageProcessor::call_RAY_MPI_TAG_EXTENSION_START(Message*message){
 	uint64_t*incoming=(uint64_t*)buffer;
 	vector<uint64_t> a;
 	(*m_allPaths).push_back(a);
-	int id=incoming[0];
+	uint64_t id=incoming[0];
 	#ifdef ASSERT
 	int rank=id%MAX_NUMBER_OF_MPI_PROCESSES;
 	assert(rank<size);
@@ -1535,7 +1497,7 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_PATH_VERTEX(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
-	int id=incoming[0];
+	uint64_t id=incoming[0];
 	int position=incoming[1];
 	#ifdef ASSERT
 	assert(m_fusionData->m_FUSION_identifier_map.count(id)>0);
@@ -1831,8 +1793,6 @@ void MessageProcessor::assignHandlers(){
 	m_methods[RAY_MPI_TAG_START_SEEDING]=&MessageProcessor::call_RAY_MPI_TAG_START_SEEDING;
 	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE;
 	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY;
-	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE;
-	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_KEY_AND_COVERAGE_REPLY;
 	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES;
 	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY;
 	m_methods[RAY_MPI_TAG_SEEDING_IS_OVER]=&MessageProcessor::call_RAY_MPI_TAG_SEEDING_IS_OVER;

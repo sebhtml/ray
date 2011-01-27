@@ -47,7 +47,7 @@ using namespace std;
 #define SHOW_PROGRESS
 
 // the maximum of processes is utilized to construct unique hyperfusions IDs
-#define MAX_NUMBER_OF_MPI_PROCESSES 100000
+#define MAX_NUMBER_OF_MPI_PROCESSES 1000000
 
 #define _REPEATED_LENGTH_ALARM_THRESHOLD 100
 

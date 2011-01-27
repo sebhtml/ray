@@ -39,7 +39,6 @@ class FusionData{
 	bool m_checkedValidity;
 	int*m_mode;
 
-
 	SeedingData*m_seedingData;
 	int m_wordSize;
 	bool m_FINISH_vertex_requested;
