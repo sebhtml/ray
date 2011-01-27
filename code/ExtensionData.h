@@ -125,7 +125,7 @@ public:
 	void setSequence(uint64_t a,string b);
 	void constructor();
 	void removeSequence(uint64_t a);
-	string getSequence(uint64_t a);
+	void getSequence(uint64_t a,char*buffer);
 	char getStrand(uint64_t a);
 
 	void destructor();

@@ -377,14 +377,16 @@ uint8_t charToCode(char a){
 }
 
 char codeToChar(uint8_t a){
-	if(a==_ENCODING_A)
-		return 'A';
-	if(a==_ENCODING_T)
-		return 'T';
-	if(a==_ENCODING_C)
-		return 'C';
-	if(a==_ENCODING_G)
-		return 'G';
+	switch(a){
+		case _ENCODING_A:
+			return 'A';
+		case _ENCODING_T:
+			return 'T';
+		case _ENCODING_C:
+			return 'C';
+		case _ENCODING_G:
+			return 'G';
+	}
 	return 'A';
 }
 

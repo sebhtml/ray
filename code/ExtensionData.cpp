@@ -103,8 +103,8 @@ int ExtensionData::getStartingPosition(uint64_t a){
 void ExtensionData::removeSequence(uint64_t a){
 }
 
-string ExtensionData::getSequence(uint64_t a){
-	return m_database.find(a)->getValue()->m_read.getSeq();
+void ExtensionData::getSequence(uint64_t a,char*buffer){
+	m_database.find(a)->getValue()->m_read.getSeq(buffer);
 }
 
 char ExtensionData::getStrand(uint64_t a){

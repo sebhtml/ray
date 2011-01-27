@@ -92,9 +92,10 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			fflush(stdout);
 		}
 	}else{
-		string aSeq=(*m_myReads)[(*m_mode_send_vertices_sequence_id)]->getSeq();
-		const char*readSequence=aSeq.c_str();
-		int len=strlen(readSequence);
+		if(m_mode_send_vertices_sequence_id_position==0){
+			(*m_myReads)[(*m_mode_send_vertices_sequence_id)]->getSeq(m_readSequence);
+		}
+		int len=strlen(m_readSequence);
 
 		if(len<m_wordSize){
 			m_hasPreviousVertex=false;
@@ -107,12 +108,12 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		int lll=len-m_wordSize+1;
 		
 		#ifdef ASSERT
-		assert(readSequence!=NULL);
+		assert(m_readSequence!=NULL);
 		assert(m_wordSize<=32);
 		#endif
 
 		int p=(m_mode_send_vertices_sequence_id_position);
-		memcpy(memory,readSequence+p,m_wordSize);
+		memcpy(memory,m_readSequence+p,m_wordSize);
 		memory[m_wordSize]='\0';
 		if(isValidDNA(memory)){
 			uint64_t a=wordId(memory);

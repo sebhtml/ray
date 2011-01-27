@@ -44,12 +44,15 @@ class Read{
 	char*trim(char*a,const char*b);
 public:
 	void constructor(const char*sequence,MyAllocator*seqMyAllocator,bool trim);
-	string getSeq()const;
+	void getSeq(char*buffer)const;
 	int length()const;
 	uint64_t getVertex(int pos,int w,char strand,bool color)const;
 	void setPairedRead(PairedRead*t);
 	bool hasPairedRead()const;
 	PairedRead*getPairedRead()const;
+	uint8_t*getRawSequence();
+	int getRequiredBytes();
+	void setRawSequence(uint8_t*seq,int length);
 };
 
 #endif

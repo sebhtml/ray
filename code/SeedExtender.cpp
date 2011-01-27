@@ -169,7 +169,11 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 	}else if((*edgesReceived)){
 		if((*outgoingEdgeIndex)<(int)(*receivedOutgoingEdges).size()){
 			// get the coverage of these.
-			if(!(*vertexCoverageRequested)){
+			if(!(*vertexCoverageRequested)&&m_cache.count((*receivedOutgoingEdges)[(*outgoingEdgeIndex)])>0){
+				(*vertexCoverageRequested)=true;
+				(*vertexCoverageReceived)=true;
+				(*receivedVertexCoverage)=(*receivedOutgoingEdges)[(*outgoingEdgeIndex)];
+			}else if(!(*vertexCoverageRequested)){
 				uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
 				message[0]=(uint64_t)(*receivedOutgoingEdges)[(*outgoingEdgeIndex)];
 				int dest=vertexRank(message[0],size);
@@ -179,6 +183,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				(*vertexCoverageReceived)=false;
 				(*receivedVertexCoverage)=-1;
 			}else if((*vertexCoverageReceived)){
+				m_cache[(*receivedOutgoingEdges)[(*outgoingEdgeIndex)]]=*receivedVertexCoverage;
 				(*outgoingEdgeIndex)++;
 				(*vertexCoverageRequested)=false;
 				ed->m_EXTENSION_coverages->push_back((*receivedVertexCoverage));
@@ -308,8 +313,8 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				assert(startPosition<(int)ed->m_extensionCoverageValues->size());
 				#endif
 
-				string aSeq=ed->getSequence(uniqueId);
-				const char*theSequence=aSeq.c_str();
+				char theSequence[4000];
+				ed->getSequence(uniqueId,theSequence);
 				ed->m_EXTENSION_receivedLength=strlen(theSequence);
 				if(distance>(ed->m_EXTENSION_receivedLength-wordSize)){
 					// the read is now out-of-range.
@@ -331,9 +336,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 					if(ed->m_EXTENSION_receivedReadVertex==pathVertex){
 						if(!ed->hasPairedRead(uniqueId)){
 							ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(distance);	
-							//if(coverageOfStartingVertex<maxCoverage){
-								_UPDATE_SINGLE_VALUES(distance);
-							//}
+							_UPDATE_SINGLE_VALUES(distance);
 
 							ed->m_EXTENSION_edgeIterator=0;
 							ed->m_EXTENSION_readIterator++;
@@ -387,16 +390,19 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 					ed->m_EXTENSION_edgeIterator=0;
 				}
 			}else{
-				// remove reads that are no longer in-range.
-				for(int i=0;i<(int)ed->m_EXTENSION_readsOutOfRange.size();i++){
-					uint64_t uniqueId=ed->m_EXTENSION_readsOutOfRange[i];
-					if(ed->hasPairedRead(uniqueId)>0){
-						ed->removePairedRead(uniqueId);
+				if(!ed->m_EXTENSION_readsOutOfRange.empty()){
+					// remove reads that are no longer in-range.
+					for(int i=0;i<(int)ed->m_EXTENSION_readsOutOfRange.size();i++){
+						uint64_t uniqueId=ed->m_EXTENSION_readsOutOfRange[i];
+						if(ed->hasPairedRead(uniqueId)>0){
+							ed->removePairedRead(uniqueId);
+						}
+						ed->removeSequence(uniqueId);
+						ed->m_EXTENSION_readsInRange->erase(ed->m_EXTENSION_readsOutOfRange[i]);
 					}
-					ed->removeSequence(uniqueId);
-					ed->m_EXTENSION_readsInRange->erase(ed->m_EXTENSION_readsOutOfRange[i]);
+					ed->m_EXTENSION_readsOutOfRange.clear();
+					return;
 				}
-				ed->m_EXTENSION_readsOutOfRange.clear();
 
 				ed->m_EXTENSION_singleEndResolution=true;
 
@@ -571,6 +577,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 
 void SeedExtender::storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<vector<uint64_t> >*seeds,
 uint64_t*currentVertex,BubbleData*bubbleData){
+	m_cache.clear();
 	if(ed->m_EXTENSION_extension->size()>=100){
 
 		#ifdef SHOW_CHOICE
@@ -675,7 +682,11 @@ vector<uint64_t>*receivedOutgoingEdges,Chooser*chooser,ChooserData*cd,
 BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpaceMode,int wordSize
 ){
 	if(!ed->m_EXTENSION_directVertexDone){
-		if(!(*vertexCoverageRequested)){
+		if(!(*vertexCoverageRequested)&&m_cache.count(*currentVertex)>0){
+			(*vertexCoverageRequested)=true;
+			(*vertexCoverageReceived)=true;
+			*receivedVertexCoverage=m_cache[*currentVertex];
+		}else if(!(*vertexCoverageRequested)){
 			(*vertexCoverageRequested)=true;
 			(*vertexCoverageReceived)=false;
 			
@@ -686,6 +697,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 			(*outbox).push_back(aMessage);
 		}else if((*vertexCoverageReceived)){
 			if(!ed->m_EXTENSION_VertexMarkAssembled_requested){
+				m_cache[*currentVertex]=*receivedVertexCoverage;
 				int theCurrentSize=ed->m_EXTENSION_extension->size();
 				if(theCurrentSize%10000==0){
 					printf("Rank %i reached %i vertices\n",theRank,theCurrentSize);

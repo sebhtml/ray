@@ -46,6 +46,7 @@ class DepthFirstSearchData;
 using namespace std;
 
 class SeedExtender{
+	map<uint64_t,int> m_cache;
 	vector<Direction>m_receivedDirections;
 	EarlyStoppingTechnology m_earlyStoppingTechnology;
 	bool m_skippedASeed;

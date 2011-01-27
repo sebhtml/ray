@@ -86,7 +86,6 @@ void Machine::start(){
 
 	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator);
 
-	srand(m_lastTime);
 	m_fusionData->m_fusionStarted=false;
 	m_ed->m_EXTENSION_numberOfRanksDone=0;
 	m_colorSpaceMode=false;
@@ -340,7 +339,7 @@ m_seedingData,
 				&m_myReads);
 		}
 
-
+		m_lastTime=time(NULL);
 		run();
 	}
 
@@ -398,11 +397,28 @@ m_seedingData,
  * 	5) send messages
  */
 void Machine::run(){
+/*
+	bool printMicroSeconds=false;
+	uint64_t startTime=0;
+	uint64_t endingTime=0;
+*/
 	while(isAlive()){
+/*
+		startTime=getMicroSeconds();
+*/
 		receiveMessages(); 
 		processMessages();
 		processData();
 		sendMessages();
+/*
+		endingTime=getMicroSeconds();
+		int diff=endingTime-startTime;
+		if(false&&diff>=500){
+			printf("Rank %i: %i microseconds\n",m_rank,diff);
+			fflush(stdout);
+			printMicroSeconds=false;
+		}
+*/
 	}
 }
 

@@ -73,18 +73,8 @@ void Read::constructor(const char*sequence,MyAllocator*seqMyAllocator,bool trimF
 		sequence=trim(buffer,sequence);
 	}
 	int length=strlen(sequence);
-	int requiredBits=2*length;
-	int modulo=requiredBits%8;
-	if(modulo!=0){
-		int bitsToAdd=8-modulo;
-		requiredBits+=bitsToAdd;
-	}
-
-	#ifdef ASSERT
-	assert(requiredBits%8==0);
-	#endif
-
-	int requiredBytes=requiredBits/8;
+	m_length=length;
+	int requiredBytes=getRequiredBytes();
 
 	uint8_t workingBuffer[4096];
 	for(int i=0;i<requiredBytes;i++){
@@ -120,7 +110,6 @@ void Read::constructor(const char*sequence,MyAllocator*seqMyAllocator,bool trimF
 	cout<<endl;
 	#endif
 
-	m_length=length;
 
 	m_sequence=(uint8_t*)seqMyAllocator->allocate(requiredBytes*sizeof(uint8_t));
 	memcpy(m_sequence,workingBuffer,requiredBytes);
@@ -132,9 +121,7 @@ void Read::constructor(const char*sequence,MyAllocator*seqMyAllocator,bool trimF
 	#endif
 }
 
-string Read::getSeq() const{
-	char workingBuffer[4096];
-
+void Read::getSeq(char*workingBuffer) const{
 	for(int position=0;position<m_length;position++){
 		int positionInWorkingBuffer=position/4;
 		uint8_t word=m_sequence[positionInWorkingBuffer];
@@ -145,13 +132,10 @@ string Read::getSeq() const{
 		workingBuffer[position]=nucleotide;
 	}
 	workingBuffer[m_length]='\0';
-	string aString(workingBuffer);
-
-	return aString;
 }
 
 int Read::length()const{
-	return getSeq().length();
+	return m_length;
 }
 
 /*                      
@@ -160,8 +144,9 @@ int Read::length()const{
  *                     p p-1 p-2               0
  */
 uint64_t Read::getVertex(int pos,int w,char strand,bool color) const {
-	string seq=getSeq();
-	return kmerAtPosition(seq.c_str(),pos,w,strand,color);
+	char buffer[4000];
+	getSeq(buffer);
+	return kmerAtPosition(buffer,pos,w,strand,color);
 }
 
 void Read::setPairedRead(PairedRead*t){
@@ -176,3 +161,27 @@ PairedRead*Read::getPairedRead()const{
 	return m_pairedRead;
 }
 
+uint8_t*Read::getRawSequence(){
+	return m_sequence;
+}
+
+int Read::getRequiredBytes(){
+	int requiredBits=2*m_length;
+	int modulo=requiredBits%8;
+	if(modulo!=0){
+		int bitsToAdd=8-modulo;
+		requiredBits+=bitsToAdd;
+	}
+
+	#ifdef ASSERT
+	assert(requiredBits%8==0);
+	#endif
+
+	int requiredBytes=requiredBits/8;
+	return requiredBytes;
+}
+
+void Read::setRawSequence(uint8_t*seq,int length){
+	m_sequence=seq;
+	m_length=length;
+}
