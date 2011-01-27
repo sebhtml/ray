@@ -20,6 +20,7 @@
 */
 
 #include<ExtensionData.h>
+#include <string.h>
 
 void ExtensionData::constructor(){
 	int chunkSize=4194304;
@@ -65,21 +66,19 @@ void ExtensionData::addUsedRead(uint64_t a){
 }
 
 bool ExtensionData::hasPairedRead(uint64_t a){
-	return m_database.find(a)->getValue()->m_read.hasPairedRead();
+	return m_database.find(a)->getValue()->m_hasPairedRead;
 }
 
 PairedRead ExtensionData::getPairedRead(uint64_t a){
-	PairedRead b=*(m_database.find(a)->getValue()->m_read.getPairedRead());
-	return b;
+	return m_database.find(a)->getValue()->m_pairedRead;
 }
 
 void ExtensionData::removePairedRead(uint64_t a){
 }
 
 void ExtensionData::setPairedRead(uint64_t a,PairedRead b){
-	PairedRead*c=(PairedRead*)m_allocator.allocate(1*sizeof(PairedRead));
-	*c=b;
-	m_database.find(a)->getValue()->m_read.setPairedRead(c);
+	m_database.find(a)->getValue()->m_pairedRead=b;
+	m_database.find(a)->getValue()->m_hasPairedRead=true;
 }
 
 void ExtensionData::setStrand(uint64_t a,char b){
@@ -91,9 +90,10 @@ void ExtensionData::setStartingPosition(uint64_t a, int b){
 }
 
 void ExtensionData::setSequence(uint64_t a,string b){
-	Read c;
-	c.constructor(b.c_str(),&m_allocator,false);
-	m_database.find(a)->getValue()->m_read=c;
+	char*seq=(char*)m_allocator.allocate(b.length()*sizeof(char));
+	strcpy(seq,b.c_str());
+	m_database.find(a)->getValue()->m_readSequence=seq;
+	m_database.find(a)->getValue()->m_hasPairedRead=false;
 }
 
 int ExtensionData::getStartingPosition(uint64_t a){
@@ -103,8 +103,8 @@ int ExtensionData::getStartingPosition(uint64_t a){
 void ExtensionData::removeSequence(uint64_t a){
 }
 
-void ExtensionData::getSequence(uint64_t a,char*buffer){
-	m_database.find(a)->getValue()->m_read.getSeq(buffer);
+char*ExtensionData::getSequence(uint64_t a){
+	return m_database.find(a)->getValue()->m_readSequence;
 }
 
 char ExtensionData::getStrand(uint64_t a){

@@ -313,8 +313,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				assert(startPosition<(int)ed->m_extensionCoverageValues->size());
 				#endif
 
-				char theSequence[4000];
-				ed->getSequence(uniqueId,theSequence);
+				char*theSequence=ed->getSequence(uniqueId);
 				ed->m_EXTENSION_receivedLength=strlen(theSequence);
 				if(distance>(ed->m_EXTENSION_receivedLength-wordSize)){
 					// the read is now out-of-range.

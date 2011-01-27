@@ -33,9 +33,11 @@ using namespace std;
 
 class ExtensionElement{
 public:
-	Read m_read;
 	int m_position;
 	char m_strand;
+	bool m_hasPairedRead;
+	char*m_readSequence;
+	PairedRead m_pairedRead;
 };
 
 class ExtensionData{
@@ -125,7 +127,7 @@ public:
 	void setSequence(uint64_t a,string b);
 	void constructor();
 	void removeSequence(uint64_t a);
-	void getSequence(uint64_t a,char*buffer);
+	char* getSequence(uint64_t a);
 	char getStrand(uint64_t a);
 
 	void destructor();
