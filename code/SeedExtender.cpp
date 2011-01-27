@@ -28,7 +28,7 @@
 #include<BubbleTool.h>
 
 // uncomment to display how Ray chooses things.
-//#define SHOW_CHOICE
+#define SHOW_CHOICE
 
 void debugMessage(int source,int destination,string message){
 	cout<<"Microseconds: "<<getMicroSeconds()<<" Source: "<<source<<" Destination: "<<destination<<" Message: "<<message<<endl;
@@ -172,7 +172,11 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 			if(!(*vertexCoverageRequested)&&m_cache.count((*receivedOutgoingEdges)[(*outgoingEdgeIndex)])>0){
 				(*vertexCoverageRequested)=true;
 				(*vertexCoverageReceived)=true;
-				(*receivedVertexCoverage)=(*receivedOutgoingEdges)[(*outgoingEdgeIndex)];
+				(*receivedVertexCoverage)=m_cache[(*receivedOutgoingEdges)[(*outgoingEdgeIndex)]];
+
+				#ifdef ASSERT
+				assert((*receivedVertexCoverage)<=255);
+				#endif
 			}else if(!(*vertexCoverageRequested)){
 				uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
 				message[0]=(uint64_t)(*receivedOutgoingEdges)[(*outgoingEdgeIndex)];
@@ -186,6 +190,9 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				m_cache[(*receivedOutgoingEdges)[(*outgoingEdgeIndex)]]=*receivedVertexCoverage;
 				(*outgoingEdgeIndex)++;
 				(*vertexCoverageRequested)=false;
+				#ifdef ASSERT
+				assert((*receivedVertexCoverage)<=255);
+				#endif
 				ed->m_EXTENSION_coverages->push_back((*receivedVertexCoverage));
 			}
 		}else{
@@ -408,7 +415,8 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				int choice=(*oa).choose(ed,&(*chooser),minimumCoverage,(maxCoverage),cd);
 				if(choice!=IMPOSSIBLE_CHOICE){
 					#ifdef SHOW_CHOICE
-					if(ed->m_enumerateChoices_outgoingEdges.size()>1){
+					if(ed->m_enumerateChoices_outgoingEdges.size()>1
+					&&theRank==30&&ed->m_EXTENSION_currentSeedIndex+1==26){
 						cout<<"Choosing..."<<endl;
 						inspect(ed,currentVertex);
 						cout<<endl;
@@ -457,7 +465,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 					}
 				}else{
 					#ifdef SHOW_CHOICE
-					cout<<"Choice #"<<dfsData->m_doChoice_tips_i+1<<" : visited "<<dfsData->m_depthFirstSearchVisitedVertices.size()<<", max depth is "<<dfsData->m_depthFirstSearch_maxDepth<<endl;
+					//cout<<"Choice #"<<dfsData->m_doChoice_tips_i+1<<" : visited "<<dfsData->m_depthFirstSearchVisitedVertices.size()<<", max depth is "<<dfsData->m_depthFirstSearch_maxDepth<<endl;
 					#endif
 					// keep the edge if it is not a tip.
 					if(dfsData->m_depthFirstSearch_maxDepth>=TIP_LIMIT){
@@ -705,6 +713,9 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				ed->m_EXTENSION_extension->push_back((*currentVertex));
 				ed->m_extensionCoverageValues->push_back(*receivedVertexCoverage);
 				ed->m_currentCoverage=(*receivedVertexCoverage);
+				#ifdef ASSERT
+				assert(ed->m_currentCoverage<=255);
+				#endif
 
 				// save wave progress.
 				uint64_t waveId=ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+theRank;
@@ -815,6 +826,9 @@ void SeedExtender::inspect(ExtensionData*ed,uint64_t*currentVertex){
 	cout<<endl;
 	cout<<"*****************************************"<<endl;
 	cout<<"CurrentVertex="<<idToWord(*currentVertex,wordSize)<<" @"<<ed->m_EXTENSION_extension->size()<<endl;
+	#ifdef ASSERT
+	assert(ed->m_currentCoverage<=255);
+	#endif
 	cout<<"Coverage="<<ed->m_currentCoverage<<endl;
 	cout<<" # ReadsInRange: "<<ed->m_EXTENSION_readsInRange->size()<<endl;
 	cout<<ed->m_enumerateChoices_outgoingEdges.size()<<" choices ";
