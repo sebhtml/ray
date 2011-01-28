@@ -27,38 +27,82 @@ void Chooser::chooseWithPairedReads(ExtensionData*m_ed,
 	ChooserData*m_cd,
 	int m_minimumCoverage,int m_maxCoverage,
 	double __PAIRED_MULTIPLIER,
-vector<set<int> >*battleVictories
+vector<set<int> >*battleVictories,
+Parameters*parameters
 ){
 
 	vector<int> minimumValues;
 	vector<int> counts;
+	vector<int> maximumValues;
 
 	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
-		int minimum=999999;
-		counts.push_back(m_ed->m_EXTENSION_pairedReadPositionsForVertices[i].size());
+		map<int,vector<int> > classifiedValues;
+		
 		for(int j=0;j<(int)m_ed->m_EXTENSION_pairedReadPositionsForVertices[i].size();j++){
 			int value=m_ed->m_EXTENSION_pairedReadPositionsForVertices[i][j];
-			if(value<minimum){
-				minimum=value;
+			int library=m_ed->m_EXTENSION_pairedLibrariesForVertices[i][j];
+			classifiedValues[library].push_back(value);
+		}
+
+		vector<int> acceptedValues;
+
+		int minimum=999999;
+		int maximum=-999;
+		for(map<int,vector<int> >::iterator j=classifiedValues.begin();j!=classifiedValues.end();j++){
+			int averageLength=parameters->getLibraryAverageLength(j->first);
+			bool hasMin=false;
+			bool hasMax=false;
+			for(int k=0;k<(int)j->second.size();k++){
+				int val=j->second[k];
+				//cout<<"Val="<<val<<" Average="<<averageLength<<endl;
+				if(val<minimum){
+					minimum=val;
+				}
+				if(val>maximum){
+					maximum=val;
+				}
+				if(val>=averageLength){
+					hasMax=true;
+				}
+				if(val<=averageLength){
+					hasMin=true;
+				}
+			}
+			if(hasMax&&hasMax){
+				for(int k=0;k<(int)j->second.size();k++){
+					int val=j->second[k];
+					acceptedValues.push_back(val);
+				}
 			}
 		}
+
+		counts.push_back(acceptedValues.size());
+		if(acceptedValues.size()==0){
+			minimum=0;
+			maximum=0;
+		}
 		minimumValues.push_back(minimum);
+		maximumValues.push_back(maximum);
+		//cout<<"CHoice="<<i<<" "<<"Max="<<maximum<<" Min="<<minimum<<endl;
 	}
 
 	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
+		if(counts[i]==0){
+			continue;
+		}
 		for(int j=0;j<(int)m_ed->m_enumerateChoices_outgoingEdges.size();j++){
-			if((m_cd->m_CHOOSER_theMaxsPaired[i] > __PAIRED_MULTIPLIER*m_cd->m_CHOOSER_theMaxsPaired[j])){
+			if(maximumValues[i] > __PAIRED_MULTIPLIER*maximumValues[j]){
 				(*battleVictories)[i].insert(j);
 			}
 
-			if((m_cd->m_CHOOSER_theMaxsPaired[i] <= __PAIRED_MULTIPLIER*m_cd->m_CHOOSER_theMaxsPaired[j])
+			if(maximumValues[i] <= __PAIRED_MULTIPLIER*maximumValues[j]
 			&& minimumValues[i] < 0.5 * minimumValues[j]){
 				(*battleVictories)[i].insert(j);
 			}
 
 			// same maximum
-			if((m_cd->m_CHOOSER_theMaxsPaired[i] <= __PAIRED_MULTIPLIER*m_cd->m_CHOOSER_theMaxsPaired[j])
-			&& (m_cd->m_CHOOSER_theMaxsPaired[j] <= __PAIRED_MULTIPLIER*m_cd->m_CHOOSER_theMaxsPaired[i])
+			if(maximumValues[i] <= __PAIRED_MULTIPLIER*maximumValues[j]
+			&& maximumValues[j] <= __PAIRED_MULTIPLIER*maximumValues[i]
 			&& counts[i]>20*counts[j]){
 				// dodge sequencing errors.
 				(*battleVictories)[i].insert(j);

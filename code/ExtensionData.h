@@ -109,6 +109,7 @@ public:
 	set<uint64_t>::iterator m_EXTENSION_readIterator;
 	map<int,vector<int> > m_EXTENSION_readPositionsForVertices;
 	map<int,vector<int> > m_EXTENSION_pairedReadPositionsForVertices;
+	map<int,vector<int> > m_EXTENSION_pairedLibrariesForVertices;
 	int m_currentCoverage;
 
 	set<uint64_t>*m_EXTENSION_readsInRange;

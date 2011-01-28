@@ -40,7 +40,8 @@ void OpenAssemblerChooser::constructor(int m_peakCoverage){
 	updateMultiplicators(m_peakCoverage);
 }
 
-int OpenAssemblerChooser::choose(ExtensionData*m_ed,Chooser*m_c,int m_minimumCoverage,int m_maxCoverage,ChooserData*m_cd){
+int OpenAssemblerChooser::choose(ExtensionData*m_ed,Chooser*m_c,int m_minimumCoverage,int m_maxCoverage,ChooserData*m_cd,
+Parameters*parameters){
 	vector<set<int> > battleVictories;
 
 	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
@@ -48,7 +49,7 @@ int OpenAssemblerChooser::choose(ExtensionData*m_ed,Chooser*m_c,int m_minimumCov
 		battleVictories.push_back(victories);
 	}
 
-	m_c->chooseWithPairedReads(m_ed,m_cd,m_minimumCoverage,m_maxCoverage,m_pairedEndMultiplicator,&battleVictories);
+	m_c->chooseWithPairedReads(m_ed,m_cd,m_minimumCoverage,m_maxCoverage,m_pairedEndMultiplicator,&battleVictories,parameters);
 	
 	int pairedChoice=getWinner(&battleVictories,m_ed->m_enumerateChoices_outgoingEdges.size());
 

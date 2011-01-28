@@ -28,7 +28,7 @@
 #include<BubbleTool.h>
 
 // uncomment to display how Ray chooses things.
-#define SHOW_CHOICE
+//#define SHOW_CHOICE
 
 void debugMessage(int source,int destination,string message){
 	cout<<"Microseconds: "<<getMicroSeconds()<<" Source: "<<source<<" Destination: "<<destination<<" Message: "<<message<<endl;
@@ -204,6 +204,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 			ed->m_EXTENSION_readLength_done=false;
 			ed->m_EXTENSION_readPositionsForVertices.clear();
 			ed->m_EXTENSION_pairedReadPositionsForVertices.clear();
+			ed->m_EXTENSION_pairedLibrariesForVertices.clear();
 
 			ed->m_EXTENSION_edgeIterator=0;
 			ed->m_EXTENSION_hasPairedReadRequested=false;
@@ -365,14 +366,16 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 							||(rightStrand=='R' && leftStrand=='F'))
 						/*&& coverageOfLeftVertex<maxCoverage*/){
 								// it matches!
-									int theDistance=startPosition-startingPositionOnPath+distance;
+									//int theDistance=startPosition-startingPositionOnPath+distance;
 									
-									ed->m_EXTENSION_pairedReadPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(theDistance);
-									if(theDistance>cd->m_CHOOSER_theMaxsPaired[ed->m_EXTENSION_edgeIterator]){
-										cd->m_CHOOSER_theMaxsPaired[ed->m_EXTENSION_edgeIterator]=theDistance;
+									//ed->m_EXTENSION_pairedReadPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(theDistance);
+									ed->m_EXTENSION_pairedReadPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(observedFragmentLength);
+									ed->m_EXTENSION_pairedLibrariesForVertices[ed->m_EXTENSION_edgeIterator].push_back(library);
+									if(observedFragmentLength>cd->m_CHOOSER_theMaxsPaired[ed->m_EXTENSION_edgeIterator]){
+										cd->m_CHOOSER_theMaxsPaired[ed->m_EXTENSION_edgeIterator]=observedFragmentLength;
 									}
 									cd->m_CHOOSER_theNumbersPaired[ed->m_EXTENSION_edgeIterator]++;
-									cd->m_CHOOSER_theSumsPaired[ed->m_EXTENSION_edgeIterator]+=theDistance;
+									cd->m_CHOOSER_theSumsPaired[ed->m_EXTENSION_edgeIterator]+=observedFragmentLength;
 								}
 							}
 									
@@ -412,11 +415,10 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 
 				ed->m_EXTENSION_singleEndResolution=true;
 
-				int choice=(*oa).choose(ed,&(*chooser),minimumCoverage,(maxCoverage),cd);
+				int choice=(*oa).choose(ed,&(*chooser),minimumCoverage,(maxCoverage),cd,m_parameters);
 				if(choice!=IMPOSSIBLE_CHOICE){
 					#ifdef SHOW_CHOICE
-					if(ed->m_enumerateChoices_outgoingEdges.size()>1
-					&&theRank==30&&ed->m_EXTENSION_currentSeedIndex+1==26){
+					if(ed->m_enumerateChoices_outgoingEdges.size()>1){
 						cout<<"Choosing..."<<endl;
 						inspect(ed,currentVertex);
 						cout<<endl;

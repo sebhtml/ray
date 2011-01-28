@@ -25,6 +25,7 @@
 #define IMPOSSIBLE_CHOICE -1
 #include<ExtensionData.h>
 #include<ChooserData.h>
+#include <Parameters.h>
 
 /**
  * paired-end OpenAssembler chooser class
@@ -32,7 +33,7 @@
 class Chooser{
 public:
 	void chooseWithPairedReads(ExtensionData*m_ed,ChooserData*m_cd,int m_minimumCoverage,int m_maxCoverage,double m,
-		vector<set<int> >*battleVictories);
+		vector<set<int> >*battleVictories,Parameters*parameters);
 	void clear(int*a,int b);
 };
 

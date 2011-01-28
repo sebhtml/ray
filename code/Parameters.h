@@ -107,8 +107,6 @@ public:
 	bool getError();
 	void addDistance(int library,int distance,int count);
 	void computeAverageDistances();
-	int getObservedAverageDistance(int library);
-	int getObservedStandardDeviation(int library);
 	uint64_t getNumberOfSequences(int n);
 	void setNumberOfSequences(uint64_t n);
 	int getNumberOfFiles();

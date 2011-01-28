@@ -35,7 +35,8 @@ class OpenAssemblerChooser{
 
 	int getWinner(vector<set<int> >*battleVictories,int choices);
 public:
-	int choose(ExtensionData*m_ed,Chooser*m_c,int m_minimumCoverage,int m_maxCoverage,ChooserData*m_cd);
+	int choose(ExtensionData*m_ed,Chooser*m_c,int m_minimumCoverage,int m_maxCoverage,ChooserData*m_cd,
+	Parameters*parameters);
 	void constructor(int peak);
 
 };
