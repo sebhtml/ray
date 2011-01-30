@@ -26,6 +26,7 @@ class SeedingData;
 
 #include<Direction.h>
 #include<vector>
+#include <Parameters.h>
 #include<set>
 #include<StaticVector.h>
 #include<map>
@@ -63,6 +64,7 @@ public:
 	bool m_FINISH_vertex_received;
 	bool m_FINISH_fusionOccured;
 	vector<vector<uint64_t> > m_FINISH_newFusions;
+	vector<int> m_FINISH_coverages;
 	map<uint64_t,int> m_FINISH_pathLengths;
 	uint64_t m_FINISH_received_vertex;
 
@@ -94,7 +96,7 @@ public:
 	vector<Direction> m_FUSION_receivedPaths;
 	bool m_FUSION_path_requested;
 	Direction m_FUSION_receivedPath;
-
+	Parameters*m_parameters;
 	map<uint64_t,int> m_FUSION_identifier_map;
 
 	set<uint64_t> m_FUSION_eliminated;
@@ -103,7 +105,7 @@ public:
 
 	void constructor(int size,int maxSize,int rank,StaticVector*m_outbox,
 		RingAllocator*m_outboxAllocator,int wordSize,bool colorSpaceMode,
-	ExtensionData*ed,SeedingData*seedingData,int*m_mode);
+	ExtensionData*ed,SeedingData*seedingData,int*m_mode,Parameters*parameters);
 
 	void setReadiness();
 	bool isReady();

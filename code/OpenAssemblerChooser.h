@@ -30,7 +30,6 @@
 class OpenAssemblerChooser{
 	double m_singleEndMultiplicator;
 	double m_pairedEndMultiplicator;
-	int proceedWithCoverages(int a,int b,ExtensionData*m_ed);
 	void updateMultiplicators(int a);
 
 	int getWinner(vector<set<int> >*battleVictories,int choices);

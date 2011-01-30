@@ -98,12 +98,12 @@ queries.each do |name,hits|
 	end
 	filteredHits.each do |hit|
 		#puts hit.getQueryCoverage.to_s
-		if hit.getQueryCoverage>=0.95
+		if hit.getQueryCoverage>=0.99
 			ok=true
 		end
 		mums<< hit
 	end
-	if ok==false and filteredHits.size==2 and filteredHits[0].getQueryCoverage+filteredHits[1].getQueryCoverage >= 0.95
+	if ok==false and filteredHits.size==2 and filteredHits[0].getQueryCoverage+filteredHits[1].getQueryCoverage >= 0.99
 		# check if it is circular
 		puts "is circular?"
 		if filteredHits[0].getRefStart==1 and filteredHits[1].getRefEnd==filteredHits[1].getRefLength

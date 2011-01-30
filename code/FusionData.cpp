@@ -76,7 +76,8 @@ void FusionData::readyBuffers(){
 
 void FusionData::constructor(int size,int max,int rank,StaticVector*outbox,
 		RingAllocator*outboxAllocator,int wordSize,bool colorSpaceMode,
-		ExtensionData*ed,SeedingData*seedingData,int*mode){
+		ExtensionData*ed,SeedingData*seedingData,int*mode,Parameters*parameters){
+	m_parameters=parameters;
 	m_seedingData=seedingData;
 	m_mode=mode;
 	m_ed=ed;
@@ -145,7 +146,7 @@ void FusionData::finishFusions(){
 		m_FINISH_pathsForPosition=NULL;
 		return;
 	}
-	int overlapMinimumLength=1000;
+	int overlapMinimumLength=3000;
 	if((int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<overlapMinimumLength){
 		m_seedingData->m_SEEDING_i++;
 		m_FINISH_vertex_requested=false;
@@ -185,6 +186,7 @@ void FusionData::finishFusions(){
 				}
 			}
 			m_FINISH_pathsForPosition->push_back(a);
+			m_FINISH_coverages.push_back(m_seedingData->m_SEEDING_receivedVertexCoverage);
 			if(m_ed->m_EXTENSION_currentPosition==0){
 				if(m_seedingData->m_SEEDING_i%10==0){
 					printf("Rank %i is finishing fusions [%i/%i]\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_ed->m_EXTENSION_contigs.size());
@@ -192,6 +194,8 @@ void FusionData::finishFusions(){
 				}
 				vector<uint64_t> a;
 				m_FINISH_newFusions.push_back(a);
+				vector<int> b;
+				m_FINISH_coverages.clear();
 				m_FINISH_vertex_requested=false;
 				m_FUSION_eliminated.insert(currentId);
 				m_FUSION_pathLengthRequested=false;
@@ -302,6 +306,19 @@ void FusionData::finishFusions(){
 				thePosition--;
 			}
 
+			
+			bool repeat=true;
+			int pos=(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-overlapMinimumLength;
+			while(pos<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
+				if(m_FINISH_coverages[pos]<=m_parameters->getPeakCoverage()){
+					repeat=false;
+				}
+				pos++;
+			}
+			if(!done&&repeat){
+				done=true;
+			}
+
 			m_checkedValidity=true;
 		}
 	}else{
@@ -367,6 +384,7 @@ void FusionData::finishFusions(){
 		m_checkedValidity=false;
 		delete m_FINISH_pathsForPosition;
 		m_FINISH_pathsForPosition=new vector<vector<Direction> >;
+		m_FINISH_coverages.clear();
 	}
 }
 

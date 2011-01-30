@@ -106,7 +106,7 @@ void MyForest::remove(uint64_t a){
 	#endif
 
 	int tree=getTreeIndex(a);
-	if(m_trees[tree].remove(a)){
+	if(m_trees[tree].remove(a,true)){
 		m_size--;
 	}
 }

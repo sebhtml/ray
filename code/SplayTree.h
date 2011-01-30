@@ -58,7 +58,7 @@ public:
 	// freeze the splay tree.
 	void freeze();
 	void unfreeze();
-	bool remove(KEY key);
+	bool remove(KEY key,bool reuse);
 	SplayNode<KEY,VALUE>*insert(KEY key);
 	SplayNode<KEY,VALUE>*find(KEY key);
 	void print();
@@ -114,7 +114,7 @@ SplayTree<KEY,VALUE>::~SplayTree(){
  * based on http://www.cs.umbc.edu/courses/undergraduate/341/fall98/frey/ClassNotes/Class17/splay.html
  */
 template<class KEY,class VALUE>
-bool SplayTree<KEY,VALUE>::remove(KEY key){
+bool SplayTree<KEY,VALUE>::remove(KEY key,bool reuse){
 	#ifdef ASSERT
 	assert(m_frozen==false);
 	#endif
@@ -155,7 +155,9 @@ bool SplayTree<KEY,VALUE>::remove(KEY key){
 	m_size--;
 
 	// reuse the pointer 
-	m_allocator->addAddressToReuse(toRemove);
+	if(reuse){
+		m_allocator->addAddressToReuse(toRemove);
+	}
 	return true;
 }
 

@@ -244,7 +244,7 @@ void Machine::start(){
 
 	m_fusionData->constructor(getSize(),MAXIMUM_MESSAGE_SIZE_IN_BYTES,getRank(),&m_outbox,&m_outboxAllocator,m_parameters.getWordSize(),
 	m_parameters.getColorSpaceMode(),
-		m_ed,m_seedingData,&m_slave_mode);
+		m_ed,m_seedingData,&m_slave_mode,&m_parameters);
 
 
 	m_library.constructor(getRank(),&m_outbox,&m_outboxAllocator,&m_sequence_id,&m_sequence_idInFile,

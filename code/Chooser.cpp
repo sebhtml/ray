@@ -50,25 +50,36 @@ Parameters*parameters
 		int maximum=-999;
 		for(map<int,vector<int> >::iterator j=classifiedValues.begin();j!=classifiedValues.end();j++){
 			int averageLength=parameters->getLibraryAverageLength(j->first);
+			int stddev=parameters->getLibraryStandardDeviation(j->first);
+			int leftThreshold=averageLength-stddev/3;
+			int rightThreshold=averageLength+stddev/3;
 			bool hasMin=false;
 			bool hasMax=false;
+			int localMin=99999;
+			int localMax=-999;
 			for(int k=0;k<(int)j->second.size();k++){
 				int val=j->second[k];
 				//cout<<"Val="<<val<<" Average="<<averageLength<<endl;
-				if(val<minimum){
-					minimum=val;
+				if(val<localMin){
+					localMin=val;
 				}
-				if(val>maximum){
-					maximum=val;
+				if(val>localMax){
+					localMax=val;
 				}
-				if(val>=averageLength){
+				if(val>=leftThreshold){
 					hasMax=true;
 				}
-				if(val<=averageLength){
+				if(val<=rightThreshold){
 					hasMin=true;
 				}
 			}
 			if(hasMax&&hasMax){
+				if(localMin<minimum){
+					minimum=localMin;
+				}
+				if(localMax>maximum){
+					maximum=localMax;
+				}
 				for(int k=0;k<(int)j->second.size();k++){
 					int val=j->second[k];
 					acceptedValues.push_back(val);
@@ -92,11 +103,6 @@ Parameters*parameters
 		}
 		for(int j=0;j<(int)m_ed->m_enumerateChoices_outgoingEdges.size();j++){
 			if(maximumValues[i] > __PAIRED_MULTIPLIER*maximumValues[j]){
-				(*battleVictories)[i].insert(j);
-			}
-
-			if(maximumValues[i] <= __PAIRED_MULTIPLIER*maximumValues[j]
-			&& minimumValues[i] < 0.5 * minimumValues[j]){
 				(*battleVictories)[i].insert(j);
 			}
 

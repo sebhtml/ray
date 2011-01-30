@@ -68,6 +68,18 @@ Parameters*parameters){
 		}
 		#endif
 		return pairedChoice;
+	}else{
+		// if both have paired reads and that is not enough for one of them to win, then abort
+		int withPairedReads=0;
+		
+		for(int j=0;j<(int)m_ed->m_EXTENSION_pairedReadPositionsForVertices.size();j++){
+			if(m_ed->m_EXTENSION_pairedReadPositionsForVertices[j].size()>0){
+				withPairedReads++;
+			}
+		}
+		if(withPairedReads!=0){
+			return IMPOSSIBLE_CHOICE;
+		}
 	}
 
 	// win or lose with single-end reads
@@ -95,62 +107,6 @@ Parameters*parameters){
 	return IMPOSSIBLE_CHOICE;
 }
 
-int OpenAssemblerChooser::proceedWithCoverages(int a,int b,
-	ExtensionData*m_ed
-){
-	vector<int> counts2;
-	vector<int> counts5;
-	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
-		int j2=0;
-		int j5=0;
-		if(m_ed->m_EXTENSION_readPositionsForVertices.count(i)>0){
-			for(int k=0;k<(int)m_ed->m_EXTENSION_readPositionsForVertices[i].size();k++){
-				int distanceFromOrigin=m_ed->m_EXTENSION_readPositionsForVertices[i][k];
-				if(distanceFromOrigin>=2){
-					j2++;
-				}
-				if(distanceFromOrigin>=5){
-					j5++;
-				}
-			}
-		}
-		counts2.push_back(j2);
-		counts5.push_back(j5);
-	}
-
-	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
-		bool isBetter=true;
-		int coverageI=(*m_ed->m_EXTENSION_coverages)[i];
-		int singleReadsI=m_ed->m_EXTENSION_readPositionsForVertices[i].size();
-		if(counts2[i]==0)
-			continue;
-
-		// in less than 10% of the coverage is supported by displayed reads, abort it...
-		if(singleReadsI*10 < coverageI){
-			continue;
-		}
-
-		for(int j=0;j<(int)m_ed->m_enumerateChoices_outgoingEdges.size();j++){
-			if(i==j)
-				continue;
-			//int coverageJ=m_ed->m_EXTENSION_coverages[j];
-			//int singleReadsJ=m_ed->m_EXTENSION_readPositionsForVertices[j].size();
-			if(!(counts2[j]<=a and counts2[i]>=b)){
-				isBetter=false;
-				break;
-			}
-		}
-		if(isBetter){
-			#ifdef SHOW_CHOICE
-			cout<<"Choice #"<<i+1<<" wins, with "<<m_ed->m_EXTENSION_readPositionsForVertices[i].size()<<" reads."<<endl;
-			cout<<" in range: "<<m_ed->m_EXTENSION_readsInRange.size()<<endl;
-			#endif
-			
-			return i;
-		}
-	}
-	return IMPOSSIBLE_CHOICE;
-}
 
 int OpenAssemblerChooser::getWinner(vector<set<int> >*battleVictories,int choices){
 	for(int winner=0;winner<(int)battleVictories->size();winner++){

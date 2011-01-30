@@ -1233,9 +1233,10 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE(Message*message){
 	#endif
 
 	vector<Direction> paths=node->getValue()->getDirections();
-	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
 	message2[0]=paths.size();
-	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY,rank);
+	message2[1]=node->getValue()->getCoverage();
+	Message aMessage(message2,2,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -1245,6 +1246,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY(Message*mess
 	m_fusionData->m_FUSION_paths_received=true;
 	m_fusionData->m_FUSION_receivedPaths.clear();
 	m_fusionData->m_FUSION_numberOfPaths=incoming[0];
+	m_seedingData->m_SEEDING_receivedVertexCoverage=incoming[1];
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_GET_PATH_LENGTH(Message*message){

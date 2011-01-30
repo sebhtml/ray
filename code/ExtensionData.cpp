@@ -97,10 +97,21 @@ void ExtensionData::setSequence(uint64_t a,string b){
 }
 
 int ExtensionData::getStartingPosition(uint64_t a){
+	#ifdef ASSERT
+	assert(m_database.find(a)!=NULL);
+	#endif
+	
 	return m_database.find(a)->getValue()->m_position;
 }
 
 void ExtensionData::removeSequence(uint64_t a){
+	#ifdef ASSERT
+	assert(m_database.find(a)!=NULL);
+	#endif
+	m_database.remove(a,false);
+	#ifdef ASSERT
+	assert(m_database.find(a)==NULL);
+	#endif
 }
 
 char*ExtensionData::getSequence(uint64_t a){
