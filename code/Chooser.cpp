@@ -36,65 +36,26 @@ Parameters*parameters
 	vector<int> maximumValues;
 
 	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
-		map<int,vector<int> > classifiedValues;
-		
-		for(int j=0;j<(int)m_ed->m_EXTENSION_pairedReadPositionsForVertices[i].size();j++){
-			int value=m_ed->m_EXTENSION_pairedReadPositionsForVertices[i][j];
-			int library=m_ed->m_EXTENSION_pairedLibrariesForVertices[i][j];
-			classifiedValues[library].push_back(value);
-		}
-
-		vector<int> acceptedValues;
-
 		int minimum=999999;
 		int maximum=-999;
-		for(map<int,vector<int> >::iterator j=classifiedValues.begin();j!=classifiedValues.end();j++){
-			int averageLength=parameters->getLibraryAverageLength(j->first);
-			int stddev=parameters->getLibraryStandardDeviation(j->first);
-			int leftThreshold=averageLength-stddev/3;
-			int rightThreshold=averageLength+stddev/3;
-			bool hasMin=false;
-			bool hasMax=false;
-			int localMin=99999;
-			int localMax=-999;
-			for(int k=0;k<(int)j->second.size();k++){
-				int val=j->second[k];
-				//cout<<"Val="<<val<<" Average="<<averageLength<<endl;
-				if(val<localMin){
-					localMin=val;
-				}
-				if(val>localMax){
-					localMax=val;
-				}
-				if(val>=leftThreshold){
-					hasMax=true;
-				}
-				if(val<=rightThreshold){
-					hasMin=true;
-				}
+
+		for(int j=0;j<(int)m_ed->m_EXTENSION_pairedReadPositionsForVertices[i].size();j++){
+			int value=m_ed->m_EXTENSION_pairedReadPositionsForVertices[i][j];
+			if(value>maximum){
+				maximum=value;
 			}
-			if(hasMax&&hasMax){
-				if(localMin<minimum){
-					minimum=localMin;
-				}
-				if(localMax>maximum){
-					maximum=localMax;
-				}
-				for(int k=0;k<(int)j->second.size();k++){
-					int val=j->second[k];
-					acceptedValues.push_back(val);
-				}
+			if(value<minimum){
+				minimum=value;
 			}
 		}
 
-		counts.push_back(acceptedValues.size());
-		if(acceptedValues.size()==0){
+		counts.push_back(m_ed->m_EXTENSION_pairedReadPositionsForVertices[i].size());
+		if(m_ed->m_EXTENSION_pairedReadPositionsForVertices[i].size()==0){
 			minimum=0;
 			maximum=0;
 		}
 		minimumValues.push_back(minimum);
 		maximumValues.push_back(maximum);
-		//cout<<"CHoice="<<i<<" "<<"Max="<<maximum<<" Min="<<minimum<<endl;
 	}
 
 	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){

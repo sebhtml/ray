@@ -46,17 +46,20 @@ class DepthFirstSearchData;
 using namespace std;
 
 class SeedExtender{
+	bool m_removedUnfitLibraries;
 	map<uint64_t,int> m_cache;
 	vector<Direction>m_receivedDirections;
 	EarlyStoppingTechnology m_earlyStoppingTechnology;
 	bool m_skippedASeed;
 	Parameters*m_parameters;
 	BubbleTool m_bubbleTool;
-
+	ExtensionData*m_ed;
 	MyAllocator*m_directionsAllocator;
 
 	set<uint64_t> m_eliminatedSeeds;
 	void inspect(ExtensionData*ed,uint64_t*currentVertex);
+
+	void removeUnfitLibraries();
 public:
 	bool m_sequenceReceived;
 	bool m_sequenceRequested;
@@ -109,7 +112,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 
 	set<uint64_t>*getEliminatedSeeds();
 
-	void constructor(Parameters*parameters,MyAllocator*m_directionsAllocator);
+	void constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed);
 };
 
 #endif

@@ -205,6 +205,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 			ed->m_EXTENSION_readPositionsForVertices.clear();
 			ed->m_EXTENSION_pairedReadPositionsForVertices.clear();
 			ed->m_EXTENSION_pairedLibrariesForVertices.clear();
+			ed->m_EXTENSION_pairedReadsForVertices.clear();
 
 			ed->m_EXTENSION_edgeIterator=0;
 			ed->m_EXTENSION_hasPairedReadRequested=false;
@@ -309,7 +310,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 			// and cumulate the results in
 			// ed->m_EXTENSION_readPositions, which is a map<int,vector<int> > if one of the vertices match
 			if(ed->m_EXTENSION_readIterator!=ed->m_EXTENSION_readsInRange->end()){
-
+				m_removedUnfitLibraries=false;
 				// we received the vertex for that read,
 				// now check if it matches one of 
 				// the many choices we have
@@ -360,7 +361,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 								int startingPositionOnPath=ed->getStartingPosition(uniqueReadIdentifier);
 			
 								int observedFragmentLength=(startPosition-startingPositionOnPath)+ed->m_EXTENSION_receivedLength;
-								int multiplier=1;
+								int multiplier=3;
 								if(expectedFragmentLength-multiplier*expectedDeviation<=observedFragmentLength and
 								observedFragmentLength <= expectedFragmentLength+multiplier*expectedDeviation 
 					&& ((rightStrand=='F' && leftStrand=='R')
@@ -372,6 +373,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 									//ed->m_EXTENSION_pairedReadPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(theDistance);
 									ed->m_EXTENSION_pairedReadPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(observedFragmentLength);
 									ed->m_EXTENSION_pairedLibrariesForVertices[ed->m_EXTENSION_edgeIterator].push_back(library);
+									ed->m_EXTENSION_pairedReadsForVertices[ed->m_EXTENSION_edgeIterator].push_back(uniqueId);
 									if(observedFragmentLength>cd->m_CHOOSER_theMaxsPaired[ed->m_EXTENSION_edgeIterator]){
 										cd->m_CHOOSER_theMaxsPaired[ed->m_EXTENSION_edgeIterator]=observedFragmentLength;
 									}
@@ -415,9 +417,16 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 					return;
 				}
 
+				if(!m_removedUnfitLibraries){
+					removeUnfitLibraries();
+					m_removedUnfitLibraries=true;
+					return;
+				}
+
 				if(!ed->m_sequencesToFree.empty()){
 					for(int i=0;i<(int)ed->m_sequencesToFree.size();i++){
 						uint64_t uniqueId=ed->m_sequencesToFree[i];
+						cout<<"Removing "<<uniqueId<<endl;
 						ed->removeSequence(uniqueId);
 						ed->m_EXTENSION_readsInRange->erase(uniqueId);
 					}
@@ -836,7 +845,8 @@ set<uint64_t>*SeedExtender::getEliminatedSeeds(){
 	return &m_eliminatedSeeds;
 }
 
-void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAllocator){
+void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed){
+	m_ed=ed;
 	this->m_directionsAllocator=m_directionsAllocator;
 	m_parameters=parameters;
 	m_bubbleTool.constructor(parameters);
@@ -876,5 +886,51 @@ void SeedExtender::inspect(ExtensionData*ed,uint64_t*currentVertex){
 			cout<<ed->m_EXTENSION_pairedReadPositionsForVertices[i][j];
 		}
 		cout<<endl;
+	}
+}
+
+void SeedExtender::removeUnfitLibraries(){
+	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
+		map<int,vector<int> > classifiedValues;
+		map<int,vector<uint64_t> > reads;
+		
+		for(int j=0;j<(int)m_ed->m_EXTENSION_pairedReadPositionsForVertices[i].size();j++){
+			int value=m_ed->m_EXTENSION_pairedReadPositionsForVertices[i][j];
+			int library=m_ed->m_EXTENSION_pairedLibrariesForVertices[i][j];
+			uint64_t readId=m_ed->m_EXTENSION_pairedReadsForVertices[i][j];
+			classifiedValues[library].push_back(value);
+			reads[library].push_back(readId);
+		}
+
+		vector<int> acceptedValues;
+
+		for(map<int,vector<int> >::iterator j=classifiedValues.begin();j!=classifiedValues.end();j++){
+			int library=j->first;
+			int averageLength=m_parameters->getLibraryAverageLength(j->first);
+			int stddev=m_parameters->getLibraryStandardDeviation(j->first);
+			int sum=0;
+			int n=0;
+			for(int k=0;k<(int)j->second.size();k++){
+				int val=j->second[k];
+				sum+=val;
+				n++;
+			}
+			int mean=sum/n;
+			
+			if(mean<=averageLength+stddev
+			&& mean>=averageLength-stddev){
+				for(int k=0;k<(int)j->second.size();k++){
+					int val=j->second[k];
+					acceptedValues.push_back(val);
+				}
+			}else if(j->second.size()>10){// to restore reads for a library, we need at least 5
+				for(int k=0;k<(int)j->second.size();k++){
+					uint64_t uniqueId=reads[library][k];
+					cout<<"Restoring Value="<<j->second[k]<<" Expected="<<averageLength<<" Dev="<<stddev<<" MeanForLibrary="<<mean<<" n="<<n<<endl;
+					m_ed->m_sequencesToFree.push_back(uniqueId);
+				}
+			}
+		}
+		m_ed->m_EXTENSION_pairedReadPositionsForVertices[i]=acceptedValues;
 	}
 }

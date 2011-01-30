@@ -84,7 +84,7 @@ void Machine::start(){
  	// the number of splay trees in a forest.
 	int numberOfTrees=16384;
 
-	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator);
+	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed);
 
 	m_fusionData->m_fusionStarted=false;
 	m_ed->m_EXTENSION_numberOfRanksDone=0;

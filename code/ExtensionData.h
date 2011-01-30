@@ -111,6 +111,7 @@ public:
 	map<int,vector<int> > m_EXTENSION_readPositionsForVertices;
 	map<int,vector<int> > m_EXTENSION_pairedReadPositionsForVertices;
 	map<int,vector<int> > m_EXTENSION_pairedLibrariesForVertices;
+	map<int,vector<uint64_t> > m_EXTENSION_pairedReadsForVertices;
 	int m_currentCoverage;
 
 	set<uint64_t>*m_EXTENSION_readsInRange;
