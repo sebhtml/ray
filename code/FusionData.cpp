@@ -305,10 +305,10 @@ void FusionData::finishFusions(){
 				thePosition--;
 			}
 
-			cout<<"Matching "<<matchingPositions<<"/"<<overlapMinimumLength<<endl;
+			//cout<<"Matching "<<matchingPositions<<"/"<<overlapMinimumLength<<endl;
 			// overlap myst be good, no more than 2 mismatches
 			if((overlapMinimumLength-matchingPositions)>20){
-				cout<<"Mapping not good."<<endl;
+				//cout<<"Mapping not good."<<endl;
 				done=true;
 			}
 
