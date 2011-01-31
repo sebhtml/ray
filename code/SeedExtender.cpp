@@ -28,7 +28,7 @@
 #include<BubbleTool.h>
 
 // uncomment to display how Ray chooses things.
-#define SHOW_CHOICE
+//#define SHOW_CHOICE
 
 void debugMessage(int source,int destination,string message){
 	cout<<"Microseconds: "<<getMicroSeconds()<<" Source: "<<source<<" Destination: "<<destination<<" Message: "<<message<<endl;
@@ -426,7 +426,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				if(!ed->m_sequencesToFree.empty()){
 					for(int i=0;i<(int)ed->m_sequencesToFree.size();i++){
 						uint64_t uniqueId=ed->m_sequencesToFree[i];
-						cout<<"Removing "<<uniqueId<<endl;
+						//cout<<"Removing "<<uniqueId<<endl;
 						ed->removeSequence(uniqueId);
 						ed->m_EXTENSION_readsInRange->erase(uniqueId);
 					}
@@ -926,7 +926,7 @@ void SeedExtender::removeUnfitLibraries(){
 			}else if(j->second.size()>10){// to restore reads for a library, we need at least 5
 				for(int k=0;k<(int)j->second.size();k++){
 					uint64_t uniqueId=reads[library][k];
-					cout<<"Restoring Value="<<j->second[k]<<" Expected="<<averageLength<<" Dev="<<stddev<<" MeanForLibrary="<<mean<<" n="<<n<<endl;
+					//cout<<"Restoring Value="<<j->second[k]<<" Expected="<<averageLength<<" Dev="<<stddev<<" MeanForLibrary="<<mean<<" n="<<n<<endl;
 					m_ed->m_sequencesToFree.push_back(uniqueId);
 				}
 			}

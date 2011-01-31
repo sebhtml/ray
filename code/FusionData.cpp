@@ -146,7 +146,7 @@ void FusionData::finishFusions(){
 		m_FINISH_pathsForPosition=NULL;
 		return;
 	}
-	int overlapMinimumLength=3000;
+	int overlapMinimumLength=1000;
 	if((int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<overlapMinimumLength){
 		m_seedingData->m_SEEDING_i++;
 		m_FINISH_vertex_requested=false;
@@ -209,7 +209,8 @@ void FusionData::finishFusions(){
 		}
 	}else if(!m_checkedValidity){
 		done=true;
-		vector<Direction> directions1=(*m_FINISH_pathsForPosition)[m_FINISH_pathsForPosition->size()-1];
+		int capLength=20;
+		vector<Direction> directions1=(*m_FINISH_pathsForPosition)[m_FINISH_pathsForPosition->size()-1-capLength];
 		vector<Direction> directions2=(*m_FINISH_pathsForPosition)[m_FINISH_pathsForPosition->size()-overlapMinimumLength];
 
 		// no hits are possible.
@@ -262,12 +263,15 @@ void FusionData::finishFusions(){
 				for(int j=0;j<(int)searchResults.size();j++){
 					int index2=searchResults[j];
 					int otherProgression=directions2[index2].getProgression();
-					if(progression1-otherProgression+1==overlapMinimumLength){
+					int observedDistance=(progression1-otherProgression+1);
+					int expectedDistance=(overlapMinimumLength-capLength);
+					if(observedDistance==expectedDistance){
+						cout<<"Expected="<<expectedDistance<<" Observed="<<observedDistance<<endl;
 						// this is 
 						done=false;
 						hits++;
 						m_selectedPath=wave1;
-						m_selectedPosition=progression1;
+						m_selectedPosition=progression1+capLength;
 					}
 				}
 			}
@@ -290,32 +294,21 @@ void FusionData::finishFusions(){
 			//     if it is not the case, we might have a degenerated repeated region !
 			//     therefore, we must be cautious.
 			int thePosition=m_FINISH_pathsForPosition->size()-1;
+			int matchingPositions=0;
 			while(thePosition>=(int)m_FINISH_pathsForPosition->size()-overlapMinimumLength){
-				bool found=false;
 				for(int j=0;j<(int)(*m_FINISH_pathsForPosition)[thePosition].size();j++){
 					if((*m_FINISH_pathsForPosition)[thePosition][j].getWave()==m_selectedPath){
-						found=true;
+						matchingPositions++;
 						break;
 					}
-				}
-				if(!found){
-					// this is a degenerated repeated region, aborting now.
-					done=true;
-					break;
 				}
 				thePosition--;
 			}
 
-			
-			bool repeat=true;
-			int pos=(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-overlapMinimumLength;
-			while(pos<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
-				if(m_FINISH_coverages[pos]<=m_parameters->getPeakCoverage()){
-					repeat=false;
-				}
-				pos++;
-			}
-			if(!done&&repeat){
+			cout<<"Matching "<<matchingPositions<<"/"<<overlapMinimumLength<<endl;
+			// overlap myst be good, no more than 2 mismatches
+			if((overlapMinimumLength-matchingPositions)>20){
+				cout<<"Mapping not good."<<endl;
 				done=true;
 			}
 
