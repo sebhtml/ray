@@ -82,7 +82,6 @@ void Machine::start(){
 	m_ready=true;
 	
  	// the number of splay trees in a forest.
-	int numberOfTrees=16384;
 
 	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed);
 
@@ -246,12 +245,11 @@ void Machine::start(){
 	m_parameters.getColorSpaceMode(),
 		m_ed,m_seedingData,&m_slave_mode,&m_parameters);
 
-
 	m_library.constructor(getRank(),&m_outbox,&m_outboxAllocator,&m_sequence_id,&m_sequence_idInFile,
 		m_ed,&m_readsPositions,getSize(),&m_timePrinter,&m_slave_mode,&m_master_mode,
 	&m_parameters,&m_fileId,m_seedingData);
 
-
+	int numberOfTrees=131072;
 	m_subgraph.constructor(numberOfTrees,&m_treeAllocator);
 	
 	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),&m_outbox,&m_outboxAllocator,&m_seedCoverage,&m_slave_mode,&m_parameters,&m_wordSize,&m_subgraph,

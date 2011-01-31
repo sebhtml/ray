@@ -46,25 +46,17 @@ template<class KEY,class VALUE>
 class SplayTree{
 	SplayNode<KEY,VALUE>*m_root;
 	uint64_t m_size;
-	bool m_inserted;
 	void splay(KEY key);
-	MyAllocator*m_allocator;
-	bool m_frozen;
 public:
-	SplayTree();
-	void constructor(MyAllocator*allocator);
 	void constructor();
-	~SplayTree();
 	// freeze the splay tree.
-	void freeze();
-	void unfreeze();
-	bool remove(KEY key,bool reuse);
-	SplayNode<KEY,VALUE>*insert(KEY key);
-	SplayNode<KEY,VALUE>*find(KEY key);
+	bool remove(KEY key,bool reuse,MyAllocator*allocator);
+	SplayNode<KEY,VALUE>*insert(KEY key,MyAllocator*allocator,bool*inserted);
+	SplayNode<KEY,VALUE>*find(KEY key,bool frozen);
+	SplayNode<KEY,VALUE>*findBinary(KEY key);
 	void print();
 	SplayNode<KEY,VALUE>*getRoot();
 	uint64_t size();
-	bool inserted();
 	void clear();
 };
 
@@ -72,7 +64,7 @@ template<class KEY,class VALUE>
 void SplayTree<KEY,VALUE>::clear(){
 	// the allocator will be released elsewhere
 	m_root=NULL;
-	m_allocator=NULL;
+	m_size=0;
 }
 
 template<class KEY,class VALUE>
@@ -81,32 +73,9 @@ uint64_t SplayTree<KEY,VALUE>::size(){
 }
 
 template<class KEY,class VALUE>
-bool SplayTree<KEY,VALUE>::inserted(){
-	return m_inserted;
-}
-
-template<class KEY,class VALUE>
-SplayTree<KEY,VALUE>::SplayTree(){
-	constructor();
-}
-
-template<class KEY,class VALUE>
 void SplayTree<KEY,VALUE>::constructor(){
-	m_frozen=false;
 	m_root=NULL;
 	m_size=0;
-	m_inserted=false;
-	m_allocator=NULL;
-}
-
-template<class KEY,class VALUE>
-void SplayTree<KEY,VALUE>::constructor(MyAllocator*allocator){
-	m_allocator=allocator;
-}
-
-template<class KEY,class VALUE>
-SplayTree<KEY,VALUE>::~SplayTree(){
-	clear();
 }
 
 /*
@@ -114,7 +83,7 @@ SplayTree<KEY,VALUE>::~SplayTree(){
  * based on http://www.cs.umbc.edu/courses/undergraduate/341/fall98/frey/ClassNotes/Class17/splay.html
  */
 template<class KEY,class VALUE>
-bool SplayTree<KEY,VALUE>::remove(KEY key,bool reuse){
+bool SplayTree<KEY,VALUE>::remove(KEY key,bool reuse,MyAllocator*allocator){
 	#ifdef ASSERT
 	assert(m_frozen==false);
 	#endif
@@ -156,7 +125,7 @@ bool SplayTree<KEY,VALUE>::remove(KEY key,bool reuse){
 
 	// reuse the pointer 
 	if(reuse){
-		m_allocator->addAddressToReuse(toRemove);
+		allocator->addAddressToReuse(toRemove);
 	}
 	return true;
 }
@@ -171,19 +140,22 @@ SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::getRoot(){
  * then, add x as root, and put y as child of x (left or right)
  */
 template<class KEY,class VALUE>
-SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::insert(KEY key){
-	m_inserted=false;
+SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::insert(KEY key,MyAllocator*allocator,bool*inserted){
+	(*inserted)=false;
 	if(m_root==NULL){
-		m_root=(SplayNode<KEY,VALUE>*)m_allocator->allocate(sizeof(SplayNode<KEY,VALUE>));
+		#ifdef ASSERT
+		assert(m_allocator!=NULL);
+		#endif
+		m_root=(SplayNode<KEY,VALUE>*)allocator->allocate(sizeof(SplayNode<KEY,VALUE>));
 		m_root->init(key);
-		m_inserted=true;
+		(*inserted)=true;
 		m_size++;
 		return m_root;
 	}
 	splay(key);
 	if(m_root->getKey()==key)
 		return m_root;
-	SplayNode<KEY,VALUE>*n=(SplayNode<KEY,VALUE>*)m_allocator->allocate(sizeof(SplayNode<KEY,VALUE>));
+	SplayNode<KEY,VALUE>*n=(SplayNode<KEY,VALUE>*)allocator->allocate(sizeof(SplayNode<KEY,VALUE>));
 	n->init(key);
 	
 	if(key<m_root->getKey()){
@@ -197,8 +169,23 @@ SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::insert(KEY key){
 	}
 	m_root=n;
 	m_size++;
-	m_inserted=true;
+	(*inserted)=true;
 	return m_root;
+}
+
+template<class KEY,class VALUE>
+SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::findBinary(KEY key){
+	SplayNode<KEY,VALUE>*t=m_root;
+	while(t!=NULL){
+		if(t->m_key==key){
+			return t;
+		}else if(key<t->m_key){
+			t=t->m_left;
+		}else{
+			t=t->m_right;
+		}
+	}
+	return NULL;
 }
 
 /*
@@ -207,19 +194,9 @@ SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::insert(KEY key){
  * return the root
  */
 template<class KEY,class VALUE>
-SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::find(KEY key){
-	if(m_frozen){
-		SplayNode<KEY,VALUE>*t=m_root;
-		while(t!=NULL){
-			if(t->m_key==key){
-				return t;
-			}else if(key<t->m_key){
-				t=t->m_left;
-			}else{
-				t=t->m_right;
-			}
-		}
-		return NULL;
+SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::find(KEY key,bool frozen){
+	if(frozen){
+		return findBinary(key);
 	}
 
 	if(m_root==NULL)
@@ -262,21 +239,7 @@ void SplayTree<KEY,VALUE>::print(){
 }
 
 template<class KEY,class VALUE>
-void SplayTree<KEY,VALUE>::freeze(){
-	m_frozen=true;
-}
-
-template<class KEY,class VALUE>
-void SplayTree<KEY,VALUE>::unfreeze(){
-	m_frozen=false;
-}
-
-template<class KEY,class VALUE>
 void SplayTree<KEY,VALUE>::splay(KEY key){
-	#ifdef ASSERT
-	assert(!m_frozen);
-	#endif
-
 	SplayNode<KEY,VALUE> header;
 	SplayNode<KEY,VALUE>*l;
 	SplayNode<KEY,VALUE>*r;

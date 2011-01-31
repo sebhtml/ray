@@ -26,22 +26,15 @@
 #include<PairedRead.h>
 #include<set>
 #include<Read.h>
+#include <ExtensionElement.h>
 #include<map>
 #include<ReadAnnotation.h>
 #include<common_functions.h>
 using namespace std;
 
-class ExtensionElement{
-public:
-	int m_position;
-	char m_strand;
-	bool m_hasPairedRead;
-	char*m_readSequence;
-	PairedRead m_pairedRead;
-};
-
 class ExtensionData{
-	SplayTree<uint64_t,ExtensionElement> m_database;
+	SplayTree<uint64_t,ExtensionElement>*m_database;
+	int m_numberOfBins;
 
 	MyAllocator m_allocator;
 
@@ -117,22 +110,13 @@ public:
 	set<uint64_t>*m_EXTENSION_readsInRange;
 
 	void resetStructures();
-	bool isUsedRead(uint64_t a);
-	void addUsedRead(uint64_t a);
-	bool hasPairedRead(uint64_t a);
-	PairedRead getPairedRead(uint64_t a);
-	void removePairedRead(uint64_t a);
-	void setPairedRead(uint64_t a,PairedRead b);
-	void setStrand(uint64_t a,char b);
-	void setStartingPosition(uint64_t a, int b);
-	int getStartingPosition(uint64_t a);
-	void setSequence(uint64_t a,string b);
-	void constructor();
+	ExtensionElement*getUsedRead(uint64_t a);
+	ExtensionElement*addUsedRead(uint64_t a);
 	void removeSequence(uint64_t a);
-	char* getSequence(uint64_t a);
-	char getStrand(uint64_t a);
+	void constructor();
 
 	void destructor();
+	MyAllocator*getAllocator();
 };
 
 #endif

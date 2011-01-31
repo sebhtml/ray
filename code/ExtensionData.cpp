@@ -19,12 +19,15 @@
 
 */
 
-#include<ExtensionData.h>
+#include <ExtensionData.h>
 #include <string.h>
+#include <crypto.h>
 
 void ExtensionData::constructor(){
+	m_numberOfBins=4096;
 	int chunkSize=4194304;
 	m_allocator.constructor(chunkSize);
+	m_database=(SplayTree<uint64_t,ExtensionElement>*)__Malloc(m_numberOfBins*sizeof(SplayTree<uint64_t,ExtensionElement>));
 	createStructures();
 }
 
@@ -33,8 +36,9 @@ void ExtensionData::createStructures(){
 	m_extensionCoverageValues=new vector<int>;
 	m_EXTENSION_coverages=new vector<int>;
 	m_EXTENSION_readsInRange=new set<uint64_t>;
-
-	m_database.constructor(&m_allocator);
+	for(int i=0;i<m_numberOfBins;i++){
+		m_database[i].constructor();
+	}
 }
 
 void ExtensionData::destroyStructures(){
@@ -43,7 +47,9 @@ void ExtensionData::destroyStructures(){
 	delete m_EXTENSION_coverages;
 	delete m_EXTENSION_readsInRange;
 
-	m_database.clear();
+	for(int i=0;i<m_numberOfBins;i++){
+		m_database[i].clear();
+	}
 }
 
 void ExtensionData::resetStructures(){
@@ -55,69 +61,26 @@ void ExtensionData::resetStructures(){
 void ExtensionData::destructor(){
 	destroyStructures();
 	m_allocator.clear();
+	__Free(m_database);
 }
 
-bool ExtensionData::isUsedRead(uint64_t a){
-	return m_database.find(a)!=NULL;
+ExtensionElement*ExtensionData::getUsedRead(uint64_t a){
+	SplayNode<uint64_t,ExtensionElement>*node=m_database[uniform_hashing_function_1_64_64(a)%m_numberOfBins].find(a,true);
+	if(node!=NULL){
+		return node->getValue();
+	}
+	return NULL;
 }
 
-void ExtensionData::addUsedRead(uint64_t a){
-	m_database.insert(a);
-}
-
-bool ExtensionData::hasPairedRead(uint64_t a){
-	return m_database.find(a)->getValue()->m_hasPairedRead;
-}
-
-PairedRead ExtensionData::getPairedRead(uint64_t a){
-	return m_database.find(a)->getValue()->m_pairedRead;
-}
-
-void ExtensionData::removePairedRead(uint64_t a){
-}
-
-void ExtensionData::setPairedRead(uint64_t a,PairedRead b){
-	m_database.find(a)->getValue()->m_pairedRead=b;
-	m_database.find(a)->getValue()->m_hasPairedRead=true;
-}
-
-void ExtensionData::setStrand(uint64_t a,char b){
-	m_database.find(a)->getValue()->m_strand=b;
-}
-
-void ExtensionData::setStartingPosition(uint64_t a, int b){
-	m_database.find(a)->getValue()->m_position=b;
-}
-
-void ExtensionData::setSequence(uint64_t a,string b){
-	char*seq=(char*)m_allocator.allocate(b.length()*sizeof(char));
-	strcpy(seq,b.c_str());
-	m_database.find(a)->getValue()->m_readSequence=seq;
-	m_database.find(a)->getValue()->m_hasPairedRead=false;
-}
-
-int ExtensionData::getStartingPosition(uint64_t a){
-	#ifdef ASSERT
-	assert(m_database.find(a)!=NULL);
-	#endif
-	
-	return m_database.find(a)->getValue()->m_position;
+ExtensionElement*ExtensionData::addUsedRead(uint64_t a){
+	bool val;
+	return m_database[uniform_hashing_function_1_64_64(a)%m_numberOfBins].insert(a,&m_allocator,&val)->getValue();
 }
 
 void ExtensionData::removeSequence(uint64_t a){
-	#ifdef ASSERT
-	assert(m_database.find(a)!=NULL);
-	#endif
-	m_database.remove(a,false);
-	#ifdef ASSERT
-	assert(m_database.find(a)==NULL);
-	#endif
+	m_database[uniform_hashing_function_1_64_64(a)%m_numberOfBins].remove(a,false,&m_allocator);
 }
 
-char*ExtensionData::getSequence(uint64_t a){
-	return m_database.find(a)->getValue()->m_readSequence;
-}
-
-char ExtensionData::getStrand(uint64_t a){
-	return m_database.find(a)->getValue()->m_strand;
+MyAllocator*ExtensionData::getAllocator(){
+	return &m_allocator;
 }

@@ -9,7 +9,7 @@ LDADD=""
 
 noinst_LIBRARIES = libRay.a
 libRay_a_SOURCES = \
-VirtualCommunicator.h VirtualCommunicator.cpp SeedWorker.h SeedWorker.cpp \
+ExtensionElement.h ExtensionElement.cpp VirtualCommunicator.h VirtualCommunicator.cpp SeedWorker.h SeedWorker.cpp \
 MemoryConsumptionReducer.h MemoryConsumptionReducer.cpp \
 MyForestIterator.cpp MyForestIterator.h crypto.cpp crypto.h \
 MyStack.h EarlyStoppingTechnology.h EarlyStoppingTechnology.cpp ArrayOfReads.h ArrayOfReads.cpp \

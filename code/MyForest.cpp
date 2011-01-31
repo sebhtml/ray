@@ -26,13 +26,15 @@
 using namespace std;
 
 void MyForest::constructor(int count,MyAllocator*allocator){
-	m_allocator=allocator;
-	m_trees=(SplayTree<uint64_t,Vertex>*)allocator->allocate(sizeof(SplayTree<uint64_t,Vertex>)*count);
-	for(int i=0;i<count;i++){
-		m_trees[i].constructor();
-		m_trees[i].constructor(allocator);
-	}
 	m_numberOfTrees=count;
+	m_allocator=allocator;
+	#ifdef ASSERT
+	assert(m_allocator!=NULL);
+	#endif
+	m_trees=(SplayTree<uint64_t,Vertex>*)__Malloc(sizeof(SplayTree<uint64_t,Vertex>)*m_numberOfTrees);
+	for(int i=0;i<m_numberOfTrees;i++){
+		m_trees[i].constructor();
+	}
 	m_inserted=false;
 	m_size=0;
 }
@@ -50,17 +52,20 @@ SplayTree<uint64_t,Vertex>*MyForest::getTree(int i){
 }
 
 int MyForest::getTreeIndex(uint64_t i){
+	//return 0;
 	return uniform_hashing_function_2_64_64(i)%m_numberOfTrees;
 }
 
 SplayNode<uint64_t,Vertex>*MyForest::find(uint64_t key){
-	return m_trees[getTreeIndex(key)].find(key);
+	return m_trees[getTreeIndex(key)].find(key,m_frozen);
 }
 
 SplayNode<uint64_t,Vertex>*MyForest::insert(uint64_t key){
 	int tree=getTreeIndex(key);
-	SplayNode<uint64_t,Vertex>*n=m_trees[tree].insert(key);
-	m_inserted=m_trees[tree].inserted();
+	#ifdef ASSERT
+	assert(tree<m_numberOfTrees);
+	#endif
+	SplayNode<uint64_t,Vertex>*n=m_trees[tree].insert(key,m_allocator,&m_inserted);
 	if(m_inserted){
 		m_size++;
 	}
@@ -72,16 +77,10 @@ bool MyForest::inserted(){
 }
 
 void MyForest::freeze(){
-	for(int i=0;i<m_numberOfTrees;i++){
-		m_trees[i].freeze();
-	}
 	m_frozen=true;
 }
 
 void MyForest::unfreeze(){
-	for(int i=0;i<m_numberOfTrees;i++){
-		m_trees[i].unfreeze();
-	}
 	m_frozen=false;
 }
 
@@ -106,7 +105,7 @@ void MyForest::remove(uint64_t a){
 	#endif
 
 	int tree=getTreeIndex(a);
-	if(m_trees[tree].remove(a,true)){
+	if(m_trees[tree].remove(a,true,m_allocator)){
 		m_size--;
 	}
 }

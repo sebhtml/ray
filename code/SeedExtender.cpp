@@ -315,14 +315,15 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				// now check if it matches one of 
 				// the many choices we have
 				uint64_t uniqueId=*(ed->m_EXTENSION_readIterator);
-				int startPosition=ed->getStartingPosition(uniqueId);
+				ExtensionElement*element=ed->getUsedRead(uniqueId);
+				int startPosition=element->getPosition();
 				int distance=ed->m_EXTENSION_extension->size()-startPosition;
 
 				#ifdef ASSERT
 				assert(startPosition<(int)ed->m_extensionCoverageValues->size());
 				#endif
 
-				char*theSequence=ed->getSequence(uniqueId);
+				char*theSequence=element->getSequence();
 				ed->m_EXTENSION_receivedLength=strlen(theSequence);
 				if(distance>(ed->m_EXTENSION_receivedLength-wordSize)){
 					// the read is now out-of-range.
@@ -333,7 +334,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 					return;
 				}
 
-				char leftStrand=ed->getStrand(uniqueId);
+				char leftStrand=element->getStrand();
 				ed->m_EXTENSION_receivedReadVertex=kmerAtPosition(theSequence,distance,wordSize,leftStrand,*colorSpaceMode);
 				//cout<<"Vertex is "<<idToWord(ed->m_EXTENSION_receivedReadVertex,wordSize)<<endl;
 				// process each edge separately.
@@ -342,7 +343,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 					uint64_t pathVertex=ed->m_enumerateChoices_outgoingEdges[ed->m_EXTENSION_edgeIterator];
 					// got a match!
 					if(ed->m_EXTENSION_receivedReadVertex==pathVertex){
-						if(!ed->hasPairedRead(uniqueId)){
+						if(!element->hasPairedRead()){
 							ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_edgeIterator].push_back(distance);	
 							_UPDATE_SINGLE_VALUES(distance);
 
@@ -350,15 +351,16 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 							ed->m_EXTENSION_readIterator++;
 							ed->m_EXTENSION_hasPairedReadRequested=false;
 						}else{	
-							PairedRead pairedRead=ed->getPairedRead(uniqueId);
+							PairedRead pairedRead=element->getPairedRead();
 							uint64_t uniqueReadIdentifier=pairedRead.getUniqueId();
 							int library=pairedRead.getLibrary();
 							int expectedFragmentLength=m_parameters->getLibraryAverageLength(library);
 							int expectedDeviation=m_parameters->getLibraryStandardDeviation(library);
 							//bool leftReadIsLeftInThePair=pairedRead.isLeftRead();
-							if(ed->isUsedRead(uniqueReadIdentifier)){// use to be via readsPositions
-								char rightStrand=ed->getStrand(uniqueReadIdentifier);
-								int startingPositionOnPath=ed->getStartingPosition(uniqueReadIdentifier);
+							ExtensionElement*extensionElement=ed->getUsedRead(uniqueReadIdentifier);
+							if(extensionElement!=NULL){// use to be via readsPositions
+								char rightStrand=extensionElement->getStrand();
+								int startingPositionOnPath=extensionElement->getPosition();
 			
 								int observedFragmentLength=(startPosition-startingPositionOnPath)+ed->m_EXTENSION_receivedLength;
 								int multiplier=3;
@@ -408,10 +410,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 					// remove reads that are no longer in-range.
 					for(int i=0;i<(int)ed->m_EXTENSION_readsOutOfRange.size();i++){
 						uint64_t uniqueId=ed->m_EXTENSION_readsOutOfRange[i];
-						if(ed->hasPairedRead(uniqueId)>0){
-							ed->removePairedRead(uniqueId);
-						}
-						ed->m_EXTENSION_readsInRange->erase(ed->m_EXTENSION_readsOutOfRange[i]);
+						ed->m_EXTENSION_readsInRange->erase(uniqueId);
 					}
 					ed->m_EXTENSION_readsOutOfRange.clear();
 					return;
@@ -791,7 +790,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				if(m_sequenceIndexToCache<(int)ed->m_EXTENSION_receivedReads.size()){
 					ReadAnnotation annotation=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache];
 					uint64_t uniqueId=annotation.getUniqueId();
-					if(ed->isUsedRead(uniqueId)){
+					ExtensionElement*anElement=ed->getUsedRead(uniqueId);
+					if(anElement!=NULL){
 						m_sequenceIndexToCache++;
 					}else if(!m_sequenceRequested){
 						m_sequenceRequested=true;
@@ -806,16 +806,16 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,sequenceRank,RAY_MPI_TAG_REQUEST_READ_SEQUENCE,theRank);
 						outbox->push_back(aMessage);
 					}else if(m_sequenceReceived){
-						ed->addUsedRead(uniqueId);
-						ed->setSequence(uniqueId,m_receivedString);
-						ed->setStartingPosition(uniqueId,ed->m_EXTENSION_extension->size()-1);
-						ed->setStrand(uniqueId,annotation.getStrand());
-					ed->m_EXTENSION_readsInRange->insert(uniqueId);
+						ExtensionElement*element=ed->addUsedRead(uniqueId);
+						element->setSequence(m_receivedString.c_str(),ed->getAllocator());
+						element->setStartingPosition(ed->m_EXTENSION_extension->size()-1);
+						element->setStrand(annotation.getStrand());
+						ed->m_EXTENSION_readsInRange->insert(uniqueId);
 						m_sequenceReceived=false;
 
 						// received paired read too !
 						if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
-							ed->setPairedRead(annotation.getUniqueId(),ed->m_EXTENSION_pairedRead);
+							element->setPairedRead(ed->m_EXTENSION_pairedRead);
 						}
 	
 						m_sequenceIndexToCache++;
