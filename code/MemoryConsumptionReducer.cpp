@@ -238,8 +238,8 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 
 			m_hasSetVertex=true;
 			m_doneWithOutgoingEdges=false;
-			m_dfsDataOutgoing.m_doChoice_tips_dfs_done=false;
-			m_dfsDataOutgoing.m_doChoice_tips_dfs_initiated=false;
+			m_dfsDataOutgoing->m_doChoice_tips_dfs_done=false;
+			m_dfsDataOutgoing->m_doChoice_tips_dfs_initiated=false;
 		}else if(!isCandidate(m_firstVertex,wordSize)){
 			m_hasSetVertex=false;
 		}else if(!m_doneWithOutgoingEdges){
@@ -247,9 +247,9 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 			vector<uint64_t> parents=m_firstVertex->getValue()->getIngoingEdges(key,wordSize);
 			vector<uint64_t> children=m_firstVertex->getValue()->getOutgoingEdges(key,wordSize);
 
-			if(!m_dfsDataOutgoing.m_doChoice_tips_dfs_done){
+			if(!m_dfsDataOutgoing->m_doChoice_tips_dfs_done){
 				//cout<<"visit. "<<endl;
-				m_dfsDataOutgoing.depthFirstSearchBidirectional(key,m_maximumDepth,
+				m_dfsDataOutgoing->depthFirstSearchBidirectional(key,m_maximumDepth,
 edgesRequested,
 vertexCoverageRequested,
 vertexCoverageReceived,
@@ -267,9 +267,9 @@ edgesReceived,parameters
 				map<uint64_t,vector<uint64_t> > theParents;
 				map<uint64_t,vector<uint64_t> > theChildren;
 
-				for(int j=0;j<(int)m_dfsDataOutgoing.m_depthFirstSearchVisitedVertices_vector.size();j+=2){
-					uint64_t prefix=m_dfsDataOutgoing.m_depthFirstSearchVisitedVertices_vector[j+0];
-					uint64_t suffix=m_dfsDataOutgoing.m_depthFirstSearchVisitedVertices_vector[j+1];
+				for(int j=0;j<(int)m_dfsDataOutgoing->m_depthFirstSearchVisitedVertices_vector.size();j+=2){
+					uint64_t prefix=m_dfsDataOutgoing->m_depthFirstSearchVisitedVertices_vector[j+0];
+					uint64_t suffix=m_dfsDataOutgoing->m_depthFirstSearchVisitedVertices_vector[j+1];
 					theChildren[prefix].push_back(suffix);
 					theParents[suffix].push_back(prefix);
 				}
@@ -311,7 +311,7 @@ edgesReceived,parameters
 
 						if(theEdges->count(current)>0&&(*theEdges)[current].size()==1){
 							path.push_back(current);
-							int theCoverageOfCurrent=m_dfsDataOutgoing.m_coverages[current];
+							int theCoverageOfCurrent=m_dfsDataOutgoing->m_coverages[current];
 							if(theCoverageOfCurrent>maximumCoverageInPath){
 								maximumCoverageInPath=theCoverageOfCurrent;
 							}	
@@ -330,7 +330,7 @@ edgesReceived,parameters
 						while(!nodes.empty()){
 							uint64_t node=nodes.top();
 
-							int theCoverageOfCurrent=m_dfsDataOutgoing.m_coverages[node];
+							int theCoverageOfCurrent=m_dfsDataOutgoing->m_coverages[node];
 
 							visited.insert(node);
 							nodes.pop();
@@ -360,7 +360,7 @@ edgesReceived,parameters
 						vector<uint64_t> bestPath=computePath(otherEdges,junction,vertexAtMaxDepth,&visited);
 						for(int u=0;u<(int)bestPath.size();u++){
 							uint64_t node=bestPath[u];
-							int theCoverageOfCurrent=m_dfsDataOutgoing.m_coverages[node];
+							int theCoverageOfCurrent=m_dfsDataOutgoing->m_coverages[node];
 							if(theCoverageOfCurrent<minimumCoverageInOtherPath){
 								minimumCoverageInOtherPath=theCoverageOfCurrent;
 							}
@@ -388,7 +388,7 @@ edgesReceived,parameters
 							if(!aloneBits){
 								break;
 							}
-							if(m_dfsDataOutgoing.m_coverages[path[o]]!=1){
+							if(m_dfsDataOutgoing->m_coverages[path[o]]!=1){
 								#ifdef _VERBOSE
 								//cout<<path.size()<<" vertices, no junction, and a vertex has a coverage greater than 1"<<endl;
 								#endif
@@ -425,8 +425,8 @@ edgesReceived,parameters
 							
 							for(int u=0;u<(int)path.size();u++){	
 								uint64_t kmer=path[u];
-								(*m_ingoingEdges)[kmer]=(*(m_dfsDataOutgoing.getIngoingEdges()))[kmer];
-								(*m_outgoingEdges)[kmer]=(*(m_dfsDataOutgoing.getOutgoingEdges()))[kmer];
+								(*m_ingoingEdges)[kmer]=(*(m_dfsDataOutgoing->getIngoingEdges()))[kmer];
+								(*m_outgoingEdges)[kmer]=(*(m_dfsDataOutgoing->getOutgoingEdges()))[kmer];
 							}
 
 							// push queries in a buffer
@@ -453,9 +453,9 @@ edgesReceived,parameters
 						m_toRemove->push_back(path[u]);
 						uint64_t vertex=path[u];
 			
-						(*m_ingoingEdges)[vertex]=(*(m_dfsDataOutgoing.getIngoingEdges()))[vertex];
+						(*m_ingoingEdges)[vertex]=(*(m_dfsDataOutgoing->getIngoingEdges()))[vertex];
 
-						(*m_outgoingEdges)[vertex]=(*(m_dfsDataOutgoing.getOutgoingEdges()))[vertex];
+						(*m_outgoingEdges)[vertex]=(*(m_dfsDataOutgoing->getOutgoingEdges()))[vertex];
 
 						#ifdef ASSERT
 						if(idToWord(vertex,wordSize)=="GCGGCTAGTTTTCTAGTTTGA"){
@@ -487,14 +487,14 @@ edgesReceived,parameters
 					cout<<"root="<<idToWord(key,wordSize)<<endl;
 					cout<<"Parents: "<<parents.size()<<endl;
 					cout<<"Children: "<<children.size()<<endl;
-					cout<<m_dfsDataOutgoing.m_depthFirstSearchVisitedVertices_vector.size()/2<<" edges."<<endl;
+					cout<<m_dfsDataOutgoing->m_depthFirstSearchVisitedVertices_vector.size()/2<<" edges."<<endl;
 					cout<<"MaximumCoverageInPath="<<maximumCoverageInPath<<endl;
 					cout<<"MinimumCoverageInOtherPath="<<minimumCoverageInOtherPath<<endl;
 			
 					cout<<"digraph{"<<endl;
 					cout<<"node [color=lightblue2 style=filled]"<<endl;
-					for(map<uint64_t,int>::iterator p=m_dfsDataOutgoing.m_coverages.begin();
-						p!=m_dfsDataOutgoing.m_coverages.end();p++){
+					for(map<uint64_t,int>::iterator p=m_dfsDataOutgoing->m_coverages.begin();
+						p!=m_dfsDataOutgoing->m_coverages.end();p++){
 						cout<<idToWord(p->first,wordSize)<<" [label=\""<<idToWord(p->first,wordSize)<<" "<<p->second;
 						if(key==p->first){
 							cout<<" (root) ";
@@ -522,13 +522,13 @@ edgesReceived,parameters
 						cout<<" ] "<<endl;
 					}
 
-					for(int j=0;j<(int)m_dfsDataOutgoing.m_depthFirstSearchVisitedVertices_vector.size();j+=2){
-						uint64_t prefix=m_dfsDataOutgoing.m_depthFirstSearchVisitedVertices_vector[j+0];
-						uint64_t suffix=m_dfsDataOutgoing.m_depthFirstSearchVisitedVertices_vector[j+1];
+					for(int j=0;j<(int)m_dfsDataOutgoing->m_depthFirstSearchVisitedVertices_vector.size();j+=2){
+						uint64_t prefix=m_dfsDataOutgoing->m_depthFirstSearchVisitedVertices_vector[j+0];
+						uint64_t suffix=m_dfsDataOutgoing->m_depthFirstSearchVisitedVertices_vector[j+1];
 						cout<<idToWord(prefix,wordSize)<<" -> "<<idToWord(suffix,wordSize)<<endl;
 						#ifdef ASSERT
-						assert(m_dfsDataOutgoing.m_coverages.count(prefix)>0);
-						assert(m_dfsDataOutgoing.m_coverages.count(suffix)>0);
+						assert(m_dfsDataOutgoing->m_coverages.count(prefix)>0);
+						assert(m_dfsDataOutgoing->m_coverages.count(suffix)>0);
 						#endif
 					}
 					cout<<"}"<<endl;
@@ -620,6 +620,7 @@ map<uint64_t,vector<uint64_t> >*MemoryConsumptionReducer::getOutgoingEdges(){
 }
 
 void MemoryConsumptionReducer::destructor(){
+	delete m_dfsDataOutgoing;
 	delete m_toRemove;
 	delete m_ingoingEdges;
 	delete m_outgoingEdges;
@@ -629,6 +630,7 @@ void MemoryConsumptionReducer::destructor(){
 }
 
 void MemoryConsumptionReducer::constructor(){
+	m_dfsDataOutgoing=new DepthFirstSearchData;
 	m_toRemove=new vector<uint64_t>;
 	m_ingoingEdges=new map<uint64_t,vector<uint64_t> >;
 	m_outgoingEdges=new map<uint64_t,vector<uint64_t> >;

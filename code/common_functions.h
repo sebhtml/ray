@@ -35,7 +35,6 @@ see <http://www.gnu.org/licenses/>
 #include<slave_modes.h>
 #include<mpi_tags.h>
 #include<stdint.h>
-#include<SplayTree.h>
 #include<stdlib.h>
 #include<sys/types.h>
 #include<time.h>

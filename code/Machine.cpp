@@ -65,7 +65,6 @@ Machine::Machine(int argc,char**argv){
 	#ifdef SHOW_SENT_MESSAGES
 	m_stats=new StatisticsData();
 	#endif
-	m_dfsData=new DepthFirstSearchData();
 	m_fusionData=new FusionData();
 	m_seedingData=new SeedingData();
 
@@ -1245,7 +1244,7 @@ void Machine::call_RAY_SLAVE_MODE_EXTENSION(){
 	m_fusionData,&m_outboxAllocator,&(m_seedingData->m_SEEDING_edgesRequested),&(m_seedingData->m_SEEDING_outgoingEdgeIndex),
 	&m_last_value,&(m_seedingData->m_SEEDING_vertexCoverageRequested),m_wordSize,&m_colorSpaceMode,getSize(),&(m_seedingData->m_SEEDING_vertexCoverageReceived),
 	&(m_seedingData->m_SEEDING_receivedVertexCoverage),&m_repeatedLength,&maxCoverage,&(m_seedingData->m_SEEDING_receivedOutgoingEdges),&m_c,
-	m_cd,m_bubbleData,m_dfsData,
+	m_cd,m_bubbleData,
 m_minimumCoverage,&m_oa,&(m_seedingData->m_SEEDING_edgesReceived),&m_slave_mode);
 }
 
@@ -1255,7 +1254,6 @@ void Machine::call_RAY_SLAVE_MODE_DELETE_VERTICES(){
 m_reducer.getIngoingEdges(),m_reducer.getOutgoingEdges()
 )){
 		// flush
-
 
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_DELETE_VERTICES_DONE,getRank());
 		m_outbox.push_back(aMessage);
@@ -1276,7 +1274,6 @@ void Machine::killRanks(){
 	if(m_killed){
 		return;
 	}
-
 
 	m_killed=true;
 	for(int i=getSize()-1;i>=0;i--){
@@ -1307,9 +1304,7 @@ void Machine::printStatus(){
 
 Machine::~Machine(){
 	// do nothing.
-	delete m_dfsData;
 	delete m_bubbleData;
-	m_dfsData=NULL;
 	m_bubbleData=NULL;
 }
 

@@ -20,9 +20,7 @@
 */
 
 #include<common_functions.h>
-#ifdef ASSERT
 #include<assert.h>
-#endif
 #include<math.h>
 #include<Parameters.h>
 #include<string>
@@ -359,7 +357,7 @@ void Parameters::parseCommands(){
 			}
 
 			m_reducerIsActivated=true;
-			m_reducerPeriod=10000000;
+			m_reducerPeriod=1000000;
 			
 			if(items==1){
 				m_reducerPeriod=atoi(m_commands[i+1].c_str());

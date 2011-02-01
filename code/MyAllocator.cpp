@@ -27,13 +27,6 @@
 #include<assert.h>
 using namespace std;
 
-MyAllocator::MyAllocator(){
-	m_addressesToReuse=NULL;
-	m_numberOfAddressesToReuse=0;
-	m_growthRate=130000;
-	m_maxSize=0;
-}
-
 /**
  * reset the currentPosition and reuse allocated memory.
  */
@@ -49,11 +42,12 @@ void MyAllocator::constructor(int chunkSize){
 	#endif
 	m_chunks.push_back(m_currentChunk);
 	m_currentPosition=0;
+	m_store.constructor();
 }
 
 void*MyAllocator::allocate(int s){
-	if(hasAddressesToReuse()){
-		return reuseAddress();
+	if(m_store.hasAddressesToReuse()){
+		return m_store.reuseAddress();
 	}
 
 	// hopefully fix alignment issues on Itanium
@@ -111,19 +105,6 @@ void MyAllocator::resetMemory(){
 		m_currentPosition=0;
 		return;
 	}
-/*
-	// keep the first CHUNK
-	if(getNumberOfChunks()>1){
-		for(int i=1;i<(int)m_chunks.size();i++){
-			__Free(m_chunks[i]);
-		}
-		void*first=m_chunks[0];
-		m_chunks.clear();
-		m_chunks.push_back(first);
-		m_currentPosition=0;
-		return;
-	}
-*/
 	// to this point, we know there are no chunks anyway,
 	// but we know we won't reach this line
 	// because there is alway one chunk if the object is not cleared.
@@ -153,35 +134,6 @@ int MyAllocator::getNumberOfChunks(){
 	return m_chunks.size();
 }
 
-bool MyAllocator::hasAddressesToReuse(){
-	return m_numberOfAddressesToReuse>0;
+ReusableMemoryStore*MyAllocator::getStore(){
+	return &m_store;
 }
-
-void*MyAllocator::reuseAddress(){
-	m_numberOfAddressesToReuse--;
-	void*ptr=m_addressesToReuse[m_numberOfAddressesToReuse];
-	if(m_numberOfAddressesToReuse==0){
-		free(m_addressesToReuse);
-		m_addressesToReuse=NULL;
-	}
-	return ptr;
-}
-
-void MyAllocator::addAddressToReuse(void*ptr){
-	if(m_numberOfAddressesToReuse==m_maxSize || m_addressesToReuse==NULL){
-		m_maxSize+=m_growthRate;
-		m_addressesToReuse=(void**)__Realloc(m_addressesToReuse,m_maxSize*sizeof(void*));
-	}
-	m_addressesToReuse[m_numberOfAddressesToReuse]=ptr;
-	m_numberOfAddressesToReuse++;
-}
-
-void MyAllocator::freeAddressesToReuse(){
-	if(m_numberOfAddressesToReuse!=0){
-		free(m_addressesToReuse);
-		m_addressesToReuse=NULL;
-		m_numberOfAddressesToReuse=0;
-	}
-}
-
-

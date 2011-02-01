@@ -48,13 +48,12 @@ class MemoryConsumptionReducer{
 	bool m_hasSetVertex;
 	bool m_doneWithOutgoingEdges;
 	
-	DepthFirstSearchData m_dfsDataOutgoing;
+	DepthFirstSearchData*m_dfsDataOutgoing;
 	SplayNode<uint64_t,Vertex>*m_firstVertex;
 
 	vector<uint64_t>*m_toRemove;
 	map<uint64_t,vector<uint64_t> >*m_ingoingEdges;
 	map<uint64_t,vector<uint64_t> >*m_outgoingEdges;
-
 
 	vector<vector<uint64_t> >*m_confettiToCheck;
 	vector<int>*m_confettiMaxCoverage;

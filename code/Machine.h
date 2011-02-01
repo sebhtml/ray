@@ -245,9 +245,6 @@ class Machine{
 	// BUBBLE
 	BubbleData*m_bubbleData;
 
-
-	DepthFirstSearchData*m_dfsData;
-
 	int milliSeconds();
 	void enumerateChoices();
 	void killRanks();

@@ -20,10 +20,9 @@
 */
 
 #ifndef _Vertex
-
 #define _Vertex
+
 #include<ReadAnnotation.h>
-#include<MyAllocator.h>
 #include<Direction.h>
 #include<VertexLinkedList.h>
 #include<stdint.h>
@@ -78,14 +77,14 @@ public:
 	int getCoverage();
 	void addOutgoingEdge(uint64_t a,int k);
 	void addIngoingEdge(uint64_t a,int k);
-	void addRead(int rank,int i,char c,MyAllocator*allocator);
+	void addRead(ReadAnnotation*e);
 	bool isAssembled();
 	void assemble();
 	vector<uint64_t> getIngoingEdges(uint64_t a,int k);
 	vector<uint64_t> getOutgoingEdges(uint64_t a,int k);
 	uint8_t getEdges();
 	ReadAnnotation*getReads();
-	void addDirection(uint64_t wave,int progression,MyAllocator*a);
+	void addDirection(Direction*d);
 	vector<Direction> getDirections();
 	void clearDirections();
 	void deleteIngoingEdge(uint64_t a,int k);

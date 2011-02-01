@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C)  2010  Sébastien Boisvert
+    Copyright (C)  2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -23,7 +23,8 @@
 #ifndef _MyAllocator
 #define _MyAllocator
 
-#include<vector>
+#include <vector>
+#include <ReusableMemoryStore.h>
 using namespace std;
 
 /*
@@ -39,19 +40,11 @@ class MyAllocator{
 	void*m_currentChunk;
 	int m_currentPosition;
 	int m_CHUNK_SIZE;
-
-	void**m_addressesToReuse;
-	int m_numberOfAddressesToReuse;
-	int m_growthRate;
-	int m_maxSize;
-
-	bool hasAddressesToReuse();
-	void*reuseAddress();
+	ReusableMemoryStore m_store;
 public:
 	/**
  * allocator.
  */
-	MyAllocator();
 	void print();
 	/**
  	* reset the chunk to reuse it properly.
@@ -66,9 +59,9 @@ public:
 	~MyAllocator();
 	int getChunkSize();
 	int getNumberOfChunks();
-	void addAddressToReuse(void*ptr);
-	void freeAddressesToReuse();
+
 	void resetMemory();
+	ReusableMemoryStore*getStore();
 };
 
 

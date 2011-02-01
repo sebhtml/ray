@@ -38,7 +38,7 @@ void SeedExtender::extendSeeds(vector<vector<uint64_t> >*seeds,ExtensionData*ed,
   uint64_t*currentVertex,FusionData*fusionData,RingAllocator*outboxAllocator,bool*edgesRequested,int*outgoingEdgeIndex,
 int*last_value,bool*vertexCoverageRequested,int wordSize,bool*colorSpaceMode,int size,bool*vertexCoverageReceived,
 int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,vector<uint64_t>*receivedOutgoingEdges,Chooser*chooser,
-ChooserData*cd,BubbleData*bubbleData,DepthFirstSearchData*dfsData,
+ChooserData*cd,BubbleData*bubbleData,
 int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 	if((*seeds).size()==0){
 		ed->destructor();
@@ -50,7 +50,8 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_EXTENSION_IS_DONE,theRank);
 		(*outbox).push_back(aMessage);
-
+		delete m_cache;
+		delete m_dfsData;
 		return;
 	}
 	if(!ed->m_EXTENSION_initiated){
@@ -139,8 +140,7 @@ oa,colorSpaceMode,wordSize);
 		currentVertex,theRank,vertexCoverageRequested,receivedOutgoingEdges,
 		vertexCoverageReceived,size,receivedVertexCoverage,chooser,cd,wordSize);
 	}else if(!ed->m_EXTENSION_choose){
-		doChoice(outboxAllocator,outgoingEdgeIndex,outbox,currentVertex,cd,bubbleData,theRank,
-	dfsData,wordSize,
+		doChoice(outboxAllocator,outgoingEdgeIndex,outbox,currentVertex,cd,bubbleData,theRank,wordSize,
 	ed,minimumCoverage,*maxCoverage,oa,chooser,colorSpaceMode,seeds,
 edgesRequested,vertexCoverageRequested,vertexCoverageReceived,size,receivedVertexCoverage,edgesReceived,
 receivedOutgoingEdges);
@@ -169,10 +169,10 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 	}else if((*edgesReceived)){
 		if((*outgoingEdgeIndex)<(int)(*receivedOutgoingEdges).size()){
 			// get the coverage of these.
-			if(!(*vertexCoverageRequested)&&m_cache.count((*receivedOutgoingEdges)[(*outgoingEdgeIndex)])>0){
+			if(!(*vertexCoverageRequested)&&(*m_cache).count((*receivedOutgoingEdges)[(*outgoingEdgeIndex)])>0){
 				(*vertexCoverageRequested)=true;
 				(*vertexCoverageReceived)=true;
-				(*receivedVertexCoverage)=m_cache[(*receivedOutgoingEdges)[(*outgoingEdgeIndex)]];
+				(*receivedVertexCoverage)=(*m_cache)[(*receivedOutgoingEdges)[(*outgoingEdgeIndex)]];
 
 				#ifdef ASSERT
 				assert((*receivedVertexCoverage)<=255);
@@ -187,7 +187,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				(*vertexCoverageReceived)=false;
 				(*receivedVertexCoverage)=-1;
 			}else if((*vertexCoverageReceived)){
-				m_cache[(*receivedOutgoingEdges)[(*outgoingEdgeIndex)]]=*receivedVertexCoverage;
+				(*m_cache)[(*receivedOutgoingEdges)[(*outgoingEdgeIndex)]]=*receivedVertexCoverage;
 				(*outgoingEdgeIndex)++;
 				(*vertexCoverageRequested)=false;
 				#ifdef ASSERT
@@ -250,7 +250,7 @@ cd->m_CHOOSER_theSums[ed->m_EXTENSION_edgeIterator]+=distance;
  *      if this fails, Ray attempts to choose by resolving bubbles
  */
 void SeedExtender::doChoice(RingAllocator*outboxAllocator,int*outgoingEdgeIndex,StaticVector*outbox,
-	uint64_t*currentVertex,ChooserData*cd,BubbleData*bubbleData,int theRank,DepthFirstSearchData*dfsData,
+	uint64_t*currentVertex,ChooserData*cd,BubbleData*bubbleData,int theRank,
 	int wordSize,
 ExtensionData*ed,int minimumCoverage,int maxCoverage,OpenAssemblerChooser*oa,Chooser*chooser,bool*colorSpaceMode,
 	vector<vector<uint64_t> >*seeds,
@@ -464,19 +464,19 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				}
 
 				ed->m_doChoice_tips_Detected=false;
-				dfsData->m_doChoice_tips_Initiated=false;
+				m_dfsData->m_doChoice_tips_Initiated=false;
 			}
 			return;
 		}else if(!ed->m_doChoice_tips_Detected && ed->m_EXTENSION_readsInRange->size()>0){
  			//for each entries in ed->m_enumerateChoices_outgoingEdges, do a dfs of max depth 40.
 			//if the reached depth is 40, it is not a tip, otherwise, it is.
 			int maxDepth=MAX_DEPTH;
-			if(!dfsData->m_doChoice_tips_Initiated){
-				dfsData->m_doChoice_tips_i=0;
-				dfsData->m_doChoice_tips_newEdges.clear();
-				dfsData->m_doChoice_tips_dfs_initiated=false;
-				dfsData->m_doChoice_tips_dfs_done=false;
-				dfsData->m_doChoice_tips_Initiated=true;
+			if(!m_dfsData->m_doChoice_tips_Initiated){
+				m_dfsData->m_doChoice_tips_i=0;
+				m_dfsData->m_doChoice_tips_newEdges.clear();
+				m_dfsData->m_doChoice_tips_dfs_initiated=false;
+				m_dfsData->m_doChoice_tips_dfs_done=false;
+				m_dfsData->m_doChoice_tips_Initiated=true;
 				bubbleData->m_BUBBLE_visitedVertices.clear();
 				bubbleData->m_visitedVertices.clear();
 				bubbleData->m_BUBBLE_visitedVerticesDepths.clear();
@@ -484,59 +484,56 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 			bubbleData->m_coverages[(*currentVertex)]=ed->m_currentCoverage;
 			}
 
-			if(dfsData->m_doChoice_tips_i<(int)ed->m_enumerateChoices_outgoingEdges.size()){
-				if(!dfsData->m_doChoice_tips_dfs_done){
+			if(m_dfsData->m_doChoice_tips_i<(int)ed->m_enumerateChoices_outgoingEdges.size()){
+				if(!m_dfsData->m_doChoice_tips_dfs_done){
 					if(ed->m_enumerateChoices_outgoingEdges.size()==1){
-						dfsData->m_doChoice_tips_dfs_done=true;
+						m_dfsData->m_doChoice_tips_dfs_done=true;
 					}else{
-						dfsData->depthFirstSearch((*currentVertex),ed->m_enumerateChoices_outgoingEdges[dfsData->m_doChoice_tips_i],maxDepth,edgesRequested,vertexCoverageRequested,vertexCoverageReceived,outboxAllocator,
+						m_dfsData->depthFirstSearch((*currentVertex),ed->m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_i],maxDepth,edgesRequested,vertexCoverageRequested,vertexCoverageReceived,outboxAllocator,
 size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage,edgesReceived);
 					}
 				}else{
-					#ifdef SHOW_CHOICE
-					//cout<<"Choice #"<<dfsData->m_doChoice_tips_i+1<<" : visited "<<dfsData->m_depthFirstSearchVisitedVertices.size()<<", max depth is "<<dfsData->m_depthFirstSearch_maxDepth<<endl;
-					#endif
 					// keep the edge if it is not a tip.
-					if(dfsData->m_depthFirstSearch_maxDepth>=TIP_LIMIT){
+					if(m_dfsData->m_depthFirstSearch_maxDepth>=TIP_LIMIT){
 
 						// just don't try that strange graph place for now.
-						if(dfsData->m_depthFirstSearchVisitedVertices.size()==MAX_VERTICES_TO_VISIT){
+						if(m_dfsData->m_depthFirstSearchVisitedVertices.size()==MAX_VERTICES_TO_VISIT){
 							/*
 							m_doChoice_tips_Detected=true;
 							bubbleData->m_doChoice_bubbles_Detected=true;
 							return;
 							*/
 						}
-						dfsData->m_doChoice_tips_newEdges.push_back(dfsData->m_doChoice_tips_i);
-						bubbleData->m_visitedVertices.push_back(dfsData->m_depthFirstSearchVisitedVertices);
+						m_dfsData->m_doChoice_tips_newEdges.push_back(m_dfsData->m_doChoice_tips_i);
+						bubbleData->m_visitedVertices.push_back(m_dfsData->m_depthFirstSearchVisitedVertices);
 						// store visited vertices for bubble detection purposes.
 
-						bubbleData->m_BUBBLE_visitedVertices.push_back(dfsData->m_depthFirstSearchVisitedVertices_vector);
-						for(map<uint64_t,int>::iterator i=dfsData->m_coverages.begin();
-							i!=dfsData->m_coverages.end();i++){
+						bubbleData->m_BUBBLE_visitedVertices.push_back(m_dfsData->m_depthFirstSearchVisitedVertices_vector);
+						for(map<uint64_t,int>::iterator i=m_dfsData->m_coverages.begin();
+							i!=m_dfsData->m_coverages.end();i++){
 							bubbleData->m_coverages[i->first]=i->second;
 						}
-						bubbleData->m_BUBBLE_visitedVerticesDepths.push_back(dfsData->m_depthFirstSearchVisitedVertices_depths);
+						bubbleData->m_BUBBLE_visitedVerticesDepths.push_back(m_dfsData->m_depthFirstSearchVisitedVertices_depths);
 					}else{
 						#ifdef SHOW_PROGRESS_DEBUG
-						cout<<"We have a tip "<<dfsData->m_depthFirstSearch_maxDepth<<" LIMIT="<<TIP_LIMIT<<"."<<endl;
+						cout<<"We have a tip "<<m_dfsData->m_depthFirstSearch_maxDepth<<" LIMIT="<<TIP_LIMIT<<"."<<endl;
 						#endif
 					}
-					dfsData->m_doChoice_tips_i++;
-					dfsData->m_doChoice_tips_dfs_initiated=false;
-					dfsData->m_doChoice_tips_dfs_done=false;
+					m_dfsData->m_doChoice_tips_i++;
+					m_dfsData->m_doChoice_tips_dfs_initiated=false;
+					m_dfsData->m_doChoice_tips_dfs_done=false;
 				}
 			}else{
 				#ifdef SHOW_PROGRESS
 				#endif
 				// we have a winner with tips investigation.
-				if(dfsData->m_doChoice_tips_newEdges.size()==1 && ed->m_EXTENSION_readsInRange->size()>0 
-		and ed->m_EXTENSION_readPositionsForVertices[dfsData->m_doChoice_tips_newEdges[0]].size()>0
+				if(m_dfsData->m_doChoice_tips_newEdges.size()==1 && ed->m_EXTENSION_readsInRange->size()>0 
+		and ed->m_EXTENSION_readPositionsForVertices[m_dfsData->m_doChoice_tips_newEdges[0]].size()>0
 ){
 					// tip watchdog!
 					// the watchdog watches Ray to be sure he is up to the task!
 					TipWatchdog watchdog;
-					bool opinion=watchdog.getApproval(ed,dfsData,minimumCoverage,
+					bool opinion=watchdog.getApproval(ed,m_dfsData,minimumCoverage,
 						(*currentVertex),wordSize,bubbleData);
 					if(!opinion){
 						ed->m_doChoice_tips_Detected=true;
@@ -545,7 +542,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 						return;
 					}
 
-					(*currentVertex)=ed->m_enumerateChoices_outgoingEdges[dfsData->m_doChoice_tips_newEdges[0]];
+					(*currentVertex)=ed->m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_newEdges[0]];
 					#ifdef SHOW_PROGRESS
 					//cout<<"We have a win after tip elimination: "<<idToWord((*currentVertex),wordSize)<<endl;
 					#endif
@@ -613,7 +610,8 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 
 void SeedExtender::storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<vector<uint64_t> >*seeds,
 uint64_t*currentVertex,BubbleData*bubbleData){
-	m_cache.clear();
+	delete m_cache;
+	m_cache=new map<uint64_t,int>;
 	if(ed->m_EXTENSION_extension->size()>=100){
 
 		#ifdef SHOW_CHOICE
@@ -663,6 +661,9 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
  bool*colorSpaceMode,int size,vector<vector<uint64_t> >*seeds){
 	if(!ed->m_EXTENSION_directVertexDone){
 		if(!ed->m_EXTENSION_VertexAssembled_requested){
+			delete m_dfsData;
+			m_dfsData=new DepthFirstSearchData;
+
 			m_receivedDirections.clear();
 			if(ed->m_EXTENSION_currentSeedIndex%10==0 and ed->m_EXTENSION_currentPosition==0 and (*last_value)!=ed->m_EXTENSION_currentSeedIndex){
 				(*last_value)=ed->m_EXTENSION_currentSeedIndex;
@@ -718,10 +719,10 @@ vector<uint64_t>*receivedOutgoingEdges,Chooser*chooser,ChooserData*cd,
 BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpaceMode,int wordSize
 ){
 	if(!ed->m_EXTENSION_directVertexDone){
-		if(!(*vertexCoverageRequested)&&m_cache.count(*currentVertex)>0){
+		if(!(*vertexCoverageRequested)&&(*m_cache).count(*currentVertex)>0){
 			(*vertexCoverageRequested)=true;
 			(*vertexCoverageReceived)=true;
-			*receivedVertexCoverage=m_cache[*currentVertex];
+			*receivedVertexCoverage=(*m_cache)[*currentVertex];
 		}else if(!(*vertexCoverageRequested)){
 			(*vertexCoverageRequested)=true;
 			(*vertexCoverageReceived)=false;
@@ -733,7 +734,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 			(*outbox).push_back(aMessage);
 		}else if((*vertexCoverageReceived)){
 			if(!ed->m_EXTENSION_VertexMarkAssembled_requested){
-				m_cache[*currentVertex]=*receivedVertexCoverage;
+				(*m_cache)[*currentVertex]=*receivedVertexCoverage;
 				int theCurrentSize=ed->m_EXTENSION_extension->size();
 				if(theCurrentSize%10000==0){
 					printf("Rank %i reached %i vertices\n",theRank,theCurrentSize);
@@ -846,6 +847,8 @@ set<uint64_t>*SeedExtender::getEliminatedSeeds(){
 }
 
 void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed){
+	m_dfsData=new DepthFirstSearchData;
+	m_cache=new map<uint64_t,int>;
 	m_ed=ed;
 	this->m_directionsAllocator=m_directionsAllocator;
 	m_parameters=parameters;

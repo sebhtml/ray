@@ -19,10 +19,11 @@
 
 */
 
-#include<BubbleTool.h>
-#include<common_functions.h>
-#include<map>
-#include<set>
+#include <BubbleTool.h>
+#include <common_functions.h>
+#include <map>
+#include <set>
+#include <iostream>
 using namespace std;
 
 //#define DEBUG_BUBBLES

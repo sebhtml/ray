@@ -35,6 +35,7 @@ void RingAllocator::constructor(int chunks,int size){
 	m_numberOfBytes=m_chunks*m_max;
 	m_memory=(uint8_t*)__Malloc(sizeof(uint8_t)*m_chunks*m_max);
 	m_current=0;
+
 }
 
 RingAllocator::RingAllocator(){
@@ -75,3 +76,5 @@ void RingAllocator::resetCount(){
 int RingAllocator::getCount(){
 	return m_count;
 }
+
+

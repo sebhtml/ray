@@ -23,7 +23,6 @@
 #define _VertexLinkedList
 
 #include<common_functions.h>
-#include<MyAllocator.h>
 
 class VertexLinkedList{
 	uint64_t m_vertex;

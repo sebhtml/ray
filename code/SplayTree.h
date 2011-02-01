@@ -32,7 +32,6 @@
 #include<MyAllocator.h>
 using namespace std;
 
-
 /*
  * the splay tree is a binary tree. If a key is asked often, the key will be near the root, otherwise, it will be deeper.
  * this eases the processing because sequencing errors are kept far away from the root.
@@ -125,7 +124,7 @@ bool SplayTree<KEY,VALUE>::remove(KEY key,bool reuse,MyAllocator*allocator){
 
 	// reuse the pointer 
 	if(reuse){
-		allocator->addAddressToReuse(toRemove);
+		allocator->getStore()->addAddressToReuse(toRemove);
 	}
 	return true;
 }

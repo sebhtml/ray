@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C)  2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -19,25 +19,24 @@
 
 */
 
-#include<VertexLinkedList.h>
+#include <ReusableMemoryStore.h>
 
-VertexLinkedList::VertexLinkedList(){
-
-}
-void VertexLinkedList::constructor(uint64_t a){
-	m_vertex=a;
-	m_next=NULL;
+void ReusableMemoryStore::constructor(){
+	m_toReuse=NULL;
 }
 
-void VertexLinkedList::setNext(VertexLinkedList*a){
-	m_next=a;
+bool ReusableMemoryStore::hasAddressesToReuse(){
+	return m_toReuse!=NULL;
 }
 
-uint64_t VertexLinkedList::getVertex(){
-	return m_vertex;
+void*ReusableMemoryStore::reuseAddress(){
+	SplayNode<uint64_t,Vertex>*tmp=m_toReuse;
+	m_toReuse=tmp->m_right;
+	return tmp;
 }
 
-VertexLinkedList*VertexLinkedList::getNext(){
-	return m_next;
+void ReusableMemoryStore::addAddressToReuse(void*p){
+	SplayNode<uint64_t,Vertex>*ptr=(SplayNode<uint64_t,Vertex>*)p;
+	ptr->m_right=m_toReuse;
+	m_toReuse=ptr;
 }
-

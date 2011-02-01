@@ -46,8 +46,9 @@ class DepthFirstSearchData;
 using namespace std;
 
 class SeedExtender{
+	DepthFirstSearchData*m_dfsData;
 	bool m_removedUnfitLibraries;
-	map<uint64_t,int> m_cache;
+	map<uint64_t,int>*m_cache;
 	vector<Direction>m_receivedDirections;
 	EarlyStoppingTechnology m_earlyStoppingTechnology;
 	bool m_skippedASeed;
@@ -93,13 +94,13 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 	FusionData*fusionData,RingAllocator*outboxAllocator,bool*edgesRequested,int*outgoingEdgeIndex,
 int*last_value,bool*vertexCoverageRequested,int wordSize,bool*colorSpaceMode,int size,bool*vertexCoverageReceived,
 int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,vector<uint64_t>*receivedOutgoingEdges,Chooser*chooser,
-ChooserData*cd,BubbleData*bubbleData,DepthFirstSearchData*dfsData,
+ChooserData*cd,BubbleData*bubbleData,
 int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode);
 
 
 
 	void doChoice(RingAllocator*outboxAllocator,int*outgoingEdgeIndex,StaticVector*outbox,uint64_t*currentVertex,
-ChooserData*cd,BubbleData*bubbleData,int theRank,DepthFirstSearchData*dfsData,int wordSize,
+ChooserData*cd,BubbleData*bubbleData,int theRank,int wordSize,
 ExtensionData*ed,int minimumCoverage,int maxCoverage,OpenAssemblerChooser*oa,Chooser*chooser,bool*colorSpaceMode,
 	vector<vector<uint64_t> >*seeds,
 bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,int size,

@@ -36,6 +36,8 @@ public:
 	VALUE m_value;
 	SplayNode<KEY,VALUE>*m_left;
 	SplayNode<KEY,VALUE>*m_right;
+
+
 	SplayNode(KEY key);
 	SplayNode();
 	void setLeft(SplayNode<KEY,VALUE>*vertex);

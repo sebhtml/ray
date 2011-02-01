@@ -157,29 +157,19 @@ void Vertex::addOutgoingEdge(uint64_t a,int k){
 	#endif
 }
 
-void Vertex::addRead(int rank,int i,char c,MyAllocator*allocator){
-	ReadAnnotation*e=(ReadAnnotation*)allocator->allocate(sizeof(ReadAnnotation));
-	#ifdef ASSERT
-	assert(e!=NULL);
-	#endif
-	e->constructor(rank,i,c);
+void Vertex::addRead(ReadAnnotation*e){
 	if(m_readsStartingHere!=NULL){
 		e->setNext(m_readsStartingHere);
 	}
 	m_readsStartingHere=e;
 }
 
-void Vertex::addDirection(uint64_t wave,int progression,MyAllocator*allocator){
-	Direction*e=(Direction*)allocator->allocate(sizeof(Direction));
-	e->constructor(wave,progression);
+void Vertex::addDirection(Direction*e){
 	if(m_direction!=NULL){
 		e->setNext(m_direction);
 	}
 	m_direction=e;
 }
-
-
-
 
 bool Vertex::isAssembled(){
 	return m_direction!=NULL;

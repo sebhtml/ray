@@ -500,8 +500,6 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER(Mes
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message){
-	m_subgraph->getAllocator()->freeAddressesToReuse();
-
 	printf("Rank %i has %i vertices (completed)\n",rank,(int)m_subgraph->size());
 	fflush(stdout);
 	showMemoryUsage(rank);
@@ -948,7 +946,13 @@ void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message){
 		if(node==NULL){
 			continue;
 		}
-		node->getValue()->addRead(rank,sequenceIdOnDestination,strand,&(*m_persistentAllocator));
+		ReadAnnotation*e=(ReadAnnotation*)m_persistentAllocator->allocate(sizeof(ReadAnnotation));
+		#ifdef ASSERT
+		assert(e!=NULL);
+		#endif
+		e->constructor(rank,sequenceIdOnDestination,strand);
+
+		node->getValue()->addRead(e);
 	}
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY,rank);
 	m_outbox->push_back(aMessage);
@@ -1183,7 +1187,10 @@ void MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 		#endif
 		uint64_t wave=incoming[i+1];
 		int progression=incoming[i+2];
-		node->getValue()->addDirection(wave,progression,&(*m_directionsAllocator));
+		Direction*e=(Direction*)m_directionsAllocator->allocate(sizeof(Direction));
+		e->constructor(wave,progression);
+
+		node->getValue()->addDirection(e);
 	}
 }
 
