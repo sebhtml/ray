@@ -15,6 +15,8 @@ distributing vertices.
 * Paired reads are utilized if the distance falls in mean-3 standard
 deviation;mean+3 standard deviation. (3 instead of 1 as described in the
 paper).
+* If a pair of reads does not respect the constraint, the right read is put
+back in removed from the used read set.
 * Fusions are computed more cautiously.
 * Added reporting of memory usage for sequence reads and for vertices. And for
 a few other places too.

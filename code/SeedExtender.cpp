@@ -28,7 +28,7 @@
 #include<BubbleTool.h>
 
 // uncomment to display how Ray chooses things.
-//#define SHOW_CHOICE
+#define SHOW_CHOICE
 
 void debugMessage(int source,int destination,string message){
 	cout<<"Microseconds: "<<getMicroSeconds()<<" Source: "<<source<<" Destination: "<<destination<<" Message: "<<message<<endl;
