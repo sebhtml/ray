@@ -411,6 +411,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 					for(int i=0;i<(int)ed->m_EXTENSION_readsOutOfRange.size();i++){
 						uint64_t uniqueId=ed->m_EXTENSION_readsOutOfRange[i];
 						ed->m_EXTENSION_readsInRange->erase(uniqueId);
+						__Free(ed->getUsedRead(uniqueId)->getSequence());
 					}
 					ed->m_EXTENSION_readsOutOfRange.clear();
 					return;
@@ -426,6 +427,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 					for(int i=0;i<(int)ed->m_sequencesToFree.size();i++){
 						uint64_t uniqueId=ed->m_sequencesToFree[i];
 						//cout<<"Removing "<<uniqueId<<endl;
+						__Free(ed->getUsedRead(uniqueId)->getSequence());
 						ed->removeSequence(uniqueId);
 						ed->m_EXTENSION_readsInRange->erase(uniqueId);
 					}
@@ -612,6 +614,7 @@ void SeedExtender::storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vect
 uint64_t*currentVertex,BubbleData*bubbleData){
 	delete m_cache;
 	m_cache=new map<uint64_t,int>;
+
 	if(ed->m_EXTENSION_extension->size()>=100){
 
 		#ifdef SHOW_CHOICE
@@ -626,6 +629,9 @@ uint64_t*currentVertex,BubbleData*bubbleData){
 		fflush(stdout);
 		showMemoryUsage(theRank);
 
+		int a=ed->getAllocator()->getChunkSize()*ed->getAllocator()->getNumberOfChunks();
+		printf("Rank %i: database allocation: %i\n",theRank,a);
+
 		int chunks=m_directionsAllocator->getNumberOfChunks();
 		int chunkSize=m_directionsAllocator->getChunkSize();
 		uint64_t totalBytes=chunks*chunkSize;
@@ -638,6 +644,14 @@ uint64_t*currentVertex,BubbleData*bubbleData){
 		uint64_t id=ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+theRank;
 		ed->m_EXTENSION_identifiers.push_back(id);
 	}
+
+	ed->resetStructures();
+	printf("After\n");
+	fflush(stdout);
+	showMemoryUsage(theRank);
+	int a=ed->getAllocator()->getChunkSize()*ed->getAllocator()->getNumberOfChunks();
+	printf("Rank %i: database allocation: %i\n",theRank,a);
+
 	ed->m_EXTENSION_currentSeedIndex++;
 
 	ed->m_EXTENSION_currentPosition=0;
@@ -647,8 +661,6 @@ uint64_t*currentVertex,BubbleData*bubbleData){
 	}
 
 	ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
-
-	ed->resetStructures();
 
 	ed->m_EXTENSION_directVertexDone=false;
 	ed->m_EXTENSION_complementedSeed=false;
@@ -739,7 +751,12 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				if(theCurrentSize%10000==0){
 					printf("Rank %i reached %i vertices\n",theRank,theCurrentSize);
 					fflush(stdout);
+
+					showMemoryUsage(theRank);
+					int a=ed->getAllocator()->getChunkSize()*ed->getAllocator()->getNumberOfChunks();
+					printf("Rank %i: database allocation: %i\n",theRank,a);
 				}
+
 				ed->m_EXTENSION_extension->push_back((*currentVertex));
 				ed->m_extensionCoverageValues->push_back(*receivedVertexCoverage);
 				ed->m_currentCoverage=(*receivedVertexCoverage);

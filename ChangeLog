@@ -30,6 +30,8 @@ identifiers overflow on 32 bits.
 other rank, now each rank appends its fusions to the contigs file and also to
 the AMOS file.
 * Fixed a bug in the numbering of reads in the AMOS file.
+* Fixed a memory usage problem in the memory consumption reducer
+
 
 = 1.2.2 'X-ray' =
 2011-01-11
