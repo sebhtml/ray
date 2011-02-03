@@ -41,7 +41,6 @@
 #include<Library.h>
 #include<Chooser.h>
 #include<MessageProcessor.h>
-#include<ChooserData.h>
 #include<Vertex.h>
 #include<OpenAssemblerChooser.h>
 #include<SplayTree.h>
@@ -163,7 +162,6 @@ class Machine{
 
 
 	ExtensionData*m_ed;
-	ChooserData*m_cd;
 
 	// coverage distribubtion
 	map<int,uint64_t> m_coverageDistribution;

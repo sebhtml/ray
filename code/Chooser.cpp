@@ -21,10 +21,8 @@
 
 #include<Chooser.h>
 #include<common_functions.h>
-#include<ChooserData.h>
 
 void Chooser::chooseWithPairedReads(ExtensionData*m_ed,
-	ChooserData*m_cd,
 	int m_minimumCoverage,int m_maxCoverage,
 	double __PAIRED_MULTIPLIER,
 vector<set<int> >*battleVictories,
@@ -38,9 +36,9 @@ Parameters*parameters
 	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
 		int minimum=999999;
 		int maximum=-999;
-
-		for(int j=0;j<(int)m_ed->m_EXTENSION_pairedReadPositionsForVertices[i].size();j++){
-			int value=m_ed->m_EXTENSION_pairedReadPositionsForVertices[i][j];
+		uint64_t key=m_ed->m_enumerateChoices_outgoingEdges[i];
+		for(int j=0;j<(int)m_ed->m_EXTENSION_pairedReadPositionsForVertices[key].size();j++){
+			int value=m_ed->m_EXTENSION_pairedReadPositionsForVertices[key][j];
 			if(value>maximum){
 				maximum=value;
 			}
@@ -49,8 +47,8 @@ Parameters*parameters
 			}
 		}
 
-		counts.push_back(m_ed->m_EXTENSION_pairedReadPositionsForVertices[i].size());
-		if(m_ed->m_EXTENSION_pairedReadPositionsForVertices[i].size()==0){
+		counts.push_back(m_ed->m_EXTENSION_pairedReadPositionsForVertices[key].size());
+		if(m_ed->m_EXTENSION_pairedReadPositionsForVertices[key].size()==0){
 			minimum=0;
 			maximum=0;
 		}

@@ -102,10 +102,10 @@ public:
 	// reads to check (the ones "in range")
 	bool m_EXTENSION_singleEndResolution;
 	set<uint64_t>::iterator m_EXTENSION_readIterator;
-	map<int,vector<int> > m_EXTENSION_readPositionsForVertices;
-	map<int,vector<int> > m_EXTENSION_pairedReadPositionsForVertices;
-	map<int,vector<int> > m_EXTENSION_pairedLibrariesForVertices;
-	map<int,vector<uint64_t> > m_EXTENSION_pairedReadsForVertices;
+	map<uint64_t,vector<int> > m_EXTENSION_readPositionsForVertices;
+	map<uint64_t,vector<int> > m_EXTENSION_pairedReadPositionsForVertices;
+	map<uint64_t,vector<int> > m_EXTENSION_pairedLibrariesForVertices;
+	map<uint64_t,vector<uint64_t> > m_EXTENSION_pairedReadsForVertices;
 	int m_currentCoverage;
 
 	set<uint64_t>*m_EXTENSION_readsInRange;

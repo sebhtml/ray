@@ -24,9 +24,11 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 */
 
-#include<RingAllocator.h>
-#include<common_functions.h>
-#include<assert.h>
+#include <RingAllocator.h>
+#include <common_functions.h>
+#include <assert.h>
+#include <iostream>
+using namespace std;
 
 void RingAllocator::constructor(int chunks,int size){
 	resetCount();

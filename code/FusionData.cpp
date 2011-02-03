@@ -266,7 +266,7 @@ void FusionData::finishFusions(){
 					int observedDistance=(progression1-otherProgression+1);
 					int expectedDistance=(overlapMinimumLength-capLength);
 					if(observedDistance==expectedDistance){
-						cout<<"Expected="<<expectedDistance<<" Observed="<<observedDistance<<endl;
+						//cout<<"Expected="<<expectedDistance<<" Observed="<<observedDistance<<endl;
 						// this is 
 						done=false;
 						hits++;

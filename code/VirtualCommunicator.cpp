@@ -18,6 +18,7 @@
 	see <http://www.gnu.org/licenses/>
 */
 
+#include <assert.h>
 #include<VirtualCommunicator.h>
 #include<common_functions.h>
 #include <mpi.h>

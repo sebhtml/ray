@@ -83,9 +83,6 @@ void SplayTree<KEY,VALUE>::constructor(){
  */
 template<class KEY,class VALUE>
 bool SplayTree<KEY,VALUE>::remove(KEY key,bool reuse,MyAllocator*allocator){
-	#ifdef ASSERT
-	assert(m_frozen==false);
-	#endif
 	// can't remove from an empty tree
 	if(m_root==NULL){
 		return false;
@@ -142,9 +139,6 @@ template<class KEY,class VALUE>
 SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::insert(KEY key,MyAllocator*allocator,bool*inserted){
 	(*inserted)=false;
 	if(m_root==NULL){
-		#ifdef ASSERT
-		assert(m_allocator!=NULL);
-		#endif
 		m_root=(SplayNode<KEY,VALUE>*)allocator->allocate(sizeof(SplayNode<KEY,VALUE>));
 		m_root->init(key);
 		(*inserted)=true;

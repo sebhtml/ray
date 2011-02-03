@@ -19,6 +19,7 @@
 
 */
 
+#include <assert.h>
 #include <Message.h>
 #include <mpi_tags.h>
 #include <common_functions.h>

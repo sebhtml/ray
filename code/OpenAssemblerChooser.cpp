@@ -40,7 +40,7 @@ void OpenAssemblerChooser::constructor(int m_peakCoverage){
 	updateMultiplicators(m_peakCoverage);
 }
 
-int OpenAssemblerChooser::choose(ExtensionData*m_ed,Chooser*m_c,int m_minimumCoverage,int m_maxCoverage,ChooserData*m_cd,
+int OpenAssemblerChooser::choose(ExtensionData*m_ed,Chooser*m_c,int m_minimumCoverage,int m_maxCoverage,
 Parameters*parameters){
 	vector<set<int> > battleVictories;
 
@@ -49,7 +49,7 @@ Parameters*parameters){
 		battleVictories.push_back(victories);
 	}
 
-	m_c->chooseWithPairedReads(m_ed,m_cd,m_minimumCoverage,m_maxCoverage,m_pairedEndMultiplicator,&battleVictories,parameters);
+	m_c->chooseWithPairedReads(m_ed,m_minimumCoverage,m_maxCoverage,m_pairedEndMultiplicator,&battleVictories,parameters);
 	
 	int pairedChoice=getWinner(&battleVictories,m_ed->m_enumerateChoices_outgoingEdges.size());
 
@@ -72,8 +72,9 @@ Parameters*parameters){
 		// if both have paired reads and that is not enough for one of them to win, then abort
 		int withPairedReads=0;
 		
-		for(int j=0;j<(int)m_ed->m_EXTENSION_pairedReadPositionsForVertices.size();j++){
-			if(m_ed->m_EXTENSION_pairedReadPositionsForVertices[j].size()>0){
+		for(int j=0;j<(int)m_ed->m_enumerateChoices_outgoingEdges.size();j++){
+			uint64_t key=m_ed->m_enumerateChoices_outgoingEdges[j];
+			if(m_ed->m_EXTENSION_pairedReadPositionsForVertices[key].size()>0){
 				withPairedReads++;
 			}
 		}
@@ -82,16 +83,41 @@ Parameters*parameters){
 		}
 	}
 
+	map<int,int> CHOOSER_theMaxs;
+	map<int,int> CHOOSER_theNumbers;
+	map<int,int> CHOOSER_theSums;
+
+	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
+		uint64_t key=m_ed->m_enumerateChoices_outgoingEdges[i];
+		int max=0;
+		int n=0;
+		int sum=0;
+		if(m_ed->m_EXTENSION_readPositionsForVertices.count(key)>0){
+			for(vector<int>::iterator j=m_ed->m_EXTENSION_readPositionsForVertices[key].begin();
+				j!=m_ed->m_EXTENSION_readPositionsForVertices[key].end();j++){
+				int val=*j;
+				if(val>max){
+					max=val;
+				}
+				n++;
+				sum+=val;
+			}
+		}
+		CHOOSER_theSums[i]=sum;
+		CHOOSER_theNumbers[i]=n;
+		CHOOSER_theMaxs[i]=max;
+	}
+
 	// win or lose with single-end reads
 	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
-		if(m_cd->m_CHOOSER_theMaxs[i]<5){
+		if(CHOOSER_theMaxs[i]<5){
 			continue;
 		}
 
 		for(int j=0;j<(int)m_ed->m_enumerateChoices_outgoingEdges.size();j++){
-			if((m_cd->m_CHOOSER_theMaxs[i] > m_singleEndMultiplicator*m_cd->m_CHOOSER_theMaxs[j]) 
-				&& (m_cd->m_CHOOSER_theSums[i] > m_singleEndMultiplicator*m_cd->m_CHOOSER_theSums[j]) 
-				&& (m_cd->m_CHOOSER_theNumbers[i] > m_singleEndMultiplicator*m_cd->m_CHOOSER_theNumbers[j])
+			if((CHOOSER_theMaxs[i] > m_singleEndMultiplicator*CHOOSER_theMaxs[j]) 
+				&& (CHOOSER_theSums[i] > m_singleEndMultiplicator*CHOOSER_theSums[j]) 
+				&& (CHOOSER_theNumbers[i] > m_singleEndMultiplicator*CHOOSER_theNumbers[j])
 				){
 				battleVictories[i].insert(j);
 			}

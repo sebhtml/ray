@@ -25,8 +25,10 @@
 
 bool TipWatchdog::getApproval(ExtensionData*ed,DepthFirstSearchData*dfsData,int minimumCoverage,uint64_t SEEDING_currentVertex,
 	int w,BubbleData*bubbleData){
-	int readsInFavorOfThis=ed->m_EXTENSION_readPositionsForVertices[dfsData->m_doChoice_tips_newEdges[0]].size();
-	int coverageAtTheVertexLocation=(*ed->m_EXTENSION_coverages)[dfsData->m_doChoice_tips_newEdges[0]];
+	int id=dfsData->m_doChoice_tips_newEdges[0];
+	uint64_t key=ed->m_enumerateChoices_outgoingEdges[id];
+	int readsInFavorOfThis=ed->m_EXTENSION_readPositionsForVertices[key].size();
+	int coverageAtTheVertexLocation=(*ed->m_EXTENSION_coverages)[id];
 
 	// reads are not supportive of this.
 	if(readsInFavorOfThis*10<coverageAtTheVertexLocation){
@@ -37,17 +39,19 @@ bool TipWatchdog::getApproval(ExtensionData*ed,DepthFirstSearchData*dfsData,int 
 	return true;
 
 	if(ed->m_enumerateChoices_outgoingEdges.size()==2 and
-		(int)ed->m_EXTENSION_readPositionsForVertices[0].size() < minimumCoverage and
-		(int)ed->m_EXTENSION_readPositionsForVertices[1].size() < minimumCoverage){
+		(int)ed->m_EXTENSION_readPositionsForVertices[ed->m_enumerateChoices_outgoingEdges[0]].size() < minimumCoverage 
+		&& (int)ed->m_EXTENSION_readPositionsForVertices[ed->m_enumerateChoices_outgoingEdges[1]].size() < minimumCoverage){
 		int winner=dfsData->m_doChoice_tips_newEdges[0];
 		int loser=0;
-		if(winner==loser)
+		if(winner==loser){
 			loser++;
-		int readsForWinner=ed->m_EXTENSION_readPositionsForVertices[winner].size();
-		int readsForLoser=ed->m_EXTENSION_readPositionsForVertices[loser].size();
+		}
+		int readsForWinner=ed->m_EXTENSION_readPositionsForVertices[ed->m_enumerateChoices_outgoingEdges[winner]].size();
+		int readsForLoser=ed->m_EXTENSION_readPositionsForVertices[ed->m_enumerateChoices_outgoingEdges[loser]].size();
 		int diff=readsForWinner-readsForLoser;
-		if(diff<0)
+		if(diff<0){
 			diff=-diff;
+		}
 		if(diff<2){
 			#ifdef SHOW_TIP_WATCHDOG
 			cout<<"Ray Oddity: The genome lacks coverage after "<<idToWord(SEEDING_currentVertex,w)<<"; Ray can't choose wisely if you don't provide enough data, be manly and rerun your sample!"<<endl;

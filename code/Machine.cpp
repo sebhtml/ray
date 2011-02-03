@@ -70,7 +70,6 @@ Machine::Machine(int argc,char**argv){
 
 	m_ed=new ExtensionData();
 	m_sd=new ScaffolderData();
-	m_cd=new ChooserData();
 
 	assignMasterHandlers();
 	assignSlaveHandlers();
@@ -573,6 +572,8 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	cout<<"Rank "<<getRank()<<": the minimum coverage is "<<m_minimumCoverage<<endl;
 	cout<<"Rank "<<getRank()<<": the peak coverage is "<<m_peakCoverage<<endl;
 
+	//int diff=m_peakCoverage-m_minimumCoverage;
+	//m_seedCoverage=m_minimumCoverage+(3*diff)/4;
 	m_seedCoverage=(m_minimumCoverage+m_peakCoverage)/2;
 
 	m_coverageDistribution.clear();
@@ -1244,7 +1245,7 @@ void Machine::call_RAY_SLAVE_MODE_EXTENSION(){
 	m_fusionData,&m_outboxAllocator,&(m_seedingData->m_SEEDING_edgesRequested),&(m_seedingData->m_SEEDING_outgoingEdgeIndex),
 	&m_last_value,&(m_seedingData->m_SEEDING_vertexCoverageRequested),m_wordSize,&m_colorSpaceMode,getSize(),&(m_seedingData->m_SEEDING_vertexCoverageReceived),
 	&(m_seedingData->m_SEEDING_receivedVertexCoverage),&m_repeatedLength,&maxCoverage,&(m_seedingData->m_SEEDING_receivedOutgoingEdges),&m_c,
-	m_cd,m_bubbleData,
+	m_bubbleData,
 m_minimumCoverage,&m_oa,&(m_seedingData->m_SEEDING_edgesReceived),&m_slave_mode);
 }
 

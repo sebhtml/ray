@@ -37,7 +37,6 @@ class DepthFirstSearchData;
 #include<FusionData.h>
 #include<BubbleData.h>
 #include<DepthFirstSearchData.h>
-#include<ChooserData.h>
 #include<BubbleTool.h>
 #include<OpenAssemblerChooser.h>
 #include<EarlyStoppingTechnology.h>
@@ -73,7 +72,7 @@ public:
 	void enumerateChoices(bool*edgesRequested,ExtensionData*ed,bool*edgesReceived,RingAllocator*outboxAllocator,
 		int*outgoingEdgeIndex,StaticVector*outbox,
 uint64_t*currentVertex,int theRank,bool*vertexCoverageRequested,vector<uint64_t>*receivedOutgoingEdges,
-bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,ChooserData*cd,
+bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 int wordSize);
 
 
@@ -85,7 +84,7 @@ int wordSize);
  StaticVector*outbox,int size,int theRank,ExtensionData*ed,bool*vertexCoverageRequested,
 		bool*vertexCoverageReceived,int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,
 	bool*edgesRequested,
-vector<uint64_t>*receivedOutgoingEdges,Chooser*chooser,ChooserData*cd,
+vector<uint64_t>*receivedOutgoingEdges,Chooser*chooser,
 BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpaceMode,int wordSize);
 
 
@@ -94,13 +93,13 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 	FusionData*fusionData,RingAllocator*outboxAllocator,bool*edgesRequested,int*outgoingEdgeIndex,
 int*last_value,bool*vertexCoverageRequested,int wordSize,bool*colorSpaceMode,int size,bool*vertexCoverageReceived,
 int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,vector<uint64_t>*receivedOutgoingEdges,Chooser*chooser,
-ChooserData*cd,BubbleData*bubbleData,
+BubbleData*bubbleData,
 int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode);
 
 
 
 	void doChoice(RingAllocator*outboxAllocator,int*outgoingEdgeIndex,StaticVector*outbox,uint64_t*currentVertex,
-ChooserData*cd,BubbleData*bubbleData,int theRank,int wordSize,
+BubbleData*bubbleData,int theRank,int wordSize,
 ExtensionData*ed,int minimumCoverage,int maxCoverage,OpenAssemblerChooser*oa,Chooser*chooser,bool*colorSpaceMode,
 	vector<vector<uint64_t> >*seeds,
 bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,int size,

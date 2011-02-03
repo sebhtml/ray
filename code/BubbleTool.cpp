@@ -21,6 +21,7 @@
 
 #include <BubbleTool.h>
 #include <common_functions.h>
+#include <assert.h>
 #include <map>
 #include <set>
 #include <iostream>
