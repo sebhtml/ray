@@ -160,7 +160,7 @@ bool SequencesLoader::computePartition(int rank,int size,
 			return false;
 		}
 		m_parameters->setNumberOfSequences(m_loader.size());
-		printf("Rank %i: %s -> partition is [%lu;%lu], %lu sequence reads\n",m_rank,allFiles[(m_distribution_file_id)].c_str(),counted,counted+m_loader.size()-1,m_loader.size());
+		printf("Rank %i: [%i/%i] %s -> partition is [%lu;%lu], %lu sequence reads\n",m_rank,m_distribution_file_id+1,(int)allFiles.size(),allFiles[(m_distribution_file_id)].c_str(),counted,counted+m_loader.size()-1,m_loader.size());
 		fflush(stdout);
 		counted+=m_loader.size();
 		// write Reads in AMOS format.
