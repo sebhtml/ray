@@ -1,11 +1,154 @@
 \documentclass{article}
+\usepackage{hyperref}
 \usepackage[utf8]{inputenc}
 
 
 \begin{document}
 
 \author{Sébastien Boisvert}
-\title{Instruction Manual for the Ray \emph{de novo} genome assembler}
+\title{Instruction Manual for the Ray \emph{de novo} genome assembler software}
 \maketitle
+
+
+Ray version 1.2.3
+
+\vspace{2cm}
+
+\href{http://denovoassembler.sf.net}{http://denovoassembler.sf.net}
+
+\vspace{2cm}
+
+Reference to cite: 
+\vspace{2cm}
+
+\noindent
+Sébastien Boisvert, François Laviolette \& Jacques Corbeil.\\
+Ray: simultaneous assembly of reads from a mix of high-throughput sequencing technologies.\\
+\emph{Journal of Computational Biology} (Mary Ann Liebert, Inc. publishers, New York, U.S.A.).\\
+November 2010, Volume 17, Issue 11, Pages 1519-1533.\\
+doi:10.1089/cmb.2009.0238\\
+\href{http://dx.doi.org/doi:10.1089/cmb.2009.0238}{http://dx.doi.org/doi:10.1089/cmb.2009.0238}
+
+\newpage
+\tableofcontents
+\newpage
+
+\section{Inputs}
+
+The input files for Ray contain sequences. The files must be formatted in one of the supported formats.
+
+\begin{table}[h]
+\caption{File formats compatible with the Ray \emph{de novo} genome assembler software}
+\begin{tabular}{lll}
+\hline
+Format & Obligatory extension \\
+\hline
+Fasta format & .fasta\\
+Fasta format, compressed with GNU zip (gzip) & .fasta.gz \\
+Fasta format, compressed with bzip2 & .fasta.bz2 \\
+Fastq format & .fastq\\
+Fastq format, compressed with GNU zip (gzip) & .fastq.gz \\
+Fastq format, compressed with bzip2 & .fastq.bz2 \\
+Standard flowgram format & .sff \\
+\hline
+\end{tabular}
+\end{table}
+
+
+\section{Parameters}
+
+\subsection{$k$-mer length with -k}
+
+Ray builds a distributed catalog of all occuring $k$-mers in the reads and their reverse-complement. $k$ must be greater or equal to 15 and lower or equal to 32.
+
+\subsection{Output prefix with -o}
+
+Output files are named according to the prefix provided by the option -o.
+
+\subsection{Single-end reads with -s}
+
+\begin{verbatim}
+-s <sequencesFile>
+\end{verbatim}
+
+\subsection{Paired-end reads and mate-pair reads with -p}
+
+\begin{verbatim}
+-p <leftSequencesFile> <rightSequencesFile> [ <averageFragmentLength> <standardDeviation> ]
+\end{verbatim}
+
+Example for paired-end reads (the ends of DNA fragments):
+
+\begin{verbatim}
+-p s_200_1.fastq s_200_2.fastq
+\end{verbatim}
+
+Example for mate-pair reads (owing to circularization and ligation, the order must be reverse):
+
+\begin{verbatim}
+-p s_20000_2.fastq s_20000_1.fastq
+\end{verbatim}
+
+\subsection{Paired-end reads and mate-pair reads with -i (interleaved sequences)}
+
+\begin{verbatim}
+-i <sequencesFile [ <averageFragmentLength> <standardDeviation> ]
+\end{verbatim}
+
+In the interleaved file (example is for a fasta file):
+
+\begin{verbatim}
+>200_1_1234/1
+ATCGATCGATCGACTCAGACACGTACG
+>200_1_1234/2
+ACTGACGACGTACGACGTCATGCAACT
+...
+\end{verbatim}
+
+For mate-pair reads, the order must be reverse.
+
+
+\section{Output}
+
+\subsection{Contiguous sequences}
+
+OutputPrefix.fasta contains contiguous sequences.
+
+\subsection{Paired-end and mate-pair libraries}
+
+OutputPrefix.LibraryLibraryNumber.txt contains the distribution of distances for paired-end and mate-pair libraries. One file per library.
+
+\subsection{Coverage distribution}
+
+OuputPrefix.CoverageDistribution.txt contains the $k$-mer coverage distribution.
+
+\subsection{Messages}
+
+OuputPrefix.ReceivedMessages.txt contains a matrix.
+
+It contains the number of received messages for each MPI rank.
+
+(MPI communication matrix; rows=destinations, columns=sources)
+
+\section{Example}
+
+\subsection{Bacterial genome with paired-end and mate-pair short reads}
+
+The command:
+
+\begin{verbatim}
+mpirun -np 32 ~/Ray/trunk/code/Ray \
+-p /home/boiseb01/nuccore/Large-Ecoli/200_1.fastq \
+   /home/boiseb01/nuccore/Large-Ecoli/200_2.fastq \
+-p /home/boiseb01/nuccore/Large-Ecoli/1000_1.fastq \
+   /home/boiseb01/nuccore/Large-Ecoli/1000_2.fastq \
+-p /home/boiseb01/nuccore/Large-Ecoli/4000_1.fastq \
+   /home/boiseb01/nuccore/Large-Ecoli/4000_2.fastq \
+-p /home/boiseb01/nuccore/Large-Ecoli/10000_1.fastq \
+   /home/boiseb01/nuccore/Large-Ecoli/10000_2.fastq \
+-o BacterialGenome | tee RayLog
+\end{verbatim}
+
+
 
 \end{document}
