@@ -599,9 +599,6 @@ uint64_t*currentVertex,BubbleData*bubbleData){
 		fflush(stdout);
 		showMemoryUsage(theRank);
 
-		int a=ed->getAllocator()->getChunkSize()*ed->getAllocator()->getNumberOfChunks();
-		printf("Rank %i: database allocation: %i\n",theRank,a);
-
 		int chunks=m_directionsAllocator->getNumberOfChunks();
 		int chunkSize=m_directionsAllocator->getChunkSize();
 		uint64_t totalBytes=chunks*chunkSize;
@@ -616,7 +613,6 @@ uint64_t*currentVertex,BubbleData*bubbleData){
 	}
 
 	ed->resetStructures();
-	printf("After\n");
 	fflush(stdout);
 	showMemoryUsage(theRank);
 	int a=ed->getAllocator()->getChunkSize()*ed->getAllocator()->getNumberOfChunks();

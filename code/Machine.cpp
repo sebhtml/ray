@@ -399,6 +399,12 @@ void Machine::run(){
 	uint64_t endingTime=0;
 */
 	while(isAlive()){
+		time_t t=time(NULL);
+		if(t!=m_lastTime&&t%60==0){
+			printf("Rank %i is alive\n",m_rank);
+			fflush(stdout);
+			m_lastTime=t;
+		}
 /*
 		startTime=getMicroSeconds();
 */
