@@ -1,11 +1,27 @@
+1. 
+
+paired-end reads
+
 
 ----------------------------->
                                                                   <-------------------------------
 
 
 
-
-
 Valid orientations: 'F' & 'R'
 
 Ray considers 'R' & 'F' too for the reverse-complement pair.
+
+
+ -p s_1.fastq s_2.fastq
+
+
+2.
+
+mate-pair reads
+
+
+You must invert the order:
+
+
+ -p s_2.fastq s_1.fastq because the circularization and ligation invert the order.

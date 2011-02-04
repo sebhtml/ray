@@ -9,9 +9,9 @@ distributing vertices.
 * Removed read simulators because samtools include one called 'wgsim'.
 * Changed the paired-end heuristics to accomodate larger distances.
 * Removed RepeatedVertexWatchdog.
-* Changed the RepeatedThreshold from 255 to 3*peakCoverage
+* Changed the RepeatedThreshold from 255 to 3*peakCoverage (or 255 if it is
+higher than 255)
 * Now both versions of read pairs are utilized.
-* Removed heuristics based solely on coverage.
 * Paired reads are utilized if the distance falls in mean-3 standard
 deviation;mean+3 standard deviation. (3 instead of 1 as described in the
 paper).

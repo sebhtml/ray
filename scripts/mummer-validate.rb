@@ -92,14 +92,12 @@ queries.each do |name,hits|
 	ok=false
 	filteredHits=[]
 	hits.each do |hit|
-		if hit.getQueryCoverage>=0.04
-			filteredHits<< hit
-		end
-	end
-	filteredHits.each do |hit|
 		#puts hit.getQueryCoverage.to_s
-		if hit.getQueryCoverage>=0.99
+		if hit.getQueryCoverage>=0.982
 			ok=true
+		end
+		if hit.getQueryCoverage>=0.01
+			filteredHits<< hit
 		end
 		mums<< hit
 	end
@@ -113,13 +111,10 @@ queries.each do |name,hits|
 	end
 	if ok==false
 		fileOutput.puts name
-		hits.each do |hit|
-			if hit.getQueryCoverage<0.04
-				next
-			end
+		filteredHits.each do |hit|
 			fileOutput.puts hit.getRawLine
 		end
-		if hits.size>1
+		if filteredHits.size>1
 			misassembled+=1
 		end
 	end

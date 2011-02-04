@@ -47,6 +47,7 @@ public:
 	vector<int>*m_EXTENSION_coverages;
 	vector<uint64_t>*m_EXTENSION_extension;
 	vector<int>*m_extensionCoverageValues;
+	vector<int>*m_repeatLengths;
 
 	// EXTENSION MODE
 	vector<uint64_t> m_enumerateChoices_outgoingEdges;

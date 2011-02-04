@@ -45,6 +45,8 @@ class DepthFirstSearchData;
 using namespace std;
 
 class SeedExtender{
+	int m_repeatLength;
+
 	DepthFirstSearchData*m_dfsData;
 	bool m_removedUnfitLibraries;
 	map<uint64_t,int>*m_cache;

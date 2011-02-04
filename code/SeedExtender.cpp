@@ -302,6 +302,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				#ifdef ASSERT
 				assert(startPosition<(int)ed->m_extensionCoverageValues->size());
 				#endif
+				int repeatLengthForLeft=ed->m_repeatLengths->at(startPosition);
 
 				char*theSequence=element->getSequence();
 				ed->m_EXTENSION_receivedLength=strlen(theSequence);
@@ -334,14 +335,17 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 					if(extensionElement!=NULL){// use to be via readsPositions
 						char rightStrand=extensionElement->getStrand();
 						int startingPositionOnPath=extensionElement->getPosition();
-			
 						int observedFragmentLength=(startPosition-startingPositionOnPath)+ed->m_EXTENSION_receivedLength;
 						int multiplier=3;
+
+						//int theDistance=startPosition-startingPositionOnPath;
+						int repeatThreshold=100;
 						if(expectedFragmentLength-multiplier*expectedDeviation<=observedFragmentLength 
 						&& observedFragmentLength <= expectedFragmentLength+multiplier*expectedDeviation 
 				&&( (rightStrand=='F' && leftStrand=='R')
 					||(rightStrand=='R' && leftStrand=='F'))
-				/*&& coverageOfLeftVertex<maxCoverage*/){
+				// the bridging pair is meaningless if both start in repeats
+				&&repeatLengthForLeft<repeatThreshold){
 						// it matches!
 							//int theDistance=startPosition-startingPositionOnPath+distance;
 							
@@ -732,6 +736,14 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				ed->m_EXTENSION_extension->push_back((*currentVertex));
 				ed->m_extensionCoverageValues->push_back(*receivedVertexCoverage);
 				ed->m_currentCoverage=(*receivedVertexCoverage);
+
+				if(ed->m_currentCoverage<m_parameters->getMaxCoverage()){
+					m_repeatLength=0;
+				}else{
+					m_repeatLength++;
+				}
+				ed->m_repeatLengths->push_back(m_repeatLength);
+
 				#ifdef ASSERT
 				assert(ed->m_currentCoverage<=255);
 				#endif

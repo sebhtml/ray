@@ -48,8 +48,6 @@ using namespace std;
 // the maximum of processes is utilized to construct unique hyperfusions IDs
 #define MAX_NUMBER_OF_MPI_PROCESSES 1000000
 
-#define _REPEATED_LENGTH_ALARM_THRESHOLD 100
-
 #define __max(a,b) (((a)>(b)) ? (a) : (b))
 
 #define MAX_DEPTH 60

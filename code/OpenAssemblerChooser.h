@@ -33,6 +33,11 @@ class OpenAssemblerChooser{
 	void updateMultiplicators(int a);
 
 	int getWinner(vector<set<int> >*battleVictories,int choices);
+	
+	/**
+ * choose where to go based on coverage
+ */
+	void chooseWithCoverage(ExtensionData*ed,int minCoverage,vector<set<int> >*battleVictories);
 public:
 	int choose(ExtensionData*m_ed,Chooser*m_c,int m_minimumCoverage,int m_maxCoverage,
 	Parameters*parameters);
