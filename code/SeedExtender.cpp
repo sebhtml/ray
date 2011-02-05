@@ -299,7 +299,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				int startPosition=element->getPosition();
 				int distance=ed->m_EXTENSION_extension->size()-startPosition;
 
-				int coverageForRightRead=ed->m_extensionCoverageValues->at(startPosition);
+				//int coverageForRightRead=ed->m_extensionCoverageValues->at(startPosition);
 				int repeatValueForRightRead=ed->m_repeatedValues->at(startPosition);
 				#ifdef ASSERT
 				assert(startPosition<(int)ed->m_extensionCoverageValues->size());
@@ -341,7 +341,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 						char rightStrand=extensionElement->getStrand();
 						int startingPositionOnPath=extensionElement->getPosition();
 
-						int coverageForLeftRead=ed->m_extensionCoverageValues->at(startingPositionOnPath);
+						//int coverageForLeftRead=ed->m_extensionCoverageValues->at(startingPositionOnPath);
 						int repeatLengthForLeftRead=ed->m_repeatedValues->at(startingPositionOnPath);
 						int observedFragmentLength=(startPosition-startingPositionOnPath)+ed->m_EXTENSION_receivedLength;
 						int multiplier=3;
