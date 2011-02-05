@@ -299,6 +299,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				int startPosition=element->getPosition();
 				int distance=ed->m_EXTENSION_extension->size()-startPosition;
 
+				int coverageForRightRead=ed->m_extensionCoverageValues->at(startPosition);
 				#ifdef ASSERT
 				assert(startPosition<(int)ed->m_extensionCoverageValues->size());
 				#endif
@@ -319,7 +320,9 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				// process each edge separately.
 				// got a match!
 				if(!element->hasPairedRead()){
-					ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(distance);	
+					if(coverageForRightRead<maxCoverage){
+						ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(distance);	
+					}
 
 					ed->m_EXTENSION_readIterator++;
 				}else{	
@@ -335,18 +338,17 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 						char rightStrand=extensionElement->getStrand();
 						int startingPositionOnPath=extensionElement->getPosition();
 
-						int repeatLengthForLeft=ed->m_repeatLengths->at(startingPositionOnPath);
+						int coverageForLeftRead=ed->m_extensionCoverageValues->at(startingPositionOnPath);
 						int observedFragmentLength=(startPosition-startingPositionOnPath)+ed->m_EXTENSION_receivedLength;
 						int multiplier=3;
 
 						//int theDistance=startPosition-startingPositionOnPath;
-						int repeatThreshold=100;
 						if(expectedFragmentLength-multiplier*expectedDeviation<=observedFragmentLength 
 						&& observedFragmentLength <= expectedFragmentLength+multiplier*expectedDeviation 
 				&&( (rightStrand=='F' && leftStrand=='R')
 					||(rightStrand=='R' && leftStrand=='F'))
 				// the bridging pair is meaningless if both start in repeats
-				&&repeatLengthForLeft<repeatThreshold){
+				&&coverageForLeftRead<maxCoverage){
 						// it matches!
 							//int theDistance=startPosition-startingPositionOnPath+distance;
 							
@@ -361,7 +363,9 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 					}
 							
 					// add it anyway as a single-end match too!
-					ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(distance);
+					if(coverageForRightRead<maxCoverage){
+						ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(distance);
+					}
 
 					ed->m_EXTENSION_readIterator++;
 				}
@@ -739,7 +743,6 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				}else{
 					m_repeatLength++;
 				}
-				ed->m_repeatLengths->push_back(m_repeatLength);
 
 				#ifdef ASSERT
 				assert(ed->m_currentCoverage<=255);

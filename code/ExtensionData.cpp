@@ -34,7 +34,6 @@ void ExtensionData::createStructures(){
 	m_allocator.constructor(chunkSize);
 	m_EXTENSION_extension=new vector<uint64_t>;
 	m_extensionCoverageValues=new vector<int>;
-	m_repeatLengths=new vector<int>;
 	m_EXTENSION_coverages=new vector<int>;
 	m_EXTENSION_readsInRange=new set<uint64_t>;
 	for(int i=0;i<m_numberOfBins;i++){
@@ -44,7 +43,6 @@ void ExtensionData::createStructures(){
 
 void ExtensionData::destroyStructures(){
 	delete m_EXTENSION_extension;
-	delete m_repeatLengths;
 	delete m_extensionCoverageValues;
 	delete m_EXTENSION_coverages;
 	delete m_EXTENSION_readsInRange;

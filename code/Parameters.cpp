@@ -639,7 +639,7 @@ void Parameters::printFinalMessage(){
 
 void Parameters::setPeakCoverage(int a){
 	m_peakCoverage=a;
-	m_maxCoverage=3*m_peakCoverage;
+	m_maxCoverage=1.4*m_peakCoverage;
 	if(m_maxCoverage>255){
 		m_maxCoverage=255;
 	}
