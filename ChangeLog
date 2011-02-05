@@ -1,5 +1,5 @@
 = 1.2.3 'cRAYfish' =
-2011-01-XX
+2011-02-05
 
 * Instruction manual
 * Fixed a bug leading to a segmentation fault when providing an invalid file
@@ -10,14 +10,14 @@ distributing vertices.
 * Removed read simulators because samtools include one called 'wgsim'.
 * Changed the paired-end heuristics to accomodate larger distances.
 * Removed RepeatedVertexWatchdog.
-* Changed the RepeatedThreshold from 255 to 3*peakCoverage (or 255 if it is
+* Changed the RepeatedThreshold from 255 to 2*peakCoverage (or 255 if it is
 higher than 255)
 * Now both versions of read pairs are utilized.
 * Paired reads are utilized if the distance falls in mean-3 standard
 deviation;mean+3 standard deviation. (3 instead of 1 as described in the
 paper).
-* If a pair of reads does not respect the constraint, the right read is put
-back in removed from the used read set.
+* If a pair of reads does not respect the constraints, the right read is 
+removed from the used read set.
 * Fusions are computed more cautiously.
 * Added reporting of memory usage for sequence reads and for vertices. And for
 a few other places too.
@@ -27,7 +27,7 @@ clear() because the latter does not free memory.
 * Added a Doxygen configuration file.
 * The paths in the distributed graph are now numbered with an integer of 64
 bits. This fixes a segmentation fault occuring with large genomes -- when
-identifiers overflow on 32 bits.
+identifiers overflow on 32 bits. (need to verify this)
 * The partition on sequence reads is outputted.
 * Instead of having the Rank 0 (master) to request the contigs of each every
 other rank, now each rank appends its fusions to the contigs file and also to
@@ -36,6 +36,7 @@ the AMOS file.
 * Fixed a memory usage problem in the memory consumption reducer
 * Improved the running time for the extension of seeds by removing an inner
 loop.
+
 
 = 1.2.2 'X-ray' =
 2011-01-11
