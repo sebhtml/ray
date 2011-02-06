@@ -23,7 +23,7 @@
 #include <string.h>
 
 void ExtensionElement::setSequence(const char*b,MyAllocator*allocator){
-	m_readSequence=(char*)__Malloc((strlen(b)+1)*sizeof(char));
+	m_readSequence=(char*)allocator->allocate((strlen(b)+1)*sizeof(char));
 	strcpy(m_readSequence,b);
 	m_hasPairedRead=false;
 }

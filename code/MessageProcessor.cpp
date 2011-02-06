@@ -1391,7 +1391,7 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 		iterator.next()->m_value.clearDirections();
 	}
 
-	m_directionsAllocator->resetMemory();
+	m_directionsAllocator->reset();
 
 	// add the FINISHING bits
 	for(int i=0;i<(int)m_fusionData->m_FINISH_newFusions.size();i++){

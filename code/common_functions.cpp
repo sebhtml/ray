@@ -39,20 +39,6 @@ using namespace std;
 #define _ENCODING_C 2
 #define _ENCODING_G 3
 
-string reverseComplement(string a){
-	char*rev=(char*)__Malloc(a.length()+1);
-	int i=0;
-	for(int p=a.length()-1;p>=0;p--){
-		char c=a[p];
-		rev[i]=complementNucleotide(c);
-		i++;
-	}
-	rev[a.length()]='\0';
-	string j(rev);
-	__Free(rev);
-	return j;
-}
-
 char complementNucleotide(char c){
 	switch(c){
 		case 'A':
@@ -209,7 +195,6 @@ void coutBIN8(uint8_t a){
 	cout<<endl;
 }
 
-
 uint64_t getKPrefix(uint64_t a,int k){
 	return (a<<(sizeof(uint64_t)*8-2*(k+1)+2))>>(sizeof(uint64_t)*8-2*(k+1)+2); // move things around...
 }
@@ -284,13 +269,12 @@ string addLineBreaks(string dna){
 	return output.str();
 }
 
-//#define MALLOC_DEBUG
+#define MALLOC_DEBUG
 void*__Malloc(int c){
-
 	void*a=NULL;
 	a=malloc(c);
 	if(a==NULL){
-		cout<<"Critical exception: The system is out of memory, malloc returned NULL."<<endl;
+		cout<<"Critical exception: The system is out of memory, returned NULL."<<endl;
 	}
 	assert(a!=NULL);
 	assert(c!=0);
@@ -305,7 +289,7 @@ void*__Malloc(int c){
 void*__Realloc(void*a,int b){
 	a=realloc(a,b);
 	if(a==NULL){
-		cout<<"Critical exception: The system is out of memory, malloc returned NULL."<<endl;
+		cout<<"Critical exception: The system is out of memory, returned NULL."<<endl;
 	}
 	assert(a!=NULL);
 

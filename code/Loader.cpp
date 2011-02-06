@@ -29,15 +29,15 @@
 #include<Read.h>
 using namespace std;
 
-Loader::Loader(){
+void Loader::constructor(){
 	m_maxToLoad=500000;
 	DISTRIBUTION_ALLOCATOR_CHUNK_SIZE=m_maxToLoad*100;
 	m_currentOffset=0;
 	m_type=FORMAT_NULL;
+	m_allocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
 }
 
 int Loader::load(string file,bool isGenome){
-	m_allocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
 	ifstream f(file.c_str());
 	bool exists=f;
 	f.close();
@@ -160,9 +160,8 @@ void Loader::clear(){
 
 void Loader::loadSequences(){
 	m_currentOffset+=m_reads.size();
-	m_reads.clear();
-	m_allocator.clear();
-	m_allocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
+	m_reads.reset();
+	m_allocator.reset();
 
 	if(m_type==FORMAT_FASTQ_GZ){
 		#ifdef HAVE_ZLIB
@@ -190,4 +189,16 @@ void Loader::loadSequences(){
 		#endif
 	}
 	//cout<<"Offset= "<<m_currentOffset<<" "<<m_reads.size()<<endl;
+}
+
+void Loader::reset(){
+	m_reads.reset();
+	m_allocator.reset();
+	m_size=0;
+	m_currentOffset=0;
+	m_type=FORMAT_NULL;
+
+	#ifdef ASSERT
+	assert(m_reads.size()==0);
+	#endif
 }

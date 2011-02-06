@@ -41,7 +41,7 @@ class GridAllocator{
 public:
 	void constructor();
 	void free(GridData*a,int b);
-	GridData*allocate(int a);
+	GridData*allocate(int a,uint16_t*reserved);
 	MyAllocator*getAllocator();
 };
 

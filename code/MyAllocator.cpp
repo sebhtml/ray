@@ -32,15 +32,17 @@ using namespace std;
  */
 void MyAllocator::reset(){
 	m_currentPosition=0;
+	m_currentChunkId=0;
 }
 
 void MyAllocator::constructor(int chunkSize){
+	m_currentChunkId=0;
 	m_CHUNK_SIZE=chunkSize; 
-	m_currentChunk=(void*)__Malloc(m_CHUNK_SIZE);
+	void*currentChunk=(void*)__Malloc(m_CHUNK_SIZE);
 	#ifdef ASSERT
-	assert(m_currentChunk!=NULL);
+	assert(currentChunk!=NULL);
 	#endif
-	m_chunks.push_back(m_currentChunk);
+	m_chunks.push_back(currentChunk);
 	m_currentPosition=0;
 	m_store.constructor();
 }
@@ -61,7 +63,6 @@ void*MyAllocator::allocate(int s){
 	#endif
 	#endif
 
-
 	#ifdef ASSERT
 	assert(m_currentChunk!=NULL);
 	#endif
@@ -80,17 +81,25 @@ void*MyAllocator::allocate(int s){
 	
 	int left=m_CHUNK_SIZE-m_currentPosition;
 	if(s>left){
-		m_currentChunk=__Malloc(m_CHUNK_SIZE);
-		#ifdef ASSERT
-		assert(m_currentChunk!=NULL);
-		#endif
-		m_chunks.push_back(m_currentChunk);
+		if(!(m_currentChunkId+1<(int)m_chunks.size())){
+			void*currentChunk=__Malloc(m_CHUNK_SIZE);
+			#ifdef ASSERT
+			assert(m_currentChunk!=NULL);
+			#endif
+			m_chunks.push_back(currentChunk);
+		}
+		m_currentChunkId++;
 		m_currentPosition=0;
 		return allocate(s);
 	}
 	
+	#ifdef ASSERT
+	assert(m_currentChunkId<(int)m_chunks.size());
+	assert(m_currentPosition<m_CHUNK_SIZE);
+	#endif
+
 	// the address is the head of currentCHunk+ m_currentPosition bytes
-	void*r=(void*)(((char*)m_currentChunk)+m_currentPosition);
+	void*r=(void*)(((char*)m_chunks[m_currentChunkId])+m_currentPosition);
 	// increase the current position.
 	m_currentPosition+=s;
 	return r;
@@ -100,25 +109,13 @@ MyAllocator::~MyAllocator(){
 	clear();
 }
 
-void MyAllocator::resetMemory(){
-	// just reuse the chunk if there is only one.
-	if(getNumberOfChunks()==1){
-		m_currentPosition=0;
-		return;
-	}
-	// to this point, we know there are no chunks anyway,
-	// but we know we won't reach this line
-	// because there is alway one chunk if the object is not cleared.
-	//
-	clear();
-	constructor(m_CHUNK_SIZE);
-}
-
 void MyAllocator::clear(){
 	for(int i=0;i<(int)m_chunks.size();i++){
 		__Free(m_chunks[i]);
 	}
 	m_chunks.clear();
+	m_currentPosition=0;
+	m_currentChunkId=0;
 }
 
 int MyAllocator::getChunkSize(){

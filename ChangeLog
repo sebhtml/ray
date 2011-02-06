@@ -1,3 +1,11 @@
+= 1.2.4
+2011-02-XX
+
+* Reduced the memory fragmentation in the extension of seeds.
+* Implemented a large grid table. It is an hash table in with elements in bins
+are ordered by the number of accesses.
+
+
 = 1.2.3 'cRAYfish' =
 2011-02-05
 

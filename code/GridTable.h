@@ -30,6 +30,7 @@ class GridTable{
 	GridAllocator m_gridAllocator;
 	GridData**m_gridData;
 	uint16_t*m_gridSizes;
+	uint16_t*m_gridReservedSizes;
 	int m_gridSize;
 	bool m_frozen;
 

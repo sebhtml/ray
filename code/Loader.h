@@ -88,11 +88,12 @@ class Loader{
 	void loadSequences();
 
 public:
-	Loader();
+	void constructor();
 	int load(string file,bool isGenome);
 	uint64_t size();
 	Read*at(uint64_t i);
 	void clear();
+	void reset();
 };
 
 #endif

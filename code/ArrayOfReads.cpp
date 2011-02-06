@@ -134,3 +134,7 @@ void ArrayOfReads::clear(){
 	assert(m_maxSize==0);
 	#endif
 }
+
+void ArrayOfReads::reset(){
+	m_elements=0;
+}

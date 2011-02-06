@@ -29,7 +29,7 @@ see <http://www.gnu.org/licenses/>
 #define MAXIMUM_NUMBER_OF_LIBRARIES 250
 #define DUMMY_LIBRARY 255
 
-#define RAY_VERSION "1.2.3"
+#define RAY_VERSION "1.2.4"
 
 #include<master_modes.h>
 #include<slave_modes.h>
@@ -83,7 +83,7 @@ using namespace std;
 /*
  *  complement the sequence of a biological thing
  */
-string reverseComplement(string a);
+string reverseComplement(string a,char*rev);
 
 /*
  * convert a char* to uint64_t

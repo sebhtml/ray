@@ -33,13 +33,15 @@ void GridTable::constructor(int rank){
 	int bytes1=m_gridSize*sizeof(GridData*);
 	m_gridData=(GridData**)__Malloc(bytes1);
 	int bytes2=m_gridSize*sizeof(uint16_t);
-	cout<<"sizeof(GridData) -> "<<sizeof(GridData)<<endl;
 	m_gridSizes=(uint16_t*)__Malloc(bytes2);
-	printf("Rank %i: allocating %i bytes for grid table\n",rank,bytes1+bytes2);
+	int bytes3=m_gridSize*sizeof(uint16_t);
+	m_gridReservedSizes=(uint16_t*)__Malloc(bytes3);
+	printf("Rank %i: allocating %i bytes for grid table\n",rank,bytes1+bytes2+bytes3);
 	fflush(stdout);
 	for(int i=0;i<m_gridSize;i++){
 		m_gridSizes[i]=0;
 		m_gridData[i]=NULL;
+		m_gridReservedSizes[i]=0;
 	}
 	m_gridAllocator.constructor();
 }
@@ -68,16 +70,19 @@ Vertex*GridTable::insert(uint64_t key){
 			return move(bin,i);
 		}
 	}
-	GridData*newEntries=m_gridAllocator.allocate(m_gridSizes[bin]+1);
-	for(int i=0;i<m_gridSizes[bin];i++){
-		newEntries[i].m_key=m_gridData[bin][i].m_key;
-		newEntries[i].m_value=m_gridData[bin][i].m_value;
+	if(m_gridReservedSizes[bin]==m_gridSizes[bin]){
+		GridData*newEntries=m_gridAllocator.allocate(m_gridSizes[bin]+1,m_gridReservedSizes+bin);
+		for(int i=0;i<m_gridSizes[bin];i++){
+			newEntries[i].m_key=m_gridData[bin][i].m_key;
+			newEntries[i].m_value=m_gridData[bin][i].m_value;
+		}
+		if(m_gridSizes[bin]!=0){
+			m_gridAllocator.free(m_gridData[bin],m_gridSizes[bin]);
+		}
+		m_gridData[bin]=newEntries;
 	}
-	newEntries[m_gridSizes[bin]].m_key=key;
-	if(m_gridSizes[bin]!=0){
-		m_gridAllocator.free(m_gridData[bin],m_gridSizes[bin]);
-	}
-	m_gridData[bin]=newEntries;
+
+	m_gridData[bin][m_gridSizes[bin]].m_key=key;
 	int oldSize=m_gridSizes[bin];
 	m_gridSizes[bin]++;
 	// check overflow

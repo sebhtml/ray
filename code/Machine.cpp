@@ -386,9 +386,6 @@ m_seedingData,
 	m_inboxAllocator.clear();
 	m_outboxAllocator.clear();
 
-	MPI_Barrier(MPI_COMM_WORLD);
-	showMemoryUsage(m_rank);
-
 	MPI_Finalize();
 }
 
@@ -409,8 +406,9 @@ void Machine::run(){
 */
 	while(isAlive()){
 		time_t t=time(NULL);
-		if(t!=m_lastTime&&t%60==0){
+		if(t!=m_lastTime&&t%30==0){
 			printf("Rank %i is alive\n",m_rank);
+			showMemoryUsage(m_rank);
 			fflush(stdout);
 			m_lastTime=t;
 		}

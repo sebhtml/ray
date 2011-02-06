@@ -26,7 +26,8 @@ void GridAllocator::constructor(){
 	m_allocator.constructor(size);
 }
 
-GridData*GridAllocator::allocate(int a){
+GridData*GridAllocator::allocate(int a,uint16_t*reserved){
+	
 	if(m_toReuse.count(a)>0){
 		GridData*tmp=m_toReuse[a];
 		GridData*next=(GridData*)tmp->m_key;
@@ -35,9 +36,14 @@ GridData*GridAllocator::allocate(int a){
 		}else{
 			m_toReuse[a]=next;
 		}
+		*reserved=a;
 		return tmp;
 	}
-	return (GridData*)m_allocator.allocate(sizeof(GridData)*a);
+
+	//a=roundNumber(a,4);
+	GridData*addr=(GridData*)m_allocator.allocate(sizeof(GridData)*a);
+	*reserved=a;
+	return addr;
 }
 
 void GridAllocator::free(GridData*a,int b){
@@ -52,3 +58,5 @@ void GridAllocator::free(GridData*a,int b){
 MyAllocator*GridAllocator::getAllocator(){
 	return &m_allocator;
 }
+
+

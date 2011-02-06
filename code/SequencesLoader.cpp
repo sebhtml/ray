@@ -153,6 +153,7 @@ bool SequencesLoader::computePartition(int rank,int size,
 	}
 	m_distribution_sequence_id=0;
 	vector<string> allFiles=(*m_parameters).getAllFiles();
+	m_loader.constructor();
 	for(m_distribution_file_id=0;m_distribution_file_id<(int)allFiles.size();
 		m_distribution_file_id++){
 		int res=m_loader.load(allFiles[(m_distribution_file_id)],false);
@@ -184,7 +185,9 @@ bool SequencesLoader::computePartition(int rank,int size,
 			m_loader.clear();
 			m_loader.load(allFiles[(m_distribution_file_id)],false);
 		}
+		m_loader.reset();
 	}
+	m_loader.clear();
 	fclose(fp);
 	printf("Rank %i: global partition is [%i;%lu], %lu sequence reads\n",m_rank,0,counted-1,counted);
 	printf("\n");
@@ -230,6 +233,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 
 	m_distribution_currentSequenceId=0;
 	//int files=allFiles.size();
+	m_loader.constructor();
 	for(m_distribution_file_id=0;m_distribution_file_id<(int)allFiles.size();
 		m_distribution_file_id++){
 
@@ -291,9 +295,11 @@ bool SequencesLoader::loadSequences(int rank,int size,
 				break;
 			}
 		}
-		m_loader.clear();
+
+		m_loader.reset();
 	}
 	
+	m_loader.clear();
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_SEQUENCES_READY,rank);
 	m_outbox->push_back(aMessage);
 

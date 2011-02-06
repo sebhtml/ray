@@ -27,11 +27,11 @@ void ExtensionData::constructor(){
 	m_numberOfBins=4096;
 	m_database=(SplayTree<uint64_t,ExtensionElement>*)__Malloc(m_numberOfBins*sizeof(SplayTree<uint64_t,ExtensionElement>));
 	createStructures();
+	int chunkSize=4194304;
+	m_allocator.constructor(chunkSize);
 }
 
 void ExtensionData::createStructures(){
-	int chunkSize=4194304;
-	m_allocator.constructor(chunkSize);
 	m_EXTENSION_extension=new vector<uint64_t>;
 	m_repeatedValues=new vector<int>;
 	m_extensionCoverageValues=new vector<int>;
@@ -49,13 +49,17 @@ void ExtensionData::destroyStructures(){
 	delete m_EXTENSION_coverages;
 	delete m_EXTENSION_readsInRange;
 
-	m_allocator.clear();
 	for(int i=0;i<m_numberOfBins;i++){
 		m_database[i].clear();
 	}
 }
 
 void ExtensionData::resetStructures(){
+	m_allocator.reset();
+	//m_allocator.clear();
+	//int chunkSize=4194304;
+	//m_allocator.constructor(chunkSize);
+
 	destroyStructures();
 	createStructures();
 }
@@ -85,3 +89,4 @@ void ExtensionData::removeSequence(uint64_t a){
 MyAllocator*ExtensionData::getAllocator(){
 	return &m_allocator;
 }
+

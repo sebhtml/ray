@@ -41,6 +41,7 @@ public:
 	uint64_t size();
 	void clear();
 	ArrayOfReads();
+	void reset();
 };
 
 #endif

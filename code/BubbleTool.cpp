@@ -100,13 +100,11 @@ map<uint64_t,int>*coverages){
 		return false;// we don'T support that right now ! triploid stuff are awesome.
 	}
 
-
 	// given the word size
 	// check that they join.
 	//
 	// substitution SNP is d=0
 	// del is 1, 2, or 3
-
 
 	map<uint64_t,int> coveringNumber;
 

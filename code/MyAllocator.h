@@ -37,8 +37,8 @@ using namespace std;
  */
 class MyAllocator{
 	vector<void*>m_chunks;
-	void*m_currentChunk;
 	int m_currentPosition;
+	int m_currentChunkId;
 	int m_CHUNK_SIZE;
 	ReusableMemoryStore m_store;
 public:
@@ -46,10 +46,6 @@ public:
  * allocator.
  */
 	void print();
-	/**
- 	* reset the chunk to reuse it properly.
- 	*/
-	void reset();
 	void clear();
 	/**
  * assign a size to the allocator.
@@ -60,8 +56,12 @@ public:
 	int getChunkSize();
 	int getNumberOfChunks();
 
-	void resetMemory();
 	ReusableMemoryStore*getStore();
+	/**
+ 	* reset the chunk to reuse it properly.
+ 	*/
+	void reset();
+
 };
 
 

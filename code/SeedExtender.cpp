@@ -42,6 +42,7 @@ BubbleData*bubbleData,
 int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 	if((*seeds).size()==0){
 		ed->destructor();
+		ed->getAllocator()->clear();
 		printf("Rank %i is extending seeds [%i/%i] (completed)\n",theRank,(int)(*seeds).size(),(int)(*seeds).size());
 		fflush(stdout);
 		showMemoryUsage(theRank);
@@ -134,7 +135,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		markCurrentVertexAsAssembled(currentVertex,outboxAllocator,outgoingEdgeIndex,outbox,
 size,theRank,ed,vertexCoverageRequested,vertexCoverageReceived,receivedVertexCoverage,
 repeatedLength,maxCoverage,edgesRequested,receivedOutgoingEdges,chooser,bubbleData,minimumCoverage,
-oa,colorSpaceMode,wordSize);
+oa,colorSpaceMode,wordSize,seeds);
 	}else if(!ed->m_EXTENSION_enumerateChoices){
 		enumerateChoices(edgesRequested,ed,edgesReceived,outboxAllocator,outgoingEdgeIndex,outbox,
 		currentVertex,theRank,vertexCoverageRequested,receivedOutgoingEdges,
@@ -381,7 +382,6 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 					for(int i=0;i<(int)ed->m_EXTENSION_readsOutOfRange.size();i++){
 						uint64_t uniqueId=ed->m_EXTENSION_readsOutOfRange[i];
 						ed->m_EXTENSION_readsInRange->erase(uniqueId);
-						__Free(ed->getUsedRead(uniqueId)->getSequence());
 					}
 					ed->m_EXTENSION_readsOutOfRange.clear();
 					return;
@@ -399,7 +399,6 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 					for(int i=0;i<(int)ed->m_sequencesToFree.size();i++){
 						uint64_t uniqueId=ed->m_sequencesToFree[i];
 						//cout<<"Removing "<<uniqueId<<endl;
-						__Free(ed->getUsedRead(uniqueId)->getSequence());
 						ed->removeSequence(uniqueId);
 						ed->m_EXTENSION_readsInRange->erase(uniqueId);
 					}
@@ -706,7 +705,7 @@ void SeedExtender::markCurrentVertexAsAssembled(uint64_t*currentVertex,RingAlloc
 StaticVector*outbox,int size,int theRank,ExtensionData*ed,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,bool*edgesRequested,
 vector<uint64_t>*receivedOutgoingEdges,Chooser*chooser,
-BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpaceMode,int wordSize
+BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpaceMode,int wordSize,vector<vector<uint64_t> >*seeds
 ){
 	if(!ed->m_EXTENSION_directVertexDone){
 		if(!(*vertexCoverageRequested)&&(*m_cache).count(*currentVertex)>0){
@@ -730,6 +729,10 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				(*m_cache)[*currentVertex]=*receivedVertexCoverage;
 				int theCurrentSize=ed->m_EXTENSION_extension->size();
 				if(theCurrentSize%10000==0){
+					if(theCurrentSize==0 && !ed->m_EXTENSION_complementedSeed){
+						printf("Rank %i starts on a seed [%i/%i]\n",theRank,ed->m_EXTENSION_currentSeedIndex,(int)(*seeds).size());
+						fflush(stdout);
+					}
 					printf("Rank %i reached %i vertices\n",theRank,theCurrentSize);
 					fflush(stdout);
 

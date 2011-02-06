@@ -29,6 +29,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<BzReader.h>
 #include<stdlib.h>
 #include<assert.h>
+#include <common_functions.h>
 
 void BzReader::open(const char*file){
 	int error;
@@ -36,7 +37,7 @@ void BzReader::open(const char*file){
 	int verbosity=0;
 	int small=0;
 	m_bzFile=BZ2_bzReadOpen(&error,m_file,verbosity,small,NULL,0);
-	m_buffer=(char*)malloc(__BzReader_MAXIMUM_LENGTH*sizeof(char));
+	m_buffer=(char*)__Malloc(__BzReader_MAXIMUM_LENGTH*sizeof(char));
 	m_bufferSize=0;
 	m_bufferPosition=0;
 }
@@ -113,5 +114,5 @@ void BzReader::close(){
 	fclose(m_file);
 	m_bzFile=NULL;
 	m_file=NULL;
-	free(m_buffer);
+	__Free(m_buffer);
 }
