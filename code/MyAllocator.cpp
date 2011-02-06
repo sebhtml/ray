@@ -64,10 +64,6 @@ void*MyAllocator::allocate(int s){
 	#endif
 
 	#ifdef ASSERT
-	assert(m_currentChunk!=NULL);
-	#endif
-
-	#ifdef ASSERT
 	if(s>m_CHUNK_SIZE){
 		cout<<"Requested "<<s<<" -- only have "<<m_CHUNK_SIZE<<endl;
 	}
@@ -83,9 +79,6 @@ void*MyAllocator::allocate(int s){
 	if(s>left){
 		if(!(m_currentChunkId+1<(int)m_chunks.size())){
 			void*currentChunk=__Malloc(m_CHUNK_SIZE);
-			#ifdef ASSERT
-			assert(m_currentChunk!=NULL);
-			#endif
 			m_chunks.push_back(currentChunk);
 		}
 		m_currentChunkId++;
