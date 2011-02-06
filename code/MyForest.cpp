@@ -25,8 +25,8 @@
 #include<sstream>
 using namespace std;
 
-void MyForest::constructor(int count,MyAllocator*allocator){
-	m_numberOfTrees=count;
+void MyForest::constructor(MyAllocator*allocator){
+	m_numberOfTrees=131072;
 	m_allocator=allocator;
 	#ifdef ASSERT
 	assert(m_allocator!=NULL);
@@ -56,11 +56,15 @@ int MyForest::getTreeIndex(uint64_t i){
 	return uniform_hashing_function_2_64_64(i)%m_numberOfTrees;
 }
 
-SplayNode<uint64_t,Vertex>*MyForest::find(uint64_t key){
-	return m_trees[getTreeIndex(key)].find(key,m_frozen);
+Vertex*MyForest::find(uint64_t key){
+	SplayNode<uint64_t,Vertex>*n=m_trees[getTreeIndex(key)].find(key,m_frozen);
+	if(n!=NULL){
+		return n->getValue();
+	}
+	return NULL;
 }
 
-SplayNode<uint64_t,Vertex>*MyForest::insert(uint64_t key){
+Vertex*MyForest::insert(uint64_t key){
 	int tree=getTreeIndex(key);
 	#ifdef ASSERT
 	assert(tree<m_numberOfTrees);
@@ -69,7 +73,10 @@ SplayNode<uint64_t,Vertex>*MyForest::insert(uint64_t key){
 	if(m_inserted){
 		m_size++;
 	}
-	return n;
+	if(n!=NULL){
+		return n->getValue();
+	}
+	return NULL;
 }
 
 bool MyForest::inserted(){

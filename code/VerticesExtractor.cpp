@@ -307,7 +307,7 @@ void VerticesExtractor::resetRanksDoneForReduction(){
 	m_ranksDoneWithReduction=0;
 }
 
-void VerticesExtractor::updateThreshold(MyForest*a){
+void VerticesExtractor::updateThreshold(GridTable*a){
 	#ifdef ASSERT
 	assert(m_buffersForIngoingEdgesToDelete.isEmpty());
 	assert(m_buffersForOutgoingEdgesToDelete.isEmpty());
@@ -388,7 +388,7 @@ void VerticesExtractor::checkPendingMessagesForReduction(StaticVector*outbox,int
  * send the vertices to the owners for permanent deletions
  *
  */
-bool VerticesExtractor::deleteVertices(vector<uint64_t>*verticesToRemove,MyForest*subgraph,Parameters*parameters,RingAllocator*m_outboxAllocator,
+bool VerticesExtractor::deleteVertices(vector<uint64_t>*verticesToRemove,GridTable*subgraph,Parameters*parameters,RingAllocator*m_outboxAllocator,
 	StaticVector*m_outbox,map<uint64_t,vector<uint64_t> >*ingoingEdges,map<uint64_t,vector<uint64_t> >*outgoingEdges
 ){
 	#ifdef ASSERT

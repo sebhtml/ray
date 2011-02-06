@@ -33,6 +33,32 @@ doi:10.1089/cmb.2009.0238\\
 \tableofcontents
 \newpage
 
+\section{Installation}
+
+\subsection{Compilation flags}
+
+For processors requiring addresses aligned on 8 bytes, you must add the following compilation flag.
+
+\begin{verbatim}
+-DALIGN_ADDRESSES
+\end{verbatim}
+
+\subsection{Compilation with the configure script}
+
+\begin{verbatim}
+./configure --prefix=/software/ray-x.y.z
+make
+sudo make install
+ls -l /software/ray-x.y.z/bin/Ray
+\end{verbatim}
+
+\subsection{Compilation with the makefile.alternate}
+
+\begin{verbatim}
+make -f makefile.alternate
+ls -l code/Ray
+\end{verbatim}
+
 \section{Inputs}
 
 The input files for Ray contain sequences. The files must be formatted in one of the supported formats.
@@ -53,6 +79,7 @@ Standard flowgram format & .sff \\
 \hline
 \end{tabular}
 \end{table}
+
 
 
 \section{Parameters}

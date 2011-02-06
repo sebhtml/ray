@@ -1,3 +1,7 @@
+For platforms requiring aligned addresses, you must add the following flag:
+
+	-DALIGN_ADDRESSES
+
 You need a C++ compiler (g++ will do) and a MPI implementation (MPICH2 or Open-MPI will do).
 
 

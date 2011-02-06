@@ -50,6 +50,7 @@ void*MyAllocator::allocate(int s){
 		return m_store.reuseAddress();
 	}
 
+	#ifdef ALIGN_ADDRESSES
 	// hopefully fix alignment issues on Itanium
 	int alignment=8;
 	if(s%8!=0){
@@ -57,6 +58,7 @@ void*MyAllocator::allocate(int s){
 	}
 	#ifdef ASSERT
 	assert(s%8==0);
+	#endif
 	#endif
 
 
@@ -95,7 +97,6 @@ void*MyAllocator::allocate(int s){
 }
 
 MyAllocator::~MyAllocator(){
-	printf("destructor\n");
 	clear();
 }
 

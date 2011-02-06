@@ -23,6 +23,7 @@
 #ifndef _Machine
 #define _Machine
 
+#include <GridTable.h>
 #include<MessagesHandler.h>
 #include<common_functions.h>
 #include<MyForest.h>
@@ -175,7 +176,7 @@ class Machine{
 
 	Parameters m_parameters;
 	int m_numberOfMachinesDoneSendingEdges;
-	MyForest m_subgraph;
+	GridTable m_subgraph;
 
 	// SEQUENCE DISTRIBUTION
 	bool m_reverseComplementVertex;

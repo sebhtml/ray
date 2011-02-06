@@ -24,6 +24,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 */
 
+#include <GridTableIterator.h>
 #include<crypto.h>
 #include<SplayNode.h>
 #include<mpi.h>
@@ -232,6 +233,14 @@ void Machine::start(){
 		#endif
 
 		cout<<"Rank "<<MASTER_RANK<<": the maximum size of a message is "<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<" bytes"<<endl;
+		cout<<"Rank "<<MASTER_RANK<<": align addresses on 8 bytes: ";
+		#ifdef ALIGN_ADDRESSES
+		cout<<" yes";
+		#else
+		cout<<" no";
+		#endif
+		cout<<endl;
+
 		cout<<endl;
 		m_timePrinter.printElapsedTime("Beginning of computation");
 		cout<<endl;
@@ -247,8 +256,8 @@ void Machine::start(){
 		m_ed,&m_readsPositions,getSize(),&m_timePrinter,&m_slave_mode,&m_master_mode,
 	&m_parameters,&m_fileId,m_seedingData);
 
-	int numberOfTrees=131072;
-	m_subgraph.constructor(numberOfTrees,&m_treeAllocator);
+	//m_subgraph.constructor(&m_treeAllocator);
+	m_subgraph.constructor(getRank());
 	
 	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),&m_outbox,&m_outboxAllocator,&m_seedCoverage,&m_slave_mode,&m_parameters,&m_wordSize,&m_subgraph,
 		&m_colorSpaceMode,&m_inbox);
@@ -690,14 +699,14 @@ void Machine::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
 
 void Machine::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
 	if(m_distributionOfCoverage.size()==0){
-		for(int i=0;i<m_subgraph.getNumberOfTrees();i++){
-			SplayTreeIterator<uint64_t,Vertex> iterator(m_subgraph.getTree(i));
-			while(iterator.hasNext()){
-				SplayNode<uint64_t,Vertex>*node=iterator.next();
-
-				int coverage=node->getValue()->getCoverage();
-				m_distributionOfCoverage[coverage]++;
-			}
+		GridTableIterator iterator;
+		//MyForestIterator iterator;
+		iterator.constructor(&m_subgraph);
+		while(iterator.hasNext()){
+			GridData*node=iterator.next();
+			//SplayNode<uint64_t,Vertex>*node=iterator.next();
+			int coverage=node->m_value.getCoverage();
+			m_distributionOfCoverage[coverage]++;
 		}
 	}
 

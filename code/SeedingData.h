@@ -32,6 +32,7 @@ class SeedExtender;
 #include <SplayNode.h>
 #include <Vertex.h>
 #include <MyForest.h>
+#include <GridTableIterator.h>
 #include <set>
 #include <common_functions.h>
 #include <MyForestIterator.h>
@@ -58,8 +59,10 @@ class SeedingData{
 	vector<uint64_t> m_waitingWorkers;
 	vector<uint64_t> m_activeWorkersToRestore;
 	Parameters*m_parameters;
-	MyForest*m_subgraph;
-	MyForestIterator m_splayTreeIterator;
+	GridTable*m_subgraph;
+	GridTableIterator m_splayTreeIterator;
+	//MyForest*m_subgraph;
+	//MyForestIterator m_splayTreeIterator;
 	int m_wordSize;
 	int m_completedJobs;
 	int m_maximumAliveWorkers;
@@ -105,7 +108,7 @@ public:
 	void computeSeeds();
 
 	void constructor(SeedExtender*seedExtender,int rank,int size,StaticVector*outbox,RingAllocator*outboxAllocator,
-		int*seedCoverage,int*mode,Parameters*parameters,int*wordSize,MyForest*subgraph,bool*colorSpaceMode,
+		int*seedCoverage,int*mode,Parameters*parameters,int*wordSize,GridTable*subgraph,bool*colorSpaceMode,
 		StaticVector*inbox);
 	void updateStates();
 };

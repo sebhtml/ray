@@ -154,7 +154,7 @@ bool MemoryConsumptionReducer::isJunction(uint64_t vertex,map<uint64_t,vector<ui
 	return false;
 }
 
-bool MemoryConsumptionReducer::reduce(MyForest*a,Parameters*parameters,
+bool MemoryConsumptionReducer::reduce(GridTable*a,Parameters*parameters,
 bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	RingAllocator*outboxAllocator,int size,int theRank,StaticVector*outbox,
  int*receivedVertexCoverage,SeedingData*seedingData,
@@ -243,9 +243,9 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 		}else if(!isCandidate(m_firstVertex,wordSize)){
 			m_hasSetVertex=false;
 		}else if(!m_doneWithOutgoingEdges){
-			uint64_t key=m_firstVertex->getKey();
-			vector<uint64_t> parents=m_firstVertex->getValue()->getIngoingEdges(key,wordSize);
-			vector<uint64_t> children=m_firstVertex->getValue()->getOutgoingEdges(key,wordSize);
+			uint64_t key=m_firstVertex->m_key;
+			vector<uint64_t> parents=m_firstVertex->m_value.getIngoingEdges(key,wordSize);
+			vector<uint64_t> children=m_firstVertex->m_value.getOutgoingEdges(key,wordSize);
 
 			if(!m_dfsDataOutgoing->m_doChoice_tips_dfs_done){
 				//cout<<"visit. "<<endl;
@@ -552,16 +552,16 @@ int MemoryConsumptionReducer::getNumberOfRemovedVertices(){
 	return m_toRemove->size();
 }
 
-bool MemoryConsumptionReducer::isCandidate(SplayNode<uint64_t,Vertex>*m_firstVertex,int wordSize){
-	uint64_t key=m_firstVertex->getKey();
-	vector<uint64_t> parents=m_firstVertex->getValue()->getIngoingEdges(key,wordSize);
-	vector<uint64_t> children=m_firstVertex->getValue()->getOutgoingEdges(key,wordSize);
-	int coverage=m_firstVertex->getValue()->getCoverage();
+bool MemoryConsumptionReducer::isCandidate(GridData*m_firstVertex,int wordSize){
+	uint64_t key=m_firstVertex->m_key;
+	vector<uint64_t> parents=m_firstVertex->m_value.getIngoingEdges(key,wordSize);
+	vector<uint64_t> children=m_firstVertex->m_value.getOutgoingEdges(key,wordSize);
+	int coverage=m_firstVertex->m_value.getCoverage();
 	return ((parents.size()==1&&children.size()==0)||(parents.size()==0&&children.size()==1))&&coverage==1;
 	//return parents.size()==1&&children.size()==0&&coverage<=3;
 }
 
-void MemoryConsumptionReducer::printCounter(Parameters*parameters,MyForest*forest){
+void MemoryConsumptionReducer::printCounter(Parameters*parameters,GridTable*forest){
 	if(m_counter==forest->size()){
 		printf("Rank %i is reducing memory usage [%lu/%lu] (completed)\n",parameters->getRank(),m_counter,forest->size());
 	}else if(m_counter%20000==0){

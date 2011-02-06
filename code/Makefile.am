@@ -9,6 +9,7 @@ LDADD=""
 
 noinst_LIBRARIES = libRay.a
 libRay_a_SOURCES = \
+GridTable.h GridTable.cpp GridAllocator.h GridAllocator.cpp GridTableIterator.h GridTableIterator.cpp \
 ReusableMemoryStore.h ReusableMemoryStore.cpp ExtensionElement.h ExtensionElement.cpp VirtualCommunicator.h VirtualCommunicator.cpp SeedWorker.h SeedWorker.cpp \
 MemoryConsumptionReducer.h MemoryConsumptionReducer.cpp \
 MyForestIterator.cpp MyForestIterator.h crypto.cpp crypto.h \

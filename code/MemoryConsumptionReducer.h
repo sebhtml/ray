@@ -24,6 +24,8 @@
 
 #include<MyForestIterator.h>
 #include<MyForest.h>
+#include <GridTable.h>
+#include <GridTableIterator.h>
 #include<Parameters.h>
 #include<RingAllocator.h>
 #include<BufferedData.h>
@@ -41,7 +43,8 @@ class MemoryConsumptionReducer{
 
 	uint64_t m_counter;
 
-	MyForestIterator m_iterator;
+	GridTableIterator m_iterator;
+	//MyForestIterator m_iterator;
 	bool m_initiated;
 
 	bool m_currentVertexIsDone;
@@ -49,7 +52,8 @@ class MemoryConsumptionReducer{
 	bool m_doneWithOutgoingEdges;
 	
 	DepthFirstSearchData*m_dfsDataOutgoing;
-	SplayNode<uint64_t,Vertex>*m_firstVertex;
+	GridData*m_firstVertex;
+	//SplayNode<uint64_t,Vertex>*m_firstVertex;
 
 	vector<uint64_t>*m_toRemove;
 	map<uint64_t,vector<uint64_t> >*m_ingoingEdges;
@@ -60,9 +64,9 @@ class MemoryConsumptionReducer{
 
 	int m_maximumDepth;
 
-	bool isCandidate(SplayNode<uint64_t,Vertex>*node,int wordSize);
+	bool isCandidate(GridData*node,int wordSize);
 	
-	void printCounter(Parameters*parameters,MyForest*a);
+	void printCounter(Parameters*parameters,GridTable*a);
 
 	bool isJunction(uint64_t vertex,map<uint64_t,vector<uint64_t> >*edges,int wordSize);
 	vector<uint64_t> computePath(map<uint64_t,vector<uint64_t> >*edges,uint64_t start,uint64_t end,set<uint64_t>*visited);
@@ -74,7 +78,7 @@ public:
 	/*
  	* returns true if done
  	*/
-	bool reduce(MyForest*a,Parameters*parameters,
+	bool reduce(GridTable*a,Parameters*parameters,
 bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	RingAllocator*outboxAllocator,int size,int theRank,StaticVector*outbox,
  int*receivedVertexCoverage,SeedingData*seedingData,

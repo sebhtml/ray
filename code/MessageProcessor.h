@@ -39,6 +39,7 @@
 #include<ReadAnnotation.h>
 #include<VerticesExtractor.h>
 #include<MyForest.h>
+#include <GridTable.h>
 #include<Parameters.h>
 #include<MemoryConsumptionReducer.h>
 #include<BufferedData.h>
@@ -79,7 +80,9 @@ class MessageProcessor{
 
 	MessagesHandler*m_messagesHandler;
 
-	MyForest*m_subgraph;
+	//MyForest*m_subgraph;
+	GridTable*m_subgraph;
+
 	RingAllocator*m_outboxAllocator;
 	int rank;
 	int*m_numberOfMachinesDoneSendingEdges;
@@ -275,7 +278,7 @@ ExtensionData*ed,
 			int*m_numberOfRanksDoneDetectingDistances,
 			int*m_numberOfRanksDoneSendingDistances,
 			Parameters*parameters,
-			MyForest*m_subgraph,
+			GridTable*m_subgraph,
 			RingAllocator*m_outboxAllocator,
 				int rank,
 			int*m_numberOfMachinesDoneSendingEdges,

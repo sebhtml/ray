@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C) 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -19,38 +19,38 @@
 
 */
 
+#ifndef _GridTable
+#define _GridTable
 
+#include <GridAllocator.h>
 
-#ifndef _MyForest
-#define _MyForest
-
-#include<SplayTree.h>
-#include<Vertex.h>
-#include<MyAllocator.h>
-#include<common_functions.h>
-
-class MyForest{
-	int m_numberOfTrees;
+class GridTable{
 	uint64_t m_size;
-	SplayTree<uint64_t,Vertex>*m_trees;
 	bool m_inserted;
-	int getTreeIndex(uint64_t i);
-	MyAllocator*m_allocator;
+	GridAllocator m_gridAllocator;
+	GridData**m_gridData;
+	uint16_t*m_gridSizes;
+	int m_gridSize;
 	bool m_frozen;
+
+	/**
+ *   move the item in front of the others
+ */
+	Vertex*move(int bin,int item);
 public:
-	int getNumberOfTrees();
-	SplayTree<uint64_t,Vertex>*getTree(int i);
-	void constructor(MyAllocator*allocator);
+	void constructor(int rank);
 	uint64_t size();
 	Vertex*find(uint64_t key);
 	Vertex*insert(uint64_t key);
 	bool inserted();
+	void remove(uint64_t a);
+	GridData*getElementInBin(int bin,int element);
+	int getNumberOfElementsInBin(int bin);
+	int getNumberOfBins();
+	MyAllocator*getAllocator();
 	void freeze();
 	void unfreeze();
-	void show(int rank,const char*a);
 	bool frozen();
-	void remove(uint64_t a);
-	MyAllocator*getAllocator();
 };
 
 #endif

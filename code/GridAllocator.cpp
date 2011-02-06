@@ -19,38 +19,36 @@
 
 */
 
+#include <GridAllocator.h>
 
+void GridAllocator::constructor(){
+	int size=16777216;
+	m_allocator.constructor(size);
+}
 
-#ifndef _MyForest
-#define _MyForest
+GridData*GridAllocator::allocate(int a){
+	if(m_toReuse.count(a)>0){
+		GridData*tmp=m_toReuse[a];
+		GridData*next=(GridData*)tmp->m_key;
+		if(next==NULL){
+			m_toReuse.erase(a);
+		}else{
+			m_toReuse[a]=next;
+		}
+		return tmp;
+	}
+	return (GridData*)m_allocator.allocate(sizeof(GridData)*a);
+}
 
-#include<SplayTree.h>
-#include<Vertex.h>
-#include<MyAllocator.h>
-#include<common_functions.h>
+void GridAllocator::free(GridData*a,int b){
+	if(m_toReuse.count(b)==0){
+		a->m_key=(uint64_t)NULL;
+	}else{
+		a->m_key=(uint64_t)m_toReuse[b];
+	}
+	m_toReuse[b]=a;
+}
 
-class MyForest{
-	int m_numberOfTrees;
-	uint64_t m_size;
-	SplayTree<uint64_t,Vertex>*m_trees;
-	bool m_inserted;
-	int getTreeIndex(uint64_t i);
-	MyAllocator*m_allocator;
-	bool m_frozen;
-public:
-	int getNumberOfTrees();
-	SplayTree<uint64_t,Vertex>*getTree(int i);
-	void constructor(MyAllocator*allocator);
-	uint64_t size();
-	Vertex*find(uint64_t key);
-	Vertex*insert(uint64_t key);
-	bool inserted();
-	void freeze();
-	void unfreeze();
-	void show(int rank,const char*a);
-	bool frozen();
-	void remove(uint64_t a);
-	MyAllocator*getAllocator();
-};
-
-#endif
+MyAllocator*GridAllocator::getAllocator(){
+	return &m_allocator;
+}

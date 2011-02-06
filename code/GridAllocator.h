@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C) 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -19,37 +19,29 @@
 
 */
 
+#ifndef _GridAllocator
+#define _GridAllocator
+
+#include <stdint.h>
+#include <Vertex.h>
+#include <MyAllocator.h>
+
+typedef struct{
+	uint64_t m_key;
+	Vertex m_value;
+} GridData;
 
 
-#ifndef _MyForest
-#define _MyForest
+#include <map>
+using namespace std;
 
-#include<SplayTree.h>
-#include<Vertex.h>
-#include<MyAllocator.h>
-#include<common_functions.h>
-
-class MyForest{
-	int m_numberOfTrees;
-	uint64_t m_size;
-	SplayTree<uint64_t,Vertex>*m_trees;
-	bool m_inserted;
-	int getTreeIndex(uint64_t i);
-	MyAllocator*m_allocator;
-	bool m_frozen;
+class GridAllocator{
+	map<int,GridData*> m_toReuse;
+	MyAllocator m_allocator;
 public:
-	int getNumberOfTrees();
-	SplayTree<uint64_t,Vertex>*getTree(int i);
-	void constructor(MyAllocator*allocator);
-	uint64_t size();
-	Vertex*find(uint64_t key);
-	Vertex*insert(uint64_t key);
-	bool inserted();
-	void freeze();
-	void unfreeze();
-	void show(int rank,const char*a);
-	bool frozen();
-	void remove(uint64_t a);
+	void constructor();
+	void free(GridData*a,int b);
+	GridData*allocate(int a);
 	MyAllocator*getAllocator();
 };
 

@@ -30,24 +30,8 @@
 void SeedingData::computeSeeds(){
 	if(!m_initiatedIterator){
 		m_last=time(NULL);
-		#ifdef ASSERT
-		SplayTreeIterator<uint64_t,Vertex> iter0;
-		iter0.constructor(m_subgraph->getTree(0));
-		int n=m_subgraph->getTree(0)->size();
-		int oo=0;
-		while(iter0.hasNext()){
-			iter0.next();
-			oo++;
-		}
-		assert(n==oo);
-		//cout<<"N="<<n<<endl;
-		#endif
 
 		m_SEEDING_i=0;
-
-		#ifdef ASSERT
-		assert(!m_splayTreeIterator.hasNext());
-		#endif
 
 		m_activeWorkerIterator=m_activeWorkers.begin();
 		m_splayTreeIterator.constructor(m_subgraph);
@@ -166,8 +150,9 @@ void SeedingData::computeSeeds(){
 					assert(m_completedJobs==0&&m_activeWorkers.size()==0&&m_aliveWorkers.size()==0);
 				}
 				#endif
-				SplayNode<uint64_t,Vertex>*node=m_splayTreeIterator.next();
-				m_aliveWorkers[m_SEEDING_i].constructor(node->getKey(),m_parameters,m_outboxAllocator,&m_virtualCommunicator,m_SEEDING_i);
+				//SplayNode<uint64_t,Vertex>*node=m_splayTreeIterator.next();
+				GridData*node=m_splayTreeIterator.next();
+				m_aliveWorkers[m_SEEDING_i].constructor(node->m_key,m_parameters,m_outboxAllocator,&m_virtualCommunicator,m_SEEDING_i);
 				m_activeWorkers.insert(m_SEEDING_i);
 				int population=m_aliveWorkers.size();
 				if(population>m_maximumWorkers){
@@ -241,7 +226,7 @@ void SeedingData::computeSeeds(){
 }
 
 void SeedingData::constructor(SeedExtender*seedExtender,int rank,int size,StaticVector*outbox,RingAllocator*outboxAllocator,int*seedCoverage,int*mode,
-	Parameters*parameters,int*wordSize,MyForest*subgraph,bool*colorSpaceMode,StaticVector*inbox){
+	Parameters*parameters,int*wordSize,GridTable*subgraph,bool*colorSpaceMode,StaticVector*inbox){
 	m_maximumWorkers=0;
 	m_seedExtender=seedExtender;
 	m_size=size;

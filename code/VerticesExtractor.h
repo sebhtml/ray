@@ -109,7 +109,7 @@ public:
 	void resetRanksDoneForReduction();
 
 	uint64_t getThreshold();
-	void updateThreshold(MyForest*a);
+	void updateThreshold(GridTable*a);
 	bool isTriggered();
 	void trigger();
 	void removeTrigger();
@@ -119,7 +119,7 @@ public:
 	bool mustTriggerReduction();
 	void scheduleReduction(StaticVector*outbox,int rank);
 
-	bool deleteVertices(vector<uint64_t>*verticesToRemove,MyForest*subgraph,
+	bool deleteVertices(vector<uint64_t>*verticesToRemove,GridTable*subgraph,
 Parameters*parameters,RingAllocator*m_outboxAllocator,
 	StaticVector*m_outbox,map<uint64_t,vector<uint64_t> >*ingoingEdges,map<uint64_t,vector<uint64_t> >*outgoingEdges
 );
