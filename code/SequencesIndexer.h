@@ -36,6 +36,7 @@
 #include<Parameters.h>
 
 class SequencesIndexer{
+	MyAllocator m_allocator;
 	int m_pendingMessages;
 
 	int m_theSequenceId;
@@ -55,6 +56,7 @@ ArrayOfReads*m_myReads,
 
 	void constructor(int size);
 	void setReadiness();
+	MyAllocator*getAllocator();
 };
 
 #endif

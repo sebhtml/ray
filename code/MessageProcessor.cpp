@@ -514,7 +514,7 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*me
 	int chunkSize=m_subgraph->getAllocator()->getChunkSize();
 	uint64_t totalBytes=chunks*chunkSize;
 	uint64_t kibibytes=totalBytes/1024;
-	printf("Rank %i: memory usage for vertices is %lu KiB\n",rank,kibibytes);
+	printf("Rank %i: memory usage for vertices topology is %lu KiB\n",rank,kibibytes);
 	fflush(stdout);
 
 	(*m_mode_send_coverage_iterator)=0;
@@ -590,6 +590,20 @@ void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 		}
 	}
 	#endif
+
+	int chunks=m_subgraph->getSecondAllocator()->getNumberOfChunks();
+	int chunkSize=m_subgraph->getSecondAllocator()->getChunkSize();
+	uint64_t totalBytes=chunks*chunkSize;
+	uint64_t kibibytes=totalBytes/1024;
+	printf("Rank %i: memory usage for vertices data is %lu KiB\n",rank,kibibytes);
+	fflush(stdout);
+
+	chunks=m_si->getAllocator()->getNumberOfChunks();
+	chunkSize=m_si->getAllocator()->getChunkSize();
+	totalBytes=chunks*chunkSize;
+	kibibytes=totalBytes/1024;
+	printf("Rank %i: memory usage for read markers is %lu KiB\n",rank,kibibytes);
+	fflush(stdout);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message){
@@ -826,12 +840,12 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
-	Vertex*node=m_subgraph->find(incoming[0]);
 	int offset=incoming[1];
 	#ifdef ASSERT
+	Vertex*node=m_subgraph->find(incoming[0]);
 	assert(node!=NULL);
 	#endif
-	vector<Direction> directions=node->getDirections(incoming[0]);
+	vector<Direction> directions=m_subgraph->getDirections(incoming[0]);
 	//cout<<"directions="<<directions.size()<<endl;
 	int maxSize=directions.size();
 	//cout<<"source="<<source<<" self="<<rank<<" MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED directions="<<maxSize<<endl;
@@ -953,6 +967,11 @@ void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message){
 	for(int i=0;i<count;i+=4){
 		m_count++;
 		uint64_t vertex=incoming[i+0];
+		int coverage=m_subgraph->find(vertex)->getCoverage(vertex);
+		if(coverage==1){
+			continue;
+		}
+
 		uint64_t complement=complementVertex_normal(vertex,*m_wordSize);
 		bool lower=vertex<complement;
 		int rank=incoming[i+1];
@@ -962,13 +981,13 @@ void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message){
 		if(node==NULL){
 			continue;
 		}
-		ReadAnnotation*e=(ReadAnnotation*)m_persistentAllocator->allocate(sizeof(ReadAnnotation));
+		ReadAnnotation*e=(ReadAnnotation*)m_si->getAllocator()->allocate(sizeof(ReadAnnotation));
 		#ifdef ASSERT
 		assert(e!=NULL);
 		#endif
 		e->constructor(rank,sequenceIdOnDestination,strand,lower);
 
-		node->addRead(vertex,e);
+		m_subgraph->addRead(vertex,e);
 	}
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY,rank);
 	m_outbox->push_back(aMessage);
@@ -1002,14 +1021,14 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS(Message*message){
 		//cout<<__func__<<" from key "<<incoming[0]<<endl;
 		cout.flush();
 		vertex=incoming[0];
-		Vertex*node=m_subgraph->find(vertex);
 
 		#ifdef ASSERT
+		Vertex*node=m_subgraph->find(vertex);
 		assert(node!=NULL);
 		#endif
 
-		e=node->getReads(vertex);
-	
+		e=m_subgraph->getReads(vertex);
+		
 		#ifdef ASSERT
 		assert(maxToProcess%3==0);
 		#endif
@@ -1122,6 +1141,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS_REPLY(Message*message){
 		&& incoming[i+1]==m_sentinelValue
 		&& incoming[i+2]==m_sentinelValue){
 			(m_ed->m_EXTENSION_reads_received)=true;
+			//cout<<m_ed->m_EXTENSION_receivedReads.size()<<" Reads."<<endl;
 		}else{
 			#ifdef ASSERT
 			assert(m_ed->m_EXTENSION_reads_received==false);
@@ -1212,8 +1232,8 @@ void MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 		uint64_t vertex=incoming[i+0];
 		uint64_t rc=complementVertex_normal(vertex,*m_wordSize);
 		bool lower=vertex<rc;
-		Vertex*node=m_subgraph->find(vertex);
 		#ifdef ASSERT
+		Vertex*node=m_subgraph->find(vertex);
 		assert(node!=NULL);
 		#endif
 		uint64_t wave=incoming[i+1];
@@ -1221,7 +1241,7 @@ void MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 		Direction*e=(Direction*)m_directionsAllocator->allocate(sizeof(Direction));
 		e->constructor(wave,progression,lower);
 
-		node->addDirection(incoming[i],e);
+		m_subgraph->addDirection(incoming[i],e);
 	}
 }
 
@@ -1270,7 +1290,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE(Message*message){
 	assert(node!=NULL);
 	#endif
 
-	vector<Direction> paths=node->getDirections(incoming[0]);
+	vector<Direction> paths=m_subgraph->getDirections(incoming[0]);
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
 	message2[0]=paths.size();
 	message2[1]=node->getCoverage(incoming[0]);
@@ -1329,11 +1349,11 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
-	Vertex*node=m_subgraph->find(incoming[0]);
 	#ifdef ASSERT
+	Vertex*node=m_subgraph->find(incoming[0]);
 	assert(node!=NULL);
 	#endif
-	vector<Direction> paths=node->getDirections(incoming[0]);
+	vector<Direction> paths=m_subgraph->getDirections(incoming[0]);
 	int i=incoming[1];
 	Direction d=paths[i];
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(3*sizeof(uint64_t));
@@ -1421,9 +1441,9 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 	//MyForestIterator iterator;
 	iterator.constructor(m_subgraph,*m_wordSize);
 	while(iterator.hasNext()){
-		Vertex*node=iterator.next();
+		iterator.next();
 		uint64_t key=iterator.getKey();
-		node->clearDirections(key);
+		m_subgraph->clearDirections(key);
 	}
 
 	m_directionsAllocator->reset();

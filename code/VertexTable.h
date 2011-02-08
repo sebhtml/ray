@@ -19,22 +19,19 @@
 
 */
 
-#ifndef _GridTable
-#define _GridTable
+#ifndef _VertexTable
+#define _VertexTable
 
-#include <VertexTable.h>
 #include <MyAllocator.h>
-#include <Vertex.h>
+#include <VertexData.h>
 
-class GridTable{
-	VertexTable m_vertexTable;
-	int m_rank;
+class VertexTable{
 	uint64_t m_size;
 	bool m_inserted;
 	MyAllocator m_gridAllocator;
-	Vertex**m_gridData;
+	VertexData**m_gridData;
 	uint16_t*m_gridSizes;
-	uint16_t*m_gridReservedSizes;
+	//uint16_t*m_gridReservedSizes;
 	int m_gridSize;
 	bool m_frozen;
 	int m_wordSize;
@@ -42,20 +39,19 @@ class GridTable{
 	/**
  *   move the item in front of the others
  */
-	Vertex*move(int bin,int item);
+	VertexData*move(int bin,int item);
 public:
 	void constructor(int rank);
 	void setWordSize(int w);
 	uint64_t size();
-	Vertex*find(uint64_t key);
-	Vertex*insert(uint64_t key);
+	VertexData*find(uint64_t key);
+	VertexData*insert(uint64_t key);
 	bool inserted();
 	void remove(uint64_t a);
-	Vertex*getElementInBin(int bin,int element);
+	VertexData*getElementInBin(int bin,int element);
 	int getNumberOfElementsInBin(int bin);
 	int getNumberOfBins();
 	MyAllocator*getAllocator();
-	MyAllocator*getSecondAllocator();
 	void freeze();
 	void unfreeze();
 	bool frozen();
@@ -65,7 +61,7 @@ public:
 	void addDirection(uint64_t a,Direction*d);
 	vector<Direction> getDirections(uint64_t a);
 	void clearDirections(uint64_t a);
-	void buildData();
+
 };
 
 #endif

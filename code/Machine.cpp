@@ -164,9 +164,8 @@ void Machine::start(){
 	m_inbox.constructor(MAX_ALLOCATED_MESSAGES_IN_INBOX);
 	m_outbox.constructor(MAX_ALLOCATED_MESSAGES_IN_OUTBOX);
 
-	int PERSISTENT_ALLOCATOR_CHUNK_SIZE=16777216; // 16 MiB
+	int PERSISTENT_ALLOCATOR_CHUNK_SIZE=4194304; // 4 MiB
 	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
-	m_treeAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
 
 	int directionAllocatorChunkSize=4194304; // 4 MiB
 	m_directionsAllocator.constructor(directionAllocatorChunkSize);
@@ -233,13 +232,14 @@ void Machine::start(){
 		cout<<"Rank "<<MASTER_RANK<<": the maximum size of a message is "<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<" bytes"<<endl;
 		cout<<"Rank "<<MASTER_RANK<<": align addresses on 8 bytes: ";
 		#ifdef ALIGN_ADDRESSES
-		cout<<" yes";
+		cout<<" yes (ALIGN_ADDRESSES is defined)";
 		#else
-		cout<<" no";
+		cout<<" no (ALIGN_ADDRESSES is undefined)";
 		#endif
 		cout<<endl;
 
 		cout<<" sizeof(Vertex)="<<sizeof(Vertex)<<endl;
+		cout<<" sizeof(VertexData)="<<sizeof(VertexData)<<endl;
 		cout<<" sizeof(Direction)="<<sizeof(Direction)<<endl;
 		cout<<" sizeof(ReadAnnotation)="<<sizeof(ReadAnnotation)<<endl;
 		cout<<" sizeof(Read)="<<sizeof(Read)<<endl;
@@ -260,7 +260,6 @@ void Machine::start(){
 		m_ed,&m_readsPositions,getSize(),&m_timePrinter,&m_slave_mode,&m_master_mode,
 	&m_parameters,&m_fileId,m_seedingData);
 
-	//m_subgraph.constructor(&m_treeAllocator);
 	m_subgraph.constructor(getRank());
 	
 	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),&m_outbox,&m_outboxAllocator,&m_seedCoverage,&m_slave_mode,&m_parameters,&m_wordSize,&m_subgraph,
@@ -385,7 +384,6 @@ m_seedingData,
 	MPI_Barrier(MPI_COMM_WORLD);
 	m_messagesHandler.freeLeftovers();
 	m_persistentAllocator.clear();
-	m_treeAllocator.clear();
 	m_directionsAllocator.clear();
 	m_inboxAllocator.clear();
 	m_outboxAllocator.clear();
@@ -740,6 +738,8 @@ void Machine::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
 
 	m_distributionOfCoverage.clear();
 	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
+	
+	m_subgraph.buildData();
 }
 
 void Machine::call_RAY_MASTER_MODE_TRIGGER_SEEDING(){

@@ -20,22 +20,24 @@
 */
 
 #include <assert.h>
-#include <GridTable.h>
+#include <VertexTable.h>
 #include <common_functions.h>
+#include <iostream>
 #include <crypto.h>
 #include <stdlib.h>
 #include <stdio.h>
+using namespace std;
 
-void GridTable::constructor(int rank){
+void VertexTable::constructor(int rank){
 	m_size=0;
 	m_inserted=false;
 	m_gridSize=4194304;
-	int bytes1=m_gridSize*sizeof(Vertex*);
-	m_gridData=(Vertex**)__Malloc(bytes1);
+	int bytes1=m_gridSize*sizeof(VertexData*);
+	m_gridData=(VertexData**)__Malloc(bytes1);
 	int bytes2=m_gridSize*sizeof(uint16_t);
 	m_gridSizes=(uint16_t*)__Malloc(bytes2);
 	//m_gridReservedSizes=(uint16_t*)__Malloc(bytes3);
-	printf("Rank %i: allocating %i bytes for grid table\n",rank,bytes1+bytes2);
+	printf("Rank %i: allocating %i bytes for vertex table\n",rank,bytes1+bytes2);
 	fflush(stdout);
 	showMemoryUsage(rank);
 	for(int i=0;i<m_gridSize;i++){
@@ -44,14 +46,13 @@ void GridTable::constructor(int rank){
 		//m_gridReservedSizes[i]=0;
 	}
 	m_gridAllocator.constructor(m_gridSize);
-	m_rank=rank;
 }
 
-uint64_t GridTable::size(){
+uint64_t VertexTable::size(){
 	return m_size;
 }
 
-Vertex*GridTable::find(uint64_t key){
+VertexData*VertexTable::find(uint64_t key){
 	uint64_t lowerKey;
 	int bin=hash_function_2(key,m_wordSize,&lowerKey)%m_gridSize;
 
@@ -59,7 +60,7 @@ Vertex*GridTable::find(uint64_t key){
 		lowerKey=key;
 	}
 	for(int i=0;i<m_gridSizes[bin];i++){
-		Vertex*gridEntry=m_gridData[bin]+i;
+		VertexData*gridEntry=m_gridData[bin]+i;
 		if(gridEntry->m_lowerKey==lowerKey){
 			return move(bin,i);
 		}
@@ -67,7 +68,7 @@ Vertex*GridTable::find(uint64_t key){
 	return NULL;
 }
 
-Vertex*GridTable::insert(uint64_t key){
+VertexData*VertexTable::insert(uint64_t key){
 	uint64_t lowerKey;
 	m_inserted=false;
 	int bin=hash_function_2(key,m_wordSize,&lowerKey)%m_gridSize;
@@ -76,43 +77,45 @@ Vertex*GridTable::insert(uint64_t key){
 	}
 	//cout<<key<<" bin="<<bin<<" size="<<m_gridSizes[bin]<<endl;
 	for(int i=0;i<m_gridSizes[bin];i++){
-		Vertex*gridEntry=m_gridData[bin]+i;
+		VertexData*gridEntry=m_gridData[bin]+i;
 		if(gridEntry->m_lowerKey==lowerKey){
+			//cout<<"Found "<<key<<" in bin "<<bin<<endl;
 			return move(bin,i);
 		}
 	}
 	//if(m_gridReservedSizes[bin]==m_gridSizes[bin]){
 	if(true){
-		Vertex*newEntries=(Vertex*)m_gridAllocator.allocate((m_gridSizes[bin]+1)*sizeof(Vertex));
+		VertexData*newEntries=(VertexData*)m_gridAllocator.allocate((m_gridSizes[bin]+1)*sizeof(VertexData));
 		for(int i=0;i<m_gridSizes[bin];i++){
 			newEntries[i]=m_gridData[bin][i];
 		}
 		if(m_gridSizes[bin]!=0){
-			m_gridAllocator.getStore()->addAddressToReuse(m_gridData[bin],m_gridSizes[bin]*sizeof(Vertex));
+			m_gridAllocator.getStore()->addAddressToReuse(m_gridData[bin],m_gridSizes[bin]*sizeof(VertexData));
 		}
 		m_gridData[bin]=newEntries;
 	}
 
 	m_gridData[bin][m_gridSizes[bin]].m_lowerKey=lowerKey;
+	m_gridData[bin][m_gridSizes[bin]].constructor();
 	int oldSize=m_gridSizes[bin];
 	m_gridSizes[bin]++;
-	//m_gridReservedSizes[bin]++;
 	// check overflow
 	assert(m_gridSizes[bin]>oldSize);
 	m_inserted=true;
 	m_size+=2;
+	//cout<<"Inserted "<<key<<" in bin "<<bin<<endl;
 	return move(bin,m_gridSizes[bin]-1);
 }
 
-bool GridTable::inserted(){
+bool VertexTable::inserted(){
 	return m_inserted;
 }
 
-void GridTable::remove(uint64_t a){
+void VertexTable::remove(uint64_t a){
 
 }
 
-Vertex*GridTable::getElementInBin(int bin,int element){
+VertexData*VertexTable::getElementInBin(int bin,int element){
 	#ifdef ASSERT
 	assert(bin<getNumberOfBins());
 	assert(element<getNumberOfElementsInBin(bin));
@@ -120,34 +123,30 @@ Vertex*GridTable::getElementInBin(int bin,int element){
 	return m_gridData[bin]+element;
 }
 
-int GridTable::getNumberOfElementsInBin(int bin){
+int VertexTable::getNumberOfElementsInBin(int bin){
 	#ifdef ASSERT
 	assert(bin<getNumberOfBins());
 	#endif
 	return m_gridSizes[bin];
 }
 
-int GridTable::getNumberOfBins(){
+int VertexTable::getNumberOfBins(){
 	return m_gridSize;
 }
 
-MyAllocator*GridTable::getAllocator(){
+MyAllocator*VertexTable::getAllocator(){
 	return &m_gridAllocator;
 }
 
-MyAllocator*GridTable::getSecondAllocator(){
-	return m_vertexTable.getAllocator();
-}
-
-void GridTable::freeze(){
+void VertexTable::freeze(){
 	m_frozen=true;
 }
 
-void GridTable::unfreeze(){
+void VertexTable::unfreeze(){
 	m_frozen=false;
 }
 
-bool GridTable::frozen(){
+bool VertexTable::frozen(){
 	return m_frozen;
 }
 
@@ -162,11 +161,11 @@ bool GridTable::frozen(){
  *
  *
  */
-Vertex*GridTable::move(int bin,int item){
+VertexData*VertexTable::move(int bin,int item){
 	if(m_frozen){
 		return m_gridData[bin]+item;
 	}
-	Vertex tmp;
+	VertexData tmp;
 	#ifdef ASSERT
 	assert(item<getNumberOfElementsInBin(bin));
 	#endif
@@ -178,31 +177,46 @@ Vertex*GridTable::move(int bin,int item){
 	return m_gridData[bin];
 }
 
-void GridTable::setWordSize(int w){
+void VertexTable::setWordSize(int w){
 	m_wordSize=w;
-	m_vertexTable.setWordSize(w);
 }
 
-void GridTable::addRead(uint64_t a,ReadAnnotation*e){
-	m_vertexTable.addRead(a,e);
+void VertexTable::addRead(uint64_t a,ReadAnnotation*e){
+	VertexData*i=insert(a);
+	i->addRead(a,e);
+	#ifdef ASSERT
+	ReadAnnotation*reads=i->getReads(a);
+	assert(reads!=NULL);
+	#endif
 }
 
-ReadAnnotation*GridTable::getReads(uint64_t a){
-	return m_vertexTable.getReads(a);
+ReadAnnotation*VertexTable::getReads(uint64_t a){
+	VertexData*i=find(a);
+	if(i==NULL){
+		return NULL;
+	}
+	ReadAnnotation*reads=i->getReads(a);
+	return reads;
 }
 
-void GridTable::addDirection(uint64_t a,Direction*d){
-	m_vertexTable.addDirection(a,d);
+void VertexTable::addDirection(uint64_t a,Direction*d){
+	VertexData*i=insert(a);
+	i->addDirection(a,d);
 }
 
-vector<Direction> GridTable::getDirections(uint64_t a){
-	return m_vertexTable.getDirections(a);
+vector<Direction> VertexTable::getDirections(uint64_t a){
+	VertexData*i=find(a);
+	if(i==NULL){
+		vector<Direction> p;
+		return p;
+	}
+	return i->getDirections(a);
 }
 
-void GridTable::clearDirections(uint64_t a){
-	m_vertexTable.clearDirections(a);
+void VertexTable::clearDirections(uint64_t a){
+	VertexData*i=find(a);
+	if(i!=NULL){
+		i->clearDirections(a);
+	}
 }
 
-void GridTable::buildData(){
-	m_vertexTable.constructor(m_rank);
-}

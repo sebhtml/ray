@@ -324,4 +324,5 @@ void SequencesLoader::constructor(int size,MyAllocator*allocator,ArrayOfReads*re
 	m_size=size;
 	m_persistentAllocator=allocator;
 	m_myReads=reads;
+	m_myReads->constructor();
 }

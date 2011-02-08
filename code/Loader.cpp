@@ -31,10 +31,11 @@ using namespace std;
 
 void Loader::constructor(){
 	m_maxToLoad=500000;
-	DISTRIBUTION_ALLOCATOR_CHUNK_SIZE=m_maxToLoad*100;
+	DISTRIBUTION_ALLOCATOR_CHUNK_SIZE=4194304;
 	m_currentOffset=0;
 	m_type=FORMAT_NULL;
 	m_allocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
+	m_reads.constructor();
 }
 
 int Loader::load(string file,bool isGenome){

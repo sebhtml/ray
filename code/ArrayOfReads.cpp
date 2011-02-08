@@ -25,9 +25,14 @@
 #include <iostream>
 using namespace std;
 
-ArrayOfReads::ArrayOfReads(){
+void ArrayOfReads::constructor(){
 	m_CHUNK_SIZE=100000;
-	m_chunks=NULL;
+	m_maxNumberOfChunks=1000;
+	m_chunks=(Read**)__Malloc(m_maxNumberOfChunks*sizeof(Read*));
+	#ifdef ASSERT
+	assert(m_chunks!=NULL);
+	#endif
+
 	m_elements=0;
 	m_numberOfChunks=0;
 	m_maxSize=0;
@@ -35,15 +40,17 @@ ArrayOfReads::ArrayOfReads(){
 
 void ArrayOfReads::push_back(Read*a){
 	if(m_elements==m_maxSize){
+		#ifdef ASSERT
+		assert(m_numberOfChunks!=m_maxNumberOfChunks);
+		#endif
 
 		m_maxSize+=m_CHUNK_SIZE;
+		cout<<"New size="<<m_maxSize<<endl;
 		m_numberOfChunks++;
 		
 		#ifdef ASSERT
 		assert(m_numberOfChunks!=0);
 		#endif
-
-		m_chunks=(Read**)__Realloc(m_chunks,m_numberOfChunks*sizeof(Read*));
 
 		#ifdef ASSERT
 		assert(m_chunks!=NULL);

@@ -19,24 +19,35 @@
 
 */
 
-#ifndef _GridAllocator
-#define _GridAllocator
+#ifndef _VertexData
+#define _VertexData
 
 #include <stdint.h>
-#include <Vertex.h>
-#include <MyAllocator.h>
-
-#include <map>
+#include <ReadAnnotation.h>
+#include <Direction.h>
+#include <vector>
 using namespace std;
 
-class GridAllocator{
-	map<int,Vertex*> m_toReuse;
-	MyAllocator m_allocator;
+class VertexData{
 public:
+	uint64_t m_lowerKey;
+/*
+ * 	read annotations
+ * 	which reads start here?
+ */
+	ReadAnnotation*m_readsStartingHere;
+
+/*
+ *	which hyperfusions go on this vertex at least once?
+ */
+	Direction*m_directions;
+
 	void constructor();
-	void free(Vertex*a,int b);
-	Vertex*allocate(int a,uint16_t*reserved);
-	MyAllocator*getAllocator();
+	void addRead(uint64_t a,ReadAnnotation*e);
+	ReadAnnotation*getReads(uint64_t a);
+	void addDirection(uint64_t a,Direction*d);
+	vector<Direction> getDirections(uint64_t a);
+	void clearDirections(uint64_t a);
 };
 
 #endif

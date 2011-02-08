@@ -130,7 +130,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		// TODO: check if the position !=0
 		ed->m_EXTENSION_complementedSeed=false;
 		ed->m_EXTENSION_complementedSeed2=true;
-		ed->resetStructures();
+		//ed->resetStructures();
 
 	}else if(!ed->m_EXTENSION_markedCurrentVertexAsAssembled){
 		markCurrentVertexAsAssembled(currentVertex,outboxAllocator,outgoingEdgeIndex,outbox,

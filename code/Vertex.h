@@ -22,12 +22,13 @@
 #ifndef _Vertex
 #define _Vertex
 
-#include<ReadAnnotation.h>
-#include<Direction.h>
-#include<VertexLinkedList.h>
-#include<stdint.h>
-#include<common_functions.h>
-#include<vector>
+#include <ReadAnnotation.h>
+#include <Direction.h>
+#include <VertexLinkedList.h>
+#include <VertexData.h>
+#include <stdint.h>
+#include <common_functions.h>
+#include <vector>
 using namespace std;
 
 /*
@@ -60,16 +61,6 @@ public:
 	uint8_t m_edges_lower;
 	#endif
 
-	/*
- * 	read annotations
- * 	which reads start here?
- */
-	ReadAnnotation*m_readsStartingHere;
-
-/*
- *	which hyperfusions go on this vertex at least once?
- */
-	Direction*m_directions;
 
 	#ifndef USE_DISTANT_SEGMENTS_GRAPH
 	void addOutgoingEdge_ClassicMethod(uint64_t vertex,uint64_t a,int k);
@@ -81,16 +72,13 @@ public:
 	int getCoverage(uint64_t p);
 	void addOutgoingEdge(uint64_t vertex,uint64_t a,int k);
 	void addIngoingEdge(uint64_t vertex,uint64_t a,int k);
-	void addRead(uint64_t a,ReadAnnotation*e);
 	vector<uint64_t> getIngoingEdges(uint64_t a,int k);
 	vector<uint64_t> getOutgoingEdges(uint64_t a,int k);
 	uint8_t getEdges(uint64_t a);
-	ReadAnnotation*getReads(uint64_t a);
-	void addDirection(uint64_t a,Direction*d);
-	vector<Direction> getDirections(uint64_t a);
-	void clearDirections(uint64_t a);
 	void deleteIngoingEdge(uint64_t vertex,uint64_t a,int k);
 	void deleteOutgoingEdge(uint64_t vertex,uint64_t a,int k);
+
+
 }
 #ifdef __GNUC__ 
 __attribute((packed)) 

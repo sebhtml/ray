@@ -281,21 +281,6 @@ void*__Malloc(int c){
 	return a;
 }
 
-void*__Realloc(void*a,int b){
-	a=realloc(a,b);
-	if(a==NULL){
-		cout<<"Critical exception: The system is out of memory, returned NULL."<<endl;
-	}
-	assert(a!=NULL);
-
-	#ifdef MALLOC_DEBUG
-	printf("%s %i %s %i bytes, ret %p\n",__FILE__,__LINE__,__func__,b,a);
-	fflush(stdout);
-	#endif
-
-	return a;
-}
-
 void __Free(void*a){
 	#ifdef MALLOC_DEBUG
 	printf("%s %i %s %p\n",__FILE__,__LINE__,__func__,a);

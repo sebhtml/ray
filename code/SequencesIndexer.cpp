@@ -118,10 +118,15 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 }
 
 void SequencesIndexer::constructor(int m_size){
+	m_allocator.constructor(4194304);
 	m_bufferedData.constructor(m_size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t));
 	m_pendingMessages=0;
 }
 
 void SequencesIndexer::setReadiness(){
 	m_pendingMessages--;
+}
+
+MyAllocator*SequencesIndexer::getAllocator(){
+	return &m_allocator;
 }

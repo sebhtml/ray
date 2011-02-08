@@ -35,8 +35,6 @@ void Vertex::constructor(){
 	#else
 	m_edges_lower=0;
 	#endif
-	m_readsStartingHere=NULL;
-	m_directions=NULL;
 }
 
 void Vertex::setCoverage(uint64_t a,int coverage){
@@ -172,39 +170,6 @@ void Vertex::addOutgoingEdge(uint64_t vertex,uint64_t a,int k){
 	#endif
 }
 
-void Vertex::addRead(uint64_t vertex,ReadAnnotation*e){
-	e->setNext(m_readsStartingHere);
-	m_readsStartingHere=e;
-}
-
-void Vertex::addDirection(uint64_t vertex,Direction*e){
-	e->setNext(m_directions);
-	m_directions=e;
-}
-
-ReadAnnotation*Vertex::getReads(uint64_t vertex){
-	return m_readsStartingHere;
-}
-
-vector<Direction> Vertex::getDirections(uint64_t vertex){
-	bool seekLower=false;
-	if(vertex==m_lowerKey){
-		seekLower=true;
-	}
-	vector<Direction> a;
-	Direction*e=m_directions;
-	while(e!=NULL){
-		if(e->isLower()==seekLower){
-			a.push_back(*e);
-		}
-		e=e->getNext();
-	}
-	return a;
-}
-
-void Vertex::clearDirections(uint64_t a){
-	m_directions=NULL;
-}
 
 uint8_t Vertex::getEdges(uint64_t a){
 	if(a==m_lowerKey){
