@@ -33,15 +33,21 @@
  */
 class Direction{
 	uint64_t m_wave; // the path Identifier, as a wave for itself.
-	int m_progression; // the position in the path.
+	uint32_t m_progression; // the position in the path.
+	bool m_lower;
 	Direction*m_next;
 public:
-	void constructor(uint64_t wave,int progression);
+	void constructor(uint64_t wave,int progression,bool lower);
 	uint64_t getWave();
 	int getProgression();
 	Direction*getNext();
 	void setNext(Direction*e);
-};
+	bool isLower();
+}
+#ifdef __GNUC__ 
+__attribute((packed)) 
+#endif
+;
 
 #endif
 

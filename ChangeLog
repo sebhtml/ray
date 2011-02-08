@@ -4,6 +4,11 @@
 * Reduced the memory fragmentation in the extension of seeds.
 * Implemented a large grid table. It is an hash table in with elements in bins
 are ordered by the number of accesses.
+* Force the packing of structures and classes if using gcc
+* The memory for sequence reads is reused in the extension of seeds.
+* Any vertex is stored along its reverse complement.
+* The Vertex class was stripped to reduce the memory usage.
+
 
 
 = 1.2.3 'cRAYfish' =

@@ -19,9 +19,11 @@
 
 */
 
-#include<ArrayOfReads.h>
-#include<stdlib.h>
-#include<assert.h>
+#include <ArrayOfReads.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <iostream>
+using namespace std;
 
 ArrayOfReads::ArrayOfReads(){
 	m_CHUNK_SIZE=100000;

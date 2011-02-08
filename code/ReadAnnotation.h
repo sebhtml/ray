@@ -32,19 +32,25 @@
  * The read paths are restored using read annotations.
  */
 class ReadAnnotation{
+	ReadAnnotation*m_next;
 	uint32_t m_readIndex;
 	uint16_t m_rank;
 	char m_strand;
-	ReadAnnotation*m_next;
+	bool m_lower;
 public:
-	void constructor(int a,int b,char c);
+	void constructor(int a,int b,char c,bool lower);
+	bool isLower();
 	int getRank()const;
 	int getReadIndex()const;
 	char getStrand()const;
 	ReadAnnotation*getNext()const;
 	void setNext(ReadAnnotation*a);
 	uint64_t getUniqueId() const;
-};
+}
+#ifdef __GNUC__ 
+__attribute((packed)) 
+#endif
+;
 
 #endif
 

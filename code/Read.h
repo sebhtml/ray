@@ -37,9 +37,9 @@ using namespace std;
  * and a (possible) link to paired information.
  */
 class Read{
-	uint16_t m_length;
 	uint8_t *m_sequence;
 	PairedRead*m_pairedRead;// the read on the left
+	uint16_t m_length;
 
 	char*trim(char*a,const char*b);
 public:
@@ -53,6 +53,10 @@ public:
 	uint8_t*getRawSequence();
 	int getRequiredBytes();
 	void setRawSequence(uint8_t*seq,int length);
-};
+}
+#ifdef __GNUC__ 
+__attribute((packed)) 
+#endif
+;
 
 #endif

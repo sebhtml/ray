@@ -42,6 +42,10 @@ public:
 	uint32_t getId();
 	uint64_t getUniqueId();
 	int getLibrary();
-};
+}
+#ifdef __GNUC__ 
+__attribute((packed)) 
+#endif
+;
 
 #endif

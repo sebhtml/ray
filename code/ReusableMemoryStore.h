@@ -22,18 +22,23 @@
 #ifndef _ReusableMemoryStore
 #define _ReusableMemoryStore
 
-#include <SplayNode.h>
-#include <Vertex.h>
 #include <stdint.h>
+#include <map>
+using namespace std;
+
+typedef struct{
+	void*m_next;
+} Element;
 
 class ReusableMemoryStore{
-	SplayNode<uint64_t,Vertex>*m_toReuse;
+	map<int,Element*> m_toReuse;
 public:
 
-	bool hasAddressesToReuse();
-	void*reuseAddress();
-	void addAddressToReuse(void*ptr);
+	bool hasAddressesToReuse(int size);
+	void*reuseAddress(int size);
+	void addAddressToReuse(void*ptr,int size);
 	void constructor();
+	void reset();
 };
 
 #endif

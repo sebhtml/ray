@@ -43,7 +43,6 @@ public:
  *	The coverage of the vertex
  */
 	COVERAGE_TYPE m_coverage_lower;
-	COVERAGE_TYPE m_coverage_higher;
 
 	/*
  *	the ingoing and outgoing edges.
@@ -59,21 +58,18 @@ public:
 	VertexLinkedList*m_outgoingEdges;
 	#else
 	uint8_t m_edges_lower;
-	uint8_t m_edges_higher;
 	#endif
 
 	/*
  * 	read annotations
  * 	which reads start here?
  */
-	ReadAnnotation*m_readsStartingHere_lower;
-	ReadAnnotation*m_readsStartingHere_higher;
+	ReadAnnotation*m_readsStartingHere;
 
 /*
  *	which hyperfusions go on this vertex at least once?
  */
-	Direction*m_direction_lower;
-	Direction*m_direction_higher;
+	Direction*m_directions;
 
 	#ifndef USE_DISTANT_SEGMENTS_GRAPH
 	void addOutgoingEdge_ClassicMethod(uint64_t vertex,uint64_t a,int k);
@@ -95,6 +91,10 @@ public:
 	void clearDirections(uint64_t a);
 	void deleteIngoingEdge(uint64_t vertex,uint64_t a,int k);
 	void deleteOutgoingEdge(uint64_t vertex,uint64_t a,int k);
-};
+}
+#ifdef __GNUC__ 
+__attribute((packed)) 
+#endif
+;
 
 #endif

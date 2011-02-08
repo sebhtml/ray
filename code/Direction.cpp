@@ -22,7 +22,8 @@
 #include<Direction.h>
 #include<stdlib.h>
 
-void Direction::constructor(uint64_t wave,int progression){
+void Direction::constructor(uint64_t wave,int progression,bool lower){
+	m_lower=lower;
 	m_wave=wave;
 	m_progression=progression;
 	m_next=NULL;
@@ -44,3 +45,6 @@ void Direction::setNext(Direction*e){
 	m_next=e;
 }
 
+bool Direction::isLower(){
+	return m_lower;
+}

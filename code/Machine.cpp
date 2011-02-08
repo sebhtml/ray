@@ -240,6 +240,11 @@ void Machine::start(){
 		cout<<endl;
 
 		cout<<" sizeof(Vertex)="<<sizeof(Vertex)<<endl;
+		cout<<" sizeof(Direction)="<<sizeof(Direction)<<endl;
+		cout<<" sizeof(ReadAnnotation)="<<sizeof(ReadAnnotation)<<endl;
+		cout<<" sizeof(Read)="<<sizeof(Read)<<endl;
+		cout<<" sizeof(PairedRead)="<<sizeof(PairedRead)<<endl;
+	
 		cout<<endl;
 		m_timePrinter.printElapsedTime("Beginning of computation");
 		cout<<endl;

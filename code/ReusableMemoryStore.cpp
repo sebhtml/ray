@@ -20,23 +20,58 @@
 */
 
 #include <ReusableMemoryStore.h>
+#include <assert.h>
 
 void ReusableMemoryStore::constructor(){
-	m_toReuse=NULL;
 }
 
-bool ReusableMemoryStore::hasAddressesToReuse(){
-	return m_toReuse!=NULL;
+bool ReusableMemoryStore::hasAddressesToReuse(int size){
+	bool test=m_toReuse.count(size)>0;
+	#ifdef ASSERT
+	if(test){
+		assert(m_toReuse[size]!=NULL);
+	}
+	#endif
+	return test;
 }
 
-void*ReusableMemoryStore::reuseAddress(){
-	SplayNode<uint64_t,Vertex>*tmp=m_toReuse;
-	m_toReuse=tmp->m_right;
+void*ReusableMemoryStore::reuseAddress(int size){
+	#ifdef ASSERT
+	assert(m_toReuse.count(size)>0 && m_toReuse[size]!=NULL);
+	#endif
+
+	Element*tmp=m_toReuse[size];
+	#ifdef ASSERT
+	assert(tmp!=NULL);
+	#endif
+	Element*next=(Element*)tmp->m_next;
+	m_toReuse[size]=next;
+	if(m_toReuse[size]==NULL){
+		m_toReuse.erase(size);
+	}
+	#ifdef ASSERT
+	if(m_toReuse.count(size)>0){
+		assert(m_toReuse[size]!=NULL);
+	}
+	#endif
 	return tmp;
 }
 
-void ReusableMemoryStore::addAddressToReuse(void*p){
-	SplayNode<uint64_t,Vertex>*ptr=(SplayNode<uint64_t,Vertex>*)p;
-	ptr->m_right=m_toReuse;
-	m_toReuse=ptr;
+void ReusableMemoryStore::addAddressToReuse(void*p,int size){
+	if(size<(int)sizeof(Element)){
+		return;
+	}
+	#ifdef ASSERT
+	assert(p!=NULL);
+	#endif
+	Element*ptr=(Element*)p;
+	ptr->m_next=NULL;
+	if(m_toReuse.count(size)>0){
+		ptr->m_next=m_toReuse[size];
+	}
+	m_toReuse[size]=ptr;
+}
+
+void ReusableMemoryStore::reset(){
+	m_toReuse.clear();
 }

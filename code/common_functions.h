@@ -31,6 +31,11 @@ see <http://www.gnu.org/licenses/>
 
 #define RAY_VERSION "1.2.4"
 
+#define _ENCODING_A 0
+#define _ENCODING_T 1
+#define _ENCODING_C 2
+#define _ENCODING_G 3
+
 #include<master_modes.h>
 #include<slave_modes.h>
 #include<mpi_tags.h>
@@ -186,6 +191,8 @@ char complementNucleotide(char c);
 
 uint64_t hash_function_1(uint64_t a,int w);
 uint64_t hash_function_2(uint64_t a,int w,uint64_t*b);
+
+uint8_t invertEdges(uint8_t a);
 
 #endif
 

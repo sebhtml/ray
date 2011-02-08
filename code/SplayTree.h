@@ -121,7 +121,7 @@ bool SplayTree<KEY,VALUE>::remove(KEY key,bool reuse,MyAllocator*allocator){
 
 	// reuse the pointer 
 	if(reuse){
-		allocator->getStore()->addAddressToReuse(toRemove);
+		allocator->getStore()->addAddressToReuse(toRemove,sizeof(SplayNode<KEY,VALUE>));
 	}
 	return true;
 }

@@ -21,6 +21,8 @@
 
 #include <GridTableIterator.h>
 #include <assert.h>
+#include <iostream>
+using namespace std;
 
 void GridTableIterator::constructor(GridTable*a,int wordSize){
 	m_lowerKeyIsDone=false;

@@ -34,11 +34,6 @@
 #include<sstream>
 using namespace std;
 
-#define _ENCODING_A 0
-#define _ENCODING_T 1
-#define _ENCODING_C 2
-#define _ENCODING_G 3
-
 char complementNucleotide(char c){
 	switch(c){
 		case 'A':
@@ -498,4 +493,67 @@ uint64_t hash_function_2(uint64_t a,int w,uint64_t*b){
 		a=*b;
 	}
 	return uniform_hashing_function_2_64_64(a);
+}
+
+	// outgoing  ingoing
+	//
+	// G C T A G C T A
+	//
+	// 7 6 5 4 3 2 1 0
+
+uint8_t invertEdges(uint8_t edges){
+	uint8_t out=0;
+
+	// outgoing edges
+	for(int i=0;i<4;i++){
+		int j=((((uint64_t)edges)<<(sizeof(uint64_t)*8-5-i))>>(sizeof(uint64_t)*8-1));
+		if(j==1){
+			switch(i){
+				case _ENCODING_A:
+					j=_ENCODING_T;
+					break;
+				case _ENCODING_T:
+					j=_ENCODING_A;
+					break;
+				case _ENCODING_G:
+					j=_ENCODING_C;
+					break;
+				case _ENCODING_C:
+					j=_ENCODING_G;
+					break;
+				default:
+					break;
+			}
+			
+			uint8_t newBits=(1<<j);
+			out=out|newBits;
+		}
+	}
+
+	// Ingoing edges
+	for(int i=0;i<4;i++){
+		int j=((((uint64_t)edges)<<((sizeof(uint64_t)*8-1)-i))>>(sizeof(uint64_t)*8-1));
+		if(j==1){
+			switch(i){
+				case _ENCODING_A:
+					j=_ENCODING_T;
+					break;
+				case _ENCODING_T:
+					j=_ENCODING_A;
+					break;
+				case _ENCODING_G:
+					j=_ENCODING_C;
+					break;
+				case _ENCODING_C:
+					j=_ENCODING_G;
+					break;
+				default:
+					break;
+			}
+			
+			uint8_t newBits=(1<<(4+j));
+			out=out|newBits;
+		}
+	}
+	return out;
 }

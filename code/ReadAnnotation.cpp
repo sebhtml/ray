@@ -24,7 +24,8 @@
 #include<cstdlib>
 #include<common_functions.h>
 
-void ReadAnnotation::constructor(int rank,int readIndex,char c){
+void ReadAnnotation::constructor(int rank,int readIndex,char c,bool lower){
+	m_lower=lower;
 	m_rank=rank;
 	m_readIndex=readIndex;
 	m_next=NULL; // xor on the next.
@@ -57,3 +58,6 @@ uint64_t ReadAnnotation::getUniqueId()const{
 	return a;
 }
 
+bool ReadAnnotation::isLower(){
+	return m_lower;
+}

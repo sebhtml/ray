@@ -65,7 +65,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		ed->m_EXTENSION_directVertexDone=false;
 		ed->m_EXTENSION_VertexAssembled_requested=false;
 		ed->m_EXTENSION_complementedSeed=false;
-		ed->m_EXTENSION_complementedSeed2=false;
+		ed->m_EXTENSION_complementedSeed2=true;
 	
 		ed->constructor();
 
@@ -129,7 +129,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		}
 		// TODO: check if the position !=0
 		ed->m_EXTENSION_complementedSeed=false;
-		ed->m_EXTENSION_complementedSeed2=false;
+		ed->m_EXTENSION_complementedSeed2=true;
 		ed->resetStructures();
 
 	}else if(!ed->m_EXTENSION_markedCurrentVertexAsAssembled){
@@ -383,6 +383,11 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 					for(int i=0;i<(int)ed->m_EXTENSION_readsOutOfRange.size();i++){
 						uint64_t uniqueId=ed->m_EXTENSION_readsOutOfRange[i];
 						ed->m_EXTENSION_readsInRange->erase(uniqueId);
+
+						// free the sequence
+						ExtensionElement*element=ed->getUsedRead(uniqueId);
+						char*read=element->getSequence();
+						ed->getAllocator()->getStore()->addAddressToReuse(read,strlen(read)+1);
 					}
 					ed->m_EXTENSION_readsOutOfRange.clear();
 					return;
@@ -400,6 +405,12 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 					for(int i=0;i<(int)ed->m_sequencesToFree.size();i++){
 						uint64_t uniqueId=ed->m_sequencesToFree[i];
 						//cout<<"Removing "<<uniqueId<<endl;
+
+						// free the sequence
+						char*read=ed->getUsedRead(uniqueId)->getSequence();
+						ed->getAllocator()->getStore()->addAddressToReuse(read,strlen(read)+1);
+
+						// remove it
 						ed->removeSequence(uniqueId);
 						ed->m_EXTENSION_readsInRange->erase(uniqueId);
 					}
@@ -562,11 +573,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 
 		// no choice possible...
 		// do it for the lulz
-		if(!ed->m_EXTENSION_complementedSeed /*|| !ed->m_EXTENSION_complementedSeed2*/){
-			if(!ed->m_EXTENSION_complementedSeed){
-				ed->m_EXTENSION_complementedSeed=true;
-			}
-
+		if(!ed->m_EXTENSION_complementedSeed || !ed->m_EXTENSION_complementedSeed2){
 			vector<uint64_t> complementedSeed;
 
 			for(int i=ed->m_EXTENSION_extension->size()-1;i>=0;i--){
@@ -583,6 +590,14 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			ed->m_EXTENSION_directVertexDone=false;
 			ed->m_EXTENSION_VertexAssembled_requested=false;
 
+			if(!ed->m_EXTENSION_complementedSeed){
+				ed->m_EXTENSION_complementedSeed=true;
+				if(ed->m_EXTENSION_currentSeed.size()<1000){
+					ed->m_EXTENSION_complementedSeed2=false;
+				}
+			}else if(!ed->m_EXTENSION_complementedSeed2){
+				ed->m_EXTENSION_complementedSeed2=true;
+			}
 		}else{
 			storeExtensionAndGetNextOne(ed,theRank,seeds,currentVertex,bubbleData);
 		}
@@ -639,7 +654,7 @@ uint64_t*currentVertex,BubbleData*bubbleData){
 
 	ed->m_EXTENSION_directVertexDone=false;
 	ed->m_EXTENSION_complementedSeed=false;
-	ed->m_EXTENSION_complementedSeed2=false;
+	ed->m_EXTENSION_complementedSeed2=true;
 	ed->m_EXTENSION_VertexAssembled_requested=false;
 }
 

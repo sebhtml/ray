@@ -33,6 +33,7 @@ using namespace std;
 void MyAllocator::reset(){
 	m_currentPosition=0;
 	m_currentChunkId=0;
+	m_store.reset();
 }
 
 void MyAllocator::constructor(int chunkSize){
@@ -48,8 +49,8 @@ void MyAllocator::constructor(int chunkSize){
 }
 
 void*MyAllocator::allocate(int s){
-	if(m_store.hasAddressesToReuse()){
-		return m_store.reuseAddress();
+	if(m_store.hasAddressesToReuse(s)){
+		return m_store.reuseAddress(s);
 	}
 
 	#ifdef ALIGN_ADDRESSES
@@ -103,6 +104,7 @@ MyAllocator::~MyAllocator(){
 }
 
 void MyAllocator::clear(){
+	m_store.reset();
 	for(int i=0;i<(int)m_chunks.size();i++){
 		__Free(m_chunks[i]);
 	}

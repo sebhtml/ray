@@ -55,10 +55,10 @@ void ExtensionData::destroyStructures(){
 }
 
 void ExtensionData::resetStructures(){
-	m_allocator.reset();
-	//m_allocator.clear();
-	//int chunkSize=4194304;
-	//m_allocator.constructor(chunkSize);
+	//m_allocator.reset();
+	m_allocator.clear();
+	int chunkSize=4194304;
+	m_allocator.constructor(chunkSize);
 
 	destroyStructures();
 	createStructures();
