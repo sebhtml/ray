@@ -52,7 +52,7 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 	}
 
 	uint64_t vertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
-	int destination=vertexRank(vertex,getSize());
+	int destination=vertexRank(vertex,getSize(),m_wordSize);
 	m_buffers.addAt(destination,vertex);
 	m_buffers.addAt(destination,m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i]);
 	m_buffers.addAt(destination,m_ed->m_EXTENSION_currentPosition);
@@ -436,7 +436,7 @@ void FusionData::makeFusions(){
 				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 				message[0]=theVertex;
 
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize()),RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,getRank());
+				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize(),m_wordSize),RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,getRank());
 				m_outbox->push_back(aMessage);
 				m_FUSION_paths_requested=true;
 				m_FUSION_paths_received=false;
@@ -449,7 +449,7 @@ void FusionData::makeFusions(){
 						uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
 						message[0]=theVertex;
 						message[1]=m_FUSION_path_id;
-						Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize()),RAY_MPI_TAG_ASK_VERTEX_PATH,getRank());
+						Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize(),m_wordSize),RAY_MPI_TAG_ASK_VERTEX_PATH,getRank());
 						m_outbox->push_back(aMessage);
 						m_FUSION_path_requested=true;
 						m_FUSION_path_received=false;
@@ -480,7 +480,7 @@ void FusionData::makeFusions(){
 				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 				message[0]=theVertex;
 
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize()),RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,getRank());
+				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize(),m_wordSize),RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,getRank());
 				m_outbox->push_back(aMessage);
 				m_FUSION_paths_requested=true;
 				m_FUSION_paths_received=false;
@@ -493,7 +493,7 @@ void FusionData::makeFusions(){
 						uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
 						message[0]=theVertex;
 						message[1]=m_FUSION_path_id;
-						Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize()),RAY_MPI_TAG_ASK_VERTEX_PATH,getRank());
+						Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize(),m_wordSize),RAY_MPI_TAG_ASK_VERTEX_PATH,getRank());
 						m_outbox->push_back(aMessage);
 						m_FUSION_path_requested=true;
 						m_FUSION_path_received=false;
@@ -623,7 +623,7 @@ void FusionData::makeFusions(){
 				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 				message[0]=theVertex;
 
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize()),RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,getRank());
+				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize(),m_wordSize),RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,getRank());
 				m_outbox->push_back(aMessage);
 				m_FUSION_paths_requested=true;
 				m_FUSION_paths_received=false;
@@ -636,7 +636,7 @@ void FusionData::makeFusions(){
 						uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
 						message[0]=theVertex;
 						message[1]=m_FUSION_path_id;
-						Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize()),RAY_MPI_TAG_ASK_VERTEX_PATH,getRank());
+						Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize(),m_wordSize),RAY_MPI_TAG_ASK_VERTEX_PATH,getRank());
 						m_outbox->push_back(aMessage);
 						m_FUSION_path_requested=true;
 						m_FUSION_path_received=false;
@@ -663,7 +663,7 @@ void FusionData::makeFusions(){
 				uint64_t theVertex=complementVertex(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][END_LENGTH],m_wordSize,m_colorSpaceMode);
 				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 				message[0]=theVertex;
-				int destination=vertexRank(theVertex,getSize());
+				int destination=vertexRank(theVertex,getSize(),m_wordSize);
 
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,getRank());
 				m_outbox->push_back(aMessage);
@@ -678,7 +678,7 @@ void FusionData::makeFusions(){
 						uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
 						message[0]=theVertex;
 						message[1]=m_FUSION_path_id;
-						Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize()),RAY_MPI_TAG_ASK_VERTEX_PATH,getRank());
+						Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize(),m_wordSize),RAY_MPI_TAG_ASK_VERTEX_PATH,getRank());
 						m_outbox->push_back(aMessage);
 						m_FUSION_path_requested=true;
 						m_FUSION_path_received=false;
@@ -810,7 +810,7 @@ void FusionData::getPaths(uint64_t vertex){
 		uint64_t theVertex=vertex;
 		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 		message[0]=theVertex;
-		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize()),RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,getRank());
+		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize(),m_wordSize),RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,getRank());
 		m_outbox->push_back(aMessage);
 		m_FUSION_paths_requested=true;
 		m_FUSION_paths_received=false;
@@ -824,7 +824,7 @@ void FusionData::getPaths(uint64_t vertex){
 				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
 				message[0]=theVertex;
 				message[1]=m_FUSION_path_id;
-				Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize()),RAY_MPI_TAG_ASK_VERTEX_PATH,getRank());
+				Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize(),m_wordSize),RAY_MPI_TAG_ASK_VERTEX_PATH,getRank());
 				m_outbox->push_back(aMessage);
 				m_FUSION_path_requested=true;
 				m_FUSION_path_received=false;

@@ -395,8 +395,8 @@ string convertToString(vector<uint64_t>*b,int m_wordSize){
 	return contig;
 }
 
-int vertexRank(uint64_t a,int _size){
-	return uniform_hashing_function_1_64_64(a)%(_size);
+int vertexRank(uint64_t a,int _size,int w){
+	return hash_function_1(a,w)%(_size);
 }
 
 uint64_t kmerAtPosition(char*m_sequence,int pos,int w,char strand,bool color){
@@ -482,4 +482,20 @@ vector<uint64_t> _getIngoingEdges(uint64_t a,uint8_t edges,int k){
 		}
 	}
 	return b;
+}
+
+uint64_t hash_function_1(uint64_t a,int w){
+	uint64_t b=complementVertex_normal(a,w);
+	if(b<a){
+		a=b;
+	}
+	return uniform_hashing_function_1_64_64(a);
+}
+
+uint64_t hash_function_2(uint64_t a,int w,uint64_t*b){
+	*b=complementVertex_normal(a,w);
+	if(*b<a){
+		a=*b;
+	}
+	return uniform_hashing_function_2_64_64(a);
 }

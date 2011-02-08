@@ -52,7 +52,8 @@ class MemoryConsumptionReducer{
 	bool m_doneWithOutgoingEdges;
 	
 	DepthFirstSearchData*m_dfsDataOutgoing;
-	GridData*m_firstVertex;
+	uint64_t m_firstKey;
+	Vertex*m_firstVertex;
 	//SplayNode<uint64_t,Vertex>*m_firstVertex;
 
 	vector<uint64_t>*m_toRemove;
@@ -64,7 +65,7 @@ class MemoryConsumptionReducer{
 
 	int m_maximumDepth;
 
-	bool isCandidate(GridData*node,int wordSize);
+	bool isCandidate(uint64_t key,Vertex*node,int wordSize);
 	
 	void printCounter(Parameters*parameters,GridTable*a);
 

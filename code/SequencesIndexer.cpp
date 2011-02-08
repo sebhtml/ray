@@ -79,7 +79,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 	vertexChar[m_wordSize]='\0';
 	if(isValidDNA(vertexChar)){
 		uint64_t vertex=wordId(vertexChar);
-		int sendTo=vertexRank(vertex,m_size);
+		int sendTo=vertexRank(vertex,m_size,m_wordSize);
 		m_bufferedData.addAt(sendTo,vertex);
 		m_bufferedData.addAt(sendTo,m_rank);
 
@@ -100,7 +100,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 	vertexChar[m_wordSize]='\0';
 	if(isValidDNA(vertexChar)){
 		uint64_t vertex=complementVertex(wordId(vertexChar),m_wordSize,(m_colorSpaceMode));
-		int sendTo=vertexRank(vertex,m_size);
+		int sendTo=vertexRank(vertex,m_size,m_wordSize);
 		m_bufferedData.addAt(sendTo,vertex);
 		m_bufferedData.addAt(sendTo,m_rank);
 		m_bufferedData.addAt(sendTo,m_theSequenceId);

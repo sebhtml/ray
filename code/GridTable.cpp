@@ -30,8 +30,8 @@ void GridTable::constructor(int rank){
 	m_size=0;
 	m_inserted=false;
 	m_gridSize=4194304;
-	int bytes1=m_gridSize*sizeof(GridData*);
-	m_gridData=(GridData**)__Malloc(bytes1);
+	int bytes1=m_gridSize*sizeof(Vertex*);
+	m_gridData=(Vertex**)__Malloc(bytes1);
 	int bytes2=m_gridSize*sizeof(uint16_t);
 	m_gridSizes=(uint16_t*)__Malloc(bytes2);
 	int bytes3=m_gridSize*sizeof(uint16_t);
@@ -51,10 +51,15 @@ uint64_t GridTable::size(){
 }
 
 Vertex*GridTable::find(uint64_t key){
-	int bin=uniform_hashing_function_2_64_64(key)%m_gridSize;
+	uint64_t lowerKey;
+	int bin=hash_function_2(key,m_wordSize,&lowerKey)%m_gridSize;
+
+	if(key<lowerKey){
+		lowerKey=key;
+	}
 	for(int i=0;i<m_gridSizes[bin];i++){
-		GridData*gridEntry=m_gridData[bin]+i;
-		if(gridEntry->m_key==key){
+		Vertex*gridEntry=m_gridData[bin]+i;
+		if(gridEntry->m_lowerKey==lowerKey){
 			return move(bin,i);
 		}
 	}
@@ -62,19 +67,23 @@ Vertex*GridTable::find(uint64_t key){
 }
 
 Vertex*GridTable::insert(uint64_t key){
+	uint64_t lowerKey;
 	m_inserted=false;
-	int bin=uniform_hashing_function_2_64_64(key)%m_gridSize;
+	int bin=hash_function_2(key,m_wordSize,&lowerKey)%m_gridSize;
+	if(key<lowerKey){
+		lowerKey=key;
+	}
+	//cout<<key<<" bin="<<bin<<" size="<<m_gridSizes[bin]<<endl;
 	for(int i=0;i<m_gridSizes[bin];i++){
-		GridData*gridEntry=m_gridData[bin]+i;
-		if(gridEntry->m_key==key){
+		Vertex*gridEntry=m_gridData[bin]+i;
+		if(gridEntry->m_lowerKey==lowerKey){
 			return move(bin,i);
 		}
 	}
 	if(m_gridReservedSizes[bin]==m_gridSizes[bin]){
-		GridData*newEntries=m_gridAllocator.allocate(m_gridSizes[bin]+1,m_gridReservedSizes+bin);
+		Vertex*newEntries=m_gridAllocator.allocate(m_gridSizes[bin]+1,m_gridReservedSizes+bin);
 		for(int i=0;i<m_gridSizes[bin];i++){
-			newEntries[i].m_key=m_gridData[bin][i].m_key;
-			newEntries[i].m_value=m_gridData[bin][i].m_value;
+			newEntries[i]=m_gridData[bin][i];
 		}
 		if(m_gridSizes[bin]!=0){
 			m_gridAllocator.free(m_gridData[bin],m_gridSizes[bin]);
@@ -82,13 +91,13 @@ Vertex*GridTable::insert(uint64_t key){
 		m_gridData[bin]=newEntries;
 	}
 
-	m_gridData[bin][m_gridSizes[bin]].m_key=key;
+	m_gridData[bin][m_gridSizes[bin]].m_lowerKey=lowerKey;
 	int oldSize=m_gridSizes[bin];
 	m_gridSizes[bin]++;
 	// check overflow
 	assert(m_gridSizes[bin]>oldSize);
 	m_inserted=true;
-	m_size++;
+	m_size+=2;
 	return move(bin,m_gridSizes[bin]-1);
 }
 
@@ -100,7 +109,7 @@ void GridTable::remove(uint64_t a){
 
 }
 
-GridData*GridTable::getElementInBin(int bin,int element){
+Vertex*GridTable::getElementInBin(int bin,int element){
 	#ifdef ASSERT
 	assert(bin<getNumberOfBins());
 	assert(element<getNumberOfElementsInBin(bin));
@@ -148,9 +157,9 @@ bool GridTable::frozen(){
  */
 Vertex*GridTable::move(int bin,int item){
 	if(m_frozen){
-		return &(m_gridData[bin][item].m_value);
+		return m_gridData[bin]+item;
 	}
-	GridData tmp;
+	Vertex tmp;
 	#ifdef ASSERT
 	assert(item<getNumberOfElementsInBin(bin));
 	#endif
@@ -159,6 +168,9 @@ Vertex*GridTable::move(int bin,int item){
 		m_gridData[bin][i+1]=m_gridData[bin][i];
 	}
 	m_gridData[bin][0]=tmp;
-	return &(m_gridData[bin][0].m_value);
+	return m_gridData[bin];
 }
 
+void GridTable::setWordSize(int w){
+	m_wordSize=w;
+}

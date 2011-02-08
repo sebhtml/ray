@@ -28,29 +28,41 @@
 using namespace std;
 
 void Vertex::constructor(){
-	m_coverage=0;
+	m_coverage_lower=0;
+	m_coverage_higher=0;
 	#ifdef USE_DISTANT_SEGMENTS_GRAPH
 	m_ingoingEdges=NULL;
 	m_outgoingEdges=NULL;
 	#else
-	m_edges=0;
+	m_edges_lower=0;
+	m_edges_higher=0;
 	#endif
-	m_readsStartingHere=NULL;
-	m_direction=NULL;
+	m_readsStartingHere_lower=NULL;
+	m_direction_lower=NULL;
+	m_readsStartingHere_higher=NULL;
+	m_direction_higher=NULL;
 }
 
-void Vertex::setCoverage(int coverage){
+void Vertex::setCoverage(uint64_t a,int coverage){
 	COVERAGE_TYPE max=0;
 	max=max-1;// underflow.
-	if(m_coverage==max){ // maximum value for unsigned char.
+	COVERAGE_TYPE*ptr=&m_coverage_lower;
+	if(a!=m_lowerKey){
+		ptr=&m_coverage_higher;
+	}
+	if(*ptr==max){ // maximum value for unsigned char.
 		return;
 	}
 
-	m_coverage=coverage;
+	*ptr=coverage;
 }
 
-int Vertex::getCoverage(){
-	return m_coverage;
+int Vertex::getCoverage(uint64_t a){
+	COVERAGE_TYPE*ptr=&m_coverage_lower;
+	if(a!=m_lowerKey){
+		ptr=&m_coverage_higher;
+	}
+	return *ptr;
 }
 
 vector<uint64_t> Vertex::getIngoingEdges(uint64_t a,int k){
@@ -61,7 +73,10 @@ vector<uint64_t> Vertex::getIngoingEdges(uint64_t a,int k){
 		t=t->getNext();
 	}
 	#else
-	return _getIngoingEdges(a,m_edges,k);
+	if(a==m_lowerKey){
+		return _getIngoingEdges(a,m_edges_lower,k);
+	}
+	return _getIngoingEdges(a,m_edges_higher,k);
 	#endif
 }
 
@@ -73,28 +88,40 @@ vector<uint64_t> Vertex::getOutgoingEdges(uint64_t a,int k){
 		t=t->getNext();
 	}
 	#else
-	return _getOutgoingEdges(a,m_edges,k);
+	if(a==m_lowerKey){
+		return _getOutgoingEdges(a,m_edges_lower,k);
+	}
+	return _getOutgoingEdges(a,m_edges_higher,k);
+	
 	#endif
 }
 
 #ifndef USE_DISTANT_SEGMENTS_GRAPH
-void Vertex::addIngoingEdge_ClassicMethod(uint64_t a,int k){
+void Vertex::addIngoingEdge_ClassicMethod(uint64_t vertex,uint64_t a,int k){
 	uint8_t s1First=getFirstSegmentFirstCode(a,k,_SEGMENT_LENGTH);
 	// add s1First to edges.
 	uint8_t newBits=(1<<(s1First));
-	m_edges=m_edges|newBits;
+	if(vertex==m_lowerKey){
+		m_edges_lower=m_edges_lower|newBits;
+	}else{
+		m_edges_higher=m_edges_higher|newBits;
+	}
 }
 #endif
 
-void Vertex::deleteIngoingEdge(uint64_t a,int k){
+void Vertex::deleteIngoingEdge(uint64_t vertex,uint64_t a,int k){
 	uint8_t s1First=getFirstSegmentFirstCode(a,k,_SEGMENT_LENGTH);
 	// delete s1First from edges.
 	uint8_t newBits=(1<<(s1First));
 	newBits=~newBits;
-	m_edges=m_edges&newBits;
+	if(vertex==m_lowerKey){
+		m_edges_lower=m_edges_lower&newBits;
+	}else{
+		m_edges_higher=m_edges_higher&newBits;
+	}
 }
 
-void Vertex::addIngoingEdge(uint64_t a,int k){
+void Vertex::addIngoingEdge(uint64_t vertex,uint64_t a,int k){
 	#ifdef USE_DISTANT_SEGMENTS_GRAPH
 	VertexLinkedList*t=m_ingoingEdges;
 	while(t!=NULL){
@@ -108,12 +135,12 @@ void Vertex::addIngoingEdge(uint64_t a,int k){
 	n->setNext(m_ingoingEdges);
 	m_ingoingEdges=n;
 	#else
-	addIngoingEdge_ClassicMethod(a,k);
+	addIngoingEdge_ClassicMethod(vertex,a,k);
 	#endif
 }
 
 #ifndef USE_DISTANT_SEGMENTS_GRAPH
-void Vertex::addOutgoingEdge_ClassicMethod(uint64_t a,int k){
+void Vertex::addOutgoingEdge_ClassicMethod(uint64_t vertex,uint64_t a,int k){
 	uint8_t s2Last=getSecondSegmentLastCode(a,k,_SEGMENT_LENGTH);
 	// description of m_edges:
 	// outgoing  ingoing
@@ -124,21 +151,27 @@ void Vertex::addOutgoingEdge_ClassicMethod(uint64_t a,int k){
 
 	// put s2Last in m_edges
 	uint64_t newBits=1<<(4+s2Last);
-	
-	m_edges=m_edges|newBits;
+	if(vertex==m_lowerKey){
+		m_edges_lower=m_edges_lower|newBits;
+	}else{
+		m_edges_higher=m_edges_higher|newBits;
+	}
 }
 
 #endif
 
-void Vertex::deleteOutgoingEdge(uint64_t a,int k){
+void Vertex::deleteOutgoingEdge(uint64_t vertex,uint64_t a,int k){
 	uint8_t s2Last=getSecondSegmentLastCode(a,k,_SEGMENT_LENGTH);
 	uint64_t newBits=1<<(4+s2Last);
 	newBits=~newBits;
-	m_edges=m_edges&newBits;
+	if(vertex==m_lowerKey){
+		m_edges_lower=m_edges_lower&newBits;
+	}else{
+		m_edges_higher=m_edges_higher&newBits;
+	}
 }
 
-
-void Vertex::addOutgoingEdge(uint64_t a,int k){
+void Vertex::addOutgoingEdge(uint64_t vertex,uint64_t a,int k){
 	#ifdef USE_DISTANT_SEGMENTS_GRAPH
 	VertexLinkedList*t=m_outgoingEdges;
 	while(t!=NULL){
@@ -153,35 +186,53 @@ void Vertex::addOutgoingEdge(uint64_t a,int k){
 	m_outgoingEdges=n;
 
 	#else
-	addOutgoingEdge_ClassicMethod(a,k);
+	addOutgoingEdge_ClassicMethod(vertex,a,k);
 	#endif
 }
 
-void Vertex::addRead(ReadAnnotation*e){
-	if(m_readsStartingHere!=NULL){
-		e->setNext(m_readsStartingHere);
+void Vertex::addRead(uint64_t vertex,ReadAnnotation*e){
+	if(vertex==m_lowerKey){
+		if(m_readsStartingHere_lower!=NULL){
+			e->setNext(m_readsStartingHere_lower);
+		}
+		m_readsStartingHere_lower=e;
+	}else{
+		if(m_readsStartingHere_higher!=NULL){
+			e->setNext(m_readsStartingHere_higher);
+		}
+		m_readsStartingHere_higher=e;
 	}
-	m_readsStartingHere=e;
 }
 
-void Vertex::addDirection(Direction*e){
-	if(m_direction!=NULL){
-		e->setNext(m_direction);
+void Vertex::addDirection(uint64_t vertex,Direction*e){
+	if(vertex==m_lowerKey){
+		e->setNext(m_direction_lower);
+		m_direction_lower=e;
+	}else{
+		e->setNext(m_direction_higher);
+		m_direction_higher=e;
 	}
-	m_direction=e;
 }
 
-bool Vertex::isAssembled(){
-	return m_direction!=NULL;
+ReadAnnotation*Vertex::getReads(uint64_t vertex){
+	if(vertex==m_lowerKey){
+		return m_readsStartingHere_lower;
+	}
+	return m_readsStartingHere_higher;
 }
 
-ReadAnnotation*Vertex::getReads(){
-	return m_readsStartingHere;
-}
-
-vector<Direction> Vertex::getDirections(){
+vector<Direction> Vertex::getDirections(uint64_t vertex){
+	if(vertex==m_lowerKey){
+		vector<Direction> a;
+		Direction*e=m_direction_lower;
+		while(e!=NULL){
+			a.push_back(*e);
+			e=e->getNext();
+		}
+		return a;
+	}
 	vector<Direction> a;
-	Direction*e=m_direction;
+	Direction*e=m_direction_higher;
 	while(e!=NULL){
 		a.push_back(*e);
 		e=e->getNext();
@@ -189,10 +240,17 @@ vector<Direction> Vertex::getDirections(){
 	return a;
 }
 
-void Vertex::clearDirections(){
-	m_direction=NULL;
+void Vertex::clearDirections(uint64_t a){
+	if(a==m_lowerKey){
+		m_direction_lower=NULL;
+	}else{
+		m_direction_higher=NULL;
+	}
 }
 
-uint8_t Vertex::getEdges(){
-	return m_edges;
+uint8_t Vertex::getEdges(uint64_t a){
+	if(a==m_lowerKey){
+		return m_edges_lower;
+	}
+	return m_edges_higher;
 }

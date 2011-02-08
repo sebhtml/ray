@@ -27,20 +27,20 @@
 class FusionData;
 class DepthFirstSearchData;
 
-#include<common_functions.h>
-#include<Message.h>
-#include<vector>
-#include<ExtensionData.h>
-#include<Parameters.h>
-#include<RingAllocator.h>
-#include<MyAllocator.h>
-#include<FusionData.h>
-#include<BubbleData.h>
-#include<DepthFirstSearchData.h>
-#include<BubbleTool.h>
-#include<OpenAssemblerChooser.h>
-#include<EarlyStoppingTechnology.h>
-
+#include <common_functions.h>
+#include <Message.h>
+#include <vector>
+#include <ExtensionData.h>
+#include <Parameters.h>
+#include <RingAllocator.h>
+#include <MyAllocator.h>
+#include <FusionData.h>
+#include <BubbleData.h>
+#include <DepthFirstSearchData.h>
+#include <BubbleTool.h>
+#include <OpenAssemblerChooser.h>
+#include <EarlyStoppingTechnology.h>
+#include <GridTable.h>
 
 using namespace std;
 
@@ -51,6 +51,7 @@ class SeedExtender{
 	bool m_removedUnfitLibraries;
 	map<uint64_t,int>*m_cache;
 	vector<Direction>m_receivedDirections;
+	GridTable*m_subgraph;
 	EarlyStoppingTechnology m_earlyStoppingTechnology;
 	bool m_skippedASeed;
 	Parameters*m_parameters;
@@ -114,7 +115,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 
 	set<uint64_t>*getEliminatedSeeds();
 
-	void constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed);
+	void constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed,GridTable*table);
 };
 
 #endif

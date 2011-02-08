@@ -63,7 +63,7 @@ public:
 	bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	RingAllocator*outboxAllocator,int size,int theRank,StaticVector*outbox,
  int*receivedVertexCoverage,vector<uint64_t>*receivedOutgoingEdges,
-		int minimumCoverage,bool*edgesReceived);
+		int minimumCoverage,bool*edgesReceived,int wordSize);
 
 	void depthFirstSearchBidirectional(uint64_t a,int maxDepth,
 	bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,

@@ -210,7 +210,7 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 		}
 */
 		
-		m_iterator.constructor(a);
+		m_iterator.constructor(a,wordSize);
 	}else if(!m_currentVertexIsDone){
 		if(!m_hasSetVertex){
 			if(!m_iterator.hasNext()){
@@ -225,14 +225,16 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 			}
 			printCounter(parameters,a);
 			m_firstVertex=m_iterator.next();
+			m_firstKey=m_iterator.getKey();
 			m_counter++;
 
-			while(!isCandidate(m_firstVertex,wordSize)){
+			while(!isCandidate(m_firstKey,m_firstVertex,wordSize)){
 				if(!m_iterator.hasNext()){
 					return false;
 				}
 				printCounter(parameters,a);
 				m_firstVertex=m_iterator.next();
+				m_firstKey=m_iterator.getKey();
 				m_counter++;
 			}
 
@@ -240,12 +242,12 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 			m_doneWithOutgoingEdges=false;
 			m_dfsDataOutgoing->m_doChoice_tips_dfs_done=false;
 			m_dfsDataOutgoing->m_doChoice_tips_dfs_initiated=false;
-		}else if(!isCandidate(m_firstVertex,wordSize)){
+		}else if(!isCandidate(m_firstKey,m_firstVertex,wordSize)){
 			m_hasSetVertex=false;
 		}else if(!m_doneWithOutgoingEdges){
-			uint64_t key=m_firstVertex->m_key;
-			vector<uint64_t> parents=m_firstVertex->m_value.getIngoingEdges(key,wordSize);
-			vector<uint64_t> children=m_firstVertex->m_value.getOutgoingEdges(key,wordSize);
+			uint64_t key=m_firstVertex->m_lowerKey;
+			vector<uint64_t> parents=m_firstVertex->getIngoingEdges(key,wordSize);
+			vector<uint64_t> children=m_firstVertex->getOutgoingEdges(key,wordSize);
 
 			if(!m_dfsDataOutgoing->m_doChoice_tips_dfs_done){
 				//cout<<"visit. "<<endl;
@@ -432,7 +434,7 @@ edgesReceived,parameters
 							// push queries in a buffer
 							for(int i=0;i<(int)kMersToCheck.size();i++){
 								uint64_t kmer=kMersToCheck[i];
-								int destination=vertexRank(kmer,size);
+								int destination=vertexRank(kmer,size,wordSize);
 								m_bufferedData.addAt(destination,uniqueId);
 								m_bufferedData.addAt(destination,kmer);
 								if(m_bufferedData.flush(destination,2,RAY_MPI_TAG_CHECK_VERTEX,outboxAllocator,outbox,theRank,false)){
@@ -552,11 +554,10 @@ int MemoryConsumptionReducer::getNumberOfRemovedVertices(){
 	return m_toRemove->size();
 }
 
-bool MemoryConsumptionReducer::isCandidate(GridData*m_firstVertex,int wordSize){
-	uint64_t key=m_firstVertex->m_key;
-	vector<uint64_t> parents=m_firstVertex->m_value.getIngoingEdges(key,wordSize);
-	vector<uint64_t> children=m_firstVertex->m_value.getOutgoingEdges(key,wordSize);
-	int coverage=m_firstVertex->m_value.getCoverage();
+bool MemoryConsumptionReducer::isCandidate(uint64_t key,Vertex*m_firstVertex,int wordSize){
+	vector<uint64_t> parents=m_firstVertex->getIngoingEdges(key,wordSize);
+	vector<uint64_t> children=m_firstVertex->getOutgoingEdges(key,wordSize);
+	int coverage=m_firstVertex->getCoverage(key);
 	return ((parents.size()==1&&children.size()==0)||(parents.size()==0&&children.size()==1))&&coverage==1;
 	//return parents.size()==1&&children.size()==0&&coverage<=3;
 }

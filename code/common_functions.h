@@ -169,7 +169,7 @@ char codeToChar(uint8_t a);
 
 string convertToString(vector<uint64_t>*b,int m_wordSize);
 
-int vertexRank(uint64_t a,int _size);
+int vertexRank(uint64_t a,int _size,int w);
 
 uint64_t kmerAtPosition(char*string,int pos,int w,char strand,bool color);
 
@@ -183,6 +183,9 @@ vector<uint64_t> _getOutgoingEdges(uint64_t a,uint8_t edges,int k);
 vector<uint64_t> _getIngoingEdges(uint64_t a,uint8_t edges,int k);
 
 char complementNucleotide(char c);
+
+uint64_t hash_function_1(uint64_t a,int w);
+uint64_t hash_function_2(uint64_t a,int w,uint64_t*b);
 
 #endif
 

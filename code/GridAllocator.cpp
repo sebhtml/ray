@@ -26,11 +26,10 @@ void GridAllocator::constructor(){
 	m_allocator.constructor(size);
 }
 
-GridData*GridAllocator::allocate(int a,uint16_t*reserved){
-	
+Vertex*GridAllocator::allocate(int a,uint16_t*reserved){
 	if(m_toReuse.count(a)>0){
-		GridData*tmp=m_toReuse[a];
-		GridData*next=(GridData*)tmp->m_key;
+		Vertex*tmp=m_toReuse[a];
+		Vertex*next=(Vertex*)tmp->m_lowerKey;
 		if(next==NULL){
 			m_toReuse.erase(a);
 		}else{
@@ -41,16 +40,16 @@ GridData*GridAllocator::allocate(int a,uint16_t*reserved){
 	}
 
 	//a=roundNumber(a,4);
-	GridData*addr=(GridData*)m_allocator.allocate(sizeof(GridData)*a);
+	Vertex*addr=(Vertex*)m_allocator.allocate(sizeof(Vertex)*a);
 	*reserved=a;
 	return addr;
 }
 
-void GridAllocator::free(GridData*a,int b){
+void GridAllocator::free(Vertex*a,int b){
 	if(m_toReuse.count(b)==0){
-		a->m_key=(uint64_t)NULL;
+		a->m_lowerKey=(uint64_t)NULL;
 	}else{
-		a->m_key=(uint64_t)m_toReuse[b];
+		a->m_lowerKey=(uint64_t)m_toReuse[b];
 	}
 	m_toReuse[b]=a;
 }

@@ -34,7 +34,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 				int rank,
 				StaticVector*m_outbox,
 				bool*m_mode_send_vertices,
-				int m_wordSize,
+				int wordSize,
 				int size,
 				RingAllocator*m_outboxAllocator,
 				bool m_colorSpaceMode,int*m_mode
@@ -97,7 +97,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		}
 		int len=strlen(m_readSequence);
 
-		if(len<m_wordSize){
+		if(len<wordSize){
 			m_hasPreviousVertex=false;
 			(*m_mode_send_vertices_sequence_id)++;
 			(m_mode_send_vertices_sequence_id_position)=0;
@@ -105,29 +105,29 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		}
 
 		char memory[100];
-		int lll=len-m_wordSize+1;
+		int lll=len-wordSize+1;
 		
 		#ifdef ASSERT
 		assert(m_readSequence!=NULL);
-		assert(m_wordSize<=32);
+		assert(wordSize<=32);
 		#endif
 
 		int p=(m_mode_send_vertices_sequence_id_position);
-		memcpy(memory,m_readSequence+p,m_wordSize);
-		memory[m_wordSize]='\0';
+		memcpy(memory,m_readSequence+p,wordSize);
+		memory[wordSize]='\0';
 		if(isValidDNA(memory)){
 			uint64_t a=wordId(memory);
 
 			#ifdef ASSERT
 			bool hit=false;
-			if(idToWord(a,m_wordSize)=="GGTAGAGGAAAATGTTGCCAC"){
+			if(idToWord(a,wordSize)=="GGTAGAGGAAAATGTTGCCAC"){
 				hit=true;
 			}
 			#endif
 
 			int rankToFlush=0;
 
-			rankToFlush=vertexRank(a,size);
+			rankToFlush=vertexRank(a,size,wordSize);
 			m_bufferedData.addAt(rankToFlush,a);
 
 			if(m_bufferedData.flush(rankToFlush,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,false)){
@@ -136,7 +136,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 
 			if(m_hasPreviousVertex){
 				// outgoing edge
-				int outgoingRank=vertexRank(m_previousVertex,size);
+				int outgoingRank=vertexRank(m_previousVertex,size,wordSize);
 				m_bufferedDataForOutgoingEdges.addAt(outgoingRank,m_previousVertex);
 				m_bufferedDataForOutgoingEdges.addAt(outgoingRank,a);
 
@@ -151,7 +151,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 				}
 
 				// ingoing edge
-				int ingoingRank=vertexRank(a,size);
+				int ingoingRank=vertexRank(a,size,wordSize);
 				m_bufferedDataForIngoingEdges.addAt(ingoingRank,m_previousVertex);
 				m_bufferedDataForIngoingEdges.addAt(ingoingRank,a);
 
@@ -167,19 +167,19 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			}
 
 			// reverse complement
-			uint64_t b=complementVertex(a,m_wordSize,m_colorSpaceMode);
+			uint64_t b=complementVertex(a,wordSize,m_colorSpaceMode);
 
 			#ifdef ASSERT
 			if(hit){
-				if(!(idToWord(b,m_wordSize)=="GTGGCAACATTTTCCTCTACC")){
-					cout<<idToWord(a,m_wordSize)<<" and "<<idToWord(b,m_wordSize)<<" color="<<m_colorSpaceMode<<endl;
+				if(!(idToWord(b,wordSize)=="GTGGCAACATTTTCCTCTACC")){
+					cout<<idToWord(a,wordSize)<<" and "<<idToWord(b,wordSize)<<" color="<<m_colorSpaceMode<<endl;
 				}
-				assert(idToWord(b,m_wordSize)=="GTGGCAACATTTTCCTCTACC");
+				assert(idToWord(b,wordSize)=="GTGGCAACATTTTCCTCTACC");
 			}
 			#endif
 
 
-			rankToFlush=vertexRank(b,size);
+			rankToFlush=vertexRank(b,size,wordSize);
 			m_bufferedData.addAt(rankToFlush,b);
 
 			if(m_bufferedData.flush(rankToFlush,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,false)){
@@ -188,7 +188,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 
 			if(m_hasPreviousVertex){
 				// outgoing edge
-				int outgoingRank=vertexRank(b,size);
+				int outgoingRank=vertexRank(b,size,wordSize);
 				m_bufferedDataForOutgoingEdges.addAt(outgoingRank,b);
 				m_bufferedDataForOutgoingEdges.addAt(outgoingRank,m_previousVertexRC);
 
@@ -203,7 +203,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 				}
 
 				// ingoing edge
-				int ingoingRank=vertexRank(m_previousVertexRC,size);
+				int ingoingRank=vertexRank(m_previousVertexRC,size,wordSize);
 				m_bufferedDataForIngoingEdges.addAt(ingoingRank,b);
 				m_bufferedDataForIngoingEdges.addAt(ingoingRank,m_previousVertexRC);
 
@@ -406,7 +406,7 @@ bool VerticesExtractor::deleteVertices(vector<uint64_t>*verticesToRemove,GridTab
 
 	int size=parameters->getSize();
 	int rank=parameters->getRank();
-	//int m_wordSize=parameters->getWordSize();
+	//int wordSize=parameters->getWordSize();
 
 	bool color=parameters->getColorSpaceMode();
 	int wordSize=parameters->getWordSize();
@@ -423,7 +423,7 @@ bool VerticesExtractor::deleteVertices(vector<uint64_t>*verticesToRemove,GridTab
 	}else if(m_deletionIterator<(uint64_t)verticesToRemove->size()){
 		uint64_t vertex=verticesToRemove->at(m_deletionIterator);
 		m_deletionIterator++;
-		int rankToFlush=vertexRank(vertex,size);
+		int rankToFlush=vertexRank(vertex,size,wordSize);
 		m_bufferedData.addAt(rankToFlush,vertex);
 
 		if(m_bufferedData.flush(rankToFlush,1,RAY_MPI_TAG_DELETE_VERTEX,m_outboxAllocator,m_outbox,rank,false)){
@@ -431,7 +431,7 @@ bool VerticesExtractor::deleteVertices(vector<uint64_t>*verticesToRemove,GridTab
 		}
 
 		uint64_t rcVertex=complementVertex(vertex,wordSize,color);
-		rankToFlush=vertexRank(rcVertex,size);
+		rankToFlush=vertexRank(rcVertex,size,wordSize);
 		m_bufferedData.addAt(rankToFlush,rcVertex);
 
 		if(m_bufferedData.flush(rankToFlush,1,RAY_MPI_TAG_DELETE_VERTEX,m_outboxAllocator,m_outbox,rank,false)){
@@ -451,7 +451,7 @@ bool VerticesExtractor::deleteVertices(vector<uint64_t>*verticesToRemove,GridTab
 		for(int j=0;j<(int)ingoingEdgesForDirect.size();j++){
 			uint64_t prefix=ingoingEdgesForDirect[j];
 			uint64_t suffix=vertex;
-			int rankToFlush=vertexRank(prefix,size);
+			int rankToFlush=vertexRank(prefix,size,wordSize);
 			m_buffersForOutgoingEdgesToDelete.addAt(rankToFlush,prefix);
 			m_buffersForOutgoingEdgesToDelete.addAt(rankToFlush,suffix);
 
@@ -463,7 +463,7 @@ bool VerticesExtractor::deleteVertices(vector<uint64_t>*verticesToRemove,GridTab
 			// XXX: I am not sure that this procedure works too for color space, must verify.
 			prefix=rcVertex;
 			suffix=complementVertex(ingoingEdgesForDirect[j],wordSize,color);
-			rankToFlush=vertexRank(suffix,size);
+			rankToFlush=vertexRank(suffix,size,wordSize);
 
 			m_buffersForIngoingEdgesToDelete.addAt(rankToFlush,prefix);
 			m_buffersForIngoingEdgesToDelete.addAt(rankToFlush,suffix);
@@ -486,7 +486,7 @@ bool VerticesExtractor::deleteVertices(vector<uint64_t>*verticesToRemove,GridTab
 		for(int j=0;j<(int)outgoingEdgesForDirect.size();j++){
 			uint64_t prefix=vertex;
 			uint64_t suffix=outgoingEdgesForDirect[j];
-			int rankToFlush=vertexRank(suffix,size);
+			int rankToFlush=vertexRank(suffix,size,wordSize);
 			m_buffersForIngoingEdgesToDelete.addAt(rankToFlush,prefix);
 			m_buffersForIngoingEdgesToDelete.addAt(rankToFlush,suffix);
 
@@ -498,7 +498,7 @@ bool VerticesExtractor::deleteVertices(vector<uint64_t>*verticesToRemove,GridTab
 			// XXX: I am not sure that this procedure works too for color space, must verify.
 			prefix=complementVertex(outgoingEdgesForDirect[j],wordSize,color);
 			suffix=rcVertex;
-			rankToFlush=vertexRank(prefix,size);
+			rankToFlush=vertexRank(prefix,size,wordSize);
 
 			m_buffersForOutgoingEdgesToDelete.addAt(rankToFlush,prefix);
 			m_buffersForOutgoingEdgesToDelete.addAt(rankToFlush,suffix);

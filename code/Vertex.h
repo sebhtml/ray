@@ -36,10 +36,14 @@ using namespace std;
  * vertices always respect the de Bruijn property.
  */
 class Vertex{
+
+public:
+	uint64_t m_lowerKey;
 	/*
  *	The coverage of the vertex
  */
-	COVERAGE_TYPE m_coverage;
+	COVERAGE_TYPE m_coverage_lower;
+	COVERAGE_TYPE m_coverage_higher;
 
 	/*
  *	the ingoing and outgoing edges.
@@ -54,41 +58,43 @@ class Vertex{
 	VertexLinkedList*m_ingoingEdges;
 	VertexLinkedList*m_outgoingEdges;
 	#else
-	uint8_t m_edges;
+	uint8_t m_edges_lower;
+	uint8_t m_edges_higher;
 	#endif
 
 	/*
  * 	read annotations
  * 	which reads start here?
  */
-	ReadAnnotation*m_readsStartingHere;
+	ReadAnnotation*m_readsStartingHere_lower;
+	ReadAnnotation*m_readsStartingHere_higher;
 
 /*
  *	which hyperfusions go on this vertex at least once?
  */
-	Direction*m_direction;
+	Direction*m_direction_lower;
+	Direction*m_direction_higher;
+
 	#ifndef USE_DISTANT_SEGMENTS_GRAPH
-	void addOutgoingEdge_ClassicMethod(uint64_t a,int k);
-	void addIngoingEdge_ClassicMethod(uint64_t a,int k);
+	void addOutgoingEdge_ClassicMethod(uint64_t vertex,uint64_t a,int k);
+	void addIngoingEdge_ClassicMethod(uint64_t vertex,uint64_t a,int k);
 	#endif
-public:
+
 	void constructor();
-	void setCoverage(int coverage);
-	int getCoverage();
-	void addOutgoingEdge(uint64_t a,int k);
-	void addIngoingEdge(uint64_t a,int k);
-	void addRead(ReadAnnotation*e);
-	bool isAssembled();
-	void assemble();
+	void setCoverage(uint64_t a,int coverage);
+	int getCoverage(uint64_t p);
+	void addOutgoingEdge(uint64_t vertex,uint64_t a,int k);
+	void addIngoingEdge(uint64_t vertex,uint64_t a,int k);
+	void addRead(uint64_t a,ReadAnnotation*e);
 	vector<uint64_t> getIngoingEdges(uint64_t a,int k);
 	vector<uint64_t> getOutgoingEdges(uint64_t a,int k);
-	uint8_t getEdges();
-	ReadAnnotation*getReads();
-	void addDirection(Direction*d);
-	vector<Direction> getDirections();
-	void clearDirections();
-	void deleteIngoingEdge(uint64_t a,int k);
-	void deleteOutgoingEdge(uint64_t a,int k);
+	uint8_t getEdges(uint64_t a);
+	ReadAnnotation*getReads(uint64_t a);
+	void addDirection(uint64_t a,Direction*d);
+	vector<Direction> getDirections(uint64_t a);
+	void clearDirections(uint64_t a);
+	void deleteIngoingEdge(uint64_t vertex,uint64_t a,int k);
+	void deleteOutgoingEdge(uint64_t vertex,uint64_t a,int k);
 };
 
 #endif

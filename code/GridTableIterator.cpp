@@ -22,7 +22,9 @@
 #include <GridTableIterator.h>
 #include <assert.h>
 
-void GridTableIterator::constructor(GridTable*a){
+void GridTableIterator::constructor(GridTable*a,int wordSize){
+	m_lowerKeyIsDone=false;
+	m_wordSize=wordSize;
 	m_table=a;
 	m_currentBin=0;
 	m_currentPosition=0;
@@ -39,7 +41,7 @@ bool GridTableIterator::hasNext(){
 	return m_currentBin<m_table->getNumberOfBins()&&m_currentPosition<m_table->getNumberOfElementsInBin(m_currentBin);
 }
 
-GridData*GridTableIterator::next(){
+Vertex*GridTableIterator::next(){
 	getNext();
 	#ifdef ASSERT
 	assert(m_currentBin<m_table->getNumberOfBins());
@@ -48,8 +50,15 @@ GridData*GridTableIterator::next(){
 	}
 	assert(m_currentPosition<m_table->getNumberOfElementsInBin(m_currentBin));
 	#endif
-	GridData*element=m_table->getElementInBin(m_currentBin,m_currentPosition);
-	m_currentPosition++;
+	Vertex*element=m_table->getElementInBin(m_currentBin,m_currentPosition);
+	if(!m_lowerKeyIsDone){
+		m_currentKey=element->m_lowerKey;
+		m_lowerKeyIsDone=true;
+	}else{
+		m_currentKey=complementVertex_normal(m_currentKey,m_wordSize);
+		m_lowerKeyIsDone=false;
+		m_currentPosition++;
+	}
 	return element;
 }
 
@@ -63,7 +72,16 @@ void GridTableIterator::getNext(){
 			assert(m_currentBin<m_table->getNumberOfBins());
 			assert(m_currentPosition<m_table->getNumberOfElementsInBin(m_currentBin));
 			#endif
+			//cout<<__func__<<" getting next bin="<<m_currentBin<<" id="<<m_currentPosition<<""<<endl;
+
 			return;
 		}
 	}
+}
+
+uint64_t GridTableIterator::getKey(){
+	#ifdef ASSERT
+	assert(m_table->find(m_currentKey)!=NULL);
+	#endif
+	return m_currentKey;
 }

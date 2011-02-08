@@ -265,7 +265,6 @@ class Machine{
 	void processData();
 	int getRank();
 	void receiveWelcomeMessage(MPI_Status*status);
-	int vertexRank(uint64_t a);
 	void getPaths(uint64_t vertex);
 	void extendSeeds();
 	void finishFusions();

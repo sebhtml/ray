@@ -141,7 +141,7 @@ void SeedWorker::do_1_1_test(){
 		if(!m_SEEDING_InedgesRequested){
 			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 			message[0]=(uint64_t)m_SEEDING_currentVertex;
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(m_SEEDING_currentVertex,getSize()),RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,getRank());
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(m_SEEDING_currentVertex,getSize(),m_wordSize),RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,getRank());
 			m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 			m_SEEDING_numberOfIngoingEdgesWithSeedCoverage=0;
 			m_SEEDING_numberOfOutgoingEdgesWithSeedCoverage=0;
@@ -181,7 +181,8 @@ void SeedWorker::do_1_1_test(){
 				}else if(!m_SEEDING_vertexCoverageRequested){
 					uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 					message[0]=vertex;
-					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0],getSize()),RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,getRank());
+					//cout<<__func__<<" "<<__LINE__<<" "<<idToWord(m_SEEDING_currentVertex,21)<<" "<<idToWord(vertex,21)<<endl;
+					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0],getSize(),m_wordSize),RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,getRank());
 					m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 					m_SEEDING_vertexCoverageRequested=true;
 				}else if(m_virtualCommunicator->isMessageProcessed(m_workerIdentifier)){
@@ -210,7 +211,8 @@ void SeedWorker::do_1_1_test(){
 				}else if(!m_SEEDING_vertexCoverageRequested){
 					uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 					message[0]=vertex;
-					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0],getSize()),RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,getRank());
+					//cout<<__func__<<" "<<__LINE__<<" "<<idToWord(vertex,21)<<endl;
+					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0],getSize(),m_wordSize),RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,getRank());
 					m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 					m_SEEDING_vertexCoverageRequested=true;
 				}else if(m_virtualCommunicator->isMessageProcessed(m_workerIdentifier)){

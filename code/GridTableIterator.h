@@ -26,13 +26,17 @@
 
 class GridTableIterator{
 	GridTable*m_table;
+	bool m_lowerKeyIsDone;
+	uint64_t m_currentKey;
+	int m_wordSize;
 	int m_currentBin;
 	int m_currentPosition;
 	void getNext();
 public:
-	void constructor(GridTable*a);
+	void constructor(GridTable*a,int wordSize);
 	bool hasNext();
-	GridData*next();
+	Vertex*next();
+	uint64_t getKey();
 };
 
 #endif

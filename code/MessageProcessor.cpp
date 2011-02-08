@@ -53,6 +53,7 @@ void MessageProcessor::call_RAY_MPI_TAG_SET_WORD_SIZE(Message*message){
 	uint64_t*incoming=(uint64_t*)buffer;
 	(*m_wordSize)=incoming[0];
 	(*m_colorSpaceMode)=incoming[1];
+	m_subgraph->setWordSize(*m_wordSize);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTEX(Message*message){
@@ -97,7 +98,7 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT(Message*message
 		}
 		assert(node!=NULL);
 		#endif
-		outgoingMessage[i]=node->getEdges();
+		outgoingMessage[i]=node->getEdges(incoming[i]);
 	}
 	
 	Message aMessage(outgoingMessage,count,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY,rank);
@@ -120,7 +121,7 @@ void MessageProcessor::call_RAY_MPI_TAG_CHECK_VERTEX(Message*message){
 		if(node!=NULL){
 			int parents=node->getIngoingEdges(vertex,(*m_wordSize)).size();
 			int children=node->getOutgoingEdges(vertex,(*m_wordSize)).size();
-			int coverage=node->getCoverage();
+			int coverage=node->getCoverage(vertex);
 			if(parents>0&&children>0&&coverage>3){
 				outgoingMessage[outgoingCount++]=task;
 				outgoingMessage[outgoingCount++]=coverage;
@@ -162,7 +163,7 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_INGOING_EDGE(Message*message){
 
 		/* the edge might already be deleted if the tip is within another tip. */
 
-		node->deleteIngoingEdge(prefix,(*m_wordSize));
+		node->deleteIngoingEdge(suffix,prefix,(*m_wordSize));
 
 		#ifdef ASSERT
 		int after=node->getOutgoingEdges(suffix,*m_wordSize).size();
@@ -205,7 +206,7 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_OUTGOING_EDGE(Message*message){
 		#endif
 
 		/* the edge might already be deleted if the tip is within another tip. */
-		node->deleteOutgoingEdge(suffix,(*m_wordSize));
+		node->deleteOutgoingEdge(prefix,suffix,(*m_wordSize));
 		
 		#ifdef ASSERT
 		int after=node->getOutgoingEdges(suffix,*m_wordSize).size();
@@ -366,9 +367,9 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 		if(m_subgraph->inserted()){
 			tmp->constructor(); 
 		}
-		tmp->setCoverage(tmp->getCoverage()+1);
+		tmp->setCoverage(l,tmp->getCoverage(l)+1);
 		#ifdef ASSERT
-		assert(tmp->getCoverage()>0);
+		assert(tmp->getCoverage(l)>0);
 		#endif
 	}
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_VERTICES_DATA_REPLY,rank);
@@ -426,7 +427,7 @@ void MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA(Message*message){
 		assert(node!=NULL);
 		#endif
 
-		node->addOutgoingEdge(suffix,(*m_wordSize));
+		node->addOutgoingEdge(prefix,suffix,(*m_wordSize));
 	}
 
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_OUT_EDGES_DATA_REPLY,rank);
@@ -473,7 +474,7 @@ void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){
 		assert(node!=NULL);
 		#endif
 
-		node->addIngoingEdge(prefix,(*m_wordSize));
+		node->addIngoingEdge(suffix,prefix,(*m_wordSize));
 	}
 
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_IN_EDGES_DATA_REPLY,rank);
@@ -575,12 +576,12 @@ void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 	int size=0;
 	GridTableIterator seedingIterator;
 	//MyForestIterator seedingIterator;
-	seedingIterator.constructor(m_subgraph);
+	seedingIterator.constructor(m_subgraph,*m_wordSize);
 	while(seedingIterator.hasNext()){
 		size++;
-		GridData*node=seedingIterator.next();
+		Vertex*node=seedingIterator.next();
 		//SplayNode<uint64_t,Vertex>*node=seedingIterator.next();
-		edgesDistribution[node->m_value.getIngoingEdges(node->m_key,(*m_wordSize)).size()][node->m_value.getOutgoingEdges(node->m_key,(*m_wordSize)).size()]++;
+		edgesDistribution[node->getIngoingEdges(node->m_lowerKey,(*m_wordSize)).size()][node->getOutgoingEdges(node->m_lowerKey,(*m_wordSize)).size()]++;
 		//(m_seedingData->m_SEEDING_nodes).push_back(node->getKey());
 	}
 	#ifdef ASSERT
@@ -608,7 +609,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message)
 		}
 		assert(node!=NULL);
 		#endif
-		uint64_t coverage=node->getCoverage();
+		uint64_t coverage=node->getCoverage(incoming[i]);
 		message2[i+0]=coverage;
 	}
 	Message aMessage(message2,count*1,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY,rank);
@@ -833,7 +834,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED(Message*message){
 	#ifdef ASSERT
 	assert(node!=NULL);
 	#endif
-	vector<Direction> directions=node->getDirections();
+	vector<Direction> directions=node->getDirections(incoming[0]);
 	//cout<<"directions="<<directions.size()<<endl;
 	int maxSize=directions.size();
 	//cout<<"source="<<source<<" self="<<rank<<" MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED directions="<<maxSize<<endl;
@@ -960,7 +961,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message){
 		#endif
 		e->constructor(rank,sequenceIdOnDestination,strand);
 
-		node->addRead(e);
+		node->addRead(vertex,e);
 	}
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY,rank);
 	m_outbox->push_back(aMessage);
@@ -996,7 +997,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS(Message*message){
 		assert(node!=NULL);
 		#endif
 
-		e=node->getReads();
+		e=node->getReads(incoming[0]);
 	
 		#ifdef ASSERT
 		assert(maxToProcess%3==0);
@@ -1192,7 +1193,7 @@ void MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 		Direction*e=(Direction*)m_directionsAllocator->allocate(sizeof(Direction));
 		e->constructor(wave,progression);
 
-		node->addDirection(e);
+		node->addDirection(incoming[i],e);
 	}
 }
 
@@ -1241,10 +1242,10 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE(Message*message){
 	assert(node!=NULL);
 	#endif
 
-	vector<Direction> paths=node->getDirections();
+	vector<Direction> paths=node->getDirections(incoming[0]);
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
 	message2[0]=paths.size();
-	message2[1]=node->getCoverage();
+	message2[1]=node->getCoverage(incoming[0]);
 	Message aMessage(message2,2,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
@@ -1304,7 +1305,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH(Message*message){
 	#ifdef ASSERT
 	assert(node!=NULL);
 	#endif
-	vector<Direction> paths=node->getDirections();
+	vector<Direction> paths=node->getDirections(incoming[0]);
 	int i=incoming[1];
 	Direction d=paths[i];
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
@@ -1386,9 +1387,11 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 	// clear graph
 	GridTableIterator iterator;
 	//MyForestIterator iterator;
-	iterator.constructor(m_subgraph);
+	iterator.constructor(m_subgraph,*m_wordSize);
 	while(iterator.hasNext()){
-		iterator.next()->m_value.clearDirections();
+		Vertex*node=iterator.next();
+		uint64_t key=iterator.getKey();
+		node->clearDirections(key);
 	}
 
 	m_directionsAllocator->reset();

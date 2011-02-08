@@ -92,7 +92,7 @@ void Library::detectDistances(){
 			#endif
 			uint64_t vertex=m_seedingData->m_SEEDING_seeds[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
 			message[0]=vertex;
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0],getSize()),RAY_MPI_TAG_REQUEST_READS,getRank());
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0],getSize(),m_parameters->getWordSize()),RAY_MPI_TAG_REQUEST_READS,getRank());
 			m_outbox->push_back(aMessage);
 			m_ed->m_EXTENSION_edgeIterator=0;// iterate over reads
 			m_ed->m_EXTENSION_hasPairedReadRequested=false;

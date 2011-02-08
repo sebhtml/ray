@@ -34,7 +34,7 @@ void SeedingData::computeSeeds(){
 		m_SEEDING_i=0;
 
 		m_activeWorkerIterator=m_activeWorkers.begin();
-		m_splayTreeIterator.constructor(m_subgraph);
+		m_splayTreeIterator.constructor(m_subgraph,m_wordSize);
 		m_initiatedIterator=true;
 		m_maximumAliveWorkers=30000;
 		#ifdef ASSERT
@@ -111,8 +111,8 @@ void SeedingData::computeSeeds(){
 				uint64_t firstVertex=seed[0];
 				uint64_t lastVertex=seed[seed.size()-1];
 				uint64_t lastVertexReverse=complementVertex(lastVertex,(m_wordSize),(*m_colorSpaceMode));
-				int aRank=vertexRank(firstVertex,getSize());
-				int bRank=vertexRank(lastVertexReverse,getSize());
+				int aRank=vertexRank(firstVertex,getSize(),m_wordSize);
+				int bRank=vertexRank(lastVertexReverse,getSize(),m_wordSize);
 
 				if(aRank==bRank){
 					if(m_seedExtender->getEliminatedSeeds()->count(firstVertex)==0 && m_seedExtender->getEliminatedSeeds()->count(lastVertexReverse)==0){
@@ -151,8 +151,8 @@ void SeedingData::computeSeeds(){
 				}
 				#endif
 				//SplayNode<uint64_t,Vertex>*node=m_splayTreeIterator.next();
-				GridData*node=m_splayTreeIterator.next();
-				m_aliveWorkers[m_SEEDING_i].constructor(node->m_key,m_parameters,m_outboxAllocator,&m_virtualCommunicator,m_SEEDING_i);
+				Vertex*node=m_splayTreeIterator.next();
+				m_aliveWorkers[m_SEEDING_i].constructor(node->m_lowerKey,m_parameters,m_outboxAllocator,&m_virtualCommunicator,m_SEEDING_i);
 				m_activeWorkers.insert(m_SEEDING_i);
 				int population=m_aliveWorkers.size();
 				if(population>m_maximumWorkers){

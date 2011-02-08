@@ -28,11 +28,12 @@ class GridTable{
 	uint64_t m_size;
 	bool m_inserted;
 	GridAllocator m_gridAllocator;
-	GridData**m_gridData;
+	Vertex**m_gridData;
 	uint16_t*m_gridSizes;
 	uint16_t*m_gridReservedSizes;
 	int m_gridSize;
 	bool m_frozen;
+	int m_wordSize;
 
 	/**
  *   move the item in front of the others
@@ -40,12 +41,13 @@ class GridTable{
 	Vertex*move(int bin,int item);
 public:
 	void constructor(int rank);
+	void setWordSize(int w);
 	uint64_t size();
 	Vertex*find(uint64_t key);
 	Vertex*insert(uint64_t key);
 	bool inserted();
 	void remove(uint64_t a);
-	GridData*getElementInBin(int bin,int element);
+	Vertex*getElementInBin(int bin,int element);
 	int getNumberOfElementsInBin(int bin);
 	int getNumberOfBins();
 	MyAllocator*getAllocator();

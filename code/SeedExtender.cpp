@@ -110,8 +110,9 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 			checkIfCurrentVertexIsAssembled(ed,outbox,outboxAllocator,outgoingEdgeIndex,last_value,
 	currentVertex,theRank,vertexCoverageRequested,wordSize,colorSpaceMode,size,seeds);
 		}
-	}else if((ed->m_EXTENSION_currentPosition==0 && m_eliminatedSeeds.count(ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition])>0)
-	|| (ed->m_EXTENSION_vertexIsAssembledResult and ed->m_EXTENSION_currentPosition==0 and ed->m_EXTENSION_complementedSeed==false)){
+	}else if(((ed->m_EXTENSION_currentPosition==0 && m_eliminatedSeeds.count(ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition])>0)
+	|| (ed->m_EXTENSION_vertexIsAssembledResult && ed->m_EXTENSION_currentPosition==0 && ed->m_EXTENSION_complementedSeed==false))
+		){
 		//cout<<"Rank "<<theRank<<": Ray Early-Stopping Technology was triggered, Case 1: seed is already processed at p=0."<<endl;
 		ed->m_EXTENSION_currentSeedIndex++;// skip the current one.
 		ed->m_EXTENSION_currentPosition=0;
@@ -162,7 +163,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 		(*edgesRequested)=true;
 		uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
 		message[0]=(uint64_t)(*currentVertex);
-		int dest=vertexRank((*currentVertex),size);
+		int dest=vertexRank((*currentVertex),size,wordSize);
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES,theRank);
 		//cout<<"Sending a message to "<<dest<<endl;
 		(*outbox).push_back(aMessage);
@@ -183,7 +184,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 			}else if(!(*vertexCoverageRequested)){
 				uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
 				message[0]=(uint64_t)(*receivedOutgoingEdges)[(*outgoingEdgeIndex)];
-				int dest=vertexRank(message[0],size);
+				int dest=vertexRank(message[0],size,wordSize);
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
 				(*outbox).push_back(aMessage);
 				(*vertexCoverageRequested)=true;
@@ -470,7 +471,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 						m_dfsData->m_doChoice_tips_dfs_done=true;
 					}else{
 						m_dfsData->depthFirstSearch((*currentVertex),ed->m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_i],maxDepth,edgesRequested,vertexCoverageRequested,vertexCoverageReceived,outboxAllocator,
-size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage,edgesReceived);
+size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage,edgesReceived,wordSize);
 					}
 				}else{
 					// keep the edge if it is not a tip.
@@ -662,7 +663,7 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(2*sizeof(uint64_t));
 			message[0]=(uint64_t)(*currentVertex);
 			message[1]=0;
-			int destination=vertexRank((*currentVertex),size);
+			int destination=vertexRank((*currentVertex),size,wordSize);
 			Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_ASK_IS_ASSEMBLED,theRank);
 			(*outbox).push_back(aMessage);
 			ed->m_EXTENSION_VertexAssembled_received=false;
@@ -687,7 +688,7 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(2*sizeof(uint64_t));
 			message[0]=(uint64_t)complementVertex((*currentVertex),wordSize,(*colorSpaceMode));
 			message[1]=0;
-			int destination=vertexRank(message[0],size);
+			int destination=vertexRank(message[0],size,wordSize);
 			Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_ASK_IS_ASSEMBLED,theRank);
 			(*outbox).push_back(aMessage);
 			ed->m_EXTENSION_VertexAssembled_received=false;
@@ -720,7 +721,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 			
 			uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
 			message[0]=(*currentVertex);
-			int destination=vertexRank(message[0],size);
+			int destination=vertexRank(message[0],size,wordSize);
 			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
 			(*outbox).push_back(aMessage);
 		}else if((*vertexCoverageReceived)){
@@ -769,7 +770,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				message[0]=(uint64_t)(*currentVertex);
 				message[1]=waveId;
 				message[2]=progression;
-				int destination=vertexRank((*currentVertex),size);
+				int destination=vertexRank((*currentVertex),size,wordSize);
 				Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_SAVE_WAVE_PROGRESSION,theRank);
 				(*outbox).push_back(aMessage);
 				ed->m_EXTENSION_reverseVertexDone=true;
@@ -790,7 +791,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				ed->m_EXTENSION_reads_received=false;
 				uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
 				message[0]=(uint64_t)(*currentVertex);
-				int dest=vertexRank((*currentVertex),size);
+				int dest=vertexRank((*currentVertex),size,wordSize);
 				//cout<<__func__<<" Requesting reads from "<<dest<<endl;
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_READS,theRank);
 				(*outbox).push_back(aMessage);
@@ -856,7 +857,9 @@ set<uint64_t>*SeedExtender::getEliminatedSeeds(){
 	return &m_eliminatedSeeds;
 }
 
-void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed){
+void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed,
+	GridTable*subgraph){
+	m_subgraph=subgraph;
 	m_dfsData=new DepthFirstSearchData;
 	m_cache=new map<uint64_t,int>;
 	m_ed=ed;

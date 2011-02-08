@@ -26,22 +26,16 @@
 #include <Vertex.h>
 #include <MyAllocator.h>
 
-typedef struct{
-	uint64_t m_key;
-	Vertex m_value;
-} GridData;
-
-
 #include <map>
 using namespace std;
 
 class GridAllocator{
-	map<int,GridData*> m_toReuse;
+	map<int,Vertex*> m_toReuse;
 	MyAllocator m_allocator;
 public:
 	void constructor();
-	void free(GridData*a,int b);
-	GridData*allocate(int a,uint16_t*reserved);
+	void free(Vertex*a,int b);
+	Vertex*allocate(int a,uint16_t*reserved);
 	MyAllocator*getAllocator();
 };
 

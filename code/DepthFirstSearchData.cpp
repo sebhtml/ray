@@ -28,7 +28,7 @@ void DepthFirstSearchData::depthFirstSearch(uint64_t root,uint64_t a,int maxDept
 	bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	RingAllocator*outboxAllocator,int size,int theRank,StaticVector*outbox,
  int*receivedVertexCoverage,vector<uint64_t>*receivedOutgoingEdges,
-		int minimumCoverage,bool*edgesReceived){
+		int minimumCoverage,bool*edgesReceived,int wordSize){
 	if(!m_doChoice_tips_dfs_initiated){
 		m_depthFirstSearchVisitedVertices.clear();
 		m_depthFirstSearchVisitedVertices_vector.clear();
@@ -62,7 +62,7 @@ void DepthFirstSearchData::depthFirstSearch(uint64_t root,uint64_t a,int maxDept
 			
 			uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
 			message[0]=vertexToVisit;
-			int dest=vertexRank(message[0],size);
+			int dest=vertexRank(message[0],size,wordSize);
 			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
 			(*outbox).push_back(aMessage);
 		}else if((*vertexCoverageReceived)){
@@ -96,7 +96,7 @@ void DepthFirstSearchData::depthFirstSearch(uint64_t root,uint64_t a,int maxDept
 				// visit the vertex, and ask next edges.
 				uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
 				message[0]=vertexToVisit;
-				int destination=vertexRank(vertexToVisit,size);
+				int destination=vertexRank(vertexToVisit,size,wordSize);
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES,theRank);
 				(*outbox).push_back(aMessage);
 				(*edgesRequested)=true;
@@ -196,7 +196,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 			
 			uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
 			message[0]=vertexToVisit;
-			int dest=vertexRank(message[0],size);
+			int dest=vertexRank(message[0],size,parameters->getWordSize());
 			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
 			(*outbox).push_back(aMessage);
 		}else if((*vertexCoverageReceived)){
@@ -233,7 +233,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 				// visit the vertex, and ask next edges.
 				uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
 				message[0]=vertexToVisit;
-				int destination=vertexRank(vertexToVisit,size);
+				int destination=vertexRank(vertexToVisit,size,parameters->getWordSize());
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_REQUEST_VERTEX_EDGES,theRank);
 				//cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" RAY_MPI_TAG_REQUEST_VERTEX_EDGES "<<idToWord(vertexToVisit,wordSize)<<endl;
 

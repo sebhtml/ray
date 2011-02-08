@@ -382,6 +382,12 @@ void Parameters::parseCommands(){
 				m_wordSize=32;
 			}
 
+			if(m_wordSize%2==0){
+				m_wordSize++;
+			}
+			if(m_wordSize==33){
+				m_wordSize=31;
+			}
 			if(m_rank==MASTER_RANK){
 				cout<<endl;
 				cout<<endl;

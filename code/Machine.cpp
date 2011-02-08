@@ -80,9 +80,7 @@ void Machine::start(){
 	m_killed=false;
 	m_ready=true;
 	
- 	// the number of splay trees in a forest.
-
-	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed);
+	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed,&m_subgraph);
 
 	m_fusionData->m_fusionStarted=false;
 	m_ed->m_EXTENSION_numberOfRanksDone=0;
@@ -241,6 +239,7 @@ void Machine::start(){
 		#endif
 		cout<<endl;
 
+		cout<<" sizeof(Vertex)="<<sizeof(Vertex)<<endl;
 		cout<<endl;
 		m_timePrinter.printElapsedTime("Beginning of computation");
 		cout<<endl;
@@ -697,15 +696,29 @@ void Machine::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
 
 void Machine::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
 	if(m_distributionOfCoverage.size()==0){
+		#ifdef ASSERT
+		uint64_t n=0;
+		#endif
 		GridTableIterator iterator;
 		//MyForestIterator iterator;
-		iterator.constructor(&m_subgraph);
+		iterator.constructor(&m_subgraph,m_wordSize);
 		while(iterator.hasNext()){
-			GridData*node=iterator.next();
+			Vertex*node=iterator.next();
+			uint64_t key=iterator.getKey();
+			//cout<<idToWord(key,m_wordSize)<<endl;
 			//SplayNode<uint64_t,Vertex>*node=iterator.next();
-			int coverage=node->m_value.getCoverage();
+			int coverage=node->getCoverage(key);
 			m_distributionOfCoverage[coverage]++;
+			#ifdef ASSERT
+			n++;
+			#endif
 		}
+		#ifdef ASSERT
+		if(n!=m_subgraph.size()){
+			cout<<"n="<<n<<" size="<<m_subgraph.size()<<endl;
+		}
+		assert(n==m_subgraph.size());
+		#endif
 	}
 
 	int*data=(int*)m_outboxAllocator.allocate(sizeof(int)*2*m_parameters.getMaxCoverage());
@@ -1023,7 +1036,7 @@ void Machine::call_RAY_MASTER_MODE_ASK_EXTENSIONS(){
 						m_seedingData->m_SEEDING_edgesRequested=true;
 						uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
 						message[0]=(uint64_t)theVertex;
-						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0]),RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES,getRank());
+						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0],getSize(),m_wordSize),RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES,getRank());
 						m_outbox.push_back(aMessage);
 						m_fusionData->m_Machine_getPaths_DONE=false;
 						m_fusionData->m_Machine_getPaths_INITIALIZED=false;
@@ -1205,7 +1218,7 @@ void Machine::call_RAY_SLAVE_MODE_AMOS(){
 			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
 			uint64_t vertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_mode_send_vertices_sequence_id_position];
 			message[0]=vertex;
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(vertex),RAY_MPI_TAG_REQUEST_READS,getRank());
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(vertex,getSize(),m_wordSize),RAY_MPI_TAG_REQUEST_READS,getRank());
 			m_outbox.push_back(aMessage);
 
 			// iterator on reads
@@ -1320,10 +1333,6 @@ Machine::~Machine(){
 	// do nothing.
 	delete m_bubbleData;
 	m_bubbleData=NULL;
-}
-
-int Machine::vertexRank(uint64_t a){
-	return uniform_hashing_function_1_64_64(a)%getSize();
 }
 
 void Machine::call_RAY_MASTER_MODE_ASK_BEGIN_REDUCTION(){
