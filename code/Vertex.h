@@ -80,9 +80,8 @@ public:
 
 
 }
-#ifdef __GNUC__ 
-__attribute((packed)) 
+#ifdef FORCE_PACKING
+__attribute__((__packed__))
 #endif
 ;
-
 #endif

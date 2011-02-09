@@ -47,8 +47,8 @@ public:
 	void setNext(ReadAnnotation*a);
 	uint64_t getUniqueId() const;
 }
-#ifdef __GNUC__ 
-__attribute((packed)) 
+#ifdef FORCE_PACKING
+__attribute__((__packed__))
 #endif
 ;
 

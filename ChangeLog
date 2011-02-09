@@ -11,6 +11,8 @@ are ordered by the number of accesses.
 * The vertex data is now stored in a separate place to reduce memory usage.
 * Removed the call to __Realloc
 * Don't index reads on vertices with a coverage of 1.
+* Structures can be packed by providing -DFORCE_PACKING at compile time, this
+will save memory. Might not be suitable for some architectures.
 
 
 = 1.2.3 'cRAYfish' =

@@ -54,8 +54,8 @@ public:
 	int getRequiredBytes();
 	void setRawSequence(uint8_t*seq,int length);
 }
-#ifdef __GNUC__ 
-__attribute((packed)) 
+#ifdef FORCE_PACKING
+__attribute__((__packed__))
 #endif
 ;
 

@@ -200,6 +200,10 @@ void Machine::start(){
 		cout<<endl;
 		cout<<"Rank "<<MASTER_RANK<<": Ray "<<RAY_VERSION<<endl;
 
+		#ifdef __GNUC__
+		cout<<"Rank "<<MASTER_RANK<<": GNU detected."<<endl;
+		#endif
+
 		#ifdef MPICH2
                 cout<<"Rank "<<MASTER_RANK<<": compiled with MPICH2 "<<MPICH2_VERSION<<endl;
 		#endif
@@ -231,10 +235,10 @@ void Machine::start(){
 
 		cout<<"Rank "<<MASTER_RANK<<": the maximum size of a message is "<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<" bytes"<<endl;
 		cout<<"Rank "<<MASTER_RANK<<": align addresses on 8 bytes: ";
-		#ifdef ALIGN_ADDRESSES
-		cout<<" yes (ALIGN_ADDRESSES is defined)";
+		#ifndef FORCE_PACKING
+		cout<<" yes (FORCE_PACKING is undefined)";
 		#else
-		cout<<" no (ALIGN_ADDRESSES is undefined)";
+		cout<<" no (FORCE_PACKING is defined";
 		#endif
 		cout<<endl;
 

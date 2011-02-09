@@ -48,6 +48,10 @@ public:
 	void addDirection(uint64_t a,Direction*d);
 	vector<Direction> getDirections(uint64_t a);
 	void clearDirections(uint64_t a);
-};
+}
+#ifdef FORCE_PACKING
+__attribute__((__packed__))
+#endif
+;
 
 #endif

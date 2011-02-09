@@ -53,7 +53,7 @@ void*MyAllocator::allocate(int s){
 		return m_store.reuseAddress(s);
 	}
 
-	#ifdef ALIGN_ADDRESSES
+	#ifndef FORCE_PACKING
 	// hopefully fix alignment issues on Itanium
 	int alignment=8;
 	if(s%8!=0){

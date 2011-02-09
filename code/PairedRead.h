@@ -43,8 +43,8 @@ public:
 	uint64_t getUniqueId();
 	int getLibrary();
 }
-#ifdef __GNUC__ 
-__attribute((packed)) 
+#ifdef FORCE_PACKING
+__attribute__((__packed__))
 #endif
 ;
 
