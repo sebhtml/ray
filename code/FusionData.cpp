@@ -334,7 +334,8 @@ void FusionData::finishFusions(){
 			}else if(m_FUSION_pathLengthReceived){
 				m_FINISH_pathLengths[pathId]=m_FUSION_receivedLength;
 			}
-		}else if(m_FINISH_pathLengths[pathId]!=(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){// avoid fusion of same length.
+		}else if(m_FINISH_pathLengths[pathId]!=0
+		&&m_FINISH_pathLengths[pathId]!=(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){// avoid fusion of same length.
 			int nextPosition=progression+1;
 			if(nextPosition<m_FINISH_pathLengths[pathId]){
 				// get the vertex
@@ -586,7 +587,7 @@ void FusionData::makeFusions(){
 				m_FUSION_pathLengthReceived=false;
 			}else if(m_FUSION_pathLengthReceived){
 				if(m_FUSION_receivedLength==0){
-				}else if(m_FUSION_matches[m_FUSION_match_index]<currentId and m_FUSION_receivedLength == (int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
+				}else if(m_FUSION_matches[m_FUSION_match_index]<currentId && m_FUSION_receivedLength == (int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
 					m_FUSION_eliminated.insert(currentId);
 					m_FUSION_direct_fusionDone=false;
 					m_FUSION_first_done=false;
@@ -761,8 +762,10 @@ void FusionData::makeFusions(){
 				m_FUSION_pathLengthRequested=true;
 				m_FUSION_pathLengthReceived=false;
 			}else if(m_FUSION_pathLengthReceived){
+				// if the length is 0, it means that the contig was not stored because it was too short
 				if(m_FUSION_receivedLength==0){
-				}else if(m_FUSION_matches[m_FUSION_match_index]<currentId and m_FUSION_receivedLength == (int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
+				// we only keep the other one...
+				}else if(m_FUSION_matches[m_FUSION_match_index]<currentId && m_FUSION_receivedLength == (int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
 					m_FUSION_eliminated.insert(currentId);
 					m_FUSION_direct_fusionDone=false;
 					m_FUSION_first_done=false;

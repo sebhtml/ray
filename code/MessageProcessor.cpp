@@ -1313,16 +1313,10 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_PATH_LENGTH(Message*message){
 	uint64_t*incoming=(uint64_t*)buffer;
 	uint64_t id=incoming[0];
 	int length=0;
-	#ifdef ASSERT
-	assert(m_fusionData->m_FUSION_identifier_map.count(id)>0);
-	#endif
 	if(m_fusionData->m_FUSION_identifier_map.count(id)>0){
 		length=(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size();
 	}
 
-	#ifdef ASSERT
-	assert(length>0);
-	#endif
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t));
 	message2[0]=length;
 	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_GET_PATH_LENGTH_REPLY,rank);
