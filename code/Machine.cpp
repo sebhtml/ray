@@ -413,7 +413,11 @@ void Machine::run(){
 	while(isAlive()){
 		time_t t=time(NULL);
 		if(t!=m_lastTime&&t%30==0){
-			printf("Rank %i is alive\n",m_rank);
+			time_t m_endingTime=time(NULL);
+			struct tm * timeinfo;
+			timeinfo=localtime(&m_endingTime);
+			cout<<"Date: ";
+			printf("Rank %i is alive %s\n",m_rank,asctime(timeinfo));
 			showMemoryUsage(m_rank);
 			fflush(stdout);
 			m_lastTime=t;

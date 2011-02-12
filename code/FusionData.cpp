@@ -286,6 +286,7 @@ void FusionData::finishFusions(){
 				done=true;
 			}	
 
+			/*
 			// make sure that all positions from 
 			// <m_FINISH_pathsForPosition.size()-1> up to 
 			//     <m_FINISH_pathsForPosition.size()-overlapMinimumLength>
@@ -311,7 +312,7 @@ void FusionData::finishFusions(){
 				//cout<<"Mapping not good."<<endl;
 				done=true;
 			}
-
+			*/
 			m_checkedValidity=true;
 		}
 	}else{

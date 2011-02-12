@@ -462,7 +462,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 		}else if(!ed->m_doChoice_tips_Detected && ed->m_EXTENSION_readsInRange->size()>0){
  			//for each entries in ed->m_enumerateChoices_outgoingEdges, do a dfs of max depth 40.
 			//if the reached depth is 40, it is not a tip, otherwise, it is.
-			int maxDepth=MAX_DEPTH;
+			int maxDepth=2*m_parameters->getWordSize();
 			if(!m_dfsData->m_doChoice_tips_Initiated){
 				m_dfsData->m_doChoice_tips_i=0;
 				m_dfsData->m_doChoice_tips_newEdges.clear();

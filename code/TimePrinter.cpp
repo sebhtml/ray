@@ -24,6 +24,8 @@
 #include<iostream>
 using namespace std;
 
+
+
 void TimePrinter::printElapsedTime(string description){
 	time_t m_endingTime=time(NULL);
 	int differenceWithLast=m_endingTime-m_lastTime;
