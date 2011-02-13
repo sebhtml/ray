@@ -473,7 +473,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				bubbleData->m_visitedVertices.clear();
 				bubbleData->m_BUBBLE_visitedVerticesDepths.clear();
 				bubbleData->m_coverages.clear();
-			bubbleData->m_coverages[(*currentVertex)]=ed->m_currentCoverage;
+				bubbleData->m_coverages[(*currentVertex)]=ed->m_currentCoverage;
 			}
 
 			if(m_dfsData->m_doChoice_tips_i<(int)ed->m_enumerateChoices_outgoingEdges.size()){
@@ -572,7 +572,6 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 		}
 
 		// no choice possible...
-		// do it for the lulz
 		if(!ed->m_EXTENSION_complementedSeed || !ed->m_EXTENSION_complementedSeed2){
 			vector<uint64_t> complementedSeed;
 
@@ -618,8 +617,10 @@ uint64_t*currentVertex,BubbleData*bubbleData){
 		#endif
 
 		int theCurrentSize=ed->m_EXTENSION_extension->size();
-		printf("Rank %i reached %i vertices from seed %i (completed)\n",theRank,theCurrentSize,
+		printf("Rank %i reached %i vertices (%s) from seed %i (completed)\n",theRank,theCurrentSize,
+			idToWord(*currentVertex,m_parameters->getWordSize()).c_str(),
 			ed->m_EXTENSION_currentSeedIndex+1);
+
 		fflush(stdout);
 		showMemoryUsage(theRank);
 
@@ -746,10 +747,13 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				int theCurrentSize=ed->m_EXTENSION_extension->size();
 				if(theCurrentSize%10000==0){
 					if(theCurrentSize==0 && !ed->m_EXTENSION_complementedSeed){
-						printf("Rank %i starts on a seed [%i/%i]\n",theRank,ed->m_EXTENSION_currentSeedIndex,(int)(*seeds).size());
+						printf("Rank %i starts on a seed, length is %i [%i/%i]\n",theRank,
+						(int)ed->m_EXTENSION_currentSeed.size(),
+							ed->m_EXTENSION_currentSeedIndex,(int)(*seeds).size());
 						fflush(stdout);
 					}
-					printf("Rank %i reached %i vertices\n",theRank,theCurrentSize);
+					printf("Rank %i reached %i vertices (%s)\n",theRank,theCurrentSize,idToWord(*currentVertex,
+						m_parameters->getWordSize()).c_str());
 					fflush(stdout);
 
 					showMemoryUsage(theRank);
