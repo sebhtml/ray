@@ -238,7 +238,7 @@ void Machine::start(){
 		#ifndef FORCE_PACKING
 		cout<<" yes (FORCE_PACKING is undefined)";
 		#else
-		cout<<" no (FORCE_PACKING is defined";
+		cout<<" no (FORCE_PACKING is defined)";
 		#endif
 		cout<<endl;
 
@@ -405,39 +405,24 @@ m_seedingData,
  * 	5) send messages
  */
 void Machine::run(){
-/*
-	bool printMicroSeconds=false;
-	uint64_t startTime=0;
-	uint64_t endingTime=0;
-*/
 	while(isAlive()){
+	#ifdef SHOW_ALIVE
 		time_t t=time(NULL);
 		if(t!=m_lastTime&&t%30==0){
 			time_t m_endingTime=time(NULL);
 			struct tm * timeinfo;
 			timeinfo=localtime(&m_endingTime);
 			cout<<"Date: ";
-			printf("Rank %i is alive %s\n",m_rank,asctime(timeinfo));
+			printf("Rank %i is alive %s",m_rank,asctime(timeinfo));
 			showMemoryUsage(m_rank);
 			fflush(stdout);
 			m_lastTime=t;
 		}
-/*
-		startTime=getMicroSeconds();
-*/
+	#endif
 		receiveMessages(); 
 		processMessages();
 		processData();
 		sendMessages();
-/*
-		endingTime=getMicroSeconds();
-		int diff=endingTime-startTime;
-		if(false&&diff>=500){
-			printf("Rank %i: %i microseconds\n",m_rank,diff);
-			fflush(stdout);
-			printMicroSeconds=false;
-		}
-*/
 	}
 }
 
@@ -688,13 +673,6 @@ void Machine::call_RAY_SLAVE_MODE_ASSEMBLE_WAVES(){
 		m_outbox.push_back(aMessage);
 	}else{
 	}
-}
-
-void Machine::call_RAY_SLAVE_MODE_PERFORM_CALIBRATION(){
-	int rank=rand()%getSize();
-	uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
-	Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rank,RAY_MPI_TAG_CALIBRATION_MESSAGE,getRank());
-	m_outbox.push_back(aMessage);
 }
 
 void Machine::call_RAY_SLAVE_MODE_FINISH_FUSIONS(){
@@ -1421,7 +1399,6 @@ void Machine::assignSlaveHandlers(){
 	m_slave_methods[RAY_SLAVE_MODE_SEND_EXTENSION_DATA]=&Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA;
 	m_slave_methods[RAY_SLAVE_MODE_ASSEMBLE_WAVES]=&Machine::call_RAY_SLAVE_MODE_ASSEMBLE_WAVES;
 	m_slave_methods[RAY_SLAVE_MODE_FUSION]=&Machine::call_RAY_SLAVE_MODE_FUSION;
-	m_slave_methods[RAY_SLAVE_MODE_PERFORM_CALIBRATION]=&Machine::call_RAY_SLAVE_MODE_PERFORM_CALIBRATION;
 	m_slave_methods[RAY_SLAVE_MODE_INDEX_SEQUENCES]=&Machine::call_RAY_SLAVE_MODE_INDEX_SEQUENCES;
 	m_slave_methods[RAY_SLAVE_MODE_FINISH_FUSIONS]=&Machine::call_RAY_SLAVE_MODE_FINISH_FUSIONS;
 	m_slave_methods[RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS]=&Machine::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS;

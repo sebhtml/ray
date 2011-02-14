@@ -287,6 +287,9 @@ void FusionData::finishFusions(){
 			}	
 
 			/*
+ 		
+		TODO: restore this code.
+
 			// make sure that all positions from 
 			// <m_FINISH_pathsForPosition.size()-1> up to 
 			//     <m_FINISH_pathsForPosition.size()-overlapMinimumLength>
@@ -812,34 +815,16 @@ void FusionData::getPaths(uint64_t vertex){
 
 	if(!m_FUSION_paths_requested){
 		uint64_t theVertex=vertex;
-		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
+		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
 		message[0]=theVertex;
-		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize(),m_wordSize),RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,getRank());
+		message[1]=0;
+		Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize(),m_wordSize),RAY_MPI_TAG_ASK_VERTEX_PATHS,getRank());
 		m_outbox->push_back(aMessage);
 		m_FUSION_paths_requested=true;
 		m_FUSION_paths_received=false;
-		m_FUSION_path_id=0;
-		m_FUSION_path_requested=false;
 		m_FUSION_receivedPaths.clear();
 	}else if(m_FUSION_paths_received){
-		if(m_FUSION_path_id<m_FUSION_numberOfPaths){
-			if(!m_FUSION_path_requested){
-				uint64_t theVertex=vertex;
-				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
-				message[0]=theVertex;
-				message[1]=m_FUSION_path_id;
-				Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize(),m_wordSize),RAY_MPI_TAG_ASK_VERTEX_PATH,getRank());
-				m_outbox->push_back(aMessage);
-				m_FUSION_path_requested=true;
-				m_FUSION_path_received=false;
-			}else if(m_FUSION_path_received){
-				m_FUSION_path_id++;
-				m_Machine_getPaths_result.push_back(m_FUSION_receivedPath);
-				m_FUSION_path_requested=false;
-			}
-		}else{
-			m_Machine_getPaths_DONE=true;
-		}
+		m_Machine_getPaths_DONE=true;
 	}
 }
 

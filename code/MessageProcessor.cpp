@@ -1330,13 +1330,70 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_PATH_LENGTH_REPLY(Message*message){
 	m_fusionData->m_FUSION_pathLengthReceived=true;
 }
 
-void MessageProcessor::call_RAY_MPI_TAG_CALIBRATION_MESSAGE(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS(Message*message){
+	void*buffer=message->getBuffer();
+	int source=message->getSource();
+	uint64_t*incoming=(uint64_t*)buffer;
+	uint64_t vertex=incoming[0];
+	int firstPathId=incoming[1];
+	vector<Direction> paths=m_subgraph->getDirections(vertex);
+
+	int availableElements=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t);
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	int j=2;
+	message2[0]=vertex;
+	while(firstPathId<(int)paths.size() && j<availableElements){
+		message2[j++]=paths[firstPathId].getWave();
+		message2[j++]=paths[firstPathId].getProgression();
+		firstPathId++;
+	}
+	message2[1]=firstPathId;
+
+	if(firstPathId==(int)paths.size()){
+		Message aMessage(message2,j,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END,rank);
+		m_outbox->push_back(aMessage);
+	}else{
+		Message aMessage(message2,j,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY,rank);
+		m_outbox->push_back(aMessage);
+	}
 }
-void MessageProcessor::call_RAY_MPI_TAG_BEGIN_CALIBRATION(Message*message){
+
+void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY(Message*message){
+	void*buffer=message->getBuffer();
+	uint64_t*incoming=(uint64_t*)buffer;
+	uint64_t vertex=incoming[0];
+	int count=message->getCount();
+	uint64_t complement=complementVertex_normal(vertex,*m_wordSize);
+	bool lower=vertex<complement;
+	for(int i=2;i<count;i+=2){
+		int pathId=incoming[i];
+		int position=incoming[i+1];
+		m_fusionData->m_FUSION_receivedPath.constructor(pathId,position,lower);
+		m_fusionData->m_Machine_getPaths_result.push_back(m_fusionData->m_FUSION_receivedPath);
+	}
+
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
+	message2[0]=vertex;
+	message2[1]=incoming[1];
+	Message aMessage(message2,2,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_ASK_VERTEX_PATHS,rank);
+	m_outbox->push_back(aMessage);
 }
-void MessageProcessor::call_RAY_MPI_TAG_END_CALIBRATION(Message*message){
-}
-void MessageProcessor::call_RAY_MPI_TAG_COMMUNICATION_STABILITY_MESSAGE(Message*message){
+
+void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END(Message*message){
+	void*buffer=message->getBuffer();
+	uint64_t*incoming=(uint64_t*)buffer;
+	uint64_t vertex=incoming[0];
+	int count=message->getCount();
+	uint64_t complement=complementVertex_normal(vertex,*m_wordSize);
+	bool lower=vertex<complement;
+	for(int i=2;i<count;i+=2){
+		int pathId=incoming[i];
+		int position=incoming[i+1];
+		m_fusionData->m_FUSION_receivedPath.constructor(pathId,position,lower);
+		m_fusionData->m_Machine_getPaths_result.push_back(m_fusionData->m_FUSION_receivedPath);
+	}
+
+	m_fusionData->m_FUSION_paths_received=true;
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH(Message*message){
@@ -1893,10 +1950,6 @@ void MessageProcessor::assignHandlers(){
 	m_methods[RAY_MPI_TAG_GET_PATH_LENGTH]=&MessageProcessor::call_RAY_MPI_TAG_GET_PATH_LENGTH;
 	m_methods[RAY_MPI_TAG_VERTICES_DATA_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA_REPLY;
 	m_methods[RAY_MPI_TAG_GET_PATH_LENGTH_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_GET_PATH_LENGTH_REPLY;
-	m_methods[RAY_MPI_TAG_CALIBRATION_MESSAGE]=&MessageProcessor::call_RAY_MPI_TAG_CALIBRATION_MESSAGE;
-	m_methods[RAY_MPI_TAG_BEGIN_CALIBRATION]=&MessageProcessor::call_RAY_MPI_TAG_BEGIN_CALIBRATION;
-	m_methods[RAY_MPI_TAG_END_CALIBRATION]=&MessageProcessor::call_RAY_MPI_TAG_END_CALIBRATION;
-	m_methods[RAY_MPI_TAG_COMMUNICATION_STABILITY_MESSAGE]=&MessageProcessor::call_RAY_MPI_TAG_COMMUNICATION_STABILITY_MESSAGE;
 	m_methods[RAY_MPI_TAG_ASK_VERTEX_PATH]=&MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH;
 	m_methods[RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY;
 	m_methods[RAY_MPI_TAG_HAS_PAIRED_READ]=&MessageProcessor::call_RAY_MPI_TAG_HAS_PAIRED_READ;
@@ -1958,6 +2011,9 @@ void MessageProcessor::assignHandlers(){
 	m_methods[RAY_MPI_TAG_LOAD_SEQUENCES]=&MessageProcessor::call_RAY_MPI_TAG_LOAD_SEQUENCES;
 	m_methods[RAY_MPI_TAG_WRITE_AMOS]=&MessageProcessor::call_RAY_MPI_TAG_WRITE_AMOS;
 	m_methods[RAY_MPI_TAG_WRITE_AMOS_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_WRITE_AMOS_REPLY;
+	m_methods[RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END]=&MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END;
+	m_methods[RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY;
+	m_methods[RAY_MPI_TAG_ASK_VERTEX_PATHS]=&MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS;
 }
 
 

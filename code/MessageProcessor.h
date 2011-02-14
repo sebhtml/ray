@@ -190,10 +190,6 @@ class MessageProcessor{
 	void call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY(Message*message);
 	void call_RAY_MPI_TAG_GET_PATH_LENGTH(Message*message);
 	void call_RAY_MPI_TAG_GET_PATH_LENGTH_REPLY(Message*message);
-	void call_RAY_MPI_TAG_CALIBRATION_MESSAGE(Message*message);
-	void call_RAY_MPI_TAG_BEGIN_CALIBRATION(Message*message);
-	void call_RAY_MPI_TAG_END_CALIBRATION(Message*message);
-	void call_RAY_MPI_TAG_COMMUNICATION_STABILITY_MESSAGE(Message*message);
 	void call_RAY_MPI_TAG_ASK_VERTEX_PATH(Message*message);
 	void call_RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY(Message*message);
 	void call_RAY_MPI_TAG_HAS_PAIRED_READ(Message*message);
@@ -266,6 +262,9 @@ class MessageProcessor{
 	void call_RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY(Message*message);
 	void call_RAY_MPI_TAG_MUST_RUN_REDUCER_FROM_MASTER(Message*message);
 	void call_RAY_MPI_TAG_LOAD_SEQUENCES(Message*message);
+	void call_RAY_MPI_TAG_ASK_VERTEX_PATHS(Message*message);
+	void call_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY(Message*message);
+	void call_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END(Message*message);
 
 public:
 	void constructor(MessagesHandler*m_messagesHandler,
