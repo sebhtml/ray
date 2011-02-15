@@ -41,6 +41,9 @@ void MessagesHandler::sendMessages(StaticVector*outbox,int source){
 
 		#ifdef ASSERT
 		assert(destination>=0);
+		if(destination>=m_size){
+			cout<<"Tag="<<tag<<" Destination="<<destination<<endl;
+		}
 		assert(destination<m_size);
 		assert(!(buffer==NULL && count>0));
 		assert(count<=(int)(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)));

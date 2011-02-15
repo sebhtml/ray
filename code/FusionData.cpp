@@ -160,6 +160,10 @@ void FusionData::finishFusions(){
 	// check if the path begins with someone else.
 	
 	uint64_t currentId=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
+	#ifdef ASSERT
+	assert(getRankFromPathUniqueId(currentId)<m_size);
+	#endif
+
 	// don't do it if it is removed.
 
 	// start threading the extension
@@ -169,9 +173,14 @@ void FusionData::finishFusions(){
 	// we have the extension in m_ed->m_EXTENSION_contigs[m_SEEDING_i]
 	// we get the paths with getPaths
 	bool done=false;
+
+	int capLength=20;
+	int position1=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-1-capLength;
+	int position2=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-overlapMinimumLength;
 	if(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
 		if(!m_Machine_getPaths_DONE){
-			if(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-overlapMinimumLength){
+			//if(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-overlapMinimumLength){
+			if(m_ed->m_EXTENSION_currentPosition!=position1	&&m_ed->m_EXTENSION_currentPosition!=position2){
 				m_Machine_getPaths_DONE=true;
 			}else{
 				getPaths(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition]);
@@ -209,9 +218,8 @@ void FusionData::finishFusions(){
 		}
 	}else if(!m_checkedValidity){
 		done=true;
-		int capLength=20;
-		vector<Direction> directions1=(*m_FINISH_pathsForPosition)[m_FINISH_pathsForPosition->size()-1-capLength];
-		vector<Direction> directions2=(*m_FINISH_pathsForPosition)[m_FINISH_pathsForPosition->size()-overlapMinimumLength];
+		vector<Direction> directions1=(*m_FINISH_pathsForPosition)[position1];
+		vector<Direction> directions2=(*m_FINISH_pathsForPosition)[position2];
 
 		// no hits are possible.
 		if(directions1.size()==0 || directions2.size()==0){
@@ -286,9 +294,7 @@ void FusionData::finishFusions(){
 				done=true;
 			}	
 
-			/*
- 		
-		TODO: restore this code.
+/*
 
 			// make sure that all positions from 
 			// <m_FINISH_pathsForPosition.size()-1> up to 
@@ -315,7 +321,7 @@ void FusionData::finishFusions(){
 				//cout<<"Mapping not good."<<endl;
 				done=true;
 			}
-			*/
+*/
 			m_checkedValidity=true;
 		}
 	}else{
@@ -328,9 +334,13 @@ void FusionData::finishFusions(){
 		// the same start and end.
 		if(m_FINISH_pathLengths.count(pathId)==0){
 			if(!m_FUSION_pathLengthRequested){
-				int rankId=pathId%MAX_NUMBER_OF_MPI_PROCESSES;
+				int rankId=getRankFromPathUniqueId(pathId);
 				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t));
 				message[0]=pathId;
+	
+				#ifdef ASSERT
+				assert(rankId<m_size);
+				#endif
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rankId,RAY_MPI_TAG_GET_PATH_LENGTH,getRank());
 				m_outbox->push_back(aMessage);
 				m_FUSION_pathLengthRequested=true;
@@ -346,7 +356,7 @@ void FusionData::finishFusions(){
 				// get its paths,
 				// and continue...
 				if(!m_FINISH_vertex_requested){
-					int rankId=pathId%MAX_NUMBER_OF_MPI_PROCESSES;
+					int rankId=getRankFromPathUniqueId(pathId);
 					uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t)*2);
 					message[0]=pathId;
 					message[1]=nextPosition;
@@ -425,6 +435,9 @@ void FusionData::makeFusions(){
 		return;
 	}else if(!m_FUSION_direct_fusionDone){
 		uint64_t currentId=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
+		#ifdef ASSERT
+		assert(getRankFromPathUniqueId(currentId)<m_size);
+		#endif
 		if(!m_FUSION_first_done){
 			if(!m_FUSION_paths_requested){
 				#ifdef SHOW_PROGRESS
@@ -447,6 +460,7 @@ void FusionData::makeFusions(){
 				m_FUSION_paths_received=false;
 				m_FUSION_path_id=0;
 				m_FUSION_path_requested=false;
+				m_FUSION_receivedPaths.clear();
 			}else if(m_FUSION_paths_received){
 				if(m_FUSION_path_id<m_FUSION_numberOfPaths){
 					if(!m_FUSION_path_requested){
@@ -491,6 +505,7 @@ void FusionData::makeFusions(){
 				m_FUSION_paths_received=false;
 				m_FUSION_path_id=0;
 				m_FUSION_path_requested=false;
+				m_FUSION_receivedPaths.clear();
 			}else if(m_FUSION_paths_received){
 				if(m_FUSION_path_id<m_FUSION_numberOfPaths){
 					if(!m_FUSION_path_requested){
@@ -531,6 +546,9 @@ void FusionData::makeFusions(){
 			for(int i=0;i<(int)m_FUSION_firstPaths.size();i++){
 				index[m_FUSION_firstPaths[i].getWave()]++;
 				uint64_t pathId=m_FUSION_firstPaths[i].getWave();
+				#ifdef ASSERT
+				assert(getRankFromPathUniqueId(pathId)<m_size);
+				#endif
 				int progression=m_FUSION_firstPaths[i].getProgression();
 				starts[pathId].push_back(progression);
 			}
@@ -539,6 +557,10 @@ void FusionData::makeFusions(){
 				index[m_FUSION_lastPaths[i].getWave()]++;
 				
 				uint64_t pathId=m_FUSION_lastPaths[i].getWave();
+				#ifdef ASSERT
+				assert(getRankFromPathUniqueId(pathId)<m_size);
+				#endif
+	
 				int progression=m_FUSION_lastPaths[i].getProgression();
 				ends[pathId].push_back(progression);
 			}
@@ -547,6 +569,9 @@ void FusionData::makeFusions(){
 			
 			for(map<uint64_t,int>::iterator i=index.begin();i!=index.end();++i){
 				uint64_t otherPathId=i->first;
+				#ifdef ASSERT
+				assert(getRankFromPathUniqueId(otherPathId)<m_size);
+				#endif
 				if(i->second>=2 and otherPathId != currentId){
 					// try to find a match with the current size.
 					for(int k=0;k<(int)starts[otherPathId].size();k++){
@@ -577,14 +602,30 @@ void FusionData::makeFusions(){
 			m_FUSION_match_index=0;
 			m_FUSION_pathLengthRequested=false;
 		}else if(!m_FUSION_matches_length_done){
+			#ifdef ASSERT
+			assert(m_seedingData->m_SEEDING_i<m_ed->m_EXTENSION_identifiers.size());
+			#endif
 			uint64_t currentId=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
+			#ifdef ASSERT
+			assert(getRankFromPathUniqueId(currentId)<m_size);
+			#endif
 			if(m_FUSION_match_index==(int)m_FUSION_matches.size()){// tested all matches, and nothing was found.
 				m_FUSION_matches_length_done=true;
 			}else if(!m_FUSION_pathLengthRequested){
+				#ifdef ASSERT
+				assert(m_FUSION_match_index<(int)m_FUSION_matches.size());
+				#endif
 				uint64_t uniquePathId=m_FUSION_matches[m_FUSION_match_index];
-				int rankId=uniquePathId%MAX_NUMBER_OF_MPI_PROCESSES;
+				int rankId=getRankFromPathUniqueId(uniquePathId);
 				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t));
 				message[0]=uniquePathId;
+
+				#ifdef ASSERT
+				if(rankId>=m_size){
+					cout<<"UniqueId="<<uniquePathId<<endl;
+				}
+				assert(rankId<m_size);
+				#endif
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rankId,RAY_MPI_TAG_GET_PATH_LENGTH,getRank());
 				m_outbox->push_back(aMessage);
 				m_FUSION_pathLengthRequested=true;
@@ -758,9 +799,12 @@ void FusionData::makeFusions(){
 				m_FUSION_matches_length_done=true;
 			}else if(!m_FUSION_pathLengthRequested){
 				uint64_t uniquePathId=m_FUSION_matches[m_FUSION_match_index];
-				int rankId=uniquePathId%MAX_NUMBER_OF_MPI_PROCESSES;
+				int rankId=getRankFromPathUniqueId(uniquePathId);
 				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t));
 				message[0]=uniquePathId;
+				#ifdef ASSERT
+				assert(rankId<m_size);
+				#endif
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rankId,RAY_MPI_TAG_GET_PATH_LENGTH,getRank());
 				m_outbox->push_back(aMessage);
 				m_FUSION_pathLengthRequested=true;
@@ -814,17 +858,21 @@ void FusionData::getPaths(uint64_t vertex){
 	}
 
 	if(!m_FUSION_paths_requested){
-		uint64_t theVertex=vertex;
 		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
-		message[0]=theVertex;
+		message[0]=vertex;
 		message[1]=0;
-		Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,vertexRank(theVertex,getSize(),m_wordSize),RAY_MPI_TAG_ASK_VERTEX_PATHS,getRank());
+		Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,vertexRank(vertex,getSize(),m_wordSize),RAY_MPI_TAG_ASK_VERTEX_PATHS,getRank());
 		m_outbox->push_back(aMessage);
 		m_FUSION_paths_requested=true;
 		m_FUSION_paths_received=false;
 		m_FUSION_receivedPaths.clear();
 	}else if(m_FUSION_paths_received){
 		m_Machine_getPaths_DONE=true;
+		#ifdef ASSERT
+		for(int i=0;i<(int)m_FUSION_receivedPaths.size();i++){
+			assert(getRankFromPathUniqueId(m_FUSION_receivedPaths[i].getWave())<m_size);
+		}
+		#endif
 	}
 }
 

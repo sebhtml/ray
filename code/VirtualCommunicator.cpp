@@ -54,7 +54,7 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 	assert(m_elementSizes.count(tag)>0);
 	#endif
 
-	uint64_t elementId=tag*MAX_NUMBER_OF_MPI_PROCESSES+destination;
+	uint64_t elementId=getPathUniqueId(destination,tag);
 	int oldPriority=0;
 	// delete old priority
 	if(m_messageContent.count(tag)>0&&m_messageContent[tag].count(destination)>0){
@@ -104,7 +104,7 @@ void VirtualCommunicator::flushMessage(int tag,int destination){
 	assert(m_messageContent.count(tag)>0&&m_messageContent[tag].count(destination)>0);
 	#endif
 	int priority=m_messageContent[tag][destination].size();
-	uint64_t elementId=tag*MAX_NUMBER_OF_MPI_PROCESSES+destination;
+	uint64_t elementId=getPathUniqueId(destination,tag);
 	m_priorityQueue[priority].erase(elementId);
 	if(m_priorityQueue[priority].size()==0){
 		m_priorityQueue.erase(priority);
@@ -265,8 +265,8 @@ void VirtualCommunicator::forceFlush(){
 	assert(!m_priorityQueue.rbegin()->second.empty());
 	#endif
 	uint64_t elementId=*(m_priorityQueue.rbegin()->second.begin());
-	int selectedDestination=elementId%MAX_NUMBER_OF_MPI_PROCESSES;
-	int selectedTag=elementId/MAX_NUMBER_OF_MPI_PROCESSES;
+	int selectedDestination=getRankFromPathUniqueId(elementId);
+	int selectedTag=getIdFromPathUniqueId(elementId);
 	#ifdef ASSERT
 	assert(m_messageContent.count(selectedTag)>0&&m_messageContent[selectedTag].count(selectedDestination)>0);
 	assert(!m_messageContent[selectedTag][selectedDestination].empty());
@@ -285,8 +285,8 @@ bool VirtualCommunicator::nextIsAlmostFull(){
 	}
 	
 	uint64_t elementId=*(m_priorityQueue.rbegin()->second.begin());
-	int selectedDestination=elementId%MAX_NUMBER_OF_MPI_PROCESSES;
-	int selectedTag=elementId/MAX_NUMBER_OF_MPI_PROCESSES;
+	int selectedDestination=getRankFromPathUniqueId(elementId);
+	int selectedTag=getIdFromPathUniqueId(elementId);
 	
 	int period=m_elementSizes[selectedTag];
 	int currentSize=m_messageContent[selectedTag][selectedDestination].size();

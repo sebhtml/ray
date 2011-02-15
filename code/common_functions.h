@@ -192,6 +192,10 @@ uint64_t hash_function_2(uint64_t a,int w,uint64_t*b);
 
 uint8_t invertEdges(uint8_t a);
 
+uint64_t getPathUniqueId(int rank,int id);
+int getIdFromPathUniqueId(uint64_t a);
+int getRankFromPathUniqueId(uint64_t a);
+
 #endif
 
 

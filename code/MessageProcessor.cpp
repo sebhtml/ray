@@ -868,6 +868,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED(Message*message){
 	#ifdef ASSERT
 	if(directions.size()==0){
 		assert(nextOffset==0);
+		assert(processed==0);
 	}
 	#endif
 
@@ -967,11 +968,12 @@ void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message){
 	for(int i=0;i<count;i+=4){
 		m_count++;
 		uint64_t vertex=incoming[i+0];
+/*
 		int coverage=m_subgraph->find(vertex)->getCoverage(vertex);
 		if(coverage==1){
 			continue;
 		}
-
+*/
 		uint64_t complement=complementVertex_normal(vertex,*m_wordSize);
 		bool lower=vertex<complement;
 		int rank=incoming[i+1];
@@ -1343,11 +1345,24 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS(Message*message){
 	int j=2;
 	message2[0]=vertex;
 	while(firstPathId<(int)paths.size() && j<availableElements){
-		message2[j++]=paths[firstPathId].getWave();
+		#ifdef ASSERT
+		assert(firstPathId<(int)paths.size());
+		#endif
+		uint64_t pathId=paths[firstPathId].getWave();
+		#ifdef ASSERT
+		assert(getRankFromPathUniqueId(pathId)<size);
+		#endif
+		message2[j++]=pathId;
 		message2[j++]=paths[firstPathId].getProgression();
 		firstPathId++;
 	}
 	message2[1]=firstPathId;
+
+	#ifdef ASSERT
+	assert(j/2-1<=(int)paths.size());
+	assert(j<=availableElements);
+	assert(source<size);
+	#endif
 
 	if(firstPathId==(int)paths.size()){
 		Message aMessage(message2,j,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END,rank);
@@ -1366,7 +1381,10 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY(Message*message){
 	uint64_t complement=complementVertex_normal(vertex,*m_wordSize);
 	bool lower=vertex<complement;
 	for(int i=2;i<count;i+=2){
-		int pathId=incoming[i];
+		uint64_t pathId=incoming[i];
+		#ifdef ASSERT
+		assert(getRankFromPathUniqueId(pathId)<size);
+		#endif
 		int position=incoming[i+1];
 		m_fusionData->m_FUSION_receivedPath.constructor(pathId,position,lower);
 		m_fusionData->m_Machine_getPaths_result.push_back(m_fusionData->m_FUSION_receivedPath);
@@ -1387,7 +1405,10 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END(Message*messa
 	uint64_t complement=complementVertex_normal(vertex,*m_wordSize);
 	bool lower=vertex<complement;
 	for(int i=2;i<count;i+=2){
-		int pathId=incoming[i];
+		uint64_t pathId=incoming[i];
+		#ifdef ASSERT
+		assert(getRankFromPathUniqueId(pathId)<size);
+		#endif
 		int position=incoming[i+1];
 		m_fusionData->m_FUSION_receivedPath.constructor(pathId,position,lower);
 		m_fusionData->m_Machine_getPaths_result.push_back(m_fusionData->m_FUSION_receivedPath);
@@ -1410,6 +1431,9 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH(Message*message){
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(3*sizeof(uint64_t));
 	message2[0]=incoming[0];
 	message2[1]=d.getWave();
+	#ifdef ASSERT
+	assert(getRankFromPathUniqueId(message2[1])<size);
+	#endif
 	message2[2]=d.getProgression();
 	Message aMessage(message2,3,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY,rank);
 	m_outbox->push_back(aMessage);
@@ -1422,7 +1446,10 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY(Message*message){
 	uint64_t vertex=incoming[0];
 	uint64_t complement=complementVertex_normal(vertex,*m_wordSize);
 	bool lower=vertex<complement;
-	int pathId=incoming[1];
+	uint64_t pathId=incoming[1];
+	#ifdef ASSERT
+	assert(getRankFromPathUniqueId(pathId)<size);
+	#endif
 	int position=incoming[2];
 	m_fusionData->m_FUSION_receivedPath.constructor(pathId,position,lower);
 }
@@ -1525,12 +1552,12 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 	(m_ed->m_EXTENSION_identifiers).clear();
 	m_fusionData->m_FUSION_eliminated.clear();
 	for(int i=0;i<(int)fusions.size();i++){
-		uint64_t id=i*MAX_NUMBER_OF_MPI_PROCESSES+rank;
+		uint64_t id=getPathUniqueId(rank,i);
 		#ifdef ASSERT
 		assert(rank<size);
 		assert(rank>=0);
 		assert(size>=1);
-		assert((int)(id%MAX_NUMBER_OF_MPI_PROCESSES)<size);
+		assert((int)getRankFromPathUniqueId(id)<size);
 		#endif
 		(m_ed->m_EXTENSION_identifiers).push_back(id);
 	}
@@ -1596,7 +1623,7 @@ void MessageProcessor::call_RAY_MPI_TAG_EXTENSION_START(Message*message){
 	(*m_allPaths).push_back(a);
 	uint64_t id=incoming[0];
 	#ifdef ASSERT
-	int rank=id%MAX_NUMBER_OF_MPI_PROCESSES;
+	int rank=getRankFromPathUniqueId(id);
 	assert(rank<size);
 	#endif
 	(*m_identifiers).push_back(id);

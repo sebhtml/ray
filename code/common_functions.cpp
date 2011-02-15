@@ -542,3 +542,19 @@ uint8_t invertEdges(uint8_t edges){
 	}
 	return out;
 }
+
+
+uint64_t getPathUniqueId(int rank,int id){
+	uint64_t a=id;
+	a=a*MAX_NUMBER_OF_MPI_PROCESSES+rank;
+	return a;
+}
+
+int getIdFromPathUniqueId(uint64_t a){
+	return a/MAX_NUMBER_OF_MPI_PROCESSES;
+}
+
+int getRankFromPathUniqueId(uint64_t a){
+	int rank=a%MAX_NUMBER_OF_MPI_PROCESSES;
+	return rank;
+}

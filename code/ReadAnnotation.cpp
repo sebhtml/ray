@@ -53,9 +53,7 @@ ReadAnnotation*ReadAnnotation::getNext()const{
 }
 
 uint64_t ReadAnnotation::getUniqueId()const{
-	uint64_t a=m_readIndex;
-	a=a*MAX_NUMBER_OF_MPI_PROCESSES+m_rank;
-	return a;
+	return getPathUniqueId(m_rank,m_readIndex);
 }
 
 bool ReadAnnotation::isLower(){

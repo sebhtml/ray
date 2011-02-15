@@ -110,15 +110,11 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 			checkIfCurrentVertexIsAssembled(ed,outbox,outboxAllocator,outgoingEdgeIndex,last_value,
 	currentVertex,theRank,vertexCoverageRequested,wordSize,colorSpaceMode,size,seeds);
 		}
-	}else if(((ed->m_EXTENSION_currentPosition==0 && m_eliminatedSeeds.count(ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition])>0)
-	|| (ed->m_EXTENSION_vertexIsAssembledResult && ed->m_EXTENSION_currentPosition==0 && ed->m_EXTENSION_complementedSeed==false))
-		){
+	}else if(ed->m_EXTENSION_vertexIsAssembledResult && ed->m_EXTENSION_currentPosition==0 && ed->m_EXTENSION_complementedSeed==false){
 		//cout<<"Rank "<<theRank<<": Ray Early-Stopping Technology was triggered, Case 1: seed is already processed at p=0."<<endl;
 		ed->m_EXTENSION_currentSeedIndex++;// skip the current one.
 		ed->m_EXTENSION_currentPosition=0;
 
-		//int waveId=ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+theRank;
-		//m_earlyStoppingTechnology.constructor(waveId,theRank);
 
 		ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 		ed->m_EXTENSION_directVertexDone=false;
@@ -633,7 +629,7 @@ uint64_t*currentVertex,BubbleData*bubbleData){
 
 		ed->m_EXTENSION_contigs.push_back(*(ed->m_EXTENSION_extension));
 	
-		uint64_t id=ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+theRank;
+		uint64_t id=getPathUniqueId(theRank,ed->m_EXTENSION_currentSeedIndex);
 		ed->m_EXTENSION_identifiers.push_back(id);
 	}
 
@@ -776,10 +772,11 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				#endif
 
 				// save wave progress.
-				uint64_t waveId=ed->m_EXTENSION_currentSeedIndex*MAX_NUMBER_OF_MPI_PROCESSES+theRank;
+				uint64_t waveId=getPathUniqueId(theRank,ed->m_EXTENSION_currentSeedIndex);
 				#ifdef ASSERT
-				assert((int)(waveId/MAX_NUMBER_OF_MPI_PROCESSES)==ed->m_EXTENSION_currentSeedIndex);
-				assert((int)(waveId%MAX_NUMBER_OF_MPI_PROCESSES)==theRank);
+				assert((int)getIdFromPathUniqueId(waveId)==ed->m_EXTENSION_currentSeedIndex);
+				assert((int)getRankFromPathUniqueId(waveId)==theRank);
+				assert(theRank<size);
 				#endif
 
 				int progression=ed->m_EXTENSION_extension->size()-1;
