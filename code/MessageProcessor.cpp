@@ -732,22 +732,34 @@ void MessageProcessor::call_RAY_MPI_TAG_RECEIVED_MESSAGES_REPLY(Message*message)
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_RECEIVED_MESSAGES(Message*message){
+	#ifdef COUNT_MESSAGES
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
 	uint64_t*incoming=(uint64_t*)buffer;
 	for(int i=0;i<count;i++){
 		m_messagesHandler->addCount(message->getSource(),incoming[i]);
 	}
-	if(message->getSource()!=MASTER_RANK && m_messagesHandler->isFinished(message->getSource())){
+	#endif
+
+	bool isFinished=true;
+	#ifdef COUNT_MESSAGES
+	isFinished=m_messagesHandler->isFinished(message->getSource());
+	#endif
+	if(message->getSource()!=MASTER_RANK && isFinished){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_RECEIVED_MESSAGES_REPLY,rank);
 		m_outbox->push_back(aMessage);
 	}
-	if(m_messagesHandler->isFinished()){
+	bool finished=true;
+	#ifdef COUNT_MESSAGES
+	finished=m_messagesHandler->isFinished()
+	#endif
+	if(finished){
 		(*m_alive)=false;
 	}
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON(Message*message){
+	#ifdef COUNT_MESSAGES
 	// send stats to master
 	int i=0;
 	while(i<size){
@@ -755,13 +767,18 @@ void MessageProcessor::call_RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON(Message*message){
 		int j=0;
 		int maxToProcess=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t);
 		while(i+j<size &&j<maxToProcess){
+			#ifdef COUNT_MESSAGES
 			data[j]=m_messagesHandler->getReceivedMessages()[i+j];
+			#endif
 			j++;
 		}
 		Message aMessage(data,j,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_RECEIVED_MESSAGES,rank);
 		m_outbox->push_back(aMessage);
 		i+=maxToProcess;
 	}
+	#else
+	*m_alive=false;
+	#endif
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_I_GO_NOW(Message*message){
@@ -840,93 +857,23 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
-	int offset=incoming[1];
 	#ifdef ASSERT
 	Vertex*node=m_subgraph->find(incoming[0]);
 	assert(node!=NULL);
 	#endif
-	vector<Direction> directions=m_subgraph->getDirections(incoming[0]);
-	//cout<<"directions="<<directions.size()<<endl;
-	int maxSize=directions.size();
-	//cout<<"source="<<source<<" self="<<rank<<" MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED directions="<<maxSize<<endl;
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
+	message2[0]=m_subgraph->isAssembled(incoming[0]);
 
-	// each one of them takes 2 elements., this is 4000/8/2-1 = 249
-	int maxToProcess=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)/2-1; // -1 because we need to track the offset and the vertex too
-	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-	message2[0]=incoming[0];
-	int p=2; // 0 is vertex, 1 is offset
-	int processed=0;
-	while(processed<maxToProcess && offset+processed<maxSize){
-		message2[p++]=directions[offset+processed].getWave();
-		message2[p++]=directions[offset+processed].getProgression();
-		processed++;
-	}
-
-	int nextOffset=offset+processed;
-	message2[1]=nextOffset;
-
-	#ifdef ASSERT
-	if(directions.size()==0){
-		assert(nextOffset==0);
-		assert(processed==0);
-	}
-	#endif
-
-	//cout<<"processed "<<processed<<endl;
-
-	if(nextOffset==maxSize){
-		Message aMessage(message2,2*processed+2,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY_END,rank);
-		m_outbox->push_back(aMessage);
-	}else{
-		Message aMessage(message2,2*processed+2,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY,rank);
-		m_outbox->push_back(aMessage);
-	}
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY_END(Message*message){
-	void*buffer=message->getBuffer();
-	uint64_t*incoming=(uint64_t*)buffer;
-	int count=message->getCount();
-	uint64_t vertex=incoming[0]; // incoming[0] is a vertex
-	uint64_t complement=complementVertex_normal(vertex,*m_wordSize);
-	bool lower=vertex<complement;
-
-	for(int i=2;i<count;i+=2){
-		uint64_t wave=incoming[i+0];
-		int progression=incoming[i+1];
-		Direction a;
-		a.constructor(wave,progression,lower);
-		seedExtender->getDirections()->push_back(a);
-	}
-
-	(m_ed->m_EXTENSION_VertexAssembled_received)=true;
-	(m_ed->m_EXTENSION_vertexIsAssembledResult)=seedExtender->getDirections()->size()>0;
-	//cout<<"source="<<message->getSource()<<" self="<<rank<<" MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY_END directions="<<seedExtender->getDirections()->size()<<endl;
+	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY,rank);
+	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY(Message*message){
 	void*buffer=message->getBuffer();
-	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
-	int count=message->getCount();
 
-	uint64_t vertex=incoming[0]; // incoming[0] is a vertex
-	uint64_t complement=complementVertex_normal(vertex,*m_wordSize);
-	bool lower=vertex<complement;
-	for(int i=2;i<count;i+=2){
-		uint64_t wave=incoming[i+0];
-		int progression=incoming[i+1];
-		Direction a;
-		a.constructor(wave,progression,lower);
-		seedExtender->getDirections()->push_back(a);
-	}
-	
-	// ask for the next data chunk
-	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
-	message2[0]=incoming[0];
-	message2[1]=incoming[1];
-	Message aMessage(message2,2,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_IS_ASSEMBLED,rank);
-	m_outbox->push_back(aMessage);
+	(m_ed->m_EXTENSION_VertexAssembled_received)=true;
+	(m_ed->m_EXTENSION_vertexIsAssembledResult)=(bool)incoming[0];
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_MARK_AS_ASSEMBLED(Message*message){
@@ -1950,7 +1897,6 @@ void MessageProcessor::assignHandlers(){
 	m_methods[RAY_MPI_TAG_ASK_EXTENSION]=&MessageProcessor::call_RAY_MPI_TAG_ASK_EXTENSION;
 	m_methods[RAY_MPI_TAG_ASK_IS_ASSEMBLED]=&MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED;
 	m_methods[RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY;
-	m_methods[RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY_END]=&MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY_END;
 	m_methods[RAY_MPI_TAG_MARK_AS_ASSEMBLED]=&MessageProcessor::call_RAY_MPI_TAG_MARK_AS_ASSEMBLED;
 	m_methods[RAY_MPI_TAG_ASK_EXTENSION_DATA]=&MessageProcessor::call_RAY_MPI_TAG_ASK_EXTENSION_DATA;
 	m_methods[RAY_MPI_TAG_EXTENSION_DATA]=&MessageProcessor::call_RAY_MPI_TAG_EXTENSION_DATA;

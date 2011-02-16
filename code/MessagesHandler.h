@@ -36,23 +36,29 @@ class MessagesHandler{
 	int m_head;
 	MPI_Request*m_ring;
 	char*m_buffers;
-	uint64_t*m_receivedMessages;
 	int m_rank;
 	int m_size;
+
+	#ifdef COUNT_MESSAGES
+	uint64_t*m_receivedMessages;
 	uint64_t*m_allReceivedMessages;
 	int*m_allCounts;
 	map<int,map<int,int> > m_buckets;
+	#endif
 
 public:
 	void constructor(int rank,int size);
-	void showStats();
 	void sendMessages(StaticVector*outbox,int source);
 	void receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator,int destination);
+
+	#ifdef COUNT_MESSAGES
+	bool isFinished(int rank);
+	void showStats();
 	uint64_t*getReceivedMessages();
 	void addCount(int rank,uint64_t count);
 	void writeStats(const char*file);
 	bool isFinished();
-	bool isFinished(int rank);
+	#endif
 	void freeLeftovers();
 };
 

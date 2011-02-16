@@ -113,7 +113,10 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 		// add the message in the inbox
 		Message aMessage(incoming,length,MPI_UNSIGNED_LONG_LONG,source,tag,source);
 		inbox->push_back(aMessage);
+	
+		#ifdef COUNT_MESSAGES
 		m_receivedMessages[source]++;
+		#endif
 		
 		#ifdef DEBUG_MESSAGES
 		m_buckets[source][tag]++;
@@ -135,6 +138,7 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 	}
 }
 
+#ifdef COUNT_MESSAGES
 void MessagesHandler::showStats(){
 	if(m_rank!=0){
 		return;
@@ -152,18 +156,24 @@ void MessagesHandler::showStats(){
 	}
 	cout<<endl;
 }
+#endif
 
+#ifdef COUNT_MESSAGES
 void MessagesHandler::addCount(int rank,uint64_t count){
 	int source=m_allCounts[rank];
 	int destination=rank;
 	m_allReceivedMessages[destination*m_size+source]=count;
 	m_allCounts[rank]++;
 }
+#endif
 
+#ifdef COUNT_MESSAGES
 bool MessagesHandler::isFinished(int rank){
 	return m_allCounts[rank]==m_size;
 }
+#endif
 
+#ifdef COUNT_MESSAGES
 bool MessagesHandler::isFinished(){
 	for(int i=0;i<m_size;i++){
 		if(!isFinished(i)){
@@ -178,7 +188,9 @@ bool MessagesHandler::isFinished(){
 
 	return true;
 }
+#endif
 
+#ifdef COUNT_MESSAGES
 void MessagesHandler::writeStats(const char*file){
 	ofstream f(file);
 	
@@ -196,10 +208,12 @@ void MessagesHandler::writeStats(const char*file){
 	}
 	f.close();
 }
+#endif
 
 void MessagesHandler::constructor(int rank,int size){
 	m_rank=rank;
 	m_size=size;
+	#ifdef COUNT_MESSAGES
 	m_receivedMessages=(uint64_t*)__Malloc(sizeof(uint64_t)*m_size);
 	if(rank==MASTER_RANK){
 		m_allReceivedMessages=(uint64_t*)__Malloc(sizeof(uint64_t)*m_size*m_size);
@@ -212,6 +226,7 @@ void MessagesHandler::constructor(int rank,int size){
 			m_allCounts[i]=0;
 		}
 	}
+	#endif
 
 	// the ring itself  contain requests ready to receive messages
 	m_ringSize=128;
@@ -229,9 +244,11 @@ void MessagesHandler::constructor(int rank,int size){
 	}
 }
 
+#ifdef COUNT_MESSAGES
 uint64_t*MessagesHandler::getReceivedMessages(){
 	return m_receivedMessages;
 }
+#endif
 
 void MessagesHandler::freeLeftovers(){
 	#ifdef DEBUG_MESSAGES

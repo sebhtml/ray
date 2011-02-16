@@ -360,9 +360,11 @@ m_seedingData,
 		m_timePrinter.printDurations();
 
 		cout<<endl;
+		#ifdef COUNT_MESSAGES
 		string file=m_parameters.getReceivedMessagesFile();
 		const char*tmp=file.c_str();
 		m_messagesHandler.writeStats(tmp);
+		#endif
 
 	}
 
@@ -381,7 +383,9 @@ m_seedingData,
 			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getAmosFile()<<" (reads mapped onto contiguous sequences in AMOS format)"<<endl;
 
 		}
+		#ifdef COUNT_MESSAGES
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getReceivedMessagesFile()<<" (MPI communication matrix; rows=destinations, columns=sources) "<<endl;
+		#endif
 		cout<<endl;
 	}
 

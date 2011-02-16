@@ -24,7 +24,7 @@
 #include <crypto.h>
 
 void ExtensionData::constructor(){
-	m_numberOfBins=4096;
+	m_numberOfBins=1;
 	m_database=(SplayTree<uint64_t,ExtensionElement>*)__Malloc(m_numberOfBins*sizeof(SplayTree<uint64_t,ExtensionElement>));
 	createStructures();
 	int chunkSize=4194304;
@@ -70,7 +70,8 @@ void ExtensionData::destructor(){
 }
 
 ExtensionElement*ExtensionData::getUsedRead(uint64_t a){
-	SplayNode<uint64_t,ExtensionElement>*node=m_database[uniform_hashing_function_1_64_64(a)%m_numberOfBins].find(a,true);
+	int bin=0;//uniform_hashing_function_1_64_64(a)%m_numberOfBins;
+	SplayNode<uint64_t,ExtensionElement>*node=m_database[bin].find(a,true);
 	if(node!=NULL){
 		return node->getValue();
 	}
@@ -79,11 +80,13 @@ ExtensionElement*ExtensionData::getUsedRead(uint64_t a){
 
 ExtensionElement*ExtensionData::addUsedRead(uint64_t a){
 	bool val;
-	return m_database[uniform_hashing_function_1_64_64(a)%m_numberOfBins].insert(a,&m_allocator,&val)->getValue();
+	int bin=0;//uniform_hashing_function_1_64_64(a)%m_numberOfBins;
+	return m_database[bin].insert(a,&m_allocator,&val)->getValue();
 }
 
 void ExtensionData::removeSequence(uint64_t a){
-	m_database[uniform_hashing_function_1_64_64(a)%m_numberOfBins].remove(a,false,&m_allocator);
+	int bin=0;//uniform_hashing_function_1_64_64(a)%m_numberOfBins
+	m_database[bin].remove(a,false,&m_allocator);
 }
 
 MyAllocator*ExtensionData::getAllocator(){

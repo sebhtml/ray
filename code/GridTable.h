@@ -66,6 +66,7 @@ public:
 	vector<Direction> getDirections(uint64_t a);
 	void clearDirections(uint64_t a);
 	void buildData();
+	bool isAssembled(uint64_t a);
 };
 
 #endif

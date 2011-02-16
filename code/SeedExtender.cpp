@@ -693,6 +693,7 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			}
 		}
 	}else if(!ed->m_EXTENSION_reverseVertexDone){
+/*
 		if(!ed->m_EXTENSION_VertexAssembled_requested){
 			//cout<<__func__<<" requests reverse"<<endl;
 			m_receivedDirections.clear();
@@ -705,12 +706,13 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			(*outbox).push_back(aMessage);
 			ed->m_EXTENSION_VertexAssembled_received=false;
 		}else if(ed->m_EXTENSION_VertexAssembled_received){
+*/
 			//cout<<__func__<<" receives reverse"<<endl;
 			//m_earlyStoppingTechnology.addDirections(&m_receivedDirections);
 			ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
 			ed->m_EXTENSION_markedCurrentVertexAsAssembled=false;
 			ed->m_EXTENSION_directVertexDone=false;
-		}
+		//}
 	}
 }
 

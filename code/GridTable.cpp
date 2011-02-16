@@ -195,6 +195,11 @@ void GridTable::addDirection(uint64_t a,Direction*d){
 	m_vertexTable.addDirection(a,d);
 }
 
+bool GridTable::isAssembled(uint64_t a){
+	uint64_t reverse=complementVertex_normal(a,m_wordSize);
+	return getDirections(a).size()>0||getDirections(reverse).size()>0;
+}
+
 vector<Direction> GridTable::getDirections(uint64_t a){
 	return m_vertexTable.getDirections(a);
 }

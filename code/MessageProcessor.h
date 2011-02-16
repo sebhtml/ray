@@ -228,7 +228,6 @@ class MessageProcessor{
 	void call_RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY(Message*message);
 	void call_RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY(Message*message);
 	void call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY(Message*message);
-	void call_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY_END(Message*message);
 	void call_RAY_MPI_TAG_MUST_RUN_REDUCER(Message*message);
 	void call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION(Message*message);
 	void call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY(Message*message);
