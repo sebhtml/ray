@@ -76,11 +76,10 @@ void SequencesLoader::registerSequence(){
 		uint64_t rightSequenceIdOnRank=m_parameters->getIdFromGlobalId(rightSequenceGlobalId);
 
 		int library=m_parameters->getLibrary(m_distribution_file_id);
-
-		PairedRead*t=(PairedRead*)(*m_persistentAllocator).allocate(sizeof(PairedRead));
-		t->constructor(rightSequenceRank,rightSequenceIdOnRank,library);
-
-		(*m_myReads)[leftSequenceIdOnRank]->setPairedRead(t);
+		
+		(*m_myReads)[leftSequenceIdOnRank]->setLeftType();
+		(*m_myReads)[leftSequenceIdOnRank]->getPairedRead()->constructor(rightSequenceRank,rightSequenceIdOnRank,library);
+		//cout<<"Matching "<<getPathUniqueId(m_rank,leftSequenceIdOnRank)<<" and "<<getPathUniqueId(rightSequenceRank,rightSequenceIdOnRank)<<endl;
 	}else if(m_LOADER_isRightFile){
 
 		#ifdef ASSERT
@@ -101,10 +100,9 @@ void SequencesLoader::registerSequence(){
 		uint64_t leftSequenceIdOnRank=m_parameters->getIdFromGlobalId(leftSequenceGlobalId);
 		int library=m_parameters->getLibrary(m_distribution_file_id);
 
-		PairedRead*t=(PairedRead*)(*m_persistentAllocator).allocate(sizeof(PairedRead));
-		t->constructor(leftSequenceRank,leftSequenceIdOnRank,library);
-		(*m_myReads)[rightSequenceIdOnRank]->setPairedRead(t);
-
+		(*m_myReads)[rightSequenceIdOnRank]->setRightType();
+		(*m_myReads)[rightSequenceIdOnRank]->getPairedRead()->constructor(leftSequenceRank,leftSequenceIdOnRank,library);
+		//cout<<"Matching "<<getPathUniqueId(m_rank,rightSequenceIdOnRank)<<" and "<<getPathUniqueId(leftSequenceRank,leftSequenceIdOnRank)<<endl;
 	// left sequence in interleaved file
 	}else if(m_isInterleavedFile && ((m_distribution_sequence_id)%2)==0){
 		uint64_t rightSequenceGlobalId=(m_distribution_currentSequenceId)+1;
@@ -114,10 +112,9 @@ void SequencesLoader::registerSequence(){
 		uint64_t leftSequenceIdOnRank=m_myReads->size()-1;
 
 		int library=m_parameters->getLibrary(m_distribution_file_id);
-
-		PairedRead*t=(PairedRead*)(*m_persistentAllocator).allocate(sizeof(PairedRead));
-		t->constructor(rightSequenceRank,rightSequenceIdOnRank,library);
-		(*m_myReads)[leftSequenceIdOnRank]->setPairedRead(t);
+		
+		(*m_myReads)[leftSequenceIdOnRank]->setLeftType();
+		(*m_myReads)[leftSequenceIdOnRank]->getPairedRead()->constructor(rightSequenceRank,rightSequenceIdOnRank,library);
 
 	// only the right sequence.
 	}else if(m_isInterleavedFile &&((m_distribution_sequence_id)%2)==1){
@@ -127,10 +124,9 @@ void SequencesLoader::registerSequence(){
 		int leftSequenceRank=m_parameters->getRankFromGlobalId(leftSequenceGlobalId);
 		uint64_t leftSequenceIdOnRank=m_parameters->getIdFromGlobalId(leftSequenceGlobalId);
 		int library=m_parameters->getLibrary(m_distribution_file_id);
-
-		PairedRead*t=(PairedRead*)(*m_persistentAllocator).allocate(sizeof(PairedRead));
-		t->constructor(leftSequenceRank,leftSequenceIdOnRank,library);
-		(*m_myReads)[rightSequenceIdOnRank]->setPairedRead(t);
+		
+		(*m_myReads)[rightSequenceIdOnRank]->setRightType();
+		(*m_myReads)[rightSequenceIdOnRank]->getPairedRead()->constructor(leftSequenceRank,leftSequenceIdOnRank,library);
 	}
 }
 

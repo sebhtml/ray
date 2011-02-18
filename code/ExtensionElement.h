@@ -35,16 +35,21 @@ class ExtensionElement{
 	bool m_hasPairedRead;
 	char*m_readSequence;
 	PairedRead m_pairedRead;
+	uint8_t m_type;
 public:
 	void setStartingPosition(int a);
 	void setStrand(char a);
 	void setPairedRead(PairedRead a);
+	void setType(int a);
 	bool hasPairedRead();
 	void setSequence(const char*a,MyAllocator*b);
 	int getPosition();
 	char getStrand();
 	PairedRead getPairedRead();
 	char*getSequence();
+	bool isLeftEnd();
+	bool isRightEnd();
+	int getType();
 };
 
 #endif

@@ -1710,7 +1710,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE(Message*message){
 	assert(t!=NULL);
 	#endif
 
-	int beforeRounding=4*sizeof(uint64_t)+m_myReads->at(index)->getRequiredBytes();
+	int beforeRounding=5*sizeof(uint64_t)+m_myReads->at(index)->getRequiredBytes();
 	int toAllocate=roundNumber(beforeRounding,sizeof(uint64_t));
 	//cout<<" seq is "<<strlen(seq)<<" +1 +4*8="<<beforeRounding<<", rounded: "<<toAllocate<<endl;
 
@@ -1718,8 +1718,9 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE(Message*message){
 	messageBytes[0]=t->getRank();
 	messageBytes[1]=t->getId();
 	messageBytes[2]=t->getLibrary();
-	messageBytes[3]=m_myReads->at(index)->length();
-	char*dest=(char*)(messageBytes+4);
+	messageBytes[3]=(*m_myReads)[index]->getType();
+	messageBytes[4]=m_myReads->at(index)->length();
+	char*dest=(char*)(messageBytes+5);
 	memcpy(dest,m_myReads->at(index)->getRawSequence(),m_myReads->at(index)->getRequiredBytes());
 	//cout<<"dest="<<dest<<endl;
 	Message aMessage(messageBytes,toAllocate/sizeof(uint64_t),MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY,rank);
@@ -1731,9 +1732,9 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY(Message*mess
 	uint64_t*incoming=(uint64_t*)buffer;
 	(m_ed->m_EXTENSION_pairedRead).constructor(incoming[0],incoming[1],incoming[2]);
 	(m_ed->m_EXTENSION_pairedSequenceReceived)=true;
-
-	int length=incoming[3];
-	uint8_t*sequence=(uint8_t*)(incoming+4);
+	m_ed->m_readType=incoming[3];
+	int length=incoming[4];
+	uint8_t*sequence=(uint8_t*)(incoming+5);
 	Read tmp;
 	tmp.setRawSequence(sequence,length);
 	char buffer2[4000];

@@ -315,29 +315,43 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 					return;
 				}
 
-				char leftStrand=element->getStrand();
-				ed->m_EXTENSION_receivedReadVertex=kmerAtPosition(theSequence,distance,wordSize,leftStrand,*colorSpaceMode);
+				char theRightStrand=element->getStrand();
+				#ifdef ASSERT
+				assert(theRightStrand=='R'||theRightStrand=='F');
+				assert(element->getType()==TYPE_SINGLE_END||element->getType()==TYPE_RIGHT_END||element->getType()==TYPE_LEFT_END);
+				#endif
+				//bool isARightSequence=(theRightStrand=='R' && element->isRightEnd())||(theRightStrand=='F' && element->isLeftEnd());
+				//isARightSequence=true;// TODO: remove
+
+				ed->m_EXTENSION_receivedReadVertex=kmerAtPosition(theSequence,distance,wordSize,theRightStrand,*colorSpaceMode);
 				//cout<<"Vertex is "<<idToWord(ed->m_EXTENSION_receivedReadVertex,wordSize)<<endl;
 				// process each edge separately.
 				// got a match!
+				//cout<<"Strand="<<theRightStrand<<" Type="<<element->getType()<<" isRight="<<isARightSequence<<endl;
+
 				if(!element->hasPairedRead()){
 					if(repeatValueForRightRead<repeatThreshold){
 						ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(distance);	
 					}
 
 					ed->m_EXTENSION_readIterator++;
-				}else{	
-					//cout<<"has paired read"<<endl;
+				}else{
 					PairedRead pairedRead=element->getPairedRead();
 					uint64_t uniqueReadIdentifier=pairedRead.getUniqueId();
+					int diff=uniqueId-uniqueReadIdentifier;
+					if(uniqueReadIdentifier>uniqueId){
+						diff=uniqueReadIdentifier-uniqueId;
+					}
+					//cout<<"has paired read rightStrand="<<theRightStrand<<" RightId="<<uniqueId<<" LeftId="<<uniqueReadIdentifier<<" Diff="<<diff<<endl;
 					int library=pairedRead.getLibrary();
 					int expectedFragmentLength=m_parameters->getLibraryAverageLength(library);
 					int expectedDeviation=m_parameters->getLibraryStandardDeviation(library);
 					//bool leftReadIsLeftInThePair=pairedRead.isLeftRead();
 					ExtensionElement*extensionElement=ed->getUsedRead(uniqueReadIdentifier);
 					if(extensionElement!=NULL){// use to be via readsPositions
-						char rightStrand=extensionElement->getStrand();
+						char theLeftStrand=extensionElement->getStrand();
 						int startingPositionOnPath=extensionElement->getPosition();
+
 
 						//int coverageForLeftRead=ed->m_extensionCoverageValues->at(startingPositionOnPath);
 						int repeatLengthForLeftRead=ed->m_repeatedValues->at(startingPositionOnPath);
@@ -347,23 +361,25 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 						//int theDistance=startPosition-startingPositionOnPath;
 						if(expectedFragmentLength-multiplier*expectedDeviation<=observedFragmentLength 
 						&& observedFragmentLength <= expectedFragmentLength+multiplier*expectedDeviation 
-				&&( (rightStrand=='F' && leftStrand=='R')
-					||(rightStrand=='R' && leftStrand=='F'))
+				&&( (theLeftStrand=='F' && theRightStrand=='R')
+					||(theLeftStrand=='R' && theRightStrand=='F'))
 				// the bridging pair is meaningless if both start in repeats
 				&&repeatLengthForLeftRead<repeatThreshold){
 						// it matches!
 							//int theDistance=startPosition-startingPositionOnPath+distance;
 							
+							//cout<<"Found element: LeftStrand="<<theLeftStrand<<" RightStrand="<<theRightStrand<<" LeftType="<<extensionElement->getType()<<" RightType="<<element->getType()<<endl;
 							ed->m_EXTENSION_pairedReadPositionsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(observedFragmentLength);
 							ed->m_EXTENSION_pairedLibrariesForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(library);
 							ed->m_EXTENSION_pairedReadsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(uniqueId);
+
 						}else{
 							//cout<<"Invalid -> Average="<<expectedFragmentLength<<" Deviation="<<expectedDeviation<<" Observed="<<observedFragmentLength<<endl;					
 							// remove the right read from the used set
 							ed->m_sequencesToFree.push_back(uniqueId);
 						}
 					}
-							
+
 					// add it anyway as a single-end match too!
 					if(repeatValueForRightRead<repeatThreshold){
 						ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(distance);
@@ -835,18 +851,32 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,sequenceRank,RAY_MPI_TAG_REQUEST_READ_SEQUENCE,theRank);
 						outbox->push_back(aMessage);
 					}else if(m_sequenceReceived){
-						ExtensionElement*element=ed->addUsedRead(uniqueId);
-						element->setSequence(m_receivedString.c_str(),ed->getAllocator());
-						element->setStartingPosition(ed->m_EXTENSION_extension->size()-1);
-						element->setStrand(annotation.getStrand());
-						ed->m_EXTENSION_readsInRange->insert(uniqueId);
-						m_sequenceReceived=false;
-
-						// received paired read too !
-						if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
-							element->setPairedRead(ed->m_EXTENSION_pairedRead);
+						bool addRead=true;
+						if(m_repeatLength>0){
+							// the vertex is repeated
+							if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
+								uint64_t mateId=ed->m_EXTENSION_pairedRead.getUniqueId();
+								// the mate is required to allow proper placement
+								if(ed->getUsedRead(mateId)==NULL){
+									addRead=false;
+									//cout<<"Not using read: coverage="<<ed->m_currentCoverage<<" peak="<<m_parameters->getPeakCoverage()<<endl;
+								}
+							}
 						}
-	
+						if(addRead){
+							ExtensionElement*element=ed->addUsedRead(uniqueId);
+							element->setSequence(m_receivedString.c_str(),ed->getAllocator());
+							element->setStartingPosition(ed->m_EXTENSION_extension->size()-1);
+							element->setStrand(annotation.getStrand());
+							element->setType(ed->m_readType);
+							ed->m_EXTENSION_readsInRange->insert(uniqueId);
+
+							// received paired read too !
+							if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
+								element->setPairedRead(ed->m_EXTENSION_pairedRead);
+							}
+						}
+
 						m_sequenceIndexToCache++;
 						m_sequenceRequested=false;
 					}

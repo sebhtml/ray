@@ -65,6 +65,7 @@ char*Read::trim(char*buffer,const char*sequence){
 }
 
 void Read::constructor(const char*sequence,MyAllocator*seqMyAllocator,bool trimFlag){
+	m_type=TYPE_SINGLE_END;
 	#ifdef __READ_VERBOSITY
 	cout<<"In="<<sequence<<endl;
 	#endif
@@ -113,7 +114,6 @@ void Read::constructor(const char*sequence,MyAllocator*seqMyAllocator,bool trimF
 
 	m_sequence=(uint8_t*)seqMyAllocator->allocate(requiredBytes*sizeof(uint8_t));
 	memcpy(m_sequence,workingBuffer,requiredBytes);
-	m_pairedRead=NULL;
 
 	#ifdef __READ_VERBOSITY
 	cout<<"Out="<<getSeq()<<endl;
@@ -149,16 +149,15 @@ uint64_t Read::getVertex(int pos,int w,char strand,bool color) const {
 	return kmerAtPosition(buffer,pos,w,strand,color);
 }
 
-void Read::setPairedRead(PairedRead*t){
-	m_pairedRead=t;
-}
-
 bool Read::hasPairedRead()const{
-	return m_pairedRead!=NULL;
+	return m_type!=TYPE_SINGLE_END;
 }
 
-PairedRead*Read::getPairedRead()const{
-	return m_pairedRead;
+PairedRead*Read::getPairedRead(){
+	if(m_type==TYPE_SINGLE_END){
+		return NULL;
+	}
+	return &m_pairedRead;
 }
 
 uint8_t*Read::getRawSequence(){
@@ -184,4 +183,16 @@ int Read::getRequiredBytes(){
 void Read::setRawSequence(uint8_t*seq,int length){
 	m_sequence=seq;
 	m_length=length;
+}
+
+void Read::setLeftType(){
+	m_type=TYPE_LEFT_END;
+}
+
+void Read::setRightType(){
+	m_type=TYPE_RIGHT_END;
+}
+
+int Read::getType(){
+	return m_type;
 }

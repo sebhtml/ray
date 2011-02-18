@@ -19,6 +19,7 @@
 
 */
 
+#include <Read.h>
 #include <ExtensionElement.h>
 #include <string.h>
 
@@ -54,6 +55,22 @@ void ExtensionElement::setStartingPosition(int a){
 
 void ExtensionElement::setStrand(char a){
 	m_strand=a;
+}
+
+void ExtensionElement::setType(int a){
+	m_type=a;
+}
+
+bool ExtensionElement::isLeftEnd(){
+	return m_type==TYPE_LEFT_END;
+}
+
+bool ExtensionElement::isRightEnd(){
+	return m_type==TYPE_RIGHT_END;
+}
+
+int ExtensionElement::getType(){
+	return m_type;
 }
 
 void ExtensionElement::setPairedRead(PairedRead a){

@@ -153,9 +153,11 @@ void OpenAssemblerChooser::chooseWithCoverage(ExtensionData*ed,int minCoverage,v
 		int singleReadsI=ed->m_EXTENSION_readPositionsForVertices[key].size();
 
 		// in less than 10% of the coverage is supported by displayed reads, abort it...
+		/*
 		if(singleReadsI*10 < coverageForI){
 			continue;
 		}
+		*/
 
 		for(int j=0;j<(int)ed->m_enumerateChoices_outgoingEdges.size();j++){
 			if(i==j){

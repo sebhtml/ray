@@ -32,14 +32,19 @@
 #include<PairedRead.h>
 using namespace std;
 
+#define TYPE_SINGLE_END 0
+#define TYPE_LEFT_END 1
+#define TYPE_RIGHT_END 2
+
 /*
  * a read is represented as a char*
  * and a (possible) link to paired information.
  */
 class Read{
 	uint8_t *m_sequence;
-	PairedRead*m_pairedRead;// the read on the left
+	PairedRead m_pairedRead;// the read on the left
 	uint16_t m_length;
+	uint8_t m_type;
 
 	char*trim(char*a,const char*b);
 public:
@@ -47,12 +52,14 @@ public:
 	void getSeq(char*buffer)const;
 	int length()const;
 	uint64_t getVertex(int pos,int w,char strand,bool color)const;
-	void setPairedRead(PairedRead*t);
 	bool hasPairedRead()const;
-	PairedRead*getPairedRead()const;
+	PairedRead*getPairedRead();
 	uint8_t*getRawSequence();
 	int getRequiredBytes();
 	void setRawSequence(uint8_t*seq,int length);
+	void setRightType();
+	void setLeftType();
+	int getType();
 }
 #ifdef FORCE_PACKING
 __attribute__((__packed__))
