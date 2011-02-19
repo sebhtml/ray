@@ -58,8 +58,9 @@ AR = ar
 ARFLAGS = cru
 libRay_a_AR = $(AR) $(ARFLAGS)
 libRay_a_LIBADD =
-am__libRay_a_SOURCES_DIST = VertexData.h VertexData.cpp VertexTable.h \
-	VertexTable.cpp GridTable.h GridTable.cpp GridTableIterator.h \
+am__libRay_a_SOURCES_DIST = IndexerWorker.h IndexerWorker.cpp \
+	VertexData.h VertexData.cpp VertexTable.h VertexTable.cpp \
+	GridTable.h GridTable.cpp GridTableIterator.h \
 	GridTableIterator.cpp ReusableMemoryStore.h \
 	ReusableMemoryStore.cpp ExtensionElement.h \
 	ExtensionElement.cpp VirtualCommunicator.h \
@@ -97,17 +98,17 @@ am__libRay_a_SOURCES_DIST = VertexData.h VertexData.cpp VertexTable.h \
 @HAVE_ZLIB_TRUE@am__objects_1 = FastqGzLoader.$(OBJEXT)
 @HAVE_BZ2_TRUE@am__objects_2 = FastqBz2Loader.$(OBJEXT) \
 @HAVE_BZ2_TRUE@	BzReader.$(OBJEXT)
-am_libRay_a_OBJECTS = VertexData.$(OBJEXT) VertexTable.$(OBJEXT) \
-	GridTable.$(OBJEXT) GridTableIterator.$(OBJEXT) \
-	ReusableMemoryStore.$(OBJEXT) ExtensionElement.$(OBJEXT) \
-	VirtualCommunicator.$(OBJEXT) SeedWorker.$(OBJEXT) \
-	MemoryConsumptionReducer.$(OBJEXT) MyForestIterator.$(OBJEXT) \
-	crypto.$(OBJEXT) EarlyStoppingTechnology.$(OBJEXT) \
-	ArrayOfReads.$(OBJEXT) RingAllocator.$(OBJEXT) \
-	StaticVector.$(OBJEXT) MessagesHandler.$(OBJEXT) \
-	SeedingData.$(OBJEXT) Library.$(OBJEXT) FastaLoader.$(OBJEXT) \
-	FastqLoader.$(OBJEXT) BubbleTool.$(OBJEXT) \
-	BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
+am_libRay_a_OBJECTS = IndexerWorker.$(OBJEXT) VertexData.$(OBJEXT) \
+	VertexTable.$(OBJEXT) GridTable.$(OBJEXT) \
+	GridTableIterator.$(OBJEXT) ReusableMemoryStore.$(OBJEXT) \
+	ExtensionElement.$(OBJEXT) VirtualCommunicator.$(OBJEXT) \
+	SeedWorker.$(OBJEXT) MemoryConsumptionReducer.$(OBJEXT) \
+	MyForestIterator.$(OBJEXT) crypto.$(OBJEXT) \
+	EarlyStoppingTechnology.$(OBJEXT) ArrayOfReads.$(OBJEXT) \
+	RingAllocator.$(OBJEXT) StaticVector.$(OBJEXT) \
+	MessagesHandler.$(OBJEXT) SeedingData.$(OBJEXT) \
+	Library.$(OBJEXT) FastaLoader.$(OBJEXT) FastqLoader.$(OBJEXT) \
+	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	DepthFirstSearchData.$(OBJEXT) Direction.$(OBJEXT) \
@@ -236,11 +237,11 @@ top_srcdir = @top_srcdir@
 AM_CXXFLAGS = -O3 -Wall
 LDADD = ""
 noinst_LIBRARIES = libRay.a
-libRay_a_SOURCES = VertexData.h VertexData.cpp VertexTable.h \
-	VertexTable.cpp GridTable.h GridTable.cpp GridTableIterator.h \
-	GridTableIterator.cpp ReusableMemoryStore.h \
-	ReusableMemoryStore.cpp ExtensionElement.h \
-	ExtensionElement.cpp VirtualCommunicator.h \
+libRay_a_SOURCES = IndexerWorker.h IndexerWorker.cpp VertexData.h \
+	VertexData.cpp VertexTable.h VertexTable.cpp GridTable.h \
+	GridTable.cpp GridTableIterator.h GridTableIterator.cpp \
+	ReusableMemoryStore.h ReusableMemoryStore.cpp \
+	ExtensionElement.h ExtensionElement.cpp VirtualCommunicator.h \
 	VirtualCommunicator.cpp SeedWorker.h SeedWorker.cpp \
 	MemoryConsumptionReducer.h MemoryConsumptionReducer.cpp \
 	MyForestIterator.cpp MyForestIterator.h crypto.cpp crypto.h \
@@ -381,6 +382,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FusionData.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/GridTable.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/GridTableIterator.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/IndexerWorker.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Library.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Loader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Machine.Po@am__quote@

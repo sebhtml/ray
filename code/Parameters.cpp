@@ -773,3 +773,11 @@ void Parameters::setSeedCoverage(int a){
 int Parameters::getSeedCoverage(){
 	return m_seedCoverage;
 }
+
+int Parameters::getMinimumCoverage(){
+	return m_minimumCoverage;
+}
+
+void Parameters::setMinimumCoverage(int a){
+	m_minimumCoverage=a;
+}

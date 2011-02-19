@@ -36,7 +36,10 @@ class ExtensionElement{
 	char*m_readSequence;
 	PairedRead m_pairedRead;
 	uint8_t m_type;
+	uint8_t m_strandPosition;
 public:
+	void setStrandPosition(int a);
+	int getStrandPosition();
 	void setStartingPosition(int a);
 	void setStrand(char a);
 	void setPairedRead(PairedRead a);

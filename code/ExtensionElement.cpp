@@ -77,3 +77,11 @@ void ExtensionElement::setPairedRead(PairedRead a){
 	m_pairedRead=a;
 	m_hasPairedRead=true;
 }
+
+void ExtensionElement::setStrandPosition(int a){
+	m_strandPosition=a;
+}
+
+int ExtensionElement::getStrandPosition(){
+	return m_strandPosition;
+}

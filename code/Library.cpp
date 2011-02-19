@@ -75,6 +75,7 @@ void Library::detectDistances(){
 		m_seedingData->m_SEEDING_i++;
 		(*m_readsPositions).clear();
 		m_readsStrands.clear();
+		m_strandPositions.clear();
 		#ifdef ASSERT
 		assert((*m_readsPositions).size()==0);
 		#endif
@@ -136,16 +137,19 @@ void Library::detectDistances(){
 									uint64_t uniqueReadIdentifier=m_ed->m_EXTENSION_pairedRead.getUniqueId();
 									if((*m_readsPositions).count(uniqueReadIdentifier)>0){
 										int library=m_ed->m_EXTENSION_pairedRead.getLibrary();
+										int rightStrandPosition=annotation.getPositionOnStrand();
 										char rightStrand=annotation.getStrand();
 										char leftStrand=m_readsStrands[uniqueReadIdentifier];
+										int leftStrandPosition=m_strandPositions[uniqueReadIdentifier];
 											
-										if((rightStrand=='R' && leftStrand=='F')
-										||(rightStrand=='F' && leftStrand=='R')){// make sure the orientation is OK
+										if(( leftStrand=='F' && rightStrand=='R' )
+										||(  leftStrand=='R' && rightStrand=='F' )){// make sure the orientation is OK
 											int p1=(*m_readsPositions)[uniqueReadIdentifier];
 											
 										
 											int p2=m_ed->m_EXTENSION_currentPosition;
-											int d=p2-p1+m_ed->m_EXTENSION_receivedLength;
+											int d=p2-p1+m_ed->m_EXTENSION_receivedLength+leftStrandPosition-rightStrandPosition;
+											//cout<<"d="<<d<<" lId="<<annotation.getUniqueId()<<" rId="<<uniqueReadIdentifier<<" pLeft="<<p1<<" pRight="<<p2<<" lStrand="<<leftStrand<<" rStrand="<<rightStrand<<" leftStrandPos="<<leftStrandPosition<<" rightStrandPos="<<rightStrandPosition<<" RightLength="<<m_ed->m_EXTENSION_receivedLength<<endl;
 											(m_libraryDistances)[library][d]++;
 											m_detectedDistances++;
 										}
@@ -173,9 +177,12 @@ void Library::detectDistances(){
 					uint64_t uniqueId=m_ed->m_EXTENSION_receivedReads[i].getUniqueId();
 					int position=m_ed->m_EXTENSION_currentPosition;
 					char strand=m_ed->m_EXTENSION_receivedReads[i].getStrand();
+					int strandPosition=m_ed->m_EXTENSION_receivedReads[i].getPositionOnStrand();
 					// read, position, strand
 					(*m_readsPositions)[uniqueId]=position;
 					m_readsStrands[uniqueId]=strand;
+					m_strandPositions[uniqueId]=strandPosition;
+					//cout<<"Read Id="<<uniqueId<<" Strand="<<strand<<" StrandPosition="<<strandPosition<<" PositionOnSeed="<<position<<endl;
 				}
 
 				m_ed->m_EXTENSION_currentPosition++;

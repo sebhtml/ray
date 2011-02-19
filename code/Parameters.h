@@ -52,7 +52,7 @@ class Parameters{
 	int m_libraryAverageLength[MAXIMUM_NUMBER_OF_LIBRARIES];
 	int m_libraryDeviation[MAXIMUM_NUMBER_OF_LIBRARIES];
 	int m_numberOfLibraries;
-
+	int m_minimumCoverage;
 	bool m_error;
 	string m_prefix;
 	bool m_amos;
@@ -135,6 +135,8 @@ public:
 	int getMaximumDistance();
 	uint64_t getGlobalIdFromRankAndLocalId(int rank,int id);
 	int getMaximumAllowedCoverage();
+	int getMinimumCoverage();
+	void setMinimumCoverage(int a);
 };
 
 #endif

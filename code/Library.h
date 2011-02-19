@@ -51,6 +51,7 @@ class Library{
 	ExtensionData*m_ed;
 	map<uint64_t,int>*m_readsPositions;
 	map<uint64_t,char> m_readsStrands;
+	map<uint64_t,uint16_t> m_strandPositions;
 	RingAllocator*m_outboxAllocator;
 	int m_size;
 	TimePrinter*m_timePrinter;

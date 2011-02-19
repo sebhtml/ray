@@ -298,7 +298,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				assert(element!=NULL);
 				#endif
 				int startPosition=element->getPosition();
-				int distance=ed->m_EXTENSION_extension->size()-startPosition;
+				int distance=ed->m_EXTENSION_extension->size()-startPosition+element->getStrandPosition();
 
 				//int coverageForRightRead=ed->m_extensionCoverageValues->at(startPosition);
 				int repeatValueForRightRead=ed->m_repeatedValues->at(startPosition);
@@ -358,7 +358,8 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 
 						//int coverageForLeftRead=ed->m_extensionCoverageValues->at(startingPositionOnPath);
 						int repeatLengthForLeftRead=ed->m_repeatedValues->at(startingPositionOnPath);
-						int observedFragmentLength=(startPosition-startingPositionOnPath)+ed->m_EXTENSION_receivedLength;
+						int observedFragmentLength=(startPosition-startingPositionOnPath)+ed->m_EXTENSION_receivedLength+extensionElement->getStrandPosition()-element->getStrandPosition();
+						//cout<<"Observed="<<observedFragmentLength<<endl;
 						int multiplier=3;
 
 						//int theDistance=startPosition-startingPositionOnPath;
@@ -884,6 +885,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 							int startPosition=ed->m_EXTENSION_extension->size()-1;
 							element->setStartingPosition(startPosition);
 							element->setStrand(annotation.getStrand());
+							element->setStrandPosition(annotation.getPositionOnStrand());
 							element->setType(ed->m_readType);
 							ed->m_EXTENSION_readsInRange->insert(uniqueId);
 

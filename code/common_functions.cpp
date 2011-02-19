@@ -264,7 +264,7 @@ string addLineBreaks(string dna){
 	return output.str();
 }
 
-#define MALLOC_DEBUG
+//#define MALLOC_DEBUG
 void*__Malloc(int c){
 	void*a=NULL;
 	a=malloc(c);

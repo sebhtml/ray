@@ -35,13 +35,15 @@ class ReadAnnotation{
 	ReadAnnotation*m_next;
 	uint32_t m_readIndex;
 	uint16_t m_rank;
+	uint16_t m_positionOnStrand;
 	char m_strand;
 	bool m_lower;
 public:
-	void constructor(int a,int b,char c,bool lower);
+	void constructor(int a,int b,int positionOnStrand,char c,bool lower);
 	bool isLower();
 	int getRank()const;
 	int getReadIndex()const;
+	int getPositionOnStrand()const;
 	char getStrand()const;
 	ReadAnnotation*getNext()const;
 	void setNext(ReadAnnotation*a);

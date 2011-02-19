@@ -118,13 +118,6 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		if(isValidDNA(memory)){
 			uint64_t a=wordId(memory);
 
-			#ifdef ASSERT
-			bool hit=false;
-			if(idToWord(a,wordSize)=="GGTAGAGGAAAATGTTGCCAC"){
-				hit=true;
-			}
-			#endif
-
 			int rankToFlush=0;
 
 			rankToFlush=vertexRank(a,size,wordSize);

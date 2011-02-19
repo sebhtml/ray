@@ -24,12 +24,17 @@
 #include<cstdlib>
 #include<common_functions.h>
 
-void ReadAnnotation::constructor(int rank,int readIndex,char c,bool lower){
+void ReadAnnotation::constructor(int rank,int readIndex,int positionOnStrand,char c,bool lower){
 	m_lower=lower;
 	m_rank=rank;
+	m_positionOnStrand=positionOnStrand;
 	m_readIndex=readIndex;
 	m_next=NULL; // xor on the next.
 	m_strand=c;
+}
+
+int ReadAnnotation::getPositionOnStrand()const{
+	return m_positionOnStrand;
 }
 
 char ReadAnnotation::getStrand()const{

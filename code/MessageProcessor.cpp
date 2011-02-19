@@ -553,6 +553,7 @@ void MessageProcessor::call_RAY_MPI_TAG_SEND_COVERAGE_VALUES(Message*message){
 	m_oa->constructor((*m_peakCoverage));
 	parameters->setPeakCoverage(*m_peakCoverage);
 	parameters->setSeedCoverage(*m_seedCoverage);
+	parameters->setMinimumCoverage(*m_minimumCoverage);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_READY_TO_SEED(Message*message){
@@ -912,7 +913,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
 	uint64_t*incoming=(uint64_t*)buffer;
-	for(int i=0;i<count;i+=4){
+	for(int i=0;i<count;i+=5){
 		m_count++;
 		uint64_t vertex=incoming[i+0];
 /*
@@ -925,7 +926,8 @@ void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message){
 		bool lower=vertex<complement;
 		int rank=incoming[i+1];
 		int sequenceIdOnDestination=(int)incoming[i+2];
-		char strand=(char)incoming[i+3];
+		int positionOnStrand=incoming[i+3];
+		char strand=(char)incoming[i+4];
 		Vertex*node=m_subgraph->find(vertex);
 		if(node==NULL){
 			continue;
@@ -934,7 +936,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message){
 		#ifdef ASSERT
 		assert(e!=NULL);
 		#endif
-		e->constructor(rank,sequenceIdOnDestination,strand,lower);
+		e->constructor(rank,sequenceIdOnDestination,positionOnStrand,strand,lower);
 
 		m_subgraph->addRead(vertex,e);
 	}
@@ -952,11 +954,11 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS(Message*message){
 	int count=message->getCount();
 
 	// keep 3 for the sentinels or the pointer. + 1 for the vertex
-	int maxToProcess=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)-3-1;
-	maxToProcess=maxToProcess-maxToProcess%3;
+	int maxToProcess=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)-4-1;
+	maxToProcess=maxToProcess-maxToProcess%4;
 	
 	#ifdef ASSERT
-	assert(maxToProcess%3==0);
+	assert(maxToProcess%4==0);
 	#endif
 
 	ReadAnnotation*e=NULL;
@@ -979,7 +981,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS(Message*message){
 		e=m_subgraph->getReads(vertex);
 		
 		#ifdef ASSERT
-		assert(maxToProcess%3==0);
+		assert(maxToProcess%4==0);
 		#endif
 
 		// send a maximum of maxToProcess individually
@@ -988,9 +990,10 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS(Message*message){
 		message2[j++]=m_sentinelValue;
 		message2[j++]=0;
 		message2[j++]=m_sentinelValue;
+		message2[j++]=m_sentinelValue;
 		
 		#ifdef ASSERT
-		assert(j==3);
+		assert(j==4);
 		#endif
 
 	// use the pointer provided, count is 2, but only the first element is good.
@@ -1017,7 +1020,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS(Message*message){
 			cout<<"Error : rank="<<e->getRank()<<" Strand="<<e->getStrand()<<endl;
 		}
 		assert(e->getRank()<size);
-		assert(j<=(maxToProcess-3));
+		assert(j<=(maxToProcess-4));
 		assert(e->getStrand()=='F'||e->getStrand()=='R');
 		assert((uint64_t)e->getReadIndex()!=m_sentinelValue);
 		#endif
@@ -1026,14 +1029,15 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS(Message*message){
 			//cout<<"appending"<<endl;
 			message2[j++]=e->getRank();
 			message2[j++]=e->getReadIndex();
+			message2[j++]=e->getPositionOnStrand();
 			message2[j++]=e->getStrand();
 		}
 		//cout<<"next"<<endl;
 		e=e->getNext();
 
 		#ifdef ASSERT
-		assert(j%3==0);
-		assert(j<=maxToProcess+3);
+		assert(j%4==0);
+		assert(j<=maxToProcess+4);
 		#endif
 	}
 	if(e==NULL){
@@ -1041,10 +1045,11 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS(Message*message){
 		message2[j++]=m_sentinelValue;
 		message2[j++]=m_sentinelValue;
 		message2[j++]=m_sentinelValue;
+		message2[j++]=m_sentinelValue;
 		//cout<<"DONE "<<endl;
 		cout.flush();
 		#ifdef ASSERT
-		assert(j%3==0);
+		assert(j%4==0);
 		#endif
 		message2[j++]=vertex;
 	}else{
@@ -1053,7 +1058,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS(Message*message){
 		//cout<<"SET PTR="<<(uint64_t)e<<endl;
 		cout.flush();
 		#ifdef ASSERT
-		assert(j%3==1);
+		assert(j%4==1);
 		#endif
 		message2[j++]=vertex;
 	}
@@ -1065,17 +1070,17 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS_REPLY(Message*message){
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
 	int count=message->getCount();
-	int count3=count-(count%3);
+	int count3=count-(count%4);
 	uint64_t vertex=incoming[count-1];
 	uint64_t complement=complementVertex_normal(vertex,*m_wordSize);
 	bool lower=vertex<complement;
 
 	#ifdef ASSERT
-	assert(count3%3==0);
+	assert(count3%4==0);
 	assert(incoming!=NULL);
 	#endif
 
-	for(int i=0;i<count3;i+=3){
+	for(int i=0;i<count3;i+=4){
 		// beginning of transmission, s,0,s
 		if(incoming[i+0]==m_sentinelValue 
 		&& incoming[i+1]==0
@@ -1101,7 +1106,8 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS_REPLY(Message*message){
 
 			int theRank=incoming[i];
 			int index=incoming[i+1];
-			char strand=incoming[i+2];
+			int strandPosition=incoming[i+2];
+			char strand=incoming[i+3];
 
 			#ifdef ASSERT
 			assert(theRank>=0);
@@ -1110,7 +1116,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS_REPLY(Message*message){
 			#endif
 
 			ReadAnnotation e;
-			e.constructor(theRank,index,strand,lower);
+			e.constructor(theRank,index,strandPosition,strand,lower);
 			m_ed->m_EXTENSION_receivedReads.push_back(e);
 		}
 	}
