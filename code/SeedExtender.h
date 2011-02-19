@@ -63,6 +63,8 @@ class SeedExtender{
 	void inspect(ExtensionData*ed,uint64_t*currentVertex);
 
 	void removeUnfitLibraries();
+
+	void setFreeUnmatedPairedReads();
 public:
 	bool m_sequenceReceived;
 	bool m_sequenceRequested;

@@ -37,6 +37,8 @@ void ExtensionData::createStructures(){
 	m_extensionCoverageValues=new vector<int>;
 	m_EXTENSION_coverages=new vector<int>;
 	m_EXTENSION_readsInRange=new set<uint64_t>;
+	m_expirations=new map<int,vector<uint64_t> >;
+	m_pairedReadsWithoutMate=new set<uint64_t>;
 	for(int i=0;i<m_numberOfBins;i++){
 		m_database[i].constructor();
 	}
@@ -48,6 +50,8 @@ void ExtensionData::destroyStructures(){
 	delete m_repeatedValues;
 	delete m_EXTENSION_coverages;
 	delete m_EXTENSION_readsInRange;
+	delete m_pairedReadsWithoutMate;
+	delete m_expirations;
 
 	for(int i=0;i<m_numberOfBins;i++){
 		m_database[i].clear();

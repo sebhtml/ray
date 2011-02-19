@@ -28,7 +28,7 @@
 #include<BubbleTool.h>
 
 // uncomment to display how Ray chooses things.
-//#define SHOW_CHOICE
+#define SHOW_CHOICE
 
 void debugMessage(int source,int destination,string message){
 	cout<<"Microseconds: "<<getMicroSeconds()<<" Source: "<<source<<" Destination: "<<destination<<" Message: "<<message<<endl;
@@ -294,6 +294,9 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				uint64_t uniqueId=*(ed->m_EXTENSION_readIterator);
 				//cout<<"Iterating on reads "<<uniqueId<<endl;
 				ExtensionElement*element=ed->getUsedRead(uniqueId);
+				#ifdef ASSERT
+				assert(element!=NULL);
+				#endif
 				int startPosition=element->getPosition();
 				int distance=ed->m_EXTENSION_extension->size()-startPosition;
 
@@ -336,14 +339,14 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 
 					ed->m_EXTENSION_readIterator++;
 				}else{
-					PairedRead pairedRead=element->getPairedRead();
-					uint64_t uniqueReadIdentifier=pairedRead.getUniqueId();
+					PairedRead*pairedRead=element->getPairedRead();
+					uint64_t uniqueReadIdentifier=pairedRead->getUniqueId();
 					int diff=uniqueId-uniqueReadIdentifier;
 					if(uniqueReadIdentifier>uniqueId){
 						diff=uniqueReadIdentifier-uniqueId;
 					}
 					//cout<<"has paired read rightStrand="<<theRightStrand<<" RightId="<<uniqueId<<" LeftId="<<uniqueReadIdentifier<<" Diff="<<diff<<endl;
-					int library=pairedRead.getLibrary();
+					int library=pairedRead->getLibrary();
 					int expectedFragmentLength=m_parameters->getLibraryAverageLength(library);
 					int expectedDeviation=m_parameters->getLibraryStandardDeviation(library);
 					//bool leftReadIsLeftInThePair=pairedRead.isLeftRead();
@@ -398,6 +401,9 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 
 						// free the sequence
 						ExtensionElement*element=ed->getUsedRead(uniqueId);
+						#ifdef ASSERT
+						assert(element!=NULL);
+						#endif
 						char*read=element->getSequence();
 						ed->getAllocator()->getStore()->addAddressToReuse(read,strlen(read)+1);
 					}
@@ -410,16 +416,25 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 					removeUnfitLibraries();
 					//cout<<"done."<<endl;
 					m_removedUnfitLibraries=true;
+					//cout<<"PairedReadsWithoutMate="<<m_ed->m_pairedReadsWithoutMate->size()<<endl;
+					setFreeUnmatedPairedReads();
 					return;
 				}
 
 				if(!ed->m_sequencesToFree.empty()){
 					for(int i=0;i<(int)ed->m_sequencesToFree.size();i++){
 						uint64_t uniqueId=ed->m_sequencesToFree[i];
-						//cout<<"Removing "<<uniqueId<<endl;
-
+						//cout<<"Removing "<<uniqueId<<"  now="<<m_ed->m_EXTENSION_extension->size()-1<<endl;
+						m_ed->m_pairedReadsWithoutMate->erase(uniqueId);
 						// free the sequence
-						char*read=ed->getUsedRead(uniqueId)->getSequence();
+						ExtensionElement*element=ed->getUsedRead(uniqueId);
+						#ifdef ASSERT
+						if(element==NULL){
+							cout<<"element "<<uniqueId<<" not found now="<<m_ed->m_EXTENSION_extension->size()-1<<""<<endl;
+						}
+						assert(element!=NULL);
+						#endif
+						char*read=element->getSequence();
 						ed->getAllocator()->getStore()->addAddressToReuse(read,strlen(read)+1);
 
 						// remove it
@@ -852,13 +867,13 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 						outbox->push_back(aMessage);
 					}else if(m_sequenceReceived){
 						bool addRead=true;
-						if(m_repeatLength>0){
+						if(ed->m_currentCoverage>3*m_parameters->getPeakCoverage()){
 							// the vertex is repeated
 							if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
 								uint64_t mateId=ed->m_EXTENSION_pairedRead.getUniqueId();
 								// the mate is required to allow proper placement
 								if(ed->getUsedRead(mateId)==NULL){
-									addRead=false;
+									//addRead=false;
 									//cout<<"Not using read: coverage="<<ed->m_currentCoverage<<" peak="<<m_parameters->getPeakCoverage()<<endl;
 								}
 							}
@@ -866,7 +881,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 						if(addRead){
 							ExtensionElement*element=ed->addUsedRead(uniqueId);
 							element->setSequence(m_receivedString.c_str(),ed->getAllocator());
-							element->setStartingPosition(ed->m_EXTENSION_extension->size()-1);
+							int startPosition=ed->m_EXTENSION_extension->size()-1;
+							element->setStartingPosition(startPosition);
 							element->setStrand(annotation.getStrand());
 							element->setType(ed->m_readType);
 							ed->m_EXTENSION_readsInRange->insert(uniqueId);
@@ -874,6 +890,20 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 							// received paired read too !
 							if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
 								element->setPairedRead(ed->m_EXTENSION_pairedRead);
+								uint64_t mateId=ed->m_EXTENSION_pairedRead.getUniqueId();
+								if(ed->getUsedRead(mateId)==NULL){// the mate has not shown up yet
+									ed->m_pairedReadsWithoutMate->insert(uniqueId);
+
+									int library=ed->m_EXTENSION_pairedRead.getLibrary();
+									int expectedFragmentLength=m_parameters->getLibraryAverageLength(library);
+									int expectedDeviation=m_parameters->getLibraryStandardDeviation(library);
+									int expiration=startPosition+expectedFragmentLength+3*expectedDeviation;
+
+									//cout<<"adding expiration Now="<<startPosition<<" Expiration="<<expiration<<" Id="<<uniqueId<<endl;
+									(*ed->m_expirations)[expiration].push_back(uniqueId);
+								}else{ // the mate has shown up already and was waiting
+									ed->m_pairedReadsWithoutMate->erase(mateId);
+								}
 							}
 						}
 
@@ -999,4 +1029,19 @@ void SeedExtender::removeUnfitLibraries(){
 		}
 		m_ed->m_EXTENSION_pairedReadPositionsForVertices[vertex]=acceptedValues;
 	}
+}
+
+void SeedExtender::setFreeUnmatedPairedReads(){
+	if(m_ed->m_expirations->count(m_ed->m_EXTENSION_extension->size())==0){
+		return;
+	}
+	vector<uint64_t>*expired=&(*m_ed->m_expirations)[m_ed->m_EXTENSION_extension->size()];
+	for(int i=0;i<(int)expired->size();i++){
+		uint64_t readId=expired->at(i);
+		if(m_ed->m_pairedReadsWithoutMate->count(readId)>0){
+			m_ed->m_sequencesToFree.push_back(readId); // RECYCLING IS desactivated
+			//cout<<"Expired: Now="<<m_ed->m_EXTENSION_extension->size()-1<<" Id="<<readId<<endl;
+		}
+	}
+	m_ed->m_expirations->erase(m_ed->m_EXTENSION_extension->size());
 }

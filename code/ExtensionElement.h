@@ -45,7 +45,7 @@ public:
 	void setSequence(const char*a,MyAllocator*b);
 	int getPosition();
 	char getStrand();
-	PairedRead getPairedRead();
+	PairedRead*getPairedRead();
 	char*getSequence();
 	bool isLeftEnd();
 	bool isRightEnd();

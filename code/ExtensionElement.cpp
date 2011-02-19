@@ -45,8 +45,8 @@ bool ExtensionElement::hasPairedRead(){
 	return m_hasPairedRead;
 }
 
-PairedRead ExtensionElement::getPairedRead(){
-	return m_pairedRead;
+PairedRead*ExtensionElement::getPairedRead(){
+	return &m_pairedRead;
 }
 
 void ExtensionElement::setStartingPosition(int a){

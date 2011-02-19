@@ -110,6 +110,8 @@ public:
 	int m_currentCoverage;
 
 	set<uint64_t>*m_EXTENSION_readsInRange;
+	set<uint64_t>*m_pairedReadsWithoutMate;
+	map<int,vector<uint64_t> >*m_expirations;
 
 	void resetStructures();
 	ExtensionElement*getUsedRead(uint64_t a);
