@@ -82,7 +82,7 @@ using namespace std;
  * this is the type used to store coverage values
  * default is 8 bits, unsigned.
  */
-#define COVERAGE_TYPE uint8_t
+#define COVERAGE_TYPE uint16_t
 
 /*
  *  complement the sequence of a biological thing

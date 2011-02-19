@@ -28,7 +28,7 @@
 #include<BubbleTool.h>
 
 // uncomment to display how Ray chooses things.
-#define SHOW_CHOICE
+//#define SHOW_CHOICE
 
 void debugMessage(int source,int destination,string message){
 	cout<<"Microseconds: "<<getMicroSeconds()<<" Source: "<<source<<" Destination: "<<destination<<" Message: "<<message<<endl;
@@ -175,7 +175,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				(*receivedVertexCoverage)=(*m_cache)[(*receivedOutgoingEdges)[(*outgoingEdgeIndex)]];
 
 				#ifdef ASSERT
-				assert((*receivedVertexCoverage)<=255);
+				assert((*receivedVertexCoverage)<=m_parameters->getMaximumAllowedCoverage());
 				#endif
 			}else if(!(*vertexCoverageRequested)){
 				uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
@@ -191,7 +191,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				(*outgoingEdgeIndex)++;
 				(*vertexCoverageRequested)=false;
 				#ifdef ASSERT
-				assert((*receivedVertexCoverage)<=255);
+				assert((*receivedVertexCoverage)<=m_parameters->getMaximumAllowedCoverage());
 				#endif
 				ed->m_EXTENSION_coverages->push_back((*receivedVertexCoverage));
 			}
@@ -801,7 +801,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 
 				ed->m_repeatedValues->push_back(m_repeatLength);
 				#ifdef ASSERT
-				assert(ed->m_currentCoverage<=255);
+				assert(ed->m_currentCoverage<=m_parameters->getMaximumAllowedCoverage());
 				#endif
 
 				// save wave progress.
@@ -952,7 +952,7 @@ void SeedExtender::inspect(ExtensionData*ed,uint64_t*currentVertex){
 	cout<<"*****************************************"<<endl;
 	cout<<"CurrentVertex="<<idToWord(*currentVertex,wordSize)<<" @"<<ed->m_EXTENSION_extension->size()<<endl;
 	#ifdef ASSERT
-	assert(ed->m_currentCoverage<=255);
+	assert(ed->m_currentCoverage<=m_parameters->getMaximumAllowedCoverage());
 	#endif
 	cout<<"Coverage="<<ed->m_currentCoverage<<endl;
 	cout<<" # ReadsInRange: "<<ed->m_EXTENSION_readsInRange->size()<<endl;

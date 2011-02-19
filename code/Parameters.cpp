@@ -643,11 +643,18 @@ void Parameters::printFinalMessage(){
 	}
 }
 
+int Parameters::getMaximumAllowedCoverage(){
+	COVERAGE_TYPE a=0;
+	a--;
+	return a;
+}
+
 void Parameters::setPeakCoverage(int a){
+	int max=getMaximumAllowedCoverage();
 	m_peakCoverage=a;
 	m_maxCoverage=2*m_peakCoverage;
-	if(m_maxCoverage>255){
-		m_maxCoverage=255;
+	if(m_maxCoverage>max){
+		m_maxCoverage=max;
 	}
 }
 
