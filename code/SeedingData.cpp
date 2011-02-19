@@ -227,12 +227,12 @@ void SeedingData::computeSeeds(){
 
 void SeedingData::constructor(SeedExtender*seedExtender,int rank,int size,StaticVector*outbox,RingAllocator*outboxAllocator,int*seedCoverage,int*mode,
 	Parameters*parameters,int*wordSize,GridTable*subgraph,bool*colorSpaceMode,StaticVector*inbox){
-	m_maximumWorkers=0;
 	m_seedExtender=seedExtender;
 	m_size=size;
 	m_rank=rank;
 	m_outbox=outbox;
 	m_completedJobs=0;
+	m_maximumWorkers=0;
 	m_flushAllMode=false;
 	m_outboxAllocator=outboxAllocator;
 	m_seedCoverage=seedCoverage;

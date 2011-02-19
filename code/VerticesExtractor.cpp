@@ -162,16 +162,6 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			// reverse complement
 			uint64_t b=complementVertex(a,wordSize,m_colorSpaceMode);
 
-			#ifdef ASSERT
-			if(hit){
-				if(!(idToWord(b,wordSize)=="GTGGCAACATTTTCCTCTACC")){
-					cout<<idToWord(a,wordSize)<<" and "<<idToWord(b,wordSize)<<" color="<<m_colorSpaceMode<<endl;
-				}
-				assert(idToWord(b,wordSize)=="GTGGCAACATTTTCCTCTACC");
-			}
-			#endif
-
-
 			rankToFlush=vertexRank(b,size,wordSize);
 			m_bufferedData.addAt(rankToFlush,b);
 

@@ -32,15 +32,35 @@
 #include<BufferedData.h>
 #include<MyAllocator.h>
 #include<RingAllocator.h>
-#include<Read.h>
-#include<Parameters.h>
+#include <VirtualCommunicator.h>
+#include <Read.h>
+#include <IndexerWorker.h>
+#include <Parameters.h>
 
 class SequencesIndexer{
+	int m_rank;
+	int m_size;
+	Parameters*m_parameters;
 	MyAllocator m_allocator;
 	int m_pendingMessages;
+	int m_completedJobs;
+	int m_maximumAliveWorkers;
+	int m_maximumWorkers;
 
+	VirtualCommunicator m_virtualCommunicator;
+	set<uint64_t> m_activeWorkers;
+	set<uint64_t>::iterator m_activeWorkerIterator;
+	map<uint64_t,IndexerWorker> m_aliveWorkers;
+	bool m_communicatorWasTriggered;
+	vector<uint64_t> m_workersDone;
+	vector<uint64_t> m_waitingWorkers;
+	vector<uint64_t> m_activeWorkersToRestore;
+
+	bool m_initiatedIterator;
 	int m_theSequenceId;
-	BufferedData m_bufferedData;
+
+	void updateStates();
+
 public:
 
 	void attachReads(
@@ -54,7 +74,7 @@ ArrayOfReads*m_myReads,
 				bool m_colorSpaceMode
 );
 
-	void constructor(int size);
+	void constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox);
 	void setReadiness();
 	MyAllocator*getAllocator();
 };

@@ -45,9 +45,7 @@ void ArrayOfReads::push_back(Read*a){
 		#endif
 
 		m_maxSize+=m_CHUNK_SIZE;
-		cout<<"New size="<<m_maxSize<<endl;
 		m_numberOfChunks++;
-		
 		#ifdef ASSERT
 		assert(m_numberOfChunks!=0);
 		#endif

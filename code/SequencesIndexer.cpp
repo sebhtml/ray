@@ -37,94 +37,130 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 				int m_rank,
 				bool m_colorSpaceMode
 			){
-	if(m_pendingMessages!=0){
+	if(!m_initiatedIterator){
+		m_theSequenceId=0;
+
+		m_activeWorkerIterator=m_activeWorkers.begin();
+		m_initiatedIterator=true;
+		m_maximumAliveWorkers=30000;
+	}
+
+	m_virtualCommunicator.processInbox(&m_activeWorkersToRestore);
+
+
+	if(!m_virtualCommunicator.isReady()){
 		return;
 	}
 
-	// when done: call_RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY to root
-	// the tag: RAY_MPI_TAG_ATTACH_SEQUENCE
+	if(m_activeWorkerIterator!=m_activeWorkers.end()){
+		uint64_t workerId=*m_activeWorkerIterator;
+		#ifdef ASSERT
+		assert(m_aliveWorkers.count(workerId)>0);
+		assert(!m_aliveWorkers[workerId].isDone());
+		#endif
+		m_virtualCommunicator.resetLocalPushedMessageStatus();
 
-	if(m_theSequenceId==(int)m_myReads->size()){
-		if(!m_bufferedData.isEmpty()){
-			m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank);
-			return;
+		//cout<<"Rank "<<m_rank<<" Worker="<<workerId<<" work()"<<endl;
+		//
+		//force the worker to work until he finishes or pushes something on the stack
+		while(!m_aliveWorkers[workerId].isDone()&&!m_virtualCommunicator.getLocalPushedMessageStatus()){
+			m_aliveWorkers[workerId].work();
 		}
 
+		if(m_virtualCommunicator.getLocalPushedMessageStatus()){
+			m_waitingWorkers.push_back(workerId);
+		}
+		if(m_aliveWorkers[workerId].isDone()){
+			m_workersDone.push_back(workerId);
+		}
+		m_activeWorkerIterator++;
+	}else{
+		updateStates();
+
+		//  add one worker to active workers
+		//  reason is that those already in the pool don't communicate anymore -- 
+		//  as for they need responses.
+		if(!m_virtualCommunicator.getGlobalPushedMessageStatus()&&m_activeWorkers.empty()){
+			// there is at least one worker to start
+			// AND
+			// the number of alive workers is below the maximum
+			if(m_theSequenceId<(int)m_myReads->size()&&(int)m_aliveWorkers.size()<m_maximumAliveWorkers){
+				if(m_theSequenceId%100000==0){
+					printf("Rank %i is indexing sequence reads [%i/%i]\n",m_rank,m_theSequenceId+1,(int)m_myReads->size());
+					fflush(stdout);
+				}
+
+				#ifdef ASSERT
+				if(m_theSequenceId==0){
+					assert(m_completedJobs==0&&m_activeWorkers.size()==0&&m_aliveWorkers.size()==0);
+				}
+				#endif
+				//SplayNode<uint64_t,Vertex>*node=m_splayTreeIterator.next();
+				//cout<<"Creating worker "<<m_theSequenceId<<endl;
+				char sequence[4000];
+				#ifdef ASSERT
+				assert(m_theSequenceId<(int)m_myReads->size());
+				#endif
+
+				m_myReads->at(m_theSequenceId)->getSeq(sequence);
+
+				m_aliveWorkers[m_theSequenceId].constructor(m_theSequenceId,sequence,m_parameters,m_outboxAllocator,&m_virtualCommunicator,m_theSequenceId);
+				m_activeWorkers.insert(m_theSequenceId);
+				int population=m_aliveWorkers.size();
+				if(population>m_maximumWorkers){
+					m_maximumWorkers=population;
+				}
+
+				m_theSequenceId++;
+			}else{
+				m_virtualCommunicator.forceFlush();
+			}
+		}
+
+		m_activeWorkerIterator=m_activeWorkers.begin();
+	}
+
+	#ifdef ASSERT
+	assert((int)m_aliveWorkers.size()<=m_maximumAliveWorkers);
+	#endif
+
+	if((int)m_myReads->size()==m_completedJobs){
 		printf("Rank %i is indexing sequence reads [%i/%i] (completed)\n",m_rank,(int)m_myReads->size(),(int)m_myReads->size());
 		fflush(stdout);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,m_rank);
 		m_outbox->push_back(aMessage);
-		m_bufferedData.clear();
 
+		m_virtualCommunicator.printStatistics();
 		showMemoryUsage(m_rank);
 
-		return;
-	}
-	#ifdef ASSERT
-	assert(m_theSequenceId<(int)m_myReads->size());
-	#endif
-	char sequence[4000];
-	m_myReads->at(m_theSequenceId)->getSeq(sequence);
-	int theLength=strlen(sequence);
-	if((int)theLength<m_wordSize){
-		m_theSequenceId++;
-		return;
-	}
-	#ifdef ASSERT
-	assert(theLength>=m_wordSize);
-	#endif
-	char vertexChar[100];
-	int posF=0;
-	memcpy(vertexChar,sequence+posF,m_wordSize);
-	vertexChar[m_wordSize]='\0';
-	if(isValidDNA(vertexChar)){
-		uint64_t vertex=wordId(vertexChar);
-		int sendTo=vertexRank(vertex,m_size,m_wordSize);
-		m_bufferedData.addAt(sendTo,vertex);
-		m_bufferedData.addAt(sendTo,m_rank);
-
 		#ifdef ASSERT
-		assert(m_rank<m_size);
-		assert(m_rank>=0);
+		assert(m_aliveWorkers.size()==0);
+		assert(m_activeWorkers.size()==0);
 		#endif
-
-		m_bufferedData.addAt(sendTo,m_theSequenceId);
-		m_bufferedData.addAt(sendTo,posF);
-		m_bufferedData.addAt(sendTo,(uint64_t)'F');
-
-		if(m_bufferedData.flush(sendTo,5,RAY_MPI_TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank,false)){
-			m_pendingMessages++;
-		}
 	}
-
-	int posR=0;
-	memcpy(vertexChar,sequence+strlen(sequence)-posR-(m_wordSize),m_wordSize);
-	vertexChar[m_wordSize]='\0';
-	if(isValidDNA(vertexChar)){
-		uint64_t vertex=complementVertex(wordId(vertexChar),m_wordSize,(m_colorSpaceMode));
-		int sendTo=vertexRank(vertex,m_size,m_wordSize);
-		m_bufferedData.addAt(sendTo,vertex);
-		m_bufferedData.addAt(sendTo,m_rank);
-		m_bufferedData.addAt(sendTo,m_theSequenceId);
-		m_bufferedData.addAt(sendTo,posR);
-		m_bufferedData.addAt(sendTo,(uint64_t)'R');
-		if(m_bufferedData.flush(sendTo,5,RAY_MPI_TAG_ATTACH_SEQUENCE,m_outboxAllocator,m_outbox,m_rank,false)){
-			m_pendingMessages++;
-		}
-	}
-
-	if(m_theSequenceId%100000==0){
-		printf("Rank %i is indexing sequence reads [%i/%i]\n",m_rank,m_theSequenceId+1,(int)m_myReads->size());
-		fflush(stdout);
-	}
-	m_theSequenceId++;
 }
 
-void SequencesIndexer::constructor(int m_size){
+void SequencesIndexer::constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox){
+	m_initiatedIterator=false;
+	m_parameters=parameters;
+	m_rank=parameters->getRank();
+	m_size=parameters->getSize();
 	m_allocator.constructor(4194304);
-	m_bufferedData.constructor(m_size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t));
 	m_pendingMessages=0;
+
+	m_completedJobs=0;
+	m_maximumWorkers=0;
+	m_theSequenceId=0;
+
+	m_virtualCommunicator.constructor(m_rank,m_size,outboxAllocator,inbox,outbox);
+
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_ATTACH_SEQUENCE,RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_ATTACH_SEQUENCE,5);
+
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,1);
+
 }
 
 void SequencesIndexer::setReadiness(){
@@ -133,4 +169,38 @@ void SequencesIndexer::setReadiness(){
 
 MyAllocator*SequencesIndexer::getAllocator(){
 	return &m_allocator;
+}
+
+void SequencesIndexer::updateStates(){
+	// erase completed jobs
+	for(int i=0;i<(int)m_workersDone.size();i++){
+		uint64_t workerId=m_workersDone[i];
+		#ifdef ASSERT
+		assert(m_activeWorkers.count(workerId)>0);
+		assert(m_aliveWorkers.count(workerId)>0);
+		#endif
+		m_activeWorkers.erase(workerId);
+		m_aliveWorkers.erase(workerId);
+		m_completedJobs++;
+	}
+	m_workersDone.clear();
+
+	for(int i=0;i<(int)m_waitingWorkers.size();i++){
+		uint64_t workerId=m_waitingWorkers[i];
+		#ifdef ASSERT
+		assert(m_activeWorkers.count(workerId)>0);
+		#endif
+		m_activeWorkers.erase(workerId);
+		//cout<<"Rank "<<m_rank<<" Worker="<<workerId<<" SET STATE SLEEPY"<<endl;
+	}
+	m_waitingWorkers.clear();
+
+	for(int i=0;i<(int)m_activeWorkersToRestore.size();i++){
+		uint64_t workerId=m_activeWorkersToRestore[i];
+		m_activeWorkers.insert(workerId);
+		//cout<<"Rank "<<m_rank<<" Worker="<<workerId<<" SET STATE ACTIVE"<<endl;
+	}
+	m_activeWorkersToRestore.clear();
+
+	m_virtualCommunicator.resetGlobalPushedMessageStatus();
 }

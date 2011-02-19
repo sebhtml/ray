@@ -19,7 +19,9 @@ MessageProcessor::call_RAY_MPI_TAG_GET_PATH_LENGTH(Message*): Assertion
 vertices of a path are involved with fusions, but the associated path was not
 stored owing too its length that was too short.
 * Grouped messages in finishing fusions.
-
+* The maximum coverage allowed is not 65535 instead of 255.
+* Sequencing indexing in the de Bruijn graph places each read on a 'good'
+vertex.
 
 
 = 1.2.3 'cRAYfish' =

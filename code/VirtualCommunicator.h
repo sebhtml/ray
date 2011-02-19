@@ -141,6 +141,10 @@ public:
 	bool isMessageProcessed(uint64_t workerId);
 	
 	/**
+ *
+ * after calling isMessageProcessed, the worker must retrieve its data with 
+ * getResponseElements, else the whole thing will fail
+ *
  * after reading the response, it is erased from
  * the current object
  * time complexity: log(number of workers)

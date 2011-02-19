@@ -109,11 +109,13 @@ class Machine{
 	int m_size;
 	int m_totalLetters;
 	bool m_alive;
-	bool m_welcomeStep;
 	bool m_loadSequenceStep;
 	char*m_inputFile;
 	int m_sequence_ready_machines;
 	bool m_messageSentForVerticesDistribution;
+
+	bool m_waiting;
+	map<int,uint64_t>::iterator m_coverageIterator;
 
 	Chooser m_c;
 	SequencesIndexer m_si;

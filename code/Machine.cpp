@@ -270,7 +270,6 @@ void Machine::start(){
 		&m_colorSpaceMode,&m_inbox);
 
 	m_alive=true;
-	m_welcomeStep=true;
 	m_loadSequenceStep=false;
 	m_totalLetters=0;
 
@@ -332,7 +331,7 @@ m_seedingData,
 	&m_mode_send_vertices,
 	&m_numberOfMachinesDoneSendingVertices,
 	&m_numberOfMachinesDoneSendingCoverage,
-				&m_outbox,
+				&m_outbox,&m_inbox,
 	&m_sd->m_allIdentifiers,&m_oa,
 	&m_numberOfRanksWithCoverageData,&m_seedExtender,
 	&m_master_mode,&m_isFinalFusion,&m_si);
@@ -701,6 +700,7 @@ void Machine::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
 			//cout<<idToWord(key,m_wordSize)<<endl;
 			//SplayNode<uint64_t,Vertex>*node=iterator.next();
 			int coverage=node->getCoverage(key);
+			//cout<<coverage<<endl;
 			m_distributionOfCoverage[coverage]++;
 			#ifdef ASSERT
 			n++;
@@ -712,24 +712,38 @@ void Machine::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
 		}
 		assert(n==m_subgraph.size());
 		#endif
-	}
+		m_waiting=false;
+		m_coverageIterator=m_distributionOfCoverage.begin();
+	}else if(m_waiting){
+		if(m_inbox.size()>0&&m_inbox[0]->getTag()==RAY_MPI_TAG_COVERAGE_DATA_REPLY){
+			m_waiting=false;
+		}
+	}else{
+		uint64_t*messageContent=(uint64_t*)m_outboxAllocator.allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+		int count=0;
+		int maximumElements=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t);
+		while(count<maximumElements && m_coverageIterator!=m_distributionOfCoverage.end()){
+			int coverage=m_coverageIterator->first;
+			uint64_t numberOfVertices=m_coverageIterator->second;
+			messageContent[count]=coverage;
+			messageContent[count+1]=numberOfVertices;
+			count+=2;
+			m_coverageIterator++;
+		}
 
-	int*data=(int*)m_outboxAllocator.allocate(sizeof(int)*2*m_parameters.getMaxCoverage());
-	int j=0;
-	data[j++]=m_distributionOfCoverage.size();
-	for(map<int,uint64_t>::iterator i=m_distributionOfCoverage.begin();i!=m_distributionOfCoverage.end();i++){
-		int coverage=i->first;
-		uint64_t count=i->second;
-		data[j++]=coverage;
-		data[j++]=count;
+		if(count!=0){
+			Message aMessage(messageContent,count,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_COVERAGE_DATA,getRank());
+			
+			m_outbox.push_back(aMessage);
+			m_waiting=true;
+		}else{
+			m_distributionOfCoverage.clear();
+			m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
+			m_subgraph.buildData();
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_COVERAGE_END,getRank());
+			m_outbox.push_back(aMessage);
+		}
 	}
-	Message aMessage(data,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t), MPI_UNSIGNED_LONG_LONG, MASTER_RANK, RAY_MPI_TAG_COVERAGE_DATA,getRank());
-	m_outbox.push_back(aMessage);
-
-	m_distributionOfCoverage.clear();
-	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
-	
-	m_subgraph.buildData();
 }
 
 void Machine::call_RAY_MASTER_MODE_TRIGGER_SEEDING(){

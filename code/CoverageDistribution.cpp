@@ -19,7 +19,6 @@
 
 */
 
-
 #include<CoverageDistribution.h>
 #include<iostream>
 #include<fstream>

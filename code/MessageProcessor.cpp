@@ -327,7 +327,8 @@ void MessageProcessor::call_RAY_MPI_TAG_WELCOME(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message){
 	(*m_mode)=RAY_SLAVE_MODE_INDEX_SEQUENCES;
-	m_si->constructor(size);
+	m_si->constructor(parameters,m_outboxAllocator,m_inbox,m_outbox);
+	void constructor(int rank,int size,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_SEQUENCES_READY(Message*message){
@@ -522,20 +523,25 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*me
 	(*m_mode)=RAY_SLAVE_MODE_SEND_DISTRIBUTION;
 }
 
+void MessageProcessor::call_RAY_MPI_TAG_COVERAGE_DATA_REPLY(Message*message){
+}
+
 void MessageProcessor::call_RAY_MPI_TAG_COVERAGE_DATA(Message*message){
 	void*buffer=message->getBuffer();
-	int*incoming=(int*)buffer;
-	int count=incoming[0];
+	uint64_t*incoming=(uint64_t*)buffer;
+	int count=message->getCount();
 
-	for(int i=0;i<count;i++){
-		int coverage=incoming[1+2*i+0];
-		uint64_t count=incoming[1+2*i+1];
+	for(int i=0;i<count;i+=2){
+		int coverage=incoming[i];
+		uint64_t count=incoming[i+1];
 		(*m_coverageDistribution)[coverage]+=count;
 	}
-	call_RAY_MPI_TAG_COVERAGE_END(message);
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_COVERAGE_DATA_REPLY,rank);
+	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_COVERAGE_END(Message*message){
+	//cout<<__func__<<" "<<message->getSource()<<endl;
 	(*m_numberOfMachinesDoneSendingCoverage)++;
 	if((*m_numberOfMachinesDoneSendingCoverage)==size){
 		(*m_master_mode)=RAY_MASTER_MODE_SEND_COVERAGE_VALUES;
@@ -787,7 +793,8 @@ void MessageProcessor::call_RAY_MPI_TAG_I_GO_NOW(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS(Message*message){
 	int source=message->getSource();
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,rank);
+	uint64_t*dummy=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	Message aMessage(dummy,5,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -928,6 +935,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message){
 		int sequenceIdOnDestination=(int)incoming[i+2];
 		int positionOnStrand=incoming[i+3];
 		char strand=(char)incoming[i+4];
+		//cout<<__func__<<" Vertex="<<idToWord(vertex,*m_wordSize)<<" ReadRank="<<rank<<" ReadIndexOnRank="<<sequenceIdOnDestination<<" ReadStrandOnVertex="<<strand<<" StrandPositionInRead="<<positionOnStrand<<endl;
 		Vertex*node=m_subgraph->find(vertex);
 		if(node==NULL){
 			continue;
@@ -940,7 +948,8 @@ void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message){
 
 		m_subgraph->addRead(vertex,e);
 	}
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY,rank);
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	Message aMessage(message2,count,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -1798,6 +1807,7 @@ SequencesLoader*sequencesLoader,ExtensionData*ed,
 	int*m_numberOfMachinesDoneSendingVertices,
 	int*m_numberOfMachinesDoneSendingCoverage,
 				StaticVector*m_outbox,
+				StaticVector*m_inbox,
 		map<int,int>*m_allIdentifiers,OpenAssemblerChooser*m_oa,
 int*m_numberOfRanksWithCoverageData,
 SeedExtender*seedExtender,int*m_master_mode,
@@ -1853,6 +1863,7 @@ SequencesIndexer*m_si){
 	this->m_numberOfMachinesDoneSendingVertices=m_numberOfMachinesDoneSendingVertices;
 	this->m_numberOfMachinesDoneSendingCoverage=m_numberOfMachinesDoneSendingCoverage;
 	this->m_outbox=m_outbox;
+	this->m_inbox=m_inbox;
 	this->m_allIdentifiers=m_allIdentifiers,
 	this->m_oa=m_oa;
 	this->m_numberOfRanksWithCoverageData=m_numberOfRanksWithCoverageData;
@@ -1885,6 +1896,7 @@ void MessageProcessor::assignHandlers(){
 	m_methods[RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER]=&MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER;
 	m_methods[RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION]=&MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION;
 	m_methods[RAY_MPI_TAG_COVERAGE_DATA]=&MessageProcessor::call_RAY_MPI_TAG_COVERAGE_DATA;
+	m_methods[RAY_MPI_TAG_COVERAGE_DATA_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_COVERAGE_DATA_REPLY;
 	m_methods[RAY_MPI_TAG_COVERAGE_END]=&MessageProcessor::call_RAY_MPI_TAG_COVERAGE_END;
 	m_methods[RAY_MPI_TAG_SEND_COVERAGE_VALUES]=&MessageProcessor::call_RAY_MPI_TAG_SEND_COVERAGE_VALUES;
 	m_methods[RAY_MPI_TAG_READY_TO_SEED]=&MessageProcessor::call_RAY_MPI_TAG_READY_TO_SEED;

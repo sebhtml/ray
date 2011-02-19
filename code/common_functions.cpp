@@ -266,13 +266,13 @@ string addLineBreaks(string dna){
 
 //#define MALLOC_DEBUG
 void*__Malloc(int c){
+	assert(c!=0);
 	void*a=NULL;
 	a=malloc(c);
 	if(a==NULL){
 		cout<<"Critical exception: The system is out of memory, returned NULL."<<endl;
 	}
 	assert(a!=NULL);
-	assert(c!=0);
 
 	#ifdef MALLOC_DEBUG
 	printf("%s %i %s %i bytes, ret %p\n",__FILE__,__LINE__,__func__,c,a);
@@ -379,7 +379,7 @@ int vertexRank(uint64_t a,int _size,int w){
 	return hash_function_1(a,w)%(_size);
 }
 
-uint64_t kmerAtPosition(char*m_sequence,int pos,int w,char strand,bool color){
+uint64_t kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool color){
 	int length=strlen(m_sequence);
 	if(pos>length-w){
 		cout<<"Fatal: offset is too large."<<endl;
@@ -390,18 +390,16 @@ uint64_t kmerAtPosition(char*m_sequence,int pos,int w,char strand,bool color){
 		exit(0);
 	}
 	if(strand=='F'){
-		char*sequence=m_sequence+pos;
-		char tmp=sequence[w];
+		char sequence[100];
+		memcpy(sequence,m_sequence+pos,w);
 		sequence[w]='\0';
 		uint64_t v=wordId(sequence);
-		sequence[w]=tmp;
 		return v;
 	}else if(strand=='R'){
-		char*sequence=m_sequence+length-pos-w;
-		char tmp=sequence[w];
+		char sequence[100];
+		memcpy(sequence,m_sequence+length-pos-w,w);
 		sequence[w]='\0';
 		uint64_t v=wordId(sequence);
-		sequence[w]=tmp;
 		return complementVertex(v,w,color);
 	}
 	return 0;

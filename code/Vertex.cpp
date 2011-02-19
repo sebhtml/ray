@@ -41,7 +41,7 @@ void Vertex::setCoverage(uint64_t a,int coverage){
 	COVERAGE_TYPE max=0;
 	max=max-1;// underflow.
 	if(a==m_lowerKey){
-		if(m_coverage_lower==max){ // maximum value for unsigned char.
+		if(m_coverage_lower==max){ // maximum value
 			return;
 		}
 

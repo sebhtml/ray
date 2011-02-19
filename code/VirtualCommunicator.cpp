@@ -208,6 +208,9 @@ void VirtualCommunicator::processInbox(vector<uint64_t>*activeWorkers){
 			assert(workers.size()>0);
 			assert(elementsPerWorker>0);
 			int count=message->getCount();
+			if(count==0){
+				cout<<"QueryTag = "<<queryTag<<endl;
+			}
 			assert(count>0);
 			if(count!=(int)workers.size()*elementsPerWorker){
 				cout<<"Rank="<<m_rank<<" Count="<<count<<" Workers="<<workers.size()<<" ElementsPerWorker="<<elementsPerWorker<<endl;

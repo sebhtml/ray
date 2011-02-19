@@ -124,6 +124,7 @@ class MessageProcessor{
 	VerticesExtractor*m_verticesExtractor;
 	int*m_numberOfMachinesDoneSendingCoverage;
 	StaticVector*m_outbox;
+	StaticVector*m_inbox;
 	map<int,int>*m_allIdentifiers;
 	OpenAssemblerChooser*m_oa;
 	int*m_numberOfRanksWithCoverageData;
@@ -146,6 +147,7 @@ class MessageProcessor{
 	void call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER(Message*message);
 	void call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message);
 	void call_RAY_MPI_TAG_COVERAGE_DATA(Message*message);
+	void call_RAY_MPI_TAG_COVERAGE_DATA_REPLY(Message*message);
 	void call_RAY_MPI_TAG_COVERAGE_END(Message*message);
 	void call_RAY_MPI_TAG_SEND_COVERAGE_VALUES(Message*message);
 	void call_RAY_MPI_TAG_READY_TO_SEED(Message*message);
@@ -315,6 +317,7 @@ ExtensionData*ed,
 	int*m_numberOfMachinesDoneSendingVertices,
 	int*m_numberOfMachinesDoneSendingCoverage,
 				StaticVector*m_outbox,
+				StaticVector*m_inbox,
 		map<int,int>*m_allIdentifiers,OpenAssemblerChooser*m_oa,
 int*m_numberOfRanksWithCoverageData,
 SeedExtender*seedExtender,int*m_master_mode,bool*m_isFinalFusion,

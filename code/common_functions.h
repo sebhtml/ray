@@ -80,8 +80,8 @@ using namespace std;
 
 /*
  * this is the type used to store coverage values
- * default is 8 bits, unsigned.
  */
+//#define COVERAGE_TYPE uint8_t
 #define COVERAGE_TYPE uint16_t
 
 /*
@@ -174,7 +174,7 @@ string convertToString(vector<uint64_t>*b,int m_wordSize);
 
 int vertexRank(uint64_t a,int _size,int w);
 
-uint64_t kmerAtPosition(char*string,int pos,int w,char strand,bool color);
+uint64_t kmerAtPosition(const char*string,int pos,int w,char strand,bool color);
 
 int roundNumber(int number,int alignment);
 
