@@ -1015,11 +1015,19 @@ void SeedExtender::removeUnfitLibraries(){
 			}
 			int mean=sum/n;
 			
+			int minimumNumberOfBridges=3;
+
+			if(averageLength>=1000){
+				minimumNumberOfBridges=5;
+			}
+
 			if(
 			(mean<=averageLength+stddev&& mean>=averageLength-stddev)){
-				for(int k=0;k<(int)j->second.size();k++){
-					int val=j->second[k];
-					acceptedValues.push_back(val);
+				if(n>=minimumNumberOfBridges){// required links
+					for(int k=0;k<(int)j->second.size();k++){
+						int val=j->second[k];
+						acceptedValues.push_back(val);
+					}
 				}
 			}else if(j->second.size()>10){// to restore reads for a library, we need at least 5
 				for(int k=0;k<(int)j->second.size();k++){

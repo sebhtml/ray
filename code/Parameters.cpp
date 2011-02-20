@@ -785,3 +785,5 @@ void Parameters::setMinimumCoverage(int a){
 uint64_t Parameters::_complementVertex(uint64_t a){
 	return complementVertex(a,m_wordSize,m_colorSpaceMode);
 }
+
+
