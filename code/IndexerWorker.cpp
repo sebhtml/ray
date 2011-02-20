@@ -118,7 +118,7 @@ void IndexerWorker::indexIfGood(uint64_t vertex){
 		}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
 			int coverage=m_virtualCommunicator->getResponseElements(m_workerId)[0];
 			//cout<<"Coverage is "<<coverage<<endl;
-			if(coverage<m_parameters->getMinimumCoverage()){
+			if(coverage<m_parameters->getMinimumCoverage()/2){
 				m_vertexIsDone=true;
 				m_gotIndexed=false;
 			}else{

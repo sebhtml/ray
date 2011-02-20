@@ -1015,8 +1015,8 @@ void SeedExtender::removeUnfitLibraries(){
 			}
 			int mean=sum/n;
 			
-			if(mean<=averageLength+stddev
-			&& mean>=averageLength-stddev){
+			if(
+			(mean<=averageLength+stddev&& mean>=averageLength-stddev)){
 				for(int k=0;k<(int)j->second.size();k++){
 					int val=j->second[k];
 					acceptedValues.push_back(val);
