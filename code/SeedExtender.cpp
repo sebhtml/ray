@@ -1015,10 +1015,10 @@ void SeedExtender::removeUnfitLibraries(){
 			}
 			int mean=sum/n;
 			
-			int minimumNumberOfBridges=3;
+			int minimumNumberOfBridges=2;
 
-			if(averageLength>=1000){
-				minimumNumberOfBridges=5;
+			if(averageLength>=5000){
+				minimumNumberOfBridges=4;
 			}
 
 			if(
