@@ -85,7 +85,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 			// AND
 			// the number of alive workers is below the maximum
 			if(m_theSequenceId<(int)m_myReads->size()&&(int)m_aliveWorkers.size()<m_maximumAliveWorkers){
-				if(m_theSequenceId%100000==0){
+				if(m_theSequenceId%10000==0){
 					printf("Rank %i is indexing sequence reads [%i/%i]\n",m_rank,m_theSequenceId+1,(int)m_myReads->size());
 					fflush(stdout);
 				}
@@ -126,6 +126,8 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 
 	if((int)m_myReads->size()==m_completedJobs){
 		printf("Rank %i is indexing sequence reads [%i/%i] (completed)\n",m_rank,(int)m_myReads->size(),(int)m_myReads->size());
+		fflush(stdout);
+		printf("Rank %i: peak number of workers: %i, maximum: %i\n",m_rank,m_maximumWorkers,m_maximumAliveWorkers);
 		fflush(stdout);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,m_rank);

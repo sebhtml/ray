@@ -33,11 +33,11 @@ void IndexerWorker::constructor(int sequenceId,char*sequence,Parameters*paramete
 	m_forwardIndexed=false;
 	m_reverseIndexed=false;
 	m_position=0;
+	m_coverageRequested=false;
 	m_theLength=strlen(sequence);
 	m_vertexIsDone=false;
-	m_gotIndexed=false;
 	m_vertexInitiated=false;
-	m_currentStrand='F';
+	m_fetchedCoverageValues=false;
 }
 
 bool IndexerWorker::isDone(){
@@ -47,42 +47,132 @@ bool IndexerWorker::isDone(){
 void IndexerWorker::work(){
 	if(m_done){
 		return;
-	}else if(!m_forwardIndexed){
+	}else if(!m_fetchedCoverageValues){
 		if(m_position>m_theLength-m_parameters->getWordSize()){
-			m_done=true;// no solid k-mer found
-		}else{
-			uint64_t vertex=kmerAtPosition(m_sequence.c_str(),m_position,m_parameters->getWordSize(),m_currentStrand,m_parameters->getColorSpaceMode());
-			if(!m_vertexIsDone){
-				indexIfGood(vertex);
-			}else{// is done
-				m_vertexInitiated=false;
-				m_vertexIsDone=false;
-				if(m_gotIndexed){
-					m_forwardIndexed=true;
-					m_position=0;
-					m_currentStrand='R';
-				}else{
-					m_position++;
+			m_fetchedCoverageValues=true;
+		}else if(!m_coverageRequested){
+			//cout<<"Seq ="<<m_sequence<<" "<<m_parameters->getWordSize()endl;
+			uint64_t vertex=kmerAtPosition(m_sequence.c_str(),m_position,m_parameters->getWordSize(),'F',m_parameters->getColorSpaceMode());
+			m_vertices.push_back(vertex);
+			int sendTo=vertexRank(vertex,m_parameters->getSize(),m_parameters->getWordSize());
+			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
+			message[0]=vertex;
+			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,sendTo,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_parameters->getRank());
+			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
+			m_coverageRequested=true;
+		}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
+			int coverage=m_virtualCommunicator->getResponseElements(m_workerId)[0];
+			m_coverages.push_back(coverage);
+			//cout<<"Coverage="<<coverage<<endl;
+			m_position++;
+			m_coverageRequested=false;
+		}
+	}else if(!m_forwardIndexed){
+		if(!m_vertexIsDone){
+			int selectedPosition=-1;
+			// find a vertex that is not an error and that is not repeated
+			for(int i=0;i<(int)m_coverages.size()/2;i++){
+				int coverage=m_coverages[i];
+				if(coverage>=m_parameters->getMinimumCoverage()/2&&coverage<m_parameters->getPeakCoverage()*2){
+					selectedPosition=i;
+					break;
 				}
 			}
+
+			// find a vertex that is not an error 
+			if(selectedPosition==-1){
+				for(int i=0;i<(int)m_coverages.size();i++){
+					int coverage=m_coverages[i];
+					if(coverage>=m_parameters->getMinimumCoverage()/2){
+						selectedPosition=i;
+						break;
+					}
+				}
+	
+			}
+/*
+			cout<<"Seq="<<m_sequence<<endl;
+			cout<<" Coverages ";
+			for(int i=0;i<(int)m_coverages.size();i++){
+				cout<<" "<<i<<":"<<m_coverages[i];
+			}
+			cout<<" ForwardSelection="<<selectedPosition<<endl;
+*/
+			// index it
+			if(selectedPosition!=-1){
+				uint64_t vertex=m_vertices[selectedPosition];
+				int sendTo=vertexRank(vertex,m_parameters->getSize(),m_parameters->getWordSize());
+				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(5*sizeof(uint64_t));
+				message[0]=vertex;
+				message[1]=m_parameters->getRank();
+				message[2]=m_sequenceId;
+				message[3]=selectedPosition;
+				message[4]='F';
+				Message aMessage(message,5,MPI_UNSIGNED_LONG_LONG,sendTo,RAY_MPI_TAG_ATTACH_SEQUENCE,m_parameters->getRank());
+				m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
+				m_vertexIsDone=true;
+			}else{
+				m_forwardIndexed=true;
+			}
+		}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
+			m_virtualCommunicator->getResponseElements(m_workerId);
+			m_forwardIndexed=true;
+			m_reverseIndexed=false;
+			m_vertexIsDone=false;
 		}
 	}else if(!m_reverseIndexed){
-		if(m_position>m_theLength-m_parameters->getWordSize()){
-			m_done=true;// no solid k-mer found
-		}else{
-			uint64_t vertex=kmerAtPosition(m_sequence.c_str(),m_position,m_parameters->getWordSize(),m_currentStrand,m_parameters->getColorSpaceMode());
-			if(!m_vertexIsDone){
-				indexIfGood(vertex);
-			}else{// is done
-				m_vertexInitiated=false;
-				m_vertexIsDone=false;
-				if(m_gotIndexed){
-					m_reverseIndexed=true;
-				}else{
-					m_position++;
+		if(!m_vertexIsDone){
+			int selectedPosition=-1;
+			// find a vertex that is not an error and that is not repeated
+			for(int i=(int)m_coverages.size()-1;i>=(int)m_coverages.size()/2;i--){
+				int coverage=m_coverages[i];
+				if(coverage>=m_parameters->getMinimumCoverage()/2&&coverage<m_parameters->getPeakCoverage()*2){
+					selectedPosition=i;
+					break;
 				}
 			}
+
+			// find a vertex that is not an error 
+			if(selectedPosition==-1){
+				for(int i=(int)m_coverages.size()-1;i>=0;i--){
+					int coverage=m_coverages[i];
+					if(coverage>=m_parameters->getMinimumCoverage()/2){
+						selectedPosition=i;
+						break;
+					}
+				}
+	
+			}
+/*
+			cout<<"Seq="<<m_sequence<<endl;
+			cout<<" Coverages ";
+			for(int i=0;i<(int)m_coverages.size();i++){
+				cout<<" "<<i<<":"<<m_coverages[i];
+			}
+			cout<<" ReverseSelection="<<selectedPosition<<endl;
+*/
+
+			// index it
+			if(selectedPosition!=-1){
+				uint64_t vertex=m_parameters->_complementVertex(m_vertices[selectedPosition]);
+				int sendTo=vertexRank(vertex,m_parameters->getSize(),m_parameters->getWordSize());
+				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(5*sizeof(uint64_t));
+				message[0]=vertex;
+				message[1]=m_parameters->getRank();
+				message[2]=m_sequenceId;
+				message[3]=m_theLength-m_parameters->getWordSize()-selectedPosition;
+				message[4]='R';
+				Message aMessage(message,5,MPI_UNSIGNED_LONG_LONG,sendTo,RAY_MPI_TAG_ATTACH_SEQUENCE,m_parameters->getRank());
+				m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
+				m_vertexIsDone=true;
+			}else{
+				m_reverseIndexed=true;
+			}
+		}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
+			m_virtualCommunicator->getResponseElements(m_workerId);
+			m_reverseIndexed=true;
 		}
+
 	}else{
 		m_done=true;
 	}
@@ -92,54 +182,4 @@ uint64_t IndexerWorker::getWorkerId(){
 	return m_workerId;
 }
 
-// RAY_MPI_TAG_ATTACH_SEQUENCE takes 5: vertex, rank, seqId, strandPosition, strand
-//      returns nothing
-// RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE takes 1: vertex
-//      return the coverage
-//
-//      on completion m_vertexIsDone is set to true
-//      for initialisation, set m_vertexInitiated to false
-void IndexerWorker::indexIfGood(uint64_t vertex){
-	if(m_vertexIsDone){
-		return;
-	}else if(!m_vertexInitiated){
-		m_gotIndexed=false;
-		m_coverageRequested=false;
-		m_checkedCoverage=false;
-		m_vertexInitiated=true;
-	}else if(!m_checkedCoverage){
-		if(!m_coverageRequested){
-			int sendTo=vertexRank(vertex,m_parameters->getSize(),m_parameters->getWordSize());
-			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
-			message[0]=vertex;
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,sendTo,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_parameters->getRank());
-			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
-			m_coverageRequested=true;
-		}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
-			int coverage=m_virtualCommunicator->getResponseElements(m_workerId)[0];
-			//cout<<"Coverage is "<<coverage<<endl;
-			if(coverage<m_parameters->getMinimumCoverage()/2){
-				m_vertexIsDone=true;
-				m_gotIndexed=false;
-			}else{
-				m_checkedCoverage=true;
-				m_indexedTheVertex=false;
-			}
-		}
-	}else if(!m_indexedTheVertex){
-		int sendTo=vertexRank(vertex,m_parameters->getSize(),m_parameters->getWordSize());
-		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(5*sizeof(uint64_t));
-		message[0]=vertex;
-		message[1]=m_parameters->getRank();
-		message[2]=m_sequenceId;
-		message[3]=m_position;
-		message[4]=m_currentStrand;
-		Message aMessage(message,5,MPI_UNSIGNED_LONG_LONG,sendTo,RAY_MPI_TAG_ATTACH_SEQUENCE,m_parameters->getRank());
-		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
-		m_indexedTheVertex=true;
-	}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		m_virtualCommunicator->getResponseElements(m_workerId);
-		m_gotIndexed=true;
-		m_vertexIsDone=true;
-	}
-}
+

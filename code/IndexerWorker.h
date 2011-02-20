@@ -42,13 +42,13 @@ class IndexerWorker{
 	RingAllocator*m_outboxAllocator;
 	bool m_forwardIndexed;
 	bool m_reverseIndexed;
-	char m_currentStrand;
 	bool m_vertexInitiated;
 	bool m_vertexIsDone;
-	bool m_gotIndexed;
 	bool m_coverageRequested;
-	void indexIfGood(uint64_t vertex);
+	bool m_fetchedCoverageValues;
 
+	vector<uint64_t> m_vertices;
+	vector<int> m_coverages;
 public:
 	void constructor(int sequenceId,char*sequence,Parameters*parameters,RingAllocator*outboxAllocator,
 		VirtualCommunicator*vc,uint64_t workerId);

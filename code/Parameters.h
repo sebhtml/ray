@@ -137,6 +137,7 @@ public:
 	int getMaximumAllowedCoverage();
 	int getMinimumCoverage();
 	void setMinimumCoverage(int a);
+	uint64_t _complementVertex(uint64_t a);
 };
 
 #endif

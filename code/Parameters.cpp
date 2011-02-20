@@ -781,3 +781,7 @@ int Parameters::getMinimumCoverage(){
 void Parameters::setMinimumCoverage(int a){
 	m_minimumCoverage=a;
 }
+
+uint64_t Parameters::_complementVertex(uint64_t a){
+	return complementVertex(a,m_wordSize,m_colorSpaceMode);
+}
