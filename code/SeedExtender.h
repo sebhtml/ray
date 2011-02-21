@@ -65,6 +65,9 @@ class SeedExtender{
 	void removeUnfitLibraries();
 
 	void setFreeUnmatedPairedReads();
+
+	void showReadsInRange();
+
 public:
 	bool m_sequenceReceived;
 	bool m_sequenceRequested;

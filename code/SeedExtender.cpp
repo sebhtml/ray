@@ -785,6 +785,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 					printf("Rank %i reached %i vertices (%s)\n",theRank,theCurrentSize,idToWord(*currentVertex,
 						m_parameters->getWordSize()).c_str());
 					fflush(stdout);
+					showReadsInRange();
 
 					showMemoryUsage(theRank);
 					int a=ed->getAllocator()->getChunkSize()*ed->getAllocator()->getNumberOfChunks();
@@ -1054,4 +1055,14 @@ void SeedExtender::setFreeUnmatedPairedReads(){
 		}
 	}
 	m_ed->m_expirations->erase(m_ed->m_EXTENSION_extension->size());
+}
+
+void SeedExtender::showReadsInRange(){
+	cout<<"Reads in range:";
+	for(set<uint64_t>::iterator i=m_ed->m_EXTENSION_readsInRange->begin();
+		i!=m_ed->m_EXTENSION_readsInRange->end();i++){
+		cout<<" "<<*i;
+	}
+	cout<<endl;
+	cout.flush();
 }

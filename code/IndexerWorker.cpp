@@ -75,6 +75,9 @@ void IndexerWorker::work(){
 				int coverage=m_coverages[i];
 				if(coverage>=m_parameters->getMinimumCoverage()/2&&coverage<m_parameters->getPeakCoverage()*2){
 					selectedPosition=i;
+					if(selectedPosition!=0&&m_coverages[0]>=m_parameters->getPeakCoverage()*2){
+						cout<<"BINGO"<<endl;
+					}
 					break;
 				}
 			}
@@ -92,10 +95,19 @@ void IndexerWorker::work(){
 			}
 /*
 			cout<<"Seq="<<m_sequence<<endl;
-			cout<<" Coverages ";
+			cout<<"digraph{"<<endl;
 			for(int i=0;i<(int)m_coverages.size();i++){
-				cout<<" "<<i<<":"<<m_coverages[i];
+				uint64_t vertex=m_vertices[i];
+				string prefix= idToWord(vertex,m_parameters->getWordSize());
+				cout<<prefix<<" [ label=\""<<prefix<<" ("<<m_coverages[i]<<")\" shape=\"egg\" color=\"lightblue2\" ]"<<endl;
+				if(i+1<(int)m_coverages.size()){
+					uint64_t nextVertex=m_vertices[i+1];
+					string suffix=idToWord(nextVertex,m_parameters->getWordSize());
+					cout<<prefix<<" -> "<<suffix<<endl;
+				}
+				//cout<<" "<<i<<":"<<m_coverages[i];
 			}
+			cout<<"}"<<endl;
 			cout<<" ForwardSelection="<<selectedPosition<<endl;
 */
 			// index it
