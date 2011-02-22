@@ -210,6 +210,21 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 
 			ed->m_enumerateChoices_outgoingEdges=(*receivedOutgoingEdges);
 
+			// remove those with a coverage of 1
+			vector<uint64_t> choices;
+			vector<int> coverages;
+			for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
+				uint64_t kmer=ed->m_enumerateChoices_outgoingEdges[i];
+				int coverageValue=ed->m_EXTENSION_coverages->at(i);
+				if(coverageValue>1){
+					choices.push_back(kmer);
+					coverages.push_back(coverageValue);
+				}
+			}
+/*
+			*(ed->m_EXTENSION_coverages)=coverages;
+			ed->m_enumerateChoices_outgoingEdges=choices;
+*/
 			#ifdef ASSERT
 			assert(ed->m_EXTENSION_coverages->size()==ed->m_enumerateChoices_outgoingEdges.size());
 			#endif

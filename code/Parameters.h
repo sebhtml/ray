@@ -138,6 +138,7 @@ public:
 	int getMinimumCoverage();
 	void setMinimumCoverage(int a);
 	uint64_t _complementVertex(uint64_t a);
+	bool hasPairedReads();
 };
 
 #endif

@@ -149,7 +149,7 @@ void FusionData::finishFusions(){
 		m_FINISH_pathsForPosition=NULL;
 		return;
 	}
-	int overlapMinimumLength=1000;
+	int overlapMinimumLength=3000;
 	if((int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<overlapMinimumLength){
 		m_seedingData->m_SEEDING_i++;
 		m_FINISH_vertex_requested=false;
@@ -182,8 +182,8 @@ void FusionData::finishFusions(){
 	int position2=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-overlapMinimumLength;
 	if(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
 		if(!m_Machine_getPaths_DONE){
-			//if(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-overlapMinimumLength){
-			if(m_ed->m_EXTENSION_currentPosition!=position1	&&m_ed->m_EXTENSION_currentPosition!=position2){
+			if(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-overlapMinimumLength){
+			//if(m_ed->m_EXTENSION_currentPosition!=position1	&&m_ed->m_EXTENSION_currentPosition!=position2){
 				m_Machine_getPaths_DONE=true;
 			}else{
 				getPaths(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition]);
@@ -297,7 +297,6 @@ void FusionData::finishFusions(){
 				done=true;
 			}	
 
-/*
 
 			// make sure that all positions from 
 			// <m_FINISH_pathsForPosition.size()-1> up to 
@@ -324,7 +323,7 @@ void FusionData::finishFusions(){
 				//cout<<"Mapping not good."<<endl;
 				done=true;
 			}
-*/
+
 			m_checkedValidity=true;
 		}
 	}else{

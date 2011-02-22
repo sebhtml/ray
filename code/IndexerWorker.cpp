@@ -76,7 +76,7 @@ void IndexerWorker::work(){
 				if(coverage>=m_parameters->getMinimumCoverage()/2&&coverage<m_parameters->getPeakCoverage()*2){
 					selectedPosition=i;
 					if(selectedPosition!=0&&m_coverages[0]>=m_parameters->getPeakCoverage()*2){
-						cout<<"BINGO"<<endl;
+						//cout<<"BINGO"<<endl;
 					}
 					break;
 				}

@@ -71,6 +71,11 @@ Parameters*parameters){
 		#endif
 		return pairedChoice;
 	}else{
+		if(m_ed->m_EXTENSION_extension->size()>50000){
+			if(!parameters->hasPairedReads()){
+				return IMPOSSIBLE_CHOICE;
+			}
+		}
 		// if both have paired reads and that is not enough for one of them to win, then abort
 		int withPairedReads=0;
 		
