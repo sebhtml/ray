@@ -1,6 +1,7 @@
 * run regressions
 * update ChangedLog (based on svn log and trac milestone)
 * check version in common_functions.h + configure.ac + manual
+* compile the manual
 * test compilation on a svn export using make.alternate and configure
 * svn cp trunk tags/<version>
 * close the milestone in trac
