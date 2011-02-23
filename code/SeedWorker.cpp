@@ -25,6 +25,8 @@
 #include <common_functions.h>
 #include <stdint.h>
 #include <SeedWorker.h>
+#include <iostream>
+using namespace std;
 
 void SeedWorker::work(){
 	if(m_finished){

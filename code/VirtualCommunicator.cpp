@@ -19,9 +19,11 @@
 */
 
 #include <assert.h>
-#include<VirtualCommunicator.h>
-#include<common_functions.h>
+#include <VirtualCommunicator.h>
+#include <common_functions.h>
 #include <mpi.h>
+#include <iostream>
+using namespace std;
 
 void VirtualCommunicator::setElementsPerQuery(int tag,int size){
 	#ifdef ASSERT

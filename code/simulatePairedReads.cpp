@@ -71,7 +71,10 @@ string reverseComplement(string*a){
 }
 
 int main(int argc,char**argv){
-	cout<<"PROGRAM GENOME.FASTA SUBSTITUTION_RATE AVERAGE_OUTER_DISTANCE STANDARD_DEVIATION PAIRS READ_LENGTH OUT1.fasta OUT2.fasta"<<endl;
+	cout<<argv[0]<<" GENOME.FASTA SUBSTITUTION_RATE AVERAGE_OUTER_DISTANCE STANDARD_DEVIATION PAIRS READ_LENGTH OUT1.fasta OUT2.fasta"<<endl;
+	if(argc!=8){
+		return 0;
+	}
 	string file=argv[1];
 	double substitutionRate=atof(argv[2]);
 	int average=atoi(argv[3]);

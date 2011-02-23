@@ -19,11 +19,13 @@
 
 */
 
-#include<assert.h>
-#include<mpi.h>
-#include<BufferedData.h>
-#include<RingAllocator.h>
-#include<StaticVector.h>
+#include <assert.h>
+#include <mpi.h>
+#include <BufferedData.h>
+#include <RingAllocator.h>
+#include <StaticVector.h>
+#include <iostream>
+using namespace std;
 
 //#define DEBUG_BUFFERS
 // the capacity is measured in uint64_t

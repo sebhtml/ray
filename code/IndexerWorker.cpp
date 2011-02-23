@@ -20,6 +20,7 @@
 */
 
 #include <IndexerWorker.h>
+#include <string.h>
 
 void IndexerWorker::constructor(int sequenceId,char*sequence,Parameters*parameters,RingAllocator*outboxAllocator,
 	VirtualCommunicator*vc,uint64_t workerId){

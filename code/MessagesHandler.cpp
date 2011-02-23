@@ -19,10 +19,11 @@
 
 */
 
-#include<MessagesHandler.h>
-#include<common_functions.h>
-#include<fstream>
-#include<assert.h>
+#include <MessagesHandler.h>
+#include <common_functions.h>
+#include <fstream>
+#include <assert.h>
+#include <iostream>
 using namespace std;
 
 //#define DEBUG_MESSAGES

@@ -1,5 +1,6 @@
 \documentclass{article}
 \usepackage{hyperref}
+\usepackage{fullpage}
 \usepackage[utf8]{inputenc}
 
 
@@ -35,21 +36,48 @@ doi:10.1089/cmb.2009.0238\\
 
 \section{Installation}
 
+To install Ray, you need a C++ compiler, make and an MPI implementation compliant
+with MPI standard 2.2.
+These software are readily available in most GNU/Linux distributions.
+
+\begin{table}{h}
+\caption{Suggested software}
+\begin{tabular}{ll}
+\hline
+Software & Name \\
+\hline
+C++ compiler & GNU g++ \\
+MPI implementation & Open-MPI \\
+\hline
+\end{tabular}
+\end{table}
+
+
+
 \subsection{Compilation flags}
 
-For processors requiring addresses aligned on 8 bytes, you must add the following compilation flag.
-
-\begin{verbatim}
--DALIGN_ADDRESSES
-\end{verbatim}
+\begin{table}[h]
+\caption{Compilation flags}
+\begin{tabular}{ll}
+\hline
+Flag & Effet \\
+\hline
+HAVE\_ZLIB & enable support for .gz files \\
+HAVE\_LIBBZ2 & enable support for .bz2 files \\
+FORCE\_PACKING & enable packing of structures and classes\\
+ASSERT & enable assertions in the code \\
+\hline
+\end{tabular}
+\end{table}
 
 \subsection{Compilation with the configure script}
 
+
 \begin{verbatim}
-./configure --prefix=/software/ray-x.y.z
+./configure --prefix=$(pwd)/software/ray-x.y.z
 make
-sudo make install
-ls -l /software/ray-x.y.z/bin/Ray
+make install
+ls -l $(pwd)/software/ray-x.y.z/bin/Ray
 \end{verbatim}
 
 \subsection{Compilation with the makefile.alternate}
@@ -84,9 +112,12 @@ Standard flowgram format & .sff \\
 
 \section{Parameters}
 
+Ray assembles reads (paired or not) to produce an assembly.
+Paired reads must be on opposite strands (forward \& reverse or reverse \& forward).
+
 \subsection{$k$-mer length with -k}
 
-Ray builds a distributed catalog of all occuring $k$-mers in the reads and their reverse-complement. $k$ must be greater or equal to 15 and lower or equal to 32.
+Ray builds a distributed catalog of all occuring $k$-mers in the reads and their reverse-complement. $k$ must be greater or equal to 15 and lower or equal to 31. The $k$-mer length must be an odd number.
 
 \subsection{Output prefix with -o}
 
@@ -110,10 +141,10 @@ Example for paired-end reads (the ends of DNA fragments):
 -p s_200_1.fastq s_200_2.fastq
 \end{verbatim}
 
-Example for mate-pair reads (owing to circularization and ligation, the order must be reverse):
+Example for mate-pair reads:
 
 \begin{verbatim}
--p s_20000_2.fastq s_20000_1.fastq
+-p s_20000_1.fastq s_20000_2.fastq
 \end{verbatim}
 
 \subsection{Paired-end reads and mate-pair reads with -i (interleaved sequences)}
@@ -132,7 +163,6 @@ ACTGACGACGTACGACGTCATGCAACT
 ...
 \end{verbatim}
 
-For mate-pair reads, the order must be reverse.
 
 
 \section{Output}
@@ -148,14 +178,6 @@ OutputPrefix.LibraryLibraryNumber.txt contains the distribution of distances for
 \subsection{Coverage distribution}
 
 OuputPrefix.CoverageDistribution.txt contains the $k$-mer coverage distribution.
-
-\subsection{Messages}
-
-OuputPrefix.ReceivedMessages.txt contains a matrix.
-
-It contains the number of received messages for each MPI rank.
-
-(MPI communication matrix; rows=destinations, columns=sources)
 
 \section{Example}
 
@@ -176,6 +198,18 @@ mpirun -np 32 ~/Ray/trunk/code/Ray \
 -o BacterialGenome | tee RayLog
 \end{verbatim}
 
+\section{Virtual sequencer \& simulations}
 
+The Ray package includes a simulator for paired reads.
+
+\begin{verbatim}
+N=6000000
+readLength=50
+errorRate=0.005
+ref=~/nuccore/Ecoli-k12-mg1655.fasta
+
+g++ code/simulatePairedReads.cpp -O3 -Wall -o Simulator 
+./Simulator $ref $errorRate 200 20 $N $readLength L1_1.fasta L1_2.fasta
+\end{verbatim}
 
 \end{document}
