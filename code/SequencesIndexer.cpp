@@ -19,14 +19,14 @@
 
 */
 
-#include<SequencesIndexer.h>
-#include<string.h>
-#include<stdlib.h>
-#include<assert.h>
-#include<Parameters.h>
-#include<Loader.h>
-#include<common_functions.h>
-#include<Message.h>
+#include <SequencesIndexer.h>
+#include <string.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <Parameters.h>
+#include <Loader.h>
+#include <common_functions.h>
+#include <Message.h>
 
 void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 				RingAllocator*m_outboxAllocator,

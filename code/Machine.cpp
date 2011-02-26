@@ -262,7 +262,7 @@ void Machine::start(){
 
 	m_library.constructor(getRank(),&m_outbox,&m_outboxAllocator,&m_sequence_id,&m_sequence_idInFile,
 		m_ed,&m_readsPositions,getSize(),&m_timePrinter,&m_slave_mode,&m_master_mode,
-	&m_parameters,&m_fileId,m_seedingData);
+	&m_parameters,&m_fileId,m_seedingData,&m_inbox,&m_virtualCommunicator);
 
 	m_subgraph.constructor(getRank());
 	

@@ -59,11 +59,11 @@ ARFLAGS = cru
 libRay_a_AR = $(AR) $(ARFLAGS)
 libRay_a_LIBADD =
 am__libRay_a_SOURCES_DIST = IndexerWorker.h IndexerWorker.cpp \
-	VertexData.h VertexData.cpp VertexTable.h VertexTable.cpp \
-	GridTable.h GridTable.cpp GridTableIterator.h \
-	GridTableIterator.cpp ReusableMemoryStore.h \
-	ReusableMemoryStore.cpp ExtensionElement.h \
-	ExtensionElement.cpp VirtualCommunicator.h \
+	ReadFetcher.cpp ReadFetcher.h VertexData.h VertexData.cpp \
+	VertexTable.h VertexTable.cpp GridTable.h GridTable.cpp \
+	GridTableIterator.h GridTableIterator.cpp \
+	ReusableMemoryStore.h ReusableMemoryStore.cpp \
+	ExtensionElement.h ExtensionElement.cpp VirtualCommunicator.h \
 	VirtualCommunicator.cpp SeedWorker.h SeedWorker.cpp \
 	MemoryConsumptionReducer.h MemoryConsumptionReducer.cpp \
 	MyForestIterator.cpp MyForestIterator.h crypto.cpp crypto.h \
@@ -98,8 +98,8 @@ am__libRay_a_SOURCES_DIST = IndexerWorker.h IndexerWorker.cpp \
 @HAVE_ZLIB_TRUE@am__objects_1 = FastqGzLoader.$(OBJEXT)
 @HAVE_BZ2_TRUE@am__objects_2 = FastqBz2Loader.$(OBJEXT) \
 @HAVE_BZ2_TRUE@	BzReader.$(OBJEXT)
-am_libRay_a_OBJECTS = IndexerWorker.$(OBJEXT) VertexData.$(OBJEXT) \
-	VertexTable.$(OBJEXT) GridTable.$(OBJEXT) \
+am_libRay_a_OBJECTS = IndexerWorker.$(OBJEXT) ReadFetcher.$(OBJEXT) \
+	VertexData.$(OBJEXT) VertexTable.$(OBJEXT) GridTable.$(OBJEXT) \
 	GridTableIterator.$(OBJEXT) ReusableMemoryStore.$(OBJEXT) \
 	ExtensionElement.$(OBJEXT) VirtualCommunicator.$(OBJEXT) \
 	SeedWorker.$(OBJEXT) MemoryConsumptionReducer.$(OBJEXT) \
@@ -185,7 +185,6 @@ PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
 PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
-PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 RANLIB = @RANLIB@
@@ -238,11 +237,12 @@ top_srcdir = @top_srcdir@
 AM_CXXFLAGS = -O3 -Wall
 LDADD = ""
 noinst_LIBRARIES = libRay.a
-libRay_a_SOURCES = IndexerWorker.h IndexerWorker.cpp VertexData.h \
-	VertexData.cpp VertexTable.h VertexTable.cpp GridTable.h \
-	GridTable.cpp GridTableIterator.h GridTableIterator.cpp \
-	ReusableMemoryStore.h ReusableMemoryStore.cpp \
-	ExtensionElement.h ExtensionElement.cpp VirtualCommunicator.h \
+libRay_a_SOURCES = IndexerWorker.h IndexerWorker.cpp ReadFetcher.cpp \
+	ReadFetcher.h VertexData.h VertexData.cpp VertexTable.h \
+	VertexTable.cpp GridTable.h GridTable.cpp GridTableIterator.h \
+	GridTableIterator.cpp ReusableMemoryStore.h \
+	ReusableMemoryStore.cpp ExtensionElement.h \
+	ExtensionElement.cpp VirtualCommunicator.h \
 	VirtualCommunicator.cpp SeedWorker.h SeedWorker.cpp \
 	MemoryConsumptionReducer.h MemoryConsumptionReducer.cpp \
 	MyForestIterator.cpp MyForestIterator.h crypto.cpp crypto.h \
@@ -399,6 +399,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Parameters.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Read.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ReadAnnotation.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ReadFetcher.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ReusableMemoryStore.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RingAllocator.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SeedExtender.Po@am__quote@

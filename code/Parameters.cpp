@@ -789,3 +789,7 @@ uint64_t Parameters::_complementVertex(uint64_t a){
 bool Parameters::hasPairedReads(){
 	return m_numberOfLibraries!=0;
 }
+
+int Parameters::_vertexRank(uint64_t a){
+	return vertexRank(a,m_size,m_wordSize);
+}

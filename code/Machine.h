@@ -80,6 +80,7 @@ class Machine;
 typedef void (Machine::*MachineMethod) ();
 
 class Machine{
+	VirtualCommunicator m_virtualCommunicator;
 	FILE*m_amosFile;
 	bool m_killed;
 	MachineMethod m_master_methods[64];

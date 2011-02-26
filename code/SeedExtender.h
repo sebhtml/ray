@@ -34,6 +34,7 @@ class DepthFirstSearchData;
 #include <Parameters.h>
 #include <RingAllocator.h>
 #include <MyAllocator.h>
+#include <ReadFetcher.h>
 #include <FusionData.h>
 #include <BubbleData.h>
 #include <DepthFirstSearchData.h>

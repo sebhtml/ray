@@ -49,7 +49,7 @@ CoverageDistribution::CoverageDistribution(map<int,uint64_t>*distributionOfCover
 			(*distributionOfCoverage)[coverage-1]<=(*distributionOfCoverage)[coverage]) &&
 		(distributionOfCoverage->count(coverage+1)==0||
 			(*distributionOfCoverage)[coverage+1]<=(*distributionOfCoverage)[coverage]) &&
-		(*distributionOfCoverage)[coverage]>(*distributionOfCoverage)[m_peakCoverage]){
+		(distributionOfCoverage->count(m_peakCoverage)==0||(*distributionOfCoverage)[coverage]>(*distributionOfCoverage)[m_peakCoverage])){
 			m_peakCoverage=coverage;
 		}
 	}

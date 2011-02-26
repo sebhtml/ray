@@ -33,19 +33,23 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<map>
 #include<StaticVector.h>
 #include<TimePrinter.h>
+#include <ReadFetcher.h>
+#include <VirtualCommunicator.h>
 #include<Parameters.h>
 #include<SeedingData.h>
 #include<RingAllocator.h>
 using namespace std;
 
 class Library{
+	
 	int m_detectedDistances;
 	vector<int> m_libraryIndexes;
-
+	VirtualCommunicator*m_virtualCommunicator;
 	BufferedData m_bufferedData;
 	int m_ready;
 	int m_rank;
 	StaticVector*m_outbox;
+	StaticVector*m_inbox;
 	int*m_sequence_id;
 	int*m_sequence_idInFile;
 	ExtensionData*m_ed;
@@ -64,6 +68,7 @@ class Library{
 	map<int,map<int,int> > m_libraryDistances;
 	map<int,int>::iterator m_libraryIndex;
 	bool m_libraryIndexInitiated;
+	ReadFetcher m_readFetcher;
 
 public:
 	Library();
@@ -79,7 +84,7 @@ public:
 	void constructor(int m_rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator,
 	int*m_sequence_id,int*m_sequence_idInFile,ExtensionData*m_ed,map<uint64_t,int >*m_readsPositions,int m_size,
 TimePrinter*m_timePrinter,int*m_mode,int*m_master_mode,
-Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData
+Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,StaticVector*inbox,VirtualCommunicator*vc
 );
 
 };

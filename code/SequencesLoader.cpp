@@ -140,10 +140,9 @@ bool SequencesLoader::computePartition(int rank,int size,
 	printf("Rank %i is computing the partition\n",m_rank);
 	fflush(stdout);
 	uint64_t counted=0;
-
-	FILE*fp=fopen(m_parameters->getAmosFile().c_str(),"w+");
-
+	FILE*fp=NULL;
 	if(m_parameters->useAmos()){
+		fp=fopen(m_parameters->getAmosFile().c_str(),"w+");
 		// empty the file.
 		cout<<"Rank "<<m_rank<<" is adding sequences to "<<m_parameters->getAmosFile()<<endl<<endl;
 	}
@@ -184,7 +183,9 @@ bool SequencesLoader::computePartition(int rank,int size,
 		m_loader.reset();
 	}
 	m_loader.clear();
-	fclose(fp);
+	if(m_parameters->useAmos()){
+		fclose(fp);
+	}
 	printf("Rank %i: global partition is [%i;%lu], %lu sequence reads\n",m_rank,0,counted-1,counted);
 	printf("\n");
 	return true;

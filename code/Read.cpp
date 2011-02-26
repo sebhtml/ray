@@ -60,7 +60,6 @@ char*Read::trim(char*buffer,const char*sequence){
 	last++;
 	// only junk awaits beyond <last>
 	corrected[last]='\0';
-	//cout<<"OUT="<<corrected<<endl;
 	return corrected;
 }
 

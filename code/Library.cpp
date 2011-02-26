@@ -87,19 +87,20 @@ void Library::detectDistances(){
 			}
 			m_ed->m_EXTENSION_reads_requested=true;
 			m_ed->m_EXTENSION_reads_received=false;
-			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 			#ifdef ASSERT
 			assert(m_ed->m_EXTENSION_currentPosition<(int)m_seedingData->m_SEEDING_seeds[m_seedingData->m_SEEDING_i].size());
 			#endif
 			uint64_t vertex=m_seedingData->m_SEEDING_seeds[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
-			message[0]=vertex;
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0],getSize(),m_parameters->getWordSize()),RAY_MPI_TAG_REQUEST_READS,getRank());
-			m_outbox->push_back(aMessage);
+		
+			m_readFetcher.constructor(vertex,m_outboxAllocator,m_inbox,m_outbox,m_parameters);
 			m_ed->m_EXTENSION_edgeIterator=0;// iterate over reads
 			m_ed->m_EXTENSION_hasPairedReadRequested=false;
-		}else if(m_ed->m_EXTENSION_reads_received){
-			if(m_ed->m_EXTENSION_edgeIterator<(int)m_ed->m_EXTENSION_receivedReads.size()){
-				ReadAnnotation annotation=m_ed->m_EXTENSION_receivedReads[m_ed->m_EXTENSION_edgeIterator];
+		}else if(!m_readFetcher.isDone()){
+			m_readFetcher.work();
+
+		}else{
+			if(m_ed->m_EXTENSION_edgeIterator<(int)m_readFetcher.getResult()->size()){
+				ReadAnnotation annotation=m_readFetcher.getResult()->at(m_ed->m_EXTENSION_edgeIterator);
 				int rightRead=annotation.getReadIndex();
 				#ifdef ASSERT_AUTO
 				uint64_t rightReadUniqueId=annotation.getUniqueId();
@@ -173,11 +174,11 @@ void Library::detectDistances(){
 				#ifdef ASSERT_AUTO
 				cout<<"Adding reads in positions "<<m_ed->m_EXTENSION_currentPosition<<endl;
 				#endif
-				for(int i=0;i<(int)m_ed->m_EXTENSION_receivedReads.size();i++){
-					uint64_t uniqueId=m_ed->m_EXTENSION_receivedReads[i].getUniqueId();
+				for(int i=0;i<(int)m_readFetcher.getResult()->size();i++){
+					uint64_t uniqueId=m_readFetcher.getResult()->at(i).getUniqueId();
 					int position=m_ed->m_EXTENSION_currentPosition;
-					char strand=m_ed->m_EXTENSION_receivedReads[i].getStrand();
-					int strandPosition=m_ed->m_EXTENSION_receivedReads[i].getPositionOnStrand();
+					char strand=m_readFetcher.getResult()->at(i).getStrand();
+					int strandPosition=m_readFetcher.getResult()->at(i).getPositionOnStrand();
 					// read, position, strand
 					(*m_readsPositions)[uniqueId]=position;
 					m_readsStrands[uniqueId]=strand;
@@ -195,7 +196,7 @@ void Library::detectDistances(){
 void Library::constructor(int m_rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator,int*m_sequence_id,int*m_sequence_idInFile,ExtensionData*m_ed,
 map<uint64_t,int >*m_readsPositions,int m_size,
 TimePrinter*m_timePrinter,int*m_mode,int*m_master_mode,
-Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData
+Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,StaticVector*inbox,VirtualCommunicator*vc
 ){
 	this->m_rank=m_rank;
 	this->m_outbox=m_outbox;
@@ -215,6 +216,8 @@ Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData
 	this->m_fileId=m_fileId;
 	this->m_seedingData=m_seedingData;
 	m_ready=0;
+	m_virtualCommunicator=vc;
+	m_inbox=inbox;
 }
 
 void Library::setReadiness(){

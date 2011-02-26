@@ -72,7 +72,8 @@ string reverseComplement(string*a){
 
 int main(int argc,char**argv){
 	cout<<argv[0]<<" GENOME.FASTA SUBSTITUTION_RATE AVERAGE_OUTER_DISTANCE STANDARD_DEVIATION PAIRS READ_LENGTH OUT1.fasta OUT2.fasta"<<endl;
-	if(argc!=8){
+	if(argc!=9){
+		cout<<argc<<" but needs 8"<<endl;
 		return 0;
 	}
 	string file=argv[1];
@@ -84,7 +85,7 @@ int main(int argc,char**argv){
 	string left=argv[7];
 	string right=argv[8];
 
-	boost::mt19937 generator(time(NULL));
+	boost::mt19937 generator(time(NULL)+getpid());
 	boost::normal_distribution<> distribution(average,dev);
 	boost::variate_generator<boost::mt19937&,boost::normal_distribution<> > fragmentLengthSampler(generator,distribution);
 
@@ -107,7 +108,7 @@ int main(int argc,char**argv){
 	string sequence=genome.str();
 	int sequenceLength=sequence.length();
 
-	boost::mt19937 generator2(time(NULL));
+	boost::mt19937 generator2(time(NULL)+getpid()*3);
 	boost::uniform_int<> uniformDistribution(0,sequenceLength-1);
 	boost::variate_generator<boost::mt19937&,boost::uniform_int<> > fragmentPositionSampler(generator2,uniformDistribution);
 
@@ -119,7 +120,7 @@ int main(int argc,char**argv){
 
 	int i=0;
 
-	srand(9999);
+	srand(time(NULL)+getpid()+4);
 	ofstream leftOut(left.c_str());
 	ofstream rightOut(right.c_str());
 	cout<<"OUTPUTS: "<<left<<" "<<right<<endl;

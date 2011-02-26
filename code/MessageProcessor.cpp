@@ -48,6 +48,35 @@ void MessageProcessor::processMessage(Message*message){
 	(this->*f)(message);
 }
 
+void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
+	//int count=message->getCount();
+	uint64_t*buffer=(uint64_t*)message->getBuffer();
+	uint64_t vertex=buffer[0];
+	ReadAnnotation*ptr=(ReadAnnotation*)buffer[1];
+	if(ptr==NULL){
+		ptr=m_subgraph->getReads(vertex);
+	}
+
+	int maxToProcess=4;
+	
+	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	int j=0;
+	while(ptr!=NULL&&j<maxToProcess){
+		outgoingMessage[1+j]=ptr->getRank();
+		outgoingMessage[1+j+1]=ptr->getReadIndex();
+		outgoingMessage[1+j+2]=ptr->getPositionOnStrand();
+		outgoingMessage[1+j+3]=ptr->getStrand();
+		ptr=ptr->getNext();
+		j+=4;
+	}
+	outgoingMessage[0]=(uint64_t)ptr;
+	Message aMessage(outgoingMessage,j+1,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY,rank);
+	m_outbox->push_back(aMessage);
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY(Message*message){
+}
+
 void MessageProcessor::call_RAY_MPI_TAG_SET_WORD_SIZE(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
@@ -2006,6 +2035,8 @@ void MessageProcessor::assignHandlers(){
 	m_methods[RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END]=&MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END;
 	m_methods[RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY;
 	m_methods[RAY_MPI_TAG_ASK_VERTEX_PATHS]=&MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS;
+	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_READS]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS;
+	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY;
 }
 
 
