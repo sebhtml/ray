@@ -54,11 +54,6 @@ bool myComparator_sort(const vector<uint64_t>&a,const vector<uint64_t>&b){
 
 using namespace std;
 
-
-
-
-
-
 Machine::Machine(int argc,char**argv){
 	m_argc=argc;
 	m_argv=argv;
@@ -259,6 +254,11 @@ void Machine::start(){
 	m_fusionData->constructor(getSize(),MAXIMUM_MESSAGE_SIZE_IN_BYTES,getRank(),&m_outbox,&m_outboxAllocator,m_parameters.getWordSize(),
 	m_parameters.getColorSpaceMode(),
 		m_ed,m_seedingData,&m_slave_mode,&m_parameters);
+
+	m_virtualCommunicator.constructor(m_rank,m_size,&m_outboxAllocator,&m_inbox,&m_outbox);
+	//m_virtualCommunicator.setDebug();
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_REQUEST_VERTEX_READS,RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_READS,5);
 
 	m_library.constructor(getRank(),&m_outbox,&m_outboxAllocator,&m_sequence_id,&m_sequence_idInFile,
 		m_ed,&m_readsPositions,getSize(),&m_timePrinter,&m_slave_mode,&m_master_mode,

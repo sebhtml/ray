@@ -58,6 +58,11 @@ void Library::updateDistances(){
 }
 
 void Library::detectDistances(){
+	m_virtualCommunicator->processInbox(&m_activeWorkersToRestore);
+
+	if(!m_virtualCommunicator->isReady()){
+		return;
+	}
 	if(m_seedingData->m_SEEDING_i==(uint64_t)m_seedingData->m_SEEDING_seeds.size()){
 		printf("Rank %i detected %i library lengths\n",getRank(),m_detectedDistances);
 		fflush(stdout);
@@ -92,12 +97,12 @@ void Library::detectDistances(){
 			#endif
 			uint64_t vertex=m_seedingData->m_SEEDING_seeds[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
 		
-			m_readFetcher.constructor(vertex,m_outboxAllocator,m_inbox,m_outbox,m_parameters);
+			m_readFetcher.constructor(vertex,m_outboxAllocator,m_inbox,m_outbox,m_parameters,m_virtualCommunicator);
 			m_ed->m_EXTENSION_edgeIterator=0;// iterate over reads
 			m_ed->m_EXTENSION_hasPairedReadRequested=false;
 		}else if(!m_readFetcher.isDone()){
 			m_readFetcher.work();
-
+			m_virtualCommunicator->forceFlush();
 		}else{
 			if(m_ed->m_EXTENSION_edgeIterator<(int)m_readFetcher.getResult()->size()){
 				ReadAnnotation annotation=m_readFetcher.getResult()->at(m_ed->m_EXTENSION_edgeIterator);

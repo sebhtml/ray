@@ -46,6 +46,7 @@ using namespace std;
 * this class is event-driven and tag-specific and destination-specific
 */
 class VirtualCommunicator{
+	bool m_debug;
 	uint64_t m_pushedMessages;
 	uint64_t m_flushedMessages;
 	map<int,uint64_t> m_distribution;
@@ -193,6 +194,7 @@ public:
 
 	bool nextIsAlmostFull();
 	void printStatistics();
+	void setDebug();
 };
 
 #endif

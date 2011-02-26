@@ -170,6 +170,7 @@ vector<uint64_t> VirtualCommunicator::getResponseElements(uint64_t workerId){
 }
 
 void VirtualCommunicator::constructor(int rank,int size,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox){
+	m_debug=false;
 	m_pushedMessages=0;
 	m_rank=rank;
 	m_size=size;
@@ -263,7 +264,13 @@ bool VirtualCommunicator::isReady(){
 
 // force the first encountered thing
 void VirtualCommunicator::forceFlush(){
+	if(m_debug){
+		cout<<__func__<<endl;
+	}
 	if(m_priorityQueue.size()==0){
+		if(m_debug){
+			cout<<"queue is empty"<<endl;
+		}
 		return;
 	}
 	#ifdef ASSERT
@@ -314,4 +321,8 @@ void VirtualCommunicator::printStatistics(){
 	}
 	printf("Rank %i: %lu virtual messages for %lu pushed messages\n",m_rank,m_flushedMessages,m_pushedMessages);
 	fflush(stdout);
+}
+
+void VirtualCommunicator::setDebug(){
+	m_debug=true;
 }

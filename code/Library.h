@@ -69,6 +69,7 @@ class Library{
 	map<int,int>::iterator m_libraryIndex;
 	bool m_libraryIndexInitiated;
 	ReadFetcher m_readFetcher;
+	vector<uint64_t> m_activeWorkersToRestore;
 
 public:
 	Library();

@@ -56,11 +56,13 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 	if(ptr==NULL){
 		ptr=m_subgraph->getReads(vertex);
 	}
-
 	int maxToProcess=4;
 	
 	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	int j=0;
+	if(ptr==NULL){
+		outgoingMessage[1+j]=-1;
+	}
 	while(ptr!=NULL&&j<maxToProcess){
 		outgoingMessage[1+j]=ptr->getRank();
 		outgoingMessage[1+j+1]=ptr->getReadIndex();
@@ -70,7 +72,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 		j+=4;
 	}
 	outgoingMessage[0]=(uint64_t)ptr;
-	Message aMessage(outgoingMessage,j+1,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY,rank);
+	Message aMessage(outgoingMessage,maxToProcess+1,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
