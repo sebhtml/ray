@@ -66,9 +66,22 @@ class Library{
 	map<int,map<int,int> > m_libraryDistances;
 	map<int,int>::iterator m_libraryIndex;
 	bool m_libraryIndexInitiated;
-	vector<uint64_t> m_activeWorkersToRestore;
-	LibraryWorker m_libraryWorker;
 	bool m_workerInitiated;
+	bool m_initiatedIterator;
+	uint64_t m_SEEDING_i;
+	set<uint64_t> m_activeWorkers;
+	set<uint64_t>::iterator m_activeWorkerIterator;
+	int m_completedJobs;
+	int m_maximumAliveWorkers;
+	int m_maximumWorkers;
+
+	map<uint64_t,LibraryWorker> m_aliveWorkers;
+	bool m_communicatorWasTriggered;
+	vector<uint64_t> m_workersDone;
+	vector<uint64_t> m_waitingWorkers;
+	vector<uint64_t> m_activeWorkersToRestore;
+
+	void updateStates();
 public:
 	Library();
 	void allocateBuffers();

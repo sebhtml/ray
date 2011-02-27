@@ -82,7 +82,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
 	int j=0;
-	for(int i=0;i<message->getCount();i+=2){
+	for(int i=0;i<message->getCount();i+=5){
 		uint64_t vertex=buffer[i];
 		ReadAnnotation*ptr=(ReadAnnotation*)buffer[i+1];
 		if(ptr==NULL){
@@ -91,10 +91,14 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 		int maxToProcess=4;
 	
 		if(ptr==NULL){
-			outgoingMessage[j+1]=-1;
+			outgoingMessage[j+1]=INVALID_RANK;
 		}
 		while(ptr!=NULL&&j<maxToProcess){
-			outgoingMessage[1+j]=ptr->getRank();
+			int rank=ptr->getRank();
+			#ifdef ASSERT
+			assert(rank>=0&&rank<parameters->getSize());
+			#endif
+			outgoingMessage[1+j]=rank;
 			outgoingMessage[1+j+1]=ptr->getReadIndex();
 			outgoingMessage[1+j+2]=ptr->getPositionOnStrand();
 			outgoingMessage[1+j+3]=ptr->getStrand();

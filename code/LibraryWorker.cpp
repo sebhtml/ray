@@ -36,9 +36,9 @@ bool LibraryWorker::isDone(){
 	return m_done;
 }
 
-void LibraryWorker::constructor(int id,SeedingData*seedingData,VirtualCommunicator*virtualCommunicator,RingAllocator*outboxAllocator,Parameters*parameters,
+void LibraryWorker::constructor(uint64_t id,SeedingData*seedingData,VirtualCommunicator*virtualCommunicator,RingAllocator*outboxAllocator,Parameters*parameters,
 StaticVector*inbox,StaticVector*outbox,	map<int,map<int,int> >*libraryDistances,int*detectedDistances){
-	cout<<"LibraryWorker::Constructor"<<endl;
+	//cout<<"LibraryWorker::Constructor"<<endl;
 	m_done=false;
 	m_parameters=parameters;
 	m_SEEDING_i=id;
@@ -65,7 +65,7 @@ void LibraryWorker::work(){
 	}
 	//cout<<"Work"<<endl;
 	#ifdef ASSERT
-	assert(m_SEEDING_i<(int)m_seedingData->m_SEEDING_seeds.size());
+	assert(m_SEEDING_i<m_seedingData->m_SEEDING_seeds.size());
 	#endif
 	if(m_EXTENSION_currentPosition==(int)m_seedingData->m_SEEDING_seeds[m_SEEDING_i].size()){
 		m_done=true;
@@ -80,7 +80,7 @@ void LibraryWorker::work(){
 			#endif
 			uint64_t vertex=m_seedingData->m_SEEDING_seeds[m_SEEDING_i][m_EXTENSION_currentPosition];
 		
-			m_readFetcher.constructor(vertex,m_outboxAllocator,m_inbox,m_outbox,m_parameters,m_virtualCommunicator);
+			m_readFetcher.constructor(vertex,m_outboxAllocator,m_inbox,m_outbox,m_parameters,m_virtualCommunicator,m_SEEDING_i);
 			#ifdef ASSERT
 			assert(!m_readFetcher.isDone());
 			#endif
@@ -97,15 +97,19 @@ void LibraryWorker::work(){
 					message[0]=rightRead;
 					#ifdef ASSERT
 					assert(m_parameters!=NULL);
+					if(!(annotation.getRank()<m_parameters->getSize())){
+						cout<<"Error rank="<<annotation.getRank()<<" size="<<m_parameters->getSize()<<endl;
+					}
+					assert(annotation.getRank()<m_parameters->getSize());
 					#endif
 					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),RAY_MPI_TAG_GET_READ_MATE,m_parameters->getRank());
 					//cout<<"Requesting mate"<<endl;
 					//(m_outbox)->push_back(aMessage);
-					m_virtualCommunicator->pushMessage(rightRead,&aMessage);
+					m_virtualCommunicator->pushMessage(m_SEEDING_i,&aMessage);
 					m_EXTENSION_hasPairedReadRequested=true;
-				}else if(m_virtualCommunicator->isMessageProcessed(rightRead)){
+				}else if(m_virtualCommunicator->isMessageProcessed(m_SEEDING_i)){
 					//cout<<"Got mate"<<endl;
-					vector<uint64_t> buffer=m_virtualCommunicator->getResponseElements(rightRead);
+					vector<uint64_t> buffer=m_virtualCommunicator->getResponseElements(m_SEEDING_i);
 					#ifdef ASSERT
 					assert((int)buffer.size()==4);
 					#endif

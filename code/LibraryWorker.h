@@ -45,7 +45,7 @@ class LibraryWorker{
 	map<uint64_t,char> m_readsStrands;
 	map<uint64_t,uint16_t> m_strandPositions;
 	VirtualCommunicator*m_virtualCommunicator;
-	int m_SEEDING_i;
+	uint64_t m_SEEDING_i;
 	RingAllocator*m_outboxAllocator;
 	Parameters*m_parameters;
 	int m_EXTENSION_currentPosition;
@@ -59,7 +59,7 @@ class LibraryWorker{
 	
 public:
 
-	void constructor(int id,SeedingData*seedingData,VirtualCommunicator*virtualCommunicator,RingAllocator*outboxAllocator,
+	void constructor(uint64_t id,SeedingData*seedingData,VirtualCommunicator*virtualCommunicator,RingAllocator*outboxAllocator,
 	Parameters*parameters,StaticVector*inbox,StaticVector*outbox,map<int,map<int,int> >*libraryDistances,int*detectedDistances);
 	bool isDone();
 	void work();

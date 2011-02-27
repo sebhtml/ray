@@ -42,12 +42,18 @@ void VirtualCommunicator::setReplyType(int query,int reply){
 void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 	m_pushedMessages++;
 	#ifdef ASSERT
+	if(m_elementsForWorkers.count(workerId)>0){
+		cout<<"Error: there is already a pending message for worker "<<workerId<<endl;
+	}
 	assert(m_elementsForWorkers.count(workerId)==0);
 	#endif
 	m_globalPushedMessageStatus=true;
 	m_localPushedMessageStatus=true;
 	int destination=message->getDestination();
 	#ifdef ASSERT
+	if(!(destination>=0&&destination<m_size)){
+		cout<<"Error: tag="<<message->getTag()<<" destination="<<destination<<" (INVALID)"<<endl;
+	}
 	assert(destination>=0&&destination<m_size);
 	#endif
 
@@ -223,8 +229,14 @@ void VirtualCommunicator::processInbox(vector<uint64_t>*activeWorkers){
 			for(int i=0;i<(int)workers.size();i++){
 				uint64_t workerId=workers[i];
 				activeWorkers->push_back(workerId);
+				if(m_debug){
+					cout<<"Reactivating "<<workerId<<" tag="<<queryTag<<endl;
+				}
 				int basePosition=i*elementsPerWorker;
 				#ifdef ASSERT
+				if(m_elementsForWorkers.count(workerId)>0){
+					cout<<"there already are elements for "<<workerId<<endl;
+				}
 				assert(m_elementsForWorkers.count(workerId)==0);
 				#endif
 				for(int j=0;j<elementsPerWorker;j++){

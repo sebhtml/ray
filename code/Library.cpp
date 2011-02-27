@@ -58,21 +58,91 @@ void Library::updateDistances(){
 }
 
 void Library::detectDistances(){
-	if(!m_workerInitiated){
-		m_workerInitiated=true;
-		if(m_seedingData->m_SEEDING_i<m_seedingData->m_SEEDING_seeds.size()){
-			m_libraryWorker.constructor(m_seedingData->m_SEEDING_i,m_seedingData,m_virtualCommunicator,m_outboxAllocator,m_parameters,m_inbox,m_outbox,&m_libraryDistances,
-	&m_detectedDistances);
-		}
+	if(!m_initiatedIterator){
+		m_SEEDING_i=0;
+
+		m_activeWorkerIterator=m_activeWorkers.begin();
+		m_initiatedIterator=true;
+		m_maximumAliveWorkers=30000;
+		m_maximumAliveWorkers=1;
 	}
 
 	m_virtualCommunicator->processInbox(&m_activeWorkersToRestore);
 
-	m_virtualCommunicator->forceFlush();
+
 	if(!m_virtualCommunicator->isReady()){
 		return;
 	}
-	if(m_seedingData->m_SEEDING_i==(uint64_t)m_seedingData->m_SEEDING_seeds.size()){
+
+	if(m_activeWorkerIterator!=m_activeWorkers.end()){
+		uint64_t workerId=*m_activeWorkerIterator;
+		#ifdef ASSERT
+		if(m_aliveWorkers.count(workerId)==0){
+			cout<<"Error: "<<workerId<<" is not in alive workers "<<m_activeWorkers.size()<<endl;
+		}
+		assert(m_aliveWorkers.count(workerId)>0);
+		assert(!m_aliveWorkers[workerId].isDone());
+		#endif
+		m_virtualCommunicator->resetLocalPushedMessageStatus();
+
+		//cout<<"Rank "<<m_rank<<" Worker="<<workerId<<" work()"<<endl;
+		//
+		//force the worker to work until he finishes or pushes something on the stack
+		while(!m_aliveWorkers[workerId].isDone()&&!m_virtualCommunicator->getLocalPushedMessageStatus()){
+			m_aliveWorkers[workerId].work();
+		}
+
+		if(m_virtualCommunicator->getLocalPushedMessageStatus()){
+			//cout<<"Waiting -> "<<workerId<<endl;
+			m_waitingWorkers.push_back(workerId);
+		}
+		if(m_aliveWorkers[workerId].isDone()){
+			m_workersDone.push_back(workerId);
+		}
+		m_activeWorkerIterator++;
+	}else{
+		updateStates();
+
+		//  add one worker to active workers
+		//  reason is that those already in the pool don't communicate anymore -- 
+		//  as for they need responses.
+		if(!m_virtualCommunicator->getGlobalPushedMessageStatus()&&m_activeWorkers.empty()){
+			// there is at least one worker to start
+			// AND
+			// the number of alive workers is below the maximum
+			if(m_SEEDING_i<m_seedingData->m_SEEDING_seeds.size()&&(int)m_aliveWorkers.size()<m_maximumAliveWorkers){
+				if(m_SEEDING_i%10==0){
+					printf("Rank %i is calculating library lengths [%i/%i]\n",m_parameters->getRank(),(int)m_SEEDING_i+1,(int)m_seedingData->m_SEEDING_seeds.size());
+					fflush(stdout);
+				}
+
+				#ifdef ASSERT
+				if(m_SEEDING_i==0){
+					assert(m_completedJobs==0&&m_activeWorkers.size()==0&&m_aliveWorkers.size()==0);
+				}
+				#endif
+
+				//cout<<"Creating worker "<<m_SEEDING_i<<endl;
+				m_aliveWorkers[m_SEEDING_i].constructor(m_SEEDING_i,m_seedingData,m_virtualCommunicator,m_outboxAllocator,m_parameters,m_inbox,m_outbox,&m_libraryDistances,&m_detectedDistances);
+				m_activeWorkers.insert(m_SEEDING_i);
+				int population=m_aliveWorkers.size();
+				if(population>m_maximumWorkers){
+					m_maximumWorkers=population;
+				}
+				m_SEEDING_i++;
+			}else{
+				m_virtualCommunicator->forceFlush();
+			}
+		}
+
+		m_activeWorkerIterator=m_activeWorkers.begin();
+	}
+
+	#ifdef ASSERT
+	assert((int)m_aliveWorkers.size()<=m_maximumAliveWorkers);
+	#endif
+
+	if(m_completedJobs==(int)m_seedingData->m_SEEDING_seeds.size()){
 		printf("Rank %i detected %i library lengths\n",getRank(),m_detectedDistances);
 		fflush(stdout);
 		printf("Rank %i is calculating library lengths [%i/%i] (completed)\n",getRank(),(int)m_seedingData->m_SEEDING_seeds.size(),(int)m_seedingData->m_SEEDING_seeds.size());
@@ -82,19 +152,9 @@ void Library::detectDistances(){
 		m_outbox->push_back(aMessage);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 
+		m_virtualCommunicator->printStatistics();
 		showMemoryUsage(m_rank);
-
-	}else if(!m_libraryWorker.isDone()){
-		m_libraryWorker.work();
-	}else{
-		m_seedingData->m_SEEDING_i++;
-		if(m_seedingData->m_SEEDING_i<m_seedingData->m_SEEDING_seeds.size()){
-			m_libraryWorker.constructor(m_seedingData->m_SEEDING_i,m_seedingData,m_virtualCommunicator,m_outboxAllocator,m_parameters,m_inbox,m_outbox,&m_libraryDistances,
-				&m_detectedDistances);
-		}
 	}
-
-
 }
 
 void Library::constructor(int m_rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator,int*m_sequence_id,int*m_sequence_idInFile,ExtensionData*m_ed,
@@ -123,9 +183,7 @@ Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,StaticVector*inbo
 	m_virtualCommunicator=vc;
 	m_inbox=inbox;
 
-	m_seedingData->m_SEEDING_i=0;
-	m_workerInitiated=false;
-
+	m_initiatedIterator=false;
 }
 
 void Library::setReadiness(){
@@ -188,4 +246,38 @@ void Library::sendLibraryDistances(){
 
 		m_libraryIndex++;
 	}
+}
+
+void Library::updateStates(){
+	// erase completed jobs
+	for(int i=0;i<(int)m_workersDone.size();i++){
+		uint64_t workerId=m_workersDone[i];
+		#ifdef ASSERT
+		assert(m_activeWorkers.count(workerId)>0);
+		assert(m_aliveWorkers.count(workerId)>0);
+		#endif
+		m_activeWorkers.erase(workerId);
+		m_aliveWorkers.erase(workerId);
+		m_completedJobs++;
+	}
+	m_workersDone.clear();
+
+	for(int i=0;i<(int)m_waitingWorkers.size();i++){
+		uint64_t workerId=m_waitingWorkers[i];
+		#ifdef ASSERT
+		assert(m_activeWorkers.count(workerId)>0);
+		#endif
+		m_activeWorkers.erase(workerId);
+		//cout<<"Rank "<<m_rank<<" Worker="<<workerId<<" SET STATE SLEEPY"<<endl;
+	}
+	m_waitingWorkers.clear();
+
+	for(int i=0;i<(int)m_activeWorkersToRestore.size();i++){
+		uint64_t workerId=m_activeWorkersToRestore[i];
+		m_activeWorkers.insert(workerId);
+		//cout<<"Rank "<<m_rank<<" Worker="<<workerId<<" SET STATE ACTIVE"<<endl;
+	}
+	m_activeWorkersToRestore.clear();
+
+	m_virtualCommunicator->resetGlobalPushedMessageStatus();
 }

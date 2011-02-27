@@ -49,9 +49,9 @@ see <http://www.gnu.org/licenses/>
 using namespace std;
 
 #define SHOW_PROGRESS
-
 // the maximum of processes is utilized to construct unique hyperfusions IDs
 #define MAX_NUMBER_OF_MPI_PROCESSES 1000000
+#define INVALID_RANK MAX_NUMBER_OF_MPI_PROCESSES
 
 #define __max(a,b) (((a)>(b)) ? (a) : (b))
 
