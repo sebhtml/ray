@@ -260,8 +260,11 @@ void Machine::start(){
 	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_REQUEST_VERTEX_READS,RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY);
 	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_READS,5);
 
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_GET_READ_MATE,RAY_MPI_TAG_GET_READ_MATE_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_GET_READ_MATE,4);
+
 	m_library.constructor(getRank(),&m_outbox,&m_outboxAllocator,&m_sequence_id,&m_sequence_idInFile,
-		m_ed,&m_readsPositions,getSize(),&m_timePrinter,&m_slave_mode,&m_master_mode,
+		m_ed,getSize(),&m_timePrinter,&m_slave_mode,&m_master_mode,
 	&m_parameters,&m_fileId,m_seedingData,&m_inbox,&m_virtualCommunicator);
 
 	m_subgraph.constructor(getRank());

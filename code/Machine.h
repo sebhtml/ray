@@ -157,7 +157,6 @@ class Machine{
 
 	int m_numberOfRanksDoneDetectingDistances;
 	// read, strand, position
-	map<uint64_t,int > m_readsPositions;
 	int m_numberOfRanksDoneSendingDistances;
 
 

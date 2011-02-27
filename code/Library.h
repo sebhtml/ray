@@ -35,9 +35,10 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<TimePrinter.h>
 #include <ReadFetcher.h>
 #include <VirtualCommunicator.h>
-#include<Parameters.h>
-#include<SeedingData.h>
-#include<RingAllocator.h>
+#include <Parameters.h>
+#include <SeedingData.h>
+#include <RingAllocator.h>
+#include <LibraryWorker.h>
 using namespace std;
 
 class Library{
@@ -53,9 +54,6 @@ class Library{
 	int*m_sequence_id;
 	int*m_sequence_idInFile;
 	ExtensionData*m_ed;
-	map<uint64_t,int>*m_readsPositions;
-	map<uint64_t,char> m_readsStrands;
-	map<uint64_t,uint16_t> m_strandPositions;
 	RingAllocator*m_outboxAllocator;
 	int m_size;
 	TimePrinter*m_timePrinter;
@@ -68,9 +66,9 @@ class Library{
 	map<int,map<int,int> > m_libraryDistances;
 	map<int,int>::iterator m_libraryIndex;
 	bool m_libraryIndexInitiated;
-	ReadFetcher m_readFetcher;
 	vector<uint64_t> m_activeWorkersToRestore;
-
+	LibraryWorker m_libraryWorker;
+	bool m_workerInitiated;
 public:
 	Library();
 	void allocateBuffers();
@@ -83,7 +81,7 @@ public:
 	void sendLibraryDistances();
 
 	void constructor(int m_rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator,
-	int*m_sequence_id,int*m_sequence_idInFile,ExtensionData*m_ed,map<uint64_t,int >*m_readsPositions,int m_size,
+	int*m_sequence_id,int*m_sequence_idInFile,ExtensionData*m_ed,int m_size,
 TimePrinter*m_timePrinter,int*m_mode,int*m_master_mode,
 Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,StaticVector*inbox,VirtualCommunicator*vc
 );

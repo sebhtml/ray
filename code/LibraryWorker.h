@@ -30,19 +30,37 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include <map>
 #include <stdint.h>
 #include <ExtensionData.h>
+#include <SeedingData.h>
+#include <VirtualCommunicator.h>
+#include <RingAllocator.h>
 using namespace std;
 
 class LibraryWorker{
 	bool m_done;
+	ReadFetcher m_readFetcher;
 	map<int,map<int,int> >*m_libraryDistances;
 	ExtensionData*m_ed;
 
-	map<uint64_t,int>*m_readsPositions;
+	map<uint64_t,int> m_readsPositions;
 	map<uint64_t,char> m_readsStrands;
 	map<uint64_t,uint16_t> m_strandPositions;
-
+	VirtualCommunicator*m_virtualCommunicator;
+	int m_SEEDING_i;
+	RingAllocator*m_outboxAllocator;
+	Parameters*m_parameters;
+	int m_EXTENSION_currentPosition;
+	bool m_EXTENSION_reads_requested;
+	SeedingData*m_seedingData;
+	int m_EXTENSION_edgeIterator;
+	StaticVector*m_inbox;
+	StaticVector*m_outbox;
+	bool m_EXTENSION_hasPairedReadRequested;
+	int*m_detectedDistances;
+	
 public:
-	void constructor();
+
+	void constructor(int id,SeedingData*seedingData,VirtualCommunicator*virtualCommunicator,RingAllocator*outboxAllocator,
+	Parameters*parameters,StaticVector*inbox,StaticVector*outbox,map<int,map<int,int> >*libraryDistances,int*detectedDistances);
 	bool isDone();
 	void work();
 };

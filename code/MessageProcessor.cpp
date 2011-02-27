@@ -48,31 +48,62 @@ void MessageProcessor::processMessage(Message*message){
 	(this->*f)(message);
 }
 
+void MessageProcessor::call_RAY_MPI_TAG_GET_READ_MATE_REPLY(Message*message){
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_GET_READ_MATE(Message*message){
+	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	int j=0;
+	uint64_t*buffer=(uint64_t*)message->getBuffer();
+	for(int i=0;i<message->getCount();i++){
+		int readId=buffer[i];
+		Read*read=m_myReads->at(readId);
+		int readLength=read->length();
+		outgoingMessage[j++]=readLength;
+		if(!read->hasPairedRead()){
+			outgoingMessage[j++]=-1;
+			outgoingMessage[j++]=-1;
+			outgoingMessage[j++]=-1;
+		}else{
+			PairedRead*mate=read->getPairedRead();
+			outgoingMessage[j++]=mate->getRank();
+			outgoingMessage[j++]=mate->getId();
+			outgoingMessage[j++]=mate->getLibrary();
+		}
+	}
+
+	Message aMessage(outgoingMessage,j,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_GET_READ_MATE_REPLY,rank);
+	m_outbox->push_back(aMessage);
+}
+
 void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 	//int count=message->getCount();
 	uint64_t*buffer=(uint64_t*)message->getBuffer();
-	uint64_t vertex=buffer[0];
-	ReadAnnotation*ptr=(ReadAnnotation*)buffer[1];
-	if(ptr==NULL){
-		ptr=m_subgraph->getReads(vertex);
-	}
-	int maxToProcess=4;
-	
 	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+
 	int j=0;
-	if(ptr==NULL){
-		outgoingMessage[1+j]=-1;
+	for(int i=0;i<message->getCount();i+=2){
+		uint64_t vertex=buffer[i];
+		ReadAnnotation*ptr=(ReadAnnotation*)buffer[i+1];
+		if(ptr==NULL){
+			ptr=m_subgraph->getReads(vertex);
+		}
+		int maxToProcess=4;
+	
+		if(ptr==NULL){
+			outgoingMessage[j+1]=-1;
+		}
+		while(ptr!=NULL&&j<maxToProcess){
+			outgoingMessage[1+j]=ptr->getRank();
+			outgoingMessage[1+j+1]=ptr->getReadIndex();
+			outgoingMessage[1+j+2]=ptr->getPositionOnStrand();
+			outgoingMessage[1+j+3]=ptr->getStrand();
+			ptr=ptr->getNext();
+		}
+		outgoingMessage[j]=(uint64_t)ptr;
+		j+=5;
 	}
-	while(ptr!=NULL&&j<maxToProcess){
-		outgoingMessage[1+j]=ptr->getRank();
-		outgoingMessage[1+j+1]=ptr->getReadIndex();
-		outgoingMessage[1+j+2]=ptr->getPositionOnStrand();
-		outgoingMessage[1+j+3]=ptr->getStrand();
-		ptr=ptr->getNext();
-		j+=4;
-	}
-	outgoingMessage[0]=(uint64_t)ptr;
-	Message aMessage(outgoingMessage,maxToProcess+1,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY,rank);
+	Message aMessage(outgoingMessage,j,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -2039,6 +2070,8 @@ void MessageProcessor::assignHandlers(){
 	m_methods[RAY_MPI_TAG_ASK_VERTEX_PATHS]=&MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS;
 	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_READS]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS;
 	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY;
+	m_methods[RAY_MPI_TAG_GET_READ_MATE]=&MessageProcessor::call_RAY_MPI_TAG_GET_READ_MATE;
+	m_methods[RAY_MPI_TAG_GET_READ_MATE_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_GET_READ_MATE_REPLY;
 }
 
 

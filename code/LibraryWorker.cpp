@@ -27,127 +27,138 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include <LibraryWorker.h>
 #include <Message.h>
 #include <SeedingData.h>
+#include <map>
 #include <mpi.h>
 #include <VirtualCommunicator.h>
-
-void LibraryWorker::constructor(int id,SeedingData*seedingData,VirtualCommunicator*virtualCommunicator){
-	m_virtualCommunicator=virtualCommunicator;
-	m_currentPosition=0;
-	m_id=id;
-	m_seedingData=seedingData;
-	m_readsRequested=false;
-}
+using namespace std;
 
 bool LibraryWorker::isDone(){
 	return m_done;
 }
 
+void LibraryWorker::constructor(int id,SeedingData*seedingData,VirtualCommunicator*virtualCommunicator,RingAllocator*outboxAllocator,Parameters*parameters,
+StaticVector*inbox,StaticVector*outbox,	map<int,map<int,int> >*libraryDistances,int*detectedDistances){
+	cout<<"LibraryWorker::Constructor"<<endl;
+	m_done=false;
+	m_parameters=parameters;
+	m_SEEDING_i=id;
+	m_seedingData=seedingData;
+	m_virtualCommunicator=virtualCommunicator;
+	m_outboxAllocator=outboxAllocator;
+	m_EXTENSION_currentPosition=0;
+	m_EXTENSION_reads_requested=false;
+	m_EXTENSION_hasPairedReadRequested=false;
+	m_EXTENSION_edgeIterator=0;
+	m_inbox=inbox;
+	m_outbox=outbox;
+	m_libraryDistances=libraryDistances;
+	m_detectedDistances=detectedDistances;
+
+	m_readsPositions.clear();
+	m_readsStrands.clear();
+	m_strandPositions.clear();
+}
+
 void LibraryWorker::work(){
-	if(m_currentPosition==(int)m_seedingData->m_SEEDING_seeds[m_id].size()){
+	if(m_done){
+		return;
+	}
+	//cout<<"Work"<<endl;
+	#ifdef ASSERT
+	assert(m_SEEDING_i<(int)m_seedingData->m_SEEDING_seeds.size());
+	#endif
+	if(m_EXTENSION_currentPosition==(int)m_seedingData->m_SEEDING_seeds[m_SEEDING_i].size()){
 		m_done=true;
+		//cout<<"DONE"<<endl;
 	}else{
-		if(!m_readsRequested){
-			m_readsRequested=true;
-			uint64_t vertex=m_seedingData->m_SEEDING_seeds[m_id][m__currentPosition];
-			m_readFetcher.constructor(vertex,m_outboxAllocator,m_inbox,m_outbox,m_parameters);
-			m_edgeIterator=0;// iterate over reads
-			m_hasPairedReadRequested=false;
+		if(!m_EXTENSION_reads_requested){
+			//cout<<"Requesting reads"<<endl;
+			m_EXTENSION_reads_requested=true;
+			#ifdef ASSERT
+			assert(m_seedingData!=NULL);
+			assert(m_EXTENSION_currentPosition<(int)m_seedingData->m_SEEDING_seeds[m_SEEDING_i].size());
+			#endif
+			uint64_t vertex=m_seedingData->m_SEEDING_seeds[m_SEEDING_i][m_EXTENSION_currentPosition];
+		
+			m_readFetcher.constructor(vertex,m_outboxAllocator,m_inbox,m_outbox,m_parameters,m_virtualCommunicator);
+			#ifdef ASSERT
+			assert(!m_readFetcher.isDone());
+			#endif
+			m_EXTENSION_edgeIterator=0;// iterate over reads
+			m_EXTENSION_hasPairedReadRequested=false;
 		}else if(!m_readFetcher.isDone()){
 			m_readFetcher.work();
 		}else{
-			if(m_edgeIterator<(int)m_readFetcher.getResult()->size()){
-				ReadAnnotation annotation=m_readFetcher.getResult()->at(m_edgeIterator);
-
+			if(m_EXTENSION_edgeIterator<(int)m_readFetcher.getResult()->size()){
+				ReadAnnotation annotation=m_readFetcher.getResult()->at(m_EXTENSION_edgeIterator);
 				int rightRead=annotation.getReadIndex();
-				#ifdef ASSERT_AUTO
-				uint64_t rightReadUniqueId=annotation.getUniqueId();
-				#endif
-				if(!m_hasPairedReadRequested){
+				if(!m_EXTENSION_hasPairedReadRequested){
 					uint64_t*message=(uint64_t*)(m_outboxAllocator)->allocate(1*sizeof(uint64_t));
 					message[0]=rightRead;
-					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),RAY_MPI_TAG_HAS_PAIRED_READ,getRank());
-					
-					(m_outbox)->push_back(aMessage);
-					m_hasPairedReadRequested=true;
-					m_hasPairedReadReceived=false;
-					m_readLength_requested=false;
-				}else if(m_hasPairedReadReceived){
-					if(m_EXTENSION_hasPairedReadAnswer){
-						if(!m_EXTENSION_readLength_requested){
-							m_EXTENSION_readLength_requested=true;
-							m_EXTENSION_readLength_received=false;
-							uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
-							m_EXTENSION_pairedSequenceRequested=false;
-							message[0]=rightRead;
-							Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),RAY_MPI_TAG_ASK_READ_LENGTH,getRank());
-							m_outbox->push_back(aMessage);
-						}else if(m_ed->m_EXTENSION_readLength_received){
-							if(!m_ed->m_EXTENSION_pairedSequenceRequested){
-								m_ed->m_EXTENSION_pairedSequenceReceived=false;
-								m_ed->m_EXTENSION_pairedSequenceRequested=true;
-								uint64_t*message=(uint64_t*)(m_outboxAllocator)->allocate(1*sizeof(uint64_t));
-								message[0]=rightRead;
-								Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),RAY_MPI_TAG_GET_PAIRED_READ,getRank());
-								(m_outbox)->push_back(aMessage);
-							}else if(m_ed->m_EXTENSION_pairedSequenceReceived){
-								int library=m_ed->m_EXTENSION_pairedRead.getLibrary();
-								bool isAutomatic=m_parameters->isAutomatic(library);
-								if(isAutomatic){
-									uint64_t uniqueReadIdentifier=m_ed->m_EXTENSION_pairedRead.getUniqueId();
-									if((*m_readsPositions).count(uniqueReadIdentifier)>0){
-										int library=m_ed->m_EXTENSION_pairedRead.getLibrary();
-										int rightStrandPosition=annotation.getPositionOnStrand();
-										char rightStrand=annotation.getStrand();
-										char leftStrand=m_readsStrands[uniqueReadIdentifier];
-										int leftStrandPosition=m_strandPositions[uniqueReadIdentifier];
+					#ifdef ASSERT
+					assert(m_parameters!=NULL);
+					#endif
+					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),RAY_MPI_TAG_GET_READ_MATE,m_parameters->getRank());
+					//cout<<"Requesting mate"<<endl;
+					//(m_outbox)->push_back(aMessage);
+					m_virtualCommunicator->pushMessage(rightRead,&aMessage);
+					m_EXTENSION_hasPairedReadRequested=true;
+				}else if(m_virtualCommunicator->isMessageProcessed(rightRead)){
+					//cout<<"Got mate"<<endl;
+					vector<uint64_t> buffer=m_virtualCommunicator->getResponseElements(rightRead);
+					#ifdef ASSERT
+					assert((int)buffer.size()==4);
+					#endif
+					if((int)buffer[1]!=-1){
+						//cout<<"Got mate, checking if automatic"<<endl;
+						int library=buffer[3];
+						int readLength=buffer[0];
+						bool isAutomatic=m_parameters->isAutomatic(library);
+						if(isAutomatic){
+							uint64_t uniqueReadIdentifier=getPathUniqueId(buffer[1],buffer[2]);
+							if((m_readsPositions).count(uniqueReadIdentifier)>0){
+								int rightStrandPosition=annotation.getPositionOnStrand();
+								char rightStrand=annotation.getStrand();
+								char leftStrand=m_readsStrands[uniqueReadIdentifier];
+								int leftStrandPosition=m_strandPositions[uniqueReadIdentifier];
 											
-										if(( leftStrand=='F' && rightStrand=='R' )
-										||(  leftStrand=='R' && rightStrand=='F' )){// make sure the orientation is OK
-											int p1=(*m_readsPositions)[uniqueReadIdentifier];
-											
-										
-											int p2=m_ed->m_EXTENSION_currentPosition;
-											int d=p2-p1+m_ed->m_EXTENSION_receivedLength+leftStrandPosition-rightStrandPosition;
-											//cout<<"d="<<d<<" lId="<<annotation.getUniqueId()<<" rId="<<uniqueReadIdentifier<<" pLeft="<<p1<<" pRight="<<p2<<" lStrand="<<leftStrand<<" rStrand="<<rightStrand<<" leftStrandPos="<<leftStrandPosition<<" rightStrandPos="<<rightStrandPosition<<" RightLength="<<m_ed->m_EXTENSION_receivedLength<<endl;
-											(*m_libraryDistances)[library][d]++;
-											m_detectedDistances++;
-										}
-									}else{
-										#ifdef ASSERT_AUTO
-										cout<<"Pair was not found."<<endl;
-										#endif
-									}
+								if(( leftStrand=='F' && rightStrand=='R' )
+								||(  leftStrand=='R' && rightStrand=='F' )){// make sure the orientation is OK
+									int p1=(m_readsPositions)[uniqueReadIdentifier];
+									int p2=m_EXTENSION_currentPosition;
+									int d=p2-p1+readLength+leftStrandPosition-rightStrandPosition;
+									//cout<<"d="<<d<<" lId="<<annotation.getUniqueId()<<" rId="<<uniqueReadIdentifier<<" pLeft="<<p1<<" pRight="<<p2<<" lStrand="<<leftStrand<<" rStrand="<<rightStrand<<" leftStrandPos="<<leftStrandPosition<<" rightStrandPos="<<rightStrandPosition<<" RightLength="<<readLength<<endl;
+									(*m_libraryDistances)[library][d]++;
+									(*m_detectedDistances)++;
 								}
-							
-								m_ed->m_EXTENSION_edgeIterator++;
-								m_ed->m_EXTENSION_hasPairedReadRequested=false;
+							}else{
+								//cout<<"Pair was not found."<<endl;
 							}
 						}
-					}else{
-						m_ed->m_EXTENSION_edgeIterator++;
-						m_ed->m_EXTENSION_hasPairedReadRequested=false;
 					}
+					//cout<<"Next read"<<endl;
+					m_EXTENSION_edgeIterator++;
+					m_EXTENSION_hasPairedReadRequested=false;
 				}
 			}else{
-				#ifdef ASSERT_AUTO
-				cout<<"Adding reads in positions "<<m_ed->m_EXTENSION_currentPosition<<endl;
-				#endif
+				//cout<<"Storing positions"<<endl;
 				for(int i=0;i<(int)m_readFetcher.getResult()->size();i++){
-					ReadAnnotation a=m_readFetcher.getResult()->at(i);
-					uint64_t uniqueId=a.getUniqueId();
-					int position=m_ed->m_EXTENSION_currentPosition;
-					char strand=a.getStrand();
-					int strandPosition=a.getPositionOnStrand();
+					uint64_t uniqueId=m_readFetcher.getResult()->at(i).getUniqueId();
+					int position=m_EXTENSION_currentPosition;
+					char strand=m_readFetcher.getResult()->at(i).getStrand();
+					int strandPosition=m_readFetcher.getResult()->at(i).getPositionOnStrand();
 					// read, position, strand
-					(*m_readsPositions)[uniqueId]=position;
+					(m_readsPositions)[uniqueId]=position;
 					m_readsStrands[uniqueId]=strand;
 					m_strandPositions[uniqueId]=strandPosition;
 					//cout<<"Read Id="<<uniqueId<<" Strand="<<strand<<" StrandPosition="<<strandPosition<<" PositionOnSeed="<<position<<endl;
 				}
-
-				m_ed->m_EXTENSION_currentPosition++;
-				m_ed->m_EXTENSION_reads_requested=false;
+				//cout<<"Next position"<<endl;
+				m_EXTENSION_currentPosition++;
+				m_EXTENSION_reads_requested=false;
 			}
 		}
 	}
+
+
 }

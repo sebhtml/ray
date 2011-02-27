@@ -58,8 +58,17 @@ void Library::updateDistances(){
 }
 
 void Library::detectDistances(){
+	if(!m_workerInitiated){
+		m_workerInitiated=true;
+		if(m_seedingData->m_SEEDING_i<m_seedingData->m_SEEDING_seeds.size()){
+			m_libraryWorker.constructor(m_seedingData->m_SEEDING_i,m_seedingData,m_virtualCommunicator,m_outboxAllocator,m_parameters,m_inbox,m_outbox,&m_libraryDistances,
+	&m_detectedDistances);
+		}
+	}
+
 	m_virtualCommunicator->processInbox(&m_activeWorkersToRestore);
 
+	m_virtualCommunicator->forceFlush();
 	if(!m_virtualCommunicator->isReady()){
 		return;
 	}
@@ -75,134 +84,25 @@ void Library::detectDistances(){
 
 		showMemoryUsage(m_rank);
 
-	}else if(m_ed->m_EXTENSION_currentPosition==(int)m_seedingData->m_SEEDING_seeds[m_seedingData->m_SEEDING_i].size()){
-		m_ed->m_EXTENSION_currentPosition=0;
-		m_seedingData->m_SEEDING_i++;
-		(*m_readsPositions).clear();
-		m_readsStrands.clear();
-		m_strandPositions.clear();
-		#ifdef ASSERT
-		assert((*m_readsPositions).size()==0);
-		#endif
+	}else if(!m_libraryWorker.isDone()){
+		m_libraryWorker.work();
 	}else{
-		if(!m_ed->m_EXTENSION_reads_requested){
-			if(m_ed->m_EXTENSION_currentPosition==0 && m_seedingData->m_SEEDING_i%10==0){
-				printf("Rank %i is calculating library lengths [%i/%i]\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_seedingData->m_SEEDING_seeds.size());
-				fflush(stdout);
-			}
-			m_ed->m_EXTENSION_reads_requested=true;
-			m_ed->m_EXTENSION_reads_received=false;
-			#ifdef ASSERT
-			assert(m_ed->m_EXTENSION_currentPosition<(int)m_seedingData->m_SEEDING_seeds[m_seedingData->m_SEEDING_i].size());
-			#endif
-			uint64_t vertex=m_seedingData->m_SEEDING_seeds[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
-		
-			m_readFetcher.constructor(vertex,m_outboxAllocator,m_inbox,m_outbox,m_parameters,m_virtualCommunicator);
-			m_ed->m_EXTENSION_edgeIterator=0;// iterate over reads
-			m_ed->m_EXTENSION_hasPairedReadRequested=false;
-		}else if(!m_readFetcher.isDone()){
-			m_readFetcher.work();
-			m_virtualCommunicator->forceFlush();
-		}else{
-			if(m_ed->m_EXTENSION_edgeIterator<(int)m_readFetcher.getResult()->size()){
-				ReadAnnotation annotation=m_readFetcher.getResult()->at(m_ed->m_EXTENSION_edgeIterator);
-				int rightRead=annotation.getReadIndex();
-				#ifdef ASSERT_AUTO
-				uint64_t rightReadUniqueId=annotation.getUniqueId();
-				#endif
-				if(!m_ed->m_EXTENSION_hasPairedReadRequested){
-					uint64_t*message=(uint64_t*)(m_outboxAllocator)->allocate(1*sizeof(uint64_t));
-					message[0]=rightRead;
-					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),RAY_MPI_TAG_HAS_PAIRED_READ,getRank());
-					(m_outbox)->push_back(aMessage);
-					m_ed->m_EXTENSION_hasPairedReadRequested=true;
-					m_ed->m_EXTENSION_hasPairedReadReceived=false;
-					m_ed->m_EXTENSION_readLength_requested=false;
-				}else if(m_ed->m_EXTENSION_hasPairedReadReceived){
-					if(m_ed->m_EXTENSION_hasPairedReadAnswer){
-						if(!m_ed->m_EXTENSION_readLength_requested){
-							m_ed->m_EXTENSION_readLength_requested=true;
-							m_ed->m_EXTENSION_readLength_received=false;
-							uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
-							m_ed->m_EXTENSION_pairedSequenceRequested=false;
-							message[0]=rightRead;
-							Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),RAY_MPI_TAG_ASK_READ_LENGTH,getRank());
-							m_outbox->push_back(aMessage);
-						}else if(m_ed->m_EXTENSION_readLength_received){
-							if(!m_ed->m_EXTENSION_pairedSequenceRequested){
-								m_ed->m_EXTENSION_pairedSequenceReceived=false;
-								m_ed->m_EXTENSION_pairedSequenceRequested=true;
-								uint64_t*message=(uint64_t*)(m_outboxAllocator)->allocate(1*sizeof(uint64_t));
-								message[0]=rightRead;
-								Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),RAY_MPI_TAG_GET_PAIRED_READ,getRank());
-								(m_outbox)->push_back(aMessage);
-							}else if(m_ed->m_EXTENSION_pairedSequenceReceived){
-								int library=m_ed->m_EXTENSION_pairedRead.getLibrary();
-								bool isAutomatic=m_parameters->isAutomatic(library);
-								if(isAutomatic){
-									uint64_t uniqueReadIdentifier=m_ed->m_EXTENSION_pairedRead.getUniqueId();
-									if((*m_readsPositions).count(uniqueReadIdentifier)>0){
-										int library=m_ed->m_EXTENSION_pairedRead.getLibrary();
-										int rightStrandPosition=annotation.getPositionOnStrand();
-										char rightStrand=annotation.getStrand();
-										char leftStrand=m_readsStrands[uniqueReadIdentifier];
-										int leftStrandPosition=m_strandPositions[uniqueReadIdentifier];
-											
-										if(( leftStrand=='F' && rightStrand=='R' )
-										||(  leftStrand=='R' && rightStrand=='F' )){// make sure the orientation is OK
-											int p1=(*m_readsPositions)[uniqueReadIdentifier];
-											
-										
-											int p2=m_ed->m_EXTENSION_currentPosition;
-											int d=p2-p1+m_ed->m_EXTENSION_receivedLength+leftStrandPosition-rightStrandPosition;
-											//cout<<"d="<<d<<" lId="<<annotation.getUniqueId()<<" rId="<<uniqueReadIdentifier<<" pLeft="<<p1<<" pRight="<<p2<<" lStrand="<<leftStrand<<" rStrand="<<rightStrand<<" leftStrandPos="<<leftStrandPosition<<" rightStrandPos="<<rightStrandPosition<<" RightLength="<<m_ed->m_EXTENSION_receivedLength<<endl;
-											(m_libraryDistances)[library][d]++;
-											m_detectedDistances++;
-										}
-									}else{
-										#ifdef ASSERT_AUTO
-										cout<<"Pair was not found."<<endl;
-										#endif
-									}
-								}
-							
-								m_ed->m_EXTENSION_edgeIterator++;
-								m_ed->m_EXTENSION_hasPairedReadRequested=false;
-							}
-						}
-					}else{
-						m_ed->m_EXTENSION_edgeIterator++;
-						m_ed->m_EXTENSION_hasPairedReadRequested=false;
-					}
-				}
-			}else{
-				#ifdef ASSERT_AUTO
-				cout<<"Adding reads in positions "<<m_ed->m_EXTENSION_currentPosition<<endl;
-				#endif
-				for(int i=0;i<(int)m_readFetcher.getResult()->size();i++){
-					uint64_t uniqueId=m_readFetcher.getResult()->at(i).getUniqueId();
-					int position=m_ed->m_EXTENSION_currentPosition;
-					char strand=m_readFetcher.getResult()->at(i).getStrand();
-					int strandPosition=m_readFetcher.getResult()->at(i).getPositionOnStrand();
-					// read, position, strand
-					(*m_readsPositions)[uniqueId]=position;
-					m_readsStrands[uniqueId]=strand;
-					m_strandPositions[uniqueId]=strandPosition;
-					//cout<<"Read Id="<<uniqueId<<" Strand="<<strand<<" StrandPosition="<<strandPosition<<" PositionOnSeed="<<position<<endl;
-				}
-
-				m_ed->m_EXTENSION_currentPosition++;
-				m_ed->m_EXTENSION_reads_requested=false;
-			}
+		m_seedingData->m_SEEDING_i++;
+		if(m_seedingData->m_SEEDING_i<m_seedingData->m_SEEDING_seeds.size()){
+			m_libraryWorker.constructor(m_seedingData->m_SEEDING_i,m_seedingData,m_virtualCommunicator,m_outboxAllocator,m_parameters,m_inbox,m_outbox,&m_libraryDistances,
+				&m_detectedDistances);
 		}
 	}
+
+
 }
 
 void Library::constructor(int m_rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator,int*m_sequence_id,int*m_sequence_idInFile,ExtensionData*m_ed,
-map<uint64_t,int >*m_readsPositions,int m_size,
+int m_size,
 TimePrinter*m_timePrinter,int*m_mode,int*m_master_mode,
 Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,StaticVector*inbox,VirtualCommunicator*vc
 ){
+	//cout<<"Library::constructor"<<endl;
 	this->m_rank=m_rank;
 	this->m_outbox=m_outbox;
 	this->m_outboxAllocator=m_outboxAllocator;
@@ -212,7 +112,6 @@ Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,StaticVector*inbo
 	this->m_sequence_id=m_sequence_id;
 	this->m_sequence_idInFile=m_sequence_idInFile;
 	this->m_ed=m_ed;
-	this->m_readsPositions=m_readsPositions;
 	this->m_size=m_size;
 	this->m_timePrinter=m_timePrinter;
 	this->m_mode=m_mode;
@@ -223,6 +122,10 @@ Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,StaticVector*inbo
 	m_ready=0;
 	m_virtualCommunicator=vc;
 	m_inbox=inbox;
+
+	m_seedingData->m_SEEDING_i=0;
+	m_workerInitiated=false;
+
 }
 
 void Library::setReadiness(){
