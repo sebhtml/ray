@@ -40,7 +40,11 @@ public:
 	int m_readPosition;
 	uint16_t m_strandPosition;
 	char m_readStrand;
-};
+}
+#ifdef FORCE_PACKING
+__attribute__((__packed__))
+#endif
+;
 
 class LibraryWorker{
 	bool m_done;

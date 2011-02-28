@@ -30,13 +30,13 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include <MyAllocator.h>
 
 class ExtensionElement{
+	PairedRead m_pairedRead;
+	char*m_readSequence;
 	int m_position;
+	uint16_t m_strandPosition;
 	char m_strand;
 	bool m_hasPairedRead;
-	char*m_readSequence;
-	PairedRead m_pairedRead;
 	uint8_t m_type;
-	uint8_t m_strandPosition;
 public:
 	void setStrandPosition(int a);
 	int getStrandPosition();
@@ -53,6 +53,10 @@ public:
 	bool isLeftEnd();
 	bool isRightEnd();
 	int getType();
-};
+}
+#ifdef FORCE_PACKING
+__attribute__((__packed__))
+#endif
+;
 
 #endif
