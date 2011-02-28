@@ -111,10 +111,6 @@ void Library::detectDistances(){
 			// AND
 			// the number of alive workers is below the maximum
 			if(m_SEEDING_i<m_seedingData->m_SEEDING_seeds.size()&&(int)m_aliveWorkers.size()<m_maximumAliveWorkers){
-				if(m_SEEDING_i%10==0){
-					printf("Rank %i is calculating library lengths [%i/%i]\n",m_parameters->getRank(),(int)m_SEEDING_i+1,(int)m_seedingData->m_SEEDING_seeds.size());
-					fflush(stdout);
-				}
 
 				#ifdef ASSERT
 				if(m_SEEDING_i==0){
@@ -152,6 +148,8 @@ void Library::detectDistances(){
 		m_outbox->push_back(aMessage);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 
+		printf("Rank %i: peak number of workers: %i, maximum: %i\n",m_rank,m_maximumWorkers,m_maximumAliveWorkers);
+		fflush(stdout);
 		m_virtualCommunicator->printStatistics();
 		showMemoryUsage(m_rank);
 	}
@@ -258,6 +256,11 @@ void Library::updateStates(){
 		#endif
 		m_activeWorkers.erase(workerId);
 		m_aliveWorkers.erase(workerId);
+		if(m_completedJobs%10==0){
+			printf("Rank %i is calculating library lengths [%i/%i]\n",m_parameters->getRank(),m_completedJobs+1,(int)m_seedingData->m_SEEDING_seeds.size());
+			fflush(stdout);
+		}
+
 		m_completedJobs++;
 	}
 	m_workersDone.clear();

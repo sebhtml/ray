@@ -88,20 +88,18 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 		if(ptr==NULL){
 			ptr=m_subgraph->getReads(vertex);
 		}
-		int maxToProcess=4;
 	
 		if(ptr==NULL){
 			outgoingMessage[j+1]=INVALID_RANK;
-		}
-		while(ptr!=NULL&&j<maxToProcess){
+		}else{
 			int rank=ptr->getRank();
 			#ifdef ASSERT
 			assert(rank>=0&&rank<parameters->getSize());
 			#endif
-			outgoingMessage[1+j]=rank;
-			outgoingMessage[1+j+1]=ptr->getReadIndex();
-			outgoingMessage[1+j+2]=ptr->getPositionOnStrand();
-			outgoingMessage[1+j+3]=ptr->getStrand();
+			outgoingMessage[j+1]=rank;
+			outgoingMessage[j+2]=ptr->getReadIndex();
+			outgoingMessage[j+3]=ptr->getPositionOnStrand();
+			outgoingMessage[j+4]=ptr->getStrand();
 			ptr=ptr->getNext();
 		}
 		outgoingMessage[j]=(uint64_t)ptr;
