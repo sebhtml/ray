@@ -1,7 +1,8 @@
 = 1.3.0 =
 2011-03-XX
 
-
+* Vertices with less than 1 of coverage are ignored during the computation of
+seeds and during the computation of extensions.
 * Computation of library outer distances relies on the virtual communicator.
 
 
