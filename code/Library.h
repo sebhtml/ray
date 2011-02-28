@@ -81,6 +81,7 @@ class Library{
 	vector<uint64_t> m_waitingWorkers;
 	vector<uint64_t> m_activeWorkersToRestore;
 
+	MyAllocator m_allocator;
 	void updateStates();
 public:
 	Library();

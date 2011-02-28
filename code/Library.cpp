@@ -64,7 +64,7 @@ void Library::detectDistances(){
 		m_activeWorkerIterator=m_activeWorkers.begin();
 		m_initiatedIterator=true;
 		m_maximumAliveWorkers=30000;
-		m_maximumAliveWorkers=1;
+		//m_maximumAliveWorkers=1;
 	}
 
 	m_virtualCommunicator->processInbox(&m_activeWorkersToRestore);
@@ -119,7 +119,7 @@ void Library::detectDistances(){
 				#endif
 
 				//cout<<"Creating worker "<<m_SEEDING_i<<endl;
-				m_aliveWorkers[m_SEEDING_i].constructor(m_SEEDING_i,m_seedingData,m_virtualCommunicator,m_outboxAllocator,m_parameters,m_inbox,m_outbox,&m_libraryDistances,&m_detectedDistances);
+				m_aliveWorkers[m_SEEDING_i].constructor(m_SEEDING_i,m_seedingData,m_virtualCommunicator,m_outboxAllocator,m_parameters,m_inbox,m_outbox,&m_libraryDistances,&m_detectedDistances,&m_allocator);
 				m_activeWorkers.insert(m_SEEDING_i);
 				int population=m_aliveWorkers.size();
 				if(population>m_maximumWorkers){
@@ -147,6 +147,7 @@ void Library::detectDistances(){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE,getRank());
 		m_outbox->push_back(aMessage);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
+		m_allocator.clear();
 
 		printf("Rank %i: peak number of workers: %i, maximum: %i\n",m_rank,m_maximumWorkers,m_maximumAliveWorkers);
 		fflush(stdout);
@@ -182,6 +183,7 @@ Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,StaticVector*inbo
 	m_inbox=inbox;
 
 	m_initiatedIterator=false;
+	m_allocator.constructor(4000000);
 }
 
 void Library::setReadiness(){

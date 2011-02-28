@@ -35,15 +35,22 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include <RingAllocator.h>
 using namespace std;
 
+class LibraryElement{
+public:
+	int m_readPosition;
+	uint16_t m_strandPosition;
+	char m_readStrand;
+};
+
 class LibraryWorker{
 	bool m_done;
 	ReadFetcher m_readFetcher;
 	map<int,map<int,int> >*m_libraryDistances;
 	ExtensionData*m_ed;
 
-	map<uint64_t,int> m_readsPositions;
-	map<uint64_t,char> m_readsStrands;
-	map<uint64_t,uint16_t> m_strandPositions;
+	SplayTree<uint64_t,LibraryElement> m_database;
+
+	MyAllocator*m_allocator;
 	VirtualCommunicator*m_virtualCommunicator;
 	uint64_t m_SEEDING_i;
 	RingAllocator*m_outboxAllocator;
@@ -60,7 +67,8 @@ class LibraryWorker{
 public:
 
 	void constructor(uint64_t id,SeedingData*seedingData,VirtualCommunicator*virtualCommunicator,RingAllocator*outboxAllocator,
-	Parameters*parameters,StaticVector*inbox,StaticVector*outbox,map<int,map<int,int> >*libraryDistances,int*detectedDistances);
+	Parameters*parameters,StaticVector*inbox,StaticVector*outbox,map<int,map<int,int> >*libraryDistances,int*detectedDistances,
+		MyAllocator*allocator);
 	bool isDone();
 	void work();
 };

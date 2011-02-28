@@ -37,7 +37,7 @@ bool LibraryWorker::isDone(){
 }
 
 void LibraryWorker::constructor(uint64_t id,SeedingData*seedingData,VirtualCommunicator*virtualCommunicator,RingAllocator*outboxAllocator,Parameters*parameters,
-StaticVector*inbox,StaticVector*outbox,	map<int,map<int,int> >*libraryDistances,int*detectedDistances){
+StaticVector*inbox,StaticVector*outbox,	map<int,map<int,int> >*libraryDistances,int*detectedDistances,MyAllocator*allocator){
 	//cout<<"LibraryWorker::Constructor"<<endl;
 	m_done=false;
 	m_parameters=parameters;
@@ -54,9 +54,8 @@ StaticVector*inbox,StaticVector*outbox,	map<int,map<int,int> >*libraryDistances,
 	m_libraryDistances=libraryDistances;
 	m_detectedDistances=detectedDistances;
 
-	m_readsPositions.clear();
-	m_readsStrands.clear();
-	m_strandPositions.clear();
+	m_allocator=allocator;
+	m_database.constructor();
 }
 
 void LibraryWorker::work(){
@@ -68,6 +67,11 @@ void LibraryWorker::work(){
 	assert(m_SEEDING_i<m_seedingData->m_SEEDING_seeds.size());
 	#endif
 	if(m_EXTENSION_currentPosition==(int)m_seedingData->m_SEEDING_seeds[m_SEEDING_i].size()){
+		while(m_database.size()>0){
+			SplayNode<uint64_t,LibraryElement>*node=m_database.getRoot();
+			uint64_t key=node->getKey();
+			m_database.remove(key,true,m_allocator);
+		}
 		m_done=true;
 		//cout<<"DONE"<<endl;
 	}else{
@@ -120,15 +124,17 @@ void LibraryWorker::work(){
 						bool isAutomatic=m_parameters->isAutomatic(library);
 						if(isAutomatic){
 							uint64_t uniqueReadIdentifier=getPathUniqueId(buffer[1],buffer[2]);
-							if((m_readsPositions).count(uniqueReadIdentifier)>0){
+							SplayNode<uint64_t,LibraryElement>*node=m_database.find(uniqueReadIdentifier,false);
+							if(node!=NULL){
+								LibraryElement*element=node->getValue();
 								int rightStrandPosition=annotation.getPositionOnStrand();
 								char rightStrand=annotation.getStrand();
-								char leftStrand=m_readsStrands[uniqueReadIdentifier];
-								int leftStrandPosition=m_strandPositions[uniqueReadIdentifier];
+								char leftStrand=element->m_readStrand;
+								int leftStrandPosition=element->m_strandPosition;
 											
 								if(( leftStrand=='F' && rightStrand=='R' )
 								||(  leftStrand=='R' && rightStrand=='F' )){// make sure the orientation is OK
-									int p1=(m_readsPositions)[uniqueReadIdentifier];
+									int p1=element->m_readPosition;
 									int p2=m_EXTENSION_currentPosition;
 									int d=p2-p1+readLength+leftStrandPosition-rightStrandPosition;
 									//cout<<"d="<<d<<" lId="<<annotation.getUniqueId()<<" rId="<<uniqueReadIdentifier<<" pLeft="<<p1<<" pRight="<<p2<<" lStrand="<<leftStrand<<" rStrand="<<rightStrand<<" leftStrandPos="<<leftStrandPosition<<" rightStrandPos="<<rightStrandPosition<<" RightLength="<<readLength<<endl;
@@ -152,9 +158,12 @@ void LibraryWorker::work(){
 					char strand=m_readFetcher.getResult()->at(i).getStrand();
 					int strandPosition=m_readFetcher.getResult()->at(i).getPositionOnStrand();
 					// read, position, strand
-					(m_readsPositions)[uniqueId]=position;
-					m_readsStrands[uniqueId]=strand;
-					m_strandPositions[uniqueId]=strandPosition;
+					bool flag;
+					SplayNode<uint64_t,LibraryElement>*node=m_database.insert(uniqueId,m_allocator,&flag);
+					LibraryElement*element=node->getValue();
+					element->m_readPosition=position;
+					element->m_readStrand=strand;
+					element->m_strandPosition=strandPosition;
 					//cout<<"Read Id="<<uniqueId<<" Strand="<<strand<<" StrandPosition="<<strandPosition<<" PositionOnSeed="<<position<<endl;
 				}
 				//cout<<"Next position"<<endl;
