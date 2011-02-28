@@ -154,7 +154,7 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT(Message*message
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
 	int count=message->getCount();
 	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-	for(int i=0;i<count;i++){
+	for(int i=0;i<count;i+=2){
 		Vertex*node=m_subgraph->find(incoming[i]);
 		#ifdef ASSERT
 		if(node==NULL){
@@ -163,6 +163,7 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT(Message*message
 		assert(node!=NULL);
 		#endif
 		outgoingMessage[i]=node->getEdges(incoming[i]);
+		outgoingMessage[i+1]=node->getCoverage(incoming[i]);
 	}
 	
 	Message aMessage(outgoingMessage,count,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY,rank);

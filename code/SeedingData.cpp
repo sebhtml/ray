@@ -249,7 +249,7 @@ void SeedingData::constructor(SeedExtender*seedExtender,int rank,int size,Static
 	m_virtualCommunicator.constructor(rank,size,outboxAllocator,inbox,outbox);
 
 	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY);
-	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,1);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,2);
 
 	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY);
 	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,1);

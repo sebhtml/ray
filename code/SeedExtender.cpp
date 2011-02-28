@@ -155,6 +155,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 	if(!(*edgesRequested)){
 		//cout<<__func__<<endl;
 		ed->m_EXTENSION_coverages->clear();
+		ed->m_enumerateChoices_outgoingEdges.clear();
 		(*edgesReceived)=false;
 		(*edgesRequested)=true;
 		uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
@@ -168,18 +169,19 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 		(*outgoingEdgeIndex)=0;
 	}else if((*edgesReceived)){
 		if((*outgoingEdgeIndex)<(int)(*receivedOutgoingEdges).size()){
+			uint64_t kmer=(*receivedOutgoingEdges)[(*outgoingEdgeIndex)];
 			// get the coverage of these.
-			if(!(*vertexCoverageRequested)&&(*m_cache).count((*receivedOutgoingEdges)[(*outgoingEdgeIndex)])>0){
+			if(!(*vertexCoverageRequested)&&(*m_cache).count(kmer)>0){
 				(*vertexCoverageRequested)=true;
 				(*vertexCoverageReceived)=true;
-				(*receivedVertexCoverage)=(*m_cache)[(*receivedOutgoingEdges)[(*outgoingEdgeIndex)]];
+				(*receivedVertexCoverage)=(*m_cache)[kmer];
 
 				#ifdef ASSERT
 				assert((*receivedVertexCoverage)<=m_parameters->getMaximumAllowedCoverage());
 				#endif
 			}else if(!(*vertexCoverageRequested)){
 				uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
-				message[0]=(uint64_t)(*receivedOutgoingEdges)[(*outgoingEdgeIndex)];
+				message[0]=(uint64_t)kmer;
 				int dest=vertexRank(message[0],size,wordSize);
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
 				(*outbox).push_back(aMessage);
@@ -187,15 +189,20 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				(*vertexCoverageReceived)=false;
 				(*receivedVertexCoverage)=-1;
 			}else if((*vertexCoverageReceived)){
-				(*m_cache)[(*receivedOutgoingEdges)[(*outgoingEdgeIndex)]]=*receivedVertexCoverage;
+				(*m_cache)[kmer]=*receivedVertexCoverage;
 				(*outgoingEdgeIndex)++;
 				(*vertexCoverageRequested)=false;
 				#ifdef ASSERT
 				assert((*receivedVertexCoverage)<=m_parameters->getMaximumAllowedCoverage());
 				#endif
-				ed->m_EXTENSION_coverages->push_back((*receivedVertexCoverage));
+				int coverageValue=*receivedVertexCoverage;
+				if(coverageValue>1){
+					ed->m_EXTENSION_coverages->push_back((*receivedVertexCoverage));
+					ed->m_enumerateChoices_outgoingEdges.push_back(kmer);
+				}
 			}
 		}else{
+			receivedOutgoingEdges->clear();
 			//cout<<__func__<<" Got choices."<<endl;
 			ed->m_EXTENSION_enumerateChoices=true;
 			ed->m_EXTENSION_choose=false;
@@ -208,23 +215,6 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 			ed->m_EXTENSION_pairedLibrariesForVertices.clear();
 			ed->m_EXTENSION_pairedReadsForVertices.clear();
 
-			ed->m_enumerateChoices_outgoingEdges=(*receivedOutgoingEdges);
-
-			// remove those with a coverage of 1
-			vector<uint64_t> choices;
-			vector<int> coverages;
-			for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
-				uint64_t kmer=ed->m_enumerateChoices_outgoingEdges[i];
-				int coverageValue=ed->m_EXTENSION_coverages->at(i);
-				if(coverageValue>1){
-					choices.push_back(kmer);
-					coverages.push_back(coverageValue);
-				}
-			}
-/*
-			*(ed->m_EXTENSION_coverages)=coverages;
-			ed->m_enumerateChoices_outgoingEdges=choices;
-*/
 			#ifdef ASSERT
 			assert(ed->m_EXTENSION_coverages->size()==ed->m_enumerateChoices_outgoingEdges.size());
 			#endif
@@ -271,8 +261,9 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 		cout<<"What the hell? position="<<ed->m_EXTENSION_currentPosition<<" "<<idToWord(ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition],wordSize)<<" with "<<ed->m_enumerateChoices_outgoingEdges.size()<<" choices ";
 		cout<<endl;
 		cout<<"seed size= "<<ed->m_EXTENSION_currentSeed.size()<<endl;
-		for(int j=0;j<(int)ed->m_enumerateChoices_outgoingEdges.size();j++){
-			cout<<" "<<idToWord(ed->m_enumerateChoices_outgoingEdges[j],wordSize)<<endl;
+		cout<<"Choices: ";
+		for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
+			cout<<" "<<idToWord(ed->m_enumerateChoices_outgoingEdges[i],wordSize);
 		}
 		cout<<endl;
 		cout<<"ComplementSeed="<<ed->m_EXTENSION_complementedSeed<<endl;
@@ -800,7 +791,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 					printf("Rank %i reached %i vertices (%s)\n",theRank,theCurrentSize,idToWord(*currentVertex,
 						m_parameters->getWordSize()).c_str());
 					fflush(stdout);
-					showReadsInRange();
+					//showReadsInRange();
 
 					showMemoryUsage(theRank);
 					int a=ed->getAllocator()->getChunkSize()*ed->getAllocator()->getNumberOfChunks();

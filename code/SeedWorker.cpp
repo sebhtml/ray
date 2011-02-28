@@ -143,7 +143,7 @@ void SeedWorker::do_1_1_test(){
 		if(!m_SEEDING_InedgesRequested){
 			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 			message[0]=(uint64_t)m_SEEDING_currentVertex;
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(m_SEEDING_currentVertex,getSize(),m_wordSize),RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,getRank());
+			Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,vertexRank(m_SEEDING_currentVertex,getSize(),m_wordSize),RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,getRank());
 			m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 			m_SEEDING_numberOfIngoingEdgesWithSeedCoverage=0;
 			m_SEEDING_numberOfOutgoingEdgesWithSeedCoverage=0;
@@ -157,6 +157,13 @@ void SeedWorker::do_1_1_test(){
 			m_ingoingEdgesReceived=true;
 			vector<uint64_t> elements=m_virtualCommunicator->getResponseElements(m_workerIdentifier);
 			uint8_t edges=elements[0];
+			int coverage=elements[1];
+			if(coverage<m_seedCoverage){
+				m_SEEDING_1_1_test_done=true;
+				m_SEEDING_1_1_test_result=false;
+				return;
+			}
+
 			m_SEEDING_receivedIngoingEdges=_getIngoingEdges(m_SEEDING_currentVertex,edges,m_wordSize);
 			m_SEEDING_receivedOutgoingEdges=_getOutgoingEdges(m_SEEDING_currentVertex,edges,m_wordSize);
 			#ifdef ASSERT
