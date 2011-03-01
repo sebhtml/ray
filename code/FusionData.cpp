@@ -91,7 +91,7 @@ void FusionData::constructor(int size,int max,int rank,StaticVector*outbox,
 	#endif
 	m_colorSpaceMode=colorSpaceMode;
 	
-	m_FINISH_pathsForPosition=new vector<vector<Direction> >;
+	m_FINISH_pathsForPosition=NULL;
 
 	m_Machine_getPaths_INITIALIZED=false;
 	m_Machine_getPaths_DONE=false;
@@ -130,6 +130,7 @@ bool FusionData::isReady(){
 void FusionData::finishFusions(){
 	if(m_FINISH_pathsForPosition==NULL){
 		m_FINISH_pathsForPosition=new vector<vector<Direction> >;
+		m_mappingConfirmed=false;
 	}
 	if(m_seedingData->m_SEEDING_i==(uint64_t)m_ed->m_EXTENSION_contigs.size()){
 		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
@@ -326,6 +327,8 @@ void FusionData::finishFusions(){
 
 			m_checkedValidity=true;
 		}
+	}else if(!m_mappingConfirmed){
+		m_mappingConfirmed=true;
 	}else{
 		// check if it is there for at least overlapMinimumLength
 		uint64_t pathId=m_selectedPath;
