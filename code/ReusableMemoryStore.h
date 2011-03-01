@@ -26,9 +26,10 @@
 #include <map>
 using namespace std;
 
+
 typedef struct{
 	void*m_next;
-} Element;
+}Element;
 
 class ReusableMemoryStore{
 	map<int,Element*> m_toReuse;

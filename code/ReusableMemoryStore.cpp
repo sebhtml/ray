@@ -67,7 +67,11 @@ void ReusableMemoryStore::addAddressToReuse(void*p,int size){
 	Element*ptr=(Element*)p;
 	ptr->m_next=NULL;
 	if(m_toReuse.count(size)>0){
-		ptr->m_next=m_toReuse[size];
+		Element*next=m_toReuse[size];
+		#ifdef ASSERT
+		assert(next!=NULL);
+		#endif
+		ptr->m_next=next;
 	}
 	m_toReuse[size]=ptr;
 }

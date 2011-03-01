@@ -85,3 +85,7 @@ void ExtensionElement::setStrandPosition(int a){
 int ExtensionElement::getStrandPosition(){
 	return m_strandPosition;
 }
+
+void ExtensionElement::removeSequence(){
+	m_readSequence=NULL;
+}

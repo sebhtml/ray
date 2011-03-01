@@ -61,6 +61,8 @@ class SeedExtender{
 	MyAllocator*m_directionsAllocator;
 
 	set<uint64_t> m_eliminatedSeeds;
+	map<int,vector<uint64_t> >m_expiredReads;
+
 	void inspect(ExtensionData*ed,uint64_t*currentVertex);
 
 	void removeUnfitLibraries();

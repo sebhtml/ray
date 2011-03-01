@@ -208,7 +208,6 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 			ed->m_EXTENSION_choose=false;
 			ed->m_EXTENSION_singleEndResolution=false;
 			ed->m_EXTENSION_readIterator=ed->m_EXTENSION_readsInRange->begin();
-			ed->m_EXTENSION_readsOutOfRange.clear();
 			ed->m_EXTENSION_readLength_done=false;
 			ed->m_EXTENSION_readPositionsForVertices.clear();
 			ed->m_EXTENSION_pairedReadPositionsForVertices.clear();
@@ -241,6 +240,47 @@ ExtensionData*ed,int minimumCoverage,int maxCoverage,OpenAssemblerChooser*oa,Cho
 bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,int size,
 int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingEdges
 ){
+	if(m_expiredReads.count(ed->m_EXTENSION_currentPosition)>0){
+		for(int i=0;i<(int)m_expiredReads[ed->m_EXTENSION_currentPosition].size();i++){
+			uint64_t uniqueId=m_expiredReads[ed->m_EXTENSION_currentPosition][i];
+			//cout<<"Expires: "<<uniqueId<<" Position="<<ed->m_EXTENSION_currentPosition<<endl;
+			ed->m_EXTENSION_readsInRange->erase(uniqueId);
+
+			// free the sequence
+			ExtensionElement*element=ed->getUsedRead(uniqueId);
+			if(element==NULL){
+				continue;
+			}
+			#ifdef ASSERT
+			assert(element!=NULL);
+			#endif
+			char*read=element->getSequence();
+			if(read==NULL){
+				continue;
+			}
+			#ifdef ASSERT
+			assert(read!=NULL);
+			#endif
+			
+			element->removeSequence();
+			ed->getAllocator()->getStore()->addAddressToReuse(read,strlen(read)+1);
+
+		}
+		m_expiredReads.erase(ed->m_EXTENSION_currentPosition);
+		ed->m_EXTENSION_readIterator=ed->m_EXTENSION_readsInRange->begin();
+		return;
+	}
+
+	// if there is only one choice and reads supporting it
+	if(ed->m_enumerateChoices_outgoingEdges.size()==1&&ed->m_EXTENSION_readsInRange->size()>0){
+		(*currentVertex)=ed->m_enumerateChoices_outgoingEdges[0]; 
+		ed->m_EXTENSION_choose=true; 
+		ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false; 
+		ed->m_EXTENSION_directVertexDone=false; 
+		ed->m_EXTENSION_VertexAssembled_requested=false; 
+		return; 
+	}
+
 	// use the seed to extend the thing.
 	if(ed->m_EXTENSION_currentPosition<(int)ed->m_EXTENSION_currentSeed.size()){
 		//cout<<"Extending with seed, p="<<ed->m_EXTENSION_currentPosition<<" size="<<ed->m_EXTENSION_currentSeed.size()<<endl;
@@ -275,6 +315,8 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 		#endif
 
 	// else, do a paired-end or single-end lookup if reads are in range.
+		
+
 	}else{
 
 /*
@@ -315,11 +357,17 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				int repeatThreshold=100;
 
 				char*theSequence=element->getSequence();
+				#ifdef ASSERT
+				assert(theSequence!=NULL);
+				#endif
 				ed->m_EXTENSION_receivedLength=strlen(theSequence);
 				if(distance>(ed->m_EXTENSION_receivedLength-wordSize)){
+					cout<<"OutOfRange UniqueId="<<uniqueId<<" Length="<<strlen(theSequence)<<" StartPosition="<<element->getPosition()<<" CurrentPosition="<<ed->m_EXTENSION_extension->size()-1<<" StrandPosition="<<element->getStrandPosition()<<endl;
+					#ifdef ASSERT
+					assert(false);
+					#endif
 					// the read is now out-of-range
 					//cout<<"out of range Distance="<<distance<<" Length="<<(ed->m_EXTENSION_receivedLength-wordSize)<<endl;
-					ed->m_EXTENSION_readsOutOfRange.push_back(uniqueId);
 					ed->m_EXTENSION_readIterator++;	
 					return;
 				}
@@ -399,24 +447,6 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				}
 			}else{
 				//cout<<"DOne iterating."<<endl;
-				if(!ed->m_EXTENSION_readsOutOfRange.empty()){
-					//cout<<"Removing reads out-of-range"<<endl;
-					// remove reads that are no longer in-range.
-					for(int i=0;i<(int)ed->m_EXTENSION_readsOutOfRange.size();i++){
-						uint64_t uniqueId=ed->m_EXTENSION_readsOutOfRange[i];
-						ed->m_EXTENSION_readsInRange->erase(uniqueId);
-
-						// free the sequence
-						ExtensionElement*element=ed->getUsedRead(uniqueId);
-						#ifdef ASSERT
-						assert(element!=NULL);
-						#endif
-						char*read=element->getSequence();
-						ed->getAllocator()->getStore()->addAddressToReuse(read,strlen(read)+1);
-					}
-					ed->m_EXTENSION_readsOutOfRange.clear();
-					return;
-				}
 
 				if(!m_removedUnfitLibraries){
 					//cout<<"Removing unfit libraries."<<endl;
@@ -428,6 +458,11 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 					return;
 				}
 
+				// reads will be set free in 3 cases:
+				//
+				// 1. the distance did not match for a pair
+				// 2. the read has not met its mate
+				// 3. the library population indicates a wrong placement
 				if(!ed->m_sequencesToFree.empty()){
 					for(int i=0;i<(int)ed->m_sequencesToFree.size();i++){
 						uint64_t uniqueId=ed->m_sequencesToFree[i];
@@ -442,7 +477,13 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 						assert(element!=NULL);
 						#endif
 						char*read=element->getSequence();
-						ed->getAllocator()->getStore()->addAddressToReuse(read,strlen(read)+1);
+						if(read!=NULL){
+							#ifdef ASSERT
+							assert(read!=NULL);
+							#endif
+							element->removeSequence();
+							ed->getAllocator()->getStore()->addAddressToReuse(read,strlen(read)+1);
+						}
 
 						// remove it
 						ed->removeSequence(uniqueId);
@@ -875,6 +916,17 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 						outbox->push_back(aMessage);
 					}else if(m_sequenceReceived){
 						bool addRead=true;
+						int startPosition=ed->m_EXTENSION_extension->size()-1;
+						int readLength=m_receivedString.length();
+						int position=startPosition;
+						int wordSize=m_parameters->getWordSize();
+						int positionOnStrand=annotation.getPositionOnStrand();
+
+						int availableLength=readLength-positionOnStrand;
+						if(availableLength<=wordSize){
+							addRead=false;
+						}
+
 						if(ed->m_currentCoverage>3*m_parameters->getPeakCoverage()){
 							// the vertex is repeated
 							if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
@@ -889,13 +941,19 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 						if(addRead){
 							ExtensionElement*element=ed->addUsedRead(uniqueId);
 							element->setSequence(m_receivedString.c_str(),ed->getAllocator());
-							int startPosition=ed->m_EXTENSION_extension->size()-1;
 							element->setStartingPosition(startPosition);
 							element->setStrand(annotation.getStrand());
 							element->setStrandPosition(annotation.getPositionOnStrand());
 							element->setType(ed->m_readType);
 							ed->m_EXTENSION_readsInRange->insert(uniqueId);
 
+							#ifdef ASSERT
+							assert(readLength==(int)strlen(element->getSequence()));
+							#endif
+				
+							int expiryPosition=position+readLength-positionOnStrand-wordSize;
+							m_expiredReads[expiryPosition].push_back(uniqueId);
+							//cout<<"Read="<<uniqueId<<" Length="<<readLength<<" WordSize="<<wordSize<<" PositionOnStrand="<<positionOnStrand<<" Position="<<position<<" ExpiryPosition="<<expiryPosition<<endl;
 							// received paired read too !
 							if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
 								element->setPairedRead(ed->m_EXTENSION_pairedRead);

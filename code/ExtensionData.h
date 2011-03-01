@@ -95,7 +95,6 @@ public:
 	vector<ReadAnnotation> m_EXTENSION_receivedReads;
 	bool m_EXTENSION_reads_requested;
 	bool m_EXTENSION_reads_received;
-	vector<uint64_t> m_EXTENSION_readsOutOfRange;
 	vector<uint64_t> m_sequencesToFree;
 	int m_EXTENSION_receivedLength;
 	bool m_EXTENSION_reverseVertexDone;

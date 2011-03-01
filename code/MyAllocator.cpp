@@ -49,7 +49,7 @@ void MyAllocator::constructor(int chunkSize){
 }
 
 void*MyAllocator::allocate(int s){
-	if(m_store.hasAddressesToReuse(s)){
+	if( m_store.hasAddressesToReuse(s)){
 		return m_store.reuseAddress(s);
 	}
 
