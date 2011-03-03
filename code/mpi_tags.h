@@ -30,6 +30,8 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 // Ray instances like to communicate a lots!
 //
 
+extern const char* MESSAGES[];
+
 enum {
 RAY_MPI_TAG_LOAD_SEQUENCES,
 RAY_MPI_TAG_WELCOME,

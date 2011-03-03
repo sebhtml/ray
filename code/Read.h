@@ -36,7 +36,7 @@ using namespace std;
 #define TYPE_LEFT_END 1
 #define TYPE_RIGHT_END 2
 
-/*
+/**
  * a read is represented as a char*
  * and a (possible) link to paired information.
  */

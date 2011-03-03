@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C)  2010  Sébastien Boisvert
+    Copyright (C)  2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -16,9 +16,7 @@
     You have received a copy of the GNU General Public License
     along with this program (COPYING).  
 	see <http://www.gnu.org/licenses/>
-
 */
-
 
 #ifndef _SplayNode
 #define _SplayNode
@@ -26,7 +24,7 @@
 #include<iostream>
 using namespace std;
 
-/*
+/**
  * a splay node.
  */
 template<class KEY,class VALUE>
@@ -36,7 +34,6 @@ public:
 	VALUE m_value;
 	SplayNode<KEY,VALUE>*m_left;
 	SplayNode<KEY,VALUE>*m_right;
-
 
 	SplayNode(KEY key);
 	SplayNode();
@@ -70,7 +67,6 @@ SplayNode<KEY,VALUE>*SplayNode<KEY,VALUE>::getLeft()const{
 	return m_left;
 }
 
-
 template<class KEY,class VALUE>
 void SplayNode<KEY,VALUE>::init(KEY key){
 	m_key=key;
@@ -88,7 +84,6 @@ void SplayNode<KEY,VALUE>::setLeft(SplayNode<KEY,VALUE>*vertex){
 	m_left=vertex;
 }
 
-
 template<class KEY,class VALUE>
 void SplayNode<KEY,VALUE>::setRight(SplayNode<KEY,VALUE>*vertex){
 	m_right=vertex;
@@ -98,7 +93,6 @@ template<class KEY,class VALUE>
 SplayNode<KEY,VALUE>::SplayNode(KEY key){
 	init(key);
 }
-
 
 template<class KEY,class VALUE>
 SplayNode<KEY,VALUE>::SplayNode(){

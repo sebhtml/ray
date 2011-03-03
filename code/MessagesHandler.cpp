@@ -26,7 +26,7 @@
 #include <iostream>
 using namespace std;
 
-//#define DEBUG_MESSAGES
+#define SHOW_TAGS
 
 /*
  * send messages,
@@ -37,7 +37,6 @@ void MessagesHandler::sendMessages(StaticVector*outbox,int source){
 		int destination=aMessage->getDestination();
 		void*buffer=aMessage->getBuffer();
 		int count=aMessage->getCount();
-		MPI_Datatype type=aMessage->getMPIDatatype();
 		int tag=aMessage->getTag();
 
 		#ifdef ASSERT
@@ -48,16 +47,19 @@ void MessagesHandler::sendMessages(StaticVector*outbox,int source){
 		assert(destination<m_size);
 		assert(!(buffer==NULL && count>0));
 		assert(count<=(int)(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)));
-		assert(type==MPI_UNSIGNED_LONG_LONG);
 		#endif
 
 		MPI_Request request;
 
 		//  MPI_Issend
 		//      Synchronous nonblocking. Note that a Wait/Test will complete only when the matching receive is posted
-		MPI_Isend(buffer,count,type,destination,tag,MPI_COMM_WORLD,&request);
-		
+		MPI_Isend(buffer,count,MPI_UNSIGNED_LONG_LONG,destination,tag,MPI_COMM_WORLD,&request);
 		MPI_Request_free(&request);
+
+		#ifdef SHOW_TAGS
+		printf("%s\tSource\t%i\tDestination\t%i\tCount\t%i\tTag\t%s\n",__func__,source,destination,count,MESSAGES[tag]);
+		fflush(stdout);
+		#endif
 
 		#ifdef ASSERT
 		assert(request==MPI_REQUEST_NULL);
@@ -98,22 +100,26 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 		// that one was a lower bound
 		int tag=status.MPI_TAG;
 		int source=status.MPI_SOURCE;
-		int length;
-		MPI_Get_count(&status,MPI_UNSIGNED_LONG_LONG,&length);
+		int count;
+		MPI_Get_count(&status,MPI_UNSIGNED_LONG_LONG,&count);
 		uint64_t*filledBuffer=(uint64_t*)m_buffers+m_head*MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t);
 
 		// copy it in a safe buffer
-		uint64_t*incoming=(uint64_t*)inboxAllocator->allocate(length*sizeof(uint64_t));
-		for(int i=0;i<length;i++){
-			incoming[i]=filledBuffer[i];
-		}
+		uint64_t*incoming=(uint64_t*)inboxAllocator->allocate(count*sizeof(uint64_t));
+
+		memcpy(incoming,filledBuffer,count*sizeof(uint64_t));
 
 		// the request can start again
 		MPI_Start(m_ring+m_head);
 	
 		// add the message in the inbox
-		Message aMessage(incoming,length,MPI_UNSIGNED_LONG_LONG,source,tag,source);
+		Message aMessage(incoming,count,MPI_UNSIGNED_LONG_LONG,source,tag,source);
 		inbox->push_back(aMessage);
+
+		#ifdef SHOW_TAGS
+		printf("%s\tSource\t%i\tDestination\t%i\tCount\t%i\tTag\t%s\n",__func__,source,destination,count,MESSAGES[tag]);
+		fflush(stdout);
+		#endif
 	
 		#ifdef COUNT_MESSAGES
 		m_receivedMessages[source]++;
@@ -121,20 +127,13 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 		
 		#ifdef DEBUG_MESSAGES
 		m_buckets[source][tag]++;
-
-		if(m_rank==0 && source==0){
-			if(tag==RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES){
-				//cout<<"Self="<<m_rank<<" Source="<<source<<" Tag="<<__TAG_NAMES[tag]<<" Vertex="<<incoming[0]<<endl;
-			}else if(tag==RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY){
-				//cout<<"Self="<<m_rank<<" Source="<<source<<" Tag="<<__TAG_NAMES[tag]<<endl;
-			}
-		}
 		#endif
 
 		// increment the head
-		m_head++;
-		if(m_head==m_ringSize){
+		if(m_head==m_ringSize-1){
 			m_head=0;
+		}else{
+			m_head++;
 		}
 	}
 }

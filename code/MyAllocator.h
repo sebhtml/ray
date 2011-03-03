@@ -27,7 +27,7 @@
 #include <ReusableMemoryStore.h>
 using namespace std;
 
-/*
+/**
  * all memory allocations that are pervasive use this allocator.
  * MyAllocator is a simple CHUNK_ALLOCATOR.
  * it allocates m_CHUNK_SIZE bytes internally.
@@ -43,7 +43,7 @@ class MyAllocator{
 	ReusableMemoryStore m_store;
 public:
 	/**
- * allocator.
+ * print allocator information
  */
 	void print();
 	void clear();
@@ -51,11 +51,17 @@ public:
  * assign a size to the allocator.
  */
 	void constructor(int a);
+/**
+ * allocate memory
+ */
 	void*allocate(int s);
 	~MyAllocator();
 	int getChunkSize();
 	int getNumberOfChunks();
 
+/**
+ * return the container for reusable memory
+ */
 	ReusableMemoryStore*getStore();
 	/**
  	* reset the chunk to reuse it properly.

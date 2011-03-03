@@ -31,6 +31,10 @@
 #include<StaticVector.h>
 using namespace std;
 
+/**
+ * software layer to handler messages
+ * it uses persistant communication
+ */
 class MessagesHandler{
 	int m_ringSize;
 	int m_head;
@@ -48,7 +52,14 @@ class MessagesHandler{
 
 public:
 	void constructor(int rank,int size);
+	/**
+ *  send a message or more
+ */
 	void sendMessages(StaticVector*outbox,int source);
+	/**
+ * receive one or zero message.
+ * the others, if any, will be picked up in the next iteration
+ */
 	void receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator,int destination);
 
 	#ifdef COUNT_MESSAGES

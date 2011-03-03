@@ -1053,7 +1053,16 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS(Message*message){
 		#endif
 
 		e=m_subgraph->getReads(vertex);
-		
+		/*
+		int n=0;
+		while(e!=NULL){
+			n++;
+			e=e->getNext();
+		}
+		cout<<"Reads: "<<n<<endl;
+		*/
+		e=m_subgraph->getReads(vertex);
+
 		#ifdef ASSERT
 		assert(maxToProcess%4==0);
 		#endif

@@ -24,36 +24,35 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 */
 
-#ifndef _slave_modes
-#define _slave_modes
+#ifndef _ReadFetcher
+#define _ReadFetcher
 
-// slave modes
+#include <vector>
+#include <ReadAnnotation.h>
+#include <StaticVector.h>
+#include <Parameters.h>
+#include <stdint.h>
+#include <RingAllocator.h>
+#include <VirtualCommunicator.h>
+using namespace std;
 
-enum{
-RAY_SLAVE_MODE_LOAD_SEQUENCES,
-RAY_SLAVE_MODE_EXTENSION_ASK,
-RAY_SLAVE_MODE_START_SEEDING,
-RAY_SLAVE_MODE_DO_NOTHING,
-RAY_SLAVE_MODE_ASK_EXTENSIONS,
-RAY_SLAVE_MODE_SEND_EXTENSION_DATA,
-RAY_SLAVE_MODE_ASSEMBLE_WAVES,
-RAY_SLAVE_MODE_ASSEMBLE_GRAPH,
-RAY_SLAVE_MODE_FUSION,
-RAY_SLAVE_MODE_FINISH_FUSIONS,
-RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS,
-RAY_SLAVE_MODE_AMOS,
-RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION,
-RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES,
-RAY_SLAVE_MODE_UPDATE_DISTANCES,
-RAY_SLAVE_MODE_EXTRACT_VERTICES,
-RAY_SLAVE_MODE_SEND_DISTRIBUTION,
-RAY_SLAVE_MODE_PROCESS_INGOING_EDGES,
-RAY_SLAVE_MODE_PROCESS_OUTGOING_EDGES,
-RAY_SLAVE_MODE_EXTENSION,
-RAY_SLAVE_MODE_INDEX_SEQUENCES,
-RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION,
-RAY_SLAVE_MODE_DELETE_VERTICES,
-RAY_SLAVE_MODE_DUMMY
+class ReadFetcher{
+	uint64_t m_workerId;
+	VirtualCommunicator*m_virtualCommunicator;
+	Parameters*m_parameters;
+	RingAllocator*m_outboxAllocator;
+	StaticVector*m_outbox;
+	StaticVector*m_inbox;
+	vector<ReadAnnotation> m_reads;
+	uint64_t m_vertex;
+	bool m_readsRequested;
+	void*m_pointer;
+	bool m_done;
+public:
+	void constructor(uint64_t vertex,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,VirtualCommunicator*vc,uint64_t workerId);
+	bool isDone();
+	void work();
+	vector<ReadAnnotation>*getResult();
 };
 
 #endif

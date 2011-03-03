@@ -25,7 +25,14 @@
 #include<Chooser.h> // for IMPOSSIBLE_CHOICE
 
 /**
- * de Bruijn heuristic to choose extension direction in a graph, described in paper (in revision).
+ * de Bruijn heuristic to choose extension direction in a graph, described in paper 
+ * 	
+ * 	Ray: simultaneous assembly of reads from a mix of high-throughput sequencing technologies.
+ * 	Sébastien Boisvert, François Laviolette, and Jacques Corbeil.
+ * 	Journal of Computational Biology (Mary Ann Liebert, Inc. publishers).
+ * 	November 2010, 17(11): 1519-1533.
+ * 	doi:10.1089/cmb.2009.0238
+ * 	http://dx.doi.org/doi:10.1089/cmb.2009.0238
  */
 class OpenAssemblerChooser{
 	double m_singleEndMultiplicator;

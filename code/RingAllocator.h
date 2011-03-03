@@ -31,7 +31,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<stdint.h>
 using namespace std;
 
-/*
+/**
  * This class is a ring buffer. No !, it is an allocator. Thus, referred to as a ring allocator.
  *
  * This is an allocator that can allocate up to <m_chunks> allocations of exactly <m_max> bytes.

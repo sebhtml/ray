@@ -17,7 +17,7 @@ MemoryConsumptionReducer.h MemoryConsumptionReducer.cpp \
 MyForestIterator.cpp MyForestIterator.h crypto.cpp crypto.h \
 MyStack.h EarlyStoppingTechnology.h EarlyStoppingTechnology.cpp ArrayOfReads.h ArrayOfReads.cpp \
 RingAllocator.cpp RingAllocator.h StaticVector.cpp StaticVector.h \
-MessagesHandler.h MessagesHandler.cpp slave_modes.h master_modes.h mpi_tags.h \
+MessagesHandler.h MessagesHandler.cpp slave_modes.h master_modes.h mpi_tags.h mpi_tags.cpp \
 SeedingData.cpp SeedingData.h Library.h Library.cpp FastaLoader.h FastaLoader.cpp FastqLoader.h \
 FastqLoader.cpp BubbleData.h BubbleTool.cpp BubbleTool.h BufferedData.cpp \
 BufferedData.h Chooser.cpp ChooserData.h Chooser.h ColorSpaceDecoder.cpp \

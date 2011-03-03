@@ -24,7 +24,7 @@
 
 #include<Read.h>
 
-/*!
+/**
  * This class holds reads. These are stored in chunks, which are utterly linked in chains.
  * When a chunk is full, another one is added, and linked to the full one aforementionned.
  */
@@ -36,7 +36,14 @@ class ArrayOfReads{
 	uint64_t m_elements;
 	uint64_t m_maxSize;
 public:
+	/**
+ * 	add a read
+ */
 	void push_back(Read*a);
+
+/** 
+ * get a read
+ */
 	Read*at(uint64_t i);
 	Read*operator[](uint64_t i);
 	uint64_t size();

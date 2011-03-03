@@ -19,8 +19,6 @@
 
 */
 
-
-
 #ifndef _MyForest
 #define _MyForest
 

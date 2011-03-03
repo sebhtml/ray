@@ -20,9 +20,7 @@
 */
 
 // TYPE: FRAMEWORK
-
 #ifndef _Parameters
-
 #define _Parameters
 
 #include<map>
@@ -32,7 +30,7 @@
 #include<vector>
 using namespace std;
 
-/*
+/**
  * This class is the implementation of an interpreter for the RayInputFile.
  * It allows the following commands:
  * 	LoadSingleEndReads <FileA>

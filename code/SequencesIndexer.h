@@ -58,7 +58,6 @@ class SequencesIndexer{
 
 	bool m_initiatedIterator;
 	int m_theSequenceId;
-
 	void updateStates();
 
 public:

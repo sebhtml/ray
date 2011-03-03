@@ -26,7 +26,6 @@
 #include <map>
 using namespace std;
 
-
 typedef struct{
 	void*m_next;
 }Element;

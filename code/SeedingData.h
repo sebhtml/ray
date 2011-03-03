@@ -61,8 +61,6 @@ class SeedingData{
 	Parameters*m_parameters;
 	GridTable*m_subgraph;
 	GridTableIterator m_splayTreeIterator;
-	//MyForest*m_subgraph;
-	//MyForestIterator m_splayTreeIterator;
 	int m_wordSize;
 	int m_completedJobs;
 	int m_maximumAliveWorkers;

@@ -16,15 +16,12 @@
     You have received a copy of the GNU General Public License
     along with this program (COPYING).  
 	see <http://www.gnu.org/licenses/>
-
 */
-
 
 #ifndef _MyStack
 #define _MyStack
 
 #include<assert.h>
-
 #define _MAX_STACK_SIZE 1024
 
 template<class TYPE>
