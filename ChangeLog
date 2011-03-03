@@ -7,6 +7,9 @@ seeds and during the computation of extensions.
 * Expiry positions are used to toss away reads that are out-of-range
 * When only one choice is given during the extension and some reads are
 in-range, then the sole choice is picked up.
+* Fixed a bug for empty reads.
+* A read is not added in the active set if it is marked on a repeated vertex
+and its mate was not encountered yet.
 
 
 = 1.2.4 =

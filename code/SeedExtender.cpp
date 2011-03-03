@@ -900,6 +900,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 					ReadAnnotation annotation=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache];
 					uint64_t uniqueId=annotation.getUniqueId();
 					ExtensionElement*anElement=ed->getUsedRead(uniqueId);
+	
+
 					if(anElement!=NULL){
 						m_sequenceIndexToCache++;
 					}else if(!m_sequenceRequested){
@@ -927,17 +929,21 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 							addRead=false;
 						}
 
+						// don't add it up if its is marked on a repeated vertex and
+						// its mate was not seen yet.
+						
 						if(ed->m_currentCoverage>3*m_parameters->getPeakCoverage()){
 							// the vertex is repeated
 							if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
 								uint64_t mateId=ed->m_EXTENSION_pairedRead.getUniqueId();
 								// the mate is required to allow proper placement
 								if(ed->getUsedRead(mateId)==NULL){
-									//addRead=false;
+									addRead=false;
 									//cout<<"Not using read: coverage="<<ed->m_currentCoverage<<" peak="<<m_parameters->getPeakCoverage()<<endl;
 								}
 							}
 						}
+
 						if(addRead){
 							ExtensionElement*element=ed->addUsedRead(uniqueId);
 							element->setSequence(m_receivedString.c_str(),ed->getAllocator());

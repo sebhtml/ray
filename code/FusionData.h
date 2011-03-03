@@ -38,6 +38,7 @@ using namespace std;
 
 class FusionData{
 	bool m_mappingConfirmed;
+	int m_validationPosition;
 	bool m_checkedValidity;
 	int*m_mode;
 

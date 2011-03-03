@@ -91,8 +91,9 @@ void FusionData::constructor(int size,int max,int rank,StaticVector*outbox,
 	#endif
 	m_colorSpaceMode=colorSpaceMode;
 	
-	m_FINISH_pathsForPosition=NULL;
-
+	m_FINISH_pathsForPosition=new vector<vector<Direction> >;
+	m_mappingConfirmed=false;
+	m_validationPosition=0;
 	m_Machine_getPaths_INITIALIZED=false;
 	m_Machine_getPaths_DONE=false;
 }
@@ -128,10 +129,6 @@ bool FusionData::isReady(){
  *                          ----------------------->
  */
 void FusionData::finishFusions(){
-	if(m_FINISH_pathsForPosition==NULL){
-		m_FINISH_pathsForPosition=new vector<vector<Direction> >;
-		m_mappingConfirmed=false;
-	}
 	if(m_seedingData->m_SEEDING_i==(uint64_t)m_ed->m_EXTENSION_contigs.size()){
 		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 		message[0]=m_FINISH_fusionOccured;
@@ -147,7 +144,7 @@ void FusionData::finishFusions(){
 		assert(m_FINISH_pathsForPosition!=NULL);
 		#endif
 		delete m_FINISH_pathsForPosition;
-		m_FINISH_pathsForPosition=NULL;
+		m_FINISH_pathsForPosition=new vector<vector<Direction> >;
 		return;
 	}
 	int overlapMinimumLength=3000;
@@ -183,8 +180,8 @@ void FusionData::finishFusions(){
 	int position2=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-overlapMinimumLength;
 	if(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
 		if(!m_Machine_getPaths_DONE){
-			if(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-overlapMinimumLength){
-			//if(m_ed->m_EXTENSION_currentPosition!=position1	&&m_ed->m_EXTENSION_currentPosition!=position2){
+			//if(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-overlapMinimumLength){
+			if(m_ed->m_EXTENSION_currentPosition!=position1	&&m_ed->m_EXTENSION_currentPosition!=position2){
 				m_Machine_getPaths_DONE=true;
 			}else{
 				getPaths(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition]);
@@ -298,7 +295,7 @@ void FusionData::finishFusions(){
 				done=true;
 			}	
 
-
+/*
 			// make sure that all positions from 
 			// <m_FINISH_pathsForPosition.size()-1> up to 
 			//     <m_FINISH_pathsForPosition.size()-overlapMinimumLength>
@@ -324,11 +321,35 @@ void FusionData::finishFusions(){
 				//cout<<"Mapping not good."<<endl;
 				done=true;
 			}
+*/
 
 			m_checkedValidity=true;
 		}
 	}else if(!m_mappingConfirmed){
-		m_mappingConfirmed=true;
+		if(position1<=m_validationPosition && m_validationPosition<=position2){
+			if(!m_Machine_getPaths_DONE){
+				#ifdef ASSERT
+				assert(m_seedingData->m_SEEDING_i<m_ed->m_EXTENSION_contigs.size());
+				assert(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size());
+				#endif
+				getPaths(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition]);
+			}else{
+				bool found=false;
+				for(int i=0;i<(int)m_Machine_getPaths_result.size();i++){
+					if(m_Machine_getPaths_result[i].getWave()==m_selectedPath){
+						found=true;
+						break;
+					}
+				}
+				if(!found){
+					done=true;// the selection is not confirmed
+				}
+			}
+		}else if(m_validationPosition>position2){
+			m_mappingConfirmed=true;
+		}else{
+			m_validationPosition++;
+		}
 	}else{
 		// check if it is there for at least overlapMinimumLength
 		uint64_t pathId=m_selectedPath;
@@ -398,6 +419,8 @@ void FusionData::finishFusions(){
 		delete m_FINISH_pathsForPosition;
 		m_FINISH_pathsForPosition=new vector<vector<Direction> >;
 		m_FINISH_coverages.clear();
+		m_mappingConfirmed=false;
+		m_validationPosition=0;
 	}
 }
 

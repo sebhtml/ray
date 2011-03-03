@@ -110,9 +110,12 @@ void Read::constructor(const char*sequence,MyAllocator*seqMyAllocator,bool trimF
 	cout<<endl;
 	#endif
 
-
-	m_sequence=(uint8_t*)seqMyAllocator->allocate(requiredBytes*sizeof(uint8_t));
-	memcpy(m_sequence,workingBuffer,requiredBytes);
+	if(requiredBytes==0){
+		m_sequence=NULL;
+	}else{
+		m_sequence=(uint8_t*)seqMyAllocator->allocate(requiredBytes*sizeof(uint8_t));
+		memcpy(m_sequence,workingBuffer,requiredBytes);
+	}
 
 	#ifdef __READ_VERBOSITY
 	cout<<"Out="<<getSeq()<<endl;
