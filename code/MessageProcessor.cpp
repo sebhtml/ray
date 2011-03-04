@@ -1070,13 +1070,13 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS(Message*message){
 
 	uint64_t vertex=0;
 	// start from the beginning
-	if(count==1){
+	if(count==3){
 		//cout<<__func__<<" from key "<<incoming[0]<<endl;
-		cout.flush();
+		//cout.flush();
 		vertex=incoming[0];
 
-		#ifdef ASSERT
 		Vertex*node=m_subgraph->find(vertex);
+		#ifdef ASSERT
 		assert(node!=NULL);
 		#endif
 
@@ -1088,8 +1088,8 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS(Message*message){
 			e=e->getNext();
 		}
 		cout<<"Reads: "<<n<<endl;
-		*/
 		e=m_subgraph->getReads(vertex);
+		*/
 
 		#ifdef ASSERT
 		assert(maxToProcess%4==0);
@@ -1100,15 +1100,23 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS(Message*message){
 		// pad the message with a sentinel value  sentinel/0/sentinel
 		message2[j++]=m_sentinelValue;
 		message2[j++]=0;
-		message2[j++]=m_sentinelValue;
-		message2[j++]=m_sentinelValue;
+		message2[j++]=node->getCoverage(vertex);
+		message2[j++]=node->getEdges(vertex);
 		
+		uint64_t rc=complementVertex_normal(vertex,*m_wordSize);
+		bool lower=vertex<rc;
+		uint64_t wave=incoming[1];
+		int progression=incoming[2];
+		Direction*e=(Direction*)m_directionsAllocator->allocate(sizeof(Direction));
+		e->constructor(wave,progression,lower);
+		m_subgraph->addDirection(vertex,e);
+
 		#ifdef ASSERT
 		assert(j==4);
 		#endif
 
 	// use the pointer provided, count is 2, but only the first element is good.
-	}else{
+	}else if(count==2){
 		//cout<<__func__<<" from pointer "<<incoming[0]<<endl; 
 		cout.flush();
 		e=(ReadAnnotation*)incoming[0];
@@ -1194,8 +1202,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS_REPLY(Message*message){
 	for(int i=0;i<count3;i+=4){
 		// beginning of transmission, s,0,s
 		if(incoming[i+0]==m_sentinelValue 
-		&& incoming[i+1]==0
-		&& incoming[i+2]==m_sentinelValue){
+		&& incoming[i+1]==0){
 			#ifdef ASSERT
 			assert(m_ed->m_EXTENSION_reads_received==false);
 			#endif
@@ -1203,8 +1210,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS_REPLY(Message*message){
 			m_ed->m_EXTENSION_receivedReads.clear();
 		// end of transmission, s,s,s
 		}else if(incoming[i+0]==m_sentinelValue 
-		&& incoming[i+1]==m_sentinelValue
-		&& incoming[i+2]==m_sentinelValue){
+		&& incoming[i+1]==m_sentinelValue){
 			(m_ed->m_EXTENSION_reads_received)=true;
 			//cout<<m_ed->m_EXTENSION_receivedReads.size()<<" Reads."<<endl;
 		}else{

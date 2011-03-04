@@ -103,6 +103,10 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		if(ed->m_EXTENSION_currentPosition>0){
 			ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
 			ed->m_EXTENSION_markedCurrentVertexAsAssembled=false;
+			//cout<<"Preset m_EXTENSION_markedCurrentVertexAsAssembled <- false"<<endl;
+
+			ed->m_EXTENSION_reads_requested=false;
+			
 			ed->m_EXTENSION_directVertexDone=false;
 			ed->m_EXTENSION_VertexMarkAssembled_requested=false;
 			(*vertexCoverageRequested)=false;
@@ -153,7 +157,7 @@ uint64_t*currentVertex,int theRank,bool*vertexCoverageRequested,vector<uint64_t>
 bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,int wordSize
 ){
 	if(!(*edgesRequested)){
-		//cout<<__func__<<endl;
+		//cout<<__func__<<" init"<<endl;
 		ed->m_EXTENSION_coverages->clear();
 		ed->m_enumerateChoices_outgoingEdges.clear();
 		(*edgesReceived)=true;
@@ -197,7 +201,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 			}
 		}else{
 			receivedOutgoingEdges->clear();
-			//cout<<__func__<<" Got choices."<<endl;
+			//cout<<__func__<<" Got "<<ed->m_enumerateChoices_outgoingEdges.size()<<" choices."<<endl;
 			ed->m_EXTENSION_enumerateChoices=true;
 			ed->m_EXTENSION_choose=false;
 			ed->m_EXTENSION_singleEndResolution=false;
@@ -762,7 +766,9 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			if(ed->m_EXTENSION_vertexIsAssembledResult){
 				ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
 				ed->m_EXTENSION_markedCurrentVertexAsAssembled=false;
+				//cout<<"1289312 m_EXTENSION_markedCurrentVertexAsAssembled <- false"<<endl;
 				ed->m_EXTENSION_directVertexDone=false;
+				ed->m_EXTENSION_reads_requested=false;
 			}
 		}
 	}else if(!ed->m_EXTENSION_reverseVertexDone){
@@ -784,7 +790,9 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			//m_earlyStoppingTechnology.addDirections(&m_receivedDirections);
 			ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
 			ed->m_EXTENSION_markedCurrentVertexAsAssembled=false;
+			//cout<<"12312 m_EXTENSION_markedCurrentVertexAsAssembled <- false"<<endl;
 			ed->m_EXTENSION_directVertexDone=false;
+			ed->m_EXTENSION_reads_requested=false;
 		//}
 	}
 }
@@ -795,194 +803,183 @@ StaticVector*outbox,int size,int theRank,ExtensionData*ed,bool*vertexCoverageReq
 vector<uint64_t>*receivedOutgoingEdges,Chooser*chooser,
 BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpaceMode,int wordSize,vector<vector<uint64_t> >*seeds
 ){
-	if(!ed->m_EXTENSION_directVertexDone){
-		if(!(*vertexCoverageRequested)){
-			(*vertexCoverageRequested)=true;
-			(*vertexCoverageReceived)=false;
-			//cout<<__func__<<" Requesting"<<endl;
-
-			// mark as assembled.
-			//cout<<__func__<<" marking as assembled"<<endl;
-			int theCurrentSize=ed->m_EXTENSION_extension->size();
-			if(theCurrentSize%10000==0){
-				if(theCurrentSize==0 && !ed->m_EXTENSION_complementedSeed){
-					printf("Rank %i starts on a seed, length is %i [%i/%i]\n",theRank,
-					(int)ed->m_EXTENSION_currentSeed.size(),
-						ed->m_EXTENSION_currentSeedIndex,(int)(*seeds).size());
-					fflush(stdout);
-				}
-				printf("Rank %i reached %i vertices (%s)\n",theRank,theCurrentSize,idToWord(*currentVertex,
-					m_parameters->getWordSize()).c_str());
+	// get the reads starting at that position.
+	if(!ed->m_EXTENSION_reads_requested){
+		int theCurrentSize=ed->m_EXTENSION_extension->size();
+		if(theCurrentSize%10000==0){
+			if(theCurrentSize==0 && !ed->m_EXTENSION_complementedSeed){
+				printf("Rank %i starts on a seed, length is %i [%i/%i]\n",theRank,
+				(int)ed->m_EXTENSION_currentSeed.size(),
+					ed->m_EXTENSION_currentSeedIndex,(int)(*seeds).size());
 				fflush(stdout);
-				//showReadsInRange();
-
-				showMemoryUsage(theRank);
-				int a=ed->getAllocator()->getChunkSize()*ed->getAllocator()->getNumberOfChunks();
-				printf("Rank %i: database allocation: %i\n",theRank,a);
 			}
+			printf("Rank %i reached %i vertices (%s)\n",theRank,theCurrentSize,idToWord(*currentVertex,
+				m_parameters->getWordSize()).c_str());
+			fflush(stdout);
+			//showReadsInRange();
 
+			showMemoryUsage(theRank);
+			int a=ed->getAllocator()->getChunkSize()*ed->getAllocator()->getNumberOfChunks();
+			printf("Rank %i: database allocation: %i\n",theRank,a);
+		}
+
+
+
+		// save wave progress.
+		uint64_t waveId=getPathUniqueId(theRank,ed->m_EXTENSION_currentSeedIndex);
+		#ifdef ASSERT
+		assert((int)getIdFromPathUniqueId(waveId)==ed->m_EXTENSION_currentSeedIndex);
+		assert((int)getRankFromPathUniqueId(waveId)==theRank);
+		assert(theRank<size);
+		#endif
+
+		int progression=ed->m_EXTENSION_extension->size()-1;
+
+		*vertexCoverageRequested=true;
+		*vertexCoverageReceived=false;
+		ed->m_EXTENSION_reads_requested=true;
+		ed->m_EXTENSION_reads_received=false;
+		uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
+		message[0]=(uint64_t)(*currentVertex);
+		message[1]=waveId;
+		message[2]=progression;
+		int dest=vertexRank((*currentVertex),size,wordSize);
+		//cout<<__func__<<" Requesting reads from "<<dest<<endl;
+		//cout<<__func__<<" Request reads, coverage, edges + mark as assembled."<<endl;
+		Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_READS,theRank);
+		(*outbox).push_back(aMessage);
+		m_sequenceIndexToCache=0;
+		m_sequenceRequested=false;
+
+	}else if((*vertexCoverageRequested)&&!(*vertexCoverageReceived)){
+		if(m_inbox->size()==1&&m_inbox->at(0)->getTag()==RAY_MPI_TAG_REQUEST_READS_REPLY){
+			uint64_t*buffer=(uint64_t*)m_inbox->at(0)->getBuffer();
+
+			/*
+ *  0 -> sentinel
+ *  1 -> sentinel
+ *  2 -> coverage
+ *  3 -> compact edges
+ */
+			*receivedVertexCoverage=buffer[2];
+			(*m_cache)[*currentVertex]=*receivedVertexCoverage;
 			ed->m_EXTENSION_extension->push_back((*currentVertex));
 			ed->m_extensionCoverageValues->push_back(*receivedVertexCoverage);
 			ed->m_currentCoverage=(*receivedVertexCoverage);
+			//cout<<"Receives coverage "<<ed->m_currentCoverage<<endl;
 			if(ed->m_currentCoverage<m_parameters->getMaxCoverage()){
 				m_repeatLength=0;
 			}else{
 				m_repeatLength++;
 			}
 
-			ed->m_repeatedValues->push_back(m_repeatLength);
 			#ifdef ASSERT
 			assert(ed->m_currentCoverage<=m_parameters->getMaximumAllowedCoverage());
 			#endif
 
-			// save wave progress.
-			uint64_t waveId=getPathUniqueId(theRank,ed->m_EXTENSION_currentSeedIndex);
-			#ifdef ASSERT
-			assert((int)getIdFromPathUniqueId(waveId)==ed->m_EXTENSION_currentSeedIndex);
-			assert((int)getRankFromPathUniqueId(waveId)==theRank);
-			assert(theRank<size);
-			#endif
+			ed->m_repeatedValues->push_back(m_repeatLength);
 
-			int progression=ed->m_EXTENSION_extension->size()-1;
-		
-			ed->m_EXTENSION_reverseVertexDone=true;
-			ed->m_EXTENSION_reads_requested=false;
-			
-			int maximumLibrarySize=m_parameters->getMaximumDistance()+1000;
+			*vertexCoverageReceived=true;
+			uint64_t compactEdges=buffer[3];
+			*receivedOutgoingEdges=_getOutgoingEdges(*currentVertex,compactEdges,m_parameters->getWordSize());
+			//cout<<"Receives compact edges "<<receivedOutgoingEdges->size()<<endl;
+		}
+	}else if(ed->m_EXTENSION_reads_received){
+		if(m_sequenceIndexToCache<(int)ed->m_EXTENSION_receivedReads.size()){
+			ReadAnnotation annotation=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache];
+			uint64_t uniqueId=annotation.getUniqueId();
+			ExtensionElement*anElement=ed->getUsedRead(uniqueId);
 
-			// we don't really need these reads
-			if(ed->m_EXTENSION_currentPosition<(int)ed->m_EXTENSION_currentSeed.size()-maximumLibrarySize){
-				ed->m_EXTENSION_reads_requested=true;
-				ed->m_EXTENSION_reads_received=true;
-				ed->m_EXTENSION_receivedReads.clear();
-			}
 
-			uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(3*sizeof(uint64_t));
-			message[0]=(*currentVertex);
-			message[1]=waveId;
-			message[2]=progression;
-			int destination=vertexRank(message[0],size,wordSize);
-			Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_GET_COVERAGE_AND_MARK,theRank);
-			(*outbox).push_back(aMessage);
-		}else if(*vertexCoverageRequested&&!*vertexCoverageReceived){
-			if(m_inbox->size()==1&&m_inbox->at(0)->getTag()==RAY_MPI_TAG_GET_COVERAGE_AND_MARK_REPLY){
-				uint64_t*buffer=(uint64_t*)m_inbox->at(0)->getBuffer();
-				*receivedVertexCoverage=buffer[0];
-				*vertexCoverageReceived=true;
-				uint64_t compactEdges=buffer[1];
-				*receivedOutgoingEdges=_getOutgoingEdges(*currentVertex,compactEdges,m_parameters->getWordSize());
-			}
-		}else if((*vertexCoverageReceived)){
-			// get the reads starting at that position.
-			if(!ed->m_EXTENSION_reads_requested){
-				(*m_cache)[*currentVertex]=*receivedVertexCoverage;
-				ed->m_EXTENSION_reads_requested=true;
-				ed->m_EXTENSION_reads_received=false;
+			if(anElement!=NULL){
+				m_sequenceIndexToCache++;
+			}else if(!m_sequenceRequested){
+				m_sequenceRequested=true;
+				m_sequenceReceived=false;
+				int sequenceRank=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache].getRank();
+				#ifdef ASSERT
+				assert(sequenceRank>=0);
+				assert(sequenceRank<size);
+				#endif
 				uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
-				message[0]=(uint64_t)(*currentVertex);
-				int dest=vertexRank((*currentVertex),size,wordSize);
-				//cout<<__func__<<" Requesting reads from "<<dest<<endl;
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_READS,theRank);
-				(*outbox).push_back(aMessage);
-				m_sequenceIndexToCache=0;
-				m_sequenceRequested=false;
-			}else if(ed->m_EXTENSION_reads_received){
-				if(m_sequenceIndexToCache<(int)ed->m_EXTENSION_receivedReads.size()){
-					ReadAnnotation annotation=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache];
-					uint64_t uniqueId=annotation.getUniqueId();
-					ExtensionElement*anElement=ed->getUsedRead(uniqueId);
-	
+				message[0]=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache].getReadIndex();
+				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,sequenceRank,RAY_MPI_TAG_REQUEST_READ_SEQUENCE,theRank);
+				outbox->push_back(aMessage);
+			}else if(m_sequenceReceived){
+				bool addRead=true;
+				int startPosition=ed->m_EXTENSION_extension->size()-1;
+				int readLength=m_receivedString.length();
+				int position=startPosition;
+				int wordSize=m_parameters->getWordSize();
+				int positionOnStrand=annotation.getPositionOnStrand();
 
-					if(anElement!=NULL){
-						m_sequenceIndexToCache++;
-					}else if(!m_sequenceRequested){
-						m_sequenceRequested=true;
-						m_sequenceReceived=false;
-						int sequenceRank=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache].getRank();
-						#ifdef ASSERT
-						assert(sequenceRank>=0);
-						assert(sequenceRank<size);
-						#endif
-						uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
-						message[0]=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache].getReadIndex();
-						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,sequenceRank,RAY_MPI_TAG_REQUEST_READ_SEQUENCE,theRank);
-						outbox->push_back(aMessage);
-					}else if(m_sequenceReceived){
-						bool addRead=true;
-						int startPosition=ed->m_EXTENSION_extension->size()-1;
-						int readLength=m_receivedString.length();
-						int position=startPosition;
-						int wordSize=m_parameters->getWordSize();
-						int positionOnStrand=annotation.getPositionOnStrand();
-
-						int availableLength=readLength-positionOnStrand;
-						if(availableLength<=wordSize){
-							addRead=false;
-						}
-
-						// don't add it up if its is marked on a repeated vertex and
-						// its mate was not seen yet.
-						
-						if(ed->m_currentCoverage>3*m_parameters->getPeakCoverage()){
-							// the vertex is repeated
-							if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
-								uint64_t mateId=ed->m_EXTENSION_pairedRead.getUniqueId();
-								// the mate is required to allow proper placement
-								if(ed->getUsedRead(mateId)==NULL){
-									addRead=false;
-									//cout<<"Not using read: coverage="<<ed->m_currentCoverage<<" peak="<<m_parameters->getPeakCoverage()<<endl;
-								}
-							}
-						}
-
-						if(addRead){
-							ExtensionElement*element=ed->addUsedRead(uniqueId);
-							element->setSequence(m_receivedString.c_str(),ed->getAllocator());
-							element->setStartingPosition(startPosition);
-							element->setStrand(annotation.getStrand());
-							element->setStrandPosition(annotation.getPositionOnStrand());
-							element->setType(ed->m_readType);
-							ed->m_EXTENSION_readsInRange->insert(uniqueId);
-
-							#ifdef ASSERT
-							assert(readLength==(int)strlen(element->getSequence()));
-							#endif
-				
-							int expiryPosition=position+readLength-positionOnStrand-wordSize;
-							m_expiredReads[expiryPosition].push_back(uniqueId);
-							//cout<<"Read="<<uniqueId<<" Length="<<readLength<<" WordSize="<<wordSize<<" PositionOnStrand="<<positionOnStrand<<" Position="<<position<<" ExpiryPosition="<<expiryPosition<<endl;
-							// received paired read too !
-							if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
-								element->setPairedRead(ed->m_EXTENSION_pairedRead);
-								uint64_t mateId=ed->m_EXTENSION_pairedRead.getUniqueId();
-								if(ed->getUsedRead(mateId)==NULL){// the mate has not shown up yet
-									ed->m_pairedReadsWithoutMate->insert(uniqueId);
-
-									int library=ed->m_EXTENSION_pairedRead.getLibrary();
-									int expectedFragmentLength=m_parameters->getLibraryAverageLength(library);
-									int expectedDeviation=m_parameters->getLibraryStandardDeviation(library);
-									int expiration=startPosition+expectedFragmentLength+3*expectedDeviation;
-
-									//cout<<"adding expiration Now="<<startPosition<<" Expiration="<<expiration<<" Id="<<uniqueId<<endl;
-									(*ed->m_expirations)[expiration].push_back(uniqueId);
-								}else{ // the mate has shown up already and was waiting
-									ed->m_pairedReadsWithoutMate->erase(mateId);
-								}
-							}
-						}
-
-						m_sequenceIndexToCache++;
-						m_sequenceRequested=false;
-					}
-				}else{
-					//cout<<"Received "<<ed->m_EXTENSION_receivedReads.size()<<" sequences."<<endl;
-					ed->m_EXTENSION_directVertexDone=true;
-					ed->m_EXTENSION_VertexMarkAssembled_requested=false;
-					ed->m_EXTENSION_enumerateChoices=false;
-					(*edgesRequested)=false;
-					ed->m_EXTENSION_markedCurrentVertexAsAssembled=true;
+				int availableLength=readLength-positionOnStrand;
+				if(availableLength<=wordSize){
+					addRead=false;
 				}
+
+				// don't add it up if its is marked on a repeated vertex and
+				// its mate was not seen yet.
+				
+				if(ed->m_currentCoverage>3*m_parameters->getPeakCoverage()){
+					// the vertex is repeated
+					if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
+						uint64_t mateId=ed->m_EXTENSION_pairedRead.getUniqueId();
+						// the mate is required to allow proper placement
+						if(ed->getUsedRead(mateId)==NULL){
+							addRead=false;
+							//cout<<"Not using read: coverage="<<ed->m_currentCoverage<<" peak="<<m_parameters->getPeakCoverage()<<endl;
+						}
+					}
+				}
+
+				if(addRead){
+					ExtensionElement*element=ed->addUsedRead(uniqueId);
+					element->setSequence(m_receivedString.c_str(),ed->getAllocator());
+					element->setStartingPosition(startPosition);
+					element->setStrand(annotation.getStrand());
+					element->setStrandPosition(annotation.getPositionOnStrand());
+					element->setType(ed->m_readType);
+					ed->m_EXTENSION_readsInRange->insert(uniqueId);
+
+					#ifdef ASSERT
+					assert(readLength==(int)strlen(element->getSequence()));
+					#endif
+		
+					int expiryPosition=position+readLength-positionOnStrand-wordSize;
+					m_expiredReads[expiryPosition].push_back(uniqueId);
+					//cout<<"Read="<<uniqueId<<" Length="<<readLength<<" WordSize="<<wordSize<<" PositionOnStrand="<<positionOnStrand<<" Position="<<position<<" ExpiryPosition="<<expiryPosition<<endl;
+					// received paired read too !
+					if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
+						element->setPairedRead(ed->m_EXTENSION_pairedRead);
+						uint64_t mateId=ed->m_EXTENSION_pairedRead.getUniqueId();
+						if(ed->getUsedRead(mateId)==NULL){// the mate has not shown up yet
+							ed->m_pairedReadsWithoutMate->insert(uniqueId);
+
+							int library=ed->m_EXTENSION_pairedRead.getLibrary();
+							int expectedFragmentLength=m_parameters->getLibraryAverageLength(library);
+							int expectedDeviation=m_parameters->getLibraryStandardDeviation(library);
+							int expiration=startPosition+expectedFragmentLength+3*expectedDeviation;
+
+							//cout<<"adding expiration Now="<<startPosition<<" Expiration="<<expiration<<" Id="<<uniqueId<<endl;
+							(*ed->m_expirations)[expiration].push_back(uniqueId);
+						}else{ // the mate has shown up already and was waiting
+							ed->m_pairedReadsWithoutMate->erase(mateId);
+						}
+					}
+				}
+
+				m_sequenceIndexToCache++;
+				m_sequenceRequested=false;
 			}
+		}else{
+			//cout<<"Received "<<ed->m_EXTENSION_receivedReads.size()<<" sequences."<<endl;
+			ed->m_EXTENSION_directVertexDone=true;
+			ed->m_EXTENSION_VertexMarkAssembled_requested=false;
+			ed->m_EXTENSION_enumerateChoices=false;
+			(*edgesRequested)=false;
+			ed->m_EXTENSION_markedCurrentVertexAsAssembled=true;
+			//cout<<"m_EXTENSION_markedCurrentVertexAsAssembled <- true"<<endl;
 		}
 	}
 }
