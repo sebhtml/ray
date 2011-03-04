@@ -681,7 +681,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_GET_COVERAGE_AND_MARK(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
-	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
 	uint64_t vertex=incoming[0];
 	Vertex*node=m_subgraph->find(vertex);
 	#ifdef ASSERT
@@ -689,6 +689,7 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_COVERAGE_AND_MARK(Message*message){
 	#endif
 	uint64_t coverage=node->getCoverage(vertex);
 	message2[0]=coverage;
+	message2[1]=node->getEdges(vertex);
 	uint64_t rc=complementVertex_normal(vertex,*m_wordSize);
 	bool lower=vertex<rc;
 	uint64_t wave=incoming[1];
@@ -697,7 +698,7 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_COVERAGE_AND_MARK(Message*message){
 	e->constructor(wave,progression,lower);
 	m_subgraph->addDirection(vertex,e);
 
-	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_GET_COVERAGE_AND_MARK_REPLY,rank);
+	Message aMessage(message2,2,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_GET_COVERAGE_AND_MARK_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 

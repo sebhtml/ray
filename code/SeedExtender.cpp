@@ -156,14 +156,8 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 		//cout<<__func__<<endl;
 		ed->m_EXTENSION_coverages->clear();
 		ed->m_enumerateChoices_outgoingEdges.clear();
-		(*edgesReceived)=false;
+		(*edgesReceived)=true;
 		(*edgesRequested)=true;
-		uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
-		message[0]=(uint64_t)(*currentVertex);
-		int dest=vertexRank((*currentVertex),size,wordSize);
-		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES,theRank);
-		//cout<<"Sending a message to "<<dest<<endl;
-		(*outbox).push_back(aMessage);
 		ed->m_EXTENSION_currentPosition++;
 		(*vertexCoverageRequested)=false;
 		(*outgoingEdgeIndex)=0;
@@ -875,6 +869,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				uint64_t*buffer=(uint64_t*)m_inbox->at(0)->getBuffer();
 				*receivedVertexCoverage=buffer[0];
 				*vertexCoverageReceived=true;
+				uint64_t compactEdges=buffer[1];
+				*receivedOutgoingEdges=_getOutgoingEdges(*currentVertex,compactEdges,m_parameters->getWordSize());
 			}
 		}else if((*vertexCoverageReceived)){
 			// get the reads starting at that position.
