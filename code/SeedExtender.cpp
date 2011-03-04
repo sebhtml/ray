@@ -658,6 +658,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			(*currentVertex)=ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition];
 
 			ed->resetStructures();
+			m_cacheForRepeatedReads.clear();
 
 			ed->m_EXTENSION_directVertexDone=false;
 			ed->m_EXTENSION_VertexAssembled_requested=false;
@@ -711,6 +712,7 @@ uint64_t*currentVertex,BubbleData*bubbleData){
 	}
 
 	ed->resetStructures();
+	m_cacheForRepeatedReads.clear();
 	fflush(stdout);
 	showMemoryUsage(theRank);
 	int a=ed->getAllocator()->getChunkSize()*ed->getAllocator()->getNumberOfChunks();
@@ -890,9 +892,32 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 			uint64_t uniqueId=annotation.getUniqueId();
 			ExtensionElement*anElement=ed->getUsedRead(uniqueId);
 
-
 			if(anElement!=NULL){
 				m_sequenceIndexToCache++;
+			}else if(!m_sequenceRequested
+				&&m_cacheForRepeatedReads.find(uniqueId,false)!=NULL){
+				//cout<<"Retrieving from cache "<<uniqueId<<endl;
+				char buffer[4000];
+				SplayNode<uint64_t,Read>*node=m_cacheForRepeatedReads.find(uniqueId,false);
+				#ifdef ASSERT
+				assert(node!=NULL);
+				#endif
+				node->getValue()->getSeq(buffer);
+				m_receivedString=buffer;
+				PairedRead*pr=node->getValue()->getPairedRead();
+
+				PairedRead dummy;
+				dummy.constructor(0,0,DUMMY_LIBRARY);
+				if(pr==NULL){
+					pr=&dummy;
+				}
+
+				#ifdef ASSERT
+				assert(pr!=NULL);
+				#endif
+				ed->m_EXTENSION_pairedRead=*pr;
+				m_sequenceRequested=true;
+				m_sequenceReceived=true;
 			}else if(!m_sequenceRequested){
 				m_sequenceRequested=true;
 				m_sequenceReceived=false;
@@ -906,6 +931,30 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,sequenceRank,RAY_MPI_TAG_REQUEST_READ_SEQUENCE,theRank);
 				outbox->push_back(aMessage);
 			}else if(m_sequenceReceived){
+				// put sequences on repeats in the cache
+				if(ed->m_currentCoverage>3*m_parameters->getPeakCoverage()
+				&&(m_cacheForRepeatedReads.find(uniqueId,false)==NULL)){
+					//cout<<"Saving in cache "<<uniqueId<<endl;
+					Read a;
+					a.constructor(m_receivedString.c_str(),m_ed->getAllocator(),false);
+					a.setType(m_ed->m_readType);
+					PairedRead*r=a.getPairedRead();
+					#ifdef ASSERT
+					assert(r!=NULL);
+					#endif
+					if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
+						*r=ed->m_EXTENSION_pairedRead;
+					}
+					bool inserted;
+					SplayNode<uint64_t,Read>*node=m_cacheForRepeatedReads.insert(uniqueId,m_ed->getAllocator(),&inserted);
+					Read*value=node->getValue();
+					#ifdef ASSERT
+					assert(inserted);
+					assert(value!=NULL);
+					#endif
+					*value=a;
+				}
+
 				bool addRead=true;
 				int startPosition=ed->m_EXTENSION_extension->size()-1;
 				int readLength=m_receivedString.length();
@@ -998,6 +1047,7 @@ set<uint64_t>*SeedExtender::getEliminatedSeeds(){
 
 void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed,
 	GridTable*subgraph,StaticVector*inbox){
+	m_cacheForRepeatedReads.constructor();
 	m_inbox=inbox;
 	m_subgraph=subgraph;
 	m_dfsData=new DepthFirstSearchData;

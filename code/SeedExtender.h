@@ -46,6 +46,8 @@ class DepthFirstSearchData;
 using namespace std;
 
 class SeedExtender{
+	SplayTree<uint64_t,Read>m_cacheForRepeatedReads;
+
 	int m_repeatLength;
 	StaticVector*m_inbox;
 

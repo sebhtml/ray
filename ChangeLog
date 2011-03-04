@@ -11,6 +11,8 @@ in-range, then the sole choice is picked up.
 * A read is not added in the active set if it is marked on a repeated vertex
 and its mate was not encountered yet.
 * Grouped messages in the extension of seeds.
+* Reads marked on repeated vertices are cached during the extension.
+
 
 = 1.2.4 =
 2011-02-23

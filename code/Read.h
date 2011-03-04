@@ -60,6 +60,7 @@ public:
 	void setRightType();
 	void setLeftType();
 	int getType();
+	void setType(uint8_t type);
 }
 #ifdef FORCE_PACKING
 __attribute__((__packed__))

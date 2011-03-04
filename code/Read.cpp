@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C)  2010  Sébastien Boisvert
+    Copyright (C)  2010, 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -16,7 +16,6 @@
     You have received a copy of the GNU General Public License
     along with this program (COPYING).  
 	see <http://www.gnu.org/licenses/>
-
 */
 
 #include<assert.h>
@@ -25,7 +24,6 @@
 #include<cstdlib>
 #include<iostream>
 #include<cstring>
-
 using namespace  std;
 
 // #define __READ_VERBOSITY
@@ -197,4 +195,8 @@ void Read::setRightType(){
 
 int Read::getType(){
 	return m_type;
+}
+
+void Read::setType(uint8_t a){
+	m_type=a;
 }
