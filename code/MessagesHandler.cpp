@@ -26,7 +26,7 @@
 #include <iostream>
 using namespace std;
 
-#define SHOW_TAGS
+//#define SHOW_TAGS
 
 /*
  * send messages,
@@ -57,7 +57,7 @@ void MessagesHandler::sendMessages(StaticVector*outbox,int source){
 		MPI_Request_free(&request);
 
 		#ifdef SHOW_TAGS
-		printf("%s\tSource\t%i\tDestination\t%i\tCount\t%i\tTag\t%s\n",__func__,source,destination,count,MESSAGES[tag]);
+		printf("SEND\tSource\t%i\tDestination\t%i\tCount\t%i\tTag\t%s\n",source,destination,count,MESSAGES[tag]);
 		fflush(stdout);
 		#endif
 
@@ -117,7 +117,7 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 		inbox->push_back(aMessage);
 
 		#ifdef SHOW_TAGS
-		printf("%s\tSource\t%i\tDestination\t%i\tCount\t%i\tTag\t%s\n",__func__,source,destination,count,MESSAGES[tag]);
+		printf("RECV\tSource\t%i\tDestination\t%i\tCount\t%i\tTag\t%s\n",source,destination,count,MESSAGES[tag]);
 		fflush(stdout);
 		#endif
 	

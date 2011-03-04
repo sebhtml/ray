@@ -802,89 +802,84 @@ vector<uint64_t>*receivedOutgoingEdges,Chooser*chooser,
 BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpaceMode,int wordSize,vector<vector<uint64_t> >*seeds
 ){
 	if(!ed->m_EXTENSION_directVertexDone){
-		if(!(*vertexCoverageRequested)&&(*m_cache).count(*currentVertex)>0){
-			//cout<<__func__<<" Requesting cache"<<endl;
-			(*vertexCoverageRequested)=true;
-			(*vertexCoverageReceived)=true;
-			*receivedVertexCoverage=(*m_cache)[*currentVertex];
-		}else if(!(*vertexCoverageRequested)){
+		if(!(*vertexCoverageRequested)){
 			(*vertexCoverageRequested)=true;
 			(*vertexCoverageReceived)=false;
 			//cout<<__func__<<" Requesting"<<endl;
-			
-			uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
-			message[0]=(*currentVertex);
-			int destination=vertexRank(message[0],size,wordSize);
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
-			(*outbox).push_back(aMessage);
-		}else if((*vertexCoverageReceived)){
-			if(!ed->m_EXTENSION_VertexMarkAssembled_requested){
-				//cout<<__func__<<" marking as assembled"<<endl;
-				(*m_cache)[*currentVertex]=*receivedVertexCoverage;
-				int theCurrentSize=ed->m_EXTENSION_extension->size();
-				if(theCurrentSize%10000==0){
-					if(theCurrentSize==0 && !ed->m_EXTENSION_complementedSeed){
-						printf("Rank %i starts on a seed, length is %i [%i/%i]\n",theRank,
-						(int)ed->m_EXTENSION_currentSeed.size(),
-							ed->m_EXTENSION_currentSeedIndex,(int)(*seeds).size());
-						fflush(stdout);
-					}
-					printf("Rank %i reached %i vertices (%s)\n",theRank,theCurrentSize,idToWord(*currentVertex,
-						m_parameters->getWordSize()).c_str());
+
+			// mark as assembled.
+			//cout<<__func__<<" marking as assembled"<<endl;
+			int theCurrentSize=ed->m_EXTENSION_extension->size();
+			if(theCurrentSize%10000==0){
+				if(theCurrentSize==0 && !ed->m_EXTENSION_complementedSeed){
+					printf("Rank %i starts on a seed, length is %i [%i/%i]\n",theRank,
+					(int)ed->m_EXTENSION_currentSeed.size(),
+						ed->m_EXTENSION_currentSeedIndex,(int)(*seeds).size());
 					fflush(stdout);
-					//showReadsInRange();
-
-					showMemoryUsage(theRank);
-					int a=ed->getAllocator()->getChunkSize()*ed->getAllocator()->getNumberOfChunks();
-					printf("Rank %i: database allocation: %i\n",theRank,a);
 				}
+				printf("Rank %i reached %i vertices (%s)\n",theRank,theCurrentSize,idToWord(*currentVertex,
+					m_parameters->getWordSize()).c_str());
+				fflush(stdout);
+				//showReadsInRange();
 
-				ed->m_EXTENSION_extension->push_back((*currentVertex));
-				ed->m_extensionCoverageValues->push_back(*receivedVertexCoverage);
-				ed->m_currentCoverage=(*receivedVertexCoverage);
-				if(ed->m_currentCoverage<m_parameters->getMaxCoverage()){
-					m_repeatLength=0;
-				}else{
-					m_repeatLength++;
-				}
+				showMemoryUsage(theRank);
+				int a=ed->getAllocator()->getChunkSize()*ed->getAllocator()->getNumberOfChunks();
+				printf("Rank %i: database allocation: %i\n",theRank,a);
+			}
 
-				ed->m_repeatedValues->push_back(m_repeatLength);
-				#ifdef ASSERT
-				assert(ed->m_currentCoverage<=m_parameters->getMaximumAllowedCoverage());
-				#endif
+			ed->m_EXTENSION_extension->push_back((*currentVertex));
+			ed->m_extensionCoverageValues->push_back(*receivedVertexCoverage);
+			ed->m_currentCoverage=(*receivedVertexCoverage);
+			if(ed->m_currentCoverage<m_parameters->getMaxCoverage()){
+				m_repeatLength=0;
+			}else{
+				m_repeatLength++;
+			}
 
-				// save wave progress.
-				uint64_t waveId=getPathUniqueId(theRank,ed->m_EXTENSION_currentSeedIndex);
-				#ifdef ASSERT
-				assert((int)getIdFromPathUniqueId(waveId)==ed->m_EXTENSION_currentSeedIndex);
-				assert((int)getRankFromPathUniqueId(waveId)==theRank);
-				assert(theRank<size);
-				#endif
+			ed->m_repeatedValues->push_back(m_repeatLength);
+			#ifdef ASSERT
+			assert(ed->m_currentCoverage<=m_parameters->getMaximumAllowedCoverage());
+			#endif
 
-				int progression=ed->m_EXTENSION_extension->size()-1;
+			// save wave progress.
+			uint64_t waveId=getPathUniqueId(theRank,ed->m_EXTENSION_currentSeedIndex);
+			#ifdef ASSERT
+			assert((int)getIdFromPathUniqueId(waveId)==ed->m_EXTENSION_currentSeedIndex);
+			assert((int)getRankFromPathUniqueId(waveId)==theRank);
+			assert(theRank<size);
+			#endif
+
+			int progression=ed->m_EXTENSION_extension->size()-1;
+		
+			ed->m_EXTENSION_reverseVertexDone=true;
+			ed->m_EXTENSION_reads_requested=false;
 			
-				ed->m_EXTENSION_VertexMarkAssembled_requested=true;
-				uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(3*sizeof(uint64_t));
-				message[0]=(uint64_t)(*currentVertex);
-				message[1]=waveId;
-				message[2]=progression;
-				int destination=vertexRank((*currentVertex),size,wordSize);
-				Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_SAVE_WAVE_PROGRESSION,theRank);
-				(*outbox).push_back(aMessage);
-				ed->m_EXTENSION_reverseVertexDone=true;
-				ed->m_EXTENSION_reads_requested=false;
-				
-				int maximumLibrarySize=m_parameters->getMaximumDistance()+1000;
+			int maximumLibrarySize=m_parameters->getMaximumDistance()+1000;
 
-				// we don't really need these reads
-				if(ed->m_EXTENSION_currentPosition<(int)ed->m_EXTENSION_currentSeed.size()-maximumLibrarySize){
-					ed->m_EXTENSION_reads_requested=true;
-					ed->m_EXTENSION_reads_received=true;
-					ed->m_EXTENSION_receivedReads.clear();
-				}
+			// we don't really need these reads
+			if(ed->m_EXTENSION_currentPosition<(int)ed->m_EXTENSION_currentSeed.size()-maximumLibrarySize){
+				ed->m_EXTENSION_reads_requested=true;
+				ed->m_EXTENSION_reads_received=true;
+				ed->m_EXTENSION_receivedReads.clear();
+			}
 
+			uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(3*sizeof(uint64_t));
+			message[0]=(*currentVertex);
+			message[1]=waveId;
+			message[2]=progression;
+			int destination=vertexRank(message[0],size,wordSize);
+			Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_GET_COVERAGE_AND_MARK,theRank);
+			(*outbox).push_back(aMessage);
+		}else if(*vertexCoverageRequested&&!*vertexCoverageReceived){
+			if(m_inbox->size()==1&&m_inbox->at(0)->getTag()==RAY_MPI_TAG_GET_COVERAGE_AND_MARK_REPLY){
+				uint64_t*buffer=(uint64_t*)m_inbox->at(0)->getBuffer();
+				*receivedVertexCoverage=buffer[0];
+				*vertexCoverageReceived=true;
+			}
+		}else if((*vertexCoverageReceived)){
 			// get the reads starting at that position.
-			}else if(!ed->m_EXTENSION_reads_requested){
+			if(!ed->m_EXTENSION_reads_requested){
+				(*m_cache)[*currentVertex]=*receivedVertexCoverage;
 				ed->m_EXTENSION_reads_requested=true;
 				ed->m_EXTENSION_reads_received=false;
 				uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
@@ -1009,7 +1004,8 @@ set<uint64_t>*SeedExtender::getEliminatedSeeds(){
 }
 
 void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed,
-	GridTable*subgraph){
+	GridTable*subgraph,StaticVector*inbox){
+	m_inbox=inbox;
 	m_subgraph=subgraph;
 	m_dfsData=new DepthFirstSearchData;
 	m_cache=new map<uint64_t,int>;

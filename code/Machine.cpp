@@ -75,7 +75,7 @@ void Machine::start(){
 	m_killed=false;
 	m_ready=true;
 	
-	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed,&m_subgraph);
+	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed,&m_subgraph,&m_inbox);
 
 	m_fusionData->m_fusionStarted=false;
 	m_ed->m_EXTENSION_numberOfRanksDone=0;

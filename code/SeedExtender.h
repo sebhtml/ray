@@ -47,6 +47,7 @@ using namespace std;
 
 class SeedExtender{
 	int m_repeatLength;
+	StaticVector*m_inbox;
 
 	DepthFirstSearchData*m_dfsData;
 	bool m_removedUnfitLibraries;
@@ -117,7 +118,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 
 	set<uint64_t>*getEliminatedSeeds();
 
-	void constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed,GridTable*table);
+	void constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed,GridTable*table,StaticVector*inbox);
 };
 
 #endif
