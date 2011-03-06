@@ -490,7 +490,7 @@ void FusionData::makeFusions(){
 				getPaths(theVertex);
 			}else{
 				if(m_seedingData->m_SEEDING_i%10==0){
-					printf("Rank %i is computing fusions [%i/%i]\n",getRank(),(int)m_seedingData->m_SEEDING_i,(int)m_ed->m_EXTENSION_contigs.size());
+					printf("Rank %i is computing fusions [%i/%i]\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_ed->m_EXTENSION_contigs.size());
 					fflush(stdout);
 				}
 
@@ -832,15 +832,16 @@ void FusionData::getPaths(uint64_t vertex){
 			theDirection=newDirection;
 			i++;
 		}
+
+		Direction**ddirect=node->getValue();
+		*ddirect=theDirection;
+		m_Machine_getPaths_DONE=true;
+
 		#ifdef ASSERT
 		if(m_Machine_getPaths_result.size()==0){
 			assert(*(m_cacheForRepeatedVertices.find(vertex,false)->getValue())==NULL);
 		}
 		#endif
-
-		Direction**ddirect=node->getValue();
-		*ddirect=theDirection;
-		m_Machine_getPaths_DONE=true;
 	}
 }
 
