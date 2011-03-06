@@ -1334,10 +1334,8 @@ void MessageProcessor::call_RAY_MPI_TAG_ASSEMBLE_WAVES_DONE(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_START_FUSION(Message*message){
-	cout<<__func__<<endl;
 	(*m_mode)=RAY_SLAVE_MODE_FUSION;
 	(m_seedingData->m_SEEDING_i)=0;
-
 	m_fusionData->m_FUSION_direct_fusionDone=false;
 	m_fusionData->m_FUSION_first_done=false;
 	m_fusionData->m_FUSION_paths_requested=false;

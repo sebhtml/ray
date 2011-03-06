@@ -957,8 +957,6 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 			m_outbox.push_back(aMessage);
 		}
 		m_DISTRIBUTE_n=0;
-		//cout<<"Cycle "<<m_cycleNumber<<" sending 5) RAY_MPI_TAG_DISTRIBUTE_FUSIONS"<<endl;
-
 	}else if(m_DISTRIBUTE_n==getSize() and m_isFinalFusion && m_currentCycleStep==5){
 		m_currentCycleStep++;
 		#ifdef SHOW_PROGRESS
@@ -969,7 +967,6 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		m_DISTRIBUTE_n=-1;
 		for(int i=0;i<(int)getSize();i++){// start fusion.
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_START_FUSION,getRank());
-			cout<<"SEND RAY_MPI_TAG_START_FUSION"<<endl;
 			m_outbox.push_back(aMessage);
 		}
 		

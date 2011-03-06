@@ -47,6 +47,7 @@ using namespace std;
 
 class SeedExtender{
 	SplayTree<uint64_t,Read>m_cacheForRepeatedReads;
+	MyAllocator m_cacheAllocator;
 
 	int m_repeatLength;
 	StaticVector*m_inbox;
@@ -62,7 +63,6 @@ class SeedExtender{
 	BubbleTool m_bubbleTool;
 	ExtensionData*m_ed;
 	MyAllocator*m_directionsAllocator;
-	MyAllocator m_cacheAllocator;
 
 	set<uint64_t> m_eliminatedSeeds;
 	map<int,vector<uint64_t> >m_expiredReads;

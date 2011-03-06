@@ -40,6 +40,11 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		m_buffers.clear();
 
+		m_cacheForRepeatedVertices.clear();
+		m_cacheAllocator.clear();
+		int chunkSize=4194304;
+		m_cacheAllocator.constructor(chunkSize);
+
 		showMemoryUsage(m_rank);
 		return;
 	}
@@ -79,6 +84,9 @@ void FusionData::constructor(int size,int max,int rank,StaticVector*outbox,
 		ExtensionData*ed,SeedingData*seedingData,int*mode,Parameters*parameters){
 	m_parameters=parameters;
 	m_seedingData=seedingData;
+	int chunkSize=4194304;
+	m_cacheAllocator.constructor(chunkSize);
+	m_cacheForRepeatedVertices.constructor();
 	m_mode=mode;
 	m_ed=ed;
 	m_size=size;
@@ -139,6 +147,11 @@ void FusionData::finishFusions(){
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_FINISH_FUSIONS_FINISHED,getRank());
 		m_outbox->push_back(aMessage);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
+
+		m_cacheForRepeatedVertices.clear();
+		m_cacheAllocator.clear();
+		int chunkSize=4194304;
+		m_cacheAllocator.constructor(chunkSize);
 
 		#ifdef ASSERT
 		assert(m_FINISH_pathsForPosition!=NULL);
@@ -773,8 +786,22 @@ void FusionData::getPaths(uint64_t vertex){
 		m_Machine_getPaths_result.clear();
 		return;
 	}
-
-	if(!m_FUSION_paths_requested){
+	if(m_cacheForRepeatedVertices.find(vertex,false)!=NULL){
+		SplayNode<uint64_t,Direction*>*node=m_cacheForRepeatedVertices.find(vertex,false);
+		#ifdef ASSERT
+		assert(node!=NULL);
+		#endif
+		Direction**ddirect=node->getValue();
+		#ifdef ASSERT
+		assert(ddirect!=NULL);
+		#endif
+		Direction*d=*ddirect;
+		while(d!=NULL){
+			m_Machine_getPaths_result.push_back(*d);
+			d=d->getNext();
+		}
+		m_Machine_getPaths_DONE=true;
+	}else if(!m_FUSION_paths_requested){
 		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
 		message[0]=vertex;
 		message[1]=0;
@@ -784,12 +811,36 @@ void FusionData::getPaths(uint64_t vertex){
 		m_FUSION_paths_received=false;
 		m_FUSION_receivedPaths.clear();
 	}else if(m_FUSION_paths_received){
-		m_Machine_getPaths_DONE=true;
 		#ifdef ASSERT
 		for(int i=0;i<(int)m_FUSION_receivedPaths.size();i++){
 			assert(getRankFromPathUniqueId(m_FUSION_receivedPaths[i].getWave())<m_size);
 		}
 		#endif
+		bool inserted;
+		// save the result in the cache.
+		#ifdef ASSERT
+		assert(m_cacheForRepeatedVertices.find(vertex,false)==NULL);
+		#endif
+
+		SplayNode<uint64_t,Direction*>*node=m_cacheForRepeatedVertices.insert(vertex,&m_cacheAllocator,&inserted);
+		int i=0;
+		Direction*theDirection=NULL;
+		while(i<(int)m_Machine_getPaths_result.size()){
+			Direction*newDirection=(Direction*)m_cacheAllocator.allocate(sizeof(Direction)*1);
+			*newDirection=m_Machine_getPaths_result[i];
+			newDirection->setNext(theDirection);
+			theDirection=newDirection;
+			i++;
+		}
+		#ifdef ASSERT
+		if(m_Machine_getPaths_result.size()==0){
+			assert(*(m_cacheForRepeatedVertices.find(vertex,false)->getValue())==NULL);
+		}
+		#endif
+
+		Direction**ddirect=node->getValue();
+		*ddirect=theDirection;
+		m_Machine_getPaths_DONE=true;
 	}
 }
 
