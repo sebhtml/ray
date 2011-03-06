@@ -969,6 +969,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		m_DISTRIBUTE_n=-1;
 		for(int i=0;i<(int)getSize();i++){// start fusion.
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_START_FUSION,getRank());
+			cout<<"SEND RAY_MPI_TAG_START_FUSION"<<endl;
 			m_outbox.push_back(aMessage);
 		}
 		

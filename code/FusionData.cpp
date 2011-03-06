@@ -476,6 +476,11 @@ void FusionData::makeFusions(){
 			if(!m_Machine_getPaths_DONE){
 				getPaths(theVertex);
 			}else{
+				if(m_seedingData->m_SEEDING_i%10==0){
+					printf("Rank %i is computing fusions [%i/%i]\n",getRank(),(int)m_seedingData->m_SEEDING_i,(int)m_ed->m_EXTENSION_contigs.size());
+					fflush(stdout);
+				}
+
 				m_FUSION_paths_requested=false;
 				m_FUSION_firstPaths=m_Machine_getPaths_result;
 				m_FUSION_first_done=true;

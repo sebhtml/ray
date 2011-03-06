@@ -51,6 +51,9 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_EXTENSION_IS_DONE,theRank);
 		(*outbox).push_back(aMessage);
+
+		m_cacheForRepeatedReads.clear();
+
 		delete m_cache;
 		delete m_dfsData;
 		return;
@@ -658,7 +661,6 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			(*currentVertex)=ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition];
 
 			ed->resetStructures();
-			m_cacheForRepeatedReads.clear();
 
 			ed->m_EXTENSION_directVertexDone=false;
 			ed->m_EXTENSION_VertexAssembled_requested=false;
@@ -712,7 +714,6 @@ uint64_t*currentVertex,BubbleData*bubbleData){
 	}
 
 	ed->resetStructures();
-	m_cacheForRepeatedReads.clear();
 	fflush(stdout);
 	showMemoryUsage(theRank);
 	int a=ed->getAllocator()->getChunkSize()*ed->getAllocator()->getNumberOfChunks();
@@ -936,7 +937,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				&&(m_cacheForRepeatedReads.find(uniqueId,false)==NULL)){
 					//cout<<"Saving in cache "<<uniqueId<<endl;
 					Read a;
-					a.constructor(m_receivedString.c_str(),m_ed->getAllocator(),false);
+					a.constructor(m_receivedString.c_str(),&m_cacheAllocator,false);
 					a.setType(m_ed->m_readType);
 					PairedRead*r=a.getPairedRead();
 					#ifdef ASSERT
@@ -946,7 +947,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 						*r=ed->m_EXTENSION_pairedRead;
 					}
 					bool inserted;
-					SplayNode<uint64_t,Read>*node=m_cacheForRepeatedReads.insert(uniqueId,m_ed->getAllocator(),&inserted);
+					SplayNode<uint64_t,Read>*node=m_cacheForRepeatedReads.insert(uniqueId,&m_cacheAllocator,&inserted);
 					Read*value=node->getValue();
 					#ifdef ASSERT
 					assert(inserted);
@@ -1048,6 +1049,8 @@ set<uint64_t>*SeedExtender::getEliminatedSeeds(){
 void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed,
 	GridTable*subgraph,StaticVector*inbox){
 	m_cacheForRepeatedReads.constructor();
+	int chunkSize=4194304;
+	m_cacheAllocator.constructor(chunkSize);
 	m_inbox=inbox;
 	m_subgraph=subgraph;
 	m_dfsData=new DepthFirstSearchData;
