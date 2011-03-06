@@ -53,6 +53,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		(*outbox).push_back(aMessage);
 
 		m_cacheForRepeatedReads.clear();
+		m_cacheForListOfReads.clear();
 
 		delete m_cache;
 		delete m_dfsData;
@@ -849,8 +850,14 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 		int dest=vertexRank((*currentVertex),size,wordSize);
 		//cout<<__func__<<" Requesting reads from "<<dest<<endl;
 		//cout<<__func__<<" Request reads, coverage, edges + mark as assembled."<<endl;
-		Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_READS,theRank);
-		(*outbox).push_back(aMessage);
+
+		if(m_cacheForListOfReads.find(*currentVertex,false)==NULL){
+			Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_READS,theRank);
+			(*outbox).push_back(aMessage);
+		}else{// use the cache
+			Message aMessage(message,4,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_READS,theRank);
+			(*outbox).push_back(aMessage);
+		}
 		m_sequenceIndexToCache=0;
 		m_sequenceRequested=false;
 
@@ -885,9 +892,33 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 			*vertexCoverageReceived=true;
 			uint64_t compactEdges=buffer[3];
 			*receivedOutgoingEdges=_getOutgoingEdges(*currentVertex,compactEdges,m_parameters->getWordSize());
-			//cout<<"Receives compact edges "<<receivedOutgoingEdges->size()<<endl;
+
+			// get reads from the cache
+			if(m_cacheForListOfReads.find(*currentVertex,false)!=NULL){
+				ed->m_EXTENSION_receivedReads.clear();
+				ReadAnnotation*annotation=*(m_cacheForListOfReads.find(*currentVertex,false)->getValue());
+				while(annotation!=NULL){
+					ed->m_EXTENSION_receivedReads.push_back(*annotation);
+					annotation=annotation->getNext();
+				}
+			}
 		}
 	}else if(ed->m_EXTENSION_reads_received){
+		// add a cache entry
+		if(m_cacheForListOfReads.find(*currentVertex,false)==NULL
+		 && ed->m_currentCoverage>3*m_parameters->getPeakCoverage()){
+			bool inserted;
+			SplayNode<uint64_t,ReadAnnotation*>*node=m_cacheForListOfReads.insert(*currentVertex,&m_cacheAllocator,&inserted);
+			ReadAnnotation*root=NULL;
+			for(int i=0;i<(int)ed->m_EXTENSION_receivedReads.size();i++){
+				ReadAnnotation*newAnnotation=(ReadAnnotation*)m_cacheAllocator.allocate(sizeof(ReadAnnotation)*1);
+				*newAnnotation=ed->m_EXTENSION_receivedReads[i];
+				newAnnotation->setNext(root);
+				root=newAnnotation;
+			}
+			ReadAnnotation**theRoot=node->getValue();
+			*theRoot=root;
+		}
 		if(m_sequenceIndexToCache<(int)ed->m_EXTENSION_receivedReads.size()){
 			ReadAnnotation annotation=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache];
 			uint64_t uniqueId=annotation.getUniqueId();
@@ -1049,6 +1080,7 @@ set<uint64_t>*SeedExtender::getEliminatedSeeds(){
 void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed,
 	GridTable*subgraph,StaticVector*inbox){
 	m_cacheForRepeatedReads.constructor();
+	m_cacheForListOfReads.constructor();
 	int chunkSize=4194304;
 	m_cacheAllocator.constructor(chunkSize);
 	m_inbox=inbox;

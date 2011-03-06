@@ -1070,7 +1070,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS(Message*message){
 
 	uint64_t vertex=0;
 	// start from the beginning
-	if(count==3){
+	if(count>=3){
 		//cout<<__func__<<" from key "<<incoming[0]<<endl;
 		//cout.flush();
 		vertex=incoming[0];
@@ -1130,6 +1130,11 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS(Message*message){
 
 	uint64_t complement=complementVertex_normal(vertex,*m_wordSize);
 	bool lower=vertex<complement;
+
+	// a count of 4 means that the cache will be used on the other end
+	if(count==4){
+		e=NULL;
+	}
 
 	while(e!=NULL&&j!=maxToProcess){
 		#ifdef ASSERT

@@ -12,6 +12,8 @@ in-range, then the sole choice is picked up.
 and its mate was not encountered yet.
 * Grouped messages in the extension of seeds.
 * Reads marked on repeated vertices are cached during the extension.
+* Paths are cached in the computation of fusions.
+* The list of reads for a repeated vertex is cached.
 
 
 = 1.2.4 =

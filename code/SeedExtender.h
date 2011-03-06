@@ -47,6 +47,7 @@ using namespace std;
 
 class SeedExtender{
 	SplayTree<uint64_t,Read>m_cacheForRepeatedReads;
+	SplayTree<uint64_t,ReadAnnotation*> m_cacheForListOfReads;
 	MyAllocator m_cacheAllocator;
 
 	int m_repeatLength;
