@@ -29,7 +29,7 @@ see <http://www.gnu.org/licenses/>
 #define MAXIMUM_NUMBER_OF_LIBRARIES 250
 #define DUMMY_LIBRARY 255
 
-#define RAY_VERSION "1.2.4"
+#define RAY_VERSION "1.3.0"
 
 #define _ENCODING_A 0
 #define _ENCODING_T 1
