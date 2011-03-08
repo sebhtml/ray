@@ -63,7 +63,7 @@ void OnDiskAllocator::addChunk(){
 	char*map=NULL;
 	// MAP_PRIVATE changes are private
 	// MAP_SHARED would make changes public (force writting; better)
-	map =(char*)mmap(0, m_chunkSize, PROT_READ | PROT_WRITE,MAP_SHARED,fd, 0);
+	map =(char*)mmap(0, m_chunkSize, PROT_READ | PROT_WRITE,MAP_PRIVATE,fd, 0);
 	if (map == MAP_FAILED||map==NULL) {
 		close(fd);
 		perror("Error mmapping the file");
