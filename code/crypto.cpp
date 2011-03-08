@@ -58,7 +58,7 @@ uint64_t uniform_hashing_function_2_64_64(uint64_t key){
 // actually it is not properly implemented.
 uint64_t hashing_function(const char*a){
 	int n=strlen(a);
-	uint64_t basis=14695981039346656037;
+	uint64_t basis=(uint64_t)14695981039346656037UL;
 	uint64_t prime=1099511628211;
 	for(int i=0;i<n;i++){
 		uint8_t b=a[i];

@@ -64,7 +64,7 @@ void ExtensionData::destroyStructures(){
 }
 
 void ExtensionData::resetStructures(){
-	m_allocator.clear();
+	m_allocator.reset();
 
 	destroyStructures();
 	createStructures();

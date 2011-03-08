@@ -244,6 +244,8 @@ void Machine::start(){
 		
 		cout<<endl;
 		cout<<"Ray Systems are using memory-mapped files (POSIX mmap)"<<endl;
+		size_t page_size = (size_t) sysconf (_SC_PAGESIZE);
+		cout<<"PageSize: "<<page_size<<" bytes"<<endl;
 		cout<<endl;
 		m_timePrinter.printElapsedTime("Beginning of computation");
 		cout<<endl;
@@ -403,6 +405,8 @@ m_seedingData,
 	m_directionsAllocator.clear();
 	m_inboxAllocator.clear();
 	m_outboxAllocator.clear();
+
+	printf("Rank %i: clearing memory-mapped files, please wait.",m_rank);
 	m_diskAllocator.clear();
 
 	MPI_Finalize();

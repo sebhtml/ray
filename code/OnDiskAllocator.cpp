@@ -33,7 +33,7 @@ using namespace std;
 //  http://www.linuxquestions.org/questions/programming-9/mmap-tutorial-c-c-511265/
 void OnDiskAllocator::constructor(const char*prefix){
 	m_prefix=prefix;
-	m_chunkSize=1024*1024*100;
+	m_chunkSize=1024*1024*128; // 128 MiB
 }
 
 void OnDiskAllocator::addChunk(){
@@ -61,7 +61,9 @@ void OnDiskAllocator::addChunk(){
 		perror("Error writing last byte of the file");
 	}
 	char*map=NULL;
-	map =(char*)mmap(0, m_chunkSize, PROT_READ | PROT_WRITE, MAP_SHARED,fd, 0);
+	// MAP_PRIVATE changes are private
+	// MAP_SHARED would make changes public (force writting; better)
+	map =(char*)mmap(0, m_chunkSize, PROT_READ | PROT_WRITE,MAP_SHARED,fd, 0);
 	if (map == MAP_FAILED||map==NULL) {
 		close(fd);
 		perror("Error mmapping the file");
@@ -70,7 +72,7 @@ void OnDiskAllocator::addChunk(){
 	m_pointers.push_back(map);
 	m_fileDescriptors.push_back(fd);
 	m_fileNames.push_back(fileName);
-	cout<<"mmap File: "<<fileName<<" SizeInBytes: "<<m_chunkSize<<""<<endl;
+	cout<<"mmap "<<fileName<<" ("<<m_chunkSize/1024/1024<<" MiB)"<<endl;
 	m_current=0;
 }
 
@@ -113,11 +115,12 @@ void OnDiskAllocator::clear(){
 
 		string fileName=m_fileNames[i];
 		remove(fileName.c_str());
-		cout<<"munmap File: "<<fileName<<" SizeInBytes: "<<m_chunkSize<<""<<endl;
+		cout<<"munmap "<<fileName<<endl;
 	}
 	m_pointers.clear();
 	m_fileNames.clear();
 	m_fileDescriptors.clear();
+	m_toReuse.clear();
 }
 
 void OnDiskAllocator::free(void*a,int b){
@@ -175,3 +178,11 @@ void OnDiskAllocator::addAddressToReuse(void*p,int size){
 	m_toReuse[size]=ptr;
 }
 
+void OnDiskAllocator::reset(){
+	m_toReuse.clear();
+	if(m_pointers.size()>1){
+		clear();
+	}else{
+		m_current=0;
+	}
+}

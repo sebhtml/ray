@@ -54,12 +54,12 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_EXTENSION_IS_DONE,theRank);
 		(*outbox).push_back(aMessage);
-
+		m_cacheAllocator.clear();
 		m_cacheForRepeatedReads.clear();
 		//m_cacheHashTable.clear();
 		m_cacheForListOfReads.clear();
 
-		delete m_cache;
+		m_cache.clear();
 		delete m_dfsData;
 		return;
 	}
@@ -79,6 +79,10 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 
 	}else if(ed->m_EXTENSION_currentSeedIndex==(int)(*seeds).size()){
 		ed->destructor();
+		ed->getAllocator()->clear();
+		m_cacheAllocator.clear();
+		m_cache.clear();
+
 		printf("Rank %i is extending seeds [%i/%i] (completed)\n",theRank,(int)(*seeds).size(),(int)(*seeds).size());
 		fflush(stdout);
 
@@ -177,10 +181,10 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 		if((*outgoingEdgeIndex)<(int)(*receivedOutgoingEdges).size()){
 			uint64_t kmer=(*receivedOutgoingEdges)[(*outgoingEdgeIndex)];
 			// get the coverage of these.
-			if(!(*vertexCoverageRequested)&&(*m_cache).count(kmer)>0){
+			if(!(*vertexCoverageRequested)&&(m_cache).find(kmer,false)!=NULL){
 				(*vertexCoverageRequested)=true;
 				(*vertexCoverageReceived)=true;
-				(*receivedVertexCoverage)=(*m_cache)[kmer];
+				(*receivedVertexCoverage)=*(m_cache.find(kmer,false)->getValue());
 
 				#ifdef ASSERT
 				assert((*receivedVertexCoverage)<=m_parameters->getMaximumAllowedCoverage());
@@ -195,7 +199,8 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				(*vertexCoverageReceived)=false;
 				(*receivedVertexCoverage)=-1;
 			}else if((*vertexCoverageReceived)){
-				(*m_cache)[kmer]=*receivedVertexCoverage;
+				bool inserted;
+				*((m_cache.insert(kmer,&m_cacheAllocator,&inserted))->getValue())=*receivedVertexCoverage;
 				(*outgoingEdgeIndex)++;
 				(*vertexCoverageRequested)=false;
 				#ifdef ASSERT
@@ -685,9 +690,6 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 
 void SeedExtender::storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<vector<uint64_t> >*seeds,
 uint64_t*currentVertex,BubbleData*bubbleData){
-	delete m_cache;
-	m_cache=new map<uint64_t,int>;
-
 	if(ed->m_EXTENSION_extension->size()>=100){
 
 		#ifdef SHOW_CHOICE
@@ -855,7 +857,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
  *  3 -> compact edges
  */
 			*receivedVertexCoverage=buffer[2];
-			(*m_cache)[*currentVertex]=*receivedVertexCoverage;
+			bool inserted;
+			*((m_cache.insert(*currentVertex,&m_cacheAllocator,&inserted))->getValue())=*receivedVertexCoverage;
 			ed->m_EXTENSION_extension->push_back((*currentVertex));
 			ed->m_extensionCoverageValues->push_back(*receivedVertexCoverage);
 			ed->m_currentCoverage=(*receivedVertexCoverage);
@@ -1104,7 +1107,7 @@ void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAll
 	m_inbox=inbox;
 	m_subgraph=subgraph;
 	m_dfsData=new DepthFirstSearchData;
-	m_cache=new map<uint64_t,int>;
+	m_cache.constructor();
 	m_ed=ed;
 	this->m_directionsAllocator=m_directionsAllocator;
 	m_bubbleTool.constructor(parameters);

@@ -24,7 +24,6 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 */
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -35,7 +34,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include <fcntl.h>
 #include <map>
 #include <vector>
-#include <sys/mman.h>
+#include <sys/mman.h> // POSIX memory management
 using namespace std;
 
 #ifndef _OnDiskAllocator
@@ -46,7 +45,8 @@ typedef struct{
 }StoreElement;
 
 /**
- * a class that allocate memory from a file
+ * a class that allocate memory from a file. This class uses POSIX mmap and POSIX munmap.
+ * \see http://pubs.opengroup.org/onlinepubs/009695399/functions/mmap.html
  */
 class OnDiskAllocator{
 	vector<char*> m_pointers;
@@ -81,6 +81,10 @@ public:
  * clear everything.
  */
 	void clear();
+/**
+ * reset the allocator
+ */
+	void reset();
 };
 
 

@@ -56,7 +56,7 @@ class SeedExtender{
 
 	DepthFirstSearchData*m_dfsData;
 	bool m_removedUnfitLibraries;
-	map<uint64_t,int>*m_cache;
+	SplayTree<uint64_t,int> m_cache;
 	vector<Direction>m_receivedDirections;
 	GridTable*m_subgraph;
 	EarlyStoppingTechnology m_earlyStoppingTechnology;

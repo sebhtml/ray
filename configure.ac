@@ -40,7 +40,12 @@ AC_CHECK_HEADERS(string.h)
 AC_CHECK_HEADERS(stdio.h)
 AC_CHECK_HEADERS(stdlib.h)
 AC_CHECK_HEADERS(assert.h)
-
+AC_CHECK_HEADERS(stdio.h)
+AC_CHECK_HEADERS(stdlib.h)
+AC_CHECK_HEADERS(sys/types.h)
+AC_CHECK_HEADERS(sys/stat.h)
+AC_CHECK_HEADERS(fcntl.h)
+AC_CHECK_HEADERS(sys/mman.h)
 
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
@@ -50,7 +55,6 @@ AC_TYPE_UINT8_T
 AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
-
 
 AC_CHECK_LIB(z, inflate,
         [AC_CHECK_HEADERS([zlib.h],
@@ -72,6 +76,5 @@ scripts/gnuplot/Makefile
 scripts/examples/Makefile
 scripts/examples/SunGridEngine,Open-MPI/Makefile
 scripts/Makefile])
-
 
 AC_OUTPUT

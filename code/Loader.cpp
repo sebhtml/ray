@@ -31,7 +31,6 @@ using namespace std;
 
 void Loader::constructor(const char*prefix){
 	m_maxToLoad=500000;
-	DISTRIBUTION_ALLOCATOR_CHUNK_SIZE=4194304;
 	m_currentOffset=0;
 	m_type=FORMAT_NULL;
 	ostringstream prefixFull;
@@ -163,7 +162,7 @@ void Loader::clear(){
 
 void Loader::loadSequences(){
 	m_currentOffset+=m_reads.size();
-	m_allocator.clear();
+	m_allocator.reset();
 	m_reads.reset();
 
 	if(m_type==FORMAT_FASTQ_GZ){
@@ -195,7 +194,7 @@ void Loader::loadSequences(){
 }
 
 void Loader::reset(){
-	m_allocator.clear();
+	m_allocator.reset();
 	m_reads.reset();
 	m_size=0;
 	m_currentOffset=0;

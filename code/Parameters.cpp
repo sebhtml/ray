@@ -146,6 +146,8 @@ void Parameters::parseCommands(){
 
 	m_numberOfLibraries=0;
 
+	bool providedMemoryPrefix=false;
+
 	for(int i=0;i<(int)m_commands.size();i++){
 		string token=m_commands[i];
 		if(singleReadsCommands.count(token)>0){
@@ -181,6 +183,7 @@ void Parameters::parseCommands(){
 			}
 			token=m_commands[i];
 			m_memoryFilePrefix=token;
+			providedMemoryPrefix=true;
 		}else if(outputFileCommands.count(token)>0){
 			i++;
 			int items=m_commands.size()-i;
@@ -193,6 +196,9 @@ void Parameters::parseCommands(){
 			}
 			token=m_commands[i];
 			m_prefix=token;
+			if(!providedMemoryPrefix){
+				m_memoryFilePrefix=m_prefix;
+			}
 		}else if(interleavedCommands.count(token)>0){
 			// make sure there is at least 4 elements left.
 			int items=0;
@@ -425,6 +431,10 @@ void Parameters::parseCommands(){
 			cout<<"Memory Consumption Reducer is enabled, threshold="<<m_reducerPeriod<<endl;
 		}
 		cout<<endl;
+		cout<<"Output files will be prefixed with "<<getPrefix()<<endl;
+		cout<<"Memory-mapped files will be prefixed with "<<getMemoryPrefix()<<endl;
+		cout<<endl;
+
 	}
 
 	int maximumNumberOfFiles=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint32_t);

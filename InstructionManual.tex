@@ -115,6 +115,19 @@ Standard flowgram format & .sff \\
 Ray assembles reads (paired or not) to produce an assembly.
 Paired reads must be on opposite strands (forward \& reverse or reverse \& forward).
 
+\subsection{Path prefix for memory-mapped files (default: value given to -o)}
+    Ray uses memory-mapped files (using POSIX mmap).
+    If you are running Ray on a high-performance computer/cluster, check if the system provides
+    a directory called /scratch. Such a directory usually provides fast-access to file pages.
+    OnDiskAllocator is a chunk allocator whose chunks are in memory-mapped files (1 chunk = 1 file).
+    Obviously, demand paging will do the swapping of memory pages.
+
+
+\begin{verbatim}
+     -MemoryPrefix <memoryPrefix>
+\end{verbatim}
+
+
 \subsection{$k$-mer length with -k}
 
 Ray builds a distributed catalog of all occuring $k$-mers in the reads and their reverse-complement. $k$ must be greater or equal to 15 and lower or equal to 31. The $k$-mer length must be an odd number.
