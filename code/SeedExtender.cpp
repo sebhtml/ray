@@ -19,13 +19,14 @@
 
 */
 
-#include<string.h>
-#include<StaticVector.h>
-#include<TipWatchdog.h>
-#include<SeedExtender.h>
-#include<Chooser.h>
-#include<assert.h>
-#include<BubbleTool.h>
+#include <string.h>
+#include <StaticVector.h>
+#include <TipWatchdog.h>
+#include <SeedExtender.h>
+#include <Chooser.h>
+#include <assert.h>
+#include <BubbleTool.h>
+#include <crypto.h>
 
 // uncomment to display how Ray chooses things.
 //#define SHOW_CHOICE
@@ -53,6 +54,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		(*outbox).push_back(aMessage);
 
 		m_cacheForRepeatedReads.clear();
+		//m_cacheHashTable.clear();
 		m_cacheForListOfReads.clear();
 
 		delete m_cache;
@@ -693,20 +695,7 @@ uint64_t*currentVertex,BubbleData*bubbleData){
 		cout<<"Stopping extension..."<<endl;
 		#endif
 
-		int theCurrentSize=ed->m_EXTENSION_extension->size();
-		printf("Rank %i reached %i vertices (%s) from seed %i (completed)\n",theRank,theCurrentSize,
-			idToWord(*currentVertex,m_parameters->getWordSize()).c_str(),
-			ed->m_EXTENSION_currentSeedIndex+1);
-
-		fflush(stdout);
-		showMemoryUsage(theRank);
-
-		int chunks=m_directionsAllocator->getNumberOfChunks();
-		int chunkSize=m_directionsAllocator->getChunkSize();
-		uint64_t totalBytes=chunks*chunkSize;
-		uint64_t kibibytes=totalBytes/1024;
-		printf("Rank %i: memory usage for directions is %lu KiB\n",theRank,kibibytes);
-		fflush(stdout);
+		printExtensionStatus(currentVertex);
 
 		ed->m_EXTENSION_contigs.push_back(*(ed->m_EXTENSION_extension));
 	
@@ -817,17 +806,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 					ed->m_EXTENSION_currentSeedIndex,(int)(*seeds).size());
 				fflush(stdout);
 			}
-			printf("Rank %i reached %i vertices (%s)\n",theRank,theCurrentSize,idToWord(*currentVertex,
-				m_parameters->getWordSize()).c_str());
-			fflush(stdout);
-			//showReadsInRange();
-
-			showMemoryUsage(theRank);
-			int a=ed->getAllocator()->getChunkSize()*ed->getAllocator()->getNumberOfChunks();
-			printf("Rank %i: database allocation: %i\n",theRank,a);
+			printExtensionStatus(currentVertex);
 		}
-
-
 
 		// save wave progress.
 		uint64_t waveId=getPathUniqueId(theRank,ed->m_EXTENSION_currentSeedIndex);
@@ -905,10 +885,9 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 		}
 	}else if(ed->m_EXTENSION_reads_received){
 		// add a cache entry
-		if(m_cacheForListOfReads.find(*currentVertex,false)==NULL
-		 && ed->m_currentCoverage>3*m_parameters->getPeakCoverage()){
-			bool inserted;
-			SplayNode<uint64_t,ReadAnnotation*>*node=m_cacheForListOfReads.insert(*currentVertex,&m_cacheAllocator,&inserted);
+		if(false
+&&		m_cacheForListOfReads.find(*currentVertex,false)==NULL
+		 && ed->m_currentCoverage>100*m_parameters->getPeakCoverage()){
 			ReadAnnotation*root=NULL;
 			for(int i=0;i<(int)ed->m_EXTENSION_receivedReads.size();i++){
 				ReadAnnotation*newAnnotation=(ReadAnnotation*)m_cacheAllocator.allocate(sizeof(ReadAnnotation)*1);
@@ -916,6 +895,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				newAnnotation->setNext(root);
 				root=newAnnotation;
 			}
+			bool inserted;
+			SplayNode<uint64_t,ReadAnnotation*>*node=m_cacheForListOfReads.insert(*currentVertex,&m_cacheAllocator,&inserted);
 			ReadAnnotation**theRoot=node->getValue();
 			*theRoot=root;
 		}
@@ -963,27 +944,58 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,sequenceRank,RAY_MPI_TAG_REQUEST_READ_SEQUENCE,theRank);
 				outbox->push_back(aMessage);
 			}else if(m_sequenceReceived){
+				int cachingThreshold=2000*m_parameters->getPeakCoverage();
+				if(cachingThreshold>m_parameters->getMaximumAllowedCoverage()){
+					cachingThreshold=m_parameters->getMaximumAllowedCoverage();
+				}
 				// put sequences on repeats in the cache
-				if(ed->m_currentCoverage>3*m_parameters->getPeakCoverage()
+				//
+				if(ed->m_currentCoverage>=cachingThreshold
 				&&(m_cacheForRepeatedReads.find(uniqueId,false)==NULL)){
-					//cout<<"Saving in cache "<<uniqueId<<endl;
+					//uint64_t hashValue=0;
+					//hashValue=hashing_function(m_receivedString.c_str());
+					//cout<<"Saving in cache ReadIdentifier="<<uniqueId<<" Sequence="<<m_receivedString<<" HashValue="<<hashValue<<" CoverageValue="<<ed->m_currentCoverage<<endl;
 					Read a;
-					a.constructor(m_receivedString.c_str(),&m_cacheAllocator,false);
+					bool setSequence=false;
+/*
+					if(m_cacheHashTable.find(hashValue,false)!=NULL){
+						Read*read=m_cacheHashTable.find(hashValue,false)->getValue();
+						char buffer[4000];
+						read->getSeq(buffer);
+						string stringTwo=buffer;
+						if(stringTwo==m_receivedString){
+							uint8_t*raw=read->getRawSequence();
+							a.constructorWithRawSequence(m_receivedString.c_str(),raw,false);
+							setSequence=true;
+						}
+					}
+*/
+					if(!setSequence){
+						a.constructor(m_receivedString.c_str(),&m_cacheAllocator,false);
+					}
 					a.setType(m_ed->m_readType);
 					PairedRead*r=a.getPairedRead();
-					#ifdef ASSERT
-					assert(r!=NULL);
-					#endif
 					if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
+						#ifdef ASSERT
+						assert(r!=NULL);
+						#endif
 						*r=ed->m_EXTENSION_pairedRead;
 					}
 					bool inserted;
 					SplayNode<uint64_t,Read>*node=m_cacheForRepeatedReads.insert(uniqueId,&m_cacheAllocator,&inserted);
 					Read*value=node->getValue();
+
 					#ifdef ASSERT
 					assert(inserted);
 					assert(value!=NULL);
 					#endif
+/*
+					if(setSequence&&m_cacheHashTable.find(hashValue,false)==NULL){
+						SplayNode<uint64_t,Read*>*theNode=m_cacheHashTable.insert(hashValue,&m_cacheAllocator,&inserted);
+						Read**ptr=theNode->getValue();
+						*ptr=value;
+					}
+*/
 					*value=a;
 				}
 
@@ -1080,6 +1092,7 @@ set<uint64_t>*SeedExtender::getEliminatedSeeds(){
 void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed,
 	GridTable*subgraph,StaticVector*inbox){
 	m_cacheForRepeatedReads.constructor();
+	//m_cacheHashTable.constructor();
 	m_cacheForListOfReads.constructor();
 	int chunkSize=4194304;
 	m_cacheAllocator.constructor(chunkSize);
@@ -1209,4 +1222,29 @@ void SeedExtender::showReadsInRange(){
 	}
 	cout<<endl;
 	cout.flush();
+}
+
+void SeedExtender::printExtensionStatus(uint64_t*currentVertex){
+	int theRank=m_parameters->getRank();
+	int theCurrentSize=m_ed->m_EXTENSION_extension->size();
+	printf("Rank %i reached %i vertices (%s) from seed %i (completed)\n",theRank,theCurrentSize,
+		idToWord(*currentVertex,m_parameters->getWordSize()).c_str(),
+		m_ed->m_EXTENSION_currentSeedIndex+1);
+
+	fflush(stdout);
+	showMemoryUsage(theRank);
+
+	int chunks=m_directionsAllocator->getNumberOfChunks();
+	int chunkSize=m_directionsAllocator->getChunkSize();
+	uint64_t totalBytes=chunks*chunkSize;
+	uint64_t kibibytes=totalBytes/1024;
+	printf("Rank %i: memory usage for directions is %lu KiB\n",theRank,kibibytes);
+	fflush(stdout);
+
+	int readsInCache=m_cacheForRepeatedReads.size();
+	//int hashEntries=m_cacheHashTable.size();
+	int listsInCache=m_cacheForListOfReads.size();
+	printf("Rank %i: lists of reads in cache: %i\n",theRank,listsInCache);
+	printf("Rank %i: reads in cache: %i\n",theRank,readsInCache);
+	fflush(stdout);
 }

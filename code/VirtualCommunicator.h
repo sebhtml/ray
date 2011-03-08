@@ -33,7 +33,7 @@
 #include <queue>
 using namespace std;
 
-/*
+/**
  * this class provides an architecture for virtualization of message communication.
  *
  * This means that messages are grouped, but the programmer don't have to group them himself...

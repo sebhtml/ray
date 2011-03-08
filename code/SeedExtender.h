@@ -76,6 +76,7 @@ class SeedExtender{
 
 	void showReadsInRange();
 
+	void printExtensionStatus(uint64_t*currentVertex);
 public:
 	bool m_sequenceReceived;
 	bool m_sequenceRequested;

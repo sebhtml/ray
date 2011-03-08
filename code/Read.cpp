@@ -61,6 +61,12 @@ char*Read::trim(char*buffer,const char*sequence){
 	return corrected;
 }
 
+void Read::constructorWithRawSequence(const char*seq,uint8_t*raw,bool flag){
+	m_type=TYPE_SINGLE_END;
+	m_length=strlen(seq);
+	m_sequence=raw;
+}
+
 void Read::constructor(const char*sequence,MyAllocator*seqMyAllocator,bool trimFlag){
 	m_type=TYPE_SINGLE_END;
 	#ifdef __READ_VERBOSITY

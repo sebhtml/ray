@@ -17,17 +17,40 @@
     along with this program (COPYING).  
 	see <http://www.gnu.org/licenses/>
 
+
+ 	Funding:
+
+Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Research (Master's award: 200910MDR-215249-172830 and Doctoral award: 200902CGM-204212-172830).
+
 */
 
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <stdint.h>
+#include <unistd.h>
+#include <string>
+#include <fcntl.h>
+#include <sys/mman.h>
+using namespace std;
 
-#ifndef _crypto
-#define _crypto
+#ifndef _OnDiskAllocator
+#define _OnDiskAllocator
 
-#include<stdint.h>
+class OnDiskAllocator{
+	string m_fileName;
+	uint64_t m_current;
+	char*m_map;
+	int m_fd;
+	uint64_t m_total;
+public:
+	void constructor(int a);
+	void*allocate(int a);
+	void clear();
+};
 
-uint64_t uniform_hashing_function_1_64_64(uint64_t key);
-uint64_t uniform_hashing_function_2_64_64(uint64_t key);
-uint64_t hashing_function(const char*a);
+
 
 #endif

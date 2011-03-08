@@ -49,6 +49,7 @@ class Read{
 	char*trim(char*a,const char*b);
 public:
 	void constructor(const char*sequence,MyAllocator*seqMyAllocator,bool trim);
+	void constructorWithRawSequence(const char*sequence,uint8_t*raw,bool trim);
 	void getSeq(char*buffer)const;
 	int length()const;
 	uint64_t getVertex(int pos,int w,char strand,bool color)const;
