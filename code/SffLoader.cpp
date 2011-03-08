@@ -132,7 +132,7 @@ int SffLoader::openSff(string file){
 // page 445-448
 // or 
 // http://blog.malde.org/index.php/2008/11/14/454-sequencing-and-parsing-the-sff-binary-format/
-void SffLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
+void SffLoader::load(int maxToLoad,ArrayOfReads*reads,OnDiskAllocator*seqMyAllocator){
 
 	int loadedSequences=0;
 	size_t fread_result;

@@ -143,12 +143,12 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 	}
 }
 
-void SequencesIndexer::constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox){
+void SequencesIndexer::constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,OnDiskAllocator*allocator){
+	m_allocator=allocator;
 	m_initiatedIterator=false;
 	m_parameters=parameters;
 	m_rank=parameters->getRank();
 	m_size=parameters->getSize();
-	m_allocator.constructor(4194304);
 	m_pendingMessages=0;
 
 	m_completedJobs=0;
@@ -169,8 +169,8 @@ void SequencesIndexer::setReadiness(){
 	m_pendingMessages--;
 }
 
-MyAllocator*SequencesIndexer::getAllocator(){
-	return &m_allocator;
+OnDiskAllocator*SequencesIndexer::getAllocator(){
+	return m_allocator;
 }
 
 void SequencesIndexer::updateStates(){

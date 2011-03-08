@@ -27,72 +27,151 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include <OnDiskAllocator.h>
 #include <assert.h>
 #include <sstream>
+#include <iostream>
 using namespace std;
 
 //  http://www.linuxquestions.org/questions/programming-9/mmap-tutorial-c-c-511265/
-void OnDiskAllocator::constructor(int blockSize){
-	ostringstream a;
-	a<<"/tmp/cache_pid_"<<getpid();
-	m_fileName=a.str();
-	m_total=blockSize;
-	int i;
-	int result;
+void OnDiskAllocator::constructor(const char*prefix){
+	m_prefix=prefix;
+	m_chunkSize=1024*1024*100;
+}
 
-	m_fd = open(m_fileName.c_str(), O_RDWR | O_CREAT | O_TRUNC, (mode_t)0600);
-	if (m_fd == -1) {
+void OnDiskAllocator::addChunk(){
+	int chunkId=m_pointers.size();
+	ostringstream a;
+	a<<m_prefix<<"_RaySystems_pid_"<<getpid()<<"_chunk_"<<chunkId<<".mmap";
+	string fileName=a.str();
+	int fd=-1;
+
+	fd = open(fileName.c_str(), O_RDWR | O_CREAT | O_TRUNC, (mode_t)0600);
+	if (fd == -1) {
 		perror("Error opening file for writing");
 	}
 
-    /* Stretch the file size to the size of the (mmapped) array of ints
- *      */
-    result = lseek(m_fd,m_total-1, SEEK_SET);
-    if (result == -1) {
-	close(m_fd);
-	perror("Error calling lseek() to 'stretch' the file");
-    }
-    
-    /* Something needs to be written at the end of the file to
- *      * have the file actually have the new size.
- *           * Just writing an empty string at the current file position will do.
- *                *
- *                     * Note:
- *                          *  - The current position in the file is at the end of the stretched 
- *                               *    file due to the call to lseek().
- *                                    *  - An empty string is actually a single '\0' character, so a zero-byte
- *                                         *    will be written at the last byte of the file.
- *                                              */
-    result = write(m_fd, "", 1);
-    if (result != 1) {
-	close(m_fd);
-	perror("Error writing last byte of the file");
-    }
+	// go at the new end
+	int result = lseek(fd,m_chunkSize-1, SEEK_SET);
+	if (result == -1) {
+		close(fd);
+		perror("Error calling lseek() to 'stretch' the file");
+	}
+    	// write an empty string to update the file
+	result = write(fd, "", 1);
+	if (result != 1) {
+		close(fd);
+		perror("Error writing last byte of the file");
+	}
+	char*map=NULL;
+	map =(char*)mmap(0, m_chunkSize, PROT_READ | PROT_WRITE, MAP_SHARED,fd, 0);
+	if (map == MAP_FAILED||map==NULL) {
+		close(fd);
+		perror("Error mmapping the file");
+	}
 
-    /* Now the file is ready to be mmapped.
- *      */
-    m_map =(char*)mmap(0, m_total, PROT_READ | PROT_WRITE, MAP_SHARED,m_fd, 0);
-    if (m_map == MAP_FAILED) {
-	close(m_fd);
-	perror("Error mmapping the file");
-    }
+	m_pointers.push_back(map);
+	m_fileDescriptors.push_back(fd);
+	m_fileNames.push_back(fileName);
+	cout<<"mmap File: "<<fileName<<" SizeInBytes: "<<m_chunkSize<<""<<endl;
 	m_current=0;
 }
 
 void*OnDiskAllocator::allocate(int a){
-	uint64_t left=m_total-m_current;
-	assert(left>=a);
-	void*ret=m_map;
+	int remainder=a%8;
+	int toAdd=8-remainder;
+	a+=toAdd;
+	assert(a!=0);
+	if((uint64_t)a>m_chunkSize){
+		cout<<"Error: requested "<<a<<" but chunk size is "<<m_chunkSize<<endl;
+	}
+	assert((uint64_t)a<=m_chunkSize);
+	if(hasAddressesToReuse(a)){
+		return reuseAddress(a);
+	}
+
+	if(m_pointers.size()==0){
+		addChunk();
+	}
+	uint64_t left=m_chunkSize-m_current;
+	if(left<(uint64_t)a){
+		addChunk();
+		left=m_chunkSize-m_current;
+	}
+	assert(left>=(uint64_t)a);
+	void*ret=m_pointers[m_pointers.size()-1]+m_current;
 	m_current+=a;
 	return ret;
 }
 
 void OnDiskAllocator::clear(){
-    if (munmap(m_map, m_total) == -1) {
-	perror("Error un-mmapping the file");
-	/* Decide here whether to close(fd) and exit() or not. Depends... */
-    }
+	for(int i=0;i<(int)m_pointers.size();i++){
+		char*map=m_pointers[i];
+		if (munmap(map, m_chunkSize) == -1) {
+			perror("Error un-mmapping the file");
+		}
 
-    /* Un-mmaping doesn't close the file, so we still need to do that.
- *      */
-    close(m_fd);
-	remove(m_fileName.c_str());
+		int fd=m_fileDescriptors[i];
+		close(fd);
+
+		string fileName=m_fileNames[i];
+		remove(fileName.c_str());
+		cout<<"munmap File: "<<fileName<<" SizeInBytes: "<<m_chunkSize<<""<<endl;
+	}
+	m_pointers.clear();
+	m_fileNames.clear();
+	m_fileDescriptors.clear();
 }
+
+void OnDiskAllocator::free(void*a,int b){
+	addAddressToReuse(a,b);
+}
+
+bool OnDiskAllocator::hasAddressesToReuse(int size){
+	bool test=m_toReuse.count(size)>0;
+	#ifdef ASSERT
+	if(test){
+		assert(m_toReuse[size]!=NULL);
+	}
+	#endif
+	return test;
+}
+
+void*OnDiskAllocator::reuseAddress(int size){
+	#ifdef ASSERT
+	assert(m_toReuse.count(size)>0 && m_toReuse[size]!=NULL);
+	#endif
+
+	StoreElement*tmp=m_toReuse[size];
+	#ifdef ASSERT
+	assert(tmp!=NULL);
+	#endif
+	StoreElement*next=(StoreElement*)tmp->m_next;
+	m_toReuse[size]=next;
+	if(m_toReuse[size]==NULL){
+		m_toReuse.erase(size);
+	}
+	#ifdef ASSERT
+	if(m_toReuse.count(size)>0){
+		assert(m_toReuse[size]!=NULL);
+	}
+	#endif
+	return tmp;
+}
+
+void OnDiskAllocator::addAddressToReuse(void*p,int size){
+	if(size<(int)sizeof(StoreElement)){
+		return;
+	}
+	#ifdef ASSERT
+	assert(p!=NULL);
+	#endif
+	StoreElement*ptr=(StoreElement*)p;
+	ptr->m_next=NULL;
+	if(m_toReuse.count(size)>0){
+		StoreElement*next=m_toReuse[size];
+		#ifdef ASSERT
+		assert(next!=NULL);
+		#endif
+		ptr->m_next=next;
+	}
+	m_toReuse[size]=ptr;
+}
+

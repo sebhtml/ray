@@ -26,6 +26,7 @@
 #include<common_functions.h>
 #include<vector>
 #include<MyAllocator.h>
+#include <OnDiskAllocator.h>
 #include<Read.h>
 #include<fstream>
 #include<ArrayOfReads.h>
@@ -66,7 +67,7 @@ class Loader{
 	int m_type;
 	int DISTRIBUTION_ALLOCATOR_CHUNK_SIZE;
 	ArrayOfReads m_reads;
-	MyAllocator m_allocator;
+	OnDiskAllocator m_allocator;
 
 	uint64_t m_currentOffset;
 	int m_maxToLoad;
@@ -88,7 +89,7 @@ class Loader{
 	void loadSequences();
 
 public:
-	void constructor();
+	void constructor(const char*prefix);
 	int load(string file,bool isGenome);
 	uint64_t size();
 	Read*at(uint64_t i);

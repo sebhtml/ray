@@ -19,7 +19,6 @@
 
 */
 
-
 #ifndef _FastqBz2Loader
 #define _FastqBz2Loader
 
@@ -27,6 +26,7 @@
 #include<vector>
 #include<ArrayOfReads.h>
 #include<Read.h>
+#include <OnDiskAllocator.h>
 #include<BzReader.h>
 #include<MyAllocator.h>
 using namespace std;
@@ -38,7 +38,7 @@ class FastqBz2Loader{
 public:
 	int open(string file,int period);
 	int getSize();
-	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period);
+	void load(int maxToLoad,ArrayOfReads*reads,OnDiskAllocator*seqMyAllocator,int period);
 };
 
 #endif

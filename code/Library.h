@@ -29,6 +29,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 #include<BufferedData.h>
 #include<ExtensionData.h>
+#include <OnDiskAllocator.h>
 #include<common_functions.h>
 #include<map>
 #include<StaticVector.h>
@@ -81,7 +82,7 @@ class Library{
 	vector<uint64_t> m_waitingWorkers;
 	vector<uint64_t> m_activeWorkersToRestore;
 
-	MyAllocator m_allocator;
+	OnDiskAllocator m_allocator;
 	void updateStates();
 public:
 	Library();

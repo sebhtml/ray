@@ -21,14 +21,19 @@
 
 #include <ExtensionData.h>
 #include <string.h>
+#include <sstream>
 #include <crypto.h>
+using namespace std;
 
-void ExtensionData::constructor(){
+void ExtensionData::constructor(Parameters*parameters){
+	m_parameters=parameters;
 	m_numberOfBins=1;
 	m_database=(SplayTree<uint64_t,ExtensionElement>*)__Malloc(m_numberOfBins*sizeof(SplayTree<uint64_t,ExtensionElement>));
 	createStructures();
-	int chunkSize=4194304;
-	m_allocator.constructor(chunkSize);
+
+	ostringstream prefixFull;
+	prefixFull<<m_parameters->getMemoryPrefix()<<"_ExtensionData";
+	m_allocator.constructor(prefixFull.str().c_str());
 }
 
 void ExtensionData::createStructures(){
@@ -59,10 +64,7 @@ void ExtensionData::destroyStructures(){
 }
 
 void ExtensionData::resetStructures(){
-	//m_allocator.reset();
 	m_allocator.clear();
-	int chunkSize=4194304;
-	m_allocator.constructor(chunkSize);
 
 	destroyStructures();
 	createStructures();
@@ -93,7 +95,7 @@ void ExtensionData::removeSequence(uint64_t a){
 	m_database[bin].remove(a,false,&m_allocator);
 }
 
-MyAllocator*ExtensionData::getAllocator(){
+OnDiskAllocator*ExtensionData::getAllocator(){
 	return &m_allocator;
 }
 

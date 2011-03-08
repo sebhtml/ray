@@ -26,6 +26,8 @@
 #include <PairedRead.h>
 #include <set>
 #include <Read.h>
+#include <OnDiskAllocator.h>
+#include <Parameters.h>
 #include <ExtensionElement.h>
 #include <map>
 #include <ReadAnnotation.h>
@@ -36,8 +38,8 @@ using namespace std;
 class ExtensionData{
 	SplayTree<uint64_t,ExtensionElement>*m_database;
 	int m_numberOfBins;
-
-	MyAllocator m_allocator;
+	Parameters*m_parameters;
+	OnDiskAllocator m_allocator;
 
 	void createStructures();
 	void destroyStructures();
@@ -116,10 +118,10 @@ public:
 	ExtensionElement*getUsedRead(uint64_t a);
 	ExtensionElement*addUsedRead(uint64_t a);
 	void removeSequence(uint64_t a);
-	void constructor();
+	void constructor(Parameters*parameters);
 
 	void destructor();
-	MyAllocator*getAllocator();
+	OnDiskAllocator*getAllocator();
 };
 
 #endif

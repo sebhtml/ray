@@ -26,24 +26,24 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void GridTable::constructor(int rank){
+void GridTable::constructor(int rank,OnDiskAllocator*allocator){
+	m_gridAllocatorOnDisk=allocator;
 	m_size=0;
 	m_inserted=false;
 	m_gridSize=4194304;
 	int bytes1=m_gridSize*sizeof(Vertex*);
-	m_gridData=(Vertex**)__Malloc(bytes1);
+	m_gridData=(Vertex**)m_gridAllocatorOnDisk->allocate(bytes1);
 	int bytes2=m_gridSize*sizeof(uint16_t);
-	m_gridSizes=(uint16_t*)__Malloc(bytes2);
-	//m_gridReservedSizes=(uint16_t*)__Malloc(bytes3);
+	m_gridSizes=(uint16_t*)m_gridAllocatorOnDisk->allocate(bytes2);
+/*
 	printf("Rank %i: allocating %i bytes for grid table\n",rank,bytes1+bytes2);
 	fflush(stdout);
+*/
 	showMemoryUsage(rank);
 	for(int i=0;i<m_gridSize;i++){
 		m_gridSizes[i]=0;
 		m_gridData[i]=NULL;
-		//m_gridReservedSizes[i]=0;
 	}
-	m_gridAllocator.constructor(m_gridSize);
 	m_rank=rank;
 }
 
@@ -83,12 +83,12 @@ Vertex*GridTable::insert(uint64_t key){
 	}
 	//if(m_gridReservedSizes[bin]==m_gridSizes[bin]){
 	if(true){
-		Vertex*newEntries=(Vertex*)m_gridAllocator.allocate((m_gridSizes[bin]+1)*sizeof(Vertex));
+		Vertex*newEntries=(Vertex*)m_gridAllocatorOnDisk->allocate((m_gridSizes[bin]+1)*sizeof(Vertex));
 		for(int i=0;i<m_gridSizes[bin];i++){
 			newEntries[i]=m_gridData[bin][i];
 		}
 		if(m_gridSizes[bin]!=0){
-			m_gridAllocator.getStore()->addAddressToReuse(m_gridData[bin],m_gridSizes[bin]*sizeof(Vertex));
+			m_gridAllocatorOnDisk->free(m_gridData[bin],m_gridSizes[bin]*sizeof(Vertex));
 		}
 		m_gridData[bin]=newEntries;
 	}
@@ -131,11 +131,11 @@ int GridTable::getNumberOfBins(){
 	return m_gridSize;
 }
 
-MyAllocator*GridTable::getAllocator(){
-	return &m_gridAllocator;
+OnDiskAllocator*GridTable::getAllocator(){
+	return m_gridAllocatorOnDisk;
 }
 
-MyAllocator*GridTable::getSecondAllocator(){
+OnDiskAllocator*GridTable::getSecondAllocator(){
 	return m_vertexTable.getAllocator();
 }
 
@@ -209,5 +209,5 @@ void GridTable::clearDirections(uint64_t a){
 }
 
 void GridTable::buildData(){
-	m_vertexTable.constructor(m_rank);
+	m_vertexTable.constructor(m_rank,m_gridAllocatorOnDisk);
 }

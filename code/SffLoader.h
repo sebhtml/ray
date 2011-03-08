@@ -27,6 +27,7 @@
 #include<string>
 #include<vector>
 #include<Read.h>
+#include <OnDiskAllocator.h>
 #include<stdio.h>
 #include<fstream>
 #include<ArrayOfReads.h>
@@ -51,7 +52,7 @@ class SffLoader{
 public:
 	int open(string file);
 	int getSize();
-	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
+	void load(int maxToLoad,ArrayOfReads*reads,OnDiskAllocator*seqMyAllocator);
 };
 
 #endif

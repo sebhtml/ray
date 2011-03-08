@@ -72,10 +72,10 @@ Machine::Machine(int argc,char**argv){
 }
 
 void Machine::start(){
+
 	m_killed=false;
 	m_ready=true;
 	
-	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed,&m_subgraph,&m_inbox);
 
 	m_fusionData->m_fusionStarted=false;
 	m_ed->m_EXTENSION_numberOfRanksDone=0;
@@ -138,9 +138,6 @@ void Machine::start(){
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	showMemoryUsage(m_rank);
-
-	MPI_Barrier(MPI_COMM_WORLD);
 	
 	m_parameters.setSize(getSize());
 	MAX_ALLOCATED_MESSAGES_IN_OUTBOX=getSize();
@@ -179,7 +176,7 @@ void Machine::start(){
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	m_sl.constructor(m_size,&m_persistentAllocator,&m_myReads);
+	m_si.constructor(&m_parameters,&m_outboxAllocator,&m_inbox,&m_outbox,&m_diskAllocator);
 
 	int maximumNumberOfProcesses=65536;
 	if(getSize()>maximumNumberOfProcesses){
@@ -236,6 +233,7 @@ void Machine::start(){
 		cout<<" no (FORCE_PACKING is defined)";
 		#endif
 		cout<<endl;
+		cout<<endl;
 
 		cout<<" sizeof(Vertex)="<<sizeof(Vertex)<<endl;
 		cout<<" sizeof(VertexData)="<<sizeof(VertexData)<<endl;
@@ -243,7 +241,9 @@ void Machine::start(){
 		cout<<" sizeof(ReadAnnotation)="<<sizeof(ReadAnnotation)<<endl;
 		cout<<" sizeof(Read)="<<sizeof(Read)<<endl;
 		cout<<" sizeof(PairedRead)="<<sizeof(PairedRead)<<endl;
-	
+		
+		cout<<endl;
+		cout<<"Ray Systems are using memory-mapped files (POSIX mmap)"<<endl;
 		cout<<endl;
 		m_timePrinter.printElapsedTime("Beginning of computation");
 		cout<<endl;
@@ -251,12 +251,18 @@ void Machine::start(){
 
 	m_parameters.constructor(m_argc,m_argv,getRank());
 
+	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed,&m_subgraph,&m_inbox);
+	ostringstream prefixFull;
+	prefixFull<<m_parameters.getMemoryPrefix()<<"_Main";
+	m_diskAllocator.constructor(prefixFull.str().c_str());
+
+	m_sl.constructor(m_size,&m_diskAllocator,&m_myReads);
+
 	m_fusionData->constructor(getSize(),MAXIMUM_MESSAGE_SIZE_IN_BYTES,getRank(),&m_outbox,&m_outboxAllocator,m_parameters.getWordSize(),
 	m_parameters.getColorSpaceMode(),
 		m_ed,m_seedingData,&m_slave_mode,&m_parameters);
 
 	m_virtualCommunicator.constructor(m_rank,m_size,&m_outboxAllocator,&m_inbox,&m_outbox);
-	//m_virtualCommunicator.setDebug();
 	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_REQUEST_VERTEX_READS,RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY);
 	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_READS,5);
 
@@ -267,7 +273,7 @@ void Machine::start(){
 		m_ed,getSize(),&m_timePrinter,&m_slave_mode,&m_master_mode,
 	&m_parameters,&m_fileId,m_seedingData,&m_inbox,&m_virtualCommunicator);
 
-	m_subgraph.constructor(getRank());
+	m_subgraph.constructor(getRank(),&m_diskAllocator);
 	
 	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),&m_outbox,&m_outboxAllocator,&m_seedCoverage,&m_slave_mode,&m_parameters,&m_wordSize,&m_subgraph,
 		&m_colorSpaceMode,&m_inbox);
@@ -349,7 +355,7 @@ m_seedingData,
 	}else{
 		if(isMaster()){
 			m_master_mode=RAY_MASTER_MODE_LOAD_CONFIG;
-			m_sl.constructor(getSize(),&m_persistentAllocator,
+			m_sl.constructor(getSize(),&m_diskAllocator,
 				&m_myReads);
 		}
 
@@ -397,6 +403,7 @@ m_seedingData,
 	m_directionsAllocator.clear();
 	m_inboxAllocator.clear();
 	m_outboxAllocator.clear();
+	m_diskAllocator.clear();
 
 	MPI_Finalize();
 }

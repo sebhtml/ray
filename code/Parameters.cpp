@@ -45,6 +45,7 @@ Parameters::Parameters(){
 	m_reducerIsActivated=false;
 	m_amos=false;
 	m_error=false;
+	m_memoryFilePrefix=m_prefix;
 }
 
 int Parameters::getWordSize(){
@@ -118,6 +119,9 @@ void Parameters::parseCommands(){
 	outputFileCommands.insert("-OutputFile");
 	outputFileCommands.insert("--OutputFile");
 	
+	set<string> memoryMappedFileCommands;
+	memoryMappedFileCommands.insert("-MemoryPrefix");
+
 	set<string> kmerSetting;
 	kmerSetting.insert("-k");
 
@@ -132,6 +136,7 @@ void Parameters::parseCommands(){
 	toAdd.push_back(kmerSetting);
 	toAdd.push_back(interleavedCommands);
 	toAdd.push_back(reduceMemoryUsage);
+	toAdd.push_back(memoryMappedFileCommands);
 
 	for(int i=0;i<(int)toAdd.size();i++){
 		for(set<string>::iterator j=toAdd[i].begin();j!=toAdd[i].end();j++){
@@ -164,6 +169,18 @@ void Parameters::parseCommands(){
 				cout<<"-s (single sequences)"<<endl;
 				cout<<" Sequences: "<<token<<endl;
 			}
+		}else if(memoryMappedFileCommands.count(token)>0){
+			i++;
+			int items=m_commands.size()-i;
+			if(items<1){
+				if(m_rank==MASTER_RANK){
+					cout<<"Error: "<<token<<" needs 1 item, you provided "<<items<<endl;
+				}
+				m_error=true;
+				return;
+			}
+			token=m_commands[i];
+			m_memoryFilePrefix=token;
 		}else if(outputFileCommands.count(token)>0){
 			i++;
 			int items=m_commands.size()-i;
@@ -682,54 +699,84 @@ void Parameters::showUsage(){
 	cout<<endl;
 	cout<<"Usage:"<<endl<<endl;
 	cout<<"Supported sequences file format: "<<endl;
+	cout<<endl;
 
-	cout<<".fasta"<<endl;
+	cout<<"  .fasta"<<endl;
 	#ifdef HAVE_ZLIB
-	cout<<".fasta.gz"<<endl;
+	cout<<"  .fasta.gz"<<endl;
 	#endif
 	#ifdef HAVE_LIBBZ2
-	cout<<".fasta.bz2"<<endl;
+	cout<<"  .fasta.bz2"<<endl;
 	#endif
-	cout<<".fastq"<<endl;
+	cout<<"  .fastq"<<endl;
 	#ifdef HAVE_ZLIB
-	cout<<".fastq.gz"<<endl;
+	cout<<"  .fastq.gz"<<endl;
 	#endif
 	#ifdef HAVE_LIBBZ2
-	cout<<".fastq.bz2"<<endl;
+	cout<<"  .fastq.bz2"<<endl;
 	#endif
-	cout<<".sff (paired reads must be extracted manually)"<<endl;
+	cout<<"  .sff (paired reads must be extracted manually)"<<endl;
 
+	cout<<endl;
+	cout<<"    Note: file format is determined with file extension."<<endl;
+	cout<<endl;
 	cout<<endl;
 
 	cout<<"Parameters:"<<endl;
 	cout<<endl;
-
-	cout<<"Single-end reads"<<endl;
-    	cout<<" -s <sequencesFile>"<<endl;
 	cout<<endl;
-	cout<<"Paired-end reads:"<<endl;
-	cout<<" -p <leftSequencesFile> <rightSequencesFile> [ <fragmentLength> <standardDeviation> ]"<<endl;
+	cout<<"  Single-end reads"<<endl;
 	cout<<endl;
-	cout<<"Paired-end reads:"<<endl;
-	cout<<" -i <interleavedFile> [ <fragmentLength> <standardDeviation> ]"<<endl;
+    	cout<<"   -s <sequencesFile>"<<endl;
 	cout<<endl;
-	cout<<"Output (default: RayOutput)"<<endl;
-	cout<<" -o <outputPrefix>"<<endl;
+	cout<<endl;
+	cout<<"  Paired-end reads:"<<endl;
+	cout<<"   The average outer distance and standard deviation are automatically computed if not provided."<<endl;
+	cout<<endl;
+	cout<<"   -p <leftSequencesFile> <rightSequencesFile> [ <fragmentLength> <standardDeviation> ]"<<endl;
+	cout<<endl;
+	cout<<endl;
+	cout<<"  Paired-end reads:"<<endl;
+	cout<<"   The average outer distance and standard deviation are automatically computed if not provided."<<endl;
+	cout<<endl;
+	cout<<"   -i <interleavedFile> [ <fragmentLength> <standardDeviation> ]"<<endl;
+	cout<<endl;
+	cout<<endl;
+	cout<<"  Output (default: RayOutput)"<<endl;
+	cout<<"    Ray writes a contigs file, a coverage distribution file, and an AMOS file (if -a is provided)."<<endl;
+	cout<<"    The name of these files is based on the value provided with -o."<<endl;
+	cout<<endl;
+	cout<<"   -o <outputPrefix>"<<endl;
+	cout<<endl;
 	cout<<endl;	
-	cout<<"AMOS output"<<endl;
-	cout<<" -a  "<<endl;
+	cout<<"  AMOS output (writting this file is slow)"<<endl;
+	cout<<endl;
+	cout<<"   -a  "<<endl;
+	cout<<endl;
     	cout<<endl;
-	cout<<"k-mer size (default: 21)"<<endl;
-	cout<<" -k <kmerSize>"<<endl;
+	cout<<"  k-mer size (default: 21)"<<endl;
+	cout<<"   This parameter controls the length of the k-mers in the de Bruijn subgraph."<<endl;
+	cout<<"   It most be odd because reverse-complement vertices are stored together."<<endl;
 	cout<<endl;
-	cout<<"Memory Usage Reducer (experimental, disabled by default)"<<endl;
-	cout<<" -r [Minimum Number of vertices necessary to trigger the subsystem]"<<endl;
+	cout<<"   -k <kmerSize>"<<endl;
 	cout<<endl;
-	cout<<"Ray writes a contigs file, a coverage distribution file, and an AMOS file (if -a is provided)."<<endl;
-	cout<<"The name of these files is based on the value provided with -o."<<endl;
 	cout<<endl;
-	cout<<"use --help to show this help"<<endl;
+	cout<<"  Path prefix for memory-mapped files (default: value given to -o)"<<endl;
+	cout<<"    Ray uses memory-mapped files (using POSIX mmap)."<<endl;
+	cout<<"    If you are running Ray on a high-performance computer/cluster, check if the system provides"<<endl;
+	cout<<"    a directory called /scratch. Such a directory usually provides fast-access to file pages."<<endl;
+	cout<<"    OnDiskAllocator is a chunk allocator whose chunks are in memory-mapped files (1 chunk = 1 file)."<<endl;
+	cout<<"    Obviously, demand paging will do the swapping of memory pages."<<endl;
 	cout<<endl;
+	cout<<"     -MemoryPrefix <memoryPrefix>"<<endl;
+	cout<<endl;
+	cout<<endl;
+	cout<<"  use --help to show this help"<<endl;
+	cout<<endl;
+}
+
+string Parameters::getMemoryPrefix(){
+	return m_memoryFilePrefix;
 }
 
 int Parameters::getReducerValue(){

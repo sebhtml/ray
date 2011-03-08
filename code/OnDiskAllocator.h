@@ -33,21 +33,53 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include <unistd.h>
 #include <string>
 #include <fcntl.h>
+#include <map>
+#include <vector>
 #include <sys/mman.h>
 using namespace std;
 
 #ifndef _OnDiskAllocator
 #define _OnDiskAllocator
 
+typedef struct{
+	void*m_next;
+}StoreElement;
+
+/**
+ * a class that allocate memory from a file
+ */
 class OnDiskAllocator{
-	string m_fileName;
+	vector<char*> m_pointers;
+	vector<int> m_fileDescriptors;
+	vector<string> m_fileNames;
+	string m_prefix;
+
+	map<int,StoreElement*> m_toReuse;
+
 	uint64_t m_current;
-	char*m_map;
-	int m_fd;
-	uint64_t m_total;
+	uint64_t m_chunkSize;
+
+	void addChunk();
+
+	void addAddressToReuse(void*p,int size);
+	void*reuseAddress(int size);
+	bool hasAddressesToReuse(int size);
 public:
-	void constructor(int a);
+	/**
+ * the constructor sets the block size
+ */
+	void constructor(const char*prefix);
+/**
+ * this function allocates <a> bytes
+ */
 	void*allocate(int a);
+/**
+ * this function free an allocation
+ */
+	void free(void*a,int size);
+/**
+ * clear everything.
+ */
 	void clear();
 };
 

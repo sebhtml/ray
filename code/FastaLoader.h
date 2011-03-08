@@ -19,8 +19,6 @@
 
 */
 
-
-
 #ifndef _FastaLoader
 #define _FastaLoader
 
@@ -33,10 +31,9 @@
 #include<Read.h>
 using namespace std;
 
-
 class FastaLoader{
 public:
-	int load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
+	int load(string file,ArrayOfReads*reads,OnDiskAllocator*seqMyAllocator);
 };
 
 #endif

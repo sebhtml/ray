@@ -28,24 +28,24 @@
 #include <stdio.h>
 using namespace std;
 
-void VertexTable::constructor(int rank){
+void VertexTable::constructor(int rank,OnDiskAllocator*allocator){
+	m_gridAllocator=allocator;
 	m_size=0;
 	m_inserted=false;
 	m_gridSize=4194304;
 	int bytes1=m_gridSize*sizeof(VertexData*);
-	m_gridData=(VertexData**)__Malloc(bytes1);
+	m_gridData=(VertexData**)m_gridAllocator->allocate(bytes1);
 	int bytes2=m_gridSize*sizeof(uint16_t);
-	m_gridSizes=(uint16_t*)__Malloc(bytes2);
-	//m_gridReservedSizes=(uint16_t*)__Malloc(bytes3);
+	m_gridSizes=(uint16_t*)m_gridAllocator->allocate(bytes2);
+/*
 	printf("Rank %i: allocating %i bytes for vertex table\n",rank,bytes1+bytes2);
 	fflush(stdout);
+*/
 	showMemoryUsage(rank);
 	for(int i=0;i<m_gridSize;i++){
 		m_gridSizes[i]=0;
 		m_gridData[i]=NULL;
-		//m_gridReservedSizes[i]=0;
 	}
-	m_gridAllocator.constructor(m_gridSize);
 }
 
 uint64_t VertexTable::size(){
@@ -85,12 +85,12 @@ VertexData*VertexTable::insert(uint64_t key){
 	}
 	//if(m_gridReservedSizes[bin]==m_gridSizes[bin]){
 	if(true){
-		VertexData*newEntries=(VertexData*)m_gridAllocator.allocate((m_gridSizes[bin]+1)*sizeof(VertexData));
+		VertexData*newEntries=(VertexData*)m_gridAllocator->allocate((m_gridSizes[bin]+1)*sizeof(VertexData));
 		for(int i=0;i<m_gridSizes[bin];i++){
 			newEntries[i]=m_gridData[bin][i];
 		}
 		if(m_gridSizes[bin]!=0){
-			m_gridAllocator.getStore()->addAddressToReuse(m_gridData[bin],m_gridSizes[bin]*sizeof(VertexData));
+			m_gridAllocator->free(m_gridData[bin],m_gridSizes[bin]*sizeof(VertexData));
 		}
 		m_gridData[bin]=newEntries;
 	}
@@ -134,8 +134,8 @@ int VertexTable::getNumberOfBins(){
 	return m_gridSize;
 }
 
-MyAllocator*VertexTable::getAllocator(){
-	return &m_gridAllocator;
+OnDiskAllocator*VertexTable::getAllocator(){
+	return m_gridAllocator;
 }
 
 void VertexTable::freeze(){

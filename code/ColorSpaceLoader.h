@@ -30,6 +30,7 @@
 #include<MyAllocator.h>
 #include<ColorSpaceDecoder.h>
 #include<Read.h>
+#include <OnDiskAllocator.h>
 using namespace std;
 
 class ColorSpaceLoader{
@@ -38,7 +39,7 @@ class ColorSpaceLoader{
 	int m_size;
 	int m_loaded;
 public:
-	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
+	void load(int maxToLoad,ArrayOfReads*reads,OnDiskAllocator*seqMyAllocator);
 	int open(string file);
 	int getSize();
 };

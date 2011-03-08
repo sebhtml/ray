@@ -28,6 +28,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 #include <PairedRead.h>
 #include <MyAllocator.h>
+#include <OnDiskAllocator.h>
 
 class ExtensionElement{
 	PairedRead m_pairedRead;
@@ -45,7 +46,7 @@ public:
 	void setPairedRead(PairedRead a);
 	void setType(int a);
 	bool hasPairedRead();
-	void setSequence(const char*a,MyAllocator*b);
+	void setSequence(const char*a,OnDiskAllocator*b);
 	int getPosition();
 	char getStrand();
 	PairedRead*getPairedRead();

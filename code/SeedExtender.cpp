@@ -24,9 +24,11 @@
 #include <TipWatchdog.h>
 #include <SeedExtender.h>
 #include <Chooser.h>
+#include <sstream>
 #include <assert.h>
 #include <BubbleTool.h>
 #include <crypto.h>
+using namespace std;
 
 // uncomment to display how Ray chooses things.
 //#define SHOW_CHOICE
@@ -73,7 +75,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		ed->m_EXTENSION_complementedSeed=false;
 		ed->m_EXTENSION_complementedSeed2=true;
 	
-		ed->constructor();
+		ed->constructor(m_parameters);
 
 	}else if(ed->m_EXTENSION_currentSeedIndex==(int)(*seeds).size()){
 		ed->destructor();
@@ -267,8 +269,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 			#endif
 			
 			element->removeSequence();
-			ed->getAllocator()->getStore()->addAddressToReuse(read,strlen(read)+1);
-
+			ed->getAllocator()->free(read,strlen(read)+1);
 		}
 		m_expiredReads.erase(ed->m_EXTENSION_currentPosition);
 		ed->m_EXTENSION_readIterator=ed->m_EXTENSION_readsInRange->begin();
@@ -486,7 +487,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 							assert(read!=NULL);
 							#endif
 							element->removeSequence();
-							ed->getAllocator()->getStore()->addAddressToReuse(read,strlen(read)+1);
+							ed->getAllocator()->free(read,strlen(read)+1);
 						}
 
 						// remove it
@@ -706,8 +707,10 @@ uint64_t*currentVertex,BubbleData*bubbleData){
 	ed->resetStructures();
 	fflush(stdout);
 	showMemoryUsage(theRank);
+/*
 	int a=ed->getAllocator()->getChunkSize()*ed->getAllocator()->getNumberOfChunks();
 	printf("Rank %i: database allocation: %i\n",theRank,a);
+*/
 
 	ed->m_EXTENSION_currentSeedIndex++;
 
@@ -884,10 +887,14 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 			}
 		}
 	}else if(ed->m_EXTENSION_reads_received){
+		int cachingThreshold=100*m_parameters->getPeakCoverage();
+		if(cachingThreshold>m_parameters->getMaximumAllowedCoverage()){
+			cachingThreshold=m_parameters->getMaximumAllowedCoverage();
+		}
+
 		// add a cache entry
-		if(false
-&&		m_cacheForListOfReads.find(*currentVertex,false)==NULL
-		 && ed->m_currentCoverage>100*m_parameters->getPeakCoverage()){
+		if(m_cacheForListOfReads.find(*currentVertex,false)==NULL
+		 && ed->m_currentCoverage>=cachingThreshold){
 			ReadAnnotation*root=NULL;
 			for(int i=0;i<(int)ed->m_EXTENSION_receivedReads.size();i++){
 				ReadAnnotation*newAnnotation=(ReadAnnotation*)m_cacheAllocator.allocate(sizeof(ReadAnnotation)*1);
@@ -944,10 +951,6 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,sequenceRank,RAY_MPI_TAG_REQUEST_READ_SEQUENCE,theRank);
 				outbox->push_back(aMessage);
 			}else if(m_sequenceReceived){
-				int cachingThreshold=2000*m_parameters->getPeakCoverage();
-				if(cachingThreshold>m_parameters->getMaximumAllowedCoverage()){
-					cachingThreshold=m_parameters->getMaximumAllowedCoverage();
-				}
 				// put sequences on repeats in the cache
 				//
 				if(ed->m_currentCoverage>=cachingThreshold
@@ -1094,15 +1097,16 @@ void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAll
 	m_cacheForRepeatedReads.constructor();
 	//m_cacheHashTable.constructor();
 	m_cacheForListOfReads.constructor();
-	int chunkSize=4194304;
-	m_cacheAllocator.constructor(chunkSize);
+	ostringstream prefixFull;
+	m_parameters=parameters;
+	prefixFull<<m_parameters->getMemoryPrefix()<<"_SeedExtender";
+	m_cacheAllocator.constructor(prefixFull.str().c_str());
 	m_inbox=inbox;
 	m_subgraph=subgraph;
 	m_dfsData=new DepthFirstSearchData;
 	m_cache=new map<uint64_t,int>;
 	m_ed=ed;
 	this->m_directionsAllocator=m_directionsAllocator;
-	m_parameters=parameters;
 	m_bubbleTool.constructor(parameters);
 }
 

@@ -23,12 +23,14 @@
 #define _ArrayOfReads
 
 #include<Read.h>
+#include <OnDiskAllocator.h>
 
 /**
  * This class holds reads. These are stored in chunks, which are utterly linked in chains.
  * When a chunk is full, another one is added, and linked to the full one aforementionned.
  */
 class ArrayOfReads{
+	OnDiskAllocator*m_allocator;
 	int m_CHUNK_SIZE;
 	Read**m_chunks;
 	int m_numberOfChunks;
@@ -48,7 +50,7 @@ public:
 	Read*operator[](uint64_t i);
 	uint64_t size();
 	void clear();
-	void constructor();
+	void constructor(OnDiskAllocator*allocator);
 	void reset();
 };
 

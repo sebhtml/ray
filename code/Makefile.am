@@ -11,6 +11,7 @@ noinst_LIBRARIES = libRay.a
 libRay_a_SOURCES = \
 IndexerWorker.h IndexerWorker.cpp ReadFetcher.cpp ReadFetcher.h LibraryWorker.h LibraryWorker.cpp \
 VertexData.h VertexData.cpp VertexTable.h VertexTable.cpp \
+OnDiskAllocator.h OnDiskAllocator.cpp \
 GridTable.h GridTable.cpp GridTableIterator.h GridTableIterator.cpp \
 ReusableMemoryStore.h ReusableMemoryStore.cpp ExtensionElement.h ExtensionElement.cpp VirtualCommunicator.h VirtualCommunicator.cpp SeedWorker.h SeedWorker.cpp \
 MemoryConsumptionReducer.h MemoryConsumptionReducer.cpp \

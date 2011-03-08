@@ -38,7 +38,7 @@ using namespace std;
 
 class FusionData{
 	SplayTree<uint64_t,Direction*>m_cacheForRepeatedVertices;
-	MyAllocator m_cacheAllocator;
+	OnDiskAllocator m_cacheAllocator;
 
 	bool m_mappingConfirmed;
 	int m_validationPosition;

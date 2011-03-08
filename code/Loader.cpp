@@ -29,13 +29,15 @@
 #include<Read.h>
 using namespace std;
 
-void Loader::constructor(){
+void Loader::constructor(const char*prefix){
 	m_maxToLoad=500000;
 	DISTRIBUTION_ALLOCATOR_CHUNK_SIZE=4194304;
 	m_currentOffset=0;
 	m_type=FORMAT_NULL;
-	m_allocator.constructor(DISTRIBUTION_ALLOCATOR_CHUNK_SIZE);
-	m_reads.constructor();
+	ostringstream prefixFull;
+	prefixFull<<prefix<<"_Loader";
+	m_allocator.constructor(prefixFull.str().c_str());
+	m_reads.constructor(&m_allocator);
 }
 
 int Loader::load(string file,bool isGenome){
@@ -161,8 +163,8 @@ void Loader::clear(){
 
 void Loader::loadSequences(){
 	m_currentOffset+=m_reads.size();
+	m_allocator.clear();
 	m_reads.reset();
-	m_allocator.reset();
 
 	if(m_type==FORMAT_FASTQ_GZ){
 		#ifdef HAVE_ZLIB
@@ -193,8 +195,8 @@ void Loader::loadSequences(){
 }
 
 void Loader::reset(){
+	m_allocator.clear();
 	m_reads.reset();
-	m_allocator.reset();
 	m_size=0;
 	m_currentOffset=0;
 	m_type=FORMAT_NULL;

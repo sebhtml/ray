@@ -25,10 +25,14 @@
 #include <iostream>
 using namespace std;
 
-void ArrayOfReads::constructor(){
+void ArrayOfReads::constructor(OnDiskAllocator*allocator){
+	#ifdef ASSERT
+	assert(allocator!=NULL);
+	#endif
+	m_allocator=allocator;
 	m_CHUNK_SIZE=100000;
 	m_maxNumberOfChunks=1000;
-	m_chunks=(Read**)__Malloc(m_maxNumberOfChunks*sizeof(Read*));
+	m_chunks=(Read**)m_allocator->allocate(m_maxNumberOfChunks*sizeof(Read*));
 	#ifdef ASSERT
 	assert(m_chunks!=NULL);
 	#endif
@@ -39,6 +43,9 @@ void ArrayOfReads::constructor(){
 }
 
 void ArrayOfReads::push_back(Read*a){
+	#ifdef ASSERT
+	assert(a!=NULL);
+	#endif
 	if(m_elements==m_maxSize){
 		#ifdef ASSERT
 		assert(m_numberOfChunks!=m_maxNumberOfChunks);
@@ -54,7 +61,7 @@ void ArrayOfReads::push_back(Read*a){
 		assert(m_chunks!=NULL);
 		#endif
 
-		m_chunks[m_numberOfChunks-1]=(Read*)__Malloc(m_CHUNK_SIZE*sizeof(Read));
+		m_chunks[m_numberOfChunks-1]=(Read*)m_allocator->allocate(m_CHUNK_SIZE*sizeof(Read));
 
 		#ifdef ASSERT
 		assert(m_chunks[m_numberOfChunks-1]!=NULL);
@@ -124,10 +131,6 @@ Read*ArrayOfReads::operator[](uint64_t i){
 
 void ArrayOfReads::clear(){
 	if(m_chunks!=NULL){
-		for(int i=0;i<(int)m_numberOfChunks;i++){
-			__Free(m_chunks[i]);
-		}
-		__Free(m_chunks);
 		m_chunks=NULL;
 		m_elements=0;
 		m_numberOfChunks=0;
@@ -144,4 +147,7 @@ void ArrayOfReads::clear(){
 
 void ArrayOfReads::reset(){
 	m_elements=0;
+	m_numberOfChunks=0;
+	m_maxSize=0;
+	m_chunks=(Read**)m_allocator->allocate(m_maxNumberOfChunks*sizeof(Read*));
 }

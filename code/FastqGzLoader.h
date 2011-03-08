@@ -24,6 +24,7 @@
 
 #include<string>
 #include<vector>
+#include <OnDiskAllocator.h>
 #include<Read.h>
 #include<ArrayOfReads.h>
 #include<zlib.h>
@@ -37,7 +38,7 @@ class FastqGzLoader{
 public:
 	int open(string file,int period);
 	int getSize();
-	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period);
+	void load(int maxToLoad,ArrayOfReads*reads,OnDiskAllocator*seqMyAllocator,int period);
 };
 
 #endif

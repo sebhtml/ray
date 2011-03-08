@@ -27,9 +27,11 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<ReadAnnotation.h>
 #include<Library.h>
 #include<mpi_tags.h>
+#include <sstream>
 #include<common_functions.h>
 #include<assert.h>
 #include<Parameters.h>
+using namespace std;
 
 void Library::updateDistances(){
 	uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
@@ -183,7 +185,9 @@ Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,StaticVector*inbo
 	m_inbox=inbox;
 
 	m_initiatedIterator=false;
-	m_allocator.constructor(4000000);
+	ostringstream prefixFull;
+	prefixFull<<m_parameters->getMemoryPrefix()<<"_Library";
+	m_allocator.constructor(prefixFull.str().c_str());
 }
 
 void Library::setReadiness(){

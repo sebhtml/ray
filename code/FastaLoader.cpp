@@ -22,7 +22,7 @@
 #include<FastaLoader.h>
 #include<fstream>
 
-int FastaLoader::load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
+int FastaLoader::load(string file,ArrayOfReads*reads,OnDiskAllocator*seqMyAllocator){
 	string id;
 	ostringstream sequence;
 	string buffer;

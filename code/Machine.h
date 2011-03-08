@@ -28,6 +28,7 @@
 #include<common_functions.h>
 #include<MyForest.h>
 #include<ArrayOfReads.h>
+#include <OnDiskAllocator.h>
 #include<MemoryConsumptionReducer.h>
 #include<StaticVector.h>
 #include<SeedingData.h>
@@ -94,6 +95,7 @@ class Machine{
 	Library m_library;
 	int m_currentCycleStep;
 	MessagesHandler m_messagesHandler;
+	OnDiskAllocator m_diskAllocator;
 
 	int m_numberOfRanksWithCoverageData;
 	TimePrinter m_timePrinter;

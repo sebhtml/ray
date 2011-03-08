@@ -26,6 +26,7 @@
 #include<Vertex.h>
 #include<MyAllocator.h>
 #include<common_functions.h>
+#include <OnDiskAllocator.h>
 
 class MyForest{
 	int m_numberOfTrees;
@@ -33,12 +34,12 @@ class MyForest{
 	SplayTree<uint64_t,Vertex>*m_trees;
 	bool m_inserted;
 	int getTreeIndex(uint64_t i);
-	MyAllocator*m_allocator;
+	OnDiskAllocator*m_allocator;
 	bool m_frozen;
 public:
 	int getNumberOfTrees();
 	SplayTree<uint64_t,Vertex>*getTree(int i);
-	void constructor(MyAllocator*allocator);
+	void constructor(OnDiskAllocator*allocator);
 	uint64_t size();
 	Vertex*find(uint64_t key);
 	Vertex*insert(uint64_t key);
@@ -48,7 +49,7 @@ public:
 	void show(int rank,const char*a);
 	bool frozen();
 	void remove(uint64_t a);
-	MyAllocator*getAllocator();
+	OnDiskAllocator*getAllocator();
 };
 
 #endif

@@ -24,6 +24,7 @@
 
 #include <VertexTable.h>
 #include <MyAllocator.h>
+#include <OnDiskAllocator.h>
 #include <Vertex.h>
 
 class GridTable{
@@ -31,10 +32,11 @@ class GridTable{
 	int m_rank;
 	uint64_t m_size;
 	bool m_inserted;
-	MyAllocator m_gridAllocator;
 	Vertex**m_gridData;
 	uint16_t*m_gridSizes;
 	uint16_t*m_gridReservedSizes;
+	OnDiskAllocator*m_gridAllocatorOnDisk;
+
 	int m_gridSize;
 	bool m_frozen;
 	int m_wordSize;
@@ -44,7 +46,7 @@ class GridTable{
  */
 	Vertex*move(int bin,int item);
 public:
-	void constructor(int rank);
+	void constructor(int rank,OnDiskAllocator*allocator);
 	void setWordSize(int w);
 	uint64_t size();
 	Vertex*find(uint64_t key);
@@ -54,8 +56,8 @@ public:
 	Vertex*getElementInBin(int bin,int element);
 	int getNumberOfElementsInBin(int bin);
 	int getNumberOfBins();
-	MyAllocator*getAllocator();
-	MyAllocator*getSecondAllocator();
+	OnDiskAllocator*getAllocator();
+	OnDiskAllocator*getSecondAllocator();
 	void freeze();
 	void unfreeze();
 	bool frozen();

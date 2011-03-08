@@ -35,6 +35,7 @@ class DepthFirstSearchData;
 #include <RingAllocator.h>
 #include <MyAllocator.h>
 #include <ReadFetcher.h>
+#include <OnDiskAllocator.h>
 #include <FusionData.h>
 #include <BubbleData.h>
 #include <DepthFirstSearchData.h>
@@ -48,7 +49,7 @@ using namespace std;
 class SeedExtender{
 	SplayTree<uint64_t,Read>m_cacheForRepeatedReads;
 	SplayTree<uint64_t,ReadAnnotation*> m_cacheForListOfReads;
-	MyAllocator m_cacheAllocator;
+	OnDiskAllocator m_cacheAllocator;
 
 	int m_repeatLength;
 	StaticVector*m_inbox;

@@ -28,6 +28,7 @@
 #include<RingAllocator.h>
 #include<Loader.h>
 #include<MyAllocator.h>
+#include <OnDiskAllocator.h>
 #include<StaticVector.h>
 #include<vector>
 #include<Message.h>
@@ -37,7 +38,7 @@
 using namespace std;
 
 class SequencesLoader{
-	MyAllocator*m_persistentAllocator;
+	OnDiskAllocator*m_persistentAllocator;
 	ArrayOfReads*m_myReads;
 	Parameters*m_parameters;
 	uint64_t m_distribution_currentSequenceId;
@@ -67,6 +68,6 @@ public:
 	time_t*m_lastTime,
 	Parameters*m_parameters,int*m_master_mode,int*m_mode);
 
-	void constructor(int size,MyAllocator*m_persistentAllocator,ArrayOfReads*m_myReads);
+	void constructor(int size,OnDiskAllocator*m_persistentAllocator,ArrayOfReads*m_myReads);
 };
 #endif

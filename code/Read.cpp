@@ -67,7 +67,7 @@ void Read::constructorWithRawSequence(const char*seq,uint8_t*raw,bool flag){
 	m_sequence=raw;
 }
 
-void Read::constructor(const char*sequence,MyAllocator*seqMyAllocator,bool trimFlag){
+void Read::constructor(const char*sequence,OnDiskAllocator*seqMyAllocator,bool trimFlag){
 	m_type=TYPE_SINGLE_END;
 	#ifdef __READ_VERBOSITY
 	cout<<"In="<<sequence<<endl;

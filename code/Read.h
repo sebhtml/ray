@@ -24,12 +24,13 @@
 #ifndef _Read
 #define _Read
 
-#include<string>
-#include<stdint.h>
-#include<vector>
-#include<common_functions.h>
-#include<MyAllocator.h>
-#include<PairedRead.h>
+#include <string>
+#include <stdint.h>
+#include <vector>
+#include <common_functions.h>
+#include <MyAllocator.h>
+#include <PairedRead.h>
+#include <OnDiskAllocator.h>
 using namespace std;
 
 #define TYPE_SINGLE_END 0
@@ -48,7 +49,7 @@ class Read{
 
 	char*trim(char*a,const char*b);
 public:
-	void constructor(const char*sequence,MyAllocator*seqMyAllocator,bool trim);
+	void constructor(const char*sequence,OnDiskAllocator*seqMyAllocator,bool trim);
 	void constructorWithRawSequence(const char*sequence,uint8_t*raw,bool trim);
 	void getSeq(char*buffer)const;
 	int length()const;

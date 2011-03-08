@@ -21,7 +21,9 @@
 
 #include<assert.h>
 #include<FusionData.h>
+#include <sstream>
 #include<Message.h>
+using namespace std;
 
 #define SHOW_FUSION
 
@@ -42,8 +44,6 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 
 		m_cacheForRepeatedVertices.clear();
 		m_cacheAllocator.clear();
-		int chunkSize=4194304;
-		m_cacheAllocator.constructor(chunkSize);
 
 		showMemoryUsage(m_rank);
 		return;
@@ -84,8 +84,9 @@ void FusionData::constructor(int size,int max,int rank,StaticVector*outbox,
 		ExtensionData*ed,SeedingData*seedingData,int*mode,Parameters*parameters){
 	m_parameters=parameters;
 	m_seedingData=seedingData;
-	int chunkSize=4194304;
-	m_cacheAllocator.constructor(chunkSize);
+	ostringstream prefixFull;
+	prefixFull<<m_parameters->getMemoryPrefix()<<"_FusionData";
+	m_cacheAllocator.constructor(prefixFull.str().c_str());
 	m_cacheForRepeatedVertices.constructor();
 	m_mode=mode;
 	m_ed=ed;
@@ -150,8 +151,6 @@ void FusionData::finishFusions(){
 
 		m_cacheForRepeatedVertices.clear();
 		m_cacheAllocator.clear();
-		int chunkSize=4194304;
-		m_cacheAllocator.constructor(chunkSize);
 
 		#ifdef ASSERT
 		assert(m_FINISH_pathsForPosition!=NULL);
@@ -462,6 +461,8 @@ void FusionData::makeFusions(){
 		}
 		printf("Rank %i is computing fusions [%i/%i] (completed)\n",getRank(),(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
 		fflush(stdout);
+
+		m_cacheAllocator.clear();
 
 		showMemoryUsage(m_rank);
 		return;

@@ -43,7 +43,7 @@ int FastqLoader::open(string file,int period){
 	return EXIT_SUCCESS;
 }
 
-void FastqLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period){
+void FastqLoader::load(int maxToLoad,ArrayOfReads*reads,OnDiskAllocator*seqMyAllocator,int period){
 	char buffer[4096];
 	int rotatingVariable=0;
 	int loadedSequences=0;

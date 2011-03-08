@@ -30,6 +30,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include <map>
 #include <stdint.h>
 #include <ExtensionData.h>
+#include <OnDiskAllocator.h>
 #include <SeedingData.h>
 #include <VirtualCommunicator.h>
 #include <RingAllocator.h>
@@ -54,7 +55,7 @@ class LibraryWorker{
 
 	SplayTree<uint64_t,LibraryElement> m_database;
 
-	MyAllocator*m_allocator;
+	OnDiskAllocator*m_allocator;
 	VirtualCommunicator*m_virtualCommunicator;
 	uint64_t m_SEEDING_i;
 	RingAllocator*m_outboxAllocator;
@@ -72,7 +73,7 @@ public:
 
 	void constructor(uint64_t id,SeedingData*seedingData,VirtualCommunicator*virtualCommunicator,RingAllocator*outboxAllocator,
 	Parameters*parameters,StaticVector*inbox,StaticVector*outbox,map<int,map<int,int> >*libraryDistances,int*detectedDistances,
-		MyAllocator*allocator);
+		OnDiskAllocator*allocator);
 	bool isDone();
 	void work();
 };

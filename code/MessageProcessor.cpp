@@ -392,8 +392,6 @@ void MessageProcessor::call_RAY_MPI_TAG_WELCOME(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message){
 	(*m_mode)=RAY_SLAVE_MODE_INDEX_SEQUENCES;
-	m_si->constructor(parameters,m_outboxAllocator,m_inbox,m_outbox);
-	void constructor(int rank,int size,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_SEQUENCES_READY(Message*message){
@@ -576,13 +574,14 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*me
 	showMemoryUsage(rank);
 	fflush(stdout);
 
+/*
 	int chunks=m_subgraph->getAllocator()->getNumberOfChunks();
 	int chunkSize=m_subgraph->getAllocator()->getChunkSize();
 	uint64_t totalBytes=chunks*chunkSize;
 	uint64_t kibibytes=totalBytes/1024;
 	printf("Rank %i: memory usage for vertices topology is %lu KiB\n",rank,kibibytes);
 	fflush(stdout);
-
+*/
 	(*m_mode_send_coverage_iterator)=0;
 	(*m_mode_sendDistribution)=true;
 	(*m_mode)=RAY_SLAVE_MODE_SEND_DISTRIBUTION;
@@ -663,6 +662,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 	}
 	#endif
 
+/*
 	int chunks=m_subgraph->getSecondAllocator()->getNumberOfChunks();
 	int chunkSize=m_subgraph->getSecondAllocator()->getChunkSize();
 	uint64_t totalBytes=chunks*chunkSize;
@@ -676,6 +676,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 	kibibytes=totalBytes/1024;
 	printf("Rank %i: memory usage for read markers is %lu KiB\n",rank,kibibytes);
 	fflush(stdout);
+*/
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_GET_COVERAGE_AND_MARK(Message*message){
@@ -1016,19 +1017,12 @@ void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message){
 	for(int i=0;i<count;i+=5){
 		m_count++;
 		uint64_t vertex=incoming[i+0];
-/*
-		int coverage=m_subgraph->find(vertex)->getCoverage(vertex);
-		if(coverage==1){
-			continue;
-		}
-*/
 		uint64_t complement=complementVertex_normal(vertex,*m_wordSize);
 		bool lower=vertex<complement;
 		int rank=incoming[i+1];
 		int sequenceIdOnDestination=(int)incoming[i+2];
 		int positionOnStrand=incoming[i+3];
 		char strand=(char)incoming[i+4];
-		//cout<<__func__<<" Vertex="<<idToWord(vertex,*m_wordSize)<<" ReadRank="<<rank<<" ReadIndexOnRank="<<sequenceIdOnDestination<<" ReadStrandOnVertex="<<strand<<" StrandPositionInRead="<<positionOnStrand<<endl;
 		Vertex*node=m_subgraph->find(vertex);
 		if(node==NULL){
 			continue;

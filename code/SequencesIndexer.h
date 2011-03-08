@@ -34,6 +34,7 @@
 #include <RingAllocator.h>
 #include <VirtualCommunicator.h>
 #include <Read.h>
+#include <OnDiskAllocator.h>
 #include <IndexerWorker.h>
 #include <Parameters.h>
 
@@ -41,7 +42,7 @@ class SequencesIndexer{
 	int m_rank;
 	int m_size;
 	Parameters*m_parameters;
-	MyAllocator m_allocator;
+	OnDiskAllocator*m_allocator;
 	int m_pendingMessages;
 	int m_completedJobs;
 	int m_maximumAliveWorkers;
@@ -73,9 +74,10 @@ ArrayOfReads*m_myReads,
 				bool m_colorSpaceMode
 );
 
-	void constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox);
+	void constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,
+	OnDiskAllocator*allocator);
 	void setReadiness();
-	MyAllocator*getAllocator();
+	OnDiskAllocator*getAllocator();
 };
 
 #endif

@@ -50,7 +50,7 @@ int FastqBz2Loader::open(string file,int period){
 }
 
 // a very simple and compact fastq.gz reader
-void FastqBz2Loader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period){
+void FastqBz2Loader::load(int maxToLoad,ArrayOfReads*reads,OnDiskAllocator*seqMyAllocator,int period){
 	char buffer[4096];
 	int rotatingVariable=0;
 	int loadedSequences=0;

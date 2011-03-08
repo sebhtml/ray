@@ -41,6 +41,8 @@ class Parameters{
 	int m_reducerPeriod;
 	int m_maximumDistance;
 
+	string m_memoryFilePrefix;
+
 	bool m_reducerIsActivated;
 	int m_size;
 	int m_maxCoverage;
@@ -138,6 +140,7 @@ public:
 	uint64_t _complementVertex(uint64_t a);
 	bool hasPairedReads();
 	int _vertexRank(uint64_t a);
+	string getMemoryPrefix();
 };
 
 #endif

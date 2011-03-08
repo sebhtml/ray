@@ -148,7 +148,7 @@ bool SequencesLoader::computePartition(int rank,int size,
 	}
 	m_distribution_sequence_id=0;
 	vector<string> allFiles=(*m_parameters).getAllFiles();
-	m_loader.constructor();
+	m_loader.constructor(m_parameters->getMemoryPrefix().c_str());
 	for(m_distribution_file_id=0;m_distribution_file_id<(int)allFiles.size();
 		m_distribution_file_id++){
 		int res=m_loader.load(allFiles[(m_distribution_file_id)],false);
@@ -229,8 +229,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 	fflush(stdout);
 
 	m_distribution_currentSequenceId=0;
-	//int files=allFiles.size();
-	m_loader.constructor();
+	m_loader.constructor(m_parameters->getMemoryPrefix().c_str());
 	for(m_distribution_file_id=0;m_distribution_file_id<(int)allFiles.size();
 		m_distribution_file_id++){
 
@@ -244,9 +243,6 @@ bool SequencesLoader::loadSequences(int rank,int size,
 		if(m_distribution_currentSequenceId>endingSequenceId){
 			break;// we are done
 		}
-
-		//printf("Rank %i is loading %s [%i/%i]\n",m_rank,allFiles.at(m_distribution_file_id).c_str(),
-			//m_distribution_file_id+1,files);
 
 		int res=m_loader.load(allFiles[(m_distribution_file_id)],false);
 		if(res==EXIT_FAILURE){
@@ -306,6 +302,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 	printf("Rank %i has %lu sequence reads (completed)\n",m_rank,amount);
 	fflush(stdout);
 
+/*
 	showMemoryUsage(m_rank);
 	int chunks=m_persistentAllocator->getNumberOfChunks();
 	int chunkSize=m_persistentAllocator->getChunkSize();
@@ -313,13 +310,14 @@ bool SequencesLoader::loadSequences(int rank,int size,
 	uint64_t kibibytes=totalBytes/1024;
 	printf("Rank %i: memory usage for sequence reads is %lu KiB\n",m_rank,kibibytes);
 	fflush(stdout);
+*/
 
 	return true;
 }
 
-void SequencesLoader::constructor(int size,MyAllocator*allocator,ArrayOfReads*reads){
+void SequencesLoader::constructor(int size,OnDiskAllocator*allocator,ArrayOfReads*reads){
 	m_size=size;
 	m_persistentAllocator=allocator;
 	m_myReads=reads;
-	m_myReads->constructor();
+	m_myReads->constructor(allocator);
 }
