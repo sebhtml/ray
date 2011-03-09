@@ -243,7 +243,6 @@ void Machine::start(){
 		cout<<" sizeof(PairedRead)="<<sizeof(PairedRead)<<endl;
 		
 		cout<<endl;
-		cout<<"Ray Systems are using memory-mapped files (POSIX mmap)"<<endl;
 		size_t page_size = (size_t) sysconf (_SC_PAGESIZE);
 		cout<<"PageSize: "<<page_size<<" bytes"<<endl;
 		cout<<endl;
@@ -256,7 +255,8 @@ void Machine::start(){
 	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed,&m_subgraph,&m_inbox);
 	ostringstream prefixFull;
 	prefixFull<<m_parameters.getMemoryPrefix()<<"_Main";
-	m_diskAllocator.constructor(prefixFull.str().c_str());
+	int chunkSize=16777216;
+	m_diskAllocator.constructor(chunkSize);
 
 	m_sl.constructor(m_size,&m_diskAllocator,&m_myReads);
 
@@ -406,21 +406,11 @@ m_seedingData,
 	m_inboxAllocator.clear();
 	m_outboxAllocator.clear();
 
-	printf("Rank %i: clearing memory-mapped files, please wait.",m_rank);
 	m_diskAllocator.clear();
 
 	MPI_Finalize();
 }
 
-/*
- * this is the function that runs a lots
- *
- * it
- * 	1) receives messages
- * 	3) process message. The function that deals with a message is selected with the message's tag
- * 	4) process data, this depends on the master-mode and slave-mode states.
- * 	5) send messages
- */
 void Machine::run(){
 	while(isAlive()){
 	#ifdef SHOW_ALIVE
@@ -1342,16 +1332,7 @@ bool Machine::isAlive(){
 	return m_alive;
 }
 
-void Machine::printStatus(){
-	cout<<"********"<<endl;
-	cout<<"Rank: "<<getRank()<<endl;
-	cout<<"Reads: "<<m_myReads.size()<<endl;
-	cout<<"Inbox: "<<m_inbox.size()<<endl;
-	cout<<"Outbox: "<<m_outbox.size()<<endl;
-}
-
 Machine::~Machine(){
-	// do nothing.
 	delete m_bubbleData;
 	m_bubbleData=NULL;
 }

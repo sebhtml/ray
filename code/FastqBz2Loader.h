@@ -38,7 +38,7 @@ class FastqBz2Loader{
 public:
 	int open(string file,int period);
 	int getSize();
-	void load(int maxToLoad,ArrayOfReads*reads,OnDiskAllocator*seqMyAllocator,int period);
+	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period);
 };
 
 #endif

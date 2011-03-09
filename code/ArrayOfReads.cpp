@@ -25,7 +25,7 @@
 #include <iostream>
 using namespace std;
 
-void ArrayOfReads::constructor(OnDiskAllocator*allocator){
+void ArrayOfReads::constructor(MyAllocator*allocator){
 	#ifdef ASSERT
 	assert(allocator!=NULL);
 	#endif

@@ -67,7 +67,7 @@ class Loader{
 	int m_type;
 	int DISTRIBUTION_ALLOCATOR_CHUNK_SIZE;
 	ArrayOfReads m_reads;
-	OnDiskAllocator m_allocator;
+	MyAllocator m_allocator;
 
 	uint64_t m_currentOffset;
 	int m_maxToLoad;

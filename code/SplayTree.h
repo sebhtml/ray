@@ -48,8 +48,8 @@ class SplayTree{
 public:
 	void constructor();
 	// freeze the splay tree.
-	bool remove(KEY key,bool reuse,OnDiskAllocator*allocator);
-	SplayNode<KEY,VALUE>*insert(KEY key,OnDiskAllocator*allocator,bool*inserted);
+	bool remove(KEY key,bool reuse,MyAllocator*allocator);
+	SplayNode<KEY,VALUE>*insert(KEY key,MyAllocator*allocator,bool*inserted);
 	SplayNode<KEY,VALUE>*find(KEY key,bool frozen);
 	SplayNode<KEY,VALUE>*findBinary(KEY key);
 	void print();
@@ -81,7 +81,7 @@ void SplayTree<KEY,VALUE>::constructor(){
  * based on http://www.cs.umbc.edu/courses/undergraduate/341/fall98/frey/ClassNotes/Class17/splay.html
  */
 template<class KEY,class VALUE>
-bool SplayTree<KEY,VALUE>::remove(KEY key,bool reuse,OnDiskAllocator*allocator){
+bool SplayTree<KEY,VALUE>::remove(KEY key,bool reuse,MyAllocator*allocator){
 	// can't remove from an empty tree
 	if(m_root==NULL){
 		return false;
@@ -135,7 +135,7 @@ SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::getRoot(){
  * then, add x as root, and put y as child of x (left or right)
  */
 template<class KEY,class VALUE>
-SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::insert(KEY key,OnDiskAllocator*allocator,bool*inserted){
+SplayNode<KEY,VALUE>*SplayTree<KEY,VALUE>::insert(KEY key,MyAllocator*allocator,bool*inserted){
 	(*inserted)=false;
 	if(m_root==NULL){
 		m_root=(SplayNode<KEY,VALUE>*)allocator->allocate(sizeof(SplayNode<KEY,VALUE>));

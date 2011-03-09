@@ -41,6 +41,9 @@ class MyAllocator{
 	int m_currentChunkId;
 	int m_CHUNK_SIZE;
 	ReusableMemoryStore m_store;
+
+	void addChunk();
+
 public:
 	/**
  * print allocator information
@@ -62,12 +65,11 @@ public:
 /**
  * return the container for reusable memory
  */
-	ReusableMemoryStore*getStore();
 	/**
  	* reset the chunk to reuse it properly.
  	*/
 	void reset();
-
+	void free(void*a,int b);
 };
 
 

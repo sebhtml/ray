@@ -29,7 +29,7 @@
 class VertexTable{
 	uint64_t m_size;
 	bool m_inserted;
-	OnDiskAllocator*m_gridAllocator;
+	MyAllocator*m_gridAllocator;
 	VertexData**m_gridData;
 	uint16_t*m_gridSizes;
 	int m_gridSize;
@@ -41,7 +41,7 @@ class VertexTable{
  */
 	VertexData*move(int bin,int item);
 public:
-	void constructor(int rank,OnDiskAllocator*allocator);
+	void constructor(int rank,MyAllocator*allocator);
 	void setWordSize(int w);
 	uint64_t size();
 	VertexData*find(uint64_t key);
@@ -51,7 +51,7 @@ public:
 	VertexData*getElementInBin(int bin,int element);
 	int getNumberOfElementsInBin(int bin);
 	int getNumberOfBins();
-	OnDiskAllocator*getAllocator();
+	MyAllocator*getAllocator();
 	void freeze();
 	void unfreeze();
 	bool frozen();

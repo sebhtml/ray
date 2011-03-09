@@ -28,19 +28,17 @@
 #include <stdio.h>
 using namespace std;
 
-void VertexTable::constructor(int rank,OnDiskAllocator*allocator){
+void VertexTable::constructor(int rank,MyAllocator*allocator){
 	m_gridAllocator=allocator;
 	m_size=0;
 	m_inserted=false;
 	m_gridSize=4194304;
 	int bytes1=m_gridSize*sizeof(VertexData*);
-	m_gridData=(VertexData**)m_gridAllocator->allocate(bytes1);
+	m_gridData=(VertexData**)__Malloc(bytes1);
 	int bytes2=m_gridSize*sizeof(uint16_t);
-	m_gridSizes=(uint16_t*)m_gridAllocator->allocate(bytes2);
-/*
+	m_gridSizes=(uint16_t*)__Malloc(bytes2);
 	printf("Rank %i: allocating %i bytes for vertex table\n",rank,bytes1+bytes2);
 	fflush(stdout);
-*/
 	showMemoryUsage(rank);
 	for(int i=0;i<m_gridSize;i++){
 		m_gridSizes[i]=0;
@@ -134,7 +132,7 @@ int VertexTable::getNumberOfBins(){
 	return m_gridSize;
 }
 
-OnDiskAllocator*VertexTable::getAllocator(){
+MyAllocator*VertexTable::getAllocator(){
 	return m_gridAllocator;
 }
 

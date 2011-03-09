@@ -49,7 +49,7 @@ using namespace std;
 class SeedExtender{
 	SplayTree<uint64_t,Read>m_cacheForRepeatedReads;
 	SplayTree<uint64_t,ReadAnnotation*> m_cacheForListOfReads;
-	OnDiskAllocator m_cacheAllocator;
+	MyAllocator m_cacheAllocator;
 
 	int m_repeatLength;
 	StaticVector*m_inbox;

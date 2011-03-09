@@ -34,12 +34,12 @@ class MyForest{
 	SplayTree<uint64_t,Vertex>*m_trees;
 	bool m_inserted;
 	int getTreeIndex(uint64_t i);
-	OnDiskAllocator*m_allocator;
+	MyAllocator*m_allocator;
 	bool m_frozen;
 public:
 	int getNumberOfTrees();
 	SplayTree<uint64_t,Vertex>*getTree(int i);
-	void constructor(OnDiskAllocator*allocator);
+	void constructor(MyAllocator*allocator);
 	uint64_t size();
 	Vertex*find(uint64_t key);
 	Vertex*insert(uint64_t key);
@@ -49,7 +49,7 @@ public:
 	void show(int rank,const char*a);
 	bool frozen();
 	void remove(uint64_t a);
-	OnDiskAllocator*getAllocator();
+	MyAllocator*getAllocator();
 };
 
 #endif

@@ -55,7 +55,7 @@ int ColorSpaceLoader::open(string file){
 	return EXIT_SUCCESS;
 }
 
-void ColorSpaceLoader::load(int maxToLoad,ArrayOfReads*reads,OnDiskAllocator*seqMyAllocator){
+void ColorSpaceLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
 	char bufferForLine[1024];
 	int loadedSequences=0;
 	while(m_loaded<m_size&& loadedSequences<maxToLoad){

@@ -95,7 +95,7 @@ class Machine{
 	Library m_library;
 	int m_currentCycleStep;
 	MessagesHandler m_messagesHandler;
-	OnDiskAllocator m_diskAllocator;
+	MyAllocator m_diskAllocator;
 
 	int m_numberOfRanksWithCoverageData;
 	TimePrinter m_timePrinter;
@@ -233,7 +233,6 @@ class Machine{
 	bool m_cycleStarted;
 	bool m_reductionOccured;
 
-
 	#ifdef SHOW_SENT_MESSAGES
 	StatisticsData*m_stats;
 	#endif
@@ -245,18 +244,19 @@ class Machine{
 	OpenAssemblerChooser m_oa;
 	// BUBBLE
 	BubbleData*m_bubbleData;
-
-	int milliSeconds();
-	void enumerateChoices();
 	void killRanks();
-	void printStatus();
-	void doChoice();
-	void checkIfCurrentVertexIsAssembled();
-	void markCurrentVertexAsAssembled();
 	int getSize();
 	bool isAlive();
+/**
+ * this is the function that runs a lots
+ *
+ * it
+ * 	1) receives messages
+ * 	3) process message. The function that deals with a message is selected with the message's tag
+ * 	4) process data, this depends on the master-mode and slave-mode states.
+ * 	5) send messages
+ */
 	void run();
-	void do_1_1_test();
 	bool isMaster();
 	void receiveMessages();
 	void loadSequences();
@@ -268,10 +268,9 @@ class Machine{
 	int getRank();
 	void receiveWelcomeMessage(MPI_Status*status);
 	void getPaths(uint64_t vertex);
-	void extendSeeds();
-	void finishFusions();
-	void makeFusions();
-	void depthFirstSearch(uint64_t root,uint64_t a,int b);
+	//void extendSeeds();
+	//void makeFusions();
+	//void depthFirstSearch(uint64_t root,uint64_t a,int b);
 	
 	void assignMasterHandlers();
 	void assignSlaveHandlers();

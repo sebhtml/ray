@@ -38,7 +38,7 @@
 using namespace std;
 
 class SequencesLoader{
-	OnDiskAllocator*m_persistentAllocator;
+	MyAllocator*m_persistentAllocator;
 	ArrayOfReads*m_myReads;
 	Parameters*m_parameters;
 	uint64_t m_distribution_currentSequenceId;
@@ -68,6 +68,6 @@ public:
 	time_t*m_lastTime,
 	Parameters*m_parameters,int*m_master_mode,int*m_mode);
 
-	void constructor(int size,OnDiskAllocator*m_persistentAllocator,ArrayOfReads*m_myReads);
+	void constructor(int size,MyAllocator*m_persistentAllocator,ArrayOfReads*m_myReads);
 };
 #endif

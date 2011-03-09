@@ -55,7 +55,7 @@ class LibraryWorker{
 
 	SplayTree<uint64_t,LibraryElement> m_database;
 
-	OnDiskAllocator*m_allocator;
+	MyAllocator*m_allocator;
 	VirtualCommunicator*m_virtualCommunicator;
 	uint64_t m_SEEDING_i;
 	RingAllocator*m_outboxAllocator;
@@ -73,7 +73,7 @@ public:
 
 	void constructor(uint64_t id,SeedingData*seedingData,VirtualCommunicator*virtualCommunicator,RingAllocator*outboxAllocator,
 	Parameters*parameters,StaticVector*inbox,StaticVector*outbox,map<int,map<int,int> >*libraryDistances,int*detectedDistances,
-		OnDiskAllocator*allocator);
+		MyAllocator*allocator);
 	bool isDone();
 	void work();
 };

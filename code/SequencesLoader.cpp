@@ -315,7 +315,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 	return true;
 }
 
-void SequencesLoader::constructor(int size,OnDiskAllocator*allocator,ArrayOfReads*reads){
+void SequencesLoader::constructor(int size,MyAllocator*allocator,ArrayOfReads*reads){
 	m_size=size;
 	m_persistentAllocator=allocator;
 	m_myReads=reads;

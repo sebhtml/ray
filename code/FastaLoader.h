@@ -33,7 +33,7 @@ using namespace std;
 
 class FastaLoader{
 public:
-	int load(string file,ArrayOfReads*reads,OnDiskAllocator*seqMyAllocator);
+	int load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
 };
 
 #endif

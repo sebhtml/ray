@@ -39,7 +39,7 @@ class ExtensionData{
 	SplayTree<uint64_t,ExtensionElement>*m_database;
 	int m_numberOfBins;
 	Parameters*m_parameters;
-	OnDiskAllocator m_allocator;
+	MyAllocator m_allocator;
 
 	void createStructures();
 	void destroyStructures();
@@ -121,7 +121,7 @@ public:
 	void constructor(Parameters*parameters);
 
 	void destructor();
-	OnDiskAllocator*getAllocator();
+	MyAllocator*getAllocator();
 };
 
 #endif

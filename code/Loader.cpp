@@ -35,7 +35,7 @@ void Loader::constructor(const char*prefix){
 	m_type=FORMAT_NULL;
 	ostringstream prefixFull;
 	prefixFull<<prefix<<"_Loader";
-	m_allocator.constructor(prefixFull.str().c_str());
+	m_allocator.constructor(4194304);
 	m_reads.constructor(&m_allocator);
 }
 

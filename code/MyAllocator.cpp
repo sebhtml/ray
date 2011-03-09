@@ -37,15 +37,17 @@ void MyAllocator::reset(){
 }
 
 void MyAllocator::constructor(int chunkSize){
-	m_currentChunkId=0;
 	m_CHUNK_SIZE=chunkSize; 
+}
+
+void MyAllocator::addChunk(){
 	void*currentChunk=(void*)__Malloc(m_CHUNK_SIZE);
 	#ifdef ASSERT
 	assert(currentChunk!=NULL);
 	#endif
 	m_chunks.push_back(currentChunk);
+	m_currentChunkId=0;
 	m_currentPosition=0;
-	m_store.constructor();
 }
 
 void*MyAllocator::allocate(int s){
@@ -54,6 +56,10 @@ void*MyAllocator::allocate(int s){
 	#endif
 	if(m_store.hasAddressesToReuse(s)){
 		return m_store.reuseAddress(s);
+	}
+
+	if(m_chunks.size()==0){
+		addChunk();
 	}
 
 	#ifndef FORCE_PACKING
@@ -91,6 +97,10 @@ void*MyAllocator::allocate(int s){
 	}
 	
 	#ifdef ASSERT
+	if(m_currentChunkId>=(int)m_chunks.size()){
+		cout<<"ChunkId="<<m_currentChunkId<<" Chunks="<<m_chunks.size()<<endl;
+	}
+	
 	assert(m_currentChunkId<(int)m_chunks.size());
 	if(m_currentPosition>=m_CHUNK_SIZE){
 		cout<<"Error: ToAllocate="<<s<<" Chunks="<<m_chunks.size()<<" CurrentChunk="<<m_currentChunkId<<" ChunkPosition="<<m_currentPosition<<" ChunkSize="<<m_CHUNK_SIZE<<endl;
@@ -133,6 +143,6 @@ int MyAllocator::getNumberOfChunks(){
 	return m_chunks.size();
 }
 
-ReusableMemoryStore*MyAllocator::getStore(){
-	return &m_store;
+void MyAllocator::free(void*a,int b){
+	m_store.addAddressToReuse(a,b);
 }

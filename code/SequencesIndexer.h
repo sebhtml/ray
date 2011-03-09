@@ -42,7 +42,7 @@ class SequencesIndexer{
 	int m_rank;
 	int m_size;
 	Parameters*m_parameters;
-	OnDiskAllocator*m_allocator;
+	MyAllocator*m_allocator;
 	int m_pendingMessages;
 	int m_completedJobs;
 	int m_maximumAliveWorkers;
@@ -75,9 +75,9 @@ ArrayOfReads*m_myReads,
 );
 
 	void constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,
-	OnDiskAllocator*allocator);
+	MyAllocator*allocator);
 	void setReadiness();
-	OnDiskAllocator*getAllocator();
+	MyAllocator*getAllocator();
 };
 
 #endif

@@ -30,7 +30,7 @@
  * When a chunk is full, another one is added, and linked to the full one aforementionned.
  */
 class ArrayOfReads{
-	OnDiskAllocator*m_allocator;
+	MyAllocator*m_allocator;
 	int m_CHUNK_SIZE;
 	Read**m_chunks;
 	int m_numberOfChunks;
@@ -50,7 +50,7 @@ public:
 	Read*operator[](uint64_t i);
 	uint64_t size();
 	void clear();
-	void constructor(OnDiskAllocator*allocator);
+	void constructor(MyAllocator*allocator);
 	void reset();
 };
 

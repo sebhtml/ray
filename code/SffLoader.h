@@ -52,7 +52,7 @@ class SffLoader{
 public:
 	int open(string file);
 	int getSize();
-	void load(int maxToLoad,ArrayOfReads*reads,OnDiskAllocator*seqMyAllocator);
+	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
 };
 
 #endif

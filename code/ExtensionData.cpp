@@ -33,7 +33,7 @@ void ExtensionData::constructor(Parameters*parameters){
 
 	ostringstream prefixFull;
 	prefixFull<<m_parameters->getMemoryPrefix()<<"_ExtensionData";
-	m_allocator.constructor(prefixFull.str().c_str());
+	m_allocator.constructor(4194304);
 }
 
 void ExtensionData::createStructures(){
@@ -95,7 +95,7 @@ void ExtensionData::removeSequence(uint64_t a){
 	m_database[bin].remove(a,false,&m_allocator);
 }
 
-OnDiskAllocator*ExtensionData::getAllocator(){
+MyAllocator*ExtensionData::getAllocator(){
 	return &m_allocator;
 }
 

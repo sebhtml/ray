@@ -86,7 +86,7 @@ void FusionData::constructor(int size,int max,int rank,StaticVector*outbox,
 	m_seedingData=seedingData;
 	ostringstream prefixFull;
 	prefixFull<<m_parameters->getMemoryPrefix()<<"_FusionData";
-	m_cacheAllocator.constructor(prefixFull.str().c_str());
+	m_cacheAllocator.constructor(4194304);
 	m_cacheForRepeatedVertices.constructor();
 	m_mode=mode;
 	m_ed=ed;

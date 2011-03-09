@@ -37,7 +37,7 @@ bool LibraryWorker::isDone(){
 }
 
 void LibraryWorker::constructor(uint64_t id,SeedingData*seedingData,VirtualCommunicator*virtualCommunicator,RingAllocator*outboxAllocator,Parameters*parameters,
-StaticVector*inbox,StaticVector*outbox,	map<int,map<int,int> >*libraryDistances,int*detectedDistances,OnDiskAllocator*allocator){
+StaticVector*inbox,StaticVector*outbox,	map<int,map<int,int> >*libraryDistances,int*detectedDistances,MyAllocator*allocator){
 	//cout<<"LibraryWorker::Constructor"<<endl;
 	m_done=false;
 	m_parameters=parameters;

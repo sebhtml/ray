@@ -25,7 +25,7 @@
 #include<sstream>
 using namespace std;
 
-void MyForest::constructor(OnDiskAllocator*allocator){
+void MyForest::constructor(MyAllocator*allocator){
 	m_numberOfTrees=131072;
 	m_allocator=allocator;
 	#ifdef ASSERT
@@ -117,6 +117,6 @@ void MyForest::remove(uint64_t a){
 	}
 }
 
-OnDiskAllocator*MyForest::getAllocator(){
+MyAllocator*MyForest::getAllocator(){
 	return m_allocator;
 }

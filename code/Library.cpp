@@ -187,7 +187,8 @@ Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,StaticVector*inbo
 	m_initiatedIterator=false;
 	ostringstream prefixFull;
 	prefixFull<<m_parameters->getMemoryPrefix()<<"_Library";
-	m_allocator.constructor(prefixFull.str().c_str());
+	int chunkSize=4194304;
+	m_allocator.constructor(chunkSize);
 }
 
 void Library::setReadiness(){

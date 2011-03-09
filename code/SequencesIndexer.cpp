@@ -143,7 +143,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 	}
 }
 
-void SequencesIndexer::constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,OnDiskAllocator*allocator){
+void SequencesIndexer::constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,MyAllocator*allocator){
 	m_allocator=allocator;
 	m_initiatedIterator=false;
 	m_parameters=parameters;
@@ -169,7 +169,7 @@ void SequencesIndexer::setReadiness(){
 	m_pendingMessages--;
 }
 
-OnDiskAllocator*SequencesIndexer::getAllocator(){
+MyAllocator*SequencesIndexer::getAllocator(){
 	return m_allocator;
 }
 

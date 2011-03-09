@@ -432,7 +432,6 @@ void Parameters::parseCommands(){
 		}
 		cout<<endl;
 		cout<<"Output files will be prefixed with "<<getPrefix()<<endl;
-		cout<<"Memory-mapped files will be prefixed with "<<getMemoryPrefix()<<endl;
 		cout<<endl;
 
 	}
@@ -769,16 +768,6 @@ void Parameters::showUsage(){
 	cout<<"   It most be odd because reverse-complement vertices are stored together."<<endl;
 	cout<<endl;
 	cout<<"   -k <kmerSize>"<<endl;
-	cout<<endl;
-	cout<<endl;
-	cout<<"  Path prefix for memory-mapped files (default: value given to -o)"<<endl;
-	cout<<"    Ray uses memory-mapped files (using POSIX mmap)."<<endl;
-	cout<<"    If you are running Ray on a high-performance computer/cluster, check if the system provides"<<endl;
-	cout<<"    a directory called /scratch. Such a directory usually provides fast-access to file pages."<<endl;
-	cout<<"    OnDiskAllocator is a chunk allocator whose chunks are in memory-mapped files (1 chunk = 1 file)."<<endl;
-	cout<<"    Obviously, demand paging will do the swapping of memory pages."<<endl;
-	cout<<endl;
-	cout<<"     -MemoryPrefix <memoryPrefix>"<<endl;
 	cout<<endl;
 	cout<<endl;
 	cout<<"  use --help to show this help"<<endl;

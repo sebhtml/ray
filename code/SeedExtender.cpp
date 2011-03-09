@@ -890,13 +890,13 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 			}
 		}
 	}else if(ed->m_EXTENSION_reads_received){
-		int cachingThreshold=100*m_parameters->getPeakCoverage();
+		int cachingThreshold=2000*m_parameters->getPeakCoverage();
 		if(cachingThreshold>m_parameters->getMaximumAllowedCoverage()){
 			cachingThreshold=m_parameters->getMaximumAllowedCoverage();
 		}
 
 		// add a cache entry
-		if(m_cacheForListOfReads.find(*currentVertex,false)==NULL
+		if(false &&m_cacheForListOfReads.find(*currentVertex,false)==NULL
 		 && ed->m_currentCoverage>=cachingThreshold){
 			ReadAnnotation*root=NULL;
 			for(int i=0;i<(int)ed->m_EXTENSION_receivedReads.size();i++){
@@ -956,7 +956,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 			}else if(m_sequenceReceived){
 				// put sequences on repeats in the cache
 				//
-				if(ed->m_currentCoverage>=cachingThreshold
+				if(false && ed->m_currentCoverage>=cachingThreshold
 				&&(m_cacheForRepeatedReads.find(uniqueId,false)==NULL)){
 					//uint64_t hashValue=0;
 					//hashValue=hashing_function(m_receivedString.c_str());
@@ -1103,7 +1103,7 @@ void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAll
 	ostringstream prefixFull;
 	m_parameters=parameters;
 	prefixFull<<m_parameters->getMemoryPrefix()<<"_SeedExtender";
-	m_cacheAllocator.constructor(prefixFull.str().c_str());
+	m_cacheAllocator.constructor(4194304);
 	m_inbox=inbox;
 	m_subgraph=subgraph;
 	m_dfsData=new DepthFirstSearchData;

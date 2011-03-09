@@ -35,7 +35,7 @@ class GridTable{
 	Vertex**m_gridData;
 	uint16_t*m_gridSizes;
 	uint16_t*m_gridReservedSizes;
-	OnDiskAllocator*m_gridAllocatorOnDisk;
+	MyAllocator*m_gridAllocatorOnDisk;
 
 	int m_gridSize;
 	bool m_frozen;
@@ -46,7 +46,7 @@ class GridTable{
  */
 	Vertex*move(int bin,int item);
 public:
-	void constructor(int rank,OnDiskAllocator*allocator);
+	void constructor(int rank,MyAllocator*allocator);
 	void setWordSize(int w);
 	uint64_t size();
 	Vertex*find(uint64_t key);
@@ -56,8 +56,8 @@ public:
 	Vertex*getElementInBin(int bin,int element);
 	int getNumberOfElementsInBin(int bin);
 	int getNumberOfBins();
-	OnDiskAllocator*getAllocator();
-	OnDiskAllocator*getSecondAllocator();
+	MyAllocator*getAllocator();
+	MyAllocator*getSecondAllocator();
 	void freeze();
 	void unfreeze();
 	bool frozen();
