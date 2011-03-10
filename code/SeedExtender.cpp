@@ -118,6 +118,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 			//cout<<"Preset m_EXTENSION_markedCurrentVertexAsAssembled <- false"<<endl;
 
 			ed->m_EXTENSION_reads_requested=false;
+			m_messengerInitiated=false;
 			
 			ed->m_EXTENSION_directVertexDone=false;
 			ed->m_EXTENSION_VertexMarkAssembled_requested=false;
@@ -139,10 +140,8 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 			ed->m_EXTENSION_currentSeed=(*seeds)[ed->m_EXTENSION_currentSeedIndex];
 			(*currentVertex)=ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition];
 		}
-		// TODO: check if the position !=0
 		ed->m_EXTENSION_complementedSeed=false;
 		ed->m_EXTENSION_complementedSeed2=true;
-		//ed->resetStructures();
 
 	}else if(!ed->m_EXTENSION_markedCurrentVertexAsAssembled){
 		markCurrentVertexAsAssembled(currentVertex,outboxAllocator,outgoingEdgeIndex,outbox,
@@ -670,6 +669,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			(*currentVertex)=ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition];
 
 			ed->resetStructures();
+			m_matesToMeet.clear();
 
 			ed->m_EXTENSION_directVertexDone=false;
 			ed->m_EXTENSION_VertexAssembled_requested=false;
@@ -707,6 +707,7 @@ uint64_t*currentVertex,BubbleData*bubbleData){
 	}
 
 	ed->resetStructures();
+	m_matesToMeet.clear();
 	fflush(stdout);
 	showMemoryUsage(theRank);
 /*
@@ -767,6 +768,8 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 				//cout<<"1289312 m_EXTENSION_markedCurrentVertexAsAssembled <- false"<<endl;
 				ed->m_EXTENSION_directVertexDone=false;
 				ed->m_EXTENSION_reads_requested=false;
+				m_messengerInitiated=false;
+			
 			}
 		}
 	}else if(!ed->m_EXTENSION_reverseVertexDone){
@@ -791,6 +794,7 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			//cout<<"12312 m_EXTENSION_markedCurrentVertexAsAssembled <- false"<<endl;
 			ed->m_EXTENSION_directVertexDone=false;
 			ed->m_EXTENSION_reads_requested=false;
+			m_messengerInitiated=false;
 		//}
 	}
 }
@@ -801,8 +805,9 @@ StaticVector*outbox,int size,int theRank,ExtensionData*ed,bool*vertexCoverageReq
 vector<uint64_t>*receivedOutgoingEdges,Chooser*chooser,
 BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpaceMode,int wordSize,vector<vector<uint64_t> >*seeds
 ){
-	// get the reads starting at that position.
-	if(!ed->m_EXTENSION_reads_requested){
+	if(!m_messengerInitiated){
+		*edgesRequested=false;
+		m_pickedInformation=false;
 		int theCurrentSize=ed->m_EXTENSION_extension->size();
 		if(theCurrentSize%10000==0){
 			if(theCurrentSize==0 && !ed->m_EXTENSION_complementedSeed){
@@ -813,9 +818,10 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 			}
 			printExtensionStatus(currentVertex);
 		}
+		m_messengerInitiated=true;
 
-		// save wave progress.
 		uint64_t waveId=getPathUniqueId(theRank,ed->m_EXTENSION_currentSeedIndex);
+		// save wave progress.
 		#ifdef ASSERT
 		assert((int)getIdFromPathUniqueId(waveId)==ed->m_EXTENSION_currentSeedIndex);
 		assert((int)getRankFromPathUniqueId(waveId)==theRank);
@@ -823,93 +829,37 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 		#endif
 
 		int progression=ed->m_EXTENSION_extension->size()-1;
-
-		*vertexCoverageRequested=true;
-		*vertexCoverageReceived=false;
-		ed->m_EXTENSION_reads_requested=true;
-		ed->m_EXTENSION_reads_received=false;
-		uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
-		message[0]=(uint64_t)(*currentVertex);
-		message[1]=waveId;
-		message[2]=progression;
-		int dest=vertexRank((*currentVertex),size,wordSize);
-		//cout<<__func__<<" Requesting reads from "<<dest<<endl;
-		//cout<<__func__<<" Request reads, coverage, edges + mark as assembled."<<endl;
-
-		if(m_cacheForListOfReads.find(*currentVertex,false)==NULL){
-			Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_READS,theRank);
-			(*outbox).push_back(aMessage);
-		}else{// use the cache
-			Message aMessage(message,4,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_READS,theRank);
-			(*outbox).push_back(aMessage);
-		}
+		uint64_t vertex=*currentVertex;
+		m_vertexMessenger.constructor(vertex,waveId,progression,&m_matesToMeet,m_inbox,outbox,outboxAllocator,m_parameters);
+	}else if(!m_vertexMessenger.isDone()){
+		m_vertexMessenger.work();
+	}else if(!m_pickedInformation){
+		m_pickedInformation=true;
 		m_sequenceIndexToCache=0;
+		ed->m_EXTENSION_receivedReads=m_vertexMessenger.getReadAnnotations();
+		*receivedVertexCoverage=m_vertexMessenger.getCoverageValue();
+		ed->m_currentCoverage=*receivedVertexCoverage;
+		bool inserted;
+		*((m_cache.insert(*currentVertex,&m_cacheAllocator,&inserted))->getValue())=ed->m_currentCoverage;
+		uint64_t compactEdges=m_vertexMessenger.getEdges();
+		*receivedOutgoingEdges=_getOutgoingEdges(*currentVertex,compactEdges,m_parameters->getWordSize());
+		ed->m_EXTENSION_extension->push_back((*currentVertex));
+		ed->m_extensionCoverageValues->push_back(*receivedVertexCoverage);
+
+		if(ed->m_currentCoverage<m_parameters->getMaxCoverage()){
+			m_repeatLength=0;
+		}else{
+			m_repeatLength++;
+		}
+
+		#ifdef ASSERT
+		assert(ed->m_currentCoverage<=m_parameters->getMaximumAllowedCoverage());
+		#endif
+
+		ed->m_repeatedValues->push_back(m_repeatLength);
+
 		m_sequenceRequested=false;
-
-	}else if((*vertexCoverageRequested)&&!(*vertexCoverageReceived)){
-		if(m_inbox->size()==1&&m_inbox->at(0)->getTag()==RAY_MPI_TAG_REQUEST_READS_REPLY){
-			uint64_t*buffer=(uint64_t*)m_inbox->at(0)->getBuffer();
-
-			/*
- *  0 -> sentinel
- *  1 -> sentinel
- *  2 -> coverage
- *  3 -> compact edges
- */
-			*receivedVertexCoverage=buffer[2];
-			bool inserted;
-			*((m_cache.insert(*currentVertex,&m_cacheAllocator,&inserted))->getValue())=*receivedVertexCoverage;
-			ed->m_EXTENSION_extension->push_back((*currentVertex));
-			ed->m_extensionCoverageValues->push_back(*receivedVertexCoverage);
-			ed->m_currentCoverage=(*receivedVertexCoverage);
-			//cout<<"Receives coverage "<<ed->m_currentCoverage<<endl;
-			if(ed->m_currentCoverage<m_parameters->getMaxCoverage()){
-				m_repeatLength=0;
-			}else{
-				m_repeatLength++;
-			}
-
-			#ifdef ASSERT
-			assert(ed->m_currentCoverage<=m_parameters->getMaximumAllowedCoverage());
-			#endif
-
-			ed->m_repeatedValues->push_back(m_repeatLength);
-
-			*vertexCoverageReceived=true;
-			uint64_t compactEdges=buffer[3];
-			*receivedOutgoingEdges=_getOutgoingEdges(*currentVertex,compactEdges,m_parameters->getWordSize());
-
-			// get reads from the cache
-			if(m_cacheForListOfReads.find(*currentVertex,false)!=NULL){
-				ed->m_EXTENSION_receivedReads.clear();
-				ReadAnnotation*annotation=*(m_cacheForListOfReads.find(*currentVertex,false)->getValue());
-				while(annotation!=NULL){
-					ed->m_EXTENSION_receivedReads.push_back(*annotation);
-					annotation=annotation->getNext();
-				}
-			}
-		}
-	}else if(ed->m_EXTENSION_reads_received){
-		int cachingThreshold=2000*m_parameters->getPeakCoverage();
-		if(cachingThreshold>m_parameters->getMaximumAllowedCoverage()){
-			cachingThreshold=m_parameters->getMaximumAllowedCoverage();
-		}
-
-		// add a cache entry
-		if(false &&m_cacheForListOfReads.find(*currentVertex,false)==NULL
-		 && ed->m_currentCoverage>=cachingThreshold){
-			ReadAnnotation*root=NULL;
-			for(int i=0;i<(int)ed->m_EXTENSION_receivedReads.size();i++){
-				ReadAnnotation*newAnnotation=(ReadAnnotation*)m_cacheAllocator.allocate(sizeof(ReadAnnotation)*1);
-				*newAnnotation=ed->m_EXTENSION_receivedReads[i];
-				newAnnotation->setNext(root);
-				root=newAnnotation;
-			}
-			bool inserted;
-			SplayNode<uint64_t,ReadAnnotation*>*node=m_cacheForListOfReads.insert(*currentVertex,&m_cacheAllocator,&inserted);
-			ReadAnnotation**theRoot=node->getValue();
-			*theRoot=root;
-		}
+	}else{
 		if(m_sequenceIndexToCache<(int)ed->m_EXTENSION_receivedReads.size()){
 			ReadAnnotation annotation=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache];
 			uint64_t uniqueId=annotation.getUniqueId();
@@ -954,56 +904,6 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,sequenceRank,RAY_MPI_TAG_REQUEST_READ_SEQUENCE,theRank);
 				outbox->push_back(aMessage);
 			}else if(m_sequenceReceived){
-				// put sequences on repeats in the cache
-				//
-				if(false && ed->m_currentCoverage>=cachingThreshold
-				&&(m_cacheForRepeatedReads.find(uniqueId,false)==NULL)){
-					//uint64_t hashValue=0;
-					//hashValue=hashing_function(m_receivedString.c_str());
-					//cout<<"Saving in cache ReadIdentifier="<<uniqueId<<" Sequence="<<m_receivedString<<" HashValue="<<hashValue<<" CoverageValue="<<ed->m_currentCoverage<<endl;
-					Read a;
-					bool setSequence=false;
-/*
-					if(m_cacheHashTable.find(hashValue,false)!=NULL){
-						Read*read=m_cacheHashTable.find(hashValue,false)->getValue();
-						char buffer[4000];
-						read->getSeq(buffer);
-						string stringTwo=buffer;
-						if(stringTwo==m_receivedString){
-							uint8_t*raw=read->getRawSequence();
-							a.constructorWithRawSequence(m_receivedString.c_str(),raw,false);
-							setSequence=true;
-						}
-					}
-*/
-					if(!setSequence){
-						a.constructor(m_receivedString.c_str(),&m_cacheAllocator,false);
-					}
-					a.setType(m_ed->m_readType);
-					PairedRead*r=a.getPairedRead();
-					if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
-						#ifdef ASSERT
-						assert(r!=NULL);
-						#endif
-						*r=ed->m_EXTENSION_pairedRead;
-					}
-					bool inserted;
-					SplayNode<uint64_t,Read>*node=m_cacheForRepeatedReads.insert(uniqueId,&m_cacheAllocator,&inserted);
-					Read*value=node->getValue();
-
-					#ifdef ASSERT
-					assert(inserted);
-					assert(value!=NULL);
-					#endif
-/*
-					if(setSequence&&m_cacheHashTable.find(hashValue,false)==NULL){
-						SplayNode<uint64_t,Read*>*theNode=m_cacheHashTable.insert(hashValue,&m_cacheAllocator,&inserted);
-						Read**ptr=theNode->getValue();
-						*ptr=value;
-					}
-*/
-					*value=a;
-				}
 
 				bool addRead=true;
 				int startPosition=ed->m_EXTENSION_extension->size()-1;
@@ -1020,7 +920,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				// don't add it up if its is marked on a repeated vertex and
 				// its mate was not seen yet.
 				
-				if(ed->m_currentCoverage>3*m_parameters->getPeakCoverage()){
+				if(ed->m_currentCoverage>=3*m_parameters->getPeakCoverage()){
 					// the vertex is repeated
 					if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
 						uint64_t mateId=ed->m_EXTENSION_pairedRead.getUniqueId();
@@ -1033,6 +933,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				}
 
 				if(addRead){
+					m_matesToMeet.erase(uniqueId);
 					ExtensionElement*element=ed->addUsedRead(uniqueId);
 					element->setSequence(m_receivedString.c_str(),ed->getAllocator());
 					element->setStartingPosition(startPosition);
@@ -1062,6 +963,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 
 							//cout<<"adding expiration Now="<<startPosition<<" Expiration="<<expiration<<" Id="<<uniqueId<<endl;
 							(*ed->m_expirations)[expiration].push_back(uniqueId);
+		
+							m_matesToMeet.insert(mateId);
 						}else{ // the mate has shown up already and was waiting
 							ed->m_pairedReadsWithoutMate->erase(mateId);
 						}
@@ -1072,7 +975,17 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				m_sequenceRequested=false;
 			}
 		}else{
-			//cout<<"Received "<<ed->m_EXTENSION_receivedReads.size()<<" sequences."<<endl;
+			/*
+			int position=ed->m_EXTENSION_extension->size()-1;
+			cout<<"Rank "<<m_parameters->getRank()<<" Vertex: "<<idToWord(*currentVertex,m_parameters->getWordSize())<<
+				" Coverage: "<<ed->m_currentCoverage<<" ReadsInRange: "<<ed->m_EXTENSION_readsInRange->size()<<
+				" MatesToMeet: "<<m_matesToMeet.size()<<
+				" Position: "<<position<<" Received "<<ed->m_EXTENSION_receivedReads.size()<<" sequences.";
+			if(ed->m_currentCoverage>=3*m_parameters->getPeakCoverage()){
+				cout<<" REPEAT";
+			}
+			cout<<endl;
+*/
 			ed->m_EXTENSION_directVertexDone=true;
 			ed->m_EXTENSION_VertexMarkAssembled_requested=false;
 			ed->m_EXTENSION_enumerateChoices=false;
@@ -1255,3 +1168,5 @@ void SeedExtender::printExtensionStatus(uint64_t*currentVertex){
 	printf("Rank %i: reads in cache: %i\n",theRank,readsInCache);
 	fflush(stdout);
 }
+
+

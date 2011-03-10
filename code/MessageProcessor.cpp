@@ -120,6 +120,108 @@ void MessageProcessor::call_RAY_MPI_TAG_SET_WORD_SIZE(Message*message){
 	m_subgraph->setWordSize(*m_wordSize);
 }
 
+void MessageProcessor::call_RAY_MPI_TAG_VERTEX_INFO_REPLY(Message*message){
+	//cout<<__func__<<endl;
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS_REPLY(Message*message){
+	//cout<<__func__<<endl;
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS(Message*message){
+	//cout<<__func__<<endl;
+	uint64_t*incoming=(uint64_t*)message->getBuffer();
+	uint64_t vertex=incoming[0];
+	uint64_t complement=complementVertex_normal(vertex,*m_wordSize);
+	bool lower=vertex<complement;
+	ReadAnnotation*e=(ReadAnnotation*)incoming[1];
+	#ifdef ASSERT
+	assert(e!=NULL);
+	#endif
+	int maximumToReturn=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)/4-1;
+	int processed=0;
+	while(e!=NULL&&processed<maximumToReturn){
+		if(e->isLower()==lower){
+			processed++;
+		}
+		e=e->getNext();
+	}
+	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate((processed+1)*4*sizeof(uint64_t));
+	outgoingMessage[0]=processed;
+	//cout<<__func__<<" "<<processed<<" reads."<<endl;
+	processed=0;
+	int pos=1;
+	e=(ReadAnnotation*)incoming[1];
+	while(e!=NULL&&processed<maximumToReturn){
+		if(e->isLower()==lower){
+			outgoingMessage[pos++]=e->getRank();
+			outgoingMessage[pos++]=e->getReadIndex();
+			outgoingMessage[pos++]=e->getPositionOnStrand();
+			outgoingMessage[pos++]=e->getStrand();
+			processed++;
+		}
+
+		e=e->getNext();
+	}
+	outgoingMessage[pos++]=(uint64_t)e;
+	//cout<<__func__<<" Pos="<<pos<<endl;
+	Message aMessage(outgoingMessage,pos,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_VERTEX_READS_REPLY,rank);
+	m_outbox->push_back(aMessage);
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_VERTEX_INFO(Message*message){
+	//cout<<__func__<<endl;
+	uint64_t*incoming=(uint64_t*)message->getBuffer();
+	uint64_t vertex=incoming[0];
+	uint64_t complement=complementVertex_normal(vertex,*m_wordSize);
+	bool lower=vertex<complement;
+	Vertex*node=m_subgraph->find(vertex);
+	#ifdef ASSERT
+	assert(node!=NULL);
+	#endif
+
+	ReadAnnotation*e=m_subgraph->getReads(vertex);
+	int n=0;
+	while(e!=NULL){
+		if(e->isLower()==lower){
+			n++;
+		}
+		e=e->getNext();
+	}
+	e=m_subgraph->getReads(vertex);
+
+	uint64_t wave=incoming[1];
+	int progression=incoming[2];
+	Direction*d=(Direction*)m_directionsAllocator->allocate(sizeof(Direction));
+	d->constructor(wave,progression,lower);
+	m_subgraph->addDirection(vertex,d);
+
+	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	outgoingMessage[0]=node->getCoverage(vertex);
+	outgoingMessage[1]=node->getEdges(vertex);
+	outgoingMessage[2]=n;
+	int pos=5;
+	int processed=0;
+	int maximumToReturn=(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)-5)/4;
+	e=m_subgraph->getReads(vertex);
+	while(e!=NULL&&processed<maximumToReturn){
+		if(e->isLower()==lower){
+			outgoingMessage[pos++]=e->getRank();
+			outgoingMessage[pos++]=e->getReadIndex();
+			outgoingMessage[pos++]=e->getPositionOnStrand();
+			outgoingMessage[pos++]=e->getStrand();
+			processed++;
+		}
+
+		e=e->getNext();
+	}
+
+	outgoingMessage[3]=(uint64_t)e;
+	outgoingMessage[4]=processed;
+	Message aMessage(outgoingMessage,pos,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_VERTEX_INFO_REPLY,rank);
+	m_outbox->push_back(aMessage);
+}
+
 void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTEX(Message*message){
 	#ifdef ASSERT
 	assert(!m_subgraph->frozen());
@@ -2118,7 +2220,10 @@ void MessageProcessor::assignHandlers(){
 	m_methods[RAY_MPI_TAG_GET_READ_MATE_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_GET_READ_MATE_REPLY;
 	m_methods[RAY_MPI_TAG_GET_COVERAGE_AND_MARK]=&MessageProcessor::call_RAY_MPI_TAG_GET_COVERAGE_AND_MARK;
 	m_methods[RAY_MPI_TAG_GET_COVERAGE_AND_MARK_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_GET_COVERAGE_AND_MARK_REPLY;
-
+	m_methods[RAY_MPI_TAG_VERTEX_INFO]=&MessageProcessor::call_RAY_MPI_TAG_VERTEX_INFO;
+	m_methods[RAY_MPI_TAG_VERTEX_INFO_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_VERTEX_INFO_REPLY;
+	m_methods[RAY_MPI_TAG_VERTEX_READS]=&MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS;
+	m_methods[RAY_MPI_TAG_VERTEX_READS_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS_REPLY;
 }
 
 

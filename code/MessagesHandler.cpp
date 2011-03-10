@@ -57,8 +57,10 @@ void MessagesHandler::sendMessages(StaticVector*outbox,int source){
 		MPI_Request_free(&request);
 
 		#ifdef SHOW_TAGS
-		printf("SEND\tSource\t%i\tDestination\t%i\tCount\t%i\tTag\t%s\n",source,destination,count,MESSAGES[tag]);
-		fflush(stdout);
+		if(source==0){
+			printf("SEND\tSource\t%i\tDestination\t%i\tCount\t%i\tTag\t%s\n",source,destination,count,MESSAGES[tag]);
+			fflush(stdout);
+		}
 		#endif
 
 		#ifdef ASSERT
@@ -117,8 +119,10 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 		inbox->push_back(aMessage);
 
 		#ifdef SHOW_TAGS
-		printf("RECV\tSource\t%i\tDestination\t%i\tCount\t%i\tTag\t%s\n",source,destination,count,MESSAGES[tag]);
-		fflush(stdout);
+		if(destination==0){
+			printf("RECV\tSource\t%i\tDestination\t%i\tCount\t%i\tTag\t%s\n",source,destination,count,MESSAGES[tag]);
+			fflush(stdout);
+		}
 		#endif
 	
 		#ifdef COUNT_MESSAGES

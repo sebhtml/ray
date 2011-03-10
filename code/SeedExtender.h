@@ -30,6 +30,7 @@ class DepthFirstSearchData;
 #include <common_functions.h>
 #include <Message.h>
 #include <vector>
+#include <VertexMessenger.h>
 #include <ExtensionData.h>
 #include <Parameters.h>
 #include <RingAllocator.h>
@@ -47,6 +48,7 @@ class DepthFirstSearchData;
 using namespace std;
 
 class SeedExtender{
+	bool m_pickedInformation;
 	SplayTree<uint64_t,Read>m_cacheForRepeatedReads;
 	SplayTree<uint64_t,ReadAnnotation*> m_cacheForListOfReads;
 	MyAllocator m_cacheAllocator;
@@ -65,6 +67,10 @@ class SeedExtender{
 	BubbleTool m_bubbleTool;
 	ExtensionData*m_ed;
 	MyAllocator*m_directionsAllocator;
+
+	set<uint64_t> m_matesToMeet;
+	bool m_messengerInitiated;
+	VertexMessenger m_vertexMessenger;
 
 	set<uint64_t> m_eliminatedSeeds;
 	map<int,vector<uint64_t> >m_expiredReads;

@@ -74,13 +74,14 @@ am__libRay_a_SOURCES_DIST = IndexerWorker.h IndexerWorker.cpp \
 	RingAllocator.cpp RingAllocator.h StaticVector.cpp \
 	StaticVector.h MessagesHandler.h MessagesHandler.cpp \
 	slave_modes.h master_modes.h mpi_tags.h mpi_tags.cpp \
-	SeedingData.cpp SeedingData.h Library.h Library.cpp \
-	FastaLoader.h FastaLoader.cpp FastqLoader.h FastqLoader.cpp \
-	BubbleData.h BubbleTool.cpp BubbleTool.h BufferedData.cpp \
-	BufferedData.h Chooser.cpp ChooserData.h Chooser.h \
-	ColorSpaceDecoder.cpp ColorSpaceDecoder.h ColorSpaceLoader.cpp \
-	ColorSpaceLoader.h common_functions.cpp common_functions.h \
-	config.h CoverageDistribution.cpp CoverageDistribution.h \
+	VertexMessenger.h VertexMessenger.cpp SeedingData.cpp \
+	SeedingData.h Library.h Library.cpp FastaLoader.h \
+	FastaLoader.cpp FastqLoader.h FastqLoader.cpp BubbleData.h \
+	BubbleTool.cpp BubbleTool.h BufferedData.cpp BufferedData.h \
+	Chooser.cpp ChooserData.h Chooser.h ColorSpaceDecoder.cpp \
+	ColorSpaceDecoder.h ColorSpaceLoader.cpp ColorSpaceLoader.h \
+	common_functions.cpp common_functions.h config.h \
+	CoverageDistribution.cpp CoverageDistribution.h \
 	DepthFirstSearchData.cpp DepthFirstSearchData.h Direction.cpp \
 	Direction.h ExtensionData.cpp ExtensionData.h FusionData.h \
 	FusionData.cpp Loader.cpp Loader.hi Machine.cpp Machine.h \
@@ -110,9 +111,10 @@ am_libRay_a_OBJECTS = IndexerWorker.$(OBJEXT) ReadFetcher.$(OBJEXT) \
 	crypto.$(OBJEXT) EarlyStoppingTechnology.$(OBJEXT) \
 	ArrayOfReads.$(OBJEXT) RingAllocator.$(OBJEXT) \
 	StaticVector.$(OBJEXT) MessagesHandler.$(OBJEXT) \
-	mpi_tags.$(OBJEXT) SeedingData.$(OBJEXT) Library.$(OBJEXT) \
-	FastaLoader.$(OBJEXT) FastqLoader.$(OBJEXT) \
-	BubbleTool.$(OBJEXT) BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
+	mpi_tags.$(OBJEXT) VertexMessenger.$(OBJEXT) \
+	SeedingData.$(OBJEXT) Library.$(OBJEXT) FastaLoader.$(OBJEXT) \
+	FastqLoader.$(OBJEXT) BubbleTool.$(OBJEXT) \
+	BufferedData.$(OBJEXT) Chooser.$(OBJEXT) \
 	ColorSpaceDecoder.$(OBJEXT) ColorSpaceLoader.$(OBJEXT) \
 	common_functions.$(OBJEXT) CoverageDistribution.$(OBJEXT) \
 	DepthFirstSearchData.$(OBJEXT) Direction.$(OBJEXT) \
@@ -256,13 +258,14 @@ libRay_a_SOURCES = IndexerWorker.h IndexerWorker.cpp ReadFetcher.cpp \
 	RingAllocator.cpp RingAllocator.h StaticVector.cpp \
 	StaticVector.h MessagesHandler.h MessagesHandler.cpp \
 	slave_modes.h master_modes.h mpi_tags.h mpi_tags.cpp \
-	SeedingData.cpp SeedingData.h Library.h Library.cpp \
-	FastaLoader.h FastaLoader.cpp FastqLoader.h FastqLoader.cpp \
-	BubbleData.h BubbleTool.cpp BubbleTool.h BufferedData.cpp \
-	BufferedData.h Chooser.cpp ChooserData.h Chooser.h \
-	ColorSpaceDecoder.cpp ColorSpaceDecoder.h ColorSpaceLoader.cpp \
-	ColorSpaceLoader.h common_functions.cpp common_functions.h \
-	config.h CoverageDistribution.cpp CoverageDistribution.h \
+	VertexMessenger.h VertexMessenger.cpp SeedingData.cpp \
+	SeedingData.h Library.h Library.cpp FastaLoader.h \
+	FastaLoader.cpp FastqLoader.h FastqLoader.cpp BubbleData.h \
+	BubbleTool.cpp BubbleTool.h BufferedData.cpp BufferedData.h \
+	Chooser.cpp ChooserData.h Chooser.h ColorSpaceDecoder.cpp \
+	ColorSpaceDecoder.h ColorSpaceLoader.cpp ColorSpaceLoader.h \
+	common_functions.cpp common_functions.h config.h \
+	CoverageDistribution.cpp CoverageDistribution.h \
 	DepthFirstSearchData.cpp DepthFirstSearchData.h Direction.cpp \
 	Direction.h ExtensionData.cpp ExtensionData.h FusionData.h \
 	FusionData.cpp Loader.cpp Loader.hi Machine.cpp Machine.h \
@@ -421,6 +424,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Vertex.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VertexData.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VertexLinkedList.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VertexMessenger.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VertexTable.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VerticesExtractor.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VirtualCommunicator.Po@am__quote@
