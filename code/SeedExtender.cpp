@@ -975,7 +975,6 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				m_sequenceRequested=false;
 			}
 		}else{
-			/*
 			int position=ed->m_EXTENSION_extension->size()-1;
 			cout<<"Rank "<<m_parameters->getRank()<<" Vertex: "<<idToWord(*currentVertex,m_parameters->getWordSize())<<
 				" Coverage: "<<ed->m_currentCoverage<<" ReadsInRange: "<<ed->m_EXTENSION_readsInRange->size()<<
@@ -985,7 +984,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				cout<<" REPEAT";
 			}
 			cout<<endl;
-*/
+
 			ed->m_EXTENSION_directVertexDone=true;
 			ed->m_EXTENSION_VertexMarkAssembled_requested=false;
 			ed->m_EXTENSION_enumerateChoices=false;

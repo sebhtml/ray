@@ -272,8 +272,7 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT(Message*message
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY(Message*message){
-}
+void MessageProcessor::call_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY(Message*message){}
 
 void MessageProcessor::call_RAY_MPI_TAG_CHECK_VERTEX(Message*message){
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
@@ -431,6 +430,45 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTICES(Message*message){
 	#ifdef ASSERT
 	assert(!m_subgraph->frozen());
 	#endif
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY(Message*message){}
+
+void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS_FROM_LIST(Message*message){
+	uint64_t*incoming=(uint64_t*)message->getBuffer();
+	uint64_t vertex=incoming[0];
+	uint64_t complement=complementVertex_normal(vertex,*m_wordSize);
+	int numberOfMates=incoming[2];
+	bool lower=vertex<complement;
+	ReadAnnotation*e=(ReadAnnotation*)incoming[1];
+	#ifdef ASSERT
+	assert(e!=NULL);
+	#endif
+	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	int processed=0;
+	int pos=1;
+	set<uint64_t> localIndex;
+	for(int i=0;i<numberOfMates;i++){
+		localIndex.insert(incoming[3+i]);
+	}
+
+	while(e!=NULL){
+		if(e->isLower()==lower){
+			uint64_t uniqueId=getPathUniqueId(e->getRank(),e->getReadIndex());
+			if(localIndex.count(uniqueId)>0){
+				outgoingMessage[pos++]=e->getRank();
+				outgoingMessage[pos++]=e->getReadIndex();
+				outgoingMessage[pos++]=e->getPositionOnStrand();
+				outgoingMessage[pos++]=e->getStrand();
+				processed++;
+			}
+		}
+
+		e=e->getNext();
+	}
+	outgoingMessage[0]=processed;
+	Message aMessage(outgoingMessage,1+processed*4,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY,rank);
+	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTICES_DONE(Message*message){
@@ -2224,6 +2262,8 @@ void MessageProcessor::assignHandlers(){
 	m_methods[RAY_MPI_TAG_VERTEX_INFO_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_VERTEX_INFO_REPLY;
 	m_methods[RAY_MPI_TAG_VERTEX_READS]=&MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS;
 	m_methods[RAY_MPI_TAG_VERTEX_READS_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS_REPLY;
+	m_methods[RAY_MPI_TAG_VERTEX_READS_FROM_LIST]=&MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS_FROM_LIST;
+	m_methods[RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY;
 }
 
 

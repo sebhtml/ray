@@ -37,6 +37,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 using namespace std;
 
 class VertexMessenger{
+	set<uint64_t>::iterator m_mateIterator;
 	Parameters*m_parameters;
 	StaticVector*m_inbox;
 	StaticVector*m_outbox;
@@ -58,6 +59,7 @@ class VertexMessenger{
 	bool m_receivedReads;
 
 	void getReadsForUniqueVertex();
+	void getReadsForRepeatedVertex();
 public:
 	void constructor(uint64_t vertex,uint64_t wave,int pos,set<uint64_t>*matesToMeet,StaticVector*inbox,StaticVector*outbox,
 	RingAllocator*outboxAllocator,Parameters*parameters);

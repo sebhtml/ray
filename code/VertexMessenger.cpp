@@ -80,12 +80,68 @@ void VertexMessenger::work(){
 			m_isDone=true;
 		}else{
 			m_requestedReads=false;
+			m_mateIterator=m_matesToMeet->begin();
 		}
 	}else if(m_receivedBasicInfo){
 		if(m_coverageValue>=3*m_parameters->getPeakCoverage()){
-			getReadsForUniqueVertex();
+			getReadsForRepeatedVertex();
 		}else{
 			getReadsForUniqueVertex();
+		}
+	}
+}
+
+void VertexMessenger::getReadsForRepeatedVertex(){
+	if(!m_requestedReads){
+		//cout<<"Requesting reads"<<endl;
+		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+		message[0]=m_vertex;
+		message[1]=(uint64_t)m_pointer;
+		int maximumMates=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)/4;
+		int processed=0;
+		while(processed<maximumMates&&m_mateIterator!=m_matesToMeet->end()){
+			uint64_t mate=*m_mateIterator;
+			message[3+processed]=mate;
+			processed++;
+			m_mateIterator++;
+		}
+		message[2]=processed;
+		Message aMessage(message,processed+3,MPI_UNSIGNED_LONG_LONG,m_destination,RAY_MPI_TAG_VERTEX_READS_FROM_LIST,m_parameters->getRank());
+		m_outbox->push_back(aMessage);
+		m_requestedReads=true;
+		m_receivedReads=false;
+	}else if(!m_receivedReads&&m_inbox->size()==1&&m_inbox->at(0)->getTag()==RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY){
+		m_receivedReads=true;
+		//cout<<"Received reads."<<endl;
+		uint64_t*buffer=(uint64_t*)m_inbox->at(0)->getBuffer();
+		int numberOfReadsInMessage=buffer[0];
+		int i=0;
+		while(i<numberOfReadsInMessage){
+			int theRank=buffer[1+4*i];
+			int index=buffer[1+4*i+1];
+			int strandPosition=buffer[1+4*i+2];
+			char strand=buffer[1+4*i+3];
+
+			#ifdef ASSERT
+			assert(theRank>=0);
+			if(theRank>=m_parameters->getSize()){
+				cout<<"Rank="<<theRank<<" Size="<<m_parameters->getSize()<<endl;
+			}
+			assert(theRank<m_parameters->getSize());
+			assert(strand=='F'||strand=='R');
+			#endif
+
+			ReadAnnotation e;
+			e.constructor(theRank,index,strandPosition,strand,false);
+			m_annotations.push_back(e);
+			i++;
+		}
+		if(m_mateIterator==m_matesToMeet->end()){
+			//cout<<"No more reads -- is done"<<endl;
+			m_isDone=true;
+		}else{
+			m_requestedReads=false;
+			//cout<<"more reads -- not done."<<endl;
 		}
 	}
 }
