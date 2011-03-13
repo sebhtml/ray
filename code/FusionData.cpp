@@ -213,6 +213,7 @@ void FusionData::finishFusions(){
 				if(m_seedingData->m_SEEDING_i%10==0){
 					printf("Rank %i is finishing fusions [%i/%i]\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_ed->m_EXTENSION_contigs.size());
 					fflush(stdout);
+					showMemoryUsage(getRank());
 				}
 				vector<uint64_t> a;
 				m_FINISH_newFusions.push_back(a);
@@ -355,6 +356,8 @@ void FusionData::finishFusions(){
 				}
 				if(!found){
 					done=true;// the selection is not confirmed
+				}else{
+					m_validationPosition++;// added
 				}
 			}
 		}else if(m_validationPosition>position2){
@@ -817,12 +820,13 @@ void FusionData::getPaths(uint64_t vertex){
 			assert(getRankFromPathUniqueId(m_FUSION_receivedPaths[i].getWave())<m_size);
 		}
 		#endif
-		bool inserted;
 		// save the result in the cache.
 		#ifdef ASSERT
 		assert(m_cacheForRepeatedVertices.find(vertex,false)==NULL);
 		#endif
 
+/*
+		bool inserted;
 		SplayNode<uint64_t,Direction*>*node=m_cacheForRepeatedVertices.insert(vertex,&m_cacheAllocator,&inserted);
 		int i=0;
 		Direction*theDirection=NULL;
@@ -836,13 +840,15 @@ void FusionData::getPaths(uint64_t vertex){
 
 		Direction**ddirect=node->getValue();
 		*ddirect=theDirection;
-		m_Machine_getPaths_DONE=true;
 
 		#ifdef ASSERT
 		if(m_Machine_getPaths_result.size()==0){
 			assert(*(m_cacheForRepeatedVertices.find(vertex,false)->getValue())==NULL);
 		}
 		#endif
+*/
+
+		m_Machine_getPaths_DONE=true;
 	}
 }
 
