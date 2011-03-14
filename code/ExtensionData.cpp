@@ -20,6 +20,7 @@
 */
 
 #include <ExtensionData.h>
+#include <malloc_types.h>
 #include <string.h>
 #include <sstream>
 #include <crypto.h>
@@ -28,12 +29,13 @@ using namespace std;
 void ExtensionData::constructor(Parameters*parameters){
 	m_parameters=parameters;
 	m_numberOfBins=1;
-	m_database=(SplayTree<uint64_t,ExtensionElement>*)__Malloc(m_numberOfBins*sizeof(SplayTree<uint64_t,ExtensionElement>));
+	m_database=(SplayTree<uint64_t,ExtensionElement>*)__Malloc(m_numberOfBins*sizeof(SplayTree<uint64_t,ExtensionElement>),
+		RAY_MALLOC_TYPE_EXTENSION_DATA_TREES);
 	createStructures();
 
 	ostringstream prefixFull;
 	prefixFull<<m_parameters->getMemoryPrefix()<<"_ExtensionData";
-	m_allocator.constructor(4194304);
+	m_allocator.constructor(4194304,RAY_MALLOC_TYPE_EXTENSION_DATA_ALLOCATOR);
 }
 
 void ExtensionData::createStructures(){
@@ -72,7 +74,7 @@ void ExtensionData::resetStructures(){
 
 void ExtensionData::destructor(){
 	destroyStructures();
-	__Free(m_database);
+	__Free(m_database,RAY_MALLOC_TYPE_EXTENSION_DATA_TREES);
 }
 
 ExtensionElement*ExtensionData::getUsedRead(uint64_t a){

@@ -142,8 +142,8 @@ uint64_t complementVertex(uint64_t a,int m_wordSize,bool useColorSpace);
  */
 string addLineBreaks(string sequence);
 
-void*__Malloc(int c);
-void __Free(void*a);
+void*__Malloc(int c,int mallocType);
+void __Free(void*a,int mallocType);
 
 /*
  * compute the reverse complement in color space (it is just the same, but reverse)

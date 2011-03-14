@@ -61,7 +61,6 @@ public:
 	uint8_t m_edges_lower;
 	#endif
 
-
 	#ifndef USE_DISTANT_SEGMENTS_GRAPH
 	void addOutgoingEdge_ClassicMethod(uint64_t vertex,uint64_t a,int k);
 	void addIngoingEdge_ClassicMethod(uint64_t vertex,uint64_t a,int k);

@@ -19,6 +19,7 @@
 
 */
 
+#include <malloc_types.h>
 #include <string.h>
 #include <StaticVector.h>
 #include <TipWatchdog.h>
@@ -1017,7 +1018,7 @@ void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAll
 	ostringstream prefixFull;
 	m_parameters=parameters;
 	prefixFull<<m_parameters->getMemoryPrefix()<<"_SeedExtender";
-	m_cacheAllocator.constructor(4194304);
+	m_cacheAllocator.constructor(4194304,RAY_MALLOC_TYPE_SEED_EXTENDER_CACHE);
 	m_inbox=inbox;
 	m_subgraph=subgraph;
 	m_dfsData=new DepthFirstSearchData;

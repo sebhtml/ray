@@ -24,6 +24,7 @@
 #include<stdio.h>
 #include<sys/time.h>
 #include<vector>
+#include <malloc_types.h>
 #include<fstream>
 #include<common_functions.h>
 #include<time.h>
@@ -265,7 +266,7 @@ string addLineBreaks(string dna){
 }
 
 #define MALLOC_DEBUG
-void*__Malloc(int c){
+void*__Malloc(int c,int mallocType){
 	assert(c!=0);
 	void*a=NULL;
 	a=malloc(c);
@@ -275,15 +276,15 @@ void*__Malloc(int c){
 	assert(a!=NULL);
 
 	#ifdef MALLOC_DEBUG
-	printf("%s %i %s %i bytes, ret %p\n",__FILE__,__LINE__,__func__,c,a);
+	printf("%s %i %s %i bytes, ret %p %s\n",__FILE__,__LINE__,__func__,c,a,MALLOC_TYPES[mallocType]);
 	fflush(stdout);
 	#endif
 	return a;
 }
 
-void __Free(void*a){
+void __Free(void*a,int mallocType){
 	#ifdef MALLOC_DEBUG
-	printf("%s %i %s %p\n",__FILE__,__LINE__,__func__,a);
+	printf("%s %i %s %p %s\n",__FILE__,__LINE__,__func__,a,MALLOC_TYPES[mallocType]);
 	fflush(stdout);
 	#endif
 

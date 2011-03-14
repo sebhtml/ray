@@ -36,12 +36,13 @@ void MyAllocator::reset(){
 	m_store.reset();
 }
 
-void MyAllocator::constructor(int chunkSize){
+void MyAllocator::constructor(int chunkSize,int type){
 	m_CHUNK_SIZE=chunkSize; 
+	m_type=type;
 }
 
 void MyAllocator::addChunk(){
-	void*currentChunk=(void*)__Malloc(m_CHUNK_SIZE);
+	void*currentChunk=(void*)__Malloc(m_CHUNK_SIZE,m_type);
 	#ifdef ASSERT
 	assert(currentChunk!=NULL);
 	#endif
@@ -88,7 +89,7 @@ void*MyAllocator::allocate(int s){
 	int left=m_CHUNK_SIZE-m_currentPosition;
 	if(s>left){
 		if(!(m_currentChunkId+1<(int)m_chunks.size())){
-			void*currentChunk=__Malloc(m_CHUNK_SIZE);
+			void*currentChunk=__Malloc(m_CHUNK_SIZE,m_type);
 			m_chunks.push_back(currentChunk);
 		}
 		m_currentChunkId++;
@@ -122,7 +123,7 @@ MyAllocator::~MyAllocator(){
 void MyAllocator::clear(){
 	m_store.reset();
 	for(int i=0;i<(int)m_chunks.size();i++){
-		__Free(m_chunks[i]);
+		__Free(m_chunks[i],m_type);
 	}
 	m_chunks.clear();
 	m_currentPosition=0;

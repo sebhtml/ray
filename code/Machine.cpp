@@ -1207,7 +1207,7 @@ void Machine::call_RAY_SLAVE_MODE_AMOS(){
 		if(!m_ed->m_EXTENSION_reads_requested){
 			if(m_mode_send_vertices_sequence_id_position==0){
 				string seq=convertToString(&(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i]),m_wordSize);
-				char*qlt=(char*)__Malloc(seq.length()+1);
+				char*qlt=(char*)__Malloc(seq.length()+1,RAY_MASTER_MODE_AMOS);
 				strcpy(qlt,seq.c_str());
 				for(int i=0;i<(int)strlen(qlt);i++){
 					qlt[i]='D';
@@ -1222,7 +1222,7 @@ void Machine::call_RAY_SLAVE_MODE_AMOS(){
 					);
 
 				m_ed->m_EXTENSION_currentPosition++;
-				__Free(qlt);
+				__Free(qlt,RAY_MALLOC_TYPE_AMOS);
 			}
 
 			m_ed->m_EXTENSION_reads_requested=true;
