@@ -842,6 +842,7 @@ void Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 	}
 	cout<<"Rank "<<m_rank<<" appended "<<total<<" elements"<<endl;
 	fclose(fp);
+	showMemoryUsage(getRank());
 
 	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_EXTENSION_DATA_END,getRank());

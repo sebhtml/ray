@@ -53,6 +53,7 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 		if(m_seedingData->m_SEEDING_i%10==0){
 			printf("Rank %i is distributing fusions [%i/%i]\n",getRank,(int)(m_seedingData->m_SEEDING_i+1),(int)m_ed->m_EXTENSION_contigs.size());
 			fflush(stdout);
+			showMemoryUsage(getRank);
 		}
 	}
 
@@ -161,6 +162,8 @@ void FusionData::finishFusions(){
 	}
 	int overlapMinimumLength=3000;
 	if((int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<overlapMinimumLength){
+		//cout<<"Too short "<<endl;
+		//showMemoryUsage(getRank());
 		m_seedingData->m_SEEDING_i++;
 		m_FINISH_vertex_requested=false;
 		m_ed->m_EXTENSION_currentPosition=0;
@@ -194,7 +197,11 @@ void FusionData::finishFusions(){
 		if(!m_Machine_getPaths_DONE){
 			//if(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-overlapMinimumLength){
 			if(m_ed->m_EXTENSION_currentPosition!=position1	&&m_ed->m_EXTENSION_currentPosition!=position2){
+				//printf("Rank %i: skipping position %i\n",getRank(),m_ed->m_EXTENSION_currentPosition);
+				//fflush(stdout);
+				//showMemoryUsage(getRank());
 				m_Machine_getPaths_DONE=true;
+				m_Machine_getPaths_result.clear();// avoids major leak... LOL
 			}else{
 				getPaths(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition]);
 			}
@@ -226,11 +233,19 @@ void FusionData::finishFusions(){
 			}
 			uint64_t vertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
 			m_FINISH_newFusions[m_FINISH_newFusions.size()-1].push_back(vertex);
-			m_ed->m_EXTENSION_currentPosition++;
 			m_Machine_getPaths_DONE=false;
 			m_Machine_getPaths_INITIALIZED=false;
+			m_Machine_getPaths_result.clear();
+			//printf("Rank %i position -> %i paths %i\n",getRank(),m_ed->m_EXTENSION_currentPosition,(int)a.size());
+			//fflush(stdout);
+			//showMemoryUsage(getRank());
+			m_ed->m_EXTENSION_currentPosition++;
 		}
 	}else if(!m_checkedValidity){
+		//printf("Rank %i: checking validity\n",getRank());
+		//fflush(stdout);
+		//showMemoryUsage(getRank());
+
 		done=true;
 		vector<Direction> directions1=(*m_FINISH_pathsForPosition)[position1];
 		vector<Direction> directions2=(*m_FINISH_pathsForPosition)[position2];
@@ -238,6 +253,7 @@ void FusionData::finishFusions(){
 		// no hits are possible.
 		if(directions1.size()==0 || directions2.size()==0){
 			m_checkedValidity=true;
+			//cout<<"Rank "<<getRank()<<" No hit possible."<<endl;
 		}else{
 
 		// basically, directions1 contains the paths at a particular vertex in the path
@@ -306,6 +322,7 @@ void FusionData::finishFusions(){
  	*/
 			if(hits>1){// we don't support that right now.
 				done=true;
+				//cout<<"Rank "<<getRank()<<" more than 1 hit..."<<endl;
 			}	
 
 /*
@@ -337,6 +354,13 @@ void FusionData::finishFusions(){
 */
 
 			m_checkedValidity=true;
+
+			//printf("Rank %i: checking validity (done)\n",getRank());
+			//fflush(stdout);
+			//showMemoryUsage(getRank());
+			if(!done){
+				//cout<<"Rank "<<getRank()<<" still valid."<<endl;
+			}
 		}
 	}else if(!m_mappingConfirmed){
 		if(position1<=m_validationPosition && m_validationPosition<=position2){
@@ -347,6 +371,10 @@ void FusionData::finishFusions(){
 				#endif
 				getPaths(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition]);
 			}else{
+
+				//printf("Rank %i: confirming mapping position=%i\n",getRank(),m_validationPosition);
+				//fflush(stdout);
+				//showMemoryUsage(getRank());
 				bool found=false;
 				for(int i=0;i<(int)m_Machine_getPaths_result.size();i++){
 					if(m_Machine_getPaths_result[i].getWave()==m_selectedPath){
@@ -358,12 +386,20 @@ void FusionData::finishFusions(){
 					done=true;// the selection is not confirmed
 				}else{
 					m_validationPosition++;// added
+					m_Machine_getPaths_DONE=false;
+					m_Machine_getPaths_INITIALIZED=false;
 				}
 			}
 		}else if(m_validationPosition>position2){
 			m_mappingConfirmed=true;
+
+			//printf("Rank %i: confirming mapping (done)\n",getRank());
+			//fflush(stdout);
+			//showMemoryUsage(getRank());
 		}else{
 			m_validationPosition++;
+			m_Machine_getPaths_DONE=false;
+			m_Machine_getPaths_INITIALIZED=false;
 		}
 	}else{
 		// check if it is there for at least overlapMinimumLength
@@ -382,14 +418,21 @@ void FusionData::finishFusions(){
 				#ifdef ASSERT
 				assert(rankId<m_size);
 				#endif
+	
+				//printf("Rank %i: requesting target length\n",getRank());
+				//fflush(stdout);
+				//showMemoryUsage(getRank());
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rankId,RAY_MPI_TAG_GET_PATH_LENGTH,getRank());
 				m_outbox->push_back(aMessage);
 				m_FUSION_pathLengthRequested=true;
 				m_FUSION_pathLengthReceived=false;
 			}else if(m_FUSION_pathLengthReceived){
 				m_FINISH_pathLengths[pathId]=m_FUSION_receivedLength;
+				//printf("Rank %i: received target length\n",getRank());
+				//fflush(stdout);
+				//showMemoryUsage(getRank());
 			}
-		}else if(m_FINISH_pathLengths[pathId]!=0
+		}else if(m_FINISH_pathLengths[pathId]!=0 // 0 means the path does not exist.
 		&&m_FINISH_pathLengths[pathId]!=(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){// avoid fusion of same length.
 			int nextPosition=progression+1;
 			if(nextPosition<m_FINISH_pathLengths[pathId]){
@@ -405,6 +448,10 @@ void FusionData::finishFusions(){
 					m_outbox->push_back(aMessage);
 					m_FINISH_vertex_requested=true;
 					m_FINISH_vertex_received=false;
+
+					//printf("Rank %i: requesting target vertex at %i\n",getRank(),nextPosition);
+					//fflush(stdout);
+					//showMemoryUsage(getRank());
 				}else if(m_FINISH_vertex_received){
 					m_FINISH_newFusions[m_FINISH_newFusions.size()-1].push_back(m_FINISH_received_vertex);
 					m_FINISH_vertex_requested=false;
@@ -413,16 +460,20 @@ void FusionData::finishFusions(){
 				}
 			}else{
 				#ifdef SHOW_FUSION
-				cout<<"Ray says: extension-"<<m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i]<<" ("<<m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<<" vertices) and extension-"<<pathId<<" ("<<m_FINISH_pathLengths[pathId]<<" vertices) make a fusion, result: "<<m_FINISH_newFusions[m_FINISH_newFusions.size()-1].size()<<" vertices."<<endl;
+				cout<<"Rank "<<getRank()<<": extension-"<<m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i]<<" ("<<m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<<" vertices) and extension-"<<pathId<<" ("<<m_FINISH_pathLengths[pathId]<<" vertices) make a fusion, result: "<<m_FINISH_newFusions[m_FINISH_newFusions.size()-1].size()<<" vertices."<<endl;
 				#endif
 
 				done=true;
+				showMemoryUsage(getRank());
 			}
 		}else{
 			done=true;
 		}
 	}
 	if(done){
+		//printf("Rank %i: it is done \n",getRank());
+		//fflush(stdout);
+		//showMemoryUsage(getRank());
 		// there is nothing we can do.
 		m_seedingData->m_SEEDING_i++;
 		m_FINISH_vertex_requested=false;
@@ -496,6 +547,7 @@ void FusionData::makeFusions(){
 				if(m_seedingData->m_SEEDING_i%10==0){
 					printf("Rank %i is computing fusions [%i/%i]\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_ed->m_EXTENSION_contigs.size());
 					fflush(stdout);
+					showMemoryUsage(getRank());
 				}
 
 				m_FUSION_paths_requested=false;
