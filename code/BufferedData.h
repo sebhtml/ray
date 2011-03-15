@@ -40,6 +40,7 @@
  *  this is above the threshold and the RingAllocator does not allow that.
  */
 class BufferedData{
+	int m_type;
 	int*m_sizes;
 	int m_ranks;
 
@@ -52,7 +53,7 @@ public:
  *
 	// the capacity is measured in uint64_t
  */
-	void constructor(int numberOfRanks,int capacity);
+	void constructor(int numberOfRanks,int capacity,int type);
 	int size(int i)const;
 	uint64_t getAt(int i,int j);
 	void addAt(int i,uint64_t k);

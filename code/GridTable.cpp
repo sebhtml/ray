@@ -19,6 +19,7 @@
 
 */
 
+#include <malloc_types.h>
 #include <assert.h>
 #include <GridTable.h>
 #include <common_functions.h>

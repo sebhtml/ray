@@ -23,6 +23,7 @@
 #include <common_functions.h>
 #include <fstream>
 #include <assert.h>
+#include <malloc_types.h>
 #include <iostream>
 using namespace std;
 
@@ -235,8 +236,8 @@ void MessagesHandler::constructor(int rank,int size){
 	// the ring itself  contain requests ready to receive messages
 	m_ringSize=128;
 
-	m_ring=(MPI_Request*)__Malloc(sizeof(MPI_Request)*m_ringSize);
-	m_buffers=(char*)__Malloc(MAXIMUM_MESSAGE_SIZE_IN_BYTES*m_ringSize);
+	m_ring=(MPI_Request*)__Malloc(sizeof(MPI_Request)*m_ringSize,RAY_MALLOC_TYPE_PERSISTENT_MESSAGE_RING);
+	m_buffers=(char*)__Malloc(MAXIMUM_MESSAGE_SIZE_IN_BYTES*m_ringSize,RAY_MALLOC_TYPE_PERSISTENT_MESSAGE_BUFFERS);
 	m_head=0;
 
 	// post a few receives.
@@ -262,6 +263,6 @@ void MessagesHandler::freeLeftovers(){
 		MPI_Cancel(m_ring+i);
 		MPI_Request_free(m_ring+i);
 	}
-	__Free(m_ring);
-	__Free(m_buffers);
+	__Free(m_ring,RAY_MALLOC_TYPE_PERSISTENT_MESSAGE_RING);
+	__Free(m_buffers,RAY_MALLOC_TYPE_PERSISTENT_MESSAGE_BUFFERS);
 }

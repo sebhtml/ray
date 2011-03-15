@@ -28,13 +28,14 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<assert.h>
 #include<common_functions.h>
 
-void StaticVector::constructor(int size){
+void StaticVector::constructor(int size,int type){
+	m_type=type;
 	#ifdef ASSERT
 	assert(size!=0);
 	#endif
 
 	m_maxSize=size;
-	m_messages=(Message*)__Malloc(sizeof(Message)*m_maxSize);
+	m_messages=(Message*)__Malloc(sizeof(Message)*m_maxSize,m_type);
 	m_size=0;
 }
 

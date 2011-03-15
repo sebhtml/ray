@@ -19,11 +19,12 @@
 
 */
 
-#include<MemoryConsumptionReducer.h>
-#include<CoverageDistribution.h>
-#include<stack>
-#include<string.h>
-#include<set>
+#include <MemoryConsumptionReducer.h>
+#include <CoverageDistribution.h>
+#include <stack>
+#include <string.h>
+#include <set>
+#include <malloc_types.h>
 using namespace std;
 
 //#define _VERBOSE
@@ -575,7 +576,8 @@ vector<uint64_t>*MemoryConsumptionReducer::getVerticesToRemove(){
 }
 
 void MemoryConsumptionReducer::constructor(int size){
-	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t));
+	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
+		RAY_MALLOC_TYPE_MEMORY_REDUCER_BUFFERS);
 	m_pendingMessages=0;
 }
 

@@ -19,14 +19,16 @@
 	see <http://www.gnu.org/licenses/>
 
 */
-#include<sstream>
-#include<iostream>
-#include<assert.h>
-#include<string>
-#include<vector>
-#include<Loader.h>
-#include<stdlib.h>
-#include<Read.h>
+
+#include <sstream>
+#include <iostream>
+#include <assert.h>
+#include <string>
+#include <vector>
+#include <Loader.h>
+#include <stdlib.h>
+#include <Read.h>
+#include <malloc_types.h>
 using namespace std;
 
 void Loader::constructor(const char*prefix){
@@ -35,7 +37,7 @@ void Loader::constructor(const char*prefix){
 	m_type=FORMAT_NULL;
 	ostringstream prefixFull;
 	prefixFull<<prefix<<"_Loader";
-	m_allocator.constructor(4194304);
+	m_allocator.constructor(4194304,RAY_MALLOC_TYPE_LOADER_ALLOCATOR);
 	m_reads.constructor(&m_allocator);
 }
 

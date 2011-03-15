@@ -19,10 +19,11 @@
 
 */
 
-#include<assert.h>
-#include<FusionData.h>
+#include <assert.h>
+#include <FusionData.h>
 #include <sstream>
-#include<Message.h>
+#include <Message.h>
+#include <malloc_types.h>
 using namespace std;
 
 #define SHOW_FUSION
@@ -46,6 +47,7 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 		m_cacheAllocator.clear();
 
 		showMemoryUsage(m_rank);
+		now();
 		return;
 	}
 
@@ -54,6 +56,7 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 			printf("Rank %i is distributing fusions [%i/%i]\n",getRank,(int)(m_seedingData->m_SEEDING_i+1),(int)m_ed->m_EXTENSION_contigs.size());
 			fflush(stdout);
 			showMemoryUsage(getRank);
+			now();
 		}
 	}
 
@@ -77,7 +80,8 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 }
 
 void FusionData::readyBuffers(){
-	m_buffers.constructor(m_size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t));
+	m_buffers.constructor(m_size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
+		RAY_MALLOC_TYPE_FUSION_BUFFERS);
 }
 
 void FusionData::constructor(int size,int max,int rank,StaticVector*outbox,
@@ -87,7 +91,7 @@ void FusionData::constructor(int size,int max,int rank,StaticVector*outbox,
 	m_seedingData=seedingData;
 	ostringstream prefixFull;
 	prefixFull<<m_parameters->getMemoryPrefix()<<"_FusionData";
-	m_cacheAllocator.constructor(4194304);
+	m_cacheAllocator.constructor(4194304,RAY_MALLOC_TYPE_FUSION_CACHING);
 	m_cacheForRepeatedVertices.constructor();
 	m_mode=mode;
 	m_ed=ed;
@@ -146,6 +150,7 @@ void FusionData::finishFusions(){
 		fflush(stdout);
 	
 		showMemoryUsage(m_rank);
+		now();
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_FINISH_FUSIONS_FINISHED,getRank());
 		m_outbox->push_back(aMessage);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
@@ -221,6 +226,7 @@ void FusionData::finishFusions(){
 					printf("Rank %i is finishing fusions [%i/%i]\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_ed->m_EXTENSION_contigs.size());
 					fflush(stdout);
 					showMemoryUsage(getRank());
+					now();
 				}
 				vector<uint64_t> a;
 				m_FINISH_newFusions.push_back(a);
@@ -519,6 +525,7 @@ void FusionData::makeFusions(){
 		m_cacheAllocator.clear();
 
 		showMemoryUsage(m_rank);
+		now();
 		return;
 	}else if((int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<=END_LENGTH){
 		#ifdef SHOW_PROGRESS
@@ -548,6 +555,7 @@ void FusionData::makeFusions(){
 					printf("Rank %i is computing fusions [%i/%i]\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_ed->m_EXTENSION_contigs.size());
 					fflush(stdout);
 					showMemoryUsage(getRank());
+					now();
 				}
 
 				m_FUSION_paths_requested=false;

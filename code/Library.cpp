@@ -24,13 +24,14 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 */
 
-#include<ReadAnnotation.h>
-#include<Library.h>
-#include<mpi_tags.h>
+#include <ReadAnnotation.h>
+#include <Library.h>
+#include <mpi_tags.h>
 #include <sstream>
-#include<common_functions.h>
-#include<assert.h>
-#include<Parameters.h>
+#include <common_functions.h>
+#include <assert.h>
+#include <Parameters.h>
+#include <malloc_types.h>
 using namespace std;
 
 void Library::updateDistances(){
@@ -208,7 +209,8 @@ Library::Library(){
 }
 
 void Library::allocateBuffers(){
-	m_bufferedData.constructor(m_size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t));
+	m_bufferedData.constructor(m_size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
+		RAY_MALLOC_TYPE_LIBRARY_BUFFERS);
 	(m_libraryIndexInitiated)=false;
 	(m_libraryIterator)=0;
 	for(map<int,map<int,int> >::iterator i=m_libraryDistances.begin();

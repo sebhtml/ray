@@ -672,6 +672,8 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			ed->resetStructures();
 			m_matesToMeet.clear();
 
+			m_cacheAllocator.clear();
+			m_cache.clear();
 			ed->m_EXTENSION_directVertexDone=false;
 			ed->m_EXTENSION_VertexAssembled_requested=false;
 
@@ -709,6 +711,10 @@ uint64_t*currentVertex,BubbleData*bubbleData){
 
 	ed->resetStructures();
 	m_matesToMeet.clear();
+
+	m_cacheAllocator.clear();
+	m_cache.clear();
+
 	fflush(stdout);
 	showMemoryUsage(theRank);
 /*

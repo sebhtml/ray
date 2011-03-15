@@ -19,14 +19,15 @@
 
 */
 
-#include<string.h>
-#include<stdlib.h>
-#include<VerticesExtractor.h>
-#include<assert.h>
-#include<Message.h>
-#include<time.h>
-#include<StaticVector.h>
-#include<common_functions.h>
+#include <string.h>
+#include <stdlib.h>
+#include <VerticesExtractor.h>
+#include <assert.h>
+#include <Message.h>
+#include <time.h>
+#include <StaticVector.h>
+#include <common_functions.h>
+#include <malloc_types.h>
 
 void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 				ArrayOfReads*m_myReads,
@@ -224,12 +225,12 @@ void VerticesExtractor::constructor(int size,Parameters*parameters){
 	m_outbox=NULL;
 	m_mode_send_vertices_sequence_id_position=0;
 	m_hasPreviousVertex=false;
-	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t));
-	m_bufferedDataForOutgoingEdges.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t));
-	m_bufferedDataForIngoingEdges.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t));
+	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_VERTEX_EXTRACTOR_BUFFERS);
+	m_bufferedDataForOutgoingEdges.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_OUTGOING_EDGES_EXTRACTOR_BUFFERS);
+	m_bufferedDataForIngoingEdges.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_INGOING_EDGES_EXTRACTOR_BUFFERS);
 	
-	m_buffersForOutgoingEdgesToDelete.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t));
-	m_buffersForIngoingEdgesToDelete.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t));
+	m_buffersForOutgoingEdgesToDelete.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_DEL_OUT);
+	m_buffersForIngoingEdgesToDelete.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_DEL_IN);
 
 	m_pendingMessages=0;
 	m_size=size;

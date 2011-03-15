@@ -19,15 +19,16 @@
 
 */
 
-#include<common_functions.h>
-#include<cstring>
-#include<fstream>
-#include<string>
-#include<vector>
-#include<SffLoader.h>
-#include<iostream>
-#include<stdint.h>
-#include<stdio.h>
+#include <common_functions.h>
+#include <cstring>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <SffLoader.h>
+#include <iostream>
+#include <stdint.h>
+#include <stdio.h>
+#include <malloc_types.h>
 using namespace std;
 
 int max(int a,int b){
@@ -114,10 +115,10 @@ int SffLoader::openSff(string file){
 	invert16(&m_number_of_flows_per_read);
 	uint8_t flowgram_format_code;
 	fread_result=fread((char*)&flowgram_format_code,1,sizeof(uint8_t),m_fp);
-	flow_chars=(char*)__Malloc(m_number_of_flows_per_read+1);
+	flow_chars=(char*)__Malloc(m_number_of_flows_per_read+1,RAY_MALLOC_TYPE_454);
 	fread_result=fread(flow_chars,1,m_number_of_flows_per_read,m_fp);
 	flow_chars[m_number_of_flows_per_read]='\0';
-	key_sequence=(char*)__Malloc(key_length+1);
+	key_sequence=(char*)__Malloc(key_length+1,RAY_MALLOC_TYPE_454);
 	fread_result=fread(key_sequence,1,key_length,m_fp);
 	key_sequence[key_length]='\0';
 	
@@ -159,7 +160,7 @@ void SffLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator
 		uint16_t clip_adaptor_right;
 		fread_result=fread((char*)&clip_adaptor_right,1,sizeof(uint16_t),m_fp);
 		invert16(&clip_adaptor_right);
-		char*Name=(char*)__Malloc(name_length+1);
+		char*Name=(char*)__Malloc(name_length+1,RAY_MALLOC_TYPE_454);
 		fread_result=fread(Name,1,name_length,m_fp);
 		Name[name_length]='\0';
 
@@ -173,7 +174,7 @@ void SffLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator
 		skip=number_of_bases*sizeof(uint8_t);
 		for(int i=0;i<skip;i++)
 			fgetc(m_fp);
-		char*Bases=(char*)__Malloc(number_of_bases+1);
+		char*Bases=(char*)__Malloc(number_of_bases+1,RAY_MALLOC_TYPE_454);
 		fread_result=fread(Bases,1,number_of_bases,m_fp);
 		Bases[number_of_bases]='\0';
 		skip=number_of_bases*sizeof(uint8_t);
@@ -201,13 +202,13 @@ void SffLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator
 		loadedSequences++;
 		m_loaded++;
 
-		__Free(Name);
-		__Free(Bases);
+		__Free(Name,RAY_MALLOC_TYPE_454);
+		__Free(Bases,RAY_MALLOC_TYPE_454);
 	}
 
 	if(m_loaded==m_size){
-		delete[] key_sequence;
-		delete[] flow_chars;
+		__Free(key_sequence,RAY_MALLOC_TYPE_454);
+		__Free(flow_chars,RAY_MALLOC_TYPE_454);
 		fclose(m_fp);
 	}
 }

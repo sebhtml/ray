@@ -196,6 +196,8 @@ uint64_t getPathUniqueId(int rank,int id);
 int getIdFromPathUniqueId(uint64_t a);
 int getRankFromPathUniqueId(uint64_t a);
 
+void now();
+
 #endif
 
 

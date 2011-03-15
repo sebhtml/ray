@@ -24,6 +24,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 */
 
+#include <malloc_types.h>
 #include <GridTableIterator.h>
 #include<crypto.h>
 #include<SplayNode.h>
@@ -138,7 +139,6 @@ void Machine::start(){
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	
 	m_parameters.setSize(getSize());
 	MAX_ALLOCATED_MESSAGES_IN_OUTBOX=getSize();
 	MAX_ALLOCATED_MESSAGES_IN_INBOX=1;
@@ -150,17 +150,19 @@ void Machine::start(){
 		MAX_ALLOCATED_MESSAGES_IN_OUTBOX=m_maximumAllocatedOutputBuffers;
 	}
 
-	m_inboxAllocator.constructor(MAX_ALLOCATED_MESSAGES_IN_INBOX,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-	m_outboxAllocator.constructor(m_maximumAllocatedOutputBuffers,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	m_inboxAllocator.constructor(MAX_ALLOCATED_MESSAGES_IN_INBOX,MAXIMUM_MESSAGE_SIZE_IN_BYTES,
+		RAY_MALLOC_TYPE_INBOX_ALLOCATOR);
+	m_outboxAllocator.constructor(m_maximumAllocatedOutputBuffers,MAXIMUM_MESSAGE_SIZE_IN_BYTES,
+		RAY_MALLOC_TYPE_OUTBOX_ALLOCATOR);
 
-	m_inbox.constructor(MAX_ALLOCATED_MESSAGES_IN_INBOX);
-	m_outbox.constructor(MAX_ALLOCATED_MESSAGES_IN_OUTBOX);
+	m_inbox.constructor(MAX_ALLOCATED_MESSAGES_IN_INBOX,RAY_MALLOC_TYPE_INBOX_VECTOR);
+	m_outbox.constructor(MAX_ALLOCATED_MESSAGES_IN_OUTBOX,RAY_MALLOC_TYPE_OUTBOX_VECTOR);
 
 	int PERSISTENT_ALLOCATOR_CHUNK_SIZE=4194304; // 4 MiB
-	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE);
+	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE,RAY_MALLOC_TYPE_PERSISTENT_DATA_ALLOCATOR);
 
 	int directionAllocatorChunkSize=4194304; // 4 MiB
-	m_directionsAllocator.constructor(directionAllocatorChunkSize);
+	m_directionsAllocator.constructor(directionAllocatorChunkSize,RAY_MALLOC_TYPE_WAVE_ALLOCATOR);
 
 	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
 	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
@@ -256,7 +258,7 @@ void Machine::start(){
 	ostringstream prefixFull;
 	prefixFull<<m_parameters.getMemoryPrefix()<<"_Main";
 	int chunkSize=16777216;
-	m_diskAllocator.constructor(chunkSize);
+	m_diskAllocator.constructor(chunkSize,RAY_MALLOC_TYPE_DATA_ALLOCATOR);
 
 	m_sl.constructor(m_size,&m_diskAllocator,&m_myReads);
 
@@ -898,7 +900,6 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 	//  * a clear cycle
 	//  * a distribute cycle
 	//  * a fusion cycle
-
 
 	if(!m_cycleStarted){
 		#ifdef SHOW_PROGRESS

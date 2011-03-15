@@ -276,7 +276,7 @@ void*__Malloc(int c,int mallocType){
 	assert(a!=NULL);
 
 	#ifdef MALLOC_DEBUG
-	printf("%s %i %s %i bytes, ret %p %s\n",__FILE__,__LINE__,__func__,c,a,MALLOC_TYPES[mallocType]);
+	printf("%s %i\t%s\t%i bytes, ret\t%p\t%s\n",__FILE__,__LINE__,__func__,c,a,MALLOC_TYPES[mallocType]);
 	fflush(stdout);
 	#endif
 	return a;
@@ -284,7 +284,7 @@ void*__Malloc(int c,int mallocType){
 
 void __Free(void*a,int mallocType){
 	#ifdef MALLOC_DEBUG
-	printf("%s %i %s %p %s\n",__FILE__,__LINE__,__func__,a,MALLOC_TYPES[mallocType]);
+	printf("%s %i\t%s\t%p\t%s\n",__FILE__,__LINE__,__func__,a,MALLOC_TYPES[mallocType]);
 	fflush(stdout);
 	#endif
 
@@ -556,4 +556,11 @@ int getIdFromPathUniqueId(uint64_t a){
 int getRankFromPathUniqueId(uint64_t a){
 	int rank=a%MAX_NUMBER_OF_MPI_PROCESSES;
 	return rank;
+}
+
+void now(){
+	time_t m_endingTime=time(NULL);
+	struct tm * timeinfo;
+	timeinfo=localtime(&m_endingTime);
+	cout<<"Date: "<<asctime(timeinfo);
 }

@@ -33,13 +33,14 @@ class StaticVector{
 	Message*m_messages;
 	int m_size;
 	int m_maxSize;
+	int m_type;
 public:
 	Message*operator[](int i);
 	Message*at(int i);
 	void push_back(Message a);
 	int size();
 	void clear();
-	void constructor(int size);
+	void constructor(int size,int type);
 };
 
 #endif
