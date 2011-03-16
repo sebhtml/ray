@@ -10,7 +10,9 @@
 \title{Instruction Manual for the Ray \emph{de novo} genome assembler software}
 \maketitle
 
+(this document is also available in \LaTeX: InstructionManual.tex)
 
+\vspace{2cm}
 Ray version 1.3.0
 
 \vspace{2cm}
@@ -38,10 +40,14 @@ doi:10.1089/cmb.2009.0238\\
 
 To install Ray, you need a C++ compiler, make and an MPI implementation compliant
 with MPI standard 2.2.
-These software are readily available in most GNU/Linux distributions.
 
-\begin{table}{h}
-\caption{Suggested software}
+Ray runs on any POSIX-compliant system. This includes GNU/Linux.
+Windows users need to install Cygwin although Ray is not tested on Cygwin.
+
+The software below are readily available in most GNU/Linux distributions (Table~\ref{software}).
+
+\begin{table}[h]
+\caption{Suggested software}\label{software}
 \begin{tabular}{ll}
 \hline
 Software & Name \\
@@ -52,15 +58,14 @@ MPI implementation & Open-MPI \\
 \end{tabular}
 \end{table}
 
+There are some compilation flags that can be changed. These are listed below in Table~\ref{flags}.
 
-
-\subsection{Compilation flags}
 
 \begin{table}[h]
-\caption{Compilation flags}
+\caption{Compilation flags}\label{flags}
 \begin{tabular}{ll}
 \hline
-Flag & Effet \\
+Flag & Effect  \\
 \hline
 HAVE\_ZLIB & enable support for .gz files \\
 HAVE\_LIBBZ2 & enable support for .bz2 files \\
@@ -69,6 +74,12 @@ ASSERT & enable assertions in the code \\
 \hline
 \end{tabular}
 \end{table}
+
+The source code of Ray can be compiled with a configure script and associated Makefile.
+This approach will verify that your system has required libraries and functions.
+
+The source code can also be compiled simply with makefile.alternate.
+
 
 \subsection{Compilation with the configure script}
 
@@ -80,6 +91,7 @@ make install
 ls -l $(pwd)/software/ray-x.y.z/bin/Ray
 \end{verbatim}
 
+
 \subsection{Compilation with the makefile.alternate}
 
 \begin{verbatim}
@@ -90,9 +102,11 @@ ls -l code/Ray
 \section{Inputs}
 
 The input files for Ray contain sequences. The files must be formatted in one of the supported formats.
+These formats are listed in Table~\ref{formats}. Note that the file extension is obligatory and Ray uses it
+to select the file format.
 
 \begin{table}[h]
-\caption{File formats compatible with the Ray \emph{de novo} genome assembler software}
+\caption{File formats compatible with the Ray \emph{de novo} genome assembler software}\label{formats}
 \begin{tabular}{lll}
 \hline
 Format & Obligatory extension \\
@@ -115,6 +129,13 @@ Standard flowgram format & .sff \\
 Ray assembles reads (paired or not) to produce an assembly.
 Paired reads must be on opposite strands (forward \& reverse or reverse \& forward).
 
+For a paired library, paired reads can be provided as two files (with -p) or as one file containing interleaved
+sequences (with -i).
+With both, the average outer distance and the standard deviation can be provided by the user. Otherwise, these values are
+computed by Ray.
+The maximum  number of paired libraries allowed by Ray is 250.
+
+
 
 
 \subsection{$k$-mer length with -k}
@@ -133,8 +154,14 @@ Output files are named according to the prefix provided by the option -o.
 
 \subsection{Paired-end reads and mate-pair reads with -p}
 
+Average outer distance and standard deviation are computed by Ray if omitted.
+
 \begin{verbatim}
--p <leftSequencesFile> <rightSequencesFile> [ <averageFragmentLength> <standardDeviation> ]
+-p <leftSequencesFile> <rightSequencesFile>  
+
+OR
+
+-p <leftSequencesFile> <rightSequencesFile>  <averageFragmentLength> <standardDeviation> 
 \end{verbatim}
 
 Example for paired-end reads (the ends of DNA fragments):
@@ -149,10 +176,23 @@ Example for mate-pair reads:
 -p s_20000_1.fastq s_20000_2.fastq
 \end{verbatim}
 
-\subsection{Paired-end reads and mate-pair reads with -i (interleaved sequences)}
+Example with metagenomic data and user-provided average outer distance and standard deviation
 
 \begin{verbatim}
--i <sequencesFile [ <averageFragmentLength> <standardDeviation> ]
+-p s_1.fastq s_2.fastq 300 30
+\end{verbatim}
+
+\subsection{Paired-end reads and mate-pair reads with -i (interleaved sequences)}
+
+
+Average outer distance and standard deviation are computed by Ray if omitted.
+
+\begin{verbatim}
+-i <sequencesFile>
+
+OR
+
+-i <sequencesFile>  <averageFragmentLength> <standardDeviation> 
 \end{verbatim}
 
 In the interleaved file (example is for a fasta file):
@@ -169,6 +209,11 @@ ACTGACGACGTACGACGTCATGCAACT
 
 \section{Output}
 
+If GNU/Linux is the operating system, then memory usage are periodically outputted in the 
+standard output using information gathered from /proc. Otherwise, memory usage is not reported.
+
+Memory usage is reported on lines containing the string 'VmData'.
+
 \subsection{Contiguous sequences}
 
 OutputPrefix.fasta contains contiguous sequences.
@@ -176,6 +221,8 @@ OutputPrefix.fasta contains contiguous sequences.
 \subsection{Paired-end and mate-pair libraries}
 
 OutputPrefix.LibraryLibraryNumber.txt contains the distribution of distances for paired-end and mate-pair libraries. One file per library.
+
+If you provided one paired library, then you will get a file named OutputPrefix.Library0.txt.
 
 \subsection{Coverage distribution}
 
@@ -214,4 +261,53 @@ g++ code/simulatePairedReads.cpp -O3 -Wall -o Simulator
 ./Simulator $ref $errorRate 200 20 $N $readLength L1_1.fasta L1_2.fasta
 \end{verbatim}
 
+\section{Exploring the source code}
+
+Ray source code is documented with Doxygen standards.
+
+The command below generates code documentation.
+
+\begin{verbatim}
+doxygen DoxygenConfigurationFile
+\end{verbatim}
+
+To browse it, use this command:
+
+\begin{verbatim}
+firefox DoxygenDocumentation/html/index.html
+\end{verbatim}
+
+\section{Reporting bugs \& crashes}
+
+\begin{verbatim}
+On the mailing list:
+denovoassembler-users # lists DOT sourceforge.net
+
+or personal email:
+sebastien.boisvert.3 # ulaval DOT ca  or seb # boisvert DOT info
+\end{verbatim}
+
+\noindent
+Elements to send:
+
+\begin{enumerate}
+ \item Ray command including mpirun
+  \item Ray standard output: mpirun -np 32 /path/to/Ray -p p\_1.fastq p\_2.fastq -o Out $|$\& tee Log; gzip Log; ls -lh Log.gz
+    \item  C++ compiler name (examples: GNU g++, Intel ICC, or other) and version (usually $--$version)
+   \item  MPI library name (examples: Open-MPI, MPICH2, or other) and version (usually $--$version)
+    \item  Sequencer vendor and model that generated reads
+    \item  Total physical memory of the system and physical memory available for each MPI ranks
+\item Job scheduler (examples: Grid Engine, PBS, none or other)
+\end{enumerate}
+
+\noindent
+Also, if you have access to compute nodes:
+
+\begin{enumerate}
+\setcounter{enumi}{7}
+   \item Memory page size: getconf PAGESIZE $>$ pagesize
+   \item Central processing unit: cat /proc/cpuinfo|gzip$>$ cpuinfo.gz
+   \item Memory information: cat /proc/meminfo|gzip$>$ meminfo.gz
+   \item Kernel: uname -a$>$ uname-a 
+\end{enumerate}
 \end{document}
