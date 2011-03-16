@@ -521,7 +521,7 @@ void FusionData::makeFusions(){
 	// if a path is 100% identical to another one, but is reverse-complement, keep the one with the lowest ID
 	
 	int END_LENGTH=100;
-	int maxNumberOfPaths=500;
+	//int maxNumberOfPaths=500;
 	// avoid duplication of contigs.
 	if(m_seedingData->m_SEEDING_i<(uint64_t)m_ed->m_EXTENSION_contigs.size()){
 		if((int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<=END_LENGTH){
@@ -580,7 +580,7 @@ void FusionData::makeFusions(){
 
 				m_FUSION_paths_requested=false;
 				m_FUSION_firstPaths=m_Machine_getPaths_result;
-				cout<<"Direct First Paths: "<<m_FUSION_firstPaths.size()<<endl;
+				//cout<<"Direct First Paths: "<<m_FUSION_firstPaths.size()<<endl;
 				
 				m_FUSION_first_done=true;
 				m_FUSION_last_done=false;
@@ -595,7 +595,7 @@ void FusionData::makeFusions(){
 				m_FUSION_paths_requested=false;
 				m_FUSION_last_done=true;
 				m_FUSION_lastPaths=m_Machine_getPaths_result;
-				cout<<"Direct Last Paths: "<<m_FUSION_lastPaths.size()<<endl;
+				//cout<<"Direct Last Paths: "<<m_FUSION_lastPaths.size()<<endl;
 				m_FUSION_matches_done=false;
 				m_FUSION_matches.clear();
 				m_Machine_getPaths_INITIALIZED=false;
@@ -609,10 +609,6 @@ void FusionData::makeFusions(){
 
 			// extract those that are on both starting and ending vertices.
 			for(int i=0;i<(int)m_FUSION_firstPaths.size();i++){
-				// don't invest central processing unit instructions on repeats
-				if((int)m_FUSION_firstPaths.size()>maxNumberOfPaths && (int)m_FUSION_lastPaths.size()>maxNumberOfPaths){
-					break;
-				}
 				index[m_FUSION_firstPaths[i].getWave()]++;
 				uint64_t pathId=m_FUSION_firstPaths[i].getWave();
 				#ifdef ASSERT
@@ -623,10 +619,6 @@ void FusionData::makeFusions(){
 			}
 
 			for(int i=0;i<(int)m_FUSION_lastPaths.size();i++){
-				// don't invest central processing unit instructions on repeats
-				if((int)m_FUSION_firstPaths.size()>maxNumberOfPaths && (int)m_FUSION_lastPaths.size()>maxNumberOfPaths){
-					break;
-				}
 				index[m_FUSION_lastPaths[i].getWave()]++;
 				
 				uint64_t pathId=m_FUSION_lastPaths[i].getWave();
@@ -698,7 +690,7 @@ void FusionData::makeFusions(){
 				assert(rankId<m_size);
 				#endif
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rankId,RAY_MPI_TAG_GET_PATH_LENGTH,getRank());
-				cout<<"Requesting Direct Path Length."<<endl;
+				//cout<<"Requesting Direct Path Length."<<endl;
 				m_outbox->push_back(aMessage);
 				m_FUSION_pathLengthRequested=true;
 				m_FUSION_pathLengthReceived=false;
@@ -745,7 +737,7 @@ void FusionData::makeFusions(){
 			}else{
 				m_FUSION_paths_requested=false;
 				m_FUSION_firstPaths=m_Machine_getPaths_result;
-				cout<<"Reverse First Paths: "<<m_FUSION_firstPaths.size()<<endl;
+				//cout<<"Reverse First Paths: "<<m_FUSION_firstPaths.size()<<endl;
 				m_FUSION_first_done=true;
 				m_FUSION_last_done=false;
 				m_Machine_getPaths_INITIALIZED=false;
@@ -763,7 +755,7 @@ void FusionData::makeFusions(){
 				m_FUSION_paths_requested=false;
 				m_FUSION_last_done=true;
 				m_FUSION_lastPaths=m_Machine_getPaths_result;
-				cout<<"Reverse Last Paths: "<<m_FUSION_lastPaths.size()<<endl;
+				//cout<<"Reverse Last Paths: "<<m_FUSION_lastPaths.size()<<endl;
 				m_FUSION_matches_done=false;
 				m_FUSION_matches.clear();
 				m_Machine_getPaths_INITIALIZED=false;
@@ -776,20 +768,12 @@ void FusionData::makeFusions(){
 			map<uint64_t,vector<int> > starts;
 			map<uint64_t,vector<int> > ends;
 			for(int i=0;i<(int)m_FUSION_firstPaths.size();i++){
-				// don't invest central processing unit instructions on repeats
-				if((int)m_FUSION_firstPaths.size()>maxNumberOfPaths && (int)m_FUSION_lastPaths.size()>maxNumberOfPaths){
-					break;
-				}
 				index[m_FUSION_firstPaths[i].getWave()]++;
 				uint64_t pathId=m_FUSION_firstPaths[i].getWave();
 				int progression=m_FUSION_firstPaths[i].getProgression();
 				starts[pathId].push_back(progression);
 			}
 			for(int i=0;i<(int)m_FUSION_lastPaths.size();i++){
-				// don't invest central processing unit instructions on repeats
-				if((int)m_FUSION_firstPaths.size()>maxNumberOfPaths && (int)m_FUSION_lastPaths.size()>maxNumberOfPaths){
-					break;
-				}
 				index[m_FUSION_lastPaths[i].getWave()]++;
 				
 				uint64_t pathId=m_FUSION_lastPaths[i].getWave();
@@ -839,7 +823,7 @@ void FusionData::makeFusions(){
 				assert(rankId<m_size);
 				#endif
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rankId,RAY_MPI_TAG_GET_PATH_LENGTH,getRank());
-				cout<<"Requesting reverse length."<<endl;
+				//cout<<"Requesting reverse length."<<endl;
 				m_outbox->push_back(aMessage);
 				m_FUSION_pathLengthRequested=true;
 				m_FUSION_pathLengthReceived=false;
@@ -950,3 +934,9 @@ void FusionData::getPaths(uint64_t vertex){
 	}
 }
 
+void FusionData::initialise(){
+	m_FUSION_direct_fusionDone=false;
+	m_FUSION_first_done=false;
+	m_FUSION_paths_requested=false;
+	m_timer.constructor();
+}

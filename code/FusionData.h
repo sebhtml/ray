@@ -124,6 +124,7 @@ public:
 	void makeFusions();
 	void readyBuffers();
 	void getPaths(uint64_t vertex);
+	void initialise();
 };
 
 #endif

@@ -350,6 +350,7 @@ m_seedingData,
 	&m_master_mode,&m_isFinalFusion,&m_si);
 
 	m_messagesHandler.constructor(getRank(),getSize());
+	m_timePrinter.constructor();
 
 	if(m_argc==1||((string)m_argv[1])=="--help"){
 		if(isMaster()){
