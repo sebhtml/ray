@@ -192,6 +192,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTEX_INFO(Message*message){
 
 	uint64_t wave=incoming[1];
 	int progression=incoming[2];
+	// add direction in the graph
 	Direction*d=(Direction*)m_directionsAllocator->allocate(sizeof(Direction));
 	d->constructor(wave,progression,lower);
 	m_subgraph->addDirection(vertex,d);
@@ -835,6 +836,7 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_COVERAGE_AND_MARK(Message*message){
 	bool lower=vertex<rc;
 	uint64_t wave=incoming[1];
 	int progression=incoming[2];
+	// mark direction in the graph
 	Direction*e=(Direction*)m_directionsAllocator->allocate(sizeof(Direction));
 	e->constructor(wave,progression,lower);
 	m_subgraph->addDirection(vertex,e);
@@ -1241,6 +1243,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS(Message*message){
 		bool lower=vertex<rc;
 		uint64_t wave=incoming[1];
 		int progression=incoming[2];
+		// add direction in the graph
 		Direction*e=(Direction*)m_directionsAllocator->allocate(sizeof(Direction));
 		e->constructor(wave,progression,lower);
 		m_subgraph->addDirection(vertex,e);

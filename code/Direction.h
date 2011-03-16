@@ -32,10 +32,10 @@
  * directions of the flow are stored with Directions. (as linked lists).
  */
 class Direction{
+	Direction*m_next;
 	uint64_t m_wave; // the path Identifier, as a wave for itself.
 	uint32_t m_progression; // the position in the path.
 	bool m_lower;
-	Direction*m_next;
 public:
 	void constructor(uint64_t wave,int progression,bool lower);
 	uint64_t getWave();

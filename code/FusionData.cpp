@@ -38,6 +38,8 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 	}else if(m_buffers.isEmpty() && m_seedingData->m_SEEDING_i==(uint64_t)m_ed->m_EXTENSION_contigs.size()){
 		printf("Rank %i is distributing fusions [%i/%i] (completed)\n",getRank,(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
 		fflush(stdout);
+		m_timer.printElapsedTime("Distributing fusions");
+		m_timer.constructor();
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED,getRank);
 		m_outbox->push_back(aMessage);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
@@ -59,6 +61,11 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 			now();
 		}
 	}
+
+	#ifdef ASSERT
+	assert(m_seedingData->m_SEEDING_i<m_ed->m_EXTENSION_currentPosition);
+	assert(m_seedingData->m_SEEDING_i<m_ed->m_EXTENSION_contigs.size());
+	#endif
 
 	uint64_t vertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
 	int destination=vertexRank(vertex,getSize(),m_wordSize);
@@ -87,6 +94,7 @@ void FusionData::readyBuffers(){
 void FusionData::constructor(int size,int max,int rank,StaticVector*outbox,
 		RingAllocator*outboxAllocator,int wordSize,bool colorSpaceMode,
 		ExtensionData*ed,SeedingData*seedingData,int*mode,Parameters*parameters){
+	m_timer.constructor();
 	m_parameters=parameters;
 	m_seedingData=seedingData;
 	ostringstream prefixFull;
@@ -148,7 +156,8 @@ void FusionData::finishFusions(){
 		message[0]=m_FINISH_fusionOccured;
 		printf("Rank %i is finishing fusions [%i/%i] (completed)\n",getRank(),(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
 		fflush(stdout);
-	
+		m_timer.printElapsedTime("Finishing fusions");
+		m_timer.constructor();
 		showMemoryUsage(m_rank);
 		now();
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_FINISH_FUSIONS_FINISHED,getRank());
@@ -169,6 +178,14 @@ void FusionData::finishFusions(){
 	if((int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<overlapMinimumLength){
 		//cout<<"Too short "<<endl;
 		//showMemoryUsage(getRank());
+	
+		if(m_seedingData->m_SEEDING_i%10==0){
+			printf("Rank %i is finishing fusions [%i/%i]\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_ed->m_EXTENSION_contigs.size());
+			fflush(stdout);
+			showMemoryUsage(getRank());
+			now();
+		}
+
 		m_seedingData->m_SEEDING_i++;
 		m_FINISH_vertex_requested=false;
 		m_ed->m_EXTENSION_currentPosition=0;
@@ -176,6 +193,7 @@ void FusionData::finishFusions(){
 		m_Machine_getPaths_INITIALIZED=false;
 		m_Machine_getPaths_DONE=false;
 		m_checkedValidity=false;
+
 		return;
 	}
 	// check if the path begins with someone else.
@@ -504,6 +522,7 @@ void FusionData::makeFusions(){
 	// if a path is 100% identical to another one, but is reverse-complement, keep the one with the lowest ID
 	
 	int END_LENGTH=100;
+	int maxNumberOfPaths=500;
 	// avoid duplication of contigs.
 	if(m_seedingData->m_SEEDING_i<(uint64_t)m_ed->m_EXTENSION_contigs.size()){
 		if((int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<=END_LENGTH){
@@ -521,6 +540,8 @@ void FusionData::makeFusions(){
 		}
 		printf("Rank %i is computing fusions [%i/%i] (completed)\n",getRank(),(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
 		fflush(stdout);
+		m_timer.printElapsedTime("Computing fusions");
+		m_timer.constructor();
 
 		m_cacheAllocator.clear();
 
@@ -560,13 +581,14 @@ void FusionData::makeFusions(){
 
 				m_FUSION_paths_requested=false;
 				m_FUSION_firstPaths=m_Machine_getPaths_result;
+				cout<<"Direct First Paths: "<<m_FUSION_firstPaths.size()<<endl;
+				
 				m_FUSION_first_done=true;
 				m_FUSION_last_done=false;
 				m_Machine_getPaths_INITIALIZED=false;
 				m_Machine_getPaths_DONE=false;
 			}
 		}else if(!m_FUSION_last_done){
-
 			uint64_t theVertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-END_LENGTH];
 			if(!m_Machine_getPaths_DONE){
 				getPaths(theVertex);
@@ -574,6 +596,7 @@ void FusionData::makeFusions(){
 				m_FUSION_paths_requested=false;
 				m_FUSION_last_done=true;
 				m_FUSION_lastPaths=m_Machine_getPaths_result;
+				cout<<"Direct Last Paths: "<<m_FUSION_lastPaths.size()<<endl;
 				m_FUSION_matches_done=false;
 				m_FUSION_matches.clear();
 				m_Machine_getPaths_INITIALIZED=false;
@@ -587,6 +610,10 @@ void FusionData::makeFusions(){
 
 			// extract those that are on both starting and ending vertices.
 			for(int i=0;i<(int)m_FUSION_firstPaths.size();i++){
+				// don't invest central processing unit instructions on repeats
+				if((int)m_FUSION_firstPaths.size()>maxNumberOfPaths && (int)m_FUSION_lastPaths.size()>maxNumberOfPaths){
+					break;
+				}
 				index[m_FUSION_firstPaths[i].getWave()]++;
 				uint64_t pathId=m_FUSION_firstPaths[i].getWave();
 				#ifdef ASSERT
@@ -597,6 +624,10 @@ void FusionData::makeFusions(){
 			}
 
 			for(int i=0;i<(int)m_FUSION_lastPaths.size();i++){
+				// don't invest central processing unit instructions on repeats
+				if((int)m_FUSION_firstPaths.size()>maxNumberOfPaths && (int)m_FUSION_lastPaths.size()>maxNumberOfPaths){
+					break;
+				}
 				index[m_FUSION_lastPaths[i].getWave()]++;
 				
 				uint64_t pathId=m_FUSION_lastPaths[i].getWave();
@@ -607,8 +638,6 @@ void FusionData::makeFusions(){
 				int progression=m_FUSION_lastPaths[i].getProgression();
 				ends[pathId].push_back(progression);
 			}
-			
-
 			
 			for(map<uint64_t,int>::iterator i=index.begin();i!=index.end();++i){
 				uint64_t otherPathId=i->first;
@@ -670,6 +699,7 @@ void FusionData::makeFusions(){
 				assert(rankId<m_size);
 				#endif
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rankId,RAY_MPI_TAG_GET_PATH_LENGTH,getRank());
+				cout<<"Requesting Direct Path Length."<<endl;
 				m_outbox->push_back(aMessage);
 				m_FUSION_pathLengthRequested=true;
 				m_FUSION_pathLengthReceived=false;
@@ -716,6 +746,7 @@ void FusionData::makeFusions(){
 			}else{
 				m_FUSION_paths_requested=false;
 				m_FUSION_firstPaths=m_Machine_getPaths_result;
+				cout<<"Reverse First Paths: "<<m_FUSION_firstPaths.size()<<endl;
 				m_FUSION_first_done=true;
 				m_FUSION_last_done=false;
 				m_Machine_getPaths_INITIALIZED=false;
@@ -733,6 +764,7 @@ void FusionData::makeFusions(){
 				m_FUSION_paths_requested=false;
 				m_FUSION_last_done=true;
 				m_FUSION_lastPaths=m_Machine_getPaths_result;
+				cout<<"Reverse Last Paths: "<<m_FUSION_lastPaths.size()<<endl;
 				m_FUSION_matches_done=false;
 				m_FUSION_matches.clear();
 				m_Machine_getPaths_INITIALIZED=false;
@@ -745,12 +777,20 @@ void FusionData::makeFusions(){
 			map<uint64_t,vector<int> > starts;
 			map<uint64_t,vector<int> > ends;
 			for(int i=0;i<(int)m_FUSION_firstPaths.size();i++){
+				// don't invest central processing unit instructions on repeats
+				if((int)m_FUSION_firstPaths.size()>maxNumberOfPaths && (int)m_FUSION_lastPaths.size()>maxNumberOfPaths){
+					break;
+				}
 				index[m_FUSION_firstPaths[i].getWave()]++;
 				uint64_t pathId=m_FUSION_firstPaths[i].getWave();
 				int progression=m_FUSION_firstPaths[i].getProgression();
 				starts[pathId].push_back(progression);
 			}
 			for(int i=0;i<(int)m_FUSION_lastPaths.size();i++){
+				// don't invest central processing unit instructions on repeats
+				if((int)m_FUSION_firstPaths.size()>maxNumberOfPaths && (int)m_FUSION_lastPaths.size()>maxNumberOfPaths){
+					break;
+				}
 				index[m_FUSION_lastPaths[i].getWave()]++;
 				
 				uint64_t pathId=m_FUSION_lastPaths[i].getWave();
@@ -800,6 +840,7 @@ void FusionData::makeFusions(){
 				assert(rankId<m_size);
 				#endif
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rankId,RAY_MPI_TAG_GET_PATH_LENGTH,getRank());
+				cout<<"Requesting reverse length."<<endl;
 				m_outbox->push_back(aMessage);
 				m_FUSION_pathLengthRequested=true;
 				m_FUSION_pathLengthReceived=false;
@@ -885,7 +926,6 @@ void FusionData::getPaths(uint64_t vertex){
 		assert(m_cacheForRepeatedVertices.find(vertex,false)==NULL);
 		#endif
 
-/*
 		bool inserted;
 		SplayNode<uint64_t,Direction*>*node=m_cacheForRepeatedVertices.insert(vertex,&m_cacheAllocator,&inserted);
 		int i=0;
@@ -906,7 +946,6 @@ void FusionData::getPaths(uint64_t vertex){
 			assert(*(m_cacheForRepeatedVertices.find(vertex,false)->getValue())==NULL);
 		}
 		#endif
-*/
 
 		m_Machine_getPaths_DONE=true;
 	}

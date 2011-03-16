@@ -24,19 +24,21 @@
 
 class SeedingData;
 
-#include<Direction.h>
-#include<vector>
+#include <Direction.h>
+#include <vector>
 #include <Parameters.h>
-#include<set>
-#include<StaticVector.h>
-#include<map>
-#include<SeedingData.h>
-#include<ExtensionData.h>
-#include<RingAllocator.h>
-#include<BufferedData.h>
+#include <set>
+#include <StaticVector.h>
+#include <map>
+#include <SeedingData.h>
+#include <ExtensionData.h>
+#include <RingAllocator.h>
+#include <BufferedData.h>
+#include <TimePrinter.h>
 using namespace std;
 
 class FusionData{
+	TimePrinter m_timer;
 	SplayTree<uint64_t,Direction*>m_cacheForRepeatedVertices;
 	MyAllocator m_cacheAllocator;
 

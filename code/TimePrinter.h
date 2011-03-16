@@ -38,7 +38,7 @@ class TimePrinter{
 	void printDifference(int s);
 public:
 	void printElapsedTime(string description);
-	TimePrinter();
+	void constructor();
 	void printDurations();
 	void printDifferenceFromStart(int rank);
 };

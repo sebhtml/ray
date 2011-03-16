@@ -64,8 +64,10 @@ void TimePrinter::printDifferenceFromStart(int rank){
 	cout<<endl;
 }
 
-TimePrinter::TimePrinter(){
+void TimePrinter::constructor(){
 	m_startingTime=m_lastTime=m_endingTime=time(NULL);
+	m_descriptions.clear();
+	m_durations.clear();
 }
 
 void TimePrinter::printDifference(int difference){
