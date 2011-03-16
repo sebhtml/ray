@@ -73,6 +73,7 @@ Machine::Machine(int argc,char**argv){
 }
 
 void Machine::start(){
+	m_timePrinter.constructor();
 
 	m_killed=false;
 	m_ready=true;
