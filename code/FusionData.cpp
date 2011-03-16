@@ -63,7 +63,6 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 	}
 
 	#ifdef ASSERT
-	assert(m_seedingData->m_SEEDING_i<m_ed->m_EXTENSION_currentPosition);
 	assert(m_seedingData->m_SEEDING_i<m_ed->m_EXTENSION_contigs.size());
 	#endif
 
