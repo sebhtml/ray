@@ -1156,6 +1156,10 @@ void SeedExtender::printExtensionStatus(uint64_t*currentVertex){
 	int theRank=m_parameters->getRank();
 	int theCurrentSize=m_ed->m_EXTENSION_extension->size();
 	now();
+	// stop the infinite loop
+	if(m_ed->m_EXTENSION_extension->size()>200000){
+		exit(0);
+	}
 	printf("Rank %i reached %i vertices (%s) from seed %i\n",theRank,theCurrentSize,
 		idToWord(*currentVertex,m_parameters->getWordSize()).c_str(),
 		m_ed->m_EXTENSION_currentSeedIndex+1);
