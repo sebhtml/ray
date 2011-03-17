@@ -702,7 +702,7 @@ uint64_t*currentVertex,BubbleData*bubbleData){
 		#endif
 
 		printExtensionStatus(currentVertex);
-
+		cout<<"Rank "<<theRank<<" (extension done)"<<endl;
 		ed->m_EXTENSION_contigs.push_back(*(ed->m_EXTENSION_extension));
 	
 		uint64_t id=getPathUniqueId(theRank,ed->m_EXTENSION_currentSeedIndex);
@@ -1143,7 +1143,7 @@ void SeedExtender::setFreeUnmatedPairedReads(){
 }
 
 void SeedExtender::showReadsInRange(){
-	cout<<"Reads in range:";
+	cout<<"Reads in range ("<<m_ed->m_EXTENSION_readsInRange->size()<<"):";
 	for(set<uint64_t>::iterator i=m_ed->m_EXTENSION_readsInRange->begin();
 		i!=m_ed->m_EXTENSION_readsInRange->end();i++){
 		cout<<" "<<*i;
@@ -1155,12 +1155,14 @@ void SeedExtender::showReadsInRange(){
 void SeedExtender::printExtensionStatus(uint64_t*currentVertex){
 	int theRank=m_parameters->getRank();
 	int theCurrentSize=m_ed->m_EXTENSION_extension->size();
-	printf("Rank %i reached %i vertices (%s) from seed %i (completed)\n",theRank,theCurrentSize,
+	now();
+	printf("Rank %i reached %i vertices (%s) from seed %i\n",theRank,theCurrentSize,
 		idToWord(*currentVertex,m_parameters->getWordSize()).c_str(),
 		m_ed->m_EXTENSION_currentSeedIndex+1);
 
 	fflush(stdout);
 	showMemoryUsage(theRank);
+	showReadsInRange();
 
 	int chunks=m_directionsAllocator->getNumberOfChunks();
 	int chunkSize=m_directionsAllocator->getChunkSize();

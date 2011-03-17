@@ -616,11 +616,9 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
 }
 
-void Machine::call_RAY_MASTER_MODE_DO_NOTHING(){
-}
+void Machine::call_RAY_MASTER_MODE_DO_NOTHING(){}
 
-void Machine::call_RAY_SLAVE_MODE_DO_NOTHING(){
-}
+void Machine::call_RAY_SLAVE_MODE_DO_NOTHING(){}
 
 void Machine::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 	m_verticesExtractor.process(		&m_mode_send_vertices_sequence_id,
