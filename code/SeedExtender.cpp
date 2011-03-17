@@ -1158,6 +1158,7 @@ void SeedExtender::printExtensionStatus(uint64_t*currentVertex){
 	now();
 	// stop the infinite loop
 	if(m_ed->m_EXTENSION_extension->size()>200000){
+		cout<<"Error: Infinite loop"<<endl;
 		exit(0);
 	}
 	printf("Rank %i reached %i vertices (%s) from seed %i\n",theRank,theCurrentSize,
