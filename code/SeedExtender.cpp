@@ -476,7 +476,9 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				if(!ed->m_sequencesToFree.empty()){
 					for(int i=0;i<(int)ed->m_sequencesToFree.size();i++){
 						uint64_t uniqueId=ed->m_sequencesToFree[i];
-						//cout<<"Removing "<<uniqueId<<"  now="<<m_ed->m_EXTENSION_extension->size()-1<<endl;
+						if(uniqueId==3070752000416||uniqueId==667867000413){
+							cout<<"Removing "<<uniqueId<<"  now="<<m_ed->m_EXTENSION_extension->size()-1<<endl;
+						}
 						m_ed->m_pairedReadsWithoutMate->erase(uniqueId);
 						// free the sequence
 						ExtensionElement*element=ed->getUsedRead(uniqueId);
@@ -942,6 +944,10 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				if(addRead){
 					m_matesToMeet.erase(uniqueId);
 					ExtensionElement*element=ed->addUsedRead(uniqueId);
+					if(uniqueId==3070752000416||uniqueId==667867000413){
+						cout<<"Add SeqInfo Seq="<<m_receivedString<<" Id="<<uniqueId<<endl;
+					}
+
 					element->setSequence(m_receivedString.c_str(),ed->getAllocator());
 					element->setStartingPosition(startPosition);
 					element->setStrand(annotation.getStrand());
@@ -968,7 +974,9 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 							int expectedDeviation=m_parameters->getLibraryStandardDeviation(library);
 							int expiration=startPosition+expectedFragmentLength+3*expectedDeviation;
 
-							//cout<<"adding expiration Now="<<startPosition<<" Expiration="<<expiration<<" Id="<<uniqueId<<endl;
+							if(uniqueId==3070752000416||uniqueId==667867000413){
+								cout<<"adding expiration Now="<<startPosition<<" Expiration="<<expiration<<" Id="<<uniqueId<<" "<<"muL="<<expectedFragmentLength<<" sigmaL="<<expectedDeviation<<endl;
+							}
 							(*ed->m_expirations)[expiration].push_back(uniqueId);
 		
 							m_matesToMeet.insert(mateId);
@@ -1136,7 +1144,10 @@ void SeedExtender::setFreeUnmatedPairedReads(){
 		uint64_t readId=expired->at(i);
 		if(m_ed->m_pairedReadsWithoutMate->count(readId)>0){
 			m_ed->m_sequencesToFree.push_back(readId); // RECYCLING IS desactivated
-			//cout<<"Expired: Now="<<m_ed->m_EXTENSION_extension->size()-1<<" Id="<<readId<<endl;
+			uint64_t uniqueId=readId;
+			if(uniqueId==3070752000416||uniqueId==667867000413){
+				cout<<"Expired: Now="<<m_ed->m_EXTENSION_extension->size()-1<<" Id="<<readId<<endl;
+			}
 		}
 	}
 	m_ed->m_expirations->erase(m_ed->m_EXTENSION_extension->size());
