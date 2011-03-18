@@ -19,6 +19,8 @@
 
 */
 
+#define HUNT_INFINITE_BUG
+
 #include <malloc_types.h>
 #include <string.h>
 #include <StaticVector.h>
@@ -443,9 +445,11 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 							m_hasPairedSequences=true;
 
 						}else{
+							#ifdef HUNT_INFINITE_BUG
 							if(m_ed->m_EXTENSION_extension->size()>10000){
 								cout<<"Invalid -> Average="<<expectedFragmentLength<<" Deviation="<<expectedDeviation<<" Observed="<<observedFragmentLength<<endl;					
 							}
+							#endif
 							// remove the right read from the used set
 							// TODO: remove this because the constraint 1 is checked above when read are picked up
 							ed->m_sequencesToFree.push_back(uniqueId);
@@ -482,9 +486,11 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				if(!ed->m_sequencesToFree.empty()){
 					for(int i=0;i<(int)ed->m_sequencesToFree.size();i++){
 						uint64_t uniqueId=ed->m_sequencesToFree[i];
+						#ifdef HUNT_INFINITE_BUG
 						if(m_ed->m_EXTENSION_extension->size()>10000){
 							cout<<"Removing "<<uniqueId<<"  now="<<m_ed->m_EXTENSION_extension->size()-1<<endl;
 						}
+						#endif
 						m_ed->m_pairedReadsWithoutMate->erase(uniqueId);
 						// free the sequence
 						ExtensionElement*element=ed->getUsedRead(uniqueId);
@@ -1008,10 +1014,12 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 					#endif
 		
 					int expiryPosition=position+readLength-positionOnStrand-wordSize;
-
+		
+					#ifdef HUNT_INFINITE_BUG
 					if(m_ed->m_EXTENSION_extension->size()>10000){
 						cout<<"Add SeqInfo Seq="<<m_receivedString<<" Id="<<uniqueId<<" ExpiryPosition="<<expiryPosition<<endl;
 					}
+					#endif
 					m_expiredReads[expiryPosition].push_back(uniqueId);
 					//cout<<"Read="<<uniqueId<<" Length="<<readLength<<" WordSize="<<wordSize<<" PositionOnStrand="<<positionOnStrand<<" Position="<<position<<" ExpiryPosition="<<expiryPosition<<endl;
 					// received paired read too !
@@ -1026,9 +1034,11 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 							int expectedDeviation=m_parameters->getLibraryStandardDeviation(library);
 							int expiration=startPosition+expectedFragmentLength+3*expectedDeviation;
 
+							#ifdef HUNT_INFINITE_BUG
 							if(m_ed->m_EXTENSION_extension->size()>10000){
 								cout<<"adding expiration (to meet mate) Now="<<startPosition<<" Expiration="<<expiration<<" Id="<<uniqueId<<" "<<"muL="<<expectedFragmentLength<<" sigmaL="<<expectedDeviation<<endl;
 							}
+							#endif
 							(*ed->m_expirations)[expiration].push_back(uniqueId);
 		
 							m_matesToMeet.insert(mateId);
@@ -1189,10 +1199,11 @@ void SeedExtender::removeUnfitLibraries(){
 			}else if(j->second.size()>10){// to restore reads for a library, we need at least 5
 				for(int k=0;k<(int)j->second.size();k++){
 					uint64_t uniqueId=reads[library][k];
-
+					#ifdef HUNT_INFINITE_BUG
 					if(m_ed->m_EXTENSION_extension->size()>10000){
 						cout<<"Restoring Value="<<j->second[k]<<" Expected="<<averageLength<<" Dev="<<stddev<<" MeanForLibrary="<<mean<<" n="<<n<<endl;
 					}
+					#endif
 					m_ed->m_sequencesToFree.push_back(uniqueId);
 				}
 			}
@@ -1217,10 +1228,11 @@ void SeedExtender::setFreeUnmatedPairedReads(){
 		uint64_t readId=expired->at(i);
 		if(m_ed->m_pairedReadsWithoutMate->count(readId)>0){
 			m_ed->m_sequencesToFree.push_back(readId); // RECYCLING IS desactivated
-			uint64_t uniqueId=readId;
+			#ifdef HUNT_INFINITE_BUG
 			if(m_ed->m_EXTENSION_extension->size()>10000){
 				cout<<"Expired: Now="<<m_ed->m_EXTENSION_extension->size()-1<<" Id="<<readId<<endl;
 			}
+			#endif
 		}
 	}
 	m_ed->m_expirations->erase(m_ed->m_EXTENSION_extension->size());
@@ -1241,10 +1253,12 @@ void SeedExtender::printExtensionStatus(uint64_t*currentVertex){
 	int theCurrentSize=m_ed->m_EXTENSION_extension->size();
 	now();
 	// stop the infinite loop
+	#ifdef HUNT_INFINITE_BUG
 	if(m_ed->m_EXTENSION_extension->size()>200000){
 		cout<<"Error: Infinite loop"<<endl;
 		exit(0);
 	}
+	#endif
 	printf("Rank %i reached %i vertices (%s) from seed %i\n",theRank,theCurrentSize,
 		idToWord(*currentVertex,m_parameters->getWordSize()).c_str(),
 		m_ed->m_EXTENSION_currentSeedIndex+1);
