@@ -442,7 +442,9 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 							ed->m_EXTENSION_pairedReadsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(uniqueId);
 
 						}else{
-							//cout<<"Invalid -> Average="<<expectedFragmentLength<<" Deviation="<<expectedDeviation<<" Observed="<<observedFragmentLength<<endl;					
+							if(uniqueId==3070752000416||uniqueId==667867000413){
+								cout<<"Invalid -> Average="<<expectedFragmentLength<<" Deviation="<<expectedDeviation<<" Observed="<<observedFragmentLength<<endl;					
+							}
 							// remove the right read from the used set
 							ed->m_sequencesToFree.push_back(uniqueId);
 						}
@@ -464,6 +466,8 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 					//cout<<"done."<<endl;
 					m_removedUnfitLibraries=true;
 					//cout<<"PairedReadsWithoutMate="<<m_ed->m_pairedReadsWithoutMate->size()<<endl;
+
+					// there is a bug with this on human genome infinite loop)
 					setFreeUnmatedPairedReads();
 					return;
 				}
@@ -920,6 +924,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				int position=startPosition;
 				int wordSize=m_parameters->getWordSize();
 				int positionOnStrand=annotation.getPositionOnStrand();
+				char theRightStrand=annotation.getStrand();
 
 				int availableLength=readLength-positionOnStrand;
 				if(availableLength<=wordSize){
@@ -934,19 +939,59 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 					if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
 						uint64_t mateId=ed->m_EXTENSION_pairedRead.getUniqueId();
 						// the mate is required to allow proper placement
-						if(ed->getUsedRead(mateId)==NULL){
+						
+
+						ExtensionElement*extensionElement=ed->getUsedRead(mateId);
+
+						if(extensionElement==NULL){
 							addRead=false;
 							//cout<<"Not using read: coverage="<<ed->m_currentCoverage<<" peak="<<m_parameters->getPeakCoverage()<<endl;
+						}
+
+					}
+				}
+
+				// check the distance.
+				if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
+					uint64_t mateId=ed->m_EXTENSION_pairedRead.getUniqueId();
+					// the mate is required to allow proper placement
+					
+					ExtensionElement*extensionElement=ed->getUsedRead(mateId);
+
+					if(extensionElement!=NULL){// use to be via readsPositions
+						char theLeftStrand=extensionElement->getStrand();
+						int startingPositionOnPath=extensionElement->getPosition();
+
+						//int coverageForLeftRead=ed->m_extensionCoverageValues->at(startingPositionOnPath);
+						int repeatLengthForLeftRead=ed->m_repeatedValues->at(startingPositionOnPath);
+						int observedFragmentLength=(startPosition-startingPositionOnPath)+ed->m_EXTENSION_receivedLength+extensionElement->getStrandPosition()-positionOnStrand;
+						//cout<<"Observed="<<observedFragmentLength<<endl;
+						int multiplier=3;
+
+						int library=ed->m_EXTENSION_pairedRead.getLibrary();
+						int expectedFragmentLength=m_parameters->getLibraryAverageLength(library);
+						int expectedDeviation=m_parameters->getLibraryStandardDeviation(library);
+
+						int repeatThreshold=100;
+						//int theDistance=startPosition-startingPositionOnPath;
+						if(expectedFragmentLength-multiplier*expectedDeviation<=observedFragmentLength 
+						&& observedFragmentLength <= expectedFragmentLength+multiplier*expectedDeviation 
+				&&( (theLeftStrand=='F' && theRightStrand=='R')
+					||(theLeftStrand=='R' && theRightStrand=='F'))
+				// the bridging pair is meaningless if both start in repeats
+				&&repeatLengthForLeftRead<repeatThreshold){
+							
+						}else{
+							// remove the right read from the used set
+							addRead=false;
 						}
 					}
 				}
 
+
 				if(addRead){
 					m_matesToMeet.erase(uniqueId);
 					ExtensionElement*element=ed->addUsedRead(uniqueId);
-					if(uniqueId==3070752000416||uniqueId==667867000413){
-						cout<<"Add SeqInfo Seq="<<m_receivedString<<" Id="<<uniqueId<<endl;
-					}
 
 					element->setSequence(m_receivedString.c_str(),ed->getAllocator());
 					element->setStartingPosition(startPosition);
@@ -960,6 +1005,10 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 					#endif
 		
 					int expiryPosition=position+readLength-positionOnStrand-wordSize;
+
+					if(uniqueId==3070752000416||uniqueId==667867000413){
+						cout<<"Add SeqInfo Seq="<<m_receivedString<<" Id="<<uniqueId<<" ExpiryPosition="<<expiryPosition<<endl;
+					}
 					m_expiredReads[expiryPosition].push_back(uniqueId);
 					//cout<<"Read="<<uniqueId<<" Length="<<readLength<<" WordSize="<<wordSize<<" PositionOnStrand="<<positionOnStrand<<" Position="<<position<<" ExpiryPosition="<<expiryPosition<<endl;
 					// received paired read too !
@@ -975,7 +1024,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 							int expiration=startPosition+expectedFragmentLength+3*expectedDeviation;
 
 							if(uniqueId==3070752000416||uniqueId==667867000413){
-								cout<<"adding expiration Now="<<startPosition<<" Expiration="<<expiration<<" Id="<<uniqueId<<" "<<"muL="<<expectedFragmentLength<<" sigmaL="<<expectedDeviation<<endl;
+								cout<<"adding expiration (to meet mate) Now="<<startPosition<<" Expiration="<<expiration<<" Id="<<uniqueId<<" "<<"muL="<<expectedFragmentLength<<" sigmaL="<<expectedDeviation<<endl;
 							}
 							(*ed->m_expirations)[expiration].push_back(uniqueId);
 		
@@ -1043,6 +1092,10 @@ void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAll
 }
 
 void SeedExtender::inspect(ExtensionData*ed,uint64_t*currentVertex){
+	#ifdef ASSERT
+	assert(ed->m_enumerateChoices_outgoingEdges.size()==ed->m_EXTENSION_coverages->size());
+	#endif
+
 	int wordSize=m_parameters->getWordSize();
 	cout<<endl;
 	cout<<"*****************************************"<<endl;
@@ -1061,6 +1114,12 @@ void SeedExtender::inspect(ExtensionData*ed,uint64_t*currentVertex){
 		cout<<endl;
 		cout<<"Choice #"<<i+1<<endl;
 		cout<<"Vertex: "<<vertex<<endl;
+		#ifdef ASSERT
+		if(i>=(int)ed->m_EXTENSION_coverages->size()){
+			cout<<"Error: i="<<i<<" Size="<<ed->m_EXTENSION_coverages->size()<<endl;
+		}
+		assert(i<(int)ed->m_EXTENSION_coverages->size());
+		#endif
 		cout<<"Coverage="<<ed->m_EXTENSION_coverages->at(i)<<endl;
 		cout<<"New letter: "<<vertex[wordSize-1]<<endl;
 		cout<<"Single-end reads: ("<<ed->m_EXTENSION_readPositionsForVertices[key].size()<<")"<<endl;
@@ -1126,7 +1185,10 @@ void SeedExtender::removeUnfitLibraries(){
 			}else if(j->second.size()>10){// to restore reads for a library, we need at least 5
 				for(int k=0;k<(int)j->second.size();k++){
 					uint64_t uniqueId=reads[library][k];
-					//cout<<"Restoring Value="<<j->second[k]<<" Expected="<<averageLength<<" Dev="<<stddev<<" MeanForLibrary="<<mean<<" n="<<n<<endl;
+
+					if(uniqueId==3070752000416||uniqueId==667867000413){
+						cout<<"Restoring Value="<<j->second[k]<<" Expected="<<averageLength<<" Dev="<<stddev<<" MeanForLibrary="<<mean<<" n="<<n<<endl;
+					}
 					m_ed->m_sequencesToFree.push_back(uniqueId);
 				}
 			}
