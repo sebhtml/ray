@@ -440,12 +440,14 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 							ed->m_EXTENSION_pairedReadPositionsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(observedFragmentLength);
 							ed->m_EXTENSION_pairedLibrariesForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(library);
 							ed->m_EXTENSION_pairedReadsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(uniqueId);
+							m_hasPairedSequences=true;
 
 						}else{
-							if(uniqueId==3070752000416||uniqueId==667867000413){
+							if(m_ed->m_EXTENSION_extension->size()>10000){
 								cout<<"Invalid -> Average="<<expectedFragmentLength<<" Deviation="<<expectedDeviation<<" Observed="<<observedFragmentLength<<endl;					
 							}
 							// remove the right read from the used set
+							// TODO: remove this because the constraint 1 is checked above when read are picked up
 							ed->m_sequencesToFree.push_back(uniqueId);
 						}
 					}
@@ -480,7 +482,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				if(!ed->m_sequencesToFree.empty()){
 					for(int i=0;i<(int)ed->m_sequencesToFree.size();i++){
 						uint64_t uniqueId=ed->m_sequencesToFree[i];
-						if(uniqueId==3070752000416||uniqueId==667867000413){
+						if(m_ed->m_EXTENSION_extension->size()>10000){
 							cout<<"Removing "<<uniqueId<<"  now="<<m_ed->m_EXTENSION_extension->size()-1<<endl;
 						}
 						m_ed->m_pairedReadsWithoutMate->erase(uniqueId);
@@ -819,6 +821,7 @@ vector<uint64_t>*receivedOutgoingEdges,Chooser*chooser,
 BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpaceMode,int wordSize,vector<vector<uint64_t> >*seeds
 ){
 	if(!m_messengerInitiated){
+		m_hasPairedSequences=false;
 		*edgesRequested=false;
 		m_pickedInformation=false;
 		int theCurrentSize=ed->m_EXTENSION_extension->size();
@@ -1006,7 +1009,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 		
 					int expiryPosition=position+readLength-positionOnStrand-wordSize;
 
-					if(uniqueId==3070752000416||uniqueId==667867000413){
+					if(m_ed->m_EXTENSION_extension->size()>10000){
 						cout<<"Add SeqInfo Seq="<<m_receivedString<<" Id="<<uniqueId<<" ExpiryPosition="<<expiryPosition<<endl;
 					}
 					m_expiredReads[expiryPosition].push_back(uniqueId);
@@ -1023,7 +1026,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 							int expectedDeviation=m_parameters->getLibraryStandardDeviation(library);
 							int expiration=startPosition+expectedFragmentLength+3*expectedDeviation;
 
-							if(uniqueId==3070752000416||uniqueId==667867000413){
+							if(m_ed->m_EXTENSION_extension->size()>10000){
 								cout<<"adding expiration (to meet mate) Now="<<startPosition<<" Expiration="<<expiration<<" Id="<<uniqueId<<" "<<"muL="<<expectedFragmentLength<<" sigmaL="<<expectedDeviation<<endl;
 							}
 							(*ed->m_expirations)[expiration].push_back(uniqueId);
@@ -1141,6 +1144,7 @@ void SeedExtender::inspect(ExtensionData*ed,uint64_t*currentVertex){
 }
 
 void SeedExtender::removeUnfitLibraries(){
+	bool hasPairedSequences=false;
 	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
 		map<int,vector<int> > classifiedValues;
 		map<int,vector<uint64_t> > reads;
@@ -1186,7 +1190,7 @@ void SeedExtender::removeUnfitLibraries(){
 				for(int k=0;k<(int)j->second.size();k++){
 					uint64_t uniqueId=reads[library][k];
 
-					if(uniqueId==3070752000416||uniqueId==667867000413){
+					if(m_ed->m_EXTENSION_extension->size()>10000){
 						cout<<"Restoring Value="<<j->second[k]<<" Expected="<<averageLength<<" Dev="<<stddev<<" MeanForLibrary="<<mean<<" n="<<n<<endl;
 					}
 					m_ed->m_sequencesToFree.push_back(uniqueId);
@@ -1194,10 +1198,17 @@ void SeedExtender::removeUnfitLibraries(){
 			}
 		}
 		m_ed->m_EXTENSION_pairedReadPositionsForVertices[vertex]=acceptedValues;
+		if(!acceptedValues.empty()){
+			hasPairedSequences=true;
+		}
 	}
+	m_hasPairedSequences=hasPairedSequences;
 }
 
 void SeedExtender::setFreeUnmatedPairedReads(){
+	if(!m_hasPairedSequences){// avoid infinite loops.
+		return;
+	}
 	if(m_ed->m_expirations->count(m_ed->m_EXTENSION_extension->size())==0){
 		return;
 	}
@@ -1207,7 +1218,7 @@ void SeedExtender::setFreeUnmatedPairedReads(){
 		if(m_ed->m_pairedReadsWithoutMate->count(readId)>0){
 			m_ed->m_sequencesToFree.push_back(readId); // RECYCLING IS desactivated
 			uint64_t uniqueId=readId;
-			if(uniqueId==3070752000416||uniqueId==667867000413){
+			if(m_ed->m_EXTENSION_extension->size()>10000){
 				cout<<"Expired: Now="<<m_ed->m_EXTENSION_extension->size()-1<<" Id="<<readId<<endl;
 			}
 		}
