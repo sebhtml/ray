@@ -443,16 +443,6 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 							ed->m_EXTENSION_pairedLibrariesForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(library);
 							ed->m_EXTENSION_pairedReadsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(uniqueId);
 							m_hasPairedSequences=true;
-
-						}else{
-							#ifdef HUNT_INFINITE_BUG
-							if(m_ed->m_EXTENSION_extension->size()>10000){
-								cout<<"Invalid -> Average="<<expectedFragmentLength<<" Deviation="<<expectedDeviation<<" Observed="<<observedFragmentLength<<endl;					
-							}
-							#endif
-							// remove the right read from the used set
-							// TODO: remove this because the constraint 1 is checked above when read are picked up
-							ed->m_sequencesToFree.push_back(uniqueId);
 						}
 					}
 
