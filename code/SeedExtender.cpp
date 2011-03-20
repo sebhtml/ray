@@ -19,7 +19,7 @@
 
 */
 
-#define HUNT_INFINITE_BUG
+//#define HUNT_INFINITE_BUG
 
 #include <malloc_types.h>
 #include <string.h>
@@ -475,6 +475,9 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				// 3. the library population indicates a wrong placement
 				if(!ed->m_sequencesToFree.empty()){
 					for(int i=0;i<(int)ed->m_sequencesToFree.size();i++){
+						if(!m_hasPairedSequences){
+							break;// can'T free if there are no pairs
+						}
 						uint64_t uniqueId=ed->m_sequencesToFree[i];
 						#ifdef HUNT_INFINITE_BUG
 						if(m_ed->m_EXTENSION_extension->size()>10000){
