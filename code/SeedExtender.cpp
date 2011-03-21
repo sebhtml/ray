@@ -19,7 +19,7 @@
 
 */
 
-#define HUNT_INFINITE_BUG
+//#define HUNT_INFINITE_BUG
 
 #include <malloc_types.h>
 #include <string.h>
