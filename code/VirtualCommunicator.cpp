@@ -331,7 +331,9 @@ void VirtualCommunicator::printStatistics(){
 		printf("Rank %i Size: %i Count: %lu\n",m_rank,size,count);
 		fflush(stdout);
 	}
+	double ratio=100.0*m_flushedMessages/m_pushedMessages;
 	printf("Rank %i: %lu virtual messages for %lu pushed messages\n",m_rank,m_flushedMessages,m_pushedMessages);
+	printf("Rank %i: percentage= %f%%\n",m_rank,ratio);
 	fflush(stdout);
 }
 
