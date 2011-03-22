@@ -26,6 +26,8 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 #include <ReadFetcher.h>
 #include <assert.h>
+#include <iostream>
+using namespace std;
 
 void ReadFetcher::constructor(uint64_t vertex,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,
 VirtualCommunicator*vc,uint64_t workerId){

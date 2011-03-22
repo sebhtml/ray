@@ -25,6 +25,7 @@
 #include <assert.h>
 #include <malloc_types.h>
 #include <iostream>
+#include <string.h>
 using namespace std;
 
 //#define SHOW_TAGS
