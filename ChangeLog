@@ -1,5 +1,5 @@
 = 1.3.0 =
-2011-03-XX
+2011-03-22
 
 * Vertices with less than 1 of coverage are ignored during the computation of
 seeds and during the computation of extensions.
@@ -16,6 +16,8 @@ and its mate was not encountered yet.
 * Fixed an infinite loop in the extension of seeds.
 * When fetching read markers for a vertex, send a list of mates to meet if the
 vertex is repeated in order to reduce the communication.
+* Updated the Instruction Manual
+* Added a version of the logo without text.
 
 
 = 1.2.4 =
