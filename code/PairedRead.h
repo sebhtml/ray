@@ -35,7 +35,7 @@
 class PairedRead{
 	uint32_t m_readIndex;
 	uint16_t m_rank;
-	uint8_t m_library;
+	uint16_t m_library;
 public:
 	void constructor(int rank,int id,int library);
 	int getRank();

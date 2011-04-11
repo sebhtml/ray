@@ -26,10 +26,9 @@ see <http://www.gnu.org/licenses/>
 #include<config.h>
 #endif
 
-#define MAXIMUM_NUMBER_OF_LIBRARIES 250
-#define DUMMY_LIBRARY 255
+#define DUMMY_LIBRARY 40000
 
-#define RAY_VERSION "1.3.0"
+#define RAY_VERSION "1.3.1"
 
 #define _ENCODING_A 0
 #define _ENCODING_T 1

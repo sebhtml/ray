@@ -753,7 +753,7 @@ void Machine::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
 }
 
 void Machine::call_RAY_MASTER_MODE_TRIGGER_SEEDING(){
-	m_timePrinter.printElapsedTime("Indexing of sequence reads");
+	m_timePrinter.printElapsedTime("Selection of optimal read markers");
 	cout<<endl;
 	m_readyToSeed=-1;
 	m_numberOfRanksDoneSeeding=0;

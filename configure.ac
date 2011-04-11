@@ -1,5 +1,5 @@
 AC_PREREQ(2.59)
-AC_INIT(Ray,1.3.0, denovoassembler-users@lists.sourceforge.net, ray, http://denovoassembler.sf.net)
+AC_INIT(Ray,1.3.1, denovoassembler-users@lists.sourceforge.net, ray, http://denovoassembler.sf.net)
 
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_SRCDIR(code/MessageProcessor.cpp)

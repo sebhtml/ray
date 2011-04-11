@@ -664,9 +664,12 @@ string Parameters::getReceivedMessagesFile(){
 }
 
 void Parameters::printFinalMessage(){
+	cout<<"Rank "<<MASTER_RANK<<" wrote library statistics"<<endl;
+/*
 	for(int i=0;i<(int)m_observedDistances.size();i++){
 		cout<<"Rank "<<MASTER_RANK<<" wrote "<<getLibraryFile(i)<<endl;
 	}
+*/
 }
 
 int Parameters::getMaximumAllowedCoverage(){

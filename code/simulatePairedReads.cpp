@@ -151,7 +151,7 @@ int main(int argc,char**argv){
 		rightOut<<">"<<i<<"/2"<<endl<<rightSequence<<endl;
 		i++;
 	}
-	cout<<i+1<<"/"<<pairs<<endl;
+	cout<<i<<"/"<<pairs<<endl;
 	cout<<"Done."<<endl;
 	leftOut.close();
 	rightOut.close();

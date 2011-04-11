@@ -49,8 +49,8 @@ class Parameters{
 	int m_rank;
 	int m_peakCoverage;
 
-	int m_libraryAverageLength[MAXIMUM_NUMBER_OF_LIBRARIES];
-	int m_libraryDeviation[MAXIMUM_NUMBER_OF_LIBRARIES];
+	map<int,int> m_libraryAverageLength;
+	map<int,int> m_libraryDeviation;
 	int m_numberOfLibraries;
 	int m_minimumCoverage;
 	bool m_error;

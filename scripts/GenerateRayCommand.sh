@@ -9,4 +9,4 @@ do
 done
 
 output=$((ls *.fast*;date)|md5sum|awk '{print $1}')
-echo "-o $output"
+echo "-o $output | tee $output"".log"

@@ -86,7 +86,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 			// the number of alive workers is below the maximum
 			if(m_theSequenceId<(int)m_myReads->size()&&(int)m_aliveWorkers.size()<m_maximumAliveWorkers){
 				if(m_theSequenceId%10000==0){
-					printf("Rank %i is indexing sequence reads [%i/%i]\n",m_rank,m_theSequenceId+1,(int)m_myReads->size());
+					printf("Rank %i is selecting optimal read markers [%i/%i]\n",m_rank,m_theSequenceId+1,(int)m_myReads->size());
 					fflush(stdout);
 				}
 
@@ -125,7 +125,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 	#endif
 
 	if((int)m_myReads->size()==m_completedJobs){
-		printf("Rank %i is indexing sequence reads [%i/%i] (completed)\n",m_rank,(int)m_myReads->size(),(int)m_myReads->size());
+		printf("Rank %i is selecting optimal read markers [%i/%i] (completed)\n",m_rank,(int)m_myReads->size(),(int)m_myReads->size());
 		fflush(stdout);
 		printf("Rank %i: peak number of workers: %i, maximum: %i\n",m_rank,m_maximumWorkers,m_maximumAliveWorkers);
 		fflush(stdout);
