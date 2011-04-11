@@ -73,7 +73,7 @@ string reverseComplement(string*a){
 int main(int argc,char**argv){
 	cout<<argv[0]<<" GENOME.FASTA SUBSTITUTION_RATE AVERAGE_OUTER_DISTANCE STANDARD_DEVIATION PAIRS READ_LENGTH OUT1.fasta OUT2.fasta"<<endl;
 	if(argc!=9){
-		cout<<argc<<" but needs 8"<<endl;
+		cout<<argc<<" but needs 9"<<endl;
 		return 0;
 	}
 	string file=argv[1];
