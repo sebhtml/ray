@@ -666,6 +666,10 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 		// no choice possible...
 		if(!ed->m_EXTENSION_complementedSeed || !ed->m_EXTENSION_complementedSeed2){
 			vector<uint64_t> complementedSeed;
+			int theCurrentSize=ed->m_EXTENSION_currentSeed.size();
+			printf("Rank %i reached %i vertices from seed %i (changing direction)\n",theRank,theCurrentSize,
+				m_ed->m_EXTENSION_currentSeedIndex+1);
+			fflush(stdout);
 
 			for(int i=ed->m_EXTENSION_extension->size()-1;i>=0;i--){
 				complementedSeed.push_back(complementVertex(ed->m_EXTENSION_extension->at(i),wordSize,(*colorSpaceMode)));
