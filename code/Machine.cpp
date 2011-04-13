@@ -415,24 +415,58 @@ m_seedingData,
 	MPI_Finalize();
 }
 
+#define SHOW_LIFE_STATISTICS
 void Machine::run(){
+	#ifdef SHOW_LIFE_STATISTICS
+	// define some variables that hold life statistics of this
+	// MPI rank
+	int ticks=0;
+	int sentMessages=0;
+	int receivedMessages=0;
+	map<int,int> messageTypes;
+	#endif
+
 	while(isAlive()){
-	#ifdef SHOW_ALIVE
+		#ifdef SHOW_LIFE_STATISTICS
 		time_t t=time(NULL);
-		if(t!=m_lastTime&&t%30==0){
-			time_t m_endingTime=time(NULL);
-			struct tm * timeinfo;
-			timeinfo=localtime(&m_endingTime);
-			cout<<"Date: ";
-			printf("Rank %i is alive %s",m_rank,asctime(timeinfo));
-			showMemoryUsage(m_rank);
+		if(t!=m_lastTime){
+			printf("Rank %i: seconds= %i ticks= %i sent= %i received= %i\n",m_rank,(int)t,ticks,sentMessages,receivedMessages);
+			printf("Rank %i: sent message types: ",m_rank);
+			for(map<int,int>::iterator i=messageTypes.begin();i!=messageTypes.end();i++){
+				int mpiTag=i->first;
+				int count=i->second;
+				printf("%s: %i ",MESSAGES[mpiTag],count);
+			}
+			printf("\n");
+
 			fflush(stdout);
+			ticks=0;
+			sentMessages=0;
+			receivedMessages=0;
+			messageTypes.clear();
 			m_lastTime=t;
 		}
-	#endif
+		#endif
+		// 1. receive the message (0 or 1 message is received)
 		receiveMessages(); 
+		#ifdef SHOW_LIFE_STATISTICS
+		receivedMessages+=m_inbox.size();
+		#endif
+		
+		// 2. process the received message, if any
 		processMessages();
+
+		// 3. process data according to current slave and master modes
 		processData();
+		#ifdef SHOW_LIFE_STATISTICS
+		sentMessages+=m_outbox.size();
+		ticks++;
+		for(int i=0;i<(int)m_outbox.size();i++){
+			messageTypes[m_outbox[i]->getTag()]++;
+		}
+		#endif
+
+		// 4. send messages
 		sendMessages();
 	}
 }

@@ -791,29 +791,11 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			}
 		}
 	}else if(!ed->m_EXTENSION_reverseVertexDone){
-/*
-		if(!ed->m_EXTENSION_VertexAssembled_requested){
-			//cout<<__func__<<" requests reverse"<<endl;
-			m_receivedDirections.clear();
-			ed->m_EXTENSION_VertexAssembled_requested=true;
-			uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(2*sizeof(uint64_t));
-			message[0]=(uint64_t)complementVertex((*currentVertex),wordSize,(*colorSpaceMode));
-			message[1]=0;
-			int destination=vertexRank(message[0],size,wordSize);
-			Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_ASK_IS_ASSEMBLED,theRank);
-			(*outbox).push_back(aMessage);
-			ed->m_EXTENSION_VertexAssembled_received=false;
-		}else if(ed->m_EXTENSION_VertexAssembled_received){
-*/
-			//cout<<__func__<<" receives reverse"<<endl;
-			//m_earlyStoppingTechnology.addDirections(&m_receivedDirections);
 			ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
 			ed->m_EXTENSION_markedCurrentVertexAsAssembled=false;
-			//cout<<"12312 m_EXTENSION_markedCurrentVertexAsAssembled <- false"<<endl;
 			ed->m_EXTENSION_directVertexDone=false;
 			ed->m_EXTENSION_reads_requested=false;
 			m_messengerInitiated=false;
-		//}
 	}
 }
 
@@ -876,7 +858,6 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 		#endif
 
 		ed->m_repeatedValues->push_back(m_repeatLength);
-
 		m_sequenceRequested=false;
 	}else{
 		if(m_sequenceIndexToCache<(int)ed->m_EXTENSION_receivedReads.size()){
