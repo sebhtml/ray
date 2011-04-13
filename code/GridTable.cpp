@@ -32,6 +32,7 @@ void GridTable::constructor(int rank,MyAllocator*allocator){
 	m_size=0;
 	m_inserted=false;
 	m_gridSize=4194304;
+	//m_gridSize=50000;
 	int bytes1=m_gridSize*sizeof(Vertex*);
 	m_gridData=(Vertex**)__Malloc(bytes1,RAY_MALLOC_TYPE_GRID_TABLE_DATA);
 	int bytes2=m_gridSize*sizeof(uint16_t);
