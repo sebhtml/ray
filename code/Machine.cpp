@@ -430,7 +430,8 @@ void Machine::run(){
 		#ifdef SHOW_LIFE_STATISTICS
 		time_t t=time(NULL);
 		if(t!=m_lastTime){
-			printf("Rank %i: seconds= %i ticks= %i sent= %i received= %i\n",m_rank,(int)t,ticks,sentMessages,receivedMessages);
+			printf("Rank %i: %s seconds= %i ticks= %i sent= %i received= %i\n",m_rank,SLAVE_MODES[m_slave_mode],
+				(int)t,ticks,sentMessages,receivedMessages);
 			printf("Rank %i: sent message types: ",m_rank);
 			for(map<int,int>::iterator i=messageTypes.begin();i!=messageTypes.end();i++){
 				int mpiTag=i->first;
