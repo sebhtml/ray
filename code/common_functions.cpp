@@ -416,7 +416,16 @@ uint64_t getMicroSeconds(){
 	struct tm *tm;
 	gettimeofday(&tv,&tz);
 	tm=localtime(&tv.tv_sec);
-	uint64_t milliSeconds=tm->tm_hour*60*60*1000*1000+tm->tm_min*60*1000*1000+tm->tm_sec*1000*1000+tv.tv_usec;
+	uint64_t milliSeconds=tv.tv_usec;
+	return milliSeconds;
+}
+
+uint64_t getMilliSecondsSinceEpoch(){
+	struct timeval tv;
+	gettimeofday(&tv,NULL);
+	time_t seconds=time(NULL);
+	uint64_t microseconds=tv.tv_usec;
+	uint64_t milliSeconds=((seconds)*1000+microseconds/1000.0)+0.5;
 	return milliSeconds;
 }
 

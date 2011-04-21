@@ -179,6 +179,8 @@ int roundNumber(int number,int alignment);
 
 uint64_t getMicroSeconds();
 
+uint64_t getMilliSecondsSinceEpoch();
+
 void showMemoryUsage(int rank);
 
 vector<uint64_t> _getOutgoingEdges(uint64_t a,uint8_t edges,int k);

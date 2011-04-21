@@ -425,13 +425,20 @@ void Machine::run(){
 	int receivedMessages=0;
 	map<int,int> messageTypes;
 	#endif
+	
+	uint64_t startingTime=getMilliSecondsSinceEpoch()/100;
+
+	uint64_t lastTime=startingTime;
 
 	while(isAlive()){
 		#ifdef SHOW_LIFE_STATISTICS
-		time_t t=time(NULL);
-		if(t!=m_lastTime){
-			printf("Rank %i: %s seconds= %i ticks= %i sent= %i received= %i\n",m_rank,SLAVE_MODES[m_slave_mode],
-				(int)t,ticks,sentMessages,receivedMessages);
+		uint64_t t=getMilliSecondsSinceEpoch()/100;
+		if(t>lastTime){
+			int toPrint=t-startingTime;
+			double seconds=toPrint/10.0;
+			printf("Rank %i: %s Time= %.1f s Speed= %i Sent= %i Received= %i\n",m_rank,SLAVE_MODES[m_slave_mode],
+				seconds,ticks,sentMessages,receivedMessages);
+		/*
 			printf("Rank %i: sent message types: ",m_rank);
 			for(map<int,int>::iterator i=messageTypes.begin();i!=messageTypes.end();i++){
 				int mpiTag=i->first;
@@ -439,13 +446,13 @@ void Machine::run(){
 				printf("%s: %i ",MESSAGES[mpiTag],count);
 			}
 			printf("\n");
-
+		*/
 			fflush(stdout);
 			ticks=0;
 			sentMessages=0;
 			receivedMessages=0;
 			messageTypes.clear();
-			m_lastTime=t;
+			lastTime=t;
 		}
 		#endif
 		// 1. receive the message (0 or 1 message is received)
@@ -628,7 +635,8 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 
 	//int diff=m_peakCoverage-m_minimumCoverage;
 	//m_seedCoverage=m_minimumCoverage+(3*diff)/4;
-	m_seedCoverage=(m_minimumCoverage+m_peakCoverage)/2;
+	m_seedCoverage=m_minimumCoverage;
+	//(m_minimumCoverage+m_peakCoverage)/2;
 
 	m_coverageDistribution.clear();
 
