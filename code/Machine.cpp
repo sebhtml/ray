@@ -415,7 +415,7 @@ m_seedingData,
 	MPI_Finalize();
 }
 
-#define SHOW_LIFE_STATISTICS
+//#define SHOW_LIFE_STATISTICS
 void Machine::run(){
 	#ifdef SHOW_LIFE_STATISTICS
 	// define some variables that hold life statistics of this
