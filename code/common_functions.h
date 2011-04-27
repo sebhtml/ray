@@ -177,9 +177,7 @@ uint64_t kmerAtPosition(const char*string,int pos,int w,char strand,bool color);
 
 int roundNumber(int number,int alignment);
 
-uint64_t getMicroSeconds();
-
-uint64_t getMilliSecondsSinceEpoch();
+uint64_t getMilliSeconds();
 
 void showMemoryUsage(int rank);
 

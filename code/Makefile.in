@@ -39,10 +39,11 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 @HAVE_ZLIB_TRUE@am__append_1 = FastqGzLoader.cpp FastqGzLoader.h
-@HAVE_BZ2_TRUE@am__append_2 = FastqBz2Loader.cpp FastqBz2Loader.h BzReader.h BzReader.cpp
+@HAVE_LIBBZ2_TRUE@am__append_2 = FastqBz2Loader.cpp FastqBz2Loader.h BzReader.h BzReader.cpp
 bin_PROGRAMS = Ray$(EXEEXT)
 @HAVE_ZLIB_TRUE@am__append_3 = -lz
-@HAVE_BZ2_TRUE@am__append_4 = -lbz2
+@HAVE_LIBBZ2_TRUE@am__append_4 = -lbz2
+@HAVE_CLOCK_GETTIME_TRUE@am__append_5 = -lrt
 subdir = code
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -99,8 +100,8 @@ am__libRay_a_SOURCES_DIST = IndexerWorker.h IndexerWorker.cpp \
 	FastqGzLoader.h FastqBz2Loader.cpp FastqBz2Loader.h BzReader.h \
 	BzReader.cpp
 @HAVE_ZLIB_TRUE@am__objects_1 = FastqGzLoader.$(OBJEXT)
-@HAVE_BZ2_TRUE@am__objects_2 = FastqBz2Loader.$(OBJEXT) \
-@HAVE_BZ2_TRUE@	BzReader.$(OBJEXT)
+@HAVE_LIBBZ2_TRUE@am__objects_2 = FastqBz2Loader.$(OBJEXT) \
+@HAVE_LIBBZ2_TRUE@	BzReader.$(OBJEXT)
 am_libRay_a_OBJECTS = IndexerWorker.$(OBJEXT) ReadFetcher.$(OBJEXT) \
 	LibraryWorker.$(OBJEXT) VertexData.$(OBJEXT) \
 	VertexTable.$(OBJEXT) malloc_types.$(OBJEXT) \
@@ -136,7 +137,7 @@ am_Ray_OBJECTS = ray_main.$(OBJEXT)
 Ray_OBJECTS = $(am_Ray_OBJECTS)
 am__DEPENDENCIES_1 =
 Ray_DEPENDENCIES = libRay.a $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -284,7 +285,7 @@ libRay_a_SOURCES = IndexerWorker.h IndexerWorker.cpp ReadFetcher.cpp \
 	VerticesExtractor.cpp VerticesExtractor.h $(am__append_1) \
 	$(am__append_2)
 Ray_SOURCES = ray_main.cpp 
-Ray_LDADD = libRay.a $(am__append_3) $(am__append_4)
+Ray_LDADD = libRay.a $(am__append_3) $(am__append_4) $(am__append_5)
 all: all-am
 
 .SUFFIXES:

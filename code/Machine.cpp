@@ -199,6 +199,10 @@ void Machine::start(){
 		cout<<"Rank "<<MASTER_RANK<<": GNU detected."<<endl;
 		#endif
 
+		#ifdef HAVE_CLOCK_GETTIME
+		cout<<"Rank "<<MASTER_RANK<<": clock_gettime is available"<<endl;
+		#endif
+
 		#ifdef MPICH2
                 cout<<"Rank "<<MASTER_RANK<<": compiled with MPICH2 "<<MPICH2_VERSION<<endl;
 		#endif
@@ -424,19 +428,20 @@ void Machine::run(){
 	int sentMessages=0;
 	int receivedMessages=0;
 	map<int,int> messageTypes;
-	#endif
 	
-	uint64_t startingTime=getMilliSecondsSinceEpoch()/100;
+	int resolution=100;// milliseconds
+	int parts=1000/resolution;
 
-	uint64_t lastTime=startingTime;
+	uint64_t lastTime=getMilliSeconds();
+	#endif
 
 	while(isAlive()){
 		#ifdef SHOW_LIFE_STATISTICS
-		uint64_t t=getMilliSecondsSinceEpoch()/100;
-		if(t>lastTime){
-			int toPrint=t-startingTime;
-			double seconds=toPrint/10.0;
-			printf("Rank %i: %s Time= %.1f s Speed= %i Sent= %i Received= %i\n",m_rank,SLAVE_MODES[m_slave_mode],
+		uint64_t t=getMilliSeconds();
+		if(t>=(lastTime+resolution)/parts*parts){
+			int toPrint=t;
+			double seconds=toPrint/(1000.0);
+			printf("Rank %i: %s Time= %.2f s Speed= %i Sent= %i Received= %i\n",m_rank,SLAVE_MODES[m_slave_mode],
 				seconds,ticks,sentMessages,receivedMessages);
 		/*
 			printf("Rank %i: sent message types: ",m_rank);
@@ -633,10 +638,8 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	cout<<"Rank "<<getRank()<<": the minimum coverage is "<<m_minimumCoverage<<endl;
 	cout<<"Rank "<<getRank()<<": the peak coverage is "<<m_peakCoverage<<endl;
 
-	//int diff=m_peakCoverage-m_minimumCoverage;
-	//m_seedCoverage=m_minimumCoverage+(3*diff)/4;
-	m_seedCoverage=m_minimumCoverage;
-	//(m_minimumCoverage+m_peakCoverage)/2;
+	m_seedCoverage=(m_peakCoverage+m_minimumCoverage)/2;
+	cout<<"Rank "<<getRank()<<": the seed coverage is "<<m_seedCoverage<<endl;
 
 	m_coverageDistribution.clear();
 
@@ -1045,7 +1048,6 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 }
 
 void Machine::call_RAY_MASTER_MODE_ASK_EXTENSIONS(){
-
 	// ask ranks to send their extensions.
 	if(!m_ed->m_EXTENSION_currentRankIsSet){
 		m_ed->m_EXTENSION_currentRankIsSet=true;

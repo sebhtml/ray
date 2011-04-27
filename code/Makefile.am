@@ -42,19 +42,25 @@ if HAVE_ZLIB
 libRay_a_SOURCES += FastqGzLoader.cpp FastqGzLoader.h
 endif
 
-if HAVE_BZ2
+if HAVE_LIBBZ2
 libRay_a_SOURCES += FastqBz2Loader.cpp FastqBz2Loader.h BzReader.h BzReader.cpp
 endif
 
 bin_PROGRAMS = Ray
 
 Ray_SOURCES =  ray_main.cpp 
-Ray_LDADD = libRay.a
+Ray_LDADD = libRay.a 
 
 if HAVE_ZLIB
 Ray_LDADD += -lz
 endif
 
-if HAVE_BZ2
+if HAVE_LIBBZ2
 Ray_LDADD += -lbz2
 endif
+
+if HAVE_CLOCK_GETTIME
+Ray_LDADD += -lrt
+endif
+
+

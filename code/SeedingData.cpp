@@ -101,11 +101,11 @@ void SeedingData::computeSeeds(){
 	
 				// if both seeds are on the same rank
 				// dump the reverse and keep the forward
-				/*
-				printf("Rank %i added a seed with %i vertices\n",m_rank,(int)seed.size());
+				
+				printf("Rank %i discovered a seed with %i vertices\n",m_rank,(int)seed.size());
 				fflush(stdout);
 				showMemoryUsage(m_rank);
-				*/
+				
 				m_SEEDING_seeds.push_back(seed);
 
 				uint64_t firstVertex=seed[0];

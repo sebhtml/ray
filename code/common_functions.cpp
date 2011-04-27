@@ -410,22 +410,15 @@ int roundNumber(int s,int alignment){
 	return ((s/alignment)+1)*alignment;
 }
 
-uint64_t getMicroSeconds(){
-	struct timeval tv;
-	struct timezone tz;
-	struct tm *tm;
-	gettimeofday(&tv,&tz);
-	tm=localtime(&tv.tv_sec);
-	uint64_t milliSeconds=tv.tv_usec;
-	return milliSeconds;
-}
-
-uint64_t getMilliSecondsSinceEpoch(){
-	struct timeval tv;
-	gettimeofday(&tv,NULL);
-	time_t seconds=time(NULL);
-	uint64_t microseconds=tv.tv_usec;
-	uint64_t milliSeconds=((seconds)*1000+microseconds/1000.0)+0.5;
+uint64_t getMilliSeconds(){
+	uint64_t milliSeconds=0;
+	#ifdef HAVE_CLOCK_GETTIME
+	timespec temp;
+	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&temp);
+	uint64_t seconds=temp.tv_sec;
+	uint64_t nanoseconds=temp.tv_nsec;
+	milliSeconds=seconds*1000+nanoseconds/1000/1000;
+	#endif
 	return milliSeconds;
 }
 
