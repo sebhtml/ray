@@ -39,7 +39,7 @@ Parameters::Parameters(){
 	m_prefix="RayOutput";
 	m_initiated=false;
 	m_directory="assembly";
-	m_minimumContigLength=100;
+	m_minimumContigLength=200;
 	m_wordSize=21;
 	m_colorSpaceMode=false;
 	m_reducerIsActivated=false;
@@ -707,74 +707,52 @@ bool Parameters::runReducer(){
 	return m_reducerIsActivated;
 }
 
+void showOption(string option,string description){
+	string spacesBeforeOption="       ";
+	string spacesBeforeDescription="              ";
+	cout<<spacesBeforeOption<<option<<endl<<spacesBeforeDescription<<description<<endl;
+	cout<<endl;
+}
+
 void Parameters::showUsage(){
-	cout<<endl;
-	cout<<"Usage:"<<endl<<endl;
-	cout<<"Supported sequences file format: "<<endl;
+	
+	cout<<"NAME"<<endl<<"     ray -- de Bruijn Message-Passing-Interface-based de novo assembler"<<endl<<endl;
+
+	cout<<"SYNOPSIS"<<endl<<endl;
+
+	cout<<"DESCRIPTION:"<<endl;
 	cout<<endl;
 
-	cout<<"  .fasta"<<endl;
+	showOption("-s sequenceFile","Provides a file containing single-end reads.");
+	showOption("-p leftSequenceFile rightSequenceFile [averageOuterDistance standardDeviation]","Provides two files containing paired-end reads. averageOuterDistance and standardDeviation are automatically computed if not provided.");
+	showOption("-i interleavedSequenceFile [averageOuterDistance standardDeviation]","Provides one file containing interleaved paired-end reads. averageOuterDistance and standardDeviation are automatically computed if not provided.");
+	showOption("-o outputPrefix","Specifies the prefix for outputted files.");
+	showOption("-a","Requests the AMOS file.");
+	showOption("-k kmerLength","Selects the length of k-mers. The default value is 21. It most be odd because reverse-complement vertices are stored together.");
+	showOption("--help","Displays this help page.");
+
+	cout<<"FILES"<<endl;
+
+	cout<<"     .fasta"<<endl;
 	#ifdef HAVE_ZLIB
-	cout<<"  .fasta.gz"<<endl;
+	cout<<"     .fasta.gz"<<endl;
 	#endif
 	#ifdef HAVE_LIBBZ2
-	cout<<"  .fasta.bz2"<<endl;
+	cout<<"     .fasta.bz2"<<endl;
 	#endif
-	cout<<"  .fastq"<<endl;
+	cout<<"     .fastq"<<endl;
 	#ifdef HAVE_ZLIB
-	cout<<"  .fastq.gz"<<endl;
+	cout<<"     .fastq.gz"<<endl;
 	#endif
 	#ifdef HAVE_LIBBZ2
-	cout<<"  .fastq.bz2"<<endl;
+	cout<<"     .fastq.bz2"<<endl;
 	#endif
-	cout<<"  .sff (paired reads must be extracted manually)"<<endl;
+	cout<<"     .sff (paired reads must be extracted manually)"<<endl;
 
 	cout<<endl;
-	cout<<"    Note: file format is determined with file extension."<<endl;
-	cout<<endl;
+	cout<<"     Note: file format is determined with file extension."<<endl;
 	cout<<endl;
 
-	cout<<"Parameters:"<<endl;
-	cout<<endl;
-	cout<<endl;
-	cout<<"  Single-end reads"<<endl;
-	cout<<endl;
-    	cout<<"   -s <sequencesFile>"<<endl;
-	cout<<endl;
-	cout<<endl;
-	cout<<"  Paired-end reads:"<<endl;
-	cout<<"   The average outer distance and standard deviation are automatically computed if not provided."<<endl;
-	cout<<endl;
-	cout<<"   -p <leftSequencesFile> <rightSequencesFile> [ <fragmentLength> <standardDeviation> ]"<<endl;
-	cout<<endl;
-	cout<<endl;
-	cout<<"  Paired-end reads:"<<endl;
-	cout<<"   The average outer distance and standard deviation are automatically computed if not provided."<<endl;
-	cout<<endl;
-	cout<<"   -i <interleavedFile> [ <fragmentLength> <standardDeviation> ]"<<endl;
-	cout<<endl;
-	cout<<endl;
-	cout<<"  Output (default: RayOutput)"<<endl;
-	cout<<"    Ray writes a contigs file, a coverage distribution file, and an AMOS file (if -a is provided)."<<endl;
-	cout<<"    The name of these files is based on the value provided with -o."<<endl;
-	cout<<endl;
-	cout<<"   -o <outputPrefix>"<<endl;
-	cout<<endl;
-	cout<<endl;	
-	cout<<"  AMOS output (writting this file is slow)"<<endl;
-	cout<<endl;
-	cout<<"   -a  "<<endl;
-	cout<<endl;
-    	cout<<endl;
-	cout<<"  k-mer size (default: 21)"<<endl;
-	cout<<"   This parameter controls the length of the k-mers in the de Bruijn subgraph."<<endl;
-	cout<<"   It most be odd because reverse-complement vertices are stored together."<<endl;
-	cout<<endl;
-	cout<<"   -k <kmerSize>"<<endl;
-	cout<<endl;
-	cout<<endl;
-	cout<<"  use --help to show this help"<<endl;
-	cout<<endl;
 }
 
 string Parameters::getMemoryPrefix(){

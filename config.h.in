@@ -9,6 +9,9 @@
 /* Define to 1 if you have the <bzlib.h> header file. */
 #undef HAVE_BZLIB_H
 
+/* Have rt */
+#undef HAVE_CLOCK_GETTIME
+
 /* Define to 1 if you have the <cstdlib> header file. */
 #undef HAVE_CSTDLIB
 

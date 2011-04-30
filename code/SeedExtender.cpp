@@ -127,7 +127,10 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 	currentVertex,theRank,vertexCoverageRequested,wordSize,colorSpaceMode,size,seeds);
 		}
 	}else if(ed->m_EXTENSION_vertexIsAssembledResult && ed->m_EXTENSION_currentPosition==0 && ed->m_EXTENSION_complementedSeed==false){
-		//cout<<"Rank "<<theRank<<": Ray Early-Stopping Technology was triggered, Case 1: seed is already processed at p=0."<<endl;
+		printf("Rank %i skips a seed, length is %i [%i/%i]\n",theRank,
+			(int)ed->m_EXTENSION_currentSeed.size(),
+			ed->m_EXTENSION_currentSeedIndex,(int)(*seeds).size());
+
 		ed->m_EXTENSION_currentSeedIndex++;// skip the current one.
 		ed->m_EXTENSION_currentPosition=0;
 
@@ -1246,13 +1249,6 @@ void SeedExtender::printExtensionStatus(uint64_t*currentVertex){
 	uint64_t totalBytes=chunks*chunkSize;
 	uint64_t kibibytes=totalBytes/1024;
 	printf("Rank %i: memory usage for directions is %lu KiB\n",theRank,kibibytes);
-	fflush(stdout);
-
-	int readsInCache=m_cacheForRepeatedReads.size();
-	//int hashEntries=m_cacheHashTable.size();
-	int listsInCache=m_cacheForListOfReads.size();
-	printf("Rank %i: lists of reads in cache: %i\n",theRank,listsInCache);
-	printf("Rank %i: reads in cache: %i\n",theRank,readsInCache);
 	fflush(stdout);
 }
 

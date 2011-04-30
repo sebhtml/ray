@@ -20,12 +20,17 @@
 */
 
 #include <VirtualCommunicator.h>
+#include <algorithm>
 #include <assert.h>
 #include <SeedingData.h>
 #include <Message.h>
 #include <mpi.h>
 #include <mpi_tags.h>
 #include <SeedWorker.h>
+
+bool myComparator_sort(const vector<uint64_t>&a,const vector<uint64_t>&b){
+	return a.size()>b.size();
+}
 
 void SeedingData::computeSeeds(){
 	if(!m_initiatedIterator){
@@ -51,27 +56,6 @@ void SeedingData::computeSeeds(){
 	// flush all mode is necessary to empty buffers and 
 	// restart things from scratch..
 
-/*
-	if(m_flushAllMode){
-		if(m_virtualCommunicator.hasMessagesToFlush()){
-			//cout<<"Rank "<<m_rank<<" forceFlush()"<<endl;
-			// no worker to start OR the maximum is reached
-			// must flush buffers manually because no more workers are to be created
-			m_virtualCommunicator.forceFlush();
-
-			if(m_virtualCommunicator.nextIsAlmostFull()){
-				m_flushAllMode=false;
-				updateStates();
-			}
-
-			return;
-		}else{
-			m_flushAllMode=false;
-			updateStates();
-		}
-	}
-*/
-
 	// 1. iterate on active workers
 	if(m_activeWorkerIterator!=m_activeWorkers.end()){
 		uint64_t workerId=*m_activeWorkerIterator;
@@ -81,8 +65,6 @@ void SeedingData::computeSeeds(){
 		#endif
 		m_virtualCommunicator.resetLocalPushedMessageStatus();
 
-		//cout<<"Rank "<<m_rank<<" Worker="<<workerId<<" work()"<<endl;
-		//
 		//force the worker to work until he finishes or pushes something on the stack
 		while(!m_aliveWorkers[workerId].isDone()&&!m_virtualCommunicator.getLocalPushedMessageStatus()){
 			m_aliveWorkers[workerId].work();
@@ -98,34 +80,11 @@ void SeedingData::computeSeeds(){
 			int nucleotides=seed.size()+(m_wordSize)-1;
 			// only consider the long ones.
 			if(nucleotides>=m_parameters->getMinimumContigLength()){
-	
-				// if both seeds are on the same rank
-				// dump the reverse and keep the forward
-				
 				printf("Rank %i discovered a seed with %i vertices\n",m_rank,(int)seed.size());
 				fflush(stdout);
 				showMemoryUsage(m_rank);
 				
 				m_SEEDING_seeds.push_back(seed);
-
-				uint64_t firstVertex=seed[0];
-				uint64_t lastVertex=seed[seed.size()-1];
-				uint64_t lastVertexReverse=complementVertex(lastVertex,(m_wordSize),(*m_colorSpaceMode));
-				int aRank=vertexRank(firstVertex,getSize(),m_wordSize);
-				int bRank=vertexRank(lastVertexReverse,getSize(),m_wordSize);
-
-				if(aRank==bRank){
-					if(m_seedExtender->getEliminatedSeeds()->count(firstVertex)==0 && m_seedExtender->getEliminatedSeeds()->count(lastVertexReverse)==0){
-						m_seedExtender->getEliminatedSeeds()->insert(firstVertex);
-						//m_SEEDING_seeds.push_back(m_SEEDING_seed);
-					}
-				// if they are on two ranks,
-				// keep the one on the rank with the lower number.
-				}else if((aRank+bRank)%2==0 && aRank<bRank){
-					m_seedExtender->getEliminatedSeeds()->insert(firstVertex);
-				}else if(((aRank+bRank)%2==1 && aRank>bRank)){
-					m_seedExtender->getEliminatedSeeds()->insert(firstVertex);
-				}
 			}
 		}
 		m_activeWorkerIterator++;
@@ -150,42 +109,30 @@ void SeedingData::computeSeeds(){
 					assert(m_completedJobs==0&&m_activeWorkers.size()==0&&m_aliveWorkers.size()==0);
 				}
 				#endif
-				//SplayNode<uint64_t,Vertex>*node=m_splayTreeIterator.next();
-				Vertex*node=m_splayTreeIterator.next();
-				m_aliveWorkers[m_SEEDING_i].constructor(node->m_lowerKey,m_parameters,m_outboxAllocator,&m_virtualCommunicator,m_SEEDING_i);
+				m_splayTreeIterator.next();
+				VERTEX_TYPE vertexKey=m_splayTreeIterator.getKey();
+
+				m_aliveWorkers[m_SEEDING_i].constructor(vertexKey,m_parameters,m_outboxAllocator,&m_virtualCommunicator,m_SEEDING_i);
 				m_activeWorkers.insert(m_SEEDING_i);
 				int population=m_aliveWorkers.size();
 				if(population>m_maximumWorkers){
 					m_maximumWorkers=population;
 				}
-/*
-				if(m_SEEDING_i%10000==0){ cout<<"Rank "<<m_rank<<" Adding worker WorkerId="<<m_SEEDING_i<<" ActiveWorkers="<<m_activeWorkers.size()<<" AliveWorkers="<<m_aliveWorkers.size()<<" CompletedJobs="<<m_completedJobs<<endl;
-				}
-*/
 
 				m_SEEDING_i++;
-				if(m_SEEDING_i==(uint64_t)m_subgraph->size()){
-					/*
-					cout<<"Rank "<<m_rank<<" ActiveWorkers="<<m_activeWorkers.size()<<" AliveWorkers="<<m_aliveWorkers.size()<<" CompletedJobs="<<m_completedJobs<<"/"<<m_subgraph->size()<<endl;
-					cout<<"Rank "<<m_rank<<": no more workers to start."<<endl;
-					cout.flush();
-					*/
-				}
 
+				// skip the reverse complement as we don't really need it anyway.
+				/*
+				m_splayTreeIterator.next();
+				m_SEEDING_i++;
+				m_completedJobs++;
+				*/
 			}else{
-				//cout<<"Rank "<<m_rank<<" forceFlush ActiveWorkers="<<m_activeWorkers.size()<<" AliveWorkers="<<m_aliveWorkers.size()<<" CompletedJobs="<<m_completedJobs<<"/"<<m_subgraph->size()<<endl;
 				m_virtualCommunicator.forceFlush();
-				//m_flushAllMode=true;
 			}
 		}
 
-	/*
-		cout<<"Rank "<<m_rank<<" RestartingIterator."<<endl;
-		cout<<"Rank "<<m_rank<<" ActiveWorkers="<<m_activeWorkers.size()<<" AliveWorkers="<<m_aliveWorkers.size()<<" CompletedJobs="<<m_completedJobs<<"/"<<m_subgraph->size()<<endl;
-	*/
-
 		// brace yourself for the next round
-		//updateStates();
 		m_activeWorkerIterator=m_activeWorkers.begin();
 	}
 
@@ -207,22 +154,15 @@ void SeedingData::computeSeeds(){
 
 		showMemoryUsage(m_rank);
 		#ifdef ASSERT
-/*
-		if(m_aliveWorkers.size()!=0){
-			cout<<"Total="<<m_subgraph->size()<<" Completed="<<m_completedJobs<<" Alive="<<m_aliveWorkers.size()<<" Active="<<m_activeWorkers.size()<<endl;
-		}
-*/
+
 		assert(m_aliveWorkers.size()==0);
 		assert(m_activeWorkers.size()==0);
 		#endif
+
+		// sort the seeds by length
+		// m_SEEDING_seeds
+		std::sort(m_SEEDING_seeds.begin(),m_SEEDING_seeds.end(),myComparator_sort);
 	}
-/*
-	time_t t=time(NULL);
-	if(t!=m_last){
-		cout<<"Rank "<<m_rank<<" ActiveWorkers="<<m_activeWorkers.size()<<" AliveWorkers="<<m_aliveWorkers.size()<<" CompletedJobs="<<m_completedJobs<<"/"<<m_subgraph->size()<<endl;
-		m_last=t;
-	}
-*/
 }
 
 void SeedingData::constructor(SeedExtender*seedExtender,int rank,int size,StaticVector*outbox,RingAllocator*outboxAllocator,int*seedCoverage,int*mode,
@@ -283,14 +223,12 @@ void SeedingData::updateStates(){
 		assert(m_activeWorkers.count(workerId)>0);
 		#endif
 		m_activeWorkers.erase(workerId);
-		//cout<<"Rank "<<m_rank<<" Worker="<<workerId<<" SET STATE SLEEPY"<<endl;
 	}
 	m_waitingWorkers.clear();
 
 	for(int i=0;i<(int)m_activeWorkersToRestore.size();i++){
 		uint64_t workerId=m_activeWorkersToRestore[i];
 		m_activeWorkers.insert(workerId);
-		//cout<<"Rank "<<m_rank<<" Worker="<<workerId<<" SET STATE ACTIVE"<<endl;
 	}
 	m_activeWorkersToRestore.clear();
 

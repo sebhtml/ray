@@ -48,6 +48,9 @@ class SeedWorker{
 	int m_SEEDING_ingoingEdgeIndex;
 	int m_SEEDING_outgoingEdgeIndex;
 	vector<uint64_t> m_SEEDING_receivedIngoingEdges;
+	vector<int> m_ingoingCoverages;
+	vector<int> m_outgoingCoverages;
+	Parameters*m_parameters;
 	bool m_SEEDING_vertexCoverageReceived;
 	vector<uint64_t> m_SEEDING_receivedOutgoingEdges;
 	int m_SEEDING_numberOfOutgoingEdges;
@@ -61,6 +64,7 @@ class SeedWorker{
 	int m_wordSize;
 
 	vector<uint64_t> m_SEEDING_seed;
+	vector<int> m_coverages;
 	bool m_SEEDING_firstVertexParentTestDone;	
 	set<uint64_t> m_SEEDING_vertices;
 	uint64_t m_SEEDING_first;

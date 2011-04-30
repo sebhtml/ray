@@ -26,6 +26,8 @@ see <http://www.gnu.org/licenses/>
 #include<config.h>
 #endif
 
+#define VERTEX_TYPE uint64_t
+
 #define DUMMY_LIBRARY 40000
 
 #define RAY_VERSION "1.3.1"

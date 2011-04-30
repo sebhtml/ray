@@ -49,10 +49,6 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<algorithm>
 #include<unistd.h>
 
-bool myComparator_sort(const vector<uint64_t>&a,const vector<uint64_t>&b){
-	return a.size()>b.size();
-}
-
 using namespace std;
 
 Machine::Machine(int argc,char**argv){

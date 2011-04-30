@@ -75,12 +75,43 @@ void SeedWorker::work(){
 			}
 			if(!m_SEEDING_1_1_test_result){
 				m_finished=true;
+
+				if((int)m_SEEDING_seed.size()>=m_parameters->getMinimumContigLength()-m_parameters->getWordSize()+1){
+					printf("Rank %i next vertex: in ",m_rank);
+					for(int i=0;i<(int)m_ingoingCoverages.size();i++){
+						printf(" %i",m_ingoingCoverages[i]);
+					}
+					printf(" out ");
+					for(int i=0;i<(int)m_outgoingCoverages.size();i++){
+						printf(" %i",m_outgoingCoverages[i]);
+					}
+					printf("\n");
+/*
+					printf("Rank %i last ",m_rank);
+					int n=100;
+					if((int)m_coverages.size()<n){
+						n=m_coverages.size();
+					}
+					for(int i=0;i<(int)m_coverages.size();i++){
+						printf(" %i",m_coverages[m_coverages.size()-1-i]);
+					}
+					printf("\n");
+*/
+				}
+
 			}else{
-				m_SEEDING_seed.push_back(m_SEEDING_currentVertex);
-				m_SEEDING_vertices.insert(m_SEEDING_currentVertex);
-				m_SEEDING_currentVertex=m_SEEDING_currentChildVertex;
-				m_SEEDING_testInitiated=false;
-				m_SEEDING_1_1_test_done=false;
+				// we want some coherence...
+				if(m_SEEDING_seed.size()>0
+				&&m_SEEDING_seed[m_SEEDING_seed.size()-1]!=m_SEEDING_currentParentVertex){
+					m_finished=true;
+				}else{
+					m_SEEDING_seed.push_back(m_SEEDING_currentVertex);
+					m_coverages.push_back(m_cache[m_SEEDING_currentVertex]);
+					m_SEEDING_vertices.insert(m_SEEDING_currentVertex);
+					m_SEEDING_currentVertex=m_SEEDING_currentChildVertex;
+					m_SEEDING_testInitiated=false;
+					m_SEEDING_1_1_test_done=false;
+				}
 			}
 		}
 	}
@@ -106,6 +137,7 @@ void SeedWorker::constructor(uint64_t key,Parameters*parameters,RingAllocator*ou
 	m_seedCoverage=parameters->getSeedCoverage();
 	m_SEEDING_seed.clear();
 	m_wordSize=parameters->getWordSize();
+	m_parameters=parameters;
 }
 
 /*
@@ -158,14 +190,14 @@ void SeedWorker::do_1_1_test(){
 			vector<uint64_t> elements=m_virtualCommunicator->getResponseElements(m_workerIdentifier);
 			uint8_t edges=elements[0];
 			int coverage=elements[1];
-			if(coverage<m_seedCoverage){
-				m_SEEDING_1_1_test_done=true;
-				m_SEEDING_1_1_test_result=false;
-				return;
-			}
+			m_cache[m_SEEDING_currentVertex]=coverage;
 
 			m_SEEDING_receivedIngoingEdges=_getIngoingEdges(m_SEEDING_currentVertex,edges,m_wordSize);
 			m_SEEDING_receivedOutgoingEdges=_getOutgoingEdges(m_SEEDING_currentVertex,edges,m_wordSize);
+
+			m_ingoingCoverages.clear();
+			m_outgoingCoverages.clear();
+
 			#ifdef ASSERT
 			if(m_SEEDING_receivedIngoingEdges.size()>4){
 				cout<<"size="<<m_SEEDING_receivedIngoingEdges.size()<<endl;
@@ -182,41 +214,27 @@ void SeedWorker::do_1_1_test(){
 				uint64_t vertex=(uint64_t)m_SEEDING_receivedIngoingEdges[m_SEEDING_ingoingEdgeIndex];
 				if(m_cache.count(vertex)>0){
 					m_SEEDING_receivedVertexCoverage=m_cache[vertex];
-					if(m_SEEDING_receivedVertexCoverage>=m_seedCoverage){
-						m_SEEDING_currentParentVertex=m_SEEDING_receivedIngoingEdges[m_SEEDING_ingoingEdgeIndex];
-						m_SEEDING_numberOfIngoingEdgesWithSeedCoverage++;
-					}
 					m_SEEDING_ingoingEdgeIndex++;
+					m_ingoingCoverages.push_back(m_SEEDING_receivedVertexCoverage);
 				}else if(!m_SEEDING_vertexCoverageRequested){
 					uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 					message[0]=vertex;
-					//cout<<__func__<<" "<<__LINE__<<" "<<idToWord(m_SEEDING_currentVertex,21)<<" "<<idToWord(vertex,21)<<endl;
 					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0],getSize(),m_wordSize),RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,getRank());
 					m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 					m_SEEDING_vertexCoverageRequested=true;
 				}else if(m_virtualCommunicator->isMessageProcessed(m_workerIdentifier)){
 					m_SEEDING_receivedVertexCoverage=m_virtualCommunicator->getResponseElements(m_workerIdentifier)[0];
 					m_cache[vertex]=m_SEEDING_receivedVertexCoverage;
-					if(m_SEEDING_receivedVertexCoverage>=(m_seedCoverage)){
-						m_SEEDING_currentParentVertex=m_SEEDING_receivedIngoingEdges[m_SEEDING_ingoingEdgeIndex];
-						m_SEEDING_numberOfIngoingEdgesWithSeedCoverage++;
-					}
 					m_SEEDING_ingoingEdgeIndex++;
 					m_SEEDING_vertexCoverageRequested=false;
-					if(m_SEEDING_ingoingEdgeIndex==(int)m_SEEDING_receivedIngoingEdges.size()&&m_SEEDING_numberOfIngoingEdgesWithSeedCoverage!=1){
-						m_SEEDING_1_1_test_done=true;
-						m_SEEDING_1_1_test_result=false;
-					}
+					m_ingoingCoverages.push_back(m_SEEDING_receivedVertexCoverage);
 				}
 			}else if(m_SEEDING_outgoingEdgeIndex<(int)m_SEEDING_receivedOutgoingEdges.size()){
 				uint64_t vertex=(uint64_t)m_SEEDING_receivedOutgoingEdges[m_SEEDING_outgoingEdgeIndex];
 				if(m_cache.count(vertex)>0){
 					m_SEEDING_receivedVertexCoverage=m_cache[vertex];
-					if(m_SEEDING_receivedVertexCoverage>=(m_seedCoverage)){
-						m_SEEDING_currentChildVertex=m_SEEDING_receivedOutgoingEdges[m_SEEDING_outgoingEdgeIndex];
-						m_SEEDING_numberOfOutgoingEdgesWithSeedCoverage++;
-					}
 					m_SEEDING_outgoingEdgeIndex++;
+					m_outgoingCoverages.push_back(m_SEEDING_receivedVertexCoverage);
 				}else if(!m_SEEDING_vertexCoverageRequested){
 					uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 					message[0]=vertex;
@@ -226,12 +244,9 @@ void SeedWorker::do_1_1_test(){
 				}else if(m_virtualCommunicator->isMessageProcessed(m_workerIdentifier)){
 					m_SEEDING_receivedVertexCoverage=m_virtualCommunicator->getResponseElements(m_workerIdentifier)[0];
 					m_cache[vertex]=m_SEEDING_receivedVertexCoverage;
-					if(m_SEEDING_receivedVertexCoverage>=(m_seedCoverage)){
-						m_SEEDING_currentChildVertex=m_SEEDING_receivedOutgoingEdges[m_SEEDING_outgoingEdgeIndex];
-						m_SEEDING_numberOfOutgoingEdgesWithSeedCoverage++;
-					}
 					m_SEEDING_outgoingEdgeIndex++;
 					m_SEEDING_vertexCoverageRequested=false;
+					m_outgoingCoverages.push_back(m_SEEDING_receivedVertexCoverage);
 				}
 			}else{// done analyzing ingoing edges.
 				m_SEEDING_ingoingEdgesDone=true;
@@ -239,8 +254,71 @@ void SeedWorker::do_1_1_test(){
 		}
 	}else{
 		m_SEEDING_1_1_test_done=true;
-		m_SEEDING_1_1_test_result=(m_SEEDING_numberOfIngoingEdgesWithSeedCoverage==1)&&
-			(m_SEEDING_numberOfOutgoingEdgesWithSeedCoverage==1);
+		int multiplicator=10;
+		bool oneParent=false;
+
+		// if OK, set m_SEEDING_currentChildVertex and m_SEEDING_currentParentVertex
+		
+		for(int i=0;i<(int)m_ingoingCoverages.size();i++){
+			int coverage=m_ingoingCoverages[i];
+			VERTEX_TYPE vertex=m_SEEDING_receivedIngoingEdges[i];
+			oneParent=true;
+			for(int j=0;j<(int)m_ingoingCoverages.size();j++){
+				if(i==j){
+					continue;
+				}
+				int otherCoverage=m_ingoingCoverages[j];
+				if(otherCoverage*multiplicator>coverage){
+					oneParent=false;
+					break;
+				}
+			}
+			if(oneParent){
+				m_SEEDING_currentParentVertex=vertex;
+				break;
+			}
+		}
+		
+		bool oneChild=false;
+
+		for(int i=0;i<(int)m_outgoingCoverages.size();i++){
+			int coverage=m_outgoingCoverages[i];
+			VERTEX_TYPE vertex=m_SEEDING_receivedOutgoingEdges[i];
+			oneChild=true;
+			for(int j=0;j<(int)m_outgoingCoverages.size();j++){
+				if(i==j){
+					continue;
+				}
+				int otherCoverage=m_outgoingCoverages[j];
+				if(otherCoverage*multiplicator>coverage){
+					oneChild=false;
+					break;
+				}
+			}
+			if(oneChild){
+				m_SEEDING_currentChildVertex=vertex;
+				break;
+			}
+		}
+
+
+		m_SEEDING_1_1_test_result=oneChild&&oneParent;
+
+/*
+		if((int)m_SEEDING_seed.size()>=m_parameters->getMinimumContigLength()-m_parameters->getWordSize()+1
+			&&!m_SEEDING_1_1_test_result){
+			printf("Not adequate: in: ");
+			for(int i=0;i<(int)m_ingoingCoverages.size();i++){
+				printf(" %i",m_ingoingCoverages[i]);
+			}
+			printf(" out ");
+			for(int i=0;i<(int)m_outgoingCoverages.size();i++){
+				printf(" %i",m_outgoingCoverages[i]);
+			}
+			printf("\n");
+		}
+*/
+
 	}
 }
 

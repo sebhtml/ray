@@ -65,16 +65,20 @@ AC_CHECK_LIB(z, inflate,
 
 AC_CHECK_LIB(bz2, BZ2_decompress,
         [AC_CHECK_HEADERS([bzlib.h],
-          AM_CONDITIONAL(HAVE_BZ2, true)
+          AM_CONDITIONAL(HAVE_LIBBZ2, true)
           AC_DEFINE(HAVE_LIBBZ2,1,[Have libbz2]),
-         AM_CONDITIONAL(HAVE_BZ2, false))],
-         AM_CONDITIONAL(HAVE_BZ2, false))
+         AM_CONDITIONAL(HAVE_LIBBZ2, false))],
+         AM_CONDITIONAL(HAVE_LIBBZ2, false))
+
+AC_CHECK_LIB(rt, clock_gettime,
+        [AC_CHECK_HEADERS([time.h],
+          AM_CONDITIONAL(HAVE_CLOCK_GETTIME, true)
+          AC_DEFINE(HAVE_CLOCK_GETTIME,1,[Have rt]),
+         AM_CONDITIONAL(HAVE_CLOCK_GETTIME, false))],
+         AM_CONDITIONAL(HAVE_CLOCK_GETTIME, false))
+
 
 AC_CONFIG_FILES([code/Makefile
-Makefile
-scripts/gnuplot/Makefile
-scripts/examples/Makefile
-scripts/examples/SunGridEngine,Open-MPI/Makefile
-scripts/Makefile])
+Makefile])
 
 AC_OUTPUT
