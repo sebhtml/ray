@@ -80,11 +80,17 @@ void SeedingData::computeSeeds(){
 			int nucleotides=seed.size()+(m_wordSize)-1;
 			// only consider the long ones.
 			if(nucleotides>=m_parameters->getMinimumContigLength()){
-				printf("Rank %i discovered a seed with %i vertices\n",m_rank,(int)seed.size());
-				fflush(stdout);
-				showMemoryUsage(m_rank);
 				
-				m_SEEDING_seeds.push_back(seed);
+				VERTEX_TYPE firstVertex=seed[0];
+				VERTEX_TYPE lastVertex=seed[seed.size()-1];
+				VERTEX_TYPE firstReverse=m_parameters->_complementVertex(lastVertex);
+
+				if(firstVertex<firstReverse){
+					printf("Rank %i discovered a seed with %i vertices\n",m_rank,(int)seed.size());
+					fflush(stdout);
+					showMemoryUsage(m_rank);
+					m_SEEDING_seeds.push_back(seed);
+				}
 			}
 		}
 		m_activeWorkerIterator++;
@@ -109,11 +115,18 @@ void SeedingData::computeSeeds(){
 					assert(m_completedJobs==0&&m_activeWorkers.size()==0&&m_aliveWorkers.size()==0);
 				}
 				#endif
-				m_splayTreeIterator.next();
+				Vertex*node=m_splayTreeIterator.next();
 				VERTEX_TYPE vertexKey=m_splayTreeIterator.getKey();
 
-				m_aliveWorkers[m_SEEDING_i].constructor(vertexKey,m_parameters,m_outboxAllocator,&m_virtualCommunicator,m_SEEDING_i);
-				m_activeWorkers.insert(m_SEEDING_i);
+				int coverage=node->getCoverage(vertexKey);
+				int minimum=5;
+				if(coverage<minimum){
+					m_completedJobs++;
+				}else{
+					m_aliveWorkers[m_SEEDING_i].constructor(vertexKey,m_parameters,m_outboxAllocator,&m_virtualCommunicator,m_SEEDING_i);
+					m_activeWorkers.insert(m_SEEDING_i);
+				}
+
 				int population=m_aliveWorkers.size();
 				if(population>m_maximumWorkers){
 					m_maximumWorkers=population;

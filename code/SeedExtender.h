@@ -48,6 +48,7 @@ class DepthFirstSearchData;
 using namespace std;
 
 class SeedExtender{
+	int m_extended;
 	bool m_hasPairedSequences;
 	bool m_pickedInformation;
 	SplayTree<uint64_t,Read>m_cacheForRepeatedReads;

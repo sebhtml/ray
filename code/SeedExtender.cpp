@@ -42,47 +42,15 @@ int*last_value,bool*vertexCoverageRequested,int wordSize,bool*colorSpaceMode,int
 int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,vector<uint64_t>*receivedOutgoingEdges,Chooser*chooser,
 BubbleData*bubbleData,
 int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
-	if((*seeds).size()==0){
-		ed->destructor();
-		ed->getAllocator()->clear();
-		printf("Rank %i is extending seeds [%i/%i] (completed)\n",theRank,(int)(*seeds).size(),(int)(*seeds).size());
-		fflush(stdout);
-		showMemoryUsage(theRank);
-		fflush(stdout);
-		ed->m_mode_EXTENSION=false;
-		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_EXTENSION_IS_DONE,theRank);
-		(*outbox).push_back(aMessage);
-		m_cacheAllocator.clear();
-		m_cacheForRepeatedReads.clear();
-		//m_cacheHashTable.clear();
-		m_cacheForListOfReads.clear();
-
-		m_cache.clear();
-		delete m_dfsData;
-		return;
-	}
-	if(!ed->m_EXTENSION_initiated){
-		ed->m_EXTENSION_initiated=true;
-		ed->m_EXTENSION_currentSeedIndex=0;
-		ed->m_EXTENSION_currentPosition=0;
-		ed->m_EXTENSION_currentSeed=(*seeds)[ed->m_EXTENSION_currentSeedIndex];
-		(*currentVertex)=ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition];
-		ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
-		ed->m_EXTENSION_directVertexDone=false;
-		ed->m_EXTENSION_VertexAssembled_requested=false;
-		ed->m_EXTENSION_complementedSeed=false;
-		ed->m_EXTENSION_complementedSeed2=true;
-	
-		ed->constructor(m_parameters);
-
-	}else if(ed->m_EXTENSION_currentSeedIndex==(int)(*seeds).size()){
+	if(ed->m_EXTENSION_currentSeedIndex==(int)(*seeds).size()){
 		ed->destructor();
 		ed->getAllocator()->clear();
 		m_cacheAllocator.clear();
 		m_cache.clear();
 
 		printf("Rank %i is extending seeds [%i/%i] (completed)\n",theRank,(int)(*seeds).size(),(int)(*seeds).size());
+		double ratio=(0.0+m_extended)/seeds->size();
+		printf("Rank %i extended %i seeds out of %i (%.2f%%)\n",theRank,m_extended,(int)seeds->size(),ratio);
 		fflush(stdout);
 
 		showMemoryUsage(theRank);
@@ -97,6 +65,19 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_EXTENSION_IS_DONE,theRank);
 		outbox->push_back(aMessage);
 		return;
+	}else if(!ed->m_EXTENSION_initiated){
+		ed->m_EXTENSION_initiated=true;
+		ed->m_EXTENSION_currentSeedIndex=0;
+		ed->m_EXTENSION_currentPosition=0;
+		ed->m_EXTENSION_currentSeed=(*seeds)[ed->m_EXTENSION_currentSeedIndex];
+		(*currentVertex)=ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition];
+		ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
+		ed->m_EXTENSION_directVertexDone=false;
+		ed->m_EXTENSION_VertexAssembled_requested=false;
+		ed->m_EXTENSION_complementedSeed=false;
+		ed->m_EXTENSION_complementedSeed2=true;
+	
+		ed->constructor(m_parameters);
 	}
 
 	// algorithms here.
@@ -811,6 +792,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 		int theCurrentSize=ed->m_EXTENSION_extension->size();
 		if(theCurrentSize%10000==0){
 			if(theCurrentSize==0 && !ed->m_EXTENSION_complementedSeed){
+				m_extended++;
 				printf("Rank %i starts on a seed, length is %i [%i/%i]\n",theRank,
 				(int)ed->m_EXTENSION_currentSeed.size(),
 					ed->m_EXTENSION_currentSeedIndex,(int)(*seeds).size());
