@@ -39,7 +39,7 @@ Parameters::Parameters(){
 	m_prefix="RayOutput";
 	m_initiated=false;
 	m_directory="assembly";
-	m_minimumContigLength=200;
+	m_minimumContigLength=100;
 	m_wordSize=21;
 	m_colorSpaceMode=false;
 	m_reducerIsActivated=false;
@@ -589,7 +589,7 @@ void Parameters::computeAverageDistances(){
 				sum+=diff*diff*count;
 			}
 			sum/=n;
-			standardDeviation=(int)sqrt(sum);
+			standardDeviation=(int)sqrt((double)sum);
 		}else{
 			average=0;
 			standardDeviation=0;

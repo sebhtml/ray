@@ -86,19 +86,17 @@ void SeedWorker::work(){
 						printf(" %i",m_outgoingCoverages[i]);
 					}
 					printf("\n");
-/*
+
 					printf("Rank %i last ",m_rank);
 					int n=100;
 					if((int)m_coverages.size()<n){
 						n=m_coverages.size();
 					}
-					for(int i=0;i<(int)m_coverages.size();i++){
-						printf(" %i",m_coverages[m_coverages.size()-1-i]);
+					for(int i=n-1;i>=0;i--){
+						printf(" %i",m_coverages[m_coverages.size()-i-1]);
 					}
 					printf("\n");
-*/
 				}
-
 			}else{
 				// we want some coherence...
 				if(m_SEEDING_seed.size()>0
@@ -190,6 +188,13 @@ void SeedWorker::do_1_1_test(){
 			vector<uint64_t> elements=m_virtualCommunicator->getResponseElements(m_workerIdentifier);
 			uint8_t edges=elements[0];
 			int coverage=elements[1];
+			
+			if(coverage==1){
+				m_SEEDING_1_1_test_result=false;
+				m_SEEDING_1_1_test_done=true;
+				return;
+			}
+
 			m_cache[m_SEEDING_currentVertex]=coverage;
 
 			m_SEEDING_receivedIngoingEdges=_getIngoingEdges(m_SEEDING_currentVertex,edges,m_wordSize);
@@ -301,24 +306,7 @@ void SeedWorker::do_1_1_test(){
 			}
 		}
 
-
 		m_SEEDING_1_1_test_result=oneChild&&oneParent;
-
-/*
-		if((int)m_SEEDING_seed.size()>=m_parameters->getMinimumContigLength()-m_parameters->getWordSize()+1
-			&&!m_SEEDING_1_1_test_result){
-			printf("Not adequate: in: ");
-			for(int i=0;i<(int)m_ingoingCoverages.size();i++){
-				printf(" %i",m_ingoingCoverages[i]);
-			}
-			printf(" out ");
-			for(int i=0;i<(int)m_outgoingCoverages.size();i++){
-				printf(" %i",m_outgoingCoverages[i]);
-			}
-			printf("\n");
-		}
-*/
-
 	}
 }
 

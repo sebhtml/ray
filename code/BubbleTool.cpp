@@ -83,20 +83,10 @@ map<uint64_t,int>*coverages){
 	#endif
 
 	if(trees->size()<2){
-		#ifdef DEBUG_BUBBLES
-		if(idToWord(root,m_wordSize)=="CCTATTATTGAAAAAACGGGA"){
-			cout<<"<2"<<endl;
-		}
-		#endif
 		return false;
 	}
 
 	if(trees->size()!=2){
-		#ifdef DEBUG_BUBBLES
-		if(idToWord(root,m_wordSize)=="CCTATTATTGAAAAAACGGGA"){
-			cout<<"!=2"<<endl;
-		}
-		#endif
 		return false;// we don'T support that right now ! triploid stuff are awesome.
 	}
 
@@ -124,12 +114,6 @@ map<uint64_t,int>*coverages){
 	}
 
 	if(!foundTarget){
-
-		#ifdef DEBUG_BUBBLES
-		if(idToWord(root,m_wordSize)=="CCTATTATTGAAAAAACGGGA"){
-			cout<<"No target found for CCTATTATTGAAAAAACGGGA"<<endl;
-		}
-		#endif
 		return false;
 	}
 

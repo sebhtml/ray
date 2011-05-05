@@ -635,7 +635,6 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	cout<<"Rank "<<getRank()<<": the peak coverage is "<<m_peakCoverage<<endl;
 
 	m_seedCoverage=(m_peakCoverage+m_minimumCoverage)/2;
-	cout<<"Rank "<<getRank()<<": the seed coverage is "<<m_seedCoverage<<endl;
 
 	m_coverageDistribution.clear();
 

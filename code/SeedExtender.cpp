@@ -19,7 +19,7 @@
 
 */
 
-//#define HUNT_INFINITE_BUG
+#define SHOW_IMPOSSIBLE_CHOICE
 
 #include <malloc_types.h>
 #include <string.h>
@@ -32,9 +32,6 @@
 #include <BubbleTool.h>
 #include <crypto.h>
 using namespace std;
-
-// uncomment to display how Ray chooses things.
-//#define SHOW_CHOICE
 
 void SeedExtender::extendSeeds(vector<vector<uint64_t> >*seeds,ExtensionData*ed,int theRank,StaticVector*outbox,
   uint64_t*currentVertex,FusionData*fusionData,RingAllocator*outboxAllocator,bool*edgesRequested,int*outgoingEdgeIndex,
@@ -49,7 +46,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		m_cache.clear();
 
 		printf("Rank %i is extending seeds [%i/%i] (completed)\n",theRank,(int)(*seeds).size(),(int)(*seeds).size());
-		double ratio=(0.0+m_extended)/seeds->size();
+		double ratio=(0.0+m_extended)/seeds->size()*100.0;
 		printf("Rank %i extended %i seeds out of %i (%.2f%%)\n",theRank,m_extended,(int)seeds->size(),ratio);
 		fflush(stdout);
 
@@ -95,7 +92,6 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		if(ed->m_EXTENSION_currentPosition>0){
 			ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
 			ed->m_EXTENSION_markedCurrentVertexAsAssembled=false;
-			//cout<<"Preset m_EXTENSION_markedCurrentVertexAsAssembled <- false"<<endl;
 
 			ed->m_EXTENSION_reads_requested=false;
 			m_messengerInitiated=false;
@@ -151,7 +147,6 @@ uint64_t*currentVertex,int theRank,bool*vertexCoverageRequested,vector<uint64_t>
 bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,int wordSize
 ){
 	if(!(*edgesRequested)){
-		//cout<<__func__<<" init"<<endl;
 		ed->m_EXTENSION_coverages->clear();
 		ed->m_enumerateChoices_outgoingEdges.clear();
 		(*edgesReceived)=true;
@@ -196,7 +191,6 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 			}
 		}else{
 			receivedOutgoingEdges->clear();
-			//cout<<__func__<<" Got "<<ed->m_enumerateChoices_outgoingEdges.size()<<" choices."<<endl;
 			ed->m_EXTENSION_enumerateChoices=true;
 			ed->m_EXTENSION_choose=false;
 			ed->m_EXTENSION_singleEndResolution=false;
@@ -236,7 +230,6 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 	if(m_expiredReads.count(ed->m_EXTENSION_currentPosition)>0){
 		for(int i=0;i<(int)m_expiredReads[ed->m_EXTENSION_currentPosition].size();i++){
 			uint64_t uniqueId=m_expiredReads[ed->m_EXTENSION_currentPosition][i];
-			//cout<<"Expires: "<<uniqueId<<" Position="<<ed->m_EXTENSION_currentPosition<<endl;
 			ed->m_EXTENSION_readsInRange->erase(uniqueId);
 
 			// free the sequence
@@ -275,7 +268,6 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 
 	// use the seed to extend the thing.
 	if(ed->m_EXTENSION_currentPosition<(int)ed->m_EXTENSION_currentSeed.size()){
-		//cout<<"Extending with seed, p="<<ed->m_EXTENSION_currentPosition<<" size="<<ed->m_EXTENSION_currentSeed.size()<<endl;
 
 		for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
 			if(ed->m_enumerateChoices_outgoingEdges[i]==ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition]){
@@ -290,9 +282,11 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 
 		#define SHOW_EXTEND_WITH_SEED
 		#ifdef SHOW_EXTEND_WITH_SEED
-		cout<<"What the hell? position="<<ed->m_EXTENSION_currentPosition<<" "<<idToWord(ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition],wordSize)<<" with "<<ed->m_enumerateChoices_outgoingEdges.size()<<" choices ";
+		cout<<"Error: The seed contains a choice not supported by the graph."<<endl;
+		cout<<"Extension length: "<<ed->m_EXTENSION_extension->size()<<" vertices"<<endl;
+		cout<<"position="<<ed->m_EXTENSION_currentPosition<<" "<<idToWord(ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition],wordSize)<<" with "<<ed->m_enumerateChoices_outgoingEdges.size()<<" choices ";
 		cout<<endl;
-		cout<<"seed size= "<<ed->m_EXTENSION_currentSeed.size()<<endl;
+		cout<<"Seed length: "<<ed->m_EXTENSION_currentSeed.size()<<" vertices"<<endl;
 		cout<<"Choices: ";
 		for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
 			cout<<" "<<idToWord(ed->m_enumerateChoices_outgoingEdges[i],wordSize);
@@ -307,10 +301,8 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 		#endif
 
 	// else, do a paired-end or single-end lookup if reads are in range.
-		
 
 	}else{
-
 /*
  *
  *                         min                          seed                       peak
@@ -682,14 +674,50 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 	}
 }
 
+void SeedExtender::printTree(VERTEX_TYPE root,
+map<VERTEX_TYPE,set<VERTEX_TYPE> >*arcs,map<VERTEX_TYPE,int>*coverages,int depth,set<VERTEX_TYPE>*visited){
+	if(arcs->count(root)==0)
+		return;
+	if(visited->count(root)>0)
+		return;
+	visited->insert(root);
+	set<VERTEX_TYPE> children=(*arcs)[root];
+	for(set<VERTEX_TYPE>::iterator i=children.begin();i!=children.end();++i){
+		for(int j=0;j<depth;j++)
+			printf(" ");
+		string s=idToWord(*i,m_parameters->getWordSize());
+		printf("%s %i\n",s.c_str(),(*coverages)[*i]);
+		printTree(*i,arcs,coverages,depth+1,visited);
+	}
+}
+
 void SeedExtender::storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<vector<uint64_t> >*seeds,
 uint64_t*currentVertex,BubbleData*bubbleData){
 	if(ed->m_EXTENSION_extension->size()>=100){
 
-		#ifdef SHOW_CHOICE
+		#ifdef SHOW_IMPOSSIBLE_CHOICE
 		cout<<"Choosing... (impossible!)"<<endl;
 		inspect(ed,currentVertex);
 		cout<<"Stopping extension..."<<endl;
+		map<VERTEX_TYPE,set<VERTEX_TYPE> >arcs;
+		for(int i=0;i<(int)bubbleData->m_BUBBLE_visitedVertices.size();i++){
+			VERTEX_TYPE root=*currentVertex;
+			VERTEX_TYPE child=ed->m_enumerateChoices_outgoingEdges[i];
+			arcs[root].insert(child);
+			for(int j=0;j<(int)bubbleData->m_BUBBLE_visitedVertices[i].size();j+=2){
+				VERTEX_TYPE first=bubbleData->m_BUBBLE_visitedVertices[i][j];
+				VERTEX_TYPE second=bubbleData->m_BUBBLE_visitedVertices[i][j+1];
+				arcs[first].insert(second);
+			}
+		}
+		printf("\n");
+		printf("Tree\n");
+		string s=idToWord(*currentVertex,m_parameters->getWordSize());
+		printf("%s %i\n",s.c_str(),ed->m_currentCoverage);
+		set<VERTEX_TYPE> visited;
+		printTree(*currentVertex,&arcs,
+				&bubbleData->m_coverages,1,&visited);
+		printf("\n");
 		#endif
 
 		printExtensionStatus(currentVertex);
@@ -1011,24 +1039,11 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				m_sequenceRequested=false;
 			}
 		}else{
-/*
-			int position=ed->m_EXTENSION_extension->size()-1;
-			cout<<"Rank "<<m_parameters->getRank()<<" Vertex: "<<idToWord(*currentVertex,m_parameters->getWordSize())<<
-				" Coverage: "<<ed->m_currentCoverage<<" ReadsInRange: "<<ed->m_EXTENSION_readsInRange->size()<<
-				" MatesToMeet: "<<m_matesToMeet.size()<<
-				" Position: "<<position<<" Received "<<ed->m_EXTENSION_receivedReads.size()<<" sequences.";
-			if(ed->m_currentCoverage>=3*m_parameters->getPeakCoverage()){
-				cout<<" REPEAT";
-			}
-			cout<<endl;
-*/
-
 			ed->m_EXTENSION_directVertexDone=true;
 			ed->m_EXTENSION_VertexMarkAssembled_requested=false;
 			ed->m_EXTENSION_enumerateChoices=false;
 			(*edgesRequested)=false;
 			ed->m_EXTENSION_markedCurrentVertexAsAssembled=true;
-			//cout<<"m_EXTENSION_markedCurrentVertexAsAssembled <- true"<<endl;
 		}
 	}
 }

@@ -86,6 +86,10 @@ class SeedExtender{
 	void showReadsInRange();
 
 	void printExtensionStatus(uint64_t*currentVertex);
+
+
+	void printTree(VERTEX_TYPE root,
+map<VERTEX_TYPE,set<VERTEX_TYPE> >*arcs,map<VERTEX_TYPE,int>*coverages,int depth,set<VERTEX_TYPE>*visited);
 public:
 	bool m_sequenceReceived;
 	bool m_sequenceRequested;

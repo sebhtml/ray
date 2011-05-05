@@ -107,18 +107,14 @@ void LibraryWorker::work(){
 					assert(annotation.getRank()<m_parameters->getSize());
 					#endif
 					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),RAY_MPI_TAG_GET_READ_MATE,m_parameters->getRank());
-					//cout<<"Requesting mate"<<endl;
-					//(m_outbox)->push_back(aMessage);
 					m_virtualCommunicator->pushMessage(m_SEEDING_i,&aMessage);
 					m_EXTENSION_hasPairedReadRequested=true;
 				}else if(m_virtualCommunicator->isMessageProcessed(m_SEEDING_i)){
-					//cout<<"Got mate"<<endl;
 					vector<uint64_t> buffer=m_virtualCommunicator->getResponseElements(m_SEEDING_i);
 					#ifdef ASSERT
 					assert((int)buffer.size()==4);
 					#endif
 					if((int)buffer[1]!=-1){
-						//cout<<"Got mate, checking if automatic"<<endl;
 						int library=buffer[3];
 						int readLength=buffer[0];
 						bool isAutomatic=m_parameters->isAutomatic(library);
@@ -137,21 +133,16 @@ void LibraryWorker::work(){
 									int p1=element->m_readPosition;
 									int p2=m_EXTENSION_currentPosition;
 									int d=p2-p1+readLength+leftStrandPosition-rightStrandPosition;
-									//cout<<"d="<<d<<" lId="<<annotation.getUniqueId()<<" rId="<<uniqueReadIdentifier<<" pLeft="<<p1<<" pRight="<<p2<<" lStrand="<<leftStrand<<" rStrand="<<rightStrand<<" leftStrandPos="<<leftStrandPosition<<" rightStrandPos="<<rightStrandPosition<<" RightLength="<<readLength<<endl;
 									(*m_libraryDistances)[library][d]++;
 									(*m_detectedDistances)++;
 								}
-							}else{
-								//cout<<"Pair was not found."<<endl;
 							}
 						}
 					}
-					//cout<<"Next read"<<endl;
 					m_EXTENSION_edgeIterator++;
 					m_EXTENSION_hasPairedReadRequested=false;
 				}
 			}else{
-				//cout<<"Storing positions"<<endl;
 				for(int i=0;i<(int)m_readFetcher.getResult()->size();i++){
 					uint64_t uniqueId=m_readFetcher.getResult()->at(i).getUniqueId();
 					int position=m_EXTENSION_currentPosition;
@@ -164,14 +155,10 @@ void LibraryWorker::work(){
 					element->m_readPosition=position;
 					element->m_readStrand=strand;
 					element->m_strandPosition=strandPosition;
-					//cout<<"Read Id="<<uniqueId<<" Strand="<<strand<<" StrandPosition="<<strandPosition<<" PositionOnSeed="<<position<<endl;
 				}
-				//cout<<"Next position"<<endl;
 				m_EXTENSION_currentPosition++;
 				m_EXTENSION_reads_requested=false;
 			}
 		}
 	}
-
-
 }
