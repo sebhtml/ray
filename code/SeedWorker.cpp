@@ -77,21 +77,21 @@ void SeedWorker::work(){
 				m_finished=true;
 
 				if((int)m_SEEDING_seed.size()>=m_parameters->getMinimumContigLength()-m_parameters->getWordSize()+1){
-					printf("Rank %i next vertex: in ",m_rank);
+					printf("Rank %i next vertex: Coverage= %i, ingoing coverages:",m_rank,m_cache[m_SEEDING_currentVertex]);
 					for(int i=0;i<(int)m_ingoingCoverages.size();i++){
 						printf(" %i",m_ingoingCoverages[i]);
 					}
-					printf(" out ");
+					printf(" outgoing coverages:");
 					for(int i=0;i<(int)m_outgoingCoverages.size();i++){
 						printf(" %i",m_outgoingCoverages[i]);
 					}
 					printf("\n");
 
-					printf("Rank %i last ",m_rank);
 					int n=100;
 					if((int)m_coverages.size()<n){
 						n=m_coverages.size();
 					}
+					printf("Rank %i last %i coverage values in the seed:",m_rank,n);
 					for(int i=n-1;i>=0;i--){
 						printf(" %i",m_coverages[m_coverages.size()-i-1]);
 					}
@@ -259,7 +259,7 @@ void SeedWorker::do_1_1_test(){
 		}
 	}else{
 		m_SEEDING_1_1_test_done=true;
-		int multiplicator=10;
+		int multiplicator=4;
 		bool oneParent=false;
 
 		// if OK, set m_SEEDING_currentChildVertex and m_SEEDING_currentParentVertex

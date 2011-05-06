@@ -303,28 +303,17 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 	// else, do a paired-end or single-end lookup if reads are in range.
 
 	}else{
-/*
- *
- *                         min                          seed                       peak
- *             min/2       
- *                                      2min
- *   A         ==============
- *   B                      =============================
- *   C                      =============
- */
 		// stuff in the reads to appropriate arcs.
 		if(!ed->m_EXTENSION_singleEndResolution && ed->m_EXTENSION_readsInRange->size()>0){
 			// try to use single-end reads to resolve the repeat.
 			// for each read in range, ask them their vertex at position (CurrentPositionOnContig-StartPositionOfReadOnContig)
 			// and cumulate the results in
-			// ed->m_EXTENSION_readPositions, which is a map<int,vector<int> > if one of the vertices match
 			if(ed->m_EXTENSION_readIterator!=ed->m_EXTENSION_readsInRange->end()){
 				m_removedUnfitLibraries=false;
 				// we received the vertex for that read,
 				// now check if it matches one of 
 				// the many choices we have
 				uint64_t uniqueId=*(ed->m_EXTENSION_readIterator);
-				//cout<<"Iterating on reads "<<uniqueId<<endl;
 				ExtensionElement*element=ed->getUsedRead(uniqueId);
 				#ifdef ASSERT
 				assert(element!=NULL);
@@ -332,7 +321,6 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				int startPosition=element->getPosition();
 				int distance=ed->m_EXTENSION_extension->size()-startPosition+element->getStrandPosition();
 
-				//int coverageForRightRead=ed->m_extensionCoverageValues->at(startPosition);
 				int repeatValueForRightRead=ed->m_repeatedValues->at(startPosition);
 				#ifdef ASSERT
 				assert(startPosition<(int)ed->m_extensionCoverageValues->size());
@@ -351,7 +339,6 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 					assert(false);
 					#endif
 					// the read is now out-of-range
-					//cout<<"out of range Distance="<<distance<<" Length="<<(ed->m_EXTENSION_receivedLength-wordSize)<<endl;
 					ed->m_EXTENSION_readIterator++;	
 					return;
 				}
@@ -361,20 +348,15 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				assert(theRightStrand=='R'||theRightStrand=='F');
 				assert(element->getType()==TYPE_SINGLE_END||element->getType()==TYPE_RIGHT_END||element->getType()==TYPE_LEFT_END);
 				#endif
-				//bool isARightSequence=(theRightStrand=='R' && element->isRightEnd())||(theRightStrand=='F' && element->isLeftEnd());
-				//isARightSequence=true;// TODO: remove
 
 				ed->m_EXTENSION_receivedReadVertex=kmerAtPosition(theSequence,distance,wordSize,theRightStrand,*colorSpaceMode);
-				//cout<<"Vertex is "<<idToWord(ed->m_EXTENSION_receivedReadVertex,wordSize)<<endl;
 				// process each edge separately.
 				// got a match!
-				//cout<<"Strand="<<theRightStrand<<" Type="<<element->getType()<<" isRight="<<isARightSequence<<endl;
 
 				if(!element->hasPairedRead()){
 					if(repeatValueForRightRead<repeatThreshold){
 						ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(distance);	
 					}
-
 					ed->m_EXTENSION_readIterator++;
 				}else{
 					PairedRead*pairedRead=element->getPairedRead();
@@ -383,24 +365,18 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 					if(uniqueReadIdentifier>uniqueId){
 						diff=uniqueReadIdentifier-uniqueId;
 					}
-					//cout<<"has paired read rightStrand="<<theRightStrand<<" RightId="<<uniqueId<<" LeftId="<<uniqueReadIdentifier<<" Diff="<<diff<<endl;
 					int library=pairedRead->getLibrary();
 					int expectedFragmentLength=m_parameters->getLibraryAverageLength(library);
 					int expectedDeviation=m_parameters->getLibraryStandardDeviation(library);
-					//bool leftReadIsLeftInThePair=pairedRead.isLeftRead();
 					ExtensionElement*extensionElement=ed->getUsedRead(uniqueReadIdentifier);
 					if(extensionElement!=NULL){// use to be via readsPositions
 						char theLeftStrand=extensionElement->getStrand();
 						int startingPositionOnPath=extensionElement->getPosition();
 
-
-						//int coverageForLeftRead=ed->m_extensionCoverageValues->at(startingPositionOnPath);
 						int repeatLengthForLeftRead=ed->m_repeatedValues->at(startingPositionOnPath);
 						int observedFragmentLength=(startPosition-startingPositionOnPath)+ed->m_EXTENSION_receivedLength+extensionElement->getStrandPosition()-element->getStrandPosition();
-						//cout<<"Observed="<<observedFragmentLength<<endl;
 						int multiplier=3;
 
-						//int theDistance=startPosition-startingPositionOnPath;
 						if(expectedFragmentLength-multiplier*expectedDeviation<=observedFragmentLength 
 						&& observedFragmentLength <= expectedFragmentLength+multiplier*expectedDeviation 
 				&&( (theLeftStrand=='F' && theRightStrand=='R')
@@ -408,9 +384,6 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				// the bridging pair is meaningless if both start in repeats
 				&&repeatLengthForLeftRead<repeatThreshold){
 						// it matches!
-							//int theDistance=startPosition-startingPositionOnPath+distance;
-							
-							//cout<<"Found element: LeftStrand="<<theLeftStrand<<" RightStrand="<<theRightStrand<<" LeftType="<<extensionElement->getType()<<" RightType="<<element->getType()<<endl;
 							ed->m_EXTENSION_pairedReadPositionsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(observedFragmentLength);
 							ed->m_EXTENSION_pairedLibrariesForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(library);
 							ed->m_EXTENSION_pairedReadsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(uniqueId);
@@ -426,14 +399,9 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 					ed->m_EXTENSION_readIterator++;
 				}
 			}else{
-				//cout<<"DOne iterating."<<endl;
-
 				if(!m_removedUnfitLibraries){
-					//cout<<"Removing unfit libraries."<<endl;
 					removeUnfitLibraries();
-					//cout<<"done."<<endl;
 					m_removedUnfitLibraries=true;
-					//cout<<"PairedReadsWithoutMate="<<m_ed->m_pairedReadsWithoutMate->size()<<endl;
 
 					// there is a bug with this on human genome infinite loop)
 					setFreeUnmatedPairedReads();
@@ -484,9 +452,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 
 				ed->m_EXTENSION_singleEndResolution=true;
 
-				//cout<<"choose"<<endl;
 				int choice=(*oa).choose(ed,&(*chooser),minimumCoverage,(maxCoverage),m_parameters);
-				//cout<<"Choose is done."<<endl;
 				if(choice!=IMPOSSIBLE_CHOICE){
 					#ifdef SHOW_CHOICE
 					int count=0;
@@ -506,7 +472,6 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 					}
 					#endif
 
-					//cout<<"Choosed "<<choice<<endl;
 					#ifdef ASSERT
 					assert(choice<(int)ed->m_enumerateChoices_outgoingEdges.size());
 					#endif
@@ -538,6 +503,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				bubbleData->m_BUBBLE_visitedVerticesDepths.clear();
 				bubbleData->m_coverages.clear();
 				bubbleData->m_coverages[(*currentVertex)]=ed->m_currentCoverage;
+
 			}
 
 			if(m_dfsData->m_doChoice_tips_i<(int)ed->m_enumerateChoices_outgoingEdges.size()){
@@ -551,15 +517,8 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 				}else{
 					// keep the edge if it is not a tip.
 					if(m_dfsData->m_depthFirstSearch_maxDepth>=TIP_LIMIT){
-
 						// just don't try that strange graph place for now.
-						if(m_dfsData->m_depthFirstSearchVisitedVertices.size()==MAX_VERTICES_TO_VISIT){
-							/*
-							m_doChoice_tips_Detected=true;
-							bubbleData->m_doChoice_bubbles_Detected=true;
-							return;
-							*/
-						}
+
 						m_dfsData->m_doChoice_tips_newEdges.push_back(m_dfsData->m_doChoice_tips_i);
 						bubbleData->m_visitedVertices.push_back(m_dfsData->m_depthFirstSearchVisitedVertices);
 						// store visited vertices for bubble detection purposes.
@@ -599,9 +558,6 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 					}
 
 					(*currentVertex)=ed->m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_newEdges[0]];
-					#ifdef SHOW_PROGRESS
-					//cout<<"We have a win after tip elimination: "<<idToWord((*currentVertex),wordSize)<<endl;
-					#endif
 					ed->m_EXTENSION_choose=true;
 					ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 					ed->m_EXTENSION_directVertexDone=false;
@@ -686,7 +642,22 @@ map<VERTEX_TYPE,set<VERTEX_TYPE> >*arcs,map<VERTEX_TYPE,int>*coverages,int depth
 		for(int j=0;j<depth;j++)
 			printf(" ");
 		string s=idToWord(*i,m_parameters->getWordSize());
-		printf("%s %i\n",s.c_str(),(*coverages)[*i]);
+		#ifdef ASSERT
+		//assert(coverages->count(*i)>0);
+		#endif
+		int coverage=(*coverages)[*i];
+		#ifdef ASSERT
+		assert(coverages>0);
+		#endif
+		printf("%s coverage: %i depth: %i\n",s.c_str(),coverage,depth);
+
+		if(coverages->count(*i)==0||coverage==0){
+			cout<<"Error: "<<idToWord(*i,m_parameters->getWordSize())<<" don't have a coverage value"<<endl;
+		}
+
+		if(depth==1)
+			visited->clear();
+
 		printTree(*i,arcs,coverages,depth+1,visited);
 	}
 }
@@ -699,25 +670,30 @@ uint64_t*currentVertex,BubbleData*bubbleData){
 		cout<<"Choosing... (impossible!)"<<endl;
 		inspect(ed,currentVertex);
 		cout<<"Stopping extension..."<<endl;
-		map<VERTEX_TYPE,set<VERTEX_TYPE> >arcs;
-		for(int i=0;i<(int)bubbleData->m_BUBBLE_visitedVertices.size();i++){
-			VERTEX_TYPE root=*currentVertex;
-			VERTEX_TYPE child=ed->m_enumerateChoices_outgoingEdges[i];
-			arcs[root].insert(child);
-			for(int j=0;j<(int)bubbleData->m_BUBBLE_visitedVertices[i].size();j+=2){
-				VERTEX_TYPE first=bubbleData->m_BUBBLE_visitedVertices[i][j];
-				VERTEX_TYPE second=bubbleData->m_BUBBLE_visitedVertices[i][j+1];
-				arcs[first].insert(second);
+
+		if(ed->m_enumerateChoices_outgoingEdges.size()>1 && ed->m_EXTENSION_readsInRange->size()){
+			map<VERTEX_TYPE,set<VERTEX_TYPE> >arcs;
+			for(int i=0;i<(int)bubbleData->m_BUBBLE_visitedVertices.size();i++){
+				VERTEX_TYPE root=*currentVertex;
+				VERTEX_TYPE child=ed->m_enumerateChoices_outgoingEdges[i];
+				arcs[root].insert(child);
+				for(int j=0;j<(int)bubbleData->m_BUBBLE_visitedVertices[i].size();j+=2){
+					VERTEX_TYPE first=bubbleData->m_BUBBLE_visitedVertices[i][j];
+					VERTEX_TYPE second=bubbleData->m_BUBBLE_visitedVertices[i][j+1];
+					arcs[first].insert(second);
+				}
 			}
+			printf("\n");
+			printf("Tree\n");
+			string s=idToWord(*currentVertex,m_parameters->getWordSize());
+			printf("%s %i\n",s.c_str(),ed->m_currentCoverage);
+			set<VERTEX_TYPE> visited;
+			printTree(*currentVertex,&arcs,
+					&bubbleData->m_coverages,1,&visited);
+			printf("\n");
+
 		}
-		printf("\n");
-		printf("Tree\n");
-		string s=idToWord(*currentVertex,m_parameters->getWordSize());
-		printf("%s %i\n",s.c_str(),ed->m_currentCoverage);
-		set<VERTEX_TYPE> visited;
-		printTree(*currentVertex,&arcs,
-				&bubbleData->m_coverages,1,&visited);
-		printf("\n");
+
 		#endif
 
 		printExtensionStatus(currentVertex);
@@ -736,10 +712,6 @@ uint64_t*currentVertex,BubbleData*bubbleData){
 
 	fflush(stdout);
 	showMemoryUsage(theRank);
-/*
-	int a=ed->getAllocator()->getChunkSize()*ed->getAllocator()->getNumberOfChunks();
-	printf("Rank %i: database allocation: %i\n",theRank,a);
-*/
 
 	ed->m_EXTENSION_currentSeedIndex++;
 

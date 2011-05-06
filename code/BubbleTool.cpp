@@ -27,7 +27,7 @@
 #include <iostream>
 using namespace std;
 
-//#define DEBUG_BUBBLES
+#define DEBUG_BUBBLES
 
 void BubbleTool::printStuff(uint64_t root,vector<vector<uint64_t> >*trees,
 map<uint64_t,int>*coverages){
@@ -86,6 +86,8 @@ map<uint64_t,int>*coverages){
 		return false;
 	}
 
+	printStuff(root,trees,coverages);
+
 	if(trees->size()!=2){
 		return false;// we don'T support that right now ! triploid stuff are awesome.
 	}
@@ -103,7 +105,13 @@ map<uint64_t,int>*coverages){
 	for(int j=0;j<(int)trees->size();j++){
 		for(int i=0;i<(int)trees->at(j).size();i+=2){
 			uint64_t a=trees->at(j).at(i+1);
-			//cout<<"Tree="<<j<<" Visiting "<<idToWord(a,m_wordSize)<<endl;
+			#ifdef ASSERT
+			if(coverages->count(a)==0){
+				cout<<idToWord(a,m_parameters->getWordSize())<<" has no coverage."<<endl;
+			}
+			assert(coverages->count(a)>0);
+			#endif
+
 			coveringNumber[a]++;
 			if(!foundTarget && coveringNumber[a]==2){
 				foundTarget=true;
@@ -114,6 +122,9 @@ map<uint64_t,int>*coverages){
 	}
 
 	if(!foundTarget){
+		#ifdef DEBUG_BUBBLES
+		cout<<"Target not found."<<endl;
+		#endif
 		return false;
 	}
 
@@ -124,6 +135,22 @@ map<uint64_t,int>*coverages){
 	double multiplicator=1.5;
 	int peak=m_parameters->getPeakCoverage();
 	int multiplicatorThreshold=(int)multiplicator*peak;
+
+	#ifdef ASSERT
+	assert(coverages->count(root)>0);
+	assert(coverages->count(target)>0);
+	#endif
+	int rootCoverage=(*coverages)[root];
+	int targetCoverage=(*coverages)[target];
+	#ifdef ASSERT
+	assert(rootCoverage>0);
+	assert(targetCoverage>0);
+	#endif
+
+	#ifdef DEBUG_BUBBLES
+	cout<<"root="<<idToWord(root,m_wordSize)<<" target="<<idToWord(target,m_wordSize)<<endl;
+	cout<<"Root coverage: "<<rootCoverage<<" target coverage: "<<targetCoverage<<endl;
+	#endif
 
 	// the two alternative paths must have less redundancy.
 	if((*coverages)[target]>=multiplicatorThreshold
@@ -179,9 +206,6 @@ map<uint64_t,int>*coverages){
 			current=theParent;
 		}
 	}
-	#ifdef DEBUG_BUBBLES
-	cout<<"root="<<idToWord(root,m_wordSize)<<" target="<<idToWord(target,m_wordSize)<<endl;
-	#endif
 
 	#ifdef DEBUG_BUBBLES
 	cout<<"O1="<<observedValues[0].size()<<" O2="<<observedValues[1].size()<<endl;
@@ -236,14 +260,12 @@ map<uint64_t,int>*coverages){
 		#ifdef DEBUG_BUBBLES
 		cout<<"This is a genuine bubble"<<endl;
 		cout<<"root="<<idToWord(root,m_wordSize)<<" target="<<idToWord(target,m_wordSize)<<endl;
-		printStuff(root,trees,coverages);
 		#endif
 		return true;
 	}
 
 	#ifdef DEBUG_BUBBLES
 	cout<<"False at last"<<endl;
-	printStuff(root,trees,coverages);
 	#endif
 
 	return false;
