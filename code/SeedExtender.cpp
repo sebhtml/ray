@@ -500,7 +500,6 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 				m_dfsData->m_doChoice_tips_Initiated=true;
 				bubbleData->m_BUBBLE_visitedVertices.clear();
 				bubbleData->m_visitedVertices.clear();
-				bubbleData->m_BUBBLE_visitedVerticesDepths.clear();
 				bubbleData->m_coverages.clear();
 				bubbleData->m_coverages[(*currentVertex)]=ed->m_currentCoverage;
 
@@ -515,32 +514,28 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage,edgesReceived,wordSize);
 					}
 				}else{
+					#ifdef ASSERT
+					assert(!m_dfsData->m_depthFirstSearchVisitedVertices_vector.empty());
+					#endif
+
+					// store visited vertices for bubble detection purposes.
+					bubbleData->m_BUBBLE_visitedVertices.push_back(m_dfsData->m_depthFirstSearchVisitedVertices_vector);
+					for(map<uint64_t,int>::iterator i=m_dfsData->m_coverages.begin();
+						i!=m_dfsData->m_coverages.end();i++){
+						bubbleData->m_coverages[i->first]=i->second;
+					}
+
+					bubbleData->m_visitedVertices.push_back(m_dfsData->m_depthFirstSearchVisitedVertices);
 					// keep the edge if it is not a tip.
 					if(m_dfsData->m_depthFirstSearch_maxDepth>=TIP_LIMIT){
-						// just don't try that strange graph place for now.
-
 						m_dfsData->m_doChoice_tips_newEdges.push_back(m_dfsData->m_doChoice_tips_i);
-						bubbleData->m_visitedVertices.push_back(m_dfsData->m_depthFirstSearchVisitedVertices);
-						// store visited vertices for bubble detection purposes.
-
-						bubbleData->m_BUBBLE_visitedVertices.push_back(m_dfsData->m_depthFirstSearchVisitedVertices_vector);
-						for(map<uint64_t,int>::iterator i=m_dfsData->m_coverages.begin();
-							i!=m_dfsData->m_coverages.end();i++){
-							bubbleData->m_coverages[i->first]=i->second;
-						}
-						bubbleData->m_BUBBLE_visitedVerticesDepths.push_back(m_dfsData->m_depthFirstSearchVisitedVertices_depths);
-					}else{
-						#ifdef SHOW_PROGRESS_DEBUG
-						cout<<"We have a tip "<<m_dfsData->m_depthFirstSearch_maxDepth<<" LIMIT="<<TIP_LIMIT<<"."<<endl;
-						#endif
 					}
+
 					m_dfsData->m_doChoice_tips_i++;
 					m_dfsData->m_doChoice_tips_dfs_initiated=false;
 					m_dfsData->m_doChoice_tips_dfs_done=false;
 				}
 			}else{
-				#ifdef SHOW_PROGRESS
-				#endif
 				// we have a winner with tips investigation.
 				if(m_dfsData->m_doChoice_tips_newEdges.size()==1 && ed->m_EXTENSION_readsInRange->size()>0 
 		&& ed->m_EXTENSION_readPositionsForVertices[ed->m_enumerateChoices_outgoingEdges[m_dfsData->m_doChoice_tips_newEdges[0]]].size()>0
@@ -643,7 +638,7 @@ map<VERTEX_TYPE,set<VERTEX_TYPE> >*arcs,map<VERTEX_TYPE,int>*coverages,int depth
 			printf(" ");
 		string s=idToWord(*i,m_parameters->getWordSize());
 		#ifdef ASSERT
-		//assert(coverages->count(*i)>0);
+		assert(coverages->count(*i)>0);
 		#endif
 		int coverage=(*coverages)[*i];
 		#ifdef ASSERT
@@ -671,7 +666,7 @@ uint64_t*currentVertex,BubbleData*bubbleData){
 		inspect(ed,currentVertex);
 		cout<<"Stopping extension..."<<endl;
 
-		if(ed->m_enumerateChoices_outgoingEdges.size()>1 && ed->m_EXTENSION_readsInRange->size()){
+		if(ed->m_enumerateChoices_outgoingEdges.size()>1 && ed->m_EXTENSION_readsInRange->size()>0){
 			map<VERTEX_TYPE,set<VERTEX_TYPE> >arcs;
 			for(int i=0;i<(int)bubbleData->m_BUBBLE_visitedVertices.size();i++){
 				VERTEX_TYPE root=*currentVertex;

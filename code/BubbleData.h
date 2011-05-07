@@ -41,7 +41,6 @@ public:
 	std::vector<std::set<uint64_t> > m_visitedVertices;
 	bool m_doChoice_bubbles_Detected;
 	bool m_doChoice_bubbles_Initiated;
-	std::vector<std::vector<int> > m_BUBBLE_visitedVerticesDepths;
 	map<uint64_t,int> m_coverages;
 };
 

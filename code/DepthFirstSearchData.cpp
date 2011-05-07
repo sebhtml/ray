@@ -32,6 +32,11 @@ void DepthFirstSearchData::depthFirstSearch(uint64_t root,uint64_t a,int maxDept
 	if(!m_doChoice_tips_dfs_initiated){
 		m_depthFirstSearchVisitedVertices.clear();
 		m_depthFirstSearchVisitedVertices_vector.clear();
+
+		// add an arc
+		m_depthFirstSearchVisitedVertices_vector.push_back(root);
+		m_depthFirstSearchVisitedVertices_vector.push_back(a);
+
 		m_depthFirstSearchVisitedVertices_depths.clear();
 		while(m_depthFirstSearchVerticesToVisit.size()>0){
 			m_depthFirstSearchVerticesToVisit.pop();
@@ -69,17 +74,8 @@ void DepthFirstSearchData::depthFirstSearch(uint64_t root,uint64_t a,int maxDept
 			if(!(*edgesRequested)){
 				m_coverages[vertexToVisit]=(*receivedVertexCoverage);
 				m_depthFirstSearchVisitedVertices.insert(vertexToVisit);
-
 				int theDepth=m_depthFirstSearchDepths.top();
 
-				// if visited too many vertices, don't request the children of this one.
-				if(m_depthFirstSearchVisitedVertices.size()>=MAX_VERTICES_TO_VISIT){
-					(*edgesRequested)=true;
-					(*edgesReceived)=true;
-					receivedOutgoingEdges->clear();
-				}
-
-				// too far away.
 				if(theDepth> m_depthFirstSearch_maxDepth){
 					m_depthFirstSearch_maxDepth=theDepth;
 				}
@@ -113,17 +109,24 @@ void DepthFirstSearchData::depthFirstSearch(uint64_t root,uint64_t a,int maxDept
 						m_maxDepthReached=true;
 						continue;
 					}
-					m_depthFirstSearchVerticesToVisit.push(nextVertex);
-					m_depthFirstSearchDepths.push(newDepth);
 
+					if(m_depthFirstSearchVisitedVertices.size()<MAX_VERTICES_TO_VISIT){
+						// add an arc
 						m_depthFirstSearchVisitedVertices_vector.push_back(vertexToVisit);
 						m_depthFirstSearchVisitedVertices_vector.push_back(nextVertex);
+
+						// add the depth for the vertex
 						m_depthFirstSearchVisitedVertices_depths.push_back(newDepth);
 
-						#ifdef SHOW_MINI_GRAPH
-						cout<<idToWord(vertexToVisit,wordSize)<<" -> "<<idToWord(nextVertex,wordSize)<<endl;
-						#endif
-					//}
+						// stacks
+						m_depthFirstSearchVerticesToVisit.push(nextVertex);
+						m_depthFirstSearchDepths.push(newDepth);
+					}
+
+
+					#ifdef SHOW_MINI_GRAPH
+					cout<<idToWord(vertexToVisit,wordSize)<<" -> "<<idToWord(nextVertex,wordSize)<<endl;
+					#endif
 				}
 				(*edgesRequested)=false;
 				(*vertexCoverageRequested)=false;
@@ -225,6 +228,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 				message[0]=vertexToVisit;
 				int destination=vertexRank(vertexToVisit,size,parameters->getWordSize());
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_REQUEST_VERTEX_EDGES,theRank);
+				//cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" RAY_MPI_TAG_REQUEST_VERTEX_EDGES "<<idToWord(vertexToVisit,wordSize)<<endl;
 
 				(*outbox).push_back(aMessage);
 				(*edgesRequested)=true;
@@ -234,6 +238,8 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 				int theDepth=m_depthFirstSearchDepths.top();
 
 				#ifdef ASSERT
+	
+				//cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" Vertex=GCGGCTAGTTTTCTAGTTTGA Output="<<receivedOutgoingEdges->size()<<endl;
 
 				assert(theDepth>=0);
 				assert(theDepth<=maxDepth);

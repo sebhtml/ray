@@ -34,10 +34,6 @@ map<uint64_t,int>*coverages){
 	int m_wordSize=m_parameters->getWordSize();
 	cout<<"Trees="<<trees->size()<<endl;
 	cout<<"root="<<idToWord(root,m_wordSize)<<endl;
-	if(trees->size()==2){
-		cout<<"b1="<<idToWord(trees->at(0).at(0),m_wordSize)<<endl;
-		cout<<"b2="<<idToWord(trees->at(1).at(0),m_wordSize)<<endl;
-	}
 	cout<<"digraph{"<<endl;
 	map<uint64_t,set<uint64_t> > printedEdges;
 	
@@ -45,9 +41,13 @@ map<uint64_t,int>*coverages){
 		cout<<idToWord(i->first,m_wordSize)<<" [label=\""<<idToWord(i->first,m_wordSize)<<" "<<i->second<<"\"]"<<endl;
 	}
 	for(int j=0;j<(int)trees->size();j++){
-		cout<<idToWord(root,m_wordSize)<<" -> "<<idToWord(trees->at(j).at(0),m_wordSize)<<endl;
+		if(trees->at(j).size()>0)
+			cout<<idToWord(root,m_wordSize)<<" -> "<<idToWord(trees->at(j).at(0),m_wordSize)<<endl;
 		for(int i=0;i<(int)trees->at(j).size();i+=2){
 			uint64_t a=trees->at(j).at(i+0);
+			#ifdef ASSERT
+			assert(i+1<(int)trees->at(j).size());
+			#endif
 			uint64_t b=trees->at(j).at(i+1);
 			if(printedEdges.count(a)>0 && printedEdges[a].count(b)>0){
 				continue;
@@ -57,7 +57,6 @@ map<uint64_t,int>*coverages){
 		}
 	}
 	cout<<"}"<<endl;
-
 }
 
 /**
@@ -241,20 +240,20 @@ map<uint64_t,int>*coverages){
 	if((int)observedValues[0].size()<2*m_parameters->getWordSize()
 	&& (int)observedValues[1].size()<2*m_parameters->getWordSize()){
 		if(sum1>sum2){
-			m_choice=trees->at(0).at(0);
+			m_choice=trees->at(0).at(1);
 		}else if(sum2>sum1){
-			m_choice=trees->at(1).at(0);
+			m_choice=trees->at(1).at(1);
 
 		// this will not happen often
 		}else if(sum1==sum2){
 			// take the shortest, if any
 			if(observedValues[0].size()<observedValues[1].size()){
-				m_choice=trees->at(0).at(0);
+				m_choice=trees->at(0).at(1);
 			}else if(observedValues[1].size()<observedValues[0].size()){
-				m_choice=trees->at(1).at(0);
+				m_choice=trees->at(1).at(1);
 			// same length and same sum, won't happen very often anyway
 			}else{
-				m_choice=trees->at(0).at(0);
+				m_choice=trees->at(0).at(1);
 			}
 		}
 		#ifdef DEBUG_BUBBLES
