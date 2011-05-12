@@ -73,18 +73,17 @@ HAVE\_ZLIB & enable support for .gz files \\
 HAVE\_LIBBZ2 & enable support for .bz2 files \\
 FORCE\_PACKING & enable packing of structures and classes\\
 ASSERT & enable assertions in the code \\
+HAVE\_CLOCK\_GETTIME & get time at a nanosecond precision -- real-time \\
 \hline
 \end{tabular}
 \end{table}
 
 The source code of Ray can be compiled with a Makefile.
-You need to have mpic++ in your path. 
+You need to have mpic++ in your path, otherwise edit the Makefile to change CC.
 
-
-\subsection{Compilation with the makefile.alternate}
 
 \begin{verbatim}
-make -f makefile.alternate
+make 
 ls -l code/Ray
 \end{verbatim}
 
