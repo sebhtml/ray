@@ -50,6 +50,11 @@ Parameters::Parameters(){
 	m_debugBubbles=false;
 	m_debugSeeds=false;
 	m_showMemoryUsage=false;
+	m_showEndingContext=false;
+}
+
+bool Parameters::showEndingContext(){
+	return m_showEndingContext;
 }
 
 bool Parameters::debugBubbles(){
@@ -164,6 +169,7 @@ void Parameters::parseCommands(){
 	commands.insert("-debug-bubbles");
 	commands.insert("-debug-seeds");
 	commands.insert("-run-profiler");
+	commands.insert("-show-ending-context");
 
 	m_numberOfLibraries=0;
 
@@ -460,6 +466,11 @@ void Parameters::parseCommands(){
 			m_showMemoryUsage=true;
 			if(m_rank==MASTER_RANK){
 				printf("Enabling memory usage reporting.\n");
+			}
+		}else if(token=="-show-ending-context"){
+			m_showEndingContext=true;
+			if(m_rank==MASTER_RANK){
+				printf("Ray will show the ending context of extensions.\n");
 			}
 		}
 	}
@@ -774,10 +785,11 @@ void Parameters::showUsage(){
 	showOption("-o outputPrefix","Specifies the prefix for outputted files.");
 	showOption("-a","Requests the AMOS file.");
 	showOption("-k kmerLength","Selects the length of k-mers. The default value is 21. It most be odd because reverse-complement vertices are stored together.");
-	showOption("-run-profiler","Run the profiler as the code runs. Needs real-time Linux.");
-	showOption("-debug-bubbles","Debug bubble code.");
-	showOption("-debug-seeds","Debug seed code.");
-	showOption("-show-memory-usage","Show memory usage. Data is fetched from /proc on GNU/Linux");
+	showOption("-run-profiler","Runs the profiler as the code runs. Needs real-time Linux.");
+	showOption("-debug-bubbles","Debugs bubble code.");
+	showOption("-debug-seeds","Debugs seed code.");
+	showOption("-show-memory-usage","Shows memory usage. Data is fetched from /proc on GNU/Linux");
+	showOption("-show-ending-context","Shows the ending context of each extension.\n");
 
 	showOption("--help","Displays this help page.");
 

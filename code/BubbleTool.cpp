@@ -77,7 +77,9 @@ map<uint64_t,int>*coverages){
 	}
 	#endif
 
-	printStuff(root,trees,coverages);
+	if(m_parameters->debugBubbles()){
+		printStuff(root,trees,coverages);
+	}
 
 	if(trees->size()!=2){
 		return false;// we don'T support that right now ! triploid stuff are awesome.

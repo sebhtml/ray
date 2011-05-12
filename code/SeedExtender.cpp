@@ -663,13 +663,14 @@ map<VERTEX_TYPE,set<VERTEX_TYPE> >*arcs,map<VERTEX_TYPE,int>*coverages,int depth
 void SeedExtender::storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<vector<uint64_t> >*seeds,
 uint64_t*currentVertex,BubbleData*bubbleData){
 	if(ed->m_EXTENSION_extension->size()>=100){
+		if(m_parameters->showEndingContext()){
+			cout<<"Choosing... (impossible!)"<<endl;
+			inspect(ed,currentVertex);
+			cout<<"Stopping extension..."<<endl;
+		}
 
-		#ifdef SHOW_IMPOSSIBLE_CHOICE
-		cout<<"Choosing... (impossible!)"<<endl;
-		inspect(ed,currentVertex);
-		cout<<"Stopping extension..."<<endl;
-
-		if(ed->m_enumerateChoices_outgoingEdges.size()>1 && ed->m_EXTENSION_readsInRange->size()>0){
+		if(ed->m_enumerateChoices_outgoingEdges.size()>1 && ed->m_EXTENSION_readsInRange->size()>0
+		&&m_parameters->showEndingContext()){
 			map<VERTEX_TYPE,set<VERTEX_TYPE> >arcs;
 			for(int i=0;i<(int)bubbleData->m_BUBBLE_visitedVertices.size();i++){
 				VERTEX_TYPE root=*currentVertex;
@@ -691,8 +692,6 @@ uint64_t*currentVertex,BubbleData*bubbleData){
 			printf("\n");
 
 		}
-
-		#endif
 
 		printExtensionStatus(currentVertex);
 		cout<<"Rank "<<theRank<<" (extension done)"<<endl;

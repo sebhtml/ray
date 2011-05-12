@@ -39,6 +39,7 @@ using namespace std;
  */
 class Parameters{
 	bool m_showMemoryUsage;
+	bool m_showEndingContext;
 	bool m_debugSeeds;
 	bool m_profiler;
 	bool m_debugBubbles;
@@ -159,6 +160,7 @@ public:
 	*/
 	bool debugSeeds();
 	bool showMemoryUsage();
+	bool showEndingContext();
 };
 
 #endif

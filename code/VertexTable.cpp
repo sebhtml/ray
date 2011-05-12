@@ -39,8 +39,6 @@ void VertexTable::constructor(int rank,MyAllocator*allocator,Parameters*m_parame
 	m_gridData=(VertexData**)__Malloc(bytes1,RAY_MALLOC_TYPE_VERTEX_TABLE_DATA);
 	int bytes2=m_gridSize*sizeof(uint16_t);
 	m_gridSizes=(uint16_t*)__Malloc(bytes2,RAY_MALLOC_TYPE_VERTEX_TABLE_SIZES);
-	printf("Rank %i: allocating %i bytes for vertex table\n",rank,bytes1+bytes2);
-	fflush(stdout);
 
 	if(m_parameters->showMemoryUsage()){
 		showMemoryUsage(rank);

@@ -37,8 +37,6 @@ void GridTable::constructor(int rank,MyAllocator*allocator,Parameters*m_paramete
 	m_gridData=(Vertex**)__Malloc(bytes1,RAY_MALLOC_TYPE_GRID_TABLE_DATA);
 	int bytes2=m_gridSize*sizeof(uint16_t);
 	m_gridSizes=(uint16_t*)__Malloc(bytes2,RAY_MALLOC_TYPE_GRID_TABLE_SIZES);
-	printf("Rank %i: allocating %i bytes for grid table\n",rank,bytes1+bytes2);
-	fflush(stdout);
 
 	if(m_parameters->showMemoryUsage()){
 		showMemoryUsage(rank);
