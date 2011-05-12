@@ -12,6 +12,8 @@ coverage values.
 * Added a switch to debug seed generation: -debug-seeds
 * Added a switch to debug bubble detection: -debug-bubbles
 * Added a switch to show memory usage: -show-memory-usage
+* Added a switch to show the ending context of extensions:
+-show-ending-context
 
 
 = 1.3.0 =
