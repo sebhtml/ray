@@ -77,24 +77,8 @@ ASSERT & enable assertions in the code \\
 \end{tabular}
 \end{table}
 
-The source code of Ray can be compiled with a configure script and associated Makefile.
-This approach will verify that your system has required libraries and functions.
-The source code can also be compiled simply with makefile.alternate.
-With both approaches, you need to have mpic++ in your path. 
-Furthermore, CXX must not be defined. If it is defined, then its values should be set to mpic++.
-
-
-
-\subsection{Compilation with the configure script}
-
-
-
-\begin{verbatim}
-./configure --prefix=$(pwd)/software/ray-x.y.z
-make
-make install
-ls -l $(pwd)/software/ray-x.y.z/bin/Ray
-\end{verbatim}
+The source code of Ray can be compiled with a Makefile.
+You need to have mpic++ in your path. 
 
 
 \subsection{Compilation with the makefile.alternate}
