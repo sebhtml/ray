@@ -1,5 +1,4 @@
 mpirun -tag-output -np $(cat PROCESSES) ~/Ray/trunk/code/Ray \
--run-profiler \
 -p /home/boiseb01/nuccore/200xStreptococcus-pneumoniae-R6.fasta_fragments_1.fasta \
    /home/boiseb01/nuccore/200xStreptococcus-pneumoniae-R6.fasta_fragments_2.fasta \
 -o $0
