@@ -41,8 +41,6 @@ map<uint64_t,int>*coverages){
 		cout<<idToWord(i->first,m_wordSize)<<" [label=\""<<idToWord(i->first,m_wordSize)<<" "<<i->second<<"\"]"<<endl;
 	}
 	for(int j=0;j<(int)trees->size();j++){
-		if(trees->at(j).size()>0)
-			cout<<idToWord(root,m_wordSize)<<" -> "<<idToWord(trees->at(j).at(0),m_wordSize)<<endl;
 		for(int i=0;i<(int)trees->at(j).size();i+=2){
 			uint64_t a=trees->at(j).at(i+0);
 			#ifdef ASSERT
@@ -64,7 +62,7 @@ map<uint64_t,int>*coverages){
  */
 bool BubbleTool::isGenuineBubble(uint64_t root,vector<vector<uint64_t> >*trees,
 map<uint64_t,int>*coverages){
-	if((*coverages)[root]==m_parameters->getMaxCoverage()){
+	if((*coverages)[root]>=m_parameters->getMaxCoverage()){
 		return false;
 	}
 
@@ -80,10 +78,6 @@ map<uint64_t,int>*coverages){
 		}
 	}
 	#endif
-
-	if(trees->size()<2){
-		return false;
-	}
 
 	printStuff(root,trees,coverages);
 
@@ -127,13 +121,9 @@ map<uint64_t,int>*coverages){
 		return false;
 	}
 
-	if((*coverages)[target]==m_parameters->getMaxCoverage()){
+	if((*coverages)[target]>=m_parameters->getMaxCoverage()){
 		return false;
 	}
-
-	double multiplicator=1.5;
-	int peak=m_parameters->getPeakCoverage();
-	int multiplicatorThreshold=(int)multiplicator*peak;
 
 	#ifdef ASSERT
 	assert(coverages->count(root)>0);
@@ -145,17 +135,6 @@ map<uint64_t,int>*coverages){
 	assert(rootCoverage>0);
 	assert(targetCoverage>0);
 	#endif
-
-	#ifdef DEBUG_BUBBLES
-	cout<<"root="<<idToWord(root,m_wordSize)<<" target="<<idToWord(target,m_wordSize)<<endl;
-	cout<<"Root coverage: "<<rootCoverage<<" target coverage: "<<targetCoverage<<endl;
-	#endif
-
-	// the two alternative paths must have less redundancy.
-	if((*coverages)[target]>=multiplicatorThreshold
-	&&(*coverages)[root]>=multiplicatorThreshold){
-		return false;
-	}
 
 	vector<map<uint64_t,uint64_t> > parents;
 
@@ -196,10 +175,6 @@ map<uint64_t,int>*coverages){
 			visited.insert(current);
 			uint64_t theParent=parents[j][current];
 			int coverageValue=(*coverages)[theParent];
-
-			if(coverageValue>m_parameters->getPeakCoverage()){
-				return false;
-			}
 
 			observedValues[j].push_back(coverageValue);
 			current=theParent;
