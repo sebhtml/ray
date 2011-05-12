@@ -415,9 +415,7 @@ m_seedingData,
 	MPI_Finalize();
 }
 
-//#define SHOW_LIFE_STATISTICS
 void Machine::run(){
-	#ifdef SHOW_LIFE_STATISTICS
 	// define some variables that hold life statistics of this
 	// MPI rank
 	int ticks=0;
@@ -429,16 +427,15 @@ void Machine::run(){
 	int parts=1000/resolution;
 
 	uint64_t lastTime=getMilliSeconds();
-	#endif
 
 	while(isAlive()){
-		#ifdef SHOW_LIFE_STATISTICS
-		uint64_t t=getMilliSeconds();
-		if(t>=(lastTime+resolution)/parts*parts){
-			int toPrint=t;
-			double seconds=toPrint/(1000.0);
-			printf("Rank %i: %s Time= %.2f s Speed= %i Sent= %i Received= %i\n",m_rank,SLAVE_MODES[m_slave_mode],
-				seconds,ticks,sentMessages,receivedMessages);
+		if(m_parameters.runProfiler()){
+			uint64_t t=getMilliSeconds();
+			if(t>=(lastTime+resolution)/parts*parts){
+				int toPrint=t;
+				double seconds=toPrint/(1000.0);
+				printf("Rank %i: %s Time= %.2f s Speed= %i Sent= %i Received= %i\n",m_rank,SLAVE_MODES[m_slave_mode],
+					seconds,ticks,sentMessages,receivedMessages);
 		/*
 			printf("Rank %i: sent message types: ",m_rank);
 			for(map<int,int>::iterator i=messageTypes.begin();i!=messageTypes.end();i++){
@@ -448,32 +445,33 @@ void Machine::run(){
 			}
 			printf("\n");
 		*/
-			fflush(stdout);
-			ticks=0;
-			sentMessages=0;
-			receivedMessages=0;
-			messageTypes.clear();
-			lastTime=t;
+				fflush(stdout);
+				ticks=0;
+				sentMessages=0;
+				receivedMessages=0;
+				messageTypes.clear();
+				lastTime=t;
+			}
 		}
-		#endif
 		// 1. receive the message (0 or 1 message is received)
 		receiveMessages(); 
-		#ifdef SHOW_LIFE_STATISTICS
-		receivedMessages+=m_inbox.size();
-		#endif
+		if(m_parameters.runProfiler()){
+			receivedMessages+=m_inbox.size();
+		}
 		
 		// 2. process the received message, if any
 		processMessages();
 
 		// 3. process data according to current slave and master modes
 		processData();
-		#ifdef SHOW_LIFE_STATISTICS
-		sentMessages+=m_outbox.size();
-		ticks++;
-		for(int i=0;i<(int)m_outbox.size();i++){
-			messageTypes[m_outbox[i]->getTag()]++;
+
+		if(m_parameters.runProfiler()){
+			sentMessages+=m_outbox.size();
+			ticks++;
+			for(int i=0;i<(int)m_outbox.size();i++){
+				messageTypes[m_outbox[i]->getTag()]++;
+			}
 		}
-		#endif
 
 		// 4. send messages
 		sendMessages();

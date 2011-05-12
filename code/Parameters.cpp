@@ -46,6 +46,21 @@ Parameters::Parameters(){
 	m_amos=false;
 	m_error=false;
 	m_memoryFilePrefix=m_prefix;
+	m_profiler=false;
+	m_debugBubbles=false;
+	m_debugSeeds=false;
+}
+
+bool Parameters::debugBubbles(){
+	return m_debugBubbles;
+}
+
+bool Parameters::runProfiler(){
+	return m_profiler;
+}
+
+bool Parameters::debugSeeds(){
+	return m_debugSeeds;
 }
 
 int Parameters::getWordSize(){
@@ -420,6 +435,15 @@ void Parameters::parseCommands(){
 				cout<<endl;
 				cout<<endl;
 			}
+		}else if(token=="-run-profiler"){
+			m_profiler=true;
+			printf("Enabling profiler!\n");
+		}else if(token=="-debug-bubbles"){
+			m_debugBubbles=true;
+			printf("Enabling bubble debug mode.\n");
+		}else if(token=="-debug-seeds"){
+			m_debugSeeds=true;
+			printf("Enabling seed debug mode.\n");
 		}
 	}
 
@@ -729,6 +753,10 @@ void Parameters::showUsage(){
 	showOption("-o outputPrefix","Specifies the prefix for outputted files.");
 	showOption("-a","Requests the AMOS file.");
 	showOption("-k kmerLength","Selects the length of k-mers. The default value is 21. It most be odd because reverse-complement vertices are stored together.");
+	showOption("-run-profiler","Run the profiler as the code runs.");
+	showOption("-debug-bubbles","Debug bubble code.");
+	showOption("-debug-seeds","Debug seed code.");
+
 	showOption("--help","Displays this help page.");
 
 	cout<<"FILES"<<endl;

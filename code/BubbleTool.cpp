@@ -27,8 +27,6 @@
 #include <iostream>
 using namespace std;
 
-#define DEBUG_BUBBLES
-
 void BubbleTool::printStuff(uint64_t root,vector<vector<uint64_t> >*trees,
 map<uint64_t,int>*coverages){
 	int m_wordSize=m_parameters->getWordSize();
@@ -115,9 +113,9 @@ map<uint64_t,int>*coverages){
 	}
 
 	if(!foundTarget){
-		#ifdef DEBUG_BUBBLES
-		cout<<"Target not found."<<endl;
-		#endif
+		if(m_parameters->debugBubbles()){
+			cout<<"Target not found."<<endl;
+		}
 		return false;
 	}
 
@@ -181,36 +179,35 @@ map<uint64_t,int>*coverages){
 		}
 	}
 
-	#ifdef DEBUG_BUBBLES
-	cout<<"O1="<<observedValues[0].size()<<" O2="<<observedValues[1].size()<<endl;
-	#endif
+	if(m_parameters->debugBubbles()){
+		cout<<"O1="<<observedValues[0].size()<<" O2="<<observedValues[1].size()<<endl;
+	}
 
 	int sum1=0;
 	for(int i=0;i<(int)observedValues[0].size();i++){
 		sum1+=observedValues[0][i];
 	}
 
-	#ifdef DEBUG_BUBBLES
-	cout<<"O1Values= ";
-	for(int i=0;i<(int)observedValues[0].size();i++){
-		cout<<observedValues[0][i]<<" ";
+	if(m_parameters->debugBubbles()){
+		cout<<"O1Values= ";
+		for(int i=0;i<(int)observedValues[0].size();i++){
+			cout<<observedValues[0][i]<<" ";
+		}
+		cout<<endl;
 	}
-	cout<<endl;
-	#endif
 
 	int sum2=0;
 	for(int i=0;i<(int)observedValues[1].size();i++){
 		sum2+=observedValues[1][i];
 	}
 	
-	#ifdef DEBUG_BUBBLES
-	cout<<"O2Values= ";
-	for(int i=0;i<(int)observedValues[1].size();i++){
-		cout<<observedValues[1][i]<<" ";
+	if(m_parameters->debugBubbles()){
+		cout<<"O2Values= ";
+		for(int i=0;i<(int)observedValues[1].size();i++){
+			cout<<observedValues[1][i]<<" ";
+		}
+		cout<<endl;
 	}
-	cout<<endl;
-
-	#endif
 
 	if((int)observedValues[0].size()<2*m_parameters->getWordSize()
 	&& (int)observedValues[1].size()<2*m_parameters->getWordSize()){
@@ -231,16 +228,18 @@ map<uint64_t,int>*coverages){
 				m_choice=trees->at(0).at(1);
 			}
 		}
-		#ifdef DEBUG_BUBBLES
-		cout<<"This is a genuine bubble"<<endl;
-		cout<<"root="<<idToWord(root,m_wordSize)<<" target="<<idToWord(target,m_wordSize)<<endl;
-		#endif
+		
+		if(m_parameters->debugBubbles()){
+			cout<<"This is a genuine bubble"<<endl;
+			cout<<"root="<<idToWord(root,m_wordSize)<<" target="<<idToWord(target,m_wordSize)<<endl;
+		}
+
 		return true;
 	}
 
-	#ifdef DEBUG_BUBBLES
-	cout<<"False at last"<<endl;
-	#endif
+	if(m_parameters->debugBubbles()){
+		cout<<"False at last"<<endl;
+	}
 
 	return false;
 }

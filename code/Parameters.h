@@ -38,6 +38,10 @@ using namespace std;
  *
  */
 class Parameters{
+	bool m_debugSeeds;
+	bool m_profiler;
+	bool m_debugBubbles;
+
 	int m_reducerPeriod;
 	int m_maximumDistance;
 
@@ -141,6 +145,18 @@ public:
 	bool hasPairedReads();
 	int _vertexRank(uint64_t a);
 	string getMemoryPrefix();
+	/**
+	* run the profiler
+	*/
+	bool runProfiler();
+	/**
+	* debug the code for bubble detection
+	*/
+	bool debugBubbles();
+	/** 
+	* debug the code that computes seeds
+	*/
+	bool debugSeeds();
 };
 
 #endif
