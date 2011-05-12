@@ -134,7 +134,10 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 		m_outbox->push_back(aMessage);
 
 		m_virtualCommunicator.printStatistics();
-		showMemoryUsage(m_rank);
+
+		if(m_parameters->showMemoryUsage()){
+			showMemoryUsage(m_rank);
+		}
 
 		#ifdef ASSERT
 		assert(m_aliveWorkers.size()==0);

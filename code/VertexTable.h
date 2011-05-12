@@ -25,6 +25,7 @@
 #include <MyAllocator.h>
 #include <VertexData.h>
 #include <OnDiskAllocator.h>
+#include <Parameters.h>
 
 class VertexTable{
 	uint64_t m_size;
@@ -41,7 +42,7 @@ class VertexTable{
  */
 	VertexData*move(int bin,int item);
 public:
-	void constructor(int rank,MyAllocator*allocator);
+	void constructor(int rank,MyAllocator*allocator,Parameters*a);
 	void setWordSize(int w);
 	uint64_t size();
 	VertexData*find(uint64_t key);

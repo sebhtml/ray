@@ -36,7 +36,10 @@ void SequencesLoader::registerSequence(){
 		uint64_t amount=m_myReads->size();
 		printf("Rank %i has %lu sequence reads\n",m_rank,amount);
 		fflush(stdout);
-		showMemoryUsage(m_rank);
+
+		if(m_parameters->showMemoryUsage()){
+			showMemoryUsage(m_rank);
+		}
 	}
 	#ifdef ASSERT
 	assert(m_distribution_sequence_id<m_loader.size());
@@ -301,16 +304,6 @@ bool SequencesLoader::loadSequences(int rank,int size,
 	uint64_t amount=m_myReads->size();
 	printf("Rank %i has %lu sequence reads (completed)\n",m_rank,amount);
 	fflush(stdout);
-
-/*
-	showMemoryUsage(m_rank);
-	int chunks=m_persistentAllocator->getNumberOfChunks();
-	int chunkSize=m_persistentAllocator->getChunkSize();
-	uint64_t totalBytes=chunks*chunkSize;
-	uint64_t kibibytes=totalBytes/1024;
-	printf("Rank %i: memory usage for sequence reads is %lu KiB\n",m_rank,kibibytes);
-	fflush(stdout);
-*/
 
 	return true;
 }

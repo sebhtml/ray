@@ -27,21 +27,25 @@
 #include <crypto.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <Parameters.h>
 using namespace std;
 
-void VertexTable::constructor(int rank,MyAllocator*allocator){
+void VertexTable::constructor(int rank,MyAllocator*allocator,Parameters*m_parameters){
 	m_gridAllocator=allocator;
 	m_size=0;
 	m_inserted=false;
 	m_gridSize=4194304;
-	//m_gridSize=50000;
 	int bytes1=m_gridSize*sizeof(VertexData*);
 	m_gridData=(VertexData**)__Malloc(bytes1,RAY_MALLOC_TYPE_VERTEX_TABLE_DATA);
 	int bytes2=m_gridSize*sizeof(uint16_t);
 	m_gridSizes=(uint16_t*)__Malloc(bytes2,RAY_MALLOC_TYPE_VERTEX_TABLE_SIZES);
 	printf("Rank %i: allocating %i bytes for vertex table\n",rank,bytes1+bytes2);
 	fflush(stdout);
-	showMemoryUsage(rank);
+
+	if(m_parameters->showMemoryUsage()){
+		showMemoryUsage(rank);
+	}
+
 	for(int i=0;i<m_gridSize;i++){
 		m_gridSizes[i]=0;
 		m_gridData[i]=NULL;

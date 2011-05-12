@@ -50,7 +50,10 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		printf("Rank %i extended %i seeds out of %i (%.2f%%)\n",theRank,m_extended,(int)seeds->size(),ratio);
 		fflush(stdout);
 
-		showMemoryUsage(theRank);
+		if(m_parameters->showMemoryUsage()){
+			showMemoryUsage(theRank);
+		}
+
 		ed->m_mode_EXTENSION=false;
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 	
@@ -706,7 +709,10 @@ uint64_t*currentVertex,BubbleData*bubbleData){
 	m_cache.clear();
 
 	fflush(stdout);
-	showMemoryUsage(theRank);
+
+	if(m_parameters->showMemoryUsage()){
+		showMemoryUsage(theRank);
+	}
 
 	ed->m_EXTENSION_currentSeedIndex++;
 
@@ -1205,7 +1211,11 @@ void SeedExtender::printExtensionStatus(uint64_t*currentVertex){
 		m_ed->m_EXTENSION_currentSeedIndex+1);
 
 	fflush(stdout);
-	showMemoryUsage(theRank);
+
+	if(m_parameters->showMemoryUsage()){
+		showMemoryUsage(theRank);
+	}
+
 	showReadsInRange();
 
 	int chunks=m_directionsAllocator->getNumberOfChunks();

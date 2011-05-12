@@ -88,7 +88,10 @@ void SeedingData::computeSeeds(){
 				if(firstVertex<firstReverse){
 					printf("Rank %i discovered a seed with %i vertices\n",m_rank,(int)seed.size());
 					fflush(stdout);
-					showMemoryUsage(m_rank);
+
+					if(m_parameters->showMemoryUsage()){
+						showMemoryUsage(m_rank);
+					}
 					m_SEEDING_seeds.push_back(seed);
 				}
 			}
@@ -108,7 +111,10 @@ void SeedingData::computeSeeds(){
 				if(m_SEEDING_i % 100000 ==0){
 					printf("Rank %i is creating seeds [%i/%i]\n",getRank(),(int)m_SEEDING_i+1,(int)m_subgraph->size());
 					fflush(stdout);
-					showMemoryUsage(m_rank);
+
+					if(m_parameters->showMemoryUsage()){
+						showMemoryUsage(m_rank);
+					}
 				}
 				#ifdef ASSERT
 				if(m_SEEDING_i==0){
@@ -165,15 +171,16 @@ void SeedingData::computeSeeds(){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_SEEDING_IS_OVER,getRank());
 		m_outbox->push_back(aMessage);
 
-		showMemoryUsage(m_rank);
-		#ifdef ASSERT
+		if(m_parameters->showMemoryUsage()){
+			showMemoryUsage(m_rank);
+		}
 
+		#ifdef ASSERT
 		assert(m_aliveWorkers.size()==0);
 		assert(m_activeWorkers.size()==0);
 		#endif
 
 		// sort the seeds by length
-		// m_SEEDING_seeds
 		std::sort(m_SEEDING_seeds.begin(),m_SEEDING_seeds.end(),myComparator_sort);
 	}
 }

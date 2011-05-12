@@ -38,6 +38,7 @@ using namespace std;
  *
  */
 class Parameters{
+	bool m_showMemoryUsage;
 	bool m_debugSeeds;
 	bool m_profiler;
 	bool m_debugBubbles;
@@ -157,6 +158,7 @@ public:
 	* debug the code that computes seeds
 	*/
 	bool debugSeeds();
+	bool showMemoryUsage();
 };
 
 #endif

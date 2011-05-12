@@ -25,6 +25,7 @@
 #include <VertexTable.h>
 #include <MyAllocator.h>
 #include <OnDiskAllocator.h>
+#include <Parameters.h>
 #include <Vertex.h>
 
 class GridTable{
@@ -46,7 +47,7 @@ class GridTable{
  */
 	Vertex*move(int bin,int item);
 public:
-	void constructor(int rank,MyAllocator*allocator);
+	void constructor(int rank,MyAllocator*allocator,Parameters*a);
 	void setWordSize(int w);
 	uint64_t size();
 	Vertex*find(uint64_t key);
@@ -67,7 +68,7 @@ public:
 	void addDirection(uint64_t a,Direction*d);
 	vector<Direction> getDirections(uint64_t a);
 	void clearDirections(uint64_t a);
-	void buildData();
+	void buildData(Parameters*a);
 	bool isAssembled(uint64_t a);
 };
 

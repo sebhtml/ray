@@ -7,6 +7,10 @@
 * The number of seeds is now divided by 2 to speed up their extension.
 * Fixed a bug in the depth first search that leaded to vertices having no
 coverage values.
+* Removed the configure script, now you must compile Ray with the provided Makefile.
+* Added a switch to enable the profiler: -run-profiler
+* Added a switch to debug seed generation: -debug-seeds
+* Added a switch to debug bubble detection: -debug-bubbles
 
 
 = 1.3.0 =

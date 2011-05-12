@@ -50,8 +50,10 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 		m_cacheForRepeatedVertices.clear();
 		m_cacheAllocator.clear();
 
-		showMemoryUsage(m_rank);
-		now();
+		if(m_parameters->showMemoryUsage()){
+			showMemoryUsage(m_rank);
+			now();
+		}
 		return;
 	}
 
@@ -59,8 +61,10 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 		if(m_seedingData->m_SEEDING_i%10==0){
 			printf("Rank %i is distributing fusions [%i/%i]\n",getRank,(int)(m_seedingData->m_SEEDING_i+1),(int)m_ed->m_EXTENSION_contigs.size());
 			fflush(stdout);
-			showMemoryUsage(getRank);
-			now();
+			if(m_parameters->showMemoryUsage()){
+				showMemoryUsage(getRank);
+				now();
+			}
 		}
 	}
 
@@ -161,8 +165,11 @@ void FusionData::finishFusions(){
 		m_timer.printElapsedTime("Finishing fusions");
 		m_timer.constructor();
 */
-		showMemoryUsage(m_rank);
-		now();
+		if(m_parameters->showMemoryUsage()){
+			showMemoryUsage(m_rank);
+			now();
+		}
+
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_FINISH_FUSIONS_FINISHED,getRank());
 		m_outbox->push_back(aMessage);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
@@ -179,14 +186,15 @@ void FusionData::finishFusions(){
 	}
 	int overlapMinimumLength=3000;
 	if((int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<overlapMinimumLength){
-		//cout<<"Too short "<<endl;
-		//showMemoryUsage(getRank());
 	
 		if(m_seedingData->m_SEEDING_i%10==0){
 			printf("Rank %i is finishing fusions [%i/%i]\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_ed->m_EXTENSION_contigs.size());
 			fflush(stdout);
-			showMemoryUsage(getRank());
-			now();
+	
+			if(m_parameters->showMemoryUsage()){
+				showMemoryUsage(getRank());
+				now();
+			}
 		}
 
 		m_seedingData->m_SEEDING_i++;
@@ -225,7 +233,6 @@ void FusionData::finishFusions(){
 			if(m_ed->m_EXTENSION_currentPosition!=position1	&&m_ed->m_EXTENSION_currentPosition!=position2){
 				//printf("Rank %i: skipping position %i\n",getRank(),m_ed->m_EXTENSION_currentPosition);
 				//fflush(stdout);
-				//showMemoryUsage(getRank());
 				m_Machine_getPaths_DONE=true;
 				m_Machine_getPaths_result.clear();// avoids major leak... LOL
 			}else{
@@ -246,8 +253,11 @@ void FusionData::finishFusions(){
 				if(m_seedingData->m_SEEDING_i%10==0){
 					printf("Rank %i is finishing fusions [%i/%i]\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_ed->m_EXTENSION_contigs.size());
 					fflush(stdout);
-					showMemoryUsage(getRank());
-					now();
+	
+					if(m_parameters->showMemoryUsage()){
+						showMemoryUsage(getRank());
+						now();
+					}
 				}
 				vector<uint64_t> a;
 				m_FINISH_newFusions.push_back(a);
@@ -265,13 +275,11 @@ void FusionData::finishFusions(){
 			m_Machine_getPaths_result.clear();
 			//printf("Rank %i position -> %i paths %i\n",getRank(),m_ed->m_EXTENSION_currentPosition,(int)a.size());
 			//fflush(stdout);
-			//showMemoryUsage(getRank());
 			m_ed->m_EXTENSION_currentPosition++;
 		}
 	}else if(!m_checkedValidity){
 		//printf("Rank %i: checking validity\n",getRank());
 		//fflush(stdout);
-		//showMemoryUsage(getRank());
 
 		done=true;
 		vector<Direction> directions1=(*m_FINISH_pathsForPosition)[position1];
@@ -384,7 +392,6 @@ void FusionData::finishFusions(){
 
 			//printf("Rank %i: checking validity (done)\n",getRank());
 			//fflush(stdout);
-			//showMemoryUsage(getRank());
 			if(!done){
 				//cout<<"Rank "<<getRank()<<" still valid."<<endl;
 			}
@@ -401,7 +408,6 @@ void FusionData::finishFusions(){
 
 				//printf("Rank %i: confirming mapping position=%i\n",getRank(),m_validationPosition);
 				//fflush(stdout);
-				//showMemoryUsage(getRank());
 				bool found=false;
 				for(int i=0;i<(int)m_Machine_getPaths_result.size();i++){
 					if(m_Machine_getPaths_result[i].getWave()==m_selectedPath){
@@ -422,7 +428,6 @@ void FusionData::finishFusions(){
 
 			//printf("Rank %i: confirming mapping (done)\n",getRank());
 			//fflush(stdout);
-			//showMemoryUsage(getRank());
 		}else{
 			m_validationPosition++;
 			m_Machine_getPaths_DONE=false;
@@ -448,7 +453,6 @@ void FusionData::finishFusions(){
 	
 				//printf("Rank %i: requesting target length\n",getRank());
 				//fflush(stdout);
-				//showMemoryUsage(getRank());
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rankId,RAY_MPI_TAG_GET_PATH_LENGTH,getRank());
 				m_outbox->push_back(aMessage);
 				m_FUSION_pathLengthRequested=true;
@@ -457,7 +461,6 @@ void FusionData::finishFusions(){
 				m_FINISH_pathLengths[pathId]=m_FUSION_receivedLength;
 				//printf("Rank %i: received target length\n",getRank());
 				//fflush(stdout);
-				//showMemoryUsage(getRank());
 			}
 		}else if(m_FINISH_pathLengths[pathId]!=0 // 0 means the path does not exist.
 		&&m_FINISH_pathLengths[pathId]!=(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){// avoid fusion of same length.
@@ -478,7 +481,6 @@ void FusionData::finishFusions(){
 
 					//printf("Rank %i: requesting target vertex at %i\n",getRank(),nextPosition);
 					//fflush(stdout);
-					//showMemoryUsage(getRank());
 				}else if(m_FINISH_vertex_received){
 					m_FINISH_newFusions[m_FINISH_newFusions.size()-1].push_back(m_FINISH_received_vertex);
 					m_FINISH_vertex_requested=false;
@@ -491,7 +493,9 @@ void FusionData::finishFusions(){
 				#endif
 
 				done=true;
-				showMemoryUsage(getRank());
+				if(m_parameters->showMemoryUsage()){
+					showMemoryUsage(getRank());
+				}
 			}
 		}else{
 			done=true;
@@ -500,7 +504,6 @@ void FusionData::finishFusions(){
 	if(done){
 		//printf("Rank %i: it is done \n",getRank());
 		//fflush(stdout);
-		//showMemoryUsage(getRank());
 		// there is nothing we can do.
 		m_seedingData->m_SEEDING_i++;
 		m_FINISH_vertex_requested=false;
@@ -543,15 +546,13 @@ void FusionData::makeFusions(){
 		}
 		printf("Rank %i is computing fusions [%i/%i] (completed)\n",getRank(),(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
 		fflush(stdout);
-/*
-		m_timer.printElapsedTime("Computing fusions");
-		m_timer.constructor();
-*/
 
 		m_cacheAllocator.clear();
 
-		showMemoryUsage(m_rank);
-		now();
+		if(m_parameters->showMemoryUsage()){
+			showMemoryUsage(m_rank);
+			now();
+		}
 		return;
 	}else if((int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<=END_LENGTH){
 		#ifdef SHOW_PROGRESS
@@ -580,8 +581,10 @@ void FusionData::makeFusions(){
 				if(m_seedingData->m_SEEDING_i%10==0){
 					printf("Rank %i is computing fusions [%i/%i]\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_ed->m_EXTENSION_contigs.size());
 					fflush(stdout);
-					showMemoryUsage(getRank());
-					now();
+					if(m_parameters->showMemoryUsage()){
+						showMemoryUsage(getRank());
+						now();
+					}
 				}
 
 				m_FUSION_paths_requested=false;

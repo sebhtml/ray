@@ -49,6 +49,7 @@ Parameters::Parameters(){
 	m_profiler=false;
 	m_debugBubbles=false;
 	m_debugSeeds=false;
+	m_showMemoryUsage=false;
 }
 
 bool Parameters::debugBubbles(){
@@ -158,6 +159,11 @@ void Parameters::parseCommands(){
 			commands.insert(*j);
 		}
 	}
+
+	commands.insert("-show-memory-usage");
+	commands.insert("-debug-bubbles");
+	commands.insert("-debug-seeds");
+	commands.insert("-run-profiler");
 
 	m_numberOfLibraries=0;
 
@@ -437,13 +443,24 @@ void Parameters::parseCommands(){
 			}
 		}else if(token=="-run-profiler"){
 			m_profiler=true;
-			printf("Enabling profiler!\n");
+			if(m_rank==MASTER_RANK){
+				printf("Enabling profiler!\n");
+			}
 		}else if(token=="-debug-bubbles"){
 			m_debugBubbles=true;
-			printf("Enabling bubble debug mode.\n");
+			if(m_rank==MASTER_RANK){
+				printf("Enabling bubble debug mode.\n");
+			}
 		}else if(token=="-debug-seeds"){
 			m_debugSeeds=true;
-			printf("Enabling seed debug mode.\n");
+			if(m_rank==MASTER_RANK){
+				printf("Enabling seed debug mode.\n");
+			}
+		}else if(token=="-show-memory-usage"){
+			m_showMemoryUsage=true;
+			if(m_rank==MASTER_RANK){
+				printf("Enabling memory usage reporting.\n");
+			}
 		}
 	}
 
@@ -682,6 +699,10 @@ bool Parameters::isInterleavedFile(int i){
 	return m_interleavedFiles.count(i)>0;
 }
 
+bool Parameters::showMemoryUsage(){
+	return m_showMemoryUsage;
+}
+
 string Parameters::getReceivedMessagesFile(){
 	string outputForMessages=getPrefix()+".ReceivedMessages.txt";
 	return outputForMessages;
@@ -753,9 +774,10 @@ void Parameters::showUsage(){
 	showOption("-o outputPrefix","Specifies the prefix for outputted files.");
 	showOption("-a","Requests the AMOS file.");
 	showOption("-k kmerLength","Selects the length of k-mers. The default value is 21. It most be odd because reverse-complement vertices are stored together.");
-	showOption("-run-profiler","Run the profiler as the code runs.");
+	showOption("-run-profiler","Run the profiler as the code runs. Needs real-time Linux.");
 	showOption("-debug-bubbles","Debug bubble code.");
 	showOption("-debug-seeds","Debug seed code.");
+	showOption("-show-memory-usage","Show memory usage. Data is fetched from /proc on GNU/Linux");
 
 	showOption("--help","Displays this help page.");
 

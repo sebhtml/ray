@@ -27,7 +27,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void GridTable::constructor(int rank,MyAllocator*allocator){
+void GridTable::constructor(int rank,MyAllocator*allocator,Parameters*m_parameters){
 	m_gridAllocatorOnDisk=allocator;
 	m_size=0;
 	m_inserted=false;
@@ -39,7 +39,10 @@ void GridTable::constructor(int rank,MyAllocator*allocator){
 	m_gridSizes=(uint16_t*)__Malloc(bytes2,RAY_MALLOC_TYPE_GRID_TABLE_SIZES);
 	printf("Rank %i: allocating %i bytes for grid table\n",rank,bytes1+bytes2);
 	fflush(stdout);
-	showMemoryUsage(rank);
+
+	if(m_parameters->showMemoryUsage()){
+		showMemoryUsage(rank);
+	}
 	for(int i=0;i<m_gridSize;i++){
 		m_gridSizes[i]=0;
 		m_gridData[i]=NULL;
@@ -208,6 +211,6 @@ void GridTable::clearDirections(uint64_t a){
 	m_vertexTable.clearDirections(a);
 }
 
-void GridTable::buildData(){
-	m_vertexTable.constructor(m_rank,m_gridAllocatorOnDisk);
+void GridTable::buildData(Parameters*a){
+	m_vertexTable.constructor(m_rank,m_gridAllocatorOnDisk,a);
 }

@@ -155,7 +155,10 @@ void Library::detectDistances(){
 		printf("Rank %i: peak number of workers: %i, maximum: %i\n",m_rank,m_maximumWorkers,m_maximumAliveWorkers);
 		fflush(stdout);
 		m_virtualCommunicator->printStatistics();
-		showMemoryUsage(m_rank);
+
+		if(m_parameters->showMemoryUsage()){
+			showMemoryUsage(m_rank);
+		}
 	}
 }
 

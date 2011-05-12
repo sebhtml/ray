@@ -562,7 +562,10 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 			(*m_last_value)=m_subgraph->size();
 			printf("Rank %i has %i vertices\n",rank,(int)m_subgraph->size());
 			fflush(stdout);
-			showMemoryUsage(rank);
+
+			if(parameters->showMemoryUsage()){
+				showMemoryUsage(rank);
+			}
 		}
 
 		Vertex*tmp=m_subgraph->insert(l);
@@ -712,17 +715,12 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER(Mes
 void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message){
 	printf("Rank %i has %i vertices (completed)\n",rank,(int)m_subgraph->size());
 	fflush(stdout);
-	showMemoryUsage(rank);
-	fflush(stdout);
 
-/*
-	int chunks=m_subgraph->getAllocator()->getNumberOfChunks();
-	int chunkSize=m_subgraph->getAllocator()->getChunkSize();
-	uint64_t totalBytes=chunks*chunkSize;
-	uint64_t kibibytes=totalBytes/1024;
-	printf("Rank %i: memory usage for vertices topology is %lu KiB\n",rank,kibibytes);
-	fflush(stdout);
-*/
+	if(parameters->showMemoryUsage()){
+		showMemoryUsage(rank);
+		fflush(stdout);
+	}
+
 	(*m_mode_send_coverage_iterator)=0;
 	(*m_mode_sendDistribution)=true;
 	(*m_mode)=RAY_SLAVE_MODE_SEND_DISTRIBUTION;

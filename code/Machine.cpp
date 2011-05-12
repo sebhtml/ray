@@ -278,7 +278,7 @@ void Machine::start(){
 		m_ed,getSize(),&m_timePrinter,&m_slave_mode,&m_master_mode,
 	&m_parameters,&m_fileId,m_seedingData,&m_inbox,&m_virtualCommunicator);
 
-	m_subgraph.constructor(getRank(),&m_diskAllocator);
+	m_subgraph.constructor(getRank(),&m_diskAllocator,&m_parameters);
 	
 	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),&m_outbox,&m_outboxAllocator,&m_seedCoverage,&m_slave_mode,&m_parameters,&m_wordSize,&m_subgraph,
 		&m_colorSpaceMode,&m_inbox);
@@ -288,7 +288,10 @@ void Machine::start(){
 	m_totalLetters=0;
 
 	MPI_Barrier(MPI_COMM_WORLD);
-	showMemoryUsage(getRank());
+
+	if(m_parameters.showMemoryUsage()){
+		showMemoryUsage(getRank());
+	}
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
@@ -384,7 +387,9 @@ m_seedingData,
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	showMemoryUsage(getRank());
+	if(m_parameters.showMemoryUsage()){
+		showMemoryUsage(getRank());
+	}
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
@@ -784,7 +789,7 @@ void Machine::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
 		}else{
 			m_distributionOfCoverage.clear();
 			m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
-			m_subgraph.buildData();
+			m_subgraph.buildData(&m_parameters);
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_COVERAGE_END,getRank());
 			m_outbox.push_back(aMessage);
 		}
@@ -883,7 +888,10 @@ void Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 	}
 	cout<<"Rank "<<m_rank<<" appended "<<total<<" elements"<<endl;
 	fclose(fp);
-	showMemoryUsage(getRank());
+
+	if(m_parameters.showMemoryUsage()){
+		showMemoryUsage(getRank());
+	}
 
 	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_EXTENSION_DATA_END,getRank());
