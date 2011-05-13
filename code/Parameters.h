@@ -67,6 +67,7 @@ class Parameters{
 	vector<uint64_t> m_numberOfSequencesInFile;
 	uint64_t m_totalNumberOfSequences;
 	map<int,int> m_fileLibrary;
+	vector<vector<int> > m_libraryFiles;
 	set<int> m_automaticLibraries;
 
 	string m_directory;

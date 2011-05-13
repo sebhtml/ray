@@ -298,6 +298,9 @@ void Parameters::parseCommands(){
 			}
 
 			m_fileLibrary[interleavedFileIndex]=m_numberOfLibraries;
+			vector<int> files;
+			files.push_back(interleavedFileIndex);
+			m_libraryFiles.push_back(files);
 
 			addLibraryData(m_numberOfLibraries,meanFragmentLength,standardDeviation);
 
@@ -381,6 +384,10 @@ void Parameters::parseCommands(){
 
 			m_fileLibrary[rightFile]=m_numberOfLibraries;
 			m_fileLibrary[leftFile]=m_numberOfLibraries;
+			vector<int> files;
+			files.push_back(rightFile);
+			files.push_back(leftFile);
+			m_libraryFiles.push_back(files);
 
 			addLibraryData(m_numberOfLibraries,meanFragmentLength,standardDeviation);
 
@@ -618,16 +625,22 @@ void Parameters::computeAverageDistances(){
 		int library=i;
 		int n=0;
 		string fileName=getLibraryFile(library);
+		#ifdef WRITE_LIBRARY_OBSERVATIONS
 		ofstream f(fileName.c_str());
+		#endif
 		for(map<int,int>::iterator j=m_observedDistances[library].begin();
 			j!=m_observedDistances[library].end();j++){
 			int d=j->first;
 			int count=j->second;
+			#ifdef WRITE_LIBRARY_OBSERVATIONS
 			f<<d<<"\t"<<count<<endl;
+			#endif
 			sum+=d*count;
 			n+=count;
 		}
+		#ifdef WRITE_LIBRARY_OBSERVATIONS
 		f.close();
+		#endif
 		int average;
 		int standardDeviation;
 		if(n>0){
@@ -653,6 +666,17 @@ void Parameters::computeAverageDistances(){
 	cout<<endl;
 	cout<<endl;
 
+	ostringstream fileName;
+	fileName<<getPrefix();
+	fileName<<".LibraryStatistics.txt";
+	ofstream f2(fileName.str().c_str());
+
+	for(int i=0;i<(int)m_numberOfSequencesInFile.size();i++){
+		f2<<" File: "<<m_singleEndReadsFile[i]<<endl;
+		f2<<"  NumberOfSequencesInFile: "<<m_numberOfSequencesInFile[i]<<endl;
+	}
+	f2<<endl;
+
 	for(int i=0;i<(int)m_numberOfLibraries;i++){
 		int library=i;
 		string type="Manual";
@@ -661,8 +685,31 @@ void Parameters::computeAverageDistances(){
 		}
 		int average=getLibraryAverageLength(library);
 		int standardDeviation=getLibraryStandardDeviation(library);
-		cout<<"Library # "<<library<<" ("<<type<<") -> average length: "<<average<<" and standard variation: "<<standardDeviation<<endl;
+		cout<<"Library # "<<library<<" ("<<type<<") -> average length: "<<average<<" and standard deviation: "<<standardDeviation<<endl;
+		cout<<"Library # "<<library<<" ("<<type<<") -> average length: "<<average<<" and standard deviation: "<<standardDeviation<<endl;
+		f2<<"NumberOfPairedLibraries: "<<m_numberOfLibraries<<endl;
+		f2<<endl;
+		f2<<"LibraryNumber: "<<library<<endl;
+		f2<<" InputFormat: "<<endl;
+		f2<<" DetectionType: "<<type<<endl;
+		vector<int> files=m_libraryFiles[i];
+		string format="Interleaved,Paired";
+		if(files.size()==2){
+			format="TwoFiles,Paired";
+		}
+		f2<<" File: "<<m_singleEndReadsFile[files[0]]<<endl;
+		f2<<"  NumberOfSequencesInFile: "<<m_numberOfSequencesInFile[files[0]]<<endl;
+		if(files.size()>1){
+			f2<<" File: "<<m_singleEndReadsFile[files[1]]<<endl;
+			f2<<"  NumberOfSequencesInFile: "<<m_numberOfSequencesInFile[files[1]]<<endl;
+		}
+		f2<<" AverageOuterDistance: "<<average<<endl;
+		f2<<" StandardDeviation: "<<standardDeviation<<endl;
+		if(standardDeviation*2>average){
+			f2<<" DetectionFailure: Yes"<<endl;
+		}
 	}
+	f2.close();
 }
 
 void Parameters::addLibraryData(int library,int average,int deviation){

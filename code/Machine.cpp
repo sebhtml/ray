@@ -628,6 +628,7 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	string file=m_parameters.getCoverageDistributionFile();
 	CoverageDistribution distribution(&m_coverageDistribution,&file);
 
+
 	m_minimumCoverage=distribution.getMinimumCoverage();
 	m_peakCoverage=distribution.getPeakCoverage();
 
@@ -636,6 +637,28 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 
 	cout<<"Rank "<<getRank()<<": the minimum coverage is "<<m_minimumCoverage<<endl;
 	cout<<"Rank "<<getRank()<<": the peak coverage is "<<m_peakCoverage<<endl;
+
+	uint64_t numberOfVertices=0;
+	uint64_t verticesWith1Coverage=0;
+	for(map<int,uint64_t>::iterator i=m_coverageDistribution.begin();
+		i!=m_coverageDistribution.end();i++){
+		int coverageValue=i->first;
+		uint64_t vertices=i->second;
+		if(coverageValue==1)
+			verticesWith1Coverage=vertices;
+		numberOfVertices+=vertices;
+	}
+	double percentageSeenOnce=(0.0+verticesWith1Coverage)/numberOfVertices*100.00;
+
+	ostringstream g;
+	g<<m_parameters.getPrefix();
+	g<<".CoverageDistributionAnalysis.txt";
+	ofstream outputFile(g.str().c_str());
+	outputFile<<"MinimumCoverage:\t"<<m_minimumCoverage<<endl;
+	outputFile<<"PeakCoverage:\t"<<m_peakCoverage<<endl;
+	outputFile<<"PercentageOfVerticesOccuringOnce:\t"<<percentageSeenOnce<<"%"<<endl;
+
+	outputFile.close();
 
 	m_seedCoverage=(m_peakCoverage+m_minimumCoverage)/2;
 

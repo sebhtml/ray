@@ -14,7 +14,9 @@ coverage values.
 * Added a switch to show memory usage: -show-memory-usage
 * Added a switch to show the ending context of extensions:
 -show-ending-context
-
+* Devised a new algorithm that finds the peak and minimum coverages in distributions.
+* Ray now writes the peak and minimum coverages to a file.
+* Ray now writes the statistics for library to a file.
 
 = 1.3.0 =
 2011-03-22
