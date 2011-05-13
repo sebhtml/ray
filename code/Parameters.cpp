@@ -385,8 +385,8 @@ void Parameters::parseCommands(){
 			m_fileLibrary[rightFile]=m_numberOfLibraries;
 			m_fileLibrary[leftFile]=m_numberOfLibraries;
 			vector<int> files;
-			files.push_back(rightFile);
 			files.push_back(leftFile);
+			files.push_back(rightFile);
 			m_libraryFiles.push_back(files);
 
 			addLibraryData(m_numberOfLibraries,meanFragmentLength,standardDeviation);
@@ -680,6 +680,8 @@ void Parameters::computeAverageDistances(){
 	}
 	f2<<endl;
 
+	f2<<"NumberOfPairedLibraries: "<<m_numberOfLibraries<<endl;
+	f2<<endl;
 	for(int i=0;i<(int)m_numberOfLibraries;i++){
 		int library=i;
 		string type="Manual";
@@ -690,16 +692,14 @@ void Parameters::computeAverageDistances(){
 		int standardDeviation=getLibraryStandardDeviation(library);
 		cout<<"Library # "<<library<<" ("<<type<<") -> average length: "<<average<<" and standard deviation: "<<standardDeviation<<endl;
 		cout<<"Library # "<<library<<" ("<<type<<") -> average length: "<<average<<" and standard deviation: "<<standardDeviation<<endl;
-		f2<<"NumberOfPairedLibraries: "<<m_numberOfLibraries<<endl;
-		f2<<endl;
 		f2<<"LibraryNumber: "<<library<<endl;
-		f2<<" InputFormat: "<<endl;
-		f2<<" DetectionType: "<<type<<endl;
-		vector<int> files=m_libraryFiles[i];
 		string format="Interleaved,Paired";
+		vector<int> files=m_libraryFiles[i];
 		if(files.size()==2){
 			format="TwoFiles,Paired";
 		}
+		f2<<" InputFormat: "<<format<<endl;
+		f2<<" DetectionType: "<<type<<endl;
 		f2<<" File: "<<m_singleEndReadsFile[files[0]]<<endl;
 		f2<<"  NumberOfSequences: "<<m_numberOfSequencesInFile[files[0]]<<endl;
 		if(files.size()>1){
@@ -711,6 +711,7 @@ void Parameters::computeAverageDistances(){
 		if(standardDeviation*2>average){
 			f2<<" DetectionFailure: Yes"<<endl;
 		}
+		f2<<endl;
 	}
 	f2.close();
 }
