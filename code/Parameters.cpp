@@ -671,9 +671,12 @@ void Parameters::computeAverageDistances(){
 	fileName<<".LibraryStatistics.txt";
 	ofstream f2(fileName.str().c_str());
 
-	for(int i=0;i<(int)m_numberOfSequencesInFile.size();i++){
+	for(int i=0;i<(int)m_singleEndReadsFile.size();i++){
+		#ifdef ASSERT
+		assert(i<(int)m_singleEndReadsFile.size());
+		#endif
 		f2<<" File: "<<m_singleEndReadsFile[i]<<endl;
-		f2<<"  NumberOfSequencesInFile: "<<m_numberOfSequencesInFile[i]<<endl;
+		f2<<"  NumberOfSequences: "<<m_numberOfSequencesInFile[i]<<endl;
 	}
 	f2<<endl;
 
@@ -698,10 +701,10 @@ void Parameters::computeAverageDistances(){
 			format="TwoFiles,Paired";
 		}
 		f2<<" File: "<<m_singleEndReadsFile[files[0]]<<endl;
-		f2<<"  NumberOfSequencesInFile: "<<m_numberOfSequencesInFile[files[0]]<<endl;
+		f2<<"  NumberOfSequences: "<<m_numberOfSequencesInFile[files[0]]<<endl;
 		if(files.size()>1){
 			f2<<" File: "<<m_singleEndReadsFile[files[1]]<<endl;
-			f2<<"  NumberOfSequencesInFile: "<<m_numberOfSequencesInFile[files[1]]<<endl;
+			f2<<"  NumberOfSequences: "<<m_numberOfSequencesInFile[files[1]]<<endl;
 		}
 		f2<<" AverageOuterDistance: "<<average<<endl;
 		f2<<" StandardDeviation: "<<standardDeviation<<endl;

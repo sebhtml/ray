@@ -656,7 +656,8 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	ofstream outputFile(g.str().c_str());
 	outputFile<<"MinimumCoverage:\t"<<m_minimumCoverage<<endl;
 	outputFile<<"PeakCoverage:\t"<<m_peakCoverage<<endl;
-	outputFile<<"PercentageOfVerticesOccuringOnce:\t"<<percentageSeenOnce<<"%"<<endl;
+	outputFile<<"Percentage of vertices with coverage 1:\t"<<percentageSeenOnce<<"%"<<endl;
+	outputFile<<"DistributionFile: "<<file<<endl;
 
 	outputFile.close();
 
