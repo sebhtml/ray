@@ -27,7 +27,7 @@ best=0
 while i<len(derivatives)-1:
 	xi=x[i]
 	yi=y[i]
-	leftScore=0
+	leftScore=1
 	j=i-1
 	step=256
 	min=i-step
@@ -36,31 +36,31 @@ while i<len(derivatives)-1:
 	max=i+step
 	if max>len(derivatives)-1:
 		max=len(derivatives)-1
-	o=0
+	o=1
 	while j>=min:
 		val=derivatives[j]
 		if val>0:
-			o+=2
+			o+=1
 		else:
-			o=0
+			o=1
 		leftScore+=o*o
 		j-=1
 	j=i+1
-	rightScore=0
-	o=0
+	rightScore=1
+	o=1
 	while j<max:
 		val=derivatives[j]
 		if val<0:
-			o+=2
+			o+=1
 		else:
-			o=0
+			o=1
 		rightScore+=o*o
 		j+=1
-	score=leftScore+rightScore
+	score=leftScore*rightScore
 	if score>maxScore:
 		maxScore=score
 		best=xi
-	#print str(xi)+"\t"+str(yi)+"\t"+str(score)
+	print str(xi)+"\t"+str(yi)+"\t"+str(score)
 	i+=1
 
 print best
