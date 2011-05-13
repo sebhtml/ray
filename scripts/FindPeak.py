@@ -24,18 +24,17 @@ while i<len(x)-1:
 i=0
 maxScore=0
 best=0
+besti=0
 while i<len(derivatives)-1:
 	xi=x[i]
 	yi=y[i]
+	step=256
+
 	leftScore=1
 	j=i-1
-	step=256
 	min=i-step
 	if min<0:
 		min=0
-	max=i+step
-	if max>len(derivatives)-1:
-		max=len(derivatives)-1
 	o=1
 	while j>=min:
 		val=derivatives[j]
@@ -45,10 +44,15 @@ while i<len(derivatives)-1:
 			o=1
 		leftScore+=o*o
 		j-=1
-	j=i+1
+
+
 	rightScore=1
+	j=i+1
+	max=i+step
+	if max>len(derivatives)-1:
+		max=len(derivatives)-1
 	o=1
-	while j<max:
+	while j<=max:
 		val=derivatives[j]
 		if val<0:
 			o+=1
@@ -56,11 +60,26 @@ while i<len(derivatives)-1:
 			o=1
 		rightScore+=o*o
 		j+=1
+
 	score=leftScore*rightScore
 	if score>maxScore:
 		maxScore=score
 		best=xi
-	print str(xi)+"\t"+str(yi)+"\t"+str(score)
+		besti=i
+	#print str(xi)+"\t"+str(yi)+"\t"+str(score)
 	i+=1
 
-print best
+mini=besti
+i=besti
+minValue=y[i]
+while i>=0:
+	val=y[i]
+	if val<minValue:
+		mini=i
+		minValue=val
+	i-=1
+
+minimumCoverage=x[mini]
+
+print "Minimum: "+str(minimumCoverage)
+print "Peak: "+str(best)

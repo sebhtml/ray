@@ -26,55 +26,26 @@
 using namespace std;
 
 CoverageDistribution::CoverageDistribution(map<int,uint64_t>*distributionOfCoverage,string*file){
-	COVERAGE_TYPE max=0;
-	max--;
-
-	m_peakCoverage=100;
-	m_minimumCoverage=1;
-	ofstream f;
 	if(file!=NULL){
+		ofstream f;
 		f.open(file->c_str());
-	}
-
-	for(map<int,uint64_t>::iterator i=distributionOfCoverage->begin();i!=distributionOfCoverage->end();i++){
-		if(file!=NULL){
+		for(map<int,uint64_t>::iterator i=distributionOfCoverage->begin();i!=distributionOfCoverage->end();i++){
 			f<<""<<i->first<<" "<<i->second<<endl;
 		}
-		int coverage=i->first;
-		if(coverage==max)
-			continue;
-		if(
-		coverage!=1&&
-		(distributionOfCoverage->count(coverage-1)==0||
-			(*distributionOfCoverage)[coverage-1]<=(*distributionOfCoverage)[coverage]) &&
-		(distributionOfCoverage->count(coverage+1)==0||
-			(*distributionOfCoverage)[coverage+1]<=(*distributionOfCoverage)[coverage]) &&
-		(distributionOfCoverage->count(m_peakCoverage)==0||(*distributionOfCoverage)[coverage]>(*distributionOfCoverage)[m_peakCoverage])){
-			m_peakCoverage=coverage;
-		}
-	}
-
-	for(int coverage=1;coverage<=m_peakCoverage;coverage++){
-		if(
-		distributionOfCoverage->count(coverage-1)>0 &&
-			(*distributionOfCoverage)[coverage-1]>=(*distributionOfCoverage)[coverage] &&
-		distributionOfCoverage->count(coverage+1)>0 &&
-			(*distributionOfCoverage)[coverage+1]>=(*distributionOfCoverage)[coverage] &&
-
-		(*distributionOfCoverage)[coverage]<(*distributionOfCoverage)[m_minimumCoverage]&&
-		coverage < m_peakCoverage&&
-		(m_minimumCoverage==1|| coverage<m_minimumCoverage)){
-			m_minimumCoverage=coverage;
-		}
-	}
-
-	if((*distributionOfCoverage)[m_peakCoverage]==0){
-		m_peakCoverage=0;
-	}
-
-	if(file!=NULL){
 		f.close();
 	}
+
+	m_minimumCoverage=1;
+	m_peakCoverage=1;
+	
+	vector<int> x;
+	vector<uint64_t> y;
+	for(map<int,uint64_t>::iterator i=distributionOfCoverage->begin();i!=distributionOfCoverage->end();i++){
+		x.push_back(i->first);
+		y.push_back(i->second);
+	}
+
+	FindPeak(&x,&y,&m_minimumCoverage,&m_peakCoverage);
 }
 
 int CoverageDistribution::getPeakCoverage(){
@@ -83,5 +54,88 @@ int CoverageDistribution::getPeakCoverage(){
 
 int CoverageDistribution::getMinimumCoverage(){
 	return m_minimumCoverage;
+}
+
+void CoverageDistribution::FindPeak(vector<int>*x,vector<uint64_t>*y,int*minimumCoverage,int*peakCoverage){
+	// compute derivatives
+	vector<double> derivatives;
+	for(int i=0;i<(int)x->size()-1;i++){
+		uint64_t xi=x->at(i);
+		int64_t yi=y->at(i);
+		int64_t xi1=x->at(i+1);
+		int64_t yi1=y->at(i+1);
+		int64_t dy=yi1-yi;
+		uint64_t dx=xi1-xi;
+		double derivative=(0.0+dy)/(0.0+dx);
+		derivatives.push_back(derivative);
+		//cout<<i<<" "<<xi<<" "<<yi<<" "<<dx<<" "<<dy<<" "<<derivative<<endl;
+	}
+
+	// find the peak with custom scores	
+	uint64_t maxScore=0;
+	int bestI=0;
+	for(int i=0;i<(int)derivatives.size()-1;i++){
+		int step=256;
+
+		// compute the left score
+		uint64_t leftScore=1;
+		int j=i-1;
+		int min=i-step;
+		if(min<0){
+			min=0;
+		}
+		int o=1;
+		while(j>=min){
+			double derivative=derivatives[j];
+			if(derivative>0){
+				o++;
+			}else{
+				o=1;
+			}
+			leftScore+=o*o;
+			j--;
+		}
+		
+		// compute the right score
+		uint64_t rightScore=1;
+		j=i+1;
+		int max=i+step;
+		if(max>(int)derivatives.size()-1){
+			max=derivatives.size()-1;
+		}
+		o=1;
+		while(j<=max){
+			double derivative=derivatives[j];
+			if(derivative<0){
+				o++;
+			}else{
+				o=1;
+			}
+			rightScore+=o*o;
+			j++;
+
+		}
+		uint64_t score=leftScore*rightScore;
+		//cout<<i<<" "<<leftScore<<" "<<rightScore<<" "<<score<<endl;
+
+		if(score>maxScore){
+			maxScore=score;
+			bestI=i;
+		}
+	}
+
+	int minI=bestI;
+	int i=bestI;
+	uint64_t minValue=y->at(minI);
+	while(i>=0){
+		uint64_t yi=y->at(i);
+		if(yi<minValue){
+			minValue=yi;
+			minI=i;
+		}
+		i--;
+	}
+	*minimumCoverage=x->at(minI);
+	*peakCoverage=x->at(bestI);
 }
 
