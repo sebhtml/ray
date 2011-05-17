@@ -370,10 +370,6 @@ void Parameters::parseCommands(){
 					cout<<" Average length: "<<meanFragmentLength<<endl;
 					cout<<" Standard deviation: "<<standardDeviation<<endl;
 				}
-				int distance=meanFragmentLength+standardDeviation;
-				if(distance>m_maximumDistance){
-					m_maximumDistance=distance;
-				}
 			}else if(items==2){// automatic detection.
 				m_automaticLibraries.insert(m_numberOfLibraries);
 				if(m_rank==MASTER_RANK){
@@ -620,9 +616,10 @@ string Parameters::getLibraryFile(int library){
 
 void Parameters::computeAverageDistances(){
 	cout<<endl;
-	for(int i=0;i<(int)m_observedDistances.size();i++){
+	for(map<int,map<int,int> >::iterator i=m_observedDistances.begin();
+		i!=m_observedDistances.end();i++){
 		uint64_t sum=0;
-		int library=i;
+		int library=i->first;
 		int n=0;
 		string fileName=getLibraryFile(library);
 		#ifdef WRITE_LIBRARY_OBSERVATIONS
@@ -717,6 +714,7 @@ void Parameters::computeAverageDistances(){
 }
 
 void Parameters::addLibraryData(int library,int average,int deviation){
+	cout<<__func__<<" Library "<<library<<" Average "<<average<<" Deviation "<<deviation<<endl;
 	m_libraryAverageLength[library]=average;
 	m_libraryDeviation[library]=deviation;
 	
