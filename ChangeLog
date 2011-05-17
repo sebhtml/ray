@@ -19,6 +19,7 @@ coverage values.
 * Ray now writes the statistics for library to a file.
 * Fixed a bug that disallowed mixing manual and automatic detection of outer distances.
 * Ray now writes the statistics for seed lengths to a file.
+* Devised a new algorithm that computes longer seeds to bootstrap assemblies.
 
 
 = 1.3.0 =
