@@ -714,7 +714,6 @@ void Parameters::computeAverageDistances(){
 }
 
 void Parameters::addLibraryData(int library,int average,int deviation){
-	cout<<__func__<<" Library "<<library<<" Average "<<average<<" Deviation "<<deviation<<endl;
 	m_libraryAverageLength[library]=average;
 	m_libraryDeviation[library]=deviation;
 	
