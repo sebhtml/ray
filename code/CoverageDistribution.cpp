@@ -19,10 +19,11 @@
 
 */
 
-#include<CoverageDistribution.h>
-#include<iostream>
-#include<fstream>
-#include<map>
+#include <CoverageDistribution.h>
+#include <iostream>
+#include <fstream>
+#include <map>
+#include <math.h>
 using namespace std;
 
 CoverageDistribution::CoverageDistribution(map<int,uint64_t>*distributionOfCoverage,string*file){
@@ -75,6 +76,7 @@ void CoverageDistribution::FindPeak(vector<int>*x,vector<uint64_t>*y,int*minimum
 	uint64_t maxScore=0;
 	int bestI=0;
 	for(int i=0;i<(int)derivatives.size()-1;i++){
+		int64_t yi=y->at(i);
 		int step=256;
 
 		// compute the left score
@@ -115,7 +117,7 @@ void CoverageDistribution::FindPeak(vector<int>*x,vector<uint64_t>*y,int*minimum
 			j++;
 
 		}
-		uint64_t score=leftScore*rightScore;
+		uint64_t score=(uint64_t)(log(yi)*leftScore*rightScore);
 		//cout<<i<<" "<<leftScore<<" "<<rightScore<<" "<<score<<endl;
 
 		if(score>maxScore){

@@ -61,12 +61,12 @@ while i<len(derivatives)-1:
 		rightScore+=o*o
 		j+=1
 
-	score=leftScore*rightScore
+	score=math.log(yi)*leftScore*rightScore
 	if score>maxScore:
 		maxScore=score
 		best=xi
 		besti=i
-	#print str(xi)+"\t"+str(yi)+"\t"+str(score)
+	#print str(xi)+"\t"+str(yi)+"\t"+str(leftScore)+"\t"+str(rightScore)+"\t"+str(score)
 	i+=1
 
 mini=besti

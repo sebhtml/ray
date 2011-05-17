@@ -1164,9 +1164,18 @@ void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message){
 		int positionOnStrand=incoming[i+3];
 		char strand=(char)incoming[i+4];
 		Vertex*node=m_subgraph->find(vertex);
+
+		int coverage=node->getCoverage(vertex);
+
 		if(node==NULL){
 			continue;
 		}
+
+		if(coverage==1){
+			printf("SKIPPING COVERAGE 1\n");
+			continue;
+		}
+		
 		ReadAnnotation*e=(ReadAnnotation*)m_si->getAllocator()->allocate(sizeof(ReadAnnotation));
 		#ifdef ASSERT
 		assert(e!=NULL);
