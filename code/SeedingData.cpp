@@ -21,6 +21,8 @@
 
 #include <VirtualCommunicator.h>
 #include <algorithm>
+#include <fstream>
+#include <sstream>
 #include <assert.h>
 #include <SeedingData.h>
 #include <Message.h>
@@ -191,6 +193,7 @@ void SeedingData::constructor(SeedExtender*seedExtender,int rank,int size,Static
 	m_size=size;
 	m_rank=rank;
 	m_outbox=outbox;
+	m_inbox=inbox;
 	m_completedJobs=0;
 	m_maximumWorkers=0;
 	m_flushAllMode=false;
@@ -253,4 +256,60 @@ void SeedingData::updateStates(){
 	m_activeWorkersToRestore.clear();
 
 	m_virtualCommunicator.resetGlobalPushedMessageStatus();
+}
+
+void SeedingData::sendSeedLengths(){
+	if(!m_initialized){
+		for(int i=0;i<(int)m_SEEDING_seeds.size();i++){
+			int length=m_SEEDING_seeds[i].size();
+			m_slaveSeedLengths[length]++;
+		}
+		m_iterator=m_slaveSeedLengths.begin();
+		m_initialized=true;
+		m_communicatorWasTriggered=false;
+	}
+
+	if(m_inbox->size()==1&&(*m_inbox)[0]->getTag()==RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY)
+		m_communicatorWasTriggered=false;
+	
+	if(m_communicatorWasTriggered)
+		return;
+
+	if(m_iterator==m_slaveSeedLengths.end()){
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,
+			RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS,getRank());
+		m_outbox->push_back(aMessage);
+		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
+		return;
+	}
+	
+	uint64_t*messageBuffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	int maximumPairs=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)/2;
+	int i=0;
+	while(i<maximumPairs && m_iterator!=m_slaveSeedLengths.end()){
+		int length=m_iterator->first;
+		int count=m_iterator->second;
+		messageBuffer[2*i]=length;
+		messageBuffer[2*i+1]=count;
+		i++;
+		m_iterator++;
+	}
+
+	cout<<"Sending seed lengths"<<endl;
+	Message aMessage(messageBuffer,2*i,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,
+		RAY_MPI_TAG_SEND_SEED_LENGTHS,getRank());
+	m_outbox->push_back(aMessage);
+}
+
+void SeedingData::writeSeedStatistics(){
+	ostringstream file;
+	file<<m_parameters->getPrefix();
+	file<<".SeedStatistics.txt";
+	ofstream f(file.str().c_str());
+	for(map<int,int>::iterator i=m_masterSeedLengths.begin();i!=m_masterSeedLengths.end();i++){
+		int length=i->first;
+		int count=i->second;
+		f<<length<<"\t"<<count<<endl;
+	}
+	f.close();
 }

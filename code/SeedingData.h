@@ -40,15 +40,17 @@ class SeedExtender;
 using namespace std;
 
 class SeedingData{
+	map<int,int>::iterator m_iterator;
+
 	bool m_flushAllMode;
 	VirtualCommunicator m_virtualCommunicator;
-	bool m_initialized;
 	bool m_initiatedIterator;
 	bool*m_colorSpaceMode;
 	int m_rank;
 	int m_size;
 	RingAllocator*m_outboxAllocator;
 	StaticVector*m_outbox;
+	StaticVector*m_inbox;
 	int*m_seedCoverage;
 	int*m_mode;
 	set<uint64_t> m_activeWorkers;
@@ -67,6 +69,10 @@ class SeedingData{
 	int m_maximumWorkers;
 	time_t m_last;
 public:
+
+	map<int,int> m_masterSeedLengths;
+	map<int,int> m_slaveSeedLengths;
+	
 
 	bool m_SEEDING_edgesRequested;
 	int m_SEEDING_ingoingEdgeIndex;
@@ -109,6 +115,9 @@ public:
 		int*seedCoverage,int*mode,Parameters*parameters,int*wordSize,GridTable*subgraph,bool*colorSpaceMode,
 		StaticVector*inbox);
 	void updateStates();
+	void sendSeedLengths();
+	bool m_initialized;
+	void writeSeedStatistics();
 };
 
 #endif

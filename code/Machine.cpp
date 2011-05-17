@@ -530,6 +530,10 @@ void Machine::receiveMessages(){
 	#endif
 }
 
+void Machine::call_RAY_SLAVE_MODE_SEND_SEED_LENGTHS(){
+	m_seedingData->sendSeedLengths();
+}
+
 void Machine::call_RAY_MASTER_MODE_LOAD_CONFIG(){
 	if(m_argc==2){
 		ifstream f(m_argv[1]);
@@ -1494,4 +1498,5 @@ void Machine::assignSlaveHandlers(){
 	m_slave_methods[RAY_SLAVE_MODE_DELETE_VERTICES]=&Machine::call_RAY_SLAVE_MODE_DELETE_VERTICES;
 	m_slave_methods[RAY_SLAVE_MODE_LOAD_SEQUENCES]=&Machine::call_RAY_SLAVE_MODE_LOAD_SEQUENCES;
 	m_slave_methods[RAY_SLAVE_MODE_AMOS]=&Machine::call_RAY_SLAVE_MODE_AMOS;
+	m_slave_methods[RAY_SLAVE_MODE_SEND_SEED_LENGTHS]=&Machine::call_RAY_SLAVE_MODE_SEND_SEED_LENGTHS;
 }

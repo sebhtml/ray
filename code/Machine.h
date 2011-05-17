@@ -320,6 +320,7 @@ class Machine{
 	void call_RAY_SLAVE_MODE_DELETE_VERTICES();
 	void call_RAY_SLAVE_MODE_LOAD_SEQUENCES();
 	void call_RAY_SLAVE_MODE_AMOS();
+	void call_RAY_SLAVE_MODE_SEND_SEED_LENGTHS();
 
 public:
 	/*

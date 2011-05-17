@@ -189,8 +189,10 @@ bool SequencesLoader::computePartition(int rank,int size,
 	if(m_parameters->useAmos()){
 		fclose(fp);
 	}
-	printf("Rank %i: global partition is [%i;%lu], %lu sequence reads\n",m_rank,0,counted-1,counted);
-	printf("\n");
+	if(counted>0){
+		printf("Rank %i: global partition is [%i;%lu], %lu sequence reads\n",m_rank,0,counted-1,counted);
+		printf("\n");
+	}
 	return true;
 }
 

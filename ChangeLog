@@ -17,6 +17,9 @@ coverage values.
 * Devised a new algorithm that finds the peak and minimum coverages in distributions.
 * Ray now writes the peak and minimum coverages to a file.
 * Ray now writes the statistics for library to a file.
+* Fixed a bug that disallowed mixing manual and automatic detection of outer distances.
+* Ray now writes the statistics for seed lengths to a file.
+
 
 = 1.3.0 =
 2011-03-22
