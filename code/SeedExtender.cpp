@@ -1215,8 +1215,9 @@ void SeedExtender::printExtensionStatus(uint64_t*currentVertex){
 		showMemoryUsage(theRank);
 	}
 
+	#ifdef SHOW_READS_IN_RANGE
 	showReadsInRange();
-
+	#endif
 	int chunks=m_directionsAllocator->getNumberOfChunks();
 	int chunkSize=m_directionsAllocator->getChunkSize();
 	uint64_t totalBytes=chunks*chunkSize;

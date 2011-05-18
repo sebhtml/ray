@@ -29,7 +29,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<crypto.h>
 #include<SplayNode.h>
 #include<mpi.h>
-#include<Machine.h>
+#include <Machine.h>
 #include<VerticesExtractor.h>
 #include<sstream>
 #include<Message.h>
@@ -62,7 +62,6 @@ Machine::Machine(int argc,char**argv){
 	m_seedingData=new SeedingData();
 
 	m_ed=new ExtensionData();
-	m_sd=new ScaffolderData();
 
 	assignMasterHandlers();
 	assignSlaveHandlers();
@@ -154,6 +153,9 @@ void Machine::start(){
 
 	m_inbox.constructor(MAX_ALLOCATED_MESSAGES_IN_INBOX,RAY_MALLOC_TYPE_INBOX_VECTOR);
 	m_outbox.constructor(MAX_ALLOCATED_MESSAGES_IN_OUTBOX,RAY_MALLOC_TYPE_OUTBOX_VECTOR);
+
+	m_scaffolder.constructor(&m_outbox,&m_inbox,&m_outboxAllocator,&m_parameters,&m_slave_mode);
+	m_mp.setScaffolder(&m_scaffolder);
 
 	int PERSISTENT_ALLOCATOR_CHUNK_SIZE=4194304; // 4 MiB
 	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE,RAY_MALLOC_TYPE_PERSISTENT_DATA_ALLOCATOR);
@@ -349,7 +351,8 @@ m_seedingData,
 	&m_numberOfMachinesDoneSendingVertices,
 	&m_numberOfMachinesDoneSendingCoverage,
 				&m_outbox,&m_inbox,
-	&m_sd->m_allIdentifiers,&m_oa,
+	//&m_sd->m_allIdentifiers,
+	&m_oa,
 	&m_numberOfRanksWithCoverageData,&m_seedExtender,
 	&m_master_mode,&m_isFinalFusion,&m_si);
 
@@ -1057,15 +1060,6 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 			cout<<endl;
 			m_master_mode=RAY_MASTER_MODE_ASK_EXTENSIONS;
 
-			m_sd->m_computedTopology=false;
-
-			m_sd->m_pathId=0;
-			m_sd->m_visitedVertices.clear();
-			while(!m_sd->m_verticesToVisit.empty())
-				m_sd->m_verticesToVisit.pop();
-			while(!m_sd->m_depthsToVisit.empty())
-				m_sd->m_depthsToVisit.pop();
-			m_sd->m_processedLastVertex=false;
 			m_ed->m_EXTENSION_currentRankIsSet=false;
 			m_ed->m_EXTENSION_rank=-1;
 		}else{
@@ -1084,121 +1078,6 @@ void Machine::call_RAY_MASTER_MODE_ASK_EXTENSIONS(){
 		m_ed->m_EXTENSION_rank++;
 	}
 	if(m_ed->m_EXTENSION_rank==getSize()){
-		#ifdef SHOW_SCAFFOLDER
-		#endif
-		int minimumLength=500;
-		if(!m_sd->m_computedTopology){ // in development.
-			// for each contig path, take the last vertex, and search for other contig paths 
-			// reachable from it.
-			if(false and m_sd->m_pathId<(int)m_allPaths.size()){
-				int currentPathId=m_identifiers[m_sd->m_pathId];
-				if(!m_sd->m_processedLastVertex){
-					if((int)m_allPaths[m_sd->m_pathId].size()<minimumLength){
-						m_sd->m_pathId++;
-						return;
-					}
-				
-					#ifdef SHOW_SCAFFOLDER
-					//cout<<"push last vertex."<<endl;
-					#endif
-					m_sd->m_processedLastVertex=true;
-					int theLength=m_allPaths[m_sd->m_pathId].size();
-					uint64_t lastVertex=m_allPaths[m_sd->m_pathId][theLength-1];
-					#ifdef SHOW_SCAFFOLDER
-					cout<<"contig-"<<currentPathId<<" Last="<<idToWord(lastVertex,m_wordSize)<<" "<<theLength<<" vertices"<<endl;
-	
-					#endif
-					m_sd->m_verticesToVisit.push(lastVertex);
-					m_sd->m_depthsToVisit.push(0);
-					m_seedingData->m_SEEDING_edgesRequested=false;
-					m_sd->m_visitedVertices.clear();
-				}else if(!m_sd->m_verticesToVisit.empty()){
-					uint64_t theVertex=m_sd->m_verticesToVisit.top();
-					int theDepth=m_sd->m_depthsToVisit.top();
-					if(!m_seedingData->m_SEEDING_edgesRequested){
-						#ifdef SHOW_SCAFFOLDER
-						//cout<<"Asking for arcs. "<<theVertex<<endl;
-						#endif
-						m_seedingData->m_SEEDING_edgesReceived=false;
-						m_seedingData->m_SEEDING_edgesRequested=true;
-						uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
-						message[0]=(uint64_t)theVertex;
-						Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0],getSize(),m_wordSize),RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES,getRank());
-						m_outbox.push_back(aMessage);
-						m_fusionData->m_Machine_getPaths_DONE=false;
-						m_fusionData->m_Machine_getPaths_INITIALIZED=false;
-						m_fusionData->m_Machine_getPaths_result.clear();
-						m_sd->m_visitedVertices.insert(theVertex);
-					}else if(m_seedingData->m_SEEDING_edgesReceived){
-						if(!m_fusionData->m_Machine_getPaths_DONE){
-							getPaths(theVertex);
-						}else{
-							vector<Direction> nextPaths;
-							#ifdef SHOW_SCAFFOLDER
-							if(nextPaths.size()>0){
-								cout<<"We have "<<nextPaths.size()<<" paths with "<<idToWord(theVertex,m_wordSize)<<endl;	
-							}
-							#endif
-							for(int i=0;i<(int)m_fusionData->m_Machine_getPaths_result.size();i++){
-								int pathId=m_fusionData->m_Machine_getPaths_result[i].getWave();
-								if(pathId==currentPathId)
-									continue;
-								// this one is discarded.
-								if(m_sd->m_allIdentifiers.count(pathId)==0){
-									continue;
-								}
-								// not at the front.
-								if(m_fusionData->m_Machine_getPaths_result[i].getProgression()>0)
-									continue;
-								int index=m_sd->m_allIdentifiers[pathId];
-
-								// too small to be relevant.
-								if((int)m_allPaths[index].size()<minimumLength)
-									continue;
-								
-								nextPaths.push_back(m_fusionData->m_Machine_getPaths_result[i]);
-							}
-
-							m_sd->m_verticesToVisit.pop();
-							m_sd->m_depthsToVisit.pop();
-							m_seedingData->m_SEEDING_edgesRequested=false;
-
-							if(nextPaths.size()>0){// we found a path
-								for(int i=0;i<(int)nextPaths.size();i++){
-									cout<<"contig-"<<m_identifiers[m_sd->m_pathId]<<" -> "<<"contig-"<<nextPaths[i].getWave()<<" ("<<theDepth<<","<<nextPaths[i].getProgression()<<") via "<<idToWord(theVertex,m_wordSize)<<endl;
-									#ifdef ASSERT
-									assert(m_sd->m_allIdentifiers.count(nextPaths[i].getWave())>0);
-									#endif
-								}
-							}else{// continue the visit.
-								for(int i=0;i<(int)m_seedingData->m_SEEDING_receivedOutgoingEdges.size();i++){
-									uint64_t newVertex=m_seedingData->m_SEEDING_receivedOutgoingEdges[i];
-									if(m_sd->m_visitedVertices.count(newVertex)>0)
-										continue;
-									int d=theDepth+1;
-									if(d>3000)
-										continue;
-									m_sd->m_verticesToVisit.push(newVertex);
-									m_sd->m_depthsToVisit.push(d);
-								}
-							}
-
-						}
-					}
-				}else{
-					m_sd->m_processedLastVertex=false;
-					m_sd->m_pathId++;
-					#ifdef SHOW_SCAFFOLDER
-					//cout<<"Processing next."<<endl;
-					#endif
-				}
-			}else{
-				m_sd->m_computedTopology=true;
-			}
-			return;
-		}
-
-		m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
 
 		if(m_parameters.useAmos()){
 			m_master_mode=RAY_MASTER_MODE_AMOS;
@@ -1209,8 +1088,9 @@ void Machine::call_RAY_MASTER_MODE_ASK_EXTENSIONS(){
 			m_mode_send_vertices_sequence_id_position=0;
 			m_ed->m_EXTENSION_reads_requested=false;
 			cout<<endl;
-		}else{// we are done.
-			killRanks();
+		}else{
+			m_master_mode=RAY_MASTER_MODE_SCAFFOLDER;
+			m_scaffolder.m_numberOfRanksFinished=0;
 		}
 		
 	}else if(!m_ed->m_EXTENSION_currentRankIsStarted){
@@ -1236,10 +1116,14 @@ void Machine::call_RAY_MASTER_MODE_AMOS(){
 		if(m_ed->m_EXTENSION_rank<getSize()){
 			m_ed->m_EXTENSION_currentRankIsStarted=false;
 		}else{
-			killRanks();
-			m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+			m_master_mode=RAY_MASTER_MODE_SCAFFOLDER;
+			m_scaffolder.m_numberOfRanksFinished=0;
 		}
 	}
+}
+
+void Machine::call_RAY_MASTER_MODE_SCAFFOLDER(){
+	m_scaffolder.run();
 }
 
 void Machine::call_RAY_SLAVE_MODE_AMOS(){
@@ -1384,6 +1268,11 @@ void Machine::processData(){
 	(this->*slaveMethod)();
 }
 
+void Machine::call_RAY_MASTER_MODE_KILL_RANKS(){
+	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+	killRanks();
+}
+
 void Machine::killRanks(){
 	if(m_killed){
 		return;
@@ -1454,49 +1343,13 @@ void Machine::call_RAY_MASTER_MODE_RESUME_VERTEX_DISTRIBUTION(){
 }
 
 void Machine::assignMasterHandlers(){
-	m_master_methods[RAY_MASTER_MODE_LOAD_CONFIG]=&Machine::call_RAY_MASTER_MODE_LOAD_CONFIG;
-	m_master_methods[RAY_MASTER_MODE_LOAD_SEQUENCES]=&Machine::call_RAY_MASTER_MODE_LOAD_SEQUENCES;
-	m_master_methods[RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION]=&Machine::call_RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION;
-	m_master_methods[RAY_MASTER_MODE_SEND_COVERAGE_VALUES]=&Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES;
-	m_master_methods[RAY_MASTER_MODE_DO_NOTHING]=&Machine::call_RAY_MASTER_MODE_DO_NOTHING;
-	m_master_methods[RAY_MASTER_MODE_UPDATE_DISTANCES]=&Machine::call_RAY_MASTER_MODE_UPDATE_DISTANCES;
-	m_master_methods[RAY_MASTER_MODE_ASK_EXTENSIONS]=&Machine::call_RAY_MASTER_MODE_ASK_EXTENSIONS;
-	m_master_methods[RAY_MASTER_MODE_AMOS]=&Machine::call_RAY_MASTER_MODE_AMOS;
-	m_master_methods[RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS]=&Machine::call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS;
-	m_master_methods[RAY_MASTER_MODE_TRIGGER_INDEXING]=&Machine::call_RAY_MASTER_MODE_TRIGGER_INDEXING;
-	m_master_methods[RAY_MASTER_MODE_INDEX_SEQUENCES]=&Machine::call_RAY_MASTER_MODE_INDEX_SEQUENCES;
-	m_master_methods[RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS]=&Machine::call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS;
-	m_master_methods[RAY_MASTER_MODE_PREPARE_SEEDING]=&Machine::call_RAY_MASTER_MODE_PREPARE_SEEDING;
-	m_master_methods[RAY_MASTER_MODE_TRIGGER_SEEDING]=&Machine::call_RAY_MASTER_MODE_TRIGGER_SEEDING;
-	m_master_methods[RAY_MASTER_MODE_TRIGGER_DETECTION]=&Machine::call_RAY_MASTER_MODE_TRIGGER_DETECTION;
-	m_master_methods[RAY_MASTER_MODE_ASK_DISTANCES]=&Machine::call_RAY_MASTER_MODE_ASK_DISTANCES;
-	m_master_methods[RAY_MASTER_MODE_START_UPDATING_DISTANCES]=&Machine::call_RAY_MASTER_MODE_START_UPDATING_DISTANCES;
-	m_master_methods[RAY_MASTER_MODE_TRIGGER_EXTENSIONS]=&Machine::call_RAY_MASTER_MODE_TRIGGER_EXTENSIONS;
-	m_master_methods[RAY_MASTER_MODE_TRIGGER_FUSIONS]=&Machine::call_RAY_MASTER_MODE_TRIGGER_FUSIONS;
-	m_master_methods[RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS]=&Machine::call_RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS;
-	m_master_methods[RAY_MASTER_MODE_START_FUSION_CYCLE]=&Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE;
-	m_master_methods[RAY_MASTER_MODE_ASK_BEGIN_REDUCTION]=&Machine::call_RAY_MASTER_MODE_ASK_BEGIN_REDUCTION;
-	m_master_methods[RAY_MASTER_MODE_RESUME_VERTEX_DISTRIBUTION]=&Machine::call_RAY_MASTER_MODE_RESUME_VERTEX_DISTRIBUTION;
-	m_master_methods[RAY_MASTER_MODE_START_REDUCTION]=&Machine::call_RAY_MASTER_MODE_START_REDUCTION;
+	#define MACRO_LIST_ITEM(x) m_master_methods[x]=&Machine::call_ ## x ;
+	#include <master_mode_macros.h>
+	#undef MACRO_LIST_ITEM
 }
 
 void Machine::assignSlaveHandlers(){
-	m_slave_methods[RAY_SLAVE_MODE_START_SEEDING]=&Machine::call_RAY_SLAVE_MODE_START_SEEDING;
-	m_slave_methods[RAY_SLAVE_MODE_DO_NOTHING]=&Machine::call_RAY_SLAVE_MODE_DO_NOTHING;
-	m_slave_methods[RAY_SLAVE_MODE_SEND_EXTENSION_DATA]=&Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA;
-	m_slave_methods[RAY_SLAVE_MODE_ASSEMBLE_WAVES]=&Machine::call_RAY_SLAVE_MODE_ASSEMBLE_WAVES;
-	m_slave_methods[RAY_SLAVE_MODE_FUSION]=&Machine::call_RAY_SLAVE_MODE_FUSION;
-	m_slave_methods[RAY_SLAVE_MODE_INDEX_SEQUENCES]=&Machine::call_RAY_SLAVE_MODE_INDEX_SEQUENCES;
-	m_slave_methods[RAY_SLAVE_MODE_FINISH_FUSIONS]=&Machine::call_RAY_SLAVE_MODE_FINISH_FUSIONS;
-	m_slave_methods[RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS]=&Machine::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS;
-	m_slave_methods[RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION]=&Machine::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION;
-	m_slave_methods[RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES]=&Machine::call_RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES;
-	m_slave_methods[RAY_SLAVE_MODE_EXTRACT_VERTICES]=&Machine::call_RAY_SLAVE_MODE_EXTRACT_VERTICES;
-	m_slave_methods[RAY_SLAVE_MODE_SEND_DISTRIBUTION]=&Machine::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION;
-	m_slave_methods[RAY_SLAVE_MODE_EXTENSION]=&Machine::call_RAY_SLAVE_MODE_EXTENSION;
-	m_slave_methods[RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION]=&Machine::call_RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION;
-	m_slave_methods[RAY_SLAVE_MODE_DELETE_VERTICES]=&Machine::call_RAY_SLAVE_MODE_DELETE_VERTICES;
-	m_slave_methods[RAY_SLAVE_MODE_LOAD_SEQUENCES]=&Machine::call_RAY_SLAVE_MODE_LOAD_SEQUENCES;
-	m_slave_methods[RAY_SLAVE_MODE_AMOS]=&Machine::call_RAY_SLAVE_MODE_AMOS;
-	m_slave_methods[RAY_SLAVE_MODE_SEND_SEED_LENGTHS]=&Machine::call_RAY_SLAVE_MODE_SEND_SEED_LENGTHS;
+	#define MACRO_LIST_ITEM(x) m_slave_methods[x]=&Machine::call_ ## x ;
+	#include <slave_mode_macros.h>
+	#undef MACRO_LIST_ITEM
 }

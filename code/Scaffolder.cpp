@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C) 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -17,27 +17,32 @@
     along with this program (COPYING).  
 	see <http://www.gnu.org/licenses/>
 
- 	Funding:
-Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Research (Master's award: 200910MDR-215249-172830 and Doctoral award: 200902CGM-204212-172830).
-
 */
 
-#ifndef _mpi_tags
-#define _mpi_tags
+#include <Scaffolder.h>
+#include <Message.h>
 
-// tags for MPI
-// these are the message types used by Ray
-// Ray instances like to communicate a lots!
-//
+void Scaffolder::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
+	int*slaveMode){
+	m_outbox=outbox;
+	m_inbox=inbox;
+	m_outboxAllocator=outboxAllocator;
+	m_parameters=parameters;
+	m_slave_mode=slaveMode;
+}
 
-extern const char* MESSAGES[];
+void Scaffolder::run(){
+	if(!m_initialised){
+		m_ready=true;
+	}
 
-#define MACRO_LIST_ITEM(element) element,
+	if(!m_ready)
+		return;
 
-enum {
-#include <mpi_tag_macros.h>
-};
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING,
+		m_parameters->getRank());
 
-#undef MACRO_LIST_ITEM
+	m_outbox->push_back(aMessage);
 
-#endif
+	(*m_slave_mode)=RAY_SLAVE_MODE_DO_NOTHING;
+}

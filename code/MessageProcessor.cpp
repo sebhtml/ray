@@ -652,13 +652,6 @@ void MessageProcessor::call_RAY_MPI_TAG_START_VERTICES_DISTRIBUTION(Message*mess
 	(*m_mode_send_vertices_sequence_id)=0;
 }
 
-void MessageProcessor::call_RAY_MPI_TAG_EDGES_DISTRIBUTED(Message*message){
-	(*m_numberOfMachinesDoneSendingEdges)++;
-	if((*m_numberOfMachinesDoneSendingEdges)==size){
-		(*m_master_mode)=RAY_MASTER_MODE_TRIGGER_INDEXING;
-	}
-}
-
 void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA_REPLY(Message*message){
 	m_verticesExtractor->setReadiness();
 }
@@ -1885,8 +1878,7 @@ void MessageProcessor::call_RAY_MPI_TAG_EXTENSION_START(Message*message){
 	assert(rank<size);
 	#endif
 	(*m_identifiers).push_back(id);
-	(*m_allIdentifiers)[id]=m_identifiers->size()-1;
-
+	//(*m_allIdentifiers)[id]=m_identifiers->size()-1;
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_ELIMINATE_PATH(Message*message){
@@ -2054,6 +2046,17 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY(Message*mess
 	seedExtender->m_sequenceReceived=true;
 }
 
+void MessageProcessor::call_RAY_MPI_TAG_I_FINISHED_SCAFFOLDING(Message*message){
+	m_scaffolder->m_numberOfRanksFinished++;
+	if(m_scaffolder->m_numberOfRanksFinished==parameters->getSize()){
+		(*m_master_mode)=RAY_MASTER_MODE_KILL_RANKS;
+	}
+}
+
+void MessageProcessor::setScaffolder(Scaffolder*a){
+	m_scaffolder=a;
+}
+
 void MessageProcessor::constructor(
 MessagesHandler*m_messagesHandler,
 SeedingData*seedingData,
@@ -2104,7 +2107,8 @@ SequencesLoader*sequencesLoader,ExtensionData*ed,
 	int*m_numberOfMachinesDoneSendingCoverage,
 				StaticVector*m_outbox,
 				StaticVector*m_inbox,
-		map<int,int>*m_allIdentifiers,OpenAssemblerChooser*m_oa,
+		//map<int,int>*m_allIdentifiers,
+		OpenAssemblerChooser*m_oa,
 int*m_numberOfRanksWithCoverageData,
 SeedExtender*seedExtender,int*m_master_mode,
 bool*m_isFinalFusion,
@@ -2160,7 +2164,7 @@ SequencesIndexer*m_si){
 	this->m_numberOfMachinesDoneSendingCoverage=m_numberOfMachinesDoneSendingCoverage;
 	this->m_outbox=m_outbox;
 	this->m_inbox=m_inbox;
-	this->m_allIdentifiers=m_allIdentifiers,
+	//this->m_allIdentifiers=m_allIdentifiers,
 	this->m_oa=m_oa;
 	this->m_numberOfRanksWithCoverageData=m_numberOfRanksWithCoverageData;
 	this->seedExtender=seedExtender;
@@ -2168,7 +2172,6 @@ SequencesIndexer*m_si){
 	this->m_isFinalFusion=m_isFinalFusion;
 	this->m_ready=m_ready;
 	m_seedingData=seedingData;
-
 }
 
 MessageProcessor::MessageProcessor(){
@@ -2181,143 +2184,9 @@ MessageProcessor::MessageProcessor(){
 }
 
 void MessageProcessor::assignHandlers(){
-	m_methods[RAY_MPI_TAG_WELCOME]=&MessageProcessor::call_RAY_MPI_TAG_WELCOME;
-	m_methods[RAY_MPI_TAG_SEQUENCES_READY]=&MessageProcessor::call_RAY_MPI_TAG_SEQUENCES_READY;
-	m_methods[RAY_MPI_TAG_VERTICES_DATA]=&MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA;
-	m_methods[RAY_MPI_TAG_VERTICES_DISTRIBUTED]=&MessageProcessor::call_RAY_MPI_TAG_VERTICES_DISTRIBUTED;
-	m_methods[RAY_MPI_TAG_OUT_EDGES_DATA]=&MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA;
-	m_methods[RAY_MPI_TAG_START_VERTICES_DISTRIBUTION]=&MessageProcessor::call_RAY_MPI_TAG_START_VERTICES_DISTRIBUTION;
-	m_methods[RAY_MPI_TAG_IN_EDGES_DATA]=&MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA;
-	m_methods[RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION]=&MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION;
-	m_methods[RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER]=&MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER;
-	m_methods[RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION]=&MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION;
-	m_methods[RAY_MPI_TAG_COVERAGE_DATA]=&MessageProcessor::call_RAY_MPI_TAG_COVERAGE_DATA;
-	m_methods[RAY_MPI_TAG_COVERAGE_DATA_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_COVERAGE_DATA_REPLY;
-	m_methods[RAY_MPI_TAG_COVERAGE_END]=&MessageProcessor::call_RAY_MPI_TAG_COVERAGE_END;
-	m_methods[RAY_MPI_TAG_SEND_COVERAGE_VALUES]=&MessageProcessor::call_RAY_MPI_TAG_SEND_COVERAGE_VALUES;
-	m_methods[RAY_MPI_TAG_READY_TO_SEED]=&MessageProcessor::call_RAY_MPI_TAG_READY_TO_SEED;
-	m_methods[RAY_MPI_TAG_START_SEEDING]=&MessageProcessor::call_RAY_MPI_TAG_START_SEEDING;
-	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE;
-	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY;
-	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES;
-	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY;
-	m_methods[RAY_MPI_TAG_SEEDING_IS_OVER]=&MessageProcessor::call_RAY_MPI_TAG_SEEDING_IS_OVER;
-	m_methods[RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON]=&MessageProcessor::call_RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON;
-	m_methods[RAY_MPI_TAG_I_GO_NOW]=&MessageProcessor::call_RAY_MPI_TAG_I_GO_NOW;
-	m_methods[RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS]=&MessageProcessor::call_RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS;
-	m_methods[RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY;
-	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES;
-	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY;
-	m_methods[RAY_MPI_TAG_EXTENSION_IS_DONE]=&MessageProcessor::call_RAY_MPI_TAG_EXTENSION_IS_DONE;
-	m_methods[RAY_MPI_TAG_ASK_EXTENSION]=&MessageProcessor::call_RAY_MPI_TAG_ASK_EXTENSION;
-	m_methods[RAY_MPI_TAG_ASK_IS_ASSEMBLED]=&MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED;
-	m_methods[RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY;
-	m_methods[RAY_MPI_TAG_MARK_AS_ASSEMBLED]=&MessageProcessor::call_RAY_MPI_TAG_MARK_AS_ASSEMBLED;
-	m_methods[RAY_MPI_TAG_ASK_EXTENSION_DATA]=&MessageProcessor::call_RAY_MPI_TAG_ASK_EXTENSION_DATA;
-	m_methods[RAY_MPI_TAG_EXTENSION_DATA]=&MessageProcessor::call_RAY_MPI_TAG_EXTENSION_DATA;
-	m_methods[RAY_MPI_TAG_EXTENSION_DATA_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_EXTENSION_DATA_REPLY;
-	m_methods[RAY_MPI_TAG_EXTENSION_END]=&MessageProcessor::call_RAY_MPI_TAG_EXTENSION_END;
-	m_methods[RAY_MPI_TAG_EXTENSION_DATA_END]=&MessageProcessor::call_RAY_MPI_TAG_EXTENSION_DATA_END;
-	m_methods[RAY_MPI_TAG_ATTACH_SEQUENCE]=&MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE;
-	m_methods[RAY_MPI_TAG_REQUEST_READS]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS;
-	m_methods[RAY_MPI_TAG_REQUEST_READS_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS_REPLY;
-	m_methods[RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION]=&MessageProcessor::call_RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION;
-	m_methods[RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY;
-	m_methods[RAY_MPI_TAG_ASK_READ_LENGTH]=&MessageProcessor::call_RAY_MPI_TAG_ASK_READ_LENGTH;
-	m_methods[RAY_MPI_TAG_ASK_READ_LENGTH_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_ASK_READ_LENGTH_REPLY;
-	m_methods[RAY_MPI_TAG_SAVE_WAVE_PROGRESSION]=&MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION;
-	m_methods[RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY;
-	m_methods[RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REPLY;
-	m_methods[RAY_MPI_TAG_ASSEMBLE_WAVES]=&MessageProcessor::call_RAY_MPI_TAG_ASSEMBLE_WAVES;
-	m_methods[RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REVERSE]=&MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REVERSE;
-	m_methods[RAY_MPI_TAG_ASSEMBLE_WAVES_DONE]=&MessageProcessor::call_RAY_MPI_TAG_ASSEMBLE_WAVES_DONE;
-	m_methods[RAY_MPI_TAG_START_FUSION]=&MessageProcessor::call_RAY_MPI_TAG_START_FUSION;
-	m_methods[RAY_MPI_TAG_FUSION_DONE]=&MessageProcessor::call_RAY_MPI_TAG_FUSION_DONE;
-	m_methods[RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE]=&MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE;
-	m_methods[RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY;
-	m_methods[RAY_MPI_TAG_GET_PATH_LENGTH]=&MessageProcessor::call_RAY_MPI_TAG_GET_PATH_LENGTH;
-	m_methods[RAY_MPI_TAG_VERTICES_DATA_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA_REPLY;
-	m_methods[RAY_MPI_TAG_GET_PATH_LENGTH_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_GET_PATH_LENGTH_REPLY;
-	m_methods[RAY_MPI_TAG_ASK_VERTEX_PATH]=&MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH;
-	m_methods[RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY;
-	m_methods[RAY_MPI_TAG_HAS_PAIRED_READ]=&MessageProcessor::call_RAY_MPI_TAG_HAS_PAIRED_READ;
-	m_methods[RAY_MPI_TAG_HAS_PAIRED_READ_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_HAS_PAIRED_READ_REPLY;
-	m_methods[RAY_MPI_TAG_GET_PAIRED_READ]=&MessageProcessor::call_RAY_MPI_TAG_GET_PAIRED_READ;
-	m_methods[RAY_MPI_TAG_GET_PAIRED_READ_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_GET_PAIRED_READ_REPLY;
-	m_methods[RAY_MPI_TAG_START_INDEXING_SEQUENCES]=&MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES;
-	m_methods[RAY_MPI_TAG_CLEAR_DIRECTIONS]=&MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS;
-	m_methods[RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY;
-	m_methods[RAY_MPI_TAG_FINISH_FUSIONS]=&MessageProcessor::call_RAY_MPI_TAG_FINISH_FUSIONS;
-	m_methods[RAY_MPI_TAG_FINISH_FUSIONS_FINISHED]=&MessageProcessor::call_RAY_MPI_TAG_FINISH_FUSIONS_FINISHED;
-	m_methods[RAY_MPI_TAG_DISTRIBUTE_FUSIONS]=&MessageProcessor::call_RAY_MPI_TAG_DISTRIBUTE_FUSIONS;
-	m_methods[RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED]=&MessageProcessor::call_RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED;
-	m_methods[RAY_MPI_TAG_EXTENSION_START]=&MessageProcessor::call_RAY_MPI_TAG_EXTENSION_START;
-	m_methods[RAY_MPI_TAG_ELIMINATE_PATH]=&MessageProcessor::call_RAY_MPI_TAG_ELIMINATE_PATH;
-	m_methods[RAY_MPI_TAG_GET_PATH_VERTEX]=&MessageProcessor::call_RAY_MPI_TAG_GET_PATH_VERTEX;
-	m_methods[RAY_MPI_TAG_GET_PATH_VERTEX_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_GET_PATH_VERTEX_REPLY;
-	m_methods[RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY;
-	m_methods[RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY;
-	m_methods[RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION]=&MessageProcessor::call_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION;
-	m_methods[RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE]=&MessageProcessor::call_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE;
-	m_methods[RAY_MPI_TAG_LIBRARY_DISTANCE]=&MessageProcessor::call_RAY_MPI_TAG_LIBRARY_DISTANCE;
-	m_methods[RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY;
-	m_methods[RAY_MPI_TAG_ASK_LIBRARY_DISTANCES]=&MessageProcessor::call_RAY_MPI_TAG_ASK_LIBRARY_DISTANCES;
-	m_methods[RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED]=&MessageProcessor::call_RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED;
-	m_methods[RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION]=&MessageProcessor::call_RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION;
-	m_methods[RAY_MPI_TAG_RECEIVED_COVERAGE_INFORMATION]=&MessageProcessor::call_RAY_MPI_TAG_RECEIVED_COVERAGE_INFORMATION;
-	m_methods[RAY_MPI_TAG_REQUEST_READ_SEQUENCE]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE;
-	m_methods[RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY;
-	m_methods[RAY_MPI_TAG_IN_EDGES_DATA_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA_REPLY;
-	m_methods[RAY_MPI_TAG_OUT_EDGES_DATA_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA_REPLY;
-	m_methods[RAY_MPI_TAG_RECEIVED_MESSAGES]=&MessageProcessor::call_RAY_MPI_TAG_RECEIVED_MESSAGES;
-	m_methods[RAY_MPI_TAG_RECEIVED_MESSAGES_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_RECEIVED_MESSAGES_REPLY;
-	m_methods[RAY_MPI_TAG_MUST_RUN_REDUCER]=&MessageProcessor::call_RAY_MPI_TAG_MUST_RUN_REDUCER;
-	m_methods[RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY;
-	m_methods[RAY_MPI_TAG_ASK_BEGIN_REDUCTION]=&MessageProcessor::call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION;
-	m_methods[RAY_MPI_TAG_RESUME_VERTEX_DISTRIBUTION]=&MessageProcessor::call_RAY_MPI_TAG_RESUME_VERTEX_DISTRIBUTION;
-	m_methods[RAY_MPI_TAG_REDUCE_MEMORY_CONSUMPTION_DONE]=&MessageProcessor::call_RAY_MPI_TAG_REDUCE_MEMORY_CONSUMPTION_DONE;
-	m_methods[RAY_MPI_TAG_START_REDUCTION]=&MessageProcessor::call_RAY_MPI_TAG_START_REDUCTION;
-	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_EDGES]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_EDGES;
-	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_EDGES_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_EDGES_REPLY;
-	m_methods[RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT]=&MessageProcessor::call_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
-	m_methods[RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY;
-	m_methods[RAY_MPI_TAG_DELETE_VERTICES]=&MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTICES;
-	m_methods[RAY_MPI_TAG_DELETE_VERTICES_DONE]=&MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTICES_DONE;
-	m_methods[RAY_MPI_TAG_UPDATE_THRESHOLD]=&MessageProcessor::call_RAY_MPI_TAG_UPDATE_THRESHOLD;
-	m_methods[RAY_MPI_TAG_UPDATE_THRESHOLD_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_UPDATE_THRESHOLD_REPLY;
-	m_methods[RAY_MPI_TAG_DELETE_VERTEX]=&MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTEX;
-	m_methods[RAY_MPI_TAG_DELETE_INGOING_EDGE]=&MessageProcessor::call_RAY_MPI_TAG_DELETE_INGOING_EDGE;
-	m_methods[RAY_MPI_TAG_DELETE_OUTGOING_EDGE]=&MessageProcessor::call_RAY_MPI_TAG_DELETE_OUTGOING_EDGE;
-	m_methods[RAY_MPI_TAG_DELETE_VERTEX_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTEX_REPLY;
-	m_methods[RAY_MPI_TAG_DELETE_OUTGOING_EDGE_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_DELETE_OUTGOING_EDGE_REPLY;
-	m_methods[RAY_MPI_TAG_DELETE_INGOING_EDGE_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_DELETE_INGOING_EDGE_REPLY;
-	m_methods[RAY_MPI_TAG_CHECK_VERTEX]=&MessageProcessor::call_RAY_MPI_TAG_CHECK_VERTEX;
-	m_methods[RAY_MPI_TAG_CHECK_VERTEX_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_CHECK_VERTEX_REPLY;
-	m_methods[RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY;
-	m_methods[RAY_MPI_TAG_SET_WORD_SIZE]=&MessageProcessor::call_RAY_MPI_TAG_SET_WORD_SIZE;
-	m_methods[RAY_MPI_TAG_MUST_RUN_REDUCER_FROM_MASTER]=&MessageProcessor::call_RAY_MPI_TAG_MUST_RUN_REDUCER_FROM_MASTER;
-	m_methods[RAY_MPI_TAG_LOAD_SEQUENCES]=&MessageProcessor::call_RAY_MPI_TAG_LOAD_SEQUENCES;
-	m_methods[RAY_MPI_TAG_WRITE_AMOS]=&MessageProcessor::call_RAY_MPI_TAG_WRITE_AMOS;
-	m_methods[RAY_MPI_TAG_WRITE_AMOS_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_WRITE_AMOS_REPLY;
-	m_methods[RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END]=&MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END;
-	m_methods[RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY;
-	m_methods[RAY_MPI_TAG_ASK_VERTEX_PATHS]=&MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS;
-	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_READS]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS;
-	m_methods[RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY;
-	m_methods[RAY_MPI_TAG_GET_READ_MATE]=&MessageProcessor::call_RAY_MPI_TAG_GET_READ_MATE;
-	m_methods[RAY_MPI_TAG_GET_READ_MATE_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_GET_READ_MATE_REPLY;
-	m_methods[RAY_MPI_TAG_GET_COVERAGE_AND_MARK]=&MessageProcessor::call_RAY_MPI_TAG_GET_COVERAGE_AND_MARK;
-	m_methods[RAY_MPI_TAG_GET_COVERAGE_AND_MARK_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_GET_COVERAGE_AND_MARK_REPLY;
-	m_methods[RAY_MPI_TAG_VERTEX_INFO]=&MessageProcessor::call_RAY_MPI_TAG_VERTEX_INFO;
-	m_methods[RAY_MPI_TAG_VERTEX_INFO_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_VERTEX_INFO_REPLY;
-	m_methods[RAY_MPI_TAG_VERTEX_READS]=&MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS;
-	m_methods[RAY_MPI_TAG_VERTEX_READS_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS_REPLY;
-	m_methods[RAY_MPI_TAG_VERTEX_READS_FROM_LIST]=&MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS_FROM_LIST;
-	m_methods[RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY;
-	m_methods[RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY]=&MessageProcessor::call_RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY;
-	m_methods[RAY_MPI_TAG_SEND_SEED_LENGTHS]=&MessageProcessor::call_RAY_MPI_TAG_SEND_SEED_LENGTHS;
-	m_methods[RAY_MPI_TAG_REQUEST_SEED_LENGTHS]=&MessageProcessor::call_RAY_MPI_TAG_REQUEST_SEED_LENGTHS;
-	m_methods[RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS]=&MessageProcessor::call_RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS;
+	#define MACRO_LIST_ITEM(x) m_methods[x]=&MessageProcessor::call_ ## x ;
+	#include <mpi_tag_macros.h>
+	#undef MACRO_LIST_ITEM
 }
 
 

@@ -23,6 +23,7 @@
 #ifndef _Machine
 #define _Machine
 
+#include <Scaffolder.h>
 #include <GridTable.h>
 #include<MessagesHandler.h>
 #include<common_functions.h>
@@ -64,17 +65,6 @@ public:
 	map<int,int> m_statistics_bytes;
 };
 
-class ScaffolderData{
-public:
-	bool m_computedTopology;
-	int m_pathId;
-	MyStack<int> m_depthsToVisit;
-	MyStack<uint64_t> m_verticesToVisit;
-	set<uint64_t> m_visitedVertices;
-	bool m_processedLastVertex;
-	map<int,int> m_allIdentifiers;
-};
-
 using namespace std;
 
 class Machine;
@@ -99,7 +89,6 @@ class Machine{
 
 	int m_numberOfRanksWithCoverageData;
 	TimePrinter m_timePrinter;
-	ScaffolderData*m_sd;
 	VerticesExtractor m_verticesExtractor;
 	MessageProcessor m_mp;
 	int m_argc;
@@ -184,6 +173,8 @@ class Machine{
 
 	// SEQUENCE DISTRIBUTION
 	bool m_reverseComplementVertex;
+
+	Scaffolder m_scaffolder;
 
 	// memory allocators
 	// m_outboxAllocator, m_inboxAllocator, and m_distributionAllocator are
@@ -275,53 +266,11 @@ class Machine{
 	void assignMasterHandlers();
 	void assignSlaveHandlers();
 
-	void call_RAY_MASTER_MODE_LOAD_CONFIG();
-	void call_RAY_MASTER_MODE_LOAD_SEQUENCES();
-	void call_RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION();
-	void call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES();
-	void call_RAY_MASTER_MODE_TRIGGER_EDGES_DISTRIBUTION();
-	void call_RAY_MASTER_MODE_START_EDGES_DISTRIBUTION();
-	void call_RAY_SLAVE_MODE_EXTRACT_VERTICES();
-	void call_RAY_MASTER_MODE_TRIGGER_EDGES();
-	void call_RAY_MASTER_MODE_TRIGGER_INDEXING();
-	void call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS();
-	void call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS();
-	void call_RAY_MASTER_MODE_PREPARE_SEEDING();
-	void call_RAY_MASTER_MODE_ASK_BEGIN_REDUCTION();
-	void call_RAY_MASTER_MODE_RESUME_VERTEX_DISTRIBUTION();
-	void call_RAY_MASTER_MODE_START_REDUCTION();
-
-	void call_RAY_SLAVE_MODE_ASSEMBLE_WAVES();
-	void call_RAY_SLAVE_MODE_FINISH_FUSIONS();
-	void call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS();
-	void call_RAY_SLAVE_MODE_SEND_DISTRIBUTION();
-	void call_RAY_MASTER_MODE_TRIGGER_SEEDING();
-	void call_RAY_SLAVE_MODE_START_SEEDING();
-	void call_RAY_MASTER_MODE_TRIGGER_DETECTION();
-	void call_RAY_MASTER_MODE_ASK_DISTANCES();
-	void call_RAY_MASTER_MODE_START_UPDATING_DISTANCES();
-	void call_RAY_MASTER_MODE_INDEX_SEQUENCES();
-	void call_RAY_MASTER_MODE_TRIGGER_EXTENSIONS();
-	void call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA();
-	void call_RAY_SLAVE_MODE_FUSION();
-	void call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION();
-	void call_RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES();
-	void call_RAY_MASTER_MODE_UPDATE_DISTANCES();
-	void call_RAY_MASTER_MODE_TRIGGER_FUSIONS();
-	void call_RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS();
-	void call_RAY_MASTER_MODE_START_FUSION_CYCLE();
-	void call_RAY_MASTER_MODE_ASK_EXTENSIONS();
-	void call_RAY_MASTER_MODE_AMOS();
-	void call_RAY_SLAVE_MODE_EXTENSION();
-	void call_RAY_MASTER_MODE_DO_NOTHING();
-	void call_RAY_SLAVE_MODE_DO_NOTHING();
-	void call_RAY_SLAVE_MODE_INDEX_SEQUENCES();
-	void call_RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION();
-	void call_RAY_SLAVE_MODE_DELETE_VERTICES();
-	void call_RAY_SLAVE_MODE_LOAD_SEQUENCES();
-	void call_RAY_SLAVE_MODE_AMOS();
-	void call_RAY_SLAVE_MODE_SEND_SEED_LENGTHS();
-
+	#define MACRO_LIST_ITEM(x) void call_ ## x();
+	#include <master_mode_macros.h>
+	#include <slave_mode_macros.h>
+	#undef MACRO_LIST_ITEM
+	
 public:
 	/*
  * this is the only public bit

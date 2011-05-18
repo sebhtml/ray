@@ -20,6 +20,8 @@ coverage values.
 * Fixed a bug that disallowed mixing manual and automatic detection of outer distances.
 * Ray now writes the statistics for seed lengths to a file.
 * Devised a new algorithm that computes longer seeds to bootstrap assemblies.
+* Slave modes, master modes and MPI tags are generated with macros for method
+prototypes, enumerations and assignments in arrays.
 
 
 = 1.3.0 =

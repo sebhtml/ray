@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C) 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -17,27 +17,30 @@
     along with this program (COPYING).  
 	see <http://www.gnu.org/licenses/>
 
- 	Funding:
-Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Research (Master's award: 200910MDR-215249-172830 and Doctoral award: 200902CGM-204212-172830).
-
 */
 
-#ifndef _mpi_tags
-#define _mpi_tags
+#ifndef _Scaffolder
+#define _Scaffolder
 
-// tags for MPI
-// these are the message types used by Ray
-// Ray instances like to communicate a lots!
-//
+#include <Parameters.h>
+#include <StaticVector.h>
+#include <RingAllocator.h>
 
-extern const char* MESSAGES[];
+class Scaffolder{
+	Parameters*m_parameters;
+	StaticVector*m_inbox;
+	StaticVector*m_outbox;
+	RingAllocator*m_outboxAllocator;
+	bool m_initialised;
+	int*m_slave_mode;
+	bool m_ready;
+public:
+	int m_numberOfRanksFinished;
 
-#define MACRO_LIST_ITEM(element) element,
-
-enum {
-#include <mpi_tag_macros.h>
+	void constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
+		int*slaveMode);
+	void run();
 };
 
-#undef MACRO_LIST_ITEM
-
 #endif
+
