@@ -21,6 +21,8 @@
 
 #include <Scaffolder.h>
 #include <Message.h>
+#include <vector>
+using namespace std;
 
 void Scaffolder::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
 	int*slaveMode){
@@ -39,10 +41,17 @@ void Scaffolder::run(){
 	if(!m_ready)
 		return;
 
+	cout<<"Scaffolder => "<<m_contigs.size()<<endl;
+
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING,
 		m_parameters->getRank());
 
 	m_outbox->push_back(aMessage);
 
 	(*m_slave_mode)=RAY_SLAVE_MODE_DO_NOTHING;
+}
+
+void Scaffolder::addContig(uint64_t name,vector<uint64_t>*vertices){
+	m_contigNames.push_back(name);
+	m_contigs.push_back(*vertices);
 }

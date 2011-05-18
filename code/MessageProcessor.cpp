@@ -1779,8 +1779,6 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 
 	// add the FINISHING bits
 	for(int i=0;i<(int)m_fusionData->m_FINISH_newFusions.size();i++){
-		#ifdef SHOW_PROGRESS
-		#endif
 		(m_ed->m_EXTENSION_contigs).push_back((m_fusionData->m_FINISH_newFusions)[i]);
 	}
 

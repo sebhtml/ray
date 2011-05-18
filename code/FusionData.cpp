@@ -555,9 +555,7 @@ void FusionData::makeFusions(){
 		}
 		return;
 	}else if((int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<=END_LENGTH){
-		#ifdef SHOW_PROGRESS
 		cout<<"No fusion for me. "<<m_seedingData->m_SEEDING_i<<" "<<m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<<" "<<m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i]<<endl;
-		#endif
 		m_FUSION_direct_fusionDone=false;
 		m_FUSION_first_done=false;
 		m_FUSION_paths_requested=false;

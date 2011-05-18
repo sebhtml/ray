@@ -24,9 +24,15 @@
 
 #include <Parameters.h>
 #include <StaticVector.h>
+#include <vector>
 #include <RingAllocator.h>
+#include <constants.h>
+using namespace std;
 
 class Scaffolder{
+	vector<vector<VERTEX_TYPE> > m_contigs;
+	vector<uint64_t> m_contigNames;
+
 	Parameters*m_parameters;
 	StaticVector*m_inbox;
 	StaticVector*m_outbox;
@@ -40,6 +46,7 @@ public:
 	void constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
 		int*slaveMode);
 	void run();
+	void addContig(uint64_t name,vector<uint64_t>*vertices);
 };
 
 #endif

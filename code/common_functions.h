@@ -1,6 +1,6 @@
 /*
 Ray
-Copyright (C)  2010  Sébastien Boisvert
+Copyright (C)  2010, 2011  Sébastien Boisvert
 
 http://DeNovoAssembler.SourceForge.Net/
 
@@ -22,68 +22,15 @@ see <http://www.gnu.org/licenses/>
 #ifndef _common_functions
 #define _common_functions
 
-#ifdef HAVE_CONFIG_H
-#include<config.h>
-#endif
-
-#define VERTEX_TYPE uint64_t
-
-#define DUMMY_LIBRARY 40000
-
-#define RAY_VERSION "1.3.1"
-
-#define _ENCODING_A 0
-#define _ENCODING_T 1
-#define _ENCODING_C 2
-#define _ENCODING_G 3
-
-#include<master_modes.h>
-#include<slave_modes.h>
-#include<mpi_tags.h>
-#include<stdint.h>
-#include<stdlib.h>
-#include<sys/types.h>
-#include<time.h>
-#include<unistd.h>
-#include<string>
-#include<vector>
+#include <string>
+#include <constants.h>
+#include <slave_modes.h>
+#include <master_modes.h>
+#include <vector>
+#include <mpi_tags.h>
 using namespace std;
 
-#define SHOW_PROGRESS
-// the maximum of processes is utilized to construct unique hyperfusions IDs
-#define MAX_NUMBER_OF_MPI_PROCESSES 1000000
-#define INVALID_RANK MAX_NUMBER_OF_MPI_PROCESSES
-
 #define __max(a,b) (((a)>(b)) ? (a) : (b))
-
-#define MAX_VERTICES_TO_VISIT 500
-#define TIP_LIMIT 40
-#define _MINIMUM_COVERAGE 2
-
-// Open-MPI threshold if 4k (4096), and this include Open-MPI's metadata.
-// tests show that 4096-100 bytes are sent eagerly, too.
-// divide that by eight and you get the number of 64-bit integers 
-// allowed in a eager single communication
-
-/*
- * "4096 is rendezvous. For eager, try 4000 or lower. "
- *  --Eugene Loh  (Oracle)
- *  http://www.open-mpi.org/community/lists/devel/2010/11/8700.php
- *
- */
-
-//#define MAXIMUM_MESSAGE_SIZE_IN_BYTES     131072 // 128 KiB
-#define MAXIMUM_MESSAGE_SIZE_IN_BYTES 4000
-
-#define MASTER_RANK 0x0
-
-#define _SEGMENT_LENGTH 5
-
-/*
- * this is the type used to store coverage values
- */
-//#define COVERAGE_TYPE uint8_t
-#define COVERAGE_TYPE uint16_t
 
 /*
  *  complement the sequence of a biological thing

@@ -914,6 +914,9 @@ void Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 		}
 		total++;
 		string contig=convertToString(&(m_ed->m_EXTENSION_contigs[i]),m_parameters.getWordSize());
+		
+		m_scaffolder.addContig(uniqueId,&(m_ed->m_EXTENSION_contigs[i]));
+
 		string withLineBreaks=addLineBreaks(contig);
 		fprintf(fp,">contig-%lu %i nucleotides\n%s",uniqueId,(int)contig.length(),withLineBreaks.c_str());
 	}
@@ -980,8 +983,6 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 	//  * a fusion cycle
 
 	if(!m_cycleStarted){
-		#ifdef SHOW_PROGRESS
-		#endif
 		m_nextReductionOccured=false;
 		m_cycleStarted=true;
 		m_isFinalFusion=false;
@@ -993,8 +994,6 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		m_currentCycleStep=1;
 		m_CLEAR_n=0;
 	}else if(m_CLEAR_n==getSize() and !m_isFinalFusion and m_currentCycleStep==1){
-		#ifdef SHOW_PROGRESS
-		#endif
 		m_currentCycleStep++;
 		m_CLEAR_n=-1;
 
@@ -1005,8 +1004,6 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		m_DISTRIBUTE_n=0;
 		//cout<<"Cycle "<<m_cycleNumber<<" sending 2) RAY_MPI_TAG_DISTRIBUTE_FUSIONS"<<endl;
 	}else if(m_DISTRIBUTE_n==getSize() and !m_isFinalFusion and m_currentCycleStep==2){
-		#ifdef SHOW_PROGRESS
-		#endif
 		m_currentCycleStep++;
 		m_DISTRIBUTE_n=-1;
 		m_isFinalFusion=true;
@@ -1017,8 +1014,6 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		//cout<<"Cycle "<<m_cycleNumber<<" sending 3) RAY_MPI_TAG_FINISH_FUSIONS"<<endl;
 		m_FINISH_n=0;
 	}else if(m_FINISH_n==getSize() and m_isFinalFusion and m_currentCycleStep==3){
-		#ifdef SHOW_PROGRESS
-		#endif
 		m_currentCycleStep++;
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_CLEAR_DIRECTIONS,getRank());
@@ -1030,8 +1025,6 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 	}else if(m_CLEAR_n==getSize() and m_isFinalFusion && m_currentCycleStep==4){
 		m_CLEAR_n=-1;
 		m_currentCycleStep++;
-		#ifdef SHOW_PROGRESS
-		#endif
 
 		for(int i=0;i<getSize();i++){
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_DISTRIBUTE_FUSIONS,getRank());
@@ -1040,10 +1033,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		m_DISTRIBUTE_n=0;
 	}else if(m_DISTRIBUTE_n==getSize() and m_isFinalFusion && m_currentCycleStep==5){
 		m_currentCycleStep++;
-		#ifdef SHOW_PROGRESS
 		cout<<"Rank 0 tells others to compute fusions."<<endl;
-
-		#endif
 		m_fusionData->m_FUSION_numberOfRanksDone=0;
 		m_DISTRIBUTE_n=-1;
 		for(int i=0;i<(int)getSize();i++){// start fusion.
