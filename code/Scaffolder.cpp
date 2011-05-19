@@ -85,13 +85,14 @@ void Scaffolder::run(){
 					m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 					m_coverageRequested=true;
 					m_coverageReceived=false;
-				}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
+				}else if(!m_coverageReceived
+					&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
 					//cout<<"Received coverage"<<endl;
 					m_receivedCoverage=m_virtualCommunicator->getResponseElements(m_workerId)[0];
 					m_coverageReceived=true;
 					m_initialisedFetcher=false;
-				}else if(m_coverageReceived){
 					//cout<<"Coverage= "<<m_receivedCoverage<<endl;
+				}else if(m_coverageReceived){
 					if(m_coverageReceived<m_parameters->getPeakCoverage()){
 						if(!m_initialisedFetcher){
 							m_readFetcher.constructor(vertex,m_outboxAllocator,m_inbox,
@@ -103,6 +104,26 @@ void Scaffolder::run(){
 						}else{
 							if(m_readAnnotationId<(int)m_readFetcher.getResult()->size()){
 								ReadAnnotation*a=&(m_readFetcher.getResult()->at(m_readAnnotationId));
+								//cout<<"ReadAnnotation "<<m_readAnnotationId<<endl;
+								// if is paired
+								// 	get the forward and the reverse markers
+								// 	get the coverage of the forward vertex
+								// 	if < maxCoverage
+								//	 	get the Direction
+								//	 	if only 1 Direction
+								//	 		if contig is not self
+								//	 			get its length
+								//	 			print link information
+								//
+								// 	get the coverage of the reverse vertex
+								// 	if < maxCoverage
+								//	 	get the Direction
+								//	 	if only 1 Direction
+								//	 		if contig is not self
+								//	 			get its length
+								//	 			print link information
+								//
+							
 								m_readAnnotationId++;
 							}else{
 								m_forwardDone=true;
@@ -138,7 +159,7 @@ void Scaffolder::run(){
 			m_positionOnContig=0;
 		}
 	}else{
-		cout<<"done."<<endl;
+		//cout<<"done."<<endl;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING,
 			m_parameters->getRank());
 		m_outbox->push_back(aMessage);

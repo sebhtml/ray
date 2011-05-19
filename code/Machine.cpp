@@ -386,7 +386,6 @@ m_seedingData,
 	}
 
 	if(isMaster() && !m_aborted){
-		m_timePrinter.printElapsedTime("Collection of fusions");
 		m_timePrinter.printDurations();
 
 		cout<<endl;
@@ -407,9 +406,6 @@ m_seedingData,
 	MPI_Barrier(MPI_COMM_WORLD);
 
 	if(isMaster() && !m_aborted){
-		cout<<endl;
-		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getCoverageDistributionFile()<<" (how redundant are the k-mers)"<<endl;
-		m_parameters.printFinalMessage();
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<" (contiguous sequences in FASTA format) "<<endl;
 		if(m_parameters.useAmos()){
 			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getAmosFile()<<" (reads mapped onto contiguous sequences in AMOS format)"<<endl;
@@ -626,7 +622,7 @@ void Machine::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
 }
 
 void Machine::call_RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION(){
-	m_timePrinter.printElapsedTime("Distribution of sequence reads");
+	m_timePrinter.printElapsedTime("Sequence partitioning");
 	cout<<endl;
 	
 	for(int i=0;i<getSize();i++){
@@ -723,7 +719,7 @@ void Machine::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 void Machine::call_RAY_MASTER_MODE_TRIGGER_INDEXING(){
 	m_numberOfMachinesDoneSendingEdges=-9;
 	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
-	m_timePrinter.printElapsedTime("Calculation of coverage distribution");
+	m_timePrinter.printElapsedTime("Coverage distribution analysis");
 	cout<<endl;
 
 	cout<<endl;
@@ -745,7 +741,7 @@ void Machine::call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS(){
 
 void Machine::call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS(){
 	m_numberOfMachinesReadyToSendDistribution=-1;
-	m_timePrinter.printElapsedTime("Distribution of vertices & edges");
+	m_timePrinter.printElapsedTime("Graph construction");
 	cout<<endl;
 
 	for(int i=0;i<getSize();i++){
@@ -861,7 +857,7 @@ void Machine::call_RAY_SLAVE_MODE_START_SEEDING(){
 }
 
 void Machine::call_RAY_MASTER_MODE_TRIGGER_DETECTION(){
-	m_timePrinter.printElapsedTime("Computation of seeds");
+	m_timePrinter.printElapsedTime("Detection of assembly seeds");
 	cout<<endl;
 	m_numberOfRanksDoneSeeding=-1;
 	for(int i=0;i<getSize();i++){
@@ -960,7 +956,7 @@ void Machine::call_RAY_MASTER_MODE_UPDATE_DISTANCES(){
 }
 
 void Machine::call_RAY_MASTER_MODE_TRIGGER_FUSIONS(){
-	m_timePrinter.printElapsedTime("Extension of seeds");
+	m_timePrinter.printElapsedTime("Bidirectional extension of seeds");
 	cout<<endl;
 
 	// ask one at once to do the fusion
@@ -1057,7 +1053,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		m_reductionOccured=m_nextReductionOccured;
 		m_fusionData->m_FUSION_numberOfRanksDone=-1;
 		if(!m_reductionOccured or m_cycleNumber ==5){ 
-			m_timePrinter.printElapsedTime("Computation of fusions");
+			m_timePrinter.printElapsedTime("Merging of redundant contigs");
 			cout<<endl;
 			m_master_mode=RAY_MASTER_MODE_ASK_EXTENSIONS;
 
@@ -1079,7 +1075,7 @@ void Machine::call_RAY_MASTER_MODE_ASK_EXTENSIONS(){
 		m_ed->m_EXTENSION_rank++;
 	}
 	if(m_ed->m_EXTENSION_rank==getSize()){
-
+		m_timePrinter.printElapsedTime("Generation of contigs");
 		if(m_parameters.useAmos()){
 			m_master_mode=RAY_MASTER_MODE_AMOS;
 			m_ed->m_EXTENSION_currentRankIsStarted=false;
@@ -1278,6 +1274,10 @@ void Machine::processData(){
 }
 
 void Machine::call_RAY_MASTER_MODE_KILL_RANKS(){
+	if(m_scaffolder.m_numberOfRanksFinished==getSize()){
+		m_timePrinter.printElapsedTime("Scaffolding of contigs");
+	}
+
 	killRanks();
 	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
 }

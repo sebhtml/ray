@@ -542,7 +542,7 @@ string Parameters::getDirectory(){
 }
 
 string Parameters::getOutputFile(){
-	return getPrefix()+".fasta";
+	return getPrefix()+".Contigs.fasta";
 }
 
 int Parameters::getMinimumContigLength(){

@@ -52,7 +52,7 @@ void Library::updateDistances(){
 		m_outbox->push_back(aMessage);
 	}
 
-	m_timePrinter->printElapsedTime("Computation of library sizes");
+	m_timePrinter->printElapsedTime("Estimation of outer distances for paired reads");
 	cout<<endl;
 
 	(*m_master_mode)=RAY_MASTER_MODE_TRIGGER_EXTENSIONS;
