@@ -49,9 +49,9 @@ void SeedingData::computeSeeds(){
 		#endif
 	}
 
-	m_virtualCommunicator.processInbox(&m_activeWorkersToRestore);
+	m_virtualCommunicator->processInbox(&m_activeWorkersToRestore);
 
-	if(!m_virtualCommunicator.isReady()){
+	if(!m_virtualCommunicator->isReady()){
 		return;
 	}
 
@@ -65,14 +65,14 @@ void SeedingData::computeSeeds(){
 		assert(m_aliveWorkers.count(workerId)>0);
 		assert(!m_aliveWorkers[workerId].isDone());
 		#endif
-		m_virtualCommunicator.resetLocalPushedMessageStatus();
+		m_virtualCommunicator->resetLocalPushedMessageStatus();
 
 		//force the worker to work until he finishes or pushes something on the stack
-		while(!m_aliveWorkers[workerId].isDone()&&!m_virtualCommunicator.getLocalPushedMessageStatus()){
+		while(!m_aliveWorkers[workerId].isDone()&&!m_virtualCommunicator->getLocalPushedMessageStatus()){
 			m_aliveWorkers[workerId].work();
 		}
 
-		if(m_virtualCommunicator.getLocalPushedMessageStatus()){
+		if(m_virtualCommunicator->getLocalPushedMessageStatus()){
 			m_waitingWorkers.push_back(workerId);
 		}
 		if(m_aliveWorkers[workerId].isDone()){
@@ -105,7 +105,7 @@ void SeedingData::computeSeeds(){
 		//  add one worker to active workers
 		//  reason is that those already in the pool don't communicate anymore -- 
 		//  as for they need responses.
-		if(!m_virtualCommunicator.getGlobalPushedMessageStatus()&&m_activeWorkers.empty()){
+		if(!m_virtualCommunicator->getGlobalPushedMessageStatus()&&m_activeWorkers.empty()){
 			// there is at least one worker to start
 			// AND
 			// the number of alive workers is below the maximum
@@ -131,7 +131,7 @@ void SeedingData::computeSeeds(){
 				if(coverage<minimum){
 					m_completedJobs++;
 				}else{
-					m_aliveWorkers[m_SEEDING_i].constructor(vertexKey,m_parameters,m_outboxAllocator,&m_virtualCommunicator,m_SEEDING_i);
+					m_aliveWorkers[m_SEEDING_i].constructor(vertexKey,m_parameters,m_outboxAllocator,m_virtualCommunicator,m_SEEDING_i);
 					m_activeWorkers.insert(m_SEEDING_i);
 				}
 
@@ -149,7 +149,7 @@ void SeedingData::computeSeeds(){
 				m_completedJobs++;
 				*/
 			}else{
-				m_virtualCommunicator.forceFlush();
+				m_virtualCommunicator->forceFlush();
 			}
 		}
 
@@ -169,7 +169,7 @@ void SeedingData::computeSeeds(){
 		fflush(stdout);
 		printf("Rank %i: peak number of workers: %i, maximum: %i\n",m_rank,m_maximumWorkers,m_maximumAliveWorkers);
 		fflush(stdout);
-		m_virtualCommunicator.printStatistics();
+		m_virtualCommunicator->printStatistics();
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_SEEDING_IS_OVER,getRank());
 		m_outbox->push_back(aMessage);
 
@@ -188,7 +188,9 @@ void SeedingData::computeSeeds(){
 }
 
 void SeedingData::constructor(SeedExtender*seedExtender,int rank,int size,StaticVector*outbox,RingAllocator*outboxAllocator,int*seedCoverage,int*mode,
-	Parameters*parameters,int*wordSize,GridTable*subgraph,bool*colorSpaceMode,StaticVector*inbox){
+	Parameters*parameters,int*wordSize,GridTable*subgraph,bool*colorSpaceMode,StaticVector*inbox,
+	VirtualCommunicator*vc){
+	m_virtualCommunicator=vc;
 	m_seedExtender=seedExtender;
 	m_size=size;
 	m_rank=rank;
@@ -208,14 +210,6 @@ void SeedingData::constructor(SeedExtender*seedExtender,int rank,int size,Static
 	m_subgraph=subgraph;
 	m_colorSpaceMode=colorSpaceMode;
 	m_initiatedIterator=false;
-
-	m_virtualCommunicator.constructor(rank,size,outboxAllocator,inbox,outbox);
-
-	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY);
-	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,2);
-
-	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY);
-	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,1);
 }
 
 int SeedingData::getRank(){
@@ -255,7 +249,7 @@ void SeedingData::updateStates(){
 	}
 	m_activeWorkersToRestore.clear();
 
-	m_virtualCommunicator.resetGlobalPushedMessageStatus();
+	m_virtualCommunicator->resetGlobalPushedMessageStatus();
 }
 
 void SeedingData::sendSeedLengths(){

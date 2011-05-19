@@ -27,9 +27,17 @@
 #include <vector>
 #include <RingAllocator.h>
 #include <constants.h>
+#include <VirtualCommunicator.h>
+#include <ReadFetcher.h>
 using namespace std;
 
 class Scaffolder{
+	bool m_initialisedFetcher;
+	int m_readAnnotationId;
+	ReadFetcher m_readFetcher;
+	vector<uint64_t> m_activeWorkers;
+	uint64_t m_workerId;
+	VirtualCommunicator*m_virtualCommunicator;
 	bool m_coverageRequested;
 	bool m_coverageReceived;
 	int m_receivedCoverage;
@@ -52,7 +60,7 @@ public:
 	int m_numberOfRanksFinished;
 
 	void constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
-		int*slaveMode);
+		int*slaveMode,VirtualCommunicator*vc);
 	void run();
 	void addContig(uint64_t name,vector<uint64_t>*vertices);
 };

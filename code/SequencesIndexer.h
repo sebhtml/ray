@@ -48,7 +48,7 @@ class SequencesIndexer{
 	int m_maximumAliveWorkers;
 	int m_maximumWorkers;
 
-	VirtualCommunicator m_virtualCommunicator;
+	VirtualCommunicator*m_virtualCommunicator;
 	set<uint64_t> m_activeWorkers;
 	set<uint64_t>::iterator m_activeWorkerIterator;
 	map<uint64_t,IndexerWorker> m_aliveWorkers;
@@ -75,7 +75,7 @@ ArrayOfReads*m_myReads,
 );
 
 	void constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,
-	MyAllocator*allocator);
+	MyAllocator*allocator,VirtualCommunicator*vc);
 	void setReadiness();
 	MyAllocator*getAllocator();
 };

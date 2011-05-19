@@ -43,7 +43,7 @@ class SeedingData{
 	map<int,int>::iterator m_iterator;
 
 	bool m_flushAllMode;
-	VirtualCommunicator m_virtualCommunicator;
+	VirtualCommunicator*m_virtualCommunicator;
 	bool m_initiatedIterator;
 	bool*m_colorSpaceMode;
 	int m_rank;
@@ -113,7 +113,7 @@ public:
 
 	void constructor(SeedExtender*seedExtender,int rank,int size,StaticVector*outbox,RingAllocator*outboxAllocator,
 		int*seedCoverage,int*mode,Parameters*parameters,int*wordSize,GridTable*subgraph,bool*colorSpaceMode,
-		StaticVector*inbox);
+		StaticVector*inbox,VirtualCommunicator*vc);
 	void updateStates();
 	void sendSeedLengths();
 	bool m_initialized;

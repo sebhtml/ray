@@ -154,7 +154,8 @@ void Machine::start(){
 	m_inbox.constructor(MAX_ALLOCATED_MESSAGES_IN_INBOX,RAY_MALLOC_TYPE_INBOX_VECTOR);
 	m_outbox.constructor(MAX_ALLOCATED_MESSAGES_IN_OUTBOX,RAY_MALLOC_TYPE_OUTBOX_VECTOR);
 
-	m_scaffolder.constructor(&m_outbox,&m_inbox,&m_outboxAllocator,&m_parameters,&m_slave_mode);
+	m_scaffolder.constructor(&m_outbox,&m_inbox,&m_outboxAllocator,&m_parameters,&m_slave_mode,
+	&m_virtualCommunicator);
 	m_mp.setScaffolder(&m_scaffolder);
 
 	int PERSISTENT_ALLOCATOR_CHUNK_SIZE=4194304; // 4 MiB
@@ -177,7 +178,7 @@ void Machine::start(){
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	m_si.constructor(&m_parameters,&m_outboxAllocator,&m_inbox,&m_outbox,&m_diskAllocator);
+	m_si.constructor(&m_parameters,&m_outboxAllocator,&m_inbox,&m_outbox,&m_diskAllocator,&m_virtualCommunicator);
 
 	int maximumNumberOfProcesses=65536;
 	if(getSize()>maximumNumberOfProcesses){
@@ -276,6 +277,15 @@ void Machine::start(){
 	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_GET_READ_MATE,RAY_MPI_TAG_GET_READ_MATE_REPLY);
 	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_GET_READ_MATE,4);
 
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,1);
+
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_ATTACH_SEQUENCE,RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_ATTACH_SEQUENCE,5);
+
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,2);
+
 	m_library.constructor(getRank(),&m_outbox,&m_outboxAllocator,&m_sequence_id,&m_sequence_idInFile,
 		m_ed,getSize(),&m_timePrinter,&m_slave_mode,&m_master_mode,
 	&m_parameters,&m_fileId,m_seedingData,&m_inbox,&m_virtualCommunicator);
@@ -283,7 +293,7 @@ void Machine::start(){
 	m_subgraph.constructor(getRank(),&m_diskAllocator,&m_parameters);
 	
 	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),&m_outbox,&m_outboxAllocator,&m_seedCoverage,&m_slave_mode,&m_parameters,&m_wordSize,&m_subgraph,
-		&m_colorSpaceMode,&m_inbox);
+		&m_colorSpaceMode,&m_inbox,&m_virtualCommunicator);
 
 	m_alive=true;
 	m_loadSequenceStep=false;
@@ -1268,8 +1278,8 @@ void Machine::processData(){
 }
 
 void Machine::call_RAY_MASTER_MODE_KILL_RANKS(){
-	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
 	killRanks();
+	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
 }
 
 void Machine::killRanks(){

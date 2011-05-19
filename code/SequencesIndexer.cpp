@@ -45,10 +45,10 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 		m_maximumAliveWorkers=30000;
 	}
 
-	m_virtualCommunicator.processInbox(&m_activeWorkersToRestore);
+	m_virtualCommunicator->processInbox(&m_activeWorkersToRestore);
 
 
-	if(!m_virtualCommunicator.isReady()){
+	if(!m_virtualCommunicator->isReady()){
 		return;
 	}
 
@@ -58,16 +58,16 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 		assert(m_aliveWorkers.count(workerId)>0);
 		assert(!m_aliveWorkers[workerId].isDone());
 		#endif
-		m_virtualCommunicator.resetLocalPushedMessageStatus();
+		m_virtualCommunicator->resetLocalPushedMessageStatus();
 
 		//cout<<"Rank "<<m_rank<<" Worker="<<workerId<<" work()"<<endl;
 		//
 		//force the worker to work until he finishes or pushes something on the stack
-		while(!m_aliveWorkers[workerId].isDone()&&!m_virtualCommunicator.getLocalPushedMessageStatus()){
+		while(!m_aliveWorkers[workerId].isDone()&&!m_virtualCommunicator->getLocalPushedMessageStatus()){
 			m_aliveWorkers[workerId].work();
 		}
 
-		if(m_virtualCommunicator.getLocalPushedMessageStatus()){
+		if(m_virtualCommunicator->getLocalPushedMessageStatus()){
 			m_waitingWorkers.push_back(workerId);
 		}
 		if(m_aliveWorkers[workerId].isDone()){
@@ -80,7 +80,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 		//  add one worker to active workers
 		//  reason is that those already in the pool don't communicate anymore -- 
 		//  as for they need responses.
-		if(!m_virtualCommunicator.getGlobalPushedMessageStatus()&&m_activeWorkers.empty()){
+		if(!m_virtualCommunicator->getGlobalPushedMessageStatus()&&m_activeWorkers.empty()){
 			// there is at least one worker to start
 			// AND
 			// the number of alive workers is below the maximum
@@ -104,7 +104,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 
 				m_myReads->at(m_theSequenceId)->getSeq(sequence);
 
-				m_aliveWorkers[m_theSequenceId].constructor(m_theSequenceId,sequence,m_parameters,m_outboxAllocator,&m_virtualCommunicator,m_theSequenceId,m_myReads);
+				m_aliveWorkers[m_theSequenceId].constructor(m_theSequenceId,sequence,m_parameters,m_outboxAllocator,m_virtualCommunicator,m_theSequenceId,m_myReads);
 				m_activeWorkers.insert(m_theSequenceId);
 				int population=m_aliveWorkers.size();
 				if(population>m_maximumWorkers){
@@ -113,7 +113,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 
 				m_theSequenceId++;
 			}else{
-				m_virtualCommunicator.forceFlush();
+				m_virtualCommunicator->forceFlush();
 			}
 		}
 
@@ -133,7 +133,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,m_rank);
 		m_outbox->push_back(aMessage);
 
-		m_virtualCommunicator.printStatistics();
+		m_virtualCommunicator->printStatistics();
 
 		if(m_parameters->showMemoryUsage()){
 			showMemoryUsage(m_rank);
@@ -146,7 +146,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 	}
 }
 
-void SequencesIndexer::constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,MyAllocator*allocator){
+void SequencesIndexer::constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,MyAllocator*allocator,VirtualCommunicator*vc){
 	m_allocator=allocator;
 	m_initiatedIterator=false;
 	m_parameters=parameters;
@@ -157,15 +157,7 @@ void SequencesIndexer::constructor(Parameters*parameters,RingAllocator*outboxAll
 	m_completedJobs=0;
 	m_maximumWorkers=0;
 	m_theSequenceId=0;
-
-	m_virtualCommunicator.constructor(m_rank,m_size,outboxAllocator,inbox,outbox);
-
-	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_ATTACH_SEQUENCE,RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY);
-	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_ATTACH_SEQUENCE,5);
-
-	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY);
-	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,1);
-
+	m_virtualCommunicator=vc;
 }
 
 void SequencesIndexer::setReadiness(){
@@ -207,5 +199,5 @@ void SequencesIndexer::updateStates(){
 	}
 	m_activeWorkersToRestore.clear();
 
-	m_virtualCommunicator.resetGlobalPushedMessageStatus();
+	m_virtualCommunicator->resetGlobalPushedMessageStatus();
 }

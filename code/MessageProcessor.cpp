@@ -837,7 +837,6 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_COVERAGE_AND_MARK(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_GET_COVERAGE_AND_MARK_REPLY(Message*message){
-
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message){
@@ -956,7 +955,6 @@ void MessageProcessor::call_RAY_MPI_TAG_SEEDING_IS_OVER(Message*message){
 	if((*m_numberOfRanksDoneSeeding)==size){
 		(*m_numberOfRanksDoneSeeding)=0;
 		(*m_master_mode)=RAY_MASTER_MODE_DO_NOTHING;
-		cout<<"MASTER: seeding is done."<<endl;
 		for(int i=0;i<size;i++){
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_REQUEST_SEED_LENGTHS,rank);
 			m_outbox->push_back(aMessage);
@@ -967,32 +965,27 @@ void MessageProcessor::call_RAY_MPI_TAG_SEEDING_IS_OVER(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_REQUEST_SEED_LENGTHS(Message*message){
 	(*m_mode)=RAY_SLAVE_MODE_SEND_SEED_LENGTHS;
 	m_seedingData->m_initialized=false;
-	cout<<" sending seed lengths"<<endl;
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_SEND_SEED_LENGTHS(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	int count=message->getCount();
-	cout<<"Receiving seed lengths "<<__func__<<endl;
 	for(int i=0;i<count;i+=2){
 		int seedLength=incoming[i];
 		int number=incoming[i+1];
 		m_seedingData->m_masterSeedLengths[seedLength]+=number;
 	}
 	
-	cout<<" reply "<<endl;
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY(Message*message){
-	cout<<__func__<<endl;
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS(Message*message){
 	(*m_numberOfRanksDoneSeeding)++;
-	cout<<__func__<<" done: "<<*m_numberOfRanksDoneSeeding<<endl;
 
 	if((*m_numberOfRanksDoneSeeding)==size){
 		(*m_numberOfRanksDoneSeeding)=0;
