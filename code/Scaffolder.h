@@ -32,6 +32,29 @@
 using namespace std;
 
 class Scaffolder{
+	bool m_forwardDirectionsRequested;
+	bool m_forwardDirectionsReceived;
+	int m_pairedForwardMarkerCoverage;
+	bool m_pairedForwardHasDirection;
+	uint64_t m_pairedForwardDirectionName;
+	int m_pairedForwardDirectionPosition;
+	bool m_reverseDirectionsRequested;
+	int m_readLength;
+	bool m_markersRequested;
+	bool m_markersReceived;
+	int m_pairedForwardOffset;
+	int m_pairedReverseOffset;
+	VERTEX_TYPE m_pairedForwardMarker;
+	VERTEX_TYPE m_pairedReverseMarker;
+	bool m_pairReceived;
+	int m_pairedReadRank;
+	int m_pairedReadIndex;
+	int m_pairedReadLibrary;
+	int m_pairedReadLength;
+	bool m_pairRequested;
+	bool m_hasPairReceived;
+	bool m_hasPairRequested;
+	bool m_hasPair;
 	bool m_initialisedFetcher;
 	int m_readAnnotationId;
 	ReadFetcher m_readFetcher;

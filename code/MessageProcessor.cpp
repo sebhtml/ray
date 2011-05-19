@@ -51,6 +51,30 @@ void MessageProcessor::processMessage(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_GET_READ_MATE_REPLY(Message*message){
 }
 
+void MessageProcessor::call_RAY_MPI_TAG_GET_READ_MARKERS_REPLY(Message*message){
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_GET_READ_MARKERS(Message*message){
+	int count=message->getCount();
+	uint64_t*incoming=(uint64_t*)message->getBuffer();
+	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	for(int i=0;i<count;i++){
+		int readId=incoming[i];
+		Read*read=m_myReads->at(readId);
+		int readLength=read->length();
+		outgoingMessage[5*i+0]=readLength;
+		VERTEX_TYPE forwardMarker=read->getVertex(read->getForwardOffset(),parameters->getWordSize(),'F',parameters->getColorSpaceMode());
+		VERTEX_TYPE reverseMarker=read->getVertex(read->getReverseOffset(),parameters->getWordSize(),'R',parameters->getColorSpaceMode());
+		outgoingMessage[5*i+1]=forwardMarker;
+		outgoingMessage[5*i+2]=reverseMarker;
+		outgoingMessage[5*i+3]=read->getForwardOffset();
+		outgoingMessage[5*i+4]=read->getReverseOffset();
+	}
+
+	Message aMessage(outgoingMessage,count*5,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_GET_READ_MARKERS_REPLY,rank);
+	m_outbox->push_back(aMessage);
+}
+
 void MessageProcessor::call_RAY_MPI_TAG_GET_READ_MATE(Message*message){
 	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	int j=0;
@@ -1542,17 +1566,47 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY(Message*mess
 
 void MessageProcessor::call_RAY_MPI_TAG_GET_PATH_LENGTH(Message*message){
 	void*buffer=message->getBuffer();
+	int count=message->getCount();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
-	uint64_t id=incoming[0];
-	int length=0;
-	if(m_fusionData->m_FUSION_identifier_map.count(id)>0){
-		length=(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size();
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	for(int i=0;i<count;i++){
+		uint64_t id=incoming[i];
+		int length=0;
+		if(m_fusionData->m_FUSION_identifier_map.count(id)>0){
+			length=(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size();
+		}
+
+		message2[i]=length;
+	}
+	Message aMessage(message2,count,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_GET_PATH_LENGTH_REPLY,rank);
+	m_outbox->push_back(aMessage);
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION_REPLY(Message*message){
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION(Message*message){
+	void*buffer=message->getBuffer();
+	int count=message->getCount();
+	int source=message->getSource();
+	uint64_t*incoming=(uint64_t*)buffer;
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+
+	for(int i=0;i<count;i++){
+		VERTEX_TYPE vertex=incoming[i];
+		Vertex*node=m_subgraph->find(vertex);
+		int coverage=node->getCoverage(vertex);
+		vector<Direction> paths=m_subgraph->getDirections(vertex);
+		message2[i*4+0]=coverage;
+		message2[i*4+1]=(paths.size()==1);
+		if(paths.size()==1){
+			message2[4*i+2]=paths[0].getWave();
+			message2[4*i+3]=paths[0].getProgression();
+		}
 	}
 
-	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t));
-	message2[0]=length;
-	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_GET_PATH_LENGTH_REPLY,rank);
+	Message aMessage(message2,count*4,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -1690,12 +1744,15 @@ void MessageProcessor::call_RAY_MPI_TAG_HAS_PAIRED_READ(Message*message){
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
-	int index=incoming[0];
-	#ifdef ASSERT
-	assert(index<(int)m_myReads->size());
-	#endif
-	message2[0]=(*m_myReads)[index]->hasPairedRead();
-	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_HAS_PAIRED_READ_REPLY,rank);
+	int count=message->getCount();
+	for(int i=0;i<count;i++){
+		int index=incoming[i];
+		#ifdef ASSERT
+		assert(index<(int)m_myReads->size());
+		#endif
+		message2[i]=(*m_myReads)[index]->hasPairedRead();
+	}
+	Message aMessage(message2,count,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_HAS_PAIRED_READ_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 

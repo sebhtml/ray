@@ -43,7 +43,7 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 	m_pushedMessages++;
 	#ifdef ASSERT
 	if(m_elementsForWorkers.count(workerId)>0){
-		cout<<"Error: there is already a pending message for worker "<<workerId<<endl;
+		cout<<"Error: there is already a pending message for worker "<<workerId<<" tag="<<MESSAGES[message->getTag()]<<endl;
 	}
 	assert(m_elementsForWorkers.count(workerId)==0);
 	#endif
@@ -222,7 +222,7 @@ void VirtualCommunicator::processInbox(vector<uint64_t>*activeWorkers){
 			}
 			assert(count>0);
 			if(count!=(int)workers.size()*elementsPerWorker){
-				cout<<"Rank="<<m_rank<<" Count="<<count<<" Workers="<<workers.size()<<" ElementsPerWorker="<<elementsPerWorker<<endl;
+				cout<<"Rank="<<m_rank<<" Count="<<count<<" Workers="<<workers.size()<<" ElementsPerWorker="<<elementsPerWorker<<" QueryTag="<<MESSAGES[queryTag]<<endl;
 			}
 			assert(count==(int)workers.size()*elementsPerWorker);
 			#endif

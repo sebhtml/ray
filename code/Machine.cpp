@@ -319,6 +319,16 @@ void Machine::start(){
 	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY);
 	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,2);
 
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_HAS_PAIRED_READ,RAY_MPI_TAG_HAS_PAIRED_READ_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_HAS_PAIRED_READ,1);
+
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_GET_READ_MARKERS,RAY_MPI_TAG_GET_READ_MARKERS_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_GET_READ_MARKERS,5);
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_GET_PATH_LENGTH,RAY_MPI_TAG_GET_PATH_LENGTH_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_GET_PATH_LENGTH,1);
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION,RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION,4);
+
 	m_library.constructor(getRank(),&m_outbox,&m_outboxAllocator,&m_sequence_id,&m_sequence_idInFile,
 		m_ed,getSize(),&m_timePrinter,&m_slave_mode,&m_master_mode,
 	&m_parameters,&m_fileId,m_seedingData,&m_inbox,&m_virtualCommunicator);
