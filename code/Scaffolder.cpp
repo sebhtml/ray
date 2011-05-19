@@ -61,8 +61,9 @@ void Scaffolder::run(){
 				// 					get the paths that goes on them
 				// 					print the linking information
 				if(!m_coverageRequested){
+					cout<<"Requesting coverage"<<endl;
 					uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
-
+					buffer[0]=vertex;
 					Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,
 					m_parameters->_vertexRank(vertex),RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_parameters->getRank());
 					m_outbox->push_back(aMessage);
@@ -70,6 +71,7 @@ void Scaffolder::run(){
 					m_coverageReceived=false;
 				}else if(m_inbox->size()==1
 					&&m_inbox->at(0)->getTag()==RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY){
+					cout<<"Received coverage"<<endl;
 					m_receivedCoverage=((uint64_t*)m_inbox->at(0)->getBuffer())[0];
 					m_coverageReceived=true;
 				}else if(m_coverageReceived){
@@ -93,11 +95,14 @@ void Scaffolder::run(){
 				m_reverseDone=true;
 			}else{
 				m_positionOnContig++;
+				m_forwardDone=false;
+				m_coverageRequested=false;
 			}
 		}else{
 			m_contigId++;
 			m_positionOnContig=0;
 			m_forwardDone=false;
+			m_coverageRequested=false;
 		}
 	}else{
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING,
