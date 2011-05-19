@@ -1798,8 +1798,13 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_PAIRED_READ_REPLY(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 	int source=message->getSource();
+	bool appendReverseComplement=(message->getCount()==0);
 	// clearing old data too!.
 	m_fusionData->m_FINISH_pathLengths.clear();
+
+	if(!appendReverseComplement){
+		cout<<"Will not generate reverse complement"<<endl;
+	}
 
 	//cout<<"Rank "<<rank<<" is clearing its directions"<<endl;
 	// clear graph
@@ -1821,12 +1826,14 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 
 	m_fusionData->m_FINISH_newFusions.clear();
 
-
 	vector<vector<uint64_t> > fusions;
 	for(int i=0;i<(int)(m_ed->m_EXTENSION_contigs).size();i++){
 		uint64_t id=(m_ed->m_EXTENSION_identifiers)[i];
 		if(m_fusionData->m_FUSION_eliminated.count(id)==0){
 			fusions.push_back((m_ed->m_EXTENSION_contigs)[i]);
+			if(!appendReverseComplement)
+				continue;
+
 			vector<uint64_t> rc;
 			for(int j=(m_ed->m_EXTENSION_contigs)[i].size()-1;j>=0;j--){
 				rc.push_back(complementVertex((m_ed->m_EXTENSION_contigs)[i][j],*m_wordSize,(*m_colorSpaceMode)));

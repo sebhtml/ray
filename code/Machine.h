@@ -58,13 +58,6 @@
 #include<mpi.h>
 #include<VerticesExtractor.h>
 
-class StatisticsData{
-public:
-	time_t m_time_t_statistics;
-	map<int,int> m_statistics_messages;
-	map<int,int> m_statistics_bytes;
-};
-
 using namespace std;
 
 class Machine;
@@ -77,8 +70,9 @@ class Machine{
 	MachineMethod m_master_methods[64];
 	MachineMethod m_slave_methods[64];
 
+	bool m_mustStop;
+
 	int MAX_ALLOCATED_MESSAGES_IN_OUTBOX;
-	
 	// always 1
 	int MAX_ALLOCATED_MESSAGES_IN_INBOX;
 
@@ -225,7 +219,6 @@ class Machine{
 	bool m_reductionOccured;
 
 	#ifdef SHOW_SENT_MESSAGES
-	StatisticsData*m_stats;
 	#endif
 	SequencesLoader m_sl;
 

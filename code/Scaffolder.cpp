@@ -214,11 +214,12 @@ void Scaffolder::run(){
 									m_pairedForwardDirectionPosition=response[3];
 									m_forwardDirectionsReceived=true;
 									m_reverseDirectionsRequested=false;
-									cout<<"PairedForwardMarkerCoverage "<<m_pairedForwardMarkerCoverage<<" HasDirection"<<m_pairedForwardHasDirection<<endl;
+									//cout<<"PairedForwardMarkerCoverage "<<m_pairedForwardMarkerCoverage<<" HasDirection"<<m_pairedForwardHasDirection<<endl;
 
 									if(m_pairedForwardHasDirection
-									&&m_pairedForwardMarkerCoverage<m_parameters->getMaxCoverage()){
-										cout<<"Self= "<<m_contigNames[m_contigId]<<" Other= "<<m_pairedForwardDirectionName<<endl;
+									&&m_pairedForwardMarkerCoverage<m_parameters->getMaxCoverage()
+									&&m_contigNames[m_contigId]!=m_pairedForwardDirectionName){
+										cout<<"Self= "<<m_contigNames[m_contigId]<<" position="<<m_positionOnContig<<" Length: "<<m_contigs[m_contigId].size()<<" Other= "<<m_pairedForwardDirectionName<<" Position= "<<m_pairedForwardDirectionPosition<<endl;
 									}
 								}else if(!m_forwardDirectionsReceived){
 									return;

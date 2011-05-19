@@ -1020,6 +1020,7 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS(){
 	m_master_mode=RAY_MASTER_MODE_START_FUSION_CYCLE;
 	m_cycleStarted=false;
 	m_cycleNumber=0;
+	m_mustStop=false;
 }
 
 void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
@@ -1033,11 +1034,18 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 	//  * a fusion cycle
 
 	if(!m_cycleStarted){
+		int count=0;
+		if(m_mustStop){
+			count=1;
+		}
+
+		uint64_t*buffer=(uint64_t*)m_outboxAllocator.allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+
 		m_nextReductionOccured=false;
 		m_cycleStarted=true;
 		m_isFinalFusion=false;
 		for(int i=0;i<getSize();i++){
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_CLEAR_DIRECTIONS,getRank());
+			Message aMessage(buffer,count,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_CLEAR_DIRECTIONS,getRank());
 			m_outbox.push_back(aMessage);
 		}
 		//cout<<"Cycle "<<m_cycleNumber<<" sending 1) RAY_MPI_TAG_CLEAR_DIRECTIONS"<<endl;
@@ -1065,11 +1073,17 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		m_FINISH_n=0;
 	}else if(m_FINISH_n==getSize() and m_isFinalFusion and m_currentCycleStep==3){
 		m_currentCycleStep++;
+		int count=0;
+		if(m_mustStop){
+			count=1;
+		}
+		uint64_t*buffer=(uint64_t*)m_outboxAllocator.allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+
 		for(int i=0;i<getSize();i++){
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_CLEAR_DIRECTIONS,getRank());
+			Message aMessage(buffer,count,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_CLEAR_DIRECTIONS,getRank());
 			m_outbox.push_back(aMessage);
 		}
-		//cout<<"Cycle "<<m_cycleNumber<<" sending 4) RAY_MPI_TAG_CLEAR_DIRECTIONS"<<endl;
+
 		m_FINISH_n=-1;
 		m_CLEAR_n=0;
 	}else if(m_CLEAR_n==getSize() and m_isFinalFusion && m_currentCycleStep==4){
@@ -1081,8 +1095,19 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 			m_outbox.push_back(aMessage);
 		}
 		m_DISTRIBUTE_n=0;
-	}else if(m_DISTRIBUTE_n==getSize() and m_isFinalFusion && m_currentCycleStep==5){
+	}else if(m_DISTRIBUTE_n==getSize() && m_isFinalFusion && m_currentCycleStep==5){
 		m_currentCycleStep++;
+
+		if(m_mustStop){
+			m_timePrinter.printElapsedTime("Merging of redundant contigs");
+			cout<<endl;
+			m_master_mode=RAY_MASTER_MODE_ASK_EXTENSIONS;
+
+			m_ed->m_EXTENSION_currentRankIsSet=false;
+			m_ed->m_EXTENSION_rank=-1;
+			return;
+		}
+
 		cout<<"Rank 0 tells others to compute fusions."<<endl;
 		m_fusionData->m_FUSION_numberOfRanksDone=0;
 		m_DISTRIBUTE_n=-1;
@@ -1092,21 +1117,14 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		}
 		
 	}else if(m_fusionData->m_FUSION_numberOfRanksDone==getSize() && m_isFinalFusion && m_currentCycleStep==6){
-		
 		m_reductionOccured=m_nextReductionOccured;
 		m_fusionData->m_FUSION_numberOfRanksDone=-1;
-		if(!m_reductionOccured or m_cycleNumber ==5){ 
-			m_timePrinter.printElapsedTime("Merging of redundant contigs");
-			cout<<endl;
-			m_master_mode=RAY_MASTER_MODE_ASK_EXTENSIONS;
-
-			m_ed->m_EXTENSION_currentRankIsSet=false;
-			m_ed->m_EXTENSION_rank=-1;
-		}else{
-			// we continue now!
-			m_cycleStarted=false;
-			m_cycleNumber++;
+		if(!m_reductionOccured || m_cycleNumber ==5){ 
+			m_mustStop=true;
 		}
+		// we continue now!
+		m_cycleStarted=false;
+		m_cycleNumber++;
 	}
 }
 
