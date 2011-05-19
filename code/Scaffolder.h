@@ -30,6 +30,10 @@
 using namespace std;
 
 class Scaffolder{
+	bool m_reverseDone;
+	bool m_forwardDone;
+	int m_contigId;
+	int m_positionOnContig;
 	vector<vector<VERTEX_TYPE> > m_contigs;
 	vector<uint64_t> m_contigNames;
 

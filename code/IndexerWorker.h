@@ -26,9 +26,11 @@
 #include <RingAllocator.h>
 #include <VirtualCommunicator.h>
 #include <stdint.h>
+#include <ArrayOfReads.h>
 
 // this class is a worker for sequence indexing
 class IndexerWorker{
+	ArrayOfReads*m_reads;
 	int m_sequenceId;
 	bool m_done;
 	int m_position;
@@ -51,7 +53,7 @@ class IndexerWorker{
 	vector<int> m_coverages;
 public:
 	void constructor(int sequenceId,char*sequence,Parameters*parameters,RingAllocator*outboxAllocator,
-		VirtualCommunicator*vc,uint64_t workerId);
+		VirtualCommunicator*vc,uint64_t workerId,ArrayOfReads*a);
 	bool isDone();
 	void work();
 	uint64_t getWorkerId();

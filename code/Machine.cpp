@@ -509,7 +509,8 @@ void Machine::sendMessages(){
 		cout<<"Fatal: "<<messagesToSend<<" messages to send, but max is "<<MAX_ALLOCATED_MESSAGES_IN_OUTBOX<<endl;
 		cout<<"tags=";
 		for(int i=0;i<(int)m_outbox.size();i++){
-			cout<<" "<<m_outbox[i]->getTag();
+			int tag=m_outbox[i]->getTag();
+			cout<<" "<<MESSAGES[tag]<<endl;
 		}
 		cout<<endl;
 	}
@@ -1113,6 +1114,14 @@ void Machine::call_RAY_MASTER_MODE_AMOS(){
 }
 
 void Machine::call_RAY_MASTER_MODE_SCAFFOLDER(){
+	for(int i=0;i<getSize();i++){
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_START_SCAFFOLDER,getRank());
+		m_outbox.push_back(aMessage);
+	}
+	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+}
+
+void Machine::call_RAY_SLAVE_MODE_SCAFFOLDER(){
 	m_scaffolder.run();
 }
 

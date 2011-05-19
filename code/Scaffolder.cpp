@@ -31,24 +31,67 @@ void Scaffolder::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocato
 	m_outboxAllocator=outboxAllocator;
 	m_parameters=parameters;
 	m_slave_mode=slaveMode;
+	m_initialised=false;
 }
 
 void Scaffolder::run(){
 	if(!m_initialised){
+		m_initialised=true;
 		m_ready=true;
+		m_contigId=0;
+		m_positionOnContig=0;
+		m_forwardDone=false;
 	}
 
 	if(!m_ready)
 		return;
 
-	cout<<"Scaffolder => "<<m_contigs.size()<<endl;
+	if(m_contigId<(int)m_contigs.size()){
+		if(m_positionOnContig<(int)m_contigs[m_contigId].size()){
+			VERTEX_TYPE vertex=m_contigs[m_contigId][m_positionOnContig];
+			VERTEX_TYPE reverseComplement=m_parameters->_complementVertex(vertex);
+			if(!m_forwardDone){
+				// get the coverage
+				// if < maxCoverage
+				// 	get read markers
+				// 	for each read marker
+				// 		if it is paired
+				// 			get its pair
+				// 				get the vertex for the opposite strand of the first read
+				// 				get the coverage of this vertex
+				// 				if < maxCoverage
+				// 					get the paths that goes on them
+				// 					print the linking information
+				m_forwardDone=true;
+				m_reverseDone=false;
+			}else if(!m_reverseDone){
+				// get the coverage
+				// if < maxCoverage
+				// 	get read markers
+				// 	for each read marker
+				// 		if it is paired
+				// 			get its pair
+				// 				get the vertex for the opposite strand of the first read
+				// 				get the coverage of this vertex
+				// 				if < maxCoverage
+				// 					get the paths that goes on them
+				// 					print the linking information
 
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING,
-		m_parameters->getRank());
-
-	m_outbox->push_back(aMessage);
-
-	(*m_slave_mode)=RAY_SLAVE_MODE_DO_NOTHING;
+				m_reverseDone=true;
+			}else{
+				m_positionOnContig++;
+			}
+		}else{
+			m_contigId++;
+			m_positionOnContig=0;
+			m_forwardDone=false;
+		}
+	}else{
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING,
+			m_parameters->getRank());
+		m_outbox->push_back(aMessage);
+		(*m_slave_mode)=RAY_SLAVE_MODE_DO_NOTHING;
+	}
 }
 
 void Scaffolder::addContig(uint64_t name,vector<uint64_t>*vertices){

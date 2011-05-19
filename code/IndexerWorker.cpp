@@ -23,7 +23,8 @@
 #include <string.h>
 
 void IndexerWorker::constructor(int sequenceId,char*sequence,Parameters*parameters,RingAllocator*outboxAllocator,
-	VirtualCommunicator*vc,uint64_t workerId){
+	VirtualCommunicator*vc,uint64_t workerId,ArrayOfReads*a){
+	m_reads=a;
 	m_sequenceId=sequenceId;
 	m_sequence=sequence;
 	m_parameters=parameters;
@@ -124,6 +125,7 @@ void IndexerWorker::work(){
 				Message aMessage(message,5,MPI_UNSIGNED_LONG_LONG,sendTo,RAY_MPI_TAG_ATTACH_SEQUENCE,m_parameters->getRank());
 				m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 				m_vertexIsDone=true;
+				m_reads->at(m_workerId)->setForwardOffset(selectedPosition);
 			}else{
 				m_forwardIndexed=true;
 			}
@@ -170,14 +172,16 @@ void IndexerWorker::work(){
 				uint64_t vertex=m_parameters->_complementVertex(m_vertices[selectedPosition]);
 				int sendTo=vertexRank(vertex,m_parameters->getSize(),m_parameters->getWordSize());
 				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(5*sizeof(uint64_t));
+				int positionOnStrand=m_theLength-m_parameters->getWordSize()-selectedPosition;
 				message[0]=vertex;
 				message[1]=m_parameters->getRank();
 				message[2]=m_sequenceId;
-				message[3]=m_theLength-m_parameters->getWordSize()-selectedPosition;
+				message[3]=positionOnStrand;
 				message[4]='R';
 				Message aMessage(message,5,MPI_UNSIGNED_LONG_LONG,sendTo,RAY_MPI_TAG_ATTACH_SEQUENCE,m_parameters->getRank());
 				m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 				m_vertexIsDone=true;
+				m_reads->at(m_workerId)->setReverseOffset(positionOnStrand);
 			}else{
 				m_reverseIndexed=true;
 			}

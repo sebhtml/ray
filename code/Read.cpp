@@ -68,6 +68,8 @@ void Read::constructorWithRawSequence(const char*seq,uint8_t*raw,bool flag){
 }
 
 void Read::constructor(const char*sequence,MyAllocator*seqMyAllocator,bool trimFlag){
+	m_forwardOffset=0;
+	m_reverseOffset=0;
 	m_type=TYPE_SINGLE_END;
 	#ifdef __READ_VERBOSITY
 	cout<<"In="<<sequence<<endl;
@@ -206,3 +208,20 @@ int Read::getType(){
 void Read::setType(uint8_t a){
 	m_type=a;
 }
+
+void Read::setForwardOffset(int a){
+	m_forwardOffset=a;
+}
+
+void Read::setReverseOffset(int a){
+	m_reverseOffset=a;
+}
+
+int Read::getForwardOffset(){
+	return m_forwardOffset;
+}
+
+int Read::getReverseOffset(){
+	return m_reverseOffset;
+}
+

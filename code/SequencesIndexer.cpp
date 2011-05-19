@@ -104,7 +104,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 
 				m_myReads->at(m_theSequenceId)->getSeq(sequence);
 
-				m_aliveWorkers[m_theSequenceId].constructor(m_theSequenceId,sequence,m_parameters,m_outboxAllocator,&m_virtualCommunicator,m_theSequenceId);
+				m_aliveWorkers[m_theSequenceId].constructor(m_theSequenceId,sequence,m_parameters,m_outboxAllocator,&m_virtualCommunicator,m_theSequenceId,m_myReads);
 				m_activeWorkers.insert(m_theSequenceId);
 				int population=m_aliveWorkers.size();
 				if(population>m_maximumWorkers){

@@ -1207,7 +1207,6 @@ void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message){
 		}
 
 		if(coverage==1){
-			printf("SKIPPING COVERAGE 1\n");
 			continue;
 		}
 		
@@ -1249,8 +1248,6 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS(Message*message){
 	uint64_t vertex=0;
 	// start from the beginning
 	if(count>=3){
-		//cout<<__func__<<" from key "<<incoming[0]<<endl;
-		//cout.flush();
 		vertex=incoming[0];
 
 		Vertex*node=m_subgraph->find(vertex);
@@ -1259,15 +1256,6 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS(Message*message){
 		#endif
 
 		e=m_subgraph->getReads(vertex);
-		/*
-		int n=0;
-		while(e!=NULL){
-			n++;
-			e=e->getNext();
-		}
-		cout<<"Reads: "<<n<<endl;
-		e=m_subgraph->getReads(vertex);
-		*/
 
 		#ifdef ASSERT
 		assert(maxToProcess%4==0);
@@ -1296,7 +1284,6 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS(Message*message){
 
 	// use the pointer provided, count is 2, but only the first element is good.
 	}else if(count==2){
-		//cout<<__func__<<" from pointer "<<incoming[0]<<endl; 
 		cout.flush();
 		e=(ReadAnnotation*)incoming[0];
 		vertex=incoming[1];
@@ -2049,6 +2036,10 @@ void MessageProcessor::call_RAY_MPI_TAG_I_FINISHED_SCAFFOLDING(Message*message){
 	if(m_scaffolder->m_numberOfRanksFinished==parameters->getSize()){
 		(*m_master_mode)=RAY_MASTER_MODE_KILL_RANKS;
 	}
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_START_SCAFFOLDER(Message*message){
+	(*m_mode)=RAY_SLAVE_MODE_SCAFFOLDER;
 }
 
 void MessageProcessor::setScaffolder(Scaffolder*a){

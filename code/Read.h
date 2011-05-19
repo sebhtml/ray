@@ -46,6 +46,10 @@ class Read{
 	PairedRead m_pairedRead;// the read on the left
 	uint16_t m_length;
 	uint8_t m_type;
+	
+	// for the scaffolder:
+	uint8_t m_forwardOffset;
+	uint8_t m_reverseOffset;
 
 	char*trim(char*a,const char*b);
 public:
@@ -63,6 +67,10 @@ public:
 	void setLeftType();
 	int getType();
 	void setType(uint8_t type);
+	void setForwardOffset(int a);
+	void setReverseOffset(int a);
+	int getForwardOffset();
+	int getReverseOffset();
 }
 #ifdef FORCE_PACKING
 __attribute__((__packed__))
