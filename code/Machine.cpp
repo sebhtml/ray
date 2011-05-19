@@ -252,6 +252,39 @@ void Machine::start(){
 		size_t page_size = (size_t) sysconf (_SC_PAGESIZE);
 		cout<<"PageSize: "<<page_size<<" bytes"<<endl;
 		cout<<endl;
+		cout<<"Number of MPI ranks: "<<getSize()<<endl;
+		cout<<"Ray master MPI rank: "<<MASTER_RANK<<endl;
+		cout<<"Ray slave MPI ranks: 0-"<<getSize()-1<<endl;
+		cout<<endl;
+		int count=0;
+		#define MACRO_LIST_ITEM(x) count++;
+		#include <master_mode_macros.h>
+		#undef MACRO_LIST_ITEM
+		cout<<"Ray master modes ( "<<count<<" )"<<endl;
+		#define MACRO_LIST_ITEM(x) printf(" %i %s\n",x,#x);fflush(stdout);
+		#include <master_mode_macros.h>
+		#undef MACRO_LIST_ITEM
+		cout<<endl;
+		count=0;
+		#define MACRO_LIST_ITEM(x) count++;
+		#include <slave_mode_macros.h>
+		#undef MACRO_LIST_ITEM
+		cout<<"Ray slave modes ( "<<count<<" )"<<endl;
+		#define MACRO_LIST_ITEM(x) printf(" %i %s\n",x,#x);fflush(stdout);
+		#include <slave_mode_macros.h>
+		#undef MACRO_LIST_ITEM
+		cout<<endl;
+		count=0;
+		#define MACRO_LIST_ITEM(x) count++;
+		#include <mpi_tag_macros.h>
+		#undef MACRO_LIST_ITEM
+		cout<<"Ray MPI tags ( "<<count<<" )"<<endl;
+		#define MACRO_LIST_ITEM(x) printf(" %i %s\n",x,#x);fflush(stdout);
+		#include <mpi_tag_macros.h>
+		#undef MACRO_LIST_ITEM
+		
+		cout<<endl;
+
 		m_timePrinter.printElapsedTime("Beginning of computation");
 		cout<<endl;
 	}

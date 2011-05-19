@@ -97,8 +97,6 @@ void Parameters::parseCommands(){
 
 	if(m_rank==MASTER_RANK){
 		cout<<endl;
-		cout<<"Number of MPI ranks: "<<m_size<<endl;
-		cout<<endl;
 		cout<<"Ray command:"<<endl<<endl;
 
 		for(int i=0;i<(int)m_commands.size();i++){
