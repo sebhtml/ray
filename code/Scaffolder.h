@@ -30,6 +30,10 @@
 using namespace std;
 
 class Scaffolder{
+	bool m_coverageRequested;
+	bool m_coverageReceived;
+	int m_receivedCoverage;
+
 	bool m_reverseDone;
 	bool m_forwardDone;
 	int m_contigId;
