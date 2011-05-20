@@ -47,6 +47,7 @@ class MyAllocator{
 	void addChunk();
 
 public:
+	MyAllocator();
 	/**
  * print allocator information
  */

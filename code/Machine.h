@@ -251,10 +251,6 @@ class Machine{
 	void processData();
 	int getRank();
 	void receiveWelcomeMessage(MPI_Status*status);
-	void getPaths(uint64_t vertex);
-	//void extendSeeds();
-	//void makeFusions();
-	//void depthFirstSearch(uint64_t root,uint64_t a,int b);
 	
 	void assignMasterHandlers();
 	void assignSlaveHandlers();

@@ -451,16 +451,12 @@ void FusionData::finishFusions(){
 				assert(rankId<m_size);
 				#endif
 	
-				//printf("Rank %i: requesting target length\n",getRank());
-				//fflush(stdout);
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rankId,RAY_MPI_TAG_GET_PATH_LENGTH,getRank());
 				m_outbox->push_back(aMessage);
 				m_FUSION_pathLengthRequested=true;
 				m_FUSION_pathLengthReceived=false;
 			}else if(m_FUSION_pathLengthReceived){
 				m_FINISH_pathLengths[pathId]=m_FUSION_receivedLength;
-				//printf("Rank %i: received target length\n",getRank());
-				//fflush(stdout);
 			}
 		}else if(m_FINISH_pathLengths[pathId]!=0 // 0 means the path does not exist.
 		&&m_FINISH_pathLengths[pathId]!=(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){// avoid fusion of same length.

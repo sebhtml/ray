@@ -53,214 +53,7 @@ void Scaffolder::run(){
 	m_activeWorkers.clear();
 
 	if(m_contigId<(int)m_contigs.size()){
-		if(m_positionOnContig<(int)m_contigs[m_contigId].size()){
-			#ifdef ASSERT
-			assert(m_contigId<(int)m_contigs.size());
-			assert(m_positionOnContig<(int)m_contigs[m_contigId].size());
-			#endif
-
-			VERTEX_TYPE vertex=m_contigs[m_contigId][m_positionOnContig];
-			#ifdef ASSERT
-			assert(m_parameters!=NULL);
-			#endif
-			VERTEX_TYPE reverseComplement=m_parameters->_complementVertex(vertex);
-			if(!m_forwardDone){
-				// get the coverage
-				// if < maxCoverage
-				// 	get read markers
-				// 	for each read marker
-				// 		if it is paired
-				// 			get its pair
-				// 				get the vertex for the opposite strand of the first read
-				// 				get the coverage of this vertex
-				// 				if < maxCoverage
-				// 					get the paths that goes on them
-				// 					print the linking information
-				if(!m_coverageRequested){
-					//cout<<"Requesting coverage contig "<<m_contigId<<"/"<<m_contigs.size()<<" position "<<m_positionOnContig<<"/"<<m_contigs[m_contigId].size()<<endl;
-					uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
-					buffer[0]=vertex;
-					Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,
-						m_parameters->_vertexRank(vertex),RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_parameters->getRank());
-					m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
-					m_coverageRequested=true;
-					m_coverageReceived=false;
-				}else if(!m_coverageReceived
-					&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
-					//cout<<"Received coverage"<<endl;
-					m_receivedCoverage=m_virtualCommunicator->getResponseElements(m_workerId)[0];
-					m_coverageReceived=true;
-					m_initialisedFetcher=false;
-					//cout<<"Coverage= "<<m_receivedCoverage<<endl;
-				}else if(m_coverageReceived){
-					if(m_coverageReceived<m_parameters->getPeakCoverage()){
-						if(!m_initialisedFetcher){
-							m_readFetcher.constructor(vertex,m_outboxAllocator,m_inbox,
-							m_outbox,m_parameters,m_virtualCommunicator,m_workerId);
-							m_readAnnotationId=0;
-							m_initialisedFetcher=true;
-							m_hasPairRequested=false;
-						}else if(!m_readFetcher.isDone()){
-							m_readFetcher.work();
-						}else{
-							if(m_readAnnotationId<(int)m_readFetcher.getResult()->size()){
-								//cout<<"ReadAnnotation "<<m_readAnnotationId<<endl;
-								// if is paired
-								// 	get the forward and the reverse markers
-								// 	get the coverage of the forward vertex
-								// 	if < maxCoverage
-								//	 	get the Direction
-								//	 	if only 1 Direction
-								//	 		if contig is not self
-								//	 			get its length
-								//	 			print link information
-								//
-								// 	get the coverage of the reverse vertex
-								// 	if < maxCoverage
-								//	 	get the Direction
-								//	 	if only 1 Direction
-								//	 		if contig is not self
-								//	 			get its length
-								//	 			print link information
-								//
-
-								ReadAnnotation*a=&(m_readFetcher.getResult()->at(m_readAnnotationId));
-								int rank=a->getRank();
-								int sequenceId=a->getReadIndex();
-								char strand=a->getStrand();
-								int positionOnStrand=a->getPositionOnStrand();
-								if(!m_hasPairRequested){
-									uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
-									buffer[0]=sequenceId;
-									Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,
-									rank,RAY_MPI_TAG_HAS_PAIRED_READ,m_parameters->getRank());
-									m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
-									m_hasPairRequested=true;
-									m_hasPairReceived=false;
-									//cout<<"Requests has pair?"<<endl;
-								}else if(!m_hasPairReceived
-								&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
-									m_hasPair=m_virtualCommunicator->getResponseElements(m_workerId)[0];
-									m_hasPairReceived=true;
-									m_pairRequested=false;
-									//cout<<"Answer has pair?"<<endl;
-								}else if(!m_hasPairReceived){
-									return;
-								}else if(!m_hasPair){
-									//cout<<"No pair"<<endl;
-									m_readAnnotationId++;
-									m_hasPairRequested=false;
-								}else if(!m_pairRequested){
-									uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
-									buffer[0]=sequenceId;
-									Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,
-									rank,RAY_MPI_TAG_GET_READ_MATE,m_parameters->getRank());
-									m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
-									//cout<<"Requests Pair"<<endl;
-									m_pairRequested=true;
-									m_pairReceived=false;
-								}else if(!m_pairReceived
-								&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
-									vector<uint64_t> response=m_virtualCommunicator->getResponseElements(m_workerId);
-									m_readLength=response[0];
-									m_pairedReadRank=response[1];
-									m_pairedReadIndex=response[2];
-									m_pairedReadLibrary=response[3];
-									m_pairReceived=true;
-									m_markersRequested=false;
-									//cout<<"Receives pair"<<endl;
-								}else if(!m_pairReceived){
-									return;
-								}else if(!m_markersRequested){
-									uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
-									buffer[0]=m_pairedReadIndex;
-									Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,
-									m_pairedReadRank,RAY_MPI_TAG_GET_READ_MARKERS,m_parameters->getRank());
-									m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
-									m_markersRequested=true;
-									m_markersReceived=false;
-								}else if(!m_markersReceived
-								&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
-									vector<uint64_t> response=m_virtualCommunicator->getResponseElements(m_workerId);
-									m_pairedReadLength=response[0];
-									m_pairedForwardMarker=response[1];
-									m_pairedReverseMarker=response[2];
-									m_pairedForwardOffset=response[3];
-									m_pairedReverseOffset=response[4];
-									m_markersReceived=true;
-									m_forwardDirectionsRequested=false;
-								}else if(!m_markersReceived){
-									return;
-								}else if(!m_forwardDirectionsRequested){
-									//cout<<"OriginalVertex= "<<idToWord(vertex,m_parameters->getWordSize())<<" ";
-									//cout<<"ForwardMarker= "<<idToWord(m_pairedForwardMarker,m_parameters->getWordSize())<<" ";
-									//cout<<"ReverseMarker= "<<idToWord(m_pairedReverseMarker,m_parameters->getWordSize())<<" "<<endl;
-									uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
-									buffer[0]=m_pairedForwardMarker;
-									Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,
-									m_parameters->_vertexRank(m_pairedForwardMarker),
-									RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION,m_parameters->getRank());
-									//cout<<"Sending "<<" RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION"<<endl;
-									m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
-									m_forwardDirectionsRequested=true;
-									m_forwardDirectionsReceived=false;
-								}else if(!m_forwardDirectionsReceived
-								&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
-									//cout<<"Received direction."<<endl;
-									vector<uint64_t> response=m_virtualCommunicator->getResponseElements(m_workerId);
-									m_pairedForwardMarkerCoverage=response[0];
-									m_pairedForwardHasDirection=response[1];
-									m_pairedForwardDirectionName=response[2];
-									m_pairedForwardDirectionPosition=response[3];
-									m_forwardDirectionsReceived=true;
-									m_reverseDirectionsRequested=false;
-									//cout<<"PairedForwardMarkerCoverage "<<m_pairedForwardMarkerCoverage<<" HasDirection"<<m_pairedForwardHasDirection<<endl;
-
-									if(m_pairedForwardHasDirection
-									&&m_pairedForwardMarkerCoverage<m_parameters->getMaxCoverage()
-									&&m_contigNames[m_contigId]!=m_pairedForwardDirectionName){
-										cout<<"Self= "<<m_contigNames[m_contigId]<<" position="<<m_positionOnContig<<" Length: "<<m_contigs[m_contigId].size()<<" Other= "<<m_pairedForwardDirectionName<<" Position= "<<m_pairedForwardDirectionPosition<<endl;
-									}
-								}else if(!m_forwardDirectionsReceived){
-									return;
-								}else if(m_forwardDirectionsReceived){
-									m_readAnnotationId++;
-									m_hasPairRequested=false;
-								}
-							
-							}else{
-								m_forwardDone=true;
-								m_reverseDone=false;
-							}
-						}
-					}else{
-						m_forwardDone=true;
-						m_reverseDone=false;
-					}
-				}
-			}else if(!m_reverseDone){
-				// get the coverage
-				// if < maxCoverage
-				// 	get read markers
-				// 	for each read marker
-				// 		if it is paired
-				// 			get its pair
-				// 				get the vertex for the opposite strand of the first read
-				// 				get the coverage of this vertex
-				// 				if < maxCoverage
-				// 					get the paths that goes on them
-				// 					print the linking information
-
-				m_reverseDone=true;
-			}else{
-				m_positionOnContig++;
-				m_forwardDone=false;
-				m_coverageRequested=false;
-			}
-		}else{
-			m_contigId++;
-			m_positionOnContig=0;
-		}
+		processContig();
 	}else{
 		//cout<<"done."<<endl;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING,
@@ -273,4 +66,265 @@ void Scaffolder::run(){
 void Scaffolder::addContig(uint64_t name,vector<uint64_t>*vertices){
 	m_contigNames.push_back(name);
 	m_contigs.push_back(*vertices);
+}
+
+void Scaffolder::processContig(){
+	if(m_positionOnContig<(int)m_contigs[m_contigId].size()){
+		processContigPosition();
+	}else{
+		m_contigId++;
+		m_positionOnContig=0;
+	}
+}
+
+void Scaffolder::processContigPosition(){
+	#ifdef ASSERT
+	assert(m_contigId<(int)m_contigs.size());
+	assert(m_positionOnContig<(int)m_contigs[m_contigId].size());
+	#endif
+
+	VERTEX_TYPE vertex=m_contigs[m_contigId][m_positionOnContig];
+	#ifdef ASSERT
+	assert(m_parameters!=NULL);
+	#endif
+	VERTEX_TYPE reverseComplement=m_parameters->_complementVertex(vertex);
+	if(!m_forwardDone){
+		processVertex(vertex);
+	}else if(!m_reverseDone){
+		// get the coverage
+		// if < maxCoverage
+		// 	get read markers
+		// 	for each read marker
+		// 		if it is paired
+		// 			get its pair
+		// 				get the vertex for the opposite strand of the first read
+		// 				get the coverage of this vertex
+		// 				if < maxCoverage
+		// 					get the paths that goes on them
+		// 					print the linking information
+
+		m_reverseDone=true;
+	}else{
+		m_positionOnContig++;
+		m_forwardDone=false;
+		m_coverageRequested=false;
+	}
+}
+
+void Scaffolder::processVertex(VERTEX_TYPE vertex){
+	// get the coverage
+	// if < maxCoverage
+	// 	get read markers
+	// 	for each read marker
+	// 		if it is paired
+	// 			get its pair
+	// 				get the vertex for the opposite strand of the first read
+	// 				get the coverage of this vertex
+	// 				if < maxCoverage
+	// 					get the paths that goes on them
+	// 					print the linking information
+	if(!m_coverageRequested){
+		//cout<<"Requesting coverage contig "<<m_contigId<<"/"<<m_contigs.size()<<" position "<<m_positionOnContig<<"/"<<m_contigs[m_contigId].size()<<endl;
+		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+		buffer[0]=vertex;
+		Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,
+			m_parameters->_vertexRank(vertex),RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_parameters->getRank());
+		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
+		m_coverageRequested=true;
+		m_coverageReceived=false;
+	}else if(!m_coverageReceived
+		&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
+		//cout<<"Received coverage"<<endl;
+		m_receivedCoverage=m_virtualCommunicator->getResponseElements(m_workerId)[0];
+		m_coverageReceived=true;
+		m_initialisedFetcher=false;
+		//cout<<"Coverage= "<<m_receivedCoverage<<endl;
+	}else if(m_coverageReceived){
+		if(m_receivedCoverage<m_parameters->getPeakCoverage()){
+			if(!m_initialisedFetcher){
+				m_readFetcher.constructor(vertex,m_outboxAllocator,m_inbox,
+				m_outbox,m_parameters,m_virtualCommunicator,m_workerId);
+				m_readAnnotationId=0;
+				m_initialisedFetcher=true;
+				m_hasPairRequested=false;
+			}else if(!m_readFetcher.isDone()){
+				m_readFetcher.work();
+			}else{
+				processAnnotations();
+			}
+		}else{
+			m_forwardDone=true;
+			m_reverseDone=false;
+		}
+	}
+}
+
+void Scaffolder::processAnnotations(){
+	if(m_readAnnotationId<(int)m_readFetcher.getResult()->size()){
+		processAnnotation();
+	}else{
+		m_forwardDone=true;
+		m_reverseDone=false;
+	}
+}
+
+void Scaffolder::processAnnotation(){
+	//cout<<"ReadAnnotation "<<m_readAnnotationId<<endl;
+	// if is paired
+	// 	get the forward and the reverse markers
+	// 	get the coverage of the forward vertex
+	// 	if < maxCoverage
+	//	 	get the Direction
+	//	 	if only 1 Direction
+	//	 		if contig is not self
+	//	 			get its length
+	//	 			print link information
+	//
+	// 	get the coverage of the reverse vertex
+	// 	if < maxCoverage
+	//	 	get the Direction
+	//	 	if only 1 Direction
+	//	 		if contig is not self
+	//	 			get its length
+	//	 			print link information
+	//
+
+	ReadAnnotation*a=&(m_readFetcher.getResult()->at(m_readAnnotationId));
+	int rank=a->getRank();
+	int sequenceId=a->getReadIndex();
+	char strand=a->getStrand();
+	int positionOnStrand=a->getPositionOnStrand();
+	if(!m_hasPairRequested){
+		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+		buffer[0]=sequenceId;
+		Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,rank,RAY_MPI_TAG_HAS_PAIRED_READ,m_parameters->getRank());
+		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
+		m_hasPairRequested=true;
+		m_hasPairReceived=false;
+		//cout<<"Requests has pair?"<<endl;
+	}else if(!m_hasPairReceived
+	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
+		m_hasPair=m_virtualCommunicator->getResponseElements(m_workerId)[0];
+		m_hasPairReceived=true;
+		m_pairRequested=false;
+		//cout<<"Answer has pair?"<<endl;
+	}else if(!m_hasPairReceived){
+		return;
+	}else if(!m_hasPair){
+		//cout<<"No pair"<<endl;
+		m_readAnnotationId++;
+		m_hasPairRequested=false;
+	}else if(!m_pairRequested){
+		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+		buffer[0]=sequenceId;
+		Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,
+		rank,RAY_MPI_TAG_GET_READ_MATE,m_parameters->getRank());
+		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
+		//cout<<"Requests Pair"<<endl;
+		m_pairRequested=true;
+		m_pairReceived=false;
+	}else if(!m_pairReceived
+	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
+		vector<uint64_t> response=m_virtualCommunicator->getResponseElements(m_workerId);
+		m_readLength=response[0];
+		m_pairedReadRank=response[1];
+		m_pairedReadIndex=response[2];
+		m_pairedReadLibrary=response[3];
+		m_pairReceived=true;
+		m_markersRequested=false;
+		//cout<<"Receives pair"<<endl;
+	}else if(!m_pairReceived){
+		return;
+	}else if(!m_markersRequested){
+		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+		buffer[0]=m_pairedReadIndex;
+		Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,
+		m_pairedReadRank,RAY_MPI_TAG_GET_READ_MARKERS,m_parameters->getRank());
+		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
+		m_markersRequested=true;
+		m_markersReceived=false;
+	}else if(!m_markersReceived
+	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
+		vector<uint64_t> response=m_virtualCommunicator->getResponseElements(m_workerId);
+		m_pairedReadLength=response[0];
+		m_pairedForwardMarker=response[1];
+		m_pairedReverseMarker=response[2];
+		m_pairedForwardOffset=response[3];
+		m_pairedReverseOffset=response[4];
+		m_markersReceived=true;
+		m_forwardDirectionsRequested=false;
+	}else if(!m_markersReceived){
+		return;
+	}else if(!m_forwardDirectionsRequested){
+		//cout<<"OriginalVertex= "<<idToWord(vertex,m_parameters->getWordSize())<<" ";
+		//cout<<"ForwardMarker= "<<idToWord(m_pairedForwardMarker,m_parameters->getWordSize())<<" ";
+		//cout<<"ReverseMarker= "<<idToWord(m_pairedReverseMarker,m_parameters->getWordSize())<<" "<<endl;
+		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+		buffer[0]=m_pairedForwardMarker;
+		Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,
+		m_parameters->_vertexRank(m_pairedForwardMarker),
+		RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION,m_parameters->getRank());
+		//cout<<"Sending "<<" RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION"<<endl;
+		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
+		m_forwardDirectionsRequested=true;
+		m_forwardDirectionsReceived=false;
+	}else if(!m_forwardDirectionsReceived
+	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
+		//cout<<"Received direction."<<endl;
+		vector<uint64_t> response=m_virtualCommunicator->getResponseElements(m_workerId);
+		m_pairedForwardMarkerCoverage=response[0];
+		m_pairedForwardHasDirection=response[1];
+		m_pairedForwardDirectionName=response[2];
+		m_pairedForwardDirectionPosition=response[3];
+		m_forwardDirectionsReceived=true;
+		m_reverseDirectionsRequested=false;
+		m_forwardDirectionLengthRequested=false;
+
+		if(m_contigNames[m_contigId]==m_pairedForwardDirectionName
+		||!(m_pairedForwardMarkerCoverage<m_parameters->getMaxCoverage())
+		|| !m_pairedForwardHasDirection){
+			m_readAnnotationId++;
+			m_hasPairRequested=false;
+		}
+	}else if(!m_forwardDirectionsReceived){
+		return;
+	}else if(!m_forwardDirectionLengthRequested){
+		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+		int rankId=getRankFromPathUniqueId(m_pairedForwardDirectionName);
+		buffer[0]=m_pairedForwardDirectionName;
+		Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,
+		rankId,
+		RAY_MPI_TAG_GET_PATH_LENGTH,m_parameters->getRank());
+		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
+		m_forwardDirectionLengthRequested=true;
+		m_forwardDirectionLengthReceived=false;
+
+	}else if(!m_forwardDirectionLengthReceived
+	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
+		vector<uint64_t> response=m_virtualCommunicator->getResponseElements(m_workerId);
+		m_pairedForwardDirectionLength=response[0];
+		m_forwardDirectionLengthReceived=true;
+		cout<<endl;
+		cout<<"Path1: "<<m_contigNames[m_contigId]<<endl;
+		cout<<" Length: "<<m_contigs[m_contigId].size()<<endl;
+		cout<<" Position: "<<m_positionOnContig<<endl;
+		cout<<" Coverage: "<<m_receivedCoverage<<endl;
+		cout<<" PathStrand: F"<<endl;
+		cout<<" ReadStrand: "<<strand<<endl;
+		cout<<" ReadLength: "<<m_readLength<<endl;
+		cout<<" PositionInRead: "<<positionOnStrand<<endl;
+		cout<<"Path2: "<<m_pairedForwardDirectionName<<endl;
+		cout<<" Length: "<<m_pairedForwardDirectionLength<<endl;
+		cout<<" Position: "<<m_pairedForwardDirectionPosition<<endl;
+		cout<<" Coverage: "<<m_pairedForwardMarkerCoverage<<endl;
+		cout<<" PathStrand: F"<<endl;
+		cout<<" ReadStrand: F"<<endl;
+		cout<<" ReadLength: "<<m_pairedReadLength<<endl;
+		cout<<" PositionInRead: "<<m_pairedForwardOffset<<endl;
+	}else if(!m_forwardDirectionLengthReceived){
+		return;
+	}else if(m_forwardDirectionLengthReceived){
+		m_readAnnotationId++;
+		m_hasPairRequested=false;
+	}
 }

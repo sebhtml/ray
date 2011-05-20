@@ -47,7 +47,6 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<Loader.h>
 #include<MyAllocator.h>
 #include<algorithm>
-#include<unistd.h>
 
 using namespace std;
 
@@ -172,10 +171,6 @@ void Machine::start(){
 	m_ranksDoneAttachingReads=0;
 	m_reducer.constructor(getSize());
 
-	int pid=getpid();
-	printf("Rank %i is running as UNIX process %i on %s\n",getRank(),pid,serverName);
-	fflush(stdout);
-
 	MPI_Barrier(MPI_COMM_WORLD);
 
 	m_si.constructor(&m_parameters,&m_outboxAllocator,&m_inbox,&m_outbox,&m_diskAllocator,&m_virtualCommunicator);
@@ -195,40 +190,40 @@ void Machine::start(){
 		cout<<"Rank "<<MASTER_RANK<<": Ray "<<RAY_VERSION<<endl;
 
 		#ifdef __GNUC__
-		cout<<"Rank "<<MASTER_RANK<<": GNU detected."<<endl;
+		cout<<"Rank "<<MASTER_RANK<<": GNU detected (__GNUC__)"<<endl;
 		#endif
 
 		#ifdef HAVE_CLOCK_GETTIME
-		cout<<"Rank "<<MASTER_RANK<<": clock_gettime is available"<<endl;
+		cout<<"Rank "<<MASTER_RANK<<": clock_gettime is available (HAVE_CLOCK_GETTIME)"<<endl;
 		#endif
 
 		#ifdef MPICH2
-                cout<<"Rank "<<MASTER_RANK<<": compiled with MPICH2 "<<MPICH2_VERSION<<endl;
+                cout<<"Rank "<<MASTER_RANK<<": compiled with MPICH2 (MPICH2)"<<MPICH2_VERSION<<endl;
 		#endif
 
 		#ifdef OMPI_MPI_H
-                cout<<"Rank "<<MASTER_RANK<<": compiled with Open-MPI "<<OMPI_MAJOR_VERSION<<"."<<OMPI_MINOR_VERSION<<"."<<OMPI_RELEASE_VERSION<<endl;
+                cout<<"Rank "<<MASTER_RANK<<": compiled with Open-MPI (OMPI_MPI_H)"<<OMPI_MAJOR_VERSION<<"."<<OMPI_MINOR_VERSION<<"."<<OMPI_RELEASE_VERSION<<endl;
 		#endif
 
 		cout<<"Rank "<<MASTER_RANK<<": MPI library implements the standard MPI "<<version<<"."<<subversion<<""<<endl;
 
 		// show libraries
 		#ifdef HAVE_ZLIB
-		cout<<"Rank "<<MASTER_RANK<<": compiled with GZIP"<<endl;
+		cout<<"Rank "<<MASTER_RANK<<": compiled with GZIP (HAVE_ZLIB)"<<endl;
 		#endif
 
 		#ifdef HAVE_LIBBZ2
-		cout<<"Rank "<<MASTER_RANK<<": compiled with BZIP2"<<endl;
+		cout<<"Rank "<<MASTER_RANK<<": compiled with BZIP2 (HAVE_LIBBZ2)"<<endl;
 		#endif
 
 		// show OS, only Linux
 
 		#ifdef linux
-		cout<<"Rank "<<MASTER_RANK<<": compiled for GNU/Linux, using /proc for memory usage data"<<endl;
+		cout<<"Rank "<<MASTER_RANK<<": compiled for GNU/Linux (linux), using /proc for memory usage data"<<endl;
 		#endif
 
 		#ifdef ASSERT
-		cout<<"Rank "<<MASTER_RANK<<": compiled with assertions"<<endl;
+		cout<<"Rank "<<MASTER_RANK<<": compiled with assertions (ASSERT)"<<endl;
 		#endif
 
 		cout<<"Rank "<<MASTER_RANK<<": the maximum size of a message is "<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<" bytes"<<endl;
@@ -249,13 +244,12 @@ void Machine::start(){
 		cout<<" sizeof(PairedRead)="<<sizeof(PairedRead)<<endl;
 		
 		cout<<endl;
-		size_t page_size = (size_t) sysconf (_SC_PAGESIZE);
-		cout<<"PageSize: "<<page_size<<" bytes"<<endl;
-		cout<<endl;
+
 		cout<<"Number of MPI ranks: "<<getSize()<<endl;
 		cout<<"Ray master MPI rank: "<<MASTER_RANK<<endl;
 		cout<<"Ray slave MPI ranks: 0-"<<getSize()-1<<endl;
 		cout<<endl;
+
 		int count=0;
 		#define MACRO_LIST_ITEM(x) count++;
 		#include <master_mode_macros.h>
@@ -1051,7 +1045,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		//cout<<"Cycle "<<m_cycleNumber<<" sending 1) RAY_MPI_TAG_CLEAR_DIRECTIONS"<<endl;
 		m_currentCycleStep=1;
 		m_CLEAR_n=0;
-	}else if(m_CLEAR_n==getSize() and !m_isFinalFusion and m_currentCycleStep==1){
+	}else if(m_CLEAR_n==getSize() && !m_isFinalFusion && m_currentCycleStep==1){
 		m_currentCycleStep++;
 		m_CLEAR_n=-1;
 
@@ -1061,7 +1055,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		}
 		m_DISTRIBUTE_n=0;
 		//cout<<"Cycle "<<m_cycleNumber<<" sending 2) RAY_MPI_TAG_DISTRIBUTE_FUSIONS"<<endl;
-	}else if(m_DISTRIBUTE_n==getSize() and !m_isFinalFusion and m_currentCycleStep==2){
+	}else if(m_DISTRIBUTE_n==getSize() && !m_isFinalFusion && m_currentCycleStep==2){
 		m_currentCycleStep++;
 		m_DISTRIBUTE_n=-1;
 		m_isFinalFusion=true;
@@ -1071,7 +1065,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		}
 		//cout<<"Cycle "<<m_cycleNumber<<" sending 3) RAY_MPI_TAG_FINISH_FUSIONS"<<endl;
 		m_FINISH_n=0;
-	}else if(m_FINISH_n==getSize() and m_isFinalFusion and m_currentCycleStep==3){
+	}else if(m_FINISH_n==getSize() && m_isFinalFusion && m_currentCycleStep==3){
 		m_currentCycleStep++;
 		int count=0;
 		if(m_mustStop){
@@ -1086,7 +1080,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 
 		m_FINISH_n=-1;
 		m_CLEAR_n=0;
-	}else if(m_CLEAR_n==getSize() and m_isFinalFusion && m_currentCycleStep==4){
+	}else if(m_CLEAR_n==getSize() && m_isFinalFusion && m_currentCycleStep==4){
 		m_CLEAR_n=-1;
 		m_currentCycleStep++;
 

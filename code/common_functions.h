@@ -30,6 +30,12 @@ see <http://www.gnu.org/licenses/>
 #include <mpi_tags.h>
 using namespace std;
 
+#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
+#define OS_WIN
+#else
+#define OS_POSIX
+#endif
+
 #define __max(a,b) (((a)>(b)) ? (a) : (b))
 
 /*

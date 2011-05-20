@@ -31,7 +31,16 @@
 #include <ReadFetcher.h>
 using namespace std;
 
+/**
+ * Scaffolder class, it uses MPI through the virtual communicator.
+ *
+ * \author Sébastien Boisvert
+ */
 class Scaffolder{
+	// these are mostly flags for sends/receives
+	bool m_forwardDirectionLengthRequested;
+	bool m_forwardDirectionLengthReceived;
+	int m_pairedForwardDirectionLength;
 	bool m_forwardDirectionsRequested;
 	bool m_forwardDirectionsReceived;
 	int m_pairedForwardMarkerCoverage;
@@ -79,9 +88,22 @@ class Scaffolder{
 	bool m_initialised;
 	int*m_slave_mode;
 	bool m_ready;
+
+	void processContig();
+	void processContigPosition();
+	void processVertex(VERTEX_TYPE vertex);
+	void processAnnotations();
+	void processAnnotation();
+	
 public:
+	/**
+ *	Number of ranks that have finished scaffolding
+ */
 	int m_numberOfRanksFinished;
 
+	/**
+ *	Constructor of the scaffolder
+ */
 	void constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
 		int*slaveMode,VirtualCommunicator*vc);
 	void run();

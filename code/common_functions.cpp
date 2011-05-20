@@ -20,20 +20,23 @@
 */
 
 
-#include<crypto.h>
-#include<assert.h>
-#include<stdio.h>
-#include<sys/time.h>
-#include<vector>
+#include <crypto.h>
+#include <assert.h>
+#include <stdio.h>
+
+#ifdef HAVE_CLOCK_TIME
+#include <sys/time.h>
+#endif
+
+#include <vector>
 #include <malloc_types.h>
-#include<fstream>
-#include<common_functions.h>
-#include<time.h>
-#include<stdlib.h>
-#include<iostream>
-#include<string>
-#include<cstring>
-#include<sstream>
+#include <fstream>
+#include <common_functions.h>
+#include <stdlib.h>
+#include <iostream>
+#include <string>
+#include <cstring>
+#include <sstream>
 using namespace std;
 
 char complementNucleotide(char c){

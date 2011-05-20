@@ -29,12 +29,10 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdint.h>
-#include <unistd.h>
 #include <string>
 #include <fcntl.h>
 #include <map>
 #include <vector>
-#include <sys/mman.h> // POSIX memory management
 using namespace std;
 
 #ifndef _OnDiskAllocator

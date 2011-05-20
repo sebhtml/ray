@@ -24,10 +24,14 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 */
 
+#include <common_functions.h>
 #include <OnDiskAllocator.h>
 #include <assert.h>
 #include <sstream>
 #include <iostream>
+#ifdef OS_POSIX
+#include <sys/mman.h> // POSIX memory managemen
+#endif
 using namespace std;
 
 //  http://www.linuxquestions.org/questions/programming-9/mmap-tutorial-c-c-511265/
@@ -37,6 +41,7 @@ void OnDiskAllocator::constructor(const char*prefix){
 }
 
 void OnDiskAllocator::addChunk(){
+	#ifdef OS_POSIX
 	int chunkId=m_pointers.size();
 	ostringstream a;
 	a<<m_prefix<<"_RaySystems_pid_"<<getpid()<<"_chunk_"<<chunkId<<".mmap";
@@ -74,6 +79,7 @@ void OnDiskAllocator::addChunk(){
 	m_fileNames.push_back(fileName);
 	cout<<"mmap "<<fileName<<" ("<<m_chunkSize/1024/1024<<" MiB)"<<endl;
 	m_current=0;
+	#endif
 }
 
 void*OnDiskAllocator::allocate(int a){

@@ -147,3 +147,7 @@ int MyAllocator::getNumberOfChunks(){
 void MyAllocator::free(void*a,int b){
 	m_store.addAddressToReuse(a,b);
 }
+
+MyAllocator::MyAllocator(){
+}
+
