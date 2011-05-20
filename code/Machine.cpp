@@ -114,7 +114,7 @@ void Machine::start(){
 		cout<<endl<<"**************************************************"<<endl;
     		cout<<"This program comes with ABSOLUTELY NO WARRANTY."<<endl;
     		cout<<"This is free software, and you are welcome to redistribute it"<<endl;
-    		cout<<"under certain conditions; see \"COPYING\" for details."<<endl;
+    		cout<<"under certain conditions; see \"LICENSE\" for details."<<endl;
 		cout<<"**************************************************"<<endl;
 		cout<<endl;
 		cout<<"Ray Copyright (C) 2010, 2011  Sébastien Boisvert, François Laviolette, Jacques Corbeil"<<endl;
@@ -187,51 +187,81 @@ void Machine::start(){
 
 	if(isMaster()){
 		cout<<endl;
-		cout<<"Rank "<<MASTER_RANK<<": Ray "<<RAY_VERSION<<endl;
+		cout<<"Rank "<<MASTER_RANK<<": Ray version: "<<RAY_VERSION<<endl;
 
+		cout<<"Rank "<<MASTER_RANK<<": GNU system (__GNUC__): ";
 		#ifdef __GNUC__
-		cout<<"Rank "<<MASTER_RANK<<": GNU detected (__GNUC__)"<<endl;
+		cout<<"yes"<<endl;
+		#else
+		cout<<"no"<<endl;
 		#endif
 
+		cout<<"Rank "<<MASTER_RANK<<": Operating System: ";
+		#ifdef OS_WIN
+		cout<<"Microsoft Windows (OS_WIN)"<<endl;
+		#else
+		cout<<"POSIX (OS_POSIX)"<<endl;
+		#endif
+
+		cout<<"Rank "<<MASTER_RANK<<": real-time Operating System (HAVE_CLOCK_GETTIME): ";
 		#ifdef HAVE_CLOCK_GETTIME
-		cout<<"Rank "<<MASTER_RANK<<": clock_gettime is available (HAVE_CLOCK_GETTIME)"<<endl;
+		cout<<"yes"<<endl;
+		#else
+		cout<<"no"<<endl;
 		#endif
 
+		cout<<"Rank "<<MASTER_RANK<<": Message-Passing Interface implementation: ";
 		#ifdef MPICH2
-                cout<<"Rank "<<MASTER_RANK<<": compiled with MPICH2 (MPICH2)"<<MPICH2_VERSION<<endl;
+                cout<<"MPICH2 (MPICH2)"<<MPICH2_VERSION<<endl;
 		#endif
-
 		#ifdef OMPI_MPI_H
-                cout<<"Rank "<<MASTER_RANK<<": compiled with Open-MPI (OMPI_MPI_H)"<<OMPI_MAJOR_VERSION<<"."<<OMPI_MINOR_VERSION<<"."<<OMPI_RELEASE_VERSION<<endl;
+                cout<<"Open-MPI (OMPI_MPI_H) "<<OMPI_MAJOR_VERSION<<"."<<OMPI_MINOR_VERSION<<"."<<OMPI_RELEASE_VERSION<<endl;
+		#endif
+		#ifndef MPICH2
+		#ifndef OMPI_MPI_H
+		cout<<"Unknown"<<endl;
+		#endif
 		#endif
 
-		cout<<"Rank "<<MASTER_RANK<<": MPI library implements the standard MPI "<<version<<"."<<subversion<<""<<endl;
+		cout<<"Rank "<<MASTER_RANK<<": Message-Passing Interface standard version: "<<version<<"."<<subversion<<""<<endl;
 
 		// show libraries
+		cout<<"Rank "<<MASTER_RANK<<": GZIP (HAVE_ZLIB): ";
 		#ifdef HAVE_ZLIB
-		cout<<"Rank "<<MASTER_RANK<<": compiled with GZIP (HAVE_ZLIB)"<<endl;
+		cout<<"yes"<<endl;
+		#else
+		cout<<"no"<<endl;
 		#endif
 
+		cout<<"Rank "<<MASTER_RANK<<": BZIP2 (HAVE_LIBBZ2): ";
 		#ifdef HAVE_LIBBZ2
-		cout<<"Rank "<<MASTER_RANK<<": compiled with BZIP2 (HAVE_LIBBZ2)"<<endl;
+		cout<<"yes"<<endl;
+		#else
+		cout<<"no"<<endl;
 		#endif
 
 		// show OS, only Linux
 
+		cout<<"Rank "<<MASTER_RANK<<": GNU/Linux (linux): ";
 		#ifdef linux
-		cout<<"Rank "<<MASTER_RANK<<": compiled for GNU/Linux (linux), using /proc for memory usage data"<<endl;
-		#endif
-
-		#ifdef ASSERT
-		cout<<"Rank "<<MASTER_RANK<<": compiled with assertions (ASSERT)"<<endl;
-		#endif
-
-		cout<<"Rank "<<MASTER_RANK<<": the maximum size of a message is "<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<" bytes"<<endl;
-		cout<<"Rank "<<MASTER_RANK<<": align addresses on 8 bytes: ";
-		#ifndef FORCE_PACKING
-		cout<<" yes (FORCE_PACKING is undefined)";
+		cout<<"yes"<<endl;
 		#else
-		cout<<" no (FORCE_PACKING is defined)";
+		cout<<"no"<<endl;
+		#endif
+
+		cout<<"Rank "<<MASTER_RANK<<": assertions (ASSERT): ";
+		#ifdef ASSERT
+		cout<<"yes"<<endl;
+		#else
+		cout<<"no"<<endl;
+		#endif
+
+		cout<<"Rank "<<MASTER_RANK<<": maximum size of a message (MAXIMUM_MESSAGE_SIZE_IN_BYTES): "<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<" bytes"<<endl;
+		cout<<"Rank "<<MASTER_RANK<<": don't align addresses on 8 bytes (FORCE_PACKING): ";
+		#ifdef FORCE_PACKING
+		cout<<"yes";
+		#else
+		cout<<"no";
 		#endif
 		cout<<endl;
 		cout<<endl;
@@ -251,6 +281,7 @@ void Machine::start(){
 		cout<<endl;
 
 		int count=0;
+		#ifdef SHOW_ITEMS
 		#define MACRO_LIST_ITEM(x) count++;
 		#include <master_mode_macros.h>
 		#undef MACRO_LIST_ITEM
@@ -276,7 +307,7 @@ void Machine::start(){
 		#define MACRO_LIST_ITEM(x) printf(" %i %s\n",x,#x);fflush(stdout);
 		#include <mpi_tag_macros.h>
 		#undef MACRO_LIST_ITEM
-		
+		#endif
 		cout<<endl;
 
 		m_timePrinter.printElapsedTime("Beginning of computation");

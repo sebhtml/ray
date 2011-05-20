@@ -28,7 +28,7 @@ see <http://www.gnu.org/licenses/>
 
 #define DUMMY_LIBRARY 40000
 
-#define RAY_VERSION "1.3.1"
+#define RAY_VERSION "1.4.0"
 
 #define _ENCODING_A 0
 #define _ENCODING_T 1

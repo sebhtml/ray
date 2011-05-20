@@ -22,17 +22,21 @@
 #ifndef _FastqGzLoader
 #define _FastqGzLoader
 
-#include<string>
-#include<vector>
+#include <string>
+#include <vector>
 #include <OnDiskAllocator.h>
-#include<Read.h>
-#include<ArrayOfReads.h>
-#include<zlib.h>
-#include<MyAllocator.h>
+#include <Read.h>
+#include <ArrayOfReads.h>
+#ifdef HAVE_ZLIB
+#include <zlib.h>
+#endif
+#include <MyAllocator.h>
 using namespace std;
 
 class FastqGzLoader{
+	#ifdef HAVE_ZLIB
 	gzFile m_f;
+	#endif
 	int m_size;
 	int m_loaded;
 public:

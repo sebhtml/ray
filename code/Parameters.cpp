@@ -831,7 +831,9 @@ void Parameters::showUsage(){
 	showOption("-o outputPrefix","Specifies the prefix for outputted files.");
 	showOption("-a","Requests the AMOS file.");
 	showOption("-k kmerLength","Selects the length of k-mers. The default value is 21. It most be odd because reverse-complement vertices are stored together.");
+	#ifdef HAVE_CLOCK_GETTIME
 	showOption("-run-profiler","Runs the profiler as the code runs. Needs real-time Linux.");
+	#endif
 	showOption("-debug-bubbles","Debugs bubble code.");
 	showOption("-debug-seeds","Debugs seed code.");
 	showOption("-show-memory-usage","Shows memory usage. Data is fetched from /proc on GNU/Linux");

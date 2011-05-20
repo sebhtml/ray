@@ -288,8 +288,8 @@ void Scaffolder::processAnnotation(){
 		if(m_contigNames[m_contigId]==m_pairedForwardDirectionName
 		||!(m_pairedForwardMarkerCoverage<m_parameters->getMaxCoverage())
 		|| !m_pairedForwardHasDirection){
-			m_readAnnotationId++;
-			m_hasPairRequested=false;
+			m_forwardDirectionLengthRequested=true;
+			m_forwardDirectionLengthReceived=true;
 		}
 	}else if(!m_forwardDirectionsReceived){
 		return;
@@ -314,8 +314,6 @@ void Scaffolder::processAnnotation(){
 
 		if(m_pairedForwardDirectionLength<range
 		||(int)m_contigs[m_contigId].size()<range){
-			m_readAnnotationId++;
-			m_hasPairRequested=false;
 			return;
 		}
 
@@ -444,8 +442,8 @@ Case 13. (allowed)
 		if(m_contigNames[m_contigId]==m_pairedReverseDirectionName
 		||!(m_pairedReverseMarkerCoverage<m_parameters->getMaxCoverage())
 		|| !m_pairedReverseHasDirection){
-			m_readAnnotationId++;
-			m_hasPairRequested=false;
+			m_reverseDirectionLengthRequested=true;
+			m_reverseDirectionLengthReceived=true;
 		}
 	}else if(!m_reverseDirectionsReceived){
 		return;

@@ -33,6 +33,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include <common_functions.h>
 
 void BzReader::open(const char*file){
+	#ifdef HAVE_LIBBZ2
 	int error;
 	m_file=fopen(file,"r");
 	int verbosity=0;
@@ -41,9 +42,11 @@ void BzReader::open(const char*file){
 	m_buffer=(char*)__Malloc(__BzReader_MAXIMUM_LENGTH*sizeof(char),RAY_MALLOC_TYPE_BZ2);
 	m_bufferSize=0;
 	m_bufferPosition=0;
+	#endif
 }
 
 char*BzReader::readLine(char*s, int n){
+	#ifdef HAVE_LIBBZ2
 	#ifdef ASSERT
 	assert(n<=__BzReader_MAXIMUM_LENGTH);
 	#endif
@@ -106,14 +109,17 @@ char*BzReader::readLine(char*s, int n){
 		s[i++]=m_buffer[m_bufferPosition++];
 	}
 	s[i]='\0';
+	#endif
 	return s;
 }
 
 void BzReader::close(){
+	#ifdef HAVE_LIBBZ2
 	int error;
 	BZ2_bzReadClose(&error,m_bzFile);
 	fclose(m_file);
 	m_bzFile=NULL;
 	m_file=NULL;
 	__Free(m_buffer,RAY_MALLOC_TYPE_BZ2);
+	#endif
 }

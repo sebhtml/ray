@@ -4,9 +4,12 @@
 # remove HAVE_CLOCK_GETTIME and -lrt if you don't have real-time Linux
 
 CC=mpic++
-CFLAGS=-I. -O3 -Wall -Icode -fomit-frame-pointer -DHAVE_ZLIB -DHAVE_LIBBZ2 -DASSERT -DHAVE_CLOCK_GETTIME 
+CFLAGS=-I. -O3 -Wall -Icode -fomit-frame-pointer -DASSERT -DHAVE_ZLIB -DHAVE_LIBBZ2 -DHAVE_CLOCK_GETTIME 
 
-LDFLAGS=-lz -lbz2  -lrt
+# -lrt must be provided with -DHAVE_CLOCK_GETTIME
+# -lz must be provided with -DHAVE_ZLIB
+#  -lbz2 must be provided with -DHAVE_LIBBZ2
+LDFLAGS=-lz -lbz2 -lrt
 
 TARGET=code/Ray-devel
 
