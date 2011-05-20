@@ -582,7 +582,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 	for(int i=0;i<length;i++){
 		uint64_t l=incoming[i];
 
-		if((*m_last_value)!=(int)m_subgraph->size() and (int)m_subgraph->size()%100000==0){
+		if((*m_last_value)!=(int)m_subgraph->size() && (int)m_subgraph->size()%100000==0){
 			(*m_last_value)=m_subgraph->size();
 			printf("Rank %i has %i vertices\n",rank,(int)m_subgraph->size());
 			fflush(stdout);

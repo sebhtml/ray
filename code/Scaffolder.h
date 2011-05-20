@@ -37,6 +37,14 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class Scaffolder{
+	bool m_reverseDirectionsReceived;
+	bool m_reverseDirectionLengthReceived;
+	uint64_t m_pairedReverseDirectionName;
+	int m_pairedReverseDirectionPosition;
+	int m_pairedReverseMarkerCoverage;
+	bool m_pairedReverseHasDirection;
+	bool m_reverseDirectionLengthRequested;
+	int m_pairedReverseDirectionLength;
 	// these are mostly flags for sends/receives
 	bool m_forwardDirectionLengthRequested;
 	bool m_forwardDirectionLengthReceived;

@@ -237,7 +237,7 @@ void Parameters::parseCommands(){
 				}
 				k++;
 			}
-			if(items!=1 and items!=3){
+			if(items!=1 && items!=3){
 				if(m_rank==MASTER_RANK){
 					cout<<"Error: "<<token<<" needs 1 or 3 items, you provided "<<items<<endl;
 				}
@@ -316,7 +316,7 @@ void Parameters::parseCommands(){
 				}
 				k++;
 			}
-			if(items!=2 and items!=4){
+			if(items!=2 && items!=4){
 				if(m_rank==MASTER_RANK){
 					cout<<"Error: "<<token<<" needs 2 or 4 items, you provided "<<items<<endl;
 				}

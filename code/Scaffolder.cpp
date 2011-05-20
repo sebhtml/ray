@@ -87,7 +87,7 @@ void Scaffolder::processContigPosition(){
 	#ifdef ASSERT
 	assert(m_parameters!=NULL);
 	#endif
-	VERTEX_TYPE reverseComplement=m_parameters->_complementVertex(vertex);
+	//VERTEX_TYPE reverseComplement=m_parameters->_complementVertex(vertex);
 	if(!m_forwardDone){
 		processVertex(vertex);
 	}else if(!m_reverseDone){
@@ -255,6 +255,11 @@ void Scaffolder::processAnnotation(){
 		m_forwardDirectionsRequested=false;
 	}else if(!m_markersReceived){
 		return;
+/***
+ *
+ * Forward Directions
+ *
+ ***/
 	}else if(!m_forwardDirectionsRequested){
 		//cout<<"OriginalVertex= "<<idToWord(vertex,m_parameters->getWordSize())<<" ";
 		//cout<<"ForwardMarker= "<<idToWord(m_pairedForwardMarker,m_parameters->getWordSize())<<" ";
@@ -304,7 +309,19 @@ void Scaffolder::processAnnotation(){
 		vector<uint64_t> response=m_virtualCommunicator->getResponseElements(m_workerId);
 		m_pairedForwardDirectionLength=response[0];
 		m_forwardDirectionLengthReceived=true;
+
+		int range=m_parameters->getLibraryAverageLength(m_pairedReadLibrary)+3*m_parameters->getLibraryStandardDeviation(m_pairedReadLibrary);
+
+		if(m_pairedForwardDirectionLength<range
+		||(int)m_contigs[m_contigId].size()<range){
+			m_readAnnotationId++;
+			m_hasPairRequested=false;
+			return;
+		}
+
 		cout<<endl;
+		cout<<"AverageDistance: "<<m_parameters->getLibraryAverageLength(m_pairedReadLibrary)<<endl;
+		cout<<"StandardDeviation: "<<m_parameters->getLibraryStandardDeviation(m_pairedReadLibrary)<<endl;
 		cout<<"Path1: "<<m_contigNames[m_contigId]<<endl;
 		cout<<" Length: "<<m_contigs[m_contigId].size()<<endl;
 		cout<<" Position: "<<m_positionOnContig<<endl;
@@ -321,10 +338,261 @@ void Scaffolder::processAnnotation(){
 		cout<<" ReadStrand: F"<<endl;
 		cout<<" ReadLength: "<<m_pairedReadLength<<endl;
 		cout<<" PositionInRead: "<<m_pairedForwardOffset<<endl;
+		bool path1IsLeft=false;
+		bool path1IsRight=false;
+		bool path2IsLeft=false;
+		bool path2IsRight=false;
+		if(m_positionOnContig<range)
+			path1IsLeft=true;
+		if(m_positionOnContig>(int)m_contigs[m_contigId].size()-range)
+			path1IsRight=true;
+		if(m_pairedForwardDirectionPosition<range)
+			path2IsLeft=true;
+		if(m_pairedForwardDirectionPosition>m_pairedForwardDirectionLength-range)
+			path2IsRight=true;
+/*
+Case 6. (allowed)
+
+                    ---->                              
+                                                           ---->
+------------------------>              ------------------------>
+*/
+
+		if(path1IsRight&&path2IsRight&&strand=='F'){
+			int distanceIn1=m_contigs[m_contigId].size()-m_positionOnContig+positionOnStrand;
+			int distanceIn2=m_pairedForwardDirectionLength-m_pairedForwardDirectionPosition+m_pairedForwardOffset;
+			int distance=range-distanceIn1-distanceIn2;
+			if(distance>0)
+				cout<<"LINK "<<m_contigNames[m_contigId]<<",F,"<<m_pairedForwardDirectionName<<",R,"<<distance<<endl;
+/*
+Case 1. (allowed)
+
+---->                              
+                                       ---->
+------------------------>              ------------------------>
+*/
+		}else if(path1IsLeft&&path2IsLeft&&strand=='F'){
+			int distanceIn1=m_positionOnContig+m_readLength-positionOnStrand;
+			int distanceIn2=m_pairedForwardDirectionPosition+m_pairedReadLength-m_pairedForwardOffset;
+			int distance=range-distanceIn1-distanceIn2;
+			if(distance>0)
+				cout<<"LINK "<<m_contigNames[m_contigId]<<",R,"<<m_pairedForwardDirectionName<<",F,"<<distance<<endl;
+/*
+Case 10. (allowed)
+
+<----
+                                                           ---->
+------------------------>              ------------------------>
+
+                   ---->              <----
+<-----------------------              <-------------------------
+*/
+		}else if(path1IsLeft&&path2IsRight&&strand=='R'){
+			int distanceIn1=m_positionOnContig+positionOnStrand;
+			int distanceIn2=m_pairedForwardDirectionLength-m_pairedForwardDirectionPosition+m_pairedForwardOffset;
+			int distance=range-distanceIn1-distanceIn2;
+			if(distance>0)
+				cout<<"LINK "<<m_contigNames[m_contigId]<<",R,"<<m_pairedForwardDirectionName<<",R,"<<distance<<endl;
+
+/*
+Case 13. (allowed)
+
+                    <----
+                                       ---->
+------------------------>              ------------------------>
+*/
+		}else if(path1IsRight&&path2IsLeft&&strand=='R'){
+			int distanceIn1=m_contigs[m_contigId].size()-m_positionOnContig-positionOnStrand+m_readLength;
+			int distanceIn2=m_pairedForwardDirectionPosition+m_pairedReadLength-m_pairedForwardOffset;
+			int distance=range-distanceIn1-distanceIn2;
+			if(distance>0)
+				cout<<"LINK "<<m_contigNames[m_contigId]<<",F,"<<m_pairedForwardDirectionName<<",F,"<<distance<<endl;
+		}
+
 	}else if(!m_forwardDirectionLengthReceived){
 		return;
-	}else if(m_forwardDirectionLengthReceived){
+
+/***
+ *
+ * Reverse Directions
+ *
+ ***/
+	}else if(!m_reverseDirectionsRequested){
+		//cout<<"OriginalVertex= "<<idToWord(vertex,m_parameters->getWordSize())<<" ";
+		//cout<<"ForwardMarker= "<<idToWord(m_pairedForwardMarker,m_parameters->getWordSize())<<" ";
+		//cout<<"ReverseMarker= "<<idToWord(m_pairedReverseMarker,m_parameters->getWordSize())<<" "<<endl;
+		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+		buffer[0]=m_pairedReverseMarker;
+		Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,
+		m_parameters->_vertexRank(m_pairedReverseMarker),
+		RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION,m_parameters->getRank());
+		//cout<<"Sending "<<" RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION"<<endl;
+		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
+		m_reverseDirectionsRequested=true;
+		m_reverseDirectionsReceived=false;
+	}else if(!m_reverseDirectionsReceived
+	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
+		//cout<<"Received direction."<<endl;
+		vector<uint64_t> response=m_virtualCommunicator->getResponseElements(m_workerId);
+		m_pairedReverseMarkerCoverage=response[0];
+		m_pairedReverseHasDirection=response[1];
+		m_pairedReverseDirectionName=response[2];
+		m_pairedReverseDirectionPosition=response[3];
+		m_reverseDirectionsReceived=true;
+		m_reverseDirectionLengthRequested=false;
+
+		if(m_contigNames[m_contigId]==m_pairedReverseDirectionName
+		||!(m_pairedReverseMarkerCoverage<m_parameters->getMaxCoverage())
+		|| !m_pairedReverseHasDirection){
+			m_readAnnotationId++;
+			m_hasPairRequested=false;
+		}
+	}else if(!m_reverseDirectionsReceived){
+		return;
+	}else if(!m_reverseDirectionLengthRequested){
+		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+		int rankId=getRankFromPathUniqueId(m_pairedReverseDirectionName);
+		buffer[0]=m_pairedReverseDirectionName;
+		Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,
+		rankId,RAY_MPI_TAG_GET_PATH_LENGTH,m_parameters->getRank());
+		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
+		m_reverseDirectionLengthRequested=true;
+		m_reverseDirectionLengthReceived=false;
+	}else if(!m_reverseDirectionLengthReceived
+	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
+		vector<uint64_t> response=m_virtualCommunicator->getResponseElements(m_workerId);
+		m_pairedReverseDirectionLength=response[0];
+		m_reverseDirectionLengthReceived=true;
+		cout<<endl;
+		cout<<"AverageDistance: "<<m_parameters->getLibraryAverageLength(m_pairedReadLibrary)<<endl;
+		cout<<"StandardDeviation: "<<m_parameters->getLibraryStandardDeviation(m_pairedReadLibrary)<<endl;
+		cout<<"Path1: "<<m_contigNames[m_contigId]<<endl;
+		cout<<" Length: "<<m_contigs[m_contigId].size()<<endl;
+		cout<<" Position: "<<m_positionOnContig<<endl;
+		cout<<" Coverage: "<<m_receivedCoverage<<endl;
+		cout<<" PathStrand: F"<<endl;
+		cout<<" ReadStrand: "<<strand<<endl;
+		cout<<" ReadLength: "<<m_readLength<<endl;
+		cout<<" PositionInRead: "<<positionOnStrand<<endl;
+		cout<<"Path2: "<<m_pairedReverseDirectionName<<endl;
+		cout<<" Length: "<<m_pairedReverseDirectionLength<<endl;
+		cout<<" Position: "<<m_pairedReverseDirectionPosition<<endl;
+		cout<<" Coverage: "<<m_pairedReverseMarkerCoverage<<endl;
+		cout<<" PathStrand: F"<<endl;
+		cout<<" ReadStrand: R"<<endl;
+		cout<<" ReadLength: "<<m_pairedReadLength<<endl;
+		cout<<" PositionInRead: "<<m_pairedReverseOffset<<endl;
+
+	}else if(!m_reverseDirectionLengthReceived){
+		return;
+
+	}else if(m_reverseDirectionLengthReceived){
 		m_readAnnotationId++;
 		m_hasPairRequested=false;
 	}
 }
+
+/*
+
+Case 1. (allowed)
+
+---->                              
+                                       ---->
+------------------------>              ------------------------>
+
+
+Case 2. (disallowed)
+
+---->                              
+                                                           ---->
+------------------------>              ------------------------>
+
+Case 3. (disallowed)
+
+---->                              
+                                       <----
+------------------------>              ------------------------>
+
+Case 4. (allowed)
+
+---->                              
+                                                           <----
+------------------------>              ------------------------>
+
+Case 5. (disallowed)
+
+                    ---->                              
+                                       ---->
+------------------------>              ------------------------>
+
+
+Case 6. (allowed)
+
+                    ---->                              
+                                                           ---->
+------------------------>              ------------------------>
+
+Case 7. (allowed)
+
+                    ---->                              
+                                       <----
+------------------------>              ------------------------>
+
+Case 8. (disallowed)
+
+                    ---->                              
+                                                           <----
+------------------------>              ------------------------>
+
+
+Case 9. (disallowed)
+
+<----
+                                       ---->
+------------------------>              ------------------------>
+
+
+Case 10. (allowed)
+
+<----
+                                                           ---->
+------------------------>              ------------------------>
+
+Case 11. (allowed)
+
+<----
+                                       <----
+------------------------>              ------------------------>
+
+Case 12. (disallowed)
+
+<----
+                                                           <----
+------------------------>              ------------------------>
+
+Case 13. (allowed)
+
+                    <----
+                                       ---->
+------------------------>              ------------------------>
+
+
+Case 14. (disallowed)
+
+                    <----
+                                                           ---->
+------------------------>              ------------------------>
+
+Case 15. (disallowed)
+
+                    <----
+                                       <----
+------------------------>              ------------------------>
+
+Case 16. (allowed)
+
+                    <----
+                                                           <----
+------------------------>              ------------------------>
+
+*/

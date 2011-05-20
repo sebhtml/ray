@@ -638,7 +638,7 @@ void FusionData::makeFusions(){
 				#ifdef ASSERT
 				assert(getRankFromPathUniqueId(otherPathId)<m_size);
 				#endif
-				if(i->second>=2 and otherPathId != currentId){
+				if(i->second>=2 && otherPathId != currentId){
 					// try to find a match with the current size.
 					for(int k=0;k<(int)starts[otherPathId].size();k++){
 						bool found=false;
@@ -785,7 +785,7 @@ void FusionData::makeFusions(){
 			}
 			for(map<uint64_t,int>::iterator i=index.begin();i!=index.end();++i){
 				uint64_t otherPathId=i->first;
-				if(i->second>=2 and i->first != currentId){
+				if(i->second>=2 && i->first != currentId){
 					// try to find a match with the current size.
 					for(int k=0;k<(int)starts[otherPathId].size();k++){
 						bool found=false;

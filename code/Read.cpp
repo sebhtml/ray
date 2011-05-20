@@ -44,7 +44,7 @@ char*Read::trim(char*buffer,const char*sequence){
 	// discard N at the beginning and end of the read.
 	// find the first symbol that is a A,T,C or G
 	int first=0;
-	while(buffer[first]!='A' and buffer[first]!='T' and buffer[first]!='C' and buffer[first]!='G' and first<theLen){
+	while(buffer[first]!='A' && buffer[first]!='T' &&buffer[first]!='C' &&buffer[first]!='G' &&first<theLen){
 		first++;
 	}
 	char*corrected=buffer+first;
