@@ -336,6 +336,7 @@ void Scaffolder::processAnnotation(){
 		cout<<" ReadStrand: F"<<endl;
 		cout<<" ReadLength: "<<m_pairedReadLength<<endl;
 		cout<<" PositionInRead: "<<m_pairedForwardOffset<<endl;
+
 		bool path1IsLeft=false;
 		bool path1IsRight=false;
 		bool path2IsLeft=false;
@@ -361,7 +362,7 @@ Case 6. (allowed)
 			int distanceIn2=m_pairedForwardDirectionLength-m_pairedForwardDirectionPosition+m_pairedForwardOffset;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0)
-				cout<<"LINK "<<m_contigNames[m_contigId]<<",F,"<<m_pairedForwardDirectionName<<",R,"<<distance<<endl;
+				cout<<"LINK06 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedForwardDirectionName<<",R,"<<distance<<endl;
 /*
 Case 1. (allowed)
 
@@ -374,7 +375,7 @@ Case 1. (allowed)
 			int distanceIn2=m_pairedForwardDirectionPosition+m_pairedReadLength-m_pairedForwardOffset;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0)
-				cout<<"LINK "<<m_contigNames[m_contigId]<<",R,"<<m_pairedForwardDirectionName<<",F,"<<distance<<endl;
+				cout<<"LINK01 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedForwardDirectionName<<",F,"<<distance<<endl;
 /*
 Case 10. (allowed)
 
@@ -390,7 +391,7 @@ Case 10. (allowed)
 			int distanceIn2=m_pairedForwardDirectionLength-m_pairedForwardDirectionPosition+m_pairedForwardOffset;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0)
-				cout<<"LINK "<<m_contigNames[m_contigId]<<",R,"<<m_pairedForwardDirectionName<<",R,"<<distance<<endl;
+				cout<<"LINK10 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedForwardDirectionName<<",R,"<<distance<<endl;
 
 /*
 Case 13. (allowed)
@@ -404,7 +405,7 @@ Case 13. (allowed)
 			int distanceIn2=m_pairedForwardDirectionPosition+m_pairedReadLength-m_pairedForwardOffset;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0)
-				cout<<"LINK "<<m_contigNames[m_contigId]<<",F,"<<m_pairedForwardDirectionName<<",F,"<<distance<<endl;
+				cout<<"LINK13 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedForwardDirectionName<<",F,"<<distance<<endl;
 		}
 
 	}else if(!m_forwardDirectionLengthReceived){
@@ -461,6 +462,14 @@ Case 13. (allowed)
 		vector<uint64_t> response=m_virtualCommunicator->getResponseElements(m_workerId);
 		m_pairedReverseDirectionLength=response[0];
 		m_reverseDirectionLengthReceived=true;
+		
+		int range=m_parameters->getLibraryAverageLength(m_pairedReadLibrary)+3*m_parameters->getLibraryStandardDeviation(m_pairedReadLibrary);
+
+		if(m_pairedReverseDirectionLength<range
+		||(int)m_contigs[m_contigId].size()<range){
+			return;
+		}
+
 		cout<<endl;
 		cout<<"AverageDistance: "<<m_parameters->getLibraryAverageLength(m_pairedReadLibrary)<<endl;
 		cout<<"StandardDeviation: "<<m_parameters->getLibraryStandardDeviation(m_pairedReadLibrary)<<endl;
@@ -481,6 +490,79 @@ Case 13. (allowed)
 		cout<<" ReadLength: "<<m_pairedReadLength<<endl;
 		cout<<" PositionInRead: "<<m_pairedReverseOffset<<endl;
 
+		bool path1IsLeft=false;
+		bool path1IsRight=false;
+		bool path2IsLeft=false;
+		bool path2IsRight=false;
+		if(m_positionOnContig<range)
+			path1IsLeft=true;
+		if(m_positionOnContig>(int)m_contigs[m_contigId].size()-range)
+			path1IsRight=true;
+		if(m_pairedReverseDirectionPosition<range)
+			path2IsLeft=true;
+		if(m_pairedReverseDirectionPosition>m_pairedReverseDirectionLength-range)
+			path2IsRight=true;
+
+
+/*
+Case 4. (allowed)
+
+---->                              
+                                                           <----
+------------------------>              ------------------------>
+*/
+
+		if(path1IsLeft&&path2IsRight&&strand=='F'){
+			int distanceIn1=m_positionOnContig+m_readLength-positionOnStrand;
+			int distanceIn2=m_pairedReverseDirectionLength-m_pairedReverseDirectionPosition-m_pairedReverseOffset+m_pairedReadLength;
+			int distance=range-distanceIn1-distanceIn2;
+			if(distance>0)
+				cout<<"LINK04 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedReverseDirectionName<<",R,"<<distance<<endl;
+		
+
+/*
+Case 7. (allowed)
+
+                    ---->                              
+                                       <----
+------------------------>              ------------------------>
+*/
+		}else if(path1IsRight&&path2IsLeft&&strand=='F'){
+			int distanceIn1=m_contigs[m_contigId].size()-m_positionOnContig+positionOnStrand;
+			int distanceIn2=m_pairedReverseDirectionPosition+m_pairedReverseOffset;
+			int distance=range-distanceIn1-distanceIn2;
+			if(distance>0)
+				cout<<"LINK07 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedReverseDirectionName<<",F,"<<distance<<endl;
+	
+
+/*
+Case 11. (allowed)
+
+<----
+                                       <----
+------------------------>              ------------------------>
+*/
+		}else if(path1IsLeft&&path2IsLeft&&strand=='R'){
+			int distanceIn1=m_positionOnContig+positionOnStrand;
+			int distanceIn2=m_pairedReverseDirectionPosition+m_pairedReverseOffset;
+			int distance=range-distanceIn1-distanceIn2;
+			if(distance>0)
+				cout<<"LINK11 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedReverseDirectionName<<",F,"<<distance<<endl;
+
+/*
+Case 16. (allowed)
+
+                    <----
+                                                           <----
+------------------------>              ------------------------>
+*/
+		}else if(path1IsRight&&path2IsRight&&strand=='R'){
+			int distanceIn1=m_contigs[m_contigId].size()-m_positionOnContig-positionOnStrand+m_readLength;
+			int distanceIn2=m_pairedReverseDirectionLength-m_pairedReverseDirectionPosition-m_pairedReverseOffset+m_pairedReadLength;
+			int distance=range-distanceIn1-distanceIn2;
+			if(distance>0)
+				cout<<"LINK16 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedReverseDirectionName<<",R,"<<distance<<endl;
+		}
 	}else if(!m_reverseDirectionLengthReceived){
 		return;
 
