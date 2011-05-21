@@ -26,6 +26,55 @@
 #include <assert.h>
 using namespace std;
 
+void Scaffolder::addMasterLink(vector<uint64_t>*a){
+	m_masterLinks.push_back(*a);
+}
+
+void Scaffolder::solve(){
+	map<uint64_t,map<char,map<uint64_t,map<char,vector<int> > > > > keys;
+	for(int i=0;i<(int)m_masterLinks.size();i++){
+		uint64_t leftContig=m_masterLinks[i][0];
+		char leftStrand=m_masterLinks[i][1];
+		uint64_t rightContig=m_masterLinks[i][2];
+		char rightStrand=m_masterLinks[i][3];
+		int average=m_masterLinks[i][4];
+		int number=m_masterLinks[i][5];
+		keys[leftContig][leftStrand][rightContig][rightStrand].push_back(average);
+		keys[leftContig][leftStrand][rightContig][rightStrand].push_back(number);
+	}
+
+	for(map<uint64_t,map<char,map<uint64_t,map<char,vector<int> > > > >::iterator i=
+		keys.begin();i!=keys.end();i++){
+		uint64_t leftContig=i->first;
+		for(map<char,map<uint64_t,map<char,vector<int> > > >::iterator j=i->second.begin();
+			j!=i->second.end();j++){
+			char leftStrand=j->first;
+			for(map<uint64_t,map<char,vector<int> > >::iterator k=j->second.begin();
+				k!=j->second.end();k++){
+				uint64_t rightContig=k->first;
+				for(map<char,vector<int> >::iterator l=k->second.begin();
+					l!=k->second.end();l++){
+					char rightStrand=l->first;
+					int sum=0;
+					int n=0;
+					int pos=0;
+					for(vector<int>::iterator m=l->second.begin();m!=l->second.end();m++){
+						if(pos%2==0){
+							sum+=*m;
+							n++;
+						}
+						pos++;
+					}
+					if(n==2){
+						int average=sum/n;
+						cout<<"MEGA-LINK "<<leftContig<<" "<<leftStrand<<" "<<rightContig<<" "<<rightStrand<<" "<<average<<endl;
+					}
+				}
+			}
+		}
+	}
+}
+
 void Scaffolder::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
 	int*slaveMode,VirtualCommunicator*vc){
 	m_virtualCommunicator=vc;
@@ -438,7 +487,7 @@ Case 6. (allowed)
 			if(distance>0){
 				m_scaffoldingSummary[m_contigNames[m_contigId]]['F'][m_pairedForwardDirectionName]['R'].push_back(distance);
 			}
-				//cout<<"LINK06 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedForwardDirectionName<<",R,"<<distance<<endl;
+				cout<<"LINK06 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedForwardDirectionName<<",R,"<<distance<<endl;
 /*
 Case 1. (allowed)
 
@@ -451,7 +500,7 @@ Case 1. (allowed)
 			int distanceIn2=m_pairedForwardDirectionPosition+m_pairedReadLength-m_pairedForwardOffset;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0){
-				//cout<<"LINK01 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedForwardDirectionName<<",F,"<<distance<<endl;
+				cout<<"LINK01 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedForwardDirectionName<<",F,"<<distance<<endl;
 				m_scaffoldingSummary[m_contigNames[m_contigId]]['R'][m_pairedForwardDirectionName]['F'].push_back(distance);
 			}
 /*
@@ -469,7 +518,7 @@ Case 10. (allowed)
 			int distanceIn2=m_pairedForwardDirectionLength-m_pairedForwardDirectionPosition+m_pairedForwardOffset;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0){
-				//cout<<"LINK10 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedForwardDirectionName<<",R,"<<distance<<endl;
+				cout<<"LINK10 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedForwardDirectionName<<",R,"<<distance<<endl;
 				m_scaffoldingSummary[m_contigNames[m_contigId]]['R'][m_pairedForwardDirectionName]['R'].push_back(distance);
 			}
 
@@ -485,7 +534,7 @@ Case 13. (allowed)
 			int distanceIn2=m_pairedForwardDirectionPosition+m_pairedReadLength-m_pairedForwardOffset;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0){
-				//cout<<"LINK13 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedForwardDirectionName<<",F,"<<distance<<endl;
+				cout<<"LINK13 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedForwardDirectionName<<",F,"<<distance<<endl;
 				m_scaffoldingSummary[m_contigNames[m_contigId]]['F'][m_pairedForwardDirectionName]['F'].push_back(distance);
 			}
 		}
@@ -601,7 +650,7 @@ Case 4. (allowed)
 			int distanceIn2=m_pairedReverseDirectionLength-m_pairedReverseDirectionPosition-m_pairedReverseOffset+m_pairedReadLength;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0){
-				//cout<<"LINK04 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedReverseDirectionName<<",R,"<<distance<<endl;
+				cout<<"LINK04 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedReverseDirectionName<<",R,"<<distance<<endl;
 				m_scaffoldingSummary[m_contigNames[m_contigId]]['R'][m_pairedReverseDirectionName]['R'].push_back(distance);
 			}
 		
@@ -618,7 +667,7 @@ Case 7. (allowed)
 			int distanceIn2=m_pairedReverseDirectionPosition+m_pairedReverseOffset;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0){
-				//cout<<"LINK07 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedReverseDirectionName<<",F,"<<distance<<endl;
+				cout<<"LINK07 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedReverseDirectionName<<",F,"<<distance<<endl;
 				m_scaffoldingSummary[m_contigNames[m_contigId]]['F'][m_pairedReverseDirectionName]['F'].push_back(distance);
 			}
 	
@@ -635,7 +684,7 @@ Case 11. (allowed)
 			int distanceIn2=m_pairedReverseDirectionPosition+m_pairedReverseOffset;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0){
-				//cout<<"LINK11 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedReverseDirectionName<<",F,"<<distance<<endl;
+				cout<<"LINK11 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedReverseDirectionName<<",F,"<<distance<<endl;
 				m_scaffoldingSummary[m_contigNames[m_contigId]]['R'][m_pairedReverseDirectionName]['F'].push_back(distance);
 			}
 
@@ -651,7 +700,7 @@ Case 16. (allowed)
 			int distanceIn2=m_pairedReverseDirectionLength-m_pairedReverseDirectionPosition-m_pairedReverseOffset+m_pairedReadLength;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0){
-				//cout<<"LINK16 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedReverseDirectionName<<",R,"<<distance<<endl;
+				cout<<"LINK16 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedReverseDirectionName<<",R,"<<distance<<endl;
 				m_scaffoldingSummary[m_contigNames[m_contigId]]['F'][m_pairedReverseDirectionName]['R'].push_back(distance);
 			}
 		}

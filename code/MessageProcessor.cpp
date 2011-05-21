@@ -56,7 +56,33 @@ void MessageProcessor::call_RAY_MPI_TAG_SCAFFOLDING_LINKS(Message*message){
 	char rightStrand=incoming[3];
 	int average=incoming[4];
 	int number=incoming[5];
-	cout<<__func__<<" "<<leftContig<<" "<<leftStrand<<" "<<rightContig<<" "<<rightStrand<<" "<<average<<" "<<number<<endl;
+	if(rightContig<leftContig){
+		uint64_t t=leftContig;
+		leftContig=rightContig;
+		rightContig=t;
+		char t2=leftStrand;
+		leftStrand=rightStrand;
+		rightStrand=t2;
+		if(leftStrand=='F')
+			leftStrand='R';
+		else
+			leftStrand='F';
+		if(rightStrand=='F')
+			rightStrand='R';
+		else
+			rightStrand='F';
+	}
+
+	//cout<<__func__<<" "<<leftContig<<" "<<leftStrand<<" "<<rightContig<<" "<<rightStrand<<" "<<average<<" "<<number<<endl;
+	vector<uint64_t> link;
+	link.push_back(leftContig);
+	link.push_back(leftStrand);
+	link.push_back(rightContig);
+	link.push_back(rightStrand);
+	link.push_back(average);
+	link.push_back(number);
+	m_scaffolder->addMasterLink(&link);
+
 	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	Message aMessage(outgoingMessage,message->getCount(),
 		MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_SCAFFOLDING_LINKS_REPLY,rank);
@@ -2109,6 +2135,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY(Message*mess
 void MessageProcessor::call_RAY_MPI_TAG_I_FINISHED_SCAFFOLDING(Message*message){
 	m_scaffolder->m_numberOfRanksFinished++;
 	if(m_scaffolder->m_numberOfRanksFinished==parameters->getSize()){
+		m_scaffolder->solve();
 		(*m_master_mode)=RAY_MASTER_MODE_KILL_RANKS;
 	}
 }

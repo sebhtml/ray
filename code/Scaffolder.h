@@ -37,6 +37,7 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class Scaffolder{
+	vector<vector<uint64_t> >m_masterLinks;
 	int m_summaryIterator;
 	bool m_summarySent;
 	vector<vector<uint64_t> >m_summary;
@@ -123,6 +124,8 @@ public:
 		int*slaveMode,VirtualCommunicator*vc);
 	void run();
 	void addContig(uint64_t name,vector<uint64_t>*vertices);
+	void addMasterLink(vector<uint64_t>*link);
+	void solve();
 };
 
 #endif
