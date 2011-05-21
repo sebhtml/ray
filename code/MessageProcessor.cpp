@@ -48,6 +48,24 @@ void MessageProcessor::processMessage(Message*message){
 	(this->*f)(message);
 }
 
+void MessageProcessor::call_RAY_MPI_TAG_SCAFFOLDING_LINKS(Message*message){
+	uint64_t*incoming=(uint64_t*)message->getBuffer();
+	uint64_t leftContig=incoming[0];
+	char leftStrand=incoming[1];
+	uint64_t rightContig=incoming[2];
+	char rightStrand=incoming[3];
+	int average=incoming[4];
+	int number=incoming[5];
+	cout<<__func__<<" "<<leftContig<<" "<<leftStrand<<" "<<rightContig<<" "<<rightStrand<<" "<<average<<" "<<number<<endl;
+	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	Message aMessage(outgoingMessage,message->getCount(),
+		MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_SCAFFOLDING_LINKS_REPLY,rank);
+	m_outbox->push_back(aMessage);
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_SCAFFOLDING_LINKS_REPLY(Message*message){
+}
+
 void MessageProcessor::call_RAY_MPI_TAG_GET_READ_MATE_REPLY(Message*message){
 }
 

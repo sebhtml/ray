@@ -71,10 +71,77 @@ void Scaffolder::addContig(uint64_t name,vector<uint64_t>*vertices){
 void Scaffolder::processContig(){
 	if(m_positionOnContig<(int)m_contigs[m_contigId].size()){
 		processContigPosition();
+	}else if(!m_summaryPerformed){
+		performSummary();
+	}else if(!m_summarySent){
+		sendSummary();
 	}else{
 		m_contigId++;
 		m_positionOnContig=0;
 	}
+}
+
+void Scaffolder::sendSummary(){
+	if(m_summaryIterator<(int)m_summary.size()){
+		if(!m_entrySent){
+			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+			for(int i=0;i<6;i++){
+				message[i]=m_summary[m_summaryIterator][i];
+			}
+			Message aMessage(message,6,MPI_UNSIGNED_LONG_LONG,
+				MASTER_RANK,RAY_MPI_TAG_SCAFFOLDING_LINKS,m_parameters->getRank());
+			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
+			m_entrySent=true;
+		}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
+			m_virtualCommunicator->getResponseElements(m_workerId);
+			m_summaryIterator++;
+			m_entrySent=false;
+		}
+	}else{
+		m_summarySent=true;
+	}
+}
+
+void Scaffolder::performSummary(){
+	m_summary.clear();
+	m_summaryIterator=0;
+	for(map<uint64_t,map<char,map<uint64_t,map<char,vector<int> > > > >::iterator i=
+		m_scaffoldingSummary.begin();i!=m_scaffoldingSummary.end();i++){
+		uint64_t leftContig=i->first;
+		for(map<char,map<uint64_t,map<char,vector<int> > > >::iterator j=i->second.begin();
+			j!=i->second.end();j++){
+			char leftStrand=j->first;
+			for(map<uint64_t,map<char,vector<int> > >::iterator k=j->second.begin();
+				k!=j->second.end();k++){
+				uint64_t rightContig=k->first;
+				for(map<char,vector<int> >::iterator l=k->second.begin();
+					l!=k->second.end();l++){
+					char rightStrand=l->first;
+					int sum=0;
+					int n=0;
+					for(vector<int>::iterator m=l->second.begin();m!=l->second.end();m++){
+						int distance=*m;
+						sum+=distance;
+						n++;
+					}
+					int average=sum/n;
+					//cout<<"SUMMARISED_LINK "<<leftContig<<" "<<leftStrand<<" "<<rightContig<<" "<<rightStrand<<" "<<average<<" "<<n<<endl;
+
+					vector<uint64_t> entry;
+					entry.push_back(leftContig);
+					entry.push_back(leftStrand);
+					entry.push_back(rightContig);
+					entry.push_back(rightStrand);
+					entry.push_back(average);
+					entry.push_back(n);
+					m_summary.push_back(entry);
+				}
+			}
+		}
+	}
+	m_summaryPerformed=true;
+	m_summarySent=false;
+	m_entrySent=false;
 }
 
 void Scaffolder::processContigPosition(){
@@ -132,6 +199,10 @@ void Scaffolder::processVertex(VERTEX_TYPE vertex){
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		m_coverageRequested=true;
 		m_coverageReceived=false;
+		if(m_positionOnContig==0){
+			m_scaffoldingSummary.clear();
+			m_summaryPerformed=false;
+		}
 	}else if(!m_coverageReceived
 		&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
 		//cout<<"Received coverage"<<endl;
@@ -349,6 +420,9 @@ void Scaffolder::processAnnotation(){
 			path2IsLeft=true;
 		if(m_pairedForwardDirectionPosition>m_pairedForwardDirectionLength-range)
 			path2IsRight=true;
+
+		if((path1IsLeft&&path1IsRight)||(path2IsLeft&&path2IsRight))
+			return;
 /*
 Case 6. (allowed)
 
@@ -361,8 +435,10 @@ Case 6. (allowed)
 			int distanceIn1=m_contigs[m_contigId].size()-m_positionOnContig+positionOnStrand;
 			int distanceIn2=m_pairedForwardDirectionLength-m_pairedForwardDirectionPosition+m_pairedForwardOffset;
 			int distance=range-distanceIn1-distanceIn2;
-			if(distance>0)
-				cout<<"LINK06 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedForwardDirectionName<<",R,"<<distance<<endl;
+			if(distance>0){
+				m_scaffoldingSummary[m_contigNames[m_contigId]]['F'][m_pairedForwardDirectionName]['R'].push_back(distance);
+			}
+				//cout<<"LINK06 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedForwardDirectionName<<",R,"<<distance<<endl;
 /*
 Case 1. (allowed)
 
@@ -374,8 +450,10 @@ Case 1. (allowed)
 			int distanceIn1=m_positionOnContig+m_readLength-positionOnStrand;
 			int distanceIn2=m_pairedForwardDirectionPosition+m_pairedReadLength-m_pairedForwardOffset;
 			int distance=range-distanceIn1-distanceIn2;
-			if(distance>0)
-				cout<<"LINK01 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedForwardDirectionName<<",F,"<<distance<<endl;
+			if(distance>0){
+				//cout<<"LINK01 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedForwardDirectionName<<",F,"<<distance<<endl;
+				m_scaffoldingSummary[m_contigNames[m_contigId]]['R'][m_pairedForwardDirectionName]['F'].push_back(distance);
+			}
 /*
 Case 10. (allowed)
 
@@ -390,8 +468,10 @@ Case 10. (allowed)
 			int distanceIn1=m_positionOnContig+positionOnStrand;
 			int distanceIn2=m_pairedForwardDirectionLength-m_pairedForwardDirectionPosition+m_pairedForwardOffset;
 			int distance=range-distanceIn1-distanceIn2;
-			if(distance>0)
-				cout<<"LINK10 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedForwardDirectionName<<",R,"<<distance<<endl;
+			if(distance>0){
+				//cout<<"LINK10 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedForwardDirectionName<<",R,"<<distance<<endl;
+				m_scaffoldingSummary[m_contigNames[m_contigId]]['R'][m_pairedForwardDirectionName]['R'].push_back(distance);
+			}
 
 /*
 Case 13. (allowed)
@@ -404,8 +484,10 @@ Case 13. (allowed)
 			int distanceIn1=m_contigs[m_contigId].size()-m_positionOnContig-positionOnStrand+m_readLength;
 			int distanceIn2=m_pairedForwardDirectionPosition+m_pairedReadLength-m_pairedForwardOffset;
 			int distance=range-distanceIn1-distanceIn2;
-			if(distance>0)
-				cout<<"LINK13 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedForwardDirectionName<<",F,"<<distance<<endl;
+			if(distance>0){
+				//cout<<"LINK13 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedForwardDirectionName<<",F,"<<distance<<endl;
+				m_scaffoldingSummary[m_contigNames[m_contigId]]['F'][m_pairedForwardDirectionName]['F'].push_back(distance);
+			}
 		}
 
 	}else if(!m_forwardDirectionLengthReceived){
@@ -503,6 +585,8 @@ Case 13. (allowed)
 		if(m_pairedReverseDirectionPosition>m_pairedReverseDirectionLength-range)
 			path2IsRight=true;
 
+		if((path1IsLeft&&path1IsRight)||(path2IsLeft&&path2IsRight))
+			return;
 
 /*
 Case 4. (allowed)
@@ -516,8 +600,10 @@ Case 4. (allowed)
 			int distanceIn1=m_positionOnContig+m_readLength-positionOnStrand;
 			int distanceIn2=m_pairedReverseDirectionLength-m_pairedReverseDirectionPosition-m_pairedReverseOffset+m_pairedReadLength;
 			int distance=range-distanceIn1-distanceIn2;
-			if(distance>0)
-				cout<<"LINK04 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedReverseDirectionName<<",R,"<<distance<<endl;
+			if(distance>0){
+				//cout<<"LINK04 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedReverseDirectionName<<",R,"<<distance<<endl;
+				m_scaffoldingSummary[m_contigNames[m_contigId]]['R'][m_pairedReverseDirectionName]['R'].push_back(distance);
+			}
 		
 
 /*
@@ -531,8 +617,10 @@ Case 7. (allowed)
 			int distanceIn1=m_contigs[m_contigId].size()-m_positionOnContig+positionOnStrand;
 			int distanceIn2=m_pairedReverseDirectionPosition+m_pairedReverseOffset;
 			int distance=range-distanceIn1-distanceIn2;
-			if(distance>0)
-				cout<<"LINK07 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedReverseDirectionName<<",F,"<<distance<<endl;
+			if(distance>0){
+				//cout<<"LINK07 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedReverseDirectionName<<",F,"<<distance<<endl;
+				m_scaffoldingSummary[m_contigNames[m_contigId]]['F'][m_pairedReverseDirectionName]['F'].push_back(distance);
+			}
 	
 
 /*
@@ -546,8 +634,10 @@ Case 11. (allowed)
 			int distanceIn1=m_positionOnContig+positionOnStrand;
 			int distanceIn2=m_pairedReverseDirectionPosition+m_pairedReverseOffset;
 			int distance=range-distanceIn1-distanceIn2;
-			if(distance>0)
-				cout<<"LINK11 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedReverseDirectionName<<",F,"<<distance<<endl;
+			if(distance>0){
+				//cout<<"LINK11 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedReverseDirectionName<<",F,"<<distance<<endl;
+				m_scaffoldingSummary[m_contigNames[m_contigId]]['R'][m_pairedReverseDirectionName]['F'].push_back(distance);
+			}
 
 /*
 Case 16. (allowed)
@@ -560,8 +650,10 @@ Case 16. (allowed)
 			int distanceIn1=m_contigs[m_contigId].size()-m_positionOnContig-positionOnStrand+m_readLength;
 			int distanceIn2=m_pairedReverseDirectionLength-m_pairedReverseDirectionPosition-m_pairedReverseOffset+m_pairedReadLength;
 			int distance=range-distanceIn1-distanceIn2;
-			if(distance>0)
-				cout<<"LINK16 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedReverseDirectionName<<",R,"<<distance<<endl;
+			if(distance>0){
+				//cout<<"LINK16 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedReverseDirectionName<<",R,"<<distance<<endl;
+				m_scaffoldingSummary[m_contigNames[m_contigId]]['F'][m_pairedReverseDirectionName]['R'].push_back(distance);
+			}
 		}
 	}else if(!m_reverseDirectionLengthReceived){
 		return;

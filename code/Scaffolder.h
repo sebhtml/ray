@@ -37,6 +37,12 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class Scaffolder{
+	int m_summaryIterator;
+	bool m_summarySent;
+	vector<vector<uint64_t> >m_summary;
+	bool m_summaryPerformed;
+	bool m_entrySent;
+	map<uint64_t,map<char,map<uint64_t,map<char,vector<int> > > > > m_scaffoldingSummary;
 	bool m_reverseDirectionsReceived;
 	bool m_reverseDirectionLengthReceived;
 	uint64_t m_pairedReverseDirectionName;
@@ -102,7 +108,8 @@ class Scaffolder{
 	void processVertex(VERTEX_TYPE vertex);
 	void processAnnotations();
 	void processAnnotation();
-	
+	void performSummary();
+	void sendSummary();
 public:
 	/**
  *	Number of ranks that have finished scaffolding
