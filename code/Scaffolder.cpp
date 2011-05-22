@@ -52,6 +52,8 @@ void Scaffolder::solve(){
 		keys[leftContig][leftStrand][rightContig][rightStrand].push_back(number);
 	}
 
+	map<uint64_t,map<uint64_t,int> > validCounts;
+
 	for(map<uint64_t,map<char,map<uint64_t,map<char,vector<int> > > > >::iterator i=
 		keys.begin();i!=keys.end();i++){
 		uint64_t leftContig=i->first;
@@ -84,6 +86,8 @@ void Scaffolder::solve(){
 						megaLink.push_back(rightStrand);
 						megaLink.push_back(average);
 						megaLinks.push_back(megaLink);
+						validCounts[leftContig][rightContig]++;
+						validCounts[rightContig][leftContig]++;
 					}
 				}
 			}
@@ -132,10 +136,13 @@ void Scaffolder::solve(){
 	
 	// write contig list
 	ostringstream contigList;
-	contigList<<m_parameters->getPrefix()<<".ContigList.txt";
+	contigList<<m_parameters->getPrefix()<<".ContigLengths.txt";
 	ofstream f(contigList.str().c_str());
+	uint64_t totalContigLength=0;
 	for(int i=0;i<(int)m_masterContigs.size();i++){
-		f<<"contig-"<<m_masterContigs[i]<<"\t"<<m_masterLengths[i]+m_parameters->getWordSize()-1<<endl;
+		int length=m_masterLengths[i]+m_parameters->getWordSize()-1;
+		f<<"contig-"<<m_masterContigs[i]<<"\t"<<length<<endl;
+		totalContigLength+=length;
 	}
 	f.close();
 
@@ -148,7 +155,8 @@ void Scaffolder::solve(){
 			&&children[vertex][state].size()==1){
 			uint64_t childVertex=children[vertex][state][0][2];
 			char childState=children[vertex][state][0][3];
-			if(parents[childVertex][childState].size()==1){
+			if(parents[childVertex][childState].size()==1
+			&&validCounts[vertex][childVertex]==1){
 				int currentColor=colors[vertex];
 				int childColor=colors[childVertex];
 				if(currentColor!=childColor){
@@ -161,6 +169,7 @@ void Scaffolder::solve(){
 				}
 			}
 		}
+/*
 		if(children.count(vertex)>0&&children[vertex].count(state)>0
 			&&children[vertex][state].size()==1){
 			uint64_t childVertex=children[vertex][state][0][2];
@@ -178,13 +187,14 @@ void Scaffolder::solve(){
 				}
 			}
 		}
-
+*/
 		state='R';
 		if(children.count(vertex)>0&&children[vertex].count(state)>0
 			&&children[vertex][state].size()==1){
 			uint64_t childVertex=children[vertex][state][0][2];
 			char childState=children[vertex][state][0][3];
-			if(parents[childVertex][childState].size()==1){
+			if(parents[childVertex][childState].size()==1
+			&& validCounts[vertex][childVertex]==1){
 				int currentColor=colors[vertex];
 				int childColor=colors[childVertex];
 				if(currentColor!=childColor){
@@ -197,6 +207,7 @@ void Scaffolder::solve(){
 				}
 			}
 		}
+/*
 		if(children.count(vertex)>0&&children[vertex].count(state)>0
 			&&children[vertex][state].size()==1){
 			uint64_t childVertex=children[vertex][state][0][2];
@@ -214,7 +225,7 @@ void Scaffolder::solve(){
 				}
 			}
 		}
-
+*/
 	}
 
 	//cout<<"Generate scaffolds"<<endl;
@@ -253,21 +264,41 @@ void Scaffolder::solve(){
 	//cout<<" Write scaffold list"<<endl;
 	// write scaffold list
 	ostringstream scaffoldList;
-	scaffoldList<<m_parameters->getPrefix()<<".ScaffoldList.txt";
+	scaffoldList<<m_parameters->getPrefix()<<".ScaffoldComponents.txt";
+	ostringstream scaffoldLengths;
+	scaffoldLengths<<m_parameters->getPrefix()<<".ScaffoldLengths.txt";
+	ofstream f3(scaffoldLengths.str().c_str());
 	ofstream f2(scaffoldList.str().c_str());
+	uint64_t totalScaffoldLength=0;
 	for(int i=0;i<(int)m_scaffoldContigs.size();i++){
 		int scaffoldName=i;
+		int length=0;
 		for(int j=0;j<(int)m_scaffoldContigs[i].size();j++){
 			uint64_t contigName=m_scaffoldContigs[i][j];
 			char contigStrand=m_scaffoldStrands[i][j];
-			f2<<"scaffold-"<<scaffoldName<<"\t"<<"contig-"<<contigName<<"\t"<<contigStrand<<"\t"<<contigLengths[contigName]+m_parameters->getWordSize()-1<<endl;
+			int theLength=contigLengths[contigName]+m_parameters->getWordSize()-1;
+			f2<<"scaffold-"<<scaffoldName<<"\t"<<"contig-"<<contigName<<"\t"<<contigStrand<<"\t"<<theLength<<endl;
+			length+=theLength;
 			if(j!=(int)m_scaffoldContigs[i].size()-1){
-				f2<<"scaffold-"<<scaffoldName<<"\tgap\t-\t"<<m_scaffoldGaps[i][j]<<endl;
+				int theLength=m_scaffoldGaps[i][j];
+				f2<<"scaffold-"<<scaffoldName<<"\tgap\t-\t"<<theLength<<endl;
+				length+=theLength;
 			}
 		}
+		f3<<"scaffold-"<<scaffoldName<<"\t"<<length<<endl;
+		totalScaffoldLength+=length;
 		f2<<endl;
 	}
 	f2.close();
+	f3.close();
+	ostringstream outputStat;
+	outputStat<<m_parameters->getPrefix()<<".OutputNumbers.txt";
+	ofstream f4(outputStat.str().c_str());
+	f4<<"Number of contigs:\t"<<m_masterContigs.size()<<endl;
+	f4<<"Total length of contigs:\t"<<totalContigLength<<endl;
+	f4<<"Number of scaffolds:\t"<<m_scaffoldContigs.size()<<endl;
+	f4<<"Total length of scaffolds:\t"<<totalScaffoldLength<<endl;
+	f4.close();
 }
 
 void Scaffolder::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,

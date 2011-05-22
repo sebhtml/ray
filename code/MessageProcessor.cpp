@@ -1859,14 +1859,8 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 	// clearing old data too!.
 	m_fusionData->m_FINISH_pathLengths.clear();
 
-	if(!appendReverseComplement){
-		cout<<"Will not generate reverse complement"<<endl;
-	}
-
-	//cout<<"Rank "<<rank<<" is clearing its directions"<<endl;
 	// clear graph
 	GridTableIterator iterator;
-	//MyForestIterator iterator;
 	iterator.constructor(m_subgraph,*m_wordSize);
 	while(iterator.hasNext()){
 		iterator.next();

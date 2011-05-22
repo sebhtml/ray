@@ -106,6 +106,7 @@ void Parameters::parseCommands(){
 				cout<<" "<<m_commands[i]<<endl;
 			}
 		}
+
 		cout<<endl;
 		cout<<endl;
 		cout<<endl;
@@ -477,9 +478,22 @@ void Parameters::parseCommands(){
 	}
 
 	if(m_rank==MASTER_RANK){
-		cout<<endl;
-		cout<<"k-mer size: "<<m_wordSize<<endl;
+		ostringstream commandFile;
+		commandFile<<getPrefix()<<".RayCommand.txt";
+		ofstream f(commandFile.str().c_str());
+		f<<"mpirun -np "<<getSize()<<" \\"<<endl;
+		for(int i=0;i<(int)m_commands.size();i++){
+			if(i!=(int)m_commands.size()-1){
+				f<<" "<<m_commands[i]<<" \\"<<endl;
+			}else{
+				f<<" "<<m_commands[i]<<endl;
+			}
+		}
+		f.close();
 
+		cout<<endl;
+		cout<<"k-mer length: "<<m_wordSize<<endl;
+		
 		if(m_reducerIsActivated){
 			cout<<"Memory Consumption Reducer is enabled, threshold="<<m_reducerPeriod<<endl;
 		}
@@ -666,13 +680,16 @@ void Parameters::computeAverageDistances(){
 	fileName<<".LibraryStatistics.txt";
 	ofstream f2(fileName.str().c_str());
 
+	uint64_t totalSequences=0;
 	for(int i=0;i<(int)m_singleEndReadsFile.size();i++){
 		#ifdef ASSERT
 		assert(i<(int)m_singleEndReadsFile.size());
 		#endif
 		f2<<" File: "<<m_singleEndReadsFile[i]<<endl;
 		f2<<"  NumberOfSequences: "<<m_numberOfSequencesInFile[i]<<endl;
+		totalSequences+=m_numberOfSequencesInFile[i];
 	}
+	f2<<endl<<"Total: "<<totalSequences<<endl;
 	f2<<endl;
 
 	f2<<"NumberOfPairedLibraries: "<<m_numberOfLibraries<<endl;

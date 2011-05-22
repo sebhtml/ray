@@ -186,8 +186,14 @@ void Machine::start(){
 	MPI_Get_version(&version,&subversion);
 
 	if(isMaster()){
+		ostringstream rayRuntime;
+		rayRuntime<<m_parameters.getPrefix()<<".RayRunTime.txt";
+		ofstream f(rayRuntime.str().c_str());
+
 		cout<<endl;
 		cout<<"Rank "<<MASTER_RANK<<": Ray version: "<<RAY_VERSION<<endl;
+		f<<"Ray version: "<<RAY_VERSION<<endl;
+		f.close();
 
 		cout<<"Rank "<<MASTER_RANK<<": GNU system (__GNUC__): ";
 		#ifdef __GNUC__
