@@ -42,6 +42,19 @@ void MessageProcessor::call_RAY_MPI_TAG_LOAD_SEQUENCES(Message*message){
 	(*m_mode)=RAY_SLAVE_MODE_LOAD_SEQUENCES;
 }
 
+void MessageProcessor::call_RAY_MPI_TAG_CONTIG_INFO(Message*message){
+	uint64_t*incoming=(uint64_t*)message->getBuffer();
+	m_scaffolder->addMasterContig(incoming[0],incoming[1]);
+	
+	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	Message aMessage(outgoingMessage,message->getCount(),
+		MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_CONTIG_INFO_REPLY,rank);
+	m_outbox->push_back(aMessage);
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_CONTIG_INFO_REPLY(Message*message){
+}
+
 void MessageProcessor::processMessage(Message*message){
 	int tag=message->getTag();
 	FNMETHOD f=m_methods[tag];

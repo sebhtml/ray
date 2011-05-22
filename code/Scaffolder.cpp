@@ -23,6 +23,8 @@
 #include <Scaffolder.h>
 #include <Message.h>
 #include <vector>
+#include <fstream>
+#include <sstream>
 #include <assert.h>
 using namespace std;
 
@@ -30,7 +32,14 @@ void Scaffolder::addMasterLink(vector<uint64_t>*a){
 	m_masterLinks.push_back(*a);
 }
 
+void Scaffolder::addMasterContig(uint64_t name,int length){
+	m_masterContigs.push_back(name);
+	m_masterLengths.push_back(length);
+}
+
 void Scaffolder::solve(){
+	vector<vector<uint64_t> > megaLinks;
+
 	map<uint64_t,map<char,map<uint64_t,map<char,vector<int> > > > > keys;
 	for(int i=0;i<(int)m_masterLinks.size();i++){
 		uint64_t leftContig=m_masterLinks[i][0];
@@ -67,12 +76,198 @@ void Scaffolder::solve(){
 					}
 					if(n==2){
 						int average=sum/n;
-						cout<<"MEGA-LINK "<<leftContig<<" "<<leftStrand<<" "<<rightContig<<" "<<rightStrand<<" "<<average<<endl;
+						//cout<<"MEGA-LINK "<<leftContig<<" "<<leftStrand<<" "<<rightContig<<" "<<rightStrand<<" "<<average<<endl;
+						vector<uint64_t> megaLink;
+						megaLink.push_back(leftContig);
+						megaLink.push_back(leftStrand);
+						megaLink.push_back(rightContig);
+						megaLink.push_back(rightStrand);
+						megaLink.push_back(average);
+						megaLinks.push_back(megaLink);
 					}
 				}
 			}
 		}
 	}
+	
+	// create the graph
+	set<uint64_t> vertices;
+	map<uint64_t,map<char,vector<vector<uint64_t> > > > parents;
+	map<uint64_t,map<char,vector<vector<uint64_t> > > > children;
+	for(int i=0;i<(int)megaLinks.size();i++){
+		uint64_t leftContig=megaLinks[i][0];
+		char leftStrand=megaLinks[i][1];
+		uint64_t rightContig=megaLinks[i][2];
+		char rightStrand=megaLinks[i][3];
+		int distance=megaLinks[i][4];
+		char otherLeftStrand='F';
+		vertices.insert(leftContig);
+		vertices.insert(rightContig);
+		if(leftStrand=='F')
+			otherLeftStrand='R';
+		char otherRightStrand='F';
+		if(rightStrand=='F')
+			otherRightStrand='R';
+		children[leftContig][leftStrand].push_back(megaLinks[i]);
+		parents[rightContig][rightStrand].push_back(megaLinks[i]);
+		vector<uint64_t> reverseLink;
+		reverseLink.push_back(rightContig);
+		reverseLink.push_back(otherRightStrand);
+		reverseLink.push_back(leftContig);
+		reverseLink.push_back(otherLeftStrand);
+		reverseLink.push_back(distance);
+		children[rightContig][otherRightStrand].push_back(reverseLink);
+		parents[leftContig][otherLeftStrand].push_back(reverseLink);
+	}
+
+	// add colors to the graph
+	map<uint64_t,int> colors;
+	map<int,vector<uint64_t> > colorMap;
+	int i=0;
+	for(set<uint64_t>::iterator j=vertices.begin();j!=vertices.end();j++){
+		colors[*j]=i;
+		colorMap[i].push_back(*j);
+		i++;
+	}
+	
+	// write contig list
+	ostringstream contigList;
+	contigList<<m_parameters->getPrefix()<<".ContigList.txt";
+	ofstream f(contigList.str().c_str());
+	for(int i=0;i<(int)m_masterContigs.size();i++){
+		f<<"contig-"<<m_masterContigs[i]<<"\t"<<m_masterLengths[i]+m_parameters->getWordSize()-1<<endl;
+	}
+	f.close();
+
+	//cout<<"Coloring"<<endl;
+	// do some color merging.
+	for(set<uint64_t>::iterator j=vertices.begin();j!=vertices.end();j++){
+		uint64_t vertex=*j;
+		char state='F';
+		if(children.count(vertex)>0&&children[vertex].count(state)>0
+			&&children[vertex][state].size()==1){
+			uint64_t childVertex=children[vertex][state][0][2];
+			char childState=children[vertex][state][0][3];
+			if(parents[childVertex][childState].size()==1){
+				int currentColor=colors[vertex];
+				int childColor=colors[childVertex];
+				if(currentColor!=childColor){
+					for(int i=0;i<(int)colorMap[childColor].size();i++){
+						uint64_t otherVertex=colorMap[childColor][i];
+						colors[otherVertex]=currentColor;
+						colorMap[currentColor].push_back(otherVertex);
+					}
+					colorMap.erase(childColor);
+				}
+			}
+		}
+		if(children.count(vertex)>0&&children[vertex].count(state)>0
+			&&children[vertex][state].size()==1){
+			uint64_t childVertex=children[vertex][state][0][2];
+			char childState=children[vertex][state][0][3];
+			if(parents[childVertex][childState].size()==1){
+				int currentColor=colors[vertex];
+				int childColor=colors[childVertex];
+				if(currentColor!=childColor){
+					for(int i=0;i<(int)colorMap[childColor].size();i++){
+						uint64_t otherVertex=colorMap[childColor][i];
+						colors[otherVertex]=currentColor;
+						colorMap[currentColor].push_back(otherVertex);
+					}
+					colorMap.erase(childColor);
+				}
+			}
+		}
+
+		state='R';
+		if(children.count(vertex)>0&&children[vertex].count(state)>0
+			&&children[vertex][state].size()==1){
+			uint64_t childVertex=children[vertex][state][0][2];
+			char childState=children[vertex][state][0][3];
+			if(parents[childVertex][childState].size()==1){
+				int currentColor=colors[vertex];
+				int childColor=colors[childVertex];
+				if(currentColor!=childColor){
+					for(int i=0;i<(int)colorMap[childColor].size();i++){
+						uint64_t otherVertex=colorMap[childColor][i];
+						colors[otherVertex]=currentColor;
+						colorMap[currentColor].push_back(otherVertex);
+					}
+					colorMap.erase(childColor);
+				}
+			}
+		}
+		if(children.count(vertex)>0&&children[vertex].count(state)>0
+			&&children[vertex][state].size()==1){
+			uint64_t childVertex=children[vertex][state][0][2];
+			char childState=children[vertex][state][0][3];
+			if(parents[childVertex][childState].size()==1){
+				int currentColor=colors[vertex];
+				int childColor=colors[childVertex];
+				if(currentColor!=childColor){
+					for(int i=0;i<(int)colorMap[childColor].size();i++){
+						uint64_t otherVertex=colorMap[childColor][i];
+						colors[otherVertex]=currentColor;
+						colorMap[currentColor].push_back(otherVertex);
+					}
+					colorMap.erase(childColor);
+				}
+			}
+		}
+
+	}
+
+	//cout<<"Generate scaffolds"<<endl;
+
+	// extract scaffolds
+	set<int>completedColours;
+	for(set<uint64_t>::iterator j=vertices.begin();j!=vertices.end();j++){
+		uint64_t vertex=*j;
+		extractScaffolds('F',&colors,vertex,&parents,&children,&completedColours);
+		extractScaffolds('R',&colors,vertex,&parents,&children,&completedColours);
+	}
+
+	//cout<<"Scaffolds: "<<m_scaffoldContigs.size()<<endl;
+	//cout<<"Add unscaffolded stuff."<<endl;
+
+	// add unscaffolded stuff.
+	for(int i=0;i<(int)m_masterContigs.size();i++){
+		uint64_t contig=m_masterContigs[i];
+		if(colors.count(contig)==0){
+			vector<uint64_t> contigs;
+			vector<char> strands;
+			contigs.push_back(m_masterContigs[i]);
+			strands.push_back('F');
+			m_scaffoldContigs.push_back(contigs);
+			m_scaffoldStrands.push_back(strands);
+		}
+	}
+
+	//cout<<"Scaffolds: "<<m_scaffoldContigs.size()<<endl;
+
+	map<uint64_t,int> contigLengths;
+	for(int i=0;i<(int)m_masterLengths.size();i++){
+		contigLengths[m_masterContigs[i]]=m_masterLengths[i];
+	}
+
+	//cout<<" Write scaffold list"<<endl;
+	// write scaffold list
+	ostringstream scaffoldList;
+	scaffoldList<<m_parameters->getPrefix()<<".ScaffoldList.txt";
+	ofstream f2(scaffoldList.str().c_str());
+	for(int i=0;i<(int)m_scaffoldContigs.size();i++){
+		int scaffoldName=i;
+		for(int j=0;j<(int)m_scaffoldContigs[i].size();j++){
+			uint64_t contigName=m_scaffoldContigs[i][j];
+			char contigStrand=m_scaffoldStrands[i][j];
+			f2<<"scaffold-"<<scaffoldName<<"\t"<<"contig-"<<contigName<<"\t"<<contigStrand<<"\t"<<contigLengths[contigName]+m_parameters->getWordSize()-1<<endl;
+			if(j!=(int)m_scaffoldContigs[i].size()-1){
+				f2<<"scaffold-"<<scaffoldName<<"\tgap\t-\t"<<m_scaffoldGaps[i][j]<<endl;
+			}
+		}
+		f2<<endl;
+	}
+	f2.close();
 }
 
 void Scaffolder::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
@@ -85,6 +280,84 @@ void Scaffolder::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocato
 	m_slave_mode=slaveMode;
 	m_initialised=false;
 	m_workerId=0;
+}
+
+void Scaffolder::extractScaffolds(char state,map<uint64_t,int>*colors,uint64_t vertex,
+	map<uint64_t,map<char,vector<vector<uint64_t> > > >*parents,
+	map<uint64_t,map<char,vector<vector<uint64_t> > > >*children,set<int>*completedColours){
+	vector<uint64_t> contigs;
+	vector<char> strands;
+	vector<int> gaps;
+	bool skip=false;
+	int currentColor=(*colors)[vertex];
+	if((*completedColours).count(currentColor)>0)
+		return;
+
+	cout<<" COLOR contig-"<<vertex<<" "<<currentColor<<endl;
+	//cout<<"Checking parent"<<endl;
+	if((*parents).count(vertex)>0&&(*parents)[vertex].count(state)>0){
+		for(int i=0;i<(int)(*parents)[vertex][state].size();i++){
+			#ifdef ASSERT
+			assert(0<(*parents)[vertex][state][i].size());
+			#endif
+			uint64_t parent=(*parents)[vertex][state][i][0];
+			int parentColor=(*colors)[parent];
+			if(parentColor==currentColor){
+				skip=true;
+				break;
+			}
+		}
+	}
+	if(skip)
+		return;
+
+	(*completedColours).insert(currentColor);
+	//cout<<"Good parent "<<endl;
+	bool done=false;
+	while(!done){
+		contigs.push_back(vertex);
+		strands.push_back(state);
+		//cout<<"Checking if has children"<<endl;
+		if((*children).count(vertex)>0&&(*children)[vertex].count(state)>0){
+			bool found=false;
+			for(int i=0;i<(int)(*children)[vertex][state].size();i++){
+				#ifdef ASSERT
+				assert(2<(*children)[vertex][state][i].size());
+				#endif
+				uint64_t childVertex=(*children)[vertex][state][i][2];
+				int childColor=(*colors)[childVertex];
+				//cout<<"Got color"<<endl;
+				if(childColor==currentColor){
+					//cout<<"Same color"<<endl;
+					#ifdef ASSERT
+					assert(3<(*children)[vertex][state][i].size());
+					#endif
+					char childState=(*children)[vertex][state][i][3];
+					//cout<<"Got child state"<<endl;
+					#ifdef ASSERT
+					assert(4<(*children)[vertex][state][i].size());
+					#endif
+					int gap=(*children)[vertex][state][i][4];
+					//cout<<"Appending gap"<<endl;
+					gaps.push_back(gap);
+
+					vertex=childVertex;
+					state=childState;
+					found=true;
+					break;
+				}
+			}
+			if(!found){
+				done=true;
+			}
+		}else{
+			done=true;
+		}
+	}
+	m_scaffoldContigs.push_back(contigs);
+	m_scaffoldStrands.push_back(strands);
+	m_scaffoldGaps.push_back(gaps);
+	return;
 }
 
 void Scaffolder::run(){
@@ -124,9 +397,26 @@ void Scaffolder::processContig(){
 		performSummary();
 	}else if(!m_summarySent){
 		sendSummary();
+	}else if(!m_sentContigMeta){
+		sendContigInfo();
 	}else{
 		m_contigId++;
 		m_positionOnContig=0;
+	}
+}
+
+void Scaffolder::sendContigInfo(){
+	if(!m_sentContigInfo){
+		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+		message[0]=m_contigNames[m_contigId];
+		message[1]=m_contigs[m_contigId].size();
+		Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,
+			MASTER_RANK,RAY_MPI_TAG_CONTIG_INFO,m_parameters->getRank());
+		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
+		m_sentContigInfo=true;
+	}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
+		m_virtualCommunicator->getResponseElements(m_workerId);
+		m_sentContigMeta=true;
 	}
 }
 
@@ -148,6 +438,8 @@ void Scaffolder::sendSummary(){
 		}
 	}else{
 		m_summarySent=true;
+		m_sentContigMeta=false;
+		m_sentContigInfo=false;
 	}
 }
 
@@ -251,6 +543,11 @@ void Scaffolder::processVertex(VERTEX_TYPE vertex){
 		if(m_positionOnContig==0){
 			m_scaffoldingSummary.clear();
 			m_summaryPerformed=false;
+		}
+		if(m_positionOnContig%10000==0){
+			printf("Rank %i: gathering scaffold links [%i/%i] [%i/%i]\n",m_parameters->getRank(),
+				m_contigId+1,(int)m_contigs.size(),
+				m_positionOnContig+1,(int)m_contigs[m_contigId].size());
 		}
 	}else if(!m_coverageReceived
 		&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
@@ -437,6 +734,7 @@ void Scaffolder::processAnnotation(){
 			return;
 		}
 
+		#ifdef PRINT_RAW_LINK
 		cout<<endl;
 		cout<<"AverageDistance: "<<m_parameters->getLibraryAverageLength(m_pairedReadLibrary)<<endl;
 		cout<<"StandardDeviation: "<<m_parameters->getLibraryStandardDeviation(m_pairedReadLibrary)<<endl;
@@ -456,6 +754,7 @@ void Scaffolder::processAnnotation(){
 		cout<<" ReadStrand: F"<<endl;
 		cout<<" ReadLength: "<<m_pairedReadLength<<endl;
 		cout<<" PositionInRead: "<<m_pairedForwardOffset<<endl;
+		#endif
 
 		bool path1IsLeft=false;
 		bool path1IsRight=false;
@@ -486,8 +785,10 @@ Case 6. (allowed)
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0){
 				m_scaffoldingSummary[m_contigNames[m_contigId]]['F'][m_pairedForwardDirectionName]['R'].push_back(distance);
-			}
+				#ifdef PRINT_RAW_LINK
 				cout<<"LINK06 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedForwardDirectionName<<",R,"<<distance<<endl;
+				#endif
+			}
 /*
 Case 1. (allowed)
 
@@ -500,7 +801,9 @@ Case 1. (allowed)
 			int distanceIn2=m_pairedForwardDirectionPosition+m_pairedReadLength-m_pairedForwardOffset;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0){
+				#ifdef PRINT_RAW_LINK
 				cout<<"LINK01 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedForwardDirectionName<<",F,"<<distance<<endl;
+				#endif
 				m_scaffoldingSummary[m_contigNames[m_contigId]]['R'][m_pairedForwardDirectionName]['F'].push_back(distance);
 			}
 /*
@@ -518,7 +821,9 @@ Case 10. (allowed)
 			int distanceIn2=m_pairedForwardDirectionLength-m_pairedForwardDirectionPosition+m_pairedForwardOffset;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0){
+				#ifdef PRINT_RAW_LINK
 				cout<<"LINK10 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedForwardDirectionName<<",R,"<<distance<<endl;
+				#endif
 				m_scaffoldingSummary[m_contigNames[m_contigId]]['R'][m_pairedForwardDirectionName]['R'].push_back(distance);
 			}
 
@@ -534,7 +839,9 @@ Case 13. (allowed)
 			int distanceIn2=m_pairedForwardDirectionPosition+m_pairedReadLength-m_pairedForwardOffset;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0){
+				#ifdef PRINT_RAW_LINK
 				cout<<"LINK13 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedForwardDirectionName<<",F,"<<distance<<endl;
+				#endif
 				m_scaffoldingSummary[m_contigNames[m_contigId]]['F'][m_pairedForwardDirectionName]['F'].push_back(distance);
 			}
 		}
@@ -600,7 +907,8 @@ Case 13. (allowed)
 		||(int)m_contigs[m_contigId].size()<range){
 			return;
 		}
-
+	
+		#ifdef PRINT_RAW_LINK
 		cout<<endl;
 		cout<<"AverageDistance: "<<m_parameters->getLibraryAverageLength(m_pairedReadLibrary)<<endl;
 		cout<<"StandardDeviation: "<<m_parameters->getLibraryStandardDeviation(m_pairedReadLibrary)<<endl;
@@ -620,6 +928,7 @@ Case 13. (allowed)
 		cout<<" ReadStrand: R"<<endl;
 		cout<<" ReadLength: "<<m_pairedReadLength<<endl;
 		cout<<" PositionInRead: "<<m_pairedReverseOffset<<endl;
+		#endif
 
 		bool path1IsLeft=false;
 		bool path1IsRight=false;
@@ -650,7 +959,9 @@ Case 4. (allowed)
 			int distanceIn2=m_pairedReverseDirectionLength-m_pairedReverseDirectionPosition-m_pairedReverseOffset+m_pairedReadLength;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0){
+				#ifdef PRINT_RAW_LINK
 				cout<<"LINK04 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedReverseDirectionName<<",R,"<<distance<<endl;
+				#endif
 				m_scaffoldingSummary[m_contigNames[m_contigId]]['R'][m_pairedReverseDirectionName]['R'].push_back(distance);
 			}
 		
@@ -667,7 +978,9 @@ Case 7. (allowed)
 			int distanceIn2=m_pairedReverseDirectionPosition+m_pairedReverseOffset;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0){
+				#ifdef PRINT_RAW_LINK
 				cout<<"LINK07 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedReverseDirectionName<<",F,"<<distance<<endl;
+				#endif
 				m_scaffoldingSummary[m_contigNames[m_contigId]]['F'][m_pairedReverseDirectionName]['F'].push_back(distance);
 			}
 	
@@ -684,7 +997,9 @@ Case 11. (allowed)
 			int distanceIn2=m_pairedReverseDirectionPosition+m_pairedReverseOffset;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0){
+				#ifdef PRINT_RAW_LINK
 				cout<<"LINK11 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedReverseDirectionName<<",F,"<<distance<<endl;
+				#endif
 				m_scaffoldingSummary[m_contigNames[m_contigId]]['R'][m_pairedReverseDirectionName]['F'].push_back(distance);
 			}
 
@@ -700,7 +1015,9 @@ Case 16. (allowed)
 			int distanceIn2=m_pairedReverseDirectionLength-m_pairedReverseDirectionPosition-m_pairedReverseOffset+m_pairedReadLength;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0){
+				#ifdef PRINT_RAW_LINK
 				cout<<"LINK16 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedReverseDirectionName<<",R,"<<distance<<endl;
+				#endif
 				m_scaffoldingSummary[m_contigNames[m_contigId]]['F'][m_pairedReverseDirectionName]['R'].push_back(distance);
 			}
 		}

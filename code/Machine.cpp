@@ -280,8 +280,8 @@ void Machine::start(){
 		cout<<"Ray slave MPI ranks: 0-"<<getSize()-1<<endl;
 		cout<<endl;
 
-		int count=0;
 		#ifdef SHOW_ITEMS
+		int count=0;
 		#define MACRO_LIST_ITEM(x) count++;
 		#include <master_mode_macros.h>
 		#undef MACRO_LIST_ITEM
@@ -356,6 +356,9 @@ void Machine::start(){
 
 	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_SCAFFOLDING_LINKS,RAY_MPI_TAG_SCAFFOLDING_LINKS_REPLY);
 	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_SCAFFOLDING_LINKS,6);
+
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_CONTIG_INFO,RAY_MPI_TAG_CONTIG_INFO_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_CONTIG_INFO,2);
 
 	m_library.constructor(getRank(),&m_outbox,&m_outboxAllocator,&m_sequence_id,&m_sequence_idInFile,
 		m_ed,getSize(),&m_timePrinter,&m_slave_mode,&m_master_mode,

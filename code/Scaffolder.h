@@ -37,6 +37,13 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class Scaffolder{
+	vector<vector<uint64_t> > m_scaffoldContigs;
+	vector<vector<char> >m_scaffoldStrands;
+	vector<vector<int> >m_scaffoldGaps;
+	bool m_sentContigInfo;
+	bool m_sentContigMeta;
+	vector<uint64_t> m_masterContigs;
+	vector<int> m_masterLengths;
 	vector<vector<uint64_t> >m_masterLinks;
 	int m_summaryIterator;
 	bool m_summarySent;
@@ -111,6 +118,11 @@ class Scaffolder{
 	void processAnnotation();
 	void performSummary();
 	void sendSummary();
+	void sendContigInfo();
+	void extractScaffolds(char state,map<uint64_t,int>*colors,uint64_t vertex,
+		map<uint64_t,map<char,vector<vector<uint64_t> > > >*parents,
+		map<uint64_t,map<char,vector<vector<uint64_t> > > >*children,set<int>*completedColours);
+
 public:
 	/**
  *	Number of ranks that have finished scaffolding
@@ -126,6 +138,7 @@ public:
 	void addContig(uint64_t name,vector<uint64_t>*vertices);
 	void addMasterLink(vector<uint64_t>*link);
 	void solve();
+	void addMasterContig(uint64_t name,int length);
 };
 
 #endif
