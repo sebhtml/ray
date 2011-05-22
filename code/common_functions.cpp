@@ -387,7 +387,7 @@ int vertexRank(uint64_t a,int _size,int w){
 uint64_t kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool color){
 	int length=strlen(m_sequence);
 	if(pos>length-w){
-		cout<<"Fatal: offset is too large."<<endl;
+		cout<<"Fatal: offset is too large: position= "<<pos<<" Length= "<<length<<" WordSize=" <<w<<endl;
 		exit(0);
 	}
 	if(pos<0){

@@ -709,6 +709,13 @@ void Scaffolder::processAnnotation(){
  *
  ***/
 	}else if(!m_forwardDirectionsRequested){
+		// skip unrelated marker
+		if(m_pairedForwardOffset>m_pairedReadLength-m_parameters->getWordSize()){
+			m_forwardDirectionsRequested=true;
+			m_forwardDirectionsReceived=true;
+			m_forwardDirectionLengthRequested=true;
+			m_forwardDirectionLengthReceived=true;
+		}
 		//cout<<"OriginalVertex= "<<idToWord(vertex,m_parameters->getWordSize())<<" ";
 		//cout<<"ForwardMarker= "<<idToWord(m_pairedForwardMarker,m_parameters->getWordSize())<<" ";
 		//cout<<"ReverseMarker= "<<idToWord(m_pairedReverseMarker,m_parameters->getWordSize())<<" "<<endl;
@@ -886,6 +893,13 @@ Case 13. (allowed)
  *
  ***/
 	}else if(!m_reverseDirectionsRequested){
+		if(m_pairedReverseOffset>m_pairedReadLength-m_parameters->getWordSize()){
+			m_reverseDirectionsRequested=true;
+			m_reverseDirectionsReceived=true;
+			m_reverseDirectionLengthRequested=true;
+			m_reverseDirectionLengthReceived=true;
+		}
+
 		//cout<<"OriginalVertex= "<<idToWord(vertex,m_parameters->getWordSize())<<" ";
 		//cout<<"ForwardMarker= "<<idToWord(m_pairedForwardMarker,m_parameters->getWordSize())<<" ";
 		//cout<<"ReverseMarker= "<<idToWord(m_pairedReverseMarker,m_parameters->getWordSize())<<" "<<endl;

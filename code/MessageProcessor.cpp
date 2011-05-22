@@ -120,8 +120,14 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_READ_MARKERS(Message*message){
 		Read*read=m_myReads->at(readId);
 		int readLength=read->length();
 		outgoingMessage[5*i+0]=readLength;
-		VERTEX_TYPE forwardMarker=read->getVertex(read->getForwardOffset(),parameters->getWordSize(),'F',parameters->getColorSpaceMode());
-		VERTEX_TYPE reverseMarker=read->getVertex(read->getReverseOffset(),parameters->getWordSize(),'R',parameters->getColorSpaceMode());
+		VERTEX_TYPE forwardMarker=0;
+		if(read->getForwardOffset()<=readLength-parameters->getWordSize()){
+			forwardMarker=read->getVertex(read->getForwardOffset(),parameters->getWordSize(),'F',parameters->getColorSpaceMode());
+		}
+		VERTEX_TYPE reverseMarker=0;
+		if(read->getReverseOffset()<=readLength-parameters->getWordSize()){
+			reverseMarker=read->getVertex(read->getReverseOffset(),parameters->getWordSize(),'R',parameters->getColorSpaceMode());
+		}
 		outgoingMessage[5*i+1]=forwardMarker;
 		outgoingMessage[5*i+2]=reverseMarker;
 		outgoingMessage[5*i+3]=read->getForwardOffset();
