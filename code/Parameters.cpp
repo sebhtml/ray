@@ -502,7 +502,7 @@ void Parameters::parseCommands(){
 		cout<<endl;
 
 		ostringstream rayRuntime;
-		rayRuntime<<getPrefix()<<".RayRunTime.txt";
+		rayRuntime<<getPrefix()<<".RayVersion.txt";
 		ofstream f2(rayRuntime.str().c_str());
 		f2<<"Ray version: "<<RAY_VERSION<<endl;
 		f2.close();

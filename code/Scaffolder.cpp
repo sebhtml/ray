@@ -329,7 +329,7 @@ void Scaffolder::extractScaffolds(char state,map<uint64_t,int>*colors,uint64_t v
 	if((*completedColours).count(currentColor)>0)
 		return;
 
-	cout<<" COLOR contig-"<<vertex<<" "<<currentColor<<endl;
+	//cout<<" COLOR contig-"<<vertex<<" "<<currentColor<<endl;
 	//cout<<"Checking parent"<<endl;
 	if((*parents).count(vertex)>0&&(*parents)[vertex].count(state)>0){
 		for(int i=0;i<(int)(*parents)[vertex][state].size();i++){
@@ -415,7 +415,7 @@ void Scaffolder::run(){
 	if(m_contigId<(int)m_contigs.size()){
 		processContig();
 	}else{
-		cout<<"done."<<endl;
+		//cout<<"done."<<endl;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING,
 			m_parameters->getRank());
 		m_outbox->push_back(aMessage);
@@ -660,17 +660,17 @@ void Scaffolder::processAnnotation(){
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		m_hasPairRequested=true;
 		m_hasPairReceived=false;
-		cout<<"Requests has pair?"<<endl;
+		//cout<<"Requests has pair?"<<endl;
 	}else if(!m_hasPairReceived
 	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
 		m_hasPair=m_virtualCommunicator->getResponseElements(m_workerId)[0];
 		m_hasPairReceived=true;
 		m_pairRequested=false;
-		cout<<"Answer has pair?"<<endl;
+		//cout<<"Answer has pair?"<<endl;
 	}else if(!m_hasPairReceived){
 		return;
 	}else if(!m_hasPair){
-		cout<<"No pair"<<endl;
+		//cout<<"No pair"<<endl;
 		m_readAnnotationId++;
 		m_hasPairRequested=false;
 	}else if(!m_pairRequested){
@@ -679,7 +679,7 @@ void Scaffolder::processAnnotation(){
 		Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,
 		rank,RAY_MPI_TAG_GET_READ_MATE,m_parameters->getRank());
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
-		cout<<"Requests Pair"<<endl;
+		//cout<<"Requests Pair"<<endl;
 		m_pairRequested=true;
 		m_pairReceived=false;
 	}else if(!m_pairReceived
@@ -691,7 +691,7 @@ void Scaffolder::processAnnotation(){
 		m_pairedReadLibrary=response[3];
 		m_pairReceived=true;
 		m_markersRequested=false;
-		cout<<"Receives pair"<<endl;
+		//cout<<"Receives pair"<<endl;
 	}else if(!m_pairReceived){
 		return;
 	}else if(!m_markersRequested){

@@ -1198,7 +1198,7 @@ void SeedExtender::showReadsInRange(){
 void SeedExtender::printExtensionStatus(uint64_t*currentVertex){
 	int theRank=m_parameters->getRank();
 	int theCurrentSize=m_ed->m_EXTENSION_extension->size();
-	now();
+	//now();
 	// stop the infinite loop
 	#ifdef HUNT_INFINITE_BUG
 	if(m_ed->m_EXTENSION_extension->size()>200000){
@@ -1223,8 +1223,10 @@ void SeedExtender::printExtensionStatus(uint64_t*currentVertex){
 	int chunkSize=m_directionsAllocator->getChunkSize();
 	uint64_t totalBytes=chunks*chunkSize;
 	uint64_t kibibytes=totalBytes/1024;
-	printf("Rank %i: memory usage for directions is %lu KiB\n",theRank,kibibytes);
-	fflush(stdout);
+	if(m_parameters->showMemoryUsage()){
+		printf("Rank %i: memory usage for directions is %lu KiB\n",theRank,kibibytes);
+		fflush(stdout);
+	}
 }
 
 
