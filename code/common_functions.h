@@ -94,7 +94,7 @@ uint64_t complementVertex(uint64_t a,int m_wordSize,bool useColorSpace);
 /*
  * add line breaks to a string
  */
-string addLineBreaks(string sequence);
+string addLineBreaks(string sequence,int a);
 
 void*__Malloc(int c,int mallocType);
 void __Free(void*a,int mallocType);
@@ -151,6 +151,8 @@ int getIdFromPathUniqueId(uint64_t a);
 int getRankFromPathUniqueId(uint64_t a);
 
 void now();
+
+string reverseComplement(string*a);
 
 #endif
 

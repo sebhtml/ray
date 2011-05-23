@@ -37,6 +37,10 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class Scaffolder{
+	int m_scaffoldId;
+	int m_positionOnScaffold;
+	bool m_writeContigRequested;
+
 	vector<vector<uint64_t> > m_scaffoldContigs;
 	vector<vector<char> >m_scaffoldStrands;
 	vector<vector<int> >m_scaffoldGaps;
@@ -107,7 +111,6 @@ class Scaffolder{
 	StaticVector*m_inbox;
 	StaticVector*m_outbox;
 	RingAllocator*m_outboxAllocator;
-	bool m_initialised;
 	int*m_slave_mode;
 	bool m_ready;
 
@@ -124,6 +127,8 @@ class Scaffolder{
 		map<uint64_t,map<char,vector<vector<uint64_t> > > >*children,set<int>*completedColours);
 
 public:
+
+	bool m_initialised;
 	/**
  *	Number of ranks that have finished scaffolding
  */
@@ -139,6 +144,7 @@ public:
 	void addMasterLink(vector<uint64_t>*link);
 	void solve();
 	void addMasterContig(uint64_t name,int length);
+	void writeScaffolds();
 };
 
 #endif

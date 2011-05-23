@@ -135,6 +135,8 @@ void Machine::start(){
 	MPI_Barrier(MPI_COMM_WORLD);
 
 	m_parameters.setSize(getSize());
+	m_parameters.setSlaveModePointer(&m_slave_mode);
+	m_parameters.setMasterModePointer(&m_master_mode);
 	MAX_ALLOCATED_MESSAGES_IN_OUTBOX=getSize();
 	MAX_ALLOCATED_MESSAGES_IN_INBOX=1;
 
@@ -186,14 +188,9 @@ void Machine::start(){
 	MPI_Get_version(&version,&subversion);
 
 	if(isMaster()){
-		ostringstream rayRuntime;
-		rayRuntime<<m_parameters.getPrefix()<<".RayRunTime.txt";
-		ofstream f(rayRuntime.str().c_str());
 
 		cout<<endl;
 		cout<<"Rank "<<MASTER_RANK<<": Ray version: "<<RAY_VERSION<<endl;
-		f<<"Ray version: "<<RAY_VERSION<<endl;
-		f.close();
 
 		cout<<"Rank "<<MASTER_RANK<<": GNU system (__GNUC__): ";
 		#ifdef __GNUC__
@@ -335,6 +332,10 @@ void Machine::start(){
 		m_ed,m_seedingData,&m_slave_mode,&m_parameters);
 
 	m_virtualCommunicator.constructor(m_rank,m_size,&m_outboxAllocator,&m_inbox,&m_outbox);
+
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_WRITE_CONTIG,RAY_MPI_TAG_WRITE_CONTIG_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_WRITE_CONTIG,3);
+
 	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_REQUEST_VERTEX_READS,RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY);
 	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_READS,5);
 
@@ -486,7 +487,9 @@ m_seedingData,
 	MPI_Barrier(MPI_COMM_WORLD);
 
 	if(isMaster() && !m_aborted){
-		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<" (contiguous sequences in FASTA format) "<<endl;
+		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<endl;
+		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getScaffoldFile()<<endl;
+
 		if(m_parameters.useAmos()){
 			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getAmosFile()<<" (reads mapped onto contiguous sequences in AMOS format)"<<endl;
 
@@ -507,6 +510,10 @@ m_seedingData,
 	m_diskAllocator.clear();
 
 	MPI_Finalize();
+}
+
+void Machine::call_RAY_MASTER_MODE_WRITE_SCAFFOLDS(){
+	m_scaffolder.writeScaffolds();
 }
 
 void Machine::run(){
@@ -1004,7 +1011,7 @@ void Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 		
 		m_scaffolder.addContig(uniqueId,&(m_ed->m_EXTENSION_contigs[i]));
 
-		string withLineBreaks=addLineBreaks(contig);
+		string withLineBreaks=addLineBreaks(contig,m_parameters.getColumns());
 		fprintf(fp,">contig-%lu %i nucleotides\n%s",uniqueId,(int)contig.length(),withLineBreaks.c_str());
 	}
 	cout<<"Rank "<<m_rank<<" appended "<<total<<" elements"<<endl;

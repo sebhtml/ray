@@ -38,6 +38,8 @@ using namespace std;
  *
  */
 class Parameters{
+	int*m_slaveMode;
+	int*m_masterMode;
 	bool m_showMemoryUsage;
 	bool m_showEndingContext;
 	bool m_debugSeeds;
@@ -162,6 +164,15 @@ public:
 	bool debugSeeds();
 	bool showMemoryUsage();
 	bool showEndingContext();
+	int getSlaveMode();
+	void setSlaveMode(int a);
+	void setSlaveModePointer(int*a);
+
+	int getMasterMode();
+	void setMasterMode(int a);
+	void setMasterModePointer(int*a);
+	string getScaffoldFile();
+	int getColumns();
 };
 
 #endif

@@ -54,6 +54,14 @@ char complementNucleotide(char c){
 	}
 }
 
+string reverseComplement(string*a){
+	ostringstream b;
+	for(int i=a->length()-1;i>=0;i--){
+		b<<complementNucleotide((*a)[i]);
+	}
+	return b.str();
+}
+
 // convert k-mer to uint64_t
 uint64_t wordId(const char*a){
 	#ifdef USE_DISTANT_SEGMENTS_GRAPH
@@ -258,10 +266,9 @@ uint64_t complementVertex_normal(uint64_t a,int m_wordSize){
 	return output;
 }
 
-string addLineBreaks(string dna){
+string addLineBreaks(string dna,int columns){
 	ostringstream output;
 	int j=0;
-	int columns=60;
 	while(j<(int)dna.length()){
 		output<<dna.substr(j,columns)<<endl;
 		j+=columns;

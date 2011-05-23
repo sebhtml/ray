@@ -501,6 +501,11 @@ void Parameters::parseCommands(){
 		cout<<"Output files will be prefixed with "<<getPrefix()<<endl;
 		cout<<endl;
 
+		ostringstream rayRuntime;
+		rayRuntime<<getPrefix()<<".RayRunTime.txt";
+		ofstream f2(rayRuntime.str().c_str());
+		f2<<"Ray version: "<<RAY_VERSION<<endl;
+		f2.close();
 	}
 
 	int maximumNumberOfFiles=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint32_t);
@@ -946,4 +951,37 @@ bool Parameters::hasPairedReads(){
 
 int Parameters::_vertexRank(uint64_t a){
 	return vertexRank(a,m_size,m_wordSize);
+}
+int Parameters::getSlaveMode(){
+	return *m_slaveMode;
+}
+
+void Parameters::setSlaveMode(int a){
+	*m_slaveMode=a;
+}
+
+void Parameters::setSlaveModePointer(int*a){
+	m_slaveMode=a;
+}
+
+int Parameters::getMasterMode(){
+	return *m_masterMode;
+}
+
+void Parameters::setMasterMode(int a){
+	*m_masterMode=a;
+}
+
+void Parameters::setMasterModePointer(int*a){
+	m_masterMode=a;
+}
+
+string Parameters::getScaffoldFile(){
+	ostringstream a;
+	a<<getPrefix()<<".Scaffolds.fasta";
+	return a.str();
+}
+
+int Parameters::getColumns(){
+	return 60;
 }

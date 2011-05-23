@@ -78,7 +78,7 @@ class MessageProcessor{
 	ExtensionData*m_ed;
 	int*m_numberOfRanksDoneDetectingDistances;
 	int*m_numberOfRanksDoneSendingDistances;
-	Parameters*parameters;
+	Parameters*m_parameters;
 
 	MessagesHandler*m_messagesHandler;
 

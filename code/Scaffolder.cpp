@@ -54,6 +54,10 @@ void Scaffolder::solve(){
 
 	map<uint64_t,map<uint64_t,int> > validCounts;
 
+	ostringstream linkFile;
+	linkFile<<m_parameters->getPrefix()<<".ScaffoldLinks.txt";
+	ofstream f(linkFile.str().c_str());
+
 	for(map<uint64_t,map<char,map<uint64_t,map<char,vector<int> > > > >::iterator i=
 		keys.begin();i!=keys.end();i++){
 		uint64_t leftContig=i->first;
@@ -78,7 +82,7 @@ void Scaffolder::solve(){
 					}
 					if(n==2){
 						int average=sum/n;
-						//cout<<"MEGA-LINK "<<leftContig<<" "<<leftStrand<<" "<<rightContig<<" "<<rightStrand<<" "<<average<<endl;
+						f<<"contig-"<<leftContig<<"\t"<<leftStrand<<"\tcontig-"<<rightContig<<"\t"<<rightStrand<<"\t"<<average<<endl;
 						vector<uint64_t> megaLink;
 						megaLink.push_back(leftContig);
 						megaLink.push_back(leftStrand);
@@ -93,6 +97,7 @@ void Scaffolder::solve(){
 			}
 		}
 	}
+	f.close();
 	
 	// create the graph
 	set<uint64_t> vertices;
@@ -137,14 +142,14 @@ void Scaffolder::solve(){
 	// write contig list
 	ostringstream contigList;
 	contigList<<m_parameters->getPrefix()<<".ContigLengths.txt";
-	ofstream f(contigList.str().c_str());
+	ofstream f2(contigList.str().c_str());
 	uint64_t totalContigLength=0;
 	for(int i=0;i<(int)m_masterContigs.size();i++){
 		int length=m_masterLengths[i]+m_parameters->getWordSize()-1;
-		f<<"contig-"<<m_masterContigs[i]<<"\t"<<length<<endl;
+		f2<<"contig-"<<m_masterContigs[i]<<"\t"<<length<<endl;
 		totalContigLength+=length;
 	}
-	f.close();
+	f2.close();
 
 	//cout<<"Coloring"<<endl;
 	// do some color merging.
@@ -268,7 +273,7 @@ void Scaffolder::solve(){
 	ostringstream scaffoldLengths;
 	scaffoldLengths<<m_parameters->getPrefix()<<".ScaffoldLengths.txt";
 	ofstream f3(scaffoldLengths.str().c_str());
-	ofstream f2(scaffoldList.str().c_str());
+	ofstream f4(scaffoldList.str().c_str());
 	uint64_t totalScaffoldLength=0;
 	for(int i=0;i<(int)m_scaffoldContigs.size();i++){
 		int scaffoldName=i;
@@ -277,38 +282,38 @@ void Scaffolder::solve(){
 			uint64_t contigName=m_scaffoldContigs[i][j];
 			char contigStrand=m_scaffoldStrands[i][j];
 			int theLength=contigLengths[contigName]+m_parameters->getWordSize()-1;
-			f2<<"scaffold-"<<scaffoldName<<"\t"<<"contig-"<<contigName<<"\t"<<contigStrand<<"\t"<<theLength<<endl;
+			f4<<"scaffold-"<<scaffoldName<<"\t"<<"contig-"<<contigName<<"\t"<<contigStrand<<"\t"<<theLength<<endl;
 			length+=theLength;
 			if(j!=(int)m_scaffoldContigs[i].size()-1){
 				int theLength=m_scaffoldGaps[i][j];
-				f2<<"scaffold-"<<scaffoldName<<"\tgap\t-\t"<<theLength<<endl;
+				f4<<"scaffold-"<<scaffoldName<<"\tgap\t-\t"<<theLength<<endl;
 				length+=theLength;
 			}
 		}
 		f3<<"scaffold-"<<scaffoldName<<"\t"<<length<<endl;
 		totalScaffoldLength+=length;
-		f2<<endl;
+		f4<<endl;
 	}
 	f2.close();
 	f3.close();
 	ostringstream outputStat;
 	outputStat<<m_parameters->getPrefix()<<".OutputNumbers.txt";
-	ofstream f4(outputStat.str().c_str());
-	f4<<"Number of contigs:\t"<<m_masterContigs.size()<<endl;
-	f4<<"Total length of contigs:\t"<<totalContigLength<<endl;
-	f4<<"Number of scaffolds:\t"<<m_scaffoldContigs.size()<<endl;
-	f4<<"Total length of scaffolds:\t"<<totalScaffoldLength<<endl;
-	f4.close();
+	ofstream f5(outputStat.str().c_str());
+	f5<<"Number of contigs:\t"<<m_masterContigs.size()<<endl;
+	f5<<"Total length of contigs:\t"<<totalContigLength<<endl;
+	f5<<"Number of scaffolds:\t"<<m_scaffoldContigs.size()<<endl;
+	f5<<"Total length of scaffolds:\t"<<totalScaffoldLength<<endl;
+	f5.close();
 }
 
 void Scaffolder::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
 	int*slaveMode,VirtualCommunicator*vc){
+	m_slave_mode=slaveMode;
 	m_virtualCommunicator=vc;
 	m_outbox=outbox;
 	m_inbox=inbox;
 	m_outboxAllocator=outboxAllocator;
 	m_parameters=parameters;
-	m_slave_mode=slaveMode;
 	m_initialised=false;
 	m_workerId=0;
 }
@@ -393,6 +398,7 @@ void Scaffolder::extractScaffolds(char state,map<uint64_t,int>*colors,uint64_t v
 
 void Scaffolder::run(){
 	if(!m_initialised){
+		//cout<<"Initialise"<<endl;
 		m_initialised=true;
 		m_ready=true;
 		m_contigId=0;
@@ -401,6 +407,7 @@ void Scaffolder::run(){
 		m_coverageRequested=false;
 	}
 
+	//cout<<"Forcing flush"<<endl;
 	m_virtualCommunicator->forceFlush();
 	m_virtualCommunicator->processInbox(&m_activeWorkers);
 	m_activeWorkers.clear();
@@ -408,7 +415,7 @@ void Scaffolder::run(){
 	if(m_contigId<(int)m_contigs.size()){
 		processContig();
 	}else{
-		//cout<<"done."<<endl;
+		cout<<"done."<<endl;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING,
 			m_parameters->getRank());
 		m_outbox->push_back(aMessage);
@@ -563,7 +570,7 @@ void Scaffolder::processVertex(VERTEX_TYPE vertex){
 	// 					get the paths that goes on them
 	// 					print the linking information
 	if(!m_coverageRequested){
-		//cout<<"Requesting coverage contig "<<m_contigId<<"/"<<m_contigs.size()<<" position "<<m_positionOnContig<<"/"<<m_contigs[m_contigId].size()<<endl;
+		//cout<<"1Requesting coverage contig "<<m_contigId<<"/"<<m_contigs.size()<<" position "<<m_positionOnContig<<"/"<<m_contigs[m_contigId].size()<<endl;
 		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
 		buffer[0]=vertex;
 		Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,
@@ -583,7 +590,11 @@ void Scaffolder::processVertex(VERTEX_TYPE vertex){
 	}else if(!m_coverageReceived
 		&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
 		//cout<<"Received coverage"<<endl;
-		m_receivedCoverage=m_virtualCommunicator->getResponseElements(m_workerId)[0];
+		vector<uint64_t>answer=m_virtualCommunicator->getResponseElements(m_workerId);
+		#ifdef ASSERT
+		assert(0<answer.size());
+		#endif
+		m_receivedCoverage=answer[0];
 		m_coverageReceived=true;
 		m_initialisedFetcher=false;
 		//cout<<"Coverage= "<<m_receivedCoverage<<endl;
@@ -649,17 +660,17 @@ void Scaffolder::processAnnotation(){
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		m_hasPairRequested=true;
 		m_hasPairReceived=false;
-		//cout<<"Requests has pair?"<<endl;
+		cout<<"Requests has pair?"<<endl;
 	}else if(!m_hasPairReceived
 	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
 		m_hasPair=m_virtualCommunicator->getResponseElements(m_workerId)[0];
 		m_hasPairReceived=true;
 		m_pairRequested=false;
-		//cout<<"Answer has pair?"<<endl;
+		cout<<"Answer has pair?"<<endl;
 	}else if(!m_hasPairReceived){
 		return;
 	}else if(!m_hasPair){
-		//cout<<"No pair"<<endl;
+		cout<<"No pair"<<endl;
 		m_readAnnotationId++;
 		m_hasPairRequested=false;
 	}else if(!m_pairRequested){
@@ -668,7 +679,7 @@ void Scaffolder::processAnnotation(){
 		Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,
 		rank,RAY_MPI_TAG_GET_READ_MATE,m_parameters->getRank());
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
-		//cout<<"Requests Pair"<<endl;
+		cout<<"Requests Pair"<<endl;
 		m_pairRequested=true;
 		m_pairReceived=false;
 	}else if(!m_pairReceived
@@ -680,7 +691,7 @@ void Scaffolder::processAnnotation(){
 		m_pairedReadLibrary=response[3];
 		m_pairReceived=true;
 		m_markersRequested=false;
-		//cout<<"Receives pair"<<endl;
+		cout<<"Receives pair"<<endl;
 	}else if(!m_pairReceived){
 		return;
 	}else if(!m_markersRequested){
@@ -1072,6 +1083,75 @@ Case 16. (allowed)
 	}else if(m_reverseDirectionLengthReceived){
 		m_readAnnotationId++;
 		m_hasPairRequested=false;
+	}
+}
+
+void Scaffolder::writeScaffolds(){
+	if(!m_initialised){
+		m_initialised=true;
+		m_scaffoldId=0;
+		m_contigId=0;
+		m_writeContigRequested=false;
+		m_positionOnScaffold=0;// actually it is a position on the scaffold
+	}
+
+	m_virtualCommunicator->forceFlush();
+	m_virtualCommunicator->processInbox(&m_activeWorkers);
+	m_activeWorkers.clear();
+
+	if(m_scaffoldId<(int)m_scaffoldContigs.size()){
+		if(m_contigId<(int)m_scaffoldContigs[m_scaffoldId].size()){
+			if(!m_writeContigRequested){
+				m_writeContigRequested=true;
+				uint64_t contigNumber=m_scaffoldContigs[m_scaffoldId][m_contigId];
+				char strand=m_scaffoldStrands[m_scaffoldId][m_contigId];
+				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+				int rankId=getRankFromPathUniqueId(contigNumber);
+				message[0]=contigNumber;
+				message[1]=strand;
+				message[2]=m_positionOnScaffold;
+				Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,
+					rankId,RAY_MPI_TAG_WRITE_CONTIG,m_parameters->getRank());
+				m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
+				if(m_contigId==0){
+					string file=m_parameters->getScaffoldFile();
+					FILE*fp=fopen(file.c_str(),"a");
+					fprintf(fp,">scaffold-%i\n",m_scaffoldId);
+					fclose(fp);
+				}
+			}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
+				vector<uint64_t>answer=m_virtualCommunicator->getResponseElements(m_workerId);
+				m_positionOnScaffold=answer[0];
+				if(m_contigId<(int)m_scaffoldContigs[m_scaffoldId].size()-1){
+					int gapSize=m_scaffoldGaps[m_scaffoldId][m_contigId];
+					string file=m_parameters->getScaffoldFile();
+					FILE*fp=fopen(file.c_str(),"a");
+					int i=0;
+					int columns=m_parameters->getColumns();
+					while(i<gapSize){
+						fprintf(fp,"N");
+						i++;
+						m_positionOnScaffold++;
+						if(m_positionOnScaffold%columns==0){
+							fprintf(fp,"\n");
+						}
+					}
+					fclose(fp);
+				}
+				m_contigId++;
+				m_writeContigRequested=false;
+			}
+		}else{
+			string file=m_parameters->getScaffoldFile();
+			FILE*fp=fopen(file.c_str(),"a");
+			fprintf(fp,"\n");
+			fclose(fp);
+			m_scaffoldId++;
+			m_contigId=0;
+			m_positionOnScaffold=0;
+		}
+	}else{
+		m_parameters->setMasterMode(RAY_MASTER_MODE_KILL_RANKS);
 	}
 }
 

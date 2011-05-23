@@ -37,7 +37,7 @@
 void MessageProcessor::call_RAY_MPI_TAG_LOAD_SEQUENCES(Message*message){
 	uint32_t*incoming=(uint32_t*)message->getBuffer();
 	for(int i=0;i<(int)incoming[0];i++){
-		parameters->setNumberOfSequences(incoming[1+i]);
+		m_parameters->setNumberOfSequences(incoming[1+i]);
 	}
 	(*m_mode)=RAY_SLAVE_MODE_LOAD_SEQUENCES;
 }
@@ -121,12 +121,12 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_READ_MARKERS(Message*message){
 		int readLength=read->length();
 		outgoingMessage[5*i+0]=readLength;
 		VERTEX_TYPE forwardMarker=0;
-		if(read->getForwardOffset()<=readLength-parameters->getWordSize()){
-			forwardMarker=read->getVertex(read->getForwardOffset(),parameters->getWordSize(),'F',parameters->getColorSpaceMode());
+		if(read->getForwardOffset()<=readLength-m_parameters->getWordSize()){
+			forwardMarker=read->getVertex(read->getForwardOffset(),m_parameters->getWordSize(),'F',m_parameters->getColorSpaceMode());
 		}
 		VERTEX_TYPE reverseMarker=0;
-		if(read->getReverseOffset()<=readLength-parameters->getWordSize()){
-			reverseMarker=read->getVertex(read->getReverseOffset(),parameters->getWordSize(),'R',parameters->getColorSpaceMode());
+		if(read->getReverseOffset()<=readLength-m_parameters->getWordSize()){
+			reverseMarker=read->getVertex(read->getReverseOffset(),m_parameters->getWordSize(),'R',m_parameters->getColorSpaceMode());
 		}
 		outgoingMessage[5*i+1]=forwardMarker;
 		outgoingMessage[5*i+2]=reverseMarker;
@@ -181,7 +181,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 		}else{
 			int rank=ptr->getRank();
 			#ifdef ASSERT
-			assert(rank>=0&&rank<parameters->getSize());
+			assert(rank>=0&&rank<m_parameters->getSize());
 			#endif
 			outgoingMessage[j+1]=rank;
 			outgoingMessage[j+2]=ptr->getReadIndex();
@@ -485,7 +485,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY(Message*aMessa
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_RESUME_VERTEX_DISTRIBUTION(Message*message){
-	if(parameters->runReducer()){
+	if(m_parameters->runReducer()){
 		m_verticesExtractor->updateThreshold(m_subgraph);
 		printf("Rank %i: %lu -> %lu\n",rank,m_lastSize,m_subgraph->size());
 	}
@@ -650,7 +650,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 			printf("Rank %i has %i vertices\n",rank,(int)m_subgraph->size());
 			fflush(stdout);
 
-			if(parameters->showMemoryUsage()){
+			if(m_parameters->showMemoryUsage()){
 				showMemoryUsage(rank);
 			}
 		}
@@ -682,7 +682,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DISTRIBUTED(Message*message){
 	(*m_numberOfMachinesDoneSendingVertices)++;
 	if((*m_numberOfMachinesDoneSendingVertices)==size){
 		m_verticesExtractor->setDistributionAsCompleted();
-		if(parameters->runReducer()){
+		if(m_parameters->runReducer()){
 			for(int i=0;i<size;i++){
 				Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_MUST_RUN_REDUCER_FROM_MASTER,rank);
 				m_outbox->push_back(aMessage);
@@ -731,8 +731,8 @@ void MessageProcessor::call_RAY_MPI_TAG_START_VERTICES_DISTRIBUTION(Message*mess
 	MPI_Barrier(MPI_COMM_WORLD);
 	(*m_mode_send_vertices)=true;
 	(*m_mode)=RAY_SLAVE_MODE_EXTRACT_VERTICES;
-	m_verticesExtractor->constructor(size,parameters);
-	if(parameters->runReducer()){
+	m_verticesExtractor->constructor(size,m_parameters);
+	if(m_parameters->runReducer()){
 		m_verticesExtractor->enableReducer();
 	}
 
@@ -771,14 +771,14 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION(M
 	m_verticesExtractor->assertBuffersAreEmpty();
 	#endif
 
-	if(parameters->runReducer()){
+	if(m_parameters->runReducer()){
 		m_verticesExtractor->updateThreshold(m_subgraph);
 		printf("Rank %i: %lu -> %lu\n",rank,m_lastSize,m_subgraph->size());
 	}
 
 	// freeze the forest. icy winter ahead.
 	m_subgraph->freeze();
-	//m_subgraph->show(rank,parameters->getPrefix().c_str());
+	//m_subgraph->show(rank,m_parameters->getPrefix().c_str());
 	int source=message->getSource();
 
 	Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, source, RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER,rank);
@@ -796,7 +796,7 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*me
 	printf("Rank %i has %i vertices (completed)\n",rank,(int)m_subgraph->size());
 	fflush(stdout);
 
-	if(parameters->showMemoryUsage()){
+	if(m_parameters->showMemoryUsage()){
 		showMemoryUsage(rank);
 		fflush(stdout);
 	}
@@ -840,9 +840,9 @@ void MessageProcessor::call_RAY_MPI_TAG_SEND_COVERAGE_VALUES(Message*message){
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_RECEIVED_COVERAGE_INFORMATION,rank);
 	m_outbox->push_back(aMessage);
 	m_oa->constructor((*m_peakCoverage));
-	parameters->setPeakCoverage(*m_peakCoverage);
-	parameters->setSeedCoverage(*m_seedCoverage);
-	parameters->setMinimumCoverage(*m_minimumCoverage);
+	m_parameters->setPeakCoverage(*m_peakCoverage);
+	m_parameters->setSeedCoverage(*m_seedCoverage);
+	m_parameters->setMinimumCoverage(*m_minimumCoverage);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_READY_TO_SEED(Message*message){
@@ -2048,7 +2048,7 @@ void MessageProcessor::call_RAY_MPI_TAG_LIBRARY_DISTANCE(Message*message){
 	int count=message->getCount();
 	uint64_t*incoming=(uint64_t*)buffer;
 	for(int i=0;i<count;i+=3){
-		parameters->addDistance(incoming[i+0],incoming[i+1],incoming[i+2]);
+		m_parameters->addDistance(incoming[i+0],incoming[i+1],incoming[i+2]);
 		//cout<<"SourceSays "<<message->getSource()<<" "<<incoming[i+0]<<" "<<incoming[i+1]<<" "<<incoming[i+2]<<endl;
 		//fflush(stdout);
 	}
@@ -2079,7 +2079,7 @@ void MessageProcessor::call_RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION(Message*messa
 	for(int i=0;i<libraries;i++){
 		int average=data[2*i+1+0];
 		int deviation=data[2*i+1+1];
-		parameters->addLibraryData(i,average,deviation);
+		m_parameters->addLibraryData(i,average,deviation);
 	}
 }
 
@@ -2147,10 +2147,54 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY(Message*mess
 
 void MessageProcessor::call_RAY_MPI_TAG_I_FINISHED_SCAFFOLDING(Message*message){
 	m_scaffolder->m_numberOfRanksFinished++;
-	if(m_scaffolder->m_numberOfRanksFinished==parameters->getSize()){
+	if(m_scaffolder->m_numberOfRanksFinished==m_parameters->getSize()){
 		m_scaffolder->solve();
-		(*m_master_mode)=RAY_MASTER_MODE_KILL_RANKS;
+		(*m_master_mode)=RAY_MASTER_MODE_WRITE_SCAFFOLDS;
+		m_scaffolder->m_initialised=false;
 	}
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_WRITE_CONTIG_REPLY(Message*message){
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_WRITE_CONTIG(Message*message){
+	uint64_t*incoming=(uint64_t*)message->getBuffer();
+	uint64_t contigId=incoming[0];
+	char strand=incoming[1];
+	int currentPosition=incoming[2];
+
+	#ifdef ASSERT
+	assert(m_fusionData->m_FUSION_identifier_map.count(contigId)>0);
+	#endif
+
+	int index=m_fusionData->m_FUSION_identifier_map[contigId];
+
+	string file=m_parameters->getScaffoldFile();
+	FILE*fp=fopen(file.c_str(),"a");
+	int contigPosition=0;
+	string contigSequence=convertToString(&((m_ed->m_EXTENSION_contigs)[index]),m_parameters->getWordSize());
+	if(strand=='R'){
+		contigSequence=reverseComplement(&contigSequence);
+	}
+
+	int length=contigSequence.length();
+	int columns=m_parameters->getColumns();
+	while(contigPosition<length){
+		char nucleotide=contigSequence[contigPosition];
+		fprintf(fp,"%c",nucleotide);
+		contigPosition++;
+		currentPosition++;
+		if(currentPosition%columns==0){
+			fprintf(fp,"\n");
+		}
+	}
+	fclose(fp);
+
+	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	outgoingMessage[0]=currentPosition;
+	Message aMessage(outgoingMessage,message->getCount(),
+		MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_WRITE_CONTIG_REPLY,rank);
+	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_START_SCAFFOLDER(Message*message){
@@ -2224,7 +2268,7 @@ SequencesIndexer*m_si){
 	this->m_ed=ed;
 	this->m_numberOfRanksDoneDetectingDistances=m_numberOfRanksDoneDetectingDistances;
 	this->m_numberOfRanksDoneSendingDistances=m_numberOfRanksDoneSendingDistances;
-	this->parameters=parameters;
+	this->m_parameters=parameters;
 	this->m_library=m_library;
 	this->m_subgraph=m_subgraph;
 	this->m_outboxAllocator=m_outboxAllocator;
