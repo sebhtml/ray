@@ -55,11 +55,16 @@ map<uint64_t,int>*coverages){
 	cout<<"}"<<endl;
 }
 
+#define NO_BUBBLES
+
 /**
  *
  */
 bool BubbleTool::isGenuineBubble(uint64_t root,vector<vector<uint64_t> >*trees,
 map<uint64_t,int>*coverages){
+	#ifdef NO_BUBBLES
+	return false;
+	#endif
 	if((*coverages)[root]>=m_parameters->getMaxCoverage()){
 		return false;
 	}

@@ -487,6 +487,8 @@ m_seedingData,
 	MPI_Barrier(MPI_COMM_WORLD);
 
 	if(isMaster() && !m_aborted){
+		m_scaffolder.printFinalMessage();
+		cout<<endl;
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<endl;
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getScaffoldFile()<<endl;
 		cout<<"Check for "<<m_parameters.getPrefix()<<".*"<<endl;
@@ -499,7 +501,6 @@ m_seedingData,
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getReceivedMessagesFile()<<" (MPI communication matrix; rows=destinations, columns=sources) "<<endl;
 		#endif
 		cout<<endl;
-		m_scaffolder.printFinalMessage();
 	}
 
 	MPI_Barrier(MPI_COMM_WORLD);

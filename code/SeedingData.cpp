@@ -289,7 +289,6 @@ void SeedingData::sendSeedLengths(){
 		m_iterator++;
 	}
 
-	cout<<"Sending seed lengths"<<endl;
 	Message aMessage(messageBuffer,2*i,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,
 		RAY_MPI_TAG_SEND_SEED_LENGTHS,getRank());
 	m_outbox->push_back(aMessage);
