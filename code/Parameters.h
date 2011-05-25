@@ -173,6 +173,7 @@ public:
 	void setMasterModePointer(int*a);
 	string getScaffoldFile();
 	int getColumns();
+	int getLargeContigThreshold();
 };
 
 #endif

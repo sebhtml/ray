@@ -37,6 +37,15 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class Scaffolder{
+	int m_numberOfScaffolds;
+	int m_numberOfScaffoldsWithThreshold;
+	int m_numberOfContigs;
+	int m_numberOfContigsWithAtLeastThreshold;
+	uint64_t m_totalContigLength;
+	uint64_t m_totalContigLengthWithThreshold;
+	uint64_t m_totalScaffoldLength;
+	uint64_t m_totalScaffoldLengthWithThreshold;
+
 	int m_scaffoldId;
 	int m_positionOnScaffold;
 	bool m_writeContigRequested;
@@ -145,6 +154,7 @@ public:
 	void solve();
 	void addMasterContig(uint64_t name,int length);
 	void writeScaffolds();
+	void printFinalMessage();
 };
 
 #endif

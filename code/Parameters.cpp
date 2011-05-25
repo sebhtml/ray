@@ -985,3 +985,7 @@ string Parameters::getScaffoldFile(){
 int Parameters::getColumns(){
 	return 60;
 }
+
+int Parameters::getLargeContigThreshold(){
+	return 500;
+}

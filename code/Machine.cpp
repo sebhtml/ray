@@ -489,7 +489,8 @@ m_seedingData,
 	if(isMaster() && !m_aborted){
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<endl;
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getScaffoldFile()<<endl;
-
+		cout<<"Check for "<<m_parameters.getPrefix()<<".*"<<endl;
+		cout<<endl;
 		if(m_parameters.useAmos()){
 			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getAmosFile()<<" (reads mapped onto contiguous sequences in AMOS format)"<<endl;
 
@@ -498,6 +499,7 @@ m_seedingData,
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getReceivedMessagesFile()<<" (MPI communication matrix; rows=destinations, columns=sources) "<<endl;
 		#endif
 		cout<<endl;
+		m_scaffolder.printFinalMessage();
 	}
 
 	MPI_Barrier(MPI_COMM_WORLD);
