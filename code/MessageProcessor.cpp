@@ -835,14 +835,13 @@ void MessageProcessor::call_RAY_MPI_TAG_SEND_COVERAGE_VALUES(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	(*m_minimumCoverage)=incoming[0];
-	(*m_seedCoverage)=incoming[1];
-	(*m_peakCoverage)=incoming[2];
+	(*m_peakCoverage)=incoming[1];
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_RECEIVED_COVERAGE_INFORMATION,rank);
 	m_outbox->push_back(aMessage);
 	m_oa->constructor((*m_peakCoverage));
 	m_parameters->setPeakCoverage(*m_peakCoverage);
-	m_parameters->setSeedCoverage(*m_seedCoverage);
 	m_parameters->setMinimumCoverage(*m_minimumCoverage);
+	m_parameters->setRepeatCoverage(incoming[2]);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_READY_TO_SEED(Message*message){

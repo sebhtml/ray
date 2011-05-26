@@ -133,7 +133,6 @@ void SeedWorker::constructor(uint64_t key,Parameters*parameters,RingAllocator*ou
 	m_SEEDING_firstVertexTestDone=false;
 	m_size=parameters->getSize();
 	m_rank=parameters->getRank();
-	m_seedCoverage=parameters->getSeedCoverage();
 	m_SEEDING_seed.clear();
 	m_wordSize=parameters->getWordSize();
 	m_parameters=parameters;

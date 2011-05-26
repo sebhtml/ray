@@ -19,14 +19,13 @@
 
 */
 
-
 #ifndef _CoverageDistribution
 #define _CoverageDistribution
 
-#include<map>
-#include<string>
-#include<stdint.h>
-#include<common_functions.h>
+#include <map>
+#include <string>
+#include <vector>
+#include <stdint.h>
 using namespace std;
 
 /*
@@ -37,13 +36,15 @@ using namespace std;
 class CoverageDistribution{
 	int m_minimumCoverage;
 	int m_peakCoverage;
+	int m_repeatCoverage;
 
-	void FindPeak(vector<int>*x,vector<uint64_t>*y,int*minimumCoverage,int*peakCoverage);
+	void findPeak(vector<int>*x,vector<uint64_t>*y);
 
 public:
 	CoverageDistribution(map<int,uint64_t>*distributionOfCoverage,string*file);
 	int getMinimumCoverage();
 	int getPeakCoverage();
+	int getRepeatCoverage();
 };
 
 #endif

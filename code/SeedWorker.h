@@ -59,7 +59,6 @@ class SeedWorker{
 	bool m_SEEDING_InedgesRequested;
 	bool m_outgoingEdgesReceived;
 	bool m_SEEDING_edgesRequested;
-	int m_seedCoverage;
 	bool m_ingoingEdgesReceived;
 	int m_wordSize;
 

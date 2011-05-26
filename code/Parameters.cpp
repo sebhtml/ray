@@ -803,20 +803,19 @@ int Parameters::getMaximumAllowedCoverage(){
 }
 
 void Parameters::setPeakCoverage(int a){
-	int max=getMaximumAllowedCoverage();
 	m_peakCoverage=a;
-	m_maxCoverage=2*m_peakCoverage;
-	if(m_maxCoverage>max){
-		m_maxCoverage=max;
-	}
+}
+
+void Parameters::setRepeatCoverage(int a){
+	m_repeatCoverage=a;
 }
 
 int Parameters::getPeakCoverage(){
 	return m_peakCoverage;
 }
 
-int Parameters::getMaxCoverage(){
-	return m_maxCoverage;
+int Parameters::getRepeatCoverage(){
+	return m_repeatCoverage;
 }
 
 int Parameters::getSize(){
@@ -923,14 +922,6 @@ int Parameters::getMaximumDistance(){
 uint64_t Parameters::getGlobalIdFromRankAndLocalId(int rank,int id){
 	uint64_t x=m_totalNumberOfSequences/m_size;
 	return rank*x+id;
-}
-
-void Parameters::setSeedCoverage(int a){
-	m_seedCoverage=a;
-}
-
-int Parameters::getSeedCoverage(){
-	return m_seedCoverage;
 }
 
 int Parameters::getMinimumCoverage(){

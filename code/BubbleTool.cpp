@@ -55,7 +55,7 @@ map<uint64_t,int>*coverages){
 	cout<<"}"<<endl;
 }
 
-#define NO_BUBBLES
+//#define NO_BUBBLES
 
 /**
  *
@@ -65,7 +65,7 @@ map<uint64_t,int>*coverages){
 	#ifdef NO_BUBBLES
 	return false;
 	#endif
-	if((*coverages)[root]>=m_parameters->getMaxCoverage()){
+	if((*coverages)[root]>=m_parameters->getRepeatCoverage()){
 		return false;
 	}
 
@@ -126,7 +126,7 @@ map<uint64_t,int>*coverages){
 		return false;
 	}
 
-	if((*coverages)[target]>=m_parameters->getMaxCoverage()){
+	if((*coverages)[target]>=m_parameters->getRepeatCoverage()){
 		return false;
 	}
 

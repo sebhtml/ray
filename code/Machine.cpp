@@ -732,10 +732,9 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	string file=m_parameters.getCoverageDistributionFile();
 	CoverageDistribution distribution(&m_coverageDistribution,&file);
 
-
 	m_minimumCoverage=distribution.getMinimumCoverage();
 	m_peakCoverage=distribution.getPeakCoverage();
-
+	int repeatCoverage=distribution.getRepeatCoverage();
 	printf("\n");
 	fflush(stdout);
 
@@ -760,16 +759,15 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	ofstream outputFile(g.str().c_str());
 	outputFile<<"MinimumCoverage:\t"<<m_minimumCoverage<<endl;
 	outputFile<<"PeakCoverage:\t"<<m_peakCoverage<<endl;
+	outputFile<<"RepeatCoverage:\t"<<repeatCoverage<<endl;
 	outputFile<<"Percentage of vertices with coverage 1:\t"<<percentageSeenOnce<<"%"<<endl;
 	outputFile<<"DistributionFile: "<<file<<endl;
 
 	outputFile.close();
 
-	m_seedCoverage=(m_peakCoverage+m_minimumCoverage)/2;
-
 	m_coverageDistribution.clear();
 
-	if(m_minimumCoverage > m_peakCoverage or m_peakCoverage==m_parameters.getMaxCoverage()){
+	if(m_minimumCoverage > m_peakCoverage or m_peakCoverage==m_parameters.getRepeatCoverage()){
 		killRanks();
 		cout<<"Error: no enrichment observed."<<endl;
 		return;
@@ -778,8 +776,8 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	// see these values to everyone.
 	uint64_t*buffer=(uint64_t*)m_outboxAllocator.allocate(3*sizeof(uint64_t));
 	buffer[0]=m_minimumCoverage;
-	buffer[1]=m_seedCoverage;
-	buffer[2]=m_peakCoverage;
+	buffer[1]=m_peakCoverage;
+	buffer[2]=repeatCoverage;
 	m_numberOfRanksWithCoverageData=0;
 	for(int i=0;i<getSize();i++){
 		Message aMessage(buffer,3,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_SEND_COVERAGE_VALUES,getRank());
@@ -1350,7 +1348,7 @@ void Machine::call_RAY_SLAVE_MODE_AMOS(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_EXTENSION(){
-	int maxCoverage=m_parameters.getMaxCoverage();
+	int maxCoverage=m_parameters.getRepeatCoverage();
 	m_seedExtender.extendSeeds(&(m_seedingData->m_SEEDING_seeds),m_ed,getRank(),&m_outbox,&(m_seedingData->m_SEEDING_currentVertex),
 	m_fusionData,&m_outboxAllocator,&(m_seedingData->m_SEEDING_edgesRequested),&(m_seedingData->m_SEEDING_outgoingEdgeIndex),
 	&m_last_value,&(m_seedingData->m_SEEDING_vertexCoverageRequested),m_wordSize,&m_colorSpaceMode,getSize(),&(m_seedingData->m_SEEDING_vertexCoverageReceived),

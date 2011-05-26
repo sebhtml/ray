@@ -829,7 +829,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 		ed->m_EXTENSION_extension->push_back((*currentVertex));
 		ed->m_extensionCoverageValues->push_back(*receivedVertexCoverage);
 
-		if(ed->m_currentCoverage<m_parameters->getMaxCoverage()){
+		if(ed->m_currentCoverage<m_parameters->getRepeatCoverage()){
 			m_repeatLength=0;
 		}else{
 			m_repeatLength++;

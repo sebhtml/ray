@@ -53,7 +53,7 @@ class Parameters{
 
 	bool m_reducerIsActivated;
 	int m_size;
-	int m_maxCoverage;
+	int m_repeatCoverage;
 	int m_rank;
 	int m_peakCoverage;
 
@@ -127,10 +127,7 @@ public:
 	int getPeakCoverage();
 	void addLibraryData(int library,int average,int deviation);
 	int getNumberOfLibraries();
-
-	int getMaxCoverage();
-	int getSeedCoverage();
-	void setSeedCoverage(int a);
+	int getRepeatCoverage();
 	string getPrefix();
 	int getRank();
 	int getSize();
@@ -174,6 +171,7 @@ public:
 	string getScaffoldFile();
 	int getColumns();
 	int getLargeContigThreshold();
+	void setRepeatCoverage(int a);
 };
 
 #endif

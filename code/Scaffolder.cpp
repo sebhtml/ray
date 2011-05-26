@@ -783,7 +783,7 @@ void Scaffolder::processAnnotation(){
 		m_forwardDirectionLengthRequested=false;
 
 		if(m_contigNames[m_contigId]==m_pairedForwardDirectionName
-		||!(m_pairedForwardMarkerCoverage<m_parameters->getMaxCoverage())
+		||!(m_pairedForwardMarkerCoverage<m_parameters->getRepeatCoverage())
 		|| !m_pairedForwardHasDirection){
 			m_forwardDirectionLengthRequested=true;
 			m_forwardDirectionLengthReceived=true;
@@ -966,7 +966,7 @@ Case 13. (allowed)
 		m_reverseDirectionLengthRequested=false;
 
 		if(m_contigNames[m_contigId]==m_pairedReverseDirectionName
-		||!(m_pairedReverseMarkerCoverage<m_parameters->getMaxCoverage())
+		||!(m_pairedReverseMarkerCoverage<m_parameters->getRepeatCoverage())
 		|| !m_pairedReverseHasDirection){
 			m_reverseDirectionLengthRequested=true;
 			m_reverseDirectionLengthReceived=true;
