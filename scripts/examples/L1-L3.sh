@@ -1,4 +1,5 @@
 mpirun -tag-output -np $(cat PROCESSES) ~/Ray/trunk/code/Ray \
+-debug-bubbles \
  -p ~/RECOMB-seq-2011/L1_1.fasta ~/RECOMB-seq-2011/L1_2.fasta -p ~/RECOMB-seq-2011/L2_1.fasta ~/RECOMB-seq-2011/L2_2.fasta \
  -p ~/RECOMB-seq-2011/L3_1.fasta ~/RECOMB-seq-2011/L3_2.fasta -o $0
 
