@@ -17,7 +17,7 @@ body=""
 p=1
 def writeToFile(head,body,output,threshold,p):
 	if len(body)>=threshold:
-		output.write(">"+str(p)+"\n")
+		output.write(">"+str(head)+"\n")
 		i=0
 		columns=80
 		while i<len(body):
@@ -30,7 +30,7 @@ for line in input:
 		if head!="":
 			writeToFile(head,body,output,threshold,p)
 			p+=1
-		head=line.strip()
+		head=line.strip().replace(">","").split()[0].strip()
 		body=""
 	else:
 		body+=line.strip()
