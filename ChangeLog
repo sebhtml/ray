@@ -6,16 +6,17 @@
 * The number of seeds is now divided by 2 to speed up their extension.
 * Fixed a bug in the depth first search that leaded to vertices having no
 coverage values.
-* Removed the configure script, now you must compile Ray with the provided Makefile.
+* Removed the configure script, now Ray must be compiled with the provided Makefile.
 * Added a switch to enable the profiler: -run-profiler
 * Added a switch to debug seed generation: -debug-seeds
 * Added a switch to debug bubble detection: -debug-bubbles
 * Added a switch to show memory usage: -show-memory-usage
 * Added a switch to show the ending context of extensions:
 -show-ending-context
-* Devised a new algorithm that finds the peak and minimum coverages in distributions.
-* Ray now writes the peak and minimum coverages to a file.
-* Ray now writes the statistics for library to a file.
+* Devised a new algorithm that finds the peak coverage, minimum coverage and
+repeat coverage in distributions.
+* Ray now writes the peak, minimum and repeat coverages to a file.
+* Ray now writes the statistics for libraries to a file.
 * Fixed a bug that disallowed mixing manual and automatic detection of outer distances.
 * Ray now writes the statistics for seed lengths to a file.
 * Devised a new algorithm that computes longer seeds to bootstrap assemblies.
