@@ -1,0 +1,47 @@
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"><title>
+
+Assemblage parallèle de génomes avec des séquences très courtes en paires.
+
+</title>
+
+
+</head>
+<body>
+
+
+
+<pre>
+Assemblage parallèle de génomes avec des séquences très courtes en paires.
+Sébastien Boisvert, François Laviolette, Mario Marchand, et Jacques Corbeil.
+Journée de la science du 5 mai 2010
+Institut des maladies infectieuses et immunitaires (III/IMII) des Instituts de recherche en santé du Canada (CIHR/IRSC)
+Fairmont le Château Frontenac.
+</pre>
+
+
+<h1>ASSEMBLAGE PARALLÈLE DE GÉNOMES AVEC DES SÉQUENCES TRÈS COURTES EN PAIRES</h1>
+
+<h1>MOTS CLÉS</h1>
+ GÉNOMIQUE, BIOINFORMATIQUE, ALGORITHME
+
+<p>
+
+OBJECTIF : Les organismes vivants encodent leur fonctionnement dans un génome. Un génome bactérien a une longueur de quelques centaines de milliers de nucléotides à quelques millions. Par exemple, Mycoplasma agalactiae PG2, un pathogène chez les petits ruminants, a un génome de 877438 nucléotides, alors que Pseudomonas aeruginosa PAO1, un agent pathogène en santé humaine, a un génome de 6264404 nucléotides. Le séquençage permet de guider la découverte de cibles thérapeutiques: les protéines encodées dans les génomes. Plusieurs nouvelles technologies de séquençage (454, Illumina, SOLiD) permettent d'obtenir des millions de paires de séquences digitales, lesquelles correspondent aux extrémités de fragments d'ADN provenant d'un génome. L'analyse bioinformatique de ces données est cependant un défi nécessitant les algorithmes adéquats et les structures de données appropriées.
+</p><p>
+MÉTHODES : Nous avons développé Ray (http://denovoassembler.sf.net/), un logiciel qui calcule en parallèle la séquence d'un génome à partir de millions de paires de séquences digitales obtenues par un séquenceur de nouvelle génération comme 
+le Illumina Genome Analyzer. Nous avons testé Ray sur plusieurs ensembles de données, et avons utilisé le superordinateur CLUMEQ de l'Université Laval.
+</p><p>
+
+RÉSULTATS : Pour la bactérie modèle Escherichia coli K-12 MG1655, nous avons obtenu un génome réparti en 148 séquences couvrant le génome à 98.1% avec aucune séquence erronée à partir de 21.9 millions de paires de séquences (fragments de 215 +/- 20 nucléotides) de 36 nucléotides (technologie Illumina). Le temps d'exécution est de moins de 30 minutes à l'aide de 28 processeurs AMD Opteron.
+
+</p><p>
+CONCLUSION : L'obtention de séquences digitales avec la technologie de séquençage Illumina et l'analyse subséquente avec l'assembleur parallèle Ray permet de décoder un génome bactérien très rapidement et très efficacement. Ray est présentement un des assembleurs les plus performants en distribution libre.
+</p>
+(300 mots)
+
+<br />
+<a href="publications.html">Back</a>
+
+</body></html>

@@ -1,0 +1,6 @@
+Ray -- Parallel genome assemblies for parallel DNA sequencing
+
+Ray is a paralleled computer-controlled software that computes de novo genome assemblies of next-gen sequencing data using message passing interface.
+
+
+

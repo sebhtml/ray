@@ -1,0 +1,68 @@
+Publications
+
+<b>Paper</b>
+<ul>
+<li>
+<b>Ray: simultaneous assembly of reads from a mix of high-throughput sequencing technologies.</b><br />
+<span class="seb">Sébastien Boisvert</span>, François Laviolette, and Jacques Corbeil.<br />
+<i>Journal of Computational Biology</i> (Mary Ann Liebert, Inc. publishers).<br />
+November 2010, 17(11): 1519-1533.  <br />
+<a href="http://dx.doi.org/doi:10.1089/cmb.2009.0238">
+doi:10.1089/cmb.2009.0238</a><br />
+&nbsp;
+</li>
+</ul>
+
+<b>Others</b>
+
+<ul>
+
+<li>
+<b>Constrained traversal of repeats with paired sequences.</b><br />
+<span class="seb">Sébastien Boisvert</span>, Élénie Godzaridis, François Laviolette & Jacques Corbeil.<br />
+<a href="http://compbio.cs.sfu.ca/recomb2011/satellite/acceptedpaper.html">First Annual RECOMB Satellite Workshop on Massively Parallel Sequencing</a>, March 26-27 2011, Vancouver, BC, Canada.<br />
+<a href="RECOMB-seq-2011-abstract.html">abstract</a>; 
+
+<a href="recomb-seq-2011-talk.pdf">presentation</a><br />
+&nbsp;
+</li>
+
+<li>
+<b>Assemblage parallèle de génomes à partir de séquences Illumina très courtes en paires.</b><br />
+<span class="seb">Sébastien Boisvert</span>, François Laviolette, Mario Marchand, et Jacques Corbeil.<br />
+12ème journée annuelle de la recherche, 27 mai 2010, Université Laval.<br />
+<a href="ulaval-2010-abstract.html">abstract</a>;
+
+<a href="Boisvert-ULaval-2010.pdf">presentation</a><br />&nbsp;
+</li>
+
+<li>
+<b>Assemblage parallèle de génomes avec des séquences très courtes en paires.</b><br />
+<span class="seb">Sébastien Boisvert</span>, François Laviolette, Mario Marchand, et Jacques Corbeil.<br />
+Journée de la science du 5 mai 2010 <br />
+Institut des maladies infectieuses et immunitaires (III/IMII) des Instituts de recherche en santé du Canada (CIHR/IRSC)<br />
+
+Fairmont le Château Frontenac.<br />
+<a href="IMII-SBoisvert.html">abstract</a>; 
+<a href="Boisvert-IMII-2010.pdf">poster</a><br />
+&nbsp;
+</li>
+<li>
+
+<b>OpenAssembler: assembly of reads from a mix of high-throughput sequencing technologies.</b><br />
+<span class="seb">Sébastien Boisvert</span>, François Laviolette, and Jacques Corbeil. <br />
+
+<a href="http://www.centrerc.umontreal.ca/colloque2009a.html">Robert Cedergren Bioinformatics Colloquium 2009</a> (Université de Montréal).
+<br />
+<a href="Boisvert-Cedergren2009-Abstract.html">abstract</a>;
+<a href="Boisvert-Cedergren2009-Presentation.pdf">presentation</a><br />
+&nbsp;
+
+
+
+
+
+
+
+</li>
+</ul>
