@@ -2,6 +2,11 @@
 
 import sys
 
+if len(sys.argv)!=2:
+	print "Usage: "
+	print "ValidateScaffolds.py Prefix"
+	sys.exit()
+
 prefix=sys.argv[1]
 
 map=prefix+".Contigs.fasta.500.mums_prefix.coords"
@@ -9,6 +14,7 @@ scaffolds=prefix+".ScaffoldComponents.txt"
 
 correctLocations={}
 coverages={}
+identities={}
 
 lineNumber=0
 for line in open(map):
@@ -21,11 +27,13 @@ for line in open(map):
 		if contigStart>contigEnd:
 			strand='R'
 		queryCoverage=float(tokens[15])
+		identity=float(tokens[9])
 		contigName=tokens[18].strip()
 		chromosomeName=tokens[17].strip()
-		if contigName not in coverages or queryCoverage>coverages[contigName]:
+		if contigName not in coverages or queryCoverage>coverages[contigName] or (queryCoverage==coverages[contigName] and identity> identities[contigName]):
 			coverages[contigName]=queryCoverage
 			correctLocations[contigName]=[chromosomeName,start,strand]
+			identities[contigName]=identity
 
 	lineNumber+=1
 	
