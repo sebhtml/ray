@@ -195,31 +195,37 @@ ACTGACGACGTACGACGTCATGCAACT
 
 
 
-\section{Output}
+\section{Outputs}
 
-If GNU/Linux is the operating system, then memory usage are periodically outputted in the 
-standard output using information gathered from /proc. Otherwise, memory usage is not reported.
+\begin{table}[h]
+\caption{File formats compatible with the Ray \emph{de novo} genome assembler software}\label{formats}
+\begin{tabular}{lll}
+\hline
+File& Description\\
+\hline
+PREFIX.RayCommand.txt & The exact same command provided \\
+PREFIX.RayVersion.txt & The version of Ray\\
+PREFIX.Contigs.fasta & Contiguous sequences in FASTA format\\
+PREFIX.ContigLengths.txt & The lengths of contiguous sequences\\
+PREFIX.Scaffolds.fasta & The scaffold sequences in FASTA format \\
+PREFIX.ScaffoldComponents.txt & The components of each scaffold\\
+PREFIX.ScaffoldLengths.txt & The length of each scaffold \\
+PREFIX.ScaffoldLinks.txt & Scaffold links \\
+PREFIX.CoverageDistribution.txt & The distribution of coverage values \\
+PREFIX.CoverageDistributionAnalysis.txt & Analysis of the coverage distribution \\
+PREFIX.LibraryStatistics.txt & Number of reads in each file and estimation of outer distances for paired reads \\
+PREFIX.SeedLengthDistribution.txt & The distribution of seed lengths \\
+PREFIX.OutputNumbers.txt & Overall numbers for the assembly\\
+PREFIX.AMOS.afg & Assembly representation in AMOS format \\
+\hline
+\end{tabular}
+\end{table}
 
-Memory usage is reported on lines containing the string 'VmData'.
 
-Furthermore, Ray writes key information in the standard output.
-Search for the string 'peak' to obtain the peak k-mer coverage of your sequence data.
-Search for the string 'average' to obtain the average outer distance computed by Ray
-for each paired library.
+\section{Validation of assemblies}
 
-\subsection{Contiguous sequences}
-
-OutputPrefix.fasta contains contiguous sequences.
-
-\subsection{Paired-end and mate-pair libraries}
-
-OutputPrefix.LibraryLibraryNumber.txt contains the distribution of distances for paired-end and mate-pair libraries. One file per library.
-
-If you provided one paired library, then you will get a file named OutputPrefix.Library0.txt.
-
-\subsection{Coverage distribution}
-
-OuputPrefix.CoverageDistribution.txt contains the $k$-mer coverage distribution.
+In the scripts/ directory, the script ValidateGenomeAssembly.sh can validate an assembly against the corresponding
+reference.
 
 \section{Example}
 
