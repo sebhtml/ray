@@ -84,11 +84,13 @@ def isScaffoldCorrect(scaffold,order,correctLocations):
 	print "Observed: "+str(order)
 	print "Correct: "+str(correctOrder)
 	if len(order)!=len(correctOrder):
+		print "Incorrect"
 		return False
 
 	i=0
 	while i<len(order):
 		if order[i][0]!=correctOrder[i][0] or  order[i][1]!=correctOrder[i][2]:
+			print "Incorrect"
 			return False
 		i+=1
 	return True
