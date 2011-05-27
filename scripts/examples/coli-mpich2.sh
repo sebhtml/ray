@@ -6,4 +6,4 @@ mpirun -tag-output -np $(cat PROCESSES) ~/Ray/trunk/code/Ray \
 -run-profiler \
 -o $0
 
-~/Ray/trunk/scripts/print-latex.sh ~/nuccore/Ecoli-k12-mg1655.fasta $0.Contigs.fasta $0.Ray
+ValidateGenomeAssembly.sh ~/nuccore/Ecoli-k12-mg1655.fasta $0.Contigs.fasta $0.Ray

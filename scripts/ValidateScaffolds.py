@@ -34,7 +34,7 @@ incorrectScaffolds=0
 order=[]
 lastScaffold=""
 
-def isScaffoldCorrect(order,correctLocations):
+def isScaffoldCorrect(scaffold,order,correctLocations):
 	chromosomes={}
 	correctOrder=[]
 	found=0
@@ -80,6 +80,7 @@ def isScaffoldCorrect(order,correctLocations):
 	# validate order and observedOrder
 
 	print ""
+	print scaffold
 	print "Observed: "+str(order)
 	print "Correct: "+str(correctOrder)
 	if len(order)!=len(correctOrder):
@@ -107,7 +108,7 @@ for line in open(scaffolds):
 	elif lastScaffold==scaffold:
 		order.append([contig,strand])
 	else:
-		if not isScaffoldCorrect(order,correctLocations):
+		if not isScaffoldCorrect(lastScaffold,order,correctLocations):
 			incorrectScaffolds+=1
 		order=[]
 		lastScaffold=scaffold
