@@ -1138,14 +1138,21 @@ void Scaffolder::writeScaffolds(){
 				char strand=m_scaffoldStrands[m_scaffoldId][m_contigId];
 				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 				int rankId=getRankFromPathUniqueId(contigNumber);
+
+				string file=m_parameters->getScaffoldFile();
+				if(m_scaffoldId==0&&m_contigId==0){
+					FILE*fp=fopen(file.c_str(),"w+");
+					fclose(fp);
+				}
+
 				message[0]=contigNumber;
 				message[1]=strand;
 				message[2]=m_positionOnScaffold;
+
 				Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,
 					rankId,RAY_MPI_TAG_WRITE_CONTIG,m_parameters->getRank());
 				m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 				if(m_contigId==0){
-					string file=m_parameters->getScaffoldFile();
 					FILE*fp=fopen(file.c_str(),"a");
 					fprintf(fp,">scaffold-%i\n",m_scaffoldId);
 					fclose(fp);
