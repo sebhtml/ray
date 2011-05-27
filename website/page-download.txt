@@ -1,7 +1,0 @@
-Download Ray
-
-<a href="http://sourceforge.net/projects/denovoassembler/files/Ray-1.4.0.tar.bz2">Ray 1.4.0</a> is the lastest version.
-
-<br />
-
-<a href="http://sourceforge.net/projects/denovoassembler/files/">Older versions</a> are available.

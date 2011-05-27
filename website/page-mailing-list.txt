@@ -1,3 +1,0 @@
-Mailing list
-
-Members of the Ray community communicate with the <a href="http://lists.sourceforge.net/lists/listinfo/denovoassembler-users">mailing list</a> and on <a href="http://seqanswers.com/forums/showthread.php?t=4301">SEQanswers</a>.
