@@ -1,7 +1,8 @@
 = 1.4.0 =
 2011-05-YY
 
-* A built-in scaffolder is available.
+* A built-in scaffolder is now available -- Thanks to Dr. Jean-Francois
+Pombert (University of British Columbia) for the suggestion.
 * The maximum number of libraries is now 499 instead of 250.
 * The number of seeds is now divided by 2 to speed up their extension.
 * Fixed a bug in the depth first search that leaded to vertices having no
