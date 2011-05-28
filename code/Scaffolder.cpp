@@ -19,6 +19,8 @@
 
 */
 
+#define PRINT_RAW_LINK
+
 #include <ReadFetcher.h>
 #include <Scaffolder.h>
 #include <Message.h>
