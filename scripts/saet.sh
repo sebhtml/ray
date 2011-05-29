@@ -1,1 +1,0 @@
-saet_mp R1a007_20080307_2_EG017_F3.csfasta R1a007_20080307_2_EG017_F3_QV.qual 4600000 -numcores 24
