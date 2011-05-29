@@ -13,23 +13,20 @@ assembly=$2
 
 prefix=$(echo $assembly|sed 's/.Contigs.fasta//g')
 
-
 assembly500=$assembly.500.fa
 mummerFile=$assembly.500.mums
 
 filter-contigs.py $assembly 500 $assembly500
 
-
-filter-contigs.py $scaffoldsFile 500 $scaffolds500
 mummer-validate.rb $reference  $assembly500 $mummerFile &> /dev/null
 
-ValidateScaffolds.py $prefix > $prefix.ScaffoldValidation.txt
 
 scaffoldsFile=$prefix".Scaffolds.fasta"
 scaffolds500=$scaffoldsFile".500.fasta"
+ValidateScaffolds.py $prefix > $prefix.ScaffoldValidation.txt
 numberOfIncorrectScaffolds=$(cat $prefix.ScaffoldValidation.txt|tail -n1)
+filter-contigs.py $scaffoldsFile 500 $scaffolds500
 numberOfScaffolds=$(grep '>' $scaffolds500|wc -l)
-
 
 numberOfContigs=$(grep '>' $assembly500|wc -l)
 bases=$(getlengths $assembly500|awk '{sum+= $2} END {print sum}')
