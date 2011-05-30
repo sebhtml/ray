@@ -19,7 +19,7 @@
 
 */
 
-#define PRINT_RAW_LINK
+//#define PRINT_RAW_LINK
 
 #include <ReadFetcher.h>
 #include <Scaffolder.h>
