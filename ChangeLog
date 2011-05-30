@@ -1,5 +1,5 @@
 = 1.4.0 =
-2011-05-YY
+2011-05-30
 
 * A built-in scaffolder is now available -- Thanks to Dr. Jean-Francois
 Pombert (University of British Columbia) for the suggestion.
@@ -28,6 +28,7 @@ Pouseele (Applied Maths, Inc.) for some suggestions.
 * Added instructions regarding mpic++ and CXX environment variable.
 Thanks to Dr. Harry Mangalam from UC Irvice for pointing that out.
 * Changed the merger behavior for ends of contigs.
+* Added a script to validate scaffolds.
 
 
 = 1.3.0 =
