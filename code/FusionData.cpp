@@ -224,7 +224,7 @@ void FusionData::finishFusions(){
 	// we get the paths with getPaths
 	bool done=false;
 
-	int capLength=200;
+	int capLength=80;
 	int position1=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-1-capLength;
 	int position2=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-overlapMinimumLength+capLength;
 	if(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
@@ -337,7 +337,7 @@ void FusionData::finishFusions(){
 					int index2=searchResults[j];
 					int otherProgression=directions2[index2].getProgression();
 					int observedDistance=(progression1-otherProgression+1);
-					int expectedDistance=(overlapMinimumLength-capLength);
+					int expectedDistance=(overlapMinimumLength-2*capLength);
 					if(observedDistance==expectedDistance){
 						//cout<<"Expected="<<expectedDistance<<" Observed="<<observedDistance<<endl;
 						// this is 

@@ -17,3 +17,5 @@ do
 done 
 
 )|& tee Regressions-$suffix
+
+summarize-regressions.py Regressions-$suffix > Regressions-$suffix.".html"
