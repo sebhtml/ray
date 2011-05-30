@@ -816,7 +816,9 @@ void Scaffolder::processAnnotation(){
 		int range=m_parameters->getLibraryAverageLength(m_pairedReadLibrary)+3*m_parameters->getLibraryStandardDeviation(m_pairedReadLibrary);
 
 		if(m_pairedForwardDirectionLength<range
-		||(int)m_contigs[m_contigId].size()<range){
+		||(int)m_contigs[m_contigId].size()<range
+		|| 2*m_receivedCoverage<m_pairedForwardMarkerCoverage
+		|| 2*m_pairedForwardMarkerCoverage<m_receivedCoverage ){
 			return;
 		}
 
@@ -997,7 +999,9 @@ Case 13. (allowed)
 		int range=m_parameters->getLibraryAverageLength(m_pairedReadLibrary)+3*m_parameters->getLibraryStandardDeviation(m_pairedReadLibrary);
 
 		if(m_pairedReverseDirectionLength<range
-		||(int)m_contigs[m_contigId].size()<range){
+		||(int)m_contigs[m_contigId].size()<range
+		|| 2*m_receivedCoverage<m_pairedReverseMarkerCoverage
+		|| 2*m_pairedReverseMarkerCoverage<m_receivedCoverage){
 			return;
 		}
 	
