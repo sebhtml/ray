@@ -184,7 +184,7 @@ void FusionData::finishFusions(){
 		m_FINISH_pathsForPosition=new vector<vector<Direction> >;
 		return;
 	}
-	int overlapMinimumLength=3000;
+	int overlapMinimumLength=2000;
 	if((int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<overlapMinimumLength){
 	
 		if(m_seedingData->m_SEEDING_i%10==0){
