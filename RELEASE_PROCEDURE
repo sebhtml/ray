@@ -1,6 +1,6 @@
 * run regressions
 * update ChangedLog (based on svn log and trac milestone)
-* check version in common_functions.h + manual
+* check version in constants.h + manual
 * compile the manual
 * test compilation on a svn export using Makefile
 * svn cp trunk tags/<version>
