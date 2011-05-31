@@ -1,15 +1,31 @@
 # author: Sébastien Boisvert
 # use make -j 30 to use 30 CPUs to compile
 
-# remove HAVE_CLOCK_GETTIME and -lrt if you don't have real-time Linux
 
-CC=mpic++
-CFLAGS=-I. -O3 -Wall -Icode -fomit-frame-pointer -DASSERT -DHAVE_ZLIB -DHAVE_LIBBZ2 -DHAVE_CLOCK_GETTIME 
+MPICXX=mpic++
+CXXFLAGS=-Wall -Icode
 
-# -lrt must be provided with -DHAVE_CLOCK_GETTIME
-# -lz must be provided with -DHAVE_ZLIB
-#  -lbz2 must be provided with -DHAVE_LIBBZ2
-LDFLAGS=-lz -lbz2 -lrt
+# if you use Intel's mpiicpc, uncomment the following lines
+#MPICXX=mpiicpc 
+#CXXFLAGS+= -DMPICH_IGNORE_CXX_SEEK -DMPICH_SKIP_MPICXX
+
+# optimization
+CXXFLAGS+= -O3 -fomit-frame-pointer
+
+# compile assertions
+CXXFLAGS+= -DASSERT 
+
+#compile with libz
+CXXFLAGS+=-DHAVE_LIBZ
+LDFLAGS+= -lz
+
+#compile with libbz2
+CXXFLAGS+= -DHAVE_LIBBZ2 
+LDFLAGS+= -lbz2
+
+#compile with real-time linux
+CXXFLAGS+= -DHAVE_CLOCK_GETTIME 
+LDFLAGS+= -lrt
 
 TARGET=code/Ray
 
@@ -17,14 +33,14 @@ OBJS=code/VertexMessenger.o code/OnDiskAllocator.o code/mpi_tags.o code/ReadFetc
 
 # inference rule
 %.o: %.cpp
-	$(CC) -c -o $@ $<  $(CFLAGS)
+	$(MPICXX) -c -o $@ $<  $(CXXFLAGS)
 
 # the target is Ray
 all: $(TARGET)
 
 # how to make Ray
 $(TARGET): $(OBJS)
-	$(CC) $(LDFLAGS) $(OBJS) -o $@
+	$(MPICXX) $(LDFLAGS) $(OBJS) -o $@
 	@echo "Ray executable is $(TARGET)"
 
 clean:

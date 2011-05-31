@@ -1,3 +1,11 @@
+= 1.4.1 =
+2011-06-XX
+
+* Fixed a compilation problem in Scaffolder.cpp. Thanks to
+Volker Winkelmann (University of Cologne).
+* Changed CC to MPICXX and added lines to compile Ray with Intel's MPI
+implementation. Thanks to Volker Winkelmann (University of Cologne).
+
 = 1.4.0 =
 2011-05-30
 
