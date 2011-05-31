@@ -1,6 +1,7 @@
 # author: Sébastien Boisvert
 # use make -j 30 to use 30 CPUs to compile
 
+MAXKMERLENGTH=31
 
 MPICXX=mpic++
 CXXFLAGS=-Wall -Icode

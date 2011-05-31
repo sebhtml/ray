@@ -23,7 +23,8 @@
 #ifndef _Direction
 #define _Direction
 
-#include<stdint.h>
+#include <stdint.h>
+#include <common_functions.h>
 
 /*
  * a direction is a wave and a progression.
@@ -43,11 +44,7 @@ public:
 	Direction*getNext();
 	void setNext(Direction*e);
 	bool isLower();
-}
-#ifdef FORCE_PACKING
-__attribute__((__packed__))
-#endif
-;
+} ATTRIBUTE_PACKED;
 
 #endif
 

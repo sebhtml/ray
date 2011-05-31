@@ -71,10 +71,6 @@ public:
 	void setReverseOffset(int a);
 	int getForwardOffset();
 	int getReverseOffset();
-}
-#ifdef FORCE_PACKING
-__attribute__((__packed__))
-#endif
-;
+} ATTRIBUTE_PACKED;
 
 #endif

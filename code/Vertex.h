@@ -76,11 +76,6 @@ public:
 	uint8_t getEdges(uint64_t a);
 	void deleteIngoingEdge(uint64_t vertex,uint64_t a,int k);
 	void deleteOutgoingEdge(uint64_t vertex,uint64_t a,int k);
+} ATTRIBUTE_PACKED;
 
-
-}
-#ifdef FORCE_PACKING
-__attribute__((__packed__))
-#endif
-;
 #endif

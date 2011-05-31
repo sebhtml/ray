@@ -48,11 +48,7 @@ public:
 	ReadAnnotation*getNext()const;
 	void setNext(ReadAnnotation*a);
 	uint64_t getUniqueId() const;
-}
-#ifdef FORCE_PACKING
-__attribute__((__packed__))
-#endif
-;
+} ATTRIBUTE_PACKED;
 
 #endif
 

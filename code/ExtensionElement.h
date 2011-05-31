@@ -55,10 +55,6 @@ public:
 	bool isRightEnd();
 	int getType();
 	void removeSequence();
-}
-#ifdef FORCE_PACKING
-__attribute__((__packed__))
-#endif
-;
+} ATTRIBUTE_PACKED;
 
 #endif

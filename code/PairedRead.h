@@ -42,10 +42,6 @@ public:
 	uint32_t getId();
 	uint64_t getUniqueId();
 	int getLibrary();
-}
-#ifdef FORCE_PACKING
-__attribute__((__packed__))
-#endif
-;
+} ATTRIBUTE_PACKED;
 
 #endif

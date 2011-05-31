@@ -30,6 +30,17 @@ see <http://www.gnu.org/licenses/>
 #include <mpi_tags.h>
 using namespace std;
 
+#ifdef FORCE_PACKING
+#ifdef __GNUC__
+#define ATTRIBUTE_PACKED  __attribute__ ((packed))
+#else
+#define ATTRIBUTE_PACKED
+#endif
+#else
+#define ATTRIBUTE_PACKED
+#endif
+
+
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
 #define OS_WIN
 #else
