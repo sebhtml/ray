@@ -25,7 +25,7 @@
 #include<ArrayOfReads.h>
 #include<stdio.h>
 #include<string>
-#include<MyAllocator.h>
+#include<memory/MyAllocator.h>
 #include<vector>
 #include<sstream>
 #include<Read.h>

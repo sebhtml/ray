@@ -24,11 +24,11 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include <SffLoader.h>
+#include <format/SffLoader.h>
 #include <iostream>
 #include <stdint.h>
 #include <stdio.h>
-#include <malloc_types.h>
+#include <memory/malloc_types.h>
 using namespace std;
 
 int max(int a,int b){

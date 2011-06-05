@@ -22,31 +22,31 @@
 #ifndef _MessageProcessor
 #define _MessageProcessor
 
-#include<RingAllocator.h>
-#include<Library.h>
-#include<SequencesIndexer.h>
-#include<SeedingData.h>
-#include<OpenAssemblerChooser.h>
-#include<ArrayOfReads.h>
-#include<Message.h>
-#include<vector>
-#include<SplayTree.h>
-#include<StaticVector.h>
-#include<SeedExtender.h>
-#include<MessagesHandler.h>
-#include<SequencesLoader.h>
-#include<FusionData.h>
-#include<ReadAnnotation.h>
-#include<VerticesExtractor.h>
-#include<MyForest.h>
+#include <memory/RingAllocator.h>
+#include <Library.h>
+#include <SequencesIndexer.h>
+#include <SeedingData.h>
+#include <OpenAssemblerChooser.h>
+#include <ArrayOfReads.h>
+#include <communication/Message.h>
+#include <vector>
+#include <SplayTree.h>
+#include <StaticVector.h>
+#include <SeedExtender.h>
+#include <communication/MessagesHandler.h>
+#include <SequencesLoader.h>
+#include <FusionData.h>
+#include <ReadAnnotation.h>
+#include <VerticesExtractor.h>
+#include <MyForest.h>
 #include <GridTable.h>
-#include<Parameters.h>
-#include<MemoryConsumptionReducer.h>
-#include<BufferedData.h>
-#include<MyAllocator.h>
+#include <core/Parameters.h>
+#include <MemoryConsumptionReducer.h>
+#include <communication/BufferedData.h>
+#include <memory/MyAllocator.h>
 #include <Vertex.h>
 #include <Scaffolder.h>
-#include <VirtualCommunicator.h>
+#include <communication/VirtualCommunicator.h>
 using namespace std;
 
 
@@ -137,7 +137,7 @@ class MessageProcessor{
 	void assignHandlers();
 
 	#define MACRO_LIST_ITEM(x) void call_ ## x ( Message*m ) ;
-	#include <mpi_tag_macros.h>
+	#include <communication/mpi_tag_macros.h>
 	#undef MACRO_LIST_ITEM
 	
 public:

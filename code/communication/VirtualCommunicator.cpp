@@ -19,7 +19,7 @@
 */
 
 #include <assert.h>
-#include <VirtualCommunicator.h>
+#include <communication/VirtualCommunicator.h>
 #include <common_functions.h>
 #include <mpi.h>
 #include <iostream>

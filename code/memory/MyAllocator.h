@@ -19,12 +19,11 @@
 
 */
 
-
 #ifndef _MyAllocator
 #define _MyAllocator
 
 #include <vector>
-#include <ReusableMemoryStore.h>
+#include <memory/ReusableMemoryStore.h>
 using namespace std;
 
 /**

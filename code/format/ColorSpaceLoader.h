@@ -23,14 +23,14 @@
 #ifndef _ColorSpaceLoader
 #define _ColorSpaceLoader
 
-#include<string>
-#include<vector>
-#include<ArrayOfReads.h>
-#include<fstream>
-#include<MyAllocator.h>
-#include<ColorSpaceDecoder.h>
-#include<Read.h>
-#include <OnDiskAllocator.h>
+#include <string>
+#include <vector>
+#include <ArrayOfReads.h>
+#include <fstream>
+#include <memory/MyAllocator.h>
+#include <format/ColorSpaceDecoder.h>
+#include <Read.h>
+#include <memory/OnDiskAllocator.h>
 using namespace std;
 
 class ColorSpaceLoader{

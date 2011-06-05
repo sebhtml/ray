@@ -22,12 +22,12 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 */
 
-#include <mpi_tags.h>
+#include <communication/mpi_tags.h>
 
 #define MACRO_LIST_ITEM(element) #element,
 
 const char* MESSAGES[]={
-#include <mpi_tag_macros.h>
+#include <communication/mpi_tag_macros.h>
 };
 
 #undef MACRO_LIST_ITEM

@@ -26,10 +26,10 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 #define __BzReader_MAXIMUM_LENGTH 2*4096
 
-#include <BzReader.h>
+#include <compression/BzReader.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <malloc_types.h>
+#include <memory/malloc_types.h>
 #include <common_functions.h>
 
 void BzReader::open(const char*file){

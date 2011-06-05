@@ -30,7 +30,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #define MACRO_LIST_ITEM(x) x,
 
 enum{
-#include <master_mode_macros.h>
+#include <core/master_mode_macros.h>
 };
 
 #undef MACRO_LIST_ITEM

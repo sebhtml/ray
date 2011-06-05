@@ -20,12 +20,12 @@ see <http://www.gnu.org/licenses/>
 
 */
 
-#include <malloc_types.h>
+#include <memory/malloc_types.h>
 
 #define MACRO_LIST_ITEM(x) #x,
 
 const char* MALLOC_TYPES[]={
-#include <malloc_type_macros.h>
+#include <memory/malloc_type_macros.h>
 };
 
 #undef MACRO_LIST_ITEM

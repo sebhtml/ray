@@ -19,7 +19,7 @@
 
 */
 
-#include<Message.h>
+#include <communication/Message.h>
 
 Message::Message(void*b,int c,MPI_Datatype d,int dest,int tag,int source){
 	// buffer must be allocated or else it will CORE DUMP.

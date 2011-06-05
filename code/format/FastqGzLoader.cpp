@@ -19,9 +19,12 @@
 
 */
 
-#include<FastqGzLoader.h>
+#include<format/FastqGzLoader.h>
 #include<fstream>
+
+#ifdef HAVE_ZLIB
 #include<zlib.h>
+#endif
 
 int FastqGzLoader::open(string file,int period){
 	#ifdef HAVE_ZLIB

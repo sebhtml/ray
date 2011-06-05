@@ -27,11 +27,11 @@
 #include<string>
 #include<vector>
 #include<Read.h>
-#include <OnDiskAllocator.h>
+#include <memory/OnDiskAllocator.h>
 #include<stdio.h>
 #include<fstream>
 #include<ArrayOfReads.h>
-#include<MyAllocator.h>
+#include<memory/MyAllocator.h>
 using namespace std;
 
 /**

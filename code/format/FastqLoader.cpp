@@ -19,7 +19,7 @@
 
 */
 
-#include<FastqLoader.h>
+#include<format/FastqLoader.h>
 #include<fstream>
 
 int FastqLoader::open(string file,int period){

@@ -22,12 +22,12 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 */
 
-#include <slave_modes.h>
+#include <core/slave_modes.h>
 
 #define MACRO_LIST_ITEM(x) #x,
 
 const char* SLAVE_MODES[]={
-#include <slave_mode_macros.h>
+#include <core/slave_mode_macros.h>
 };
 
 #undef MACRO_LIST_ITEM

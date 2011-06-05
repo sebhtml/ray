@@ -19,11 +19,11 @@
 
 */
 
-#include <MessagesHandler.h>
+#include <communication/MessagesHandler.h>
 #include <common_functions.h>
 #include <fstream>
 #include <assert.h>
-#include <malloc_types.h>
+#include <memory/malloc_types.h>
 #include <iostream>
 #include <string.h>
 using namespace std;

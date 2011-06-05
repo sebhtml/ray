@@ -26,9 +26,9 @@
 #include<vector>
 #include<ArrayOfReads.h>
 #include<Read.h>
-#include <OnDiskAllocator.h>
-#include<BzReader.h>
-#include<MyAllocator.h>
+#include <memory/OnDiskAllocator.h>
+#include<compression/BzReader.h>
+#include<memory/MyAllocator.h>
 using namespace std;
 
 class FastqBz2Loader{

@@ -21,7 +21,7 @@
 
 #include<iostream>
 #include<string.h>
-#include<ColorSpaceDecoder.h>
+#include<format/ColorSpaceDecoder.h>
 #include<stdlib.h>
 using namespace std;
 

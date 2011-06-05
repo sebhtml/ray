@@ -25,17 +25,17 @@
 
 #include <Scaffolder.h>
 #include <GridTable.h>
-#include<MessagesHandler.h>
+#include<communication/MessagesHandler.h>
 #include<common_functions.h>
 #include<MyForest.h>
 #include<ArrayOfReads.h>
-#include <OnDiskAllocator.h>
+#include <memory/OnDiskAllocator.h>
 #include<MemoryConsumptionReducer.h>
 #include<StaticVector.h>
 #include<SeedingData.h>
 #include<map>
 #include<vector>
-#include<RingAllocator.h>
+#include<memory/RingAllocator.h>
 #include<DepthFirstSearchData.h>
 #include<TimePrinter.h>
 #include<SequencesIndexer.h>
@@ -43,18 +43,18 @@
 #include<SequencesLoader.h>
 #include<Library.h>
 #include<Chooser.h>
-#include<MessageProcessor.h>
+#include<communication/MessageProcessor.h>
 #include<Vertex.h>
 #include<OpenAssemblerChooser.h>
 #include<SplayTree.h>
 #include<BubbleData.h>
-#include<Message.h>
+#include<communication/Message.h>
 #include<time.h>
 #include<SplayTreeIterator.h>
 #include<set>
 #include<Read.h>
-#include<Parameters.h>
-#include<MyAllocator.h>
+#include<core/Parameters.h>
+#include<memory/MyAllocator.h>
 #include<mpi.h>
 #include<VerticesExtractor.h>
 
@@ -256,8 +256,8 @@ class Machine{
 	void assignSlaveHandlers();
 
 	#define MACRO_LIST_ITEM(x) void call_ ## x();
-	#include <master_mode_macros.h>
-	#include <slave_mode_macros.h>
+	#include <core/master_mode_macros.h>
+	#include <core/slave_mode_macros.h>
 	#undef MACRO_LIST_ITEM
 	
 public:

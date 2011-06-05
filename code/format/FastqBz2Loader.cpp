@@ -19,9 +19,9 @@
 
 */
 
-#include<FastqBz2Loader.h>
+#include<format/FastqBz2Loader.h>
 #include<fstream>
-#include<BzReader.h>
+#include<compression/BzReader.h>
 
 int FastqBz2Loader::getSize(){
 	return m_size;

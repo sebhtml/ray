@@ -19,20 +19,20 @@
 
 */
 
-#include<string.h>
-#include<assert.h>
-#include<Read.h>
-#include<MessageProcessor.h>
-#include<StaticVector.h>
-#include<common_functions.h>
-#include<ReadAnnotation.h>
-#include<SplayTree.h>
-#include<Direction.h>
-#include<SplayNode.h>
-#include<MyForest.h>
-#include<SplayTreeIterator.h>
-#include<FusionData.h>
-#include<Parameters.h>
+#include <string.h>
+#include <assert.h>
+#include <Read.h>
+#include <communication/MessageProcessor.h>
+#include <StaticVector.h>
+#include <common_functions.h>
+#include <ReadAnnotation.h>
+#include <SplayTree.h>
+#include <Direction.h>
+#include <SplayNode.h>
+#include <MyForest.h>
+#include <SplayTreeIterator.h>
+#include <FusionData.h>
+#include <core/Parameters.h>
 
 void MessageProcessor::call_RAY_MPI_TAG_LOAD_SEQUENCES(Message*message){
 	uint32_t*incoming=(uint32_t*)message->getBuffer();
@@ -2234,7 +2234,7 @@ MessageProcessor::MessageProcessor(){
 
 void MessageProcessor::assignHandlers(){
 	#define MACRO_LIST_ITEM(x) m_methods[x]=&MessageProcessor::call_ ## x ;
-	#include <mpi_tag_macros.h>
+	#include <communication/mpi_tag_macros.h>
 	#undef MACRO_LIST_ITEM
 }
 

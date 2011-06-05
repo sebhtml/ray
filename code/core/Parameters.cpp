@@ -22,7 +22,7 @@
 #include<common_functions.h>
 #include<assert.h>
 #include<math.h>
-#include<Parameters.h>
+#include<core/Parameters.h>
 #include<string>
 #include<sstream>
 #include<iostream>
@@ -31,8 +31,7 @@
 #include<fstream>
 #include<Read.h>
 #include<Loader.h>
-#include<Parameters.h>
-#include<MyAllocator.h>
+#include <memory/MyAllocator.h>
 using namespace std;
 
 Parameters::Parameters(){

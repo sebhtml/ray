@@ -23,13 +23,13 @@
 #ifndef _VirtualCommunicator
 #define _VirtualCommunicator
 
-#include<map>
+#include <map>
 #include <vector>
-#include<RingAllocator.h>
+#include <memory/RingAllocator.h>
 #include <StaticVector.h>
-#include <Message.h>
+#include <communication/Message.h>
 #include <stdint.h>
-#include <MyAllocator.h>
+#include <memory/MyAllocator.h>
 #include <queue>
 using namespace std;
 

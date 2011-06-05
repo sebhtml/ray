@@ -19,7 +19,7 @@
 
 */
 
-#include<FastaLoader.h>
+#include<format/FastaLoader.h>
 #include<fstream>
 
 int FastaLoader::load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator){

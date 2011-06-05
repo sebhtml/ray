@@ -23,10 +23,10 @@
 #define _MessagesHandler
 
 #include<vector>
-#include<MyAllocator.h>
-#include<Message.h>
+#include<memory/MyAllocator.h>
+#include<communication/Message.h>
 #include<common_functions.h>
-#include<RingAllocator.h>
+#include<memory/RingAllocator.h>
 #include<map>
 #include<StaticVector.h>
 using namespace std;

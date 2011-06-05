@@ -24,13 +24,13 @@
 
 #include <string>
 #include <vector>
-#include <OnDiskAllocator.h>
+#include <memory/OnDiskAllocator.h>
 #include <Read.h>
 #include <ArrayOfReads.h>
 #ifdef HAVE_ZLIB
 #include <zlib.h>
 #endif
-#include <MyAllocator.h>
+#include <memory/MyAllocator.h>
 using namespace std;
 
 class FastqGzLoader{

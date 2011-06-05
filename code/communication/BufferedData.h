@@ -19,15 +19,13 @@
 
 */
 
-// TYPE: COMMUNICATION
-
 #ifndef _BufferedData
 #define _BufferedData
 
-#include<common_functions.h>
-#include<MyAllocator.h>
-#include<StaticVector.h>
-#include<RingAllocator.h>
+#include <common_functions.h>
+#include <memory/MyAllocator.h>
+#include <StaticVector.h>
+#include <memory/RingAllocator.h>
 
 /*
  *  This class accumulates messages and flush them when the threshold is reached.

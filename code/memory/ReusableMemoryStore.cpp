@@ -19,7 +19,7 @@
 
 */
 
-#include <ReusableMemoryStore.h>
+#include <memory/ReusableMemoryStore.h>
 #include <assert.h>
 
 void ReusableMemoryStore::constructor(){

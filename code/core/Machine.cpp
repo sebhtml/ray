@@ -24,15 +24,15 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 */
 
-#include <malloc_types.h>
+#include <memory/malloc_types.h>
 #include <GridTableIterator.h>
-#include<crypto.h>
+#include<cryptography/crypto.h>
 #include<SplayNode.h>
 #include<mpi.h>
-#include <Machine.h>
+#include <core/Machine.h>
 #include<VerticesExtractor.h>
 #include<sstream>
-#include<Message.h>
+#include<communication/Message.h>
 #include<time.h>
 #include<TipWatchdog.h>
 #include<BubbleTool.h>
@@ -45,7 +45,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<SplayTreeIterator.h>
 #include<Read.h>
 #include<Loader.h>
-#include<MyAllocator.h>
+#include<memory/MyAllocator.h>
 #include<algorithm>
 
 using namespace std;
@@ -342,11 +342,11 @@ void Machine::start(){
 	m_virtualCommunicator.constructor(m_rank,m_size,&m_outboxAllocator,&m_inbox,&m_outbox);
 
 	#define Set(x,y) m_virtualCommunicator.setReplyType( x, x ## _REPLY );
-	#include <VirtualCommunicatorConfiguration.h>
+	#include <communication/VirtualCommunicatorConfiguration.h>
 	#undef Set
 
 	#define Set(x,y) m_virtualCommunicator.setElementsPerQuery( x, y );
-	#include <VirtualCommunicatorConfiguration.h>
+	#include <communication/VirtualCommunicatorConfiguration.h>
 	#undef Set
 
 	m_library.constructor(getRank(),&m_outbox,&m_outboxAllocator,&m_sequence_id,&m_sequence_idInFile,
@@ -1444,12 +1444,12 @@ void Machine::call_RAY_MASTER_MODE_RESUME_VERTEX_DISTRIBUTION(){
 
 void Machine::assignMasterHandlers(){
 	#define MACRO_LIST_ITEM(x) m_master_methods[x]=&Machine::call_ ## x ;
-	#include <master_mode_macros.h>
+	#include <core/master_mode_macros.h>
 	#undef MACRO_LIST_ITEM
 }
 
 void Machine::assignSlaveHandlers(){
 	#define MACRO_LIST_ITEM(x) m_slave_methods[x]=&Machine::call_ ## x ;
-	#include <slave_mode_macros.h>
+	#include <core/slave_mode_macros.h>
 	#undef MACRO_LIST_ITEM
 }

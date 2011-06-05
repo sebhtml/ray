@@ -35,7 +35,7 @@ extern const char* MESSAGES[];
 #define MACRO_LIST_ITEM(element) element,
 
 enum {
-#include <mpi_tag_macros.h>
+#include <communication/mpi_tag_macros.h>
 };
 
 #undef MACRO_LIST_ITEM

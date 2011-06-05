@@ -24,7 +24,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 */
 
-#include <RingAllocator.h>
+#include <memory/RingAllocator.h>
 #include <common_functions.h>
 #include <assert.h>
 #include <iostream>

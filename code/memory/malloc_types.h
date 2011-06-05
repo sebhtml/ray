@@ -28,7 +28,7 @@ extern const char* MALLOC_TYPES[];
 #define MACRO_LIST_ITEM(x) x,
 
 enum{
-#include <malloc_type_macros.h>
+#include <memory/malloc_type_macros.h>
 };
 
 #undef MACRO_LIST_ITEM

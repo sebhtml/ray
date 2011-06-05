@@ -21,8 +21,8 @@
 
 #include <assert.h>
 #include <mpi.h>
-#include <BufferedData.h>
-#include <RingAllocator.h>
+#include <communication/BufferedData.h>
+#include <memory/RingAllocator.h>
 #include <StaticVector.h>
 #include <iostream>
 using namespace std;

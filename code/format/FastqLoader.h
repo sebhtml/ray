@@ -26,8 +26,8 @@
 
 #include<stdio.h>
 #include<string>
-#include <OnDiskAllocator.h>
-#include<MyAllocator.h>
+#include <memory/OnDiskAllocator.h>
+#include<memory/MyAllocator.h>
 #include<fstream>
 #include<ArrayOfReads.h>
 #include<vector>

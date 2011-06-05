@@ -19,12 +19,12 @@
 
 */
 
-#include<common_functions.h>
-#include<MyAllocator.h>
-#include<stdlib.h>
-#include<iostream>
-#include<stdio.h>
-#include<assert.h>
+#include <common_functions.h>
+#include <memory/MyAllocator.h>
+#include <stdlib.h>
+#include <iostream>
+#include <stdio.h>
+#include <assert.h>
 using namespace std;
 
 /**
