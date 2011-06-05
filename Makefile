@@ -1,2 +1,2 @@
 all:
-	cd code;make;cd ..;cp code/Ray .
+	cd code;make
