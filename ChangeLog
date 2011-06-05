@@ -5,6 +5,11 @@
 Volker Winkelmann (University of Cologne).
 * Changed CC to MPICXX and added lines to compile Ray with Intel's MPI
 implementation. Thanks to Volker Winkelmann (University of Cologne).
+* Implemented a Kmer class for arbitrary long k-mers, change MAXKMERLENGTH in
+Makefile
+* Added pack and unpack methods to Kmer to abstract the communication of
+k-mers -- thanks to Élénie Godzaridis for the idea.
+
 
 = 1.4.0 =
 2011-05-30
