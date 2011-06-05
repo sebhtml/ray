@@ -22,24 +22,25 @@
 #ifndef _BubbleTool
 #define _BubbleTool
 
-#include<vector>
-#include<common_functions.h>
-#include<map>
-#include<Parameters.h>
+#include <vector>
+#include <common_functions.h>
+#include <map>
+#include <Kmer.h>
+#include <Parameters.h>
 using namespace std;
 
 class BubbleTool{
 	Parameters*m_parameters;
-	uint64_t m_choice;
+	Kmer m_choice;
 public:
-	bool isGenuineBubble(uint64_t root, vector<vector<uint64_t> >*trees,
-map<uint64_t,int>*coverages);
+	bool isGenuineBubble(Kmer root, vector<vector<Kmer > >*trees,
+map<Kmer ,int>*coverages);
 	void constructor(Parameters*p);
 
-	uint64_t getTraversalStartingPoint();
+	Kmer getTraversalStartingPoint();
 
-	void printStuff(uint64_t root, vector<vector<uint64_t> >*trees,
-map<uint64_t,int>*coverages);
+	void printStuff(Kmer root, vector<vector<Kmer > >*trees,
+map<Kmer ,int>*coverages);
 };
 
 #endif

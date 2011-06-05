@@ -50,8 +50,8 @@ class VerticesExtractor{
 	uint64_t m_deletionIterator;
 
 	bool m_hasPreviousVertex;
-	uint64_t m_previousVertex;
-	uint64_t m_previousVertexRC;
+	Kmer  m_previousVertex;
+	Kmer m_previousVertexRC;
 
 	BufferedData m_bufferedDataForOutgoingEdges;
 	BufferedData m_bufferedDataForIngoingEdges;
@@ -119,9 +119,9 @@ public:
 	bool mustTriggerReduction();
 	void scheduleReduction(StaticVector*outbox,int rank);
 
-	bool deleteVertices(vector<uint64_t>*verticesToRemove,GridTable*subgraph,
+	bool deleteVertices(vector<Kmer>*verticesToRemove,GridTable*subgraph,
 Parameters*parameters,RingAllocator*m_outboxAllocator,
-	StaticVector*m_outbox,map<uint64_t,vector<uint64_t> >*ingoingEdges,map<uint64_t,vector<uint64_t> >*outgoingEdges
+	StaticVector*m_outbox,map<Kmer,vector<Kmer> >*ingoingEdges,map<Kmer,vector<Kmer> >*outgoingEdges
 );
 	void prepareDeletions();
 

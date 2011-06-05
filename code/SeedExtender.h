@@ -60,7 +60,7 @@ class SeedExtender{
 
 	DepthFirstSearchData*m_dfsData;
 	bool m_removedUnfitLibraries;
-	SplayTree<uint64_t,int> m_cache;
+	SplayTree<Kmer,int> m_cache;
 	vector<Direction>m_receivedDirections;
 	GridTable*m_subgraph;
 	EarlyStoppingTechnology m_earlyStoppingTechnology;
@@ -77,7 +77,7 @@ class SeedExtender{
 	set<uint64_t> m_eliminatedSeeds;
 	map<int,vector<uint64_t> >m_expiredReads;
 
-	void inspect(ExtensionData*ed,uint64_t*currentVertex);
+	void inspect(ExtensionData*ed,Kmer*currentVertex);
 
 	void removeUnfitLibraries();
 
@@ -85,10 +85,10 @@ class SeedExtender{
 
 	void showReadsInRange();
 
-	void printExtensionStatus(uint64_t*currentVertex);
+	void printExtensionStatus(Kmer*currentVertex);
 
-	void printTree(VERTEX_TYPE root,
-map<VERTEX_TYPE,set<VERTEX_TYPE> >*arcs,map<VERTEX_TYPE,int>*coverages,int depth,set<VERTEX_TYPE>*visited);
+	void printTree(Kmer root,
+map<Kmer,set<Kmer> >*arcs,map<Kmer,int>*coverages,int depth,set<Kmer>*visited);
 public:
 	bool m_sequenceReceived;
 	bool m_sequenceRequested;
@@ -99,38 +99,38 @@ public:
 
 	void enumerateChoices(bool*edgesRequested,ExtensionData*ed,bool*edgesReceived,RingAllocator*outboxAllocator,
 		int*outgoingEdgeIndex,StaticVector*outbox,
-uint64_t*currentVertex,int theRank,bool*vertexCoverageRequested,vector<uint64_t>*receivedOutgoingEdges,
+Kmer*currentVertex,int theRank,bool*vertexCoverageRequested,vector<Kmer>*receivedOutgoingEdges,
 bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 int wordSize);
 
 	void checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector*outbox,RingAllocator*outboxAllocator,
-	 int*outgoingEdgeIndex,int*last_value,uint64_t*currentVertex,int theRank,bool*vertexCoverageRequested,
-	int wordSize,bool*colorSpaceMode,int size,vector<vector<uint64_t> >*seeds);
+	 int*outgoingEdgeIndex,int*last_value,Kmer*currentVertex,int theRank,bool*vertexCoverageRequested,
+	int wordSize,bool*colorSpaceMode,int size,vector<vector<Kmer> >*seeds);
 
-	void markCurrentVertexAsAssembled(uint64_t*currentVertex,RingAllocator*outboxAllocator,int*outgoingEdgeIndex,
+	void markCurrentVertexAsAssembled(Kmer *currentVertex,RingAllocator*outboxAllocator,int*outgoingEdgeIndex,
  StaticVector*outbox,int size,int theRank,ExtensionData*ed,bool*vertexCoverageRequested,
 		bool*vertexCoverageReceived,int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,
 	bool*edgesRequested,
-vector<uint64_t>*receivedOutgoingEdges,Chooser*chooser,
-BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpaceMode,int wordSize,vector<vector<uint64_t> >*seeds);
+vector<Kmer>*receivedOutgoingEdges,Chooser*chooser,
+BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpaceMode,int wordSize,vector<vector<Kmer> >*seeds);
 
-	void extendSeeds(vector<vector<uint64_t> >*seeds,ExtensionData*ed,int theRank,StaticVector*outbox,uint64_t*currentVertex,
+	void extendSeeds(vector<vector<Kmer> >*seeds,ExtensionData*ed,int theRank,StaticVector*outbox,Kmer*currentVertex,
 	FusionData*fusionData,RingAllocator*outboxAllocator,bool*edgesRequested,int*outgoingEdgeIndex,
 int*last_value,bool*vertexCoverageRequested,int wordSize,bool*colorSpaceMode,int size,bool*vertexCoverageReceived,
-int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,vector<uint64_t>*receivedOutgoingEdges,Chooser*chooser,
+int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,vector<Kmer>*receivedOutgoingEdges,Chooser*chooser,
 BubbleData*bubbleData,
 int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode);
 
-	void doChoice(RingAllocator*outboxAllocator,int*outgoingEdgeIndex,StaticVector*outbox,uint64_t*currentVertex,
+	void doChoice(RingAllocator*outboxAllocator,int*outgoingEdgeIndex,StaticVector*outbox,Kmer*currentVertex,
 BubbleData*bubbleData,int theRank,int wordSize,
 ExtensionData*ed,int minimumCoverage,int maxCoverage,OpenAssemblerChooser*oa,Chooser*chooser,bool*colorSpaceMode,
-	vector<vector<uint64_t> >*seeds,
+	vector<vector<Kmer> >*seeds,
 bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,int size,
-int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingEdges);
+int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges);
 
 	vector<Direction>*getDirections();
 
-	void storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<vector<uint64_t> >*seeds,uint64_t*currentVertex,
+	void storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<vector<Kmer> >*seeds,Kmer*currentVertex,
 		BubbleData*bubbleData);
 
 	set<uint64_t>*getEliminatedSeeds();

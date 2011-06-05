@@ -22,6 +22,7 @@
 #ifndef _GridTable
 #define _GridTable
 
+#include <Kmer.h>
 #include <VertexTable.h>
 #include <MyAllocator.h>
 #include <OnDiskAllocator.h>
@@ -50,10 +51,10 @@ public:
 	void constructor(int rank,MyAllocator*allocator,Parameters*a);
 	void setWordSize(int w);
 	uint64_t size();
-	Vertex*find(uint64_t key);
-	Vertex*insert(uint64_t key);
+	Vertex*find(Kmer*key);
+	Vertex*insert(Kmer*key);
 	bool inserted();
-	void remove(uint64_t a);
+	void remove(Kmer*a);
 	Vertex*getElementInBin(int bin,int element);
 	int getNumberOfElementsInBin(int bin);
 	int getNumberOfBins();
@@ -63,13 +64,13 @@ public:
 	void unfreeze();
 	bool frozen();
 
-	void addRead(uint64_t a,ReadAnnotation*e);
-	ReadAnnotation*getReads(uint64_t a);
-	void addDirection(uint64_t a,Direction*d);
-	vector<Direction> getDirections(uint64_t a);
-	void clearDirections(uint64_t a);
+	void addRead(Kmer*a,ReadAnnotation*e);
+	ReadAnnotation*getReads(Kmer*a);
+	void addDirection(Kmer*a,Direction*d);
+	vector<Direction> getDirections(Kmer*a);
+	void clearDirections(Kmer*a);
 	void buildData(Parameters*a);
-	bool isAssembled(uint64_t a);
+	bool isAssembled(Kmer*a);
 };
 
 #endif

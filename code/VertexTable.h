@@ -45,10 +45,10 @@ public:
 	void constructor(int rank,MyAllocator*allocator,Parameters*a);
 	void setWordSize(int w);
 	uint64_t size();
-	VertexData*find(uint64_t key);
-	VertexData*insert(uint64_t key);
+	VertexData*find(Kmer*key);
+	VertexData*insert(Kmer*key);
 	bool inserted();
-	void remove(uint64_t a);
+	void remove(Kmer*a);
 	VertexData*getElementInBin(int bin,int element);
 	int getNumberOfElementsInBin(int bin);
 	int getNumberOfBins();
@@ -57,11 +57,11 @@ public:
 	void unfreeze();
 	bool frozen();
 
-	void addRead(uint64_t a,ReadAnnotation*e);
-	ReadAnnotation*getReads(uint64_t a);
-	void addDirection(uint64_t a,Direction*d);
-	vector<Direction> getDirections(uint64_t a);
-	void clearDirections(uint64_t a);
+	void addRead(Kmer*a,ReadAnnotation*e);
+	ReadAnnotation*getReads(Kmer*a);
+	void addDirection(Kmer*a,Direction*d);
+	vector<Direction> getDirections(Kmer*a);
+	void clearDirections(Kmer*a);
 
 };
 

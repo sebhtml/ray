@@ -36,7 +36,7 @@ Parameters*parameters
 	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
 		int minimum=999999;
 		int maximum=-999;
-		uint64_t key=m_ed->m_enumerateChoices_outgoingEdges[i];
+		Kmer key=m_ed->m_enumerateChoices_outgoingEdges[i];
 		for(int j=0;j<(int)m_ed->m_EXTENSION_pairedReadPositionsForVertices[key].size();j++){
 			int value=m_ed->m_EXTENSION_pairedReadPositionsForVertices[key][j];
 			if(value>maximum){

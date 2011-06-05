@@ -28,7 +28,7 @@
 class GridTableIterator{
 	GridTable*m_table;
 	bool m_lowerKeyIsDone;
-	VERTEX_TYPE m_currentKey;
+	Kmer m_currentKey;
 	int m_wordSize;
 	int m_currentBin;
 	int m_currentPosition;
@@ -37,7 +37,7 @@ public:
 	void constructor(GridTable*a,int wordSize);
 	bool hasNext();
 	Vertex*next();
-	VERTEX_TYPE getKey();
+	Kmer*getKey();
 };
 
 #endif

@@ -1,0 +1,38 @@
+	
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_WRITE_CONTIG,RAY_MPI_TAG_WRITE_CONTIG_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_WRITE_CONTIG,3);
+
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_REQUEST_VERTEX_READS,RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_READS,4+KMER_U64_ARRAY_SIZE);
+
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_GET_READ_MATE,RAY_MPI_TAG_GET_READ_MATE_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_GET_READ_MATE,4);
+
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,KMER_U64_ARRAY_SIZE);
+
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_ATTACH_SEQUENCE,RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_ATTACH_SEQUENCE,KMER_U64_ARRAY_SIZE+4);
+
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,min(2,max(2,KMER_U64_ARRAY_SIZE)));
+
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_HAS_PAIRED_READ,RAY_MPI_TAG_HAS_PAIRED_READ_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_HAS_PAIRED_READ,1);
+
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_GET_READ_MARKERS,RAY_MPI_TAG_GET_READ_MARKERS_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_GET_READ_MARKERS,5);
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_GET_PATH_LENGTH,RAY_MPI_TAG_GET_PATH_LENGTH_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_GET_PATH_LENGTH,1);
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION,RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION,4);
+
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_SCAFFOLDING_LINKS,RAY_MPI_TAG_SCAFFOLDING_LINKS_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_SCAFFOLDING_LINKS,6);
+
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_CONTIG_INFO,RAY_MPI_TAG_CONTIG_INFO_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_CONTIG_INFO,2);
+
+	m_virtualCommunicator.setReplyType(MPI_TAG_CHECK_VERTEX,MPI_TAG_CHECK_VERTEX_REPLY);
+	m_virtualCommunicator.setElementsPerQuery(MPI_TAG_CHECK_VERTEX,KMER_U64_ARRAY_SIZE+1);
+

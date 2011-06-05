@@ -30,7 +30,7 @@ using namespace std;
 
 class VertexData{
 public:
-	uint64_t m_lowerKey;
+	Kmer m_lowerKey;
 /*
  * 	read annotations
  * 	which reads start here?
@@ -43,11 +43,11 @@ public:
 	Direction*m_directions;
 
 	void constructor();
-	void addRead(uint64_t a,ReadAnnotation*e);
-	ReadAnnotation*getReads(uint64_t a);
-	void addDirection(uint64_t a,Direction*d);
-	vector<Direction> getDirections(uint64_t a);
-	void clearDirections(uint64_t a);
+	void addRead(Kmer*a,ReadAnnotation*e);
+	ReadAnnotation*getReads(Kmer*a);
+	void addDirection(Kmer*a,Direction*d);
+	vector<Direction> getDirections(Kmer*a);
+	void clearDirections(Kmer*a);
 } ATTRIBUTE_PACKED;
 
 #endif

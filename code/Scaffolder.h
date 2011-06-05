@@ -88,8 +88,8 @@ class Scaffolder{
 	bool m_markersReceived;
 	int m_pairedForwardOffset;
 	int m_pairedReverseOffset;
-	VERTEX_TYPE m_pairedForwardMarker;
-	VERTEX_TYPE m_pairedReverseMarker;
+	Kmer m_pairedForwardMarker;
+	Kmer m_pairedReverseMarker;
 	bool m_pairReceived;
 	int m_pairedReadRank;
 	int m_pairedReadIndex;
@@ -113,7 +113,7 @@ class Scaffolder{
 	bool m_forwardDone;
 	int m_contigId;
 	int m_positionOnContig;
-	vector<vector<VERTEX_TYPE> > m_contigs;
+	vector<vector<Kmer> > m_contigs;
 	vector<uint64_t> m_contigNames;
 
 	Parameters*m_parameters;
@@ -125,7 +125,7 @@ class Scaffolder{
 
 	void processContig();
 	void processContigPosition();
-	void processVertex(VERTEX_TYPE vertex);
+	void processVertex(Kmer vertex);
 	void processAnnotations();
 	void processAnnotation();
 	void performSummary();
@@ -149,7 +149,7 @@ public:
 	void constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
 		int*slaveMode,VirtualCommunicator*vc);
 	void run();
-	void addContig(uint64_t name,vector<uint64_t>*vertices);
+	void addContig(uint64_t name,vector<Kmer>*vertices);
 	void addMasterLink(vector<uint64_t>*link);
 	void solve();
 	void addMasterContig(uint64_t name,int length);

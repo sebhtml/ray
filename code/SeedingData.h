@@ -26,6 +26,7 @@
 
 class SeedExtender;
 
+#include <Kmer.h>
 #include <VirtualCommunicator.h>
 #include <SeedExtender.h>
 #include <SplayTreeIterator.h>
@@ -76,16 +77,16 @@ public:
 
 	bool m_SEEDING_edgesRequested;
 	int m_SEEDING_ingoingEdgeIndex;
-	vector<uint64_t> m_SEEDING_receivedOutgoingEdges;
-	uint64_t m_SEEDING_currentVertex;
+	vector<Kmer> m_SEEDING_receivedOutgoingEdges;
+	Kmer m_SEEDING_currentVertex;
 	int m_SEEDING_receivedVertexCoverage;
-	vector<uint64_t> m_SEEDING_receivedIngoingEdges;
+	vector<Kmer> m_SEEDING_receivedIngoingEdges;
 	bool m_SEEDING_InedgesReceived;
 	int m_SEEDING_outgoingEdgeIndex;
 	bool m_SEEDING_vertexCoverageRequested;
 	bool m_SEEDING_vertexCoverageReceived;
 	SplayTreeIterator<uint64_t,Vertex>*m_SEEDING_iterator;
-	SplayNode<uint64_t,Vertex>*m_SEEDING_node;
+	SplayNode<Kmer,Vertex>*m_SEEDING_node;
 	uint64_t m_SEEDING_receivedKey;
 	bool m_SEEDING_vertexKeyAndCoverageReceived;
 	int m_SEEDING_currentChildRank;
@@ -100,7 +101,7 @@ public:
 	int m_SEEDING_outgoing_index;
 	bool m_SEEDING_outgoing_choice_done;
 	int m_SEEDING_currentRank;
-	vector<vector<uint64_t> > m_SEEDING_seeds;
+	vector<vector<Kmer> > m_SEEDING_seeds;
 	vector<int> m_SEEDING_outgoingCoverages;
 	vector<uint64_t> m_SEEDING_outgoingKeys;
 	bool m_SEEDING_vertexKeyAndCoverageRequested;

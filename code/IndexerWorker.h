@@ -49,7 +49,7 @@ class IndexerWorker{
 	bool m_coverageRequested;
 	bool m_fetchedCoverageValues;
 
-	vector<uint64_t> m_vertices;
+	vector<Kmer> m_vertices;
 	vector<int> m_coverages;
 public:
 	void constructor(int sequenceId,char*sequence,Parameters*parameters,RingAllocator*outboxAllocator,

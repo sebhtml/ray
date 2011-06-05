@@ -36,8 +36,8 @@ using namespace std;
 class DepthFirstSearchData{
 	bool m_outgoingEdgesDone;
 
-	map<uint64_t,vector<uint64_t> > m_outgoingEdges;
-	map<uint64_t,vector<uint64_t> > m_ingoingEdges;
+	map<Kmer,vector<Kmer> > m_outgoingEdges;
+	map<Kmer,vector<Kmer> > m_ingoingEdges;
 
 public:
 
@@ -52,28 +52,28 @@ public:
 	MyStack<int> m_depthFirstSearchDepths;
 	int m_doChoice_tips_i;
 	vector<int> m_doChoice_tips_newEdges;
-	set<uint64_t> m_depthFirstSearchVisitedVertices;
-	MyStack<uint64_t> m_depthFirstSearchVerticesToVisit;
-	vector<uint64_t> m_depthFirstSearchVisitedVertices_vector;
+	set<Kmer> m_depthFirstSearchVisitedVertices;
+	MyStack<Kmer> m_depthFirstSearchVerticesToVisit;
+	vector<Kmer> m_depthFirstSearchVisitedVertices_vector;
 	vector<int> m_depthFirstSearchVisitedVertices_depths;
-	map<uint64_t,int> m_coverages;
+	map<Kmer,int> m_coverages;
 
 
-	void depthFirstSearch(uint64_t root,uint64_t a,int maxDepth,
+	void depthFirstSearch(Kmer root,Kmer a,int maxDepth,
 	bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	RingAllocator*outboxAllocator,int size,int theRank,StaticVector*outbox,
- int*receivedVertexCoverage,vector<uint64_t>*receivedOutgoingEdges,
+ int*receivedVertexCoverage,vector<Kmer>*receivedOutgoingEdges,
 		int minimumCoverage,bool*edgesReceived,int wordSize);
 
-	void depthFirstSearchBidirectional(uint64_t a,int maxDepth,
+	void depthFirstSearchBidirectional(Kmer a,int maxDepth,
 	bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	RingAllocator*outboxAllocator,int size,int theRank,StaticVector*outbox,
  int*receivedVertexCoverage,SeedingData*seedingData,
 		int minimumCoverage,bool*edgesReceived,Parameters*parameters);
 
 	
-	map<uint64_t,vector<uint64_t> >*getIngoingEdges();
-	map<uint64_t,vector<uint64_t> >*getOutgoingEdges();
+	map<Kmer,vector<Kmer> >*getIngoingEdges();
+	map<Kmer,vector<Kmer> >*getOutgoingEdges();
 
 
 };

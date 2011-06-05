@@ -19,6 +19,7 @@
 
 */
 
+#include <Kmer.h>
 #include <malloc_types.h>
 #include <assert.h>
 #include <GridTable.h>
@@ -52,33 +53,33 @@ uint64_t GridTable::size(){
 	return m_size;
 }
 
-Vertex*GridTable::find(uint64_t key){
-	uint64_t lowerKey;
-	int bin=hash_function_2(key,m_wordSize,&lowerKey)%m_gridSize;
+Vertex*GridTable::find(Kmer*key){
+	Kmer lowerKey;
+	int bin=hash_function_2(*key,m_wordSize,&lowerKey)%m_gridSize;
 
-	if(key<lowerKey){
-		lowerKey=key;
+	if(key->isLower(&lowerKey)){
+		lowerKey=*key;
 	}
 	for(int i=0;i<m_gridSizes[bin];i++){
 		Vertex*gridEntry=m_gridData[bin]+i;
-		if(gridEntry->m_lowerKey==lowerKey){
+		if(gridEntry->m_lowerKey.isEqual(&lowerKey)){
 			return move(bin,i);
 		}
 	}
 	return NULL;
 }
 
-Vertex*GridTable::insert(uint64_t key){
-	uint64_t lowerKey;
+Vertex*GridTable::insert(Kmer*key){
+	Kmer lowerKey;
 	m_inserted=false;
-	int bin=hash_function_2(key,m_wordSize,&lowerKey)%m_gridSize;
-	if(key<lowerKey){
-		lowerKey=key;
+	int bin=hash_function_2(*key,m_wordSize,&lowerKey)%m_gridSize;
+	if(key->isLower(&lowerKey)){
+		lowerKey=*key;
 	}
 	//cout<<key<<" bin="<<bin<<" size="<<m_gridSizes[bin]<<endl;
 	for(int i=0;i<m_gridSizes[bin];i++){
 		Vertex*gridEntry=m_gridData[bin]+i;
-		if(gridEntry->m_lowerKey==lowerKey){
+		if(gridEntry->m_lowerKey.isEqual(&lowerKey)){
 			return move(bin,i);
 		}
 	}
@@ -109,8 +110,7 @@ bool GridTable::inserted(){
 	return m_inserted;
 }
 
-void GridTable::remove(uint64_t a){
-
+void GridTable::remove(Kmer*a){
 }
 
 Vertex*GridTable::getElementInBin(int bin,int element){
@@ -184,28 +184,28 @@ void GridTable::setWordSize(int w){
 	m_vertexTable.setWordSize(w);
 }
 
-void GridTable::addRead(uint64_t a,ReadAnnotation*e){
+void GridTable::addRead(Kmer*a,ReadAnnotation*e){
 	m_vertexTable.addRead(a,e);
 }
 
-ReadAnnotation*GridTable::getReads(uint64_t a){
+ReadAnnotation*GridTable::getReads(Kmer*a){
 	return m_vertexTable.getReads(a);
 }
 
-void GridTable::addDirection(uint64_t a,Direction*d){
+void GridTable::addDirection(Kmer*a,Direction*d){
 	m_vertexTable.addDirection(a,d);
 }
 
-bool GridTable::isAssembled(uint64_t a){
-	uint64_t reverse=complementVertex_normal(a,m_wordSize);
-	return getDirections(a).size()>0||getDirections(reverse).size()>0;
+bool GridTable::isAssembled(Kmer*a){
+	Kmer reverse=complementVertex_normal(a,m_wordSize);
+	return getDirections(a).size()>0||getDirections(&reverse).size()>0;
 }
 
-vector<Direction> GridTable::getDirections(uint64_t a){
+vector<Direction> GridTable::getDirections(Kmer*a){
 	return m_vertexTable.getDirections(a);
 }
 
-void GridTable::clearDirections(uint64_t a){
+void GridTable::clearDirections(Kmer*a){
 	m_vertexTable.clearDirections(a);
 }
 

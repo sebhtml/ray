@@ -114,6 +114,11 @@ public:
  */
 	void setElementsPerQuery(int tag,int size);
 	
+/**
+ * get the number of elements per query
+ */
+	int getElementsPerQuery(int tag);
+
 	/**
  * this method must be called before calling workers.
  * it will fetch messages from inbox according to ongoing queries.

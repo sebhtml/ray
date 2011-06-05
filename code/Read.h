@@ -57,7 +57,7 @@ public:
 	void constructorWithRawSequence(const char*sequence,uint8_t*raw,bool trim);
 	void getSeq(char*buffer)const;
 	int length()const;
-	uint64_t getVertex(int pos,int w,char strand,bool color)const;
+	Kmer getVertex(int pos,int w,char strand,bool color)const;
 	bool hasPairedRead()const;
 	PairedRead*getPairedRead();
 	uint8_t*getRawSequence();

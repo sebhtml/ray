@@ -48,11 +48,11 @@ public:
 
 	int m_readType;
 	vector<int>*m_EXTENSION_coverages;
-	vector<uint64_t>*m_EXTENSION_extension;
+	vector<Kmer >*m_EXTENSION_extension;
 	vector<int>*m_extensionCoverageValues;
 	vector<int>*m_repeatedValues;
 	// EXTENSION MODE
-	vector<uint64_t> m_enumerateChoices_outgoingEdges;
+	vector<Kmer> m_enumerateChoices_outgoingEdges;
 	bool m_doChoice_tips_Detected;
 	PairedRead m_EXTENSION_pairedRead;
 	bool m_EXTENSION_pairedSequenceRequested;
@@ -64,9 +64,9 @@ public:
 	vector<uint64_t> m_EXTENSION_identifiers;
 	bool m_EXTENSION_complementedSeed;
 	bool m_EXTENSION_complementedSeed2;
-	vector<uint64_t> m_EXTENSION_currentSeed;
+	vector<Kmer > m_EXTENSION_currentSeed;
 	int m_EXTENSION_numberOfRanksDone;
-	vector<vector<uint64_t> > m_EXTENSION_contigs;
+	vector<vector<Kmer > > m_EXTENSION_contigs;
 	bool m_EXTENSION_checkedIfCurrentVertexIsAssembled;
 	bool m_EXTENSION_VertexMarkAssembled_requested;
 	bool m_EXTENSION_reverseComplement_requested;
@@ -76,7 +76,7 @@ public:
 	bool m_EXTENSION_readLength_done;
 	bool m_EXTENSION_read_vertex_received;
 	bool m_EXTENSION_read_vertex_requested;
-	uint64_t m_EXTENSION_receivedReadVertex;
+	Kmer m_EXTENSION_receivedReadVertex;
 	bool m_mode_EXTENSION;
 	bool m_EXTENSION_currentRankIsDone;
 	bool m_EXTENSION_currentRankIsSet;
@@ -104,10 +104,10 @@ public:
 	// reads to check (the ones "in range")
 	bool m_EXTENSION_singleEndResolution;
 	set<uint64_t>::iterator m_EXTENSION_readIterator;
-	map<uint64_t,vector<int> > m_EXTENSION_readPositionsForVertices;
-	map<uint64_t,vector<int> > m_EXTENSION_pairedReadPositionsForVertices;
-	map<uint64_t,vector<int> > m_EXTENSION_pairedLibrariesForVertices;
-	map<uint64_t,vector<uint64_t> > m_EXTENSION_pairedReadsForVertices;
+	map<Kmer,vector<int> > m_EXTENSION_readPositionsForVertices;
+	map<Kmer,vector<int> > m_EXTENSION_pairedReadPositionsForVertices;
+	map<Kmer,vector<int> > m_EXTENSION_pairedLibrariesForVertices;
+	map<Kmer,vector<uint64_t> > m_EXTENSION_pairedReadsForVertices;
 	int m_currentCoverage;
 
 	set<uint64_t>*m_EXTENSION_readsInRange;

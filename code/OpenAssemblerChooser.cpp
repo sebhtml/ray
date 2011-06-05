@@ -80,7 +80,7 @@ Parameters*parameters){
 		int withPairedReads=0;
 		
 		for(int j=0;j<(int)m_ed->m_enumerateChoices_outgoingEdges.size();j++){
-			uint64_t key=m_ed->m_enumerateChoices_outgoingEdges[j];
+			Kmer key=m_ed->m_enumerateChoices_outgoingEdges[j];
 			if(m_ed->m_EXTENSION_pairedReadPositionsForVertices[key].size()>0){
 				withPairedReads++;
 			}
@@ -95,7 +95,7 @@ Parameters*parameters){
 	map<int,int> CHOOSER_theSums;
 
 	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
-		uint64_t key=m_ed->m_enumerateChoices_outgoingEdges[i];
+		Kmer key=m_ed->m_enumerateChoices_outgoingEdges[i];
 		int max=0;
 		int n=0;
 		int sum=0;
@@ -154,7 +154,7 @@ int OpenAssemblerChooser::getWinner(vector<set<int> >*battleVictories,int choice
 void OpenAssemblerChooser::chooseWithCoverage(ExtensionData*ed,int minCoverage,vector<set<int> >*battleVictories){
 	for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
 		int coverageForI=ed->m_EXTENSION_coverages->at(i);
-		uint64_t key=ed->m_enumerateChoices_outgoingEdges[i];
+		Kmer key=ed->m_enumerateChoices_outgoingEdges[i];
 		int singleReadsI=ed->m_EXTENSION_readPositionsForVertices[key].size();
 
 		// in less than 10% of the coverage is supported by displayed reads, abort it...

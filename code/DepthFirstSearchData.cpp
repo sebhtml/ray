@@ -24,10 +24,10 @@
 /*
  * do a depth first search with max depth of maxDepth;
  */
-void DepthFirstSearchData::depthFirstSearch(uint64_t root,uint64_t a,int maxDepth,
+void DepthFirstSearchData::depthFirstSearch(Kmer root,Kmer a,int maxDepth,
 	bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	RingAllocator*outboxAllocator,int size,int theRank,StaticVector*outbox,
- int*receivedVertexCoverage,vector<uint64_t>*receivedOutgoingEdges,
+ int*receivedVertexCoverage,vector<Kmer>*receivedOutgoingEdges,
 		int minimumCoverage,bool*edgesReceived,int wordSize){
 	if(!m_doChoice_tips_dfs_initiated){
 		m_depthFirstSearchVisitedVertices.clear();
@@ -60,15 +60,16 @@ void DepthFirstSearchData::depthFirstSearch(uint64_t root,uint64_t a,int maxDept
 		#endif
 	}
 	if(m_depthFirstSearchVerticesToVisit.size()>0){
-		uint64_t vertexToVisit=m_depthFirstSearchVerticesToVisit.top();
+		Kmer vertexToVisit=m_depthFirstSearchVerticesToVisit.top();
 		if(!(*vertexCoverageRequested)){
 			(*vertexCoverageRequested)=true;
 			(*vertexCoverageReceived)=false;
 			
 			uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
-			message[0]=vertexToVisit;
-			int dest=vertexRank(message[0],size,wordSize);
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
+			int j=0;
+			vertexToVisit.pack(message,&j);
+			int dest=vertexRank(&vertexToVisit,size,wordSize);
+			Message aMessage(message,j,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
 			(*outbox).push_back(aMessage);
 		}else if((*vertexCoverageReceived)){
 			if(!(*edgesRequested)){
@@ -82,14 +83,15 @@ void DepthFirstSearchData::depthFirstSearch(uint64_t root,uint64_t a,int maxDept
 			
 				// visit the vertex, and ask next edges.
 				uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
-				message[0]=vertexToVisit;
-				int destination=vertexRank(vertexToVisit,size,wordSize);
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES,theRank);
+				int bufferPosition=0;
+				vertexToVisit.pack(message,&bufferPosition);
+				int destination=vertexRank(&vertexToVisit,size,wordSize);
+				Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES,theRank);
 				(*outbox).push_back(aMessage);
 				(*edgesRequested)=true;
 				(*edgesReceived)=false;
 			}else if((*edgesReceived)){
-				uint64_t vertexToVisit=m_depthFirstSearchVerticesToVisit.top();
+				Kmer vertexToVisit=m_depthFirstSearchVerticesToVisit.top();
 				int theDepth=m_depthFirstSearchDepths.top();
 				#ifdef ASSERT
 				assert(theDepth>=0);
@@ -101,7 +103,7 @@ void DepthFirstSearchData::depthFirstSearch(uint64_t root,uint64_t a,int maxDept
 				m_depthFirstSearchDepths.pop();
 
 				for(int i=0;i<(int)(*receivedOutgoingEdges).size();i++){
-					uint64_t nextVertex=(*receivedOutgoingEdges)[i];
+					Kmer nextVertex=(*receivedOutgoingEdges)[i];
 					if(m_depthFirstSearchVisitedVertices.count(nextVertex)>0){
 						continue;
 					}
@@ -140,7 +142,7 @@ void DepthFirstSearchData::depthFirstSearch(uint64_t root,uint64_t a,int maxDept
 	}
 }
 
-void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth,
+void DepthFirstSearchData::depthFirstSearchBidirectional(Kmer a,int maxDepth,
 	bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	RingAllocator*outboxAllocator,int size,int theRank,StaticVector*outbox,
  int*receivedVertexCoverage,SeedingData*seedingData,
@@ -174,7 +176,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 		(*vertexCoverageRequested)=false;
 	}
 	if(m_depthFirstSearchVerticesToVisit.size()>0){
-		uint64_t vertexToVisit=m_depthFirstSearchVerticesToVisit.top();
+		Kmer vertexToVisit=m_depthFirstSearchVerticesToVisit.top();
 
 		if(!(*vertexCoverageRequested)){
 
@@ -188,9 +190,10 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 			(*vertexCoverageReceived)=false;
 			
 			uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
-			message[0]=vertexToVisit;
-			int dest=vertexRank(message[0],size,parameters->getWordSize());
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
+			int bufferPosition=0;
+			vertexToVisit.pack(message,&bufferPosition);
+			int dest=vertexRank(&vertexToVisit,size,parameters->getWordSize());
+			Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
 			(*outbox).push_back(aMessage);
 		}else if((*vertexCoverageReceived)){
 			if(!(*edgesRequested)){
@@ -198,7 +201,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 
 				#ifdef ASSERT
 				if(m_depthFirstSearchVisitedVertices.count(vertexToVisit)>0){
-					cout<<"Already visited: "<<idToWord(vertexToVisit,wordSize)<<" root is "<<idToWord(a,wordSize)<<endl;
+					cout<<"Already visited: "<<idToWord(&vertexToVisit,wordSize)<<" root is "<<idToWord(&a,wordSize)<<endl;
 				}
 				assert(m_depthFirstSearchVisitedVertices.count(vertexToVisit)==0);
 				assert(*receivedVertexCoverage>0);
@@ -225,16 +228,17 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 			
 				// visit the vertex, and ask next edges.
 				uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
-				message[0]=vertexToVisit;
-				int destination=vertexRank(vertexToVisit,size,parameters->getWordSize());
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_REQUEST_VERTEX_EDGES,theRank);
+				int bufferPosition=0;
+				vertexToVisit.pack(message,&bufferPosition);
+				int destination=vertexRank(&vertexToVisit,size,parameters->getWordSize());
+				Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_REQUEST_VERTEX_EDGES,theRank);
 				//cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" RAY_MPI_TAG_REQUEST_VERTEX_EDGES "<<idToWord(vertexToVisit,wordSize)<<endl;
 
 				(*outbox).push_back(aMessage);
 				(*edgesRequested)=true;
 				(*edgesReceived)=false;
 			}else if((*edgesReceived)){
-				uint64_t vertexToVisit=m_depthFirstSearchVerticesToVisit.top();
+				Kmer vertexToVisit=m_depthFirstSearchVerticesToVisit.top();
 				int theDepth=m_depthFirstSearchDepths.top();
 
 				#ifdef ASSERT
@@ -256,10 +260,10 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 				// following is the number of ingoing edges
 				// following are the ingoing edges.
 
-				vector<uint64_t> outgoingEdges=seedingData->m_SEEDING_receivedOutgoingEdges;
+				vector<Kmer > outgoingEdges=seedingData->m_SEEDING_receivedOutgoingEdges;
 
 				for(int i=0;i<(int)outgoingEdges.size();i++){
-					uint64_t nextVertex=outgoingEdges[i];
+					Kmer nextVertex=outgoingEdges[i];
 
 					if(m_depthFirstSearchVisitedVertices.size()>=MAX_VERTICES_TO_VISIT){
 						continue;
@@ -281,17 +285,17 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 
 				#ifdef ASSERT
 				if(m_outgoingEdges.count(vertexToVisit)>0){
-					cout<<idToWord(vertexToVisit,wordSize)<<" is already in the data structure "<<m_outgoingEdges[vertexToVisit].size()<<" v. "<<outgoingEdges.size()<<endl;
+					cout<<idToWord(&vertexToVisit,wordSize)<<" is already in the data structure "<<m_outgoingEdges[vertexToVisit].size()<<" v. "<<outgoingEdges.size()<<endl;
 				}
 				assert(m_outgoingEdges.count(vertexToVisit)==0);
 				#endif
 
 				m_outgoingEdges[vertexToVisit]=outgoingEdges;
 
-				vector<uint64_t> ingoingEdges=seedingData->m_SEEDING_receivedIngoingEdges;
+				vector<Kmer> ingoingEdges=seedingData->m_SEEDING_receivedIngoingEdges;
 
 				for(int i=0;i<(int)ingoingEdges.size();i++){
-					uint64_t nextVertex=ingoingEdges[i];
+					Kmer nextVertex=ingoingEdges[i];
 
 					if(m_depthFirstSearchVisitedVertices.size()>=MAX_VERTICES_TO_VISIT){
 						continue;
@@ -332,11 +336,11 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(uint64_t a,int maxDepth
 	}
 }
 
-map<uint64_t,vector<uint64_t> >*DepthFirstSearchData::getIngoingEdges(){
+map<Kmer,vector<Kmer> >*DepthFirstSearchData::getIngoingEdges(){
 	return &m_ingoingEdges;
 }
 
-map<uint64_t,vector<uint64_t> >*DepthFirstSearchData::getOutgoingEdges(){
+map<Kmer,vector<Kmer> >*DepthFirstSearchData::getOutgoingEdges(){
 	return &m_outgoingEdges;
 }
 

@@ -32,27 +32,27 @@
 using namespace std;
 
 class SeedWorker{
-	map<uint64_t,int> m_cache;
+	map<Kmer,int> m_cache;
 	uint64_t m_workerIdentifier;
 	bool m_finished;
-	uint64_t m_SEEDING_currentChildVertex;
+	Kmer m_SEEDING_currentChildVertex;
 	bool m_SEEDING_InedgesReceived;
-	uint64_t m_SEEDING_currentParentVertex;
+	Kmer m_SEEDING_currentParentVertex;
 	bool m_SEEDING_ingoingEdgesDone;
 	int m_SEEDING_numberOfOutgoingEdgesWithSeedCoverage;
-	uint64_t m_SEEDING_currentVertex;
+	Kmer m_SEEDING_currentVertex;
 	int m_SEEDING_numberOfIngoingEdges;
 	bool m_SEEDING_vertexCoverageRequested;
 	bool m_SEEDING_edgesReceived;
 	bool m_SEEDING_testInitiated;
 	int m_SEEDING_ingoingEdgeIndex;
 	int m_SEEDING_outgoingEdgeIndex;
-	vector<uint64_t> m_SEEDING_receivedIngoingEdges;
+	vector<Kmer> m_SEEDING_receivedIngoingEdges;
 	vector<int> m_ingoingCoverages;
 	vector<int> m_outgoingCoverages;
 	Parameters*m_parameters;
 	bool m_SEEDING_vertexCoverageReceived;
-	vector<uint64_t> m_SEEDING_receivedOutgoingEdges;
+	vector<Kmer> m_SEEDING_receivedOutgoingEdges;
 	int m_SEEDING_numberOfOutgoingEdges;
 	int m_SEEDING_numberOfIngoingEdgesWithSeedCoverage;
 	bool m_SEEDING_outgoingEdgesDone;
@@ -62,11 +62,11 @@ class SeedWorker{
 	bool m_ingoingEdgesReceived;
 	int m_wordSize;
 
-	vector<uint64_t> m_SEEDING_seed;
+	vector<Kmer> m_SEEDING_seed;
 	vector<int> m_coverages;
 	bool m_SEEDING_firstVertexParentTestDone;	
-	set<uint64_t> m_SEEDING_vertices;
-	uint64_t m_SEEDING_first;
+	set<Kmer> m_SEEDING_vertices;
+	Kmer m_SEEDING_first;
 	bool m_SEEDING_firstVertexTestDone;
 	int m_SEEDING_numberOfSeedCoverageCandidates;
 	int m_rank;
@@ -79,10 +79,10 @@ class SeedWorker{
 	bool m_SEEDING_1_1_test_done;
 	VirtualCommunicator*m_virtualCommunicator;
 public:
-	void constructor(uint64_t vertex,Parameters*parameters,RingAllocator*outboxAllocator,
+	void constructor(Kmer*vertex,Parameters*parameters,RingAllocator*outboxAllocator,
 		VirtualCommunicator*vc,uint64_t workerId);
 	bool isDone();
-	vector<uint64_t> getSeed();
+	vector<Kmer>*getSeed();
 	void do_1_1_test();
 	void work();
 	uint64_t getWorkerId();

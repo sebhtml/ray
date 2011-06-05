@@ -52,27 +52,27 @@ class MemoryConsumptionReducer{
 	bool m_doneWithOutgoingEdges;
 	
 	DepthFirstSearchData*m_dfsDataOutgoing;
-	uint64_t m_firstKey;
+	Kmer m_firstKey;
 	Vertex*m_firstVertex;
 	//SplayNode<uint64_t,Vertex>*m_firstVertex;
 
-	vector<uint64_t>*m_toRemove;
-	map<uint64_t,vector<uint64_t> >*m_ingoingEdges;
-	map<uint64_t,vector<uint64_t> >*m_outgoingEdges;
+	vector<Kmer>*m_toRemove;
+	map<Kmer,vector<Kmer> >*m_ingoingEdges;
+	map<Kmer,vector<Kmer> >*m_outgoingEdges;
 
-	vector<vector<uint64_t> >*m_confettiToCheck;
+	vector<vector<Kmer> >*m_confettiToCheck;
 	vector<int>*m_confettiMaxCoverage;
 
 	int m_maximumDepth;
 
-	bool isCandidate(uint64_t key,Vertex*node,int wordSize);
+	bool isCandidate(Kmer key,Vertex*node,int wordSize);
 	
 	void printCounter(Parameters*parameters,GridTable*a);
 
-	bool isJunction(uint64_t vertex,map<uint64_t,vector<uint64_t> >*edges,int wordSize);
-	vector<uint64_t> computePath(map<uint64_t,vector<uint64_t> >*edges,uint64_t start,uint64_t end,set<uint64_t>*visited);
+	bool isJunction(Kmer vertex,map<Kmer ,vector<Kmer> >*edges,int wordSize);
+	vector<Kmer> computePath(map<Kmer,vector<Kmer> >*edges,Kmer start,Kmer end,set<Kmer >*visited);
 
-	void getPermutations(uint64_t kmer,int length,vector<uint64_t>*output,int wordSize);
+	void getPermutations(Kmer kmer,int length,vector<Kmer>*output,int wordSize);
 
 public:
 	MemoryConsumptionReducer();
@@ -87,14 +87,14 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 );
 
 	int getNumberOfRemovedVertices();
-	vector<uint64_t>*getVerticesToRemove();
+	vector<Kmer>*getVerticesToRemove();
 
 	void constructor(int size);
 
 	void processConfetti(uint64_t*a,int b);
 
-	map<uint64_t,vector<uint64_t> >*getIngoingEdges();
-	map<uint64_t,vector<uint64_t> >*getOutgoingEdges();
+	map<Kmer,vector<Kmer> >*getIngoingEdges();
+	map<Kmer,vector<Kmer> >*getOutgoingEdges();
 
 	void constructor();
 	void destructor();

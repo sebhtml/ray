@@ -82,9 +82,9 @@ void LibraryWorker::work(){
 			assert(m_seedingData!=NULL);
 			assert(m_EXTENSION_currentPosition<(int)m_seedingData->m_SEEDING_seeds[m_SEEDING_i].size());
 			#endif
-			uint64_t vertex=m_seedingData->m_SEEDING_seeds[m_SEEDING_i][m_EXTENSION_currentPosition];
+			Kmer vertex=m_seedingData->m_SEEDING_seeds[m_SEEDING_i][m_EXTENSION_currentPosition];
 		
-			m_readFetcher.constructor(vertex,m_outboxAllocator,m_inbox,m_outbox,m_parameters,m_virtualCommunicator,m_SEEDING_i);
+			m_readFetcher.constructor(&vertex,m_outboxAllocator,m_inbox,m_outbox,m_parameters,m_virtualCommunicator,m_SEEDING_i);
 			#ifdef ASSERT
 			assert(!m_readFetcher.isDone());
 			#endif

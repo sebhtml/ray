@@ -23,10 +23,10 @@
 
 #include<TipWatchdog.h>
 
-bool TipWatchdog::getApproval(ExtensionData*ed,DepthFirstSearchData*dfsData,int minimumCoverage,uint64_t SEEDING_currentVertex,
+bool TipWatchdog::getApproval(ExtensionData*ed,DepthFirstSearchData*dfsData,int minimumCoverage,Kmer SEEDING_currentVertex,
 	int w,BubbleData*bubbleData){
 	int id=dfsData->m_doChoice_tips_newEdges[0];
-	uint64_t key=ed->m_enumerateChoices_outgoingEdges[id];
+	Kmer key=ed->m_enumerateChoices_outgoingEdges[id];
 	int readsInFavorOfThis=ed->m_EXTENSION_readPositionsForVertices[key].size();
 	int coverageAtTheVertexLocation=(*ed->m_EXTENSION_coverages)[id];
 

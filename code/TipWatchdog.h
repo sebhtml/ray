@@ -28,7 +28,7 @@
 
 class TipWatchdog{
 public:
-	bool getApproval(ExtensionData*ed,DepthFirstSearchData*dfsData,int minimumCoverage,uint64_t currentVertex,int w,
+	bool getApproval(ExtensionData*ed,DepthFirstSearchData*dfsData,int minimumCoverage,Kmer currentVertex,int w,
 		BubbleData*bubbleData);
 };
 

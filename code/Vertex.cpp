@@ -29,18 +29,13 @@ using namespace std;
 
 void Vertex::constructor(){
 	m_coverage_lower=0;
-	#ifdef USE_DISTANT_SEGMENTS_GRAPH
-	m_ingoingEdges=NULL;
-	m_outgoingEdges=NULL;
-	#else
 	m_edges_lower=0;
-	#endif
 }
 
-void Vertex::setCoverage(uint64_t a,int coverage){
+void Vertex::setCoverage(Kmer*a,int coverage){
 	COVERAGE_TYPE max=0;
 	max=max-1;// underflow.
-	if(a==m_lowerKey){
+	if(*a==m_lowerKey){
 		if(m_coverage_lower==max){ // maximum value
 			return;
 		}
@@ -49,82 +44,48 @@ void Vertex::setCoverage(uint64_t a,int coverage){
 	}
 }
 
-int Vertex::getCoverage(uint64_t a){
+int Vertex::getCoverage(Kmer*a){
 	return m_coverage_lower;
 }
 
-vector<uint64_t> Vertex::getIngoingEdges(uint64_t a,int k){
-	#ifdef USE_DISTANT_SEGMENTS_GRAPH
-	VertexLinkedList*t=m_ingoingEdges;
-	while(t!=NULL){
-		b.push_back(t->getVertex());
-		t=t->getNext();
-	}
-	#else
-	if(a==m_lowerKey){
+vector<Kmer> Vertex::getIngoingEdges(Kmer *a,int k){
+	if((*a)==m_lowerKey){
 		return _getIngoingEdges(a,m_edges_lower,k);
 	}
 	return _getIngoingEdges(a,invertEdges(m_edges_lower),k);
-	#endif
 }
 
-vector<uint64_t> Vertex::getOutgoingEdges(uint64_t a,int k){
-	#ifdef USE_DISTANT_SEGMENTS_GRAPH
-	VertexLinkedList*t=m_outgoingEdges;
-	while(t!=NULL){
-		b.push_back(t->getVertex());
-		t=t->getNext();
-	}
-	#else
-	if(a==m_lowerKey){
+vector<Kmer> Vertex::getOutgoingEdges(Kmer*a,int k){
+	if(*a==m_lowerKey){
 		return _getOutgoingEdges(a,m_edges_lower,k);
 	}
 	return _getOutgoingEdges(a,invertEdges(m_edges_lower),k);
-	
-	#endif
 }
 
-#ifndef USE_DISTANT_SEGMENTS_GRAPH
-void Vertex::addIngoingEdge_ClassicMethod(uint64_t vertex,uint64_t a,int k){
+void Vertex::addIngoingEdge_ClassicMethod(Kmer*vertex,Kmer*a,int k){
 	uint8_t s1First=getFirstSegmentFirstCode(a,k,_SEGMENT_LENGTH);
 	// add s1First to edges.
 	uint8_t newBits=(1<<(s1First));
-	if(vertex==m_lowerKey){
+	if(*vertex==m_lowerKey){
 		m_edges_lower=m_edges_lower|newBits;
 	}
 }
-#endif
 
-void Vertex::deleteIngoingEdge(uint64_t vertex,uint64_t a,int k){
+void Vertex::deleteIngoingEdge(Kmer*vertex,Kmer*a,int k){
 	uint8_t s1First=getFirstSegmentFirstCode(a,k,_SEGMENT_LENGTH);
 	// delete s1First from edges.
 	uint8_t newBits=(1<<(s1First));
 	newBits=~newBits;
-	if(vertex==m_lowerKey){
+	if(*vertex==m_lowerKey){
 		m_edges_lower=m_edges_lower&newBits;
 	}
 }
 
-void Vertex::addIngoingEdge(uint64_t vertex,uint64_t a,int k){
-	#ifdef USE_DISTANT_SEGMENTS_GRAPH
-	VertexLinkedList*t=m_ingoingEdges;
-	while(t!=NULL){
-		if(t->getVertex()==a)
-			return;
-		t=t->getNext();
-	}
-
-	VertexLinkedList*n=(VertexLinkedList*)m->allocate(sizeof(VertexLinkedList));
-	n->constructor(a);
-	n->setNext(m_ingoingEdges);
-	m_ingoingEdges=n;
-	#else
+void Vertex::addIngoingEdge(Kmer*vertex,Kmer*a,int k){
 	addIngoingEdge_ClassicMethod(vertex,a,k);
-	#endif
 }
 
-#ifndef USE_DISTANT_SEGMENTS_GRAPH
-void Vertex::addOutgoingEdge_ClassicMethod(uint64_t vertex,uint64_t a,int k){
+void Vertex::addOutgoingEdge_ClassicMethod(Kmer*vertex,Kmer*a,int k){
 	uint8_t s2Last=getSecondSegmentLastCode(a,k,_SEGMENT_LENGTH);
 	// description of m_edges:
 	// outgoing  ingoing
@@ -135,44 +96,26 @@ void Vertex::addOutgoingEdge_ClassicMethod(uint64_t vertex,uint64_t a,int k){
 
 	// put s2Last in m_edges
 	uint64_t newBits=1<<(4+s2Last);
-	if(vertex==m_lowerKey){
+	if(*vertex==m_lowerKey){
 		m_edges_lower=m_edges_lower|newBits;
 	}
 }
 
-#endif
-
-void Vertex::deleteOutgoingEdge(uint64_t vertex,uint64_t a,int k){
+void Vertex::deleteOutgoingEdge(Kmer*vertex,Kmer*a,int k){
 	uint8_t s2Last=getSecondSegmentLastCode(a,k,_SEGMENT_LENGTH);
 	uint64_t newBits=1<<(4+s2Last);
 	newBits=~newBits;
-	if(vertex==m_lowerKey){
+	if(*vertex==m_lowerKey){
 		m_edges_lower=m_edges_lower&newBits;
 	}
 }
 
-void Vertex::addOutgoingEdge(uint64_t vertex,uint64_t a,int k){
-	#ifdef USE_DISTANT_SEGMENTS_GRAPH
-	VertexLinkedList*t=m_outgoingEdges;
-	while(t!=NULL){
-		if(t->getVertex()==a)
-			return;
-		t=t->getNext();
-	}
-
-	VertexLinkedList*n=(VertexLinkedList*)m->allocate(sizeof(VertexLinkedList));
-	n->constructor(a);
-	n->setNext(m_outgoingEdges);
-	m_outgoingEdges=n;
-
-	#else
+void Vertex::addOutgoingEdge(Kmer*vertex,Kmer*a,int k){
 	addOutgoingEdge_ClassicMethod(vertex,a,k);
-	#endif
 }
 
-
-uint8_t Vertex::getEdges(uint64_t a){
-	if(a==m_lowerKey){
+uint8_t Vertex::getEdges(Kmer*a){
+	if(*a==m_lowerKey){
 		return m_edges_lower;
 	}
 	return invertEdges(m_edges_lower);

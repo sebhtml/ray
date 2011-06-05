@@ -29,7 +29,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include <iostream>
 using namespace std;
 
-void ReadFetcher::constructor(uint64_t vertex,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,
+void ReadFetcher::constructor(Kmer*vertex,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,
 VirtualCommunicator*vc,uint64_t workerId){
 	m_workerId=workerId;
 	m_virtualCommunicator=vc;
@@ -37,7 +37,7 @@ VirtualCommunicator*vc,uint64_t workerId){
 	m_outboxAllocator=outboxAllocator;
 	m_outbox=outbox;
 	m_inbox=inbox;
-	m_vertex=vertex;
+	m_vertex=*vertex;
 	m_readsRequested=false;
 	m_reads.clear();
 	m_done=false;
@@ -53,11 +53,18 @@ void ReadFetcher::work(){
 		return;
 	}
 	if(!m_readsRequested){
+		int elementSize=5;
+		if(KMER_U64_ARRAY_SIZE+1>elementSize){
+			elementSize=KMER_U64_ARRAY_SIZE+1;
+		}
+
+
 		uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-		message2[0]=m_vertex;
-		message2[1]=(uint64_t)m_pointer;
-		int destination=m_parameters->_vertexRank(m_vertex);
-		Message aMessage(message2,5,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,m_parameters->getRank());
+		int bufferPosition=0;
+		m_vertex.pack(message2,&bufferPosition);
+		message2[bufferPosition++]=(uint64_t)m_pointer;
+		int destination=m_parameters->_vertexRank(&m_vertex);
+		Message aMessage(message2,elementSize,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,m_parameters->getRank());
 		//cout<<__func__<<" "<<__LINE__<<" Message vertex="<<m_vertex<<" pointer="<<m_pointer<<" worker="<<m_workerId<<endl;
 		//m_outbox->push_back(aMessage);
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
@@ -92,11 +99,17 @@ void ReadFetcher::work(){
 			m_done=true;
 			//cout<<__func__<<" "<<__LINE__<<" DONE "<<m_reads.size()<<" reads"<<endl;
 		}else{
+			int elementSize=5;
+			if(KMER_U64_ARRAY_SIZE+1>elementSize){
+				elementSize=KMER_U64_ARRAY_SIZE+1;
+			}
+
 			uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-			message2[0]=m_vertex;
-			message2[1]=(uint64_t)m_pointer;
-			int destination=m_parameters->_vertexRank(m_vertex);
-			Message aMessage(message2,5,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,m_parameters->getRank());
+			int bufferPosition=0;
+			m_vertex.pack(message2,&bufferPosition);
+			message2[bufferPosition++]=(uint64_t)m_pointer;
+			int destination=m_parameters->_vertexRank(&m_vertex);
+			Message aMessage(message2,elementSize,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,m_parameters->getRank());
 			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 			//m_outbox->push_back(aMessage);
 			//cout<<__func__<<" "<<__LINE__<<" Message vertex="<<m_vertex<<" pointer="<<m_pointer<<" worker="<<m_workerId<<endl;

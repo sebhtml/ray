@@ -117,87 +117,107 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		memcpy(memory,m_readSequence+p,wordSize);
 		memory[wordSize]='\0';
 		if(isValidDNA(memory)){
-			uint64_t a=wordId(memory);
+			Kmer a=wordId(memory);
 
 			int rankToFlush=0;
 
-			rankToFlush=vertexRank(a,size,wordSize);
-			m_bufferedData.addAt(rankToFlush,a);
+			rankToFlush=vertexRank(&a,size,wordSize);
+			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+				m_bufferedData.addAt(rankToFlush,a.getU64(i));
+			}
 
-			if(m_bufferedData.flush(rankToFlush,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_bufferedData.flush(rankToFlush,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,false)){
 				m_pendingMessages++;
 			}
 
 			if(m_hasPreviousVertex){
 				// outgoing edge
-				int outgoingRank=vertexRank(m_previousVertex,size,wordSize);
-				m_bufferedDataForOutgoingEdges.addAt(outgoingRank,m_previousVertex);
-				m_bufferedDataForOutgoingEdges.addAt(outgoingRank,a);
+				int outgoingRank=vertexRank(&m_previousVertex,size,wordSize);
+				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,m_previousVertex.getU64(i));
+				}
+				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,a.getU64(i));
+				}
 
-				if(m_bufferedDataForOutgoingEdges.needsFlushing(outgoingRank,2)){
-					if(m_bufferedData.flush(outgoingRank,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true)){
+				if(m_bufferedDataForOutgoingEdges.needsFlushing(outgoingRank,2*KMER_U64_ARRAY_SIZE)){
+					if(m_bufferedData.flush(outgoingRank,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true)){
 						m_pendingMessages++;
 					}
 				}
 
-				if(m_bufferedDataForOutgoingEdges.flush(outgoingRank,2,RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,rank,false)){
+				if(m_bufferedDataForOutgoingEdges.flush(outgoingRank,2*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,rank,false)){
 					m_pendingMessages++;
 				}
 
 				// ingoing edge
-				int ingoingRank=vertexRank(a,size,wordSize);
-				m_bufferedDataForIngoingEdges.addAt(ingoingRank,m_previousVertex);
-				m_bufferedDataForIngoingEdges.addAt(ingoingRank,a);
+				int ingoingRank=vertexRank(&a,size,wordSize);
+				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+					m_bufferedDataForIngoingEdges.addAt(ingoingRank,m_previousVertex.getU64(i));
+				}
+				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+					m_bufferedDataForIngoingEdges.addAt(ingoingRank,a.getU64(i));
+				}
 
-				if(m_bufferedDataForIngoingEdges.needsFlushing(ingoingRank,2)){
-					if(m_bufferedData.flush(ingoingRank,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true)){
+				if(m_bufferedDataForIngoingEdges.needsFlushing(ingoingRank,2*KMER_U64_ARRAY_SIZE)){
+					if(m_bufferedData.flush(ingoingRank,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true)){
 						m_pendingMessages++;
 					}
 				}
 
-				if(m_bufferedDataForIngoingEdges.flush(ingoingRank,2,RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,rank,false)){
+				if(m_bufferedDataForIngoingEdges.flush(ingoingRank,2*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,rank,false)){
 					m_pendingMessages++;
 				}
 			}
 
 			// reverse complement
-			uint64_t b=complementVertex(a,wordSize,m_colorSpaceMode);
+			Kmer b=complementVertex(&a,wordSize,m_colorSpaceMode);
 
-			rankToFlush=vertexRank(b,size,wordSize);
-			m_bufferedData.addAt(rankToFlush,b);
+			rankToFlush=vertexRank(&b,size,wordSize);
+			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+				m_bufferedData.addAt(rankToFlush,b.getU64(i));
+			}
 
-			if(m_bufferedData.flush(rankToFlush,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_bufferedData.flush(rankToFlush,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,false)){
 				m_pendingMessages++;
 			}
 
 			if(m_hasPreviousVertex){
 				// outgoing edge
-				int outgoingRank=vertexRank(b,size,wordSize);
-				m_bufferedDataForOutgoingEdges.addAt(outgoingRank,b);
-				m_bufferedDataForOutgoingEdges.addAt(outgoingRank,m_previousVertexRC);
+				int outgoingRank=vertexRank(&b,size,wordSize);
+				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,b.getU64(i));
+				}
+				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,m_previousVertexRC.getU64(i));
+				}
 
-				if(m_bufferedDataForOutgoingEdges.needsFlushing(outgoingRank,2)){
-					if(m_bufferedData.flush(outgoingRank,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true)){
+				if(m_bufferedDataForOutgoingEdges.needsFlushing(outgoingRank,2*KMER_U64_ARRAY_SIZE)){
+					if(m_bufferedData.flush(outgoingRank,1*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true)){
 						m_pendingMessages++;
 					}
 				}
 
-				if(m_bufferedDataForOutgoingEdges.flush(outgoingRank,2,RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,rank,false)){
+				if(m_bufferedDataForOutgoingEdges.flush(outgoingRank,2*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,rank,false)){
 					m_pendingMessages++;
 				}
 
 				// ingoing edge
-				int ingoingRank=vertexRank(m_previousVertexRC,size,wordSize);
-				m_bufferedDataForIngoingEdges.addAt(ingoingRank,b);
-				m_bufferedDataForIngoingEdges.addAt(ingoingRank,m_previousVertexRC);
+				int ingoingRank=vertexRank(&m_previousVertexRC,size,wordSize);
+				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+					m_bufferedDataForIngoingEdges.addAt(ingoingRank,b.getU64(i));
+				}
+				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+					m_bufferedDataForIngoingEdges.addAt(ingoingRank,m_previousVertexRC.getU64(i));
+				}
 
-				if(m_bufferedDataForIngoingEdges.needsFlushing(ingoingRank,2)){
-					if(m_bufferedData.flush(ingoingRank,1,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true)){
+				if(m_bufferedDataForIngoingEdges.needsFlushing(ingoingRank,2*KMER_U64_ARRAY_SIZE)){
+					if(m_bufferedData.flush(ingoingRank,1*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true)){
 						m_pendingMessages++;
 					}
 				}
 
-				if(m_bufferedDataForIngoingEdges.flush(ingoingRank,2,RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,rank,false)){
+				if(m_bufferedDataForIngoingEdges.flush(ingoingRank,2*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,rank,false)){
 					m_pendingMessages++;
 				}
 			}
@@ -372,8 +392,8 @@ void VerticesExtractor::checkPendingMessagesForReduction(StaticVector*outbox,int
  * send the vertices to the owners for permanent deletions
  *
  */
-bool VerticesExtractor::deleteVertices(vector<uint64_t>*verticesToRemove,GridTable*subgraph,Parameters*parameters,RingAllocator*m_outboxAllocator,
-	StaticVector*m_outbox,map<uint64_t,vector<uint64_t> >*ingoingEdges,map<uint64_t,vector<uint64_t> >*outgoingEdges
+bool VerticesExtractor::deleteVertices(vector<Kmer>*verticesToRemove,GridTable*subgraph,Parameters*parameters,RingAllocator*m_outboxAllocator,
+	StaticVector*m_outbox,map<Kmer,vector<Kmer> >*ingoingEdges,map<Kmer,vector<Kmer> >*outgoingEdges
 ){
 	#ifdef ASSERT
 	assert(m_pendingMessages>=0);
@@ -405,27 +425,31 @@ bool VerticesExtractor::deleteVertices(vector<uint64_t>*verticesToRemove,GridTab
 		assert(m_buffersForOutgoingEdgesToDelete.isEmpty());
 		#endif
 	}else if(m_deletionIterator<(uint64_t)verticesToRemove->size()){
-		uint64_t vertex=verticesToRemove->at(m_deletionIterator);
+		Kmer vertex=verticesToRemove->at(m_deletionIterator);
 		m_deletionIterator++;
-		int rankToFlush=vertexRank(vertex,size,wordSize);
-		m_bufferedData.addAt(rankToFlush,vertex);
+		int rankToFlush=vertexRank(&vertex,size,wordSize);
+		for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+			m_bufferedData.addAt(rankToFlush,vertex.getU64(i));
+		}
 
-		if(m_bufferedData.flush(rankToFlush,1,RAY_MPI_TAG_DELETE_VERTEX,m_outboxAllocator,m_outbox,rank,false)){
+		if(m_bufferedData.flush(rankToFlush,1*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_DELETE_VERTEX,m_outboxAllocator,m_outbox,rank,false)){
 			m_pendingMessages++;
 		}
 
-		uint64_t rcVertex=complementVertex(vertex,wordSize,color);
-		rankToFlush=vertexRank(rcVertex,size,wordSize);
-		m_bufferedData.addAt(rankToFlush,rcVertex);
+		Kmer rcVertex=complementVertex(&vertex,wordSize,color);
+		rankToFlush=vertexRank(&rcVertex,size,wordSize);
+		for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+			m_bufferedData.addAt(rankToFlush,rcVertex.getU64(i));
+		}
 
-		if(m_bufferedData.flush(rankToFlush,1,RAY_MPI_TAG_DELETE_VERTEX,m_outboxAllocator,m_outbox,rank,false)){
+		if(m_bufferedData.flush(rankToFlush,1*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_DELETE_VERTEX,m_outboxAllocator,m_outbox,rank,false)){
 			m_pendingMessages++;
 		}
 
 		// using ingoing edges, tell parents to delete the associated outgoing edge
 		// a maximum of 4 messages will be released
 
-		vector<uint64_t>ingoingEdgesForDirect=(*ingoingEdges)[vertex];
+		vector<Kmer>ingoingEdgesForDirect=(*ingoingEdges)[vertex];
 
 		#ifdef ASSERT
 		assert(ingoingEdgesForDirect.size()>=0);
@@ -433,32 +457,41 @@ bool VerticesExtractor::deleteVertices(vector<uint64_t>*verticesToRemove,GridTab
 		#endif
 
 		for(int j=0;j<(int)ingoingEdgesForDirect.size();j++){
-			uint64_t prefix=ingoingEdgesForDirect[j];
-			uint64_t suffix=vertex;
-			int rankToFlush=vertexRank(prefix,size,wordSize);
-			m_buffersForOutgoingEdgesToDelete.addAt(rankToFlush,prefix);
-			m_buffersForOutgoingEdgesToDelete.addAt(rankToFlush,suffix);
+			Kmer prefix=ingoingEdgesForDirect[j];
+			Kmer suffix=vertex;
+			int rankToFlush=vertexRank(&prefix,size,wordSize);
+			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+				m_buffersForOutgoingEdgesToDelete.addAt(rankToFlush,prefix.getU64(i));
+			}
+			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+				m_buffersForOutgoingEdgesToDelete.addAt(rankToFlush,suffix.getU64(i));
+			}
 
-			if(m_buffersForOutgoingEdgesToDelete.flush(rankToFlush,2,RAY_MPI_TAG_DELETE_OUTGOING_EDGE,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_buffersForOutgoingEdgesToDelete.flush(rankToFlush,2*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_DELETE_OUTGOING_EDGE,m_outboxAllocator,m_outbox,rank,false)){
 				incrementPendingMessages();
 			}
 
 			// flush RC too
 			// XXX: I am not sure that this procedure works too for color space, must verify.
 			prefix=rcVertex;
-			suffix=complementVertex(ingoingEdgesForDirect[j],wordSize,color);
-			rankToFlush=vertexRank(suffix,size,wordSize);
+			suffix=complementVertex(&(ingoingEdgesForDirect[j]),wordSize,color);
+			rankToFlush=vertexRank(&suffix,size,wordSize);
 
-			m_buffersForIngoingEdgesToDelete.addAt(rankToFlush,prefix);
-			m_buffersForIngoingEdgesToDelete.addAt(rankToFlush,suffix);
+			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+				m_buffersForIngoingEdgesToDelete.addAt(rankToFlush,prefix.getU64(i));
+			}
 
-			if(m_buffersForIngoingEdgesToDelete.flush(rankToFlush,2,RAY_MPI_TAG_DELETE_INGOING_EDGE,m_outboxAllocator,m_outbox,rank,false)){
+			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+				m_buffersForIngoingEdgesToDelete.addAt(rankToFlush,suffix.getU64(i));
+			}
+
+			if(m_buffersForIngoingEdgesToDelete.flush(rankToFlush,2*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_DELETE_INGOING_EDGE,m_outboxAllocator,m_outbox,rank,false)){
 				incrementPendingMessages();
 			}
 
 		}
 
-		vector<uint64_t>outgoingEdgesForDirect=(*outgoingEdges)[vertex];
+		vector<Kmer>outgoingEdgesForDirect=(*outgoingEdges)[vertex];
 
 		#ifdef ASSERT
 		assert(outgoingEdgesForDirect.size()>=0);
@@ -468,26 +501,34 @@ bool VerticesExtractor::deleteVertices(vector<uint64_t>*verticesToRemove,GridTab
 		// using outgoing edges, tell children to delete the associated ingoing edge
 		// a maximum of 4 messages will be released
 		for(int j=0;j<(int)outgoingEdgesForDirect.size();j++){
-			uint64_t prefix=vertex;
-			uint64_t suffix=outgoingEdgesForDirect[j];
-			int rankToFlush=vertexRank(suffix,size,wordSize);
-			m_buffersForIngoingEdgesToDelete.addAt(rankToFlush,prefix);
-			m_buffersForIngoingEdgesToDelete.addAt(rankToFlush,suffix);
+			Kmer prefix=vertex;
+			Kmer suffix=outgoingEdgesForDirect[j];
+			int rankToFlush=vertexRank(&suffix,size,wordSize);
+			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+				m_buffersForIngoingEdgesToDelete.addAt(rankToFlush,prefix.getU64(i));
+			}
+			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+				m_buffersForIngoingEdgesToDelete.addAt(rankToFlush,suffix.getU64(i));
+			}
 
-			if(m_buffersForIngoingEdgesToDelete.flush(rankToFlush,2,RAY_MPI_TAG_DELETE_INGOING_EDGE,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_buffersForIngoingEdgesToDelete.flush(rankToFlush,2*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_DELETE_INGOING_EDGE,m_outboxAllocator,m_outbox,rank,false)){
 				incrementPendingMessages();
 			}
 
 			// flush RC too
 			// XXX: I am not sure that this procedure works too for color space, must verify.
-			prefix=complementVertex(outgoingEdgesForDirect[j],wordSize,color);
+			prefix=complementVertex(&(outgoingEdgesForDirect[j]),wordSize,color);
 			suffix=rcVertex;
-			rankToFlush=vertexRank(prefix,size,wordSize);
+			rankToFlush=vertexRank(&prefix,size,wordSize);
 
-			m_buffersForOutgoingEdgesToDelete.addAt(rankToFlush,prefix);
-			m_buffersForOutgoingEdgesToDelete.addAt(rankToFlush,suffix);
+			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+				m_buffersForOutgoingEdgesToDelete.addAt(rankToFlush,prefix.getU64(i));
+			}
+			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+				m_buffersForOutgoingEdgesToDelete.addAt(rankToFlush,suffix.getU64(i));
+			}
 
-			if(m_buffersForOutgoingEdgesToDelete.flush(rankToFlush,2,RAY_MPI_TAG_DELETE_OUTGOING_EDGE,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_buffersForOutgoingEdgesToDelete.flush(rankToFlush,2*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_DELETE_OUTGOING_EDGE,m_outboxAllocator,m_outbox,rank,false)){
 				incrementPendingMessages();
 			}
 		}

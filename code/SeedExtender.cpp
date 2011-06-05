@@ -33,10 +33,10 @@
 #include <crypto.h>
 using namespace std;
 
-void SeedExtender::extendSeeds(vector<vector<uint64_t> >*seeds,ExtensionData*ed,int theRank,StaticVector*outbox,
-  uint64_t*currentVertex,FusionData*fusionData,RingAllocator*outboxAllocator,bool*edgesRequested,int*outgoingEdgeIndex,
+void SeedExtender::extendSeeds(vector<vector<Kmer> >*seeds,ExtensionData*ed,int theRank,StaticVector*outbox,
+  Kmer*currentVertex,FusionData*fusionData,RingAllocator*outboxAllocator,bool*edgesRequested,int*outgoingEdgeIndex,
 int*last_value,bool*vertexCoverageRequested,int wordSize,bool*colorSpaceMode,int size,bool*vertexCoverageReceived,
-int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,vector<uint64_t>*receivedOutgoingEdges,Chooser*chooser,
+int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,vector<Kmer>*receivedOutgoingEdges,Chooser*chooser,
 BubbleData*bubbleData,
 int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 	if(ed->m_EXTENSION_currentSeedIndex==(int)(*seeds).size()){
@@ -146,7 +146,7 @@ receivedOutgoingEdges);
 // populated variables.
 void SeedExtender::enumerateChoices(bool*edgesRequested,ExtensionData*ed,bool*edgesReceived,RingAllocator*outboxAllocator,
 	int*outgoingEdgeIndex,StaticVector*outbox,
-uint64_t*currentVertex,int theRank,bool*vertexCoverageRequested,vector<uint64_t>*receivedOutgoingEdges,
+Kmer*currentVertex,int theRank,bool*vertexCoverageRequested,vector<Kmer>*receivedOutgoingEdges,
 bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,int wordSize
 ){
 	if(!(*edgesRequested)){
@@ -159,7 +159,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 		(*outgoingEdgeIndex)=0;
 	}else if((*edgesReceived)){
 		if((*outgoingEdgeIndex)<(int)(*receivedOutgoingEdges).size()){
-			uint64_t kmer=(*receivedOutgoingEdges)[(*outgoingEdgeIndex)];
+			Kmer kmer=(*receivedOutgoingEdges)[(*outgoingEdgeIndex)];
 			// get the coverage of these.
 			if(!(*vertexCoverageRequested)&&(m_cache).find(kmer,false)!=NULL){
 				(*vertexCoverageRequested)=true;
@@ -171,9 +171,10 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				#endif
 			}else if(!(*vertexCoverageRequested)){
 				uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
-				message[0]=(uint64_t)kmer;
-				int dest=vertexRank(message[0],size,wordSize);
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
+				int bufferPosition=0;
+				kmer.pack(message,&bufferPosition);
+				int dest=vertexRank(&kmer,size,wordSize);
+				Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
 				(*outbox).push_back(aMessage);
 				(*vertexCoverageRequested)=true;
 				(*vertexCoverageReceived)=false;
@@ -223,12 +224,12 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
  *      if this fails, Ray attempts to choose by resolving bubbles
  */
 void SeedExtender::doChoice(RingAllocator*outboxAllocator,int*outgoingEdgeIndex,StaticVector*outbox,
-	uint64_t*currentVertex,BubbleData*bubbleData,int theRank,
+	Kmer*currentVertex,BubbleData*bubbleData,int theRank,
 	int wordSize,
 ExtensionData*ed,int minimumCoverage,int maxCoverage,OpenAssemblerChooser*oa,Chooser*chooser,bool*colorSpaceMode,
-	vector<vector<uint64_t> >*seeds,
+	vector<vector<Kmer> >*seeds,
 bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,int size,
-int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingEdges
+int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 ){
 	if(m_expiredReads.count(ed->m_EXTENSION_currentPosition)>0){
 		for(int i=0;i<(int)m_expiredReads[ed->m_EXTENSION_currentPosition].size();i++){
@@ -287,12 +288,12 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<uint64_t>*receivedOutgoingE
 		#ifdef SHOW_EXTEND_WITH_SEED
 		cout<<"Error: The seed contains a choice not supported by the graph."<<endl;
 		cout<<"Extension length: "<<ed->m_EXTENSION_extension->size()<<" vertices"<<endl;
-		cout<<"position="<<ed->m_EXTENSION_currentPosition<<" "<<idToWord(ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition],wordSize)<<" with "<<ed->m_enumerateChoices_outgoingEdges.size()<<" choices ";
+		cout<<"position="<<ed->m_EXTENSION_currentPosition<<" "<<idToWord(&(ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition]),wordSize)<<" with "<<ed->m_enumerateChoices_outgoingEdges.size()<<" choices ";
 		cout<<endl;
 		cout<<"Seed length: "<<ed->m_EXTENSION_currentSeed.size()<<" vertices"<<endl;
 		cout<<"Choices: ";
 		for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
-			cout<<" "<<idToWord(ed->m_enumerateChoices_outgoingEdges[i],wordSize);
+			cout<<" "<<idToWord(&(ed->m_enumerateChoices_outgoingEdges[i]),wordSize);
 		}
 		cout<<endl;
 		cout<<"ComplementSeed="<<ed->m_EXTENSION_complementedSeed<<endl;
@@ -523,7 +524,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 
 					// store visited vertices for bubble detection purposes.
 					bubbleData->m_BUBBLE_visitedVertices.push_back(m_dfsData->m_depthFirstSearchVisitedVertices_vector);
-					for(map<uint64_t,int>::iterator i=m_dfsData->m_coverages.begin();
+					for(map<Kmer,int>::iterator i=m_dfsData->m_coverages.begin();
 						i!=m_dfsData->m_coverages.end();i++){
 						bubbleData->m_coverages[i->first]=i->second;
 					}
@@ -591,14 +592,14 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 
 		// no choice possible...
 		if(!ed->m_EXTENSION_complementedSeed || !ed->m_EXTENSION_complementedSeed2){
-			vector<uint64_t> complementedSeed;
+			vector<Kmer> complementedSeed;
 			int theCurrentSize=ed->m_EXTENSION_currentSeed.size();
 			printf("Rank %i reached %i vertices from seed %i (changing direction)\n",theRank,theCurrentSize,
 				m_ed->m_EXTENSION_currentSeedIndex+1);
 			fflush(stdout);
 
 			for(int i=ed->m_EXTENSION_extension->size()-1;i>=0;i--){
-				complementedSeed.push_back(complementVertex(ed->m_EXTENSION_extension->at(i),wordSize,(*colorSpaceMode)));
+				complementedSeed.push_back(complementVertex(&(ed->m_EXTENSION_extension->at(i)),wordSize,(*colorSpaceMode)));
 			}
 
 			ed->m_EXTENSION_currentPosition=0;
@@ -628,18 +629,18 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 	}
 }
 
-void SeedExtender::printTree(VERTEX_TYPE root,
-map<VERTEX_TYPE,set<VERTEX_TYPE> >*arcs,map<VERTEX_TYPE,int>*coverages,int depth,set<VERTEX_TYPE>*visited){
+void SeedExtender::printTree(Kmer root,
+map<Kmer,set<Kmer> >*arcs,map<Kmer,int>*coverages,int depth,set<Kmer>*visited){
 	if(arcs->count(root)==0)
 		return;
 	if(visited->count(root)>0)
 		return;
 	visited->insert(root);
-	set<VERTEX_TYPE> children=(*arcs)[root];
-	for(set<VERTEX_TYPE>::iterator i=children.begin();i!=children.end();++i){
+	set<Kmer> children=(*arcs)[root];
+	for(set<Kmer>::iterator i=children.begin();i!=children.end();++i){
 		for(int j=0;j<depth;j++)
 			printf(" ");
-		string s=idToWord(*i,m_parameters->getWordSize());
+		string s=idToWord(&(*i),m_parameters->getWordSize());
 		#ifdef ASSERT
 		assert(coverages->count(*i)>0);
 		#endif
@@ -650,7 +651,7 @@ map<VERTEX_TYPE,set<VERTEX_TYPE> >*arcs,map<VERTEX_TYPE,int>*coverages,int depth
 		printf("%s coverage: %i depth: %i\n",s.c_str(),coverage,depth);
 
 		if(coverages->count(*i)==0||coverage==0){
-			cout<<"Error: "<<idToWord(*i,m_parameters->getWordSize())<<" don't have a coverage value"<<endl;
+			cout<<"Error: "<<idToWord(&(*i),m_parameters->getWordSize())<<" don't have a coverage value"<<endl;
 		}
 
 		if(depth==1)
@@ -660,8 +661,8 @@ map<VERTEX_TYPE,set<VERTEX_TYPE> >*arcs,map<VERTEX_TYPE,int>*coverages,int depth
 	}
 }
 
-void SeedExtender::storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<vector<uint64_t> >*seeds,
-uint64_t*currentVertex,BubbleData*bubbleData){
+void SeedExtender::storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<vector<Kmer> >*seeds,
+Kmer *currentVertex,BubbleData*bubbleData){
 	if(ed->m_EXTENSION_extension->size()>=100){
 		if(m_parameters->showEndingContext()){
 			cout<<"Choosing... (impossible!)"<<endl;
@@ -671,22 +672,22 @@ uint64_t*currentVertex,BubbleData*bubbleData){
 
 		if(ed->m_enumerateChoices_outgoingEdges.size()>1 && ed->m_EXTENSION_readsInRange->size()>0
 		&&m_parameters->showEndingContext()){
-			map<VERTEX_TYPE,set<VERTEX_TYPE> >arcs;
+			map<Kmer,set<Kmer> >arcs;
 			for(int i=0;i<(int)bubbleData->m_BUBBLE_visitedVertices.size();i++){
-				VERTEX_TYPE root=*currentVertex;
-				VERTEX_TYPE child=ed->m_enumerateChoices_outgoingEdges[i];
+				Kmer root=*currentVertex;
+				Kmer child=ed->m_enumerateChoices_outgoingEdges[i];
 				arcs[root].insert(child);
 				for(int j=0;j<(int)bubbleData->m_BUBBLE_visitedVertices[i].size();j+=2){
-					VERTEX_TYPE first=bubbleData->m_BUBBLE_visitedVertices[i][j];
-					VERTEX_TYPE second=bubbleData->m_BUBBLE_visitedVertices[i][j+1];
+					Kmer first=bubbleData->m_BUBBLE_visitedVertices[i][j];
+					Kmer second=bubbleData->m_BUBBLE_visitedVertices[i][j+1];
 					arcs[first].insert(second);
 				}
 			}
 			printf("\n");
 			printf("Tree\n");
-			string s=idToWord(*currentVertex,m_parameters->getWordSize());
+			string s=idToWord(currentVertex,m_parameters->getWordSize());
 			printf("%s %i\n",s.c_str(),ed->m_currentCoverage);
-			set<VERTEX_TYPE> visited;
+			set<Kmer> visited;
 			printTree(*currentVertex,&arcs,
 					&bubbleData->m_coverages,1,&visited);
 			printf("\n");
@@ -730,8 +731,8 @@ uint64_t*currentVertex,BubbleData*bubbleData){
 }
 
 void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector*outbox,RingAllocator*outboxAllocator,
-  int*outgoingEdgeIndex,int*last_value,uint64_t*currentVertex,int theRank,bool*vertexCoverageRequested,int wordSize,
- bool*colorSpaceMode,int size,vector<vector<uint64_t> >*seeds){
+  int*outgoingEdgeIndex,int*last_value,Kmer*currentVertex,int theRank,bool*vertexCoverageRequested,int wordSize,
+ bool*colorSpaceMode,int size,vector<vector<Kmer> >*seeds){
 	if(!ed->m_EXTENSION_directVertexDone){
 		if(!ed->m_EXTENSION_VertexAssembled_requested){
 			//cout<<__func__<<endl;
@@ -748,10 +749,11 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			}
 			ed->m_EXTENSION_VertexAssembled_requested=true;
 			uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(2*sizeof(uint64_t));
-			message[0]=(uint64_t)(*currentVertex);
-			message[1]=0;
-			int destination=vertexRank((*currentVertex),size,wordSize);
-			Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_ASK_IS_ASSEMBLED,theRank);
+			int bufferPosition=0;
+			currentVertex->pack(message,&bufferPosition);
+			message[bufferPosition++]=0;
+			int destination=vertexRank(currentVertex,size,wordSize);
+			Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_ASK_IS_ASSEMBLED,theRank);
 			(*outbox).push_back(aMessage);
 			ed->m_EXTENSION_VertexAssembled_received=false;
 		}else if(ed->m_EXTENSION_VertexAssembled_received){
@@ -780,11 +782,11 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 	}
 }
 
-void SeedExtender::markCurrentVertexAsAssembled(uint64_t*currentVertex,RingAllocator*outboxAllocator,int*outgoingEdgeIndex, 
+void SeedExtender::markCurrentVertexAsAssembled(Kmer*currentVertex,RingAllocator*outboxAllocator,int*outgoingEdgeIndex, 
 StaticVector*outbox,int size,int theRank,ExtensionData*ed,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,bool*edgesRequested,
-vector<uint64_t>*receivedOutgoingEdges,Chooser*chooser,
-BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpaceMode,int wordSize,vector<vector<uint64_t> >*seeds
+vector<Kmer>*receivedOutgoingEdges,Chooser*chooser,
+BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpaceMode,int wordSize,vector<vector<Kmer> >*seeds
 ){
 	if(!m_messengerInitiated){
 		m_hasPairedSequences=false;
@@ -812,7 +814,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 		#endif
 
 		int progression=ed->m_EXTENSION_extension->size()-1;
-		uint64_t vertex=*currentVertex;
+		Kmer vertex=*currentVertex;
 		m_vertexMessenger.constructor(vertex,waveId,progression,&m_matesToMeet,m_inbox,outbox,outboxAllocator,m_parameters);
 	}else if(!m_vertexMessenger.isDone()){
 		m_vertexMessenger.work();
@@ -825,7 +827,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 		bool inserted;
 		*((m_cache.insert(*currentVertex,&m_cacheAllocator,&inserted))->getValue())=ed->m_currentCoverage;
 		uint64_t compactEdges=m_vertexMessenger.getEdges();
-		*receivedOutgoingEdges=_getOutgoingEdges(*currentVertex,compactEdges,m_parameters->getWordSize());
+		*receivedOutgoingEdges=_getOutgoingEdges(currentVertex,compactEdges,m_parameters->getWordSize());
 		ed->m_EXTENSION_extension->push_back((*currentVertex));
 		ed->m_extensionCoverageValues->push_back(*receivedVertexCoverage);
 
@@ -1051,7 +1053,7 @@ void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAll
 	m_bubbleTool.constructor(parameters);
 }
 
-void SeedExtender::inspect(ExtensionData*ed,uint64_t*currentVertex){
+void SeedExtender::inspect(ExtensionData*ed,Kmer*currentVertex){
 	#ifdef ASSERT
 	assert(ed->m_enumerateChoices_outgoingEdges.size()==ed->m_EXTENSION_coverages->size());
 	#endif
@@ -1059,7 +1061,7 @@ void SeedExtender::inspect(ExtensionData*ed,uint64_t*currentVertex){
 	int wordSize=m_parameters->getWordSize();
 	cout<<endl;
 	cout<<"*****************************************"<<endl;
-	cout<<"CurrentVertex="<<idToWord(*currentVertex,wordSize)<<" @"<<ed->m_EXTENSION_extension->size()<<endl;
+	cout<<"CurrentVertex="<<idToWord(currentVertex,wordSize)<<" @"<<ed->m_EXTENSION_extension->size()<<endl;
 	#ifdef ASSERT
 	assert(ed->m_currentCoverage<=m_parameters->getMaximumAllowedCoverage());
 	#endif
@@ -1069,8 +1071,8 @@ void SeedExtender::inspect(ExtensionData*ed,uint64_t*currentVertex){
 
 	cout<<endl;
 	for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
-		string vertex=idToWord(ed->m_enumerateChoices_outgoingEdges[i],wordSize);
-		uint64_t key=ed->m_enumerateChoices_outgoingEdges[i];
+		string vertex=idToWord(&(ed->m_enumerateChoices_outgoingEdges[i]),wordSize);
+		Kmer key=ed->m_enumerateChoices_outgoingEdges[i];
 		cout<<endl;
 		cout<<"Choice #"<<i+1<<endl;
 		cout<<"Vertex: "<<vertex<<endl;
@@ -1105,7 +1107,7 @@ void SeedExtender::removeUnfitLibraries(){
 	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
 		map<int,vector<int> > classifiedValues;
 		map<int,vector<uint64_t> > reads;
-		uint64_t vertex=m_ed->m_enumerateChoices_outgoingEdges[i];
+		Kmer vertex=m_ed->m_enumerateChoices_outgoingEdges[i];
 		for(int j=0;j<(int)m_ed->m_EXTENSION_pairedReadPositionsForVertices[vertex].size();j++){
 			int value=m_ed->m_EXTENSION_pairedReadPositionsForVertices[vertex][j];
 			int library=m_ed->m_EXTENSION_pairedLibrariesForVertices[vertex][j];
@@ -1195,7 +1197,7 @@ void SeedExtender::showReadsInRange(){
 	cout.flush();
 }
 
-void SeedExtender::printExtensionStatus(uint64_t*currentVertex){
+void SeedExtender::printExtensionStatus(Kmer*currentVertex){
 	int theRank=m_parameters->getRank();
 	int theCurrentSize=m_ed->m_EXTENSION_extension->size();
 	//now();
@@ -1207,7 +1209,7 @@ void SeedExtender::printExtensionStatus(uint64_t*currentVertex){
 	}
 	#endif
 	printf("Rank %i reached %i vertices (%s) from seed %i\n",theRank,theCurrentSize,
-		idToWord(*currentVertex,m_parameters->getWordSize()).c_str(),
+		idToWord(currentVertex,m_parameters->getWordSize()).c_str(),
 		m_ed->m_EXTENSION_currentSeedIndex+1);
 
 	fflush(stdout);

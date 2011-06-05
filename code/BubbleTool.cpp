@@ -27,28 +27,28 @@
 #include <iostream>
 using namespace std;
 
-void BubbleTool::printStuff(uint64_t root,vector<vector<uint64_t> >*trees,
-map<uint64_t,int>*coverages){
+void BubbleTool::printStuff(Kmer root,vector<vector<Kmer> >*trees,
+map<Kmer,int>*coverages){
 	int m_wordSize=m_parameters->getWordSize();
 	cout<<"Trees="<<trees->size()<<endl;
-	cout<<"root="<<idToWord(root,m_wordSize)<<endl;
+	cout<<"root="<<idToWord(&root,m_wordSize)<<endl;
 	cout<<"digraph{"<<endl;
-	map<uint64_t,set<uint64_t> > printedEdges;
+	map<Kmer,set<Kmer> > printedEdges;
 	
-	for(map<uint64_t,int>::iterator i=coverages->begin();i!=coverages->end();i++){
-		cout<<idToWord(i->first,m_wordSize)<<" [label=\""<<idToWord(i->first,m_wordSize)<<" "<<i->second<<"\"]"<<endl;
+	for(map<Kmer ,int>::iterator i=coverages->begin();i!=coverages->end();i++){
+		cout<<idToWord(&(i->first),m_wordSize)<<" [label=\""<<idToWord(&(i->first),m_wordSize)<<" "<<i->second<<"\"]"<<endl;
 	}
 	for(int j=0;j<(int)trees->size();j++){
 		for(int i=0;i<(int)trees->at(j).size();i+=2){
-			uint64_t a=trees->at(j).at(i+0);
+			Kmer a=trees->at(j).at(i+0);
 			#ifdef ASSERT
 			assert(i+1<(int)trees->at(j).size());
 			#endif
-			uint64_t b=trees->at(j).at(i+1);
+			Kmer b=trees->at(j).at(i+1);
 			if(printedEdges.count(a)>0 && printedEdges[a].count(b)>0){
 				continue;
 			}
-			cout<<idToWord(a,m_wordSize)<<" -> "<<idToWord(b,m_wordSize)<<endl;
+			cout<<idToWord(&a,m_wordSize)<<" -> "<<idToWord(&b,m_wordSize)<<endl;
 			printedEdges[a].insert(b);
 		}
 	}
@@ -60,8 +60,8 @@ map<uint64_t,int>*coverages){
 /**
  *
  */
-bool BubbleTool::isGenuineBubble(uint64_t root,vector<vector<uint64_t> >*trees,
-map<uint64_t,int>*coverages){
+bool BubbleTool::isGenuineBubble(Kmer root,vector<vector<Kmer > >*trees,
+map<Kmer ,int>*coverages){
 	#ifdef NO_BUBBLES
 	return false;
 	#endif
@@ -73,10 +73,10 @@ map<uint64_t,int>*coverages){
 	int m_wordSize=m_parameters->getWordSize();
 	for(int i=0;i<(int)trees->size();i++){
 		for(int j=0;j<(int)trees->at(i).size();j+=2){
-			uint64_t a=trees->at(i).at(j+0);
-			uint64_t b=trees->at(i).at(j+1);
-			string as=idToWord(a,m_wordSize);
-			string bs=idToWord(b,m_wordSize);
+			Kmer a=trees->at(i).at(j+0);
+			Kmer b=trees->at(i).at(j+1);
+			string as=idToWord(&a,m_wordSize);
+			string bs=idToWord(&b,m_wordSize);
 			assert(as.substr(1,m_wordSize-1)==bs.substr(0,m_wordSize-1));
 		}
 	}
@@ -96,16 +96,16 @@ map<uint64_t,int>*coverages){
 	// substitution SNP is d=0
 	// del is 1, 2, or 3
 
-	map<uint64_t,int> coveringNumber;
+	map<Kmer ,int> coveringNumber;
 
-	uint64_t target=0;
+	Kmer target;
 	bool foundTarget=false;
 	for(int j=0;j<(int)trees->size();j++){
 		for(int i=0;i<(int)trees->at(j).size();i+=2){
-			uint64_t a=trees->at(j).at(i+1);
+			Kmer a=trees->at(j).at(i+1);
 			#ifdef ASSERT
 			if(coverages->count(a)==0){
-				cout<<idToWord(a,m_parameters->getWordSize())<<" has no coverage."<<endl;
+				cout<<idToWord(&a,m_parameters->getWordSize())<<" has no coverage."<<endl;
 			}
 			assert(coverages->count(a)>0);
 			#endif
@@ -141,14 +141,14 @@ map<uint64_t,int>*coverages){
 	assert(targetCoverage>0);
 	#endif
 
-	vector<map<uint64_t,uint64_t> > parents;
+	vector<map<Kmer ,Kmer > > parents;
 
 	for(int j=0;j<(int)trees->size();j++){
-		map<uint64_t,uint64_t> aVector;
+		map<Kmer ,Kmer > aVector;
 		parents.push_back(aVector);
 		for(int i=0;i<(int)trees->at(j).size();i+=2){
-			uint64_t a=trees->at(j).at(i+0);
-			uint64_t b=trees->at(j).at(i+1);
+			Kmer a=trees->at(j).at(i+0);
+			Kmer b=trees->at(j).at(i+1);
 			parents[j][b]=a;
 		}
 	}
@@ -168,17 +168,17 @@ map<uint64_t,int>*coverages){
 	for(int j=0;j<(int)trees->size();j++){
 		vector<int> aVector;
 		observedValues.push_back(aVector);
-		set<uint64_t> visited;
+		set<Kmer > visited;
 		
-		uint64_t startingPoint=trees->at(j).at(0);
-		uint64_t current=target;
+		Kmer startingPoint=trees->at(j).at(0);
+		Kmer current=target;
 
 		while(current!=startingPoint){
 			if(visited.count(current)>0){
 				return false;
 			}
 			visited.insert(current);
-			uint64_t theParent=parents[j][current];
+			Kmer theParent=parents[j][current];
 			int coverageValue=(*coverages)[theParent];
 
 			observedValues[j].push_back(coverageValue);
@@ -238,7 +238,7 @@ map<uint64_t,int>*coverages){
 		
 		if(m_parameters->debugBubbles()){
 			cout<<"This is a genuine bubble"<<endl;
-			cout<<"root="<<idToWord(root,m_wordSize)<<" target="<<idToWord(target,m_wordSize)<<endl;
+			cout<<"root="<<idToWord(&root,m_wordSize)<<" target="<<idToWord(&target,m_wordSize)<<endl;
 		}
 
 		return true;
@@ -251,7 +251,7 @@ map<uint64_t,int>*coverages){
 	return false;
 }
 
-uint64_t BubbleTool::getTraversalStartingPoint(){
+Kmer BubbleTool::getTraversalStartingPoint(){
 	return m_choice;
 }
 

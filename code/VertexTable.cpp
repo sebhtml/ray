@@ -54,33 +54,33 @@ uint64_t VertexTable::size(){
 	return m_size;
 }
 
-VertexData*VertexTable::find(uint64_t key){
-	uint64_t lowerKey;
-	int bin=hash_function_2(key,m_wordSize,&lowerKey)%m_gridSize;
+VertexData*VertexTable::find(Kmer*key){
+	Kmer lowerKey;
+	int bin=hash_function_2(*key,m_wordSize,&lowerKey)%m_gridSize;
 
-	if(key<lowerKey){
-		lowerKey=key;
+	if(key->isLower(&lowerKey)){
+		lowerKey=*key;
 	}
 	for(int i=0;i<m_gridSizes[bin];i++){
 		VertexData*gridEntry=m_gridData[bin]+i;
-		if(gridEntry->m_lowerKey==lowerKey){
+		if(gridEntry->m_lowerKey.isEqual(&lowerKey)){
 			return move(bin,i);
 		}
 	}
 	return NULL;
 }
 
-VertexData*VertexTable::insert(uint64_t key){
-	uint64_t lowerKey;
+VertexData*VertexTable::insert(Kmer*key){
+	Kmer lowerKey;
 	m_inserted=false;
-	int bin=hash_function_2(key,m_wordSize,&lowerKey)%m_gridSize;
-	if(key<lowerKey){
-		lowerKey=key;
+	int bin=hash_function_2(*key,m_wordSize,&lowerKey)%m_gridSize;
+	if(key->isLower(&lowerKey)){
+		lowerKey=*key;
 	}
 	//cout<<key<<" bin="<<bin<<" size="<<m_gridSizes[bin]<<endl;
 	for(int i=0;i<m_gridSizes[bin];i++){
 		VertexData*gridEntry=m_gridData[bin]+i;
-		if(gridEntry->m_lowerKey==lowerKey){
+		if(gridEntry->m_lowerKey.isEqual(&lowerKey)){
 			//cout<<"Found "<<key<<" in bin "<<bin<<endl;
 			return move(bin,i);
 		}
@@ -113,8 +113,7 @@ bool VertexTable::inserted(){
 	return m_inserted;
 }
 
-void VertexTable::remove(uint64_t a){
-
+void VertexTable::remove(Kmer*a){
 }
 
 VertexData*VertexTable::getElementInBin(int bin,int element){
@@ -183,7 +182,7 @@ void VertexTable::setWordSize(int w){
 	m_wordSize=w;
 }
 
-void VertexTable::addRead(uint64_t a,ReadAnnotation*e){
+void VertexTable::addRead(Kmer*a,ReadAnnotation*e){
 	VertexData*i=insert(a);
 	i->addRead(a,e);
 	#ifdef ASSERT
@@ -192,7 +191,7 @@ void VertexTable::addRead(uint64_t a,ReadAnnotation*e){
 	#endif
 }
 
-ReadAnnotation*VertexTable::getReads(uint64_t a){
+ReadAnnotation*VertexTable::getReads(Kmer*a){
 	VertexData*i=find(a);
 	if(i==NULL){
 		return NULL;
@@ -201,12 +200,12 @@ ReadAnnotation*VertexTable::getReads(uint64_t a){
 	return reads;
 }
 
-void VertexTable::addDirection(uint64_t a,Direction*d){
+void VertexTable::addDirection(Kmer*a,Direction*d){
 	VertexData*i=insert(a);
 	i->addDirection(a,d);
 }
 
-vector<Direction> VertexTable::getDirections(uint64_t a){
+vector<Direction> VertexTable::getDirections(Kmer*a){
 	VertexData*i=find(a);
 	if(i==NULL){
 		vector<Direction> p;
@@ -215,7 +214,7 @@ vector<Direction> VertexTable::getDirections(uint64_t a){
 	return i->getDirections(a);
 }
 
-void VertexTable::clearDirections(uint64_t a){
+void VertexTable::clearDirections(Kmer*a){
 	VertexData*i=find(a);
 	if(i!=NULL){
 		i->clearDirections(a);

@@ -39,7 +39,7 @@ using namespace std;
 class Vertex{
 
 public:
-	uint64_t m_lowerKey;
+	Kmer m_lowerKey;
 	/*
  *	The coverage of the vertex
  */
@@ -54,28 +54,21 @@ public:
 	//
 	// 7 6 5 4 3 2 1 0
 	
-	#ifdef USE_DISTANT_SEGMENTS_GRAPH
-	VertexLinkedList*m_ingoingEdges;
-	VertexLinkedList*m_outgoingEdges;
-	#else
 	uint8_t m_edges_lower;
-	#endif
 
-	#ifndef USE_DISTANT_SEGMENTS_GRAPH
-	void addOutgoingEdge_ClassicMethod(uint64_t vertex,uint64_t a,int k);
-	void addIngoingEdge_ClassicMethod(uint64_t vertex,uint64_t a,int k);
-	#endif
+	void addOutgoingEdge_ClassicMethod(Kmer*vertex,Kmer*a,int k);
+	void addIngoingEdge_ClassicMethod(Kmer*vertex,Kmer*a,int k);
 
 	void constructor();
-	void setCoverage(uint64_t a,int coverage);
-	int getCoverage(uint64_t p);
-	void addOutgoingEdge(uint64_t vertex,uint64_t a,int k);
-	void addIngoingEdge(uint64_t vertex,uint64_t a,int k);
-	vector<uint64_t> getIngoingEdges(uint64_t a,int k);
-	vector<uint64_t> getOutgoingEdges(uint64_t a,int k);
-	uint8_t getEdges(uint64_t a);
-	void deleteIngoingEdge(uint64_t vertex,uint64_t a,int k);
-	void deleteOutgoingEdge(uint64_t vertex,uint64_t a,int k);
+	void setCoverage(Kmer*a,int coverage);
+	int getCoverage(Kmer*p);
+	void addOutgoingEdge(Kmer*vertex,Kmer*a,int k);
+	void addIngoingEdge(Kmer*vertex,Kmer*a,int k);
+	vector<Kmer> getIngoingEdges(Kmer*a,int k);
+	vector<Kmer> getOutgoingEdges(Kmer*a,int k);
+	uint8_t getEdges(Kmer*a);
+	void deleteIngoingEdge(Kmer*vertex,Kmer*a,int k);
+	void deleteOutgoingEdge(Kmer*vertex,Kmer*a,int k);
 } ATTRIBUTE_PACKED;
 
 #endif

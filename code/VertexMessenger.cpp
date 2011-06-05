@@ -40,10 +40,11 @@ void VertexMessenger::work(){
 		//cout<<"Request basic info"<<endl;
 		m_receivedBasicInfo=false;
 		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(3*sizeof(uint64_t));
-		message[0]=m_vertex;
-		message[1]=m_waveId;
-		message[2]=m_wavePosition;
-		Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,m_destination,RAY_MPI_TAG_VERTEX_INFO,m_parameters->getRank());
+		int j=0;
+		m_vertex.pack(message,&j);
+		message[j++]=m_waveId;
+		message[j++]=m_wavePosition;
+		Message aMessage(message,j,MPI_UNSIGNED_LONG_LONG,m_destination,RAY_MPI_TAG_VERTEX_INFO,m_parameters->getRank());
 		m_outbox->push_back(aMessage);
 	}else if(!m_receivedBasicInfo &&m_inbox->size()==1&&m_inbox->at(0)->getTag()==RAY_MPI_TAG_VERTEX_INFO_REPLY){
 		//cout<<"Received basic info"<<endl;
@@ -97,18 +98,21 @@ void VertexMessenger::getReadsForRepeatedVertex(){
 	if(!m_requestedReads){
 		//cout<<"Requesting reads"<<endl;
 		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-		message[0]=m_vertex;
-		message[1]=(uint64_t)m_pointer;
+		int j=0;
+		m_vertex.pack(message,&j);
+		message[j++]=(uint64_t)m_pointer;
 		int maximumMates=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)/4;
+		
 		int processed=0;
 		while(processed<maximumMates&&m_mateIterator!=m_matesToMeet->end()){
 			uint64_t mate=*m_mateIterator;
-			message[3+processed]=mate;
+			message[j+1+processed]=mate;
 			processed++;
 			m_mateIterator++;
 		}
-		message[2]=processed;
-		Message aMessage(message,processed+3,MPI_UNSIGNED_LONG_LONG,m_destination,RAY_MPI_TAG_VERTEX_READS_FROM_LIST,m_parameters->getRank());
+		message[j]=processed;
+		Message aMessage(message,processed+j,
+			MPI_UNSIGNED_LONG_LONG,m_destination,RAY_MPI_TAG_VERTEX_READS_FROM_LIST,m_parameters->getRank());
 		m_outbox->push_back(aMessage);
 		m_requestedReads=true;
 		m_receivedReads=false;
@@ -152,9 +156,10 @@ void VertexMessenger::getReadsForUniqueVertex(){
 	if(!m_requestedReads){
 		//cout<<"Requesting reads"<<endl;
 		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
-		message[0]=m_vertex;
-		message[1]=(uint64_t)m_pointer;
-		Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,m_destination,RAY_MPI_TAG_VERTEX_READS,m_parameters->getRank());
+		int j=0;
+		m_vertex.pack(message,&j);
+		message[j++]=(uint64_t)m_pointer;
+		Message aMessage(message,j,MPI_UNSIGNED_LONG_LONG,m_destination,RAY_MPI_TAG_VERTEX_READS,m_parameters->getRank());
 		m_outbox->push_back(aMessage);
 		m_requestedReads=true;
 		m_receivedReads=false;
@@ -211,7 +216,7 @@ uint16_t VertexMessenger::getCoverageValue(){
 	return m_coverageValue;
 }
 
-void VertexMessenger::constructor(uint64_t vertex,uint64_t wave,int pos,set<uint64_t>*matesToMeet,StaticVector*inbox,StaticVector*outbox,
+void VertexMessenger::constructor(Kmer vertex,uint64_t wave,int pos,set<uint64_t>*matesToMeet,StaticVector*inbox,StaticVector*outbox,
 	RingAllocator*outboxAllocator,Parameters*parameters){
 	m_inbox=inbox;
 	m_outbox=outbox;
@@ -224,5 +229,5 @@ void VertexMessenger::constructor(uint64_t vertex,uint64_t wave,int pos,set<uint
 	m_annotations.clear();
 	m_isDone=false;
 	m_requestedBasicInfo=false;
-	m_destination=m_parameters->_vertexRank(m_vertex);
+	m_destination=m_parameters->_vertexRank(&m_vertex);
 }

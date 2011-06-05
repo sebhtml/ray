@@ -26,23 +26,23 @@ void VertexData::constructor(){
 	m_directions=NULL;
 }
 
-void VertexData::addRead(uint64_t vertex,ReadAnnotation*e){
+void VertexData::addRead(Kmer*vertex,ReadAnnotation*e){
 	e->setNext(m_readsStartingHere);
 	m_readsStartingHere=e;
 }
 
-void VertexData::addDirection(uint64_t vertex,Direction*e){
+void VertexData::addDirection(Kmer*vertex,Direction*e){
 	e->setNext(m_directions);
 	m_directions=e;
 }
 
-ReadAnnotation*VertexData::getReads(uint64_t vertex){
+ReadAnnotation*VertexData::getReads(Kmer*vertex){
 	return m_readsStartingHere;
 }
 
-vector<Direction> VertexData::getDirections(uint64_t vertex){
+vector<Direction> VertexData::getDirections(Kmer*vertex){
 	bool seekLower=false;
-	if(vertex==m_lowerKey){
+	if(vertex->isEqual(&m_lowerKey)){
 		seekLower=true;
 	}
 	vector<Direction> a;
@@ -56,6 +56,6 @@ vector<Direction> VertexData::getDirections(uint64_t vertex){
 	return a;
 }
 
-void VertexData::clearDirections(uint64_t a){
+void VertexData::clearDirections(Kmer*a){
 	m_directions=NULL;
 }

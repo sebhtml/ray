@@ -29,13 +29,13 @@ using namespace std;
 
 //#define _VERBOSE
 
-void MemoryConsumptionReducer::getPermutations(uint64_t kmer,int length,vector<uint64_t>*output,int wordSize){
+void MemoryConsumptionReducer::getPermutations(Kmer kmer,int length,vector<Kmer>*output,int wordSize){
 	#ifdef ASSERT
 	assert(output->size()==0);
 	assert(length<=wordSize);
 	#endif
-	string stringVersion=idToWord(kmer,wordSize);
-	char buffer[50];
+	string stringVersion=idToWord(&kmer,wordSize);
+	char buffer[1000];
 	strcpy(buffer,stringVersion.c_str());
 	vector<char> changes;
 	changes.push_back('A');
@@ -51,7 +51,7 @@ void MemoryConsumptionReducer::getPermutations(uint64_t kmer,int length,vector<u
 				continue;
 			}
 			buffer[i]=newNucleotide;
-			uint64_t a=wordId(buffer);
+			Kmer a=wordId(buffer);
 			buffer[i]=oldNucleotide;
 			output->push_back(a);
 		}
@@ -80,23 +80,23 @@ MemoryConsumptionReducer::MemoryConsumptionReducer(){
 	m_initiated=false;
 }
 
-vector<uint64_t> MemoryConsumptionReducer::computePath(map<uint64_t,vector<uint64_t> >*edges,uint64_t start,uint64_t end,set<uint64_t>*visited){
-	vector<uint64_t> path;
+vector<Kmer> MemoryConsumptionReducer::computePath(map<Kmer,vector<Kmer> >*edges,Kmer start,Kmer end,set<Kmer>*visited){
+	vector<Kmer> path;
 	if(visited->count(start)>0){
 		return path;
 	}
 	visited->insert(start);
-	if(start==end){
+	if(start.isEqual(&end)){
 		path.push_back(start);
 		return path;
 	}
 	if(edges->count(start)==0){
 		return path;
 	}
-	vector<uint64_t> nextVertices=(*edges)[start];
+	vector<Kmer> nextVertices=(*edges)[start];
 	for(int j=0;j<(int)nextVertices.size();j++){
-		uint64_t vertex=nextVertices[j];
-		vector<uint64_t> aPath=computePath(edges,vertex,end,visited);
+		Kmer vertex=nextVertices[j];
+		vector<Kmer > aPath=computePath(edges,vertex,end,visited);
 		if(aPath.size()>0){
 			path.push_back(start);
 			for(int l=0;l<(int)aPath.size();l++){
@@ -108,7 +108,7 @@ vector<uint64_t> MemoryConsumptionReducer::computePath(map<uint64_t,vector<uint6
 	return path;
 }
 
-bool MemoryConsumptionReducer::isJunction(uint64_t vertex,map<uint64_t,vector<uint64_t> >*edges,int wordSize){
+bool MemoryConsumptionReducer::isJunction(Kmer vertex,map<Kmer ,vector<Kmer> >*edges,int wordSize){
 	if(edges->count(vertex)==0){
 		return false;
 	}
@@ -118,17 +118,17 @@ bool MemoryConsumptionReducer::isJunction(uint64_t vertex,map<uint64_t,vector<ui
 	// compute the depth at each depth
 	// one leads to the root, and another must be longer than wordSize (not a tip)
 	
-	vector<uint64_t> nextVertices=(*edges)[vertex];
+	vector<Kmer> nextVertices=(*edges)[vertex];
 	for(int i=0;i<(int)nextVertices.size();i++){
-		uint64_t current=nextVertices[i];
-		stack<uint64_t> vertices;
+		Kmer current=nextVertices[i];
+		stack<Kmer> vertices;
 		stack<int> depths;
-		set<uint64_t> visited;
+		set<Kmer> visited;
 		vertices.push(current);
 		depths.push(1);
 
 		while(!vertices.empty()){
-			uint64_t topVertex=vertices.top();
+			Kmer topVertex=vertices.top();
 			vertices.pop();
 			int topDepth=depths.top();
 			depths.pop();
@@ -144,7 +144,7 @@ bool MemoryConsumptionReducer::isJunction(uint64_t vertex,map<uint64_t,vector<ui
 			if(edges->count(topVertex)==0){
 				continue;
 			}
-			vector<uint64_t> nextBits=(*edges)[topVertex];
+			vector<Kmer> nextBits=(*edges)[topVertex];
 			int newDepth=topDepth+1;
 			for(int j=0;j<(int)nextBits.size();j++){
 				vertices.push(nextBits[j]);
@@ -226,7 +226,7 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 			}
 			printCounter(parameters,a);
 			m_firstVertex=m_iterator.next();
-			m_firstKey=m_iterator.getKey();
+			m_firstKey=*(m_iterator.getKey());
 			m_counter++;
 
 			while(!isCandidate(m_firstKey,m_firstVertex,wordSize)){
@@ -235,7 +235,7 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 				}
 				printCounter(parameters,a);
 				m_firstVertex=m_iterator.next();
-				m_firstKey=m_iterator.getKey();
+				m_firstKey=*(m_iterator.getKey());
 				m_counter++;
 			}
 
@@ -246,9 +246,9 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 		}else if(!isCandidate(m_firstKey,m_firstVertex,wordSize)){
 			m_hasSetVertex=false;
 		}else if(!m_doneWithOutgoingEdges){
-			uint64_t key=m_firstVertex->m_lowerKey;
-			vector<uint64_t> parents=m_firstVertex->getIngoingEdges(key,wordSize);
-			vector<uint64_t> children=m_firstVertex->getOutgoingEdges(key,wordSize);
+			Kmer key=m_firstVertex->m_lowerKey;
+			vector<Kmer > parents=m_firstVertex->getIngoingEdges(&key,wordSize);
+			vector<Kmer > children=m_firstVertex->getOutgoingEdges(&key,wordSize);
 
 			if(!m_dfsDataOutgoing->m_doChoice_tips_dfs_done){
 				//cout<<"visit. "<<endl;
@@ -267,41 +267,41 @@ edgesReceived,parameters
 );
 			}else{
 				// find the first probably-good vertex 
-				map<uint64_t,vector<uint64_t> > theParents;
-				map<uint64_t,vector<uint64_t> > theChildren;
+				map<Kmer,vector<Kmer> > theParents;
+				map<Kmer,vector<Kmer> > theChildren;
 
 				for(int j=0;j<(int)m_dfsDataOutgoing->m_depthFirstSearchVisitedVertices_vector.size();j+=2){
-					uint64_t prefix=m_dfsDataOutgoing->m_depthFirstSearchVisitedVertices_vector[j+0];
-					uint64_t suffix=m_dfsDataOutgoing->m_depthFirstSearchVisitedVertices_vector[j+1];
+					Kmer prefix=m_dfsDataOutgoing->m_depthFirstSearchVisitedVertices_vector[j+0];
+					Kmer suffix=m_dfsDataOutgoing->m_depthFirstSearchVisitedVertices_vector[j+1];
 					theChildren[prefix].push_back(suffix);
 					theParents[suffix].push_back(prefix);
 				}
 
-				vector<uint64_t> path;
+				vector<Kmer > path;
 				bool foundDestination=false;
 				bool foundJunction=false;
-				set<uint64_t> visited;
+				set<Kmer > visited;
 				int maximumDepth=-99;
 				int coverageAtMaxDepth=0;
-				uint64_t vertexAtMaxDepth=0;
-				uint64_t junction=0;
+				Kmer vertexAtMaxDepth;
+				Kmer junction;
 				int maximumCoverageInPath=0;
 				int minimumCoverageInOtherPath=999;
 				bool isLow=false;
-				set<uint64_t> bestVertices;
+				set<Kmer > bestVertices;
 				bool aloneBits=false;
 				int maxReadLength=2*wordSize-1;
 				int maxPathSize=maxReadLength-wordSize; // k-1
 
 				if((parents.size()==0||children.size()==0)&&!(parents.size()==0&&children.size()==0)){
-					map<uint64_t,vector<uint64_t> >*theEdges=&theParents;
-					map<uint64_t,vector<uint64_t> >*otherEdges=&theChildren;
+					map<Kmer ,vector<Kmer > >*theEdges=&theParents;
+					map<Kmer ,vector<Kmer > >*otherEdges=&theChildren;
 					if(parents.size()==0){
 						theEdges=&theChildren;
 						otherEdges=&theParents;
 					}
 
-					uint64_t current=key;
+					Kmer current=key;
 					while(1){
 						if(visited.count(current)>0){
 							break;
@@ -325,13 +325,13 @@ edgesReceived,parameters
 					}
 
 					if(foundJunction){
-						stack<uint64_t> nodes;
+						stack<Kmer > nodes;
 						stack<int> depths;
 
 						depths.push(0);
 						nodes.push(junction);
 						while(!nodes.empty()){
-							uint64_t node=nodes.top();
+							Kmer node=nodes.top();
 
 							int theCoverageOfCurrent=m_dfsDataOutgoing->m_coverages[node];
 
@@ -350,7 +350,7 @@ edgesReceived,parameters
 							int newDepth=nodeDepth+1;
 
 							for(int k=0;k<(int)(*otherEdges)[node].size();k++){
-								uint64_t nextVertex=(*otherEdges)[node][k];
+								Kmer nextVertex=(*otherEdges)[node][k];
 								if(visited.count(nextVertex)>0){
 									continue;
 								}
@@ -359,10 +359,10 @@ edgesReceived,parameters
 							}
 						}
 			
-						set<uint64_t> visited;
-						vector<uint64_t> bestPath=computePath(otherEdges,junction,vertexAtMaxDepth,&visited);
+						set<Kmer > visited;
+						vector<Kmer > bestPath=computePath(otherEdges,junction,vertexAtMaxDepth,&visited);
 						for(int u=0;u<(int)bestPath.size();u++){
-							uint64_t node=bestPath[u];
+							Kmer node=bestPath[u];
 							int theCoverageOfCurrent=m_dfsDataOutgoing->m_coverages[node];
 							if(theCoverageOfCurrent<minimumCoverageInOtherPath){
 								minimumCoverageInOtherPath=theCoverageOfCurrent;
@@ -422,23 +422,25 @@ edgesReceived,parameters
 							m_confettiToCheck->push_back(path);
 							m_confettiMaxCoverage->push_back(maximumCoverageInPath);
 
-							uint64_t root=path[0];
-							vector<uint64_t> kMersToCheck;
+							Kmer root=path[0];
+							vector<Kmer > kMersToCheck;
 							getPermutations(root,positionsToCheck,&kMersToCheck,wordSize);
 							
 							for(int u=0;u<(int)path.size();u++){	
-								uint64_t kmer=path[u];
+								Kmer kmer=path[u];
 								(*m_ingoingEdges)[kmer]=(*(m_dfsDataOutgoing->getIngoingEdges()))[kmer];
 								(*m_outgoingEdges)[kmer]=(*(m_dfsDataOutgoing->getOutgoingEdges()))[kmer];
 							}
 
 							// push queries in a buffer
 							for(int i=0;i<(int)kMersToCheck.size();i++){
-								uint64_t kmer=kMersToCheck[i];
-								int destination=vertexRank(kmer,size,wordSize);
+								Kmer kmer=kMersToCheck[i];
+								int destination=vertexRank(&kmer,size,wordSize);
 								m_bufferedData.addAt(destination,uniqueId);
-								m_bufferedData.addAt(destination,kmer);
-								if(m_bufferedData.flush(destination,2,RAY_MPI_TAG_CHECK_VERTEX,outboxAllocator,outbox,theRank,false)){
+								for(int k=0;k<kmer.getNumberOfU64();k++){
+									m_bufferedData.addAt(destination,kmer.getU64(k));
+								}
+								if(m_bufferedData.flush(destination,1+KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_CHECK_VERTEX,outboxAllocator,outbox,theRank,false)){
 									m_pendingMessages++;
 								}
 							}
@@ -454,17 +456,11 @@ edgesReceived,parameters
 					}
 					for(int u=0;u<(int)path.size();u++){
 						m_toRemove->push_back(path[u]);
-						uint64_t vertex=path[u];
+						Kmer vertex=path[u];
 			
 						(*m_ingoingEdges)[vertex]=(*(m_dfsDataOutgoing->getIngoingEdges()))[vertex];
 
 						(*m_outgoingEdges)[vertex]=(*(m_dfsDataOutgoing->getOutgoingEdges()))[vertex];
-
-						#ifdef ASSERT
-						if(idToWord(vertex,wordSize)=="GCGGCTAGTTTTCTAGTTTGA"){
-							cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" Vertex="<<vertex<<" IN="<<(*m_ingoingEdges)[vertex].size()<<" OUT="<<(*m_outgoingEdges)[vertex].size()<<endl;
-						}
-						#endif
 
 					}
 				}
@@ -475,7 +471,7 @@ edgesReceived,parameters
 				if(/*parameters->getRank()==MASTER_RANK 
 				&&!foundJunction&&!aloneBits&&children.size()==0&&(int)path.size()<=maxPathSize*/
 				forcePrint){
-					set<uint64_t> removed;
+					set<Kmer > removed;
 					for(int p=0;p<(int)path.size();p++){
 						if(foundDestination){
 							removed.insert(path[p]);
@@ -496,7 +492,7 @@ edgesReceived,parameters
 			
 					cout<<"digraph{"<<endl;
 					cout<<"node [color=lightblue2 style=filled]"<<endl;
-					for(map<uint64_t,int>::iterator p=m_dfsDataOutgoing->m_coverages.begin();
+					for(map<Kmer ,int>::iterator p=m_dfsDataOutgoing->m_coverages.begin();
 						p!=m_dfsDataOutgoing->m_coverages.end();p++){
 						cout<<idToWord(p->first,wordSize)<<" [label=\""<<idToWord(p->first,wordSize)<<" "<<p->second;
 						if(key==p->first){
@@ -508,10 +504,6 @@ edgesReceived,parameters
 
 						if(vertexAtMaxDepth==p->first){
 							cout<<" (deepest vertex) ";
-						}
-
-						if("GAAACGCGACCAAGTAATGGG"==idToWord(p->first,wordSize)){
-							cout<<" (culprit) ";
 						}
 
 						cout<<"\" ";
@@ -526,8 +518,8 @@ edgesReceived,parameters
 					}
 
 					for(int j=0;j<(int)m_dfsDataOutgoing->m_depthFirstSearchVisitedVertices_vector.size();j+=2){
-						uint64_t prefix=m_dfsDataOutgoing->m_depthFirstSearchVisitedVertices_vector[j+0];
-						uint64_t suffix=m_dfsDataOutgoing->m_depthFirstSearchVisitedVertices_vector[j+1];
+						Kmer prefix=m_dfsDataOutgoing->m_depthFirstSearchVisitedVertices_vector[j+0];
+						Kmer suffix=m_dfsDataOutgoing->m_depthFirstSearchVisitedVertices_vector[j+1];
 						cout<<idToWord(prefix,wordSize)<<" -> "<<idToWord(suffix,wordSize)<<endl;
 						#ifdef ASSERT
 						assert(m_dfsDataOutgoing->m_coverages.count(prefix)>0);
@@ -555,10 +547,10 @@ int MemoryConsumptionReducer::getNumberOfRemovedVertices(){
 	return m_toRemove->size();
 }
 
-bool MemoryConsumptionReducer::isCandidate(uint64_t key,Vertex*m_firstVertex,int wordSize){
-	vector<uint64_t> parents=m_firstVertex->getIngoingEdges(key,wordSize);
-	vector<uint64_t> children=m_firstVertex->getOutgoingEdges(key,wordSize);
-	int coverage=m_firstVertex->getCoverage(key);
+bool MemoryConsumptionReducer::isCandidate(Kmer key,Vertex*m_firstVertex,int wordSize){
+	vector<Kmer > parents=m_firstVertex->getIngoingEdges(&key,wordSize);
+	vector<Kmer > children=m_firstVertex->getOutgoingEdges(&key,wordSize);
+	int coverage=m_firstVertex->getCoverage(&key);
 	return ((parents.size()==1&&children.size()==0)||(parents.size()==0&&children.size()==1))&&coverage==1;
 	//return parents.size()==1&&children.size()==0&&coverage<=3;
 }
@@ -571,7 +563,7 @@ void MemoryConsumptionReducer::printCounter(Parameters*parameters,GridTable*fore
 	}
 }
 
-vector<uint64_t>*MemoryConsumptionReducer::getVerticesToRemove(){
+vector<Kmer >*MemoryConsumptionReducer::getVerticesToRemove(){
 	return m_toRemove;
 }
 
@@ -595,7 +587,7 @@ void MemoryConsumptionReducer::processConfetti(uint64_t*a,int b){
 		assert(task<(int)m_confettiMaxCoverage->size());
 		#endif
 
-		vector<uint64_t>*vertices=&(*m_confettiToCheck)[task];
+		vector<Kmer>*vertices=&(*m_confettiToCheck)[task];
 		int maxCoverage=(*m_confettiMaxCoverage)[task];
 		if(coverage<maxCoverage){
 			continue;
@@ -604,7 +596,7 @@ void MemoryConsumptionReducer::processConfetti(uint64_t*a,int b){
 		assert(vertices->size()>0);
 		#endif
 		for(int j=0;j<(int)vertices->size();j++){
-			uint64_t vertex=vertices->at(j);
+			Kmer vertex=vertices->at(j);
 			m_toRemove->push_back(vertex);
 		}
 	}
@@ -614,11 +606,11 @@ void MemoryConsumptionReducer::processConfetti(uint64_t*a,int b){
 	#endif
 }
 
-map<uint64_t,vector<uint64_t> >*MemoryConsumptionReducer::getIngoingEdges(){
+map<Kmer ,vector<Kmer > >*MemoryConsumptionReducer::getIngoingEdges(){
 	return m_ingoingEdges;
 }
 
-map<uint64_t,vector<uint64_t> >*MemoryConsumptionReducer::getOutgoingEdges(){
+map<Kmer ,vector<Kmer > >*MemoryConsumptionReducer::getOutgoingEdges(){
 	return m_outgoingEdges;
 }
 
@@ -634,10 +626,10 @@ void MemoryConsumptionReducer::destructor(){
 
 void MemoryConsumptionReducer::constructor(){
 	m_dfsDataOutgoing=new DepthFirstSearchData;
-	m_toRemove=new vector<uint64_t>;
-	m_ingoingEdges=new map<uint64_t,vector<uint64_t> >;
-	m_outgoingEdges=new map<uint64_t,vector<uint64_t> >;
+	m_toRemove=new vector<Kmer >;
+	m_ingoingEdges=new map<Kmer ,vector<Kmer > >;
+	m_outgoingEdges=new map<Kmer ,vector<Kmer > >;
 	m_processedTasks=new set<int>;
-	m_confettiToCheck=new vector<vector<uint64_t> >;
+	m_confettiToCheck=new vector<vector<Kmer> >;
 	m_confettiMaxCoverage=new vector<int>;
 }

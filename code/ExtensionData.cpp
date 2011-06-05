@@ -39,7 +39,7 @@ void ExtensionData::constructor(Parameters*parameters){
 }
 
 void ExtensionData::createStructures(){
-	m_EXTENSION_extension=new vector<uint64_t>;
+	m_EXTENSION_extension=new vector<Kmer>;
 	m_repeatedValues=new vector<int>;
 	m_extensionCoverageValues=new vector<int>;
 	m_EXTENSION_coverages=new vector<int>;

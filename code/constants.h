@@ -24,7 +24,17 @@ see <http://www.gnu.org/licenses/>
 
 #include <stdint.h>
 
-#define VERTEX_TYPE uint64_t
+#ifdef FORCE_PACKING
+#ifdef __GNUC__
+#define ATTRIBUTE_PACKED  __attribute__ ((packed))
+#else
+#define ATTRIBUTE_PACKED
+#endif
+#else
+#define ATTRIBUTE_PACKED
+#endif
+
+
 
 #define DUMMY_LIBRARY 40000
 

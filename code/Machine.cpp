@@ -158,6 +158,7 @@ void Machine::start(){
 	m_scaffolder.constructor(&m_outbox,&m_inbox,&m_outboxAllocator,&m_parameters,&m_slave_mode,
 	&m_virtualCommunicator);
 	m_mp.setScaffolder(&m_scaffolder);
+	m_mp.setVirtualCommunicator(&m_virtualCommunicator);
 
 	int PERSISTENT_ALLOCATOR_CHUNK_SIZE=4194304; // 4 MiB
 	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE,RAY_MALLOC_TYPE_PERSISTENT_DATA_ALLOCATOR);
@@ -268,14 +269,16 @@ void Machine::start(){
 		#endif
 		cout<<endl;
 		cout<<endl;
-
+	
+		#ifdef SHOW_SIZEOF
 		cout<<" sizeof(Vertex)="<<sizeof(Vertex)<<endl;
 		cout<<" sizeof(VertexData)="<<sizeof(VertexData)<<endl;
 		cout<<" sizeof(Direction)="<<sizeof(Direction)<<endl;
 		cout<<" sizeof(ReadAnnotation)="<<sizeof(ReadAnnotation)<<endl;
 		cout<<" sizeof(Read)="<<sizeof(Read)<<endl;
 		cout<<" sizeof(PairedRead)="<<sizeof(PairedRead)<<endl;
-		
+		#endif
+
 		cout<<endl;
 
 		cout<<"Number of MPI ranks: "<<getSize()<<endl;
@@ -333,39 +336,13 @@ void Machine::start(){
 
 	m_virtualCommunicator.constructor(m_rank,m_size,&m_outboxAllocator,&m_inbox,&m_outbox);
 
-	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_WRITE_CONTIG,RAY_MPI_TAG_WRITE_CONTIG_REPLY);
-	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_WRITE_CONTIG,3);
+	#define Set(x,y) m_virtualCommunicator.setReplyType( x, x ## _REPLY );
+	#include <VirtualCommunicatorConfiguration.h>
+	#undef Set
 
-	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_REQUEST_VERTEX_READS,RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY);
-	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_READS,5);
-
-	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_GET_READ_MATE,RAY_MPI_TAG_GET_READ_MATE_REPLY);
-	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_GET_READ_MATE,4);
-
-	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY);
-	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,1);
-
-	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_ATTACH_SEQUENCE,RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY);
-	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_ATTACH_SEQUENCE,5);
-
-	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY);
-	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,2);
-
-	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_HAS_PAIRED_READ,RAY_MPI_TAG_HAS_PAIRED_READ_REPLY);
-	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_HAS_PAIRED_READ,1);
-
-	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_GET_READ_MARKERS,RAY_MPI_TAG_GET_READ_MARKERS_REPLY);
-	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_GET_READ_MARKERS,5);
-	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_GET_PATH_LENGTH,RAY_MPI_TAG_GET_PATH_LENGTH_REPLY);
-	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_GET_PATH_LENGTH,1);
-	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION,RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION_REPLY);
-	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION,4);
-
-	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_SCAFFOLDING_LINKS,RAY_MPI_TAG_SCAFFOLDING_LINKS_REPLY);
-	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_SCAFFOLDING_LINKS,6);
-
-	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_CONTIG_INFO,RAY_MPI_TAG_CONTIG_INFO_REPLY);
-	m_virtualCommunicator.setElementsPerQuery(RAY_MPI_TAG_CONTIG_INFO,2);
+	#define Set(x,y) m_virtualCommunicator.setElementsPerQuery( x, y );
+	#include <VirtualCommunicatorConfiguration.h>
+	#undef Set
 
 	m_library.constructor(getRank(),&m_outbox,&m_outboxAllocator,&m_sequence_id,&m_sequence_idInFile,
 		m_ed,getSize(),&m_timePrinter,&m_slave_mode,&m_master_mode,
@@ -872,10 +849,10 @@ void Machine::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
 		iterator.constructor(&m_subgraph,m_wordSize);
 		while(iterator.hasNext()){
 			Vertex*node=iterator.next();
-			uint64_t key=iterator.getKey();
+			Kmer key=*(iterator.getKey());
 			//cout<<idToWord(key,m_wordSize)<<endl;
 			//SplayNode<uint64_t,Vertex>*node=iterator.next();
-			int coverage=node->getCoverage(key);
+			int coverage=node->getCoverage(&key);
 			//cout<<coverage<<endl;
 			m_distributionOfCoverage[coverage]++;
 			#ifdef ASSERT
@@ -1254,14 +1231,15 @@ void Machine::call_RAY_SLAVE_MODE_AMOS(){
 	*            m_mode_send_vertices_sequence_id_position: for the current position in the current contig.
 	*/
 
-	if(m_seedingData->m_SEEDING_i==(uint64_t)m_ed->m_EXTENSION_contigs.size()){// all contigs are processed
+	if(true || m_seedingData->m_SEEDING_i==(uint64_t)m_ed->m_EXTENSION_contigs.size()){// all contigs are processed
 		uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
 		message[0]=m_ed->m_EXTENSION_currentPosition;
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_WRITE_AMOS_REPLY,getRank());
 		m_outbox.push_back(aMessage);
 		fclose(m_amosFile);
 		m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
-		cout<<"Rank "<<m_rank<<" appended "<<m_sequence_id<<" elements"<<endl;
+		//cout<<"Rank "<<m_rank<<" appended "<<m_sequence_id<<" elements"<<endl;
+		//TODO: AMOS FILE OUTPUT IS disabled for now.
 	// iterate over the next one
 	}else if(m_fusionData->m_FUSION_eliminated.count(m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i])>0){
 		m_seedingData->m_SEEDING_i++;
@@ -1298,10 +1276,12 @@ void Machine::call_RAY_SLAVE_MODE_AMOS(){
 			m_ed->m_EXTENSION_reads_requested=true;
 			m_ed->m_EXTENSION_reads_received=false;
 			uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(1*sizeof(uint64_t));
-			uint64_t vertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_mode_send_vertices_sequence_id_position];
-			message[0]=vertex;
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(vertex,getSize(),m_wordSize),RAY_MPI_TAG_REQUEST_READS,getRank());
-			m_outbox.push_back(aMessage);
+			Kmer vertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_mode_send_vertices_sequence_id_position];
+			int pos=0;
+			vertex.pack(message,&pos);
+			//Message aMessage(message,pos,MPI_UNSIGNED_LONG_LONG,vertexRank(vertex,getSize(),m_wordSize),RAY_MPI_TAG_REQUEST_READS,getRank());
+			//m_outbox.push_back(aMessage);
+			//TODO: code is broken
 
 			// iterator on reads
 			m_fusionData->m_FUSION_path_id=0;

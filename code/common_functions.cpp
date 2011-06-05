@@ -63,7 +63,7 @@ string reverseComplement(string*a){
 }
 
 // convert k-mer to uint64_t
-uint64_t wordId(const char*a){
+Kmer wordId(const char*a){
 	#ifdef USE_DISTANT_SEGMENTS_GRAPH
 	return wordId_DistantSegments(a);
 	#endif
@@ -71,9 +71,11 @@ uint64_t wordId(const char*a){
 
 }
 
-uint64_t wordId_Classic(const char*a){
-	uint64_t i=0;
-	for(int j=0;j<(int)strlen(a);j++){
+Kmer wordId_Classic(const char*a){
+	Kmer i;
+	//i.print();
+	int theLen=strlen(a);
+	for(int j=0;j<(int)theLen;j++){
 		uint64_t k=_ENCODING_A; // default is A
 		char h=a[j];
 		switch(h){
@@ -87,10 +89,21 @@ uint64_t wordId_Classic(const char*a){
 				k=_ENCODING_G;
 				break;
 		}
-		i=(i|(k<<(j<<1)));
+		int bitPosition=2*j;
+		int chunk=bitPosition/64;
+		int bitPositionInChunk=bitPosition%64;
+		//cout<<"bitPositionInChunk="<<bitPositionInChunk<<" code="<<k<<endl;
+		#ifdef ASSERT
+		if(!(chunk<i.getNumberOfU64())){
+			cout<<"Chunk="<<chunk<<" positionInKmer="<<j<<" KmerLength="<<strlen(a)<<" bitPosition=" <<bitPosition<<" Chunks="<<i.getNumberOfU64()<<endl;
+		}
+		assert(chunk<i.getNumberOfU64());
+		#endif
+		uint64_t filter=(k<<bitPositionInChunk);
+		//i.print();
+		i.setU64(chunk,i.getU64(chunk)|filter);
 	}
 	return i;
-
 }
 
 uint64_t wordId_DistantSegments(const char*a){
@@ -119,10 +132,30 @@ uint64_t wordId_DistantSegments(const char*a){
 
 }
 
-string idToWord(uint64_t i,int wordSize){
+void printU64(uint64_t a){
+	for(int i=0;i<64;i++){
+		int bit=(a<<i)>>63;
+		printf("%i",bit);
+	}
+	printf("\n");
+}
+
+/*
+ *	7 6 5 4 3 2 1 0 
+ *			7 6 5 4 3 2 1 0
+ *
+ * 	k=6
+ */
+string idToWord(const Kmer*i,int wordSize){
 	char a[1000];
 	for(int p=0;p<wordSize;p++){
-		uint64_t j=(i<<(sizeof(uint64_t)*8-2-2*p))>>(sizeof(uint64_t)*8-2); // clear the bits.
+		int bitPosition=2*p;
+		int chunkId=bitPosition/64;
+		int bitPositionInChunk=(bitPosition%64);
+		uint64_t chunk=i->getU64(chunkId);
+		//printU64(chunk);
+		uint64_t j=(chunk<<(62-bitPositionInChunk))>>62; // clear the bits.
+		//cout<<"Position="<<p<<" Chunk "<<chunkId<<" BitInChunk="<<bitPositionInChunk<<" code="<<j<<endl;
 		switch(j){
 			case _ENCODING_A:
 				a[p]='A';
@@ -160,15 +193,21 @@ char getFirstSymbol(uint64_t i,int k){
 	return '0';
 }
 
-char getLastSymbol(uint64_t i,int m_wordSize){
-	i=(i<<(sizeof(uint64_t)*8-2*m_wordSize))>>(sizeof(uint64_t)*8-2); // clecar bits
-        if((int)i==_ENCODING_A)
+char getLastSymbol(Kmer*i,int m_wordSize){
+	int bitPosition=2*m_wordSize;
+	int chunkId=bitPosition/64;
+	int bitPositionInChunk=bitPosition%64;
+	uint64_t chunk=i->getU64(chunkId);
+	chunk=(chunk<<(sizeof(uint64_t)*8-bitPositionInChunk))>>(sizeof(uint64_t)*8-2); // clecar bits
+
+	// TODO: replace by a switch
+        if((int)chunk==_ENCODING_A)
                 return 'A';
-        if((int)i==_ENCODING_T)
+        if((int)chunk==_ENCODING_T)
                 return 'T';
-        if((int)i==_ENCODING_C)
+        if((int)chunk==_ENCODING_C)
                 return 'C';
-        if((int)i==_ENCODING_G)
+        if((int)chunk==_ENCODING_G)
                 return 'G';
 	cout<<"Fatal exception, getLastSymbol."<<endl;
 	exit(0);
@@ -211,30 +250,49 @@ uint64_t getKSuffix(uint64_t a,int k){
 	return a>>2;
 }
 
-uint64_t complementVertex(uint64_t a,int b,bool colorSpace){
+Kmer complementVertex(Kmer*a,int b,bool colorSpace){
 	if(colorSpace){
 		return complementVertex_colorSpace(a,b);
 	}
 	return complementVertex_normal(a,b);
 }
 
-uint64_t complementVertex_colorSpace(uint64_t a,int wordSize){
-	uint64_t output=0;
+Kmer complementVertex_colorSpace(Kmer*a,int wordSize){
+	Kmer output;
 	int position2=0;
 	for(int positionInMer=wordSize-1;positionInMer>=0;positionInMer--){
-		uint64_t complementVertex=(a<<((sizeof(uint64_t)*8-2)-2*positionInMer))>>(sizeof(uint64_t)*8-2);
-		output=(output|(complementVertex<<(position2<<1)));
-		position2++;
+		int bitPosition=positionInMer*2;
+		int u64_id=bitPosition/64;
+		int bitPositionInChunk=bitPosition%64;
+		uint64_t chunk=a->getU64(u64_id);
+		uint64_t complementVertex=(chunk<<((sizeof(uint64_t)*8-2)-bitPositionInChunk))>>(sizeof(uint64_t)*8-2);
+
+		uint64_t oldValue=output.getU64(u64_id);
+		oldValue=(oldValue|(complementVertex<<(position2)));
+		position2+=2;
+		if(position2>=64){
+			position2=0;
+		}
 	}
 
 	return output;
 }
 
-uint64_t complementVertex_normal(uint64_t a,int m_wordSize){
-	uint64_t output=0;
+/*
+ *	127..64
+ * 			63..0
+ *
+ *
+ */
+Kmer complementVertex_normal(Kmer*a,int m_wordSize){
+	Kmer output;
 	int position2=0;
 	for(int positionInMer=m_wordSize-1;positionInMer>=0;positionInMer--){
-		uint64_t j=(a<<((sizeof(uint64_t)*8-2)-2*positionInMer))>>(sizeof(uint64_t)*8-2);
+		int bitPosition=positionInMer*2;
+		int u64_id=bitPosition/64;
+		int bitPositionInChunk=bitPosition%64;
+		uint64_t chunk=a->getU64(u64_id);
+		uint64_t j=(chunk<<((sizeof(uint64_t)*8-2)-bitPositionInChunk))>>(sizeof(uint64_t)*8-2);
 		uint64_t complementVertex=0;
 		switch(j){
 			case _ENCODING_A:
@@ -260,8 +318,12 @@ uint64_t complementVertex_normal(uint64_t a,int m_wordSize){
 			complementVertex=_ENCODING_A;
 		}
 		#endif
-		output=(output|(complementVertex<<(position2<<1)));
-		position2++;
+		uint64_t oldValue=output.getU64(u64_id);
+		oldValue=(oldValue|(complementVertex<<(position2)));
+		position2+=2;
+		if(position2>=64){
+			position2=0;
+		}
 	}
 	return output;
 }
@@ -302,42 +364,25 @@ void __Free(void*a,int mallocType){
 	free(a);
 }
 
-uint8_t getFirstSegmentLastCode(uint64_t v,int totalLength,int segmentLength){
-	// ATCAGTTGCAGTACTGCAATCTACG
-	// 0000000000000011100001100100000000000000000000000001011100100100
-	//                                                   6 5 4 3 2 1 0
-	v=(v<<(sizeof(uint64_t)*8-(segmentLength*2)));// clear garbage
-	v=(v>>(sizeof(uint64_t)*8-2));// restore state
-	return v;
-}
-
-uint8_t getSecondSegmentLastCode(uint64_t v,int totalLength,int segmentLength){
+uint8_t getSecondSegmentLastCode(Kmer* v,int totalLength,int segmentLength){
 	// ATCAGTTGCAGTACTGCAATCTACG
 	// 0000000000000011100001100100000000000000000000000001011100100100
 	//               6 5 4 3 2 1 0
-	v=v<<(sizeof(uint64_t)*8-(totalLength*2));
-	v=(v>>(sizeof(uint64_t)*8-2));// restore state
+	uint64_t a=v->getU64(0);
+	a=a<<(sizeof(uint64_t)*8-(totalLength*2));
+	a=(a>>(sizeof(uint64_t)*8-2));// restore state
 	
-	return v;
+	return a;
 }
 
-uint8_t getFirstSegmentFirstCode(uint64_t v,int totalLength,int segmentLength){
+uint8_t getFirstSegmentFirstCode(Kmer*v,int totalLength,int segmentLength){
 	// ATCAGTTGCAGTACTGCAATCTACG
 	// 0000000000000011100001100100000000000000000000000001011100100100
 	//                                                   6 5 4 3 2 1 0
-	v=v<<(sizeof(uint64_t)*8-2);
-	v=v>>(sizeof(uint64_t)*8-2);
-	return v;
-}
-
-uint8_t getSecondSegmentFirstCode(uint64_t v,int totalLength,int segmentLength){
-	// ATCAGTTGCAGTACTGCAATCTACG
-	// 0000000000000011100001100100000000000000000000000001011100100100
-	//               6 5 4 3 2 1 0
-	int extra=(2*segmentLength-2);
-	v=v<<(sizeof(uint64_t)*8-2*totalLength+extra);
-	v=v>>(sizeof(uint64_t)*8-2);
-	return v;
+	uint64_t a=v->getU64(0);
+	a=a<<(sizeof(uint64_t)*8-2);
+	a=a>>(sizeof(uint64_t)*8-2);
+	return a;
 }
 
 uint8_t charToCode(char a){
@@ -366,7 +411,7 @@ char codeToChar(uint8_t a){
 	return 'A';
 }
 
-string convertToString(vector<uint64_t>*b,int m_wordSize){
+string convertToString(vector<Kmer>*b,int m_wordSize){
 	ostringstream a;
 	#ifdef USE_DISTANT_SEGMENTS_GRAPH
 	//
@@ -378,20 +423,20 @@ string convertToString(vector<uint64_t>*b,int m_wordSize){
 		a<<codeToChar(getFirstSegmentFirstCode((*b)[p],_SEGMENT_LENGTH,m_wordSize));
 	}
 	#else
-	a<<idToWord((*b)[0],m_wordSize);
+	a<<idToWord(&(*b)[0],m_wordSize);
 	#endif
 	for(int j=1;j<(int)(*b).size();j++){
-		a<<getLastSymbol((*b)[j],m_wordSize);
+		a<<getLastSymbol(&(*b)[j],m_wordSize);
 	}
 	string contig=a.str();
 	return contig;
 }
 
-int vertexRank(uint64_t a,int _size,int w){
-	return hash_function_1(a,w)%(_size);
+int vertexRank(Kmer*a,int _size,int w){
+	return hash_function_1(*a,w)%(_size);
 }
 
-uint64_t kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool color){
+Kmer kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool color){
 	int length=strlen(m_sequence);
 	if(pos>length-w){
 		cout<<"Fatal: offset is too large: position= "<<pos<<" Length= "<<length<<" WordSize=" <<w<<endl;
@@ -405,16 +450,17 @@ uint64_t kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool col
 		char sequence[100];
 		memcpy(sequence,m_sequence+pos,w);
 		sequence[w]='\0';
-		uint64_t v=wordId(sequence);
+		Kmer v=wordId(sequence);
 		return v;
 	}else if(strand=='R'){
 		char sequence[100];
 		memcpy(sequence,m_sequence+length-pos-w,w);
 		sequence[w]='\0';
-		uint64_t v=wordId(sequence);
-		return complementVertex(v,w,color);
+		Kmer v=wordId(sequence);
+		return complementVertex(&v,w,color);
 	}
-	return 0;
+	Kmer error;
+	return error;
 }
 
 int roundNumber(int s,int alignment){
@@ -451,45 +497,99 @@ void showMemoryUsage(int rank){
 	#endif
 }
 
-vector<uint64_t> _getOutgoingEdges(uint64_t a,uint8_t edges,int k){
-	vector<uint64_t> b;
+vector<Kmer> _getOutgoingEdges(Kmer*a,uint8_t edges,int k){
+	vector<Kmer> b;
+	Kmer aTemplate;
+	aTemplate=*a;
+
+	for(int i=0;i<aTemplate.getNumberOfU64();i++){
+		uint64_t word=aTemplate.getU64(i)>>2;
+		if(i!=aTemplate.getNumberOfU64()-1){
+			uint64_t next=aTemplate.getU64(i+1);
+/*
+ *		abcd	efgh
+ *		00ab	00ef
+ *		00ab	cdef
+ */
+			next=(next<<62);
+			word=word|next;
+		}
+	}
+
 	for(int i=0;i<4;i++){
 		int j=((((uint64_t)edges)<<(sizeof(uint64_t)*8-5-i))>>(sizeof(uint64_t)*8-1));
 		if(j==1){
-			uint64_t l=(a>>2)|(((uint64_t)i)<<(2*(k-1)));
-			b.push_back(l);
+			b.push_back(aTemplate);
 		}
 	}
 
 	return b;
 }
 
-vector<uint64_t> _getIngoingEdges(uint64_t a,uint8_t edges,int k){
-	vector<uint64_t> b;
+vector<Kmer> _getIngoingEdges(Kmer*a,uint8_t edges,int k){
+	cout<<"Input"<<endl;
+	a->print();
+	vector<Kmer> b;
+	Kmer aTemplate;
+	aTemplate=*a;
+	
+
+	for(int i=0;i<aTemplate.getNumberOfU64();i++){
+		uint8_t element=aTemplate.getU64(i);
+		element=element<<2;
+
+//	1		0
+//
+//	127..64		63...0
+//
+//	00abcdefgh  ijklmnopqr		// initial state
+//	abcdefgh00  klmnopqr00		// shift left
+//	abcdefghij  klmnopqr00		// copy the last to the first
+//	00cdefghij  klmnopqr00		// reset the 2 last
+
+		if(i!=0){
+			// the 2 last of the previous will be the 2 first of this one
+			uint64_t last=aTemplate.getU64(i-1);
+			last=(last>>62);
+			element=element|last;
+		}
+
+		if(i==aTemplate.getNumberOfU64()-1 && 2*k<64){
+			uint64_t filter=1;
+			filter=filter<<(2*k);
+			element=element|filter;
+			filter=1;
+			filter=filter<<(2*k+1);
+			element=element|filter;
+		}
+		aTemplate.setU64(i,element);
+	}
+	cout<<"Template, IN"<<endl;
+	aTemplate.print();
+
 	for(int i=0;i<4;i++){
 		int j=((((uint64_t)edges)<<((sizeof(uint64_t)*8-1)-i))>>(sizeof(uint64_t)*8-1));
 		if(j==1){
-			uint64_t l=((a<<(sizeof(uint64_t)*8-2*k+2))>>(sizeof(uint64_t)*8-2*k))|((uint64_t)i);
-			b.push_back(l);
+			b.push_back(aTemplate);
 		}
 	}
 	return b;
 }
 
-uint64_t hash_function_1(uint64_t a,int w){
-	uint64_t b=complementVertex_normal(a,w);
-	if(b<a){
+uint64_t hash_function_1(Kmer a,int w){
+	Kmer b=complementVertex_normal(&a,w);
+	if(b.isLower(&a)){
 		a=b;
 	}
-	return uniform_hashing_function_1_64_64(a);
+	return uniform_hashing_function_1_64_64(a.getU64(0));
 }
 
-uint64_t hash_function_2(uint64_t a,int w,uint64_t*b){
-	*b=complementVertex_normal(a,w);
-	if(*b<a){
+uint64_t hash_function_2(Kmer a,int w,Kmer*b){
+	*b=complementVertex_normal(&a,w);
+	if(b->isLower(&a)){
 		a=*b;
 	}
-	return uniform_hashing_function_2_64_64(a);
+	return uniform_hashing_function_2_64_64(a.getU64(0));
 }
 
 	// outgoing  ingoing
@@ -577,3 +677,4 @@ void now(){
 	timeinfo=localtime(&m_endingTime);
 	cout<<"Date: "<<asctime(timeinfo);
 }
+

@@ -19,12 +19,12 @@
 
 */
 
+#include <SeedWorker.h>
 #include <assert.h>
 #include <Message.h>
 #include <mpi_tags.h>
 #include <common_functions.h>
 #include <stdint.h>
-#include <SeedWorker.h>
 #include <iostream>
 using namespace std;
 
@@ -101,7 +101,7 @@ void SeedWorker::work(){
 			}else{
 				// we want some coherence...
 				if(m_SEEDING_seed.size()>0
-				&&m_SEEDING_seed[m_SEEDING_seed.size()-1]!=m_SEEDING_currentParentVertex){
+				&&!(m_SEEDING_seed[m_SEEDING_seed.size()-1].isEqual(&m_SEEDING_currentParentVertex))){
 					m_finished=true;
 				}else{
 					m_SEEDING_seed.push_back(m_SEEDING_currentVertex);
@@ -120,13 +120,13 @@ bool SeedWorker::isDone(){
 	return m_finished;
 }
 
-void SeedWorker::constructor(uint64_t key,Parameters*parameters,RingAllocator*outboxAllocator,
+void SeedWorker::constructor(Kmer*key,Parameters*parameters,RingAllocator*outboxAllocator,
 		VirtualCommunicator*virtualCommunicator,uint64_t workerId){
 	m_workerIdentifier=workerId;
 	m_virtualCommunicator=virtualCommunicator;
 	m_finished=false;
 	m_outboxAllocator=outboxAllocator;
-	m_SEEDING_currentVertex=key;
+	m_SEEDING_currentVertex=*key;
 	m_SEEDING_first=m_SEEDING_currentVertex;
 	m_SEEDING_testInitiated=false;
 	m_SEEDING_1_1_test_done=false;
@@ -172,8 +172,11 @@ void SeedWorker::do_1_1_test(){
 	}else if(!m_SEEDING_ingoingEdgesDone){
 		if(!m_SEEDING_InedgesRequested){
 			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
-			message[0]=(uint64_t)m_SEEDING_currentVertex;
-			Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,vertexRank(m_SEEDING_currentVertex,getSize(),m_wordSize),RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,getRank());
+			int bufferPosition=0;
+			m_SEEDING_currentVertex.pack(message,&bufferPosition);
+			int messageSize=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT);
+			Message aMessage(message,messageSize,
+		MPI_UNSIGNED_LONG_LONG,vertexRank(&m_SEEDING_currentVertex,getSize(),m_wordSize),RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,getRank());
 			m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 			m_SEEDING_numberOfIngoingEdgesWithSeedCoverage=0;
 			m_SEEDING_numberOfOutgoingEdgesWithSeedCoverage=0;
@@ -197,8 +200,8 @@ void SeedWorker::do_1_1_test(){
 
 			m_cache[m_SEEDING_currentVertex]=coverage;
 
-			m_SEEDING_receivedIngoingEdges=_getIngoingEdges(m_SEEDING_currentVertex,edges,m_wordSize);
-			m_SEEDING_receivedOutgoingEdges=_getOutgoingEdges(m_SEEDING_currentVertex,edges,m_wordSize);
+			m_SEEDING_receivedIngoingEdges=_getIngoingEdges(&m_SEEDING_currentVertex,edges,m_wordSize);
+			m_SEEDING_receivedOutgoingEdges=_getOutgoingEdges(&m_SEEDING_currentVertex,edges,m_wordSize);
 
 			m_ingoingCoverages.clear();
 			m_outgoingCoverages.clear();
@@ -216,15 +219,16 @@ void SeedWorker::do_1_1_test(){
 			}
 		}else if(m_ingoingEdgesReceived){
 			if(m_SEEDING_ingoingEdgeIndex<(int)m_SEEDING_receivedIngoingEdges.size()){
-				uint64_t vertex=(uint64_t)m_SEEDING_receivedIngoingEdges[m_SEEDING_ingoingEdgeIndex];
+				Kmer vertex=m_SEEDING_receivedIngoingEdges[m_SEEDING_ingoingEdgeIndex];
 				if(m_cache.count(vertex)>0){
 					m_SEEDING_receivedVertexCoverage=m_cache[vertex];
 					m_SEEDING_ingoingEdgeIndex++;
 					m_ingoingCoverages.push_back(m_SEEDING_receivedVertexCoverage);
 				}else if(!m_SEEDING_vertexCoverageRequested){
 					uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
-					message[0]=vertex;
-					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0],getSize(),m_wordSize),RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,getRank());
+					int bufferPosition=0;
+					vertex.pack(message,&bufferPosition);
+					Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,vertexRank(&vertex,getSize(),m_wordSize),RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,getRank());
 					m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 					m_SEEDING_vertexCoverageRequested=true;
 				}else if(m_virtualCommunicator->isMessageProcessed(m_workerIdentifier)){
@@ -235,15 +239,17 @@ void SeedWorker::do_1_1_test(){
 					m_ingoingCoverages.push_back(m_SEEDING_receivedVertexCoverage);
 				}
 			}else if(m_SEEDING_outgoingEdgeIndex<(int)m_SEEDING_receivedOutgoingEdges.size()){
-				uint64_t vertex=(uint64_t)m_SEEDING_receivedOutgoingEdges[m_SEEDING_outgoingEdgeIndex];
+				Kmer vertex=m_SEEDING_receivedOutgoingEdges[m_SEEDING_outgoingEdgeIndex];
 				if(m_cache.count(vertex)>0){
 					m_SEEDING_receivedVertexCoverage=m_cache[vertex];
 					m_SEEDING_outgoingEdgeIndex++;
 					m_outgoingCoverages.push_back(m_SEEDING_receivedVertexCoverage);
 				}else if(!m_SEEDING_vertexCoverageRequested){
 					uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
-					message[0]=vertex;
-					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,vertexRank(message[0],getSize(),m_wordSize),RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,getRank());
+					int bufferPosition=0;
+					vertex.pack(message,&bufferPosition);
+					Message aMessage(message,bufferPosition,
+						MPI_UNSIGNED_LONG_LONG,vertexRank(&vertex,getSize(),m_wordSize),RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,getRank());
 					m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 					m_SEEDING_vertexCoverageRequested=true;
 				}else if(m_virtualCommunicator->isMessageProcessed(m_workerIdentifier)){
@@ -266,7 +272,7 @@ void SeedWorker::do_1_1_test(){
 		
 		for(int i=0;i<(int)m_ingoingCoverages.size();i++){
 			int coverage=m_ingoingCoverages[i];
-			VERTEX_TYPE vertex=m_SEEDING_receivedIngoingEdges[i];
+			Kmer vertex=m_SEEDING_receivedIngoingEdges[i];
 			oneParent=true;
 			for(int j=0;j<(int)m_ingoingCoverages.size();j++){
 				if(i==j){
@@ -288,7 +294,7 @@ void SeedWorker::do_1_1_test(){
 
 		for(int i=0;i<(int)m_outgoingCoverages.size();i++){
 			int coverage=m_outgoingCoverages[i];
-			VERTEX_TYPE vertex=m_SEEDING_receivedOutgoingEdges[i];
+			Kmer vertex=m_SEEDING_receivedOutgoingEdges[i];
 			oneChild=true;
 			for(int j=0;j<(int)m_outgoingCoverages.size();j++){
 				if(i==j){
@@ -318,8 +324,8 @@ int SeedWorker::getRank(){
 	return m_rank;
 }
 
-vector<uint64_t> SeedWorker::getSeed(){
-	return m_SEEDING_seed;
+vector<Kmer>*SeedWorker::getSeed(){
+	return &m_SEEDING_seed;
 }
 
 uint64_t SeedWorker::getWorkerId(){

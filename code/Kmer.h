@@ -22,7 +22,10 @@
 #ifndef _Kmer
 #define _Kmer
 
+#include <constants.h>
 #include <stdint.h>
+#include <vector>
+using namespace std;
 
 #define KMER_REQUIRED_BITS 2*MAXKMERLENGTH
 #define KMER_REQUIRED_BYTES KMER_REQUIRED_BITS/8
@@ -41,6 +44,8 @@
 	#define KMER_U64_ARRAY_SIZE KMER_UINT64_T
 #endif
 
+
+
 /**
  * Class for storing k-mers.
  * For now only an array of uint64_t is present, but later,
@@ -53,8 +58,22 @@ class Kmer{
 public:
 	Kmer();
 	~Kmer();
+	bool isEqual(const Kmer*a)const ;
+	bool isLower(const Kmer*a)const ;
+	void print()const;
+	void pack(uint64_t*messageBuffer,int*messagePosition)const ;
+	void unpack(uint64_t*messageBuffer,int*messagePosition);
+	void unpack(vector<uint64_t>*messageBuffer,int*messagePosition);
+	bool operator<(const Kmer&b) const;
+	void operator=(const Kmer&b);
+	bool operator!=(const Kmer&b)const;
+	bool operator==(const Kmer&b) const;
+
 	void setU64(int i,uint64_t b);
-	uint64_t getU64(int i);
+	uint64_t getU64(int i)const;
+	int getNumberOfU64()const;
+
 }ATTRIBUTE_PACKED;
+
 
 #endif

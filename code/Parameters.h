@@ -143,9 +143,9 @@ public:
 	int getMaximumAllowedCoverage();
 	int getMinimumCoverage();
 	void setMinimumCoverage(int a);
-	uint64_t _complementVertex(uint64_t a);
+	Kmer _complementVertex(Kmer*a);
 	bool hasPairedReads();
-	int _vertexRank(uint64_t a);
+	int _vertexRank(Kmer*a);
 	string getMemoryPrefix();
 	/**
 	* run the profiler

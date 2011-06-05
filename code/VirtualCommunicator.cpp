@@ -32,6 +32,13 @@ void VirtualCommunicator::setElementsPerQuery(int tag,int size){
 	m_elementSizes[tag]=size;
 }
 
+int VirtualCommunicator::getElementsPerQuery(int tag){
+	#ifdef ASSERT
+	assert(m_elementSizes.count(tag)!=0);
+	#endif
+	return m_elementSizes[tag];
+}
+
 void VirtualCommunicator::setReplyType(int query,int reply){
 	#ifdef ASSERT
 	assert(m_replyTagToQueryTag.count(reply)==0);

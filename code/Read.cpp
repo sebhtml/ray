@@ -151,7 +151,7 @@ int Read::length()const{
  *           -----------------------------------
  *                     p p-1 p-2               0
  */
-uint64_t Read::getVertex(int pos,int w,char strand,bool color) const {
+Kmer Read::getVertex(int pos,int w,char strand,bool color) const {
 	char buffer[4000];
 	getSeq(buffer);
 	return kmerAtPosition(buffer,pos,w,strand,color);

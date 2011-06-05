@@ -39,7 +39,7 @@ using namespace std;
 
 class FusionData{
 	TimePrinter m_timer;
-	SplayTree<uint64_t,Direction*>m_cacheForRepeatedVertices;
+	SplayTree<Kmer ,Direction*>m_cacheForRepeatedVertices;
 	MyAllocator m_cacheAllocator;
 
 	bool m_mappingConfirmed;
@@ -70,10 +70,10 @@ public:
 
 	bool m_FINISH_vertex_received;
 	bool m_FINISH_fusionOccured;
-	vector<vector<uint64_t> > m_FINISH_newFusions;
+	vector<vector<Kmer > > m_FINISH_newFusions;
 	vector<int> m_FINISH_coverages;
 	map<uint64_t,int> m_FINISH_pathLengths;
-	uint64_t m_FINISH_received_vertex;
+	Kmer  m_FINISH_received_vertex;
 
 	bool m_Machine_getPaths_INITIALIZED;
 	bool m_Machine_getPaths_DONE;
@@ -123,7 +123,7 @@ public:
 	void finishFusions();
 	void makeFusions();
 	void readyBuffers();
-	void getPaths(uint64_t vertex);
+	void getPaths(Kmer vertex);
 	void initialise();
 };
 

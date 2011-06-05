@@ -46,6 +46,7 @@
 #include<MyAllocator.h>
 #include <Vertex.h>
 #include <Scaffolder.h>
+#include <VirtualCommunicator.h>
 using namespace std;
 
 
@@ -53,6 +54,7 @@ class MessageProcessor;
 typedef void (MessageProcessor::*FNMETHOD) (Message*message);
 
 class MessageProcessor{
+	VirtualCommunicator*m_virtualCommunicator;
 	Scaffolder*m_scaffolder;
 	int m_count;
 
@@ -202,6 +204,7 @@ SequencesIndexer*m_si
 	void flushBuffers();
 	void setReducer(MemoryConsumptionReducer*reducer);
 	void setScaffolder(Scaffolder*a);
+	void setVirtualCommunicator(VirtualCommunicator*a);
 };
 
 #endif

@@ -115,23 +115,24 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_READ_MARKERS(Message*message){
 	int count=message->getCount();
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
 	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	int outputPosition=0;
 	for(int i=0;i<count;i++){
 		int readId=incoming[i];
 		Read*read=m_myReads->at(readId);
 		int readLength=read->length();
-		outgoingMessage[5*i+0]=readLength;
-		VERTEX_TYPE forwardMarker=0;
+		outgoingMessage[outputPosition++]=readLength;
+		Kmer forwardMarker;
 		if(read->getForwardOffset()<=readLength-m_parameters->getWordSize()){
 			forwardMarker=read->getVertex(read->getForwardOffset(),m_parameters->getWordSize(),'F',m_parameters->getColorSpaceMode());
 		}
-		VERTEX_TYPE reverseMarker=0;
+		Kmer reverseMarker;
 		if(read->getReverseOffset()<=readLength-m_parameters->getWordSize()){
 			reverseMarker=read->getVertex(read->getReverseOffset(),m_parameters->getWordSize(),'R',m_parameters->getColorSpaceMode());
 		}
-		outgoingMessage[5*i+1]=forwardMarker;
-		outgoingMessage[5*i+2]=reverseMarker;
-		outgoingMessage[5*i+3]=read->getForwardOffset();
-		outgoingMessage[5*i+4]=read->getReverseOffset();
+		forwardMarker.pack(outgoingMessage,&outputPosition);
+		reverseMarker.pack(outgoingMessage,&outputPosition);
+		outgoingMessage[outputPosition++]=read->getForwardOffset();
+		outgoingMessage[outputPosition++]=read->getReverseOffset();
 	}
 
 	Message aMessage(outgoingMessage,count*5,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_GET_READ_MARKERS_REPLY,rank);
@@ -169,11 +170,18 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
 	int j=0;
-	for(int i=0;i<message->getCount();i+=5){
-		uint64_t vertex=buffer[i];
-		ReadAnnotation*ptr=(ReadAnnotation*)buffer[i+1];
+	int elementSize=5;
+	if(KMER_U64_ARRAY_SIZE+1>elementSize){
+		elementSize=KMER_U64_ARRAY_SIZE+1;
+	}
+
+	for(int i=0;i<message->getCount();i+=elementSize){
+		Kmer vertex;
+		int bufferPosition=i;
+		vertex.unpack(buffer,&bufferPosition);
+		ReadAnnotation*ptr=(ReadAnnotation*)buffer[bufferPosition++];
 		if(ptr==NULL){
-			ptr=m_subgraph->getReads(vertex);
+			ptr=m_subgraph->getReads(&vertex);
 		}
 	
 		if(ptr==NULL){
@@ -190,7 +198,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 			ptr=ptr->getNext();
 		}
 		outgoingMessage[j]=(uint64_t)ptr;
-		j+=5;
+		j+=(elementSize);
 	}
 	Message aMessage(outgoingMessage,j,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY,rank);
 	m_outbox->push_back(aMessage);
@@ -218,8 +226,10 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS_REPLY(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS(Message*message){
 	//cout<<__func__<<endl;
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
-	uint64_t vertex=incoming[0];
-	uint64_t complement=complementVertex_normal(vertex,*m_wordSize);
+	Kmer vertex;
+	int pos=0;
+	vertex.unpack(incoming,&pos);
+	Kmer complement=m_parameters->_complementVertex(&vertex);
 	bool lower=vertex<complement;
 	ReadAnnotation*e=(ReadAnnotation*)incoming[1];
 	#ifdef ASSERT
@@ -237,7 +247,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS(Message*message){
 	outgoingMessage[0]=processed;
 	//cout<<__func__<<" "<<processed<<" reads."<<endl;
 	processed=0;
-	int pos=1;
+	pos=1;
 	e=(ReadAnnotation*)incoming[1];
 	while(e!=NULL&&processed<maximumToReturn){
 		if(e->isLower()==lower){
@@ -259,15 +269,18 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_VERTEX_INFO(Message*message){
 	//cout<<__func__<<endl;
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
-	uint64_t vertex=incoming[0];
-	uint64_t complement=complementVertex_normal(vertex,*m_wordSize);
+	Kmer vertex;
+	for(int i=0;i<vertex.getNumberOfU64();i++){
+		vertex.setU64(i,incoming[i]);
+	}
+	Kmer complement=m_parameters->_complementVertex(&vertex);
 	bool lower=vertex<complement;
-	Vertex*node=m_subgraph->find(vertex);
+	Vertex*node=m_subgraph->find(&vertex);
 	#ifdef ASSERT
 	assert(node!=NULL);
 	#endif
 
-	ReadAnnotation*e=m_subgraph->getReads(vertex);
+	ReadAnnotation*e=m_subgraph->getReads(&vertex);
 	int n=0;
 	while(e!=NULL){
 		if(e->isLower()==lower){
@@ -275,23 +288,23 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTEX_INFO(Message*message){
 		}
 		e=e->getNext();
 	}
-	e=m_subgraph->getReads(vertex);
+	e=m_subgraph->getReads(&vertex);
 
 	uint64_t wave=incoming[1];
 	int progression=incoming[2];
 	// add direction in the graph
 	Direction*d=(Direction*)m_directionsAllocator->allocate(sizeof(Direction));
 	d->constructor(wave,progression,lower);
-	m_subgraph->addDirection(vertex,d);
+	m_subgraph->addDirection(&vertex,d);
 
 	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-	outgoingMessage[0]=node->getCoverage(vertex);
-	outgoingMessage[1]=node->getEdges(vertex);
+	outgoingMessage[0]=node->getCoverage(&vertex);
+	outgoingMessage[1]=node->getEdges(&vertex);
 	outgoingMessage[2]=n;
 	int pos=5;
 	int processed=0;
 	int maximumToReturn=(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)-5)/4;
-	e=m_subgraph->getReads(vertex);
+	e=m_subgraph->getReads(&vertex);
 	while(e!=NULL&&processed<maximumToReturn){
 		if(e->isLower()==lower){
 			outgoingMessage[pos++]=e->getRank();
@@ -317,9 +330,12 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTEX(Message*message){
 
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
 	int count=message->getCount();
-	for(int i=0;i<count;i++){
-		uint64_t vertex=incoming[i];
-		Vertex*node=m_subgraph->find(vertex);
+	for(int i=0;i<count;i+=KMER_U64_ARRAY_SIZE){
+		Kmer vertex;
+		int bufferPosition=i;
+		vertex.unpack(incoming,&bufferPosition);
+
+		Vertex*node=m_subgraph->find(&vertex);
 
 		if(node==NULL){
 			continue;
@@ -330,10 +346,10 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTEX(Message*message){
 		#endif
 
 		// delete the vertex
-		m_subgraph->remove(vertex);
+		m_subgraph->remove(&vertex);
 
 		#ifdef ASSERT
-		assert(m_subgraph->find(vertex)==NULL);
+		assert(m_subgraph->find(&vertex)==NULL);
 		#endif
 	}
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_DELETE_VERTEX_REPLY,rank);
@@ -344,16 +360,21 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT(Message*message
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
 	int count=message->getCount();
 	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-	for(int i=0;i<count;i+=2){
-		Vertex*node=m_subgraph->find(incoming[i]);
+	int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT);
+
+	for(int i=0;i<count;i+=period){
+		Kmer vertex;
+		int bufferPosition=i;
+		vertex.unpack(incoming,&bufferPosition);
+		Vertex*node=m_subgraph->find(&vertex);
 		#ifdef ASSERT
 		if(node==NULL){
-			cout<<__func__<<" does not exist: "<<idToWord(incoming[i],*m_wordSize)<<endl;
+			cout<<__func__<<" does not exist: "<<idToWord(&vertex,*m_wordSize)<<endl;
 		}
 		assert(node!=NULL);
 		#endif
-		outgoingMessage[i]=node->getEdges(incoming[i]);
-		outgoingMessage[i+1]=node->getCoverage(incoming[i]);
+		outgoingMessage[i]=node->getEdges(&vertex);
+		outgoingMessage[i+1]=node->getCoverage(&vertex);
 	}
 	
 	Message aMessage(outgoingMessage,count,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY,rank);
@@ -367,15 +388,18 @@ void MessageProcessor::call_RAY_MPI_TAG_CHECK_VERTEX(Message*message){
 	int count=message->getCount();
 	
 	int outgoingCount=0;
+	int period=1+KMER_U64_ARRAY_SIZE;
 	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-	for(int i=0;i<count;i+=2){
+	for(int i=0;i<count;i+=period){
 		int task=incoming[i+0];
-		uint64_t vertex=incoming[i+1];
-		Vertex*node=m_subgraph->find(vertex);
+		Kmer vertex;
+		int bufferPosition=i+1;
+		vertex.unpack(incoming,&bufferPosition);
+		Vertex*node=m_subgraph->find(&vertex);
 		if(node!=NULL){
-			int parents=node->getIngoingEdges(vertex,(*m_wordSize)).size();
-			int children=node->getOutgoingEdges(vertex,(*m_wordSize)).size();
-			int coverage=node->getCoverage(vertex);
+			int parents=node->getIngoingEdges(&vertex,(*m_wordSize)).size();
+			int children=node->getOutgoingEdges(&vertex,(*m_wordSize)).size();
+			int coverage=node->getCoverage(&vertex);
 			if(parents>0&&children>0&&coverage>3){
 				outgoingMessage[outgoingCount++]=task;
 				outgoingMessage[outgoingCount++]=coverage;
@@ -400,11 +424,14 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_INGOING_EDGE(Message*message){
 
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
 	int count=message->getCount();
-	for(int i=0;i<count;i+=2){
-		uint64_t prefix=incoming[i+0];
-		uint64_t suffix=incoming[i+1];
+	for(int i=0;i<count;i+=2*KMER_U64_ARRAY_SIZE){
+		int bufferPosition=i;
+		Kmer prefix;
+		prefix.unpack(incoming,&bufferPosition);
+		Kmer suffix;
+		suffix.unpack(incoming,&bufferPosition);
 
-		Vertex*node=m_subgraph->find(suffix);
+		Vertex*node=m_subgraph->find(&suffix);
 
 		if(node==NULL){ // node already deleted, don't need to delete the edges.
 			continue;
@@ -412,15 +439,15 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_INGOING_EDGE(Message*message){
 
 		#ifdef ASSERT
 		assert(node!=NULL);
-		int before=node->getOutgoingEdges(suffix,*m_wordSize).size();
+		int before=node->getOutgoingEdges(&suffix,*m_wordSize).size();
 		#endif
 
 		/* the edge might already be deleted if the tip is within another tip. */
 
-		node->deleteIngoingEdge(suffix,prefix,(*m_wordSize));
+		node->deleteIngoingEdge(&suffix,&prefix,(*m_wordSize));
 
 		#ifdef ASSERT
-		int after=node->getOutgoingEdges(suffix,*m_wordSize).size();
+		int after=node->getOutgoingEdges(&suffix,*m_wordSize).size();
 		assert(after<=before);
 		#endif
 	}
@@ -445,10 +472,14 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_OUTGOING_EDGE(Message*message){
 
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
 	int count=message->getCount();
-	for(int i=0;i<count;i+=2){
-		uint64_t prefix=incoming[i+0];
-		uint64_t suffix=incoming[i+1];
-		Vertex*node=m_subgraph->find(prefix);
+	for(int i=0;i<count;i+=2*KMER_U64_ARRAY_SIZE){
+		int bufferPosition=i;
+		Kmer prefix;
+		prefix.unpack(incoming,&bufferPosition);
+		Kmer suffix;
+		suffix.unpack(incoming,&bufferPosition);
+
+		Vertex*node=m_subgraph->find(&prefix);
 
 		if(node==NULL){ // node already deleted, don't need to delete the edges.
 			continue;
@@ -456,14 +487,14 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_OUTGOING_EDGE(Message*message){
 	
 		#ifdef ASSERT
 		assert(node!=NULL);
-		int before=node->getOutgoingEdges(suffix,*m_wordSize).size();
+		int before=node->getOutgoingEdges(&suffix,*m_wordSize).size();
 		#endif
 
 		/* the edge might already be deleted if the tip is within another tip. */
-		node->deleteOutgoingEdge(prefix,suffix,(*m_wordSize));
+		node->deleteOutgoingEdge(&prefix,&suffix,(*m_wordSize));
 		
 		#ifdef ASSERT
-		int after=node->getOutgoingEdges(suffix,*m_wordSize).size();
+		int after=node->getOutgoingEdges(&suffix,*m_wordSize).size();
 		assert(after<=before);
 		#endif
 	}
@@ -524,11 +555,14 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY(Message*mes
 
 void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS_FROM_LIST(Message*message){
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
-	uint64_t vertex=incoming[0];
-	uint64_t complement=complementVertex_normal(vertex,*m_wordSize);
-	int numberOfMates=incoming[2];
+	Kmer vertex;
+	for(int i=0;i<vertex.getNumberOfU64();i++){
+		vertex.setU64(i,incoming[i]);
+	}
+	Kmer complement=m_parameters->_complementVertex(&vertex);
+	int numberOfMates=incoming[KMER_U64_ARRAY_SIZE+1];
 	bool lower=vertex<complement;
-	ReadAnnotation*e=(ReadAnnotation*)incoming[1];
+	ReadAnnotation*e=(ReadAnnotation*)incoming[KMER_U64_ARRAY_SIZE+0];
 	#ifdef ASSERT
 	assert(e!=NULL);
 	#endif
@@ -537,7 +571,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS_FROM_LIST(Message*message){
 	int pos=1;
 	set<uint64_t> localIndex;
 	for(int i=0;i<numberOfMates;i++){
-		localIndex.insert(incoming[3+i]);
+		localIndex.insert(incoming[KMER_U64_ARRAY_SIZE+2+i]);
 	}
 
 	while(e!=NULL){
@@ -642,8 +676,10 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 	assert(!m_subgraph->frozen());
 	#endif
 
-	for(int i=0;i<length;i++){
-		uint64_t l=incoming[i];
+	for(int i=0;i<length;i+=KMER_U64_ARRAY_SIZE){
+		Kmer l;
+		int pos=i;
+		l.unpack(incoming,&pos);
 
 		if((*m_last_value)!=(int)m_subgraph->size() && (int)m_subgraph->size()%100000==0){
 			(*m_last_value)=m_subgraph->size();
@@ -655,14 +691,14 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 			}
 		}
 
-		Vertex*tmp=m_subgraph->insert(l);
+		Vertex*tmp=m_subgraph->insert(&l);
 		#ifdef ASSERT
 		assert(tmp!=NULL);
 		#endif
 		if(m_subgraph->inserted()){
 			tmp->constructor(); 
 		}
-		tmp->setCoverage(l,tmp->getCoverage(l)+1);
+		tmp->setCoverage(&l,tmp->getCoverage(&l)+1);
 	}
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_VERTICES_DATA_REPLY,rank);
 	m_outbox->push_back(aMessage);
@@ -710,16 +746,19 @@ void MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA(Message*message){
 	int length=count;
 
 	for(int i=0;i<(int)length;i+=2){
-		uint64_t prefix=incoming[i+0];
-		uint64_t suffix=incoming[i+1];
+		int pos=i;
+		Kmer prefix;
+		prefix.unpack(incoming,&pos);
+		Kmer suffix;
+		suffix.unpack(incoming,&pos);
 
-		Vertex*node=m_subgraph->find(prefix);
+		Vertex*node=m_subgraph->find(&prefix);
 
 		#ifdef ASSERT
 		assert(node!=NULL);
 		#endif
 
-		node->addOutgoingEdge(prefix,suffix,(*m_wordSize));
+		node->addOutgoingEdge(&prefix,&suffix,(*m_wordSize));
 	}
 
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_OUT_EDGES_DATA_REPLY,rank);
@@ -749,17 +788,20 @@ void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){
 	uint64_t*incoming=(uint64_t*)buffer;
 	int length=count;
 
-	for(int i=0;i<(int)length;i+=2){
-		uint64_t prefix=incoming[i+0];
-		uint64_t suffix=incoming[i+1];
-	
-		Vertex*node=m_subgraph->find(suffix);
+	for(int i=0;i<(int)length;i+=2*KMER_U64_ARRAY_SIZE){
+		int bufferPosition=i;
+		Kmer prefix;
+		prefix.unpack(incoming,&bufferPosition);
+		Kmer suffix;
+		suffix.unpack(incoming,&bufferPosition);
+
+		Vertex*node=m_subgraph->find(&suffix);
 
 		#ifdef ASSERT
 		assert(node!=NULL);
 		#endif
 
-		node->addIngoingEdge(suffix,prefix,(*m_wordSize));
+		node->addIngoingEdge(&suffix,&prefix,(*m_wordSize));
 	}
 
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_IN_EDGES_DATA_REPLY,rank);
@@ -867,7 +909,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 		size++;
 		Vertex*node=seedingIterator.next();
 		//SplayNode<uint64_t,Vertex>*node=seedingIterator.next();
-		edgesDistribution[node->getIngoingEdges(node->m_lowerKey,(*m_wordSize)).size()][node->getOutgoingEdges(node->m_lowerKey,(*m_wordSize)).size()]++;
+		edgesDistribution[node->getIngoingEdges(&(node->m_lowerKey),(*m_wordSize)).size()][node->getOutgoingEdges(&(node->m_lowerKey),(*m_wordSize)).size()]++;
 		//(m_seedingData->m_SEEDING_nodes).push_back(node->getKey());
 	}
 	#ifdef ASSERT
@@ -901,22 +943,24 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_COVERAGE_AND_MARK(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
-	uint64_t vertex=incoming[0];
-	Vertex*node=m_subgraph->find(vertex);
+	Kmer vertex;
+	int bufferPosition=0;
+	vertex.unpack(incoming,&bufferPosition);
+	Vertex*node=m_subgraph->find(&vertex);
 	#ifdef ASSERT
 	assert(node!=NULL);
 	#endif
-	uint64_t coverage=node->getCoverage(vertex);
+	uint64_t coverage=node->getCoverage(&vertex);
 	message2[0]=coverage;
-	message2[1]=node->getEdges(vertex);
-	uint64_t rc=complementVertex_normal(vertex,*m_wordSize);
+	message2[1]=node->getEdges(&vertex);
+	Kmer rc=m_parameters->_complementVertex(&vertex);
 	bool lower=vertex<rc;
 	uint64_t wave=incoming[1];
 	int progression=incoming[2];
 	// mark direction in the graph
 	Direction*e=(Direction*)m_directionsAllocator->allocate(sizeof(Direction));
 	e->constructor(wave,progression,lower);
-	m_subgraph->addDirection(vertex,e);
+	m_subgraph->addDirection(&vertex,e);
 
 	Message aMessage(message2,2,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_GET_COVERAGE_AND_MARK_REPLY,rank);
 	m_outbox->push_back(aMessage);
@@ -931,18 +975,21 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message)
 	uint64_t*incoming=(uint64_t*)buffer;
 	int count=message->getCount();
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(count*1*sizeof(uint64_t));
-	for(int i=0;i<count;i++){
-		Vertex*node=m_subgraph->find(incoming[i+0]);
+	for(int i=0;i<count;i+=KMER_U64_ARRAY_SIZE){
+		Kmer vertex;
+		int bufferPosition=i;
+		vertex.unpack(incoming,&bufferPosition);
+		Vertex*node=m_subgraph->find(&vertex);
 		#ifdef ASSERT
 		if(node==NULL){
-			cout<<"Rank="<<rank<<" "<<__func__<<" "<<idToWord(incoming[i+0],(*m_wordSize))<<" does not exist"<<endl;
+			cout<<"Rank="<<rank<<" "<<__func__<<" "<<idToWord(&vertex,(*m_wordSize))<<" does not exist"<<endl;
 		}
 		assert(node!=NULL);
 		#endif
-		uint64_t coverage=node->getCoverage(incoming[i]);
-		message2[i+0]=coverage;
+		uint64_t coverage=node->getCoverage(&vertex);
+		message2[i]=coverage;
 	}
-	Message aMessage(message2,count*1,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY,rank);
+	Message aMessage(message2,count,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -959,14 +1006,19 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES(Message*me
 	uint64_t*incoming=(uint64_t*)buffer;
 	int count=message->getCount();
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(count*5*sizeof(uint64_t));
-	for(int i=0;i<count;i++){
-		vector<uint64_t> outgoingEdges=m_subgraph->find(incoming[i+0])->getOutgoingEdges(incoming[i+0],*m_wordSize);
-		message2[5*i+0]=outgoingEdges.size();
+
+	for(int i=0;i<count;i+=KMER_U64_ARRAY_SIZE){
+		Kmer vertex;
+		int bufferPosition=i;
+		vertex.unpack(incoming,&bufferPosition);
+		vector<Kmer> outgoingEdges=m_subgraph->find(&vertex)->getOutgoingEdges(&vertex,*m_wordSize);
+		int outputPosition=5*i;
+		message2[outputPosition++]=outgoingEdges.size();
 		for(int j=0;j<(int)outgoingEdges.size();j++){
-			message2[5*i+1+j]=outgoingEdges[j];
+			outgoingEdges[j].pack(message2,&outputPosition);
 		}
 	}
-	Message aMessage(message2,count*5,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY,rank);
+	Message aMessage(message2,(count/KMER_U64_ARRAY_SIZE)*5,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -976,29 +1028,29 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_EDGES(Message*message){
 	uint64_t*incoming=(uint64_t*)buffer;
 	int count=message->getCount();
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(count*10*sizeof(uint64_t));
+	int outputPosition=0;
+	Kmer vertex;
+	int bufferPosition=0;
+	vertex.unpack(incoming,&bufferPosition);
 
-	for(int j=0;j<count;j++){
-		uint64_t vertex=incoming[j];
-		Vertex*node=m_subgraph->find(vertex);
+	Vertex*node=m_subgraph->find(&vertex);
 
-		#ifdef ASSERT
-		assert(node!=NULL);
-		#endif
+	#ifdef ASSERT
+	assert(node!=NULL);
+	#endif
 
-		vector<uint64_t> outgoingEdges=node->getOutgoingEdges(vertex,*m_wordSize);
-		vector<uint64_t> ingoingEdges=node->getIngoingEdges(vertex,*m_wordSize);
-		int k=j*10;
-		
-		message2[k+0]=outgoingEdges.size();
-		for(int i=0;i<(int)outgoingEdges.size();i++){
-			message2[k+1+i]=outgoingEdges[i];
-		}
-		message2[k+5]=ingoingEdges.size();
-		for(int i=0;i<(int)ingoingEdges.size();i++){
-			message2[k+5+1+i]=ingoingEdges[i];
-		}
+	vector<Kmer> outgoingEdges=node->getOutgoingEdges(&vertex,*m_wordSize);
+	vector<Kmer> ingoingEdges=node->getIngoingEdges(&vertex,*m_wordSize);
+	
+	message2[outputPosition++]=outgoingEdges.size();
+	for(int i=0;i<(int)outgoingEdges.size();i++){
+		outgoingEdges[i].pack(message2,&outputPosition);
 	}
-	Message aMessage(message2,count*10,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_EDGES_REPLY,rank);
+	message2[outputPosition++]=ingoingEdges.size();
+	for(int i=0;i<(int)ingoingEdges.size();i++){
+		ingoingEdges[i].pack(message2,&outputPosition);
+	}
+	Message aMessage(message2,outputPosition,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_EDGES_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -1006,19 +1058,23 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_EDGES_REPLY(Message*messa
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 
-	int numberOfOutgoingEdges=incoming[0];
+	int bufferPosition=0;
+	int numberOfOutgoingEdges=incoming[bufferPosition++];
 	(m_seedingData->m_SEEDING_receivedOutgoingEdges).clear();
 
 	for(int i=0;i<numberOfOutgoingEdges;i++){
-		(m_seedingData->m_SEEDING_receivedOutgoingEdges).push_back(incoming[1+i]);
+		Kmer a;
+		a.unpack(incoming,&bufferPosition);
+		(m_seedingData->m_SEEDING_receivedOutgoingEdges).push_back(a);
 	}
 
-	int numberOfIngoingEdges=incoming[5];
+	int numberOfIngoingEdges=incoming[bufferPosition++];
 	m_seedingData->m_SEEDING_receivedIngoingEdges.clear();
 
 	for(int i=0;i<numberOfIngoingEdges;i++){
-		uint64_t nextVertex=incoming[5+1+i];
-		m_seedingData->m_SEEDING_receivedIngoingEdges.push_back(nextVertex);
+		Kmer a;
+		a.unpack(incoming,&bufferPosition);
+		m_seedingData->m_SEEDING_receivedIngoingEdges.push_back(a);
 	}
 
 	(m_seedingData->m_SEEDING_edgesReceived)=true;
@@ -1028,8 +1084,11 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY(Mess
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	(m_seedingData->m_SEEDING_receivedOutgoingEdges).clear();
-	for(int i=0;i<(int)incoming[0];i++){
-		uint64_t nextVertex=incoming[1+i];
+	int bufferPosition=0;
+	int count=incoming[bufferPosition++];
+	for(int i=0;i<(int)count;i++){
+		Kmer nextVertex;
+		nextVertex.unpack(incoming,&bufferPosition);
 		(m_seedingData->m_SEEDING_receivedOutgoingEdges).push_back(nextVertex);
 	}
 
@@ -1166,17 +1225,21 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES(Message*mes
 	#endif
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(count*5*sizeof(uint64_t));
 	for(int i=0;i<count;i++){
-		Vertex*node=m_subgraph->find(incoming[0+i]);
+		Kmer vertex;
+		int pos=i;
+		vertex.unpack(incoming,&pos);
+		Vertex*node=m_subgraph->find(&vertex);
 		#ifdef ASSERT
 		if(node==NULL){
-			cout<<"Rank="<<rank<<" "<<idToWord(incoming[i+0],*m_wordSize)<<" does not exist."<<endl;
+			cout<<"Rank="<<rank<<" "<<idToWord(&vertex,*m_wordSize)<<" does not exist."<<endl;
 		}
 		assert(node!=NULL);
 		#endif 
-		vector<uint64_t> ingoingEdges=node->getIngoingEdges(incoming[i+0],*m_wordSize);
-		message2[i*5+0]=ingoingEdges.size();
+		vector<Kmer> ingoingEdges=node->getIngoingEdges(&vertex,*m_wordSize);
+		int outputPosition=i*5;
+		message2[outputPosition++]=ingoingEdges.size();
 		for(int j=0;j<(int)ingoingEdges.size();j++){
-			message2[i*5+1+j]=ingoingEdges[j];
+			ingoingEdges[j].unpack(incoming,&outputPosition);
 		}
 	}
 	Message aMessage(message2,count*5,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY,rank);
@@ -1187,8 +1250,12 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY(Messa
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	(m_seedingData->m_SEEDING_receivedIngoingEdges).clear();
-	for(int i=0;i<(int)incoming[0];i++){
-		(m_seedingData->m_SEEDING_receivedIngoingEdges).push_back(incoming[1+i]);
+	int bufferPosition=0;
+	int numberOfElements=incoming[bufferPosition++];
+	for(int i=0;i<(int)numberOfElements;i++){
+		Kmer a;
+		a.unpack(incoming,&bufferPosition);
+		(m_seedingData->m_SEEDING_receivedIngoingEdges).push_back(a);
 	}
 	(m_seedingData->m_SEEDING_InedgesReceived)=true;
 }
@@ -1213,12 +1280,15 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
+	Kmer vertex;
+	int pos=0;
+	vertex.unpack(incoming,&pos);
 	#ifdef ASSERT
-	Vertex*node=m_subgraph->find(incoming[0]);
+	Vertex*node=m_subgraph->find(&vertex);
 	assert(node!=NULL);
 	#endif
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
-	message2[0]=m_subgraph->isAssembled(incoming[0]);
+	message2[0]=m_subgraph->isAssembled(&vertex);
 
 	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY,rank);
 	m_outbox->push_back(aMessage);
@@ -1268,18 +1338,21 @@ void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
 	uint64_t*incoming=(uint64_t*)buffer;
-	for(int i=0;i<count;i+=5){
+	for(int i=0;i<count;i+=KMER_U64_ARRAY_SIZE+4){
 		m_count++;
-		uint64_t vertex=incoming[i+0];
-		uint64_t complement=complementVertex_normal(vertex,*m_wordSize);
-		bool lower=vertex<complement;
-		int rank=incoming[i+1];
-		int sequenceIdOnDestination=(int)incoming[i+2];
-		int positionOnStrand=incoming[i+3];
-		char strand=(char)incoming[i+4];
-		Vertex*node=m_subgraph->find(vertex);
+		Kmer vertex;
+		for(int j=0;j<vertex.getNumberOfU64();j++){
+			vertex.setU64(j,incoming[i+j]);
+		}
+		Kmer complement=m_parameters->_complementVertex(&vertex);
+		bool lower=vertex.isLower(&complement);
+		int rank=incoming[i+vertex.getNumberOfU64()];
+		int sequenceIdOnDestination=(int)incoming[i+vertex.getNumberOfU64()+1];
+		int positionOnStrand=incoming[i+vertex.getNumberOfU64()+2];
+		char strand=(char)incoming[i+vertex.getNumberOfU64()+3];
+		Vertex*node=m_subgraph->find(&vertex);
 
-		int coverage=node->getCoverage(vertex);
+		int coverage=node->getCoverage(&vertex);
 
 		if(node==NULL){
 			continue;
@@ -1295,7 +1368,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message){
 		#endif
 		e->constructor(rank,sequenceIdOnDestination,positionOnStrand,strand,lower);
 
-		m_subgraph->addRead(vertex,e);
+		m_subgraph->addRead(&vertex,e);
 	}
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	Message aMessage(message2,count,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY,rank);
@@ -1306,219 +1379,24 @@ void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY(Message*message){
 	m_si->setReadiness();
 }
 
-void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS(Message*message){
-	uint64_t*incoming=(uint64_t*)message->getBuffer();
-	int source=message->getSource();
-	int count=message->getCount();
-
-	// keep 3 for the sentinels or the pointer. + 1 for the vertex
-	int maxToProcess=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)-4-1;
-	maxToProcess=maxToProcess-maxToProcess%4;
-	
-	#ifdef ASSERT
-	assert(maxToProcess%4==0);
-	#endif
-
-	ReadAnnotation*e=NULL;
-
-	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-	int j=0;
-
-	uint64_t vertex=0;
-	// start from the beginning
-	if(count>=3){
-		vertex=incoming[0];
-
-		Vertex*node=m_subgraph->find(vertex);
-		#ifdef ASSERT
-		assert(node!=NULL);
-		#endif
-
-		e=m_subgraph->getReads(vertex);
-
-		#ifdef ASSERT
-		assert(maxToProcess%4==0);
-		#endif
-
-		// send a maximum of maxToProcess individually
-
-		// pad the message with a sentinel value  sentinel/0/sentinel
-		message2[j++]=m_sentinelValue;
-		message2[j++]=0;
-		message2[j++]=node->getCoverage(vertex);
-		message2[j++]=node->getEdges(vertex);
-		
-		uint64_t rc=complementVertex_normal(vertex,*m_wordSize);
-		bool lower=vertex<rc;
-		uint64_t wave=incoming[1];
-		int progression=incoming[2];
-		// add direction in the graph
-		Direction*e=(Direction*)m_directionsAllocator->allocate(sizeof(Direction));
-		e->constructor(wave,progression,lower);
-		m_subgraph->addDirection(vertex,e);
-
-		#ifdef ASSERT
-		assert(j==4);
-		#endif
-
-	// use the pointer provided, count is 2, but only the first element is good.
-	}else if(count==2){
-		cout.flush();
-		e=(ReadAnnotation*)incoming[0];
-		vertex=incoming[1];
-
-		#ifdef ASSERT
-		assert(e!=NULL);
-		assert(j==0);
-		#endif
-	}
-
-	uint64_t complement=complementVertex_normal(vertex,*m_wordSize);
-	bool lower=vertex<complement;
-
-	// a count of 4 means that the cache will be used on the other end
-	if(count==4){
-		e=NULL;
-	}
-
-	while(e!=NULL&&j!=maxToProcess){
-		#ifdef ASSERT
-		assert(e!=NULL);
-		assert(e->getRank()>=0);
-		if(e->getRank()>=size){
-			cout<<"Error : rank="<<e->getRank()<<" Strand="<<e->getStrand()<<endl;
-		}
-		assert(e->getRank()<size);
-		assert(j<=(maxToProcess-4));
-		assert(e->getStrand()=='F'||e->getStrand()=='R');
-		assert((uint64_t)e->getReadIndex()!=m_sentinelValue);
-		#endif
-
-		if(e->isLower()==lower){
-			//cout<<"appending"<<endl;
-			message2[j++]=e->getRank();
-			message2[j++]=e->getReadIndex();
-			message2[j++]=e->getPositionOnStrand();
-			message2[j++]=e->getStrand();
-		}
-		//cout<<"next"<<endl;
-		e=e->getNext();
-
-		#ifdef ASSERT
-		assert(j%4==0);
-		assert(j<=maxToProcess+4);
-		#endif
-	}
-	if(e==NULL){
-		// end is sentinel/sentinel/sentinel
-		message2[j++]=m_sentinelValue;
-		message2[j++]=m_sentinelValue;
-		message2[j++]=m_sentinelValue;
-		message2[j++]=m_sentinelValue;
-		//cout<<"DONE "<<endl;
-		cout.flush();
-		#ifdef ASSERT
-		assert(j%4==0);
-		#endif
-		message2[j++]=vertex;
-	}else{
-		// pad with the pointer
-		message2[j++]=(uint64_t)e;
-		//cout<<"SET PTR="<<(uint64_t)e<<endl;
-		cout.flush();
-		#ifdef ASSERT
-		assert(j%4==1);
-		#endif
-		message2[j++]=vertex;
-	}
-
-	Message aMessage(message2,j,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_READS_REPLY,rank);
-	m_outbox->push_back(aMessage);
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READS_REPLY(Message*message){
-	uint64_t*incoming=(uint64_t*)message->getBuffer();
-	int count=message->getCount();
-	int count3=count-(count%4);
-	uint64_t vertex=incoming[count-1];
-	uint64_t complement=complementVertex_normal(vertex,*m_wordSize);
-	bool lower=vertex<complement;
-
-	#ifdef ASSERT
-	assert(count3%4==0);
-	assert(incoming!=NULL);
-	#endif
-
-	for(int i=0;i<count3;i+=4){
-		// beginning of transmission, s,0,s
-		if(incoming[i+0]==m_sentinelValue 
-		&& incoming[i+1]==0){
-			#ifdef ASSERT
-			assert(m_ed->m_EXTENSION_reads_received==false);
-			#endif
-
-			m_ed->m_EXTENSION_receivedReads.clear();
-		// end of transmission, s,s,s
-		}else if(incoming[i+0]==m_sentinelValue 
-		&& incoming[i+1]==m_sentinelValue){
-			(m_ed->m_EXTENSION_reads_received)=true;
-			//cout<<m_ed->m_EXTENSION_receivedReads.size()<<" Reads."<<endl;
-		}else{
-			#ifdef ASSERT
-			assert(m_ed->m_EXTENSION_reads_received==false);
-			assert(incoming[i+0]!=m_sentinelValue);
-			assert(incoming[i+1]!=m_sentinelValue);
-			assert(incoming[i+2]!=m_sentinelValue);
-			#endif
-
-			int theRank=incoming[i];
-			int index=incoming[i+1];
-			int strandPosition=incoming[i+2];
-			char strand=incoming[i+3];
-
-			#ifdef ASSERT
-			assert(theRank>=0);
-			assert(theRank<size);
-			assert(strand=='F'||strand=='R');
-			#endif
-
-			ReadAnnotation e;
-			e.constructor(theRank,index,strandPosition,strand,lower);
-			m_ed->m_EXTENSION_receivedReads.push_back(e);
-		}
-	}
-	if(!m_ed->m_EXTENSION_reads_received){
-		// ask for more, give the pointer to the correct location.
-		// pointer is 64 bits, assuming 64-bit architecture
-		uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-		void*ptr=(void*)incoming[count-2];
-		#ifdef ASSERT
-		assert(ptr!=NULL);
-		#endif
-
-		message2[0]=(uint64_t)ptr;
-		message2[1]=vertex;
-		Message aMessage(message2,2,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_REQUEST_READS,rank);
-		m_outbox->push_back(aMessage);
-	}
-}
-
 void MessageProcessor::call_RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
 	char strand=incoming[2];
-	uint64_t vertex=(*m_myReads)[incoming[0]]->getVertex(incoming[1],(*m_wordSize),strand,(*m_colorSpaceMode));
+	Kmer vertex=(*m_myReads)[incoming[0]]->getVertex(incoming[1],(*m_wordSize),strand,(*m_colorSpaceMode));
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
-	message2[0]=vertex;
-	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY,rank);
+	int bufferPosition=0;
+	vertex.pack(message2,&bufferPosition);
+	Message aMessage(message2,bufferPosition,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY(Message*message){
-	void*buffer=message->getBuffer();
+	uint64_t*buffer=(uint64_t*)message->getBuffer();
 	(m_ed->m_EXTENSION_read_vertex_received)=true;
-	(m_ed->m_EXTENSION_receivedReadVertex)=((uint64_t*)buffer)[0];
+	int bufferPosition=0;
+	m_ed->m_EXTENSION_receivedReadVertex.unpack(buffer,&bufferPosition);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_ASK_READ_LENGTH(Message*message){
@@ -1551,11 +1429,13 @@ void MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 	uint64_t*incoming=(uint64_t*)buffer;
 	int count=message->getCount();
 	for(int i=0;i<count;i+=3){
-		uint64_t vertex=incoming[i+0];
-		uint64_t rc=complementVertex_normal(vertex,*m_wordSize);
+		Kmer vertex;
+		int pos=i;
+		vertex.unpack(incoming,&pos);
+		Kmer rc=m_parameters->_complementVertex(&vertex);
 		bool lower=vertex<rc;
 		#ifdef ASSERT
-		Vertex*node=m_subgraph->find(vertex);
+		Vertex*node=m_subgraph->find(&vertex);
 		assert(node!=NULL);
 		#endif
 		uint64_t wave=incoming[i+1];
@@ -1563,7 +1443,7 @@ void MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 		Direction*e=(Direction*)m_directionsAllocator->allocate(sizeof(Direction));
 		e->constructor(wave,progression,lower);
 
-		m_subgraph->addDirection(incoming[i],e);
+		m_subgraph->addDirection(&vertex,e);
 	}
 }
 
@@ -1599,20 +1479,23 @@ void MessageProcessor::call_RAY_MPI_TAG_FUSION_DONE(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE(Message*message){
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
-	Vertex*node=m_subgraph->find(incoming[0]);
+	int pos=0;
+	Kmer vertex;
+	vertex.unpack(incoming,&pos);
+	Vertex*node=m_subgraph->find(&vertex);
 
 	#ifdef ASSERT
 	if(node==NULL){
-		cout<<"Source="<<message->getSource()<<" Destination="<<rank<<" "<<idToWord(incoming[0],*m_wordSize)<<" does not exist, aborting"<<endl;
+		cout<<"Source="<<message->getSource()<<" Destination="<<rank<<" "<<idToWord(&vertex,*m_wordSize)<<" does not exist, aborting"<<endl;
 		cout.flush();
 	}
 	assert(node!=NULL);
 	#endif
 
-	vector<Direction> paths=m_subgraph->getDirections(incoming[0]);
+	vector<Direction> paths=m_subgraph->getDirections(&vertex);
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
 	message2[0]=paths.size();
-	message2[1]=node->getCoverage(incoming[0]);
+	message2[1]=node->getCoverage(&vertex);
 	Message aMessage(message2,2,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
@@ -1656,10 +1539,12 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION(Message*messa
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
 	for(int i=0;i<count;i++){
-		VERTEX_TYPE vertex=incoming[i];
-		Vertex*node=m_subgraph->find(vertex);
-		int coverage=node->getCoverage(vertex);
-		vector<Direction> paths=m_subgraph->getDirections(vertex);
+		Kmer vertex;
+		int pos=i;
+		vertex.unpack(incoming,&pos);
+		Vertex*node=m_subgraph->find(&vertex);
+		int coverage=node->getCoverage(&vertex);
+		vector<Direction> paths=m_subgraph->getDirections(&vertex);
 		message2[i*4+0]=coverage;
 		message2[i*4+1]=(paths.size()==1);
 		if(paths.size()==1){
@@ -1683,14 +1568,18 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
-	uint64_t vertex=incoming[0];
+	Kmer vertex;
+	int pos=0;
+	vertex.unpack(incoming,&pos);
+
 	int firstPathId=incoming[1];
-	vector<Direction> paths=m_subgraph->getDirections(vertex);
+	vector<Direction> paths=m_subgraph->getDirections(&vertex);
 
 	int availableElements=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t);
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	int j=2;
-	message2[0]=vertex;
+	int outputPosition=0;
+	vertex.pack(message2,&outputPosition);
 	while(firstPathId<(int)paths.size() && j<availableElements){
 		#ifdef ASSERT
 		assert(firstPathId<(int)paths.size());
@@ -1723,9 +1612,11 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
-	uint64_t vertex=incoming[0];
+	Kmer vertex;
+	int pos=0;
+	vertex.unpack(incoming,&pos);
 	int count=message->getCount();
-	uint64_t complement=complementVertex_normal(vertex,*m_wordSize);
+	Kmer complement=m_parameters->_complementVertex(&vertex);
 	bool lower=vertex<complement;
 	for(int i=2;i<count;i+=2){
 		uint64_t pathId=incoming[i];
@@ -1738,18 +1629,21 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY(Message*message){
 	}
 
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
-	message2[0]=vertex;
-	message2[1]=incoming[1];
-	Message aMessage(message2,2,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_ASK_VERTEX_PATHS,rank);
+	int outputPosition=0;
+	vertex.pack(message2,&outputPosition);
+	message2[outputPosition++]=incoming[1];
+	Message aMessage(message2,outputPosition,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_ASK_VERTEX_PATHS,rank);
 	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
-	uint64_t vertex=incoming[0];
+	Kmer vertex;
+	int bufferPosition=0;
+	vertex.unpack(incoming,&bufferPosition);
 	int count=message->getCount();
-	uint64_t complement=complementVertex_normal(vertex,*m_wordSize);
+	Kmer complement=m_parameters->_complementVertex(&vertex);
 	bool lower=vertex<complement;
 	for(int i=2;i<count;i+=2){
 		uint64_t pathId=incoming[i];
@@ -1768,21 +1662,25 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
+	Kmer kmer;
+	int pos=0;
+	kmer.unpack(incoming,&pos);
 	#ifdef ASSERT
-	Vertex*node=m_subgraph->find(incoming[0]);
+	Vertex*node=m_subgraph->find(&kmer);
 	assert(node!=NULL);
 	#endif
-	vector<Direction> paths=m_subgraph->getDirections(incoming[0]);
+	vector<Direction> paths=m_subgraph->getDirections(&kmer);
 	int i=incoming[1];
 	Direction d=paths[i];
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(3*sizeof(uint64_t));
-	message2[0]=incoming[0];
-	message2[1]=d.getWave();
+	int outputPosition=0;
+	kmer.pack(message2,&outputPosition);
+	message2[outputPosition++]=d.getWave();
 	#ifdef ASSERT
 	assert(getRankFromPathUniqueId(message2[1])<size);
 	#endif
-	message2[2]=d.getProgression();
-	Message aMessage(message2,3,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY,rank);
+	message2[outputPosition++]=d.getProgression();
+	Message aMessage(message2,outputPosition,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -1790,8 +1688,10 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	m_fusionData->m_FUSION_path_received=true;
-	uint64_t vertex=incoming[0];
-	uint64_t complement=complementVertex_normal(vertex,*m_wordSize);
+	Kmer vertex;
+	int pos=0;
+	vertex.unpack(incoming,&pos);
+	Kmer complement=m_parameters->_complementVertex(&vertex);
 	bool lower=vertex<complement;
 	uint64_t pathId=incoming[1];
 	#ifdef ASSERT
@@ -1869,8 +1769,8 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 	iterator.constructor(m_subgraph,*m_wordSize);
 	while(iterator.hasNext()){
 		iterator.next();
-		uint64_t key=iterator.getKey();
-		m_subgraph->clearDirections(key);
+		Kmer key=*(iterator.getKey());
+		m_subgraph->clearDirections(&key);
 	}
 
 	m_directionsAllocator->clear();
@@ -1882,7 +1782,7 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 
 	m_fusionData->m_FINISH_newFusions.clear();
 
-	vector<vector<uint64_t> > fusions;
+	vector<vector<Kmer> > fusions;
 	for(int i=0;i<(int)(m_ed->m_EXTENSION_contigs).size();i++){
 		uint64_t id=(m_ed->m_EXTENSION_identifiers)[i];
 		if(m_fusionData->m_FUSION_eliminated.count(id)==0){
@@ -1890,9 +1790,9 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 			if(!appendReverseComplement)
 				continue;
 
-			vector<uint64_t> rc;
+			vector<Kmer> rc;
 			for(int j=(m_ed->m_EXTENSION_contigs)[i].size()-1;j>=0;j--){
-				rc.push_back(complementVertex((m_ed->m_EXTENSION_contigs)[i][j],*m_wordSize,(*m_colorSpaceMode)));
+				rc.push_back(complementVertex(&((m_ed->m_EXTENSION_contigs)[i][j]),*m_wordSize,(*m_colorSpaceMode)));
 			}
 			fusions.push_back(rc);
 		}
@@ -2001,8 +1901,10 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_PATH_VERTEX(Message*message){
 	assert(position<(int)(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size());
 	#endif
 	uint64_t*messageBytes=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t));
-	messageBytes[0]=(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]][position];
-	Message aMessage(messageBytes,1,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_GET_PATH_VERTEX_REPLY,rank);
+	Kmer a=(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]][position];
+	int pos=0;
+	a.pack(messageBytes,&pos);
+	Message aMessage(messageBytes,pos,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_GET_PATH_VERTEX_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -2010,7 +1912,8 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_PATH_VERTEX_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	m_fusionData->m_FINISH_vertex_received=true;
-	m_fusionData->m_FINISH_received_vertex=incoming[0];
+	int pos=0;
+	m_fusionData->m_FINISH_received_vertex.unpack(incoming,&pos);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_WRITE_AMOS(Message*message){
@@ -2336,4 +2239,6 @@ void MessageProcessor::assignHandlers(){
 	#undef MACRO_LIST_ITEM
 }
 
-
+void MessageProcessor::setVirtualCommunicator(VirtualCommunicator*a){
+	m_virtualCommunicator=a;
+}

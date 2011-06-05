@@ -461,7 +461,7 @@ void Scaffolder::run(){
 	}
 }
 
-void Scaffolder::addContig(uint64_t name,vector<uint64_t>*vertices){
+void Scaffolder::addContig(uint64_t name,vector<Kmer>*vertices){
 	m_contigNames.push_back(name);
 	m_contigs.push_back(*vertices);
 }
@@ -567,11 +567,11 @@ void Scaffolder::processContigPosition(){
 	assert(m_positionOnContig<(int)m_contigs[m_contigId].size());
 	#endif
 
-	VERTEX_TYPE vertex=m_contigs[m_contigId][m_positionOnContig];
+	Kmer vertex=m_contigs[m_contigId][m_positionOnContig];
 	#ifdef ASSERT
 	assert(m_parameters!=NULL);
 	#endif
-	//VERTEX_TYPE reverseComplement=m_parameters->_complementVertex(vertex);
+	//Kmer reverseComplement=m_parameters->_complementVertex(vertex);
 	if(!m_forwardDone){
 		processVertex(vertex);
 	}else if(!m_reverseDone){
@@ -595,7 +595,7 @@ void Scaffolder::processContigPosition(){
 	}
 }
 
-void Scaffolder::processVertex(VERTEX_TYPE vertex){
+void Scaffolder::processVertex(Kmer vertex){
 	// get the coverage
 	// if < maxCoverage
 	// 	get read markers
@@ -609,10 +609,11 @@ void Scaffolder::processVertex(VERTEX_TYPE vertex){
 	// 					print the linking information
 	if(!m_coverageRequested){
 		//cout<<"1Requesting coverage contig "<<m_contigId<<"/"<<m_contigs.size()<<" position "<<m_positionOnContig<<"/"<<m_contigs[m_contigId].size()<<endl;
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
-		buffer[0]=vertex;
-		Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,
-			m_parameters->_vertexRank(vertex),RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_parameters->getRank());
+		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
+		int bufferPosition=0;
+		vertex.pack(buffer,&bufferPosition);
+		Message aMessage(buffer,bufferPosition,MPI_UNSIGNED_LONG_LONG,
+			m_parameters->_vertexRank(&vertex),RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_parameters->getRank());
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		m_coverageRequested=true;
 		m_coverageReceived=false;
@@ -639,7 +640,7 @@ void Scaffolder::processVertex(VERTEX_TYPE vertex){
 	}else if(m_coverageReceived){
 		if(m_receivedCoverage<m_parameters->getPeakCoverage()){
 			if(!m_initialisedFetcher){
-				m_readFetcher.constructor(vertex,m_outboxAllocator,m_inbox,
+				m_readFetcher.constructor(&vertex,m_outboxAllocator,m_inbox,
 				m_outbox,m_parameters,m_virtualCommunicator,m_workerId);
 				m_readAnnotationId=0;
 				m_initialisedFetcher=true;
@@ -692,7 +693,7 @@ void Scaffolder::processAnnotation(){
 	char strand=a->getStrand();
 	int positionOnStrand=a->getPositionOnStrand();
 	if(!m_hasPairRequested){
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 		buffer[0]=sequenceId;
 		Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,rank,RAY_MPI_TAG_HAS_PAIRED_READ,m_parameters->getRank());
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
@@ -712,7 +713,7 @@ void Scaffolder::processAnnotation(){
 		m_readAnnotationId++;
 		m_hasPairRequested=false;
 	}else if(!m_pairRequested){
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 		buffer[0]=sequenceId;
 		Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,
 		rank,RAY_MPI_TAG_GET_READ_MATE,m_parameters->getRank());
@@ -733,7 +734,7 @@ void Scaffolder::processAnnotation(){
 	}else if(!m_pairReceived){
 		return;
 	}else if(!m_markersRequested){
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 		buffer[0]=m_pairedReadIndex;
 		Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,
 		m_pairedReadRank,RAY_MPI_TAG_GET_READ_MARKERS,m_parameters->getRank());
@@ -743,11 +744,12 @@ void Scaffolder::processAnnotation(){
 	}else if(!m_markersReceived
 	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
 		vector<uint64_t> response=m_virtualCommunicator->getResponseElements(m_workerId);
-		m_pairedReadLength=response[0];
-		m_pairedForwardMarker=response[1];
-		m_pairedReverseMarker=response[2];
-		m_pairedForwardOffset=response[3];
-		m_pairedReverseOffset=response[4];
+		int bufferPosition=0;
+		m_pairedReadLength=response[bufferPosition++];
+		m_pairedForwardMarker.unpack(&response,&bufferPosition);
+		m_pairedReverseMarker.unpack(&response,&bufferPosition);
+		m_pairedForwardOffset=response[bufferPosition++];
+		m_pairedReverseOffset=response[bufferPosition++];
 		m_markersReceived=true;
 		m_forwardDirectionsRequested=false;
 	}else if(!m_markersReceived){
@@ -768,10 +770,11 @@ void Scaffolder::processAnnotation(){
 		//cout<<"OriginalVertex= "<<idToWord(vertex,m_parameters->getWordSize())<<" ";
 		//cout<<"ForwardMarker= "<<idToWord(m_pairedForwardMarker,m_parameters->getWordSize())<<" ";
 		//cout<<"ReverseMarker= "<<idToWord(m_pairedReverseMarker,m_parameters->getWordSize())<<" "<<endl;
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
-		buffer[0]=m_pairedForwardMarker;
-		Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,
-		m_parameters->_vertexRank(m_pairedForwardMarker),
+		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
+		int bufferPosition=0;
+		m_pairedForwardMarker.pack(buffer,&bufferPosition);
+		Message aMessage(buffer,bufferPosition,MPI_UNSIGNED_LONG_LONG,
+		m_parameters->_vertexRank(&m_pairedForwardMarker),
 		RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION,m_parameters->getRank());
 		//cout<<"Sending "<<" RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION"<<endl;
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
@@ -798,7 +801,7 @@ void Scaffolder::processAnnotation(){
 	}else if(!m_forwardDirectionsReceived){
 		return;
 	}else if(!m_forwardDirectionLengthRequested){
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 		int rankId=getRankFromPathUniqueId(m_pairedForwardDirectionName);
 		buffer[0]=m_pairedForwardDirectionName;
 		Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,
@@ -954,10 +957,11 @@ Case 13. (allowed)
 		//cout<<"OriginalVertex= "<<idToWord(vertex,m_parameters->getWordSize())<<" ";
 		//cout<<"ForwardMarker= "<<idToWord(m_pairedForwardMarker,m_parameters->getWordSize())<<" ";
 		//cout<<"ReverseMarker= "<<idToWord(m_pairedReverseMarker,m_parameters->getWordSize())<<" "<<endl;
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
-		buffer[0]=m_pairedReverseMarker;
-		Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,
-		m_parameters->_vertexRank(m_pairedReverseMarker),
+		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
+		int bufferPosition=0;
+		m_pairedReverseMarker.pack(buffer,&bufferPosition);
+		Message aMessage(buffer,bufferPosition,MPI_UNSIGNED_LONG_LONG,
+		m_parameters->_vertexRank(&m_pairedReverseMarker),
 		RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION,m_parameters->getRank());
 		//cout<<"Sending "<<" RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION"<<endl;
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
@@ -983,7 +987,7 @@ Case 13. (allowed)
 	}else if(!m_reverseDirectionsReceived){
 		return;
 	}else if(!m_reverseDirectionLengthRequested){
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(VERTEX_TYPE));
+		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 		int rankId=getRankFromPathUniqueId(m_pairedReverseDirectionName);
 		buffer[0]=m_pairedReverseDirectionName;
 		Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,

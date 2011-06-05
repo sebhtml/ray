@@ -44,12 +44,12 @@ class ReadFetcher{
 	StaticVector*m_outbox;
 	StaticVector*m_inbox;
 	vector<ReadAnnotation> m_reads;
-	uint64_t m_vertex;
+	Kmer m_vertex;
 	bool m_readsRequested;
 	void*m_pointer;
 	bool m_done;
 public:
-	void constructor(uint64_t vertex,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,VirtualCommunicator*vc,uint64_t workerId);
+	void constructor(Kmer*vertex,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,VirtualCommunicator*vc,uint64_t workerId);
 	bool isDone();
 	void work();
 	vector<ReadAnnotation>*getResult();

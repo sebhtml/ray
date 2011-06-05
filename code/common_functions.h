@@ -22,6 +22,7 @@ see <http://www.gnu.org/licenses/>
 #ifndef _common_functions
 #define _common_functions
 
+#include <Kmer.h>
 #include <string>
 #include <constants.h>
 #include <slave_modes.h>
@@ -29,16 +30,6 @@ see <http://www.gnu.org/licenses/>
 #include <vector>
 #include <mpi_tags.h>
 using namespace std;
-
-#ifdef FORCE_PACKING
-#ifdef __GNUC__
-#define ATTRIBUTE_PACKED  __attribute__ ((packed))
-#else
-#define ATTRIBUTE_PACKED
-#endif
-#else
-#define ATTRIBUTE_PACKED
-#endif
 
 
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
@@ -58,13 +49,13 @@ string reverseComplement(string a,char*rev);
  * convert a char* to uint64_t
  * A=00, T=01, C=10, G=11
  */
-uint64_t wordId(const char*a);
-uint64_t wordId_Classic(const char*a);
+Kmer wordId(const char*a);
+Kmer wordId_Classic(const char*a);
 
 /*
  * convert a 64-bit integer to a string
  */
-string idToWord(uint64_t i,int wordSize);
+string idToWord(const Kmer*i,int wordSize);
 
 /*
  * verify that x has only A,T,C, and G
@@ -74,12 +65,12 @@ bool isValidDNA(const char*x);
 /*
  * get the first letter of a uint64_t
  */
-char getFirstSymbol(uint64_t i,int k);
+char getFirstSymbol(Kmer i,int k);
 
 /*
  * get the last letter of a uint64_t
  */
-char getLastSymbol(uint64_t i,int w);
+char getLastSymbol(Kmer*i,int w);
 
 /*
  * output in stdout the binary view of a 64-bit integer.
@@ -100,7 +91,7 @@ uint64_t getKSuffix(uint64_t a,int k);
 /*
  * complement a vertex, and return another one
  */
-uint64_t complementVertex(uint64_t a,int m_wordSize,bool useColorSpace);
+Kmer complementVertex(Kmer*a,int m_wordSize,bool useColorSpace);
 
 /*
  * add line breaks to a string
@@ -114,32 +105,30 @@ void __Free(void*a,int mallocType);
  * compute the reverse complement in color space (it is just the same, but reverse)
  */
 
-uint64_t complementVertex_colorSpace(uint64_t a,int b);
+Kmer complementVertex_colorSpace(Kmer*a,int b);
 
 /*
  * complement vertex, normal.
  */
-uint64_t complementVertex_normal(uint64_t a,int m_wordSize);
+Kmer complementVertex_normal(Kmer*a,int m_wordSize);
 
 /*
  * use mini distant segments here.
  */
 uint64_t wordId_DistantSegments(const char*a);
 
-uint8_t getFirstSegmentLastCode(uint64_t v,int segmentLength,int totalLength);
-uint8_t getFirstSegmentFirstCode(uint64_t v,int segmentLength,int totalLength);
-uint8_t getSecondSegmentFirstCode(uint64_t v,int segmentLength,int totalLength);
-uint8_t getSecondSegmentLastCode(uint64_t v,int segmentLength,int totalLength);
+uint8_t getFirstSegmentFirstCode(Kmer*v,int segmentLength,int totalLength);
+uint8_t getSecondSegmentLastCode(Kmer*v,int segmentLength,int totalLength);
 
 uint8_t charToCode(char a);
 
 char codeToChar(uint8_t a);
 
-string convertToString(vector<uint64_t>*b,int m_wordSize);
+string convertToString(vector<Kmer>*b,int m_wordSize);
 
-int vertexRank(uint64_t a,int _size,int w);
+int vertexRank(Kmer*a,int _size,int w);
 
-uint64_t kmerAtPosition(const char*string,int pos,int w,char strand,bool color);
+Kmer kmerAtPosition(const char*string,int pos,int w,char strand,bool color);
 
 int roundNumber(int number,int alignment);
 
@@ -147,13 +136,13 @@ uint64_t getMilliSeconds();
 
 void showMemoryUsage(int rank);
 
-vector<uint64_t> _getOutgoingEdges(uint64_t a,uint8_t edges,int k);
-vector<uint64_t> _getIngoingEdges(uint64_t a,uint8_t edges,int k);
+vector<Kmer> _getOutgoingEdges(Kmer*a,uint8_t edges,int k);
+vector<Kmer> _getIngoingEdges(Kmer*a,uint8_t edges,int k);
 
 char complementNucleotide(char c);
 
-uint64_t hash_function_1(uint64_t a,int w);
-uint64_t hash_function_2(uint64_t a,int w,uint64_t*b);
+uint64_t hash_function_1(Kmer a,int w);
+uint64_t hash_function_2(Kmer a,int w,Kmer*b);
 
 uint8_t invertEdges(uint8_t a);
 

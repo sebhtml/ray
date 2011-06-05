@@ -29,6 +29,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 #include <stdint.h>
 #include <ReadAnnotation.h>
+#include <Kmer.h>
 #include <StaticVector.h>
 #include <RingAllocator.h>
 #include <Parameters.h>
@@ -46,7 +47,7 @@ class VertexMessenger{
 	uint16_t m_coverageValue;
 	vector<ReadAnnotation> m_annotations;
 	bool m_isDone;
-	uint64_t m_vertex;
+	Kmer m_vertex;
 	uint64_t m_waveId;
 	int m_wavePosition;
 	set<uint64_t>*m_matesToMeet;
@@ -61,7 +62,7 @@ class VertexMessenger{
 	void getReadsForUniqueVertex();
 	void getReadsForRepeatedVertex();
 public:
-	void constructor(uint64_t vertex,uint64_t wave,int pos,set<uint64_t>*matesToMeet,StaticVector*inbox,StaticVector*outbox,
+	void constructor(Kmer vertex,uint64_t wave,int pos,set<uint64_t>*matesToMeet,StaticVector*inbox,StaticVector*outbox,
 	RingAllocator*outboxAllocator,Parameters*parameters);
 	bool isDone();
 	void work();

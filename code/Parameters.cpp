@@ -932,7 +932,7 @@ void Parameters::setMinimumCoverage(int a){
 	m_minimumCoverage=a;
 }
 
-uint64_t Parameters::_complementVertex(uint64_t a){
+Kmer Parameters::_complementVertex(Kmer*a){
 	return complementVertex(a,m_wordSize,m_colorSpaceMode);
 }
 
@@ -940,7 +940,7 @@ bool Parameters::hasPairedReads(){
 	return m_numberOfLibraries!=0;
 }
 
-int Parameters::_vertexRank(uint64_t a){
+int Parameters::_vertexRank(Kmer*a){
 	return vertexRank(a,m_size,m_wordSize);
 }
 int Parameters::getSlaveMode(){

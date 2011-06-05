@@ -57,7 +57,7 @@ Vertex*GridTableIterator::next(){
 		m_currentKey=element->m_lowerKey;
 		m_lowerKeyIsDone=true;
 	}else{
-		m_currentKey=complementVertex_normal(m_currentKey,m_wordSize);
+		m_currentKey=complementVertex_normal(&m_currentKey,m_wordSize);
 		m_lowerKeyIsDone=false;
 		m_currentPosition++;
 	}
@@ -81,9 +81,9 @@ void GridTableIterator::getNext(){
 	}
 }
 
-uint64_t GridTableIterator::getKey(){
+Kmer*GridTableIterator::getKey(){
 	#ifdef ASSERT
-	assert(m_table->find(m_currentKey)!=NULL);
+	assert(m_table->find(&m_currentKey)!=NULL);
 	#endif
-	return m_currentKey;
+	return &m_currentKey;
 }

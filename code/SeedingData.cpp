@@ -30,7 +30,7 @@
 #include <mpi_tags.h>
 #include <SeedWorker.h>
 
-bool myComparator_sort(const vector<uint64_t>&a,const vector<uint64_t>&b){
+bool myComparator_sort(const vector<Kmer>&a,const vector<Kmer>&b){
 	return a.size()>b.size();
 }
 
@@ -77,15 +77,15 @@ void SeedingData::computeSeeds(){
 		}
 		if(m_aliveWorkers[workerId].isDone()){
 			m_workersDone.push_back(workerId);
-			vector<uint64_t> seed=m_aliveWorkers[workerId].getSeed();
+			vector<Kmer> seed=*(m_aliveWorkers[workerId].getSeed());
 
 			int nucleotides=seed.size()+(m_wordSize)-1;
 			// only consider the long ones.
 			if(nucleotides>=m_parameters->getMinimumContigLength()){
 				
-				VERTEX_TYPE firstVertex=seed[0];
-				VERTEX_TYPE lastVertex=seed[seed.size()-1];
-				VERTEX_TYPE firstReverse=m_parameters->_complementVertex(lastVertex);
+				Kmer firstVertex=seed[0];
+				Kmer lastVertex=seed[seed.size()-1];
+				Kmer firstReverse=m_parameters->_complementVertex(&lastVertex);
 
 				if(firstVertex<firstReverse){
 					printf("Rank %i discovered a seed with %i vertices\n",m_rank,(int)seed.size());
@@ -124,14 +124,14 @@ void SeedingData::computeSeeds(){
 				}
 				#endif
 				Vertex*node=m_splayTreeIterator.next();
-				VERTEX_TYPE vertexKey=m_splayTreeIterator.getKey();
+				Kmer vertexKey=*(m_splayTreeIterator.getKey());
 
-				int coverage=node->getCoverage(vertexKey);
+				int coverage=node->getCoverage(&vertexKey);
 				int minimum=5;
 				if(coverage<minimum){
 					m_completedJobs++;
 				}else{
-					m_aliveWorkers[m_SEEDING_i].constructor(vertexKey,m_parameters,m_outboxAllocator,m_virtualCommunicator,m_SEEDING_i);
+					m_aliveWorkers[m_SEEDING_i].constructor(&vertexKey,m_parameters,m_outboxAllocator,m_virtualCommunicator,m_SEEDING_i);
 					m_activeWorkers.insert(m_SEEDING_i);
 				}
 

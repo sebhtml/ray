@@ -54,12 +54,13 @@ void IndexerWorker::work(){
 			m_fetchedCoverageValues=true;
 		}else if(!m_coverageRequested){
 			//cout<<"Seq ="<<m_sequence<<" "<<m_parameters->getWordSize()endl;
-			uint64_t vertex=kmerAtPosition(m_sequence.c_str(),m_position,m_parameters->getWordSize(),'F',m_parameters->getColorSpaceMode());
+			Kmer vertex=kmerAtPosition(m_sequence.c_str(),m_position,m_parameters->getWordSize(),'F',m_parameters->getColorSpaceMode());
 			m_vertices.push_back(vertex);
-			int sendTo=vertexRank(vertex,m_parameters->getSize(),m_parameters->getWordSize());
+			int sendTo=vertexRank(&vertex,m_parameters->getSize(),m_parameters->getWordSize());
 			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
-			message[0]=vertex;
-			Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,sendTo,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_parameters->getRank());
+			int bufferPosition=0;
+			vertex.pack(message,&bufferPosition);
+			Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,sendTo,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_parameters->getRank());
 			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 			m_coverageRequested=true;
 		}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
@@ -114,15 +115,16 @@ void IndexerWorker::work(){
 */
 			// index it
 			if(selectedPosition!=-1){
-				uint64_t vertex=m_vertices[selectedPosition];
-				int sendTo=vertexRank(vertex,m_parameters->getSize(),m_parameters->getWordSize());
+				Kmer vertex=m_vertices[selectedPosition];
+				int sendTo=vertexRank(&vertex,m_parameters->getSize(),m_parameters->getWordSize());
 				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(5*sizeof(uint64_t));
-				message[0]=vertex;
-				message[1]=m_parameters->getRank();
-				message[2]=m_sequenceId;
-				message[3]=selectedPosition;
-				message[4]='F';
-				Message aMessage(message,5,MPI_UNSIGNED_LONG_LONG,sendTo,RAY_MPI_TAG_ATTACH_SEQUENCE,m_parameters->getRank());
+				int j=0;
+				vertex.pack(message,&j);
+				message[j++]=m_parameters->getRank();
+				message[j++]=m_sequenceId;
+				message[j++]=selectedPosition;
+				message[j++]='F';
+				Message aMessage(message,j,MPI_UNSIGNED_LONG_LONG,sendTo,RAY_MPI_TAG_ATTACH_SEQUENCE,m_parameters->getRank());
 				m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 				m_vertexIsDone=true;
 				m_reads->at(m_workerId)->setForwardOffset(selectedPosition);
@@ -169,16 +171,17 @@ void IndexerWorker::work(){
 
 			// index it
 			if(selectedPosition!=-1){
-				uint64_t vertex=m_parameters->_complementVertex(m_vertices[selectedPosition]);
-				int sendTo=vertexRank(vertex,m_parameters->getSize(),m_parameters->getWordSize());
+				Kmer vertex=m_parameters->_complementVertex(&(m_vertices[selectedPosition]));
+				int sendTo=vertexRank(&vertex,m_parameters->getSize(),m_parameters->getWordSize());
 				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(5*sizeof(uint64_t));
 				int positionOnStrand=m_theLength-m_parameters->getWordSize()-selectedPosition;
-				message[0]=vertex;
-				message[1]=m_parameters->getRank();
-				message[2]=m_sequenceId;
-				message[3]=positionOnStrand;
-				message[4]='R';
-				Message aMessage(message,5,MPI_UNSIGNED_LONG_LONG,sendTo,RAY_MPI_TAG_ATTACH_SEQUENCE,m_parameters->getRank());
+				int j=0;
+				vertex.pack(message,&j);
+				message[j++]=m_parameters->getRank();
+				message[j++]=m_sequenceId;
+				message[j++]=positionOnStrand;
+				message[j++]='R';
+				Message aMessage(message,j,MPI_UNSIGNED_LONG_LONG,sendTo,RAY_MPI_TAG_ATTACH_SEQUENCE,m_parameters->getRank());
 				m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 				m_vertexIsDone=true;
 				m_reads->at(m_workerId)->setReverseOffset(positionOnStrand);
