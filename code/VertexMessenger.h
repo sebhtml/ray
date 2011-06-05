@@ -28,9 +28,9 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #define _VertexMessenger
 
 #include <stdint.h>
-#include <ReadAnnotation.h>
-#include <Kmer.h>
-#include <StaticVector.h>
+#include <structures/ReadAnnotation.h>
+#include <structures/Kmer.h>
+#include <structures/StaticVector.h>
 #include <memory/RingAllocator.h>
 #include <core/Parameters.h>
 #include <vector>

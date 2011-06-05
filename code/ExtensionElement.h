@@ -26,7 +26,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #ifndef _ExtensionElement
 #define _ExtensionElement
 
-#include <PairedRead.h>
+#include <structures/PairedRead.h>
 #include <memory/MyAllocator.h>
 #include <memory/OnDiskAllocator.h>
 

@@ -24,8 +24,8 @@
 
 #include<string>
 #include<vector>
-#include<ArrayOfReads.h>
-#include<Read.h>
+#include<structures/ArrayOfReads.h>
+#include<structures/Read.h>
 #include <memory/OnDiskAllocator.h>
 #include<compression/BzReader.h>
 #include<memory/MyAllocator.h>

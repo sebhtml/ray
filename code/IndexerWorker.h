@@ -26,7 +26,7 @@
 #include <memory/RingAllocator.h>
 #include <communication/VirtualCommunicator.h>
 #include <stdint.h>
-#include <ArrayOfReads.h>
+#include <structures/ArrayOfReads.h>
 
 // this class is a worker for sequence indexing
 class IndexerWorker{

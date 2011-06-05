@@ -22,13 +22,13 @@
 #ifndef _FastaLoader
 #define _FastaLoader
 
-#include<ArrayOfReads.h>
+#include<structures/ArrayOfReads.h>
 #include<stdio.h>
 #include<string>
 #include<memory/MyAllocator.h>
 #include<vector>
 #include<sstream>
-#include<Read.h>
+#include<structures/Read.h>
 using namespace std;
 
 class FastaLoader{

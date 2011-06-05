@@ -21,16 +21,16 @@
 
 #include <string.h>
 #include <assert.h>
-#include <Read.h>
+#include <structures/Read.h>
 #include <communication/MessageProcessor.h>
-#include <StaticVector.h>
-#include <common_functions.h>
-#include <ReadAnnotation.h>
-#include <SplayTree.h>
-#include <Direction.h>
-#include <SplayNode.h>
-#include <MyForest.h>
-#include <SplayTreeIterator.h>
+#include <structures/StaticVector.h>
+#include <core/common_functions.h>
+#include <structures/ReadAnnotation.h>
+#include <structures/SplayTree.h>
+#include <structures/Direction.h>
+#include <structures/SplayNode.h>
+#include <structures/MyForest.h>
+#include <structures/SplayTreeIterator.h>
 #include <FusionData.h>
 #include <core/Parameters.h>
 

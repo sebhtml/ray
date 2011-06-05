@@ -22,18 +22,18 @@
 #ifndef _VerticesExtractor
 #define _VerticesExtractor
 
-#include <StaticVector.h>
+#include <structures/StaticVector.h>
 #include <communication/BufferedData.h>
 #include <vector>
 #include <core/Parameters.h>
-#include <common_functions.h>
-#include <ArrayOfReads.h>
+#include <core/common_functions.h>
+#include <structures/ArrayOfReads.h>
 #include <communication/Message.h>
 #include <MemoryConsumptionReducer.h>
-#include <MyForest.h>
+#include <structures/MyForest.h>
 #include <memory/RingAllocator.h>
 #include <set>
-#include <Read.h>
+#include <structures/Read.h>
 using namespace std;
 
 class VerticesExtractor{

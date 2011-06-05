@@ -24,7 +24,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 */
 
-#include <common_functions.h>
+#include <core/common_functions.h>
 #include <memory/OnDiskAllocator.h>
 #include <assert.h>
 #include <sstream>

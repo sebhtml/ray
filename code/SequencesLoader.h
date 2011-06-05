@@ -29,10 +29,10 @@
 #include <Loader.h>
 #include <memory/MyAllocator.h>
 #include <memory/OnDiskAllocator.h>
-#include <StaticVector.h>
+#include <structures/StaticVector.h>
 #include <vector>
 #include <communication/Message.h>
-#include <Read.h>
+#include <structures/Read.h>
 #include <BubbleData.h>
 #include <time.h>
 using namespace std;

@@ -23,7 +23,7 @@
 #include <mpi.h>
 #include <communication/BufferedData.h>
 #include <memory/RingAllocator.h>
-#include <StaticVector.h>
+#include <structures/StaticVector.h>
 #include <iostream>
 using namespace std;
 

@@ -28,8 +28,8 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #define _ReadFetcher
 
 #include <vector>
-#include <ReadAnnotation.h>
-#include <StaticVector.h>
+#include <structures/ReadAnnotation.h>
+#include <structures/StaticVector.h>
 #include <core/Parameters.h>
 #include <stdint.h>
 #include <memory/RingAllocator.h>

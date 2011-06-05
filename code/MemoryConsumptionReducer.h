@@ -22,17 +22,17 @@
 #ifndef _MemoryConsumptionReducer
 #define _MemoryConsumptionReducer
 
-#include<MyForestIterator.h>
-#include<MyForest.h>
-#include <GridTable.h>
-#include <GridTableIterator.h>
+#include<structures/MyForestIterator.h>
+#include<structures/MyForest.h>
+#include <graph/GridTable.h>
+#include <graph/GridTableIterator.h>
 #include<core/Parameters.h>
 #include<memory/RingAllocator.h>
 #include<communication/BufferedData.h>
 #include<set>
 #include<vector>
 #include<DepthFirstSearchData.h>
-#include<StaticVector.h>
+#include<structures/StaticVector.h>
 #include <SeedingData.h>
 using namespace std;
 

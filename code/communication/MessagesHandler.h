@@ -25,10 +25,10 @@
 #include<vector>
 #include<memory/MyAllocator.h>
 #include<communication/Message.h>
-#include<common_functions.h>
+#include<core/common_functions.h>
 #include<memory/RingAllocator.h>
 #include<map>
-#include<StaticVector.h>
+#include<structures/StaticVector.h>
 using namespace std;
 
 /**

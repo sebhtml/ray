@@ -24,11 +24,11 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 */
 
-#include <ReadAnnotation.h>
+#include <structures/ReadAnnotation.h>
 #include <Library.h>
 #include <communication/mpi_tags.h>
 #include <sstream>
-#include <common_functions.h>
+#include <core/common_functions.h>
 #include <assert.h>
 #include <core/Parameters.h>
 #include <memory/malloc_types.h>

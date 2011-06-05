@@ -25,9 +25,9 @@ Ray
 #include<BubbleData.h>
 #include<assert.h>
 #include<vector>
-#include<common_functions.h>
+#include<core/common_functions.h>
 #include<Loader.h>
-#include<Read.h>
+#include<structures/Read.h>
 #include<iostream>
 using namespace std;
 

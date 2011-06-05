@@ -27,7 +27,7 @@
 class FusionData;
 class DepthFirstSearchData;
 
-#include <common_functions.h>
+#include <core/common_functions.h>
 #include <communication/Message.h>
 #include <vector>
 #include <VertexMessenger.h>
@@ -43,7 +43,7 @@ class DepthFirstSearchData;
 #include <BubbleTool.h>
 #include <OpenAssemblerChooser.h>
 #include <EarlyStoppingTechnology.h>
-#include <GridTable.h>
+#include <graph/GridTable.h>
 
 using namespace std;
 

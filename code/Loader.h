@@ -23,13 +23,13 @@
 #ifndef _Loader
 #define _Loader
 
-#include <common_functions.h>
+#include <core/common_functions.h>
 #include <vector>
 #include <memory/MyAllocator.h>
 #include <memory/OnDiskAllocator.h>
-#include <Read.h>
+#include <structures/Read.h>
 #include <fstream>
-#include <ArrayOfReads.h>
+#include <structures/ArrayOfReads.h>
 #include <string>
 
 #ifdef HAVE_ZLIB

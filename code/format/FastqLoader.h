@@ -29,10 +29,10 @@
 #include <memory/OnDiskAllocator.h>
 #include<memory/MyAllocator.h>
 #include<fstream>
-#include<ArrayOfReads.h>
+#include<structures/ArrayOfReads.h>
 #include<vector>
 #include<sstream>
-#include<Read.h>
+#include<structures/Read.h>
 using namespace std;
 
 class FastqLoader{

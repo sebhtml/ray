@@ -26,7 +26,7 @@
 #include <map>
 #include <vector>
 #include <memory/RingAllocator.h>
-#include <StaticVector.h>
+#include <structures/StaticVector.h>
 #include <communication/Message.h>
 #include <stdint.h>
 #include <memory/MyAllocator.h>

@@ -20,7 +20,7 @@
 */
 
 #include <communication/MessagesHandler.h>
-#include <common_functions.h>
+#include <core/common_functions.h>
 #include <fstream>
 #include <assert.h>
 #include <memory/malloc_types.h>

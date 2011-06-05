@@ -25,7 +25,7 @@
 #include <assert.h>
 #include <core/Parameters.h>
 #include <Loader.h>
-#include <common_functions.h>
+#include <core/common_functions.h>
 #include <communication/Message.h>
 
 void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,

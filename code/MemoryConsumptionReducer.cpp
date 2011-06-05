@@ -20,7 +20,7 @@
 */
 
 #include <MemoryConsumptionReducer.h>
-#include <CoverageDistribution.h>
+#include <graph/CoverageDistribution.h>
 #include <stack>
 #include <string.h>
 #include <set>

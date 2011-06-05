@@ -24,11 +24,11 @@
 
 class SeedingData;
 
-#include <Direction.h>
+#include <structures/Direction.h>
 #include <vector>
 #include <core/Parameters.h>
 #include <set>
-#include <StaticVector.h>
+#include <structures/StaticVector.h>
 #include <map>
 #include <SeedingData.h>
 #include <ExtensionData.h>

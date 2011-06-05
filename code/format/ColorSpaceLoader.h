@@ -25,11 +25,11 @@
 
 #include <string>
 #include <vector>
-#include <ArrayOfReads.h>
+#include <structures/ArrayOfReads.h>
 #include <fstream>
 #include <memory/MyAllocator.h>
 #include <format/ColorSpaceDecoder.h>
-#include <Read.h>
+#include <structures/Read.h>
 #include <memory/OnDiskAllocator.h>
 using namespace std;
 

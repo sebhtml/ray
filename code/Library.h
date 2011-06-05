@@ -30,9 +30,9 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<communication/BufferedData.h>
 #include<ExtensionData.h>
 #include <memory/OnDiskAllocator.h>
-#include<common_functions.h>
+#include<core/common_functions.h>
 #include<map>
-#include<StaticVector.h>
+#include<structures/StaticVector.h>
 #include<TimePrinter.h>
 #include <ReadFetcher.h>
 #include <communication/VirtualCommunicator.h>

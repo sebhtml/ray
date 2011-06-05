@@ -27,25 +27,25 @@
 #include <SequencesIndexer.h>
 #include <SeedingData.h>
 #include <OpenAssemblerChooser.h>
-#include <ArrayOfReads.h>
+#include <structures/ArrayOfReads.h>
 #include <communication/Message.h>
 #include <vector>
-#include <SplayTree.h>
-#include <StaticVector.h>
+#include <structures/SplayTree.h>
+#include <structures/StaticVector.h>
 #include <SeedExtender.h>
 #include <communication/MessagesHandler.h>
 #include <SequencesLoader.h>
 #include <FusionData.h>
-#include <ReadAnnotation.h>
+#include <structures/ReadAnnotation.h>
 #include <VerticesExtractor.h>
-#include <MyForest.h>
-#include <GridTable.h>
+#include <structures/MyForest.h>
+#include <graph/GridTable.h>
 #include <core/Parameters.h>
 #include <MemoryConsumptionReducer.h>
 #include <communication/BufferedData.h>
 #include <memory/MyAllocator.h>
-#include <Vertex.h>
-#include <Scaffolder.h>
+#include <structures/Vertex.h>
+#include <scaffolder/Scaffolder.h>
 #include <communication/VirtualCommunicator.h>
 using namespace std;
 

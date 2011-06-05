@@ -25,7 +25,7 @@
 
 #include<map>
 #include<vector>
-#include<Direction.h>
+#include<structures/Direction.h>
 #include<stdint.h>
 using namespace std;
 

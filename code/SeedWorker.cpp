@@ -23,7 +23,7 @@
 #include <assert.h>
 #include <communication/Message.h>
 #include <communication/mpi_tags.h>
-#include <common_functions.h>
+#include <core/common_functions.h>
 #include <stdint.h>
 #include <iostream>
 using namespace std;

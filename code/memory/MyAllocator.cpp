@@ -19,7 +19,7 @@
 
 */
 
-#include <common_functions.h>
+#include <core/common_functions.h>
 #include <memory/MyAllocator.h>
 #include <stdlib.h>
 #include <iostream>

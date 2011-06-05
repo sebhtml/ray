@@ -23,9 +23,9 @@
 #define _BubbleTool
 
 #include <vector>
-#include <common_functions.h>
+#include <core/common_functions.h>
 #include <map>
-#include <Kmer.h>
+#include <structures/Kmer.h>
 #include <core/Parameters.h>
 using namespace std;
 

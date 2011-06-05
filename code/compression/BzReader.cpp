@@ -30,7 +30,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include <stdlib.h>
 #include <assert.h>
 #include <memory/malloc_types.h>
-#include <common_functions.h>
+#include <core/common_functions.h>
 
 void BzReader::open(const char*file){
 	#ifdef HAVE_LIBBZ2

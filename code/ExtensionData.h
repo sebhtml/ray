@@ -23,16 +23,16 @@
 #define _ExtensionData
 
 #include <vector>
-#include <PairedRead.h>
+#include <structures/PairedRead.h>
 #include <set>
-#include <Read.h>
+#include <structures/Read.h>
 #include <memory/OnDiskAllocator.h>
 #include <core/Parameters.h>
 #include <ExtensionElement.h>
 #include <map>
-#include <ReadAnnotation.h>
-#include <common_functions.h>
-#include <SplayTree.h>
+#include <structures/ReadAnnotation.h>
+#include <core/common_functions.h>
+#include <structures/SplayTree.h>
 using namespace std;
 
 class ExtensionData{

@@ -25,8 +25,8 @@
 #include <assert.h>
 #include <communication/Message.h>
 #include <time.h>
-#include <StaticVector.h>
-#include <common_functions.h>
+#include <structures/StaticVector.h>
+#include <core/common_functions.h>
 #include <memory/malloc_types.h>
 
 void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,

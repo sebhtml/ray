@@ -22,9 +22,9 @@
 #ifndef _BufferedData
 #define _BufferedData
 
-#include <common_functions.h>
+#include <core/common_functions.h>
 #include <memory/MyAllocator.h>
-#include <StaticVector.h>
+#include <structures/StaticVector.h>
 #include <memory/RingAllocator.h>
 
 /*

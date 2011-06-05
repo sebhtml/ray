@@ -26,17 +26,17 @@
 
 class SeedExtender;
 
-#include <Kmer.h>
+#include <structures/Kmer.h>
 #include <communication/VirtualCommunicator.h>
 #include <SeedExtender.h>
-#include <SplayTreeIterator.h>
-#include <SplayNode.h>
-#include <Vertex.h>
-#include <MyForest.h>
-#include <GridTableIterator.h>
+#include <structures/SplayTreeIterator.h>
+#include <structures/SplayNode.h>
+#include <structures/Vertex.h>
+#include <structures/MyForest.h>
+#include <graph/GridTableIterator.h>
 #include <set>
-#include <common_functions.h>
-#include <MyForestIterator.h>
+#include <core/common_functions.h>
+#include <structures/MyForestIterator.h>
 #include <SeedWorker.h>
 using namespace std;
 

@@ -23,7 +23,7 @@
 
 #include <memory/malloc_types.h>
 #include <string.h>
-#include <StaticVector.h>
+#include <structures/StaticVector.h>
 #include <TipWatchdog.h>
 #include <SeedExtender.h>
 #include <Chooser.h>

@@ -20,7 +20,7 @@
 */
 
 #include<Chooser.h>
-#include<common_functions.h>
+#include<core/common_functions.h>
 
 void Chooser::chooseWithPairedReads(ExtensionData*m_ed,
 	int m_minimumCoverage,int m_maxCoverage,

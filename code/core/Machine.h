@@ -23,15 +23,15 @@
 #ifndef _Machine
 #define _Machine
 
-#include <Scaffolder.h>
-#include <GridTable.h>
+#include <scaffolder/Scaffolder.h>
+#include <graph/GridTable.h>
 #include<communication/MessagesHandler.h>
-#include<common_functions.h>
-#include<MyForest.h>
-#include<ArrayOfReads.h>
+#include<core/common_functions.h>
+#include<structures/MyForest.h>
+#include<structures/ArrayOfReads.h>
 #include <memory/OnDiskAllocator.h>
 #include<MemoryConsumptionReducer.h>
-#include<StaticVector.h>
+#include<structures/StaticVector.h>
 #include<SeedingData.h>
 #include<map>
 #include<vector>
@@ -44,15 +44,15 @@
 #include<Library.h>
 #include<Chooser.h>
 #include<communication/MessageProcessor.h>
-#include<Vertex.h>
+#include<structures/Vertex.h>
 #include<OpenAssemblerChooser.h>
-#include<SplayTree.h>
+#include<structures/SplayTree.h>
 #include<BubbleData.h>
 #include<communication/Message.h>
 #include<time.h>
-#include<SplayTreeIterator.h>
+#include<structures/SplayTreeIterator.h>
 #include<set>
-#include<Read.h>
+#include<structures/Read.h>
 #include<core/Parameters.h>
 #include<memory/MyAllocator.h>
 #include<mpi.h>

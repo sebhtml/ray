@@ -24,7 +24,7 @@
 #define _Parameters
 
 #include<map>
-#include<common_functions.h>
+#include<core/common_functions.h>
 #include<set>
 #include<string>
 #include<vector>

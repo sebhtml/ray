@@ -20,7 +20,7 @@
 */
 
 #include <BubbleTool.h>
-#include <common_functions.h>
+#include <core/common_functions.h>
 #include <assert.h>
 #include <map>
 #include <set>

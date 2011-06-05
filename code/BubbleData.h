@@ -24,7 +24,7 @@
 
 #include<vector>
 #include<map>
-#include<common_functions.h>
+#include<core/common_functions.h>
 #include<stdio.h>
 #include<stdlib.h>
 #include<set>

@@ -22,7 +22,7 @@
 #include<stdlib.h>
 #include<format/ColorSpaceLoader.h>
 #include<fstream>
-#include<common_functions.h>
+#include<core/common_functions.h>
 #include<iostream>
 #include<string.h>
 using namespace std;

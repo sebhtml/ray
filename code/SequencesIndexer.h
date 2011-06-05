@@ -24,16 +24,16 @@
 #ifndef _SequencesIndexer
 #define _SequencesIndexer
 
-#include <common_functions.h>
+#include <core/common_functions.h>
 #include <communication/Message.h>
-#include <StaticVector.h>
+#include <structures/StaticVector.h>
 #include <vector>
-#include <ArrayOfReads.h>
+#include <structures/ArrayOfReads.h>
 #include <communication/BufferedData.h>
 #include <memory/MyAllocator.h>
 #include <memory/RingAllocator.h>
 #include <communication/VirtualCommunicator.h>
-#include <Read.h>
+#include <structures/Read.h>
 #include <memory/OnDiskAllocator.h>
 #include <IndexerWorker.h>
 #include <core/Parameters.h>

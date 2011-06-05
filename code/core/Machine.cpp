@@ -25,9 +25,9 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 */
 
 #include <memory/malloc_types.h>
-#include <GridTableIterator.h>
+#include <graph/GridTableIterator.h>
 #include<cryptography/crypto.h>
-#include<SplayNode.h>
+#include<structures/SplayNode.h>
 #include<mpi.h>
 #include <core/Machine.h>
 #include<VerticesExtractor.h>
@@ -37,13 +37,13 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include<TipWatchdog.h>
 #include<BubbleTool.h>
 #include<assert.h>
-#include<common_functions.h>
+#include<core/common_functions.h>
 #include<iostream>
 #include<fstream>
-#include<CoverageDistribution.h>
+#include<graph/CoverageDistribution.h>
 #include<string.h>
-#include<SplayTreeIterator.h>
-#include<Read.h>
+#include<structures/SplayTreeIterator.h>
+#include<structures/Read.h>
 #include<Loader.h>
 #include<memory/MyAllocator.h>
 #include<algorithm>

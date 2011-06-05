@@ -29,6 +29,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include <SeedingData.h>
 #include <map>
 #include <mpi.h>
+#include <assert.h>
 #include <communication/VirtualCommunicator.h>
 using namespace std;
 

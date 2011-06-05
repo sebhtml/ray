@@ -19,7 +19,7 @@
 
 */
 
-#include<common_functions.h>
+#include<core/common_functions.h>
 #include<assert.h>
 #include<math.h>
 #include<core/Parameters.h>
@@ -29,7 +29,7 @@
 #include<vector>
 #include<cstdlib>
 #include<fstream>
-#include<Read.h>
+#include<structures/Read.h>
 #include<Loader.h>
 #include <memory/MyAllocator.h>
 using namespace std;
