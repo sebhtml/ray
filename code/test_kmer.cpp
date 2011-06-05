@@ -1,5 +1,5 @@
 
-
+#include <unitTest.h>
 #include <Kmer.h>
 #include <common_functions.h>
 #include <assert.h>
@@ -39,6 +39,15 @@ int main(int argc,char**argv){
 	char last=seq[seq.length()-1];
 	char observed=getLastSymbol(&id,wordSize);
 	assert(observed==last);
+
+
+	// reverse complement
+	string rc=reverseComplement(&seq);
+
+	Kmer comp=complementVertex(&id,wordSize,false);
+	string result2=idToWord(&comp,wordSize);
+	assertEquals(rc,result2);
+	
 	return 0;
 }
 

@@ -311,15 +311,9 @@ Kmer complementVertex_normal(Kmer*a,int m_wordSize){
 				assert(false);
 				break;
 		}
-		#ifdef USE_DISTANT_SEGMENTS_GRAPH
-		
-		if(positionInMer<_SEGMENT_LENGTH or positionInMer>m_wordSize-_SEGMENT_LENGTH-1){
-		}else{
-			complementVertex=_ENCODING_A;
-		}
-		#endif
 		uint64_t oldValue=output.getU64(u64_id);
 		oldValue=(oldValue|(complementVertex<<(position2)));
+		output.setU64(u64_id,oldValue);
 		position2+=2;
 		if(position2>=64){
 			position2=0;
@@ -433,7 +427,7 @@ string convertToString(vector<Kmer>*b,int m_wordSize){
 }
 
 int vertexRank(Kmer*a,int _size,int w){
-	return hash_function_1(*a,w)%(_size);
+	return hash_function_1(a,w)%(_size);
 }
 
 Kmer kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool color){
@@ -576,20 +570,21 @@ vector<Kmer> _getIngoingEdges(Kmer*a,uint8_t edges,int k){
 	return b;
 }
 
-uint64_t hash_function_1(Kmer a,int w){
-	Kmer b=complementVertex_normal(&a,w);
-	if(b.isLower(&a)){
-		a=b;
+uint64_t hash_function_1(Kmer*a,int w){
+	Kmer b=complementVertex_normal(a,w);
+	if(a->isLower(&b)){
+		b=*a;
 	}
-	return uniform_hashing_function_1_64_64(a.getU64(0));
+	return uniform_hashing_function_1_64_64(b.getU64(0));
 }
 
-uint64_t hash_function_2(Kmer a,int w,Kmer*b){
-	*b=complementVertex_normal(&a,w);
-	if(b->isLower(&a)){
-		a=*b;
+uint64_t hash_function_2(Kmer*a,int w,Kmer*b){
+	*b=complementVertex_normal(a,w);
+	Kmer*lower=a;
+	if(b->isLower(a)){
+		lower=b;
 	}
-	return uniform_hashing_function_2_64_64(a.getU64(0));
+	return uniform_hashing_function_2_64_64(lower->getU64(0));
 }
 
 	// outgoing  ingoing

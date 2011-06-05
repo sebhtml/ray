@@ -670,17 +670,16 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
 	uint64_t*incoming=(uint64_t*)buffer;
-	int length=count;
 
 	#ifdef ASSERT
 	assert(!m_subgraph->frozen());
 	#endif
-
-	for(int i=0;i<length;i+=KMER_U64_ARRAY_SIZE){
+	//cout<<__func__<<" "<<count<<endl;
+	for(int i=0;i<count;i+=KMER_U64_ARRAY_SIZE){
 		Kmer l;
 		int pos=i;
 		l.unpack(incoming,&pos);
-
+		//cout<<"Kmer received from "<<message->getSource()<<" i="<<i<<" "<<idToWord(&l,m_parameters->getWordSize())<<endl;
 		if((*m_last_value)!=(int)m_subgraph->size() && (int)m_subgraph->size()%100000==0){
 			(*m_last_value)=m_subgraph->size();
 			printf("Rank %i has %i vertices\n",rank,(int)m_subgraph->size());

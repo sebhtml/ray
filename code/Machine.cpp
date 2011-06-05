@@ -192,7 +192,7 @@ void Machine::start(){
 
 		cout<<endl;
 		cout<<"Rank "<<MASTER_RANK<<": Ray version: "<<RAY_VERSION<<endl;
-
+		cout<<"Rank "<<MASTER_RANK<<" MAXKMERLENGTH: "<<MAXKMERLENGTH<<" (KMER_U64_ARRAY_SIZE: "<<KMER_U64_ARRAY_SIZE<<")"<<endl;
 		cout<<"Rank "<<MASTER_RANK<<": GNU system (__GNUC__): ";
 		#ifdef __GNUC__
 		cout<<"yes"<<endl;
@@ -271,6 +271,11 @@ void Machine::start(){
 		cout<<endl;
 	
 		#ifdef SHOW_SIZEOF
+
+		cout<<"KMER_BYTES "<<KMER_BYTES<<endl;
+		cout<<"KMER_UINT64_T "<<KMER_UINT64_T<<endl;
+		cout<<"KMER_UINT64_T_MODULO "<<KMER_UINT64_T_MODULO<<endl;
+
 		cout<<" sizeof(Vertex)="<<sizeof(Vertex)<<endl;
 		cout<<" sizeof(VertexData)="<<sizeof(VertexData)<<endl;
 		cout<<" sizeof(Direction)="<<sizeof(Direction)<<endl;

@@ -430,15 +430,12 @@ void Parameters::parseCommands(){
 			if(m_wordSize<15){
 				m_wordSize=15;
 			}
-			if(m_wordSize>32){
-				m_wordSize=32;
+			if(m_wordSize>MAXKMERLENGTH){
+				m_wordSize=MAXKMERLENGTH;
 			}
 
 			if(m_wordSize%2==0){
-				m_wordSize++;
-			}
-			if(m_wordSize==33){
-				m_wordSize=31;
+				m_wordSize--;
 			}
 			if(m_rank==MASTER_RANK){
 				cout<<endl;

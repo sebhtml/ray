@@ -56,7 +56,7 @@ uint64_t VertexTable::size(){
 
 VertexData*VertexTable::find(Kmer*key){
 	Kmer lowerKey;
-	int bin=hash_function_2(*key,m_wordSize,&lowerKey)%m_gridSize;
+	int bin=hash_function_2(key,m_wordSize,&lowerKey)%m_gridSize;
 
 	if(key->isLower(&lowerKey)){
 		lowerKey=*key;
@@ -73,7 +73,7 @@ VertexData*VertexTable::find(Kmer*key){
 VertexData*VertexTable::insert(Kmer*key){
 	Kmer lowerKey;
 	m_inserted=false;
-	int bin=hash_function_2(*key,m_wordSize,&lowerKey)%m_gridSize;
+	int bin=hash_function_2(key,m_wordSize,&lowerKey)%m_gridSize;
 	if(key->isLower(&lowerKey)){
 		lowerKey=*key;
 	}

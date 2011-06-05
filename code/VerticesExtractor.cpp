@@ -105,19 +105,20 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			return;
 		}
 
-		char memory[100];
+		char memory[1000];
 		int lll=len-wordSize+1;
 		
 		#ifdef ASSERT
 		assert(m_readSequence!=NULL);
-		assert(wordSize<=32);
 		#endif
 
 		int p=(m_mode_send_vertices_sequence_id_position);
 		memcpy(memory,m_readSequence+p,wordSize);
 		memory[wordSize]='\0';
 		if(isValidDNA(memory)){
+			//cout<<"Kmer: "<<memory<<endl;
 			Kmer a=wordId(memory);
+			//cout<<"Encoded: "<<idToWord(&a,m_parameters->getWordSize())<<endl;
 
 			int rankToFlush=0;
 
@@ -262,6 +263,7 @@ void VerticesExtractor::constructor(int size,Parameters*parameters){
 	m_triggered=false;
 	m_mustTriggerReduction=false;
 	m_thresholdForReduction=9999999999999;
+	m_parameters=parameters;
 }
 
 void VerticesExtractor::enableReducer(){

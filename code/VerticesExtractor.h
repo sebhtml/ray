@@ -39,6 +39,7 @@ using namespace std;
 class VerticesExtractor{
 	char m_readSequence[4000];
 	bool m_distributionIsCompleted;
+	Parameters*m_parameters;
 
 	int m_rank;
 	RingAllocator*m_outboxAllocator;
