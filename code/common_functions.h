@@ -25,10 +25,10 @@ see <http://www.gnu.org/licenses/>
 #include <Kmer.h>
 #include <string>
 #include <constants.h>
-#include <slave_modes.h>
-#include <master_modes.h>
+#include <core/slave_modes.h>
+#include <core/master_modes.h>
 #include <vector>
-#include <mpi_tags.h>
+#include <communication/mpi_tags.h>
 using namespace std;
 
 

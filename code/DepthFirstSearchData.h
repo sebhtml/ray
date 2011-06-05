@@ -27,8 +27,8 @@
 #include<map>
 #include <SeedingData.h>
 #include<set>
-#include<Parameters.h>
-#include<RingAllocator.h>
+#include<core/Parameters.h>
+#include<memory/RingAllocator.h>
 #include<StaticVector.h>
 #include<common_functions.h>
 using namespace std;

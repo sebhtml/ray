@@ -20,7 +20,7 @@
 */
 
 
-#include <crypto.h>
+#include <cryptography/crypto.h>
 #include <assert.h>
 #include <stdio.h>
 
@@ -29,7 +29,7 @@
 #endif
 
 #include <vector>
-#include <malloc_types.h>
+#include <memory/malloc_types.h>
 #include <fstream>
 #include <common_functions.h>
 #include <stdlib.h>

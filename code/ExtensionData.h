@@ -26,8 +26,8 @@
 #include <PairedRead.h>
 #include <set>
 #include <Read.h>
-#include <OnDiskAllocator.h>
-#include <Parameters.h>
+#include <memory/OnDiskAllocator.h>
+#include <core/Parameters.h>
 #include <ExtensionElement.h>
 #include <map>
 #include <ReadAnnotation.h>

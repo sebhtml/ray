@@ -30,10 +30,10 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include <vector>
 #include <ReadAnnotation.h>
 #include <StaticVector.h>
-#include <Parameters.h>
+#include <core/Parameters.h>
 #include <stdint.h>
-#include <RingAllocator.h>
-#include <VirtualCommunicator.h>
+#include <memory/RingAllocator.h>
+#include <communication/VirtualCommunicator.h>
 using namespace std;
 
 class ReadFetcher{

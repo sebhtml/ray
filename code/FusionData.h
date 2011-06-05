@@ -26,14 +26,14 @@ class SeedingData;
 
 #include <Direction.h>
 #include <vector>
-#include <Parameters.h>
+#include <core/Parameters.h>
 #include <set>
 #include <StaticVector.h>
 #include <map>
 #include <SeedingData.h>
 #include <ExtensionData.h>
-#include <RingAllocator.h>
-#include <BufferedData.h>
+#include <memory/RingAllocator.h>
+#include <communication/BufferedData.h>
 #include <TimePrinter.h>
 using namespace std;
 

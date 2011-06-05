@@ -26,7 +26,7 @@
 #include <common_functions.h>
 #include <map>
 #include <Kmer.h>
-#include <Parameters.h>
+#include <core/Parameters.h>
 using namespace std;
 
 class BubbleTool{

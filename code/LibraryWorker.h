@@ -30,10 +30,10 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include <map>
 #include <stdint.h>
 #include <ExtensionData.h>
-#include <OnDiskAllocator.h>
+#include <memory/OnDiskAllocator.h>
 #include <SeedingData.h>
-#include <VirtualCommunicator.h>
-#include <RingAllocator.h>
+#include <communication/VirtualCommunicator.h>
+#include <memory/RingAllocator.h>
 using namespace std;
 
 class LibraryElement{

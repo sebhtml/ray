@@ -25,11 +25,11 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 */
 
 #include <LibraryWorker.h>
-#include <Message.h>
+#include <communication/Message.h>
 #include <SeedingData.h>
 #include <map>
 #include <mpi.h>
-#include <VirtualCommunicator.h>
+#include <communication/VirtualCommunicator.h>
 using namespace std;
 
 bool LibraryWorker::isDone(){

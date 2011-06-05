@@ -24,9 +24,9 @@
 
 #include<SplayTree.h>
 #include<Vertex.h>
-#include<MyAllocator.h>
+#include<memory/MyAllocator.h>
 #include<common_functions.h>
-#include <OnDiskAllocator.h>
+#include <memory/OnDiskAllocator.h>
 
 class MyForest{
 	int m_type;

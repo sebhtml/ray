@@ -27,7 +27,7 @@
 class SeedExtender;
 
 #include <Kmer.h>
-#include <VirtualCommunicator.h>
+#include <communication/VirtualCommunicator.h>
 #include <SeedExtender.h>
 #include <SplayTreeIterator.h>
 #include <SplayNode.h>

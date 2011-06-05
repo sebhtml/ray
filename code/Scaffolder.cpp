@@ -24,7 +24,7 @@
 #include <iostream>
 #include <ReadFetcher.h>
 #include <Scaffolder.h>
-#include <Message.h>
+#include <communication/Message.h>
 #include <vector>
 #include <fstream>
 #include <sstream>

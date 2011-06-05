@@ -19,10 +19,8 @@
 
 */
 
-
-
 #include<iostream>
-#include<Machine.h>
+#include<core/Machine.h>
 using namespace std;
 
 /*

@@ -27,7 +27,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #ifndef _StaticVector
 #define _StaticVector
 
-#include<Message.h>
+#include <communication/Message.h>
 
 class StaticVector{
 	Message*m_messages;

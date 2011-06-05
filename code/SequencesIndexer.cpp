@@ -23,10 +23,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <Parameters.h>
+#include <core/Parameters.h>
 #include <Loader.h>
 #include <common_functions.h>
-#include <Message.h>
+#include <communication/Message.h>
 
 void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 				RingAllocator*m_outboxAllocator,

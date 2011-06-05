@@ -24,17 +24,17 @@
 #ifndef _SequencesLoader
 #define _SequencesLoader
 
-#include<Parameters.h>
-#include<RingAllocator.h>
-#include<Loader.h>
-#include<MyAllocator.h>
-#include <OnDiskAllocator.h>
-#include<StaticVector.h>
-#include<vector>
-#include<Message.h>
-#include<Read.h>
-#include<BubbleData.h>
-#include<time.h>
+#include <core/Parameters.h>
+#include <memory/RingAllocator.h>
+#include <Loader.h>
+#include <memory/MyAllocator.h>
+#include <memory/OnDiskAllocator.h>
+#include <StaticVector.h>
+#include <vector>
+#include <communication/Message.h>
+#include <Read.h>
+#include <BubbleData.h>
+#include <time.h>
 using namespace std;
 
 class SequencesLoader{

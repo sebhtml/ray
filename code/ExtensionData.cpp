@@ -20,10 +20,10 @@
 */
 
 #include <ExtensionData.h>
-#include <malloc_types.h>
+#include <memory/malloc_types.h>
 #include <string.h>
 #include <sstream>
-#include <crypto.h>
+#include <cryptography/crypto.h>
 using namespace std;
 
 void ExtensionData::constructor(Parameters*parameters){

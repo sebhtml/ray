@@ -23,11 +23,11 @@
 #include <stdlib.h>
 #include <VerticesExtractor.h>
 #include <assert.h>
-#include <Message.h>
+#include <communication/Message.h>
 #include <time.h>
 #include <StaticVector.h>
 #include <common_functions.h>
-#include <malloc_types.h>
+#include <memory/malloc_types.h>
 
 void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 				ArrayOfReads*m_myReads,

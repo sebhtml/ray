@@ -22,9 +22,10 @@
 #ifndef _Chooser
 #define _Chooser
 
-#define IMPOSSIBLE_CHOICE -1
 #include<ExtensionData.h>
-#include <Parameters.h>
+#include <core/Parameters.h>
+
+#define IMPOSSIBLE_CHOICE -1
 
 /**
  * paired-end OpenAssembler chooser class

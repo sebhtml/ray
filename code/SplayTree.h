@@ -27,8 +27,8 @@
 #include<common_functions.h>
 #include<SplayNode.h>
 #include<iostream>
-#include<MyAllocator.h>
-#include <OnDiskAllocator.h>
+#include<memory/MyAllocator.h>
+#include <memory/OnDiskAllocator.h>
 using namespace std;
 
 /**

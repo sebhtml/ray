@@ -31,8 +31,8 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include <ReadAnnotation.h>
 #include <Kmer.h>
 #include <StaticVector.h>
-#include <RingAllocator.h>
-#include <Parameters.h>
+#include <memory/RingAllocator.h>
+#include <core/Parameters.h>
 #include <vector>
 #include <set>
 using namespace std;

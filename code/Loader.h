@@ -23,27 +23,27 @@
 #ifndef _Loader
 #define _Loader
 
-#include<common_functions.h>
-#include<vector>
-#include<MyAllocator.h>
-#include <OnDiskAllocator.h>
-#include<Read.h>
-#include<fstream>
-#include<ArrayOfReads.h>
-#include<string>
+#include <common_functions.h>
+#include <vector>
+#include <memory/MyAllocator.h>
+#include <memory/OnDiskAllocator.h>
+#include <Read.h>
+#include <fstream>
+#include <ArrayOfReads.h>
+#include <string>
 
 #ifdef HAVE_ZLIB
-#include<FastqGzLoader.h>
+#include<format/FastqGzLoader.h>
 #endif
 
 #ifdef HAVE_LIBBZ2
-#include<FastqBz2Loader.h>
+#include<format/FastqBz2Loader.h>
 #endif
 
-#include<FastaLoader.h>
-#include<FastqLoader.h>
-#include<ColorSpaceLoader.h>
-#include<SffLoader.h>
+#include<format/FastaLoader.h>
+#include<format/FastqLoader.h>
+#include<format/ColorSpaceLoader.h>
+#include<format/SffLoader.h>
 
 using namespace std;
 

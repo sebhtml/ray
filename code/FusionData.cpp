@@ -22,8 +22,8 @@
 #include <assert.h>
 #include <FusionData.h>
 #include <sstream>
-#include <Message.h>
-#include <malloc_types.h>
+#include <communication/Message.h>
+#include <memory/malloc_types.h>
 using namespace std;
 
 #define SHOW_FUSION

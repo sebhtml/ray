@@ -29,7 +29,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include <stdint.h>
 #include <stdio.h>
 #include <iostream>
-#include <Message.h>
+#include <communication/Message.h>
 using namespace std;
 
 void VertexMessenger::work(){

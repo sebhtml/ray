@@ -22,12 +22,12 @@
 #ifndef _Scaffolder
 #define _Scaffolder
 
-#include <Parameters.h>
+#include <core/Parameters.h>
 #include <StaticVector.h>
 #include <vector>
-#include <RingAllocator.h>
+#include <memory/RingAllocator.h>
 #include <constants.h>
-#include <VirtualCommunicator.h>
+#include <communication/VirtualCommunicator.h>
 #include <ReadFetcher.h>
 using namespace std;
 

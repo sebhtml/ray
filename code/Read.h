@@ -28,9 +28,9 @@
 #include <stdint.h>
 #include <vector>
 #include <common_functions.h>
-#include <MyAllocator.h>
+#include <memory/MyAllocator.h>
 #include <PairedRead.h>
-#include <OnDiskAllocator.h>
+#include <memory/OnDiskAllocator.h>
 using namespace std;
 
 #define TYPE_SINGLE_END 0

@@ -19,15 +19,15 @@
 
 */
 
-#include <VirtualCommunicator.h>
+#include <communication/VirtualCommunicator.h>
 #include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <assert.h>
 #include <SeedingData.h>
-#include <Message.h>
+#include <communication/Message.h>
 #include <mpi.h>
-#include <mpi_tags.h>
+#include <communication/mpi_tags.h>
 #include <SeedWorker.h>
 
 bool myComparator_sort(const vector<Kmer>&a,const vector<Kmer>&b){

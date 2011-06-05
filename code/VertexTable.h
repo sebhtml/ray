@@ -22,10 +22,10 @@
 #ifndef _VertexTable
 #define _VertexTable
 
-#include <MyAllocator.h>
+#include <memory/MyAllocator.h>
 #include <VertexData.h>
-#include <OnDiskAllocator.h>
-#include <Parameters.h>
+#include <memory/OnDiskAllocator.h>
+#include <core/Parameters.h>
 
 class VertexTable{
 	uint64_t m_size;

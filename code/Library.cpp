@@ -26,12 +26,12 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 #include <ReadAnnotation.h>
 #include <Library.h>
-#include <mpi_tags.h>
+#include <communication/mpi_tags.h>
 #include <sstream>
 #include <common_functions.h>
 #include <assert.h>
-#include <Parameters.h>
-#include <malloc_types.h>
+#include <core/Parameters.h>
+#include <memory/malloc_types.h>
 using namespace std;
 
 void Library::updateDistances(){

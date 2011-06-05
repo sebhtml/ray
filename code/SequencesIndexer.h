@@ -25,18 +25,18 @@
 #define _SequencesIndexer
 
 #include <common_functions.h>
-#include <Message.h>
+#include <communication/Message.h>
 #include <StaticVector.h>
 #include <vector>
 #include <ArrayOfReads.h>
-#include <BufferedData.h>
-#include <MyAllocator.h>
-#include <RingAllocator.h>
-#include <VirtualCommunicator.h>
+#include <communication/BufferedData.h>
+#include <memory/MyAllocator.h>
+#include <memory/RingAllocator.h>
+#include <communication/VirtualCommunicator.h>
 #include <Read.h>
-#include <OnDiskAllocator.h>
+#include <memory/OnDiskAllocator.h>
 #include <IndexerWorker.h>
-#include <Parameters.h>
+#include <core/Parameters.h>
 
 class SequencesIndexer{
 	int m_rank;

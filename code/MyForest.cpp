@@ -19,10 +19,10 @@
 
 */
 
-#include<MyForest.h>
-#include<crypto.h>
-#include<stdio.h>
-#include<sstream>
+#include <MyForest.h>
+#include <cryptography/crypto.h>
+#include <stdio.h>
+#include <sstream>
 using namespace std;
 
 void MyForest::constructor(MyAllocator*allocator,int type){

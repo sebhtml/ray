@@ -19,15 +19,15 @@
 
 */
 
-#include <malloc_types.h>
+#include <memory/malloc_types.h>
 #include <assert.h>
 #include <VertexTable.h>
 #include <common_functions.h>
 #include <iostream>
-#include <crypto.h>
+#include <cryptography/crypto.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <Parameters.h>
+#include <core/Parameters.h>
 using namespace std;
 
 void VertexTable::constructor(int rank,MyAllocator*allocator,Parameters*m_parameters){

@@ -20,11 +20,11 @@
 */
 
 #include <Kmer.h>
-#include <malloc_types.h>
+#include <memory/malloc_types.h>
 #include <assert.h>
 #include <GridTable.h>
 #include <common_functions.h>
-#include <crypto.h>
+#include <cryptography/crypto.h>
 #include <stdlib.h>
 #include <stdio.h>
 

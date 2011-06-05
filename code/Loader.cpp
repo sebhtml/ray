@@ -28,7 +28,7 @@
 #include <Loader.h>
 #include <stdlib.h>
 #include <Read.h>
-#include <malloc_types.h>
+#include <memory/malloc_types.h>
 using namespace std;
 
 void Loader::constructor(const char*prefix){

@@ -27,18 +27,18 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #ifndef _Library
 #define _Library
 
-#include<BufferedData.h>
+#include<communication/BufferedData.h>
 #include<ExtensionData.h>
-#include <OnDiskAllocator.h>
+#include <memory/OnDiskAllocator.h>
 #include<common_functions.h>
 #include<map>
 #include<StaticVector.h>
 #include<TimePrinter.h>
 #include <ReadFetcher.h>
-#include <VirtualCommunicator.h>
-#include <Parameters.h>
+#include <communication/VirtualCommunicator.h>
+#include <core/Parameters.h>
 #include <SeedingData.h>
-#include <RingAllocator.h>
+#include <memory/RingAllocator.h>
 #include <LibraryWorker.h>
 using namespace std;
 

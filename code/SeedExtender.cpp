@@ -21,7 +21,7 @@
 
 #define SHOW_IMPOSSIBLE_CHOICE
 
-#include <malloc_types.h>
+#include <memory/malloc_types.h>
 #include <string.h>
 #include <StaticVector.h>
 #include <TipWatchdog.h>
@@ -30,7 +30,7 @@
 #include <sstream>
 #include <assert.h>
 #include <BubbleTool.h>
-#include <crypto.h>
+#include <cryptography/crypto.h>
 using namespace std;
 
 void SeedExtender::extendSeeds(vector<vector<Kmer> >*seeds,ExtensionData*ed,int theRank,StaticVector*outbox,

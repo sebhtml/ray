@@ -21,8 +21,8 @@
 
 #include <SeedWorker.h>
 #include <assert.h>
-#include <Message.h>
-#include <mpi_tags.h>
+#include <communication/Message.h>
+#include <communication/mpi_tags.h>
 #include <common_functions.h>
 #include <stdint.h>
 #include <iostream>

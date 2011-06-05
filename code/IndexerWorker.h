@@ -22,9 +22,9 @@
 #ifndef _IndexerWorker
 #define _IndexerWorker
 
-#include <Parameters.h>
-#include <RingAllocator.h>
-#include <VirtualCommunicator.h>
+#include <core/Parameters.h>
+#include <memory/RingAllocator.h>
+#include <communication/VirtualCommunicator.h>
 #include <stdint.h>
 #include <ArrayOfReads.h>
 

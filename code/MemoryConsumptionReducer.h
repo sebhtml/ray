@@ -26,9 +26,9 @@
 #include<MyForest.h>
 #include <GridTable.h>
 #include <GridTableIterator.h>
-#include<Parameters.h>
-#include<RingAllocator.h>
-#include<BufferedData.h>
+#include<core/Parameters.h>
+#include<memory/RingAllocator.h>
+#include<communication/BufferedData.h>
 #include<set>
 #include<vector>
 #include<DepthFirstSearchData.h>

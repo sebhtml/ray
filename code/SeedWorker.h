@@ -25,9 +25,9 @@
 #define _SeedWorker
 
 #include <stdint.h>
-#include <Parameters.h>
-#include <RingAllocator.h>
-#include <VirtualCommunicator.h>
+#include <core/Parameters.h>
+#include <memory/RingAllocator.h>
+#include <communication/VirtualCommunicator.h>
 #include <vector>
 using namespace std;
 

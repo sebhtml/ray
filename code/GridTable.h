@@ -24,9 +24,9 @@
 
 #include <Kmer.h>
 #include <VertexTable.h>
-#include <MyAllocator.h>
-#include <OnDiskAllocator.h>
-#include <Parameters.h>
+#include <memory/MyAllocator.h>
+#include <memory/OnDiskAllocator.h>
+#include <core/Parameters.h>
 #include <Vertex.h>
 
 class GridTable{

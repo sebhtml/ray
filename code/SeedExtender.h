@@ -28,15 +28,15 @@ class FusionData;
 class DepthFirstSearchData;
 
 #include <common_functions.h>
-#include <Message.h>
+#include <communication/Message.h>
 #include <vector>
 #include <VertexMessenger.h>
 #include <ExtensionData.h>
-#include <Parameters.h>
-#include <RingAllocator.h>
-#include <MyAllocator.h>
+#include <core/Parameters.h>
+#include <memory/RingAllocator.h>
+#include <memory/MyAllocator.h>
 #include <ReadFetcher.h>
-#include <OnDiskAllocator.h>
+#include <memory/OnDiskAllocator.h>
 #include <FusionData.h>
 #include <BubbleData.h>
 #include <DepthFirstSearchData.h>
