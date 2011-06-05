@@ -78,9 +78,9 @@ void Kmer::print()const{
 	for(int j=0;j<getNumberOfU64();j++){
 		uint64_t a=getU64(j);
 		for(int k=63;k>=0;k-=2){
-			int bit=a<<(k-2)>>63;
+			int bit=a<<(k-1)>>63;
 			printf("%i",bit);
-			bit=a<<(k-1)>>63;
+			bit=a<<(k)>>63;
 			printf("%i ",bit);
 		}
 	}

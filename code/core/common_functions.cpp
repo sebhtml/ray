@@ -132,14 +132,6 @@ uint64_t wordId_DistantSegments(const char*a){
 
 }
 
-void printU64(uint64_t a){
-	for(int i=0;i<64;i++){
-		int bit=(a<<i)>>63;
-		printf("%i",bit);
-	}
-	printf("\n");
-}
-
 /*
  *	7 6 5 4 3 2 1 0 
  *			7 6 5 4 3 2 1 0
@@ -153,7 +145,6 @@ string idToWord(const Kmer*i,int wordSize){
 		int chunkId=bitPosition/64;
 		int bitPositionInChunk=(bitPosition%64);
 		uint64_t chunk=i->getU64(chunkId);
-		//printU64(chunk);
 		uint64_t j=(chunk<<(62-bitPositionInChunk))>>62; // clear the bits.
 		//cout<<"Position="<<p<<" Chunk "<<chunkId<<" BitInChunk="<<bitPositionInChunk<<" code="<<j<<endl;
 		switch(j){
@@ -273,6 +264,7 @@ Kmer complementVertex_colorSpace(Kmer*a,int wordSize){
 		if(position2>=64){
 			position2=0;
 		}
+		output.setU64(u64_id,oldValue);
 	}
 
 	return output;
@@ -286,7 +278,8 @@ Kmer complementVertex_colorSpace(Kmer*a,int wordSize){
  */
 Kmer complementVertex_normal(Kmer*a,int m_wordSize){
 	Kmer output;
-	int position2=0;
+	int bitPositionInOutput=0;
+
 	for(int positionInMer=m_wordSize-1;positionInMer>=0;positionInMer--){
 		int bitPosition=positionInMer*2;
 		int u64_id=bitPosition/64;
@@ -311,13 +304,11 @@ Kmer complementVertex_normal(Kmer*a,int m_wordSize){
 				assert(false);
 				break;
 		}
-		uint64_t oldValue=output.getU64(u64_id);
-		oldValue=(oldValue|(complementVertex<<(position2)));
-		output.setU64(u64_id,oldValue);
-		position2+=2;
-		if(position2>=64){
-			position2=0;
-		}
+		int outputChunk=bitPositionInOutput/64;
+		uint64_t oldValue=output.getU64(outputChunk);
+		oldValue=(oldValue|(complementVertex<<(bitPositionInOutput%64)));
+		output.setU64(outputChunk,oldValue);
+		bitPositionInOutput+=2;
 	}
 	return output;
 }
@@ -492,6 +483,11 @@ void showMemoryUsage(int rank){
 }
 
 vector<Kmer> _getOutgoingEdges(Kmer*a,uint8_t edges,int k){
+	/*
+	cout<<__func__<<endl;
+	cout<<"Input: "<<endl;
+	a->print();
+	*/
 	vector<Kmer> b;
 	Kmer aTemplate;
 	aTemplate=*a;
@@ -505,15 +501,42 @@ vector<Kmer> _getOutgoingEdges(Kmer*a,uint8_t edges,int k){
  *		00ab	00ef
  *		00ab	cdef
  */
+			uint64_t current=aTemplate.getU64(i);
+			//cout<<"Current"<<endl;
+			//print64(current);
+			//cout<<"Next"<<endl;
+			//print64(next);
 			next=(next<<62);
+			//cout<<"Filter"<<endl;
+			//print64(next);
 			word=word|next;
 		}
+		aTemplate.setU64(i,word);
 	}
+
+
+	//cout<<"Template"<<endl;
+	//aTemplate.print();
+
+	int positionToUpdate=2*k;
+	positionToUpdate=positionToUpdate%64;
 
 	for(int i=0;i<4;i++){
 		int j=((((uint64_t)edges)<<(sizeof(uint64_t)*8-5-i))>>(sizeof(uint64_t)*8-1));
 		if(j==1){
-			b.push_back(aTemplate);
+			Kmer newKmer=aTemplate;
+			//cout<<"Adding."<<endl;
+			int id=newKmer.getNumberOfU64()-1;
+			uint64_t last=newKmer.getU64(id);
+			uint64_t filter=i;
+			filter=filter<<(positionToUpdate-2);
+			last=last|filter;
+			//cout<<"Filter"<<endl;
+			//print64(filter);
+			newKmer.setU64(id,last);
+			//cout<<"Adding."<<endl;
+			//newKmer.print();
+			b.push_back(newKmer);
 		}
 	}
 
@@ -521,15 +544,19 @@ vector<Kmer> _getOutgoingEdges(Kmer*a,uint8_t edges,int k){
 }
 
 vector<Kmer> _getIngoingEdges(Kmer*a,uint8_t edges,int k){
+/*
+	cout<<endl;
 	cout<<"Input"<<endl;
 	a->print();
+*/
 	vector<Kmer> b;
 	Kmer aTemplate;
 	aTemplate=*a;
 	
+	int posToClear=2*k;
 
 	for(int i=0;i<aTemplate.getNumberOfU64();i++){
-		uint8_t element=aTemplate.getU64(i);
+		uint64_t element=aTemplate.getU64(i);
 		element=element<<2;
 
 //	1		0
@@ -548,23 +575,41 @@ vector<Kmer> _getIngoingEdges(Kmer*a,uint8_t edges,int k){
 			element=element|last;
 		}
 
-		if(i==aTemplate.getNumberOfU64()-1 && 2*k<64){
+		
+		if(i==aTemplate.getNumberOfU64()-1 ){
+			int position=posToClear%64;
+
 			uint64_t filter=1;
-			filter=filter<<(2*k);
-			element=element|filter;
+			filter=filter<<(position);
+			filter=~filter;
+			element=element&filter;
+			//print64(filter);
 			filter=1;
-			filter=filter<<(2*k+1);
-			element=element|filter;
+			filter=filter<<(position+1);
+			filter=~filter;
+			//print64(filter);
+			element=element&filter;
 		}
 		aTemplate.setU64(i,element);
 	}
-	cout<<"Template, IN"<<endl;
-	aTemplate.print();
+	//cout<<"Template, INgoing"<<endl;
+	//aTemplate.print();
 
 	for(int i=0;i<4;i++){
 		int j=((((uint64_t)edges)<<((sizeof(uint64_t)*8-1)-i))>>(sizeof(uint64_t)*8-1));
 		if(j==1){
-			b.push_back(aTemplate);
+			//cout<<"Adding."<<endl;
+			Kmer newKmer=aTemplate;
+			int id=0;
+			uint64_t last=newKmer.getU64(id);
+			uint64_t filter=i;
+			//cout<<"Filter ingoing edge"<<endl;
+			//print64(filter);
+			last=last|filter;
+			newKmer.setU64(id,last);
+			//cout<<"Adding."<<endl;
+			//newKmer.print();
+			b.push_back(newKmer);
 		}
 	}
 	return b;
@@ -673,3 +718,12 @@ void now(){
 	cout<<"Date: "<<asctime(timeinfo);
 }
 
+void print64(uint64_t a){
+	for(int k=63;k>=0;k-=2){
+		int bit=a<<(k-1)>>63;
+		printf("%i",bit);
+		bit=a<<(k)>>63;
+		printf("%i ",bit);
+	}
+	printf("\n");
+}

@@ -154,6 +154,8 @@ void now();
 
 string reverseComplement(string*a);
 
+void print64(uint64_t a);
+
 #endif
 
 
