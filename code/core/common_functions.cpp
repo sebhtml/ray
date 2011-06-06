@@ -501,7 +501,6 @@ vector<Kmer> _getOutgoingEdges(Kmer*a,uint8_t edges,int k){
  *		00ab	00ef
  *		00ab	cdef
  */
-			uint64_t current=aTemplate.getU64(i);
 			//cout<<"Current"<<endl;
 			//print64(current);
 			//cout<<"Next"<<endl;

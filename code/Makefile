@@ -45,7 +45,8 @@ communication/Message.o communication/MessageProcessor.o communication/MessagesH
 
 #formats
 OBJS+=format/ColorSpaceDecoder.o format/ColorSpaceLoader.o format/FastaLoader.o \
-format/FastqBz2Loader.o format/FastqGzLoader.o format/FastqLoader.o format/SffLoader.o 
+format/FastqBz2Loader.o format/FastqGzLoader.o format/FastqLoader.o format/SffLoader.o \
+format/Amos.o
 
 #core
 OBJS+=core/slave_modes.o core/Machine.o core/Parameters.o core/common_functions.o

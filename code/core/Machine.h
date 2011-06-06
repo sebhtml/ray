@@ -57,6 +57,7 @@
 #include<memory/MyAllocator.h>
 #include<mpi.h>
 #include<VerticesExtractor.h>
+#include <format/Amos.h>
 
 using namespace std;
 
@@ -64,8 +65,8 @@ class Machine;
 typedef void (Machine::*MachineMethod) ();
 
 class Machine{
+	Amos m_amos;
 	VirtualCommunicator m_virtualCommunicator;
-	FILE*m_amosFile;
 	bool m_killed;
 	MachineMethod m_master_methods[64];
 	MachineMethod m_slave_methods[64];

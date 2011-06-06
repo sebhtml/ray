@@ -9,6 +9,8 @@ implementation. Thanks to Volker Winkelmann (University of Cologne).
 Makefile
 * Added pack and unpack methods to Kmer to abstract the communication of
 k-mers -- thanks to Élénie Godzaridis for the idea.
+* Output contigs >= 100, not paths >= 100
+* Detailed the warning for unmatched 454 prefix.
 
 
 = 1.4.0 =
