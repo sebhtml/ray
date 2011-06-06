@@ -43,8 +43,6 @@ void Scaffolder::addMasterContig(uint64_t name,int length){
 void Scaffolder::solve(){
 	vector<vector<uint64_t> > megaLinks;
 
-	int minimumNumberOfRawLinks=3;
-
 	map<uint64_t,map<char,map<uint64_t,map<char,vector<int> > > > > keys;
 	for(int i=0;i<(int)m_masterLinks.size();i++){
 		uint64_t leftContig=m_masterLinks[i][0];
@@ -53,10 +51,8 @@ void Scaffolder::solve(){
 		char rightStrand=m_masterLinks[i][3];
 		int average=m_masterLinks[i][4];
 		int number=m_masterLinks[i][5];
-		if(number>=minimumNumberOfRawLinks){
-			keys[leftContig][leftStrand][rightContig][rightStrand].push_back(average);
-			keys[leftContig][leftStrand][rightContig][rightStrand].push_back(number);
-		}
+		keys[leftContig][leftStrand][rightContig][rightStrand].push_back(average);
+		keys[leftContig][leftStrand][rightContig][rightStrand].push_back(number);
 	}
 
 	map<uint64_t,map<uint64_t,int> > validCounts;
