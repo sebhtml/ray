@@ -192,7 +192,8 @@ void SffLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator
 		string sequence=Bases;
 		string key=key_sequence;
 		if(sequence.substr(0,key_length)!=key){
-			(cout)<<"Not KEY, was "<<sequence.substr(0,key_length)<<" expected "<<key<<endl;
+			(cout)<<"Warning: the sequence key was "<<sequence.substr(0,key_length)<<", expected "<<key<<" (from the SFF header)"<<endl;
+			cout<<"Skipping sequence."<<endl;
 			continue;
 		}
 		Read read;
