@@ -28,11 +28,20 @@
 #include <FusionData.h>
 #include <ExtensionData.h>
 #include <scaffolder/Scaffolder.h>
+#include <vector>
+#include <ReadFetcher.h>
+#include <stdint.h>
+#include <communication/VirtualCommunicator.h>
+using namespace std;
 
 /**
  * AMOS specification is available : http://sourceforge.net/apps/mediawiki/amos/index.php?title=AMOS
  */
 class Amos{
+	VirtualCommunicator*m_virtualCommunicator;
+	StaticVector*m_inbox;
+	uint64_t m_workerId;
+	ReadFetcher m_readFetcher;
 	int*m_master_mode;
 	int*m_slave_mode;
 	Scaffolder*m_scaffolder;
@@ -45,11 +54,13 @@ class Amos{
 	int m_sequence_id;
 	ExtensionData*m_ed;
 	int m_mode_send_vertices_sequence_id_position;
+	vector<uint64_t> m_activeWorkers;
 public:
 	void masterMode();
 	void slaveMode();
 	void constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*outbox,
-		FusionData*fusionData,ExtensionData*extensionData,int*masterMode,int*slaveMode,Scaffolder*scaffolder);
+		FusionData*fusionData,ExtensionData*extensionData,int*masterMode,int*slaveMode,Scaffolder*scaffolder,
+StaticVector*inbox,VirtualCommunicator*virtualCommunicator);
 };
 
 

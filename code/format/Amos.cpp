@@ -33,7 +33,10 @@
 #include <core/Parameters.h>
 
 void Amos::constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*outbox,
-	FusionData*fusionData,ExtensionData*extensionData,int*masterMode,int*slaveMode,Scaffolder*scaffolder){
+	FusionData*fusionData,ExtensionData*extensionData,int*masterMode,int*slaveMode,Scaffolder*scaffolder,
+	StaticVector*inbox,VirtualCommunicator*virtualCommunicator){
+	m_virtualCommunicator=virtualCommunicator;
+	m_inbox=inbox;
 	m_slave_mode=slaveMode;
 	m_master_mode=masterMode;
 	m_scaffolder=scaffolder;
@@ -42,6 +45,7 @@ void Amos::constructor(Parameters*parameters,RingAllocator*outboxAllocator,Stati
 	m_outboxAllocator=outboxAllocator;
 	m_fusionData=fusionData;
 	m_ed=extensionData;
+	m_workerId=0;
 }
 
 void Amos::masterMode(){
@@ -73,6 +77,13 @@ void Amos::slaveMode(){
 		m_ed->m_EXTENSION_reads_requested=false;
 		m_sequence_id=0;
 	}
+
+	//cout<<"Forcing flush"<<endl;
+	m_virtualCommunicator->forceFlush();
+	m_virtualCommunicator->processInbox(&m_activeWorkers);
+	m_activeWorkers.clear();
+
+
 	/*
 	* use m_allPaths and m_identifiers
 	*
@@ -80,7 +91,7 @@ void Amos::slaveMode(){
 	*            m_mode_send_vertices_sequence_id_position: for the current position in the current contig.
 	*/
 
-	if(true || m_contigId==(int)m_ed->m_EXTENSION_contigs.size()){// all contigs are processed
+	if(m_contigId==(int)m_ed->m_EXTENSION_contigs.size()){// all contigs are processed
 		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 		message[0]=m_ed->m_EXTENSION_currentPosition;
 		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_WRITE_AMOS_REPLY,m_parameters->getRank());
@@ -122,21 +133,33 @@ void Amos::slaveMode(){
 				__Free(qlt,RAY_MALLOC_TYPE_AMOS);
 			}
 
+			if(m_mode_send_vertices_sequence_id_position%10000==0){
+				cout<<"Rank "<<m_parameters->getRank()<<" Exporting AMOS ["<<m_contigId<<"/"<<m_ed->m_EXTENSION_contigs.size()<<"] [";
+				cout<<m_mode_send_vertices_sequence_id_position<<"/"<<m_ed->m_EXTENSION_contigs[m_contigId].size()<<"]"<<endl;
+			}
+
 			m_ed->m_EXTENSION_reads_requested=true;
 			m_ed->m_EXTENSION_reads_received=false;
-			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
+			//uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 			Kmer vertex=m_ed->m_EXTENSION_contigs[m_contigId][m_mode_send_vertices_sequence_id_position];
-			int pos=0;
-			vertex.pack(message,&pos);
+			//int pos=0;
+			//vertex.pack(message,&pos);
 			//Message aMessage(message,pos,MPI_UNSIGNED_LONG_LONG,vertexRank(vertex,getSize(),m_wordSize),RAY_MPI_TAG_REQUEST_READS,getRank());
 			//m_outbox.push_back(aMessage);
 			//TODO: code is broken
 
-
+			m_readFetcher.constructor(&vertex,m_outboxAllocator,m_inbox,m_outbox,m_parameters,m_virtualCommunicator,m_workerId);
 
 			// iterator on reads
 			m_fusionData->m_FUSION_path_id=0;
 			m_ed->m_EXTENSION_readLength_requested=false;
+		}else if(!m_ed->m_EXTENSION_reads_received){
+			if(!m_readFetcher.isDone()){
+				m_readFetcher.work();
+			}else{
+				m_ed->m_EXTENSION_reads_received=true;
+				m_ed->m_EXTENSION_receivedReads=*(m_readFetcher.getResult());
+			}
 		}else if(m_ed->m_EXTENSION_reads_received){
 			if(m_fusionData->m_FUSION_path_id<(int)m_ed->m_EXTENSION_receivedReads.size()){
 				int readRank=m_ed->m_EXTENSION_receivedReads[m_fusionData->m_FUSION_path_id].getRank();
