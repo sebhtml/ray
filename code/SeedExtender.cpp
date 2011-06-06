@@ -663,7 +663,7 @@ map<Kmer,set<Kmer> >*arcs,map<Kmer,int>*coverages,int depth,set<Kmer>*visited){
 
 void SeedExtender::storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<vector<Kmer> >*seeds,
 Kmer *currentVertex,BubbleData*bubbleData){
-	if(ed->m_EXTENSION_extension->size()>=100){
+	if((int)ed->m_EXTENSION_extension->size()+m_parameters->getWordSize()-1>=m_parameters->getMinimumContigLength()){
 		if(m_parameters->showEndingContext()){
 			cout<<"Choosing... (impossible!)"<<endl;
 			inspect(ed,currentVertex);
