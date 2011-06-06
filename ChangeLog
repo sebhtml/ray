@@ -1,6 +1,8 @@
 = 1.4.1 =
 2011-06-XX
 
+* Moved the code tree to subversion to git and from an in-house tree to a
+github tree -- see http://github.com/sebhtml/ray
 * Fixed a compilation problem in Scaffolder.cpp. Thanks to
 Volker Winkelmann (University of Cologne).
 * Changed CC to MPICXX and added lines to compile Ray with Intel's MPI
@@ -11,6 +13,7 @@ Makefile
 k-mers -- thanks to Élénie Godzaridis for the idea.
 * Output contigs >= 100, not paths >= 100
 * Detailed the warning for unmatched 454 prefix.
+* Fixed a bug in the TLE entries in the AMOS file.
 
 
 = 1.4.0 =

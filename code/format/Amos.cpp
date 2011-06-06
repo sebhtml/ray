@@ -153,7 +153,7 @@ void Amos::slaveMode(){
 			// iterator on reads
 			m_fusionData->m_FUSION_path_id=0;
 			m_ed->m_EXTENSION_readLength_requested=false;
-		}else if(!m_ed->m_EXTENSION_reads_received){
+		}else if(m_ed->m_EXTENSION_reads_requested && !m_ed->m_EXTENSION_reads_received){
 			if(!m_readFetcher.isDone()){
 				m_readFetcher.work();
 			}else{
@@ -174,7 +174,7 @@ void Amos::slaveMode(){
 					m_outbox->push_back(aMessage);
 				}else if(m_ed->m_EXTENSION_readLength_received){
 					int readLength=m_ed->m_EXTENSION_receivedLength;
-					int globalIdentifier=m_parameters->getGlobalIdFromRankAndLocalId(readRank,idOnRank);
+					uint64_t globalIdentifier=m_parameters->getGlobalIdFromRankAndLocalId(readRank,idOnRank)+1;
 					int start=0;
 					int theEnd=readLength-1;
 					int offset=m_mode_send_vertices_sequence_id_position;
@@ -184,7 +184,11 @@ void Amos::slaveMode(){
 						theEnd=t;
 						offset++;
 					}
-					fprintf(m_amosFile,"{TLE\nsrc:%i\noff:%i\nclr:%i,%i\n}\n",globalIdentifier+1,offset,
+					if(globalIdentifier==1512){
+						Kmer vertex=m_ed->m_EXTENSION_contigs[m_contigId][m_mode_send_vertices_sequence_id_position];
+						cout<<"Position "<<m_mode_send_vertices_sequence_id_position<<" Kmer "<<idToWord(&vertex,m_parameters->getWordSize())<<" ReadStrand "<<strand<<" iid:"<<globalIdentifier<<endl;
+					}
+					fprintf(m_amosFile,"{TLE\nsrc:%li\noff:%i\nclr:%i,%i\n}\n",globalIdentifier,offset,
 						start,theEnd);
 		
 					// increment to get the next read.

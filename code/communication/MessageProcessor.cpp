@@ -170,33 +170,44 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
 	int j=0;
-	int elementSize=5;
-	if(KMER_U64_ARRAY_SIZE+1>elementSize){
-		elementSize=KMER_U64_ARRAY_SIZE+1;
-	}
+	int elementSize=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_READS);
 
 	for(int i=0;i<message->getCount();i+=elementSize){
 		Kmer vertex;
 		int bufferPosition=i;
 		vertex.unpack(buffer,&bufferPosition);
 		ReadAnnotation*ptr=(ReadAnnotation*)buffer[bufferPosition++];
+		Kmer complement=m_parameters->_complementVertex(&vertex);
+		bool isLower=vertex<complement;
 		if(ptr==NULL){
 			ptr=m_subgraph->getReads(&vertex);
 		}
 	
-		if(ptr==NULL){
-			outgoingMessage[j+1]=INVALID_RANK;
-		}else{
+		bool gotOne=false;
+		while(ptr!=NULL&&!gotOne){
 			int rank=ptr->getRank();
 			#ifdef ASSERT
 			assert(rank>=0&&rank<m_parameters->getSize());
 			#endif
-			outgoingMessage[j+1]=rank;
-			outgoingMessage[j+2]=ptr->getReadIndex();
-			outgoingMessage[j+3]=ptr->getPositionOnStrand();
-			outgoingMessage[j+4]=ptr->getStrand();
+/*
+			uint64_t globalId=m_parameters->getGlobalIdFromRankAndLocalId(rank,ptr->getReadIndex())+1;
+			if(globalId==1512){
+				cout<<__FILE__<<" "<<__LINE__<<" i="<<i<<" iid:1512 Kmer "<<idToWord(&vertex,m_parameters->getWordSize())<<" PosOnStrand "<<ptr->getPositionOnStrand()<<" Strand "<<ptr->getStrand()<<" isLower "<<ptr->isLower()<<endl;
+			}
+*/
+			if(ptr->isLower()==isLower){
+				outgoingMessage[j+1]=rank;
+				outgoingMessage[j+2]=ptr->getReadIndex();
+				outgoingMessage[j+3]=ptr->getPositionOnStrand();
+				outgoingMessage[j+4]=ptr->getStrand();
+				gotOne=true;
+			}
 			ptr=ptr->getNext();
 		}
+		if(!gotOne){
+			outgoingMessage[j+1]=INVALID_RANK;
+		}
+
 		outgoingMessage[j]=(uint64_t)ptr;
 		j+=(elementSize);
 	}
@@ -1352,6 +1363,13 @@ void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message){
 		Vertex*node=m_subgraph->find(&vertex);
 
 		int coverage=node->getCoverage(&vertex);
+
+/*
+		uint64_t globalId=m_parameters->getGlobalIdFromRankAndLocalId(rank,sequenceIdOnDestination)+1;
+		if(globalId==1512){
+			cout<<__func__<<" iid:1512 Strand "<<strand<<" Kmer "<<idToWord(&vertex,m_parameters->getWordSize())<<" PositionOnStrand "<<positionOnStrand<<endl;
+		}
+*/
 
 		if(node==NULL){
 			continue;

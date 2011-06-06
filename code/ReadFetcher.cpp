@@ -99,10 +99,7 @@ void ReadFetcher::work(){
 			m_done=true;
 			//cout<<__func__<<" "<<__LINE__<<" DONE "<<m_reads.size()<<" reads"<<endl;
 		}else{
-			int elementSize=5;
-			if(KMER_U64_ARRAY_SIZE+1>elementSize){
-				elementSize=KMER_U64_ARRAY_SIZE+1;
-			}
+			int elementSize=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_READS);
 
 			uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 			int bufferPosition=0;
