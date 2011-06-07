@@ -27,14 +27,14 @@
 #include <memory/OnDiskAllocator.h>
 #include <structures/Read.h>
 #include <structures/ArrayOfReads.h>
-#ifdef HAVE_ZLIB
+#ifdef HAVE_LIBZ
 #include <zlib.h>
 #endif
 #include <memory/MyAllocator.h>
 using namespace std;
 
 class FastqGzLoader{
-	#ifdef HAVE_ZLIB
+	#ifdef HAVE_LIBZ
 	gzFile m_f;
 	#endif
 	int m_size;

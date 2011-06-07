@@ -233,8 +233,8 @@ void Machine::start(){
 		cout<<"Rank "<<MASTER_RANK<<": Message-Passing Interface standard version: "<<version<<"."<<subversion<<""<<endl;
 
 		// show libraries
-		cout<<"Rank "<<MASTER_RANK<<": GZIP (HAVE_ZLIB): ";
-		#ifdef HAVE_ZLIB
+		cout<<"Rank "<<MASTER_RANK<<": GZIP (HAVE_LIBZ): ";
+		#ifdef HAVE_LIBZ
 		cout<<"yes"<<endl;
 		#else
 		cout<<"no"<<endl;

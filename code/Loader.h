@@ -32,7 +32,7 @@
 #include <structures/ArrayOfReads.h>
 #include <string>
 
-#ifdef HAVE_ZLIB
+#ifdef HAVE_LIBZ
 #include<format/FastqGzLoader.h>
 #endif
 
@@ -78,7 +78,7 @@ class Loader{
 	FastqLoader m_fastq;	
 	FastaLoader m_fasta;	
 
-	#ifdef HAVE_ZLIB
+	#ifdef HAVE_LIBZ
 	FastqGzLoader m_fastqgz;
 	#endif
 

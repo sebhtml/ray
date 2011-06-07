@@ -861,14 +861,14 @@ void Parameters::showUsage(){
 	cout<<"FILES"<<endl;
 
 	cout<<"     .fasta"<<endl;
-	#ifdef HAVE_ZLIB
+	#ifdef HAVE_LIBZ
 	cout<<"     .fasta.gz"<<endl;
 	#endif
 	#ifdef HAVE_LIBBZ2
 	cout<<"     .fasta.bz2"<<endl;
 	#endif
 	cout<<"     .fastq"<<endl;
-	#ifdef HAVE_ZLIB
+	#ifdef HAVE_LIBZ
 	cout<<"     .fastq.gz"<<endl;
 	#endif
 	#ifdef HAVE_LIBBZ2
