@@ -69,8 +69,8 @@ map<Kmer ,int>*coverages){
 		return false;
 	}
 
-	#ifdef ASSERT
 	int m_wordSize=m_parameters->getWordSize();
+	#ifdef ASSERT
 	for(int i=0;i<(int)trees->size();i++){
 		for(int j=0;j<(int)trees->at(i).size();j+=2){
 			Kmer a=trees->at(i).at(j+0);
@@ -134,9 +134,9 @@ map<Kmer ,int>*coverages){
 	assert(coverages->count(root)>0);
 	assert(coverages->count(target)>0);
 	#endif
+	#ifdef ASSERT
 	int rootCoverage=(*coverages)[root];
 	int targetCoverage=(*coverages)[target];
-	#ifdef ASSERT
 	assert(rootCoverage>0);
 	assert(targetCoverage>0);
 	#endif
