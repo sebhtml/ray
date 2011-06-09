@@ -755,7 +755,7 @@ void MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA(Message*message){
 	uint64_t*incoming=(uint64_t*)buffer;
 	int length=count;
 
-	for(int i=0;i<(int)length;i+=2){
+	for(int i=0;i<(int)length;i+=2*KMER_U64_ARRAY_SIZE){
 		int pos=i;
 		Kmer prefix;
 		prefix.unpack(incoming,&pos);
