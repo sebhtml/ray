@@ -574,20 +574,25 @@ vector<Kmer> _getIngoingEdges(Kmer*a,uint8_t edges,int k){
 			element=element|last;
 		}
 
-		
-		if(i==aTemplate.getNumberOfU64()-1 ){
+		/**
+ *	The two last bits that shifted must be cleared
+ *	Otherwise, it will change the hash value of the Kmer...
+ *	The chunk number i contains bits from i to i*64-1
+ *	Therefore, if posToClear is inside these boundaries,
+ *	then it is obvious that these awful bits must be changed 
+ *	to 0
+ */
+		if(i*64<=posToClear&&posToClear<i*64+64){
 			int position=posToClear%64;
 
-			uint64_t filter=1;
+			uint64_t filter=3;// 11 or 1*2^1+1*2^0
 			filter=filter<<(position);
 			filter=~filter;
+			//cout<<"Element"<<endl;
+			//print64(element);
 			element=element&filter;
+			//cout<<"Filter"<<endl;
 			//print64(filter);
-			filter=1;
-			filter=filter<<(position+1);
-			filter=~filter;
-			//print64(filter);
-			element=element&filter;
 		}
 		aTemplate.setU64(i,element);
 	}

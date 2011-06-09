@@ -40,6 +40,8 @@ void test_Ingoing(){
 	assertEquals(actualStr,a);
 
 	if(actual!=aKmer){
+		cout<<"MAXKMERLENGTH: "<<MAXKMERLENGTH<<endl;
+		cout<<"WordSize: "<<wordSize<<endl;
 		cout<<"Expected: "<<endl;
 		aKmer.print();
 		cout<<"Actual: "<<endl;
@@ -110,6 +112,8 @@ int main(int argc,char**argv){
 		Kmer id=wordId(a.c_str());
 
 		if(theKmer!=id){
+			cout<<"MAXKMERLENGTH: "<<MAXKMERLENGTH<<endl;
+			cout<<"WordSize: "<<wordSize<<endl;
 			cout<<"Expected: "<<endl;
 			id.print();
 			cout<<"Actual: "<<endl;
