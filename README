@@ -1,6 +1,8 @@
 Website: http://denovoassembler.sf.net
 
 Ray is a parallel de novo genome assembler that utilise the message-passing interface everywhere.
+Ray is implemented using peer-to-peer communication with the message-passing interface.
+See http://www.parawiki.org/index.php/Message_Passing_Interface#Peer_to_Peer_Communication
 
 
 Mailing list: denovoassembler-users <AT> lists.sourceforge.net
