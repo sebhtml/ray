@@ -47,6 +47,13 @@ void VirtualCommunicator::setReplyType(int query,int reply){
 }
 
 void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
+	int tag=message->getTag();
+	int period=m_elementSizes[tag];
+	int count=message->getCount();
+	#ifdef ASSERT
+	assert(count<=period);
+	#endif
+
 	m_pushedMessages++;
 	#ifdef ASSERT
 	if(m_elementsForWorkers.count(workerId)>0){
@@ -64,7 +71,6 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 	assert(destination>=0&&destination<m_size);
 	#endif
 
-	int tag=message->getTag();
 	#ifdef ASSERT
 	assert(m_elementSizes.count(tag)>0);
 	#endif
@@ -79,7 +85,6 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 			m_priorityQueue.erase(oldPriority);
 		}
 	}
-	int count=message->getCount();
 	int newPriority=oldPriority+count;
 	m_priorityQueue[newPriority].insert(elementId);
 	//cout<<"Rank "<<m_rank<<" "<<__func__<<" Worker="<<workerId<<" Tag="<<tag<<" Destination="<<destination<<endl;
@@ -97,16 +102,23 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 	#ifdef ASSERT
 	assert(m_elementSizes.count(tag)>0);
 	#endif
-	int currentSize=m_messageContent[tag][destination].size();
 
-	int period=m_elementSizes[tag];
+	int currentSize=m_workerCurrentIdentifiers[tag][destination].size();
+
+	/*
+ *	maximum number of pushed messages
+ */
 	int threshold=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)/period;
 	#ifdef ASSERT
 	assert(m_elementSizes.count(tag)>0);
 	assert(period>=1);
 	assert(threshold<=(int)(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)));
+	if(currentSize>threshold){
+		cout<<"Fatal: too much bits, tag= "<<MESSAGES[tag]<<" Threshold= "<<threshold<<" pushed messages; Actual= "<<currentSize<<" pushed messages; Period= "<<period<<" uint64_t/message; Count= "<<count<<" Priority= "<<newPriority<<" Destination: "<<destination<<endl;
+	}
 	assert(currentSize<=threshold);
 	#endif
+	//cout<<__func__<<" Tag: "<<MESSAGES[tag]<<" Destination: "<<destination<<" CurrentSize: "<<currentSize<<" Threshold: "<<threshold<<" Workers: "<<m_workerCurrentIdentifiers[tag][destination].size()<<endl;
 	if(currentSize>=threshold){
 		// must flush the message
 		flushMessage(tag,destination);
@@ -132,16 +144,14 @@ void VirtualCommunicator::flushMessage(int tag,int destination){
 		cout<<"Cannot flush empty buffer!"<<endl;
 	}
 	assert(currentSize>0);
-	int requiredResponseLength=currentSize*m_elementSizes[tag]*sizeof(uint64_t);
+	int requiredResponseLength=m_workerCurrentIdentifiers[tag][destination].size()*m_elementSizes[tag]*sizeof(uint64_t);
 	m_distribution[requiredResponseLength]++;
 	//cout<<"Rank "<<m_rank<<" "<<__func__<<" RequiredResponseLength="<<requiredResponseLength<<" Tag="<<tag<<" Destination="<<destination<<endl;
 	assert(requiredResponseLength<=MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	#endif
 
-/*
-	cout<<"Rank "<<m_rank<<" "<<__func__<<" Tag="<<tag<<" Destination="<<destination<<" Capacity: "<<requiredResponseLength<<" / "<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<endl;
-	cout.flush();
-*/
+	//cout<<"Rank "<<m_rank<<" "<<__func__<<" Tag="<<MESSAGES[tag]<<" Destination="<<destination<<" Capacity: "<<requiredResponseLength<<" / "<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<" bytes"<<endl;
+
 	//if(requiredResponseLength!=MAXIMUM_MESSAGE_SIZE_IN_BYTES){
 		//cout<<"Rank "<<m_rank<<" "<<__func__<<" Under Capacity: "<<requiredResponseLength<<"/"<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<endl;
 	//}

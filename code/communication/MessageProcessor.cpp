@@ -135,7 +135,7 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_READ_MARKERS(Message*message){
 		outgoingMessage[outputPosition++]=read->getReverseOffset();
 	}
 
-	Message aMessage(outgoingMessage,count*5,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_GET_READ_MARKERS_REPLY,rank);
+	Message aMessage(outgoingMessage,outputPosition,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_GET_READ_MARKERS_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -1464,7 +1464,7 @@ void MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	int count=message->getCount();
-	for(int i=0;i<count;i+=3){
+	for(int i=0;i<count;i+=(KMER_U64_ARRAY_SIZE+2)){
 		Kmer vertex;
 		int pos=i;
 		vertex.unpack(incoming,&pos);
@@ -1474,8 +1474,8 @@ void MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 		Vertex*node=m_subgraph->find(&vertex);
 		assert(node!=NULL);
 		#endif
-		uint64_t wave=incoming[i+1];
-		int progression=incoming[i+2];
+		uint64_t wave=incoming[pos++];
+		int progression=incoming[pos++];
 		Direction*e=(Direction*)m_directionsAllocator->allocate(sizeof(Direction));
 		e->constructor(wave,progression,lower);
 
@@ -1574,7 +1574,7 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION(Message*messa
 	uint64_t*incoming=(uint64_t*)buffer;
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
-	for(int i=0;i<count;i++){
+	for(int i=0;i<count;i+=KMER_U64_ARRAY_SIZE){
 		Kmer vertex;
 		int pos=i;
 		vertex.unpack(incoming,&pos);
@@ -1589,7 +1589,7 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION(Message*messa
 		}
 	}
 
-	Message aMessage(message2,count*4,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION_REPLY,rank);
+	Message aMessage(message2,(count/KMER_U64_ARRAY_SIZE)*4,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 

@@ -1,7 +1,7 @@
 Ray assembler
 ============
 
-Ray is a parallel de novo genome assembler that utilise the message-passing interface everywhere.
+Ray is a parallel de novo genome assembler that utilises the message-passing interface everywhere.
 Ray is implemented using peer-to-peer communication with the message-passing interface.
 See http://www.parawiki.org/index.php/Message_Passing_Interface#Peer_to_Peer_Communication
 
