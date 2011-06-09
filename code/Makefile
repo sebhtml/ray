@@ -4,7 +4,12 @@
 #############################################
 # compilation options
 
-# maximum k-mer length.
+# maximum k-mer length
+# in nucleotides
+# 32 nucleotides are stored on 64 bits
+# 64 nucleotides are stored on 2x64 bits
+# 96 nucleotides are stored on 3x64 bits
+# Intermediate values should utilise intermediate numbers of bits.
 MAXKMERLENGTH=64
 
 # support for .gz files
