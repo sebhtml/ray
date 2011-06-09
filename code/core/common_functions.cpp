@@ -518,6 +518,7 @@ vector<Kmer> _getOutgoingEdges(Kmer*a,uint8_t edges,int k){
 	//aTemplate.print();
 
 	int positionToUpdate=2*k;
+	int chunkIdToUpdate=positionToUpdate/64;
 	positionToUpdate=positionToUpdate%64;
 
 	for(int i=0;i<4;i++){
@@ -525,14 +526,13 @@ vector<Kmer> _getOutgoingEdges(Kmer*a,uint8_t edges,int k){
 		if(j==1){
 			Kmer newKmer=aTemplate;
 			//cout<<"Adding."<<endl;
-			int id=newKmer.getNumberOfU64()-1;
-			uint64_t last=newKmer.getU64(id);
+			uint64_t last=newKmer.getU64(chunkIdToUpdate);
 			uint64_t filter=i;
 			filter=filter<<(positionToUpdate-2);
 			last=last|filter;
 			//cout<<"Filter"<<endl;
 			//print64(filter);
-			newKmer.setU64(id,last);
+			newKmer.setU64(chunkIdToUpdate,last);
 			//cout<<"Adding."<<endl;
 			//newKmer.print();
 			b.push_back(newKmer);
