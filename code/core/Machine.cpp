@@ -101,15 +101,11 @@ void Machine::start(){
 	m_isFinalFusion=false;
 
 
-	MPI_Init(&m_argc,&m_argv);
-
-	char serverName[1000];
-	int len;
-	MPI_Get_processor_name(serverName,&len);
-	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
-	MPI_Comm_size(MPI_COMM_WORLD,&m_size);
-	
-	MPI_Barrier(MPI_COMM_WORLD);
+	m_messagesHandler.constructor(&m_argc,&m_argv);
+	m_rank=m_messagesHandler.getRank();
+	m_size=m_messagesHandler.getSize();
+		
+	m_messagesHandler.barrier();
 
 	if(isMaster()){
 		cout<<endl<<"**************************************************"<<endl;
@@ -133,7 +129,7 @@ void Machine::start(){
 		cout<<endl;
 	}
 
-	MPI_Barrier(MPI_COMM_WORLD);
+	m_messagesHandler.barrier();
 
 	m_parameters.setSize(getSize());
 	m_parameters.setSlaveModePointer(&m_slave_mode);
@@ -178,7 +174,7 @@ void Machine::start(){
 	m_ranksDoneAttachingReads=0;
 	m_reducer.constructor(getSize());
 
-	MPI_Barrier(MPI_COMM_WORLD);
+	m_messagesHandler.barrier();
 
 	m_si.constructor(&m_parameters,&m_outboxAllocator,&m_inbox,&m_outbox,&m_diskAllocator,&m_virtualCommunicator);
 
@@ -190,7 +186,7 @@ void Machine::start(){
 
 	int version;
 	int subversion;
-	MPI_Get_version(&version,&subversion);
+	m_messagesHandler.version(&version,&subversion);
 
 	if(isMaster()){
 
@@ -366,13 +362,13 @@ void Machine::start(){
 	m_loadSequenceStep=false;
 	m_totalLetters=0;
 
-	MPI_Barrier(MPI_COMM_WORLD);
+	m_messagesHandler.barrier();
 
 	if(m_parameters.showMemoryUsage()){
 		showMemoryUsage(getRank());
 	}
 
-	MPI_Barrier(MPI_COMM_WORLD);
+	m_messagesHandler.barrier();
 
 	if(isMaster()){
 		cout<<endl;
@@ -433,7 +429,6 @@ m_seedingData,
 	&m_numberOfRanksWithCoverageData,&m_seedExtender,
 	&m_master_mode,&m_isFinalFusion,&m_si);
 
-	m_messagesHandler.constructor(getRank(),getSize());
 	m_timePrinter.constructor();
 
 	if(m_argc==1||((string)m_argv[1])=="--help"){
@@ -464,13 +459,13 @@ m_seedingData,
 
 	}
 
-	MPI_Barrier(MPI_COMM_WORLD);
+	m_messagesHandler.barrier();
 
 	if(m_parameters.showMemoryUsage()){
 		showMemoryUsage(getRank());
 	}
 
-	MPI_Barrier(MPI_COMM_WORLD);
+	m_messagesHandler.barrier();
 
 	if(isMaster() && !m_aborted){
 		m_scaffolder.printFinalMessage();
@@ -489,7 +484,7 @@ m_seedingData,
 		cout<<endl;
 	}
 
-	MPI_Barrier(MPI_COMM_WORLD);
+	m_messagesHandler.barrier();
 	m_messagesHandler.freeLeftovers();
 	m_persistentAllocator.clear();
 	m_directionsAllocator.clear();

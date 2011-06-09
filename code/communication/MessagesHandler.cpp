@@ -216,9 +216,7 @@ void MessagesHandler::writeStats(const char*file){
 }
 #endif
 
-void MessagesHandler::constructor(int rank,int size){
-	m_rank=rank;
-	m_size=size;
+void MessagesHandler::initialiseMembers(){
 	#ifdef COUNT_MESSAGES
 	m_receivedMessages=(uint64_t*)__Malloc(sizeof(uint64_t)*m_size);
 	if(rank==MASTER_RANK){
@@ -266,4 +264,35 @@ void MessagesHandler::freeLeftovers(){
 	}
 	__Free(m_ring,RAY_MALLOC_TYPE_PERSISTENT_MESSAGE_RING);
 	__Free(m_buffers,RAY_MALLOC_TYPE_PERSISTENT_MESSAGE_BUFFERS);
+}
+
+void MessagesHandler::constructor(int*argc,char***argv){
+	MPI_Init(argc,argv);
+	char serverName[1000];
+	int len;
+	MPI_Get_processor_name(serverName,&len);
+	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
+	MPI_Comm_size(MPI_COMM_WORLD,&m_size);
+	initialiseMembers();
+	m_processorName=serverName;
+}
+
+string MessagesHandler::getName(){
+	return m_processorName;
+}
+
+int MessagesHandler::getRank(){
+	return m_rank;
+}
+
+int MessagesHandler::getSize(){
+	return m_size;
+}
+
+void MessagesHandler::barrier(){
+	MPI_Barrier(MPI_COMM_WORLD);
+}
+
+void MessagesHandler::version(int*a,int*b){
+	MPI_Get_version(a,b);
 }

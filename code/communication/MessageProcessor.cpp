@@ -786,7 +786,7 @@ void MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_START_VERTICES_DISTRIBUTION(Message*message){
 	// wait for everyone
-	MPI_Barrier(MPI_COMM_WORLD);
+	m_messagesHandler->barrier();
 	(*m_mode_send_vertices)=true;
 	(*m_mode)=RAY_SLAVE_MODE_EXTRACT_VERTICES;
 	m_verticesExtractor->constructor(size,m_parameters);

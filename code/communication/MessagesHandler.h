@@ -36,6 +36,8 @@ using namespace std;
  * it uses persistant communication
  */
 class MessagesHandler{
+	string m_processorName;
+
 	int m_ringSize;
 	int m_head;
 	MPI_Request*m_ring;
@@ -49,9 +51,12 @@ class MessagesHandler{
 	int*m_allCounts;
 	map<int,map<int,int> > m_buckets;
 	#endif
+	
+	void initialiseMembers();
 
 public:
-	void constructor(int rank,int size);
+	void constructor(int*argc,char***argv);
+
 	/**
  *  send a message or more
  */
@@ -71,6 +76,11 @@ public:
 	bool isFinished();
 	#endif
 	void freeLeftovers();
+	string getName();
+	int getRank();
+	int getSize();
+	void barrier();
+	void version(int*a,int*b);
 };
 
 #endif
