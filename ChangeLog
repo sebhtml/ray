@@ -17,6 +17,9 @@ k-mers -- thanks to Élénie Godzaridis for the idea.
 * The Makefile can now install Ray somewhere. (make install PREFIX=prefix)
 * Structures are now packed by default. Set FORCE_PACKING=n to disable it.
 * Created subdirectories for code.
+* Ray now uses all sequences in an SFF file -- not just those matching the
+sequence key.
+
 
 = 1.4.0 =
 2011-05-30

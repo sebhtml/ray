@@ -111,7 +111,10 @@ void VertexMessenger::getReadsForRepeatedVertex(){
 			m_mateIterator++;
 		}
 		message[j]=processed;
-		Message aMessage(message,processed+j,
+/*
+ * <--vertex--><--pointer--><--numberOfMates--><--mates -->
+ */
+		Message aMessage(message,j+1+processed,
 			MPI_UNSIGNED_LONG_LONG,m_destination,RAY_MPI_TAG_VERTEX_READS_FROM_LIST,m_parameters->getRank());
 		m_outbox->push_back(aMessage);
 		m_requestedReads=true;

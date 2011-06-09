@@ -753,7 +753,7 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(2*sizeof(uint64_t));
 			int bufferPosition=0;
 			currentVertex->pack(message,&bufferPosition);
-			message[bufferPosition++]=0;
+			//message[bufferPosition++]=0;
 			int destination=vertexRank(currentVertex,size,wordSize);
 			Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_ASK_IS_ASSEMBLED,theRank);
 			(*outbox).push_back(aMessage);

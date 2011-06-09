@@ -48,18 +48,12 @@ void ReadFetcher::work(){
 		return;
 	}
 	if(!m_readsRequested){
-		int elementSize=5;
-		if(KMER_U64_ARRAY_SIZE+1>elementSize){
-			elementSize=KMER_U64_ARRAY_SIZE+1;
-		}
-
-
 		uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 		int bufferPosition=0;
 		m_vertex.pack(message2,&bufferPosition);
 		message2[bufferPosition++]=(uint64_t)m_pointer;
 		int destination=m_parameters->_vertexRank(&m_vertex);
-		Message aMessage(message2,elementSize,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,m_parameters->getRank());
+		Message aMessage(message2,bufferPosition,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,m_parameters->getRank());
 		//cout<<__func__<<" "<<__LINE__<<" Message vertex="<<m_vertex<<" pointer="<<m_pointer<<" worker="<<m_workerId<<endl;
 		//m_outbox->push_back(aMessage);
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
@@ -94,14 +88,13 @@ void ReadFetcher::work(){
 			m_done=true;
 			//cout<<__func__<<" "<<__LINE__<<" DONE "<<m_reads.size()<<" reads"<<endl;
 		}else{
-			int elementSize=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_READS);
 
 			uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 			int bufferPosition=0;
 			m_vertex.pack(message2,&bufferPosition);
 			message2[bufferPosition++]=(uint64_t)m_pointer;
 			int destination=m_parameters->_vertexRank(&m_vertex);
-			Message aMessage(message2,elementSize,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,m_parameters->getRank());
+			Message aMessage(message2,bufferPosition,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,m_parameters->getRank());
 			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 			//m_outbox->push_back(aMessage);
 			//cout<<__func__<<" "<<__LINE__<<" Message vertex="<<m_vertex<<" pointer="<<m_pointer<<" worker="<<m_workerId<<endl;

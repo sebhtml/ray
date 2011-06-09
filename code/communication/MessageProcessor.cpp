@@ -164,15 +164,19 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_READ_MATE(Message*message){
 	m_outbox->push_back(aMessage);
 }
 
+/*
+ * input: list of Kmer+ReadAnnotation*
+ * output:
+ *        list of ReadAnnotation
+ */
 void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 	//int count=message->getCount();
 	uint64_t*buffer=(uint64_t*)message->getBuffer();
 	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
 	int j=0;
-	int elementSize=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_READS);
 
-	for(int i=0;i<message->getCount();i+=elementSize){
+	for(int i=0;i<message->getCount();i+=KMER_U64_ARRAY_SIZE+1){
 		Kmer vertex;
 		int bufferPosition=i;
 		vertex.unpack(buffer,&bufferPosition);
@@ -209,7 +213,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 		}
 
 		outgoingMessage[j]=(uint64_t)ptr;
-		j+=(elementSize);
+		j+=5;
 	}
 	Message aMessage(outgoingMessage,j,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY,rank);
 	m_outbox->push_back(aMessage);
@@ -234,6 +238,9 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS_REPLY(Message*message){
 	//cout<<__func__<<endl;
 }
 
+/*
+ * <- k-mer -><- pointer ->
+ */
 void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS(Message*message){
 	//cout<<__func__<<endl;
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
@@ -242,7 +249,8 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS(Message*message){
 	vertex.unpack(incoming,&pos);
 	Kmer complement=m_parameters->_complementVertex(&vertex);
 	bool lower=vertex<complement;
-	ReadAnnotation*e=(ReadAnnotation*)incoming[1];
+	ReadAnnotation*e=(ReadAnnotation*)incoming[pos++];
+	ReadAnnotation*origin=e;
 	#ifdef ASSERT
 	assert(e!=NULL);
 	#endif
@@ -255,25 +263,25 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS(Message*message){
 		e=e->getNext();
 	}
 	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate((processed+1)*4*sizeof(uint64_t));
-	outgoingMessage[0]=processed;
+	int outputPosition=0;
+	outgoingMessage[outputPosition++]=processed;
 	//cout<<__func__<<" "<<processed<<" reads."<<endl;
 	processed=0;
-	pos=1;
-	e=(ReadAnnotation*)incoming[1];
+	e=origin;
 	while(e!=NULL&&processed<maximumToReturn){
 		if(e->isLower()==lower){
-			outgoingMessage[pos++]=e->getRank();
-			outgoingMessage[pos++]=e->getReadIndex();
-			outgoingMessage[pos++]=e->getPositionOnStrand();
-			outgoingMessage[pos++]=e->getStrand();
+			outgoingMessage[outputPosition++]=e->getRank();
+			outgoingMessage[outputPosition++]=e->getReadIndex();
+			outgoingMessage[outputPosition++]=e->getPositionOnStrand();
+			outgoingMessage[outputPosition++]=e->getStrand();
 			processed++;
 		}
 
 		e=e->getNext();
 	}
-	outgoingMessage[pos++]=(uint64_t)e;
+	outgoingMessage[outputPosition++]=(uint64_t)e;
 	//cout<<__func__<<" Pos="<<pos<<endl;
-	Message aMessage(outgoingMessage,pos,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_VERTEX_READS_REPLY,rank);
+	Message aMessage(outgoingMessage,outputPosition,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_VERTEX_READS_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -564,6 +572,10 @@ void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTICES(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY(Message*message){}
 
+
+/*
+ * <--vertex--><--pointer--><--numberOfMates--><--mates -->
+ */
 void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS_FROM_LIST(Message*message){
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
 	Kmer vertex;
