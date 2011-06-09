@@ -30,15 +30,11 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #ifndef _BzReader
 #define _BzReader
 
-#ifdef HAVE_LIBBZ2
 #include<bzlib.h>
-#endif
 #include<stdio.h>
 
 class BzReader{
-	#ifdef HAVE_LIBBZ2
 	BZFILE*m_bzFile;
-	#endif
 	FILE*m_file;
 	char*m_buffer;
 	int m_bufferSize;

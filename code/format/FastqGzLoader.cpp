@@ -22,12 +22,9 @@
 #include<format/FastqGzLoader.h>
 #include<fstream>
 
-#ifdef HAVE_LIBZ
 #include<zlib.h>
-#endif
 
 int FastqGzLoader::open(string file,int period){
-	#ifdef HAVE_LIBZ
 	m_f=gzopen(file.c_str(),"r");
 	char buffer[4096];
 	m_size=0;
@@ -45,13 +42,11 @@ int FastqGzLoader::open(string file,int period){
 	}
 	gzclose(m_f);
 	m_f=gzopen(file.c_str(),"r");
-	#endif
 	return EXIT_SUCCESS;
 }
 
 // a very simple and compact fastq.gz reader
 void FastqGzLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period){
-	#ifdef HAVE_LIBZ
 	char buffer[4096];
 	int rotatingVariable=0;
 	int loadedSequences=0;
@@ -74,7 +69,6 @@ void FastqGzLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAlloc
 	if(m_loaded==m_size){
 		gzclose(m_f);
 	}
-	#endif
 }
 
 int FastqGzLoader::getSize(){
