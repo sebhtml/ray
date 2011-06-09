@@ -1,10 +1,10 @@
-* run regressions
+* run regression tests
+* run unit tests
 * update ChangedLog (based on git log)
 * set ASSERT to no.
 * set MAXKMERLENGTH to 32
 * check version in constants.h + manual
-* compile the manual
-* test compilation on a git clone __on 6 different computers__: 
+* test compilation on a git clone __on 5 different computers__: 
  - ls30
  - iceman (colosse2)
  - cortex
@@ -13,6 +13,7 @@
 * git tag vx.y.z
 * close the milestone in trac
 * git checkout tag,
+* compile the manual
 * do a tar.bz2, compile it to test it
  - ls30
  - iceman (colosse2)
@@ -20,6 +21,6 @@
  - globe,
  - lw132
 * upload the tarball on sf
-* update the wiki page (front page + ChangeLog)
-* post an email on the list including changes (ChangeLog) and results of regressions (compressed)
+* update the web site (front page)
+* post an email on the list including changes (ChangeLog) 
 * update the seqanswer thread
