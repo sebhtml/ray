@@ -1,4 +1,4 @@
-= 1.4.1 =
+= 1.6.0 =
 2011-06-XX
 
 * Moved the code tree to subversion to git and from an in-house tree to a
@@ -14,7 +14,7 @@ k-mers -- thanks to Élénie Godzaridis for the idea.
 * Output contigs >= 100, not paths >= 100
 * Detailed the warning for unmatched 454 prefix.
 * Fixed a bug in the TLE entries in the AMOS file.
-
+* The Makefile can now install Ray somewhere.
 
 = 1.4.0 =
 2011-05-30

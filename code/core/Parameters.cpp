@@ -704,7 +704,6 @@ void Parameters::computeAverageDistances(){
 		int average=getLibraryAverageLength(library);
 		int standardDeviation=getLibraryStandardDeviation(library);
 		cout<<"Library # "<<library<<" ("<<type<<") -> average length: "<<average<<" and standard deviation: "<<standardDeviation<<endl;
-		cout<<"Library # "<<library<<" ("<<type<<") -> average length: "<<average<<" and standard deviation: "<<standardDeviation<<endl;
 		f2<<"LibraryNumber: "<<library<<endl;
 		string format="Interleaved,Paired";
 		vector<int> files=m_libraryFiles[i];

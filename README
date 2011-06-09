@@ -1,21 +1,50 @@
-Website: http://denovoassembler.sf.net
+Ray assembler
+============
 
 Ray is a parallel de novo genome assembler that utilise the message-passing interface everywhere.
 Ray is implemented using peer-to-peer communication with the message-passing interface.
 See http://www.parawiki.org/index.php/Message_Passing_Interface#Peer_to_Peer_Communication
 
 
-Mailing list: denovoassembler-users <AT> lists.sourceforge.net
+### Website
+
+http://denovoassembler.sf.net
 
 
-Installation
+### Code repository
+
+	https://github.com/sebhtml/ray
+
+### Mailing list
+
+denovoassembler-users <AT> lists.sourceforge.net
+
+### Installation
+
+
 
 
 	tar xjf Ray-x.y.z.tar.bz2
 	cd Ray-x.y.z
 	make
-	ls code/Ray
+	make install PREFIX=build9
+	ls build9
 
+
+Change the compiler
+---------------
+
+make MPICXX=/software/openmpi-1.4.3/bin/mpic++
+
+Compilation options
+------------------
+
+make MAXKMERLENGTH=128 HAVE_LIBZ=n HAVE_LIBBZ2=n HAVE_CLOCK_GETTIME=n INTEL_COMPILER=n ASSERT=n FORCE_PACKING=y
+
+see the Makefile for more.
+
+
+### Run Ray
 
 To run Ray on paired reads:
 
@@ -24,8 +53,11 @@ To run Ray on paired reads:
 	ls prefix.Scaffolds.fasta
 	ls prefix.*
 
+### Publications
+
+http://denovoassembler.sf.net/publications.html
 
 
-Code repository
 
-	https://github.com/sebhtml/ray
+
+
