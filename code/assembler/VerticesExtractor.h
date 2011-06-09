@@ -24,16 +24,16 @@
 
 #include <structures/StaticVector.h>
 #include <communication/BufferedData.h>
-#include <vector>
 #include <core/Parameters.h>
 #include <core/common_functions.h>
 #include <structures/ArrayOfReads.h>
 #include <communication/Message.h>
-#include <MemoryConsumptionReducer.h>
+#include <assembler/MemoryConsumptionReducer.h>
 #include <structures/MyForest.h>
 #include <memory/RingAllocator.h>
-#include <set>
 #include <structures/Read.h>
+#include <set>
+#include <vector>
 using namespace std;
 
 class VerticesExtractor{

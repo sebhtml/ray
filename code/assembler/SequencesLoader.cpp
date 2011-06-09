@@ -20,13 +20,13 @@ Ray
 */
 
 #include<string.h>
-#include<SequencesLoader.h>
+#include<assembler/SequencesLoader.h>
 #include<communication/Message.h>
-#include<BubbleData.h>
+#include<assembler/BubbleData.h>
 #include<assert.h>
 #include<vector>
 #include<core/common_functions.h>
-#include<Loader.h>
+#include<assembler/Loader.h>
 #include<structures/Read.h>
 #include<iostream>
 using namespace std;

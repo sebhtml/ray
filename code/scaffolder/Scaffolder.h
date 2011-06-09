@@ -28,7 +28,7 @@
 #include <memory/RingAllocator.h>
 #include <core/constants.h>
 #include <communication/VirtualCommunicator.h>
-#include <ReadFetcher.h>
+#include <assembler/ReadFetcher.h>
 using namespace std;
 
 /**

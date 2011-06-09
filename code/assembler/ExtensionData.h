@@ -22,17 +22,17 @@
 #ifndef _ExtensionData
 #define _ExtensionData
 
-#include <vector>
 #include <structures/PairedRead.h>
-#include <set>
 #include <structures/Read.h>
 #include <memory/OnDiskAllocator.h>
 #include <core/Parameters.h>
-#include <ExtensionElement.h>
-#include <map>
+#include <assembler/ExtensionElement.h>
 #include <structures/ReadAnnotation.h>
 #include <core/common_functions.h>
 #include <structures/SplayTree.h>
+#include <map>
+#include <set>
+#include <vector>
 using namespace std;
 
 class ExtensionData{

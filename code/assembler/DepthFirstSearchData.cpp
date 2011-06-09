@@ -19,7 +19,7 @@
 
 */
 
-#include<DepthFirstSearchData.h>
+#include <assembler/DepthFirstSearchData.h>
 
 /*
  * do a depth first search with max depth of maxDepth;

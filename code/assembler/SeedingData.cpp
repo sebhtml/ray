@@ -24,11 +24,11 @@
 #include <fstream>
 #include <sstream>
 #include <assert.h>
-#include <SeedingData.h>
+#include <assembler/SeedingData.h>
 #include <communication/Message.h>
 #include <mpi.h>
 #include <communication/mpi_tags.h>
-#include <SeedWorker.h>
+#include <assembler/SeedWorker.h>
 
 bool myComparator_sort(const vector<Kmer>&a,const vector<Kmer>&b){
 	return a.size()>b.size();

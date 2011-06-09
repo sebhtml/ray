@@ -22,7 +22,7 @@
 //#define PRINT_RAW_LINK
 
 #include <iostream>
-#include <ReadFetcher.h>
+#include <assembler/ReadFetcher.h>
 #include <scaffolder/Scaffolder.h>
 #include <communication/Message.h>
 #include <vector>

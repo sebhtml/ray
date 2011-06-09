@@ -31,7 +31,7 @@
 #include <structures/SplayNode.h>
 #include <structures/MyForest.h>
 #include <structures/SplayTreeIterator.h>
-#include <FusionData.h>
+#include <assembler/FusionData.h>
 #include <core/Parameters.h>
 
 void MessageProcessor::call_RAY_MPI_TAG_LOAD_SEQUENCES(Message*message){

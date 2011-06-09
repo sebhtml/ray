@@ -24,12 +24,12 @@
 #include <memory/malloc_types.h>
 #include <string.h>
 #include <structures/StaticVector.h>
-#include <TipWatchdog.h>
-#include <SeedExtender.h>
-#include <Chooser.h>
+#include <assembler/TipWatchdog.h>
+#include <assembler/SeedExtender.h>
+#include <assembler/Chooser.h>
 #include <sstream>
 #include <assert.h>
-#include <BubbleTool.h>
+#include <assembler/BubbleTool.h>
 #include <cryptography/crypto.h>
 using namespace std;
 

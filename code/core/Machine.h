@@ -25,39 +25,38 @@
 
 #include <scaffolder/Scaffolder.h>
 #include <graph/GridTable.h>
-#include<communication/MessagesHandler.h>
-#include<core/common_functions.h>
-#include<structures/MyForest.h>
-#include<structures/ArrayOfReads.h>
+#include <communication/MessagesHandler.h>
+#include <core/common_functions.h>
+#include <structures/MyForest.h>
+#include <structures/ArrayOfReads.h>
 #include <memory/OnDiskAllocator.h>
-#include<MemoryConsumptionReducer.h>
-#include<structures/StaticVector.h>
-#include<SeedingData.h>
-#include<map>
-#include<vector>
-#include<memory/RingAllocator.h>
-#include<DepthFirstSearchData.h>
-#include<TimePrinter.h>
-#include<SequencesIndexer.h>
-#include<SeedExtender.h>
-#include<SequencesLoader.h>
-#include<Library.h>
-#include<Chooser.h>
-#include<communication/MessageProcessor.h>
-#include<structures/Vertex.h>
-#include<OpenAssemblerChooser.h>
-#include<structures/SplayTree.h>
-#include<BubbleData.h>
-#include<communication/Message.h>
-#include<time.h>
-#include<structures/SplayTreeIterator.h>
-#include<set>
-#include<structures/Read.h>
-#include<core/Parameters.h>
-#include<memory/MyAllocator.h>
-#include<mpi.h>
-#include<VerticesExtractor.h>
+#include <assembler/MemoryConsumptionReducer.h>
+#include <structures/StaticVector.h>
+#include <assembler/SeedingData.h>
+#include <map>
+#include <vector>
+#include <memory/RingAllocator.h>
+#include <assembler/DepthFirstSearchData.h>
+#include <assembler/TimePrinter.h>
+#include <assembler/SequencesIndexer.h>
+#include <assembler/SeedExtender.h>
+#include <assembler/SequencesLoader.h>
+#include <assembler/Library.h>
+#include <assembler/Chooser.h>
+#include <communication/MessageProcessor.h>
+#include <structures/Vertex.h>
+#include <assembler/OpenAssemblerChooser.h>
+#include <structures/SplayTree.h>
+#include <assembler/BubbleData.h>
+#include <communication/Message.h>
+#include <structures/SplayTreeIterator.h>
+#include <structures/Read.h>
+#include <core/Parameters.h>
+#include <memory/MyAllocator.h>
+#include <assembler/VerticesExtractor.h>
 #include <format/Amos.h>
+#include <set>
+#include <time.h>
 
 using namespace std;
 
@@ -251,7 +250,6 @@ class Machine{
 	void checkRequests();
 	void processData();
 	int getRank();
-	void receiveWelcomeMessage(MPI_Status*status);
 	
 	void assignMasterHandlers();
 	void assignSlaveHandlers();

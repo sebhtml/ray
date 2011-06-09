@@ -17,23 +17,18 @@
     along with this program (COPYING).  
 	see <http://www.gnu.org/licenses/>
 
-
- 	Funding:
-
-Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Research (Master's award: 200910MDR-215249-172830 and Doctoral award: 200902CGM-204212-172830).
-
 */
 
 #ifndef _LibraryWorker
 #define _LibraryWorker
 
-#include <map>
-#include <stdint.h>
-#include <ExtensionData.h>
+#include <assembler/SeedingData.h>
+#include <assembler/ExtensionData.h>
 #include <memory/OnDiskAllocator.h>
-#include <SeedingData.h>
 #include <communication/VirtualCommunicator.h>
 #include <memory/RingAllocator.h>
+#include <map>
+#include <stdint.h>
 using namespace std;
 
 class LibraryElement{

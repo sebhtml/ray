@@ -19,8 +19,6 @@
 
 */
 
-// TYPE: ALGORITHM
-
 #ifndef _SeedExtender
 #define _SeedExtender
 
@@ -30,19 +28,19 @@ class DepthFirstSearchData;
 #include <core/common_functions.h>
 #include <communication/Message.h>
 #include <vector>
-#include <VertexMessenger.h>
-#include <ExtensionData.h>
+#include <assembler/VertexMessenger.h>
+#include <assembler/ExtensionData.h>
 #include <core/Parameters.h>
 #include <memory/RingAllocator.h>
 #include <memory/MyAllocator.h>
-#include <ReadFetcher.h>
+#include <assembler/ReadFetcher.h>
 #include <memory/OnDiskAllocator.h>
-#include <FusionData.h>
-#include <BubbleData.h>
-#include <DepthFirstSearchData.h>
-#include <BubbleTool.h>
-#include <OpenAssemblerChooser.h>
-#include <EarlyStoppingTechnology.h>
+#include <assembler/FusionData.h>
+#include <assembler/BubbleData.h>
+#include <assembler/DepthFirstSearchData.h>
+#include <assembler/BubbleTool.h>
+#include <assembler/OpenAssemblerChooser.h>
+#include <assembler/EarlyStoppingTechnology.h>
 #include <graph/GridTable.h>
 
 using namespace std;

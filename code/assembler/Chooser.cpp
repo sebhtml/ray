@@ -19,7 +19,7 @@
 
 */
 
-#include<Chooser.h>
+#include<assembler/Chooser.h>
 #include<core/common_functions.h>
 
 void Chooser::chooseWithPairedReads(ExtensionData*m_ed,

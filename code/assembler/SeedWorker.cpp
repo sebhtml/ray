@@ -19,7 +19,7 @@
 
 */
 
-#include <SeedWorker.h>
+#include <assembler/SeedWorker.h>
 #include <assert.h>
 #include <communication/Message.h>
 #include <communication/mpi_tags.h>

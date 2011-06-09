@@ -20,7 +20,7 @@
 */
 
 #include <structures/Read.h>
-#include <ExtensionElement.h>
+#include <assembler/ExtensionElement.h>
 #include <string.h>
 
 void ExtensionElement::setSequence(const char*b,MyAllocator*allocator){

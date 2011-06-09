@@ -22,7 +22,7 @@
 #ifndef _OpenAssemblerChooser
 #define _OpenAssemblerChooser
 
-#include<Chooser.h> // for IMPOSSIBLE_CHOICE
+#include <assembler/Chooser.h> // for IMPOSSIBLE_CHOICE
 
 /**
  * de Bruijn heuristic to choose extension direction in a graph, described in paper 

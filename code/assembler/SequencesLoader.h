@@ -26,15 +26,15 @@
 
 #include <core/Parameters.h>
 #include <memory/RingAllocator.h>
-#include <Loader.h>
+#include <assembler/Loader.h>
 #include <memory/MyAllocator.h>
 #include <memory/OnDiskAllocator.h>
 #include <structures/StaticVector.h>
-#include <vector>
 #include <communication/Message.h>
 #include <structures/Read.h>
-#include <BubbleData.h>
+#include <assembler/BubbleData.h>
 #include <time.h>
+#include <vector>
 using namespace std;
 
 class SequencesLoader{

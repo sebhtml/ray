@@ -17,15 +17,10 @@
     along with this program (COPYING).  
 	see <http://www.gnu.org/licenses/>
 
-
- 	Funding:
-
-Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Research (Master's award: 200910MDR-215249-172830 and Doctoral award: 200902CGM-204212-172830).
-
 */
 
 #include <structures/ReadAnnotation.h>
-#include <Library.h>
+#include <assembler/Library.h>
 #include <communication/mpi_tags.h>
 #include <sstream>
 #include <core/common_functions.h>

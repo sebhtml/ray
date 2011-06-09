@@ -19,7 +19,7 @@
 
 */
 
-#include <MemoryConsumptionReducer.h>
+#include <assembler/MemoryConsumptionReducer.h>
 #include <graph/CoverageDistribution.h>
 #include <stack>
 #include <string.h>

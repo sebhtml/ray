@@ -19,7 +19,7 @@
 
 */
 
-#include <IndexerWorker.h>
+#include <assembler/IndexerWorker.h>
 #include <string.h>
 
 void IndexerWorker::constructor(int sequenceId,char*sequence,Parameters*parameters,RingAllocator*outboxAllocator,

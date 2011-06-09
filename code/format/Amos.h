@@ -25,13 +25,13 @@
 #include <structures/StaticVector.h>
 #include <memory/RingAllocator.h>
 #include <stdio.h>
-#include <FusionData.h>
-#include <ExtensionData.h>
+#include <assembler/FusionData.h>
+#include <assembler/ExtensionData.h>
 #include <scaffolder/Scaffolder.h>
-#include <vector>
-#include <ReadFetcher.h>
+#include <assembler/ReadFetcher.h>
 #include <stdint.h>
 #include <communication/VirtualCommunicator.h>
+#include <vector>
 using namespace std;
 
 /**

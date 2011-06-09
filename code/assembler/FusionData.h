@@ -30,11 +30,11 @@ class SeedingData;
 #include <set>
 #include <structures/StaticVector.h>
 #include <map>
-#include <SeedingData.h>
-#include <ExtensionData.h>
+#include <assembler/SeedingData.h>
+#include <assembler/ExtensionData.h>
 #include <memory/RingAllocator.h>
 #include <communication/BufferedData.h>
-#include <TimePrinter.h>
+#include <assembler/TimePrinter.h>
 using namespace std;
 
 class FusionData{

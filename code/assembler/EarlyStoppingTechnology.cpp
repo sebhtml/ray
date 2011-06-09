@@ -21,7 +21,7 @@
 
 #include<set>
 #include<iostream>
-#include<EarlyStoppingTechnology.h>
+#include<assembler/EarlyStoppingTechnology.h>
 using namespace std;
 
 void EarlyStoppingTechnology::addDirections(vector<Direction>*directions){

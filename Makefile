@@ -94,7 +94,10 @@ LDFLAGS-$(HAVE_CLOCK_GETTIME) += -lrt
 CXXFLAGS += $(CXXFLAGS-y)
 LDFLAGS += $(LDFLAGS-y)
 
-TARGET=code/Ray
+
+TARGET-$(VIRTUAL_SEQUENCER) += code/VirtualNextGenSequencer
+
+TARGET=code/Ray $(TARGET-y)
 
 #memory
 obj-y += code/memory/OnDiskAllocator.o code/memory/ReusableMemoryStore.o code/memory/MyAllocator.o code/memory/RingAllocator.o \
@@ -133,14 +136,17 @@ code/structures/StaticVector.o code/structures/Vertex.o
 #scaffolder
 obj-y += code/scaffolder/Scaffolder.o 
 
-#unclassified
-obj-y += code/VertexMessenger.o \
-code/ReadFetcher.o code/LibraryWorker.o code/IndexerWorker.o  \
-code/SeedWorker.o code/ExtensionElement.o \
-code/DepthFirstSearchData.o code/MemoryConsumptionReducer.o  code/SeedingData.o \
-code/BubbleTool.o code/Chooser.o code/EarlyStoppingTechnology.o code/FusionData.o code/Library.o code/Loader.o \
-code/OpenAssemblerChooser.o code/SeedExtender.o code/SequencesIndexer.o code/SequencesLoader.o \
-code/TimePrinter.o code/TipWatchdog.o code/VerticesExtractor.o  code/ray_main.o code/ExtensionData.o 
+#assembler
+obj-y += code/assembler/VertexMessenger.o \
+code/assembler/ReadFetcher.o code/assembler/LibraryWorker.o code/assembler/IndexerWorker.o  \
+code/assembler/SeedWorker.o code/assembler/ExtensionElement.o \
+code/assembler/DepthFirstSearchData.o code/assembler/MemoryConsumptionReducer.o  code/assembler/SeedingData.o \
+code/assembler/BubbleTool.o code/assembler/Chooser.o code/assembler/EarlyStoppingTechnology.o \
+code/assembler/FusionData.o code/assembler/Library.o code/assembler/Loader.o \
+code/assembler/OpenAssemblerChooser.o code/assembler/SeedExtender.o code/assembler/SequencesIndexer.o \
+code/assembler/SequencesLoader.o \
+code/assembler/TimePrinter.o code/assembler/TipWatchdog.o code/assembler/VerticesExtractor.o \
+code/assembler/ray_main.o code/assembler/ExtensionData.o 
 
 # inference rule
 %.o: %.cpp
@@ -152,6 +158,9 @@ all: $(TARGET)
 # how to make Ray
 $(TARGET): $(obj-y)
 	$(MPICXX) $(LDFLAGS) $(obj-y) -o $@
+
+code/VirtualNextGenSequencer: code/simulation/simulatePairedReads.cpp
+	$(CXX) -o $@ $< $(CXXFLAGS)
 
 clean:
 	rm -f $(TARGET) $(obj-y)

@@ -17,16 +17,11 @@
     along with this program (COPYING).  
 	see <http://www.gnu.org/licenses/>
 
-
- 	Funding:
-
-Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Research (Master's award: 200910MDR-215249-172830 and Doctoral award: 200902CGM-204212-172830).
-
 */
 
-#include <LibraryWorker.h>
+#include <assembler/LibraryWorker.h>
 #include <communication/Message.h>
-#include <SeedingData.h>
+#include <assembler/SeedingData.h>
 #include <map>
 #include <mpi.h>
 #include <assert.h>

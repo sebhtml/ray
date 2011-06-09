@@ -20,7 +20,7 @@
 */
 
 #include <assert.h>
-#include <FusionData.h>
+#include <assembler/FusionData.h>
 #include <sstream>
 #include <communication/Message.h>
 #include <memory/malloc_types.h>

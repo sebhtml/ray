@@ -14,7 +14,9 @@ k-mers -- thanks to Élénie Godzaridis for the idea.
 * Output contigs >= 100, not paths >= 100
 * Detailed the warning for unmatched 454 prefix.
 * Fixed a bug in the TLE entries in the AMOS file.
-* The Makefile can now install Ray somewhere.
+* The Makefile can now install Ray somewhere. (make install PREFIX=prefix)
+* Structures are now packed by default. Set FORCE_PACKING=n to disable it.
+* Created subdirectories for code.
 
 = 1.4.0 =
 2011-05-30

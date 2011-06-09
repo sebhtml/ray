@@ -26,27 +26,27 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 #include <memory/malloc_types.h>
 #include <graph/GridTableIterator.h>
-#include<cryptography/crypto.h>
-#include<structures/SplayNode.h>
-#include<mpi.h>
+#include <cryptography/crypto.h>
+#include <structures/SplayNode.h>
 #include <core/Machine.h>
-#include<VerticesExtractor.h>
-#include<sstream>
-#include<communication/Message.h>
-#include<time.h>
-#include<TipWatchdog.h>
-#include<BubbleTool.h>
-#include<assert.h>
-#include<core/common_functions.h>
-#include<iostream>
-#include<fstream>
-#include<graph/CoverageDistribution.h>
-#include<string.h>
-#include<structures/SplayTreeIterator.h>
-#include<structures/Read.h>
-#include<Loader.h>
-#include<memory/MyAllocator.h>
-#include<algorithm>
+#include <assembler/VerticesExtractor.h>
+#include <sstream>
+#include <communication/Message.h>
+#include <time.h>
+#include <assembler/TipWatchdog.h>
+#include <assembler/BubbleTool.h>
+#include <assert.h>
+#include <core/common_functions.h>
+#include <iostream>
+#include <fstream>
+#include <graph/CoverageDistribution.h>
+#include <string.h>
+#include <structures/SplayTreeIterator.h>
+#include <structures/Read.h>
+#include <assembler/Loader.h>
+#include <memory/MyAllocator.h>
+#include <algorithm>
+#include <mpi.h>
 
 using namespace std;
 
@@ -99,6 +99,7 @@ void Machine::start(){
 	m_messageSentForVerticesDistribution=false;
 	m_sequence_ready_machines=0;
 	m_isFinalFusion=false;
+
 
 	MPI_Init(&m_argc,&m_argv);
 

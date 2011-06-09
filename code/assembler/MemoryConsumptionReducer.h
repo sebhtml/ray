@@ -22,18 +22,18 @@
 #ifndef _MemoryConsumptionReducer
 #define _MemoryConsumptionReducer
 
-#include<structures/MyForestIterator.h>
-#include<structures/MyForest.h>
+#include <structures/MyForestIterator.h>
+#include <structures/MyForest.h>
 #include <graph/GridTable.h>
 #include <graph/GridTableIterator.h>
-#include<core/Parameters.h>
-#include<memory/RingAllocator.h>
-#include<communication/BufferedData.h>
-#include<set>
-#include<vector>
-#include<DepthFirstSearchData.h>
-#include<structures/StaticVector.h>
-#include <SeedingData.h>
+#include <core/Parameters.h>
+#include <memory/RingAllocator.h>
+#include <communication/BufferedData.h>
+#include <assembler/DepthFirstSearchData.h>
+#include <assembler/SeedingData.h>
+#include <structures/StaticVector.h>
+#include <set>
+#include <vector>
 using namespace std;
 
 class MemoryConsumptionReducer{

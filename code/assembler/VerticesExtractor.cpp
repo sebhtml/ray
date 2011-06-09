@@ -21,7 +21,7 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <VerticesExtractor.h>
+#include <assembler/VerticesExtractor.h>
 #include <assert.h>
 #include <communication/Message.h>
 #include <time.h>

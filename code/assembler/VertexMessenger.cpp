@@ -24,12 +24,12 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 */
 
-#include <assert.h>
-#include <VertexMessenger.h>
+#include <assembler/VertexMessenger.h>
+#include <communication/Message.h>
 #include <stdint.h>
+#include <assert.h>
 #include <stdio.h>
 #include <iostream>
-#include <communication/Message.h>
 using namespace std;
 
 void VertexMessenger::work(){

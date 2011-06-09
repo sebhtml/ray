@@ -19,12 +19,12 @@
 
 */
 
-
 #ifndef _TipWatchdog
 #define _TipWatchdog
-#include<ExtensionData.h>
-#include<DepthFirstSearchData.h>
-#include<BubbleData.h>
+
+#include <assembler/ExtensionData.h>
+#include <assembler/DepthFirstSearchData.h>
+#include <assembler/BubbleData.h>
 
 class TipWatchdog{
 public:

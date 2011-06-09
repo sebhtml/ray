@@ -19,12 +19,12 @@
 
 */
 
-#include <SequencesIndexer.h>
+#include <assembler/SequencesIndexer.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <core/Parameters.h>
-#include <Loader.h>
+#include <assembler/Loader.h>
 #include <core/common_functions.h>
 #include <communication/Message.h>
 

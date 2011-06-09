@@ -1,6 +1,7 @@
 * run regressions
 * update ChangedLog (based on git log)
 * set ASSERT to no.
+* set MAXKMERLENGTH to 32
 * check version in constants.h + manual
 * compile the manual
 * test compilation on a git clone __on 6 different computers__: 

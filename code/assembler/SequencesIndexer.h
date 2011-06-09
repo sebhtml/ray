@@ -19,24 +19,23 @@
 
 */
 
-// TYPE: ALGORITHM
-
 #ifndef _SequencesIndexer
 #define _SequencesIndexer
 
-#include <core/common_functions.h>
+#include <assembler/IndexerWorker.h>
 #include <communication/Message.h>
-#include <structures/StaticVector.h>
-#include <vector>
-#include <structures/ArrayOfReads.h>
 #include <communication/BufferedData.h>
+#include <communication/VirtualCommunicator.h>
+#include <core/Parameters.h>
+#include <core/common_functions.h>
 #include <memory/MyAllocator.h>
 #include <memory/RingAllocator.h>
-#include <communication/VirtualCommunicator.h>
-#include <structures/Read.h>
 #include <memory/OnDiskAllocator.h>
-#include <IndexerWorker.h>
-#include <core/Parameters.h>
+#include <structures/StaticVector.h>
+#include <structures/ArrayOfReads.h>
+#include <structures/Read.h>
+#include <vector>
+using namespace std;
 
 class SequencesIndexer{
 	int m_rank;
