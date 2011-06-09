@@ -22,6 +22,8 @@ HAVE_LIBBZ2=yes
 HAVE_CLOCK_GETTIME=yes
 
 # use Intel's compiler
+# the name of the Intel MPI C++ compiler is mpiicpc
+# Open-MPI and MPICH2 utilise mpic++ for the name.
 INTEL_COMPILER=no
 
 # pack structures to reduce memory usage
@@ -29,6 +31,7 @@ INTEL_COMPILER=no
 # won't work on Itanium and on Sparc
 # The operating system's kernel must also allow the retrieval of 8-byte chunks sitting
 # between two memory cache pages. Linux can do that, but I don't know for others.
+# if you are not sure, type uname -a to get your processor architecture.
 FORCE_PACKING=yes
 
 # compile assertions

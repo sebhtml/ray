@@ -1,12 +1,23 @@
 * run regressions
-* update ChangedLog (based on svn log and trac milestone)
+* update ChangedLog (based on git log)
+* set ASSERT to no.
 * check version in constants.h + manual
 * compile the manual
-* test compilation on a svn export using Makefile
-* svn cp trunk tags/<version>
+* test compilation on a git clone __on 6 different computers__: 
+ - ls30
+ - iceman (colosse2)
+ - cortex
+ - globe,
+ - lw132
+* git tag vx.y.z
 * close the milestone in trac
-* svn export
+* git checkout tag,
 * do a tar.bz2, compile it to test it
+ - ls30
+ - iceman (colosse2)
+ - cortex
+ - globe,
+ - lw132
 * upload the tarball on sf
 * update the wiki page (front page + ChangeLog)
 * post an email on the list including changes (ChangeLog) and results of regressions (compressed)
