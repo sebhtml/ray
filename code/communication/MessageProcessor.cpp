@@ -694,7 +694,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 		string kmerStr=idToWord(&l,m_parameters->getWordSize());
 
 /*
-		if(kmerStr=="GACTTGATTAGACAAGAAGTT"){
+		if(kmerStr=="TTTGAAGGATTTTTTCATCAA"){
 			cout<<__func__<<" Kmer received from "<<message->getSource()<<" i="<<i<<" "<<kmerStr<<endl;
 			l.print();
 		}
@@ -1002,7 +1002,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message)
 		string kmerStr=idToWord(&vertex,m_parameters->getWordSize());
 
 /*
-		if(kmerStr=="GACTTGATTAGACAAGAAGTT"){
+		if(kmerStr=="TTTGAAGGATTTTTTCATCAA"){
 			cout<<__func__<<" Source: "<<message->getSource()<<" i="<<i<<" Kmer: "<<kmerStr<<endl;
 			vertex.print();
 		}
