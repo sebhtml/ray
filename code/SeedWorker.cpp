@@ -225,10 +225,11 @@ void SeedWorker::do_1_1_test(){
 					m_SEEDING_ingoingEdgeIndex++;
 					m_ingoingCoverages.push_back(m_SEEDING_receivedVertexCoverage);
 				}else if(!m_SEEDING_vertexCoverageRequested){
-					uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
+					uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(KMER_U64_ARRAY_SIZE*sizeof(uint64_t));
 					int bufferPosition=0;
 					vertex.pack(message,&bufferPosition);
-					Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,vertexRank(&vertex,getSize(),m_wordSize),RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,getRank());
+					Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,vertexRank(&vertex,getSize(),m_wordSize),
+						RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,getRank());
 					m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 					m_SEEDING_vertexCoverageRequested=true;
 				}else if(m_virtualCommunicator->isMessageProcessed(m_workerIdentifier)){
@@ -245,11 +246,12 @@ void SeedWorker::do_1_1_test(){
 					m_SEEDING_outgoingEdgeIndex++;
 					m_outgoingCoverages.push_back(m_SEEDING_receivedVertexCoverage);
 				}else if(!m_SEEDING_vertexCoverageRequested){
-					uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
+					uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(KMER_U64_ARRAY_SIZE*sizeof(uint64_t));
 					int bufferPosition=0;
 					vertex.pack(message,&bufferPosition);
 					Message aMessage(message,bufferPosition,
-						MPI_UNSIGNED_LONG_LONG,vertexRank(&vertex,getSize(),m_wordSize),RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,getRank());
+						MPI_UNSIGNED_LONG_LONG,vertexRank(&vertex,getSize(),m_wordSize),
+						RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,getRank());
 					m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 					m_SEEDING_vertexCoverageRequested=true;
 				}else if(m_virtualCommunicator->isMessageProcessed(m_workerIdentifier)){
