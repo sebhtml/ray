@@ -170,10 +170,12 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				assert((*receivedVertexCoverage)<=m_parameters->getMaximumAllowedCoverage());
 				#endif
 			}else if(!(*vertexCoverageRequested)){
-				uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
+				uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(KMER_U64_ARRAY_SIZE*sizeof(uint64_t));
 				int bufferPosition=0;
 				kmer.pack(message,&bufferPosition);
 				int dest=vertexRank(&kmer,size,wordSize);
+				//cout<<__func__<<" Destination: "<<dest<<" RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE "<<idToWord(&kmer,m_parameters->getWordSize())<<endl;
+
 				Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
 				(*outbox).push_back(aMessage);
 				(*vertexCoverageRequested)=true;

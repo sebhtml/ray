@@ -65,10 +65,12 @@ void DepthFirstSearchData::depthFirstSearch(Kmer root,Kmer a,int maxDepth,
 			(*vertexCoverageRequested)=true;
 			(*vertexCoverageReceived)=false;
 			
-			uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
+			uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(KMER_U64_ARRAY_SIZE*sizeof(uint64_t));
 			int j=0;
 			vertexToVisit.pack(message,&j);
 			int dest=vertexRank(&vertexToVisit,size,wordSize);
+			
+			//cout<<__func__<<" "<<__LINE__<<" Destination: "<<dest<<" RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE "<<idToWord(&vertexToVisit,wordSize)<<endl;
 			Message aMessage(message,j,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
 			(*outbox).push_back(aMessage);
 		}else if((*vertexCoverageReceived)){
@@ -189,10 +191,11 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(Kmer a,int maxDepth,
 			(*vertexCoverageRequested)=true;
 			(*vertexCoverageReceived)=false;
 			
-			uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
+			uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(KMER_U64_ARRAY_SIZE*sizeof(uint64_t));
 			int bufferPosition=0;
 			vertexToVisit.pack(message,&bufferPosition);
 			int dest=vertexRank(&vertexToVisit,size,parameters->getWordSize());
+			//cout<<__func__<<" "<<__LINE__<<" Destination: "<<dest<<" RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE "<<idToWord(&vertexToVisit,parameters->getWordSize())<<endl;
 			Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
 			(*outbox).push_back(aMessage);
 		}else if((*vertexCoverageReceived)){

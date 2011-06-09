@@ -134,6 +134,9 @@ int main(int argc,char**argv){
 	Kmer comp=complementVertex(&id,wordSize,false);
 	string result2=idToWord(&comp,wordSize);
 	assertEquals(rc,result2);
+
+	Kmer rcId=wordId(rc.c_str());
+	assert(rcId==comp);
 	
 /*
 	for(int i=0;i<seq.length();i++){

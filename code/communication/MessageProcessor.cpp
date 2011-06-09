@@ -692,9 +692,8 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 		l.unpack(incoming,&pos);
 
 		string kmerStr=idToWord(&l,m_parameters->getWordSize());
-
 /*
-		if(kmerStr=="TTTGAAGGATTTTTTCATCAA"){
+		if(kmerStr=="GCTCTTTGATTTTCATTGAGT"){
 			cout<<__func__<<" Kmer received from "<<message->getSource()<<" i="<<i<<" "<<kmerStr<<endl;
 			l.print();
 		}
@@ -993,7 +992,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message)
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
 	int count=message->getCount();
-	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(count*1*sizeof(uint64_t));
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(count*sizeof(uint64_t));
 	for(int i=0;i<count;i+=KMER_U64_ARRAY_SIZE){
 		Kmer vertex;
 		int bufferPosition=i;
@@ -1002,7 +1001,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message)
 		string kmerStr=idToWord(&vertex,m_parameters->getWordSize());
 
 /*
-		if(kmerStr=="TTTGAAGGATTTTTTCATCAA"){
+		if(kmerStr=="GCTCTTTGATTTTCATTGAGT"){
 			cout<<__func__<<" Source: "<<message->getSource()<<" i="<<i<<" Kmer: "<<kmerStr<<endl;
 			vertex.print();
 		}
@@ -1041,13 +1040,13 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES(Message*me
 		int bufferPosition=i;
 		vertex.unpack(incoming,&bufferPosition);
 		vector<Kmer> outgoingEdges=m_subgraph->find(&vertex)->getOutgoingEdges(&vertex,*m_wordSize);
-		int outputPosition=5*i;
+		int outputPosition=(1+4*KMER_U64_ARRAY_SIZE)*i;
 		message2[outputPosition++]=outgoingEdges.size();
 		for(int j=0;j<(int)outgoingEdges.size();j++){
 			outgoingEdges[j].pack(message2,&outputPosition);
 		}
 	}
-	Message aMessage(message2,(count/KMER_U64_ARRAY_SIZE)*5,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY,rank);
+	Message aMessage(message2,(count/KMER_U64_ARRAY_SIZE)*(1+4*KMER_U64_ARRAY_SIZE),MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
