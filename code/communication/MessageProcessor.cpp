@@ -690,7 +690,16 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 		Kmer l;
 		int pos=i;
 		l.unpack(incoming,&pos);
-		//cout<<"Kmer received from "<<message->getSource()<<" i="<<i<<" "<<idToWord(&l,m_parameters->getWordSize())<<endl;
+
+		string kmerStr=idToWord(&l,m_parameters->getWordSize());
+
+/*
+		if(kmerStr=="GACTTGATTAGACAAGAAGTT"){
+			cout<<__func__<<" Kmer received from "<<message->getSource()<<" i="<<i<<" "<<kmerStr<<endl;
+			l.print();
+		}
+*/
+
 		if((*m_last_value)!=(int)m_subgraph->size() && (int)m_subgraph->size()%100000==0){
 			(*m_last_value)=m_subgraph->size();
 			printf("Rank %i has %i vertices\n",rank,(int)m_subgraph->size());
@@ -989,6 +998,16 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message)
 		Kmer vertex;
 		int bufferPosition=i;
 		vertex.unpack(incoming,&bufferPosition);
+
+		string kmerStr=idToWord(&vertex,m_parameters->getWordSize());
+
+/*
+		if(kmerStr=="GACTTGATTAGACAAGAAGTT"){
+			cout<<__func__<<" Source: "<<message->getSource()<<" i="<<i<<" Kmer: "<<kmerStr<<endl;
+			vertex.print();
+		}
+*/
+
 		Vertex*node=m_subgraph->find(&vertex);
 		#ifdef ASSERT
 		if(node==NULL){
