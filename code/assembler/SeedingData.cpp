@@ -205,7 +205,7 @@ void SeedingData::constructor(SeedExtender*seedExtender,int rank,int size,Static
 	m_parameters=parameters;
 	m_wordSize=m_parameters->getWordSize();
 	#ifdef ASSERT
-	assert(m_wordSize>=15&&m_wordSize<=32);
+	assert(m_wordSize>=15&&m_wordSize<=MAXKMERLENGTH);
 	#endif
 	m_subgraph=subgraph;
 	m_colorSpaceMode=colorSpaceMode;
