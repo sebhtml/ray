@@ -191,11 +191,15 @@ void SffLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator
 
 		string sequence=Bases;
 		string key=key_sequence;
+/*
+ Note: Now Ray just uses all sequence in the SFF file..
+
 		if(sequence.substr(0,key_length)!=key){
 			(cout)<<"Warning: the sequence key was "<<sequence.substr(0,key_length)<<", expected "<<key<<" (from the SFF header)"<<endl;
 			cout<<"Skipping sequence."<<endl;
 			continue;
 		}
+*/
 		Read read;
 		read.constructor(sequence.substr(first-1,last-first+1).c_str(),seqMyAllocator,true);
 		reads->push_back(&read);
