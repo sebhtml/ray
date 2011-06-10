@@ -21,6 +21,8 @@ k-mers -- thanks to Élénie Godzaridis for the idea.
 sequence key.
 * Ray now estimates the genome length in
 RayOutput.CoverageDistributionAnalysis.txt.
+* Fixed an integer overflow in CoverageDistribution when the number of k-mers
+occuring once is very large.
 
 
 = 1.4.0 =

@@ -25,6 +25,8 @@
 #include <map>
 using namespace std;
 
+//#define DEBUG_CoverageDistribution
+
 CoverageDistribution::CoverageDistribution(map<int,uint64_t>*distributionOfCoverage,string*file){
 	if(file!=NULL){
 		ofstream f;
@@ -65,18 +67,37 @@ void CoverageDistribution::findPeak(vector<int>*x,vector<uint64_t>*y){
 		int64_t a=(y->at(i)-y->at(i-1));
 		int b=(x->at(i)-x->at(i-1));
 		double derivative=(0.0+a)/(0.0+b);
-		//cout<<x->at(i)<<" "<<derivative<<endl;
+		#ifdef DEBUG_CoverageDistribution
+		cout<<x->at(i)<<" "<<derivative<<endl;
+		#endif
 		derivatives.push_back(derivative);
 	}
 	
 	vector<int> maximums;
+/*
+ * The number of previous derivative that must go strictly up
+ */
+	int parameter=2;
 
 	for(int i=1;i<n;i++){
-		if(x->at(i)<4){
+		int firstToVerify=i-parameter;
+		if(firstToVerify<1){
+			continue;
+		}
+		int lastToVerify=i-1;
+		bool goingUp=true;
+		for(int j=firstToVerify;j<=lastToVerify;j++){
+			if(derivatives[j]<0){
+				goingUp=false;
+			}
+		}
+		if(!goingUp){
 			continue;
 		}
 		if(derivatives[i-1]>0&&derivatives[i]<0){
-			//cout<<"MaximumAt "<<x->at(i)<<" Self="<<derivatives[i]<<" Previous="<<derivatives[i-1]<<endl;
+			#ifdef DEBUG_CoverageDistribution
+			cout<<"MaximumAt "<<x->at(i)<<" Self="<<derivatives[i]<<" Previous="<<derivatives[i-1]<<endl;
+			#endif
 			maximums.push_back(i);
 		}
 	}
@@ -87,7 +108,9 @@ void CoverageDistribution::findPeak(vector<int>*x,vector<uint64_t>*y){
 	for(int i=0;i<(int)maximums.size();i++){
 		if(y->at(maximums[i])>y->at(peakI)){
 			peakI=maximums[i];
-			//cout<<"NewPeak= "<<x->at(peakI)<<endl;
+			#ifdef DEBUG_CoverageDistribution
+			cout<<"NewPeak= "<<x->at(peakI)<<endl;
+			#endif
 		}
 	}
 	int minI=peakI;
