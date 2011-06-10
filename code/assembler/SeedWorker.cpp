@@ -19,6 +19,7 @@
 
 */
 
+#include <core/constants.h>
 #include <assembler/SeedWorker.h>
 #include <assert.h>
 #include <communication/Message.h>

@@ -24,6 +24,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 */
 
+#include <core/constants.h>
 #include<structures/StaticVector.h>
 #include<assert.h>
 #include <core/common_functions.h>

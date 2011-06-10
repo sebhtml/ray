@@ -19,6 +19,7 @@
 
 */
 
+#include <core/constants.h>
 #include <communication/VirtualCommunicator.h>
 #include <algorithm>
 #include <fstream>

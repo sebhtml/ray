@@ -36,6 +36,11 @@ see <http://www.gnu.org/licenses/>
 #define __STDC_FORMAT_MACROS /* for PRIu64 */
 #endif
 
+#ifdef OS_WIN
+#include <xiosbase>
+#include <stdexcept>
+#endif
+
 #ifdef FORCE_PACKING
 #ifdef __GNUC__
 #define ATTRIBUTE_PACKED  __attribute__ ((packed))

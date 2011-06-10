@@ -25,6 +25,8 @@ RayOutput.CoverageDistributionAnalysis.txt.
 occuring once is very large.
 * Added exit code EXIT_NOMOREMEMORY=42 as suggested by Hannes Pouseele (applied-maths.com).
 * Fixed the an access violation on Windows. Bug reported by Hannes Pouseele (applied-maths.com).
+* Fixed compilation errors for Microsoft Visual C++ (xiosbase and stdexcept) 
+Bug reported by Hannes Pouseele (applied-maths.com>)
 
 
 = 1.4.0 =

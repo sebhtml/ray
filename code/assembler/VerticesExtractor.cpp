@@ -19,6 +19,7 @@
 
 */
 
+#include <core/constants.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assembler/VerticesExtractor.h>
