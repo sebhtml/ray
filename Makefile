@@ -177,7 +177,7 @@ install: all
 	mkdir -p $(PREFIX)
 	cp $(TARGET) $(PREFIX)
 	cp InstructionManual.pdf $(PREFIX)
-	cp README $(PREFIX)
-	cp LICENSE $(PREFIX)
-	cp ChangeLog $(PREFIX)
+	cp README.md $(PREFIX)/README.doc
+	cp LICENSE $(PREFIX)/LICENSE.doc
+	cp ChangeLog $(PREFIX)/ChangeLog.doc
 
