@@ -1,4 +1,4 @@
-#include <CoverageDistribution.h>
+#include <graph/CoverageDistribution.h>
 #include <string>
 #include <map>
 #include <fstream>

@@ -62,7 +62,7 @@ void CoverageDistribution::findPeak(vector<int>*x,vector<uint64_t>*y){
 	int n=x->size();
 	derivatives.push_back(0);
 	for(int i=1;i<n;i++){
-		int a=(y->at(i)-y->at(i-1));
+		int64_t a=(y->at(i)-y->at(i-1));
 		int b=(x->at(i)-x->at(i-1));
 		double derivative=(0.0+a)/(0.0+b);
 		//cout<<x->at(i)<<" "<<derivative<<endl;
