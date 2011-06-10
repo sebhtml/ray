@@ -430,8 +430,11 @@ void Parameters::parseCommands(){
 				m_wordSize=15;
 			}
 			if(m_wordSize>MAXKMERLENGTH){
-				cout<<"Rank "<<MASTER_RANK<<": Warning, k > MAXKMERLENGTH"<<endl;
-				cout<<"Rank "<<MASTER_RANK<<": Change MAXKMERLENGTH in the Makefile and recompile Ray."<<endl;
+				if(m_rank==MASTER_RANK){
+					cout<<endl;
+					cout<<"Rank "<<MASTER_RANK<<": Warning, k > MAXKMERLENGTH"<<endl;
+					cout<<"Rank "<<MASTER_RANK<<": Change MAXKMERLENGTH in the Makefile and recompile Ray."<<endl;
+				}
 				m_wordSize=MAXKMERLENGTH;
 			}
 
