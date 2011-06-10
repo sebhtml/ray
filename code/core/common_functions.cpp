@@ -567,10 +567,17 @@ vector<Kmer> _getIngoingEdges(Kmer*a,uint8_t edges,int k){
 //	abcdefghij  klmnopqr00		// copy the last to the first
 //	00cdefghij  klmnopqr00		// reset the 2 last
 
+/**
+ * Now, we need to copy 2 bits from 
+ */
 		if(i!=0){
 			// the 2 last of the previous will be the 2 first of this one
-			uint64_t last=aTemplate.getU64(i-1);
+			uint64_t last=a->getU64(i-1);
+			//cout<<"Previous chunk"<<endl;
+			//print64(last);
 			last=(last>>62);
+			//cout<<"Filter"<<endl;
+			//print64(last);
 			element=element|last;
 		}
 
