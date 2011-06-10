@@ -7,7 +7,7 @@ echo ""
 echo "Installing Ray to $PREFIX"
 echo ""
 cp $TARGETS $PREFIX
-cp InstructionManual.pdf $PREFIX
+cp InstructionManual.* $PREFIX
 cp README.md $PREFIX/README.doc
 cp LICENSE $PREFIX/LICENSE.doc
 cp ChangeLog $PREFIX/ChangeLog.doc
