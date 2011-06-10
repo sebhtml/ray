@@ -8,6 +8,94 @@
 #include <iostream>
 using namespace std;
 
+void test_out_large(){
+	string a="TCAAAAATTTCTTTCAAAGTAATCTCATAAGCTGCTGGA";
+	string b= "CAAAAATTTCTTTCAAAGTAATCTCATAAGCTGCTGGAT";
+	int wordSize=a.length();
+
+	// description of m_edges:
+	// outgoing  ingoing
+	//
+	// G C T A G C T A
+	//
+	// 7 6 5 4 3 2 1 0
+	
+	uint8_t edges=(1<<5);
+
+	Kmer aKmer=wordId(a.c_str());
+	Kmer bKmer=wordId(b.c_str());
+	
+	vector<Kmer>oEdges=_getOutgoingEdges(&aKmer,edges,wordSize);
+	assertEquals(oEdges.size(),1);
+
+	Kmer actual=oEdges[0];
+	string actualStr=idToWord(&actual,wordSize);
+	if(actualStr!=b){
+		cout<<"MAXKMERLENGTH: "<<MAXKMERLENGTH<<endl;
+		cout<<"WordSize: "<<wordSize<<endl;
+		cout<<"Expected"<<endl;
+		cout<<a<<" -> "<<b<<endl;
+		cout<<"Actual:"<<endl;
+		cout<<a<<" -> "<<actualStr<<"*"<<endl;
+		cout<<endl;
+	}
+	assertEquals(actualStr,b);
+
+	if(actual!=bKmer){
+		cout<<"MAXKMERLENGTH: "<<MAXKMERLENGTH<<endl;
+		cout<<"WordSize: "<<wordSize<<endl;
+		cout<<"Expected: "<<endl;
+		bKmer.print();
+		cout<<"Actual: "<<endl;
+		actual.print();
+	}
+	assert(actual==bKmer);
+}
+
+void test_Ingoing_large(){
+	string a="TCAAAAATTTCTTTCAAAGTAATCTCATAAGCTGCTGGA";
+	string b= "CAAAAATTTCTTTCAAAGTAATCTCATAAGCTGCTGGAT";
+	int wordSize=a.length();
+
+	// description of m_edges:
+	// outgoing  ingoing
+	//
+	// G C T A G C T A
+	//
+	// 7 6 5 4 3 2 1 0
+	
+	uint8_t edges=(1<<1);
+
+	Kmer aKmer=wordId(a.c_str());
+	Kmer bKmer=wordId(b.c_str());
+	
+	vector<Kmer>inEdges=_getIngoingEdges(&bKmer,edges,wordSize);
+	Kmer actual=inEdges[0];
+	string actualStr=idToWord(&actual,wordSize);
+	if(actualStr!=a){
+		cout<<"MAXKMERLENGTH: "<<MAXKMERLENGTH<<endl;
+		cout<<"WordSize: "<<wordSize<<endl;
+		cout<<"Expected"<<endl;
+		cout<<a<<" -> "<<b<<endl;
+		cout<<"Actual:"<<endl;
+		cout<<actualStr<<" -> "<<b<<endl;
+		cout<<endl;
+	}
+	assertEquals(actualStr,a);
+
+	if(actual!=aKmer){
+		cout<<"MAXKMERLENGTH: "<<MAXKMERLENGTH<<endl;
+		cout<<"WordSize: "<<wordSize<<endl;
+		cout<<"Expected: "<<endl;
+		aKmer.print();
+		cout<<"Actual: "<<endl;
+		actual.print();
+	}
+	assert(actual==aKmer);
+}
+
+
+
 void test_out(){
 	string a="GACTTGATTAGACAAGAAGTT";
 	string b= "ACTTGATTAGACAAGAAGTTG";
@@ -201,6 +289,11 @@ int main(int argc,char**argv){
 
 	test_Ingoing();
 	test_out();
+
+	if(MAXKMERLENGTH>32){
+		test_Ingoing_large();
+		test_out_large();
+	}
 	return 0;
 }
 
