@@ -45,6 +45,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include <structures/Read.h>
 #include <assembler/Loader.h>
 #include <memory/MyAllocator.h>
+#include <core/constants.h>
 #include <algorithm>
 #include <mpi.h>
 #include <inttypes.h>
@@ -72,7 +73,6 @@ void Machine::start(){
 	m_killed=false;
 	m_ready=true;
 	
-
 	m_fusionData->m_fusionStarted=false;
 	m_ed->m_EXTENSION_numberOfRanksDone=0;
 	m_colorSpaceMode=false;
@@ -99,7 +99,6 @@ void Machine::start(){
 	m_messageSentForVerticesDistribution=false;
 	m_sequence_ready_machines=0;
 	m_isFinalFusion=false;
-
 
 	m_messagesHandler.constructor(&m_argc,&m_argv);
 	m_rank=m_messagesHandler.getRank();
