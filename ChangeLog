@@ -19,7 +19,8 @@ k-mers -- thanks to Élénie Godzaridis for the idea.
 * Created subdirectories for code.
 * Ray now uses all sequences in an SFF file -- not just those matching the
 sequence key.
-
+* Ray now estimates the genome length in
+RayOutput.CoverageDistributionAnalysis.txt.
 
 = 1.4.0 =
 2011-05-30
