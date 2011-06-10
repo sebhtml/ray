@@ -30,6 +30,7 @@ using namespace std;
 void Vertex::constructor(){
 	m_coverage_lower=0;
 	m_edges_lower=0;
+	m_edges_higher=0;
 }
 
 void Vertex::setCoverage(Kmer*a,int coverage){
@@ -52,32 +53,36 @@ vector<Kmer> Vertex::getIngoingEdges(Kmer *a,int k){
 	if((*a)==m_lowerKey){
 		return _getIngoingEdges(a,m_edges_lower,k);
 	}
-	return _getIngoingEdges(a,invertEdges(m_edges_lower),k);
+	return _getIngoingEdges(a,m_edges_higher,k);
 }
 
 vector<Kmer> Vertex::getOutgoingEdges(Kmer*a,int k){
 	if(*a==m_lowerKey){
 		return _getOutgoingEdges(a,m_edges_lower,k);
 	}
-	return _getOutgoingEdges(a,invertEdges(m_edges_lower),k);
+	return _getOutgoingEdges(a,m_edges_higher,k);
 }
 
 void Vertex::addIngoingEdge_ClassicMethod(Kmer*vertex,Kmer*a,int k){
-	uint8_t s1First=getFirstSegmentFirstCode(a,k,_SEGMENT_LENGTH);
+	uint8_t s1First=getFirstSegmentFirstCode(a,k);
 	// add s1First to edges.
 	uint8_t newBits=(1<<(s1First));
 	if(*vertex==m_lowerKey){
 		m_edges_lower=m_edges_lower|newBits;
+	}else{
+		m_edges_higher=m_edges_higher|newBits;
 	}
 }
 
 void Vertex::deleteIngoingEdge(Kmer*vertex,Kmer*a,int k){
-	uint8_t s1First=getFirstSegmentFirstCode(a,k,_SEGMENT_LENGTH);
+	uint8_t s1First=getFirstSegmentFirstCode(a,k);
 	// delete s1First from edges.
 	uint8_t newBits=(1<<(s1First));
 	newBits=~newBits;
 	if(*vertex==m_lowerKey){
 		m_edges_lower=m_edges_lower&newBits;
+	}else{
+		m_edges_higher=m_edges_higher&newBits;
 	}
 }
 
@@ -86,7 +91,6 @@ void Vertex::addIngoingEdge(Kmer*vertex,Kmer*a,int k){
 }
 
 void Vertex::addOutgoingEdge_ClassicMethod(Kmer*vertex,Kmer*a,int k){
-	uint8_t s2Last=getSecondSegmentLastCode(a,k,_SEGMENT_LENGTH);
 	// description of m_edges:
 	// outgoing  ingoing
 	//
@@ -95,18 +99,23 @@ void Vertex::addOutgoingEdge_ClassicMethod(Kmer*vertex,Kmer*a,int k){
 	// 7 6 5 4 3 2 1 0
 
 	// put s2Last in m_edges
+	uint8_t s2Last=getSecondSegmentLastCode(a,k);
 	uint64_t newBits=1<<(4+s2Last);
 	if(*vertex==m_lowerKey){
 		m_edges_lower=m_edges_lower|newBits;
+	}else{
+		m_edges_higher=m_edges_higher|newBits;
 	}
 }
 
 void Vertex::deleteOutgoingEdge(Kmer*vertex,Kmer*a,int k){
-	uint8_t s2Last=getSecondSegmentLastCode(a,k,_SEGMENT_LENGTH);
+	uint8_t s2Last=getSecondSegmentLastCode(a,k);
 	uint64_t newBits=1<<(4+s2Last);
 	newBits=~newBits;
 	if(*vertex==m_lowerKey){
 		m_edges_lower=m_edges_lower&newBits;
+	}else{
+		m_edges_higher=m_edges_higher&newBits;
 	}
 }
 
@@ -118,7 +127,7 @@ uint8_t Vertex::getEdges(Kmer*a){
 	if(*a==m_lowerKey){
 		return m_edges_lower;
 	}
-	return invertEdges(m_edges_lower);
+	return m_edges_higher;
 }
 
 

@@ -40,7 +40,6 @@ class DepthFirstSearchData;
 #include <assembler/DepthFirstSearchData.h>
 #include <assembler/BubbleTool.h>
 #include <assembler/OpenAssemblerChooser.h>
-#include <assembler/EarlyStoppingTechnology.h>
 #include <graph/GridTable.h>
 
 using namespace std;
@@ -61,7 +60,6 @@ class SeedExtender{
 	SplayTree<Kmer,int> m_cache;
 	vector<Direction>m_receivedDirections;
 	GridTable*m_subgraph;
-	EarlyStoppingTechnology m_earlyStoppingTechnology;
 	bool m_skippedASeed;
 	Parameters*m_parameters;
 	BubbleTool m_bubbleTool;

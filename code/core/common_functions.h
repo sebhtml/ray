@@ -63,30 +63,9 @@ string idToWord(const Kmer*i,int wordSize);
 bool isValidDNA(const char*x);
 
 /*
- * get the first letter of a uint64_t
- */
-char getFirstSymbol(Kmer i,int k);
-
-/*
  * get the last letter of a uint64_t
  */
 char getLastSymbol(Kmer*i,int w);
-
-/*
- * output in stdout the binary view of a 64-bit integer.
- */
-void coutBIN(uint64_t a);
-void coutBIN8(uint8_t a);
-
-/*
- * get the prefix
- */
-uint64_t getKPrefix(uint64_t a,int k);
-
-/*
- * get the suffix
- */
-uint64_t getKSuffix(uint64_t a,int k);
 
 /*
  * complement a vertex, and return another one
@@ -115,10 +94,8 @@ Kmer complementVertex_normal(Kmer*a,int m_wordSize);
 /*
  * use mini distant segments here.
  */
-uint64_t wordId_DistantSegments(const char*a);
-
-uint8_t getFirstSegmentFirstCode(Kmer*v,int segmentLength,int totalLength);
-uint8_t getSecondSegmentLastCode(Kmer*v,int segmentLength,int totalLength);
+uint8_t getFirstSegmentFirstCode(Kmer*v,int w);
+uint8_t getSecondSegmentLastCode(Kmer*v,int w);
 
 uint8_t charToCode(char a);
 
@@ -155,6 +132,7 @@ void now();
 string reverseComplement(string*a);
 
 void print64(uint64_t a);
+void print8(uint8_t a);
 
 #endif
 

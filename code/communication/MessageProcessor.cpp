@@ -703,13 +703,11 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 		int pos=i;
 		l.unpack(incoming,&pos);
 
-/*
 		string kmerStr=idToWord(&l,m_parameters->getWordSize());
-		if(kmerStr=="TCAAAAATTTCTTTCAAAGTAATCTCATAAGCCGCTGGA"){
+		if(kmerStr=="TGCAAGTTAGCAACATCATATGAGTGCAATCCTGTTGTAGGCTCATCTAAGACATAAATAGTT"){
 			cout<<__func__<<" Kmer received from "<<message->getSource()<<" i="<<i<<" "<<kmerStr<<endl;
 			l.print();
 		}
-*/
 
 		if((*m_last_value)!=(int)m_subgraph->size() && (int)m_subgraph->size()%100000==0){
 			(*m_last_value)=m_subgraph->size();
@@ -785,6 +783,9 @@ void MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA(Message*message){
 		Vertex*node=m_subgraph->find(&prefix);
 
 		#ifdef ASSERT
+		if(node==NULL){
+			cout<<"Rank="<<rank<<" "<<__func__<<" "<<idToWord(&prefix,(*m_wordSize))<<" does not exist"<<endl;
+		}
 		assert(node!=NULL);
 		#endif
 
@@ -825,6 +826,14 @@ void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){
 		Kmer suffix;
 		suffix.unpack(incoming,&bufferPosition);
 
+/*
+		string kmerStr=idToWord(&suffix,m_parameters->getWordSize());
+		if(kmerStr=="GCAAGTTAGCAACATCATATGAGTGCAATCCTGTTGTAGGCTCATCTAAGACATAAATAGTTT"){
+			string parent=idToWord(&prefix,m_parameters->getWordSize());
+			cout<<__func__<<" "<<parent<<" -> "<<kmerStr<<endl;
+		}
+*/
+
 		Vertex*node=m_subgraph->find(&suffix);
 
 		#ifdef ASSERT
@@ -832,6 +841,18 @@ void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){
 		#endif
 
 		node->addIngoingEdge(&suffix,&prefix,(*m_wordSize));
+
+		#ifdef ASSERT
+		vector<Kmer>inEdges=node->getIngoingEdges(&suffix,m_parameters->getWordSize());
+		bool found=false;
+		for(int j=0;j<(int)inEdges.size();j++){
+			if(inEdges[j]==prefix){
+				found=true;
+				break;
+			}
+		}
+		assert(found);
+		#endif
 	}
 
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_IN_EDGES_DATA_REPLY,rank);
@@ -1010,14 +1031,12 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message)
 		int bufferPosition=i;
 		vertex.unpack(incoming,&bufferPosition);
 
-/*
 		string kmerStr=idToWord(&vertex,m_parameters->getWordSize());
 
-		if(kmerStr=="TCAAAAATTTCTTTCAAAGTAATCTCATAAGCCGCTGGA"){
+		if(kmerStr=="TGCAAGTTAGCAACATCATATGAGTGCAATCCTGTTGTAGGCTCATCTAAGACATAAATAGTT"){
 			cout<<__func__<<" Source: "<<message->getSource()<<" i="<<i<<" Kmer: "<<kmerStr<<endl;
 			vertex.print();
 		}
-*/
 
 		Vertex*node=m_subgraph->find(&vertex);
 		#ifdef ASSERT

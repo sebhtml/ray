@@ -54,6 +54,7 @@ public:
 	// 7 6 5 4 3 2 1 0
 	
 	uint8_t m_edges_lower;
+	uint8_t m_edges_higher;
 
 	void addOutgoingEdge_ClassicMethod(Kmer*vertex,Kmer*a,int k);
 	void addIngoingEdge_ClassicMethod(Kmer*vertex,Kmer*a,int k);

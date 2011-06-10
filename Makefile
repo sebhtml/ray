@@ -9,7 +9,7 @@ PREFIX=install-prefix
 
 # maximum k-mer length
 # in nucleotides
-# 32 nucleotides are stored on 64 bits
+# 32 nucleotides are stored on 1x64 bits
 # 64 nucleotides are stored on 2x64 bits
 # 96 nucleotides are stored on 3x64 bits
 # Intermediate values should utilise intermediate numbers of bits.
@@ -145,7 +145,7 @@ obj-y += code/assembler/VertexMessenger.o \
 code/assembler/ReadFetcher.o code/assembler/LibraryWorker.o code/assembler/IndexerWorker.o  \
 code/assembler/SeedWorker.o code/assembler/ExtensionElement.o \
 code/assembler/DepthFirstSearchData.o code/assembler/MemoryConsumptionReducer.o  code/assembler/SeedingData.o \
-code/assembler/BubbleTool.o code/assembler/Chooser.o code/assembler/EarlyStoppingTechnology.o \
+code/assembler/BubbleTool.o code/assembler/Chooser.o \
 code/assembler/FusionData.o code/assembler/Library.o code/assembler/Loader.o \
 code/assembler/OpenAssemblerChooser.o code/assembler/SeedExtender.o code/assembler/SequencesIndexer.o \
 code/assembler/SequencesLoader.o \

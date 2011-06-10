@@ -1,12 +1,130 @@
 
+#include <structures/Vertex.h>
 #include <tests/unitTest.h>
 #include <structures/Kmer.h>
+#include <core/constants.h>
 #include <set>
 #include <core/common_functions.h>
+#include <vector>
 #include <assert.h>
 #include <string>
 #include <iostream>
 using namespace std;
+
+void test_addInEdge(){
+	string a="AGCAAGTTAGCAACATCATATGAGTGCAATCCTGTTGTAGGCTCATCTAAGACATAAATAGTT";
+	string b= "GCAAGTTAGCAACATCATATGAGTGCAATCCTGTTGTAGGCTCATCTAAGACATAAATAGTTT";
+	int wordSize=a.length();
+
+	Kmer aKmer=wordId(a.c_str());
+	Kmer bKmer=wordId(b.c_str());
+
+	Vertex bVertex;
+	bVertex.constructor();
+	bVertex.m_lowerKey=bKmer;
+	bVertex.addIngoingEdge(&bKmer,&aKmer,wordSize);
+	
+	vector<Kmer>inEdges=bVertex.getIngoingEdges(&bKmer,wordSize);
+	bool found=false;
+	for(int j=0;j<(int)inEdges.size();j++){
+		if(inEdges[j]==aKmer){
+			found=true;
+			break;
+		}
+	}
+	if(!found){
+		cout<<"Expected: "<<a<<endl;
+		cout<<"Actual:"<<endl;
+		cout<<inEdges.size()<<endl;
+		for(int j=0;j<(int)inEdges.size();j++){
+			cout<<idToWord(&(inEdges[j]),wordSize)<<endl;
+		}
+	}
+	assertEquals(inEdges.size(),1);
+	assertEquals(found,true);
+}
+
+void test_addOutEdge(){
+	string a="CAATAAGTAAAAAAGATTTTGTAACTTTCACAGCCTTATTTTTATCAATAGATACTGATAT";
+	string b= "AATAAGTAAAAAAGATTTTGTAACTTTCACAGCCTTATTTTTATCAATAGATACTGATATT";
+	int wordSize=a.length();
+
+	Kmer aKmer=wordId(a.c_str());
+	Kmer bKmer=wordId(b.c_str());
+
+	Vertex aVertex;
+	aVertex.constructor();
+	Kmer lower=aKmer;
+	Kmer aRC=complementVertex(&aKmer,wordSize,false);
+
+	if(aRC<lower){
+		lower=aRC;
+	}
+	aVertex.m_lowerKey=lower;
+	aVertex.addOutgoingEdge(&aKmer,&bKmer,wordSize);
+	
+	vector<Kmer>Edges=aVertex.getOutgoingEdges(&aKmer,wordSize);
+	bool found=false;
+	for(int j=0;j<(int)Edges.size();j++){
+		if(Edges[j]==bKmer){
+			found=true;
+			break;
+		}
+	}
+	if(!found){
+		cout<<"Expected: "<<endl;
+		cout<<b<<endl;
+		cout<<"Actual:"<<endl;
+		for(int j=0;j<(int)Edges.size();j++){
+			cout<<idToWord(&(Edges[j]),wordSize)<<endl;
+		}
+		uint8_t edges=aVertex.getEdges(&aKmer);
+		cout<<"Edges"<<endl;
+		print8(edges);
+	}
+	assertEquals(Edges.size(),1);
+	assertEquals(found,true);
+}
+
+void test_addInEdge2(){
+	string a="AGCAAGTTAGCAACATCATATGAGTGCAATCCTGTTGTAGGCTCATCTAAGACATAAATAGTT";
+	string b= "GCAAGTTAGCAACATCATATGAGTGCAATCCTGTTGTAGGCTCATCTAAGACATAAATAGTTT";
+	int wordSize=a.length();
+
+	Kmer aKmer=wordId(a.c_str());
+	Kmer bKmer=wordId(b.c_str());
+
+	Vertex bVertex;
+	bVertex.constructor();
+	Kmer bRC=complementVertex(&bKmer,wordSize,false);
+	Kmer lower=bKmer;
+	Kmer aRC=complementVertex(&aKmer,wordSize,false);
+
+	if(bRC<lower){
+		lower=bRC;
+	}
+	bVertex.m_lowerKey=lower;
+	bVertex.addIngoingEdge(&bKmer,&aKmer,wordSize);
+	
+	vector<Kmer>inEdges=bVertex.getIngoingEdges(&bKmer,wordSize);
+	bool found=false;
+	for(int j=0;j<(int)inEdges.size();j++){
+		if(inEdges[j]==aKmer){
+			found=true;
+			break;
+		}
+	}
+	if(!found){
+		cout<<"Expected: "<<a<<endl;
+		cout<<"Actual:"<<endl;
+		cout<<inEdges.size()<<endl;
+		for(int j=0;j<(int)inEdges.size();j++){
+			cout<<idToWord(&(inEdges[j]),wordSize)<<endl;
+		}
+	}
+	assertEquals(inEdges.size(),1);
+	assertEquals(found,true);
+}
 
 void test_out_large(){
 	string a="TCAAAAATTTCTTTCAAAGTAATCTCATAAGCTGCTGGA";
@@ -20,7 +138,9 @@ void test_out_large(){
 	//
 	// 7 6 5 4 3 2 1 0
 	
-	uint8_t edges=(1<<5);
+	uint8_t edges=(1<<(4+_ENCODING_T));
+
+	//print8(edges);
 
 	Kmer aKmer=wordId(a.c_str());
 	Kmer bKmer=wordId(b.c_str());
@@ -51,6 +171,53 @@ void test_out_large(){
 	}
 	assert(actual==bKmer);
 }
+
+void test_Ingoing_large2(){
+	string a="AGCAAGTTAGCAACATCATATGAGTGCAATCCTGTTGTAGGCTCATCTAAGACATAAATAGTT";
+	string b= "GCAAGTTAGCAACATCATATGAGTGCAATCCTGTTGTAGGCTCATCTAAGACATAAATAGTTT";
+	int wordSize=a.length();
+
+	// description of m_edges:
+	// outgoing  ingoing
+	//
+	// G C T A G C T A
+	//
+	// 7 6 5 4 3 2 1 0
+	
+	uint8_t edges=(1<<0);
+
+	Kmer aKmer=wordId(a.c_str());
+	assertEquals(getFirstSegmentFirstCode(&aKmer,wordSize),_ENCODING_A);
+
+	Kmer bKmer=wordId(b.c_str());
+	
+	vector<Kmer>inEdges=_getIngoingEdges(&bKmer,edges,wordSize);
+	Kmer actual=inEdges[0];
+	string actualStr=idToWord(&actual,wordSize);
+	if(actualStr!=a){
+		cout<<"MAXKMERLENGTH: "<<MAXKMERLENGTH<<endl;
+		cout<<"WordSize: "<<wordSize<<endl;
+		cout<<"Expected"<<endl;
+		cout<<a<<" -> "<<b<<endl;
+		cout<<"Actual:"<<endl;
+		cout<<actualStr<<" -> "<<b<<endl;
+		cout<<endl;
+	}
+	assertEquals(actualStr,a);
+
+	if(actual!=aKmer){
+		cout<<"MAXKMERLENGTH: "<<MAXKMERLENGTH<<endl;
+		cout<<"WordSize: "<<wordSize<<endl;
+		cout<<"Expected: "<<endl;
+		aKmer.print();
+		cout<<"Actual: "<<endl;
+		actual.print();
+	}
+	assert(actual==aKmer);
+}
+
+
+
 
 void test_Ingoing_large(){
 	string a="TCAAAAATTTCTTTCAAAGTAATCTCATAAGCTGCTGGA";
@@ -292,7 +459,11 @@ int main(int argc,char**argv){
 
 	if(MAXKMERLENGTH>32){
 		test_Ingoing_large();
+		test_Ingoing_large2();
 		test_out_large();
+		test_addInEdge();
+		test_addInEdge2();
+		test_addOutEdge();
 	}
 	return 0;
 }

@@ -25,9 +25,11 @@
 #define assertEquals(expected,actual) \
 if(expected!=actual) {\
 	cout<<endl; \
-	cout<<"Failed unit test"<<endl; \
-	cout<<expected<<" != "<<actual<<endl; \
+	cout<<"Failed unit test (assertEquals)"<<endl; \
+	cout<<"Expected: "<<expected<<endl; \
+	cout<<"Actual: "<<actual<<endl; \
 	cout<<"File: "<<__FILE__<<endl; \
+	cout<<"Function: "<<__func__<<endl; \
 	cout<<"Line: "<<__LINE__<<endl; \
 } 
 

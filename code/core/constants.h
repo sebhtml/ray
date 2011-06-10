@@ -45,8 +45,6 @@ see <http://www.gnu.org/licenses/>
 #define _ENCODING_C 2
 #define _ENCODING_G 3
 
-#define _SEGMENT_LENGTH 5
-
 // the maximum of processes is utilized to construct unique hyperfusions IDs
 #define MAX_NUMBER_OF_MPI_PROCESSES 1000000
 #define INVALID_RANK MAX_NUMBER_OF_MPI_PROCESSES

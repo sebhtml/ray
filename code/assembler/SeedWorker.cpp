@@ -201,13 +201,18 @@ void SeedWorker::do_1_1_test(){
 
 			m_SEEDING_receivedIngoingEdges=_getIngoingEdges(&m_SEEDING_currentVertex,edges,m_wordSize);
 
+			string child=idToWord(&m_SEEDING_currentVertex,m_parameters->getWordSize());
+
 /*
+			if(child=="GCAAGTTAGCAACATCATATGAGTGCAATCCTGTTGTAGGCTCATCTAAGACATAAATAGTTT"){
+				cout<<"Edges"<<endl;
+				print8(edges);
+			}
 			for(int i=0;i<(int)m_SEEDING_receivedIngoingEdges.size();i++){
 				Kmer vertex=m_SEEDING_receivedIngoingEdges[i];
 				string kmerStr=idToWord(&vertex,m_parameters->getWordSize());
-				if(kmerStr=="TCAAAAATTTCTTTCAAAGTAATCTCATAAGCCGCTGGA"){
-					string child=idToWord(&m_SEEDING_currentVertex,m_parameters->getWordSize());
-					cout<<__func__<<" "<<__LINE__<<" Ingoing: "<<kmerStr<<" Current: "<<child<<endl;
+				if(child=="GCAAGTTAGCAACATCATATGAGTGCAATCCTGTTGTAGGCTCATCTAAGACATAAATAGTTT"){
+					cout<<__func__<<" "<<__LINE__<<" "<<kmerStr<<" -> "<<child<<endl;
 					vertex.print();
 				}
 			}
@@ -242,14 +247,11 @@ void SeedWorker::do_1_1_test(){
 					vertex.pack(message,&bufferPosition);
 					int dest=vertexRank(&vertex,getSize(),m_wordSize);
 
-/*
 					string kmerStr=idToWord(&vertex,m_parameters->getWordSize());
-
-					if(kmerStr=="TCAAAAATTTCTTTCAAAGTAATCTCATAAGCCGCTGGA"){
+					if(kmerStr=="TCCGTGTTTCATAGTCAGGGGCTGTAATATCAGTAGTCAAGCCCCAAGAGAAGCGTGAAAA"){
 						cout<<__func__<<" "<<__LINE__<<" Destination: "<<dest<<" Kmer: "<<kmerStr<<endl;
 						vertex.print();
 					}
-*/
 
 					Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,dest,
 						RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,getRank());
@@ -274,13 +276,11 @@ void SeedWorker::do_1_1_test(){
 					vertex.pack(message,&bufferPosition);
 					int dest=vertexRank(&vertex,getSize(),m_wordSize);
 
-/*
 					string kmerStr=idToWord(&vertex,m_parameters->getWordSize());
-					if(kmerStr=="TCAAAAATTTCTTTCAAAGTAATCTCATAAGCCGCTGGA"){
+					if(kmerStr=="TCCGTGTTTCATAGTCAGGGGCTGTAATATCAGTAGTCAAGCCCCAAGAGAAGCGTGAAAA"){
 						cout<<__func__<<" "<<__LINE__<<" Destination: "<<dest<<" Kmer: "<<kmerStr<<endl;
 						vertex.print();
 					}
-*/
 
 					Message aMessage(message,bufferPosition,
 						MPI_UNSIGNED_LONG_LONG,dest,
