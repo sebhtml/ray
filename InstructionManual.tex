@@ -18,7 +18,11 @@ Ray version 1.6.0
 
 \vspace{2cm}
 
-\href{http://denovoassembler.sf.net}{http://denovoassembler.sf.net}
+Website: \href{http://denovoassembler.sf.net}{http://denovoassembler.sf.net}
+
+\vspace{0.4cm}
+
+Git source tree: \href{http://github.com/sebhtml/ray}{http://github.com/sebhtml/ray}
 
 \vspace{2cm}
 
@@ -38,15 +42,21 @@ doi:10.1089/cmb.2009.0238\\
 \tableofcontents
 \newpage
 
+\section{Abstract}
+
+Ray is documented in this manual, on 
+\href{http://github.com/sebhtml/ray}{http://github.com/sebhtml/ray}
+ (with the README.md) and in the 
+C++ code using Doxygen. Enjoy the manual.
+
 \section{Installation}
 
-To install Ray, you need a C++ compiler, make and an MPI implementation compliant
-with MPI standard 2.2.
+To install Ray, you need a C++ compiler (standard 1998), make and an MPI implementation compliant
+with the MPI standard 2.2.
 
-Ray runs on any POSIX-compliant system. This includes GNU/Linux.
-Windows users need to install Cygwin although Ray is not tested on Cygwin.
+The software below are readily (and freely) available in most GNU/Linux distributions (I use Ubuntu, CentOS, and Fedora); 
+see Table~\ref{software}).
 
-The software below are readily available in most GNU/Linux distributions (Table~\ref{software}).
 
 \begin{table}[h]
 \caption{Suggested software}\label{software}
@@ -56,36 +66,73 @@ Software & Name \\
 \hline
 C++ compiler & GNU g++ \\
 MPI implementation & Open-MPI \\
+make & GNU make \\
 \hline
 \end{tabular}
 \end{table}
 
-There are some compilation flags that can be changed. These are listed below in Table~\ref{flags}.
+Ray runs on any POSIX-compliant system. This includes GNU/Linux.
+Windows users need to install Cygwin although Ray is not tested on Cygwin.
+In fact, Ray should compile in Microsoft Visual C++ with a few changes, I guess.
+But I don't use Microsoft Visual C++ so I don't know for sure.
 
-
-\begin{table}[h]
-\caption{Compilation flags}\label{flags}
-\begin{tabular}{ll}
-\hline
-Flag & Effect  \\
-\hline
-HAVE\_LIBZ & enable support for .gz files \\
-HAVE\_LIBBZ2 & enable support for .bz2 files \\
-FORCE\_PACKING & enable packing of structures and classes\\
-ASSERT & enable assertions in the code \\
-HAVE\_CLOCK\_GETTIME & get time at a nanosecond precision -- real-time \\
-\hline
-\end{tabular}
-\end{table}
 
 The source code of Ray can be compiled with a Makefile.
-You need to have mpic++ in your path, otherwise edit the Makefile to change CC.
 
+
+There are some compilation options that can be changed. These are listed below in Table~\ref{flags}.
+They can be changed in the Makefile or provided on the command line.
+
+\begin{table}[h]
+\caption{Compilation options}\label{flags}
+\begin{tabular}{lll}
+\hline
+Option & Value & Description \\
+\hline
+MAXKMERLENGTH & integer & maximum k-mer length \\
+HAVE\_LIBZ & y/n & enable support for .gz files \\
+HAVE\_LIBBZ2 & y/n& enable support for .bz2 files \\
+FORCE\_PACKING & y/n& enable packing of structures and classes\\
+ASSERT & y/n& enable assertions in the code \\
+HAVE\_CLOCK\_GETTIME & y/n& get time at a nanosecond precision -- real-time \\
+VIRTUAL\_SEQUENCER & y/n& will generate a program called VirtualNextGenSequencer \\
+INTEL\_COMPILER & y/n& use mpiicpc \\
+\hline
+\end{tabular}
+\end{table}
+
+To compile Ray, enter these commands.
 
 \begin{verbatim}
 make 
-ls -l code/Ray
+make install PREFIX=build
+ls build/Ray
 \end{verbatim}
+
+
+You need to have mpic++ in your path, otherwise edit the Makefile to change MPICXX.
+You may also provide MPICXX on the command line.
+
+\begin{verbatim}
+make MPICXX=/software/openmpi-1.4.3/bin/mpic++
+make install PREFIX=build
+ls build/Ray
+\end{verbatim}
+
+You can also provide all compilation options as follows.
+
+\begin{verbatim}
+make MPICXX=/software/openmpi-1.4.3/bin/mpic++ MAXKMERLENGTH=64 HAVE_LIBZ=n HAVE_LIBBZ2=n \
+HAVE_CLOCK_GETTIME=n INTEL_COMPILER=n ASSERT=n FORCE_PACKING=y
+make install PREFIX=build
+ls build/Ray
+\end{verbatim}
+
+
+No configure script exists because it is too much of a mess to maintain.
+Furthermore, autoconf and automake just don't work on a Lustre filesystem (used on most
+super computers) when the network file system disallows file locking.
+The Makefile of Ray utilises the Linux kernel syntax (obj-y += object.o).
 
 \section{Inputs}
 
@@ -110,6 +157,7 @@ Standard flowgram format & .sff \\
 \end{tabular}
 \end{table}
 
+Keep in mind that these formats are *just* containers.
 
 
 \section{Parameters}
@@ -120,7 +168,8 @@ Paired reads must be on opposite strands (forward \& reverse or reverse \& forwa
 For a paired library, paired reads can be provided as two files (with -p) or as one file containing interleaved
 sequences (with -i).
 With both, the average outer distance and the standard deviation can be provided by the user. Otherwise, these values are
-computed by Ray.
+computed by Ray. Ray may fail to compute and average outer distance when the later is too high.
+In that case, provide the value.
 The maximum  number of paired libraries allowed by Ray is 499.
 
 
@@ -128,7 +177,7 @@ The maximum  number of paired libraries allowed by Ray is 499.
 
 \subsection{$k$-mer length with -k}
 
-Ray builds a distributed catalog of all occuring $k$-mers in the reads and their reverse-complement. $k$ must be greater or equal to 15 and lower or equal to 31. The $k$-mer length must be an odd number.
+Ray builds a distributed catalog of all occuring $k$-mers in the reads and their reverse-complement. $k$ must be greater or equal to 15 and lower or equal to MAXKMERLENGTH (provided at compilation). The $k$-mer length must be an odd number.
 
 \subsection{Output prefix with -o}
 
@@ -197,8 +246,10 @@ ACTGACGACGTACGACGTCATGCAACT
 
 \section{Outputs}
 
+Outputted files are listed in Table~\ref{outputs}.
+
 \begin{table}[h]
-\caption{File formats compatible with the Ray \emph{de novo} genome assembler software}\label{formats}
+\caption{Files generated by the Ray \emph{de novo} genome assembler software}\label{outputs}
 \begin{tabular}{lll}
 \hline
 File& Description\\
@@ -213,7 +264,8 @@ PREFIX.ScaffoldLengths.txt & The length of each scaffold \\
 PREFIX.ScaffoldLinks.txt & Scaffold links \\
 PREFIX.CoverageDistribution.txt & The distribution of coverage values \\
 PREFIX.CoverageDistributionAnalysis.txt & Analysis of the coverage distribution \\
-PREFIX.LibraryStatistics.txt & Number of reads in each file and estimation of outer distances for paired reads \\
+PREFIX.LibraryStatistics.txt & Number of reads in each file \\
+ & and estimation of outer distances for paired reads \\
 PREFIX.SeedLengthDistribution.txt & The distribution of seed lengths \\
 PREFIX.OutputNumbers.txt & Overall numbers for the assembly\\
 PREFIX.AMOS.afg & Assembly representation in AMOS format \\
@@ -221,20 +273,27 @@ PREFIX.AMOS.afg & Assembly representation in AMOS format \\
 \end{tabular}
 \end{table}
 
+The file PREFIX.CoverageDistributionAnalysis.txt contains an estimation of the genome length.
+
+
+\newpage
 
 \section{Validation of assemblies}
 
 In the scripts/ directory, the script ValidateGenomeAssembly.sh can validate an assembly against the corresponding
-reference.
+reference. To run it, you will need MUMmer and some other programs from AMOS (Google them).
 
-\section{Example}
+
+\section{Examples}
+
+Examples are available in scripts/examples.
 
 \subsection{Bacterial genome with paired-end and mate-pair short reads}
 
 The command:
 
 \begin{verbatim}
-mpirun -np 32 ~/Ray/trunk/code/Ray \
+mpirun -np 32 ./build-99/Ray \
 -p /home/boiseb01/nuccore/Large-Ecoli/200_1.fastq \
    /home/boiseb01/nuccore/Large-Ecoli/200_2.fastq \
 -p /home/boiseb01/nuccore/Large-Ecoli/1000_1.fastq \
@@ -249,24 +308,46 @@ mpirun -np 32 ~/Ray/trunk/code/Ray \
 \section{Virtual sequencer \& simulations}
 
 The Ray package includes a simulator for paired reads.
+To build it, you must provide VIRTUAL\_SEQUENCER=y.
 
 \begin{verbatim}
+
+make VIRTUAL_SEQUENCER=y
+make install PREFIX=build
+
 N=6000000
 readLength=50
 errorRate=0.005
 ref=~/nuccore/Ecoli-k12-mg1655.fasta
 
-g++ code/simulatePairedReads.cpp -O3 -Wall -o Simulator 
-./Simulator $ref $errorRate 200 20 $N $readLength L1_1.fasta L1_2.fasta
+./build/VirtualNextGenSequencer $ref $errorRate 200 20 $N $readLength L1_1.fasta L1_2.fasta
+\end{verbatim}
+
+You can then assemble these reads with Ray.
+
+\begin{verbatim}
+
+mpirun -np 64 ./build/Ray -k 31 -p L1_1.fasta L2_2.fasta -o DeadlyBug
+
 \end{verbatim}
 
 \section{Exploring the source code}
 
-Ray source code is documented with Doxygen standards.
+The source code of Ray (and all the changes since its inception) is on github.
+github is a place where people code socially.
+There, you can browse the source code easily.
+
+\href{http://github.com/sebhtml/ray}{http://github.com/sebhtml/ray}
+
+Feel free to fork my tree and send me a pull request if you have some
+interesting changes to the code base.
+
+The Ray source code is documented with Doxygen tags.
 
 The command below generates code documentation.
 
 \begin{verbatim}
+cd code
 doxygen DoxygenConfigurationFile
 \end{verbatim}
 
@@ -278,12 +359,17 @@ firefox DoxygenDocumentation/html/index.html
 
 \section{Reporting bugs \& crashes}
 
+If Ray crashed, you should send a bug report.
+However, be sure that you can reproduce the bug when Ray is compiled with
+ASSERT=y. Assertions are useful to catch those pesky bugs.
+
 \begin{verbatim}
 On the mailing list:
+
 denovoassembler-users # lists DOT sourceforge.net
 
-or personal email:
-sebastien.boisvert.3 # ulaval DOT ca  or seb # boisvert DOT info
+(replace # with @)
+
 \end{verbatim}
 
 \noindent
@@ -309,4 +395,8 @@ Also, if you have access to compute nodes:
    \item Memory information: cat /proc/meminfo|gzip$>$ meminfo.gz
    \item Kernel: uname -a$>$ uname-a 
 \end{enumerate}
+
+
+THE END
+
 \end{document}

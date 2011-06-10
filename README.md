@@ -78,6 +78,8 @@ Doctoral Award to S.B., Canadian Institutes of Health Research (CIHR)
 ## Coding, maintenance, implementing ideas:
 
 - Sébastien Boisvert, Doctoral student, Université Laval
+http://boisvert.info
+http://twitter.com/sebhtml
 
 
 ## Mentoring:

@@ -173,7 +173,7 @@ manual:
 	latex2html -split 0 -html_version 4.0,latin1,unicode InstructionManual.tex
 	pdflatex InstructionManual.tex
 
-install: all manual
+install: all
 	mkdir -p $(PREFIX)
 	cp $(TARGET) $(PREFIX)
 	cp InstructionManual.pdf $(PREFIX)
