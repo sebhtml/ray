@@ -66,7 +66,7 @@ MPICXX-y = mpic++
 CXXFLAGS = -Wall -Icode
 
 # optimization
-CXXFLAGS += -O3 -fomit-frame-pointer
+CXXFLAGS += -O3 -fomit-frame-pointer # -Wmissing-prototypes -Wstrict-prototypes
 
 # if you use Intel's mpiicpc, uncomment the following lines
 MPICXX-$(INTEL_COMPILER) = mpiicpc 
@@ -99,9 +99,9 @@ CXXFLAGS += $(CXXFLAGS-y)
 LDFLAGS += $(LDFLAGS-y)
 
 
-TARGET-$(VIRTUAL_SEQUENCER) += code/VirtualNextGenSequencer
+TARGETS-$(VIRTUAL_SEQUENCER) += code/VirtualNextGenSequencer
 
-TARGET=code/Ray $(TARGET-y)
+TARGETS=code/Ray $(TARGETS-y)
 
 #memory
 obj-y += code/memory/OnDiskAllocator.o code/memory/ReusableMemoryStore.o code/memory/MyAllocator.o code/memory/RingAllocator.o \
@@ -154,30 +154,52 @@ code/assembler/ray_main.o code/assembler/ExtensionData.o
 
 # inference rule
 %.o: %.cpp
-	$(MPICXX) -c -o $@ $<  $(CXXFLAGS)
+	@echo "  MPICXX" $<
+	@$(MPICXX) -c -o $@ $<  $(CXXFLAGS)
 
 # the target is Ray
-all: $(TARGET)
+all: $(TARGETS)
 
+showOptions: 
+	@echo ""
+	@echo "Compilation options (you can change them of course)"
+	@echo ""
+	@echo PREFIX= $(PREFIX)
+	@echo MAXKMERLENGTH= $(MAXKMERLENGTH)
+	@echo FORCE_PACKING= $(FORCE_PACKING)
+	@echo ASSERT= $(ASSERT)
+	@echo HAVE_LIBZ= $(HAVE_LIBZ)
+	@echo HAVE_LIBBZ2= $(HAVE_LIBBZ2)
+	@echo HAVE_CLOCK_GETTIME= $(HAVE_CLOCK_GETTIME)
+	@echo INTEL_COMPILER= $(INTEL_COMPILER)
+	@echo VIRTUAL_SEQUENCER= $(VIRTUAL_SEQUENCER)
+	@echo MPICXX= $(MPICXX)
+	@echo ""
+	@echo "Compilation and linking flags (generated automatically)"
+	@echo ""
+	@echo CXXFLAGS= $(CXXFLAGS)
+	@echo LDFLAGS= $(LDFLAGS)
+	@echo ""
+	@touch showOptions
+	
 # how to make Ray
-$(TARGET): $(obj-y)
-	$(MPICXX) $(LDFLAGS) $(obj-y) -o $@
+code/Ray: showOptions $(obj-y)
+	@echo "  MPICXX $@"
+	@$(MPICXX) $(LDFLAGS) $(obj-y) -o $@
+	@echo $(PREFIX) > PREFIX
+	@echo $(TARGETS) > TARGETS
 
 code/VirtualNextGenSequencer: code/simulation/simulatePairedReads.cpp
-	$(CXX) -o $@ $< $(CXXFLAGS)
+	@$(CXX) -o $@ $< $(CXXFLAGS)
+	@echo "  CXX $<"
 
 clean:
-	rm -f $(TARGET) $(obj-y)
+	@rm -f $(TARGETS) $(obj-y) showOptions PREFIX TARGETS
+	@echo CLEAN
 
 manual:
 	latex2html -split 0 -html_version 4.0,latin1,unicode InstructionManual.tex
 	pdflatex InstructionManual.tex
 
-install: all
-	mkdir -p $(PREFIX)
-	cp $(TARGET) $(PREFIX)
-	cp InstructionManual.pdf $(PREFIX)
-	cp README.md $(PREFIX)/README.doc
-	cp LICENSE $(PREFIX)/LICENSE.doc
-	cp ChangeLog $(PREFIX)/ChangeLog.doc
-
+install: $(TARGETS)
+	@scripts/install.sh

@@ -4,7 +4,7 @@
 * set ASSERT to no.
 * set MAXKMERLENGTH to 32
 * check version in constants.h + manual
-* test compilation on a git clone __on 5 different computers__: 
+* test compilation on a git clone __on 5 different computers__ (make + make install): 
  - ls30
  - iceman (colosse2)
  - cortex
@@ -14,7 +14,7 @@
 * close the milestone in trac
 * git checkout tag,
 * compile the manual
-* do a tar.bz2, compile it to test it
+* do a tar.bz2, compile it (make + make install) to test it
  - ls30
  - iceman (colosse2)
  - cortex
