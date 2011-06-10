@@ -11,11 +11,11 @@ http://denovoassembler.sf.net
 
 # Code repository
 
-	https://github.com/sebhtml/ray
+http://github.com/sebhtml/ray
 
 # Mailing list
 
-denovoassembler-users <AT> lists.sourceforge.net
+denovoassembler-users AT lists.sourceforge.net
 
 # Installation
 
@@ -53,8 +53,17 @@ To run Ray on paired reads:
 
 http://denovoassembler.sf.net/publications.html
 
+# Code
 
-# Message-passing interface
+## Code documentation
+
+cd code
+doxygen DoxygenConfigurationFile
+cd DoxygenDocumentation/html
+firefox index.html
+
+
+## Message-passing interface
 
 - http://cw.squyres.com/
 - http://www.parawiki.org/index.php/Message_Passing_Interface#Peer_to_Peer_Communication
