@@ -288,10 +288,9 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_VERTEX_INFO(Message*message){
 	//cout<<__func__<<endl;
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
+	int bufferPosition=0;
 	Kmer vertex;
-	for(int i=0;i<vertex.getNumberOfU64();i++){
-		vertex.setU64(i,incoming[i]);
-	}
+	vertex.unpack(incoming,&bufferPosition);
 	Kmer complement=m_parameters->_complementVertex(&vertex);
 	bool lower=vertex<complement;
 	Vertex*node=m_subgraph->find(&vertex);
@@ -309,8 +308,8 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTEX_INFO(Message*message){
 	}
 	e=m_subgraph->getReads(&vertex);
 
-	uint64_t wave=incoming[1];
-	int progression=incoming[2];
+	uint64_t wave=incoming[bufferPosition++];
+	int progression=incoming[bufferPosition++];
 	// add direction in the graph
 	Direction*d=(Direction*)m_directionsAllocator->allocate(sizeof(Direction));
 	d->constructor(wave,progression,lower);
@@ -1505,6 +1504,14 @@ void MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 		assert(node!=NULL);
 		#endif
 		uint64_t wave=incoming[pos++];
+		
+		#ifdef ASSERT
+		if(getRankFromPathUniqueId(wave)>=size){
+			cout<<"Invalid rank: "<<getRankFromPathUniqueId(wave)<<" maximum is "<<size-1<<endl;
+		}
+		assert(getRankFromPathUniqueId(wave)<size);
+		#endif
+
 		int progression=incoming[pos++];
 		Direction*e=(Direction*)m_directionsAllocator->allocate(sizeof(Direction));
 		e->constructor(wave,progression,lower);
@@ -1638,39 +1645,43 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS(Message*message){
 	int pos=0;
 	vertex.unpack(incoming,&pos);
 
-	int firstPathId=incoming[1];
+	int firstPathId=incoming[pos];
 	vector<Direction> paths=m_subgraph->getDirections(&vertex);
 
 	int availableElements=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t);
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-	int j=2;
 	int outputPosition=0;
 	vertex.pack(message2,&outputPosition);
-	while(firstPathId<(int)paths.size() && j<availableElements){
+	int origin=outputPosition;
+	outputPosition++;
+	while(firstPathId<(int)paths.size() && outputPosition<availableElements){
 		#ifdef ASSERT
 		assert(firstPathId<(int)paths.size());
 		#endif
 		uint64_t pathId=paths[firstPathId].getWave();
+		int progression=paths[firstPathId].getProgression();
 		#ifdef ASSERT
+		if(getRankFromPathUniqueId(pathId)>=size){
+			cout<<"Invalid rank: "<<getRankFromPathUniqueId(pathId)<<" maximum is "<<size-1<<" Index: "<<firstPathId<<" Total: "<<paths.size()<<" Progression: "<<progression<<endl;
+		}
 		assert(getRankFromPathUniqueId(pathId)<size);
 		#endif
-		message2[j++]=pathId;
-		message2[j++]=paths[firstPathId].getProgression();
+		message2[outputPosition++]=pathId;
+		message2[outputPosition++]=progression;
 		firstPathId++;
 	}
-	message2[1]=firstPathId;
+	message2[origin]=firstPathId;
 
 	#ifdef ASSERT
-	assert(j/2-1<=(int)paths.size());
-	assert(j<=availableElements);
+	assert(outputPosition<=availableElements);
 	assert(source<size);
 	#endif
 
 	if(firstPathId==(int)paths.size()){
-		Message aMessage(message2,j,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END,rank);
+		Message aMessage(message2,outputPosition,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END,rank);
 		m_outbox->push_back(aMessage);
 	}else{
-		Message aMessage(message2,j,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY,rank);
+		Message aMessage(message2,outputPosition,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY,rank);
 		m_outbox->push_back(aMessage);
 	}
 }
@@ -1684,7 +1695,9 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY(Message*message){
 	int count=message->getCount();
 	Kmer complement=m_parameters->_complementVertex(&vertex);
 	bool lower=vertex<complement;
-	for(int i=2;i<count;i+=2){
+	int origin=pos;
+	pos++;
+	for(int i=pos;i<count;i+=2){
 		uint64_t pathId=incoming[i];
 		#ifdef ASSERT
 		assert(getRankFromPathUniqueId(pathId)<size);
@@ -1697,7 +1710,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY(Message*message){
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
 	int outputPosition=0;
 	vertex.pack(message2,&outputPosition);
-	message2[outputPosition++]=incoming[1];
+	message2[outputPosition++]=incoming[origin];
 	Message aMessage(message2,outputPosition,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_ASK_VERTEX_PATHS,rank);
 	m_outbox->push_back(aMessage);
 }
@@ -1710,8 +1723,9 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END(Message*messa
 	vertex.unpack(incoming,&bufferPosition);
 	int count=message->getCount();
 	Kmer complement=m_parameters->_complementVertex(&vertex);
+	bufferPosition++;
 	bool lower=vertex<complement;
-	for(int i=2;i<count;i+=2){
+	for(int i=bufferPosition;i<count;i+=2){
 		uint64_t pathId=incoming[i];
 		#ifdef ASSERT
 		assert(getRankFromPathUniqueId(pathId)<size);

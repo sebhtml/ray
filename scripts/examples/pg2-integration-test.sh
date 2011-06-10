@@ -4,4 +4,4 @@ mpirun -tag-output -np $(cat PROCESSES) ./build-64/Ray \
 -k 70 \
 -o $0
 
-ValidateGenomeAssembly.sh Mycoplasma_agalactiae_PG2.fasta $0.Contigs.fasta $0.Ray
+ValidateGenomeAssembly.sh ~/nuccore/Mycoplasma_agalactiae_PG2.fasta $0.Contigs.fasta $0.Ray
