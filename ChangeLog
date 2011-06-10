@@ -22,6 +22,7 @@ sequence key.
 * Ray now estimates the genome length in
 RayOutput.CoverageDistributionAnalysis.txt.
 
+
 = 1.4.0 =
 2011-05-30
 

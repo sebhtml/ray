@@ -1,21 +1,21 @@
 # Ray assembler
 
-Ray is a parallel de novo genome assembler that utilises the message-passing interface everywhere.
-Ray is implemented using peer-to-peer communication with the message-passing interface.
+Ray is a parallel de novo genome assembler that utilises the message-passing interface everywhere
+and is implemented using peer-to-peer communication.
 
 
 # Website
 
-http://denovoassembler.sf.net
+- http://denovoassembler.sf.net
 
 
 # Code repository
 
-http://github.com/sebhtml/ray
+- http://github.com/sebhtml/ray
 
 # Mailing list
 
-denovoassembler-users AT lists.sourceforge.net
+- denovoassembler-users AT lists.sourceforge.net
 
 # Installation
 
@@ -31,11 +31,11 @@ denovoassembler-users AT lists.sourceforge.net
 
 ## Change the compiler
 
-make MPICXX=/software/openmpi-1.4.3/bin/mpic++
+	make MPICXX=/software/openmpi-1.4.3/bin/mpic++
 
 ## Compilation options
 
-make MAXKMERLENGTH=128 HAVE_LIBZ=n HAVE_LIBBZ2=n HAVE_CLOCK_GETTIME=n INTEL_COMPILER=n ASSERT=n FORCE_PACKING=y
+	make MAXKMERLENGTH=128 HAVE_LIBZ=n HAVE_LIBBZ2=n HAVE_CLOCK_GETTIME=n INTEL_COMPILER=n ASSERT=n FORCE_PACKING=y
 
 see the Makefile for more.
 
@@ -44,7 +44,7 @@ see the Makefile for more.
 
 To run Ray on paired reads:
 
-	mpirun -np 25 Ray -p lib1left.fasta lib1right.fasta -p lib2left.fasta lib2right.fasta -o prefix
+	mpirun -np 25 Ray -p lib1.left.fasta lib1.right.fasta -p lib2.left.fasta lib2.right.fasta -o prefix
 	ls prefix.Contigs.fasta
 	ls prefix.Scaffolds.fasta
 	ls prefix.*
