@@ -174,8 +174,7 @@ void SeedWorker::do_1_1_test(){
 			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 			int bufferPosition=0;
 			m_SEEDING_currentVertex.pack(message,&bufferPosition);
-			int messageSize=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT);
-			Message aMessage(message,messageSize,
+			Message aMessage(message,m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT),
 		MPI_UNSIGNED_LONG_LONG,vertexRank(&m_SEEDING_currentVertex,getSize(),m_wordSize),RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,getRank());
 			m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 			m_SEEDING_numberOfIngoingEdgesWithSeedCoverage=0;
@@ -201,6 +200,19 @@ void SeedWorker::do_1_1_test(){
 			m_cache[m_SEEDING_currentVertex]=coverage;
 
 			m_SEEDING_receivedIngoingEdges=_getIngoingEdges(&m_SEEDING_currentVertex,edges,m_wordSize);
+
+/*
+			for(int i=0;i<(int)m_SEEDING_receivedIngoingEdges.size();i++){
+				Kmer vertex=m_SEEDING_receivedIngoingEdges[i];
+				string kmerStr=idToWord(&vertex,m_parameters->getWordSize());
+				if(kmerStr=="TCAAAAATTTCTTTCAAAGTAATCTCATAAGCCGCTGGA"){
+					string child=idToWord(&m_SEEDING_currentVertex,m_parameters->getWordSize());
+					cout<<__func__<<" "<<__LINE__<<" Ingoing: "<<kmerStr<<" Current: "<<child<<endl;
+					vertex.print();
+				}
+			}
+*/
+
 			m_SEEDING_receivedOutgoingEdges=_getOutgoingEdges(&m_SEEDING_currentVertex,edges,m_wordSize);
 
 			m_ingoingCoverages.clear();
@@ -228,7 +240,18 @@ void SeedWorker::do_1_1_test(){
 					uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(KMER_U64_ARRAY_SIZE*sizeof(uint64_t));
 					int bufferPosition=0;
 					vertex.pack(message,&bufferPosition);
-					Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,vertexRank(&vertex,getSize(),m_wordSize),
+					int dest=vertexRank(&vertex,getSize(),m_wordSize);
+
+/*
+					string kmerStr=idToWord(&vertex,m_parameters->getWordSize());
+
+					if(kmerStr=="TCAAAAATTTCTTTCAAAGTAATCTCATAAGCCGCTGGA"){
+						cout<<__func__<<" "<<__LINE__<<" Destination: "<<dest<<" Kmer: "<<kmerStr<<endl;
+						vertex.print();
+					}
+*/
+
+					Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,dest,
 						RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,getRank());
 					m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 					m_SEEDING_vertexCoverageRequested=true;
@@ -249,8 +272,18 @@ void SeedWorker::do_1_1_test(){
 					uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(KMER_U64_ARRAY_SIZE*sizeof(uint64_t));
 					int bufferPosition=0;
 					vertex.pack(message,&bufferPosition);
+					int dest=vertexRank(&vertex,getSize(),m_wordSize);
+
+/*
+					string kmerStr=idToWord(&vertex,m_parameters->getWordSize());
+					if(kmerStr=="TCAAAAATTTCTTTCAAAGTAATCTCATAAGCCGCTGGA"){
+						cout<<__func__<<" "<<__LINE__<<" Destination: "<<dest<<" Kmer: "<<kmerStr<<endl;
+						vertex.print();
+					}
+*/
+
 					Message aMessage(message,bufferPosition,
-						MPI_UNSIGNED_LONG_LONG,vertexRank(&vertex,getSize(),m_wordSize),
+						MPI_UNSIGNED_LONG_LONG,dest,
 						RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,getRank());
 					m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 					m_SEEDING_vertexCoverageRequested=true;
