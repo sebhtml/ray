@@ -217,6 +217,9 @@ void*__Malloc(int c,int mallocType){
 	if(a==NULL){
 		cout<<"Critical exception: The system is out of memory, returned NULL."<<endl;
 	}
+
+	exit(EXIT_NOMOREMEMORY);
+
 	assert(a!=NULL);
 
 	#ifdef MALLOC_DEBUG
