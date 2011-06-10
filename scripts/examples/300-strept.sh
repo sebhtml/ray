@@ -1,4 +1,4 @@
-mpirun -tag-output -np $(cat PROCESSES) ~/Ray/trunk/code/Ray \
+mpirun -tag-output -np $(cat PROCESSES) ~/git-clones/ray/code/Ray \
 -p /home/boiseb01/nuccore/s_1.fasta \
    /home/boiseb01/nuccore/s_2.fasta \
 -o $0

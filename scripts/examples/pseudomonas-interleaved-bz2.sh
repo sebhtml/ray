@@ -1,4 +1,4 @@
-mpirun -np $(cat PROCESSES) ~/Ray/trunk/code/Ray \
+mpirun -np $(cat PROCESSES)  ~/git-clones/ray/code/Ray  \
 -i /home/boiseb01/nuccore/Pseudo-inter.fasta.bz2 -o $0
 
 ValidateGenomeAssembly.sh \

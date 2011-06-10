@@ -1,5 +1,5 @@
 mpirun -np $(cat PROCESSES) \
-~/Ray/trunk/code/Ray \
+  ~/git-clones/ray/code/Ray \
 -i /data/users/boiseb01/sra/SRA001125/sdata/interleaved1.fastq \
 -i /data/users/boiseb01/sra/SRA001125/sdata/interleaved2.fastq \
 -o $0

@@ -1,6 +1,8 @@
 
 suffix=$(date +%Y-%m-%d-%H-%M-%S).txt
 
+bash makeBuilds.sh
+
 (
 echo "BEGIN LIST OF REGRESSIONS $(date)"
 for i in $(ls *.sh|bash listRegressions.sh)

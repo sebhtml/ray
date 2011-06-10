@@ -1,4 +1,4 @@
-mpirun -np $(cat PROCESSES) ~/Ray/trunk/code/Ray \
+mpirun -np $(cat PROCESSES)  ~/git-clones/ray/code/Ray  \
 -p ~/nuccore/Pseud,200b,2x50b,50X_1.fasta.bz2 ~/nuccore/Pseud,200b,2x50b,50X_2.fasta.gz \
 -o $0
 
