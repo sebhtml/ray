@@ -23,6 +23,8 @@ sequence key.
 RayOutput.CoverageDistributionAnalysis.txt.
 * Fixed an integer overflow in CoverageDistribution when the number of k-mers
 occuring once is very large.
+* Added exit code EXIT_NOMOREMEMORY=42 as suggested by Hannes Pouseele (applied-maths.com).
+* Fixed the an access violation on Windows. Bug reported by Hannes Pouseele (applied-maths.com).
 
 
 = 1.4.0 =
