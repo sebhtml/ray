@@ -724,12 +724,21 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 
 	uint64_t numberOfVertices=0;
 	uint64_t verticesWith1Coverage=0;
+	int lowestCoverage=9999;
+	
+	uint64_t genomeKmers=0;
+
 	for(map<int,uint64_t>::iterator i=m_coverageDistribution.begin();
 		i!=m_coverageDistribution.end();i++){
 		int coverageValue=i->first;
 		uint64_t vertices=i->second;
-		if(coverageValue==1)
+		if(coverageValue<lowestCoverage){
 			verticesWith1Coverage=vertices;
+			lowestCoverage=coverageValue;
+		}
+		if(coverageValue>=m_minimumCoverage){
+			genomeKmers+=vertices;
+		}
 		numberOfVertices+=vertices;
 	}
 	double percentageSeenOnce=(0.0+verticesWith1Coverage)/numberOfVertices*100.00;
@@ -738,10 +747,14 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	g<<m_parameters.getPrefix();
 	g<<".CoverageDistributionAnalysis.txt";
 	ofstream outputFile(g.str().c_str());
+	outputFile<<"k-mer length:\t"<<m_parameters.getWordSize()<<endl;
+	outputFile<<"Lowest coverage observed:\t"<<lowestCoverage<<endl;
 	outputFile<<"MinimumCoverage:\t"<<m_minimumCoverage<<endl;
 	outputFile<<"PeakCoverage:\t"<<m_peakCoverage<<endl;
 	outputFile<<"RepeatCoverage:\t"<<repeatCoverage<<endl;
-	outputFile<<"Percentage of vertices with coverage 1:\t"<<percentageSeenOnce<<"%"<<endl;
+	outputFile<<"Number of k-mers with at least MinimumCoverage:\t"<<genomeKmers<<" k-mers"<<endl;
+	outputFile<<"Estimated genome length:\t"<<genomeKmers/2<<" nucleotides"<<endl;
+	outputFile<<"Percentage of vertices with coverage "<<lowestCoverage<<":\t"<<percentageSeenOnce<<" %"<<endl;
 	outputFile<<"DistributionFile: "<<file<<endl;
 
 	outputFile.close();
