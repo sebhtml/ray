@@ -47,7 +47,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #include <memory/MyAllocator.h>
 #include <algorithm>
 #include <mpi.h>
-
+#include <inttypes.h>
 using namespace std;
 
 Machine::Machine(int argc,char**argv){
@@ -1007,7 +1007,8 @@ void Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 		m_scaffolder.addContig(uniqueId,&(m_ed->m_EXTENSION_contigs[i]));
 
 		string withLineBreaks=addLineBreaks(contig,m_parameters.getColumns());
-		fprintf(fp,">contig-%lu %i nucleotides\n%s",uniqueId,(int)contig.length(),withLineBreaks.c_str());
+		
+		fprintf(fp,">contig-%"PRIu64" %i nucleotides\n%s",uniqueId,(int)contig.length(),withLineBreaks.c_str());
 	}
 	cout<<"Rank "<<m_rank<<" appended "<<total<<" elements"<<endl;
 	fclose(fp);

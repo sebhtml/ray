@@ -26,6 +26,16 @@ see <http://www.gnu.org/licenses/>
 
 #define EXIT_NOMOREMEMORY 42
 
+#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
+#define OS_WIN
+#else
+#define OS_POSIX
+#endif
+
+#ifdef __GNUC__
+#define __STDC_FORMAT_MACROS /* for PRIu64 */
+#endif
+
 #ifdef FORCE_PACKING
 #ifdef __GNUC__
 #define ATTRIBUTE_PACKED  __attribute__ ((packed))
