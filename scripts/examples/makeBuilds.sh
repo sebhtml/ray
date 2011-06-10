@@ -4,6 +4,7 @@ for k in 32 64 96 128
 do
 	make clean
 	make MAXKMERLENGTH=$k -j 30
+	rm -rf $origin/build-$k
 	make install PREFIX=$origin/build-$k
 done
 make clean
