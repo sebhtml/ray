@@ -57,10 +57,10 @@ http://denovoassembler.sf.net/publications.html
 
 ## Code documentation
 
-cd code
-doxygen DoxygenConfigurationFile
-cd DoxygenDocumentation/html
-firefox index.html
+	cd code
+	doxygen DoxygenConfigurationFile
+	cd DoxygenDocumentation/html
+	firefox index.html
 
 
 ## Message-passing interface
@@ -77,17 +77,17 @@ Doctoral Award to S.B., Canadian Institutes of Health Research (CIHR)
 
 ## Coding, maintenance, implementing ideas:
 
-	Sébastien Boisvert, Doctoral student, Université Laval
+- Sébastien Boisvert, Doctoral student, Université Laval
 
 
 ## Mentoring:
 
-	Prof. François Laviolette, Université Laval
-	Prof. Jacques Corbeil, Université Laval
+- Prof. François Laviolette, Université Laval
+- Prof. Jacques Corbeil, Université Laval
 
 
 ## Design insights for parallel architecture:
 
-	Élénie Godzaridis
+- Élénie Godzaridis
 
 	
