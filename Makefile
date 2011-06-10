@@ -201,5 +201,5 @@ manual:
 	latex2html -split 0 -html_version 4.0,latin1,unicode InstructionManual.tex
 	pdflatex InstructionManual.tex
 
-install: $(TARGETS)
+install: 
 	@scripts/install.sh
