@@ -137,6 +137,19 @@ Furthermore, autoconf and automake just don't work on a Lustre filesystem (used 
 super computers) when the network file system disallows file locking.
 The Makefile of Ray utilises the Linux kernel syntax (obj-y += object.o).
 
+\subsection{Use large k-mers}
+
+\begin{verbatim}
+	make PREFIX=Ray-Large-k-mers MAXKMERLENGTH=128
+	# wait
+	make install
+	mpirun -np 512 Ray-Large-k-mers/Ray -k 103 -p lib1_1.fastq lib1_2.fastq \
+	-p lib2_1.fastq lib2_2.fastq -o DeadlyBug,Assembler=Ray,K=103
+	# wait
+	ls DeadlyBug,Assembler=Ray,K=103.Scaffolds.fasta
+\end{verbatim}
+
+
 \section{Inputs}
 
 The input files for Ray contain sequences. The files must be formatted in one of the supported formats.

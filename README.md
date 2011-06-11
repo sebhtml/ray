@@ -42,6 +42,16 @@ Enjoy the README.
 
 	make MPICXX=/software/openmpi-1.4.3/bin/mpic++
 
+## Use large k-mers
+
+	make PREFIX=Ray-Large-k-mers MAXKMERLENGTH=128
+	# wait
+	make install
+	mpirun -np 512 Ray-Large-k-mers/Ray -k 103 -p lib1_1.fastq lib1_2.fastq \
+	-p lib2_1.fastq lib2_2.fastq -o DeadlyBug,Assembler=Ray,K=103
+	# wait
+	ls DeadlyBug,Assembler=Ray,K=103.Scaffolds.fasta
+
 ## Compilation options
 
 	make MAXKMERLENGTH=128 HAVE_LIBZ=n HAVE_LIBBZ2=n HAVE_CLOCK_GETTIME=n INTEL_COMPILER=n ASSERT=n FORCE_PACKING=y
