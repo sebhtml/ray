@@ -9,7 +9,7 @@ do
 done
 
 make clean
-make -j 30 PREFIX=$origin/build-compression
+make -j 30 PREFIX=$origin/build-compression HAVE_LIBZ=y HAVE_LIBBZ2=y
 rm -rf $origin/build-compression
 make install
 
