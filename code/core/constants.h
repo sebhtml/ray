@@ -26,6 +26,9 @@ see <http://www.gnu.org/licenses/>
 
 #include <stdint.h>
 
+/* exit codes */
+
+/* EXIT_SUCCESS 0 (defined in stdlib.h) */
 #define EXIT_NOMOREMEMORY 42
 
 /*

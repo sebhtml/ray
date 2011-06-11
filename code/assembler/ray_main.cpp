@@ -21,6 +21,7 @@
 
 #include<iostream>
 #include<core/Machine.h>
+#include <stdlib.h>
 using namespace std;
 
 /*
@@ -29,6 +30,6 @@ using namespace std;
 int main(int argc,char**argv){
 	Machine*m=new Machine(argc,argv);
 	m->start();
-	return 0;
+	return EXIT_SUCCESS;
 }
 
