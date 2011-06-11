@@ -7,6 +7,12 @@ do
 	rm -rf $origin/build-$k
 	make install
 done
+
+make clean
+make -j 30 PREFIX=$origin/build-compression
+rm -rf $origin/build-compression
+make install
+
 make clean
 make -j 30
 cd $origin
