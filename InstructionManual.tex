@@ -92,6 +92,7 @@ They can be changed in the Makefile or provided on the command line.
 \hline
 Option & Value & Description \\
 \hline
+PREFIX & path & where 'make install' will install Ray
 MAXKMERLENGTH & integer & maximum k-mer length \\
 HAVE\_LIBZ & y/n & enable support for .gz files \\
 HAVE\_LIBBZ2 & y/n& enable support for .bz2 files \\
@@ -107,8 +108,8 @@ INTEL\_COMPILER & y/n& use mpiicpc \\
 To compile Ray, enter these commands.
 
 \begin{verbatim}
-make 
-make install PREFIX=build
+make PREFIX=build
+make install
 ls build/Ray
 \end{verbatim}
 
@@ -117,18 +118,19 @@ You need to have mpic++ in your path, otherwise edit the Makefile to change MPIC
 You may also provide MPICXX on the command line.
 
 \begin{verbatim}
-make MPICXX=/software/openmpi-1.4.3/bin/mpic++
-make install PREFIX=build
+make PREFIX=build MPICXX=/software/openmpi-1.4.3/bin/mpic++
+make install
 ls build/Ray
 \end{verbatim}
 
 You can also provide all compilation options as follows.
 
 \begin{verbatim}
-make MPICXX=/software/openmpi-1.4.3/bin/mpic++ MAXKMERLENGTH=64 HAVE_LIBZ=n HAVE_LIBBZ2=n \
+make  PREFIX=build MPICXX=/software/openmpi-1.4.3/bin/mpic++ \
+MAXKMERLENGTH=64 HAVE_LIBZ=n HAVE_LIBBZ2=n \
 HAVE_CLOCK_GETTIME=n INTEL_COMPILER=n ASSERT=n FORCE_PACKING=y
-make install PREFIX=build
-ls build/Ray
+#wait 
+make install
 \end{verbatim}
 
 
@@ -325,12 +327,21 @@ mpirun -np 32 ./build-99/Ray \
 
 The Ray package includes a simulator for paired reads.
 To build it, you must provide VIRTUAL\_SEQUENCER=y.
+Note that you need boost to compile this tool.
+
+To compile it, type these commands:
 
 \begin{verbatim}
 
-make VIRTUAL_SEQUENCER=y
-make install PREFIX=build
+make PREFIX=build VIRTUAL_SEQUENCER=y
+# wait
+make install
+./build/VirtualNextGenSequencer 
+\end{verbatim}
 
+To use it:
+
+\begin{verbatim}
 N=6000000
 readLength=50
 errorRate=0.005

@@ -28,19 +28,16 @@ Enjoy the README.
 
 # Installation
 
-
-
-
 	tar xjf Ray-x.y.z.tar.bz2
 	cd Ray-x.y.z
-	make
-	make install PREFIX=build9
-	ls build9
+	make PREFIX=build
+	make install
+	ls build
 
 
 ## Change the compiler
 
-	make MPICXX=/software/openmpi-1.4.3/bin/mpic++
+	make PREFIX=build MPICXX=/software/openmpi-1.4.3/bin/mpic++
 
 ## Use large k-mers
 
@@ -54,7 +51,11 @@ Enjoy the README.
 
 ## Compilation options
 
-	make MAXKMERLENGTH=128 HAVE_LIBZ=n HAVE_LIBBZ2=n HAVE_CLOCK_GETTIME=n INTEL_COMPILER=n ASSERT=n FORCE_PACKING=y
+	make PREFIX=build-3000 MAXKMERLENGTH=128 HAVE_LIBZ=y HAVE_LIBBZ2=y \
+	HAVE_CLOCK_GETTIME=n INTEL_COMPILER=n ASSERT=n FORCE_PACKING=y
+	# wait
+	make install
+	ls build-3000
 
 see the Makefile for more.
 
