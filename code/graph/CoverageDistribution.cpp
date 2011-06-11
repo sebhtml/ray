@@ -25,8 +25,6 @@
 #include <map>
 using namespace std;
 
-//#define DEBUG_CoverageDistribution
-
 CoverageDistribution::CoverageDistribution(map<int,uint64_t>*distributionOfCoverage,string*file){
 	if(file!=NULL){
 		ofstream f;

@@ -19,8 +19,6 @@
 
 */
 
-//#define PRINT_RAW_LINK
-
 #include <iostream>
 #include <assembler/ReadFetcher.h>
 #include <scaffolder/Scaffolder.h>
@@ -161,7 +159,6 @@ void Scaffolder::solve(){
 	}
 	f2.close();
 
-	//cout<<"Coloring"<<endl;
 	// do some color merging.
 	for(set<uint64_t>::iterator j=vertices.begin();j!=vertices.end();j++){
 		uint64_t vertex=*j;
@@ -184,25 +181,6 @@ void Scaffolder::solve(){
 				}
 			}
 		}
-/*
-		if(children.count(vertex)>0&&children[vertex].count(state)>0
-			&&children[vertex][state].size()==1){
-			uint64_t childVertex=children[vertex][state][0][2];
-			char childState=children[vertex][state][0][3];
-			if(parents[childVertex][childState].size()==1){
-				int currentColor=colors[vertex];
-				int childColor=colors[childVertex];
-				if(currentColor!=childColor){
-					for(int i=0;i<(int)colorMap[childColor].size();i++){
-						uint64_t otherVertex=colorMap[childColor][i];
-						colors[otherVertex]=currentColor;
-						colorMap[currentColor].push_back(otherVertex);
-					}
-					colorMap.erase(childColor);
-				}
-			}
-		}
-*/
 		state='R';
 		if(children.count(vertex)>0&&children[vertex].count(state)>0
 			&&children[vertex][state].size()==1){
@@ -222,28 +200,7 @@ void Scaffolder::solve(){
 				}
 			}
 		}
-/*
-		if(children.count(vertex)>0&&children[vertex].count(state)>0
-			&&children[vertex][state].size()==1){
-			uint64_t childVertex=children[vertex][state][0][2];
-			char childState=children[vertex][state][0][3];
-			if(parents[childVertex][childState].size()==1){
-				int currentColor=colors[vertex];
-				int childColor=colors[childVertex];
-				if(currentColor!=childColor){
-					for(int i=0;i<(int)colorMap[childColor].size();i++){
-						uint64_t otherVertex=colorMap[childColor][i];
-						colors[otherVertex]=currentColor;
-						colorMap[currentColor].push_back(otherVertex);
-					}
-					colorMap.erase(childColor);
-				}
-			}
-		}
-*/
 	}
-
-	//cout<<"Generate scaffolds"<<endl;
 
 	// extract scaffolds
 	set<int>completedColours;
@@ -252,9 +209,6 @@ void Scaffolder::solve(){
 		extractScaffolds('F',&colors,vertex,&parents,&children,&completedColours);
 		extractScaffolds('R',&colors,vertex,&parents,&children,&completedColours);
 	}
-
-	//cout<<"Scaffolds: "<<m_scaffoldContigs.size()<<endl;
-	//cout<<"Add unscaffolded stuff."<<endl;
 
 	// add unscaffolded stuff.
 	for(int i=0;i<(int)m_masterContigs.size();i++){
@@ -269,14 +223,11 @@ void Scaffolder::solve(){
 		}
 	}
 
-	//cout<<"Scaffolds: "<<m_scaffoldContigs.size()<<endl;
-
 	map<uint64_t,int> contigLengths;
 	for(int i=0;i<(int)m_masterLengths.size();i++){
 		contigLengths[m_masterContigs[i]]=m_masterLengths[i];
 	}
 
-	//cout<<" Write scaffold list"<<endl;
 	// write scaffold list
 	ostringstream scaffoldList;
 	scaffoldList<<m_parameters->getPrefix()<<".ScaffoldComponents.txt";
@@ -363,8 +314,6 @@ void Scaffolder::extractScaffolds(char state,map<uint64_t,int>*colors,uint64_t v
 	if((*completedColours).count(currentColor)>0)
 		return;
 
-	//cout<<" COLOR contig-"<<vertex<<" "<<currentColor<<endl;
-	//cout<<"Checking parent"<<endl;
 	if((*parents).count(vertex)>0&&(*parents)[vertex].count(state)>0){
 		for(int i=0;i<(int)(*parents)[vertex][state].size();i++){
 			#ifdef ASSERT
@@ -382,12 +331,10 @@ void Scaffolder::extractScaffolds(char state,map<uint64_t,int>*colors,uint64_t v
 		return;
 
 	(*completedColours).insert(currentColor);
-	//cout<<"Good parent "<<endl;
 	bool done=false;
 	while(!done){
 		contigs.push_back(vertex);
 		strands.push_back(state);
-		//cout<<"Checking if has children"<<endl;
 		if((*children).count(vertex)>0&&(*children)[vertex].count(state)>0){
 			bool found=false;
 			for(int i=0;i<(int)(*children)[vertex][state].size();i++){
@@ -396,19 +343,15 @@ void Scaffolder::extractScaffolds(char state,map<uint64_t,int>*colors,uint64_t v
 				#endif
 				uint64_t childVertex=(*children)[vertex][state][i][2];
 				int childColor=(*colors)[childVertex];
-				//cout<<"Got color"<<endl;
 				if(childColor==currentColor){
-					//cout<<"Same color"<<endl;
 					#ifdef ASSERT
 					assert(3<(*children)[vertex][state][i].size());
 					#endif
 					char childState=(*children)[vertex][state][i][3];
-					//cout<<"Got child state"<<endl;
 					#ifdef ASSERT
 					assert(4<(*children)[vertex][state][i].size());
 					#endif
 					int gap=(*children)[vertex][state][i][4];
-					//cout<<"Appending gap"<<endl;
 					gaps.push_back(gap);
 
 					vertex=childVertex;
@@ -432,7 +375,6 @@ void Scaffolder::extractScaffolds(char state,map<uint64_t,int>*colors,uint64_t v
 
 void Scaffolder::run(){
 	if(!m_initialised){
-		//cout<<"Initialise"<<endl;
 		m_initialised=true;
 		m_ready=true;
 		m_contigId=0;
@@ -441,7 +383,6 @@ void Scaffolder::run(){
 		m_coverageRequested=false;
 	}
 
-	//cout<<"Forcing flush"<<endl;
 	m_virtualCommunicator->forceFlush();
 	m_virtualCommunicator->processInbox(&m_activeWorkers);
 	m_activeWorkers.clear();
@@ -449,7 +390,6 @@ void Scaffolder::run(){
 	if(m_contigId<(int)m_contigs.size()){
 		processContig();
 	}else{
-		//cout<<"done."<<endl;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING,
 			m_parameters->getRank());
 		m_outbox->push_back(aMessage);
@@ -538,7 +478,6 @@ void Scaffolder::performSummary(){
 						n++;
 					}
 					int average=sum/n;
-					//cout<<"SUMMARISED_LINK "<<leftContig<<" "<<leftStrand<<" "<<rightContig<<" "<<rightStrand<<" "<<average<<" "<<n<<endl;
 
 					vector<uint64_t> entry;
 					entry.push_back(leftContig);
@@ -567,7 +506,6 @@ void Scaffolder::processContigPosition(){
 	#ifdef ASSERT
 	assert(m_parameters!=NULL);
 	#endif
-	//Kmer reverseComplement=m_parameters->_complementVertex(vertex);
 	if(!m_forwardDone){
 		processVertex(vertex);
 	}else if(!m_reverseDone){
@@ -604,7 +542,6 @@ void Scaffolder::processVertex(Kmer vertex){
 	// 					get the paths that goes on them
 	// 					print the linking information
 	if(!m_coverageRequested){
-		//cout<<"1Requesting coverage contig "<<m_contigId<<"/"<<m_contigs.size()<<" position "<<m_positionOnContig<<"/"<<m_contigs[m_contigId].size()<<endl;
 		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 		int bufferPosition=0;
 		vertex.pack(buffer,&bufferPosition);
@@ -624,7 +561,6 @@ void Scaffolder::processVertex(Kmer vertex){
 		}
 	}else if(!m_coverageReceived
 		&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		//cout<<"Received coverage"<<endl;
 		vector<uint64_t>answer=m_virtualCommunicator->getResponseElements(m_workerId);
 		#ifdef ASSERT
 		assert(0<answer.size());
@@ -632,7 +568,6 @@ void Scaffolder::processVertex(Kmer vertex){
 		m_receivedCoverage=answer[0];
 		m_coverageReceived=true;
 		m_initialisedFetcher=false;
-		//cout<<"Coverage= "<<m_receivedCoverage<<endl;
 	}else if(m_coverageReceived){
 		if(m_receivedCoverage<m_parameters->getPeakCoverage()){
 			if(!m_initialisedFetcher){
@@ -663,7 +598,6 @@ void Scaffolder::processAnnotations(){
 }
 
 void Scaffolder::processAnnotation(){
-	//cout<<"ReadAnnotation "<<m_readAnnotationId<<endl;
 	// if is paired
 	// 	get the forward and the reverse markers
 	// 	get the coverage of the forward vertex
@@ -695,17 +629,14 @@ void Scaffolder::processAnnotation(){
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		m_hasPairRequested=true;
 		m_hasPairReceived=false;
-		//cout<<"Requests has pair?"<<endl;
 	}else if(!m_hasPairReceived
 	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
 		m_hasPair=m_virtualCommunicator->getResponseElements(m_workerId)[0];
 		m_hasPairReceived=true;
 		m_pairRequested=false;
-		//cout<<"Answer has pair?"<<endl;
 	}else if(!m_hasPairReceived){
 		return;
 	}else if(!m_hasPair){
-		//cout<<"No pair"<<endl;
 		m_readAnnotationId++;
 		m_hasPairRequested=false;
 	}else if(!m_pairRequested){
@@ -714,7 +645,6 @@ void Scaffolder::processAnnotation(){
 		Message aMessage(buffer,1,MPI_UNSIGNED_LONG_LONG,
 		rank,RAY_MPI_TAG_GET_READ_MATE,m_parameters->getRank());
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
-		//cout<<"Requests Pair"<<endl;
 		m_pairRequested=true;
 		m_pairReceived=false;
 	}else if(!m_pairReceived
@@ -726,7 +656,6 @@ void Scaffolder::processAnnotation(){
 		m_pairedReadLibrary=response[3];
 		m_pairReceived=true;
 		m_markersRequested=false;
-		//cout<<"Receives pair"<<endl;
 	}else if(!m_pairReceived){
 		return;
 	}else if(!m_markersRequested){
@@ -763,22 +692,17 @@ void Scaffolder::processAnnotation(){
 			m_forwardDirectionLengthRequested=true;
 			m_forwardDirectionLengthReceived=true;
 		}
-		//cout<<"OriginalVertex= "<<idToWord(vertex,m_parameters->getWordSize())<<" ";
-		//cout<<"ForwardMarker= "<<idToWord(m_pairedForwardMarker,m_parameters->getWordSize())<<" ";
-		//cout<<"ReverseMarker= "<<idToWord(m_pairedReverseMarker,m_parameters->getWordSize())<<" "<<endl;
 		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 		int bufferPosition=0;
 		m_pairedForwardMarker.pack(buffer,&bufferPosition);
 		Message aMessage(buffer,bufferPosition,MPI_UNSIGNED_LONG_LONG,
 		m_parameters->_vertexRank(&m_pairedForwardMarker),
 		RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION,m_parameters->getRank());
-		//cout<<"Sending "<<" RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION"<<endl;
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		m_forwardDirectionsRequested=true;
 		m_forwardDirectionsReceived=false;
 	}else if(!m_forwardDirectionsReceived
 	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		//cout<<"Received direction."<<endl;
 		vector<uint64_t> response=m_virtualCommunicator->getResponseElements(m_workerId);
 		m_pairedForwardMarkerCoverage=response[0];
 		m_pairedForwardHasDirection=response[1];
@@ -950,22 +874,17 @@ Case 13. (allowed)
 			m_reverseDirectionLengthReceived=true;
 		}
 
-		//cout<<"OriginalVertex= "<<idToWord(vertex,m_parameters->getWordSize())<<" ";
-		//cout<<"ForwardMarker= "<<idToWord(m_pairedForwardMarker,m_parameters->getWordSize())<<" ";
-		//cout<<"ReverseMarker= "<<idToWord(m_pairedReverseMarker,m_parameters->getWordSize())<<" "<<endl;
 		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 		int bufferPosition=0;
 		m_pairedReverseMarker.pack(buffer,&bufferPosition);
 		Message aMessage(buffer,bufferPosition,MPI_UNSIGNED_LONG_LONG,
 		m_parameters->_vertexRank(&m_pairedReverseMarker),
 		RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION,m_parameters->getRank());
-		//cout<<"Sending "<<" RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION"<<endl;
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		m_reverseDirectionsRequested=true;
 		m_reverseDirectionsReceived=false;
 	}else if(!m_reverseDirectionsReceived
 	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		//cout<<"Received direction."<<endl;
 		vector<uint64_t> response=m_virtualCommunicator->getResponseElements(m_workerId);
 		m_pairedReverseMarkerCoverage=response[0];
 		m_pairedReverseHasDirection=response[1];

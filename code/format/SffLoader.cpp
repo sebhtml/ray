@@ -96,8 +96,6 @@ int SffLoader::openSff(string file){
 	}
 	fread_result=fread((char*)&index_offset,1,sizeof(uint64_t),m_fp);
 	invert64(&index_offset);
-	//(cout)<<"Using clip values"<<endl;
-	//(cout)<<"Index offset: "<<index_offset<<endl;
 	fread_result=fread((char*)&index_length,1,sizeof(uint32_t),m_fp);
 	fread_result=fread((char*)&number_of_reads,1,sizeof(uint32_t),m_fp);
 	invert32(&index_length);
@@ -191,15 +189,7 @@ void SffLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator
 
 		string sequence=Bases;
 		string key=key_sequence;
-/*
- Note: Now Ray just uses all sequence in the SFF file..
 
-		if(sequence.substr(0,key_length)!=key){
-			(cout)<<"Warning: the sequence key was "<<sequence.substr(0,key_length)<<", expected "<<key<<" (from the SFF header)"<<endl;
-			cout<<"Skipping sequence."<<endl;
-			continue;
-		}
-*/
 		Read read;
 		read.constructor(sequence.substr(first-1,last-first+1).c_str(),seqMyAllocator,true);
 		reads->push_back(&read);

@@ -71,7 +71,6 @@ void DepthFirstSearchData::depthFirstSearch(Kmer root,Kmer a,int maxDepth,
 			vertexToVisit.pack(message,&j);
 			int dest=vertexRank(&vertexToVisit,size,wordSize);
 			
-			//cout<<__func__<<" "<<__LINE__<<" Destination: "<<dest<<" RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE "<<idToWord(&vertexToVisit,wordSize)<<endl;
 			Message aMessage(message,j,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
 			(*outbox).push_back(aMessage);
 		}else if((*vertexCoverageReceived)){
@@ -196,7 +195,6 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(Kmer a,int maxDepth,
 			int bufferPosition=0;
 			vertexToVisit.pack(message,&bufferPosition);
 			int dest=vertexRank(&vertexToVisit,size,parameters->getWordSize());
-			//cout<<__func__<<" "<<__LINE__<<" Destination: "<<dest<<" RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE "<<idToWord(&vertexToVisit,parameters->getWordSize())<<endl;
 			Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
 			(*outbox).push_back(aMessage);
 		}else if((*vertexCoverageReceived)){
@@ -236,7 +234,6 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(Kmer a,int maxDepth,
 				vertexToVisit.pack(message,&bufferPosition);
 				int destination=vertexRank(&vertexToVisit,size,parameters->getWordSize());
 				Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_REQUEST_VERTEX_EDGES,theRank);
-				//cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" RAY_MPI_TAG_REQUEST_VERTEX_EDGES "<<idToWord(vertexToVisit,wordSize)<<endl;
 
 				(*outbox).push_back(aMessage);
 				(*edgesRequested)=true;
@@ -247,8 +244,6 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(Kmer a,int maxDepth,
 
 				#ifdef ASSERT
 	
-				//cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" Vertex=GCGGCTAGTTTTCTAGTTTGA Output="<<receivedOutgoingEdges->size()<<endl;
-
 				assert(theDepth>=0);
 				assert(theDepth<=maxDepth);
 				#endif
@@ -326,7 +321,6 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(Kmer a,int maxDepth,
 				#ifdef ASSERT
 				assert(m_ingoingEdges.count(vertexToVisit)==0);
 	
-				//cout<<__FILE__<<" "<<__LINE__<<" "<<__func__<<" Vertex=GCGGCTAGTTTTCTAGTTTGA IN="<<ingoingEdges.size()<<" OUT="<<outgoingEdges.size()<<endl;
 				#endif
 
 				m_ingoingEdges[vertexToVisit]=ingoingEdges;

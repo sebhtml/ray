@@ -19,8 +19,6 @@
 
 */
 
-// TYPE: ALGORITHM
-
 #ifndef _SeedWorker
 #define _SeedWorker
 

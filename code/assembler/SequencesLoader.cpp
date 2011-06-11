@@ -82,7 +82,6 @@ void SequencesLoader::registerSequence(){
 		
 		(*m_myReads)[leftSequenceIdOnRank]->setLeftType();
 		(*m_myReads)[leftSequenceIdOnRank]->getPairedRead()->constructor(rightSequenceRank,rightSequenceIdOnRank,library);
-		//cout<<"Matching "<<getPathUniqueId(m_rank,leftSequenceIdOnRank)<<" and "<<getPathUniqueId(rightSequenceRank,rightSequenceIdOnRank)<<endl;
 	}else if(m_LOADER_isRightFile){
 
 		#ifdef ASSERT
@@ -105,7 +104,6 @@ void SequencesLoader::registerSequence(){
 
 		(*m_myReads)[rightSequenceIdOnRank]->setRightType();
 		(*m_myReads)[rightSequenceIdOnRank]->getPairedRead()->constructor(leftSequenceRank,leftSequenceIdOnRank,library);
-		//cout<<"Matching "<<getPathUniqueId(m_rank,rightSequenceIdOnRank)<<" and "<<getPathUniqueId(leftSequenceRank,leftSequenceIdOnRank)<<endl;
 	// left sequence in interleaved file
 	}else if(m_isInterleavedFile && ((m_distribution_sequence_id)%2)==0){
 		uint64_t rightSequenceGlobalId=(m_distribution_currentSequenceId)+1;

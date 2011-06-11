@@ -19,7 +19,6 @@
 
 */
 
-
 #include<structures/PairedRead.h>
 #include<core/common_functions.h>
 #include<assert.h>

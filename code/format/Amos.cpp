@@ -78,7 +78,6 @@ void Amos::slaveMode(){
 		m_sequence_id=0;
 	}
 
-	//cout<<"Forcing flush"<<endl;
 	m_virtualCommunicator->forceFlush();
 	m_virtualCommunicator->processInbox(&m_activeWorkers);
 	m_activeWorkers.clear();
@@ -98,8 +97,6 @@ void Amos::slaveMode(){
 		m_outbox->push_back(aMessage);
 		fclose(m_amosFile);
 		*m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
-		//cout<<"Rank "<<m_rank<<" appended "<<m_sequence_id<<" elements"<<endl;
-		//TODO: AMOS FILE OUTPUT IS disabled for now.
 	// iterate over the next one
 	}else if(m_fusionData->m_FUSION_eliminated.count(m_ed->m_EXTENSION_identifiers[m_contigId])>0){
 		m_contigId++;
@@ -140,13 +137,7 @@ void Amos::slaveMode(){
 
 			m_ed->m_EXTENSION_reads_requested=true;
 			m_ed->m_EXTENSION_reads_received=false;
-			//uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 			Kmer vertex=m_ed->m_EXTENSION_contigs[m_contigId][m_mode_send_vertices_sequence_id_position];
-			//int pos=0;
-			//vertex.pack(message,&pos);
-			//Message aMessage(message,pos,MPI_UNSIGNED_LONG_LONG,vertexRank(vertex,getSize(),m_wordSize),RAY_MPI_TAG_REQUEST_READS,getRank());
-			//m_outbox.push_back(aMessage);
-			//TODO: code is broken
 
 			m_readFetcher.constructor(&vertex,m_outboxAllocator,m_inbox,m_outbox,m_parameters,m_virtualCommunicator,m_workerId);
 

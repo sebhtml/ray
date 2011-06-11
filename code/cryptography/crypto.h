@@ -19,8 +19,6 @@
 
 */
 
-
-
 #ifndef _crypto
 #define _crypto
 
@@ -28,6 +26,5 @@
 
 uint64_t uniform_hashing_function_1_64_64(uint64_t key);
 uint64_t uniform_hashing_function_2_64_64(uint64_t key);
-uint64_t hashing_function(const char*a);
 
 #endif

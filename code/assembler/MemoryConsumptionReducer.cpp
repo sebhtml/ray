@@ -27,8 +27,6 @@
 #include <memory/malloc_types.h>
 using namespace std;
 
-//#define _VERBOSE
-
 void MemoryConsumptionReducer::getPermutations(Kmer kmer,int length,vector<Kmer>*output,int wordSize){
 	#ifdef ASSERT
 	assert(output->size()==0);
@@ -138,7 +136,6 @@ bool MemoryConsumptionReducer::isJunction(Kmer vertex,map<Kmer ,vector<Kmer> >*e
 			visited.insert(topVertex);
 
 			if(topDepth>wordSize){
-				//cout<<"is Junction"<<endl;
 				return true;
 			}
 			if(edges->count(topVertex)==0){
@@ -176,14 +173,6 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 
 		constructor();
 
-/*
-		if((int)m_confettiToCheck.size()>0){
-			int remaining=m_confettiToCheck.size()-m_processedTasks.size();
-			cout<<remaining<<" confetti were held back."<<endl;
-		}
-*/
-
-
 		m_currentVertexIsDone=false;
 		m_hasSetVertex=false;
 
@@ -192,24 +181,6 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 		// 1 for the junction
 		// total: 2k+2
 		m_maximumDepth=2*wordSize+2;
-
-/*
-		m_iterator.constructor(a);
-
-		map<int,uint64_t> distribution;
-		while(m_iterator.hasNext()){
-			distribution[m_iterator.next()->getValue()->getCoverage()]++;
-		}
-		CoverageDistribution dis(&distribution,NULL);
-		int peak=dis.getPeakCoverage();
-		//printf("Rank %i: peak coverage is %i\n",parameters->getRank(),dis.getPeakCoverage());
-		if(parameters->getRank()==MASTER_RANK){
-			for(map<int,uint64_t>::iterator i=distribution.begin();i!=distribution.end();i++){
-				cout<<i->first<<" -> "<<i->second<<endl;
-			}
-			cout<<"Peak is "<<peak<<endl;
-		}
-*/
 		
 		m_iterator.constructor(a,wordSize);
 	}else if(!m_currentVertexIsDone){
@@ -251,7 +222,6 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 			vector<Kmer > children=m_firstVertex->getOutgoingEdges(&key,wordSize);
 
 			if(!m_dfsDataOutgoing->m_doChoice_tips_dfs_done){
-				//cout<<"visit. "<<endl;
 				m_dfsDataOutgoing->depthFirstSearchBidirectional(key,m_maximumDepth,
 edgesRequested,
 vertexCoverageRequested,
@@ -370,7 +340,6 @@ edgesReceived,parameters
 							bestVertices.insert(node);
 						}
 
-						//cout<<"Depth reached: "<<maximumDepth<<" vs "<<path.size()<<endl;
 						if(maximumDepth>wordSize&&(int)path.size()<=wordSize){
 							foundDestination=true;
 						}
@@ -392,9 +361,6 @@ edgesReceived,parameters
 								break;
 							}
 							if(m_dfsDataOutgoing->m_coverages[path[o]]!=1){
-								#ifdef _VERBOSE
-								//cout<<path.size()<<" vertices, no junction, and a vertex has a coverage greater than 1"<<endl;
-								#endif
 								aloneBits=false;
 								break;
 							}
@@ -468,8 +434,7 @@ edgesReceived,parameters
 				#define PRINT_GRAPHVIZ
 				#endif
 				#ifdef PRINT_GRAPHVIZ
-				if(/*parameters->getRank()==MASTER_RANK 
-				&&!foundJunction&&!aloneBits&&children.size()==0&&(int)path.size()<=maxPathSize*/
+				if(
 				forcePrint){
 					set<Kmer > removed;
 					for(int p=0;p<(int)path.size();p++){
@@ -552,7 +517,6 @@ bool MemoryConsumptionReducer::isCandidate(Kmer key,Vertex*m_firstVertex,int wor
 	vector<Kmer > children=m_firstVertex->getOutgoingEdges(&key,wordSize);
 	int coverage=m_firstVertex->getCoverage(&key);
 	return ((parents.size()==1&&children.size()==0)||(parents.size()==0&&children.size()==1))&&coverage==1;
-	//return parents.size()==1&&children.size()==0&&coverage<=3;
 }
 
 void MemoryConsumptionReducer::printCounter(Parameters*parameters,GridTable*forest){

@@ -16,12 +16,6 @@
     You have received a copy of the GNU General Public License
     along with this program (COPYING).  
 	see <http://www.gnu.org/licenses/>
-
-
- 	Funding:
-
-Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Research (Master's award: 200910MDR-215249-172830 and Doctoral award: 200902CGM-204212-172830).
-
 */
 
 #include <memory/malloc_types.h>
@@ -423,7 +417,6 @@ m_seedingData,
 	&m_numberOfMachinesDoneSendingVertices,
 	&m_numberOfMachinesDoneSendingCoverage,
 				&m_outbox,&m_inbox,
-	//&m_sd->m_allIdentifiers,
 	&m_oa,
 	&m_numberOfRanksWithCoverageData,&m_seedExtender,
 	&m_master_mode,&m_isFinalFusion,&m_si);
@@ -499,6 +492,10 @@ void Machine::call_RAY_MASTER_MODE_WRITE_SCAFFOLDS(){
 	m_scaffolder.writeScaffolds();
 }
 
+/*
+ * This is the main loop of the program.
+ * One instance on each MPI rank.
+ */
 void Machine::run(){
 	// define some variables that hold life statistics of this
 	// MPI rank
@@ -520,15 +517,6 @@ void Machine::run(){
 				double seconds=toPrint/(1000.0);
 				printf("Rank %i: %s Time= %.2f s Speed= %i Sent= %i Received= %i\n",m_rank,SLAVE_MODES[m_slave_mode],
 					seconds,ticks,sentMessages,receivedMessages);
-		/*
-			printf("Rank %i: sent message types: ",m_rank);
-			for(map<int,int>::iterator i=messageTypes.begin();i!=messageTypes.end();i++){
-				int mpiTag=i->first;
-				int count=i->second;
-				printf("%s: %i ",MESSAGES[mpiTag],count);
-			}
-			printf("\n");
-		*/
 				fflush(stdout);
 				ticks=0;
 				sentMessages=0;
@@ -861,15 +849,11 @@ void Machine::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
 		uint64_t n=0;
 		#endif
 		GridTableIterator iterator;
-		//MyForestIterator iterator;
 		iterator.constructor(&m_subgraph,m_wordSize);
 		while(iterator.hasNext()){
 			Vertex*node=iterator.next();
 			Kmer key=*(iterator.getKey());
-			//cout<<idToWord(key,m_wordSize)<<endl;
-			//SplayNode<uint64_t,Vertex>*node=iterator.next();
 			int coverage=node->getCoverage(&key);
-			//cout<<coverage<<endl;
 			m_distributionOfCoverage[coverage]++;
 			#ifdef ASSERT
 			n++;
@@ -1087,7 +1071,6 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 			Message aMessage(buffer,count,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_CLEAR_DIRECTIONS,getRank());
 			m_outbox.push_back(aMessage);
 		}
-		//cout<<"Cycle "<<m_cycleNumber<<" sending 1) RAY_MPI_TAG_CLEAR_DIRECTIONS"<<endl;
 		m_currentCycleStep=1;
 		m_CLEAR_n=0;
 	}else if(m_CLEAR_n==getSize() && !m_isFinalFusion && m_currentCycleStep==1){
@@ -1099,7 +1082,6 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 			m_outbox.push_back(aMessage);
 		}
 		m_DISTRIBUTE_n=0;
-		//cout<<"Cycle "<<m_cycleNumber<<" sending 2) RAY_MPI_TAG_DISTRIBUTE_FUSIONS"<<endl;
 	}else if(m_DISTRIBUTE_n==getSize() && !m_isFinalFusion && m_currentCycleStep==2){
 		m_currentCycleStep++;
 		m_DISTRIBUTE_n=-1;
@@ -1108,7 +1090,6 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_FINISH_FUSIONS,getRank());
 			m_outbox.push_back(aMessage);
 		}
-		//cout<<"Cycle "<<m_cycleNumber<<" sending 3) RAY_MPI_TAG_FINISH_FUSIONS"<<endl;
 		m_FINISH_n=0;
 	}else if(m_FINISH_n==getSize() && m_isFinalFusion && m_currentCycleStep==3){
 		m_currentCycleStep++;

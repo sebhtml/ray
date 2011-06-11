@@ -38,10 +38,6 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 	}else if(m_buffers.isEmpty() && m_seedingData->m_SEEDING_i==(uint64_t)m_ed->m_EXTENSION_contigs.size()){
 		printf("Rank %i is distributing fusions [%i/%i] (completed)\n",getRank,(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
 		fflush(stdout);
-/*
-		m_timer.printElapsedTime("Distributing fusions");
-		m_timer.constructor();
-*/
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED,getRank);
 		m_outbox->push_back(aMessage);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
@@ -163,10 +159,6 @@ void FusionData::finishFusions(){
 		message[0]=m_FINISH_fusionOccured;
 		printf("Rank %i is finishing fusions [%i/%i] (completed)\n",getRank(),(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
 		fflush(stdout);
-/*
-		m_timer.printElapsedTime("Finishing fusions");
-		m_timer.constructor();
-*/
 		if(m_parameters->showMemoryUsage()){
 			showMemoryUsage(m_rank);
 			now();
@@ -231,10 +223,7 @@ void FusionData::finishFusions(){
 	int position2=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-overlapMinimumLength+capLength;
 	if(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
 		if(!m_Machine_getPaths_DONE){
-			//if(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-overlapMinimumLength){
 			if(m_ed->m_EXTENSION_currentPosition!=position1	&&m_ed->m_EXTENSION_currentPosition!=position2){
-				//printf("Rank %i: skipping position %i\n",getRank(),m_ed->m_EXTENSION_currentPosition);
-				//fflush(stdout);
 				m_Machine_getPaths_DONE=true;
 				m_Machine_getPaths_result.clear();// avoids major leak... LOL
 			}else{
@@ -275,13 +264,9 @@ void FusionData::finishFusions(){
 			m_Machine_getPaths_DONE=false;
 			m_Machine_getPaths_INITIALIZED=false;
 			m_Machine_getPaths_result.clear();
-			//printf("Rank %i position -> %i paths %i\n",getRank(),m_ed->m_EXTENSION_currentPosition,(int)a.size());
-			//fflush(stdout);
 			m_ed->m_EXTENSION_currentPosition++;
 		}
 	}else if(!m_checkedValidity){
-		//printf("Rank %i: checking validity\n",getRank());
-		//fflush(stdout);
 
 		done=true;
 		vector<Direction> directions1=(*m_FINISH_pathsForPosition)[position1];
@@ -290,7 +275,6 @@ void FusionData::finishFusions(){
 		// no hits are possible.
 		if(directions1.size()==0 || directions2.size()==0){
 			m_checkedValidity=true;
-			//cout<<"Rank "<<getRank()<<" No hit possible."<<endl;
 		}else{
 
 		// basically, directions1 contains the paths at a particular vertex in the path
@@ -311,7 +295,6 @@ void FusionData::finishFusions(){
 				uint64_t waveId=directions1[j].getWave();
 				in1.insert(waveId);
 			}
-			//cout<<"Rank "<<getRank()<<" directions1="<<directions1.size()<<" directions2="<<directions2.size()<<endl;
 
 			// index the index for each wave
 			for(int j=0;j<(int)directions2.size();j++){
@@ -341,7 +324,6 @@ void FusionData::finishFusions(){
 					int observedDistance=(progression1-otherProgression+1);
 					int expectedDistance=(overlapMinimumLength-2*capLength);
 					if(observedDistance==expectedDistance){
-						//cout<<"Expected="<<expectedDistance<<" Observed="<<observedDistance<<endl;
 						// this is 
 						done=false;
 						hits++;
@@ -359,44 +341,10 @@ void FusionData::finishFusions(){
  	*/
 			if(hits>1){// we don't support that right now.
 				done=true;
-				//cout<<"Rank "<<getRank()<<" more than 1 hit..."<<endl;
 			}	
 
-/*
-			// make sure that all positions from 
-			// <m_FINISH_pathsForPosition.size()-1> up to 
-			//     <m_FINISH_pathsForPosition.size()-overlapMinimumLength>
-			//     contain m_selectedPath.
-			//
-			//     if it is not the case, we might have a degenerated repeated region !
-			//     therefore, we must be cautious.
-			int thePosition=m_FINISH_pathsForPosition->size()-1;
-			int matchingPositions=0;
-			while(thePosition>=(int)m_FINISH_pathsForPosition->size()-overlapMinimumLength){
-				for(int j=0;j<(int)(*m_FINISH_pathsForPosition)[thePosition].size();j++){
-					if((*m_FINISH_pathsForPosition)[thePosition][j].getWave()==m_selectedPath){
-						matchingPositions++;
-						break;
-					}
-				}
-				thePosition--;
-			}
-
-			//cout<<"Matching "<<matchingPositions<<"/"<<overlapMinimumLength<<endl;
-			// overlap myst be good, no more than 2 mismatches
-			if((overlapMinimumLength-matchingPositions)>20){
-				//cout<<"Mapping not good."<<endl;
-				done=true;
-			}
-*/
 
 			m_checkedValidity=true;
-
-			//printf("Rank %i: checking validity (done)\n",getRank());
-			//fflush(stdout);
-			if(!done){
-				//cout<<"Rank "<<getRank()<<" still valid."<<endl;
-			}
 		}
 	}else if(!m_mappingConfirmed){
 		if(position1<=m_validationPosition && m_validationPosition<=position2){
@@ -408,8 +356,6 @@ void FusionData::finishFusions(){
 				getPaths(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition]);
 			}else{
 
-				//printf("Rank %i: confirming mapping position=%i\n",getRank(),m_validationPosition);
-				//fflush(stdout);
 				bool found=false;
 				for(int i=0;i<(int)m_Machine_getPaths_result.size();i++){
 					if(m_Machine_getPaths_result[i].getWave()==m_selectedPath){
@@ -428,8 +374,6 @@ void FusionData::finishFusions(){
 		}else if(m_validationPosition>position2){
 			m_mappingConfirmed=true;
 
-			//printf("Rank %i: confirming mapping (done)\n",getRank());
-			//fflush(stdout);
 		}else{
 			m_validationPosition++;
 			m_Machine_getPaths_DONE=false;
@@ -477,8 +421,6 @@ void FusionData::finishFusions(){
 					m_FINISH_vertex_requested=true;
 					m_FINISH_vertex_received=false;
 
-					//printf("Rank %i: requesting target vertex at %i\n",getRank(),nextPosition);
-					//fflush(stdout);
 				}else if(m_FINISH_vertex_received){
 					m_FINISH_newFusions[m_FINISH_newFusions.size()-1].push_back(m_FINISH_received_vertex);
 					m_FINISH_vertex_requested=false;
@@ -500,8 +442,6 @@ void FusionData::finishFusions(){
 		}
 	}
 	if(done){
-		//printf("Rank %i: it is done \n",getRank());
-		//fflush(stdout);
 		// there is nothing we can do.
 		m_seedingData->m_SEEDING_i++;
 		m_FINISH_vertex_requested=false;
@@ -526,7 +466,6 @@ void FusionData::makeFusions(){
 	// if a path is 100% identical to another one, but is reverse-complement, keep the one with the lowest ID
 	
 	int END_LENGTH=100;
-	//int maxNumberOfPaths=500;
 	// avoid duplication of contigs.
 	if(m_seedingData->m_SEEDING_i<(uint64_t)m_ed->m_EXTENSION_contigs.size()){
 		if((int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<=END_LENGTH){
@@ -585,7 +524,6 @@ void FusionData::makeFusions(){
 
 				m_FUSION_paths_requested=false;
 				m_FUSION_firstPaths=m_Machine_getPaths_result;
-				//cout<<"Direct First Paths: "<<m_FUSION_firstPaths.size()<<endl;
 				
 				m_FUSION_first_done=true;
 				m_FUSION_last_done=false;
@@ -600,7 +538,6 @@ void FusionData::makeFusions(){
 				m_FUSION_paths_requested=false;
 				m_FUSION_last_done=true;
 				m_FUSION_lastPaths=m_Machine_getPaths_result;
-				//cout<<"Direct Last Paths: "<<m_FUSION_lastPaths.size()<<endl;
 				m_FUSION_matches_done=false;
 				m_FUSION_matches.clear();
 				m_Machine_getPaths_INITIALIZED=false;
@@ -647,7 +584,6 @@ void FusionData::makeFusions(){
 						for(int p=0;p<(int)ends[otherPathId].size();p++){
 							int observedLength=ends[otherPathId][p]-starts[otherPathId][k]+1;
 							int expectedLength=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-2*END_LENGTH+1;
-							//cout<<observedLength<<" versus "<<expectedLength<<endl;
 							if(observedLength==expectedLength){
 								m_FUSION_matches.push_back(otherPathId);
 								found=true;
@@ -695,7 +631,6 @@ void FusionData::makeFusions(){
 				assert(rankId<m_size);
 				#endif
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rankId,RAY_MPI_TAG_GET_PATH_LENGTH,getRank());
-				//cout<<"Requesting Direct Path Length."<<endl;
 				m_outbox->push_back(aMessage);
 				m_FUSION_pathLengthRequested=true;
 				m_FUSION_pathLengthReceived=false;
@@ -742,7 +677,6 @@ void FusionData::makeFusions(){
 			}else{
 				m_FUSION_paths_requested=false;
 				m_FUSION_firstPaths=m_Machine_getPaths_result;
-				//cout<<"Reverse First Paths: "<<m_FUSION_firstPaths.size()<<endl;
 				m_FUSION_first_done=true;
 				m_FUSION_last_done=false;
 				m_Machine_getPaths_INITIALIZED=false;
@@ -760,7 +694,6 @@ void FusionData::makeFusions(){
 				m_FUSION_paths_requested=false;
 				m_FUSION_last_done=true;
 				m_FUSION_lastPaths=m_Machine_getPaths_result;
-				//cout<<"Reverse Last Paths: "<<m_FUSION_lastPaths.size()<<endl;
 				m_FUSION_matches_done=false;
 				m_FUSION_matches.clear();
 				m_Machine_getPaths_INITIALIZED=false;
@@ -794,7 +727,6 @@ void FusionData::makeFusions(){
 						for(int p=0;p<(int)ends[otherPathId].size();p++){
 							int observedLength=ends[otherPathId][p]-starts[otherPathId][k]+1;
 							int expectedLength=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-2*END_LENGTH+1;
-							//cout<<observedLength<<" versus "<<expectedLength<<endl;
 							if(observedLength==expectedLength){
 								m_FUSION_matches.push_back(otherPathId);
 								found=true;
@@ -828,7 +760,6 @@ void FusionData::makeFusions(){
 				assert(rankId<m_size);
 				#endif
 				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,rankId,RAY_MPI_TAG_GET_PATH_LENGTH,getRank());
-				//cout<<"Requesting reverse length."<<endl;
 				m_outbox->push_back(aMessage);
 				m_FUSION_pathLengthRequested=true;
 				m_FUSION_pathLengthReceived=false;

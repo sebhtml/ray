@@ -55,8 +55,6 @@ map<Kmer,int>*coverages){
 	cout<<"}"<<endl;
 }
 
-//#define NO_BUBBLES
-
 /**
  *
  */

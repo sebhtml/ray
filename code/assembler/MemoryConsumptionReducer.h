@@ -44,7 +44,6 @@ class MemoryConsumptionReducer{
 	uint64_t m_counter;
 
 	GridTableIterator m_iterator;
-	//MyForestIterator m_iterator;
 	bool m_initiated;
 
 	bool m_currentVertexIsDone;
@@ -54,7 +53,6 @@ class MemoryConsumptionReducer{
 	DepthFirstSearchData*m_dfsDataOutgoing;
 	Kmer m_firstKey;
 	Vertex*m_firstVertex;
-	//SplayNode<uint64_t,Vertex>*m_firstVertex;
 
 	vector<Kmer>*m_toRemove;
 	map<Kmer,vector<Kmer> >*m_ingoingEdges;

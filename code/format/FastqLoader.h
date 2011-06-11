@@ -19,8 +19,6 @@
 
 */
 
-
-
 #ifndef _FastqLoader
 #define _FastqLoader
 

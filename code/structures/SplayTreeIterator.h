@@ -19,7 +19,6 @@
 
 */
 
-
 #ifndef _SplayTreeIterator
 #define _SplayTreeIterator
 
@@ -70,7 +69,6 @@ void SplayTreeIterator<TREE_KEY_TYPE,TREE_VALUE_TYPE>::constructor(SplayTree<TRE
 	m_processed=0;
 	m_treeSize=m_tree->size();
 	if(m_tree!=NULL && m_tree->getRoot()!=NULL){
-		//cout<<"Root is "<<m_tree->getRoot()->getKey()<<endl;
 		m_stack.push(tree->getRoot());
 	}
 }
@@ -80,9 +78,7 @@ bool SplayTreeIterator<TREE_KEY_TYPE,TREE_VALUE_TYPE>::hasNext()const{
 	#ifdef ASSERT
 	if(m_stack.size()==0 && m_tree!=NULL){
 		if(m_processed!=(int)m_tree->size()){
-			//cout<<"Second version."<<endl;
 			cout<<"Rank="<<m_rank<<" id="<<m_id<<" Processed="<<m_processed<<" Tree="<<m_tree->size()<<" onRecord="<<m_treeSize<<endl;
-			//m_tree->print();
 		}
 		assert(m_processed==(int)m_tree->size());
 	}

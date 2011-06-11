@@ -36,6 +36,7 @@ using namespace std;
 
 /**
  * AMOS specification is available : http://sourceforge.net/apps/mediawiki/amos/index.php?title=AMOS
+ * \see http://sourceforge.net/apps/mediawiki/amos/index.php?title=Message_Types
  */
 class Amos{
 	VirtualCommunicator*m_virtualCommunicator;

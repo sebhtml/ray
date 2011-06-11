@@ -53,7 +53,6 @@ SplayTree<uint64_t,Vertex>*MyForest::getTree(int i){
 }
 
 int MyForest::getTreeIndex(uint64_t i){
-	//return 0;
 	return uniform_hashing_function_2_64_64(i)%m_numberOfTrees;
 }
 

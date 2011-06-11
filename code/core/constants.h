@@ -22,39 +22,59 @@ see <http://www.gnu.org/licenses/>
 #ifndef _constants
 #define _constants
 
+#define RAY_VERSION "1.6.0-rc1"
+
 #include <stdint.h>
 
 #define EXIT_NOMOREMEMORY 42
 
-#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
+/*
+ * Detect the operating system
+ */
+#if defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(WIN64) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__) 
 #define OS_WIN
 #else
 #define OS_POSIX
 #endif
 
+/*
+ * If GNU, must set __STDC_FORMAT_MACROS
+ * to get PRIu64 definition
+ */
 #ifdef __GNUC__
 #define __STDC_FORMAT_MACROS /* for PRIu64 */
 #endif
 
+/*
+ * Include those libraries for Microsoft Visual C++
+ */
 #ifdef OS_WIN
 #include <xiosbase>
 #include <stdexcept>
+/* http://msdn.microsoft.com/en-us/library/b0084kay%28VS.80%29.aspx */
+#define __func__ __FUNCTION__ 
 #endif
 
 #ifdef FORCE_PACKING
-#ifdef __GNUC__
-#define ATTRIBUTE_PACKED  __attribute__ ((packed))
+/*
+ * With gcc, one can pack data structures.
+ */
+	#ifdef __GNUC__
+		#define ATTRIBUTE_PACKED  __attribute__ ((packed))
+/*
+ * For Microsoft Visual C++
+ */
+	#elif defined(_MSC_VER)
+		#define ATTRIBUTE_PACKED /* sorry, not available yet */
+	#else
+		#define ATTRIBUTE_PACKED
+	#endif
 #else
-#define ATTRIBUTE_PACKED
+	#define ATTRIBUTE_PACKED
 #endif
-#else
-#define ATTRIBUTE_PACKED
-#endif
-
 
 #define DUMMY_LIBRARY 40000
 
-#define RAY_VERSION "1.6.0-devel"
 
 #define _ENCODING_A 0
 #define _ENCODING_T 1
@@ -81,10 +101,9 @@ see <http://www.gnu.org/licenses/>
  *
  */
 
-//#define MAXIMUM_MESSAGE_SIZE_IN_BYTES     131072 // 128 KiB
 #define MAXIMUM_MESSAGE_SIZE_IN_BYTES 4000
 
-#define MASTER_RANK 0x00
+#define MASTER_RANK 0
 
 /*
  * this is the type used to store coverage values

@@ -13,24 +13,24 @@ PREFIX=install-prefix
 # 64 nucleotides are stored on 2x64 bits
 # 96 nucleotides are stored on 3x64 bits
 # Intermediate values should utilise intermediate numbers of bits.
-MAXKMERLENGTH = 64
+MAXKMERLENGTH = 32
 
 # support for .gz files
 # needs libz
 # set to no if you don't have libz
 # y/n
-HAVE_LIBZ = y
+HAVE_LIBZ = n
 
 # support for .bz2 files
 # needs libbz2
 # set to no if you don't have libbz2
 # y/n
-HAVE_LIBBZ2 = y
+HAVE_LIBBZ2 = n
 
 # a real-time OS is available
 # (for the function clock_gettime)
 # y/n
-HAVE_CLOCK_GETTIME = y
+HAVE_CLOCK_GETTIME = n
 
 # use Intel's compiler
 # the name of the Intel MPI C++ compiler is mpiicpc
@@ -50,7 +50,7 @@ FORCE_PACKING = y
 # compile assertions
 # Ray may be faster when ASSERT=n
 # y/n
-ASSERT = y
+ASSERT = n
 
 # Create VirtualNextGenSequencer
 # needs boost library

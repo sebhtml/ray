@@ -32,7 +32,6 @@ void OpenAssemblerChooser::updateMultiplicators(int m_peakCoverage){
 		m_singleEndMultiplicator=m_pairedEndMultiplicator=1.3;
 	}
 	if(m_peakCoverage>=100){
-		//m_singleEndMultiplicator=m_pairedEndMultiplicator=1.0;
 	}
 }
 

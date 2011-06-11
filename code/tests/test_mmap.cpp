@@ -26,8 +26,6 @@ int main(){
 		map[i]=0;
 	}
 	cout<<"set to 0"<<endl;
-	//msync(map,m_chunkSize,MS_SYNC|MS_INVALIDATE);
-	//cout<<"msync done."<<endl;
 	munmap(map,m_chunkSize);
 	map =(char*)mmap(map, m_chunkSize, PROT_READ | PROT_WRITE,MAP_PRIVATE|MAP_FIXED,fd, 0);
 	cout<<"munmap/mmap"<<endl;

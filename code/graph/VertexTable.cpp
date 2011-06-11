@@ -77,7 +77,6 @@ VertexData*VertexTable::insert(Kmer*key){
 	if(key->isLower(&lowerKey)){
 		lowerKey=*key;
 	}
-	//cout<<key<<" bin="<<bin<<" size="<<m_gridSizes[bin]<<endl;
 	for(int i=0;i<m_gridSizes[bin];i++){
 		VertexData*gridEntry=m_gridData[bin]+i;
 		if(gridEntry->m_lowerKey.isEqual(&lowerKey)){
@@ -85,7 +84,6 @@ VertexData*VertexTable::insert(Kmer*key){
 			return move(bin,i);
 		}
 	}
-	//if(m_gridReservedSizes[bin]==m_gridSizes[bin]){
 	if(true){
 		VertexData*newEntries=(VertexData*)m_gridAllocator->allocate((m_gridSizes[bin]+1)*sizeof(VertexData));
 		for(int i=0;i<m_gridSizes[bin];i++){
@@ -105,7 +103,6 @@ VertexData*VertexTable::insert(Kmer*key){
 	assert(m_gridSizes[bin]>oldSize);
 	m_inserted=true;
 	m_size+=2;
-	//cout<<"Inserted "<<key<<" in bin "<<bin<<endl;
 	return move(bin,m_gridSizes[bin]-1);
 }
 

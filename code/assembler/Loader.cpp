@@ -132,10 +132,8 @@ Read*Loader::at(uint64_t i){
 	assert(i<m_size);
 	#endif
 
-	//cout<<"at "<<i<<endl;
 	if(i>=m_currentOffset+m_reads.size()){
 		loadSequences();
-		//cout<<"Loaded "<<m_reads.size()<<endl;
 	}
 	#ifdef ASSERT
 	if(i>=m_currentOffset+m_reads.size()){
@@ -192,7 +190,6 @@ void Loader::loadSequences(){
 		m_fastqgz.load(m_maxToLoad,&m_reads,&m_allocator,2);
 		#endif
 	}
-	//cout<<"Offset= "<<m_currentOffset<<" "<<m_reads.size()<<endl;
 }
 
 void Loader::reset(){

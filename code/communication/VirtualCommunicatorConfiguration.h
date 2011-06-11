@@ -21,9 +21,8 @@
 
 /*
  * configuration of the virtual communicator
+ * file included in Machine.cpp
  */
-
-
 
 Set( RAY_MPI_TAG_WRITE_CONTIG, 			3 )
 Set( RAY_MPI_TAG_REQUEST_VERTEX_READS, 		max(5,KMER_U64_ARRAY_SIZE+1) )

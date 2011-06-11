@@ -170,7 +170,6 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_READ_MATE(Message*message){
  *        list of ReadAnnotation
  */
 void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
-	//int count=message->getCount();
 	uint64_t*buffer=(uint64_t*)message->getBuffer();
 	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
@@ -193,12 +192,6 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 			#ifdef ASSERT
 			assert(rank>=0&&rank<m_parameters->getSize());
 			#endif
-/*
-			uint64_t globalId=m_parameters->getGlobalIdFromRankAndLocalId(rank,ptr->getReadIndex())+1;
-			if(globalId==1512){
-				cout<<__FILE__<<" "<<__LINE__<<" i="<<i<<" iid:1512 Kmer "<<idToWord(&vertex,m_parameters->getWordSize())<<" PosOnStrand "<<ptr->getPositionOnStrand()<<" Strand "<<ptr->getStrand()<<" isLower "<<ptr->isLower()<<endl;
-			}
-*/
 			if(ptr->isLower()==isLower){
 				outgoingMessage[j+1]=rank;
 				outgoingMessage[j+2]=ptr->getReadIndex();
@@ -231,18 +224,15 @@ void MessageProcessor::call_RAY_MPI_TAG_SET_WORD_SIZE(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_VERTEX_INFO_REPLY(Message*message){
-	//cout<<__func__<<endl;
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS_REPLY(Message*message){
-	//cout<<__func__<<endl;
 }
 
 /*
  * <- k-mer -><- pointer ->
  */
 void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS(Message*message){
-	//cout<<__func__<<endl;
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
 	Kmer vertex;
 	int pos=0;
@@ -265,7 +255,6 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS(Message*message){
 	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate((processed+1)*4*sizeof(uint64_t));
 	int outputPosition=0;
 	outgoingMessage[outputPosition++]=processed;
-	//cout<<__func__<<" "<<processed<<" reads."<<endl;
 	processed=0;
 	e=origin;
 	while(e!=NULL&&processed<maximumToReturn){
@@ -280,13 +269,11 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS(Message*message){
 		e=e->getNext();
 	}
 	outgoingMessage[outputPosition++]=(uint64_t)e;
-	//cout<<__func__<<" Pos="<<pos<<endl;
 	Message aMessage(outgoingMessage,outputPosition,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_VERTEX_READS_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_VERTEX_INFO(Message*message){
-	//cout<<__func__<<endl;
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
 	int bufferPosition=0;
 	Kmer vertex;
@@ -657,13 +644,11 @@ void MessageProcessor::call_RAY_MPI_TAG_START_REDUCTION(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION(Message*message){
-	//cout<<"Source="<<message->getSource()<<" Destination="<<rank<<" RAY_MPI_TAG_ASK_BEGIN_REDUCTION"<<endl;
 	m_verticesExtractor->scheduleReduction(m_outbox,rank);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_MUST_RUN_REDUCER(Message*message){
 	int rank=message->getSource();
-	//cout<<"Source="<<rank<<" Destination="<<rank<<" RAY_MPI_TAG_MUST_RUN_REDUCER"<<endl;
 	m_verticesExtractor->addRankForReduction(rank);
 	if(m_verticesExtractor->mustRunReducer()){
 		(*m_master_mode)=RAY_MASTER_MODE_ASK_BEGIN_REDUCTION;
@@ -696,7 +681,6 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 	#ifdef ASSERT
 	assert(!m_subgraph->frozen());
 	#endif
-	//cout<<__func__<<" "<<count<<endl;
 	for(int i=0;i<count;i+=KMER_U64_ARRAY_SIZE){
 		Kmer l;
 		int pos=i;
@@ -825,14 +809,6 @@ void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){
 		Kmer suffix;
 		suffix.unpack(incoming,&bufferPosition);
 
-/*
-		string kmerStr=idToWord(&suffix,m_parameters->getWordSize());
-		if(kmerStr=="GCAAGTTAGCAACATCATATGAGTGCAATCCTGTTGTAGGCTCATCTAAGACATAAATAGTTT"){
-			string parent=idToWord(&prefix,m_parameters->getWordSize());
-			cout<<__func__<<" "<<parent<<" -> "<<kmerStr<<endl;
-		}
-*/
-
 		Vertex*node=m_subgraph->find(&suffix);
 
 		#ifdef ASSERT
@@ -870,7 +846,6 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION(M
 
 	// freeze the forest. icy winter ahead.
 	m_subgraph->freeze();
-	//m_subgraph->show(rank,m_parameters->getPrefix().c_str());
 	int source=message->getSource();
 
 	Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, source, RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER,rank);
@@ -916,7 +891,6 @@ void MessageProcessor::call_RAY_MPI_TAG_COVERAGE_DATA(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_COVERAGE_END(Message*message){
-	//cout<<__func__<<" "<<message->getSource()<<endl;
 	(*m_numberOfMachinesDoneSendingCoverage)++;
 	if((*m_numberOfMachinesDoneSendingCoverage)==size){
 		(*m_master_mode)=RAY_MASTER_MODE_SEND_COVERAGE_VALUES;
@@ -953,40 +927,18 @@ void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 
 	int size=0;
 	GridTableIterator seedingIterator;
-	//MyForestIterator seedingIterator;
 	seedingIterator.constructor(m_subgraph,*m_wordSize);
 	while(seedingIterator.hasNext()){
 		size++;
 		Vertex*node=seedingIterator.next();
-		//SplayNode<uint64_t,Vertex>*node=seedingIterator.next();
 		edgesDistribution[node->getIngoingEdges(&(node->m_lowerKey),(*m_wordSize)).size()][node->getOutgoingEdges(&(node->m_lowerKey),(*m_wordSize)).size()]++;
-		//(m_seedingData->m_SEEDING_nodes).push_back(node->getKey());
 	}
 	#ifdef ASSERT
-	//assert((int)m_subgraph->size()==size);
-	//cout<<"Ingoing and outgoing edges."<<endl;
 	for(map<int,map<int,int> >::iterator i=edgesDistribution.begin();i!=edgesDistribution.end();++i){
 		for(map<int,int>::iterator j=i->second.begin();j!=i->second.end();++j){
-			//cout<<i->first<<" "<<j->first<<" "<<j->second<<endl;
 		}
 	}
 	#endif
-
-/*
-	int chunks=m_subgraph->getSecondAllocator()->getNumberOfChunks();
-	int chunkSize=m_subgraph->getSecondAllocator()->getChunkSize();
-	uint64_t totalBytes=chunks*chunkSize;
-	uint64_t kibibytes=totalBytes/1024;
-	printf("Rank %i: memory usage for vertices data is %lu KiB\n",rank,kibibytes);
-	fflush(stdout);
-
-	chunks=m_si->getAllocator()->getNumberOfChunks();
-	chunkSize=m_si->getAllocator()->getChunkSize();
-	totalBytes=chunks*chunkSize;
-	kibibytes=totalBytes/1024;
-	printf("Rank %i: memory usage for read markers is %lu KiB\n",rank,kibibytes);
-	fflush(stdout);
-*/
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_GET_COVERAGE_AND_MARK(Message*message){
@@ -1031,12 +983,6 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message)
 		vertex.unpack(incoming,&bufferPosition);
 
 		string kmerStr=idToWord(&vertex,m_parameters->getWordSize());
-
-		if(kmerStr=="TGCAAGTTAGCAACATCATATGAGTGCAATCCTGTTGTAGGCTCATCTAAGACATAAATAGTT"){
-			cout<<__func__<<" Source: "<<message->getSource()<<" i="<<i<<" Kmer: "<<kmerStr<<endl;
-			vertex.print();
-		}
-
 		Vertex*node=m_subgraph->find(&vertex);
 		#ifdef ASSERT
 		if(node==NULL){
@@ -1411,14 +1357,6 @@ void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message){
 		Vertex*node=m_subgraph->find(&vertex);
 
 		int coverage=node->getCoverage(&vertex);
-
-/*
-		uint64_t globalId=m_parameters->getGlobalIdFromRankAndLocalId(rank,sequenceIdOnDestination)+1;
-		if(globalId==1512){
-			cout<<__func__<<" iid:1512 Strand "<<strand<<" Kmer "<<idToWord(&vertex,m_parameters->getWordSize())<<" PositionOnStrand "<<positionOnStrand<<endl;
-		}
-*/
-
 		if(node==NULL){
 			continue;
 		}
@@ -1956,7 +1894,6 @@ void MessageProcessor::call_RAY_MPI_TAG_EXTENSION_START(Message*message){
 	assert(rank<size);
 	#endif
 	(*m_identifiers).push_back(id);
-	//(*m_allIdentifiers)[id]=m_identifiers->size()-1;
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_ELIMINATE_PATH(Message*message){
@@ -2031,10 +1968,7 @@ void MessageProcessor::call_RAY_MPI_TAG_LIBRARY_DISTANCE(Message*message){
 	uint64_t*incoming=(uint64_t*)buffer;
 	for(int i=0;i<count;i+=3){
 		m_parameters->addDistance(incoming[i+0],incoming[i+1],incoming[i+2]);
-		//cout<<"SourceSays "<<message->getSource()<<" "<<incoming[i+0]<<" "<<incoming[i+1]<<" "<<incoming[i+2]<<endl;
-		//fflush(stdout);
 	}
-	//cout<<"Received "<<count/3<<" lengths from "<<message->getSource()<<endl;
 
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY,rank);
 	m_outbox->push_back(aMessage);
@@ -2047,7 +1981,6 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_LIBRARY_DISTANCES(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED(Message*message){
 	(*m_numberOfRanksDoneSendingDistances)++;
-	//cout<<"RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED "<<(*m_numberOfRanksDoneSendingDistances)<<endl;
 	if((*m_numberOfRanksDoneSendingDistances)==size){
 		(*m_master_mode)=RAY_MASTER_MODE_START_UPDATING_DISTANCES;
 	}
@@ -2096,7 +2029,6 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE(Message*message){
 
 	int beforeRounding=5*sizeof(uint64_t)+m_myReads->at(index)->getRequiredBytes();
 	int toAllocate=roundNumber(beforeRounding,sizeof(uint64_t));
-	//cout<<" seq is "<<strlen(seq)<<" +1 +4*8="<<beforeRounding<<", rounded: "<<toAllocate<<endl;
 
 	uint64_t*messageBytes=(uint64_t*)m_outboxAllocator->allocate(toAllocate);
 	messageBytes[0]=t->getRank();
@@ -2106,7 +2038,6 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE(Message*message){
 	messageBytes[4]=m_myReads->at(index)->length();
 	char*dest=(char*)(messageBytes+5);
 	memcpy(dest,m_myReads->at(index)->getRawSequence(),m_myReads->at(index)->getRequiredBytes());
-	//cout<<"dest="<<dest<<endl;
 	Message aMessage(messageBytes,toAllocate/sizeof(uint64_t),MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
@@ -2237,7 +2168,6 @@ SequencesLoader*sequencesLoader,ExtensionData*ed,
 	int*m_numberOfMachinesDoneSendingCoverage,
 				StaticVector*m_outbox,
 				StaticVector*m_inbox,
-		//map<int,int>*m_allIdentifiers,
 		OpenAssemblerChooser*m_oa,
 int*m_numberOfRanksWithCoverageData,
 SeedExtender*seedExtender,int*m_master_mode,
@@ -2294,7 +2224,6 @@ SequencesIndexer*m_si){
 	this->m_numberOfMachinesDoneSendingCoverage=m_numberOfMachinesDoneSendingCoverage;
 	this->m_outbox=m_outbox;
 	this->m_inbox=m_inbox;
-	//this->m_allIdentifiers=m_allIdentifiers,
 	this->m_oa=m_oa;
 	this->m_numberOfRanksWithCoverageData=m_numberOfRanksWithCoverageData;
 	this->seedExtender=seedExtender;

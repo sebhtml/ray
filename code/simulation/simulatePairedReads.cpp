@@ -44,7 +44,6 @@ string addSubstitutionErrors(string*a,double rate){
 }
 
 string reverseComplement(string*a){
-	//cout<<"IN="<<*a<<endl;
 	ostringstream b;
 	int n=a->length()-1;
 	while(n>=0){
@@ -66,7 +65,6 @@ string reverseComplement(string*a){
 		}
 		b<<symbol;
 	}
-	//cout<<"OUT="<<b.str()<<endl;
 	return b.str();
 }
 
@@ -132,11 +130,9 @@ int main(int argc,char**argv){
 		int observedDistance=fragmentLengthSampler();
 
 		if(start+observedDistance>sequenceLength){
-			//cout<<"Skipping"<<endl;
 			continue;
 		}
 		int reverse=rand()%2;
-		//cout<<"I="<<i<<" Strand="<<reverse<<" Start="<<start<<" Length="<<fragmentLength<<" Seq="<<fragment<<endl;
 		string leftSequence=sequence.substr(start,length);
 		string rightSequence=sequence.substr(start+observedDistance-length,length);
 		if(reverse==1){

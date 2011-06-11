@@ -16,12 +16,6 @@
     You have received a copy of the GNU General Public License
     along with this program (COPYING).  
 	see <http://www.gnu.org/licenses/>
-
-
- 	Funding:
-
-Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Research (Master's award: 200910MDR-215249-172830 and Doctoral award: 200902CGM-204212-172830).
-
 */
 
 #include <assembler/VertexMessenger.h>
@@ -37,7 +31,6 @@ void VertexMessenger::work(){
 		return;
 	}else if(!m_requestedBasicInfo){
 		m_requestedBasicInfo=true;
-		//cout<<"Request basic info"<<endl;
 		m_receivedBasicInfo=false;
 		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(3*sizeof(uint64_t));
 		int j=0;
@@ -47,7 +40,6 @@ void VertexMessenger::work(){
 		Message aMessage(message,j,MPI_UNSIGNED_LONG_LONG,m_destination,RAY_MPI_TAG_VERTEX_INFO,m_parameters->getRank());
 		m_outbox->push_back(aMessage);
 	}else if(!m_receivedBasicInfo &&m_inbox->size()==1&&m_inbox->at(0)->getTag()==RAY_MPI_TAG_VERTEX_INFO_REPLY){
-		//cout<<"Received basic info"<<endl;
 		m_receivedBasicInfo=true;
 		uint64_t*buffer=(uint64_t*)m_inbox->at(0)->getBuffer();
 		m_coverageValue=buffer[0];
@@ -79,7 +71,6 @@ void VertexMessenger::work(){
 		}
 
 		if(m_pointer==NULL){
-			//cout<<"No reads -- is done"<<endl;
 			m_isDone=true;
 		}else{
 			m_requestedReads=false;
@@ -96,7 +87,6 @@ void VertexMessenger::work(){
 
 void VertexMessenger::getReadsForRepeatedVertex(){
 	if(!m_requestedReads){
-		//cout<<"Requesting reads"<<endl;
 		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 		int j=0;
 		m_vertex.pack(message,&j);
@@ -121,7 +111,6 @@ void VertexMessenger::getReadsForRepeatedVertex(){
 		m_receivedReads=false;
 	}else if(!m_receivedReads&&m_inbox->size()==1&&m_inbox->at(0)->getTag()==RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY){
 		m_receivedReads=true;
-		//cout<<"Received reads."<<endl;
 		uint64_t*buffer=(uint64_t*)m_inbox->at(0)->getBuffer();
 		int numberOfReadsInMessage=buffer[0];
 		int i=0;
@@ -146,18 +135,15 @@ void VertexMessenger::getReadsForRepeatedVertex(){
 			i++;
 		}
 		if(m_mateIterator==m_matesToMeet->end()){
-			//cout<<"No more reads -- is done"<<endl;
 			m_isDone=true;
 		}else{
 			m_requestedReads=false;
-			//cout<<"more reads -- not done."<<endl;
 		}
 	}
 }
 
 void VertexMessenger::getReadsForUniqueVertex(){
 	if(!m_requestedReads){
-		//cout<<"Requesting reads"<<endl;
 		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
 		int j=0;
 		m_vertex.pack(message,&j);
@@ -168,7 +154,6 @@ void VertexMessenger::getReadsForUniqueVertex(){
 		m_receivedReads=false;
 	}else if(!m_receivedReads&&m_inbox->size()==1&&m_inbox->at(0)->getTag()==RAY_MPI_TAG_VERTEX_READS_REPLY){
 		m_receivedReads=true;
-		//cout<<"Received reads."<<endl;
 		uint64_t*buffer=(uint64_t*)m_inbox->at(0)->getBuffer();
 		int numberOfReadsInMessage=buffer[0];
 		int i=0;
@@ -194,11 +179,9 @@ void VertexMessenger::getReadsForUniqueVertex(){
 		}
 		m_pointer=(void*)buffer[1+numberOfReadsInMessage*4];
 		if((int)m_annotations.size()==m_numberOfAnnotations){
-			//cout<<"No more reads -- is done"<<endl;
 			m_isDone=true;
 		}else{
 			m_requestedReads=false;
-			//cout<<"more reads -- not done."<<endl;
 		}
 	}
 }

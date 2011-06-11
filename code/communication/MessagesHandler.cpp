@@ -29,8 +29,6 @@
 #include <string.h>
 using namespace std;
 
-//#define SHOW_TAGS
-
 /*
  * send messages,
  */
@@ -93,7 +91,6 @@ Moreover, at the end it is very easy to MPI_Cancel all the receives not yet matc
 
     george. 
  */
-
 void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator,int destination){
 	int flag;
 	MPI_Status status;
@@ -156,9 +153,9 @@ void MessagesHandler::showStats(){
 		int source=i->first;
 		cout<<" source="<<source<<endl;
 		for(map<int,int>::iterator j=i->second.begin();j!=i->second.end();j++){
-			//int tag=j->first;
-			//int count=j->second;
-			//cout<<__TAG_NAMES[tag]<<" "<<count<<endl;
+			int tag=j->first;
+			int count=j->second;
+			cout<<MESSAGES[tag]<<" "<<count<<endl;
 		}
 	}
 	cout<<endl;

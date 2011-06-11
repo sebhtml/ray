@@ -19,7 +19,6 @@
 
 */
 
-
 #ifndef _Machine
 #define _Machine
 
@@ -120,7 +119,6 @@ class Machine{
 
 	MemoryConsumptionReducer m_reducer;
 
-	// TODO: merge all m_mode_* variables with m_mode and m_master_mode.
 	bool m_startEdgeDistribution;
 	bool m_mode_AttachSequences;
 

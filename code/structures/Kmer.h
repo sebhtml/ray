@@ -27,6 +27,10 @@
 #include <vector>
 using namespace std;
 
+/*
+ * Determine the number of uint64_t necessary to host 
+ * k-mers of maximum length MAXKMERLENGTH
+ */
 #define KMER_REQUIRED_BITS (2*MAXKMERLENGTH)
 #define KMER_REQUIRED_BYTES (KMER_REQUIRED_BITS/8)
 #define KMER_REQUIRED_BYTES_MODULO (KMER_REQUIRED_BITS%8)
@@ -43,8 +47,6 @@ using namespace std;
 #else
 	#define KMER_U64_ARRAY_SIZE (KMER_UINT64_T)
 #endif
-
-
 
 /**
  * Class for storing k-mers.

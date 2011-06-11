@@ -19,8 +19,6 @@
 
 */
 
-// TYPE: FILE FORMAT
-
 #ifndef _SffLoader
 #define _SffLoader
 

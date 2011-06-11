@@ -21,7 +21,6 @@
 
 #include<format/FastqGzLoader.h>
 #include<fstream>
-
 #include<zlib.h>
 
 int FastqGzLoader::open(string file,int period){

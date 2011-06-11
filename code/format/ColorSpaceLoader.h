@@ -19,7 +19,6 @@
 
 */
 
-
 #ifndef _ColorSpaceLoader
 #define _ColorSpaceLoader
 

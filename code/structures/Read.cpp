@@ -26,8 +26,6 @@
 #include<cstring>
 using namespace  std;
 
-// #define __READ_VERBOSITY
-
 char*Read::trim(char*buffer,const char*sequence){
 	int theLen=strlen(sequence);
 	strcpy(buffer,sequence);

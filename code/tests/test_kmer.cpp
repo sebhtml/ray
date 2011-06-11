@@ -140,8 +140,6 @@ void test_out_large(){
 	
 	uint8_t edges=(1<<(4+_ENCODING_T));
 
-	//print8(edges);
-
 	Kmer aKmer=wordId(a.c_str());
 	Kmer bKmer=wordId(b.c_str());
 	
@@ -351,32 +349,13 @@ void test_Ingoing(){
 
 
 int main(int argc,char**argv){
-	//cout<<endl;
-	//cout<<"MAXKMERLENGTH="<<MAXKMERLENGTH<<endl;
 	string seq=argv[1];
-	//cout<<"Seq="<<endl;
 	int wordSize=seq.length();
 
 	Kmer id=wordId(seq.c_str());
-	//cout<<"Kmer="<<endl;
-	//cout<<"idToWord="<<endl;
-	//cout<<idToWord(&id,wordSize);
-	//cout<<endl;
 
 	Kmer empty;
-	//cout<<idToWord(&empty,wordSize);
 	string result=idToWord(&id,wordSize);
-	//cout<<seq<<endl;
-	//if(seq!=result){
-		for(int i=0;i<seq.length();i++){
-			//cout<<" "<<seq[i]<<" ";
-		}
-/*
-		cout<<endl;
-		id.print();
-		cout<<result<<endl;
-*/
-	//}
 	assert(seq==result);
 	char last=seq[seq.length()-1];
 	char observed=getLastSymbol(&id,wordSize);
@@ -393,13 +372,6 @@ int main(int argc,char**argv){
 	Kmer rcId=wordId(rc.c_str());
 	assert(rcId==comp);
 	
-/*
-	for(int i=0;i<seq.length();i++){
-		cout<<" "<<seq[i]<<" ";
-	}
-	cout<<endl;
-*/
-
 	// ingoing edges.
 	//
 	uint8_t edges=0xff;
@@ -407,8 +379,6 @@ int main(int argc,char**argv){
 	assertEquals(4,inEdges.size());
 	set<string> tmp;
 	for(int i=0;i<(int)inEdges.size();i++){
-		//cout<<"Entry "<<i<<" "<<endl;
-		//inEdges[i].print();
 		Kmer theKmer=inEdges[i];
 		string a=idToWord(&theKmer,wordSize);
 		Kmer id=wordId(a.c_str());
@@ -449,7 +419,6 @@ int main(int argc,char**argv){
 		assertEquals(tmp.count(a),0);
 		tmp.insert(a);
 		assertEquals(seq.substr(1,wordSize-1),a.substr(0,wordSize-1));
-		//cout<<seq<<" -> "<<a<<endl;
 	}
 
 	assertEquals(tmp.size(),4);

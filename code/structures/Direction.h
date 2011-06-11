@@ -19,7 +19,6 @@
 
 */
 
-
 #ifndef _Direction
 #define _Direction
 

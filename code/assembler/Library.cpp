@@ -62,7 +62,6 @@ void Library::detectDistances(){
 		m_activeWorkerIterator=m_activeWorkers.begin();
 		m_initiatedIterator=true;
 		m_maximumAliveWorkers=30000;
-		//m_maximumAliveWorkers=1;
 	}
 
 	m_virtualCommunicator->processInbox(&m_activeWorkersToRestore);
@@ -83,15 +82,12 @@ void Library::detectDistances(){
 		#endif
 		m_virtualCommunicator->resetLocalPushedMessageStatus();
 
-		//cout<<"Rank "<<m_rank<<" Worker="<<workerId<<" work()"<<endl;
-		//
 		//force the worker to work until he finishes or pushes something on the stack
 		while(!m_aliveWorkers[workerId].isDone()&&!m_virtualCommunicator->getLocalPushedMessageStatus()){
 			m_aliveWorkers[workerId].work();
 		}
 
 		if(m_virtualCommunicator->getLocalPushedMessageStatus()){
-			//cout<<"Waiting -> "<<workerId<<endl;
 			m_waitingWorkers.push_back(workerId);
 		}
 		if(m_aliveWorkers[workerId].isDone()){
@@ -116,7 +112,6 @@ void Library::detectDistances(){
 				}
 				#endif
 
-				//cout<<"Creating worker "<<m_SEEDING_i<<endl;
 				m_aliveWorkers[m_SEEDING_i].constructor(m_SEEDING_i,m_seedingData,m_virtualCommunicator,m_outboxAllocator,m_parameters,m_inbox,m_outbox,&m_libraryDistances,&m_detectedDistances,&m_allocator);
 				m_activeWorkers.insert(m_SEEDING_i);
 				int population=m_aliveWorkers.size();
@@ -162,7 +157,6 @@ int m_size,
 TimePrinter*m_timePrinter,int*m_mode,int*m_master_mode,
 Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,StaticVector*inbox,VirtualCommunicator*vc
 ){
-	//cout<<"Library::constructor"<<endl;
 	this->m_rank=m_rank;
 	this->m_outbox=m_outbox;
 	this->m_outboxAllocator=m_outboxAllocator;
@@ -278,14 +272,12 @@ void Library::updateStates(){
 		assert(m_activeWorkers.count(workerId)>0);
 		#endif
 		m_activeWorkers.erase(workerId);
-		//cout<<"Rank "<<m_rank<<" Worker="<<workerId<<" SET STATE SLEEPY"<<endl;
 	}
 	m_waitingWorkers.clear();
 
 	for(int i=0;i<(int)m_activeWorkersToRestore.size();i++){
 		uint64_t workerId=m_activeWorkersToRestore[i];
 		m_activeWorkers.insert(workerId);
-		//cout<<"Rank "<<m_rank<<" Worker="<<workerId<<" SET STATE ACTIVE"<<endl;
 	}
 	m_activeWorkersToRestore.clear();
 

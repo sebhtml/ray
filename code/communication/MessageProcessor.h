@@ -84,7 +84,6 @@ class MessageProcessor{
 
 	MessagesHandler*m_messagesHandler;
 
-	//MyForest*m_subgraph;
 	GridTable*m_subgraph;
 
 	RingAllocator*m_outboxAllocator;
@@ -136,6 +135,9 @@ class MessageProcessor{
 
 	void assignHandlers();
 
+	/*
+ * generate prototypes with the list and a macro
+ */
 	#define MACRO_LIST_ITEM(x) void call_ ## x ( Message*m ) ;
 	#include <communication/mpi_tag_macros.h>
 	#undef MACRO_LIST_ITEM
@@ -191,7 +193,6 @@ ExtensionData*ed,
 	int*m_numberOfMachinesDoneSendingCoverage,
 				StaticVector*m_outbox,
 				StaticVector*m_inbox,
-		//map<int,int>*m_allIdentifiers,
 		OpenAssemblerChooser*m_oa,
 int*m_numberOfRanksWithCoverageData,
 SeedExtender*seedExtender,int*m_master_mode,bool*m_isFinalFusion,

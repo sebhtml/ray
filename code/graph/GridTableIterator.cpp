@@ -74,7 +74,6 @@ void GridTableIterator::getNext(){
 			assert(m_currentBin<m_table->getNumberOfBins());
 			assert(m_currentPosition<m_table->getNumberOfElementsInBin(m_currentBin));
 			#endif
-			//cout<<__func__<<" getting next bin="<<m_currentBin<<" id="<<m_currentPosition<<""<<endl;
 
 			return;
 		}

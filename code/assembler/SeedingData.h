@@ -19,8 +19,6 @@
 
 */
 
-// ALGORITHM
-
 #ifndef _SeedingData
 #define _SeedingData
 

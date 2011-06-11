@@ -31,8 +31,6 @@ see <http://www.gnu.org/licenses/>
 #include <communication/mpi_tags.h>
 using namespace std;
 
-
-
 #define __max(a,b) (((a)>(b)) ? (a) : (b))
 
 /*

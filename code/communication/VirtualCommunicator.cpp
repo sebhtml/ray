@@ -88,7 +88,6 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 	}
 	int newPriority=oldPriority+count;
 	m_priorityQueue[newPriority].insert(elementId);
-	//cout<<"Rank "<<m_rank<<" "<<__func__<<" Worker="<<workerId<<" Tag="<<tag<<" Destination="<<destination<<endl;
 	#ifdef ASSERT
 	assert(count>0);
 	#endif
@@ -119,7 +118,6 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 	}
 	assert(currentSize<=threshold);
 	#endif
-	//cout<<__func__<<" Tag: "<<MESSAGES[tag]<<" Destination: "<<destination<<" CurrentSize: "<<currentSize<<" Threshold: "<<threshold<<" Workers: "<<m_workerCurrentIdentifiers[tag][destination].size()<<endl;
 	if(currentSize>=threshold){
 		// must flush the message
 		flushMessage(tag,destination);
@@ -147,15 +145,8 @@ void VirtualCommunicator::flushMessage(int tag,int destination){
 	assert(currentSize>0);
 	int requiredResponseLength=m_workerCurrentIdentifiers[tag][destination].size()*m_elementSizes[tag]*sizeof(uint64_t);
 	m_distribution[requiredResponseLength]++;
-	//cout<<"Rank "<<m_rank<<" "<<__func__<<" RequiredResponseLength="<<requiredResponseLength<<" Tag="<<tag<<" Destination="<<destination<<endl;
 	assert(requiredResponseLength<=MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	#endif
-
-	//cout<<"Rank "<<m_rank<<" "<<__func__<<" Tag="<<MESSAGES[tag]<<" Destination="<<destination<<" Capacity: "<<requiredResponseLength<<" / "<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<" bytes"<<endl;
-
-	//if(requiredResponseLength!=MAXIMUM_MESSAGE_SIZE_IN_BYTES){
-		//cout<<"Rank "<<m_rank<<" "<<__func__<<" Under Capacity: "<<requiredResponseLength<<"/"<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<endl;
-	//}
 
 	uint64_t*messageContent=(uint64_t*)m_outboxAllocator->allocate(currentSize*sizeof(uint64_t));
 
@@ -172,9 +163,6 @@ void VirtualCommunicator::flushMessage(int tag,int destination){
 	m_outbox->push_back(aMessage);
 
 	m_pendingMessages++;
-
-	//cout<<"Rank "<<m_rank<<" "<<__func__<<" Tag="<<tag<<" Destination="<<destination<<" CurrentSize="<<currentSize<<" PendingMessages="<<m_messages[destination]<<" TotalPending="<<m_pendingMessages<<endl;
-	//cout.flush();
 }
 
 bool VirtualCommunicator::isMessageProcessed(uint64_t workerId){
@@ -221,7 +209,6 @@ void VirtualCommunicator::processInbox(vector<uint64_t>*activeWorkers){
 		int queryTag=m_replyTagToQueryTag[incomingTag];
 		if(m_activeTag==queryTag&&m_activeDestination==source){
 			m_pendingMessages--;
-			//cout<<"Rank "<<m_rank<<" "<<__func__<<" QueryTag="<<queryTag<<" Source="<<source<<" TotalPending="<<m_pendingMessages<<endl;
 			cout.flush();
 			uint64_t*buffer=(uint64_t*)message->getBuffer();
 			#ifdef ASSERT
@@ -313,7 +300,6 @@ void VirtualCommunicator::forceFlush(){
 	assert(m_messageContent.count(selectedTag)>0&&m_messageContent[selectedTag].count(selectedDestination)>0);
 	assert(!m_messageContent[selectedTag][selectedDestination].empty());
 	#endif
-	//cout<<"Rank "<<m_rank<<" "<<__func__<<" Tag="<<selectedTag<<" Destination="<<selectedDestination<<" Count="<<maxSize<<endl;
 	flushMessage(selectedTag,selectedDestination);
 }
 

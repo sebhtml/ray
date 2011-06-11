@@ -53,7 +53,6 @@ void IndexerWorker::work(){
 		if(m_position>m_theLength-m_parameters->getWordSize()){
 			m_fetchedCoverageValues=true;
 		}else if(!m_coverageRequested){
-			//cout<<"Seq ="<<m_sequence<<" "<<m_parameters->getWordSize()endl;
 			Kmer vertex=kmerAtPosition(m_sequence.c_str(),m_position,m_parameters->getWordSize(),'F',m_parameters->getColorSpaceMode());
 			m_vertices.push_back(vertex);
 			int sendTo=vertexRank(&vertex,m_parameters->getSize(),m_parameters->getWordSize());
@@ -66,7 +65,6 @@ void IndexerWorker::work(){
 		}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
 			int coverage=m_virtualCommunicator->getResponseElements(m_workerId)[0];
 			m_coverages.push_back(coverage);
-			//cout<<"Coverage="<<coverage<<endl;
 			m_position++;
 			m_coverageRequested=false;
 		}
@@ -78,9 +76,6 @@ void IndexerWorker::work(){
 				int coverage=m_coverages[i];
 				if(coverage>=m_parameters->getMinimumCoverage()/2&&coverage<m_parameters->getPeakCoverage()*2){
 					selectedPosition=i;
-					if(selectedPosition!=0&&m_coverages[0]>=m_parameters->getPeakCoverage()*2){
-						//cout<<"BINGO"<<endl;
-					}
 					break;
 				}
 			}
@@ -96,23 +91,6 @@ void IndexerWorker::work(){
 				}
 	
 			}
-/*
-			cout<<"Seq="<<m_sequence<<endl;
-			cout<<"digraph{"<<endl;
-			for(int i=0;i<(int)m_coverages.size();i++){
-				uint64_t vertex=m_vertices[i];
-				string prefix= idToWord(vertex,m_parameters->getWordSize());
-				cout<<prefix<<" [ label=\""<<prefix<<" ("<<m_coverages[i]<<")\" shape=\"egg\" color=\"lightblue2\" ]"<<endl;
-				if(i+1<(int)m_coverages.size()){
-					uint64_t nextVertex=m_vertices[i+1];
-					string suffix=idToWord(nextVertex,m_parameters->getWordSize());
-					cout<<prefix<<" -> "<<suffix<<endl;
-				}
-				//cout<<" "<<i<<":"<<m_coverages[i];
-			}
-			cout<<"}"<<endl;
-			cout<<" ForwardSelection="<<selectedPosition<<endl;
-*/
 			// index it
 			if(selectedPosition!=-1){
 				Kmer vertex=m_vertices[selectedPosition];
@@ -160,14 +138,6 @@ void IndexerWorker::work(){
 				}
 	
 			}
-/*
-			cout<<"Seq="<<m_sequence<<endl;
-			cout<<" Coverages ";
-			for(int i=0;i<(int)m_coverages.size();i++){
-				cout<<" "<<i<<":"<<m_coverages[i];
-			}
-			cout<<" ReverseSelection="<<selectedPosition<<endl;
-*/
 
 			// index it
 			if(selectedPosition!=-1){

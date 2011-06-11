@@ -175,7 +175,6 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				int bufferPosition=0;
 				kmer.pack(message,&bufferPosition);
 				int dest=vertexRank(&kmer,size,wordSize);
-				//cout<<__func__<<" Destination: "<<dest<<" RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE "<<idToWord(&kmer,m_parameters->getWordSize())<<endl;
 
 				Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
 				(*outbox).push_back(aMessage);
@@ -738,7 +737,6 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
  bool*colorSpaceMode,int size,vector<vector<Kmer> >*seeds){
 	if(!ed->m_EXTENSION_directVertexDone){
 		if(!ed->m_EXTENSION_VertexAssembled_requested){
-			//cout<<__func__<<endl;
 			delete m_dfsData;
 			m_dfsData=new DepthFirstSearchData;
 
@@ -754,13 +752,11 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(2*sizeof(uint64_t));
 			int bufferPosition=0;
 			currentVertex->pack(message,&bufferPosition);
-			//message[bufferPosition++]=0;
 			int destination=vertexRank(currentVertex,size,wordSize);
 			Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_ASK_IS_ASSEMBLED,theRank);
 			(*outbox).push_back(aMessage);
 			ed->m_EXTENSION_VertexAssembled_received=false;
 		}else if(ed->m_EXTENSION_VertexAssembled_received){
-			//cout<<__func__<<" direct is done"<<endl;
 			ed->m_EXTENSION_reverseVertexDone=false;
 			ed->m_EXTENSION_directVertexDone=true;
 			ed->m_EXTENSION_VertexMarkAssembled_requested=false;
@@ -769,7 +765,6 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			if(ed->m_EXTENSION_vertexIsAssembledResult){
 				ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
 				ed->m_EXTENSION_markedCurrentVertexAsAssembled=false;
-				//cout<<"1289312 m_EXTENSION_markedCurrentVertexAsAssembled <- false"<<endl;
 				ed->m_EXTENSION_directVertexDone=false;
 				ed->m_EXTENSION_reads_requested=false;
 				m_messengerInitiated=false;
@@ -856,7 +851,6 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 				m_sequenceIndexToCache++;
 			}else if(!m_sequenceRequested
 				&&m_cacheForRepeatedReads.find(uniqueId,false)!=NULL){
-				//cout<<"Retrieving from cache "<<uniqueId<<endl;
 				char buffer[4000];
 				SplayNode<uint64_t,Read>*node=m_cacheForRepeatedReads.find(uniqueId,false);
 				#ifdef ASSERT
@@ -919,7 +913,6 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 
 						if(extensionElement==NULL){
 							addRead=false;
-							//cout<<"Not using read: coverage="<<ed->m_currentCoverage<<" peak="<<m_parameters->getPeakCoverage()<<endl;
 						}
 
 					}
@@ -936,10 +929,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 						char theLeftStrand=extensionElement->getStrand();
 						int startingPositionOnPath=extensionElement->getPosition();
 
-						//int coverageForLeftRead=ed->m_extensionCoverageValues->at(startingPositionOnPath);
 						int repeatLengthForLeftRead=ed->m_repeatedValues->at(startingPositionOnPath);
 						int observedFragmentLength=(startPosition-startingPositionOnPath)+ed->m_EXTENSION_receivedLength+extensionElement->getStrandPosition()-positionOnStrand;
-						//cout<<"Observed="<<observedFragmentLength<<endl;
 						int multiplier=3;
 
 						int library=ed->m_EXTENSION_pairedRead.getLibrary();
@@ -947,7 +938,6 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 						int expectedDeviation=m_parameters->getLibraryStandardDeviation(library);
 
 						int repeatThreshold=100;
-						//int theDistance=startPosition-startingPositionOnPath;
 						if(expectedFragmentLength-multiplier*expectedDeviation<=observedFragmentLength 
 						&& observedFragmentLength <= expectedFragmentLength+multiplier*expectedDeviation 
 				&&( (theLeftStrand=='F' && theRightStrand=='R')
@@ -986,7 +976,6 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,bool*colorSpac
 					}
 					#endif
 					m_expiredReads[expiryPosition].push_back(uniqueId);
-					//cout<<"Read="<<uniqueId<<" Length="<<readLength<<" WordSize="<<wordSize<<" PositionOnStrand="<<positionOnStrand<<" Position="<<position<<" ExpiryPosition="<<expiryPosition<<endl;
 					// received paired read too !
 					if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
 						element->setPairedRead(ed->m_EXTENSION_pairedRead);
@@ -1041,7 +1030,6 @@ set<uint64_t>*SeedExtender::getEliminatedSeeds(){
 void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed,
 	GridTable*subgraph,StaticVector*inbox){
 	m_cacheForRepeatedReads.constructor();
-	//m_cacheHashTable.constructor();
 	m_cacheForListOfReads.constructor();
 	ostringstream prefixFull;
 	m_parameters=parameters;
@@ -1203,7 +1191,6 @@ void SeedExtender::showReadsInRange(){
 void SeedExtender::printExtensionStatus(Kmer*currentVertex){
 	int theRank=m_parameters->getRank();
 	int theCurrentSize=m_ed->m_EXTENSION_extension->size();
-	//now();
 	// stop the infinite loop
 	#ifdef HUNT_INFINITE_BUG
 	if(m_ed->m_EXTENSION_extension->size()>200000){

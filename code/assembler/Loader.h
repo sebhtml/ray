@@ -19,7 +19,6 @@
 
 */
 
-
 #ifndef _Loader
 #define _Loader
 

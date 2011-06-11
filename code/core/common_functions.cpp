@@ -70,14 +70,12 @@ Kmer wordId(const char*a){
 
 Kmer wordId_Classic(const char*a){
 	Kmer i;
-	//i.print();
 	int theLen=strlen(a);
 	for(int j=0;j<(int)theLen;j++){
 		uint64_t k=charToCode(a[j]);
 		int bitPosition=2*j;
 		int chunk=bitPosition/64;
 		int bitPositionInChunk=bitPosition%64;
-		//cout<<"bitPositionInChunk="<<bitPositionInChunk<<" code="<<k<<endl;
 		#ifdef ASSERT
 		if(!(chunk<i.getNumberOfU64())){
 			cout<<"Chunk="<<chunk<<" positionInKmer="<<j<<" KmerLength="<<strlen(a)<<" bitPosition=" <<bitPosition<<" Chunks="<<i.getNumberOfU64()<<endl;
@@ -85,7 +83,6 @@ Kmer wordId_Classic(const char*a){
 		assert(chunk<i.getNumberOfU64());
 		#endif
 		uint64_t filter=(k<<bitPositionInChunk);
-		//i.print();
 		i.setU64(chunk,i.getU64(chunk)|filter);
 	}
 	return i;
@@ -105,7 +102,6 @@ string idToWord(const Kmer*i,int wordSize){
 		int bitPositionInChunk=(bitPosition%64);
 		uint64_t chunk=i->getU64(chunkId);
 		uint64_t j=(chunk<<(62-bitPositionInChunk))>>62; // clear the bits.
-		//cout<<"Position="<<p<<" Chunk "<<chunkId<<" BitInChunk="<<bitPositionInChunk<<" code="<<j<<endl;
 		a[p]=codeToChar(j);
 	}
 	a[wordSize]='\0';
@@ -370,11 +366,6 @@ void showMemoryUsage(int rank){
 }
 
 vector<Kmer> _getOutgoingEdges(Kmer*a,uint8_t edges,int k){
-	/*
-	cout<<__func__<<endl;
-	cout<<"Input: "<<endl;
-	a->print();
-	*/
 	vector<Kmer> b;
 	Kmer aTemplate;
 	aTemplate=*a;
@@ -388,21 +379,11 @@ vector<Kmer> _getOutgoingEdges(Kmer*a,uint8_t edges,int k){
  *		00ab	00ef
  *		00ab	cdef
  */
-			//cout<<"Current"<<endl;
-			//print64(current);
-			//cout<<"Next"<<endl;
-			//print64(next);
 			next=(next<<62);
-			//cout<<"Filter"<<endl;
-			//print64(next);
 			word=word|next;
 		}
 		aTemplate.setU64(i,word);
 	}
-
-
-	//cout<<"Template"<<endl;
-	//aTemplate.print();
 
 	int positionToUpdate=2*k;
 	int chunkIdToUpdate=positionToUpdate/64;
@@ -412,16 +393,11 @@ vector<Kmer> _getOutgoingEdges(Kmer*a,uint8_t edges,int k){
 		int j=((((uint64_t)edges)<<(sizeof(uint64_t)*8-5-i))>>(sizeof(uint64_t)*8-1));
 		if(j==1){
 			Kmer newKmer=aTemplate;
-			//cout<<"Adding."<<endl;
 			uint64_t last=newKmer.getU64(chunkIdToUpdate);
 			uint64_t filter=i;
 			filter=filter<<(positionToUpdate-2);
 			last=last|filter;
-			//cout<<"Filter"<<endl;
-			//print64(filter);
 			newKmer.setU64(chunkIdToUpdate,last);
-			//cout<<"Adding."<<endl;
-			//newKmer.print();
 			b.push_back(newKmer);
 		}
 	}
@@ -430,11 +406,6 @@ vector<Kmer> _getOutgoingEdges(Kmer*a,uint8_t edges,int k){
 }
 
 vector<Kmer> _getIngoingEdges(Kmer*a,uint8_t edges,int k){
-/*
-	cout<<endl;
-	cout<<"Input"<<endl;
-	a->print();
-*/
 	vector<Kmer> b;
 	Kmer aTemplate;
 	aTemplate=*a;
@@ -460,11 +431,7 @@ vector<Kmer> _getIngoingEdges(Kmer*a,uint8_t edges,int k){
 		if(i!=0){
 			// the 2 last of the previous will be the 2 first of this one
 			uint64_t last=a->getU64(i-1);
-			//cout<<"Previous chunk"<<endl;
-			//print64(last);
 			last=(last>>62);
-			//cout<<"Filter"<<endl;
-			//print64(last);
 			element=element|last;
 		}
 
@@ -482,31 +449,20 @@ vector<Kmer> _getIngoingEdges(Kmer*a,uint8_t edges,int k){
 			uint64_t filter=3;// 11 or 1*2^1+1*2^0
 			filter=filter<<(position);
 			filter=~filter;
-			//cout<<"Element"<<endl;
-			//print64(element);
 			element=element&filter;
-			//cout<<"Filter"<<endl;
-			//print64(filter);
 		}
 		aTemplate.setU64(i,element);
 	}
-	//cout<<"Template, INgoing"<<endl;
-	//aTemplate.print();
 
 	for(int i=0;i<4;i++){
 		int j=((((uint64_t)edges)<<((sizeof(uint64_t)*8-1)-i))>>(sizeof(uint64_t)*8-1));
 		if(j==1){
-			//cout<<"Adding."<<endl;
 			Kmer newKmer=aTemplate;
 			int id=0;
 			uint64_t last=newKmer.getU64(id);
 			uint64_t filter=i;
-			//cout<<"Filter ingoing edge"<<endl;
-			//print64(filter);
 			last=last|filter;
 			newKmer.setU64(id,last);
-			//cout<<"Adding."<<endl;
-			//newKmer.print();
 			b.push_back(newKmer);
 		}
 	}
@@ -590,18 +546,6 @@ uint8_t invertEdges(uint8_t edges){
 			out=out|newBits;
 		}
 	}
-/*
-	cout<<endl;
-	cout<<__func__<<endl;
-	cout<<"outgoing  ingoing"<<endl;
-	cout<<"G C T A G C T A"<<endl;
-	cout<<"7 6 5 4 3 2 1 0"<<endl;
-
-	cout<<"In: "<<endl;
-	print8(edges);
-	cout<<"Out: "<<endl;
-	print8(out);
-*/
 	return out;
 }
 

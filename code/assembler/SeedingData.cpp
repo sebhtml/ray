@@ -144,11 +144,6 @@ void SeedingData::computeSeeds(){
 				m_SEEDING_i++;
 
 				// skip the reverse complement as we don't really need it anyway.
-				/*
-				m_splayTreeIterator.next();
-				m_SEEDING_i++;
-				m_completedJobs++;
-				*/
 			}else{
 				m_virtualCommunicator->forceFlush();
 			}

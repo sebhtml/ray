@@ -105,6 +105,7 @@ void*MyAllocator::allocate(int s){
 	assert(m_currentChunkId<(int)m_chunks.size());
 	if(m_currentPosition>=m_CHUNK_SIZE){
 		cout<<"Error: ToAllocate="<<s<<" Chunks="<<m_chunks.size()<<" CurrentChunk="<<m_currentChunkId<<" ChunkPosition="<<m_currentPosition<<" ChunkSize="<<m_CHUNK_SIZE<<endl;
+		exit(EXIT_NOMOREMEMORY);
 	}
 	assert(m_currentPosition<m_CHUNK_SIZE);
 	#endif

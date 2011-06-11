@@ -54,8 +54,6 @@ void ReadFetcher::work(){
 		message2[bufferPosition++]=(uint64_t)m_pointer;
 		int destination=m_parameters->_vertexRank(&m_vertex);
 		Message aMessage(message2,bufferPosition,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,m_parameters->getRank());
-		//cout<<__func__<<" "<<__LINE__<<" Message vertex="<<m_vertex<<" pointer="<<m_pointer<<" worker="<<m_workerId<<endl;
-		//m_outbox->push_back(aMessage);
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		m_readsRequested=true;
 	}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
@@ -64,8 +62,6 @@ void ReadFetcher::work(){
 		assert((int)buffer.size()==5);
 		#endif
 		m_pointer=(void*)buffer[0];
-		//int count=buffer.size();
-		//cout<<__func__<<" "<<__LINE__<<" RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY pointer="<<m_pointer<<endl;
 		int rank=buffer[1];
 		if(rank!=INVALID_RANK){
 			#ifdef ASSERT
@@ -86,7 +82,6 @@ void ReadFetcher::work(){
 		}
 		if(m_pointer==NULL){
 			m_done=true;
-			//cout<<__func__<<" "<<__LINE__<<" DONE "<<m_reads.size()<<" reads"<<endl;
 		}else{
 
 			uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
@@ -96,8 +91,6 @@ void ReadFetcher::work(){
 			int destination=m_parameters->_vertexRank(&m_vertex);
 			Message aMessage(message2,bufferPosition,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,m_parameters->getRank());
 			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
-			//m_outbox->push_back(aMessage);
-			//cout<<__func__<<" "<<__LINE__<<" Message vertex="<<m_vertex<<" pointer="<<m_pointer<<" worker="<<m_workerId<<endl;
 		}
 	}
 }

@@ -60,8 +60,6 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 		#endif
 		m_virtualCommunicator->resetLocalPushedMessageStatus();
 
-		//cout<<"Rank "<<m_rank<<" Worker="<<workerId<<" work()"<<endl;
-		//
 		//force the worker to work until he finishes or pushes something on the stack
 		while(!m_aliveWorkers[workerId].isDone()&&!m_virtualCommunicator->getLocalPushedMessageStatus()){
 			m_aliveWorkers[workerId].work();
@@ -95,8 +93,6 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 					assert(m_completedJobs==0&&m_activeWorkers.size()==0&&m_aliveWorkers.size()==0);
 				}
 				#endif
-				//SplayNode<uint64_t,Vertex>*node=m_splayTreeIterator.next();
-				//cout<<"Creating worker "<<m_theSequenceId<<endl;
 				char sequence[4000];
 				#ifdef ASSERT
 				assert(m_theSequenceId<(int)m_myReads->size());
@@ -188,14 +184,12 @@ void SequencesIndexer::updateStates(){
 		assert(m_activeWorkers.count(workerId)>0);
 		#endif
 		m_activeWorkers.erase(workerId);
-		//cout<<"Rank "<<m_rank<<" Worker="<<workerId<<" SET STATE SLEEPY"<<endl;
 	}
 	m_waitingWorkers.clear();
 
 	for(int i=0;i<(int)m_activeWorkersToRestore.size();i++){
 		uint64_t workerId=m_activeWorkersToRestore[i];
 		m_activeWorkers.insert(workerId);
-		//cout<<"Rank "<<m_rank<<" Worker="<<workerId<<" SET STATE ACTIVE"<<endl;
 	}
 	m_activeWorkersToRestore.clear();
 

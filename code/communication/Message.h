@@ -19,10 +19,6 @@
 
 */
 
-
-
-
-
 #ifndef _Message
 #define _Message
 

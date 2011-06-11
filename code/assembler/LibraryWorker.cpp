@@ -34,7 +34,6 @@ bool LibraryWorker::isDone(){
 
 void LibraryWorker::constructor(uint64_t id,SeedingData*seedingData,VirtualCommunicator*virtualCommunicator,RingAllocator*outboxAllocator,Parameters*parameters,
 StaticVector*inbox,StaticVector*outbox,	map<int,map<int,int> >*libraryDistances,int*detectedDistances,MyAllocator*allocator){
-	//cout<<"LibraryWorker::Constructor"<<endl;
 	m_done=false;
 	m_parameters=parameters;
 	m_SEEDING_i=id;
@@ -58,7 +57,6 @@ void LibraryWorker::work(){
 	if(m_done){
 		return;
 	}
-	//cout<<"Work"<<endl;
 	#ifdef ASSERT
 	assert(m_SEEDING_i<m_seedingData->m_SEEDING_seeds.size());
 	#endif
@@ -69,10 +67,8 @@ void LibraryWorker::work(){
 			m_database.remove(key,true,m_allocator);
 		}
 		m_done=true;
-		//cout<<"DONE"<<endl;
 	}else{
 		if(!m_EXTENSION_reads_requested){
-			//cout<<"Requesting reads"<<endl;
 			m_EXTENSION_reads_requested=true;
 			#ifdef ASSERT
 			assert(m_seedingData!=NULL);

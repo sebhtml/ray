@@ -27,7 +27,6 @@
 #include <iostream>
 using namespace std;
 
-//#define DEBUG_BUFFERS
 // the capacity is measured in uint64_t
 void BufferedData::constructor(int numberOfRanks,int capacity,int type){
 	m_type=type;
@@ -116,8 +115,6 @@ int BufferedData::flushAll(int tag,RingAllocator*outboxAllocator,StaticVector*ou
 	}
 	return flushed;
 }
-
-
 
 bool BufferedData::flush(int destination,int period,int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank,bool force){
 	#ifdef ASSERT

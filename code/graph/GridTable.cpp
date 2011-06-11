@@ -33,7 +33,6 @@ void GridTable::constructor(int rank,MyAllocator*allocator,Parameters*m_paramete
 	m_size=0;
 	m_inserted=false;
 	m_gridSize=4194304;
-	//m_gridSize=50000;
 	int bytes1=m_gridSize*sizeof(Vertex*);
 	m_gridData=(Vertex**)__Malloc(bytes1,RAY_MALLOC_TYPE_GRID_TABLE_DATA);
 	int bytes2=m_gridSize*sizeof(uint16_t);
@@ -76,14 +75,12 @@ Vertex*GridTable::insert(Kmer*key){
 	if(key->isLower(&lowerKey)){
 		lowerKey=*key;
 	}
-	//cout<<key<<" bin="<<bin<<" size="<<m_gridSizes[bin]<<endl;
 	for(int i=0;i<m_gridSizes[bin];i++){
 		Vertex*gridEntry=m_gridData[bin]+i;
 		if(gridEntry->m_lowerKey.isEqual(&lowerKey)){
 			return move(bin,i);
 		}
 	}
-	//if(m_gridReservedSizes[bin]==m_gridSizes[bin]){
 	if(true){
 		Vertex*newEntries=(Vertex*)m_gridAllocatorOnDisk->allocate((m_gridSizes[bin]+1)*sizeof(Vertex));
 		for(int i=0;i<m_gridSizes[bin];i++){
@@ -98,7 +95,6 @@ Vertex*GridTable::insert(Kmer*key){
 	m_gridData[bin][m_gridSizes[bin]].m_lowerKey=lowerKey;
 	int oldSize=m_gridSizes[bin];
 	m_gridSizes[bin]++;
-	//m_gridReservedSizes[bin]++;
 	// check overflow
 	assert(m_gridSizes[bin]>oldSize);
 	m_inserted=true;

@@ -117,9 +117,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		memcpy(memory,m_readSequence+p,wordSize);
 		memory[wordSize]='\0';
 		if(isValidDNA(memory)){
-			//cout<<"Kmer: "<<memory<<endl;
 			Kmer a=wordId(memory);
-			//cout<<"Encoded: "<<idToWord(&a,m_parameters->getWordSize())<<endl;
 
 			int rankToFlush=0;
 
@@ -381,7 +379,6 @@ void VerticesExtractor::checkPendingMessagesForReduction(StaticVector*outbox,int
 	if(m_pendingMessages==0 && mustTriggerReduction()
 	&&(m_mode_send_vertices_sequence_id_position)==0){// trigger at the beginning of a read, not in the middle.
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY,rank);
-		//cout<<"Source="<<rank<<" Destination="<<MASTER_RANK<<" RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY (meanwhile, freezing)"<<endl;
 		outbox->push_back(aMessage);
 		m_mustTriggerReduction=false;
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
@@ -413,7 +410,6 @@ bool VerticesExtractor::deleteVertices(vector<Kmer>*verticesToRemove,GridTable*s
 
 	int size=parameters->getSize();
 	int rank=parameters->getRank();
-	//int wordSize=parameters->getWordSize();
 
 	bool color=parameters->getColorSpaceMode();
 	int wordSize=parameters->getWordSize();

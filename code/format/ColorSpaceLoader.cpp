@@ -27,7 +27,6 @@
 #include<string.h>
 using namespace std;
 
-
 #define _ENCODING_CHAR_A '0'
 #define _ENCODING_CHAR_T '1'
 #define _ENCODING_CHAR_C '2'

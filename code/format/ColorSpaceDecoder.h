@@ -19,7 +19,6 @@
 
 */
 
-
 #ifndef _ColorSpaceDecoder
 #define _ColorSpaceDecoder
 

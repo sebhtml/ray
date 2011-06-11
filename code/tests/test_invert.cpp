@@ -16,10 +16,6 @@ void test1(){
 	uint8_t expected=1<<4;
 	uint8_t actual=invertEdges(edges);
 	assertEquals(actual,expected);
-	//cout<<"In="<<endl;
-	//print(edges);
-	//cout<<"Out="<<endl;
-	//print(res);
 }
 
 void test2(){

@@ -19,7 +19,6 @@
 
 */
 
-// TYPE: FRAMEWORK
 #ifndef _Parameters
 #define _Parameters
 
