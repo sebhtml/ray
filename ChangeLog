@@ -14,7 +14,8 @@ k-mers -- thanks to Élénie Godzaridis for the idea.
 * Output contigs >= 100, not paths >= 100
 * Detailed the warning for unmatched 454 prefix.
 * Fixed a bug in the TLE entries in the AMOS file.
-* The Makefile can now install Ray somewhere. (make install PREFIX=prefix)
+* The Makefile can now install Ray somewhere. (make PREFIX=prefix; make
+install)
 * Structures are now packed by default. Set FORCE_PACKING=n to disable it.
 * Created subdirectories for code.
 * Ray now uses all sequences in an SFF file -- not just those matching the
@@ -22,7 +23,7 @@ sequence key.
 * Ray now estimates the genome length in
 RayOutput.CoverageDistributionAnalysis.txt.
 * Fixed an integer overflow in CoverageDistribution when the number of k-mers
-occuring once is very large.
+occuring once is very large (for Assemblathon-2 datasets).
 * Added exit code EXIT_NOMOREMEMORY=42 as suggested by Hannes Pouseele (applied-maths.com).
 * Fixed the an access violation on Windows. Bug reported by Hannes Pouseele (applied-maths.com).
 * Fixed compilation errors for Microsoft Visual C++ (xiosbase and stdexcept) 
