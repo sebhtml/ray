@@ -22,7 +22,7 @@ see <http://www.gnu.org/licenses/>
 #ifndef _constants
 #define _constants
 
-#define RAY_VERSION "1.6.0-rc1"
+#define RAY_VERSION "1.6.0-rc2"
 
 #include <stdint.h>
 
@@ -46,6 +46,19 @@ see <http://www.gnu.org/licenses/>
  */
 #ifdef __GNUC__
 #define __STDC_FORMAT_MACROS /* for PRIu64 */
+#endif
+
+/*
+ * Define the inline keyword if using 
+ * Microsoft Visual C++
+ */
+
+#if defined(__GNUC__)
+#define INLINE inline
+#elif defined(_MSC_VER)
+#define INLINE __forceinline
+#else
+#define INLINE
 #endif
 
 /*
@@ -79,12 +92,12 @@ see <http://www.gnu.org/licenses/>
 #define DUMMY_LIBRARY 40000
 
 
-#define _ENCODING_A 0
-#define _ENCODING_T 1
-#define _ENCODING_C 2
-#define _ENCODING_G 3
+#define RAY_NUCLEOTIDE_A 0 /* ~00 == 11 */
+#define RAY_NUCLEOTIDE_C 1 /* ~01 == 10 */
+#define RAY_NUCLEOTIDE_G 2 /* ~10 == 01 */
+#define RAY_NUCLEOTIDE_T 3 /* ~11 == 00 */
 
-// the maximum of processes is utilized to construct unique hyperfusions IDs
+/* the maximum of processes is utilized to construct unique hyperfusions IDs */
 #define MAX_NUMBER_OF_MPI_PROCESSES 1000000
 #define INVALID_RANK MAX_NUMBER_OF_MPI_PROCESSES
 
@@ -92,12 +105,12 @@ see <http://www.gnu.org/licenses/>
 #define TIP_LIMIT 40
 #define _MINIMUM_COVERAGE 2
 
-// Open-MPI threshold if 4k (4096), and this include Open-MPI's metadata.
-// tests show that 4096-100 bytes are sent eagerly, too.
-// divide that by eight and you get the number of 64-bit integers 
-// allowed in a eager single communication
-
 /*
+ Open-MPI threshold if 4k (4096), and this include Open-MPI's metadata.
+ tests show that 4096-100 bytes are sent eagerly, too.
+ divide that by eight and you get the number of 64-bit integers 
+ allowed in a eager single communication
+
  * "4096 is rendezvous. For eager, try 4000 or lower. "
  *  --Eugene Loh  (Oracle)
  *  http://www.open-mpi.org/community/lists/devel/2010/11/8700.php

@@ -62,53 +62,6 @@ string reverseComplement(string*a){
 	return b.str();
 }
 
-// convert k-mer to uint64_t
-Kmer wordId(const char*a){
-	return wordId_Classic(a);
-
-}
-
-Kmer wordId_Classic(const char*a){
-	Kmer i;
-	int theLen=strlen(a);
-	for(int j=0;j<(int)theLen;j++){
-		uint64_t k=charToCode(a[j]);
-		int bitPosition=2*j;
-		int chunk=bitPosition/64;
-		int bitPositionInChunk=bitPosition%64;
-		#ifdef ASSERT
-		if(!(chunk<i.getNumberOfU64())){
-			cout<<"Chunk="<<chunk<<" positionInKmer="<<j<<" KmerLength="<<strlen(a)<<" bitPosition=" <<bitPosition<<" Chunks="<<i.getNumberOfU64()<<endl;
-		}
-		assert(chunk<i.getNumberOfU64());
-		#endif
-		uint64_t filter=(k<<bitPositionInChunk);
-		i.setU64(chunk,i.getU64(chunk)|filter);
-	}
-	return i;
-}
-
-/*
- *	7 6 5 4 3 2 1 0 
- *			7 6 5 4 3 2 1 0
- *
- * 	k=6
- */
-string idToWord(const Kmer*i,int wordSize){
-	char a[1000];
-	for(int p=0;p<wordSize;p++){
-		int bitPosition=2*p;
-		int chunkId=bitPosition/64;
-		int bitPositionInChunk=(bitPosition%64);
-		uint64_t chunk=i->getU64(chunkId);
-		uint64_t j=(chunk<<(62-bitPositionInChunk))>>62; // clear the bits.
-		a[p]=codeToChar(j);
-	}
-	a[wordSize]='\0';
-	string b(a);
-	return b;
-}
-
 char getLastSymbol(Kmer*i,int m_wordSize){
 	return codeToChar(getSecondSegmentLastCode(i,m_wordSize));
 }
@@ -121,78 +74,6 @@ bool isValidDNA(const char*x){
 			return false;
 	}
 	return true;
-}
-
-Kmer complementVertex(Kmer*a,int b,bool colorSpace){
-	if(colorSpace){
-		return complementVertex_colorSpace(a,b);
-	}
-	return complementVertex_normal(a,b);
-}
-
-Kmer complementVertex_colorSpace(Kmer*a,int wordSize){
-	Kmer output;
-	int position2=0;
-	for(int positionInMer=wordSize-1;positionInMer>=0;positionInMer--){
-		int bitPosition=positionInMer*2;
-		int u64_id=bitPosition/64;
-		int bitPositionInChunk=bitPosition%64;
-		uint64_t chunk=a->getU64(u64_id);
-		uint64_t complementVertex=(chunk<<((sizeof(uint64_t)*8-2)-bitPositionInChunk))>>(sizeof(uint64_t)*8-2);
-
-		uint64_t oldValue=output.getU64(u64_id);
-		oldValue=(oldValue|(complementVertex<<(position2)));
-		position2+=2;
-		if(position2>=64){
-			position2=0;
-		}
-		output.setU64(u64_id,oldValue);
-	}
-
-	return output;
-}
-
-/*
- *	127..64
- * 			63..0
- *
- *
- */
-Kmer complementVertex_normal(Kmer*a,int m_wordSize){
-	Kmer output;
-	int bitPositionInOutput=0;
-
-	for(int positionInMer=m_wordSize-1;positionInMer>=0;positionInMer--){
-		int bitPosition=positionInMer*2;
-		int u64_id=bitPosition/64;
-		int bitPositionInChunk=bitPosition%64;
-		uint64_t chunk=a->getU64(u64_id);
-		uint64_t j=(chunk<<((sizeof(uint64_t)*8-2)-bitPositionInChunk))>>(sizeof(uint64_t)*8-2);
-		uint64_t complementVertex=0;
-		switch(j){
-			case _ENCODING_A:
-				complementVertex=_ENCODING_T;
-				break;
-			case _ENCODING_T:
-				complementVertex=_ENCODING_A;
-				break;
-			case _ENCODING_C:
-				complementVertex=_ENCODING_G;
-				break;
-			case _ENCODING_G:
-				complementVertex=_ENCODING_C;
-				break;
-			default:
-				assert(false);
-				break;
-		}
-		int outputChunk=bitPositionInOutput/64;
-		uint64_t oldValue=output.getU64(outputChunk);
-		oldValue=(oldValue|(complementVertex<<(bitPositionInOutput%64)));
-		output.setU64(outputChunk,oldValue);
-		bitPositionInOutput+=2;
-	}
-	return output;
 }
 
 string addLineBreaks(string dna,int columns){
@@ -251,32 +132,6 @@ uint8_t getFirstSegmentFirstCode(Kmer*v,int w){
 	a=a<<(sizeof(uint64_t)*8-2);
 	a=a>>(sizeof(uint64_t)*8-2);
 	return a;
-}
-
-uint8_t charToCode(char a){
-	if(a=='A')
-		return _ENCODING_A;
-	if(a=='T')
-		return _ENCODING_T;
-	if(a=='C')
-		return _ENCODING_C;
-	if(a=='G')
-		return _ENCODING_G;
-	return _ENCODING_A;// default is A
-}
-
-char codeToChar(uint8_t a){
-	switch(a){
-		case _ENCODING_A:
-			return 'A';
-		case _ENCODING_T:
-			return 'T';
-		case _ENCODING_C:
-			return 'C';
-		case _ENCODING_G:
-			return 'G';
-	}
-	return 'A';
 }
 
 string convertToString(vector<Kmer>*b,int m_wordSize){
@@ -470,7 +325,7 @@ vector<Kmer> _getIngoingEdges(Kmer*a,uint8_t edges,int k){
 }
 
 uint64_t hash_function_1(Kmer*a,int w){
-	Kmer b=complementVertex_normal(a,w);
+	Kmer b=complementVertex(a,w,false);
 	if(a->isLower(&b)){
 		b=*a;
 	}
@@ -478,7 +333,7 @@ uint64_t hash_function_1(Kmer*a,int w){
 }
 
 uint64_t hash_function_2(Kmer*a,int w,Kmer*b){
-	*b=complementVertex_normal(a,w);
+	*b=complementVertex(a,w,false);
 	Kmer*lower=a;
 	if(b->isLower(a)){
 		lower=b;
@@ -495,26 +350,13 @@ uint64_t hash_function_2(Kmer*a,int w,Kmer*b){
 uint8_t invertEdges(uint8_t edges){
 	uint8_t out=0;
 
+	uint64_t mask=3;
+
 	// outgoing edges
 	for(int i=0;i<4;i++){
 		int j=((((uint64_t)edges)<<(sizeof(uint64_t)*8-5-i))>>(sizeof(uint64_t)*8-1));
 		if(j==1){
-			switch(i){
-				case _ENCODING_A:
-					j=_ENCODING_T;
-					break;
-				case _ENCODING_T:
-					j=_ENCODING_A;
-					break;
-				case _ENCODING_G:
-					j=_ENCODING_C;
-					break;
-				case _ENCODING_C:
-					j=_ENCODING_G;
-					break;
-				default:
-					break;
-			}
+			j=~i&mask;
 			
 			uint8_t newBits=(1<<j);
 			out=out|newBits;
@@ -525,22 +367,7 @@ uint8_t invertEdges(uint8_t edges){
 	for(int i=0;i<4;i++){
 		int j=((((uint64_t)edges)<<((sizeof(uint64_t)*8-1)-i))>>(sizeof(uint64_t)*8-1));
 		if(j==1){
-			switch(i){
-				case _ENCODING_A:
-					j=_ENCODING_T;
-					break;
-				case _ENCODING_T:
-					j=_ENCODING_A;
-					break;
-				case _ENCODING_G:
-					j=_ENCODING_C;
-					break;
-				case _ENCODING_C:
-					j=_ENCODING_G;
-					break;
-				default:
-					break;
-			}
+			j=~i&mask;
 			
 			uint8_t newBits=(1<<(4+j));
 			out=out|newBits;

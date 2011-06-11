@@ -25,6 +25,9 @@
 #include <core/constants.h>
 #include <stdint.h>
 #include <vector>
+#ifdef ASSERT
+#include <assert.h>
+#endif
 using namespace std;
 
 /*
@@ -71,8 +74,22 @@ public:
 	bool operator!=(const Kmer&b)const;
 	bool operator==(const Kmer&b) const;
 
-	void setU64(int i,uint64_t b);
-	uint64_t getU64(int i)const;
+	INLINE
+	void setU64(int i,uint64_t b){
+		#ifdef ASSERT
+		assert(i<getNumberOfU64());
+		#endif
+		m_u64[i]=b;
+	}
+
+	INLINE
+	uint64_t getU64(int i)const{
+		#ifdef ASSERT
+		assert(i<getNumberOfU64());
+		#endif
+		return m_u64[i];
+	}
+
 	int getNumberOfU64()const;
 
 }ATTRIBUTE_PACKED;

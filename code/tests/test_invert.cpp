@@ -12,15 +12,15 @@ void test1(){
 	//
 	// 7 6 5 4 3 2 1 0
 
-	uint8_t edges=1<<1;
-	uint8_t expected=1<<4;
+	uint8_t edges=1<<RAY_NUCLEOTIDE_T;
+	uint8_t expected=1<<(4+RAY_NUCLEOTIDE_A);
 	uint8_t actual=invertEdges(edges);
 	assertEquals(actual,expected);
 }
 
 void test2(){
-	uint8_t edges=1<<2;
-	uint8_t expected=1<<7;
+	uint8_t edges=1<<RAY_NUCLEOTIDE_C;
+	uint8_t expected=1<<(4+RAY_NUCLEOTIDE_G);
 	uint8_t actual=invertEdges(edges);
 	assertEquals(actual,expected);
 
@@ -36,8 +36,8 @@ void test2(){
  */
 
 void test3(){
-	uint8_t edges=1<<5;
-	uint8_t expected=1<<0;
+	uint8_t edges=1<<(4+RAY_NUCLEOTIDE_T);
+	uint8_t expected=1<<RAY_NUCLEOTIDE_A;
 	uint8_t actual=invertEdges(edges);
 	assertEquals(actual,expected);
 

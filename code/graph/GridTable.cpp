@@ -193,7 +193,7 @@ void GridTable::addDirection(Kmer*a,Direction*d){
 }
 
 bool GridTable::isAssembled(Kmer*a){
-	Kmer reverse=complementVertex_normal(a,m_wordSize);
+	Kmer reverse=complementVertex(a,m_wordSize,false);
 	return getDirections(a).size()>0||getDirections(&reverse).size()>0;
 }
 

@@ -14,6 +14,6 @@ rm -rf $origin/build-compression
 make install
 
 make clean
-make -j 30
+make MAXKMERLENGTH=32 -j 30 
 cd $origin
 

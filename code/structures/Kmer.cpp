@@ -36,20 +36,6 @@ Kmer::Kmer(){
 Kmer::~Kmer(){
 }
 
-void Kmer::setU64(int i,uint64_t b){
-	#ifdef ASSERT
-	assert(i<getNumberOfU64());
-	#endif
-	m_u64[i]=b;
-}
-
-uint64_t Kmer::getU64(int i)const{
-	#ifdef ASSERT
-	assert(i<getNumberOfU64());
-	#endif
-	return m_u64[i];
-}
-
 int Kmer::getNumberOfU64()const{
 	return KMER_U64_ARRAY_SIZE;
 }

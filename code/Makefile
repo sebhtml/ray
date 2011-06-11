@@ -1,6 +1,6 @@
 all:
-	cd ..;$(MAKE) $(MFLAGS) all
+	@cd ..;$(MAKE) $(MFLAGS) all
 
 clean:
-	cd ..;$(MAKE) $(MFLAGS) clean
+	@cd ..;$(MAKE) $(MFLAGS) clean
 	

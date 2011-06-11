@@ -26,9 +26,14 @@ see <http://www.gnu.org/licenses/>
 #include <string>
 #include <core/constants.h>
 #include <core/slave_modes.h>
+#include <iostream>
 #include <core/master_modes.h>
 #include <vector>
 #include <communication/mpi_tags.h>
+#include <string.h>
+#ifdef ASSERT
+#include <assert.h>
+#endif
 using namespace std;
 
 #define __max(a,b) (((a)>(b)) ? (a) : (b))
@@ -38,17 +43,73 @@ using namespace std;
  */
 string reverseComplement(string a,char*rev);
 
-/*
- * convert a char* to uint64_t
- * A=00, T=01, C=10, G=11
- */
-Kmer wordId(const char*a);
-Kmer wordId_Classic(const char*a);
+INLINE
+uint8_t charToCode(char a){
+	switch (a){
+		case 'A':
+			return RAY_NUCLEOTIDE_A;
+		case 'T':
+			return RAY_NUCLEOTIDE_T;
+		case 'C':
+			return RAY_NUCLEOTIDE_C;
+		case 'G':
+			return RAY_NUCLEOTIDE_G;
+		default:
+			return RAY_NUCLEOTIDE_A;
+	}
+}
 
-/*
- * convert a 64-bit integer to a string
- */
-string idToWord(const Kmer*i,int wordSize);
+INLINE
+char codeToChar(uint8_t a){
+	switch(a){
+		case RAY_NUCLEOTIDE_A:
+			return 'A';
+		case RAY_NUCLEOTIDE_T:
+			return 'T';
+		case RAY_NUCLEOTIDE_C:
+			return 'C';
+		case RAY_NUCLEOTIDE_G:
+			return 'G';
+	}
+	return 'A';
+}
+
+INLINE
+Kmer wordId(const char*a){
+	Kmer i;
+	int theLen=strlen(a);
+	for(int j=0;j<(int)theLen;j++){
+		uint64_t k=charToCode(a[j]);
+		int bitPosition=2*j;
+		int chunk=bitPosition/64;
+		int bitPositionInChunk=bitPosition%64;
+		#ifdef ASSERT
+		if(!(chunk<i.getNumberOfU64())){
+			cout<<"Chunk="<<chunk<<" positionInKmer="<<j<<" KmerLength="<<strlen(a)<<" bitPosition=" <<bitPosition<<" Chunks="<<i.getNumberOfU64()<<endl;
+		}
+		assert(chunk<i.getNumberOfU64());
+		#endif
+		uint64_t filter=(k<<bitPositionInChunk);
+		i.setU64(chunk,i.getU64(chunk)|filter);
+	}
+	return i;
+}
+
+INLINE
+string idToWord(const Kmer*i,int wordSize){
+	char a[1000];
+	for(int p=0;p<wordSize;p++){
+		int bitPosition=2*p;
+		int chunkId=p/32;
+		int bitPositionInChunk=(bitPosition%64);
+		uint64_t chunk=i->getU64(chunkId);
+		uint64_t j=(chunk<<(62-bitPositionInChunk))>>62; // clear the bits.
+		a[p]=codeToChar(j);
+	}
+	a[wordSize]='\0';
+	string b=a;
+	return b;
+}
 
 /*
  * verify that x has only A,T,C, and G
@@ -63,7 +124,26 @@ char getLastSymbol(Kmer*i,int w);
 /*
  * complement a vertex, and return another one
  */
-Kmer complementVertex(Kmer*a,int m_wordSize,bool useColorSpace);
+INLINE
+Kmer complementVertex(Kmer*a,int wordSize,bool colorSpace){
+	Kmer output;
+	uint64_t bitPositionInOutput=0;
+	uint64_t mask=3;
+	for(int positionInMer=wordSize-1;positionInMer>=0;positionInMer--){
+		int u64_id=positionInMer/32;
+		int bitPositionInChunk=(2*positionInMer)%64;
+		uint64_t chunk=a->getU64(u64_id);
+		uint64_t j=(chunk<<(62-bitPositionInChunk))>>62;
+		
+		j=~j&mask;
+		int outputChunk=bitPositionInOutput/64;
+		uint64_t oldValue=output.getU64(outputChunk);
+		oldValue=(oldValue|(j<<(bitPositionInOutput%64)));
+		output.setU64(outputChunk,oldValue);
+		bitPositionInOutput+=2;
+	}
+	return output;
+}
 
 /*
  * add line breaks to a string
@@ -89,10 +169,6 @@ Kmer complementVertex_normal(Kmer*a,int m_wordSize);
  */
 uint8_t getFirstSegmentFirstCode(Kmer*v,int w);
 uint8_t getSecondSegmentLastCode(Kmer*v,int w);
-
-uint8_t charToCode(char a);
-
-char codeToChar(uint8_t a);
 
 string convertToString(vector<Kmer>*b,int m_wordSize);
 

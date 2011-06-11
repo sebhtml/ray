@@ -57,7 +57,7 @@ Vertex*GridTableIterator::next(){
 		m_currentKey=element->m_lowerKey;
 		m_lowerKeyIsDone=true;
 	}else{
-		m_currentKey=complementVertex_normal(&m_currentKey,m_wordSize);
+		m_currentKey=complementVertex(&m_currentKey,m_wordSize,false);
 		m_lowerKeyIsDone=false;
 		m_currentPosition++;
 	}

@@ -59,6 +59,12 @@ VIRTUAL_SEQUENCER = n
 # end of compilation options
 #############################################
 
+# optimize
+OPTIMIZE = y
+
+# profiling
+GPROF = n
+
 MPICXX-y = mpic++
 
 # mpic++ from an MPI implementation must be reachable with the PATH
@@ -66,7 +72,10 @@ MPICXX-y = mpic++
 CXXFLAGS = -Wall -Icode
 
 # optimization
-CXXFLAGS += -O3 -fomit-frame-pointer # -Wmissing-prototypes -Wstrict-prototypes
+CXXFLAGS-$(OPTIMIZE) += -O3 -fomit-frame-pointer # -Wmissing-prototypes -Wstrict-prototypes
+
+# profiling
+CXXFLAGS-$(GPROF) += -g -pg
 
 # if you use Intel's mpiicpc, uncomment the following lines
 MPICXX-$(INTEL_COMPILER) = mpiicpc 
@@ -94,6 +103,8 @@ LDFLAGS-$(HAVE_LIBBZ2) += -lbz2
 #compile with real-time linux
 CXXFLAGS-$(HAVE_CLOCK_GETTIME) += -DHAVE_CLOCK_GETTIME 
 LDFLAGS-$(HAVE_CLOCK_GETTIME) += -lrt
+
+LDFLAGS-$(GPROF) += -pg
 
 CXXFLAGS += $(CXXFLAGS-y)
 LDFLAGS += $(LDFLAGS-y)
@@ -164,21 +175,23 @@ showOptions:
 	@echo ""
 	@echo "Compilation options (you can change them of course)"
 	@echo ""
-	@echo PREFIX= $(PREFIX)
-	@echo MAXKMERLENGTH= $(MAXKMERLENGTH)
-	@echo FORCE_PACKING= $(FORCE_PACKING)
-	@echo ASSERT= $(ASSERT)
-	@echo HAVE_LIBZ= $(HAVE_LIBZ)
-	@echo HAVE_LIBBZ2= $(HAVE_LIBBZ2)
-	@echo HAVE_CLOCK_GETTIME= $(HAVE_CLOCK_GETTIME)
-	@echo INTEL_COMPILER= $(INTEL_COMPILER)
-	@echo VIRTUAL_SEQUENCER= $(VIRTUAL_SEQUENCER)
-	@echo MPICXX= $(MPICXX)
+	@echo PREFIX = $(PREFIX)
+	@echo MAXKMERLENGTH = $(MAXKMERLENGTH)
+	@echo FORCE_PACKING = $(FORCE_PACKING)
+	@echo ASSERT = $(ASSERT)
+	@echo HAVE_LIBZ = $(HAVE_LIBZ)
+	@echo HAVE_LIBBZ2 = $(HAVE_LIBBZ2)
+	@echo HAVE_CLOCK_GETTIME = $(HAVE_CLOCK_GETTIME)
+	@echo INTEL_COMPILER = $(INTEL_COMPILER)
+	@echo VIRTUAL_SEQUENCER = $(VIRTUAL_SEQUENCER)
+	@echo MPICXX = $(MPICXX)
+	@echo GPROF = $(GPROF)
+	@echo OPTIMIZE = $(OPTIMIZE)
 	@echo ""
 	@echo "Compilation and linking flags (generated automatically)"
 	@echo ""
-	@echo CXXFLAGS= $(CXXFLAGS)
-	@echo LDFLAGS= $(LDFLAGS)
+	@echo CXXFLAGS = $(CXXFLAGS)
+	@echo LDFLAGS = $(LDFLAGS)
 	@echo ""
 	@touch showOptions
 	

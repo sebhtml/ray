@@ -138,7 +138,7 @@ void test_out_large(){
 	//
 	// 7 6 5 4 3 2 1 0
 	
-	uint8_t edges=(1<<(4+_ENCODING_T));
+	uint8_t edges=(1<<(4+RAY_NUCLEOTIDE_T));
 
 	Kmer aKmer=wordId(a.c_str());
 	Kmer bKmer=wordId(b.c_str());
@@ -185,7 +185,7 @@ void test_Ingoing_large2(){
 	uint8_t edges=(1<<0);
 
 	Kmer aKmer=wordId(a.c_str());
-	assertEquals(getFirstSegmentFirstCode(&aKmer,wordSize),_ENCODING_A);
+	assertEquals(getFirstSegmentFirstCode(&aKmer,wordSize),RAY_NUCLEOTIDE_A);
 
 	Kmer bKmer=wordId(b.c_str());
 	
@@ -229,7 +229,7 @@ void test_Ingoing_large(){
 	//
 	// 7 6 5 4 3 2 1 0
 	
-	uint8_t edges=(1<<1);
+	uint8_t edges=(1<<RAY_NUCLEOTIDE_T);
 
 	Kmer aKmer=wordId(a.c_str());
 	Kmer bKmer=wordId(b.c_str());
@@ -269,11 +269,8 @@ void test_out(){
 	// description of m_edges:
 	// outgoing  ingoing
 	//
-	// G C T A G C T A
-	//
-	// 7 6 5 4 3 2 1 0
 	
-	uint8_t edges=(1<<7);
+	uint8_t edges=(1<<(4+RAY_NUCLEOTIDE_G));
 
 	Kmer aKmer=wordId(a.c_str());
 	Kmer bKmer=wordId(b.c_str());
@@ -313,11 +310,11 @@ void test_Ingoing(){
 	// description of m_edges:
 	// outgoing  ingoing
 	//
-	// G C T A G C T A
+	// T G C A T G C A
 	//
 	// 7 6 5 4 3 2 1 0
 	
-	uint8_t edges=(1<<3);
+	uint8_t edges=(1<<RAY_NUCLEOTIDE_G);
 
 	Kmer aKmer=wordId(a.c_str());
 	Kmer bKmer=wordId(b.c_str());
