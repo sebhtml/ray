@@ -43,73 +43,25 @@ using namespace std;
  */
 string reverseComplement(string a,char*rev);
 
-INLINE
-uint8_t charToCode(char a){
-	switch (a){
-		case 'A':
-			return RAY_NUCLEOTIDE_A;
-		case 'T':
-			return RAY_NUCLEOTIDE_T;
-		case 'C':
-			return RAY_NUCLEOTIDE_C;
-		case 'G':
-			return RAY_NUCLEOTIDE_G;
-		default:
-			return RAY_NUCLEOTIDE_A;
-	}
-}
+/*
+ * transform a Kmer in a string
+ */
+string idToWord(const Kmer*i,int wordSize);
 
-INLINE
-char codeToChar(uint8_t a){
-	switch(a){
-		case RAY_NUCLEOTIDE_A:
-			return 'A';
-		case RAY_NUCLEOTIDE_T:
-			return 'T';
-		case RAY_NUCLEOTIDE_C:
-			return 'C';
-		case RAY_NUCLEOTIDE_G:
-			return 'G';
-	}
-	return 'A';
-}
+/*
+ * transform a string in a Kmer
+ */
+Kmer wordId(const char*a);
 
-INLINE
-Kmer wordId(const char*a){
-	Kmer i;
-	int theLen=strlen(a);
-	for(int j=0;j<(int)theLen;j++){
-		uint64_t k=charToCode(a[j]);
-		int bitPosition=2*j;
-		int chunk=bitPosition/64;
-		int bitPositionInChunk=bitPosition%64;
-		#ifdef ASSERT
-		if(!(chunk<i.getNumberOfU64())){
-			cout<<"Chunk="<<chunk<<" positionInKmer="<<j<<" KmerLength="<<strlen(a)<<" bitPosition=" <<bitPosition<<" Chunks="<<i.getNumberOfU64()<<endl;
-		}
-		assert(chunk<i.getNumberOfU64());
-		#endif
-		uint64_t filter=(k<<bitPositionInChunk);
-		i.setU64(chunk,i.getU64(chunk)|filter);
-	}
-	return i;
-}
+/*
+ * transform a encoded nucleotide in a char
+ */
+char codeToChar(uint8_t a);
 
-INLINE
-string idToWord(const Kmer*i,int wordSize){
-	char a[1000];
-	for(int p=0;p<wordSize;p++){
-		int bitPosition=2*p;
-		int chunkId=p/32;
-		int bitPositionInChunk=(bitPosition%64);
-		uint64_t chunk=i->getU64(chunkId);
-		uint64_t j=(chunk<<(62-bitPositionInChunk))>>62; // clear the bits.
-		a[p]=codeToChar(j);
-	}
-	a[wordSize]='\0';
-	string b=a;
-	return b;
-}
+/*
+ * Encode a char
+ */
+uint8_t charToCode(char a);
 
 /*
  * verify that x has only A,T,C, and G
@@ -124,6 +76,8 @@ char getLastSymbol(Kmer*i,int w);
 /*
  * complement a vertex, and return another one
  */
+/* Kmer complementVertex(Kmer*a,int wordSize,bool colorSpace); */
+
 INLINE
 Kmer complementVertex(Kmer*a,int wordSize,bool colorSpace){
 	Kmer output;

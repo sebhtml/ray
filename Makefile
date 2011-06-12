@@ -59,20 +59,48 @@ VIRTUAL_SEQUENCER = n
 # end of compilation options
 #############################################
 
+# OS detection based on git Makefile
+uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
+uname_M := $(shell sh -c 'uname -m 2>/dev/null || echo not')
+uname_O := $(shell sh -c 'uname -o 2>/dev/null || echo not')
+uname_R := $(shell sh -c 'uname -r 2>/dev/null || echo not')
+uname_P := $(shell sh -c 'uname -p 2>/dev/null || echo not')
+uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
+
+ifdef MSVC
+        uname_S := Windows
+        uname_O := Windows
+endif
+
 # optimize
 OPTIMIZE = y
 
 # profiling
 GPROF = n
 
+ifeq ($(GPROF),y)
+	OPTIMIZE = n
+endif
+
+PEDANTIC = n
+
 MPICXX-y = mpic++
 
 # mpic++ from an MPI implementation must be reachable with the PATH
 # tested implementations of MPI include Open-MPI and MPICH2
-CXXFLAGS = -Wall -Icode
+CXXFLAGS = -Icode
 
 # optimization
-CXXFLAGS-$(OPTIMIZE) += -O3 -fomit-frame-pointer # -Wmissing-prototypes -Wstrict-prototypes
+CXXFLAGS-$(OPTIMIZE) += -O3
+
+ifeq ($(INTEL_COMPILER),n)
+# g++ options
+ifeq ($(uname_S),Linux)
+	CXXFLAGS += -Wall -std=c++98
+	#CXXFLAGS-$(OPTIMIZE) += -fomit-frame-pointer -finline-functions -funroll-loops
+	CXXFLAGS-$(PEDANTIC) += -pedantic -Wextra 
+endif
+endif
 
 # profiling
 CXXFLAGS-$(GPROF) += -g -pg

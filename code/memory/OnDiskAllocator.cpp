@@ -192,3 +192,4 @@ void OnDiskAllocator::reset(){
 		m_current=0;
 	}
 }
+

@@ -551,12 +551,10 @@ void Machine::run(){
 	}
 }
 
-INLINE
 int Machine::getRank(){
 	return m_rank;
 }
 
-INLINE
 void Machine::processMessages(){
 	#ifdef ASSERT
 	assert(m_inbox.size()>=0&&m_inbox.size()<=1);
@@ -567,7 +565,6 @@ void Machine::processMessages(){
 	}
 }
 
-INLINE
 void Machine::sendMessages(){
 	#ifdef ASSERT
 	assert(m_outboxAllocator.getCount()<=m_maximumAllocatedOutputBuffers);
@@ -592,7 +589,6 @@ void Machine::sendMessages(){
 	m_messagesHandler.sendMessages(&m_outbox,getRank());
 }
 
-INLINE
 void Machine::receiveMessages(){
 	m_inbox.clear();
 	m_messagesHandler.receiveMessages(&m_inbox,&m_inboxAllocator,getRank());
@@ -1230,7 +1226,6 @@ m_reducer.getIngoingEdges(),m_reducer.getOutgoingEdges()
 	}
 }
 
-INLINE
 void Machine::processData(){
 	MachineMethod masterMethod=m_master_methods[m_master_mode];
 	(this->*masterMethod)();
@@ -1260,17 +1255,14 @@ void Machine::killRanks(){
 	}
 }
 
-INLINE
 bool Machine::isMaster(){
 	return getRank()==MASTER_RANK;
 }
 
-INLINE
 int Machine::getSize(){
 	return m_size;
 }
 
-INLINE
 bool Machine::isAlive(){
 	return m_alive;
 }

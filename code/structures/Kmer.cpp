@@ -109,3 +109,4 @@ bool Kmer::operator!=(const Kmer&b) const{
 }
 
 
+

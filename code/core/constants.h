@@ -41,17 +41,9 @@ see <http://www.gnu.org/licenses/>
 #endif
 
 /*
- * If GNU, must set __STDC_FORMAT_MACROS
- * to get PRIu64 definition
- */
-#ifdef __GNUC__
-#define __STDC_FORMAT_MACROS /* for PRIu64 */
-#endif
-
-/*
- * Define the inline keyword if using 
- * Microsoft Visual C++
- */
+* - * Define the inline keyword if using 
+*   - * Microsoft Visual C++
+*   - */
 
 #if defined(__GNUC__)
 #define INLINE inline
@@ -59,6 +51,15 @@ see <http://www.gnu.org/licenses/>
 #define INLINE __forceinline
 #else
 #define INLINE
+#endif
+
+
+/*
+ * If GNU, must set __STDC_FORMAT_MACROS
+ * to get PRIu64 definition
+ */
+#ifdef __GNUC__
+#define __STDC_FORMAT_MACROS /* for PRIu64 */
 #endif
 
 /*
