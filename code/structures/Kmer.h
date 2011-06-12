@@ -63,37 +63,34 @@ class Kmer{
 public:
 	Kmer();
 	~Kmer();
-	bool isEqual(const Kmer*a)const ;
-	bool isLower(const Kmer*a)const ;
-	void print()const;
-	void pack(uint64_t*messageBuffer,int*messagePosition)const ;
+	bool isEqual(Kmer*a);
+	bool isLower(Kmer*a);
+	void print();
+	void pack(uint64_t*messageBuffer,int*messagePosition);
 	void unpack(uint64_t*messageBuffer,int*messagePosition);
 	void unpack(vector<uint64_t>*messageBuffer,int*messagePosition);
-	bool operator<(const Kmer&b) const;
 	void operator=(const Kmer&b);
+	bool operator<(const Kmer&b)const;
 	bool operator!=(const Kmer&b)const;
-	bool operator==(const Kmer&b) const;
-/*
-	uint64_t getU64(int i)const;
-	void setU64(int i,uint64_t b);
-*/
-INLINE
-void setU64(int i,uint64_t b){
-	#ifdef ASSERT
-	assert(i<getNumberOfU64());
-	#endif
-	m_u64[i]=b;
-}
+	bool operator==(const Kmer&b)const;
 
-INLINE
-uint64_t getU64(int i)const{
-	#ifdef ASSERT
-	assert(i<getNumberOfU64());
-	#endif
-	return m_u64[i];
-}
+	INLINE
+	void setU64(int i,uint64_t b){
+		#ifdef ASSERT
+		assert(i<KMER_U64_ARRAY_SIZE);
+		#endif
+		m_u64[i]=b;
+	}
 
-	int getNumberOfU64()const;
+	INLINE
+	uint64_t getU64(int i){
+		#ifdef ASSERT
+		assert(i<KMER_U64_ARRAY_SIZE);
+		#endif
+		return m_u64[i];
+	}
+
+	int getNumberOfU64();
 
 }ATTRIBUTE_PACKED;
 

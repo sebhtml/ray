@@ -24,7 +24,14 @@
 #include <assert.h>
 
 bool Kmer::operator<(const Kmer&b)const{
-	return isLower(&b);
+	for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+		if(m_u64[i]<b.m_u64[i]){
+			return true;
+		}else if(m_u64[i]>b.m_u64[i]){
+			return false;
+		}
+	}
+	return false;
 }
 
 Kmer::Kmer(){
@@ -36,11 +43,11 @@ Kmer::Kmer(){
 Kmer::~Kmer(){
 }
 
-int Kmer::getNumberOfU64()const{
+int Kmer::getNumberOfU64(){
 	return KMER_U64_ARRAY_SIZE;
 }
 
-bool Kmer::isLower(const Kmer*a)const {
+bool Kmer::isLower(Kmer*a){
 	for(int i=0;i<getNumberOfU64();i++){
 		if(getU64(i)<a->getU64(i)){
 			return true;
@@ -51,7 +58,7 @@ bool Kmer::isLower(const Kmer*a)const {
 	return false;
 }
 
-bool Kmer::isEqual(const Kmer*a)const {
+bool Kmer::isEqual(Kmer*a){
 	for(int i=0;i<getNumberOfU64();i++){
 		if(getU64(i)!=a->getU64(i)){
 			return false;
@@ -60,7 +67,7 @@ bool Kmer::isEqual(const Kmer*a)const {
 	return true;
 }
 
-void Kmer::print()const{
+void Kmer::print(){
 	for(int j=0;j<getNumberOfU64();j++){
 		uint64_t a=getU64(j);
 		for(int k=63;k>=0;k-=2){
@@ -73,7 +80,7 @@ void Kmer::print()const{
 	printf("\n");
 }
 
-void Kmer::pack(uint64_t*messageBuffer,int*messagePosition)const{
+void Kmer::pack(uint64_t*messageBuffer,int*messagePosition){
 	for(int i=0;i<getNumberOfU64();i++){
 		messageBuffer[*messagePosition]=getU64(i);
 		(*messagePosition)++;
@@ -95,18 +102,26 @@ void Kmer::unpack(vector<uint64_t>*messageBuffer,int*messagePosition){
 }
 
 void Kmer::operator=(const Kmer&b){
-	for(int i=0;i<getNumberOfU64();i++){
-		setU64(i,b.getU64(i));
+	for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+		m_u64[i]=b.m_u64[i];
 	}
 }
 
 bool Kmer::operator==(const Kmer&b) const{
-	return isEqual(&b);
+	for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+		if(m_u64[i]!=b.m_u64[i]){
+			return false;
+		}
+	}
+	return true;
 }
 
 bool Kmer::operator!=(const Kmer&b) const{
-	return !isEqual(&b);
+	for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+		if(m_u64[i]!=b.m_u64[i]){
+			return true;
+		}
+	}
+	return false;
 }
-
-
 

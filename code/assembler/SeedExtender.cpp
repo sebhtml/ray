@@ -642,7 +642,8 @@ map<Kmer,set<Kmer> >*arcs,map<Kmer,int>*coverages,int depth,set<Kmer>*visited){
 	for(set<Kmer>::iterator i=children.begin();i!=children.end();++i){
 		for(int j=0;j<depth;j++)
 			printf(" ");
-		string s=idToWord(&(*i),m_parameters->getWordSize());
+		Kmer child=*i;
+		string s=idToWord(&child,m_parameters->getWordSize());
 		#ifdef ASSERT
 		assert(coverages->count(*i)>0);
 		#endif
@@ -653,7 +654,7 @@ map<Kmer,set<Kmer> >*arcs,map<Kmer,int>*coverages,int depth,set<Kmer>*visited){
 		printf("%s coverage: %i depth: %i\n",s.c_str(),coverage,depth);
 
 		if(coverages->count(*i)==0||coverage==0){
-			cout<<"Error: "<<idToWord(&(*i),m_parameters->getWordSize())<<" don't have a coverage value"<<endl;
+			cout<<"Error: "<<idToWord(&child,m_parameters->getWordSize())<<" don't have a coverage value"<<endl;
 		}
 
 		if(depth==1)

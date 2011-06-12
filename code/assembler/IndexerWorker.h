@@ -40,7 +40,7 @@ class IndexerWorker{
 	Parameters*m_parameters;
 	int m_workerId;
 	bool m_checkedCoverage;
-	string m_sequence;
+	char m_sequence[4096];
 	RingAllocator*m_outboxAllocator;
 	bool m_forwardIndexed;
 	bool m_reverseIndexed;

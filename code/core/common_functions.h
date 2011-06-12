@@ -46,12 +46,12 @@ string reverseComplement(string a,char*rev);
 /*
  * transform a Kmer in a string
  */
-string idToWord(const Kmer*i,int wordSize);
+string idToWord(Kmer*i,int wordSize);
 
 /*
  * transform a string in a Kmer
  */
-Kmer wordId(const char*a);
+Kmer wordId(char*a);
 
 /*
  * transform a encoded nucleotide in a char
@@ -66,7 +66,7 @@ uint8_t charToCode(char a);
 /*
  * verify that x has only A,T,C, and G
  */
-bool isValidDNA(const char*x);
+bool isValidDNA(char*x);
 
 /*
  * get the last letter of a uint64_t
@@ -76,28 +76,7 @@ char getLastSymbol(Kmer*i,int w);
 /*
  * complement a vertex, and return another one
  */
-/* Kmer complementVertex(Kmer*a,int wordSize,bool colorSpace); */
-
-INLINE
-Kmer complementVertex(Kmer*a,int wordSize,bool colorSpace){
-	Kmer output;
-	uint64_t bitPositionInOutput=0;
-	uint64_t mask=3;
-	for(int positionInMer=wordSize-1;positionInMer>=0;positionInMer--){
-		int u64_id=positionInMer/32;
-		int bitPositionInChunk=(2*positionInMer)%64;
-		uint64_t chunk=a->getU64(u64_id);
-		uint64_t j=(chunk<<(62-bitPositionInChunk))>>62;
-		
-		j=~j&mask;
-		int outputChunk=bitPositionInOutput/64;
-		uint64_t oldValue=output.getU64(outputChunk);
-		oldValue=(oldValue|(j<<(bitPositionInOutput%64)));
-		output.setU64(outputChunk,oldValue);
-		bitPositionInOutput+=2;
-	}
-	return output;
-}
+Kmer complementVertex(Kmer*a,int wordSize,bool colorSpace);
 
 /*
  * add line breaks to a string
@@ -128,7 +107,7 @@ string convertToString(vector<Kmer>*b,int m_wordSize);
 
 int vertexRank(Kmer*a,int _size,int w);
 
-Kmer kmerAtPosition(const char*string,int pos,int w,char strand,bool color);
+Kmer kmerAtPosition(char*string,int pos,int w,char strand,bool color);
 
 int roundNumber(int number,int alignment);
 

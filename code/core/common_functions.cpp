@@ -66,7 +66,7 @@ char getLastSymbol(Kmer*i,int m_wordSize){
 	return codeToChar(getSecondSegmentLastCode(i,m_wordSize));
 }
 
-bool isValidDNA(const char*x){
+bool isValidDNA(char*x){
 	int len=strlen(x);
 	for(int i=0;i<len;i++){
 		char a=x[i];
@@ -159,7 +159,7 @@ int vertexRank(Kmer*a,int _size,int w){
 	return hash_function_1(a,w)%(_size);
 }
 
-Kmer kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool color){
+Kmer kmerAtPosition(char*m_sequence,int pos,int w,char strand,bool color){
 	int length=strlen(m_sequence);
 	if(pos>length-w){
 		cout<<"Fatal: offset is too large: position= "<<pos<<" Length= "<<length<<" WordSize=" <<w<<endl;
@@ -333,7 +333,8 @@ uint64_t hash_function_1(Kmer*a,int w){
 }
 
 uint64_t hash_function_2(Kmer*a,int w,Kmer*b){
-	*b=complementVertex(a,w,false);
+	Kmer c=complementVertex(a,w,false);
+	*b=c;
 	Kmer*lower=a;
 	if(b->isLower(a)){
 		lower=b;
@@ -446,7 +447,7 @@ char codeToChar(uint8_t a){
 	return 'A';
 }
 
-Kmer wordId(const char*a){
+Kmer wordId(char*a){
 	Kmer i;
 	int theLen=strlen(a);
 	for(int j=0;j<(int)theLen;j++){
@@ -466,7 +467,7 @@ Kmer wordId(const char*a){
 	return i;
 }
 
-string idToWord(const Kmer*i,int wordSize){
+string idToWord(Kmer*i,int wordSize){
 	char a[1000];
 	for(int p=0;p<wordSize;p++){
 		int bitPosition=2*p;
@@ -481,6 +482,24 @@ string idToWord(const Kmer*i,int wordSize){
 	return b;
 }
 
-
+Kmer complementVertex(Kmer*a,int wordSize,bool colorSpace){
+	Kmer output;
+	uint64_t bitPositionInOutput=0;
+	uint64_t mask=3;
+	for(int positionInMer=wordSize-1;positionInMer>=0;positionInMer--){
+		int u64_id=positionInMer/32;
+		int bitPositionInChunk=(2*positionInMer)%64;
+		uint64_t chunk=a->getU64(u64_id);
+		uint64_t j=(chunk<<(62-bitPositionInChunk))>>62;
+		
+		j=~j&mask;
+		int outputChunk=bitPositionInOutput/64;
+		uint64_t oldValue=output.getU64(outputChunk);
+		oldValue=(oldValue|(j<<(bitPositionInOutput%64)));
+		output.setU64(outputChunk,oldValue);
+		bitPositionInOutput+=2;
+	}
+	return output;
+}
 
 

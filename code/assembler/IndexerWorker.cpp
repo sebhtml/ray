@@ -26,7 +26,7 @@ void IndexerWorker::constructor(int sequenceId,char*sequence,Parameters*paramete
 	VirtualCommunicator*vc,uint64_t workerId,ArrayOfReads*a){
 	m_reads=a;
 	m_sequenceId=sequenceId;
-	m_sequence=sequence;
+	strcpy(m_sequence,sequence);
 	m_parameters=parameters;
 	m_outboxAllocator=outboxAllocator;
 	m_virtualCommunicator=vc;
@@ -53,7 +53,7 @@ void IndexerWorker::work(){
 		if(m_position>m_theLength-m_parameters->getWordSize()){
 			m_fetchedCoverageValues=true;
 		}else if(!m_coverageRequested){
-			Kmer vertex=kmerAtPosition(m_sequence.c_str(),m_position,m_parameters->getWordSize(),'F',m_parameters->getColorSpaceMode());
+			Kmer vertex=kmerAtPosition(m_sequence,m_position,m_parameters->getWordSize(),'F',m_parameters->getColorSpaceMode());
 			m_vertices.push_back(vertex);
 			int sendTo=vertexRank(&vertex,m_parameters->getSize(),m_parameters->getWordSize());
 			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));

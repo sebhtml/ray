@@ -44,7 +44,6 @@ see <http://www.gnu.org/licenses/>
 * - * Define the inline keyword if using 
 *   - * Microsoft Visual C++
 *   - */
-
 #if defined(__GNUC__)
 #define INLINE inline
 #elif defined(_MSC_VER)
@@ -52,7 +51,6 @@ see <http://www.gnu.org/licenses/>
 #else
 #define INLINE
 #endif
-
 
 /*
  * If GNU, must set __STDC_FORMAT_MACROS

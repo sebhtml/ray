@@ -36,7 +36,8 @@ map<Kmer,int>*coverages){
 	map<Kmer,set<Kmer> > printedEdges;
 	
 	for(map<Kmer ,int>::iterator i=coverages->begin();i!=coverages->end();i++){
-		cout<<idToWord(&(i->first),m_wordSize)<<" [label=\""<<idToWord(&(i->first),m_wordSize)<<" "<<i->second<<"\"]"<<endl;
+		Kmer kmer=i->first;
+		cout<<idToWord(&kmer,m_wordSize)<<" [label=\""<<idToWord(&kmer,m_wordSize)<<" "<<i->second<<"\"]"<<endl;
 	}
 	for(int j=0;j<(int)trees->size();j++){
 		for(int i=0;i<(int)trees->at(j).size();i+=2){
