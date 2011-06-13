@@ -42,7 +42,6 @@
 #include <core/constants.h>
 #include <algorithm>
 #include <mpi.h>
-#include <inttypes.h>
 using namespace std;
 
 Machine::Machine(int argc,char**argv){
@@ -973,11 +972,11 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_EXTENSIONS(){
 void Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 	cout<<"Rank "<<m_rank<< " is appending its fusions"<<endl;
 	string output=m_parameters.getOutputFile();
-	FILE*fp;
+	ofstream fp;
 	if(m_rank==0){
-		fp=fopen(output.c_str(),"w+");
+		fp.open(output.c_str());
 	}else{
-		fp=fopen(output.c_str(),"a+");
+		fp.open(output.c_str(),ios_base::out|ios_base::app);
 	}
 	int total=0;
 	for(int i=0;i<(int)m_ed->m_EXTENSION_contigs.size();i++){
@@ -991,11 +990,10 @@ void Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 		m_scaffolder.addContig(uniqueId,&(m_ed->m_EXTENSION_contigs[i]));
 
 		string withLineBreaks=addLineBreaks(contig,m_parameters.getColumns());
-		
-		fprintf(fp,">contig-%"PRIu64" %i nucleotides\n%s",uniqueId,(int)contig.length(),withLineBreaks.c_str());
+		fp<<">contig-"<<uniqueId<<" "<<contig.length()<<" nucleotides"<<endl<<withLineBreaks<<endl;
 	}
 	cout<<"Rank "<<m_rank<<" appended "<<total<<" elements"<<endl;
-	fclose(fp);
+	fp.close();
 
 	if(m_parameters.showMemoryUsage()){
 		showMemoryUsage(getRank());
