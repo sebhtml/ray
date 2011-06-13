@@ -18,6 +18,7 @@
 	see <http://www.gnu.org/licenses/>
 */
 
+#include <core/ray_windows.h>
 #include <core/constants.h>
 #include <assert.h>
 #include <communication/VirtualCommunicator.h>

@@ -21,6 +21,7 @@
 
 #define SHOW_IMPOSSIBLE_CHOICE
 
+#include <core/ray_windows.h>
 #include <core/constants.h>
 #include <memory/malloc_types.h>
 #include <string.h>

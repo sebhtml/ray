@@ -68,16 +68,6 @@ see <http://www.gnu.org/licenses/>
 #define __STDC_FORMAT_MACROS /* for PRIu64 */
 #endif
 
-/*
- * Include those libraries for Microsoft Visual C++
- */
-#ifdef _MSC_VER
-#include <xiosbase>
-#include <stdexcept>
-/* http://msdn.microsoft.com/en-us/library/b0084kay%28VS.80%29.aspx */
-#define __func__ __FUNCTION__ 
-#endif
-
 #ifdef FORCE_PACKING
 /*
  * With gcc, one can pack data structures.

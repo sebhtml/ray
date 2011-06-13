@@ -19,6 +19,7 @@
 
 */
 
+#include <core/ray_windows.h>
 #include <core/constants.h>
 #include <assembler/DepthFirstSearchData.h>
 
