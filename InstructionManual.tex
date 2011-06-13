@@ -206,6 +206,17 @@ The maximum  number of paired libraries allowed by Ray is 499.
 }
               Runs the profiler as the code runs. Needs real-time Linux (HAVE\_CLOCK\_GETTIME = y)
 
+\subsection{-amos}
+
+Generates an AMOS file containing read locations on contigs. This file can be opened with AMOS Hawkeye, Tablet and other assembly browser
+software.
+
+
+
+\subsection{
+-help
+}
+Shows options available.
 
 \subsection{$k$-mer length with -k}
 
@@ -300,7 +311,7 @@ PREFIX.LibraryStatistics.txt & Number of reads in each file \\
  & and estimation of outer distances for paired reads \\
 PREFIX.SeedLengthDistribution.txt & The distribution of seed lengths \\
 PREFIX.OutputNumbers.txt & Overall numbers for the assembly\\
-PREFIX.AMOS.afg & Assembly representation in AMOS format \\
+PREFIX.AMOS.afg & Assembly representation in AMOS format (--output-amos) \\
 \hline
 \end{tabular}
 \end{table}
