@@ -24,6 +24,14 @@ see <http://www.gnu.org/licenses/>
 
 #define RAY_VERSION "1.6.0-rc2"
 
+/* 
+ * Define the maximum k-mer length when
+ * the compiler/make does not.
+ */
+#ifndef MAXKMERLENGTH
+#define MAXKMERLENGTH 32
+#endif
+
 #include <stdint.h>
 
 /* exit codes */
