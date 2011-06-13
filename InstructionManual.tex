@@ -83,7 +83,7 @@ They can be changed in the Makefile or provided on the command line.
 \hline
 Option & Value & Description \\
 \hline
-PREFIX & path & where 'make install' will install Ray
+PREFIX & path & where 'make install' will install Ray \\
 MAXKMERLENGTH & integer & maximum k-mer length \\
 HAVE\_LIBZ & y/n & enable support for .gz files \\
 HAVE\_LIBBZ2 & y/n& enable support for .bz2 files \\
@@ -181,7 +181,30 @@ computed by Ray. Ray may fail to compute and average outer distance when the lat
 In that case, provide the value.
 The maximum  number of paired libraries allowed by Ray is 499.
 
+\subsection{      
+ -debug-bubbles
+}
+              Debugs bubble code.
 
+\subsection{      
+       -debug-seeds
+}
+              Debugs seed code.
+
+\subsection{      
+       -show-memory-usage (only available in GNU/Linux)
+}
+              Shows memory usage. Data is fetched from /proc on GNU/Linux
+
+\subsection{      
+       -show-ending-context
+}
+              Shows the ending context of each extension.
+
+\subsection{      
+       -run-profiler
+}
+              Runs the profiler as the code runs. Needs real-time Linux (HAVE\_CLOCK\_GETTIME = y)
 
 
 \subsection{$k$-mer length with -k}
