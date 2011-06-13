@@ -5,18 +5,18 @@ and is implemented using peer-to-peer communication.
 
 Ray is documented in the manual (InstructionManual.tex; available
 online and in Portable Document Format), 
-on 
-http://github.com/sebhtml/ray
- (with the README.md), in the 
+on http://github.com/sebhtml/ray (with the README.md), in the 
 C++ code using Doxygen and in the journal paper as well.
+
 Enjoy the README.
 
+Ray is implemented in C++, version ISO/IEC 14882:1998.
 
+It also utilises the message-passing interface (MPI), version 2.2.
 
 # Website
 
 - http://denovoassembler.sf.net
-
 
 # Code repository
 
@@ -28,12 +28,15 @@ Enjoy the README.
 
 # Installation
 
+You need a C++ compiler, make, an implementation of MPI.
+
+## Compilation
+
 	tar xjf Ray-x.y.z.tar.bz2
 	cd Ray-x.y.z
 	make PREFIX=build
 	make install
 	ls build
-
 
 ## Change the compiler
 
