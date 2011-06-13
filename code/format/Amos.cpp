@@ -162,22 +162,23 @@ void Amos::slaveMode(){
 					uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 					message[0]=idOnRank;
 					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,readRank,RAY_MPI_TAG_ASK_READ_LENGTH,m_parameters->getRank());
-					m_outbox->push_back(aMessage);
-				}else if(m_ed->m_EXTENSION_readLength_received){
-					int readLength=m_ed->m_EXTENSION_receivedLength;
+					m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
+				}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
+					vector<uint64_t> result=m_virtualCommunicator->getResponseElements(m_workerId);
+					int readLength=result[0];
+					int forwardOffset=result[1];
+					int reverseOffset=result[2];
 					uint64_t globalIdentifier=m_parameters->getGlobalIdFromRankAndLocalId(readRank,idOnRank)+1;
-					int start=0;
+					int start=forwardOffset;
 					int theEnd=readLength-1;
 					int offset=m_mode_send_vertices_sequence_id_position;
 					if(strand=='R'){
+						start=0;
+						theEnd=theEnd-reverseOffset;
 						int t=start;
 						start=theEnd;
 						theEnd=t;
 						offset++;
-					}
-					if(globalIdentifier==1512){
-						Kmer vertex=m_ed->m_EXTENSION_contigs[m_contigId][m_mode_send_vertices_sequence_id_position];
-						cout<<"Position "<<m_mode_send_vertices_sequence_id_position<<" Kmer "<<idToWord(&vertex,m_parameters->getWordSize())<<" ReadStrand "<<strand<<" iid:"<<globalIdentifier<<endl;
 					}
 					fprintf(m_amosFile,"{TLE\nsrc:%li\noff:%i\nclr:%i,%i\n}\n",globalIdentifier,offset,
 						start,theEnd);

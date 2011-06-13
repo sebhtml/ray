@@ -1401,11 +1401,23 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_READ_LENGTH(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
-	int length=(*m_myReads)[incoming[0]]->length();
+	int index=incoming[0];
+	#ifdef ASSERT
+	assert(index<m_myReads->size());
+	#endif
+	Read*read=(*m_myReads)[index];
+	#ifdef ASSERT
+	assert(read!=NULL);
+	#endif
+	int length=read->length();
 	
-	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
-	message2[0]=length;
-	Message aMessage(message2,1,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_READ_LENGTH_REPLY,rank);
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(3*sizeof(uint64_t));
+	int pos=0;
+	message2[pos++]=length;
+	message2[pos++]=read->getForwardOffset();
+	message2[pos++]=read->getReverseOffset();
+
+	Message aMessage(message2,pos,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_ASK_READ_LENGTH_REPLY,rank);
 	m_outbox->push_back(aMessage);
 }
 
