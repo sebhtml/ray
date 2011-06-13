@@ -19,6 +19,8 @@
 
 */
 
+#ifdef HAVE_LIBBZ2
+
 #define __BzReader_MAXIMUM_LENGTH 2*4096
 
 #include <compression/BzReader.h>
@@ -112,3 +114,5 @@ void BzReader::close(){
 	m_file=NULL;
 	__Free(m_buffer,RAY_MALLOC_TYPE_BZ2);
 }
+
+#endif

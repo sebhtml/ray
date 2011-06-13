@@ -447,26 +447,6 @@ char codeToChar(uint8_t a){
 	return 'A';
 }
 
-Kmer wordId(char*a){
-	Kmer i;
-	int theLen=strlen(a);
-	for(int j=0;j<(int)theLen;j++){
-		uint64_t k=charToCode(a[j]);
-		int bitPosition=2*j;
-		int chunk=bitPosition/64;
-		int bitPositionInChunk=bitPosition%64;
-		#ifdef ASSERT
-		if(!(chunk<i.getNumberOfU64())){
-			cout<<"Chunk="<<chunk<<" positionInKmer="<<j<<" KmerLength="<<strlen(a)<<" bitPosition=" <<bitPosition<<" Chunks="<<i.getNumberOfU64()<<endl;
-		}
-		assert(chunk<i.getNumberOfU64());
-		#endif
-		uint64_t filter=(k<<bitPositionInChunk);
-		i.setU64(chunk,i.getU64(chunk)|filter);
-	}
-	return i;
-}
-
 string idToWord(Kmer*i,int wordSize){
 	char a[1000];
 	for(int p=0;p<wordSize;p++){
@@ -480,26 +460,6 @@ string idToWord(Kmer*i,int wordSize){
 	a[wordSize]='\0';
 	string b=a;
 	return b;
-}
-
-Kmer complementVertex(Kmer*a,int wordSize,bool colorSpace){
-	Kmer output;
-	uint64_t bitPositionInOutput=0;
-	uint64_t mask=3;
-	for(int positionInMer=wordSize-1;positionInMer>=0;positionInMer--){
-		int u64_id=positionInMer/32;
-		int bitPositionInChunk=(2*positionInMer)%64;
-		uint64_t chunk=a->getU64(u64_id);
-		uint64_t j=(chunk<<(62-bitPositionInChunk))>>62;
-		
-		j=~j&mask;
-		int outputChunk=bitPositionInOutput/64;
-		uint64_t oldValue=output.getU64(outputChunk);
-		oldValue=(oldValue|(j<<(bitPositionInOutput%64)));
-		output.setU64(outputChunk,oldValue);
-		bitPositionInOutput+=2;
-	}
-	return output;
 }
 
 

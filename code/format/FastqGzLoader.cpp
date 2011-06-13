@@ -19,6 +19,8 @@
 
 */
 
+#ifdef HAVE_LIBZ
+
 #include<format/FastqGzLoader.h>
 #include<fstream>
 #include<zlib.h>
@@ -73,3 +75,6 @@ void FastqGzLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAlloc
 int FastqGzLoader::getSize(){
 	return m_size;
 }
+
+#endif
+

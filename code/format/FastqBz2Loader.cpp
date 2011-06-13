@@ -19,6 +19,8 @@
 
 */
 
+#ifdef HAVE_LIBBZ2
+
 #include<format/FastqBz2Loader.h>
 #include<fstream>
 #include<compression/BzReader.h>
@@ -75,4 +77,4 @@ void FastqBz2Loader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllo
 	}
 }
 
-
+#endif

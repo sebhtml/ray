@@ -35,7 +35,7 @@ bool TipWatchdog::getApproval(ExtensionData*ed,DepthFirstSearchData*dfsData,int 
 
 	return true;
 
-	if(ed->m_enumerateChoices_outgoingEdges.size()==2 and
+	if(ed->m_enumerateChoices_outgoingEdges.size()==2 &&
 		(int)ed->m_EXTENSION_readPositionsForVertices[ed->m_enumerateChoices_outgoingEdges[0]].size() < minimumCoverage 
 		&& (int)ed->m_EXTENSION_readPositionsForVertices[ed->m_enumerateChoices_outgoingEdges[1]].size() < minimumCoverage){
 		int winner=dfsData->m_doChoice_tips_newEdges[0];

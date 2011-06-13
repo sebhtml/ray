@@ -19,8 +19,9 @@
 
 */
 
-#ifndef _BzReader
+#ifndef _BzReader 
 #define _BzReader
+#ifdef HAVE_LIBBZ2
 
 #include<bzlib.h>
 #include<stdio.h>
@@ -38,4 +39,5 @@ public:
 	void close();
 };
 
+#endif
 #endif

@@ -21,6 +21,7 @@
 
 #ifndef _FastqGzLoader
 #define _FastqGzLoader
+#ifdef HAVE_LIBZ
 
 #include <string>
 #include <vector>
@@ -41,4 +42,5 @@ public:
 	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period);
 };
 
+#endif
 #endif

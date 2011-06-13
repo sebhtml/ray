@@ -36,8 +36,6 @@ see <http://www.gnu.org/licenses/>
 #endif
 using namespace std;
 
-#define __max(a,b) (((a)>(b)) ? (a) : (b))
-
 /*
  *  complement the sequence of a biological thing
  */
@@ -47,11 +45,6 @@ string reverseComplement(string a,char*rev);
  * transform a Kmer in a string
  */
 string idToWord(Kmer*i,int wordSize);
-
-/*
- * transform a string in a Kmer
- */
-Kmer wordId(char*a);
 
 /*
  * transform a encoded nucleotide in a char
@@ -76,7 +69,50 @@ char getLastSymbol(Kmer*i,int w);
 /*
  * complement a vertex, and return another one
  */
-Kmer complementVertex(Kmer*a,int wordSize,bool colorSpace);
+INLINE
+Kmer complementVertex(Kmer*a,int wordSize,bool colorSpace){
+	Kmer output;
+	uint64_t bitPositionInOutput=0;
+	uint64_t mask=3;
+	for(int positionInMer=wordSize-1;positionInMer>=0;positionInMer--){
+		int u64_id=positionInMer/32;
+		int bitPositionInChunk=(2*positionInMer)%64;
+		uint64_t chunk=a->getU64(u64_id);
+		uint64_t j=(chunk<<(62-bitPositionInChunk))>>62;
+		
+		j=~j&mask;
+		int outputChunk=bitPositionInOutput/64;
+		uint64_t oldValue=output.getU64(outputChunk);
+		oldValue=(oldValue|(j<<(bitPositionInOutput%64)));
+		output.setU64(outputChunk,oldValue);
+		bitPositionInOutput+=2;
+	}
+	return output;
+}
+
+/*
+ * transform a string in a Kmer
+ */
+INLINE
+Kmer wordId(const char*a){
+	Kmer i;
+	int theLen=strlen(a);
+	for(int j=0;j<(int)theLen;j++){
+		uint64_t k=charToCode(a[j]);
+		int bitPosition=2*j;
+		int chunk=bitPosition/64;
+		int bitPositionInChunk=bitPosition%64;
+		#ifdef ASSERT
+		if(!(chunk<i.getNumberOfU64())){
+			cout<<"Chunk="<<chunk<<" positionInKmer="<<j<<" KmerLength="<<strlen(a)<<" bitPosition=" <<bitPosition<<" Chunks="<<i.getNumberOfU64()<<endl;
+		}
+		assert(chunk<i.getNumberOfU64());
+		#endif
+		uint64_t filter=(k<<bitPositionInChunk);
+		i.setU64(chunk,i.getU64(chunk)|filter);
+	}
+	return i;
+}
 
 /*
  * add line breaks to a string
@@ -85,17 +121,6 @@ string addLineBreaks(string sequence,int a);
 
 void*__Malloc(int c,int mallocType);
 void __Free(void*a,int mallocType);
-
-/*
- * compute the reverse complement in color space (it is just the same, but reverse)
- */
-
-Kmer complementVertex_colorSpace(Kmer*a,int b);
-
-/*
- * complement vertex, normal.
- */
-Kmer complementVertex_normal(Kmer*a,int m_wordSize);
 
 /*
  * use mini distant segments here.
