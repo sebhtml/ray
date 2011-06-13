@@ -212,8 +212,8 @@ void showMemoryUsage(int rank){
 		if(key=="VmData:"){
 			uint64_t count;
 			f>>count;
-			printf("Rank %i: VmData= %lu KiB\n",rank,count);
-			fflush(stdout);
+			cout<<"Rank "<<rank<<": VmData= "<<cout<<" KiB"<<endl;
+			cout.flush();
 			break;
 		}
 	}
