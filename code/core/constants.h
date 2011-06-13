@@ -37,7 +37,8 @@ see <http://www.gnu.org/licenses/>
 /* exit codes */
 
 /* EXIT_SUCCESS 0 (defined in stdlib.h) */
-#define EXIT_NOMOREMEMORY 42
+#define EXIT_NEEDS_ARGUMENTS 5
+#define EXIT_NO_MORE_MEMORY 42
 
 /*
  * Detect the operating system

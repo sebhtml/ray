@@ -128,6 +128,9 @@ void Parameters::parseCommands(){
 
 	set<string> outputAmosCommands;
 	outputAmosCommands.insert("-a");
+	outputAmosCommands.insert("-amos");
+	outputAmosCommands.insert("--amos");
+	outputAmosCommands.insert("--output-amos");
 	outputAmosCommands.insert("OutputAmosFile");
 	outputAmosCommands.insert("-OutputAmosFile");
 	outputAmosCommands.insert("--OutputAmosFile");
@@ -147,6 +150,25 @@ void Parameters::parseCommands(){
 	set<string> reduceMemoryUsage;
 	reduceMemoryUsage.insert("-r");
 
+	set<string> showMemory;
+	showMemory.insert("-show-memory-usage");
+	showMemory.insert("--show-memory-usage");
+	set<string> debugBubbles;
+	debugBubbles.insert("-debug-bubbles");
+	debugBubbles.insert("--debug-bubbles");
+
+	set<string> debugSeeds;
+	debugSeeds.insert("-debug-seeds");
+	debugSeeds.insert("--debug-seeds");
+
+	set<string> runProfiler;
+	runProfiler.insert("-run-profiler");
+	runProfiler.insert("--run-profiler");
+
+	set<string> showContext;
+	showContext.insert("-show-ending-context");
+	showContext.insert("--show-ending-context");
+
 	vector<set<string> > toAdd;
 	toAdd.push_back(singleReadsCommands);
 	toAdd.push_back(pairedReadsCommands);
@@ -156,18 +178,17 @@ void Parameters::parseCommands(){
 	toAdd.push_back(interleavedCommands);
 	toAdd.push_back(reduceMemoryUsage);
 	toAdd.push_back(memoryMappedFileCommands);
+	toAdd.push_back(showMemory);	
+	toAdd.push_back(debugBubbles);
+	toAdd.push_back(debugSeeds);
+	toAdd.push_back(runProfiler);
+	toAdd.push_back(showContext);
 
 	for(int i=0;i<(int)toAdd.size();i++){
 		for(set<string>::iterator j=toAdd[i].begin();j!=toAdd[i].end();j++){
 			commands.insert(*j);
 		}
 	}
-
-	commands.insert("-show-memory-usage");
-	commands.insert("-debug-bubbles");
-	commands.insert("-debug-seeds");
-	commands.insert("-run-profiler");
-	commands.insert("-show-ending-context");
 
 	m_numberOfLibraries=0;
 
@@ -450,27 +471,27 @@ void Parameters::parseCommands(){
 				cout<<endl;
 				cout<<endl;
 			}
-		}else if(token=="-run-profiler"){
+		}else if(runProfiler.count(token)>0){
 			m_profiler=true;
 			if(m_rank==MASTER_RANK){
 				printf("Enabling profiler!\n");
 			}
-		}else if(token=="-debug-bubbles"){
+		}else if(debugBubbles.count(token)>0){
 			m_debugBubbles=true;
 			if(m_rank==MASTER_RANK){
 				printf("Enabling bubble debug mode.\n");
 			}
-		}else if(token=="-debug-seeds"){
+		}else if(debugSeeds.count(token)>0){
 			m_debugSeeds=true;
 			if(m_rank==MASTER_RANK){
 				printf("Enabling seed debug mode.\n");
 			}
-		}else if(token=="-show-memory-usage"){
+		}else if(showMemory.count(token)>0){
 			m_showMemoryUsage=true;
 			if(m_rank==MASTER_RANK){
 				printf("Enabling memory usage reporting.\n");
 			}
-		}else if(token=="-show-ending-context"){
+		}else if(showContext.count(token)>0){
 			m_showEndingContext=true;
 			if(m_rank==MASTER_RANK){
 				printf("Ray will show the ending context of extensions.\n");
@@ -824,37 +845,54 @@ bool Parameters::runReducer(){
 	return m_reducerIsActivated;
 }
 
-void showOption(string option,string description){
+void Parameters::showOption(string option,string description){
 	string spacesBeforeOption="       ";
+	cout<<spacesBeforeOption<<option<<endl;
+	showOptionDescription(description);
+}
+
+void Parameters::showOptionDescription(string description){
 	string spacesBeforeDescription="              ";
-	cout<<spacesBeforeOption<<option<<endl<<spacesBeforeDescription<<description<<endl;
-	cout<<endl;
+	cout<<spacesBeforeDescription<<description<<endl;
 }
 
 void Parameters::showUsage(){
-	
-	cout<<"NAME"<<endl<<"     ray -- de Bruijn Message-Passing-Interface-based de novo assembler"<<endl<<endl;
+	string basicSpaces="       ";
+	cout<<"NAME"<<endl<<basicSpaces<<"Ray - assemble genomes in parallel using the message-passing interface"<<endl<<endl;
 
-	cout<<"SYNOPSIS"<<endl<<endl;
-
-	cout<<"DESCRIPTION:"<<endl;
+	cout<<"SYNOPSIS"<<endl;
+	cout<<basicSpaces<<"mpirun -np NUMBER_OF_RANKS Ray -p l1_1.fastq l1_2.fastq -p l2_1.fastq l2_2.fastq"<<endl;
 	cout<<endl;
-
+	cout<<"DESCRIPTION:"<<endl;
 	showOption("-s sequenceFile","Provides a file containing single-end reads.");
-	showOption("-p leftSequenceFile rightSequenceFile [averageOuterDistance standardDeviation]","Provides two files containing paired-end reads. averageOuterDistance and standardDeviation are automatically computed if not provided.");
-	showOption("-i interleavedSequenceFile [averageOuterDistance standardDeviation]","Provides one file containing interleaved paired-end reads. averageOuterDistance and standardDeviation are automatically computed if not provided.");
+	cout<<endl;
+	showOption("-p leftSequenceFile rightSequenceFile [averageOuterDistance standardDeviation]","Provides two files containing paired-end reads.");
+	showOptionDescription("averageOuterDistance and standardDeviation are automatically computed if not provided.");
+	cout<<endl;
+	showOption("-i interleavedSequenceFile [averageOuterDistance standardDeviation]","Provides one file containing interleaved paired-end reads.");
+	showOptionDescription("averageOuterDistance and standardDeviation are automatically computed if not provided.");
+	cout<<endl;
 	showOption("-o outputPrefix","Specifies the prefix for outputted files.");
-	showOption("-a","Requests the AMOS file.");
+	cout<<endl;
+	showOption("-amos","Requests the AMOS file.");
+	cout<<endl;
 	showOption("-k kmerLength","Selects the length of k-mers. The default value is 21. It most be odd because reverse-complement vertices are stored together.");
+	cout<<endl;
 	#ifdef HAVE_CLOCK_GETTIME
 	showOption("-run-profiler","Runs the profiler as the code runs. Needs real-time Linux.");
+	cout<<endl;
 	#endif
 	showOption("-debug-bubbles","Debugs bubble code.");
+	cout<<endl;
 	showOption("-debug-seeds","Debugs seed code.");
+	cout<<endl;
 	showOption("-show-memory-usage","Shows memory usage. Data is fetched from /proc on GNU/Linux");
+	cout<<endl;
 	showOption("-show-ending-context","Shows the ending context of each extension.\n");
 
-	showOption("--help","Displays this help page.");
+	cout<<endl;
+	showOption("-help","Displays this help page.");
+	cout<<endl;
 
 	cout<<"FILES"<<endl;
 
@@ -877,7 +915,36 @@ void Parameters::showUsage(){
 	cout<<endl;
 	cout<<"     Note: file format is determined with file extension."<<endl;
 	cout<<endl;
+	cout<<"DOCUMENTATION"<<endl;
+	cout<<basicSpaces<<"Manual (Portable Document Format): InstructionManual.pdf"<<endl;
+	cout<<basicSpaces<<"Manual (online): <http://denovoassembler.sf.net/manual.html>"<<endl;
+	cout<<basicSpaces<<"github README.md: <http://github.com/sebhtml/ray>"<<endl;
+	cout<<basicSpaces<<"This help page"<<endl;
+	cout<<endl;
+	cout<<"AUTHOR"<<endl;
+	cout<<basicSpaces<<"Written by Sébastien Boisvert."<<endl;
+	cout<<endl;
+	cout<<"REPORTING BUGS"<<endl;
+	cout<<basicSpaces<<"Report bugs to denovoassembler-users@lists.sourceforge.net"<<endl;
+	cout<<basicSpaces<<"Home page: <http://denovoassembler.sourceforge.net/>"<<endl;
+	cout<<endl;
+	cout<<"COPYRIGHT"<<endl;
+	cout<<basicSpaces<<"This program is free software: you can redistribute it and/or modify"<<endl;
+	cout<<basicSpaces<<"it under the terms of the GNU General Public License as published by"<<endl;
+	cout<<basicSpaces<<"the Free Software Foundation, version 3 of the License."<<endl;
 
+	cout<<endl;
+	cout<<basicSpaces<<"This program is distributed in the hope that it will be useful,"<<endl;
+	cout<<basicSpaces<<"but WITHOUT ANY WARRANTY; without even the implied warranty of"<<endl;
+	cout<<basicSpaces<<"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the"<<endl;
+	cout<<basicSpaces<<"GNU General Public License for more details."<<endl;
+
+	cout<<endl;
+	cout<<basicSpaces<<"You have received a copy of the GNU General Public License"<<endl;
+	cout<<basicSpaces<<"along with this program (see LICENSE)."<<endl;
+
+	cout<<endl;
+	cout<<"Ray "<<RAY_VERSION<<endl;
 }
 
 string Parameters::getMemoryPrefix(){

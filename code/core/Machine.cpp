@@ -45,6 +45,26 @@
 using namespace std;
 
 Machine::Machine(int argc,char**argv){
+	m_messagesHandler.constructor(&argc,&argv);
+	m_rank=m_messagesHandler.getRank();
+	m_size=m_messagesHandler.getSize();
+	if(isMaster() && argc==1){
+		m_parameters.showUsage();
+		exit(EXIT_NEEDS_ARGUMENTS);
+	}else if(argc==2){
+		string param=argv[1];
+		if(param.find("help")!=string::npos){
+			m_parameters.showUsage();
+			exit(EXIT_NEEDS_ARGUMENTS);
+		}else if(param.find("usage")!=string::npos){
+			m_parameters.showUsage();
+			exit(EXIT_NEEDS_ARGUMENTS);
+		}else if(param.find("man")!=string::npos){
+			m_parameters.showUsage();
+			exit(EXIT_NEEDS_ARGUMENTS);
+		}
+	}
+
 	m_argc=argc;
 	m_argv=argv;
 	m_bubbleData=new BubbleData();
@@ -93,10 +113,6 @@ void Machine::start(){
 	m_sequence_ready_machines=0;
 	m_isFinalFusion=false;
 
-	m_messagesHandler.constructor(&m_argc,&m_argv);
-	m_rank=m_messagesHandler.getRank();
-	m_size=m_messagesHandler.getSize();
-		
 	m_messagesHandler.barrier();
 
 	if(isMaster()){

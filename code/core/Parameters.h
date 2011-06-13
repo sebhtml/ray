@@ -90,7 +90,8 @@ class Parameters{
 	void parseCommands();
 
 	string getLibraryFile(int library);
-
+	void showOption(string a,string b);
+	void showOptionDescription(string a);
 public:
 	Parameters();
 	string getReceivedMessagesFile();

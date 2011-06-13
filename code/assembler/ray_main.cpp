@@ -19,14 +19,11 @@
 
 */
 
-#include<iostream>
-#include<core/Machine.h>
+#include <iostream>
+#include <core/Machine.h>
 #include <stdlib.h>
 using namespace std;
 
-/*
- *  the main function calls Machine.
- */
 int main(int argc,char**argv){
 	Machine*m=new Machine(argc,argv);
 	m->start();
