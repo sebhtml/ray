@@ -22,7 +22,7 @@ see <http://www.gnu.org/licenses/>
 #ifndef _constants
 #define _constants
 
-#define RAY_VERSION "1.6.0-rc2"
+#define RAY_VERSION "1.6.0"
 
 /* 
  * Define the maximum k-mer length when
