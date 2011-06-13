@@ -71,9 +71,9 @@ see <http://www.gnu.org/licenses/>
 /*
  * Include those libraries for Microsoft Visual C++
  */
-#ifdef OS_WIN
-/* #include <xiosbase> */
-/* #include <stdexcept> */
+#ifdef _MSC_VER
+#include <xiosbase>
+#include <stdexcept>
 /* http://msdn.microsoft.com/en-us/library/b0084kay%28VS.80%29.aspx */
 #define __func__ __FUNCTION__ 
 #endif
