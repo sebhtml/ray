@@ -19,10 +19,9 @@
 
 */
 
-#ifndef _Message
-#define _Message
+#ifndef _Message_H
+#define _Message_H
 
-#include <core/constants.h>
 #include <mpi.h>
 
 /*
