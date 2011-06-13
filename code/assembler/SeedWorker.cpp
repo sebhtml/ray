@@ -188,7 +188,7 @@ void SeedWorker::do_1_1_test(){
 		}else if(m_virtualCommunicator->isMessageProcessed(m_workerIdentifier)
 			&&!m_ingoingEdgesReceived){
 			m_ingoingEdgesReceived=true;
-			vector<uint64_t> elements=m_virtualCommunicator->getResponseElements(m_workerIdentifier);
+			vector<uint64_t> elements=m_virtualCommunicator->getMessageResponseElements(m_workerIdentifier);
 			uint8_t edges=elements[0];
 			int coverage=elements[1];
 			
@@ -238,7 +238,7 @@ void SeedWorker::do_1_1_test(){
 					m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 					m_SEEDING_vertexCoverageRequested=true;
 				}else if(m_virtualCommunicator->isMessageProcessed(m_workerIdentifier)){
-					m_SEEDING_receivedVertexCoverage=m_virtualCommunicator->getResponseElements(m_workerIdentifier)[0];
+					m_SEEDING_receivedVertexCoverage=m_virtualCommunicator->getMessageResponseElements(m_workerIdentifier)[0];
 					m_cache[vertex]=m_SEEDING_receivedVertexCoverage;
 					m_SEEDING_ingoingEdgeIndex++;
 					m_SEEDING_vertexCoverageRequested=false;
@@ -262,7 +262,7 @@ void SeedWorker::do_1_1_test(){
 					m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 					m_SEEDING_vertexCoverageRequested=true;
 				}else if(m_virtualCommunicator->isMessageProcessed(m_workerIdentifier)){
-					m_SEEDING_receivedVertexCoverage=m_virtualCommunicator->getResponseElements(m_workerIdentifier)[0];
+					m_SEEDING_receivedVertexCoverage=m_virtualCommunicator->getMessageResponseElements(m_workerIdentifier)[0];
 					m_cache[vertex]=m_SEEDING_receivedVertexCoverage;
 					m_SEEDING_outgoingEdgeIndex++;
 					m_SEEDING_vertexCoverageRequested=false;

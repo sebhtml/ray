@@ -435,7 +435,7 @@ void Scaffolder::sendContigInfo(){
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		m_sentContigInfo=true;
 	}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		m_virtualCommunicator->getResponseElements(m_workerId);
+		m_virtualCommunicator->getMessageResponseElements(m_workerId);
 		m_sentContigMeta=true;
 	}
 }
@@ -452,7 +452,7 @@ void Scaffolder::sendSummary(){
 			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 			m_entrySent=true;
 		}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
-			m_virtualCommunicator->getResponseElements(m_workerId);
+			m_virtualCommunicator->getMessageResponseElements(m_workerId);
 			m_summaryIterator++;
 			m_entrySent=false;
 		}
@@ -569,7 +569,7 @@ void Scaffolder::processVertex(Kmer vertex){
 		}
 	}else if(!m_coverageReceived
 		&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		vector<uint64_t>answer=m_virtualCommunicator->getResponseElements(m_workerId);
+		vector<uint64_t>answer=m_virtualCommunicator->getMessageResponseElements(m_workerId);
 		#ifdef ASSERT
 		assert(0<answer.size());
 		#endif
@@ -639,7 +639,7 @@ void Scaffolder::processAnnotation(){
 		m_hasPairReceived=false;
 	}else if(!m_hasPairReceived
 	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		m_hasPair=m_virtualCommunicator->getResponseElements(m_workerId)[0];
+		m_hasPair=m_virtualCommunicator->getMessageResponseElements(m_workerId)[0];
 		m_hasPairReceived=true;
 		m_pairRequested=false;
 	}else if(!m_hasPairReceived){
@@ -657,7 +657,7 @@ void Scaffolder::processAnnotation(){
 		m_pairReceived=false;
 	}else if(!m_pairReceived
 	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		vector<uint64_t> response=m_virtualCommunicator->getResponseElements(m_workerId);
+		vector<uint64_t> response=m_virtualCommunicator->getMessageResponseElements(m_workerId);
 		m_readLength=response[0];
 		m_pairedReadRank=response[1];
 		m_pairedReadIndex=response[2];
@@ -676,7 +676,7 @@ void Scaffolder::processAnnotation(){
 		m_markersReceived=false;
 	}else if(!m_markersReceived
 	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		vector<uint64_t> response=m_virtualCommunicator->getResponseElements(m_workerId);
+		vector<uint64_t> response=m_virtualCommunicator->getMessageResponseElements(m_workerId);
 		int bufferPosition=0;
 		m_pairedReadLength=response[bufferPosition++];
 		m_pairedForwardMarker.unpack(&response,&bufferPosition);
@@ -711,7 +711,7 @@ void Scaffolder::processAnnotation(){
 		m_forwardDirectionsReceived=false;
 	}else if(!m_forwardDirectionsReceived
 	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		vector<uint64_t> response=m_virtualCommunicator->getResponseElements(m_workerId);
+		vector<uint64_t> response=m_virtualCommunicator->getMessageResponseElements(m_workerId);
 		m_pairedForwardMarkerCoverage=response[0];
 		m_pairedForwardHasDirection=response[1];
 		m_pairedForwardDirectionName=response[2];
@@ -741,7 +741,7 @@ void Scaffolder::processAnnotation(){
 
 	}else if(!m_forwardDirectionLengthReceived
 	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		vector<uint64_t> response=m_virtualCommunicator->getResponseElements(m_workerId);
+		vector<uint64_t> response=m_virtualCommunicator->getMessageResponseElements(m_workerId);
 		m_pairedForwardDirectionLength=response[0];
 		m_forwardDirectionLengthReceived=true;
 
@@ -893,7 +893,7 @@ Case 13. (allowed)
 		m_reverseDirectionsReceived=false;
 	}else if(!m_reverseDirectionsReceived
 	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		vector<uint64_t> response=m_virtualCommunicator->getResponseElements(m_workerId);
+		vector<uint64_t> response=m_virtualCommunicator->getMessageResponseElements(m_workerId);
 		m_pairedReverseMarkerCoverage=response[0];
 		m_pairedReverseHasDirection=response[1];
 		m_pairedReverseDirectionName=response[2];
@@ -920,7 +920,7 @@ Case 13. (allowed)
 		m_reverseDirectionLengthReceived=false;
 	}else if(!m_reverseDirectionLengthReceived
 	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		vector<uint64_t> response=m_virtualCommunicator->getResponseElements(m_workerId);
+		vector<uint64_t> response=m_virtualCommunicator->getMessageResponseElements(m_workerId);
 		m_pairedReverseDirectionLength=response[0];
 		m_reverseDirectionLengthReceived=true;
 		
@@ -1096,7 +1096,7 @@ void Scaffolder::writeScaffolds(){
 					fclose(fp);
 				}
 			}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
-				vector<uint64_t>answer=m_virtualCommunicator->getResponseElements(m_workerId);
+				vector<uint64_t>answer=m_virtualCommunicator->getMessageResponseElements(m_workerId);
 				m_positionOnScaffold=answer[0];
 				if(m_contigId<(int)m_scaffoldContigs[m_scaffoldId].size()-1){
 					int gapSize=m_scaffoldGaps[m_scaffoldId][m_contigId];

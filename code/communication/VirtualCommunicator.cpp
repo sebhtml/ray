@@ -169,7 +169,7 @@ bool VirtualCommunicator::isMessageProcessed(uint64_t workerId){
 	return m_elementsForWorkers.count(workerId)>0;
 }
 
-vector<uint64_t> VirtualCommunicator::getResponseElements(uint64_t workerId){
+vector<uint64_t> VirtualCommunicator::getMessageResponseElements(uint64_t workerId){
 	#ifdef ASSERT
 	assert(isMessageProcessed(workerId));
 	#endif

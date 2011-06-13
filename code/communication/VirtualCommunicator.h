@@ -149,13 +149,13 @@ public:
 	/**
  *
  * after calling isMessageProcessed, the worker must retrieve its data with 
- * getResponseElements, else the whole thing will fail
+ * getMessageResponseElements, else the whole thing will fail
  *
  * after reading the response, it is erased from
  * the current object
  * time complexity: log(number of workers)
  */
-	vector<uint64_t> getResponseElements(uint64_t workerId);
+	vector<uint64_t> getMessageResponseElements(uint64_t workerId);
 	
 /**
  * if all workers are awaiting responses and 

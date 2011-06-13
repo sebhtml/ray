@@ -164,7 +164,7 @@ void Amos::slaveMode(){
 					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,readRank,RAY_MPI_TAG_ASK_READ_LENGTH,m_parameters->getRank());
 					m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 				}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
-					vector<uint64_t> result=m_virtualCommunicator->getResponseElements(m_workerId);
+					vector<uint64_t> result=m_virtualCommunicator->getMessageResponseElements(m_workerId);
 					int readLength=result[0];
 					int forwardOffset=result[1];
 					int reverseOffset=result[2];

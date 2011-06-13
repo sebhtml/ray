@@ -63,7 +63,7 @@ void IndexerWorker::work(){
 			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 			m_coverageRequested=true;
 		}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
-			int coverage=m_virtualCommunicator->getResponseElements(m_workerId)[0];
+			int coverage=m_virtualCommunicator->getMessageResponseElements(m_workerId)[0];
 			m_coverages.push_back(coverage);
 			m_position++;
 			m_coverageRequested=false;
@@ -110,7 +110,7 @@ void IndexerWorker::work(){
 				m_forwardIndexed=true;
 			}
 		}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
-			m_virtualCommunicator->getResponseElements(m_workerId);
+			m_virtualCommunicator->getMessageResponseElements(m_workerId);
 			m_forwardIndexed=true;
 			m_reverseIndexed=false;
 			m_vertexIsDone=false;
@@ -159,7 +159,7 @@ void IndexerWorker::work(){
 				m_reverseIndexed=true;
 			}
 		}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
-			m_virtualCommunicator->getResponseElements(m_workerId);
+			m_virtualCommunicator->getMessageResponseElements(m_workerId);
 			m_reverseIndexed=true;
 		}
 
