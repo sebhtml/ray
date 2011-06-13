@@ -19,6 +19,7 @@
 
 */
 
+#include <core/ray_windows.h>
 #include <assembler/LibraryWorker.h>
 #include <communication/Message.h>
 #include <assembler/SeedingData.h>
