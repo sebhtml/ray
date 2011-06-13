@@ -72,7 +72,7 @@ char getLastSymbol(Kmer*i,int w);
 INLINE
 Kmer complementVertex(Kmer*a,int wordSize,bool colorSpace){
 	Kmer output;
-	uint64_t bitPositionInOutput=0;
+	int bitPositionInOutput=0;
 	uint64_t mask=3;
 	for(int positionInMer=wordSize-1;positionInMer>=0;positionInMer--){
 		int u64_id=positionInMer/32;

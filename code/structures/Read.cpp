@@ -49,7 +49,7 @@ char*Read::trim(char*buffer,const char*sequence){
 	// find the last symbol that is a A,T,C, or G
 	int last=0;
 	for(int i=0;i<(int)strlen(corrected);i++){
-		if(corrected[i]=='A' or corrected[i]=='T' or corrected[i]=='C' or corrected[i]=='G'){
+		if(corrected[i]=='A' || corrected[i]=='T' || corrected[i]=='C' || corrected[i]=='G'){
 			last=i;
 		}
 	}

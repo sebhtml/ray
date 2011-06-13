@@ -511,7 +511,7 @@ void Machine::run(){
 
 	while(m_alive){
 		if(runProfiler){
-			uint64_t t=getMilliSeconds();
+			int t=getMilliSeconds();
 			if(t>=(lastTime+resolution)/parts*parts){
 				int toPrint=t;
 				double seconds=toPrint/(1000.0);
@@ -657,7 +657,7 @@ void Machine::call_RAY_MASTER_MODE_LOAD_SEQUENCES(){
 	messageInInts[0]=m_parameters.getNumberOfFiles();
 
 	for(int i=0;i<(int)m_parameters.getNumberOfFiles();i++){
-		messageInInts[1+i]=m_parameters.getNumberOfSequences(i);
+		messageInInts[1+i]=(uint64_t)m_parameters.getNumberOfSequences(i);
 	}
 	
 	for(int i=0;i<getSize();i++){
@@ -748,7 +748,7 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 
 	m_coverageDistribution.clear();
 
-	if(m_minimumCoverage > m_peakCoverage or m_peakCoverage==m_parameters.getRepeatCoverage()){
+	if(m_minimumCoverage > m_peakCoverage || m_peakCoverage==m_parameters.getRepeatCoverage()){
 		killRanks();
 		cout<<"Error: no enrichment observed."<<endl;
 		return;

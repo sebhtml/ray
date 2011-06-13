@@ -23,6 +23,7 @@
 #include <cryptography/crypto.h>
 #include <assert.h>
 #include <stdio.h>
+#include <core/constants.h>
 
 #ifdef HAVE_CLOCK_TIME
 #include <sys/time.h>
@@ -394,10 +395,12 @@ int getRankFromPathUniqueId(uint64_t a){
 }
 
 void now(){
+	#ifdef OS_POSIX
 	time_t m_endingTime=time(NULL);
 	struct tm * timeinfo;
 	timeinfo=localtime(&m_endingTime);
 	cout<<"Date: "<<asctime(timeinfo);
+	#endif
 }
 
 void print64(uint64_t a){

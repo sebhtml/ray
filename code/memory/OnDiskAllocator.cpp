@@ -110,6 +110,7 @@ void*OnDiskAllocator::allocate(int a){
 }
 
 void OnDiskAllocator::clear(){
+	#ifdef OS_POSIX
 	for(int i=0;i<(int)m_pointers.size();i++){
 		char*map=m_pointers[i];
 		if (munmap(map, m_chunkSize) == -1) {
@@ -127,6 +128,7 @@ void OnDiskAllocator::clear(){
 	m_fileNames.clear();
 	m_fileDescriptors.clear();
 	m_toReuse.clear();
+	#endif
 }
 
 void OnDiskAllocator::free(void*a,int b){
