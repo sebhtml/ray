@@ -138,7 +138,7 @@ CXXFLAGS += $(CXXFLAGS-y)
 LDFLAGS += $(LDFLAGS-y)
 
 
-TARGETS-$(VIRTUAL_SEQUENCER) += code/VirtualNextGenSequencer
+TARGETS-$(VIRTUAL_SEQUENCER) += readSimulator/VirtualNextGenSequencer
 
 TARGETS=code/Ray $(TARGETS-y)
 
@@ -230,7 +230,7 @@ code/Ray: showOptions $(obj-y)
 	@echo $(PREFIX) > PREFIX
 	@echo $(TARGETS) > TARGETS
 
-code/VirtualNextGenSequencer: code/simulation/simulatePairedReads.cpp
+readSimulator/VirtualNextGenSequencer: readSimulator/simulatePairedReads.cpp
 	@$(CXX) -o $@ $< $(CXXFLAGS)
 	@echo "  CXX $<"
 

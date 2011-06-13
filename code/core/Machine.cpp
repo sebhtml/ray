@@ -506,7 +506,7 @@ void Machine::run(){
 	int resolution=100;// milliseconds
 	int parts=1000/resolution;
 
-	uint64_t lastTime=getMilliSeconds();
+	int lastTime=getMilliSeconds();
 	bool runProfiler=m_parameters.runProfiler();
 
 	while(m_alive){
