@@ -61,11 +61,13 @@ see <http://www.gnu.org/licenses/>
 #endif
 
 /*
- * If GNU, must set __STDC_FORMAT_MACROS
- * to get PRIu64 definition
+ * Include those libraries for Microsoft Visual C++
  */
-#ifdef __GNUC__
-#define __STDC_FORMAT_MACROS /* for PRIu64 */
+#ifdef _MSC_VER
+#include <xiosbase>
+#include <stdexcept>
+/* http://msdn.microsoft.com/en-us/library/b0084kay%28VS.80%29.aspx */
+#define __func__ __FUNCTION__ 
 #endif
 
 #ifdef FORCE_PACKING
@@ -87,7 +89,6 @@ see <http://www.gnu.org/licenses/>
 #endif
 
 #define DUMMY_LIBRARY 40000
-
 
 #define RAY_NUCLEOTIDE_A 0 /* ~00 == 11 */
 #define RAY_NUCLEOTIDE_C 1 /* ~01 == 10 */

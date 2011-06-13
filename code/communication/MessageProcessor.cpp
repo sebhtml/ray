@@ -19,6 +19,7 @@
 
 */
 
+#include <core/constants.h>
 #include <string.h>
 #include <assert.h>
 #include <structures/Read.h>
@@ -685,12 +686,6 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 		Kmer l;
 		int pos=i;
 		l.unpack(incoming,&pos);
-
-		string kmerStr=idToWord(&l,m_parameters->getWordSize());
-		if(kmerStr=="TGCAAGTTAGCAACATCATATGAGTGCAATCCTGTTGTAGGCTCATCTAAGACATAAATAGTT"){
-			cout<<__func__<<" Kmer received from "<<message->getSource()<<" i="<<i<<" "<<kmerStr<<endl;
-			l.print();
-		}
 
 		if((*m_last_value)!=(int)m_subgraph->size() && (int)m_subgraph->size()%100000==0){
 			(*m_last_value)=m_subgraph->size();

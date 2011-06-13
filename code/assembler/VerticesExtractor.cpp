@@ -19,7 +19,6 @@
 
 */
 
-#include <core/ray_windows.h>
 #include <core/constants.h>
 #include <string.h>
 #include <stdlib.h>

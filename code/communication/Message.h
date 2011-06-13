@@ -22,7 +22,8 @@
 #ifndef _Message
 #define _Message
 
-#include<mpi.h>
+#include <core/constants.h>
+#include <mpi.h>
 
 /*
  * in Ray, every message is a Message.

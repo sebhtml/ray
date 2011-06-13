@@ -19,7 +19,6 @@
 
 */
 
-#include <core/ray_windows.h>
 #include <core/constants.h>
 #include <communication/VirtualCommunicator.h>
 #include <algorithm>
