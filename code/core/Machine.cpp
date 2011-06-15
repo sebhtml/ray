@@ -42,6 +42,7 @@
 #include <core/constants.h>
 #include <algorithm>
 #include <mpi.h>
+
 using namespace std;
 
 Machine::Machine(int argc,char**argv){
@@ -64,6 +65,8 @@ Machine::Machine(int argc,char**argv){
 			exit(EXIT_NEEDS_ARGUMENTS);
 		}
 	}
+
+	cout<<"Rank "<<m_rank<<": Rank= "<<m_rank<<" Size= "<<m_size<<" ProcessIdentifier= "<<portableProcessId()<<" ProcessorName= "<<m_messagesHandler.getName()<<endl;
 
 	m_argc=argc;
 	m_argv=argv;

@@ -34,6 +34,14 @@
 #include <string>
 #include <cstring>
 #include <sstream>
+
+#ifdef OS_POSIX
+#include <unistd.h>
+#endif
+#ifdef OS_WIN
+#include <windows.h>
+#endif
+
 using namespace std;
 
 char complementNucleotide(char c){
@@ -461,4 +469,12 @@ string idToWord(Kmer*i,int wordSize){
 	return b;
 }
 
-
+int portableProcessId(){
+	#ifdef OS_POSIX
+	return getpid();
+	#elif defined(OS_WIN)
+	return GetCurrentProcessId();
+	#else
+	return -1;
+	#endif
+}

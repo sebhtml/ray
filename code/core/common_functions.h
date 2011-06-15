@@ -161,6 +161,8 @@ string reverseComplement(string*a);
 void print64(uint64_t a);
 void print8(uint8_t a);
 
+int portableProcessId();
+
 #endif
 
 
