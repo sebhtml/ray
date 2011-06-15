@@ -24,11 +24,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <core/constants.h>
-
-#ifdef HAVE_CLOCK_TIME
-#include <sys/time.h>
-#endif
-
+#include <time.h>
 #include <vector>
 #include <memory/malloc_types.h>
 #include <fstream>
