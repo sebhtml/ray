@@ -1,3 +1,11 @@
+= 1.6.1 =
+2011-
+
+* Presumably fixed a compilation error on Apple Snow Leopard.
+Thanks to Anthony Underwood for reporting the bug.
+
+
+
 = 1.6.0 =
 2011-06-13
 
