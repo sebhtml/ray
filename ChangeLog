@@ -1,9 +1,10 @@
 = 1.6.1 =
-2011-
+2011-06-
 
 * Presumably fixed a compilation error on Apple Snow Leopard.
 Thanks to Anthony Underwood for reporting the bug.
-
+* Added a smoothing routine for the detection of points in the coverage
+distribution. Thanks to pmiguel on SEQanswers for providing raw data points.
 
 
 = 1.6.0 =

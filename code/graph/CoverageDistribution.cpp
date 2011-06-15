@@ -23,7 +23,46 @@
 #include <iostream>
 #include <fstream>
 #include <map>
+#ifdef ASSERT
+#include <assert.h>
+#endif
 using namespace std;
+
+vector<uint64_t> CoverageDistribution::smoothData(vector<uint64_t>*y){
+	vector<uint64_t> output;
+	int len=y->size();
+	
+	int window=3;
+	int current=0;
+	int first=0;
+	int last=current+window;
+	if(last>len-1)
+		last=len-1;
+
+	uint64_t sum=0;
+	for(int j=first;j<=last;j++)
+		sum+=y->at(j);
+
+	while(current<len){
+		int weight=last-first+1;
+		uint64_t average=(sum-y->at(current))/(weight-1);
+		output.push_back(average);
+		current++;
+		int newFirst=current-window;
+		if(newFirst<0)
+			newFirst=0;
+		if(newFirst!=first)
+			sum-=y->at(first);
+		first=newFirst;
+		int newLast=current+window;
+		if(newLast>len-1)
+			newLast=len-1;
+		if(newLast!=last)
+			sum+=y->at(newLast);
+		last=newLast;
+	}
+	return output;
+}
 
 CoverageDistribution::CoverageDistribution(map<int,uint64_t>*distributionOfCoverage,string*file){
 	if(file!=NULL){
@@ -41,8 +80,22 @@ CoverageDistribution::CoverageDistribution(map<int,uint64_t>*distributionOfCover
 		x.push_back(i->first);
 		y.push_back(i->second);
 	}
+	vector<uint64_t> smoothed=smoothData(&y);
 
-	findPeak(&x,&y);
+	#ifdef DEBUG_CoverageDistribution
+	for(int current=0;current<(int)x.size();current++){
+		cout<<"AVERAGE\t"<<x.at(current)<<"\t"<<y.at(current)<<"\t"<<smoothed.at(current)<<endl;
+	}
+	#endif
+
+	#ifdef ASSERT
+	if(x.size()!=smoothed.size()){
+		cout<<x.size()<<" vs "<<smoothed.size()<<endl;
+	}
+	assert(x.size()==smoothed.size());
+	assert(x.size()==y.size());
+	#endif
+	findPeak(&x,&smoothed);
 }
 
 int CoverageDistribution::getPeakCoverage(){
