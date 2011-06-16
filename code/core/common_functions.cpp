@@ -208,7 +208,7 @@ uint64_t getMilliSeconds(){
 }
 
 void showMemoryUsage(int rank){
-	#ifdef linux
+	#ifdef __linux__
 	ifstream f("/proc/self/status");
 	while(!f.eof()){
 		string key;

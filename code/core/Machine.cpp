@@ -259,8 +259,8 @@ void Machine::start(){
 
 		// show OS, only Linux
 
-		cout<<"Rank "<<MASTER_RANK<<": GNU/Linux (linux): ";
-		#ifdef linux
+		cout<<"Rank "<<MASTER_RANK<<": GNU/Linux (__linux__): ";
+		#ifdef __linux__
 		cout<<"yes"<<endl;
 		#else
 		cout<<"no"<<endl;
