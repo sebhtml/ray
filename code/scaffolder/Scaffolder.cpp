@@ -562,7 +562,11 @@ void Scaffolder::processVertex(Kmer vertex){
 			m_scaffoldingSummary.clear();
 			m_summaryPerformed=false;
 		}
-		if(m_positionOnContig%10000==0){
+		if(m_positionOnContig==(int)m_contigs[m_contigId].size()-1){
+			printf("Rank %i: gathering scaffold links [%i/%i] [%i/%i] (completed)\n",m_parameters->getRank(),
+				m_contigId+1,(int)m_contigs.size(),
+				m_positionOnContig+1,(int)m_contigs[m_contigId].size());
+		}else if(m_positionOnContig%10000==0){
 			printf("Rank %i: gathering scaffold links [%i/%i] [%i/%i]\n",m_parameters->getRank(),
 				m_contigId+1,(int)m_contigs.size(),
 				m_positionOnContig+1,(int)m_contigs[m_contigId].size());
