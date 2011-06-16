@@ -533,7 +533,7 @@ vector<Kmer >*MemoryConsumptionReducer::getVerticesToRemove(){
 
 void MemoryConsumptionReducer::constructor(int size){
 	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
-		RAY_MALLOC_TYPE_MEMORY_REDUCER_BUFFERS);
+		RAY_MALLOC_TYPE_MEMORY_REDUCER_BUFFERS,false);
 	m_pendingMessages=0;
 }
 

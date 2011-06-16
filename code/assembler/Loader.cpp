@@ -31,13 +31,14 @@
 #include <memory/malloc_types.h>
 using namespace std;
 
-void Loader::constructor(const char*prefix){
+void Loader::constructor(const char*prefix,bool show){
 	m_maxToLoad=500000;
 	m_currentOffset=0;
 	m_type=FORMAT_NULL;
 	ostringstream prefixFull;
 	prefixFull<<prefix<<"_Loader";
-	m_allocator.constructor(4194304,RAY_MALLOC_TYPE_LOADER_ALLOCATOR);
+	m_show=show;
+	m_allocator.constructor(4194304,RAY_MALLOC_TYPE_LOADER_ALLOCATOR,m_show);
 	m_reads.constructor(&m_allocator);
 }
 

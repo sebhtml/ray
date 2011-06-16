@@ -156,12 +156,12 @@ void Machine::start(){
 	}
 
 	m_inboxAllocator.constructor(MAX_ALLOCATED_MESSAGES_IN_INBOX,MAXIMUM_MESSAGE_SIZE_IN_BYTES,
-		RAY_MALLOC_TYPE_INBOX_ALLOCATOR);
+		RAY_MALLOC_TYPE_INBOX_ALLOCATOR,m_parameters.showMemoryAllocations());
 	m_outboxAllocator.constructor(m_maximumAllocatedOutputBuffers,MAXIMUM_MESSAGE_SIZE_IN_BYTES,
-		RAY_MALLOC_TYPE_OUTBOX_ALLOCATOR);
+		RAY_MALLOC_TYPE_OUTBOX_ALLOCATOR,m_parameters.showMemoryAllocations());
 
-	m_inbox.constructor(MAX_ALLOCATED_MESSAGES_IN_INBOX,RAY_MALLOC_TYPE_INBOX_VECTOR);
-	m_outbox.constructor(MAX_ALLOCATED_MESSAGES_IN_OUTBOX,RAY_MALLOC_TYPE_OUTBOX_VECTOR);
+	m_inbox.constructor(MAX_ALLOCATED_MESSAGES_IN_INBOX,RAY_MALLOC_TYPE_INBOX_VECTOR,m_parameters.showMemoryAllocations());
+	m_outbox.constructor(MAX_ALLOCATED_MESSAGES_IN_OUTBOX,RAY_MALLOC_TYPE_OUTBOX_VECTOR,m_parameters.showMemoryAllocations());
 
 	m_scaffolder.constructor(&m_outbox,&m_inbox,&m_outboxAllocator,&m_parameters,&m_slave_mode,
 	&m_virtualCommunicator);
@@ -172,10 +172,12 @@ void Machine::start(){
 	m_mp.setVirtualCommunicator(&m_virtualCommunicator);
 
 	int PERSISTENT_ALLOCATOR_CHUNK_SIZE=4194304; // 4 MiB
-	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE,RAY_MALLOC_TYPE_PERSISTENT_DATA_ALLOCATOR);
+	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE,RAY_MALLOC_TYPE_PERSISTENT_DATA_ALLOCATOR,
+		m_parameters.showMemoryAllocations());
 
 	int directionAllocatorChunkSize=4194304; // 4 MiB
-	m_directionsAllocator.constructor(directionAllocatorChunkSize,RAY_MALLOC_TYPE_WAVE_ALLOCATOR);
+	m_directionsAllocator.constructor(directionAllocatorChunkSize,RAY_MALLOC_TYPE_WAVE_ALLOCATOR,
+		m_parameters.showMemoryAllocations());
 
 	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
 	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
@@ -342,7 +344,8 @@ void Machine::start(){
 	ostringstream prefixFull;
 	prefixFull<<m_parameters.getMemoryPrefix()<<"_Main";
 	int chunkSize=16777216;
-	m_diskAllocator.constructor(chunkSize,RAY_MALLOC_TYPE_DATA_ALLOCATOR);
+	m_diskAllocator.constructor(chunkSize,RAY_MALLOC_TYPE_DATA_ALLOCATOR,
+		m_parameters.showMemoryAllocations());
 
 	m_sl.constructor(m_size,&m_diskAllocator,&m_myReads);
 

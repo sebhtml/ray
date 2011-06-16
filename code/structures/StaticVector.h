@@ -35,7 +35,7 @@ public:
 	void push_back(Message a);
 	int size();
 	void clear();
-	void constructor(int size,int type);
+	void constructor(int size,int type,bool show);
 };
 
 #endif

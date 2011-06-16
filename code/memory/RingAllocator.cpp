@@ -25,15 +25,15 @@
 #include <iostream>
 using namespace std;
 
-void RingAllocator::constructor(int chunks,int size,int type){
+void RingAllocator::constructor(int chunks,int size,int type,bool show){
 	resetCount();
 	m_chunks=chunks;
 	m_max=size;
 	m_type=type;
 	m_numberOfBytes=m_chunks*m_max;
-	m_memory=(uint8_t*)__Malloc(sizeof(uint8_t)*m_chunks*m_max,m_type);
+	m_memory=(uint8_t*)__Malloc(sizeof(uint8_t)*m_chunks*m_max,m_type,show);
 	m_current=0;
-
+	m_show=show;
 }
 
 RingAllocator::RingAllocator(){
@@ -63,7 +63,7 @@ int RingAllocator::getSize(){
 }
 
 void RingAllocator::clear(){
-	__Free(m_memory,m_type);
+	__Free(m_memory,m_type,m_show);
 	m_memory=NULL;
 }
 

@@ -112,7 +112,7 @@ void Amos::slaveMode(){
 		if(!m_ed->m_EXTENSION_reads_requested){
 			if(m_mode_send_vertices_sequence_id_position==0){
 				string seq=convertToString(&(m_ed->m_EXTENSION_contigs[m_contigId]),m_parameters->getWordSize());
-				char*qlt=(char*)__Malloc(seq.length()+1,RAY_MASTER_MODE_AMOS);
+				char*qlt=(char*)__Malloc(seq.length()+1,RAY_MASTER_MODE_AMOS,m_parameters->showMemoryAllocations());
 				strcpy(qlt,seq.c_str());
 				for(int i=0;i<(int)strlen(qlt);i++){
 					qlt[i]='D';
@@ -127,7 +127,7 @@ void Amos::slaveMode(){
 					);
 
 				m_ed->m_EXTENSION_currentPosition++;
-				__Free(qlt,RAY_MALLOC_TYPE_AMOS);
+				__Free(qlt,RAY_MALLOC_TYPE_AMOS,m_parameters->showMemoryAllocations());
 			}
 
 			if(m_mode_send_vertices_sequence_id_position%10000==0){

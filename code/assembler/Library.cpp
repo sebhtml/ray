@@ -181,7 +181,7 @@ Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,StaticVector*inbo
 	ostringstream prefixFull;
 	prefixFull<<m_parameters->getMemoryPrefix()<<"_Library";
 	int chunkSize=4194304;
-	m_allocator.constructor(chunkSize,RAY_MALLOC_TYPE_LIBRARY_ALLOCATOR);
+	m_allocator.constructor(chunkSize,RAY_MALLOC_TYPE_LIBRARY_ALLOCATOR,m_parameters->showMemoryAllocations());
 }
 
 void Library::setReadiness(){
@@ -202,7 +202,7 @@ Library::Library(){
 
 void Library::allocateBuffers(){
 	m_bufferedData.constructor(m_size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
-		RAY_MALLOC_TYPE_LIBRARY_BUFFERS);
+		RAY_MALLOC_TYPE_LIBRARY_BUFFERS,m_parameters->showMemoryAllocations());
 	(m_libraryIndexInitiated)=false;
 	(m_libraryIterator)=0;
 	for(map<int,map<int,int> >::iterator i=m_libraryDistances.begin();

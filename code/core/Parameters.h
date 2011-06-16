@@ -44,6 +44,7 @@ class Parameters{
 	bool m_debugSeeds;
 	bool m_profiler;
 	bool m_debugBubbles;
+	bool m_showMemoryAllocations;
 
 	int m_reducerPeriod;
 	int m_maximumDistance;
@@ -172,6 +173,7 @@ public:
 	int getColumns();
 	int getLargeContigThreshold();
 	void setRepeatCoverage(int a);
+	bool showMemoryAllocations();
 };
 
 #endif

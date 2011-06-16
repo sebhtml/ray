@@ -91,7 +91,7 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 
 void FusionData::readyBuffers(){
 	m_buffers.constructor(m_size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
-		RAY_MALLOC_TYPE_FUSION_BUFFERS);
+		RAY_MALLOC_TYPE_FUSION_BUFFERS,m_parameters->showMemoryAllocations());
 }
 
 void FusionData::constructor(int size,int max,int rank,StaticVector*outbox,
@@ -102,7 +102,7 @@ void FusionData::constructor(int size,int max,int rank,StaticVector*outbox,
 	m_seedingData=seedingData;
 	ostringstream prefixFull;
 	prefixFull<<m_parameters->getMemoryPrefix()<<"_FusionData";
-	m_cacheAllocator.constructor(4194304,RAY_MALLOC_TYPE_FUSION_CACHING);
+	m_cacheAllocator.constructor(4194304,RAY_MALLOC_TYPE_FUSION_CACHING,m_parameters->showMemoryAllocations());
 	m_cacheForRepeatedVertices.constructor();
 	m_mode=mode;
 	m_ed=ed;

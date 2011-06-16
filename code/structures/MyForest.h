@@ -30,6 +30,7 @@
 
 class MyForest{
 	int m_type;
+	bool m_show;
 	int m_numberOfTrees;
 	uint64_t m_size;
 	SplayTree<uint64_t,Vertex>*m_trees;
@@ -40,7 +41,7 @@ class MyForest{
 public:
 	int getNumberOfTrees();
 	SplayTree<uint64_t,Vertex>*getTree(int i);
-	void constructor(MyAllocator*allocator,int type);
+	void constructor(MyAllocator*allocator,int type,bool show);
 	uint64_t size();
 	Vertex*find(uint64_t key);
 	Vertex*insert(uint64_t key);

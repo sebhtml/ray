@@ -28,15 +28,16 @@
 using namespace std;
 
 // the capacity is measured in uint64_t
-void BufferedData::constructor(int numberOfRanks,int capacity,int type){
+void BufferedData::constructor(int numberOfRanks,int capacity,int type,bool show){
+	m_show=show;
 	m_type=type;
 	#ifdef DEBUG_BUFFERS
 	printf("BufferedData::constructor\n");
 	fflush(stdout);
 	#endif
 
-	m_sizes=(int*)__Malloc(sizeof(int)*numberOfRanks,m_type);
-	m_data=(uint64_t*)__Malloc(sizeof(uint64_t)*capacity*numberOfRanks,m_type);
+	m_sizes=(int*)__Malloc(sizeof(int)*numberOfRanks,m_type,m_show);
+	m_data=(uint64_t*)__Malloc(sizeof(uint64_t)*capacity*numberOfRanks,m_type,m_show);
 	for(int i=0;i<(int)numberOfRanks;i++){
 		m_sizes[i]=0;
 	}
@@ -50,11 +51,11 @@ void BufferedData::clear(){
 	#endif
 
 	if(m_sizes!=NULL){
-		__Free(m_sizes,m_type);
+		__Free(m_sizes,m_type,m_show);
 		m_sizes=NULL;
 	}
 	if(m_data!=NULL){
-		__Free(m_data,m_type);
+		__Free(m_data,m_type,m_show);
 		m_data=NULL;
 	}
 }

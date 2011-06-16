@@ -24,14 +24,14 @@
 #include<assert.h>
 #include <core/common_functions.h>
 
-void StaticVector::constructor(int size,int type){
+void StaticVector::constructor(int size,int type,bool show){
 	m_type=type;
 	#ifdef ASSERT
 	assert(size!=0);
 	#endif
 
 	m_maxSize=size;
-	m_messages=(Message*)__Malloc(sizeof(Message)*m_maxSize,m_type);
+	m_messages=(Message*)__Malloc(sizeof(Message)*m_maxSize,m_type,show);
 	m_size=0;
 }
 

@@ -37,6 +37,7 @@ using namespace std;
 Parameters::Parameters(){
 	m_prefix="RayOutput";
 	m_initiated=false;
+	m_showMemoryAllocations=false;
 	m_directory="assembly";
 	m_minimumContigLength=100;
 	m_wordSize=21;
@@ -135,6 +136,9 @@ void Parameters::parseCommands(){
 	outputAmosCommands.insert("-OutputAmosFile");
 	outputAmosCommands.insert("--OutputAmosFile");
 
+	set<string> showMalloc;
+	showMalloc.insert("-show-memory-allocations");
+
 	set<string> outputFileCommands;
 	outputFileCommands.insert("-o");
 	outputFileCommands.insert("OutputFile");
@@ -183,6 +187,7 @@ void Parameters::parseCommands(){
 	toAdd.push_back(debugSeeds);
 	toAdd.push_back(runProfiler);
 	toAdd.push_back(showContext);
+	toAdd.push_back(showMalloc);
 
 	for(int i=0;i<(int)toAdd.size();i++){
 		for(set<string>::iterator j=toAdd[i].begin();j!=toAdd[i].end();j++){
@@ -409,6 +414,8 @@ void Parameters::parseCommands(){
 			m_numberOfLibraries++;
 		}else if(outputAmosCommands.count(token)>0){
 			m_amos=true;
+		}else if(showMalloc.count(token)>0){
+			m_showMemoryAllocations=true;
 		}else if(reduceMemoryUsage.count(token)>0){
 			int items=0;
 			for(int j=i+1;j<(int)m_commands.size();j++){
@@ -889,7 +896,8 @@ void Parameters::showUsage(){
 	showOption("-show-memory-usage","Shows memory usage. Data is fetched from /proc on GNU/Linux");
 	cout<<endl;
 	showOption("-show-ending-context","Shows the ending context of each extension.\n");
-
+	cout<<endl;
+	showOption("-show-memory-allocations","Shows memory allocation events");
 	cout<<endl;
 	showOption("-help","Displays this help page.");
 	cout<<endl;
@@ -1040,4 +1048,8 @@ int Parameters::getColumns(){
 
 int Parameters::getLargeContigThreshold(){
 	return 500;
+}
+
+bool Parameters::showMemoryAllocations(){
+	return m_showMemoryAllocations;
 }

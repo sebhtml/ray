@@ -36,13 +36,14 @@ class RingAllocator{
 	int m_type;
 	int m_count;
 	int m_chunks;
+	bool m_show;
 	int m_numberOfBytes;
 	int m_max;
 	uint8_t*m_memory;
 	int m_current;
 public:
 	RingAllocator();
-	void constructor(int chunks,int size,int type);
+	void constructor(int chunks,int size,int type,bool show);
 	void*allocate(int a);
 	int getSize();
 	void clear();

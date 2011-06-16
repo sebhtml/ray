@@ -1403,7 +1403,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_READ_LENGTH(Message*message){
 	uint64_t*incoming=(uint64_t*)buffer;
 	int index=incoming[0];
 	#ifdef ASSERT
-	assert(index<m_myReads->size());
+	assert(index<(int)m_myReads->size());
 	#endif
 	Read*read=(*m_myReads)[index];
 	#ifdef ASSERT

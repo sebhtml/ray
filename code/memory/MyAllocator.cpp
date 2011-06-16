@@ -36,13 +36,14 @@ void MyAllocator::reset(){
 	m_store.reset();
 }
 
-void MyAllocator::constructor(int chunkSize,int type){
+void MyAllocator::constructor(int chunkSize,int type,bool show){
+	m_show=show;
 	m_CHUNK_SIZE=chunkSize; 
 	m_type=type;
 }
 
 void MyAllocator::addChunk(){
-	void*currentChunk=(void*)__Malloc(m_CHUNK_SIZE,m_type);
+	void*currentChunk=(void*)__Malloc(m_CHUNK_SIZE,m_type,m_show);
 	#ifdef ASSERT
 	assert(currentChunk!=NULL);
 	#endif
@@ -89,7 +90,7 @@ void*MyAllocator::allocate(int s){
 	int left=m_CHUNK_SIZE-m_currentPosition;
 	if(s>left){
 		if(!(m_currentChunkId+1<(int)m_chunks.size())){
-			void*currentChunk=__Malloc(m_CHUNK_SIZE,m_type);
+			void*currentChunk=__Malloc(m_CHUNK_SIZE,m_type,m_show);
 			m_chunks.push_back(currentChunk);
 		}
 		m_currentChunkId++;
@@ -105,7 +106,7 @@ void*MyAllocator::allocate(int s){
 	assert(m_currentChunkId<(int)m_chunks.size());
 	if(m_currentPosition>=m_CHUNK_SIZE){
 		cout<<"Error: ToAllocate="<<s<<" Chunks="<<m_chunks.size()<<" CurrentChunk="<<m_currentChunkId<<" ChunkPosition="<<m_currentPosition<<" ChunkSize="<<m_CHUNK_SIZE<<endl;
-		exit(EXIT_NOMOREMEMORY);
+		exit(EXIT_NO_MORE_MEMORY);
 	}
 	assert(m_currentPosition<m_CHUNK_SIZE);
 	#endif
@@ -124,7 +125,7 @@ MyAllocator::~MyAllocator(){
 void MyAllocator::clear(){
 	m_store.reset();
 	for(int i=0;i<(int)m_chunks.size();i++){
-		__Free(m_chunks[i],m_type);
+		__Free(m_chunks[i],m_type,m_show);
 	}
 	m_chunks.clear();
 	m_currentPosition=0;

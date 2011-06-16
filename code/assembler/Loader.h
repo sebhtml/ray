@@ -63,6 +63,7 @@ FORMAT_FASTQ_BZ2
  * Ray makes no use of quality values, so Their encoding is irrelevant.
  */
 class Loader{
+	bool m_show;
 	int m_type;
 	int DISTRIBUTION_ALLOCATOR_CHUNK_SIZE;
 	ArrayOfReads m_reads;
@@ -88,7 +89,7 @@ class Loader{
 	void loadSequences();
 
 public:
-	void constructor(const char*prefix);
+	void constructor(const char*prefix,bool show);
 	int load(string file,bool isGenome);
 	uint64_t size();
 	Read*at(uint64_t i);

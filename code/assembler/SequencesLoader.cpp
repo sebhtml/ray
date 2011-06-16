@@ -149,7 +149,7 @@ bool SequencesLoader::computePartition(int rank,int size,
 	}
 	m_distribution_sequence_id=0;
 	vector<string> allFiles=(*m_parameters).getAllFiles();
-	m_loader.constructor(m_parameters->getMemoryPrefix().c_str());
+	m_loader.constructor(m_parameters->getMemoryPrefix().c_str(),m_parameters->showMemoryAllocations());
 	for(m_distribution_file_id=0;m_distribution_file_id<(int)allFiles.size();
 		m_distribution_file_id++){
 		int res=m_loader.load(allFiles[(m_distribution_file_id)],false);
@@ -232,7 +232,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 	fflush(stdout);
 
 	m_distribution_currentSequenceId=0;
-	m_loader.constructor(m_parameters->getMemoryPrefix().c_str());
+	m_loader.constructor(m_parameters->getMemoryPrefix().c_str(),m_parameters->showMemoryAllocations());
 	for(m_distribution_file_id=0;m_distribution_file_id<(int)allFiles.size();
 		m_distribution_file_id++){
 

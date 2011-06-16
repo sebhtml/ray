@@ -92,7 +92,7 @@ string addLineBreaks(string dna,int columns){
 }
 
 //#define MALLOC_DEBUG
-void*__Malloc(int c,int mallocType){
+void*__Malloc(int c,int mallocType,bool show){
 	assert(c!=0);
 	void*a=NULL;
 	a=malloc(c);
@@ -103,18 +103,18 @@ void*__Malloc(int c,int mallocType){
 
 	assert(a!=NULL);
 
-	#ifdef MALLOC_DEBUG
-	printf("%s %i\t%s\t%i bytes, ret\t%p\t%s\n",__FILE__,__LINE__,__func__,c,a,MALLOC_TYPES[mallocType]);
-	fflush(stdout);
-	#endif
+	if(show){
+		printf("%s %i\t%s\t%i bytes, ret\t%p\t%s\n",__FILE__,__LINE__,__func__,c,a,MALLOC_TYPES[mallocType]);
+		fflush(stdout);
+	}
 	return a;
 }
 
-void __Free(void*a,int mallocType){
-	#ifdef MALLOC_DEBUG
-	printf("%s %i\t%s\t%p\t%s\n",__FILE__,__LINE__,__func__,a,MALLOC_TYPES[mallocType]);
-	fflush(stdout);
-	#endif
+void __Free(void*a,int mallocType,bool show){
+	if(show){
+		printf("%s %i\t%s\t%p\t%s\n",__FILE__,__LINE__,__func__,a,MALLOC_TYPES[mallocType]);
+		fflush(stdout);
+	}
 
 	free(a);
 }

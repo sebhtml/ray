@@ -240,17 +240,18 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 }
 
 void VerticesExtractor::constructor(int size,Parameters*parameters){
+	m_parameters=parameters;
 	m_finished=false;
 	m_distributionIsCompleted=false;
 	m_outbox=NULL;
 	m_mode_send_vertices_sequence_id_position=0;
 	m_hasPreviousVertex=false;
-	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_VERTEX_EXTRACTOR_BUFFERS);
-	m_bufferedDataForOutgoingEdges.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_OUTGOING_EDGES_EXTRACTOR_BUFFERS);
-	m_bufferedDataForIngoingEdges.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_INGOING_EDGES_EXTRACTOR_BUFFERS);
+	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_VERTEX_EXTRACTOR_BUFFERS,m_parameters->showMemoryAllocations());
+	m_bufferedDataForOutgoingEdges.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_OUTGOING_EDGES_EXTRACTOR_BUFFERS,m_parameters->showMemoryAllocations());
+	m_bufferedDataForIngoingEdges.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_INGOING_EDGES_EXTRACTOR_BUFFERS,m_parameters->showMemoryAllocations());
 	
-	m_buffersForOutgoingEdgesToDelete.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_DEL_OUT);
-	m_buffersForIngoingEdgesToDelete.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_DEL_IN);
+	m_buffersForOutgoingEdgesToDelete.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_DEL_OUT,m_parameters->showMemoryAllocations());
+	m_buffersForIngoingEdgesToDelete.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_DEL_IN,m_parameters->showMemoryAllocations());
 
 	m_pendingMessages=0;
 	m_size=size;
@@ -262,7 +263,6 @@ void VerticesExtractor::constructor(int size,Parameters*parameters){
 	m_triggered=false;
 	m_mustTriggerReduction=false;
 	m_thresholdForReduction=9999999999999;
-	m_parameters=parameters;
 }
 
 void VerticesExtractor::enableReducer(){

@@ -25,14 +25,15 @@
 #include <sstream>
 using namespace std;
 
-void MyForest::constructor(MyAllocator*allocator,int type){
+void MyForest::constructor(MyAllocator*allocator,int type,bool show){
+	m_show=show;
 	m_type=type;
 	m_numberOfTrees=131072;
 	m_allocator=allocator;
 	#ifdef ASSERT
 	assert(m_allocator!=NULL);
 	#endif
-	m_trees=(SplayTree<uint64_t,Vertex>*)__Malloc(sizeof(SplayTree<uint64_t,Vertex>)*m_numberOfTrees,m_type);
+	m_trees=(SplayTree<uint64_t,Vertex>*)__Malloc(sizeof(SplayTree<uint64_t,Vertex>)*m_numberOfTrees,m_type,m_show);
 	for(int i=0;i<m_numberOfTrees;i++){
 		m_trees[i].constructor();
 	}

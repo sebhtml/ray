@@ -119,8 +119,8 @@ Kmer wordId(const char*a){
  */
 string addLineBreaks(string sequence,int a);
 
-void*__Malloc(int c,int mallocType);
-void __Free(void*a,int mallocType);
+void*__Malloc(int c,int mallocType,bool show);
+void __Free(void*a,int mallocType,bool show);
 
 /*
  * use mini distant segments here.

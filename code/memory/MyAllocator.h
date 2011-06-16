@@ -36,7 +36,7 @@ using namespace std;
  */
 class MyAllocator{
 	int m_type;
-
+	bool m_show;
 	vector<void*>m_chunks;
 	int m_currentPosition;
 	int m_currentChunkId;
@@ -55,7 +55,7 @@ public:
 	/**
  * assign a size to the allocator.
  */
-	void constructor(int a,int type);
+	void constructor(int a,int type,bool show);
 /**
  * allocate memory
  */

@@ -41,6 +41,7 @@ class BufferedData{
 	int m_type;
 	int*m_sizes;
 	int m_ranks;
+	bool m_show;
 
 	// the capacity is measured in uint64_t
 	int m_capacity;
@@ -51,7 +52,7 @@ public:
  *
 	// the capacity is measured in uint64_t
  */
-	void constructor(int numberOfRanks,int capacity,int type);
+	void constructor(int numberOfRanks,int capacity,int type,bool show);
 	int size(int i)const;
 	uint64_t getAt(int i,int j);
 	void addAt(int i,uint64_t k);
