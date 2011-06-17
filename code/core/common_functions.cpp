@@ -216,7 +216,7 @@ void showMemoryUsage(int rank){
 		if(key=="VmData:"){
 			uint64_t count;
 			f>>count;
-			cout<<"Rank "<<rank<<": VmData= "<<cout<<" KiB"<<endl;
+			cout<<"Rank "<<rank<<": VmData= "<<count<<" KiB"<<endl;
 			cout.flush();
 			break;
 		}
@@ -334,17 +334,36 @@ uint64_t hash_function_1(Kmer*a,int w){
 	if(a->isLower(&b)){
 		b=*a;
 	}
+	#if KMER_U64_ARRAY_SIZE == 1
 	return uniform_hashing_function_1_64_64(b.getU64(0));
+	#else
+	uint64_t key=b.getU64(0);
+	for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+		uint64_t hash=uniform_hashing_function_1_64_64(b.getU64(i));
+		key^=hash;
+	}
+	return key;
+
+	#endif
 }
 
-uint64_t hash_function_2(Kmer*a,int w,Kmer*b){
-	Kmer c=complementVertex(a,w,false);
-	*b=c;
-	Kmer*lower=a;
-	if(b->isLower(a)){
-		lower=b;
+uint64_t hash_function_2(Kmer*a,int w,Kmer*c){
+	Kmer b=complementVertex(a,w,false);
+	*c=b;
+	if(a->isLower(&b)){
+		b=*a;
 	}
-	return uniform_hashing_function_2_64_64(lower->getU64(0));
+	#if KMER_U64_ARRAY_SIZE == 1
+	return uniform_hashing_function_2_64_64(b.getU64(0));
+	#else
+	uint64_t key=b.getU64(0);
+	for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+		uint64_t hash=uniform_hashing_function_2_64_64(b.getU64(i));
+		key^=hash;
+	}
+	return key;
+
+	#endif
 }
 
 	// outgoing  ingoing
