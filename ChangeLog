@@ -9,7 +9,7 @@ distribution. Thanks to pmiguel on SEQanswers for providing raw data points.
 * Fixed the showMemoryUsage function.
 * Fixed uniform distribution of k-mers for k > 32
 * Fixed a bug for the seed length distribution written to a file.
-
+* Changed MAXKMERLENGTH=128 for MAXKMERLENGTH=64 in examples.
 
 
 = 1.6.0 =
