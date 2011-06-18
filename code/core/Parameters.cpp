@@ -659,6 +659,8 @@ string Parameters::getLibraryFile(int library){
 	return s.str();
 }
 
+#define WRITE_LIBRARY_OBSERVATIONS
+
 void Parameters::computeAverageDistances(){
 	cout<<endl;
 	for(map<int,map<int,int> >::iterator i=m_observedDistances.begin();
