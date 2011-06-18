@@ -8,6 +8,8 @@ distribution. Thanks to pmiguel on SEQanswers for providing raw data points.
 * Changed ifdef linux to ifdef __linux__.
 * Fixed the showMemoryUsage function.
 * Fixed uniform distribution of k-mers for k > 32
+* Fixed a bug for the seed length distribution written to a file.
+
 
 
 = 1.6.0 =
