@@ -1582,6 +1582,10 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_PATH_LENGTH_REPLY(Message*message){
 	m_fusionData->m_FUSION_pathLengthReceived=true;
 }
 
+/*
+input: Kmer ; index
+output: Kmer ; index ; list
+*/
 void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
@@ -1599,7 +1603,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS(Message*message){
 	vertex.pack(message2,&outputPosition);
 	int origin=outputPosition;
 	outputPosition++;
-	while(firstPathId<(int)paths.size() && outputPosition<availableElements){
+	while(firstPathId<(int)paths.size() && (outputPosition+2)<availableElements){
 		#ifdef ASSERT
 		assert(firstPathId<(int)paths.size());
 		#endif
