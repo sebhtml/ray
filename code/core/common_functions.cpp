@@ -19,14 +19,12 @@
 
 */
 
-
 #include <cryptography/crypto.h>
 #include <assert.h>
 #include <stdio.h>
 #include <core/constants.h>
 #include <time.h>
 #include <vector>
-#include <memory/malloc_types.h>
 #include <fstream>
 #include <core/common_functions.h>
 #include <stdlib.h>
@@ -89,34 +87,6 @@ string addLineBreaks(string dna,int columns){
 		j+=columns;
 	}
 	return output.str();
-}
-
-//#define MALLOC_DEBUG
-void*__Malloc(int c,int mallocType,bool show){
-	assert(c!=0);
-	void*a=NULL;
-	a=malloc(c);
-	if(a==NULL){
-		cout<<"Critical exception: The system is out of memory, returned NULL."<<endl;
-		exit(EXIT_NO_MORE_MEMORY);
-	}
-
-	assert(a!=NULL);
-
-	if(show){
-		printf("%s %i\t%s\t%i bytes, ret\t%p\t%s\n",__FILE__,__LINE__,__func__,c,a,MALLOC_TYPES[mallocType]);
-		fflush(stdout);
-	}
-	return a;
-}
-
-void __Free(void*a,int mallocType,bool show){
-	if(show){
-		printf("%s %i\t%s\t%p\t%s\n",__FILE__,__LINE__,__func__,a,MALLOC_TYPES[mallocType]);
-		fflush(stdout);
-	}
-
-	free(a);
 }
 
 uint8_t getSecondSegmentLastCode(Kmer* v,int w){

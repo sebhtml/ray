@@ -145,6 +145,7 @@ TARGETS=code/Ray $(TARGETS-y)
 #memory
 obj-y += code/memory/OnDiskAllocator.o code/memory/ReusableMemoryStore.o code/memory/MyAllocator.o code/memory/RingAllocator.o \
 code/memory/malloc_types.o 
+obj-y += code/memory/allocator.o
 
 #communication
 obj-y += code/communication/mpi_tags.o code/communication/VirtualCommunicator.o code/communication/BufferedData.o \

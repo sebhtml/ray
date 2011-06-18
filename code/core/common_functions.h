@@ -22,6 +22,7 @@ see <http://www.gnu.org/licenses/>
 #ifndef _common_functions
 #define _common_functions
 
+#include <memory/allocator.h>
 #include <structures/Kmer.h>
 #include <string>
 #include <core/constants.h>
@@ -118,9 +119,6 @@ Kmer wordId(const char*a){
  * add line breaks to a string
  */
 string addLineBreaks(string sequence,int a);
-
-void*__Malloc(int c,int mallocType,bool show);
-void __Free(void*a,int mallocType,bool show);
 
 /*
  * use mini distant segments here.

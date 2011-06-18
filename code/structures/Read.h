@@ -25,7 +25,6 @@
 #include <string>
 #include <stdint.h>
 #include <vector>
-#include <core/common_functions.h>
 #include <memory/MyAllocator.h>
 #include <structures/PairedRead.h>
 #include <memory/OnDiskAllocator.h>

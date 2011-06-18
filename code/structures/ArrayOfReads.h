@@ -23,7 +23,6 @@
 #define _ArrayOfReads
 
 #include<structures/Read.h>
-#include <memory/OnDiskAllocator.h>
 
 /**
  * This class holds reads. These are stored in chunks, which are utterly linked in chains.
