@@ -133,13 +133,13 @@ The Makefile of Ray utilises the Linux kernel syntax (obj-y += object.o).
 \subsection{Use large k-mers}
 
 \begin{verbatim}
-	make PREFIX=Ray-Large-k-mers MAXKMERLENGTH=128
+	make PREFIX=Ray-Large-k-mers MAXKMERLENGTH=64
 	# wait
 	make install
-	mpirun -np 512 Ray-Large-k-mers/Ray -k 103 -p lib1_1.fastq lib1_2.fastq \
-	-p lib2_1.fastq lib2_2.fastq -o DeadlyBug,Assembler=Ray,K=103
+	mpirun -np 512 Ray-Large-k-mers/Ray -k 63 -p lib1_1.fastq lib1_2.fastq \
+	-p lib2_1.fastq lib2_2.fastq -o DeadlyBug,Assembler=Ray,K=63
 	# wait
-	ls DeadlyBug,Assembler=Ray,K=103.Scaffolds.fasta
+	ls DeadlyBug,Assembler=Ray,K=63.Scaffolds.fasta
 \end{verbatim}
 
 

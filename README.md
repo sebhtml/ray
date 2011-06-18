@@ -44,17 +44,17 @@ You need a C++ compiler, make, an implementation of MPI.
 
 ## Use large k-mers
 
-	make PREFIX=Ray-Large-k-mers MAXKMERLENGTH=128
+	make PREFIX=Ray-Large-k-mers MAXKMERLENGTH=64
 	# wait
 	make install
-	mpirun -np 512 Ray-Large-k-mers/Ray -k 103 -p lib1_1.fastq lib1_2.fastq \
-	-p lib2_1.fastq lib2_2.fastq -o DeadlyBug,Assembler=Ray,K=103
+	mpirun -np 512 Ray-Large-k-mers/Ray -k 63 -p lib1_1.fastq lib1_2.fastq \
+	-p lib2_1.fastq lib2_2.fastq -o DeadlyBug,Assembler=Ray,K=63
 	# wait
-	ls DeadlyBug,Assembler=Ray,K=103.Scaffolds.fasta
+	ls DeadlyBug,Assembler=Ray,K=63.Scaffolds.fasta
 
 ## Compilation options
 
-	make PREFIX=build-3000 MAXKMERLENGTH=128 HAVE_LIBZ=y HAVE_LIBBZ2=y \
+	make PREFIX=build-3000 MAXKMERLENGTH=64 HAVE_LIBZ=y HAVE_LIBBZ2=y \
 	HAVE_CLOCK_GETTIME=n INTEL_COMPILER=n ASSERT=n FORCE_PACKING=y
 	# wait
 	make install
