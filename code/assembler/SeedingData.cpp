@@ -251,7 +251,7 @@ void SeedingData::updateStates(){
 void SeedingData::sendSeedLengths(){
 	if(!m_initialized){
 		for(int i=0;i<(int)m_SEEDING_seeds.size();i++){
-			int length=m_SEEDING_seeds[i].size();
+			int length=m_SEEDING_seeds[i].size()+m_parameters->getWordSize()-1;
 			m_slaveSeedLengths[length]++;
 		}
 		m_iterator=m_slaveSeedLengths.begin();
