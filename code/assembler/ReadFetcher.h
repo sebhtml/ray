@@ -33,6 +33,7 @@ using namespace std;
 
 /**
  * A class that fetches reads for a Kmer
+ * Pretty simple stuff.
  *
  */
 class ReadFetcher{

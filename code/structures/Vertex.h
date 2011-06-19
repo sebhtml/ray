@@ -34,6 +34,8 @@ using namespace std;
  * the vertex is important in the algorithm
  * a DNA sequence is simply an ordered array of vertices. Two consecutive 
  * vertices always respect the de Bruijn property.
+ * a Vertex actually stores two k-mers: only the lower is stored.
+ * This halves the memory usage.
  */
 class Vertex{
 
@@ -48,10 +50,6 @@ public:
  *	the ingoing and outgoing edges.
  */
 	// outgoing  ingoing
-	//
-	// G C T A G C T A
-	//
-	// 7 6 5 4 3 2 1 0
 	
 	uint8_t m_edges_lower;
 	uint8_t m_edges_higher;

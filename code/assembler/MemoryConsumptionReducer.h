@@ -36,6 +36,11 @@
 #include <vector>
 using namespace std;
 
+/*
+ * This class is currently not used.
+ * It implements strategies to minimise the
+ * memory usage of the Ray assembler.
+ */
 class MemoryConsumptionReducer{
 	int m_pendingMessages;
 	set<int>*m_processedTasks;

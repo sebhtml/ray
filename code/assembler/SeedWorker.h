@@ -29,6 +29,10 @@
 #include <vector>
 using namespace std;
 
+/*
+ * Given a Kmer, SeedWorker determines if it spawns a seed.
+ * If yes, it computes the seed.
+ */
 class SeedWorker{
 	map<Kmer,int> m_cache;
 	uint64_t m_workerIdentifier;

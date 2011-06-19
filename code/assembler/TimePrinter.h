@@ -27,6 +27,9 @@
 #include<string>
 using namespace std;
 
+/*
+ * Prints the current local time.
+ */
 class TimePrinter{
 	time_t m_last;
 	time_t m_startingTime;

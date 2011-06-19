@@ -35,7 +35,8 @@ using namespace std;
 #define TYPE_RIGHT_END 2
 
 /**
- * a read is represented as a char*
+ * a read is represented as a uint8_t*,
+ * 2 bits per nucleotide
  * and a (possible) link to paired information.
  */
 class Read{

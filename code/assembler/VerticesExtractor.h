@@ -36,6 +36,13 @@
 #include <vector>
 using namespace std;
 
+/*
+ * Any MPI rank has some reads to process.
+ * VerticesExtractor extracts k-mers from these reads.
+ * It also computes arcs between k-mers.
+ * These bits are then sent (buffered) to
+ * their respective owners.
+ */
 class VerticesExtractor{
 	char m_readSequence[4000];
 	bool m_distributionIsCompleted;

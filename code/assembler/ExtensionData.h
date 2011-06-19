@@ -35,6 +35,9 @@
 #include <vector>
 using namespace std;
 
+/*
+ * Stores the information for a seed extension.
+ */
 class ExtensionData{
 	SplayTree<uint64_t,ExtensionElement>*m_database;
 	int m_numberOfBins;

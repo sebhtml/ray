@@ -29,6 +29,11 @@
 #include <core/Parameters.h>
 using namespace std;
 
+/*
+ * Check if a bubble is genuine or not.
+ * Data is stored in BubbleData
+ * TODO: BubbleData and BubbleTool should me merged.
+ */
 class BubbleTool{
 	Parameters*m_parameters;
 	Kmer m_choice;

@@ -38,6 +38,13 @@ class SeedExtender;
 #include <set>
 using namespace std;
 
+/*
+ * Computes seeds in the k-mer graph.
+ * The computation is not done actually by
+ * this class. It is a pool of workers that does the job.
+ * These workers push messages on the virtual
+ * communicator and the later groups messages.
+ */
 class SeedingData{
 	map<int,int>::iterator m_iterator;
 

@@ -28,7 +28,9 @@
 #include <stdint.h>
 #include <structures/ArrayOfReads.h>
 
-// this class is a worker for sequence indexing
+/* this class is a worker for sequence indexing
+ * Optimal read markers are selected by IndexerWorker
+ */
 class IndexerWorker{
 	ArrayOfReads*m_reads;
 	int m_sequenceId;

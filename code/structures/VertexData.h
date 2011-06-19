@@ -28,6 +28,12 @@
 #include <vector>
 using namespace std;
 
+/**
+ * Contains additional information such as optimal read markers and
+ * extension progressions.
+ * Obviously, VertexData are not instanciated for
+ * k-mers observed once.
+ */
 class VertexData{
 public:
 	Kmer m_lowerKey;

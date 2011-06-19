@@ -35,6 +35,11 @@
 #include <vector>
 using namespace std;
 
+/*
+ * Computes the partition on reads (MASTER_RANK).
+ * Loads the appropriate slice of reads (all MPI ranks).
+ *
+ */
 class SequencesLoader{
 	MyAllocator*m_persistentAllocator;
 	ArrayOfReads*m_myReads;
