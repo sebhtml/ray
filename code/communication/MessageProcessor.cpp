@@ -2103,15 +2103,18 @@ void MessageProcessor::call_RAY_MPI_TAG_WRITE_CONTIG(Message*message){
 
 	int length=contigSequence.length();
 	int columns=m_parameters->getColumns();
+	ostringstream outputBuffer;
 	while(contigPosition<length){
 		char nucleotide=contigSequence[contigPosition];
-		fprintf(fp,"%c",nucleotide);
+		outputBuffer<<nucleotide;
 		contigPosition++;
 		currentPosition++;
 		if(currentPosition%columns==0){
-			fprintf(fp,"\n");
+			outputBuffer<<"\n";
 		}
 	}
+	fprintf(fp,"%s",outputBuffer.str().c_str());
+
 	fclose(fp);
 
 	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);

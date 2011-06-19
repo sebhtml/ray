@@ -11,6 +11,8 @@ distribution. Thanks to pmiguel on SEQanswers for providing raw data points.
 * Fixed a bug for the seed length distribution written to a file.
 * Changed MAXKMERLENGTH=128 for MAXKMERLENGTH=64 in examples.
 * Fixed a communication problem for k>32.
+* Added a progression indicator for scaffolding.
+* Writting scaffold sequences is now faster.
 
 = 1.6.0 =
 2011-06-13

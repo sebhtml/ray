@@ -1073,6 +1073,9 @@ void Scaffolder::writeScaffolds(){
 	m_activeWorkers.clear();
 
 	if(m_scaffoldId<(int)m_scaffoldContigs.size()){
+		if(m_scaffoldId%1000==0){
+			cout<<"Rank "<<m_parameters->getRank()<<" writting scaffolds"<<endl;
+		}
 		if(m_contigId<(int)m_scaffoldContigs[m_scaffoldId].size()){
 			if(!m_writeContigRequested){
 				m_writeContigRequested=true;
