@@ -556,8 +556,9 @@ void Machine::runWithProfiler(){
 		if(t>=(lastTime+resolution)/parts*parts){
 			int toPrint=t;
 			double seconds=toPrint/(1000.0);
-			printf("Rank %i: %s Time= %.2f s Speed= %i Sent= %i Received= %i\n",m_rank,SLAVE_MODES[m_slave_mode],
-				seconds,ticks,sentMessages,receivedMessages);
+			int balance=sentMessages-receivedMessages;
+			printf("Rank %i: %s Time= %.2f s Speed= %i Sent= %i Received= %i Balance= %i\n",m_rank,SLAVE_MODES[m_slave_mode],
+				seconds,ticks,sentMessages,receivedMessages,balance);
 			fflush(stdout);
 			ticks=0;
 			sentMessages=0;
