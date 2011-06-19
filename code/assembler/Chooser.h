@@ -29,6 +29,8 @@
 
 /**
  * paired-end OpenAssembler chooser class
+ * Given a seed, its last vertex can have children
+ * To choose the correct child, Chooser is utilised.
  */
 class Chooser{
 public:

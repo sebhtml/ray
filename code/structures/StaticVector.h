@@ -24,6 +24,9 @@
 
 #include <communication/Message.h>
 
+/**
+ * A static vector of Message.
+ */
 class StaticVector{
 	Message*m_messages;
 	int m_size;

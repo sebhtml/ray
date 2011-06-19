@@ -26,6 +26,9 @@
 #include <assembler/DepthFirstSearchData.h>
 #include <assembler/BubbleData.h>
 
+/*
+ * Watch for unwanted things.
+ */
 class TipWatchdog{
 public:
 	bool getApproval(ExtensionData*ed,DepthFirstSearchData*dfsData,int minimumCoverage,Kmer currentVertex,int w,

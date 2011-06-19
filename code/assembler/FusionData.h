@@ -37,6 +37,9 @@ class SeedingData;
 #include <assembler/TimePrinter.h>
 using namespace std;
 
+/*
+ * Contains information regarding fusion of extensions.
+ */
 class FusionData{
 	TimePrinter m_timer;
 	SplayTree<Kmer ,Direction*>m_cacheForRepeatedVertices;

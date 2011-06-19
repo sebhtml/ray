@@ -28,6 +28,9 @@
 #include<assert.h>
 #include<stdlib.h>
 
+/**
+ * An iterator on SplayTree
+ */
 template<class TREE_KEY_TYPE,class TREE_VALUE_TYPE>
 class SplayTreeIterator{
 	MyStack<SplayNode<TREE_KEY_TYPE,TREE_VALUE_TYPE>*>m_stack;

@@ -33,6 +33,10 @@
 #include <core/common_functions.h>
 using namespace std;
 
+/*
+ * Data for depth first search.
+ *
+ */
 class DepthFirstSearchData{
 	bool m_outgoingEdgesDone;
 

@@ -91,6 +91,7 @@ void Parameters::loadCommandsFromArguments(int argc,char**argv){
 	}
 }
 
+/* parse commands */
 void Parameters::parseCommands(){
 	m_initiated=true;
 	set<string> commands;
@@ -623,7 +624,6 @@ string Parameters::getInputFile(){
 	return m_input;
 }
 
-
 string Parameters::getParametersFile(){
 	return "Ray-Parameters.txt";
 }
@@ -865,6 +865,7 @@ void Parameters::showOptionDescription(string description){
 	cout<<spacesBeforeDescription<<description<<endl;
 }
 
+/* obviously shows usage */
 void Parameters::showUsage(){
 	string basicSpaces="       ";
 	cout<<"NAME"<<endl<<basicSpaces<<"Ray - assemble genomes in parallel using the message-passing interface"<<endl<<endl;
@@ -957,6 +958,8 @@ void Parameters::showUsage(){
 	cout<<"Ray "<<RAY_VERSION<<endl;
 }
 
+/* get the prefix for mmap'ed files 
+ * currently not used. */
 string Parameters::getMemoryPrefix(){
 	return m_memoryFilePrefix;
 }

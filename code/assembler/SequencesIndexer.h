@@ -37,6 +37,9 @@
 #include <vector>
 using namespace std;
 
+/*
+ * Computes optimal read markers using workers.
+ */
 class SequencesIndexer{
 	int m_rank;
 	int m_size;

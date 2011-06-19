@@ -44,6 +44,9 @@ class DepthFirstSearchData;
 
 using namespace std;
 
+/*
+ * Performs the extension of seeds.
+ */
 class SeedExtender{
 	int m_extended;
 	bool m_hasPairedSequences;

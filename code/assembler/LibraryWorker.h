@@ -38,6 +38,9 @@ public:
 	char m_readStrand;
 } ATTRIBUTE_PACKED;
 
+/*
+ * Computes average outer distances 
+ */
 class LibraryWorker{
 	bool m_done;
 	ReadFetcher m_readFetcher;

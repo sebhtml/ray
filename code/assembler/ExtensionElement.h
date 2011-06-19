@@ -26,6 +26,10 @@
 #include <memory/MyAllocator.h>
 #include <memory/OnDiskAllocator.h>
 
+/*
+ * An extension element is a read mapped on an
+ * extension for an MPI rank.
+ */
 class ExtensionElement{
 	PairedRead m_pairedRead;
 	char*m_readSequence;

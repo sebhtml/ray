@@ -37,8 +37,14 @@
 #include <assembler/LibraryWorker.h>
 using namespace std;
 
+/*
+ * This class computes the average outer distances 
+ * for paired reads and mate-pairs.
+ * To do so, it spawns a pool of workers.
+ * These workers will push messages and these
+ * messages are grouped by the virtual communicator.
+ */
 class Library{
-	
 	int m_detectedDistances;
 	vector<int> m_libraryIndexes;
 	VirtualCommunicator*m_virtualCommunicator;
