@@ -248,7 +248,9 @@ class Machine{
 	void checkRequests();
 	void processData();
 	int getRank();
-	
+	void runWithProfiler();
+	void runVanilla();
+
 	void assignMasterHandlers();
 	void assignSlaveHandlers();
 

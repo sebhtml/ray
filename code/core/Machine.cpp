@@ -513,11 +513,32 @@ void Machine::call_RAY_MASTER_MODE_WRITE_SCAFFOLDS(){
 	m_scaffolder.writeScaffolds();
 }
 
+void Machine::run(){
+	if(m_parameters.runProfiler()){
+		runWithProfiler();
+	}else{
+		runVanilla();
+	}
+}
+
+void Machine::runVanilla(){
+	while(m_alive){
+		// 1. receive the message (0 or 1 message is received)
+		receiveMessages(); 
+		// 2. process the received message, if any
+		processMessages();
+		// 3. process data according to current slave and master modes
+		processData();
+		// 4. send messages
+		sendMessages();
+	}
+}
+
 /*
  * This is the main loop of the program.
  * One instance on each MPI rank.
  */
-void Machine::run(){
+void Machine::runWithProfiler(){
 	// define some variables that hold life statistics of this
 	// MPI rank
 	int ticks=0;
@@ -529,29 +550,24 @@ void Machine::run(){
 	int parts=1000/resolution;
 
 	int lastTime=getMilliSeconds();
-	bool runProfiler=m_parameters.runProfiler();
 
 	while(m_alive){
-		if(runProfiler){
-			int t=getMilliSeconds();
-			if(t>=(lastTime+resolution)/parts*parts){
-				int toPrint=t;
-				double seconds=toPrint/(1000.0);
-				printf("Rank %i: %s Time= %.2f s Speed= %i Sent= %i Received= %i\n",m_rank,SLAVE_MODES[m_slave_mode],
-					seconds,ticks,sentMessages,receivedMessages);
-				fflush(stdout);
-				ticks=0;
-				sentMessages=0;
-				receivedMessages=0;
-				messageTypes.clear();
-				lastTime=t;
-			}
+		int t=getMilliSeconds();
+		if(t>=(lastTime+resolution)/parts*parts){
+			int toPrint=t;
+			double seconds=toPrint/(1000.0);
+			printf("Rank %i: %s Time= %.2f s Speed= %i Sent= %i Received= %i\n",m_rank,SLAVE_MODES[m_slave_mode],
+				seconds,ticks,sentMessages,receivedMessages);
+			fflush(stdout);
+			ticks=0;
+			sentMessages=0;
+			receivedMessages=0;
+			messageTypes.clear();
+			lastTime=t;
 		}
 		// 1. receive the message (0 or 1 message is received)
 		receiveMessages(); 
-		if(runProfiler){
-			receivedMessages+=m_inbox.size();
-		}
+		receivedMessages+=m_inbox.size();
 		
 		// 2. process the received message, if any
 		processMessages();
@@ -559,12 +575,10 @@ void Machine::run(){
 		// 3. process data according to current slave and master modes
 		processData();
 
-		if(runProfiler){
-			sentMessages+=m_outbox.size();
-			ticks++;
-			for(int i=0;i<(int)m_outbox.size();i++){
-				messageTypes[m_outbox[i]->getTag()]++;
-			}
+		sentMessages+=m_outbox.size();
+		ticks++;
+		for(int i=0;i<(int)m_outbox.size();i++){
+			messageTypes[m_outbox[i]->getTag()]++;
 		}
 
 		// 4. send messages
