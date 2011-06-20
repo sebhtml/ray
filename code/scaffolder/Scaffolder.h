@@ -29,6 +29,7 @@
 #include <core/constants.h>
 #include <communication/VirtualCommunicator.h>
 #include <assembler/ReadFetcher.h>
+#include <sstream>
 using namespace std;
 
 /**
@@ -37,6 +38,16 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class Scaffolder{
+	int m_rankIdForContig;
+	bool m_hasContigSequence_Initialised;
+	FILE*m_fp;
+	bool m_hasContigSequence;
+	string m_contigSequence;
+	map<uint64_t,int> m_contigLengths;
+	int m_position;
+	int m_theLength;
+	vector<Kmer> m_contigPath;
+	bool m_requestedContigChunk;
 	int m_numberOfScaffolds;
 	int m_numberOfScaffoldsWithThreshold;
 	int m_numberOfContigs;
@@ -123,6 +134,10 @@ class Scaffolder{
 	int*m_slave_mode;
 	bool m_ready;
 
+	/**
+ *	gets a contig sequence by receiving several MPI messages
+ */
+	void getContigSequence(uint64_t id);
 	void processContig();
 	void processContigPosition();
 	void processVertex(Kmer vertex);

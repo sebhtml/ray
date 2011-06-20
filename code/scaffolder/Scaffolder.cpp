@@ -231,9 +231,8 @@ void Scaffolder::solve(){
 		}
 	}
 
-	map<uint64_t,int> contigLengths;
 	for(int i=0;i<(int)m_masterLengths.size();i++){
-		contigLengths[m_masterContigs[i]]=m_masterLengths[i];
+		m_contigLengths[m_masterContigs[i]]=m_masterLengths[i];
 	}
 
 	// write scaffold list
@@ -253,7 +252,7 @@ void Scaffolder::solve(){
 		for(int j=0;j<(int)m_scaffoldContigs[i].size();j++){
 			uint64_t contigName=m_scaffoldContigs[i][j];
 			char contigStrand=m_scaffoldStrands[i][j];
-			int theLength=contigLengths[contigName]+m_parameters->getWordSize()-1;
+			int theLength=m_contigLengths[contigName]+m_parameters->getWordSize()-1;
 			f4<<"scaffold-"<<scaffoldName<<"\t"<<"contig-"<<contigName<<"\t"<<contigStrand<<"\t"<<theLength<<endl;
 			length+=theLength;
 			if(j!=(int)m_scaffoldContigs[i].size()-1){
@@ -1059,13 +1058,53 @@ Case 16. (allowed)
 	}
 }
 
+void Scaffolder::getContigSequence(uint64_t id){
+	if(!m_hasContigSequence_Initialised){
+		m_hasContigSequence_Initialised=true;
+		m_rankIdForContig=getRankFromPathUniqueId(id);
+		m_theLength=m_contigLengths[id];
+		m_position=0;
+		m_contigPath.clear();
+		m_requestedContigChunk=false;
+	}
+	
+	if(m_position<m_theLength){
+		if(!m_requestedContigChunk){
+			m_requestedContigChunk=true;
+			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+			message[0]=id;
+			message[1]=m_position;
+			Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,
+				m_rankIdForContig,RAY_MPI_TAG_GET_CONTIG_CHUNK,m_parameters->getRank());
+			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
+		}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
+			vector<uint64_t> data=m_virtualCommunicator->getMessageResponseElements(m_workerId);
+			int pos=0;
+			while(pos<(int)data.size()){
+				Kmer a;
+				a.unpack(&data,&pos);
+				m_contigPath.push_back(a);
+				m_position++;
+			}
+			m_requestedContigChunk=false;
+		}
+	}else{
+		m_contigSequence=convertToString(&m_contigPath,m_parameters->getWordSize());
+		m_hasContigSequence=true;
+	}
+}
+
 void Scaffolder::writeScaffolds(){
 	if(!m_initialised){
 		m_initialised=true;
 		m_scaffoldId=0;
 		m_contigId=0;
-		m_writeContigRequested=false;
-		m_positionOnScaffold=0;// actually it is a position on the scaffold
+		/* actually it is a position on the scaffold */
+		m_positionOnScaffold=0;
+		m_hasContigSequence=false;
+		m_hasContigSequence_Initialised=false;
+		string file=m_parameters->getScaffoldFile();
+		m_fp=fopen(file.c_str(),"w");
 	}
 
 	m_virtualCommunicator->forceFlush();
@@ -1074,69 +1113,65 @@ void Scaffolder::writeScaffolds(){
 
 	if(m_scaffoldId<(int)m_scaffoldContigs.size()){
 		if(m_contigId<(int)m_scaffoldContigs[m_scaffoldId].size()){
-			if(!m_writeContigRequested){
-				if(m_contigId==0&&m_scaffoldId%1000==0){
-					cout<<"Rank "<<m_parameters->getRank()<<" writting scaffolds ["<<m_scaffoldId+1<<"/"<<m_scaffoldContigs.size()<<"]"<<endl;
-				}
-
-				m_writeContigRequested=true;
-				uint64_t contigNumber=m_scaffoldContigs[m_scaffoldId][m_contigId];
-				char strand=m_scaffoldStrands[m_scaffoldId][m_contigId];
-				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-				int rankId=getRankFromPathUniqueId(contigNumber);
-
-				string file=m_parameters->getScaffoldFile();
-				if(m_scaffoldId==0&&m_contigId==0){
-					FILE*fp=fopen(file.c_str(),"w");
-					fclose(fp);
-				}
-
-				message[0]=contigNumber;
-				message[1]=strand;
-				message[2]=m_positionOnScaffold;
-
-				Message aMessage(message,3,MPI_UNSIGNED_LONG_LONG,
-					rankId,RAY_MPI_TAG_WRITE_CONTIG,m_parameters->getRank());
-				m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
+			uint64_t contigNumber=m_scaffoldContigs[m_scaffoldId][m_contigId];
+			if(!m_hasContigSequence){
+				getContigSequence(contigNumber);
+			}else{ /* at this point, m_contigSequence is filled. */
 				if(m_contigId==0){
-					FILE*fp=fopen(file.c_str(),"a");
-					fprintf(fp,">scaffold-%i\n",m_scaffoldId);
-					fclose(fp);
+					fprintf(m_fp,">scaffold-%i\n",m_scaffoldId);
+					m_positionOnScaffold=0;
 				}
-			}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
-				vector<uint64_t>answer=m_virtualCommunicator->getMessageResponseElements(m_workerId);
-				m_positionOnScaffold=answer[0];
+
+				int contigPosition=0;
+				char strand=m_scaffoldStrands[m_scaffoldId][m_contigId];
+				if(strand=='R'){
+					m_contigSequence=reverseComplement(&m_contigSequence);
+				}
+
+				int length=m_contigSequence.length();
+				int columns=m_parameters->getColumns();
+				ostringstream outputBuffer;
+				while(contigPosition<length){
+					char nucleotide=m_contigSequence[contigPosition];
+					outputBuffer<<nucleotide;
+					contigPosition++;
+					m_positionOnScaffold++;
+					if(m_positionOnScaffold%columns==0){
+						outputBuffer<<"\n";
+					}
+				}
+				
+				fprintf(m_fp,"%s",outputBuffer.str().c_str());
+
 				if(m_contigId<(int)m_scaffoldContigs[m_scaffoldId].size()-1){
 					int gapSize=m_scaffoldGaps[m_scaffoldId][m_contigId];
-					string file=m_parameters->getScaffoldFile();
-					FILE*fp=fopen(file.c_str(),"a");
 					int i=0;
 					int columns=m_parameters->getColumns();
-					ostringstream outputBuffer;
+					ostringstream outputBuffer2;
 					while(i<gapSize){
-						outputBuffer<<"N";
+						outputBuffer2<<"N";
 						i++;
 						m_positionOnScaffold++;
 						if(m_positionOnScaffold%columns==0){
-							outputBuffer<<"\n";
+							outputBuffer2<<"\n";
 						}
 					}
-					fprintf(fp,"%s",outputBuffer.str().c_str());
-					fclose(fp);
+					fprintf(m_fp,"%s",outputBuffer2.str().c_str());
 				}
 				m_contigId++;
-				m_writeContigRequested=false;
+				m_hasContigSequence=false;
+				m_hasContigSequence_Initialised=false;
 			}
 		}else{
-			string file=m_parameters->getScaffoldFile();
-			FILE*fp=fopen(file.c_str(),"a");
-			fprintf(fp,"\n");
-			fclose(fp);
+			fprintf(m_fp,"\n");
 			m_scaffoldId++;
 			m_contigId=0;
 			m_positionOnScaffold=0;
+			m_hasContigSequence=false;
+			m_hasContigSequence_Initialised=false;
 		}
 	}else{
+		fclose(m_fp);
 		m_parameters->setMasterMode(RAY_MASTER_MODE_KILL_RANKS);
 	}
 }

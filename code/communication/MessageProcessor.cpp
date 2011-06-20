@@ -2078,49 +2078,25 @@ void MessageProcessor::call_RAY_MPI_TAG_I_FINISHED_SCAFFOLDING(Message*message){
 	}
 }
 
-void MessageProcessor::call_RAY_MPI_TAG_WRITE_CONTIG_REPLY(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY(Message*message){
 }
 
-void MessageProcessor::call_RAY_MPI_TAG_WRITE_CONTIG(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_GET_CONTIG_CHUNK(Message*message){
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
 	uint64_t contigId=incoming[0];
-	char strand=incoming[1];
-	int currentPosition=incoming[2];
-
-	#ifdef ASSERT
-	assert(m_fusionData->m_FUSION_identifier_map.count(contigId)>0);
-	#endif
-
+	int position=incoming[1];
 	int index=m_fusionData->m_FUSION_identifier_map[contigId];
-
-	string file=m_parameters->getScaffoldFile();
-	FILE*fp=fopen(file.c_str(),"a");
-	int contigPosition=0;
-	string contigSequence=convertToString(&((m_ed->m_EXTENSION_contigs)[index]),m_parameters->getWordSize());
-	if(strand=='R'){
-		contigSequence=reverseComplement(&contigSequence);
+	int length=m_ed->m_EXTENSION_contigs[index].size();
+	int outputPosition=0;
+	uint64_t*messageContent=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	while(position<length
+	 && outputPosition<(int)(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t))){
+		m_ed->m_EXTENSION_contigs[index][position++].pack(messageContent,&outputPosition);
 	}
-
-	int length=contigSequence.length();
-	int columns=m_parameters->getColumns();
-	ostringstream outputBuffer;
-	while(contigPosition<length){
-		char nucleotide=contigSequence[contigPosition];
-		outputBuffer<<nucleotide;
-		contigPosition++;
-		currentPosition++;
-		if(currentPosition%columns==0){
-			outputBuffer<<"\n";
-		}
-	}
-	fprintf(fp,"%s",outputBuffer.str().c_str());
-
-	fclose(fp);
-
-	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-	outgoingMessage[0]=currentPosition;
-	Message aMessage(outgoingMessage,message->getCount(),
-		MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_WRITE_CONTIG_REPLY,rank);
+	
+	Message aMessage(messageContent,outputPosition,
+		MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY,
+		m_parameters->getRank());
 	m_outbox->push_back(aMessage);
 }
 

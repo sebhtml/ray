@@ -22,9 +22,11 @@
 /*
  * configuration of the virtual communicator
  * file included in Machine.cpp
+ *
+ * Sets the message maximum size -- useful for grouping purposes.
  */
 
-Set( RAY_MPI_TAG_WRITE_CONTIG, 			3 )
+Set( RAY_MPI_TAG_GET_CONTIG_CHUNK,		MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t) )
 Set( RAY_MPI_TAG_REQUEST_VERTEX_READS, 		max(5,KMER_U64_ARRAY_SIZE+1) )
 Set( RAY_MPI_TAG_GET_READ_MATE, 		4 )
 Set( RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,	KMER_U64_ARRAY_SIZE )
