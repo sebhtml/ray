@@ -35,7 +35,7 @@ void BzReader::open(const char*file){
 	int verbosity=0;
 	int small=0;
 	m_bzFile=BZ2_bzReadOpen(&error,m_file,verbosity,small,NULL,0);
-	m_buffer=(char*)__Malloc(__BzReader_MAXIMUM_LENGTH*sizeof(char),RAY_MALLOC_TYPE_BZ2);
+	m_buffer=(char*)__Malloc(__BzReader_MAXIMUM_LENGTH*sizeof(char),RAY_MALLOC_TYPE_BZ2,false);
 	m_bufferSize=0;
 	m_bufferPosition=0;
 }
@@ -112,7 +112,7 @@ void BzReader::close(){
 	fclose(m_file);
 	m_bzFile=NULL;
 	m_file=NULL;
-	__Free(m_buffer,RAY_MALLOC_TYPE_BZ2);
+	__Free(m_buffer,RAY_MALLOC_TYPE_BZ2,false);
 }
 
 #endif
