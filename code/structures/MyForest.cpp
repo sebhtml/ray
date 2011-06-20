@@ -96,7 +96,7 @@ void MyForest::show(int rank,const char*prefix){
 	cout<<"MyForest::show()"<<endl;
 	ostringstream a;
 	a<<prefix<<".Forest.Rank_"<<rank<<".txt";
-	FILE*f=fopen(a.str().c_str(),"w+");
+	FILE*f=fopen(a.str().c_str(),"w");
 	for(int i=0;i<m_numberOfTrees;i++){
 		fprintf(f,"%i %li\n",i,getTree(i)->size());
 	}

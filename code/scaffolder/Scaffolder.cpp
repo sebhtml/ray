@@ -1073,11 +1073,12 @@ void Scaffolder::writeScaffolds(){
 	m_activeWorkers.clear();
 
 	if(m_scaffoldId<(int)m_scaffoldContigs.size()){
-		if(m_scaffoldId%1000==0){
-			cout<<"Rank "<<m_parameters->getRank()<<" writting scaffolds"<<endl;
-		}
 		if(m_contigId<(int)m_scaffoldContigs[m_scaffoldId].size()){
 			if(!m_writeContigRequested){
+				if(m_contigId==0&&m_scaffoldId%1000==0){
+					cout<<"Rank "<<m_parameters->getRank()<<" writting scaffolds ["<<m_scaffoldId+1<<"/"<<m_scaffoldContigs.size()<<"]"<<endl;
+				}
+
 				m_writeContigRequested=true;
 				uint64_t contigNumber=m_scaffoldContigs[m_scaffoldId][m_contigId];
 				char strand=m_scaffoldStrands[m_scaffoldId][m_contigId];
@@ -1086,7 +1087,7 @@ void Scaffolder::writeScaffolds(){
 
 				string file=m_parameters->getScaffoldFile();
 				if(m_scaffoldId==0&&m_contigId==0){
-					FILE*fp=fopen(file.c_str(),"w+");
+					FILE*fp=fopen(file.c_str(),"w");
 					fclose(fp);
 				}
 
@@ -1111,14 +1112,16 @@ void Scaffolder::writeScaffolds(){
 					FILE*fp=fopen(file.c_str(),"a");
 					int i=0;
 					int columns=m_parameters->getColumns();
+					ostringstream outputBuffer;
 					while(i<gapSize){
-						fprintf(fp,"N");
+						outputBuffer<<"N";
 						i++;
 						m_positionOnScaffold++;
 						if(m_positionOnScaffold%columns==0){
-							fprintf(fp,"\n");
+							outputBuffer<<"\n";
 						}
 					}
+					fprintf(fp,"%s",outputBuffer.str().c_str());
 					fclose(fp);
 				}
 				m_contigId++;

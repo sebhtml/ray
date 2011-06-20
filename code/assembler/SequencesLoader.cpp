@@ -143,7 +143,7 @@ bool SequencesLoader::computePartition(int rank,int size,
 	uint64_t counted=0;
 	FILE*fp=NULL;
 	if(m_parameters->useAmos()){
-		fp=fopen(m_parameters->getAmosFile().c_str(),"w+");
+		fp=fopen(m_parameters->getAmosFile().c_str(),"w");
 		// empty the file.
 		cout<<"Rank "<<m_rank<<" is adding sequences to "<<m_parameters->getAmosFile()<<endl<<endl;
 	}
