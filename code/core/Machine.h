@@ -59,6 +59,9 @@
 
 using namespace std;
 
+/**
+* Main class of the application. Runs the main program loop on each MPI rank.
+*/
 class Machine;
 typedef void (Machine::*MachineMethod) ();
 

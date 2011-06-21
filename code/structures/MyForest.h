@@ -28,6 +28,9 @@
 #include<core/common_functions.h>
 #include <memory/OnDiskAllocator.h>
 
+/**
+ * A forest contains numerous trees.
+ */
 class MyForest{
 	int m_type;
 	bool m_show;
