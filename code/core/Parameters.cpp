@@ -129,6 +129,8 @@ void Parameters::parseCommands(){
 	set<string> interleavedCommands;
 	interleavedCommands.insert("-i");
 
+	set<string> colorSpaceMode;
+	colorSpaceMode.insert("-color-space");
 	set<string> outputAmosCommands;
 	outputAmosCommands.insert("-a");
 	outputAmosCommands.insert("-amos");
@@ -194,6 +196,7 @@ void Parameters::parseCommands(){
 	toAdd.push_back(showContext);
 	toAdd.push_back(showMalloc);
 	toAdd.push_back(writeKmers);
+	toAdd.push_back(colorSpaceMode);
 
 	for(int i=0;i<(int)toAdd.size();i++){
 		for(set<string>::iterator j=toAdd[i].begin();j!=toAdd[i].end();j++){
@@ -220,9 +223,7 @@ void Parameters::parseCommands(){
 			}
 			token=m_commands[i];
 			m_singleEndReadsFile.push_back(token);
-			if(token.find(".csfasta")!=string::npos){
-				m_colorSpaceMode=true;
-			}
+
 			if(m_rank==MASTER_RANK){
 				cout<<endl;
 				cout<<"-s (single sequences)"<<endl;
@@ -278,9 +279,6 @@ void Parameters::parseCommands(){
 			}
 			i++;
 			token=m_commands[i];
-			if(token.find(".csfasta")!=string::npos){
-				m_colorSpaceMode=true;
-			}
 
 			string interleavedFile=token;
 			int interleavedFileIndex=m_singleEndReadsFile.size();
@@ -357,9 +355,6 @@ void Parameters::parseCommands(){
 			}
 			i++;
 			token=m_commands[i];
-			if(token.find(".csfasta")!=string::npos){
-				m_colorSpaceMode=true;
-			}
 			string left=token;
 			// add left file
 			int leftFile=m_singleEndReadsFile.size();
@@ -497,6 +492,13 @@ void Parameters::parseCommands(){
 			m_debugBubbles=true;
 			if(m_rank==MASTER_RANK){
 				printf("Enabling bubble debug mode.\n");
+			}
+		}else if(colorSpaceMode.count(token)>0){
+			m_colorSpaceMode=true;
+			if(m_rank==MASTER_RANK){
+				cout<<endl;
+				cout<<"Enabling color-space mode"<<endl;
+				cout<<"All reads should be in color space."<<endl;
 			}
 		}else if(debugSeeds.count(token)>0){
 			m_debugSeeds=true;
@@ -913,6 +915,9 @@ void Parameters::showUsage(){
 	showOptionDescription("Needs HAVE_CLOCK_GETTIME=y at compilation");
 	showOptionDescription("Running the profiler increases running times.");
 	cout<<endl;
+	showOption("-color-space","Runs in color-space");
+	showOptionDescription("Needs csfasta files");
+	cout<<endl;
 	showOption("-debug-bubbles","Debugs bubble code.");
 	showOptionDescription("Bubbles can be due to heterozygous sites or sequencing errors or other (unknown) events");
 	cout<<endl;
@@ -939,6 +944,7 @@ void Parameters::showUsage(){
 	cout<<"     .fastq.gz (needs HAVE_LIBZ=y at compilation)"<<endl;
 	cout<<"     .fastq.bz2 (needs HAVE_LIBBZ2=y at compilation)"<<endl;
 	cout<<"     .sff (paired reads must be extracted manually)"<<endl;
+	cout<<"     .csfasta (color-space reads)"<<endl;
 
 	cout<<endl;
 	cout<<"     Note: file format is determined with file extension."<<endl;

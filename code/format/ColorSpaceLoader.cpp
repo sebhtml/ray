@@ -77,7 +77,8 @@ void ColorSpaceLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAl
 				}
 			}
 			Read t;
-			t.constructor(bufferForLine+2,seqMyAllocator,true);// remove the leading T & first color
+			// remove the leading T & first color
+			t.constructor(bufferForLine+2,seqMyAllocator,true);
 			reads->push_back(&t);
 			loadedSequences++;
 			m_loaded++;
