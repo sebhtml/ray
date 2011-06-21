@@ -130,7 +130,7 @@ Furthermore, autoconf and automake just don't work on a Lustre filesystem (used 
 super computers) when the network file system disallows file locking.
 The Makefile of Ray utilises the Linux kernel syntax (obj-y += object.o).
 
-\subsection{Use large k-mers}
+\subsection{Use longer k-mers}
 
 \begin{verbatim}
 	make PREFIX=Ray-Large-k-mers MAXKMERLENGTH=64
@@ -142,6 +142,7 @@ The Makefile of Ray utilises the Linux kernel syntax (obj-y += object.o).
 	ls DeadlyBug,Assembler=Ray,K=63.Scaffolds.fasta
 \end{verbatim}
 
+Note: longer k-mers utilise more memory.
 
 \section{Inputs}
 
@@ -188,6 +189,11 @@ The maximum  number of paired libraries allowed by Ray is 499.
 }
               Debugs bubble code.
 
+\subsection{
+-write-kmers
+}
+Ray will write k-mers to PREFIX.kmers.txt.
+
 \subsection{      
        -debug-seeds
 }
@@ -206,12 +212,12 @@ The maximum  number of paired libraries allowed by Ray is 499.
 \subsection{      
        -run-profiler
 }
-              Runs the profiler as the code runs. Needs real-time Linux (HAVE\_CLOCK\_GETTIME = y)
+              Runs the profiler as the code runs. Needs a real-time POSIX system (HAVE\_CLOCK\_GETTIME = y)
 
 \subsection{-amos}
 
 Generates an AMOS file containing read locations on contigs. This file can be opened with AMOS Hawkeye, Tablet and other assembly browser
-software.
+software. The generated file is PREFIX.AMOS.afg.
 
 
 
@@ -313,7 +319,8 @@ PREFIX.LibraryStatistics.txt & Number of reads in each file \\
  & and estimation of outer distances for paired reads \\
 PREFIX.SeedLengthDistribution.txt & The distribution of seed lengths \\
 PREFIX.OutputNumbers.txt & Overall numbers for the assembly\\
-PREFIX.AMOS.afg & Assembly representation in AMOS format (--output-amos) \\
+PREFIX.AMOS.afg & Assembly representation in AMOS format (-amos) \\
+PREFIX.kmers.txt & K-mer graph (-write-kmers) \\
 \hline
 \end{tabular}
 \end{table}

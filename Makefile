@@ -1,6 +1,7 @@
 # author: Sébastien Boisvert
 # Makefile for the ray assembler
-#
+# Objects appended to obj-y are compiled and linked.
+# Objects appended to obj-n are not compiled and linked.
 #############################################
 # compilation options
 
@@ -10,9 +11,11 @@ PREFIX=install-prefix
 # maximum k-mer length
 # in nucleotides
 # 32 nucleotides are stored on 1x64 bits
+# 45 nucleotides are stored on 2x64 bits
 # 64 nucleotides are stored on 2x64 bits
 # 96 nucleotides are stored on 3x64 bits
 # Intermediate values should utilise intermediate numbers of bits.
+# There is no maximum value for MAXKMERLENGTH
 MAXKMERLENGTH = 32
 
 # support for .gz files
@@ -171,6 +174,7 @@ obj-y += code/cryptography/crypto.o
 
 #graph
 obj-y += code/graph/GridTable.o code/graph/VertexTable.o code/graph/GridTableIterator.o code/graph/CoverageDistribution.o 
+obj-y += code/graph/CoverageGatherer.o
 
 #structures
 obj-y += code/structures/VertexData.o code/structures/Kmer.o code/structures/MyForestIterator.o code/structures/MyForest.o \

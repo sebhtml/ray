@@ -41,6 +41,7 @@
 #include <assembler/SeedExtender.h>
 #include <assembler/SequencesLoader.h>
 #include <assembler/Library.h>
+#include <graph/CoverageGatherer.h>
 #include <assembler/Chooser.h>
 #include <communication/MessageProcessor.h>
 #include <structures/Vertex.h>
@@ -66,6 +67,10 @@ class Machine;
 typedef void (Machine::*MachineMethod) ();
 
 class Machine{
+	CoverageGatherer m_coverageGatherer;
+	bool m_coverageInitialised;
+	int m_coverageRank;
+
 	Amos m_amos;
 	VirtualCommunicator m_virtualCommunicator;
 	bool m_killed;
@@ -102,9 +107,6 @@ class Machine{
 	int m_sequence_ready_machines;
 	bool m_messageSentForVerticesDistribution;
 
-	bool m_waiting;
-	map<int,uint64_t>::iterator m_coverageIterator;
-
 	Chooser m_c;
 	SequencesIndexer m_si;
 	SeedExtender m_seedExtender;
@@ -131,8 +133,6 @@ class Machine{
 	int m_numberOfMachinesReadyToSendDistribution;
 	int m_numberOfRanksDoneSeeding;
 	int m_numberOfRanksGone;
-	map<int,uint64_t> m_distributionOfCoverage;
-
 	FusionData*m_fusionData;
 
 	int m_machineRank;

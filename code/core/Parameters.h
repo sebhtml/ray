@@ -45,7 +45,7 @@ class Parameters{
 	bool m_profiler;
 	bool m_debugBubbles;
 	bool m_showMemoryAllocations;
-
+	bool m_writeKmers;
 	int m_reducerPeriod;
 	int m_maximumDistance;
 
@@ -174,6 +174,7 @@ public:
 	int getLargeContigThreshold();
 	void setRepeatCoverage(int a);
 	bool showMemoryAllocations();
+	bool writeKmers();
 };
 
 #endif

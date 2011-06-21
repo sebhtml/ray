@@ -13,6 +13,7 @@ distribution. Thanks to pmiguel on SEQanswers for providing raw data points.
 * Fixed a communication problem for k>32.
 * Added a progression indicator for scaffolding.
 * Writting scaffold sequences is now faster.
+* New option: -write-kmers writes k-mers
 
 = 1.6.0 =
 2011-06-13

@@ -84,6 +84,7 @@ Machine::Machine(int argc,char**argv){
 }
 
 void Machine::start(){
+	m_coverageInitialised=false;
 	m_timePrinter.constructor();
 
 	m_killed=false;
@@ -165,6 +166,9 @@ void Machine::start(){
 
 	m_scaffolder.constructor(&m_outbox,&m_inbox,&m_outboxAllocator,&m_parameters,&m_slave_mode,
 	&m_virtualCommunicator);
+	m_coverageGatherer.constructor(&m_parameters,&m_inbox,&m_outbox,&m_slave_mode,&m_subgraph,
+		&m_outboxAllocator);
+
 	m_amos.constructor(&m_parameters,&m_outboxAllocator,&m_outbox,m_fusionData,m_ed,&m_master_mode,&m_slave_mode,&m_scaffolder,
 		&m_inbox,&m_virtualCommunicator);
 
@@ -743,8 +747,14 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	printf("\n");
 	fflush(stdout);
 
+	cout<<endl;
 	cout<<"Rank "<<getRank()<<": the minimum coverage is "<<m_minimumCoverage<<endl;
 	cout<<"Rank "<<getRank()<<": the peak coverage is "<<m_peakCoverage<<endl;
+
+	if(m_parameters.writeKmers()){
+		cout<<endl;
+		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getPrefix()<<".kmers.txt"<<endl;
+	}
 
 	uint64_t numberOfVertices=0;
 	uint64_t verticesWith1Coverage=0;
@@ -846,15 +856,21 @@ void Machine::call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS(){
 }
 
 void Machine::call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS(){
-	m_numberOfMachinesReadyToSendDistribution=-1;
-	m_timePrinter.printElapsedTime("Graph construction");
-	cout<<endl;
-
-	for(int i=0;i<getSize();i++){
-		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, i, RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION,getRank());
-		m_outbox.push_back(aMessage);
+	if(!m_coverageInitialised){
+		m_timePrinter.printElapsedTime("Graph construction");
+		cout<<endl;
+		m_coverageInitialised=true;
+		m_coverageRank=0;
 	}
-	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+
+	if(m_coverageRank==m_numberOfMachinesDoneSendingCoverage){
+		Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG,m_coverageRank,
+			RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION,getRank());
+		m_outbox.push_back(aMessage);
+		m_coverageRank++;
+	}
+	if(m_coverageRank==m_parameters.getSize())
+		m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
 }
 
 void Machine::call_RAY_MASTER_MODE_PREPARE_SEEDING(){
@@ -881,59 +897,7 @@ void Machine::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
-	if(m_distributionOfCoverage.size()==0){
-		#ifdef ASSERT
-		uint64_t n=0;
-		#endif
-		GridTableIterator iterator;
-		iterator.constructor(&m_subgraph,m_wordSize);
-		while(iterator.hasNext()){
-			Vertex*node=iterator.next();
-			Kmer key=*(iterator.getKey());
-			int coverage=node->getCoverage(&key);
-			m_distributionOfCoverage[coverage]++;
-			#ifdef ASSERT
-			n++;
-			#endif
-		}
-		#ifdef ASSERT
-		if(n!=m_subgraph.size()){
-			cout<<"n="<<n<<" size="<<m_subgraph.size()<<endl;
-		}
-		assert(n==m_subgraph.size());
-		#endif
-		m_waiting=false;
-		m_coverageIterator=m_distributionOfCoverage.begin();
-	}else if(m_waiting){
-		if(m_inbox.size()>0&&m_inbox[0]->getTag()==RAY_MPI_TAG_COVERAGE_DATA_REPLY){
-			m_waiting=false;
-		}
-	}else{
-		uint64_t*messageContent=(uint64_t*)m_outboxAllocator.allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-		int count=0;
-		int maximumElements=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t);
-		while(count<maximumElements && m_coverageIterator!=m_distributionOfCoverage.end()){
-			int coverage=m_coverageIterator->first;
-			uint64_t numberOfVertices=m_coverageIterator->second;
-			messageContent[count]=coverage;
-			messageContent[count+1]=numberOfVertices;
-			count+=2;
-			m_coverageIterator++;
-		}
-
-		if(count!=0){
-			Message aMessage(messageContent,count,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_COVERAGE_DATA,getRank());
-			
-			m_outbox.push_back(aMessage);
-			m_waiting=true;
-		}else{
-			m_distributionOfCoverage.clear();
-			m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
-			m_subgraph.buildData(&m_parameters);
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_COVERAGE_END,getRank());
-			m_outbox.push_back(aMessage);
-		}
-	}
+	m_coverageGatherer.work();
 }
 
 void Machine::call_RAY_MASTER_MODE_TRIGGER_SEEDING(){
