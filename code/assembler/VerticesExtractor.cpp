@@ -39,7 +39,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 				int wordSize,
 				int size,
 				RingAllocator*m_outboxAllocator,
-				bool m_colorSpaceMode,int*m_mode
+				int*m_mode
 				){
 	if(this->m_outbox==NULL){
 		m_rank=rank;
@@ -121,7 +121,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 
 			int rankToFlush=0;
 
-			rankToFlush=vertexRank(&a,size,wordSize);
+			rankToFlush=m_parameters->_vertexRank(&a);
 			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 				m_bufferedData.addAt(rankToFlush,a.getU64(i));
 			}
@@ -132,7 +132,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 
 			if(m_hasPreviousVertex){
 				// outgoing edge
-				int outgoingRank=vertexRank(&m_previousVertex,size,wordSize);
+				int outgoingRank=m_parameters->_vertexRank(&m_previousVertex);
 				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,m_previousVertex.getU64(i));
 				}
@@ -151,7 +151,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 				}
 
 				// ingoing edge
-				int ingoingRank=vertexRank(&a,size,wordSize);
+				int ingoingRank=m_parameters->_vertexRank(&a);
 				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 					m_bufferedDataForIngoingEdges.addAt(ingoingRank,m_previousVertex.getU64(i));
 				}
@@ -171,9 +171,9 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			}
 
 			// reverse complement
-			Kmer b=complementVertex(&a,wordSize,m_colorSpaceMode);
+			Kmer b=complementVertex(&a,wordSize,m_parameters->getColorSpaceMode());
 
-			rankToFlush=vertexRank(&b,size,wordSize);
+			rankToFlush=m_parameters->_vertexRank(&b);
 			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 				m_bufferedData.addAt(rankToFlush,b.getU64(i));
 			}
@@ -184,7 +184,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 
 			if(m_hasPreviousVertex){
 				// outgoing edge
-				int outgoingRank=vertexRank(&b,size,wordSize);
+				int outgoingRank=m_parameters->_vertexRank(&b);
 				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,b.getU64(i));
 				}
@@ -203,7 +203,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 				}
 
 				// ingoing edge
-				int ingoingRank=vertexRank(&m_previousVertexRC,size,wordSize);
+				int ingoingRank=m_parameters->_vertexRank(&m_previousVertexRC);
 				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 					m_bufferedDataForIngoingEdges.addAt(ingoingRank,b.getU64(i));
 				}
@@ -408,7 +408,6 @@ bool VerticesExtractor::deleteVertices(vector<Kmer>*verticesToRemove,GridTable*s
 	assert(m_bufferedDataForOutgoingEdges.isEmpty());
 	#endif
 
-	int size=parameters->getSize();
 	int rank=parameters->getRank();
 
 	bool color=parameters->getColorSpaceMode();
@@ -426,7 +425,7 @@ bool VerticesExtractor::deleteVertices(vector<Kmer>*verticesToRemove,GridTable*s
 	}else if(m_deletionIterator<(uint64_t)verticesToRemove->size()){
 		Kmer vertex=verticesToRemove->at(m_deletionIterator);
 		m_deletionIterator++;
-		int rankToFlush=vertexRank(&vertex,size,wordSize);
+		int rankToFlush=m_parameters->_vertexRank(&vertex);
 		for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 			m_bufferedData.addAt(rankToFlush,vertex.getU64(i));
 		}
@@ -436,7 +435,7 @@ bool VerticesExtractor::deleteVertices(vector<Kmer>*verticesToRemove,GridTable*s
 		}
 
 		Kmer rcVertex=complementVertex(&vertex,wordSize,color);
-		rankToFlush=vertexRank(&rcVertex,size,wordSize);
+		rankToFlush=m_parameters->_vertexRank(&rcVertex);
 		for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 			m_bufferedData.addAt(rankToFlush,rcVertex.getU64(i));
 		}
@@ -458,7 +457,7 @@ bool VerticesExtractor::deleteVertices(vector<Kmer>*verticesToRemove,GridTable*s
 		for(int j=0;j<(int)ingoingEdgesForDirect.size();j++){
 			Kmer prefix=ingoingEdgesForDirect[j];
 			Kmer suffix=vertex;
-			int rankToFlush=vertexRank(&prefix,size,wordSize);
+			int rankToFlush=m_parameters->_vertexRank(&prefix);
 			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 				m_buffersForOutgoingEdgesToDelete.addAt(rankToFlush,prefix.getU64(i));
 			}
@@ -474,7 +473,7 @@ bool VerticesExtractor::deleteVertices(vector<Kmer>*verticesToRemove,GridTable*s
 			// XXX: I am not sure that this procedure works too for color space, must verify.
 			prefix=rcVertex;
 			suffix=complementVertex(&(ingoingEdgesForDirect[j]),wordSize,color);
-			rankToFlush=vertexRank(&suffix,size,wordSize);
+			rankToFlush=m_parameters->_vertexRank(&suffix);
 
 			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 				m_buffersForIngoingEdgesToDelete.addAt(rankToFlush,prefix.getU64(i));
@@ -502,7 +501,7 @@ bool VerticesExtractor::deleteVertices(vector<Kmer>*verticesToRemove,GridTable*s
 		for(int j=0;j<(int)outgoingEdgesForDirect.size();j++){
 			Kmer prefix=vertex;
 			Kmer suffix=outgoingEdgesForDirect[j];
-			int rankToFlush=vertexRank(&suffix,size,wordSize);
+			int rankToFlush=m_parameters->_vertexRank(&suffix);
 			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 				m_buffersForIngoingEdgesToDelete.addAt(rankToFlush,prefix.getU64(i));
 			}
@@ -518,7 +517,7 @@ bool VerticesExtractor::deleteVertices(vector<Kmer>*verticesToRemove,GridTable*s
 			// XXX: I am not sure that this procedure works too for color space, must verify.
 			prefix=complementVertex(&(outgoingEdgesForDirect[j]),wordSize,color);
 			suffix=rcVertex;
-			rankToFlush=vertexRank(&prefix,size,wordSize);
+			rankToFlush=m_parameters->_vertexRank(&prefix);
 
 			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 				m_buffersForOutgoingEdgesToDelete.addAt(rankToFlush,prefix.getU64(i));

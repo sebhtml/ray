@@ -22,6 +22,7 @@
 #ifndef _GridTableIterator
 #define _GridTableIterator
 
+#include <core/Parameters.h>
 #include <core/common_functions.h>
 #include <graph/GridTable.h>
 
@@ -33,8 +34,9 @@ class GridTableIterator{
 	int m_currentBin;
 	int m_currentPosition;
 	void getNext();
+	Parameters*m_parameters;
 public:
-	void constructor(GridTable*a,int wordSize);
+	void constructor(GridTable*a,int wordSize,Parameters*b);
 	bool hasNext();
 	Vertex*next();
 	Kmer*getKey();

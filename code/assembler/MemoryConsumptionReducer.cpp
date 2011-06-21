@@ -182,7 +182,7 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 		// total: 2k+2
 		m_maximumDepth=2*wordSize+2;
 		
-		m_iterator.constructor(a,wordSize);
+		m_iterator.constructor(a,wordSize,parameters);
 	}else if(!m_currentVertexIsDone){
 		if(!m_hasSetVertex){
 			if(!m_iterator.hasNext()){
@@ -401,7 +401,7 @@ edgesReceived,parameters
 							// push queries in a buffer
 							for(int i=0;i<(int)kMersToCheck.size();i++){
 								Kmer kmer=kMersToCheck[i];
-								int destination=vertexRank(&kmer,size,wordSize);
+								int destination=m_parameters->_vertexRank(&kmer);
 								m_bufferedData.addAt(destination,uniqueId);
 								for(int k=0;k<kmer.getNumberOfU64();k++){
 									m_bufferedData.addAt(destination,kmer.getU64(k));
@@ -531,7 +531,8 @@ vector<Kmer >*MemoryConsumptionReducer::getVerticesToRemove(){
 	return m_toRemove;
 }
 
-void MemoryConsumptionReducer::constructor(int size){
+void MemoryConsumptionReducer::constructor(int size,Parameters*parameters){
+	m_parameters=parameters;
 	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
 		RAY_MALLOC_TYPE_MEMORY_REDUCER_BUFFERS,false);
 	m_pendingMessages=0;

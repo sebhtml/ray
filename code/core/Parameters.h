@@ -93,6 +93,8 @@ class Parameters{
 	string getLibraryFile(int library);
 	void showOption(string a,string b);
 	void showOptionDescription(string a);
+	void fileNameHook(string f);
+
 public:
 	Parameters();
 	string getReceivedMessagesFile();

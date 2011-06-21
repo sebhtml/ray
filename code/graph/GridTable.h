@@ -30,6 +30,7 @@
 #include <structures/Vertex.h>
 
 class GridTable{
+	Parameters*m_parameters;
 	VertexTable m_vertexTable;
 	int m_rank;
 	uint64_t m_size;

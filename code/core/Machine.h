@@ -224,7 +224,6 @@ class Machine{
 	SequencesLoader m_sl;
 
 	int m_repeatedLength;
-	bool m_colorSpaceMode;
 
 	OpenAssemblerChooser m_oa;
 	// BUBBLE

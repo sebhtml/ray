@@ -285,6 +285,8 @@ void Parameters::parseCommands(){
 			m_interleavedFiles.insert(interleavedFileIndex);
 			m_singleEndReadsFile.push_back(interleavedFile);
 
+			fileNameHook(interleavedFile);
+
 			int meanFragmentLength=0;
 			int standardDeviation=0;
 			#ifdef ASSERT
@@ -369,6 +371,8 @@ void Parameters::parseCommands(){
 			m_rightFiles.insert(rightFile);
 			m_singleEndReadsFile.push_back(right);
 
+			fileNameHook(left);
+			fileNameHook(right);
 
 			int meanFragmentLength=0;
 			int standardDeviation=0;
@@ -1038,7 +1042,7 @@ bool Parameters::hasPairedReads(){
 }
 
 int Parameters::_vertexRank(Kmer*a){
-	return vertexRank(a,m_size,m_wordSize);
+	return vertexRank(a,m_size,m_wordSize,m_colorSpaceMode);
 }
 int Parameters::getSlaveMode(){
 	return *m_slaveMode;
@@ -1084,4 +1088,15 @@ bool Parameters::showMemoryAllocations(){
 
 bool Parameters::writeKmers(){
 	return m_writeKmers;
+}
+
+void Parameters::fileNameHook(string fileName){
+	if(fileName.find(".csfasta")!=string::npos){
+		if(!m_colorSpaceMode&&m_rank==MASTER_RANK){
+			cout<<endl;
+			cout<<"Enabling color-space mode"<<endl;
+			cout<<"All reads should be in color space."<<endl;
+		}
+		m_colorSpaceMode=true;
+	}
 }

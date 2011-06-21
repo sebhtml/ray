@@ -30,7 +30,8 @@
 #include <core/Parameters.h>
 using namespace std;
 
-void VertexTable::constructor(int rank,MyAllocator*allocator,Parameters*m_parameters){
+void VertexTable::constructor(int rank,MyAllocator*allocator,Parameters*parameters){
+	m_parameters=parameters;
 	m_gridAllocator=allocator;
 	m_size=0;
 	m_inserted=false;
@@ -56,7 +57,7 @@ uint64_t VertexTable::size(){
 
 VertexData*VertexTable::find(Kmer*key){
 	Kmer lowerKey;
-	int bin=hash_function_2(key,m_wordSize,&lowerKey)%m_gridSize;
+	int bin=hash_function_2(key,m_wordSize,&lowerKey,m_parameters->getColorSpaceMode())%m_gridSize;
 
 	if(key->isLower(&lowerKey)){
 		lowerKey=*key;
@@ -73,7 +74,7 @@ VertexData*VertexTable::find(Kmer*key){
 VertexData*VertexTable::insert(Kmer*key){
 	Kmer lowerKey;
 	m_inserted=false;
-	int bin=hash_function_2(key,m_wordSize,&lowerKey)%m_gridSize;
+	int bin=hash_function_2(key,m_wordSize,&lowerKey,m_parameters->getColorSpaceMode())%m_gridSize;
 	if(key->isLower(&lowerKey)){
 		lowerKey=*key;
 	}

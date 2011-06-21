@@ -28,7 +28,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void GridTable::constructor(int rank,MyAllocator*allocator,Parameters*m_parameters){
+void GridTable::constructor(int rank,MyAllocator*allocator,Parameters*parameters){
+	m_parameters=parameters;
 	m_gridAllocatorOnDisk=allocator;
 	m_size=0;
 	m_inserted=false;
@@ -54,7 +55,7 @@ uint64_t GridTable::size(){
 
 Vertex*GridTable::find(Kmer*key){
 	Kmer lowerKey;
-	int bin=hash_function_2(key,m_wordSize,&lowerKey)%m_gridSize;
+	int bin=hash_function_2(key,m_wordSize,&lowerKey,m_parameters->getColorSpaceMode())%m_gridSize;
 
 	if(key->isLower(&lowerKey)){
 		lowerKey=*key;
@@ -71,7 +72,7 @@ Vertex*GridTable::find(Kmer*key){
 Vertex*GridTable::insert(Kmer*key){
 	Kmer lowerKey;
 	m_inserted=false;
-	int bin=hash_function_2(key,m_wordSize,&lowerKey)%m_gridSize;
+	int bin=hash_function_2(key,m_wordSize,&lowerKey,m_parameters->getColorSpaceMode())%m_gridSize;
 	if(key->isLower(&lowerKey)){
 		lowerKey=*key;
 	}
@@ -193,7 +194,7 @@ void GridTable::addDirection(Kmer*a,Direction*d){
 }
 
 bool GridTable::isAssembled(Kmer*a){
-	Kmer reverse=complementVertex(a,m_wordSize,false);
+	Kmer reverse=complementVertex(a,m_wordSize,m_parameters->getColorSpaceMode());
 	return getDirections(a).size()>0||getDirections(&reverse).size()>0;
 }
 

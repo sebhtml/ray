@@ -34,8 +34,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 				int*m_mode,
 				int m_wordSize,
 				int m_size,
-				int m_rank,
-				bool m_colorSpaceMode
+				int m_rank
 			){
 	if(!m_initiatedIterator){
 		m_theSequenceId=0;

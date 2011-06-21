@@ -24,7 +24,8 @@
 #include <iostream>
 using namespace std;
 
-void GridTableIterator::constructor(GridTable*a,int wordSize){
+void GridTableIterator::constructor(GridTable*a,int wordSize,Parameters*parameters){
+	m_parameters=parameters;
 	m_lowerKeyIsDone=false;
 	m_wordSize=wordSize;
 	m_table=a;
@@ -57,7 +58,7 @@ Vertex*GridTableIterator::next(){
 		m_currentKey=element->m_lowerKey;
 		m_lowerKeyIsDone=true;
 	}else{
-		m_currentKey=complementVertex(&m_currentKey,m_wordSize,false);
+		m_currentKey=complementVertex(&m_currentKey,m_wordSize,m_parameters->getColorSpaceMode());
 		m_lowerKeyIsDone=false;
 		m_currentPosition++;
 	}

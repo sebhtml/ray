@@ -130,8 +130,8 @@ string convertToString(vector<Kmer>*b,int m_wordSize){
 	return contig;
 }
 
-int vertexRank(Kmer*a,int _size,int w){
-	return hash_function_1(a,w)%(_size);
+int vertexRank(Kmer*a,int _size,int w,bool color){
+	return hash_function_1(a,w,color)%(_size);
 }
 
 Kmer kmerAtPosition(char*m_sequence,int pos,int w,char strand,bool color){
@@ -299,8 +299,8 @@ vector<Kmer> _getIngoingEdges(Kmer*a,uint8_t edges,int k){
 	return b;
 }
 
-uint64_t hash_function_1(Kmer*a,int w){
-	Kmer b=complementVertex(a,w,false);
+uint64_t hash_function_1(Kmer*a,int w,bool color){
+	Kmer b=complementVertex(a,w,color);
 	if(a->isLower(&b)){
 		b=*a;
 	}
@@ -317,8 +317,8 @@ uint64_t hash_function_1(Kmer*a,int w){
 	#endif
 }
 
-uint64_t hash_function_2(Kmer*a,int w,Kmer*c){
-	Kmer b=complementVertex(a,w,false);
+uint64_t hash_function_2(Kmer*a,int w,Kmer*c,bool color){
+	Kmer b=complementVertex(a,w,color);
 	*c=b;
 	if(a->isLower(&b)){
 		b=*a;

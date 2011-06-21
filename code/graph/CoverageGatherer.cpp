@@ -40,7 +40,7 @@ void CoverageGatherer::work(){
 		uint64_t n=0;
 		#endif
 		GridTableIterator iterator;
-		iterator.constructor(m_subgraph,m_parameters->getWordSize());
+		iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
 		FILE*kmerFile=NULL;
 		if(m_parameters->writeKmers()){
 			ostringstream name;

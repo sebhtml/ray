@@ -55,7 +55,7 @@ void IndexerWorker::work(){
 		}else if(!m_coverageRequested){
 			Kmer vertex=kmerAtPosition(m_sequence,m_position,m_parameters->getWordSize(),'F',m_parameters->getColorSpaceMode());
 			m_vertices.push_back(vertex);
-			int sendTo=vertexRank(&vertex,m_parameters->getSize(),m_parameters->getWordSize());
+			int sendTo=m_parameters->_vertexRank(&vertex);
 			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 			int bufferPosition=0;
 			vertex.pack(message,&bufferPosition);
@@ -94,7 +94,7 @@ void IndexerWorker::work(){
 			// index it
 			if(selectedPosition!=-1){
 				Kmer vertex=m_vertices[selectedPosition];
-				int sendTo=vertexRank(&vertex,m_parameters->getSize(),m_parameters->getWordSize());
+				int sendTo=m_parameters->_vertexRank(&vertex);
 				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(5*sizeof(uint64_t));
 				int j=0;
 				vertex.pack(message,&j);
@@ -142,7 +142,7 @@ void IndexerWorker::work(){
 			// index it
 			if(selectedPosition!=-1){
 				Kmer vertex=m_parameters->_complementVertex(&(m_vertices[selectedPosition]));
-				int sendTo=vertexRank(&vertex,m_parameters->getSize(),m_parameters->getWordSize());
+				int sendTo=m_parameters->_vertexRank(&vertex);
 				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(5*sizeof(uint64_t));
 				int positionOnStrand=m_theLength-m_parameters->getWordSize()-selectedPosition;
 				int j=0;

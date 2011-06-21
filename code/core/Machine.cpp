@@ -92,7 +92,6 @@ void Machine::start(){
 	
 	m_fusionData->m_fusionStarted=false;
 	m_ed->m_EXTENSION_numberOfRanksDone=0;
-	m_colorSpaceMode=false;
 	m_messageSentForEdgesDistribution=false;
 	m_numberOfRanksDoneSeeding=0;
 	m_numberOfMachinesReadyForEdgesDistribution=0;
@@ -189,7 +188,7 @@ void Machine::start(){
 	m_startEdgeDistribution=false;
 
 	m_ranksDoneAttachingReads=0;
-	m_reducer.constructor(getSize());
+	m_reducer.constructor(getSize(),&m_parameters);
 
 	m_messagesHandler.barrier();
 
@@ -354,7 +353,6 @@ void Machine::start(){
 	m_sl.constructor(m_size,&m_diskAllocator,&m_myReads);
 
 	m_fusionData->constructor(getSize(),MAXIMUM_MESSAGE_SIZE_IN_BYTES,getRank(),&m_outbox,&m_outboxAllocator,m_parameters.getWordSize(),
-	m_parameters.getColorSpaceMode(),
 		m_ed,m_seedingData,&m_slave_mode,&m_parameters);
 
 	m_virtualCommunicator.constructor(m_rank,m_size,&m_outboxAllocator,&m_inbox,&m_outbox);
@@ -373,8 +371,7 @@ void Machine::start(){
 
 	m_subgraph.constructor(getRank(),&m_diskAllocator,&m_parameters);
 	
-	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),&m_outbox,&m_outboxAllocator,&m_seedCoverage,&m_slave_mode,&m_parameters,&m_wordSize,&m_subgraph,
-		&m_colorSpaceMode,&m_inbox,&m_virtualCommunicator);
+	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),&m_outbox,&m_outboxAllocator,&m_seedCoverage,&m_slave_mode,&m_parameters,&m_wordSize,&m_subgraph,&m_inbox,&m_virtualCommunicator);
 
 	m_alive=true;
 	m_loadSequenceStep=false;
@@ -419,7 +416,6 @@ m_seedingData,
 	&m_identifiers,
 	&m_mode_sendDistribution,
 	&m_alive,
-	&m_colorSpaceMode,
 	&m_slave_mode,
 	&m_allPaths,
 	&m_last_value,
@@ -828,7 +824,7 @@ void Machine::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 			m_wordSize,
 			getSize(),
 			&m_outboxAllocator,
-			m_colorSpaceMode,&m_slave_mode
+			&m_slave_mode
 		);
 }
 
@@ -863,14 +859,25 @@ void Machine::call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS(){
 		m_coverageRank=0;
 	}
 
-	if(m_coverageRank==m_numberOfMachinesDoneSendingCoverage){
-		Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG,m_coverageRank,
-			RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION,getRank());
-		m_outbox.push_back(aMessage);
-		m_coverageRank++;
-	}
-	if(m_coverageRank==m_parameters.getSize())
+	if(m_parameters.writeKmers()){
+		if(m_coverageRank==m_numberOfMachinesDoneSendingCoverage){
+			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG,m_coverageRank,
+				RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION,getRank());
+			m_outbox.push_back(aMessage);
+			m_coverageRank++;
+		}
+
+		if(m_coverageRank==m_parameters.getSize())
+			m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+	}else{
+		for(m_coverageRank=0;m_coverageRank<m_parameters.getSize();m_coverageRank++){
+			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG,m_coverageRank,
+				RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION,getRank());
+			m_outbox.push_back(aMessage);
+		}
 		m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+	}
+
 }
 
 void Machine::call_RAY_MASTER_MODE_PREPARE_SEEDING(){
@@ -959,7 +966,7 @@ void Machine::call_RAY_MASTER_MODE_INDEX_SEQUENCES(){
 
 void Machine::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(){
 	m_si.attachReads(&m_myReads,&m_outboxAllocator,&m_outbox,&m_slave_mode,m_wordSize,
-	m_size,m_rank,m_colorSpaceMode);
+	m_size,m_rank);
 }
 
 void Machine::call_RAY_MASTER_MODE_TRIGGER_EXTENSIONS(){
@@ -1205,7 +1212,7 @@ void Machine::call_RAY_SLAVE_MODE_EXTENSION(){
 	int maxCoverage=m_parameters.getRepeatCoverage();
 	m_seedExtender.extendSeeds(&(m_seedingData->m_SEEDING_seeds),m_ed,getRank(),&m_outbox,&(m_seedingData->m_SEEDING_currentVertex),
 	m_fusionData,&m_outboxAllocator,&(m_seedingData->m_SEEDING_edgesRequested),&(m_seedingData->m_SEEDING_outgoingEdgeIndex),
-	&m_last_value,&(m_seedingData->m_SEEDING_vertexCoverageRequested),m_wordSize,&m_colorSpaceMode,getSize(),&(m_seedingData->m_SEEDING_vertexCoverageReceived),
+	&m_last_value,&(m_seedingData->m_SEEDING_vertexCoverageRequested),m_wordSize,getSize(),&(m_seedingData->m_SEEDING_vertexCoverageReceived),
 	&(m_seedingData->m_SEEDING_receivedVertexCoverage),&m_repeatedLength,&maxCoverage,&(m_seedingData->m_SEEDING_receivedOutgoingEdges),&m_c,
 	m_bubbleData,
 m_minimumCoverage,&m_oa,&(m_seedingData->m_SEEDING_edgesReceived),&m_slave_mode);

@@ -53,7 +53,6 @@ class FusionData{
 	SeedingData*m_seedingData;
 	int m_wordSize;
 	bool m_FINISH_vertex_requested;
-	bool m_colorSpaceMode;
 	int m_size;
 	int m_rank;
 	ExtensionData*m_ed;
@@ -114,7 +113,7 @@ public:
 	void distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int getRank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox,int getSize,int*m_mode);
 
 	void constructor(int size,int maxSize,int rank,StaticVector*m_outbox,
-		RingAllocator*m_outboxAllocator,int wordSize,bool colorSpaceMode,
+		RingAllocator*m_outboxAllocator,int wordSize,
 	ExtensionData*ed,SeedingData*seedingData,int*m_mode,Parameters*parameters);
 
 	void setReadiness();

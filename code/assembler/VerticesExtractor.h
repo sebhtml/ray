@@ -100,7 +100,7 @@ public:
 				int m_wordSize,
 				int size,
 				RingAllocator*m_outboxAllocator,
-				bool m_colorSpaceMode,int*m_mode
+				int*m_mode
 			);
 	void setReadiness();
 	bool mustRunReducer();

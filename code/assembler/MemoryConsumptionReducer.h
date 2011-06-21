@@ -45,7 +45,7 @@ class MemoryConsumptionReducer{
 	int m_pendingMessages;
 	set<int>*m_processedTasks;
 	BufferedData m_bufferedData;
-
+	Parameters*m_parameters;
 	uint64_t m_counter;
 
 	GridTableIterator m_iterator;
@@ -92,7 +92,7 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	int getNumberOfRemovedVertices();
 	vector<Kmer>*getVerticesToRemove();
 
-	void constructor(int size);
+	void constructor(int size,Parameters*a);
 
 	void processConfetti(uint64_t*a,int b);
 

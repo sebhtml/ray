@@ -67,7 +67,7 @@ public:
 	bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	RingAllocator*outboxAllocator,int size,int theRank,StaticVector*outbox,
  int*receivedVertexCoverage,vector<Kmer>*receivedOutgoingEdges,
-		int minimumCoverage,bool*edgesReceived,int wordSize);
+		int minimumCoverage,bool*edgesReceived,int wordSize,Parameters*parameters);
 
 	void depthFirstSearchBidirectional(Kmer a,int maxDepth,
 	bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,

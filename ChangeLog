@@ -14,7 +14,7 @@ distribution. Thanks to pmiguel on SEQanswers for providing raw data points.
 * Added a progression indicator for scaffolding.
 * Writting scaffold sequences is now faster.
 * New option: -write-kmers writes k-mers
-* New experimental option: -color-space
+* New experimental option: -color-space for .csfasta files.
 
 = 1.6.0 =
 2011-06-13

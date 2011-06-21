@@ -72,8 +72,7 @@ ArrayOfReads*m_myReads,
 				int*m_mode,
 				int m_wordSize,
 				int m_size,
-				int m_rank,
-				bool m_colorSpaceMode
+				int m_rank
 );
 
 	void constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,

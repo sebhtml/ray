@@ -42,7 +42,7 @@ void SeedingData::computeSeeds(){
 		m_SEEDING_i=0;
 
 		m_activeWorkerIterator=m_activeWorkers.begin();
-		m_splayTreeIterator.constructor(m_subgraph,m_wordSize);
+		m_splayTreeIterator.constructor(m_subgraph,m_wordSize,m_parameters);
 		m_initiatedIterator=true;
 		m_maximumAliveWorkers=30000;
 		#ifdef ASSERT
@@ -184,7 +184,7 @@ void SeedingData::computeSeeds(){
 }
 
 void SeedingData::constructor(SeedExtender*seedExtender,int rank,int size,StaticVector*outbox,RingAllocator*outboxAllocator,int*seedCoverage,int*mode,
-	Parameters*parameters,int*wordSize,GridTable*subgraph,bool*colorSpaceMode,StaticVector*inbox,
+	Parameters*parameters,int*wordSize,GridTable*subgraph,StaticVector*inbox,
 	VirtualCommunicator*vc){
 	m_virtualCommunicator=vc;
 	m_seedExtender=seedExtender;
@@ -204,7 +204,6 @@ void SeedingData::constructor(SeedExtender*seedExtender,int rank,int size,Static
 	assert(m_wordSize>=15&&m_wordSize<=MAXKMERLENGTH);
 	#endif
 	m_subgraph=subgraph;
-	m_colorSpaceMode=colorSpaceMode;
 	m_initiatedIterator=false;
 }
 

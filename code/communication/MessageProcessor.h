@@ -103,7 +103,6 @@ class MessageProcessor{
 	vector<uint64_t>*m_identifiers;
 	bool*m_mode_sendDistribution;
 	bool*m_alive;
-	bool*m_colorSpaceMode;
 	int*m_mode;
 	vector<vector<uint64_t> >*m_allPaths;
 	int*m_last_value;
@@ -169,7 +168,6 @@ ExtensionData*ed,
 	vector<uint64_t>*m_identifiers,
 	bool*m_mode_sendDistribution,
 	bool*m_alive,
-	bool*m_colorSpaceMode,
 	int*m_mode,
 	vector<vector<uint64_t> >*m_allPaths,
 	int*m_last_value,

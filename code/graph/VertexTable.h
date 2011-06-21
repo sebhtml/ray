@@ -28,6 +28,7 @@
 #include <core/Parameters.h>
 
 class VertexTable{
+	Parameters*m_parameters;
 	uint64_t m_size;
 	bool m_inserted;
 	MyAllocator*m_gridAllocator;

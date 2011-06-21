@@ -69,7 +69,7 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 	#endif
 
 	Kmer vertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
-	int destination=vertexRank(&vertex,getSize(),m_wordSize);
+	int destination=m_parameters->_vertexRank(&vertex);
 	for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 		m_buffers.addAt(destination,vertex.getU64(i));
 	}
@@ -95,7 +95,7 @@ void FusionData::readyBuffers(){
 }
 
 void FusionData::constructor(int size,int max,int rank,StaticVector*outbox,
-		RingAllocator*outboxAllocator,int wordSize,bool colorSpaceMode,
+		RingAllocator*outboxAllocator,int wordSize,
 		ExtensionData*ed,SeedingData*seedingData,int*mode,Parameters*parameters){
 	m_timer.constructor();
 	m_parameters=parameters;
@@ -114,7 +114,6 @@ void FusionData::constructor(int size,int max,int rank,StaticVector*outbox,
 	#ifdef ASSERT
 	assert(m_wordSize>0);
 	#endif
-	m_colorSpaceMode=colorSpaceMode;
 	
 	m_FINISH_pathsForPosition=new vector<vector<Direction> >;
 	m_mappingConfirmed=false;
@@ -670,7 +669,7 @@ void FusionData::makeFusions(){
 			assert(thePosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size());
 			#endif
 			Kmer theMainVertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][thePosition];
-			Kmer theVertex=complementVertex(&theMainVertex,m_wordSize,m_colorSpaceMode);
+			Kmer theVertex=complementVertex(&theMainVertex,m_wordSize,m_parameters->getColorSpaceMode());
 
 			if(!m_Machine_getPaths_DONE){
 				getPaths(theVertex);
@@ -687,7 +686,7 @@ void FusionData::makeFusions(){
 		}else if(!m_FUSION_last_done){
 			// get the paths going on the last vertex.
 
-			Kmer theVertex=complementVertex(&(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][END_LENGTH]),m_wordSize,m_colorSpaceMode);
+			Kmer theVertex=complementVertex(&(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][END_LENGTH]),m_wordSize,m_parameters->getColorSpaceMode());
 			if(!m_Machine_getPaths_DONE){
 				getPaths(theVertex);
 			}else{
@@ -830,7 +829,8 @@ void FusionData::getPaths(Kmer vertex){
 		int bufferPosition=0;
 		vertex.pack(message,&bufferPosition);
 		message[bufferPosition++]=0;
-		Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,vertexRank(&vertex,getSize(),m_wordSize),RAY_MPI_TAG_ASK_VERTEX_PATHS,getRank());
+		Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,
+			m_parameters->_vertexRank(&vertex),RAY_MPI_TAG_ASK_VERTEX_PATHS,getRank());
 		m_outbox->push_back(aMessage);
 		m_FUSION_paths_requested=true;
 		m_FUSION_paths_received=false;

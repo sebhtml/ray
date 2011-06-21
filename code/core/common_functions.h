@@ -81,7 +81,9 @@ Kmer complementVertex(Kmer*a,int wordSize,bool colorSpace){
 		uint64_t chunk=a->getU64(u64_id);
 		uint64_t j=(chunk<<(62-bitPositionInChunk))>>62;
 		
-		j=~j&mask;
+		if(!colorSpace) /* in color space, reverse complement is just reverse */
+			j=~j&mask;
+
 		int outputChunk=bitPositionInOutput/64;
 		uint64_t oldValue=output.getU64(outputChunk);
 		oldValue=(oldValue|(j<<(bitPositionInOutput%64)));
@@ -128,7 +130,7 @@ uint8_t getSecondSegmentLastCode(Kmer*v,int w);
 
 string convertToString(vector<Kmer>*b,int m_wordSize);
 
-int vertexRank(Kmer*a,int _size,int w);
+int vertexRank(Kmer*a,int _size,int w,bool color);
 
 Kmer kmerAtPosition(char*string,int pos,int w,char strand,bool color);
 
@@ -143,8 +145,8 @@ vector<Kmer> _getIngoingEdges(Kmer*a,uint8_t edges,int k);
 
 char complementNucleotide(char c);
 
-uint64_t hash_function_1(Kmer*a,int w);
-uint64_t hash_function_2(Kmer*a,int w,Kmer*b);
+uint64_t hash_function_1(Kmer*a,int w,bool color);
+uint64_t hash_function_2(Kmer*a,int w,Kmer*b,bool color);
 
 uint8_t invertEdges(uint8_t a);
 

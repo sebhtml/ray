@@ -51,7 +51,6 @@ class SeedingData{
 	bool m_flushAllMode;
 	VirtualCommunicator*m_virtualCommunicator;
 	bool m_initiatedIterator;
-	bool*m_colorSpaceMode;
 	int m_rank;
 	int m_size;
 	RingAllocator*m_outboxAllocator;
@@ -118,7 +117,7 @@ public:
 	void computeSeeds();
 
 	void constructor(SeedExtender*seedExtender,int rank,int size,StaticVector*outbox,RingAllocator*outboxAllocator,
-		int*seedCoverage,int*mode,Parameters*parameters,int*wordSize,GridTable*subgraph,bool*colorSpaceMode,
+		int*seedCoverage,int*mode,Parameters*parameters,int*wordSize,GridTable*subgraph,
 		StaticVector*inbox,VirtualCommunicator*vc);
 	void updateStates();
 	void sendSeedLengths();
