@@ -57,7 +57,7 @@ void DepthFirstSearchData::depthFirstSearch(Kmer root,Kmer a,int maxDepth,
 		(*vertexCoverageRequested)=false;
 		#ifdef SHOW_MINI_GRAPH
 		cout<<"<MiniGraph>"<<endl;
-		cout<<idToWord(root,wordSize)<<" -> "<<idToWord(a,wordSize)<<endl;
+		cout<<idToWord(root,wordSize,parameters->getColorSpaceMode())<<" -> "<<idToWord(a,wordSize,parameters->getColorSpaceMode())<<endl;
 		#endif
 	}
 	if(m_depthFirstSearchVerticesToVisit.size()>0){
@@ -129,7 +129,7 @@ void DepthFirstSearchData::depthFirstSearch(Kmer root,Kmer a,int maxDepth,
 
 
 					#ifdef SHOW_MINI_GRAPH
-					cout<<idToWord(vertexToVisit,wordSize)<<" -> "<<idToWord(nextVertex,wordSize)<<endl;
+					cout<<idToWord(vertexToVisit,wordSize,parameters->getColorSpaceMode())<<" -> "<<idToWord(nextVertex,wordSize,parameters->getColorSpaceMode())<<endl;
 					#endif
 				}
 				(*edgesRequested)=false;
@@ -203,7 +203,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(Kmer a,int maxDepth,
 
 				#ifdef ASSERT
 				if(m_depthFirstSearchVisitedVertices.count(vertexToVisit)>0){
-					cout<<"Already visited: "<<idToWord(&vertexToVisit,wordSize)<<" root is "<<idToWord(&a,wordSize)<<endl;
+					cout<<"Already visited: "<<idToWord(&vertexToVisit,wordSize,parameters->getColorSpaceMode())<<" root is "<<idToWord(&a,wordSize,parameters->getColorSpaceMode())<<endl;
 				}
 				assert(m_depthFirstSearchVisitedVertices.count(vertexToVisit)==0);
 				assert(*receivedVertexCoverage>0);
@@ -284,7 +284,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(Kmer a,int maxDepth,
 
 				#ifdef ASSERT
 				if(m_outgoingEdges.count(vertexToVisit)>0){
-					cout<<idToWord(&vertexToVisit,wordSize)<<" is already in the data structure "<<m_outgoingEdges[vertexToVisit].size()<<" v. "<<outgoingEdges.size()<<endl;
+					cout<<idToWord(&vertexToVisit,wordSize,parameters->getColorSpaceMode())<<" is already in the data structure "<<m_outgoingEdges[vertexToVisit].size()<<" v. "<<outgoingEdges.size()<<endl;
 				}
 				assert(m_outgoingEdges.count(vertexToVisit)==0);
 				#endif

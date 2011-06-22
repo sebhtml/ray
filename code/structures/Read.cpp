@@ -27,6 +27,7 @@
 using namespace  std;
 
 char*Read::trim(char*buffer,const char*sequence){
+	//cout<<"In=."<<sequence<<"."<<endl;
 	int theLen=strlen(sequence);
 	strcpy(buffer,sequence);
 	for(int i=0;i<theLen;i++){
@@ -46,16 +47,21 @@ char*Read::trim(char*buffer,const char*sequence){
 		first++;
 	}
 	char*corrected=buffer+first;
+	//cout<<"Trimmed first "<<first<<endl;
 	// find the last symbol that is a A,T,C, or G
 	int last=0;
-	for(int i=0;i<(int)strlen(corrected);i++){
+	int len=strlen(corrected);
+	for(int i=0;i<len;i++){
 		if(corrected[i]=='A' || corrected[i]=='T' || corrected[i]=='C' || corrected[i]=='G'){
 			last=i;
 		}
 	}
 	last++;
 	// only junk awaits beyond <last>
+	//cout<<"Trimmed last "<<last<<endl;
 	corrected[last]='\0';
+	//cout<<"Out= ."<<corrected<<"."<<endl;
+	//cout<<endl;
 	return corrected;
 }
 
@@ -69,15 +75,17 @@ void Read::constructor(const char*sequence,MyAllocator*seqMyAllocator,bool trimF
 	m_forwardOffset=0;
 	m_reverseOffset=0;
 	m_type=TYPE_SINGLE_END;
-	#ifdef __READ_VERBOSITY
-	cout<<"In="<<sequence<<endl;
-	#endif
 	if(trimFlag && strlen(sequence)<4096){
 		char buffer[4096];
 		sequence=trim(buffer,sequence);
 	}
 	int length=strlen(sequence);
 	m_length=length;
+
+	#ifdef ASSERT
+	assert(m_length>0);
+	#endif
+
 	int requiredBytes=getRequiredBytes();
 
 	uint8_t workingBuffer[4096];
@@ -120,21 +128,22 @@ void Read::constructor(const char*sequence,MyAllocator*seqMyAllocator,bool trimF
 		m_sequence=(uint8_t*)seqMyAllocator->allocate(requiredBytes*sizeof(uint8_t));
 		memcpy(m_sequence,workingBuffer,requiredBytes);
 	}
-
-	#ifdef __READ_VERBOSITY
-	cout<<"Out="<<getSeq()<<endl;
-	cout<<endl;
-	#endif
 }
 
-void Read::getSeq(char*workingBuffer) const{
+void Read::getSeq(char*workingBuffer,bool color,bool doubleEncoding) const{
+	#ifdef ASSERT
+	assert(m_length>0);
+	#endif
+
 	for(int position=0;position<m_length;position++){
 		int positionInWorkingBuffer=position/4;
 		uint8_t word=m_sequence[positionInWorkingBuffer];
 		int codePositionInWord=position%4;
 		uint8_t code=(word<<(6-codePositionInWord*2));//eliminate bits before
 		code=(code>>6);
-		char nucleotide=codeToChar(code);
+		if(!doubleEncoding)
+			color=false;
+		char nucleotide=codeToChar(code,color);
 		workingBuffer[position]=nucleotide;
 	}
 	workingBuffer[m_length]='\0';
@@ -151,7 +160,7 @@ int Read::length()const{
  */
 Kmer Read::getVertex(int pos,int w,char strand,bool color) const {
 	char buffer[4000];
-	getSeq(buffer);
+	getSeq(buffer,color,false);
 	return kmerAtPosition(buffer,pos,w,strand,color);
 }
 

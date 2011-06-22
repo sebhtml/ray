@@ -800,8 +800,10 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 
 	m_coverageDistribution.clear();
 
-	if(m_minimumCoverage > m_peakCoverage || m_peakCoverage==m_parameters.getRepeatCoverage()){
+	if(m_minimumCoverage > m_peakCoverage || m_peakCoverage==m_parameters.getRepeatCoverage()
+	|| m_peakCoverage==1){
 		killRanks();
+		m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
 		m_aborted=true;
 		cout<<"Rank 0: Assembler panic: no peak observed in the k-mer coverage distribution."<<endl;
 		cout<<"Rank 0: to deal with the sequencing error rate, try to lower the k-mer length (-k)"<<endl;
@@ -1004,7 +1006,7 @@ void Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 			continue;
 		}
 		total++;
-		string contig=convertToString(&(m_ed->m_EXTENSION_contigs[i]),m_parameters.getWordSize());
+		string contig=convertToString(&(m_ed->m_EXTENSION_contigs[i]),m_parameters.getWordSize(),m_parameters.getColorSpaceMode());
 		
 		m_scaffolder.addContig(uniqueId,&(m_ed->m_EXTENSION_contigs[i]));
 

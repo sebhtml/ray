@@ -204,8 +204,6 @@ void SeedWorker::do_1_1_test(){
 
 			m_SEEDING_receivedIngoingEdges=_getIngoingEdges(&m_SEEDING_currentVertex,edges,m_wordSize);
 
-			string child=idToWord(&m_SEEDING_currentVertex,m_parameters->getWordSize());
-
 			m_SEEDING_receivedOutgoingEdges=_getOutgoingEdges(&m_SEEDING_currentVertex,edges,m_wordSize);
 
 			m_ingoingCoverages.clear();

@@ -53,7 +53,7 @@ class Read{
 public:
 	void constructor(const char*sequence,MyAllocator*seqMyAllocator,bool trim);
 	void constructorWithRawSequence(const char*sequence,uint8_t*raw,bool trim);
-	void getSeq(char*buffer)const;
+	void getSeq(char*buffer,bool color,bool doubleEncoding)const;
 	int length()const;
 	Kmer getVertex(int pos,int w,char strand,bool color)const;
 	bool hasPairedRead()const;

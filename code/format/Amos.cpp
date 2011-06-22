@@ -111,7 +111,7 @@ void Amos::slaveMode(){
 	}else{
 		if(!m_ed->m_EXTENSION_reads_requested){
 			if(m_mode_send_vertices_sequence_id_position==0){
-				string seq=convertToString(&(m_ed->m_EXTENSION_contigs[m_contigId]),m_parameters->getWordSize());
+				string seq=convertToString(&(m_ed->m_EXTENSION_contigs[m_contigId]),m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 				char*qlt=(char*)__Malloc(seq.length()+1,RAY_MASTER_MODE_AMOS,m_parameters->showMemoryAllocations());
 				strcpy(qlt,seq.c_str());
 				for(int i=0;i<(int)strlen(qlt);i++){

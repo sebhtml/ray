@@ -79,12 +79,12 @@ void CoverageGatherer::work(){
 			n++;
 			#endif
 			if(m_parameters->writeKmers()){
-				string kmerSequence=idToWord(&key,m_parameters->getWordSize());
+				string kmerSequence=idToWord(&key,m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 				vector<Kmer> parents=node->getIngoingEdges(&key,m_parameters->getWordSize());
 				vector<Kmer> children=node->getOutgoingEdges(&key,m_parameters->getWordSize());
 				fprintf(kmerFile,"%s;%i;",kmerSequence.c_str(),coverage);
 				for(int i=0;i<(int)parents.size();i++){
-					string printableVersion=idToWord(&(parents[i]),m_parameters->getWordSize());
+					string printableVersion=idToWord(&(parents[i]),m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 					if(i!=0)
 						fprintf(kmerFile," ");
 
@@ -92,7 +92,7 @@ void CoverageGatherer::work(){
 				}
 				fprintf(kmerFile,";");
 				for(int i=0;i<(int)children.size();i++){
-					string printableVersion=idToWord(&(children[i]),m_parameters->getWordSize());
+					string printableVersion=idToWord(&(children[i]),m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 					if(i!=0)
 						fprintf(kmerFile," ");
 

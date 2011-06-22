@@ -65,8 +65,8 @@ string reverseComplement(string*a){
 	return b.str();
 }
 
-char getLastSymbol(Kmer*i,int m_wordSize){
-	return codeToChar(getSecondSegmentLastCode(i,m_wordSize));
+char getLastSymbol(Kmer*i,int m_wordSize,bool color){
+	return codeToChar(getSecondSegmentLastCode(i,m_wordSize),color);
 }
 
 bool isValidDNA(char*x){
@@ -109,7 +109,7 @@ uint8_t getFirstSegmentFirstCode(Kmer*v,int w){
 	return a;
 }
 
-string convertToString(vector<Kmer>*b,int m_wordSize){
+string convertToString(vector<Kmer>*b,int m_wordSize,bool color){
 	ostringstream a;
 	#ifdef USE_DISTANT_SEGMENTS_GRAPH
 	//
@@ -121,10 +121,10 @@ string convertToString(vector<Kmer>*b,int m_wordSize){
 		a<<codeToChar(getFirstSegmentFirstCode((*b)[p],m_wordSize));
 	}
 	#else
-	a<<idToWord(&(*b)[0],m_wordSize);
+	a<<idToWord(&(*b)[0],m_wordSize,color);
 	#endif
 	for(int j=1;j<(int)(*b).size();j++){
-		a<<getLastSymbol(&(*b)[j],m_wordSize);
+		a<<getLastSymbol(&(*b)[j],m_wordSize,color);
 	}
 	string contig=a.str();
 	return contig;
@@ -429,7 +429,21 @@ uint8_t charToCode(char a){
 	}
 }
 
-char codeToChar(uint8_t a){
+char codeToChar(uint8_t a,bool color){
+	if(color){
+		switch(a){
+			case RAY_NUCLEOTIDE_A:
+				return DOUBLE_ENCODING_A_COLOR;
+			case RAY_NUCLEOTIDE_T:
+				return DOUBLE_ENCODING_T_COLOR;
+			case RAY_NUCLEOTIDE_C:
+				return DOUBLE_ENCODING_C_COLOR;
+			case RAY_NUCLEOTIDE_G:
+				return DOUBLE_ENCODING_G_COLOR;
+		}
+		return DOUBLE_ENCODING_A_COLOR;
+	}
+
 	switch(a){
 		case RAY_NUCLEOTIDE_A:
 			return 'A';
@@ -443,7 +457,7 @@ char codeToChar(uint8_t a){
 	return 'A';
 }
 
-string idToWord(Kmer*i,int wordSize){
+string idToWord(Kmer*i,int wordSize,bool color){
 	char a[1000];
 	for(int p=0;p<wordSize;p++){
 		int bitPosition=2*p;
@@ -451,7 +465,7 @@ string idToWord(Kmer*i,int wordSize){
 		int bitPositionInChunk=(bitPosition%64);
 		uint64_t chunk=i->getU64(chunkId);
 		uint64_t j=(chunk<<(62-bitPositionInChunk))>>62; // clear the bits.
-		a[p]=codeToChar(j);
+		a[p]=codeToChar(j,color);
 	}
 	a[wordSize]='\0';
 	string b=a;

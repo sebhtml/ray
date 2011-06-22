@@ -32,7 +32,7 @@ void MemoryConsumptionReducer::getPermutations(Kmer kmer,int length,vector<Kmer>
 	assert(output->size()==0);
 	assert(length<=wordSize);
 	#endif
-	string stringVersion=idToWord(&kmer,wordSize);
+	string stringVersion=idToWord(&kmer,wordSize,m_parameters->getColorSpaceMode());
 	char buffer[1000];
 	strcpy(buffer,stringVersion.c_str());
 	vector<char> changes;
@@ -448,7 +448,7 @@ edgesReceived,parameters
 					cout<<"foundDestination="<<foundDestination<<endl;
 					cout<<"aloneBits="<<aloneBits<<endl;
 					cout<<"Depth reached: "<<maximumDepth<<" vs "<<path.size()<<" MAX="<<m_maximumDepth<<endl;
-					cout<<"root="<<idToWord(key,wordSize)<<endl;
+					cout<<"root="<<idToWord(key,wordSize,m_parameters->getColorSpaceMode())<<endl;
 					cout<<"Parents: "<<parents.size()<<endl;
 					cout<<"Children: "<<children.size()<<endl;
 					cout<<m_dfsDataOutgoing->m_depthFirstSearchVisitedVertices_vector.size()/2<<" edges."<<endl;
@@ -459,7 +459,7 @@ edgesReceived,parameters
 					cout<<"node [color=lightblue2 style=filled]"<<endl;
 					for(map<Kmer ,int>::iterator p=m_dfsDataOutgoing->m_coverages.begin();
 						p!=m_dfsDataOutgoing->m_coverages.end();p++){
-						cout<<idToWord(p->first,wordSize)<<" [label=\""<<idToWord(p->first,wordSize)<<" "<<p->second;
+						cout<<idToWord(p->first,wordSize,m_parameters->getColorSpaceMode())<<" [label=\""<<idToWord(p->first,wordSize,m_parameters->getColorSpaceMode())<<" "<<p->second;
 						if(key==p->first){
 							cout<<" (root) ";
 						}
@@ -485,7 +485,7 @@ edgesReceived,parameters
 					for(int j=0;j<(int)m_dfsDataOutgoing->m_depthFirstSearchVisitedVertices_vector.size();j+=2){
 						Kmer prefix=m_dfsDataOutgoing->m_depthFirstSearchVisitedVertices_vector[j+0];
 						Kmer suffix=m_dfsDataOutgoing->m_depthFirstSearchVisitedVertices_vector[j+1];
-						cout<<idToWord(prefix,wordSize)<<" -> "<<idToWord(suffix,wordSize)<<endl;
+						cout<<idToWord(prefix,wordSize,m_parameters->getColorSpaceMode())<<" -> "<<idToWord(suffix,wordSize,m_parameters->getColorSpaceMode())<<endl;
 						#ifdef ASSERT
 						assert(m_dfsDataOutgoing->m_coverages.count(prefix)>0);
 						assert(m_dfsDataOutgoing->m_coverages.count(suffix)>0);

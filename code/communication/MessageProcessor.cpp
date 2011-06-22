@@ -374,7 +374,7 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT(Message*message
 		Vertex*node=m_subgraph->find(&vertex);
 		#ifdef ASSERT
 		if(node==NULL){
-			cout<<__func__<<" does not exist: "<<idToWord(&vertex,*m_wordSize)<<endl;
+			cout<<__func__<<" does not exist: "<<idToWord(&vertex,*m_wordSize,m_parameters->getColorSpaceMode())<<endl;
 		}
 		assert(node!=NULL);
 		#endif
@@ -761,7 +761,7 @@ void MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA(Message*message){
 
 		#ifdef ASSERT
 		if(node==NULL){
-			cout<<"Rank="<<rank<<" "<<__func__<<" "<<idToWord(&prefix,(*m_wordSize))<<" does not exist"<<endl;
+			cout<<"Rank="<<rank<<" "<<__func__<<" "<<idToWord(&prefix,(*m_wordSize),m_parameters->getColorSpaceMode())<<" does not exist"<<endl;
 		}
 		assert(node!=NULL);
 		#endif
@@ -976,11 +976,11 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message)
 		int bufferPosition=i;
 		vertex.unpack(incoming,&bufferPosition);
 
-		string kmerStr=idToWord(&vertex,m_parameters->getWordSize());
+		string kmerStr=idToWord(&vertex,m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 		Vertex*node=m_subgraph->find(&vertex);
 		#ifdef ASSERT
 		if(node==NULL){
-			cout<<"Rank="<<rank<<" "<<__func__<<" "<<idToWord(&vertex,(*m_wordSize))<<" does not exist"<<endl;
+			cout<<"Rank="<<rank<<" "<<__func__<<" "<<idToWord(&vertex,(*m_wordSize),m_parameters->getColorSpaceMode())<<" does not exist"<<endl;
 		}
 		assert(node!=NULL);
 		#endif
@@ -1229,7 +1229,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES(Message*mes
 		Vertex*node=m_subgraph->find(&vertex);
 		#ifdef ASSERT
 		if(node==NULL){
-			cout<<"Rank="<<rank<<" "<<idToWord(&vertex,*m_wordSize)<<" does not exist."<<endl;
+			cout<<"Rank="<<rank<<" "<<idToWord(&vertex,*m_wordSize,m_parameters->getColorSpaceMode())<<" does not exist."<<endl;
 		}
 		assert(node!=NULL);
 		#endif 
@@ -1503,7 +1503,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE(Message*message){
 
 	#ifdef ASSERT
 	if(node==NULL){
-		cout<<"Source="<<message->getSource()<<" Destination="<<rank<<" "<<idToWord(&vertex,*m_wordSize)<<" does not exist, aborting"<<endl;
+		cout<<"Source="<<message->getSource()<<" Destination="<<rank<<" "<<idToWord(&vertex,*m_wordSize,m_parameters->getColorSpaceMode())<<" does not exist, aborting"<<endl;
 		cout.flush();
 	}
 	assert(node!=NULL);
@@ -2064,7 +2064,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY(Message*mess
 	Read tmp;
 	tmp.setRawSequence(sequence,length);
 	char buffer2[4000];
-	tmp.getSeq(buffer2);
+	tmp.getSeq(buffer2,m_parameters->getColorSpaceMode(),false);
 	seedExtender->m_receivedString=buffer2;
 	seedExtender->m_sequenceReceived=true;
 }

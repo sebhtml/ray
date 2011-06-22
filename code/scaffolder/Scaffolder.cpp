@@ -1089,7 +1089,7 @@ void Scaffolder::getContigSequence(uint64_t id){
 			m_requestedContigChunk=false;
 		}
 	}else{
-		m_contigSequence=convertToString(&m_contigPath,m_parameters->getWordSize());
+		m_contigSequence=convertToString(&m_contigPath,m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 		m_hasContigSequence=true;
 	}
 }

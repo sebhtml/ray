@@ -224,6 +224,8 @@ void Parameters::parseCommands(){
 			token=m_commands[i];
 			m_singleEndReadsFile.push_back(token);
 
+			fileNameHook(token);
+
 			if(m_rank==MASTER_RANK){
 				cout<<endl;
 				cout<<"-s (single sequences)"<<endl;

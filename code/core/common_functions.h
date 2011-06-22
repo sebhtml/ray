@@ -45,12 +45,12 @@ string reverseComplement(string a,char*rev);
 /*
  * transform a Kmer in a string
  */
-string idToWord(Kmer*i,int wordSize);
+string idToWord(Kmer*i,int wordSize,bool color);
 
 /*
  * transform a encoded nucleotide in a char
  */
-char codeToChar(uint8_t a);
+char codeToChar(uint8_t a,bool color);
 
 /*
  * Encode a char
@@ -65,7 +65,7 @@ bool isValidDNA(char*x);
 /*
  * get the last letter of a uint64_t
  */
-char getLastSymbol(Kmer*i,int w);
+char getLastSymbol(Kmer*i,int w,bool color);
 
 /*
  * complement a vertex, and return another one
@@ -128,7 +128,7 @@ string addLineBreaks(string sequence,int a);
 uint8_t getFirstSegmentFirstCode(Kmer*v,int w);
 uint8_t getSecondSegmentLastCode(Kmer*v,int w);
 
-string convertToString(vector<Kmer>*b,int m_wordSize);
+string convertToString(vector<Kmer>*b,int m_wordSize,bool color);
 
 int vertexRank(Kmer*a,int _size,int w,bool color);
 

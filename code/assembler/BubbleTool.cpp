@@ -31,13 +31,13 @@ void BubbleTool::printStuff(Kmer root,vector<vector<Kmer> >*trees,
 map<Kmer,int>*coverages){
 	int m_wordSize=m_parameters->getWordSize();
 	cout<<"Trees="<<trees->size()<<endl;
-	cout<<"root="<<idToWord(&root,m_wordSize)<<endl;
+	cout<<"root="<<idToWord(&root,m_wordSize,m_parameters->getColorSpaceMode())<<endl;
 	cout<<"digraph{"<<endl;
 	map<Kmer,set<Kmer> > printedEdges;
 	
 	for(map<Kmer ,int>::iterator i=coverages->begin();i!=coverages->end();i++){
 		Kmer kmer=i->first;
-		cout<<idToWord(&kmer,m_wordSize)<<" [label=\""<<idToWord(&kmer,m_wordSize)<<" "<<i->second<<"\"]"<<endl;
+		cout<<idToWord(&kmer,m_wordSize,m_parameters->getColorSpaceMode())<<" [label=\""<<idToWord(&kmer,m_wordSize,m_parameters->getColorSpaceMode())<<" "<<i->second<<"\"]"<<endl;
 	}
 	for(int j=0;j<(int)trees->size();j++){
 		for(int i=0;i<(int)trees->at(j).size();i+=2){
@@ -49,7 +49,7 @@ map<Kmer,int>*coverages){
 			if(printedEdges.count(a)>0 && printedEdges[a].count(b)>0){
 				continue;
 			}
-			cout<<idToWord(&a,m_wordSize)<<" -> "<<idToWord(&b,m_wordSize)<<endl;
+			cout<<idToWord(&a,m_wordSize,m_parameters->getColorSpaceMode())<<" -> "<<idToWord(&b,m_wordSize,m_parameters->getColorSpaceMode())<<endl;
 			printedEdges[a].insert(b);
 		}
 	}
@@ -74,8 +74,8 @@ map<Kmer ,int>*coverages){
 		for(int j=0;j<(int)trees->at(i).size();j+=2){
 			Kmer a=trees->at(i).at(j+0);
 			Kmer b=trees->at(i).at(j+1);
-			string as=idToWord(&a,m_wordSize);
-			string bs=idToWord(&b,m_wordSize);
+			string as=idToWord(&a,m_wordSize,m_parameters->getColorSpaceMode());
+			string bs=idToWord(&b,m_wordSize,m_parameters->getColorSpaceMode());
 			assert(as.substr(1,m_wordSize-1)==bs.substr(0,m_wordSize-1));
 		}
 	}
@@ -104,7 +104,7 @@ map<Kmer ,int>*coverages){
 			Kmer a=trees->at(j).at(i+1);
 			#ifdef ASSERT
 			if(coverages->count(a)==0){
-				cout<<idToWord(&a,m_parameters->getWordSize())<<" has no coverage."<<endl;
+				cout<<idToWord(&a,m_parameters->getWordSize(),m_parameters->getColorSpaceMode())<<" has no coverage."<<endl;
 			}
 			assert(coverages->count(a)>0);
 			#endif
@@ -237,7 +237,7 @@ map<Kmer ,int>*coverages){
 		
 		if(m_parameters->debugBubbles()){
 			cout<<"This is a genuine bubble"<<endl;
-			cout<<"root="<<idToWord(&root,m_wordSize)<<" target="<<idToWord(&target,m_wordSize)<<endl;
+			cout<<"root="<<idToWord(&root,m_wordSize,m_parameters->getColorSpaceMode())<<" target="<<idToWord(&target,m_wordSize,m_parameters->getColorSpaceMode())<<endl;
 		}
 
 		return true;

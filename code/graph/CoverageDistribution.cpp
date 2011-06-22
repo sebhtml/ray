@@ -33,6 +33,9 @@ vector<uint64_t> CoverageDistribution::smoothData(vector<uint64_t>*y){
 	int len=y->size();
 	
 	int window=3;
+	if((int)y->size()<=window){
+		return *y;
+	}
 	int current=0;
 	int first=0;
 	int last=current+window;

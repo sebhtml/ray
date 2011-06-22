@@ -47,7 +47,9 @@ void SequencesLoader::registerSequence(){
 
 	Read*theRead=m_loader.at(m_distribution_sequence_id);
 	char read[4000];
-	theRead->getSeq(read);
+	theRead->getSeq(read,m_parameters->getColorSpaceMode(),false);
+	
+	//cout<<"DEBUG2 Read="<<m_distribution_sequence_id<<" color="<<m_parameters->getColorSpaceMode()<<" Seq= "<<read<<endl;
 
 	Read myRead;
 	myRead.constructor(read,&(*m_persistentAllocator),true);
@@ -167,7 +169,7 @@ bool SequencesLoader::computePartition(int rank,int size,
 				uint64_t iid=m_distribution_currentSequenceId;
 				m_distribution_currentSequenceId++;
 				char seq[4000];
-				m_loader.at(i)->getSeq(seq);
+				m_loader.at(i)->getSeq(seq,m_parameters->getColorSpaceMode(),true);
 				#ifdef ASSERT
 				assert(seq!=NULL);
 				#endif

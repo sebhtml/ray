@@ -97,7 +97,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 				assert(m_theSequenceId<(int)m_myReads->size());
 				#endif
 
-				m_myReads->at(m_theSequenceId)->getSeq(sequence);
+				m_myReads->at(m_theSequenceId)->getSeq(sequence,m_parameters->getColorSpaceMode(),false);
 
 				m_aliveWorkers[m_theSequenceId].constructor(m_theSequenceId,sequence,m_parameters,m_outboxAllocator,m_virtualCommunicator,m_theSequenceId,m_myReads);
 				m_activeWorkers.insert(m_theSequenceId);

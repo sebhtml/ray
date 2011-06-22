@@ -95,7 +95,9 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		}
 	}else{
 		if(m_mode_send_vertices_sequence_id_position==0){
-			(*m_myReads)[(*m_mode_send_vertices_sequence_id)]->getSeq(m_readSequence);
+			(*m_myReads)[(*m_mode_send_vertices_sequence_id)]->getSeq(m_readSequence,m_parameters->getColorSpaceMode(),false);
+		
+			//cout<<"DEBUG Read="<<*m_mode_send_vertices_sequence_id<<" color="<<m_parameters->getColorSpaceMode()<<" Seq= "<<m_readSequence<<endl;
 		}
 		int len=strlen(m_readSequence);
 
