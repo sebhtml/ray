@@ -163,6 +163,7 @@ Fastq format & .fastq\\
 Fastq format, compressed with GNU zip (gzip) & .fastq.gz \\
 Fastq format, compressed with bzip2 & .fastq.bz2 \\
 Standard flowgram format & .sff \\
+Color-space & .csfasta \\
 \hline
 \end{tabular}
 \end{table}
@@ -170,6 +171,11 @@ Standard flowgram format & .sff \\
 Keep in mind that these formats are *just* containers.
 To use 454 mate-pairs in an SFF file, you must extract them
 and provide Ray with the 2 resulting fastq files.
+
+
+Ray assembles color-space reads and generate color-space contigs.
+Files must have the .csfasta extension. Nucleotide reads can not be mixed
+with color-space reads. This is an experimental feature.
 
 
 \section{Parameters}

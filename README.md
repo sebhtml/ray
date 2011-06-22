@@ -72,6 +72,12 @@ To run Ray on paired reads:
 	ls prefix.Scaffolds.fasta
 	ls prefix.*
 
+# Color space
+
+Ray assembles color-space reads and generate color-space contigs.
+Files must have the .csfasta extension. Nucleotide reads can not be mixed
+with color-space reads. This is an experimental feature.
+
 # Publications
 
 http://denovoassembler.sf.net/publications.html
