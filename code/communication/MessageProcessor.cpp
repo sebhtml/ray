@@ -1584,6 +1584,10 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_PATH_LENGTH_REPLY(Message*message){
 /*
 input: Kmer ; index
 output: Kmer ; index ; list
+
+Receives a k-mer and a first index, and returns a message containing 
+the k-mer, the new first index, and a list of path identifiers in the graph.
+
 */
 void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS(Message*message){
 	void*buffer=message->getBuffer();
