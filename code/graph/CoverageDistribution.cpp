@@ -32,7 +32,7 @@ vector<uint64_t> CoverageDistribution::smoothData(vector<uint64_t>*y){
 	vector<uint64_t> output;
 	int len=y->size();
 	
-	int window=3;
+	int window=4;
 	if((int)y->size()<=window){
 		return *y;
 	}
@@ -84,7 +84,7 @@ CoverageDistribution::CoverageDistribution(map<int,uint64_t>*distributionOfCover
 		y.push_back(i->second);
 	}
 	vector<uint64_t> smoothed=smoothData(&y);
-
+	smoothed=smoothData(&smoothed);
 	#ifdef DEBUG_CoverageDistribution
 	for(int current=0;current<(int)x.size();current++){
 		cout<<"AVERAGE\t"<<x.at(current)<<"\t"<<y.at(current)<<"\t"<<smoothed.at(current)<<endl;

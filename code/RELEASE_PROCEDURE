@@ -1,4 +1,4 @@
-* run regression tests
+* run regression tests (+backup on colosse)
 * run unit tests
 * update ChangedLog (based on git log)
 * set ASSERT to no.
