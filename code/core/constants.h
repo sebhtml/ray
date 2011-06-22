@@ -111,10 +111,10 @@ see <http://www.gnu.org/licenses/>
 #define _MINIMUM_COVERAGE 2
 
 /*
- Open-MPI threshold if 4k (4096), and this include Open-MPI's metadata.
+ Open-MPI eager threshold is 4k (4096), and this include Open-MPI's metadata.
  tests show that 4096-100 bytes are sent eagerly, too.
  divide that by eight and you get the number of 64-bit integers 
- allowed in a eager single communication
+ allowed in a single eager communication
 
  * "4096 is rendezvous. For eager, try 4000 or lower. "
  *  --Eugene Loh  (Oracle)
