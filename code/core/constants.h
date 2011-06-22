@@ -96,6 +96,12 @@ see <http://www.gnu.org/licenses/>
 #define RAY_NUCLEOTIDE_G 2 /* ~10 == 01 */
 #define RAY_NUCLEOTIDE_T 3 /* ~11 == 00 */
 
+#define DOUBLE_ENCODING_A_COLOR '0'
+#define DOUBLE_ENCODING_C_COLOR '1'
+#define DOUBLE_ENCODING_G_COLOR '2'
+#define DOUBLE_ENCODING_T_COLOR '3'
+
+
 /* the maximum of processes is utilized to construct unique hyperfusions IDs */
 #define MAX_NUMBER_OF_MPI_PROCESSES 1000000
 #define INVALID_RANK MAX_NUMBER_OF_MPI_PROCESSES

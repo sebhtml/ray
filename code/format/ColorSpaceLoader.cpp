@@ -27,11 +27,6 @@
 #include<string.h>
 using namespace std;
 
-#define _ENCODING_CHAR_A '0'
-#define _ENCODING_CHAR_T '1'
-#define _ENCODING_CHAR_C '2'
-#define _ENCODING_CHAR_G '3'
-
 int ColorSpaceLoader::open(string file){
 	m_f=fopen(file.c_str(),"r");
 	m_size=0;
@@ -64,13 +59,13 @@ void ColorSpaceLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAl
 		if(bufferForLine[0]=='>'){
 			fgets(bufferForLine,4096,m_f);
 			for(int j=0;j<(int)strlen(bufferForLine);j++){
-				if(bufferForLine[j]==_ENCODING_CHAR_A){
+				if(bufferForLine[j]==DOUBLE_ENCODING_A_COLOR){
 					bufferForLine[j]='A';
-				}else if(bufferForLine[j]==_ENCODING_CHAR_T){
+				}else if(bufferForLine[j]==DOUBLE_ENCODING_T_COLOR){
 					bufferForLine[j]='T';
-				}else if(bufferForLine[j]==_ENCODING_CHAR_C){
+				}else if(bufferForLine[j]==DOUBLE_ENCODING_C_COLOR){
 					bufferForLine[j]='C';
-				}else if(bufferForLine[j]==_ENCODING_CHAR_G){
+				}else if(bufferForLine[j]==DOUBLE_ENCODING_G_COLOR){
 					bufferForLine[j]='G';
 				}
 			}

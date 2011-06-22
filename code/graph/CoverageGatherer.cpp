@@ -39,6 +39,13 @@ void CoverageGatherer::work(){
 		#ifdef ASSERT
 		uint64_t n=0;
 		#endif
+		if(m_subgraph->size()==0){
+			(*m_slaveMode)=RAY_SLAVE_MODE_DO_NOTHING;
+			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_COVERAGE_END,
+				m_parameters->getRank());
+			(*m_outbox).push_back(aMessage);
+			return;
+		}
 		GridTableIterator iterator;
 		iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
 		FILE*kmerFile=NULL;
@@ -99,10 +106,10 @@ void CoverageGatherer::work(){
 		}
 			
 		#ifdef ASSERT
-		if(n!=m_subgraph.size()){
-			cout<<"n="<<n<<" size="<<m_subgraph.size()<<endl;
+		if(n!=m_subgraph->size()){
+			cout<<"n="<<n<<" size="<<m_subgraph->size()<<endl;
 		}
-		assert(n==m_subgraph.size());
+		assert(n==m_subgraph->size());
 		#endif
 		m_waiting=false;
 		m_coverageIterator=m_distributionOfCoverage.begin();
@@ -131,8 +138,8 @@ void CoverageGatherer::work(){
 			m_waiting=true;
 		}else{
 			m_distributionOfCoverage.clear();
-			(*m_slaveMode)=RAY_SLAVE_MODE_DO_NOTHING;
 			m_subgraph->buildData(m_parameters);
+			(*m_slaveMode)=RAY_SLAVE_MODE_DO_NOTHING;
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_COVERAGE_END,
 				m_parameters->getRank());
 			(*m_outbox).push_back(aMessage);

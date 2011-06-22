@@ -15,6 +15,7 @@ distribution. Thanks to pmiguel on SEQanswers for providing raw data points.
 * Writting scaffold sequences is now faster.
 * New option: -write-kmers writes k-mers
 * New experimental option: -color-space for .csfasta files.
+* Added an assembler panic when no k-mers are found in reads.
 
 = 1.6.0 =
 2011-06-13

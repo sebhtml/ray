@@ -733,6 +733,15 @@ void Machine::call_RAY_MASTER_MODE_START_EDGES_DISTRIBUTION(){
 }
 
 void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
+	if(m_coverageDistribution.size()==0){
+		cout<<endl;
+		cout<<"Rank 0: Assembler panic: no k-mers found in reads."<<endl;
+		cout<<"Rank 0: Perhaps reads are shorter than the k-mer length (change -k)."<<endl;
+		m_aborted=true;
+		m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+		killRanks();
+		return;
+	}
 	m_numberOfMachinesDoneSendingCoverage=-1;
 	string file=m_parameters.getCoverageDistributionFile();
 	CoverageDistribution distribution(&m_coverageDistribution,&file);
@@ -793,7 +802,9 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 
 	if(m_minimumCoverage > m_peakCoverage || m_peakCoverage==m_parameters.getRepeatCoverage()){
 		killRanks();
-		cout<<"Error: no enrichment observed."<<endl;
+		m_aborted=true;
+		cout<<"Rank 0: Assembler panic: no peak observed in the k-mer coverage distribution."<<endl;
+		cout<<"Rank 0: to deal with the sequencing error rate, try to lower the k-mer length (-k)"<<endl;
 		return;
 	}
 
