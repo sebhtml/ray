@@ -80,6 +80,7 @@ OPTIMIZE = y
 
 # profiling
 GPROF = n
+DEBUG = n
 
 ifeq ($(GPROF),y)
 	OPTIMIZE = n
