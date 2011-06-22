@@ -28,7 +28,7 @@ void f2(){
 	while(samples--){
 		uint64_t second=rand();
 		kmer.setU64(1,second);
-		int rank=vertexRank(&kmer,size,wordSize);
+		int rank=vertexRank(&kmer,size,wordSize,false);
 		counts[rank]++;
 	}
 	vector<int> data;
@@ -65,7 +65,7 @@ void f1(){
 		uint64_t second=rand();
 		kmer.setU64(0,first);
 		kmer.setU64(1,second);
-		int rank=vertexRank(&kmer,size,wordSize);
+		int rank=vertexRank(&kmer,size,wordSize,false);
 		counts[rank]++;
 	}
 	vector<int> data;
