@@ -35,6 +35,9 @@
 using namespace std;
 
 Parameters::Parameters(){
+	m_providedPeakCoverage=false;
+	m_providedRepeatCoverage=false;
+	m_providedMinimumCoverage=false;
 	m_prefix="RayOutput";
 	m_initiated=false;
 	m_showMemoryAllocations=false;
@@ -180,7 +183,17 @@ void Parameters::parseCommands(){
 	set<string> writeKmers;
 	writeKmers.insert("-write-kmers");
 
+	set<string> setMinimumCoverage;
+	set<string> setPeakCoverage;
+	set<string> setRepeatCoverage;
+	setMinimumCoverage.insert("-minimumCoverage");
+	setPeakCoverage.insert("-peakCoverage");
+	setRepeatCoverage.insert("-repeatCoverage");
+
 	vector<set<string> > toAdd;
+	toAdd.push_back(setRepeatCoverage);
+	toAdd.push_back(setPeakCoverage);
+	toAdd.push_back(setMinimumCoverage);
 	toAdd.push_back(singleReadsCommands);
 	toAdd.push_back(pairedReadsCommands);
 	toAdd.push_back(outputAmosCommands);
@@ -448,6 +461,49 @@ void Parameters::parseCommands(){
 			if(items==1){
 				m_reducerPeriod=atoi(m_commands[i+1].c_str());
 			}
+		}else if(setRepeatCoverage.count(token)>0){
+			i++;
+			int items=m_commands.size()-i;
+
+			if(items<1){
+				if(m_rank==MASTER_RANK){
+					cout<<"Error: "<<token<<" needs 1 item, you provided only "<<items<<endl;
+				}
+				m_error=true;
+				return;
+			}
+			token=m_commands[i];
+			m_repeatCoverage=atoi(token.c_str());
+			m_providedRepeatCoverage=true;
+		}else if(setMinimumCoverage.count(token)>0){
+			i++;
+			int items=m_commands.size()-i;
+
+			if(items<1){
+				if(m_rank==MASTER_RANK){
+					cout<<"Error: "<<token<<" needs 1 item, you provided only "<<items<<endl;
+				}
+				m_error=true;
+				return;
+			}
+			token=m_commands[i];
+			m_minimumCoverage=atoi(token.c_str());
+			m_providedMinimumCoverage=true;
+		}else if(setPeakCoverage.count(token)>0){
+			i++;
+			int items=m_commands.size()-i;
+
+			if(items<1){
+				if(m_rank==MASTER_RANK){
+					cout<<"Error: "<<token<<" needs 1 item, you provided only "<<items<<endl;
+				}
+				m_error=true;
+				return;
+			}
+			token=m_commands[i];
+			m_peakCoverage=atoi(token.c_str());
+			m_providedPeakCoverage=true;
+
 		}else if(kmerSetting.count(token)>0){
 			i++;
 			int items=m_commands.size()-i;
@@ -844,11 +900,13 @@ int Parameters::getMaximumAllowedCoverage(){
 }
 
 void Parameters::setPeakCoverage(int a){
-	m_peakCoverage=a;
+	if(!m_providedPeakCoverage)
+		m_peakCoverage=a;
 }
 
 void Parameters::setRepeatCoverage(int a){
-	m_repeatCoverage=a;
+	if(!m_providedRepeatCoverage)
+		m_repeatCoverage=a;
 }
 
 int Parameters::getPeakCoverage(){
@@ -922,7 +980,16 @@ void Parameters::showUsage(){
 	showOptionDescription("Running the profiler increases running times.");
 	cout<<endl;
 	showOption("-color-space","Runs in color-space");
-	showOptionDescription("Needs csfasta files");
+	showOptionDescription("Needs csfasta files. Activated automatically if csfasta files are provided.");
+	cout<<endl;
+	showOption("-minimumCoverage minimumCoverage","Sets manually the minimum coverage.");
+	showOptionDescription("If not provided, it is computed by Ray automatically.");
+	cout<<endl;
+	showOption("-peakCoverage peakCoverage","Sets manually the peak coverage.");
+	showOptionDescription("If not provided, it is computed by Ray automatically.");
+	cout<<endl;
+	showOption("-repeatCoverage repeatCoverage","Sets manually the repeat coverage.");
+	showOptionDescription("If not provided, it is computed by Ray automatically.");
 	cout<<endl;
 	showOption("-debug-bubbles","Debugs bubble code.");
 	showOptionDescription("Bubbles can be due to heterozygous sites or sequencing errors or other (unknown) events");
@@ -1032,7 +1099,8 @@ int Parameters::getMinimumCoverage(){
 }
 
 void Parameters::setMinimumCoverage(int a){
-	m_minimumCoverage=a;
+	if(!m_providedMinimumCoverage)
+		m_minimumCoverage=a;
 }
 
 Kmer Parameters::_complementVertex(Kmer*a){

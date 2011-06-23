@@ -154,9 +154,6 @@ class Machine{
 
 	// coverage distribubtion
 	map<int,uint64_t> m_coverageDistribution;
-	int m_minimumCoverage;
-	int m_peakCoverage;
-	int m_seedCoverage;
 	int m_numberOfMachinesDoneSendingCoverage;
 	
 	string m_VERSION;

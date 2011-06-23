@@ -232,6 +232,23 @@ software. The generated file is PREFIX.AMOS.afg.
 }
 Shows options available.
 
+
+\subsection{-minimumCoverage minimumCoverage}
+
+Sets manually the minimum coverage. 
+If not provided, it is computed by Ray automatically.
+
+\subsection{-peakCoverage peakCoverage}
+
+Sets manually the peak coverage.
+If not provided, it is computed by Ray automatically.
+
+
+\subsection{-repeatCoverage repeatCoverage}
+
+Sets manually the repeat coverage.
+If not provided, it is computed by Ray automatically.
+
 \subsection{$k$-mer length with -k}
 
 Ray builds a distributed catalog of all occuring $k$-mers in the reads and their reverse-complement. $k$ must be greater or equal to 15 and lower or equal to MAXKMERLENGTH (provided at compilation). The $k$-mer length must be an odd number.

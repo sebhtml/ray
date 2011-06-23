@@ -37,6 +37,9 @@ using namespace std;
  *
  */
 class Parameters{
+	bool m_providedPeakCoverage;
+	bool m_providedMinimumCoverage;
+	bool m_providedRepeatCoverage;
 	int*m_slaveMode;
 	int*m_masterMode;
 	bool m_showMemoryUsage;

@@ -91,9 +91,6 @@ class MessageProcessor{
 	int*m_numberOfMachinesDoneSendingEdges;
 	FusionData*m_fusionData;
 	int*m_wordSize;
-	int*m_minimumCoverage;
-	int*m_seedCoverage;
-	int*m_peakCoverage;
 	ArrayOfReads*m_myReads;
 	int size;
 	SequencesIndexer*m_si;
@@ -158,9 +155,6 @@ ExtensionData*ed,
 			int*m_numberOfMachinesDoneSendingEdges,
 			FusionData*m_fusionData,
 			int*m_wordSize,
-			int*m_minimumCoverage,
-			int*m_seedCoverage,
-			int*m_peakCoverage,
 			ArrayOfReads*m_myReads,
 		int size,
 	RingAllocator*m_inboxAllocator,

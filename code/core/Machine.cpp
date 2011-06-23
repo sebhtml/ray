@@ -371,7 +371,7 @@ void Machine::start(){
 
 	m_subgraph.constructor(getRank(),&m_diskAllocator,&m_parameters);
 	
-	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),&m_outbox,&m_outboxAllocator,&m_seedCoverage,&m_slave_mode,&m_parameters,&m_wordSize,&m_subgraph,&m_inbox,&m_virtualCommunicator);
+	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),&m_outbox,&m_outboxAllocator,&m_slave_mode,&m_parameters,&m_wordSize,&m_subgraph,&m_inbox,&m_virtualCommunicator);
 
 	m_alive=true;
 	m_loadSequenceStep=false;
@@ -406,9 +406,6 @@ m_seedingData,
 			&m_numberOfMachinesDoneSendingEdges,
 			m_fusionData,
 			&m_wordSize,
-			&m_minimumCoverage,
-			&m_seedCoverage,
-			&m_peakCoverage,
 			&m_myReads,
 		getSize(),
 	&m_inboxAllocator,
@@ -746,15 +743,15 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	string file=m_parameters.getCoverageDistributionFile();
 	CoverageDistribution distribution(&m_coverageDistribution,&file);
 
-	m_minimumCoverage=distribution.getMinimumCoverage();
-	m_peakCoverage=distribution.getPeakCoverage();
-	int repeatCoverage=distribution.getRepeatCoverage();
+	m_parameters.setMinimumCoverage(distribution.getMinimumCoverage());
+	m_parameters.setPeakCoverage(distribution.getPeakCoverage());
+	m_parameters.setRepeatCoverage(distribution.getRepeatCoverage());
 	printf("\n");
 	fflush(stdout);
 
 	cout<<endl;
-	cout<<"Rank "<<getRank()<<": the minimum coverage is "<<m_minimumCoverage<<endl;
-	cout<<"Rank "<<getRank()<<": the peak coverage is "<<m_peakCoverage<<endl;
+	cout<<"Rank "<<getRank()<<": the minimum coverage is "<<m_parameters.getMinimumCoverage()<<endl;
+	cout<<"Rank "<<getRank()<<": the peak coverage is "<<m_parameters.getPeakCoverage()<<endl;
 
 	if(m_parameters.writeKmers()){
 		cout<<endl;
@@ -775,7 +772,7 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 			verticesWith1Coverage=vertices;
 			lowestCoverage=coverageValue;
 		}
-		if(coverageValue>=m_minimumCoverage){
+		if(coverageValue>=m_parameters.getMinimumCoverage()){
 			genomeKmers+=vertices;
 		}
 		numberOfVertices+=vertices;
@@ -788,9 +785,9 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	ofstream outputFile(g.str().c_str());
 	outputFile<<"k-mer length:\t"<<m_parameters.getWordSize()<<endl;
 	outputFile<<"Lowest coverage observed:\t"<<lowestCoverage<<endl;
-	outputFile<<"MinimumCoverage:\t"<<m_minimumCoverage<<endl;
-	outputFile<<"PeakCoverage:\t"<<m_peakCoverage<<endl;
-	outputFile<<"RepeatCoverage:\t"<<repeatCoverage<<endl;
+	outputFile<<"MinimumCoverage:\t"<<m_parameters.getMinimumCoverage()<<endl;
+	outputFile<<"PeakCoverage:\t"<<m_parameters.getPeakCoverage()<<endl;
+	outputFile<<"RepeatCoverage:\t"<<m_parameters.getRepeatCoverage()<<endl;
 	outputFile<<"Number of k-mers with at least MinimumCoverage:\t"<<genomeKmers<<" k-mers"<<endl;
 	outputFile<<"Estimated genome length:\t"<<genomeKmers/2<<" nucleotides"<<endl;
 	outputFile<<"Percentage of vertices with coverage "<<lowestCoverage<<":\t"<<percentageSeenOnce<<" %"<<endl;
@@ -800,8 +797,9 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 
 	m_coverageDistribution.clear();
 
-	if(m_minimumCoverage > m_peakCoverage || m_peakCoverage==m_parameters.getRepeatCoverage()
-	|| m_peakCoverage==1){
+	if(m_parameters.getMinimumCoverage()> m_parameters.getPeakCoverage()
+	|| m_parameters.getPeakCoverage()==m_parameters.getRepeatCoverage()
+	|| m_parameters.getPeakCoverage()==1){
 		killRanks();
 		m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
 		m_aborted=true;
@@ -812,9 +810,9 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 
 	// see these values to everyone.
 	uint64_t*buffer=(uint64_t*)m_outboxAllocator.allocate(3*sizeof(uint64_t));
-	buffer[0]=m_minimumCoverage;
-	buffer[1]=m_peakCoverage;
-	buffer[2]=repeatCoverage;
+	buffer[0]=m_parameters.getMinimumCoverage();
+	buffer[1]=m_parameters.getPeakCoverage();
+	buffer[2]=m_parameters.getRepeatCoverage();
 	m_numberOfRanksWithCoverageData=0;
 	for(int i=0;i<getSize();i++){
 		Message aMessage(buffer,3,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_SEND_COVERAGE_VALUES,getRank());
@@ -1228,7 +1226,7 @@ void Machine::call_RAY_SLAVE_MODE_EXTENSION(){
 	&m_last_value,&(m_seedingData->m_SEEDING_vertexCoverageRequested),m_wordSize,getSize(),&(m_seedingData->m_SEEDING_vertexCoverageReceived),
 	&(m_seedingData->m_SEEDING_receivedVertexCoverage),&m_repeatedLength,&maxCoverage,&(m_seedingData->m_SEEDING_receivedOutgoingEdges),&m_c,
 	m_bubbleData,
-m_minimumCoverage,&m_oa,&(m_seedingData->m_SEEDING_edgesReceived),&m_slave_mode);
+m_parameters.getMinimumCoverage(),&m_oa,&(m_seedingData->m_SEEDING_edgesReceived),&m_slave_mode);
 }
 
 void Machine::call_RAY_SLAVE_MODE_DELETE_VERTICES(){
@@ -1314,7 +1312,7 @@ void Machine::call_RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION(){
 &(m_seedingData->m_SEEDING_edgesRequested),&(m_seedingData->m_SEEDING_vertexCoverageRequested),&(m_seedingData->m_SEEDING_vertexCoverageReceived),
 	&m_outboxAllocator,getSize(),getRank(),&m_outbox,
 &(m_seedingData->m_SEEDING_receivedVertexCoverage),m_seedingData,
-m_minimumCoverage,&(m_seedingData->m_SEEDING_edgesReceived)
+m_parameters.getMinimumCoverage(),&(m_seedingData->m_SEEDING_edgesReceived)
 )){
 		m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_REDUCE_MEMORY_CONSUMPTION_DONE,getRank());

@@ -183,7 +183,8 @@ void SeedingData::computeSeeds(){
 	}
 }
 
-void SeedingData::constructor(SeedExtender*seedExtender,int rank,int size,StaticVector*outbox,RingAllocator*outboxAllocator,int*seedCoverage,int*mode,
+void SeedingData::constructor(SeedExtender*seedExtender,int rank,int size,StaticVector*outbox,RingAllocator*outboxAllocator,
+int*mode,
 	Parameters*parameters,int*wordSize,GridTable*subgraph,StaticVector*inbox,
 	VirtualCommunicator*vc){
 	m_virtualCommunicator=vc;
@@ -196,7 +197,6 @@ void SeedingData::constructor(SeedExtender*seedExtender,int rank,int size,Static
 	m_maximumWorkers=0;
 	m_flushAllMode=false;
 	m_outboxAllocator=outboxAllocator;
-	m_seedCoverage=seedCoverage;
 	m_mode=mode;
 	m_parameters=parameters;
 	m_wordSize=m_parameters->getWordSize();
