@@ -9,7 +9,7 @@ do
 done
 
 # assemblathon format
-for i in $(ls *.fast*|grep .1.fastq)
+for i in $(ls *.fast*|grep "\.1\.fastq")
 do
 	echo "-p \\"
 	echo "   $(pwd)/$i \\"
