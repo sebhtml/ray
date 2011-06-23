@@ -2091,14 +2091,19 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_CONTIG_CHUNK(Message*message){
 	int position=incoming[1];
 	int index=m_fusionData->m_FUSION_identifier_map[contigId];
 	int length=m_ed->m_EXTENSION_contigs[index].size();
-	int outputPosition=0;
 	uint64_t*messageContent=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	int outputPosition=0;
+	int origin=outputPosition;
+	outputPosition++;
+	int count=0;
 	while(position<length
-	 && outputPosition<(int)(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t))){
+	 && (outputPosition+KMER_U64_ARRAY_SIZE)<(int)(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t))){
 		m_ed->m_EXTENSION_contigs[index][position++].pack(messageContent,&outputPosition);
+		count++;
 	}
-	
-	Message aMessage(messageContent,outputPosition,
+	messageContent[origin]=count;
+	Message aMessage(messageContent,
+		m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_CONTIG_CHUNK),
 		MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY,
 		m_parameters->getRank());
 	m_outbox->push_back(aMessage);

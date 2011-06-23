@@ -1080,12 +1080,13 @@ void Scaffolder::getContigSequence(uint64_t id){
 		}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
 			vector<uint64_t> data=m_virtualCommunicator->getMessageResponseElements(m_workerId);
 			int pos=0;
-			while(pos<(int)data.size()){
+			int count=data[pos++];
+			while(pos<count){
 				Kmer a;
 				a.unpack(&data,&pos);
 				m_contigPath.push_back(a);
-				m_position++;
 			}
+			m_position+=count;
 			m_requestedContigChunk=false;
 		}
 	}else{
