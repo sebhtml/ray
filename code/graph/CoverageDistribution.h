@@ -38,7 +38,7 @@ class CoverageDistribution{
 	int m_peakCoverage;
 	int m_repeatCoverage;
 
-	void findPeak(vector<int>*x,vector<uint64_t>*y);
+	void findPeak(vector<int>*x,vector<uint64_t>*y,vector<uint64_t>*rawValues);
 	vector<uint64_t> smoothData(vector<uint64_t>*a);
 public:
 	CoverageDistribution(map<int,uint64_t>*distributionOfCoverage,string*file);

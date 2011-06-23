@@ -98,7 +98,7 @@ CoverageDistribution::CoverageDistribution(map<int,uint64_t>*distributionOfCover
 	assert(x.size()==smoothed.size());
 	assert(x.size()==y.size());
 	#endif
-	findPeak(&x,&smoothed);
+	findPeak(&x,&smoothed,&y);
 }
 
 int CoverageDistribution::getPeakCoverage(){
@@ -109,7 +109,7 @@ int CoverageDistribution::getMinimumCoverage(){
 	return m_minimumCoverage;
 }
 
-void CoverageDistribution::findPeak(vector<int>*x,vector<uint64_t>*y){
+void CoverageDistribution::findPeak(vector<int>*x,vector<uint64_t>*y,vector<uint64_t>*rawValues){
 	m_minimumCoverage=1;
 	m_peakCoverage=1;
 	m_repeatCoverage=1;
@@ -167,25 +167,25 @@ void CoverageDistribution::findPeak(vector<int>*x,vector<uint64_t>*y){
 			#endif
 		}
 	}
+
+	/* refine the peak */
+	while(peakI-1>=0 && peakI-1<(int)rawValues->size() &&rawValues->at(peakI-1)>rawValues->at(peakI))
+		peakI--;
+
+	while(peakI+1>=0 && peakI+1<(int)rawValues->size() &&rawValues->at(peakI+1)>rawValues->at(peakI))
+		peakI++;
+
 	int minI=peakI;
 	for(int i=0;i<peakI;i++){
 		if(y->at(i)<y->at(minI)){
 			minI=i;
 		}
 	}
-	int maxI=peakI;
-	for(int i=peakI;i<n;i++){
-		if(y->at(i)<y->at(minI)/2){
-			maxI=i;
-			break;
-		}else if(derivatives[i]>0){
-			maxI=i;
-			break;
-		}
-	}
+
+
 	m_peakCoverage=x->at(peakI);
 	m_minimumCoverage=x->at(minI);
-	m_repeatCoverage=x->at(maxI);
+	m_repeatCoverage=2*m_peakCoverage;
 }
 
 int CoverageDistribution::getRepeatCoverage(){
