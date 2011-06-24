@@ -175,7 +175,9 @@ void KmerAcademy::destructor(){
 	uint64_t freed=bytes1+bytes2;
 	freed+=m_allocator.getNumberOfChunks()*m_allocator.getChunkSize();
 	m_allocator.clear();
-	cout<<"Rank "<<m_parameters->getRank()<<": Freeing unused assembler memory: "<<freed/1024<<" KiB freed"<<endl;
+	
+	if(m_parameters->showMemoryUsage())
+		cout<<"Rank "<<m_parameters->getRank()<<": Freeing unused assembler memory: "<<freed/1024<<" KiB freed"<<endl;
 
 	if(m_parameters->showMemoryUsage()){
 		showMemoryUsage(m_parameters->getRank());

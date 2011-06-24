@@ -193,7 +193,7 @@ void Machine::start(){
 
 	m_messagesHandler.barrier();
 
-	m_si.constructor(&m_parameters,&m_outboxAllocator,&m_inbox,&m_outbox,&m_diskAllocator,&m_virtualCommunicator);
+	m_si.constructor(&m_parameters,&m_outboxAllocator,&m_inbox,&m_outbox,&m_virtualCommunicator);
 
 	int maximumNumberOfProcesses=65536;
 	if(getSize()>maximumNumberOfProcesses){

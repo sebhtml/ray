@@ -908,25 +908,13 @@ void MessageProcessor::call_RAY_MPI_TAG_READY_TO_SEED(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 	(*m_mode)=RAY_SLAVE_MODE_START_SEEDING;
-	map<int,map<int,int> > edgesDistribution;
-	
+	if(m_parameters->showMemoryUsage()){
+		int allocatedBytes=m_si->getAllocator()->getNumberOfChunks()*m_si->getAllocator()->getChunkSize();
+		cout<<"Rank "<<m_parameters->getRank()<<": memory usage for  optimal read markers= "<<allocatedBytes/1024<<" KiB"<<endl;
+	}
+
 	#ifdef ASSERT
 	assert(m_subgraph!=NULL);
-	#endif
-
-	int size=0;
-	GridTableIterator seedingIterator;
-	seedingIterator.constructor(m_subgraph,*m_wordSize,m_parameters);
-	while(seedingIterator.hasNext()){
-		size++;
-		Vertex*node=seedingIterator.next();
-		edgesDistribution[node->getIngoingEdges(&(node->m_lowerKey),(*m_wordSize)).size()][node->getOutgoingEdges(&(node->m_lowerKey),(*m_wordSize)).size()]++;
-	}
-	#ifdef ASSERT
-	for(map<int,map<int,int> >::iterator i=edgesDistribution.begin();i!=edgesDistribution.end();++i){
-		for(map<int,int>::iterator j=i->second.begin();j!=i->second.end();++j){
-		}
-	}
 	#endif
 }
 

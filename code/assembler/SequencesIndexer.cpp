@@ -27,6 +27,7 @@
 #include <assembler/Loader.h>
 #include <core/common_functions.h>
 #include <communication/Message.h>
+#include <memory/malloc_types.h>
 
 void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 				RingAllocator*m_outboxAllocator,
@@ -141,10 +142,13 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 	}
 }
 
-void SequencesIndexer::constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,MyAllocator*allocator,VirtualCommunicator*vc){
-	m_allocator=allocator;
-	m_initiatedIterator=false;
+void SequencesIndexer::constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,VirtualCommunicator*vc){
 	m_parameters=parameters;
+	int chunkSize=16777216; // 16 MiB
+	m_allocator.constructor(chunkSize,RAY_MALLOC_TYPE_OPTIMAL_READ_MARKERS,
+		m_parameters->showMemoryAllocations());
+
+	m_initiatedIterator=false;
 	m_rank=parameters->getRank();
 	m_size=parameters->getSize();
 	m_pendingMessages=0;
@@ -160,7 +164,7 @@ void SequencesIndexer::setReadiness(){
 }
 
 MyAllocator*SequencesIndexer::getAllocator(){
-	return m_allocator;
+	return &m_allocator;
 }
 
 void SequencesIndexer::updateStates(){

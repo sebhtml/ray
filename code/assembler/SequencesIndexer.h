@@ -44,7 +44,7 @@ class SequencesIndexer{
 	int m_rank;
 	int m_size;
 	Parameters*m_parameters;
-	MyAllocator*m_allocator;
+	MyAllocator m_allocator;
 	int m_pendingMessages;
 	int m_completedJobs;
 	int m_maximumAliveWorkers;
@@ -76,7 +76,7 @@ ArrayOfReads*m_myReads,
 );
 
 	void constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,
-	MyAllocator*allocator,VirtualCommunicator*vc);
+	VirtualCommunicator*vc);
 	void setReadiness();
 	MyAllocator*getAllocator();
 };
