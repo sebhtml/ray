@@ -22,20 +22,13 @@ License: GPL
 int valid(char*a){
 	int i=0;
 	int l=strlen(a);
-	while(i++<l){
+	while(i<l){
 		char b=a[i];
-		switch(b){
-			case 'A':
-				continue;
-			case 'T':
-				continue;
-			case 'C':
-				continue;
-			case 'G':
-				continue;
-			default:
-				return 0;
+		i++;
+		if(b=='A'||b=='T'||b=='C'||b=='G'){
+			continue;
 		}
+		return 0;
 	}
 	return 1;
 }
@@ -71,7 +64,7 @@ int main(int argc,char**argv){
 	FILE*fout1=fopen(fastq1,"w");
 	FILE*fout2=fopen(fastq2,"w");
 
-	int qseqNumberOfColumns=10; /* change me */
+	int qseqNumberOfColumns=11+1; /* change me */
 	
 	int qseqSequenceColumn=9;
 
@@ -89,7 +82,6 @@ int main(int argc,char**argv){
 			fscanf(fp2,"%s",sequence2);
 		while(i++<qseqNumberOfColumns)
 			fscanf(fp2,"%s",trash);
-		
 		
 		if(!valid(sequence1))
 			continue;
