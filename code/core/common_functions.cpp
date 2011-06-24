@@ -186,7 +186,7 @@ void showMemoryUsage(int rank){
 		if(key=="VmData:"){
 			uint64_t count;
 			f>>count;
-			cout<<"Rank "<<rank<<": VmData= "<<count<<" KiB"<<endl;
+			cout<<"Rank "<<rank<<": assembler memory usage: "<<count<<" KiB"<<endl;
 			cout.flush();
 			break;
 		}

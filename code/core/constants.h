@@ -108,7 +108,6 @@ see <http://www.gnu.org/licenses/>
 
 #define MAX_VERTICES_TO_VISIT 500
 #define TIP_LIMIT 40
-#define _MINIMUM_COVERAGE 2
 
 /*
  Open-MPI eager threshold is 4k (4096), and this include Open-MPI's metadata.

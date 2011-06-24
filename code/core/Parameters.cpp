@@ -998,7 +998,7 @@ void Parameters::showUsage(){
 	showOptionDescription("Seeds are paths in the graph that are likely unique.");
 	cout<<endl;
 	showOption("-show-memory-usage","Shows memory usage. Data is fetched from /proc on GNU/Linux");
-	showOptionDescription("Needs __linux__; Lines with string 'VmData' are outputted");
+	showOptionDescription("Needs __linux__");
 	cout<<endl;
 	showOption("-show-ending-context","Shows the ending context of each extension.");
 	showOptionDescription("Shows the children of the vertex where extension was too difficult.");
@@ -1169,4 +1169,8 @@ void Parameters::fileNameHook(string fileName){
 		}
 		m_colorSpaceMode=true;
 	}
+}
+
+int Parameters::getMinimumCoverageToStore(){
+	return 2;
 }

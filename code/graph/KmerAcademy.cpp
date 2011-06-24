@@ -41,8 +41,8 @@ void KmerAcademy::constructor(int rank,Parameters*parameters){
 	m_gridSize=4194304;
 	m_frozen=false;
 	int bytes1=m_gridSize*sizeof(KmerCandidate*);
-	m_gridData=(KmerCandidate**)__Malloc(bytes1,RAY_MALLOC_TYPE_KMER_ACADEMY,m_parameters->showMemoryAllocations());
 	int bytes2=m_gridSize*sizeof(uint16_t);
+	m_gridData=(KmerCandidate**)__Malloc(bytes1,RAY_MALLOC_TYPE_KMER_ACADEMY,m_parameters->showMemoryAllocations());
 	m_gridSizes=(uint16_t*)__Malloc(bytes2,RAY_MALLOC_TYPE_KMER_ACADEMY,m_parameters->showMemoryAllocations());
 
 	if(m_parameters->showMemoryUsage()){
@@ -163,3 +163,21 @@ void KmerAcademy::freeze(){
 	m_frozen=true;
 }
 
+void KmerAcademy::destructor(){
+	if(m_parameters->showMemoryUsage()){
+		showMemoryUsage(m_parameters->getRank());
+	}
+
+	int bytes1=m_gridSize*sizeof(KmerCandidate*);
+	int bytes2=m_gridSize*sizeof(uint16_t);
+	__Free(m_gridData,RAY_MALLOC_TYPE_KMER_ACADEMY,m_parameters->showMemoryAllocations());
+	__Free(m_gridSizes,RAY_MALLOC_TYPE_KMER_ACADEMY,m_parameters->showMemoryAllocations());
+	uint64_t freed=bytes1+bytes2;
+	freed+=m_allocator.getNumberOfChunks()*m_allocator.getChunkSize();
+	m_allocator.clear();
+	cout<<"Rank "<<m_parameters->getRank()<<": Freeing unused assembler memory: "<<freed/1024<<" KiB freed"<<endl;
+
+	if(m_parameters->showMemoryUsage()){
+		showMemoryUsage(m_parameters->getRank());
+	}
+}

@@ -186,6 +186,10 @@ void CoverageDistribution::findPeak(vector<int>*x,vector<uint64_t>*y,vector<uint
 	m_peakCoverage=x->at(peakI);
 	m_minimumCoverage=x->at(minI);
 	m_repeatCoverage=2*m_peakCoverage;
+	int diff=m_peakCoverage-m_minimumCoverage;
+	int candidate=m_peakCoverage+diff;
+	if(candidate<m_repeatCoverage)
+		m_repeatCoverage=candidate;
 }
 
 int CoverageDistribution::getRepeatCoverage(){

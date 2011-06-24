@@ -288,14 +288,14 @@ void Scaffolder::solve(){
 }
 
 void Scaffolder::printFinalMessage(){
-	cout<<"Number of contigs:\t"<<m_numberOfContigs<<endl;
-	cout<<"Total length of contigs:\t"<<m_totalContigLength<<endl;
-	cout<<"Number of contigs >= "<<m_parameters->getLargeContigThreshold()<<" nt:\t"<<m_numberOfContigsWithAtLeastThreshold<<endl;
-	cout<<"Total length of contigs >= "<<m_parameters->getLargeContigThreshold()<<" nt:\t"<<m_totalContigLengthWithThreshold<<endl;
-	cout<<"Number of scaffolds:\t"<<m_numberOfScaffolds<<endl;
-	cout<<"Total length of scaffolds:\t"<<m_totalScaffoldLength<<endl;
-	cout<<"Number of scaffolds >= "<<m_parameters->getLargeContigThreshold()<<" nt:\t"<<m_numberOfScaffoldsWithThreshold<<endl;
-	cout<<"Total length of scaffolds >= "<<m_parameters->getLargeContigThreshold()<<":\t"<<m_totalScaffoldLengthWithThreshold<<endl;
+	cout<<"Number of contigs: "<<m_numberOfContigs<<endl;
+	cout<<"Total length of contigs: "<<m_totalContigLength<<endl;
+	cout<<"Number of contigs >= "<<m_parameters->getLargeContigThreshold()<<" nt: "<<m_numberOfContigsWithAtLeastThreshold<<endl;
+	cout<<"Total length of contigs >= "<<m_parameters->getLargeContigThreshold()<<" nt: "<<m_totalContigLengthWithThreshold<<endl;
+	cout<<"Number of scaffolds: "<<m_numberOfScaffolds<<endl;
+	cout<<"Total length of scaffolds: "<<m_totalScaffoldLength<<endl;
+	cout<<"Number of scaffolds >= "<<m_parameters->getLargeContigThreshold()<<" nt: "<<m_numberOfScaffoldsWithThreshold<<endl;
+	cout<<"Total length of scaffolds >= "<<m_parameters->getLargeContigThreshold()<<": "<<m_totalScaffoldLengthWithThreshold<<endl;
 }
 
 void Scaffolder::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
@@ -716,6 +716,7 @@ void Scaffolder::processAnnotation(){
 	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
 		vector<uint64_t> response=m_virtualCommunicator->getMessageResponseElements(m_workerId);
 		m_pairedForwardMarkerCoverage=response[0];
+
 		m_pairedForwardHasDirection=response[1];
 		m_pairedForwardDirectionName=response[2];
 		m_pairedForwardDirectionPosition=response[3];

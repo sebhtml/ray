@@ -372,14 +372,13 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT(Message*message
 		int bufferPosition=i;
 		vertex.unpack(incoming,&bufferPosition);
 		Vertex*node=m_subgraph->find(&vertex);
-		#ifdef ASSERT
 		if(node==NULL){
-			cout<<__func__<<" does not exist: "<<idToWord(&vertex,*m_wordSize,m_parameters->getColorSpaceMode())<<endl;
+			outgoingMessage[i]=0;
+			outgoingMessage[i+1]=1;
+		}else{
+			outgoingMessage[i]=node->getEdges(&vertex);
+			outgoingMessage[i+1]=node->getCoverage(&vertex);
 		}
-		assert(node!=NULL);
-		#endif
-		outgoingMessage[i]=node->getEdges(&vertex);
-		outgoingMessage[i+1]=node->getCoverage(&vertex);
 	}
 	
 	Message aMessage(outgoingMessage,count,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY,rank);
@@ -666,6 +665,17 @@ void MessageProcessor::call_RAY_MPI_TAG_WELCOME(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message){
+	m_subgraph->getKmerAcademy()->destructor();
+	m_subgraph->freeze();
+
+	printf("Rank %i has %i vertices (completed)\n",rank,(int)m_subgraph->size());
+	fflush(stdout);
+
+	if(m_parameters->showMemoryUsage()){
+		showMemoryUsage(rank);
+		fflush(stdout);
+	}
+
 	(*m_mode)=RAY_SLAVE_MODE_INDEX_SEQUENCES;
 }
 
@@ -701,6 +711,14 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 				showMemoryUsage(rank);
 			}
 		}
+		
+		KmerCandidate*candidate=m_subgraph->getKmerAcademy()->find(&l);
+		#ifdef ASSERT
+		assert(candidate!=NULL);
+		#endif
+
+		if(candidate->m_count<m_parameters->getMinimumCoverageToStore())
+			continue;
 
 		Vertex*tmp=m_subgraph->insert(&l);
 		#ifdef ASSERT
@@ -758,12 +776,9 @@ void MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA(Message*message){
 
 		Vertex*node=m_subgraph->find(&prefix);
 
-		#ifdef ASSERT
 		if(node==NULL){
-			cout<<"Rank="<<rank<<" "<<__func__<<" "<<idToWord(&prefix,(*m_wordSize),m_parameters->getColorSpaceMode())<<" does not exist"<<endl;
+			continue; /* NULL because coverage is too low */
 		}
-		assert(node!=NULL);
-		#endif
 
 		node->addOutgoingEdge(&prefix,&suffix,(*m_wordSize));
 	}
@@ -795,9 +810,9 @@ void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){
 
 		Vertex*node=m_subgraph->find(&suffix);
 
-		#ifdef ASSERT
-		assert(node!=NULL);
-		#endif
+		if(node==NULL){
+			continue;
+		}
 
 		node->addIngoingEdge(&suffix,&prefix,(*m_wordSize));
 
@@ -819,10 +834,6 @@ void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION(Message*message){
-	#ifdef ASSERT
-	m_kmerAcademyBuilder->assertBuffersAreEmpty();
-	#endif
-
 	// freeze the forest. icy winter ahead.
 	m_subgraph->freezeAcademy();
 	int source=message->getSource();
@@ -962,13 +973,10 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message)
 
 		string kmerStr=idToWord(&vertex,m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 		Vertex*node=m_subgraph->find(&vertex);
-		#ifdef ASSERT
-		if(node==NULL){
-			cout<<"Rank="<<rank<<" "<<__func__<<" "<<idToWord(&vertex,(*m_wordSize),m_parameters->getColorSpaceMode())<<" does not exist"<<endl;
+		int coverage=1;
+		if(node!=NULL){
+			coverage=node->getCoverage(&vertex);
 		}
-		assert(node!=NULL);
-		#endif
-		uint64_t coverage=node->getCoverage(&vertex);
 		message2[i]=coverage;
 	}
 	Message aMessage(message2,count,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY,rank);
@@ -993,7 +1001,10 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES(Message*me
 		Kmer vertex;
 		int bufferPosition=i;
 		vertex.unpack(incoming,&bufferPosition);
-		vector<Kmer> outgoingEdges=m_subgraph->find(&vertex)->getOutgoingEdges(&vertex,*m_wordSize);
+		Vertex*node=m_subgraph->find(&vertex);
+		vector<Kmer> outgoingEdges;
+		if(node!=NULL)
+			outgoingEdges=node->getOutgoingEdges(&vertex,*m_wordSize);
 		int outputPosition=(1+4*KMER_U64_ARRAY_SIZE)*i;
 		message2[outputPosition++]=outgoingEdges.size();
 		for(int j=0;j<(int)outgoingEdges.size();j++){
@@ -1544,8 +1555,12 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION(Message*messa
 		int pos=i;
 		vertex.unpack(incoming,&pos);
 		Vertex*node=m_subgraph->find(&vertex);
-		int coverage=node->getCoverage(&vertex);
-		vector<Direction> paths=m_subgraph->getDirections(&vertex);
+		int coverage=1;
+		vector<Direction> paths;
+		if(node!=NULL){
+			paths=m_subgraph->getDirections(&vertex);
+			coverage=node->getCoverage(&vertex);
+		}
 		message2[i*4+0]=coverage;
 		message2[i*4+1]=(paths.size()==1);
 		if(paths.size()==1){
@@ -2007,9 +2022,9 @@ void MessageProcessor::call_RAY_MPI_TAG_KMER_ACADEMY_DATA(Message*message){
 		int pos=i;
 		l.unpack(incoming,&pos);
 
-		if((*m_last_value)!=(int)m_subgraph->size() && (int)m_subgraph->size()%100000==0){
-			(*m_last_value)=m_subgraph->size();
-			printf("Rank %i has %i k-mers\n",rank,(int)m_subgraph->size());
+		if((*m_last_value)!=(int)m_subgraph->getKmerAcademy()->size() && (int)m_subgraph->getKmerAcademy()->size()%100000==0){
+			(*m_last_value)=m_subgraph->getKmerAcademy()->size();
+			printf("Rank %i has %i k-mers\n",rank,(int)m_subgraph->getKmerAcademy()->size());
 			fflush(stdout);
 
 			if(m_parameters->showMemoryUsage()){
@@ -2025,7 +2040,8 @@ void MessageProcessor::call_RAY_MPI_TAG_KMER_ACADEMY_DATA(Message*message){
 			tmp->m_count=0;
 		}
 		uint8_t oldValue=tmp->m_count;
-		tmp->m_count++;
+		if(tmp->m_lowerKey==l)
+			tmp->m_count++;
 		if(tmp->m_count<oldValue)
 			tmp->m_count=oldValue; /* avoids overflow */
 	}

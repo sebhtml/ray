@@ -180,6 +180,7 @@ public:
 	void setRepeatCoverage(int a);
 	bool showMemoryAllocations();
 	bool writeKmers();
+	int getMinimumCoverageToStore();
 };
 
 #endif

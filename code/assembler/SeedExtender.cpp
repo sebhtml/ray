@@ -108,10 +108,6 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 	currentVertex,theRank,vertexCoverageRequested,wordSize,size,seeds);
 		}
 	}else if(ed->m_EXTENSION_vertexIsAssembledResult && ed->m_EXTENSION_currentPosition==0 && ed->m_EXTENSION_complementedSeed==false){
-		printf("Rank %i skips a seed, length is %i [%i/%i]\n",theRank,
-			(int)ed->m_EXTENSION_currentSeed.size(),
-			ed->m_EXTENSION_currentSeedIndex,(int)(*seeds).size());
-
 		ed->m_EXTENSION_currentSeedIndex++;// skip the current one.
 		ed->m_EXTENSION_currentPosition=0;
 
@@ -190,7 +186,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				assert((*receivedVertexCoverage)<=m_parameters->getMaximumAllowedCoverage());
 				#endif
 				int coverageValue=*receivedVertexCoverage;
-				if(coverageValue>1){
+				if(coverageValue>=m_parameters->getMinimumCoverageToStore()){
 					ed->m_EXTENSION_coverages->push_back((*receivedVertexCoverage));
 					ed->m_enumerateChoices_outgoingEdges.push_back(kmer);
 				}
@@ -264,6 +260,9 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 
 	// if there is only one choice and reads supporting it
 	if(ed->m_enumerateChoices_outgoingEdges.size()==1&&ed->m_EXTENSION_readsInRange->size()>0){
+		#ifdef ASSERT
+		assert(ed->m_EXTENSION_coverages->at(0)>=m_parameters->getMinimumCoverageToStore());
+		#endif
 		(*currentVertex)=ed->m_enumerateChoices_outgoingEdges[0]; 
 		ed->m_EXTENSION_choose=true; 
 		ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false; 

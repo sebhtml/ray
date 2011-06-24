@@ -57,6 +57,7 @@ public:
 	int getNumberOfElementsInBin(int bin);
 	int getNumberOfBins();
 	void freeze();
+	void destructor();
 };
 
 #endif
