@@ -179,7 +179,7 @@ obj-y += code/cryptography/crypto.o
 
 #graph
 obj-y += code/graph/GridTable.o code/graph/VertexTable.o code/graph/GridTableIterator.o code/graph/CoverageDistribution.o 
-obj-y += code/graph/CoverageGatherer.o
+obj-y += code/graph/CoverageGatherer.o code/graph/KmerAcademy.o code/graph/KmerAcademyIterator.o
 
 #structures
 obj-y += code/structures/VertexData.o code/structures/Kmer.o code/structures/MyForestIterator.o code/structures/MyForest.o \
@@ -200,6 +200,7 @@ code/assembler/OpenAssemblerChooser.o code/assembler/SeedExtender.o code/assembl
 code/assembler/SequencesLoader.o \
 code/assembler/TimePrinter.o code/assembler/TipWatchdog.o code/assembler/VerticesExtractor.o \
 code/assembler/ray_main.o code/assembler/ExtensionData.o 
+obj-y += code/assembler/KmerAcademyBuilder.o
 
 # inference rule
 %.o: %.cpp

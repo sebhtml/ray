@@ -54,6 +54,8 @@ class MessageProcessor;
 typedef void (MessageProcessor::*FNMETHOD) (Message*message);
 
 class MessageProcessor{
+	int m_kmerAcademyFinishedRanks;
+
 	VirtualCommunicator*m_virtualCommunicator;
 	Scaffolder*m_scaffolder;
 	int m_count;

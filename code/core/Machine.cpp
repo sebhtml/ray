@@ -84,6 +84,7 @@ Machine::Machine(int argc,char**argv){
 }
 
 void Machine::start(){
+	m_initialisedAcademy=false;
 	m_coverageInitialised=false;
 	m_timePrinter.constructor();
 
@@ -721,7 +722,6 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION(){
 		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_START_VERTICES_DISTRIBUTION,getRank());
 		m_outbox.push_back(aMessage);
 	}
-	m_messageSentForVerticesDistribution=true;
 	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
 }
 
@@ -821,9 +821,43 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
 }
 
+void Machine::call_RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING(){
+	(m_numberOfMachinesDoneSendingVertices)=0;
+	m_timePrinter.printElapsedTime("Coverage distribution analysis");
+	cout<<endl;
+
+	cout<<endl;
+	for(int i=0;i<getSize();i++){
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_BUILD_GRAPH,getRank());
+		m_outbox.push_back(aMessage);
+	}
+	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+}
+
 void Machine::call_RAY_MASTER_MODE_DO_NOTHING(){}
 
 void Machine::call_RAY_SLAVE_MODE_DO_NOTHING(){}
+
+void Machine::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(){
+	if(!m_initialisedAcademy){
+		m_kmerAcademyBuilder.constructor(m_size,&m_parameters);
+		(m_mode_send_vertices_sequence_id)=0;
+		m_initialisedAcademy=true;
+	}
+	m_kmerAcademyBuilder.process(		&m_mode_send_vertices_sequence_id,
+			&m_myReads,
+			&m_reverseComplementVertex,
+			getRank(),
+			&m_outbox,
+			&m_inbox,
+			&m_mode_send_vertices,
+			m_wordSize,
+			getSize(),
+			&m_outboxAllocator,
+			&m_slave_mode
+		);
+
+}
 
 void Machine::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 	m_verticesExtractor.process(		&m_mode_send_vertices_sequence_id,
@@ -842,7 +876,7 @@ void Machine::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 void Machine::call_RAY_MASTER_MODE_TRIGGER_INDEXING(){
 	m_numberOfMachinesDoneSendingEdges=-9;
 	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
-	m_timePrinter.printElapsedTime("Coverage distribution analysis");
+	m_timePrinter.printElapsedTime("Graph construction");
 	cout<<endl;
 
 	cout<<endl;
@@ -864,31 +898,18 @@ void Machine::call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS(){
 
 void Machine::call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS(){
 	if(!m_coverageInitialised){
-		m_timePrinter.printElapsedTime("Graph construction");
+		m_timePrinter.printElapsedTime("K-mer counting");
 		cout<<endl;
 		m_coverageInitialised=true;
 		m_coverageRank=0;
 	}
 
-	if(m_parameters.writeKmers()){
-		if(m_coverageRank==m_numberOfMachinesDoneSendingCoverage){
-			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG,m_coverageRank,
-				RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION,getRank());
-			m_outbox.push_back(aMessage);
-			m_coverageRank++;
-		}
-
-		if(m_coverageRank==m_parameters.getSize())
-			m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
-	}else{
-		for(m_coverageRank=0;m_coverageRank<m_parameters.getSize();m_coverageRank++){
-			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG,m_coverageRank,
-				RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION,getRank());
-			m_outbox.push_back(aMessage);
-		}
-		m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+	for(m_coverageRank=0;m_coverageRank<m_parameters.getSize();m_coverageRank++){
+		Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG,m_coverageRank,
+			RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION,getRank());
+		m_outbox.push_back(aMessage);
 	}
-
+	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
 }
 
 void Machine::call_RAY_MASTER_MODE_PREPARE_SEEDING(){

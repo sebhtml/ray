@@ -520,6 +520,12 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY(Message*aMessa
 	}
 }
 
+void MessageProcessor::call_RAY_MPI_TAG_BUILD_GRAPH(Message*message){
+	m_verticesExtractor->constructor(m_parameters->getSize(),m_parameters);
+	*m_mode_send_vertices_sequence_id=0;
+	*m_mode=RAY_SLAVE_MODE_EXTRACT_VERTICES;
+}
+
 void MessageProcessor::call_RAY_MPI_TAG_RESUME_VERTEX_DISTRIBUTION(Message*message){
 	if(m_parameters->runReducer()){
 		m_verticesExtractor->updateThreshold(m_subgraph);
@@ -723,14 +729,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DISTRIBUTED(Message*message){
 	(*m_numberOfMachinesDoneSendingVertices)++;
 	if((*m_numberOfMachinesDoneSendingVertices)==size){
 		m_verticesExtractor->setDistributionAsCompleted();
-		if(m_parameters->runReducer()){
-			for(int i=0;i<size;i++){
-				Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_MUST_RUN_REDUCER_FROM_MASTER,rank);
-				m_outbox->push_back(aMessage);
-			}
-		}else{
-			(*m_master_mode)=RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS;
-		}
+		(*m_master_mode)=RAY_MASTER_MODE_TRIGGER_INDEXING;
 	}
 }
 
@@ -774,16 +773,7 @@ void MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_START_VERTICES_DISTRIBUTION(Message*message){
-	// wait for everyone
-	m_messagesHandler->barrier();
-	(*m_mode_send_vertices)=true;
-	(*m_mode)=RAY_SLAVE_MODE_EXTRACT_VERTICES;
-	m_verticesExtractor->constructor(size,m_parameters);
-	if(m_parameters->runReducer()){
-		m_verticesExtractor->enableReducer();
-	}
-
-	(*m_mode_send_vertices_sequence_id)=0;
+	(*m_mode)=RAY_SLAVE_MODE_BUILD_KMER_ACADEMY;
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA_REPLY(Message*message){
@@ -830,16 +820,11 @@ void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION(Message*message){
 	#ifdef ASSERT
-	m_verticesExtractor->assertBuffersAreEmpty();
+	m_kmerAcademyBuilder->assertBuffersAreEmpty();
 	#endif
 
-	if(m_parameters->runReducer()){
-		m_verticesExtractor->updateThreshold(m_subgraph);
-		printf("Rank %i: %lu -> %lu\n",rank,m_lastSize,m_subgraph->size());
-	}
-
 	// freeze the forest. icy winter ahead.
-	m_subgraph->freeze();
+	m_subgraph->freezeAcademy();
 	int source=message->getSource();
 
 	Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, source, RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER,rank);
@@ -854,7 +839,7 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER(Mes
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message){
-	printf("Rank %i has %i vertices (completed)\n",rank,(int)m_subgraph->size());
+	printf("Rank %i has %i k-mers (completed)\n",rank,(int)m_subgraph->getKmerAcademy()->size());
 	fflush(stdout);
 
 	if(m_parameters->showMemoryUsage()){
@@ -2012,10 +1997,56 @@ void MessageProcessor::call_RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION(Message*messa
 	}
 }
 
+void MessageProcessor::call_RAY_MPI_TAG_KMER_ACADEMY_DATA(Message*message){
+	void*buffer=message->getBuffer();
+	int count=message->getCount();
+	uint64_t*incoming=(uint64_t*)buffer;
+
+	for(int i=0;i<count;i+=KMER_U64_ARRAY_SIZE){
+		Kmer l;
+		int pos=i;
+		l.unpack(incoming,&pos);
+
+		if((*m_last_value)!=(int)m_subgraph->size() && (int)m_subgraph->size()%100000==0){
+			(*m_last_value)=m_subgraph->size();
+			printf("Rank %i has %i k-mers\n",rank,(int)m_subgraph->size());
+			fflush(stdout);
+
+			if(m_parameters->showMemoryUsage()){
+				showMemoryUsage(rank);
+			}
+		}
+
+		KmerCandidate*tmp=m_subgraph->insertInAcademy(&l);
+		#ifdef ASSERT
+		assert(tmp!=NULL);
+		#endif
+		if(m_subgraph->insertedInAcademy()){
+			tmp->m_count=0;
+		}
+		uint8_t oldValue=tmp->m_count;
+		tmp->m_count++;
+		if(tmp->m_count<oldValue)
+			tmp->m_count=oldValue; /* avoids overflow */
+	}
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_KMER_ACADEMY_DATA_REPLY,rank);
+	m_outbox->push_back(aMessage);
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_KMER_ACADEMY_DATA_REPLY(Message*message){
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED(Message*message){
+	m_kmerAcademyFinishedRanks++;
+	if(m_kmerAcademyFinishedRanks==m_parameters->getSize()){
+		(*m_master_mode)=RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS;
+	}
+}
+
 void MessageProcessor::call_RAY_MPI_TAG_SEND_COVERAGE_VALUES_REPLY(Message*message){
 	(*m_numberOfRanksWithCoverageData)++;
 	if((*m_numberOfRanksWithCoverageData)==size){
-		(*m_master_mode)=RAY_MASTER_MODE_TRIGGER_INDEXING;
+		(*m_master_mode)=RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING;
 	}
 }
 
@@ -2221,6 +2252,7 @@ SequencesIndexer*m_si){
 	this->m_isFinalFusion=m_isFinalFusion;
 	this->m_ready=m_ready;
 	m_seedingData=seedingData;
+	m_kmerAcademyFinishedRanks=0;
 }
 
 MessageProcessor::MessageProcessor(){

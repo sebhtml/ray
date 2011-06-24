@@ -57,6 +57,7 @@
 #include <format/Amos.h>
 #include <set>
 #include <time.h>
+#include <assembler/KmerAcademyBuilder.h>
 
 using namespace std;
 
@@ -67,6 +68,8 @@ class Machine;
 typedef void (Machine::*MachineMethod) ();
 
 class Machine{
+	KmerAcademyBuilder m_kmerAcademyBuilder;
+	bool m_initialisedAcademy;
 	CoverageGatherer m_coverageGatherer;
 	bool m_coverageInitialised;
 	int m_coverageRank;

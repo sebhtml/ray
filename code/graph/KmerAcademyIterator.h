@@ -19,32 +19,27 @@
 
 */
 
-#ifndef _CoverageGatherer_H
-#define _CoverageGatherer_H
+#ifndef _KmerAcademyIterator
+#define _KmerAcademyIterator
 
 #include <core/Parameters.h>
-#include <structures/StaticVector.h>
-#include <graph/GridTable.h>
-#include <stdint.h>
-#include <map>
-#include <memory/RingAllocator.h>
-using namespace std;
+#include <core/common_functions.h>
+#include <graph/KmerAcademy.h>
 
-class CoverageGatherer{
-	map<int,uint64_t> m_distributionOfCoverage;
-	map<int,uint64_t>::iterator m_coverageIterator;
-	bool m_waiting;
+class KmerAcademyIterator{
+	KmerAcademy*m_table;
+	bool m_lowerKeyIsDone;
+	Kmer m_currentKey;
+	int m_wordSize;
+	int m_currentBin;
+	int m_currentPosition;
+	void getNext();
 	Parameters*m_parameters;
-	StaticVector*m_inbox;
-	StaticVector*m_outbox;
-	int*m_slaveMode;
-	GridTable*m_subgraph;
-	RingAllocator*m_outboxAllocator;
 public:
-	void constructor(Parameters*parameters,StaticVector*inbox,StaticVector*outbox,int*slaveMode,
-		GridTable*subgraph,RingAllocator*outboxAllocator);
-	void work();
-	void writeKmers();
+	void constructor(KmerAcademy*a,int wordSize,Parameters*b);
+	bool hasNext();
+	KmerCandidate*next();
+	Kmer*getKey();
 };
 
 #endif

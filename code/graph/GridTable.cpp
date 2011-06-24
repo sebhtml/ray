@@ -30,6 +30,7 @@
 
 void GridTable::constructor(int rank,MyAllocator*allocator,Parameters*parameters){
 	m_parameters=parameters;
+	m_kmerAcademy.constructor(rank,m_parameters);
 	m_gridAllocatorOnDisk=allocator;
 	m_size=0;
 	m_inserted=false;
@@ -69,6 +70,10 @@ Vertex*GridTable::find(Kmer*key){
 	return NULL;
 }
 
+KmerCandidate*GridTable::insertInAcademy(Kmer*key){
+	return m_kmerAcademy.insert(key);
+}
+
 Vertex*GridTable::insert(Kmer*key){
 	Kmer lowerKey;
 	m_inserted=false;
@@ -101,6 +106,10 @@ Vertex*GridTable::insert(Kmer*key){
 	m_inserted=true;
 	m_size+=2;
 	return move(bin,m_gridSizes[bin]-1);
+}
+
+bool GridTable::insertedInAcademy(){
+	return m_kmerAcademy.inserted();
 }
 
 bool GridTable::inserted(){
@@ -208,4 +217,12 @@ void GridTable::clearDirections(Kmer*a){
 
 void GridTable::buildData(Parameters*a){
 	m_vertexTable.constructor(m_rank,m_gridAllocatorOnDisk,a);
+}
+
+void GridTable::freezeAcademy(){
+	m_kmerAcademy.freeze();
+}
+
+KmerAcademy*GridTable::getKmerAcademy(){
+	return &m_kmerAcademy;
 }
