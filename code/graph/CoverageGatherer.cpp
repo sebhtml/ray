@@ -184,7 +184,6 @@ void CoverageGatherer::work(){
 			m_waiting=true;
 		}else{
 			m_distributionOfCoverage.clear();
-			m_subgraph->buildData(m_parameters);
 			(*m_slaveMode)=RAY_SLAVE_MODE_DO_NOTHING;
 			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_COVERAGE_END,
 				m_parameters->getRank());

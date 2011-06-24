@@ -23,7 +23,6 @@
 #define _GridTable
 
 #include <structures/Kmer.h>
-#include <graph/VertexTable.h>
 #include <memory/MyAllocator.h>
 #include <graph/KmerAcademy.h>
 #include <core/Parameters.h>
@@ -32,7 +31,6 @@
 class GridTable{
 	KmerAcademy m_kmerAcademy;
 	Parameters*m_parameters;
-	VertexTable m_vertexTable;
 	int m_rank;
 	uint64_t m_size;
 	bool m_inserted;

@@ -24,7 +24,6 @@
 
 #include <structures/ReadAnnotation.h>
 #include <structures/Direction.h>
-#include <structures/VertexData.h>
 #include <stdint.h>
 #include <core/common_functions.h>
 #include <vector>
@@ -67,6 +66,24 @@ public:
 	uint8_t getEdges(Kmer*a);
 	void deleteIngoingEdge(Kmer*vertex,Kmer*a,int k);
 	void deleteOutgoingEdge(Kmer*vertex,Kmer*a,int k);
+
+/*
+ * 	read annotations
+ * 	which reads start here?
+ */
+	ReadAnnotation*m_readsStartingHere;
+
+/*
+ *	which hyperfusions go on this vertex at least once?
+ */
+	Direction*m_directions;
+
+	void addRead(Kmer*a,ReadAnnotation*e);
+	ReadAnnotation*getReads(Kmer*a);
+	void addDirection(Kmer*a,Direction*d);
+	vector<Direction> getDirections(Kmer*a);
+	void clearDirections(Kmer*a);
+
 } ATTRIBUTE_PACKED;
 
 #endif

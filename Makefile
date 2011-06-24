@@ -178,11 +178,11 @@ obj-$(HAVE_LIBBZ2) += code/compression/BzReader.o
 obj-y += code/cryptography/crypto.o
 
 #graph
-obj-y += code/graph/GridTable.o code/graph/VertexTable.o code/graph/GridTableIterator.o code/graph/CoverageDistribution.o 
+obj-y += code/graph/GridTable.o code/graph/GridTableIterator.o code/graph/CoverageDistribution.o 
 obj-y += code/graph/CoverageGatherer.o code/graph/KmerAcademy.o code/graph/KmerAcademyIterator.o
 
 #structures
-obj-y += code/structures/VertexData.o code/structures/Kmer.o code/structures/MyForestIterator.o code/structures/MyForest.o \
+obj-y += code/structures/Kmer.o code/structures/MyForestIterator.o code/structures/MyForest.o \
 code/structures/ArrayOfReads.o  code/structures/Direction.o code/structures/PairedRead.o code/structures/ReadAnnotation.o code/structures/Read.o  \
 code/structures/StaticVector.o code/structures/Vertex.o
 

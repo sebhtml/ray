@@ -142,10 +142,6 @@ MyAllocator*GridTable::getAllocator(){
 	return m_gridAllocatorOnDisk;
 }
 
-MyAllocator*GridTable::getSecondAllocator(){
-	return m_vertexTable.getAllocator();
-}
-
 void GridTable::freeze(){
 	m_frozen=true;
 }
@@ -187,36 +183,11 @@ Vertex*GridTable::move(int bin,int item){
 
 void GridTable::setWordSize(int w){
 	m_wordSize=w;
-	m_vertexTable.setWordSize(w);
-}
-
-void GridTable::addRead(Kmer*a,ReadAnnotation*e){
-	m_vertexTable.addRead(a,e);
-}
-
-ReadAnnotation*GridTable::getReads(Kmer*a){
-	return m_vertexTable.getReads(a);
-}
-
-void GridTable::addDirection(Kmer*a,Direction*d){
-	m_vertexTable.addDirection(a,d);
 }
 
 bool GridTable::isAssembled(Kmer*a){
 	Kmer reverse=complementVertex(a,m_wordSize,m_parameters->getColorSpaceMode());
 	return getDirections(a).size()>0||getDirections(&reverse).size()>0;
-}
-
-vector<Direction> GridTable::getDirections(Kmer*a){
-	return m_vertexTable.getDirections(a);
-}
-
-void GridTable::clearDirections(Kmer*a){
-	m_vertexTable.clearDirections(a);
-}
-
-void GridTable::buildData(Parameters*a){
-	m_vertexTable.constructor(m_rank,m_gridAllocatorOnDisk,a);
 }
 
 void GridTable::freezeAcademy(){
@@ -226,3 +197,43 @@ void GridTable::freezeAcademy(){
 KmerAcademy*GridTable::getKmerAcademy(){
 	return &m_kmerAcademy;
 }
+
+void GridTable::addRead(Kmer*a,ReadAnnotation*e){
+	Vertex*i=insert(a);
+	i->addRead(a,e);
+	#ifdef ASSERT
+	ReadAnnotation*reads=i->getReads(a);
+	assert(reads!=NULL);
+	#endif
+}
+
+ReadAnnotation*GridTable::getReads(Kmer*a){
+	Vertex*i=find(a);
+	if(i==NULL){
+		return NULL;
+	}
+	ReadAnnotation*reads=i->getReads(a);
+	return reads;
+}
+
+void GridTable::addDirection(Kmer*a,Direction*d){
+	Vertex*i=insert(a);
+	i->addDirection(a,d);
+}
+
+vector<Direction> GridTable::getDirections(Kmer*a){
+	Vertex*i=find(a);
+	if(i==NULL){
+		vector<Direction> p;
+		return p;
+	}
+	return i->getDirections(a);
+}
+
+void GridTable::clearDirections(Kmer*a){
+	Vertex*i=find(a);
+	if(i!=NULL){
+		i->clearDirections(a);
+	}
+}
+

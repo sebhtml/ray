@@ -31,6 +31,8 @@ void Vertex::constructor(){
 	m_coverage_lower=0;
 	m_edges_lower=0;
 	m_edges_higher=0;
+	m_readsStartingHere=NULL;
+	m_directions=NULL;
 }
 
 void Vertex::setCoverage(Kmer*a,int coverage){
@@ -130,4 +132,36 @@ uint8_t Vertex::getEdges(Kmer*a){
 	return m_edges_higher;
 }
 
+void Vertex::addRead(Kmer*vertex,ReadAnnotation*e){
+	e->setNext(m_readsStartingHere);
+	m_readsStartingHere=e;
+}
 
+void Vertex::addDirection(Kmer*vertex,Direction*e){
+	e->setNext(m_directions);
+	m_directions=e;
+}
+
+ReadAnnotation*Vertex::getReads(Kmer*vertex){
+	return m_readsStartingHere;
+}
+
+vector<Direction> Vertex::getDirections(Kmer*vertex){
+	bool seekLower=false;
+	if(vertex->isEqual(&m_lowerKey)){
+		seekLower=true;
+	}
+	vector<Direction> a;
+	Direction*e=m_directions;
+	while(e!=NULL){
+		if(e->isLower()==seekLower){
+			a.push_back(*e);
+		}
+		e=e->getNext();
+	}
+	return a;
+}
+
+void Vertex::clearDirections(Kmer*a){
+	m_directions=NULL;
+}
