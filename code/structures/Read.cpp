@@ -127,10 +127,6 @@ void Read::constructor(const char*sequence,MyAllocator*seqMyAllocator,bool trimF
 }
 
 void Read::getSeq(char*workingBuffer,bool color,bool doubleEncoding) const{
-	#ifdef ASSERT
-	assert(m_length>0);
-	#endif
-
 	for(int position=0;position<m_length;position++){
 		int positionInWorkingBuffer=position/4;
 		uint8_t word=m_sequence[positionInWorkingBuffer];

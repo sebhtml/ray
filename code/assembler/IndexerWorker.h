@@ -25,10 +25,13 @@
 #include <core/Parameters.h>
 #include <memory/RingAllocator.h>
 #include <communication/VirtualCommunicator.h>
+#include <string>
 #include <stdint.h>
 #include <structures/ArrayOfReads.h>
+using namespace std;
 
-/* this class is a worker for sequence indexing
+/**
+ * this class is a worker for sequence indexing
  * Optimal read markers are selected by IndexerWorker
  */
 class IndexerWorker{
@@ -51,8 +54,8 @@ class IndexerWorker{
 	bool m_coverageRequested;
 	bool m_fetchedCoverageValues;
 
-	vector<Kmer> m_vertices;
-	vector<int> m_coverages;
+	vector<Kmer>*m_vertices;
+	vector<int>*m_coverages;
 public:
 	void constructor(int sequenceId,char*sequence,Parameters*parameters,RingAllocator*outboxAllocator,
 		VirtualCommunicator*vc,uint64_t workerId,ArrayOfReads*a);

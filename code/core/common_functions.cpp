@@ -134,7 +134,7 @@ int vertexRank(Kmer*a,int _size,int w,bool color){
 	return hash_function_1(a,w,color)%(_size);
 }
 
-Kmer kmerAtPosition(char*m_sequence,int pos,int w,char strand,bool color){
+Kmer kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool color){
 	int length=strlen(m_sequence);
 	if(pos>length-w){
 		cout<<"Fatal: offset is too large: position= "<<pos<<" Length= "<<length<<" WordSize=" <<w<<endl;

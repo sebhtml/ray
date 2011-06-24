@@ -193,8 +193,6 @@ void Machine::start(){
 
 	m_messagesHandler.barrier();
 
-	m_si.constructor(&m_parameters,&m_outboxAllocator,&m_inbox,&m_outbox,&m_virtualCommunicator);
-
 	int maximumNumberOfProcesses=65536;
 	if(getSize()>maximumNumberOfProcesses){
 		cout<<"The maximum number of processes is "<<maximumNumberOfProcesses<<" (this can be changed in the code)"<<endl;
@@ -843,6 +841,8 @@ void Machine::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(){
 		m_kmerAcademyBuilder.constructor(m_size,&m_parameters);
 		(m_mode_send_vertices_sequence_id)=0;
 		m_initialisedAcademy=true;
+
+		m_si.constructor(&m_parameters,&m_outboxAllocator,&m_inbox,&m_outbox,&m_virtualCommunicator);
 	}
 	m_kmerAcademyBuilder.process(		&m_mode_send_vertices_sequence_id,
 			&m_myReads,

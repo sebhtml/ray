@@ -132,7 +132,7 @@ string convertToString(vector<Kmer>*b,int m_wordSize,bool color);
 
 int vertexRank(Kmer*a,int _size,int w,bool color);
 
-Kmer kmerAtPosition(char*string,int pos,int w,char strand,bool color);
+Kmer kmerAtPosition(const char*string,int pos,int w,char strand,bool color);
 
 int roundNumber(int number,int alignment);
 

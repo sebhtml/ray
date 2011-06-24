@@ -30,6 +30,8 @@
 #include <core/common_functions.h>
 #include <memory/MyAllocator.h>
 #include <memory/RingAllocator.h>
+#include <structures/SplayTree.h>
+#include <structures/SplayTreeIterator.h>
 #include <memory/OnDiskAllocator.h>
 #include <structures/StaticVector.h>
 #include <structures/ArrayOfReads.h>
@@ -45,15 +47,18 @@ class SequencesIndexer{
 	int m_size;
 	Parameters*m_parameters;
 	MyAllocator m_allocator;
+	MyAllocator m_workAllocator;
 	int m_pendingMessages;
 	int m_completedJobs;
 	int m_maximumAliveWorkers;
 	int m_maximumWorkers;
 
 	VirtualCommunicator*m_virtualCommunicator;
-	set<uint64_t> m_activeWorkers;
-	set<uint64_t>::iterator m_activeWorkerIterator;
-	map<uint64_t,IndexerWorker> m_aliveWorkers;
+	SplayTree<uint64_t,char> m_activeWorkers;
+	SplayTreeIterator<uint64_t,char> m_activeWorkerIterator;
+
+	SplayTree<uint64_t,IndexerWorker> m_aliveWorkers;
+	
 	bool m_communicatorWasTriggered;
 	vector<uint64_t> m_workersDone;
 	vector<uint64_t> m_waitingWorkers;

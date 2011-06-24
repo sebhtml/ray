@@ -40,7 +40,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 	if(!m_initiatedIterator){
 		m_theSequenceId=0;
 
-		m_activeWorkerIterator=m_activeWorkers.begin();
+		m_activeWorkerIterator.constructor(&m_activeWorkers);
 		m_initiatedIterator=true;
 		m_maximumAliveWorkers=30000;
 	}
@@ -52,40 +52,43 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 		return;
 	}
 
-	if(m_activeWorkerIterator!=m_activeWorkers.end()){
-		uint64_t workerId=*m_activeWorkerIterator;
+	if(m_activeWorkerIterator.hasNext()){
+		uint64_t workerId=m_activeWorkerIterator.next()->getKey();
 		#ifdef ASSERT
-		assert(m_aliveWorkers.count(workerId)>0);
-		assert(!m_aliveWorkers[workerId].isDone());
+		assert(m_aliveWorkers.find(workerId,false)!=NULL);
+		assert(!m_aliveWorkers.find(workerId,false)->getValue()->isDone());
 		#endif
 		m_virtualCommunicator->resetLocalPushedMessageStatus();
 
 		//force the worker to work until he finishes or pushes something on the stack
-		while(!m_aliveWorkers[workerId].isDone()&&!m_virtualCommunicator->getLocalPushedMessageStatus()){
-			m_aliveWorkers[workerId].work();
+		while(!m_aliveWorkers.find(workerId,false)->getValue()->isDone()&&!m_virtualCommunicator->getLocalPushedMessageStatus()){
+			m_aliveWorkers.find(workerId,false)->getValue()->work();
 		}
 
 		if(m_virtualCommunicator->getLocalPushedMessageStatus()){
 			m_waitingWorkers.push_back(workerId);
 		}
-		if(m_aliveWorkers[workerId].isDone()){
+		if(m_aliveWorkers.find(workerId,false)->getValue()->isDone()){
 			m_workersDone.push_back(workerId);
 		}
-		m_activeWorkerIterator++;
 	}else{
 		updateStates();
 
 		//  add one worker to active workers
 		//  reason is that those already in the pool don't communicate anymore -- 
 		//  as for they need responses.
-		if(!m_virtualCommunicator->getGlobalPushedMessageStatus()&&m_activeWorkers.empty()){
+		if(!m_virtualCommunicator->getGlobalPushedMessageStatus()&&m_activeWorkers.size()==0){
 			// there is at least one worker to start
 			// AND
 			// the number of alive workers is below the maximum
 			if(m_theSequenceId<(int)m_myReads->size()&&(int)m_aliveWorkers.size()<m_maximumAliveWorkers){
-				if(m_theSequenceId%10000==0){
+				if(m_theSequenceId%50000==0){
 					printf("Rank %i is selecting optimal read markers [%i/%i]\n",m_rank,m_theSequenceId+1,(int)m_myReads->size());
 					fflush(stdout);
+					if(m_parameters->showMemoryUsage())
+						showMemoryUsage(m_rank);
+					cout<<"AliveWorkers: "<<m_aliveWorkers.size()<<" Completed: "<<m_completedJobs<<endl;
+					cout<<"Allocated bytes: "<<m_workAllocator.getNumberOfChunks()*m_workAllocator.getChunkSize()<<endl;
 				}
 
 				#ifdef ASSERT
@@ -100,8 +103,9 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 
 				m_myReads->at(m_theSequenceId)->getSeq(sequence,m_parameters->getColorSpaceMode(),false);
 
-				m_aliveWorkers[m_theSequenceId].constructor(m_theSequenceId,sequence,m_parameters,m_outboxAllocator,m_virtualCommunicator,m_theSequenceId,m_myReads);
-				m_activeWorkers.insert(m_theSequenceId);
+				bool flag;
+				m_aliveWorkers.insert(m_theSequenceId,&m_workAllocator,&flag)->getValue()->constructor(m_theSequenceId,sequence,m_parameters,m_outboxAllocator,m_virtualCommunicator,m_theSequenceId,m_myReads);
+				m_activeWorkers.insert(m_theSequenceId,&m_workAllocator,&flag);
 				int population=m_aliveWorkers.size();
 				if(population>m_maximumWorkers){
 					m_maximumWorkers=population;
@@ -113,7 +117,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 			}
 		}
 
-		m_activeWorkerIterator=m_activeWorkers.begin();
+		m_activeWorkerIterator.constructor(&m_activeWorkers);
 	}
 
 	#ifdef ASSERT
@@ -139,13 +143,24 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 		assert(m_aliveWorkers.size()==0);
 		assert(m_activeWorkers.size()==0);
 		#endif
+
+		int freed=m_workAllocator.getNumberOfChunks()*m_workAllocator.getChunkSize();
+		m_workAllocator.clear();
+
+		if(m_parameters->showMemoryUsage()){
+			cout<<"Rank "<<m_parameters->getRank()<<": Freeing unused assembler memory: "<<freed/1024<<" KiB freed"<<endl;
+			showMemoryUsage(m_rank);
+		}
 	}
 }
 
 void SequencesIndexer::constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,VirtualCommunicator*vc){
 	m_parameters=parameters;
-	int chunkSize=16777216; // 16 MiB
+	int chunkSize=4194304; // 4 MiB
 	m_allocator.constructor(chunkSize,RAY_MALLOC_TYPE_OPTIMAL_READ_MARKERS,
+		m_parameters->showMemoryAllocations());
+
+	m_workAllocator.constructor(chunkSize,RAY_MALLOC_TYPE_OPTIMAL_READ_MARKER_WORKERS,
 		m_parameters->showMemoryAllocations());
 
 	m_initiatedIterator=false;
@@ -172,11 +187,11 @@ void SequencesIndexer::updateStates(){
 	for(int i=0;i<(int)m_workersDone.size();i++){
 		uint64_t workerId=m_workersDone[i];
 		#ifdef ASSERT
-		assert(m_activeWorkers.count(workerId)>0);
-		assert(m_aliveWorkers.count(workerId)>0);
+		assert(m_activeWorkers.find(workerId,false)!=NULL);
+		assert(m_aliveWorkers.find(workerId,false)!=NULL);
 		#endif
-		m_activeWorkers.erase(workerId);
-		m_aliveWorkers.erase(workerId);
+		m_activeWorkers.remove(workerId,true,&m_workAllocator);
+		m_aliveWorkers.remove(workerId,true,&m_workAllocator);
 		m_completedJobs++;
 	}
 	m_workersDone.clear();
@@ -184,15 +199,16 @@ void SequencesIndexer::updateStates(){
 	for(int i=0;i<(int)m_waitingWorkers.size();i++){
 		uint64_t workerId=m_waitingWorkers[i];
 		#ifdef ASSERT
-		assert(m_activeWorkers.count(workerId)>0);
+		assert(m_activeWorkers.find(workerId,false)!=NULL);
 		#endif
-		m_activeWorkers.erase(workerId);
+		m_activeWorkers.remove(workerId,true,&m_workAllocator);
 	}
 	m_waitingWorkers.clear();
 
 	for(int i=0;i<(int)m_activeWorkersToRestore.size();i++){
+		bool flag;
 		uint64_t workerId=m_activeWorkersToRestore[i];
-		m_activeWorkers.insert(workerId);
+		m_activeWorkers.insert(workerId,&m_workAllocator,&flag);
 	}
 	m_activeWorkersToRestore.clear();
 
