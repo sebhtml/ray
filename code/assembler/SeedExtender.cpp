@@ -41,7 +41,8 @@ int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,vector<Kmer>*recei
 BubbleData*bubbleData,
 int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 	if(ed->m_EXTENSION_currentSeedIndex==(int)(*seeds).size()){
-		ed->destructor();
+		if((*seeds).size()>0)
+			ed->destructor();
 		ed->getAllocator()->clear();
 		m_cacheAllocator.clear();
 		m_cache.clear();

@@ -87,8 +87,6 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 					fflush(stdout);
 					if(m_parameters->showMemoryUsage())
 						showMemoryUsage(m_rank);
-					cout<<"AliveWorkers: "<<m_aliveWorkers.size()<<" Completed: "<<m_completedJobs<<endl;
-					cout<<"Allocated bytes: "<<m_workAllocator.getNumberOfChunks()*m_workAllocator.getChunkSize()<<endl;
 				}
 
 				#ifdef ASSERT
