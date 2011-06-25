@@ -1333,10 +1333,11 @@ void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message){
 		char strand=(char)incoming[i+vertex.getNumberOfU64()+3];
 		Vertex*node=m_subgraph->find(&vertex);
 
-		int coverage=node->getCoverage(&vertex);
 		if(node==NULL){
 			continue;
 		}
+
+		int coverage=node->getCoverage(&vertex);
 
 		if(coverage==1){
 			continue;
