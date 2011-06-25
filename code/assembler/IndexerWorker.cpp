@@ -23,8 +23,9 @@
 #include <string.h>
 
 void IndexerWorker::constructor(int sequenceId,char*sequence,Parameters*parameters,RingAllocator*outboxAllocator,
-	VirtualCommunicator*vc,uint64_t workerId,ArrayOfReads*a){
+	VirtualCommunicator*vc,uint64_t workerId,ArrayOfReads*a,MyAllocator*allocator){
 	m_reads=a;
+	m_allocator=allocator;
 	m_sequenceId=sequenceId;
 	strcpy(m_sequence,sequence);
 	m_parameters=parameters;
@@ -40,8 +41,8 @@ void IndexerWorker::constructor(int sequenceId,char*sequence,Parameters*paramete
 	m_vertexIsDone=false;
 	m_vertexInitiated=false;
 	m_fetchedCoverageValues=false;
-	m_coverages=new vector<int>;
-	m_vertices=new vector<Kmer>;
+	m_coverages.constructor();
+	m_vertices.constructor();
 }
 
 bool IndexerWorker::isDone(){
@@ -56,7 +57,7 @@ void IndexerWorker::work(){
 			m_fetchedCoverageValues=true;
 		}else if(!m_coverageRequested){
 			Kmer vertex=kmerAtPosition(m_sequence,m_position,m_parameters->getWordSize(),'F',m_parameters->getColorSpaceMode());
-			m_vertices->push_back(vertex);
+			m_vertices.push_back(vertex,m_allocator);
 			int sendTo=m_parameters->_vertexRank(&vertex);
 			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 			int bufferPosition=0;
@@ -66,7 +67,7 @@ void IndexerWorker::work(){
 			m_coverageRequested=true;
 		}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
 			int coverage=m_virtualCommunicator->getMessageResponseElements(m_workerId)[0];
-			m_coverages->push_back(coverage);
+			m_coverages.push_back(coverage,m_allocator);
 			m_position++;
 			m_coverageRequested=false;
 		}
@@ -74,8 +75,8 @@ void IndexerWorker::work(){
 		if(!m_vertexIsDone){
 			int selectedPosition=-1;
 			// find a vertex that is not an error and that is not repeated
-			for(int i=0;i<(int)m_coverages->size()/2;i++){
-				int coverage=(*m_coverages)[i];
+			for(int i=0;i<(int)m_coverages.size()/2;i++){
+				int coverage=(m_coverages).at(i);
 				if(coverage>=m_parameters->getMinimumCoverage()/2&&coverage<m_parameters->getPeakCoverage()*2){
 					selectedPosition=i;
 					break;
@@ -84,8 +85,8 @@ void IndexerWorker::work(){
 
 			// find a vertex that is not an error 
 			if(selectedPosition==-1){
-				for(int i=0;i<(int)m_coverages->size();i++){
-					int coverage=(*m_coverages)[i];
+				for(int i=0;i<(int)m_coverages.size();i++){
+					int coverage=(m_coverages).at(i);
 					if(coverage>=m_parameters->getMinimumCoverage()/2){
 						selectedPosition=i;
 						break;
@@ -95,7 +96,7 @@ void IndexerWorker::work(){
 			}
 			// index it
 			if(selectedPosition!=-1){
-				Kmer vertex=(*m_vertices)[selectedPosition];
+				Kmer vertex=(m_vertices).at(selectedPosition);
 				int sendTo=m_parameters->_vertexRank(&vertex);
 				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(5*sizeof(uint64_t));
 				int j=0;
@@ -121,8 +122,8 @@ void IndexerWorker::work(){
 		if(!m_vertexIsDone){
 			int selectedPosition=-1;
 			// find a vertex that is not an error and that is not repeated
-			for(int i=(int)(*m_coverages).size()-1;i>=(int)m_coverages->size()/2;i--){
-				int coverage=(*m_coverages)[i];
+			for(int i=(int)(m_coverages).size()-1;i>=(int)m_coverages.size()/2;i--){
+				int coverage=(m_coverages).at(i);
 				if(coverage>=m_parameters->getMinimumCoverage()/2&&coverage<m_parameters->getPeakCoverage()*2){
 					selectedPosition=i;
 					break;
@@ -131,8 +132,8 @@ void IndexerWorker::work(){
 
 			// find a vertex that is not an error 
 			if(selectedPosition==-1){
-				for(int i=(int)(*m_coverages).size()-1;i>=0;i--){
-					int coverage=(*m_coverages)[i];
+				for(int i=(int)(m_coverages).size()-1;i>=0;i--){
+					int coverage=(m_coverages).at(i);
 					if(coverage>=m_parameters->getMinimumCoverage()/2){
 						selectedPosition=i;
 						break;
@@ -143,7 +144,8 @@ void IndexerWorker::work(){
 
 			// index it
 			if(selectedPosition!=-1){
-				Kmer vertex=m_parameters->_complementVertex(&((*m_vertices)[selectedPosition]));
+				Kmer tmp=m_vertices.at(selectedPosition);
+				Kmer vertex=m_parameters->_complementVertex(&tmp);
 				int sendTo=m_parameters->_vertexRank(&vertex);
 				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(5*sizeof(uint64_t));
 				int positionOnStrand=m_theLength-m_parameters->getWordSize()-selectedPosition;
@@ -166,10 +168,8 @@ void IndexerWorker::work(){
 		}
 
 	}else{
-		delete m_vertices;
-		delete m_coverages;
-		m_vertices=NULL;
-		m_coverages=NULL;
+		m_vertices.destructor(m_allocator);
+		m_coverages.destructor(m_allocator);
 		m_done=true;
 	}
 }
