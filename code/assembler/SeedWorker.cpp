@@ -313,7 +313,7 @@ void SeedWorker::do_1_1_test(){
 					continue;
 				}
 				int otherCoverage=m_ingoingCoverages[j];
-				if(otherCoverage*multiplicator>coverage){
+				if((otherCoverage*multiplicator)>coverage){
 					oneParent=false;
 					break;
 				}
@@ -335,7 +335,7 @@ void SeedWorker::do_1_1_test(){
 					continue;
 				}
 				int otherCoverage=m_outgoingCoverages[j];
-				if(otherCoverage*multiplicator>coverage){
+				if((otherCoverage*multiplicator)>coverage){
 					oneChild=false;
 					break;
 				}
