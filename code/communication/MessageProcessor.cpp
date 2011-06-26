@@ -328,39 +328,6 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTEX_INFO(Message*message){
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTEX(Message*message){
-	#ifdef ASSERT
-	assert(!m_subgraph->frozen());
-	#endif
-
-	uint64_t*incoming=(uint64_t*)message->getBuffer();
-	int count=message->getCount();
-	for(int i=0;i<count;i+=KMER_U64_ARRAY_SIZE){
-		Kmer vertex;
-		int bufferPosition=i;
-		vertex.unpack(incoming,&bufferPosition);
-
-		Vertex*node=m_subgraph->find(&vertex);
-
-		if(node==NULL){
-			continue;
-		}
-
-		#ifdef ASSERT
-		assert(node!=NULL);
-		#endif
-
-		// delete the vertex
-		m_subgraph->remove(&vertex);
-
-		#ifdef ASSERT
-		assert(m_subgraph->find(&vertex)==NULL);
-		#endif
-	}
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_DELETE_VERTEX_REPLY,rank);
-	m_outbox->push_back(aMessage);
-}
-
 void MessageProcessor::call_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT(Message*message){
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
 	int count=message->getCount();
@@ -387,182 +354,13 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT(Message*message
 
 void MessageProcessor::call_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY(Message*message){}
 
-void MessageProcessor::call_RAY_MPI_TAG_CHECK_VERTEX(Message*message){
-	uint64_t*incoming=(uint64_t*)message->getBuffer();
-	int count=message->getCount();
-	
-	int outgoingCount=0;
-	int period=1+KMER_U64_ARRAY_SIZE;
-	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-	for(int i=0;i<count;i+=period){
-		int task=incoming[i+0];
-		Kmer vertex;
-		int bufferPosition=i+1;
-		vertex.unpack(incoming,&bufferPosition);
-		Vertex*node=m_subgraph->find(&vertex);
-		if(node!=NULL){
-			int parents=node->getIngoingEdges(&vertex,(*m_wordSize)).size();
-			int children=node->getOutgoingEdges(&vertex,(*m_wordSize)).size();
-			int coverage=node->getCoverage(&vertex);
-			if(parents>0&&children>0&&coverage>3){
-				outgoingMessage[outgoingCount++]=task;
-				outgoingMessage[outgoingCount++]=coverage;
-			}
-		}
-	}
-
-	Message aMessage(outgoingMessage,outgoingCount,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_CHECK_VERTEX_REPLY,rank);
-	m_outbox->push_back(aMessage);
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_CHECK_VERTEX_REPLY(Message*message){
-	uint64_t*incoming=(uint64_t*)message->getBuffer();
-	int count=message->getCount();
-	m_reducer->processConfetti(incoming,count);
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_DELETE_INGOING_EDGE(Message*message){
-	#ifdef ASSERT
-	assert(!m_subgraph->frozen());
-	#endif
-
-	uint64_t*incoming=(uint64_t*)message->getBuffer();
-	int count=message->getCount();
-	for(int i=0;i<count;i+=2*KMER_U64_ARRAY_SIZE){
-		int bufferPosition=i;
-		Kmer prefix;
-		prefix.unpack(incoming,&bufferPosition);
-		Kmer suffix;
-		suffix.unpack(incoming,&bufferPosition);
-
-		Vertex*node=m_subgraph->find(&suffix);
-
-		if(node==NULL){ // node already deleted, don't need to delete the edges.
-			continue;
-		}
-
-		#ifdef ASSERT
-		assert(node!=NULL);
-		int before=node->getOutgoingEdges(&suffix,*m_wordSize).size();
-		#endif
-
-		/* the edge might already be deleted if the tip is within another tip. */
-
-		node->deleteIngoingEdge(&suffix,&prefix,(*m_wordSize));
-
-		#ifdef ASSERT
-		int after=node->getOutgoingEdges(&suffix,*m_wordSize).size();
-		assert(after<=before);
-		#endif
-	}
-
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_DELETE_INGOING_EDGE_REPLY,rank);
-	m_outbox->push_back(aMessage);
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_DELETE_OUTGOING_EDGE_REPLY(Message*message){
-	m_verticesExtractor->setReadiness();
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_DELETE_INGOING_EDGE_REPLY(Message*message){
-	m_verticesExtractor->setReadiness();
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_DELETE_OUTGOING_EDGE(Message*message){
-
-	#ifdef ASSERT
-	assert(!m_subgraph->frozen());
-	#endif
-
-	uint64_t*incoming=(uint64_t*)message->getBuffer();
-	int count=message->getCount();
-	for(int i=0;i<count;i+=2*KMER_U64_ARRAY_SIZE){
-		int bufferPosition=i;
-		Kmer prefix;
-		prefix.unpack(incoming,&bufferPosition);
-		Kmer suffix;
-		suffix.unpack(incoming,&bufferPosition);
-
-		Vertex*node=m_subgraph->find(&prefix);
-
-		if(node==NULL){ // node already deleted, don't need to delete the edges.
-			continue;
-		}
-	
-		#ifdef ASSERT
-		assert(node!=NULL);
-		int before=node->getOutgoingEdges(&suffix,*m_wordSize).size();
-		#endif
-
-		/* the edge might already be deleted if the tip is within another tip. */
-		node->deleteOutgoingEdge(&prefix,&suffix,(*m_wordSize));
-		
-		#ifdef ASSERT
-		int after=node->getOutgoingEdges(&suffix,*m_wordSize).size();
-		assert(after<=before);
-		#endif
-	}
-
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_DELETE_OUTGOING_EDGE_REPLY,rank);
-	m_outbox->push_back(aMessage);
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTEX_REPLY(Message*message){
-	m_verticesExtractor->setReadiness();
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION_REPLY(Message*aMessage){
-	m_verticesExtractor->incrementRanksReadyForReduction();
-	if(m_verticesExtractor->readyForReduction()){
-		(*m_master_mode)=RAY_MASTER_MODE_START_REDUCTION;
-		m_verticesExtractor->resetRanksReadyForReduction();
-	}
-}
-
 void MessageProcessor::call_RAY_MPI_TAG_BUILD_GRAPH(Message*message){
 	m_verticesExtractor->constructor(m_parameters->getSize(),m_parameters);
 	*m_mode_send_vertices_sequence_id=0;
 	*m_mode=RAY_SLAVE_MODE_EXTRACT_VERTICES;
 }
 
-void MessageProcessor::call_RAY_MPI_TAG_RESUME_VERTEX_DISTRIBUTION(Message*message){
-	if(m_parameters->runReducer()){
-		m_verticesExtractor->updateThreshold(m_subgraph);
-		printf("Rank %i: %lu -> %lu\n",rank,m_lastSize,m_subgraph->size());
-	}
-	if(!m_verticesExtractor->finished()){
-		(*m_mode)=RAY_SLAVE_MODE_EXTRACT_VERTICES;
-		m_verticesExtractor->removeTrigger();
-	}
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_REDUCE_MEMORY_CONSUMPTION_DONE(Message*message){
-	m_verticesExtractor->incrementRanksDoneWithReduction();
-	if(m_verticesExtractor->reductionIsDone()){
-		for(int i=0;i<size;i++){
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_DELETE_VERTICES,rank);
-			m_outbox->push_back(aMessage);
-		}
-		m_verticesExtractor->resetRanksDoneForReduction();
-	}
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTICES(Message*message){
-	#ifdef ASSERT
-	assert(m_subgraph->frozen());
-	#endif
-
-	m_lastSize=m_subgraph->size();
-	(*m_mode)=RAY_SLAVE_MODE_DELETE_VERTICES;
-	m_subgraph->unfreeze();
-
-	#ifdef ASSERT
-	assert(!m_subgraph->frozen());
-	#endif
-}
-
 void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY(Message*message){}
-
 
 /*
  * <--vertex--><--pointer--><--numberOfMates--><--mates -->
@@ -605,60 +403,6 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS_FROM_LIST(Message*message){
 	outgoingMessage[0]=processed;
 	Message aMessage(outgoingMessage,1+processed*4,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY,rank);
 	m_outbox->push_back(aMessage);
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_DELETE_VERTICES_DONE(Message*message){
-	m_verticesExtractor->incrementRanksDoneWithReduction();
-
-	if(m_verticesExtractor->reductionIsDone()){
-		printf("\n");
-		fflush(stdout);
-		for(int i=0;i<size;i++){
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_UPDATE_THRESHOLD,rank);
-			m_outbox->push_back(aMessage);
-		}
-		m_verticesExtractor->resetRanksDoneForReduction();
-	}
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_UPDATE_THRESHOLD(Message*message){
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_UPDATE_THRESHOLD_REPLY,rank);
-	m_outbox->push_back(aMessage);
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_UPDATE_THRESHOLD_REPLY(Message*message){
-	m_verticesExtractor->incrementRanksDoneWithReduction();
-	if(m_verticesExtractor->reductionIsDone()){
-		if(m_verticesExtractor->isDistributionCompleted()){
-			(*m_master_mode)=RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS;
-		}else{
-			(*m_master_mode)=RAY_MASTER_MODE_RESUME_VERTEX_DISTRIBUTION;
-			m_verticesExtractor->resetRanksDoneForReduction();
-		}
-	}
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_START_REDUCTION(Message*message){
-	m_subgraph->freeze();
-
-	#ifdef ASSERT
-	m_verticesExtractor->assertBuffersAreEmpty();
-	assert(m_subgraph->frozen());
-	#endif
-	(*m_mode)=RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION;
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_ASK_BEGIN_REDUCTION(Message*message){
-	m_verticesExtractor->scheduleReduction(m_outbox,rank);
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_MUST_RUN_REDUCER(Message*message){
-	int rank=message->getSource();
-	m_verticesExtractor->addRankForReduction(rank);
-	if(m_verticesExtractor->mustRunReducer()){
-		(*m_master_mode)=RAY_MASTER_MODE_ASK_BEGIN_REDUCTION;
-		m_verticesExtractor->resetRanksForReduction();
-	}
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_WELCOME(Message*message){
@@ -721,12 +465,6 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 	}
 	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_VERTICES_DATA_REPLY,rank);
 	m_outbox->push_back(aMessage);
-
-	if(m_subgraph->size()>=m_verticesExtractor->getThreshold() && !m_verticesExtractor->isTriggered()){
-		m_verticesExtractor->trigger();
-		Message aMessage2(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_MUST_RUN_REDUCER,rank);
-		m_outbox->push_back(aMessage2);
-	}
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA_REPLY(Message*message){
@@ -762,12 +500,6 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DISTRIBUTED(Message*message){
 		m_verticesExtractor->setDistributionAsCompleted();
 		(*m_master_mode)=RAY_MASTER_MODE_PURGE_NULL_EDGES;
 	}
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_MUST_RUN_REDUCER_FROM_MASTER(Message*message){
-	m_verticesExtractor->trigger();
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,message->getSource(),RAY_MPI_TAG_MUST_RUN_REDUCER,rank);
-	m_outbox->push_back(aMessage);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA_REPLY(Message*message){
@@ -2065,10 +1797,6 @@ void MessageProcessor::call_RAY_MPI_TAG_SEND_COVERAGE_VALUES_REPLY(Message*messa
 	if((*m_numberOfRanksWithCoverageData)==size){
 		(*m_master_mode)=RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING;
 	}
-}
-
-void MessageProcessor::setReducer(MemoryConsumptionReducer*a){
-	m_reducer=a;
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE(Message*message){

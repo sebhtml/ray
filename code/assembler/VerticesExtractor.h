@@ -28,7 +28,6 @@
 #include <core/common_functions.h>
 #include <structures/ArrayOfReads.h>
 #include <communication/Message.h>
-#include <assembler/MemoryConsumptionReducer.h>
 #include <structures/MyForest.h>
 #include <memory/RingAllocator.h>
 #include <structures/Read.h>
@@ -54,9 +53,6 @@ class VerticesExtractor{
 	int*m_mode;
 	int m_mode_send_vertices_sequence_id_position;
 
-	bool m_deletionsInitiated;
-	uint64_t m_deletionIterator;
-
 	bool m_hasPreviousVertex;
 	Kmer  m_previousVertex;
 	Kmer m_previousVertexRC;
@@ -67,28 +63,10 @@ class VerticesExtractor{
 	int m_pendingMessages;
 
 	BufferedData m_bufferedData;
-	set<int> m_ranksThatMustRunReducer;
 	int m_size;
 
-	int m_ranksReadyForReduction;
-	int m_ranksDoneWithReduction;
-
-	uint64_t m_thresholdForReduction;
-	uint64_t m_reductionPeriod;
-
-	bool m_triggered;
-
 	bool m_finished;
-
-	bool m_mustTriggerReduction;
-
-
-	void checkPendingMessagesForReduction(StaticVector*outbox,int rank);
 public:
-
-	BufferedData m_buffersForIngoingEdgesToDelete;
-	BufferedData m_buffersForOutgoingEdgesToDelete;
-
 
 	void constructor(int size,Parameters*parameters);
 	void process(int*m_mode_send_vertices_sequence_id,
@@ -103,35 +81,10 @@ public:
 				int*m_mode
 			);
 	void setReadiness();
-	bool mustRunReducer();
-	void addRankForReduction(int a);
-	void resetRanksForReduction();
 	
-	void incrementRanksReadyForReduction();
-	bool readyForReduction();
-
-	void incrementRanksDoneWithReduction();
-	bool reductionIsDone();
-
-	void resetRanksReadyForReduction();
-	void resetRanksDoneForReduction();
-
-	uint64_t getThreshold();
-	void updateThreshold(GridTable*a);
-	bool isTriggered();
-	void trigger();
-	void removeTrigger();
 	bool finished();
 	void flushAll(RingAllocator*m_outboxAllocator,StaticVector*m_outbox,int rank);
 	void assertBuffersAreEmpty();
-	bool mustTriggerReduction();
-	void scheduleReduction(StaticVector*outbox,int rank);
-
-	bool deleteVertices(vector<Kmer>*verticesToRemove,GridTable*subgraph,
-Parameters*parameters,RingAllocator*m_outboxAllocator,
-	StaticVector*m_outbox,map<Kmer,vector<Kmer> >*ingoingEdges,map<Kmer,vector<Kmer> >*outgoingEdges
-);
-	void prepareDeletions();
 
 	void incrementPendingMessages();
 

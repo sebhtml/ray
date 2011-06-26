@@ -21,7 +21,7 @@ coverage values automatically.
 * Reduced the memory usage during the building of the graph.
 * New outputted file: PREFIX.degreeDistribution.txt contains the distribution
 of degrees in the graph.
-
+*  Cleaned the code by removing MemoryConsumptionReducer.
 
 = 1.6.0 =
 2011-06-13

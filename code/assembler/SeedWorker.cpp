@@ -279,31 +279,6 @@ void SeedWorker::do_1_1_test(){
 
 		// if OK, set m_SEEDING_currentChildVertex and m_SEEDING_currentParentVertex
 		
-		vector<Kmer> newEdges;
-		vector<int> newCoverages;
-
-		for(int i=0;i<(int)m_ingoingCoverages.size();i++){
-			if(m_ingoingCoverages[i]>=m_parameters->getMinimumCoverageToStore()){
-				newCoverages.push_back(m_ingoingCoverages[i]);
-				newEdges.push_back(m_SEEDING_receivedIngoingEdges[i]);
-			}
-		}
-		m_ingoingCoverages=newCoverages;
-		m_SEEDING_receivedIngoingEdges=newEdges;
-		
-		newEdges.clear();
-		newCoverages.clear();
-
-		for(int i=0;i<(int)m_outgoingCoverages.size();i++){
-			if(m_outgoingCoverages[i]>=m_parameters->getMinimumCoverageToStore()){
-				newCoverages.push_back(m_outgoingCoverages[i]);
-				newEdges.push_back(m_SEEDING_receivedOutgoingEdges[i]);
-			}
-		}
-		m_outgoingCoverages=newCoverages;
-		m_SEEDING_receivedOutgoingEdges=newEdges;
-
-
 		for(int i=0;i<(int)m_ingoingCoverages.size();i++){
 			int coverage=m_ingoingCoverages[i];
 			Kmer vertex=m_SEEDING_receivedIngoingEdges[i];

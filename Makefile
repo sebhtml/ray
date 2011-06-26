@@ -193,7 +193,7 @@ obj-y += code/scaffolder/Scaffolder.o
 obj-y += code/assembler/VertexMessenger.o \
 code/assembler/ReadFetcher.o code/assembler/LibraryWorker.o code/assembler/IndexerWorker.o  \
 code/assembler/SeedWorker.o code/assembler/ExtensionElement.o \
-code/assembler/DepthFirstSearchData.o code/assembler/MemoryConsumptionReducer.o  code/assembler/SeedingData.o \
+code/assembler/DepthFirstSearchData.o code/assembler/SeedingData.o \
 code/assembler/BubbleTool.o code/assembler/Chooser.o \
 code/assembler/FusionData.o code/assembler/Library.o code/assembler/Loader.o \
 code/assembler/OpenAssemblerChooser.o code/assembler/SeedExtender.o code/assembler/SequencesIndexer.o \

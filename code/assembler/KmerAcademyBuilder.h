@@ -28,7 +28,6 @@
 #include <core/common_functions.h>
 #include <structures/ArrayOfReads.h>
 #include <communication/Message.h>
-#include <assembler/MemoryConsumptionReducer.h>
 #include <structures/MyForest.h>
 #include <memory/RingAllocator.h>
 #include <structures/Read.h>

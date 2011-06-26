@@ -29,7 +29,6 @@
 #include <structures/MyForest.h>
 #include <structures/ArrayOfReads.h>
 #include <memory/OnDiskAllocator.h>
-#include <assembler/MemoryConsumptionReducer.h>
 #include <structures/StaticVector.h>
 #include <assembler/SeedingData.h>
 #include <map>
@@ -129,7 +128,6 @@ class Machine{
 	int m_slave_mode;
 	int m_master_mode;
 
-	MemoryConsumptionReducer m_reducer;
 
 	bool m_startEdgeDistribution;
 	bool m_mode_AttachSequences;

@@ -41,7 +41,6 @@
 #include <structures/MyForest.h>
 #include <graph/GridTable.h>
 #include <core/Parameters.h>
-#include <assembler/MemoryConsumptionReducer.h>
 #include <communication/BufferedData.h>
 #include <memory/MyAllocator.h>
 #include <structures/Vertex.h>
@@ -60,7 +59,6 @@ class MessageProcessor{
 	Scaffolder*m_scaffolder;
 	int m_count;
 
-	MemoryConsumptionReducer*m_reducer;
 	uint64_t m_lastSize;
 
 	SequencesLoader*m_sequencesLoader;
@@ -197,7 +195,6 @@ SequencesIndexer*m_si
 	MessageProcessor();
 
 	void flushBuffers();
-	void setReducer(MemoryConsumptionReducer*reducer);
 	void setScaffolder(Scaffolder*a);
 	void setVirtualCommunicator(VirtualCommunicator*a);
 };

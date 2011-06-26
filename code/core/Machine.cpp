@@ -194,7 +194,6 @@ void Machine::start(){
 	m_startEdgeDistribution=false;
 
 	m_ranksDoneAttachingReads=0;
-	m_reducer.constructor(getSize(),&m_parameters);
 
 	m_messagesHandler.barrier();
 
@@ -392,7 +391,6 @@ void Machine::start(){
 	if(isMaster()){
 		cout<<endl;
 	}
-	m_mp.setReducer(&m_reducer);
 
 	m_mp.constructor(
 &m_messagesHandler,
@@ -1341,20 +1339,6 @@ void Machine::call_RAY_SLAVE_MODE_EXTENSION(){
 m_parameters.getMinimumCoverage(),&m_oa,&(m_seedingData->m_SEEDING_edgesReceived),&m_slave_mode);
 }
 
-void Machine::call_RAY_SLAVE_MODE_DELETE_VERTICES(){
-	if(m_verticesExtractor.deleteVertices(m_reducer.getVerticesToRemove(),&m_subgraph,
-&m_parameters,&m_outboxAllocator,&m_outbox,
-m_reducer.getIngoingEdges(),m_reducer.getOutgoingEdges()
-)){
-		// flush
-
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_DELETE_VERTICES_DONE,getRank());
-		m_outbox.push_back(aMessage);
-		m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
-		m_reducer.destructor();
-	}
-}
-
 void Machine::processData(){
 	MachineMethod masterMethod=m_master_methods[m_master_mode];
 	(this->*masterMethod)();
@@ -1399,46 +1383,6 @@ bool Machine::isAlive(){
 Machine::~Machine(){
 	delete m_bubbleData;
 	m_bubbleData=NULL;
-}
-
-void Machine::call_RAY_MASTER_MODE_ASK_BEGIN_REDUCTION(){
-	for(int i=0;i<getSize();i++){
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_ASK_BEGIN_REDUCTION,getRank());
-		m_outbox.push_back(aMessage);
-	}
-	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
-}
-
-void Machine::call_RAY_MASTER_MODE_START_REDUCTION(){
-	printf("\nRank %i asks all ranks to reduce memory consumption\n",getRank());
-	fflush(stdout);
-	for(int i=0;i<getSize();i++){
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_START_REDUCTION,getRank());
-		m_outbox.push_back(aMessage);
-	}
-	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
-}
-
-void Machine::call_RAY_SLAVE_MODE_REDUCE_MEMORY_CONSUMPTION(){
-	if(m_reducer.reduce(&m_subgraph,&m_parameters,
-&(m_seedingData->m_SEEDING_edgesRequested),&(m_seedingData->m_SEEDING_vertexCoverageRequested),&(m_seedingData->m_SEEDING_vertexCoverageReceived),
-	&m_outboxAllocator,getSize(),getRank(),&m_outbox,
-&(m_seedingData->m_SEEDING_receivedVertexCoverage),m_seedingData,
-m_parameters.getMinimumCoverage(),&(m_seedingData->m_SEEDING_edgesReceived)
-)){
-		m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_REDUCE_MEMORY_CONSUMPTION_DONE,getRank());
-		m_outbox.push_back(aMessage);
-		m_verticesExtractor.prepareDeletions();
-	}
-}
-
-void Machine::call_RAY_MASTER_MODE_RESUME_VERTEX_DISTRIBUTION(){
-	for(int i=0;i<getSize();i++){
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_RESUME_VERTEX_DISTRIBUTION,getRank());
-		m_outbox.push_back(aMessage);
-	}
-	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
 }
 
 void Machine::assignMasterHandlers(){
