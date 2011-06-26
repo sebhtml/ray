@@ -1772,7 +1772,7 @@ void MessageProcessor::call_RAY_MPI_TAG_KMER_ACADEMY_DATA(Message*message){
 		if(m_subgraph->insertedInAcademy()){
 			tmp->m_count=0;
 		}
-		uint8_t oldValue=tmp->m_count;
+		COVERAGE_TYPE oldValue=tmp->m_count;
 		if(tmp->m_lowerKey==l)
 			tmp->m_count++;
 		if(tmp->m_count<oldValue)

@@ -30,7 +30,7 @@
 class KmerCandidate{
 public:
 	Kmer m_lowerKey;
-	uint8_t m_count;
+	COVERAGE_TYPE m_count;
 };
 
 class KmerAcademy{

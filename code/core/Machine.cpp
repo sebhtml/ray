@@ -909,12 +909,12 @@ void Machine::call_RAY_MASTER_MODE_WRITE_KMERS(){
 		edgeFile<<m_parameters.getPrefix()<<".degreeDistribution.txt";
 		ofstream f(edgeFile.str().c_str());
 
-		f<<"#Most of the vertices should have an ingoing degree of 1 and an outgoing degree of 1."<<endl;
-		f<<"#These are the easy vertices."<<endl;
-		f<<"#Then, the most abundant are those with an ingoing degree of 1 and an outgoing degree of 2."<<endl;
-		f<<"#Note that vertices with a coverage of 1 are not considered."<<endl;
-		f<<"#The option -write-kmers will actually write all the graph to a file if you need more precise data."<<endl;
-		f<<"#IngoingDegree\tOutgoingDegree\tNumberOfVertices"<<endl;
+		f<<"# Most of the vertices should have an ingoing degree of 1 and an outgoing degree of 1."<<endl;
+		f<<"# These are the easy vertices."<<endl;
+		f<<"# Then, the most abundant are those with an ingoing degree of 1 and an outgoing degree of 2."<<endl;
+		f<<"# Note that vertices with a coverage of 1 are not considered."<<endl;
+		f<<"# The option -write-kmers will actually write all the graph to a file if you need more precise data."<<endl;
+		f<<"# IngoingDegree\tOutgoingDegree\tNumberOfVertices"<<endl;
 
 		for(int i=0;i<=4;i++){
 			for(int j=0;j<=4;j++){
