@@ -92,6 +92,9 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			m_finished=true;
 			printf("Rank %i is computing vertices & edges [%i/%i] (completed)\n",rank,(int)*m_mode_send_vertices_sequence_id,(int)m_myReads->size());
 			fflush(stdout);
+			m_bufferedData.showStatistics(m_parameters->getRank());
+			m_bufferedDataForIngoingEdges.showStatistics(m_parameters->getRank());
+			m_bufferedDataForOutgoingEdges.showStatistics(m_parameters->getRank());
 		}
 	}else{
 		if(m_mode_send_vertices_sequence_id_position==0){
@@ -248,12 +251,12 @@ void VerticesExtractor::constructor(int size,Parameters*parameters){
 	m_outbox=NULL;
 	m_mode_send_vertices_sequence_id_position=0;
 	m_hasPreviousVertex=false;
-	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_VERTEX_EXTRACTOR_BUFFERS,m_parameters->showMemoryAllocations());
-	m_bufferedDataForOutgoingEdges.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_OUTGOING_EDGES_EXTRACTOR_BUFFERS,m_parameters->showMemoryAllocations());
-	m_bufferedDataForIngoingEdges.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_INGOING_EDGES_EXTRACTOR_BUFFERS,m_parameters->showMemoryAllocations());
+	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_VERTEX_EXTRACTOR_BUFFERS,m_parameters->showMemoryAllocations(),KMER_U64_ARRAY_SIZE);
+	m_bufferedDataForOutgoingEdges.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_OUTGOING_EDGES_EXTRACTOR_BUFFERS,m_parameters->showMemoryAllocations(),2*KMER_U64_ARRAY_SIZE);
+	m_bufferedDataForIngoingEdges.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_INGOING_EDGES_EXTRACTOR_BUFFERS,m_parameters->showMemoryAllocations(),2*KMER_U64_ARRAY_SIZE);
 	
-	m_buffersForOutgoingEdgesToDelete.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_DEL_OUT,m_parameters->showMemoryAllocations());
-	m_buffersForIngoingEdgesToDelete.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_DEL_IN,m_parameters->showMemoryAllocations());
+	m_buffersForOutgoingEdgesToDelete.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_DEL_OUT,m_parameters->showMemoryAllocations(),2*KMER_U64_ARRAY_SIZE);
+	m_buffersForIngoingEdgesToDelete.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_DEL_IN,m_parameters->showMemoryAllocations(),2*KMER_U64_ARRAY_SIZE);
 
 	m_pendingMessages=0;
 	m_size=size;

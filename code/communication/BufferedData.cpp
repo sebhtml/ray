@@ -28,7 +28,11 @@
 using namespace std;
 
 // the capacity is measured in uint64_t
-void BufferedData::constructor(int numberOfRanks,int capacity,int type,bool show){
+void BufferedData::constructor(int numberOfRanks,int capacity,int type,bool show,int period){
+	m_period=period;
+	m_flushedMessages=0;
+	m_count=0;
+	m_pushedMessages=0;
 	m_show=show;
 	m_type=type;
 	#ifdef DEBUG_BUFFERS
@@ -78,6 +82,11 @@ void BufferedData::addAt(int i,uint64_t k){
 	int j=size(i);
 	m_data[i*m_capacity+j]=k;
 	m_sizes[i]++;
+	m_count++;
+	if(m_count==m_period){
+		m_count=0;
+		m_pushedMessages++;
+	}
 }
 
 void BufferedData::reset(int i){
@@ -154,6 +163,7 @@ bool BufferedData::flush(int destination,int period,int tag,RingAllocator*outbox
 	}
 	Message aMessage(message,amount,MPI_UNSIGNED_LONG_LONG,destination,tag,rank);
 	outbox->push_back(aMessage);
+	m_flushedMessages++;
 	reset(destination);
 	return true;
 }
@@ -162,4 +172,10 @@ bool BufferedData::needsFlushing(int destination,int period){
 	int threshold=(m_capacity/period)*period;
 	int amount=size(destination);
 	return amount>=threshold;
+}
+
+void BufferedData::showStatistics(int rank){
+	double ratio=100.0*m_flushedMessages/m_pushedMessages;
+	printf("Rank %i: VirtualCommunicator: %i pushed messages generated %i virtual messages (%f%%)\n",rank,m_flushedMessages,m_pushedMessages,ratio);
+	fflush(stdout);
 }

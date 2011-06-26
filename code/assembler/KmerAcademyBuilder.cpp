@@ -86,6 +86,7 @@ void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
 			m_finished=true;
 			printf("Rank %i is counting k-mers [%i/%i] (completed)\n",rank,(int)*m_mode_send_vertices_sequence_id,(int)m_myReads->size());
 			fflush(stdout);
+			m_bufferedData.showStatistics(m_parameters->getRank());
 		}
 	}else{
 		if(m_mode_send_vertices_sequence_id_position==0){
@@ -151,7 +152,7 @@ void KmerAcademyBuilder::constructor(int size,Parameters*parameters){
 	m_distributionIsCompleted=false;
 	m_outbox=NULL;
 	m_mode_send_vertices_sequence_id_position=0;
-	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_KMER_ACADEMY_BUFFER,m_parameters->showMemoryAllocations());
+	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_KMER_ACADEMY_BUFFER,m_parameters->showMemoryAllocations(),KMER_U64_ARRAY_SIZE);
 	
 	m_pendingMessages=0;
 	m_size=size;

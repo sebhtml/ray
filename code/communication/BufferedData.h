@@ -40,6 +40,10 @@
  *  this is above the threshold and the RingAllocator does not allow that.
  */
 class BufferedData{
+	int m_count;
+	int m_period;
+	int m_flushedMessages;
+	int m_pushedMessages;
 	int m_type;
 	int*m_sizes;
 	int m_ranks;
@@ -54,7 +58,7 @@ public:
  *
 	 the capacity is measured in uint64_t
  */
-	void constructor(int numberOfRanks,int capacity,int type,bool show);
+	void constructor(int numberOfRanks,int capacity,int type,bool show,int period);
 /*
  * Get the number of appended elements for MPI rank i
  */
@@ -90,6 +94,7 @@ public:
  * Returns true if any buffer is full.
  */
 	bool needsFlushing(int destination,int period);
+	void showStatistics(int rank);
 };
 
 #endif

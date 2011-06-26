@@ -41,6 +41,7 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED,getRank);
 		m_outbox->push_back(aMessage);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
+		m_buffers.showStatistics(m_parameters->getRank());
 		m_buffers.clear();
 
 		m_cacheForRepeatedVertices.clear();
@@ -91,7 +92,7 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 
 void FusionData::readyBuffers(){
 	m_buffers.constructor(m_size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
-		RAY_MALLOC_TYPE_FUSION_BUFFERS,m_parameters->showMemoryAllocations());
+		RAY_MALLOC_TYPE_FUSION_BUFFERS,m_parameters->showMemoryAllocations(),KMER_U64_ARRAY_SIZE+2);
 }
 
 void FusionData::constructor(int size,int max,int rank,StaticVector*outbox,
