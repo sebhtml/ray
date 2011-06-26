@@ -86,6 +86,7 @@ Machine::Machine(int argc,char**argv){
 void Machine::start(){
 	m_initialisedAcademy=false;
 	m_coverageInitialised=false;
+	m_writeKmerInitialised=false;
 	m_timePrinter.constructor();
 
 	m_killed=false;
@@ -755,11 +756,6 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	cout<<"Rank "<<getRank()<<": the minimum coverage is "<<m_parameters.getMinimumCoverage()<<endl;
 	cout<<"Rank "<<getRank()<<": the peak coverage is "<<m_parameters.getPeakCoverage()<<endl;
 
-	if(m_parameters.writeKmers()){
-		cout<<endl;
-		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getPrefix()<<".kmers.txt"<<endl;
-	}
-
 	uint64_t numberOfVertices=0;
 	uint64_t verticesWith1Coverage=0;
 	int lowestCoverage=9999;
@@ -889,6 +885,37 @@ void Machine::call_RAY_MASTER_MODE_PURGE_NULL_EDGES(){
 
 void Machine::call_RAY_SLAVE_MODE_PURGE_NULL_EDGES(){
 	m_edgePurger.work();
+}
+
+void Machine::call_RAY_MASTER_MODE_WRITE_KMERS(){
+	if(!m_writeKmerInitialised){
+		m_writeKmerInitialised=true;
+		m_coverageRank=0;
+		m_numberOfRanksDone=0;
+	}else if(m_inbox.size()>0&&m_inbox.at(0)->getTag()==RAY_MPI_TAG_WRITE_KMERS_REPLY){
+		m_numberOfRanksDone++;
+	}else if(m_numberOfRanksDone==m_parameters.getSize()){
+		if(m_parameters.writeKmers()){
+			cout<<endl;
+			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getPrefix()<<".kmers.txt"<<endl;
+		}
+
+		m_master_mode=RAY_MASTER_MODE_TRIGGER_INDEXING;
+	}else if(m_coverageRank==m_numberOfRanksDone){
+		cout<<"RAY_MPI_TAG_WRITE_KMERS"<<endl;
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_coverageRank,RAY_MPI_TAG_WRITE_KMERS,getRank());
+		m_outbox.push_back(aMessage);
+		m_coverageRank++;
+	}
+}
+
+void Machine::call_RAY_SLAVE_MODE_WRITE_KMERS(){
+	if(m_parameters.writeKmers())
+		m_coverageGatherer.writeKmers();
+	
+	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_WRITE_KMERS_REPLY,getRank());
+	m_outbox.push_back(aMessage);
+	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
 }
 
 void Machine::call_RAY_MASTER_MODE_TRIGGER_INDEXING(){

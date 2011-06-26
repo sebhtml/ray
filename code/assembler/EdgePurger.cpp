@@ -44,7 +44,7 @@ void EdgePurger::work(){
 	if(m_inbox->size()>0&&m_inbox->at(0)->getTag()==RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY){
 		m_masterCountFinished++;
 		if(m_masterCountFinished==m_parameters->getSize()){
-			*m_masterMode=RAY_MASTER_MODE_TRIGGER_INDEXING;
+			*m_masterMode=RAY_MASTER_MODE_WRITE_KMERS;
 		}
 	}
 	if(m_done){
@@ -158,7 +158,7 @@ void EdgePurger::updateStates(){
 		#endif
 		m_activeWorkers.erase(workerId);
 		m_aliveWorkers.erase(workerId);
-		if(m_completedJobs%100000==0){
+		if(m_completedJobs%50000==0){
 			printf("Rank %i is purging edges [%i/%i]\n",m_parameters->getRank(),m_completedJobs+1,(int)m_subgraph->size());
 			fflush(stdout);
 		}

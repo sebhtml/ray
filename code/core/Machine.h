@@ -137,7 +137,8 @@ class Machine{
 	int m_ranksDoneAttachingReads;
 	int m_numberOfMachinesReadyToSendDistribution;
 	int m_numberOfRanksDoneSeeding;
-	int m_numberOfRanksGone;
+	int m_numberOfRanksDone;
+	bool m_writeKmerInitialised;
 	FusionData*m_fusionData;
 
 	int m_machineRank;

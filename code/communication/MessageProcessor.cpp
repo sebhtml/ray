@@ -733,6 +733,12 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA_REPLY(Message*message){
 	m_verticesExtractor->setReadiness();
 }
 
+void MessageProcessor::call_RAY_MPI_TAG_WRITE_KMERS_REPLY(Message*message){}
+
+void MessageProcessor::call_RAY_MPI_TAG_WRITE_KMERS(Message*message){
+	*m_mode=RAY_SLAVE_MODE_WRITE_KMERS;
+}
+
 void MessageProcessor::call_RAY_MPI_TAG_PURGE_NULL_EDGES(Message*message){
 	m_subgraph->getKmerAcademy()->destructor();
 	m_subgraph->freeze();
