@@ -893,6 +893,13 @@ void Machine::call_RAY_MASTER_MODE_WRITE_KMERS(){
 		m_coverageRank=0;
 		m_numberOfRanksDone=0;
 	}else if(m_inbox.size()>0&&m_inbox.at(0)->getTag()==RAY_MPI_TAG_WRITE_KMERS_REPLY){
+		uint64_t*buffer=(uint64_t*)m_inbox.at(0)->getBuffer();
+		int bufferPosition=0;
+		for(int i=0;i<=4;i++){
+			for(int j=0;j<=4;j++){
+				m_edgeDistribution[i][j]+=buffer[bufferPosition++];
+			}
+		}
 		m_numberOfRanksDone++;
 	}else if(m_numberOfRanksDone==m_parameters.getSize()){
 		if(m_parameters.writeKmers()){
@@ -900,9 +907,28 @@ void Machine::call_RAY_MASTER_MODE_WRITE_KMERS(){
 			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getPrefix()<<".kmers.txt"<<endl;
 		}
 
+		ostringstream edgeFile;
+		edgeFile<<m_parameters.getPrefix()<<".degreeDistribution.txt";
+		ofstream f(edgeFile.str().c_str());
+
+		f<<"#Most of the vertices should have an ingoing degree of 1 and an outgoing degree of 1."<<endl;
+		f<<"#These are the easy vertices."<<endl;
+		f<<"#Then, the most abundant are those with an ingoing degree of 1 and an outgoing degree of 2."<<endl;
+		f<<"#Note that vertices with a coverage of 1 are not considered."<<endl;
+		f<<"#The option -write-kmers will actually write all the graph to a file if you need more precise data."<<endl;
+		f<<"#IngoingDegree\tOutgoingDegree\tNumberOfVertices"<<endl;
+
+		for(int i=0;i<=4;i++){
+			for(int j=0;j<=4;j++){
+				f<<i<<"\t"<<j<<"\t"<<m_edgeDistribution[i][j]<<endl;
+			}
+		}
+		m_edgeDistribution.clear();
+		f.close();
+		cout<<"Rank "<<getRank()<<" wrote "<<edgeFile.str()<<endl;
+	
 		m_master_mode=RAY_MASTER_MODE_TRIGGER_INDEXING;
 	}else if(m_coverageRank==m_numberOfRanksDone){
-		cout<<"RAY_MPI_TAG_WRITE_KMERS"<<endl;
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_coverageRank,RAY_MPI_TAG_WRITE_KMERS,getRank());
 		m_outbox.push_back(aMessage);
 		m_coverageRank++;
@@ -913,7 +939,28 @@ void Machine::call_RAY_SLAVE_MODE_WRITE_KMERS(){
 	if(m_parameters.writeKmers())
 		m_coverageGatherer.writeKmers();
 	
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_WRITE_KMERS_REPLY,getRank());
+	/* send edge distribution */
+	GridTableIterator iterator;
+	iterator.constructor(&m_subgraph,m_parameters.getWordSize(),&m_parameters);
+
+	map<int,map<int,uint64_t> > distribution;
+	while(iterator.hasNext()){
+		Vertex*node=iterator.next();
+		Kmer key=*(iterator.getKey());
+		int parents=node->getIngoingEdges(&key,m_parameters.getWordSize()).size();
+		int children=node->getOutgoingEdges(&key,m_parameters.getWordSize()).size();
+		distribution[parents][children]++;
+	}
+
+	uint64_t*buffer=(uint64_t*)m_outboxAllocator.allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	int outputPosition=0;
+	for(int i=0;i<=4;i++){
+		for(int j=0;j<=4;j++){
+			buffer[outputPosition++]=distribution[i][j];
+		}
+	}
+
+	Message aMessage(buffer,outputPosition,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_WRITE_KMERS_REPLY,getRank());
 	m_outbox.push_back(aMessage);
 	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
 }

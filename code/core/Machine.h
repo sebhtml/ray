@@ -70,6 +70,8 @@ typedef void (Machine::*MachineMethod) ();
 
 class Machine{
 	EdgePurger m_edgePurger;
+	map<int,map<int,uint64_t> > m_edgeDistribution;
+
 	KmerAcademyBuilder m_kmerAcademyBuilder;
 	bool m_initialisedAcademy;
 	CoverageGatherer m_coverageGatherer;

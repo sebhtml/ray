@@ -946,7 +946,7 @@ void Parameters::showUsage(){
 	cout<<"NAME"<<endl<<basicSpaces<<"Ray - assemble genomes in parallel using the message-passing interface"<<endl<<endl;
 
 	cout<<"SYNOPSIS"<<endl;
-	cout<<basicSpaces<<"mpirun -np NUMBER_OF_RANKS Ray -p l1_1.fastq l1_2.fastq -p l2_1.fastq l2_2.fastq"<<endl;
+	cout<<basicSpaces<<"mpirun -np NUMBER_OF_RANKS Ray -k KMERLENGTH -p l1_1.fastq l1_2.fastq -p l2_1.fastq l2_2.fastq -o test"<<endl;
 	cout<<endl;
 	cout<<"DESCRIPTION:"<<endl;
 	showOption("-k kmerLength","Selects the length of k-mers. The default value is 21. ");
@@ -1009,7 +1009,9 @@ void Parameters::showUsage(){
 	cout<<endl;
 
 	cout<<"FILES"<<endl;
-
+	cout<<endl;
+	cout<<"     Input files"<<endl;
+	cout<<endl;
 	cout<<"     .fasta"<<endl;
 	cout<<"     .fasta.gz (needs HAVE_LIBZ=y at compilation)"<<endl;
 	cout<<"     .fasta.bz2 (needs HAVE_LIBBZ2=y at compilation)"<<endl;
@@ -1018,6 +1020,41 @@ void Parameters::showUsage(){
 	cout<<"     .fastq.bz2 (needs HAVE_LIBBZ2=y at compilation)"<<endl;
 	cout<<"     .sff (paired reads must be extracted manually)"<<endl;
 	cout<<"     .csfasta (color-space reads)"<<endl;
+	cout<<endl;
+	cout<<"     Outputted files"<<endl;
+	cout<<endl;
+	cout<<"     PREFIX.RayCommand.txt"<<endl;
+	cout<<"     	The exact same command provided "<<endl;
+	cout<<"     PREFIX.RayVersion.txt"<<endl;
+	cout<<"     	The version of Ray"<<endl;
+	cout<<"     PREFIX.Contigs.fasta"<<endl;
+	cout<<"     	Contiguous sequences in FASTA format"<<endl;
+	cout<<"     PREFIX.ContigLengths.txt"<<endl;
+	cout<<"     	The lengths of contiguous sequences"<<endl;
+	cout<<"     PREFIX.Scaffolds.fasta"<<endl;
+	cout<<"     	The scaffold sequences in FASTA format"<<endl;
+	cout<<"     PREFIX.ScaffoldComponents.txt"<<endl;
+	cout<<"     	The components of each scaffold"<<endl;
+	cout<<"     PREFIX.ScaffoldLengths.txt"<<endl;
+	cout<<"     	The length of each scaffold"<<endl;
+	cout<<"     PREFIX.ScaffoldLinks.txt"<<endl;
+	cout<<"     	Scaffold links"<<endl;
+	cout<<"     PREFIX.CoverageDistribution.txt"<<endl;
+	cout<<"     	The distribution of coverage values"<<endl;
+	cout<<"     PREFIX.CoverageDistributionAnalysis.txt"<<endl;
+	cout<<"     	Analysis of the coverage distribution"<<endl;
+	cout<<"     PREFIX.LibraryStatistics.txt"<<endl;
+	cout<<"     	Number of reads in each file  and estimation of outer distances for paired reads"<<endl;
+	cout<<"     PREFIX.SeedLengthDistribution.txt"<<endl;
+	cout<<"     	The distribution of seed lengths"<<endl;
+	cout<<"     PREFIX.OutputNumbers.txt"<<endl;
+	cout<<"     	Overall numbers for the assembly"<<endl;
+	cout<<"     PREFIX.AMOS.afg"<<endl;
+	cout<<"     	Assembly representation in AMOS format (-amos) "<<endl;
+	cout<<"     PREFIX.kmers.txt"<<endl;
+	cout<<"     	K-mer graph (-write-kmers) "<<endl;
+	cout<<"     PREFIX.degreeDistribution.txt"<<endl;
+	cout<<"     	Distribution of ingoing and outgoing degrees"<<endl;
 
 	cout<<endl;
 	cout<<"     Note: file format is determined with file extension."<<endl;

@@ -19,6 +19,8 @@ distribution. Thanks to pmiguel on SEQanswers for providing raw data points.
 * New options: -minimumCoverage, -peakCoverage, -repeatCoverage -- provides
 coverage values automatically.
 * Reduced the memory usage during the building of the graph.
+* New outputted file: PREFIX.degreeDistribution.txt contains the distribution
+of degrees in the graph.
 
 
 = 1.6.0 =
