@@ -58,6 +58,7 @@
 #include <set>
 #include <time.h>
 #include <assembler/KmerAcademyBuilder.h>
+#include <assembler/EdgePurger.h>
 
 using namespace std;
 
@@ -68,6 +69,7 @@ class Machine;
 typedef void (Machine::*MachineMethod) ();
 
 class Machine{
+	EdgePurger m_edgePurger;
 	KmerAcademyBuilder m_kmerAcademyBuilder;
 	bool m_initialisedAcademy;
 	CoverageGatherer m_coverageGatherer;

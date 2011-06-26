@@ -166,6 +166,10 @@ void Machine::start(){
 
 	m_scaffolder.constructor(&m_outbox,&m_inbox,&m_outboxAllocator,&m_parameters,&m_slave_mode,
 	&m_virtualCommunicator);
+
+	m_edgePurger.constructor(&m_outbox,&m_inbox,&m_outboxAllocator,&m_parameters,&m_slave_mode,&m_master_mode,
+	&m_virtualCommunicator,&m_subgraph);
+
 	m_coverageGatherer.constructor(&m_parameters,&m_inbox,&m_outbox,&m_slave_mode,&m_subgraph,
 		&m_outboxAllocator);
 
@@ -873,13 +877,26 @@ void Machine::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 		);
 }
 
-void Machine::call_RAY_MASTER_MODE_TRIGGER_INDEXING(){
-	m_numberOfMachinesDoneSendingEdges=-9;
+void Machine::call_RAY_MASTER_MODE_PURGE_NULL_EDGES(){
 	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
 	m_timePrinter.printElapsedTime("Graph construction");
 	cout<<endl;
+	for(int i=0;i<getSize();i++){
+		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_PURGE_NULL_EDGES,getRank());
+		m_outbox.push_back(aMessage);
+	}
+}
 
+void Machine::call_RAY_SLAVE_MODE_PURGE_NULL_EDGES(){
+	m_edgePurger.work();
+}
+
+void Machine::call_RAY_MASTER_MODE_TRIGGER_INDEXING(){
+	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+	
+	m_timePrinter.printElapsedTime("Edge purge");
 	cout<<endl;
+
 	for(int i=0;i<getSize();i++){
 		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_START_INDEXING_SEQUENCES,getRank());
 		m_outbox.push_back(aMessage);

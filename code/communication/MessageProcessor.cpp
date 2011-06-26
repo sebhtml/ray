@@ -665,16 +665,6 @@ void MessageProcessor::call_RAY_MPI_TAG_WELCOME(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message){
-	m_subgraph->getKmerAcademy()->destructor();
-	m_subgraph->freeze();
-
-	printf("Rank %i has %i vertices (completed)\n",rank,(int)m_subgraph->size());
-	fflush(stdout);
-
-	if(m_parameters->showMemoryUsage()){
-		showMemoryUsage(rank);
-		fflush(stdout);
-	}
 
 	(*m_mode)=RAY_SLAVE_MODE_INDEX_SEQUENCES;
 }
@@ -743,11 +733,28 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA_REPLY(Message*message){
 	m_verticesExtractor->setReadiness();
 }
 
+void MessageProcessor::call_RAY_MPI_TAG_PURGE_NULL_EDGES(Message*message){
+	m_subgraph->getKmerAcademy()->destructor();
+	m_subgraph->freeze();
+
+	printf("Rank %i has %i vertices (completed)\n",rank,(int)m_subgraph->size());
+	fflush(stdout);
+
+	if(m_parameters->showMemoryUsage()){
+		showMemoryUsage(rank);
+		fflush(stdout);
+	}
+
+	*m_mode=RAY_SLAVE_MODE_PURGE_NULL_EDGES;
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY(Message*message){}
+
 void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DISTRIBUTED(Message*message){
 	(*m_numberOfMachinesDoneSendingVertices)++;
 	if((*m_numberOfMachinesDoneSendingVertices)==size){
 		m_verticesExtractor->setDistributionAsCompleted();
-		(*m_master_mode)=RAY_MASTER_MODE_TRIGGER_INDEXING;
+		(*m_master_mode)=RAY_MASTER_MODE_PURGE_NULL_EDGES;
 	}
 }
 
@@ -962,9 +969,8 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message)
 		string kmerStr=idToWord(&vertex,m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 		Vertex*node=m_subgraph->find(&vertex);
 		int coverage=1;
-		if(node!=NULL){
+		if(node!=NULL)
 			coverage=node->getCoverage(&vertex);
-		}
 		message2[i]=coverage;
 	}
 	Message aMessage(message2,count,MPI_UNSIGNED_LONG_LONG,source,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY,rank);

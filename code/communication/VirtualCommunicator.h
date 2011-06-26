@@ -49,7 +49,6 @@ class VirtualCommunicator{
 	bool m_debug;
 	uint64_t m_pushedMessages;
 	uint64_t m_flushedMessages;
-	map<int,uint64_t> m_distribution;
 
 	// priority, elementId, QueueElement
 	map<int,set<uint64_t> > m_priorityQueue;

@@ -144,7 +144,6 @@ void VirtualCommunicator::flushMessage(int tag,int destination){
 	}
 	assert(currentSize>0);
 	int requiredResponseLength=m_workerCurrentIdentifiers[tag][destination].size()*m_elementSizes[tag]*sizeof(uint64_t);
-	m_distribution[requiredResponseLength]++;
 	assert(requiredResponseLength<=MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	#endif
 
@@ -324,20 +323,8 @@ bool VirtualCommunicator::nextIsAlmostFull(){
 }
 
 void VirtualCommunicator::printStatistics(){
-	printf("Rank %i VirtualCommunicator Statistics\n",m_rank);
-	fflush(stdout);
-	uint64_t total=0;
-	for(map<int,uint64_t>::iterator i=m_distribution.begin();i!=m_distribution.end();i++){
-		break;
-		int size=i->first;
-		uint64_t count=i->second;
-		total+=count;
-		printf("Rank %i Size: %i Count: %lu\n",m_rank,size,count);
-		fflush(stdout);
-	}
 	double ratio=100.0*m_flushedMessages/m_pushedMessages;
-	printf("Rank %i: %lu virtual messages for %lu pushed messages\n",m_rank,m_flushedMessages,m_pushedMessages);
-	printf("Rank %i: percentage= %f%%\n",m_rank,ratio);
+	printf("Rank %i: VirtualCommunicator: %lu pushed messages generated %lu virtual messages (%f%%)\n",m_rank,m_flushedMessages,m_pushedMessages,ratio);
 	fflush(stdout);
 }
 

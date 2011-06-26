@@ -33,11 +33,13 @@ void GridTableIterator::constructor(GridTable*a,int wordSize,Parameters*paramete
 	m_currentPosition=0;
 	#ifdef ASSERT
 	assert(m_table!=NULL);
+	assert(m_table->frozen());
 	#endif
 }
 
 bool GridTableIterator::hasNext(){
 	#ifdef ASSERT
+	assert(m_table->frozen());
 	assert(m_table!=NULL);
 	#endif
 	getNext();
@@ -45,6 +47,9 @@ bool GridTableIterator::hasNext(){
 }
 
 Vertex*GridTableIterator::next(){
+	#ifdef ASSERT
+	assert(m_table->frozen());
+	#endif
 	getNext();
 	#ifdef ASSERT
 	assert(m_currentBin<m_table->getNumberOfBins());

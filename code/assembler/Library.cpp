@@ -182,6 +182,7 @@ Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,StaticVector*inbo
 	prefixFull<<m_parameters->getMemoryPrefix()<<"_Library";
 	int chunkSize=4194304;
 	m_allocator.constructor(chunkSize,RAY_MALLOC_TYPE_LIBRARY_ALLOCATOR,m_parameters->showMemoryAllocations());
+	m_completedJobs=0;
 }
 
 void Library::setReadiness(){

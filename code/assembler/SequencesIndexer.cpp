@@ -82,7 +82,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 			// AND
 			// the number of alive workers is below the maximum
 			if(m_theSequenceId<(int)m_myReads->size()&&(int)m_aliveWorkers.size()<m_maximumAliveWorkers){
-				if(m_theSequenceId%50000==0){
+				if(m_theSequenceId%10000==0){
 					printf("Rank %i is selecting optimal read markers [%i/%i]\n",m_rank,m_theSequenceId+1,(int)m_myReads->size());
 					fflush(stdout);
 					if(m_parameters->showMemoryUsage())
