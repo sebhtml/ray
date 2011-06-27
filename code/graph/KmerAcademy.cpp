@@ -60,13 +60,12 @@ uint64_t KmerAcademy::size(){
 }
 
 KmerCandidate*KmerAcademy::find(Kmer*key){
-	Kmer lowerKey;
-	int bin=hash_function_2(key,m_parameters->getWordSize(),&lowerKey,m_parameters->getColorSpaceMode())%m_gridSize;
-
+	Kmer lowerKey=complementVertex(key,m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 	if(key->isLower(&lowerKey)){
 		lowerKey=*key;
-
 	}
+	int bin=hash_function_2(key)%m_gridSize;
+
 	for(int i=0;i<m_gridSizes[bin];i++){
 		KmerCandidate*gridEntry=m_gridData[bin]+i;
 		if(gridEntry->m_lowerKey.isEqual(&lowerKey)){
@@ -77,12 +76,12 @@ KmerCandidate*KmerAcademy::find(Kmer*key){
 }
 
 KmerCandidate*KmerAcademy::insert(Kmer*key){
-	Kmer lowerKey;
-	m_inserted=false;
-	int bin=hash_function_2(key,m_parameters->getWordSize(),&lowerKey,m_parameters->getColorSpaceMode())%m_gridSize;
+	Kmer lowerKey=complementVertex(key,m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 	if(key->isLower(&lowerKey)){
 		lowerKey=*key;
 	}
+	m_inserted=false;
+	int bin=hash_function_2(key)%m_gridSize;
 	for(int i=0;i<m_gridSizes[bin];i++){
 		KmerCandidate*gridEntry=m_gridData[bin]+i;
 		if(gridEntry->m_lowerKey.isEqual(&lowerKey)){

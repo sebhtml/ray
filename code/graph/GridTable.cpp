@@ -55,12 +55,13 @@ uint64_t GridTable::size(){
 }
 
 Vertex*GridTable::find(Kmer*key){
-	Kmer lowerKey;
-	int bin=hash_function_2(key,m_wordSize,&lowerKey,m_parameters->getColorSpaceMode())%m_gridSize;
-
+	Kmer lowerKey=complementVertex(key,m_wordSize,m_parameters->getColorSpaceMode());
 	if(key->isLower(&lowerKey)){
 		lowerKey=*key;
 	}
+
+	int bin=hash_function_2(&lowerKey)%m_gridSize;
+
 	for(int i=0;i<m_gridSizes[bin];i++){
 		Vertex*gridEntry=m_gridData[bin]+i;
 		if(gridEntry->m_lowerKey.isEqual(&lowerKey)){
@@ -75,12 +76,13 @@ KmerCandidate*GridTable::insertInAcademy(Kmer*key){
 }
 
 Vertex*GridTable::insert(Kmer*key){
-	Kmer lowerKey;
-	m_inserted=false;
-	int bin=hash_function_2(key,m_wordSize,&lowerKey,m_parameters->getColorSpaceMode())%m_gridSize;
+	Kmer lowerKey=complementVertex(key,m_wordSize,m_parameters->getColorSpaceMode());
 	if(key->isLower(&lowerKey)){
 		lowerKey=*key;
 	}
+
+	m_inserted=false;
+	int bin=hash_function_2(&lowerKey)%m_gridSize;
 	for(int i=0;i<m_gridSizes[bin];i++){
 		Vertex*gridEntry=m_gridData[bin]+i;
 		if(gridEntry->m_lowerKey.isEqual(&lowerKey)){

@@ -131,7 +131,10 @@ string convertToString(vector<Kmer>*b,int m_wordSize,bool color){
 }
 
 int vertexRank(Kmer*a,int _size,int w,bool color){
-	return hash_function_1(a,w,color)%(_size);
+	Kmer b=complementVertex(a,w,color);
+	if(a->isLower(&b))
+		b=*a;
+	return hash_function_1(&b)%(_size);
 }
 
 Kmer kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool color){
@@ -299,17 +302,13 @@ vector<Kmer> _getIngoingEdges(Kmer*a,uint8_t edges,int k){
 	return b;
 }
 
-uint64_t hash_function_1(Kmer*a,int w,bool color){
-	Kmer b=complementVertex(a,w,color);
-	if(a->isLower(&b)){
-		b=*a;
-	}
+uint64_t hash_function_1(Kmer*a){
 	#if KMER_U64_ARRAY_SIZE == 1
-	return uniform_hashing_function_1_64_64(b.getU64(0));
+	return uniform_hashing_function_1_64_64(a->getU64(0));
 	#else
 	uint64_t key=b.getU64(0);
 	for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
-		uint64_t hash=uniform_hashing_function_1_64_64(b.getU64(i));
+		uint64_t hash=uniform_hashing_function_1_64_64(a->getU64(i));
 		key^=hash;
 	}
 	return key;
@@ -317,18 +316,13 @@ uint64_t hash_function_1(Kmer*a,int w,bool color){
 	#endif
 }
 
-uint64_t hash_function_2(Kmer*a,int w,Kmer*c,bool color){
-	Kmer b=complementVertex(a,w,color);
-	*c=b;
-	if(a->isLower(&b)){
-		b=*a;
-	}
+uint64_t hash_function_2(Kmer*a){
 	#if KMER_U64_ARRAY_SIZE == 1
-	return uniform_hashing_function_2_64_64(b.getU64(0));
+	return uniform_hashing_function_2_64_64(a->getU64(0));
 	#else
 	uint64_t key=b.getU64(0);
 	for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
-		uint64_t hash=uniform_hashing_function_2_64_64(b.getU64(i));
+		uint64_t hash=uniform_hashing_function_2_64_64(a->getU64(i));
 		key^=hash;
 	}
 	return key;

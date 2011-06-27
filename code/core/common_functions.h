@@ -145,8 +145,8 @@ vector<Kmer> _getIngoingEdges(Kmer*a,uint8_t edges,int k);
 
 char complementNucleotide(char c);
 
-uint64_t hash_function_1(Kmer*a,int w,bool color);
-uint64_t hash_function_2(Kmer*a,int w,Kmer*b,bool color);
+uint64_t hash_function_1(Kmer*a);
+uint64_t hash_function_2(Kmer*a);
 
 uint8_t invertEdges(uint8_t a);
 
