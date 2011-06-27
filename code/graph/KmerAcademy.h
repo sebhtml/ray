@@ -25,39 +25,29 @@
 #include <memory/MyAllocator.h>
 #include <structures/Kmer.h>
 #include <core/Parameters.h>
+#include <structures/MyHashTable.h>
 #include <stdint.h>
 
 class KmerCandidate{
 public:
 	Kmer m_lowerKey;
 	COVERAGE_TYPE m_count;
-};
+}ATTRIBUTE_PACKED;
 
 class KmerAcademy{
 	Parameters*m_parameters;
 	uint64_t m_size;
 	bool m_inserted;
-	MyAllocator m_allocator;
-	KmerCandidate**m_gridData;
-	uint16_t*m_gridSizes;
-	int m_gridSize;
-	bool m_frozen;
+	MyHashTable<Kmer,KmerCandidate> m_hashTable;
 
-	/**
- *   move the item in front of the others
- */
-	KmerCandidate*move(int bin,int item);
 public:
 	void constructor(int rank,Parameters*a);
 	uint64_t size();
 	KmerCandidate*find(Kmer*key);
 	KmerCandidate*insert(Kmer*key);
 	bool inserted();
-	KmerCandidate*getElementInBin(int bin,int element);
-	int getNumberOfElementsInBin(int bin);
-	int getNumberOfBins();
-	void freeze();
 	void destructor();
+	MyHashTable<Kmer,KmerCandidate>*getHashTable();
 };
 
 #endif

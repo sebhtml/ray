@@ -24,16 +24,14 @@
 
 #include <core/Parameters.h>
 #include <core/common_functions.h>
+#include <structures/MyHashTableIterator.h>
 #include <graph/KmerAcademy.h>
 
 class KmerAcademyIterator{
-	KmerAcademy*m_table;
-	bool m_lowerKeyIsDone;
+	MyHashTableIterator<Kmer,KmerCandidate> m_iterator;
+	bool m_mustProcessOtherKey;
 	Kmer m_currentKey;
-	int m_wordSize;
-	int m_currentBin;
-	int m_currentPosition;
-	void getNext();
+	KmerCandidate*m_currentEntry;
 	Parameters*m_parameters;
 public:
 	void constructor(KmerAcademy*a,int wordSize,Parameters*b);

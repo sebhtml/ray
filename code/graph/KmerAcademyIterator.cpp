@@ -20,70 +20,38 @@
 */
 
 #include <graph/KmerAcademyIterator.h>
+#include <structures/MyHashTableIterator.h>
 #include <assert.h>
 #include <iostream>
 using namespace std;
 
 void KmerAcademyIterator::constructor(KmerAcademy*a,int wordSize,Parameters*parameters){
 	m_parameters=parameters;
-	m_lowerKeyIsDone=false;
-	m_wordSize=wordSize;
-	m_table=a;
-	m_currentBin=0;
-	m_currentPosition=0;
-	#ifdef ASSERT
-	assert(m_table!=NULL);
-	#endif
+	m_mustProcessOtherKey=false;
+	m_iterator.constructor(a->getHashTable());
 }
 
 bool KmerAcademyIterator::hasNext(){
-	#ifdef ASSERT
-	assert(m_table!=NULL);
-	#endif
-	getNext();
-	return m_currentBin<m_table->getNumberOfBins()&&m_currentPosition<m_table->getNumberOfElementsInBin(m_currentBin);
+	bool iteratorHasNext=m_iterator.hasNext()||m_mustProcessOtherKey;
+	cout<<"iteratorHasNext "<<iteratorHasNext<<endl;
+	return iteratorHasNext;
 }
 
 KmerCandidate*KmerAcademyIterator::next(){
-	getNext();
+	if(m_mustProcessOtherKey){
+		m_mustProcessOtherKey=false;
+		m_currentKey=complementVertex(&m_currentKey,m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+		return m_currentEntry;
+	}
 	#ifdef ASSERT
-	assert(m_currentBin<m_table->getNumberOfBins());
-	if(m_currentPosition>=m_table->getNumberOfElementsInBin(m_currentBin)){
-		cout<<"bin="<<m_currentBin<<" bins="<<m_table->getNumberOfBins()<<" i="<<m_currentPosition<<" size="<<m_table->getNumberOfElementsInBin(m_currentBin)<<endl;
-	}
-	assert(m_currentPosition<m_table->getNumberOfElementsInBin(m_currentBin));
+	assert(hasNext());
 	#endif
-	KmerCandidate*element=m_table->getElementInBin(m_currentBin,m_currentPosition);
-	if(!m_lowerKeyIsDone){
-		m_currentKey=element->m_lowerKey;
-		m_lowerKeyIsDone=true;
-	}else{
-		m_currentKey=complementVertex(&m_currentKey,m_wordSize,m_parameters->getColorSpaceMode());
-		m_lowerKeyIsDone=false;
-		m_currentPosition++;
-	}
-	return element;
-}
-
-void KmerAcademyIterator::getNext(){
-	while(m_currentBin<m_table->getNumberOfBins()){
-		if(m_currentPosition>m_table->getNumberOfElementsInBin(m_currentBin)-1){
-			m_currentPosition=0;
-			m_currentBin++;
-		}else{
-			#ifdef ASSERT
-			assert(m_currentBin<m_table->getNumberOfBins());
-			assert(m_currentPosition<m_table->getNumberOfElementsInBin(m_currentBin));
-			#endif
-
-			return;
-		}
-	}
+	m_currentEntry=m_iterator.next();
+	m_currentKey=m_currentEntry->m_lowerKey;
+	m_mustProcessOtherKey=true;
+	return m_currentEntry;
 }
 
 Kmer*KmerAcademyIterator::getKey(){
-	#ifdef ASSERT
-	assert(m_table->find(&m_currentKey)!=NULL);
-	#endif
 	return &m_currentKey;
 }

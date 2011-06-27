@@ -22,6 +22,9 @@ coverage values automatically.
 * New outputted file: PREFIX.degreeDistribution.txt contains the distribution
 of degrees in the graph.
 *  Cleaned the code by removing MemoryConsumptionReducer.
+* The hash tables are now implemented using open addressing with quadratic
+probing.
+
 
 = 1.6.0 =
 2011-06-13

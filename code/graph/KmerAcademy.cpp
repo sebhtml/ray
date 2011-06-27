@@ -33,25 +33,14 @@ using namespace std;
 void KmerAcademy::constructor(int rank,Parameters*parameters){
 	m_parameters=parameters;
 	m_size=0;
-	int chunkSize=16777216; // 16 MiB
-	m_allocator.constructor(chunkSize,RAY_MALLOC_TYPE_KMER_ACADEMY,
-		m_parameters->showMemoryAllocations());
+	int initialHashSize=4194304;
+	m_hashTable.constructor(initialHashSize,RAY_MALLOC_TYPE_KMER_ACADEMY,
+		m_parameters->showMemoryAllocations(),m_parameters->getRank());
 
 	m_inserted=false;
-	m_gridSize=4194304;
-	m_frozen=false;
-	int bytes1=m_gridSize*sizeof(KmerCandidate*);
-	int bytes2=m_gridSize*sizeof(uint16_t);
-	m_gridData=(KmerCandidate**)__Malloc(bytes1,RAY_MALLOC_TYPE_KMER_ACADEMY,m_parameters->showMemoryAllocations());
-	m_gridSizes=(uint16_t*)__Malloc(bytes2,RAY_MALLOC_TYPE_KMER_ACADEMY,m_parameters->showMemoryAllocations());
 
 	if(m_parameters->showMemoryUsage()){
 		showMemoryUsage(rank);
-	}
-
-	for(int i=0;i<m_gridSize;i++){
-		m_gridSizes[i]=0;
-		m_gridData[i]=NULL;
 	}
 }
 
@@ -64,15 +53,7 @@ KmerCandidate*KmerAcademy::find(Kmer*key){
 	if(key->isLower(&lowerKey)){
 		lowerKey=*key;
 	}
-	int bin=hash_function_2(key)%m_gridSize;
-
-	for(int i=0;i<m_gridSizes[bin];i++){
-		KmerCandidate*gridEntry=m_gridData[bin]+i;
-		if(gridEntry->m_lowerKey.isEqual(&lowerKey)){
-			return move(bin,i);
-		}
-	}
-	return NULL;
+	return m_hashTable.find(&lowerKey);
 }
 
 KmerCandidate*KmerAcademy::insert(Kmer*key){
@@ -80,86 +61,16 @@ KmerCandidate*KmerAcademy::insert(Kmer*key){
 	if(key->isLower(&lowerKey)){
 		lowerKey=*key;
 	}
-	m_inserted=false;
-	int bin=hash_function_2(key)%m_gridSize;
-	for(int i=0;i<m_gridSizes[bin];i++){
-		KmerCandidate*gridEntry=m_gridData[bin]+i;
-		if(gridEntry->m_lowerKey.isEqual(&lowerKey)){
-			//cout<<"Found "<<key<<" in bin "<<bin<<endl;
-			return move(bin,i);
-		}
-	}
-	KmerCandidate*newEntries=(KmerCandidate*)m_allocator.allocate((m_gridSizes[bin]+1)*sizeof(KmerCandidate));
-	for(int i=0;i<m_gridSizes[bin];i++){
-		newEntries[i]=m_gridData[bin][i];
-	}
-	if(m_gridSizes[bin]!=0){
-		m_allocator.free(m_gridData[bin],m_gridSizes[bin]*sizeof(KmerCandidate));
-	}
-	m_gridData[bin]=newEntries;
-
-	m_gridData[bin][m_gridSizes[bin]].m_lowerKey=lowerKey;
-	int oldSize=m_gridSizes[bin];
-	m_gridSizes[bin]++;
-	// check overflow
-	assert(m_gridSizes[bin]>oldSize);
-	m_inserted=true;
-	m_size+=2;
-	return move(bin,m_gridSizes[bin]-1);
+	uint64_t sizeBefore=m_hashTable.size();
+	KmerCandidate*entry=m_hashTable.insert(key);
+	m_inserted=m_hashTable.size()>sizeBefore;
+	if(m_inserted)
+		m_size+=2;
+	return entry;
 }
 
 bool KmerAcademy::inserted(){
 	return m_inserted;
-}
-
-KmerCandidate*KmerAcademy::getElementInBin(int bin,int element){
-	#ifdef ASSERT
-	assert(bin<getNumberOfBins());
-	assert(element<getNumberOfElementsInBin(bin));
-	#endif
-	return m_gridData[bin]+element;
-}
-
-int KmerAcademy::getNumberOfElementsInBin(int bin){
-	#ifdef ASSERT
-	assert(bin<getNumberOfBins());
-	#endif
-	return m_gridSizes[bin];
-}
-
-int KmerAcademy::getNumberOfBins(){
-	return m_gridSize;
-}
-
-/*
- *         0 1 2 3 4 5 6 7 
- *  input: a b c d e f g h
- *
- *  move(4)  // e
- *
- * 	    0 1 2 3 4 5 6 7
- *  output: e a b c d f g h
- *
- *
- */
-KmerCandidate*KmerAcademy::move(int bin,int item){
-	if(m_frozen){
-		return m_gridData[bin]+item;
-	}
-	KmerCandidate tmp;
-	#ifdef ASSERT
-	assert(item<getNumberOfElementsInBin(bin));
-	#endif
-	tmp=m_gridData[bin][item];
-	for(int i=item-1;i>=0;i--){
-		m_gridData[bin][i+1]=m_gridData[bin][i];
-	}
-	m_gridData[bin][0]=tmp;
-	return m_gridData[bin];
-}
-
-void KmerAcademy::freeze(){
-	m_frozen=true;
 }
 
 void KmerAcademy::destructor(){
@@ -167,18 +78,13 @@ void KmerAcademy::destructor(){
 		showMemoryUsage(m_parameters->getRank());
 	}
 
-	int bytes1=m_gridSize*sizeof(KmerCandidate*);
-	int bytes2=m_gridSize*sizeof(uint16_t);
-	__Free(m_gridData,RAY_MALLOC_TYPE_KMER_ACADEMY,m_parameters->showMemoryAllocations());
-	__Free(m_gridSizes,RAY_MALLOC_TYPE_KMER_ACADEMY,m_parameters->showMemoryAllocations());
-	uint64_t freed=bytes1+bytes2;
-	freed+=m_allocator.getNumberOfChunks()*m_allocator.getChunkSize();
-	m_allocator.clear();
-	
-	if(m_parameters->showMemoryUsage())
-		cout<<"Rank "<<m_parameters->getRank()<<": Freeing unused assembler memory: "<<freed/1024<<" KiB freed"<<endl;
+	m_hashTable.destructor();
 
 	if(m_parameters->showMemoryUsage()){
 		showMemoryUsage(m_parameters->getRank());
 	}
+}
+
+MyHashTable<Kmer,KmerCandidate>*KmerAcademy::getHashTable(){
+	return &m_hashTable;
 }

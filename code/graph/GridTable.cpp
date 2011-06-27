@@ -193,7 +193,6 @@ bool GridTable::isAssembled(Kmer*a){
 }
 
 void GridTable::freezeAcademy(){
-	m_kmerAcademy.freeze();
 }
 
 KmerAcademy*GridTable::getKmerAcademy(){
