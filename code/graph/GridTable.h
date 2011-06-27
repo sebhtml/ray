@@ -29,40 +29,22 @@
 #include <structures/Vertex.h>
 
 class GridTable{
+	MyHashTable<Kmer,Vertex> m_hashTable;
 	KmerAcademy m_kmerAcademy;
 	Parameters*m_parameters;
-	int m_rank;
 	uint64_t m_size;
 	bool m_inserted;
-	Vertex**m_gridData;
-	uint16_t*m_gridSizes;
-	uint16_t*m_gridReservedSizes;
-	MyAllocator*m_gridAllocatorOnDisk;
-
-	int m_gridSize;
-	bool m_frozen;
-	int m_wordSize;
 
 	/**
  *   move the item in front of the others
  */
 	Vertex*move(int bin,int item);
 public:
-	void constructor(int rank,MyAllocator*allocator,Parameters*a);
-	void setWordSize(int w);
+	void constructor(int rank,Parameters*a);
 	uint64_t size();
 	Vertex*find(Kmer*key);
 	Vertex*insert(Kmer*key);
 	bool inserted();
-	void remove(Kmer*a);
-	Vertex*getElementInBin(int bin,int element);
-	int getNumberOfElementsInBin(int bin);
-	int getNumberOfBins();
-	MyAllocator*getAllocator();
-	MyAllocator*getSecondAllocator();
-	void freeze();
-	void unfreeze();
-	bool frozen();
 
 	void addRead(Kmer*a,ReadAnnotation*e);
 	ReadAnnotation*getReads(Kmer*a);
@@ -74,8 +56,8 @@ public:
 
 	bool insertedInAcademy();
 	KmerCandidate*insertInAcademy(Kmer*key);
-	void freezeAcademy();
 	KmerAcademy*getKmerAcademy();
+	MyHashTable<Kmer,Vertex>*getHashTable();
 };
 
 #endif

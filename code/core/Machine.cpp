@@ -372,7 +372,7 @@ void Machine::start(){
 		m_ed,getSize(),&m_timePrinter,&m_slave_mode,&m_master_mode,
 	&m_parameters,&m_fileId,m_seedingData,&m_inbox,&m_virtualCommunicator);
 
-	m_subgraph.constructor(getRank(),&m_diskAllocator,&m_parameters);
+	m_subgraph.constructor(getRank(),&m_parameters);
 	
 	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),&m_outbox,&m_outboxAllocator,&m_slave_mode,&m_parameters,&m_wordSize,&m_subgraph,&m_inbox,&m_virtualCommunicator);
 
@@ -1042,11 +1042,6 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_SEEDING(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_START_SEEDING(){
-
-	#ifdef ASSERT
-	assert(m_subgraph.frozen());
-	#endif
-
 	m_seedingData->computeSeeds();
 }
 

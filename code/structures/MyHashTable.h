@@ -36,6 +36,7 @@
  */
 template<class KEY,class VALUE>
 class MyHashTable{
+	int m_maximumProbe;
 	/**
  * Message-passing interface rank
  */
@@ -59,7 +60,7 @@ class MyHashTable{
 	/**
  * quadratic probing, assuming a number of seats that is a power of 2 */
 	uint64_t quadraticProbe(uint64_t i);
-	void checkLoadFactor();
+	void check();
 
 public:
 	/**
@@ -98,7 +99,7 @@ uint64_t MyHashTable<KEY,VALUE>::capacity(){
 }
 
 template<class KEY,class VALUE>
-void MyHashTable<KEY,VALUE>::checkLoadFactor(){
+void MyHashTable<KEY,VALUE>::check(){
 }
 
 /**
@@ -166,9 +167,9 @@ VALUE*MyHashTable<KEY,VALUE>::find(KEY*key){
  */
 template<class KEY,class VALUE>
 VALUE*MyHashTable<KEY,VALUE>::insert(KEY*key){
-	uint64_t probe=0;
+	int probe=0;
 	uint64_t seat=((hash_function_2(key)+quadraticProbe(probe))%m_totalNumberOfSeats);
-	while(probe<m_totalNumberOfSeats&& (*((uint64_t*)(m_seats+seat)))!=_MyHashTable_SEAT_IS_AVAILABLE){
+	while((uint64_t)probe<m_totalNumberOfSeats&& (*((uint64_t*)(m_seats+seat)))!=_MyHashTable_SEAT_IS_AVAILABLE){
 		if(m_seats[seat].m_lowerKey==*key)
 			return m_seats+seat;
 		probe++;
@@ -179,7 +180,10 @@ VALUE*MyHashTable<KEY,VALUE>::insert(KEY*key){
 	assert(m_utilisedSeats<m_totalNumberOfSeats);
 	#endif
 	m_utilisedSeats++;
-	checkLoadFactor();
+	assert(!isAvailable(seat));
+	if(probe>m_maximumProbe)
+		m_maximumProbe=probe;
+	check();
 
 	return find(key);
 }
@@ -187,7 +191,7 @@ VALUE*MyHashTable<KEY,VALUE>::insert(KEY*key){
 template<class KEY,class VALUE>
 void MyHashTable<KEY,VALUE>::destructor(){
 	double loadFactor=(0.0+m_utilisedSeats)/m_totalNumberOfSeats;
-	cout<<"Rank "<<m_rank<<": MyHashTable, "<<m_totalNumberOfSeats<<" buckets, load factor: "<<loadFactor<<endl;
+	cout<<"Rank "<<m_rank<<": MyHashTable, "<<m_totalNumberOfSeats<<" buckets, load factor: "<<loadFactor<<" maximum probe: "<<m_maximumProbe<<endl;
 	__Free(m_seats,m_mallocType,m_showMalloc);
 	m_seats=NULL;
 	m_utilisedSeats=0;

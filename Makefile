@@ -35,6 +35,9 @@ HAVE_LIBBZ2 = n
 # y/n
 HAVE_CLOCK_GETTIME = n
 
+# use Google sparsh hash map
+HAVE_GOOGLE_SPARSE_HASH_MAP = n
+
 # use Intel's compiler
 # the name of the Intel MPI C++ compiler is mpiicpc
 # Open-MPI and MPICH2 utilise mpic++ for the name.
@@ -96,6 +99,9 @@ CXXFLAGS = -Icode
 
 # optimization
 CXXFLAGS-$(OPTIMIZE) += -O3
+
+# Google sparse hash
+CXXFLAGS-$(HAVE_GOOGLE_SPARSE_HASH_MAP) += -D HAVE_GOOGLE_SPARSE_HASH_MAP
 
 ifeq ($(INTEL_COMPILER),n)
 # g++ options

@@ -24,16 +24,14 @@
 
 #include <core/Parameters.h>
 #include <core/common_functions.h>
+#include <structures/MyHashTableIterator.h>
 #include <graph/GridTable.h>
 
 class GridTableIterator{
-	GridTable*m_table;
-	bool m_lowerKeyIsDone;
+	MyHashTableIterator<Kmer,Vertex> m_iterator;
+	bool m_mustProcessOtherKey;
 	Kmer m_currentKey;
-	int m_wordSize;
-	int m_currentBin;
-	int m_currentPosition;
-	void getNext();
+	Vertex*m_currentEntry;
 	Parameters*m_parameters;
 public:
 	void constructor(GridTable*a,int wordSize,Parameters*b);

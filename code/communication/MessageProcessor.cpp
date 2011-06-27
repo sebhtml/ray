@@ -220,7 +220,6 @@ void MessageProcessor::call_RAY_MPI_TAG_SET_WORD_SIZE(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	(*m_wordSize)=incoming[0];
-	m_subgraph->setWordSize(*m_wordSize);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_VERTEX_INFO_REPLY(Message*message){
@@ -428,9 +427,6 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 	int count=message->getCount();
 	uint64_t*incoming=(uint64_t*)buffer;
 
-	#ifdef ASSERT
-	assert(!m_subgraph->frozen());
-	#endif
 	for(int i=0;i<count;i+=KMER_U64_ARRAY_SIZE){
 		Kmer l;
 		int pos=i;
@@ -479,7 +475,6 @@ void MessageProcessor::call_RAY_MPI_TAG_WRITE_KMERS(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_PURGE_NULL_EDGES(Message*message){
 	m_subgraph->getKmerAcademy()->destructor();
-	m_subgraph->freeze();
 
 	printf("Rank %i has %i vertices (completed)\n",rank,(int)m_subgraph->size());
 	fflush(stdout);
@@ -579,8 +574,6 @@ void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION(Message*message){
-	// freeze the forest. icy winter ahead.
-	m_subgraph->freezeAcademy();
 	int source=message->getSource();
 
 	Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG, source, RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER,rank);

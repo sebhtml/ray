@@ -51,7 +51,6 @@ void MyHashTableIterator<KEY,VALUE>::getNext(){
 	while(m_i<m_table->capacity()&&m_table->isAvailable(m_i))
 		m_i++;
 	m_hasNext=m_i<m_table->capacity()&&!m_table->isAvailable(m_i);
-	cout<<"m_hasNext "<<m_hasNext<<endl;
 }
 
 template<class KEY,class VALUE>

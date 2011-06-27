@@ -28,26 +28,19 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void GridTable::constructor(int rank,MyAllocator*allocator,Parameters*parameters){
+void GridTable::constructor(int rank,Parameters*parameters){
 	m_parameters=parameters;
 	m_kmerAcademy.constructor(rank,m_parameters);
-	m_gridAllocatorOnDisk=allocator;
 	m_size=0;
+	int initialHashSize=4194304;
+	m_hashTable.constructor(initialHashSize,RAY_MALLOC_TYPE_GRID_TABLE,
+		m_parameters->showMemoryAllocations(),m_parameters->getRank());
+
 	m_inserted=false;
-	m_gridSize=4194304;
-	int bytes1=m_gridSize*sizeof(Vertex*);
-	m_gridData=(Vertex**)__Malloc(bytes1,RAY_MALLOC_TYPE_GRID_TABLE_DATA,m_parameters->showMemoryAllocations());
-	int bytes2=m_gridSize*sizeof(uint16_t);
-	m_gridSizes=(uint16_t*)__Malloc(bytes2,RAY_MALLOC_TYPE_GRID_TABLE_SIZES,m_parameters->showMemoryAllocations());
 
 	if(m_parameters->showMemoryUsage()){
 		showMemoryUsage(rank);
 	}
-	for(int i=0;i<m_gridSize;i++){
-		m_gridSizes[i]=0;
-		m_gridData[i]=NULL;
-	}
-	m_rank=rank;
 }
 
 uint64_t GridTable::size(){
@@ -55,20 +48,11 @@ uint64_t GridTable::size(){
 }
 
 Vertex*GridTable::find(Kmer*key){
-	Kmer lowerKey=complementVertex(key,m_wordSize,m_parameters->getColorSpaceMode());
+	Kmer lowerKey=complementVertex(key,m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 	if(key->isLower(&lowerKey)){
 		lowerKey=*key;
 	}
-
-	int bin=hash_function_2(&lowerKey)%m_gridSize;
-
-	for(int i=0;i<m_gridSizes[bin];i++){
-		Vertex*gridEntry=m_gridData[bin]+i;
-		if(gridEntry->m_lowerKey.isEqual(&lowerKey)){
-			return move(bin,i);
-		}
-	}
-	return NULL;
+	return m_hashTable.find(&lowerKey);
 }
 
 KmerCandidate*GridTable::insertInAcademy(Kmer*key){
@@ -76,38 +60,16 @@ KmerCandidate*GridTable::insertInAcademy(Kmer*key){
 }
 
 Vertex*GridTable::insert(Kmer*key){
-	Kmer lowerKey=complementVertex(key,m_wordSize,m_parameters->getColorSpaceMode());
+	Kmer lowerKey=complementVertex(key,m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 	if(key->isLower(&lowerKey)){
 		lowerKey=*key;
 	}
-
-	m_inserted=false;
-	int bin=hash_function_2(&lowerKey)%m_gridSize;
-	for(int i=0;i<m_gridSizes[bin];i++){
-		Vertex*gridEntry=m_gridData[bin]+i;
-		if(gridEntry->m_lowerKey.isEqual(&lowerKey)){
-			return move(bin,i);
-		}
-	}
-	if(true){
-		Vertex*newEntries=(Vertex*)m_gridAllocatorOnDisk->allocate((m_gridSizes[bin]+1)*sizeof(Vertex));
-		for(int i=0;i<m_gridSizes[bin];i++){
-			newEntries[i]=m_gridData[bin][i];
-		}
-		if(m_gridSizes[bin]!=0){
-			m_gridAllocatorOnDisk->free(m_gridData[bin],m_gridSizes[bin]*sizeof(Vertex));
-		}
-		m_gridData[bin]=newEntries;
-	}
-
-	m_gridData[bin][m_gridSizes[bin]].m_lowerKey=lowerKey;
-	int oldSize=m_gridSizes[bin];
-	m_gridSizes[bin]++;
-	// check overflow
-	assert(m_gridSizes[bin]>oldSize);
-	m_inserted=true;
-	m_size+=2;
-	return move(bin,m_gridSizes[bin]-1);
+	uint64_t sizeBefore=m_hashTable.size();
+	Vertex*entry=m_hashTable.insert(&lowerKey);
+	m_inserted=m_hashTable.size()>sizeBefore;
+	if(m_inserted)
+		m_size+=2;
+	return entry;
 }
 
 bool GridTable::insertedInAcademy(){
@@ -118,81 +80,9 @@ bool GridTable::inserted(){
 	return m_inserted;
 }
 
-void GridTable::remove(Kmer*a){
-}
-
-Vertex*GridTable::getElementInBin(int bin,int element){
-	#ifdef ASSERT
-	assert(bin<getNumberOfBins());
-	assert(element<getNumberOfElementsInBin(bin));
-	#endif
-	return m_gridData[bin]+element;
-}
-
-int GridTable::getNumberOfElementsInBin(int bin){
-	#ifdef ASSERT
-	assert(bin<getNumberOfBins());
-	#endif
-	return m_gridSizes[bin];
-}
-
-int GridTable::getNumberOfBins(){
-	return m_gridSize;
-}
-
-MyAllocator*GridTable::getAllocator(){
-	return m_gridAllocatorOnDisk;
-}
-
-void GridTable::freeze(){
-	m_frozen=true;
-}
-
-void GridTable::unfreeze(){
-	m_frozen=false;
-}
-
-bool GridTable::frozen(){
-	return m_frozen;
-}
-
-/*
- *         0 1 2 3 4 5 6 7 
- *  input: a b c d e f g h
- *
- *  move(4)  // e
- *
- * 	    0 1 2 3 4 5 6 7
- *  output: e a b c d f g h
- *
- *
- */
-Vertex*GridTable::move(int bin,int item){
-	if(m_frozen){
-		return m_gridData[bin]+item;
-	}
-	Vertex tmp;
-	#ifdef ASSERT
-	assert(item<getNumberOfElementsInBin(bin));
-	#endif
-	tmp=m_gridData[bin][item];
-	for(int i=item-1;i>=0;i--){
-		m_gridData[bin][i+1]=m_gridData[bin][i];
-	}
-	m_gridData[bin][0]=tmp;
-	return m_gridData[bin];
-}
-
-void GridTable::setWordSize(int w){
-	m_wordSize=w;
-}
-
 bool GridTable::isAssembled(Kmer*a){
-	Kmer reverse=complementVertex(a,m_wordSize,m_parameters->getColorSpaceMode());
+	Kmer reverse=complementVertex(a,m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 	return getDirections(a).size()>0||getDirections(&reverse).size()>0;
-}
-
-void GridTable::freezeAcademy(){
 }
 
 KmerAcademy*GridTable::getKmerAcademy(){
@@ -238,3 +128,6 @@ void GridTable::clearDirections(Kmer*a){
 	}
 }
 
+MyHashTable<Kmer,Vertex>*GridTable::getHashTable(){
+	return &m_hashTable;
+}

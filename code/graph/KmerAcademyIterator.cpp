@@ -33,7 +33,6 @@ void KmerAcademyIterator::constructor(KmerAcademy*a,int wordSize,Parameters*para
 
 bool KmerAcademyIterator::hasNext(){
 	bool iteratorHasNext=m_iterator.hasNext()||m_mustProcessOtherKey;
-	cout<<"iteratorHasNext "<<iteratorHasNext<<endl;
 	return iteratorHasNext;
 }
 
