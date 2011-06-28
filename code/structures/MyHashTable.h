@@ -66,9 +66,6 @@ class MyHashTableGroup{
  * 	set a bit
  */
 	void setBit(int i,uint64_t j);
-
-	/** build the bitmap of this otherwise  unactive group of buckets */
-	void activateGroupBitmap(int numberOfBucketsInGroup,MyAllocator*allocator);
 public:
 	/** requests the bucket directly
  * 	fails if it is empty
@@ -452,7 +449,6 @@ public:
  * 	print the statistics of the hash table including,
  * 	but not necessary limited to:
  * 	- the load factor
- * 	- the maximum number of probes (open addressing via quadratic probing)
  */
 	void printStatistics();
 };
