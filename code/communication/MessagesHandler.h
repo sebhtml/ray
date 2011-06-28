@@ -23,6 +23,7 @@
 #define _MessagesHandler
 
 #include<vector>
+#include <mpi.h>
 #include<memory/MyAllocator.h>
 #include<communication/Message.h>
 #include<core/common_functions.h>
@@ -36,12 +37,17 @@ using namespace std;
  * it uses persistant communication
  */
 class MessagesHandler{
+	/**
+ * 	In Ray, all messages have buffer of the same type
+ */
+	MPI_Datatype m_datatype;
+
 	string m_processorName;
 
 	int m_ringSize;
 	int m_head;
 	MPI_Request*m_ring;
-	char*m_buffers;
+	uint8_t*m_buffers;
 	int m_rank;
 	int m_size;
 
@@ -81,6 +87,7 @@ public:
 	int getSize();
 	void barrier();
 	void version(int*a,int*b);
+	void destructor();
 };
 
 #endif

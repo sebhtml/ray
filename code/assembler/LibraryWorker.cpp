@@ -24,7 +24,6 @@
 #include <communication/Message.h>
 #include <assembler/SeedingData.h>
 #include <map>
-#include <mpi.h>
 #include <assert.h>
 #include <communication/VirtualCommunicator.h>
 using namespace std;
@@ -99,7 +98,7 @@ void LibraryWorker::work(){
 					}
 					assert(annotation.getRank()<m_parameters->getSize());
 					#endif
-					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,annotation.getRank(),RAY_MPI_TAG_GET_READ_MATE,m_parameters->getRank());
+					Message aMessage(message,1,annotation.getRank(),RAY_MPI_TAG_GET_READ_MATE,m_parameters->getRank());
 					m_virtualCommunicator->pushMessage(m_SEEDING_i,&aMessage);
 					m_EXTENSION_hasPairedReadRequested=true;
 				}else if(m_virtualCommunicator->isMessageProcessed(m_SEEDING_i)){

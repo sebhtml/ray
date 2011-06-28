@@ -22,7 +22,6 @@
 #ifndef _Message_H
 #define _Message_H
 
-#include <mpi.h>
 #include <stdint.h>
 
 /**
@@ -57,10 +56,9 @@ class Message{
 	int m_source;
 public:
 	Message();
-	Message(uint64_t*b,int c,MPI_Datatype d,int dest,int tag,int source);
+	Message(uint64_t*b,int c,int dest,int tag,int source);
 	uint64_t*getBuffer();
 	int getCount();
-	MPI_Datatype getMPIDatatype();
 /**
  * Returns the destination MPI rank
  */

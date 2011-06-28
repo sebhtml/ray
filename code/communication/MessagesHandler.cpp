@@ -53,8 +53,9 @@ void MessagesHandler::sendMessages(StaticVector*outbox,int source){
 		MPI_Request request;
 
 		//  MPI_Issend
-		//      Synchronous nonblocking. Note that a Wait/Test will complete only when the matching receive is posted
-		MPI_Isend(buffer,count,MPI_UNSIGNED_LONG_LONG,destination,tag,MPI_COMM_WORLD,&request);
+		//      Synchronous nonblocking. 
+		//      Note that a Wait/Test will complete only when the matching receive is posted
+		MPI_Isend(buffer,count,m_datatype,destination,tag,MPI_COMM_WORLD,&request);
 		MPI_Request_free(&request);
 
 		#ifdef SHOW_TAGS
@@ -103,7 +104,7 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 		int tag=status.MPI_TAG;
 		int source=status.MPI_SOURCE;
 		int count;
-		MPI_Get_count(&status,MPI_UNSIGNED_LONG_LONG,&count);
+		MPI_Get_count(&status,m_datatype,&count);
 		uint64_t*filledBuffer=(uint64_t*)m_buffers+m_head*MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t);
 
 		// copy it in a safe buffer
@@ -115,7 +116,7 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 		MPI_Start(m_ring+m_head);
 	
 		// add the message in the inbox
-		Message aMessage(incoming,count,MPI_UNSIGNED_LONG_LONG,source,tag,source);
+		Message aMessage(incoming,count,source,tag,source);
 		inbox->push_back(aMessage);
 
 		#ifdef SHOW_TAGS
@@ -234,13 +235,13 @@ void MessagesHandler::initialiseMembers(){
 	m_ringSize=128;
 
 	m_ring=(MPI_Request*)__Malloc(sizeof(MPI_Request)*m_ringSize,RAY_MALLOC_TYPE_PERSISTENT_MESSAGE_RING,false);
-	m_buffers=(char*)__Malloc(MAXIMUM_MESSAGE_SIZE_IN_BYTES*m_ringSize,RAY_MALLOC_TYPE_PERSISTENT_MESSAGE_BUFFERS,false);
+	m_buffers=(uint8_t*)__Malloc(MAXIMUM_MESSAGE_SIZE_IN_BYTES*m_ringSize,RAY_MALLOC_TYPE_PERSISTENT_MESSAGE_BUFFERS,false);
 	m_head=0;
 
 	// post a few receives.
 	for(int i=0;i<m_ringSize;i++){
-		void*buffer=m_buffers+i*MAXIMUM_MESSAGE_SIZE_IN_BYTES;
-		MPI_Recv_init(buffer,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),MPI_UNSIGNED_LONG_LONG,
+		uint8_t*buffer=m_buffers+i*MAXIMUM_MESSAGE_SIZE_IN_BYTES;
+		MPI_Recv_init(buffer,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),m_datatype,
 			MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,m_ring+i);
 		MPI_Start(m_ring+i);
 	}
@@ -265,6 +266,7 @@ void MessagesHandler::freeLeftovers(){
 }
 
 void MessagesHandler::constructor(int*argc,char***argv){
+	m_datatype=MPI_UNSIGNED_LONG_LONG;
 	MPI_Init(argc,argv);
 	char serverName[1000];
 	int len;
@@ -273,6 +275,10 @@ void MessagesHandler::constructor(int*argc,char***argv){
 	MPI_Comm_size(MPI_COMM_WORLD,&m_size);
 	initialiseMembers();
 	m_processorName=serverName;
+}
+
+void MessagesHandler::destructor(){
+	MPI_Finalize();
 }
 
 string MessagesHandler::getName(){

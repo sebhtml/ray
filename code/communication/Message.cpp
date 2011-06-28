@@ -22,7 +22,7 @@
 #include <communication/Message.h>
 
 /** buffer must be allocated or else it will CORE DUMP. */
-Message::Message(uint64_t*b,int c,MPI_Datatype d,int dest,int tag,int source){
+Message::Message(uint64_t*b,int c,int dest,int tag,int source){
 	m_buffer=b;
 	m_count=c;
 	m_dest=dest;
@@ -36,11 +36,6 @@ uint64_t*Message::getBuffer(){
 
 int Message::getCount(){
 	return m_count;
-}
-
-/** Ray only uses MPI_UNSIGNED_LONG_LONG anyway */
-MPI_Datatype Message::getMPIDatatype(){
-	return MPI_UNSIGNED_LONG_LONG;
 }
 
 int Message::getDestination(){

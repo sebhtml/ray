@@ -41,7 +41,7 @@ void CoverageGatherer::writeKmers(){
 	#endif
 	if(m_subgraph->getKmerAcademy()->size()==0){
 		(*m_slaveMode)=RAY_SLAVE_MODE_DO_NOTHING;
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_COVERAGE_END,
+		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_COVERAGE_END,
 			m_parameters->getRank());
 		(*m_outbox).push_back(aMessage);
 		return;
@@ -129,7 +129,7 @@ void CoverageGatherer::work(){
 		#endif
 		if(m_subgraph->getKmerAcademy()->size()==0){
 			(*m_slaveMode)=RAY_SLAVE_MODE_DO_NOTHING;
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_COVERAGE_END,
+			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_COVERAGE_END,
 				m_parameters->getRank());
 			(*m_outbox).push_back(aMessage);
 			return;
@@ -172,7 +172,7 @@ void CoverageGatherer::work(){
 		}
 
 		if(count!=0){
-			Message aMessage(messageContent,count,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_COVERAGE_DATA,
+			Message aMessage(messageContent,count,MASTER_RANK,RAY_MPI_TAG_COVERAGE_DATA,
 				m_parameters->getRank());
 			
 			(*m_outbox).push_back(aMessage);
@@ -180,7 +180,7 @@ void CoverageGatherer::work(){
 		}else{
 			m_distributionOfCoverage.clear();
 			(*m_slaveMode)=RAY_SLAVE_MODE_DO_NOTHING;
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_COVERAGE_END,
+			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_COVERAGE_END,
 				m_parameters->getRank());
 			(*m_outbox).push_back(aMessage);
 		}

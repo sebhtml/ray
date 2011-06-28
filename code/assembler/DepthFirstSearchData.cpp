@@ -71,7 +71,7 @@ void DepthFirstSearchData::depthFirstSearch(Kmer root,Kmer a,int maxDepth,
 			vertexToVisit.pack(message,&j);
 			int dest=parameters->_vertexRank(&vertexToVisit);
 			
-			Message aMessage(message,j,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
+			Message aMessage(message,j,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
 			(*outbox).push_back(aMessage);
 		}else if((*vertexCoverageReceived)){
 			if(!(*edgesRequested)){
@@ -88,7 +88,7 @@ void DepthFirstSearchData::depthFirstSearch(Kmer root,Kmer a,int maxDepth,
 				int bufferPosition=0;
 				vertexToVisit.pack(message,&bufferPosition);
 				int destination=parameters->_vertexRank(&vertexToVisit);
-				Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES,theRank);
+				Message aMessage(message,bufferPosition,destination,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES,theRank);
 				(*outbox).push_back(aMessage);
 				(*edgesRequested)=true;
 				(*edgesReceived)=false;
@@ -195,7 +195,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(Kmer a,int maxDepth,
 			int bufferPosition=0;
 			vertexToVisit.pack(message,&bufferPosition);
 			int dest=parameters->_vertexRank(&vertexToVisit);
-			Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
+			Message aMessage(message,bufferPosition,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
 			(*outbox).push_back(aMessage);
 		}else if((*vertexCoverageReceived)){
 			if(!(*edgesRequested)){
@@ -233,7 +233,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(Kmer a,int maxDepth,
 				int bufferPosition=0;
 				vertexToVisit.pack(message,&bufferPosition);
 				int destination=parameters->_vertexRank(&vertexToVisit);
-				Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_REQUEST_VERTEX_EDGES,theRank);
+				Message aMessage(message,bufferPosition,destination,RAY_MPI_TAG_REQUEST_VERTEX_EDGES,theRank);
 
 				(*outbox).push_back(aMessage);
 				(*edgesRequested)=true;

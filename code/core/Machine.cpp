@@ -41,7 +41,6 @@
 #include <memory/MyAllocator.h>
 #include <core/constants.h>
 #include <algorithm>
-#include <mpi.h>
 
 using namespace std;
 
@@ -393,7 +392,6 @@ void Machine::start(){
 	}
 
 	m_mp.constructor(
-&m_messagesHandler,
 m_seedingData,
 &m_library,&m_ready,
 &m_verticesExtractor,
@@ -505,7 +503,7 @@ m_seedingData,
 
 	m_diskAllocator.clear();
 
-	MPI_Finalize();
+	m_messagesHandler.destructor();
 }
 
 void Machine::call_RAY_MASTER_MODE_WRITE_SCAFFOLDS(){
@@ -664,7 +662,7 @@ void Machine::call_RAY_MASTER_MODE_LOAD_CONFIG(){
 	message[1]=m_parameters.getColorSpaceMode();
 
 	for(int i=0;i<getSize();i++){
-		Message aMessage(message,2,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_SET_WORD_SIZE,getRank());
+		Message aMessage(message,2,i,RAY_MPI_TAG_SET_WORD_SIZE,getRank());
 		m_outbox.push_back(aMessage);
 	}
 
@@ -698,7 +696,7 @@ void Machine::call_RAY_MASTER_MODE_LOAD_SEQUENCES(){
 	
 	for(int i=0;i<getSize();i++){
 		Message aMessage(message,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
-			MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_LOAD_SEQUENCES,getRank());
+		i,RAY_MPI_TAG_LOAD_SEQUENCES,getRank());
 		m_outbox.push_back(aMessage);
 	}
 	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
@@ -720,7 +718,7 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION(){
 	cout<<endl;
 	
 	for(int i=0;i<getSize();i++){
-		Message aMessage(NULL, 0, MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_START_VERTICES_DISTRIBUTION,getRank());
+		Message aMessage(NULL,0,i,RAY_MPI_TAG_START_VERTICES_DISTRIBUTION,getRank());
 		m_outbox.push_back(aMessage);
 	}
 	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
@@ -811,7 +809,7 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	buffer[2]=m_parameters.getRepeatCoverage();
 	m_numberOfRanksWithCoverageData=0;
 	for(int i=0;i<getSize();i++){
-		Message aMessage(buffer,3,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_SEND_COVERAGE_VALUES,getRank());
+		Message aMessage(buffer,3,i,RAY_MPI_TAG_SEND_COVERAGE_VALUES,getRank());
 		m_outbox.push_back(aMessage);
 	}
 	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
@@ -824,7 +822,7 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING(){
 
 	cout<<endl;
 	for(int i=0;i<getSize();i++){
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_BUILD_GRAPH,getRank());
+		Message aMessage(NULL,0,i,RAY_MPI_TAG_BUILD_GRAPH,getRank());
 		m_outbox.push_back(aMessage);
 	}
 	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
@@ -876,7 +874,7 @@ void Machine::call_RAY_MASTER_MODE_PURGE_NULL_EDGES(){
 	m_timePrinter.printElapsedTime("Graph construction");
 	cout<<endl;
 	for(int i=0;i<getSize();i++){
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_PURGE_NULL_EDGES,getRank());
+		Message aMessage(NULL,0,i,RAY_MPI_TAG_PURGE_NULL_EDGES,getRank());
 		m_outbox.push_back(aMessage);
 	}
 }
@@ -927,7 +925,7 @@ void Machine::call_RAY_MASTER_MODE_WRITE_KMERS(){
 	
 		m_master_mode=RAY_MASTER_MODE_TRIGGER_INDEXING;
 	}else if(m_coverageRank==m_numberOfRanksDone){
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_coverageRank,RAY_MPI_TAG_WRITE_KMERS,getRank());
+		Message aMessage(NULL,0,m_coverageRank,RAY_MPI_TAG_WRITE_KMERS,getRank());
 		m_outbox.push_back(aMessage);
 		m_coverageRank++;
 	}
@@ -958,7 +956,7 @@ void Machine::call_RAY_SLAVE_MODE_WRITE_KMERS(){
 		}
 	}
 
-	Message aMessage(buffer,outputPosition,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_WRITE_KMERS_REPLY,getRank());
+	Message aMessage(buffer,outputPosition,MASTER_RANK,RAY_MPI_TAG_WRITE_KMERS_REPLY,getRank());
 	m_outbox.push_back(aMessage);
 	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
 }
@@ -970,7 +968,7 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_INDEXING(){
 	cout<<endl;
 
 	for(int i=0;i<getSize();i++){
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_START_INDEXING_SEQUENCES,getRank());
+		Message aMessage(NULL,0,i,RAY_MPI_TAG_START_INDEXING_SEQUENCES,getRank());
 		m_outbox.push_back(aMessage);
 	}
 }
@@ -979,7 +977,7 @@ void Machine::call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS(){
 	cout<<endl;
 	m_numberOfMachinesDoneSendingVertices=-1;
 	for(int i=0;i<getSize();i++){
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG, i, RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION,getRank());
+		Message aMessage(NULL,0, i, RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION,getRank());
 		m_outbox.push_back(aMessage);
 	}
 	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
@@ -994,7 +992,7 @@ void Machine::call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS(){
 	}
 
 	for(m_coverageRank=0;m_coverageRank<m_parameters.getSize();m_coverageRank++){
-		Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG,m_coverageRank,
+		Message aMessage(NULL,0,m_coverageRank,
 			RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION,getRank());
 		m_outbox.push_back(aMessage);
 	}
@@ -1010,7 +1008,7 @@ void Machine::call_RAY_MASTER_MODE_PREPARE_SEEDING(){
 void Machine::call_RAY_SLAVE_MODE_ASSEMBLE_WAVES(){
 	// take each seed, and extend it in both direction using previously obtained information.
 	if(m_seedingData->m_SEEDING_i==(uint64_t)m_seedingData->m_SEEDING_seeds.size()){
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_ASSEMBLE_WAVES_DONE,getRank());
+		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_ASSEMBLE_WAVES_DONE,getRank());
 		m_outbox.push_back(aMessage);
 	}else{
 	}
@@ -1035,7 +1033,7 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_SEEDING(){
 	m_numberOfRanksDoneSeeding=0;
 	// tell everyone to seed now.
 	for(int i=0;i<getSize();i++){
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_START_SEEDING,getRank());
+		Message aMessage(NULL,0,i,RAY_MPI_TAG_START_SEEDING,getRank());
 		m_outbox.push_back(aMessage);
 	}
 	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
@@ -1050,7 +1048,7 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_DETECTION(){
 	cout<<endl;
 	m_numberOfRanksDoneSeeding=-1;
 	for(int i=0;i<getSize();i++){
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION,getRank());
+		Message aMessage(NULL,0,i,RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION,getRank());
 		m_outbox.push_back(aMessage);
 	}
 	m_numberOfRanksDoneDetectingDistances=0;
@@ -1061,7 +1059,7 @@ void Machine::call_RAY_MASTER_MODE_ASK_DISTANCES(){
 	m_numberOfRanksDoneDetectingDistances=-1;
 	m_numberOfRanksDoneSendingDistances=0;
 	for(int i=0;i<getSize();i++){
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_ASK_LIBRARY_DISTANCES,getRank());
+		Message aMessage(NULL,0,i,RAY_MPI_TAG_ASK_LIBRARY_DISTANCES,getRank());
 		m_outbox.push_back(aMessage);
 	}
 	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
@@ -1087,7 +1085,7 @@ void Machine::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(){
 
 void Machine::call_RAY_MASTER_MODE_TRIGGER_EXTENSIONS(){
 	for(int i=0;i<getSize();i++){
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_ASK_EXTENSION,getRank());
+		Message aMessage(NULL,0,i,RAY_MPI_TAG_ASK_EXTENSION,getRank());
 		m_outbox.push_back(aMessage);
 	}
 	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
@@ -1124,7 +1122,7 @@ void Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 	}
 
 	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_EXTENSION_DATA_END,getRank());
+	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_EXTENSION_DATA_END,getRank());
 	m_outbox.push_back(aMessage);
 }
 
@@ -1153,7 +1151,7 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_FUSIONS(){
 	m_ed->m_EXTENSION_numberOfRanksDone=-1;
 	m_fusionData->m_FUSION_numberOfRanksDone=0;
 	for(int i=0;i<(int)getSize();i++){// start fusion.
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_START_FUSION,getRank());
+		Message aMessage(NULL,0,i,RAY_MPI_TAG_START_FUSION,getRank());
 		m_outbox.push_back(aMessage);
 	}
 	m_fusionData->m_fusionStarted=true;
@@ -1191,7 +1189,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		m_cycleStarted=true;
 		m_isFinalFusion=false;
 		for(int i=0;i<getSize();i++){
-			Message aMessage(buffer,count,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_CLEAR_DIRECTIONS,getRank());
+			Message aMessage(buffer,count,i,RAY_MPI_TAG_CLEAR_DIRECTIONS,getRank());
 			m_outbox.push_back(aMessage);
 		}
 		m_currentCycleStep=1;
@@ -1201,7 +1199,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		m_CLEAR_n=-1;
 
 		for(int i=0;i<getSize();i++){
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_DISTRIBUTE_FUSIONS,getRank());
+			Message aMessage(NULL,0,i,RAY_MPI_TAG_DISTRIBUTE_FUSIONS,getRank());
 			m_outbox.push_back(aMessage);
 		}
 		m_DISTRIBUTE_n=0;
@@ -1210,7 +1208,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		m_DISTRIBUTE_n=-1;
 		m_isFinalFusion=true;
 		for(int i=0;i<getSize();i++){
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_FINISH_FUSIONS,getRank());
+			Message aMessage(NULL,0,i,RAY_MPI_TAG_FINISH_FUSIONS,getRank());
 			m_outbox.push_back(aMessage);
 		}
 		m_FINISH_n=0;
@@ -1223,7 +1221,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		uint64_t*buffer=(uint64_t*)m_outboxAllocator.allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
 		for(int i=0;i<getSize();i++){
-			Message aMessage(buffer,count,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_CLEAR_DIRECTIONS,getRank());
+			Message aMessage(buffer,count,i,RAY_MPI_TAG_CLEAR_DIRECTIONS,getRank());
 			m_outbox.push_back(aMessage);
 		}
 
@@ -1234,7 +1232,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		m_currentCycleStep++;
 
 		for(int i=0;i<getSize();i++){
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_DISTRIBUTE_FUSIONS,getRank());
+			Message aMessage(NULL,0,i,RAY_MPI_TAG_DISTRIBUTE_FUSIONS,getRank());
 			m_outbox.push_back(aMessage);
 		}
 		m_DISTRIBUTE_n=0;
@@ -1255,7 +1253,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		m_fusionData->m_FUSION_numberOfRanksDone=0;
 		m_DISTRIBUTE_n=-1;
 		for(int i=0;i<(int)getSize();i++){// start fusion.
-			Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_START_FUSION,getRank());
+			Message aMessage(NULL,0,i,RAY_MPI_TAG_START_FUSION,getRank());
 			m_outbox.push_back(aMessage);
 		}
 		
@@ -1296,7 +1294,7 @@ void Machine::call_RAY_MASTER_MODE_ASK_EXTENSIONS(){
 		
 	}else if(!m_ed->m_EXTENSION_currentRankIsStarted){
 		m_ed->m_EXTENSION_currentRankIsStarted=true;
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,m_ed->m_EXTENSION_rank,RAY_MPI_TAG_ASK_EXTENSION_DATA,getRank());
+		Message aMessage(NULL,0,m_ed->m_EXTENSION_rank,RAY_MPI_TAG_ASK_EXTENSION_DATA,getRank());
 		m_outbox.push_back(aMessage);
 		m_ed->m_EXTENSION_currentRankIsDone=false;
 	}else if(m_ed->m_EXTENSION_currentRankIsDone){
@@ -1310,7 +1308,7 @@ void Machine::call_RAY_MASTER_MODE_AMOS(){
 
 void Machine::call_RAY_MASTER_MODE_SCAFFOLDER(){
 	for(int i=0;i<getSize();i++){
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_START_SCAFFOLDER,getRank());
+		Message aMessage(NULL,0,i,RAY_MPI_TAG_START_SCAFFOLDER,getRank());
 		m_outbox.push_back(aMessage);
 	}
 	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
@@ -1358,7 +1356,7 @@ void Machine::killRanks(){
 
 	m_killed=true;
 	for(int i=getSize()-1;i>=0;i--){
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON,getRank());
+		Message aMessage(NULL,0,i,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON,getRank());
 		m_outbox.push_back(aMessage);
 	}
 }

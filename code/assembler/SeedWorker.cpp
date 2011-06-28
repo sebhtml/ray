@@ -23,6 +23,8 @@
 #include <assembler/SeedWorker.h>
 #include <assert.h>
 #include <communication/Message.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <communication/mpi_tags.h>
 #include <core/common_functions.h>
 #include <stdint.h>
@@ -176,7 +178,6 @@ void SeedWorker::do_1_1_test(){
 			int bufferPosition=0;
 			m_SEEDING_currentVertex.pack(message,&bufferPosition);
 			Message aMessage(message,m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT),
-		MPI_UNSIGNED_LONG_LONG,
 			m_parameters->_vertexRank(&m_SEEDING_currentVertex),
 				RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,getRank());
 			m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
@@ -233,7 +234,7 @@ void SeedWorker::do_1_1_test(){
 					vertex.pack(message,&bufferPosition);
 					int dest=m_parameters->_vertexRank(&vertex);
 
-					Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,dest,
+					Message aMessage(message,bufferPosition,dest,
 						RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,getRank());
 					m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 					m_SEEDING_vertexCoverageRequested=true;
@@ -257,7 +258,7 @@ void SeedWorker::do_1_1_test(){
 					int dest=m_parameters->_vertexRank(&vertex);
 
 					Message aMessage(message,bufferPosition,
-						MPI_UNSIGNED_LONG_LONG,dest,
+						dest,
 						RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,getRank());
 					m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 					m_SEEDING_vertexCoverageRequested=true;

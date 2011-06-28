@@ -33,7 +33,6 @@
 #include <structures/SplayTree.h>
 #include <structures/StaticVector.h>
 #include <assembler/SeedExtender.h>
-#include <communication/MessagesHandler.h>
 #include <assembler/SequencesLoader.h>
 #include <assembler/FusionData.h>
 #include <structures/ReadAnnotation.h>
@@ -81,8 +80,6 @@ class MessageProcessor{
 	int*m_numberOfRanksDoneDetectingDistances;
 	int*m_numberOfRanksDoneSendingDistances;
 	Parameters*m_parameters;
-
-	MessagesHandler*m_messagesHandler;
 
 	GridTable*m_subgraph;
 
@@ -139,7 +136,7 @@ class MessageProcessor{
 	#undef MACRO_LIST_ITEM
 	
 public:
-	void constructor(MessagesHandler*m_messagesHandler,
+	void constructor(
 SeedingData*seedingData,
 Library*m_library,
 bool*m_ready,

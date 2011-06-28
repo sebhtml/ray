@@ -53,7 +53,7 @@ void ReadFetcher::work(){
 		m_vertex.pack(message2,&bufferPosition);
 		message2[bufferPosition++]=(uint64_t)m_pointer;
 		int destination=m_parameters->_vertexRank(&m_vertex);
-		Message aMessage(message2,bufferPosition,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,m_parameters->getRank());
+		Message aMessage(message2,bufferPosition,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,m_parameters->getRank());
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		m_readsRequested=true;
 	}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
@@ -89,7 +89,7 @@ void ReadFetcher::work(){
 			m_vertex.pack(message2,&bufferPosition);
 			message2[bufferPosition++]=(uint64_t)m_pointer;
 			int destination=m_parameters->_vertexRank(&m_vertex);
-			Message aMessage(message2,bufferPosition,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,m_parameters->getRank());
+			Message aMessage(message2,bufferPosition,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,m_parameters->getRank());
 			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		}
 	}

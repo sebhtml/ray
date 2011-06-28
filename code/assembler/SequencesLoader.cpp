@@ -298,7 +298,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 	}
 	
 	m_loader.clear();
-	Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_SEQUENCES_READY,rank);
+	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_SEQUENCES_READY,rank);
 	m_outbox->push_back(aMessage);
 
 	(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;

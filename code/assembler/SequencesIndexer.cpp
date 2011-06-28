@@ -129,7 +129,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 		printf("Rank %i: peak number of workers: %i, maximum: %i\n",m_rank,m_maximumWorkers,m_maximumAliveWorkers);
 		fflush(stdout);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,m_rank);
+		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,m_rank);
 		m_outbox->push_back(aMessage);
 
 		m_virtualCommunicator->printStatistics();

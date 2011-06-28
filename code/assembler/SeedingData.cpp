@@ -27,7 +27,6 @@
 #include <assert.h>
 #include <assembler/SeedingData.h>
 #include <communication/Message.h>
-#include <mpi.h>
 #include <communication/mpi_tags.h>
 #include <assembler/SeedWorker.h>
 
@@ -167,7 +166,7 @@ void SeedingData::computeSeeds(){
 		printf("Rank %i: peak number of workers: %i, maximum: %i\n",m_rank,m_maximumWorkers,m_maximumAliveWorkers);
 		fflush(stdout);
 		m_virtualCommunicator->printStatistics();
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_SEEDING_IS_OVER,getRank());
+		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_SEEDING_IS_OVER,getRank());
 		m_outbox->push_back(aMessage);
 
 		if(m_parameters->showMemoryUsage()){
@@ -266,7 +265,7 @@ void SeedingData::sendSeedLengths(){
 		return;
 
 	if(m_iterator==m_slaveSeedLengths.end()){
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,
+		Message aMessage(NULL,0,MASTER_RANK,
 			RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS,getRank());
 		m_outbox->push_back(aMessage);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
@@ -285,7 +284,7 @@ void SeedingData::sendSeedLengths(){
 		m_iterator++;
 	}
 
-	Message aMessage(messageBuffer,2*i,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,
+	Message aMessage(messageBuffer,2*i,MASTER_RANK,
 		RAY_MPI_TAG_SEND_SEED_LENGTHS,getRank());
 	m_outbox->push_back(aMessage);
 }

@@ -20,6 +20,8 @@
 */
 
 #include <assembler/EdgePurger.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 /* code based on assembler/Library.cpp */
 
@@ -134,7 +136,7 @@ void EdgePurger::work(){
 		fflush(stdout);
 		
 		m_done=true;
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY,
+		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY,
 		m_parameters->getRank());
 		m_outbox->push_back(aMessage);
 

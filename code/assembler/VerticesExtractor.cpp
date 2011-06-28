@@ -78,7 +78,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			assert(m_bufferedDataForOutgoingEdges.isEmpty());
 			#endif
 
-			Message aMessage(NULL,0, MPI_UNSIGNED_LONG_LONG, MASTER_RANK, RAY_MPI_TAG_VERTICES_DISTRIBUTED,rank);
+			Message aMessage(NULL,0, MASTER_RANK, RAY_MPI_TAG_VERTICES_DISTRIBUTED,rank);
 			m_outbox->push_back(aMessage);
 			m_finished=true;
 			printf("Rank %i is computing vertices & edges [%i/%i] (completed)\n",rank,(int)*m_mode_send_vertices_sequence_id,(int)m_myReads->size());

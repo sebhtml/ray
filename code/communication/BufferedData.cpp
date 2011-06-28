@@ -20,9 +20,10 @@
 */
 
 #include <assert.h>
-#include <mpi.h>
 #include <communication/BufferedData.h>
 #include <memory/RingAllocator.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <structures/StaticVector.h>
 #include <iostream>
 using namespace std;
@@ -161,7 +162,7 @@ bool BufferedData::flush(int destination,int period,int tag,RingAllocator*outbox
 	for(int i=0;i<amount;i++){
 		message[i]=getAt(destination,i);
 	}
-	Message aMessage(message,amount,MPI_UNSIGNED_LONG_LONG,destination,tag,rank);
+	Message aMessage(message,amount,destination,tag,rank);
 	outbox->push_back(aMessage);
 	m_flushedMessages++;
 	reset(destination);

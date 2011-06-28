@@ -64,7 +64,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 			uint64_t id=ed->m_EXTENSION_identifiers[i];
 			fusionData->m_FUSION_identifier_map[id]=i;
 		}
-		Message aMessage(NULL,0,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_EXTENSION_IS_DONE,theRank);
+		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_EXTENSION_IS_DONE,theRank);
 		outbox->push_back(aMessage);
 		return;
 	}else if(!ed->m_EXTENSION_initiated){
@@ -173,7 +173,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				kmer.pack(message,&bufferPosition);
 				int dest=m_parameters->_vertexRank(&kmer);
 
-				Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
+				Message aMessage(message,bufferPosition,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
 				(*outbox).push_back(aMessage);
 				(*vertexCoverageRequested)=true;
 				(*vertexCoverageReceived)=false;
@@ -755,7 +755,7 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			int bufferPosition=0;
 			currentVertex->pack(message,&bufferPosition);
 			int destination=m_parameters->_vertexRank(currentVertex);
-			Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,destination,RAY_MPI_TAG_ASK_IS_ASSEMBLED,theRank);
+			Message aMessage(message,bufferPosition,destination,RAY_MPI_TAG_ASK_IS_ASSEMBLED,theRank);
 			(*outbox).push_back(aMessage);
 			ed->m_EXTENSION_VertexAssembled_received=false;
 		}else if(ed->m_EXTENSION_VertexAssembled_received){
@@ -884,7 +884,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				#endif
 				uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
 				message[0]=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache].getReadIndex();
-				Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,sequenceRank,RAY_MPI_TAG_REQUEST_READ_SEQUENCE,theRank);
+				Message aMessage(message,1,sequenceRank,RAY_MPI_TAG_REQUEST_READ_SEQUENCE,theRank);
 				outbox->push_back(aMessage);
 			}else if(m_sequenceReceived){
 

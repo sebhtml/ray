@@ -52,7 +52,7 @@ void Amos::masterMode(){
 	if(!m_ed->m_EXTENSION_currentRankIsStarted){
 		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 		message[0]=m_ed->m_EXTENSION_currentPosition;
-		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,m_ed->m_EXTENSION_rank,RAY_MPI_TAG_WRITE_AMOS,m_parameters->getRank());
+		Message aMessage(message,1,m_ed->m_EXTENSION_rank,RAY_MPI_TAG_WRITE_AMOS,m_parameters->getRank());
 		m_outbox->push_back(aMessage);
 		m_ed->m_EXTENSION_rank++;
 		m_ed->m_EXTENSION_currentRankIsDone=false;
@@ -93,7 +93,7 @@ void Amos::slaveMode(){
 	if(m_contigId==(int)m_ed->m_EXTENSION_contigs.size()){// all contigs are processed
 		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 		message[0]=m_ed->m_EXTENSION_currentPosition;
-		Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,MASTER_RANK,RAY_MPI_TAG_WRITE_AMOS_REPLY,m_parameters->getRank());
+		Message aMessage(message,1,MASTER_RANK,RAY_MPI_TAG_WRITE_AMOS_REPLY,m_parameters->getRank());
 		m_outbox->push_back(aMessage);
 		fclose(m_amosFile);
 		*m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
@@ -161,7 +161,7 @@ void Amos::slaveMode(){
 					m_ed->m_EXTENSION_readLength_received=false;
 					uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 					message[0]=idOnRank;
-					Message aMessage(message,1,MPI_UNSIGNED_LONG_LONG,readRank,RAY_MPI_TAG_ASK_READ_LENGTH,m_parameters->getRank());
+					Message aMessage(message,1,readRank,RAY_MPI_TAG_ASK_READ_LENGTH,m_parameters->getRank());
 					m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 				}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
 					vector<uint64_t> result=m_virtualCommunicator->getMessageResponseElements(m_workerId);

@@ -37,7 +37,7 @@ void VertexMessenger::work(){
 		m_vertex.pack(message,&j);
 		message[j++]=m_waveId;
 		message[j++]=m_wavePosition;
-		Message aMessage(message,j,MPI_UNSIGNED_LONG_LONG,m_destination,RAY_MPI_TAG_VERTEX_INFO,m_parameters->getRank());
+		Message aMessage(message,j,m_destination,RAY_MPI_TAG_VERTEX_INFO,m_parameters->getRank());
 		m_outbox->push_back(aMessage);
 	}else if(!m_receivedBasicInfo &&m_inbox->size()==1&&m_inbox->at(0)->getTag()==RAY_MPI_TAG_VERTEX_INFO_REPLY){
 		m_receivedBasicInfo=true;
@@ -105,7 +105,7 @@ void VertexMessenger::getReadsForRepeatedVertex(){
  * <--vertex--><--pointer--><--numberOfMates--><--mates -->
  */
 		Message aMessage(message,j+1+processed,
-			MPI_UNSIGNED_LONG_LONG,m_destination,RAY_MPI_TAG_VERTEX_READS_FROM_LIST,m_parameters->getRank());
+			m_destination,RAY_MPI_TAG_VERTEX_READS_FROM_LIST,m_parameters->getRank());
 		m_outbox->push_back(aMessage);
 		m_requestedReads=true;
 		m_receivedReads=false;
@@ -148,7 +148,7 @@ void VertexMessenger::getReadsForUniqueVertex(){
 		int j=0;
 		m_vertex.pack(message,&j);
 		message[j++]=(uint64_t)m_pointer;
-		Message aMessage(message,j,MPI_UNSIGNED_LONG_LONG,m_destination,RAY_MPI_TAG_VERTEX_READS,m_parameters->getRank());
+		Message aMessage(message,j,m_destination,RAY_MPI_TAG_VERTEX_READS,m_parameters->getRank());
 		m_outbox->push_back(aMessage);
 		m_requestedReads=true;
 		m_receivedReads=false;

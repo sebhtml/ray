@@ -22,8 +22,9 @@
 #include <assert.h>
 #include <communication/VirtualCommunicator.h>
 #include <core/common_functions.h>
-#include <mpi.h>
 #include <iostream>
+#include <stdlib.h>
+#include <stdio.h>
 using namespace std;
 
 /** set the number of elements per message for a given tag */
@@ -172,7 +173,7 @@ void VirtualCommunicator::flushMessage(int tag,int destination){
 		m_messageContent.erase(tag);
 	}
 
-	Message aMessage(messageContent,currentSize,MPI_UNSIGNED_LONG_LONG,destination,tag,m_rank);
+	Message aMessage(messageContent,currentSize,destination,tag,m_rank);
 	m_outbox->push_back(aMessage);
 
 	m_pendingMessages++;

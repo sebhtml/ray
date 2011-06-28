@@ -39,7 +39,7 @@ void EdgePurgerWorker::work(){
 				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 				int bufferPosition=0;
 				vertex.pack(message,&bufferPosition);
-				Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,sendTo,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_parameters->getRank());
+				Message aMessage(message,bufferPosition,sendTo,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_parameters->getRank());
 				m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 				m_coverageRequested=true;
 			}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
@@ -68,7 +68,7 @@ void EdgePurgerWorker::work(){
 				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 				int bufferPosition=0;
 				vertex.pack(message,&bufferPosition);
-				Message aMessage(message,bufferPosition,MPI_UNSIGNED_LONG_LONG,sendTo,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_parameters->getRank());
+				Message aMessage(message,bufferPosition,sendTo,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_parameters->getRank());
 				m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 				m_coverageRequested=true;
 			}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
