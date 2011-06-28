@@ -31,8 +31,13 @@ void ArrayOfReads::constructor(MyAllocator*allocator){
 	#endif
 	m_allocator=allocator;
 	m_CHUNK_SIZE=100000;
-	m_maxNumberOfChunks=1000;
+	m_maxNumberOfChunks=100000;
+
+	/* increased the maximum number of chunks... */
 	m_chunks=(Read**)m_allocator->allocate(m_maxNumberOfChunks*sizeof(Read*));
+	for(int i=0;i<m_maxNumberOfChunks;i++)
+		m_chunks[i]=NULL;
+
 	#ifdef ASSERT
 	assert(m_chunks!=NULL);
 	#endif
