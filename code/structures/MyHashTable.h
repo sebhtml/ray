@@ -738,8 +738,14 @@ void MyHashTable<KEY,VALUE>::findBucketWithKey(KEY*key,uint64_t*probe,int*group,
 			/** maybe it works also when inclusive, but page 529 does not mention 
  * 			if it works inclusive for powers of 2 
  * 			hence, I assume it is exclusive for safety
+ *
+ * 			h(x)%M 		-> between 0 and M-1 inclusive
+ * 			h(x)%(M-5) 	-> between 0 and M-4 inclusive
+ * 			h(x)%(M-5)+2	-> between 2 and M-2 inclusive
+ *
+ * 			h(x)%(M-5)+"	-> between 1 and M-1 exclusive
  * 			*/
-			h2=hash_function_1(key)%(m_totalNumberOfBuckets-2)+2;
+			h2=hash_function_1(key)%(m_totalNumberOfBuckets-5)+2;
 			
 			/** h2 can not be even */
 			if(h2%2==0)
@@ -754,6 +760,8 @@ void MyHashTable<KEY,VALUE>::findBucketWithKey(KEY*key,uint64_t*probe,int*group,
 			assert(h2!=0);
 			assert(h2%2!=0);
 			assert(h2>1);
+			if(h2>=m_totalNumberOfBuckets-1)
+				cout<<"h2= "<<h2<<" Buckets= "<<m_totalNumberOfBuckets<<endl;
 			assert(h2<m_totalNumberOfBuckets-1);
 			#endif
 		}
