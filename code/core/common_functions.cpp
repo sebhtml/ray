@@ -306,7 +306,7 @@ uint64_t hash_function_1(Kmer*a){
 	#if KMER_U64_ARRAY_SIZE == 1
 	return uniform_hashing_function_1_64_64(a->getU64(0));
 	#else
-	uint64_t key=b.getU64(0);
+	uint64_t key=a->getU64(0);
 	for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 		uint64_t hash=uniform_hashing_function_1_64_64(a->getU64(i));
 		key^=hash;
@@ -320,7 +320,7 @@ uint64_t hash_function_2(Kmer*a){
 	#if KMER_U64_ARRAY_SIZE == 1
 	return uniform_hashing_function_2_64_64(a->getU64(0));
 	#else
-	uint64_t key=b.getU64(0);
+	uint64_t key=a->getU64(0);
 	for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 		uint64_t hash=uniform_hashing_function_2_64_64(a->getU64(i));
 		key^=hash;
