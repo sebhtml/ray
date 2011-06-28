@@ -43,7 +43,7 @@ void Library::updateDistances(){
 	}
 
 	for(int i=0;i<m_size;i++){
-		Message aMessage(intMessage,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION,m_rank);
+		Message aMessage((uint64_t*)intMessage,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),MPI_UNSIGNED_LONG_LONG,i,RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION,m_rank);
 		m_outbox->push_back(aMessage);
 	}
 

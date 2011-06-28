@@ -23,8 +23,9 @@
 #define _Message_H
 
 #include <mpi.h>
+#include <stdint.h>
 
-/*
+/**
  * In Ray, every message is a Message.
  * the inbox and the outbox are arrays of Message's
  * All the code in Ray utilise Message to communicate information.
@@ -32,16 +33,32 @@
  * m_count is >=0 and <= MAXIMUM_MESSAGE_SIZE_IN_BYTES (default is 4000).
  */
 class Message{
-	void*m_buffer;
+	/** the message body, contains data
+ * 	if NULL, m_count must be 0 */
+	uint64_t*m_buffer;
+
+	/** the number of uint64_t that the m_buffer contains 
+ * 	can be 0 regardless of m_buffer value
+ * 	*/
 	int m_count;
-	MPI_Datatype m_datatype;
+
+	/** the Message-passing interface rank destination 
+ * 	Must be >=0 and <= MPI_Comm_size()-1 */
 	int m_dest;
+
+	/**
+ * 	Ray message-passing interface message tags are named RAY_MPI_TAG_<something>
+ * 	see mpi_tag_macros.h 
+ */
 	int m_tag;
+
+	/** the message-passing interface rank source 
+ * 	Must be >=0 and <= MPI_Comm_size()-1 */
 	int m_source;
 public:
 	Message();
-	Message(void*b,int c,MPI_Datatype d,int dest,int tag,int source);
-	void*getBuffer();
+	Message(uint64_t*b,int c,MPI_Datatype d,int dest,int tag,int source);
+	uint64_t*getBuffer();
 	int getCount();
 	MPI_Datatype getMPIDatatype();
 /**
@@ -56,7 +73,6 @@ public:
  * Gets the source MPI rank
  */
 	int getSource();
-	void setBuffer(void*buffer);
 };
 
 #endif
