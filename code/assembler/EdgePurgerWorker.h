@@ -31,6 +31,10 @@
 #include <structures/StaticVector.h>
 #include <communication/VirtualCommunicator.h>
 
+/**
+ * An EdgePurgerWorker actually does the job.
+ * It purges arcs pointing to unexistant vertices
+ */
 class EdgePurgerWorker{
 	bool m_outgoingInitialised;
 	bool m_ingoingInitialised;

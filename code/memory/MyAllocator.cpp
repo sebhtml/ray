@@ -36,12 +36,14 @@ void MyAllocator::reset(){
 	m_store.reset();
 }
 
+/** the constructor does not allocate a chunk */
 void MyAllocator::constructor(int chunkSize,int type,bool show){
 	m_show=show;
 	m_CHUNK_SIZE=chunkSize; 
 	m_type=type;
 }
 
+/**  add a chunk of memory */
 void MyAllocator::addChunk(){
 	void*currentChunk=(void*)__Malloc(m_CHUNK_SIZE,m_type,m_show);
 	#ifdef ASSERT
@@ -56,13 +58,14 @@ void*MyAllocator::allocate(int s){
 	#ifdef ASSERT
 	assert(s!=0);
 	#endif
-	if(m_store.hasAddressesToReuse(s)){
-		return m_store.reuseAddress(s);
-	}
 
-	if(m_chunks.size()==0){
+	/* reuse memory freed elsewhere */
+	if(m_store.hasAddressesToReuse(s))
+		return m_store.reuseAddress(s);
+
+	/* add a first chunk to the pool */
+	if(m_chunks.size()==0)
 		addChunk();
-	}
 
 	#ifndef FORCE_PACKING
 	// hopefully fix alignment issues on Itanium

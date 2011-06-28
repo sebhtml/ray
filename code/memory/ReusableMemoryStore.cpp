@@ -58,6 +58,7 @@ void*ReusableMemoryStore::reuseAddress(int size){
 }
 
 void ReusableMemoryStore::addAddressToReuse(void*p,int size){
+	/** don't free these tiny bits -- sizeof(Element) is 8 bytes on a 64-bit system */
 	if(size<(int)sizeof(Element)){
 		return;
 	}

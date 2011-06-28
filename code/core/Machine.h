@@ -259,8 +259,12 @@ class Machine{
 	void assignMasterHandlers();
 	void assignSlaveHandlers();
 
+	/** generate the prototypes using macros */
+
 	#define MACRO_LIST_ITEM(x) void call_ ## x();
+	/** master mode callback  prototypes */
 	#include <core/master_mode_macros.h>
+	/** slave mode callback prototypes */
 	#include <core/slave_mode_macros.h>
 	#undef MACRO_LIST_ITEM
 	
