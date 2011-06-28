@@ -23,19 +23,260 @@
 #define _MyHashTable_H
 
 #include <stdint.h>
-#include <memory/allocator.h>
+#include <memory/MyAllocator.h>
+#include <iostream>
 #include <assert.h>
+using namespace std;
 
-#define _MyHashTable_SEAT_IS_AVAILABLE 0x7ea61822
+/**
+ * This is an hash group.
+ * MyHashTable contains many MyHashTableGroup.
+ * Each MyHashTableGroup is responsible for a slice of buckets.
+ */
+template<class KEY,class VALUE>
+class MyHashTableGroup{
+	/**
+ * 	The VALUEs
+ */
+	VALUE*m_vector;
+
+	/**
+ * 	the bitmap containing the presence of absence  of a bucket 
+ */
+	uint8_t*m_bitmap;
+
+	/**
+ * 	set a bit
+ */
+	void setBit(int i,int j);
+public:
+	/** requests the bucket directly
+ * 	fails if it is empty
+ * 	*/
+	VALUE*getBucket(int bucket);
+
+	/**
+ * 	is the bucket utilised by someone else than key ?
+ */
+	bool bucketIsUtilisedBySomeoneElse(int bucket,KEY*key);
+
+	/**
+ * 	get the bit
+ */
+	int getBit(int i);
+
+	/** 
+ * 	build a group of buckets
+ */
+	void constructor(int numberOfBucketsInGroup,MyAllocator*allocator);
+
+	/**
+ * 	insert into the group
+ * 	should not be called if the bucket is used by someone else already
+ * 	otherwise it *will* fail
+ */
+	VALUE*insert(int numberOfBucketsInGroup,int bucket,KEY*key,MyAllocator*allocator,bool*inserted);
+
+	/**
+ * 	find a key
+ * 	should not be called if the bucket is used by someone else already
+ * 	otherwise it *will* fail
+ */
+	VALUE*find(int bucket,KEY*key);
+};
+
+/** sets the bit in the correct byte */
+template<class KEY,class VALUE>
+void MyHashTableGroup<KEY,VALUE>::setBit(int bit,int value){
+	int byteId=bit/8;
+	int bitInByte=bit%8;
+	#ifdef ASSERT
+	assert(value==1||value==0);
+	#endif
+	if(value==1)
+		m_bitmap[byteId]|=(1<<bitInByte);
+	else if(value==0)
+		m_bitmap[byteId]&=(~(1<<bitInByte));
+	#ifdef ASSERT
+	assert(getBit(bit)==value);
+	#endif
+}
+
+/** gets the bit  */
+template<class KEY,class VALUE>
+int MyHashTableGroup<KEY,VALUE>::getBit(int bit){
+	int byteId=bit/8;
+	int bitInByte=bit%8;
+	uint64_t word=m_bitmap[byteId];
+	word<<=(63-bitInByte);
+	word>>=63;
+	int bitValue=word;
+	#ifdef ASSERT
+	if(!(bitValue==0||bitValue==1))
+		cout<<"Bit="<<bit<<" Bit value= "<<bitValue<<" originalByte="<<(int)m_bitmap[byteId]<<" ByteId="<<byteId<<" BitInByte="<<bitInByte<<endl;
+	assert(bitValue==0||bitValue==1);
+	#endif
+	return bitValue;
+}
+
+/** builds the group of buckets */
+template<class KEY,class VALUE>
+void MyHashTableGroup<KEY,VALUE>::constructor(int numberOfBucketsInGroup,MyAllocator*allocator){
+	m_vector=NULL;
+	/* the number of buckets in a group must be a multiple of 8 */
+	/* why ? => to save memory -- not to waste memory */
+	#ifdef ASSERT
+	assert(numberOfBucketsInGroup%8==0);
+	#endif
+	int requiredBytes=numberOfBucketsInGroup/8;
+	m_bitmap=(uint8_t*)allocator->allocate(requiredBytes);
+	
+	/* set all bit to 0 */
+	for(int i=0;i<numberOfBucketsInGroup;i++)
+		setBit(i,0);
+}
+
+/**
+ * inserts a key in a group
+ * if the bucket is already utilised, then its key is key
+ * if it is not used, key is added in bucket.
+ */
+template<class KEY,class VALUE>
+VALUE*MyHashTableGroup<KEY,VALUE>::insert(int numberOfBucketsInGroup,int bucket,KEY*key,MyAllocator*allocator,bool*inserted){
+	/* the bucket can not be used by another key than key */
+	/* if it would be the case, then MyHashTable would not have sent key here */
+	#ifdef ASSERT
+	assert(!bucketIsUtilisedBySomeoneElse(bucket,key));
+	#endif
+	/*  count the number of occupied buckets before bucket */
+	int bucketsBefore=0;
+	for(int i=0;i<bucket;i++)
+		bucketsBefore+=getBit(i);
+
+	/* if the bucket is occupied, then it is returned immediately */
+	if(getBit(bucket)==1){
+		#ifdef ASSERT
+		VALUE*value=m_vector+bucketsBefore;
+		assert(value->m_lowerKey==*key);
+		#endif
+		return m_vector+bucketsBefore;
+	}
+
+	/* make sure that it is not occupied by some troll already */
+	#ifdef ASSERT
+	assert(getBit(bucket)==0);
+	#endif
+	/* the bucket is not occupied */
+	setBit(bucket,1);
+
+	/* compute the number of buckets to actually move. */
+	int bucketsAfter=0;
+	for(int i=bucket+1;i<numberOfBucketsInGroup;i++)
+		bucketsAfter+=getBit(i);
+
+	/* will allocate a new vector with one more element */
+	int requiredBytes=(bucketsBefore+1+bucketsAfter)*sizeof(VALUE);
+	VALUE*newVector=(VALUE*)allocator->allocate(requiredBytes);
+
+	/* copy the buckets before */
+	if(bucketsBefore>0)
+		memcpy(newVector,m_vector,bucketsBefore*sizeof(VALUE));
+
+	/* copy the buckets after */
+	if(bucketsAfter>0)
+		memcpy(newVector+bucketsBefore+1,m_vector+bucketsBefore,bucketsAfter*sizeof(VALUE));
+
+	/* assign the new bucket */
+	newVector[bucketsBefore].m_lowerKey=*key;
+	
+	/* garbage the old vector, MyAllocator will reuse it */
+	if(m_vector!=NULL)
+		allocator->free(m_vector,(bucketsBefore+bucketsAfter)*sizeof(VALUE));
+
+	/* assign the vector */
+	m_vector=newVector;
+
+	*inserted=true;
+	
+	/* check that everything is OK now ! */
+	#ifdef ASSERT
+	assert(getBit(bucket)==1);
+	if(getBucket(bucket)->m_lowerKey!=*key){
+		cout<<"Expected"<<endl;
+		key->print();
+		cout<<"Actual"<<endl;
+		getBucket(bucket)->m_lowerKey.print();
+		
+		cout<<"Bucket= "<<bucket<<" BucketsBefore= "<<bucketsBefore<<" BucketsAfter= "<<bucketsAfter<<endl;
+	}
+	assert(getBucket(bucket)->m_lowerKey==*key);
+	assert(!bucketIsUtilisedBySomeoneElse(bucket,key));
+	#endif
+	return m_vector+bucketsBefore;
+}
+
+/** checks that the bucket is not utilised by someone else than key */
+template<class KEY,class VALUE>
+bool MyHashTableGroup<KEY,VALUE>::bucketIsUtilisedBySomeoneElse(int bucket,KEY*key){
+	if(getBit(bucket)==0)
+		return false;
+	int bucketsBefore=0;
+	for(int i=0;i<bucket;i++)
+		bucketsBefore+=getBit(i);
+	return m_vector[bucketsBefore].m_lowerKey!=*key;
+}
+
+/** get direct access to the bucket */
+template<class KEY,class VALUE>
+VALUE*MyHashTableGroup<KEY,VALUE>::getBucket(int bucket){
+	/*  the bucket is not occupied therefore the key does not exist */
+	#ifdef ASSERT
+	assert(getBit(bucket)!=0);
+	#endif
+	/* compute the number of elements before bucket */
+	int bucketsBefore=0;
+	for(int i=0;i<bucket;i++)
+		bucketsBefore+=getBit(i);
+
+	/* return the bucket */
+	return m_vector+bucketsBefore;
+}
+
+/** finds a key in a bucket  
+ * this will *fail* if another key is found.
+ * */
+template<class KEY,class VALUE>
+VALUE*MyHashTableGroup<KEY,VALUE>::find(int bucket,KEY*key){
+	/*  the bucket is not occupied therefore the key does not exist */
+	if(getBit(bucket)==0)
+		return NULL;
+	#ifdef ASSERT
+	assert(!bucketIsUtilisedBySomeoneElse(bucket,key));
+	#endif
+	/* compute the number of elements before bucket */
+	int bucketsBefore=0;
+	for(int i=0;i<bucket;i++)
+		bucketsBefore+=getBit(i);
+	return m_vector+bucketsBefore;
+}
 
 /**
  * this hash table is specific to DNA
  * uses open addressing with quadratic probing 
  * class VALUE must have a public attribute of class KEY called m_lowerKey.
  * the number of seats can not be exceeded. 
+ * based on the description at
+ * \see http://google-sparsehash.googlecode.com/svn/trunk/doc/implementation.html
  */
 template<class KEY,class VALUE>
 class MyHashTable{
+	/** 
+ * 	chunk allocator
+ */
+	MyAllocator m_allocator;
+	/** 
+ * 	the  maximum probes required in quadratic probing
+ */
 	int m_maximumProbe;
 	/**
  * Message-passing interface rank
@@ -43,10 +284,10 @@ class MyHashTable{
 	int m_rank;
 	/**
  * the number of seats in the theater */
-	uint64_t m_totalNumberOfSeats;
+	uint64_t m_totalNumberOfBuckets;
 	/**
  * the number of people seated -- the number of utilised seats */
-	uint64_t m_utilisedSeats;
+	uint64_t m_utilisedBuckets;
 	/**
  * type of memory allocation */
 	int m_mallocType;
@@ -55,7 +296,21 @@ class MyHashTable{
 	bool m_showMalloc;
 	/**
  * the actual seats */
-	VALUE*m_seats;
+
+	/**
+ * 	groups of buckets
+ */
+	MyHashTableGroup<KEY,VALUE>*m_groups;
+
+	/**
+ * number of buckets per group
+ */
+	int m_numberOfBucketsInGroup;
+
+	/**
+ * 	number of groups 
+ */
+	int m_numberOfGroups;
 
 	/**
  * quadratic probing, assuming a number of seats that is a power of 2 */
@@ -69,7 +324,7 @@ public:
 	bool isAvailable(uint64_t a);
 	/**
  * build the seats and the hash */
-	void constructor(uint64_t seats,int mallocType,bool showMalloc,int rank);
+	void constructor(uint64_t buckets,int mallocType,bool showMalloc,int rank);
 	/**
  * find a seat given a key */
 	VALUE*find(KEY*key);
@@ -89,13 +344,15 @@ public:
 };
 
 template<class KEY,class VALUE>
-VALUE*MyHashTable<KEY,VALUE>::at(uint64_t a){
-	return m_seats+a;
+VALUE*MyHashTable<KEY,VALUE>::at(uint64_t bucket){
+	int group=bucket/m_numberOfBucketsInGroup;
+	int bucketInGroup=bucket%m_numberOfBucketsInGroup;
+	return m_groups[group].getBucket(bucketInGroup);
 }
 
 template<class KEY,class VALUE>
 uint64_t MyHashTable<KEY,VALUE>::capacity(){
-	return m_totalNumberOfSeats;
+	return m_totalNumberOfBuckets;
 }
 
 template<class KEY,class VALUE>
@@ -112,38 +369,43 @@ uint64_t MyHashTable<KEY,VALUE>::quadraticProbe(uint64_t i){
 
 template<class KEY,class VALUE>
 uint64_t MyHashTable<KEY,VALUE>::size(){
-	return m_utilisedSeats;
+	return m_utilisedBuckets;
 }
 
 /**
  * Allocate the theater and mark the seats as available
  */
 template<class KEY,class VALUE>
-void MyHashTable<KEY,VALUE>::constructor(uint64_t seats,int mallocType,bool showMalloc,int rank){
+void MyHashTable<KEY,VALUE>::constructor(uint64_t buckets,int mallocType,bool showMalloc,int rank){
 	m_rank=rank;
-
-	/* needs at least this amount of bytes to ensure that the code for an available seat can be stored */
-	assert(sizeof(KEY)>=8);
+	
+	int chunkSize=16777216;
+	m_allocator.constructor(chunkSize,mallocType,showMalloc);
+	
 	m_mallocType=mallocType;
 	m_showMalloc=showMalloc;
 	/* the number of seats is a power of 2 */
-	m_totalNumberOfSeats=1;
-	while(m_totalNumberOfSeats<seats)
-		m_totalNumberOfSeats*=2;
-	m_utilisedSeats=0;
-	uint64_t requiredBytes=m_totalNumberOfSeats*sizeof(VALUE);
-	m_seats=(VALUE*)__Malloc(requiredBytes,m_mallocType,m_showMalloc);
-	/* mark the seats as available */
-	for(uint64_t i=0;i<m_totalNumberOfSeats;i++){
-		VALUE*seat=m_seats+i;
-		uint64_t*ptr=(uint64_t*)seat;
-		*ptr=_MyHashTable_SEAT_IS_AVAILABLE;
-	}
+	m_totalNumberOfBuckets=1;
+	while(m_totalNumberOfBuckets<buckets)
+		m_totalNumberOfBuckets*=2;
+	m_utilisedBuckets=0;
+	/* the number of buckets in a group */
+	m_numberOfBucketsInGroup=48;
+
+	m_numberOfGroups=(m_totalNumberOfBuckets-1)/m_numberOfBucketsInGroup+1;
+	m_groups=(MyHashTableGroup<KEY,VALUE>*)m_allocator.allocate(m_numberOfGroups*sizeof(MyHashTableGroup<KEY,VALUE>));
+	#ifdef ASSERT
+	assert(m_groups!=NULL);
+	#endif
+	for(int i=0;i<m_numberOfGroups;i++)
+		m_groups[i].constructor(m_numberOfBucketsInGroup,&m_allocator);
 }
 
 template<class KEY,class VALUE>
-bool MyHashTable<KEY,VALUE>::isAvailable(uint64_t seat){
-	return (*((uint64_t*)(m_seats+seat)))==_MyHashTable_SEAT_IS_AVAILABLE;
+bool MyHashTable<KEY,VALUE>::isAvailable(uint64_t bucket){
+	int group=bucket/m_numberOfBucketsInGroup;
+	int bucketInGroup=bucket%m_numberOfBucketsInGroup;
+	return m_groups[group].getBit(bucketInGroup)==0;
 }
 
 /**
@@ -152,14 +414,16 @@ bool MyHashTable<KEY,VALUE>::isAvailable(uint64_t seat){
 template<class KEY,class VALUE>
 VALUE*MyHashTable<KEY,VALUE>::find(KEY*key){
 	uint64_t probe=0; 
-	uint64_t seat=((hash_function_2(key)+quadraticProbe(probe))%m_totalNumberOfSeats);
-	while(probe<m_totalNumberOfSeats&& (*((uint64_t*)(m_seats+seat)))!=_MyHashTable_SEAT_IS_AVAILABLE){
-		if(m_seats[seat].m_lowerKey==*key)
-			return m_seats+seat;
+	uint64_t bucket=((hash_function_2(key)+quadraticProbe(probe))%m_totalNumberOfBuckets);
+	int group=bucket/m_numberOfBucketsInGroup;
+	int bucketInGroup=bucket%m_numberOfBucketsInGroup;
+	while(m_groups[group].bucketIsUtilisedBySomeoneElse(bucketInGroup,key)){
 		probe++;
-		seat=((hash_function_2(key)+quadraticProbe(probe))%m_totalNumberOfSeats);
+		bucket=((hash_function_2(key)+quadraticProbe(probe))%m_totalNumberOfBuckets);
+		group=bucket/m_numberOfBucketsInGroup;
+		bucketInGroup=bucket%m_numberOfBucketsInGroup;
 	}
-	return NULL;
+	return m_groups[group].find(bucketInGroup,key);
 }
 
 /**
@@ -167,35 +431,50 @@ VALUE*MyHashTable<KEY,VALUE>::find(KEY*key){
  */
 template<class KEY,class VALUE>
 VALUE*MyHashTable<KEY,VALUE>::insert(KEY*key){
-	int probe=0;
-	uint64_t seat=((hash_function_2(key)+quadraticProbe(probe))%m_totalNumberOfSeats);
-	while((uint64_t)probe<m_totalNumberOfSeats&& (*((uint64_t*)(m_seats+seat)))!=_MyHashTable_SEAT_IS_AVAILABLE){
-		if(m_seats[seat].m_lowerKey==*key)
-			return m_seats+seat;
-		probe++;
-		seat=((hash_function_2(key)+quadraticProbe(probe))%m_totalNumberOfSeats);
-	}
-	m_seats[seat].m_lowerKey=*key;
+	uint64_t probe=0; 
+	uint64_t bucket=((hash_function_2(key)+quadraticProbe(probe))%m_totalNumberOfBuckets);
+	int group=bucket/m_numberOfBucketsInGroup;
+	int bucketInGroup=bucket%m_numberOfBucketsInGroup;
 	#ifdef ASSERT
-	assert(m_utilisedSeats<m_totalNumberOfSeats);
+	assert(group<m_numberOfGroups);
 	#endif
-	m_utilisedSeats++;
-	assert(!isAvailable(seat));
+	while(m_groups[group].bucketIsUtilisedBySomeoneElse(bucketInGroup,key)){
+		probe++;
+		bucket=((hash_function_2(key)+quadraticProbe(probe))%m_totalNumberOfBuckets);
+		group=bucket/m_numberOfBucketsInGroup;
+		bucketInGroup=bucket%m_numberOfBucketsInGroup;
+
+		#ifdef ASSERT
+		assert(group<m_numberOfGroups);
+		#endif
+	}
 	if(probe>m_maximumProbe)
 		m_maximumProbe=probe;
+	bool inserted=false;
+	m_groups[group].insert(m_numberOfBucketsInGroup,bucketInGroup,key,&m_allocator,&inserted);
+	#ifdef ASSERT
+	assert(m_groups[group].find(bucketInGroup,key)!=NULL);
+	#endif
+
+	if(inserted)
+		m_utilisedBuckets++;
+
+	/* check the load factor */
 	check();
 
-	return find(key);
+	VALUE*entry=find(key);
+	#ifdef ASSERT
+	assert(entry!=NULL);
+	#endif
+	return entry;
 }
 
 template<class KEY,class VALUE>
 void MyHashTable<KEY,VALUE>::destructor(){
-	double loadFactor=(0.0+m_utilisedSeats)/m_totalNumberOfSeats;
-	cout<<"Rank "<<m_rank<<": MyHashTable, "<<m_totalNumberOfSeats<<" buckets, load factor: "<<loadFactor<<" maximum probe: "<<m_maximumProbe<<endl;
-	__Free(m_seats,m_mallocType,m_showMalloc);
-	m_seats=NULL;
-	m_utilisedSeats=0;
-	m_totalNumberOfSeats=0;
+	double loadFactor=(0.0+m_utilisedBuckets)/m_totalNumberOfBuckets;
+	cout<<"Rank "<<m_rank<<": MyHashTable load factor: "<<loadFactor<<" maximum probe: "<<m_maximumProbe<<endl;
+	m_allocator.clear();
+	m_groups=NULL;
 }
 
 #endif

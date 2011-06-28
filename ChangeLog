@@ -24,6 +24,8 @@ of degrees in the graph.
 *  Cleaned the code by removing MemoryConsumptionReducer.
 * The hash tables are now implemented using open addressing with quadratic
 probing.
+* Implemented a sparse hash map (following the description of Google sparse
+hash; see structures/MyHashTable.h)
 
 
 = 1.6.0 =

@@ -35,9 +35,6 @@ HAVE_LIBBZ2 = n
 # y/n
 HAVE_CLOCK_GETTIME = n
 
-# use Google sparsh hash map
-HAVE_GOOGLE_SPARSE_HASH_MAP = n
-
 # use Intel's compiler
 # the name of the Intel MPI C++ compiler is mpiicpc
 # Open-MPI and MPICH2 utilise mpic++ for the name.
@@ -87,6 +84,12 @@ DEBUG = n
 
 ifeq ($(GPROF),y)
 	OPTIMIZE = n
+	FORCE_PACKING = n
+endif
+
+ifeq ($(DEBUG),y)
+	OPTIMIZE = n
+	FORCE_PACKING = n
 endif
 
 PEDANTIC = n
@@ -99,9 +102,6 @@ CXXFLAGS = -Icode
 
 # optimization
 CXXFLAGS-$(OPTIMIZE) += -O3
-
-# Google sparse hash
-CXXFLAGS-$(HAVE_GOOGLE_SPARSE_HASH_MAP) += -D HAVE_GOOGLE_SPARSE_HASH_MAP
 
 ifeq ($(INTEL_COMPILER),n)
 # g++ options
@@ -146,7 +146,7 @@ LDFLAGS-$(DEBUG)  += -g
 CXXFLAGS-$(HAVE_CLOCK_GETTIME) += -DHAVE_CLOCK_GETTIME 
 LDFLAGS-$(HAVE_CLOCK_GETTIME) += -lrt
 
-LDFLAGS-$(GPROF) += -pg
+LDFLAGS-$(GPROF) += -pg -g
 
 CXXFLAGS += $(CXXFLAGS-y)
 LDFLAGS += $(LDFLAGS-y)
@@ -233,6 +233,7 @@ showOptions:
 	@echo MPICXX = $(MPICXX)
 	@echo GPROF = $(GPROF)
 	@echo OPTIMIZE = $(OPTIMIZE)
+	@echo DEBUG = $(DEBUG)
 	@echo ""
 	@echo "Compilation and linking flags (generated automatically)"
 	@echo ""
