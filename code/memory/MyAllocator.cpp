@@ -22,6 +22,7 @@
 #include <core/common_functions.h>
 #include <memory/MyAllocator.h>
 #include <stdlib.h>
+#include <memory/malloc_types.h>
 #include <iostream>
 #include <stdio.h>
 #include <assert.h>
@@ -121,9 +122,7 @@ void*MyAllocator::allocate(int s){
 	return r;
 }
 
-MyAllocator::~MyAllocator(){
-	clear();
-}
+MyAllocator::~MyAllocator(){}
 
 void MyAllocator::clear(){
 	m_store.reset();

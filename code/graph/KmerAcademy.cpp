@@ -33,8 +33,7 @@ using namespace std;
 void KmerAcademy::constructor(int rank,Parameters*parameters){
 	m_parameters=parameters;
 	m_size=0;
-	int initialHashSize=4194304;
-	m_hashTable.constructor(initialHashSize,RAY_MALLOC_TYPE_KMER_ACADEMY,
+	m_hashTable.constructor(RAY_MALLOC_TYPE_KMER_ACADEMY,
 		m_parameters->showMemoryAllocations(),m_parameters->getRank());
 
 	m_inserted=false;

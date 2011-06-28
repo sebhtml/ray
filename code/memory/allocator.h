@@ -19,6 +19,13 @@ see <http://www.gnu.org/licenses/>
 
 */
 
+/**
+ * allocate c bytes of type mallocType
+ */
 void*__Malloc(int c,int mallocType,bool show);
+
+/**
+ * free bytes of mallocType
+ */
 void __Free(void*a,int mallocType,bool show);
 

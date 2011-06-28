@@ -54,15 +54,13 @@ void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
 	if(m_inbox->size()>0&&m_inbox->at(0)->getTag()==RAY_MPI_TAG_KMER_ACADEMY_DATA_REPLY)
 		m_pendingMessages--;
 
-	if(m_pendingMessages!=0){
+	if(m_pendingMessages!=0)
 		return;
-	}
 
-	if(m_finished){
+	if(m_finished)
 		return;
-	}
 
-	if(*m_mode_send_vertices_sequence_id%100000==0 &&m_mode_send_vertices_sequence_id_position==0
+	if(*m_mode_send_vertices_sequence_id%10000==0 &&m_mode_send_vertices_sequence_id_position==0
 	&&*m_mode_send_vertices_sequence_id<(int)m_myReads->size()){
 		string reverse="";
 		if(*m_reverseComplementVertex==true){

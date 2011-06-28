@@ -28,12 +28,19 @@
 #include <core/constants.h>
 using namespace std;
 
+/**
+ * wrapper around malloc
+ */
 void*__Malloc(int c,int mallocType,bool show){
+	#ifdef ASSERT
 	assert(c!=0);
+	assert(c>0);
+	#endif
 	void*a=NULL;
 	a=malloc(c);
 	if(a==NULL){
 		cout<<"Critical exception: The system is out of memory, returned NULL."<<endl;
+		cout<<"Requested "<<c<<" bytes of type "<<MALLOC_TYPES[mallocType]<<endl;
 		exit(EXIT_NO_MORE_MEMORY);
 	}
 
@@ -46,6 +53,9 @@ void*__Malloc(int c,int mallocType,bool show){
 	return a;
 }
 
+/**
+ * wrapper around free
+ */
 void __Free(void*a,int mallocType,bool show){
 	if(show){
 		printf("%s %i\t%s\t%p\t%s\n",__FILE__,__LINE__,__func__,a,MALLOC_TYPES[mallocType]);
