@@ -28,6 +28,11 @@
 #include <core/Parameters.h>
 #include <structures/Vertex.h>
 
+/**
+ * The GridTable  stores  all the k-mers for the graph.
+ * Low-coverage (covered once) are not stored here at all.
+ * The underlying data structure is a MyHashTable.
+ */
 class GridTable{
 	MyHashTable<Kmer,Vertex> m_hashTable;
 	KmerAcademy m_kmerAcademy;
@@ -35,10 +40,6 @@ class GridTable{
 	uint64_t m_size;
 	bool m_inserted;
 
-	/**
- *   move the item in front of the others
- */
-	Vertex*move(int bin,int item);
 public:
 	void constructor(int rank,Parameters*a);
 	uint64_t size();
@@ -58,6 +59,7 @@ public:
 	KmerCandidate*insertInAcademy(Kmer*key);
 	KmerAcademy*getKmerAcademy();
 	MyHashTable<Kmer,Vertex>*getHashTable();
+	void printStatistics();
 };
 
 #endif

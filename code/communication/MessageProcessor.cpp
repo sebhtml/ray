@@ -479,6 +479,8 @@ void MessageProcessor::call_RAY_MPI_TAG_PURGE_NULL_EDGES(Message*message){
 	printf("Rank %i has %i vertices (completed)\n",rank,(int)m_subgraph->size());
 	fflush(stdout);
 
+	m_subgraph->printStatistics();
+
 	if(m_parameters->showMemoryUsage()){
 		showMemoryUsage(rank);
 		fflush(stdout);
@@ -590,6 +592,8 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER(Mes
 void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message){
 	printf("Rank %i has %i k-mers (completed)\n",rank,(int)m_subgraph->getKmerAcademy()->size());
 	fflush(stdout);
+
+	m_subgraph->getKmerAcademy()->printStatistics();
 
 	if(m_parameters->showMemoryUsage()){
 		showMemoryUsage(rank);

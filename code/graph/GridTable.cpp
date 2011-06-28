@@ -131,3 +131,7 @@ void GridTable::clearDirections(Kmer*a){
 MyHashTable<Kmer,Vertex>*GridTable::getHashTable(){
 	return &m_hashTable;
 }
+
+void GridTable::printStatistics(){
+	m_hashTable.printStatistics();
+}

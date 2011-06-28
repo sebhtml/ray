@@ -28,12 +28,23 @@
 #include <structures/MyHashTable.h>
 #include <stdint.h>
 
+/** a KmerCandidate may become a genomic super-star --
+ * one of the fews that make it to the graph
+ */
 class KmerCandidate{
 public:
 	Kmer m_lowerKey;
 	COVERAGE_TYPE m_count;
 }ATTRIBUTE_PACKED;
 
+/**
+ * The KmerAcademy is the place where KmerCandidate  
+ * train to become  Vertex.
+ * If they fail to endure their hard training,
+ * they remain here. Usually, those failing are observed
+ * only once.
+ * The KmerAcademy is burned and destroyed once the graph is ready.
+ */
 class KmerAcademy{
 	Parameters*m_parameters;
 	uint64_t m_size;
@@ -48,6 +59,7 @@ public:
 	bool inserted();
 	void destructor();
 	MyHashTable<Kmer,KmerCandidate>*getHashTable();
+	void printStatistics();
 };
 
 #endif

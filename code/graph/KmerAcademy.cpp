@@ -48,6 +48,11 @@ uint64_t KmerAcademy::size(){
 	return m_size;
 }
 
+/**
+ * What is this sorcery ?
+ * Actually, Ray just stores one Kmer of any pair of reverse-complement
+ * Kmer objects.
+ */
 KmerCandidate*KmerAcademy::find(Kmer*key){
 	Kmer lowerKey=complementVertex(key,m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 	if(key->isLower(&lowerKey)){
@@ -87,4 +92,9 @@ void KmerAcademy::destructor(){
 
 MyHashTable<Kmer,KmerCandidate>*KmerAcademy::getHashTable(){
 	return &m_hashTable;
+}
+
+/** print statistics of the hash table */
+void KmerAcademy::printStatistics(){
+	m_hashTable.printStatistics();
 }
