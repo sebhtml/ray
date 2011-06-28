@@ -19,6 +19,11 @@
 
 */
 
+/* the code in this file is based on my understanding (Sébastien Boisvert) of
+ * the content of this page about Google sparse hash map.
+ * \see http://google-sparsehash.googlecode.com/svn/trunk/doc/implementation.html
+ */
+
 #ifndef _MyHashTable_H
 #define _MyHashTable_H
 
@@ -32,6 +37,7 @@ using namespace std;
  * This is an hash group.
  * MyHashTable contains many MyHashTableGroup.
  * Each MyHashTableGroup is responsible for a slice of buckets.
+ * \see http://google-sparsehash.googlecode.com/svn/trunk/doc/implementation.html
  */
 template<class KEY,class VALUE>
 class MyHashTableGroup{
@@ -49,6 +55,9 @@ class MyHashTableGroup{
  * 	set a bit
  */
 	void setBit(int i,int j);
+
+	/** build the bitmap of this otherwise  unactive group of buckets */
+	void activateGroupBitmap(int numberOfBucketsInGroup,MyAllocator*allocator);
 public:
 	/** requests the bucket directly
  * 	fails if it is empty
@@ -75,7 +84,8 @@ public:
  * 	should not be called if the bucket is used by someone else already
  * 	otherwise it *will* fail
  */
-	VALUE*insert(int numberOfBucketsInGroup,int bucket,KEY*key,MyAllocator*allocator,bool*inserted);
+	VALUE*insert(int numberOfBucketsInGroup,int bucket,KEY*key,MyAllocator*allocator,bool*inserted,
+		bool*newGroupActivated);
 
 	/**
  * 	find a key
@@ -88,6 +98,13 @@ public:
 /** sets the bit in the correct byte */
 template<class KEY,class VALUE>
 void MyHashTableGroup<KEY,VALUE>::setBit(int bit,int value){
+	/* nothing to do although I am not sure this case is ever triggered... */
+	if(m_bitmap==NULL&&value==0)
+		return;
+
+	#ifdef ASSERT
+	assert(m_bitmap!=NULL);
+	#endif
 	int byteId=bit/8;
 	int bitInByte=bit%8;
 	#ifdef ASSERT
@@ -105,8 +122,13 @@ void MyHashTableGroup<KEY,VALUE>::setBit(int bit,int value){
 /** gets the bit  */
 template<class KEY,class VALUE>
 int MyHashTableGroup<KEY,VALUE>::getBit(int bit){
+	/** if the bitmap is NULL, then everything is virtually 0. */
+	if(m_bitmap==NULL)
+		return 0;
+
 	int byteId=bit/8;
 	int bitInByte=bit%8;
+	/* use a uint64_t word because otherwise bits are not correct */
 	uint64_t word=m_bitmap[byteId];
 	word<<=(63-bitInByte);
 	word>>=63;
@@ -119,6 +141,22 @@ int MyHashTableGroup<KEY,VALUE>::getBit(int bit){
 	return bitValue;
 }
 
+/** 
+ * build the bitmap
+ * it is not built by the constructor because 
+ * it is not necessary if no bucket are utilised
+ * in the group of buckets.
+ */
+template<class KEY,class VALUE>
+void MyHashTableGroup<KEY,VALUE>::activateGroupBitmap(int numberOfBucketsInGroup,MyAllocator*allocator){
+	int requiredBytes=numberOfBucketsInGroup/8;
+	m_bitmap=(uint8_t*)allocator->allocate(requiredBytes);
+	
+	/* set all bit to 0 */
+	for(int i=0;i<numberOfBucketsInGroup;i++)
+		setBit(i,0);
+}
+
 /** builds the group of buckets */
 template<class KEY,class VALUE>
 void MyHashTableGroup<KEY,VALUE>::constructor(int numberOfBucketsInGroup,MyAllocator*allocator){
@@ -128,12 +166,7 @@ void MyHashTableGroup<KEY,VALUE>::constructor(int numberOfBucketsInGroup,MyAlloc
 	#ifdef ASSERT
 	assert(numberOfBucketsInGroup%8==0);
 	#endif
-	int requiredBytes=numberOfBucketsInGroup/8;
-	m_bitmap=(uint8_t*)allocator->allocate(requiredBytes);
-	
-	/* set all bit to 0 */
-	for(int i=0;i<numberOfBucketsInGroup;i++)
-		setBit(i,0);
+	m_bitmap=NULL;
 }
 
 /**
@@ -142,7 +175,8 @@ void MyHashTableGroup<KEY,VALUE>::constructor(int numberOfBucketsInGroup,MyAlloc
  * if it is not used, key is added in bucket.
  */
 template<class KEY,class VALUE>
-VALUE*MyHashTableGroup<KEY,VALUE>::insert(int numberOfBucketsInGroup,int bucket,KEY*key,MyAllocator*allocator,bool*inserted){
+VALUE*MyHashTableGroup<KEY,VALUE>::insert(int numberOfBucketsInGroup,int bucket,KEY*key,MyAllocator*allocator,bool*inserted,
+	bool*newGroupActivated){
 	/* the bucket can not be used by another key than key */
 	/* if it would be the case, then MyHashTable would not have sent key here */
 	#ifdef ASSERT
@@ -166,6 +200,13 @@ VALUE*MyHashTableGroup<KEY,VALUE>::insert(int numberOfBucketsInGroup,int bucket,
 	#ifdef ASSERT
 	assert(getBit(bucket)==0);
 	#endif
+
+	/* actually build the bitmap now */
+	if(m_bitmap==NULL){
+		activateGroupBitmap(numberOfBucketsInGroup,allocator);
+		*newGroupActivated=true;
+	}
+
 	/* the bucket is not occupied */
 	setBit(bucket,1);
 
@@ -271,13 +312,17 @@ VALUE*MyHashTableGroup<KEY,VALUE>::find(int bucket,KEY*key){
 template<class KEY,class VALUE>
 class MyHashTable{
 	/** 
+ * 	the number of active groups
+ */
+	int m_activeGroups;
+	/** 
  * 	chunk allocator
  */
 	MyAllocator m_allocator;
 	/** 
  * 	the  maximum probes required in quadratic probing
  */
-	int m_maximumProbe;
+	int m_probes[16];
 	/**
  * Message-passing interface rank
  */
@@ -285,18 +330,10 @@ class MyHashTable{
 	/**
  * the number of seats in the theater */
 	uint64_t m_totalNumberOfBuckets;
+
 	/**
  * the number of people seated -- the number of utilised seats */
 	uint64_t m_utilisedBuckets;
-	/**
- * type of memory allocation */
-	int m_mallocType;
-	/**
- * memory allocation verbosity */
-	bool m_showMalloc;
-	/**
- * the actual seats */
-
 	/**
  * 	groups of buckets
  */
@@ -313,9 +350,30 @@ class MyHashTable{
 	int m_numberOfGroups;
 
 	/**
- * quadratic probing, assuming a number of seats that is a power of 2 */
+ * quadratic probing, assuming a number of seats that is a power of 2 
+ * "But what is quadratic probing ?", you may ask.
+ * This stuff is pretty simple actually.
+ * Given an array of N elements and a key x and an hash
+ * function HASH_FUNCTION, one simple way to get the bucket is
+ *
+ *  bucket =   HASH_FUNCTION(x)%N
+ *
+ * If a collision occurs (another key already uses bucket),
+ * quadratic probing allows one to probe another bucket.
+ *
+ *  bucket =   ( HASH_FUNCTION(x) + quadraticProbe(i) )%N
+ *          
+ *             where i is initially 0
+ *             when there is a collision, increment i and check the new  bucket
+ *             repeat until satisfied.
+ */
 	uint64_t quadraticProbe(uint64_t i);
-	void check();
+
+/**
+ * If the load factor is too high,
+ * double the size, and regrow everything in the new one.
+ */
+	bool growIfNecessary();
 
 public:
 	/**
@@ -339,10 +397,25 @@ public:
  */
 	uint64_t size();
 
+	/**
+ * 	get a bucket directly
+ * 	will fail if empty
+ */
 	VALUE*at(uint64_t a);
+	
+	/** get the number of buckets */
 	uint64_t capacity();
+
+	/**
+ * 	print the statistics of the hash table including,
+ * 	but not necessary limited to:
+ * 	- the load factor
+ * 	- the maximum number of probes (open addressing via quadratic probing)
+ */
+	void printStatistics();
 };
 
+/* get a bucket */
 template<class KEY,class VALUE>
 VALUE*MyHashTable<KEY,VALUE>::at(uint64_t bucket){
 	int group=bucket/m_numberOfBucketsInGroup;
@@ -350,13 +423,16 @@ VALUE*MyHashTable<KEY,VALUE>::at(uint64_t bucket){
 	return m_groups[group].getBucket(bucketInGroup);
 }
 
+/** returns the number of buckets */
 template<class KEY,class VALUE>
 uint64_t MyHashTable<KEY,VALUE>::capacity(){
 	return m_totalNumberOfBuckets;
 }
 
+/** makes the table grow if necessary */
 template<class KEY,class VALUE>
-void MyHashTable<KEY,VALUE>::check(){
+bool MyHashTable<KEY,VALUE>::growIfNecessary(){
+	return false;
 }
 
 /**
@@ -379,17 +455,19 @@ template<class KEY,class VALUE>
 void MyHashTable<KEY,VALUE>::constructor(uint64_t buckets,int mallocType,bool showMalloc,int rank){
 	m_rank=rank;
 	
+	/** give 16 MiB to the chunk allocator */
 	int chunkSize=16777216;
 	m_allocator.constructor(chunkSize,mallocType,showMalloc);
 	
-	m_mallocType=mallocType;
-	m_showMalloc=showMalloc;
+
 	/* the number of seats is a power of 2 */
 	m_totalNumberOfBuckets=1;
 	while(m_totalNumberOfBuckets<buckets)
 		m_totalNumberOfBuckets*=2;
 	m_utilisedBuckets=0;
-	/* the number of buckets in a group */
+
+	/* the number of buckets in a group
+ * 	this is arbitrary I believe... */
 	m_numberOfBucketsInGroup=48;
 
 	m_numberOfGroups=(m_totalNumberOfBuckets-1)/m_numberOfBucketsInGroup+1;
@@ -399,6 +477,12 @@ void MyHashTable<KEY,VALUE>::constructor(uint64_t buckets,int mallocType,bool sh
 	#endif
 	for(int i=0;i<m_numberOfGroups;i++)
 		m_groups[i].constructor(m_numberOfBucketsInGroup,&m_allocator);
+
+	/*  set probe profiles to 0 */
+	for(int i=0;i<16;i++)
+		m_probes[i]=0;
+
+	m_activeGroups=0;
 }
 
 template<class KEY,class VALUE>
@@ -448,21 +532,38 @@ VALUE*MyHashTable<KEY,VALUE>::insert(KEY*key){
 		assert(group<m_numberOfGroups);
 		#endif
 	}
-	if(probe>m_maximumProbe)
-		m_maximumProbe=probe;
+
+	/* actually insert something somewhere */
 	bool inserted=false;
-	m_groups[group].insert(m_numberOfBucketsInGroup,bucketInGroup,key,&m_allocator,&inserted);
+	bool newGroupActivated=false;
+	VALUE*entry=m_groups[group].insert(m_numberOfBucketsInGroup,bucketInGroup,key,&m_allocator,&inserted,
+		&newGroupActivated);
+	
+	if(newGroupActivated)
+		m_activeGroups++;
+
+	/* check that nothing failed elsewhere */
 	#ifdef ASSERT
+	assert(entry!=NULL);
 	assert(m_groups[group].find(bucketInGroup,key)!=NULL);
 	#endif
 
-	if(inserted)
+	/* increment the elements if an insertion occured */
+	if(inserted){
 		m_utilisedBuckets++;
+		/* update the maximum number of probes */
+		if(probe>15)
+			probe=15;
+		m_probes[probe]++;
+	}
 
 	/* check the load factor */
-	check();
+	if(!growIfNecessary())
+		return entry;
 
-	VALUE*entry=find(key);
+	/* must reprobe because everything changed */
+
+	entry=find(key);
 	#ifdef ASSERT
 	assert(entry!=NULL);
 	#endif
@@ -471,10 +572,21 @@ VALUE*MyHashTable<KEY,VALUE>::insert(KEY*key){
 
 template<class KEY,class VALUE>
 void MyHashTable<KEY,VALUE>::destructor(){
-	double loadFactor=(0.0+m_utilisedBuckets)/m_totalNumberOfBuckets;
-	cout<<"Rank "<<m_rank<<": MyHashTable load factor: "<<loadFactor<<" maximum probe: "<<m_maximumProbe<<endl;
 	m_allocator.clear();
 	m_groups=NULL;
+}
+
+template<class KEY,class VALUE>
+void MyHashTable<KEY,VALUE>::printStatistics(){
+	double loadFactor=(0.0+m_utilisedBuckets)/m_totalNumberOfBuckets;
+	double activeGroups=(0.0+m_activeGroups)/m_numberOfGroups;
+	cout<<"Rank "<<m_rank<<": MyHashTable, LoadFactor: "<<loadFactor<<" Activity: "<<activeGroups<<endl;
+	cout<<"Rank "<<m_rank<<" QuadraticProbeStatistics: ";
+	for(int i=0;i<16;i++){
+		if(m_probes[i]!=0)
+			cout<<""<<i<<": "<<m_probes[i]<<"; ";
+	}
+	cout<<endl;
 }
 
 #endif
