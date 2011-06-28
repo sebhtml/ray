@@ -49,7 +49,7 @@ class MyHashTableGroup{
 	/**
  * 	the bitmap containing the presence of absence  of a bucket 
  */
-	uint8_t*m_bitmap;
+	uint64_t m_bitmap;
 
 	/**
  * 	set a bit
@@ -84,8 +84,7 @@ public:
  * 	should not be called if the bucket is used by someone else already
  * 	otherwise it *will* fail
  */
-	VALUE*insert(int numberOfBucketsInGroup,int bucket,KEY*key,MyAllocator*allocator,bool*inserted,
-		bool*newGroupActivated);
+	VALUE*insert(int numberOfBucketsInGroup,int bucket,KEY*key,MyAllocator*allocator,bool*inserted);
 
 	/**
  * 	find a key
@@ -98,23 +97,17 @@ public:
 /** sets the bit in the correct byte */
 template<class KEY,class VALUE>
 void MyHashTableGroup<KEY,VALUE>::setBit(int bit,int value){
-	/* nothing to do although I am not sure this case is ever triggered... */
-	if(m_bitmap==NULL&&value==0)
-		return;
-
-	#ifdef ASSERT
-	assert(m_bitmap!=NULL);
-	#endif
-	int byteId=bit/8;
-	int bitInByte=bit%8;
 	#ifdef ASSERT
 	assert(value==1||value==0);
 	#endif
+	uint64_t filter=1;
 	if(value==1)
-		m_bitmap[byteId]|=(1<<bitInByte);
+		m_bitmap|=(filter<<bit);
 	else if(value==0)
-		m_bitmap[byteId]&=(~(1<<bitInByte));
+		m_bitmap&=(~(filter<<bit));
 	#ifdef ASSERT
+	if(getBit(bit)!=value)
+		cout<<"Bit="<<bit<<" Expected="<<value<<" Actual="<<getBit(bit)<<endl;
 	assert(getBit(bit)==value);
 	#endif
 }
@@ -123,38 +116,12 @@ void MyHashTableGroup<KEY,VALUE>::setBit(int bit,int value){
 template<class KEY,class VALUE>
 int MyHashTableGroup<KEY,VALUE>::getBit(int bit){
 	/** if the bitmap is NULL, then everything is virtually 0. */
-	if(m_bitmap==NULL)
-		return 0;
-
-	int byteId=bit/8;
-	int bitInByte=bit%8;
 	/* use a uint64_t word because otherwise bits are not correct */
-	uint64_t word=m_bitmap[byteId];
-	word<<=(63-bitInByte);
-	word>>=63;
-	int bitValue=word;
+	int bitValue=(m_bitmap<<(63-bit))>>63;
 	#ifdef ASSERT
-	if(!(bitValue==0||bitValue==1))
-		cout<<"Bit="<<bit<<" Bit value= "<<bitValue<<" originalByte="<<(int)m_bitmap[byteId]<<" ByteId="<<byteId<<" BitInByte="<<bitInByte<<endl;
 	assert(bitValue==0||bitValue==1);
 	#endif
 	return bitValue;
-}
-
-/** 
- * build the bitmap
- * it is not built by the constructor because 
- * it is not necessary if no bucket are utilised
- * in the group of buckets.
- */
-template<class KEY,class VALUE>
-void MyHashTableGroup<KEY,VALUE>::activateGroupBitmap(int numberOfBucketsInGroup,MyAllocator*allocator){
-	int requiredBytes=numberOfBucketsInGroup/8;
-	m_bitmap=(uint8_t*)allocator->allocate(requiredBytes);
-	
-	/* set all bit to 0 */
-	for(int i=0;i<numberOfBucketsInGroup;i++)
-		setBit(i,0);
 }
 
 /** builds the group of buckets */
@@ -166,7 +133,6 @@ void MyHashTableGroup<KEY,VALUE>::constructor(int numberOfBucketsInGroup,MyAlloc
 	#ifdef ASSERT
 	assert(numberOfBucketsInGroup%8==0);
 	#endif
-	m_bitmap=NULL;
 }
 
 /**
@@ -175,8 +141,7 @@ void MyHashTableGroup<KEY,VALUE>::constructor(int numberOfBucketsInGroup,MyAlloc
  * if it is not used, key is added in bucket.
  */
 template<class KEY,class VALUE>
-VALUE*MyHashTableGroup<KEY,VALUE>::insert(int numberOfBucketsInGroup,int bucket,KEY*key,MyAllocator*allocator,bool*inserted,
-	bool*newGroupActivated){
+VALUE*MyHashTableGroup<KEY,VALUE>::insert(int numberOfBucketsInGroup,int bucket,KEY*key,MyAllocator*allocator,bool*inserted){
 	/* the bucket can not be used by another key than key */
 	/* if it would be the case, then MyHashTable would not have sent key here */
 	#ifdef ASSERT
@@ -200,12 +165,6 @@ VALUE*MyHashTableGroup<KEY,VALUE>::insert(int numberOfBucketsInGroup,int bucket,
 	#ifdef ASSERT
 	assert(getBit(bucket)==0);
 	#endif
-
-	/* actually build the bitmap now */
-	if(m_bitmap==NULL){
-		activateGroupBitmap(numberOfBucketsInGroup,allocator);
-		*newGroupActivated=true;
-	}
 
 	/* the bucket is not occupied */
 	setBit(bucket,1);
@@ -311,10 +270,6 @@ VALUE*MyHashTableGroup<KEY,VALUE>::find(int bucket,KEY*key){
  */
 template<class KEY,class VALUE>
 class MyHashTable{
-	/** 
- * 	the number of active groups
- */
-	int m_activeGroups;
 	/** 
  * 	chunk allocator
  */
@@ -467,8 +422,9 @@ void MyHashTable<KEY,VALUE>::constructor(uint64_t buckets,int mallocType,bool sh
 	m_utilisedBuckets=0;
 
 	/* the number of buckets in a group
- * 	this is arbitrary I believe... */
-	m_numberOfBucketsInGroup=48;
+ * 	this is arbitrary I believe... 
+ * 	*/
+	m_numberOfBucketsInGroup=64;
 
 	m_numberOfGroups=(m_totalNumberOfBuckets-1)/m_numberOfBucketsInGroup+1;
 	m_groups=(MyHashTableGroup<KEY,VALUE>*)m_allocator.allocate(m_numberOfGroups*sizeof(MyHashTableGroup<KEY,VALUE>));
@@ -481,8 +437,6 @@ void MyHashTable<KEY,VALUE>::constructor(uint64_t buckets,int mallocType,bool sh
 	/*  set probe profiles to 0 */
 	for(int i=0;i<16;i++)
 		m_probes[i]=0;
-
-	m_activeGroups=0;
 }
 
 template<class KEY,class VALUE>
@@ -535,12 +489,7 @@ VALUE*MyHashTable<KEY,VALUE>::insert(KEY*key){
 
 	/* actually insert something somewhere */
 	bool inserted=false;
-	bool newGroupActivated=false;
-	VALUE*entry=m_groups[group].insert(m_numberOfBucketsInGroup,bucketInGroup,key,&m_allocator,&inserted,
-		&newGroupActivated);
-	
-	if(newGroupActivated)
-		m_activeGroups++;
+	VALUE*entry=m_groups[group].insert(m_numberOfBucketsInGroup,bucketInGroup,key,&m_allocator,&inserted);
 
 	/* check that nothing failed elsewhere */
 	#ifdef ASSERT
@@ -579,8 +528,7 @@ void MyHashTable<KEY,VALUE>::destructor(){
 template<class KEY,class VALUE>
 void MyHashTable<KEY,VALUE>::printStatistics(){
 	double loadFactor=(0.0+m_utilisedBuckets)/m_totalNumberOfBuckets;
-	double activeGroups=(0.0+m_activeGroups)/m_numberOfGroups;
-	cout<<"Rank "<<m_rank<<": MyHashTable, LoadFactor: "<<loadFactor<<" Activity: "<<activeGroups<<endl;
+	cout<<"Rank "<<m_rank<<": MyHashTable, LoadFactor: "<<loadFactor<<" Activity: "<<endl;
 	cout<<"Rank "<<m_rank<<" QuadraticProbeStatistics: ";
 	for(int i=0;i<16;i++){
 		if(m_probes[i]!=0)

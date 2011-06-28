@@ -26,6 +26,7 @@
 #include <iostream>
 using namespace std;
 
+/** set the number of elements per message for a given tag */
 void VirtualCommunicator::setElementsPerQuery(int tag,int size){
 	#ifdef ASSERT
 	assert(m_elementSizes.count(tag)==0);
@@ -33,6 +34,7 @@ void VirtualCommunicator::setElementsPerQuery(int tag,int size){
 	m_elementSizes[tag]=size;
 }
 
+/** get the number of elements per message for a given tag */
 int VirtualCommunicator::getElementsPerQuery(int tag){
 	#ifdef ASSERT
 	assert(m_elementSizes.count(tag)!=0);
@@ -40,6 +42,7 @@ int VirtualCommunicator::getElementsPerQuery(int tag){
 	return m_elementSizes[tag];
 }
 
+/**  associate the reply message tag to a message tag */
 void VirtualCommunicator::setReplyType(int query,int reply){
 	#ifdef ASSERT
 	assert(m_replyTagToQueryTag.count(reply)==0);
@@ -47,6 +50,10 @@ void VirtualCommunicator::setReplyType(int query,int reply){
 	m_replyTagToQueryTag[reply]=query;
 }
 
+/** push a message
+ * this may trigger an actual message being flushed in the
+ * message-passing interface stack 
+ */
 void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 	int tag=message->getTag();
 	int period=m_elementSizes[tag];
@@ -76,9 +83,12 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 	assert(m_elementSizes.count(tag)>0);
 	#endif
 
+	/**  generate   a group key for the message 
+ * 	this is used for priority calculation
+ * 	*/
 	uint64_t elementId=getPathUniqueId(destination,tag);
 	int oldPriority=0;
-	// delete old priority
+	/* delete old priority */
 	if(m_messageContent.count(tag)>0&&m_messageContent[tag].count(destination)>0){
 		oldPriority=m_messageContent[tag][destination].size();
 		m_priorityQueue[oldPriority].erase(elementId);
@@ -97,12 +107,16 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 		m_messageContent[tag][destination].push_back(element);
 	}
 
+	/** add the worker workerId  to the list of workers that pushed a message of type
+ * 	tag to message-passing interface  rank destination
+ */
 	m_workerCurrentIdentifiers[tag][destination].push_back(workerId);
 
 	#ifdef ASSERT
 	assert(m_elementSizes.count(tag)>0);
 	#endif
 
+	/** check if the current size is good enough to flush the whole thing */
 	int currentSize=m_workerCurrentIdentifiers[tag][destination].size();
 
 	/*
