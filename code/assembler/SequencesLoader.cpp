@@ -159,7 +159,11 @@ bool SequencesLoader::computePartition(int rank,int size,
 			return false;
 		}
 		m_parameters->setNumberOfSequences(m_loader.size());
-		printf("Rank %i: [%i/%i] %s -> partition is [%lu;%lu], %lu sequence reads\n",m_rank,m_distribution_file_id+1,(int)allFiles.size(),allFiles[(m_distribution_file_id)].c_str(),counted,counted+m_loader.size()-1,m_loader.size());
+		if(counted>0)
+			printf("Rank %i: [%i/%i] %s -> partition is [%lu;%lu], %lu sequence reads\n",m_rank,m_distribution_file_id+1,(int)allFiles.size(),allFiles[(m_distribution_file_id)].c_str(),counted,counted+m_loader.size()-1,m_loader.size());
+		else
+			printf("Rank %i: [%i/%i] %s -> 0 sequence reads\n",m_rank,m_distribution_file_id+1,(int)allFiles.size(),allFiles[(m_distribution_file_id)].c_str());
+			
 		fflush(stdout);
 		counted+=m_loader.size();
 		// write Reads in AMOS format.
@@ -238,6 +242,11 @@ bool SequencesLoader::loadSequences(int rank,int size,
 	for(m_distribution_file_id=0;m_distribution_file_id<(int)allFiles.size();
 		m_distribution_file_id++){
 
+		/** should not load more sequences than required */
+		#ifdef ASSERT
+		assert(m_myReads->size()<=sequences);
+		#endif
+
 		uint64_t sequencesInFile=m_parameters->getNumberOfSequences(m_distribution_file_id);
 
 		if(!(startingSequenceId<m_distribution_currentSequenceId+sequencesInFile)){
@@ -249,18 +258,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 			break;// we are done
 		}
 
-		int res=m_loader.load(allFiles[(m_distribution_file_id)],false);
-		if(res==EXIT_FAILURE){
-			return false;
-		}
-	
-		if(m_loader.size()==0){
-			return false;
-		}
-
-		#ifdef ASSERT
-		assert(m_loader.size()!=0);
-		#endif
+		m_loader.load(allFiles[(m_distribution_file_id)],false);
 
 		m_isInterleavedFile=(m_LOADER_isLeftFile)=(m_LOADER_isRightFile)=false;
 
