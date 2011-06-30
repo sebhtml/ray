@@ -20,7 +20,9 @@
 */
 
 #include <memory/ReusableMemoryStore.h>
+#include <iostream>
 #include <assert.h>
+using namespace std;
 
 void ReusableMemoryStore::constructor(){
 }
@@ -79,4 +81,29 @@ void ReusableMemoryStore::addAddressToReuse(void*p,int size){
 
 void ReusableMemoryStore::reset(){
 	m_toReuse.clear();
+}
+
+void ReusableMemoryStore::print(){
+	cout<<"ReusableMemoryStore Information"<<endl;
+	int totalBytes=0;
+	for(map<int,Element*>::iterator i=m_toReuse.begin();
+		i!=m_toReuse.end();i++){
+		int bytes=i->first;
+		Element*ptr=i->second;
+		#ifdef ASSERT
+		assert(ptr!=NULL);
+		#endif
+		int count=0;
+		while(ptr!=NULL){
+			count++;
+			ptr=(Element*)ptr->m_next;
+		}
+		cout<<"("<<bytes<<": "<<count<<") ";
+		cout.flush();
+		totalBytes+=bytes*count;
+	}
+	cout<<endl;
+	cout<<"Total: "<<totalBytes/1024<<" KiB"<<endl;
+	cout.flush();
+
 }

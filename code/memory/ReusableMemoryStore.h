@@ -44,6 +44,7 @@ public:
 	void addAddressToReuse(void*ptr,int size);
 	void constructor();
 	void reset();
+	void print();
 };
 
 #endif

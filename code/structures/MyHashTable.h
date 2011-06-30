@@ -893,6 +893,7 @@ void MyHashTable<KEY,VALUE>::printStatistics(){
 			cout<<"("<<i<<"; "<<m_probes[i]<<"); ";
 	}
 	cout<<endl;
+	m_allocator.print();
 }
 
 #endif

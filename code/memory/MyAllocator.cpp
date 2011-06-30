@@ -139,9 +139,10 @@ int MyAllocator::getChunkSize(){
 }
 
 void MyAllocator::print(){
-	cout<<"ChunkSize="<<m_CHUNK_SIZE<<endl;
-	cout<<"EatenRams="<<m_chunks.size()<<endl;
-	cout<<"TotalBytesConsumed="<<m_CHUNK_SIZE*m_chunks.size()<<endl;
+	cout<<"ChunkSize= "<<m_CHUNK_SIZE<<endl;
+	cout<<"AllocatedChunks= "<<m_chunks.size()<<endl;
+	cout<<"TotalBytesConsumed= "<<m_CHUNK_SIZE*m_chunks.size()<<endl;
+	m_store.print();
 }
 
 int MyAllocator::getNumberOfChunks(){
