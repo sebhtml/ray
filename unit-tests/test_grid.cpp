@@ -1,6 +1,6 @@
-#include <GridTable*.h>
+#include <graph/GridTable.h>
 #include <iostream>
-#include <GridTable*Iterator.h>
+#include <graph/GridTableIterator.h>
 using namespace std;
 
 int main(){

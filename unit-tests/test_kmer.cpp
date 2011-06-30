@@ -1,6 +1,6 @@
 
 #include <structures/Vertex.h>
-#include <tests/unitTest.h>
+#include <unit-tests/unitTest.h>
 #include <structures/Kmer.h>
 #include <core/constants.h>
 #include <set>

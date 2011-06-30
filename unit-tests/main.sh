@@ -12,3 +12,5 @@ do
 done 
 
 ) &> UnitTests.txt
+
+echo "Wrote resultts in UnitTests.txt"
