@@ -1,7 +1,0 @@
-r=read.table('profile.txt')
-png('Profile-2011-04-26.png',width=4000,height=2000)
-par(mfrow=c(3,1))
-plot(r[[1]],r[[2]],type='l',col='blue')
-plot(r[[1]],r[[3]],type='l',col='red')
-plot(r[[1]],r[[4]],type='l',col='green')
-dev.off()

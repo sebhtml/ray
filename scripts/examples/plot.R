@@ -1,7 +1,0 @@
-r=read.table('ticks.data')
-png('ticks-test.png',width=2000,height=1000)
-par(mfrow=c(3,1))
-plot(r[[1]],r[[2]],type='l',col='blue',xlab='Number of seconds since the beginning',ylab='Number of ticks per seconds')
-plot(r[[1]],r[[3]],type='l',col='red',xlab='Number of seconds since the beginning',ylab='Number of sent messages')
-plot(r[[1]],r[[4]],type='l',col='green',xlab='Number of seconds since the beginning',ylab='Number of received messages')
-dev.off()
