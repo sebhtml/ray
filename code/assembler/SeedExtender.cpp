@@ -40,7 +40,8 @@ int*last_value,bool*vertexCoverageRequested,int wordSize,int size,bool*vertexCov
 int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,vector<Kmer>*receivedOutgoingEdges,Chooser*chooser,
 BubbleData*bubbleData,
 int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
-	if(ed->m_EXTENSION_currentSeedIndex==(int)(*seeds).size()){
+	if(ed->m_EXTENSION_currentSeedIndex==(int)(*seeds).size()
+		|| seeds->size()==0){
 		if((*seeds).size()>0)
 			ed->destructor();
 		ed->getAllocator()->clear();
