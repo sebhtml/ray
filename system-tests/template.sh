@@ -34,7 +34,7 @@ echo ""
 # actually, the system test can be executed on a standardd computer
 # by exporting the variables TEST_NAME, RAY_GIT_PATH and NSLOTS
 # and by then calling the said script.
-source main.sh
+source ./main.sh
 
 echo ""
 echo "THE_END $TEST_NAME $(date)"
