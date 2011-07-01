@@ -26,6 +26,10 @@ of degrees in the graph.
 hashing
 * Implemented a sparse hash map (following the description of Google sparse
 hash; see structures/MyHashTable.h)
+* New output file: PREFIX.MessagePassingInterface.txt contains the number of
+sent messages for each type.
+* System tests are now in system-tests
+
 
 
 = 1.6.0 =

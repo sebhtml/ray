@@ -84,13 +84,11 @@ Machine::Machine(int argc,char**argv){
 
 void Machine::start(){
 	m_initialisedAcademy=false;
+	m_initialisedKiller=false;
 	m_coverageInitialised=false;
 	m_writeKmerInitialised=false;
 	m_timePrinter.constructor();
-
-	m_killed=false;
 	m_ready=true;
-	
 	m_fusionData->m_fusionStarted=false;
 	m_ed->m_EXTENSION_numberOfRanksDone=0;
 	m_messageSentForEdgesDistribution=false;
@@ -112,7 +110,6 @@ void Machine::start(){
 	m_numberOfMachinesDoneSendingEdges=0;
 	m_numberOfMachinesReadyToSendDistribution=0;
 	m_numberOfMachinesDoneSendingCoverage=0;
-	m_machineRank=0;
 	m_messageSentForVerticesDistribution=false;
 	m_sequence_ready_machines=0;
 	m_isFinalFusion=false;
@@ -376,6 +373,7 @@ void Machine::start(){
 	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),&m_outbox,&m_outboxAllocator,&m_slave_mode,&m_parameters,&m_wordSize,&m_subgraph,&m_inbox,&m_virtualCommunicator);
 
 	m_alive=true;
+	m_timeToLive=1024;
 	m_loadSequenceStep=false;
 	m_totalLetters=0;
 
@@ -461,12 +459,6 @@ m_seedingData,
 		m_timePrinter.printDurations();
 
 		cout<<endl;
-		#ifdef COUNT_MESSAGES
-		string file=m_parameters.getReceivedMessagesFile();
-		const char*tmp=file.c_str();
-		m_messagesHandler.writeStats(tmp);
-		#endif
-
 	}
 
 	m_messagesHandler.barrier();
@@ -488,9 +480,6 @@ m_seedingData,
 			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getAmosFile()<<" (reads mapped onto contiguous sequences in AMOS format)"<<endl;
 
 		}
-		#ifdef COUNT_MESSAGES
-		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getReceivedMessagesFile()<<" (MPI communication matrix; rows=destinations, columns=sources) "<<endl;
-		#endif
 		cout<<endl;
 	}
 
@@ -519,7 +508,9 @@ void Machine::run(){
 }
 
 void Machine::runVanilla(){
-	while(m_alive){
+	/** m_timeToLive goes down to 0 when m_alive is false
+ * 	This is called the aging process */
+	while(m_timeToLive){
 		// 1. receive the message (0 or 1 message is received)
 		receiveMessages(); 
 		// 2. process the received message, if any
@@ -528,6 +519,10 @@ void Machine::runVanilla(){
 		processData();
 		// 4. send messages
 		sendMessages();
+
+		/** make it die if necessary */
+		if(!m_alive)
+			m_timeToLive--;
 	}
 }
 
@@ -548,7 +543,9 @@ void Machine::runWithProfiler(){
 
 	int lastTime=getMilliSeconds();
 
-	while(m_alive){
+	/** m_timeToLive goes down to 0 when m_alive is false
+ * 	This is called the aging process */
+	while(m_timeToLive){
 		int t=getMilliSeconds();
 		if(t>=(lastTime+resolution)/parts*parts){
 			int toPrint=t;
@@ -581,6 +578,10 @@ void Machine::runWithProfiler(){
 
 		// 4. send messages
 		sendMessages();
+
+		/** make it die if necessary */
+		if(!m_alive)
+			m_timeToLive--;
 	}
 }
 
@@ -644,16 +645,14 @@ void Machine::call_RAY_MASTER_MODE_LOAD_CONFIG(){
 			m_parameters.showUsage();
 			m_aborted=true;
 			f.close();
-			killRanks();
-			m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+			m_master_mode=RAY_MASTER_MODE_KILL_ALL_MPI_RANKS;
 			return;
 		}
 	}
 
 	if(m_parameters.getError()){
-		m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
 		m_aborted=true;
-		killRanks();
+		m_master_mode=RAY_MASTER_MODE_KILL_ALL_MPI_RANKS;
 		return;
 	}
 
@@ -680,9 +679,8 @@ void Machine::call_RAY_MASTER_MODE_LOAD_SEQUENCES(){
 );
 	if(!res){
 		m_aborted=true;
-		killRanks();
 		m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
-		m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+		m_master_mode=RAY_MASTER_MODE_KILL_ALL_MPI_RANKS;
 		return;
 	}
 
@@ -734,8 +732,7 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 		cout<<"Rank 0: Assembler panic: no k-mers found in reads."<<endl;
 		cout<<"Rank 0: Perhaps reads are shorter than the k-mer length (change -k)."<<endl;
 		m_aborted=true;
-		m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
-		killRanks();
+		m_master_mode=RAY_MASTER_MODE_KILL_ALL_MPI_RANKS;
 		return;
 	}
 	m_numberOfMachinesDoneSendingCoverage=-1;
@@ -794,8 +791,7 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	if(m_parameters.getMinimumCoverage()> m_parameters.getPeakCoverage()
 	|| m_parameters.getPeakCoverage()==m_parameters.getRepeatCoverage()
 	|| m_parameters.getPeakCoverage()==1){
-		killRanks();
-		m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+		m_master_mode=RAY_MASTER_MODE_KILL_ALL_MPI_RANKS;
 		m_aborted=true;
 		cout<<"Rank 0: Assembler panic: no peak observed in the k-mer coverage distribution."<<endl;
 		cout<<"Rank 0: to deal with the sequencing error rate, try to lower the k-mer length (-k)"<<endl;
@@ -1332,6 +1328,7 @@ void Machine::call_RAY_SLAVE_MODE_EXTENSION(){
 m_parameters.getMinimumCoverage(),&m_oa,&(m_seedingData->m_SEEDING_edgesReceived),&m_slave_mode);
 }
 
+/** process data my calling current slave and master methods */
 void Machine::processData(){
 	MachineMethod masterMethod=m_master_methods[m_master_mode];
 	(this->*masterMethod)();
@@ -1345,19 +1342,71 @@ void Machine::call_RAY_MASTER_MODE_KILL_RANKS(){
 		m_timePrinter.printElapsedTime("Scaffolding of contigs");
 	}
 
-	killRanks();
-	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+	m_master_mode=RAY_MASTER_MODE_KILL_ALL_MPI_RANKS;
 }
 
-void Machine::killRanks(){
-	if(m_killed){
-		return;
+/** make the message-passing interface rank die */
+void Machine::call_RAY_SLAVE_MODE_DIE(){
+	/** write message-passing interface file */
+	ostringstream file;
+	file<<m_parameters.getPrefix()<<".MessagePassingInterface.txt";
+	const char*outputFile=file.str().c_str();
+	m_messagesHandler.appendStatistics(outputFile);
+
+	/** actually die */
+	m_alive=false;
+
+	/** tell master that the rank died 
+ * 	obviously, this message won't be recorded in the MessagePassingInterface file...
+ * 	Because of that, MessagesHandler will do it for us.
+ * 	*/
+	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY,m_rank);
+	m_outbox.push_back(aMessage);
+
+	/** do nothing while dying 
+ * 	the aging process takes a while -- 1024 cycles.
+ * 	after that, it is death itself.
+ * 	*/
+	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
+}
+
+/**
+ * here we kill everyone because the computation is terminated.
+ */
+void Machine::call_RAY_MASTER_MODE_KILL_ALL_MPI_RANKS(){
+	if(!m_initialisedKiller){
+		m_initialisedKiller=true;
+		m_machineRank=m_parameters.getSize()-1;
+
+		/** empty the file if it exists */
+		ostringstream file;
+		file<<m_parameters.getPrefix()<<".MessagePassingInterface.txt";
+		
+		FILE*fp=fopen(file.str().c_str(),"w+");
+		fprintf(fp,"# Source\tDestination\tTag\tCount\n");
+		fclose(fp);
 	}
 
-	m_killed=true;
-	for(int i=getSize()-1;i>=0;i--){
-		Message aMessage(NULL,0,i,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON,getRank());
+	/** for the first to process (getSize()-1) -- the last -- we directly send it
+ * a message.
+ * For the other ones, we wait for the response of the previous.
+ */
+	if(m_machineRank==m_parameters.getSize()-1 || 
+	(m_inbox.size()>0 && m_inbox[0]->getTag()==RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY)){
+
+		/**
+ * 			Rank 0 is the last to kill
+ */
+		if(m_machineRank==0){
+			m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+		}
+
+		/** send a killer message */
+		Message aMessage(NULL,0,m_machineRank,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON,getRank());
 		m_outbox.push_back(aMessage);
+
+		/** change the next to kill */
+		m_machineRank--;
 	}
 }
 
@@ -1367,10 +1416,6 @@ bool Machine::isMaster(){
 
 int Machine::getSize(){
 	return m_size;
-}
-
-bool Machine::isAlive(){
-	return m_alive;
 }
 
 Machine::~Machine(){

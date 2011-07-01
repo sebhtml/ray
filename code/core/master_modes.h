@@ -25,7 +25,7 @@
 
 enum{
 #include <core/master_mode_macros.h>
-MASTER_MODES_DUMMY 
+RAY_MASTER_MODE_DUMMY
 };
 
 #undef MACRO_LIST_ITEM

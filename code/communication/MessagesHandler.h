@@ -22,21 +22,26 @@
 #ifndef _MessagesHandler
 #define _MessagesHandler
 
-#include<vector>
 #include <mpi.h>
-#include<memory/MyAllocator.h>
-#include<communication/Message.h>
-#include<core/common_functions.h>
-#include<memory/RingAllocator.h>
-#include<map>
-#include<structures/StaticVector.h>
-using namespace std;
+#include <memory/MyAllocator.h>
+#include <communication/Message.h>
+#include <core/common_functions.h>
+#include <memory/RingAllocator.h>
+#include <structures/StaticVector.h>
 
 /**
  * software layer to handler messages
  * it uses persistant communication
+ * MessagesHandler is the only part of Ray that is aware of the message-passing interface.
+ * All the other parts rely only on a simple inbox and a simple outbox.
+ * This boxes of messages could be implemented with something else than message-passing interface.
  */
 class MessagesHandler{
+	/** messages sent */
+	uint64_t m_sentMessages;
+	/** messages received */
+	uint64_t m_receivedMessages;
+
 	/**
  * 	In Ray, all messages have buffer of the same type
  */
@@ -51,16 +56,14 @@ class MessagesHandler{
 	int m_rank;
 	int m_size;
 
-	#ifdef COUNT_MESSAGES
-	uint64_t*m_receivedMessages;
-	uint64_t*m_allReceivedMessages;
-	int*m_allCounts;
-	map<int,map<int,int> > m_buckets;
-	#endif
-	
+	/** this variable stores counts for sent messages */
+	uint64_t*m_messageStatistics;
+
 	void initialiseMembers();
 
 public:
+	/** initialize the message handler
+ * 	*/
 	void constructor(int*argc,char***argv);
 
 	/**
@@ -73,21 +76,27 @@ public:
  */
 	void receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator,int destination);
 
-	#ifdef COUNT_MESSAGES
-	bool isFinished(int rank);
-	void showStats();
-	uint64_t*getReceivedMessages();
-	void addCount(int rank,uint64_t count);
-	void writeStats(const char*file);
-	bool isFinished();
-	#endif
+	/** free the ring elements */
 	void freeLeftovers();
+
+	/** get the processor name, usually set to the server name */
 	string getName();
+
+	/** get the identifier of the current message passing interface rank */
 	int getRank();
+
+	/** get the number of ranks */
 	int getSize();
+
+	/** makes a barrier */
 	void barrier();
+
+	/** returns the version of the message passing interface standard that is available */
 	void version(int*a,int*b);
 	void destructor();
+
+	/** write sent message counts to a file */
+	void appendStatistics(const char*file);
 };
 
 #endif

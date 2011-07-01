@@ -79,7 +79,6 @@ class Machine{
 
 	Amos m_amos;
 	VirtualCommunicator m_virtualCommunicator;
-	bool m_killed;
 	MachineMethod m_master_methods[64];
 	MachineMethod m_slave_methods[64];
 
@@ -108,6 +107,7 @@ class Machine{
 	int m_size;
 	int m_totalLetters;
 	bool m_alive;
+	int m_timeToLive;
 	bool m_loadSequenceStep;
 	char*m_inputFile;
 	int m_sequence_ready_machines;
@@ -128,7 +128,6 @@ class Machine{
 	int m_slave_mode;
 	int m_master_mode;
 
-
 	bool m_startEdgeDistribution;
 	bool m_mode_AttachSequences;
 
@@ -141,6 +140,8 @@ class Machine{
 	bool m_writeKmerInitialised;
 	FusionData*m_fusionData;
 
+	/** indicator of the killer initialization */
+	bool m_initialisedKiller;
 	int m_machineRank;
 
 	int m_mode_send_coverage_iterator;
@@ -151,10 +152,8 @@ class Machine{
 	// read, strand, position
 	int m_numberOfRanksDoneSendingDistances;
 
-
 	StaticVector m_outbox;
 	StaticVector m_inbox;
-
 
 	ExtensionData*m_ed;
 
@@ -231,9 +230,7 @@ class Machine{
 	OpenAssemblerChooser m_oa;
 	// BUBBLE
 	BubbleData*m_bubbleData;
-	void killRanks();
 	int getSize();
-	bool isAlive();
 /**
  * this is the function that runs a lots
  *

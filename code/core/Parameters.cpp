@@ -1055,6 +1055,8 @@ void Parameters::showUsage(){
 	cout<<"     	K-mer graph (-write-kmers) "<<endl;
 	cout<<"     PREFIX.degreeDistribution.txt"<<endl;
 	cout<<"     	Distribution of ingoing and outgoing degrees"<<endl;
+	cout<<"     PREFIX.MessagePassingInterface.txt"<<endl;
+	cout<<"	    	Contains the number of messages sent."<<endl;
 
 	cout<<endl;
 	cout<<"     Note: file format is determined with file extension."<<endl;

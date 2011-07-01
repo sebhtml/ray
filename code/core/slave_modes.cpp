@@ -25,6 +25,7 @@
 
 const char* SLAVE_MODES[]={
 #include <core/slave_mode_macros.h>
+"RAY_SLAVE_MODE_DUMMY"
 };
 
 #undef MACRO_LIST_ITEM

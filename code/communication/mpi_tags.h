@@ -36,7 +36,7 @@ extern const char* MESSAGES[];
 
 enum {
 #include <communication/mpi_tag_macros.h>
-MPI_TAGS_DUMMY
+RAY_MPI_TAG_DUMMY
 };
 
 #undef MACRO_LIST_ITEM

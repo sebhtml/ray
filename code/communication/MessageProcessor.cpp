@@ -861,8 +861,10 @@ void MessageProcessor::call_RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS(Message*mes
 	}
 }
 
+void MessageProcessor::call_RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY(Message*message){}
+
 void MessageProcessor::call_RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON(Message*message){
-	*m_alive=false;
+	(*m_mode)=RAY_SLAVE_MODE_DIE;
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_I_GO_NOW(Message*message){

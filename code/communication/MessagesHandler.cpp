@@ -68,6 +68,10 @@ void MessagesHandler::sendMessages(StaticVector*outbox,int source){
 		#ifdef ASSERT
 		assert(request==MPI_REQUEST_NULL);
 		#endif
+
+		/** update statistics */
+		m_messageStatistics[destination*RAY_MPI_TAG_DUMMY+tag]++;
+		m_sentMessages++;
 	}
 
 	outbox->clear();
@@ -126,111 +130,20 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 		}
 		#endif
 	
-		#ifdef COUNT_MESSAGES
-		m_receivedMessages[source]++;
-		#endif
-		
-		#ifdef DEBUG_MESSAGES
-		m_buckets[source][tag]++;
-		#endif
-
 		// increment the head
 		if(m_head==m_ringSize-1){
 			m_head=0;
 		}else{
 			m_head++;
 		}
+
+		/** update statistics */
+		m_receivedMessages++;
 	}
 }
 
-#ifdef COUNT_MESSAGES
-void MessagesHandler::showStats(){
-	if(m_rank!=0){
-		return;
-	}
-	cout<<"self="<<m_rank<<endl;
-	for(map<int,map<int,int> >::iterator i=m_buckets.begin();
-		i!=m_buckets.end();i++){
-		int source=i->first;
-		cout<<" source="<<source<<endl;
-		for(map<int,int>::iterator j=i->second.begin();j!=i->second.end();j++){
-			int tag=j->first;
-			int count=j->second;
-			cout<<MESSAGES[tag]<<" "<<count<<endl;
-		}
-	}
-	cout<<endl;
-}
-#endif
-
-#ifdef COUNT_MESSAGES
-void MessagesHandler::addCount(int rank,uint64_t count){
-	int source=m_allCounts[rank];
-	int destination=rank;
-	m_allReceivedMessages[destination*m_size+source]=count;
-	m_allCounts[rank]++;
-}
-#endif
-
-#ifdef COUNT_MESSAGES
-bool MessagesHandler::isFinished(int rank){
-	return m_allCounts[rank]==m_size;
-}
-#endif
-
-#ifdef COUNT_MESSAGES
-bool MessagesHandler::isFinished(){
-	for(int i=0;i<m_size;i++){
-		if(!isFinished(i)){
-			return false;
-		}
-	}
-
-	// update the counts for root, because it was updated.
-	for(int i=0;i<m_size;i++){
-		m_allCounts[MASTER_RANK*m_size+i]=m_receivedMessages[i];
-	}
-
-	return true;
-}
-#endif
-
-#ifdef COUNT_MESSAGES
-void MessagesHandler::writeStats(const char*file){
-	ofstream f(file);
-	
-	for(int i=0;i<m_size;i++){
-		f<<"\t"<<i;
-	}
-	f<<endl;
-
-	for(int destination=0;destination<m_size;destination++){
-		f<<destination;
-		for(int source=0;source<m_size;source++){
-			f<<"\t"<<m_allReceivedMessages[destination*m_size+source];
-		}
-		f<<endl;
-	}
-	f.close();
-}
-#endif
 
 void MessagesHandler::initialiseMembers(){
-	#ifdef COUNT_MESSAGES
-	m_receivedMessages=(uint64_t*)__Malloc(sizeof(uint64_t)*m_size);
-	if(rank==MASTER_RANK){
-		m_allReceivedMessages=(uint64_t*)__Malloc(sizeof(uint64_t)*m_size*m_size);
-		m_allCounts=(int*)__Malloc(sizeof(int)*m_size);
-	}
-
-	for(int i=0;i<m_size;i++){
-		m_receivedMessages[i]=0;
-		if(rank==MASTER_RANK){
-			m_allCounts[i]=0;
-		}
-	}
-	#endif
-
 	// the ring itself  contain requests ready to receive messages
 	m_ringSize=128;
 
@@ -247,34 +160,40 @@ void MessagesHandler::initialiseMembers(){
 	}
 }
 
-#ifdef COUNT_MESSAGES
-uint64_t*MessagesHandler::getReceivedMessages(){
-	return m_receivedMessages;
-}
-#endif
-
 void MessagesHandler::freeLeftovers(){
-	#ifdef DEBUG_MESSAGES
-	showStats();
-	#endif
 	for(int i=0;i<m_ringSize;i++){
 		MPI_Cancel(m_ring+i);
 		MPI_Request_free(m_ring+i);
 	}
 	__Free(m_ring,RAY_MALLOC_TYPE_PERSISTENT_MESSAGE_RING,false);
+	m_ring=NULL;
 	__Free(m_buffers,RAY_MALLOC_TYPE_PERSISTENT_MESSAGE_BUFFERS,false);
+	m_buffers=NULL;
+	__Free(m_messageStatistics,RAY_MALLOC_TYPE_MESSAGE_STATISTICS,false);
+	m_messageStatistics=NULL;
 }
 
 void MessagesHandler::constructor(int*argc,char***argv){
+	m_sentMessages=0;
+	m_receivedMessages=0;
 	m_datatype=MPI_UNSIGNED_LONG_LONG;
 	MPI_Init(argc,argv);
 	char serverName[1000];
 	int len;
+	/** initialize the message passing interface stack */
 	MPI_Get_processor_name(serverName,&len);
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
 	MPI_Comm_size(MPI_COMM_WORLD,&m_size);
 	initialiseMembers();
 	m_processorName=serverName;
+
+	/** initialize message statistics to 0 */
+	m_messageStatistics=(uint64_t*)__Malloc(RAY_MPI_TAG_DUMMY*m_size*sizeof(uint64_t),RAY_MALLOC_TYPE_MESSAGE_STATISTICS,false);
+	for(int rank=0;rank<m_size;rank++){
+		for(int tag=0;tag<RAY_MPI_TAG_DUMMY;tag++){
+			m_messageStatistics[rank*RAY_MPI_TAG_DUMMY+tag]=0;
+		}
+	}
 }
 
 void MessagesHandler::destructor(){
@@ -299,4 +218,23 @@ void MessagesHandler::barrier(){
 
 void MessagesHandler::version(int*a,int*b){
 	MPI_Get_version(a,b);
+}
+
+void MessagesHandler::appendStatistics(const char*file){
+	/** add an entry for RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY
+ * 	because this message is sent after writting the current file
+ */
+	m_messageStatistics[MASTER_RANK*RAY_MPI_TAG_DUMMY+RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY]++;
+	m_sentMessages++;
+
+	ofstream fp;
+	fp.open(file,ios_base::out|ios_base::app);
+	for(int destination=0;destination<m_size;destination++){
+		for(int tag=0;tag<RAY_MPI_TAG_DUMMY;tag++){
+			uint64_t count=m_messageStatistics[destination*RAY_MPI_TAG_DUMMY+tag];
+			fp<<m_rank<<"\t"<<destination<<"\t"<<MESSAGES[tag]<<"\t"<<count<<"\n";
+		}
+	}
+	fp.close();
+	cout<<"Rank "<<m_rank<<": sent "<<m_sentMessages<<" messages, received "<<m_receivedMessages<<" messages."<<endl;
 }
