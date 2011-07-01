@@ -1709,7 +1709,7 @@ void MessageProcessor::call_RAY_MPI_TAG_KMER_ACADEMY_DATA(Message*message){
 				showMemoryUsage(rank);
 			}
 
-			m_subgraph->printStatistics();
+			m_subgraph->getKmerAcademy()->printStatistics();
 		}
 
 		KmerCandidate*tmp=m_subgraph->insertInAcademy(&l);
