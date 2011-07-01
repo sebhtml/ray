@@ -1,8 +1,10 @@
 ##!/bin/bash
 
-RayTestName=__TEST_NAME__
+source config
 
-#$ -N $RayTestName
+TEST_NAME=__TEST_NAME__
+
+#$ -N $TEST_NAME
 #$ -P nne-790-ab
 #$ -l h_rt=2:00:00
 #$ -pe default 32
@@ -15,13 +17,13 @@ RayTestName=__TEST_NAME__
 module load compilers/gcc/4.4.2 mpi/openmpi/1.4.3_gcc
 
 echo ""
-echo "BEGIN $RayTestName $(date)"
+echo "BEGIN $TEST_NAME $(date)"
 echo ""
 
-cd ~/RayIntegrationTests/tests/$RayTestName
+cd $RAY_GIT_PATH/system-tests/tests/$TEST_NAME
 
 source main.sh
 
 echo ""
-echo "THE_END $RayTestName $(date)"
+echo "THE_END $TEST_NAME $(date)"
 echo ""

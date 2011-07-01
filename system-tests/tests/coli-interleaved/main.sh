@@ -1,7 +1,6 @@
-mpirun -np $NSLOTS \
-  ~/git-clones/ray/code/Ray \
+mpirun -np $NSLOTS $RAY_GIT_PATH/code/Ray \
 -i interleaved1.fastq \
 -i interleaved2.fastq \
--o $RayTestName
+-o $TEST_NAME
 
-ValidateGenomeAssembly.sh Ecoli-k12-mg1655.fasta $RayTestName.Contigs.fasta $RayTestName.Ray
+ValidateGenomeAssembly.sh Ecoli-k12-mg1655.fasta $TEST_NAME.Contigs.fasta $TEST_NAME.Ray
