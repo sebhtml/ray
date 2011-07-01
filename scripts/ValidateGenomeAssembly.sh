@@ -3,7 +3,7 @@
 if test $# -eq 0
 then
 	echo "usage"
-	echo "print-latex.sh reference assembly assembler"
+	echo "ValidateGenomeAssembly.sh reference assembly assembler"
 	exit
 fi
 
@@ -18,7 +18,7 @@ mummerFile=$assembly.500.mums
 
 filter-contigs.py $assembly 500 $assembly500
 
-mummer-validate.rb $reference  $assembly500 $mummerFile &> /dev/null
+mummer-validate.rb $reference  $assembly500 $mummerFile &> mummer-validate.rb.log
 
 
 scaffoldsFile=$prefix".Scaffolds.fasta"

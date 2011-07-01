@@ -1,8 +1,10 @@
+This directory contains some unit tests for Ray.
+
 # To run unit tests
 
 bash main.sh
-less UnitTests.txt
 
+# handy tools 
 To test the coverage distribution:
 
 g++ coverage_main.cpp ../code/graph/CoverageDistribution.cpp -O3 -o CoverageExe -I ../code -D DEBUG_CoverageDistribution -DASSERT

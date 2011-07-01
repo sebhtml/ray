@@ -1,0 +1,22 @@
+
+Executing main.sh submit all system tests to a compute grid.
+
+Then, main.sh waits for everything to complete before returning.
+
+
+# system tests
+
+In the tests directory, system tests are.
+
+Each of them has a entry point called main.sh and symbolic links to data entries.
+
+Before calling the main.sh of aa system test, 
+
+1. move to the directory containing it;
+2. export TEST_NAME, RAY_GIT_PATH and NSLOTS (NSLOTS is the number of compute cores)
+3. bash main.sh
+
+
+# builds
+
+Before running system tests, Ray builds are generated. They are deposited in builds.
