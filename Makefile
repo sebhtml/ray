@@ -160,6 +160,7 @@ TARGETS=code/Ray $(TARGETS-y)
 obj-y += code/memory/OnDiskAllocator.o code/memory/ReusableMemoryStore.o code/memory/MyAllocator.o code/memory/RingAllocator.o \
 code/memory/malloc_types.o 
 obj-y += code/memory/allocator.o
+obj-y += code/memory/DefragmentationGroup.o code/memory/ChunkAllocatorWithDefragmentation.o
 
 #communication
 obj-y += code/communication/mpi_tags.o code/communication/VirtualCommunicator.o code/communication/BufferedData.o \

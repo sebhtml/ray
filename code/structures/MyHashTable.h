@@ -39,7 +39,7 @@
 
 #include <stdint.h>
 #include <time.h>
-#include <memory/MyAllocator.h>
+#include <memory/ChunkAllocatorWithDefragmentation.h>
 #include <iostream>
 #include <assert.h>
 using namespace std;
@@ -55,7 +55,7 @@ class MyHashTableGroup{
 	/**
  * 	The VALUEs
  */
-	VALUE*m_vector;
+	SmartPointer m_vector;
 
 	/**
  * 	the bitmap containing the presence of absence  of a bucket 
@@ -70,7 +70,7 @@ public:
 	/** requests the bucket directly
  * 	fails if it is empty
  * 	*/
-	VALUE*getBucket(int bucket);
+	VALUE*getBucket(int bucket,ChunkAllocatorWithDefragmentation*a);
 
 /**
  * get the number of occupied buckets before bucket 
@@ -80,7 +80,7 @@ public:
 	/**
  * 	is the bucket utilised by someone else than key ?
  */
-	bool bucketIsUtilisedBySomeoneElse(int bucket,KEY*key);
+	bool bucketIsUtilisedBySomeoneElse(int bucket,KEY*key,ChunkAllocatorWithDefragmentation*allocator);
 
 	/**
  * 	get the bit
@@ -90,21 +90,21 @@ public:
 	/** 
  * 	build a group of buckets
  */
-	void constructor(int numberOfBucketsInGroup,MyAllocator*allocator);
+	void constructor(int numberOfBucketsInGroup,ChunkAllocatorWithDefragmentation*allocator);
 
 	/**
  * 	insert into the group
  * 	should not be called if the bucket is used by someone else already
  * 	otherwise it *will* fail
  */
-	VALUE*insert(int numberOfBucketsInGroup,int bucket,KEY*key,MyAllocator*allocator,bool*inserted);
+	VALUE*insert(int numberOfBucketsInGroup,int bucket,KEY*key,ChunkAllocatorWithDefragmentation*allocator,bool*inserted);
 
 	/**
  * 	find a key
  * 	should not be called if the bucket is used by someone else already
  * 	otherwise it *will* fail
  */
-	VALUE*find(int bucket,KEY*key);
+	VALUE*find(int bucket,KEY*key,ChunkAllocatorWithDefragmentation*allocator);
 };
 
 /** sets the bit in the correct byte */
@@ -149,9 +149,9 @@ int MyHashTableGroup<KEY,VALUE>::getBit(int bit){
 
 /** builds the group of buckets */
 template<class KEY,class VALUE>
-void MyHashTableGroup<KEY,VALUE>::constructor(int numberOfBucketsInGroup,MyAllocator*allocator){
+void MyHashTableGroup<KEY,VALUE>::constructor(int numberOfBucketsInGroup,ChunkAllocatorWithDefragmentation*allocator){
 	/** we start with an empty m_vector */
-	m_vector=NULL;
+	m_vector=SmartPointer_NULL;
 
 	/* the number of buckets in a group must be a multiple of 8 */
 	/* why ? => to save memory -- not to waste memory */
@@ -169,11 +169,12 @@ void MyHashTableGroup<KEY,VALUE>::constructor(int numberOfBucketsInGroup,MyAlloc
  * if it is not used, key is added in bucket.
  */
 template<class KEY,class VALUE>
-VALUE*MyHashTableGroup<KEY,VALUE>::insert(int numberOfBucketsInGroup,int bucket,KEY*key,MyAllocator*allocator,bool*inserted){
+VALUE*MyHashTableGroup<KEY,VALUE>::insert(int numberOfBucketsInGroup,int bucket,KEY*key,
+	ChunkAllocatorWithDefragmentation*allocator,bool*inserted){
 	/* the bucket can not be used by another key than key */
 	/* if it would be the case, then MyHashTable would not have sent key here */
 	#ifdef ASSERT
-	assert(!bucketIsUtilisedBySomeoneElse(bucket,key));
+	assert(!bucketIsUtilisedBySomeoneElse(bucket,key,allocator));
 	#endif
 
 	/*  count the number of occupied buckets before bucket */
@@ -181,11 +182,12 @@ VALUE*MyHashTableGroup<KEY,VALUE>::insert(int numberOfBucketsInGroup,int bucket,
 
 	/* if the bucket is occupied, then it is returned immediately */
 	if(getBit(bucket)==1){
+		VALUE*vectorPointer=(VALUE*)allocator->getPointer(m_vector);
 		#ifdef ASSERT
-		VALUE*value=m_vector+bucketsBefore;
+		VALUE*value=vectorPointer+bucketsBefore;
 		assert(value->m_lowerKey==*key);
 		#endif
-		return m_vector+bucketsBefore;
+		return vectorPointer+bucketsBefore;
 	}
 
 	/* make sure that it is not occupied by some troll already */
@@ -211,22 +213,25 @@ VALUE*MyHashTableGroup<KEY,VALUE>::insert(int numberOfBucketsInGroup,int bucket,
 
 	/* will allocate a new vector with one more element */
 	int requiredBytes=(bucketsBefore+1+bucketsAfter)*sizeof(VALUE);
-	VALUE*newVector=(VALUE*)allocator->allocate(requiredBytes);
+	SmartPointer newVector=allocator->allocate(requiredBytes);
+
+	VALUE*newVectorPointer=(VALUE*)allocator->getPointer(newVector);
+	VALUE*vectorPointer=(VALUE*)allocator->getPointer(m_vector);
 
 	/* copy the buckets before */
-	if(bucketsBefore>0)
-		memcpy(newVector,m_vector,bucketsBefore*sizeof(VALUE));
+	for(int i=0;i<bucketsBefore;i++)
+		newVectorPointer[i]=vectorPointer[i];
 
 	/* copy the buckets after */
-	if(bucketsAfter>0)
-		memcpy(newVector+bucketsBefore+1,m_vector+bucketsBefore,bucketsAfter*sizeof(VALUE));
+	for(int i=0;i<bucketsAfter;i++)
+		newVectorPointer[bucketsBefore+1+i]=vectorPointer[bucketsBefore+i];
 
 	/* assign the new bucket */
-	newVector[bucketsBefore].m_lowerKey=*key;
+	newVectorPointer[bucketsBefore].m_lowerKey=*key;
 	
-	/* garbage the old vector, MyAllocator will reuse it */
-	if(m_vector!=NULL)
-		allocator->free(m_vector,(bucketsBefore+bucketsAfter)*sizeof(VALUE));
+	/* garbage the old vector, ChunkAllocatorWithDefragmentation will reuse it */
+	if(m_vector!=SmartPointer_NULL)
+		allocator->deallocate(m_vector);
 
 	/* assign the vector */
 	m_vector=newVector;
@@ -234,32 +239,33 @@ VALUE*MyHashTableGroup<KEY,VALUE>::insert(int numberOfBucketsInGroup,int bucket,
 	/* check that everything is OK now ! */
 	#ifdef ASSERT
 	assert(getBit(bucket)==1);
-	if(getBucket(bucket)->m_lowerKey!=*key){
+	if(getBucket(bucket,allocator)->m_lowerKey!=*key){
 		cout<<"Expected"<<endl;
 		key->print();
 		cout<<"Actual"<<endl;
-		getBucket(bucket)->m_lowerKey.print();
+		getBucket(bucket,allocator)->m_lowerKey.print();
 		
 		cout<<"Bucket= "<<bucket<<" BucketsBefore= "<<bucketsBefore<<" BucketsAfter= "<<bucketsAfter<<endl;
 	}
-	assert(getBucket(bucket)->m_lowerKey==*key);
-	assert(!bucketIsUtilisedBySomeoneElse(bucket,key));
+	assert(getBucket(bucket,allocator)->m_lowerKey==*key);
+	assert(!bucketIsUtilisedBySomeoneElse(bucket,key,allocator));
 	#endif
 
 	/** check that we inserted something somewhere actually */
 	#ifdef ASSERT
-	assert(find(bucket,key)!=NULL);
-	assert(find(bucket,key)->m_lowerKey==*key);
+	assert(find(bucket,key,allocator)!=NULL);
+	assert(find(bucket,key,allocator)->m_lowerKey==*key);
 	#endif
 
 	/** tell the caller that we inserted something  somewhere */
 	*inserted=true;
-	return m_vector+bucketsBefore;
+	return newVectorPointer+bucketsBefore;
 }
 
 /** checks that the bucket is not utilised by someone else than key */
 template<class KEY,class VALUE>
-bool MyHashTableGroup<KEY,VALUE>::bucketIsUtilisedBySomeoneElse(int bucket,KEY*key){
+bool MyHashTableGroup<KEY,VALUE>::bucketIsUtilisedBySomeoneElse(int bucket,KEY*key,
+	ChunkAllocatorWithDefragmentation*allocator){
 	/** bucket is not used and therefore nobody uses it yet */
 	if(getBit(bucket)==0)
 		return false;
@@ -268,14 +274,15 @@ bool MyHashTableGroup<KEY,VALUE>::bucketIsUtilisedBySomeoneElse(int bucket,KEY*k
 	int bucketsBefore=getBucketsBefore(bucket);
 
 	/** check if the key is the same */
-	return m_vector[bucketsBefore].m_lowerKey!=*key;
+	VALUE*vectorPointer=(VALUE*)allocator->getPointer(m_vector);
+	return vectorPointer[bucketsBefore].m_lowerKey!=*key;
 }
 
 /** get direct access to the bucket 
  * \pre the bucket must be used or the code fails
  * */
 template<class KEY,class VALUE>
-VALUE*MyHashTableGroup<KEY,VALUE>::getBucket(int bucket){
+VALUE*MyHashTableGroup<KEY,VALUE>::getBucket(int bucket,ChunkAllocatorWithDefragmentation*allocator){
 	/*  the bucket is not occupied therefore the key does not exist */
 	#ifdef ASSERT
 	assert(getBit(bucket)!=0);
@@ -285,7 +292,8 @@ VALUE*MyHashTableGroup<KEY,VALUE>::getBucket(int bucket){
 	int bucketsBefore=getBucketsBefore(bucket);
 
 	/* return the bucket */
-	return m_vector+bucketsBefore;
+	VALUE*vectorPointer=(VALUE*)allocator->getPointer(m_vector);
+	return vectorPointer+bucketsBefore;
 }
 
 /** get the number of occupied buckets before bucket 
@@ -306,7 +314,7 @@ int MyHashTableGroup<KEY,VALUE>::getBucketsBefore(int bucket){
  * this will *fail* if another key is found.
  * */
 template<class KEY,class VALUE>
-VALUE*MyHashTableGroup<KEY,VALUE>::find(int bucket,KEY*key){
+VALUE*MyHashTableGroup<KEY,VALUE>::find(int bucket,KEY*key,ChunkAllocatorWithDefragmentation*allocator){
 	/*  the bucket is not occupied therefore the key does not exist */
 	if(getBit(bucket)==0){
 		return NULL;
@@ -314,14 +322,15 @@ VALUE*MyHashTableGroup<KEY,VALUE>::find(int bucket,KEY*key){
 
 	/** the bucket should contains key at this point */
 	#ifdef ASSERT
-	assert(!bucketIsUtilisedBySomeoneElse(bucket,key));
+	assert(!bucketIsUtilisedBySomeoneElse(bucket,key,allocator));
 	#endif
 
 	/* compute the number of elements before bucket */
 	int bucketsBefore=getBucketsBefore(bucket);
 
 	/** return the pointer m_vector with the offset valued by bucketsBefore */
-	return m_vector+bucketsBefore;
+	VALUE*vectorPointer=(VALUE*)allocator->getPointer(m_vector);
+	return vectorPointer+bucketsBefore;
 }
 
 /**
@@ -343,7 +352,7 @@ class MyHashTable{
 	/** 
  * 	chunk allocator
  */
-	MyAllocator m_allocator;
+	ChunkAllocatorWithDefragmentation m_allocator;
 	/** 
  * 	the  maximum probes required in probing
  */
@@ -458,7 +467,7 @@ template<class KEY,class VALUE>
 VALUE*MyHashTable<KEY,VALUE>::at(uint64_t bucket){
 	int group=bucket/m_numberOfBucketsInGroup;
 	int bucketInGroup=bucket%m_numberOfBucketsInGroup;
-	return m_groups[group].getBucket(bucketInGroup);
+	return m_groups[group].getBucket(bucketInGroup,&m_allocator);
 }
 
 /** returns the number of buckets */
@@ -603,9 +612,7 @@ void MyHashTable<KEY,VALUE>::constructor(uint64_t buckets,int mallocType,bool sh
 	/** set the message-passing interface rank number */
 	m_rank=rank;
 	
-	/** give 16 MiB to the chunk allocator */
-	int chunkSize=16777216;
-	m_allocator.constructor(chunkSize,mallocType,showMalloc);
+	m_allocator.constructor(sizeof(VALUE),showMalloc);
 	m_mallocType=mallocType;
 	m_showMalloc=showMalloc;
 
@@ -725,7 +732,7 @@ void MyHashTable<KEY,VALUE>::findBucketWithKey(KEY*key,uint64_t*probe,int*group,
 	#endif
 
 	/** probe bucket */
-	while(m_groups[*group].bucketIsUtilisedBySomeoneElse(*bucketInGroup,key)){
+	while(m_groups[*group].bucketIsUtilisedBySomeoneElse(*bucketInGroup,key,&m_allocator)){
 		(*probe)++;
 		
 		/** issue a warning for an unexpected large probe depth */
@@ -808,7 +815,7 @@ VALUE*MyHashTable<KEY,VALUE>::find(KEY*key){
 	#endif
 	
 	/** ask the group to find the key */
-	return m_groups[group].find(bucketInGroup,key);
+	return m_groups[group].find(bucketInGroup,key,&m_allocator);
 }
 
 /**
@@ -839,8 +846,8 @@ VALUE*MyHashTable<KEY,VALUE>::insert(KEY*key){
 	#ifdef ASSERT
 	assert(entry!=NULL);
 	assert(entry->m_lowerKey==*key);
-	assert(m_groups[group].find(bucketInGroup,key)!=NULL);
-	assert(m_groups[group].find(bucketInGroup,key)->m_lowerKey==*key);
+	assert(m_groups[group].find(bucketInGroup,key,&m_allocator)!=NULL);
+	assert(m_groups[group].find(bucketInGroup,key,&m_allocator)->m_lowerKey==*key);
 	#endif
 
 	/* increment the elements if an insertion occured */
@@ -876,7 +883,7 @@ VALUE*MyHashTable<KEY,VALUE>::insert(KEY*key){
 /** destroy the hash table */
 template<class KEY,class VALUE>
 void MyHashTable<KEY,VALUE>::destructor(){
-	m_allocator.clear();
+	m_allocator.destructor();
 	__Free(m_groups,m_mallocType,m_showMalloc);
 }
 
