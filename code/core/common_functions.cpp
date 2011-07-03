@@ -198,6 +198,10 @@ void showMemoryUsage(int rank){
 	#endif
 }
 
+/**
+ * Get the outgoing edges
+ * one bit (1=yes, 0=no) per possible edge
+ */
 vector<Kmer> _getOutgoingEdges(Kmer*a,uint8_t edges,int k){
 	vector<Kmer> b;
 	Kmer aTemplate;
@@ -238,6 +242,10 @@ vector<Kmer> _getOutgoingEdges(Kmer*a,uint8_t edges,int k){
 	return b;
 }
 
+/**
+ * Get the ingoing edges
+ * one bit (1=yes, 0=no) per possible edge
+ */
 vector<Kmer> _getIngoingEdges(Kmer*a,uint8_t edges,int k){
 	vector<Kmer> b;
 	Kmer aTemplate;

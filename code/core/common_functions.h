@@ -140,7 +140,16 @@ uint64_t getMilliSeconds();
 
 void showMemoryUsage(int rank);
 
+/**
+ * get the outgoing Kmer objects for a Kmer a having edges and
+ * a k-mer length k
+ */
 vector<Kmer> _getOutgoingEdges(Kmer*a,uint8_t edges,int k);
+
+/**
+ * get the ingoing Kmer objects for a Kmer a having edges and
+ * a k-mer length k
+ */
 vector<Kmer> _getIngoingEdges(Kmer*a,uint8_t edges,int k);
 
 char complementNucleotide(char c);

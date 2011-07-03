@@ -4,7 +4,7 @@
 # the appropriate build must be available in builds/
 
 TEST_NAME=$1
-NSLOTS=30
+NSLOTS=1
 RAY_GIT_PATH=~/git-clones/ray
 
 echo "TEST_NAME= $TEST_NAME"
