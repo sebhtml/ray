@@ -1,5 +1,5 @@
 = 1.6.1 =
-2011-06-
+2011-07-
 
 * Presumably fixed a compilation error on Apple Snow Leopard.
 Thanks to Anthony Underwood for reporting the bug.
@@ -30,6 +30,7 @@ hash; see structures/MyHashTable.h)
 sent messages for each type.
 * System tests are now in system-tests
 * Implemented SmartPointer objects to allow defragmentation of memory.
+* Implemented real-time defragmentation for SmartPointer objects.
 
 
 = 1.6.0 =

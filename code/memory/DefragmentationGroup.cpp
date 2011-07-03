@@ -21,6 +21,7 @@
 #include <memory/DefragmentationGroup.h>
 #include <memory/allocator.h>
 #include <stdlib.h>
+#include <string.h>
 #include <memory/malloc_types.h>
 #include <iostream>
 using namespace std;
@@ -31,14 +32,16 @@ using namespace std;
 
 /** bit encoding  in the bit array */
 #define AVAILABLE 0
-#define OCCUPIED 1
+#define UTILISED 1
+
+/** indicate that a chunk is full*/
+#define CHUNK_IS_FULL 18446744073709551615 /* maximum value for uint64_t */
 
 /**
- * m_availableElements must be >= n 
+ *  Return true if the DefragmentationGroup can allocate n elements 
  */
 bool DefragmentationGroup::canAllocate(int n){
-	int available=ELEMENTS_PER_GROUP-m_lastFreePosition;
-	return n<=available;
+	return (ELEMENTS_PER_GROUP-m_lastFreePosition)>=n;
 }
 
 /**
@@ -47,19 +50,22 @@ bool DefragmentationGroup::canAllocate(int n){
  * and return the head 
  * Also, the bitmap must be updated.
  */
-SmallSmartPointer DefragmentationGroup::allocate(int n){
+SmallSmartPointer DefragmentationGroup::allocate(int n,int period){
 	#ifdef ASSERT
 	assert(n>0);
 	assert(canAllocate(n));
+	assert(n<=ELEMENTS_PER_GROUP);
+	assert(m_lastFreePosition+n-1<ELEMENTS_PER_GROUP);
+	assert(m_allocatedOffsets!=NULL);
+	assert(m_allocatedSizes!=NULL);
 	#endif
 
-	/** get the HEAD */
-	SmallSmartPointer returnValue=m_lastFreePosition;
+	/** get an handle */
+	SmallSmartPointer returnValue=getAvailableSmallSmartPointer();
 
 	#ifdef ASSERT
 	assert(returnValue<ELEMENTS_PER_GROUP);
-	assert(m_allocatedOffsets!=NULL);
-	assert(m_allocatedSizes!=NULL);
+	assert(m_allocatedSizes[returnValue]==0);
 	#endif
 
 	/** save meta-data for the SmallSmartPointer */
@@ -67,83 +73,160 @@ SmallSmartPointer DefragmentationGroup::allocate(int n){
 	m_allocatedOffsets[returnValue]=m_lastFreePosition;
 
 	#ifdef ASSERT
-	assert(returnValue+n-1<ELEMENTS_PER_GROUP);
+	assert(m_allocatedSizes[returnValue]==n);
+	assert(m_allocatedOffsets[returnValue]==m_lastFreePosition);
 	#endif
-
-	/** mark it as used in the bitmap */
-	for(int i=0;i<n;i++)
-		setBit(returnValue+i,OCCUPIED);
-
+	
+	/** if we use the FreeSlice, advance the HEAD */
 	/** forward the head  */
 	m_lastFreePosition+=n;
 
-	/** lower the number of available elements */
-	m_availableElements-=n;
-	
-	#ifdef ASSERT
-	assert(m_allocatedSizes[returnValue]!=0);
-	#endif
-	
 	return returnValue;
 }
 
 /**
- * free the bits in the bitmap.
- * defragment
- * done.
+ * Usually very fast, getAvailableSmallSmartPointer returns a SmallSmartPointer
+ * that is available. To do so, the list m_availablePointers is searched.
+ * This list contains FAST_POINTERS entries (default is 256).
+ * If there is a hit, it is returned to the caller.
+ * 
+ * Otherwise, all the possible SmallSmartPointer handles are probed
+ * (there are ELEMENTS_PER_GROUP (default is 65536) of them)
+ * and those available are appended to m_availablePointers.
+ * 
+ * Finally, the SmallSmartPointer that was the last to be recorded to m_availablePointers
+ * is returned.
  */
-void DefragmentationGroup::deallocate(SmallSmartPointer a){
-	#ifdef ASSERT
-	if(m_allocatedSizes[a]==0)
-		cout<<"SmallSmartPointer has size 0."<<endl;
-	assert(m_allocatedSizes[a]>0);
-	#endif
-	int allocatedSize=m_allocatedSizes[a];
-	int offset=m_allocatedOffsets[a];
-	int max=offset+allocatedSize;
+SmallSmartPointer DefragmentationGroup::getAvailableSmallSmartPointer(){
+	for(int i=0;i<FAST_POINTERS;i++)
+		if(m_allocatedSizes[m_availablePointers[i]]==0)
+			return m_availablePointers[i];
 
-	/** update the bit map */
-	for(int i=offset;i<max;i++){
-		#ifdef ASSERT
-		assert(getBit(i)==OCCUPIED);
-		#endif
-		setBit(i,AVAILABLE);
+	/**
+ * 	Otherwise, populate m_availablePointers
+ *  find an alternative available handle */
+	/** O(65536) */
+
+	SmallSmartPointer returnValue=0;
+
+	int fast=0;
+	while(m_allocatedSizes[m_availablePointers[fast]]==0 && fast<FAST_POINTERS)
+		fast++;
+
+	int i=0;
+
+	for(i=0;i<ELEMENTS_PER_GROUP;i++){
+		if(m_allocatedSizes[i]==0){
+			m_availablePointers[fast++]=i;
+			/* always update returnValue to return the last one observed */
+			returnValue=i;
+		}
+		while(m_allocatedSizes[m_availablePointers[fast]]==0 && fast<FAST_POINTERS)
+			fast++;
+		/** we populated m_availablePointers */
+		if(fast==FAST_POINTERS)
+			break;
 	}
 
-	/** set the size to 0 for this SmallSmartPointer */
-	m_allocatedSizes[a]=0;
-	m_allocatedOffsets[a]=0;
-	m_availableElements+=allocatedSize;
-	
-	/** run the defragmenter at position offset with width allocatedSize */
-	defragment(offset,allocatedSize);
+	return returnValue;
 }
 
 /**
- * The defragment() call has mainly 2 routines:
- *
- *  1) Try to swap something into the gap
- *
- *  2) Move thing from right to left to close the gap
- *
- *  Finally, m_lastFreePosition is updated.
- *
- *  Also, all the SmallSmartPointer  must be updated  in
- *
- *   - m_allocatedOffsets
- *
- *  m_allocatedSizes does not change at all.
+ * deallocate a SmallSmartPointer
+ * defragment
+ * done.
  */
-void DefragmentationGroup::defragment(uint16_t offset,uint8_t allocationLength){
+void DefragmentationGroup::deallocate(SmallSmartPointer a,int period){
+	#ifdef ASSERT
+	assert(a<ELEMENTS_PER_GROUP);
+	if(m_allocatedSizes[a]==0)
+		cout<<__func__<<" SmallSmartPointer "<<(int)a<<" has size 0."<<endl;
+	assert(m_allocatedSizes[a]>0);
+	#endif
 
+	int allocatedSize=m_allocatedSizes[a];
+	int offset=m_allocatedOffsets[a];
+
+	/** set the size to 0 for this SmallSmartPointer */
+	m_allocatedSizes[a]=0;
+
+	/** defragment it now */
+	int indicator=offset+allocatedSize;
+	int lastUtilised=m_lastFreePosition-1;
+	if(indicator<lastUtilised)
+		moveElementsToCloseGap(offset,allocatedSize,period);
+
+	//** add it as a fast pointer if necessary */
+	int fast=0;
+	while(fast<FAST_POINTERS){
+		#ifdef ASSERT
+		assert(fast<FAST_POINTERS);
+		assert(m_availablePointers[fast]<ELEMENTS_PER_GROUP);
+		#endif
+	
+		/** replace this fast pointer with the current that is now available */
+		if(m_allocatedSizes[m_availablePointers[fast]]!=0){
+			m_availablePointers[fast]=a;
+			break;
+		}
+		fast++;
+	}
+}
+
+/**
+ * 	Move all elements starting at newOffset+allocationLength up to m_lastFreePosition
+ * 	by allocationLength positions on the left
+ */
+void DefragmentationGroup::moveElementsToCloseGap(int offset,int allocationLength,int period){
+/*
+ * 	Move all elements starting at newOffset+allocationLength up to m_lastFreePosition
+ * 	by allocationLength positions on the left
+ */
+	int lowerBound=offset+allocationLength;
+
+	/* using int here to avoid overflow 
+ * 	update m_allocatedOffsets
+ *	O(allocationLength)
+ * 	*/
+	for(int smartPointer=0;smartPointer<ELEMENTS_PER_GROUP;smartPointer++){
+		#ifdef ASSERT
+		assert(smartPointer<ELEMENTS_PER_GROUP);
+		#endif
+
+		/* move the smart pointer */
+		if(m_allocatedSizes[smartPointer]!=0 
+		&& m_allocatedOffsets[smartPointer]>=lowerBound){
+			m_allocatedOffsets[smartPointer]-=allocationLength;
+
+			#ifdef ASSERT
+			assert(m_allocatedOffsets[smartPointer]>=0);
+			#endif
+		}
+	}
+
+	/** move the bytes 
+ * gcc with -std=c++98 does not complain about memmove
+ * Here, memcpy is not safe because destination and source may overlap.
+ * */
+	void*destination=m_block+offset*period;
+	void*source=m_block+(offset+allocationLength)*period;
+	int bytes=(m_lastFreePosition-offset-allocationLength)*period;
+	memmove(destination,source,bytes);
+
+/** update m_lastFreePosition 
+ * 	*/
+
+	m_lastFreePosition-=allocationLength;
 }
 
 /**
  * Kick-start a DefragmentationGroup.
  */
 void DefragmentationGroup::constructor(int period,bool show){
+	for(int i=0;i<FAST_POINTERS;i++)
+		m_availablePointers[i]=i;
+
 	m_lastFreePosition=0;
-	m_availableElements=ELEMENTS_PER_GROUP;
 	/** allocate the memory */
 	m_block=(uint8_t*)__Malloc(ELEMENTS_PER_GROUP*period,RAY_MALLOC_TYPE_DEFRAG_GROUP,show);
 
@@ -179,10 +262,6 @@ void DefragmentationGroup::destructor(bool show){
  * Check if element bit is available or not 
  */
 int DefragmentationGroup::getBit(int bit){
-	#ifdef ASSERT
-	assert(m_bitmap!=NULL);
-	#endif
-
 	int bitChunk=bit/64;
 	int bitPosition=bit%64;
 	uint64_t filter=m_bitmap[bitChunk];
@@ -191,7 +270,7 @@ int DefragmentationGroup::getBit(int bit){
 	int value=filter;
 	
 	#ifdef ASSERT
-	assert(value==AVAILABLE||value==OCCUPIED);
+	assert(value==AVAILABLE||value==UTILISED);
 	#endif
 
 	return value;
@@ -203,8 +282,8 @@ int DefragmentationGroup::getBit(int bit){
 void DefragmentationGroup::setBit(int bit,int value){
 	#ifdef ASSERT
 	assert(m_bitmap!=NULL);
-	assert(value==AVAILABLE||value==OCCUPIED);
-	assert(getBit(bit)==AVAILABLE||getBit(bit)==OCCUPIED);
+	assert(value==AVAILABLE||value==UTILISED);
+	assert(getBit(bit)==AVAILABLE||getBit(bit)==UTILISED);
 	#endif
 
 	int bitChunk=bit/64;
@@ -219,7 +298,7 @@ void DefragmentationGroup::setBit(int bit,int value){
 	}
 
 	#ifdef ASSERT
-	assert(getBit(bit)==AVAILABLE||getBit(bit)==OCCUPIED);
+	assert(getBit(bit)==AVAILABLE||getBit(bit)==UTILISED);
 	if(getBit(bit)!=value)
 		cout<<"Expected: "<<value<<" Actual: "<<getBit(bit)<<endl;
 
@@ -231,7 +310,11 @@ void DefragmentationGroup::setBit(int bit,int value){
  * Resolvee a SmallSmartPointer
  */
 void*DefragmentationGroup::getPointer(SmallSmartPointer a,int period){
-	return m_block+m_allocatedOffsets[a]*period;
+	void*pointer=m_block+m_allocatedOffsets[a]*period;
+	#ifdef ASSERT
+	assert(m_allocatedSizes[a]!=0);
+	#endif
+	return pointer;
 }
 
 /**
@@ -255,15 +338,5 @@ bool DefragmentationGroup::isOnline(){
  * Get the number of available elements
  */
 int DefragmentationGroup::getAvailableElements(){
-	return m_availableElements;
-}
-
-/**
- * Print the bitmap
- */
-void DefragmentationGroup::print(){
-	cout<<"bitmap, 0-1023:"<<endl;
-	for(int i=0;i<ELEMENTS_PER_GROUP;i++)
-		cout<<getBit(i);
-	cout<<endl;
+	return ELEMENTS_PER_GROUP-m_lastFreePosition;
 }

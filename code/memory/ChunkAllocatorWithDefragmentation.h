@@ -26,14 +26,20 @@
 
 /**
  * basically, a SmartPointer is just an handle
- * that   can be resolved by some other object.
+ * that can be resolved by some other object.
+ * The underlying location can change, but the SmartPointer
+ * does not change.
+ *
+ * A SmartPointer is transformed into a void* by ChunkAllocatorWithDefragmentation::getPointer()
+ * getPointer actually just asks the appropriate DefragmentationGroup
+ * by polling the array of DefragmentationLane objects.
  */
 typedef uint32_t SmartPointer;
 
 /**
  * This SmartPointer is the equivalent of NULL
  */
-#define SmartPointer_NULL 4294967295
+#define SmartPointer_NULL 4294967295 /* this is the maximum value for uint32_t */
 
 /** 
  * the number of DefragmentationGroup per DefragmentationLane
@@ -49,7 +55,9 @@ typedef uint32_t SmartPointer;
  * DefragmentationLane are appended in a linked list.
  */
 typedef struct{
+	/** list of DefragmentationGroup */
 	DefragmentationGroup m_groups[GROUPS_PER_LANE];
+	/** link to the next DefragmentationLane */
 	void*m_next;
 } DefragmentationLane;
 
@@ -82,6 +90,7 @@ public:
 	/** clear allocations */
 	void destructor();
 
+	/** initialize a ChunkAllocatorWithDefragmentation  */
 	void constructor(int period,bool show);
 
 /**
@@ -98,7 +107,6 @@ public:
  * resolve a SmartPointer
  */
 	void*getPointer(SmartPointer a);
-
 };
 
 #endif
