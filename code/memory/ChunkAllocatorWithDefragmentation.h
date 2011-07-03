@@ -68,9 +68,6 @@ typedef struct{
  * the correct DefragmentationGroup in the  correct DefragmentationLane.
  */
 class ChunkAllocatorWithDefragmentation{
-	/** the number of DefragmentationGroup that are active */
-	int m_activeGroups;
-
 	/** show memory allocations */
 	bool m_show;
 

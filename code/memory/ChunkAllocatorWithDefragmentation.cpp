@@ -56,14 +56,6 @@ void ChunkAllocatorWithDefragmentation::print(){
 		lane=(DefragmentationLane*)lane->m_next;
 		lanes++;
 	}
-	
-	cout<<"DefragmentationGroups: "<<GROUPS_PER_LANE*lanes<<endl;
-	cout<<"ActiveDefragmentationGroups: "<<m_activeGroups<<endl;
-	cout<<"ELEMENTS_PER_GROUP: "<<ELEMENTS_PER_GROUP<<endl;
-	int totalElements=m_activeGroups*ELEMENTS_PER_GROUP;
-	int allocated=totalElements-availableElements;
-	double ratio=(0.0+allocated)/totalElements*100;
-	cout<<"AllocatedElements: "<<allocated<<"/"<<totalElements<<" ("<<ratio<<"%"<<")"<<endl;
 }
 
 /** clear allocations */
@@ -89,7 +81,6 @@ void ChunkAllocatorWithDefragmentation::destructor(){
 
 /** constructor almost does nothing  */
 void ChunkAllocatorWithDefragmentation::constructor(int period,bool show){
-	m_activeGroups=0;
 	m_show=show;
 	m_period=period;
 	m_defragmentationLane=NULL;
@@ -116,7 +107,6 @@ SmartPointer ChunkAllocatorWithDefragmentation::allocate(int n){
 			/** activate a lane */
 			if(!lane->m_groups[group].isOnline()){
 				lane->m_groups[group].constructor(m_period,m_show);
-				m_activeGroups++;
 			}
 
 			#ifdef ASSERT
