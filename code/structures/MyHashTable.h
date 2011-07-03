@@ -212,8 +212,8 @@ VALUE*MyHashTableGroup<KEY,VALUE>::insert(int numberOfBucketsInGroup,int bucket,
 		bucketsAfter+=getBit(i);
 
 	/* will allocate a new vector with one more element */
-	int requiredBytes=(bucketsBefore+1+bucketsAfter)*sizeof(VALUE);
-	SmartPointer newVector=allocator->allocate(requiredBytes);
+	int requiredElements=(bucketsBefore+1+bucketsAfter);
+	SmartPointer newVector=allocator->allocate(requiredElements);
 
 	VALUE*newVectorPointer=(VALUE*)allocator->getPointer(newVector);
 	VALUE*vectorPointer=(VALUE*)allocator->getPointer(m_vector);
@@ -259,6 +259,8 @@ VALUE*MyHashTableGroup<KEY,VALUE>::insert(int numberOfBucketsInGroup,int bucket,
 
 	/** tell the caller that we inserted something  somewhere */
 	*inserted=true;
+
+	newVectorPointer=(VALUE*)allocator->getPointer(m_vector);
 	return newVectorPointer+bucketsBefore;
 }
 
@@ -568,7 +570,6 @@ void MyHashTable<KEY,VALUE>::resize(uint64_t newSize){
 	if(m_utilisedBuckets!=newTable.m_utilisedBuckets)
 		cout<<"Expected: "<<m_utilisedBuckets<<" Actual: "<<newTable.m_utilisedBuckets<<endl;
 	assert(m_utilisedBuckets==newTable.m_utilisedBuckets);
-	assert(m_allocator.getNumberOfChunks()==newTable.m_allocator.getNumberOfChunks());
 	#endif
 
 	/** copy probe profiles */
@@ -845,6 +846,8 @@ VALUE*MyHashTable<KEY,VALUE>::insert(KEY*key){
 	/* check that nothing failed elsewhere */
 	#ifdef ASSERT
 	assert(entry!=NULL);
+	if(entry->m_lowerKey!=*key)
+		cout<<"Pointer: "<<entry<<endl;
 	assert(entry->m_lowerKey==*key);
 	assert(m_groups[group].find(bucketInGroup,key,&m_allocator)!=NULL);
 	assert(m_groups[group].find(bucketInGroup,key,&m_allocator)->m_lowerKey==*key);
