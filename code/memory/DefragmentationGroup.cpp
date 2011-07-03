@@ -204,14 +204,14 @@ void DefragmentationGroup::moveElementsToCloseGap(int offset,int allocationLengt
 		}
 	}
 
-	/** move the bytes 
- * gcc with -std=c++98 does not complain about memmove
- * Here, memcpy is not safe because destination and source may overlap.
+	/** 
+ * move the bytes 
  * */
-	void*destination=m_block+offset*period;
-	void*source=m_block+(offset+allocationLength)*period;
+	uint8_t*destination=m_block+offset*period;
+	uint8_t*source=m_block+(offset+allocationLength)*period;
 	int bytes=(m_lastFreePosition-offset-allocationLength)*period;
-	memmove(destination,source,bytes);
+	for(int i=0;i<bytes;i++)
+		destination[i]=source[i];
 
 /** update m_lastFreePosition 
  * 	*/

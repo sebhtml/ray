@@ -35,14 +35,6 @@
 
 #include <stdint.h>
 
-/*****************
- *
- * TODO: remove m_bitmap
- * 	replace m_allocatedSizes by a bitmap because we just need to know which SmallSmartPointer are used.
- *
- * 	to search rapidly such a bitmap, just check entries that are not equal to maximum value of uint64_t
- */
-
 /**
  * A SmallSmartPointer is a smart pointer than only a DefragmentationGroup
  * can resolve.
