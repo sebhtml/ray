@@ -138,6 +138,9 @@ int vertexRank(Kmer*a,int _size,int w,bool color){
 }
 
 Kmer kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool color){
+	#ifdef ASSERT
+	assert(w<=MAXKMERLENGTH);
+	#endif
 	int length=strlen(m_sequence);
 	if(pos>length-w){
 		cout<<"Fatal: offset is too large: position= "<<pos<<" Length= "<<length<<" WordSize=" <<w<<endl;
@@ -148,13 +151,13 @@ Kmer kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool color){
 		exit(0);
 	}
 	if(strand=='F'){
-		char sequence[100];
+		char sequence[MAXKMERLENGTH];
 		memcpy(sequence,m_sequence+pos,w);
 		sequence[w]='\0';
 		Kmer v=wordId(sequence);
 		return v;
 	}else if(strand=='R'){
-		char sequence[100];
+		char sequence[MAXKMERLENGTH];
 		memcpy(sequence,m_sequence+length-pos-w,w);
 		sequence[w]='\0';
 		Kmer v=wordId(sequence);
