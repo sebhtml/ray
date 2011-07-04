@@ -28,6 +28,7 @@
 #include <core/common_functions.h>
 #include <structures/ArrayOfReads.h>
 #include <communication/Message.h>
+#include <graph/GridTable.h>
 #include <structures/MyForest.h>
 #include <memory/RingAllocator.h>
 #include <structures/Read.h>
@@ -43,6 +44,7 @@ using namespace std;
  * their respective owners.
  */
 class VerticesExtractor{
+	GridTable*m_subgraph;
 	char m_readSequence[4000];
 	bool m_distributionIsCompleted;
 	Parameters*m_parameters;
@@ -68,7 +70,7 @@ class VerticesExtractor{
 	bool m_finished;
 public:
 
-	void constructor(int size,Parameters*parameters);
+	void constructor(int size,Parameters*parameters,GridTable*graph);
 	void process(int*m_mode_send_vertices_sequence_id,
 				ArrayOfReads*m_myReads,
 				bool*m_reverseComplementVertex,

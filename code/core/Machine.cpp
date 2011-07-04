@@ -830,7 +830,7 @@ void Machine::call_RAY_SLAVE_MODE_DO_NOTHING(){}
 
 void Machine::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(){
 	if(!m_initialisedAcademy){
-		m_kmerAcademyBuilder.constructor(m_size,&m_parameters);
+		m_kmerAcademyBuilder.constructor(m_size,&m_parameters,&m_subgraph);
 		(m_mode_send_vertices_sequence_id)=0;
 		m_initialisedAcademy=true;
 

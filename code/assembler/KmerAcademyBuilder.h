@@ -24,6 +24,7 @@
 
 #include <structures/StaticVector.h>
 #include <communication/BufferedData.h>
+#include <graph/GridTable.h>
 #include <core/Parameters.h>
 #include <core/common_functions.h>
 #include <structures/ArrayOfReads.h>
@@ -59,13 +60,13 @@ class KmerAcademyBuilder{
 	int m_size;
 
 	bool m_finished;
+	GridTable*m_subgraph;
 public:
 
 	BufferedData m_buffersForIngoingEdgesToDelete;
 	BufferedData m_buffersForOutgoingEdgesToDelete;
 
-
-	void constructor(int size,Parameters*parameters);
+	void constructor(int size,Parameters*parameters,GridTable*graph);
 	void process(int*m_mode_send_vertices_sequence_id,
 				ArrayOfReads*m_myReads,
 				bool*m_reverseComplementVertex,

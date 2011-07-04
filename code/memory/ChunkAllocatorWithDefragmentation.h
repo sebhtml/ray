@@ -68,6 +68,7 @@ typedef struct{
  * the correct DefragmentationGroup in the  correct DefragmentationLane.
  */
 class ChunkAllocatorWithDefragmentation{
+	bool m_defragmented;
 	/** show memory allocations */
 	bool m_show;
 
@@ -104,6 +105,10 @@ public:
  * resolve a SmartPointer
  */
 	void*getPointer(SmartPointer a);
+	ChunkAllocatorWithDefragmentation();
+	~ChunkAllocatorWithDefragmentation();
+
+	void defragment();
 };
 
 #endif

@@ -60,6 +60,8 @@ public:
 	KmerAcademy*getKmerAcademy();
 	MyHashTable<Kmer,Vertex>*getHashTable();
 	void printStatistics();
+	void defragment();
+	void defragmentAcademy();
 };
 
 #endif

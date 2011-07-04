@@ -462,6 +462,11 @@ public:
  * 	- the load factor
  */
 	void printStatistics();
+
+/**
+ * callback function for immediate defragmentation
+ */
+	void defragment();
 };
 
 /* get a bucket */
@@ -904,6 +909,12 @@ void MyHashTable<KEY,VALUE>::printStatistics(){
 	}
 	cout<<endl;
 	m_allocator.print();
+}
+
+/** called when nothing to do presumably. */
+template<class KEY,class VALUE>
+void MyHashTable<KEY,VALUE>::defragment(){
+	m_allocator.defragment();
 }
 
 #endif
