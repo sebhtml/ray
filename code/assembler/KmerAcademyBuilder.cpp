@@ -51,8 +51,9 @@ void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
 	#ifdef ASSERT
 	assert(m_pendingMessages>=0);
 	#endif
-	if(m_inbox->size()>0&&m_inbox->at(0)->getTag()==RAY_MPI_TAG_KMER_ACADEMY_DATA_REPLY)
+	if(m_inbox->size()>0&&m_inbox->at(0)->getTag()==RAY_MPI_TAG_KMER_ACADEMY_DATA_REPLY){
 		m_pendingMessages--;
+	}
 
 	if(m_pendingMessages!=0){
 		/** defragment the bytes while waiting ..*/

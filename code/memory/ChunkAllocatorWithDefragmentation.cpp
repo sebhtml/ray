@@ -28,11 +28,6 @@
 using namespace std;
 
 void ChunkAllocatorWithDefragmentation::defragment(){
-	if(m_defragmented)
-		return;
-
-	cout<<"defragmenting..."<<endl;
-
 	DefragmentationLane*lane=m_defragmentationLane;
 
 	while(lane!=NULL){
@@ -49,7 +44,6 @@ void ChunkAllocatorWithDefragmentation::defragment(){
 		}
 		lane=(DefragmentationLane*)lane->m_next;
 	}
-	m_defragmented=true;
 }
 
 /**
@@ -109,7 +103,6 @@ void ChunkAllocatorWithDefragmentation::destructor(){
 
 /** constructor almost does nothing  */
 void ChunkAllocatorWithDefragmentation::constructor(int period,bool show){
-	m_defragmented=true;
 	m_show=show;
 	m_period=period;
 	m_defragmentationLane=NULL;
@@ -119,8 +112,6 @@ void ChunkAllocatorWithDefragmentation::constructor(int period,bool show){
  * allocate memory
  */
 SmartPointer ChunkAllocatorWithDefragmentation::allocate(int n){
-	m_defragmented=false;
-
 	/** 64 is the number of buckets in a MyHashTableGroup */
 
 	#ifdef ASSERT

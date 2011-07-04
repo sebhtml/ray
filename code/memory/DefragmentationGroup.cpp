@@ -690,5 +690,15 @@ int DefragmentationGroup::getFreeSliceStart(){
 void DefragmentationGroup::defragment(int bytesPerElement){
 	if(m_availableElements==0)
 		return;
-	compact(m_availableElements,bytesPerElement);
+	int elementsInFreeSlice=ELEMENTS_PER_GROUP-m_freeSliceStart;
+	double ratioInFreeSlice=elementsInFreeSlice/(0.0+m_availableElements);
+
+	/* defragment only if this ratio is < 50% */
+	if(ratioInFreeSlice<0.3 && m_availableElements>16){
+		int result=elementsInFreeSlice+16;
+		if(m_availableElements<result)
+			result=m_availableElements;
+		//cout<<"Defragmenting, available: "<<m_availableElements<<" in free slice: "<<elementsInFreeSlice<<" Target: "<<result<<endl;
+		compact(result,bytesPerElement);
+	}
 }
