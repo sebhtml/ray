@@ -18,7 +18,6 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-
 #ifndef _DefragmentationGroup_H
 #define _DefragmentationGroup_H
 
@@ -43,10 +42,15 @@ typedef uint16_t SmallSmartPointer;
 
 class DefragmentationGroup{
 	/** freed stuff to accelerate things. */
-	uint16_t m_availablePointers[FAST_POINTERS];
+	uint16_t m_fastPointers[FAST_POINTERS];
 	
+	/**
+ * the number of available elements
+ */
+	int m_availableElements;
+
 	/** last free position */
-	int m_lastFreePosition;
+	int m_freeSliceStart;
 
 	/**
  * 	Pointer to allocated memory
@@ -85,15 +89,34 @@ class DefragmentationGroup{
 	void setBit(int a,int b);
 
 /**
- * 	Move all elements starting at newOffset+allocationLength up to m_lastFreePosition
+ * 	Move all elements starting at newOffset+allocationLength up to m_freeSliceStart
  * 	by allocationLength positions on the left
  */
-	void moveElementsToCloseGap(int offset,int allocationLength,int period);
+	void closeGap(int offset,int allocationLength,int bytesPerElement);
+
+/**
+ * find a gap 
+ */
+	void findGap(int*offset,int*length,int n);
+
+/** print the bitmap
+ */
+	void print();
 
 /**
  * get a SmallSmartPointer
  */
 	SmallSmartPointer getAvailableSmallSmartPointer();
+	
+/**
+ * find at least n AVAILABLE elements 
+ */
+	int findAtLeast(int n);
+
+/**
+ * Compact the block to create at least n consecutive elements 
+ */
+	void compact(int n,int bytesPerElement);
 
 public:
 /**
@@ -104,18 +127,18 @@ public:
 /** 
  * Initialiaze DefragmentationGroup
  */
-	void constructor(int period,bool show);
+	void constructor(int bytesPerElement,bool show);
 
 /**
  * Allocate memory
  */
-	SmallSmartPointer allocate(int n,int period);
+	SmallSmartPointer allocate(int n,int bytesPerElement);
 
 /**
  * Free memory
  * deallocate will defragment the block immediately
  */
-	void deallocate(SmallSmartPointer a,int period);
+	void deallocate(SmallSmartPointer a,int bytesPerElement);
 /** 
  * destroy the allocator
  */
@@ -129,7 +152,7 @@ public:
 	/**
  * 	translate a SmallSmartPointer to an actual pointer
  */
-	void*getPointer(SmallSmartPointer a,int period);
+	void*getPointer(SmallSmartPointer a,int bytesPerElement);
 	
 	/**
  * 	return yes if activated
@@ -140,6 +163,10 @@ public:
  * return the number of available elements 
  */
 	int getAvailableElements();
+
+	int getFreeSliceStart();
+	
+	void defragment(int bytesPerElement);
 };
 
 #endif
