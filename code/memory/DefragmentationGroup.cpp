@@ -585,7 +585,6 @@ void DefragmentationGroup::setBit(int bit,int value){
  */
 void*DefragmentationGroup::getPointer(SmallSmartPointer a,int bytesPerElement){
 	#ifdef ASSERT
-	assert(a<ELEMENTS_PER_GROUP);
 	if(m_allocatedSizes[a]==0)
 		cout<<"this= "<<this<<" can not getPointer on SmallSmartPointer "<<(int)a<<" because it is not allocated."<<endl;
 	assert(m_allocatedSizes[a]!=0);
@@ -625,7 +624,7 @@ int DefragmentationGroup::getAvailableElements(){
 
 int DefragmentationGroup::findAtLeast(int n){
 	int chunks=ELEMENTS_PER_GROUP/64;
-	for(int chunk=m_firstGapStart;chunk<chunks;chunk++){
+	for(int chunk=0/*m_firstGapStart TODO */;chunk<chunks;chunk++){
 		/** the chunk is not full, we may find something. */
 		if(m_bitmap[chunk]!=CHUNK_IS_FULL){
 			/** if the chunk is not full, then there are so gaps */
@@ -661,7 +660,7 @@ void DefragmentationGroup::findGap(int*gapOffset,int*gapLength,int n){
 	int chunks=ELEMENTS_PER_GROUP/64;
 	(*gapOffset)=-1;
 	(*gapLength)=0;
-	for(int chunk=m_firstGapStart;chunk<chunks;chunk++){
+	for(int chunk=0/*m_firstGapStart TODO */;chunk<chunks;chunk++){
 		/** the chunk is not full, we may find something. */
 		if(m_bitmap[chunk]!=CHUNK_IS_FULL){	
 			/**  chunk is no full, find the gaps. */

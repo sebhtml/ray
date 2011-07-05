@@ -144,10 +144,6 @@ SmartPointer ChunkAllocatorWithDefragmentation::allocate(int n){
 
 				SmallSmartPointer smallSmartPointer=lane->m_groups[group].allocate(n,m_period);
 
-				#ifdef ASSERT
-				assert(smallSmartPointer<ELEMENTS_PER_GROUP);
-				#endif
-	
 				/** build the SmartPointer with the
  *				SmallSmartPointer, DefragmentationLane id, and DefragmentationGroup id */
 				int globalGroup=laneId*GROUPS_PER_LANE+group;
