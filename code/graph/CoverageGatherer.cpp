@@ -148,7 +148,7 @@ void CoverageGatherer::work(){
 			
 		#ifdef ASSERT
 		if(n!=m_subgraph->getKmerAcademy()->size()){
-			cout<<"n="<<n<<" size="<<m_subgraph->getKmerAcademy()->size()<<endl;
+			cout<<"Expected (from iterator)="<<n<<" Actual (->size())="<<m_subgraph->getKmerAcademy()->size()<<endl;
 		}
 		assert(n==m_subgraph->getKmerAcademy()->size());
 		#endif
