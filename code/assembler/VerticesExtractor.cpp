@@ -52,7 +52,8 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 	#endif
 	if(m_pendingMessages!=0){
 		/* defragment while waiting. */
-		m_subgraph->defragment();
+		/* TODO restore defrag */
+		//m_subgraph->defragment();
 		return;
 	}
 

@@ -104,19 +104,16 @@ void ChunkAllocatorWithDefragmentation::constructor(int period,bool show){
 	m_show=show;
 	m_period=period;
 	m_defragmentationLane=NULL;
+	m_fastLane=NULL;
 }
 
 /**
- * allocate memory
+ * update:
+ *  m_fastLane
+ *  m_fastGroup
+ *  m_fastLaneNumber
  */
-SmartPointer ChunkAllocatorWithDefragmentation::allocate(int n){
-	/** 64 is the number of buckets in a MyHashTableGroup */
-
-	#ifdef ASSERT
-	if(!(n>=1 && n<=64))
-		cout<<"n= "<<n<<endl;
-	assert(n>=1&&n<=64);
-	#endif
+void ChunkAllocatorWithDefragmentation::updateFastLane(){
 
 	DefragmentationLane*lane=m_defragmentationLane;
 	DefragmentationLane*lastValidLane=m_defragmentationLane;
@@ -136,20 +133,16 @@ SmartPointer ChunkAllocatorWithDefragmentation::allocate(int n){
 			#endif
 
 			/** use this DefragmentationGroup if it can handle the query */
-			if(lane->m_groups[group].canAllocate(n)){
+			if(lane->m_groups[group].canAllocate(500)){
 				#ifdef ASSERT
 				assert(group<GROUPS_PER_LANE);
 				assert(lane->m_groups[group].isOnline());
 				#endif
-
-				SmallSmartPointer smallSmartPointer=lane->m_groups[group].allocate(n,m_period);
-
-				/** build the SmartPointer with the
- *				SmallSmartPointer, DefragmentationLane id, and DefragmentationGroup id */
-				int globalGroup=laneId*GROUPS_PER_LANE+group;
-				SmartPointer smartPointer=globalGroup*ELEMENTS_PER_GROUP+smallSmartPointer;
-
-				return smartPointer;
+			
+				m_fastLane=lane;
+				m_fastLaneNumber=laneId;
+				m_fastGroup=group;
+				return;
 			}
 		}
 		lane=(DefragmentationLane*)lane->m_next;
@@ -167,16 +160,45 @@ SmartPointer ChunkAllocatorWithDefragmentation::allocate(int n){
 		defragmentationLane->m_groups[i].setPointers();
 	defragmentationLane->m_next=NULL;
 
+	defragmentationLane->m_groups[0].constructor(m_period,m_show);
+
+	m_fastLane=defragmentationLane;
+	m_fastGroup=0;
+	m_fastLaneNumber=laneId;
+
 	if(lastValidLane==NULL)
 		m_defragmentationLane=defragmentationLane;
 	else
 		lastValidLane->m_next=defragmentationLane;
-	
-	/** now we can call the same code again with the new line 
- * 	this is a recursive call
- * 	this case does happen often.
- * 	*/
-	return allocate(n);
+}
+
+/**
+ * allocate memory
+ */
+SmartPointer ChunkAllocatorWithDefragmentation::allocate(int n){ /** 64 is the number of buckets in a MyHashTableGroup */
+	#ifdef ASSERT
+	if(!(n>=1 && n<=64))
+		cout<<"n= "<<n<<endl;
+	assert(n>=1&&n<=64);
+	#endif
+
+	/** TODO keep fastLaneId and fastGroupId for faster look-up. */
+
+	if(m_fastLane==NULL || !m_fastLane->m_groups[m_fastGroup].canAllocate(n)){
+		updateFastLane();
+	}
+
+	#ifdef ASSERT
+	assert(m_fastLane->m_groups[m_fastGroup].canAllocate(n));
+	#endif
+
+	SmallSmartPointer smallSmartPointer=m_fastLane->m_groups[m_fastGroup].allocate(n,m_period);
+
+	/** build the SmartPointer with the
+ *	SmallSmartPointer, DefragmentationLane id, and DefragmentationGroup id */
+	int globalGroup=m_fastLaneNumber*GROUPS_PER_LANE+m_fastGroup;
+	SmartPointer smartPointer=globalGroup*ELEMENTS_PER_GROUP+smallSmartPointer;
+	return smartPointer;
 }
 
 /**

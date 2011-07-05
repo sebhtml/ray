@@ -68,6 +68,10 @@ typedef struct{
  * the correct DefragmentationGroup in the  correct DefragmentationLane.
  */
 class ChunkAllocatorWithDefragmentation{
+	DefragmentationLane*m_fastLane;
+	int m_fastLaneNumber;
+	int m_fastGroup;
+
 	/** show memory allocations */
 	bool m_show;
 
@@ -79,6 +83,8 @@ class ChunkAllocatorWithDefragmentation{
 
 	/** get the DefragmentationGroup of a SmartPointer */
 	DefragmentationGroup*getGroup(SmartPointer a);
+
+	void updateFastLane();
 public:
 	/**
  * print allocator information
