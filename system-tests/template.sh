@@ -4,8 +4,8 @@
 #$ -N __TEST_NAME__
 # this is the project identifier
 #$ -P nne-790-ab
-# bound the execution to 2 hours -- most system tests *will* finish under minutes
-#$ -l h_rt=2:00:00
+# bound the execution  -- most system tests *will* finish under minutes
+#$ -l h_rt=8:00:00
 # utilize 32 compute cores in the compute grid -- also known as the mighty cloud
 #$ -pe default 32
 

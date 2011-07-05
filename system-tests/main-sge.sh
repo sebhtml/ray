@@ -26,17 +26,8 @@ echo "$(date) Submitting jobs to the grid"
 for testName in $(ls tests)
 do
 	echo "$(date) Preparing submission script for job $testName"
-	qsubFile=template.sh-qsub-$testName
-	cp template.sh $qsubFile
-	expression="s/__TEST_NAME__/$testName/g"
-	sed -i $expression $qsubFile
-	
-	# @ is the delimiter here.
-	expression2="s@__RAY_GIT_PATH__@$RAY_GIT_PATH@g"
-	sed -i $expression2 $qsubFile
 	echo "$(date) Submitting job $testName to the compute grid"
-	qsubOut=qsub-out-$testName
-	qsub $qsubFile &> $qsubOut
+	run-test-sge.sh $testName &> $qsubOut
 	jobId=$(cat $qsubOut|awk '{print $3}')
 	echo $jobId >> jobs
 	echo "$(date) Job $testName has id $jobId"
