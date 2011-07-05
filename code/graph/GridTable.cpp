@@ -139,7 +139,6 @@ void GridTable::defragment(){
 	m_hashTable.defragment();
 }
 
-void GridTable::defragmentAcademy(){
-	m_kmerAcademy.defragment();
+void GridTable::completeResizing(){
+	m_hashTable.completeResizing();
 }
-

@@ -101,3 +101,7 @@ void KmerAcademy::printStatistics(){
 void KmerAcademy::defragment(){
 	m_hashTable.defragment();
 }
+
+void KmerAcademy::completeResizing(){
+	m_hashTable.completeResizing();
+}

@@ -61,6 +61,7 @@ public:
 	MyHashTable<Kmer,KmerCandidate>*getHashTable();
 	void printStatistics();
 	void defragment();
+	void completeResizing();
 };
 
 #endif

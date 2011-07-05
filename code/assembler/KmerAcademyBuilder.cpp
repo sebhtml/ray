@@ -57,7 +57,7 @@ void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
 
 	if(m_pendingMessages!=0){
 		/** defragment the bytes while waiting ..*/
-		m_subgraph->defragmentAcademy();
+		m_subgraph->getKmerAcademy()->defragment();
 		return;
 	}
 

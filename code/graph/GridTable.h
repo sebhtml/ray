@@ -61,7 +61,7 @@ public:
 	MyHashTable<Kmer,Vertex>*getHashTable();
 	void printStatistics();
 	void defragment();
-	void defragmentAcademy();
+	void completeResizing();
 };
 
 #endif
