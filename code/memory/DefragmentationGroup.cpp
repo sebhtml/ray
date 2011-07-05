@@ -61,7 +61,12 @@ using namespace std;
  *  Return true if the DefragmentationGroup can allocate n elements 
  */
 bool DefragmentationGroup::canAllocate(int n){
-	return m_availableElements>=n;
+	/* we want fast allocation in the end...  
+	if a contiguous segment is not available, we can't handle it... 
+*/
+	int offset=findAtLeast(n);
+	return offset>=0;
+	//return m_availableElements>=n;
 }
 
 /**
@@ -624,7 +629,7 @@ int DefragmentationGroup::getAvailableElements(){
 
 int DefragmentationGroup::findAtLeast(int n){
 	int chunks=ELEMENTS_PER_GROUP/64;
-	for(int chunk=0/*m_firstGapStart TODO */;chunk<chunks;chunk++){
+	for(int chunk=m_firstGapStart/64;chunk<chunks;chunk++){
 		/** the chunk is not full, we may find something. */
 		if(m_bitmap[chunk]!=CHUNK_IS_FULL){
 			/** if the chunk is not full, then there are so gaps */
@@ -660,7 +665,7 @@ void DefragmentationGroup::findGap(int*gapOffset,int*gapLength,int n){
 	int chunks=ELEMENTS_PER_GROUP/64;
 	(*gapOffset)=-1;
 	(*gapLength)=0;
-	for(int chunk=0/*m_firstGapStart TODO */;chunk<chunks;chunk++){
+	for(int chunk=m_firstGapStart/64 ;chunk<chunks;chunk++){
 		/** the chunk is not full, we may find something. */
 		if(m_bitmap[chunk]!=CHUNK_IS_FULL){	
 			/**  chunk is no full, find the gaps. */
