@@ -166,7 +166,9 @@ public:
 
 	int getFreeSliceStart();
 	
-	void defragment(int bytesPerElement);
+/*
+ * returns true if defragmented something. */
+	bool defragment(int bytesPerElement);
 
 	int getAllocationSize(SmallSmartPointer a);
 };

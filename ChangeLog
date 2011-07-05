@@ -31,8 +31,10 @@ sent messages for each type.
 * System tests are now in system-tests
 * Implemented SmartPointer objects to allow defragmentation of memory.
 * Implemented real-time defragmentation for SmartPointer objects.
+* Implemented incremental resizing to allow low latency.
 * Fixed a buffer overflow in getKmerAtPosition, reported by David Eccles
 (gringer).
+
 
 = 1.6.0 =
 2011-06-13

@@ -20,6 +20,13 @@
 
 /* TODO: replace m_allocatedSizes with a bitmap */
 /* TODO:  replace calls to Malloc by a single call to Malloc */
+
+/* TODO add m_firstGapStart to accelerate stuff. 
+ * TODO fast skip in findGap
+ *
+ * TODO: populate fast pointers in defragment
+ * */
+
 /* call defragment somewhere else */
 
 /* run low-level assertions, pretty slow but that helped for the development. */
@@ -691,9 +698,13 @@ int DefragmentationGroup::getFreeSliceStart(){
 	return m_freeSliceStart;
 }
 
-void DefragmentationGroup::defragment(int bytesPerElement){
+bool DefragmentationGroup::defragment(int bytesPerElement){
 	if(m_availableElements==0)
-		return;
+		return false;
+
+	if(m_availableElements==(ELEMENTS_PER_GROUP-m_freeSliceStart))
+		return false;
+
 	int elementsInFreeSlice=ELEMENTS_PER_GROUP-m_freeSliceStart;
 	double ratioInFreeSlice=elementsInFreeSlice/(0.0+m_availableElements);
 
@@ -704,5 +715,7 @@ void DefragmentationGroup::defragment(int bytesPerElement){
 			result=m_availableElements;
 		//cout<<"Defragmenting, available: "<<m_availableElements<<" in free slice: "<<elementsInFreeSlice<<" Target: "<<result<<endl;
 		compact(result,bytesPerElement);
+		return true;
 	}
+	return false;
 }

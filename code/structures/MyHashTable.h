@@ -601,7 +601,65 @@ void MyHashTable<KEY,VALUE>::resize(){
 	assert(m_utilisedBuckets>0);
 	#endif
 
-	int toProcess=16;
+ /*
+ *	Suppose the main table has N slots.
+ *	Then, the auxiliary has 2*N slots.
+ *
+ *	At each call to insert(), we call resize().
+ *	Each call to resize() will transfert T items.
+ *
+ * 	In the worst case, the main table has exactly N items to transfert (all buckets are full).
+ * 	Thus, this would require N/T calls to resize()
+ *
+ * 	resize() is actually called when insert() is called, so
+ *	at completion of the transfer, the auxiliary table would have
+ *
+ *	N/T   (elements inserted directly in the auxiliary table)
+ *	N     (elements copied from the main table to the auxiliary table)
+ *
+ *	Thus, when the transfert is completed, the auxiliary table has 
+ *
+ *	at most N+N/T elements.
+ *
+ * 	We have 
+ *
+ * 	N+N/T <= 2N		(equation 1.)
+ * 	N+N/T -N  <= 2N -N
+ * 	N/T <= N
+ * 	N/T*1/N <= N * 1/N
+ * 	1/T <= 1
+ * 	1/T * T <= 1 * T
+ * 	1 <= T
+ *
+ * 	So,  basically, as long as T >= 1, we are fine.
+ *
+ * 	But in our case, resize is triggered when the main table has at least
+ * 	0.7*N
+ *
+ * 	So, we need 0.7*N/T calls to resizes.
+ *
+ * 	Upon completion, the auxiliary table will have
+ *
+ * 	0.7*N/T + 0.7*N
+ *
+ * 	The equation is then:
+ *
+ * 	0.7*N/T + 0.7*N <= 0.7*2*N 	equation 2.
+ *
+ * 	(we want the process to complete before auxiliary triggers its own incremental resizing !)
+ *
+ * 	(divide everything by 0.7)
+ *
+ * 	N/T+N<=2N
+ *
+ * 	(same equation as equation 1.)
+ *
+ * 	thus, T>=1
+ *
+ * 	Here, we choose T=2
+ * 	*/
+
+	int toProcess=2;
 
 	int i=0;
 	while(i<toProcess && m_currentBucketToTransfer<capacity()){
@@ -705,7 +763,7 @@ uint64_t MyHashTable<KEY,VALUE>::size(){
 template<class KEY,class VALUE>
 void MyHashTable<KEY,VALUE>::constructor(int mallocType,bool showMalloc,int rank){
 	/** build the hash with a default size */
-	uint64_t defaultSize=524288/2/2/2/2/2/2;
+	uint64_t defaultSize=524288;
 	constructor(defaultSize,mallocType,showMalloc,rank);
 }
 
@@ -1058,6 +1116,8 @@ void MyHashTable<KEY,VALUE>::printStatistics(){
 template<class KEY,class VALUE>
 void MyHashTable<KEY,VALUE>::defragment(){
 	m_allocator.defragment();
+	if(m_resizing)
+		m_auxiliaryTableForIncrementalResize->m_allocator.defragment();
 }
 
 template<class KEY,class VALUE>
