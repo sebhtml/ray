@@ -52,6 +52,9 @@ class DefragmentationGroup{
 	/** last free position */
 	int m_freeSliceStart;
 
+	/** where is the first gap start ? */
+	int m_firstGapStart;
+
 	/**
  * 	Pointer to allocated memory
  * 	65536 * 18 = 1179648 bytes 
