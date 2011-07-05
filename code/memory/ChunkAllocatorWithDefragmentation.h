@@ -104,6 +104,8 @@ public:
  * resolve a SmartPointer
  */
 	void*getPointer(SmartPointer a);
+	int getAllocationSize(SmartPointer a);
+
 	ChunkAllocatorWithDefragmentation();
 	~ChunkAllocatorWithDefragmentation();
 
