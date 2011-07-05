@@ -27,6 +27,8 @@
  * 	of 
  * 	Donald E. Knuth
  * 	The Art of Computer Programming, Volume 3, Second Edition
+ *
+ * Furthermore, it implements incremental resizing for real-time communication with low latency.
  */
 
 #ifndef _MyHashTable_H
@@ -67,6 +69,8 @@ class MyHashTableGroup{
  */
 	void setBit(int i,uint64_t j);
 public:
+	void print(ChunkAllocatorWithDefragmentation*allocator);
+
 	/** requests the bucket directly
  * 	fails if it is empty
  * 	*/
@@ -105,6 +109,7 @@ public:
  * 	otherwise it *will* fail
  */
 	VALUE*find(int bucket,KEY*key,ChunkAllocatorWithDefragmentation*allocator);
+
 };
 
 /** sets the bit in the correct byte */
@@ -118,11 +123,17 @@ void MyHashTableGroup<KEY,VALUE>::setBit(int bit,uint64_t value){
 	#endif
 	
 	/** use binary and or binary or */
+
+	/* set bit to 1 */
 	if(value==1){
 		m_bitmap|=(value<<bit);
+
+	/* set bit to 0 */
 	}else if(value==0){
-		value=1;
-		m_bitmap&=(~(value<<bit));
+		uint64_t filter=1;
+		filter<<=bit;
+		filter=~filter;
+		m_bitmap&=filter;
 	}
 
 	/** make sure the bit is OK */
@@ -131,6 +142,20 @@ void MyHashTableGroup<KEY,VALUE>::setBit(int bit,uint64_t value){
 		cout<<"Bit="<<bit<<" Expected="<<value<<" Actual="<<getBit(bit)<<endl;
 	assert(getBit(bit)==(int)value);
 	#endif
+}
+
+/* TODO replace  hard-coded 64 by m_numberOfBucketsInGroup  or numberOfBucketsInGroup */
+template<class KEY,class VALUE>
+void MyHashTableGroup<KEY,VALUE>::print(ChunkAllocatorWithDefragmentation*allocator){
+	#ifdef ASSERT
+	assert(allocator->getAllocationSize(m_vector)==getBucketsBefore(64));
+	#endif
+
+	cout<<"Group bitmap"<<endl;
+	cout<<"AllocatedElements: "<<allocator->getAllocationSize(m_vector)<<endl;
+	for(int i=0;i<64;i++)
+		cout<<" "<<i<<":"<<getBit(i);
+	cout<<endl;
 }
 
 /** gets the bit  */
@@ -171,6 +196,7 @@ void MyHashTableGroup<KEY,VALUE>::constructor(int numberOfBucketsInGroup,ChunkAl
 template<class KEY,class VALUE>
 VALUE*MyHashTableGroup<KEY,VALUE>::insert(int numberOfBucketsInGroup,int bucket,KEY*key,
 	ChunkAllocatorWithDefragmentation*allocator,bool*inserted){
+
 	/* the bucket can not be used by another key than key */
 	/* if it would be the case, then MyHashTable would not have sent key here */
 	#ifdef ASSERT
@@ -288,6 +314,9 @@ VALUE*MyHashTableGroup<KEY,VALUE>::getBucket(int bucket,ChunkAllocatorWithDefrag
 	/*  the bucket is not occupied therefore the key does not exist */
 	#ifdef ASSERT
 	assert(getBit(bucket)!=0);
+	if(m_vector==SmartPointer_NULL)
+		cout<<"bucket: "<<bucket<<endl;
+	assert(m_vector!=SmartPointer_NULL);
 	#endif
 
 	/* compute the number of elements before bucket */
@@ -295,6 +324,12 @@ VALUE*MyHashTableGroup<KEY,VALUE>::getBucket(int bucket,ChunkAllocatorWithDefrag
 
 	/* return the bucket */
 	VALUE*vectorPointer=(VALUE*)allocator->getPointer(m_vector);
+
+	#ifdef ASSERT
+	assert(vectorPointer!=NULL);
+	assert(getBucketsBefore(64)==allocator->getAllocationSize(m_vector));
+	#endif
+
 	return vectorPointer+bucketsBefore;
 }
 
@@ -317,6 +352,7 @@ int MyHashTableGroup<KEY,VALUE>::getBucketsBefore(int bucket){
  * */
 template<class KEY,class VALUE>
 VALUE*MyHashTableGroup<KEY,VALUE>::find(int bucket,KEY*key,ChunkAllocatorWithDefragmentation*allocator){
+
 	/*  the bucket is not occupied therefore the key does not exist */
 	if(getBit(bucket)==0){
 		return NULL;
@@ -345,6 +381,15 @@ VALUE*MyHashTableGroup<KEY,VALUE>::find(int bucket,KEY*key,ChunkAllocatorWithDef
  */
 template<class KEY,class VALUE>
 class MyHashTable{
+	/** currently doing incremental resizing ? */
+	bool m_resizing;
+
+	/** auxiliary table for incremental resizing */
+	MyHashTable*m_auxiliaryTableForIncrementalResize;
+
+	/** current bucket to transfer */
+	uint64_t m_currentBucketToTransfer;
+
 /**
  * the maximum acceptable load factor
  * beyond that value, the table is resized.
@@ -370,6 +415,12 @@ class MyHashTable{
 	/**
  * the number of people seated -- the number of utilised buckets */
 	uint64_t m_utilisedBuckets;
+
+/**
+ * 	number of inserted elements
+ */
+	uint64_t m_size;
+
 	/**
  * 	groups of buckets
  */
@@ -389,12 +440,12 @@ class MyHashTable{
  * If the load factor is too high,
  * double the size, and regrow everything in the new one.
  */
-	bool growIfNecessary();
+	void growIfNecessary();
 
 /**
  * resize the hash table
  */
-	void resize(uint64_t newSize);
+	void resize();
 
 /**
  * the type of memory allocation 
@@ -410,9 +461,14 @@ class MyHashTable{
  * build the buckets and the hash */
 	void constructor(uint64_t buckets,int mallocType,bool showMalloc,int rank);
 
+/*
+ * find a key, but specify if the auxiliary table should be searched also */
+	VALUE*findKey(KEY*key,bool checkAuxiliary);
+
 public:
 	/** unused constructor  */
 	MyHashTable();
+
 	/** unused constructor  */
 	~MyHashTable();
 
@@ -467,6 +523,8 @@ public:
  * callback function for immediate defragmentation
  */
 	void defragment();
+
+	void completeResizing();
 };
 
 /* get a bucket */
@@ -474,7 +532,14 @@ template<class KEY,class VALUE>
 VALUE*MyHashTable<KEY,VALUE>::at(uint64_t bucket){
 	int group=bucket/m_numberOfBucketsInGroup;
 	int bucketInGroup=bucket%m_numberOfBucketsInGroup;
-	return m_groups[group].getBucket(bucketInGroup,&m_allocator);
+
+	#ifdef ASSERT
+	assert(m_groups[group].getBit(bucketInGroup)==1);
+	#endif
+
+	VALUE*e=m_groups[group].getBucket(bucketInGroup,&m_allocator);
+
+	return e;
 }
 
 /** returns the number of buckets */
@@ -485,25 +550,18 @@ uint64_t MyHashTable<KEY,VALUE>::capacity(){
 
 /** makes the table grow if necessary */
 template<class KEY,class VALUE>
-bool MyHashTable<KEY,VALUE>::growIfNecessary(){
+void MyHashTable<KEY,VALUE>::growIfNecessary(){
+	if(m_resizing)
+		return;
+
 	/**  check if a growth is necessary */
 	double loadFactor=(0.0+m_utilisedBuckets)/m_totalNumberOfBuckets;
 	if(loadFactor<m_maximumLoadFactor)
-		return false;
+		return;
 
 	/** double the size */
 	uint64_t newSize=m_totalNumberOfBuckets*2;
-	resize(newSize);
 
-	/** indicates the caller that a sustainable growth occured */
-	return true;
-}
-
-/** 
- * resize the whole hash table 
- */
-template<class KEY,class VALUE>
-void MyHashTable<KEY,VALUE>::resize(uint64_t newSize){
 	/** nothing to do because shrinking is not implemented */
 	if(newSize<m_totalNumberOfBuckets)
 		return;
@@ -513,85 +571,132 @@ void MyHashTable<KEY,VALUE>::resize(uint64_t newSize){
 	if(newSize<m_utilisedBuckets)
 		return;
 
-	/** get the starting time here */
-	time_t startingTime=time(NULL);
-	
-	/** use a power of two */
-	uint64_t power2=1;
-	while(power2<newSize)
-		power2*=2;
-	newSize=power2;
+	m_currentBucketToTransfer=0;
+	m_resizing=true;
+
+	#ifdef ASSERT
+	assert(m_auxiliaryTableForIncrementalResize==NULL);
+	#endif
+
+	m_auxiliaryTableForIncrementalResize=new MyHashTable();
+
+	/** build a new larger table */
+	m_auxiliaryTableForIncrementalResize->constructor(newSize,m_mallocType,m_showMalloc,m_rank);
 
 	cout<<"Rank "<<m_rank<<" MyHashTable must grow now "<<m_totalNumberOfBuckets<<" -> "<<newSize<<endl;
 	printStatistics();
 
-	/** grow the thing. */
-	MyHashTable<KEY,VALUE> newTable;
-
 	#ifdef ASSERT
 	assert(newSize>m_totalNumberOfBuckets);
 	#endif
+}
 
-	/** build a new larger table */
-	newTable.constructor(newSize,m_mallocType,m_showMalloc,m_rank);
+/** 
+ * resize the whole hash table 
+ */
+template<class KEY,class VALUE>
+void MyHashTable<KEY,VALUE>::resize(){
+	#ifdef ASSERT
+	assert(m_resizing==true);
+	assert(m_utilisedBuckets>0);
+	#endif
 
-	/** transfer all items in the new table */
-	uint64_t bucket=0;
-	while(bucket<capacity()){
+	int toProcess=16;
+
+	int i=0;
+	while(i<toProcess && m_currentBucketToTransfer<capacity()){
 		/** if the bucket is available, it means that it is empty */
-		if(!isAvailable(bucket)){
-			VALUE*entry=at(bucket);
+		if(!isAvailable(m_currentBucketToTransfer)){
+			VALUE*entry=at(m_currentBucketToTransfer);
+
+			#ifdef ASSERT
+			assert(entry!=NULL);
+			#endif
+
 			KEY*key=&(entry->m_lowerKey);
+
+			#ifdef ASSERT
+			uint64_t probe;
+			int group;
+			int bucketInGroup;
+			findBucketWithKey(key,&probe,&group,&bucketInGroup);
+			uint64_t globalBucket=group*m_numberOfBucketsInGroup+bucketInGroup;
+			
+			if(globalBucket!=m_currentBucketToTransfer)
+				cout<<"Expected: "<<m_currentBucketToTransfer<<" Actual: "<<globalBucket<<endl;
+			assert(globalBucket==m_currentBucketToTransfer);
+
+			if(find(key)==NULL)
+				cout<<"Error: can not find the content of global bucket "<<m_currentBucketToTransfer<<endl;
+			assert(find(key)!=NULL);
+			#endif
+
+			/** remove the key too */
+			/* actually, can not remove anything because otherwise it will make the double hashing 
+ * 			fails */
 
 			/** save the size before for further use */
 			#ifdef ASSERT
-			uint64_t sizeBefore=newTable.size();
-			#endif
-			VALUE*insertedEntry=newTable.insert(key);
+			uint64_t sizeBefore=m_auxiliaryTableForIncrementalResize->m_utilisedBuckets;
 
-			/** assert that we inserted something somewhere */
-			#ifdef ASSERT
-			if(newTable.size()!=sizeBefore+1)
-				cout<<"Expected: "<<sizeBefore+1<<" Actual: "<<newTable.size()<<endl;
-			assert(newTable.size()==sizeBefore+1);
+			/* the auxiliary should not contain the key already . */
+			if(m_auxiliaryTableForIncrementalResize->find(key)!=NULL)
+				cout<<"Moving globalBucket "<<m_currentBucketToTransfer<<" but the associated key is already in auxiliary table."<<endl;
+			assert(m_auxiliaryTableForIncrementalResize->find(key)==NULL);
 			#endif
+
+			/* this pointer  will remain valid until the next insert. */
+			VALUE*insertedEntry=m_auxiliaryTableForIncrementalResize->insert(key);
 		
 			/** affect the value */
-			*insertedEntry=*entry;
+			(*insertedEntry)=*entry;
+	
+			/** assert that we inserted something somewhere */
+			#ifdef ASSERT
+			if(m_auxiliaryTableForIncrementalResize->m_utilisedBuckets!=sizeBefore+1)
+				cout<<"Expected: "<<sizeBefore+1<<" Actual: "<<m_auxiliaryTableForIncrementalResize->m_utilisedBuckets<<endl;
+			assert(m_auxiliaryTableForIncrementalResize->m_utilisedBuckets==sizeBefore+1);
+			#endif
 		}
-		bucket++;
+		i++;
+		m_currentBucketToTransfer++;
 	}
-	/** destroy the current table */
-	destructor();
 
-	/** copy important stuff  */
-	m_groups=newTable.m_groups;
-	m_totalNumberOfBuckets=newTable.m_totalNumberOfBuckets;
-	m_allocator=newTable.m_allocator;
-	m_numberOfGroups=newTable.m_numberOfGroups;
+	/* we transfered everything */
+	if(m_currentBucketToTransfer==capacity()){
+		cout<<"Rank "<<m_rank<<": MyHashTable incremental resizing is complete."<<endl;
+		/* make sure the old table is now empty */
+		#ifdef ASSERT
+		//assert(size()==0);
+		#endif
 
-	/* m_utilisedBuckets  remains the same */
-	#ifdef ASSERT
-	if(m_utilisedBuckets!=newTable.m_utilisedBuckets)
-		cout<<"Expected: "<<m_utilisedBuckets<<" Actual: "<<newTable.m_utilisedBuckets<<endl;
-	assert(m_utilisedBuckets==newTable.m_utilisedBuckets);
-	#endif
+		/** destroy the current table */
+		destructor();
+	
+		/** copy important stuff  */
+		m_groups=m_auxiliaryTableForIncrementalResize->m_groups;
+		m_totalNumberOfBuckets=m_auxiliaryTableForIncrementalResize->m_totalNumberOfBuckets;
+		m_allocator=m_auxiliaryTableForIncrementalResize->m_allocator;
+		m_numberOfGroups=m_auxiliaryTableForIncrementalResize->m_numberOfGroups;
+	
+		/** copy probe profiles */
+		for(int i=0;i<MAX_SAVED_PROBE;i++)
+			m_probes[i]=m_auxiliaryTableForIncrementalResize->m_probes[i];
+	
+		/** indicates the caller that things changed places */
 
-	/** copy probe profiles */
-	for(int i=0;i<MAX_SAVED_PROBE;i++)
-		m_probes[i]=newTable.m_probes[i];
-
-	int seconds=time(NULL)-startingTime;
-
-	/** indicates the caller that things changed places */
-	cout<<"Rank "<<m_rank<<" MyHashTable growed well; elapsed time: "<<seconds<<" seconds"<<endl;
-	printStatistics();
+		printStatistics();
+		delete m_auxiliaryTableForIncrementalResize;
+		m_auxiliaryTableForIncrementalResize=NULL;
+		m_resizing=false;
+	}
 }
 
-/** return the number of utilised buckets */
+/** return the number of elements
+ * contains the number of elements in the main table + those in the second that are not in the first */
 template<class KEY,class VALUE>
 uint64_t MyHashTable<KEY,VALUE>::size(){
-	return m_utilisedBuckets;
+	return m_size;
 }
 
 /**
@@ -600,7 +705,7 @@ uint64_t MyHashTable<KEY,VALUE>::size(){
 template<class KEY,class VALUE>
 void MyHashTable<KEY,VALUE>::constructor(int mallocType,bool showMalloc,int rank){
 	/** build the hash with a default size */
-	uint64_t defaultSize=524288;
+	uint64_t defaultSize=524288/2/2/2/2/2/2;
 	constructor(defaultSize,mallocType,showMalloc,rank);
 }
 
@@ -615,6 +720,9 @@ void MyHashTable<KEY,VALUE>::constructor(uint64_t buckets,int mallocType,bool sh
  */
 	m_maximumLoadFactor=0.7; /* 70.00% */
 
+	m_auxiliaryTableForIncrementalResize=NULL;
+	m_resizing=false;
+
 	/** set the message-passing interface rank number */
 	m_rank=rank;
 	
@@ -625,6 +733,8 @@ void MyHashTable<KEY,VALUE>::constructor(uint64_t buckets,int mallocType,bool sh
 	/* use the provided number of buckets */
 	/* the number of buckets is a power of 2 */
 	m_totalNumberOfBuckets=buckets;
+
+	m_size=0;
 
 	m_utilisedBuckets=0;
 
@@ -808,7 +918,14 @@ void MyHashTable<KEY,VALUE>::findBucketWithKey(KEY*key,uint64_t*probe,int*group,
  * finds a key
  */
 template<class KEY,class VALUE>
-VALUE*MyHashTable<KEY,VALUE>::find(KEY*key){
+VALUE*MyHashTable<KEY,VALUE>::findKey(KEY*key,bool checkAuxiliary){
+	if(m_resizing && checkAuxiliary){
+		/* check the new one first */
+		VALUE*result=m_auxiliaryTableForIncrementalResize->find(key);
+		if(result!=NULL)
+			return result;
+	}
+
 	/** get the bucket */
 	uint64_t probe;
 	int group;
@@ -825,12 +942,38 @@ VALUE*MyHashTable<KEY,VALUE>::find(KEY*key){
 }
 
 /**
+ * finds a key
+ */
+template<class KEY,class VALUE>
+VALUE*MyHashTable<KEY,VALUE>::find(KEY*key){
+	return findKey(key,true);
+}
+
+/**
  * inserts a key
  */
 template<class KEY,class VALUE>
 VALUE*MyHashTable<KEY,VALUE>::insert(KEY*key){
+	/** do incremental resizing */
+	if(m_resizing){
+		resize();
+	}
+	if(m_resizing){
+
+		/* check if key is not in the main table
+ * 		insert it in the other one */
+		if(findKey(key,false)==NULL){
+			uint64_t sizeBefore=m_auxiliaryTableForIncrementalResize->m_utilisedBuckets;
+			VALUE*e=m_auxiliaryTableForIncrementalResize->insert(key);
+			if(m_auxiliaryTableForIncrementalResize->m_utilisedBuckets>sizeBefore){
+				m_size++;
+			}
+			return e;
+		}
+	}
+
 	#ifdef ASSERT
-	uint64_t beforeSize=size();
+	uint64_t beforeSize=m_utilisedBuckets;
 	#endif
 
 	/** find the group */
@@ -861,6 +1004,7 @@ VALUE*MyHashTable<KEY,VALUE>::insert(KEY*key){
 	/* increment the elements if an insertion occured */
 	if(inserted){
 		m_utilisedBuckets++;
+		m_size++;
 		/* update the maximum number of probes */
 		if(probe>(MAX_SAVED_PROBE-1))
 			probe=(MAX_SAVED_PROBE-1);
@@ -871,20 +1015,13 @@ VALUE*MyHashTable<KEY,VALUE>::insert(KEY*key){
 	assert(find(key)!=NULL);
 	assert(find(key)->m_lowerKey==*key);
 	if(inserted)
-		assert(size()==beforeSize+1);
+		assert(m_utilisedBuckets==beforeSize+1);
 	#endif
 
 
 	/* check the load factor */
-	if(!growIfNecessary())
-		return entry;
-
-	/* must reprobe because everything changed */
-
-	entry=find(key);
-	#ifdef ASSERT
-	assert(entry!=NULL);
-	#endif
+	growIfNecessary();
+	
 	return entry;
 }
 
@@ -902,6 +1039,12 @@ template<class KEY,class VALUE>
 void MyHashTable<KEY,VALUE>::printStatistics(){
 	double loadFactor=(0.0+m_utilisedBuckets)/m_totalNumberOfBuckets*100;
 	cout<<"Rank "<<m_rank<<": MyHashTable, BucketGroups: "<<m_numberOfGroups<<", BucketsPerGroup: "<<m_numberOfBucketsInGroup<<", LoadFactor: "<<loadFactor<<"%, OccupiedBuckets: "<<m_utilisedBuckets<<"/"<<m_totalNumberOfBuckets<<endl;
+	cout<<"Rank "<<m_rank<<": incremental resizing in progress: ";
+	if(m_resizing)
+		cout<<"yes";
+	else
+		cout<<"no";
+	cout<<endl;
 	cout<<"Rank "<<m_rank<<" ProbeStatistics: ";
 	for(int i=0;i<MAX_SAVED_PROBE;i++){
 		if(m_probes[i]!=0)
@@ -915,6 +1058,13 @@ void MyHashTable<KEY,VALUE>::printStatistics(){
 template<class KEY,class VALUE>
 void MyHashTable<KEY,VALUE>::defragment(){
 	m_allocator.defragment();
+}
+
+template<class KEY,class VALUE>
+void MyHashTable<KEY,VALUE>::completeResizing(){
+	cout<<"Final resizing."<<endl;
+	while(m_resizing)
+		resize();
 }
 
 #endif
