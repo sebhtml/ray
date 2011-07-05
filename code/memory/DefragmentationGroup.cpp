@@ -23,7 +23,7 @@
 /* call defragment somewhere else */
 
 /* run low-level assertions, pretty slow but that helped for the development. */
-/* define LOW_LEVEL_ASSERT */
+/* #define LOW_LEVEL_ASSERT */
 
 #include <memory/DefragmentationGroup.h>
 #include <memory/allocator.h>
@@ -33,7 +33,7 @@
 #include <iostream>
 using namespace std;
 
-#ifdef LOW_LEVEL_ASSERT
+#ifdef  ASSERT
 #include <assert.h>
 #endif
 
@@ -505,7 +505,7 @@ void DefragmentationGroup::setBit(int bit,int value){
  * Resolvee a SmallSmartPointer
  */
 void*DefragmentationGroup::getPointer(SmallSmartPointer a,int bytesPerElement){
-	#ifdef LOW_LEVEL_ASSERT
+	#ifdef ASSERT
 	assert(a<ELEMENTS_PER_GROUP);
 	if(m_allocatedSizes[a]==0)
 		cout<<"this= "<<this<<" can not getPointer on SmallSmartPointer "<<(int)a<<" because it is not allocated."<<endl;
@@ -514,6 +514,10 @@ void*DefragmentationGroup::getPointer(SmallSmartPointer a,int bytesPerElement){
 	int offset=m_allocatedOffsets[a];
 	void*pointer=m_block+offset*bytesPerElement;
 	return pointer;
+}
+
+int DefragmentationGroup::getAllocationSize(SmallSmartPointer a){
+	return m_allocatedSizes[a];
 }
 
 /**
