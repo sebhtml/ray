@@ -120,6 +120,9 @@ int SffLoader::openSff(string file){
 	fread_result=fread(key_sequence,1,key_length,m_fp);
 	key_sequence[key_length]='\0';
 	
+	if(fread_result)
+		fread_result=0;
+
 	// padding
 	while(ftell(m_fp)%8!=0){
 		fgetc(m_fp);
@@ -200,6 +203,9 @@ void SffLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator
 		__Free(Name,RAY_MALLOC_TYPE_454,false);
 		__Free(Bases,RAY_MALLOC_TYPE_454,false);
 	}
+
+	if(fread_result)
+		fread_result=0;
 
 	if(m_loaded==m_size){
 		__Free(key_sequence,RAY_MALLOC_TYPE_454,false);
