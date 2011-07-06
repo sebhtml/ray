@@ -59,14 +59,16 @@ using namespace std;
 
 /**
  *  Return true if the DefragmentationGroup can allocate n elements 
+ *  Time complexity: O(1)
  */
 bool DefragmentationGroup::canAllocate(int n){
 	/* we want fast allocation in the end...  
 	if a contiguous segment is not available, we can't handle it... 
 */
-	int offset=findAtLeast(n);
-	return offset>=0;
+	//int offset=findAtLeast(n);
+	//return offset>=0;
 	//return m_availableElements>=n;
+	return (ELEMENTS_PER_GROUP-m_freeSliceStart)>=n;
 }
 
 /**
@@ -104,6 +106,8 @@ bool DefragmentationGroup::canAllocate(int n){
  * larger.
  * After the call to compact(), the free slice has at least n consecutive
  * AVAILABLE elements.
+ *
+ * Time complexity: O(n) where n <= 64
  */
 SmallSmartPointer DefragmentationGroup::allocate(int n,int bytesPerElement){
 	#ifdef LOW_LEVEL_ASSERT
@@ -139,7 +143,8 @@ SmallSmartPointer DefragmentationGroup::allocate(int n,int bytesPerElement){
 	#endif
 
 	/** find an offset with n consecutive AVAILABLE elements */
-	int offset=findAtLeast(n);
+	//int offset=findAtLeast(n);
+	int offset=m_freeSliceStart;
 
 	/** found no consecutive elements, must call compact() */
 	if(offset<0){
@@ -197,6 +202,11 @@ SmallSmartPointer DefragmentationGroup::allocate(int n,int bytesPerElement){
 	#endif
 
 	m_availableElements-=n;
+	
+	#ifdef ASSERT
+	assert(m_availableElements>=0);
+	assert(m_availableElements<=ELEMENTS_PER_GROUP);
+	#endif
 
 	//int old=m_firstGapStart;
 
@@ -268,8 +278,11 @@ SmallSmartPointer DefragmentationGroup::getAvailableSmallSmartPointer(){
  * deallocate a SmallSmartPointer
  * defragment
  * done.
+ *
+ * Time complexity: To be determined.
  */
 void DefragmentationGroup::deallocate(SmallSmartPointer a,int bytesPerElement){
+
 	#ifdef LOW_LEVEL_ASSERT
 	for(int i=m_freeSliceStart;i<ELEMENTS_PER_GROUP;i++){
 		if(getBit(i)!=AVAILABLE){
@@ -339,8 +352,12 @@ void DefragmentationGroup::deallocate(SmallSmartPointer a,int bytesPerElement){
 	m_availableElements+=allocatedSize;
 
 	#ifdef ASSERT
+	assert(m_availableElements<=ELEMENTS_PER_GROUP);
+	assert(m_availableElements>=0);
 	assert(m_firstGapStart<=m_freeSliceStart);
 	#endif
+
+	//closeGap(offset,allocatedSize,bytesPerElement);
 }
 
 /**
@@ -491,8 +508,17 @@ void DefragmentationGroup::closeGap(int offset,int allocationLength,int bytesPer
  * Kick-start a DefragmentationGroup.
  */
 void DefragmentationGroup::constructor(int bytesPerElement,bool show){
-	m_availableElements=ELEMENTS_PER_GROUP;
+	#ifdef ASSERT
+	assert(m_block==NULL);
+	#endif
 
+	m_availableElements=ELEMENTS_PER_GROUP;
+	
+	#ifdef ASSERT
+	assert(m_availableElements<=ELEMENTS_PER_GROUP);
+	assert(m_availableElements>=0);
+	#endif
+	
 	for(int i=0;i<FAST_POINTERS;i++)
 		m_fastPointers[i]=i;
 
@@ -624,6 +650,11 @@ bool DefragmentationGroup::isOnline(){
  * Get the number of available elements
  */
 int DefragmentationGroup::getAvailableElements(){
+	#ifdef ASSERT
+	assert(m_block!=NULL);
+	assert(m_availableElements<=ELEMENTS_PER_GROUP);
+	assert(m_availableElements>=0);
+	#endif
 	return m_availableElements;
 }
 
@@ -790,13 +821,18 @@ bool DefragmentationGroup::defragment(int bytesPerElement){
 	if(m_availableElements==0)
 		return false;
 
-	if(m_availableElements==(ELEMENTS_PER_GROUP-m_freeSliceStart))
+	int elementsInFreeSlice=ELEMENTS_PER_GROUP-m_freeSliceStart;
+	if(m_availableElements==elementsInFreeSlice)
 		return false;
 
-	int elementsInFreeSlice=ELEMENTS_PER_GROUP-m_freeSliceStart;
-	double ratioInFreeSlice=elementsInFreeSlice/(0.0+m_availableElements);
+	//double ratioInFreeSlice=elementsInFreeSlice/(0.0+m_availableElements);
+	
+	int requested=elementsInFreeSlice+1;
+	compact(requested,bytesPerElement);
+	return true;
 
 	/* defragment only if this ratio is < 50% */
+/*
 	if(ratioInFreeSlice<0.3 && m_availableElements>16){
 		int result=elementsInFreeSlice+16;
 		if(m_availableElements<result)
@@ -806,4 +842,5 @@ bool DefragmentationGroup::defragment(int bytesPerElement){
 		return true;
 	}
 	return false;
+*/
 }

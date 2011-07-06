@@ -368,10 +368,12 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 				}else{
 					PairedRead*pairedRead=element->getPairedRead();
 					uint64_t uniqueReadIdentifier=pairedRead->getUniqueId();
+/*
 					int diff=uniqueId-uniqueReadIdentifier;
 					if(uniqueReadIdentifier>uniqueId){
 						diff=uniqueReadIdentifier-uniqueId;
 					}
+*/
 					int library=pairedRead->getLibrary();
 					int expectedFragmentLength=m_parameters->getLibraryAverageLength(library);
 					int expectedDeviation=m_parameters->getLibraryStandardDeviation(library);

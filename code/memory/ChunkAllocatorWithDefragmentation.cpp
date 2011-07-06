@@ -36,7 +36,8 @@ void ChunkAllocatorWithDefragmentation::defragment(){
 		#endif
 		for(int group=0;group<GROUPS_PER_LANE;group++){
 			if(lane->m_groups[group].isOnline()){
-				lane->m_groups[group].defragment(m_period);
+				if(lane->m_groups[group].defragment(m_period))
+					return;
 			}else{
 				/* no group are online after this one since this one is not online */
 				break;
@@ -52,8 +53,6 @@ void ChunkAllocatorWithDefragmentation::defragment(){
 void ChunkAllocatorWithDefragmentation::print(){
 	DefragmentationLane*lane=m_defragmentationLane;
 	int lanes=0;
-	int availableElements=0;
-
 	while(lane!=NULL){
 		lane=(DefragmentationLane*)lane->m_next;
 		lanes++;
@@ -69,7 +68,14 @@ void ChunkAllocatorWithDefragmentation::print(){
 		cout<<"DefragmentationLane: "<<lanes<<endl;
 		for(int group=0;group<GROUPS_PER_LANE;group++){
 			if(lane->m_groups[group].isOnline()){
-				availableElements+=lane->m_groups[group].getAvailableElements();
+				int availableElements=lane->m_groups[group].getAvailableElements();
+				#ifdef ASSERT
+				int usedElements=(ELEMENTS_PER_GROUP-availableElements);
+				if(usedElements<0)
+					cout<<"group "<<group<<" ELEMENTS_PER_GROUP "<<ELEMENTS_PER_GROUP<<" availableElements "<<availableElements<<endl;
+				assert(usedElements>=0);
+				#endif
+
 				cout<<"  DefragmentationGroup: "<<group<<" usage: "<<(ELEMENTS_PER_GROUP-availableElements)<<"/"<<ELEMENTS_PER_GROUP<<" FreeSliceStart: "<<lane->m_groups[group].getFreeSliceStart()<<endl;
 			}
 		}
@@ -113,8 +119,7 @@ void ChunkAllocatorWithDefragmentation::constructor(int period,bool show){
  *  m_fastGroup
  *  m_fastLaneNumber
  */
-void ChunkAllocatorWithDefragmentation::updateFastLane(){
-
+void ChunkAllocatorWithDefragmentation::updateFastLane(int n){
 	DefragmentationLane*lane=m_defragmentationLane;
 	DefragmentationLane*lastValidLane=m_defragmentationLane;
 	int laneId=0;
@@ -133,7 +138,7 @@ void ChunkAllocatorWithDefragmentation::updateFastLane(){
 			#endif
 
 			/** use this DefragmentationGroup if it can handle the query */
-			if(lane->m_groups[group].canAllocate(500)){
+			if(lane->m_groups[group].canAllocate(n)){
 				#ifdef ASSERT
 				assert(group<GROUPS_PER_LANE);
 				assert(lane->m_groups[group].isOnline());
@@ -183,11 +188,9 @@ SmartPointer ChunkAllocatorWithDefragmentation::allocate(int n){ /** 64 is the n
 	#endif
 
 	/** TODO keep fastLaneId and fastGroupId for faster look-up. */
-
 	if(m_fastLane==NULL || !m_fastLane->m_groups[m_fastGroup].canAllocate(n)){
-		updateFastLane();
+		updateFastLane(n);
 	}
-
 	#ifdef ASSERT
 	assert(m_fastLane->m_groups[m_fastGroup].canAllocate(n));
 	#endif

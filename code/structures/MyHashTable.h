@@ -519,6 +519,8 @@ public:
  */
 	void printStatistics();
 
+	void printProbeStatistics();
+
 /**
  * callback function for immediate defragmentation
  */
@@ -583,8 +585,8 @@ void MyHashTable<KEY,VALUE>::growIfNecessary(){
 	/** build a new larger table */
 	m_auxiliaryTableForIncrementalResize->constructor(newSize,m_mallocType,m_showMalloc,m_rank);
 
-	cout<<"Rank "<<m_rank<<" MyHashTable must grow now "<<m_totalNumberOfBuckets<<" -> "<<newSize<<endl;
-	printStatistics();
+	//cout<<"Rank "<<m_rank<<" MyHashTable must grow now "<<m_totalNumberOfBuckets<<" -> "<<newSize<<endl;
+	//printStatistics();
 
 	#ifdef ASSERT
 	assert(newSize>m_totalNumberOfBuckets);
@@ -722,7 +724,7 @@ void MyHashTable<KEY,VALUE>::resize(){
 
 	/* we transfered everything */
 	if(m_currentBucketToTransfer==capacity()){
-		cout<<"Rank "<<m_rank<<": MyHashTable incremental resizing is complete."<<endl;
+		//cout<<"Rank "<<m_rank<<": MyHashTable incremental resizing is complete."<<endl;
 		/* make sure the old table is now empty */
 		#ifdef ASSERT
 		//assert(size()==0);
@@ -743,7 +745,7 @@ void MyHashTable<KEY,VALUE>::resize(){
 	
 		/** indicates the caller that things changed places */
 
-		printStatistics();
+		//printStatistics();
 		delete m_auxiliaryTableForIncrementalResize;
 		m_auxiliaryTableForIncrementalResize=NULL;
 		m_resizing=false;
@@ -1095,6 +1097,11 @@ void MyHashTable<KEY,VALUE>::destructor(){
  */
 template<class KEY,class VALUE>
 void MyHashTable<KEY,VALUE>::printStatistics(){
+	m_allocator.print();
+}
+
+template<class KEY,class VALUE>
+void MyHashTable<KEY,VALUE>::printProbeStatistics(){
 	double loadFactor=(0.0+m_utilisedBuckets)/m_totalNumberOfBuckets*100;
 	cout<<"Rank "<<m_rank<<": MyHashTable, BucketGroups: "<<m_numberOfGroups<<", BucketsPerGroup: "<<m_numberOfBucketsInGroup<<", LoadFactor: "<<loadFactor<<"%, OccupiedBuckets: "<<m_utilisedBuckets<<"/"<<m_totalNumberOfBuckets<<endl;
 	cout<<"Rank "<<m_rank<<": incremental resizing in progress: ";
@@ -1108,8 +1115,6 @@ void MyHashTable<KEY,VALUE>::printStatistics(){
 		if(m_probes[i]!=0)
 			cout<<"("<<i<<"; "<<m_probes[i]<<"); ";
 	}
-	cout<<endl;
-	m_allocator.print();
 }
 
 /** called when nothing to do presumably. */

@@ -84,7 +84,7 @@ class ChunkAllocatorWithDefragmentation{
 	/** get the DefragmentationGroup of a SmartPointer */
 	DefragmentationGroup*getGroup(SmartPointer a);
 
-	void updateFastLane();
+	void updateFastLane(int n);
 public:
 	/**
  * print allocator information
