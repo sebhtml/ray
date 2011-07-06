@@ -27,7 +27,8 @@ for testName in $(ls tests)
 do
 	echo "$(date) Preparing submission script for job $testName"
 	echo "$(date) Submitting job $testName to the compute grid"
-	run-test-sge.sh $testName &> $qsubOut
+	qsubOut=$testName.qsub
+	./run-test-sge.sh $testName &> $qsubOut
 	jobId=$(cat $qsubOut|awk '{print $3}')
 	echo $jobId >> jobs
 	echo "$(date) Job $testName has id $jobId"
