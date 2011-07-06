@@ -36,7 +36,7 @@ void ChunkAllocatorWithDefragmentation::defragment(){
 		#endif
 		for(int group=0;group<GROUPS_PER_LANE;group++){
 			if(lane->m_groups[group].isOnline()){
-				if(lane->m_groups[group].defragment(m_period))
+				if(lane->m_groups[group].defragment(m_period,m_content,false))
 					return;
 			}else{
 				/* no group are online after this one since this one is not online */
@@ -107,6 +107,7 @@ void ChunkAllocatorWithDefragmentation::destructor(){
 
 /** constructor almost does nothing  */
 void ChunkAllocatorWithDefragmentation::constructor(int period,bool show){
+	m_content=(uint16_t*)__Malloc(ELEMENTS_PER_GROUP*sizeof(uint16_t),RAY_MALLOC_TYPE_DEFRAG_LANE,show);
 	m_show=show;
 	m_period=period;
 	m_defragmentationLane=NULL;
@@ -195,7 +196,7 @@ SmartPointer ChunkAllocatorWithDefragmentation::allocate(int n){ /** 64 is the n
 	assert(m_fastLane->m_groups[m_fastGroup].canAllocate(n));
 	#endif
 
-	SmallSmartPointer smallSmartPointer=m_fastLane->m_groups[m_fastGroup].allocate(n,m_period);
+	SmallSmartPointer smallSmartPointer=m_fastLane->m_groups[m_fastGroup].allocate(n,m_period,m_content);
 
 	/** build the SmartPointer with the
  *	SmallSmartPointer, DefragmentationLane id, and DefragmentationGroup id */

@@ -41,6 +41,9 @@
 typedef uint16_t SmallSmartPointer;
 
 class DefragmentationGroup{
+	int m_offlineDefrags;
+	int m_onlineDefrags;
+
 	/** freed stuff to accelerate things. */
 	uint16_t m_fastPointers[FAST_POINTERS];
 	
@@ -51,9 +54,6 @@ class DefragmentationGroup{
 
 	/** last free position */
 	int m_freeSliceStart;
-
-	/** where is the first gap start ? */
-	int m_firstGapStart;
 
 	/**
  * 	Pointer to allocated memory
@@ -91,17 +91,6 @@ class DefragmentationGroup{
  */
 	void setBit(int a,int b);
 
-/**
- * 	Move all elements starting at newOffset+allocationLength up to m_freeSliceStart
- * 	by allocationLength positions on the left
- */
-	void closeGap(int offset,int allocationLength,int bytesPerElement);
-
-/**
- * find a gap 
- */
-	void findGap(int*offset,int*length,int n);
-
 /** print the bitmap
  */
 	void print();
@@ -111,17 +100,13 @@ class DefragmentationGroup{
  */
 	SmallSmartPointer getAvailableSmallSmartPointer();
 	
-/**
- * find at least n AVAILABLE elements 
- */
-	int findAtLeast(int n);
-
-/**
- * Compact the block to create at least n consecutive elements 
- */
-	void compact(int n,int bytesPerElement);
-
 public:
+
+/*
+ * returns true if defragmented something. */
+	bool defragment(int bytesPerElement,uint16_t*content,bool online);
+
+
 /**
  * Initialize pointers to NULL
  */
@@ -135,7 +120,7 @@ public:
 /**
  * Allocate memory
  */
-	SmallSmartPointer allocate(int n,int bytesPerElement);
+	SmallSmartPointer allocate(int n,int bytesPerElement,uint16_t*content);
 
 /**
  * Free memory
@@ -169,9 +154,6 @@ public:
 
 	int getFreeSliceStart();
 	
-/*
- * returns true if defragmented something. */
-	bool defragment(int bytesPerElement);
 
 	int getAllocationSize(SmallSmartPointer a);
 };

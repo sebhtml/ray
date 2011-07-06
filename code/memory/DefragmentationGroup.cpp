@@ -20,12 +20,7 @@
 
 /* TODO: replace m_allocatedSizes with a bitmap */
 /* TODO:  replace calls to Malloc by a single call to Malloc */
-/* TODO: use m_firstGapLength */
-/* TODO: use m_largestGapStart and m_largestGapLength */
-/* TODO fast skip in findGap
- * TODO: estimated genome length
- *
- * TODO: populate fast pointers in defragment
+ /* TODO: estimated genome length
  * */
 
 /* call defragment somewhere else */
@@ -49,14 +44,6 @@ using namespace std;
 #define AVAILABLE 0
 #define UTILISED 1
 
-/** 
- * indicate that a chunk is full
- * Instead of checking all the bits of all uint64_t
- * only the uint64_t objects that are not equal to CHUNK_IS_FULL 
- * are investigated.
- * */
-#define CHUNK_IS_FULL 18446744073709551615UL /* maximum value for uint64_t */
-
 /**
  *  Return true if the DefragmentationGroup can allocate n elements 
  *  Time complexity: O(1)
@@ -65,10 +52,13 @@ bool DefragmentationGroup::canAllocate(int n){
 	/* we want fast allocation in the end...  
 	if a contiguous segment is not available, we can't handle it... 
 */
-	//int offset=findAtLeast(n);
 	//return offset>=0;
-	//return m_availableElements>=n;
-	return (ELEMENTS_PER_GROUP-m_freeSliceStart)>=n;
+	
+	#ifdef ASSERT
+	assert((ELEMENTS_PER_GROUP-m_freeSliceStart)<=m_availableElements);
+	#endif
+
+	return m_availableElements>=n;
 }
 
 /**
@@ -101,31 +91,22 @@ bool DefragmentationGroup::canAllocate(int n){
  *
  * 64-element chunks that are filled completely are just not investigated.
  * 
- * If that fails, compact() is called.
  * This will defragment the fragmented slice and make the free slice
  * larger.
- * After the call to compact(), the free slice has at least n consecutive
  * AVAILABLE elements.
  *
  * Time complexity: O(n) where n <= 64
  */
-SmallSmartPointer DefragmentationGroup::allocate(int n,int bytesPerElement){
-	#ifdef LOW_LEVEL_ASSERT
-	for(int i=m_freeSliceStart;i<ELEMENTS_PER_GROUP;i++){
-		if(getBit(i)!=AVAILABLE){
-			cout<<"Error, offset "<<i<<" is not AVAILABLE"<<endl;
-			print();
-		}
-		assert(getBit(i)==AVAILABLE);
-	}
-	#endif
+SmallSmartPointer DefragmentationGroup::allocate(int n,int bytesPerElement,uint16_t*content){
+	if(n>(ELEMENTS_PER_GROUP-m_freeSliceStart))
+		defragment(bytesPerElement,content,true);
 
-
-	#ifdef LOW_LEVEL_ASSERT
+	#ifdef ASSERT
 	assert(n>0);
 	assert(canAllocate(n));
 	assert(n<=ELEMENTS_PER_GROUP);
 	assert(n<=m_availableElements);
+	assert(n<=(ELEMENTS_PER_GROUP-m_freeSliceStart));
 	assert(m_allocatedOffsets!=NULL);
 	assert(m_allocatedSizes!=NULL);
 	#endif
@@ -137,23 +118,15 @@ SmallSmartPointer DefragmentationGroup::allocate(int n,int bytesPerElement){
  * */
 	SmallSmartPointer returnValue=getAvailableSmallSmartPointer();
 
-	#ifdef LOW_LEVEL_ASSERT
+	#ifdef ASSERT
 	assert(returnValue<ELEMENTS_PER_GROUP);
 	assert(m_allocatedSizes[returnValue]==0);
 	#endif
 
 	/** find an offset with n consecutive AVAILABLE elements */
-	//int offset=findAtLeast(n);
 	int offset=m_freeSliceStart;
 
-	/** found no consecutive elements, must call compact() */
-	if(offset<0){
-		/** create space in the free slice. */
-		compact(n,bytesPerElement);
-		offset=m_freeSliceStart;
-	}
-
-	#ifdef LOW_LEVEL_ASSERT
+	#ifdef ASSERT
 	assert(offset>=0 && offset<ELEMENTS_PER_GROUP);
 	#endif
 
@@ -161,13 +134,13 @@ SmallSmartPointer DefragmentationGroup::allocate(int n,int bytesPerElement){
 	m_allocatedOffsets[returnValue]=offset;
 	m_allocatedSizes[returnValue]=n;
 
-	#ifdef LOW_LEVEL_ASSERT
+	#ifdef ASSERT
 	assert(m_allocatedSizes[returnValue]==n);
 	assert(m_allocatedOffsets[returnValue]==offset);
 	#endif
 
 	for(int i=0;i<n;i++){
-		#ifdef LOW_LEVEL_ASSERT
+		#ifdef ASSERT
 		assert(offset+i<ELEMENTS_PER_GROUP);
 		if(getBit(offset+i)!=AVAILABLE){
 			cout<<offset+i<<" is not available. offset: "<<offset<<" n: "<<n<<endl;
@@ -178,18 +151,12 @@ SmallSmartPointer DefragmentationGroup::allocate(int n,int bytesPerElement){
 
 		setBit(offset+i,UTILISED);
 
-		#ifdef LOW_LEVEL_ASSERT
+		#ifdef ASSERT
 		assert(getBit(offset+i)==UTILISED);
 		#endif
 	}
 
-	if(offset==m_freeSliceStart){
-		m_freeSliceStart+=n;
-		if(m_firstGapStart==offset){
-			//cout<<__func__<<" m_firstGapStart "<<m_firstGapStart<<" -> "<<m_firstGapStart+n<<endl;
-			m_firstGapStart+=n;
-		}
-	}
+	m_freeSliceStart+=n;
 
 	#ifdef LOW_LEVEL_ASSERT
 	for(int i=m_freeSliceStart;i<ELEMENTS_PER_GROUP;i++){
@@ -204,26 +171,12 @@ SmallSmartPointer DefragmentationGroup::allocate(int n,int bytesPerElement){
 	m_availableElements-=n;
 	
 	#ifdef ASSERT
+	if(m_availableElements<0)
+		cout<<"m_availableElements "<<m_availableElements<<endl;
 	assert(m_availableElements>=0);
 	assert(m_availableElements<=ELEMENTS_PER_GROUP);
 	#endif
 
-	//int old=m_firstGapStart;
-
-	while(m_firstGapStart<ELEMENTS_PER_GROUP && getBit(m_firstGapStart)==1)
-		m_firstGapStart++;
-
-	//cout<<__func__<<" m_firstGapStart "<<old<<" -> "<<m_firstGapStart+n<<endl;
-
-	#ifdef ASSERT
-	if(!(m_firstGapStart<=m_freeSliceStart)){
-		cout<<"m_firstGapStart: "<<m_firstGapStart<<" m_freeSliceStart: "<<m_freeSliceStart<<" allocated "<<n<<" at offset "<<offset<<endl;
-		print();
-	}
-	assert(m_firstGapStart<=m_freeSliceStart);
-	#endif
-
-	//cout<<"allocate "<<offset<<" "<<n<<endl;
 	return returnValue;
 }
 
@@ -284,6 +237,7 @@ SmallSmartPointer DefragmentationGroup::getAvailableSmallSmartPointer(){
 void DefragmentationGroup::deallocate(SmallSmartPointer a,int bytesPerElement){
 
 	#ifdef LOW_LEVEL_ASSERT
+	assert((ELEMENTS_PER_GROUP-m_freeSliceStart)<=m_availableElements);
 	for(int i=m_freeSliceStart;i<ELEMENTS_PER_GROUP;i++){
 		if(getBit(i)!=AVAILABLE){
 			cout<<"Error, offset "<<i<<" is not AVAILABLE"<<endl;
@@ -293,7 +247,7 @@ void DefragmentationGroup::deallocate(SmallSmartPointer a,int bytesPerElement){
 	}
 	#endif
 
-	#ifdef LOW_LEVEL_ASSERT
+	#ifdef ASSERT
 	assert(a<ELEMENTS_PER_GROUP);
 	if(m_allocatedSizes[a]==0)
 		cout<<__func__<<" SmallSmartPointer "<<(int)a<<" has size 0."<<endl;
@@ -303,32 +257,27 @@ void DefragmentationGroup::deallocate(SmallSmartPointer a,int bytesPerElement){
 	int allocatedSize=m_allocatedSizes[a];
 	int offset=m_allocatedOffsets[a];
 
-	//cout<<"deallocate "<<offset<<" "<<allocatedSize<<endl;
-
 	/** set the size to 0 for this SmallSmartPointer */
 	m_allocatedSizes[a]=0;
 
 	/** update the bitmap */
 	for(int i=0;i<allocatedSize;i++){
-		#ifdef LOW_LEVEL_ASSERT
+		#ifdef ASSERT
 		assert(offset+i<ELEMENTS_PER_GROUP);
+		if(getBit(offset+i)!=UTILISED)
+			cout<<"offset "<<offset<<" i "<<i<<" not utilised"<<endl;
 		assert(getBit(offset+i)==UTILISED);
 		#endif
 
 		setBit(offset+i,AVAILABLE);
 
-		#ifdef LOW_LEVEL_ASSERT
+		#ifdef ASSERT
 		assert(getBit(offset+i)==AVAILABLE);
 		#endif
 	}
 
 	if(offset+allocatedSize==m_freeSliceStart){
 		m_freeSliceStart=offset;
-	}
-
-	if(offset<m_firstGapStart){
-		//cout<<__func__<<" m_firstGapStart "<<m_firstGapStart<<" -> "<<offset<<endl;
-		m_firstGapStart=offset;
 	}
 
 	/* move m_freeSliceStart */
@@ -354,153 +303,9 @@ void DefragmentationGroup::deallocate(SmallSmartPointer a,int bytesPerElement){
 	#ifdef ASSERT
 	assert(m_availableElements<=ELEMENTS_PER_GROUP);
 	assert(m_availableElements>=0);
-	assert(m_firstGapStart<=m_freeSliceStart);
-	#endif
-
-	//closeGap(offset,allocatedSize,bytesPerElement);
-}
-
-/**
- * 	Move all elements starting at newOffset+allocationLength up to m_freeSliceStart
- * 	by allocationLength positions on the left
- */
-void DefragmentationGroup::closeGap(int offset,int allocationLength,int bytesPerElement){
-	//cout<<"close gap "<<offset<<" "<<allocationLength<<endl;
-	#ifdef ASSERT
-	if(!(offset>=m_firstGapStart))
-		cout<<"close gap at offset "<<offset<<" but m_firstGapStart is "<<m_firstGapStart<<endl;
-	assert(offset>=m_firstGapStart);
-	if(!(m_firstGapStart<=m_freeSliceStart)){
-		cout<<"m_firstGapStart "<<m_firstGapStart<<" m_freeSliceStart "<<m_freeSliceStart<<" closeGap at offset "<<offset<<" with length "<<allocationLength<<endl;
-		print();
-	}
-
-	assert(m_firstGapStart<=m_freeSliceStart);
-	#endif
-
-	#ifdef LOW_LEVEL_ASSERT
-	for(int i=m_freeSliceStart;i<ELEMENTS_PER_GROUP;i++){
-		if(getBit(i)!=AVAILABLE){
-			cout<<"Error, offset "<<i<<" is not AVAILABLE"<<endl;
-			print();
-		}
-		assert(getBit(i)==AVAILABLE);
-	}
-	#endif
-
-/* verify the gap */
-	#ifdef LOW_LEVEL_ASSERT
-	for(int i=0;i<allocationLength;i++){
-		assert(offset+i<ELEMENTS_PER_GROUP);
-		assert(getBit(offset+i)==AVAILABLE);
-	}
-	#endif
-
-/**
- *
- * 	Before:
- *	                   YXAHXAaxpp
- * 	|-----------|------|---------|
- * 		offset
- * 			offset+n
- * 				    last
- *
- * 	elements to move = (last-offset-n)
- *
- * 	After:
- *
- *	            YXAHXAaxpp
- * 	|-----------|------|--|
- *
- * 			      last
- *
- *
- *	update the bitmap
- */
-	int elementsToMove=m_freeSliceStart-offset-allocationLength;
-	for(int i=0;i<elementsToMove;i++){
-		#ifdef LOW_LEVEL_ASSERT
-		assert(offset+allocationLength+i<ELEMENTS_PER_GROUP);
-		#endif
-		setBit(offset+i,getBit(offset+allocationLength+i));
-	}
-
-/*
- * 	Move all elements starting at newOffset+allocationLength up to m_freeSliceStart
- * 	by allocationLength positions on the left
- */
-	int lowerBound=offset+allocationLength;
-
-	/* using int here to avoid overflow 
- * 	update m_allocatedOffsets
- *	O(allocationLength)
- * 	*/
-	for(int smartPointer=0;smartPointer<ELEMENTS_PER_GROUP;smartPointer++){
-		#ifdef LOW_LEVEL_ASSERT
-		assert(smartPointer<ELEMENTS_PER_GROUP);
-		#endif
-
-		/* move the smart pointer */
-		if(m_allocatedSizes[smartPointer]!=0 
-		&& m_allocatedOffsets[smartPointer]>=lowerBound){
-			m_allocatedOffsets[smartPointer]-=allocationLength;
-
-			#ifdef LOW_LEVEL_ASSERT
-			assert(m_allocatedOffsets[smartPointer]>=0);
-			#endif
-		}
-	}
-
-	/** 
- * move the bytes 
- * */
-	uint8_t*destination=m_block+offset*bytesPerElement;
-	uint8_t*source=m_block+(offset+allocationLength)*bytesPerElement;
-	int bytes=elementsToMove*bytesPerElement;
-	for(int i=0;i<bytes;i++)
-		destination[i]=source[i];
-
-/** update m_freeSliceStart 
- * 	*/
-
-	m_freeSliceStart-=allocationLength;
-	
-
-	/** update the bitmap to make available the things at the end */
-	for(int i=0;i<allocationLength;i++)
-		setBit(m_freeSliceStart+i,AVAILABLE);
-
-/*
-	if(offset==m_firstGapStart){
-		cout<<"gap is closed, need to find m_firstGapStart"<<endl;
-		print();
-	}
-*/
-
-	if(offset==m_firstGapStart){
-		//int old=m_firstGapStart;
-		/* here we have to be careful because the gap will not always be filled with occupied
- * 		buckets */
-		while(m_firstGapStart<ELEMENTS_PER_GROUP && getBit(m_firstGapStart)==1)
-			m_firstGapStart++;
-
-		//cout<<__func__<<" m_firstGapStart "<<old<<" -> "<<m_firstGapStart<<" closed gap at offset "<<offset<<" with length "<<allocationLength<<endl;
-	}
-	
-	#ifdef ASSERT
-	if(!(m_firstGapStart<=m_freeSliceStart)){
-		cout<<"m_firstGapStart "<<m_firstGapStart<<" m_freeSliceStart "<<m_freeSliceStart<<" closeGap at offset "<<offset<<" with length "<<allocationLength<<endl;
-		print();
-	}
-
-	assert(m_firstGapStart<=m_freeSliceStart);
-	#endif
-
-	#ifdef LOW_LEVEL_ASSERT
-	for(int i=m_freeSliceStart;i<ELEMENTS_PER_GROUP;i++){
-		assert(i<ELEMENTS_PER_GROUP);
-		assert(getBit(i)==AVAILABLE);
-	}
+	if(!((ELEMENTS_PER_GROUP-m_freeSliceStart)<=m_availableElements))
+		cout<<"elements in freeSlice: "<<ELEMENTS_PER_GROUP-m_freeSliceStart<<" available "<<m_availableElements<<" m_freeSliceStart "<<m_freeSliceStart<<endl;
+	assert((ELEMENTS_PER_GROUP-m_freeSliceStart)<=m_availableElements);
 	#endif
 }
 
@@ -508,6 +313,8 @@ void DefragmentationGroup::closeGap(int offset,int allocationLength,int bytesPer
  * Kick-start a DefragmentationGroup.
  */
 void DefragmentationGroup::constructor(int bytesPerElement,bool show){
+	m_offlineDefrags=0;
+	m_onlineDefrags=0;
 	#ifdef ASSERT
 	assert(m_block==NULL);
 	#endif
@@ -523,14 +330,13 @@ void DefragmentationGroup::constructor(int bytesPerElement,bool show){
 		m_fastPointers[i]=i;
 
 	m_freeSliceStart=0;
-	m_firstGapStart=0;
 	/** allocate the memory */
 	m_block=(uint8_t*)__Malloc(ELEMENTS_PER_GROUP*bytesPerElement,RAY_MALLOC_TYPE_DEFRAG_GROUP,show);
 
 	/** initialise sizes */
 	m_allocatedSizes=(uint8_t*)__Malloc(ELEMENTS_PER_GROUP*sizeof(uint8_t),RAY_MALLOC_TYPE_DEFRAG_GROUP,show);
 	m_allocatedOffsets=(uint16_t*)__Malloc(ELEMENTS_PER_GROUP*sizeof(uint16_t),RAY_MALLOC_TYPE_DEFRAG_GROUP,show);
-
+	
 	for(int i=0;i<ELEMENTS_PER_GROUP;i++){
 		m_allocatedSizes[i]=0;
 		m_allocatedOffsets[i]=0;
@@ -540,6 +346,10 @@ void DefragmentationGroup::constructor(int bytesPerElement,bool show){
 	m_bitmap=(uint64_t*)__Malloc(ELEMENTS_PER_GROUP/64*sizeof(uint64_t),RAY_MALLOC_TYPE_DEFRAG_GROUP,show);
 	for(int i=0;i<ELEMENTS_PER_GROUP;i++)
 		setBit(i,AVAILABLE);
+
+	#ifdef ASSERT
+	assert((ELEMENTS_PER_GROUP-m_freeSliceStart)<=m_availableElements);
+	#endif
 }
 
 /**
@@ -658,151 +468,20 @@ int DefragmentationGroup::getAvailableElements(){
 	return m_availableElements;
 }
 
-int DefragmentationGroup::findAtLeast(int n){
-	int chunks=ELEMENTS_PER_GROUP/64;
-	for(int chunk=m_firstGapStart/64;chunk<chunks;chunk++){
-		/** the chunk is not full, we may find something. */
-		if(m_bitmap[chunk]!=CHUNK_IS_FULL){
-			/** if the chunk is not full, then there are so gaps */
-			for(int bitInChunk=0;bitInChunk<64;bitInChunk++){
-				for(int offsetFromBit=0;offsetFromBit<n;offsetFromBit++){
-					int offset=chunk*64+bitInChunk+offsetFromBit;
-					if(offset==ELEMENTS_PER_GROUP)
-						break;
-					/* TODO: skip already seen AVAILABLE bits */
-
-					#ifdef LOW_LEVEL_ASSERT
-					if(offset>=ELEMENTS_PER_GROUP)
-						cout<<"Offset= "<<offset<<" chunk: "<<chunk<<" bitInChunk: "<<bitInChunk<<" offsetFromBit: "<<offsetFromBit<<endl;
-					assert(offset<ELEMENTS_PER_GROUP);
-					#endif
-
-					if(getBit(offset)==UTILISED){
-						break;
-					}
-					/* so far, we have offsetFromBit+1 consecutive AVAILABLE elements */
-					if(offsetFromBit+1==n){
-						return chunk*64+bitInChunk;
-					}
-				}
-			}
-		}
-	}
-	/* found nothing */
-	return -1;
-}
-
-void DefragmentationGroup::findGap(int*gapOffset,int*gapLength,int n){
-	int chunks=ELEMENTS_PER_GROUP/64;
-	(*gapOffset)=-1;
-	(*gapLength)=0;
-	for(int chunk=m_firstGapStart/64 ;chunk<chunks;chunk++){
-		/** the chunk is not full, we may find something. */
-		if(m_bitmap[chunk]!=CHUNK_IS_FULL){	
-			/**  chunk is no full, find the gaps. */
-			for(int bitInChunk=0;bitInChunk<64;bitInChunk++){
-				/* the largest gap we can find is of length n-1  */
-				for(int offsetFromBit=0;offsetFromBit<n;offsetFromBit++){
-					int offset=chunk*64+bitInChunk+offsetFromBit;
-
-					if(offset==ELEMENTS_PER_GROUP)
-						break;
-
-					#ifdef LOW_LEVEL_ASSERT
-					if(offset>=ELEMENTS_PER_GROUP)
-						cout<<"Offset= "<<offset<<endl;
-					assert(offset<ELEMENTS_PER_GROUP);
-					#endif
-
-					/* TODO: skip already seen AVAILABLE bits */
-					if(getBit(offset)==UTILISED){
-						if(offsetFromBit>0){
-							(*gapOffset)=chunk*64+bitInChunk;
-							(*gapLength)=offsetFromBit;
-							/* not taking the largest. taking the first. */
-							return; 
-						}
-						break;
-					}
-				}
-			}
-		}
-	}
-	#ifdef LOW_LEVEL_ASSERT
-	assert(false);
-	#endif
-}
-
-void DefragmentationGroup::compact(int n,int bytesPerElement){
-	#ifdef LOW_LEVEL_ASSERT
-	assert(m_availableElements>=n);
-	#endif
-
-	int gapOffset=0;
-	int gapLength=0;
-
-	/** check the number of elements available in the free slice */
-	while(!((ELEMENTS_PER_GROUP-m_freeSliceStart)>=n)){
-
-		/** find the largest gap -- its size is at most n-1 */
-		findGap(&gapOffset,&gapLength,n);
-
-		#ifdef ASSERT
-		if(!(gapOffset>=m_firstGapStart)){
-			cout<<"gapOffset "<<gapOffset<<" m_firstGapStart "<<m_firstGapStart<<endl;
-			print();
-		}
-		assert(gapOffset>=m_firstGapStart);
-		#endif
-
-		/** check that the gap we found is really a gap */
-		#ifdef LOW_LEVEL_ASSERT
-		if(gapLength<=0){
-			cout<<"Gap Length is: "<<gapLength<<" needs "<<n<<" availableElements= "<<m_availableElements<<endl;
-		}
-		assert(gapLength>0);
-		for(int i=0;i<gapLength;i++){
-			assert(gapOffset+i<ELEMENTS_PER_GROUP);
-			assert(getBit(gapOffset+i)==AVAILABLE);
-		}
-		#endif
-		
-		/** close this gap by moving stuff in it. */
-		closeGap(gapOffset,gapLength,bytesPerElement);
-		
-		/** assert that all elements in the free slice are AVAILABLE */
-		#ifdef LOW_LEVEL_ASSERT
-		int i=m_freeSliceStart;
-		while(i<ELEMENTS_PER_GROUP){
-			assert(i<ELEMENTS_PER_GROUP);
-			assert(getBit(i)==AVAILABLE);
-			i++;
-		}
-		#endif
-	}
-
-	/** make sure that the free slice is large enough for n elements */
-	#ifdef LOW_LEVEL_ASSERT
-	assert((ELEMENTS_PER_GROUP-m_freeSliceStart)>=n);
-
-	/** make sure that the free slice contains only AVAILABLE elements */
-	for(int i=0;i<n;i++){
-		assert(m_freeSliceStart+i<ELEMENTS_PER_GROUP);
-		if(getBit(m_freeSliceStart+i)!=AVAILABLE){
-			cout<<"m_freeSliceStart= "<<m_freeSliceStart<<" i: "<<i<<" error is UTILISED"<<endl;
-			print();
-		}
-		assert(getBit(m_freeSliceStart+i)==AVAILABLE);
-	}
-	#endif
-
-	#ifdef ASSERT
-	assert(m_firstGapStart<=m_freeSliceStart);
-	#endif
-}
-
 void DefragmentationGroup::print(){
 	int step=1024;
+	int bitTo1=0;
+
+	for(int i=0;i<ELEMENTS_PER_GROUP;i++){
+		bitTo1+=getBit(i);
+	}
+
+	cout<<"bit set to 1: "<<bitTo1<<"/"<<ELEMENTS_PER_GROUP<<endl;
+	cout<<"entries"<<endl;
+	for(int i=0;i<ELEMENTS_PER_GROUP;i++){
+		if(m_allocatedSizes[i]!=0)
+			cout<<"SmallSmartPointer "<<i<<" offset "<<m_allocatedOffsets[i]<<" size "<<(int)m_allocatedSizes[i]<<endl;
+	}
 	cout<<"bitmap"<<endl;
 	for(int i=0;i<ELEMENTS_PER_GROUP;i++){
 		if(i%step==0){
@@ -817,30 +496,144 @@ int DefragmentationGroup::getFreeSliceStart(){
 	return m_freeSliceStart;
 }
 
-bool DefragmentationGroup::defragment(int bytesPerElement){
+/*
+ * TODO remove 
+ */
+bool DefragmentationGroup::defragment(int bytesPerElement,uint16_t*content,bool online){
+
+	/* update the look-up table */
+	for(int i=0;i<ELEMENTS_PER_GROUP;i++){
+		/* otherwise we don't want to register it because it may overwrite someone else */
+		if(m_allocatedSizes[i]!=0)
+			content[m_allocatedOffsets[i]]=i;
+	}
+
+	#ifdef ASSERT
+	assert((ELEMENTS_PER_GROUP-m_freeSliceStart)<=m_availableElements);
+	#endif
+
+	/* nothing is available */
 	if(m_availableElements==0)
 		return false;
 
+	/* everything is already in the free slice */
 	int elementsInFreeSlice=ELEMENTS_PER_GROUP-m_freeSliceStart;
 	if(m_availableElements==elementsInFreeSlice)
 		return false;
 
-	//double ratioInFreeSlice=elementsInFreeSlice/(0.0+m_availableElements);
-	
-	int requested=elementsInFreeSlice+1;
-	compact(requested,bytesPerElement);
-	return true;
+	if(online)
+		m_onlineDefrags++;
+	else
+		m_offlineDefrags++;
 
-	/* defragment only if this ratio is < 50% */
-/*
-	if(ratioInFreeSlice<0.3 && m_availableElements>16){
-		int result=elementsInFreeSlice+16;
-		if(m_availableElements<result)
-			result=m_availableElements;
-		//cout<<"Defragmenting, available: "<<m_availableElements<<" in free slice: "<<elementsInFreeSlice<<" Target: "<<result<<endl;
-		compact(result,bytesPerElement);
-		return true;
+	int destination=0;
+	int source=0;
+
+	while(getBit(destination)==1 && destination<ELEMENTS_PER_GROUP)
+		destination++;
+	source=destination+1;
+
+	while(getBit(source)==0 && source<ELEMENTS_PER_GROUP)
+		source++;
+
+	while(source<ELEMENTS_PER_GROUP){
+		/* if source is empty, we are done. */
+		if(getBit(source)==0)
+			break;
+
+		/* at this point, source points to a offset where a SmallSmartPointer starts */
+		/* and destination is an empty space. */
+		#ifdef ASSERT
+		if(!(source>destination)){
+			cout<<"destination "<<destination<<" source "<<source<<endl;
+			print();
+		}
+		assert(source>destination);
+		#endif
+
+		#ifdef ASSERT
+		assert(getBit(destination)==0);
+		assert(getBit(source)==1);
+		#endif
+
+		/* here we copy source in destination */
+		/* copy the data */
+		SmallSmartPointer smartPointer=content[source];
+
+		#ifdef ASSERT
+		assert(getBit(source-1)==0);
+		if(!(m_allocatedSizes[smartPointer]!=0)){
+			cout<<"SmallSmartPointer "<<smartPointer<<" must move, but is has size 0 and bit is 1"<<endl;
+			print();
+		}
+		assert(m_allocatedSizes[smartPointer]!=0);
+		#endif
+		
+		int n=m_allocatedSizes[smartPointer];
+		for(int i=0;i<n;i++){
+			for(int byte=0;byte<bytesPerElement;byte++){
+				m_block[(destination+i)*bytesPerElement+byte]=m_block[(source+i)*bytesPerElement+byte];
+			
+			}
+		}
+
+		for(int i=destination;i<destination+n;i++)
+			setBit(i,1);
+
+		for(int i=destination+n;i<source+n;i++)
+			setBit(i,0);
+
+		m_allocatedOffsets[smartPointer]=destination;
+
+		/* move destination after the new location of smartPointer */
+		destination+=n;
+		source+=n;
+
+		/* skip occupied elements */
+		while(getBit(destination)==1 && destination<ELEMENTS_PER_GROUP)
+			destination++;
+		/* now destination is at a free block */
+
+		/* skip available elements */
+		while(getBit(source)==0 && source<ELEMENTS_PER_GROUP)
+			source++;
 	}
-	return false;
-*/
+	
+	m_freeSliceStart=destination;
+
+	#ifdef ASSERT
+	assert((ELEMENTS_PER_GROUP-m_freeSliceStart)<=m_availableElements);
+	#endif
+
+	#ifdef LOW_LEVEL_ASSERT
+	for(int i=m_freeSliceStart;i<ELEMENTS_PER_GROUP;i++)
+		assert(getBit(i)==AVAILABLE);
+
+	for(int i=0;i<m_freeSliceStart;i++)
+		assert(getBit(i)==UTILISED);
+
+	int bitTo1=0;
+	int elements=0;
+	for(int i=0;i<ELEMENTS_PER_GROUP;i++){
+		bitTo1+=getBit(i);
+		if(m_allocatedSizes[i]!=0){
+			if(!(m_allocatedOffsets[i]<m_freeSliceStart)){
+				cout<<"SmallSmartPointer "<<i<<" has offset is "<<m_allocatedOffsets[i]<<" but m_freeSliceStart is "<<m_freeSliceStart<<" size: "<<(int)m_allocatedSizes[i]<<endl;
+				print();
+			}
+			assert(m_allocatedOffsets[i]<m_freeSliceStart);
+			elements+=m_allocatedSizes[i];
+			for(int j=0;j<m_allocatedSizes[i];j++){
+				if(!(getBit(m_allocatedOffsets[i]+j)==UTILISED)){
+					cout<<"Error, SmallSmartPointer "<<i<<" offset "<<(int)m_allocatedOffsets[i]<<" size "<<(int)m_allocatedSizes[i]<<" is not in the bitmap at j="<<j<<endl;
+					print();
+				}
+				assert(getBit(m_allocatedOffsets[i]+j)==UTILISED);
+			}
+		}
+	}
+	assert(bitTo1==elements);
+	#endif
+
+	return true;
 }

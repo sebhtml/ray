@@ -72,6 +72,8 @@ class ChunkAllocatorWithDefragmentation{
 	int m_fastLaneNumber;
 	int m_fastGroup;
 
+	uint16_t*m_content;
+
 	/** show memory allocations */
 	bool m_show;
 
