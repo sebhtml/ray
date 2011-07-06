@@ -66,7 +66,7 @@ KmerCandidate*KmerAcademy::insert(Kmer*key){
 		lowerKey=*key;
 	}
 	uint64_t sizeBefore=m_hashTable.size();
-	KmerCandidate*entry=m_hashTable.insert(key);
+	KmerCandidate*entry=m_hashTable.insert(&lowerKey);
 	m_inserted=m_hashTable.size()>sizeBefore;
 	if(m_inserted)
 		m_size+=2;
