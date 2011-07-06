@@ -147,12 +147,7 @@ void MyHashTableGroup<KEY,VALUE>::setBit(int bit,uint64_t value){
 /* TODO replace  hard-coded 64 by m_numberOfBucketsInGroup  or numberOfBucketsInGroup */
 template<class KEY,class VALUE>
 void MyHashTableGroup<KEY,VALUE>::print(ChunkAllocatorWithDefragmentation*allocator){
-	#ifdef ASSERT
-	assert(allocator->getAllocationSize(m_vector)==getBucketsBefore(64));
-	#endif
-
 	cout<<"Group bitmap"<<endl;
-	cout<<"AllocatedElements: "<<allocator->getAllocationSize(m_vector)<<endl;
 	for(int i=0;i<64;i++)
 		cout<<" "<<i<<":"<<getBit(i);
 	cout<<endl;
@@ -327,7 +322,6 @@ VALUE*MyHashTableGroup<KEY,VALUE>::getBucket(int bucket,ChunkAllocatorWithDefrag
 
 	#ifdef ASSERT
 	assert(vectorPointer!=NULL);
-	assert(getBucketsBefore(64)==allocator->getAllocationSize(m_vector));
 	#endif
 
 	return vectorPointer+bucketsBefore;

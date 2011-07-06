@@ -18,10 +18,9 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-/* TODO: replace m_allocatedSizes with a bitmap */
 /* TODO:  replace calls to Malloc by a single call to Malloc */
- /* TODO: estimated genome length
- * */
+ 
+/* TODO: replace m_allocatedSizes with a bitmap */
 
 /* call defragment somewhere else */
 
@@ -57,8 +56,8 @@ bool DefragmentationGroup::canAllocate(int n){
 	#ifdef ASSERT
 	assert((ELEMENTS_PER_GROUP-m_freeSliceStart)<=m_availableElements);
 	#endif
-
-	return m_availableElements>=n;
+	return (ELEMENTS_PER_GROUP-m_freeSliceStart)>=n;
+	//return m_availableElements>=n;
 }
 
 /**
@@ -234,7 +233,7 @@ SmallSmartPointer DefragmentationGroup::getAvailableSmallSmartPointer(){
  *
  * Time complexity: To be determined.
  */
-void DefragmentationGroup::deallocate(SmallSmartPointer a,int bytesPerElement){
+void DefragmentationGroup::deallocate(SmallSmartPointer a,int bytesPerElement,uint16_t*content){
 
 	#ifdef LOW_LEVEL_ASSERT
 	assert((ELEMENTS_PER_GROUP-m_freeSliceStart)<=m_availableElements);
@@ -307,6 +306,12 @@ void DefragmentationGroup::deallocate(SmallSmartPointer a,int bytesPerElement){
 		cout<<"elements in freeSlice: "<<ELEMENTS_PER_GROUP-m_freeSliceStart<<" available "<<m_availableElements<<" m_freeSliceStart "<<m_freeSliceStart<<endl;
 	assert((ELEMENTS_PER_GROUP-m_freeSliceStart)<=m_availableElements);
 	#endif
+
+	int elementsInFreeSlice=ELEMENTS_PER_GROUP-m_freeSliceStart;
+	int fragmentedElements=m_availableElements-elementsInFreeSlice;
+	int threshold=1024;
+	if(fragmentedElements>=threshold)
+		defragment(bytesPerElement,content,true);
 }
 
 /**
@@ -435,10 +440,6 @@ void*DefragmentationGroup::getPointer(SmallSmartPointer a,int bytesPerElement){
 	return pointer;
 }
 
-int DefragmentationGroup::getAllocationSize(SmallSmartPointer a){
-	return m_allocatedSizes[a];
-}
-
 /**
  * Set pointers to NULL
  */
@@ -497,7 +498,6 @@ int DefragmentationGroup::getFreeSliceStart(){
 }
 
 /*
- * TODO remove 
  */
 bool DefragmentationGroup::defragment(int bytesPerElement,uint16_t*content,bool online){
 
@@ -637,3 +637,12 @@ bool DefragmentationGroup::defragment(int bytesPerElement,uint16_t*content,bool 
 
 	return true;
 }
+
+int DefragmentationGroup::getOfflineDefrags(){
+	return m_offlineDefrags;
+}
+
+int DefragmentationGroup::getOnlineDefrags(){
+	return m_onlineDefrags;
+}
+

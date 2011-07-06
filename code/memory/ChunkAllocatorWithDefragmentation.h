@@ -22,6 +22,7 @@
 #define _ChunkAllocatorWithDefragmentation_H
 
 #include <memory/DefragmentationGroup.h>
+#include <memory/DefragmentationLane.h>
 #include <stdlib.h>
 
 /**
@@ -41,25 +42,7 @@ typedef uint32_t SmartPointer;
  */
 #define SmartPointer_NULL 4294967295 /* this is the maximum value for uint32_t */
 
-/** 
- * the number of DefragmentationGroup per DefragmentationLane
- */
-#define GROUPS_PER_LANE 1024
-
-/**
- * A SmartPointer maps to a SmallSmartPointer inside
- * a DefragmentationGroup
- *
- * A DefragmentationGroup is in a DefragmentationLane.
- * A DefragmentationLane contains GROUPS_PER_LANE DefragmentationGroup.
- * DefragmentationLane are appended in a linked list.
- */
-typedef struct{
-	/** list of DefragmentationGroup */
-	DefragmentationGroup m_groups[GROUPS_PER_LANE];
-	/** link to the next DefragmentationLane */
-	void*m_next;
-} DefragmentationLane;
+#define NUMBER_OF_LANES 512
 
 /**
  * This ChunkAllocatorWithDefragmentation  allocate memory with
@@ -69,22 +52,17 @@ typedef struct{
  */
 class ChunkAllocatorWithDefragmentation{
 	DefragmentationLane*m_fastLane;
-	int m_fastLaneNumber;
-	int m_fastGroup;
-
+	int m_numberOfLanes;
 	uint16_t*m_content;
 
 	/** show memory allocations */
 	bool m_show;
 
 	/** the size in bytes of an element   */
-	int m_period;
+	int m_bytesPerElement;
 
 	/** the first DefragmentationLane  */
-	DefragmentationLane*m_defragmentationLane;
-
-	/** get the DefragmentationGroup of a SmartPointer */
-	DefragmentationGroup*getGroup(SmartPointer a);
+	DefragmentationLane*m_defragmentationLanes[NUMBER_OF_LANES];
 
 	void updateFastLane(int n);
 public:
@@ -112,7 +90,6 @@ public:
  * resolve a SmartPointer
  */
 	void*getPointer(SmartPointer a);
-	int getAllocationSize(SmartPointer a);
 
 	ChunkAllocatorWithDefragmentation();
 	~ChunkAllocatorWithDefragmentation();

@@ -126,7 +126,7 @@ public:
  * Free memory
  * deallocate will defragment the block immediately
  */
-	void deallocate(SmallSmartPointer a,int bytesPerElement);
+	void deallocate(SmallSmartPointer a,int bytesPerElement,uint16_t*content);
 /** 
  * destroy the allocator
  */
@@ -154,8 +154,8 @@ public:
 
 	int getFreeSliceStart();
 	
-
-	int getAllocationSize(SmallSmartPointer a);
+	int getOnlineDefrags();
+	int getOfflineDefrags();
 };
 
 #endif
