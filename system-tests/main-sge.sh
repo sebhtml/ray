@@ -75,6 +75,7 @@ do
 	TEST_NAME=$testName
 	source validate.sh > validate.out
 	cat validate.out >> ../../$outputFile.validationEntries
+	echo "" >> ../../$outputFile.validationEntries
 	echo "$(date) Job $testName has been validated."
 	cd ../..
 done
