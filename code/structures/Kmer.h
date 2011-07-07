@@ -19,6 +19,8 @@
 
 */
 
+/* TODO: merge the k-mer-related things here */
+
 #ifndef _Kmer
 #define _Kmer
 
