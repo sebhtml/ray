@@ -74,6 +74,7 @@ void ChunkAllocatorWithDefragmentation::constructor(int bytesPerElement,bool sho
 	for(int i=0;i<NUMBER_OF_LANES;i++)
 		m_defragmentationLanes[i]=NULL;
 	m_fastLane=NULL;
+	m_numberOfLanes=0;
 }
 
 /**

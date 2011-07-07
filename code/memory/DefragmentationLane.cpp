@@ -21,19 +21,31 @@
 #include <memory/DefragmentationLane.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <iostream>
+using namespace std;
 
+/**
+ * Time complexity: O(1)
+ */
 void DefragmentationLane::constructor(int number,int bytePerElement,bool show){
 	m_number=number;
 	for(int i=0;i<GROUPS_PER_LANE;i++)
 		m_groups[i].setPointers();
-	m_next=NULL;
 
+	m_fastGroup=0;
 	m_groups[0].constructor(bytePerElement,show);
 }
 
+/**
+ * can the DefragmentationLane allocates rapidly n elements ? 
+ * Time complexity: O(1) if m_fastGroup can deliver
+ * otherwise, O(GROUPS_PER_LANE)
+ * */
 bool DefragmentationLane::canAllocate(int n,int bytesPerElement,bool show){
+	if(m_groups[m_fastGroup].canAllocate(n))
+		return true;
+
 	for(int group=0;group<GROUPS_PER_LANE;group++){
-		/** activate a lane */
 		if(!m_groups[group].isOnline()){
 			m_groups[group].constructor(bytesPerElement,show);
 		}
@@ -56,18 +68,35 @@ bool DefragmentationLane::canAllocate(int n,int bytesPerElement,bool show){
 	return false;
 }
 
+/**
+ * Time complexity: O(1)
+ */
 SmallSmartPointer DefragmentationLane::allocate(int n,int bytesPerElement,uint16_t*content,int*group){
 	#ifdef ASSERT
 	assert(m_fastGroup!=-1);
+	if(!(m_fastGroup<GROUPS_PER_LANE))
+		cout<<"m_fastGroup= "<<m_fastGroup<<endl;
+	assert(m_fastGroup<GROUPS_PER_LANE);
+	assert(m_fastGroup>=0);
+	assert(n>0);
+	assert(bytesPerElement>0);
+	assert(group!=NULL);
+	assert(content!=NULL);
 	#endif
 	(*group)=m_fastGroup;
 	return m_groups[m_fastGroup].allocate(n,bytesPerElement,content);
 }
 
+/**
+ * Time complexity: O(1)
+ */
 int DefragmentationLane::getNumber(){
 	return m_number;
 }
 
+/**
+ * Time complexity: O(1)
+ */
 DefragmentationGroup*DefragmentationLane::getGroup(int i){
 	#ifdef ASSERT
 	assert(i<GROUPS_PER_LANE);

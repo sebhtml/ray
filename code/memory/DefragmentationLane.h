@@ -34,7 +34,6 @@
  *
  * A DefragmentationGroup is in a DefragmentationLane.
  * A DefragmentationLane contains GROUPS_PER_LANE DefragmentationGroup.
- * DefragmentationLane are appended in a linked list.
  */
 class DefragmentationLane{
 	int m_number;
@@ -42,9 +41,6 @@ class DefragmentationLane{
 	DefragmentationGroup m_groups[GROUPS_PER_LANE];
 	int m_fastGroup;
 public:
-	/** link to the next DefragmentationLane */
-	void*m_next;
-
 	SmallSmartPointer allocate(int n,int bytesPerElement,uint16_t*content,int*group);
 	void constructor(int number,int bytesPerElement,bool show);
 	bool canAllocate(int n,int bytesPerElement,bool show);

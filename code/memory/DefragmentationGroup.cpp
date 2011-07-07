@@ -19,10 +19,7 @@
 */
 
 /* TODO:  replace calls to Malloc by a single call to Malloc */
- 
 /* TODO: replace m_allocatedSizes with a bitmap */
-
-/* call defragment somewhere else */
 
 /* run low-level assertions, pretty slow but that helped for the development. */
 /* #define LOW_LEVEL_ASSERT */
@@ -43,6 +40,8 @@ using namespace std;
 #define AVAILABLE 0
 #define UTILISED 1
 
+#define BUSY_CHUNK 18446744073709551615UL
+
 /**
  *  Return true if the DefragmentationGroup can allocate n elements 
  *  Time complexity: O(1)
@@ -51,13 +50,10 @@ bool DefragmentationGroup::canAllocate(int n){
 	/* we want fast allocation in the end...  
 	if a contiguous segment is not available, we can't handle it... 
 */
-	//return offset>=0;
-	
 	#ifdef ASSERT
 	assert((ELEMENTS_PER_GROUP-m_freeSliceStart)<=m_availableElements);
 	#endif
 	return (ELEMENTS_PER_GROUP-m_freeSliceStart)>=n;
-	//return m_availableElements>=n;
 }
 
 /**
@@ -94,12 +90,14 @@ bool DefragmentationGroup::canAllocate(int n){
  * larger.
  * AVAILABLE elements.
  *
- * Time complexity: O(n) where n <= 64
+ *
+ * At first, we must obtain a free handle.
+ * This is usually O(256) if there is someone in m_fastPointers available.
+ * Otherwise, populating m_fastPointers is O(ELEMENTS_PER_GROUP)
+ *
  */
 SmallSmartPointer DefragmentationGroup::allocate(int n,int bytesPerElement,uint16_t*content){
-	if(n>(ELEMENTS_PER_GROUP-m_freeSliceStart))
-		defragment(bytesPerElement,content,true);
-
+	
 	#ifdef ASSERT
 	assert(n>0);
 	assert(canAllocate(n));
@@ -119,39 +117,33 @@ SmallSmartPointer DefragmentationGroup::allocate(int n,int bytesPerElement,uint1
 
 	#ifdef ASSERT
 	assert(returnValue<ELEMENTS_PER_GROUP);
+	assert(returnValue>=0);
 	assert(m_allocatedSizes[returnValue]==0);
 	#endif
 
-	/** find an offset with n consecutive AVAILABLE elements */
-	int offset=m_freeSliceStart;
-
-	#ifdef ASSERT
-	assert(offset>=0 && offset<ELEMENTS_PER_GROUP);
-	#endif
-
 	/** save meta-data for the SmallSmartPointer */
-	m_allocatedOffsets[returnValue]=offset;
+	m_allocatedOffsets[returnValue]=m_freeSliceStart;
 	m_allocatedSizes[returnValue]=n;
 
 	#ifdef ASSERT
 	assert(m_allocatedSizes[returnValue]==n);
-	assert(m_allocatedOffsets[returnValue]==offset);
+	assert(m_allocatedOffsets[returnValue]==m_freeSliceStart);
 	#endif
 
 	for(int i=0;i<n;i++){
 		#ifdef ASSERT
-		assert(offset+i<ELEMENTS_PER_GROUP);
-		if(getBit(offset+i)!=AVAILABLE){
-			cout<<offset+i<<" is not available. offset: "<<offset<<" n: "<<n<<endl;
+		assert(m_freeSliceStart+i<ELEMENTS_PER_GROUP);
+		if(getBit(m_freeSliceStart+i)!=AVAILABLE){
+			cout<<m_freeSliceStart+i<<" is not available. offset: "<<m_freeSliceStart<<" n: "<<n<<endl;
 			print();
 		}
-		assert(getBit(offset+i)==AVAILABLE);
+		assert(getBit(m_freeSliceStart+i)==AVAILABLE);
 		#endif
 
-		setBit(offset+i,UTILISED);
+		setBit(m_freeSliceStart+i,UTILISED);
 
 		#ifdef ASSERT
-		assert(getBit(offset+i)==UTILISED);
+		assert(getBit(m_freeSliceStart+i)==UTILISED);
 		#endif
 	}
 
@@ -191,6 +183,9 @@ SmallSmartPointer DefragmentationGroup::allocate(int n,int bytesPerElement,uint1
  * 
  * Finally, the SmallSmartPointer that was the last to be recorded to m_fastPointers
  * is returned.
+ *
+ * Time complexity: O(256) if an handle is available in m_fastPointers
+ * O(ELEMENTS_PER_GROUP) otherwise
  */
 SmallSmartPointer DefragmentationGroup::getAvailableSmallSmartPointer(){
 	for(int i=0;i<FAST_POINTERS;i++)
@@ -231,7 +226,8 @@ SmallSmartPointer DefragmentationGroup::getAvailableSmallSmartPointer(){
  * defragment
  * done.
  *
- * Time complexity: To be determined.
+ * Time complexity: O(n) when< 4096 elements are in the fragmented zone
+ * Otherwise, O(ELEMENTS_PER_GROUP) for the call to defragment()
  */
 void DefragmentationGroup::deallocate(SmallSmartPointer a,int bytesPerElement,uint16_t*content){
 
@@ -309,13 +305,23 @@ void DefragmentationGroup::deallocate(SmallSmartPointer a,int bytesPerElement,ui
 
 	int elementsInFreeSlice=ELEMENTS_PER_GROUP-m_freeSliceStart;
 	int fragmentedElements=m_availableElements-elementsInFreeSlice;
-	int threshold=1024;
+
+	/** this threshold is the minimum number of bins in the fragmented zone
+ * 	that are necessary to trigger a defragmentation 
+ *	low value will trigger a lot of defragmentation events, but defragmentation
+ *	is kind of slow. Therefore, you want a amortized time complexity -- that is
+ *	in general we don't defragment (fast), but sometimes we do (slow)
+ *	many fast events plus a few slow events is hopefully more fast than slow.
+ * 	*/
+	int threshold=2048; // 2Ki elements
 	if(fragmentedElements>=threshold)
 		defragment(bytesPerElement,content,true);
 }
 
 /**
  * Kick-start a DefragmentationGroup.
+ *
+ * Time complexity: O(1)
  */
 void DefragmentationGroup::constructor(int bytesPerElement,bool show){
 	m_offlineDefrags=0;
@@ -383,6 +389,17 @@ int DefragmentationGroup::getBit(int bit){
 
 	int bitChunk=bit/64;
 	int bitPosition=bit%64;
+
+	/* chunk is empty !
+ * 	all the bits are 0 for this chunk  */
+	if(m_bitmap[bitChunk]==0)
+		return 0;
+
+	/* chunk is full and busy today
+ * 	all the bits are 1 for this chunk... */
+	if(m_bitmap[bitChunk]==BUSY_CHUNK)
+		return 1;
+
 	uint64_t filter=m_bitmap[bitChunk];
 	filter<<=(63-bitPosition);
 	filter>>=63;
