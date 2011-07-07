@@ -499,6 +499,10 @@ void Machine::call_RAY_MASTER_MODE_WRITE_SCAFFOLDS(){
 	m_scaffolder.writeScaffolds();
 }
 
+/**
+ * runWithProfiler if -run-profiler is provided
+ * otherwise, run runVanilla()
+ */
 void Machine::run(){
 	if(m_parameters.runProfiler()){
 		runWithProfiler();
@@ -507,6 +511,11 @@ void Machine::run(){
 	}
 }
 
+/**
+ * the while loop is *the* main loop of Ray for each 
+ * processor.
+ * it is similar to the main loop of a video game, actually, but without a display.
+ */
 void Machine::runVanilla(){
 	/** m_timeToLive goes down to 0 when m_alive is false
  * 	This is called the aging process */
