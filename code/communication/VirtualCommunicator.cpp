@@ -339,7 +339,7 @@ bool VirtualCommunicator::nextIsAlmostFull(){
 
 void VirtualCommunicator::printStatistics(){
 	double ratio=100.0*m_flushedMessages/m_pushedMessages;
-	printf("Rank %i: VirtualCommunicator: %lu pushed messages generated %lu virtual messages (%f%%)\n",m_rank,m_flushedMessages,m_pushedMessages,ratio);
+	printf("Rank %i: VirtualCommunicator: %lu pushed messages generated %lu virtual messages (%f%%)\n",m_rank,m_pushedMessages,m_flushedMessages,ratio);
 	fflush(stdout);
 }
 
