@@ -16,8 +16,9 @@
     You have received a copy of the GNU General Public License
     along with this program (COPYING).  
 	see <http://www.gnu.org/licenses/>
-
 */
+
+/* TODO: find the memory leak in this file -- during the selection of optimal read markers, the memory goes up ? */
 
 #include <assembler/SequencesIndexer.h>
 #include <string.h>
