@@ -80,7 +80,7 @@ public:
 	void freeLeftovers();
 
 	/** get the processor name, usually set to the server name */
-	string getName();
+	string*getName();
 
 	/** get the identifier of the current message passing interface rank */
 	int getRank();

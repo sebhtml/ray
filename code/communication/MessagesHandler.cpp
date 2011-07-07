@@ -200,8 +200,8 @@ void MessagesHandler::destructor(){
 	MPI_Finalize();
 }
 
-string MessagesHandler::getName(){
-	return m_processorName;
+string*MessagesHandler::getName(){
+	return &m_processorName;
 }
 
 int MessagesHandler::getRank(){

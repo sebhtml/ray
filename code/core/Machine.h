@@ -58,6 +58,7 @@
 #include <time.h>
 #include <assembler/KmerAcademyBuilder.h>
 #include <assembler/EdgePurger.h>
+#include <communication/NetworkTest.h>
 
 using namespace std;
 
@@ -68,6 +69,7 @@ class Machine;
 typedef void (Machine::*MachineMethod) ();
 
 class Machine{
+	NetworkTest m_networkTest;
 	EdgePurger m_edgePurger;
 	map<int,map<int,uint64_t> > m_edgeDistribution;
 

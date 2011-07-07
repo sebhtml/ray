@@ -1057,6 +1057,8 @@ void Parameters::showUsage(){
 	cout<<"     	Distribution of ingoing and outgoing degrees"<<endl;
 	cout<<"     PREFIX.MessagePassingInterface.txt"<<endl;
 	cout<<"	    	Contains the number of messages sent."<<endl;
+	cout<<"     PREFIX.NetworkTest.txt"<<endl;
+	cout<<"	    	Contains the result of the network test."<<endl;
 
 	cout<<endl;
 	cout<<"     Note: file format is determined with file extension."<<endl;

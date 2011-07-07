@@ -165,6 +165,7 @@ obj-y += code/memory/DefragmentationGroup.o code/memory/ChunkAllocatorWithDefrag
 #communication
 obj-y += code/communication/mpi_tags.o code/communication/VirtualCommunicator.o code/communication/BufferedData.o \
 code/communication/Message.o code/communication/MessageProcessor.o code/communication/MessagesHandler.o
+obj-y += code/communication/NetworkTest.o
 
 #formats
 obj-y += code/format/ColorSpaceDecoder.o code/format/ColorSpaceLoader.o code/format/FastaLoader.o \

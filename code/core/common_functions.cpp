@@ -171,6 +171,7 @@ int roundNumber(int s,int alignment){
 	return ((s/alignment)+1)*alignment;
 }
 
+/** real-time */
 uint64_t getMilliSeconds(){
 	uint64_t milliSeconds=0;
 	#ifdef HAVE_CLOCK_GETTIME

@@ -65,7 +65,7 @@ Machine::Machine(int argc,char**argv){
 		}
 	}
 
-	cout<<"Rank "<<m_rank<<": Rank= "<<m_rank<<" Size= "<<m_size<<" ProcessIdentifier= "<<portableProcessId()<<" ProcessorName= "<<m_messagesHandler.getName()<<endl;
+	cout<<"Rank "<<m_rank<<": Rank= "<<m_rank<<" Size= "<<m_size<<" ProcessIdentifier= "<<portableProcessId()<<" ProcessorName= "<<*(m_messagesHandler.getName())<<endl;
 
 	m_argc=argc;
 	m_argv=argv;
@@ -83,6 +83,7 @@ Machine::Machine(int argc,char**argv){
 }
 
 void Machine::start(){
+	m_networkTest.constructor(m_rank,&m_master_mode,&m_slave_mode,m_size,&m_inbox,&m_outbox,&m_parameters,&m_outboxAllocator,m_messagesHandler.getName());
 	m_initialisedAcademy=false;
 	m_initialisedKiller=false;
 	m_coverageInitialised=false;
@@ -632,6 +633,11 @@ void Machine::sendMessages(){
 	m_messagesHandler.sendMessages(&m_outbox,getRank());
 }
 
+/**
+ * receivedMessages receives 0 or 1 messages.
+ * If more messages are available to be pumped, they will wait until the
+ * next Machine cycle.
+ */
 void Machine::receiveMessages(){
 	m_inbox.clear();
 	m_messagesHandler.receiveMessages(&m_inbox,&m_inboxAllocator,getRank());
@@ -674,7 +680,7 @@ void Machine::call_RAY_MASTER_MODE_LOAD_CONFIG(){
 		m_outbox.push_back(aMessage);
 	}
 
-	m_master_mode=RAY_MASTER_MODE_LOAD_SEQUENCES;
+	m_master_mode=RAY_MASTER_MODE_TEST_NETWORK;
 }
 
 void Machine::call_RAY_MASTER_MODE_LOAD_SEQUENCES(){
@@ -1377,6 +1383,18 @@ void Machine::call_RAY_SLAVE_MODE_DIE(){
  * 	after that, it is death itself.
  * 	*/
 	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
+}
+
+/**
+ * test the network.
+ * control logic
+ */
+void Machine::call_RAY_MASTER_MODE_TEST_NETWORK(){
+	m_networkTest.masterWork();
+}
+
+void Machine::call_RAY_SLAVE_MODE_TEST_NETWORK(){
+	m_networkTest.slaveWork();
 }
 
 /**

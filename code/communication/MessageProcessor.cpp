@@ -590,6 +590,19 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER(Mes
 	}
 }
 
+void MessageProcessor::call_RAY_MPI_TAG_TEST_NETWORK_REPLY(Message*message){}
+
+void MessageProcessor::call_RAY_MPI_TAG_TEST_NETWORK_MESSAGE(Message*message){
+	Message aMessage(NULL,0,message->getSource(),RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY,rank);
+	m_outbox->push_back(aMessage);
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY(Message*message){}
+
+void MessageProcessor::call_RAY_MPI_TAG_TEST_NETWORK(Message*message){
+	(*m_mode)=RAY_SLAVE_MODE_TEST_NETWORK;
+}
+
 void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message){
 	m_subgraph->getKmerAcademy()->completeResizing();
 

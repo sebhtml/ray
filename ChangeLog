@@ -34,7 +34,8 @@ sent messages for each type.
 * Implemented incremental resizing to allow low latency.
 * Fixed a buffer overflow in getKmerAtPosition, reported by David Eccles
 (gringer).
-
+* Added a new output file called PREFIX.NetworkTest.txt which contains average
+latency including software overhead.
 
 = 1.6.0 =
 2011-06-13
