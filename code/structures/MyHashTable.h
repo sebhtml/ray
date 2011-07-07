@@ -51,6 +51,8 @@ using namespace std;
  * MyHashTable contains many MyHashTableGroup.
  * Each MyHashTableGroup is responsible for a slice of buckets.
  * \see http://google-sparsehash.googlecode.com/svn/trunk/doc/implementation.html
+ *
+ * All operations are constant-time or so
  */
 template<class KEY,class VALUE>
 class MyHashTableGroup{
@@ -372,6 +374,11 @@ VALUE*MyHashTableGroup<KEY,VALUE>::find(int bucket,KEY*key,ChunkAllocatorWithDef
  * the number of buckets can not be exceeded. 
  * based on the description at
  * \see http://google-sparsehash.googlecode.com/svn/trunk/doc/implementation.html
+ *
+ * all operations are constant-time or so.
+ *
+ * probing depth is usually low because incremental resizing is triggered at load >= 70.0%
+ * and double hashing eases exploration of bucket landscapes.
  */
 template<class KEY,class VALUE>
 class MyHashTable{
