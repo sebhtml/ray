@@ -40,6 +40,9 @@ void DefragmentationLane::constructor(int number,int bytePerElement,bool show){
  * can the DefragmentationLane allocates rapidly n elements ? 
  * Time complexity: O(1) if m_fastGroup can deliver
  * otherwise, O(GROUPS_PER_LANE)
+ *
+ * TODO: add m_fastGroups -- groups that can allocate at least 64 and possibly remove m_fastGroup
+ *
  * */
 bool DefragmentationLane::canAllocate(int n,int bytesPerElement,bool show){
 	if(m_groups[m_fastGroup].canAllocate(n))
