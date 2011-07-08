@@ -84,7 +84,8 @@ class NetworkTest{
 
 	/** latencies */
 	map<int,int> m_latencies;
-	
+	map<int,string> m_names;
+
 	/* processor name */
 	string*m_name;
 public:

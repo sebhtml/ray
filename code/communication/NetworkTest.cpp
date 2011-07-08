@@ -36,7 +36,6 @@ using namespace std;
 void NetworkTest::constructor(int rank,int*masterMode,int*slaveMode,int size,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,RingAllocator*outboxAllocator,
 	string*name){
 	m_name=name;
-	srand(time(NULL));
 	m_inbox=inbox;
 	m_outbox=outbox;
 	m_parameters=parameters;
@@ -50,6 +49,7 @@ void NetworkTest::constructor(int rank,int*masterMode,int*slaveMode,int size,Sta
 	m_sentCurrentTestMessage=false;
 	m_outboxAllocator=outboxAllocator;
 	m_sumOfMicroSeconds=0;
+	srand(time(NULL)*(1+m_rank));
 }
 
 /** call the slave method 
@@ -87,6 +87,7 @@ void NetworkTest::slaveWork(){
 			Message aMessage(message,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),destination,RAY_MPI_TAG_TEST_NETWORK_MESSAGE,m_rank);
 			m_outbox->push_back(aMessage);
 			m_sentCurrentTestMessage=true;
+			//cout<<m_rank<<" sends RAY_MPI_TAG_TEST_NETWORK_MESSAGE to "<<destination<<endl;
 		}else if(m_inbox->size()>0 && m_inbox->at(0)->getTag()==RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY){
 			#ifdef OS_POSIX
 			struct timeval endingTime;
@@ -115,7 +116,9 @@ void NetworkTest::slaveWork(){
 
 		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 		message[0]=averageLatencyInMicroSeconds;
-		Message aMessage(message,1,MASTER_RANK,RAY_MPI_TAG_TEST_NETWORK_REPLY,m_rank);
+		char*destination=(char*)(message+1);
+		strcpy(destination,m_name->c_str());
+		Message aMessage(message,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),MASTER_RANK,RAY_MPI_TAG_TEST_NETWORK_REPLY,m_rank);
 		m_outbox->push_back(aMessage);
 		(*m_slaveMode)=RAY_SLAVE_MODE_DO_NOTHING;
 	}
@@ -133,6 +136,10 @@ void NetworkTest::masterWork(){
 	}else if(m_inbox->size()>0&&(*m_inbox)[0]->getTag()==RAY_MPI_TAG_TEST_NETWORK_REPLY){
 		int rank=m_inbox->at(0)->getSource();
 		int latency=m_inbox->at(0)->getBuffer()[0];
+		uint64_t*buffer=m_inbox->at(0)->getBuffer();
+		char*name=(char*)(buffer+1);
+		string stringName=name;
+		m_names[rank]=stringName;
 		m_latencies[rank]=latency;
 		m_doneWithNetworkTest++;
 	}else if(m_doneWithNetworkTest==m_size){
@@ -145,9 +152,9 @@ void NetworkTest::masterWork(){
 		for(int i=0;i<m_size;i++){
 			int latency=m_latencies[i];
 			if(latency==LATENCY_INFORMATION_NOT_AVAILABLE)
-				f<<i<<"\t"<<*m_name<<" LATENCY_INFORMATION_NOT_AVAILABLE"<<endl;
+				f<<i<<"\t"<<m_names[i]<<"\tLATENCY_INFORMATION_NOT_AVAILABLE"<<endl;
 			else
-				f<<i<<"\t"<<*m_name<<" "<<latency<<endl;
+				f<<i<<"\t"<<m_names[i]<<"\t"<<latency<<endl;
 		}
 		f.close();
 		m_latencies.clear();
