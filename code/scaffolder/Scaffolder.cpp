@@ -1080,17 +1080,26 @@ void Scaffolder::getContigSequence(uint64_t id){
 			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
 			vector<uint64_t> data=m_virtualCommunicator->getMessageResponseElements(m_workerId);
+			/* the position in the message buffer */
 			int pos=0;
+			/* the first element is the number of Kmer */
 			int count=data[pos++];
-			while(pos<count){
+			int kmerIterator=0;
+			while(kmerIterator<count){
 				Kmer a;
 				a.unpack(&data,&pos);
 				m_contigPath.push_back(a);
+				kmerIterator++;
 			}
 			m_position+=count;
 			m_requestedContigChunk=false;
 		}
 	}else{
+		/* we should receive a correct number of vertices */
+		#ifdef ASSERT
+		assert(m_contigPath.size()==m_theLength);
+		#endif
+
 		m_contigSequence=convertToString(&m_contigPath,m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 		m_hasContigSequence=true;
 	}
@@ -1131,6 +1140,12 @@ void Scaffolder::writeScaffolds(){
 				}
 
 				int length=m_contigSequence.length();
+
+				#ifdef ASSERT
+				int theLength=m_contigLengths[contigNumber]+m_parameters->getWordSize()-1;
+				assert(length==theLength);
+				#endif
+
 				int columns=m_parameters->getColumns();
 				ostringstream outputBuffer;
 				while(contigPosition<length){
