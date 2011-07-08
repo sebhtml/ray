@@ -1128,7 +1128,6 @@ void MyHashTable<KEY,VALUE>::defragment(){
 
 template<class KEY,class VALUE>
 void MyHashTable<KEY,VALUE>::completeResizing(){
-	cout<<"Final resizing."<<endl;
 	while(m_resizing)
 		resize();
 }
