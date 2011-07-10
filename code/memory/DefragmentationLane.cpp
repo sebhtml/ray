@@ -25,56 +25,95 @@
 using namespace std;
 
 /**
- * Time complexity: O(1)
+ * Time complexity: O(GROUPS_PER_LANE) to initializing DefragmentationGroup objects 
  */
 void DefragmentationLane::constructor(int number,int bytePerElement,bool show){
 	m_number=number;
 	for(int i=0;i<GROUPS_PER_LANE;i++)
 		m_groups[i].setPointers();
 
-	m_fastGroup=0;
-	m_groups[0].constructor(bytePerElement,show);
+	m_fastGroup=INVALID_GROUP;
+	m_numberOfActiveGroups=0;
+	m_numberOfFastGroups=0;
+}
+
+/** Update m_fastGroup rapidly */
+void DefragmentationLane::getFastGroup(int n,int bytesPerElement,bool show){
+	/* if m_fastGroup can allocate n elements, use it right away
+	Time complexity:  O(1) */
+	if(m_fastGroup!=INVALID_GROUP && m_groups[m_fastGroup].canAllocate(n))
+		return;
+
+	/* try to find the fast group in the list m_fastGroups
+	Time complexity: O(NUMBER_OF_FAST_GROUPS) (default=128)*/
+	for(int i=0;i<m_numberOfFastGroups;i++){
+		if(m_fastGroups[i]!=INVALID_GROUP && m_groups[m_fastGroups[i]].canAllocate(n)){
+			m_fastGroup=m_fastGroups[i];
+			return;
+		}
+	}
+
+	/* update m_fastGroups using the m_numberOfActiveGroups DefragmentationGroup objects 
+	Time complexity: O(m_numberOfActiveGroups) where m_numberOfActiveGroups <= GROUPS_PER_LANE */
+	int target=64;
+	m_numberOfFastGroups=0;
+	int group=0;
+
+	while(m_numberOfFastGroups<NUMBER_OF_FAST_GROUPS && group<m_numberOfActiveGroups){
+		if(m_groups[group].canAllocate(target))
+			m_fastGroups[m_numberOfFastGroups++]=group;
+		group++;
+	}
+		
+	/* if there is at least 1 fast group */
+	if(m_numberOfFastGroups>0){
+		m_fastGroup=m_fastGroups[0];
+		return;
+	}
+
+	/* no more group can be created and therefore the DefragmentationLane is too busy */
+	if(m_numberOfActiveGroups==GROUPS_PER_LANE){
+		m_fastGroup=INVALID_GROUP;
+		#ifdef ASSERT
+		assert(m_numberOfFastGroups==0);
+		#endif
+		return;
+	}
+
+	/** activate a DefragmentationGroup */
+	m_groups[m_numberOfActiveGroups].constructor(bytesPerElement,show);
+
+	/* there is only 1 one fast group */
+	m_fastGroups[m_numberOfFastGroups]=m_numberOfActiveGroups;
+	m_fastGroup=m_fastGroups[0];
+	m_numberOfActiveGroups++;
+	m_numberOfFastGroups++;
+
+	#ifdef ASSERT
+	assert(m_numberOfFastGroups==1);
+	#endif
+
+	return;
 }
 
 /**
  * can the DefragmentationLane allocates rapidly n elements ? 
  * Time complexity: O(1) if m_fastGroup can deliver
  * otherwise, O(GROUPS_PER_LANE)
- *
- * TODO: add m_fastGroups -- groups that can allocate at least 64 and possibly remove m_fastGroup
- *
  * */
 bool DefragmentationLane::canAllocate(int n,int bytesPerElement,bool show){
-	if(m_groups[m_fastGroup].canAllocate(n))
-		return true;
-
-	for(int group=0;group<GROUPS_PER_LANE;group++){
-		if(!m_groups[group].isOnline()){
-			m_groups[group].constructor(bytesPerElement,show);
-		}
-
-		#ifdef ASSERT
-		assert(m_groups[group].isOnline());
-		#endif
-
-		/** use this DefragmentationGroup if it can handle the query */
-		if(m_groups[group].canAllocate(n)){
-			m_fastGroup=group;
-			#ifdef ASSERT
-			assert(group<GROUPS_PER_LANE);
-			assert(m_groups[group].isOnline());
-			#endif
+	if(m_fastGroup!=INVALID_GROUP)
+		if(m_groups[m_fastGroup].canAllocate(n))
 			return true;
-		}
-	}
-	m_fastGroup=-1;
-	return false;
+
+	getFastGroup(n,bytesPerElement,show);
+	return m_fastGroup!=INVALID_GROUP;
 }
 
 /**
  * Time complexity: O(1)
  */
-SmallSmartPointer DefragmentationLane::allocate(int n,int bytesPerElement,uint16_t*content,int*group){
+SmallSmartPointer DefragmentationLane::allocate(int n,int bytesPerElement,int*group){
 	#ifdef ASSERT
 	assert(m_fastGroup!=-1);
 	if(!(m_fastGroup<GROUPS_PER_LANE))
@@ -84,10 +123,13 @@ SmallSmartPointer DefragmentationLane::allocate(int n,int bytesPerElement,uint16
 	assert(n>0);
 	assert(bytesPerElement>0);
 	assert(group!=NULL);
-	assert(content!=NULL);
+	assert(m_fastGroup!=INVALID_GROUP);
+	assert(m_fastGroup<m_numberOfActiveGroups);
 	#endif
+
 	(*group)=m_fastGroup;
-	return m_groups[m_fastGroup].allocate(n,bytesPerElement,content);
+
+	return m_groups[m_fastGroup].allocate(n);
 }
 
 /**

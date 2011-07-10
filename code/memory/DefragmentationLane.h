@@ -23,10 +23,13 @@
 
 #include <memory/DefragmentationGroup.h>
 
+#define INVALID_GROUP 123467
+
 /** 
  * the number of DefragmentationGroup per DefragmentationLane
  */
 #define GROUPS_PER_LANE 1024
+#define NUMBER_OF_FAST_GROUPS 128
 
 /**
  * A SmartPointer maps to a SmallSmartPointer inside
@@ -36,16 +39,34 @@
  * A DefragmentationLane contains GROUPS_PER_LANE DefragmentationGroup.
  */
 class DefragmentationLane{
+	/** the identifier of the DefragmentationLane */
 	int m_number;
 	/** list of DefragmentationGroup */
 	DefragmentationGroup m_groups[GROUPS_PER_LANE];
+	/** fast DefragmentationGroup objects */
+	int m_fastGroups[NUMBER_OF_FAST_GROUPS];
+	/** the fastest DefragmentationGroup object */
 	int m_fastGroup;
+	/** the number of active DefragmentationGroup objects */
+	int m_numberOfActiveGroups;
+	/** the number of fast DefragmentationGroup objects */
+	int m_numberOfFastGroups;
+
+	/** update m_fastGroup, if no DefragmentationGroup can allocate n elements, then m_fastGroup is set
+	 to INVALID_GROUP */
+	void getFastGroup(int n,int bytesPerElement,bool show);
 public:
-	SmallSmartPointer allocate(int n,int bytesPerElement,uint16_t*content,int*group);
+	/** allocate a SmallSmartPointer */
+	SmallSmartPointer allocate(int n,int bytesPerElement,int*group);
+	/** initialize the DefragmentationLane */
 	void constructor(int number,int bytesPerElement,bool show);
+	/** can the DefragmentationLane allocate n elements ? */
 	bool canAllocate(int n,int bytesPerElement,bool show);
+	/** return memory to the pool */
 	void deallocate(SmallSmartPointer a);
+	/** get the identifier of the DefragmentationLane */
 	int getNumber();
+	/** get a DefragmentationGroup directly */
 	DefragmentationGroup*getGroup(int i);
 };
 

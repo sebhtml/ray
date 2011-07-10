@@ -40,7 +40,7 @@ typedef uint32_t SmartPointer;
 /**
  * This SmartPointer is the equivalent of NULL
  */
-#define SmartPointer_NULL 4294967295 /* this is the maximum value for uint32_t */
+#define SmartPointer_NULL 4294967295u /* this is the maximum value for uint32_t */
 
 #define NUMBER_OF_LANES 512
 
@@ -53,7 +53,8 @@ typedef uint32_t SmartPointer;
 class ChunkAllocatorWithDefragmentation{
 	DefragmentationLane*m_fastLane;
 	int m_numberOfLanes;
-	uint16_t*m_content;
+	uint16_t*m_cellContents;
+	uint8_t*m_cellOccupancies;
 
 	/** show memory allocations */
 	bool m_show;

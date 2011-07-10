@@ -135,10 +135,6 @@ void GridTable::printStatistics(){
 	m_hashTable.printStatistics();
 }
 
-void GridTable::defragment(){
-	m_hashTable.defragment();
-}
-
 void GridTable::completeResizing(){
 	m_hashTable.completeResizing();
 }

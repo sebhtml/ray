@@ -64,11 +64,16 @@ void ChunkAllocatorWithDefragmentation::destructor(){
 		__Free(lane,RAY_MALLOC_TYPE_DEFRAG_LANE,m_show);
 		m_defragmentationLanes[i]=NULL;
 	}
+	__Free(m_cellOccupancies,RAY_MALLOC_TYPE_DEFRAG_LANE,m_show);
+	__Free(m_cellContents,RAY_MALLOC_TYPE_DEFRAG_LANE,m_show);
+	m_cellContents=NULL;
+	m_cellOccupancies=NULL;
 }
 
 /** constructor almost does nothing  */
 void ChunkAllocatorWithDefragmentation::constructor(int bytesPerElement,bool show){
-	m_content=(uint16_t*)__Malloc(ELEMENTS_PER_GROUP*sizeof(uint16_t),RAY_MALLOC_TYPE_DEFRAG_LANE,show);
+	m_cellContents=(uint16_t*)__Malloc(ELEMENTS_PER_GROUP*sizeof(uint16_t),RAY_MALLOC_TYPE_DEFRAG_LANE,show);
+	m_cellOccupancies=(uint8_t*)__Malloc(ELEMENTS_PER_GROUP*sizeof(uint8_t),RAY_MALLOC_TYPE_DEFRAG_LANE,show);
 	m_show=show;
 	m_bytesPerElement=bytesPerElement;
 	for(int i=0;i<NUMBER_OF_LANES;i++)
@@ -102,7 +107,9 @@ void ChunkAllocatorWithDefragmentation::updateFastLane(int n){
 
 	m_defragmentationLanes[m_numberOfLanes++]=defragmentationLane;
 
-	m_fastLane=defragmentationLane;
+	/** ask the lane if it can allocate */
+	if(defragmentationLane->canAllocate(n,m_bytesPerElement,m_show))
+		m_fastLane=defragmentationLane;
 }
 
 /**
@@ -120,7 +127,7 @@ SmartPointer ChunkAllocatorWithDefragmentation::allocate(int n){ /** 64 is the n
 	}
 
 	int group;
-	SmallSmartPointer smallSmartPointer=m_fastLane->allocate(n,m_bytesPerElement,m_content,&group);
+	SmallSmartPointer smallSmartPointer=m_fastLane->allocate(n,m_bytesPerElement,&group);
 
 	/** build the SmartPointer with the
  *	SmallSmartPointer, DefragmentationLane id, and DefragmentationGroup id */
@@ -147,7 +154,7 @@ void ChunkAllocatorWithDefragmentation::deallocate(SmartPointer a){
 
 	/** forward the SmallSmartPointer to the DefragmentationGroup */
 	SmallSmartPointer smallSmartPointer=a%ELEMENTS_PER_GROUP;
-	m_defragmentationLanes[correctLaneId]->getGroup(groupInLane)->deallocate(smallSmartPointer,m_bytesPerElement,m_content);
+	m_defragmentationLanes[correctLaneId]->getGroup(groupInLane)->deallocate(smallSmartPointer,m_bytesPerElement,m_cellContents,m_cellOccupancies);
 }
 
 /** this one is easy,

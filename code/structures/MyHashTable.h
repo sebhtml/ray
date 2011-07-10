@@ -1118,14 +1118,6 @@ void MyHashTable<KEY,VALUE>::printProbeStatistics(){
 	}
 }
 
-/** called when nothing to do presumably. */
-template<class KEY,class VALUE>
-void MyHashTable<KEY,VALUE>::defragment(){
-	m_allocator.defragment();
-	if(m_resizing)
-		m_auxiliaryTableForIncrementalResize->m_allocator.defragment();
-}
-
 template<class KEY,class VALUE>
 void MyHashTable<KEY,VALUE>::completeResizing(){
 	while(m_resizing)
