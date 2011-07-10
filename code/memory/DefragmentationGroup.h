@@ -41,9 +41,6 @@
 typedef uint16_t SmallSmartPointer;
 
 class DefragmentationGroup{
-	int m_offlineDefrags;
-	int m_onlineDefrags;
-
 	/** freed stuff to accelerate things. */
 	uint16_t m_fastPointers[FAST_POINTERS];
 	
@@ -75,22 +72,6 @@ class DefragmentationGroup{
  */
 	uint16_t*m_allocatedOffsets;
 
-	/**
- *  	finally, the bitmap telling us what is utilised and what is not
- *	65536 bits = 1024 uint64_t = 8192 bytes
- */
-	uint64_t*m_bitmap;
-	
-	/** 
- * 	get the bit for element a
- */
-	int getBit(int a);
-
-	/**
- * 	set the bit for element a
- */
-	void setBit(int a,int b);
-
 /** print the bitmap
  */
 	void print();
@@ -100,11 +81,10 @@ class DefragmentationGroup{
  */
 	SmallSmartPointer getAvailableSmallSmartPointer();
 	
-public:
-
 /*
  * returns true if defragmented something. */
-	bool defragment(int bytesPerElement,uint16_t*content,bool online);
+	bool defragment(int bytesPerElement,uint16_t*cellContents,uint8_t*cellOccupancies);
+public:
 
 
 /**
@@ -120,13 +100,13 @@ public:
 /**
  * Allocate memory
  */
-	SmallSmartPointer allocate(int n,int bytesPerElement,uint16_t*content);
+	SmallSmartPointer allocate(int n);
 
 /**
  * Free memory
  * deallocate will defragment the block immediately
  */
-	void deallocate(SmallSmartPointer a,int bytesPerElement,uint16_t*content);
+	void deallocate(SmallSmartPointer a,int bytesPerElement,uint16_t*cellContents,uint8_t*cellOccupancies);
 /** 
  * destroy the allocator
  */
@@ -153,9 +133,6 @@ public:
 	int getAvailableElements();
 
 	int getFreeSliceStart();
-	
-	int getOnlineDefrags();
-	int getOfflineDefrags();
 };
 
 #endif
