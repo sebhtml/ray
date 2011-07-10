@@ -127,6 +127,8 @@ void NetworkTest::slaveWork(){
 /** call the master method */
 void NetworkTest::masterWork(){
 	if(!m_initialisedNetworkTest){
+		cout<<"Rank 0: testing the network, please wait..."<<endl;
+		cout<<endl;
 		for(int i=0;i<m_size;i++){
 			Message aMessage(NULL,0,i,RAY_MPI_TAG_TEST_NETWORK,m_rank);
 			m_outbox->push_back(aMessage);
