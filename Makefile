@@ -116,7 +116,7 @@ endif
 endif
 
 # profiling
-CXXFLAGS-$(GPROF) += -g -pg
+CXXFLAGS-$(GPROF) += -g -pg -O3
 
 # if you use Intel's mpiicpc, uncomment the following lines
 MPICXX-$(INTEL_COMPILER) = mpiicpc 
