@@ -34,8 +34,7 @@ using namespace std;
 void SequencesLoader::registerSequence(){
 	if(m_myReads->size()%100000==0){
 		uint64_t amount=m_myReads->size();
-		printf("Rank %i has %lu sequence reads\n",m_rank,amount);
-		fflush(stdout);
+		cout<<"Rank "<<m_rank<<" has "<<amount<<" sequence reads"<<endl;
 
 		if(m_parameters->showMemoryUsage()){
 			showMemoryUsage(m_rank);
@@ -140,6 +139,7 @@ bool SequencesLoader::computePartition(int rank,int size,
 	time_t*m_lastTime,
 	Parameters*m_parameters,int*m_master_mode,int*m_mode
 ){
+	printf("\n\n");
 	printf("Rank %i is computing the partition\n",m_rank);
 	fflush(stdout);
 	uint64_t counted=0;
@@ -160,13 +160,13 @@ bool SequencesLoader::computePartition(int rank,int size,
 		}
 		m_parameters->setNumberOfSequences(m_loader.size());
 
-		counted+=m_loader.size();
-
-		if(counted>0)
-			printf("Rank %i: [%i/%i] %s -> partition is [%lu;%lu], %lu sequence reads\n",m_rank,m_distribution_file_id+1,(int)allFiles.size(),allFiles[(m_distribution_file_id)].c_str(),counted,counted+m_loader.size()-1,m_loader.size());
+		if(m_loader.size()>0)
+			cout<<"Rank "<<m_rank<<": ["<<m_distribution_file_id+1<<"/"<<allFiles.size()<<"] "<<allFiles[m_distribution_file_id]<<" -> partition is ["<<counted<<";"<<counted+m_loader.size()-1<<"], "<<m_loader.size()<<" sequence reads"<<endl;
 		else
 			printf("Rank %i: [%i/%i] %s -> 0 sequence reads\n",m_rank,m_distribution_file_id+1,(int)allFiles.size(),allFiles[(m_distribution_file_id)].c_str());
 			
+		counted+=m_loader.size();
+
 		fflush(stdout);
 		// write Reads in AMOS format.
 		if(rank==MASTER_RANK&&m_parameters->useAmos()){
@@ -196,8 +196,7 @@ bool SequencesLoader::computePartition(int rank,int size,
 		fclose(fp);
 	}
 	if(counted>0){
-		printf("Rank %i: global partition is [%i;%lu], %lu sequence reads\n",m_rank,0,counted-1,counted);
-		printf("\n");
+		cout<<"Rank "<<m_rank<<": global partition is [0;"<<counted-1<<"], "<<counted<<" sequence reads"<<endl;
 	}
 	return true;
 }
