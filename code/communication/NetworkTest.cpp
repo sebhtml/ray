@@ -112,7 +112,7 @@ void NetworkTest::slaveWork(){
 		averageLatencyInMicroSeconds=m_sumOfMicroSeconds/m_numberOfTestMessages;
 		#endif
 
-		cout<<"Rank "<<m_rank<<": average latency when requesting a reply for a message of "<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<" bytes is "<<averageLatencyInMicroSeconds<<" microseconds (10^-6 seconds)"<<endl;
+		cout<<"Rank "<<m_rank<<": average latency for "<<(*m_name)<<" when requesting a reply for a message of "<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<" bytes is "<<averageLatencyInMicroSeconds<<" microseconds (10^-6 seconds)"<<endl;
 
 		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 		message[0]=averageLatencyInMicroSeconds;
