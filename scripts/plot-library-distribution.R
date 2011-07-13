@@ -41,17 +41,31 @@ while(i<=length(r[[2]])){
 
 print(peakI)
 
+minI=peakI
+while(minI>=1 && r[[2]][minI]>100){
+	minI=minI-1
+}
+minX=r[[1]][minI]
+
+maxI=peakI
+
+while(maxI<=length(r[[1]]) && r[[2]][maxI]>100){
+	maxI=maxI+1
+}
+
+maxX=r[[1]][maxI]
+
 outputFile=paste(file,".pdf",sep="")
 pdf(outputFile)
 xMax=500
 par(mfrow=c(2,1))
-plot(r[[1]],r[[2]],type='l',col='black',xlab="Outer distance",ylab="Frequency",
+plot(r[[1]],r[[2]],type='l',col='black',xlab="Outer distance",ylab="Frequency",xlim=c(minX,maxX),
 	main=paste("Distribution of outer distances\n",file,sep=""))
 grid(lty=1,lwd=2)
 
 points(c(r[[1]][peakI]),c(r[[2]][peakI]),col="red")
 
-plot(r[[1]],derivatives,type='l',col='green',ylim=c(-1,+1),xlab="Outer distance",ylab="Derivative")
+plot(r[[1]],derivatives,type='l',col='green',ylim=c(-1,+1),xlab="Outer distance",ylab="Derivative",xlim=c(minX,maxX))
 
 grid(lty=1,lwd=2)
 
