@@ -20,6 +20,7 @@
 */
 
 #include<format/FastqLoader.h>
+#include <core/constants.h>
 #include<fstream>
 
 int FastqLoader::open(string file,int period){
@@ -27,8 +28,8 @@ int FastqLoader::open(string file,int period){
 	m_size=0;
 	m_loaded=0;
 	int rotatingVariable=0;
-	char buffer[4096];
-	while(NULL!=fgets(buffer,4096,m_f)){
+	char buffer[RAY_MAXIMUM_READ_LENGTH];
+	while(NULL!=fgets(buffer,RAY_MAXIMUM_READ_LENGTH,m_f)){
 		if(rotatingVariable==1){
 			m_size++;
 		}
@@ -44,11 +45,11 @@ int FastqLoader::open(string file,int period){
 }
 
 void FastqLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period){
-	char buffer[4096];
+	char buffer[RAY_MAXIMUM_READ_LENGTH];
 	int rotatingVariable=0;
 	int loadedSequences=0;
 
-	while(loadedSequences<maxToLoad && NULL!=fgets(buffer,4096,m_f)){
+	while(loadedSequences<maxToLoad && NULL!=fgets(buffer,RAY_MAXIMUM_READ_LENGTH,m_f)){
 		if(rotatingVariable==1){
 			Read t;
 			t.constructor(buffer,seqMyAllocator,true);

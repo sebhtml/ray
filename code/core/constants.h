@@ -106,6 +106,9 @@ see <http://www.gnu.org/licenses/>
 #define MAX_NUMBER_OF_MPI_PROCESSES 1000000
 #define INVALID_RANK MAX_NUMBER_OF_MPI_PROCESSES
 
+/* maximum value for a uint16_t */
+#define RAY_MAXIMUM_READ_LENGTH 65535 
+
 #define MAX_VERTICES_TO_VISIT 500
 #define TIP_LIMIT 40
 

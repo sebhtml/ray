@@ -42,6 +42,8 @@ using namespace std;
 class Read{
 	uint8_t *m_sequence;
 	PairedRead m_pairedRead;// the read on the left
+
+	/* maximum value: 65535 */
 	uint16_t m_length;
 	uint8_t m_type;
 	

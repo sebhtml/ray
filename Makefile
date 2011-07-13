@@ -93,6 +93,7 @@ endif
 ifeq ($(DEBUG),y)
 	OPTIMIZE = n
 	FORCE_PACKING = n
+	ASSERT = y 
 endif
 
 PEDANTIC = n

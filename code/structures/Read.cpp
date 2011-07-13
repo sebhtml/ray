@@ -75,8 +75,8 @@ void Read::constructor(const char*sequence,MyAllocator*seqMyAllocator,bool trimF
 	m_forwardOffset=0;
 	m_reverseOffset=0;
 	m_type=TYPE_SINGLE_END;
-	if(trimFlag && strlen(sequence)<4096){
-		char buffer[4096];
+	if(trimFlag && strlen(sequence)<RAY_MAXIMUM_READ_LENGTH){
+		char buffer[RAY_MAXIMUM_READ_LENGTH];
 		sequence=trim(buffer,sequence);
 	}
 	int length=strlen(sequence);
@@ -84,7 +84,7 @@ void Read::constructor(const char*sequence,MyAllocator*seqMyAllocator,bool trimF
 
 	int requiredBytes=getRequiredBytes();
 
-	uint8_t workingBuffer[4096];
+	uint8_t workingBuffer[RAY_MAXIMUM_READ_LENGTH];
 	for(int i=0;i<requiredBytes;i++){
 		workingBuffer[i]=0;
 	}
@@ -151,7 +151,7 @@ int Read::length()const{
  *                     p p-1 p-2               0
  */
 Kmer Read::getVertex(int pos,int w,char strand,bool color) const {
-	char buffer[4000];
+	char buffer[RAY_MAXIMUM_READ_LENGTH];
 	getSeq(buffer,color,false);
 	return kmerAtPosition(buffer,pos,w,strand,color);
 }

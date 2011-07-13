@@ -45,7 +45,7 @@ void SequencesLoader::registerSequence(){
 	#endif
 
 	Read*theRead=m_loader.at(m_distribution_sequence_id);
-	char read[4000];
+	char read[RAY_MAXIMUM_READ_LENGTH];
 	theRead->getSeq(read,m_parameters->getColorSpaceMode(),false);
 	
 	//cout<<"DEBUG2 Read="<<m_distribution_sequence_id<<" color="<<m_parameters->getColorSpaceMode()<<" Seq= "<<read<<endl;

@@ -101,7 +101,7 @@ void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
 			return;
 		}
 
-		char memory[1000];
+		char memory[MAXKMERLENGTH+1];
 		int lll=len-wordSize+1;
 		
 		#ifdef ASSERT
@@ -109,6 +109,7 @@ void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
 		#endif
 
 		int p=(m_mode_send_vertices_sequence_id_position);
+
 		memcpy(memory,m_readSequence+p,wordSize);
 		memory[wordSize]='\0';
 		if(isValidDNA(memory)){

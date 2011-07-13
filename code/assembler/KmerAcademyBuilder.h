@@ -44,7 +44,7 @@ using namespace std;
  * their respective owners.
  */
 class KmerAcademyBuilder{
-	char m_readSequence[4000];
+	char m_readSequence[RAY_MAXIMUM_READ_LENGTH];
 	bool m_distributionIsCompleted;
 	Parameters*m_parameters;
 
