@@ -1,4 +1,7 @@
 #!/usr/bin/Rscript
+#
+# input: PREFIX.CoverageDistribution.txt
+# output: PREFIX.CoverageDistribution.txt.pdf
 
 arguments=commandArgs(trailingOnly = TRUE)
 
