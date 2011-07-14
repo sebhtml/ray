@@ -20,8 +20,19 @@ for line in open(file):
 	x.append(int(tokens[0]))
 	y.append(int(tokens[1]))
 
-minX=x[0]
-maxX=x[len(x)-1]
+minI=0
+maxI=len(x)-1
+
+minimumCount=5
+
+while minI<len(x) and y[minI]<minimumCount:
+	minI+=1
+
+while maxI>=0 and y[maxI]<minimumCount:
+	maxI-=1
+
+minX=x[minI]
+maxX=x[maxI]
 middle=(maxX-minX)/2
 
 i=0
@@ -38,8 +49,15 @@ while i<len(x) and x[i]<=maxX:
 	i+=1
 
 def callPeak(x,y,peak,step):
+	middle=(x[len(x)-1]-x[0])/2
 	first=x[peak]-step
 	last=x[peak]+step
+
+	if x[peak]>middle and first<middle:
+		first=middle
+
+	if x[peak]<middle and last>middle:
+		last=middle
 
 	i=0
 	sum=0
@@ -83,14 +101,18 @@ def callPeak(x,y,peak,step):
 	if occupancy<threshold:
 		return
 
-	print "Peak Average= "+str(average)+" StandardDeviation= "+str(standardDeviation)+" Count= "+str(n)+" Points= "+str(dataPoints)+" Occupancy= "+str(occupancy)+" %"
+	print "Peak Average= "+str(average)+" StandardDeviation= "+str(standardDeviation)+" Count= "+str(n)+" Points= "+str(dataPoints)+" Quality= "+str(occupancy)+" %"
 
-step=2000
+step=1000
+#print "Peak1 "+str(x[peakLeft])
+#print "Peak2 "+str(x[peakRight])
 if x[peakRight]<x[peakLeft]+step:
+	#print "1 peak"
 	peak=peakLeft
 	if y[peakRight]>y[peakLeft]:
 		peak=peakRight
 	callPeak(x,y,peak,step)
 else:
+	#print "2 peak"
 	callPeak(x,y,peakLeft,step)
 	callPeak(x,y,peakRight,step)

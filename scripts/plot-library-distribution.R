@@ -41,15 +41,17 @@ while(i<=length(r[[2]])){
 
 print(peakI)
 
+threshold=10
+
 minI=1
-while(minI<=length(r[[2]]) && r[[2]][minI]<30){
+while(minI<=length(r[[2]]) && r[[2]][minI]<threshold){
 	minI=minI+1
 }
 minX=r[[1]][minI]
 
 maxI=length(r[[2]])
 
-while(maxI>=1 && r[[2]][maxI]<30){
+while(maxI>=1 && r[[2]][maxI]<threshold){
 	maxI=maxI-1
 }
 
