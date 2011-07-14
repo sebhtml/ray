@@ -58,12 +58,16 @@ maxX=r[[1]][maxI]
 outputFile=paste(file,".png",sep="")
 png(outputFile)
 xMax=500
-par(mfrow=c(2,1))
+par(mfrow=c(3,1))
 plot(r[[1]],r[[2]],type='l',col='black',xlab="Outer distance",ylab="Frequency",xlim=c(minX,maxX),
 	main=paste("Distribution of outer distances\n",file,sep=""))
 grid(lty=1,lwd=2)
 
 points(c(r[[1]][peakI]),c(r[[2]][peakI]),col="red")
+
+plot(r[[1]],log(r[[2]])/log(10),type='l',col='black',xlab="Outer distance",ylab="Frequency (log10 scale)",xlim=c(minX,maxX),
+	main=paste("Distribution of outer distances\n",file,sep=""))
+grid(lty=1,lwd=2)
 
 plot(r[[1]],derivatives,type='l',col='green',ylim=c(-1,+1),xlab="Outer distance",ylab="Derivative",xlim=c(minX,maxX))
 
