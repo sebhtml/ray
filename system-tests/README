@@ -1,3 +1,7 @@
+# Files
+
+data-for-system-tests is a symbolic link.
+
 
 Executing main.sh submit all system tests to a compute grid.
 

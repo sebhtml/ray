@@ -4,7 +4,7 @@
 # the appropriate build must be available in builds/
 
 TEST_NAME=$1
-NSLOTS=24
+NSLOTS=$(cat /proc/cpuinfo|grep proc|wc -l)
 RAY_GIT_PATH=~/git-clones/ray
 
 echo "TEST_NAME= $TEST_NAME"

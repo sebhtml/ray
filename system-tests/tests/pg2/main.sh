@@ -1,6 +1,6 @@
 mpirun -tag-output -np $NSLOTS $RAY_GIT_PATH/system-tests/builds/build-64/Ray \
 -p pg2_1.fasta \
-   pg2_1.fasta \
+   pg2_2.fasta \
 -k 70 \
 -o $TEST_NAME
 
