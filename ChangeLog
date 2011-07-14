@@ -1,5 +1,5 @@
 = 1.6.1 =
-2011-07-
+2011-07-14
 
 * Presumably fixed a compilation error on Apple Snow Leopard.
 Thanks to Anthony Underwood for reporting the bug.
@@ -7,35 +7,44 @@ Thanks to Anthony Underwood for reporting the bug.
 distribution. Thanks to pmiguel on SEQanswers for providing raw data points.
 * Changed ifdef linux to ifdef __linux__.
 * Fixed the showMemoryUsage function.
-* Fixed uniform distribution of k-mers for k > 32
+* Fixed uniform distribution of k-mers for k > 32 -- there was a bug in
+an hashing function. Thanks to Adrian Platts (McGill University) for reporting this.
 * Fixed a bug for the seed length distribution written to a file.
-* Changed MAXKMERLENGTH=128 for MAXKMERLENGTH=64 in examples.
+* Changed MAXKMERLENGTH=128 for MAXKMERLENGTH=64 in examples. 
+Thanks to Adrian Platts (McGill University) for reporting this.
 * Fixed a communication problem for k>32.
 * Added a progression indicator for scaffolding.
 * Writting scaffold sequences is now faster.
-* New option: -write-kmers writes k-mers
+* New option: -write-kmers writes k-mers, their counts and the arcs linking them.
 * New experimental option: -color-space for .csfasta files.
+Ray can generated color-space contigs but the feature is mostly untested.
 * Added an assembler panic when no k-mers are found in reads.
 * New options: -minimumCoverage, -peakCoverage, -repeatCoverage -- provides
-coverage values automatically.
-* Reduced the memory usage during the building of the graph.
+coverage values automatically. Otherwise these are automatically selected
+as usual.
+* Reduced the memory usage during the building of the graph using a k-mer academy.
+Once the graph is ready, memory for k-mers occuring once is freed.
 * New outputted file: PREFIX.degreeDistribution.txt contains the distribution
-of degrees in the graph.
+of degrees in the graph. Most vertices should have an ingoing degree of 1 and an
+outgoing degree of 1.
 *  Cleaned the code by removing MemoryConsumptionReducer.
 * The hash tables are now implemented using open addressing with double
-hashing
+hashing (from The Art of Computer Programming by Donald Knuth)
 * Implemented a sparse hash map (following the description of Google sparse
 hash; see structures/MyHashTable.h)
 * New output file: PREFIX.MessagePassingInterface.txt contains the number of
-sent messages for each type.
+sent messages for each type during an assembly run.
 * System tests are now in system-tests
 * Implemented SmartPointer objects to allow defragmentation of memory.
 * Implemented real-time defragmentation for SmartPointer objects.
-* Implemented incremental resizing to allow low latency.
+* Implemented incremental resizing to allow low latency when an hash table needs
+to grow.
 * Fixed a buffer overflow in getKmerAtPosition, reported by David Eccles
-(gringer).
-* Added a new output file called PREFIX.NetworkTest.txt which contains average
+(gringer) from Max-Planck-Gesellschaft, München.
+* Added a new output file called PREFIX.NetworkTest.txt which contains the average
 latency including software overhead.
+* Fixed some compilation warning on 32-bit GNU/Linux.
+* Tested Ray on the Intel Atom processor.
 
 = 1.6.0 =
 2011-06-13

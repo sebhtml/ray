@@ -22,9 +22,13 @@ It also utilises the message-passing interface (MPI), version 2.2.
 
 - http://github.com/sebhtml/ray
 
-# Mailing list
+# Mailing lists
 
 - denovoassembler-users AT lists.sourceforge.net
+
+- denovoassembler-devel AT lists.sourceforge.net
+
+- SEQanswers: http://seqanswers.com/forums/showthread.php?t=4301
 
 # Installation
 
@@ -144,6 +148,7 @@ Doctoral Award to S.B., Canadian Institutes of Health Research (CIHR)
 
 - Sébastien Boisvert, Doctoral student, Université Laval
 http://boisvert.info
+http://github.com/sebhtml
 http://twitter.com/sebhtml
 
 
