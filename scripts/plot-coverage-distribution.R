@@ -99,11 +99,11 @@ while(i<=length(r[[1]])){
 
 #print("Found minimum")
 
-outputFile=paste(file,".pdf",sep="")
-pdf(outputFile)
+outputFile=paste(file,".png",sep="")
+png(outputFile)
 xMax=500
 par(mfrow=c(2,1))
-plot(r[[1]],log(r[[2]]),type='l',col='black',xlim=c(0,2*r[[1]][maxI]),xlab="Coverage value",ylab="Number of vertices",
+plot(r[[1]],log(r[[2]])/log(10),type='l',col='black',xlim=c(0,2*r[[1]][maxI]),xlab="Coverage value",ylab="Number of vertices (log scale, base 10)",
 	main=paste("Distribution of coverage values\n",file,sep=""))
 grid(lty=1,lwd=2)
 
