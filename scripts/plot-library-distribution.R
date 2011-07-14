@@ -55,8 +55,8 @@ while(maxI>=1 && r[[2]][maxI]<100){
 
 maxX=r[[1]][maxI]
 
-outputFile=paste(file,".pdf",sep="")
-pdf(outputFile)
+outputFile=paste(file,".png",sep="")
+png(outputFile)
 xMax=500
 par(mfrow=c(2,1))
 plot(r[[1]],r[[2]],type='l',col='black',xlab="Outer distance",ylab="Frequency",xlim=c(minX,maxX),
