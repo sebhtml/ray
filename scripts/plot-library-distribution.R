@@ -42,14 +42,14 @@ while(i<=length(r[[2]])){
 print(peakI)
 
 minI=1
-while(minI<=length(r[[2]]) && r[[2]][minI]<100){
+while(minI<=length(r[[2]]) && r[[2]][minI]<30){
 	minI=minI+1
 }
 minX=r[[1]][minI]
 
 maxI=length(r[[2]])
 
-while(maxI>=1 && r[[2]][maxI]<100){
+while(maxI>=1 && r[[2]][maxI]<30){
 	maxI=maxI-1
 }
 
