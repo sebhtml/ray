@@ -60,8 +60,8 @@ class Parameters{
 	int m_rank;
 	int m_peakCoverage;
 
-	map<int,int> m_libraryAverageLength;
-	map<int,int> m_libraryDeviation;
+	map<int,vector<int> > m_libraryAverageLength;
+	map<int,vector<int> > m_libraryDeviation;
 	int m_numberOfLibraries;
 	int m_minimumCoverage;
 	bool m_error;
@@ -108,8 +108,8 @@ public:
 	int getMinimumContigLength();
 	string getOutputFile();
 	int getWordSize();
-	int getLibraryAverageLength(int i);
-	int getLibraryStandardDeviation(int i);
+	int getLibraryAverageLength(int i,int peak);
+	int getLibraryStandardDeviation(int i,int peak);
 	bool isLeftFile(int i);
 	bool isRightFile(int i);
 	bool getColorSpaceMode();
@@ -181,6 +181,10 @@ public:
 	bool showMemoryAllocations();
 	bool writeKmers();
 	int getMinimumCoverageToStore();
+
+	int getLibraryMaxAverageLength(int i);
+	int getLibraryMaxStandardDeviation(int i);
+	int getLibraryPeaks(int library);
 };
 
 #endif

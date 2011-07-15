@@ -84,12 +84,12 @@ class MessageProcessor{
 	GridTable*m_subgraph;
 
 	RingAllocator*m_outboxAllocator;
-	int rank;
+	int m_rank;
 	int*m_numberOfMachinesDoneSendingEdges;
 	FusionData*m_fusionData;
 	int*m_wordSize;
 	ArrayOfReads*m_myReads;
-	int size;
+	int m_size;
 	SequencesIndexer*m_si;
 
 	RingAllocator*m_inboxAllocator;

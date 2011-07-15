@@ -45,6 +45,10 @@ using namespace std;
  * messages are grouped by the virtual communicator.
  */
 class Library{
+	int m_currentLibrary;
+	int m_ranksThatReplied;
+	int m_informationSent;
+
 	int m_detectedDistances;
 	vector<int> m_libraryIndexes;
 	VirtualCommunicator*m_virtualCommunicator;

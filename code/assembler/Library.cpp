@@ -29,30 +29,46 @@
 #include <memory/malloc_types.h>
 using namespace std;
 
+/* send the information to all ranks */
 void Library::updateDistances(){
-	uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-	int libraries=m_parameters->getNumberOfLibraries();
-	int*intMessage=(int*)message;
-	intMessage[0]=libraries;
+	if(m_currentLibrary<m_parameters->getNumberOfLibraries()){
+		/** send the message if not already done */
+		if(!m_informationSent){
+			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+			int outputPosition=0;
+			for(int i=0;i<m_parameters->getLibraryPeaks(m_currentLibrary);i++){
+				message[outputPosition++]=m_currentLibrary;
+				message[outputPosition++]=m_parameters->getLibraryAverageLength(m_currentLibrary,i);
+				message[outputPosition++]=m_parameters->getLibraryStandardDeviation(m_currentLibrary,i);
+			}
 
-	for(int i=0;i<libraries;i++){
-		int average=m_parameters->getLibraryAverageLength(i);
-		int deviation=m_parameters->getLibraryStandardDeviation(i);
-		intMessage[2*i+0+1]=average;
-		intMessage[2*i+1+1]=deviation;
+			for(int i=0;i<m_size;i++){
+				Message aMessage(message,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),i,RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION,m_rank);
+				m_outbox->push_back(aMessage);
+			}
+
+			m_informationSent=true;
+			m_ranksThatReplied=0;
+		/** wait for a reply */
+		}else if(m_inbox->size()>0 && m_inbox->at(0)->getTag()==RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION_REPLY){
+			m_ranksThatReplied++;
+	
+			/** when everyone replied, we can proceed with the next library */
+			if(m_ranksThatReplied==m_parameters->getSize()){
+				m_currentLibrary++;
+				m_informationSent=false;
+				m_ranksThatReplied=0;
+			}
+		}
+	/** basically, we updated all libraries */
+	}else{
+		m_timePrinter->printElapsedTime("Estimation of outer distances for paired reads");
+		cout<<endl;
+
+		(*m_master_mode)=RAY_MASTER_MODE_TRIGGER_EXTENSIONS;
+		m_ed->m_EXTENSION_rank=-1;
+		m_ed->m_EXTENSION_currentRankIsSet=false;
 	}
-
-	for(int i=0;i<m_size;i++){
-		Message aMessage((uint64_t*)intMessage,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),i,RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION,m_rank);
-		m_outbox->push_back(aMessage);
-	}
-
-	m_timePrinter->printElapsedTime("Estimation of outer distances for paired reads");
-	cout<<endl;
-
-	(*m_master_mode)=RAY_MASTER_MODE_TRIGGER_EXTENSIONS;
-	m_ed->m_EXTENSION_rank=-1;
-	m_ed->m_EXTENSION_currentRankIsSet=false;
 }
 
 void Library::detectDistances(){
@@ -158,6 +174,8 @@ TimePrinter*m_timePrinter,int*m_mode,int*m_master_mode,
 Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,StaticVector*inbox,VirtualCommunicator*vc
 ){
 	this->m_rank=m_rank;
+	m_currentLibrary=0;
+	m_ranksThatReplied=0;
 	this->m_outbox=m_outbox;
 	this->m_outboxAllocator=m_outboxAllocator;
 	#ifdef ASSERT
@@ -183,6 +201,7 @@ Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,StaticVector*inbo
 	int chunkSize=4194304;
 	m_allocator.constructor(chunkSize,RAY_MALLOC_TYPE_LIBRARY_ALLOCATOR,m_parameters->showMemoryAllocations());
 	m_completedJobs=0;
+	m_informationSent=false;
 }
 
 void Library::setReadiness(){

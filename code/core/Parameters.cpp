@@ -25,6 +25,7 @@
 #include<core/Parameters.h>
 #include<string>
 #include<sstream>
+#include <pairs/LibraryPeakFinder.h>
 #include<iostream>
 #include<vector>
 #include<cstdlib>
@@ -677,12 +678,35 @@ bool Parameters::isRightFile(int i){
 	return m_rightFiles.count(i)>0;
 }
 
-int Parameters::getLibraryAverageLength(int i){
-	return m_libraryAverageLength[i];
+int Parameters::getLibraryAverageLength(int i,int j){
+	return m_libraryAverageLength[i][j];
 }
 
-int Parameters::getLibraryStandardDeviation(int i){
-	return m_libraryDeviation[i];
+int Parameters::getLibraryStandardDeviation(int i,int j){
+	return m_libraryDeviation[i][j];
+}
+
+int Parameters::getLibraryMaxAverageLength(int i){
+	if(m_libraryAverageLength[i].size()==1)
+		return m_libraryAverageLength[i][0];
+
+	int max=0;
+	for(int j=0;j<(int)m_libraryAverageLength[i].size();j++)
+		if(m_libraryAverageLength[i][j]>max)
+			max=m_libraryAverageLength[i][j];
+	return max;
+}
+
+int Parameters::getLibraryMaxStandardDeviation(int i){
+	if(m_libraryDeviation[i].size()==1)
+		return m_libraryDeviation[i][0];
+
+	int max=0;
+	for(int j=0;j<(int)m_libraryDeviation[i].size();j++)
+		if(m_libraryDeviation[i][j]>max)
+			max=m_libraryDeviation[i][j];
+	return max;
+
 }
 
 bool Parameters::getColorSpaceMode(){
@@ -738,9 +762,9 @@ void Parameters::computeAverageDistances(){
 	cout<<endl;
 	for(map<int,map<int,int> >::iterator i=m_observedDistances.begin();
 		i!=m_observedDistances.end();i++){
-		uint64_t sum=0;
 		int library=i->first;
-		int n=0;
+		vector<int> x;
+		vector<int> y;
 		string fileName=getLibraryFile(library);
 		#ifdef WRITE_LIBRARY_OBSERVATIONS
 		ofstream f(fileName.c_str());
@@ -752,32 +776,20 @@ void Parameters::computeAverageDistances(){
 			#ifdef WRITE_LIBRARY_OBSERVATIONS
 			f<<d<<"\t"<<count<<endl;
 			#endif
-			sum+=d*count;
-			n+=count;
+			x.push_back(d);
+			y.push_back(count);
 		}
 		#ifdef WRITE_LIBRARY_OBSERVATIONS
 		f.close();
 		#endif
-		int average;
-		int standardDeviation;
-		if(n>0){
-			average=sum/n;
-			sum=0;
-			for(map<int,int>::iterator j=m_observedDistances[library].begin();
-				j!=m_observedDistances[library].end();j++){
-				int d=j->first;
-				int count=j->second;
-				int diff=d-average;
-				sum+=diff*diff*count;
-			}
-			sum/=n;
-			standardDeviation=(int)sqrt((double)1.0*sum);
-		}else{
-			average=0;
-			standardDeviation=0;
-		}
 
-		addLibraryData(library,average,standardDeviation);
+		vector<int> averages;
+		vector<int> deviations;
+		LibraryPeakFinder finder;
+		finder.findPeaks(&x,&y,&averages,&deviations);
+	
+		for(int i=0;i<(int)averages.size();i++)
+			addLibraryData(library,averages[i],deviations[i]);
 
 	}	
 	cout<<endl;
@@ -808,9 +820,6 @@ void Parameters::computeAverageDistances(){
 		if(m_automaticLibraries.count(library)>0){
 			type="Automatic";
 		}
-		int average=getLibraryAverageLength(library);
-		int standardDeviation=getLibraryStandardDeviation(library);
-		cout<<"Library # "<<library<<" ("<<type<<") -> average length: "<<average<<" and standard deviation: "<<standardDeviation<<endl;
 		f2<<"LibraryNumber: "<<library<<endl;
 		string format="Interleaved,Paired";
 		vector<int> files=m_libraryFiles[i];
@@ -825,10 +834,17 @@ void Parameters::computeAverageDistances(){
 			f2<<" File: "<<m_singleEndReadsFile[files[1]]<<endl;
 			f2<<"  NumberOfSequences: "<<m_numberOfSequencesInFile[files[1]]<<endl;
 		}
-		f2<<" AverageOuterDistance: "<<average<<endl;
-		f2<<" StandardDeviation: "<<standardDeviation<<endl;
-		if(standardDeviation*2>average){
-			f2<<" DetectionFailure: Yes"<<endl;
+		f2<<"  Distribution: "<<getLibraryFile(library)<<endl;
+		for(int j=0;j<getLibraryPeaks(library);j++){
+			int average=getLibraryAverageLength(library,j);
+			int standardDeviation=getLibraryStandardDeviation(library,j);
+			cout<<"Library # "<<library<<" ("<<type<<") -> average length: "<<average<<" and standard deviation: "<<standardDeviation<<endl;
+			f2<<" Peak "<<j<<endl;
+			f2<<"  AverageOuterDistance: "<<average<<endl;
+			f2<<"  StandardDeviation: "<<standardDeviation<<endl;
+			if(standardDeviation*2>average){
+				f2<<"  DetectionFailure: Yes"<<endl;
+			}
 		}
 		f2<<endl;
 	}
@@ -836,8 +852,11 @@ void Parameters::computeAverageDistances(){
 }
 
 void Parameters::addLibraryData(int library,int average,int deviation){
-	m_libraryAverageLength[library]=average;
-	m_libraryDeviation[library]=deviation;
+	if(average==0)
+		return;
+
+	m_libraryAverageLength[library].push_back(average);
+	m_libraryDeviation[library].push_back(deviation);
 	
 	int distance=average+deviation;
 	if(distance>m_maximumDistance){
@@ -1215,3 +1234,8 @@ void Parameters::fileNameHook(string fileName){
 int Parameters::getMinimumCoverageToStore(){
 	return 2;
 }
+
+int Parameters::getLibraryPeaks(int library){
+	return m_libraryAverageLength[library].size();
+}
+

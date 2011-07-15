@@ -375,8 +375,9 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 					}
 */
 					int library=pairedRead->getLibrary();
-					int expectedFragmentLength=m_parameters->getLibraryAverageLength(library);
-					int expectedDeviation=m_parameters->getLibraryStandardDeviation(library);
+					/* TODO: iterate over all peaks */
+					int expectedFragmentLength=m_parameters->getLibraryAverageLength(library,0);
+					int expectedDeviation=m_parameters->getLibraryStandardDeviation(library,0);
 					ExtensionElement*extensionElement=ed->getUsedRead(uniqueReadIdentifier);
 					if(extensionElement!=NULL){// use to be via readsPositions
 						char theLeftStrand=extensionElement->getStrand();
@@ -939,8 +940,10 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 						int multiplier=3;
 
 						int library=ed->m_EXTENSION_pairedRead.getLibrary();
-						int expectedFragmentLength=m_parameters->getLibraryAverageLength(library);
-						int expectedDeviation=m_parameters->getLibraryStandardDeviation(library);
+
+						/** TODO: iterate over all peaks */
+						int expectedFragmentLength=m_parameters->getLibraryAverageLength(library,0);
+						int expectedDeviation=m_parameters->getLibraryStandardDeviation(library,0);
 
 						int repeatThreshold=100;
 						if(expectedFragmentLength-multiplier*expectedDeviation<=observedFragmentLength 
@@ -989,8 +992,10 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 							ed->m_pairedReadsWithoutMate->insert(uniqueId);
 
 							int library=ed->m_EXTENSION_pairedRead.getLibrary();
-							int expectedFragmentLength=m_parameters->getLibraryAverageLength(library);
-							int expectedDeviation=m_parameters->getLibraryStandardDeviation(library);
+
+							/** TODO: iterate over all peaks */
+							int expectedFragmentLength=m_parameters->getLibraryAverageLength(library,0);
+							int expectedDeviation=m_parameters->getLibraryStandardDeviation(library,0);
 							int expiration=startPosition+expectedFragmentLength+3*expectedDeviation;
 
 							#ifdef HUNT_INFINITE_BUG
@@ -1116,8 +1121,10 @@ void SeedExtender::removeUnfitLibraries(){
 
 		for(map<int,vector<int> >::iterator j=classifiedValues.begin();j!=classifiedValues.end();j++){
 			int library=j->first;
-			int averageLength=m_parameters->getLibraryAverageLength(j->first);
-			int stddev=m_parameters->getLibraryStandardDeviation(j->first);
+
+			/** TODO: iterate over all peaks */
+			int averageLength=m_parameters->getLibraryAverageLength(j->first,0);
+			int stddev=m_parameters->getLibraryStandardDeviation(j->first,0);
 			int sum=0;
 			int n=0;
 			for(int k=0;k<(int)j->second.size();k++){
