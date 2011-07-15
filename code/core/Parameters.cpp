@@ -834,7 +834,7 @@ void Parameters::computeAverageDistances(){
 			f2<<" File: "<<m_singleEndReadsFile[files[1]]<<endl;
 			f2<<"  NumberOfSequences: "<<m_numberOfSequencesInFile[files[1]]<<endl;
 		}
-		f2<<"  Distribution: "<<getLibraryFile(library)<<endl;
+		f2<<" Distribution: "<<getLibraryFile(library)<<endl;
 		for(int j=0;j<getLibraryPeaks(library);j++){
 			int average=getLibraryAverageLength(library,j);
 			int standardDeviation=getLibraryStandardDeviation(library,j);

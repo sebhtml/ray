@@ -375,9 +375,6 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 					}
 */
 					int library=pairedRead->getLibrary();
-					/* TODO: iterate over all peaks */
-					int expectedFragmentLength=m_parameters->getLibraryAverageLength(library,0);
-					int expectedDeviation=m_parameters->getLibraryStandardDeviation(library,0);
 					ExtensionElement*extensionElement=ed->getUsedRead(uniqueReadIdentifier);
 					if(extensionElement!=NULL){// use to be via readsPositions
 						char theLeftStrand=extensionElement->getStrand();
@@ -387,17 +384,25 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 						int observedFragmentLength=(startPosition-startingPositionOnPath)+ed->m_EXTENSION_receivedLength+extensionElement->getStrandPosition()-element->getStrandPosition();
 						int multiplier=3;
 
-						if(expectedFragmentLength-multiplier*expectedDeviation<=observedFragmentLength 
-						&& observedFragmentLength <= expectedFragmentLength+multiplier*expectedDeviation 
-				&&( (theLeftStrand=='F' && theRightStrand=='R')
-					||(theLeftStrand=='R' && theRightStrand=='F'))
-				// the bridging pair is meaningless if both start in repeats
-				&&repeatLengthForLeftRead<repeatThreshold){
-						// it matches!
-							ed->m_EXTENSION_pairedReadPositionsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(observedFragmentLength);
-							ed->m_EXTENSION_pairedLibrariesForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(library);
-							ed->m_EXTENSION_pairedReadsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(uniqueId);
-							m_hasPairedSequences=true;
+						/* iterate over all peaks */
+						for(int peak=0;peak<m_parameters->getLibraryPeaks(library);peak++){
+							int expectedFragmentLength=m_parameters->getLibraryAverageLength(library,peak);
+							int expectedDeviation=m_parameters->getLibraryStandardDeviation(library,peak);
+
+							if(expectedFragmentLength-multiplier*expectedDeviation<=observedFragmentLength 
+							&& observedFragmentLength <= expectedFragmentLength+multiplier*expectedDeviation 
+					&&( (theLeftStrand=='F' && theRightStrand=='R')
+						||(theLeftStrand=='R' && theRightStrand=='F'))
+					// the bridging pair is meaningless if both start in repeats
+					&&repeatLengthForLeftRead<repeatThreshold){
+							// it matches!
+								ed->m_EXTENSION_pairedReadPositionsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(observedFragmentLength);
+								ed->m_EXTENSION_pairedLibrariesForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(library);
+								ed->m_EXTENSION_pairedReadsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(uniqueId);
+								m_hasPairedSequences=true;
+								/** only match 1 peak */
+								break;
+							}
 						}
 					}
 

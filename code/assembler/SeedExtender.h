@@ -48,6 +48,9 @@ using namespace std;
  * Performs the extension of seeds.
  */
 class SeedExtender{
+	/** selected peak for a pair during the extension */
+	int m_selectedPeak;
+
 	int m_extended;
 	bool m_hasPairedSequences;
 	bool m_pickedInformation;
