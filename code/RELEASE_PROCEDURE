@@ -17,6 +17,6 @@
 * compile the manual
 * do a tar.bz2, compile it (make + make install) and test it
 * upload the tarball on sf
-* update the web site (front page)
+* update the web site (download + manual)
 * post an email on the list including changes (ChangeLog) 
 * update the seqanswer thread
