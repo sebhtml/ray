@@ -1,3 +1,8 @@
+= 1.6.2 'raygun' =
+2011-08-XX
+
+
+
 = 1.6.1 'sunray' =
 2011-07-14
 
@@ -20,7 +25,7 @@ Thanks to Adrian Platts (McGill University) for reporting this.
 Ray can generated color-space contigs but the feature is mostly untested.
 * Added an assembler panic when no k-mers are found in reads.
 * New options: -minimumCoverage, -peakCoverage, -repeatCoverage -- provides
-coverage values automatically. Otherwise these are automatically selected
+coverage values manually. Otherwise these are automatically selected
 as usual.
 * Reduced the memory usage during the building of the graph using a k-mer academy.
 Once the graph is ready, memory for k-mers occuring once is freed.
