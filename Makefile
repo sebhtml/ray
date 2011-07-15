@@ -201,6 +201,8 @@ code/structures/StaticVector.o code/structures/Vertex.o
 #scaffolder
 obj-y += code/scaffolder/Scaffolder.o 
 
+obj-y += code/pairs/LibraryPeakFinder.o
+
 #assembler
 obj-y += code/assembler/VertexMessenger.o \
 code/assembler/ReadFetcher.o code/assembler/LibraryWorker.o code/assembler/IndexerWorker.o  \
