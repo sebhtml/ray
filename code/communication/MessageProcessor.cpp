@@ -1709,7 +1709,6 @@ void MessageProcessor::call_RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION(Message*messa
 		int library=incoming[i+0];
 		int average=incoming[i+1];
 		int standardDeviation=incoming[i+2];
-		cout<<"Rank "<<m_rank<<" Adding "<<library<<" "<<average<<" "<<standardDeviation<<endl;
 
 		m_parameters->addLibraryData(library,average,standardDeviation);
 	}

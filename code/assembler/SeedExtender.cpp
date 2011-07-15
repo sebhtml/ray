@@ -946,21 +946,24 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 						int library=ed->m_EXTENSION_pairedRead.getLibrary();
 
-						/** TODO: iterate over all peaks */
-						int expectedFragmentLength=m_parameters->getLibraryAverageLength(library,0);
-						int expectedDeviation=m_parameters->getLibraryStandardDeviation(library,0);
-
 						int repeatThreshold=100;
-						if(expectedFragmentLength-multiplier*expectedDeviation<=observedFragmentLength 
-						&& observedFragmentLength <= expectedFragmentLength+multiplier*expectedDeviation 
-				&&( (theLeftStrand=='F' && theRightStrand=='R')
-					||(theLeftStrand=='R' && theRightStrand=='F'))
-				// the bridging pair is meaningless if both start in repeats
-				&&repeatLengthForLeftRead<repeatThreshold){
-							
-						}else{
-							// remove the right read from the used set
-							addRead=false;
+
+						/** : iterate over all peaks */
+						/** if there is a mate, choose the good peak for the library */
+						for(int peak=0;peak<m_parameters->getLibraryPeaks(library);peak++){
+							int expectedFragmentLength=m_parameters->getLibraryAverageLength(library,peak);
+							int expectedDeviation=m_parameters->getLibraryStandardDeviation(library,peak);
+
+							if(expectedFragmentLength-multiplier*expectedDeviation<=observedFragmentLength 
+							&& observedFragmentLength <= expectedFragmentLength+multiplier*expectedDeviation 
+					&&( (theLeftStrand=='F' && theRightStrand=='R')
+						||(theLeftStrand=='R' && theRightStrand=='F'))
+					// the bridging pair is meaningless if both start in repeats
+					&&repeatLengthForLeftRead<repeatThreshold){
+							}else{
+								// remove the right read from the used set
+								addRead=false;
+							}
 						}
 					}
 				}
