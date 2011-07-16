@@ -115,8 +115,6 @@ SmallSmartPointer DefragmentationGroup::allocate(int n){
 	SmallSmartPointer returnValue=getAvailableSmallSmartPointer();
 
 	#ifdef ASSERT
-	assert(returnValue<ELEMENTS_PER_GROUP);
-	assert(returnValue>=0);
 	assert(m_allocatedSizes[returnValue]==0);
 	#endif
 
@@ -225,7 +223,6 @@ void DefragmentationGroup::deallocate(SmallSmartPointer a,int bytesPerElement,ui
 	#endif
 
 	#ifdef ASSERT
-	assert(a<ELEMENTS_PER_GROUP);
 	if(m_allocatedSizes[a]==0)
 		cout<<__func__<<" SmallSmartPointer "<<(int)a<<" has size 0."<<endl;
 	assert(m_allocatedSizes[a]>0);

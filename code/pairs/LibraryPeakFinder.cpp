@@ -74,7 +74,7 @@ void callPeak(vector<int>*x,vector<int>*y,int peak,int step,vector<int>*peakAver
 		i+=1;
 	}
 
-	int standardDeviation=pow(((sum+0.0)/n),0.5);
+	int standardDeviation=(int)pow(((sum+0.0)/n),0.5);
 
 	/** compute the quality of the peak */
 	first=average-standardDeviation;
