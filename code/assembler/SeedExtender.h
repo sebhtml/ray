@@ -48,6 +48,7 @@ using namespace std;
  * Performs the extension of seeds.
  */
 class SeedExtender{
+	map<int,uint64_t> m_pairedScores;
 
 	int m_extended;
 	bool m_hasPairedSequences;

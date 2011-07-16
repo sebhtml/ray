@@ -1,6 +1,9 @@
 = 1.6.2 'raygun' =
 2011-08-XX
 
+* Ray can now detect more than 1 peak in the same paired library. This is useful because
+paired reads generated using DNA circularization will often be contaminated by some from 
+not circularized DNA (shorter outer distance).
 
 
 = 1.6.1 'sunray' =
