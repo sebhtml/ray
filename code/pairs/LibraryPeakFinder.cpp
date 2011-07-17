@@ -25,8 +25,10 @@
 using namespace std;
 
 /* find the peak */
-void callPeak(vector<int>*x,vector<int>*y,int peak,int step,vector<int>*peakAverages,vector<int>*peakStandardDeviation){
-	int middle=(x->at(x->size()-1)-x->at(0))/2;
+void callPeak(vector<int>*x,vector<int>*y,int peak,vector<int>*peakAverages,vector<int>*peakStandardDeviation,
+	int minX,int maxX){
+	int step=5000;
+	int middle=(maxX-minX)/2;
 	int first=x->at(peak)-step;
 	int last=x->at(peak)+step;
 
@@ -44,6 +46,7 @@ void callPeak(vector<int>*x,vector<int>*y,int peak,int step,vector<int>*peakAver
 	double thresold=0.001;
 	int dataPoints=0;
 
+	//cout<<"first "<<first<<" last "<<last<<endl;
 	/** compute the average around the possible peak */
 	while(i<(int)x->size()){
 		if(x->at(i)>=first && x->at(i) <= last && y->at(i)> y->at(peak)*thresold){
@@ -58,6 +61,7 @@ void callPeak(vector<int>*x,vector<int>*y,int peak,int step,vector<int>*peakAver
 
 	int minimumDatapoints=2;
 
+	//cout<<"points "<<dataPoints<<endl;
 	/** requires at least 2 data points */
 	if(dataPoints<minimumDatapoints)
 		return;
@@ -146,14 +150,16 @@ void LibraryPeakFinder::findPeaks(vector<int>*x,vector<int>*y,vector<int>*peakAv
 
 	/* there is one peak */
 	if(x->at(peakRight)<x->at(peakLeft)+step){
+		//cout<<"1 peak"<<endl;
 		int peak=peakLeft;
 		if(y->at(peakRight)>y->at(peakLeft))
 			peak=peakRight;
-		callPeak(x,y,peak,step,peakAverages,peakStandardDeviation);
+		callPeak(x,y,peak,peakAverages,peakStandardDeviation,minX,maxX);
 
 	/* there are two peaks */
 	}else{
-		callPeak(x,y,peakLeft,step,peakAverages,peakStandardDeviation);
-		callPeak(x,y,peakRight,step,peakAverages,peakStandardDeviation);
+		//cout<<"2 peaks "<<x->at(peakLeft)<<" and "<<x->at(peakRight)<<endl;
+		callPeak(x,y,peakLeft,peakAverages,peakStandardDeviation,minX,maxX);
+		callPeak(x,y,peakRight,peakAverages,peakStandardDeviation,minX,maxX);
 	}
 }
