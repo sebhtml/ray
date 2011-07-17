@@ -6,8 +6,8 @@
 #$ -P nne-790-ab
 # bound the execution  -- most system tests *will* finish under minutes
 #$ -l h_rt=24:00:00
-# utilize 32 compute cores in the compute grid -- also known as the mighty cloud
-#$ -pe default 32
+# utilize a number of compute cores in the compute grid -- also known as the mighty cloud
+#$ -pe default 64
 
 # load modules
 module load compilers/gcc/4.4.2 mpi/openmpi/1.4.3_gcc
