@@ -763,6 +763,10 @@ void Parameters::computeAverageDistances(){
 	for(map<int,map<int,int> >::iterator i=m_observedDistances.begin();
 		i!=m_observedDistances.end();i++){
 		int library=i->first;
+
+		if(!isAutomatic(library))
+			continue;
+
 		vector<int> x;
 		vector<int> y;
 		string fileName=getLibraryFile(library);

@@ -32,8 +32,11 @@ using namespace std;
 /* send the information to all ranks */
 void Library::updateDistances(){
 	if(m_currentLibrary<m_parameters->getNumberOfLibraries()){
+		/** don't send information for manually-provided information */
+		if(!m_parameters->isAutomatic(m_currentLibrary)){
+			m_currentLibrary++;
 		/** send the message if not already done */
-		if(!m_informationSent){
+		}else if(!m_informationSent){
 			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 			int outputPosition=0;
 			for(int i=0;i<m_parameters->getLibraryPeaks(m_currentLibrary);i++){
