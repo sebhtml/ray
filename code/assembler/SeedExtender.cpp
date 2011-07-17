@@ -702,7 +702,7 @@ Kmer *currentVertex,BubbleData*bubbleData){
 		}
 
 		if(ed->m_enumerateChoices_outgoingEdges.size()>1 && ed->m_EXTENSION_readsInRange->size()>0
-		&&m_parameters->showEndingContext()){
+		&&m_parameters->showEndingContext() && false){ /* don't show this tree. */
 			map<Kmer,set<Kmer> >arcs;
 			for(int i=0;i<(int)bubbleData->m_BUBBLE_visitedVertices.size();i++){
 				Kmer root=*currentVertex;
