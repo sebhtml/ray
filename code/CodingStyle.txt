@@ -1,0 +1,21 @@
+== Indent style ==
+
+* Kernighan and Ritchie style, variant "The One True Brace Style" (1TBS)
+	http://en.wikipedia.org/wiki/Indent_style#Variant:_1TBS
+
+* With TAB symbols.
+
+
+== Symbols ==
+
+* Attribute members of a class are prefixed with 'm_'.
+
+* No acronyms (except mpi).
+
+* Slave modes are prefixed with 'RAY_SLAVE_MODE_'.
+
+* Master modes are prefixed with 'RAY_MASTER_MODE_'.
+
+* Message-passing interface tags are prefixed with 'RAY_MPI_TAG_'.
+
+
