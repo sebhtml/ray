@@ -403,10 +403,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 					repeated region really. */){
 							// it matches!
 
-								if(m_pairedScores.count(observedFragmentLength)==0)
-									m_pairedScores[observedFragmentLength]=0;
-
-								m_pairedScores[observedFragmentLength]++;
+								m_pairedScores[library][peak]++;
 
 								ed->m_EXTENSION_pairedReadPositionsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(observedFragmentLength);
 								ed->m_EXTENSION_pairedLibrariesForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(library);
@@ -729,9 +726,17 @@ Kmer *currentVertex,BubbleData*bubbleData){
 		cout<<"Rank "<<theRank<<" (extension done)"<<endl;
 	
 		/** show the utilised outer distances */
-		cout<<"Rank "<<theRank<<" utilised outer distances: ("<<m_pairedScores.size()<<")"<<endl;
-		for(map<int,uint64_t>::iterator i=m_pairedScores.begin();i!=m_pairedScores.end();i++){
-			cout<<"Rank "<<theRank<<"  ===  "<<i->first<<" -> "<<i->second<<endl;
+		cout<<"Rank "<<theRank<<" utilised outer distances: "<<endl;
+		for(map<int,map<int, uint64_t> >::iterator i=m_pairedScores.begin();i!=m_pairedScores.end();i++){
+			for(map<int,uint64_t>::iterator j=i->second.begin();j!=i->second.end();j++){
+				int lib=i->first;
+				int peak=j->first;
+				int average=m_parameters->getLibraryAverageLength(lib,peak);
+				int deviation=m_parameters->getLibraryStandardDeviation(lib,peak);
+				uint64_t count=j->second;
+
+				cout<<"Rank "<<theRank<<" Library: "<<lib<<" LibraryPeak: "<<peak<<" PeakAverage: "<<average<<" PeakDeviation: "<<deviation<<" Pairs: "<<count<<endl;
+			}
 		}
 
 		ed->m_EXTENSION_contigs.push_back(*(ed->m_EXTENSION_extension));
