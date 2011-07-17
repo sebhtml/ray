@@ -6,6 +6,11 @@
 * With TAB symbols.
 
 
+== New lines ==
+
+* Only use '\n'
+
+
 == Symbols ==
 
 * Attribute members of a class are prefixed with 'm_'.
