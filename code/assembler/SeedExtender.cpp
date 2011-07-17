@@ -329,12 +329,12 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 				int startPosition=element->getPosition();
 				int distance=ed->m_EXTENSION_extension->size()-startPosition+element->getStrandPosition();
 
-				int repeatValueForRightRead=ed->m_repeatedValues->at(startPosition);
+				//int repeatValueForRightRead=ed->m_repeatedValues->at(startPosition);
 				#ifdef ASSERT
 				assert(startPosition<(int)ed->m_extensionCoverageValues->size());
 				#endif
 
-				int repeatThreshold=100;
+				//int repeatThreshold=100;
 
 				char*theSequence=element->getSequence();
 				#ifdef ASSERT
@@ -362,7 +362,10 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 				// got a match!
 
 				if(!element->hasPairedRead()){
-					if(repeatValueForRightRead<repeatThreshold){
+					/* we only use single-end reads on
+					non-repeated vertices */
+					//if(repeatValueForRightRead<repeatThreshold){
+					if(ed->m_currentCoverage<m_parameters->getRepeatCoverage()){
 						ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(distance);	
 					}
 					ed->m_EXTENSION_readIterator++;
@@ -381,7 +384,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 						char theLeftStrand=extensionElement->getStrand();
 						int startingPositionOnPath=extensionElement->getPosition();
 
-						int repeatLengthForLeftRead=ed->m_repeatedValues->at(startingPositionOnPath);
+						//int repeatLengthForLeftRead=ed->m_repeatedValues->at(startingPositionOnPath);
 						int observedFragmentLength=(startPosition-startingPositionOnPath)+ed->m_EXTENSION_receivedLength+extensionElement->getStrandPosition()-element->getStrandPosition();
 						int multiplier=3;
 
@@ -395,7 +398,9 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 					&&( (theLeftStrand=='F' && theRightStrand=='R')
 						||(theLeftStrand=='R' && theRightStrand=='F'))
 					// the bridging pair is meaningless if both start in repeats
-					&&repeatLengthForLeftRead<repeatThreshold){
+					//&&repeatLengthForLeftRead<repeatThreshold){
+					/* left read is safe so we don't care if right read is on a
+					repeated region really. */){
 							// it matches!
 
 								if(m_pairedScores.count(observedFragmentLength)==0)
@@ -416,7 +421,9 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 					}
 
 					// add it anyway as a single-end match too!
-					if(repeatValueForRightRead<repeatThreshold){
+					/* add it as single-end read if not repeated. */
+					//if(repeatValueForRightRead<repeatThreshold){
+					if(ed->m_currentCoverage<m_parameters->getRepeatCoverage()){
 						ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(distance);
 					}
 
@@ -860,17 +867,19 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 		ed->m_EXTENSION_extension->push_back((*currentVertex));
 		ed->m_extensionCoverageValues->push_back(*receivedVertexCoverage);
 
+		/*
 		if(ed->m_currentCoverage<m_parameters->getRepeatCoverage()){
 			m_repeatLength=0;
 		}else{
 			m_repeatLength++;
 		}
+		*/
 
 		#ifdef ASSERT
 		assert(ed->m_currentCoverage<=m_parameters->getMaximumAllowedCoverage());
 		#endif
 
-		ed->m_repeatedValues->push_back(m_repeatLength);
+		//ed->m_repeatedValues->push_back(m_repeatLength);
 		m_sequenceRequested=false;
 	}else{
 		if(m_sequenceIndexToCache<(int)ed->m_EXTENSION_receivedReads.size()){
@@ -961,13 +970,13 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 						char theLeftStrand=extensionElement->getStrand();
 						int startingPositionOnPath=extensionElement->getPosition();
 
-						int repeatLengthForLeftRead=ed->m_repeatedValues->at(startingPositionOnPath);
+						//int repeatLengthForLeftRead=ed->m_repeatedValues->at(startingPositionOnPath);
 						int observedFragmentLength=(startPosition-startingPositionOnPath)+ed->m_EXTENSION_receivedLength+extensionElement->getStrandPosition()-positionOnStrand;
 						int multiplier=3;
 
 						int library=ed->m_EXTENSION_pairedRead.getLibrary();
 
-						int repeatThreshold=100;
+						//int repeatThreshold=100;
 
 						/** : iterate over all peaks */
 						/** if there is a mate, choose the good peak for the library */
@@ -980,7 +989,9 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 					&&( (theLeftStrand=='F' && theRightStrand=='R')
 						||(theLeftStrand=='R' && theRightStrand=='F'))
 					// the bridging pair is meaningless if both start in repeats
-					&&repeatLengthForLeftRead<repeatThreshold){
+					/*&&repeatLengthForLeftRead<repeatThreshold*/
+					/* left read is safe so we don't care if right read is on a
+					repeated region really. */){
 								/* as soon as we find something interesting, we stop */
 								/* this makes Ray segfault because */
 								addRead=true;
