@@ -357,13 +357,29 @@ void Machine::start(){
 
 	m_virtualCommunicator.constructor(m_rank,m_size,&m_outboxAllocator,&m_inbox,&m_outbox);
 
-	#define Set(x,y) m_virtualCommunicator.setReplyType( x, x ## _REPLY );
-	#include <communication/VirtualCommunicatorConfiguration.h>
-	#undef Set
+	/** configure the virtual communicator. */
 
-	#define Set(x,y) m_virtualCommunicator.setElementsPerQuery( x, y );
-	#include <communication/VirtualCommunicatorConfiguration.h>
-	#undef Set
+	#define MACRO_LIST_ITEM(x,y) \
+
+	/* ## concatenates 2 symbols */
+	m_virtualCommunicator.setReplyType( x, x ## _REPLY ); \
+	m_virtualCommunicator.setElementsPerQuery( x, y );
+
+	MACRO_LIST_ITEM( RAY_MPI_TAG_GET_CONTIG_CHUNK,		MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t) )
+	MACRO_LIST_ITEM( RAY_MPI_TAG_REQUEST_VERTEX_READS, 		max(5,KMER_U64_ARRAY_SIZE+1) )
+	MACRO_LIST_ITEM( RAY_MPI_TAG_GET_READ_MATE, 		4 )
+	MACRO_LIST_ITEM( RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,	KMER_U64_ARRAY_SIZE )
+	MACRO_LIST_ITEM( RAY_MPI_TAG_ATTACH_SEQUENCE,		KMER_U64_ARRAY_SIZE+4 )
+	MACRO_LIST_ITEM( RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,	max(2,KMER_U64_ARRAY_SIZE))
+	MACRO_LIST_ITEM( RAY_MPI_TAG_HAS_PAIRED_READ,		1 )
+	MACRO_LIST_ITEM( RAY_MPI_TAG_GET_READ_MARKERS,		3+2*KMER_U64_ARRAY_SIZE )
+	MACRO_LIST_ITEM( RAY_MPI_TAG_GET_PATH_LENGTH,		1 )
+	MACRO_LIST_ITEM( RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION,	max(KMER_U64_ARRAY_SIZE,4) )
+	MACRO_LIST_ITEM( RAY_MPI_TAG_SCAFFOLDING_LINKS, 		6 )
+	MACRO_LIST_ITEM( RAY_MPI_TAG_CONTIG_INFO,			2)
+	MACRO_LIST_ITEM( RAY_MPI_TAG_ASK_READ_LENGTH, 		3 );
+
+	#undef MACRO_LIST_ITEM
 
 	m_library.constructor(getRank(),&m_outbox,&m_outboxAllocator,&m_sequence_id,&m_sequence_idInFile,
 		m_ed,getSize(),&m_timePrinter,&m_slave_mode,&m_master_mode,
