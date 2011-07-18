@@ -2003,3 +2003,13 @@ void MessageProcessor::assignHandlers(){
 void MessageProcessor::setVirtualCommunicator(VirtualCommunicator*a){
 	m_virtualCommunicator=a;
 }
+
+void MessageProcessor::call_RAY_MPI_TAG_COUNT_FILE_ENTRIES(Message*message){
+	(*m_mode)=RAY_SLAVE_MODE_COUNT_FILE_ENTRIES;
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_COUNT_FILE_ENTRIES_REPLY(Message*message){}
+void MessageProcessor::call_RAY_MPI_TAG_REQUEST_FILE_ENTRY_COUNTS(Message*message){}
+void MessageProcessor::call_RAY_MPI_TAG_REQUEST_FILE_ENTRY_COUNTS_REPLY(Message*message){}
+void MessageProcessor::call_RAY_MPI_TAG_FILE_ENTRY_COUNT(Message*message){}
+void MessageProcessor::call_RAY_MPI_TAG_FILE_ENTRY_COUNT_REPLY(Message*message){}

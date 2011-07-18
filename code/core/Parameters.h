@@ -185,6 +185,7 @@ public:
 	int getLibraryMaxAverageLength(int i);
 	int getLibraryMaxStandardDeviation(int i);
 	int getLibraryPeaks(int library);
+	string getFile(int file);
 };
 
 #endif

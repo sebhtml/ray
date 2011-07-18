@@ -160,6 +160,6 @@ void NetworkTest::masterWork(){
 		}
 		f.close();
 		m_latencies.clear();
-		(*m_masterMode)=RAY_MASTER_MODE_LOAD_SEQUENCES;
+		(*m_masterMode)=RAY_MASTER_MODE_COUNT_FILE_ENTRIES;
 	}
 }

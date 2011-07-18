@@ -26,6 +26,7 @@
 #include <graph/GridTable.h>
 #include <communication/MessagesHandler.h>
 #include <core/common_functions.h>
+#include <assembler/Partitioner.h>
 #include <structures/MyForest.h>
 #include <structures/ArrayOfReads.h>
 #include <memory/OnDiskAllocator.h>
@@ -69,6 +70,7 @@ class Machine;
 typedef void (Machine::*MachineMethod) ();
 
 class Machine{
+	Partitioner m_partitioner;
 	NetworkTest m_networkTest;
 	EdgePurger m_edgePurger;
 	map<int,map<int,uint64_t> > m_edgeDistribution;

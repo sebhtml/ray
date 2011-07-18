@@ -658,6 +658,10 @@ vector<string> Parameters::getAllFiles(){
 	return l;
 }
 
+string Parameters::getFile(int file){
+	return m_singleEndReadsFile[file];
+}
+
 string Parameters::getDirectory(){
 	return m_directory;
 }

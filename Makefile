@@ -216,6 +216,7 @@ code/assembler/TimePrinter.o code/assembler/TipWatchdog.o code/assembler/Vertice
 code/assembler/ray_main.o code/assembler/ExtensionData.o 
 obj-y += code/assembler/KmerAcademyBuilder.o
 obj-y += code/assembler/EdgePurger.o code/assembler/EdgePurgerWorker.o
+obj-y += code/assembler/Partitioner.o
 
 # inference rule
 %.o: %.cpp
