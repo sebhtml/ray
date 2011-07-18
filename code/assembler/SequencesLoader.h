@@ -64,7 +64,7 @@ public:
 	time_t*m_lastTime,
 	Parameters*m_parameters,int*m_master_mode,int*m_mode
 );
-	bool computePartition(int rank,int size,StaticVector*m_outbox,
+	bool writeSequencesToAMOSFile(int rank,int size,StaticVector*m_outbox,
 	RingAllocator*m_outboxAllocator,
 	bool*m_loadSequenceStep,
 	BubbleData*m_bubbleData,

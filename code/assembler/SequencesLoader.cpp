@@ -132,17 +132,13 @@ void SequencesLoader::registerSequence(){
 	}
 }
 
-bool SequencesLoader::computePartition(int rank,int size,
+bool SequencesLoader::writeSequencesToAMOSFile(int rank,int size,
 	StaticVector*m_outbox,
 	RingAllocator*m_outboxAllocator,
 	bool*m_loadSequenceStep,BubbleData*m_bubbleData,
 	time_t*m_lastTime,
 	Parameters*m_parameters,int*m_master_mode,int*m_mode
 ){
-	printf("\n\n");
-	printf("Rank %i is computing the partition\n",m_rank);
-	fflush(stdout);
-	uint64_t counted=0;
 	FILE*fp=NULL;
 	if(m_parameters->useAmos()){
 		fp=fopen(m_parameters->getAmosFile().c_str(),"w");
@@ -158,14 +154,6 @@ bool SequencesLoader::computePartition(int rank,int size,
 		if(res==EXIT_FAILURE){
 			return false;
 		}
-		m_parameters->setNumberOfSequences(m_loader.size());
-
-		if(m_loader.size()>0)
-			cout<<"Rank "<<m_rank<<": ["<<m_distribution_file_id+1<<"/"<<allFiles.size()<<"] "<<allFiles[m_distribution_file_id]<<" -> partition is ["<<counted<<";"<<counted+m_loader.size()-1<<"], "<<m_loader.size()<<" sequence reads"<<endl;
-		else
-			printf("Rank %i: [%i/%i] %s -> 0 sequence reads\n",m_rank,m_distribution_file_id+1,(int)allFiles.size(),allFiles[(m_distribution_file_id)].c_str());
-			
-		counted+=m_loader.size();
 
 		fflush(stdout);
 		// write Reads in AMOS format.
@@ -194,9 +182,6 @@ bool SequencesLoader::computePartition(int rank,int size,
 	m_loader.clear();
 	if(m_parameters->useAmos()){
 		fclose(fp);
-	}
-	if(counted>0){
-		cout<<"Rank "<<m_rank<<": global partition is [0;"<<counted-1<<"], "<<counted<<" sequence reads"<<endl;
 	}
 	return true;
 }

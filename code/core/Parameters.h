@@ -69,7 +69,7 @@ class Parameters{
 	bool m_amos;
 	bool m_initiated;
 	vector<string> m_singleEndReadsFile;
-	vector<uint64_t> m_numberOfSequencesInFile;
+	map<int,uint64_t> m_numberOfSequencesInFile;
 	uint64_t m_totalNumberOfSequences;
 	map<int,int> m_fileLibrary;
 	vector<vector<int> > m_libraryFiles;
@@ -123,7 +123,7 @@ public:
 	void addDistance(int library,int distance,int count);
 	void computeAverageDistances();
 	uint64_t getNumberOfSequences(int n);
-	void setNumberOfSequences(uint64_t n);
+	void setNumberOfSequences(int file,uint64_t n);
 	int getNumberOfFiles();
 	bool isAutomatic(int library);
 	int getLibrary(int file);

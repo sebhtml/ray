@@ -83,7 +83,8 @@ Machine::Machine(int argc,char**argv){
 }
 
 void Machine::start(){
-	m_networkTest.constructor(m_rank,&m_master_mode,&m_slave_mode,m_size,&m_inbox,&m_outbox,&m_parameters,&m_outboxAllocator,m_messagesHandler.getName());
+	m_networkTest.constructor(m_rank,&m_master_mode,&m_slave_mode,m_size,&m_inbox,&m_outbox,&m_parameters,&m_outboxAllocator,m_messagesHandler.getName(),
+		&m_timePrinter);
 	m_partitioner.constructor(&m_outboxAllocator,&m_inbox,&m_outbox,&m_parameters,&m_slave_mode,&m_master_mode);
 
 	m_initialisedAcademy=false;
@@ -715,7 +716,8 @@ void Machine::call_RAY_MASTER_MODE_LOAD_SEQUENCES(){
 	m_timePrinter.printElapsedTime("File partitioning");
 	cout<<endl;
 
-	bool res=m_sl.computePartition(getRank(),getSize(),
+	/** this won't write anything if -amos was not provided */
+	bool res=m_sl.writeSequencesToAMOSFile(getRank(),getSize(),
 	&m_outbox,
 	&m_outboxAllocator,
 	&m_loadSequenceStep,

@@ -69,6 +69,10 @@ void Partitioner::masterMethod(){
 		m_ranksDoneSending++;
 		/** all peers have finished */
 		if(m_ranksDoneSending==m_parameters->getSize()){
+			for(int i=0;i<m_parameters->getSize();i++){
+				m_parameters->setNumberOfSequences(i,m_masterCounts[i]);
+			}
+			m_masterCounts.clear();
 			(*m_masterMode)=RAY_MASTER_MODE_LOAD_SEQUENCES;
 		}
 	}
@@ -86,9 +90,11 @@ void Partitioner::slaveMethod(){
 		int rankInCharge=m_currentFileToCount%m_parameters->getSize();
 		if(rankInCharge==m_parameters->getRank()){
 			/** count the entries in the file */
-			int res=m_loader.load(m_parameters->getFile(m_currentFileToCount),false);
+			string file=m_parameters->getFile(m_currentFileToCount);
+			cout<<"Rank "<<m_parameters->getRank()<<" Reading "<<file<<endl;
+			int res=m_loader.load(file,false);
 			if(res==EXIT_FAILURE){
-				cout<<"Rank "<<m_parameters->getRank()<<" Error: "<<m_parameters->getFile(m_currentFileToCount)<<" failed to load properly..."<<endl;
+				cout<<"Rank "<<m_parameters->getRank()<<" Error: "<<file<<" failed to load properly..."<<endl;
 			}
 			m_slaveCounts[m_currentFileToCount]=m_loader.size();
 
@@ -131,6 +137,7 @@ void Partitioner::slaveMethod(){
 			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_REQUEST_FILE_ENTRY_COUNTS_REPLY,m_parameters->getRank());
 			m_outbox->push_back(aMessage);
 			(*m_slaveMode)=RAY_SLAVE_MODE_DO_NOTHING;
+			m_slaveCounts.clear();
 		}
 	}
 }

@@ -34,7 +34,8 @@ using namespace std;
 
 /** initialize the NetworkTest */
 void NetworkTest::constructor(int rank,int*masterMode,int*slaveMode,int size,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,RingAllocator*outboxAllocator,
-	string*name){
+	string*name,TimePrinter*timePrinter){
+	m_timePrinter=timePrinter;
 	m_name=name;
 	m_inbox=inbox;
 	m_outbox=outbox;
@@ -161,5 +162,7 @@ void NetworkTest::masterWork(){
 		f.close();
 		m_latencies.clear();
 		(*m_masterMode)=RAY_MASTER_MODE_COUNT_FILE_ENTRIES;
+		m_timePrinter->printElapsedTime("Network testing");
+		cout<<endl;
 	}
 }

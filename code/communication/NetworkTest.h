@@ -23,6 +23,7 @@
 
 #include <structures/StaticVector.h>
 #include <core/Parameters.h>
+#include <assembler/TimePrinter.h>
 #include <memory/RingAllocator.h>
 #include <string>
 #include <map>
@@ -48,6 +49,7 @@ using namespace std;
  *          - slave and master modes.
  */
 class NetworkTest{
+	TimePrinter*m_timePrinter;
 	/** the message inbox */
 	StaticVector*m_inbox;
 	/** the message outbox */
@@ -91,7 +93,7 @@ class NetworkTest{
 public:
 	/** initialize the NetworkTest */
 	void constructor(int rank,int*masterMode,int*slaveMode,int size,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,RingAllocator*outboxAllocator,
-		string*name);
+		string*name,TimePrinter*timePrinter);
 	/** work method for the master mode */
 	void masterWork();
 	/** work method for the slave mode */

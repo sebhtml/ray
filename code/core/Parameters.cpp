@@ -872,12 +872,11 @@ void Parameters::addLibraryData(int library,int average,int deviation){
 	}
 }
 
-void Parameters::setNumberOfSequences(uint64_t n){
-	if((int)m_numberOfSequencesInFile.size()<getNumberOfFiles()){
+void Parameters::setNumberOfSequences(int file,uint64_t n){
+	if(m_numberOfSequencesInFile.count(file)==0){
+		m_numberOfSequencesInFile[file]=n;
 		m_totalNumberOfSequences+=n;
 	}
-
-	m_numberOfSequencesInFile.push_back(n);
 }
 
 int Parameters::getNumberOfLibraries(){
