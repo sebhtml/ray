@@ -29,7 +29,8 @@
  * the inbox and the outbox are arrays of Message's
  * All the code in Ray utilise Message to communicate information.
  * MPI_Datatype is always MPI_UNSIGNED_LONG_LONG
- * m_count is >=0 and <= MAXIMUM_MESSAGE_SIZE_IN_BYTES (default is 4000).
+ * m_count is >=0 and <= MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)
+ *  (default is 4000/8 = 500 ).
  */
 class Message{
 	/** the message body, contains data
