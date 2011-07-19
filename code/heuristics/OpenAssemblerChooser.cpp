@@ -41,6 +41,35 @@ void OpenAssemblerChooser::constructor(int m_peakCoverage){
 
 int OpenAssemblerChooser::choose(ExtensionData*m_ed,Chooser*m_c,int m_minimumCoverage,int m_maxCoverage,
 Parameters*parameters){
+	/** prepare data for the NovaEngine */
+	vector<map<int,int> > novaData;
+	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
+		Kmer key=m_ed->m_enumerateChoices_outgoingEdges[i];
+		map<int,int> data;
+
+		/** load single-end data */
+		if(m_ed->m_EXTENSION_readPositionsForVertices.count(key)>0){
+			for(vector<int>::iterator j=m_ed->m_EXTENSION_readPositionsForVertices[key].begin();
+				j!=m_ed->m_EXTENSION_readPositionsForVertices[key].end();j++){
+				int val=*j;
+				data[val]++;
+			}
+		}
+		/** load paired-end data and mate-pair data */
+		if(m_ed->m_EXTENSION_pairedReadPositionsForVertices.count(key)>0){
+			for(int j=0;j<(int)m_ed->m_EXTENSION_pairedReadPositionsForVertices[key].size();j++){
+				int value=m_ed->m_EXTENSION_pairedReadPositionsForVertices[key][j];
+				data[value]++;
+			}
+		}
+
+		novaData.push_back(data);
+	}
+
+	/** NovaData are ready, now call the NovaEngine */
+	cout<<"Calling NovaEngine.."<<endl;
+	int novaChoice=m_novaEngine.choose(&novaData);
+
 	vector<set<int> > battleVictories;
 
 	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){

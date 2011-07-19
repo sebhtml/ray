@@ -23,6 +23,7 @@
 #define _OpenAssemblerChooser
 
 #include <heuristics/Chooser.h> // for IMPOSSIBLE_CHOICE
+#include <heuristics/RayNovaEngine.h>
 
 /**
  * de Bruijn heuristic to choose extension direction in a graph, described in paper 
@@ -35,6 +36,8 @@
  * 	http://dx.doi.org/doi:10.1089/cmb.2009.0238
  */
 class OpenAssemblerChooser{
+	RayNovaEngine m_novaEngine;
+
 	double m_singleEndMultiplicator;
 	double m_pairedEndMultiplicator;
 	void updateMultiplicators(int a);

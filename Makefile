@@ -219,7 +219,7 @@ obj-y += code/assembler/Partitioner.o
 
 # heuristics
 obj-y += code/heuristics/BubbleTool.o code/heuristics/Chooser.o code/heuristics/OpenAssemblerChooser.o \
- code/heuristics/TipWatchdog.o
+ code/heuristics/TipWatchdog.o code/heuristics/RayNovaEngine.o
 
 # inference rule
 %.o: %.cpp
