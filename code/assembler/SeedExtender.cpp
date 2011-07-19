@@ -480,6 +480,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 
 				ed->m_EXTENSION_singleEndResolution=true;
 
+				//inspect(ed,currentVertex);
 				int choice=(*oa).choose(ed,&(*chooser),minimumCoverage,(maxCoverage),m_parameters);
 				if(choice!=IMPOSSIBLE_CHOICE){
 					#ifdef SHOW_CHOICE

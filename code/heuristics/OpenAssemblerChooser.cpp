@@ -23,16 +23,8 @@
 #include<heuristics/Chooser.h>
 
 void OpenAssemblerChooser::updateMultiplicators(int m_peakCoverage){
-	m_singleEndMultiplicator=3.0;
-	m_pairedEndMultiplicator=3.0;
-	if(m_peakCoverage>=20){
-		m_singleEndMultiplicator=m_pairedEndMultiplicator=2.0;
-	}
-	if(m_peakCoverage>=25){
-		m_singleEndMultiplicator=m_pairedEndMultiplicator=1.3;
-	}
-	if(m_peakCoverage>=100){
-	}
+	m_singleEndMultiplicator=2.0;
+	m_pairedEndMultiplicator=2.0;
 }
 
 void OpenAssemblerChooser::constructor(int m_peakCoverage){
@@ -79,6 +71,10 @@ Parameters*parameters){
 
 	chooseWithCoverage(m_ed,m_minimumCoverage,&battleVictories);
 
+	int coverageWinner=getWinner(&battleVictories,m_ed->m_enumerateChoices_outgoingEdges.size());
+	if(coverageWinner!=IMPOSSIBLE_CHOICE)
+		return coverageWinner;
+
 	m_c->chooseWithPairedReads(m_ed,m_minimumCoverage,m_maxCoverage,m_pairedEndMultiplicator,&battleVictories,parameters);
 	
 	int pairedChoice=getWinner(&battleVictories,m_ed->m_enumerateChoices_outgoingEdges.size());
@@ -97,6 +93,9 @@ Parameters*parameters){
 			cout<<"Choice "<<pairedChoice+1<<" wins with paired-end reads."<<endl;
 		}
 		#endif
+		if(novaChoice!=pairedChoice){
+			cout<<"NovaEngine says "<<novaChoice<<" but PairedChooser says "<<pairedChoice<<endl;
+		}
 		return pairedChoice;
 	}else{
 		if(m_ed->m_EXTENSION_extension->size()>50000){
@@ -183,28 +182,21 @@ void OpenAssemblerChooser::chooseWithCoverage(ExtensionData*ed,int minCoverage,v
 	for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
 		int coverageForI=ed->m_EXTENSION_coverages->at(i);
 		Kmer key=ed->m_enumerateChoices_outgoingEdges[i];
-		int singleReadsI=ed->m_EXTENSION_readPositionsForVertices[key].size();
-
-		// in less than 10% of the coverage is supported by displayed reads, abort it...
-		if(singleReadsI*10 < coverageForI){
-			continue;
-		}
 
 		for(int j=0;j<(int)ed->m_enumerateChoices_outgoingEdges.size();j++){
 			if(i==j){
 				continue;
 			}
 			int coverageForJ=ed->m_EXTENSION_coverages->at(j);
-			if(coverageForJ>=5){
-				continue;
-			}
-			if(coverageForI>=2*minCoverage && coverageForJ<=minCoverage){
+
+			if(coverageForI>=2*minCoverage && coverageForJ<=minCoverage/2){
 				(*battleVictories)[i].insert(j);
 			}
-
+/*
 			if(coverageForI>=minCoverage && coverageForJ<=minCoverage/2){
 				(*battleVictories)[i].insert(j);
 			}
+*/
 		}
 	}
 }

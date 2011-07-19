@@ -19,6 +19,11 @@
 
 */
 
+/* TODO: add option -minimumContigLength
+ * TODO: add option -minimumScaffoldLength
+ * TODO: add option -show-extension-choices
+ */
+
 #include<core/common_functions.h>
 #include<assert.h>
 #include<math.h>
