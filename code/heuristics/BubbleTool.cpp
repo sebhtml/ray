@@ -19,7 +19,7 @@
 
 */
 
-#include <assembler/BubbleTool.h>
+#include <heuristics/BubbleTool.h>
 #include <core/common_functions.h>
 #include <assert.h>
 #include <map>

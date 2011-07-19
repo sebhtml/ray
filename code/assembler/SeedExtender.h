@@ -38,8 +38,8 @@ class DepthFirstSearchData;
 #include <assembler/FusionData.h>
 #include <assembler/BubbleData.h>
 #include <assembler/DepthFirstSearchData.h>
-#include <assembler/BubbleTool.h>
-#include <assembler/OpenAssemblerChooser.h>
+#include <heuristics/BubbleTool.h>
+#include <heuristics/OpenAssemblerChooser.h>
 #include <graph/GridTable.h>
 
 using namespace std;

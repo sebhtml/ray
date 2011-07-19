@@ -19,8 +19,8 @@
 
 */
 
-#include<assembler/Chooser.h>
-#include<core/common_functions.h>
+#include <heuristics/Chooser.h>
+#include <core/common_functions.h>
 
 void Chooser::chooseWithPairedReads(ExtensionData*m_ed,
 	int m_minimumCoverage,int m_maxCoverage,

@@ -19,8 +19,8 @@
 
 */
 
-#include<assembler/OpenAssemblerChooser.h>
-#include<assembler/Chooser.h>
+#include<heuristics/OpenAssemblerChooser.h>
+#include<heuristics/Chooser.h>
 
 void OpenAssemblerChooser::updateMultiplicators(int m_peakCoverage){
 	m_singleEndMultiplicator=3.0;

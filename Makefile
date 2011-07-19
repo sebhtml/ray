@@ -208,15 +208,18 @@ obj-y += code/assembler/VertexMessenger.o \
 code/assembler/ReadFetcher.o code/assembler/LibraryWorker.o code/assembler/IndexerWorker.o  \
 code/assembler/SeedWorker.o code/assembler/ExtensionElement.o \
 code/assembler/DepthFirstSearchData.o code/assembler/SeedingData.o \
-code/assembler/BubbleTool.o code/assembler/Chooser.o \
 code/assembler/FusionData.o code/assembler/Library.o code/assembler/Loader.o \
-code/assembler/OpenAssemblerChooser.o code/assembler/SeedExtender.o code/assembler/SequencesIndexer.o \
+code/assembler/SeedExtender.o code/assembler/SequencesIndexer.o \
 code/assembler/SequencesLoader.o \
-code/assembler/TimePrinter.o code/assembler/TipWatchdog.o code/assembler/VerticesExtractor.o \
+code/assembler/TimePrinter.o code/assembler/VerticesExtractor.o \
 code/assembler/ray_main.o code/assembler/ExtensionData.o 
 obj-y += code/assembler/KmerAcademyBuilder.o
 obj-y += code/assembler/EdgePurger.o code/assembler/EdgePurgerWorker.o
 obj-y += code/assembler/Partitioner.o
+
+# heuristics
+obj-y += code/heuristics/BubbleTool.o code/heuristics/Chooser.o code/heuristics/OpenAssemblerChooser.o \
+ code/heuristics/TipWatchdog.o
 
 # inference rule
 %.o: %.cpp

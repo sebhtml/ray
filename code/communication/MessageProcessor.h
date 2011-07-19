@@ -26,7 +26,7 @@
 #include <assembler/Library.h>
 #include <assembler/SequencesIndexer.h>
 #include <assembler/SeedingData.h>
-#include <assembler/OpenAssemblerChooser.h>
+#include <heuristics/OpenAssemblerChooser.h>
 #include <structures/ArrayOfReads.h>
 #include <communication/Message.h>
 #include <vector>

@@ -18,7 +18,7 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include<assembler/TipWatchdog.h>
+#include <heuristics/TipWatchdog.h>
 
 bool TipWatchdog::getApproval(ExtensionData*ed,DepthFirstSearchData*dfsData,int minimumCoverage,Kmer SEEDING_currentVertex,
 	int w,BubbleData*bubbleData){

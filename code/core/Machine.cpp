@@ -27,8 +27,8 @@
 #include <sstream>
 #include <communication/Message.h>
 #include <time.h>
-#include <assembler/TipWatchdog.h>
-#include <assembler/BubbleTool.h>
+#include <heuristics/TipWatchdog.h>
+#include <heuristics/BubbleTool.h>
 #include <assert.h>
 #include <core/common_functions.h>
 #include <iostream>

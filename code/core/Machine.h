@@ -42,10 +42,10 @@
 #include <assembler/SequencesLoader.h>
 #include <assembler/Library.h>
 #include <graph/CoverageGatherer.h>
-#include <assembler/Chooser.h>
+#include <heuristics/Chooser.h>
 #include <communication/MessageProcessor.h>
 #include <structures/Vertex.h>
-#include <assembler/OpenAssemblerChooser.h>
+#include <heuristics/OpenAssemblerChooser.h>
 #include <structures/SplayTree.h>
 #include <assembler/BubbleData.h>
 #include <communication/Message.h>
