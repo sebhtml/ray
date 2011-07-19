@@ -28,10 +28,6 @@ int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoice
 	vector<double> novaScores;
 	int choices=distances->size();
 
-	#ifdef ASSERT
-	assert(choices>1);
-	#endif
-	
 	int withElements=0;
 	int initialChoice=0;
 	for(int i=0;i<choices;i++){
