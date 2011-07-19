@@ -106,12 +106,30 @@ void callPeak(vector<int>*x,vector<int>*y,int peak,vector<int>*peakAverages,vect
 
 /** find multiple peaks in the distribution of inserts for a library */
 void LibraryPeakFinder::findPeaks(vector<int>*x,vector<int>*y,vector<int>*peakAverages,vector<int>*peakStandardDeviation){
-	/** if this is simulated data with no standard deviation */
-	if(x->size()==1&&y->at(0)>1000){
-		peakAverages->push_back(x->at(0));
+	/** if this is simulated data with no standard deviation.*/
+	int lowQuality=0;
+	int highQuality=0;
+	int lowThreshold=500;
+	int highThreshold=10000;
+	int qualityPeak=0;
+	for(int i=0;i<(int)y->size();i++){
+		if(y->at(i)<lowThreshold){
+			lowQuality++;
+		}else if(y->at(i)>highThreshold){
+			highQuality++;
+			qualityPeak=x->at(i);
+		}
+	}
+	cout<<"Low= "<<lowQuality<<" High= "<<highQuality<<endl;
+	if(((lowQuality+highQuality) == (int)y->size()) && (highQuality == 1)){
+		cout<<"No deviation! Peak 0 "<<qualityPeak<<" 0"<<endl;
+		/** only one data point was interesting actually */
+		peakAverages->push_back(qualityPeak);
 		peakStandardDeviation->push_back(0);
 		return;
 	}
+
+	/** data is more complex, needs some serious data analysis */
 
 	int minI=0;
 	int maxI=x->size()-1;

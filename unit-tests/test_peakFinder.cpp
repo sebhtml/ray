@@ -1,5 +1,6 @@
 #include <pairs/LibraryPeakFinder.h>
 #include <fstream>
+#include <iostream>
 #include <vector>
 using namespace std;
 
@@ -23,6 +24,10 @@ int main(int argc,char**argv){
 	vector<int> averages;
 	vector<int> deviations;
 	a.findPeaks(&x,&y,&averages,&deviations);
+
+	for(int i=0;i<averages.size();i++){
+		cout<<"Peak "<<i<<" "<<averages[i]<<" "<<deviations[i]<<endl;
+	}
 
 	f.close();
 
