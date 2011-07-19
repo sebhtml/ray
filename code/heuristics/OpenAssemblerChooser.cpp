@@ -31,26 +31,59 @@ void OpenAssemblerChooser::constructor(int m_peakCoverage){
 	updateMultiplicators(m_peakCoverage);
 }
 
-int OpenAssemblerChooser::choose(ExtensionData*m_ed,Chooser*m_c,int m_minimumCoverage,int m_maxCoverage,
+int OpenAssemblerChooser::choose(ExtensionData*ed,Chooser*m_c,int minimumCoverage,int m_maxCoverage,
 Parameters*parameters){
+	/** filter invalid choices */
+	set<int> invalidChoices;
+
+	for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
+		int coverageForI=ed->m_EXTENSION_coverages->at(i);
+		Kmer key=ed->m_enumerateChoices_outgoingEdges[i];
+
+		/** an invalid choice must not have paired reads */
+		/** an invalid choice must not have single reads */
+		if(ed->m_EXTENSION_pairedReadPositionsForVertices[key].size()==0 && ed->m_EXTENSION_readPositionsForVertices[key].size()==0){
+			invalidChoices.insert(i);
+			continue;
+		}
+
+		bool invalid=true;
+		/** an invalid choice must have coverage < minCoverage/2 */
+		if(coverageForI>minimumCoverage/2)
+			invalid=false;
+
+		/** all other choices must be above 2*minCoverage */
+		for(int j=0;j<(int)ed->m_enumerateChoices_outgoingEdges.size();j++){
+			if(i==j)
+				continue;
+			int coverageForJ=ed->m_EXTENSION_coverages->at(j);
+			if(coverageForJ<2*minimumCoverage)
+				invalid=false;
+		}
+
+	
+		if(invalid)
+			invalidChoices.insert(i);
+	}
+		
 	/** prepare data for the NovaEngine */
 	vector<map<int,int> > novaData;
-	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
-		Kmer key=m_ed->m_enumerateChoices_outgoingEdges[i];
+	for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
+		Kmer key=ed->m_enumerateChoices_outgoingEdges[i];
 		map<int,int> data;
 
 		/** load single-end data */
-		if(m_ed->m_EXTENSION_readPositionsForVertices.count(key)>0){
-			for(vector<int>::iterator j=m_ed->m_EXTENSION_readPositionsForVertices[key].begin();
-				j!=m_ed->m_EXTENSION_readPositionsForVertices[key].end();j++){
+		if(ed->m_EXTENSION_readPositionsForVertices.count(key)>0){
+			for(vector<int>::iterator j=ed->m_EXTENSION_readPositionsForVertices[key].begin();
+				j!=ed->m_EXTENSION_readPositionsForVertices[key].end();j++){
 				int val=*j;
 				data[val]++;
 			}
 		}
 		/** load paired-end data and mate-pair data */
-		if(m_ed->m_EXTENSION_pairedReadPositionsForVertices.count(key)>0){
-			for(int j=0;j<(int)m_ed->m_EXTENSION_pairedReadPositionsForVertices[key].size();j++){
-				int value=m_ed->m_EXTENSION_pairedReadPositionsForVertices[key][j];
+		if(ed->m_EXTENSION_pairedReadPositionsForVertices.count(key)>0){
+			for(int j=0;j<(int)ed->m_EXTENSION_pairedReadPositionsForVertices[key].size();j++){
+				int value=ed->m_EXTENSION_pairedReadPositionsForVertices[key][j];
 				data[value]++;
 			}
 		}
@@ -59,29 +92,30 @@ Parameters*parameters){
 	}
 
 	/** NovaData are ready, now call the NovaEngine */
-	cout<<"Calling NovaEngine.."<<endl;
-	int novaChoice=m_novaEngine.choose(&novaData);
+	//cout<<"Calling NovaEngine.."<<endl;
+	int novaChoice=m_novaEngine.choose(&novaData,&invalidChoices);
+
 
 	vector<set<int> > battleVictories;
 
-	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
+	for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
 		set<int> victories;
 		battleVictories.push_back(victories);
 	}
 
-	chooseWithCoverage(m_ed,m_minimumCoverage,&battleVictories);
+	chooseWithCoverage(ed,minimumCoverage,&battleVictories);
 
-	int coverageWinner=getWinner(&battleVictories,m_ed->m_enumerateChoices_outgoingEdges.size());
+	int coverageWinner=getWinner(&battleVictories,ed->m_enumerateChoices_outgoingEdges.size());
 	if(coverageWinner!=IMPOSSIBLE_CHOICE)
 		return coverageWinner;
 
-	m_c->chooseWithPairedReads(m_ed,m_minimumCoverage,m_maxCoverage,m_pairedEndMultiplicator,&battleVictories,parameters);
+	m_c->chooseWithPairedReads(ed,minimumCoverage,m_maxCoverage,m_pairedEndMultiplicator,&battleVictories,parameters);
 	
-	int pairedChoice=getWinner(&battleVictories,m_ed->m_enumerateChoices_outgoingEdges.size());
+	int pairedChoice=getWinner(&battleVictories,ed->m_enumerateChoices_outgoingEdges.size());
 
 	battleVictories.clear();
 
-	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
+	for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
 		set<int> victories;
 		battleVictories.push_back(victories);
 	}
@@ -89,16 +123,20 @@ Parameters*parameters){
 
 	if(pairedChoice!=IMPOSSIBLE_CHOICE){
 		#ifdef SHOW_CHOICE
-		if(m_ed->m_enumerateChoices_outgoingEdges.size()>1){
+		if(ed->m_enumerateChoices_outgoingEdges.size()>1){
 			cout<<"Choice "<<pairedChoice+1<<" wins with paired-end reads."<<endl;
 		}
 		#endif
 		if(novaChoice!=pairedChoice){
-			cout<<"NovaEngine says "<<novaChoice<<" but PairedChooser says "<<pairedChoice<<endl;
+			cout<<"NovaEngine says Choice "<<novaChoice<<" but PairedChooser says Choice "<<pairedChoice+1<<endl;
+			cout<<"Invalid ";
+			for(set<int>::iterator i=invalidChoices.begin();i!=invalidChoices.end();i++)
+				cout<<" "<<*i+1;
+			cout<<endl;
 		}
 		return pairedChoice;
 	}else{
-		if(m_ed->m_EXTENSION_extension->size()>50000){
+		if(ed->m_EXTENSION_extension->size()>50000){
 			if(!parameters->hasPairedReads()){
 				return IMPOSSIBLE_CHOICE;
 			}
@@ -106,9 +144,9 @@ Parameters*parameters){
 		// if both have paired reads and that is not enough for one of them to win, then abort
 		int withPairedReads=0;
 		
-		for(int j=0;j<(int)m_ed->m_enumerateChoices_outgoingEdges.size();j++){
-			Kmer key=m_ed->m_enumerateChoices_outgoingEdges[j];
-			if(m_ed->m_EXTENSION_pairedReadPositionsForVertices[key].size()>0){
+		for(int j=0;j<(int)ed->m_enumerateChoices_outgoingEdges.size();j++){
+			Kmer key=ed->m_enumerateChoices_outgoingEdges[j];
+			if(ed->m_EXTENSION_pairedReadPositionsForVertices[key].size()>0){
 				withPairedReads++;
 			}
 		}
@@ -121,14 +159,14 @@ Parameters*parameters){
 	map<int,int> CHOOSER_theNumbers;
 	map<int,int> CHOOSER_theSums;
 
-	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
-		Kmer key=m_ed->m_enumerateChoices_outgoingEdges[i];
+	for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
+		Kmer key=ed->m_enumerateChoices_outgoingEdges[i];
 		int max=0;
 		int n=0;
 		int sum=0;
-		if(m_ed->m_EXTENSION_readPositionsForVertices.count(key)>0){
-			for(vector<int>::iterator j=m_ed->m_EXTENSION_readPositionsForVertices[key].begin();
-				j!=m_ed->m_EXTENSION_readPositionsForVertices[key].end();j++){
+		if(ed->m_EXTENSION_readPositionsForVertices.count(key)>0){
+			for(vector<int>::iterator j=ed->m_EXTENSION_readPositionsForVertices[key].begin();
+				j!=ed->m_EXTENSION_readPositionsForVertices[key].end();j++){
 				int val=*j;
 				if(val>max){
 					max=val;
@@ -143,12 +181,12 @@ Parameters*parameters){
 	}
 
 	// win or lose with single-end reads
-	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
+	for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
 		if(CHOOSER_theMaxs[i]<5){
 			continue;
 		}
 
-		for(int j=0;j<(int)m_ed->m_enumerateChoices_outgoingEdges.size();j++){
+		for(int j=0;j<(int)ed->m_enumerateChoices_outgoingEdges.size();j++){
 			if((CHOOSER_theMaxs[i] > m_singleEndMultiplicator*CHOOSER_theMaxs[j]) 
 				&& (CHOOSER_theSums[i] > m_singleEndMultiplicator*CHOOSER_theSums[j]) 
 				&& (CHOOSER_theNumbers[i] > m_singleEndMultiplicator*CHOOSER_theNumbers[j])
@@ -158,7 +196,7 @@ Parameters*parameters){
 		}
 	}
 
-	int finalWinner=getWinner(&battleVictories,m_ed->m_enumerateChoices_outgoingEdges.size());
+	int finalWinner=getWinner(&battleVictories,ed->m_enumerateChoices_outgoingEdges.size());
 
 	if(finalWinner!=IMPOSSIBLE_CHOICE){
 		return finalWinner;

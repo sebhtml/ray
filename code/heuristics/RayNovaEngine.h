@@ -24,6 +24,7 @@
 
 #include <vector>
 #include<map>
+#include <set>
 using namespace std;
 
 /** This the new Ray NovaEngine(*) 
@@ -32,7 +33,7 @@ using namespace std;
 class RayNovaEngine{
 public:
 	/** choose where to go */
-	int choose(vector<map<int,int> >*distances);
+	int choose(vector<map<int,int> >*distances,set<int>*invalidChoices);
 };
 
 #endif

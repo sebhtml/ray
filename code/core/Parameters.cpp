@@ -61,6 +61,11 @@ Parameters::Parameters(){
 	m_showMemoryUsage=false;
 	m_showEndingContext=false;
 	m_writeKmers=false;
+	m_showExtensionChoice=false;
+}
+
+bool Parameters::showExtensionChoice(){
+	return m_showExtensionChoice;
 }
 
 bool Parameters::showEndingContext(){
@@ -186,6 +191,9 @@ void Parameters::parseCommands(){
 	showContext.insert("-show-ending-context");
 	showContext.insert("--show-ending-context");
 
+	set<string> showExtensionChoiceOption;
+	showExtensionChoiceOption.insert("-show-extension-choice");
+
 	set<string> writeKmers;
 	writeKmers.insert("-write-kmers");
 
@@ -197,6 +205,7 @@ void Parameters::parseCommands(){
 	setRepeatCoverage.insert("-repeatCoverage");
 
 	vector<set<string> > toAdd;
+	toAdd.push_back(showExtensionChoiceOption);
 	toAdd.push_back(setRepeatCoverage);
 	toAdd.push_back(setPeakCoverage);
 	toAdd.push_back(setMinimumCoverage);
@@ -440,6 +449,8 @@ void Parameters::parseCommands(){
 			m_numberOfLibraries++;
 		}else if(outputAmosCommands.count(token)>0){
 			m_amos=true;
+		}else if(showExtensionChoiceOption.count(token)>0){
+			m_showExtensionChoice=true;
 		}else if(showMalloc.count(token)>0){
 			m_showMemoryAllocations=true;
 		}else if(reduceMemoryUsage.count(token)>0){
@@ -1030,6 +1041,8 @@ void Parameters::showUsage(){
 	cout<<endl;
 	showOption("-show-memory-usage","Shows memory usage. Data is fetched from /proc on GNU/Linux");
 	showOptionDescription("Needs __linux__");
+	cout<<endl;
+	showOption("-show-extension-choice","Shows the choices available during the extension.");
 	cout<<endl;
 	showOption("-show-ending-context","Shows the ending context of each extension.");
 	showOptionDescription("Shows the children of the vertex where extension was too difficult.");

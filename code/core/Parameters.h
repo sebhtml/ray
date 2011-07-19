@@ -98,6 +98,7 @@ class Parameters{
 	void showOptionDescription(string a);
 	void fileNameHook(string f);
 
+	bool m_showExtensionChoice;
 public:
 	Parameters();
 	string getReceivedMessagesFile();
@@ -186,6 +187,7 @@ public:
 	int getLibraryMaxStandardDeviation(int i);
 	int getLibraryPeaks(int library);
 	string getFile(int file);
+	bool showExtensionChoice();
 };
 
 #endif

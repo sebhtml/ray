@@ -24,7 +24,7 @@
 #include <heuristics/Chooser.h>
 #include <assert.h>
 
-int RayNovaEngine::choose(vector<map<int,int> >*distances){
+int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoices){
 	vector<double> novaScores;
 	int choices=distances->size();
 
@@ -45,8 +45,8 @@ int RayNovaEngine::choose(vector<map<int,int> >*distances){
 	if(withElements==1)
 		return initialChoice;
 
-	cout<<"Ray NovaEngine"<<endl;
-	cout<<"Choices: "<<choices<<endl;
+	//cout<<"Ray NovaEngine"<<endl;
+	//cout<<"Choices: "<<choices<<endl;
 	for(int i=0;i<choices;i++){
 		int n=distances->at(i).size();
 		vector<int> observedDistances;
@@ -87,13 +87,13 @@ int RayNovaEngine::choose(vector<map<int,int> >*distances){
 			score/=(totalWeight+0.0);
 		}
 */
-		cout<<"Choice: "<<i+1<<endl;
-		cout<<" DataPoints: "<<n<<endl;
+		//cout<<"Choice: "<<i+1<<endl;
+		//cout<<" DataPoints: "<<n<<endl;
 		for(int j=0;j<n;j++){
-			cout<<" "<<observedDistances[j]<<" "<<weights[j]<<"";
+			//cout<<" "<<observedDistances[j]<<" "<<weights[j]<<"";
 		}
-		cout<<endl;
-		cout<<" NovaScore: "<<score<<endl;
+		//cout<<endl;
+		//cout<<" NovaScore: "<<score<<endl;
 		novaScores.push_back(score);
 	}
 
@@ -102,6 +102,8 @@ int RayNovaEngine::choose(vector<map<int,int> >*distances){
 		bool winner=true;
 		for(int j=0;j<choices;j++){
 			if(i==j)
+				continue;
+			if(invalidChoices->count(j)>0)
 				continue;
 			if(!(novaScores[i]>=multiplicator*novaScores[j]))
 				winner=false;
