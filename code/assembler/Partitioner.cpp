@@ -60,7 +60,7 @@ void Partitioner::masterMethod(){
 		int file=buffer[0];
 		uint64_t count=buffer[1];
 		m_masterCounts[file]=count;
-		cout<<"Rank "<<m_parameters->getRank()<<" received from "<<m_inbox->at(0)->getSource()<<" File "<<file<<" Entries "<<count<<endl;
+		//cout<<"Rank "<<m_parameters->getRank()<<" received from "<<m_inbox->at(0)->getSource()<<" File "<<file<<" Entries "<<count<<endl;
 		/** reply to the peer */
 		Message aMessage(NULL,0,m_inbox->at(0)->getSource(),RAY_MPI_TAG_FILE_ENTRY_COUNT_REPLY,m_parameters->getRank());
 		m_outbox->push_back(aMessage);
@@ -91,7 +91,7 @@ void Partitioner::slaveMethod(){
 		if(rankInCharge==m_parameters->getRank()){
 			/** count the entries in the file */
 			string file=m_parameters->getFile(m_currentFileToCount);
-			cout<<"Rank "<<m_parameters->getRank()<<" Reading "<<file<<endl;
+			//cout<<"Rank "<<m_parameters->getRank()<<" Reading "<<file<<endl;
 			int res=m_loader.load(file,false);
 			if(res==EXIT_FAILURE){
 				cout<<"Rank "<<m_parameters->getRank()<<" Error: "<<file<<" failed to load properly..."<<endl;
@@ -100,7 +100,7 @@ void Partitioner::slaveMethod(){
 
 			m_loader.clear();
 
-			cout<<"Rank "<<m_parameters->getRank()<<" File "<<m_currentFileToCount<<" has "<<m_slaveCounts[m_currentFileToCount]<<endl;
+			//cout<<"Rank "<<m_parameters->getRank()<<" File "<<m_currentFileToCount<<" has "<<m_slaveCounts[m_currentFileToCount]<<endl;
 		}
 		m_currentFileToCount++;
 		/* all files were processed, tell control peer that we are done */
