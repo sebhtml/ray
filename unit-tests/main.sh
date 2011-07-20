@@ -13,4 +13,4 @@ done
 
 ) &> UnitTests.txt
 
-echo "Wrote resultts in UnitTests.txt"
+echo "Wrote results in UnitTests.txt"

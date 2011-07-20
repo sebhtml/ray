@@ -1,7 +1,10 @@
 #include <heuristics/RayNovaEngine.h>
 #include <map>
+#include <set>
 #include <vector>
 #include <iostream>
+#include <unit-tests/unitTest.h>
+#include <assert.h>
 #include <fstream>
 using namespace std;
 
@@ -20,13 +23,14 @@ Choice: 2
 */
 int main(){
 	RayNovaEngine m_novaEngine;
+	set<int> invalid;
 	ifstream f("nova.txt");
 	while(!f.eof()){
-		string buffer;
+		string buffer="";
 		f>>buffer;
+		if(buffer=="")
+			break;
 		if(buffer=="RayNovaEngine"){
-			cout<<endl;
-			cout<<"Testing Entry with NovaEngine."<<endl;
 			f>>buffer;
 			int choices;
 			f>>choices;
@@ -40,11 +44,23 @@ int main(){
 					int distance;
 					int weight;
 					f>>distance>>weight;
-					data[distance]=weight;
+					data[distance]+=weight;
 				}
 				novaData.push_back(data);
 			}
-			m_novaEngine.choose(&novaData);
+			int choice=m_novaEngine.choose(&novaData,&invalid,false);
+			string expected;
+			f>>expected>>expected;
+			if(expected=="IMPOSSIBLE_CHOICE"){
+				if(IMPOSSIBLE_CHOICE!=choice)
+					m_novaEngine.choose(&novaData,&invalid,true);
+				assertEquals(IMPOSSIBLE_CHOICE,choice);
+			}else{
+				int expectedChoice=atoi(expected.c_str())-1;
+				if(expectedChoice!=choice)
+					m_novaEngine.choose(&novaData,&invalid,true);
+				assertEquals(expectedChoice,choice);
+			}
 		}
 	}
 	f.close();
