@@ -5,6 +5,10 @@
 paired reads generated using DNA circularization will often be contaminated by some from 
 not circularized DNA (shorter outer distance).
 * File partitioning is now performed in parallel.
+* New option: -show-extension-choice shows possible choices when the path is branching in the
+graph.
+* New experimental assembly choice engine: Ray NovaEngine. NovaEngine makes better choices for
+mate-pair reads.
 
 
 = 1.6.1 'sunray' =

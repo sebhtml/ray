@@ -1,0 +1,11 @@
+The heuristics enables Ray to build paths in the graph.
+
+Choosers implement heuristics. They are:
+
+- OpenAssembler (OpenAssembler.cpp) glues other choosers together
+- NovaEngine (RayNovaEngine.cpp) for mate-pairs (experimental)
+- PairedChooser (Chooser.cpp) for short outer distances
+- BubbleChooser (BubbleTool.cpp) for heterozygous sites (experimental)
+- TipChooser (TipWatchDog.cpp) to dodge these tips that seem good from paired data
+
+2011-07-20

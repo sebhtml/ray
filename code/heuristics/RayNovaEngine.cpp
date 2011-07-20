@@ -21,10 +21,9 @@
 
 #include <math.h>
 #include <heuristics/RayNovaEngine.h>
-#include <heuristics/Chooser.h>
 #include <assert.h>
 
-int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoices){
+int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoices,bool show){
 	vector<double> novaScores;
 	int choices=distances->size();
 
@@ -41,8 +40,10 @@ int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoice
 	if(withElements==1)
 		return initialChoice;
 
-	//cout<<"Ray NovaEngine"<<endl;
-	//cout<<"Choices: "<<choices<<endl;
+	if(show){
+		cout<<"Ray NovaEngine"<<endl;
+		cout<<"Choices: "<<choices<<endl;
+	}
 	for(int i=0;i<choices;i++){
 		int n=distances->at(i).size();
 		vector<int> observedDistances;
@@ -83,17 +84,21 @@ int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoice
 			score/=(totalWeight+0.0);
 		}
 */
-		//cout<<"Choice: "<<i+1<<endl;
-		//cout<<" DataPoints: "<<n<<endl;
-		for(int j=0;j<n;j++){
-			//cout<<" "<<observedDistances[j]<<" "<<weights[j]<<"";
+		if(show){
+			cout<<"Choice: "<<i+1<<endl;
+			cout<<" DataPoints: "<<n<<endl;
+			for(int j=0;j<n;j++){
+				cout<<" "<<observedDistances[j]<<" "<<weights[j]<<"";
+			}
+			cout<<endl;
+			cout<<" NovaScore: "<<score<<endl;
 		}
-		//cout<<endl;
-		//cout<<" NovaScore: "<<score<<endl;
 		novaScores.push_back(score);
 	}
 
-	int multiplicator=2;
+	double threshold=0.5;
+	
+	int selection=IMPOSSIBLE_CHOICE;
 	for(int i=0;i<choices;i++){
 		bool winner=true;
 		for(int j=0;j<choices;j++){
@@ -101,13 +106,26 @@ int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoice
 				continue;
 			if(invalidChoices->count(j)>0)
 				continue;
-			if(!(novaScores[i]>=multiplicator*novaScores[j]))
+			double ratio=novaScores[j]/(novaScores[i]+0.0);
+			if(novaScores[j]<3 && ratio>threshold)
+				winner=false;
+			if(novaScores[j]>=novaScores[i])
 				winner=false;
 		}
-		if(winner)
-			return i;
+		if(winner){
+			selection=i;
+			break;
+		}
+	}
+	
+	if(show){
+		if(selection==IMPOSSIBLE_CHOICE){
+			cout<<"Selection: IMPOSSIBLE_CHOICE"<<endl;
+		}else{
+			cout<<"Selection: "<<selection+1<<endl;
+		}
 	}
 
-	return IMPOSSIBLE_CHOICE;
+	return selection;
 }
 

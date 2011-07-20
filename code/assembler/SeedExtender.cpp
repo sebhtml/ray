@@ -713,6 +713,7 @@ Kmer *currentVertex,BubbleData*bubbleData){
 		printExtensionStatus(currentVertex);
 		cout<<"Rank "<<theRank<<" (extension done)"<<endl;
 	
+		#ifdef SHOW_PAIRED_SCORES
 		/** show the utilised outer distances */
 		cout<<"Rank "<<theRank<<" utilised outer distances: "<<endl;
 		for(map<int,map<int, uint64_t> >::iterator i=m_pairedScores.begin();i!=m_pairedScores.end();i++){
@@ -726,6 +727,7 @@ Kmer *currentVertex,BubbleData*bubbleData){
 				cout<<"Rank "<<theRank<<" Library: "<<lib<<" LibraryPeak: "<<peak<<" PeakAverage: "<<average<<" PeakDeviation: "<<deviation<<" Pairs: "<<count<<endl;
 			}
 		}
+		#endif
 
 		ed->m_EXTENSION_contigs.push_back(*(ed->m_EXTENSION_extension));
 	

@@ -93,8 +93,14 @@ Parameters*parameters){
 
 	/** NovaData are ready, now call the NovaEngine */
 	//cout<<"Calling NovaEngine.."<<endl;
-	int novaChoice=m_novaEngine.choose(&novaData,&invalidChoices);
+	
+	bool showNovaAlgorithm=true;
 
+	/** this is the powerful NovaEngine -- an assembly engine to surf de Bruijn DNA graphs */
+	int novaChoice=m_novaEngine.choose(&novaData,&invalidChoices,showNovaAlgorithm);
+	if(novaChoice!=IMPOSSIBLE_CHOICE){
+		return novaChoice;
+	}
 
 	vector<set<int> > battleVictories;
 
@@ -128,11 +134,13 @@ Parameters*parameters){
 		}
 		#endif
 		if(novaChoice!=pairedChoice){
-			cout<<"NovaEngine says Choice "<<novaChoice<<" but PairedChooser says Choice "<<pairedChoice+1<<endl;
-			cout<<"Invalid ";
-			for(set<int>::iterator i=invalidChoices.begin();i!=invalidChoices.end();i++)
-				cout<<" "<<*i+1;
-			cout<<endl;
+			if(showNovaAlgorithm){
+				cout<<"NovaEngine says Choice "<<novaChoice<<" but PairedChooser says Choice "<<pairedChoice+1<<endl;
+				cout<<"Invalid ";
+				for(set<int>::iterator i=invalidChoices.begin();i!=invalidChoices.end();i++)
+					cout<<" "<<*i+1;
+				cout<<endl;
+			}
 		}
 		return pairedChoice;
 	}else{

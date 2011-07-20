@@ -23,7 +23,8 @@
 #define _RayNovaEngine_H
 
 #include <vector>
-#include<map>
+#include <heuristics/Chooser.h>
+#include <map>
 #include <set>
 using namespace std;
 
@@ -33,7 +34,7 @@ using namespace std;
 class RayNovaEngine{
 public:
 	/** choose where to go */
-	int choose(vector<map<int,int> >*distances,set<int>*invalidChoices);
+	int choose(vector<map<int,int> >*distances,set<int>*invalidChoices,bool show);
 };
 
 #endif
