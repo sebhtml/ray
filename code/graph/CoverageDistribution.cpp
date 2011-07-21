@@ -47,6 +47,11 @@ CoverageDistribution::CoverageDistribution(map<int,uint64_t>*distributionOfCover
 	}
 
 	int windowSize=10;
+	int minimumX=1;
+	int minimumY=2*4096;
+	int minimumY2=55000;
+	int maximumX=65535-1;
+	int safeThreshold=256;
 
 	/** get the votes to find the peak */
 	map<int,int> votes;
@@ -60,14 +65,23 @@ CoverageDistribution::CoverageDistribution(map<int,uint64_t>*distributionOfCover
 				largestPosition=position;
 		}
 	
-		if(y.at(largestPosition)>4096*2 && x[largestPosition]!=65535)
+		if(x[largestPosition]>maximumX)
+			continue;
+
+		if(x[largestPosition]<minimumX)
+			continue;
+	
+		if(x[largestPosition] >= safeThreshold && y[largestPosition] < minimumY2)
+			continue;
+		
+		if(y.at(largestPosition)>minimumY)
 			votes[largestPosition]++;
 	}
 
 	/** check votes */
 	int largestPosition=votes.begin()->first;
 	for(map<int,int>::iterator i=votes.begin();i!=votes.end();i++){
-		if(i->second > votes[largestPosition] || y[i->first] > y[largestPosition])
+		if((i->second > votes[largestPosition] || y[i->first] > y[largestPosition]))
 			largestPosition=i->first;
 		//cout<<"x: "<<x[i->first]<<" votes: "<<i->second<<" y: "<<y[i->first]<<endl;
 	}
