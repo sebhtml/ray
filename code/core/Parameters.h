@@ -37,6 +37,7 @@ using namespace std;
  *
  */
 class Parameters{
+	set<string> m_options;
 	bool m_providedPeakCoverage;
 	bool m_providedMinimumCoverage;
 	bool m_providedRepeatCoverage;
@@ -188,6 +189,7 @@ public:
 	int getLibraryPeaks(int library);
 	string getFile(int file);
 	bool showExtensionChoice();
+	bool hasOption(string a);
 };
 
 #endif

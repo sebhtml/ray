@@ -39,6 +39,8 @@
 void MessageProcessor::call_RAY_MPI_TAG_LOAD_SEQUENCES(Message*message){
 	uint32_t*incoming=(uint32_t*)message->getBuffer();
 	for(int i=0;i<(int)incoming[0];i++){
+		if(m_parameters->hasOption("debug:partitioner"))
+			cout<<"Rank "<<m_parameters->getRank()<<" RAY_MPI_TAG_LOAD_SEQUENCES File "<<i<<" "<<incoming[i+1]<<endl;
 		m_parameters->setNumberOfSequences(i,incoming[1+i]);
 	}
 	(*m_mode)=RAY_SLAVE_MODE_LOAD_SEQUENCES;
@@ -120,6 +122,11 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_READ_MARKERS(Message*message){
 	int outputPosition=0;
 	for(int i=0;i<count;i++){
 		int readId=incoming[i];
+		#ifdef ASSERT
+		if(readId>=(int)m_myReads->size())
+			cout<<"Fatal Error: ReadIndex: "<<readId<<" but Reads: "<<m_myReads->size()<<endl;
+		assert(readId<(int)m_myReads->size());
+		#endif
 		Read*read=m_myReads->at(readId);
 		int readLength=read->length();
 		outgoingMessage[outputPosition++]=readLength;

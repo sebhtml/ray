@@ -61,7 +61,9 @@ void Partitioner::masterMethod(){
 		int file=buffer[0];
 		uint64_t count=buffer[1];
 		m_masterCounts[file]=count;
-		//cout<<"Rank "<<m_parameters->getRank()<<" received from "<<m_inbox->at(0)->getSource()<<" File "<<file<<" Entries "<<count<<endl;
+
+		if(m_parameters->hasOption("debug:partitioner"))
+			cout<<"Rank "<<m_parameters->getRank()<<" received from "<<m_inbox->at(0)->getSource()<<" File "<<file<<" Entries "<<count<<endl;
 		/** reply to the peer */
 		Message aMessage(NULL,0,m_inbox->at(0)->getSource(),RAY_MPI_TAG_FILE_ENTRY_COUNT_REPLY,m_parameters->getRank());
 		m_outbox->push_back(aMessage);
@@ -70,7 +72,9 @@ void Partitioner::masterMethod(){
 		m_ranksDoneSending++;
 		/** all peers have finished */
 		if(m_ranksDoneSending==m_parameters->getSize()){
-			for(int i=0;i<m_parameters->getSize();i++){
+			for(int i=0;i<(int)m_masterCounts.size();i++){
+				if(m_parameters->hasOption("debug:partitioner"))
+					cout<<"Rank "<<m_parameters->getRank()<< " File "<<i<<" Count "<<m_masterCounts[i]<<endl;
 				m_parameters->setNumberOfSequences(i,m_masterCounts[i]);
 			}
 			m_masterCounts.clear();
@@ -101,7 +105,8 @@ void Partitioner::slaveMethod(){
 
 			m_loader.clear();
 
-			//cout<<"Rank "<<m_parameters->getRank()<<" File "<<m_currentFileToCount<<" has "<<m_slaveCounts[m_currentFileToCount]<<endl;
+			if(m_parameters->hasOption("debug:partitioner"))
+				cout<<"Rank "<<m_parameters->getRank()<<" File "<<m_currentFileToCount<<" has "<<m_slaveCounts[m_currentFileToCount]<<endl;
 		}
 		m_currentFileToCount++;
 		/* all files were processed, tell control peer that we are done */
