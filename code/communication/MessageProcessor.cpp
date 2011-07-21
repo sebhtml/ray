@@ -977,10 +977,12 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_EXTENSION(Message*message){
 	(*m_last_value)=-1;
 	m_verticesExtractor->showBuffers();
 
-	cout<<"Libs info"<<endl;
-	for(int i=0;i<m_parameters->getNumberOfLibraries();i++){
-		for(int j=0;j<m_parameters->getLibraryPeaks(i);j++){
-			cout<<"Lib "<<i<<" Peak "<<j<<" "<<m_parameters->getLibraryAverageLength(i,j)<<" "<<m_parameters->getLibraryStandardDeviation(i,j)<<endl;
+	if(m_parameters->hasOption("show:libs")){
+		cout<<"Libs info"<<endl;
+		for(int i=0;i<m_parameters->getNumberOfLibraries();i++){
+			for(int j=0;j<m_parameters->getLibraryPeaks(i);j++){
+				cout<<"Lib "<<i<<" Peak "<<j<<" "<<m_parameters->getLibraryAverageLength(i,j)<<" "<<m_parameters->getLibraryStandardDeviation(i,j)<<endl;
+			}
 		}
 	}
 }
