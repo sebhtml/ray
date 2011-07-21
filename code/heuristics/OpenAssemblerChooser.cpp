@@ -94,7 +94,7 @@ Parameters*parameters){
 	/** NovaData are ready, now call the NovaEngine */
 	//cout<<"Calling NovaEngine.."<<endl;
 	
-	bool showNovaAlgorithm=true;
+	bool showNovaAlgorithm=parameters->showExtensionChoice();
 
 	/** this is the powerful NovaEngine -- an assembly engine to surf de Bruijn DNA graphs */
 	int novaChoice=m_novaEngine.choose(&novaData,&invalidChoices,showNovaAlgorithm);
