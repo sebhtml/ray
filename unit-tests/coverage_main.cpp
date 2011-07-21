@@ -1,6 +1,7 @@
 #include <graph/CoverageDistribution.h>
 #include <string>
 #include <map>
+#include <unit-tests/unitTest.h>
 #include <fstream>
 #include <iostream>
 using namespace std;
@@ -23,11 +24,27 @@ int main(int argc,char**argv){
 	}
 	f.close();
 
+	ifstream f2(argv[2]);
+	int expectedPeak=-1;
+	int expectedMin=-1;
+	f2>>expectedMin;
+	f2>>expectedPeak;
 	CoverageDistribution analysis(&data,NULL);
-	cout<<"File= "<<file<<endl;
-	cout<<"MinCoverage= "<<analysis.getMinimumCoverage()<<endl;
-	cout<<"PeakCoverage= "<<analysis.getPeakCoverage()<<endl;
-	cout<<"RepeatCoverage= "<<analysis.getRepeatCoverage()<<endl;
+	int actualMin=analysis.getMinimumCoverage();
+	int actualPeak=analysis.getPeakCoverage();
+
+	cout<<endl;
+	cout<<"Test "<<file<<endl;
+	cout<<"Expected minimum: "<<expectedMin<<" actual "<<actualMin<<endl;
+	cout<<"Expected peak: "<<expectedPeak<<" actual "<<actualPeak<<endl;
+
+	if(expectedPeak!=actualPeak || expectedMin!=actualMin)
+		cout<<"Test "<<file<<" Failed"<<endl;
+	else
+		cout<<"Test "<<file<<" Passed"<<endl;
+
+	assertEquals(expectedPeak,actualPeak);
+	assertEquals(expectedMin,actualMin);
 
 	return 0;
 }
