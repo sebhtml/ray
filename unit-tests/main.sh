@@ -5,7 +5,7 @@
 echo "Nothing reported = all unit tests passed"
 echo ""
 
-for i in $(ls *.sh|grep -v main.sh)
+for i in $(ls test_*.sh)
 do
 	echo "Test Suite: $i"
 	bash $i
