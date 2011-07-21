@@ -118,6 +118,9 @@ void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
 
 			/* TODO: _vertexRank (2 calls) calls complementVertex so there are 3 calls to complementVertex are done while 1 would suffice (Reported by David Eccles) */
 
+			/* TODO: actually, only the lowest k-mers need to be sent, the other is not processed anyway by the peer.
+				see MessageProcessor::call_RAY_MPI_TAG_KMER_ACADEMY_DATA */
+
 			int rankToFlush=0;
 
 			rankToFlush=m_parameters->_vertexRank(&a);
