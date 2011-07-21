@@ -433,6 +433,13 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 		int pos=i;
 		l.unpack(incoming,&pos);
 
+		/* TODO: remove call to reverseComplement, this if should never be picked up because only the lowest k-mers are sent
+ *
+ * I am not sure it would work but if it does that would reduces the number of sent messages */
+		Kmer reverseComplement=l.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+		if(reverseComplement<l)
+			continue;
+
 		if((*m_last_value)!=(int)m_subgraph->size() && (int)m_subgraph->size()%100000==0){
 			(*m_last_value)=m_subgraph->size();
 			printf("Rank %i has %i vertices\n",m_rank,(int)m_subgraph->size());

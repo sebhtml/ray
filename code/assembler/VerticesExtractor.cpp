@@ -118,6 +118,8 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 
 			int rankToFlush=0;
 
+			/* TODO: possibly don't flush k-mer that are not lower. not sure it that would work though. -Seb */
+
 			rankToFlush=m_parameters->_vertexRank(&a);
 			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 				m_bufferedData.addAt(rankToFlush,a.getU64(i));
