@@ -13,7 +13,8 @@ mate-pair reads.
 tests to test it.
 * Moved Kmer logic in class Kmer. suggested by David Eccles
 (gringer) from Max-Planck-Gesellschaft, München.
-
+* Added information on unknown nucleotides in the instruction manual.
+Suggested by Walter Eckalbar from Arizona State University.
 
 
 = 1.6.1 'sunray' =
