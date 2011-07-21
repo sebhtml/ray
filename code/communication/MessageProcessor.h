@@ -48,9 +48,17 @@
 using namespace std;
 
 
-class MessageProcessor;
+class MessageProcessor; /* needed to define FNMETHOD */
+
+/* define method pointers with 1 argument of type Message* */
 typedef void (MessageProcessor::*FNMETHOD) (Message*message);
 
+/**
+ * MessageProcessor receives all the messages of a MPI rank
+ * Message objects may also be checked using the Message inbox (m_inbox)
+ *
+ * Sometimes, a message will generate a reply (_REPLY)
+ */
 class MessageProcessor{
 	int m_kmerAcademyFinishedRanks;
 
@@ -62,6 +70,8 @@ class MessageProcessor{
 
 	SequencesLoader*m_sequencesLoader;
 
+	/** the array of callback methods 
+ * 	as of 2011-07-21, there are 167 MPI tags*/
 	FNMETHOD m_methods[256];
 
 	uint64_t m_sentinelValue;

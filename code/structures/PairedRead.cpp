@@ -37,6 +37,7 @@ uint32_t PairedRead::getId(){
 	return m_readIndex;
 }
 
+/** any read has a unique distributed identifier */
 uint64_t PairedRead::getUniqueId(){
 	return getPathUniqueId(m_rank,m_readIndex);
 }

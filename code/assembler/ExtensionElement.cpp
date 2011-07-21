@@ -23,6 +23,7 @@
 #include <assembler/ExtensionElement.h>
 #include <string.h>
 
+/** set the sequence */
 void ExtensionElement::setSequence(const char*b,MyAllocator*allocator){
 	m_readSequence=(char*)allocator->allocate((strlen(b)+1)*sizeof(char));
 	strcpy(m_readSequence,b);

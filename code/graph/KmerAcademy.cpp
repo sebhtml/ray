@@ -72,8 +72,12 @@ KmerCandidate*KmerAcademy::insert(Kmer*key){
 	uint64_t sizeBefore=m_hashTable.size();
 	KmerCandidate*entry=m_hashTable.insert(&lowerKey);
 	m_inserted=m_hashTable.size()>sizeBefore;
+
+	/* for any pair of reverse-complement k-mers
+ * 	we only insert the lowest so when we do so we virtually insert 2 k-mers
+ */
 	if(m_inserted)
-		m_size+=2;
+		m_size+=2; 
 	return entry;
 }
 

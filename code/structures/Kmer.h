@@ -60,6 +60,7 @@ using namespace std;
  *
  */
 class Kmer{
+	/** the actual array of uint64_t */
 	uint64_t m_u64[KMER_U64_ARRAY_SIZE];
 public:
 	Kmer();
@@ -105,6 +106,8 @@ public:
 		Kmer output;
 		int bitPositionInOutput=0;
 		uint64_t mask=3;
+		/* the order is inverted and nucleotides are complemented */
+		/* this is costly  */
 		for(int positionInMer=wordSize-1;positionInMer>=0;positionInMer--){
 			int u64_id=positionInMer/32;
 			int bitPositionInChunk=(2*positionInMer)%64;
@@ -141,7 +144,10 @@ public:
  */
 	vector<Kmer> _getIngoingEdges(uint8_t edges,int k);
 
+	/** hash 1 is used to distribute k-mers on MPI ranks */
 	uint64_t hash_function_1();
+
+	/** hash 2 is used for double hashing in the hash tables */
 	uint64_t hash_function_2();
 /*
  * transform a Kmer in a string
@@ -154,7 +160,5 @@ public:
  * transform a encoded nucleotide in a char
  */
 char codeToChar(uint8_t a,bool color);
-
-
 
 #endif

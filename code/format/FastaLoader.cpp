@@ -23,6 +23,7 @@
 #include<fstream>
 #include <stdlib.h>
 
+/** load sequences */
 int FastaLoader::load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
 	string id;
 	ostringstream sequence;

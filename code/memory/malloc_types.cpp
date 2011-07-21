@@ -22,6 +22,9 @@ see <http://www.gnu.org/licenses/>
 
 #include <memory/malloc_types.h>
 
+/* use a macro to define the array 
+ * #x means x in quotes   FOO becomes "FOO" */
+
 #define MACRO_LIST_ITEM(x) #x,
 
 const char* MALLOC_TYPES[]={

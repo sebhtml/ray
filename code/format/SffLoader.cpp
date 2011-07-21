@@ -32,6 +32,17 @@
 #include <memory/malloc_types.h>
 using namespace std;
 
+/** TODO: this code will fail on big-endian systems 
+ *
+ *  SFF files are stored as big-endian
+ *
+ *  http://en.wikipedia.org/wiki/Endianness
+ *
+ *  Intel processors are little-endian
+ *
+ *  That is why here byte order is inverted.
+ * */
+
 int max(int a,int b){
 	if(a>b)
 		return a;
