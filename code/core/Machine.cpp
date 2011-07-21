@@ -21,6 +21,7 @@
 #include <memory/malloc_types.h>
 #include <graph/GridTableIterator.h>
 #include <cryptography/crypto.h>
+#include <core/OperatingSystem.h>
 #include <structures/SplayNode.h>
 #include <core/Machine.h>
 #include <assembler/VerticesExtractor.h>
@@ -220,11 +221,7 @@ void Machine::start(){
 		#endif
 
 		cout<<"Rank "<<MASTER_RANK<<": Operating System: ";
-		#ifdef OS_WIN
-		cout<<"Microsoft Windows (OS_WIN)"<<endl;
-		#else
-		cout<<"POSIX (OS_POSIX)"<<endl;
-		#endif
+		cout<<getOperatingSystem()<<endl;
 
 		cout<<"Rank "<<MASTER_RANK<<": real-time Operating System (HAVE_CLOCK_GETTIME): ";
 		#ifdef HAVE_CLOCK_GETTIME
@@ -234,17 +231,7 @@ void Machine::start(){
 		#endif
 
 		cout<<"Rank "<<MASTER_RANK<<": Message-Passing Interface implementation: ";
-		#ifdef MPICH2
-                cout<<"MPICH2 (MPICH2)"<<MPICH2_VERSION<<endl;
-		#endif
-		#ifdef OMPI_MPI_H
-                cout<<"Open-MPI (OMPI_MPI_H) "<<OMPI_MAJOR_VERSION<<"."<<OMPI_MINOR_VERSION<<"."<<OMPI_RELEASE_VERSION<<endl;
-		#endif
-		#ifndef MPICH2
-		#ifndef OMPI_MPI_H
-		cout<<"Unknown"<<endl;
-		#endif
-		#endif
+		cout<<m_messagesHandler.getMessagePassingInterfaceImplementation()<<endl;
 
 		cout<<"Rank "<<MASTER_RANK<<": Message-Passing Interface standard version: "<<version<<"."<<subversion<<""<<endl;
 

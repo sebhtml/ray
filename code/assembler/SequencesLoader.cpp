@@ -21,6 +21,7 @@ Ray
 
 #include<string.h>
 #include<assembler/SequencesLoader.h>
+#include <core/OperatingSystem.h>
 #include<communication/Message.h>
 #include<assembler/BubbleData.h>
 #include<assert.h>

@@ -26,6 +26,7 @@
 #include <assert.h>
 #include <memory/malloc_types.h>
 #include <iostream>
+#include <sstream>
 #include <string.h>
 using namespace std;
 
@@ -237,4 +238,20 @@ void MessagesHandler::appendStatistics(const char*file){
 	}
 	fp.close();
 	cout<<"Rank "<<m_rank<<": sent "<<m_sentMessages<<" messages, received "<<m_receivedMessages<<" messages."<<endl;
+}
+
+string MessagesHandler::getMessagePassingInterfaceImplementation(){
+	ostringstream implementation;
+
+	#ifdef MPICH2
+        implementation<<"MPICH2 (MPICH2)"<<MPICH2_VERSION;
+	#endif
+
+	#ifdef OMPI_MPI_H
+        implementation<<"Open-MPI (OMPI_MPI_H) "<<OMPI_MAJOR_VERSION<<"."<<OMPI_MINOR_VERSION<<"."<<OMPI_RELEASE_VERSION;
+	#endif
+
+	if(implementation.str().length()==0)
+		implementation<<"Unknown";
+	return implementation.str();
 }

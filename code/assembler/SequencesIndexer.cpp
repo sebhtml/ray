@@ -22,6 +22,7 @@
 
 #include <assembler/SequencesIndexer.h>
 #include <string.h>
+#include <core/OperatingSystem.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <core/Parameters.h>

@@ -161,7 +161,7 @@ TARGETS-$(VIRTUAL_SEQUENCER) += readSimulator/VirtualNextGenSequencer
 TARGETS=code/Ray $(TARGETS-y)
 
 #memory
-obj-y += code/memory/OnDiskAllocator.o code/memory/ReusableMemoryStore.o code/memory/MyAllocator.o code/memory/RingAllocator.o \
+obj-y += code/memory/ReusableMemoryStore.o code/memory/MyAllocator.o code/memory/RingAllocator.o \
 code/memory/malloc_types.o 
 obj-y += code/memory/allocator.o
 obj-y += code/memory/DefragmentationGroup.o code/memory/ChunkAllocatorWithDefragmentation.o code/memory/DefragmentationLane.o
@@ -181,6 +181,7 @@ obj-$(HAVE_LIBZ) += code/format/FastqGzLoader.o
 
 #core
 obj-y += code/core/slave_modes.o code/core/Machine.o code/core/Parameters.o code/core/common_functions.o
+obj-y += code/core/OperatingSystem.o
 
 #compression
 

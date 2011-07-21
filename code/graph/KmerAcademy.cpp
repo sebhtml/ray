@@ -20,6 +20,7 @@
 */
 
 #include <memory/malloc_types.h>
+#include <core/OperatingSystem.h>
 #include <assert.h>
 #include <graph/KmerAcademy.h>
 #include <core/common_functions.h>

@@ -21,6 +21,7 @@
 
 #include <core/constants.h>
 #include <string.h>
+#include <core/OperatingSystem.h>
 #include <assert.h>
 #include <structures/Read.h>
 #include <communication/MessageProcessor.h>

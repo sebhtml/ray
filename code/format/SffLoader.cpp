@@ -28,6 +28,7 @@
 #include <iostream>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <memory/malloc_types.h>
 using namespace std;
 

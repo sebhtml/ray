@@ -97,6 +97,8 @@ public:
 
 	/** write sent message counts to a file */
 	void appendStatistics(const char*file);
+
+	string getMessagePassingInterfaceImplementation();
 };
 
 #endif

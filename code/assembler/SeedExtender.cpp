@@ -19,14 +19,13 @@
 
 */
 
-#define SHOW_IMPOSSIBLE_CHOICE
-
 #include <core/constants.h>
 #include <memory/malloc_types.h>
 #include <string.h>
 #include <structures/StaticVector.h>
 #include <heuristics/TipWatchdog.h>
 #include <assembler/SeedExtender.h>
+#include <core/OperatingSystem.h>
 #include <heuristics/Chooser.h>
 #include <sstream>
 #include <assert.h>

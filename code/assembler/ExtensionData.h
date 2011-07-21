@@ -24,7 +24,6 @@
 
 #include <structures/PairedRead.h>
 #include <structures/Read.h>
-#include <memory/OnDiskAllocator.h>
 #include <core/Parameters.h>
 #include <assembler/ExtensionElement.h>
 #include <structures/ReadAnnotation.h>

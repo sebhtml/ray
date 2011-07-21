@@ -24,7 +24,6 @@
 
 #include <assembler/SeedingData.h>
 #include <assembler/ExtensionData.h>
-#include <memory/OnDiskAllocator.h>
 #include <communication/VirtualCommunicator.h>
 #include <memory/RingAllocator.h>
 #include <map>

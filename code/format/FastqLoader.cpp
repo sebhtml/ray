@@ -20,6 +20,7 @@
 */
 
 #include<format/FastqLoader.h>
+#include <stdlib.h>
 #include <core/constants.h>
 #include<fstream>
 

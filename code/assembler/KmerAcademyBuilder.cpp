@@ -22,6 +22,7 @@
 #include <core/constants.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <assembler/KmerAcademyBuilder.h>
 #include <assert.h>
 #include <communication/Message.h>

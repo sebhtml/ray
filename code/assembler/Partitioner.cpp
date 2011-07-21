@@ -20,6 +20,7 @@
 */
 
 #include <assembler/Partitioner.h>
+#include <stdlib.h>
 
 void Partitioner::constructor(RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,
 	int*slaveMode,int*masterMode){

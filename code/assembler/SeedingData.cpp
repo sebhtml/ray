@@ -21,6 +21,7 @@
 
 #include <core/constants.h>
 #include <communication/VirtualCommunicator.h>
+#include <core/OperatingSystem.h>
 #include <algorithm>
 #include <fstream>
 #include <sstream>

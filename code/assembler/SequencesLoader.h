@@ -26,7 +26,6 @@
 #include <memory/RingAllocator.h>
 #include <assembler/Loader.h>
 #include <memory/MyAllocator.h>
-#include <memory/OnDiskAllocator.h>
 #include <structures/StaticVector.h>
 #include <communication/Message.h>
 #include <structures/Read.h>

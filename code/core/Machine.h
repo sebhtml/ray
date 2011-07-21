@@ -29,7 +29,6 @@
 #include <assembler/Partitioner.h>
 #include <structures/MyForest.h>
 #include <structures/ArrayOfReads.h>
-#include <memory/OnDiskAllocator.h>
 #include <structures/StaticVector.h>
 #include <assembler/SeedingData.h>
 #include <map>

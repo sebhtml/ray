@@ -29,17 +29,11 @@
 #include <map>
 using namespace std;
 
-#ifdef OS_POSIX
-#include <sys/time.h>
-#endif
-
 /**
  * This class tests the network
  * Tested elements:
  *
  *     - latency to get a response for a message
- *
- *     if OS_POSIX is not defined, the network test is not done because the code uses POSIX gettimeofday()
  *
  *     Dependencies from the Ray software stack (mostly):
  *
@@ -77,10 +71,9 @@ class NetworkTest{
 	/** the current test message has been sent ? */
 	bool m_sentCurrentTestMessage;
 
-	#ifdef OS_POSIX
 	/** the starting time */
-	struct timeval m_startingTime;
-	#endif
+	uint64_t m_startingTimeSeconds;
+	uint64_t m_startingTimeMicroseconds;
 
 	uint64_t m_sumOfMicroSeconds;
 

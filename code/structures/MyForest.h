@@ -26,7 +26,6 @@
 #include<structures/Vertex.h>
 #include<memory/MyAllocator.h>
 #include<core/common_functions.h>
-#include <memory/OnDiskAllocator.h>
 
 /**
  * A forest contains numerous trees.

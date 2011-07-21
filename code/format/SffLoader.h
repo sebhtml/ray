@@ -25,7 +25,6 @@
 #include<string>
 #include<vector>
 #include<structures/Read.h>
-#include <memory/OnDiskAllocator.h>
 #include<stdio.h>
 #include<fstream>
 #include<structures/ArrayOfReads.h>

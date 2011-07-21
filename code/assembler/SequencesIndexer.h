@@ -32,7 +32,6 @@
 #include <memory/RingAllocator.h>
 #include <structures/SplayTree.h>
 #include <structures/SplayTreeIterator.h>
-#include <memory/OnDiskAllocator.h>
 #include <structures/StaticVector.h>
 #include <structures/ArrayOfReads.h>
 #include <structures/Read.h>

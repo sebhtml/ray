@@ -24,7 +24,6 @@
 
 #include <communication/BufferedData.h>
 #include <assembler/ExtensionData.h>
-#include <memory/OnDiskAllocator.h>
 #include <core/common_functions.h>
 #include <map>
 #include <structures/StaticVector.h>

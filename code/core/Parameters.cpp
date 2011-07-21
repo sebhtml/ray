@@ -21,7 +21,6 @@
 
 /* TODO: add option -minimumContigLength
  * TODO: add option -minimumScaffoldLength
- * TODO: add option -show-extension-choices
  */
 
 #include<core/common_functions.h>
@@ -1017,7 +1016,7 @@ void Parameters::showUsage(){
 	showOptionDescription("The resulting file is not utilised by Ray.");
 	showOptionDescription("The resulting file is very large.");
 	cout<<endl;
-	showOption("-run-profiler","Runs the profiler as the code runs. Needs a real-time POSIX system.");
+	showOption("-run-profiler","Runs the profiler as the code runs.");
 	showOptionDescription("Needs HAVE_CLOCK_GETTIME=y at compilation");
 	showOptionDescription("Running the profiler increases running times.");
 	cout<<endl;
@@ -1042,7 +1041,7 @@ void Parameters::showUsage(){
 	showOption("-show-memory-usage","Shows memory usage. Data is fetched from /proc on GNU/Linux");
 	showOptionDescription("Needs __linux__");
 	cout<<endl;
-	showOption("-show-extension-choice","Shows the choices available during the extension.");
+	showOption("-show-extension-choice","Shows the choice made (with other choices) during the extension.");
 	cout<<endl;
 	showOption("-show-ending-context","Shows the ending context of each extension.");
 	showOptionDescription("Shows the children of the vertex where extension was too difficult.");

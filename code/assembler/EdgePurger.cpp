@@ -22,6 +22,7 @@
 #include <assembler/EdgePurger.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <core/OperatingSystem.h>
 
 /* code based on assembler/Library.cpp */
 

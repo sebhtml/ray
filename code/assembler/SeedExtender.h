@@ -34,7 +34,6 @@ class DepthFirstSearchData;
 #include <memory/RingAllocator.h>
 #include <memory/MyAllocator.h>
 #include <assembler/ReadFetcher.h>
-#include <memory/OnDiskAllocator.h>
 #include <assembler/FusionData.h>
 #include <assembler/BubbleData.h>
 #include <assembler/DepthFirstSearchData.h>

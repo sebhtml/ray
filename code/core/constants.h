@@ -41,15 +41,6 @@ see <http://www.gnu.org/licenses/>
 #define EXIT_NO_MORE_MEMORY 42
 
 /*
- * Detect the operating system
- */
-#if defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(WIN64) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__) 
-#define OS_WIN
-#else
-#define OS_POSIX
-#endif
-
-/*
 * - * Define the inline keyword if using 
 *   - * Microsoft Visual C++
 *   - */

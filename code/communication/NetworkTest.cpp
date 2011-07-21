@@ -24,6 +24,7 @@
 #include <core/slave_modes.h>
 #include <core/master_modes.h>
 #include <sstream>
+#include <core/OperatingSystem.h>
 #include <fstream>
 #include <stdlib.h>
 #include <core/constants.h>
@@ -79,9 +80,9 @@ void NetworkTest::constructor(int rank,int*masterMode,int*slaveMode,int size,Sta
 void NetworkTest::slaveWork(){
 	if(m_currentTestMessage<m_numberOfTestMessages){
 		if(!m_sentCurrentTestMessage){
-			#ifdef OS_POSIX
-			gettimeofday(&m_startingTime,NULL);
-			#endif
+			m_startingTimeSeconds=0;
+			m_startingTimeMicroseconds=0;
+			getMicroSeconds(&m_startingTimeSeconds,&m_startingTimeMicroseconds);
 			/** send to a random rank */
 			int destination=rand()%m_size;
 			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
@@ -90,28 +91,20 @@ void NetworkTest::slaveWork(){
 			m_sentCurrentTestMessage=true;
 			//cout<<m_rank<<" sends RAY_MPI_TAG_TEST_NETWORK_MESSAGE to "<<destination<<endl;
 		}else if(m_inbox->size()>0 && m_inbox->at(0)->getTag()==RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY){
-			#ifdef OS_POSIX
-			struct timeval endingTime;
-			gettimeofday(&endingTime,NULL);
-
-			int startingSeconds=m_startingTime.tv_sec;
-			int startingMicroSeconds=m_startingTime.tv_usec;
-			int endingSeconds=endingTime.tv_sec;
-			int endingMicroSeconds=endingTime.tv_usec;
+			uint64_t endingSeconds=0;
+			uint64_t endingMicroSeconds=0;
+			getMicroSeconds(&endingSeconds,&endingMicroSeconds);
 			
-			int microSeconds=(endingSeconds-startingSeconds)*1000*1000+endingMicroSeconds-startingMicroSeconds;
+			int microSeconds=(endingSeconds-m_startingTimeSeconds)*1000*1000+endingMicroSeconds-m_startingTimeMicroseconds;
 			m_sumOfMicroSeconds+=microSeconds;
 
-			#endif
 			m_sentCurrentTestMessage=false;
 			m_currentTestMessage++;
 		}
 	}else{
 		int averageLatencyInMicroSeconds=LATENCY_INFORMATION_NOT_AVAILABLE;
 
-		#ifdef OS_POSIX
 		averageLatencyInMicroSeconds=m_sumOfMicroSeconds/m_numberOfTestMessages;
-		#endif
 
 		cout<<"Rank "<<m_rank<<": average latency for "<<(*m_name)<<" when requesting a reply for a message of "<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<" bytes is "<<averageLatencyInMicroSeconds<<" microseconds (10^-6 seconds)"<<endl;
 

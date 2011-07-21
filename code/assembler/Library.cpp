@@ -23,6 +23,7 @@
 #include <assembler/Library.h>
 #include <communication/mpi_tags.h>
 #include <sstream>
+#include <core/OperatingSystem.h>
 #include <core/common_functions.h>
 #include <assert.h>
 #include <core/Parameters.h>

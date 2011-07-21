@@ -21,6 +21,7 @@
 
 #include<format/FastaLoader.h>
 #include<fstream>
+#include <stdlib.h>
 
 int FastaLoader::load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
 	string id;
