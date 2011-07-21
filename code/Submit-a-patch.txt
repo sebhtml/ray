@@ -1,0 +1,29 @@
+You can clone the ray git repository.
+
+	git clone git://github.com/sebhtml/ray.git
+
+After making some changes to Ray, you can prepare a patch with
+
+	git-format-patch
+
+
+You can send your patch on the mailing list 
+
+
+denovoassembler-devel AT lists.sourceforge.net
+
+
+A patch should:
+
+- be concise
+- address one issue/bug/feature (not many)
+- be easy to review
+- should compile cleanly with -std=c++98 -Wall with g++
+- should pass all system tests and all unit tests
+
+
+A patch should not:
+
+- change substantially the Ray architecture (i.e.: prototypes)
+- contain change related to unrelated issues (i.e. adding support for X _AND_ fixing bug Y)
+     (in that case, submit 2 patches)
