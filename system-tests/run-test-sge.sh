@@ -10,13 +10,16 @@ fi
 
 if [ -z $NSLOTS ]
 then
-	export NSLOTS=32
+	export NSLOTS=64
 fi
 
 qsubFile=template.sh-qsub-$testName
 cp template.sh $qsubFile
 expression="s/__TEST_NAME__/$testName/g"
 sed -i $expression $qsubFile
+
+expression3="s/__NSLOTS__/$NSLOTS/g"
+sed -i $expression3 $qsubFile
 
 # @ is the delimiter here.
 expression2="s@__RAY_GIT_PATH__@$RAY_GIT_PATH@g"
