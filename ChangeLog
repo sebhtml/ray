@@ -11,6 +11,9 @@ graph.
 mate-pair reads.
 * Simplified the algorithm that finds a peak in the coverage distribution and added 35 unit
 tests to test it.
+* Moved Kmer logic in class Kmer. suggested by David Eccles
+(gringer) from Max-Planck-Gesellschaft, München.
+
 
 
 = 1.6.1 'sunray' =

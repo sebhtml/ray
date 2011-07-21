@@ -717,7 +717,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message)
 		int bufferPosition=i;
 		vertex.unpack(incoming,&bufferPosition);
 
-		string kmerStr=idToWord(&vertex,m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+		string kmerStr=vertex.idToWord(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 		Vertex*node=m_subgraph->find(&vertex);
 		int coverage=1;
 		if(node!=NULL)
@@ -919,7 +919,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES(Message*mes
 		Vertex*node=m_subgraph->find(&vertex);
 		#ifdef ASSERT
 		if(node==NULL){
-			cout<<"Rank="<<m_rank<<" "<<idToWord(&vertex,*m_wordSize,m_parameters->getColorSpaceMode())<<" does not exist."<<endl;
+			cout<<"Rank="<<m_rank<<" "<<vertex.idToWord(*m_wordSize,m_parameters->getColorSpaceMode())<<" does not exist."<<endl;
 		}
 		assert(node!=NULL);
 		#endif 
@@ -1200,7 +1200,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE(Message*message){
 
 	#ifdef ASSERT
 	if(node==NULL){
-		cout<<"Source="<<message->getSource()<<" Destination="<<m_rank<<" "<<idToWord(&vertex,*m_wordSize,m_parameters->getColorSpaceMode())<<" does not exist, aborting"<<endl;
+		cout<<"Source="<<message->getSource()<<" Destination="<<m_rank<<" "<<vertex.idToWord(*m_wordSize,m_parameters->getColorSpaceMode())<<" does not exist, aborting"<<endl;
 		cout.flush();
 	}
 	assert(node!=NULL);
@@ -1525,7 +1525,7 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 
 			vector<Kmer> rc;
 			for(int j=(m_ed->m_EXTENSION_contigs)[i].size()-1;j>=0;j--){
-				rc.push_back(complementVertex(&((m_ed->m_EXTENSION_contigs)[i][j]),*m_wordSize,
+				rc.push_back(m_ed->m_EXTENSION_contigs[i][j].complementVertex(*m_wordSize,
 					m_parameters->getColorSpaceMode()));
 			}
 			fusions.push_back(rc);

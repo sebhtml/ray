@@ -39,7 +39,7 @@ bool KmerAcademyIterator::hasNext(){
 KmerCandidate*KmerAcademyIterator::next(){
 	if(m_mustProcessOtherKey){
 		m_mustProcessOtherKey=false;
-		m_currentKey=complementVertex(&m_currentKey,m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+		m_currentKey=m_currentKey.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 		return m_currentEntry;
 	}
 	#ifdef ASSERT

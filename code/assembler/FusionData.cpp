@@ -670,7 +670,7 @@ void FusionData::makeFusions(){
 			assert(thePosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size());
 			#endif
 			Kmer theMainVertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][thePosition];
-			Kmer theVertex=complementVertex(&theMainVertex,m_wordSize,m_parameters->getColorSpaceMode());
+			Kmer theVertex=theMainVertex.complementVertex(m_wordSize,m_parameters->getColorSpaceMode());
 
 			if(!m_Machine_getPaths_DONE){
 				getPaths(theVertex);
@@ -687,7 +687,7 @@ void FusionData::makeFusions(){
 		}else if(!m_FUSION_last_done){
 			// get the paths going on the last vertex.
 
-			Kmer theVertex=complementVertex(&(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][END_LENGTH]),m_wordSize,m_parameters->getColorSpaceMode());
+			Kmer theVertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][END_LENGTH].complementVertex(m_wordSize,m_parameters->getColorSpaceMode());
 			if(!m_Machine_getPaths_DONE){
 				getPaths(theVertex);
 			}else{

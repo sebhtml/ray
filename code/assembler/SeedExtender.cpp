@@ -292,12 +292,12 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 		#ifdef SHOW_EXTEND_WITH_SEED
 		cout<<"Error: The seed contains a choice not supported by the graph."<<endl;
 		cout<<"Extension length: "<<ed->m_EXTENSION_extension->size()<<" vertices"<<endl;
-		cout<<"position="<<ed->m_EXTENSION_currentPosition<<" "<<idToWord(&(ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition]),wordSize,m_parameters->getColorSpaceMode())<<" with "<<ed->m_enumerateChoices_outgoingEdges.size()<<" choices ";
+		cout<<"position="<<ed->m_EXTENSION_currentPosition<<" "<<(ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition]).idToWord(wordSize,m_parameters->getColorSpaceMode())<<" with "<<ed->m_enumerateChoices_outgoingEdges.size()<<" choices ";
 		cout<<endl;
 		cout<<"Seed length: "<<ed->m_EXTENSION_currentSeed.size()<<" vertices"<<endl;
 		cout<<"Choices: ";
 		for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
-			cout<<" "<<idToWord(&(ed->m_enumerateChoices_outgoingEdges[i]),wordSize,m_parameters->getColorSpaceMode());
+			cout<<" "<<(ed->m_enumerateChoices_outgoingEdges[i]).idToWord(wordSize,m_parameters->getColorSpaceMode());
 		}
 		cout<<endl;
 		cout<<"ComplementSeed="<<ed->m_EXTENSION_complementedSeed<<endl;
@@ -612,7 +612,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			fflush(stdout);
 
 			for(int i=ed->m_EXTENSION_extension->size()-1;i>=0;i--){
-				complementedSeed.push_back(complementVertex(&(ed->m_EXTENSION_extension->at(i)),wordSize,
+				complementedSeed.push_back(ed->m_EXTENSION_extension->at(i).complementVertex(wordSize,
 					m_parameters->getColorSpaceMode()));
 			}
 
@@ -655,7 +655,7 @@ map<Kmer,set<Kmer> >*arcs,map<Kmer,int>*coverages,int depth,set<Kmer>*visited){
 		for(int j=0;j<depth;j++)
 			printf(" ");
 		Kmer child=*i;
-		string s=idToWord(&child,m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+		string s=child.idToWord(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 		#ifdef ASSERT
 		assert(coverages->count(*i)>0);
 		#endif
@@ -666,7 +666,7 @@ map<Kmer,set<Kmer> >*arcs,map<Kmer,int>*coverages,int depth,set<Kmer>*visited){
 		printf("%s coverage: %i depth: %i\n",s.c_str(),coverage,depth);
 
 		if(coverages->count(*i)==0||coverage==0){
-			cout<<"Error: "<<idToWord(&child,m_parameters->getWordSize(),m_parameters->getColorSpaceMode())<<" don't have a coverage value"<<endl;
+			cout<<"Error: "<<child.idToWord(m_parameters->getWordSize(),m_parameters->getColorSpaceMode())<<" don't have a coverage value"<<endl;
 		}
 
 		if(depth==1)
@@ -701,7 +701,7 @@ Kmer *currentVertex,BubbleData*bubbleData){
 			}
 			printf("\n");
 			printf("Tree\n");
-			string s=idToWord(currentVertex,m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+			string s=currentVertex->idToWord(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 			printf("%s %i\n",s.c_str(),ed->m_currentCoverage);
 			set<Kmer> visited;
 			printTree(*currentVertex,&arcs,
@@ -858,7 +858,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 		bool inserted;
 		*((m_cache.insert(*currentVertex,&m_cacheAllocator,&inserted))->getValue())=ed->m_currentCoverage;
 		uint64_t compactEdges=m_vertexMessenger.getEdges();
-		*receivedOutgoingEdges=_getOutgoingEdges(currentVertex,compactEdges,m_parameters->getWordSize());
+		*receivedOutgoingEdges=currentVertex->_getOutgoingEdges(compactEdges,m_parameters->getWordSize());
 		ed->m_EXTENSION_extension->push_back((*currentVertex));
 		ed->m_extensionCoverageValues->push_back(*receivedVertexCoverage);
 
@@ -1104,7 +1104,7 @@ void SeedExtender::inspect(ExtensionData*ed,Kmer*currentVertex){
 	int wordSize=m_parameters->getWordSize();
 	cout<<endl;
 	cout<<"*****************************************"<<endl;
-	cout<<"CurrentVertex="<<idToWord(currentVertex,wordSize,m_parameters->getColorSpaceMode())<<" @"<<ed->m_EXTENSION_extension->size()<<endl;
+	cout<<"CurrentVertex="<<currentVertex->idToWord(wordSize,m_parameters->getColorSpaceMode())<<" @"<<ed->m_EXTENSION_extension->size()<<endl;
 	#ifdef ASSERT
 	assert(ed->m_currentCoverage<=m_parameters->getMaximumAllowedCoverage());
 	#endif
@@ -1114,7 +1114,7 @@ void SeedExtender::inspect(ExtensionData*ed,Kmer*currentVertex){
 
 	cout<<endl;
 	for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
-		string vertex=idToWord(&(ed->m_enumerateChoices_outgoingEdges[i]),wordSize,m_parameters->getColorSpaceMode());
+		string vertex=ed->m_enumerateChoices_outgoingEdges[i].idToWord(wordSize,m_parameters->getColorSpaceMode());
 		Kmer key=ed->m_enumerateChoices_outgoingEdges[i];
 		cout<<endl;
 		cout<<"Choice #"<<i+1<<endl;
@@ -1268,7 +1268,7 @@ void SeedExtender::printExtensionStatus(Kmer*currentVertex){
 	}
 	#endif
 	printf("Rank %i reached %i vertices (%s) from seed %i\n",theRank,theCurrentSize,
-		idToWord(currentVertex,m_parameters->getWordSize(),m_parameters->getColorSpaceMode()).c_str(),
+		currentVertex->idToWord(m_parameters->getWordSize(),m_parameters->getColorSpaceMode()).c_str(),
 		m_ed->m_EXTENSION_currentSeedIndex+1);
 
 	fflush(stdout);

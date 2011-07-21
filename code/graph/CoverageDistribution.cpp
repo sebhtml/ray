@@ -54,7 +54,7 @@ CoverageDistribution::CoverageDistribution(map<int,uint64_t>*distributionOfCover
 		int largestPosition=i;
 		for(int j=0;j<windowSize;j++){
 			int position=i+j;
-			if(position >= x.size())
+			if(position >= (int)x.size())
 				break;
 			if(y.at(position) > y.at(largestPosition))
 				largestPosition=position;

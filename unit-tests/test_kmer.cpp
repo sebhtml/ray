@@ -37,7 +37,7 @@ void test_addInEdge(){
 		cout<<"Actual:"<<endl;
 		cout<<inEdges.size()<<endl;
 		for(int j=0;j<(int)inEdges.size();j++){
-			cout<<idToWord(&(inEdges[j]),wordSize,false)<<endl;
+			cout<<inEdges[j].idToWord(wordSize,false)<<endl;
 		}
 	}
 	assertEquals(inEdges.size(),1);
@@ -55,7 +55,7 @@ void test_addOutEdge(){
 	Vertex aVertex;
 	aVertex.constructor();
 	Kmer lower=aKmer;
-	Kmer aRC=complementVertex(&aKmer,wordSize,false);
+	Kmer aRC=aKmer.complementVertex(wordSize,false);
 
 	if(aRC<lower){
 		lower=aRC;
@@ -76,7 +76,7 @@ void test_addOutEdge(){
 		cout<<b<<endl;
 		cout<<"Actual:"<<endl;
 		for(int j=0;j<(int)Edges.size();j++){
-			cout<<idToWord(&(Edges[j]),wordSize,false)<<endl;
+			cout<<Edges[j].idToWord(wordSize,false)<<endl;
 		}
 		uint8_t edges=aVertex.getEdges(&aKmer);
 		cout<<"Edges"<<endl;
@@ -96,9 +96,9 @@ void test_addInEdge2(){
 
 	Vertex bVertex;
 	bVertex.constructor();
-	Kmer bRC=complementVertex(&bKmer,wordSize,false);
+	Kmer bRC=bKmer.complementVertex(wordSize,false);
 	Kmer lower=bKmer;
-	Kmer aRC=complementVertex(&aKmer,wordSize,false);
+	Kmer aRC=aKmer.complementVertex(wordSize,false);
 
 	if(bRC<lower){
 		lower=bRC;
@@ -119,7 +119,7 @@ void test_addInEdge2(){
 		cout<<"Actual:"<<endl;
 		cout<<inEdges.size()<<endl;
 		for(int j=0;j<(int)inEdges.size();j++){
-			cout<<idToWord(&(inEdges[j]),wordSize,false)<<endl;
+			cout<<inEdges[j].idToWord(wordSize,false)<<endl;
 		}
 	}
 	assertEquals(inEdges.size(),1);
@@ -143,11 +143,11 @@ void test_out_large(){
 	Kmer aKmer=wordId(a.c_str());
 	Kmer bKmer=wordId(b.c_str());
 	
-	vector<Kmer>oEdges=_getOutgoingEdges(&aKmer,edges,wordSize);
+	vector<Kmer>oEdges=aKmer._getOutgoingEdges(edges,wordSize);
 	assertEquals(oEdges.size(),1);
 
 	Kmer actual=oEdges[0];
-	string actualStr=idToWord(&actual,wordSize,false);
+	string actualStr=actual.idToWord(wordSize,false);
 	if(actualStr!=b){
 		cout<<"MAXKMERLENGTH: "<<MAXKMERLENGTH<<endl;
 		cout<<"WordSize: "<<wordSize<<endl;
@@ -185,13 +185,13 @@ void test_Ingoing_large2(){
 	uint8_t edges=(1<<0);
 
 	Kmer aKmer=wordId(a.c_str());
-	assertEquals(getFirstSegmentFirstCode(&aKmer,wordSize),RAY_NUCLEOTIDE_A);
+	assertEquals(aKmer.getFirstSegmentFirstCode(wordSize),RAY_NUCLEOTIDE_A);
 
 	Kmer bKmer=wordId(b.c_str());
 	
-	vector<Kmer>inEdges=_getIngoingEdges(&bKmer,edges,wordSize);
+	vector<Kmer>inEdges=bKmer._getIngoingEdges(edges,wordSize);
 	Kmer actual=inEdges[0];
-	string actualStr=idToWord(&actual,wordSize,false);
+	string actualStr=actual.idToWord(wordSize,false);
 	if(actualStr!=a){
 		cout<<"MAXKMERLENGTH: "<<MAXKMERLENGTH<<endl;
 		cout<<"WordSize: "<<wordSize<<endl;
@@ -234,9 +234,9 @@ void test_Ingoing_large(){
 	Kmer aKmer=wordId(a.c_str());
 	Kmer bKmer=wordId(b.c_str());
 	
-	vector<Kmer>inEdges=_getIngoingEdges(&bKmer,edges,wordSize);
+	vector<Kmer>inEdges=bKmer._getIngoingEdges(edges,wordSize);
 	Kmer actual=inEdges[0];
-	string actualStr=idToWord(&actual,wordSize,false);
+	string actualStr=actual.idToWord(wordSize,false);
 	if(actualStr!=a){
 		cout<<"MAXKMERLENGTH: "<<MAXKMERLENGTH<<endl;
 		cout<<"WordSize: "<<wordSize<<endl;
@@ -275,11 +275,11 @@ void test_out(){
 	Kmer aKmer=wordId(a.c_str());
 	Kmer bKmer=wordId(b.c_str());
 	
-	vector<Kmer>oEdges=_getOutgoingEdges(&aKmer,edges,wordSize);
+	vector<Kmer>oEdges=aKmer._getOutgoingEdges(edges,wordSize);
 	assertEquals(oEdges.size(),1);
 
 	Kmer actual=oEdges[0];
-	string actualStr=idToWord(&actual,wordSize,false);
+	string actualStr=actual.idToWord(wordSize,false);
 	if(actualStr!=b){
 		cout<<"MAXKMERLENGTH: "<<MAXKMERLENGTH<<endl;
 		cout<<"WordSize: "<<wordSize<<endl;
@@ -319,9 +319,9 @@ void test_Ingoing(){
 	Kmer aKmer=wordId(a.c_str());
 	Kmer bKmer=wordId(b.c_str());
 	
-	vector<Kmer>inEdges=_getIngoingEdges(&bKmer,edges,wordSize);
+	vector<Kmer>inEdges=bKmer._getIngoingEdges(edges,wordSize);
 	Kmer actual=inEdges[0];
-	string actualStr=idToWord(&actual,wordSize,false);
+	string actualStr=actual.idToWord(wordSize,false);
 	if(actualStr!=a){
 		cout<<"MAXKMERLENGTH: "<<MAXKMERLENGTH<<endl;
 		cout<<"WordSize: "<<wordSize<<endl;
@@ -352,18 +352,18 @@ int main(int argc,char**argv){
 	Kmer id=wordId(seq.c_str());
 
 	Kmer empty;
-	string result=idToWord(&id,wordSize,false);
+	string result=id.idToWord(wordSize,false);
 	assert(seq==result);
 	char last=seq[seq.length()-1];
-	char observed=getLastSymbol(&id,wordSize,false);
+	char observed=id.getLastSymbol(wordSize,false);
 	assert(observed==last);
 
 
 	// reverse complement
 	string rc=reverseComplement(&seq);
 
-	Kmer comp=complementVertex(&id,wordSize,false);
-	string result2=idToWord(&comp,wordSize,false);
+	Kmer comp=id.complementVertex(wordSize,false);
+	string result2=comp.idToWord(wordSize,false);
 	assertEquals(rc,result2);
 
 	Kmer rcId=wordId(rc.c_str());
@@ -372,12 +372,12 @@ int main(int argc,char**argv){
 	// ingoing edges.
 	//
 	uint8_t edges=0xff;
-	vector<Kmer>inEdges=_getIngoingEdges(&id,edges,wordSize);
+	vector<Kmer>inEdges=id._getIngoingEdges(edges,wordSize);
 	assertEquals(4,inEdges.size());
 	set<string> tmp;
 	for(int i=0;i<(int)inEdges.size();i++){
 		Kmer theKmer=inEdges[i];
-		string a=idToWord(&theKmer,wordSize,false);
+		string a=theKmer.idToWord(wordSize,false);
 		Kmer id=wordId(a.c_str());
 
 		if(theKmer!=id){
@@ -398,12 +398,12 @@ int main(int argc,char**argv){
 	assertEquals(tmp.size(),4);
 
 	// test outgoing edges
-	vector<Kmer> outEdges=_getOutgoingEdges(&id,edges,wordSize);
+	vector<Kmer> outEdges=id._getOutgoingEdges(edges,wordSize);
 	assertEquals(4,outEdges.size());
 	tmp.clear();
 	for(int i=0;i<(int)outEdges.size();i++){
 		Kmer theKmer=outEdges[i];
-		string a=idToWord(&theKmer,wordSize,false);
+		string a=theKmer.idToWord(wordSize,false);
 
 		Kmer id=wordId(a.c_str());// make sure that all bit are set to 0 except those relevant 
 		if(theKmer!=id){

@@ -1189,7 +1189,7 @@ void Parameters::setMinimumCoverage(int a){
 }
 
 Kmer Parameters::_complementVertex(Kmer*a){
-	return complementVertex(a,m_wordSize,m_colorSpaceMode);
+	return a->complementVertex(m_wordSize,m_colorSpaceMode);
 }
 
 bool Parameters::hasPairedReads(){
@@ -1197,7 +1197,7 @@ bool Parameters::hasPairedReads(){
 }
 
 int Parameters::_vertexRank(Kmer*a){
-	return vertexRank(a,m_size,m_wordSize,m_colorSpaceMode);
+	return a->vertexRank(m_size,m_wordSize,m_colorSpaceMode);
 }
 int Parameters::getSlaveMode(){
 	return *m_slaveMode;

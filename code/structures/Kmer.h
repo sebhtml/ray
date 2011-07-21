@@ -19,8 +19,6 @@
 
 */
 
-/* TODO: merge the k-mer-related things here */
-
 #ifndef _Kmer
 #define _Kmer
 
@@ -30,6 +28,7 @@
 #ifdef ASSERT
 #include <assert.h>
 #endif
+#include <string>
 using namespace std;
 
 /*
@@ -93,8 +92,69 @@ public:
 	}
 
 	int getNumberOfU64();
+/*
+ * get the last letter of a uint64_t
+ */
+	char getLastSymbol(int w,bool color);
+
+/*
+ * complement a vertex, and return another one
+ */
+	INLINE
+	Kmer complementVertex(int wordSize,bool colorSpace){
+		Kmer output;
+		int bitPositionInOutput=0;
+		uint64_t mask=3;
+		for(int positionInMer=wordSize-1;positionInMer>=0;positionInMer--){
+			int u64_id=positionInMer/32;
+			int bitPositionInChunk=(2*positionInMer)%64;
+			uint64_t chunk=getU64(u64_id);
+			uint64_t j=(chunk<<(62-bitPositionInChunk))>>62;
+			
+			if(!colorSpace) /* in color space, reverse complement is just reverse */
+				j=~j&mask;
+	
+			int outputChunk=bitPositionInOutput/64;
+			uint64_t oldValue=output.getU64(outputChunk);
+			oldValue=(oldValue|(j<<(bitPositionInOutput%64)));
+			output.setU64(outputChunk,oldValue);
+			bitPositionInOutput+=2;
+		}
+		return output;
+	}
+	
+/*
+ * use mini distant segments here.
+ */
+	uint8_t getFirstSegmentFirstCode(int w);
+	uint8_t getSecondSegmentLastCode(int w);
+	int vertexRank(int _size,int w,bool color);
+/**
+ * get the outgoing Kmer objects for a Kmer a having edges and
+ * a k-mer length k
+ */
+	vector<Kmer> _getOutgoingEdges(uint8_t edges,int k);
+
+/**
+ * get the ingoing Kmer objects for a Kmer a having edges and
+ * a k-mer length k
+ */
+	vector<Kmer> _getIngoingEdges(uint8_t edges,int k);
+
+	uint64_t hash_function_1();
+	uint64_t hash_function_2();
+/*
+ * transform a Kmer in a string
+ */
+	string idToWord(int wordSize,bool color);
 
 }ATTRIBUTE_PACKED;
+
+/*
+ * transform a encoded nucleotide in a char
+ */
+char codeToChar(uint8_t a,bool color);
+
 
 
 #endif

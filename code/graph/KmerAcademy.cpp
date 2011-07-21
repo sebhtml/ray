@@ -53,7 +53,7 @@ uint64_t KmerAcademy::size(){
  * Kmer objects.
  */
 KmerCandidate*KmerAcademy::find(Kmer*key){
-	Kmer lowerKey=complementVertex(key,m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+	Kmer lowerKey=key->complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 	if(key->isLower(&lowerKey)){
 		lowerKey=*key;
 	}
@@ -64,7 +64,7 @@ KmerCandidate*KmerAcademy::find(Kmer*key){
  * Ray just stores one k-mer for any pair of k-mers
  */
 KmerCandidate*KmerAcademy::insert(Kmer*key){
-	Kmer lowerKey=complementVertex(key,m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+	Kmer lowerKey=key->complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 	if(key->isLower(&lowerKey)){
 		lowerKey=*key;
 	}

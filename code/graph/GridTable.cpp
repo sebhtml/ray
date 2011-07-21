@@ -47,7 +47,7 @@ uint64_t GridTable::size(){
 }
 
 Vertex*GridTable::find(Kmer*key){
-	Kmer lowerKey=complementVertex(key,m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+	Kmer lowerKey=key->complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 	if(key->isLower(&lowerKey)){
 		lowerKey=*key;
 	}
@@ -59,7 +59,7 @@ KmerCandidate*GridTable::insertInAcademy(Kmer*key){
 }
 
 Vertex*GridTable::insert(Kmer*key){
-	Kmer lowerKey=complementVertex(key,m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+	Kmer lowerKey=key->complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 	if(key->isLower(&lowerKey)){
 		lowerKey=*key;
 	}
@@ -80,7 +80,7 @@ bool GridTable::inserted(){
 }
 
 bool GridTable::isAssembled(Kmer*a){
-	Kmer reverse=complementVertex(a,m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+	Kmer reverse=a->complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 	return getDirections(a).size()>0||getDirections(&reverse).size()>0;
 }
 

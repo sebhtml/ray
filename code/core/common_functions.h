@@ -42,15 +42,6 @@ using namespace std;
  */
 string reverseComplement(string a,char*rev);
 
-/*
- * transform a Kmer in a string
- */
-string idToWord(Kmer*i,int wordSize,bool color);
-
-/*
- * transform a encoded nucleotide in a char
- */
-char codeToChar(uint8_t a,bool color);
 
 /*
  * Encode a char
@@ -61,37 +52,6 @@ uint8_t charToCode(char a);
  * verify that x has only A,T,C, and G
  */
 bool isValidDNA(char*x);
-
-/*
- * get the last letter of a uint64_t
- */
-char getLastSymbol(Kmer*i,int w,bool color);
-
-/*
- * complement a vertex, and return another one
- */
-INLINE
-Kmer complementVertex(Kmer*a,int wordSize,bool colorSpace){
-	Kmer output;
-	int bitPositionInOutput=0;
-	uint64_t mask=3;
-	for(int positionInMer=wordSize-1;positionInMer>=0;positionInMer--){
-		int u64_id=positionInMer/32;
-		int bitPositionInChunk=(2*positionInMer)%64;
-		uint64_t chunk=a->getU64(u64_id);
-		uint64_t j=(chunk<<(62-bitPositionInChunk))>>62;
-		
-		if(!colorSpace) /* in color space, reverse complement is just reverse */
-			j=~j&mask;
-
-		int outputChunk=bitPositionInOutput/64;
-		uint64_t oldValue=output.getU64(outputChunk);
-		oldValue=(oldValue|(j<<(bitPositionInOutput%64)));
-		output.setU64(outputChunk,oldValue);
-		bitPositionInOutput+=2;
-	}
-	return output;
-}
 
 /*
  * transform a string in a Kmer
@@ -122,15 +82,7 @@ Kmer wordId(const char*a){
  */
 string addLineBreaks(string sequence,int a);
 
-/*
- * use mini distant segments here.
- */
-uint8_t getFirstSegmentFirstCode(Kmer*v,int w);
-uint8_t getSecondSegmentLastCode(Kmer*v,int w);
-
 string convertToString(vector<Kmer>*b,int m_wordSize,bool color);
-
-int vertexRank(Kmer*a,int _size,int w,bool color);
 
 Kmer kmerAtPosition(const char*string,int pos,int w,char strand,bool color);
 
@@ -140,24 +92,7 @@ uint64_t getMilliSeconds();
 
 void showMemoryUsage(int rank);
 
-/**
- * get the outgoing Kmer objects for a Kmer a having edges and
- * a k-mer length k
- */
-vector<Kmer> _getOutgoingEdges(Kmer*a,uint8_t edges,int k);
-
-/**
- * get the ingoing Kmer objects for a Kmer a having edges and
- * a k-mer length k
- */
-vector<Kmer> _getIngoingEdges(Kmer*a,uint8_t edges,int k);
-
 char complementNucleotide(char c);
-
-uint64_t hash_function_1(Kmer*a);
-uint64_t hash_function_2(Kmer*a);
-
-uint8_t invertEdges(uint8_t a);
 
 uint64_t getPathUniqueId(int rank,int id);
 int getIdFromPathUniqueId(uint64_t a);

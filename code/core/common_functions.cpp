@@ -65,10 +65,6 @@ string reverseComplement(string*a){
 	return b.str();
 }
 
-char getLastSymbol(Kmer*i,int m_wordSize,bool color){
-	return codeToChar(getSecondSegmentLastCode(i,m_wordSize),color);
-}
-
 bool isValidDNA(char*x){
 	int len=strlen(x);
 	for(int i=0;i<len;i++){
@@ -89,26 +85,6 @@ string addLineBreaks(string dna,int columns){
 	return output.str();
 }
 
-uint8_t getSecondSegmentLastCode(Kmer* v,int w){
-	int bitPosition=2*w;
-	int chunkId=bitPosition/64;
-	int bitPositionInChunk=bitPosition%64;
-	uint64_t chunk=v->getU64(chunkId);
-	chunk=(chunk<<(sizeof(uint64_t)*8-bitPositionInChunk))>>(sizeof(uint64_t)*8-2); // clecar bits
-	
-	return (uint8_t)chunk;
-}
-
-uint8_t getFirstSegmentFirstCode(Kmer*v,int w){
-	// ATCAGTTGCAGTACTGCAATCTACG
-	// 0000000000000011100001100100000000000000000000000001011100100100
-	//                                                   6 5 4 3 2 1 0
-	uint64_t a=v->getU64(0);
-	a=a<<(sizeof(uint64_t)*8-2);
-	a=a>>(sizeof(uint64_t)*8-2);
-	return a;
-}
-
 string convertToString(vector<Kmer>*b,int m_wordSize,bool color){
 	ostringstream a;
 	#ifdef USE_DISTANT_SEGMENTS_GRAPH
@@ -118,23 +94,16 @@ string convertToString(vector<Kmer>*b,int m_wordSize,bool color){
 	//  TTAATT
 	//  the first vertex can not fill in the first delta letter alone, it needs help.
 	for(int p=0;p<m_wordSize;p++){
-		a<<codeToChar(getFirstSegmentFirstCode((*b)[p],m_wordSize));
+		a<<codeToChar(b->at(p).getFirstSegmentFirstCode(m_wordSize));
 	}
 	#else
-	a<<idToWord(&(*b)[0],m_wordSize,color);
+	a<<b->at(0).idToWord(m_wordSize,color);
 	#endif
 	for(int j=1;j<(int)(*b).size();j++){
-		a<<getLastSymbol(&(*b)[j],m_wordSize,color);
+		a<<b->at(j).getLastSymbol(m_wordSize,color);
 	}
 	string contig=a.str();
 	return contig;
-}
-
-int vertexRank(Kmer*a,int _size,int w,bool color){
-	Kmer b=complementVertex(a,w,color);
-	if(a->isLower(&b))
-		b=*a;
-	return hash_function_1(&b)%(_size);
 }
 
 Kmer kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool color){
@@ -161,7 +130,7 @@ Kmer kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool color){
 		memcpy(sequence,m_sequence+length-pos-w,w);
 		sequence[w]='\0';
 		Kmer v=wordId(sequence);
-		return complementVertex(&v,w,color);
+		return v.complementVertex(w,color);
 	}
 	Kmer error;
 	return error;
@@ -201,182 +170,6 @@ void showMemoryUsage(int rank){
 	f.close();
 	#endif
 }
-
-/**
- * Get the outgoing edges
- * one bit (1=yes, 0=no) per possible edge
- */
-vector<Kmer> _getOutgoingEdges(Kmer*a,uint8_t edges,int k){
-	vector<Kmer> b;
-	Kmer aTemplate;
-	aTemplate=*a;
-
-	for(int i=0;i<aTemplate.getNumberOfU64();i++){
-		uint64_t word=aTemplate.getU64(i)>>2;
-		if(i!=aTemplate.getNumberOfU64()-1){
-			uint64_t next=aTemplate.getU64(i+1);
-/*
- *		abcd	efgh
- *		00ab	00ef
- *		00ab	cdef
- */
-			next=(next<<62);
-			word=word|next;
-		}
-		aTemplate.setU64(i,word);
-	}
-
-	int positionToUpdate=2*k;
-	int chunkIdToUpdate=positionToUpdate/64;
-	positionToUpdate=positionToUpdate%64;
-
-	for(int i=0;i<4;i++){
-		int j=((((uint64_t)edges)<<(sizeof(uint64_t)*8-5-i))>>(sizeof(uint64_t)*8-1));
-		if(j==1){
-			Kmer newKmer=aTemplate;
-			uint64_t last=newKmer.getU64(chunkIdToUpdate);
-			uint64_t filter=i;
-			filter=filter<<(positionToUpdate-2);
-			last=last|filter;
-			newKmer.setU64(chunkIdToUpdate,last);
-			b.push_back(newKmer);
-		}
-	}
-
-	return b;
-}
-
-/**
- * Get the ingoing edges
- * one bit (1=yes, 0=no) per possible edge
- */
-vector<Kmer> _getIngoingEdges(Kmer*a,uint8_t edges,int k){
-	vector<Kmer> b;
-	Kmer aTemplate;
-	aTemplate=*a;
-	
-	int posToClear=2*k;
-
-	for(int i=0;i<aTemplate.getNumberOfU64();i++){
-		uint64_t element=aTemplate.getU64(i);
-		element=element<<2;
-
-//	1		0
-//
-//	127..64		63...0
-//
-//	00abcdefgh  ijklmnopqr		// initial state
-//	abcdefgh00  klmnopqr00		// shift left
-//	abcdefghij  klmnopqr00		// copy the last to the first
-//	00cdefghij  klmnopqr00		// reset the 2 last
-
-/**
- * Now, we need to copy 2 bits from 
- */
-		if(i!=0){
-			// the 2 last of the previous will be the 2 first of this one
-			uint64_t last=a->getU64(i-1);
-			last=(last>>62);
-			element=element|last;
-		}
-
-		/**
- *	The two last bits that shifted must be cleared
- *	Otherwise, it will change the hash value of the Kmer...
- *	The chunk number i contains bits from i to i*64-1
- *	Therefore, if posToClear is inside these boundaries,
- *	then it is obvious that these awful bits must be changed 
- *	to 0
- */
-		if(i*64<=posToClear&&posToClear<i*64+64){
-			int position=posToClear%64;
-
-			uint64_t filter=3;// 11 or 1*2^1+1*2^0
-			filter=filter<<(position);
-			filter=~filter;
-			element=element&filter;
-		}
-		aTemplate.setU64(i,element);
-	}
-
-	for(int i=0;i<4;i++){
-		int j=((((uint64_t)edges)<<((sizeof(uint64_t)*8-1)-i))>>(sizeof(uint64_t)*8-1));
-		if(j==1){
-			Kmer newKmer=aTemplate;
-			int id=0;
-			uint64_t last=newKmer.getU64(id);
-			uint64_t filter=i;
-			last=last|filter;
-			newKmer.setU64(id,last);
-			b.push_back(newKmer);
-		}
-	}
-	return b;
-}
-
-uint64_t hash_function_1(Kmer*a){
-	#if KMER_U64_ARRAY_SIZE == 1
-	return uniform_hashing_function_1_64_64(a->getU64(0));
-	#else
-	uint64_t key=a->getU64(0);
-	for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
-		uint64_t hash=uniform_hashing_function_1_64_64(a->getU64(i));
-		key^=hash;
-	}
-	return key;
-
-	#endif
-}
-
-uint64_t hash_function_2(Kmer*a){
-	#if KMER_U64_ARRAY_SIZE == 1
-	return uniform_hashing_function_2_64_64(a->getU64(0));
-	#else
-	uint64_t key=a->getU64(0);
-	for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
-		uint64_t hash=uniform_hashing_function_2_64_64(a->getU64(i));
-		key^=hash;
-	}
-	return key;
-
-	#endif
-}
-
-	// outgoing  ingoing
-	//
-	// G C T A G C T A
-	//
-	// 7 6 5 4 3 2 1 0
-
-uint8_t invertEdges(uint8_t edges){
-	uint8_t out=0;
-
-	uint64_t mask=3;
-
-	// outgoing edges
-	for(int i=0;i<4;i++){
-		int j=((((uint64_t)edges)<<(sizeof(uint64_t)*8-5-i))>>(sizeof(uint64_t)*8-1));
-		if(j==1){
-			j=~i&mask;
-			
-			uint8_t newBits=(1<<j);
-			out=out|newBits;
-		}
-	}
-
-	// Ingoing edges
-	for(int i=0;i<4;i++){
-		int j=((((uint64_t)edges)<<((sizeof(uint64_t)*8-1)-i))>>(sizeof(uint64_t)*8-1));
-		if(j==1){
-			j=~i&mask;
-			
-			uint8_t newBits=(1<<(4+j));
-			out=out|newBits;
-		}
-	}
-	return out;
-}
-
 
 uint64_t getPathUniqueId(int rank,int id){
 	uint64_t a=id;
@@ -433,49 +226,6 @@ uint8_t charToCode(char a){
 		default:
 			return RAY_NUCLEOTIDE_A;
 	}
-}
-
-char codeToChar(uint8_t a,bool color){
-	if(color){
-		switch(a){
-			case RAY_NUCLEOTIDE_A:
-				return DOUBLE_ENCODING_A_COLOR;
-			case RAY_NUCLEOTIDE_T:
-				return DOUBLE_ENCODING_T_COLOR;
-			case RAY_NUCLEOTIDE_C:
-				return DOUBLE_ENCODING_C_COLOR;
-			case RAY_NUCLEOTIDE_G:
-				return DOUBLE_ENCODING_G_COLOR;
-		}
-		return DOUBLE_ENCODING_A_COLOR;
-	}
-
-	switch(a){
-		case RAY_NUCLEOTIDE_A:
-			return 'A';
-		case RAY_NUCLEOTIDE_T:
-			return 'T';
-		case RAY_NUCLEOTIDE_C:
-			return 'C';
-		case RAY_NUCLEOTIDE_G:
-			return 'G';
-	}
-	return 'A';
-}
-
-string idToWord(Kmer*i,int wordSize,bool color){
-	char a[1000];
-	for(int p=0;p<wordSize;p++){
-		int bitPosition=2*p;
-		int chunkId=p/32;
-		int bitPositionInChunk=(bitPosition%64);
-		uint64_t chunk=i->getU64(chunkId);
-		uint64_t j=(chunk<<(62-bitPositionInChunk))>>62; // clear the bits.
-		a[p]=codeToChar(j,color);
-	}
-	a[wordSize]='\0';
-	string b=a;
-	return b;
 }
 
 int portableProcessId(){

@@ -127,7 +127,7 @@ void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
 			}
 
 			// reverse complement
-			Kmer b=complementVertex(&a,wordSize,m_parameters->getColorSpaceMode());
+			Kmer b=a.complementVertex(wordSize,m_parameters->getColorSpaceMode());
 
 			rankToFlush=m_parameters->_vertexRank(&b);
 			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
