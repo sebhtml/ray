@@ -120,9 +120,9 @@ int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoice
 	
 	if(show){
 		if(selection==IMPOSSIBLE_CHOICE){
-			cout<<"Selection: IMPOSSIBLE_CHOICE"<<endl;
+			cout<<"NovaEngine Selection: IMPOSSIBLE_CHOICE"<<endl;
 		}else{
-			cout<<"Selection: "<<selection+1<<endl;
+			cout<<"NovaEngine Selection: "<<selection+1<<endl;
 		}
 	}
 

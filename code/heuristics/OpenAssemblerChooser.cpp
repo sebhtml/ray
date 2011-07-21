@@ -95,10 +95,12 @@ Parameters*parameters){
 	//cout<<"Calling NovaEngine.."<<endl;
 	
 	bool showNovaAlgorithm=parameters->showExtensionChoice();
+	/* TODO read  the log for strept with this turned on, need to work on it a little bit */
+	bool useNovaEngine=false;
 
 	/** this is the powerful NovaEngine -- an assembly engine to surf de Bruijn DNA graphs */
 	int novaChoice=m_novaEngine.choose(&novaData,&invalidChoices,showNovaAlgorithm);
-	if(novaChoice!=IMPOSSIBLE_CHOICE){
+	if(novaChoice!=IMPOSSIBLE_CHOICE && useNovaEngine){
 		return novaChoice;
 	}
 
