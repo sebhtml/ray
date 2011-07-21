@@ -48,8 +48,8 @@ CoverageDistribution::CoverageDistribution(map<int,uint64_t>*distributionOfCover
 
 	int windowSize=10;
 	int minimumX=1;
-	int minimumY=2*4096;
-	int minimumY2=55000;
+	uint64_t minimumY=2*4096;
+	uint64_t minimumY2=55000;
 	int maximumX=65535-1;
 	int safeThreshold=256;
 
