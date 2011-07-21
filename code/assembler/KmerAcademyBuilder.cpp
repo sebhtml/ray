@@ -116,6 +116,8 @@ void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
 		if(isValidDNA(memory)){
 			Kmer a=wordId(memory);
 
+			/* TODO: _vertexRank (2 calls) calls complementVertex so there are 3 calls to complementVertex are done while 1 would suffice (Reported by David Eccles) */
+
 			int rankToFlush=0;
 
 			rankToFlush=m_parameters->_vertexRank(&a);
