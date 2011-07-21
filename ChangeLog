@@ -9,6 +9,8 @@ not circularized DNA (shorter outer distance).
 graph.
 * New experimental assembly choice engine: Ray NovaEngine. NovaEngine makes better choices for
 mate-pair reads.
+* Simplified the algorithm that finds a peak in the coverage distribution and added 35 unit
+tests to test it.
 
 
 = 1.6.1 'sunray' =
