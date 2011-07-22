@@ -62,7 +62,7 @@ void Partitioner::masterMethod(){
 		uint64_t count=buffer[1];
 		m_masterCounts[file]=count;
 
-		if(m_parameters->hasOption("debug:partitioner"))
+		if(m_parameters->hasOption("-debug-partitioner"))
 			cout<<"Rank "<<m_parameters->getRank()<<" received from "<<m_inbox->at(0)->getSource()<<" File "<<file<<" Entries "<<count<<endl;
 		/** reply to the peer */
 		Message aMessage(NULL,0,m_inbox->at(0)->getSource(),RAY_MPI_TAG_FILE_ENTRY_COUNT_REPLY,m_parameters->getRank());
@@ -72,13 +72,64 @@ void Partitioner::masterMethod(){
 		m_ranksDoneSending++;
 		/** all peers have finished */
 		if(m_ranksDoneSending==m_parameters->getSize()){
+
 			for(int i=0;i<(int)m_masterCounts.size();i++){
-				if(m_parameters->hasOption("debug:partitioner"))
+				if(m_parameters->hasOption("-debug-partitioner"))
 					cout<<"Rank "<<m_parameters->getRank()<< " File "<<i<<" Count "<<m_masterCounts[i]<<endl;
 				m_parameters->setNumberOfSequences(i,m_masterCounts[i]);
 			}
 			m_masterCounts.clear();
+
+			/* write the number of sequences */
+			ostringstream fileName;
+			fileName<<m_parameters->getPrefix();
+			fileName<<".NumberOfSequences.txt";
+			ofstream f2(fileName.str().c_str());
+
+			f2<<"Files: "<<m_parameters->getNumberOfFiles()<<endl;
+			f2<<endl;
+			uint64_t totalSequences=0;
+			for(int i=0;i<(int)m_parameters->getNumberOfFiles();i++){
+				f2<<"FileNumber: "<<i<<endl;
+				f2<<"	FilePath: "<<m_parameters->getFile(i)<<endl;
+				uint64_t entries=m_parameters->getNumberOfSequences(i);
+				f2<<" 	NumberOfSequences: "<<entries<<endl;
+				if(entries>0){
+					f2<<"	FirstSequence: "<<totalSequences<<endl;
+					f2<<"	LastSequence: "<<totalSequences+entries-1<<endl;
+				}
+				f2<<endl;
+
+				totalSequences+=entries;
+			}
+			
+			f2<<endl;
+			f2<<"Summary"<<endl;
+			f2<<"	NumberOfSequences: "<<totalSequences<<endl;
+			f2<<"	FirstSequence: 0"<<endl;
+			f2<<"	LastSequence: "<<totalSequences-1<<endl;
+			f2.close();
+			cout<<"Rank "<<m_parameters->getRank()<<" wrote "<<fileName<<endl;
+
 			(*m_masterMode)=RAY_MASTER_MODE_LOAD_SEQUENCES;
+
+			/* write the partition */
+			ostringstream fileName2;
+			fileName2<<m_parameters->getPrefix();
+			fileName2<<".SequencePartition.txt";
+			ofstream f3(fileName2.str().c_str());
+			uint64_t perRank=totalSequences/m_parameters->getSize();
+			f3<<"#Rank	FirstSequence	LastSequence	NumberOfSequences"<<endl;
+			for(int i=0;i<m_parameters->getSize();i++){
+				uint64_t first=i*perRank;
+				uint64_t last=first+perRank-1;
+				uint64_t count=last-first+1;
+				if(i==m_parameters->getSize()-1)
+					last=totalSequences-1;
+				f3<<i<<"\t"<<first<<"\t"<<last<<"\t"<<count<<endl;
+			}
+			f3.close();
+			cout<<"Rank "<<m_parameters->getRank()<<" wrote "<<fileName2<<endl;
 		}
 	}
 }
@@ -105,8 +156,7 @@ void Partitioner::slaveMethod(){
 
 			m_loader.clear();
 
-			if(m_parameters->hasOption("debug:partitioner"))
-				cout<<"Rank "<<m_parameters->getRank()<<" File "<<m_currentFileToCount<<" has "<<m_slaveCounts[m_currentFileToCount]<<endl;
+			cout<<"Rank "<<m_parameters->getRank()<<": File "<<file<<" (Number "<<m_currentFileToCount<<")  has "<<m_slaveCounts[m_currentFileToCount]<<" sequences"<<endl;
 		}
 		m_currentFileToCount++;
 		/* all files were processed, tell control peer that we are done */

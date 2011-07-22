@@ -39,7 +39,7 @@
 void MessageProcessor::call_RAY_MPI_TAG_LOAD_SEQUENCES(Message*message){
 	uint32_t*incoming=(uint32_t*)message->getBuffer();
 	for(int i=0;i<(int)incoming[0];i++){
-		if(m_parameters->hasOption("debug:partitioner"))
+		if(m_parameters->hasOption("-debug-partitioner"))
 			cout<<"Rank "<<m_parameters->getRank()<<" RAY_MPI_TAG_LOAD_SEQUENCES File "<<i<<" "<<incoming[i+1]<<endl;
 		m_parameters->setNumberOfSequences(i,incoming[1+i]);
 	}
@@ -977,7 +977,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_EXTENSION(Message*message){
 	(*m_last_value)=-1;
 	m_verticesExtractor->showBuffers();
 
-	if(m_parameters->hasOption("show:libs")){
+	if(m_parameters->hasOption("-show-libraries")){
 		cout<<"Libs info"<<endl;
 		for(int i=0;i<m_parameters->getNumberOfLibraries();i++){
 			for(int j=0;j<m_parameters->getLibraryPeaks(i);j++){

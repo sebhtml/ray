@@ -26,6 +26,7 @@
 #include <heuristics/TipWatchdog.h>
 #include <assembler/SeedExtender.h>
 #include <core/OperatingSystem.h>
+#include <fstream>
 #include <heuristics/Chooser.h>
 #include <sstream>
 #include <assert.h>
@@ -67,6 +68,24 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		}
 		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_EXTENSION_IS_DONE,theRank);
 		outbox->push_back(aMessage);
+
+		/** write extensions for debugging purposes */
+		if(m_parameters->hasOption("-write-extensions")){
+			ostringstream fileName;
+			fileName<<m_parameters->getPrefix()<<"."<<m_parameters->getRank()<<".RayExtensions.fasta";
+			cout<<"Rank "<<m_parameters->getRank()<<" -write-extensions "<<fileName.str()<<endl;
+			ofstream f(fileName.str().c_str());
+			for(int i=0;i<(int)ed->m_EXTENSION_identifiers.size();i++){
+				uint64_t id=ed->m_EXTENSION_identifiers[i];
+				f<<">RayExtension-"<<id<<endl;
+
+				f<<addLineBreaks(convertToString(&(ed->m_EXTENSION_contigs.at(i)),
+					m_parameters->getWordSize(),m_parameters->getColorSpaceMode()),
+					m_parameters->getColumns());
+			}
+			f.close();
+		}
+
 		return;
 	}else if(!ed->m_EXTENSION_initiated){
 		ed->m_EXTENSION_initiated=true;
@@ -479,11 +498,22 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 
 				ed->m_EXTENSION_singleEndResolution=true;
 
-				if(m_parameters->showExtensionChoice())
+				/** check if the choice is too easy */
+				int count=0;
+				for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
+					Kmer key=ed->m_enumerateChoices_outgoingEdges[i];
+					int elements=ed->m_EXTENSION_readPositionsForVertices[key].size()+ed->m_EXTENSION_pairedReadPositionsForVertices[key].size();
+					if(elements>0)
+						count++;
+				}
+	
+				bool display=count>1;
+
+				if(m_parameters->showExtensionChoice() && display)
 					inspect(ed,currentVertex);
 				int choice=(*oa).choose(ed,&(*chooser),minimumCoverage,(maxCoverage),m_parameters);
 				if(choice!=IMPOSSIBLE_CHOICE){
-					if(m_parameters->showExtensionChoice()){
+					if(m_parameters->showExtensionChoice() && display){
 						cout<<"Selection: "<<choice+1<<endl;
 					}
 
@@ -1100,6 +1130,7 @@ void SeedExtender::inspect(ExtensionData*ed,Kmer*currentVertex){
 	#ifdef ASSERT
 	assert(ed->m_enumerateChoices_outgoingEdges.size()==ed->m_EXTENSION_coverages->size());
 	#endif
+
 
 	int wordSize=m_parameters->getWordSize();
 	cout<<endl;

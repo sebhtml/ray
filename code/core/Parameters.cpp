@@ -63,7 +63,7 @@ Parameters::Parameters(){
 	m_showExtensionChoice=false;
 
 	/** use the new NovaEngine (TM) */
-	m_options.insert("use:NovaEngine");
+	m_options.insert("-use-NovaEngine");
 }
 
 bool Parameters::showExtensionChoice(){
@@ -113,12 +113,15 @@ void Parameters::parseCommands(){
 	m_initiated=true;
 	set<string> commands;
 
+
+	for(int i=0;i<(int)m_commands.size();i++)
+		m_options.insert(m_commands[i]);
+
 	if(m_rank==MASTER_RANK){
 		cout<<endl;
 		cout<<"Ray command:"<<endl<<endl;
 
 		for(int i=0;i<(int)m_commands.size();i++){
-			m_options.insert(m_commands[i]);
 			if(i!=(int)m_commands.size()-1){
 				cout<<" "<<m_commands[i]<<" \\"<<endl;
 			}else{
@@ -827,18 +830,6 @@ void Parameters::computeAverageDistances(){
 	fileName<<".LibraryStatistics.txt";
 	ofstream f2(fileName.str().c_str());
 
-	uint64_t totalSequences=0;
-	for(int i=0;i<(int)m_singleEndReadsFile.size();i++){
-		#ifdef ASSERT
-		assert(i<(int)m_singleEndReadsFile.size());
-		#endif
-		f2<<" File: "<<m_singleEndReadsFile[i]<<endl;
-		f2<<"  NumberOfSequences: "<<m_numberOfSequencesInFile[i]<<endl;
-		totalSequences+=m_numberOfSequencesInFile[i];
-	}
-	f2<<endl<<"Total: "<<totalSequences<<endl;
-	f2<<endl;
-
 	f2<<"NumberOfPairedLibraries: "<<m_numberOfLibraries<<endl;
 	f2<<endl;
 	for(int i=0;i<(int)m_numberOfLibraries;i++){
@@ -1062,6 +1053,8 @@ void Parameters::showUsage(){
 	cout<<endl;
 	cout<<"     Input files"<<endl;
 	cout<<endl;
+	cout<<"     Note: file format is determined with file extension."<<endl;
+	cout<<endl;
 	cout<<"     .fasta"<<endl;
 	cout<<"     .fasta.gz (needs HAVE_LIBZ=y at compilation)"<<endl;
 	cout<<"     .fasta.bz2 (needs HAVE_LIBBZ2=y at compilation)"<<endl;
@@ -1070,17 +1063,14 @@ void Parameters::showUsage(){
 	cout<<"     .fastq.bz2 (needs HAVE_LIBBZ2=y at compilation)"<<endl;
 	cout<<"     .sff (paired reads must be extracted manually)"<<endl;
 	cout<<"     .csfasta (color-space reads)"<<endl;
+
+
 	cout<<endl;
 	cout<<"     Outputted files"<<endl;
 	cout<<endl;
-	cout<<"     PREFIX.RayCommand.txt"<<endl;
-	cout<<"     	The exact same command provided "<<endl;
-	cout<<"     PREFIX.RayVersion.txt"<<endl;
-	cout<<"     	The version of Ray"<<endl;
-	cout<<"     PREFIX.Contigs.fasta"<<endl;
-	cout<<"     	Contiguous sequences in FASTA format"<<endl;
-	cout<<"     PREFIX.ContigLengths.txt"<<endl;
-	cout<<"     	The lengths of contiguous sequences"<<endl;
+
+	cout<<"     Scaffolds"<<endl;
+	cout<<endl;
 	cout<<"     PREFIX.Scaffolds.fasta"<<endl;
 	cout<<"     	The scaffold sequences in FASTA format"<<endl;
 	cout<<"     PREFIX.ScaffoldComponents.txt"<<endl;
@@ -1089,35 +1079,88 @@ void Parameters::showUsage(){
 	cout<<"     	The length of each scaffold"<<endl;
 	cout<<"     PREFIX.ScaffoldLinks.txt"<<endl;
 	cout<<"     	Scaffold links"<<endl;
+	cout<<endl;
+
+	cout<<"     Contigs"<<endl;
+	cout<<endl;
+	cout<<"     PREFIX.Contigs.fasta"<<endl;
+	cout<<"     	Contiguous sequences in FASTA format"<<endl;
+	cout<<"     PREFIX.ContigLengths.txt"<<endl;
+	cout<<"     	The lengths of contiguous sequences"<<endl;
+	cout<<endl;
+
+	cout<<"     Summary"<<endl;
+	cout<<endl;
+	cout<<"     PREFIX.OutputNumbers.txt"<<endl;
+	cout<<"     	Overall numbers for the assembly"<<endl;
+	cout<<endl;
+
+	cout<<"     de Bruijn graph"<<endl;
+	cout<<endl;
 	cout<<"     PREFIX.CoverageDistribution.txt"<<endl;
 	cout<<"     	The distribution of coverage values"<<endl;
 	cout<<"     PREFIX.CoverageDistributionAnalysis.txt"<<endl;
 	cout<<"     	Analysis of the coverage distribution"<<endl;
-	cout<<"     PREFIX.LibraryStatistics.txt"<<endl;
-	cout<<"     	Number of reads in each file  and estimation of outer distances for paired reads"<<endl;
-	cout<<"     PREFIX.SeedLengthDistribution.txt"<<endl;
-	cout<<"     	The distribution of seed lengths"<<endl;
-	cout<<"     PREFIX.OutputNumbers.txt"<<endl;
-	cout<<"     	Overall numbers for the assembly"<<endl;
-	cout<<"     PREFIX.AMOS.afg"<<endl;
-	cout<<"     	Assembly representation in AMOS format (-amos) "<<endl;
-	cout<<"     PREFIX.kmers.txt"<<endl;
-	cout<<"     	K-mer graph (-write-kmers) "<<endl;
 	cout<<"     PREFIX.degreeDistribution.txt"<<endl;
 	cout<<"     	Distribution of ingoing and outgoing degrees"<<endl;
-	cout<<"     PREFIX.MessagePassingInterface.txt"<<endl;
-	cout<<"	    	Contains the number of messages sent."<<endl;
-	cout<<"     PREFIX.NetworkTest.txt"<<endl;
-	cout<<"	    	Contains the result of the network test."<<endl;
+	cout<<"     PREFIX.kmers.txt"<<endl;
+	cout<<"     	k-mer graph, required option: -write-kmers"<<endl;
+	cout<<"         The resulting file is not utilised by Ray."<<endl;
+	cout<<"         The resulting file is very large."<<endl;
+	cout<<endl;
+	
+	cout<<"     Assembly steps"<<endl;
+	cout<<endl;
+	cout<<"     PREFIX.SeedLengthDistribution.txt"<<endl;
+	cout<<"         Distribution of seed length"<<endl;
+	cout<<"     PREFIX.<rank>.RayExtensions.fasta"<<endl;
+	cout<<"         Extension DNA sequences, required option: -write-extensions"<<endl;
+	cout<<endl;
 
+	cout<<"     Paired reads"<<endl;
 	cout<<endl;
-	cout<<"     Note: file format is determined with file extension."<<endl;
+	cout<<"     PREFIX.LibraryStatistics.txt"<<endl;
+	cout<<"     	Estimation of outer distances for paired reads"<<endl;
+	cout<<"     PREFIX.Library<LibraryNumber>.txt"<<endl;
+	cout<<"         Frequencies for observed outer distances (insert size + read lengths)"<<endl;
 	cout<<endl;
+
+	cout<<"     Partition"<<endl;
+	cout<<endl;
+	cout<<"     PREFIX.NumberOfSequences.txt"<<endl;
+	cout<<"         Number of reads in each file"<<endl;
+	cout<<"     PREFIX.SequencePartition.txt"<<endl;
+	cout<<"     	Sequence partition"<<endl;
+	cout<<endl;
+
+	cout<<"     Ray software"<<endl;
+	cout<<endl;
+	cout<<"     PREFIX.RayVersion.txt"<<endl;
+	cout<<"     	The version of Ray"<<endl;
+	cout<<"     PREFIX.RayCommand.txt"<<endl;
+	cout<<"     	The exact same command provided "<<endl;
+	cout<<endl;
+
+	cout<<"     AMOS"<<endl;
+	cout<<endl;
+	cout<<"     PREFIX.AMOS.afg"<<endl;
+	cout<<"     	Assembly representation in AMOS format, required option: -amos"<<endl;
+	cout<<endl;
+
+
+	cout<<"     Communication"<<endl;
+	cout<<endl;
+	cout<<"     PREFIX.MessagePassingInterface.txt"<<endl;
+	cout<<"	    	Number of messages sent"<<endl;
+	cout<<"     PREFIX.NetworkTest.txt"<<endl;
+	cout<<"	    	Latencies in microseconds"<<endl;
+	cout<<endl;
+
 	cout<<"DOCUMENTATION"<<endl;
+	cout<<endl;
+	cout<<basicSpaces<<"This help page (always up-to-date)"<<endl;
 	cout<<basicSpaces<<"Manual (Portable Document Format): InstructionManual.pdf"<<endl;
-	cout<<basicSpaces<<"Manual (online): <http://denovoassembler.sf.net/manual.html>"<<endl;
-	cout<<basicSpaces<<"github README.md: <http://github.com/sebhtml/ray>"<<endl;
-	cout<<basicSpaces<<"This help page"<<endl;
+	cout<<basicSpaces<<"Mailing list archives: http://sourceforge.net/mailarchive/forum.php?forum_name=denovoassembler-users"<<endl;
 	cout<<endl;
 	cout<<"AUTHOR"<<endl;
 	cout<<basicSpaces<<"Written by Sébastien Boisvert."<<endl;

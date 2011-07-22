@@ -15,7 +15,8 @@ tests to test it.
 (gringer) from Max-Planck-Gesellschaft, München.
 * Added information on unknown nucleotides in the instruction manual.
 Suggested by Walter Eckalbar from Arizona State University.
-
+* New output files: PREFIX.SequencePartition.txt and
+PREFIX.NumberOfSequences.txt.
 
 = 1.6.1 'sunray' =
 2011-07-14

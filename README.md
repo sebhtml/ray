@@ -78,38 +78,9 @@ To run Ray on paired reads:
 
 # Outputted files
 
-PREFIX.RayCommand.txt
-	The exact same command provided 
-PREFIX.RayVersion.txt
-	The version of Ray
-PREFIX.Contigs.fasta
-	Contiguous sequences in FASTA format
-PREFIX.ContigLengths.txt
-	The lengths of contiguous sequences
-PREFIX.Scaffolds.fasta
-	The scaffold sequences in FASTA format
-PREFIX.ScaffoldComponents.txt
-	The components of each scaffold
-PREFIX.ScaffoldLengths.txt
-	The length of each scaffold
-PREFIX.ScaffoldLinks.txt
-	Scaffold links
-PREFIX.CoverageDistribution.txt
-	The distribution of coverage values
-PREFIX.CoverageDistributionAnalysis.txt
-	Analysis of the coverage distribution
-PREFIX.LibraryStatistics.txt
-	Number of reads in each file  and estimation of outer distances for paired reads
-PREFIX.SeedLengthDistribution.txt
-	The distribution of seed lengths
-PREFIX.OutputNumbers.txt
-	Overall numbers for the assembly
-PREFIX.AMOS.afg
-	Assembly representation in AMOS format (-amos) 
-PREFIX.kmers.txt
-	K-mer graph (-write-kmers) 
-PREFIX.degreeDistribution.txt
-	Distribution of ingoing and outgoing degrees
+PREFIX.Contigs.fasta and PREFIX.Scaffolds.fasta
+
+type Ray -help for a full list
 
 
 # Color space
@@ -134,6 +105,7 @@ http://denovoassembler.sf.net/publications.html
 
 ## Message-passing interface
 
+- http://dskernel.blogspot.com/2011/07/understand-main-loop-of-message-passing.html
 - http://cw.squyres.com/
 - http://www.parawiki.org/index.php/Message_Passing_Interface#Peer_to_Peer_Communication
 
@@ -142,7 +114,6 @@ http://denovoassembler.sf.net/publications.html
 Doctoral Award to S.B., Canadian Institutes of Health Research (CIHR)
 
 # Authors
-
 
 ## Coding, maintenance, implementing ideas:
 
