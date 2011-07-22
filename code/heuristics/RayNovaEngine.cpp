@@ -40,6 +40,9 @@ int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoice
 	if(withElements==1)
 		return initialChoice;
 
+	if(withElements==0)
+		return IMPOSSIBLE_CHOICE;
+
 	if(show){
 		cout<<"Ray NovaEngine"<<endl;
 		cout<<"Choices: "<<choices<<endl;

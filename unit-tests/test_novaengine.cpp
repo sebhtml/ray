@@ -21,10 +21,12 @@ Choice: 2
  224 1 209 1 3 2
 
 */
-int main(){
+int main(int argc,char**argv){
 	RayNovaEngine m_novaEngine;
 	set<int> invalid;
 	ifstream f("nova.txt");
+	int passed=0;
+	int failed=0;
 	while(!f.eof()){
 		string buffer="";
 		f>>buffer;
@@ -52,17 +54,28 @@ int main(){
 			string expected;
 			f>>expected>>expected;
 			if(expected=="IMPOSSIBLE_CHOICE"){
-				if(IMPOSSIBLE_CHOICE!=choice)
+				if(IMPOSSIBLE_CHOICE!=choice){
+					failed++;
 					m_novaEngine.choose(&novaData,&invalid,true);
+				}else{
+					passed++;
+				}
 				assertEquals(IMPOSSIBLE_CHOICE,choice);
 			}else{
 				int expectedChoice=atoi(expected.c_str())-1;
-				if(expectedChoice!=choice)
+				if(expectedChoice!=choice){
+					failed++;
 					m_novaEngine.choose(&novaData,&invalid,true);
+				}else{
+					passed++;
+				}
 				assertEquals(expectedChoice,choice);
 			}
 		}
 	}
 	f.close();
+
+	cout<<argv[0]<<" Passed tests: "<<passed<<", Failed tests: "<<failed<<endl;
+
 	return 0;
 }

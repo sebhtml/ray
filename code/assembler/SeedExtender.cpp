@@ -607,7 +607,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			vector<Kmer> complementedSeed;
 			int theCurrentSize=ed->m_EXTENSION_currentSeed.size();
 			printf("Rank %i reached %i vertices from seed %i (changing direction)\n",theRank,theCurrentSize,
-				m_ed->m_EXTENSION_currentSeedIndex+1);
+				m_ed->m_EXTENSION_currentSeedIndex);
 			fflush(stdout);
 
 			for(int i=ed->m_EXTENSION_extension->size()-1;i>=0;i--){
@@ -826,7 +826,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 		if(theCurrentSize%10000==0){
 			if(theCurrentSize==0 && !ed->m_EXTENSION_complementedSeed){
 				m_extended++;
-				printf("Rank %i starts on a seed, length is %i [%i/%i]\n",theRank,
+				printf("Rank %i starts on a seed %i, length is %i [%i/%i]\n",theRank,
+				ed->m_EXTENSION_currentSeedIndex,
 				(int)ed->m_EXTENSION_currentSeed.size(),
 					ed->m_EXTENSION_currentSeedIndex,(int)(*seeds).size());
 				fflush(stdout);
@@ -1268,7 +1269,7 @@ void SeedExtender::printExtensionStatus(Kmer*currentVertex){
 	#endif
 	printf("Rank %i reached %i vertices (%s) from seed %i\n",theRank,theCurrentSize,
 		currentVertex->idToWord(m_parameters->getWordSize(),m_parameters->getColorSpaceMode()).c_str(),
-		m_ed->m_EXTENSION_currentSeedIndex+1);
+		m_ed->m_EXTENSION_currentSeedIndex);
 
 	fflush(stdout);
 
