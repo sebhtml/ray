@@ -61,6 +61,9 @@ Parameters::Parameters(){
 	m_showEndingContext=false;
 	m_writeKmers=false;
 	m_showExtensionChoice=false;
+
+	/** use the new NovaEngine (TM) */
+	m_options.insert("use:NovaEngine");
 }
 
 bool Parameters::showExtensionChoice(){
