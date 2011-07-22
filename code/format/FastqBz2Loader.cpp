@@ -22,6 +22,7 @@
 #ifdef HAVE_LIBBZ2
 
 #include<format/FastqBz2Loader.h>
+#include <stdlib.h>
 #include<fstream>
 #include<compression/BzReader.h>
 

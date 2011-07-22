@@ -24,6 +24,7 @@
 #include<format/FastqGzLoader.h>
 #include<fstream>
 #include<zlib.h>
+#include <stdlib.h>
 
 int FastqGzLoader::open(string file,int period){
 	m_f=gzopen(file.c_str(),"r");

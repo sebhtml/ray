@@ -27,7 +27,6 @@
 #include<vector>
 #include<structures/ArrayOfReads.h>
 #include<structures/Read.h>
-#include <memory/OnDiskAllocator.h>
 #include<compression/BzReader.h>
 #include<memory/MyAllocator.h>
 using namespace std;

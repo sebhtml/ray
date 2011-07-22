@@ -25,7 +25,6 @@
 
 #include <string>
 #include <vector>
-#include <memory/OnDiskAllocator.h>
 #include <structures/Read.h>
 #include <structures/ArrayOfReads.h>
 #include <zlib.h>
