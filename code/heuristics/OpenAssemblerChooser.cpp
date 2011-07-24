@@ -35,7 +35,6 @@ int OpenAssemblerChooser::choose(ExtensionData*ed,Chooser*m_c,int minimumCoverag
 Parameters*parameters){
 	/** filter invalid choices */
 	set<int> invalidChoices;
-
 	for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
 		int coverageForI=ed->m_EXTENSION_coverages->at(i);
 		Kmer key=ed->m_enumerateChoices_outgoingEdges[i];
@@ -66,6 +65,7 @@ Parameters*parameters){
 			invalidChoices.insert(i);
 	}
 		
+	int withPairedInformation=0;
 	/** prepare data for the NovaEngine */
 	vector<map<int,int> > novaData;
 	for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
@@ -83,6 +83,8 @@ Parameters*parameters){
 		/** load paired-end data and mate-pair data */
 		if(ed->m_EXTENSION_pairedReadPositionsForVertices.count(key)>0){
 			for(int j=0;j<(int)ed->m_EXTENSION_pairedReadPositionsForVertices[key].size();j++){
+				if(j==0)
+					withPairedInformation++;
 				int value=ed->m_EXTENSION_pairedReadPositionsForVertices[key][j];
 				data[value]++;
 			}
@@ -91,18 +93,13 @@ Parameters*parameters){
 		novaData.push_back(data);
 	}
 
-	/** NovaData are ready, now call the NovaEngine */
-	//cout<<"Calling NovaEngine.."<<endl;
-	
-	bool showNovaAlgorithm=parameters->hasOption("-show-NovaEngine");
-
-	/* TODO read  the log for strept with this turned on, need to work on it a little bit */
-	bool useNovaEngine=parameters->hasOption("-use-NovaEngine");
-
 	/** this is the powerful NovaEngine -- an assembly engine to surf de Bruijn DNA graphs */
-	int novaChoice=m_novaEngine.choose(&novaData,&invalidChoices,showNovaAlgorithm);
-	if(novaChoice!=IMPOSSIBLE_CHOICE && useNovaEngine){
-		return novaChoice;
+	if(parameters->hasOption("-use-NovaEngine") && withPairedInformation>0){
+		/** NovaData are ready, now call the NovaEngine */
+		bool showNovaAlgorithm=parameters->hasOption("-show-NovaEngine");
+		int novaChoice=m_novaEngine.choose(&novaData,&invalidChoices,showNovaAlgorithm);
+		if(novaChoice!=IMPOSSIBLE_CHOICE)
+			return novaChoice;
 	}
 
 	vector<set<int> > battleVictories;
@@ -136,15 +133,6 @@ Parameters*parameters){
 			cout<<"Choice "<<pairedChoice+1<<" wins with paired-end reads."<<endl;
 		}
 		#endif
-		if(novaChoice!=pairedChoice){
-			if(showNovaAlgorithm){
-				cout<<"NovaEngine says Choice "<<novaChoice<<" but PairedChooser says Choice "<<pairedChoice+1<<endl;
-				cout<<"Invalid ";
-				for(set<int>::iterator i=invalidChoices.begin();i!=invalidChoices.end();i++)
-					cout<<" "<<*i+1;
-				cout<<endl;
-			}
-		}
 		return pairedChoice;
 	}else{
 		if(ed->m_EXTENSION_extension->size()>50000){

@@ -63,8 +63,7 @@ Parameters::Parameters(){
 	m_showExtensionChoice=false;
 
 	/** use the new NovaEngine (TM) */
-	/** needs to fix assembly errors on system tests pg2 before enabling by default -useNovaEngine */
-	//m_options.insert("-use-NovaEngine");
+	m_options.insert("-use-NovaEngine");
 }
 
 bool Parameters::showExtensionChoice(){
