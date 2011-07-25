@@ -17,6 +17,9 @@ tests to test it.
 Suggested by Walter Eckalbar from Arizona State University.
 * New output files: PREFIX.SequencePartition.txt and
 PREFIX.NumberOfSequences.txt.
+* New options: -write-seeds and -write-extensions, these write seeds and
+extensions to disk.
+
 
 = 1.6.1 'sunray' =
 2011-07-14

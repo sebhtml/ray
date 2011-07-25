@@ -1014,6 +1014,10 @@ void Parameters::showUsage(){
 	showOptionDescription("The resulting file is not utilised by Ray.");
 	showOptionDescription("The resulting file is very large.");
 	cout<<endl;
+	showOption("-write-seeds","Writes seed DNA sequences");
+	cout<<endl;
+	showOption("-write-extensions","Writes extension DNA sequences");
+	cout<<endl;
 	showOption("-run-profiler","Runs the profiler as the code runs.");
 	showOptionDescription("Needs HAVE_CLOCK_GETTIME=y at compilation");
 	showOptionDescription("Running the profiler increases running times.");
@@ -1113,6 +1117,8 @@ void Parameters::showUsage(){
 	cout<<endl;
 	cout<<"     PREFIX.SeedLengthDistribution.txt"<<endl;
 	cout<<"         Distribution of seed length"<<endl;
+	cout<<"     PREFIX.<rank>.RaySeeds.fasta"<<endl;
+	cout<<"         Seed DNA sequences, required option: -write-seeds"<<endl;
 	cout<<"     PREFIX.<rank>.RayExtensions.fasta"<<endl;
 	cout<<"         Extension DNA sequences, required option: -write-extensions"<<endl;
 	cout<<endl;

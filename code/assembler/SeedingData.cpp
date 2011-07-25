@@ -181,6 +181,23 @@ void SeedingData::computeSeeds(){
 
 		// sort the seeds by length
 		std::sort(m_SEEDING_seeds.begin(),m_SEEDING_seeds.end(),myComparator_sort);
+
+		/** write seeds for debugging purposes */
+		if(m_parameters->hasOption("-write-seeds")){
+			ostringstream fileName;
+			fileName<<m_parameters->getPrefix()<<"."<<m_parameters->getRank()<<".RaySeeds.fasta";
+			ofstream f(fileName.str().c_str());
+			for(int i=0;i<(int)m_SEEDING_seeds.size();i++){
+				uint64_t id=getPathUniqueId(m_parameters->getRank(),i);
+				f<<">RaySeed-"<<id<<endl;
+
+				f<<addLineBreaks(convertToString(&(m_SEEDING_seeds[i]),
+					m_parameters->getWordSize(),m_parameters->getColorSpaceMode()),
+					m_parameters->getColumns());
+			}
+			f.close();
+		}
+
 	}
 }
 
