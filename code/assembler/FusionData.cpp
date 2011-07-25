@@ -180,6 +180,13 @@ void FusionData::finishFusions(){
 		return;
 	}
 	int overlapMinimumLength=2000;
+
+	/** require a larger minimum overlap for larger contigs, that make sense */
+	double ratio=0.3;
+	int candidateOverlapLength=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()*ratio;
+	if(candidateOverlapLength>overlapMinimumLength)
+		overlapMinimumLength=candidateOverlapLength;
+
 	if((int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<overlapMinimumLength){
 	
 		if(m_seedingData->m_SEEDING_i%10==0){

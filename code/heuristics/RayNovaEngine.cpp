@@ -47,6 +47,18 @@ int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoice
 		cout<<"Ray NovaEngine"<<endl;
 		cout<<"Choices: "<<choices<<endl;
 	}
+
+	vector<int> maximumValues;
+	for(int i=0;i<choices;i++){
+		int maximumValue=0;
+		for(map<int,int>::iterator j=distances->at(i).begin();j!=distances->at(i).end();j++){
+			int distance=j->first;
+			if(distance>maximumValue)
+				maximumValue=distance;
+		}
+		maximumValues.push_back(maximumValue);
+	}
+
 	for(int i=0;i<choices;i++){
 		int n=distances->at(i).size();
 		vector<int> observedDistances;
@@ -60,7 +72,10 @@ int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoice
 
 		double score=0;
 		map<int,int> coverage;
-		int step=64;
+
+		/** change the number of bins depending on the range of values */
+		int step=128;
+
 		for(int j=0;j<n;j++){
 			int distance=observedDistances[j];
 			int weight=weights[j];
@@ -70,23 +85,7 @@ int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoice
 		for(map<int,int>::iterator j=coverage.begin();j!=coverage.end();j++){
 			score++;
 		}
-/*
-		for(int j=0;j<n-1;j++){
-			int diff=observedDistances[j]-observedDistances[j+1];
-			score+=(weights[j]+0.0)*(diff);
-			cout<<"Diff: "<<diff<<" Weight: "<<weights[j]<<" CurrentScore: "<<score<<endl;
-			if(diff>maxDiff)
-				maxDiff=diff;
-		}
-		if(n>0){
-			int diff=observedDistances[n-1]-0.0;
-			score+=(weights[n-1]+0.0)*(diff);
-			cout<<"Diff: "<<diff<<" Weight: "<<weights[n-1]<<" CurrentScore: "<<score<<endl;
-			if(diff>maxDiff)
-				maxDiff=diff;
-			score/=(totalWeight+0.0);
-		}
-*/
+
 		if(show){
 			cout<<"Choice: "<<i+1<<endl;
 			cout<<" DataPoints: "<<n<<endl;
@@ -99,19 +98,22 @@ int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoice
 		novaScores.push_back(score);
 	}
 
-	double threshold=0.5;
-	
 	int selection=IMPOSSIBLE_CHOICE;
 	for(int i=0;i<choices;i++){
 		bool winner=true;
 		for(int j=0;j<choices;j++){
 			if(i==j)
 				continue;
+
 			if(invalidChoices->count(j)>0)
 				continue;
-			double ratio=novaScores[j]/(novaScores[i]+0.0);
-			if(novaScores[j]<3 && ratio>threshold)
+
+			if(maximumValues[i]>=maximumValues[j]*100)
+				continue;
+
+			if(novaScores[j]==1 && novaScores[i]==2)
 				winner=false;
+
 			if(novaScores[j]>=novaScores[i])
 				winner=false;
 		}

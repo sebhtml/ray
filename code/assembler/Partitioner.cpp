@@ -109,7 +109,7 @@ void Partitioner::masterMethod(){
 			f2<<"	FirstSequence: 0"<<endl;
 			f2<<"	LastSequence: "<<totalSequences-1<<endl;
 			f2.close();
-			cout<<"Rank "<<m_parameters->getRank()<<" wrote "<<fileName<<endl;
+			cout<<"Rank "<<m_parameters->getRank()<<" wrote "<<fileName.str()<<endl;
 
 			(*m_masterMode)=RAY_MASTER_MODE_LOAD_SEQUENCES;
 
@@ -123,13 +123,14 @@ void Partitioner::masterMethod(){
 			for(int i=0;i<m_parameters->getSize();i++){
 				uint64_t first=i*perRank;
 				uint64_t last=first+perRank-1;
-				uint64_t count=last-first+1;
 				if(i==m_parameters->getSize()-1)
 					last=totalSequences-1;
+				
+				uint64_t count=last-first+1;
 				f3<<i<<"\t"<<first<<"\t"<<last<<"\t"<<count<<endl;
 			}
 			f3.close();
-			cout<<"Rank "<<m_parameters->getRank()<<" wrote "<<fileName2<<endl;
+			cout<<"Rank "<<m_parameters->getRank()<<" wrote "<<fileName2.str()<<endl;
 		}
 	}
 }

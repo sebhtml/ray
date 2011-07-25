@@ -93,11 +93,13 @@ Parameters*parameters){
 		novaData.push_back(data);
 	}
 
+	int novaChoice=IMPOSSIBLE_CHOICE;
 	/** this is the powerful NovaEngine -- an assembly engine to surf de Bruijn DNA graphs */
 	if(parameters->hasOption("-use-NovaEngine") && withPairedInformation>0){
 		/** NovaData are ready, now call the NovaEngine */
 		bool showNovaAlgorithm=parameters->hasOption("-show-NovaEngine");
-		int novaChoice=m_novaEngine.choose(&novaData,&invalidChoices,showNovaAlgorithm);
+		novaChoice=m_novaEngine.choose(&novaData,&invalidChoices,showNovaAlgorithm);
+
 		if(novaChoice!=IMPOSSIBLE_CHOICE)
 			return novaChoice;
 	}
@@ -126,13 +128,7 @@ Parameters*parameters){
 		battleVictories.push_back(victories);
 	}
 
-
 	if(pairedChoice!=IMPOSSIBLE_CHOICE){
-		#ifdef SHOW_CHOICE
-		if(ed->m_enumerateChoices_outgoingEdges.size()>1){
-			cout<<"Choice "<<pairedChoice+1<<" wins with paired-end reads."<<endl;
-		}
-		#endif
 		return pairedChoice;
 	}else{
 		if(ed->m_EXTENSION_extension->size()>50000){

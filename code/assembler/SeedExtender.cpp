@@ -73,7 +73,6 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		if(m_parameters->hasOption("-write-extensions")){
 			ostringstream fileName;
 			fileName<<m_parameters->getPrefix()<<"."<<m_parameters->getRank()<<".RayExtensions.fasta";
-			cout<<"Rank "<<m_parameters->getRank()<<" -write-extensions "<<fileName.str()<<endl;
 			ofstream f(fileName.str().c_str());
 			for(int i=0;i<(int)ed->m_EXTENSION_identifiers.size();i++){
 				uint64_t id=ed->m_EXTENSION_identifiers[i];

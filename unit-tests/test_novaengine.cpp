@@ -24,7 +24,8 @@ Choice: 2
 int main(int argc,char**argv){
 	RayNovaEngine m_novaEngine;
 	set<int> invalid;
-	ifstream f("nova.txt");
+	char*fileName=argv[1];
+	ifstream f(fileName);
 	int passed=0;
 	int failed=0;
 	while(!f.eof()){
@@ -75,7 +76,7 @@ int main(int argc,char**argv){
 	}
 	f.close();
 
-	cout<<argv[0]<<" Passed tests: "<<passed<<", Failed tests: "<<failed<<endl;
+	cout<<argv[0]<<" File: "<<fileName<<" Passed tests: "<<passed<<", Failed tests: "<<failed<<endl;
 
 	return 0;
 }
