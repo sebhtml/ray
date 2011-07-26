@@ -1,5 +1,7 @@
 \documentclass{article}
 \usepackage{hyperref}
+\usepackage{html}
+
 \usepackage{graphicx}
 \usepackage{fullpage}
 \usepackage[utf8]{inputenc}
@@ -54,7 +56,7 @@ Enjoy the manual.
 
 \section{Installation}
 
-To install Ray, you need a C++ compiler (standard 1998), make and an MPI implementation compliant
+To install Ray, you need a C++ compiler (standard 1998), make and a message-passing-interface (MPI) implementation compliant
 with the MPI standard 2.2.
 
 The software below are readily (and freely) available in most GNU/Linux distributions (I use Ubuntu, CentOS, and Fedora); 
@@ -144,7 +146,42 @@ The Makefile of Ray utilises the Linux kernel syntax (obj-y += object.o).
 
 Note: longer k-mers utilise more memory.
 
+\section{General guide lines for launching Ray}
+
+\subsection{Communication}
+
+Ray is a high-performance peer-to-peer software. It runs on numerous computers simultaneously.
+Ray instances are called MPI ranks. The MPI ranks are usually mapped to processes and they communicate using available bit transfer layers.
+Bit transfer layers are (in Open-MPI):
+
+\begin{itemize}
+\item \textbf{Direct memory} copy is used when an MPI rank communicates with itself;
+\item \textbf{Shared memory} is used when an MPI rank communicates with another MPI rank located on the same computer;
+\item \textbf{TCP/IP} is used when an MPI rank communicates with another MPI rank located on a different computer.
+\end{itemize}
+
+If you use a high-performance network:
+
+\begin{itemize}
+\item \textbf{Infiniband} is used when an MPI rank communicates with another MPI rank located on a different computer.
+\end{itemize}
+
+\subsection{Scheduling a MPI job}
+
+One thing that should be avoided is sharing cluster nodes between users for any given MPI job.
+Otherwise, your MPI job may fail simply because other users sharing your job nodes may make one of your job nodes crash (load factor is too high or 
+memory usage is not respectful).
+
+If you use Oracle Grid Engine (previously known as Sun Grid Engine), you should submit your MPI jobs to a queue with an allocation rule (allocation\_rule) equal to
+the number of cores per node. This simple configuration will ensure that no cluster node is shared between users for any MPI job.
+
 \section{Inputs}
+
+For a most up-to-date list of Ray parameters, run:
+
+\begin{verbatim}
+Ray -help|less
+\end{verbatim}
 
 The input files for Ray contain sequences. The files must be formatted in one of the supported formats.
 These formats are listed in Table~\ref{formats}. Note that the file extension is obligatory and Ray uses it
@@ -447,6 +484,10 @@ To browse it, use this command:
 \begin{verbatim}
 firefox DoxygenDocumentation/html/index.html
 \end{verbatim}
+
+\section{Submitting patches}
+
+See code/Submit-a-patch.txt
 
 \section{Reporting bugs \& crashes}
 
