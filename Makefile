@@ -277,6 +277,7 @@ manual:
 	pdflatex InstructionManual.tex
 	latex2html -split 0 -html_version 4.0,latin1,unicode InstructionManual.tex
 	latex2html -split 0 -html_version 4.0,latin1,unicode InstructionManual.tex
+	sed -i 's/InstructionManual.html//g' InstructionManual/index.html
 
 install: 
 	@scripts/install.sh
