@@ -49,6 +49,7 @@ int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoice
 	}
 
 	vector<int> maximumValues;
+	int theMaximum=0;
 	for(int i=0;i<choices;i++){
 		int maximumValue=0;
 		for(map<int,int>::iterator j=distances->at(i).begin();j!=distances->at(i).end();j++){
@@ -57,6 +58,8 @@ int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoice
 				maximumValue=distance;
 		}
 		maximumValues.push_back(maximumValue);
+		if(maximumValue>theMaximum)
+			theMaximum=maximumValue;
 	}
 
 	for(int i=0;i<choices;i++){
@@ -75,6 +78,9 @@ int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoice
 
 		/** change the number of bins depending on the range of values */
 		int step=128;
+
+		if(theMaximum>8192)
+			step=512;
 
 		for(int j=0;j<n;j++){
 			int distance=observedDistances[j];

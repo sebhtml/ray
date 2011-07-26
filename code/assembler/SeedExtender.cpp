@@ -497,22 +497,11 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 
 				ed->m_EXTENSION_singleEndResolution=true;
 
-				/** check if the choice is too easy */
-				int count=0;
-				for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
-					Kmer key=ed->m_enumerateChoices_outgoingEdges[i];
-					int elements=ed->m_EXTENSION_readPositionsForVertices[key].size()+ed->m_EXTENSION_pairedReadPositionsForVertices[key].size();
-					if(elements>0)
-						count++;
-				}
-	
-				bool display=count>1;
-
-				if(m_parameters->showExtensionChoice() && display)
+				if(m_parameters->showExtensionChoice())
 					inspect(ed,currentVertex);
 				int choice=(*oa).choose(ed,&(*chooser),minimumCoverage,(maxCoverage),m_parameters);
 				if(choice!=IMPOSSIBLE_CHOICE){
-					if(m_parameters->showExtensionChoice() && display){
+					if(m_parameters->showExtensionChoice()){
 						cout<<"Selection: "<<choice+1<<endl;
 					}
 
