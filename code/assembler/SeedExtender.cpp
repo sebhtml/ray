@@ -270,8 +270,10 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 			assert(read!=NULL);
 			#endif
 			
+/*
 			element->removeSequence();
 			ed->getAllocator()->free(read,strlen(read)+1);
+*/
 		}
 		m_expiredReads.erase(ed->m_EXTENSION_currentPosition);
 		ed->m_EXTENSION_readIterator=ed->m_EXTENSION_readsInRange->begin();
@@ -623,8 +625,9 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 		// no choice possible...
 		if(!ed->m_EXTENSION_complementedSeed || !ed->m_EXTENSION_complementedSeed2){
 			vector<Kmer> complementedSeed;
-			int theCurrentSize=ed->m_EXTENSION_currentSeed.size();
-			printf("Rank %i reached %i vertices from seed %i (changing direction)\n",theRank,theCurrentSize,
+			//int theCurrentSize=ed->m_EXTENSION_currentSeed.size();
+			printf("Rank %i reached %i vertices from seed %i (changing direction)\n",theRank,
+				(int)ed->m_EXTENSION_extension->size(),
 				m_ed->m_EXTENSION_currentSeedIndex);
 			fflush(stdout);
 
@@ -900,7 +903,75 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 			uint64_t uniqueId=annotation.getUniqueId();
 			ExtensionElement*anElement=ed->getUsedRead(uniqueId);
 
+			/**
+			 * if the read is still within the range of the peak, update it 
+			 *
+			 * this complicated code add-on avoids the collapsing of
+			 * tandemly-repeated repeats.
+			 *
+			 * instead of outputting collapsed assembled region, the extender module
+			 * will let the scaffolder deal with it if it is too difficult.
+			 * */
 			if(anElement!=NULL){
+				if(m_parameters->hasOption("-show-read-placement")){
+					int currentPosition=ed->m_EXTENSION_extension->size()-1;
+					int previousPosition=anElement->getPosition();
+					cout<<"Rank "<<m_parameters->getRank()<<" Notice: Read "<<uniqueId<<" already placed at "<<previousPosition<<", current is "<<currentPosition<<endl;
+				}
+
+				if(ed->m_EXTENSION_readsInRange->count(uniqueId)==0 && anElement->hasPairedRead()){
+					char theRightStrand=anElement->getStrand();
+					PairedRead*pairedRead=anElement->getPairedRead();
+					uint64_t mateId=pairedRead->getUniqueId();
+
+					ExtensionElement*extensionElement=ed->getUsedRead(mateId);
+
+					if(extensionElement!=NULL){// use to be via readsPositions
+						char theLeftStrand=extensionElement->getStrand();
+						int startingPositionOnPath=extensionElement->getPosition();
+
+						int startPosition=ed->m_EXTENSION_extension->size()-1;
+						int positionOnStrand=anElement->getStrandPosition();
+						int rightReadLength=(int)strlen(anElement->getSequence());
+						int observedFragmentLength=(startPosition-startingPositionOnPath)+rightReadLength+extensionElement->getStrandPosition()-positionOnStrand;
+						int multiplier=3;
+
+						int library=ed->m_EXTENSION_pairedRead.getLibrary();
+
+						bool updateRead=false;
+						/** : iterate over all peaks */
+						/** if there is a mate, choose the good peak for the library */
+						for(int peak=0;peak<m_parameters->getLibraryPeaks(library);peak++){
+							int expectedFragmentLength=m_parameters->getLibraryAverageLength(library,peak);
+							int expectedDeviation=m_parameters->getLibraryStandardDeviation(library,peak);
+
+							if(expectedFragmentLength-multiplier*expectedDeviation<=observedFragmentLength 
+							&& observedFragmentLength <= expectedFragmentLength+multiplier*expectedDeviation 
+					&&( (theLeftStrand=='F' && theRightStrand=='R')
+						||(theLeftStrand=='R' && theRightStrand=='F'))
+					// the bridging pair is meaningless if both start in repeats
+					/*&&repeatLengthForLeftRead<repeatThreshold*/
+					/* left read is safe so we don't care if right read is on a
+					repeated region really. */){
+								/* as soon as we find something interesting, we stop */
+								/* this makes Ray segfault because */
+								updateRead=true;
+								break;
+							}
+						}
+		
+						if(updateRead){
+							anElement->setStartingPosition(startPosition);
+							ed->m_EXTENSION_readsInRange->insert(uniqueId);
+							int expiryPosition=startPosition+rightReadLength-positionOnStrand-m_parameters->getWordSize();
+							m_expiredReads[expiryPosition].push_back(uniqueId);
+
+							if(m_parameters->hasOption("-show-read-placement"))
+								cout<<"Rank "<<m_parameters->getRank()<<" Updated Read "<<uniqueId<<" to "<<startPosition<<" Mate is "<<mateId<<" at "<<startingPositionOnPath<<endl;
+						}
+					}
+				}
+
 				m_sequenceIndexToCache++;
 			}else if(!m_sequenceRequested
 				&&m_cacheForRepeatedReads.find(uniqueId,false)!=NULL){
