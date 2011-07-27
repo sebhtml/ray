@@ -88,12 +88,14 @@ ExtensionElement*ExtensionData::getUsedRead(uint64_t a){
 
 ExtensionElement*ExtensionData::addUsedRead(uint64_t a){
 	bool val;
-	int bin=0;//uniform_hashing_function_1_64_64(a)%m_numberOfBins;
-	return m_database[bin].insert(a,&m_allocator,&val)->getValue();
+	int bin=0;
+	ExtensionElement*element=m_database[bin].insert(a,&m_allocator,&val)->getValue();
+	element->constructor();
+	return element;
 }
 
 void ExtensionData::removeSequence(uint64_t a){
-	int bin=0;//uniform_hashing_function_1_64_64(a)%m_numberOfBins
+	int bin=0;
 	m_database[bin].remove(a,false,&m_allocator);
 }
 

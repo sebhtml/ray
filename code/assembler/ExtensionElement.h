@@ -37,6 +37,7 @@ class ExtensionElement{
 	char m_strand;
 	bool m_hasPairedRead;
 	uint8_t m_type;
+	bool m_canMove;
 public:
 	void setStrandPosition(int a);
 	int getStrandPosition();
@@ -54,6 +55,9 @@ public:
 	bool isRightEnd();
 	int getType();
 	void removeSequence();
+	void constructor();
+	bool canMove();
+	void freezePlacement();
 } ATTRIBUTE_PACKED;
 
 #endif

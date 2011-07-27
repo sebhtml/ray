@@ -960,11 +960,14 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 							}
 						}
 		
-						if(updateRead){
+						if(updateRead && anElement->canMove()){
 							anElement->setStartingPosition(startPosition);
 							ed->m_EXTENSION_readsInRange->insert(uniqueId);
 							int expiryPosition=startPosition+rightReadLength-positionOnStrand-m_parameters->getWordSize();
 							m_expiredReads[expiryPosition].push_back(uniqueId);
+
+							/** free the mate to avoid infinite loops */
+							extensionElement->freezePlacement();
 
 							if(m_parameters->hasOption("-show-read-placement"))
 								cout<<"Rank "<<m_parameters->getRank()<<" Updated Read "<<uniqueId<<" to "<<startPosition<<" Mate is "<<mateId<<" at "<<startingPositionOnPath<<endl;

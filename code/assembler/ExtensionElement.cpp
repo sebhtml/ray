@@ -90,3 +90,15 @@ int ExtensionElement::getStrandPosition(){
 void ExtensionElement::removeSequence(){
 	m_readSequence=NULL;
 }
+
+void ExtensionElement::constructor(){
+	m_canMove=true;
+}
+
+bool ExtensionElement::canMove(){
+	return m_canMove;
+}
+
+void ExtensionElement::freezePlacement(){
+	m_canMove=false;
+}
