@@ -157,7 +157,7 @@ void Partitioner::slaveMethod(){
 
 			m_loader.clear();
 
-			cout<<"Rank "<<m_parameters->getRank()<<": File "<<file<<" (Number "<<m_currentFileToCount<<")  has "<<m_slaveCounts[m_currentFileToCount]<<" sequences"<<endl;
+			cout<<"Rank "<<m_parameters->getRank()<<": File "<<file<<" (Number "<<m_currentFileToCount<<") has "<<m_slaveCounts[m_currentFileToCount]<<" sequences"<<endl;
 		}
 		m_currentFileToCount++;
 		/* all files were processed, tell control peer that we are done */

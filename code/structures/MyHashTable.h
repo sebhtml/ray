@@ -779,7 +779,7 @@ void MyHashTable<KEY,VALUE>::constructor(uint64_t buckets,int mallocType,bool sh
 	/** based on Figure 42 on page 531 of
  * 	The Art of Computer Programming, Second Edition, by Donald E. Knuth
  */
-	m_maximumLoadFactor=0.7; /* 70.00% */
+	m_maximumLoadFactor=0.7; 
 
 	m_auxiliaryTableForIncrementalResize=NULL;
 	m_resizing=false;
@@ -913,23 +913,24 @@ void MyHashTable<KEY,VALUE>::findBucketWithKey(KEY*key,uint64_t*probe,int*group,
 		(*probe)++;
 		
 		/** issue a warning for an unexpected large probe depth */
-		if((*probe)>256)
-			cout<<"Rank "<<m_rank<<" Warning, probe depth is "<<*probe<<endl;
+		if((*probe)>256){
+			int bucket=(h1+(*probe)*h2)%m_totalNumberOfBuckets;
+			cout<<"Rank "<<m_rank<<" Warning, probe depth is "<<*probe<<" h1="<<h1<<" h2="<<h2<<" m_totalNumberOfBuckets="<<m_totalNumberOfBuckets<<" m_size="<<m_size<<" m_utilisedBuckets="<<m_utilisedBuckets<<" bucket="<<bucket<<" m_resizing="<<m_resizing<<endl;
+		}
 
 		/** only compute the double hashing once */
 		if((*probe)==1){
- 			/** between 1 and M-1 exclusive */
-			/** maybe it works also when inclusive, but page 529 does not mention 
- * 			if it works inclusive for powers of 2 
- * 			hence, I assume it is exclusive for safety
+			/**  page 529 
+ * 				between 1 and M exclusive
  *
  * 			h(x)%M 		-> between 0 and M-1 inclusive
- * 			h(x)%(M-5) 	-> between 0 and M-4 inclusive
- * 			h(x)%(M-5)+2	-> between 2 and M-2 inclusive
+ * 			h(x)%(M-1) 	-> between 0 and M-2 inclusive
+ * 			h(x)%(M-2)	-> between 0 and M-3 inclusive
  *
- * 			h(x)%(M-5)+"	-> between 1 and M-1 exclusive
+ * 			h(x)%(M-2)+2"	-> between 2 and M-1 inclusive
  * 			*/
-			h2=key->hash_function_1()%(m_totalNumberOfBuckets-5)+2;
+
+			h2=key->hash_function_1()%(m_totalNumberOfBuckets-2)+2;
 			
 			/** h2 can not be even */
 			if(h2%2==0)
