@@ -936,7 +936,7 @@ void MyHashTable<KEY,VALUE>::findBucketWithKey(KEY*key,uint64_t*probe,int*group,
 			if(h2%2==0)
 				h2--; 
 
-			/* I assume it must be between 1 and M-1 exclusive */
+			/* I assume it must be between 1 and M exclusive */
 			if(h2==1)
 				h2=3;
 
@@ -944,10 +944,10 @@ void MyHashTable<KEY,VALUE>::findBucketWithKey(KEY*key,uint64_t*probe,int*group,
 			#ifdef ASSERT
 			assert(h2!=0);
 			assert(h2%2!=0);
-			assert(h2>1);
-			if(h2>=m_totalNumberOfBuckets-1)
+			assert(h2>=3);
+			if(h2>=m_totalNumberOfBuckets)
 				cout<<"h2= "<<h2<<" Buckets= "<<m_totalNumberOfBuckets<<endl;
-			assert(h2<m_totalNumberOfBuckets-1);
+			assert(h2<m_totalNumberOfBuckets);
 			#endif
 		}
 
