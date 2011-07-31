@@ -19,7 +19,7 @@ Suggested by Walter Eckalbar from Arizona State University.
 PREFIX.NumberOfSequences.txt.
 * New options: -write-seeds and -write-extensions, these write seeds and
 extensions to disk.
-
+* Fixed a bug in the incremental resizing algorithm of MyHashTable.
 
 = 1.6.1 'sunray' =
 2011-07-14

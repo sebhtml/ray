@@ -197,6 +197,9 @@ VALUE*MyHashTableGroup<KEY,VALUE>::insert(int numberOfBucketsInGroup,int bucket,
 	/* the bucket can not be used by another key than key */
 	/* if it would be the case, then MyHashTable would not have sent key here */
 	#ifdef ASSERT
+	if(bucketIsUtilisedBySomeoneElse(bucket,key,allocator)){
+		cout<<"Error, bucket "<<bucket<<" is utilised by another key numberOfBucketsInGroup "<<numberOfBucketsInGroup<<" utilised buckets in group: "<<getBucketsBefore(numberOfBucketsInGroup)<<endl;
+	}
 	assert(!bucketIsUtilisedBySomeoneElse(bucket,key,allocator));
 	#endif
 
@@ -401,24 +404,32 @@ class MyHashTable{
  * 	chunk allocator
  */
 	ChunkAllocatorWithDefragmentation m_allocator;
+
 	/** 
  * 	the  maximum probes required in probing
  */
 	int m_probes[MAX_SAVED_PROBE];
+
 	/**
  * Message-passing interface rank
  */
 	int m_rank;
+
 	/**
  * the number of buckets in the theater */
 	uint64_t m_totalNumberOfBuckets;
 
 	/**
- * the number of people seated -- the number of utilised buckets */
+         * Number of utilised buckets 
+         */
 	uint64_t m_utilisedBuckets;
 
 /**
  * 	number of inserted elements
+ * contains the sum of elements in the main table + the number of elements in the new
+ * table but not in the old one
+ * when not resizing, m_utilisedBuckets and m_size are the same
+ * when resizing, m_size may be larger than m_utilisedBuckets
  */
 	uint64_t m_size;
 
@@ -739,7 +750,14 @@ void MyHashTable<KEY,VALUE>::resize(){
 		m_totalNumberOfBuckets=m_auxiliaryTableForIncrementalResize->m_totalNumberOfBuckets;
 		m_allocator=m_auxiliaryTableForIncrementalResize->m_allocator;
 		m_numberOfGroups=m_auxiliaryTableForIncrementalResize->m_numberOfGroups;
-	
+		m_utilisedBuckets=m_auxiliaryTableForIncrementalResize->m_utilisedBuckets;
+		m_size=m_auxiliaryTableForIncrementalResize->m_size;
+
+		#ifdef ASSERT
+		assert(m_auxiliaryTableForIncrementalResize->m_resizing == false);
+		assert(m_size == m_utilisedBuckets);
+		#endif
+
 		/** copy probe profiles */
 		for(int i=0;i<MAX_SAVED_PROBE;i++)
 			m_probes[i]=m_auxiliaryTableForIncrementalResize->m_probes[i];
@@ -779,7 +797,7 @@ void MyHashTable<KEY,VALUE>::constructor(uint64_t buckets,int mallocType,bool sh
 	/** based on Figure 42 on page 531 of
  * 	The Art of Computer Programming, Second Edition, by Donald E. Knuth
  */
-	m_maximumLoadFactor=0.7; 
+	m_maximumLoadFactor=0.9; 
 
 	m_auxiliaryTableForIncrementalResize=NULL;
 	m_resizing=false;
@@ -884,7 +902,6 @@ MyHashTable<KEY,VALUE>::~MyHashTable(){}
  */
 template<class KEY,class VALUE>
 void MyHashTable<KEY,VALUE>::findBucketWithKey(KEY*key,uint64_t*probe,int*group,int*bucketInGroup){
-	*probe=0; 
 	/** 
  * 	double hashing is based on 
  * 	page 529 
@@ -892,16 +909,20 @@ void MyHashTable<KEY,VALUE>::findBucketWithKey(KEY*key,uint64_t*probe,int*group,
  * 	Donald E. Knuth
  * 	The Art of Computer Programming, Volume 3, Second Edition
  */
-	/** between 0 and M-1 inclusively -- M is m_totalNumberOfBuckets */
-	int64_t h1=key->hash_function_2()%m_totalNumberOfBuckets;
-	uint64_t bucket=h1;
-	(*group)=bucket/m_numberOfBucketsInGroup;
+	(*probe)=0; 
 
+	/** between 0 and M-1 inclusively -- M is m_totalNumberOfBuckets */
+	uint64_t h1=key->hash_function_2()%m_totalNumberOfBuckets;
+
+	/* first probe is 0 */
 	/** double hashing is computed on probe 1, not on 0 */
 	uint64_t h2=0;
+	uint64_t bucket=h1;
 
+	/** use double hashing */
+	(*group)=bucket/m_numberOfBucketsInGroup;
 	(*bucketInGroup)=bucket%m_numberOfBucketsInGroup;
-	
+
 	#ifdef ASSERT
 	assert(bucket<m_totalNumberOfBuckets);
 	assert(*group<m_numberOfGroups);
@@ -909,45 +930,55 @@ void MyHashTable<KEY,VALUE>::findBucketWithKey(KEY*key,uint64_t*probe,int*group,
 	#endif
 
 	/** probe bucket */
-	while(m_groups[*group].bucketIsUtilisedBySomeoneElse(*bucketInGroup,key,&m_allocator)){
+	while(m_groups[*group].bucketIsUtilisedBySomeoneElse(*bucketInGroup,key,&m_allocator)
+		&& ((*probe)+1) < m_totalNumberOfBuckets){
 		(*probe)++;
 		
+		/** the stride and the number of buckets are relatively prime because
+			number of buckets = M = 2^m
+		and the stride is 1 < s < M and is odd thus does not share factor with 2^m */
+
+		#ifdef ASSERT
 		/** issue a warning for an unexpected large probe depth */
-		if((*probe)>256){
-			int bucket=(h1+(*probe)*h2)%m_totalNumberOfBuckets;
-			cout<<"Rank "<<m_rank<<" Warning, probe depth is "<<*probe<<" h1="<<h1<<" h2="<<h2<<" m_totalNumberOfBuckets="<<m_totalNumberOfBuckets<<" m_size="<<m_size<<" m_utilisedBuckets="<<m_utilisedBuckets<<" bucket="<<bucket<<" m_resizing="<<m_resizing<<endl;
+		/** each bucket should be probed in exactly NumberOfBuckets probing events */
+		if((*probe)>=m_totalNumberOfBuckets){
+			cout<<"Rank "<<m_rank<<" Warning, probe depth is "<<(*probe)<<" h1="<<h1<<" h2="<<h2<<" m_totalNumberOfBuckets="<<m_totalNumberOfBuckets<<" m_size="<<m_size<<" m_utilisedBuckets="<<m_utilisedBuckets<<" bucket="<<bucket<<" m_resizing="<<m_resizing<<endl;
 		}
+
+		assert((*probe)<m_totalNumberOfBuckets);
+		#endif
 
 		/** only compute the double hashing once */
 		if((*probe)==1){
 			/**  page 529 
  * 				between 1 and M exclusive
- *
- * 			h(x)%M 		-> between 0 and M-1 inclusive
- * 			h(x)%(M-1) 	-> between 0 and M-2 inclusive
- * 			h(x)%(M-2)	-> between 0 and M-3 inclusive
- *
- * 			h(x)%(M-2)+2"	-> between 2 and M-1 inclusive
+				odd number
  * 			*/
 
-			h2=key->hash_function_1()%(m_totalNumberOfBuckets-2)+2;
+			h2=key->hash_function_1()%m_totalNumberOfBuckets;
 			
+			/** h2 can not be 0 */
+			if(h2 == 0)
+				h2=3;
+
 			/** h2 can not be even */
-			if(h2%2==0)
+			if(h2%2 == 0)
 				h2--; 
 
 			/* I assume it must be between 1 and M exclusive */
-			if(h2==1)
+			if(h2 < 3)
 				h2=3;
 
 			/** check boundaries */
 			#ifdef ASSERT
 			assert(h2!=0);
 			assert(h2%2!=0);
+			assert(h2%2 == 1);
 			assert(h2>=3);
 			if(h2>=m_totalNumberOfBuckets)
 				cout<<"h2= "<<h2<<" Buckets= "<<m_totalNumberOfBuckets<<endl;
 			assert(h2<m_totalNumberOfBuckets);
+			assert((*probe)<m_totalNumberOfBuckets);
 			#endif
 		}
 
@@ -1021,7 +1052,6 @@ VALUE*MyHashTable<KEY,VALUE>::insert(KEY*key){
 		resize();
 	}
 	if(m_resizing){
-
 		/* check if key is not in the main table
  * 		insert it in the other one */
 		if(findKey(key,false)==NULL){
