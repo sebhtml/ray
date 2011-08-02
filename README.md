@@ -136,4 +136,4 @@ http://twitter.com/sebhtml
 
 ## Contributors
 
-- David Eccles (gringer) <david.eccles@mpi-muenster.mpg.de>
+- David Eccles
