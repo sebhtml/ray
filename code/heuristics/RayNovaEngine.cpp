@@ -23,6 +23,10 @@
 #include <heuristics/RayNovaEngine.h>
 #include <assert.h>
 
+/**
+ * The implementation of this method is test-driven.
+ * It tries to generalize a lot of cases
+ */
 int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoices,bool show){
 	vector<double> novaScores;
 	int choices=distances->size();
@@ -60,6 +64,22 @@ int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoice
 		maximumValues.push_back(maximumValue);
 		if(maximumValue>theMaximum)
 			theMaximum=maximumValue;
+	}
+
+	/** choose with the maximum value, if possible */
+	double multiplicator=1.4;
+	for(int i=0;i<choices;i++){
+		bool win=true;
+		for(int j=0;j<choices;j++){
+			if(i==j)
+				continue;
+			if(multiplicator*maximumValues[j] >= maximumValues[i]){
+				win=false;
+				break;
+			}
+		}
+		if(win)
+			return i;
 	}
 
 	for(int i=0;i<choices;i++){

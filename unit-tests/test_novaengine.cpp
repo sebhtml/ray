@@ -28,6 +28,7 @@ int main(int argc,char**argv){
 	ifstream f(fileName);
 	int passed=0;
 	int failed=0;
+	int test=0;
 	while(!f.eof()){
 		string buffer="";
 		f>>buffer;
@@ -66,12 +67,14 @@ int main(int argc,char**argv){
 				int expectedChoice=atoi(expected.c_str())-1;
 				if(expectedChoice!=choice){
 					failed++;
+					cout<<" test="<<test<<endl;
 					m_novaEngine.choose(&novaData,&invalid,true);
 				}else{
 					passed++;
 				}
 				assertEquals(expectedChoice,choice);
 			}
+			test++;
 		}
 	}
 	f.close();
