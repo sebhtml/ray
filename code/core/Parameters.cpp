@@ -1048,6 +1048,8 @@ void Parameters::showUsage(){
 	showOption("-show-ending-context","Shows the ending context of each extension.");
 	showOptionDescription("Shows the children of the vertex where extension was too difficult.");
 	cout<<endl;
+	showOption("-show-distance-summary","Shows summary of outer distances used for an extension path.");
+	cout<<endl;
 	showOption("-show-memory-allocations","Shows memory allocation events");
 	cout<<endl;
 	showOption("-help","Displays this help page.");

@@ -20,6 +20,7 @@ PREFIX.NumberOfSequences.txt.
 * New options: -write-seeds and -write-extensions, these write seeds and
 extensions to disk.
 * Fixed a bug in the incremental resizing algorithm of MyHashTable.
+* Added debugging option -show-distance-summary
 
 = 1.6.1 'sunray' =
 2011-07-14
