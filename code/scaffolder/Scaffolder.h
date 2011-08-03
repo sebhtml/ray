@@ -48,14 +48,9 @@ class Scaffolder{
 	int m_theLength;
 	vector<Kmer> m_contigPath;
 	bool m_requestedContigChunk;
-	int m_numberOfScaffolds;
-	int m_numberOfScaffoldsWithThreshold;
-	int m_numberOfContigs;
-	int m_numberOfContigsWithAtLeastThreshold;
-	uint64_t m_totalContigLength;
-	uint64_t m_totalContigLengthWithThreshold;
-	uint64_t m_totalScaffoldLength;
-	uint64_t m_totalScaffoldLengthWithThreshold;
+
+	vector<int> m_allScaffoldLengths;
+	vector<int> m_allContigLengths;
 
 	int m_scaffoldId;
 	int m_positionOnScaffold;
@@ -149,6 +144,10 @@ class Scaffolder{
 	void extractScaffolds(char state,map<uint64_t,int>*colors,uint64_t vertex,
 		map<uint64_t,map<char,vector<vector<uint64_t> > > >*parents,
 		map<uint64_t,map<char,vector<vector<uint64_t> > > >*children,set<int>*completedColours);
+
+
+	void computeStatistics(vector<int>*lengths,int minimumLength,ostream*outputStream);
+	void printInStream(ostream*outputStream);
 
 public:
 

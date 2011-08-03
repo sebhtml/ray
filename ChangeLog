@@ -23,7 +23,7 @@ extensions to disk.
 * Added debugging option -show-distance-summary
 * Removed the coverage threshold from the algorithm that finds seeds in the distributed graph.
 Suggested by David Eccles(gringer) from Max-Planck-Gesellschaft, München.
-
+* Added N50, median, average and largest contig and scaffold lengths in PREFIX.OutputNumbers.txt
 
 = 1.6.1 'sunray' =
 2011-07-14

@@ -30,6 +30,11 @@ pwd
 echo "Changed directory successfully -- system test $TEST_NAME will begin..."
 echo ""
 
+# remove old files
+
+rm *.Contig*
+rm *.Scaffold*
+
 # run the system test
 # actually, the system test can be executed on a standardd computer
 # by exporting the variables TEST_NAME, RAY_GIT_PATH and NSLOTS

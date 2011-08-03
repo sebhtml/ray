@@ -152,18 +152,10 @@ void Scaffolder::solve(){
 	ostringstream contigList;
 	contigList<<m_parameters->getPrefix()<<".ContigLengths.txt";
 	ofstream f2(contigList.str().c_str());
-	m_numberOfContigsWithAtLeastThreshold=0;
-	m_totalContigLength=0;
-	m_totalContigLengthWithThreshold=0;
-	m_numberOfContigs=m_masterContigs.size();
 	for(int i=0;i<(int)m_masterContigs.size();i++){
 		int length=m_masterLengths[i]+m_parameters->getWordSize()-1;
-		if(length>=m_parameters->getLargeContigThreshold()){
-			m_numberOfContigsWithAtLeastThreshold++;
-			m_totalContigLengthWithThreshold+=length;
-		}
 		f2<<"contig-"<<m_masterContigs[i]<<"\t"<<length<<endl;
-		m_totalContigLength+=length;
+		m_allContigLengths.push_back(length);
 	}
 	f2.close();
 
@@ -239,13 +231,9 @@ void Scaffolder::solve(){
 	ostringstream scaffoldList;
 	scaffoldList<<m_parameters->getPrefix()<<".ScaffoldComponents.txt";
 	ostringstream scaffoldLengths;
-	m_numberOfScaffoldsWithThreshold=0;
-	m_totalScaffoldLengthWithThreshold=0;
 	scaffoldLengths<<m_parameters->getPrefix()<<".ScaffoldLengths.txt";
 	ofstream f3(scaffoldLengths.str().c_str());
 	ofstream f4(scaffoldList.str().c_str());
-	m_totalScaffoldLength=0;
-	m_numberOfScaffolds=m_scaffoldContigs.size();
 	for(int i=0;i<(int)m_scaffoldContigs.size();i++){
 		int scaffoldName=i;
 		int length=0;
@@ -262,40 +250,76 @@ void Scaffolder::solve(){
 			}
 		}
 		f3<<"scaffold-"<<scaffoldName<<"\t"<<length<<endl;
-		m_totalScaffoldLength+=length;
 		f4<<endl;
-		if(length>=m_parameters->getLargeContigThreshold()){
-			m_numberOfScaffoldsWithThreshold++;
-			m_totalScaffoldLengthWithThreshold+=length;
-		}
+		m_allScaffoldLengths.push_back(length);
 	}
 	f2.close();
 	f3.close();
+}
+
+void Scaffolder::printFinalMessage(){
 	ostringstream outputStat;
 	outputStat<<m_parameters->getPrefix()<<".OutputNumbers.txt";
 	ofstream f5(outputStat.str().c_str());
 
-	f5<<"Number of contigs:\t"<<m_numberOfContigs<<endl;
-	f5<<"Total length of contigs:\t"<<m_totalContigLength<<endl;
-	f5<<"Number of contigs >= "<<m_parameters->getLargeContigThreshold()<<" nt:\t"<<m_numberOfContigsWithAtLeastThreshold<<endl;
-	f5<<"Total length of contigs >= "<<m_parameters->getLargeContigThreshold()<<" nt:\t"<<m_totalContigLengthWithThreshold<<endl;
-	f5<<"Number of scaffolds:\t"<<m_numberOfScaffolds<<endl;
-	f5<<"Total length of scaffolds:\t"<<m_totalScaffoldLength<<endl;
-	f5<<"Number of scaffolds >= "<<m_parameters->getLargeContigThreshold()<<" nt:\t"<<m_numberOfScaffoldsWithThreshold<<endl;
-	f5<<"Total length of scaffolds >= "<<m_parameters->getLargeContigThreshold()<<":\t"<<m_totalScaffoldLengthWithThreshold<<endl;
+	printInStream(&cout);
+	printInStream(&f5);
 
 	f5.close();
 }
 
-void Scaffolder::printFinalMessage(){
-	cout<<"Number of contigs: "<<m_numberOfContigs<<endl;
-	cout<<"Total length of contigs: "<<m_totalContigLength<<endl;
-	cout<<"Number of contigs >= "<<m_parameters->getLargeContigThreshold()<<" nt: "<<m_numberOfContigsWithAtLeastThreshold<<endl;
-	cout<<"Total length of contigs >= "<<m_parameters->getLargeContigThreshold()<<" nt: "<<m_totalContigLengthWithThreshold<<endl;
-	cout<<"Number of scaffolds: "<<m_numberOfScaffolds<<endl;
-	cout<<"Total length of scaffolds: "<<m_totalScaffoldLength<<endl;
-	cout<<"Number of scaffolds >= "<<m_parameters->getLargeContigThreshold()<<" nt: "<<m_numberOfScaffoldsWithThreshold<<endl;
-	cout<<"Total length of scaffolds >= "<<m_parameters->getLargeContigThreshold()<<": "<<m_totalScaffoldLengthWithThreshold<<endl;
+void Scaffolder::computeStatistics(vector<int>*lengths,int minimumLength,ostream*outputStream){
+	vector<int> accepted;
+	uint64_t totalLength=0;
+	for(int i=0;i<(int)lengths->size();i++){
+		int contigLength=lengths->at(i);
+		if(contigLength>=minimumLength){
+			accepted.push_back(contigLength);
+			totalLength+=contigLength;
+		}
+	}
+	if(accepted.size()==0)
+		return;
+
+	int average=totalLength/accepted.size();
+
+	(*outputStream)<<" Number: "<<accepted.size()<<endl;
+	(*outputStream)<<" Total length: "<<totalLength<<endl;
+	(*outputStream)<<" Average: "<<average<<endl;
+
+	sort(accepted.begin(), accepted.end());
+
+	uint64_t sumOfLengths=0;
+	int i=0;
+	while(i<(int)accepted.size() && sumOfLengths < totalLength/2){
+		sumOfLengths += accepted[i];
+		i++;
+	}
+
+	int n50=accepted[i];
+
+	(*outputStream)<<" N50: "<<n50<<endl;
+
+	int median=0;
+	if(accepted.size()%2==0){
+		median=(accepted[accepted.size()/2] + accepted[accepted.size()/2 -1]) / 2;
+	}else{
+		median=accepted[accepted.size()/2];
+	}
+	(*outputStream)<<" Median: "<<median<<endl;
+
+	(*outputStream)<<" Largest: "<<accepted[accepted.size()-1]<<endl;
+}
+
+void Scaffolder::printInStream(ostream*outputStream){
+	(*outputStream)<<"Contigs >= "<<m_parameters->getMinimumContigLength()<<" nt"<<endl;
+	computeStatistics(&m_allContigLengths,m_parameters->getMinimumContigLength(),outputStream);
+	(*outputStream)<<"Contigs >= "<<m_parameters->getLargeContigThreshold()<<" nt"<<endl;
+	computeStatistics(&m_allContigLengths,m_parameters->getLargeContigThreshold(),outputStream);
+	(*outputStream)<<"Scaffolds >= "<<m_parameters->getMinimumContigLength()<<" nt"<<endl;
+	computeStatistics(&m_allScaffoldLengths,m_parameters->getMinimumContigLength(),outputStream);
+	(*outputStream)<<"Scaffolds >= "<<m_parameters->getLargeContigThreshold()<<" nt"<<endl;
+	computeStatistics(&m_allScaffoldLengths,m_parameters->getLargeContigThreshold(),outputStream);
 }
 
 void Scaffolder::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
