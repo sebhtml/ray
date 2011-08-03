@@ -125,17 +125,12 @@ void SeedingData::computeSeeds(){
 					assert(m_completedJobs==0&&m_activeWorkers.size()==0&&m_aliveWorkers.size()==0);
 				}
 				#endif
-				Vertex*node=m_splayTreeIterator.next();
+
+				m_splayTreeIterator.next();
 				Kmer vertexKey=*(m_splayTreeIterator.getKey());
 
-				int coverage=node->getCoverage(&vertexKey);
-				int minimum=5;
-				if(coverage<minimum){
-					m_completedJobs++;
-				}else{
-					m_aliveWorkers[m_SEEDING_i].constructor(&vertexKey,m_parameters,m_outboxAllocator,m_virtualCommunicator,m_SEEDING_i);
-					m_activeWorkers.insert(m_SEEDING_i);
-				}
+				m_aliveWorkers[m_SEEDING_i].constructor(&vertexKey,m_parameters,m_outboxAllocator,m_virtualCommunicator,m_SEEDING_i);
+				m_activeWorkers.insert(m_SEEDING_i);
 
 				int population=m_aliveWorkers.size();
 				if(population>m_maximumWorkers){

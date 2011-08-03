@@ -21,6 +21,9 @@ PREFIX.NumberOfSequences.txt.
 extensions to disk.
 * Fixed a bug in the incremental resizing algorithm of MyHashTable.
 * Added debugging option -show-distance-summary
+* Removed the coverage threshold from the algorithm that finds seeds in the distributed graph.
+Suggested by David Eccles(gringer) from Max-Planck-Gesellschaft, München.
+
 
 = 1.6.1 'sunray' =
 2011-07-14
