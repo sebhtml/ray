@@ -23,6 +23,7 @@
 #include <assembler/ReadFetcher.h>
 #include <scaffolder/Scaffolder.h>
 #include <communication/Message.h>
+#include <algorithm> /* for sort */
 #include <vector>
 #include <fstream>
 #include <sstream>
