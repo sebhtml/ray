@@ -96,7 +96,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 					assert(m_completedJobs==0&&m_activeWorkers.size()==0&&m_aliveWorkers.size()==0);
 				}
 				#endif
-				char sequence[4000];
+				char sequence[RAY_MAXIMUM_READ_LENGTH];
 				#ifdef ASSERT
 				assert(m_theSequenceId<(int)m_myReads->size());
 				#endif

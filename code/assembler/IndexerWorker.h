@@ -45,7 +45,7 @@ class IndexerWorker{
 	Parameters*m_parameters;
 	int m_workerId;
 	bool m_checkedCoverage;
-	char m_sequence[4096];
+	char m_sequence[RAY_MAXIMUM_READ_LENGTH];
 	RingAllocator*m_outboxAllocator;
 	bool m_forwardIndexed;
 	bool m_reverseIndexed;
