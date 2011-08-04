@@ -24,7 +24,8 @@ C++ code using Doxygen and in the journal paper as well.
  - http://aws.amazon.com/ec2/hpc-applications/
 
 - Ray utilises distributed sparse hash tables with double hashing (MyHashTable).
-- Ray does garbage collection using real-time memory defragmentation & compaction.
+- Ray utilises smart pointers.
+- Ray does garbage collection using real-time memory defragmentation & compaction (DefragmentationGroup).
 
 - Ray utilises virtual communication (VirtualCommunicator).
  - http://dskernel.blogspot.com/2011/01/virtual-communicator.html
