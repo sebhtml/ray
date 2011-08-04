@@ -70,9 +70,19 @@ int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoice
 	double multiplicator=1.4;
 	for(int i=0;i<choices;i++){
 		bool win=true;
+
+		/* an invalid choice can not win */
+		if(invalidChoices->count(i)>0)
+			continue;
+
 		for(int j=0;j<choices;j++){
 			if(i==j)
 				continue;
+
+			/* an invalid choice does not need to be tested against */
+			if(invalidChoices->count(j)>0)
+				continue;
+
 			if(multiplicator*maximumValues[j] >= maximumValues[i]){
 				win=false;
 				break;
@@ -127,6 +137,10 @@ int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoice
 	int selection=IMPOSSIBLE_CHOICE;
 	for(int i=0;i<choices;i++){
 		bool winner=true;
+		
+		if(invalidChoices->count(i) > 0)
+			continue;
+
 		for(int j=0;j<choices;j++){
 			if(i==j)
 				continue;

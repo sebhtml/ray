@@ -73,6 +73,7 @@ Parameters*parameters){
 		map<int,int> data;
 
 		/** load single-end data */
+/*
 		if(ed->m_EXTENSION_readPositionsForVertices.count(key)>0){
 			for(vector<int>::iterator j=ed->m_EXTENSION_readPositionsForVertices[key].begin();
 				j!=ed->m_EXTENSION_readPositionsForVertices[key].end();j++){
@@ -80,6 +81,7 @@ Parameters*parameters){
 				data[val]++;
 			}
 		}
+*/
 		/** load paired-end data and mate-pair data */
 		if(ed->m_EXTENSION_pairedReadPositionsForVertices.count(key)>0){
 			for(int j=0;j<(int)ed->m_EXTENSION_pairedReadPositionsForVertices[key].size();j++){
@@ -114,7 +116,8 @@ Parameters*parameters){
 	chooseWithCoverage(ed,minimumCoverage,&battleVictories);
 
 	int coverageWinner=getWinner(&battleVictories,ed->m_enumerateChoices_outgoingEdges.size());
-	if(coverageWinner!=IMPOSSIBLE_CHOICE)
+
+	if(coverageWinner!=IMPOSSIBLE_CHOICE && invalidChoices.count(coverageWinner) == 0)
 		return coverageWinner;
 
 	m_c->chooseWithPairedReads(ed,minimumCoverage,m_maxCoverage,m_pairedEndMultiplicator,&battleVictories,parameters);

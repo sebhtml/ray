@@ -346,6 +346,25 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 				assert(element!=NULL);
 				#endif
 				int startPosition=element->getPosition();
+
+/**
+ * indels model for PacBio and 454 reads
+
+
+algorithm:
+
+for read in reads:
+	extensionElement.find(vertices,&index,&distance,positionInContig)
+	if index>=0:
+		selectedVertex=vertices[index]
+
+what happened:
+	the extension element updated its last anchor to (distance,positionInContig) if a vertex from vertices was found
+otherwise, index is < 0 and the extension element remains unchanged.
+
+Presently, insertions or deletions up to 8 are supported.
+*/
+
 				int distance=ed->m_EXTENSION_extension->size()-startPosition+element->getStrandPosition();
 
 				//int repeatValueForRightRead=ed->m_repeatedValues->at(startPosition);
@@ -466,11 +485,13 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 							break;// can'T free if there are no pairs
 						}
 						uint64_t uniqueId=ed->m_sequencesToFree[i];
+/*
 						#ifdef HUNT_INFINITE_BUG
 						if(m_ed->m_EXTENSION_extension->size()>10000){
 							cout<<"Removing "<<uniqueId<<"  now="<<m_ed->m_EXTENSION_extension->size()-1<<endl;
 						}
 						#endif
+*/
 						m_ed->m_pairedReadsWithoutMate->erase(uniqueId);
 						// free the sequence
 						ExtensionElement*element=ed->getUsedRead(uniqueId);

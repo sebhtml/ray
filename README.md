@@ -21,6 +21,7 @@ C++ code using Doxygen and in the journal paper as well.
 - Ray utilises the message-passing interface (MPI), version 2.2.
 - Ray supports various network interconnects, thanks to the message-passing interface (MessagesHandler).
 - Ray is cloud-ready thanks to the message-passing interface.
+ - http://aws.amazon.com/ec2/hpc-applications/
 
 - Ray utilises distributed sparse hash tables with double hashing (MyHashTable).
 - Ray does garbage collection using real-time memory defragmentation & compaction.
@@ -126,11 +127,20 @@ http://denovoassembler.sf.net/publications.html
 	cd DoxygenDocumentation/html
 	firefox index.html
 
+# Useful links
+
+## Cloud computing
+
+- http://aws.amazon.com/ec2/hpc-applications/
+- https://cloud.genomics.cn/
+- http://szdaily.sznews.com/html/2011-08/04/content_1689998.htm
+- http://www.nature.com/nbt/journal/v28/n7/full/nbt0710-691.html
 
 ## Message-passing interface
 
 - http://dskernel.blogspot.com/2011/07/understand-main-loop-of-message-passing.html
 - http://cw.squyres.com/
+- http://blogs.cisco.com/performance/
 - http://www.parawiki.org/index.php/Message_Passing_Interface#Peer_to_Peer_Communication
 
 # Funding
