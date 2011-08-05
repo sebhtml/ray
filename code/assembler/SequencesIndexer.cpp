@@ -18,9 +18,6 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-/* TODO: find the memory leak in this file -- during the selection of optimal read markers, the memory goes up ? */
-/* when Linux' VM is almost full, the problem gets worst. */
-
 #include <assembler/SequencesIndexer.h>
 #include <string.h>
 #include <core/OperatingSystem.h>
@@ -49,7 +46,6 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 	}
 
 	m_virtualCommunicator->processInbox(&m_activeWorkersToRestore);
-
 
 	if(!m_virtualCommunicator->isReady()){
 		return;
@@ -96,16 +92,12 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 				if(m_theSequenceId==0){
 					assert(m_completedJobs==0&&m_activeWorkers.size()==0&&m_aliveWorkers.size()==0);
 				}
-				#endif
-				char sequence[RAY_MAXIMUM_READ_LENGTH];
-				#ifdef ASSERT
 				assert(m_theSequenceId<(int)m_myReads->size());
 				#endif
 
-				m_myReads->at(m_theSequenceId)->getSeq(sequence,m_parameters->getColorSpaceMode(),false);
 
 				bool flag;
-				m_aliveWorkers.insert(m_theSequenceId,&m_workAllocator,&flag)->getValue()->constructor(m_theSequenceId,sequence,m_parameters,m_outboxAllocator,m_virtualCommunicator,
+				m_aliveWorkers.insert(m_theSequenceId,&m_workAllocator,&flag)->getValue()->constructor(m_theSequenceId,m_parameters,m_outboxAllocator,m_virtualCommunicator,
 					m_theSequenceId,m_myReads,&m_workAllocator);
 				m_activeWorkers.insert(m_theSequenceId,&m_workAllocator,&flag);
 				int population=m_aliveWorkers.size();

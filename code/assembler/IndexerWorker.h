@@ -39,13 +39,11 @@ class IndexerWorker{
 	int m_sequenceId;
 	bool m_done;
 	int m_position;
-	int m_theLength;
 	VirtualCommunicator*m_virtualCommunicator;
 	bool m_indexedTheVertex;
 	Parameters*m_parameters;
 	int m_workerId;
 	bool m_checkedCoverage;
-	char m_sequence[RAY_MAXIMUM_READ_LENGTH];
 	RingAllocator*m_outboxAllocator;
 	bool m_forwardIndexed;
 	bool m_reverseIndexed;
@@ -58,7 +56,7 @@ class IndexerWorker{
 	DynamicVector<Kmer> m_vertices;
 	DynamicVector<int> m_coverages;
 public:
-	void constructor(int sequenceId,char*sequence,Parameters*parameters,RingAllocator*outboxAllocator,
+	void constructor(int sequenceId,Parameters*parameters,RingAllocator*outboxAllocator,
 		VirtualCommunicator*vc,uint64_t workerId,ArrayOfReads*a,MyAllocator*allocator);
 	bool isDone();
 	void work();
