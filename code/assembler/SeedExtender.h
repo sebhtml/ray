@@ -91,7 +91,7 @@ map<Kmer,set<Kmer> >*arcs,map<Kmer,int>*coverages,int depth,set<Kmer>*visited);
 public:
 	bool m_sequenceReceived;
 	bool m_sequenceRequested;
-	string m_receivedString;
+	char m_receivedString[RAY_MAXIMUM_READ_LENGTH];
 	int m_sequenceIndexToCache;
 
 	SeedExtender();

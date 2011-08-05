@@ -19,6 +19,8 @@
 
 */
 
+/* TODO: free sequence in ExtensionElement objects when they are not needed anymore */
+
 #include <core/constants.h>
 #include <memory/malloc_types.h>
 #include <string.h>
@@ -262,6 +264,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 			#ifdef ASSERT
 			assert(element!=NULL);
 			#endif
+/*
 			char*read=element->getSequence();
 			if(read==NULL){
 				continue;
@@ -270,6 +273,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 			assert(read!=NULL);
 			#endif
 			
+*/
 /*
 			element->removeSequence();
 			ed->getAllocator()->free(read,strlen(read)+1);
@@ -367,14 +371,12 @@ Presently, insertions or deletions up to 8 are supported.
 
 				int distance=ed->m_EXTENSION_extension->size()-startPosition+element->getStrandPosition();
 
-				//int repeatValueForRightRead=ed->m_repeatedValues->at(startPosition);
 				#ifdef ASSERT
 				assert(startPosition<(int)ed->m_extensionCoverageValues->size());
 				#endif
 
-				//int repeatThreshold=100;
-
-				char*theSequence=element->getSequence();
+				element->getSequence(m_receivedString,m_parameters);
+				char*theSequence=m_receivedString;
 				#ifdef ASSERT
 				assert(theSequence!=NULL);
 				#endif
@@ -501,6 +503,8 @@ Presently, insertions or deletions up to 8 are supported.
 						}
 						assert(element!=NULL);
 						#endif
+
+/*
 						char*read=element->getSequence();
 						if(read!=NULL){
 							#ifdef ASSERT
@@ -509,6 +513,7 @@ Presently, insertions or deletions up to 8 are supported.
 							element->removeSequence();
 							ed->getAllocator()->free(read,strlen(read)+1);
 						}
+*/
 
 						// remove it
 						ed->removeSequence(uniqueId);
@@ -953,7 +958,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 						int startPosition=ed->m_EXTENSION_extension->size()-1;
 						int positionOnStrand=anElement->getStrandPosition();
-						int rightReadLength=(int)strlen(anElement->getSequence());
+						anElement->getSequence(m_receivedString,m_parameters);
+						int rightReadLength=(int)strlen(m_receivedString);
 						int observedFragmentLength=(startPosition-startingPositionOnPath)+rightReadLength+extensionElement->getStrandPosition()-positionOnStrand;
 						int multiplier=3;
 
@@ -999,13 +1005,11 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				m_sequenceIndexToCache++;
 			}else if(!m_sequenceRequested
 				&&m_cacheForRepeatedReads.find(uniqueId,false)!=NULL){
-				char buffer[4000];
 				SplayNode<uint64_t,Read>*node=m_cacheForRepeatedReads.find(uniqueId,false);
 				#ifdef ASSERT
 				assert(node!=NULL);
 				#endif
-				node->getValue()->getSeq(buffer,m_parameters->getColorSpaceMode(),false);
-				m_receivedString=buffer;
+				node->getValue()->getSeq(m_receivedString,m_parameters->getColorSpaceMode(),false);
 				PairedRead*pr=node->getValue()->getPairedRead();
 
 				PairedRead dummy;
@@ -1036,7 +1040,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 				bool addRead=true;
 				int startPosition=ed->m_EXTENSION_extension->size()-1;
-				int readLength=m_receivedString.length();
+				int readLength=strlen(m_receivedString);
 				int position=startPosition;
 				int wordSize=m_parameters->getWordSize();
 				int positionOnStrand=annotation.getPositionOnStrand();
@@ -1118,7 +1122,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 					m_matesToMeet.erase(uniqueId);
 					ExtensionElement*element=ed->addUsedRead(uniqueId);
 
-					element->setSequence(m_receivedString.c_str(),ed->getAllocator());
+					element->setSequence(m_receivedString,ed->getAllocator());
 					element->setStartingPosition(startPosition);
 					element->setStrand(annotation.getStrand());
 					element->setStrandPosition(annotation.getPositionOnStrand());
@@ -1126,7 +1130,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 					ed->m_EXTENSION_readsInRange->insert(uniqueId);
 
 					#ifdef ASSERT
-					assert(readLength==(int)strlen(element->getSequence()));
+					element->getSequence(m_receivedString,m_parameters);
+					assert(readLength==(int)strlen(m_receivedString));
 					#endif
 		
 					int expiryPosition=position+readLength-positionOnStrand-wordSize;

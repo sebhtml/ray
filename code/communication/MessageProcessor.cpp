@@ -1871,9 +1871,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY(Message*mess
 	uint8_t*sequence=(uint8_t*)(incoming+5);
 	Read tmp;
 	tmp.setRawSequence(sequence,length);
-	char buffer2[RAY_MAXIMUM_READ_LENGTH];
-	tmp.getSeq(buffer2,m_parameters->getColorSpaceMode(),false);
-	seedExtender->m_receivedString=buffer2;
+	tmp.getSeq(seedExtender->m_receivedString,m_parameters->getColorSpaceMode(),false);
 	seedExtender->m_sequenceReceived=true;
 }
 

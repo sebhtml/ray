@@ -44,7 +44,7 @@ false positive rate = 0.00846 = 0.846%
 	m_hashFunctions=0;
 
 /**
- * this "magic" values are just random bits
+ * these "magic" values are just random bits
 they were computed with:
 
 date|md5sum
@@ -52,7 +52,7 @@ date|md5sum
 (and taking the first 16 symbols,
 1 hexadecimal symbol = 4 bits
 2*4 bits = 1 byte
-8 bytes = 1 64-bit integer
+8 bytes = 1 64-bit integer)
 
 Basically, these are used in XOR hash functions below...
 */

@@ -24,6 +24,7 @@
 
 #include <structures/PairedRead.h>
 #include <memory/MyAllocator.h>
+#include <core/Parameters.h>
 
 /*
  * An extension element is a read mapped on an
@@ -31,7 +32,7 @@
  */
 class ExtensionElement{
 	PairedRead m_pairedRead;
-	char*m_readSequence;
+	Read m_read;
 	int m_position;
 	uint16_t m_strandPosition;
 	char m_strand;
@@ -50,7 +51,7 @@ public:
 	int getPosition();
 	char getStrand();
 	PairedRead*getPairedRead();
-	char*getSequence();
+	void getSequence(char*sequence,Parameters*p);
 	bool isLeftEnd();
 	bool isRightEnd();
 	int getType();
