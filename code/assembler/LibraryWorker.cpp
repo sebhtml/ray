@@ -106,7 +106,10 @@ void LibraryWorker::work(){
 					#ifdef ASSERT
 					assert((int)buffer.size()==4);
 					#endif
-					if((int)buffer[1]!=-1){
+	
+					/** this is a sentinel value */
+					/** data: readLength, rank, id, library */
+					if((int)buffer[1] != MAX_NUMBER_OF_MPI_PROCESSES){
 						int library=buffer[3];
 						int readLength=buffer[0];
 						bool isAutomatic=m_parameters->isAutomatic(library);

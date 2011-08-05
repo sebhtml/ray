@@ -156,11 +156,12 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_READ_MATE(Message*message){
 		int readId=buffer[i];
 		Read*read=m_myReads->at(readId);
 		int readLength=read->length();
+		/** data: readLength, rank, id, library */
 		outgoingMessage[j++]=readLength;
 		if(!read->hasPairedRead()){
-			outgoingMessage[j++]=-1;
-			outgoingMessage[j++]=-1;
-			outgoingMessage[j++]=-1;
+			outgoingMessage[j++]=MAX_NUMBER_OF_MPI_PROCESSES;
+			outgoingMessage[j++]=MAX_NUMBER_OF_MPI_PROCESSES;
+			outgoingMessage[j++]=MAX_NUMBER_OF_MPI_PROCESSES;
 		}else{
 			PairedRead*mate=read->getPairedRead();
 			outgoingMessage[j++]=mate->getRank();
