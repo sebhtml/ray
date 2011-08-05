@@ -10,7 +10,7 @@ fi
 
 if [ -z $NSLOTS ]
 then
-	export NSLOTS=64
+	export NSLOTS=32
 fi
 
 qsubFile=template.sh-qsub-$testName

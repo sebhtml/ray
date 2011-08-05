@@ -24,6 +24,9 @@ extensions to disk.
 * Removed the coverage threshold from the algorithm that finds seeds in the distributed graph.
 Suggested by David Eccles(gringer) from Max-Planck-Gesellschaft, München.
 * Added N50, median, average and largest contig and scaffold lengths in PREFIX.OutputNumbers.txt
+* Implemented a Bloom filter to reduce the memory usage. This is ridiculously good and 
+the false positive rate has no effect whatsoever on Ray thanks to the KmerAcademy.
+
 
 = 1.6.1 'sunray' =
 2011-07-14

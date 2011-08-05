@@ -45,6 +45,7 @@
 #include <structures/Vertex.h>
 #include <scaffolder/Scaffolder.h>
 #include <communication/VirtualCommunicator.h>
+#include <structures/BloomFilter.h>
 using namespace std;
 
 
@@ -61,6 +62,7 @@ typedef void (MessageProcessor::*FNMETHOD) (Message*message);
  */
 class MessageProcessor{
 	int m_kmerAcademyFinishedRanks;
+	BloomFilter m_bloomFilter;
 
 	VirtualCommunicator*m_virtualCommunicator;
 	Scaffolder*m_scaffolder;

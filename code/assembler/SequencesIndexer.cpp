@@ -19,6 +19,7 @@
 */
 
 /* TODO: find the memory leak in this file -- during the selection of optimal read markers, the memory goes up ? */
+/* when Linux' VM is almost full, the problem gets worst. */
 
 #include <assembler/SequencesIndexer.h>
 #include <string.h>

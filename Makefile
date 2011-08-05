@@ -197,7 +197,7 @@ obj-y += code/graph/CoverageGatherer.o code/graph/KmerAcademy.o code/graph/KmerA
 #structures
 obj-y += code/structures/Kmer.o code/structures/MyForestIterator.o code/structures/MyForest.o \
 code/structures/ArrayOfReads.o  code/structures/Direction.o code/structures/PairedRead.o code/structures/ReadAnnotation.o code/structures/Read.o  \
-code/structures/StaticVector.o code/structures/Vertex.o
+code/structures/StaticVector.o code/structures/Vertex.o code/structures/BloomFilter.o
 
 #scaffolder
 obj-y += code/scaffolder/Scaffolder.o 

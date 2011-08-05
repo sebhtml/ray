@@ -26,6 +26,7 @@ C++ code using Doxygen and in the journal paper as well.
 - Ray utilises distributed sparse hash tables with double hashing (MyHashTable).
 - Ray utilises smart pointers.
 - Ray does garbage collection using real-time memory defragmentation & compaction (DefragmentationGroup).
+- Ray utilises a Bloom filter to avoid storing most of the erroneous k-mers in memory.
 
 - Ray utilises virtual communication (VirtualCommunicator).
  - http://dskernel.blogspot.com/2011/01/virtual-communicator.html
@@ -156,7 +157,7 @@ Doctoral Award to S.B., Canadian Institutes of Health Research (CIHR)
 http://boisvert.info
 http://github.com/sebhtml
 http://twitter.com/sebhtml
-
+http://raytrek.com
 
 ## Mentoring:
 
