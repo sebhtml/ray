@@ -495,9 +495,10 @@ Presently, insertions or deletions up to 8 are supported.
 						#endif
 */
 						m_ed->m_pairedReadsWithoutMate->erase(uniqueId);
+
 						// free the sequence
-						ExtensionElement*element=ed->getUsedRead(uniqueId);
 						#ifdef ASSERT
+						ExtensionElement*element=ed->getUsedRead(uniqueId);
 						if(element==NULL){
 							cout<<"element "<<uniqueId<<" not found now="<<m_ed->m_EXTENSION_extension->size()-1<<""<<endl;
 						}
