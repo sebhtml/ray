@@ -22,6 +22,7 @@
 #ifndef _BufferedData
 #define _BufferedData
 
+#include <stdint.h>
 #include <core/common_functions.h>
 #include <memory/MyAllocator.h>
 #include <structures/StaticVector.h>
@@ -42,8 +43,8 @@
 class BufferedData{
 	int m_count;
 	int m_period;
-	int m_flushedMessages;
-	int m_pushedMessages;
+	uint64_t m_flushedMessages;
+	uint64_t m_pushedMessages;
 	int m_type;
 	int*m_sizes;
 	int m_ranks;
