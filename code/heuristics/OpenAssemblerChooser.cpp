@@ -33,6 +33,7 @@ void OpenAssemblerChooser::constructor(int m_peakCoverage){
 
 int OpenAssemblerChooser::choose(ExtensionData*ed,Chooser*m_c,int minimumCoverage,int m_maxCoverage,
 Parameters*parameters){
+
 	/** filter invalid choices */
 	set<int> invalidChoices;
 	for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
@@ -46,24 +47,61 @@ Parameters*parameters){
 			continue;
 		}
 
-		bool invalid=true;
-		/** an invalid choice must have coverage < minCoverage/2 */
-		if(coverageForI>minimumCoverage/2)
-			invalid=false;
+		/* invalid if < minCoverage and all others >= 2*minCoverage */
 
-		/** all other choices must be above 2*minCoverage */
-		for(int j=0;j<(int)ed->m_enumerateChoices_outgoingEdges.size();j++){
-			if(i==j)
+		if(coverageForI<minimumCoverage){
+			bool invalid=true;
+			for(int j=0;j<(int)ed->m_enumerateChoices_outgoingEdges.size();j++){
+				if(i==j)
+					continue;
+				int coverageForJ=ed->m_EXTENSION_coverages->at(j);
+				if(coverageForJ<2*minimumCoverage){
+					invalid=false;
+					break;
+				}
+			}
+			if(invalid){
+				invalidChoices.insert(i);
 				continue;
-			int coverageForJ=ed->m_EXTENSION_coverages->at(j);
-			if(coverageForJ<2*minimumCoverage)
-				invalid=false;
+			}
 		}
 
-	
-		if(invalid)
-			invalidChoices.insert(i);
+		/* invalid if < minCoverage/2 and all others >= minCoverage */
+		if(coverageForI<minimumCoverage/2){
+			bool invalid=true;
+			for(int j=0;j<(int)ed->m_enumerateChoices_outgoingEdges.size();j++){
+				if(i==j)
+					continue;
+				int coverageForJ=ed->m_EXTENSION_coverages->at(j);
+				if(coverageForJ<minimumCoverage){
+					invalid=false;
+					break;
+				}
+			}
+			if(invalid){
+				invalidChoices.insert(i);
+				continue;
+			}
+		}
+
 	}
+
+	/** make a list of battle victories for each choice */
+
+	vector<set<int> > battleVictories;
+
+	for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
+		set<int> victories;
+		battleVictories.push_back(victories);
+	}
+
+	chooseWithCoverage(ed,minimumCoverage,&battleVictories);
+
+	int coverageWinner=getWinner(&battleVictories,ed->m_enumerateChoices_outgoingEdges.size());
+
+	if(coverageWinner!=IMPOSSIBLE_CHOICE && invalidChoices.count(coverageWinner) == 0)
+		return coverageWinner;
+
 		
 	int withPairedInformation=0;
 	/** prepare data for the NovaEngine */
@@ -106,19 +144,6 @@ Parameters*parameters){
 			return novaChoice;
 	}
 
-	vector<set<int> > battleVictories;
-
-	for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
-		set<int> victories;
-		battleVictories.push_back(victories);
-	}
-
-	chooseWithCoverage(ed,minimumCoverage,&battleVictories);
-
-	int coverageWinner=getWinner(&battleVictories,ed->m_enumerateChoices_outgoingEdges.size());
-
-	if(coverageWinner!=IMPOSSIBLE_CHOICE && invalidChoices.count(coverageWinner) == 0)
-		return coverageWinner;
 
 	m_c->chooseWithPairedReads(ed,minimumCoverage,m_maxCoverage,m_pairedEndMultiplicator,&battleVictories,parameters);
 	
@@ -228,11 +253,10 @@ void OpenAssemblerChooser::chooseWithCoverage(ExtensionData*ed,int minCoverage,v
 			if(coverageForI>=2*minCoverage && coverageForJ<=minCoverage/2){
 				(*battleVictories)[i].insert(j);
 			}
-/*
+
 			if(coverageForI>=minCoverage && coverageForJ<=minCoverage/2){
 				(*battleVictories)[i].insert(j);
 			}
-*/
 		}
 	}
 }
