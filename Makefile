@@ -58,10 +58,6 @@ FORCE_PACKING = n
 # y/n
 ASSERT = n
 
-# Create VirtualNextGenSequencer
-# needs boost library
-VIRTUAL_SEQUENCER = n
-
 # end of compilation options
 #############################################
 
@@ -155,9 +151,6 @@ LDFLAGS-$(GPROF) += -pg -g
 CXXFLAGS += $(CXXFLAGS-y)
 LDFLAGS += $(LDFLAGS-y)
 
-
-TARGETS-$(VIRTUAL_SEQUENCER) += readSimulator/VirtualNextGenSequencer
-
 TARGETS=code/Ray $(TARGETS-y)
 
 #memory
@@ -242,7 +235,6 @@ showOptions:
 	@echo HAVE_LIBBZ2 = $(HAVE_LIBBZ2)
 	@echo HAVE_CLOCK_GETTIME = $(HAVE_CLOCK_GETTIME)
 	@echo INTEL_COMPILER = $(INTEL_COMPILER)
-	@echo VIRTUAL_SEQUENCER = $(VIRTUAL_SEQUENCER)
 	@echo MPICXX = $(MPICXX)
 	@echo GPROF = $(GPROF)
 	@echo OPTIMIZE = $(OPTIMIZE)
@@ -261,10 +253,6 @@ code/Ray: showOptions $(obj-y)
 	@$(MPICXX) $(LDFLAGS) $(obj-y) -o $@
 	@echo $(PREFIX) > PREFIX
 	@echo $(TARGETS) > TARGETS
-
-readSimulator/VirtualNextGenSequencer: readSimulator/simulatePairedReads.cpp
-	@$(CXX) -o $@ $< $(CXXFLAGS)
-	@echo "  CXX $<"
 
 clean:
 	@rm -f $(TARGETS) $(obj-y) showOptions PREFIX TARGETS

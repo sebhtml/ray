@@ -1,9 +1,9 @@
 * run regression tests (+backup on colosse)
 * run unit tests
 * update ChangedLog (based on git log)
-* set ASSERT to no.
-* set MAXKMERLENGTH to 32
+* set ASSERT to no and set MAXKMERLENGTH to 32
 * check version in constants.h + manual
+* Update the manual (new options, etc.)
 * test compilation on a git clone __on 5 different computers__ (make + make install): 
  - ls30
  - iceman (colosse2)
