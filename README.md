@@ -72,6 +72,15 @@ You need a C++ compiler, make, an implementation of MPI.
 ## Change the compiler
 
 	make PREFIX=build MPICXX=/software/openmpi-1.4.3/bin/mpic++
+	make install
+
+Tested C++ compilers:
+
+- GNU C++ compiler (g++)
+- Intel C++ compiler (icpc)
+- clang++/LLVM (clang++)
+- Microsoft Visual C++
+
 
 ## Use large k-mers
 
@@ -173,3 +182,45 @@ http://raytrek.com
 ## Contributors
 
 - David Eccles
+
+# Compile Ray on Microsoft Windows with Microsoft Visual Studio
+
+
+## MPI implementation
+
+You can use Open-MPI or MPICH2 or another implementation available for Microsoft Windows.
+In this example, we use MPICH2 for Windows 32 bits and Microsoft Visual Studio 10.0.
+
+
+## Microsoft Visual Studio
+
+Using Microsoft Visual Studio, you need to
+include in your project the directories in the directory code/.
+
+
+## Additional include directories
+
+Add the MPICH2 include directory to
+
+Configuration Properties => C/C++ => General => Additional Include Directories.
+
+
+## Additional library directories
+
+Add the MPICH2 lib directory to
+
+Configuration Properties => Linker => General => Additional Library Directories
+
+
+## Additional dependencies
+
+Add mpi.lib to
+
+Configuration Properties => Linker => General => Additional Dependencies
+
+
+## Compilation
+
+You are now ready to build Ray.exe.
+
+
