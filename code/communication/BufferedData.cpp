@@ -177,6 +177,6 @@ bool BufferedData::needsFlushing(int destination,int period){
 
 void BufferedData::showStatistics(int rank){
 	double ratio=100.0*m_flushedMessages/m_pushedMessages;
-	printf("Rank %i: VirtualCommunicator: %i pushed messages generated %i virtual messages (%f%%)\n",rank,m_pushedMessages,m_flushedMessages,ratio);
+	printf("Rank %i: VirtualCommunicator: %lu pushed messages generated %lu virtual messages (%f%%)\n",rank,m_pushedMessages,m_flushedMessages,ratio);
 	fflush(stdout);
 }
