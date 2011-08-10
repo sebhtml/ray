@@ -109,6 +109,9 @@ int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoice
 		/** change the number of bins depending on the range of values */
 		int step=128;
 
+		if(theMaximum> 2048)
+			step=256;
+
 		if(theMaximum>8192)
 			step=512;
 

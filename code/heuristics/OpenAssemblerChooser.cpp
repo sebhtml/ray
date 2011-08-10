@@ -84,6 +84,25 @@ Parameters*parameters){
 			}
 		}
 
+		/* invalid if == 2 and all other are >= 10 */
+		if(coverageForI == 2){
+			bool invalid=true;
+			for(int j=0;j<(int)ed->m_enumerateChoices_outgoingEdges.size();j++){
+				if(i==j)
+					continue;
+				int coverageForJ=ed->m_EXTENSION_coverages->at(j);
+				if(coverageForJ<10){
+					invalid=false;
+					break;
+				}
+			}
+			if(invalid){
+				invalidChoices.insert(i);
+				continue;
+			}
+		}
+
+
 	}
 
 	/** make a list of battle victories for each choice */
