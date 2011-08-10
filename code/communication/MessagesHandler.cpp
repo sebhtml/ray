@@ -59,13 +59,6 @@ void MessagesHandler::sendMessages(StaticVector*outbox,int source){
 		MPI_Isend(buffer,count,m_datatype,destination,tag,MPI_COMM_WORLD,&request);
 		MPI_Request_free(&request);
 
-		#ifdef SHOW_TAGS
-		if(source==0){
-			printf("SEND\tSource\t%i\tDestination\t%i\tCount\t%i\tTag\t%s\n",source,destination,count,MESSAGES[tag]);
-			fflush(stdout);
-		}
-		#endif
-
 		#ifdef ASSERT
 		assert(request==MPI_REQUEST_NULL);
 		#endif
@@ -124,19 +117,8 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 		Message aMessage(incoming,count,source,tag,source);
 		inbox->push_back(aMessage);
 
-		#ifdef SHOW_TAGS
-		if(destination==0){
-			printf("RECV\tSource\t%i\tDestination\t%i\tCount\t%i\tTag\t%s\n",source,destination,count,MESSAGES[tag]);
-			fflush(stdout);
-		}
-		#endif
-	
-		// increment the head
-		if(m_head==m_ringSize-1){
-			m_head=0;
-		}else{
-			m_head++;
-		}
+		m_head++;
+		m_head%=m_ringSize;
 
 		/** update statistics */
 		m_receivedMessages++;
@@ -146,7 +128,7 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 
 void MessagesHandler::initialiseMembers(){
 	// the ring itself  contain requests ready to receive messages
-	m_ringSize=128;
+	m_ringSize=m_size+16;
 
 	m_ring=(MPI_Request*)__Malloc(sizeof(MPI_Request)*m_ringSize,RAY_MALLOC_TYPE_PERSISTENT_MESSAGE_RING,false);
 	m_buffers=(uint8_t*)__Malloc(MAXIMUM_MESSAGE_SIZE_IN_BYTES*m_ringSize,RAY_MALLOC_TYPE_PERSISTENT_MESSAGE_BUFFERS,false);

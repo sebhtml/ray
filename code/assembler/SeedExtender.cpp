@@ -652,7 +652,12 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 		// no choice possible...
 		if(!ed->m_EXTENSION_complementedSeed || !ed->m_EXTENSION_complementedSeed2){
 			vector<Kmer> complementedSeed;
-			//int theCurrentSize=ed->m_EXTENSION_currentSeed.size();
+
+			/** inspect the local setup */
+			if(m_parameters->showEndingContext()){
+				inspect(ed,currentVertex);
+			}
+
 			printf("Rank %i reached %i vertices from seed %i (changing direction)\n",theRank,
 				(int)ed->m_EXTENSION_extension->size(),
 				m_ed->m_EXTENSION_currentSeedIndex);

@@ -51,10 +51,10 @@ void*RingAllocator::allocate(int a){
 	assert(a<=m_max);
 	#endif
 	void*address=(void*)(m_memory+m_current*m_max);
+
 	m_current++;
-	if(m_current==m_chunks){
-		m_current=0;
-	}
+	m_current%=m_chunks;
+
 	return address;
 }
 
