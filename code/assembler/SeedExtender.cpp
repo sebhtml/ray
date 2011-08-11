@@ -97,8 +97,8 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 		ed->m_EXTENSION_directVertexDone=false;
 		ed->m_EXTENSION_VertexAssembled_requested=false;
-		ed->m_EXTENSION_complementedSeed=false;
-		ed->m_EXTENSION_complementedSeed2=true;
+		ed->m_previouslyFlowedVertices=0;
+		ed->m_flowNumber=0;
 	
 		ed->constructor(m_parameters);
 	}
@@ -129,7 +129,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 			checkIfCurrentVertexIsAssembled(ed,outbox,outboxAllocator,outgoingEdgeIndex,last_value,
 	currentVertex,theRank,vertexCoverageRequested,wordSize,size,seeds);
 		}
-	}else if(ed->m_EXTENSION_vertexIsAssembledResult && ed->m_EXTENSION_currentPosition==0 && ed->m_EXTENSION_complementedSeed==false){
+	}else if(ed->m_EXTENSION_vertexIsAssembledResult && ed->m_EXTENSION_currentPosition==0 && ed->m_flowNumber==0){
 		ed->m_EXTENSION_currentSeedIndex++;// skip the current one.
 		ed->m_EXTENSION_currentPosition=0;
 
@@ -141,8 +141,8 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 			ed->m_EXTENSION_currentSeed=(*seeds)[ed->m_EXTENSION_currentSeedIndex];
 			(*currentVertex)=ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition];
 		}
-		ed->m_EXTENSION_complementedSeed=false;
-		ed->m_EXTENSION_complementedSeed2=true;
+		ed->m_previouslyFlowedVertices=0;
+		ed->m_flowNumber=0;
 
 	}else if(!ed->m_EXTENSION_markedCurrentVertexAsAssembled){
 		markCurrentVertexAsAssembled(currentVertex,outboxAllocator,outgoingEdgeIndex,outbox,
@@ -323,7 +323,6 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 			cout<<" "<<(ed->m_enumerateChoices_outgoingEdges[i]).idToWord(wordSize,m_parameters->getColorSpaceMode());
 		}
 		cout<<endl;
-		cout<<"ComplementSeed="<<ed->m_EXTENSION_complementedSeed<<endl;
 
 		#endif
 
@@ -650,7 +649,11 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 		}
 
 		// no choice possible...
-		if(!ed->m_EXTENSION_complementedSeed || !ed->m_EXTENSION_complementedSeed2){
+		if((int)ed->m_EXTENSION_extension->size() > ed->m_previouslyFlowedVertices){
+			m_flowedVertices.push_back(ed->m_EXTENSION_extension->size());
+			ed->m_previouslyFlowedVertices = ed->m_EXTENSION_extension->size();
+			ed->m_flowNumber++;
+
 			vector<Kmer> complementedSeed;
 
 			/** inspect the local setup */
@@ -658,9 +661,9 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 				inspect(ed,currentVertex);
 			}
 
-			printf("Rank %i reached %i vertices from seed %i (changing direction)\n",theRank,
+			printf("Rank %i reached %i vertices from seed %i (changing direction) completed flow %i\n",theRank,
 				(int)ed->m_EXTENSION_extension->size(),
-				m_ed->m_EXTENSION_currentSeedIndex);
+				m_ed->m_EXTENSION_currentSeedIndex,ed->m_flowNumber);
 			fflush(stdout);
 
 			for(int i=ed->m_EXTENSION_extension->size()-1;i>=0;i--){
@@ -680,16 +683,9 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			m_cache.clear();
 			ed->m_EXTENSION_directVertexDone=false;
 			ed->m_EXTENSION_VertexAssembled_requested=false;
-
-			if(!ed->m_EXTENSION_complementedSeed){
-				ed->m_EXTENSION_complementedSeed=true;
-				if(ed->m_EXTENSION_currentSeed.size()<1000){
-					ed->m_EXTENSION_complementedSeed2=false;
-				}
-			}else if(!ed->m_EXTENSION_complementedSeed2){
-				ed->m_EXTENSION_complementedSeed2=true;
-			}
 		}else{
+			ed->m_flowNumber++;
+			m_flowedVertices.push_back(ed->m_EXTENSION_extension->size());
 			storeExtensionAndGetNextOne(ed,theRank,seeds,currentVertex,bubbleData);
 		}
 	}
@@ -763,7 +759,13 @@ Kmer *currentVertex,BubbleData*bubbleData){
 		}
 
 		printExtensionStatus(currentVertex);
-		cout<<"Rank "<<theRank<<" (extension done)"<<endl;
+		cout<<"Rank "<<theRank<<" (extension done) NumberOfFlows: "<<ed->m_flowNumber<<endl;
+		cout<<"Rank "<<m_parameters->getRank()<<" FlowedVertices:";
+		for(int i=0;i<(int)m_flowedVertices.size();i++){
+			cout<<" "<<m_flowedVertices[i];
+		}
+		m_flowedVertices.clear();
+		cout<<endl;
 	
 		if(m_parameters->hasOption("-show-distance-summary")){
 			/** show the utilised outer distances */
@@ -813,9 +815,10 @@ Kmer *currentVertex,BubbleData*bubbleData){
 	ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 
 	ed->m_EXTENSION_directVertexDone=false;
-	ed->m_EXTENSION_complementedSeed=false;
-	ed->m_EXTENSION_complementedSeed2=true;
 	ed->m_EXTENSION_VertexAssembled_requested=false;
+
+	ed->m_flowNumber=0;
+	ed->m_previouslyFlowedVertices=0;
 }
 
 void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector*outbox,RingAllocator*outboxAllocator,
@@ -877,7 +880,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 		m_pickedInformation=false;
 		int theCurrentSize=ed->m_EXTENSION_extension->size();
 		if(theCurrentSize%10000==0){
-			if(theCurrentSize==0 && !ed->m_EXTENSION_complementedSeed){
+			if(theCurrentSize==0 && ed->m_flowNumber ==0){
 				m_extended++;
 				printf("Rank %i starts on a seed %i, length is %i [%i/%i]\n",theRank,
 				ed->m_EXTENSION_currentSeedIndex,
@@ -1385,13 +1388,7 @@ void SeedExtender::showReadsInRange(){
 void SeedExtender::printExtensionStatus(Kmer*currentVertex){
 	int theRank=m_parameters->getRank();
 	int theCurrentSize=m_ed->m_EXTENSION_extension->size();
-	// stop the infinite loop
-	#ifdef HUNT_INFINITE_BUG
-	if(m_ed->m_EXTENSION_extension->size()>200000){
-		cout<<"Error: Infinite loop"<<endl;
-		exit(0);
-	}
-	#endif
+
 	printf("Rank %i reached %i vertices (%s) from seed %i\n",theRank,theCurrentSize,
 		currentVertex->idToWord(m_parameters->getWordSize(),m_parameters->getColorSpaceMode()).c_str(),
 		m_ed->m_EXTENSION_currentSeedIndex);

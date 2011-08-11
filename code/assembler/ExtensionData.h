@@ -64,8 +64,16 @@ public:
 	bool m_EXTENSION_hasPairedReadRequested;
 	bool m_EXTENSION_hasPairedReadReceived;
 	vector<uint64_t> m_EXTENSION_identifiers;
-	bool m_EXTENSION_complementedSeed;
-	bool m_EXTENSION_complementedSeed2;
+
+	/**
+	*	bidirectional flow algorithm using Ray's many heuristics
+	*/
+	/** the number of vertices flowed previously */
+	int m_previouslyFlowedVertices;
+
+	/** the current flow number */
+	int m_flowNumber;
+
 	vector<Kmer > m_EXTENSION_currentSeed;
 	int m_EXTENSION_numberOfRanksDone;
 	vector<vector<Kmer > > m_EXTENSION_contigs;

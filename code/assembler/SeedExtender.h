@@ -56,6 +56,8 @@ class SeedExtender{
 	SplayTree<uint64_t,ReadAnnotation*> m_cacheForListOfReads;
 	MyAllocator m_cacheAllocator;
 
+	vector<int> m_flowedVertices;
+
 	StaticVector*m_inbox;
 
 	DepthFirstSearchData*m_dfsData;
