@@ -114,7 +114,7 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 		MPI_Start(m_ring+m_head);
 	
 		// add the message in the inbox
-		Message aMessage(incoming,count,source,tag,source);
+		Message aMessage(incoming,count,destination,tag,source);
 		inbox->push_back(aMessage);
 
 		m_head++;
