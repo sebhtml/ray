@@ -1,0 +1,32 @@
+# How to Ray with 454 reads
+
+For single reads, just use
+
+mpirun -np 9999 Ray \
+-s HFIEHFUE.sff -s KFKOEOKFE.sff
+
+
+For paired reads, you must extract manually the reads.
+
+
+convert-sff.sh is available at https://github.com/sebhtml/454-pairs
+
+It utilises ssf_extract to get reads from the sff file.
+Then, it create 3 files:
+
+	outputPrefix.Reverse.fastq
+	outputPrefix.Forward.fastq
+
+and
+
+	outputPrefix.Single.fastq
+
+The 2 first should have the same number of entries.
+
+
+
+To give them to Ray:
+
+mpirun -np 133 \
+-p outputPrefix.Reverse.fastq outputPrefix.Forward.fastq \
+-s outputPrefix.Single.fastq

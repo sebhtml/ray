@@ -1,0 +1,8 @@
+Ray is implemented in C++ 1998.
+
+Ray compiles with:
+
+	- GNU C++ (gcc/g++)
+	- clang++/LLVM
+	- Microsoft Visual Studio
+	- Intel C++ (icpc)
