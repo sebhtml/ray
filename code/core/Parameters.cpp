@@ -39,6 +39,26 @@
 #include <memory/MyAllocator.h>
 using namespace std;
 
+void Parameters::getIndexes(int count,vector<int>*out){
+	vector<int> numbers;
+	for(int i=0;i<count;i++)
+		numbers.push_back(i);
+
+	srand(99);
+	while(numbers.size()>0){
+		int randomIndex=rand()%numbers.size();
+		int index=numbers[randomIndex];
+		out->push_back(index);
+		vector<int> newNumbers;
+		for(int i=0;i<(int)numbers.size();i++){
+			if(randomIndex==i)
+				continue;
+			newNumbers.push_back(numbers[i]);
+		}
+		numbers=newNumbers;
+	}
+}
+
 Parameters::Parameters(){
 	m_providedPeakCoverage=false;
 	m_providedRepeatCoverage=false;
@@ -103,13 +123,30 @@ void Parameters::loadCommandsFromFile(char*file){
 }
 
 void Parameters::loadCommandsFromArguments(int argc,char**argv){
-	for(int i=0;i<argc;i++){
+	for(int i=1;i<argc;i++){
 		m_commands.push_back(argv[i]);
 	}
 }
 
 /* parse commands */
 void Parameters::parseCommands(){
+	if(getRank() == MASTER_RANK){
+		ostringstream commandFile;
+		commandFile<<getPrefix()<<".RayCommand.txt";
+		ofstream f(commandFile.str().c_str());
+		f<<"mpirun -np "<<getSize()<<" Ray \\"<<endl;
+		for(int i=0;i<(int)m_commands.size();i++){
+			if(i!=(int)m_commands.size()-1){
+				f<<" "<<m_commands[i]<<" \\"<<endl;
+			}else{
+				f<<" "<<m_commands[i]<<endl;
+			}
+		}
+		f.close();
+		cout<<"Rank "<<MASTER_RANK<<" wrote "<<commandFile.str()<<endl;
+		cout<<endl;
+	}
+
 	m_initiated=true;
 	set<string> commands;
 
@@ -117,20 +154,48 @@ void Parameters::parseCommands(){
 	for(int i=0;i<(int)m_commands.size();i++)
 		m_options.insert(m_commands[i]);
 
-	if(m_rank==MASTER_RANK){
-		cout<<endl;
-		cout<<"Ray command:"<<endl<<endl;
+	/* shuffle randomly arguments */
 
-		for(int i=0;i<(int)m_commands.size();i++){
-			if(i!=(int)m_commands.size()-1){
-				cout<<" "<<m_commands[i]<<" \\"<<endl;
-			}else{
-				cout<<" "<<m_commands[i]<<endl;
-			}
+	vector<vector<string> > opCodes;
+	int i=0;
+	while(i<(int)m_commands.size()){
+		int j=i;
+		while(j+1<(int)m_commands.size() && m_commands[j+1][0]!='-'){
+			j++;
 		}
+		vector<string> opCode;
+		opCode.push_back(m_commands[i]);
+		for(int k=i+1;k<=j;k++){
+			opCode.push_back(m_commands[k]);
+		}
+		opCodes.push_back(opCode);
+		i=j+1;
+	}
 
-		cout<<endl;
-		cout<<endl;
+	vector<int> indexes;
+	getIndexes(opCodes.size(),&indexes);
+
+	vector<string> newCommands;
+
+	for(int i=0;i<(int)indexes.size();i++){
+		for(int j=0;j<(int)opCodes[indexes[i]].size();j++){
+			newCommands.push_back(opCodes[indexes[i]][j]);
+		}
+	}
+
+	#ifdef ASSERT
+	assert(newCommands.size()==m_commands.size());
+	#endif
+
+	m_commands=newCommands;
+	newCommands.clear();
+	opCodes.clear();
+
+	if(getRank() == MASTER_RANK){
+		cout<<"Rank 0: Shuffled opcodes"<<endl;
+		for(int i=0;i<(int)m_commands.size();i++){
+			cout<<" "<<m_commands[i]<<" \\"<<endl;
+		}
 		cout<<endl;
 	}
 
@@ -156,7 +221,6 @@ void Parameters::parseCommands(){
 	outputAmosCommands.insert("-amos");
 	outputAmosCommands.insert("--amos");
 	outputAmosCommands.insert("--output-amos");
-	outputAmosCommands.insert("OutputAmosFile");
 	outputAmosCommands.insert("-OutputAmosFile");
 	outputAmosCommands.insert("--OutputAmosFile");
 
@@ -165,7 +229,6 @@ void Parameters::parseCommands(){
 
 	set<string> outputFileCommands;
 	outputFileCommands.insert("-o");
-	outputFileCommands.insert("OutputFile");
 	outputFileCommands.insert("-OutputFile");
 	outputFileCommands.insert("--OutputFile");
 	
@@ -604,18 +667,6 @@ void Parameters::parseCommands(){
 	}
 
 	if(m_rank==MASTER_RANK){
-		ostringstream commandFile;
-		commandFile<<getPrefix()<<".RayCommand.txt";
-		ofstream f(commandFile.str().c_str());
-		f<<"mpirun -np "<<getSize()<<" \\"<<endl;
-		for(int i=0;i<(int)m_commands.size();i++){
-			if(i!=(int)m_commands.size()-1){
-				f<<" "<<m_commands[i]<<" \\"<<endl;
-			}else{
-				f<<" "<<m_commands[i]<<endl;
-			}
-		}
-		f.close();
 
 		cout<<endl;
 		cout<<"k-mer length: "<<m_wordSize<<endl;

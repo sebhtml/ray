@@ -100,6 +100,8 @@ class Parameters{
 	void fileNameHook(string f);
 
 	bool m_showExtensionChoice;
+
+	void getIndexes(int count,vector<int>*out);
 public:
 	Parameters();
 	string getReceivedMessagesFile();

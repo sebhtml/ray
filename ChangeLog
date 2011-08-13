@@ -29,6 +29,8 @@ the false positive rate has no effect whatsoever on Ray thanks to the KmerAcadem
 * Fixed a memory problem in the computation of optimal read markers.
 * The paired read simulator is now a separate project, see https://github.com/sebhtml/paired-read-simulator
 * Extension of seeds if done endlessly until growth stops.
+* Input opcodes are now shuffled before being utilised.
+
 
 = 1.6.1 'sunray' =
 2011-07-14
