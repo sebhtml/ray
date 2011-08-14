@@ -474,7 +474,7 @@ void FusionData::makeFusions(){
 	// if a path is 100% identical to another one, but is reverse-complement, keep the one with the lowest ID
 	
 	int END_LENGTH=100;
-	if((m_ed->m_EXTENSION_contigs.size() > 0) && m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size() > 100000)
+	if((m_ed->m_EXTENSION_contigs.size() > 0) && m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size() > 20000)
 		END_LENGTH=256;
 
 	int maximumDifference=500;
