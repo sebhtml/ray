@@ -362,7 +362,7 @@ void Parameters::parseCommands(){
 			int k=0;
 			for(int j=i+1;j<(int)m_commands.size();j++){
 				string cmd=m_commands[j];
-				if(commands.count(cmd)==0){
+				if(commands.count(cmd)==0 && cmd[0]!='-'){
 					items++;
 				}else{
 					break;
@@ -440,7 +440,7 @@ void Parameters::parseCommands(){
 			int k=0;
 			for(int j=i+1;j<(int)m_commands.size();j++){
 				string cmd=m_commands[j];
-				if(commands.count(cmd)==0){
+				if(commands.count(cmd)==0 && cmd[0]!='-'){
 					items++;
 				}else{
 					break;
