@@ -87,6 +87,7 @@ class Parameters{
 	bool m_colorSpaceMode;
 	string m_input;
 	vector<string> m_commands;
+	vector<string> m_originalCommands;
 	map<int,map<int,int> >  m_observedDistances;
 	vector<int> m_observedAverageDistances;
 	vector<int> m_observedStandardDeviations;

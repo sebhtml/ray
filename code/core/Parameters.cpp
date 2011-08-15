@@ -130,29 +130,14 @@ void Parameters::loadCommandsFromArguments(int argc,char**argv){
 
 /* parse commands */
 void Parameters::parseCommands(){
-	if(getRank() == MASTER_RANK){
-		ostringstream commandFile;
-		commandFile<<getPrefix()<<".RayCommand.txt";
-		ofstream f(commandFile.str().c_str());
-		f<<"mpirun -np "<<getSize()<<" Ray \\"<<endl;
-		for(int i=0;i<(int)m_commands.size();i++){
-			if(i!=(int)m_commands.size()-1){
-				f<<" "<<m_commands[i]<<" \\"<<endl;
-			}else{
-				f<<" "<<m_commands[i]<<endl;
-			}
-		}
-		f.close();
-		cout<<"Rank "<<MASTER_RANK<<" wrote "<<commandFile.str()<<endl;
-		cout<<endl;
-	}
 
 	m_initiated=true;
 	set<string> commands;
 
-
 	for(int i=0;i<(int)m_commands.size();i++)
 		m_options.insert(m_commands[i]);
+
+	m_originalCommands=m_commands;
 
 	/* shuffle randomly arguments */
 
@@ -666,9 +651,22 @@ void Parameters::parseCommands(){
 		}
 	}
 
-	if(m_rank==MASTER_RANK){
-
+	if(getRank() == MASTER_RANK){
+		ostringstream commandFile;
+		commandFile<<getPrefix()<<".RayCommand.txt";
+		ofstream f(commandFile.str().c_str());
+		f<<"mpirun -np "<<getSize()<<" Ray \\"<<endl;
+		for(int i=0;i<(int)m_originalCommands.size();i++){
+			if(i!=(int)m_originalCommands.size()-1){
+				f<<" "<<m_originalCommands[i]<<" \\"<<endl;
+			}else{
+				f<<" "<<m_originalCommands[i]<<endl;
+			}
+		}
+		f.close();
+		cout<<"Rank "<<MASTER_RANK<<" wrote "<<commandFile.str()<<endl;
 		cout<<endl;
+
 		cout<<"k-mer length: "<<m_wordSize<<endl;
 		
 		if(m_reducerIsActivated){
