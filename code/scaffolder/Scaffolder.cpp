@@ -605,7 +605,7 @@ void Scaffolder::processVertex(Kmer vertex){
 		m_coverageReceived=true;
 		m_initialisedFetcher=false;
 	}else if(m_coverageReceived){
-		if(m_receivedCoverage<m_parameters->getPeakCoverage()){
+		if(m_receivedCoverage<m_parameters->getRepeatCoverage()){
 			if(!m_initialisedFetcher){
 				m_readFetcher.constructor(&vertex,m_outboxAllocator,m_inbox,
 				m_outbox,m_parameters,m_virtualCommunicator,m_workerId);
