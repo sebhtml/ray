@@ -22,6 +22,9 @@
 #include <math.h>
 #include <iostream>
 #include <stdint.h>
+#ifdef ASSERT
+#include <assert.h>
+#endif
 using namespace std;
 
 /* find the peak */
@@ -97,8 +100,10 @@ void callPeak(vector<int>*x,vector<int>*y,int peak,vector<int>*peakAverages,vect
 	int threshold=20;
 	if(occupancy<threshold)
 		return;
-
+	
+	#ifdef VERBOSE
 	cout<<"Peak Average= "<<average<<" StandardDeviation= "<<standardDeviation<<" Count= "<<n<<" Points= "<<dataPoints<<" Quality= "<<occupancy<<" %"<<endl;
+	#endif
 
 	peakAverages->push_back(average);
 	peakStandardDeviation->push_back(standardDeviation);
@@ -106,6 +111,10 @@ void callPeak(vector<int>*x,vector<int>*y,int peak,vector<int>*peakAverages,vect
 
 /** find multiple peaks in the distribution of inserts for a library */
 void LibraryPeakFinder::findPeaks(vector<int>*x,vector<int>*y,vector<int>*peakAverages,vector<int>*peakStandardDeviation){
+	/* return if there is no data */
+	if(x->size()==0)
+		return;
+
 	/** if this is simulated data with no standard deviation.*/
 	int lowQuality=0;
 	int highQuality=0;
@@ -120,9 +129,13 @@ void LibraryPeakFinder::findPeaks(vector<int>*x,vector<int>*y,vector<int>*peakAv
 			qualityPeak=x->at(i);
 		}
 	}
+	#ifdef VERBOSE
 	cout<<"Low= "<<lowQuality<<" High= "<<highQuality<<endl;
+	#endif
 	if(((lowQuality+highQuality) == (int)y->size()) && (highQuality == 1)){
+		#ifdef VERBOSE
 		cout<<"No deviation! Peak 0 "<<qualityPeak<<" 0"<<endl;
+		#endif
 		/** only one data point was interesting actually */
 		peakAverages->push_back(qualityPeak);
 		peakStandardDeviation->push_back(0);
@@ -141,6 +154,16 @@ void LibraryPeakFinder::findPeaks(vector<int>*x,vector<int>*y,vector<int>*peakAv
 
 	while(maxI>=0 && y->at(maxI)<minimumCount)
 		maxI-=1;
+
+	if(minI>=(int)x->size())
+		minI=x->size()-1;
+	if(maxI<0)
+		maxI=0;
+
+	#ifdef ASSERT
+	assert(minI<(int)x->size());
+	assert(maxI<(int)x->size());
+	#endif
 
 	int minX=x->at(minI);
 	int maxX=x->at(maxI);
