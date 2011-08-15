@@ -292,11 +292,18 @@ void Scaffolder::computeStatistics(vector<int>*lengths,int minimumLength,ostream
 
 	uint64_t sumOfLengths=0;
 	int i=0;
-	while(i<(int)accepted.size() && sumOfLengths < totalLength/2){
-		sumOfLengths += accepted[i];
+	sumOfLengths += accepted[i];
+	while(sumOfLengths < totalLength/2){
 		i++;
+		if(i<(int)accepted.size())
+			sumOfLengths += accepted[i];
+		else
+			break;
 	}
 
+	#ifdef ASSERT
+	assert(i<(int)accepted.size());
+	#endif
 	int n50=accepted[i];
 
 	(*outputStream)<<" N50: "<<n50<<endl;
