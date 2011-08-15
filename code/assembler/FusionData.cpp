@@ -474,8 +474,18 @@ void FusionData::makeFusions(){
 	// if a path is 100% identical to another one, but is reverse-complement, keep the one with the lowest ID
 	
 	int END_LENGTH=100;
-	if((m_ed->m_EXTENSION_contigs.size() > 0) && m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size() > 20000)
-		END_LENGTH=256;
+	/** if the contig is longer, look deeper within it */
+	if(m_ed->m_EXTENSION_contigs.size() > 0){
+		int numberOfVertices=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size();
+		if(numberOfVertices > 20000)
+			END_LENGTH=1024;
+		else if(numberOfVertices > 10000)
+			END_LENGTH=512;
+		else if(numberOfVertices > 5000)
+			END_LENGTH=256;
+		else if(numberOfVertices > 2500)
+			END_LENGTH=128;
+	}
 
 	int maximumDifference=500;
 	// avoid duplication of contigs.
