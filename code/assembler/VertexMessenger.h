@@ -52,6 +52,7 @@ class VertexMessenger{
 	bool m_receivedBasicInfo;
 	bool m_requestedBasicInfo;
 	int m_numberOfAnnotations;
+	bool m_getReads;
 	void*m_pointer;
 	bool m_requestedReads;
 	int m_destination;
@@ -61,7 +62,7 @@ class VertexMessenger{
 	void getReadsForRepeatedVertex();
 public:
 	void constructor(Kmer vertex,uint64_t wave,int pos,set<uint64_t>*matesToMeet,StaticVector*inbox,StaticVector*outbox,
-	RingAllocator*outboxAllocator,Parameters*parameters);
+	RingAllocator*outboxAllocator,Parameters*parameters,bool getReads);
 	bool isDone();
 	void work();
 	uint16_t getCoverageValue();

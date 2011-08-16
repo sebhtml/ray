@@ -33,6 +33,15 @@ void Vertex::constructor(){
 	m_edges_higher=0;
 	m_readsStartingHere=NULL;
 	m_directions=NULL;
+	m_assembled=false;
+}
+
+void Vertex::assemble(){
+	m_assembled=true;
+}
+
+bool Vertex::isAssembled(){
+	return m_assembled;
 }
 
 void Vertex::setCoverage(Kmer*a,int coverage){

@@ -925,7 +925,7 @@ void Parameters::addLibraryData(int library,int average,int deviation){
 	m_libraryAverageLength[library].push_back(average);
 	m_libraryDeviation[library].push_back(deviation);
 	
-	int distance=average+deviation;
+	int distance=average+4*deviation;
 	if(distance>m_maximumDistance){
 		m_maximumDistance=distance;
 	}

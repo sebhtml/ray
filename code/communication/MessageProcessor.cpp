@@ -303,12 +303,15 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTEX_INFO(Message*message){
 	}
 	e=m_subgraph->getReads(&vertex);
 
+/*
 	uint64_t wave=incoming[bufferPosition++];
 	int progression=incoming[bufferPosition++];
 	// add direction in the graph
 	Direction*d=(Direction*)m_directionsAllocator->allocate(sizeof(Direction));
 	d->constructor(wave,progression,lower);
 	m_subgraph->addDirection(&vertex,d);
+*/
+	m_subgraph->find(&vertex)->assemble();
 
 	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	outgoingMessage[0]=node->getCoverage(&vertex);

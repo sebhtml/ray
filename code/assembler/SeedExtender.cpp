@@ -651,8 +651,26 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			return;
 		}
 
+		bool mustFlowAgain=true;
+
+		// check if the next flow is needed at all
+		// this may be bad for read reuse,
+		// TODO: try with that off
+/*
+		int currentFlow=ed->m_flowNumber+1;
+		if(currentFlow==2){
+			mustFlowAgain=false;
+
+			// we may get more range
+			if(ed->m_previouslyFlowedVertices < m_parameters->getMaximumDistance() 
+			&& (int)ed->m_EXTENSION_extension->size() >= m_parameters->getMaximumDistance()){
+				mustFlowAgain=true;
+			}
+		}
+*/
+
 		// no choice possible...
-		if((int)ed->m_EXTENSION_extension->size() > ed->m_previouslyFlowedVertices){
+		if((int)ed->m_EXTENSION_extension->size() > ed->m_previouslyFlowedVertices && mustFlowAgain){
 			m_flowedVertices.push_back(ed->m_EXTENSION_extension->size());
 			ed->m_previouslyFlowedVertices = ed->m_EXTENSION_extension->size();
 			ed->m_flowNumber++;
@@ -765,7 +783,7 @@ Kmer *currentVertex,BubbleData*bubbleData){
 		cout<<"Rank "<<theRank<<" (extension done) NumberOfFlows: "<<ed->m_flowNumber<<endl;
 		cout<<"Rank "<<m_parameters->getRank()<<" FlowedVertices:";
 		for(int i=0;i<(int)m_flowedVertices.size();i++){
-			cout<<" "<<m_flowedVertices[i];
+			cout<<" "<<i<<" "<<m_flowedVertices[i];
 		}
 		m_flowedVertices.clear();
 		cout<<endl;
@@ -890,6 +908,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				(int)ed->m_EXTENSION_currentSeed.size(),
 					ed->m_EXTENSION_currentSeedIndex,(int)(*seeds).size());
 				fflush(stdout);
+				cout<<"Rank "<<m_parameters->getRank()<<" maxDistance "<<m_parameters->getMaximumDistance()<<endl;
+				m_flowedVertices.push_back(ed->m_EXTENSION_currentSeed.size());
 			}
 			printExtensionStatus(currentVertex);
 		}
@@ -903,9 +923,28 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 		assert(theRank<size);
 		#endif
 
+		/**
+			Don't fetch read markers if they will not be used.
+
+
+                        ----------------------------------------      seed
+				*			current position
+							
+							<------>   maximum outer distance
+
+
+							* threshold position
+
+		Before threshold position, it is useless to fetch read markers.
+		*/
 		int progression=ed->m_EXTENSION_extension->size()-1;
+		int threshold=ed->m_EXTENSION_currentSeed.size()-m_parameters->getMaximumDistance();
+		bool getReads=false;
+		if(progression>=threshold)
+			getReads=true;
+
 		Kmer vertex=*currentVertex;
-		m_vertexMessenger.constructor(vertex,waveId,progression,&m_matesToMeet,m_inbox,outbox,outboxAllocator,m_parameters);
+		m_vertexMessenger.constructor(vertex,waveId,progression,&m_matesToMeet,m_inbox,outbox,outboxAllocator,m_parameters,getReads);
 	}else if(!m_vertexMessenger.isDone()){
 		m_vertexMessenger.work();
 	}else if(!m_pickedInformation){
@@ -921,19 +960,10 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 		ed->m_EXTENSION_extension->push_back((*currentVertex));
 		ed->m_extensionCoverageValues->push_back(*receivedVertexCoverage);
 
-		/*
-		if(ed->m_currentCoverage<m_parameters->getRepeatCoverage()){
-			m_repeatLength=0;
-		}else{
-			m_repeatLength++;
-		}
-		*/
-
 		#ifdef ASSERT
 		assert(ed->m_currentCoverage<=m_parameters->getMaximumAllowedCoverage());
 		#endif
 
-		//ed->m_repeatedValues->push_back(m_repeatLength);
 		m_sequenceRequested=false;
 	}else{
 		if(m_sequenceIndexToCache<(int)ed->m_EXTENSION_receivedReads.size()){

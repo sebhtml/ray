@@ -81,8 +81,11 @@ bool GridTable::inserted(){
 }
 
 bool GridTable::isAssembled(Kmer*a){
+	return find(a)->isAssembled();
+/*
 	Kmer reverse=a->complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 	return getDirections(a).size()>0||getDirections(&reverse).size()>0;
+*/
 }
 
 KmerAcademy*GridTable::getKmerAcademy(){

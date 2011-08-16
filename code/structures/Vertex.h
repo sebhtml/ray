@@ -77,12 +77,16 @@ public:
  *	which hyperfusions go on this vertex at least once?
  */
 	Direction*m_directions;
+	bool m_assembled;
 
 	void addRead(Kmer*a,ReadAnnotation*e);
 	ReadAnnotation*getReads(Kmer*a);
 	void addDirection(Kmer*a,Direction*d);
 	vector<Direction> getDirections(Kmer*a);
 	void clearDirections(Kmer*a);
+
+	void assemble();
+	bool isAssembled();
 
 } ATTRIBUTE_PACKED;
 
