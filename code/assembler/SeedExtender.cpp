@@ -130,6 +130,9 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 	currentVertex,theRank,vertexCoverageRequested,wordSize,size,seeds);
 		}
 	}else if(ed->m_EXTENSION_vertexIsAssembledResult && ed->m_EXTENSION_currentPosition==0 && ed->m_flowNumber==0){
+		cout<<"Rank "<<m_parameters->getRank()<<" skips seed ["<<ed->m_EXTENSION_currentSeedIndex<<"/"<<
+			(*seeds).size()<<"]"<<endl;
+
 		ed->m_EXTENSION_currentSeedIndex++;// skip the current one.
 		ed->m_EXTENSION_currentPosition=0;
 
