@@ -570,6 +570,12 @@ void Machine::runWithProfiler(){
 			printf("Rank %i: %s Time= %.2f s Speed= %i Sent= %i Received= %i Balance= %i\n",m_rank,SLAVE_MODES[m_slave_mode],
 				seconds,ticks,sentMessages,receivedMessages,balance);
 			fflush(stdout);
+			cout<<"Rank "<<m_parameters.getRank()<<" tag counts:"<<endl;
+			for(map<int,int>::iterator i=messageTypes.begin();i!=messageTypes.end();i++){
+				int tag=i->first;
+				int count=i->second;
+				cout<<"Rank "<<m_parameters.getRank()<<"        "<<MESSAGES[tag]<<"	"<<count<<endl;
+			}
 			ticks=0;
 			sentMessages=0;
 			receivedMessages=0;
