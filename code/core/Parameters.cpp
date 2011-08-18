@@ -1101,6 +1101,10 @@ void Parameters::showUsage(){
 	cout<<endl;
 	showOption("-show-memory-allocations","Shows memory allocation events");
 	cout<<endl;
+	showOption("-write-checkpoints","Write checkpoint files");
+	cout<<endl;
+	showOption("-read-checkpoints","Read checkpoint files");
+	cout<<endl;
 	showOption("-help","Displays this help page.");
 	cout<<endl;
 
@@ -1372,4 +1376,23 @@ int Parameters::getLibraryPeaks(int library){
 
 bool Parameters::hasOption(string a){
 	return m_options.count(a)>0;
+}
+
+bool Parameters::hasFile(const char*file){
+	ifstream f(file);
+	bool fileIsOk=f.good();
+	f.close();
+	return fileIsOk;
+}
+
+string Parameters::getCheckpointFile(const char*checkpointName){
+	ostringstream a;
+	a<<getPrefix()<<".Rank"<<getRank()<<".RayCheckpoint."<<checkpointName<<".ray";
+	return a.str();
+}
+
+bool Parameters::hasCheckpoint(const char*checkpointName){
+	if(!hasOption("-read-checkpoints"))
+		return false;
+	return hasFile(getCheckpointFile(checkpointName).c_str());
 }

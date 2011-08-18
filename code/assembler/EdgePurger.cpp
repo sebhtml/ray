@@ -28,6 +28,7 @@
 
 void EdgePurger::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
 		int*slaveMode,int*masterMode,VirtualCommunicator*vc,GridTable*subgraph){
+	m_checkedCheckpoint=false;
 	m_subgraph=subgraph;
 	m_masterMode=masterMode;
 	m_slaveMode=slaveMode;
@@ -53,6 +54,19 @@ void EdgePurger::work(){
 	if(m_done){
 		return;
 	}
+
+	if(!m_checkedCheckpoint){
+		if(m_parameters->hasCheckpoint("EdgePurge")){
+			cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint <EdgePurge>"<<endl;
+			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY,m_parameters->getRank());
+			m_outbox->push_back(aMessage);
+			m_done=true;
+			return;
+		}
+		m_checkedCheckpoint=true;
+	}
+
+
 
 	if(!m_initiatedIterator){
 		m_SEEDING_i=0;
@@ -148,6 +162,7 @@ void EdgePurger::work(){
 		if(m_parameters->showMemoryUsage()){
 			showMemoryUsage(m_parameters->getRank());
 		}
+
 	}
 }
 

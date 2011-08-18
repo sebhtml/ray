@@ -768,6 +768,31 @@ void Machine::call_RAY_MASTER_MODE_START_EDGES_DISTRIBUTION(){
 }
 
 void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
+	if(m_parameters.hasCheckpoint("CoverageDistribution")){
+		cout<<"Rank "<<m_parameters.getRank()<<" is reading checkpoint <CoverageDistribution>"<<endl;
+		m_coverageDistribution.clear();
+		ifstream f(m_parameters.getCheckpointFile("CoverageDistribution").c_str());
+		int n=0;
+		f>>n;
+		int coverage=0;
+		uint64_t count=0;
+		for(int i=0;i<n;i++){
+			f>>count>>count;
+			m_coverageDistribution[coverage]=count;
+		}
+		f.close();
+	}
+
+	if(m_parameters.hasOption("-write-checkpoints")){
+		cout<<"Rank "<<m_parameters.getRank()<<" is writing checkpoint <CoverageDistribution>"<<endl;
+		ofstream f(m_parameters.getCheckpointFile("CoverageDistribution").c_str());
+		f<<m_coverageDistribution.size()<<endl;
+		for(map<int,uint64_t>::iterator i=m_coverageDistribution.begin();i!=m_coverageDistribution.end();i++){
+			f<<i->first<<"	"<<i->second<<endl;
+		}
+		f.close();
+	}
+
 	if(m_coverageDistribution.size()==0){
 		cout<<endl;
 		cout<<"Rank 0: Assembler panic: no k-mers found in reads."<<endl;
@@ -783,6 +808,7 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	m_parameters.setMinimumCoverage(distribution.getMinimumCoverage());
 	m_parameters.setPeakCoverage(distribution.getPeakCoverage());
 	m_parameters.setRepeatCoverage(distribution.getRepeatCoverage());
+
 	printf("\n");
 	fflush(stdout);
 
@@ -1116,6 +1142,7 @@ void Machine::call_RAY_MASTER_MODE_INDEX_SEQUENCES(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(){
+
 	m_si.attachReads(&m_myReads,&m_outboxAllocator,&m_outbox,&m_slave_mode,m_wordSize,
 	m_size,m_rank);
 }

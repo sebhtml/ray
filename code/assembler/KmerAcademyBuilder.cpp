@@ -30,6 +30,8 @@
 #include <structures/StaticVector.h>
 #include <core/common_functions.h>
 #include <memory/malloc_types.h>
+#include <fstream>
+using namespace std;
 
 void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
 				ArrayOfReads*m_myReads,
@@ -49,6 +51,18 @@ void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
 		this->m_outbox=m_outbox;
 		this->m_outboxAllocator=m_outboxAllocator;
 	}
+
+	if(!m_checkedCheckpoint){
+		if(m_parameters->hasCheckpoint("KmerAcademy")){
+			cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint <KmerAcademy>"<<endl;
+			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED,rank);
+			m_outbox->push_back(aMessage);
+			m_finished=true;
+			return;
+		}
+		m_checkedCheckpoint=true;
+	}
+
 	#ifdef ASSERT
 	assert(m_pendingMessages>=0);
 	#endif
@@ -81,13 +95,13 @@ void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
 			assert(m_bufferedData.isEmpty());
 			#endif
 
-			Message aMessage(NULL,0, MASTER_RANK, 
-				RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED,rank);
+			Message aMessage(NULL,0, MASTER_RANK,RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED,rank);
 			m_outbox->push_back(aMessage);
 			m_finished=true;
 			printf("Rank %i is counting k-mers in sequence reads [%i/%i] (completed)\n",rank,(int)*m_mode_send_vertices_sequence_id,(int)m_myReads->size());
 			fflush(stdout);
 			m_bufferedData.showStatistics(m_parameters->getRank());
+
 		}
 	}else{
 		if(m_mode_send_vertices_sequence_id_position==0){
@@ -143,6 +157,7 @@ void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
 }
 
 void KmerAcademyBuilder::constructor(int size,Parameters*parameters,GridTable*graph){
+	m_checkedCheckpoint=false;
 	m_subgraph=graph;
 	m_parameters=parameters;
 	m_finished=false;

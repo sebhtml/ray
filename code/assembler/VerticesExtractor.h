@@ -44,6 +44,9 @@ using namespace std;
  * their respective owners.
  */
 class VerticesExtractor{
+	/** checkpointing */
+	bool m_checkedCheckpoint;
+
 	GridTable*m_subgraph;
 	char m_readSequence[RAY_MAXIMUM_READ_LENGTH];
 	bool m_distributionIsCompleted;

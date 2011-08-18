@@ -53,6 +53,19 @@ public:
 	uint8_t m_edges_lower;
 	uint8_t m_edges_higher;
 
+/*
+ * 	read annotations
+ * 	which reads start here?
+ */
+	ReadAnnotation*m_readsStartingHere;
+
+/*
+ *	which hyperfusions go on this vertex at least once?
+ */
+	Direction*m_directions;
+	bool m_assembled;
+
+
 	void addOutgoingEdge_ClassicMethod(Kmer*vertex,Kmer*a,int k);
 	void addIngoingEdge_ClassicMethod(Kmer*vertex,Kmer*a,int k);
 
@@ -67,17 +80,6 @@ public:
 	void deleteIngoingEdge(Kmer*vertex,Kmer*a,int k);
 	void deleteOutgoingEdge(Kmer*vertex,Kmer*a,int k);
 
-/*
- * 	read annotations
- * 	which reads start here?
- */
-	ReadAnnotation*m_readsStartingHere;
-
-/*
- *	which hyperfusions go on this vertex at least once?
- */
-	Direction*m_directions;
-	bool m_assembled;
 
 	void addRead(Kmer*a,ReadAnnotation*e);
 	ReadAnnotation*getReads(Kmer*a);

@@ -193,6 +193,9 @@ public:
 	string getFile(int file);
 	bool showExtensionChoice();
 	bool hasOption(string a);
+	bool hasCheckpoint(const char*checkpointName);
+	string getCheckpointFile(const char*a);
+	bool hasFile(const char*file);
 };
 
 #endif

@@ -420,6 +420,59 @@ void MessageProcessor::call_RAY_MPI_TAG_WELCOME(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message){
+	/* write checkpoint if necessary */
+	if(m_parameters->hasOption("-write-checkpoints")){
+		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint <KmerAcademy>"<<endl;
+		ofstream f2(m_parameters->getCheckpointFile("KmerAcademy").c_str());
+		f2<<0;
+		f2.close();
+
+		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint <Graph>"<<endl;
+		ofstream f(m_parameters->getCheckpointFile("Graph").c_str());
+
+
+		GridTableIterator iterator;
+		iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
+		f<<m_subgraph->size()<<endl;
+
+		while(iterator.hasNext()){
+			Vertex*node=iterator.next();
+			Kmer key=*(iterator.getKey());
+			int coverage=node->getCoverage(&key);
+			for(int i=0;i<key.getNumberOfU64();i++){
+				if(i!=0)
+					f<<" ";
+				f<<key.getU64(i);
+			}
+			f<<" "<<coverage;
+			vector<Kmer> parents=node->getIngoingEdges(&key,m_parameters->getWordSize());
+			vector<Kmer> children=node->getOutgoingEdges(&key,m_parameters->getWordSize());
+			f<<" "<<parents.size();
+			for(int i=0;i<(int)parents.size();i++){
+				for(int j=0;j<KMER_U64_ARRAY_SIZE;j++){
+					f<<" ";
+					f<<parents[i].getU64(j);
+				}
+			}
+			f<<" "<<children.size();
+			for(int i=0;i<(int)children.size();i++){
+				for(int j=0;j<KMER_U64_ARRAY_SIZE;j++){
+					f<<" ";
+					f<<children[i].getU64(j);
+				}
+			}
+			f<<endl;
+		}
+
+		f.close();
+
+		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint <EdgePurge>"<<endl;
+		ofstream f3(m_parameters->getCheckpointFile("EdgePurge").c_str());
+		f3<<0;
+		f3.close();
+	}
+
+	/* read the Graph checkpoint here */
 
 	(*m_mode)=RAY_SLAVE_MODE_INDEX_SEQUENCES;
 }

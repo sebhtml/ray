@@ -44,6 +44,9 @@ using namespace std;
  * their respective owners.
  */
 class KmerAcademyBuilder{
+	/** this we check the checkpoint ? */
+	bool m_checkedCheckpoint;
+
 	char m_readSequence[RAY_MAXIMUM_READ_LENGTH];
 	bool m_distributionIsCompleted;
 	Parameters*m_parameters;

@@ -48,6 +48,19 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		this->m_outbox=m_outbox;
 		this->m_outboxAllocator=m_outboxAllocator;
 	}
+
+	if(!m_checkedCheckpoint){
+		if(m_parameters->hasCheckpoint("Graph")){
+			cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint <Graph>"<<endl;
+			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_VERTICES_DISTRIBUTED,rank);
+			m_outbox->push_back(aMessage);
+			m_finished=true;
+			return;
+		}
+		m_checkedCheckpoint=true;
+	}
+
+
 	#ifdef ASSERT
 	assert(m_pendingMessages>=0);
 	#endif
@@ -87,6 +100,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			m_bufferedData.showStatistics(m_parameters->getRank());
 			m_bufferedDataForIngoingEdges.showStatistics(m_parameters->getRank());
 			m_bufferedDataForOutgoingEdges.showStatistics(m_parameters->getRank());
+
 		}
 	}else{
 		if(m_mode_send_vertices_sequence_id_position==0){
@@ -239,6 +253,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 }
 
 void VerticesExtractor::constructor(int size,Parameters*parameters,GridTable*graph){
+	m_checkedCheckpoint=false;
 	m_subgraph=graph;
 	m_parameters=parameters;
 	m_finished=false;

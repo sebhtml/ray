@@ -42,6 +42,9 @@ using namespace std;
  * EdgePurger.cpp remove these edges.
  */
 class EdgePurger{
+	/** checkpointing */
+	bool m_checkedCheckpoint;
+
 	bool m_initiatedIterator;
 	uint64_t m_SEEDING_i;
 	set<uint64_t> m_activeWorkers;
