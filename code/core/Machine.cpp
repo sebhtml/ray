@@ -1176,17 +1176,9 @@ void Machine::call_RAY_MASTER_MODE_UPDATE_DISTANCES(){
 void Machine::call_RAY_MASTER_MODE_TRIGGER_FUSIONS(){
 	m_timePrinter.printElapsedTime("Bidirectional extension of seeds");
 	cout<<endl;
-
-	// ask one at once to do the fusion
-	// because otherwise it may lead to hanging of the program for unknown reasons
-	m_ed->m_EXTENSION_numberOfRanksDone=-1;
-	m_fusionData->m_FUSION_numberOfRanksDone=0;
-	for(int i=0;i<(int)getSize();i++){// start fusion.
-		Message aMessage(NULL,0,i,RAY_MPI_TAG_START_FUSION,getRank());
-		m_outbox.push_back(aMessage);
-	}
-	m_fusionData->m_fusionStarted=true;
-	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+	
+	m_master_mode=RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS;
+	m_cycleNumber=0;
 }
 
 void Machine::call_RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS(){
@@ -1194,7 +1186,6 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS(){
 	m_reductionOccured=true;
 	m_master_mode=RAY_MASTER_MODE_START_FUSION_CYCLE;
 	m_cycleStarted=false;
-	m_cycleNumber=0;
 	m_mustStop=false;
 }
 
@@ -1225,6 +1216,14 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		}
 		m_currentCycleStep=1;
 		m_CLEAR_n=0;
+
+		/* change the regulators if this is the first cycle. */
+		if(m_cycleNumber == 0){
+			m_CLEAR_n = m_parameters.getSize();
+			m_isFinalFusion = true;
+			m_currentCycleStep = 4;
+		}
+
 	}else if(m_CLEAR_n==getSize() && !m_isFinalFusion && m_currentCycleStep==1){
 		m_currentCycleStep++;
 		m_CLEAR_n=-1;
@@ -1294,6 +1293,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		if(!m_reductionOccured || m_cycleNumber ==5){ 
 			m_mustStop=true;
 		}
+
 		// we continue now!
 		m_cycleStarted=false;
 		m_cycleNumber++;

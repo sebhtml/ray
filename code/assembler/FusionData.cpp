@@ -506,6 +506,15 @@ void FusionData::makeFusions(){
 		printf("Rank %i is computing fusions [%i/%i] (completed)\n",getRank(),(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
 		fflush(stdout);
 
+		int pathsBefore=m_ed->m_EXTENSION_contigs.size();
+		int pathsAfter=pathsBefore-m_FUSION_eliminated.size();
+
+		#ifdef ASSERT
+		assert(pathsAfter <= pathsBefore);
+		#endif
+
+		cout<<"Rank "<<m_parameters->getRank()<<" before: "<<pathsBefore<<", after: "<<pathsAfter<<endl;
+
 		m_cacheAllocator.clear();
 
 		if(m_parameters->showMemoryUsage()){

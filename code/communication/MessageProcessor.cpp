@@ -1087,6 +1087,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message){
 		}
 		
 		ReadAnnotation*e=(ReadAnnotation*)m_si->getAllocator()->allocate(sizeof(ReadAnnotation));
+
 		#ifdef ASSERT
 		assert(e!=NULL);
 		#endif
