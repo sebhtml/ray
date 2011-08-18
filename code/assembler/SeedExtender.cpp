@@ -129,7 +129,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 			checkIfCurrentVertexIsAssembled(ed,outbox,outboxAllocator,outgoingEdgeIndex,last_value,
 	currentVertex,theRank,vertexCoverageRequested,wordSize,size,seeds);
 		}
-	}else if(ed->m_EXTENSION_vertexIsAssembledResult && ed->m_EXTENSION_currentPosition==0 && ed->m_flowNumber==0){
+	}else if(ed->m_EXTENSION_vertexIsAssembledResult && ed->m_EXTENSION_currentPosition==0 && ed->m_flowNumber==1){
 		cout<<"Rank "<<m_parameters->getRank()<<" skips seed ["<<ed->m_EXTENSION_currentSeedIndex<<"/"<<
 			(*seeds).size()<<"]"<<endl;
 
@@ -673,7 +673,6 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 		if((int)ed->m_EXTENSION_extension->size() > ed->m_previouslyFlowedVertices && mustFlowAgain){
 			m_flowedVertices.push_back(ed->m_EXTENSION_extension->size());
 			ed->m_previouslyFlowedVertices = ed->m_EXTENSION_extension->size();
-			ed->m_flowNumber++;
 
 			vector<Kmer> complementedSeed;
 
@@ -682,15 +681,16 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 				inspect(ed,currentVertex);
 			}
 
-			printf("Rank %i reached %i vertices from seed %i (changing direction) completed flow %i\n",theRank,
-				(int)ed->m_EXTENSION_extension->size(),
-				m_ed->m_EXTENSION_currentSeedIndex,ed->m_flowNumber);
-			fflush(stdout);
+			printExtensionStatus(currentVertex);
+			cout<<"Rank "<<m_parameters->getRank()<<" is changing direction."<<endl;
 
 			for(int i=ed->m_EXTENSION_extension->size()-1;i>=0;i--){
 				complementedSeed.push_back(ed->m_EXTENSION_extension->at(i).complementVertex(wordSize,
 					m_parameters->getColorSpaceMode()));
 			}
+
+			/* increment the flow number */
+			ed->m_flowNumber++;
 
 			ed->m_EXTENSION_currentPosition=0;
 			ed->m_EXTENSION_currentSeed=complementedSeed;
@@ -705,7 +705,6 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			ed->m_EXTENSION_directVertexDone=false;
 			ed->m_EXTENSION_VertexAssembled_requested=false;
 		}else{
-			ed->m_flowNumber++;
 			m_flowedVertices.push_back(ed->m_EXTENSION_extension->size());
 			storeExtensionAndGetNextOne(ed,theRank,seeds,currentVertex,bubbleData);
 		}
@@ -858,6 +857,14 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 				
 			}
 			ed->m_EXTENSION_VertexAssembled_requested=true;
+
+			/* if the position is not 0 on flow 0, we don't need to send this message */
+			if(!(ed->m_EXTENSION_currentPosition==0 && ed->m_flowNumber==1)){
+				ed->m_EXTENSION_vertexIsAssembledResult=false;
+				ed->m_EXTENSION_VertexAssembled_received=true;
+				return;
+			}
+
 			uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(2*sizeof(uint64_t));
 			int bufferPosition=0;
 			currentVertex->pack(message,&bufferPosition);
@@ -865,6 +872,7 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			Message aMessage(message,bufferPosition,destination,RAY_MPI_TAG_ASK_IS_ASSEMBLED,theRank);
 			(*outbox).push_back(aMessage);
 			ed->m_EXTENSION_VertexAssembled_received=false;
+
 		}else if(ed->m_EXTENSION_VertexAssembled_received){
 			ed->m_EXTENSION_reverseVertexDone=false;
 			ed->m_EXTENSION_directVertexDone=true;
@@ -903,13 +911,15 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 		if(theCurrentSize%10000==0){
 			if(theCurrentSize==0 && ed->m_flowNumber ==0){
 				m_extended++;
-				printf("Rank %i starts on a seed %i, length is %i [%i/%i]\n",theRank,
+				printf("Rank %i starts on a seed %i, length is %i, flow %i [%i/%i]\n",theRank,
 				ed->m_EXTENSION_currentSeedIndex,
-				(int)ed->m_EXTENSION_currentSeed.size(),
+				(int)ed->m_EXTENSION_currentSeed.size(),ed->m_flowNumber,
 					ed->m_EXTENSION_currentSeedIndex,(int)(*seeds).size());
 				fflush(stdout);
-				cout<<"Rank "<<m_parameters->getRank()<<" maxDistance "<<m_parameters->getMaximumDistance()<<endl;
 				m_flowedVertices.push_back(ed->m_EXTENSION_currentSeed.size());
+			
+				/* flow #0 is the seed */
+				ed->m_flowNumber++;
 			}
 			printExtensionStatus(currentVertex);
 		}
@@ -1420,11 +1430,10 @@ void SeedExtender::showReadsInRange(){
 
 void SeedExtender::printExtensionStatus(Kmer*currentVertex){
 	int theRank=m_parameters->getRank();
-	int theCurrentSize=m_ed->m_EXTENSION_extension->size();
 
-	printf("Rank %i reached %i vertices (%s) from seed %i\n",theRank,theCurrentSize,
-		currentVertex->idToWord(m_parameters->getWordSize(),m_parameters->getColorSpaceMode()).c_str(),
-		m_ed->m_EXTENSION_currentSeedIndex);
+	printf("Rank %i reached %i vertices from seed %i, flow %i\n",theRank,
+		(int)m_ed->m_EXTENSION_extension->size(),
+		m_ed->m_EXTENSION_currentSeedIndex,m_ed->m_flowNumber);
 
 	fflush(stdout);
 
@@ -1435,14 +1444,6 @@ void SeedExtender::printExtensionStatus(Kmer*currentVertex){
 	#ifdef SHOW_READS_IN_RANGE
 	showReadsInRange();
 	#endif
-	int chunks=m_directionsAllocator->getNumberOfChunks();
-	int chunkSize=m_directionsAllocator->getChunkSize();
-	uint64_t totalBytes=chunks*chunkSize;
-	uint64_t kibibytes=totalBytes/1024;
-	if(m_parameters->showMemoryUsage()){
-		printf("Rank %i: memory usage for directions is %lu KiB\n",theRank,kibibytes);
-		fflush(stdout);
-	}
 }
 
 
