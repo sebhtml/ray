@@ -182,7 +182,11 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 	}else if((*edgesReceived)){
 		if((*outgoingEdgeIndex)<(int)(*receivedOutgoingEdges).size()){
 			Kmer kmer=(*receivedOutgoingEdges)[(*outgoingEdgeIndex)];
+			Kmer reverseComplement=kmer.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+
 			// get the coverage of these.
+			// try to get in from the cache table to avoid sending
+			// a message.
 			if(!(*vertexCoverageRequested)&&(m_cache).find(kmer,false)!=NULL){
 				(*vertexCoverageRequested)=true;
 				(*vertexCoverageReceived)=true;
@@ -191,6 +195,15 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				#ifdef ASSERT
 				assert((*receivedVertexCoverage)<=m_parameters->getMaximumAllowedCoverage());
 				#endif
+			}else if(!(*vertexCoverageRequested)&&(m_cache).find(reverseComplement,false)!=NULL){
+				(*vertexCoverageRequested)=true;
+				(*vertexCoverageReceived)=true;
+				(*receivedVertexCoverage)=*(m_cache.find(reverseComplement,false)->getValue());
+
+				#ifdef ASSERT
+				assert((*receivedVertexCoverage)<=m_parameters->getMaximumAllowedCoverage());
+				#endif
+
 			}else if(!(*vertexCoverageRequested)){
 				uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(KMER_U64_ARRAY_SIZE*sizeof(uint64_t));
 				int bufferPosition=0;
@@ -700,8 +713,10 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			ed->resetStructures();
 			m_matesToMeet.clear();
 
+/*
 			m_cacheAllocator.clear();
 			m_cache.clear();
+*/
 			ed->m_EXTENSION_directVertexDone=false;
 			ed->m_EXTENSION_VertexAssembled_requested=false;
 		}else{
