@@ -226,7 +226,7 @@ string MessagesHandler::getMessagePassingInterfaceImplementation(){
 	ostringstream implementation;
 
 	#ifdef MPICH2
-        implementation<<"MPICH2 (MPICH2)"<<MPICH2_VERSION;
+        implementation<<"MPICH2 (MPICH2) "<<MPICH2_VERSION;
 	#endif
 
 	#ifdef OMPI_MPI_H
