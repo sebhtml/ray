@@ -102,7 +102,8 @@ void LibraryWorker::work(){
 					m_virtualCommunicator->pushMessage(m_SEEDING_i,&aMessage);
 					m_EXTENSION_hasPairedReadRequested=true;
 				}else if(m_virtualCommunicator->isMessageProcessed(m_SEEDING_i)){
-					vector<uint64_t> buffer=m_virtualCommunicator->getMessageResponseElements(m_SEEDING_i);
+					vector<uint64_t> buffer;
+					m_virtualCommunicator->getMessageResponseElements(m_SEEDING_i,&buffer);
 					#ifdef ASSERT
 					assert((int)buffer.size()==4);
 					#endif

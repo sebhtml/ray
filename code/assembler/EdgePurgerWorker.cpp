@@ -43,7 +43,9 @@ void EdgePurgerWorker::work(){
 				m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 				m_coverageRequested=true;
 			}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
-				int coverage=m_virtualCommunicator->getMessageResponseElements(m_workerId)[0];
+				vector<uint64_t> response;
+				m_virtualCommunicator->getMessageResponseElements(m_workerId,&response);
+				int coverage=response[0];
 				if(coverage<m_parameters->getMinimumCoverageToStore()){
 					m_vertex->deleteIngoingEdge(&m_currentKmer,&vertex,m_parameters->getWordSize());
 				}
@@ -72,7 +74,9 @@ void EdgePurgerWorker::work(){
 				m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 				m_coverageRequested=true;
 			}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
-				int coverage=m_virtualCommunicator->getMessageResponseElements(m_workerId)[0];
+				vector<uint64_t> response;
+				m_virtualCommunicator->getMessageResponseElements(m_workerId,&response);
+				int coverage=response[0];
 				if(coverage<m_parameters->getMinimumCoverageToStore()){
 					m_vertex->deleteOutgoingEdge(&m_currentKmer,&vertex,m_parameters->getWordSize());
 				}

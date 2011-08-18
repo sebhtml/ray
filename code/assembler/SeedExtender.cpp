@@ -129,7 +129,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 			checkIfCurrentVertexIsAssembled(ed,outbox,outboxAllocator,outgoingEdgeIndex,last_value,
 	currentVertex,theRank,vertexCoverageRequested,wordSize,size,seeds);
 		}
-	}else if(ed->m_EXTENSION_vertexIsAssembledResult && ed->m_EXTENSION_currentPosition==0 && ed->m_flowNumber==1){
+	}else if(ed->m_EXTENSION_vertexIsAssembledResult && ed->m_EXTENSION_currentPosition==0 && ed->m_flowNumber==0){
 		cout<<"Rank "<<m_parameters->getRank()<<" skips seed ["<<ed->m_EXTENSION_currentSeedIndex<<"/"<<
 			(*seeds).size()<<"]"<<endl;
 
@@ -859,7 +859,7 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			ed->m_EXTENSION_VertexAssembled_requested=true;
 
 			/* if the position is not 0 on flow 0, we don't need to send this message */
-			if(!(ed->m_EXTENSION_currentPosition==0 && ed->m_flowNumber==1)){
+			if(!(ed->m_EXTENSION_currentPosition==0 && ed->m_flowNumber==0)){
 				ed->m_EXTENSION_vertexIsAssembledResult=false;
 				ed->m_EXTENSION_VertexAssembled_received=true;
 				return;

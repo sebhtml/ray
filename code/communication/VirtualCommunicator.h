@@ -154,7 +154,7 @@ public:
  * the current object
  * time complexity: log(number of workers)
  */
-	vector<uint64_t> getMessageResponseElements(uint64_t workerId);
+	void getMessageResponseElements(uint64_t workerId,vector<uint64_t>*out);
 	
 /**
  * if all workers are awaiting responses and 

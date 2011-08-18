@@ -57,7 +57,8 @@ void ReadFetcher::work(){
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		m_readsRequested=true;
 	}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		vector<uint64_t> buffer=m_virtualCommunicator->getMessageResponseElements(m_workerId);
+		vector<uint64_t> buffer;
+		m_virtualCommunicator->getMessageResponseElements(m_workerId,&buffer);
 		#ifdef ASSERT
 		assert((int)buffer.size()==5);
 		#endif

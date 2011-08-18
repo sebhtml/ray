@@ -183,16 +183,19 @@ bool VirtualCommunicator::isMessageProcessed(uint64_t workerId){
 	return m_elementsForWorkers.count(workerId)>0;
 }
 
-vector<uint64_t> VirtualCommunicator::getMessageResponseElements(uint64_t workerId){
+void VirtualCommunicator::getMessageResponseElements(uint64_t workerId,vector<uint64_t>*out){
 	#ifdef ASSERT
 	assert(isMessageProcessed(workerId));
 	#endif
-	vector<uint64_t> elements=m_elementsForWorkers[workerId];
+
+	for(int i=0;i<(int)(m_elementsForWorkers[workerId].size());i++)
+		out->push_back(m_elementsForWorkers[workerId][i]);
+
 	m_elementsForWorkers.erase(workerId);
+
 	#ifdef ASSERT
 	assert(!isMessageProcessed(workerId));
 	#endif
-	return elements;
 }
 
 void VirtualCommunicator::constructor(int rank,int size,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox){
