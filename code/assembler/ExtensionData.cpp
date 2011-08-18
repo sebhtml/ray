@@ -19,6 +19,7 @@
 
 */
 
+#include <structures/SplayTreeIterator.h>
 #include <assembler/ExtensionData.h>
 #include <memory/malloc_types.h>
 #include <string.h>
@@ -80,7 +81,7 @@ void ExtensionData::destructor(){
 ExtensionElement*ExtensionData::getUsedRead(uint64_t a){
 	int bin=0;//uniform_hashing_function_1_64_64(a)%m_numberOfBins;
 	SplayNode<uint64_t,ExtensionElement>*node=m_database[bin].find(a,true);
-	if(node!=NULL){
+	if(node!=NULL && node->getValue()->m_activated){
 		return node->getValue();
 	}
 	return NULL;
@@ -91,6 +92,7 @@ ExtensionElement*ExtensionData::addUsedRead(uint64_t a){
 	int bin=0;
 	ExtensionElement*element=m_database[bin].insert(a,&m_allocator,&val)->getValue();
 	element->constructor();
+	element->m_activated=true;
 	return element;
 }
 
@@ -103,4 +105,11 @@ MyAllocator*ExtensionData::getAllocator(){
 	return &m_allocator;
 }
 
-
+void ExtensionData::lazyDestructor(){
+	SplayTreeIterator<uint64_t,ExtensionElement> i;
+	i.constructor(&(m_database[0]));
+	while(i.hasNext()){
+		ExtensionElement*element=i.next()->getValue();
+		element->m_activated=false;
+	}
+}

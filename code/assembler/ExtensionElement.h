@@ -40,6 +40,8 @@ class ExtensionElement{
 	uint8_t m_type;
 	bool m_canMove;
 public:
+	bool m_activated;
+
 	void setStrandPosition(int a);
 	int getStrandPosition();
 	void setStartingPosition(int a);

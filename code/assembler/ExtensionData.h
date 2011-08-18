@@ -124,6 +124,8 @@ public:
 	set<uint64_t>*m_pairedReadsWithoutMate;
 	map<int,vector<uint64_t> >*m_expirations;
 
+	void lazyDestructor();
+
 	void resetStructures();
 	ExtensionElement*getUsedRead(uint64_t a);
 	ExtensionElement*addUsedRead(uint64_t a);
