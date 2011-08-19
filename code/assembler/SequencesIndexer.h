@@ -42,6 +42,9 @@ using namespace std;
  * Computes optimal read markers using workers.
  */
 class SequencesIndexer{
+	/** for checkpointing */
+	bool m_checkedCheckpoint;
+
 	int m_rank;
 	int m_size;
 	Parameters*m_parameters;

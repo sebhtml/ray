@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string>
+#include <fstream>
 #include <cryptography/crypto.h>
 using namespace std;
 
@@ -342,4 +343,13 @@ char codeToChar(uint8_t a,bool color){
 	return 'A';
 }
 
-
+void Kmer::write(ofstream*f){
+	(*f)<<hex;
+	for(int i=0;i<getNumberOfU64();i++){
+		if(i!=0){
+			(*f)<<" ";
+		}
+		(*f)<<getU64(i);
+	}
+	(*f)<<dec;
+}

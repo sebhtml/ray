@@ -50,8 +50,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 	}
 
 	if(!m_checkedCheckpoint){
-		if(m_parameters->hasCheckpoint("Graph")){
-			cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint <Graph>"<<endl;
+		if(m_parameters->hasCheckpoint("GenomeGraph")){
 			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_VERTICES_DISTRIBUTED,rank);
 			m_outbox->push_back(aMessage);
 			m_finished=true;
@@ -59,7 +58,6 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		}
 		m_checkedCheckpoint=true;
 	}
-
 
 	#ifdef ASSERT
 	assert(m_pendingMessages>=0);

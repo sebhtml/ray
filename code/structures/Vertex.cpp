@@ -174,3 +174,50 @@ vector<Direction> Vertex::getDirections(Kmer*vertex){
 void Vertex::clearDirections(Kmer*a){
 	m_directions=NULL;
 }
+
+/* TODO: write this in binary instead of ASCII */
+void Vertex::write(Kmer*key,ofstream*f,int kmerLength){
+	int coverage=getCoverage(key);
+	key->write(f);
+	(*f)<<" "<<coverage;
+	vector<Kmer> parents=getIngoingEdges(key,kmerLength);
+	vector<Kmer> children=getOutgoingEdges(key,kmerLength);
+	(*f)<<" "<<parents.size();
+	for(int i=0;i<(int)parents.size();i++){
+		(*f)<<" ";
+		parents[i].write(f);
+	}
+	(*f)<<" "<<children.size();
+	for(int i=0;i<(int)children.size();i++){
+		(*f)<<" ";
+		children[i].write(f);
+	}
+	(*f)<<endl;
+}
+
+void Vertex::writeAnnotations(Kmer*key,ofstream*f,int kmerLength,bool color){
+	key->write(f);
+	(*f)<<endl;
+
+	Kmer complement=key->complementVertex(kmerLength,color);
+	bool isLower=(*key)<complement;
+
+	int annotations=0;
+	ReadAnnotation*ptr=m_readsStartingHere;
+	while(ptr!=NULL){
+		if(ptr->isLower()==isLower){
+			annotations++;
+		}
+		ptr=ptr->getNext();
+	}
+
+	ptr=m_readsStartingHere;
+	(*f)<<annotations<<endl;
+	while(ptr!=NULL){
+		if(ptr->isLower()==isLower){
+			(*f)<<ptr->getRank()<<"	"<<ptr->getReadIndex()<<"	";
+			(*f)<<ptr->getPositionOnStrand()<<"	"<<ptr->getStrand()<<endl;
+		}
+		ptr=ptr->getNext();
+	}
+}

@@ -25,6 +25,7 @@
 #include <string>
 #include <stdint.h>
 #include <vector>
+#include <fstream>
 #include <memory/MyAllocator.h>
 #include <structures/PairedRead.h>
 using namespace std;
@@ -70,6 +71,8 @@ public:
 	void setReverseOffset(int a);
 	int getForwardOffset();
 	int getReverseOffset();
+
+	void writeOffsets(ofstream*f);
 } ATTRIBUTE_PACKED;
 
 #endif

@@ -422,54 +422,21 @@ void MessageProcessor::call_RAY_MPI_TAG_WELCOME(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message){
 	/* write checkpoint if necessary */
 	if(m_parameters->hasOption("-write-checkpoints")){
-		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint <KmerAcademy>"<<endl;
-		ofstream f2(m_parameters->getCheckpointFile("KmerAcademy").c_str());
-		f2<<0;
-		f2.close();
-
-		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint <Graph>"<<endl;
-		ofstream f(m_parameters->getCheckpointFile("Graph").c_str());
-
+		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint <GenomeGraph>"<<endl;
+		ofstream f(m_parameters->getCheckpointFile("GenomeGraph").c_str());
 
 		GridTableIterator iterator;
 		iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
+
 		f<<m_subgraph->size()<<endl;
 
 		while(iterator.hasNext()){
 			Vertex*node=iterator.next();
 			Kmer key=*(iterator.getKey());
-			int coverage=node->getCoverage(&key);
-			for(int i=0;i<key.getNumberOfU64();i++){
-				if(i!=0)
-					f<<" ";
-				f<<key.getU64(i);
-			}
-			f<<" "<<coverage;
-			vector<Kmer> parents=node->getIngoingEdges(&key,m_parameters->getWordSize());
-			vector<Kmer> children=node->getOutgoingEdges(&key,m_parameters->getWordSize());
-			f<<" "<<parents.size();
-			for(int i=0;i<(int)parents.size();i++){
-				for(int j=0;j<KMER_U64_ARRAY_SIZE;j++){
-					f<<" ";
-					f<<parents[i].getU64(j);
-				}
-			}
-			f<<" "<<children.size();
-			for(int i=0;i<(int)children.size();i++){
-				for(int j=0;j<KMER_U64_ARRAY_SIZE;j++){
-					f<<" ";
-					f<<children[i].getU64(j);
-				}
-			}
-			f<<endl;
+			node->write(&key,&f,m_parameters->getWordSize());
 		}
 
 		f.close();
-
-		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint <EdgePurge>"<<endl;
-		ofstream f3(m_parameters->getCheckpointFile("EdgePurge").c_str());
-		f3<<0;
-		f3.close();
 	}
 
 	/* read the Graph checkpoint here */
@@ -746,6 +713,33 @@ void MessageProcessor::call_RAY_MPI_TAG_READY_TO_SEED(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
+	/* write checkpoint */
+	if(m_parameters->hasOption("-write-checkpoints")){
+		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint <ReadOffsets>"<<endl;
+		ofstream f(m_parameters->getCheckpointFile("ReadOffsets").c_str());
+		f<<m_myReads->size()<<endl;
+		for(int i=0;i<(int)m_myReads->size();i++){
+			m_myReads->at(i)->writeOffsets(&f);
+		}
+		f.close();
+	
+		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint <OptimalMarkers>"<<endl;
+		ofstream f2(m_parameters->getCheckpointFile("OptimalMarkers").c_str());
+
+		GridTableIterator iterator;
+		iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
+
+		f2<<m_subgraph->size()<<endl;
+
+		while(iterator.hasNext()){
+			Vertex*node=iterator.next();
+			Kmer key=*(iterator.getKey());
+			node->writeAnnotations(&key,&f2,m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+		}
+
+		f2.close();
+	}
+
 	(*m_mode)=RAY_SLAVE_MODE_START_SEEDING;
 	if(m_parameters->showMemoryUsage()){
 		int allocatedBytes=m_si->getAllocator()->getNumberOfChunks()*m_si->getAllocator()->getChunkSize();
@@ -1745,6 +1739,22 @@ void MessageProcessor::call_RAY_MPI_TAG_WRITE_AMOS_REPLY(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION(Message*message){
+	/* write the Seeds checkpoint */
+	if(m_parameters->hasOption("-write-checkpoints")){
+		ofstream f(m_parameters->getCheckpointFile("Seeds").c_str());
+		f<<m_seedingData->m_SEEDING_seeds.size()<<endl;
+		for(int i=0;i<(int)m_seedingData->m_SEEDING_seeds.size();i++){
+			f<<m_seedingData->m_SEEDING_seeds[i].size()<<endl;
+			for(int j=0;j<(int)m_seedingData->m_SEEDING_seeds[i].size();j++){
+				if(j!=0)
+					f<<" ";
+				m_seedingData->m_SEEDING_seeds[i][j].write(&f);
+			}
+			f<<endl;
+		}
+		f.close();
+	}
+
 	(*m_mode)=RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION;
 	(m_seedingData->m_SEEDING_i)=0;
 	(m_ed->m_EXTENSION_currentPosition)=0;

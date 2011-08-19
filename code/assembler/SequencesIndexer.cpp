@@ -45,6 +45,16 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 		m_maximumAliveWorkers=30000;
 	}
 
+	if(!m_checkedCheckpoint){
+		if(m_parameters->hasCheckpoint("OptimalMarkers") && m_parameters->hasCheckpoint("ReadOffsets")){
+			(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
+			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,m_rank);
+			m_outbox->push_back(aMessage);
+			return;
+		}
+		m_checkedCheckpoint=true;
+	}
+
 	m_virtualCommunicator->processInbox(&m_activeWorkersToRestore);
 
 	if(!m_virtualCommunicator->isReady()){
@@ -150,6 +160,8 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 
 void SequencesIndexer::constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,VirtualCommunicator*vc){
 	m_parameters=parameters;
+	m_checkedCheckpoint=false;
+
 	int chunkSize=4194304; // 4 MiB
 	m_allocator.constructor(chunkSize,RAY_MALLOC_TYPE_OPTIMAL_READ_MARKERS,
 		m_parameters->showMemoryAllocations());

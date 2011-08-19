@@ -154,6 +154,8 @@ public:
  */
 	string idToWord(int wordSize,bool color);
 
+	void write(ofstream*f);
+
 }ATTRIBUTE_PACKED;
 
 /*

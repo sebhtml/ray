@@ -53,8 +53,7 @@ void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
 	}
 
 	if(!m_checkedCheckpoint){
-		if(m_parameters->hasCheckpoint("KmerAcademy")){
-			cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint <KmerAcademy>"<<endl;
+		if(m_parameters->hasCheckpoint("GenomeGraph") && m_parameters->hasCheckpoint("CoverageDistribution")){
 			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED,rank);
 			m_outbox->push_back(aMessage);
 			m_finished=true;

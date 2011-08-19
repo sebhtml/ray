@@ -24,6 +24,8 @@
 
 #include <structures/ReadAnnotation.h>
 #include <structures/Direction.h>
+#include <structures/Kmer.h>
+#include <fstream>
 #include <stdint.h>
 #include <core/common_functions.h>
 #include <vector>
@@ -89,6 +91,9 @@ public:
 
 	void assemble();
 	bool isAssembled();
+
+	void write(Kmer*key,ofstream*f,int kmerLength);
+	void writeAnnotations(Kmer*key,ofstream*f,int kmerLength,bool color);
 
 } ATTRIBUTE_PACKED;
 

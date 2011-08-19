@@ -1387,7 +1387,7 @@ bool Parameters::hasFile(const char*file){
 
 string Parameters::getCheckpointFile(const char*checkpointName){
 	ostringstream a;
-	a<<getPrefix()<<".Rank"<<getRank()<<".RayCheckpoint."<<checkpointName<<".ray";
+	a<<getPrefix()<<".Rank"<<getRank()<<".Checkpoint."<<checkpointName<<".ray";
 	return a.str();
 }
 

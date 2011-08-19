@@ -50,6 +50,16 @@ void SeedingData::computeSeeds(){
 		#endif
 	}
 
+	if(!m_checkedCheckpoint){
+		if(m_parameters->hasCheckpoint("Seeds")){
+			(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
+			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_SEEDING_IS_OVER,getRank());
+			m_outbox->push_back(aMessage);
+			return;
+		}
+		m_checkedCheckpoint=true;
+	}
+
 	m_virtualCommunicator->processInbox(&m_activeWorkersToRestore);
 
 	if(!m_virtualCommunicator->isReady()){
@@ -154,7 +164,6 @@ void SeedingData::computeSeeds(){
 	#endif
 
 	if((int)m_subgraph->size()==m_completedJobs){
-		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		printf("Rank %i has %i seeds\n",m_rank,(int)m_SEEDING_seeds.size());
 		fflush(stdout);
 		printf("Rank %i is creating seeds [%i/%i] (completed)\n",getRank(),(int)m_SEEDING_i,(int)m_subgraph->size());
@@ -162,6 +171,8 @@ void SeedingData::computeSeeds(){
 		printf("Rank %i: peak number of workers: %i, maximum: %i\n",m_rank,m_maximumWorkers,m_maximumAliveWorkers);
 		fflush(stdout);
 		m_virtualCommunicator->printStatistics();
+
+		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_SEEDING_IS_OVER,getRank());
 		m_outbox->push_back(aMessage);
 
@@ -200,6 +211,7 @@ void SeedingData::constructor(SeedExtender*seedExtender,int rank,int size,Static
 int*mode,
 	Parameters*parameters,int*wordSize,GridTable*subgraph,StaticVector*inbox,
 	VirtualCommunicator*vc){
+	m_checkedCheckpoint=false;
 	m_virtualCommunicator=vc;
 	m_seedExtender=seedExtender;
 	m_size=size;

@@ -30,7 +30,7 @@ the false positive rate has no effect whatsoever on Ray thanks to the KmerAcadem
 * The paired read simulator is now a separate project, see https://github.com/sebhtml/paired-read-simulator
 * Extension of seeds if done endlessly until growth stops.
 * Input opcodes are now shuffled before being utilised.
-
+* Added option -write-checkpoints for checkpointing.
 
 = 1.6.1 'sunray' =
 2011-07-14

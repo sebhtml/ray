@@ -768,7 +768,7 @@ void Machine::call_RAY_MASTER_MODE_START_EDGES_DISTRIBUTION(){
 }
 
 void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
-	if(m_parameters.hasCheckpoint("CoverageDistribution")){
+	if(m_parameters.hasCheckpoint("GenomeGraph") && m_parameters.hasCheckpoint("CoverageDistribution")){
 		cout<<"Rank "<<m_parameters.getRank()<<" is reading checkpoint <CoverageDistribution>"<<endl;
 		m_coverageDistribution.clear();
 		ifstream f(m_parameters.getCheckpointFile("CoverageDistribution").c_str());
@@ -788,7 +788,7 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 		ofstream f(m_parameters.getCheckpointFile("CoverageDistribution").c_str());
 		f<<m_coverageDistribution.size()<<endl;
 		for(map<int,uint64_t>::iterator i=m_coverageDistribution.begin();i!=m_coverageDistribution.end();i++){
-			f<<i->first<<"	"<<i->second<<endl;
+			f<<hex<<i->first<<"	"<<i->second<<endl;
 		}
 		f.close();
 	}

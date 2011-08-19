@@ -46,6 +46,9 @@ using namespace std;
  * communicator and the later groups messages.
  */
 class SeedingData{
+	/** checkpointing */
+	bool m_checkedCheckpoint;
+
 	map<int,int>::iterator m_iterator;
 
 	bool m_flushAllMode;
