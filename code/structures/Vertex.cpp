@@ -197,7 +197,6 @@ void Vertex::write(Kmer*key,ofstream*f,int kmerLength){
 
 void Vertex::writeAnnotations(Kmer*key,ofstream*f,int kmerLength,bool color){
 	key->write(f);
-	(*f)<<endl;
 
 	Kmer complement=key->complementVertex(kmerLength,color);
 	bool isLower=(*key)<complement;
@@ -212,11 +211,10 @@ void Vertex::writeAnnotations(Kmer*key,ofstream*f,int kmerLength,bool color){
 	}
 
 	ptr=m_readsStartingHere;
-	(*f)<<annotations<<endl;
+	(*f)<<" "<<annotations<<endl;
 	while(ptr!=NULL){
 		if(ptr->isLower()==isLower){
-			(*f)<<ptr->getRank()<<"	"<<ptr->getReadIndex()<<"	";
-			(*f)<<ptr->getPositionOnStrand()<<"	"<<ptr->getStrand()<<endl;
+			ptr->write(f);
 		}
 		ptr=ptr->getNext();
 	}

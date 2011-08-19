@@ -1394,5 +1394,10 @@ string Parameters::getCheckpointFile(const char*checkpointName){
 bool Parameters::hasCheckpoint(const char*checkpointName){
 	if(!hasOption("-read-checkpoints"))
 		return false;
+
+	/* -write-checkpoints disables -read-checkpoints */
+	if(hasOption("-write-checkpoints"))
+		return false;
+
 	return hasFile(getCheckpointFile(checkpointName).c_str());
 }

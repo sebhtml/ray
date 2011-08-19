@@ -795,6 +795,65 @@ void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 		f2.close();
 	}
 
+	/* read checkpoints ReadOffsets and OptimalMarkers */
+	
+	if(m_parameters->hasCheckpoint("OptimalMarkers") && m_parameters->hasCheckpoint("ReadOffsets")){
+		cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint <ReadOffsets>"<<endl;
+		ifstream f(m_parameters->getCheckpointFile("ReadOffsets").c_str());
+		uint64_t n=0;
+		f>>n;
+		for(uint64_t i=0;i<n;i++){
+			m_myReads->at(i)->readOffsets(&f);
+		}
+		f.close();
+
+		cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint <OptimalMarkers>"<<endl;
+		ifstream f2(m_parameters->getCheckpointFile("OptimalMarkers").c_str());
+
+		n=0;
+		f2>>n;
+		uint64_t loaded=0;
+		for(uint64_t i=0;i<n;i++){
+			Kmer kmer;
+			kmer.read(&f2);
+
+			Kmer complement=kmer.complementVertex(m_parameters->getWordSize(),
+				m_parameters->getColorSpaceMode());
+			bool isLower=kmer<complement;
+			int markers=0;
+			f2>>markers;
+			for(int j=0;j<markers;j++){
+				loaded++;
+				ReadAnnotation*marker=
+					(ReadAnnotation*)m_si->getAllocator()->allocate(sizeof(ReadAnnotation));
+
+				#ifdef ASSERT
+				assert(marker!=NULL);
+				#endif
+
+				marker->read(&f2,isLower);
+
+				Vertex*node=m_subgraph->find(&kmer);
+	
+				#ifdef ASSERT
+				if(node==NULL){
+					cout<<"Not found: "<<kmer.idToWord(m_parameters->getWordSize(),
+						m_parameters->getColorSpaceMode())<<endl;
+					cout<<"Markers: "<<markers<<endl;
+					cout<<"Vertex: "<<i<<endl;
+				}
+				assert(node!=NULL);
+				#endif
+
+				node->addRead(&kmer,marker);
+			}
+		}
+		f2.close();
+
+		cout<<"Rank "<<m_parameters->getRank()<<" loaded "<<loaded<<" markers from checkpoint OptimalMarkers."<<endl;
+	}
+
+
 	(*m_mode)=RAY_SLAVE_MODE_START_SEEDING;
 	if(m_parameters->showMemoryUsage()){
 		int allocatedBytes=m_si->getAllocator()->getNumberOfChunks()*m_si->getAllocator()->getChunkSize();

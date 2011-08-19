@@ -73,6 +73,7 @@ public:
 	int getReverseOffset();
 
 	void writeOffsets(ofstream*f);
+	void readOffsets(ifstream*f);
 } ATTRIBUTE_PACKED;
 
 #endif

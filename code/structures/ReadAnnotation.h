@@ -23,6 +23,8 @@
 #define _ReadAnnotation
 
 #include <core/common_functions.h>
+#include <fstream>
+using namespace std;
 
 /*
  * implemented as linked lists, read annotations give 
@@ -46,6 +48,9 @@ public:
 	ReadAnnotation*getNext()const;
 	void setNext(ReadAnnotation*a);
 	uint64_t getUniqueId() const;
+
+	void read(ifstream*f,bool isLower);
+	void write(ofstream*f);
 } ATTRIBUTE_PACKED;
 
 #endif

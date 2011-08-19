@@ -64,3 +64,17 @@ uint64_t ReadAnnotation::getUniqueId()const{
 bool ReadAnnotation::isLower(){
 	return m_lower;
 }
+
+void ReadAnnotation::write(ofstream*f){
+	(*f)<<getRank()<<"	"<<getReadIndex()<<"	";
+	(*f)<<getPositionOnStrand()<<"	"<<getStrand()<<endl;
+}
+
+void ReadAnnotation::read(ifstream*f,bool isLower){
+	int rank=0;
+	int readIndex=0;
+	int positionOnStrand=0;
+	char strand=0;
+	(*f)>>rank>>readIndex>>positionOnStrand>>strand;
+	constructor(rank,readIndex,positionOnStrand,strand,isLower);
+}
