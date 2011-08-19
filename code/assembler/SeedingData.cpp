@@ -349,6 +349,6 @@ void SeedingData::loadCheckpoint(){
 		}
 		m_SEEDING_seeds.push_back(seed);
 	}
-	cout<<"Rank "<<m_parameters->getRank()<<" loaded "<<n<<" seeds from checkpoint"<<endl;
+	cout<<"Rank "<<m_parameters->getRank()<<" loaded "<<n<<" seeds from checkpoint Seeds"<<endl;
 	f.close();
 }
