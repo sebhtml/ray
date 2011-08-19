@@ -142,6 +142,12 @@ void Partitioner::slaveMethod(){
 		m_currentFileToCount=0;
 		m_currentlySendingCounts=false;
 		m_sentCount=false;
+	/* all files were processed, tell control peer that we are done */
+	}else if(m_currentFileToCount==m_parameters->getNumberOfFiles()){
+		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_COUNT_FILE_ENTRIES_REPLY,m_parameters->getRank());
+		m_outbox->push_back(aMessage);
+		/* increment it so we don't go here again. */
+		m_currentFileToCount++;
 	/** count sequences in a file */
 	}else if(m_currentFileToCount<m_parameters->getNumberOfFiles()){
 		int rankInCharge=m_currentFileToCount%m_parameters->getSize();
@@ -160,11 +166,7 @@ void Partitioner::slaveMethod(){
 			cout<<"Rank "<<m_parameters->getRank()<<": File "<<file<<" (Number "<<m_currentFileToCount<<") has "<<m_slaveCounts[m_currentFileToCount]<<" sequences"<<endl;
 		}
 		m_currentFileToCount++;
-		/* all files were processed, tell control peer that we are done */
-		if(m_currentFileToCount==m_parameters->getNumberOfFiles()){
-			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_COUNT_FILE_ENTRIES_REPLY,m_parameters->getRank());
-			m_outbox->push_back(aMessage);
-		}
+
 	/** control peer asks the slave to send counts */
 	}else if(m_inbox->size()>0 && m_inbox->at(0)->getTag() == RAY_MPI_TAG_REQUEST_FILE_ENTRY_COUNTS){
 		m_currentFileToSend=0;
