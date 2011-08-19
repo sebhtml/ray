@@ -665,7 +665,7 @@ void Machine::call_RAY_SLAVE_MODE_SEND_SEED_LENGTHS(){
 }
 
 void Machine::call_RAY_MASTER_MODE_LOAD_CONFIG(){
-	if(m_argc==2){
+	if(m_argc==2 && m_argv[1][0]!='-'){
 		ifstream f(m_argv[1]);
 		if(!f){
 			cout<<"Rank "<<getRank()<<" invalid input file."<<endl;
@@ -1229,6 +1229,10 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS(){
 }
 
 void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
+	/** this master method may require the whole outbox... */
+	if(m_outbox.size()!=0)
+		return;
+
 	// the finishing is
 	//
 	//  * a clear cycle
