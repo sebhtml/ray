@@ -32,6 +32,7 @@ the false positive rate has no effect whatsoever on Ray thanks to the KmerAcadem
 * Input opcodes are now shuffled before being utilised.
 * Added option -write-checkpoints for checkpointing.
 * Added option -read-checkpoints to read checkpoints.
+* Added option -test-network-only to only to test the network and return.
 
 = 1.6.1 'sunray' =
 2011-07-14

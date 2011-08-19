@@ -154,10 +154,24 @@ void NetworkTest::masterWork(){
 		}
 		f.close();
 		m_latencies.clear();
+
 		(*m_masterMode)=RAY_MASTER_MODE_COUNT_FILE_ENTRIES;
+
+		cout<<endl;
 		cout<<"Rank "<<m_parameters->getRank()<<" wrote "<<file.str()<<endl;
 		cout<<endl;
 		m_timePrinter->printElapsedTime("Network testing");
 		cout<<endl;
+		
+		if(m_parameters->hasOption("-test-network-only")){
+			(*m_masterMode)=RAY_MASTER_MODE_KILL_ALL_MPI_RANKS;
+			return;
+		}
+
+		/* no files */
+		if(m_parameters->getNumberOfFiles()==0){
+			cout<<"Rank "<<m_parameters->getRank()<<": no input files, aborting."<<endl;
+			(*m_masterMode)=RAY_MASTER_MODE_KILL_ALL_MPI_RANKS;
+		}
 	}
 }

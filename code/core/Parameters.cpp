@@ -1105,6 +1105,8 @@ void Parameters::showUsage(){
 	cout<<endl;
 	showOption("-read-checkpoints","Read checkpoint files");
 	cout<<endl;
+	showOption("-test-network-only","Test the network and return.");
+	cout<<endl;
 	showOption("-help","Displays this help page.");
 	cout<<endl;
 
