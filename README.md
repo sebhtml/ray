@@ -3,10 +3,12 @@
 Ray is a parallel de novo genome assembler that utilises the message-passing interface everywhere
 and is implemented using peer-to-peer communication.
 
-Ray is documented in the manual (InstructionManual.tex; available
-online and in Portable Document Format), 
-on http://github.com/sebhtml/ray (with the README.md), in the 
-C++ code using Doxygen and in the journal paper as well.
+Ray is documented in
+
+- MANUAL file
+- InstructionManual.pdf
+- http://denovoassembler.sourceforge.net/manual.html
+- README.md
 
 ## Features & quick facts
 

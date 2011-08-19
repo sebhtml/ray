@@ -1,0 +1,220 @@
+NAME
+       Ray - assemble genomes in parallel using the message-passing interface
+
+SYNOPSIS
+       mpirun -np NUMBER_OF_RANKS Ray -k KMERLENGTH -p l1_1.fastq l1_2.fastq -p l2_1.fastq l2_2.fastq -o test
+
+DESCRIPTION:
+       -k kmerLength
+              Selects the length of k-mers. The default value is 21. 
+              It must be odd because reverse-complement vertices are stored together.
+              The maximum length is defined at compilation by MAXKMERLENGTH
+              Larger k-mers utilise more memory.
+
+       -p leftSequenceFile rightSequenceFile [averageOuterDistance standardDeviation]
+              Provides two files containing paired-end reads.
+              averageOuterDistance and standardDeviation are automatically computed if not provided.
+
+       -i interleavedSequenceFile [averageOuterDistance standardDeviation]
+              Provides one file containing interleaved paired-end reads.
+              averageOuterDistance and standardDeviation are automatically computed if not provided.
+
+       -s sequenceFile
+              Provides a file containing single-end reads.
+
+       -o outputPrefix
+              Specifies the prefix for outputted files.
+
+       -amos
+              Writes the AMOS file called PREFIX.AMOS.afg
+              An AMOS file contains read positions on contigs.
+              Can be opened with software with graphical user interface.
+
+       -write-kmers
+              Writes k-mer graph to PREFIX.kmers.txt
+              The resulting file is not utilised by Ray.
+              The resulting file is very large.
+
+       -write-seeds
+              Writes seed DNA sequences
+
+       -write-extensions
+              Writes extension DNA sequences
+
+       -run-profiler
+              Runs the profiler as the code runs.
+              Needs HAVE_CLOCK_GETTIME=y at compilation
+              Running the profiler increases running times.
+
+       -color-space
+              Runs in color-space
+              Needs csfasta files. Activated automatically if csfasta files are provided.
+
+       -minimumCoverage minimumCoverage
+              Sets manually the minimum coverage.
+              If not provided, it is computed by Ray automatically.
+
+       -peakCoverage peakCoverage
+              Sets manually the peak coverage.
+              If not provided, it is computed by Ray automatically.
+
+       -repeatCoverage repeatCoverage
+              Sets manually the repeat coverage.
+              If not provided, it is computed by Ray automatically.
+
+       -debug-bubbles
+              Debugs bubble code.
+              Bubbles can be due to heterozygous sites or sequencing errors or other (unknown) events
+
+       -debug-seeds
+              Debugs seed code.
+              Seeds are paths in the graph that are likely unique.
+
+       -show-memory-usage
+              Shows memory usage. Data is fetched from /proc on GNU/Linux
+              Needs __linux__
+
+       -show-extension-choice
+              Shows the choice made (with other choices) during the extension.
+
+       -show-ending-context
+              Shows the ending context of each extension.
+              Shows the children of the vertex where extension was too difficult.
+
+       -show-distance-summary
+              Shows summary of outer distances used for an extension path.
+
+       -show-memory-allocations
+              Shows memory allocation events
+
+       -write-checkpoints
+              Write checkpoint files
+
+       -read-checkpoints
+              Read checkpoint files
+
+       -help
+              Displays this help page.
+
+FILES
+
+     Input files
+
+     Note: file format is determined with file extension.
+
+     .fasta
+     .fasta.gz (needs HAVE_LIBZ=y at compilation)
+     .fasta.bz2 (needs HAVE_LIBBZ2=y at compilation)
+     .fastq
+     .fastq.gz (needs HAVE_LIBZ=y at compilation)
+     .fastq.bz2 (needs HAVE_LIBBZ2=y at compilation)
+     .sff (paired reads must be extracted manually)
+     .csfasta (color-space reads)
+
+     Outputted files
+
+     Scaffolds
+
+     PREFIX.Scaffolds.fasta
+     	The scaffold sequences in FASTA format
+     PREFIX.ScaffoldComponents.txt
+     	The components of each scaffold
+     PREFIX.ScaffoldLengths.txt
+     	The length of each scaffold
+     PREFIX.ScaffoldLinks.txt
+     	Scaffold links
+
+     Contigs
+
+     PREFIX.Contigs.fasta
+     	Contiguous sequences in FASTA format
+     PREFIX.ContigLengths.txt
+     	The lengths of contiguous sequences
+
+     Summary
+
+     PREFIX.OutputNumbers.txt
+     	Overall numbers for the assembly
+
+     de Bruijn graph
+
+     PREFIX.CoverageDistribution.txt
+     	The distribution of coverage values
+     PREFIX.CoverageDistributionAnalysis.txt
+     	Analysis of the coverage distribution
+     PREFIX.degreeDistribution.txt
+     	Distribution of ingoing and outgoing degrees
+     PREFIX.kmers.txt
+     	k-mer graph, required option: -write-kmers
+         The resulting file is not utilised by Ray.
+         The resulting file is very large.
+
+     Assembly steps
+
+     PREFIX.SeedLengthDistribution.txt
+         Distribution of seed length
+     PREFIX.<rank>.RaySeeds.fasta
+         Seed DNA sequences, required option: -write-seeds
+     PREFIX.<rank>.RayExtensions.fasta
+         Extension DNA sequences, required option: -write-extensions
+
+     Paired reads
+
+     PREFIX.LibraryStatistics.txt
+     	Estimation of outer distances for paired reads
+     PREFIX.Library<LibraryNumber>.txt
+         Frequencies for observed outer distances (insert size + read lengths)
+
+     Partition
+
+     PREFIX.NumberOfSequences.txt
+         Number of reads in each file
+     PREFIX.SequencePartition.txt
+     	Sequence partition
+
+     Ray software
+
+     PREFIX.RayVersion.txt
+     	The version of Ray
+     PREFIX.RayCommand.txt
+     	The exact same command provided 
+
+     AMOS
+
+     PREFIX.AMOS.afg
+     	Assembly representation in AMOS format, required option: -amos
+
+     Communication
+
+     PREFIX.MessagePassingInterface.txt
+	    	Number of messages sent
+     PREFIX.NetworkTest.txt
+	    	Latencies in microseconds
+
+DOCUMENTATION
+
+       This help page (always up-to-date)
+       Manual (Portable Document Format): InstructionManual.pdf
+       Mailing list archives: http://sourceforge.net/mailarchive/forum.php?forum_name=denovoassembler-users
+
+AUTHOR
+       Written by Sébastien Boisvert.
+
+REPORTING BUGS
+       Report bugs to denovoassembler-users@lists.sourceforge.net
+       Home page: <http://denovoassembler.sourceforge.net/>
+
+COPYRIGHT
+       This program is free software: you can redistribute it and/or modify
+       it under the terms of the GNU General Public License as published by
+       the Free Software Foundation, version 3 of the License.
+
+       This program is distributed in the hope that it will be useful,
+       but WITHOUT ANY WARRANTY; without even the implied warranty of
+       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+       GNU General Public License for more details.
+
+       You have received a copy of the GNU General Public License
+       along with this program (see LICENSE).
+
+Ray 1.6.2-devel
