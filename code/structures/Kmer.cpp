@@ -344,22 +344,16 @@ char codeToChar(uint8_t a,bool color){
 }
 
 void Kmer::write(ofstream*f){
-	(*f)<<hex;
 	for(int i=0;i<getNumberOfU64();i++){
-		if(i!=0){
-			(*f)<<" ";
-		}
-		(*f)<<getU64(i);
+		uint64_t a=getU64(i);
+		f->write((char*)&a,sizeof(uint64_t));
 	}
-	(*f)<<dec;
 }
 
 void Kmer::read(ifstream*f){
-	(*f)>>hex;
 	for(int i=0;i<getNumberOfU64();i++){
 		uint64_t a=0;
-		(*f)>>a;
+		f->read((char*)&a,sizeof(uint64_t));
 		setU64(i,a);
 	}
-	(*f)>>dec;
 }

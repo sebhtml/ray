@@ -773,12 +773,12 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 		m_coverageDistribution.clear();
 		ifstream f(m_parameters.getCheckpointFile("CoverageDistribution").c_str());
 		int n=0;
-		f>>hex;
-		f>>n;
+		f.read((char*)&n,sizeof(int));
 		int coverage=0;
 		uint64_t count=0;
 		for(int i=0;i<n;i++){
-			f>>coverage>>count;
+			f.read((char*)&coverage,sizeof(int));
+			f.read((char*)&count,sizeof(uint64_t));
 			m_coverageDistribution[coverage]=count;
 		}
 		f.close();
@@ -787,9 +787,13 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	if(m_parameters.hasOption("-write-checkpoints")){
 		cout<<"Rank "<<m_parameters.getRank()<<" is writing checkpoint <CoverageDistribution>"<<endl;
 		ofstream f(m_parameters.getCheckpointFile("CoverageDistribution").c_str());
-		f<<m_coverageDistribution.size()<<endl;
+		int theSize=m_coverageDistribution.size();
+		f.write((char*)&theSize,sizeof(int));
 		for(map<int,uint64_t>::iterator i=m_coverageDistribution.begin();i!=m_coverageDistribution.end();i++){
-			f<<hex<<i->first<<"	"<<i->second<<endl;
+			int coverage=i->first;
+			uint64_t count=i->second;
+			f.write((char*)&coverage,sizeof(int));
+			f.write((char*)&count,sizeof(uint64_t));
 		}
 		f.close();
 	}

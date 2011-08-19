@@ -337,16 +337,15 @@ void SeedingData::loadCheckpoint(){
 
 	ifstream f(m_parameters->getCheckpointFile("Seeds").c_str());
 	int n=0;
-	f>>n;
+	f.read((char*)&n,sizeof(int));
 	for(int i=0;i<n;i++){
 		vector<Kmer> seed;
 		int vertices=0;
-		f>>vertices;
+		f.read((char*)&vertices,sizeof(int));
 		for(int j=0;j<vertices;j++){
 			Kmer kmer;
 			kmer.read(&f);
 			seed.push_back(kmer);
-			//cout<<kmer.idToWord(m_parameters->getWordSize(),m_parameters->getColorSpaceMode())<<endl;
 		}
 		m_SEEDING_seeds.push_back(seed);
 	}

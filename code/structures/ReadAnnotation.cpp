@@ -66,8 +66,14 @@ bool ReadAnnotation::isLower(){
 }
 
 void ReadAnnotation::write(ofstream*f){
-	(*f)<<getRank()<<"	"<<getReadIndex()<<"	";
-	(*f)<<getPositionOnStrand()<<"	"<<getStrand()<<endl;
+	int rank=getRank();
+	int readIndex=getReadIndex();
+	int positionOnStrand=getPositionOnStrand();
+	char strand=getStrand();
+	f->write((char*)&rank,sizeof(int));
+	f->write((char*)&readIndex,sizeof(int));
+	f->write((char*)&positionOnStrand,sizeof(int));
+	f->write((char*)&strand,sizeof(char));
 }
 
 void ReadAnnotation::read(ifstream*f,bool isLower){
@@ -75,6 +81,9 @@ void ReadAnnotation::read(ifstream*f,bool isLower){
 	int readIndex=0;
 	int positionOnStrand=0;
 	char strand=0;
-	(*f)>>rank>>readIndex>>positionOnStrand>>strand;
+	f->read((char*)&rank,sizeof(int));
+	f->read((char*)&readIndex,sizeof(int));
+	f->read((char*)&positionOnStrand,sizeof(int));
+	f->read((char*)&strand,sizeof(char));
 	constructor(rank,readIndex,positionOnStrand,strand,isLower);
 }

@@ -179,20 +179,19 @@ void Vertex::clearDirections(Kmer*a){
 void Vertex::write(Kmer*key,ofstream*f,int kmerLength){
 	int coverage=getCoverage(key);
 	key->write(f);
-	(*f)<<" "<<coverage;
+	f->write((char*)&coverage,sizeof(int));
 	vector<Kmer> parents=getIngoingEdges(key,kmerLength);
 	vector<Kmer> children=getOutgoingEdges(key,kmerLength);
-	(*f)<<" "<<parents.size();
+	int numberOfParents=parents.size();;
+	f->write((char*)&numberOfParents,sizeof(int));
 	for(int i=0;i<(int)parents.size();i++){
-		(*f)<<" ";
 		parents[i].write(f);
 	}
-	(*f)<<" "<<children.size();
+	int numberOfChildren=children.size();
+	f->write((char*)&numberOfChildren,sizeof(int));
 	for(int i=0;i<(int)children.size();i++){
-		(*f)<<" ";
 		children[i].write(f);
 	}
-	(*f)<<endl;
 }
 
 void Vertex::writeAnnotations(Kmer*key,ofstream*f,int kmerLength,bool color){
@@ -211,7 +210,7 @@ void Vertex::writeAnnotations(Kmer*key,ofstream*f,int kmerLength,bool color){
 	}
 
 	ptr=m_readsStartingHere;
-	(*f)<<" "<<annotations<<endl;
+	f->write((char*)&annotations,sizeof(int));
 	while(ptr!=NULL){
 		if(ptr->isLower()==isLower){
 			ptr->write(f);

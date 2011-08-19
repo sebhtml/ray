@@ -427,8 +427,9 @@ void MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message
 
 		GridTableIterator iterator;
 		iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
+		uint64_t theSize=m_subgraph->size();
 
-		f<<m_subgraph->size()<<endl;
+		f.write((char*)&theSize,sizeof(uint64_t));
 
 		while(iterator.hasNext()){
 			Vertex*node=iterator.next();
@@ -444,7 +445,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message
 		cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint GenomeGraph"<<endl;
 		ifstream f(m_parameters->getCheckpointFile("GenomeGraph").c_str());
 		uint64_t n=0;
-		f>>n;
+		f.read((char*)&n,sizeof(uint64_t));
 		for(uint64_t  i=0;i<n;i++){
 			if(i%100000==0){
 				cout<<"Rank "<<m_parameters->getRank()<<" loading checkpoint GenomeGraph ["<<i<<"/"<<n<<"]"<<endl;
@@ -452,7 +453,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message
 			Kmer kmer;
 			kmer.read(&f);
 			int coverage=0;
-			f>>coverage;
+			f.read((char*)&coverage,sizeof(int));
 			Vertex*tmp=m_subgraph->insert(&kmer);
 
 			/* we only want to construct it once. */
@@ -461,14 +462,14 @@ void MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message
 				tmp->setCoverage(&kmer,coverage);
 			}
 			int parents=0;
-			f>>parents;
+			f.read((char*)&parents,sizeof(int));
 			for(int j=0;j<parents;j++){
 				Kmer parent;
 				parent.read(&f);
 				tmp->addIngoingEdge(&kmer,&parent,m_parameters->getWordSize());
 			}
 			int children=0;
-			f>>children;
+			f.read((char*)&children,sizeof(int));
 
 			for(int j=0;j<children;j++){
 				Kmer child;
@@ -772,7 +773,8 @@ void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 	if(m_parameters->hasOption("-write-checkpoints")){
 		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint <ReadOffsets>"<<endl;
 		ofstream f(m_parameters->getCheckpointFile("ReadOffsets").c_str());
-		f<<m_myReads->size()<<endl;
+		uint64_t count=m_myReads->size();
+		f.write((char*)&count,sizeof(uint64_t));
 		for(int i=0;i<(int)m_myReads->size();i++){
 			m_myReads->at(i)->writeOffsets(&f);
 		}
@@ -783,8 +785,9 @@ void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 
 		GridTableIterator iterator;
 		iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
-
-		f2<<m_subgraph->size()<<endl;
+	
+		count=m_subgraph->size();
+		f2.write((char*)&count,sizeof(uint64_t));
 
 		while(iterator.hasNext()){
 			Vertex*node=iterator.next();
@@ -801,7 +804,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 		cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint <ReadOffsets>"<<endl;
 		ifstream f(m_parameters->getCheckpointFile("ReadOffsets").c_str());
 		uint64_t n=0;
-		f>>n;
+		f.read((char*)&n,sizeof(uint64_t));
 		for(uint64_t i=0;i<n;i++){
 			m_myReads->at(i)->readOffsets(&f);
 		}
@@ -811,7 +814,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 		ifstream f2(m_parameters->getCheckpointFile("OptimalMarkers").c_str());
 
 		n=0;
-		f2>>n;
+		f2.read((char*)&n,sizeof(uint64_t));
 		uint64_t loaded=0;
 		for(uint64_t i=0;i<n;i++){
 			Kmer kmer;
@@ -821,7 +824,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 				m_parameters->getColorSpaceMode());
 			bool isLower=kmer<complement;
 			int markers=0;
-			f2>>markers;
+			f2.read((char*)&markers,sizeof(int));
 			for(int j=0;j<markers;j++){
 				loaded++;
 				ReadAnnotation*marker=
@@ -1856,15 +1859,14 @@ void MessageProcessor::call_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION(Message*mes
 	/* write the Seeds checkpoint */
 	if(m_parameters->hasOption("-write-checkpoints")){
 		ofstream f(m_parameters->getCheckpointFile("Seeds").c_str());
-		f<<m_seedingData->m_SEEDING_seeds.size()<<endl;
+		int count=m_seedingData->m_SEEDING_seeds.size();
+		f.write((char*)&count,sizeof(int));
 		for(int i=0;i<(int)m_seedingData->m_SEEDING_seeds.size();i++){
-			f<<m_seedingData->m_SEEDING_seeds[i].size()<<endl;
+			int length=m_seedingData->m_SEEDING_seeds[i].size();
+			f.write((char*)&length,sizeof(int));
 			for(int j=0;j<(int)m_seedingData->m_SEEDING_seeds[i].size();j++){
-				if(j!=0)
-					f<<" ";
 				m_seedingData->m_SEEDING_seeds[i][j].write(&f);
 			}
-			f<<endl;
 		}
 		f.close();
 	}

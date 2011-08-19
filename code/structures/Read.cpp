@@ -225,13 +225,17 @@ int Read::getReverseOffset(){
 }
 
 void Read::writeOffsets(ofstream*f){
-	(*f)<<getForwardOffset()<<"	"<<getReverseOffset()<<endl;
+	int forwardOffset=getForwardOffset();
+	int reverseOffset=getReverseOffset();
+	f->write((char*)&forwardOffset,sizeof(int));
+	f->write((char*)&reverseOffset,sizeof(int));
 }
 
 void Read::readOffsets(ifstream*f){
 	int forwardOffset=0;
 	int reverseOffset=0;
-	(*f)>>forwardOffset>>reverseOffset;
+	f->read((char*)&forwardOffset,sizeof(int));
+	f->read((char*)&reverseOffset,sizeof(int));
 	setForwardOffset(forwardOffset);
 	setReverseOffset(reverseOffset);
 }
