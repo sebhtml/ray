@@ -422,7 +422,10 @@ void MessageProcessor::call_RAY_MPI_TAG_WELCOME(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message){
 	/* write checkpoint if necessary */
 	if(m_parameters->hasOption("-write-checkpoints")){
+		/* announce the user that we are writing a checkpoint */
 		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint <GenomeGraph>"<<endl;
+		cout.flush();
+
 		ofstream f(m_parameters->getCheckpointFile("GenomeGraph").c_str());
 
 		GridTableIterator iterator;
@@ -494,7 +497,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message
 		#endif
 
 		cout<<"Rank "<<m_parameters->getRank()<<" loading checkpoint GenomeGraph ["<<n<<"/"<<n<<"]"<<endl;
-		cout<<"Rank "<<m_parameters->getRank()<<" loaded "<<n<<" vertices from checkpoint."<<endl;
+		cout<<"Rank "<<m_parameters->getRank()<<" loaded "<<n<<" vertices from checkpoint GenomeGraph"<<endl;
 	}
 
 	(*m_mode)=RAY_SLAVE_MODE_INDEX_SEQUENCES;
@@ -801,7 +804,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 	/* read checkpoints ReadOffsets and OptimalMarkers */
 	
 	if(m_parameters->hasCheckpoint("OptimalMarkers") && m_parameters->hasCheckpoint("ReadOffsets")){
-		cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint <ReadOffsets>"<<endl;
+		cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint ReadOffsets"<<endl;
 		ifstream f(m_parameters->getCheckpointFile("ReadOffsets").c_str());
 		uint64_t n=0;
 		f.read((char*)&n,sizeof(uint64_t));
@@ -810,7 +813,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 		}
 		f.close();
 
-		cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint <OptimalMarkers>"<<endl;
+		cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint OptimalMarkers"<<endl;
 		ifstream f2(m_parameters->getCheckpointFile("OptimalMarkers").c_str());
 
 		n=0;
@@ -855,7 +858,6 @@ void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 
 		cout<<"Rank "<<m_parameters->getRank()<<" loaded "<<loaded<<" markers from checkpoint OptimalMarkers."<<endl;
 	}
-
 
 	(*m_mode)=RAY_SLAVE_MODE_START_SEEDING;
 	if(m_parameters->showMemoryUsage()){
