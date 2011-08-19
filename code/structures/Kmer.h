@@ -155,6 +155,7 @@ public:
 	string idToWord(int wordSize,bool color);
 
 	void write(ofstream*f);
+	void read(ifstream*f);
 
 }ATTRIBUTE_PACKED;
 

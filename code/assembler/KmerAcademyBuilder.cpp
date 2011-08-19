@@ -52,14 +52,18 @@ void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
 		this->m_outboxAllocator=m_outboxAllocator;
 	}
 
+	if(m_finished)
+		return;
+
 	if(!m_checkedCheckpoint){
-		if(m_parameters->hasCheckpoint("GenomeGraph") && m_parameters->hasCheckpoint("CoverageDistribution")){
+		m_checkedCheckpoint=true;
+		if(m_parameters->hasCheckpoint("GenomeGraph")){
+			cout<<"Rank "<<m_parameters->getRank()<<": GenomeGraph checkpoint exists, not counting k-mers."<<endl;
 			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED,rank);
 			m_outbox->push_back(aMessage);
 			m_finished=true;
 			return;
 		}
-		m_checkedCheckpoint=true;
 	}
 
 	#ifdef ASSERT
@@ -72,9 +76,6 @@ void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
 	if(m_pendingMessages!=0){
 		return;
 	}
-
-	if(m_finished)
-		return;
 
 	if(*m_mode_send_vertices_sequence_id%10000==0 &&m_mode_send_vertices_sequence_id_position==0
 	&&*m_mode_send_vertices_sequence_id<(int)m_myReads->size()){

@@ -353,3 +353,13 @@ void Kmer::write(ofstream*f){
 	}
 	(*f)<<dec;
 }
+
+void Kmer::read(ifstream*f){
+	(*f)>>hex;
+	for(int i=0;i<getNumberOfU64();i++){
+		uint64_t a=0;
+		(*f)>>a;
+		setU64(i,a);
+	}
+	(*f)>>dec;
+}

@@ -768,16 +768,17 @@ void Machine::call_RAY_MASTER_MODE_START_EDGES_DISTRIBUTION(){
 }
 
 void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
-	if(m_parameters.hasCheckpoint("GenomeGraph") && m_parameters.hasCheckpoint("CoverageDistribution")){
+	if(m_parameters.hasCheckpoint("GenomeGraph")){
 		cout<<"Rank "<<m_parameters.getRank()<<" is reading checkpoint <CoverageDistribution>"<<endl;
 		m_coverageDistribution.clear();
 		ifstream f(m_parameters.getCheckpointFile("CoverageDistribution").c_str());
 		int n=0;
+		f>>hex;
 		f>>n;
 		int coverage=0;
 		uint64_t count=0;
 		for(int i=0;i<n;i++){
-			f>>count>>count;
+			f>>coverage>>count;
 			m_coverageDistribution[coverage]=count;
 		}
 		f.close();
@@ -966,6 +967,7 @@ void Machine::call_RAY_MASTER_MODE_WRITE_KMERS(){
 			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getPrefix()<<".kmers.txt"<<endl;
 		}
 
+		/** TODO: there is a problem with this file when using -read-checkpoints */
 		ostringstream edgeFile;
 		edgeFile<<m_parameters.getPrefix()<<".degreeDistribution.txt";
 		ofstream f(edgeFile.str().c_str());

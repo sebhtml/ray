@@ -440,6 +440,61 @@ void MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message
 	}
 
 	/* read the Graph checkpoint here */
+	if(m_parameters->hasCheckpoint("GenomeGraph")){
+		cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint GenomeGraph"<<endl;
+		ifstream f(m_parameters->getCheckpointFile("GenomeGraph").c_str());
+		uint64_t n=0;
+		f>>n;
+		for(uint64_t  i=0;i<n;i++){
+			if(i%100000==0){
+				cout<<"Rank "<<m_parameters->getRank()<<" loading checkpoint GenomeGraph ["<<i<<"/"<<n<<"]"<<endl;
+			}
+			Kmer kmer;
+			kmer.read(&f);
+			int coverage=0;
+			f>>coverage;
+			Vertex*tmp=m_subgraph->insert(&kmer);
+
+			/* we only want to construct it once. */
+			if(m_subgraph->inserted()){
+				tmp->constructor();
+				tmp->setCoverage(&kmer,coverage);
+			}
+			int parents=0;
+			f>>parents;
+			for(int j=0;j<parents;j++){
+				Kmer parent;
+				parent.read(&f);
+				tmp->addIngoingEdge(&kmer,&parent,m_parameters->getWordSize());
+			}
+			int children=0;
+			f>>children;
+
+			for(int j=0;j<children;j++){
+				Kmer child;
+				child.read(&f);
+				tmp->addOutgoingEdge(&kmer,&child,m_parameters->getWordSize());
+			}
+
+			#ifdef ASSERT
+			vector<Kmer> parentKmers=tmp->getIngoingEdges(&kmer,m_parameters->getWordSize());
+			vector<Kmer> childKmers=tmp->getOutgoingEdges(&kmer,m_parameters->getWordSize());
+			if((int)parentKmers.size()!=parents){
+				cout<<"Expected: "<<parents<<" Actual: "<<parentKmers.size()<<endl;
+			}
+			assert((int)parentKmers.size()==parents);
+			assert((int)childKmers.size()==children);
+			#endif
+		}
+		f.close();
+
+		#ifdef ASSERT
+		assert(m_subgraph->size()==n);
+		#endif
+
+		cout<<"Rank "<<m_parameters->getRank()<<" loading checkpoint GenomeGraph ["<<n<<"/"<<n<<"]"<<endl;
+		cout<<"Rank "<<m_parameters->getRank()<<" loaded "<<n<<" vertices from checkpoint."<<endl;
+	}
 
 	(*m_mode)=RAY_SLAVE_MODE_INDEX_SEQUENCES;
 }

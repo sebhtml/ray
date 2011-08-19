@@ -76,6 +76,8 @@ class SeedingData{
 	int m_maximumAliveWorkers;
 	int m_maximumWorkers;
 	time_t m_last;
+
+	void loadCheckpoint();
 public:
 
 	map<int,int> m_masterSeedLengths;

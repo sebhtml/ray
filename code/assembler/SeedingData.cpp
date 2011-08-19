@@ -52,9 +52,13 @@ void SeedingData::computeSeeds(){
 
 	if(!m_checkedCheckpoint){
 		if(m_parameters->hasCheckpoint("Seeds")){
+			cout<<"Rank "<<m_parameters->getRank()<<": checkpoint <Seeds> exists, not computing seeds."<<endl;
 			(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_SEEDING_IS_OVER,getRank());
 			m_outbox->push_back(aMessage);
+
+			loadCheckpoint();
+
 			return;
 		}
 		m_checkedCheckpoint=true;
@@ -324,5 +328,28 @@ void SeedingData::writeSeedStatistics(){
 		int count=i->second;
 		f<<length<<"\t"<<count<<endl;
 	}
+	f.close();
+}
+
+
+void SeedingData::loadCheckpoint(){
+	cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint <Seeds>"<<endl;
+
+	ifstream f(m_parameters->getCheckpointFile("Seeds").c_str());
+	int n=0;
+	f>>n;
+	for(int i=0;i<n;i++){
+		vector<Kmer> seed;
+		int vertices=0;
+		f>>vertices;
+		for(int j=0;j<vertices;j++){
+			Kmer kmer;
+			kmer.read(&f);
+			seed.push_back(kmer);
+			//cout<<kmer.idToWord(m_parameters->getWordSize(),m_parameters->getColorSpaceMode())<<endl;
+		}
+		m_SEEDING_seeds.push_back(seed);
+	}
+	cout<<"Rank "<<m_parameters->getRank()<<" loaded "<<n<<" seeds from checkpoint"<<endl;
 	f.close();
 }
