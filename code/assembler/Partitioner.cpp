@@ -142,12 +142,57 @@ void Partitioner::slaveMethod(){
 		m_currentFileToCount=0;
 		m_currentlySendingCounts=false;
 		m_sentCount=false;
+		
+		/* possibly read the checkpoint */
+		if(m_parameters->hasCheckpoint("Partition")){
+			ifstream f(m_parameters->getCheckpointFile("Partition").c_str());
+			cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint Partition"<<endl;
+			int count=0;
+			f.read((char*)&count,sizeof(int));
+			for(int i=0;i<count;i++){
+				int file=-1;
+				uint64_t sequences=0;
+				f.read((char*)&file,sizeof(int));
+				f.read((char*)&sequences,sizeof(uint64_t));
+
+				#ifdef ASSERT
+				assert(file>=0);
+				assert(m_slaveCounts.count(file)==0);
+				#endif
+			
+				m_slaveCounts[file]=sequences;
+
+				#ifdef ASSERT
+				assert(m_slaveCounts.count(file)>0);
+				#endif
+				cout<<"Rank "<<m_parameters->getRank()<<": from checkpoint Partition, file "<<file<<" has "<<sequences<<" sequences."<<endl;
+			}
+			f.close();
+			m_currentFileToCount=m_parameters->getNumberOfFiles();
+		}
 	/* all files were processed, tell control peer that we are done */
 	}else if(m_currentFileToCount==m_parameters->getNumberOfFiles()){
 		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_COUNT_FILE_ENTRIES_REPLY,m_parameters->getRank());
 		m_outbox->push_back(aMessage);
 		/* increment it so we don't go here again. */
 		m_currentFileToCount++;
+
+		/* Here we write the checkpoint Partition */
+		if(m_parameters->hasOption("-write-checkpoints")){
+			ofstream f(m_parameters->getCheckpointFile("Partition").c_str());
+			cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint Partition"<<endl;
+			int count=m_slaveCounts.size();
+			f.write((char*)&count,sizeof(int));
+			for(map<int,uint64_t>::iterator i=m_slaveCounts.begin();
+				i!=m_slaveCounts.end();i++){
+				int file=i->first;
+				uint64_t sequences=i->second;
+				f.write((char*)&file,sizeof(int));
+				f.write((char*)&sequences,sizeof(uint64_t));
+			}
+
+			f.close();
+		}
 	/** count sequences in a file */
 	}else if(m_currentFileToCount<m_parameters->getNumberOfFiles()){
 		int rankInCharge=m_currentFileToCount%m_parameters->getSize();
