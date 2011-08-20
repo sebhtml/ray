@@ -200,6 +200,8 @@ public:
 
 	/** true if file exists */
 	bool hasFile(const char*file);
+	bool writeCheckpoints();
+	bool readCheckpoints();
 };
 
 #endif

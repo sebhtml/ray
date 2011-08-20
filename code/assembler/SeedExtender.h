@@ -90,6 +90,9 @@ class SeedExtender{
 
 	void printTree(Kmer root,
 map<Kmer,set<Kmer> >*arcs,map<Kmer,int>*coverages,int depth,set<Kmer>*visited);
+
+	void readCheckpoint();
+	void writeCheckpoint();
 public:
 	bool m_sequenceReceived;
 	bool m_sequenceRequested;

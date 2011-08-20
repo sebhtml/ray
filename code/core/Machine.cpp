@@ -769,7 +769,7 @@ void Machine::call_RAY_MASTER_MODE_START_EDGES_DISTRIBUTION(){
 
 void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	if(m_parameters.hasCheckpoint("GenomeGraph")){
-		cout<<"Rank "<<m_parameters.getRank()<<" is reading checkpoint <CoverageDistribution>"<<endl;
+		cout<<"Rank "<<m_parameters.getRank()<<" is reading checkpoint CoverageDistribution"<<endl;
 		m_coverageDistribution.clear();
 		ifstream f(m_parameters.getCheckpointFile("CoverageDistribution").c_str());
 		int n=0;
@@ -784,7 +784,7 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 		f.close();
 	}
 
-	if(m_parameters.hasOption("-write-checkpoints")){
+	if(m_parameters.writeCheckpoints()){
 		cout<<"Rank "<<m_parameters.getRank()<<" is writing checkpoint <CoverageDistribution>"<<endl;
 		ofstream f(m_parameters.getCheckpointFile("CoverageDistribution").c_str());
 		int theSize=m_coverageDistribution.size();
@@ -971,7 +971,11 @@ void Machine::call_RAY_MASTER_MODE_WRITE_KMERS(){
 			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getPrefix()<<".kmers.txt"<<endl;
 		}
 
-		/** TODO: there is a problem with this file when using -read-checkpoints */
+		m_master_mode=RAY_MASTER_MODE_TRIGGER_INDEXING;
+
+		if(m_parameters.hasCheckpoint("GenomeGraph"))
+			return;
+
 		ostringstream edgeFile;
 		edgeFile<<m_parameters.getPrefix()<<".degreeDistribution.txt";
 		ofstream f(edgeFile.str().c_str());
@@ -992,7 +996,6 @@ void Machine::call_RAY_MASTER_MODE_WRITE_KMERS(){
 		f.close();
 		cout<<"Rank "<<getRank()<<" wrote "<<edgeFile.str()<<endl;
 	
-		m_master_mode=RAY_MASTER_MODE_TRIGGER_INDEXING;
 	}else if(m_coverageRank==m_numberOfRanksDone){
 		Message aMessage(NULL,0,m_coverageRank,RAY_MPI_TAG_WRITE_KMERS,getRank());
 		m_outbox.push_back(aMessage);

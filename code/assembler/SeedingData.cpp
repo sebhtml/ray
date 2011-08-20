@@ -52,7 +52,7 @@ void SeedingData::computeSeeds(){
 
 	if(!m_checkedCheckpoint){
 		if(m_parameters->hasCheckpoint("Seeds")){
-			cout<<"Rank "<<m_parameters->getRank()<<": checkpoint <Seeds> exists, not computing seeds."<<endl;
+			cout<<"Rank "<<m_parameters->getRank()<<": checkpoint Seeds exists, not computing seeds."<<endl;
 			(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_SEEDING_IS_OVER,getRank());
 			m_outbox->push_back(aMessage);
@@ -333,7 +333,7 @@ void SeedingData::writeSeedStatistics(){
 
 
 void SeedingData::loadCheckpoint(){
-	cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint <Seeds>"<<endl;
+	cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint Seeds"<<endl;
 
 	ifstream f(m_parameters->getCheckpointFile("Seeds").c_str());
 	int n=0;

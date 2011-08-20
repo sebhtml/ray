@@ -47,7 +47,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 
 	if(!m_checkedCheckpoint){
 		if(m_parameters->hasCheckpoint("OptimalMarkers") && m_parameters->hasCheckpoint("ReadOffsets")){
-			cout<<"Rank "<<m_parameters->getRank()<<": checkpoint <OptimalMarkers> exists, not selecting markers."<<endl;
+			cout<<"Rank "<<m_parameters->getRank()<<": checkpoint OptimalMarkers exists, not selecting markers."<<endl;
 			(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,m_rank);
 			m_outbox->push_back(aMessage);

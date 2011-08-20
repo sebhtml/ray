@@ -43,6 +43,25 @@ int*last_value,bool*vertexCoverageRequested,int wordSize,int size,bool*vertexCov
 int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,vector<Kmer>*receivedOutgoingEdges,Chooser*chooser,
 BubbleData*bubbleData,
 int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
+	
+	/* read the checkpoint */
+	if(m_parameters->hasCheckpoint("Extensions")){
+
+		readCheckpoint();
+
+		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
+		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_EXTENSION_IS_DONE,theRank);
+		outbox->push_back(aMessage);
+
+		// store the reverse map
+		for(int i=0;i<(int)ed->m_EXTENSION_identifiers.size();i++){
+			uint64_t id=ed->m_EXTENSION_identifiers[i];
+			fusionData->m_FUSION_identifier_map[id]=i;
+		}
+
+		return;
+	}
+
 	if(ed->m_EXTENSION_currentSeedIndex==(int)(*seeds).size()
 		|| seeds->size()==0){
 		if((*seeds).size()>0)
@@ -61,13 +80,22 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		}
 
 		ed->m_mode_EXTENSION=false;
-		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 	
-		// store the lengths.
+		// store the reverse map
 		for(int i=0;i<(int)ed->m_EXTENSION_identifiers.size();i++){
 			uint64_t id=ed->m_EXTENSION_identifiers[i];
 			fusionData->m_FUSION_identifier_map[id]=i;
 		}
+
+		#ifdef ASSERT
+		assert(m_ed->m_EXTENSION_identifiers.size()==m_ed->m_EXTENSION_contigs.size());
+		#endif
+
+		/* write checkpoint */
+		if(m_parameters->writeCheckpoints())
+			writeCheckpoint();
+
+		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_EXTENSION_IS_DONE,theRank);
 		outbox->push_back(aMessage);
 
@@ -1461,4 +1489,60 @@ void SeedExtender::printExtensionStatus(Kmer*currentVertex){
 	#endif
 }
 
+void SeedExtender::writeCheckpoint(){
+	cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint Extensions"<<endl;
+	ofstream f(m_parameters->getCheckpointFile("Extensions").c_str());
 
+	int count=m_ed->m_EXTENSION_contigs.size();
+	f.write((char*)&count,sizeof(int));
+
+	for(int i=0;i<count;i++){
+		int length=m_ed->m_EXTENSION_contigs[i].size();
+		f.write((char*)&length,sizeof(int));
+		for(int j=0;j<length;j++){
+			m_ed->m_EXTENSION_contigs[i][j].write(&f);
+		}
+	}
+	f.close();
+}
+
+void SeedExtender::readCheckpoint(){
+	cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint Extensions"<<endl;
+	ifstream f(m_parameters->getCheckpointFile("Extensions").c_str());
+
+	#ifdef ASSERT
+	assert(m_ed->m_EXTENSION_contigs.size()==0);
+	#endif
+
+	int count=0;
+	f.read((char*)&count,sizeof(int));
+
+	for(int i=0;i<count;i++){
+		int length=0;
+		f.read((char*)&length,sizeof(int));
+		#ifdef ASSERT
+		assert(length>0);
+		#endif
+		vector<Kmer> extension;
+		for(int j=0;j<length;j++){
+			Kmer kmer;
+			kmer.read(&f);
+			extension.push_back(kmer);
+		}
+		m_ed->m_EXTENSION_contigs.push_back(extension);
+
+		/* add the identifier */
+		uint64_t id=getPathUniqueId(m_parameters->getRank(),m_ed->m_EXTENSION_contigs.size()-1);
+		m_ed->m_EXTENSION_identifiers.push_back(id);
+	}
+
+	f.close();
+
+	cout<<"Rank "<<m_parameters->getRank()<<" loaded "<<count<<" extensions from checkpoint Extensions"<<endl;
+	
+	#ifdef ASSERT
+	assert(count==(int)m_ed->m_EXTENSION_contigs.size());
+	assert(m_ed->m_EXTENSION_identifiers.size()==m_ed->m_EXTENSION_contigs.size());
+	#endif
+
+}

@@ -5,11 +5,19 @@ SYNOPSIS
        mpirun -np NUMBER_OF_RANKS Ray -k KMERLENGTH -p l1_1.fastq l1_2.fastq -p l2_1.fastq l2_2.fastq -o test
 
 DESCRIPTION:
+
+       -help
+              Displays this help page.
+
+  K-mer length
+
        -k kmerLength
               Selects the length of k-mers. The default value is 21. 
               It must be odd because reverse-complement vertices are stored together.
               The maximum length is defined at compilation by MAXKMERLENGTH
               Larger k-mers utilise more memory.
+
+  Inputs
 
        -p leftSequenceFile rightSequenceFile [averageOuterDistance standardDeviation]
               Provides two files containing paired-end reads.
@@ -21,6 +29,8 @@ DESCRIPTION:
 
        -s sequenceFile
               Provides a file containing single-end reads.
+
+  Outputs
 
        -o outputPrefix
               Specifies the prefix for outputted files.
@@ -41,26 +51,12 @@ DESCRIPTION:
        -write-extensions
               Writes extension DNA sequences
 
+  Internals
+
        -run-profiler
               Runs the profiler as the code runs.
               Needs HAVE_CLOCK_GETTIME=y at compilation
               Running the profiler increases running times.
-
-       -color-space
-              Runs in color-space
-              Needs csfasta files. Activated automatically if csfasta files are provided.
-
-       -minimumCoverage minimumCoverage
-              Sets manually the minimum coverage.
-              If not provided, it is computed by Ray automatically.
-
-       -peakCoverage peakCoverage
-              Sets manually the peak coverage.
-              If not provided, it is computed by Ray automatically.
-
-       -repeatCoverage repeatCoverage
-              Sets manually the repeat coverage.
-              If not provided, it is computed by Ray automatically.
 
        -debug-bubbles
               Debugs bubble code.
@@ -87,18 +83,44 @@ DESCRIPTION:
        -show-memory-allocations
               Shows memory allocation events
 
+  Assembly options (defaults work well)
+
+       -color-space
+              Runs in color-space
+              Needs csfasta files. Activated automatically if csfasta files are provided.
+
+       -minimumCoverage minimumCoverage
+              Sets manually the minimum coverage.
+              If not provided, it is computed by Ray automatically.
+
+       -peakCoverage peakCoverage
+              Sets manually the peak coverage.
+              If not provided, it is computed by Ray automatically.
+
+       -repeatCoverage repeatCoverage
+              Sets manually the repeat coverage.
+              If not provided, it is computed by Ray automatically.
+
+  Checkpointing
+
        -write-checkpoints
               Write checkpoint files
 
        -read-checkpoints
               Read checkpoint files
 
-       -help
-              Displays this help page.
+       -read-write-checkpoints
+              Read and write checkpoint files
+
+  Hardware testing
+
+       -test-network-only
+              Test the network and return.
+
 
 FILES
 
-     Input files
+  Input files
 
      Note: file format is determined with file extension.
 
@@ -111,9 +133,9 @@ FILES
      .sff (paired reads must be extracted manually)
      .csfasta (color-space reads)
 
-     Outputted files
+  Outputted files
 
-     Scaffolds
+  Scaffolds
 
      PREFIX.Scaffolds.fasta
      	The scaffold sequences in FASTA format
@@ -124,19 +146,19 @@ FILES
      PREFIX.ScaffoldLinks.txt
      	Scaffold links
 
-     Contigs
+  Contigs
 
      PREFIX.Contigs.fasta
      	Contiguous sequences in FASTA format
      PREFIX.ContigLengths.txt
      	The lengths of contiguous sequences
 
-     Summary
+  Summary
 
      PREFIX.OutputNumbers.txt
      	Overall numbers for the assembly
 
-     de Bruijn graph
+  de Bruijn graph
 
      PREFIX.CoverageDistribution.txt
      	The distribution of coverage values
@@ -149,7 +171,7 @@ FILES
          The resulting file is not utilised by Ray.
          The resulting file is very large.
 
-     Assembly steps
+  Assembly steps
 
      PREFIX.SeedLengthDistribution.txt
          Distribution of seed length
@@ -158,33 +180,33 @@ FILES
      PREFIX.<rank>.RayExtensions.fasta
          Extension DNA sequences, required option: -write-extensions
 
-     Paired reads
+  Paired reads
 
      PREFIX.LibraryStatistics.txt
      	Estimation of outer distances for paired reads
      PREFIX.Library<LibraryNumber>.txt
          Frequencies for observed outer distances (insert size + read lengths)
 
-     Partition
+  Partition
 
      PREFIX.NumberOfSequences.txt
          Number of reads in each file
      PREFIX.SequencePartition.txt
      	Sequence partition
 
-     Ray software
+  Ray software
 
      PREFIX.RayVersion.txt
      	The version of Ray
      PREFIX.RayCommand.txt
      	The exact same command provided 
 
-     AMOS
+  AMOS
 
      PREFIX.AMOS.afg
      	Assembly representation in AMOS format, required option: -amos
 
-     Communication
+  Communication
 
      PREFIX.MessagePassingInterface.txt
 	    	Number of messages sent

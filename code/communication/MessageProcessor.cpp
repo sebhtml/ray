@@ -420,28 +420,6 @@ void MessageProcessor::call_RAY_MPI_TAG_WELCOME(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message){
-	/* write checkpoint if necessary */
-	if(m_parameters->hasOption("-write-checkpoints")){
-		/* announce the user that we are writing a checkpoint */
-		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint <GenomeGraph>"<<endl;
-		cout.flush();
-
-		ofstream f(m_parameters->getCheckpointFile("GenomeGraph").c_str());
-
-		GridTableIterator iterator;
-		iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
-		uint64_t theSize=m_subgraph->size();
-
-		f.write((char*)&theSize,sizeof(uint64_t));
-
-		while(iterator.hasNext()){
-			Vertex*node=iterator.next();
-			Kmer key=*(iterator.getKey());
-			node->write(&key,&f,m_parameters->getWordSize());
-		}
-
-		f.close();
-	}
 
 	/* read the Graph checkpoint here */
 	if(m_parameters->hasCheckpoint("GenomeGraph")){
@@ -498,6 +476,29 @@ void MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message
 
 		cout<<"Rank "<<m_parameters->getRank()<<" loading checkpoint GenomeGraph ["<<n<<"/"<<n<<"]"<<endl;
 		cout<<"Rank "<<m_parameters->getRank()<<" loaded "<<n<<" vertices from checkpoint GenomeGraph"<<endl;
+	}
+
+	/* write checkpoint if necessary */
+	if(m_parameters->writeCheckpoints()){
+		/* announce the user that we are writing a checkpoint */
+		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint <GenomeGraph>"<<endl;
+		cout.flush();
+
+		ofstream f(m_parameters->getCheckpointFile("GenomeGraph").c_str());
+
+		GridTableIterator iterator;
+		iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
+		uint64_t theSize=m_subgraph->size();
+
+		f.write((char*)&theSize,sizeof(uint64_t));
+
+		while(iterator.hasNext()){
+			Vertex*node=iterator.next();
+			Kmer key=*(iterator.getKey());
+			node->write(&key,&f,m_parameters->getWordSize());
+		}
+
+		f.close();
 	}
 
 	(*m_mode)=RAY_SLAVE_MODE_INDEX_SEQUENCES;
@@ -773,8 +774,8 @@ void MessageProcessor::call_RAY_MPI_TAG_READY_TO_SEED(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 	/* write checkpoint */
-	if(m_parameters->hasOption("-write-checkpoints")){
-		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint <ReadOffsets>"<<endl;
+	if(m_parameters->writeCheckpoints()){
+		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint ReadOffsets"<<endl;
 		ofstream f(m_parameters->getCheckpointFile("ReadOffsets").c_str());
 		uint64_t count=m_myReads->size();
 		f.write((char*)&count,sizeof(uint64_t));
@@ -783,7 +784,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 		}
 		f.close();
 	
-		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint <OptimalMarkers>"<<endl;
+		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint OptimalMarkers"<<endl;
 		ofstream f2(m_parameters->getCheckpointFile("OptimalMarkers").c_str());
 
 		GridTableIterator iterator;
@@ -1146,6 +1147,7 @@ void MessageProcessor::call_RAY_MPI_TAG_EXTENSION_IS_DONE(Message*message){
 	(m_ed->m_EXTENSION_numberOfRanksDone)++;
 	(m_ed->m_EXTENSION_currentRankIsDone)=true;
 	if((m_ed->m_EXTENSION_numberOfRanksDone)==m_size){
+		cout<<"Rank "<<m_parameters->getRank()<<" starting fusions"<<endl;
 		(*m_master_mode)=RAY_MASTER_MODE_TRIGGER_FUSIONS;
 	}
 }
@@ -1694,6 +1696,10 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 	// clearing old data too!.
 	m_fusionData->m_FINISH_pathLengths.clear();
 
+	#ifdef ASSERT
+	assert(m_ed->m_EXTENSION_contigs.size()==m_ed->m_EXTENSION_identifiers.size());
+	#endif
+
 	// clear graph
 	GridTableIterator iterator;
 	iterator.constructor(m_subgraph,*m_wordSize,m_parameters);
@@ -1705,6 +1711,8 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 
 	m_directionsAllocator->clear();
 
+	cout<<"Rank "<<m_parameters->getRank()<<" adding "<<m_fusionData->m_FINISH_newFusions.size()<<" new fusions"<<endl;
+
 	// add the FINISHING bits
 	for(int i=0;i<(int)m_fusionData->m_FINISH_newFusions.size();i++){
 		(m_ed->m_EXTENSION_contigs).push_back((m_fusionData->m_FINISH_newFusions)[i]);
@@ -1714,8 +1722,16 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 
 	vector<vector<Kmer> > fusions;
 	for(int i=0;i<(int)(m_ed->m_EXTENSION_contigs).size();i++){
-		uint64_t id=(m_ed->m_EXTENSION_identifiers)[i];
-		if(m_fusionData->m_FUSION_eliminated.count(id)==0){
+		bool eliminated=false;
+
+		/* it is not a new one */
+		if(i<(int)m_ed->m_EXTENSION_identifiers.size()){
+			uint64_t id=(m_ed->m_EXTENSION_identifiers)[i];
+			if(m_fusionData->m_FUSION_eliminated.count(id)>0)
+				eliminated=true;
+		}
+
+		if(!eliminated){
 			fusions.push_back((m_ed->m_EXTENSION_contigs)[i]);
 			if(!appendReverseComplement)
 				continue;
@@ -1749,6 +1765,10 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 
 	(m_ed->m_EXTENSION_contigs).clear();
 	(m_ed->m_EXTENSION_contigs)=fusions;
+
+	#ifdef ASSERT
+	assert(m_ed->m_EXTENSION_contigs.size()==m_ed->m_EXTENSION_identifiers.size());
+	#endif
 
 	Message aMessage(NULL,0,source,RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY,m_rank);
 	m_outbox->push_back(aMessage);
@@ -1859,8 +1879,9 @@ void MessageProcessor::call_RAY_MPI_TAG_WRITE_AMOS_REPLY(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION(Message*message){
 	/* write the Seeds checkpoint */
-	if(m_parameters->hasOption("-write-checkpoints")){
+	if(m_parameters->writeCheckpoints()){
 		ofstream f(m_parameters->getCheckpointFile("Seeds").c_str());
+		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint Seeds"<<endl;
 		int count=m_seedingData->m_SEEDING_seeds.size();
 		f.write((char*)&count,sizeof(int));
 		for(int i=0;i<(int)m_seedingData->m_SEEDING_seeds.size();i++){

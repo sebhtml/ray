@@ -58,7 +58,7 @@ void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
 	if(!m_checkedCheckpoint){
 		m_checkedCheckpoint=true;
 		if(m_parameters->hasCheckpoint("GenomeGraph")){
-			cout<<"Rank "<<m_parameters->getRank()<<": GenomeGraph checkpoint exists, not counting k-mers."<<endl;
+			cout<<"Rank "<<m_parameters->getRank()<<": checkpoint GenomeGraph exists, not counting k-mers."<<endl;
 			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED,rank);
 			m_outbox->push_back(aMessage);
 			m_finished=true;

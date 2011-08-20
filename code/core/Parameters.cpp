@@ -1037,12 +1037,21 @@ void Parameters::showUsage(){
 	cout<<basicSpaces<<"mpirun -np NUMBER_OF_RANKS Ray -k KMERLENGTH -p l1_1.fastq l1_2.fastq -p l2_1.fastq l2_2.fastq -o test"<<endl;
 	cout<<endl;
 	cout<<"DESCRIPTION:"<<endl;
+
+	cout<<endl;
+	showOption("-help","Displays this help page.");
+	cout<<endl;
+
+	cout<<"  K-mer length"<<endl;
+	cout<<endl;
 	showOption("-k kmerLength","Selects the length of k-mers. The default value is 21. ");
 	showOptionDescription("It must be odd because reverse-complement vertices are stored together.");
 	showOptionDescription("The maximum length is defined at compilation by MAXKMERLENGTH");
 	showOptionDescription("Larger k-mers utilise more memory.");
 	cout<<endl;
 
+	cout<<"  Inputs"<<endl;
+	cout<<endl;
 	showOption("-p leftSequenceFile rightSequenceFile [averageOuterDistance standardDeviation]","Provides two files containing paired-end reads.");
 	showOptionDescription("averageOuterDistance and standardDeviation are automatically computed if not provided.");
 	cout<<endl;
@@ -1052,6 +1061,9 @@ void Parameters::showUsage(){
 	cout<<endl;
 
 	showOption("-s sequenceFile","Provides a file containing single-end reads.");
+	cout<<endl;
+
+	cout<<"  Outputs"<<endl;
 	cout<<endl;
 	showOption("-o outputPrefix","Specifies the prefix for outputted files.");
 	cout<<endl;
@@ -1067,21 +1079,12 @@ void Parameters::showUsage(){
 	cout<<endl;
 	showOption("-write-extensions","Writes extension DNA sequences");
 	cout<<endl;
+
+	cout<<"  Internals"<<endl;
+	cout<<endl;
 	showOption("-run-profiler","Runs the profiler as the code runs.");
 	showOptionDescription("Needs HAVE_CLOCK_GETTIME=y at compilation");
 	showOptionDescription("Running the profiler increases running times.");
-	cout<<endl;
-	showOption("-color-space","Runs in color-space");
-	showOptionDescription("Needs csfasta files. Activated automatically if csfasta files are provided.");
-	cout<<endl;
-	showOption("-minimumCoverage minimumCoverage","Sets manually the minimum coverage.");
-	showOptionDescription("If not provided, it is computed by Ray automatically.");
-	cout<<endl;
-	showOption("-peakCoverage peakCoverage","Sets manually the peak coverage.");
-	showOptionDescription("If not provided, it is computed by Ray automatically.");
-	cout<<endl;
-	showOption("-repeatCoverage repeatCoverage","Sets manually the repeat coverage.");
-	showOptionDescription("If not provided, it is computed by Ray automatically.");
 	cout<<endl;
 	showOption("-debug-bubbles","Debugs bubble code.");
 	showOptionDescription("Bubbles can be due to heterozygous sites or sequencing errors or other (unknown) events");
@@ -1101,18 +1104,41 @@ void Parameters::showUsage(){
 	cout<<endl;
 	showOption("-show-memory-allocations","Shows memory allocation events");
 	cout<<endl;
+
+	cout<<"  Assembly options (defaults work well)"<<endl;
+	cout<<endl;
+	showOption("-color-space","Runs in color-space");
+	showOptionDescription("Needs csfasta files. Activated automatically if csfasta files are provided.");
+	cout<<endl;
+	showOption("-minimumCoverage minimumCoverage","Sets manually the minimum coverage.");
+	showOptionDescription("If not provided, it is computed by Ray automatically.");
+	cout<<endl;
+	showOption("-peakCoverage peakCoverage","Sets manually the peak coverage.");
+	showOptionDescription("If not provided, it is computed by Ray automatically.");
+	cout<<endl;
+	showOption("-repeatCoverage repeatCoverage","Sets manually the repeat coverage.");
+	showOptionDescription("If not provided, it is computed by Ray automatically.");
+	cout<<endl;
+
+	cout<<"  Checkpointing"<<endl;
+	cout<<endl;
+
 	showOption("-write-checkpoints","Write checkpoint files");
 	cout<<endl;
 	showOption("-read-checkpoints","Read checkpoint files");
 	cout<<endl;
+	showOption("-read-write-checkpoints","Read and write checkpoint files");
+	cout<<endl;
+
+	cout<<"  Hardware testing"<<endl;
+	cout<<endl;
 	showOption("-test-network-only","Test the network and return.");
 	cout<<endl;
-	showOption("-help","Displays this help page.");
 	cout<<endl;
 
 	cout<<"FILES"<<endl;
 	cout<<endl;
-	cout<<"     Input files"<<endl;
+	cout<<"  Input files"<<endl;
 	cout<<endl;
 	cout<<"     Note: file format is determined with file extension."<<endl;
 	cout<<endl;
@@ -1127,10 +1153,10 @@ void Parameters::showUsage(){
 
 
 	cout<<endl;
-	cout<<"     Outputted files"<<endl;
+	cout<<"  Outputted files"<<endl;
 	cout<<endl;
 
-	cout<<"     Scaffolds"<<endl;
+	cout<<"  Scaffolds"<<endl;
 	cout<<endl;
 	cout<<"     PREFIX.Scaffolds.fasta"<<endl;
 	cout<<"     	The scaffold sequences in FASTA format"<<endl;
@@ -1142,7 +1168,7 @@ void Parameters::showUsage(){
 	cout<<"     	Scaffold links"<<endl;
 	cout<<endl;
 
-	cout<<"     Contigs"<<endl;
+	cout<<"  Contigs"<<endl;
 	cout<<endl;
 	cout<<"     PREFIX.Contigs.fasta"<<endl;
 	cout<<"     	Contiguous sequences in FASTA format"<<endl;
@@ -1150,13 +1176,13 @@ void Parameters::showUsage(){
 	cout<<"     	The lengths of contiguous sequences"<<endl;
 	cout<<endl;
 
-	cout<<"     Summary"<<endl;
+	cout<<"  Summary"<<endl;
 	cout<<endl;
 	cout<<"     PREFIX.OutputNumbers.txt"<<endl;
 	cout<<"     	Overall numbers for the assembly"<<endl;
 	cout<<endl;
 
-	cout<<"     de Bruijn graph"<<endl;
+	cout<<"  de Bruijn graph"<<endl;
 	cout<<endl;
 	cout<<"     PREFIX.CoverageDistribution.txt"<<endl;
 	cout<<"     	The distribution of coverage values"<<endl;
@@ -1170,7 +1196,7 @@ void Parameters::showUsage(){
 	cout<<"         The resulting file is very large."<<endl;
 	cout<<endl;
 	
-	cout<<"     Assembly steps"<<endl;
+	cout<<"  Assembly steps"<<endl;
 	cout<<endl;
 	cout<<"     PREFIX.SeedLengthDistribution.txt"<<endl;
 	cout<<"         Distribution of seed length"<<endl;
@@ -1180,7 +1206,7 @@ void Parameters::showUsage(){
 	cout<<"         Extension DNA sequences, required option: -write-extensions"<<endl;
 	cout<<endl;
 
-	cout<<"     Paired reads"<<endl;
+	cout<<"  Paired reads"<<endl;
 	cout<<endl;
 	cout<<"     PREFIX.LibraryStatistics.txt"<<endl;
 	cout<<"     	Estimation of outer distances for paired reads"<<endl;
@@ -1188,7 +1214,7 @@ void Parameters::showUsage(){
 	cout<<"         Frequencies for observed outer distances (insert size + read lengths)"<<endl;
 	cout<<endl;
 
-	cout<<"     Partition"<<endl;
+	cout<<"  Partition"<<endl;
 	cout<<endl;
 	cout<<"     PREFIX.NumberOfSequences.txt"<<endl;
 	cout<<"         Number of reads in each file"<<endl;
@@ -1196,7 +1222,7 @@ void Parameters::showUsage(){
 	cout<<"     	Sequence partition"<<endl;
 	cout<<endl;
 
-	cout<<"     Ray software"<<endl;
+	cout<<"  Ray software"<<endl;
 	cout<<endl;
 	cout<<"     PREFIX.RayVersion.txt"<<endl;
 	cout<<"     	The version of Ray"<<endl;
@@ -1204,14 +1230,14 @@ void Parameters::showUsage(){
 	cout<<"     	The exact same command provided "<<endl;
 	cout<<endl;
 
-	cout<<"     AMOS"<<endl;
+	cout<<"  AMOS"<<endl;
 	cout<<endl;
 	cout<<"     PREFIX.AMOS.afg"<<endl;
 	cout<<"     	Assembly representation in AMOS format, required option: -amos"<<endl;
 	cout<<endl;
 
 
-	cout<<"     Communication"<<endl;
+	cout<<"  Communication"<<endl;
 	cout<<endl;
 	cout<<"     PREFIX.MessagePassingInterface.txt"<<endl;
 	cout<<"	    	Number of messages sent"<<endl;
@@ -1394,12 +1420,26 @@ string Parameters::getCheckpointFile(const char*checkpointName){
 }
 
 bool Parameters::hasCheckpoint(const char*checkpointName){
-	if(!hasOption("-read-checkpoints"))
-		return false;
-
-	/* -write-checkpoints disables -read-checkpoints */
-	if(hasOption("-write-checkpoints"))
+	if(!readCheckpoints())
 		return false;
 
 	return hasFile(getCheckpointFile(checkpointName).c_str());
 }
+
+bool Parameters::writeCheckpoints(){
+	if(hasOption("-write-checkpoints"))
+		return true;
+	if(hasOption("-read-write-checkpoints"))
+		return true;
+	return false;
+}
+
+bool Parameters::readCheckpoints(){
+	if(hasOption("-read-checkpoints"))
+		return true;
+	if(hasOption("-read-write-checkpoints"))
+		return true;
+	return false;
+}
+
+
