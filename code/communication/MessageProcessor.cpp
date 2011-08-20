@@ -1770,6 +1770,8 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 	assert(m_ed->m_EXTENSION_contigs.size()==m_ed->m_EXTENSION_identifiers.size());
 	#endif
 
+	cout<<"Rank "<<m_parameters->getRank()<<" cleared, "<<m_ed->m_EXTENSION_contigs.size()<<" paths"<<endl;
+
 	Message aMessage(NULL,0,source,RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY,m_rank);
 	m_outbox->push_back(aMessage);
 }

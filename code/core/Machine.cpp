@@ -1263,9 +1263,10 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		m_currentCycleStep=1;
 		m_CLEAR_n=0;
 
+		cout<<"Rank 0: starting clear step."<<endl;
+
 		/* change the regulators if this is the first cycle. */
 		if(m_cycleNumber == 0){
-			m_CLEAR_n = m_parameters.getSize();
 			m_isFinalFusion = true;
 			m_currentCycleStep = 4;
 		}
@@ -1312,6 +1313,8 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 			m_outbox.push_back(aMessage);
 		}
 		m_DISTRIBUTE_n=0;
+	
+		cout<<"Rank 0: starting distribution step"<<endl;
 	}else if(m_DISTRIBUTE_n==getSize() && m_isFinalFusion && m_currentCycleStep==5){
 		m_currentCycleStep++;
 

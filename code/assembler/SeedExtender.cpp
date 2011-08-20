@@ -45,21 +45,24 @@ BubbleData*bubbleData,
 int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 	
 	/* read the checkpoint */
-	if(m_parameters->hasCheckpoint("Extensions")){
+	if(!m_checkedCheckpoint){
+		m_checkedCheckpoint=true;
+		if(m_parameters->hasCheckpoint("Extensions")){
 
-		readCheckpoint();
-
-		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
-		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_EXTENSION_IS_DONE,theRank);
-		outbox->push_back(aMessage);
-
-		// store the reverse map
-		for(int i=0;i<(int)ed->m_EXTENSION_identifiers.size();i++){
-			uint64_t id=ed->m_EXTENSION_identifiers[i];
-			fusionData->m_FUSION_identifier_map[id]=i;
+			readCheckpoint();
+	
+			(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
+			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_EXTENSION_IS_DONE,theRank);
+			outbox->push_back(aMessage);
+	
+			// store the reverse map
+			for(int i=0;i<(int)ed->m_EXTENSION_identifiers.size();i++){
+				uint64_t id=ed->m_EXTENSION_identifiers[i];
+				fusionData->m_FUSION_identifier_map[id]=i;
+			}
+	
+			return;
 		}
-
-		return;
 	}
 
 	if(ed->m_EXTENSION_currentSeedIndex==(int)(*seeds).size()
@@ -1294,6 +1297,9 @@ set<uint64_t>*SeedExtender::getEliminatedSeeds(){
 
 void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed,
 	GridTable*subgraph,StaticVector*inbox){
+
+	m_checkedCheckpoint=false;
+
 	m_cacheForRepeatedReads.constructor();
 	m_cacheForListOfReads.constructor();
 	ostringstream prefixFull;

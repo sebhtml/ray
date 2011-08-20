@@ -47,6 +47,8 @@ using namespace std;
  * Performs the extension of seeds.
  */
 class SeedExtender{
+	bool m_checkedCheckpoint;
+
 	map<int,map<int,uint64_t> > m_pairedScores;
 
 	int m_extended;

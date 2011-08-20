@@ -227,6 +227,10 @@ void FusionData::finishFusions(){
 	bool done=false;
 
 	int capLength=80;
+
+	if(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()>20000)
+		capLength=256;
+
 	int position1=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-1-capLength;
 	int position2=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-overlapMinimumLength+capLength;
 	if(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
@@ -331,6 +335,9 @@ void FusionData::finishFusions(){
 					int otherProgression=directions2[index2].getProgression();
 					int observedDistance=(progression1-otherProgression+1);
 					int expectedDistance=(overlapMinimumLength-2*capLength);
+					
+					cout<<"Rank "<<m_parameters->getRank()<<" selfDistance: "<<expectedDistance<<" otherDistance: "<<observedDistance<<endl;
+
 					if(observedDistance==expectedDistance){
 						// this is 
 						done=false;
@@ -616,6 +623,8 @@ void FusionData::makeFusions(){
 							int observedLength=ends[otherPathId][p]-starts[otherPathId][k]+1;
 							int expectedLength=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-2*END_LENGTH+1;
 							int difference=observedLength-expectedLength;
+
+							cout<<"Rank "<<m_parameters->getRank()<<" selfDistance: "<<expectedLength<<" otherDistance: "<<observedLength<<endl;
 							if(difference<0)
 								difference=-difference;
 							if(difference <= maximumDifference){
