@@ -59,7 +59,7 @@ Basically, these are used in XOR hash functions below...
 
 	m_hashNumbers[m_hashFunctions++]=0xe70b369c4c19f0f9;
 	m_hashNumbers[m_hashFunctions++]=0xbeb7f38b993441a2;
-	m_hashNumbers[m_hashFunctions++]=0xbeb7f38b993441a2;
+	m_hashNumbers[m_hashFunctions++]=0x3149cd9246ca7995;
 	m_hashNumbers[m_hashFunctions++]=0x2ef5b2c17d479ee8;
 	m_hashNumbers[m_hashFunctions++]=0xfb8daceab90fe233;
 	m_hashNumbers[m_hashFunctions++]=0x20fa74e37d497859;
