@@ -784,8 +784,8 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 		f.close();
 	}
 
-	if(m_parameters.writeCheckpoints()){
-		cout<<"Rank "<<m_parameters.getRank()<<" is writing checkpoint <CoverageDistribution>"<<endl;
+	if(m_parameters.writeCheckpoints() && !m_parameters.hasCheckpoint("CoverageDistribution")){
+		cout<<"Rank "<<m_parameters.getRank()<<" is writing checkpoint CoverageDistribution"<<endl;
 		ofstream f(m_parameters.getCheckpointFile("CoverageDistribution").c_str());
 		int theSize=m_coverageDistribution.size();
 		f.write((char*)&theSize,sizeof(int));

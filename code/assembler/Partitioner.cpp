@@ -178,7 +178,7 @@ void Partitioner::slaveMethod(){
 		m_currentFileToCount++;
 
 		/* Here we write the checkpoint Partition */
-		if(m_parameters->writeCheckpoints()){
+		if(m_parameters->writeCheckpoints() && !m_parameters->hasCheckpoint("Partition")){
 			ofstream f(m_parameters->getCheckpointFile("Partition").c_str());
 			cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint Partition"<<endl;
 			int count=m_slaveCounts.size();
