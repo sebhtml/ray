@@ -196,7 +196,7 @@ void SeedWorker::do_1_1_test(){
 			uint8_t edges=elements[0];
 			int coverage=elements[1];
 			
-			if(coverage==1){
+			if(coverage==1 || coverage >= m_parameters->getRepeatCoverage()){
 				m_SEEDING_1_1_test_result=false;
 				m_SEEDING_1_1_test_done=true;
 				return;

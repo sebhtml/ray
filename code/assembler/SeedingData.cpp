@@ -98,13 +98,14 @@ void SeedingData::computeSeeds(){
 
 			// only consider the long ones.
 			if(nucleotides>=m_parameters->getMinimumContigLength()){
+				printf("Rank %i discovered a seed with %i vertices\n",m_rank,(int)seed.size());
 				
 				Kmer firstVertex=seed[0];
 				Kmer lastVertex=seed[seed.size()-1];
 				Kmer firstReverse=m_parameters->_complementVertex(&lastVertex);
 
 				if(firstVertex<firstReverse){
-					printf("Rank %i discovered a seed with %i vertices\n",m_rank,(int)seed.size());
+					printf("Rank %i stored a seed with %i vertices\n",m_rank,(int)seed.size());
 					fflush(stdout);
 
 					if(m_parameters->showMemoryUsage()){
