@@ -146,7 +146,9 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 	// only check that at bootstrap.
 
 	if(!ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled){
-		if(ed->m_EXTENSION_currentPosition>0){
+		if(!(ed->m_EXTENSION_currentPosition<(int)ed->m_EXTENSION_currentSeed.size())
+		&& ed->m_flowNumber==1
+ ){
 			ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
 			ed->m_EXTENSION_markedCurrentVertexAsAssembled=false;
 
@@ -160,7 +162,14 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 			checkIfCurrentVertexIsAssembled(ed,outbox,outboxAllocator,outgoingEdgeIndex,last_value,
 	currentVertex,theRank,vertexCoverageRequested,wordSize,size,seeds);
 		}
-	}else if(ed->m_EXTENSION_vertexIsAssembledResult && ed->m_EXTENSION_currentPosition==0 && ed->m_flowNumber==0){
+	}else if(
+		/* the first flow */
+		ed->m_flowNumber==1 
+ 		/* vertex is assembled already */
+		&& ed->m_EXTENSION_vertexIsAssembledResult 
+ 		/* we have not exited the seed */
+		&& ed->m_EXTENSION_currentPosition<(int)ed->m_EXTENSION_currentSeed.size()
+		){
 		cout<<"Rank "<<m_parameters->getRank()<<" skips seed ["<<ed->m_EXTENSION_currentSeedIndex<<"/"<<
 			(*seeds).size()<<"]"<<endl;
 
