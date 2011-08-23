@@ -1,5 +1,5 @@
 = 1.6.2 'raygun' =
-2011-08-XX
+2011-09-XX
 
 * Ray can now detect more than 1 peak in the same paired library. This is useful because
 paired reads generated using DNA circularization will often be contaminated by some from 
@@ -18,7 +18,7 @@ Suggested by Walter Eckalbar from Arizona State University.
 * New output files: PREFIX.SequencePartition.txt and
 PREFIX.NumberOfSequences.txt.
 * New options: -write-seeds and -write-extensions, these write seeds and
-extensions to disk.
+extensions to disk in FASTA format
 * Fixed a bug in the incremental resizing algorithm of MyHashTable.
 * Added debugging option -show-distance-summary
 * Removed the coverage threshold from the algorithm that finds seeds in the distributed graph.
@@ -32,7 +32,9 @@ the false positive rate has no effect whatsoever on Ray thanks to the KmerAcadem
 * Input opcodes are now shuffled before being utilised.
 * Added option -write-checkpoints for checkpointing.
 * Added option -read-checkpoints to read checkpoints.
+* Added option -read-write-checkpoints to use checkpoints in general.
 * Added option -test-network-only to only to test the network and return.
+
 
 = 1.6.1 'sunray' =
 2011-07-14
