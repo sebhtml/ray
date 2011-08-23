@@ -51,24 +51,16 @@ DESCRIPTION:
        -write-extensions
               Writes extension DNA sequences
 
-  Internals
-
-       -run-profiler
-              Runs the profiler as the code runs.
-              Needs HAVE_CLOCK_GETTIME=y at compilation
-              Running the profiler increases running times.
-
-       -debug-bubbles
-              Debugs bubble code.
-              Bubbles can be due to heterozygous sites or sequencing errors or other (unknown) events
-
-       -debug-seeds
-              Debugs seed code.
-              Seeds are paths in the graph that are likely unique.
+  Memory usage
 
        -show-memory-usage
               Shows memory usage. Data is fetched from /proc on GNU/Linux
               Needs __linux__
+
+       -show-memory-allocations
+              Shows memory allocation events
+
+  Algorithm verbosity
 
        -show-extension-choice
               Shows the choice made (with other choices) during the extension.
@@ -79,9 +71,6 @@ DESCRIPTION:
 
        -show-distance-summary
               Shows summary of outer distances used for an extension path.
-
-       -show-memory-allocations
-              Shows memory allocation events
 
   Assembly options (defaults work well)
 
@@ -116,6 +105,24 @@ DESCRIPTION:
 
        -test-network-only
               Test the network and return.
+
+  Debugging
+
+       -run-profiler
+              Runs the profiler as the code runs.
+              Needs HAVE_CLOCK_GETTIME=y at compilation
+              Running the profiler increases running times.
+
+       -debug-bubbles
+              Debugs bubble code.
+              Bubbles can be due to heterozygous sites or sequencing errors or other (unknown) events
+
+       -debug-seeds
+              Debugs seed code.
+              Seeds are paths in the graph that are likely unique.
+
+       -debug-fusions
+              Debugs fusion code.
 
 
 FILES
