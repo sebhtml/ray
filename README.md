@@ -55,6 +55,8 @@ Ray is documented in
 
 - Users: denovoassembler-users AT lists.sourceforge.net
 
+- Read it one gmane: http://blog.gmane.org/gmane.science.biology.ray-genome-assembler
+
 - Development/hacking: denovoassembler-devel AT lists.sourceforge.net
 
 - SEQanswers: http://seqanswers.com/forums/showthread.php?t=4301
