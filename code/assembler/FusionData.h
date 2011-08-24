@@ -41,6 +41,9 @@ using namespace std;
  * Contains information regarding fusion of extensions.
  */
 class FusionData{
+	/** debug fusion code */
+	bool m_debugFusionCode;
+
 	TimePrinter m_timer;
 	SplayTree<Kmer ,Direction*>m_cacheForRepeatedVertices;
 	MyAllocator m_cacheAllocator;

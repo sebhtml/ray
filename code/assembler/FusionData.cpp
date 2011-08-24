@@ -101,9 +101,8 @@ void FusionData::constructor(int size,int max,int rank,StaticVector*outbox,
 		ExtensionData*ed,SeedingData*seedingData,int*mode,Parameters*parameters){
 	m_timer.constructor();
 	m_parameters=parameters;
+	m_debugFusionCode=m_parameters->hasOption("-debug-fusions");
 	m_seedingData=seedingData;
-	ostringstream prefixFull;
-	prefixFull<<m_parameters->getMemoryPrefix()<<"_FusionData";
 	m_cacheAllocator.constructor(4194304,RAY_MALLOC_TYPE_FUSION_CACHING,m_parameters->showMemoryAllocations());
 	m_cacheForRepeatedVertices.constructor();
 	m_mode=mode;
@@ -336,7 +335,8 @@ void FusionData::finishFusions(){
 					int observedDistance=(progression1-otherProgression+1);
 					int expectedDistance=(overlapMinimumLength-2*capLength);
 					
-					cout<<"Rank "<<m_parameters->getRank()<<" selfDistance: "<<expectedDistance<<" otherDistance: "<<observedDistance<<endl;
+					if(m_debugFusionCode)
+						cout<<"Rank "<<m_parameters->getRank()<<" selfDistance: "<<expectedDistance<<" otherDistance: "<<observedDistance<<endl;
 
 					if(observedDistance==expectedDistance){
 						// this is 
@@ -484,7 +484,9 @@ void FusionData::makeFusions(){
 	/** if the contig is longer, look deeper within it */
 	if(m_ed->m_EXTENSION_contigs.size() > 0){
 		int numberOfVertices=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size();
-		if(numberOfVertices > 20000)
+		if(numberOfVertices > 40000)
+			END_LENGTH=3000;
+		else if(numberOfVertices > 20000)
 			END_LENGTH=1024;
 		else if(numberOfVertices > 10000)
 			END_LENGTH=512;
@@ -560,6 +562,9 @@ void FusionData::makeFusions(){
 					}
 				}
 
+				if(m_debugFusionCode)
+					cout<<"Rank "<<m_parameters->getRank()<<" makeFusion processing path # "<<currentId<<" with length "<<m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<<endl;
+
 				m_FUSION_paths_requested=false;
 				m_FUSION_firstPaths=m_Machine_getPaths_result;
 				
@@ -587,10 +592,16 @@ void FusionData::makeFusions(){
 			map<uint64_t,vector<int> > starts;
 			map<uint64_t,vector<int> > ends;
 
+			if(m_debugFusionCode)
+				cout<<"Rank "<<m_parameters->getRank()<<" forward paths on first vertex: "<<m_FUSION_firstPaths.size()<<" Paths: ";
+
 			// extract those that are on both starting and ending vertices.
 			for(int i=0;i<(int)m_FUSION_firstPaths.size();i++){
 				index[m_FUSION_firstPaths[i].getWave()]++;
 				uint64_t pathId=m_FUSION_firstPaths[i].getWave();
+
+				if(m_debugFusionCode)
+					cout<<" "<<pathId;
 				#ifdef ASSERT
 				assert(getRankFromPathUniqueId(pathId)<m_size);
 				#endif
@@ -598,10 +609,23 @@ void FusionData::makeFusions(){
 				starts[pathId].push_back(progression);
 			}
 
+
+			if(m_debugFusionCode)
+				cout<<endl;
+
+
+			if(m_debugFusionCode)
+				cout<<"Rank "<<m_parameters->getRank()<<" forward paths on last vertex: "<<m_FUSION_lastPaths.size()<<" Paths: ";
+
 			for(int i=0;i<(int)m_FUSION_lastPaths.size();i++){
 				index[m_FUSION_lastPaths[i].getWave()]++;
 				
 				uint64_t pathId=m_FUSION_lastPaths[i].getWave();
+
+
+				if(m_debugFusionCode)
+					cout<<" "<<pathId;
+
 				#ifdef ASSERT
 				assert(getRankFromPathUniqueId(pathId)<m_size);
 				#endif
@@ -609,7 +633,10 @@ void FusionData::makeFusions(){
 				int progression=m_FUSION_lastPaths[i].getProgression();
 				ends[pathId].push_back(progression);
 			}
-			
+
+			if(m_debugFusionCode)
+				cout<<endl;
+
 			for(map<uint64_t,int>::iterator i=index.begin();i!=index.end();++i){
 				uint64_t otherPathId=i->first;
 				#ifdef ASSERT
@@ -624,10 +651,15 @@ void FusionData::makeFusions(){
 							int expectedLength=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-2*END_LENGTH+1;
 							int difference=observedLength-expectedLength;
 
-							cout<<"Rank "<<m_parameters->getRank()<<" selfDistance: "<<expectedLength<<" otherDistance: "<<observedLength<<endl;
+							if(m_debugFusionCode)
+								cout<<"Rank "<<m_parameters->getRank()<<" selfDistance: "<<expectedLength<<" otherDistance: "<<observedLength<<endl;
 							if(difference<0)
 								difference=-difference;
+
 							if(difference <= maximumDifference){
+
+								if(m_debugFusionCode)
+									cout<<"Rank "<<m_parameters->getRank()<<" diff is OK with # "<<otherPathId<<endl;
 								m_FUSION_matches.push_back(otherPathId);
 								found=true;
 								break;
@@ -673,19 +705,35 @@ void FusionData::makeFusions(){
 				}
 				assert(rankId<m_size);
 				#endif
+
 				Message aMessage(message,1,rankId,RAY_MPI_TAG_GET_PATH_LENGTH,getRank());
 				m_outbox->push_back(aMessage);
 				m_FUSION_pathLengthRequested=true;
 				m_FUSION_pathLengthReceived=false;
 			}else if(m_FUSION_pathLengthReceived){
+				uint64_t uniquePathId=m_FUSION_matches[m_FUSION_match_index];
+
+
+				if(m_debugFusionCode)
+					cout<<"received length of path "<<uniquePathId<<"' length: "<<m_FUSION_receivedLength<<endl;
+
 				if(m_FUSION_receivedLength==0){
+
+				/* same length */
 				}else if(m_FUSION_matches[m_FUSION_match_index]<currentId && m_FUSION_receivedLength == (int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
+
+					if(m_debugFusionCode)
+						cout<<"Rank "<<m_parameters->getRank()<<" keeping other, discarding self [SAME LENGTH]"<<endl;
 					m_FUSION_eliminated.insert(currentId);
 					m_FUSION_direct_fusionDone=false;
 					m_FUSION_first_done=false;
 					m_FUSION_paths_requested=false;
 					m_seedingData->m_SEEDING_i++;
+				
+				/* the other is longer */
 				}else if(m_FUSION_receivedLength>(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size() ){
+					if(m_debugFusionCode)
+						cout<<"Rank "<<m_parameters->getRank()<<" keeping other, discarding self [OTHER IS LONGER]"<<endl;
 					m_FUSION_eliminated.insert(currentId);
 					m_FUSION_direct_fusionDone=false;
 					m_FUSION_first_done=false;
@@ -748,12 +796,21 @@ void FusionData::makeFusions(){
 			map<uint64_t,int> index;
 			map<uint64_t,vector<int> > starts;
 			map<uint64_t,vector<int> > ends;
+
+
+			if(m_debugFusionCode)
+				cout<<"Rank "<<m_parameters->getRank()<<" reverse paths on first vertex: "<<m_FUSION_firstPaths.size()<<" Paths: "<<endl;
+
 			for(int i=0;i<(int)m_FUSION_firstPaths.size();i++){
 				index[m_FUSION_firstPaths[i].getWave()]++;
 				uint64_t pathId=m_FUSION_firstPaths[i].getWave();
 				int progression=m_FUSION_firstPaths[i].getProgression();
 				starts[pathId].push_back(progression);
 			}
+
+			if(m_debugFusionCode)
+				cout<<"Rank "<<m_parameters->getRank()<<" reverse paths on last vertex: "<<m_FUSION_lastPaths.size()<<" Paths: "<<endl;
+
 			for(int i=0;i<(int)m_FUSION_lastPaths.size();i++){
 				index[m_FUSION_lastPaths[i].getWave()]++;
 				
@@ -773,7 +830,16 @@ void FusionData::makeFusions(){
 		
 							int difference=observedLength-expectedLength;
 			
+							if(difference<0)
+								difference=-difference;
+
+							if(m_debugFusionCode)
+								cout<<"Rank "<<m_parameters->getRank()<<" selfDistance: "<<expectedLength<<" otherDistance: "<<observedLength<<endl;
+
 							if(difference <= maximumDifference){
+								
+								if(m_debugFusionCode)
+									cout<<"Rank "<<m_parameters->getRank()<<" diff is OK with # "<<otherPathId<<endl;
 								m_FUSION_matches.push_back(otherPathId);
 								found=true;
 								break;
@@ -814,12 +880,17 @@ void FusionData::makeFusions(){
 				if(m_FUSION_receivedLength==0){
 				// we only keep the other one...
 				}else if(m_FUSION_matches[m_FUSION_match_index]<currentId && m_FUSION_receivedLength == (int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
+					if(m_debugFusionCode)
+						cout<<"Rank "<<m_parameters->getRank()<<" keeping other, discarding self [SAME LENGTH]"<<endl;
 					m_FUSION_eliminated.insert(currentId);
 					m_FUSION_direct_fusionDone=false;
 					m_FUSION_first_done=false;
 					m_FUSION_paths_requested=false;
 					m_seedingData->m_SEEDING_i++;
 				}else if(m_FUSION_receivedLength>(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
+
+					if(m_debugFusionCode)
+						cout<<"Rank "<<m_parameters->getRank()<<" keeping other, discarding self [OTHER IS LONGER]"<<endl;
 					m_FUSION_eliminated.insert(currentId);
 					m_FUSION_direct_fusionDone=false;
 					m_FUSION_first_done=false;
