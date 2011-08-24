@@ -201,6 +201,28 @@ bool SequencesLoader::loadSequences(int rank,int size,
 	printf("Rank %i is loading sequence reads\n",m_rank);
 	fflush(stdout);
 
+	/* check if the checkpoint exists */
+	if(m_parameters->hasCheckpoint("Sequences")){
+		cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint Sequences"<<endl;
+		ifstream f(m_parameters->getCheckpointFile("Sequences").c_str());
+		uint64_t count=0;
+		f.read((char*)&count,sizeof(uint64_t));
+		for(uint64_t i=0;i<count;i++){
+			Read myRead;
+			myRead.read(&f,m_persistentAllocator);
+			m_myReads->push_back(&myRead);
+		}
+
+		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_SEQUENCES_READY,rank);
+		m_outbox->push_back(aMessage);
+		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
+
+		cout<<"Rank "<<m_parameters->getRank()<<" loaded "<<count<<" sequences from checkpoint Sequences"<<endl;
+
+		/* true means no error */
+		return true;
+	}
+
 	// count the number of sequences in all files.
 	vector<string> allFiles=(*m_parameters).getAllFiles();
 	
@@ -285,12 +307,28 @@ bool SequencesLoader::loadSequences(int rank,int size,
 	m_loader.clear();
 	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_SEQUENCES_READY,rank);
 	m_outbox->push_back(aMessage);
-
 	(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 
 	uint64_t amount=m_myReads->size();
 	printf("Rank %i has %lu sequence reads (completed)\n",m_rank,amount);
 	fflush(stdout);
+
+	/* write the checkpoint file */
+	if(m_parameters->writeCheckpoints() && !m_parameters->hasCheckpoint("Sequences")){
+		/* announce the user that we are writing a checkpoint */
+		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint Sequences"<<endl;
+		cout.flush();
+
+		ofstream f(m_parameters->getCheckpointFile("Sequences").c_str());
+
+		uint64_t count=m_myReads->size();
+		f.write((char*)&count,sizeof(uint64_t));
+		for(uint64_t i=0;i<count;i++){
+			m_myReads->at(i)->write(&f);
+		}
+
+		f.close();
+	}
 
 	return true;
 }

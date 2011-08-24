@@ -40,8 +40,8 @@ using namespace std;
  * and a (possible) link to paired information.
  */
 class Read{
-	uint8_t *m_sequence;
 	PairedRead m_pairedRead;// the read on the left
+	uint8_t *m_sequence;
 
 	/* maximum value: 65535 */
 	uint16_t m_length;
@@ -74,6 +74,9 @@ public:
 
 	void writeOffsets(ofstream*f);
 	void readOffsets(ifstream*f);
+
+	void write(ofstream*f);
+	void read(ifstream*f,MyAllocator*seqMyAllocator);
 } ATTRIBUTE_PACKED;
 
 #endif

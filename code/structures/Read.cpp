@@ -239,3 +239,22 @@ void Read::readOffsets(ifstream*f){
 	setForwardOffset(forwardOffset);
 	setReverseOffset(reverseOffset);
 }
+
+void Read::write(ofstream*f){
+	m_pairedRead.write(f);
+	f->write((char*)&m_type,sizeof(uint8_t));
+	f->write((char*)&m_length,sizeof(uint16_t));
+	if(getRequiredBytes()>0)
+		f->write((char*)m_sequence,getRequiredBytes());
+}
+
+void Read::read(ifstream*f,MyAllocator*seqMyAllocator){
+	m_pairedRead.read(f);
+	f->read((char*)&m_type,sizeof(uint8_t));
+	f->read((char*)&m_length,sizeof(uint16_t));
+	m_sequence=NULL;
+	if(getRequiredBytes()>0){
+		m_sequence=(uint8_t*)seqMyAllocator->allocate(getRequiredBytes()*sizeof(uint8_t));
+		f->read((char*)m_sequence,getRequiredBytes());
+	}
+}

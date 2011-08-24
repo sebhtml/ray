@@ -45,3 +45,15 @@ uint64_t PairedRead::getUniqueId(){
 int PairedRead::getLibrary(){
 	return m_library;
 }
+
+void PairedRead::write(ofstream*f){
+	f->write((char*)&m_readIndex,sizeof(uint32_t));
+	f->write((char*)&m_rank,sizeof(uint16_t));
+	f->write((char*)&m_library,sizeof(uint16_t));
+}
+
+void PairedRead::read(ifstream*f){
+	f->read((char*)&m_readIndex,sizeof(uint32_t));
+	f->read((char*)&m_rank,sizeof(uint16_t));
+	f->read((char*)&m_library,sizeof(uint16_t));
+}

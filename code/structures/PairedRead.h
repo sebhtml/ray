@@ -23,6 +23,8 @@
 #define _PairedRead
 
 #include<core/common_functions.h>
+#include <fstream>
+using namespace std;
 
 /*
  *    LeftRead							RightRead
@@ -42,6 +44,9 @@ public:
 	uint32_t getId();
 	uint64_t getUniqueId();
 	int getLibrary();
+
+	void read(ifstream*f);
+	void write(ofstream*f);
 } ATTRIBUTE_PACKED;
 
 #endif
