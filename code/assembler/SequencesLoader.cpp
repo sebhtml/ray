@@ -204,6 +204,8 @@ bool SequencesLoader::loadSequences(int rank,int size,
 	/* check if the checkpoint exists */
 	if(m_parameters->hasCheckpoint("Sequences")){
 		cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint Sequences"<<endl;
+		cout.flush();
+
 		ifstream f(m_parameters->getCheckpointFile("Sequences").c_str());
 		uint64_t count=0;
 		f.read((char*)&count,sizeof(uint64_t));
