@@ -84,6 +84,7 @@ Parameters::Parameters(){
 
 	/** use the new NovaEngine (TM) */
 	m_options.insert("-use-NovaEngine");
+	m_options.insert("-debug-fusions");
 }
 
 bool Parameters::showExtensionChoice(){
@@ -1080,20 +1081,16 @@ void Parameters::showUsage(){
 	showOption("-write-extensions","Writes extension DNA sequences");
 	cout<<endl;
 
-	cout<<"  Internals"<<endl;
-	cout<<endl;
-	showOption("-run-profiler","Runs the profiler as the code runs.");
-	showOptionDescription("Needs HAVE_CLOCK_GETTIME=y at compilation");
-	showOptionDescription("Running the profiler increases running times.");
-	cout<<endl;
-	showOption("-debug-bubbles","Debugs bubble code.");
-	showOptionDescription("Bubbles can be due to heterozygous sites or sequencing errors or other (unknown) events");
-	cout<<endl;
-	showOption("-debug-seeds","Debugs seed code.");
-	showOptionDescription("Seeds are paths in the graph that are likely unique.");
+
+	cout<<"  Memory usage"<<endl;
 	cout<<endl;
 	showOption("-show-memory-usage","Shows memory usage. Data is fetched from /proc on GNU/Linux");
 	showOptionDescription("Needs __linux__");
+	cout<<endl;
+	showOption("-show-memory-allocations","Shows memory allocation events");
+	cout<<endl;
+
+	cout<<"  Algorithm verbosity"<<endl;
 	cout<<endl;
 	showOption("-show-extension-choice","Shows the choice made (with other choices) during the extension.");
 	cout<<endl;
@@ -1101,8 +1098,6 @@ void Parameters::showUsage(){
 	showOptionDescription("Shows the children of the vertex where extension was too difficult.");
 	cout<<endl;
 	showOption("-show-distance-summary","Shows summary of outer distances used for an extension path.");
-	cout<<endl;
-	showOption("-show-memory-allocations","Shows memory allocation events");
 	cout<<endl;
 
 	cout<<"  Assembly options (defaults work well)"<<endl;
@@ -1134,7 +1129,23 @@ void Parameters::showUsage(){
 	cout<<endl;
 	showOption("-test-network-only","Test the network and return.");
 	cout<<endl;
+
+	cout<<"  Debugging"<<endl;
 	cout<<endl;
+	showOption("-run-profiler","Runs the profiler as the code runs.");
+	showOptionDescription("Needs HAVE_CLOCK_GETTIME=y at compilation");
+	showOptionDescription("Running the profiler increases running times.");
+	cout<<endl;
+	showOption("-debug-bubbles","Debugs bubble code.");
+	showOptionDescription("Bubbles can be due to heterozygous sites or sequencing errors or other (unknown) events");
+	cout<<endl;
+	showOption("-debug-seeds","Debugs seed code.");
+	showOptionDescription("Seeds are paths in the graph that are likely unique.");
+	cout<<endl;
+	showOption("-debug-fusions","Debugs fusion code.");
+	cout<<endl;
+	cout<<endl;
+
 
 	cout<<"FILES"<<endl;
 	cout<<endl;
@@ -1420,7 +1431,7 @@ string Parameters::getCheckpointFile(const char*checkpointName){
 }
 
 bool Parameters::hasCheckpoint(const char*checkpointName){
-	cout<<"hasCheckpoint? "<<checkpointName<<endl;
+	//cout<<"hasCheckpoint? "<<checkpointName<<endl;
 
 	if(!readCheckpoints())
 		return false;
