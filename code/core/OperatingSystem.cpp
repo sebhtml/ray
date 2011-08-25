@@ -23,24 +23,79 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <assert.h>
+
 using namespace std;
 
 /*
  * Detect the operating system
  */
-#if defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(WIN64) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__) 
-#define OS_WIN
-#else
+
+/* GNU/Linux */
+#if defined(__linux__)
 #define OS_POSIX
+
+/* the GNU stack provides all we need */
+#elif defined(__GNUC__)
+#define OS_POSIX
+
+/* assume Mac OS X and not old Mac OS */
+#elif defined(__APPLE__) || defined(MACOSX)
+#define OS_POSIX
+
+/* assume Solaris or Linux or another POSIX system on Sun or Sun Sparc */
+#elif defined(__sparc__) || defined(__sun__)
+#define OS_POSIX
+
+/* random UNIX system */
+#elif defined(__unix__)
+#define OS_POSIX
+
+/* Windows 32 bits */
+#elif defined(_WIN32) || defined(WIN32)
+#define OS_WIN
+
+/* Windoes 64 bits */
+#elif defined(_WIN64) || defined(WIN64)
+#define OS_WIN
+
+/* Cygwin in Windows */
+#elif defined(__CYGWIN__)
+#define OS_POSIX
+
+/* MinGW is not tested but probably works */
+#elif defined(__MINGW32__)
+#define OS_WIN
+
+/* this will never be picked up because WIN32 or WIN64 will be picked up */
+#elif #defined(__BORLANDC__) 
+#define OS_WIN
+
+/* SGI IRIX I guess */
+#elif define(__sgi)
+#define OS_POSIX
+
+/* what is your operating system ? */
+/* assume it is a POSIX one */
+#else
+#warning "What is your operating system ?"
+#warning "Assuming it is a POSIX system..."
+#define OS_POSIX
+
 #endif
+
+/* include some files */
 
 #ifdef OS_POSIX
 #include <unistd.h> /* getpid */
 #include <time.h> /* gettimeofday*/
 #include <sys/time.h>  /* possibly clock_gettime  */
+#include <sys/stat.h>	/* mkdir */
+#include <sys/types.h> /* mode_t */
 #endif
 #ifdef OS_WIN
 #include <windows.h> /* GetCurrentProcessId */
+			/* CreateDirectory */
 #endif
 
 /** print the date, not necessary */
@@ -121,5 +176,30 @@ void getMicroSeconds(uint64_t*seconds,uint64_t*microSeconds){
 	gettimeofday(&theTime,NULL);
 	(*seconds)=theTime.tv_sec;
 	(*microSeconds)=theTime.tv_usec;
+	#endif
+}
+
+/**
+ * \see http://pubs.opengroup.org/onlinepubs/009695399/functions/mkdir.html
+ * \see http://pubs.opengroup.org/onlinepubs/7908799/xsh/sysstat.h.html
+ * \see http://www.computing.net/answers/programming/c-createdirectory/13483.html
+ *
+ * \see http://msdn.microsoft.com/en-us/library/aa363855(v=vs.85).aspx
+ */
+void createDirectory(char*directory){
+	#ifdef OS_POSIX
+
+	/* read, write for owner */
+	/* read, write for group */
+	mode_t mode=S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP;
+	int status=mkdir(directory,mode);
+
+	assert(status==0);
+	
+	#elif defined(OS_WIN)
+
+	LPSECURITY_ATTRIBUTES attr=NULL;
+	CreateDirectory(directory,attr);
+
 	#endif
 }
