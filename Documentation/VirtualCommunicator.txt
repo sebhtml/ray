@@ -1,0 +1,101 @@
+Date: 2011-08-25
+Author: Sébastien Boisvert
+Subject: Virtual Communicator
+Written on: VIA train 60 (Toronto -> Montréal)
+
+
+The standard way of starting a program in the
+command-line prompt is:
+
+	./MyProgram
+
+If MyProgram utilises threads and the systems has more than 1 processor logical
+core, then MyProgram may use them if needed and/or was designed to.
+
+
+== On the way to passing messages ==
+
+
+When using the message-passing interface (MPI), a program built around it can be
+run on more than one processor logical core. 
+
+With the message-passing interface, a program is started using an
+auxiliary program. Its standard name is mpiexec, and this name stands for
+Message-Passing-Interface EXECution. Other names for such an auxiliary program
+are mpirun and orterun. With mpiexec, the same program (in our example that
+would be MyProgram) is started on numerous processor logical cores and each of
+these program instances is given a unique identifier. Each of these numbered
+running instances are called MPI ranks. The identifying numbers of 4 MPI ranks
+would be 0, 1, 2 and 3. To start a program within this framework, the following
+command must be utilised:
+
+	mpiexec -n 4 ./MyProgram
+
+Basically, this mpiexec program will take start the same program 4 times. The
+magic of this is that the 4 MPI ranks can be on different computers, thus
+enabling the true potential of compute clusters with distributed resources. For
+instance, 16 computers connected with an Internet protocol (TCP/IP) network is a
+compute cluster with distributed resources. Let's assume that each has 8
+processor logical cores. In the MPI world, it means that we can have 
+8 MPI ranks per computer. 16 computers thus give a total of 16*8 = 128 MPI
+ranks.
+
+
+== Sending and receiving information ==
+
+It would be obviously pointless to start several instance of the same program
+with the same exact command-line arguments if these can not exchange
+information.
+
+Fortunately, there is one single thing that truly differentiate all these
+otherwise identical running instances of the same program executable. This handy
+attribute that I refer to is these MPI rank numbers. Using these, any MPI rank
+can send a message to another specific MPI rank. And any MPI rank can check for
+new unread messages recently received.
+
+Any message thus has a sender MPI rank, a receiver MPI rank and actual
+information. Any message also has an MPI tag to identify the type of information
+it contains.
+
+The hardest part is presumably to implement programs using this general idea of
+MPI ranks. Following single-program multiple-data paradigm (SPMD), the source
+code of a MPI program is the same regardless of the actual number of a MPI rank.
+
+Indeed, when started, each MPI rank gets 2 important values. The first is its MPI
+rank number that we already discussed above. The second is the total number of
+MPI ranks, which we also discussed above.
+
+
+== Sending messages is the bottleneck ==
+
+Communicating messages enables the creation of truly parallel and distributed
+computational systems. But sending messages will be slowest part in your code on
+most hardware.
+
+
+== VirtualCommunicator ==
+
+Let's say that MPI rank 4 needs to send 500 messages, each having 8 bytes of data,
+to MPI rank 13. And let's also assume that all these messages have the same MPI tag.
+
+Assuming that the maximum size of a single message is 4000 bytes, all these 500
+messages can be agglomerated in one large message of 4000 bytes (500 * 8 = 4000).
+
+The idea of the VirtualCommunicator is to push each of these 500 messages
+individually to a virtual communication device. This way, the programmer does
+not need to care about actually grouping its messages at all. This can be tricky
+and/or boring to do manually in the code. 
+
+This so-called VirtualCommunicator will do the multiplexing and demultiplexing
+of all message contents.
+
+To effectively write code that can push a lot of small messages on the
+VirtualCommunicator is also easy. You simply have to split the work load in
+slices. 
+
+
+	see ray-workers.txt
+
+
+Then, you have to assign each of these slices to a single worker.
+
