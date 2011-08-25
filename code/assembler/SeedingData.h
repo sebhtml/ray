@@ -30,10 +30,8 @@ class SeedExtender;
 #include <structures/SplayTreeIterator.h>
 #include <structures/SplayNode.h>
 #include <structures/Vertex.h>
-#include <structures/MyForest.h>
 #include <graph/GridTableIterator.h>
 #include <core/common_functions.h>
-#include <structures/MyForestIterator.h>
 #include <assembler/SeedWorker.h>
 #include <set>
 using namespace std;

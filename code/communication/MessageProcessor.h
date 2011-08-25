@@ -37,7 +37,6 @@
 #include <assembler/FusionData.h>
 #include <structures/ReadAnnotation.h>
 #include <assembler/VerticesExtractor.h>
-#include <structures/MyForest.h>
 #include <graph/GridTable.h>
 #include <core/Parameters.h>
 #include <communication/BufferedData.h>

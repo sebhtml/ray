@@ -182,7 +182,7 @@ obj-y += code/graph/GridTable.o code/graph/GridTableIterator.o code/graph/Covera
 obj-y += code/graph/CoverageGatherer.o code/graph/KmerAcademy.o code/graph/KmerAcademyIterator.o
 
 #structures
-obj-y += code/structures/Kmer.o code/structures/MyForestIterator.o code/structures/MyForest.o \
+obj-y += code/structures/Kmer.o \
 code/structures/ArrayOfReads.o  code/structures/Direction.o code/structures/PairedRead.o code/structures/ReadAnnotation.o code/structures/Read.o  \
 code/structures/StaticVector.o code/structures/Vertex.o code/structures/BloomFilter.o
 

@@ -31,7 +31,6 @@
 #include <structures/SplayTree.h>
 #include <structures/Direction.h>
 #include <structures/SplayNode.h>
-#include <structures/MyForest.h>
 #include <structures/SplayTreeIterator.h>
 #include <assembler/FusionData.h>
 #include <core/Parameters.h>

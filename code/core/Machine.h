@@ -31,7 +31,6 @@
 #include <communication/MessagesHandler.h>
 #include <core/common_functions.h>
 #include <assembler/Partitioner.h>
-#include <structures/MyForest.h>
 #include <structures/ArrayOfReads.h>
 #include <structures/StaticVector.h>
 #include <assembler/SeedingData.h>

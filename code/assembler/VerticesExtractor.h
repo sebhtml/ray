@@ -29,7 +29,6 @@
 #include <structures/ArrayOfReads.h>
 #include <communication/Message.h>
 #include <graph/GridTable.h>
-#include <structures/MyForest.h>
 #include <memory/RingAllocator.h>
 #include <structures/Read.h>
 #include <set>
