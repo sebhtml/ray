@@ -25,20 +25,24 @@
 #include<core/common_functions.h>
 #include<iostream>
 #include<string.h>
+#include <assert.h>
 using namespace std;
 
 int ColorSpaceLoader::open(string file){
 	m_f=fopen(file.c_str(),"r");
 	m_size=0;
 	m_loaded=0;
-	char bufferForLine[1024];
-	while(NULL!=fgets(bufferForLine,4096,m_f)){
+	char bufferForLine[RAY_MAXIMUM_READ_LENGTH];
+	while(NULL!=fgets(bufferForLine,RAY_MAXIMUM_READ_LENGTH,m_f)){
 		if(bufferForLine[0]=='#'){
 			continue;// skip csfasta comment
 		}
 
 		if(bufferForLine[0]=='>'){
-			fgets(bufferForLine,4096,m_f);
+			char*returnValue=fgets(bufferForLine,RAY_MAXIMUM_READ_LENGTH,m_f);
+
+			assert(returnValue != NULL);
+
 			m_size++;
 		}
 	}
@@ -48,16 +52,20 @@ int ColorSpaceLoader::open(string file){
 }
 
 void ColorSpaceLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
-	char bufferForLine[1024];
+	char bufferForLine[RAY_MAXIMUM_READ_LENGTH];
 	int loadedSequences=0;
 	while(m_loaded<m_size&& loadedSequences<maxToLoad){
-		fgets(bufferForLine,4096,m_f);
+		if(NULL==fgets(bufferForLine,RAY_MAXIMUM_READ_LENGTH,m_f))
+			continue;
+
 		if(bufferForLine[0]=='#'){
 			continue;// skip csfasta comment
 		}
 		// read two lines
 		if(bufferForLine[0]=='>'){
-			fgets(bufferForLine,4096,m_f);
+			char*returnValue=fgets(bufferForLine,RAY_MAXIMUM_READ_LENGTH,m_f);
+			assert(returnValue != NULL);
+
 			for(int j=0;j<(int)strlen(bufferForLine);j++){
 				if(bufferForLine[j]==DOUBLE_ENCODING_A_COLOR){
 					bufferForLine[j]='A';
