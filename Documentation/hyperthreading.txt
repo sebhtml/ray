@@ -1,0 +1,21 @@
+Ray works well with Intel Hyper Threading (HT) Technology.
+
+If the cluster nodes have HT enabled (in bios and in the operating system), then
+you can schedule Ray on all the logical cores.
+
+== Example ==
+
+A Xeon Nehalem <something> has 4 physical cores.
+Each core has two threads visible by the operating system, but both utilise the
+same space on the chip.
+
+If you have 5 computers and each has 2 Xeon Nehalem <something> processors,
+then each computer has 8 physical cores and 16 logical cores.
+
+Basically, you can start Ray with 5*16 MPI ranks instead of 5*8 MPI ranks.
+
+== Default value ==
+
+By default, almost all clusters have the HT disabled in the bios.
+
+

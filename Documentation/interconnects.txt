@@ -1,0 +1,37 @@
+
+Hardware: QLogic Infiniband QDR
+Operating system: CentOS GNU/Linux
+Scheduler: Portable Batch System/MOAB
+Compiler: gcc 4.x
+Middleware: MVAPICH2 1.6
+Processor: Intel Xeon Nehalem
+Latency: 15 microseconds
+
+Hardware: Mellanox Infiniband QDR
+Operating system: CentOS GNU/Linux
+Scheduler: Sun Grid Engine
+Compiler: gcc 4.x
+Middleware: Open-MPI 1.4.3
+Processor: Intel Xeon Nehalem
+Latency: 180 microseconds
+
+Hardware: giga ethernet
+Operating system: Debian GNU/Linux
+Compiler: gcc 4.x
+Middleware: Open-MPI 1.3.X
+Processor: Intel Xeon Nehalem
+Latency: 600 microseconds
+
+Hardware: shared memory
+Operating system: Ubuntu GNU/Linux 32 bits
+Compiler: gcc 4.5.2
+Middleware: Open-MPI 1.4.3
+Processor: Intel Atom (Samsung NF210)
+Latency: 50 microseconds
+
+Hardware: shared memory
+Operating system: Fedora
+Compiler: gcc 4.x
+Middleware: Open-MPI 1.4.3
+Processor: AMD Opteron
+Latency: x microseconds
