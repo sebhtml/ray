@@ -5,10 +5,10 @@ and is implemented using peer-to-peer communication.
 
 Ray is documented in
 
-- MANUAL file
-- InstructionManual.pdf
-- http://denovoassembler.sourceforge.net/manual.html
-- README.md
+- Documentation/  (many files)
+- MANUAL_PAGE.txt  (command-line options, same as Ray -help)
+- README.md  (general)
+- INSTALL.txt  (quick installation)
 
 ## Features & quick facts
 

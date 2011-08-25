@@ -1,0 +1,39 @@
+You need:
+
+	- A C++ compiler (C++ 1998 or later)
+	- An MPI implementation
+	- make
+
+== Quickstart on GNU/Linux ==
+
+On GNU/Linux, you can use GNU C++ (g++) and Open-MPI.
+
+Then, type
+
+make PREFIX=ray-build
+make install
+ls ray-build
+
+mpiexec -n 1 ray-build/Ray -o test -p test_1.fastq test_2.fastq -k 31
+
+
+== Options ==
+
+You can provide compilation options to the Makefile.
+
+MPICXX			The path to the C++ compiler wrapper (usually called mpicxx)
+PREFIX			Where to install stuff
+MAXKMERLENGTH		maximum k-mer length, default is MAXKMERLENGTH=32
+FORCE_PACKING		save memory by not aligning addresses, default is FORCE_PACKING=n
+ASSERT			run assertions too, default is ASSERT=n
+HAVE_CLOCK_GETTIME	enables option -run-profiler, default is HAVE_CLOCK_GETTIME=n
+
+
+For other options, read the Makefile header.
+
+
+== Working compilers ==
+
+Anything that supports C++ 1998.
+
+	see Documentation/COMPILERS.txt
