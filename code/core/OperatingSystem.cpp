@@ -68,11 +68,11 @@ using namespace std;
 #define OS_WIN
 
 /* this will never be picked up because WIN32 or WIN64 will be picked up */
-#elif #defined(__BORLANDC__) 
+#elif defined(__BORLANDC__) 
 #define OS_WIN
 
 /* SGI IRIX I guess */
-#elif define(__sgi)
+#elif defined(__sgi)
 #define OS_POSIX
 
 /* what is your operating system ? */
