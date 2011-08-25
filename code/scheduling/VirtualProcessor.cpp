@@ -67,6 +67,9 @@ void VirtualProcessor::updateStates(){
 /** actually initialize the VirtualProcessor */
 void VirtualProcessor::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
 		VirtualCommunicator*vc){
+
+	int rank=parameters->getRank();
+	cout<<"Rank "<<rank<<" Initializing VirtualProcessor"<<endl;
 	m_virtualCommunicator=vc;
 	m_inbox=inbox;
 	m_outboxAllocator=outboxAllocator;

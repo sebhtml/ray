@@ -355,7 +355,6 @@ void Machine::start(){
 	m_virtualCommunicator.constructor(m_rank,m_size,&m_outboxAllocator,&m_inbox,&m_outbox);
 
 	/** configure the virtual communicator. */
-
 	/* ## concatenates 2 symbols */
 
 	#define MACRO_LIST_ITEM(x,y) \
@@ -377,6 +376,10 @@ void Machine::start(){
 	MACRO_LIST_ITEM( RAY_MPI_TAG_ASK_READ_LENGTH, 		3 );
 
 	#undef MACRO_LIST_ITEM
+
+	/** initialize the VirtualProcessor */
+	m_virtualProcessor.constructor(&m_outbox,&m_inbox,&m_outboxAllocator,&m_parameters,
+		&m_virtualCommunicator);
 
 	m_library.constructor(getRank(),&m_outbox,&m_outboxAllocator,&m_sequence_id,&m_sequence_idInFile,
 		m_ed,getSize(),&m_timePrinter,&m_slave_mode,&m_master_mode,

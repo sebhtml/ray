@@ -199,6 +199,7 @@ void VirtualCommunicator::getMessageResponseElements(uint64_t workerId,vector<ui
 }
 
 void VirtualCommunicator::constructor(int rank,int size,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox){
+	cout<<"Rank "<<rank<<" Initializing VirtualCommunicator"<<endl;
 	m_debug=false;
 	m_pushedMessages=0;
 	m_rank=rank;
