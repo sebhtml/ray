@@ -1791,7 +1791,6 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_FINISH_FUSIONS(Message*message){
 	(*m_mode)=RAY_SLAVE_MODE_FINISH_FUSIONS;
-	m_fusionData->m_FINISH_fusionOccured=false;
 	(m_seedingData->m_SEEDING_i)=0;
 	(m_ed->m_EXTENSION_currentPosition)=0;
 	m_fusionData->m_FUSION_first_done=false;
@@ -1803,7 +1802,9 @@ void MessageProcessor::call_RAY_MPI_TAG_FINISH_FUSIONS_FINISHED(Message*message)
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
 	(*m_FINISH_n)++;
-	if(incoming[0]){
+	bool reductionOccured=incoming[0];
+
+	if(reductionOccured){
 		(*m_nextReductionOccured)=true;
 	}
 }

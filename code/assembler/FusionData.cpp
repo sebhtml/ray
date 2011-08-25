@@ -155,8 +155,6 @@ bool FusionData::isReady(){
  */
 void FusionData::finishFusions(){
 	if(m_seedingData->m_SEEDING_i==(uint64_t)m_ed->m_EXTENSION_contigs.size()){
-		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
-		message[0]=m_FINISH_fusionOccured;
 		printf("Rank %i is finishing fusions [%i/%i] (completed)\n",getRank(),(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
 		fflush(stdout);
 		if(m_parameters->showMemoryUsage()){
@@ -164,6 +162,8 @@ void FusionData::finishFusions(){
 			showDate();
 		}
 
+		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
+		message[0]=m_FINISH_fusionOccured;
 		Message aMessage(message,1,MASTER_RANK,RAY_MPI_TAG_FINISH_FUSIONS_FINISHED,getRank());
 		m_outbox->push_back(aMessage);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
@@ -562,8 +562,10 @@ void FusionData::makeFusions(){
 					}
 				}
 
-				if(m_debugFusionCode)
-					cout<<"Rank "<<m_parameters->getRank()<<" makeFusion processing path # "<<currentId<<" with length "<<m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<<endl;
+				if(m_debugFusionCode){
+					cout<<"Rank "<<m_parameters->getRank()<<" makeFusion processing path # "<<currentId<<", index= "<<m_seedingData->m_SEEDING_i<<" with length "<<m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<<endl;
+					cout<<" END_LENGTH= "<<END_LENGTH<<endl;
+				}
 
 				m_FUSION_paths_requested=false;
 				m_FUSION_firstPaths=m_Machine_getPaths_result;
@@ -645,14 +647,14 @@ void FusionData::makeFusions(){
 				if(i->second>=2 && otherPathId != currentId){
 					// try to find a match with the current size.
 					for(int k=0;k<(int)starts[otherPathId].size();k++){
-						bool found=false;
+						//bool found=false;
 						for(int p=0;p<(int)ends[otherPathId].size();p++){
 							int observedLength=ends[otherPathId][p]-starts[otherPathId][k]+1;
 							int expectedLength=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-2*END_LENGTH+1;
 							int difference=observedLength-expectedLength;
 
 							if(m_debugFusionCode)
-								cout<<"Rank "<<m_parameters->getRank()<<" selfDistance: "<<expectedLength<<" otherDistance: "<<observedLength<<endl;
+								cout<<"Rank "<<m_parameters->getRank()<<" self= "<<currentId<<" Other= "<<otherPathId<<" selfDistance: "<<expectedLength<<" otherDistance: "<<observedLength<<endl;
 							if(difference<0)
 								difference=-difference;
 
@@ -661,13 +663,15 @@ void FusionData::makeFusions(){
 								if(m_debugFusionCode)
 									cout<<"Rank "<<m_parameters->getRank()<<" diff is OK with # "<<otherPathId<<endl;
 								m_FUSION_matches.push_back(otherPathId);
-								found=true;
-								break;
+								//found=true;
+								//break;
 							}
 						}
+					/*
 						if(found){
 							break;
 						}
+					*/
 					}
 				}
 			}
@@ -684,7 +688,9 @@ void FusionData::makeFusions(){
 			#ifdef ASSERT
 			assert(m_seedingData->m_SEEDING_i<m_ed->m_EXTENSION_identifiers.size());
 			#endif
-			uint64_t currentId=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
+
+			//uint64_t currentId=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
+
 			#ifdef ASSERT
 			assert(getRankFromPathUniqueId(currentId)<m_size);
 			#endif
@@ -739,6 +745,8 @@ void FusionData::makeFusions(){
 					m_FUSION_first_done=false;
 					m_FUSION_paths_requested=false;
 					m_seedingData->m_SEEDING_i++;
+
+					m_FINISH_fusionOccured=true;
 				}
 				m_FUSION_match_index++;
 				m_FUSION_pathLengthRequested=false;
@@ -804,9 +812,15 @@ void FusionData::makeFusions(){
 			for(int i=0;i<(int)m_FUSION_firstPaths.size();i++){
 				index[m_FUSION_firstPaths[i].getWave()]++;
 				uint64_t pathId=m_FUSION_firstPaths[i].getWave();
+				if(m_debugFusionCode)
+					cout<<" "<<pathId;
+
 				int progression=m_FUSION_firstPaths[i].getProgression();
 				starts[pathId].push_back(progression);
 			}
+
+			if(m_debugFusionCode)
+				cout<<endl;
 
 			if(m_debugFusionCode)
 				cout<<"Rank "<<m_parameters->getRank()<<" reverse paths on last vertex: "<<m_FUSION_lastPaths.size()<<" Paths: "<<endl;
@@ -815,15 +829,22 @@ void FusionData::makeFusions(){
 				index[m_FUSION_lastPaths[i].getWave()]++;
 				
 				uint64_t pathId=m_FUSION_lastPaths[i].getWave();
+
+				if(m_debugFusionCode)
+					cout<<" "<<pathId;
 				int progression=m_FUSION_lastPaths[i].getProgression();
 				ends[pathId].push_back(progression);
 			}
+
+			if(m_debugFusionCode)
+				cout<<endl;
+
 			for(map<uint64_t,int>::iterator i=index.begin();i!=index.end();++i){
 				uint64_t otherPathId=i->first;
-				if(i->second>=2 && i->first != currentId){
+				if(i->second>=2 && otherPathId != currentId){
 					// try to find a match with the current size.
 					for(int k=0;k<(int)starts[otherPathId].size();k++){
-						bool found=false;
+						//bool found=false;
 						for(int p=0;p<(int)ends[otherPathId].size();p++){
 							int observedLength=ends[otherPathId][p]-starts[otherPathId][k]+1;
 							int expectedLength=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()-2*END_LENGTH+1;
@@ -834,19 +855,21 @@ void FusionData::makeFusions(){
 								difference=-difference;
 
 							if(m_debugFusionCode)
-								cout<<"Rank "<<m_parameters->getRank()<<" selfDistance: "<<expectedLength<<" otherDistance: "<<observedLength<<endl;
+								cout<<"Rank "<<m_parameters->getRank()<<" self= "<<currentId<<" Other= "<<otherPathId<<" selfDistance: "<<expectedLength<<" otherDistance: "<<observedLength<<endl;
 
 							if(difference <= maximumDifference){
 								
 								if(m_debugFusionCode)
 									cout<<"Rank "<<m_parameters->getRank()<<" diff is OK with # "<<otherPathId<<endl;
 								m_FUSION_matches.push_back(otherPathId);
-								found=true;
-								break;
+								//found=true;
+								//break;
 							}
 						}
+						/*
 						if(found)
 							break;
+						*/
 					}
 				}
 			}
@@ -860,7 +883,8 @@ void FusionData::makeFusions(){
 			m_FUSION_match_index=0;
 			m_FUSION_pathLengthRequested=false;
 		}else if(!m_FUSION_matches_length_done){
-			uint64_t currentId=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
+			//uint64_t currentId=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
+
 			if(m_FUSION_match_index==(int)m_FUSION_matches.size()){
 				m_FUSION_matches_length_done=true;
 			}else if(!m_FUSION_pathLengthRequested){
@@ -876,26 +900,56 @@ void FusionData::makeFusions(){
 				m_FUSION_pathLengthRequested=true;
 				m_FUSION_pathLengthReceived=false;
 			}else if(m_FUSION_pathLengthReceived){
+				
+				uint64_t uniquePathId=m_FUSION_matches[m_FUSION_match_index];
+
+				if(m_debugFusionCode)
+					cout<<"received length of path "<<uniquePathId<<"' length: "<<m_FUSION_receivedLength<<endl;
+
 				// if the length is 0, it means that the contig was not stored because it was too short
 				if(m_FUSION_receivedLength==0){
 				// we only keep the other one...
-				}else if(m_FUSION_matches[m_FUSION_match_index]<currentId && m_FUSION_receivedLength == (int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
+				}else if(uniquePathId < currentId && m_FUSION_receivedLength == (int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
 					if(m_debugFusionCode)
 						cout<<"Rank "<<m_parameters->getRank()<<" keeping other, discarding self [SAME LENGTH]"<<endl;
+
 					m_FUSION_eliminated.insert(currentId);
 					m_FUSION_direct_fusionDone=false;
 					m_FUSION_first_done=false;
 					m_FUSION_paths_requested=false;
 					m_seedingData->m_SEEDING_i++;
+
+					/* if it was not with its twin, a fusion occured. 
+					
+					- currentId
+					- uniquePathId
+
+					*/
+			
+					int rank1=getRankFromPathUniqueId(currentId);
+					int rank2=getRankFromPathUniqueId(uniquePathId);
+					int index1=getIdFromPathUniqueId(currentId);
+					int index2=getIdFromPathUniqueId(uniquePathId);
+					
+					int difference=index1-index2;
+					if(difference<0)
+						difference=-difference;
+	
+					/** these are not twin paths. */
+					if(!(rank1==rank2 && difference == 1))
+						m_FINISH_fusionOccured=true;
 				}else if(m_FUSION_receivedLength>(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()){
 
 					if(m_debugFusionCode)
 						cout<<"Rank "<<m_parameters->getRank()<<" keeping other, discarding self [OTHER IS LONGER]"<<endl;
+
 					m_FUSION_eliminated.insert(currentId);
 					m_FUSION_direct_fusionDone=false;
 					m_FUSION_first_done=false;
 					m_FUSION_paths_requested=false;
 					m_seedingData->m_SEEDING_i++;
+
+					m_FINISH_fusionOccured=true;
 				}
 				m_FUSION_match_index++;
 				m_FUSION_pathLengthRequested=false;

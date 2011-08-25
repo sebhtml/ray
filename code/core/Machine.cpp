@@ -1263,7 +1263,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		m_currentCycleStep=1;
 		m_CLEAR_n=0;
 
-		cout<<"Rank 0: starting clear step."<<endl;
+		cout<<"Rank 0: starting clear step. cycleNumber= "<<m_cycleNumber<<endl;
 
 		/* change the regulators if this is the first cycle. */
 		if(m_cycleNumber == 0){
@@ -1272,6 +1272,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		}
 
 	}else if(m_CLEAR_n==getSize() && !m_isFinalFusion && m_currentCycleStep==1){
+		cout<<"cycleStep= "<<m_currentCycleStep<<endl;
 		m_currentCycleStep++;
 		m_CLEAR_n=-1;
 
@@ -1281,6 +1282,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		}
 		m_DISTRIBUTE_n=0;
 	}else if(m_DISTRIBUTE_n==getSize() && !m_isFinalFusion && m_currentCycleStep==2){
+		cout<<"cycleStep= "<<m_currentCycleStep<<endl;
 		m_currentCycleStep++;
 		m_DISTRIBUTE_n=-1;
 		m_isFinalFusion=true;
@@ -1290,6 +1292,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		}
 		m_FINISH_n=0;
 	}else if(m_FINISH_n==getSize() && m_isFinalFusion && m_currentCycleStep==3){
+		cout<<"cycleStep= "<<m_currentCycleStep<<endl;
 		m_currentCycleStep++;
 		int count=0;
 		if(m_mustStop){
@@ -1305,6 +1308,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		m_FINISH_n=-1;
 		m_CLEAR_n=0;
 	}else if(m_CLEAR_n==getSize() && m_isFinalFusion && m_currentCycleStep==4){
+		cout<<"cycleStep= "<<m_currentCycleStep<<endl;
 		m_CLEAR_n=-1;
 		m_currentCycleStep++;
 
@@ -1316,9 +1320,11 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 	
 		cout<<"Rank 0: starting distribution step"<<endl;
 	}else if(m_DISTRIBUTE_n==getSize() && m_isFinalFusion && m_currentCycleStep==5){
+		cout<<"cycleStep= "<<m_currentCycleStep<<endl;
 		m_currentCycleStep++;
 
 		if(m_mustStop){
+			cout<<"Must stop."<<endl;
 			m_timePrinter.printElapsedTime("Merging of redundant contigs");
 			cout<<endl;
 			m_master_mode=RAY_MASTER_MODE_ASK_EXTENSIONS;
@@ -1337,8 +1343,12 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		}
 		
 	}else if(m_fusionData->m_FUSION_numberOfRanksDone==getSize() && m_isFinalFusion && m_currentCycleStep==6){
+		cout<<"cycleStep= "<<m_currentCycleStep<<endl;
 		m_reductionOccured=m_nextReductionOccured;
 		m_fusionData->m_FUSION_numberOfRanksDone=-1;
+
+		cout<<"DEBUG m_reductionOccured= "<<m_reductionOccured<<endl;
+
 		if(!m_reductionOccured || m_cycleNumber ==5){ 
 			m_mustStop=true;
 		}
