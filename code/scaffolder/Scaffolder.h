@@ -149,6 +149,13 @@ class Scaffolder{
 	void computeStatistics(vector<int>*lengths,int minimumLength,ostream*outputStream);
 	void printInStream(ostream*outputStream);
 
+	char complementNucleotide(char c);
+
+/*
+ *  complement the sequence of a biological thing
+ */
+	string reverseComplement(string*a);
+
 public:
 
 	bool m_initialised;

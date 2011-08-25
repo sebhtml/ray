@@ -36,29 +36,6 @@
 
 using namespace std;
 
-char complementNucleotide(char c){
-	switch(c){
-		case 'A':
-			return 'T';
-		case 'T':
-			return 'A';
-		case 'G':
-			return 'C';
-		case 'C':
-			return 'G';
-		default:
-			return c;
-	}
-}
-
-string reverseComplement(string*a){
-	ostringstream b;
-	for(int i=a->length()-1;i>=0;i--){
-		b<<complementNucleotide((*a)[i]);
-	}
-	return b.str();
-}
-
 bool isValidDNA(char*x){
 	int len=strlen(x);
 	for(int i=0;i<len;i++){
