@@ -5,8 +5,8 @@ The latency (in microseconds) includes:
 [user-space software layer]
 
 - Ray's code in general (number of ticks per second in Ray's main loop);
-- Ray'S VirtualProcessorCore;
-- Ray's VirtualCommunicator
+- Ray'S VirtualProcessor;
+- Ray's VirtualCommunicator;
 - Ray's MPI wrapping code;
 
 [middleware layer]
@@ -17,7 +17,7 @@ The latency (in microseconds) includes:
 
 - kernel page fault handling, if any;
 - kernel cache miss handling, if any;
-- process context switching (kernel process scheduling;
+- process context switching (kernel process scheduling);
 - kernel hardware drivers (Infiniband OFED or other drivers);
 
 [hardware layer]

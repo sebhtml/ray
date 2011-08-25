@@ -1,8 +1,20 @@
+Date: 2011-08-25
+Author: Sébastien Boisvert
+Subject: VirtualProcessor
+Written on: VIA train 60 (Toronto -> Montréal)
+
+
+The VirtualProcessor I developed enables any MPI rank to have thousands of workers working
+on different tasks. In reality, only one worker can work at any given moment, but
+the VirtualProcessor schedules fairly the workers on the only instruction pipeline
+available so that is not a problem at all.
+
+
 The VirtualProcessor is a technology that make thousands of worker compute tasks
 in parallel on a single MPI rank. Obviously, only one such worker is active at
 any point, but they all get to work.
 
-The idea is that when a worker push a message on the VirtualCommunicator, it has
+The idea is that when a worker pushes a message on the VirtualCommunicator, it has
 to wait for a reply. And this reply may arrive later. The idea of the
 VirtualProcessor is to easily submit communication-intensive tasks. 
 
@@ -11,6 +23,14 @@ to send fewer messages on the physical network.
 
 But to achieve that, an easy way of generating a lot of small messages is
 needed. This is the use of the VirtualProcessor.
+
+
+== Implementation ==
+
+Author: Sébastien Boisvert
+License: GPL
+code/scheduling/VirtualProcessor.h
+code/scheduling/VirtualProcessor.cpp
 
 
 == Workers ==

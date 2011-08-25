@@ -1,6 +1,6 @@
 Date: 2011-08-25
 Author: Sébastien Boisvert
-Subject: Virtual Communicator
+Subject: VirtualCommunicator
 Written on: VIA train 60 (Toronto -> Montréal)
 
 
@@ -21,7 +21,7 @@ run on more than one processor logical core.
 
 With the message-passing interface, a program is started using an
 auxiliary program. Its standard name is mpiexec, and this name stands for
-Message-Passing-Interface EXECution. Other names for such an auxiliary program
+Message-Passing-Interface EXECution (or perhaps EXEcuter). Other names for such an auxiliary program
 are mpirun and orterun. With mpiexec, the same program (in our example that
 would be MyProgram) is started on numerous processor logical cores and each of
 these program instances is given a unique identifier. Each of these numbered
@@ -58,10 +58,10 @@ information. Any message also has an MPI tag to identify the type of information
 it contains.
 
 The hardest part is presumably to implement programs using this general idea of
-MPI ranks. Following single-program multiple-data paradigm (SPMD), the source
+MPI ranks. Following the single-program multiple-data paradigm (SPMD), the source
 code of a MPI program is the same regardless of the actual number of a MPI rank.
 
-Indeed, when started, each MPI rank gets 2 important values. The first is its MPI
+Indeed, when started, each MPI rank gets 2 important values from mpiexec. The first is its MPI
 rank number that we already discussed above. The second is the total number of
 MPI ranks, which we also discussed above.
 
@@ -72,6 +72,8 @@ Communicating messages enables the creation of truly parallel and distributed
 computational systems. But sending messages will be slowest part in your code on
 most hardware.
 
+	see mpi-communication-latency.txt
+
 
 == VirtualCommunicator ==
 
@@ -81,21 +83,29 @@ to MPI rank 13. And let's also assume that all these messages have the same MPI 
 Assuming that the maximum size of a single message is 4000 bytes, all these 500
 messages can be agglomerated in one large message of 4000 bytes (500 * 8 = 4000).
 
-The idea of the VirtualCommunicator is to push each of these 500 messages
+The idea of the VirtualCommunicator is to push each of these small 500 messages
 individually to a virtual communication device. This way, the programmer does
 not need to care about actually grouping its messages at all. This can be tricky
 and/or boring to do manually in the code. 
 
-This so-called VirtualCommunicator will do the multiplexing and demultiplexing
+This so-called VirtualCommunicator will do the multiplexing and de-multiplexing
 of all message contents.
 
-To effectively write code that can push a lot of small messages on the
+== Implementation ==
+
+Author: Sébastien Boisvert
+License: GPL
+code/communication/VirtualCommunicator.h
+code/communication/VirtualCommunicator.cpp
+
+= Feeding the VirtualCommunicator ==
+
+Effectively write code that can push a lot of small messages on the
 VirtualCommunicator is also easy. You simply have to split the work load in
 slices. 
 
-
-	see ray-workers.txt
-
-
 Then, you have to assign each of these slices to a single worker.
+
+	see VirtualProcessor.txt
+
 
