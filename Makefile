@@ -151,7 +151,7 @@ LDFLAGS-$(GPROF) += -pg -g
 CXXFLAGS += $(CXXFLAGS-y)
 LDFLAGS += $(LDFLAGS-y)
 
-TARGETS=code/Ray $(TARGETS-y)
+TARGETS=Ray $(TARGETS-y)
 
 #memory
 obj-y += code/memory/ReusableMemoryStore.o code/memory/MyAllocator.o code/memory/RingAllocator.o \
@@ -248,7 +248,7 @@ showOptions:
 	@touch showOptions
 	
 # how to make Ray
-code/Ray: showOptions $(obj-y)
+Ray: showOptions $(obj-y)
 	@echo "  MPICXX $@"
 	@$(MPICXX) $(LDFLAGS) $(obj-y) -o $@
 	@echo $(PREFIX) > PREFIX
