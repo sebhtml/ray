@@ -1,0 +1,41 @@
+The VirtualProcessor is a technology that make thousands of worker compute tasks
+in parallel on a single MPI rank. Obviously, only one such worker is active at
+any point, but they all get to work.
+
+The idea is that when a worker push a message on the VirtualCommunicator, it has
+to wait for a reply. And this reply may arrive later. The idea of the
+VirtualProcessor is to easily submit communication-intensive tasks. 
+
+Basically, the VirtualCommunicator groups smaller messages into larger messages
+to send fewer messages on the physical network.
+
+But to achieve that, an easy way of generating a lot of small messages is
+needed. This is the use of the VirtualProcessor.
+
+
+== Workers ==
+
+In Ray, each MPI rank actually has thousands of workers within it. All these
+workers are scheduled, one after the other, inside the same process. No thread
+are utilised as these would trash the processor cache. 
+
+At any point in time, each of these worker is in one of these states:
+
+- active;
+- sleeping;
+- completed.
+
+
+
+active 
+
+	The worker is not waiting for a message reply.
+
+sleeping
+
+	The worker is waiting for a message reply.
+
+completed
+
+	The worker has completed its task.
+
