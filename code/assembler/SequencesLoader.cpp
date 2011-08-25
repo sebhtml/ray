@@ -173,7 +173,11 @@ bool SequencesLoader::writeSequencesToAMOSFile(int rank,int size,
 				for(int j=0;j<(int)strlen(qlt);j++){
 					qlt[j]='D';
 				}
+				#if defined(RAY_64_BITS)
 				fprintf(fp,"{RED\niid:%lu\neid:%lu\nseq:\n%s\n.\nqlt:\n%s\n.\n}\n",iid+1,iid+1,seq,qlt);
+				#elif defined(RAY_32_BITS)
+				fprintf(fp,"{RED\niid:%llu\neid:%llu\nseq:\n%s\n.\nqlt:\n%s\n.\n}\n",iid+1,iid+1,seq,qlt);
+				#endif
 			}
 			m_loader.clear();
 			m_loader.load(allFiles[(m_distribution_file_id)],false);
@@ -244,9 +248,9 @@ bool SequencesLoader::loadSequences(int rank,int size,
 	}
 
 	uint64_t sequences=endingSequenceId-startingSequenceId+1;
-	printf("Rank %i: partition is [%lu;%lu], %lu sequence reads\n",m_rank,startingSequenceId+1,endingSequenceId+1,
-		sequences);
-	fflush(stdout);
+
+	cout<<"Rank "<<m_rank<<" : partition is ["<<startingSequenceId+1;
+	cout<<";"<<endingSequenceId+1<<"], "<<sequences<<" sequence reads"<<endl;
 
 	m_distribution_currentSequenceId=0;
 	m_loader.constructor(m_parameters->getMemoryPrefix().c_str(),m_parameters->showMemoryAllocations());
@@ -312,8 +316,7 @@ bool SequencesLoader::loadSequences(int rank,int size,
 	(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 
 	uint64_t amount=m_myReads->size();
-	printf("Rank %i has %lu sequence reads (completed)\n",m_rank,amount);
-	fflush(stdout);
+	cout<<"Rank "<<m_rank<<" has "<<amount<<" sequence reads (completed)"<<endl;
 
 	/* write the checkpoint file */
 	if(m_parameters->writeCheckpoints() && !m_parameters->hasCheckpoint("Sequences")){

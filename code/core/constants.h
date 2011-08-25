@@ -32,6 +32,7 @@ see <http://www.gnu.org/licenses/>
 #define MAXKMERLENGTH 32
 #endif
 
+#include <stdlib.h> /* for __WORDSIZE hopefully */
 #include <stdint.h>
 
 /* exit codes */
@@ -123,5 +124,30 @@ see <http://www.gnu.org/licenses/>
  * this is the type used to store coverage values
  */
 #define COVERAGE_TYPE uint16_t
+
+/** 32-bit or 64-bit system */
+
+#if defined(__WORDSIZE)
+/** use __WORDSIZE */
+#define NUMBER_OF_BITS __WORDSIZE
+
+/** assume 64 bits */
+/* you may get some compilation warnings about printf and fprintf */
+#else
+#define NUMBER_OF_BITS 64
+#endif
+
+/* 64-bit system */
+#if NUMBER_OF_BITS == 64
+#define RAY_64_BITS
+
+/* 32-bit system */
+#elif NUMBER_OF_BITS == 32
+#define RAY_32_BITS
+
+/* assume a 64-bit system */
+#else
+#define RAY_64_BITS
+#endif
 
 #endif

@@ -118,13 +118,24 @@ void Amos::slaveMode(){
 					qlt[i]='D';
 				}
 				m_sequence_id++;
-				fprintf(m_amosFile,"{CTG\niid:%u\neid:contig-%lu\ncom:\nSoftware: Ray, MPI rank: %i\n.\nseq:\n%s\n.\nqlt:\n%s\n.\n",
+	
+				#if defined(RAY_64_BITS)
+					fprintf(m_amosFile,"{CTG\niid:%u\neid:contig-%lu\ncom:\nSoftware: Ray, MPI rank: %i\n.\nseq:\n%s\n.\nqlt:\n%s\n.\n",
 					m_ed->m_EXTENSION_currentPosition+1,
 					m_ed->m_EXTENSION_identifiers[m_contigId],
 					m_parameters->getRank(),
 					seq.c_str(),
 					qlt
 					);
+				#elif defined(RAY_32_BITS)
+					fprintf(m_amosFile,"{CTG\niid:%u\neid:contig-%llu\ncom:\nSoftware: Ray, MPI rank: %i\n.\nseq:\n%s\n.\nqlt:\n%s\n.\n",
+					m_ed->m_EXTENSION_currentPosition+1,
+					m_ed->m_EXTENSION_identifiers[m_contigId],
+					m_parameters->getRank(),
+					seq.c_str(),
+					qlt
+					);
+				#endif
 
 				m_ed->m_EXTENSION_currentPosition++;
 				__Free(qlt,RAY_MALLOC_TYPE_AMOS,m_parameters->showMemoryAllocations());
@@ -181,9 +192,15 @@ void Amos::slaveMode(){
 						theEnd=t;
 						offset++;
 					}
-					fprintf(m_amosFile,"{TLE\nsrc:%li\noff:%i\nclr:%i,%i\n}\n",globalIdentifier,offset,
+	
+					#if defined(RAY_64_BITS)
+						fprintf(m_amosFile,"{TLE\nsrc:%li\noff:%i\nclr:%i,%i\n}\n",globalIdentifier,offset,
 						start,theEnd);
-		
+					#elif defined(RAY_32_BITS)
+						fprintf(m_amosFile,"{TLE\nsrc:%lli\noff:%i\nclr:%i,%i\n}\n",globalIdentifier,offset,
+						start,theEnd);
+					#endif
+
 					// increment to get the next read.
 					m_fusionData->m_FUSION_path_id++;
 					m_ed->m_EXTENSION_readLength_requested=false;
