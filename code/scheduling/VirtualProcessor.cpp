@@ -77,6 +77,8 @@ void VirtualProcessor::constructor(StaticVector*outbox,StaticVector*inbox,RingAl
 
 	/** the maximum number of workers on this VirtualProcessor */
 	m_maximumAliveWorkers=30000;
+
+	reset();
 }
 
 /** make the VirtualProcessor run a little bit */
