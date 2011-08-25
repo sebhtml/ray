@@ -74,7 +74,7 @@ class EdgePurger{
 	void updateStates();
 public:
 	void constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
-		int*slaveMode,int*masterMode,VirtualCommunicator*vc,GridTable*edgePurger);
+		int*slaveMode,int*masterMode,VirtualCommunicator*vc,GridTable*graph);
 
 	void work();
 };
