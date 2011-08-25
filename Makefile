@@ -63,16 +63,6 @@ ASSERT = n
 
 # OS detection based on git Makefile
 uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
-uname_M := $(shell sh -c 'uname -m 2>/dev/null || echo not')
-uname_O := $(shell sh -c 'uname -o 2>/dev/null || echo not')
-uname_R := $(shell sh -c 'uname -r 2>/dev/null || echo not')
-uname_P := $(shell sh -c 'uname -p 2>/dev/null || echo not')
-uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
-
-ifdef MSVC
-        uname_S := Windows
-        uname_O := Windows
-endif
 
 # optimize
 OPTIMIZE = y
@@ -163,6 +153,10 @@ obj-y += code/memory/DefragmentationGroup.o code/memory/ChunkAllocatorWithDefrag
 obj-y += code/communication/mpi_tags.o code/communication/VirtualCommunicator.o code/communication/BufferedData.o \
 code/communication/Message.o code/communication/MessageProcessor.o code/communication/MessagesHandler.o
 obj-y += code/communication/NetworkTest.o
+
+# scheduling stuff
+obj-y += code/scheduling/Worker.o
+obj-y += code/scheduling/VirtualProcessor.o
 
 #formats
 obj-y += code/format/ColorSpaceDecoder.o code/format/ColorSpaceLoader.o code/format/FastaLoader.o \

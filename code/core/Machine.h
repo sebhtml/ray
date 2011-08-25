@@ -22,6 +22,10 @@
 #ifndef _Machine
 #define _Machine
 
+/** virtual stuff */
+#include <communication/VirtualCommunicator.h>
+#include <scheduling/VirtualProcessor.h>
+
 #include <scaffolder/Scaffolder.h>
 #include <graph/GridTable.h>
 #include <communication/MessagesHandler.h>
@@ -69,6 +73,12 @@ class Machine;
 typedef void (Machine::*MachineMethod) ();
 
 class Machine{
+	/** the virtual communicator of the MPI rank */
+	VirtualCommunicator m_virtualCommunicator;
+
+	/** the virtual processor of the MPI rank */
+	VirtualProcessor m_virtualProcessor;
+
 	Partitioner m_partitioner;
 	NetworkTest m_networkTest;
 	EdgePurger m_edgePurger;
@@ -81,7 +91,7 @@ class Machine{
 	int m_coverageRank;
 
 	Amos m_amos;
-	VirtualCommunicator m_virtualCommunicator;
+
 	MachineMethod m_master_methods[64];
 	MachineMethod m_slave_methods[64];
 

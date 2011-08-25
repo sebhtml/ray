@@ -211,7 +211,14 @@ void Machine::start(){
 	if(isMaster()){
 
 		cout<<endl;
-		cout<<"Rank "<<MASTER_RANK<<": Ray version: "<<RAY_VERSION<<endl;
+		cout<<"Rank "<<MASTER_RANK<<": Ray version: "<<RAY_VERSION<<" ";
+
+		#if defined(RAY_64_BITS)
+		cout<<"RAY_64_BITS"<<endl;
+		#elif defined(RAY_32_BITS)
+		cout<<"RAY_32_BITS"<<endl;
+		#endif
+
 		cout<<"Rank "<<MASTER_RANK<<" MAXKMERLENGTH: "<<MAXKMERLENGTH<<" (KMER_U64_ARRAY_SIZE: "<<KMER_U64_ARRAY_SIZE<<")"<<endl;
 		cout<<"Rank "<<MASTER_RANK<<": GNU system (__GNUC__): ";
 		#ifdef __GNUC__
