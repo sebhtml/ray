@@ -37,6 +37,7 @@ using namespace std;
  * vertices always respect the de Bruijn property.
  * a Vertex actually stores two k-mers: only the lower is stored.
  * This halves the memory usage.
+ * \author Sébastien Boisvert
  */
 class Vertex{
 

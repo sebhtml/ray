@@ -24,6 +24,9 @@
 #include<assert.h>
 #define _MAX_STACK_SIZE 1024
 
+/**
+ * \author Sébastien Boisvert
+ */
 template<class TYPE>
 class MyStack{
 	TYPE m_array[_MAX_STACK_SIZE]; // maximum size 

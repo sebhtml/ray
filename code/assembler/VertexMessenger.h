@@ -34,6 +34,7 @@ using namespace std;
 /*
  * Get the markers for a Kmer and also send progression 
  * information to the appropriate MPI rank.
+ * \author Sébastien Boisvert
  */
 class VertexMessenger{
 	set<uint64_t>::iterator m_mateIterator;

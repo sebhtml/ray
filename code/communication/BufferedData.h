@@ -39,6 +39,7 @@
  *  then you want the threshold to be 9, that is 10/3*3 because else
  *  at 9 it won't get flushed, and the next thing you know is that you are at 12,
  *  this is above the threshold and the RingAllocator does not allow that.
+ * \author Sébastien Boisvert
  */
 class BufferedData{
 	int m_count;

@@ -39,6 +39,7 @@ public:
 
 /*
  * Computes average outer distances 
+ * \author Sébastien Boisvert
  */
 class LibraryWorker{
 	bool m_done;

@@ -30,6 +30,7 @@
 
 /** a KmerCandidate may become a genomic super-star --
  * one of the fews that make it to the graph
+ * \author Sébastien Boisvert
  */
 class KmerCandidate{
 public:
@@ -44,6 +45,7 @@ public:
  * they remain here. Usually, those failing are observed
  * only once.
  * The KmerAcademy is burned and destroyed once the graph is ready.
+ * \author Sébastien Boisvert
  */
 class KmerAcademy{
 	Parameters*m_parameters;

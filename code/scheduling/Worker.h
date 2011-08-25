@@ -26,7 +26,9 @@
 #include <memory/RingAllocator.h>
 #include <communication/VirtualCommunicator.h>
 
-/** a general worker class */
+/** a general worker class 
+ * \author Sébastien Boisvert
+ */
 class Worker{
 
 /* protected means things that inherit Worker can also use them */

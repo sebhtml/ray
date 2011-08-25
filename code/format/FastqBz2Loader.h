@@ -31,6 +31,9 @@
 #include<memory/MyAllocator.h>
 using namespace std;
 
+/**
+ * \author Sébastien Boisvert
+ */
 class FastqBz2Loader{
 	int m_loaded;
 	int m_size;

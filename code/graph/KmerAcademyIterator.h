@@ -27,6 +27,9 @@
 #include <structures/MyHashTableIterator.h>
 #include <graph/KmerAcademy.h>
 
+/**
+ * \author Sébastien Boisvert
+ */
 class KmerAcademyIterator{
 	MyHashTableIterator<Kmer,KmerCandidate> m_iterator;
 	bool m_mustProcessOtherKey;

@@ -30,6 +30,7 @@
  *
  * A wave is the flow given by the Parallel_Ray_Engine in the graph.
  * directions of the flow are stored with Directions. (as linked lists).
+ * \author Sébastien Boisvert
  */
 class Direction{
 	Direction*m_next;

@@ -34,6 +34,7 @@ typedef struct{
  * the ReusableMemoryStore don't allocate much memory
  * it bins freed chunks by size  and these are linked in list.
  * The m_next pointer is actually in the freed chunk.
+ * \author Sébastien Boisvert
  */
 class ReusableMemoryStore{
 	map<int,Element*> m_toReuse;

@@ -71,6 +71,9 @@ using namespace std;
 class Machine;
 typedef void (Machine::*MachineMethod) ();
 
+/**
+ * \author Sébastien Boisvert
+ */
 class Machine{
 	/** the virtual communicator of the MPI rank */
 	VirtualCommunicator m_virtualCommunicator;

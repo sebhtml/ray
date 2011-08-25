@@ -38,6 +38,7 @@ using namespace std;
  * Computes the partition on reads (MASTER_RANK).
  * Loads the appropriate slice of reads (all MPI ranks).
  *
+ * \author Sébastien Boisvert
  */
 class SequencesLoader{
 	MyAllocator*m_persistentAllocator;

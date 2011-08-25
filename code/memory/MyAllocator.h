@@ -33,6 +33,7 @@ using namespace std;
  * when one requests memory, it uses this *chunk*.
  * it the chunk gets depleted, MyAllocator renews a new one and store the depleted one in its internals.
  * Also, MyAllocator reuses automatically memory freed with MyAllocator::free()
+ * \author Sébastien Boisvert
  */
 class MyAllocator{
 	int m_type;

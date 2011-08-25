@@ -32,6 +32,9 @@
 #include<structures/Read.h>
 using namespace std;
 
+/**
+ * \author Sébastien Boisvert
+ */
 class FastqLoader{
 	int m_loaded;
 	int m_size;

@@ -34,6 +34,7 @@
  * 	November 2010, 17(11): 1519-1533.
  * 	doi:10.1089/cmb.2009.0238
  * 	http://dx.doi.org/doi:10.1089/cmb.2009.0238
+ * \author Sébastien Boisvert
  */
 class OpenAssemblerChooser{
 	RayNovaEngine m_novaEngine;

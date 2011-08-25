@@ -26,6 +26,7 @@ using namespace std;
 
 /**
  * a splay node.
+ * \author Sébastien Boisvert
  */
 template<class KEY,class VALUE>
 class SplayNode{

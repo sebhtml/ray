@@ -40,6 +40,9 @@
  */
 typedef uint16_t SmallSmartPointer;
 
+/**
+ * \author Sébastien Boisvert
+ */
 class DefragmentationGroup{
 	/** freed stuff to accelerate things. */
 	uint16_t m_fastPointers[FAST_POINTERS];

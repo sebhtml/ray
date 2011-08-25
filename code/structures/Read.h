@@ -38,6 +38,7 @@ using namespace std;
  * a read is represented as a uint8_t*,
  * 2 bits per nucleotide
  * and a (possible) link to paired information.
+ * \author Sébastien Boisvert
  */
 class Read{
 	PairedRead m_pairedRead;// the read on the left

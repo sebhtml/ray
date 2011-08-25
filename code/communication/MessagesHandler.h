@@ -35,6 +35,7 @@
  * MessagesHandler is the only part of Ray that is aware of the message-passing interface.
  * All the other parts rely only on a simple inbox and a simple outbox.
  * This boxes of messages could be implemented with something else than message-passing interface.
+ * \author Sébastien Boisvert
  */
 class MessagesHandler{
 	/** messages sent */

@@ -58,6 +58,7 @@ using namespace std;
  * when the code is stable, this could be a mix of u64, u32 and u16 and u8
  * while maintening the same interface, that are the two functions.
  *
+ * \author Sébastien Boisvert
  */
 class Kmer{
 	/** the actual array of uint64_t */

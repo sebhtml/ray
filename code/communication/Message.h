@@ -31,6 +31,7 @@
  * MPI_Datatype is always MPI_UNSIGNED_LONG_LONG
  * m_count is >=0 and <= MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)
  *  (default is 4000/8 = 500 ).
+ * \author Sébastien Boisvert
  */
 class Message{
 	/** the message body, contains data

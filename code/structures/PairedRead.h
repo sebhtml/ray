@@ -33,6 +33,7 @@ using namespace std;
  *
  *                   AverageFragmentLength  +/- StandardDeviation
  * <----------------------------------------------------------------->
+ * \author Sébastien Boisvert
  */
 class PairedRead{
 	uint32_t m_readIndex;

@@ -35,6 +35,7 @@ using namespace std;
  * 	LoadSingleEndReads <FileA>
  * 	LoadPairedEndReads <FileLeft> <FileRight> <FragmentLength> <StandardDeviation>
  *
+ * \author Sébastien Boisvert
  */
 class Parameters{
 	set<string> m_options;

@@ -35,6 +35,7 @@ using namespace std;
  * A class that fetches reads for a Kmer
  * Pretty simple stuff.
  *
+ * \author Sébastien Boisvert
  */
 class ReadFetcher{
 	uint64_t m_workerId;

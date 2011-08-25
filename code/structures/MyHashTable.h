@@ -53,6 +53,7 @@ using namespace std;
  * \see http://google-sparsehash.googlecode.com/svn/trunk/doc/implementation.html
  *
  * All operations are constant-time or so
+ * \author Sébastien Boisvert
  */
 template<class KEY,class VALUE>
 class MyHashTableGroup{

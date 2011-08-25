@@ -28,6 +28,7 @@
 
 /*
  * Watch for unwanted things.
+ * \author Sébastien Boisvert
  */
 class TipWatchdog{
 public:

@@ -32,6 +32,7 @@ using namespace std;
  *
  * Given a distribution of coverage, CoverageDistribution computes 
  * the minimum coverage, and the peak coverage.
+ * \author Sébastien Boisvert
  */
 class CoverageDistribution{
 	int m_minimumCoverage;

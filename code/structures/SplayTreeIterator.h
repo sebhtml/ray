@@ -30,6 +30,7 @@
 
 /**
  * An iterator on SplayTree
+ * \author Sébastien Boisvert
  */
 template<class TREE_KEY_TYPE,class TREE_VALUE_TYPE>
 class SplayTreeIterator{

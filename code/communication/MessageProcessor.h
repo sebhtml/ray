@@ -58,6 +58,7 @@ typedef void (MessageProcessor::*FNMETHOD) (Message*message);
  * Message objects may also be checked using the Message inbox (m_inbox)
  *
  * Sometimes, a message will generate a reply (_REPLY)
+ * \author Sébastien Boisvert
  */
 class MessageProcessor{
 	int m_kmerAcademyFinishedRanks;

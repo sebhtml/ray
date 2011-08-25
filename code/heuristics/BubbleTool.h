@@ -33,6 +33,7 @@ using namespace std;
  * Check if a bubble is genuine or not.
  * Data is stored in BubbleData
  * TODO: BubbleData and BubbleTool should me merged.
+ * \author Sébastien Boisvert
  */
 class BubbleTool{
 	Parameters*m_parameters;

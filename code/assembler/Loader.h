@@ -60,6 +60,7 @@ FORMAT_FASTQ_BZ2
 /*
  * Loader loads data files. Data can be formated as SFF, FASTA, and FASTQ.
  * Ray makes no use of quality values, so Their encoding is irrelevant.
+ * \author Sébastien Boisvert
  */
 class Loader{
 	bool m_show;

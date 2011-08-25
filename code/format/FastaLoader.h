@@ -31,6 +31,9 @@
 #include<structures/Read.h>
 using namespace std;
 
+/**
+ * \author Sébastien Boisvert
+ */
 class FastaLoader{
 public:
 	int load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator);

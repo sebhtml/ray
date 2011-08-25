@@ -29,6 +29,7 @@ using namespace std;
 
 /*
  * Prints the current local time.
+ * \author Sébastien Boisvert
  */
 class TimePrinter{
 	time_t m_last;

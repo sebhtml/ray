@@ -27,6 +27,9 @@
 #include <structures/MyHashTableIterator.h>
 #include <graph/GridTable.h>
 
+/**
+ * \author Sébastien Boisvert
+ */
 class GridTableIterator{
 	MyHashTableIterator<Kmer,Vertex> m_iterator;
 	bool m_mustProcessOtherKey;

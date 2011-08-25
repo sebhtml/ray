@@ -25,6 +25,9 @@
 #include <structures/MyHashTable.h>
 #include <assert.h>
 
+/**
+ * \author Sébastien Boisvert
+ */
 template<class KEY,class VALUE>
 class MyHashTableIterator{
 	MyHashTable<KEY,VALUE>*m_table;

@@ -24,7 +24,9 @@
 #include <vector>
 using namespace std;
 
-/** finds one or two peaks in the distribution of frequencies for outer distances */
+/** finds one or two peaks in the distribution of frequencies for outer distances 
+ * \author Sébastien Boisvert
+ */
 class LibraryPeakFinder{
 
 public:

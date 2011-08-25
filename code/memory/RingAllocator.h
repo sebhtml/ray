@@ -31,6 +31,7 @@ using namespace std;
  *
  * This is an allocator that can allocate up to <m_chunks> allocations of exactly <m_max> bytes.
  * allocation and free are done both in constant time (yeah!)
+ * \author Sébastien Boisvert
  */
 class RingAllocator{
 	int m_type;

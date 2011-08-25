@@ -45,6 +45,7 @@ using namespace std;
 
 /*
  * Performs the extension of seeds.
+ * \author Sébastien Boisvert
  */
 class SeedExtender{
 	bool m_checkedCheckpoint;

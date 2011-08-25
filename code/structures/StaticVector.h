@@ -29,6 +29,7 @@
  * This is used for the inbox and the outbox in Ray
  *
  * clear is basically O(1), it just sets m_size=0
+ * \author Sébastien Boisvert
  */
 class StaticVector{
 	Message*m_messages;

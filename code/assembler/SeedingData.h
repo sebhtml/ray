@@ -42,6 +42,7 @@ using namespace std;
  * this class. It is a pool of workers that does the job.
  * These workers push messages on the virtual
  * communicator and the later groups messages.
+ * \author Sébastien Boisvert
  */
 class SeedingData{
 	/** checkpointing */

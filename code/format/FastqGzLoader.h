@@ -31,6 +31,9 @@
 #include <memory/MyAllocator.h>
 using namespace std;
 
+/**
+ * \author Sébastien Boisvert
+ */
 class FastqGzLoader{
 	gzFile m_f;
 	int m_size;

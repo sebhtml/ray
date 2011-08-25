@@ -37,6 +37,7 @@ using namespace std;
  * \see http://www.eli.sdsu.edu/courses/fall95/cs660/notes/splay/Splay.html
  * \see http://www.cs.nyu.edu/algvis/java/SplayTree.html
  * \see ftp://ftp.cs.cmu.edu/user/sleator/splaying/SplayTree.java
+ * \author Sébastien Boisvert
 */
 template<class KEY,class VALUE>
 class SplayTree{

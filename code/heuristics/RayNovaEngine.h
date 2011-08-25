@@ -30,6 +30,7 @@ using namespace std;
 
 /** This the new Ray NovaEngine(*) 
  *NovaEngine decides where to go in the k-mer graph
+ * \author Sébastien Boisvert
  */
 class RayNovaEngine{
 public:

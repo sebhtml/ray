@@ -31,6 +31,7 @@ using namespace std;
 
 /**
  * This class counts the number of entries in each input file in parallel 
+ * \author Sébastien Boisvert
  */
 class Partitioner{
 	/** the loader */

@@ -29,6 +29,7 @@
 /*
  * An extension element is a read mapped on an
  * extension for an MPI rank.
+ * \author Sébastien Boisvert
  */
 class ExtensionElement{
 	PairedRead m_pairedRead;

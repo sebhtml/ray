@@ -34,6 +34,7 @@ using namespace std;
 /**
  * This class allows one to use SFF file directly.
  * see http://454.com
+ * \author Sébastien Boisvert
  */
 class SffLoader{
 	int m_size;

@@ -39,6 +39,7 @@ using namespace std;
 
 /*
  * Contains information regarding fusion of extensions.
+ * \author Sébastien Boisvert
  */
 class FusionData{
 	/** debug fusion code */

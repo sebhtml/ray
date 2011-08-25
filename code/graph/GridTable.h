@@ -32,6 +32,7 @@
  * The GridTable  stores  all the k-mers for the graph.
  * Low-coverage (covered once) are not stored here at all.
  * The underlying data structure is a MyHashTable.
+ * \author Sébastien Boisvert
  */
 class GridTable{
 	MyHashTable<Kmer,Vertex> m_hashTable;

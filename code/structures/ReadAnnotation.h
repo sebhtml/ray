@@ -30,6 +30,7 @@ using namespace std;
  * implemented as linked lists, read annotations give 
  * information about read index in the graph.
  * The read paths are restored using read annotations.
+ * \author Sébastien Boisvert
  */
 class ReadAnnotation{
 	ReadAnnotation*m_next;

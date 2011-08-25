@@ -36,6 +36,7 @@ using namespace std;
 /*
  * Data for depth first search.
  *
+ * \author Sébastien Boisvert
  */
 class DepthFirstSearchData{
 	bool m_outgoingEdgesDone;

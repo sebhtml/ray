@@ -40,6 +40,7 @@ using namespace std;
  * enough coverage in the KmerAcademy.cpp.
  * Thus, there will be some edges that point to nothing in the GridTable.cpp.
  * EdgePurger.cpp remove these edges.
+ * \author Sébastien Boisvert
  */
 class EdgePurger{
 	/** checkpointing */

@@ -30,6 +30,9 @@
 #include <memory/RingAllocator.h>
 using namespace std;
 
+/**
+ * \author Sébastien Boisvert
+ */
 class CoverageGatherer{
 	map<int,uint64_t> m_distributionOfCoverage;
 	map<int,uint64_t>::iterator m_coverageIterator;

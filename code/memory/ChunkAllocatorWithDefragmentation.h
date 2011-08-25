@@ -49,6 +49,7 @@ typedef uint32_t SmartPointer;
  * a SmartPointer.
  * Inside, a SmartPointer is translated to a SmallSmartPointer and given to
  * the correct DefragmentationGroup in the  correct DefragmentationLane.
+ * \author Sébastien Boisvert
  */
 class ChunkAllocatorWithDefragmentation{
 	DefragmentationLane*m_fastLane;

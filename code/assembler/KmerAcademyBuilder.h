@@ -41,6 +41,7 @@ using namespace std;
  * It also computes arcs between k-mers.
  * These bits are then sent (buffered) to
  * their respective owners.
+ * \author Sébastien Boisvert
  */
 class KmerAcademyBuilder{
 	/** this we check the checkpoint ? */

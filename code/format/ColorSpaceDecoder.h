@@ -25,6 +25,10 @@
 #include<string>
 using namespace std;
 
+/**
+ *
+ * \author Sébastien Boisvert
+ */
 class ColorSpaceDecoder{
 	int m_colors[16];
 public:

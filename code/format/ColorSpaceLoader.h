@@ -32,6 +32,10 @@
 #include <structures/Read.h>
 using namespace std;
 
+/**
+ *
+ * \author Sébastien Boisvert
+ */
 class ColorSpaceLoader{
 	ColorSpaceDecoder m_decoder;
 	FILE*m_f;

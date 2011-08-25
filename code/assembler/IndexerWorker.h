@@ -33,6 +33,7 @@
 /**
  * this class is a worker for sequence indexing
  * Optimal read markers are selected by IndexerWorker
+ * \author Sébastien Boisvert
  */
 class IndexerWorker{
 	ArrayOfReads*m_reads;

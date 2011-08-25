@@ -41,6 +41,7 @@ using namespace std;
  *          - message outbox
  *          - outbox memory ring allocator
  *          - slave and master modes.
+ * \author Sébastien Boisvert
  */
 class NetworkTest{
 	TimePrinter*m_timePrinter;

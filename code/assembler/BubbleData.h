@@ -33,6 +33,7 @@ using namespace std;
 /*
  * put some members in this class or else g++ don't like it. it makes otherwise the program segfault!
  * Contains information on bubbles so they can be detected
+ * \author Sébastien Boisvert
  */
 class BubbleData{
 public:

@@ -36,6 +36,7 @@ using namespace std;
 
 /*
  * Stores the information for a seed extension.
+ * \author Sébastien Boisvert
  */
 class ExtensionData{
 	SplayTree<uint64_t,ExtensionElement>*m_database;

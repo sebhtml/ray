@@ -40,6 +40,7 @@ using namespace std;
 
 /*
  * Computes optimal read markers using workers.
+ * \author Sébastien Boisvert
  */
 class SequencesIndexer{
 	/** for checkpointing */

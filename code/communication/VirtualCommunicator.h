@@ -44,6 +44,7 @@ using namespace std;
  * The object is specific to a step of the algorithm because worker Identifiers are attributed.
  *
 * this class is event-driven and tag-specific and destination-specific
+ * \author Sébastien Boisvert
 */
 class VirtualCommunicator{
 	bool m_debug;

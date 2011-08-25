@@ -42,6 +42,7 @@ using namespace std;
  * To do so, it spawns a pool of workers.
  * These workers will push messages and these
  * messages are grouped by the virtual communicator.
+ * \author Sébastien Boisvert
  */
 class Library{
 	int m_currentLibrary;

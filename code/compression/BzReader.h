@@ -26,6 +26,9 @@
 #include<bzlib.h>
 #include<stdio.h>
 
+/**
+ * \author Sébastien Boisvert
+ */
 class BzReader{
 	BZFILE*m_bzFile;
 	FILE*m_file;

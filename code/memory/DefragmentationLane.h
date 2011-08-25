@@ -37,6 +37,7 @@
  *
  * A DefragmentationGroup is in a DefragmentationLane.
  * A DefragmentationLane contains GROUPS_PER_LANE DefragmentationGroup.
+ * \author Sébastien Boisvert
  */
 class DefragmentationLane{
 	/** the identifier of the DefragmentationLane */

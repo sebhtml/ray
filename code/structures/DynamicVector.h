@@ -26,6 +26,7 @@
 
 /**
  * a dynamic vector, this is a template
+ * \author Sébastien Boisvert
  *
  */
 template<class TYPE>
