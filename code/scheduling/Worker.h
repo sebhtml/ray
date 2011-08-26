@@ -59,6 +59,9 @@ public:
 
 	/** get the worker number */
 	uint64_t getWorkerIdentifier();
+
+	/** virtual destructor */
+	virtual ~Worker()=0;
 };
 
 #endif
