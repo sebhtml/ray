@@ -1,4 +1,4 @@
-mpirun -np $NSLOTS $RAY_GIT_PATH/code/Ray \
+mpirun -np $NSLOTS $RAY_GIT_PATH/Ray \
 -i interleaved1.fastq \
 -i interleaved2.fastq \
 -o $TEST_NAME

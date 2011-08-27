@@ -1,4 +1,4 @@
-mpirun -tag-output -np $NSLOTS $RAY_GIT_PATH/code/Ray  \
+mpirun -tag-output -np $NSLOTS $RAY_GIT_PATH/Ray  \
 -p strept_200_1.fastq \
    strept_200_2.fastq \
 -o $TEST_NAME

@@ -1,4 +1,4 @@
-mpirun -np $NSLOTS  $RAY_GIT_PATH/code/Ray  \
+mpirun -np $NSLOTS  $RAY_GIT_PATH/Ray  \
 -i strept-interleaved.fasta \
 -o $TEST_NAME
 

@@ -1,4 +1,4 @@
-mpirun -np $NSLOTS  $RAY_GIT_PATH/code/Ray  \
+mpirun -np $NSLOTS  $RAY_GIT_PATH/Ray  \
 -p Pseud,200b,2x50b,50X_1.fasta Pseud,200b,2x50b,50X_2.fasta \
 -o $TEST_NAME
 
