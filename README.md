@@ -51,6 +51,11 @@ Ray is documented in
 
 - http://github.com/sebhtml/ray
 
+- To get a ChangeLog:
+
+	./scripts/dump-ChangeLog.sh > ChangeLog
+	less ChangeLog
+
 # Mailing lists
 
 - Users: denovoassembler-users AT lists.sourceforge.net
