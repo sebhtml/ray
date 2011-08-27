@@ -1,3 +1,11 @@
+This file is not updated anymore.
+
+To generate a ChangeLog file:
+
+	./scripts/dump-ChangeLog.sh > ChangeLog
+	less ChangeLog
+
+
 = 1.6.2 'raygun' =
 2011-09-XX
 
