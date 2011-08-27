@@ -1384,6 +1384,15 @@ void MessageProcessor::call_RAY_MPI_TAG_START_FUSION(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_FUSION_DONE(Message*message){
+	
+	uint64_t*incoming=message->getBuffer();
+	bool reductionOccured=incoming[0];
+
+	if(reductionOccured){
+		cout<<"Reduction occured from RAY_MPI_TAG_FUSION_DONE!"<<endl;
+		(*m_nextReductionOccured)=true;
+	}
+
 	m_fusionData->m_FUSION_numberOfRanksDone++;
 	if(m_fusionData->m_FUSION_numberOfRanksDone==m_size && !(*m_isFinalFusion)){
 		(*m_master_mode)=RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS;
@@ -1798,14 +1807,16 @@ void MessageProcessor::call_RAY_MPI_TAG_FINISH_FUSIONS(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_FINISH_FUSIONS_FINISHED(Message*message){
-	void*buffer=message->getBuffer();
-	uint64_t*incoming=(uint64_t*)buffer;
-	(*m_FINISH_n)++;
+	uint64_t*incoming=message->getBuffer();
+
 	bool reductionOccured=incoming[0];
 
 	if(reductionOccured){
+		cout<<"Reduction occured from RAY_MPI_TAG_FINISH_FUSIONS_FINISHED !"<<endl;
 		(*m_nextReductionOccured)=true;
 	}
+
+	(*m_FINISH_n)++;
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_DISTRIBUTE_FUSIONS(Message*message){

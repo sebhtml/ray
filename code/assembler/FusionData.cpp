@@ -505,9 +505,6 @@ void FusionData::makeFusions(){
 	}
 	if(m_seedingData->m_SEEDING_i==(uint64_t)m_ed->m_EXTENSION_contigs.size()){
 
-		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_FUSION_DONE,getRank());
-		m_outbox->push_back(aMessage);
-		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		int seedIndex=m_seedingData->m_SEEDING_i-1;
 		if(m_ed->m_EXTENSION_contigs.size()==0){
 			seedIndex++;
@@ -517,6 +514,15 @@ void FusionData::makeFusions(){
 
 		int pathsBefore=m_ed->m_EXTENSION_contigs.size();
 		int pathsAfter=pathsBefore-m_FUSION_eliminated.size();
+
+		bool reductionOccured=pathsAfter < pathsBefore;
+
+		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t));
+		message[0]=reductionOccured;
+		Message aMessage(message,1,MASTER_RANK,RAY_MPI_TAG_FUSION_DONE,getRank());
+		m_outbox->push_back(aMessage);
+
+		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 
 		#ifdef ASSERT
 		assert(pathsAfter <= pathsBefore);
