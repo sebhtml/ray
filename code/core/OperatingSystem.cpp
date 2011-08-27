@@ -24,6 +24,11 @@
 #include <string>
 #include <fstream>
 #include <assert.h>
+#include <structures/Kmer.h>
+#include <structures/Vertex.h>
+#include <structures/Direction.h>
+#include <structures/PairedRead.h>
+#include <structures/Read.h>
 
 using namespace std;
 
@@ -202,4 +207,156 @@ void createDirectory(char*directory){
 	CreateDirectory(directory,attr);
 
 	#endif
+}
+
+void showRayVersionShort(){
+	cout<<"Ray version "<<RAY_VERSION<<" ";
+
+	#if defined(RAY_64_BITS)
+	cout<<"RAY_64_BITS"<<endl;
+	#elif defined(RAY_32_BITS)
+	cout<<"RAY_32_BITS"<<endl;
+	#endif
+
+	cout<<"License: GNU General Public License"<<endl;
+
+	cout<<endl;
+	cout<<"MAXKMERLENGTH: "<<MAXKMERLENGTH<<endl;
+	cout<<"KMER_U64_ARRAY_SIZE: "<<KMER_U64_ARRAY_SIZE<<endl;
+
+	cout<<"MAXIMUM_MESSAGE_SIZE_IN_BYTES: "<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<" bytes"<<endl;
+	cout<<"FORCE_PACKING (don't align addresses on 8 bytes): ";
+
+	#ifdef FORCE_PACKING
+	cout<<"y";
+	#else
+	cout<<"n";
+	#endif
+	cout<<endl;
+
+	cout<<"ASSERT: ";
+	#ifdef ASSERT
+	cout<<"y"<<endl;
+	#else
+	cout<<"n"<<endl;
+	#endif
+
+	cout<<"HAVE_CLOCK_GETTIME (real-time Operating System): ";
+	#ifdef HAVE_CLOCK_GETTIME
+	cout<<"y"<<endl;
+	#else
+	cout<<"n"<<endl;
+	#endif
+
+	// show libraries
+	cout<<"HAVE_LIBZ (gz support): ";
+	#ifdef HAVE_LIBZ
+	cout<<"y"<<endl;
+	#else
+	cout<<"n"<<endl;
+	#endif
+
+	cout<<"HAVE_LIBBZ2 (bz2 support): ";
+	#ifdef HAVE_LIBBZ2
+	cout<<"y"<<endl;
+	#else
+	cout<<"n"<<endl;
+	#endif
+
+}
+
+void showRayVersion(MessagesHandler*messagesHandler,bool fullReport){
+	showRayVersionShort();
+
+	cout<<endl;
+	cout<<"Rank "<<MASTER_RANK<<": Operating System: ";
+	cout<<getOperatingSystem()<<endl;
+
+	// show OS, only Linux
+	cout<<"Linux (__linux__): ";
+	#ifdef __linux__
+	cout<<"y"<<endl;
+	#else
+	cout<<"n"<<endl;
+	#endif
+
+
+	cout<<"GNU system (__GNUC__): ";
+	#ifdef __GNUC__
+	cout<<"y"<<endl;
+	#else
+	cout<<"n"<<endl;
+	#endif
+
+
+	cout<<"Message-passing interface"<<endl;
+	cout<<endl;
+	cout<<"Rank "<<MASTER_RANK<<": Message-Passing Interface implementation: ";
+	cout<<messagesHandler->getMessagePassingInterfaceImplementation()<<endl;
+
+	int version;
+	int subversion;
+	messagesHandler->version(&version,&subversion);
+
+	cout<<"Rank "<<MASTER_RANK<<": Message-Passing Interface standard version: "<<version<<"."<<subversion<<""<<endl;
+
+
+	cout<<endl;
+
+	#define SHOW_SIZEOF
+
+	if(!fullReport)
+		return;
+
+	#ifdef SHOW_SIZEOF
+	cout<<"Size of structures"<<endl;
+	cout<<endl;
+	cout<<"KMER_BYTES "<<KMER_BYTES<<endl;
+	cout<<"KMER_UINT64_T "<<KMER_UINT64_T<<endl;
+	cout<<"KMER_UINT64_T_MODULO "<<KMER_UINT64_T_MODULO<<endl;
+
+	cout<<" sizeof(Vertex)="<<sizeof(Vertex)<<endl;
+	cout<<" sizeof(Direction)="<<sizeof(Direction)<<endl;
+	cout<<" sizeof(ReadAnnotation)="<<sizeof(ReadAnnotation)<<endl;
+	cout<<" sizeof(Read)="<<sizeof(Read)<<endl;
+	cout<<" sizeof(PairedRead)="<<sizeof(PairedRead)<<endl;
+	#endif
+
+	cout<<endl;
+
+	cout<<"Number of MPI ranks: "<<messagesHandler->getSize()<<endl;
+	cout<<"Ray master MPI rank: "<<MASTER_RANK<<endl;
+	cout<<"Ray slave MPI ranks: 0-"<<messagesHandler->getSize()-1<<endl;
+	cout<<endl;
+
+
+	#ifdef SHOW_ITEMS
+	int count=0;
+	#define MACRO_LIST_ITEM(x) count++;
+	#include <core/master_mode_macros.h>
+	#undef MACRO_LIST_ITEM
+	cout<<"Ray master modes ( "<<count<<" )"<<endl;
+	#define MACRO_LIST_ITEM(x) printf(" %i %s\n",x,#x);fflush(stdout);
+	#include <core/master_mode_macros.h>
+	#undef MACRO_LIST_ITEM
+	cout<<endl;
+	count=0;
+	#define MACRO_LIST_ITEM(x) count++;
+	#include <core/slave_mode_macros.h>
+	#undef MACRO_LIST_ITEM
+	cout<<"Ray slave modes ( "<<count<<" )"<<endl;
+	#define MACRO_LIST_ITEM(x) printf(" %i %s\n",x,#x);fflush(stdout);
+	#include <core/slave_mode_macros.h>
+	#undef MACRO_LIST_ITEM
+	cout<<endl;
+	count=0;
+	#define MACRO_LIST_ITEM(x) count++;
+	#include <communication/mpi_tag_macros.h>
+	#undef MACRO_LIST_ITEM
+	cout<<"Ray MPI tags ( "<<count<<" )"<<endl;
+	#define MACRO_LIST_ITEM(x) printf(" %i %s\n",x,#x);fflush(stdout);
+	#include <communication/mpi_tag_macros.h>
+	#undef MACRO_LIST_ITEM
+	#endif
+	cout<<endl;
 }

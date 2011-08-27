@@ -232,7 +232,6 @@ class Machine{
 	#ifdef ASSERT
 	set<int> m_collisions;
 	#endif
-	bool m_nextReductionOccured;
 	bool m_cycleStarted;
 	bool m_reductionOccured;
 

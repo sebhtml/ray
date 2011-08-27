@@ -1042,6 +1042,8 @@ void Parameters::showUsage(){
 	cout<<endl;
 	showOption("-help","Displays this help page.");
 	cout<<endl;
+	showOption("-version","Displays Ray version and compilation options.");
+	cout<<endl;
 
 	cout<<"  K-mer length"<<endl;
 	cout<<endl;

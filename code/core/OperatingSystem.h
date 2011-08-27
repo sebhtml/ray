@@ -19,9 +19,13 @@
 
 */
 
+#ifndef _OperatingSystem_h
+#define _OperatingSystem_h
+
 /** only this file knows the operating system */
 #include <string>
 #include <core/constants.h> 
+#include <communication/MessagesHandler.h>
 using namespace std;
 
 /** show memory usage */
@@ -44,3 +48,9 @@ void getMicroSeconds(uint64_t*seconds,uint64_t*microSeconds);
 
 /** create a directory */
 void createDirectory(char*directory);
+
+void showRayVersion(MessagesHandler*messagesHandler,bool fullReport);
+
+void showRayVersionShort();
+
+#endif

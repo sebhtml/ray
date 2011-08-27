@@ -63,6 +63,9 @@ Machine::Machine(int argc,char**argv){
 		}else if(param.find("man")!=string::npos){
 			m_parameters.showUsage();
 			exit(EXIT_NEEDS_ARGUMENTS);
+		}else if(param.find("-version")!=string::npos){
+			showRayVersionShort();
+			exit(EXIT_NEEDS_ARGUMENTS);
 		}
 	}
 
@@ -204,139 +207,26 @@ void Machine::start(){
 	}
 	assert(getSize()<=maximumNumberOfProcesses);
 
-	int version;
-	int subversion;
-	m_messagesHandler.version(&version,&subversion);
+	bool fullReport=false;
+
+	if(m_argc==2){
+		string argument=m_argv[1];
+		if(argument=="-version" || argument=="--version")
+			fullReport=true;
+	}
 
 	if(isMaster()){
+		showRayVersion(&m_messagesHandler,fullReport);
 
-		cout<<endl;
-		cout<<"Rank "<<MASTER_RANK<<": Ray version: "<<RAY_VERSION<<" ";
-
-		#if defined(RAY_64_BITS)
-		cout<<"RAY_64_BITS"<<endl;
-		#elif defined(RAY_32_BITS)
-		cout<<"RAY_32_BITS"<<endl;
-		#endif
-
-		cout<<"Rank "<<MASTER_RANK<<" MAXKMERLENGTH: "<<MAXKMERLENGTH<<" (KMER_U64_ARRAY_SIZE: "<<KMER_U64_ARRAY_SIZE<<")"<<endl;
-		cout<<"Rank "<<MASTER_RANK<<": GNU system (__GNUC__): ";
-		#ifdef __GNUC__
-		cout<<"yes"<<endl;
-		#else
-		cout<<"no"<<endl;
-		#endif
-
-		cout<<"Rank "<<MASTER_RANK<<": Operating System: ";
-		cout<<getOperatingSystem()<<endl;
-
-		cout<<"Rank "<<MASTER_RANK<<": real-time Operating System (HAVE_CLOCK_GETTIME): ";
-		#ifdef HAVE_CLOCK_GETTIME
-		cout<<"yes"<<endl;
-		#else
-		cout<<"no"<<endl;
-		#endif
-
-		cout<<"Rank "<<MASTER_RANK<<": Message-Passing Interface implementation: ";
-		cout<<m_messagesHandler.getMessagePassingInterfaceImplementation()<<endl;
-
-		cout<<"Rank "<<MASTER_RANK<<": Message-Passing Interface standard version: "<<version<<"."<<subversion<<""<<endl;
-
-		// show libraries
-		cout<<"Rank "<<MASTER_RANK<<": GZIP (HAVE_LIBZ): ";
-		#ifdef HAVE_LIBZ
-		cout<<"yes"<<endl;
-		#else
-		cout<<"no"<<endl;
-		#endif
-
-		cout<<"Rank "<<MASTER_RANK<<": BZIP2 (HAVE_LIBBZ2): ";
-		#ifdef HAVE_LIBBZ2
-		cout<<"yes"<<endl;
-		#else
-		cout<<"no"<<endl;
-		#endif
-
-		// show OS, only Linux
-
-		cout<<"Rank "<<MASTER_RANK<<": GNU/Linux (__linux__): ";
-		#ifdef __linux__
-		cout<<"yes"<<endl;
-		#else
-		cout<<"no"<<endl;
-		#endif
-
-		cout<<"Rank "<<MASTER_RANK<<": assertions (ASSERT): ";
-		#ifdef ASSERT
-		cout<<"yes"<<endl;
-		#else
-		cout<<"no"<<endl;
-		#endif
-
-		cout<<"Rank "<<MASTER_RANK<<": maximum size of a message (MAXIMUM_MESSAGE_SIZE_IN_BYTES): "<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<" bytes"<<endl;
-		cout<<"Rank "<<MASTER_RANK<<": don't align addresses on 8 bytes (FORCE_PACKING): ";
-		#ifdef FORCE_PACKING
-		cout<<"yes";
-		#else
-		cout<<"no";
-		#endif
-		cout<<endl;
-		cout<<endl;
-	
-		#ifdef SHOW_SIZEOF
-
-		cout<<"KMER_BYTES "<<KMER_BYTES<<endl;
-		cout<<"KMER_UINT64_T "<<KMER_UINT64_T<<endl;
-		cout<<"KMER_UINT64_T_MODULO "<<KMER_UINT64_T_MODULO<<endl;
-
-		cout<<" sizeof(Vertex)="<<sizeof(Vertex)<<endl;
-		cout<<" sizeof(VertexData)="<<sizeof(VertexData)<<endl;
-		cout<<" sizeof(Direction)="<<sizeof(Direction)<<endl;
-		cout<<" sizeof(ReadAnnotation)="<<sizeof(ReadAnnotation)<<endl;
-		cout<<" sizeof(Read)="<<sizeof(Read)<<endl;
-		cout<<" sizeof(PairedRead)="<<sizeof(PairedRead)<<endl;
-		#endif
-
-		cout<<endl;
-
-		cout<<"Number of MPI ranks: "<<getSize()<<endl;
-		cout<<"Ray master MPI rank: "<<MASTER_RANK<<endl;
-		cout<<"Ray slave MPI ranks: 0-"<<getSize()-1<<endl;
-		cout<<endl;
-
-		#ifdef SHOW_ITEMS
-		int count=0;
-		#define MACRO_LIST_ITEM(x) count++;
-		#include <master_mode_macros.h>
-		#undef MACRO_LIST_ITEM
-		cout<<"Ray master modes ( "<<count<<" )"<<endl;
-		#define MACRO_LIST_ITEM(x) printf(" %i %s\n",x,#x);fflush(stdout);
-		#include <master_mode_macros.h>
-		#undef MACRO_LIST_ITEM
-		cout<<endl;
-		count=0;
-		#define MACRO_LIST_ITEM(x) count++;
-		#include <slave_mode_macros.h>
-		#undef MACRO_LIST_ITEM
-		cout<<"Ray slave modes ( "<<count<<" )"<<endl;
-		#define MACRO_LIST_ITEM(x) printf(" %i %s\n",x,#x);fflush(stdout);
-		#include <slave_mode_macros.h>
-		#undef MACRO_LIST_ITEM
-		cout<<endl;
-		count=0;
-		#define MACRO_LIST_ITEM(x) count++;
-		#include <mpi_tag_macros.h>
-		#undef MACRO_LIST_ITEM
-		cout<<"Ray MPI tags ( "<<count<<" )"<<endl;
-		#define MACRO_LIST_ITEM(x) printf(" %i %s\n",x,#x);fflush(stdout);
-		#include <mpi_tag_macros.h>
-		#undef MACRO_LIST_ITEM
-		#endif
-		cout<<endl;
-
-		m_timePrinter.printElapsedTime("Beginning of computation");
-		cout<<endl;
+		if(!fullReport){
+			m_timePrinter.printElapsedTime("Beginning of computation");
+			cout<<endl;
+		}
 	}
+
+	/** only show the version. */
+	if(fullReport)
+		return;
 
 	m_parameters.constructor(m_argc,m_argv,getRank());
 
@@ -437,7 +327,7 @@ m_seedingData,
 	&m_CLEAR_n,
 	&m_readyToSeed,
 	&m_FINISH_n,
-	&m_nextReductionOccured,
+	&m_reductionOccured,
 	&m_directionsAllocator,
 	&m_mode_send_coverage_iterator,
 	&m_coverageDistribution,
@@ -1263,7 +1153,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 
 		uint64_t*buffer=(uint64_t*)m_outboxAllocator.allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
-		m_nextReductionOccured=false;
+		m_reductionOccured=false;
 		m_cycleStarted=true;
 		m_isFinalFusion=false;
 		for(int i=0;i<getSize();i++){
@@ -1354,7 +1244,6 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		
 	}else if(m_fusionData->m_FUSION_numberOfRanksDone==getSize() && m_isFinalFusion && m_currentCycleStep==6){
 		cout<<"cycleStep= "<<m_currentCycleStep<<endl;
-		m_reductionOccured=m_nextReductionOccured;
 		m_fusionData->m_FUSION_numberOfRanksDone=-1;
 
 		cout<<"DEBUG m_reductionOccured= "<<m_reductionOccured<<endl;
