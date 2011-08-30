@@ -252,6 +252,12 @@ void FusionData::finishFusions(){
 			m_FINISH_pathsForPosition->push_back(a);
 			m_FINISH_coverages.push_back(m_seedingData->m_SEEDING_receivedVertexCoverage);
 			if(m_ed->m_EXTENSION_currentPosition==0){
+				
+				if(m_debugFusionCode){
+					cout<<"Trying to join path "<<m_seedingData->m_SEEDING_i+1<<" (";
+					cout<<m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<<" vertices) with something else."<<endl;
+				}
+
 				if(m_seedingData->m_SEEDING_i%10==0){
 					printf("Rank %i is finishing fusions [%i/%i]\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_ed->m_EXTENSION_contigs.size());
 					fflush(stdout);
@@ -286,6 +292,9 @@ void FusionData::finishFusions(){
 		// no hits are possible.
 		if(directions1.size()==0 || directions2.size()==0){
 			m_checkedValidity=true;
+			if(m_debugFusionCode){
+				cout<<"no hit found at all."<<endl;
+			}
 		}else{
 
 		// basically, directions1 contains the paths at a particular vertex in the path
@@ -355,8 +364,13 @@ void FusionData::finishFusions(){
  	*
  	*/
 			if(hits>1){// we don't support that right now.
+				if(m_debugFusionCode)
+					cout<<"More than one hit, "<<hits<<" hits found."<<endl;
 				done=true;
-			}	
+			}else if(hits==1){
+				if(m_debugFusionCode)
+					cout<<"Exactly 1 hit found!"<<endl;
+			}
 
 
 			m_checkedValidity=true;
@@ -378,7 +392,12 @@ void FusionData::finishFusions(){
 						break;
 					}
 				}
-				if(!found){
+				if(!found || m_parameters->hasOption("-disable-path-merger")){
+					if(m_debugFusionCode){
+						cout<<"Fallback to staged path, selection is not confirmed."<<endl;
+						cout<<" validationPosition= "<<m_validationPosition<<endl;
+					}
+
 					done=true;// the selection is not confirmed
 				}else{
 					m_validationPosition++;// added
@@ -387,6 +406,10 @@ void FusionData::finishFusions(){
 				}
 			}
 		}else if(m_validationPosition>position2){
+			if(m_debugFusionCode){
+				cout<<"Safely confirmed mapping for path "<<m_seedingData->m_SEEDING_i<<endl;
+				cout<<" hit is path "<<m_selectedPath<<" at position "<<m_selectedPosition<<endl;
+			}
 			m_mappingConfirmed=true;
 
 		}else{
@@ -417,6 +440,8 @@ void FusionData::finishFusions(){
 				m_FUSION_pathLengthRequested=true;
 				m_FUSION_pathLengthReceived=false;
 			}else if(m_FUSION_pathLengthReceived){
+				if(m_debugFusionCode)
+					cout<<"caching length for path object "<<pathId<<", value is "<<m_FUSION_receivedLength<<endl;
 				m_FINISH_pathLengths[pathId]=m_FUSION_receivedLength;
 			}
 		}else if(m_FINISH_pathLengths[pathId]!=0 // 0 means the path does not exist.
