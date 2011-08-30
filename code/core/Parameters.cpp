@@ -84,7 +84,6 @@ Parameters::Parameters(){
 
 	/** use the new NovaEngine (TM) */
 	m_options.insert("-use-NovaEngine");
-	m_options.insert("-debug-fusions");
 }
 
 bool Parameters::showExtensionChoice(){
