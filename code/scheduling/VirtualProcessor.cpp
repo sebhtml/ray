@@ -178,3 +178,7 @@ void VirtualProcessor::reset(){
 	m_initiatedIterator=false;
 	m_completedJobs=0;
 }
+
+bool VirtualProcessor::hasWorkToDo(){
+	return m_aliveWorkers.size()>0;
+}

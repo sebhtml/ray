@@ -64,7 +64,7 @@ work()
 	if worker.isDone
 		get the result of the worker
 		do something meaningful with the result
-		virtualProcessor.removeWorker(worker)
+		virtualProcessor.removeWorker(worker) (done automatically)
 		destroy the worker
 
 	if all tasks are finished
@@ -129,6 +129,9 @@ public:
 
 	/** no more task are coming */
 	void noMoreTasksAreComing();
+
+	/** returns true if some workers are alive */
+	bool hasWorkToDo();
 };
 
 #endif
