@@ -157,6 +157,9 @@ obj-y += code/communication/NetworkTest.o
 # scheduling stuff
 obj-y += code/scheduling/Worker.o
 obj-y += code/scheduling/VirtualProcessor.o
+obj-y += code/scheduling/TaskCreator.o
+
+obj-y += code/assembler/Merger.o
 
 #formats
 obj-y += code/format/ColorSpaceDecoder.o code/format/ColorSpaceLoader.o code/format/FastaLoader.o \
