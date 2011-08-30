@@ -1145,6 +1145,8 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 	//  * a distribute cycle
 	//  * a fusion cycle
 
+	int lastAllowedCycleNumber=16;
+
 	if(!m_cycleStarted){
 		int count=0;
 		if(m_mustStop){
@@ -1225,6 +1227,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 
 		if(m_mustStop){
 			cout<<"Must stop."<<endl;
+			cout<<"Rank "<<m_parameters.getRank()<<" cycleNumber= "<<m_cycleNumber<<endl;
 			m_timePrinter.printElapsedTime("Merging of redundant contigs");
 			cout<<endl;
 			m_master_mode=RAY_MASTER_MODE_ASK_EXTENSIONS;
@@ -1248,7 +1251,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 
 		cout<<"DEBUG m_reductionOccured= "<<m_reductionOccured<<endl;
 
-		if(!m_reductionOccured || m_cycleNumber ==5){ 
+		if(!m_reductionOccured || m_cycleNumber == lastAllowedCycleNumber){ 
 			m_mustStop=true;
 		}
 
