@@ -26,6 +26,7 @@
 #include <assembler/ExtensionData.h>
 #include <communication/VirtualCommunicator.h>
 #include <memory/RingAllocator.h>
+#include <scheduling/Worker.h>
 #include <map>
 #include <stdint.h>
 using namespace std;
@@ -41,7 +42,7 @@ public:
  * Computes average outer distances 
  * \author Sébastien Boisvert
  */
-class LibraryWorker{
+class LibraryWorker : public Worker {
 	bool m_done;
 	ReadFetcher m_readFetcher;
 	map<int,map<int,int> >*m_libraryDistances;

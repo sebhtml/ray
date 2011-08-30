@@ -29,13 +29,14 @@
 #include <memory/MyAllocator.h>
 #include <structures/ArrayOfReads.h>
 #include <structures/DynamicVector.h>
+#include <scheduling/Worker.h>
 
 /**
  * this class is a worker for sequence indexing
  * Optimal read markers are selected by IndexerWorker
  * \author Sébastien Boisvert
  */
-class IndexerWorker{
+class IndexerWorker : public Worker{
 	ArrayOfReads*m_reads;
 	int m_sequenceId;
 	bool m_done;

@@ -33,6 +33,8 @@ class Worker{
 
 /* protected means things that inherit Worker can also use them */
 protected:
+
+
 	/** flag indicating if the worker is done */
 	bool m_isDone;
 
@@ -47,6 +49,8 @@ protected:
 
 	/** the virtual communicator */
 	VirtualCommunicator*m_virtualCommunicator;
+
+
 public:
 
 	/** work a little bit 
@@ -60,8 +64,8 @@ public:
 	/** get the worker number */
 	uint64_t getWorkerIdentifier();
 
-	/** virtual destructor */
-	virtual ~Worker()=0;
+
+	virtual ~Worker(){}
 };
 
 #endif

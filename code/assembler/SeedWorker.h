@@ -26,6 +26,7 @@
 #include <core/Parameters.h>
 #include <memory/RingAllocator.h>
 #include <communication/VirtualCommunicator.h>
+#include <scheduling/Worker.h>
 #include <vector>
 using namespace std;
 
@@ -34,7 +35,7 @@ using namespace std;
  * If yes, it computes the seed.
  * \author Sébastien Boisvert
  */
-class SeedWorker{
+class SeedWorker: public Worker {
 	map<Kmer,int> m_cache;
 	uint64_t m_workerIdentifier;
 	bool m_finished;

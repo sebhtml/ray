@@ -29,6 +29,7 @@
 #include <graph/GridTable.h>
 #include <core/Parameters.h>
 #include <structures/StaticVector.h>
+#include <scheduling/Worker.h>
 #include <communication/VirtualCommunicator.h>
 
 /**
@@ -36,7 +37,7 @@
  * It purges arcs pointing to unexistant vertices
  * \author Sébastien Boisvert
  */
-class EdgePurgerWorker{
+class EdgePurgerWorker : public Worker {
 	bool m_outgoingInitialised;
 	bool m_ingoingInitialised;
 	int m_iterator;
