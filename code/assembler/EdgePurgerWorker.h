@@ -37,7 +37,7 @@
  * It purges arcs pointing to unexistant vertices
  * \author Sébastien Boisvert
  */
-class EdgePurgerWorker : public Worker {
+class EdgePurgerWorker /*: public Worker */ {
 	bool m_outgoingInitialised;
 	bool m_ingoingInitialised;
 	int m_iterator;

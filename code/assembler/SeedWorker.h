@@ -35,7 +35,7 @@ using namespace std;
  * If yes, it computes the seed.
  * \author Sébastien Boisvert
  */
-class SeedWorker: public Worker {
+class SeedWorker /*: public Worker */ {
 	map<Kmer,int> m_cache;
 	uint64_t m_workerIdentifier;
 	bool m_finished;

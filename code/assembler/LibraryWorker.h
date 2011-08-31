@@ -42,7 +42,7 @@ public:
  * Computes average outer distances 
  * \author Sébastien Boisvert
  */
-class LibraryWorker : public Worker {
+class LibraryWorker /*: public Worker*/ {
 	bool m_done;
 	ReadFetcher m_readFetcher;
 	map<int,map<int,int> >*m_libraryDistances;

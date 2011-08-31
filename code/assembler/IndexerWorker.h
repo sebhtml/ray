@@ -36,7 +36,7 @@
  * Optimal read markers are selected by IndexerWorker
  * \author Sébastien Boisvert
  */
-class IndexerWorker : public Worker{
+class IndexerWorker /*: public Worker*/{
 	ArrayOfReads*m_reads;
 	int m_sequenceId;
 	bool m_done;
