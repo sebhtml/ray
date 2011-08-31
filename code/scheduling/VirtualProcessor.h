@@ -116,7 +116,8 @@ public:
 	void reset();
 
 	/** make the VirtualProcessor run a little bit */
-	void run();
+	/** returns true if a worker worked */
+	bool run();
 
 	/** get the current worker */
 	Worker*getCurrentWorker();
@@ -132,6 +133,8 @@ public:
 
 	/** returns true if some workers are alive */
 	bool hasWorkToDo();
+
+	void printStatistics();
 };
 
 #endif

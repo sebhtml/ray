@@ -173,7 +173,7 @@ void Machine::start(){
 	&m_virtualCommunicator);
 
 	m_edgePurger.constructor(&m_outbox,&m_inbox,&m_outboxAllocator,&m_parameters,&m_slave_mode,&m_master_mode,
-	&m_virtualCommunicator,&m_subgraph);
+	&m_virtualCommunicator,&m_subgraph,&m_virtualProcessor);
 
 	m_coverageGatherer.constructor(&m_parameters,&m_inbox,&m_outbox,&m_slave_mode,&m_subgraph,
 		&m_outboxAllocator);
@@ -1145,7 +1145,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 	//  * a distribute cycle
 	//  * a fusion cycle
 
-	int lastAllowedCycleNumber=16;
+	int lastAllowedCycleNumber=5;
 
 	if(!m_cycleStarted){
 		int count=0;

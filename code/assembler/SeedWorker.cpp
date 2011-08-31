@@ -343,6 +343,6 @@ vector<Kmer>*SeedWorker::getSeed(){
 	return &m_SEEDING_seed;
 }
 
-uint64_t SeedWorker::getWorkerId(){
+uint64_t SeedWorker::getWorkerIdentifier(){
 	return m_workerIdentifier;
 }

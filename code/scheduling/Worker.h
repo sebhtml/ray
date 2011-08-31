@@ -31,26 +31,6 @@
  */
 class Worker{
 
-/* protected means things that inherit Worker can also use them */
-protected:
-
-
-	/** flag indicating if the worker is done */
-	bool m_isDone;
-
-	/** global Ray run-time parameters */
-	Parameters*m_parameters;
-
-	/** the worker identifier */
-	uint64_t m_workerId;
-
-	/** the ring allocator to send messages */
-	RingAllocator*m_outboxAllocator;
-
-	/** the virtual communicator */
-	VirtualCommunicator*m_virtualCommunicator;
-
-
 public:
 
 	/** work a little bit 
@@ -59,11 +39,10 @@ public:
 	virtual void work() = 0;
 
 	/** is the worker done doing its things */
-	bool isDone();
+	virtual bool isDone() = 0;
 
 	/** get the worker number */
-	uint64_t getWorkerIdentifier();
-
+	virtual uint64_t getWorkerIdentifier() = 0 ;
 
 	virtual ~Worker(){}
 };

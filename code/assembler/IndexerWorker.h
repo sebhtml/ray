@@ -36,6 +36,8 @@
  * Optimal read markers are selected by IndexerWorker
  * \author Sébastien Boisvert
  */
+
+// TODO: convert this to Worker
 class IndexerWorker /*: public Worker*/{
 	ArrayOfReads*m_reads;
 	int m_sequenceId;
@@ -60,9 +62,18 @@ class IndexerWorker /*: public Worker*/{
 public:
 	void constructor(int sequenceId,Parameters*parameters,RingAllocator*outboxAllocator,
 		VirtualCommunicator*vc,uint64_t workerId,ArrayOfReads*a,MyAllocator*allocator);
-	bool isDone();
+
+/** work a little bit 
+	 * the class Worker provides no implementation for that 
+	*/
 	void work();
-	uint64_t getWorkerId();
+
+	/** is the worker done doing its things */
+	bool isDone();
+
+	/** get the worker number */
+	uint64_t getWorkerIdentifier();
+
 };
 
 #endif

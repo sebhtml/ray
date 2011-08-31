@@ -20,31 +20,72 @@
 
 #include <scheduling/TaskCreator.h>
 
+//#define DEBUG_TASK_CREATOR
+
 /** the main loop for a task creator */
 void TaskCreator::mainLoop(){
 	if(!m_initialized){
+		#ifdef DEBUG_TASK_CREATOR
+		cout<<"Initializing"<<endl;
+		#endif
 		initializeMethod();
+		m_initialized=true;
+		m_completedJobs=0;
 	}
+
 	if(hasUnassignedTask()){
 		if(m_virtualProcessor->canAddWorker()){
 			Worker*worker=assignNextTask();
+
+
+			#ifdef DEBUG_TASK_CREATOR
+			cout<<"Adding worker to pool worker= "<<worker<<" processor="<<m_virtualProcessor<<endl;
+			#endif
+
+			#ifdef ASSERT
+			assert(worker != NULL);
+			assert(m_virtualProcessor != NULL);
+			#endif
+
 			m_virtualProcessor->addWorker(worker);
+	
+			/* tell the VirtualProcessor that no more tasks will be created */
 			if(!hasUnassignedTask()){
+				#ifdef DEBUG_TASK_CREATOR
+				cout<<"No more task are coming."<<endl;
+				#endif
 				m_virtualProcessor->noMoreTasksAreComing();
 			}
 		}
 	}
 
-	m_virtualProcessor->run();
+	Worker*worker=NULL;
 
-	Worker*worker=m_virtualProcessor->getCurrentWorker();
+	#ifdef DEBUG_TASK_CREATOR
+	cout<<"Running VirtualProcessor.run()"<<endl;
+	#endif
+	bool aWorkerWorked=m_virtualProcessor->run();
 
-	if(worker->isDone()){
+
+	if(aWorkerWorked){
+		worker=m_virtualProcessor->getCurrentWorker();
+	}
+
+	if(worker!=NULL && worker->isDone()){
+		#ifdef DEBUG_TASK_CREATOR
+		cout<<"Current worker is done"<<endl;
+		#endif
 		processWorkerResult(worker);
 		destroyWorker(worker);
+		m_completedJobs++;
 	}
 
 	if(!hasUnassignedTask() && !m_virtualProcessor->hasWorkToDo()){
+		#ifdef DEBUG_TASK_CREATOR
+		cout<<"calling finalizeMethod()"<<endl;
+		#endif
 		finalizeMethod();
+		m_virtualProcessor->printStatistics();
+		m_virtualProcessor->reset();
 	}
 }

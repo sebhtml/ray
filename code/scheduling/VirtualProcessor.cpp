@@ -23,6 +23,8 @@
 #include <assert.h>
 #endif
 
+#define DEBUG_VIRTUAL_PROCESSOR
+
 void VirtualProcessor::updateStates(){
 
 	// erase completed jobs
@@ -82,7 +84,7 @@ void VirtualProcessor::constructor(StaticVector*outbox,StaticVector*inbox,RingAl
 }
 
 /** make the VirtualProcessor run a little bit */
-void VirtualProcessor::run(){
+bool VirtualProcessor::run(){
 
 	if(!m_initiatedIterator){
 
@@ -95,7 +97,7 @@ void VirtualProcessor::run(){
 
 	/** if the VirtualCommunicator is not ready, return immediately */
 	if(!m_virtualCommunicator->isReady()){
-		return;
+		return false;
 	}
 
 	/** make the current worker work */
@@ -126,6 +128,8 @@ void VirtualProcessor::run(){
 			m_workersDone.push_back(workerId);
 		}
 		m_activeWorkerIterator++;
+
+		return true;
 	}else{
 		updateStates();
 
@@ -140,7 +144,11 @@ void VirtualProcessor::run(){
 		}
 
 		m_activeWorkerIterator=m_activeWorkers.begin();
+
+		return false;
 	}
+
+	return false;
 }
 
 /** get the current worker */
@@ -159,7 +167,18 @@ bool VirtualProcessor::canAddWorker(){
 
 /** add a worker */
 void VirtualProcessor::addWorker(Worker*worker){
+	#ifdef ASSERT
+	assert(worker != NULL);
+	#endif
+
 	uint64_t workerId=worker->getWorkerIdentifier();
+
+	#ifdef ASSERT
+	if(m_aliveWorkers.count(workerId)>0)
+		cout<<"Worker "<<workerId<<" already here"<<endl;
+	assert(m_aliveWorkers.count(workerId) == 0);
+	#endif
+
 	m_aliveWorkers[workerId]=worker;
 	m_activeWorkers.insert(workerId);
 
@@ -181,4 +200,8 @@ void VirtualProcessor::reset(){
 
 bool VirtualProcessor::hasWorkToDo(){
 	return m_aliveWorkers.size()>0;
+}
+
+void VirtualProcessor::printStatistics(){
+	cout<<"VirtualProcessor: completed jobs: "<<m_completedJobs<<endl;
 }

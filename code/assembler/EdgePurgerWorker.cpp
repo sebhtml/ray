@@ -105,3 +105,7 @@ void EdgePurgerWorker::constructor(uint64_t workerId,Vertex*vertex,Kmer*currentK
 	m_doneIngoingEdges=false;
 	m_ingoingInitialised=false;
 }
+
+uint64_t EdgePurgerWorker::getWorkerIdentifier(){
+	return m_workerId;
+}

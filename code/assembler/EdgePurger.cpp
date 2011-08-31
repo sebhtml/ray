@@ -23,11 +23,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <core/OperatingSystem.h>
+#include <memory/malloc_types.h>
 
 /* code based on assembler/Library.cpp */
 
 void EdgePurger::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
-		int*slaveMode,int*masterMode,VirtualCommunicator*vc,GridTable*subgraph){
+		int*slaveMode,int*masterMode,VirtualCommunicator*vc,GridTable*subgraph,
+	VirtualProcessor*virtualProcessor){
 	m_checkedCheckpoint=false;
 	m_subgraph=subgraph;
 	m_masterMode=masterMode;
@@ -41,6 +43,16 @@ void EdgePurger::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocato
 	m_done=false;
 	m_initiatedIterator=false;
 	m_completedJobs=0;
+
+	/* for TaskCreator */
+	m_initialized=false;
+	m_virtualProcessor=virtualProcessor;
+
+/*
+	int ALLOCATOR_CHUNK_SIZE=4194304; // 4 MiB
+	m_workerAllocator.constructor(ALLOCATOR_CHUNK_SIZE,RAY_MALLOC_TYPE_WORKER,
+		m_parameters->showMemoryAllocations());
+*/
 }
 
 void EdgePurger::work(){
@@ -65,139 +77,67 @@ void EdgePurger::work(){
 		m_checkedCheckpoint=true;
 	}
 
+	mainLoop();
+}
 
+void EdgePurger::finalizeMethod(){
+	printf("Rank %i is purging edges [%i/%i] (completed)\n",m_parameters->getRank(),(int)m_subgraph->size(),(int)m_subgraph->size());
+	fflush(stdout);
+	
+	m_done=true;
+	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY,
+	m_parameters->getRank());
+	m_outbox->push_back(aMessage);
 
-	if(!m_initiatedIterator){
-		m_SEEDING_i=0;
-		m_graphIterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
+	m_virtualCommunicator->printStatistics();
 
-		m_activeWorkerIterator=m_activeWorkers.begin();
-		m_initiatedIterator=true;
-		m_maximumAliveWorkers=30000;
-	}
-
-	m_virtualCommunicator->processInbox(&m_activeWorkersToRestore);
-
-	if(!m_virtualCommunicator->isReady()){
-		return;
-	}
-
-	if(m_activeWorkerIterator!=m_activeWorkers.end()){
-		uint64_t workerId=*m_activeWorkerIterator;
-		#ifdef ASSERT
-		if(m_aliveWorkers.count(workerId)==0){
-			cout<<"Error: "<<workerId<<" is not in alive workers "<<m_activeWorkers.size()<<endl;
-		}
-		assert(m_aliveWorkers.count(workerId)>0);
-		assert(!m_aliveWorkers[workerId].isDone());
-		#endif
-		m_virtualCommunicator->resetLocalPushedMessageStatus();
-
-		//force the worker to work until he finishes or pushes something on the stack
-		while(!m_aliveWorkers[workerId].isDone()&&!m_virtualCommunicator->getLocalPushedMessageStatus()){
-			m_aliveWorkers[workerId].work();
-		}
-
-		if(m_virtualCommunicator->getLocalPushedMessageStatus()){
-			m_waitingWorkers.push_back(workerId);
-		}
-		if(m_aliveWorkers[workerId].isDone()){
-			m_workersDone.push_back(workerId);
-		}
-		m_activeWorkerIterator++;
-	}else{
-		updateStates();
-
-		//  add one worker to active workers
-		//  reason is that those already in the pool don't communicate anymore -- 
-		//  as for they need responses.
-		if(!m_virtualCommunicator->getGlobalPushedMessageStatus()&&m_activeWorkers.empty()){
-			// there is at least one worker to start
-			// AND
-			// the number of alive workers is below the maximum
-			if(m_SEEDING_i<m_subgraph->size()&&(int)m_aliveWorkers.size()<m_maximumAliveWorkers){
-
-				#ifdef ASSERT
-				if(m_SEEDING_i==0){
-					assert(m_completedJobs==0&&m_activeWorkers.size()==0&&m_aliveWorkers.size()==0);
-				}
-				#endif
-				
-				Vertex*vertex=m_graphIterator.next();
-				Kmer*currentKmer=m_graphIterator.getKey();
-
-				m_aliveWorkers[m_SEEDING_i].constructor(m_SEEDING_i,vertex,currentKmer,m_subgraph,m_virtualCommunicator,m_outboxAllocator,m_parameters,m_inbox,m_outbox);
-				m_activeWorkers.insert(m_SEEDING_i);
-				int population=m_aliveWorkers.size();
-				if(population>m_maximumWorkers){
-					m_maximumWorkers=population;
-				}
-				m_SEEDING_i++;
-			}else{
-				m_virtualCommunicator->forceFlush();
-			}
-		}
-
-		m_activeWorkerIterator=m_activeWorkers.begin();
-	}
-
-	#ifdef ASSERT
-	assert((int)m_aliveWorkers.size()<=m_maximumAliveWorkers);
-	#endif
-
-	if(m_completedJobs==(int)m_subgraph->size()){
-		printf("Rank %i is purging edges [%i/%i] (completed)\n",m_parameters->getRank(),(int)m_subgraph->size(),(int)m_subgraph->size());
-		fflush(stdout);
-		
-		m_done=true;
-		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY,
-		m_parameters->getRank());
-		m_outbox->push_back(aMessage);
-
-		printf("Rank %i: peak number of workers: %i, maximum: %i\n",m_parameters->getRank(),m_maximumWorkers,m_maximumAliveWorkers);
-		fflush(stdout);
-		m_virtualCommunicator->printStatistics();
-
-		if(m_parameters->showMemoryUsage()){
-			showMemoryUsage(m_parameters->getRank());
-		}
-
+	if(m_parameters->showMemoryUsage()){
+		showMemoryUsage(m_parameters->getRank());
 	}
 }
 
-void EdgePurger::updateStates(){
-	// erase completed jobs
-	for(int i=0;i<(int)m_workersDone.size();i++){
-		uint64_t workerId=m_workersDone[i];
-		#ifdef ASSERT
-		assert(m_activeWorkers.count(workerId)>0);
-		assert(m_aliveWorkers.count(workerId)>0);
-		#endif
-		m_activeWorkers.erase(workerId);
-		m_aliveWorkers.erase(workerId);
-		if(m_completedJobs%50000==0){
-			printf("Rank %i is purging edges [%i/%i]\n",m_parameters->getRank(),m_completedJobs+1,(int)m_subgraph->size());
-			fflush(stdout);
-		}
+bool EdgePurger::hasUnassignedTask(){
+	return m_SEEDING_i<m_subgraph->size();
+}
 
-		m_completedJobs++;
+Worker* EdgePurger::assignNextTask(){
+	#ifdef ASSERT
+	assert(m_graphIterator.hasNext());
+	#endif
+
+	Vertex*vertex=m_graphIterator.next();
+	Kmer*currentKmer=m_graphIterator.getKey();
+
+	//EdgePurgerWorker*worker=(EdgePurgerWorker*)m_workerAllocator.allocate(sizeof(EdgePurgerWorker));
+	EdgePurgerWorker*worker=new EdgePurgerWorker;
+	worker->constructor(m_SEEDING_i,vertex,currentKmer,m_subgraph,m_virtualCommunicator,m_outboxAllocator,m_parameters,m_inbox,m_outbox);
+
+	m_SEEDING_i++;
+
+	#ifdef ASSERT
+	assert(worker != NULL);
+	#endif
+
+	return worker;
+}
+
+void EdgePurger::processWorkerResult(Worker*){
+	/* nothing to do */
+	if(m_completedJobs%50000==0){
+		cout<<"Rank "<<m_parameters->getRank()<<" is purging edges ["<<m_completedJobs+1;
+		cout<<"/"<<m_subgraph->size()<<"]"<<endl;
 	}
-	m_workersDone.clear();
 
-	for(int i=0;i<(int)m_waitingWorkers.size();i++){
-		uint64_t workerId=m_waitingWorkers[i];
-		#ifdef ASSERT
-		assert(m_activeWorkers.count(workerId)>0);
-		#endif
-		m_activeWorkers.erase(workerId);
-	}
-	m_waitingWorkers.clear();
+}
 
-	for(int i=0;i<(int)m_activeWorkersToRestore.size();i++){
-		uint64_t workerId=m_activeWorkersToRestore[i];
-		m_activeWorkers.insert(workerId);
-	}
-	m_activeWorkersToRestore.clear();
+void EdgePurger::destroyWorker(Worker*worker){
+	//m_workerAllocator.free(worker,sizeof(EdgePurgerWorker));
+	delete worker;
+}
 
-	m_virtualCommunicator->resetGlobalPushedMessageStatus();
+void EdgePurger::initializeMethod(){
+	m_SEEDING_i=0;
+	m_graphIterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
+
+	m_initiatedIterator=true;
 }

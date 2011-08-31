@@ -158,3 +158,7 @@ void LibraryWorker::work(){
 		}
 	}
 }
+
+uint64_t LibraryWorker::getWorkerIdentifier(){
+	return m_SEEDING_i;
+}

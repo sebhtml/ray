@@ -23,12 +23,15 @@
 
 #include <scheduling/Worker.h>
 #include <scheduling/VirtualProcessor.h>
+#include <memory/MyAllocator.h>
 
 /** this is an interface that should be implemented by child classes */
 class TaskCreator{
 protected:
-	VirtualProcessor*m_virtualProcessor;
 	bool m_initialized;
+	VirtualProcessor*m_virtualProcessor;
+	uint64_t m_completedJobs;
+
 public:
 	/** main function */
 	void mainLoop();
@@ -51,8 +54,7 @@ public:
 	/** destroy a worker */
 	virtual void destroyWorker(Worker*worker) = 0;
 
-	virtual ~TaskCreator() = 0;
-
+	virtual ~TaskCreator(){}
 };
 
 #endif

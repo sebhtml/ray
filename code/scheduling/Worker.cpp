@@ -20,11 +20,4 @@
 
 #include <scheduling/Worker.h>
 
-uint64_t Worker::getWorkerIdentifier(){
-	return m_workerId;
-}
-
-bool Worker::isDone(){
-	return m_isDone;
-}
-
+/* nothing to implement */

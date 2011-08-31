@@ -182,7 +182,7 @@ void IndexerWorker::work(){
 	}
 }
 
-uint64_t IndexerWorker::getWorkerId(){
+uint64_t IndexerWorker::getWorkerIdentifier(){
 	return m_workerId;
 }
 

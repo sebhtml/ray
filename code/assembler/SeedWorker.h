@@ -35,7 +35,7 @@ using namespace std;
  * If yes, it computes the seed.
  * \author Sébastien Boisvert
  */
-class SeedWorker /*: public Worker */ {
+class SeedWorker : public Worker {
 	map<Kmer,int> m_cache;
 	uint64_t m_workerIdentifier;
 	bool m_finished;
@@ -85,11 +85,20 @@ class SeedWorker /*: public Worker */ {
 public:
 	void constructor(Kmer*vertex,Parameters*parameters,RingAllocator*outboxAllocator,
 		VirtualCommunicator*vc,uint64_t workerId);
-	bool isDone();
 	vector<Kmer>*getSeed();
 	void do_1_1_test();
+
+	/** work a little bit 
+	 * the class Worker provides no implementation for that 
+	*/
 	void work();
-	uint64_t getWorkerId();
+
+	/** is the worker done doing its things */
+	bool isDone();
+
+	/** get the worker number */
+	uint64_t getWorkerIdentifier();
+
 };
 
 #endif
