@@ -254,7 +254,7 @@ void FusionData::finishFusions(){
 			if(m_ed->m_EXTENSION_currentPosition==0){
 				
 				if(m_debugFusionCode){
-					cout<<"Trying to join path "<<m_seedingData->m_SEEDING_i+1<<" (";
+					cout<<"Trying to join path "<<m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i]<<" (";
 					cout<<m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size()<<" vertices) with something else."<<endl;
 				}
 
@@ -290,7 +290,7 @@ void FusionData::finishFusions(){
 		vector<Direction> directions2=(*m_FINISH_pathsForPosition)[position2];
 
 		// no hits are possible.
-		if(directions1.size()==0 || directions2.size()==0){
+		if(directions1.size()==0 || directions2.size()==0 || m_parameters->hasOption("-disable-path-merger")){
 			m_checkedValidity=true;
 			if(m_debugFusionCode){
 				cout<<"no hit found at all."<<endl;
@@ -392,7 +392,7 @@ void FusionData::finishFusions(){
 						break;
 					}
 				}
-				if(!found || m_parameters->hasOption("-disable-path-merger")){
+				if(!found){
 					if(m_debugFusionCode){
 						cout<<"Fallback to staged path, selection is not confirmed."<<endl;
 						cout<<" validationPosition= "<<m_validationPosition<<endl;
@@ -407,7 +407,7 @@ void FusionData::finishFusions(){
 			}
 		}else if(m_validationPosition>position2){
 			if(m_debugFusionCode){
-				cout<<"Safely confirmed mapping for path "<<m_seedingData->m_SEEDING_i<<endl;
+				cout<<"Safely confirmed mapping for path "<<m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i]<<endl;
 				cout<<" hit is path "<<m_selectedPath<<" at position "<<m_selectedPosition<<endl;
 			}
 			m_mappingConfirmed=true;
