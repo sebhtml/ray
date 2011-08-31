@@ -42,7 +42,6 @@ void EdgePurger::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocato
 	m_masterCountFinished=0;
 	m_done=false;
 	m_initiatedIterator=false;
-	m_completedJobs=0;
 
 	/* for TaskCreator */
 	m_initialized=false;
@@ -88,8 +87,6 @@ void EdgePurger::finalizeMethod(){
 	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY,
 	m_parameters->getRank());
 	m_outbox->push_back(aMessage);
-
-	m_virtualCommunicator->printStatistics();
 
 	if(m_parameters->showMemoryUsage()){
 		showMemoryUsage(m_parameters->getRank());

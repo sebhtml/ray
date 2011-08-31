@@ -62,6 +62,7 @@
 #include <assembler/KmerAcademyBuilder.h>
 #include <assembler/EdgePurger.h>
 #include <communication/NetworkTest.h>
+#include <assembler/FusionTaskCreator.h>
 
 using namespace std;
 
@@ -80,6 +81,8 @@ class Machine{
 
 	/** the virtual processor of the MPI rank */
 	VirtualProcessor m_virtualProcessor;
+
+	FusionTaskCreator m_fusionTaskCreator;
 
 	Partitioner m_partitioner;
 	NetworkTest m_networkTest;

@@ -89,6 +89,13 @@ int getRankFromPathUniqueId(uint64_t a);
 void print64(uint64_t a);
 void print8(uint8_t a);
 
+char complementNucleotide(char c);
+
+/*
+ *  complement the sequence of a biological thing
+ */
+string reverseComplement(string*a);
+
 
 
 #endif

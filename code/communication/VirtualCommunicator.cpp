@@ -57,9 +57,19 @@ void VirtualCommunicator::setReplyType(int query,int reply){
  */
 void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 	int tag=message->getTag();
+
+	#ifdef ASSERT
+	assert(m_elementSizes.count(tag)>0);
+	#endif
+
 	int period=m_elementSizes[tag];
 	int count=message->getCount();
+
 	#ifdef ASSERT
+	if(count > period){
+		cout<<"Error, count= "<<count<<" but period is "<<period<<endl;
+		cout<<"Tag= "<<MESSAGES[tag]<<endl;
+	}
 	assert(count<=period);
 	#endif
 

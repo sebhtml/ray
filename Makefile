@@ -155,7 +155,6 @@ code/communication/Message.o code/communication/MessageProcessor.o code/communic
 obj-y += code/communication/NetworkTest.o
 
 # scheduling stuff
-obj-y += code/scheduling/Worker.o
 obj-y += code/scheduling/VirtualProcessor.o
 obj-y += code/scheduling/TaskCreator.o
 
@@ -205,6 +204,8 @@ code/assembler/ray_main.o code/assembler/ExtensionData.o
 obj-y += code/assembler/KmerAcademyBuilder.o
 obj-y += code/assembler/EdgePurger.o code/assembler/EdgePurgerWorker.o
 obj-y += code/assembler/Partitioner.o
+obj-y += code/assembler/FusionWorker.o 
+obj-y += code/assembler/FusionTaskCreator.o
 
 # heuristics
 obj-y += code/heuristics/BubbleTool.o code/heuristics/Chooser.o code/heuristics/OpenAssemblerChooser.o \

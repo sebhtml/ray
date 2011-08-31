@@ -1,0 +1,26 @@
+
+
+scheduling/VirtualProcessor is a virtual processor, see VirtualProcessor.txt
+
+scheduling/TaskCreator.h is an interface to create task creators for the virtual processor
+
+scheduling/Worker is an interface to define workers
+
+
+workers communicate with the virtual communicator and not directly the outbox and inbox
+
+
+
+# Purging dead edges
+
+class EdgePurger : public TaskCreator 
+
+class EdgePurgerWorker : public Worker 
+
+
+# Merging similar paths
+
+class FusionTaskCreator: public TaskCreator
+
+class FusionWorker: public Worker
+

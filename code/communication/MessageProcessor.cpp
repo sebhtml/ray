@@ -1398,28 +1398,34 @@ void MessageProcessor::call_RAY_MPI_TAG_FUSION_DONE(Message*message){
 		(*m_master_mode)=RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS;
 	}
 }
-
+/*
+ */
 void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE(Message*message){
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
 	int pos=0;
-	Kmer vertex;
-	vertex.unpack(incoming,&pos);
-	Vertex*node=m_subgraph->find(&vertex);
+	int count=message->getCount();
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(count*sizeof(uint64_t));
 
-	#ifdef ASSERT
-	if(node==NULL){
-		cout<<"Source="<<message->getSource()<<" Destination="<<m_rank<<" "<<vertex.idToWord(*m_wordSize,m_parameters->getColorSpaceMode())<<" does not exist, aborting"<<endl;
-		cout.flush();
+	for(int i=0;i<count;i+=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE)){
+
+		Kmer vertex;
+		vertex.unpack(incoming,&pos);
+
+		#ifdef ASSERT
+		Vertex*node=m_subgraph->find(&vertex);
+		if(node==NULL){
+			cout<<"Source="<<message->getSource()<<" Destination="<<m_rank<<" "<<vertex.idToWord(*m_wordSize,m_parameters->getColorSpaceMode())<<" does not exist, aborting"<<endl;
+			cout.flush();
+		}
+		assert(node!=NULL);
+		#endif
+
+		vector<Direction> paths=m_subgraph->getDirections(&vertex);
+		message2[i]=paths.size();
 	}
-	assert(node!=NULL);
-	#endif
 
-	vector<Direction> paths=m_subgraph->getDirections(&vertex);
-	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
-	message2[0]=paths.size();
-	message2[1]=node->getCoverage(&vertex);
-	Message aMessage(message2,2,source,RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY,m_rank);
+	Message aMessage(message2,count,source,RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY,m_rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -1604,24 +1610,42 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
-	Kmer kmer;
+	int count=message->getCount();
+	int elementsPerItem=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_ASK_VERTEX_PATH);
 	int pos=0;
-	kmer.unpack(incoming,&pos);
-	#ifdef ASSERT
-	Vertex*node=m_subgraph->find(&kmer);
-	assert(node!=NULL);
-	#endif
-	vector<Direction> paths=m_subgraph->getDirections(&kmer);
-	int i=incoming[1];
-	Direction d=paths[i];
-	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(3*sizeof(uint64_t));
 	int outputPosition=0;
-	kmer.pack(message2,&outputPosition);
-	message2[outputPosition++]=d.getWave();
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(count*sizeof(uint64_t));
+
 	#ifdef ASSERT
-	assert(getRankFromPathUniqueId(message2[1])<m_size);
+	assert(count % elementsPerItem == 0);
 	#endif
-	message2[outputPosition++]=d.getProgression();
+
+	for(int i=0;i<count;i+=elementsPerItem){
+		Kmer kmer;
+		kmer.unpack(incoming,&pos);
+
+		#ifdef ASSERT
+		Vertex*node=m_subgraph->find(&kmer);
+		assert(node!=NULL);
+		#endif
+
+		vector<Direction> paths=m_subgraph->getDirections(&kmer);
+		int i=incoming[pos++];
+
+		/* increment because there is padding */
+		pos++;
+
+		Direction d=paths[i];
+		kmer.pack(message2,&outputPosition);
+		message2[outputPosition++]=d.getWave();
+
+		#ifdef ASSERT
+		assert(getRankFromPathUniqueId(message2[outputPosition-1])<m_size);
+		#endif
+
+		message2[outputPosition++]=d.getProgression();
+	}
+
 	Message aMessage(message2,outputPosition,source,RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY,m_rank);
 	m_outbox->push_back(aMessage);
 }
@@ -2282,3 +2306,4 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_FILE_ENTRY_COUNTS(Message*messag
 void MessageProcessor::call_RAY_MPI_TAG_REQUEST_FILE_ENTRY_COUNTS_REPLY(Message*message){}
 void MessageProcessor::call_RAY_MPI_TAG_FILE_ENTRY_COUNT(Message*message){}
 void MessageProcessor::call_RAY_MPI_TAG_FILE_ENTRY_COUNT_REPLY(Message*message){}
+

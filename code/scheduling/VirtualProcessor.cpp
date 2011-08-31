@@ -204,4 +204,6 @@ bool VirtualProcessor::hasWorkToDo(){
 
 void VirtualProcessor::printStatistics(){
 	cout<<"VirtualProcessor: completed jobs: "<<m_completedJobs<<endl;
+
+	m_virtualCommunicator->printStatistics();
 }

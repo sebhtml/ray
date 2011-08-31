@@ -127,7 +127,6 @@ public:
 	int getRank();
 	int getSize();
 	void finishFusions();
-	void makeFusions();
 	void readyBuffers();
 	void getPaths(Kmer vertex);
 	void initialise();

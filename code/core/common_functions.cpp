@@ -165,4 +165,28 @@ uint8_t charToCode(char a){
 	}
 }
 
+char complementNucleotide(char c){
+	switch(c){
+		case 'A':
+			return 'T';
+		case 'T':
+			return 'A';
+		case 'G':
+			return 'C';
+		case 'C':
+			return 'G';
+		default:
+			return c;
+	}
+}
+
+string reverseComplement(string*a){
+	ostringstream b;
+	for(int i=a->length()-1;i>=0;i--){
+		b<<complementNucleotide((*a)[i]);
+	}
+	return b.str();
+}
+
+
 

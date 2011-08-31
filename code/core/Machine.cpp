@@ -178,6 +178,12 @@ void Machine::start(){
 	m_coverageGatherer.constructor(&m_parameters,&m_inbox,&m_outbox,&m_slave_mode,&m_subgraph,
 		&m_outboxAllocator);
 
+
+	m_fusionTaskCreator.constructor(&m_virtualProcessor,&m_outbox,
+		&m_outboxAllocator,&m_slave_mode,&m_parameters,&(m_ed->m_EXTENSION_contigs),
+		&(m_ed->m_EXTENSION_identifiers),&(m_fusionData->m_FUSION_eliminated),
+		&m_virtualCommunicator);
+
 	m_amos.constructor(&m_parameters,&m_outboxAllocator,&m_outbox,m_fusionData,m_ed,&m_master_mode,&m_slave_mode,&m_scaffolder,
 		&m_inbox,&m_virtualCommunicator);
 
@@ -263,7 +269,9 @@ void Machine::start(){
 	MACRO_LIST_ITEM( RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION,	max(KMER_U64_ARRAY_SIZE,4) )
 	MACRO_LIST_ITEM( RAY_MPI_TAG_SCAFFOLDING_LINKS, 		6 )
 	MACRO_LIST_ITEM( RAY_MPI_TAG_CONTIG_INFO,			2)
-	MACRO_LIST_ITEM( RAY_MPI_TAG_ASK_READ_LENGTH, 		3 );
+	MACRO_LIST_ITEM( RAY_MPI_TAG_ASK_READ_LENGTH, 		3 )
+	MACRO_LIST_ITEM( RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE, KMER_U64_ARRAY_SIZE )
+	MACRO_LIST_ITEM( RAY_MPI_TAG_ASK_VERTEX_PATH, (KMER_U64_ARRAY_SIZE + 2) )
 
 	#undef MACRO_LIST_ITEM
 
@@ -1100,7 +1108,7 @@ void Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_FUSION(){
-	m_fusionData->makeFusions();
+	m_fusionTaskCreator.makeFusions();
 }
 
 void Machine::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
