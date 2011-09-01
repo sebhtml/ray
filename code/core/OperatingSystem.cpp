@@ -360,3 +360,11 @@ void showRayVersion(MessagesHandler*messagesHandler,bool fullReport){
 	#endif
 	cout<<endl;
 }
+
+void showMemoryUsage(int rank){
+	uint64_t count=getMemoryUsageInKiBytes();
+	cout<<"Rank "<<rank<<": assembler memory usage: "<<count<<" KiB"<<endl;
+	cout.flush();
+}
+
+

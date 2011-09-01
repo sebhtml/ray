@@ -31,7 +31,7 @@
 #include <iostream>
 #include <string>
 #include <cstring>
-#include <core/OperatingSystem.h>
+//#include <core/OperatingSystem.h>
 #include <sstream>
 
 using namespace std;
@@ -109,12 +109,6 @@ Kmer kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool color){
 
 int roundNumber(int s,int alignment){
 	return ((s/alignment)+1)*alignment;
-}
-
-void showMemoryUsage(int rank){
-	uint64_t count=getMemoryUsageInKiBytes();
-	cout<<"Rank "<<rank<<": assembler memory usage: "<<count<<" KiB"<<endl;
-	cout.flush();
 }
 
 uint64_t getPathUniqueId(int rank,int id){
