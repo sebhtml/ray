@@ -50,6 +50,7 @@ void FusionTaskCreator::constructor(VirtualProcessor*virtualProcessor,StaticVect
 
 /** initialize the whole thing */
 void FusionTaskCreator::initializeMethod(){
+	cout<<"FusionTaskCreator::initializeMethod()"<<endl;
 	m_iterator=0;
 	m_currentWorkerIdentifier=0;
 	m_reverseStrand=false;
@@ -57,6 +58,9 @@ void FusionTaskCreator::initializeMethod(){
 
 /** finalize the whole thing */
 void FusionTaskCreator::finalizeMethod(){
+
+	cout<<"Rank "<<m_parameters->getRank()<<" FusionTaskCreator ["<<m_completedJobs<<"/"<<2*m_paths->size()<<"]"<<endl;
+
 	/* send a message */
 	uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t));
 	message[0]=false;
@@ -96,8 +100,8 @@ Worker*FusionTaskCreator::assignNextTask(){
 
 /** get the result of a worker */
 void FusionTaskCreator::processWorkerResult(Worker*worker){
-	if(m_completedJobs % 10000== 0)
-		cout<<"Rank "<<m_parameters->getRank()<<" FusionTaskCreator ["<<m_completedJobs<<"/"<<m_paths->size()<<"]"<<endl;
+	if(m_completedJobs % 10== 0)
+		cout<<"Rank "<<m_parameters->getRank()<<" FusionTaskCreator ["<<m_completedJobs<<"/"<<m_paths->size()*2<<"]"<<endl;
 
 	FusionWorker*worker2=(FusionWorker*)worker;
 	if(worker2->isPathEliminated()){

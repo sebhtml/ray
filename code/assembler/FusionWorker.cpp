@@ -39,6 +39,9 @@ void FusionWorker::work(){
 
 		/* get the number of paths */
 		if(!m_requestedNumberOfPaths){
+			if(m_position % 1000 == 0){
+				cout<<"FusionWorker "<<m_workerIdentifier<<" position: ["<<m_position<<"/"<<m_path->size()<<endl;
+			}
 			Kmer kmer=m_path->at(m_position);
 
 			if(m_reverseStrand)
@@ -57,18 +60,29 @@ void FusionWorker::work(){
 			m_requestedNumberOfPaths=true;
 			m_receivedNumberOfPaths=false;
 
-			//cout<<"worker "<<m_workerIdentifier<<" send RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE"<<endl;
+			if(m_parameters->hasOption("-debug-fusions"))
+				cout<<"worker "<<m_workerIdentifier<<" send RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE"<<endl;
 
 		/* receive the number of paths */
 		}else if(!m_receivedNumberOfPaths && m_virtualCommunicator->isMessageProcessed(m_workerIdentifier)){
 			vector<uint64_t> response;
 			m_virtualCommunicator->getMessageResponseElements(m_workerIdentifier,&response);
 			m_numberOfPaths=response[0];
-			//cout<<"worker "<<m_workerIdentifier<<" Got "<<m_numberOfPaths<<endl;
+		
+			if(m_parameters->hasOption("-debug-fusions"))
+				cout<<"worker "<<m_workerIdentifier<<" Got "<<m_numberOfPaths<<endl;
+
 			m_receivedNumberOfPaths=true;
 
 			m_pathIndex=0;
 			m_requestedPath=false;
+
+			/* 2^5 */
+			int maximumNumberOfPathsToProcess=32;
+
+			/* don't process repeated stuff */
+			if(m_receivedNumberOfPaths > maximumNumberOfPathsToProcess)
+				m_receivedNumberOfPaths=0;
 
 		}else if(m_receivedNumberOfPaths && m_pathIndex < m_numberOfPaths){
 			/* request a path */
@@ -90,7 +104,8 @@ void FusionWorker::work(){
 					RAY_MPI_TAG_ASK_VERTEX_PATH,m_parameters->getRank());
 				m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 
-				//cout<<"worker "<<m_workerIdentifier<<" send RAY_MPI_TAG_ASK_VERTEX_PATH "<<m_pathIndex<<endl;
+				if(m_parameters->hasOption("-debug-fusions"))
+					cout<<"worker "<<m_workerIdentifier<<" send RAY_MPI_TAG_ASK_VERTEX_PATH "<<m_pathIndex<<endl;
 
 				m_requestedPath=true;
 				m_receivedPath=false;
@@ -104,7 +119,9 @@ void FusionWorker::work(){
 				bufferPosition+=KMER_U64_ARRAY_SIZE;
 				uint64_t otherPathIdentifier=response[bufferPosition++];
 				//int progression=response[bufferPosition++];
-				//cout<<"worker "<<m_workerIdentifier<<" receive RAY_MPI_TAG_ASK_VERTEX_PATH"<<endl;
+
+				if(m_parameters->hasOption("-debug-fusions"))
+					cout<<"worker "<<m_workerIdentifier<<" receive RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY"<<endl;
 
 				if(otherPathIdentifier != m_identifier){
 					m_hits[otherPathIdentifier]++;
@@ -119,7 +136,10 @@ void FusionWorker::work(){
 			m_position++;
 			m_requestedNumberOfPaths=false;
 			m_receivedNumberOfPaths=false;
-			//cout<<"worker "<<m_workerIdentifier<<" Next position is "<<m_position<<endl;
+
+
+			if(m_parameters->hasOption("-debug-fusions"))
+				cout<<"worker "<<m_workerIdentifier<<" Next position is "<<m_position<<endl;
 		}
 	/* gather hit information */
 	}else if(!m_gatheredHits){

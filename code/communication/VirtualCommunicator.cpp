@@ -18,6 +18,8 @@
 	see <http://www.gnu.org/licenses/>
 */
 
+/* #define DEBUG_VIRTUAL_COMMUNICATOR */
+
 #include <core/constants.h>
 #include <assert.h>
 #include <communication/VirtualCommunicator.h>
@@ -82,6 +84,7 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 	#endif
 	m_globalPushedMessageStatus=true;
 	m_localPushedMessageStatus=true;
+
 	int destination=message->getDestination();
 	#ifdef ASSERT
 	if(!(destination>=0&&destination<m_size)){
@@ -150,6 +153,10 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 }
 
 void VirtualCommunicator::flushMessage(int tag,int destination){
+	#ifdef DEBUG_VIRTUAL_COMMUNICATOR
+	cout<<"VirtualCommunicator:: sending multiplexed message to "<<destination<<endl;
+	#endif
+
 	m_flushedMessages++;
 	#ifdef ASSERT
 	assert(m_messageContent.count(tag)>0&&m_messageContent[tag].count(destination)>0);
@@ -209,8 +216,11 @@ void VirtualCommunicator::getMessageResponseElements(uint64_t workerId,vector<ui
 }
 
 void VirtualCommunicator::constructor(int rank,int size,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox){
-	cout<<"Rank "<<rank<<" Initializing VirtualCommunicator"<<endl;
 	m_debug=false;
+
+	if(m_debug)
+		cout<<"Rank "<<rank<<" Initializing VirtualCommunicator"<<endl;
+
 	m_pushedMessages=0;
 	m_rank=rank;
 	m_size=size;
@@ -236,6 +246,10 @@ void VirtualCommunicator::processInbox(vector<uint64_t>*activeWorkers){
 		#endif
 		int queryTag=m_replyTagToQueryTag[incomingTag];
 		if(m_activeTag==queryTag&&m_activeDestination==source){
+			#ifdef DEBUG_VIRTUAL_COMMUNICATOR
+			cout<<"VirtualCommunicator: receiving multiplexed message, de-multiplexing data..."<<endl;
+			#endif
+
 			m_pendingMessages--;
 			cout.flush();
 			uint64_t*buffer=(uint64_t*)message->getBuffer();

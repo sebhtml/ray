@@ -20,7 +20,7 @@
 
 #include <scheduling/TaskCreator.h>
 
-//#define DEBUG_TASK_CREATOR
+/* #define DEBUG_TASK_CREATOR */
 
 /** the main loop for a task creator */
 void TaskCreator::mainLoop(){
@@ -61,9 +61,6 @@ void TaskCreator::mainLoop(){
 
 	Worker*worker=NULL;
 
-	#ifdef DEBUG_TASK_CREATOR
-	cout<<"Running VirtualProcessor.run()"<<endl;
-	#endif
 	bool aWorkerWorked=m_virtualProcessor->run();
 
 

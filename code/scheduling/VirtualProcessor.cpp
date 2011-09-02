@@ -23,9 +23,12 @@
 #include <assert.h>
 #endif
 
-#define DEBUG_VIRTUAL_PROCESSOR
+/* #define DEBUG_VIRTUAL_PROCESSOR */
 
 void VirtualProcessor::updateStates(){
+	#ifdef DEBUG_VIRTUAL_PROCESSOR
+	cout<<"Removing "<<m_workersDone.size()<<" workers done."<<endl;
+	#endif
 
 	// erase completed jobs
 	for(int i=0;i<(int)m_workersDone.size();i++){
@@ -43,6 +46,10 @@ void VirtualProcessor::updateStates(){
 	}
 	m_workersDone.clear();
 
+	#ifdef DEBUG_VIRTUAL_PROCESSOR
+	cout<<"Moving "<<m_waitingWorkers.size()<<" workers to sleep mode."<<endl;
+	#endif
+
 	/** make some worker sleep */
 	for(int i=0;i<(int)m_waitingWorkers.size();i++){
 		uint64_t workerId=m_waitingWorkers[i];
@@ -55,6 +62,10 @@ void VirtualProcessor::updateStates(){
 	}
 	m_waitingWorkers.clear();
 
+	#ifdef DEBUG_VIRTUAL_PROCESSOR
+	cout<<"Moving "<<m_activeWorkersToRestore.size()<<" workers to active mode"<<endl;
+	#endif
+
 	/** wake up some workers */
 	for(int i=0;i<(int)m_activeWorkersToRestore.size();i++){
 		uint64_t workerId=m_activeWorkersToRestore[i];
@@ -64,14 +75,24 @@ void VirtualProcessor::updateStates(){
 	m_activeWorkersToRestore.clear();
 
 	m_virtualCommunicator->resetGlobalPushedMessageStatus();
+
+	#ifdef DEBUG_VIRTUAL_PROCESSOR
+	int activeWorkers=m_activeWorkers.size();
+	int aliveWorkers=m_aliveWorkers.size();
+	int sleepingWorkers=aliveWorkers-activeWorkers;
+	cout<<"VirtualProcessor statistics: active: "<<activeWorkers<<" sleeping: "<<sleepingWorkers<<" total: "<<aliveWorkers<<endl;
+	#endif
 }
 
 /** actually initialize the VirtualProcessor */
 void VirtualProcessor::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
 		VirtualCommunicator*vc){
 
+	#ifdef DEBUG_VIRTUAL_PROCESSOR
 	int rank=parameters->getRank();
 	cout<<"Rank "<<rank<<" Initializing VirtualProcessor"<<endl;
+	#endif
+
 	m_virtualCommunicator=vc;
 	m_inbox=inbox;
 	m_outboxAllocator=outboxAllocator;
@@ -136,9 +157,13 @@ bool VirtualProcessor::run(){
 		//  add one worker to active workers
 		//  reason is that those already in the pool don't communicate anymore -- 
 		//  as for they need responses.
-		if(!m_virtualCommunicator->getGlobalPushedMessageStatus()&&m_activeWorkers.empty()){
+		if(!m_virtualCommunicator->getGlobalPushedMessageStatus() && m_activeWorkers.empty()){
 			/** if no more worker will be added, we need to forceFlush */
 			if(!m_moreTasksAreComing){
+				#ifdef DEBUG_VIRTUAL_PROCESSOR
+				cout<<"VirtualProcessor: calling forceFlush on VirtualCommunicator"<<endl;
+				#endif
+
 				m_virtualCommunicator->forceFlush();
 			}
 		}
