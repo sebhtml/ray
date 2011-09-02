@@ -1,3 +1,4 @@
+Ray is a lock-free software.
 
 
 scheduling/VirtualProcessor is a virtual processor, see VirtualProcessor.txt

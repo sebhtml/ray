@@ -169,36 +169,12 @@ Doctoral Award to S.B., Canadian Institutes of Health Research (CIHR)
 
 # Authors
 
-## Coding, maintenance, implementing ideas:
-
-- Sébastien Boisvert, Doctoral student, Université Laval
-http://boisvert.info
-http://github.com/sebhtml
-http://twitter.com/sebhtml
-http://raytrek.com
-
-## Mentoring:
-
-- Prof. François Laviolette, Université Laval
-- Prof. Jacques Corbeil, Université Laval
-
-
-## Design insights for parallel architecture:
-
-- Élénie Godzaridis
-
-
-## Contributors
-
-- David Eccles
+see AUTHORS
 
 # Compile Ray on Microsoft Windows with Microsoft Visual Studio
 
+see Documentation/VISUAL_STUDIO.txt
 
-## MPI implementation
-
-You can use Open-MPI or MPICH2 or another implementation available for Microsoft Windows.
-In this example, we use MPICH2 for Windows 32 bits and Microsoft Visual Studio 10.0.
 
 
 

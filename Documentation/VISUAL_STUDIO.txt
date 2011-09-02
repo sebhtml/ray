@@ -29,4 +29,8 @@ Configuration Properties => Linker => General => Additional Dependencies
 
 You are now ready to build Ray.exe.
 
+## MPI implementation
+
+You can use Open-MPI or MPICH2 or another implementation available for Microsoft Windows.
+In this example, we use MPICH2 for Windows 32 bits and Microsoft Visual Studio 10.0.
 
