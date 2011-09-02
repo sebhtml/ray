@@ -137,17 +137,21 @@ bool VirtualProcessor::run(){
 		#endif
 		m_virtualCommunicator->resetLocalPushedMessageStatus();
 
+		/* make the worker work a little bit */
+		m_aliveWorkers[workerId]->work();
+
 		//force the worker to work until he finishes or pushes something on the stack
+		/*
 		while(!m_aliveWorkers[workerId]->isDone()&&!m_virtualCommunicator->getLocalPushedMessageStatus()){
-			m_aliveWorkers[workerId]->work();
 		}
+		*/
 
 		if(m_virtualCommunicator->getLocalPushedMessageStatus()){
 			m_waitingWorkers.push_back(workerId);
-		}
-		if(m_aliveWorkers[workerId]->isDone()){
+		}else if(m_aliveWorkers[workerId]->isDone()){
 			m_workersDone.push_back(workerId);
-		}
+		} 
+
 		m_activeWorkerIterator++;
 
 		return true;
