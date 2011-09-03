@@ -178,6 +178,6 @@ bool BufferedData::needsFlushing(int destination,int period){
 void BufferedData::showStatistics(int rank){
 	double ratio=100.0*m_flushedMessages/m_pushedMessages;
 	cout<<"Rank "<<rank<<" : VirtualCommunicator: "<<m_pushedMessages;
-	cout<<" pushed messages generated "<<m_flushedMessages;
-	cout<<" virtual messages ("<<ratio<<"%)"<<endl;
+	cout<<" virtual messages generated "<<m_flushedMessages;
+	cout<<" real messages ("<<ratio<<"%)"<<endl;
 }

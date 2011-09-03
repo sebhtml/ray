@@ -50,7 +50,7 @@ void FusionTaskCreator::constructor(VirtualProcessor*virtualProcessor,StaticVect
 
 /** initialize the whole thing */
 void FusionTaskCreator::initializeMethod(){
-	cout<<"FusionTaskCreator::initializeMethod()"<<endl;
+	/* cout<<"FusionTaskCreator::initializeMethod()"<<endl; */
 	m_iterator=0;
 	m_currentWorkerIdentifier=0;
 	m_reverseStrand=false;

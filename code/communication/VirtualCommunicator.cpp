@@ -367,8 +367,10 @@ bool VirtualCommunicator::nextIsAlmostFull(){
 
 void VirtualCommunicator::printStatistics(){
 	double ratio=100.0*m_flushedMessages/m_pushedMessages;
-	cout<<"Rank "<<m_rank<<" : VirtualCommunicator: "<<m_pushedMessages<<" pushed messages generated ";
-	cout<<m_flushedMessages<<" virtual messages ("<<ratio<<"%)"<<endl;
+
+	cout<<"Rank "<<m_rank<<" : VirtualCommunicator: "<<m_pushedMessages;
+	cout<<" virtual messages generated "<<m_flushedMessages;
+	cout<<" real messages ("<<ratio<<"%)"<<endl;
 }
 
 void VirtualCommunicator::setDebug(){
