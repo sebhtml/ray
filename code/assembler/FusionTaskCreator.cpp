@@ -58,12 +58,34 @@ void FusionTaskCreator::initializeMethod(){
 
 /** finalize the whole thing */
 void FusionTaskCreator::finalizeMethod(){
+	/** all the paths */
+	int numberOfPaths=m_paths->size();
+
+	/** only the paths, not their reverse complement */
+	int numberOfRealPaths=numberOfPaths / 2;
+
+	int reverseComplementPaths = numberOfPaths / 2;
+
+	/** the number of eliminated paths */
+	int eliminatedPaths=m_eliminated->size();
+
+	/** make sure this number is at le ast all the rreverse paths */
+
+	/* truly removed paths */
+	int trulyRemovePaths=eliminatedPaths - reverseComplementPaths;
+
+	bool removedPaths=false;
+	
+	if(trulyRemovePaths >= 1)
+		removedPaths = true;
+
 
 	cout<<"Rank "<<m_parameters->getRank()<<" FusionTaskCreator ["<<m_completedJobs<<"/"<<2*m_paths->size()<<"]"<<endl;
+	cout<<"Statistics: paths: "<<numberOfRealPaths<<"; reverse-complement paths: "<<reverseComplementPaths<<" all paths: "<<numberOfPaths<<" eliminated: "<<eliminatedPaths<<endl;
 
 	/* send a message */
 	uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t));
-	message[0]=false;
+	message[0]=removedPaths;
 	Message aMessage(message,1,MASTER_RANK,RAY_MPI_TAG_FUSION_DONE,m_parameters->getRank());
 	m_outbox->push_back(aMessage);
 
@@ -74,6 +96,7 @@ void FusionTaskCreator::finalizeMethod(){
 		showMemoryUsage(m_parameters->getRank());
 	}
 
+	m_initialized=false;
 }
 
 /** has an unassigned task left to compute */

@@ -25,7 +25,9 @@
 #include <scheduling/VirtualProcessor.h>
 #include <memory/MyAllocator.h>
 
-/** this is an interface that should be implemented by child classes */
+/** this is an interface that should be implemented by child classes 
+ * m_initialized must be set to false in the child class
+ * */
 class TaskCreator{
 protected:
 	bool m_initialized;

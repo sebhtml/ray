@@ -1205,6 +1205,14 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		cout<<"cycleStep= "<<m_currentCycleStep<<endl;
 		m_currentCycleStep++;
 		int count=0;
+
+		cout<<"DEBUG m_reductionOccured= "<<m_reductionOccured<<endl;
+
+		/* if paths were merged in RAY_MPI_TAG_FINISH_FUSIONS,
+		then we want to continue these mergeing events */
+		if(m_reductionOccured && m_cycleNumber < lastAllowedCycleNumber)
+			m_mustStop = false;
+
 		if(m_mustStop){
 			count=1;
 		}
@@ -1254,6 +1262,11 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		}
 		
 	}else if(m_fusionData->m_FUSION_numberOfRanksDone==getSize() && m_isFinalFusion && m_currentCycleStep==6){
+
+		/** always force cycle number 2 */
+		if(m_cycleNumber == 0)
+			m_reductionOccured = true;
+
 		cout<<"cycleStep= "<<m_currentCycleStep<<endl;
 		m_fusionData->m_FUSION_numberOfRanksDone=-1;
 

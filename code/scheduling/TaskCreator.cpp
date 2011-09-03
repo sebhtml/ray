@@ -78,13 +78,14 @@ void TaskCreator::mainLoop(){
 	}
 
 	if(!hasUnassignedTask() && !m_virtualProcessor->hasWorkToDo()){
+		finalizeMethod();
+
 		m_virtualProcessor->printStatistics();
 		m_virtualProcessor->reset();
 
 		#ifdef DEBUG_TASK_CREATOR
 		cout<<"calling finalizeMethod()"<<endl;
 		#endif
-		finalizeMethod();
 
 	}
 }
