@@ -19,19 +19,32 @@
 
 */
 
+
 #include <assembler/FusionWorker.h>
 
 bool FusionWorker::isDone(){
 	return m_isDone;
 }
 
+/**
+ * work method.
+ *
+ * \author Sébastien Boisvert
+ *
+ * Code reviews
+ *
+ * 2011-09-02 -- Code review by Élénie Godzaridis (found bug with worker states)
+ *
+ */
+void FusionWorker::work(){
 /*
- using:
+  used tags:
+
 	RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE
 	RAY_MPI_TAG_ASK_VERTEX_PATH
 	RAY_MPI_TAG_GET_PATH_LENGTH
 */
-void FusionWorker::work(){
+
 	if(m_isDone)
 		return;
 
@@ -39,9 +52,11 @@ void FusionWorker::work(){
 
 		/* get the number of paths */
 		if(!m_requestedNumberOfPaths){
+/*
 			if(m_position % 1000 == 0){
 				cout<<"FusionWorker "<<m_workerIdentifier<<" position: ["<<m_position<<"/"<<m_path->size()<<endl;
 			}
+*/
 			Kmer kmer=m_path->at(m_position);
 
 			if(m_reverseStrand)
@@ -53,7 +68,7 @@ void FusionWorker::work(){
 			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(elementsPerQuery);
 			int outputPosition=0;
 			kmer.pack(message,&outputPosition);
-			Message aMessage(message,outputPosition,destination,
+			Message aMessage(message,elementsPerQuery,destination,
 				RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,m_parameters->getRank());
 			m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 
@@ -64,7 +79,7 @@ void FusionWorker::work(){
 				cout<<"worker "<<m_workerIdentifier<<" send RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE"<<endl;
 
 		/* receive the number of paths */
-		}else if(!m_receivedNumberOfPaths && m_virtualCommunicator->isMessageProcessed(m_workerIdentifier)){
+		}else if(m_requestedNumberOfPaths && !m_receivedNumberOfPaths && m_virtualCommunicator->isMessageProcessed(m_workerIdentifier)){
 			vector<uint64_t> response;
 			m_virtualCommunicator->getMessageResponseElements(m_workerIdentifier,&response);
 			m_numberOfPaths=response[0];
@@ -81,8 +96,8 @@ void FusionWorker::work(){
 			int maximumNumberOfPathsToProcess=32;
 
 			/* don't process repeated stuff */
-			if(m_receivedNumberOfPaths > maximumNumberOfPathsToProcess)
-				m_receivedNumberOfPaths=0;
+			if(m_numberOfPaths> maximumNumberOfPathsToProcess)
+				m_numberOfPaths=0;
 
 		}else if(m_receivedNumberOfPaths && m_pathIndex < m_numberOfPaths){
 			/* request a path */
@@ -98,9 +113,8 @@ void FusionWorker::work(){
 				int outputPosition=0;
 				kmer.pack(message,&outputPosition);
 				message[outputPosition++]=m_pathIndex;
-				outputPosition++; /* padding */
 
-				Message aMessage(message,outputPosition,destination,
+				Message aMessage(message,elementsPerQuery,destination,
 					RAY_MPI_TAG_ASK_VERTEX_PATH,m_parameters->getRank());
 				m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 
@@ -174,8 +188,8 @@ void FusionWorker::work(){
 					cout<<"received length, value= "<<length<<endl;
 				m_hitLengths.push_back(length);
 
-				m_requestedHitLength=false;
 				m_hitIterator++;
+				m_requestedHitLength=false;
 			}
 		}else{
 			m_gatheredHits=true;

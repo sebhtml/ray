@@ -81,7 +81,14 @@ bool FusionTaskCreator::hasUnassignedTask(){
 	return m_iterator < (uint64_t)m_paths->size();
 }
 
-/** assign the next task to a worker and return this worker */
+/** assign the next task to a worker and return this worker 
+ *
+ * \author Sébastien Boisvert
+ *
+ * Code reviews
+ *
+ * 2011-08-30 -- Code review by Élénie Godzaridis (found bug with new/malloc)
+ */
 Worker*FusionTaskCreator::assignNextTask(){
 	FusionWorker*worker=new FusionWorker;
 	worker->constructor(m_currentWorkerIdentifier,&(m_paths->at(m_iterator)),m_pathIdentifiers->at(m_iterator),m_reverseStrand,m_virtualCommunicator,m_parameters,m_outboxAllocator);
