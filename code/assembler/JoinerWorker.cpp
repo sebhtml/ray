@@ -20,9 +20,9 @@
 */
 
 
-#include <assembler/FusionWorker.h>
+#include <assembler/JoinerWorker.h>
 
-bool FusionWorker::isDone(){
+bool JoinerWorker::isDone(){
 	return m_isDone;
 }
 
@@ -36,7 +36,7 @@ bool FusionWorker::isDone(){
  * 2011-09-02 -- Code review by Élénie Godzaridis (found bug with worker states)
  *
  */
-void FusionWorker::work(){
+void JoinerWorker::work(){
 /*
   used tags:
 
@@ -54,7 +54,7 @@ void FusionWorker::work(){
 		if(!m_requestedNumberOfPaths){
 /*
 			if(m_position % 1000 == 0){
-				cout<<"FusionWorker "<<m_workerIdentifier<<" position: ["<<m_position<<"/"<<m_path->size()<<endl;
+				cout<<"JoinerWorker "<<m_workerIdentifier<<" position: ["<<m_position<<"/"<<m_path->size()<<endl;
 			}
 */
 			Kmer kmer=m_path->at(m_position);
@@ -132,13 +132,26 @@ void FusionWorker::work(){
 				/* skip the k-mer because we don't need it */
 				bufferPosition+=KMER_U64_ARRAY_SIZE;
 				uint64_t otherPathIdentifier=response[bufferPosition++];
-				//int progression=response[bufferPosition++];
+				int progression=response[bufferPosition++];
 
 				if(m_parameters->hasOption("-debug-fusions"))
 					cout<<"worker "<<m_workerIdentifier<<" receive RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY"<<endl;
 
 				if(otherPathIdentifier != m_identifier){
 					m_hits[otherPathIdentifier]++;
+			
+					if(m_minPosition.count(otherPathIdentifier) == 0)
+						m_minPosition[otherPathIdentifier]=progression;
+
+					if(m_maxPosition.count(otherPathIdentifier) == 0)
+						m_maxPosition[otherPathIdentifier]=progression;
+
+
+					if(progression > m_maxPosition[otherPathIdentifier])
+						m_maxPosition[otherPathIdentifier]=progression;
+					
+					if(progression < m_minPosition[otherPathIdentifier])
+						m_minPosition[otherPathIdentifier]=progression;
 				}
 				m_receivedPath=true;
 
@@ -206,10 +219,8 @@ void FusionWorker::work(){
 		assert(m_hitIterator == (int)m_hitLengths.size());
 		#endif
 
-		if(m_parameters->hasOption("-debug-fusions")){
-			cout<<"worker "<<m_workerIdentifier<<" path "<<m_identifier<<" is Done, analyzed "<<m_position<<" position length is "<<m_path->size()<<endl;
-			cout<<"worker "<<m_workerIdentifier<<" hits "<<endl;
-		}
+		cout<<"worker "<<m_workerIdentifier<<" path "<<m_identifier<<" is Done, analyzed "<<m_position<<" position length is "<<m_path->size()<<endl;
+		cout<<"worker "<<m_workerIdentifier<<" hits "<<endl;
 
 		for(int i=0;i<(int)m_hitNames.size();i++){
 			uint64_t hit=m_hitNames[i];
@@ -223,32 +234,24 @@ void FusionWorker::work(){
 
 			double ratio=(matches+0.0)/selfLength;
 
-			if(m_parameters->hasOption("-debug-fusions"))
-				cout<<"path "<<hit<<"	matches= "<<matches<<"	length= "<<hitLength<<endl;
-
-			if(ratio < 0.9)
+			if(ratio < 0.1)
 				continue;
 
-			/* the other is longer anyway */
-			if(hitLength > selfLength){
-				m_eliminated=true;
-			}
+			if(matches < 1000)
+				continue;
 
-			/* the longer is "greater" but of equal length */
-			if(hitLength == selfLength && hit > m_identifier){
-				m_eliminated=true;
-			}
+			cout<<"Joiner selfLength= "<<selfLength<< " Path  "<<hit<<"	matches= "<<matches<<"	length= "<<hitLength<<" minPosition= "<<m_minPosition[hit]<<" maxPosition= "<<m_maxPosition[hit]<<endl;
 
 		}
 		m_isDone=true;
 	}
 }
 
-uint64_t FusionWorker::getWorkerIdentifier(){
+uint64_t JoinerWorker::getWorkerIdentifier(){
 	return m_workerIdentifier;
 }
 
-void FusionWorker::constructor(uint64_t number,vector<Kmer>*path,uint64_t identifier,bool reverseStrand,
+void JoinerWorker::constructor(uint64_t number,vector<Kmer>*path,uint64_t identifier,bool reverseStrand,
 	VirtualCommunicator*virtualCommunicator,Parameters*parameters,RingAllocator*outboxAllocator){
 	m_virtualCommunicator=virtualCommunicator;
 	m_workerIdentifier=number;
@@ -271,10 +274,10 @@ void FusionWorker::constructor(uint64_t number,vector<Kmer>*path,uint64_t identi
 	}
 }
 
-bool FusionWorker::isPathEliminated(){
+bool JoinerWorker::isPathEliminated(){
 	return m_eliminated;
 }
 
-uint64_t FusionWorker::getPathIdentifier(){
+uint64_t JoinerWorker::getPathIdentifier(){
 	return m_identifier;
 }

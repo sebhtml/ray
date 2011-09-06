@@ -63,6 +63,7 @@
 #include <assembler/EdgePurger.h>
 #include <communication/NetworkTest.h>
 #include <assembler/FusionTaskCreator.h>
+#include <assembler/JoinerTaskCreator.h>
 
 using namespace std;
 
@@ -83,6 +84,7 @@ class Machine{
 	VirtualProcessor m_virtualProcessor;
 
 	FusionTaskCreator m_fusionTaskCreator;
+	JoinerTaskCreator m_joinerTaskCreator;
 
 	Partitioner m_partitioner;
 	NetworkTest m_networkTest;

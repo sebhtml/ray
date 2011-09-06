@@ -184,6 +184,12 @@ void Machine::start(){
 		&(m_ed->m_EXTENSION_identifiers),&(m_fusionData->m_FUSION_eliminated),
 		&m_virtualCommunicator);
 
+	m_joinerTaskCreator.constructor(&m_virtualProcessor,&m_outbox,
+		&m_outboxAllocator,&m_slave_mode,&m_parameters,&(m_ed->m_EXTENSION_contigs),
+		&(m_ed->m_EXTENSION_identifiers),&(m_fusionData->m_FUSION_eliminated),
+		&m_virtualCommunicator);
+
+
 	m_amos.constructor(&m_parameters,&m_outboxAllocator,&m_outbox,m_fusionData,m_ed,&m_master_mode,&m_slave_mode,&m_scaffolder,
 		&m_inbox,&m_virtualCommunicator);
 
@@ -995,7 +1001,7 @@ void Machine::call_RAY_SLAVE_MODE_ASSEMBLE_WAVES(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_FINISH_FUSIONS(){
-	m_fusionData->finishFusions();
+	m_joinerTaskCreator.finishFusions();
 }
 
 void Machine::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
