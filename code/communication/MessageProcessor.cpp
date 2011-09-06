@@ -1727,6 +1727,10 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_PAIRED_READ_REPLY(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 	int source=message->getSource();
 	bool appendReverseComplement=(message->getCount()==0);
+
+	/* never append reverse complement */
+	appendReverseComplement=false;
+
 	// clearing old data too!.
 	m_fusionData->m_FINISH_pathLengths.clear();
 
