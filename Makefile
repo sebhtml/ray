@@ -56,7 +56,7 @@ FORCE_PACKING = n
 # compile assertions
 # Ray may be faster when ASSERT=n
 # y/n
-ASSERT = n
+ASSERT = y
 
 # end of compilation options
 #############################################
