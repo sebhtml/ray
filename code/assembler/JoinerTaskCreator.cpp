@@ -32,6 +32,8 @@ void JoinerTaskCreator::constructor(VirtualProcessor*virtualProcessor,StaticVect
 		vector<vector<Kmer> >*paths,vector<uint64_t>*pathIdentifiers,
 		set<uint64_t>*eliminated,VirtualCommunicator*virtualCommunicator,
 		vector<vector<Kmer> >*newPaths){
+	m_newPaths=newPaths;
+
 	m_virtualCommunicator=virtualCommunicator;
 
 	m_eliminated=eliminated;
@@ -61,27 +63,18 @@ void JoinerTaskCreator::finalizeMethod(){
 	/** all the paths */
 	int numberOfPaths=m_paths->size();
 
-	/** only the paths, not their reverse complement */
-	int numberOfRealPaths=numberOfPaths / 2;
-
-	int reverseComplementPaths = numberOfPaths / 2;
-
 	/** the number of eliminated paths */
 	int eliminatedPaths=m_eliminated->size();
 
 	/** make sure this number is at le ast all the rreverse paths */
 
-	/* truly removed paths */
-	int trulyRemovePaths=eliminatedPaths - reverseComplementPaths;
-
 	bool removedPaths=false;
 	
-	if(trulyRemovePaths >= 1)
+	if(eliminatedPaths >= 1)
 		removedPaths = true;
 
-
 	cout<<"Rank "<<m_parameters->getRank()<<" JoinerTaskCreator ["<<m_completedJobs<<"/"<<2*m_paths->size()<<"]"<<endl;
-	cout<<"Statistics: paths: "<<numberOfRealPaths<<"; reverse-complement paths: "<<reverseComplementPaths<<" all paths: "<<numberOfPaths<<" eliminated: "<<eliminatedPaths<<endl;
+	cout<<"Statistics: all paths: "<<numberOfPaths<<" eliminated: "<<eliminatedPaths<<endl;
 
 	/* send a message */
 	uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t));
@@ -114,7 +107,8 @@ bool JoinerTaskCreator::hasUnassignedTask(){
  */
 Worker*JoinerTaskCreator::assignNextTask(){
 	JoinerWorker*worker=new JoinerWorker;
-	worker->constructor(m_currentWorkerIdentifier,&(m_paths->at(m_iterator)),m_pathIdentifiers->at(m_iterator),m_reverseStrand,m_virtualCommunicator,m_parameters,m_outboxAllocator);
+	worker->constructor(m_currentWorkerIdentifier,&(m_paths->at(m_iterator)),m_pathIdentifiers->at(m_iterator),m_reverseStrand,m_virtualCommunicator,m_parameters,m_outboxAllocator,
+	m_newPaths);
 
 
 	m_currentWorkerIdentifier++;

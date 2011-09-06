@@ -54,6 +54,8 @@ class JoinerWorker: public Worker{
 	vector<int> m_hitLengths;
 	int m_hitIterator;
 
+	vector<vector<Kmer> >*m_newPaths;
+
 	bool m_selectedHit;
 	int m_selectedHitIndex;
 
@@ -72,7 +74,9 @@ class JoinerWorker: public Worker{
 	bool m_requestedPath;
 public:
 	void constructor(uint64_t i,vector<Kmer>*path,uint64_t identifier,bool reverseStrand,
-VirtualCommunicator*virtualCommunicator,Parameters*parameters,RingAllocator*outboxAllocator);
+VirtualCommunicator*virtualCommunicator,Parameters*parameters,RingAllocator*outboxAllocator,
+vector<vector<Kmer> >*newPaths
+);
 
 	/* a method for Worker interface */
 	void work();

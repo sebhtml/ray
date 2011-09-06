@@ -374,12 +374,33 @@ void JoinerWorker::work(){
  * 					*/
 				if(selfSide==RIGHT_SIDE && otherSide == LEFT_SIDE){
 					cout<<"VALID"<<endl;
+					
+					vector<Kmer> newPath=(*m_path);
+					for(int i=m_maxPosition[hitName]+1;i<(int)hitLength;i++){
+						newPath.push_back(m_hitVertices.at(i));
+					}
+
+					m_newPaths->push_back(newPath);
+
+					cout<<"Created new path, length= "<<newPath.size()<<endl;
+					m_eliminated=true;
+
 /*
  *                          ------------->
  *                     ------------>
  *                     */
 				}else if(selfSide==LEFT_SIDE && otherSide == RIGHT_SIDE){
 					cout<<"VALID"<<endl;
+
+					vector<Kmer> newPath=m_hitVertices;
+					for(int i=m_maxPositionOnSelf[hitName]+1;i<(int)m_path->size();i++){
+						newPath.push_back(m_path->at(i));
+					}
+					m_newPaths->push_back(newPath);
+
+					cout<<"Created new path, length= "<<newPath.size()<<endl;
+					m_eliminated=true;
+
 				}else{
 					cout<<"INVALID"<<endl;
 				}
@@ -418,7 +439,10 @@ uint64_t JoinerWorker::getWorkerIdentifier(){
 }
 
 void JoinerWorker::constructor(uint64_t number,vector<Kmer>*path,uint64_t identifier,bool reverseStrand,
-	VirtualCommunicator*virtualCommunicator,Parameters*parameters,RingAllocator*outboxAllocator){
+	VirtualCommunicator*virtualCommunicator,Parameters*parameters,RingAllocator*outboxAllocator,
+vector<vector<Kmer> >*newPaths
+){
+	m_newPaths=newPaths;
 	m_virtualCommunicator=virtualCommunicator;
 	m_workerIdentifier=number;
 	m_initializedGathering=false;
