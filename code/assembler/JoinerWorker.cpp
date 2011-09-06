@@ -140,18 +140,25 @@ void JoinerWorker::work(){
 				if(otherPathIdentifier != m_identifier){
 					m_hits[otherPathIdentifier]++;
 			
-					if(m_minPosition.count(otherPathIdentifier) == 0)
+					if(m_minPosition.count(otherPathIdentifier) == 0){
 						m_minPosition[otherPathIdentifier]=progression;
+						m_minPositionOnSelf[otherPathIdentifier]=m_position;
+					}
 
-					if(m_maxPosition.count(otherPathIdentifier) == 0)
+					if(m_maxPosition.count(otherPathIdentifier) == 0){
 						m_maxPosition[otherPathIdentifier]=progression;
+						m_maxPositionOnSelf[otherPathIdentifier]=m_position;
+					}
 
-
-					if(progression > m_maxPosition[otherPathIdentifier])
-						m_maxPosition[otherPathIdentifier]=progression;
-					
-					if(progression < m_minPosition[otherPathIdentifier])
+					if(progression < m_minPosition[otherPathIdentifier]){
 						m_minPosition[otherPathIdentifier]=progression;
+						m_minPositionOnSelf[otherPathIdentifier]=m_position;
+					}
+
+					if(progression > m_maxPosition[otherPathIdentifier]){
+						m_maxPosition[otherPathIdentifier]=progression;
+						m_maxPositionOnSelf[otherPathIdentifier]=m_position;
+					}
 				}
 				m_receivedPath=true;
 
@@ -222,6 +229,9 @@ void JoinerWorker::work(){
 		cout<<"worker "<<m_workerIdentifier<<" path "<<m_identifier<<" is Done, analyzed "<<m_position<<" position length is "<<m_path->size()<<endl;
 		cout<<"worker "<<m_workerIdentifier<<" hits "<<endl;
 
+		int selectedHit=0;
+		int numberOfHits=0;
+
 		for(int i=0;i<(int)m_hitNames.size();i++){
 			uint64_t hit=m_hitNames[i];
 			int hitLength=m_hitLengths[i];
@@ -232,17 +242,32 @@ void JoinerWorker::work(){
 			assert(hit != m_identifier);
 			#endif
 
+/*
 			double ratio=(matches+0.0)/selfLength;
-
 			if(ratio < 0.1)
 				continue;
+*/
 
 			if(matches < 1000)
 				continue;
 
-			cout<<"Joiner selfLength= "<<selfLength<< " Path  "<<hit<<"	matches= "<<matches<<"	length= "<<hitLength<<" minPosition= "<<m_minPosition[hit]<<" maxPosition= "<<m_maxPosition[hit]<<endl;
+			/* TODO check that the hit is on one side */
 
+
+
+			numberOfHits++;
+			selectedHit=i;
 		}
+
+		if(numberOfHits == 1){
+			uint64_t hit=m_hitNames[selectedHit];
+			int hitLength=m_hitLengths[selectedHit];
+			int selfLength=m_path->size();
+			int matches=m_hits[hit];
+			
+			cout<<"Joiner selfPath= "<<m_identifier<<" selfStrand="<<m_reverseStrand<<" selfLength= "<<selfLength<<" MinSelf="<<m_minPositionOnSelf[hit]<<" MaxSelf="<<m_maxPositionOnSelf[hit]<<" Path="<<hit<<"	matches= "<<matches<<"	length= "<<hitLength<<" minPosition= "<<m_minPosition[hit]<<" maxPosition= "<<m_maxPosition[hit]<<endl;
+		}
+
 		m_isDone=true;
 	}
 }

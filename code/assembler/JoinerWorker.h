@@ -57,6 +57,8 @@ class JoinerWorker: public Worker{
 	map<uint64_t,int> m_hits;
 	map<uint64_t,int> m_minPosition;
 	map<uint64_t,int> m_maxPosition;
+	map<uint64_t,int> m_minPositionOnSelf;
+	map<uint64_t,int> m_maxPositionOnSelf;
 
 	int m_pathIndex;
 	bool m_receivedPath;
