@@ -63,6 +63,10 @@ class JoinerWorker: public Worker{
 	map<uint64_t,int> m_minPositionOnSelf;
 	map<uint64_t,int> m_maxPositionOnSelf;
 
+	vector<Kmer> m_hitVertices;
+	int m_hitPosition;
+	bool m_requestedHitVertex;
+
 	int m_pathIndex;
 	bool m_receivedPath;
 	bool m_requestedPath;

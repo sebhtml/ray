@@ -1889,22 +1889,29 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_PATH_VERTEX(Message*message){
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
-	uint64_t id=incoming[0];
-	int position=incoming[1];
-	#ifdef ASSERT
-	assert(m_fusionData->m_FUSION_identifier_map.count(id)>0);
-	#endif
-	#ifdef ASSERT
-	if(position>=(int)(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size()){
-		cout<<"Pos="<<position<<" Length="<<(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size()<<endl;
-	}
-	assert(position<(int)(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size());
-	#endif
+	int count=message->getCount();
+
+	int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_PATH_VERTEX);
 	uint64_t*messageBytes=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t));
-	Kmer a=(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]][position];
-	int pos=0;
-	a.pack(messageBytes,&pos);
-	Message aMessage(messageBytes,pos,source,RAY_MPI_TAG_GET_PATH_VERTEX_REPLY,m_rank);
+
+	for(int i=0;i<count;i+=elementsPerQuery){
+		uint64_t id=incoming[i];
+		int position=incoming[i+1];
+
+		#ifdef ASSERT
+		assert(m_fusionData->m_FUSION_identifier_map.count(id)>0);
+		if(position>=(int)(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size()){
+			cout<<"Pos="<<position<<" Length="<<(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size()<<endl;
+		}
+		assert(position<(int)(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size());
+		#endif
+
+		Kmer a=(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]][position];
+		int pos=i;
+		a.pack(messageBytes,&pos);
+	}
+
+	Message aMessage(messageBytes,count,source,RAY_MPI_TAG_GET_PATH_VERTEX_REPLY,m_rank);
 	m_outbox->push_back(aMessage);
 }
 

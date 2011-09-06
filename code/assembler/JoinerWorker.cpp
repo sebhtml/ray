@@ -140,6 +140,10 @@ void JoinerWorker::work(){
 				if(otherPathIdentifier != m_identifier){
 					m_hits[otherPathIdentifier]++;
 			
+					/* TODO: these values should be updated in a better way. */
+
+					/* TODO  if m_reverseStrand is true, then m_position should be (LENGTH - m_position -1) */
+
 					if(m_minPosition.count(otherPathIdentifier) == 0){
 						m_minPosition[otherPathIdentifier]=progression;
 						m_minPositionOnSelf[otherPathIdentifier]=m_position;
@@ -266,7 +270,7 @@ void JoinerWorker::work(){
 			double selfRangeRatio=(selfRange+0.0)/matches;
 			double otherRangeRatio=(otherRange+0.0)/matches;
 
-			if(selfRangeRatio < 0.7 || otherRangeRatio < 0.7)
+			if(selfRangeRatio < 0.7 || otherRangeRatio < 0.7 || selfRangeRatio > 1.3 || otherRangeRatio > 1.3)
 				continue;
 
 			numberOfHits++;
@@ -282,12 +286,130 @@ void JoinerWorker::work(){
 			cout<<"SelectedHit selfPath= "<<m_identifier<<" selfStrand="<<m_reverseStrand<<" selfLength= "<<selfLength<<" MinSelf="<<m_minPositionOnSelf[hit]<<" MaxSelf="<<m_maxPositionOnSelf[hit]<<" Path="<<hit<<"	matches= "<<matches<<"	length= "<<hitLength<<" minPosition= "<<m_minPosition[hit]<<" maxPosition= "<<m_maxPosition[hit]<<endl;
 			m_selectedHit=true;
 			m_selectedHitIndex=selectedHit;
+			m_hitPosition=0;
+			m_requestedHitVertex=false;
 		}else{
 			m_isDone=true;
 		}
+
+	/* gather all the vertices of the hit and try to join them */
 	}else if(m_selectedHit){
-		cout<<"Selected hit "<<m_selectedHitIndex<<endl;
-		m_isDone=true;
+		int hitLength=m_hitLengths[m_selectedHitIndex];
+		if(m_hitPosition < hitLength){
+			if(!m_requestedHitVertex){
+				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1);
+
+				uint64_t hitName=m_hitNames[m_selectedHitIndex];
+				int destination=getRankFromPathUniqueId(hitName);
+
+				message[0]=hitName;
+				message[1]=m_hitPosition;
+
+				int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_PATH_VERTEX);
+
+				Message aMessage(message,elementsPerQuery,destination,
+					RAY_MPI_TAG_GET_PATH_VERTEX,m_parameters->getRank());
+				m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
+				m_requestedHitVertex=true;
+			}else if(m_virtualCommunicator->isMessageProcessed(m_workerIdentifier)){
+				vector<uint64_t> response;
+				m_virtualCommunicator->getMessageResponseElements(m_workerIdentifier,&response);
+				int position=0;
+				Kmer kmer;
+				kmer.unpack(&response,&position);
+				m_hitVertices.push_back(kmer);
+				
+				m_hitPosition++;
+				m_requestedHitVertex=false;
+			}
+		}else{
+			uint64_t hitName=m_hitNames[m_selectedHitIndex];
+			int matches=m_hits[hitName];
+
+			cout<<"Received hit path data."<<endl;
+			cout<<"Matches: "<<matches<<endl;
+			cout<<"Self"<<endl;
+			cout<<" Identifier: "<<m_identifier<<endl;
+			cout<<" Strand: "<<m_reverseStrand<<endl;
+			cout<<" Length: "<<m_path->size()<<endl;
+			cout<<" Begin: "<<m_minPositionOnSelf[hitName]<<endl;
+			cout<<" End: "<<m_maxPositionOnSelf[hitName]<<endl;
+			cout<<"Hit"<<endl;
+			cout<<" Identifier: "<<hitName<<endl;
+			cout<<" Strand: 0"<<endl;
+			cout<<" Length: "<<hitLength<<endl;
+			cout<<" Begin: "<<m_minPosition[hitName]<<endl;
+			cout<<" End: "<<m_maxPosition[hitName]<<endl;
+
+			#ifdef ASSERT
+			assert(hitLength == (int)m_hitVertices.size());
+			#endif
+
+			/* self can be forward or reverse
+ * 				self can hit on its left or on its right side
+ * 			other can be forward
+ * 			other can hit on its left and on its right side 
+ * 			*/
+
+			int selfMiddle=(m_minPositionOnSelf[hitName]+m_maxPositionOnSelf[hitName])/2;
+
+			int otherMiddle=(m_minPosition[hitName]+m_maxPosition[hitName])/2;
+
+			int LEFT_SIDE=0;
+			int RIGHT_SIDE=1;
+
+			int selfSide=LEFT_SIDE;
+			if(selfMiddle > (int)(m_path->size()/2))
+				selfSide=RIGHT_SIDE;
+
+			int otherSide=LEFT_SIDE;
+			if(otherMiddle > hitLength/2)
+				otherSide=RIGHT_SIDE;
+
+			/* self is not reverse complement */
+			if(!m_reverseStrand){
+				/*
+ * 				--------------->
+ * 					---------------->
+ * 					*/
+				if(selfSide==RIGHT_SIDE && otherSide == LEFT_SIDE){
+					cout<<"VALID"<<endl;
+/*
+ *                          ------------->
+ *                     ------------>
+ *                     */
+				}else if(selfSide==LEFT_SIDE && otherSide == RIGHT_SIDE){
+					cout<<"VALID"<<endl;
+				}else{
+					cout<<"INVALID"<<endl;
+				}
+			/* self is reverse complement */
+			}else{
+
+/*
+ *
+ *                      <------------------------
+ *                                    --------------------->
+ *                                    */
+				
+				if(selfSide==RIGHT_SIDE && otherSide == LEFT_SIDE){
+					cout<<"VALID"<<endl;
+/*
+ *
+ *                      <------------------------
+ *        --------------------->
+ *                                    */
+				}else if(selfSide==LEFT_SIDE && otherSide == RIGHT_SIDE){
+					cout<<"VALID"<<endl;
+				}else{
+					cout<<"INVALID"<<endl;
+				}
+
+					
+			}
+
+			m_isDone=true;
+		}
 	}
 }
 
