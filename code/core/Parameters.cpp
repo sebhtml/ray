@@ -681,6 +681,7 @@ void Parameters::parseCommands(){
 		ofstream f2(rayRuntime.str().c_str());
 		f2<<"Ray version: "<<RAY_VERSION<<endl;
 		f2.close();
+
 	}
 
 	int maximumNumberOfFiles=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint32_t);
@@ -738,7 +739,7 @@ string Parameters::getDirectory(){
 }
 
 string Parameters::getOutputFile(){
-	return getPrefix()+".Contigs.fasta";
+	return getPrefix()+"Contigs.fasta";
 }
 
 int Parameters::getMinimumContigLength(){
@@ -801,15 +802,17 @@ string Parameters::getParametersFile(){
 }
 
 string Parameters::getPrefix(){
-	return m_prefix;
+	ostringstream directory;
+	directory<<m_prefix<<"/";
+	return directory.str();
 }
 
 string Parameters::getCoverageDistributionFile(){
-	return getPrefix()+".CoverageDistribution.txt";
+	return getPrefix()+"CoverageDistribution.txt";
 }
 
 string Parameters::getAmosFile(){
-	return getPrefix()+".AMOS.afg";
+	return getPrefix()+"AMOS.afg";
 }
 
 vector<string> Parameters::getCommands(){
@@ -827,7 +830,7 @@ void Parameters::addDistance(int library,int distance,int count){
 string Parameters::getLibraryFile(int library){
 	ostringstream s;
 	s<<getPrefix();
-	s<<"."<<"Library"<<library<<".txt";
+	s<<""<<"Library"<<library<<".txt";
 	return s.str();
 }
 
@@ -876,7 +879,7 @@ void Parameters::computeAverageDistances(){
 
 	ostringstream fileName;
 	fileName<<getPrefix();
-	fileName<<".LibraryStatistics.txt";
+	fileName<<"LibraryStatistics.txt";
 	ofstream f2(fileName.str().c_str());
 
 	f2<<"NumberOfPairedLibraries: "<<m_numberOfLibraries<<endl;
@@ -1067,13 +1070,13 @@ void Parameters::showUsage(){
 
 	cout<<"  Outputs"<<endl;
 	cout<<endl;
-	showOption("-o outputPrefix","Specifies the prefix for outputted files.");
+	showOption("-o outputDirectory","Specifies the directory for outputted files. Default is RayOutput");
 	cout<<endl;
-	showOption("-amos","Writes the AMOS file called PREFIX.AMOS.afg");
+	showOption("-amos","Writes the AMOS file called RayOutput/AMOS.afg");
 	showOptionDescription("An AMOS file contains read positions on contigs.");
 	showOptionDescription("Can be opened with software with graphical user interface.");
 	cout<<endl;
-	showOption("-write-kmers","Writes k-mer graph to PREFIX.kmers.txt");
+	showOption("-write-kmers","Writes k-mer graph to RayOutput/kmers.txt");
 	showOptionDescription("The resulting file is not utilised by Ray.");
 	showOptionDescription("The resulting file is very large.");
 	cout<<endl;
@@ -1170,39 +1173,39 @@ void Parameters::showUsage(){
 
 	cout<<"  Scaffolds"<<endl;
 	cout<<endl;
-	cout<<"     PREFIX.Scaffolds.fasta"<<endl;
+	cout<<"     RayOutput/Scaffolds.fasta"<<endl;
 	cout<<"     	The scaffold sequences in FASTA format"<<endl;
-	cout<<"     PREFIX.ScaffoldComponents.txt"<<endl;
+	cout<<"     RayOutput/ScaffoldComponents.txt"<<endl;
 	cout<<"     	The components of each scaffold"<<endl;
-	cout<<"     PREFIX.ScaffoldLengths.txt"<<endl;
+	cout<<"     RayOutput/ScaffoldLengths.txt"<<endl;
 	cout<<"     	The length of each scaffold"<<endl;
-	cout<<"     PREFIX.ScaffoldLinks.txt"<<endl;
+	cout<<"     RayOutput/ScaffoldLinks.txt"<<endl;
 	cout<<"     	Scaffold links"<<endl;
 	cout<<endl;
 
 	cout<<"  Contigs"<<endl;
 	cout<<endl;
-	cout<<"     PREFIX.Contigs.fasta"<<endl;
+	cout<<"     RayOutput/Contigs.fasta"<<endl;
 	cout<<"     	Contiguous sequences in FASTA format"<<endl;
-	cout<<"     PREFIX.ContigLengths.txt"<<endl;
+	cout<<"     RayOutput/ContigLengths.txt"<<endl;
 	cout<<"     	The lengths of contiguous sequences"<<endl;
 	cout<<endl;
 
 	cout<<"  Summary"<<endl;
 	cout<<endl;
-	cout<<"     PREFIX.OutputNumbers.txt"<<endl;
+	cout<<"     RayOutput/OutputNumbers.txt"<<endl;
 	cout<<"     	Overall numbers for the assembly"<<endl;
 	cout<<endl;
 
 	cout<<"  de Bruijn graph"<<endl;
 	cout<<endl;
-	cout<<"     PREFIX.CoverageDistribution.txt"<<endl;
+	cout<<"     RayOutput/CoverageDistribution.txt"<<endl;
 	cout<<"     	The distribution of coverage values"<<endl;
-	cout<<"     PREFIX.CoverageDistributionAnalysis.txt"<<endl;
+	cout<<"     RayOutput/CoverageDistributionAnalysis.txt"<<endl;
 	cout<<"     	Analysis of the coverage distribution"<<endl;
-	cout<<"     PREFIX.degreeDistribution.txt"<<endl;
+	cout<<"     RayOutput/degreeDistribution.txt"<<endl;
 	cout<<"     	Distribution of ingoing and outgoing degrees"<<endl;
-	cout<<"     PREFIX.kmers.txt"<<endl;
+	cout<<"     RayOutput/kmers.txt"<<endl;
 	cout<<"     	k-mer graph, required option: -write-kmers"<<endl;
 	cout<<"         The resulting file is not utilised by Ray."<<endl;
 	cout<<"         The resulting file is very large."<<endl;
@@ -1210,50 +1213,50 @@ void Parameters::showUsage(){
 	
 	cout<<"  Assembly steps"<<endl;
 	cout<<endl;
-	cout<<"     PREFIX.SeedLengthDistribution.txt"<<endl;
+	cout<<"     RayOutput/SeedLengthDistribution.txt"<<endl;
 	cout<<"         Distribution of seed length"<<endl;
-	cout<<"     PREFIX.<rank>.RaySeeds.fasta"<<endl;
+	cout<<"     RayOutput/<rank>.RaySeeds.fasta"<<endl;
 	cout<<"         Seed DNA sequences, required option: -write-seeds"<<endl;
-	cout<<"     PREFIX.<rank>.RayExtensions.fasta"<<endl;
+	cout<<"     RayOutput/<rank>.RayExtensions.fasta"<<endl;
 	cout<<"         Extension DNA sequences, required option: -write-extensions"<<endl;
 	cout<<endl;
 
 	cout<<"  Paired reads"<<endl;
 	cout<<endl;
-	cout<<"     PREFIX.LibraryStatistics.txt"<<endl;
+	cout<<"     RayOutput/LibraryStatistics.txt"<<endl;
 	cout<<"     	Estimation of outer distances for paired reads"<<endl;
-	cout<<"     PREFIX.Library<LibraryNumber>.txt"<<endl;
+	cout<<"     RayOutput/Library<LibraryNumber>.txt"<<endl;
 	cout<<"         Frequencies for observed outer distances (insert size + read lengths)"<<endl;
 	cout<<endl;
 
 	cout<<"  Partition"<<endl;
 	cout<<endl;
-	cout<<"     PREFIX.NumberOfSequences.txt"<<endl;
+	cout<<"     RayOutput/NumberOfSequences.txt"<<endl;
 	cout<<"         Number of reads in each file"<<endl;
-	cout<<"     PREFIX.SequencePartition.txt"<<endl;
+	cout<<"     RayOutput/SequencePartition.txt"<<endl;
 	cout<<"     	Sequence partition"<<endl;
 	cout<<endl;
 
 	cout<<"  Ray software"<<endl;
 	cout<<endl;
-	cout<<"     PREFIX.RayVersion.txt"<<endl;
+	cout<<"     RayOutput/RayVersion.txt"<<endl;
 	cout<<"     	The version of Ray"<<endl;
-	cout<<"     PREFIX.RayCommand.txt"<<endl;
+	cout<<"     RayOutput/RayCommand.txt"<<endl;
 	cout<<"     	The exact same command provided "<<endl;
 	cout<<endl;
 
 	cout<<"  AMOS"<<endl;
 	cout<<endl;
-	cout<<"     PREFIX.AMOS.afg"<<endl;
+	cout<<"     RayOutput/AMOS.afg"<<endl;
 	cout<<"     	Assembly representation in AMOS format, required option: -amos"<<endl;
 	cout<<endl;
 
 
 	cout<<"  Communication"<<endl;
 	cout<<endl;
-	cout<<"     PREFIX.MessagePassingInterface.txt"<<endl;
+	cout<<"     RayOutput/MessagePassingInterface.txt"<<endl;
 	cout<<"	    	Number of messages sent"<<endl;
-	cout<<"     PREFIX.NetworkTest.txt"<<endl;
+	cout<<"     RayOutput/NetworkTest.txt"<<endl;
 	cout<<"	    	Latencies in microseconds"<<endl;
 	cout<<endl;
 
@@ -1375,7 +1378,7 @@ void Parameters::setMasterModePointer(int*a){
 
 string Parameters::getScaffoldFile(){
 	ostringstream a;
-	a<<getPrefix()<<".Scaffolds.fasta";
+	a<<getPrefix()<<"Scaffolds.fasta";
 	return a.str();
 }
 

@@ -322,7 +322,7 @@ void SeedingData::sendSeedLengths(){
 void SeedingData::writeSeedStatistics(){
 	ostringstream file;
 	file<<m_parameters->getPrefix();
-	file<<".SeedLengthDistribution.txt";
+	file<<"SeedLengthDistribution.txt";
 	ofstream f(file.str().c_str());
 	for(map<int,int>::iterator i=m_masterSeedLengths.begin();i!=m_masterSeedLengths.end();i++){
 		int length=i->first;

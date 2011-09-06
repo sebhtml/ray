@@ -65,7 +65,7 @@ void Scaffolder::solve(){
 	map<uint64_t,map<uint64_t,int> > validCounts;
 
 	ostringstream linkFile;
-	linkFile<<m_parameters->getPrefix()<<".ScaffoldLinks.txt";
+	linkFile<<m_parameters->getPrefix()<<"ScaffoldLinks.txt";
 	ofstream f(linkFile.str().c_str());
 
 	for(map<uint64_t,map<char,map<uint64_t,map<char,vector<int> > > > >::iterator i=
@@ -151,7 +151,7 @@ void Scaffolder::solve(){
 	
 	// write contig list
 	ostringstream contigList;
-	contigList<<m_parameters->getPrefix()<<".ContigLengths.txt";
+	contigList<<m_parameters->getPrefix()<<"ContigLengths.txt";
 	ofstream f2(contigList.str().c_str());
 	for(int i=0;i<(int)m_masterContigs.size();i++){
 		int length=m_masterLengths[i]+m_parameters->getWordSize()-1;
@@ -230,9 +230,9 @@ void Scaffolder::solve(){
 
 	// write scaffold list
 	ostringstream scaffoldList;
-	scaffoldList<<m_parameters->getPrefix()<<".ScaffoldComponents.txt";
+	scaffoldList<<m_parameters->getPrefix()<<"ScaffoldComponents.txt";
 	ostringstream scaffoldLengths;
-	scaffoldLengths<<m_parameters->getPrefix()<<".ScaffoldLengths.txt";
+	scaffoldLengths<<m_parameters->getPrefix()<<"ScaffoldLengths.txt";
 	ofstream f3(scaffoldLengths.str().c_str());
 	ofstream f4(scaffoldList.str().c_str());
 	for(int i=0;i<(int)m_scaffoldContigs.size();i++){
@@ -260,7 +260,7 @@ void Scaffolder::solve(){
 
 void Scaffolder::printFinalMessage(){
 	ostringstream outputStat;
-	outputStat<<m_parameters->getPrefix()<<".OutputNumbers.txt";
+	outputStat<<m_parameters->getPrefix()<<"OutputNumbers.txt";
 	ofstream f5(outputStat.str().c_str());
 
 	printInStream(&cout);

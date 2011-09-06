@@ -56,15 +56,19 @@ Machine::Machine(int argc,char**argv){
 		string param=argv[1];
 		if(param.find("help")!=string::npos){
 			m_parameters.showUsage();
+			m_messagesHandler.destructor();
 			exit(EXIT_NEEDS_ARGUMENTS);
 		}else if(param.find("usage")!=string::npos){
 			m_parameters.showUsage();
+			m_messagesHandler.destructor();
 			exit(EXIT_NEEDS_ARGUMENTS);
 		}else if(param.find("man")!=string::npos){
 			m_parameters.showUsage();
+			m_messagesHandler.destructor();
 			exit(EXIT_NEEDS_ARGUMENTS);
 		}else if(param.find("-version")!=string::npos){
 			showRayVersionShort();
+			m_messagesHandler.destructor();
 			exit(EXIT_NEEDS_ARGUMENTS);
 		}
 	}
@@ -237,10 +241,31 @@ void Machine::start(){
 	}
 
 	/** only show the version. */
-	if(fullReport)
+	if(fullReport){
+		m_messagesHandler.destructor();
 		return;
+	}
 
 	m_parameters.constructor(m_argc,m_argv,getRank());
+
+
+	/** create the directory for the assembly */
+	
+	string directory=m_parameters.getPrefix();
+	if(fileExists(directory.c_str())){
+		if(m_parameters.getRank() == MASTER_RANK)
+			cout<<"Error, "<<directory<<" already exists, change the -o parameter to another value."<<endl;
+
+		m_messagesHandler.destructor();
+		return;
+	}
+
+	m_messagesHandler.barrier();
+	
+	if(m_parameters.getRank() == MASTER_RANK)
+		createDirectory(directory.c_str());
+
+
 
 	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed,&m_subgraph,&m_inbox);
 	ostringstream prefixFull;
@@ -396,7 +421,7 @@ m_seedingData,
 		cout<<endl;
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<endl;
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getScaffoldFile()<<endl;
-		cout<<"Check for "<<m_parameters.getPrefix()<<".*"<<endl;
+		cout<<"Check for "<<m_parameters.getPrefix()<<"*"<<endl;
 		cout<<endl;
 		if(m_parameters.useAmos()){
 			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getAmosFile()<<" (reads mapped onto contiguous sequences in AMOS format)"<<endl;
@@ -580,6 +605,7 @@ void Machine::call_RAY_SLAVE_MODE_SEND_SEED_LENGTHS(){
 }
 
 void Machine::call_RAY_MASTER_MODE_LOAD_CONFIG(){
+
 	if(m_argc==2 && m_argv[1][0]!='-'){
 		ifstream f(m_argv[1]);
 		if(!f){
@@ -759,7 +785,7 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 
 	ostringstream g;
 	g<<m_parameters.getPrefix();
-	g<<".CoverageDistributionAnalysis.txt";
+	g<<"CoverageDistributionAnalysis.txt";
 	ofstream outputFile(g.str().c_str());
 	outputFile<<"k-mer length:\t"<<m_parameters.getWordSize()<<endl;
 	outputFile<<"Lowest coverage observed:\t"<<lowestCoverage<<endl;
@@ -883,7 +909,7 @@ void Machine::call_RAY_MASTER_MODE_WRITE_KMERS(){
 	}else if(m_numberOfRanksDone==m_parameters.getSize()){
 		if(m_parameters.writeKmers()){
 			cout<<endl;
-			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getPrefix()<<".kmers.txt"<<endl;
+			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getPrefix()<<"kmers.txt"<<endl;
 		}
 
 		m_master_mode=RAY_MASTER_MODE_TRIGGER_INDEXING;
@@ -892,7 +918,7 @@ void Machine::call_RAY_MASTER_MODE_WRITE_KMERS(){
 			return;
 
 		ostringstream edgeFile;
-		edgeFile<<m_parameters.getPrefix()<<".degreeDistribution.txt";
+		edgeFile<<m_parameters.getPrefix()<<"degreeDistribution.txt";
 		ofstream f(edgeFile.str().c_str());
 
 		f<<"# Most of the vertices should have an ingoing degree of 1 and an outgoing degree of 1."<<endl;
@@ -1373,7 +1399,7 @@ void Machine::call_RAY_MASTER_MODE_KILL_RANKS(){
 void Machine::call_RAY_SLAVE_MODE_DIE(){
 	/** write message-passing interface file */
 	ostringstream file;
-	file<<m_parameters.getPrefix()<<".MessagePassingInterface.txt";
+	file<<m_parameters.getPrefix()<<"MessagePassingInterface.txt";
 	const char*outputFile=file.str().c_str();
 	m_messagesHandler.appendStatistics(outputFile);
 
@@ -1416,7 +1442,7 @@ void Machine::call_RAY_MASTER_MODE_KILL_ALL_MPI_RANKS(){
 
 		/** empty the file if it exists */
 		ostringstream file;
-		file<<m_parameters.getPrefix()<<".MessagePassingInterface.txt";
+		file<<m_parameters.getPrefix()<<"MessagePassingInterface.txt";
 		
 		FILE*fp=fopen(file.str().c_str(),"w+");
 		fprintf(fp,"# Source\tDestination\tTag\tCount\n");

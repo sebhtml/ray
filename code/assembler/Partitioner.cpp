@@ -83,7 +83,7 @@ void Partitioner::masterMethod(){
 			/* write the number of sequences */
 			ostringstream fileName;
 			fileName<<m_parameters->getPrefix();
-			fileName<<".NumberOfSequences.txt";
+			fileName<<"NumberOfSequences.txt";
 			ofstream f2(fileName.str().c_str());
 
 			f2<<"Files: "<<m_parameters->getNumberOfFiles()<<endl;
@@ -116,7 +116,7 @@ void Partitioner::masterMethod(){
 			/* write the partition */
 			ostringstream fileName2;
 			fileName2<<m_parameters->getPrefix();
-			fileName2<<".SequencePartition.txt";
+			fileName2<<"SequencePartition.txt";
 			ofstream f3(fileName2.str().c_str());
 			uint64_t perRank=totalSequences/m_parameters->getSize();
 			f3<<"#Rank	FirstSequence	LastSequence	NumberOfSequences"<<endl;

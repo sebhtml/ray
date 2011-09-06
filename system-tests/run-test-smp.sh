@@ -17,4 +17,6 @@ echo "NSLOTS= $NSLOTS"
 echo "RAY_GIT_PATH= $RAY_GIT_PATH"
 cd tests/$TEST_NAME
 
+rm -rf $TEST_NAME
+
 source ./main.sh

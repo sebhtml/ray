@@ -47,7 +47,9 @@ void showMemoryUsage(int rank);
 void getMicroSeconds(uint64_t*seconds,uint64_t*microSeconds);
 
 /** create a directory */
-void createDirectory(char*directory);
+void createDirectory(const char*directory);
+
+bool fileExists(const char*file);
 
 void showRayVersion(MessagesHandler*messagesHandler,bool fullReport);
 

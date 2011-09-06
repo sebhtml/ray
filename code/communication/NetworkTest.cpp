@@ -141,7 +141,7 @@ void NetworkTest::masterWork(){
 	}else if(m_doneWithNetworkTest==m_size){
 		ostringstream file;
 		file<<m_parameters->getPrefix();
-		file<<".NetworkTest.txt";
+		file<<"NetworkTest.txt";
 		ofstream f(file.str().c_str());
 		f<<"# average latency in microseconds (10^-6 seconds) when requesting a reply for a message of "<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<" bytes"<<endl;
 		f<<"# Message passing interface rank\tName\tLatency in microseconds"<<endl;

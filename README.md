@@ -99,7 +99,7 @@ Tested C++ compilers:
 	mpirun -np 512 Ray-Large-k-mers/Ray -k 63 -p lib1_1.fastq lib1_2.fastq \
 	-p lib2_1.fastq lib2_2.fastq -o DeadlyBug,Assembler=Ray,K=63
 	# wait
-	ls DeadlyBug,Assembler=Ray,K=63.Scaffolds.fasta
+	ls DeadlyBug,Assembler=Ray,K=63/Scaffolds.fasta
 
 ## Compilation options
 
@@ -116,14 +116,14 @@ see the Makefile for more.
 
 To run Ray on paired reads:
 
-	mpirun -np 25 Ray -p lib1.left.fasta lib1.right.fasta -p lib2.left.fasta lib2.right.fasta -o prefix
-	ls prefix.Contigs.fasta
-	ls prefix.Scaffolds.fasta
-	ls prefix.*
+	mpirun -np 25 Ray -p lib1.left.fasta lib1.right.fasta -p lib2.left.fasta lib2.right.fasta -o RayOutput
+	ls RayOutput/Contigs.fasta
+	ls RayOutput/Scaffolds.fasta
+	ls RayOutput/
 
 # Outputted files
 
-PREFIX.Contigs.fasta and PREFIX.Scaffolds.fasta
+RayOutput/Contigs.fasta and RayOutput/Scaffolds.fasta
 
 type Ray -help for a full list
 

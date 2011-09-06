@@ -191,21 +191,51 @@ void getMicroSeconds(uint64_t*seconds,uint64_t*microSeconds){
  *
  * \see http://msdn.microsoft.com/en-us/library/aa363855(v=vs.85).aspx
  */
-void createDirectory(char*directory){
+void createDirectory(const char*directory){
 	#ifdef OS_POSIX
 
-	/* read, write for owner */
-	/* read, write for group */
-	mode_t mode=S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP;
+	/* 
+ * S_IRWXU
+    read, write, execute/search by owner 
+ *
+ * S_IRWXG
+ *  read, write, execute/search by group 
+ *     */
+	mode_t mode=S_IRWXU | S_IRWXG;
+
 	int status=mkdir(directory,mode);
 
+	#ifdef ASSERT
 	assert(status==0);
+	#endif
 	
 	#elif defined(OS_WIN)
 
 	LPSECURITY_ATTRIBUTES attr=NULL;
 	CreateDirectory(directory,attr);
 
+	#endif
+}
+
+/** \see http://pubs.opengroup.org/onlinepubs/009695399/functions/stat.html
+ * \see http://blog.kowalczyk.info/article/Check-if-file-exists-on-Windows.html */
+bool fileExists(const char*file){
+	#ifdef OS_POSIX
+	struct stat st;
+	int returnValue=stat(file,&st);
+	
+	bool theFileExists=(returnValue == 0);
+	return theFileExists;
+	
+	#elif defined(OS_WIN)
+	/* Return TRUE if file 'fileName' exists */
+	DWORD fileAttr = GetFileAttributes(fileName);
+	if(0xFFFFFFFF == fileAttr)
+		return false;
+    	return true;
+	
+	#else
+	/* not implemented */
 	#endif
 }
 

@@ -9,6 +9,9 @@ DESCRIPTION:
        -help
               Displays this help page.
 
+       -version
+              Displays Ray version and compilation options.
+
   K-mer length
 
        -k kmerLength
@@ -32,16 +35,16 @@ DESCRIPTION:
 
   Outputs
 
-       -o outputPrefix
-              Specifies the prefix for outputted files.
+       -o outputDirectory
+              Specifies the directory for outputted files. Default is RayOutput
 
        -amos
-              Writes the AMOS file called PREFIX.AMOS.afg
+              Writes the AMOS file called RayOutput/AMOS.afg
               An AMOS file contains read positions on contigs.
               Can be opened with software with graphical user interface.
 
        -write-kmers
-              Writes k-mer graph to PREFIX.kmers.txt
+              Writes k-mer graph to RayOutput/kmers.txt
               The resulting file is not utilised by Ray.
               The resulting file is very large.
 
@@ -144,80 +147,80 @@ FILES
 
   Scaffolds
 
-     PREFIX.Scaffolds.fasta
+     RayOutput/Scaffolds.fasta
      	The scaffold sequences in FASTA format
-     PREFIX.ScaffoldComponents.txt
+     RayOutput/ScaffoldComponents.txt
      	The components of each scaffold
-     PREFIX.ScaffoldLengths.txt
+     RayOutput/ScaffoldLengths.txt
      	The length of each scaffold
-     PREFIX.ScaffoldLinks.txt
+     RayOutput/ScaffoldLinks.txt
      	Scaffold links
 
   Contigs
 
-     PREFIX.Contigs.fasta
+     RayOutput/Contigs.fasta
      	Contiguous sequences in FASTA format
-     PREFIX.ContigLengths.txt
+     RayOutput/ContigLengths.txt
      	The lengths of contiguous sequences
 
   Summary
 
-     PREFIX.OutputNumbers.txt
+     RayOutput/OutputNumbers.txt
      	Overall numbers for the assembly
 
   de Bruijn graph
 
-     PREFIX.CoverageDistribution.txt
+     RayOutput/CoverageDistribution.txt
      	The distribution of coverage values
-     PREFIX.CoverageDistributionAnalysis.txt
+     RayOutput/CoverageDistributionAnalysis.txt
      	Analysis of the coverage distribution
-     PREFIX.degreeDistribution.txt
+     RayOutput/degreeDistribution.txt
      	Distribution of ingoing and outgoing degrees
-     PREFIX.kmers.txt
+     RayOutput/kmers.txt
      	k-mer graph, required option: -write-kmers
          The resulting file is not utilised by Ray.
          The resulting file is very large.
 
   Assembly steps
 
-     PREFIX.SeedLengthDistribution.txt
+     RayOutput/SeedLengthDistribution.txt
          Distribution of seed length
-     PREFIX.<rank>.RaySeeds.fasta
+     RayOutput/<rank>.RaySeeds.fasta
          Seed DNA sequences, required option: -write-seeds
-     PREFIX.<rank>.RayExtensions.fasta
+     RayOutput/<rank>.RayExtensions.fasta
          Extension DNA sequences, required option: -write-extensions
 
   Paired reads
 
-     PREFIX.LibraryStatistics.txt
+     RayOutput/LibraryStatistics.txt
      	Estimation of outer distances for paired reads
-     PREFIX.Library<LibraryNumber>.txt
+     RayOutput/Library<LibraryNumber>.txt
          Frequencies for observed outer distances (insert size + read lengths)
 
   Partition
 
-     PREFIX.NumberOfSequences.txt
+     RayOutput/NumberOfSequences.txt
          Number of reads in each file
-     PREFIX.SequencePartition.txt
+     RayOutput/SequencePartition.txt
      	Sequence partition
 
   Ray software
 
-     PREFIX.RayVersion.txt
+     RayOutput/RayVersion.txt
      	The version of Ray
-     PREFIX.RayCommand.txt
+     RayOutput/RayCommand.txt
      	The exact same command provided 
 
   AMOS
 
-     PREFIX.AMOS.afg
+     RayOutput/AMOS.afg
      	Assembly representation in AMOS format, required option: -amos
 
   Communication
 
-     PREFIX.MessagePassingInterface.txt
+     RayOutput/MessagePassingInterface.txt
 	    	Number of messages sent
-     PREFIX.NetworkTest.txt
+     RayOutput/NetworkTest.txt
 	    	Latencies in microseconds
 
 DOCUMENTATION

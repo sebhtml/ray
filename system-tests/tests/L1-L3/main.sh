@@ -4,5 +4,5 @@ mpirun -tag-output -np $NSLOTS $RAY_GIT_PATH/Ray  \
  -p L3_1.fasta L3_2.fasta \
  -o $TEST_NAME 
 
-ValidateGenomeAssembly.sh Ecoli-k12-mg1655.fasta $TEST_NAME.Contigs.fasta $TEST_NAME.Ray
+ValidateGenomeAssembly.sh Ecoli-k12-mg1655.fasta $TEST_NAME/Contigs.fasta $TEST_NAME.Ray
 

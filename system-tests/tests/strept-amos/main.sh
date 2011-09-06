@@ -3,4 +3,4 @@ mpirun -tag-output -np $NSLOTS $RAY_GIT_PATH/Ray  \
    200xStreptococcus-pneumoniae-R6.fasta_fragments_2.fasta \
 -o $TEST_NAME -amos
 
-ValidateGenomeAssembly.sh Streptococcus-pneumoniae-R6.fasta $TEST_NAME.Contigs.fasta $TEST_NAME.Ray
+ValidateGenomeAssembly.sh Streptococcus-pneumoniae-R6.fasta $TEST_NAME/Contigs.fasta $TEST_NAME.Ray
