@@ -226,7 +226,7 @@ void FusionWorker::work(){
 			if(m_parameters->hasOption("-debug-fusions"))
 				cout<<"path "<<hit<<"	matches= "<<matches<<"	length= "<<hitLength<<endl;
 
-			if(ratio < 0.9)
+			if(ratio < 0.7)
 				continue;
 
 			/* the other is longer anyway */
