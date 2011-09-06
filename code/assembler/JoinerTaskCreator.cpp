@@ -30,7 +30,8 @@ void JoinerTaskCreator::finishFusions(){
 void JoinerTaskCreator::constructor(VirtualProcessor*virtualProcessor,StaticVector*outbox,
 		RingAllocator*outboxAllocator,int*mode,Parameters*parameters,
 		vector<vector<Kmer> >*paths,vector<uint64_t>*pathIdentifiers,
-		set<uint64_t>*eliminated,VirtualCommunicator*virtualCommunicator){
+		set<uint64_t>*eliminated,VirtualCommunicator*virtualCommunicator,
+		vector<vector<Kmer> >*newPaths){
 	m_virtualCommunicator=virtualCommunicator;
 
 	m_eliminated=eliminated;

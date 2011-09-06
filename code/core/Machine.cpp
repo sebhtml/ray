@@ -187,7 +187,7 @@ void Machine::start(){
 	m_joinerTaskCreator.constructor(&m_virtualProcessor,&m_outbox,
 		&m_outboxAllocator,&m_slave_mode,&m_parameters,&(m_ed->m_EXTENSION_contigs),
 		&(m_ed->m_EXTENSION_identifiers),&(m_fusionData->m_FUSION_eliminated),
-		&m_virtualCommunicator);
+		&m_virtualCommunicator,&(m_fusionData->m_FINISH_newFusions));
 
 
 	m_amos.constructor(&m_parameters,&m_outboxAllocator,&m_outbox,m_fusionData,m_ed,&m_master_mode,&m_slave_mode,&m_scaffolder,

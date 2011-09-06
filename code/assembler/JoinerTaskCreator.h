@@ -54,7 +54,9 @@ class JoinerTaskCreator: public TaskCreator{
 public:
 	void constructor( VirtualProcessor*virtualProcessor,StaticVector*outbox,
 		RingAllocator*outboxAllocator,int*mode,Parameters*parameters,vector<vector<Kmer> >*paths,vector<uint64_t>*pathIdentifiers,
-		set<uint64_t>*eliminated,VirtualCommunicator*virtualCommunicator);
+		set<uint64_t>*eliminated,VirtualCommunicator*virtualCommunicator,
+		vector<vector<Kmer> >*newPaths
+);
 
 	void finishFusions();
 

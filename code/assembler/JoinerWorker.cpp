@@ -213,8 +213,9 @@ void JoinerWorker::work(){
 			}
 		}else{
 			m_gatheredHits=true;
+			m_selectedHit=false;
 		}
-	}else{
+	}else if(!m_selectedHit){
 		/* at this point, we have:
  * 			m_hits
  * 			m_hitNames
@@ -234,8 +235,8 @@ void JoinerWorker::work(){
 
 		for(int i=0;i<(int)m_hitNames.size();i++){
 			uint64_t hit=m_hitNames[i];
-			int hitLength=m_hitLengths[i];
-			int selfLength=m_path->size();
+			//int hitLength=m_hitLengths[i];
+			//int selfLength=m_path->size();
 			int matches=m_hits[hit];
 
 			#ifdef ASSERT
@@ -253,7 +254,20 @@ void JoinerWorker::work(){
 
 			/* TODO check that the hit is on one side */
 
+			int selfRange=m_maxPositionOnSelf[hit] - m_minPositionOnSelf[hit];
+			if(selfRange < 0)
+				selfRange-=selfRange;
 
+			int otherRange=m_maxPosition[hit] - m_minPosition[hit];
+
+			if(otherRange< 0)
+				otherRange-=otherRange;
+
+			double selfRangeRatio=(selfRange+0.0)/matches;
+			double otherRangeRatio=(otherRange+0.0)/matches;
+
+			if(selfRangeRatio < 0.7 || otherRangeRatio < 0.7)
+				continue;
 
 			numberOfHits++;
 			selectedHit=i;
@@ -265,9 +279,14 @@ void JoinerWorker::work(){
 			int selfLength=m_path->size();
 			int matches=m_hits[hit];
 			
-			cout<<"Joiner selfPath= "<<m_identifier<<" selfStrand="<<m_reverseStrand<<" selfLength= "<<selfLength<<" MinSelf="<<m_minPositionOnSelf[hit]<<" MaxSelf="<<m_maxPositionOnSelf[hit]<<" Path="<<hit<<"	matches= "<<matches<<"	length= "<<hitLength<<" minPosition= "<<m_minPosition[hit]<<" maxPosition= "<<m_maxPosition[hit]<<endl;
+			cout<<"SelectedHit selfPath= "<<m_identifier<<" selfStrand="<<m_reverseStrand<<" selfLength= "<<selfLength<<" MinSelf="<<m_minPositionOnSelf[hit]<<" MaxSelf="<<m_maxPositionOnSelf[hit]<<" Path="<<hit<<"	matches= "<<matches<<"	length= "<<hitLength<<" minPosition= "<<m_minPosition[hit]<<" maxPosition= "<<m_maxPosition[hit]<<endl;
+			m_selectedHit=true;
+			m_selectedHitIndex=selectedHit;
+		}else{
+			m_isDone=true;
 		}
-
+	}else if(m_selectedHit){
+		cout<<"Selected hit "<<m_selectedHitIndex<<endl;
 		m_isDone=true;
 	}
 }

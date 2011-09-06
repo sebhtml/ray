@@ -54,6 +54,9 @@ class JoinerWorker: public Worker{
 	vector<int> m_hitLengths;
 	int m_hitIterator;
 
+	bool m_selectedHit;
+	int m_selectedHitIndex;
+
 	map<uint64_t,int> m_hits;
 	map<uint64_t,int> m_minPosition;
 	map<uint64_t,int> m_maxPosition;
