@@ -71,6 +71,8 @@ int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoice
 	for(int i=0;i<choices;i++){
 		bool win=true;
 
+		int numberOfEntriesForI=distances->at(i).size();
+
 		/* an invalid choice can not win */
 		if(invalidChoices->count(i)>0)
 			continue;
@@ -78,6 +80,15 @@ int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoice
 		for(int j=0;j<choices;j++){
 			if(i==j)
 				continue;
+
+			int numberOfEntriesForJ=distances->at(j).size();
+
+			/* probably a sequencing error */
+			if((numberOfEntriesForJ >= numberOfEntriesForI && numberOfEntriesForI == 1)
+			|| (numberOfEntriesForJ >= 2*numberOfEntriesForI && numberOfEntriesForI < 3)){
+				win=false;
+				break;
+			}
 
 			/* an invalid choice does not need to be tested against */
 			if(invalidChoices->count(j)>0)
