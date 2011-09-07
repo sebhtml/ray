@@ -144,24 +144,29 @@ void JoinerWorker::work(){
 
 					/* TODO  if m_reverseStrand is true, then m_position should be (LENGTH - m_position -1) */
 
+					int positionOnSelf=m_position;
+					if(m_reverseStrand){
+						positionOnSelf=m_path->size()-m_position-1;
+					}
+
 					if(m_minPosition.count(otherPathIdentifier) == 0){
 						m_minPosition[otherPathIdentifier]=progression;
-						m_minPositionOnSelf[otherPathIdentifier]=m_position;
+						m_minPositionOnSelf[otherPathIdentifier]=positionOnSelf;
 					}
 
 					if(m_maxPosition.count(otherPathIdentifier) == 0){
 						m_maxPosition[otherPathIdentifier]=progression;
-						m_maxPositionOnSelf[otherPathIdentifier]=m_position;
+						m_maxPositionOnSelf[otherPathIdentifier]=positionOnSelf;
 					}
 
 					if(progression < m_minPosition[otherPathIdentifier]){
 						m_minPosition[otherPathIdentifier]=progression;
-						m_minPositionOnSelf[otherPathIdentifier]=m_position;
+						m_minPositionOnSelf[otherPathIdentifier]=positionOnSelf;
 					}
 
 					if(progression > m_maxPosition[otherPathIdentifier]){
 						m_maxPosition[otherPathIdentifier]=progression;
-						m_maxPositionOnSelf[otherPathIdentifier]=m_position;
+						m_maxPositionOnSelf[otherPathIdentifier]=positionOnSelf;
 					}
 				}
 				m_receivedPath=true;
