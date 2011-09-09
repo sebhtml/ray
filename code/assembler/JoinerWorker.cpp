@@ -371,67 +371,74 @@ void JoinerWorker::work(){
 			if(otherMiddle > hitLength/2)
 				otherSide=RIGHT_SIDE;
 
-			/* self is not reverse complement */
-			if(!m_reverseStrand){
-				/*
- * 				--------------->
- * 					---------------->
- * 					*/
-				if(selfSide==RIGHT_SIDE && otherSide == LEFT_SIDE){
-					cout<<"VALID"<<endl;
-					
-					vector<Kmer> newPath=(*m_path);
-					for(int i=m_maxPosition[hitName]+1;i<(int)hitLength;i++){
-						newPath.push_back(m_hitVertices.at(i));
+			/*
+ * 			--------------->
+ * 				---------------->
+ * 				*/
+			if(selfSide==RIGHT_SIDE && otherSide == LEFT_SIDE){
+				cout<<"VALID"<<endl;
+				
+				vector<Kmer> newPath;
+
+				/* we take directly the path */
+				if(!m_reverseStrand){
+					newPath=(*m_path);
+				}else{
+					/* we need the reverse complement path */
+					vector<Kmer> rc;
+					for(int j=(*m_path).size()-1;j>=0;j--){
+						rc.push_back((*m_path)[j].complementVertex(m_parameters->getWordSize(),
+							m_parameters->getColorSpaceMode()));
 					}
+					newPath=rc;
+				}
 
-					m_newPaths->push_back(newPath);
+				/* other path is always forward strand */
+				for(int i=m_maxPosition[hitName]+1;i<(int)hitLength;i++){
+					newPath.push_back(m_hitVertices.at(i));
+				}
 
-					cout<<"Created new path, length= "<<newPath.size()<<endl;
-					m_eliminated=true;
+				m_newPaths->push_back(newPath);
+
+				cout<<"Created new path, length= "<<newPath.size()<<endl;
+				m_eliminated=true;
 
 /*
- *                          ------------->
- *                     ------------>
- *                     */
-				}else if(selfSide==LEFT_SIDE && otherSide == RIGHT_SIDE){
-					cout<<"VALID"<<endl;
+ *                  ------------->
+ *             ------------>
+ *             */
+			}else if(selfSide==LEFT_SIDE && otherSide == RIGHT_SIDE){
+				cout<<"VALID"<<endl;
 
-					vector<Kmer> newPath=m_hitVertices;
+				/* other path is always forward strand */
+				vector<Kmer> newPath=m_hitVertices;
+
+				/* we push the forward path */
+				if(!m_reverseStrand){
 					for(int i=m_maxPositionOnSelf[hitName]+1;i<(int)m_path->size();i++){
 						newPath.push_back(m_path->at(i));
 					}
-					m_newPaths->push_back(newPath);
 
-					cout<<"Created new path, length= "<<newPath.size()<<endl;
-					m_eliminated=true;
-
+				/* we push the reverse path */
 				}else{
-					cout<<"INVALID"<<endl;
+					vector<Kmer> rc;
+					for(int j=(*m_path).size()-1;j>=0;j--){
+						rc.push_back((*m_path)[j].complementVertex(m_parameters->getWordSize(),
+							m_parameters->getColorSpaceMode()));
+					}
+
+					for(int i=m_maxPositionOnSelf[hitName]+1;i<(int)m_path->size();i++){
+						newPath.push_back(rc.at(i));
+					}
+
 				}
-			/* self is reverse complement */
+				m_newPaths->push_back(newPath);
+
+				cout<<"Created new path, length= "<<newPath.size()<<endl;
+				m_eliminated=true;
+
 			}else{
-
-/*
- *
- *                      <------------------------
- *                                    --------------------->
- *                                    */
-				
-				if(selfSide==RIGHT_SIDE && otherSide == LEFT_SIDE){
-					cout<<"VALID"<<endl;
-/*
- *
- *                      <------------------------
- *        --------------------->
- *                                    */
-				}else if(selfSide==LEFT_SIDE && otherSide == RIGHT_SIDE){
-					cout<<"VALID"<<endl;
-				}else{
-					cout<<"INVALID"<<endl;
-				}
-
-					
+				cout<<"INVALID"<<endl;
 			}
 
 			m_isDone=true;
