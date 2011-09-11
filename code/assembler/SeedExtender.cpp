@@ -839,7 +839,6 @@ Kmer *currentVertex,BubbleData*bubbleData){
 		for(int i=0;i<(int)m_flowedVertices.size();i++){
 			cout<<" "<<i<<" "<<m_flowedVertices[i];
 		}
-		m_flowedVertices.clear();
 		cout<<endl;
 	
 		if(m_parameters->hasOption("-show-distance-summary")){
@@ -965,6 +964,9 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 		int theCurrentSize=ed->m_EXTENSION_extension->size();
 		if(theCurrentSize%10000==0){
 			if(theCurrentSize==0 && ed->m_flowNumber ==0){
+
+				m_flowedVertices.clear();
+
 				m_extended++;
 				printf("Rank %i starts on a seed %i, length is %i, flow %i [%i/%i]\n",theRank,
 				ed->m_EXTENSION_currentSeedIndex,
