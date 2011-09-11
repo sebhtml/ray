@@ -66,13 +66,22 @@ int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoice
 			theMaximum=maximumValue;
 	}
 
+	bool allHaveAtLeast2=true;
+
+	for(int i=0;i<choices;i++){
+		int numberOfEntriesForI=distances->at(i).size();
+	
+		if(numberOfEntriesForI < 2)
+			allHaveAtLeast2=false;
+	}
+
 	/** choose with the maximum value, if possible */
 	double multiplicator=1.4;
 	for(int i=0;i<choices;i++){
 		bool win=true;
 
 		int numberOfEntriesForI=distances->at(i).size();
-
+	
 		/* an invalid choice can not win */
 		if(invalidChoices->count(i)>0)
 			continue;
@@ -118,12 +127,15 @@ int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoice
 		map<int,int> coverage;
 
 		/** change the number of bins depending on the range of values */
-		int step=128;
+		int step=32;
 
-		if(theMaximum> 2048)
+		if(allHaveAtLeast2)
+			step=128;
+
+		if(theMaximum> 2048 && allHaveAtLeast2)
 			step=256;
 
-		if(theMaximum>8192)
+		if(theMaximum>8192 && allHaveAtLeast2)
 			step=512;
 
 		for(int j=0;j<n;j++){
@@ -137,6 +149,8 @@ int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoice
 		}
 
 		if(show){
+			cout<<"step= "<<step<<endl;
+		
 			cout<<"Choice: "<<i+1<<endl;
 			cout<<" DataPoints: "<<n<<endl;
 			for(int j=0;j<n;j++){
