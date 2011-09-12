@@ -196,7 +196,7 @@ void SeedingData::computeSeeds(){
 		/** write seeds for debugging purposes */
 		if(m_parameters->hasOption("-write-seeds")){
 			ostringstream fileName;
-			fileName<<m_parameters->getPrefix()<<"."<<m_parameters->getRank()<<".RaySeeds.fasta";
+			fileName<<m_parameters->getPrefix()<<"Rank"<<m_parameters->getRank()<<".RaySeeds.fasta";
 			ofstream f(fileName.str().c_str());
 			for(int i=0;i<(int)m_SEEDING_seeds.size();i++){
 				uint64_t id=getPathUniqueId(m_parameters->getRank(),i);

@@ -84,6 +84,8 @@ Parameters::Parameters(){
 
 	/** use the new NovaEngine (TM) */
 	m_options.insert("-use-NovaEngine");
+
+	m_options.insert("-write-contig-paths");
 }
 
 bool Parameters::showExtensionChoice(){
@@ -653,7 +655,7 @@ void Parameters::parseCommands(){
 
 	if(getRank() == MASTER_RANK){
 		ostringstream commandFile;
-		commandFile<<getPrefix()<<".RayCommand.txt";
+		commandFile<<getPrefix()<<"RayCommand.txt";
 		ofstream f(commandFile.str().c_str());
 		f<<"mpirun -np "<<getSize()<<" Ray \\"<<endl;
 		for(int i=0;i<(int)m_originalCommands.size();i++){
@@ -677,7 +679,7 @@ void Parameters::parseCommands(){
 		cout<<endl;
 
 		ostringstream rayRuntime;
-		rayRuntime<<getPrefix()<<".RayVersion.txt";
+		rayRuntime<<getPrefix()<<"RayVersion.txt";
 		ofstream f2(rayRuntime.str().c_str());
 		f2<<"Ray version: "<<RAY_VERSION<<endl;
 		f2.close();
@@ -976,7 +978,7 @@ bool Parameters::showMemoryUsage(){
 }
 
 string Parameters::getReceivedMessagesFile(){
-	string outputForMessages=getPrefix()+".ReceivedMessages.txt";
+	string outputForMessages=getPrefix()+"ReceivedMessages.txt";
 	return outputForMessages;
 }
 
@@ -1080,11 +1082,13 @@ void Parameters::showUsage(){
 	showOptionDescription("The resulting file is not utilised by Ray.");
 	showOptionDescription("The resulting file is very large.");
 	cout<<endl;
-	showOption("-write-seeds","Writes seed DNA sequences");
+	showOption("-write-seeds","Writes seed DNA sequences to RayOutput/Rank<rank>.RaySeeds.fasta");
 	cout<<endl;
-	showOption("-write-extensions","Writes extension DNA sequences");
+	showOption("-write-extensions","Writes extension DNA sequences to RayOutput/Rank<rank>.RayExtensions.fasta");
 	cout<<endl;
-
+	showOption("-write-contig-paths","Writes contig paths with coverage values");
+	showOptionDescription("to RayOutput/Rank<rank>.RayContigPaths.txt");
+	cout<<endl;
 
 	cout<<"  Memory usage"<<endl;
 	cout<<endl;
@@ -1215,10 +1219,12 @@ void Parameters::showUsage(){
 	cout<<endl;
 	cout<<"     RayOutput/SeedLengthDistribution.txt"<<endl;
 	cout<<"         Distribution of seed length"<<endl;
-	cout<<"     RayOutput/<rank>.RaySeeds.fasta"<<endl;
+	cout<<"     RayOutput/Rank<rank>.RaySeeds.fasta"<<endl;
 	cout<<"         Seed DNA sequences, required option: -write-seeds"<<endl;
-	cout<<"     RayOutput/<rank>.RayExtensions.fasta"<<endl;
+	cout<<"     RayOutput/Rank<rank>.RayExtensions.fasta"<<endl;
 	cout<<"         Extension DNA sequences, required option: -write-extensions"<<endl;
+	cout<<"     RayOutput/Rank<rank>.RayContigPaths.txt"<<endl;
+	cout<<"         Contig paths with coverage values, required option: -write-contig-paths"<<endl;
 	cout<<endl;
 
 	cout<<"  Paired reads"<<endl;

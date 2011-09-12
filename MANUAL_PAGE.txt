@@ -49,10 +49,14 @@ DESCRIPTION:
               The resulting file is very large.
 
        -write-seeds
-              Writes seed DNA sequences
+              Writes seed DNA sequences to RayOutput/Rank<rank>.RaySeeds.fasta
 
        -write-extensions
-              Writes extension DNA sequences
+              Writes extension DNA sequences to RayOutput/Rank<rank>.RayExtensions.fasta
+
+       -write-contig-paths
+              Writes contig paths with coverage values
+              to RayOutput/Rank<rank>.RayContigPaths.txt
 
   Memory usage
 
@@ -185,10 +189,12 @@ FILES
 
      RayOutput/SeedLengthDistribution.txt
          Distribution of seed length
-     RayOutput/<rank>.RaySeeds.fasta
+     RayOutput/Rank<rank>.RaySeeds.fasta
          Seed DNA sequences, required option: -write-seeds
-     RayOutput/<rank>.RayExtensions.fasta
+     RayOutput/Rank<rank>.RayExtensions.fasta
          Extension DNA sequences, required option: -write-extensions
+     RayOutput/Rank<rank>.RayContigPaths.txt
+         Contig paths with coverage values, required option: -write-contig-paths
 
   Paired reads
 
@@ -249,4 +255,4 @@ COPYRIGHT
        You have received a copy of the GNU General Public License
        along with this program (see LICENSE).
 
-Ray 1.6.2-devel
+Ray 1.7-devel

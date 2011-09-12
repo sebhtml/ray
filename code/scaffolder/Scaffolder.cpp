@@ -505,6 +505,11 @@ void Scaffolder::performSummary(){
 	/* TODO: possibly write the k-mer coverage values to a file */
 	uint64_t sum=0;
 
+	#ifdef ASSERT
+	assert(m_contigId < (int)m_contigs->size());
+	assert(m_vertexCoverageValues.size() == (*m_contigs)[m_contigId].size());
+	#endif
+
 	map<int,int> distribution;
 	int n=0;
 	for(int i=0;i<(int)m_vertexCoverageValues.size();i++){
@@ -540,6 +545,37 @@ void Scaffolder::performSummary(){
 		cout<<" "<<i->first<<"	"<<i->second<<endl;
 	}
 	#endif
+
+	/* write coverage values to a file if requested */
+	if(m_parameters->hasOption("-write-contig-paths")){
+		ostringstream fileName;
+		fileName<<m_parameters->getPrefix()<<"Rank"<<m_parameters->getRank()<<".RayContigPaths.txt";
+		ofstream fp;
+		if(m_contigId==0){
+			fp.open(fileName.str().c_str());
+		}else{
+			fp.open(fileName.str().c_str(),ios_base::out|ios_base::app);
+		}
+
+		#ifdef ASSERT
+		assert(m_contigId < (int)m_contigNames->size());
+		#endif
+
+		uint64_t contigName=(*m_contigNames)[m_contigId];
+		int vertices=m_vertexCoverageValues.size();
+		fp<<"contig-"<<contigName<<endl;
+		fp<<vertices<<" vertices"<<endl;
+		fp<<"#Index	Vertex	Coverage"<<endl;
+		for(int i=0;i<vertices;i++){
+			Kmer kmer=(*m_contigs)[m_contigId][i];
+			int coverage=m_vertexCoverageValues[i];
+
+			fp<<i<<"	"<<kmer.idToWord(m_parameters->getWordSize(),m_parameters->getColorSpaceMode())<<"	"<<coverage<<endl;
+		}
+
+		fp.close();
+	}
+
 
 	m_summary.clear();
 	m_summaryIterator=0;
