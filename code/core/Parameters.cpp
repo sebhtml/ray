@@ -653,39 +653,6 @@ void Parameters::parseCommands(){
 		}
 	}
 
-	if(getRank() == MASTER_RANK){
-		ostringstream commandFile;
-		commandFile<<getPrefix()<<"RayCommand.txt";
-		ofstream f(commandFile.str().c_str());
-		f<<"mpirun -np "<<getSize()<<" Ray \\"<<endl;
-		for(int i=0;i<(int)m_originalCommands.size();i++){
-			if(i!=(int)m_originalCommands.size()-1){
-				f<<" "<<m_originalCommands[i]<<" \\"<<endl;
-			}else{
-				f<<" "<<m_originalCommands[i]<<endl;
-			}
-		}
-		f.close();
-		cout<<"Rank "<<MASTER_RANK<<" wrote "<<commandFile.str()<<endl;
-		cout<<endl;
-
-		cout<<"k-mer length: "<<m_wordSize<<endl;
-		
-		if(m_reducerIsActivated){
-			cout<<"Memory Consumption Reducer is enabled, threshold="<<m_reducerPeriod<<endl;
-		}
-		cout<<endl;
-		cout<<"Output files will be prefixed with "<<getPrefix()<<endl;
-		cout<<endl;
-
-		ostringstream rayRuntime;
-		rayRuntime<<getPrefix()<<"RayVersion.txt";
-		ofstream f2(rayRuntime.str().c_str());
-		f2<<"Ray version: "<<RAY_VERSION<<endl;
-		f2.close();
-
-	}
-
 	int maximumNumberOfFiles=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint32_t);
 	
 	assert((int)m_singleEndReadsFile.size()<=maximumNumberOfFiles);
@@ -694,6 +661,38 @@ void Parameters::parseCommands(){
 	for(int p=0;p<m_wordSize;p++){
 		result*=4;
 	}
+}
+
+void Parameters::writeCommandFile(){
+	ostringstream commandFile;
+	commandFile<<getPrefix()<<"RayCommand.txt";
+	ofstream f(commandFile.str().c_str());
+	f<<"mpiexec -n "<<getSize()<<" Ray \\"<<endl;
+	for(int i=0;i<(int)m_originalCommands.size();i++){
+		if(i!=(int)m_originalCommands.size()-1){
+			f<<" "<<m_originalCommands[i]<<" \\"<<endl;
+		}else{
+			f<<" "<<m_originalCommands[i]<<endl;
+		}
+	}
+	f.close();
+	cout<<"Rank "<<MASTER_RANK<<" wrote "<<commandFile.str()<<endl;
+	cout<<endl;
+
+	cout<<"k-mer length: "<<m_wordSize<<endl;
+	
+	if(m_reducerIsActivated){
+		cout<<"Memory Consumption Reducer is enabled, threshold="<<m_reducerPeriod<<endl;
+	}
+	cout<<endl;
+	cout<<"Output files will be prefixed with "<<getPrefix()<<endl;
+	cout<<endl;
+
+	ostringstream rayRuntime;
+	rayRuntime<<getPrefix()<<"RayVersion.txt";
+	ofstream f2(rayRuntime.str().c_str());
+	f2<<"Ray version: "<<RAY_VERSION<<endl;
+	f2.close();
 }
 
 void Parameters::constructor(int argc,char**argv,int rank){

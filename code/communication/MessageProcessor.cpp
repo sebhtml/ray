@@ -1840,7 +1840,6 @@ void MessageProcessor::call_RAY_MPI_TAG_FINISH_FUSIONS_FINISHED(Message*message)
 	bool reductionOccured=incoming[0];
 
 	if(reductionOccured){
-		cout<<"Reduction occured from RAY_MPI_TAG_FINISH_FUSIONS_FINISHED !"<<endl;
 		(*m_nextReductionOccured)=true;
 	}
 

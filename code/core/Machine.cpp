@@ -248,7 +248,6 @@ void Machine::start(){
 
 	m_parameters.constructor(m_argc,m_argv,getRank());
 
-
 	/** create the directory for the assembly */
 	
 	string directory=m_parameters.getPrefix();
@@ -262,10 +261,10 @@ void Machine::start(){
 
 	m_messagesHandler.barrier();
 	
-	if(m_parameters.getRank() == MASTER_RANK)
+	if(m_parameters.getRank() == MASTER_RANK){
 		createDirectory(directory.c_str());
-
-
+		m_parameters.writeCommandFile();
+	}
 
 	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed,&m_subgraph,&m_inbox);
 	ostringstream prefixFull;

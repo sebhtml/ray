@@ -203,6 +203,8 @@ public:
 	bool hasFile(const char*file);
 	bool writeCheckpoints();
 	bool readCheckpoints();
+
+	void writeCommandFile();
 };
 
 #endif
