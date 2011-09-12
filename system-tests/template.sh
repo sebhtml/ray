@@ -32,8 +32,7 @@ echo ""
 
 # remove old files
 
-rm *.Contig*
-rm *.Scaffold*
+rm -rf $TEST_NAME
 
 # run the system test
 # actually, the system test can be executed on a standardd computer
