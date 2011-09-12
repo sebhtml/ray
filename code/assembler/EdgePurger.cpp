@@ -25,6 +25,8 @@
 #include <core/OperatingSystem.h>
 #include <memory/malloc_types.h>
 
+//#define DEBUG_EdgePurger
+
 /* code based on assembler/Library.cpp */
 
 void EdgePurger::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
@@ -41,25 +43,19 @@ void EdgePurger::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocato
 	m_parameters=parameters;
 	m_masterCountFinished=0;
 	m_done=false;
-	m_initiatedIterator=false;
 
 	/* for TaskCreator */
 	m_initialized=false;
 	m_virtualProcessor=virtualProcessor;
-
-/*
-	int ALLOCATOR_CHUNK_SIZE=4194304; // 4 MiB
-	m_workerAllocator.constructor(ALLOCATOR_CHUNK_SIZE,RAY_MALLOC_TYPE_WORKER,
-		m_parameters->showMemoryAllocations());
-*/
 }
 
 void EdgePurger::work(){
 	/* master control */
 	if(m_inbox->size()>0&&m_inbox->at(0)->getTag()==RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY){
 		m_masterCountFinished++;
+		cout<<"Receiving RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY"<<endl;
 		if(m_masterCountFinished==m_parameters->getSize()){
-			*m_masterMode=RAY_MASTER_MODE_WRITE_KMERS;
+			(*m_masterMode)=RAY_MASTER_MODE_WRITE_KMERS;
 		}
 	}
 	if(m_done){
@@ -67,6 +63,7 @@ void EdgePurger::work(){
 	}
 
 	if(!m_checkedCheckpoint){
+		cout<<"Checking checkpoint"<<endl;
 		if(m_parameters->hasCheckpoint("GenomeGraph")){
 			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY,m_parameters->getRank());
 			m_outbox->push_back(aMessage);
@@ -94,10 +91,17 @@ void EdgePurger::finalizeMethod(){
 }
 
 bool EdgePurger::hasUnassignedTask(){
+	#ifdef DEBUG_EdgePurger
+	cout<<"hasUnassignedTask "<<m_SEEDING_i<<" "<<m_subgraph->size<<endl;
+	#endif
 	return m_SEEDING_i<m_subgraph->size();
 }
 
 Worker* EdgePurger::assignNextTask(){
+	#ifdef DEBUG_EdgePurger
+	cout<<"EdgePurger::assignNextTask"<<endl;
+	#endif
+
 	#ifdef ASSERT
 	assert(m_graphIterator.hasNext());
 	#endif
@@ -123,18 +127,22 @@ void EdgePurger::processWorkerResult(Worker*){
 	if(m_completedJobs%50000==0){
 		cout<<"Rank "<<m_parameters->getRank()<<" is purging edges ["<<m_completedJobs+1;
 		cout<<"/"<<m_subgraph->size()<<"]"<<endl;
+		cout.flush();
 	}
-
 }
 
 void EdgePurger::destroyWorker(Worker*worker){
-	//m_workerAllocator.free(worker,sizeof(EdgePurgerWorker));
 	delete worker;
 }
 
 void EdgePurger::initializeMethod(){
+	#ifdef DEBUG_EdgePurger
+	cout<<"EdgePurger::initializeMethod"<<endl;
+	#endif
+
 	m_SEEDING_i=0;
 	m_graphIterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
 
-	m_initiatedIterator=true;
+	cout<<"Will process "<<m_subgraph->size()<<endl;
+	cout<<"Exiting initializeMethod"<<endl;
 }
