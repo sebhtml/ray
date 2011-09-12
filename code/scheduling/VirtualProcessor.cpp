@@ -163,7 +163,21 @@ bool VirtualProcessor::run(){
 		//  as for they need responses.
 		if(!m_virtualCommunicator->getGlobalPushedMessageStatus() && m_activeWorkers.empty()){
 			/** if no more worker will be added, we need to forceFlush */
-			if(!m_moreTasksAreComing){
+
+			bool noMoreWorkerCanBeAdded=false;
+
+			/* we have a full array of idle workers */
+			if(!canAddWorker()){
+				noMoreWorkerCanBeAdded=true;
+			}
+
+			/* we have space to add further workers, but no workers will be added in the future */
+			if(canAddWorker() && !m_moreTasksAreComing){
+				noMoreWorkerCanBeAdded=true;
+			}
+
+			/* we have to force-flush something to get rid of these endless waiting */
+			if(noMoreWorkerCanBeAdded){
 				#ifdef DEBUG_VIRTUAL_PROCESSOR
 				cout<<"VirtualProcessor: calling forceFlush on VirtualCommunicator"<<endl;
 				#endif
