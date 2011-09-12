@@ -1106,6 +1106,24 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_EXTENSIONS(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
+	/* clear eliminated paths */
+	vector<uint64_t> newNames;
+	vector<vector<Kmer> > newPaths;
+
+	for(int i=0;i<(int)m_ed->m_EXTENSION_contigs.size();i++){
+		uint64_t uniqueId=m_ed->m_EXTENSION_identifiers[i];
+		if(m_fusionData->m_FUSION_eliminated.count(uniqueId)>0){
+			continue;
+		}
+		newNames.push_back(uniqueId);
+		newPaths.push_back(m_ed->m_EXTENSION_contigs[i]);
+	}
+
+	/* overwrite old paths */
+	m_fusionData->m_FUSION_eliminated.clear();
+	m_ed->m_EXTENSION_identifiers=newNames;
+	m_ed->m_EXTENSION_contigs=newPaths;
+
 	cout<<"Rank "<<m_rank<< " is appending its fusions"<<endl;
 	string output=m_parameters.getOutputFile();
 	ofstream fp;
@@ -1115,6 +1133,9 @@ void Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 		fp.open(output.c_str(),ios_base::out|ios_base::app);
 	}
 	int total=0;
+
+	m_scaffolder.setContigPaths(&(m_ed->m_EXTENSION_identifiers),&(m_ed->m_EXTENSION_contigs));
+
 	for(int i=0;i<(int)m_ed->m_EXTENSION_contigs.size();i++){
 		uint64_t uniqueId=m_ed->m_EXTENSION_identifiers[i];
 		if(m_fusionData->m_FUSION_eliminated.count(uniqueId)>0){
@@ -1123,8 +1144,6 @@ void Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 		total++;
 		string contig=convertToString(&(m_ed->m_EXTENSION_contigs[i]),m_parameters.getWordSize(),m_parameters.getColorSpaceMode());
 		
-		m_scaffolder.addContig(uniqueId,&(m_ed->m_EXTENSION_contigs[i]));
-
 		string withLineBreaks=addLineBreaks(contig,m_parameters.getColumns());
 		fp<<">contig-"<<uniqueId<<" "<<contig.length()<<" nucleotides"<<endl<<withLineBreaks<<endl;
 	}
@@ -1133,6 +1152,26 @@ void Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 
 	if(m_parameters.showMemoryUsage()){
 		showMemoryUsage(getRank());
+	}
+
+	/** possibly write the checkpoint */
+	if(m_parameters.writeCheckpoints() && !m_parameters.hasCheckpoint("ContigPaths")){
+		cout<<"Rank "<<m_parameters.getRank()<<" is writing checkpoint ContigPaths"<<endl;
+		ofstream f(m_parameters.getCheckpointFile("ContigPaths").c_str());
+		int theSize=m_ed->m_EXTENSION_contigs.size();
+		f.write((char*)&theSize,sizeof(int));
+
+		/* write each path with its name and vertices */
+		for(int i=0;i<theSize;i++){
+			uint64_t name=m_ed->m_EXTENSION_identifiers[i];
+			int vertices=m_ed->m_EXTENSION_contigs[i].size();
+			f.write((char*)&name,sizeof(uint64_t));
+			f.write((char*)&vertices,sizeof(int));
+			for(int j=0;j<vertices;j++){
+				m_ed->m_EXTENSION_contigs[i][j].write(&f);
+			}
+		}
+		f.close();
 	}
 
 	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;

@@ -123,8 +123,8 @@ class Scaffolder{
 	bool m_forwardDone;
 	int m_contigId;
 	int m_positionOnContig;
-	vector<vector<Kmer> > m_contigs;
-	vector<uint64_t> m_contigNames;
+	vector<vector<Kmer> >*m_contigs;
+	vector<uint64_t>*m_contigNames;
 
 	Parameters*m_parameters;
 	StaticVector*m_inbox;
@@ -167,7 +167,7 @@ public:
 	void constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
 		int*slaveMode,VirtualCommunicator*vc);
 	void run();
-	void addContig(uint64_t name,vector<Kmer>*vertices);
+	void setContigPaths(vector<uint64_t>*names,vector<vector<Kmer> >*paths);
 	void addMasterLink(vector<uint64_t>*link);
 	void solve();
 	void addMasterContig(uint64_t name,int length);
