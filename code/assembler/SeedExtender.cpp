@@ -835,6 +835,9 @@ Kmer *currentVertex,BubbleData*bubbleData){
 
 		printExtensionStatus(currentVertex);
 		cout<<"Rank "<<theRank<<" (extension done) NumberOfFlows: "<<ed->m_flowNumber<<endl;
+
+		m_extended++;
+
 		cout<<"Rank "<<m_parameters->getRank()<<" FlowedVertices:";
 		for(int i=0;i<(int)m_flowedVertices.size();i++){
 			cout<<" "<<i<<" "<<m_flowedVertices[i];
@@ -967,7 +970,6 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 				m_flowedVertices.clear();
 
-				m_extended++;
 				printf("Rank %i starts on a seed %i, length is %i, flow %i [%i/%i]\n",theRank,
 				ed->m_EXTENSION_currentSeedIndex,
 				(int)ed->m_EXTENSION_currentSeed.size(),ed->m_flowNumber,
