@@ -48,7 +48,8 @@ void Scaffolder::solve(){
  *  However, it reduces significantly the number of scaffolds.
  *  Therefore, its usage is warranted.
  */
-	int minimumNumberOfRawLinks=3;
+	int minimumNumberOfRawLinks=0; /* 0 means it is not used at all */
+
 	map<uint64_t,map<char,map<uint64_t,map<char,vector<int> > > > > keys;
 	for(int i=0;i<(int)m_masterLinks.size();i++){
 		uint64_t leftContig=m_masterLinks[i][0];
@@ -57,8 +58,10 @@ void Scaffolder::solve(){
 		char rightStrand=m_masterLinks[i][3];
 		int average=m_masterLinks[i][4];
 		int number=m_masterLinks[i][5];
+
 		if(number<minimumNumberOfRawLinks)
 			continue;
+
 		keys[leftContig][leftStrand][rightContig][rightStrand].push_back(average);
 		keys[leftContig][leftStrand][rightContig][rightStrand].push_back(number);
 	}
