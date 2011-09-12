@@ -47,25 +47,11 @@ class EdgePurger : public TaskCreator {
 	/** checkpointing */
 	bool m_checkedCheckpoint;
 
-	bool m_initiatedIterator;
 	uint64_t m_SEEDING_i;
-/*
-	set<uint64_t> m_activeWorkers;
-	set<uint64_t>::iterator m_activeWorkerIterator;
-	int m_maximumAliveWorkers;
-	int m_maximumWorkers;
-*/
 	GridTable*m_subgraph;
 	GridTableIterator m_graphIterator;
-/*
-	bool m_communicatorWasTriggered;
-	vector<uint64_t> m_workersDone;
-	vector<uint64_t> m_waitingWorkers;
-	vector<uint64_t> m_activeWorkersToRestore;
-
-	map<uint64_t,EdgePurgerWorker> m_aliveWorkers;
-*/
 	int m_masterCountFinished;
+
 	Parameters*m_parameters;
 	StaticVector*m_inbox;
 	StaticVector*m_outbox;
@@ -81,7 +67,6 @@ public:
 		int*slaveMode,int*masterMode,VirtualCommunicator*vc,GridTable*graph,VirtualProcessor*virtualProcessor);
 
 	void work();
-
 
 	/** initialize the whole thing */
 	virtual void initializeMethod();
