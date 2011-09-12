@@ -30,6 +30,7 @@
 #include <communication/VirtualCommunicator.h>
 #include <assembler/ReadFetcher.h>
 #include <sstream>
+#include <scaffolder/ScaffoldingLink.h>
 using namespace std;
 
 /**
@@ -52,6 +53,9 @@ class Scaffolder{
 	vector<int> m_allScaffoldLengths;
 	vector<int> m_allContigLengths;
 
+	/* coverage values for the current path */
+	vector<int> m_vertexCoverageValues;
+
 	int m_scaffoldId;
 	int m_positionOnScaffold;
 	bool m_writeContigRequested;
@@ -69,7 +73,7 @@ class Scaffolder{
 	vector<vector<uint64_t> >m_summary;
 	bool m_summaryPerformed;
 	bool m_entrySent;
-	map<uint64_t,map<char,map<uint64_t,map<char,vector<int> > > > > m_scaffoldingSummary;
+	map<uint64_t,map<char,map<uint64_t,map<char,vector<ScaffoldingLink> > > > > m_scaffoldingSummary;
 	bool m_reverseDirectionsReceived;
 	bool m_reverseDirectionLengthReceived;
 	uint64_t m_pairedReverseDirectionName;

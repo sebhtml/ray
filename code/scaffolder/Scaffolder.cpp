@@ -28,6 +28,7 @@
 #include <fstream>
 #include <sstream>
 #include <assert.h>
+#include <math.h> /* for sqrt */
 using namespace std;
 
 void Scaffolder::addMasterLink(vector<uint64_t>*a){
@@ -497,24 +498,64 @@ void Scaffolder::sendSummary(){
 }
 
 void Scaffolder::performSummary(){
+
+	/* TODO: possibly write the k-mer coverage values to a file */
+	uint64_t sum=0;
+
+	map<int,int> distribution;
+	int n=0;
+	for(int i=0;i<(int)m_vertexCoverageValues.size();i++){
+		int coverageValue=m_vertexCoverageValues[i];
+		distribution[coverageValue]++;
+
+		if(coverageValue < m_parameters->getRepeatCoverage()){
+			sum+=coverageValue;
+			n++;
+		}
+	}
+
+	int mean=sum/n;
+
+	uint64_t sumOfSquares=0;
+	for(int i=0;i<(int)m_vertexCoverageValues.size();i++){
+		int coverageValue=m_vertexCoverageValues[i];
+		int diff=coverageValue-mean;
+		if(coverageValue < m_parameters->getRepeatCoverage()){
+			sumOfSquares+= diff*diff;
+		}
+	}
+
+	sumOfSquares /= n;
+
+	int standardDeviation=(int)sqrt(sumOfSquares);
+
+	cout<<"contig: "<<m_contigNames[m_contigId]<<" vertices: "<<m_vertexCoverageValues.size()<<" averageCoverage: "<<mean<<" standardDeviation: "<<standardDeviation<<" peakCoverage: "<<m_parameters->getPeakCoverage()<<" repeatCoverage: "<<m_parameters->getRepeatCoverage()<<endl;
+
+	#ifdef SCAFFOLDER_SHOW_DISTRIBUTION
+	cout<<"Distribution "<<endl;
+	for(map<int,int>::iterator i=distribution.begin();i!=distribution.end();i++){
+		cout<<" "<<i->first<<"	"<<i->second<<endl;
+	}
+	#endif
+
 	m_summary.clear();
 	m_summaryIterator=0;
-	for(map<uint64_t,map<char,map<uint64_t,map<char,vector<int> > > > >::iterator i=
+	for(map<uint64_t,map<char,map<uint64_t,map<char,vector<ScaffoldingLink> > > > >::iterator i=
 		m_scaffoldingSummary.begin();i!=m_scaffoldingSummary.end();i++){
 		uint64_t leftContig=i->first;
-		for(map<char,map<uint64_t,map<char,vector<int> > > >::iterator j=i->second.begin();
+		for(map<char,map<uint64_t,map<char,vector<ScaffoldingLink> > > >::iterator j=i->second.begin();
 			j!=i->second.end();j++){
 			char leftStrand=j->first;
-			for(map<uint64_t,map<char,vector<int> > >::iterator k=j->second.begin();
+			for(map<uint64_t,map<char,vector<ScaffoldingLink> > >::iterator k=j->second.begin();
 				k!=j->second.end();k++){
 				uint64_t rightContig=k->first;
-				for(map<char,vector<int> >::iterator l=k->second.begin();
+				for(map<char,vector<ScaffoldingLink> >::iterator l=k->second.begin();
 					l!=k->second.end();l++){
 					char rightStrand=l->first;
 					int sum=0;
 					int n=0;
-					for(vector<int>::iterator m=l->second.begin();m!=l->second.end();m++){
-						int distance=*m;
+					for(vector<ScaffoldingLink>::iterator m=l->second.begin();m!=l->second.end();m++){
+						int distance=(*m).getDistance();
 						sum+=distance;
 						n++;
 					}
@@ -594,6 +635,8 @@ void Scaffolder::processVertex(Kmer vertex){
 		if(m_positionOnContig==0){
 			m_scaffoldingSummary.clear();
 			m_summaryPerformed=false;
+		
+			m_vertexCoverageValues.clear();
 		}
 		if(m_positionOnContig==(int)m_contigs[m_contigId].size()-1){
 			printf("Rank %i: gathering scaffold links [%i/%i] [%i/%i] (completed)\n",m_parameters->getRank(),
@@ -614,6 +657,10 @@ void Scaffolder::processVertex(Kmer vertex){
 		m_receivedCoverage=answer[0];
 		m_coverageReceived=true;
 		m_initialisedFetcher=false;
+		
+		/* receive the coverage value at this position */
+		m_vertexCoverageValues.push_back(m_receivedCoverage);
+
 	}else if(m_coverageReceived){
 		if(m_receivedCoverage<m_parameters->getRepeatCoverage()){
 			if(!m_initialisedFetcher){
@@ -849,7 +896,9 @@ Case 6. (allowed)
 			int distanceIn2=m_pairedForwardDirectionLength-m_pairedForwardDirectionPosition+m_pairedForwardOffset;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0){
-				m_scaffoldingSummary[m_contigNames[m_contigId]]['F'][m_pairedForwardDirectionName]['R'].push_back(distance);
+				ScaffoldingLink hit;
+				hit.constructor(distance,m_receivedCoverage,m_pairedForwardMarkerCoverage);
+				m_scaffoldingSummary[m_contigNames[m_contigId]]['F'][m_pairedForwardDirectionName]['R'].push_back(hit);
 				#ifdef PRINT_RAW_LINK
 				cout<<"LINK06 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedForwardDirectionName<<",R,"<<distance<<endl;
 				#endif
@@ -869,7 +918,9 @@ Case 1. (allowed)
 				#ifdef PRINT_RAW_LINK
 				cout<<"LINK01 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedForwardDirectionName<<",F,"<<distance<<endl;
 				#endif
-				m_scaffoldingSummary[m_contigNames[m_contigId]]['R'][m_pairedForwardDirectionName]['F'].push_back(distance);
+				ScaffoldingLink hit;
+				hit.constructor(distance,m_receivedCoverage,m_pairedForwardMarkerCoverage);
+				m_scaffoldingSummary[m_contigNames[m_contigId]]['R'][m_pairedForwardDirectionName]['F'].push_back(hit);
 			}
 /*
 Case 10. (allowed)
@@ -889,7 +940,9 @@ Case 10. (allowed)
 				#ifdef PRINT_RAW_LINK
 				cout<<"LINK10 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedForwardDirectionName<<",R,"<<distance<<endl;
 				#endif
-				m_scaffoldingSummary[m_contigNames[m_contigId]]['R'][m_pairedForwardDirectionName]['R'].push_back(distance);
+				ScaffoldingLink hit;
+				hit.constructor(distance,m_receivedCoverage,m_pairedForwardMarkerCoverage);
+				m_scaffoldingSummary[m_contigNames[m_contigId]]['R'][m_pairedForwardDirectionName]['R'].push_back(hit);
 			}
 
 /*
@@ -907,7 +960,10 @@ Case 13. (allowed)
 				#ifdef PRINT_RAW_LINK
 				cout<<"LINK13 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedForwardDirectionName<<",F,"<<distance<<endl;
 				#endif
-				m_scaffoldingSummary[m_contigNames[m_contigId]]['F'][m_pairedForwardDirectionName]['F'].push_back(distance);
+
+				ScaffoldingLink hit;
+				hit.constructor(distance,m_receivedCoverage,m_pairedForwardMarkerCoverage);
+				m_scaffoldingSummary[m_contigNames[m_contigId]]['F'][m_pairedForwardDirectionName]['F'].push_back(hit);
 			}
 		}
 
@@ -1034,7 +1090,9 @@ Case 4. (allowed)
 				#ifdef PRINT_RAW_LINK
 				cout<<"LINK04 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedReverseDirectionName<<",R,"<<distance<<endl;
 				#endif
-				m_scaffoldingSummary[m_contigNames[m_contigId]]['R'][m_pairedReverseDirectionName]['R'].push_back(distance);
+				ScaffoldingLink hit;
+				hit.constructor(distance,m_receivedCoverage,m_pairedReverseMarkerCoverage);
+				m_scaffoldingSummary[m_contigNames[m_contigId]]['R'][m_pairedReverseDirectionName]['R'].push_back(hit);
 			}
 		
 
@@ -1053,7 +1111,9 @@ Case 7. (allowed)
 				#ifdef PRINT_RAW_LINK
 				cout<<"LINK07 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedReverseDirectionName<<",F,"<<distance<<endl;
 				#endif
-				m_scaffoldingSummary[m_contigNames[m_contigId]]['F'][m_pairedReverseDirectionName]['F'].push_back(distance);
+				ScaffoldingLink hit;
+				hit.constructor(distance,m_receivedCoverage,m_pairedReverseMarkerCoverage);
+				m_scaffoldingSummary[m_contigNames[m_contigId]]['F'][m_pairedReverseDirectionName]['F'].push_back(hit);
 			}
 	
 
@@ -1072,7 +1132,9 @@ Case 11. (allowed)
 				#ifdef PRINT_RAW_LINK
 				cout<<"LINK11 "<<m_contigNames[m_contigId]<<",R,"<<m_pairedReverseDirectionName<<",F,"<<distance<<endl;
 				#endif
-				m_scaffoldingSummary[m_contigNames[m_contigId]]['R'][m_pairedReverseDirectionName]['F'].push_back(distance);
+				ScaffoldingLink hit;
+				hit.constructor(distance,m_receivedCoverage,m_pairedReverseMarkerCoverage);
+				m_scaffoldingSummary[m_contigNames[m_contigId]]['R'][m_pairedReverseDirectionName]['F'].push_back(hit);
 			}
 
 /*
@@ -1090,7 +1152,9 @@ Case 16. (allowed)
 				#ifdef PRINT_RAW_LINK
 				cout<<"LINK16 "<<m_contigNames[m_contigId]<<",F,"<<m_pairedReverseDirectionName<<",R,"<<distance<<endl;
 				#endif
-				m_scaffoldingSummary[m_contigNames[m_contigId]]['F'][m_pairedReverseDirectionName]['R'].push_back(distance);
+				ScaffoldingLink hit;
+				hit.constructor(distance,m_receivedCoverage,m_pairedReverseMarkerCoverage);
+				m_scaffoldingSummary[m_contigNames[m_contigId]]['F'][m_pairedReverseDirectionName]['R'].push_back(hit);
 			}
 		}
 	}else if(!m_reverseDirectionLengthReceived){
