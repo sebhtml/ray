@@ -30,6 +30,47 @@ using namespace std;
 #define SHOW_FUSION
 
 void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int getRank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox,int getSize1,int*m_mode){
+
+	/** read the checkpoint ContigPaths */
+	if(!m_processedCheckpoint){
+		m_processedCheckpoint=true;
+
+		if(m_parameters->hasCheckpoint("ContigPaths")){
+			cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint ContigPaths"<<endl;
+			ifstream f(m_parameters->getCheckpointFile("ContigPaths").c_str());
+	
+			/* delete old stuff */
+			m_ed->m_EXTENSION_identifiers.clear();
+			m_ed->m_EXTENSION_contigs.clear();
+	
+			int theSize=0;
+			f.read((char*)&theSize,sizeof(int));
+	
+			/* write each path with its name and vertices */
+			for(int i=0;i<theSize;i++){
+				uint64_t name=0;
+				int vertices=0;
+				f.read((char*)&name,sizeof(uint64_t));
+				f.read((char*)&vertices,sizeof(int));
+				vector<Kmer> path;
+				for(int j=0;j<vertices;j++){
+					Kmer kmer;
+					kmer.read(&f);
+					path.push_back(kmer);
+				}
+	
+				#ifdef ASSERT
+				assert(vertices!=0);
+				assert(vertices == (int)path.size());
+				#endif
+	
+				m_ed->m_EXTENSION_identifiers.push_back(name);
+				m_ed->m_EXTENSION_contigs.push_back(path);
+			}
+			f.close();
+		}
+	}
+
 	if(!isReady()){
 		return;
 	}
@@ -101,6 +142,7 @@ void FusionData::constructor(int size,int max,int rank,StaticVector*outbox,
 		ExtensionData*ed,SeedingData*seedingData,int*mode,Parameters*parameters){
 	m_timer.constructor();
 	m_parameters=parameters;
+	m_processedCheckpoint=false;
 	m_debugFusionCode=m_parameters->hasOption("-debug-fusions");
 	m_seedingData=seedingData;
 	m_cacheAllocator.constructor(4194304,RAY_MALLOC_TYPE_FUSION_CACHING,m_parameters->showMemoryAllocations());

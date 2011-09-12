@@ -63,7 +63,6 @@ void EdgePurger::work(){
 	}
 
 	if(!m_checkedCheckpoint){
-		cout<<"Checking checkpoint"<<endl;
 		if(m_parameters->hasCheckpoint("GenomeGraph")){
 			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY,m_parameters->getRank());
 			m_outbox->push_back(aMessage);

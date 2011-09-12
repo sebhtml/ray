@@ -1313,8 +1313,10 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		cout<<"cycleStep= "<<m_currentCycleStep<<endl;
 		m_currentCycleStep++;
 
-		if(m_mustStop){
-			cout<<"Must stop."<<endl;
+		/* if we have the checkpoint, we want to jump to the final step now */
+
+		/* the other condition is that we have to stop */
+		if(m_mustStop || m_parameters.hasCheckpoint("ContigPaths")){
 			cout<<"Rank "<<m_parameters.getRank()<<" cycleNumber= "<<m_cycleNumber<<endl;
 			m_timePrinter.printElapsedTime("Merging of redundant contigs");
 			cout<<endl;
