@@ -4,6 +4,9 @@
 
 firstCommit=$(git log|grep ^commit|tail -n1|awk '{print $2}')
 
+totalNumberOfCommits=$(git log --pretty=oneline|wc -l)
+
+
 echo HEAD > sortedTags.txt
 
 git log|grep Author|sort |uniq|sed 's/Author: //g' > authors.txt
@@ -17,6 +20,9 @@ do
 done|sort -n -r|awk '{print $2}' >> sortedTags.txt
 
 numberOfTags=$(cat sortedTags.txt|wc -l)
+
+echo "$numberOfTags tags, $totalNumberOfCommits commits"
+echo ""
 
 for i in $(seq 1 $numberOfTags)
 do
@@ -32,7 +38,7 @@ do
 	currentCommit=$(git show $currentTag|grep ^commit|awk '{print $2}')
 	previousCommit=$(git show $previousTag|grep ^commit|awk '{print $2}')
 
-	numberOfCommits=$(git log --oneline $previousCommit..$currentCommit|wc -l)
+	numberOfCommits=$(git log --pretty=oneline $previousCommit..$currentCommit|wc -l)
 
 	echo "$currentTag        $tagDate        $numberOfCommits commits"
 	for author in $(seq 1 $numberOfAuthors)
