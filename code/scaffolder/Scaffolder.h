@@ -139,7 +139,7 @@ class Scaffolder{
 	void getContigSequence(uint64_t id);
 	void processContig();
 	void processContigPosition();
-	void processVertex(Kmer vertex);
+	void processVertex(Kmer*vertex);
 	void processAnnotations();
 	void processAnnotation();
 	void performSummary();

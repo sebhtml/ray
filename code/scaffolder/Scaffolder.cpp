@@ -19,6 +19,8 @@
 
 */
 
+#define PRINT_RAW_LINK
+
 #include <iostream>
 #include <assembler/ReadFetcher.h>
 #include <scaffolder/Scaffolder.h>
@@ -88,12 +90,16 @@ void Scaffolder::solve(){
 					int n=0;
 					int pos=0;
 					for(vector<int>::iterator m=l->second.begin();m!=l->second.end();m++){
+						/* +0 is average, +1 is the count */
 						if(pos%2==0){
 							sum+=*m;
 							n++;
 						}
 						pos++;
 					}
+					
+					/* we want contig A to reach contig B and 
+						we want contig B to reach contig A */
 					if(n==2){
 						int average=sum/n;
 						f<<"contig-"<<leftContig<<"\t"<<leftStrand<<"\tcontig-"<<rightContig<<"\t"<<rightStrand<<"\t"<<average<<endl;
@@ -502,7 +508,6 @@ void Scaffolder::sendSummary(){
 
 void Scaffolder::performSummary(){
 
-	/* TODO: possibly write the k-mer coverage values to a file */
 	uint64_t sum=0;
 
 	#ifdef ASSERT
@@ -576,7 +581,6 @@ void Scaffolder::performSummary(){
 		fp.close();
 	}
 
-
 	m_summary.clear();
 	m_summaryIterator=0;
 	for(map<uint64_t,map<char,map<uint64_t,map<char,vector<ScaffoldingLink> > > > >::iterator i=
@@ -595,10 +599,14 @@ void Scaffolder::performSummary(){
 					int n=0;
 					for(vector<ScaffoldingLink>::iterator m=l->second.begin();m!=l->second.end();m++){
 						int distance=(*m).getDistance();
-						int coverage=(*m).getCoverage1();
+						int coverage1=(*m).getCoverage1();
+						int coverage2=(*m).getCoverage2();
+
+						int numberOfStandardDeviations=1;
 
 						/* only pick up things that are not repeated */
-						if((mean-3*standardDeviation) <= coverage && coverage <= (mean+3*standardDeviation)){
+						if((mean-numberOfStandardDeviations*standardDeviation) <= coverage1 && coverage1 <= (mean+numberOfStandardDeviations*standardDeviation)
+						  && (mean-numberOfStandardDeviations*standardDeviation) <= coverage2 && coverage2 <= (mean+numberOfStandardDeviations*standardDeviation)){
 							sum+=distance;
 							n++;
 						}
@@ -611,6 +619,7 @@ void Scaffolder::performSummary(){
 
 					int average=sum/n;
 
+					/* this summary information will be sent to MASTER later */
 					vector<uint64_t> entry;
 					entry.push_back(leftContig);
 					entry.push_back(leftStrand);
@@ -639,7 +648,7 @@ void Scaffolder::processContigPosition(){
 	assert(m_parameters!=NULL);
 	#endif
 	if(!m_forwardDone){
-		processVertex(vertex);
+		processVertex(&vertex);
 	}else if(!m_reverseDone){
 		// get the coverage
 		// if < maxCoverage
@@ -661,7 +670,7 @@ void Scaffolder::processContigPosition(){
 	}
 }
 
-void Scaffolder::processVertex(Kmer vertex){
+void Scaffolder::processVertex(Kmer*vertex){
 	// get the coverage
 	// if < maxCoverage
 	// 	get read markers
@@ -676,9 +685,9 @@ void Scaffolder::processVertex(Kmer vertex){
 	if(!m_coverageRequested){
 		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 		int bufferPosition=0;
-		vertex.pack(buffer,&bufferPosition);
-		Message aMessage(buffer,bufferPosition,
-			m_parameters->_vertexRank(&vertex),RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_parameters->getRank());
+		vertex->pack(buffer,&bufferPosition);
+		Message aMessage(buffer,m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT),
+			m_parameters->_vertexRank(vertex),RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,m_parameters->getRank());
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		m_coverageRequested=true;
 		m_coverageReceived=false;
@@ -699,22 +708,40 @@ void Scaffolder::processVertex(Kmer vertex){
 		}
 	}else if(!m_coverageReceived
 		&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		vector<uint64_t>answer;
-		m_virtualCommunicator->getMessageResponseElements(m_workerId,&answer);
+		vector<uint64_t> elements;
+		m_virtualCommunicator->getMessageResponseElements(m_workerId,&elements);
+
 		#ifdef ASSERT
-		assert(0<answer.size());
+		assert(elements.size() > 0);
 		#endif
-		m_receivedCoverage=answer[0];
+
+		uint8_t edges=elements[0];
+		int coverage=elements[1];
+
+		m_receivedCoverage=coverage;
 		m_coverageReceived=true;
 		m_initialisedFetcher=false;
 		
 		/* receive the coverage value at this position */
 		m_vertexCoverageValues.push_back(m_receivedCoverage);
 
+		/* here, make sure that the vertex has exactly 1 parent and 1 child */
+		int parents=vertex->_getIngoingEdges(edges,m_parameters->getWordSize()).size();
+		int children=vertex->_getOutgoingEdges(edges,m_parameters->getWordSize()).size();
+
+		#ifdef SHOW_EDGES
+		cout<<"/ "<<coverage<<" "<<parents<<" "<<children<<endl;
+		#endif
+
+		if(!(parents == 1 && children == 1)){
+			m_forwardDone=true;
+			m_reverseDone=false;
+		}
+
 	}else if(m_coverageReceived){
 		if(m_receivedCoverage<m_parameters->getRepeatCoverage()){
 			if(!m_initialisedFetcher){
-				m_readFetcher.constructor(&vertex,m_outboxAllocator,m_inbox,
+				m_readFetcher.constructor(vertex,m_outboxAllocator,m_inbox,
 				m_outbox,m_parameters,m_virtualCommunicator,m_workerId);
 				m_readAnnotationId=0;
 				m_initialisedFetcher=true;
@@ -842,9 +869,12 @@ void Scaffolder::processAnnotation(){
 		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 		int bufferPosition=0;
 		m_pairedForwardMarker.pack(buffer,&bufferPosition);
-		Message aMessage(buffer,bufferPosition,
-		m_parameters->_vertexRank(&m_pairedForwardMarker),
-		RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION,m_parameters->getRank());
+
+		int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION);
+
+		Message aMessage(buffer,elementsPerQuery,
+			m_parameters->_vertexRank(&m_pairedForwardMarker),
+			RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION,m_parameters->getRank());
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		m_forwardDirectionsRequested=true;
 		m_forwardDirectionsReceived=false;
@@ -857,13 +887,27 @@ void Scaffolder::processAnnotation(){
 		m_pairedForwardHasDirection=response[1];
 		m_pairedForwardDirectionName=response[2];
 		m_pairedForwardDirectionPosition=response[3];
+
+		uint8_t edges=response[4];
+
 		m_forwardDirectionsReceived=true;
 		m_reverseDirectionsRequested=false;
 		m_forwardDirectionLengthRequested=false;
 
+		/* here, make sure that the vertex has exactly 1 parent and 1 child */
+		int parents=m_pairedForwardMarker._getIngoingEdges(edges,m_parameters->getWordSize()).size();
+		int children=m_pairedForwardMarker._getOutgoingEdges(edges,m_parameters->getWordSize()).size();
+
+		#ifdef SHOW_EDGES
+		cout<<"/ "<<m_pairedForwardMarkerCoverage<<" "<<parents<<" "<<children<<endl;
+		#endif
+
+		bool invalidVertex=(!(parents == 1 && children == 1));
+
+		/* the hit is invalid */
 		if((*m_contigNames)[m_contigId]==m_pairedForwardDirectionName
 		||!(m_pairedForwardMarkerCoverage<m_parameters->getRepeatCoverage())
-		|| !m_pairedForwardHasDirection){
+		|| !m_pairedForwardHasDirection || invalidVertex){
 			m_forwardDirectionLengthRequested=true;
 			m_forwardDirectionLengthReceived=true;
 		}
@@ -898,8 +942,8 @@ void Scaffolder::processAnnotation(){
 
 		#ifdef PRINT_RAW_LINK
 		cout<<endl;
-		cout<<"AverageDistance: "<<m_parameters->getLibraryAverageLength(m_pairedReadLibrary)<<endl;
-		cout<<"StandardDeviation: "<<m_parameters->getLibraryStandardDeviation(m_pairedReadLibrary)<<endl;
+		cout<<"AverageDistance: "<<m_parameters->getLibraryMaxAverageLength(m_pairedReadLibrary)<<endl;
+		cout<<"StandardDeviation: "<<m_parameters->getLibraryMaxStandardDeviation(m_pairedReadLibrary)<<endl;
 		cout<<"Path1: "<<(*m_contigNames)[m_contigId]<<endl;
 		cout<<" Length: "<<(*m_contigs)[m_contigId].size()<<endl;
 		cout<<" Position: "<<m_positionOnContig<<endl;
@@ -1036,9 +1080,12 @@ Case 13. (allowed)
 		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 		int bufferPosition=0;
 		m_pairedReverseMarker.pack(buffer,&bufferPosition);
-		Message aMessage(buffer,bufferPosition,
-		m_parameters->_vertexRank(&m_pairedReverseMarker),
-		RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION,m_parameters->getRank());
+
+		int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION);
+
+		Message aMessage(buffer,elementsPerQuery,
+			m_parameters->_vertexRank(&m_pairedReverseMarker),
+			RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION,m_parameters->getRank());
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		m_reverseDirectionsRequested=true;
 		m_reverseDirectionsReceived=false;
@@ -1050,12 +1097,26 @@ Case 13. (allowed)
 		m_pairedReverseHasDirection=response[1];
 		m_pairedReverseDirectionName=response[2];
 		m_pairedReverseDirectionPosition=response[3];
+
+		uint8_t edges=response[4];
+
 		m_reverseDirectionsReceived=true;
 		m_reverseDirectionLengthRequested=false;
 
+		/* here, make sure that the vertex has exactly 1 parent and 1 child */
+		int parents=m_pairedReverseMarker._getIngoingEdges(edges,m_parameters->getWordSize()).size();
+		int children=m_pairedReverseMarker._getOutgoingEdges(edges,m_parameters->getWordSize()).size();
+
+		#ifdef SHOW_EDGES
+		cout<<"/ "<<m_pairedReverseMarkerCoverage<<" "<<parents<<" "<<children<<endl;
+		#endif
+
+		bool invalidVertex=(!(parents == 1 && children == 1));
+
+		/* the hit is invalid */
 		if((*m_contigNames)[m_contigId]==m_pairedReverseDirectionName
 		||!(m_pairedReverseMarkerCoverage<m_parameters->getRepeatCoverage())
-		|| !m_pairedReverseHasDirection){
+		|| !m_pairedReverseHasDirection || invalidVertex){
 			m_reverseDirectionLengthRequested=true;
 			m_reverseDirectionLengthReceived=true;
 		}
@@ -1088,8 +1149,8 @@ Case 13. (allowed)
 	
 		#ifdef PRINT_RAW_LINK
 		cout<<endl;
-		cout<<"AverageDistance: "<<m_parameters->getLibraryAverageLength(m_pairedReadLibrary)<<endl;
-		cout<<"StandardDeviation: "<<m_parameters->getLibraryStandardDeviation(m_pairedReadLibrary)<<endl;
+		cout<<"AverageDistance: "<<m_parameters->getLibraryMaxAverageLength(m_pairedReadLibrary)<<endl;
+		cout<<"StandardDeviation: "<<m_parameters->getLibraryMaxStandardDeviation(m_pairedReadLibrary)<<endl;
 		cout<<"Path1: "<<(*m_contigNames)[m_contigId]<<endl;
 		cout<<" Length: "<<(*m_contigs)[m_contigId].size()<<endl;
 		cout<<" Position: "<<m_positionOnContig<<endl;

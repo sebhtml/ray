@@ -1467,26 +1467,31 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION(Message*messa
 	uint64_t*incoming=(uint64_t*)buffer;
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
-	for(int i=0;i<count;i+=KMER_U64_ARRAY_SIZE){
+	int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION);
+
+	for(int i=0;i<count;i+= elementsPerQuery){
 		Kmer vertex;
 		int pos=i;
 		vertex.unpack(incoming,&pos);
 		Vertex*node=m_subgraph->find(&vertex);
 		int coverage=1;
 		vector<Direction> paths;
+		uint8_t edges=0;
 		if(node!=NULL){
 			paths=m_subgraph->getDirections(&vertex);
 			coverage=node->getCoverage(&vertex);
+			edges=node->getEdges(&vertex);
 		}
-		message2[i*4+0]=coverage;
-		message2[i*4+1]=(paths.size()==1);
+		message2[i+0]=coverage;
+		message2[i+1]=(paths.size()==1);
 		if(paths.size()==1){
-			message2[4*i+2]=paths[0].getWave();
-			message2[4*i+3]=paths[0].getProgression();
+			message2[i+2]=paths[0].getWave();
+			message2[i+3]=paths[0].getProgression();
 		}
+		message2[i+4]=edges;
 	}
 
-	Message aMessage(message2,(count/KMER_U64_ARRAY_SIZE)*4,source,RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION_REPLY,m_rank);
+	Message aMessage(message2,count,source,RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION_REPLY,m_rank);
 	m_outbox->push_back(aMessage);
 }
 

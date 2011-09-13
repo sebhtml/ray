@@ -1440,7 +1440,7 @@ string Parameters::getCheckpointFile(const char*checkpointName){
 }
 
 bool Parameters::hasCheckpoint(const char*checkpointName){
-	cout<<"hasCheckpoint? "<<checkpointName<<endl;
+	//cout<<"hasCheckpoint? "<<checkpointName<<endl;
 
 	if(!readCheckpoints())
 		return false;

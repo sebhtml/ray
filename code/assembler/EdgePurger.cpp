@@ -53,7 +53,7 @@ void EdgePurger::work(){
 	/* master control */
 	if(m_inbox->size()>0&&m_inbox->at(0)->getTag()==RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY){
 		m_masterCountFinished++;
-		cout<<"Receiving RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY"<<endl;
+		//cout<<"Receiving RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY"<<endl;
 		if(m_masterCountFinished==m_parameters->getSize()){
 			(*m_masterMode)=RAY_MASTER_MODE_WRITE_KMERS;
 		}
