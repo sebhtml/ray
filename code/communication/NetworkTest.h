@@ -44,6 +44,14 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class NetworkTest{
+	/* number of words to use for network test */
+	/* a word is 8 bytes */
+	/* MAXIMUM_MESSAGE_SIZE_IN_BYTES is 4000 per default so 
+		numberOfWords must be <= 500 */
+	/* this is only for the network test */
+	/* default is 500 */
+	int m_numberOfWords;
+
 	TimePrinter*m_timePrinter;
 	/** the message inbox */
 	StaticVector*m_inbox;

@@ -51,7 +51,16 @@ void NetworkTest::constructor(int rank,int*masterMode,int*slaveMode,int size,Sta
 	m_sentCurrentTestMessage=false;
 	m_outboxAllocator=outboxAllocator;
 	m_sumOfMicroSeconds=0;
+
+	/* the seed must be different for all MPI ranks */
 	srand(time(NULL)*(1+m_rank));
+
+	/* a word is 8 bytes */
+	/* MAXIMUM_MESSAGE_SIZE_IN_BYTES is 4000 per default so 
+		numberOfWords must be <= 500 */
+	/* this is only for the network test */
+	/* default is 500 */
+	m_numberOfWords=200;
 }
 
 /** call the slave method 
@@ -78,6 +87,11 @@ void NetworkTest::constructor(int rank,int*masterMode,int*slaveMode,int size,Sta
  *
  * */
 void NetworkTest::slaveWork(){
+
+	#ifdef ASSERT
+	assert(m_numberOfWords*sizeof(uint64_t) <= MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	#endif
+
 	if(m_currentTestMessage<m_numberOfTestMessages){
 		if(!m_sentCurrentTestMessage){
 			m_startingTimeSeconds=0;
@@ -85,8 +99,9 @@ void NetworkTest::slaveWork(){
 			getMicroSeconds(&m_startingTimeSeconds,&m_startingTimeMicroseconds);
 			/** send to a random rank */
 			int destination=rand()%m_size;
-			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-			Message aMessage(message,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),destination,RAY_MPI_TAG_TEST_NETWORK_MESSAGE,m_rank);
+
+			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(m_numberOfWords*sizeof(uint64_t));
+			Message aMessage(message,m_numberOfWords,destination,RAY_MPI_TAG_TEST_NETWORK_MESSAGE,m_rank);
 			m_outbox->push_back(aMessage);
 			m_sentCurrentTestMessage=true;
 			//cout<<m_rank<<" sends RAY_MPI_TAG_TEST_NETWORK_MESSAGE to "<<destination<<endl;
@@ -106,7 +121,7 @@ void NetworkTest::slaveWork(){
 
 		averageLatencyInMicroSeconds=m_sumOfMicroSeconds/m_numberOfTestMessages;
 
-		cout<<"Rank "<<m_rank<<": average latency for "<<(*m_name)<<" when requesting a reply for a message of "<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<" bytes is "<<averageLatencyInMicroSeconds<<" microseconds (10^-6 seconds)"<<endl;
+		cout<<"Rank "<<m_rank<<": average latency for "<<(*m_name)<<" when requesting a reply for a message of "<<sizeof(uint64_t)*m_numberOfWords<<" bytes is "<<averageLatencyInMicroSeconds<<" microseconds (10^-6 seconds)"<<endl;
 
 		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 		message[0]=averageLatencyInMicroSeconds;
@@ -143,7 +158,7 @@ void NetworkTest::masterWork(){
 		file<<m_parameters->getPrefix();
 		file<<"NetworkTest.txt";
 		ofstream f(file.str().c_str());
-		f<<"# average latency in microseconds (10^-6 seconds) when requesting a reply for a message of "<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<" bytes"<<endl;
+		f<<"# average latency in microseconds (10^-6 seconds) when requesting a reply for a message of "<<sizeof(uint64_t)*m_numberOfWords<<" bytes"<<endl;
 		f<<"# Message passing interface rank\tName\tLatency in microseconds"<<endl;
 		for(int i=0;i<m_size;i++){
 			int latency=m_latencies[i];
