@@ -29,6 +29,7 @@
 #include <memory/RingAllocator.h>
 #include <structures/StaticVector.h>
 
+
 /**
  * software layer to handler messages
  * it uses persistant communication
@@ -50,10 +51,15 @@ class MessagesHandler{
 
 	string m_processorName;
 
+	/** things for persistent communication */
+	#ifdef USE_MPI_PERSISTENT_COMMUNICATION
 	int m_ringSize;
 	int m_head;
 	MPI_Request*m_ring;
 	uint8_t*m_buffers;
+	#endif
+
+
 	int m_rank;
 	int m_size;
 

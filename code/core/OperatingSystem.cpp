@@ -251,6 +251,13 @@ void showRayVersionShort(){
 	cout<<"License: GNU General Public License"<<endl;
 
 	cout<<endl;
+	cout<<"USE_MPI_PERSISTENT_COMMUNICATION: ";
+	#ifdef USE_MPI_PERSISTENT_COMMUNICATION
+	cout<<"y"<<endl;
+	#else
+	cout<<"n"<<endl;
+	#endif
+
 	cout<<"MAXKMERLENGTH: "<<MAXKMERLENGTH<<endl;
 	cout<<"KMER_U64_ARRAY_SIZE: "<<KMER_U64_ARRAY_SIZE<<endl;
 

@@ -30,6 +30,7 @@
 #include <string.h>
 using namespace std;
 
+
 /*
  * send messages,
  */
@@ -91,6 +92,7 @@ Moreover, at the end it is very easy to MPI_Cancel all the receives not yet matc
     george. 
  */
 void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator,int destination){
+	#ifdef USE_MPI_PERSISTENT_COMMUNICATION
 	int flag;
 	MPI_Status status;
 	MPI_Test(m_ring+m_head,&flag,&status);
@@ -123,10 +125,34 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 		/** update statistics */
 		m_receivedMessages++;
 	}
+	#else
+
+	/* use MPI_Iprobe */
+	int flag;
+	MPI_Status status;
+	MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
+
+	/* read at most one message */
+	if(flag){
+		MPI_Datatype datatype=MPI_UNSIGNED_LONG_LONG;
+		int sizeOfType=8;
+		int tag=status.MPI_TAG;
+		int source=status.MPI_SOURCE;
+		int count;
+		MPI_Get_count(&status,datatype,&count);
+	
+		uint64_t*incoming=(uint64_t*)inboxAllocator->allocate(count*sizeOfType);
+		MPI_Recv(incoming,count,datatype,source,tag,MPI_COMM_WORLD,&status);
+		Message aMessage(incoming,count,destination,tag,source);
+		inbox->push_back(aMessage);
+	}
+
+	#endif
 }
 
 
 void MessagesHandler::initialiseMembers(){
+	#ifdef USE_MPI_PERSISTENT_COMMUNICATION
 	// the ring itself  contain requests ready to receive messages
 	m_ringSize=m_size+16;
 
@@ -141,9 +167,11 @@ void MessagesHandler::initialiseMembers(){
 			MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,m_ring+i);
 		MPI_Start(m_ring+i);
 	}
+	#endif
 }
 
 void MessagesHandler::freeLeftovers(){
+	#ifdef USE_MPI_PERSISTENT_COMMUNICATION
 	for(int i=0;i<m_ringSize;i++){
 		MPI_Cancel(m_ring+i);
 		MPI_Request_free(m_ring+i);
@@ -153,6 +181,8 @@ void MessagesHandler::freeLeftovers(){
 	__Free(m_buffers,RAY_MALLOC_TYPE_PERSISTENT_MESSAGE_BUFFERS,false);
 	m_buffers=NULL;
 	__Free(m_messageStatistics,RAY_MALLOC_TYPE_MESSAGE_STATISTICS,false);
+	#endif
+
 	m_messageStatistics=NULL;
 }
 
@@ -163,6 +193,7 @@ void MessagesHandler::constructor(int*argc,char***argv){
 	MPI_Init(argc,argv);
 	char serverName[1000];
 	int len;
+
 	/** initialize the message passing interface stack */
 	MPI_Get_processor_name(serverName,&len);
 	MPI_Comm_rank(MPI_COMM_WORLD,&m_rank);
