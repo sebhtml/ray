@@ -31,6 +31,7 @@
 #include <assembler/ReadFetcher.h>
 #include <sstream>
 #include <scaffolder/ScaffoldingLink.h>
+#include <scaffolder/SummarizedLink.h>
 using namespace std;
 
 /**
@@ -67,10 +68,10 @@ class Scaffolder{
 	bool m_sentContigMeta;
 	vector<uint64_t> m_masterContigs;
 	vector<int> m_masterLengths;
-	vector<vector<uint64_t> >m_masterLinks;
+	vector<SummarizedLink>m_masterLinks;
 	int m_summaryIterator;
 	bool m_summarySent;
-	vector<vector<uint64_t> >m_summary;
+	vector<SummarizedLink>m_summary;
 	bool m_summaryPerformed;
 	bool m_entrySent;
 	map<uint64_t,map<char,map<uint64_t,map<char,vector<ScaffoldingLink> > > > > m_scaffoldingSummary;
@@ -168,7 +169,7 @@ public:
 		int*slaveMode,VirtualCommunicator*vc);
 	void run();
 	void setContigPaths(vector<uint64_t>*names,vector<vector<Kmer> >*paths);
-	void addMasterLink(vector<uint64_t>*link);
+	void addMasterLink(SummarizedLink*link);
 	void solve();
 	void addMasterContig(uint64_t name,int length);
 	void writeScaffolds();

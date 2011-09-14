@@ -90,13 +90,8 @@ void MessageProcessor::call_RAY_MPI_TAG_SCAFFOLDING_LINKS(Message*message){
 	}
 
 	//cout<<__func__<<" "<<leftContig<<" "<<leftStrand<<" "<<rightContig<<" "<<rightStrand<<" "<<average<<" "<<number<<endl;
-	vector<uint64_t> link;
-	link.push_back(leftContig);
-	link.push_back(leftStrand);
-	link.push_back(rightContig);
-	link.push_back(rightStrand);
-	link.push_back(average);
-	link.push_back(number);
+	
+	SummarizedLink link(leftContig,leftStrand,rightContig,rightStrand,average,number);
 	m_scaffolder->addMasterLink(&link);
 
 	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
@@ -699,6 +694,7 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER(Mes
 
 void MessageProcessor::call_RAY_MPI_TAG_TEST_NETWORK_REPLY(Message*message){}
 
+/* we reply with an empty message */
 void MessageProcessor::call_RAY_MPI_TAG_TEST_NETWORK_MESSAGE(Message*message){
 	Message aMessage(NULL,0,message->getSource(),RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY,m_rank);
 	m_outbox->push_back(aMessage);

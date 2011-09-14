@@ -33,7 +33,7 @@
 #include <math.h> /* for sqrt */
 using namespace std;
 
-void Scaffolder::addMasterLink(vector<uint64_t>*a){
+void Scaffolder::addMasterLink(SummarizedLink*a){
 	m_masterLinks.push_back(*a);
 }
 
@@ -50,16 +50,16 @@ void Scaffolder::solve(){
  *  However, it reduces significantly the number of scaffolds.
  *  Therefore, its usage is warranted.
  */
-	int minimumNumberOfRawLinks=0; /* 0 means it is not used at all */
+	int minimumNumberOfRawLinks=3; 
 
 	map<uint64_t,map<char,map<uint64_t,map<char,vector<int> > > > > keys;
 	for(int i=0;i<(int)m_masterLinks.size();i++){
-		uint64_t leftContig=m_masterLinks[i][0];
-		char leftStrand=m_masterLinks[i][1];
-		uint64_t rightContig=m_masterLinks[i][2];
-		char rightStrand=m_masterLinks[i][3];
-		int average=m_masterLinks[i][4];
-		int number=m_masterLinks[i][5];
+		uint64_t leftContig=m_masterLinks[i].getLeftContig();
+		char leftStrand=m_masterLinks[i].getLeftStrand();
+		uint64_t rightContig=m_masterLinks[i].getRightContig();
+		char rightStrand=m_masterLinks[i].getRightStrand();
+		int average=m_masterLinks[i].getAverage();
+		int number=m_masterLinks[i].getCount();
 
 		if(number<minimumNumberOfRawLinks)
 			continue;
@@ -89,11 +89,20 @@ void Scaffolder::solve(){
 					int sum=0;
 					int n=0;
 					int pos=0;
+
+					vector<int> averageValues;
+					vector<int> countValues;
+
 					for(vector<int>::iterator m=l->second.begin();m!=l->second.end();m++){
 						/* +0 is average, +1 is the count */
 						if(pos%2==0){
-							sum+=*m;
+							int average=*m;
+							sum+=average;
 							n++;
+							averageValues.push_back(average);
+						}else if(pos%2==1){
+							int count=*m;
+							countValues.push_back(count);
 						}
 						pos++;
 					}
@@ -102,7 +111,22 @@ void Scaffolder::solve(){
 						we want contig B to reach contig A */
 					if(n==2){
 						int average=sum/n;
-						f<<"contig-"<<leftContig<<"\t"<<leftStrand<<"\tcontig-"<<rightContig<<"\t"<<rightStrand<<"\t"<<average<<endl;
+						f<<"contig-"<<leftContig<<"\t"<<leftStrand<<"\tcontig-"<<rightContig<<"\t"<<rightStrand<<"\t"<<average;
+
+						#ifdef ASSERT
+						assert(averageValues.size() == countValues.size());
+						#endif
+
+						f<<"	"<<averageValues.size();
+						for(int summarizedLinkIterator=0;
+							summarizedLinkIterator<(int)averageValues.size();
+							summarizedLinkIterator++){
+							f<<"\t"<<summarizedLinkIterator;
+							f<<"	"<<averageValues[summarizedLinkIterator];
+							f<<"	"<<countValues[summarizedLinkIterator];
+						}
+						f<<endl;
+
 						vector<uint64_t> megaLink;
 						megaLink.push_back(leftContig);
 						megaLink.push_back(leftStrand);
@@ -486,10 +510,11 @@ void Scaffolder::sendSummary(){
 	if(m_summaryIterator<(int)m_summary.size()){
 		if(!m_entrySent){
 			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-			for(int i=0;i<6;i++){
-				message[i]=m_summary[m_summaryIterator][i];
-			}
-			Message aMessage(message,6,
+
+			int i=0;
+			m_summary[m_summaryIterator].pack(message,&i);
+
+			Message aMessage(message,i,
 				MASTER_RANK,RAY_MPI_TAG_SCAFFOLDING_LINKS,m_parameters->getRank());
 			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 			m_entrySent=true;
@@ -620,13 +645,7 @@ void Scaffolder::performSummary(){
 					int average=sum/n;
 
 					/* this summary information will be sent to MASTER later */
-					vector<uint64_t> entry;
-					entry.push_back(leftContig);
-					entry.push_back(leftStrand);
-					entry.push_back(rightContig);
-					entry.push_back(rightStrand);
-					entry.push_back(average);
-					entry.push_back(n);
+					SummarizedLink entry(leftContig,leftStrand,rightContig,rightStrand,average,n);
 					m_summary.push_back(entry);
 				}
 			}
@@ -733,7 +752,13 @@ void Scaffolder::processVertex(Kmer*vertex){
 		cout<<"/ "<<coverage<<" "<<parents<<" "<<children<<endl;
 		#endif
 
-		if(!(parents == 1 && children == 1)){
+		bool invalidVertex=(!(parents == 1 && children == 1));
+
+		// don't judge a vertex by its parents and children
+		// TODO: dump invalid parents and children by using their coverage (see SeedWorker.cpp)
+		invalidVertex=false;
+
+		if(invalidVertex){
 			m_forwardDone=true;
 			m_reverseDone=false;
 		}
@@ -903,6 +928,10 @@ void Scaffolder::processAnnotation(){
 		#endif
 
 		bool invalidVertex=(!(parents == 1 && children == 1));
+
+		// don't judge a vertex by its parents and children
+		// TODO: dump invalid parents and children by using their coverage (see SeedWorker.cpp)
+		invalidVertex=false;
 
 		/* the hit is invalid */
 		if((*m_contigNames)[m_contigId]==m_pairedForwardDirectionName
@@ -1112,6 +1141,10 @@ Case 13. (allowed)
 		#endif
 
 		bool invalidVertex=(!(parents == 1 && children == 1));
+	
+		// don't judge a vertex by its parents and children
+		// TODO: dump invalid parents and children by using their coverage (see SeedWorker.cpp)
+		invalidVertex=false;
 
 		/* the hit is invalid */
 		if((*m_contigNames)[m_contigId]==m_pairedReverseDirectionName
