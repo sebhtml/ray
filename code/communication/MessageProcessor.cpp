@@ -66,12 +66,17 @@ void MessageProcessor::processMessage(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_SCAFFOLDING_LINKS(Message*message){
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
-	uint64_t leftContig=incoming[0];
-	char leftStrand=incoming[1];
-	uint64_t rightContig=incoming[2];
-	char rightStrand=incoming[3];
-	int average=incoming[4];
-	int number=incoming[5];
+
+	int position=0;
+
+	uint64_t leftContig=incoming[position++];
+	char leftStrand=incoming[position++];
+	uint64_t rightContig=incoming[position++];
+	char rightStrand=incoming[position++];
+	int number=incoming[position++];
+	int average=incoming[position++];
+	int standardDeviation=incoming[position++];
+
 	if(rightContig<leftContig){
 		uint64_t t=leftContig;
 		leftContig=rightContig;
@@ -91,7 +96,7 @@ void MessageProcessor::call_RAY_MPI_TAG_SCAFFOLDING_LINKS(Message*message){
 
 	//cout<<__func__<<" "<<leftContig<<" "<<leftStrand<<" "<<rightContig<<" "<<rightStrand<<" "<<average<<" "<<number<<endl;
 	
-	SummarizedLink link(leftContig,leftStrand,rightContig,rightStrand,average,number);
+	SummarizedLink link(leftContig,leftStrand,rightContig,rightStrand,average,number,standardDeviation);
 	m_scaffolder->addMasterLink(&link);
 
 	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);

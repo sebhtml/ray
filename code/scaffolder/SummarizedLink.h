@@ -31,9 +31,11 @@ class SummarizedLink{
 	char m_leftStrand;
 	char m_rightStrand;
 	int m_average;
+	int m_standardDeviation;
 public:
-	SummarizedLink(uint64_t leftContig,char leftStrand,uint64_t rightContig,char rightStrand,int average,int count);
+	SummarizedLink(uint64_t leftContig,char leftStrand,uint64_t rightContig,char rightStrand,int average,int count,int standardDeviation);
 	SummarizedLink();
+	int getStandardDeviation();
 	uint64_t getLeftContig();
 	char getLeftStrand();
 	uint64_t getRightContig();

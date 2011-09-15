@@ -21,7 +21,9 @@
 
 #include <scaffolder/SummarizedLink.h>
 
-SummarizedLink::SummarizedLink(uint64_t leftContig,char leftStrand,uint64_t rightContig,char rightStrand,int average,int count){
+SummarizedLink::SummarizedLink(uint64_t leftContig,char leftStrand,uint64_t rightContig,char rightStrand,int average,int count,
+	int standardDeviation){
+	m_standardDeviation=standardDeviation;
 	m_leftContig=leftContig;
 	m_leftStrand=leftStrand;
 	m_rightContig=rightContig;
@@ -59,8 +61,9 @@ void SummarizedLink::pack(uint64_t*buffer,int*position){
 	buffer[(*position)++]=getLeftStrand();
 	buffer[(*position)++]=getRightContig();
 	buffer[(*position)++]=getRightStrand();
-	buffer[(*position)++]=getAverage();
 	buffer[(*position)++]=getCount();
+	buffer[(*position)++]=getAverage();
+	buffer[(*position)++]=getStandardDeviation();
 }
 
 void SummarizedLink::unpack(uint64_t*buffer,int*position){
@@ -68,9 +71,14 @@ void SummarizedLink::unpack(uint64_t*buffer,int*position){
 	m_leftStrand=buffer[(*position)++];
 	m_rightContig=buffer[(*position)++];
 	m_rightStrand=buffer[(*position)++];
-	m_average=buffer[(*position)++];
 	m_count=buffer[(*position)++];
+	m_average=buffer[(*position)++];
+	m_standardDeviation=buffer[(*position)++];
 }
 
 SummarizedLink::SummarizedLink(){
+}
+
+int SummarizedLink::getStandardDeviation(){
+	return m_standardDeviation;
 }

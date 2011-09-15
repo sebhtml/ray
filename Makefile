@@ -169,6 +169,7 @@ obj-$(HAVE_LIBZ) += code/format/FastqGzLoader.o
 #core
 obj-y += code/core/slave_modes.o code/core/Machine.o code/core/Parameters.o code/core/common_functions.o
 obj-y += code/core/OperatingSystem.o
+obj-y += code/core/statistics.o
 
 #compression
 

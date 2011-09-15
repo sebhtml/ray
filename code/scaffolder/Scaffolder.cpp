@@ -29,6 +29,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <core/statistics.h>
 #include <assert.h>
 #include <math.h> /* for sqrt */
 using namespace std;
@@ -60,12 +61,14 @@ void Scaffolder::solve(){
 		char rightStrand=m_masterLinks[i].getRightStrand();
 		int average=m_masterLinks[i].getAverage();
 		int number=m_masterLinks[i].getCount();
+		int standardDeviation=m_masterLinks[i].getStandardDeviation();
 
 		if(number<minimumNumberOfRawLinks)
 			continue;
 
-		keys[leftContig][leftStrand][rightContig][rightStrand].push_back(average);
 		keys[leftContig][leftStrand][rightContig][rightStrand].push_back(number);
+		keys[leftContig][leftStrand][rightContig][rightStrand].push_back(average);
+		keys[leftContig][leftStrand][rightContig][rightStrand].push_back(standardDeviation);
 	}
 
 	map<uint64_t,map<uint64_t,int> > validCounts;
@@ -90,19 +93,23 @@ void Scaffolder::solve(){
 					int n=0;
 					int pos=0;
 
-					vector<int> averageValues;
 					vector<int> countValues;
-
+					vector<int> averageValues;
+					vector<int> standardDeviationValues;
+	
 					for(vector<int>::iterator m=l->second.begin();m!=l->second.end();m++){
 						/* +0 is average, +1 is the count */
-						if(pos%2==0){
+						if(pos%3==1){
 							int average=*m;
 							sum+=average;
 							n++;
 							averageValues.push_back(average);
-						}else if(pos%2==1){
+						}else if(pos%3==0){
 							int count=*m;
 							countValues.push_back(count);
+						}else if(pos%3==2){
+							int standardDeviation=*m;
+							standardDeviationValues.push_back(standardDeviation);
 						}
 						pos++;
 					}
@@ -115,6 +122,7 @@ void Scaffolder::solve(){
 
 						#ifdef ASSERT
 						assert(averageValues.size() == countValues.size());
+						assert(standardDeviationValues.size() == countValues.size());
 						#endif
 
 						f<<"	"<<averageValues.size();
@@ -122,8 +130,9 @@ void Scaffolder::solve(){
 							summarizedLinkIterator<(int)averageValues.size();
 							summarizedLinkIterator++){
 							f<<"\t"<<summarizedLinkIterator;
-							f<<"	"<<averageValues[summarizedLinkIterator];
 							f<<"	"<<countValues[summarizedLinkIterator];
+							f<<"	"<<averageValues[summarizedLinkIterator];
+							f<<"	"<<standardDeviationValues[summarizedLinkIterator];
 						}
 						f<<endl;
 
@@ -620,8 +629,9 @@ void Scaffolder::performSummary(){
 				for(map<char,vector<ScaffoldingLink> >::iterator l=k->second.begin();
 					l!=k->second.end();l++){
 					char rightStrand=l->first;
-					int sum=0;
-					int n=0;
+
+					vector<int> veryRawDistances;
+
 					for(vector<ScaffoldingLink>::iterator m=l->second.begin();m!=l->second.end();m++){
 						int distance=(*m).getDistance();
 						int coverage1=(*m).getCoverage1();
@@ -632,20 +642,21 @@ void Scaffolder::performSummary(){
 						/* only pick up things that are not repeated */
 						if((mean-numberOfStandardDeviations*standardDeviation) <= coverage1 && coverage1 <= (mean+numberOfStandardDeviations*standardDeviation)
 						  && (mean-numberOfStandardDeviations*standardDeviation) <= coverage2 && coverage2 <= (mean+numberOfStandardDeviations*standardDeviation)){
-							sum+=distance;
-							n++;
+							veryRawDistances.push_back(distance);
 						}
 					}
 
+					int count=veryRawDistances.size();
+
 					/* no links are valid */
-					if(n==0){
+					if(count == 0){
 						continue;
 					}
 
-					int average=sum/n;
-
+					int averageValue=getAverage(&veryRawDistances);
+					int standardDeviationValue=getStandardDeviation(&veryRawDistances);
 					/* this summary information will be sent to MASTER later */
-					SummarizedLink entry(leftContig,leftStrand,rightContig,rightStrand,average,n);
+					SummarizedLink entry(leftContig,leftStrand,rightContig,rightStrand,averageValue,count,standardDeviationValue);
 					m_summary.push_back(entry);
 				}
 			}
