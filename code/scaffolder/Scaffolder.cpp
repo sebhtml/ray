@@ -28,6 +28,9 @@
 #include <algorithm> /* for sort */
 #include <vector>
 #include <fstream>
+#include <scaffolder/ScaffoldingVertex.h>
+#include <scaffolder/ScaffoldingEdge.h>
+#include <scaffolder/ScaffoldingAlgorithm.h>
 #include <sstream>
 #include <core/statistics.h>
 #include <assert.h>
@@ -44,7 +47,6 @@ void Scaffolder::addMasterContig(uint64_t name,int length){
 }
 
 void Scaffolder::solve(){
-	vector<vector<uint64_t> > megaLinks;
 
 /*
  *  The value of the minimum number of raw links is completely arbitrary.
@@ -71,11 +73,14 @@ void Scaffolder::solve(){
 		keys[leftContig][leftStrand][rightContig][rightStrand].push_back(standardDeviation);
 	}
 
-	map<uint64_t,map<uint64_t,int> > validCounts;
 
 	ostringstream linkFile;
 	linkFile<<m_parameters->getPrefix()<<"ScaffoldLinks.txt";
 	ofstream f(linkFile.str().c_str());
+
+	/* Prototype */
+	vector<ScaffoldingVertex> scaffoldingVertices;
+	vector<ScaffoldingEdge> scaffoldingEdges;
 
 	for(map<uint64_t,map<char,map<uint64_t,map<char,vector<int> > > > >::iterator i=
 		keys.begin();i!=keys.end();i++){
@@ -136,61 +141,17 @@ void Scaffolder::solve(){
 						}
 						f<<endl;
 
-						vector<uint64_t> megaLink;
-						megaLink.push_back(leftContig);
-						megaLink.push_back(leftStrand);
-						megaLink.push_back(rightContig);
-						megaLink.push_back(rightStrand);
-						megaLink.push_back(average);
-						megaLinks.push_back(megaLink);
-						validCounts[leftContig][rightContig]++;
-						validCounts[rightContig][leftContig]++;
+	
+						ScaffoldingEdge scaffoldingEdge(leftContig,leftStrand,rightContig,rightStrand,average,averageValues[0],countValues[0],standardDeviationValues[0],
+averageValues[1],countValues[1],standardDeviationValues[1]);
+
+						scaffoldingEdges.push_back(scaffoldingEdge);
 					}
 				}
 			}
 		}
 	}
 	f.close();
-	
-	// create the graph
-	set<uint64_t> vertices;
-	map<uint64_t,map<char,vector<vector<uint64_t> > > > parents;
-	map<uint64_t,map<char,vector<vector<uint64_t> > > > children;
-	for(int i=0;i<(int)megaLinks.size();i++){
-		uint64_t leftContig=megaLinks[i][0];
-		char leftStrand=megaLinks[i][1];
-		uint64_t rightContig=megaLinks[i][2];
-		char rightStrand=megaLinks[i][3];
-		int distance=megaLinks[i][4];
-		char otherLeftStrand='F';
-		vertices.insert(leftContig);
-		vertices.insert(rightContig);
-		if(leftStrand=='F')
-			otherLeftStrand='R';
-		char otherRightStrand='F';
-		if(rightStrand=='F')
-			otherRightStrand='R';
-		children[leftContig][leftStrand].push_back(megaLinks[i]);
-		parents[rightContig][rightStrand].push_back(megaLinks[i]);
-		vector<uint64_t> reverseLink;
-		reverseLink.push_back(rightContig);
-		reverseLink.push_back(otherRightStrand);
-		reverseLink.push_back(leftContig);
-		reverseLink.push_back(otherLeftStrand);
-		reverseLink.push_back(distance);
-		children[rightContig][otherRightStrand].push_back(reverseLink);
-		parents[leftContig][otherLeftStrand].push_back(reverseLink);
-	}
-
-	// add colors to the graph
-	map<uint64_t,int> colors;
-	map<int,vector<uint64_t> > colorMap;
-	int i=0;
-	for(set<uint64_t>::iterator j=vertices.begin();j!=vertices.end();j++){
-		colors[*j]=i;
-		colorMap[i].push_back(*j);
-		i++;
-	}
 	
 	// write contig list
 	ostringstream contigList;
@@ -200,72 +161,16 @@ void Scaffolder::solve(){
 		int length=m_masterLengths[i]+m_parameters->getWordSize()-1;
 		f2<<"contig-"<<m_masterContigs[i]<<"\t"<<length<<endl;
 		m_allContigLengths.push_back(length);
+		ScaffoldingVertex scaffoldingVertex(m_masterContigs[i],length);
+		scaffoldingVertices.push_back(scaffoldingVertex);
 	}
 	f2.close();
 
-	// do some color merging.
-	for(set<uint64_t>::iterator j=vertices.begin();j!=vertices.end();j++){
-		uint64_t vertex=*j;
-		char state='F';
-		if(children.count(vertex)>0&&children[vertex].count(state)>0
-			&&children[vertex][state].size()==1){
-			uint64_t childVertex=children[vertex][state][0][2];
-			char childState=children[vertex][state][0][3];
-			if(parents[childVertex][childState].size()==1
-			&&validCounts[vertex][childVertex]==1){
-				int currentColor=colors[vertex];
-				int childColor=colors[childVertex];
-				if(currentColor!=childColor){
-					for(int i=0;i<(int)colorMap[childColor].size();i++){
-						uint64_t otherVertex=colorMap[childColor][i];
-						colors[otherVertex]=currentColor;
-						colorMap[currentColor].push_back(otherVertex);
-					}
-					colorMap.erase(childColor);
-				}
-			}
-		}
-		state='R';
-		if(children.count(vertex)>0&&children[vertex].count(state)>0
-			&&children[vertex][state].size()==1){
-			uint64_t childVertex=children[vertex][state][0][2];
-			char childState=children[vertex][state][0][3];
-			if(parents[childVertex][childState].size()==1
-			&& validCounts[vertex][childVertex]==1){
-				int currentColor=colors[vertex];
-				int childColor=colors[childVertex];
-				if(currentColor!=childColor){
-					for(int i=0;i<(int)colorMap[childColor].size();i++){
-						uint64_t otherVertex=colorMap[childColor][i];
-						colors[otherVertex]=currentColor;
-						colorMap[currentColor].push_back(otherVertex);
-					}
-					colorMap.erase(childColor);
-				}
-			}
-		}
-	}
-
-	// extract scaffolds
-	set<int>completedColours;
-	for(set<uint64_t>::iterator j=vertices.begin();j!=vertices.end();j++){
-		uint64_t vertex=*j;
-		extractScaffolds('F',&colors,vertex,&parents,&children,&completedColours);
-		extractScaffolds('R',&colors,vertex,&parents,&children,&completedColours);
-	}
-
-	// add unscaffolded stuff.
-	for(int i=0;i<(int)m_masterContigs.size();i++){
-		uint64_t contig=m_masterContigs[i];
-		if(colors.count(contig)==0){
-			vector<uint64_t> contigs;
-			vector<char> strands;
-			contigs.push_back(m_masterContigs[i]);
-			strands.push_back('F');
-			m_scaffoldContigs.push_back(contigs);
-			m_scaffoldStrands.push_back(strands);
-		}
-	}
+	/* run the greedy solver */
+	ScaffoldingAlgorithm solver;
+	solver.setVertices(&scaffoldingVertices);
+	solver.setEdges(&scaffoldingEdges);
+	solver.solve(&m_scaffoldContigs,&m_scaffoldStrands,&m_scaffoldGaps);
 
 	for(int i=0;i<(int)m_masterLengths.size();i++){
 		m_contigLengths[m_masterContigs[i]]=m_masterLengths[i];
@@ -383,76 +288,6 @@ void Scaffolder::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocato
 	m_parameters=parameters;
 	m_initialised=false;
 	m_workerId=0;
-}
-
-void Scaffolder::extractScaffolds(char state,map<uint64_t,int>*colors,uint64_t vertex,
-	map<uint64_t,map<char,vector<vector<uint64_t> > > >*parents,
-	map<uint64_t,map<char,vector<vector<uint64_t> > > >*children,set<int>*completedColours){
-	vector<uint64_t> contigs;
-	vector<char> strands;
-	vector<int> gaps;
-	bool skip=false;
-	int currentColor=(*colors)[vertex];
-	if((*completedColours).count(currentColor)>0)
-		return;
-
-	if((*parents).count(vertex)>0&&(*parents)[vertex].count(state)>0){
-		for(int i=0;i<(int)(*parents)[vertex][state].size();i++){
-			#ifdef ASSERT
-			assert(0<(*parents)[vertex][state][i].size());
-			#endif
-			uint64_t parent=(*parents)[vertex][state][i][0];
-			int parentColor=(*colors)[parent];
-			if(parentColor==currentColor){
-				skip=true;
-				break;
-			}
-		}
-	}
-	if(skip)
-		return;
-
-	(*completedColours).insert(currentColor);
-	bool done=false;
-	while(!done){
-		contigs.push_back(vertex);
-		strands.push_back(state);
-		if((*children).count(vertex)>0&&(*children)[vertex].count(state)>0){
-			bool found=false;
-			for(int i=0;i<(int)(*children)[vertex][state].size();i++){
-				#ifdef ASSERT
-				assert(2<(*children)[vertex][state][i].size());
-				#endif
-				uint64_t childVertex=(*children)[vertex][state][i][2];
-				int childColor=(*colors)[childVertex];
-				if(childColor==currentColor){
-					#ifdef ASSERT
-					assert(3<(*children)[vertex][state][i].size());
-					#endif
-					char childState=(*children)[vertex][state][i][3];
-					#ifdef ASSERT
-					assert(4<(*children)[vertex][state][i].size());
-					#endif
-					int gap=(*children)[vertex][state][i][4];
-					gaps.push_back(gap);
-
-					vertex=childVertex;
-					state=childState;
-					found=true;
-					break;
-				}
-			}
-			if(!found){
-				done=true;
-			}
-		}else{
-			done=true;
-		}
-	}
-	m_scaffoldContigs.push_back(contigs);
-	m_scaffoldStrands.push_back(strands);
-	m_scaffoldGaps.push_back(gaps);
-	return;
 }
 
 void Scaffolder::run(){

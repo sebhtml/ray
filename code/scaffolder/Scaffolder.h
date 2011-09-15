@@ -64,6 +64,7 @@ class Scaffolder{
 	vector<vector<uint64_t> > m_scaffoldContigs;
 	vector<vector<char> >m_scaffoldStrands;
 	vector<vector<int> >m_scaffoldGaps;
+
 	bool m_sentContigInfo;
 	bool m_sentContigMeta;
 	vector<uint64_t> m_masterContigs;

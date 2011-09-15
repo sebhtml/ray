@@ -191,6 +191,9 @@ code/structures/StaticVector.o code/structures/Vertex.o code/structures/BloomFil
 obj-y += code/scaffolder/Scaffolder.o 
 obj-y += code/scaffolder/ScaffoldingLink.o
 obj-y += code/scaffolder/SummarizedLink.o
+obj-y += code/scaffolder/ScaffoldingAlgorithm.o
+obj-y += code/scaffolder/ScaffoldingVertex.o
+obj-y += code/scaffolder/ScaffoldingEdge.o
 
 obj-y += code/pairs/LibraryPeakFinder.o
 
