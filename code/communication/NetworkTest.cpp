@@ -60,7 +60,7 @@ void NetworkTest::constructor(int rank,int*masterMode,int*slaveMode,int size,Sta
 		numberOfWords must be <= 500 */
 	/* this is only for the network test */
 	/* default is 500 */
-	m_numberOfWords=200;
+	m_numberOfWords=500;
 }
 
 /** call the slave method 
