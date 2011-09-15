@@ -850,7 +850,8 @@ void Scaffolder::processAnnotation(){
 		if(m_pairedForwardDirectionPosition>m_pairedForwardDirectionLength-range)
 			path2IsRight=true;
 
-		if((path1IsLeft&&path1IsRight)||(path2IsLeft&&path2IsRight))
+		/* don't try to solve the problem if both paths allow both sides */
+		if((path1IsLeft&&path1IsRight)&&(path2IsLeft&&path2IsRight))
 			return;
 /*
 Case 6. (allowed)
@@ -1061,7 +1062,8 @@ Case 13. (allowed)
 		if(m_pairedReverseDirectionPosition>m_pairedReverseDirectionLength-range)
 			path2IsRight=true;
 
-		if((path1IsLeft&&path1IsRight)||(path2IsLeft&&path2IsRight))
+		/* don't try to solve the problem if both paths allow both sides */
+		if((path1IsLeft&&path1IsRight)&&(path2IsLeft&&path2IsRight))
 			return;
 
 /*
