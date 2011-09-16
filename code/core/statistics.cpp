@@ -20,6 +20,7 @@
 
 #include <core/statistics.h>
 #include <math.h> /* for sqrt */
+#include <stdint.h>
 
 int getAverage(vector<int>*values){
 	int i=0;
@@ -39,14 +40,14 @@ int getStandardDeviation(vector<int>*x){
 	int i=0;
 
 	int averageValue=getAverage(x);
-	int sum=0;
+	uint64_t sum=0;
 
 	int n=x->size();
 
 	while(i<n){
 		int diff=(x->at(i)-averageValue);
 		sum+=diff*diff;
-		i+=1;
+		i++;
 	}
 
 	int standardDeviation=(int)sqrt((sum+0.0)/n);

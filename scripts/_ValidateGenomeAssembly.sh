@@ -24,8 +24,8 @@ mummer-validate.rb $reference  $assembly500 $mummerFile &> mummer-validate.rb.lo
 
 scaffoldsFile=$prefix"Scaffolds.fasta"
 scaffolds500=$scaffoldsFile".$minimumLength.fasta"
-ValidateScaffolds.py $prefix > $prefix.ScaffoldValidation.txt
-numberOfIncorrectScaffolds=$(cat $prefix.ScaffoldValidation.txt|tail -n1)
+ValidateScaffolds.py $prefix > $prefix"ScaffoldValidation.txt"
+numberOfIncorrectScaffolds=$(cat $prefix"ScaffoldValidation.txt"|tail -n1)
 filter-contigs.py $scaffoldsFile $minimumLength $scaffolds500
 numberOfScaffolds=$(grep '>' $scaffolds500|wc -l)
 
