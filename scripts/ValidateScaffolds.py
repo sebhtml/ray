@@ -9,8 +9,8 @@ if len(sys.argv)!=2:
 
 prefix=sys.argv[1]
 
-map=prefix+".Contigs.fasta.500.mums_prefix.coords"
-scaffolds=prefix+".ScaffoldComponents.txt"
+map=prefix+"/Contigs.fasta.500.mums_prefix.coords"
+scaffolds=prefix+"/ScaffoldComponents.txt"
 
 correctLocations={}
 coverages={}
