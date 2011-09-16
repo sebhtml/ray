@@ -45,7 +45,7 @@ int main(int argc,char**argv){
 	}
 	f.close();
 
-	n /= 12;
+	n /= 14;
 
 	ifstream f2(edgeFile.c_str());
 	for(int i=0;i<n;i++){
