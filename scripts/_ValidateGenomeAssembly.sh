@@ -12,7 +12,7 @@ reference=$1
 assembly=$2
 minimumLength=$4
 
-prefix=$(echo $assembly|sed 's/.Contigs.fasta//g')
+prefix=$(echo $assembly|sed 's/Contigs.fasta//g')
 
 assembly500=$assembly.$minimumLength.fa
 mummerFile=$assembly.$minimumLength.mums
@@ -22,10 +22,10 @@ filter-contigs.py $assembly $minimumLength $assembly500
 mummer-validate.rb $reference  $assembly500 $mummerFile &> mummer-validate.rb.log
 
 
-scaffoldsFile=$prefix".Scaffolds.fasta"
+scaffoldsFile=$prefix"Scaffolds.fasta"
 scaffolds500=$scaffoldsFile".$minimumLength.fasta"
-ValidateScaffolds.py $prefix > $prefix.ScaffoldValidation.txt
-numberOfIncorrectScaffolds=$(cat $prefix.ScaffoldValidation.txt|tail -n1)
+ValidateScaffolds.py $prefix > $prefix"ScaffoldValidation.txt"
+numberOfIncorrectScaffolds=$(cat $prefix"ScaffoldValidation.txt"|tail -n1)
 filter-contigs.py $scaffoldsFile $minimumLength $scaffolds500
 numberOfScaffolds=$(grep '>' $scaffolds500|wc -l)
 

@@ -105,6 +105,11 @@ version 1
 
 contig-0        F       contig-2000306  F       7414    2       0       7384    40      1       7444    37
 
+version 2
+
+contig-0        R       contig-356000158        F       9012    2       0       3       9012    0       1       3       9012    0
+
+
 */
 	{
 	string token;
@@ -133,13 +138,15 @@ contig-0        F       contig-2000306  F       7414    2       0       7384    
 	(*f) >> dummy; /* count */
 	(*f) >> dummy; /* index */
 
-	(*f) >> m_average1;
 	(*f) >> m_count1;
+	(*f) >> m_average1;
+	(*f) >> m_standardDeviation1;
 
 	(*f) >> dummy; /* index */
 
-	(*f) >> m_average2;
 	(*f) >> m_count2;
+	(*f) >> m_average2;
+	(*f) >> m_standardDeviation2;
 }
 
 ScaffoldingEdge::ScaffoldingEdge(){

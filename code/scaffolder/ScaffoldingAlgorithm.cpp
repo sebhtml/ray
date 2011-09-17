@@ -353,14 +353,12 @@ bool ScaffoldingAlgorithm::hasConflictWithEdgeAroundContig(ScaffoldingEdge*edgeT
 
 	if(edge1ContigStrand == edge2ContigStrand){
 		if(edge1ContigSide == edge2ContigSide){
-/*
 			cout<<"Conflict for contig "<<contigToCheck<<" Length= "<<m_lengths[contigToCheck]<<endl;
 			cout<<"Edge to be added:"<<endl;
 			edgeToBeAdded->print();
 			cout<<"Already added edge:"<<endl;
 			alreadyAcceptedEdge->print();
 			m_conflicts[edgeToBeAdded->getPriority()][alreadyAcceptedEdge->getPriority()]++;
-*/
 			return true;
 		}
 	}else{
@@ -374,14 +372,12 @@ bool ScaffoldingAlgorithm::hasConflictWithEdgeAroundContig(ScaffoldingEdge*edgeT
 		#endif
 
 		if(edge1ContigSide == edge2ContigSideReverse){
-/*
 			cout<<"Conflict (reverse) for contig "<<contigToCheck<<" Length= "<<m_lengths[contigToCheck]<<endl;
 			cout<<"Edge to be added:"<<endl;
 			edgeToBeAdded->print();
 			cout<<"Already added edge:"<<endl;
 			alreadyAcceptedEdge->print();
 			m_conflicts[edgeToBeAdded->getPriority()][alreadyAcceptedEdge->getPriority()]++;
-*/
 			return true;
 		}
 	}
