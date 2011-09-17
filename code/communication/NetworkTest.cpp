@@ -47,6 +47,13 @@ void NetworkTest::constructor(int rank,int*masterMode,int*slaveMode,int size,Sta
 	m_masterMode=masterMode;
 	m_slaveMode=slaveMode;
 	m_numberOfTestMessages=100000;
+
+	int ranksPerNode=8;
+	int onlineRanksPerNode=8; // default: 8
+
+	if((m_rank % ranksPerNode) >= onlineRanksPerNode)
+		m_numberOfTestMessages=0;
+
 	m_currentTestMessage=0;
 	m_sentCurrentTestMessage=false;
 	m_outboxAllocator=outboxAllocator;
@@ -119,7 +126,10 @@ void NetworkTest::slaveWork(){
 	}else{
 		int averageLatencyInMicroSeconds=LATENCY_INFORMATION_NOT_AVAILABLE;
 
-		averageLatencyInMicroSeconds=m_sumOfMicroSeconds/m_numberOfTestMessages;
+		averageLatencyInMicroSeconds=m_sumOfMicroSeconds;
+
+		if(m_numberOfTestMessages > 0)
+			averageLatencyInMicroSeconds /= m_numberOfTestMessages;
 
 		cout<<"Rank "<<m_rank<<": average latency for "<<(*m_name)<<" when requesting a reply for a message of "<<sizeof(uint64_t)*m_numberOfWords<<" bytes is "<<averageLatencyInMicroSeconds<<" microseconds (10^-6 seconds)"<<endl;
 
