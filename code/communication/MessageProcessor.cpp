@@ -1665,11 +1665,13 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY(Message*message){
 	vertex.unpack(incoming,&pos);
 	Kmer complement=m_parameters->_complementVertex(&vertex);
 	bool lower=vertex<complement;
-	uint64_t pathId=incoming[1];
+	uint64_t pathId=incoming[pos];
+
 	#ifdef ASSERT
 	assert(getRankFromPathUniqueId(pathId)<m_size);
 	#endif
-	int position=incoming[2];
+
+	int position=incoming[pos];
 	m_fusionData->m_FUSION_receivedPath.constructor(pathId,position,lower);
 }
 
