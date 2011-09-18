@@ -75,7 +75,7 @@ void JoinerWorker::work(){
 			m_requestedNumberOfPaths=true;
 			m_receivedNumberOfPaths=false;
 
-			if(m_parameters->hasOption("-debug-fusions"))
+			if(m_parameters->hasOption("-debug-fusions2"))
 				cout<<"worker "<<m_workerIdentifier<<" send RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE"<<endl;
 
 		/* receive the number of paths */
@@ -84,7 +84,7 @@ void JoinerWorker::work(){
 			m_virtualCommunicator->getMessageResponseElements(m_workerIdentifier,&response);
 			m_numberOfPaths=response[0];
 		
-			if(m_parameters->hasOption("-debug-fusions"))
+			if(m_parameters->hasOption("-debug-fusions2"))
 				cout<<"worker "<<m_workerIdentifier<<" Got "<<m_numberOfPaths<<endl;
 
 			m_receivedNumberOfPaths=true;
@@ -118,7 +118,7 @@ void JoinerWorker::work(){
 					RAY_MPI_TAG_ASK_VERTEX_PATH,m_parameters->getRank());
 				m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 
-				if(m_parameters->hasOption("-debug-fusions"))
+				if(m_parameters->hasOption("-debug-fusions2"))
 					cout<<"worker "<<m_workerIdentifier<<" send RAY_MPI_TAG_ASK_VERTEX_PATH "<<m_pathIndex<<endl;
 
 				m_requestedPath=true;
@@ -134,15 +134,13 @@ void JoinerWorker::work(){
 				uint64_t otherPathIdentifier=response[bufferPosition++];
 				int progression=response[bufferPosition++];
 
-				if(m_parameters->hasOption("-debug-fusions"))
+				if(m_parameters->hasOption("-debug-fusions2"))
 					cout<<"worker "<<m_workerIdentifier<<" receive RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY"<<endl;
 
 				if(otherPathIdentifier != m_identifier){
 					m_hits[otherPathIdentifier]++;
 			
 					/* TODO: these values should be updated in a better way. */
-
-					/* TODO  if m_reverseStrand is true, then m_position should be (LENGTH - m_position -1) */
 
 					int positionOnSelf=m_position;
 					if(m_reverseStrand){
@@ -159,12 +157,16 @@ void JoinerWorker::work(){
 						m_maxPositionOnSelf[otherPathIdentifier]=positionOnSelf;
 					}
 
-					if(progression < m_minPosition[otherPathIdentifier]){
+					if(m_parameters->hasOption("-debug-fusions")){
+						cout<<"SelfLength= "<<m_path->size()<<" SelfStrand= "<<m_reverseStrand<<" MatchPair "<<" Self= "<<positionOnSelf<<" Other= "<<progression<<endl;
+					}
+
+					if(progression < m_minPosition[otherPathIdentifier] && positionOnSelf < m_minPositionOnSelf[otherPathIdentifier]){
 						m_minPosition[otherPathIdentifier]=progression;
 						m_minPositionOnSelf[otherPathIdentifier]=positionOnSelf;
 					}
 
-					if(progression > m_maxPosition[otherPathIdentifier]){
+					if(progression > m_maxPosition[otherPathIdentifier] && positionOnSelf > m_maxPositionOnSelf[otherPathIdentifier]){
 						m_maxPosition[otherPathIdentifier]=progression;
 						m_maxPositionOnSelf[otherPathIdentifier]=positionOnSelf;
 					}
@@ -181,7 +183,7 @@ void JoinerWorker::work(){
 			m_receivedNumberOfPaths=false;
 
 
-			if(m_parameters->hasOption("-debug-fusions"))
+			if(m_parameters->hasOption("-debug-fusions2"))
 				cout<<"worker "<<m_workerIdentifier<<" Next position is "<<m_position<<endl;
 		}
 	/* gather hit information */
@@ -213,7 +215,7 @@ void JoinerWorker::work(){
 				vector<uint64_t> response;
 				m_virtualCommunicator->getMessageResponseElements(m_workerIdentifier,&response);
 				int length=response[0];
-				if(m_parameters->hasOption("-debug-fusions"))
+				if(m_parameters->hasOption("-debug-fusions2"))
 					cout<<"received length, value= "<<length<<endl;
 				m_hitLengths.push_back(length);
 
@@ -236,8 +238,11 @@ void JoinerWorker::work(){
 		assert(m_hitIterator == (int)m_hitLengths.size());
 		#endif
 
-		cout<<"JoinerWorker worker "<<m_workerIdentifier<<" path "<<m_identifier<<" strand= "<<m_reverseStrand<<" is Done, analyzed "<<m_position<<" position length is "<<m_path->size()<<endl;
-		cout<<"JoinerWorker worker "<<m_hits.size()<<" hits "<<endl;
+
+		if(m_parameters->hasOption("-debug-fusions")){
+			cout<<"JoinerWorker worker "<<m_workerIdentifier<<" path "<<m_identifier<<" strand= "<<m_reverseStrand<<" is Done, analyzed "<<m_position<<" position length is "<<m_path->size()<<endl;
+			cout<<"JoinerWorker worker "<<m_hits.size()<<" hits "<<endl;
+		}
 
 		int selectedHit=0;
 		int numberOfHits=0;
@@ -257,6 +262,13 @@ void JoinerWorker::work(){
 			if(ratio < 0.1)
 				continue;
 */
+
+			int hitLength=m_hitLengths[i];
+			int selfLength=m_path->size();
+
+			if(m_parameters->hasOption("-debug-fusions")){
+				cout<<"JoinerWorker hit selfPath= "<<m_identifier<<" selfStrand="<<m_reverseStrand<<" selfLength= "<<selfLength<<" MinSelf="<<m_minPositionOnSelf[hit]<<" MaxSelf="<<m_maxPositionOnSelf[hit]<<" Path="<<hit<<"	matches= "<<matches<<"	length= "<<hitLength<<" minPosition= "<<m_minPosition[hit]<<" maxPosition= "<<m_maxPosition[hit]<<endl;
+			}
 
 			if(matches < 1000)
 				continue;
@@ -288,7 +300,10 @@ void JoinerWorker::work(){
 			int selfLength=m_path->size();
 			int matches=m_hits[hit];
 			
-			cout<<"SelectedHit selfPath= "<<m_identifier<<" selfStrand="<<m_reverseStrand<<" selfLength= "<<selfLength<<" MinSelf="<<m_minPositionOnSelf[hit]<<" MaxSelf="<<m_maxPositionOnSelf[hit]<<" Path="<<hit<<"	matches= "<<matches<<"	length= "<<hitLength<<" minPosition= "<<m_minPosition[hit]<<" maxPosition= "<<m_maxPosition[hit]<<endl;
+			if(m_parameters->hasOption("-debug-fusions")){
+				cout<<"SelectedHit selfPath= "<<m_identifier<<" selfStrand="<<m_reverseStrand<<" selfLength= "<<selfLength<<" MinSelf="<<m_minPositionOnSelf[hit]<<" MaxSelf="<<m_maxPositionOnSelf[hit]<<" Path="<<hit<<"	matches= "<<matches<<"	length= "<<hitLength<<" minPosition= "<<m_minPosition[hit]<<" maxPosition= "<<m_maxPosition[hit]<<endl;
+			}
+
 			m_selectedHit=true;
 			m_selectedHitIndex=selectedHit;
 			m_hitPosition=0;
@@ -331,20 +346,23 @@ void JoinerWorker::work(){
 			uint64_t hitName=m_hitNames[m_selectedHitIndex];
 			int matches=m_hits[hitName];
 
-			cout<<"Received hit path data."<<endl;
-			cout<<"Matches: "<<matches<<endl;
-			cout<<"Self"<<endl;
-			cout<<" Identifier: "<<m_identifier<<endl;
-			cout<<" Strand: "<<m_reverseStrand<<endl;
-			cout<<" Length: "<<m_path->size()<<endl;
-			cout<<" Begin: "<<m_minPositionOnSelf[hitName]<<endl;
-			cout<<" End: "<<m_maxPositionOnSelf[hitName]<<endl;
-			cout<<"Hit"<<endl;
-			cout<<" Identifier: "<<hitName<<endl;
-			cout<<" Strand: 0"<<endl;
-			cout<<" Length: "<<hitLength<<endl;
-			cout<<" Begin: "<<m_minPosition[hitName]<<endl;
-			cout<<" End: "<<m_maxPosition[hitName]<<endl;
+
+			if(m_parameters->hasOption("-debug-fusions")){
+				cout<<"Received hit path data."<<endl;
+				cout<<"Matches: "<<matches<<endl;
+				cout<<"Self"<<endl;
+				cout<<" Identifier: "<<m_identifier<<endl;
+				cout<<" Strand: "<<m_reverseStrand<<endl;
+				cout<<" Length: "<<m_path->size()<<endl;
+				cout<<" Begin: "<<m_minPositionOnSelf[hitName]<<endl;
+				cout<<" End: "<<m_maxPositionOnSelf[hitName]<<endl;
+				cout<<"Hit"<<endl;
+				cout<<" Identifier: "<<hitName<<endl;
+				cout<<" Strand: 0"<<endl;
+				cout<<" Length: "<<hitLength<<endl;
+				cout<<" Begin: "<<m_minPosition[hitName]<<endl;
+				cout<<" End: "<<m_maxPosition[hitName]<<endl;
+			}
 
 			#ifdef ASSERT
 			assert(hitLength == (int)m_hitVertices.size());

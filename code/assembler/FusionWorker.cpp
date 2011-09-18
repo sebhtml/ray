@@ -75,7 +75,7 @@ void FusionWorker::work(){
 			m_requestedNumberOfPaths=true;
 			m_receivedNumberOfPaths=false;
 
-			if(m_parameters->hasOption("-debug-fusions"))
+			if(m_parameters->hasOption("-debug-fusions2"))
 				cout<<"worker "<<m_workerIdentifier<<" send RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE"<<endl;
 
 		/* receive the number of paths */
@@ -84,7 +84,7 @@ void FusionWorker::work(){
 			m_virtualCommunicator->getMessageResponseElements(m_workerIdentifier,&response);
 			m_numberOfPaths=response[0];
 		
-			if(m_parameters->hasOption("-debug-fusions"))
+			if(m_parameters->hasOption("-debug-fusions2"))
 				cout<<"worker "<<m_workerIdentifier<<" Got "<<m_numberOfPaths<<endl;
 
 			m_receivedNumberOfPaths=true;
@@ -118,7 +118,7 @@ void FusionWorker::work(){
 					RAY_MPI_TAG_ASK_VERTEX_PATH,m_parameters->getRank());
 				m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 
-				if(m_parameters->hasOption("-debug-fusions"))
+				if(m_parameters->hasOption("-debug-fusions2"))
 					cout<<"worker "<<m_workerIdentifier<<" send RAY_MPI_TAG_ASK_VERTEX_PATH "<<m_pathIndex<<endl;
 
 				m_requestedPath=true;
@@ -134,7 +134,7 @@ void FusionWorker::work(){
 				uint64_t otherPathIdentifier=response[bufferPosition++];
 				//int progression=response[bufferPosition++];
 
-				if(m_parameters->hasOption("-debug-fusions"))
+				if(m_parameters->hasOption("-debug-fusions2"))
 					cout<<"worker "<<m_workerIdentifier<<" receive RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY"<<endl;
 
 				if(otherPathIdentifier != m_identifier){
@@ -152,7 +152,7 @@ void FusionWorker::work(){
 			m_receivedNumberOfPaths=false;
 
 
-			if(m_parameters->hasOption("-debug-fusions"))
+			if(m_parameters->hasOption("-debug-fusions2"))
 				cout<<"worker "<<m_workerIdentifier<<" Next position is "<<m_position<<endl;
 		}
 	/* gather hit information */
@@ -184,7 +184,8 @@ void FusionWorker::work(){
 				vector<uint64_t> response;
 				m_virtualCommunicator->getMessageResponseElements(m_workerIdentifier,&response);
 				int length=response[0];
-				if(m_parameters->hasOption("-debug-fusions"))
+
+				if(m_parameters->hasOption("-debug-fusions2"))
 					cout<<"received length, value= "<<length<<endl;
 				m_hitLengths.push_back(length);
 
@@ -223,8 +224,9 @@ void FusionWorker::work(){
 
 			double ratio=(matches+0.0)/selfLength;
 
-			if(m_parameters->hasOption("-debug-fusions"))
-				cout<<"path "<<hit<<"	matches= "<<matches<<"	length= "<<hitLength<<endl;
+			if(m_parameters->hasOption("-debug-fusions")){
+				cout<<"FusionWorker path "<<hit<<"	matches= "<<matches<<"	length= "<<hitLength<<endl;
+			}
 
 			if(ratio < 0.7)
 				continue;
