@@ -96,6 +96,10 @@ void SeedingData::computeSeeds(){
 
 			int nucleotides=seed.size()+(m_wordSize)-1;
 
+			if(seed.size() > 0 && m_parameters->debugSeeds()){
+				cout<<"Raw seed length: "<<nucleotides<<" nucleotides"<<endl;
+			}
+
 			// only consider the long ones.
 			if(nucleotides>=m_parameters->getMinimumContigLength()){
 				printf("Rank %i discovered a seed with %i vertices\n",m_rank,(int)seed.size());

@@ -236,8 +236,8 @@ void JoinerWorker::work(){
 		assert(m_hitIterator == (int)m_hitLengths.size());
 		#endif
 
-		cout<<"worker "<<m_workerIdentifier<<" path "<<m_identifier<<" is Done, analyzed "<<m_position<<" position length is "<<m_path->size()<<endl;
-		cout<<"worker "<<m_workerIdentifier<<" hits "<<endl;
+		cout<<"JoinerWorker worker "<<m_workerIdentifier<<" path "<<m_identifier<<" strand= "<<m_reverseStrand<<" is Done, analyzed "<<m_position<<" position length is "<<m_path->size()<<endl;
+		cout<<"JoinerWorker worker "<<m_hits.size()<<" hits "<<endl;
 
 		int selectedHit=0;
 		int numberOfHits=0;

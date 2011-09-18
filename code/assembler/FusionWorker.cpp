@@ -207,8 +207,8 @@ void FusionWorker::work(){
 		#endif
 
 		if(m_parameters->hasOption("-debug-fusions")){
-			cout<<"worker "<<m_workerIdentifier<<" path "<<m_identifier<<" is Done, analyzed "<<m_position<<" position length is "<<m_path->size()<<endl;
-			cout<<"worker "<<m_workerIdentifier<<" hits "<<endl;
+			cout<<"FusionWorker worker "<<m_workerIdentifier<<" path "<<m_identifier<<" strand= "<<m_reverseStrand<<" is Done, analyzed "<<m_position<<" position length is "<<m_path->size()<<endl;
+			cout<<"FusionWorker worker "<<m_hits.size()<<" hits "<<endl;
 		}
 
 		for(int i=0;i<(int)m_hitNames.size();i++){

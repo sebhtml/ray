@@ -79,8 +79,7 @@ void SeedWorker::work(){
 			if(!m_SEEDING_1_1_test_result){
 				m_finished=true;
 
-				if((int)m_SEEDING_seed.size()>=m_parameters->getMinimumContigLength()-m_parameters->getWordSize()+1
-				&&m_parameters->debugSeeds()){
+				if(m_parameters->debugSeeds()){
 					printf("Rank %i next vertex: Coverage= %i, ingoing coverages:",m_rank,m_cache[m_SEEDING_currentVertex]);
 					for(int i=0;i<(int)m_ingoingCoverages.size();i++){
 						printf(" %i",m_ingoingCoverages[i]);
