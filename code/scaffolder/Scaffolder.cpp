@@ -396,7 +396,11 @@ void Scaffolder::performSummary(){
 		}
 	}
 
-	int mean=sum/n;
+	int mean=sum;
+
+	if(n>0){
+		mean /= n;
+	}
 
 	uint64_t sumOfSquares=0;
 	for(int i=0;i<(int)m_vertexCoverageValues.size();i++){
@@ -407,7 +411,9 @@ void Scaffolder::performSummary(){
 		}
 	}
 
-	sumOfSquares /= n;
+	if(n > 0){
+		sumOfSquares /= n;
+	}
 
 	int standardDeviation=(int)sqrt(sumOfSquares);
 

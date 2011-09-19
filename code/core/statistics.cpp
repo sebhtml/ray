@@ -31,7 +31,12 @@ int getAverage(vector<int>*values){
 		i++;
 	}
 
-	int average=sum/n;
+	int average=sum;
+
+	if(n > 0){
+		average /= n;
+	}
+
 	return average;
 }
 
@@ -50,7 +55,11 @@ int getStandardDeviation(vector<int>*x){
 		i++;
 	}
 
-	int standardDeviation=(int)sqrt((sum+0.0)/n);
+	int standardDeviation=(int)sqrt((sum+0.0));
 	
+	if(n > 0){
+		standardDeviation=(int)sqrt((sum+0.0)/n);
+	}
+
 	return standardDeviation;
 }
