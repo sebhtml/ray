@@ -195,11 +195,18 @@ void SeedWorker::do_1_1_test(){
 			uint8_t edges=elements[0];
 			int coverage=elements[1];
 			
-			if(coverage==1 || coverage >= m_parameters->getRepeatCoverage()){
+/*
+			if(coverage==1 || coverage >= 10*m_parameters->getPeakCoverage()){
+
+				if(m_parameters->debugSeeds()){
+					cout<<"SeedWorker: skipping vertex with coverage value "<<coverage<<" PeakCoverage= "<<m_parameters->getPeakCoverage()<<endl;
+				}
+
 				m_SEEDING_1_1_test_result=false;
 				m_SEEDING_1_1_test_done=true;
 				return;
 			}
+*/
 
 			m_cache[m_SEEDING_currentVertex]=coverage;
 
