@@ -119,6 +119,9 @@ DESCRIPTION:
               Runs the profiler as the code runs.
               Running the profiler increases running times.
 
+       -show-read-placement
+              Shows read placement in the graph during the extension.
+
        -debug-bubbles
               Debugs bubble code.
               Bubbles can be due to heterozygous sites or sequencing errors or other (unknown) events
