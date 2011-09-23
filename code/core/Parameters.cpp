@@ -1142,6 +1142,8 @@ void Parameters::showUsage(){
 	showOption("-run-profiler","Runs the profiler as the code runs.");
 	showOptionDescription("Running the profiler increases running times.");
 	cout<<endl;
+	showOption("-show-read-placement","Shows read placement in the graph during the extension.");
+	cout<<endl;
 	showOption("-debug-bubbles","Debugs bubble code.");
 	showOptionDescription("Bubbles can be due to heterozygous sites or sequencing errors or other (unknown) events");
 	cout<<endl;

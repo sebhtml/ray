@@ -24,7 +24,9 @@
 #include <core/OperatingSystem.h>
 #include <structures/SplayNode.h>
 #include <core/Machine.h>
+#include <core/statistics.h>
 #include <assembler/VerticesExtractor.h>
+#include <profiling/Profiler.h>
 #include <sstream>
 #include <communication/Message.h>
 #include <time.h>
@@ -268,7 +270,7 @@ void Machine::start(){
 		m_parameters.writeCommandFile();
 	}
 
-	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed,&m_subgraph,&m_inbox);
+	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed,&m_subgraph,&m_inbox,&m_profiler);
 	ostringstream prefixFull;
 	prefixFull<<m_parameters.getMemoryPrefix()<<"_Main";
 	int chunkSize=16777216;
@@ -494,8 +496,12 @@ void Machine::runWithProfiler(){
 	// MPI rank
 	int ticks=0;
 	int sentMessages=0;
+	int sentMessagesInProcessMessages=0;
+	int sentMessagesInProcessData=0;
 	int receivedMessages=0;
-	map<int,int> messageTypes;
+	map<int,int> receivedTags;
+	map<int,int> sentTagsInProcessMessages;
+	map<int,int> sentTagsInProcessData;
 	
 	int resolution=100;// milliseconds
 	int parts=1000/resolution;
@@ -503,6 +509,19 @@ void Machine::runWithProfiler(){
 	uint64_t startingTime=getMilliSeconds();
 
 	uint64_t lastTime=getMilliSeconds();
+
+/*
+	uint64_t lastTickWhenSentMessageInProcessMessage=lastTime;
+	uint64_t lastTickWhenSentMessageInProcessData=lastTime;
+*/
+
+	vector<int> distancesForProcessMessages;
+	vector<int> distancesForProcessData;
+
+	uint64_t lastTimePointWithMessagesFromProcessData=lastTime;
+
+	bool printedCritical=false;
+	bool printedWarning=false;
 
 	/** m_timeToLive goes down to 0 when m_alive is false
  * 	This is called the aging process */
@@ -513,35 +532,144 @@ void Machine::runWithProfiler(){
 			double seconds=(t-startingTime)/1000.0;
 
 			int balance=sentMessages-receivedMessages;
-			printf("Rank %i: %s Time= %.2f s Speed= %i Sent= %i Received= %i Balance= %i\n",m_rank,SLAVE_MODES[m_slave_mode],
-				seconds,ticks,sentMessages,receivedMessages,balance);
+			printf("Rank %i: %s Time= %.2f s Speed= %i Sent= %i (processMessages: %i, processData: %i) Received= %i Balance= %i\n",
+				m_rank,SLAVE_MODES[m_slave_mode],
+				seconds,ticks,sentMessages,sentMessagesInProcessMessages,sentMessagesInProcessData,
+				receivedMessages,balance);
 			fflush(stdout);
-			cout<<"Rank "<<m_parameters.getRank()<<" tag counts:"<<endl;
-			for(map<int,int>::iterator i=messageTypes.begin();i!=messageTypes.end();i++){
-				int tag=i->first;
-				int count=i->second;
-				cout<<"Rank "<<m_parameters.getRank()<<"        "<<MESSAGES[tag]<<"	"<<count<<endl;
+
+			if(receivedTags.size() > 0){
+				cout<<"Rank "<<m_parameters.getRank()<<" received in receiveMessages:"<<endl;
+				for(map<int,int>::iterator i=receivedTags.begin();i!=receivedTags.end();i++){
+					int tag=i->first;
+					int count=i->second;
+					cout<<"Rank "<<m_parameters.getRank()<<"        "<<MESSAGES[tag]<<"	"<<count<<endl;
+				}
 			}
-			ticks=0;
+
+			if(sentTagsInProcessMessages.size() > 0){
+				cout<<"Rank "<<m_parameters.getRank()<<" sent in processMessages:"<<endl;
+				for(map<int,int>::iterator i=sentTagsInProcessMessages.begin();i!=sentTagsInProcessMessages.end();i++){
+					int tag=i->first;
+					int count=i->second;
+					cout<<"Rank "<<m_parameters.getRank()<<"        "<<MESSAGES[tag]<<"	"<<count<<endl;
+				}
+
+/*
+				int average1=getAverage(&distancesForProcessMessages);
+				int deviation1=getStandardDeviation(&distancesForProcessMessages);
+			
+				cout<<"Rank "<<m_parameters.getRank()<<" distance between processMessages messages: average= "<<average1<<", stddev= "<<deviation1<<
+					", n= "<<distancesForProcessMessages.size()<<endl;
+				
+*/
+				#ifdef FULL_DISTRIBUTION
+				map<int,int> distribution1;
+				for(int i=0;i<(int)distancesForProcessMessages.size();i++){
+					distribution1[distancesForProcessMessages[i]]++;
+				}
+				cout<<"Rank "<<m_parameters.getRank()<<" distribution: "<<endl;
+				for(map<int,int>::iterator i=distribution1.begin();i!=distribution1.end();i++){
+					cout<<i->first<<" "<<i->second<<endl;
+				}
+				#endif
+
+				distancesForProcessMessages.clear();
+			}
+
+			if(sentTagsInProcessData.size() > 0){
+				cout<<"Rank "<<m_parameters.getRank()<<" sent in processData:"<<endl;
+				for(map<int,int>::iterator i=sentTagsInProcessData.begin();i!=sentTagsInProcessData.end();i++){
+					int tag=i->first;
+					int count=i->second;
+					cout<<"Rank "<<m_parameters.getRank()<<"        "<<MESSAGES[tag]<<"	"<<count<<endl;
+				}
+/*
+				int average2=getAverage(&distancesForProcessData);
+				int deviation2=getStandardDeviation(&distancesForProcessData);
+	
+				cout<<"Rank "<<m_parameters.getRank()<<" distance between processData messages: average= "<<average2<<", stddev= "<<deviation2<<
+					", n= "<<distancesForProcessData.size()<<endl;
+				
+*/
+				#ifdef FULL_DISTRIBUTION
+				map<int,int> distribution2;
+				for(int i=0;i<(int)distancesForProcessData.size();i++){
+					distribution2[distancesForProcessData[i]]++;
+				}
+				cout<<"Rank "<<m_parameters.getRank()<<" distribution: "<<endl;
+				for(map<int,int>::iterator i=distribution2.begin();i!=distribution2.end();i++){
+					cout<<i->first<<" "<<i->second<<endl;
+				}
+				#endif
+
+				distancesForProcessData.clear();
+			}
+
+			m_profiler.print();
+			m_profiler.reset();
+
 			sentMessages=0;
+			sentMessagesInProcessMessages=0;
+			sentMessagesInProcessData=0;
 			receivedMessages=0;
-			messageTypes.clear();
+			receivedTags.clear();
+			sentTagsInProcessMessages.clear();
+			sentTagsInProcessData.clear();
+			ticks=0;
+
 			lastTime=t;
 		}
+
+		/* collect some statistics for the profiler */
+
 		// 1. receive the message (0 or 1 message is received)
 		receiveMessages(); 
 		receivedMessages+=m_inbox.size();
 		
+		for(int i=0;i<(int)m_inbox.size();i++){
+			receivedTags[m_inbox[i]->getTag()]++;
+		}
+
 		// 2. process the received message, if any
 		processMessages();
+
+		int messagesSentInProcessMessages=m_outbox.size();
+		sentMessagesInProcessMessages += messagesSentInProcessMessages;
+		sentMessages += messagesSentInProcessMessages;
+
+/*
+		if(messagesSentInProcessMessages > 0){
+			int distance=t- lastTickWhenSentMessageInProcessMessage;
+			lastTickWhenSentMessageInProcessMessage=t;
+			distancesForProcessMessages.push_back(distance);
+		}
+*/
 
 		// 3. process data according to current slave and master modes
 		processData();
 
-		sentMessages+=m_outbox.size();
-		ticks++;
-		for(int i=0;i<(int)m_outbox.size();i++){
-			messageTypes[m_outbox[i]->getTag()]++;
+		int messagesSentInProcessData = m_outbox.size() - messagesSentInProcessMessages;
+		sentMessagesInProcessData += messagesSentInProcessData;
+		sentMessages += messagesSentInProcessData;
+
+		if(messagesSentInProcessData> 0){
+/*
+			int distance=t - lastTickWhenSentMessageInProcessData;
+			lastTickWhenSentMessageInProcessData=t;
+			distancesForProcessData.push_back(distance);
+*/
+			lastTimePointWithMessagesFromProcessData=t;
+			printedCritical=false;
+			printedWarning=false;
+		}
+
+		for(int i=0;i<messagesSentInProcessMessages;i++){
+			sentTagsInProcessMessages[m_outbox[i]->getTag()]++;
+		}
+
+		for(int i=messagesSentInProcessMessages;i<(int)m_outbox.size();i++){
+			sentTagsInProcessData[m_outbox[i]->getTag()]++;
 		}
 
 		// 4. send messages
@@ -550,6 +678,26 @@ void Machine::runWithProfiler(){
 		/** make it die if necessary */
 		if(!m_alive)
 			m_timeToLive--;
+
+		/* increment ticks */
+		ticks++;
+
+		/** provide guidance and audit of the profile */
+
+		if(m_slave_mode != RAY_SLAVE_MODE_DO_NOTHING){
+			int inactivityThresholdInMilliSeconds=1*1000; // 1 second
+			int criticalThresholdInMilliSeconds=10*1000; // 10 seconds
+
+			int difference = t - lastTimePointWithMessagesFromProcessData;
+		
+			if(!printedCritical && difference >= criticalThresholdInMilliSeconds){
+				printedCritical=true;
+				cout<<"Critical: ["<<SLAVE_MODES[m_slave_mode]<<"] last message sent by processData is "<<criticalThresholdInMilliSeconds<<" milliseconds in the past."<<endl;
+			}else if(!printedWarning && difference >= inactivityThresholdInMilliSeconds){
+				printedWarning=true;
+				cout<<"Warning: ["<<SLAVE_MODES[m_slave_mode]<<"] last message sent by processData is "<<inactivityThresholdInMilliSeconds<<" milliseconds in the past."<<endl;
+			}
+		}
 	}
 }
 

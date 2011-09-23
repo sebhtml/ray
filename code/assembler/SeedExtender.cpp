@@ -43,6 +43,8 @@ int*last_value,bool*vertexCoverageRequested,int wordSize,int size,bool*vertexCov
 int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,vector<Kmer>*receivedOutgoingEdges,Chooser*chooser,
 BubbleData*bubbleData,
 int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
+
+	m_profiler->collect(PROFILER_RAY_SLAVE_MODE_EXTENSION_extendSeeds);
 	
 	/* read the checkpoint */
 	if(!m_checkedCheckpoint){
@@ -211,6 +213,8 @@ void SeedExtender::enumerateChoices(bool*edgesRequested,ExtensionData*ed,bool*ed
 Kmer*currentVertex,int theRank,bool*vertexCoverageRequested,vector<Kmer>*receivedOutgoingEdges,
 bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,int wordSize
 ){
+	m_profiler->collect(PROFILER_RAY_SLAVE_MODE_EXTENSION_enumerateChoices);
+
 	if(!(*edgesRequested)){
 		ed->m_EXTENSION_coverages->clear();
 		ed->m_enumerateChoices_outgoingEdges.clear();
@@ -307,6 +311,9 @@ ExtensionData*ed,int minimumCoverage,int maxCoverage,OpenAssemblerChooser*oa,Cho
 bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,int size,
 int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 ){
+
+	m_profiler->collect(PROFILER_RAY_SLAVE_MODE_EXTENSION_doChoice);
+
 	if(m_expiredReads.count(ed->m_EXTENSION_currentPosition)>0){
 		for(int i=0;i<(int)m_expiredReads[ed->m_EXTENSION_currentPosition].size();i++){
 			uint64_t uniqueId=m_expiredReads[ed->m_EXTENSION_currentPosition][i];
@@ -900,6 +907,9 @@ Kmer *currentVertex,BubbleData*bubbleData){
 
 void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector*outbox,RingAllocator*outboxAllocator,
   int*outgoingEdgeIndex,int*last_value,Kmer*currentVertex,int theRank,bool*vertexCoverageRequested,int wordSize,int size,vector<vector<Kmer> >*seeds){
+
+	m_profiler->collect(PROFILER_RAY_SLAVE_MODE_EXTENSION_checkIfCurrentVertexIsAssembled);
+
 	if(!ed->m_EXTENSION_directVertexDone){
 		if(!ed->m_EXTENSION_VertexAssembled_requested){
 			delete m_dfsData;
@@ -960,6 +970,9 @@ StaticVector*outbox,int size,int theRank,ExtensionData*ed,bool*vertexCoverageReq
 vector<Kmer>*receivedOutgoingEdges,Chooser*chooser,
 BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,vector<vector<Kmer> >*seeds
 ){
+
+	m_profiler->collect(PROFILER_RAY_SLAVE_MODE_EXTENSION_markCurrentVertexAsAssembled);
+
 	if(!m_messengerInitiated){
 		m_hasPairedSequences=false;
 		*edgesRequested=false;
@@ -1114,6 +1127,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				}
 
 				m_sequenceIndexToCache++;
+
+			/** this case never happens because m_cacheForRepeatedReads is never populated */
 			}else if(!m_sequenceRequested
 				&&m_cacheForRepeatedReads.find(uniqueId,false)!=NULL){
 				SplayNode<uint64_t,Read>*node=m_cacheForRepeatedReads.find(uniqueId,false);
@@ -1135,6 +1150,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				ed->m_EXTENSION_pairedRead=*pr;
 				m_sequenceRequested=true;
 				m_sequenceReceived=true;
+
+			/** send a message to get the read */
 			}else if(!m_sequenceRequested){
 				m_sequenceRequested=true;
 				m_sequenceReceived=false;
@@ -1147,6 +1164,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				message[0]=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache].getReadIndex();
 				Message aMessage(message,1,sequenceRank,RAY_MPI_TAG_REQUEST_READ_SEQUENCE,theRank);
 				outbox->push_back(aMessage);
+
+			/* we received a sequence read */
 			}else if(m_sequenceReceived){
 
 				bool addRead=true;
@@ -1228,6 +1247,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				}
 
 
+				/* after making sure the read is sane, we can add it here for sure */
 				if(addRead){
 					//cout<<"Adding read "<<uniqueId<<" at "<<position<<endl;
 					m_matesToMeet.erase(uniqueId);
@@ -1247,13 +1267,10 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 		
 					int expiryPosition=position+readLength-positionOnStrand-wordSize;
 		
-					#ifdef HUNT_INFINITE_BUG
-					if(m_ed->m_EXTENSION_extension->size()>10000){
-						cout<<"Add SeqInfo Seq="<<m_receivedString<<" Id="<<uniqueId<<" ExpiryPosition="<<expiryPosition<<endl;
+					if(m_parameters->hasOption("-show-read-placement")){
+						cout<<"Read "<<uniqueId<<" will expire at "<<expiryPosition<<endl;
 					}
-					#endif
 
-					//cout<<"Read "<<uniqueId<<" will expire at "<<expiryPosition<<endl;
 					m_expiredReads[expiryPosition].push_back(uniqueId);
 					// received paired read too !
 					if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
@@ -1269,11 +1286,6 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 							int expectedDeviation=m_parameters->getLibraryMaxStandardDeviation(library);
 							int expiration=startPosition+expectedFragmentLength+3*expectedDeviation;
 
-							#ifdef HUNT_INFINITE_BUG
-							if(m_ed->m_EXTENSION_extension->size()>10000){
-								cout<<"adding expiration (to meet mate) Now="<<startPosition<<" Expiration="<<expiration<<" Id="<<uniqueId<<" "<<"muL="<<expectedFragmentLength<<" sigmaL="<<expectedDeviation<<endl;
-							}
-							#endif
 							(*ed->m_expirations)[expiration].push_back(uniqueId);
 		
 							m_matesToMeet.insert(mateId);
@@ -1309,7 +1321,7 @@ set<uint64_t>*SeedExtender::getEliminatedSeeds(){
 }
 
 void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed,
-	GridTable*subgraph,StaticVector*inbox){
+	GridTable*subgraph,StaticVector*inbox,Profiler*profiler){
 
 	m_checkedCheckpoint=false;
 
@@ -1326,6 +1338,8 @@ void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAll
 	m_ed=ed;
 	this->m_directionsAllocator=m_directionsAllocator;
 	m_bubbleTool.constructor(parameters);
+
+	m_profiler=profiler;
 }
 
 void SeedExtender::inspect(ExtensionData*ed,Kmer*currentVertex){

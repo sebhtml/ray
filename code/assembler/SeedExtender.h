@@ -28,6 +28,7 @@ class DepthFirstSearchData;
 #include <core/common_functions.h>
 #include <communication/Message.h>
 #include <vector>
+#include <profiling/Profiler.h>
 #include <assembler/VertexMessenger.h>
 #include <assembler/ExtensionData.h>
 #include <core/Parameters.h>
@@ -49,6 +50,8 @@ using namespace std;
  */
 class SeedExtender{
 	bool m_checkedCheckpoint;
+
+	Profiler*m_profiler;
 
 	map<int,map<int,uint64_t> > m_pairedScores;
 
@@ -142,8 +145,10 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 
 	set<uint64_t>*getEliminatedSeeds();
 
-	void constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed,GridTable*table,StaticVector*inbox);
+	void constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed,GridTable*table,StaticVector*inbox,
+	Profiler*profiler);
 };
+
 
 #endif
 

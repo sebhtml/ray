@@ -201,6 +201,8 @@ obj-y += code/assembler/FusionTaskCreator.o
 obj-y += code/assembler/JoinerWorker.o 
 obj-y += code/assembler/JoinerTaskCreator.o
 
+obj-y += code/profiling/Profiler.o
+
 # heuristics
 obj-y += code/heuristics/BubbleTool.o code/heuristics/Chooser.o code/heuristics/OpenAssemblerChooser.o \
  code/heuristics/TipWatchdog.o code/heuristics/RayNovaEngine.o

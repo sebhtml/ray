@@ -64,8 +64,8 @@
 #include <communication/NetworkTest.h>
 #include <assembler/FusionTaskCreator.h>
 #include <assembler/JoinerTaskCreator.h>
-
 using namespace std;
+
 
 /**
 * Main class of the application. Runs the main program loop on each MPI rank.
@@ -77,6 +77,8 @@ typedef void (Machine::*MachineMethod) ();
  * \author Sébastien Boisvert
  */
 class Machine{
+	Profiler m_profiler;
+
 	/** the virtual communicator of the MPI rank */
 	VirtualCommunicator m_virtualCommunicator;
 
