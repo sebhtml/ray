@@ -77,6 +77,8 @@ typedef void (Machine::*MachineMethod) ();
  * \author Sébastien Boisvert
  */
 class Machine{
+	uint64_t m_startingTimeMicroseconds;
+
 	Profiler m_profiler;
 
 	/** the virtual communicator of the MPI rank */

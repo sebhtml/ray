@@ -168,6 +168,14 @@ uint64_t getMilliSeconds(){
 	return milliSeconds;
 }
 
+uint64_t getMicroSecondsInOne(){
+	uint64_t seconds=0;
+	uint64_t microseconds=0;
+	getMicroSeconds(&seconds,&microseconds);
+	
+	return seconds*1000*1000 + microseconds;
+}
+
 /** only ported to POSIX system */
 void getMicroSeconds(uint64_t*seconds,uint64_t*microSeconds){
 	#ifdef OS_POSIX

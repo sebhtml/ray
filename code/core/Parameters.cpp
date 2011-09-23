@@ -139,6 +139,11 @@ void Parameters::parseCommands(){
 	for(int i=0;i<(int)m_commands.size();i++)
 		m_options.insert(m_commands[i]);
 
+	m_showCommunicationEvents=false;
+
+	if(hasOption("-show-communication-events"))
+		m_showCommunicationEvents=true;
+
 	m_originalCommands=m_commands;
 
 	/* shuffle randomly arguments */
@@ -1142,6 +1147,8 @@ void Parameters::showUsage(){
 	showOption("-run-profiler","Runs the profiler as the code runs.");
 	showOptionDescription("Running the profiler increases running times.");
 	cout<<endl;
+	showOption("-show-communication-events","Shows all messages sent and received.");
+	cout<<endl;
 	showOption("-show-read-placement","Shows read placement in the graph during the extension.");
 	cout<<endl;
 	showOption("-debug-bubbles","Debugs bubble code.");
@@ -1467,4 +1474,6 @@ bool Parameters::readCheckpoints(){
 	return false;
 }
 
-
+bool Parameters::showCommunicationEvents(){
+	return m_showCommunicationEvents;
+}

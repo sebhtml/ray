@@ -97,6 +97,8 @@ void Machine::start(){
 		&m_timePrinter);
 	m_partitioner.constructor(&m_outboxAllocator,&m_inbox,&m_outbox,&m_parameters,&m_slave_mode,&m_master_mode);
 
+	m_startingTimeMicroseconds = getMicroSecondsInOne();
+
 	m_initialisedAcademy=false;
 	m_initialisedKiller=false;
 	m_coverageInitialised=false;
@@ -736,6 +738,13 @@ void Machine::sendMessages(){
 	}
 	#endif
 
+	if(m_outbox.size() > 0 && m_parameters.showCommunicationEvents() && m_slave_mode == RAY_SLAVE_MODE_EXTENSION){
+		uint64_t microseconds=getMicroSecondsInOne() - m_startingTimeMicroseconds;
+		for(int i=0;i<(int)m_outbox.size();i++){
+			cout<<"[Communication] "<<microseconds<<" microseconds, SEND Source: "<<m_outbox[i]->getSource()<<" Destination: "<<m_outbox[i]->getDestination()<<" Tag: "<<MESSAGES[m_outbox[i]->getTag()]<<endl;
+		}
+	}
+
 	m_messagesHandler.sendMessages(&m_outbox,getRank());
 }
 
@@ -747,6 +756,13 @@ void Machine::sendMessages(){
 void Machine::receiveMessages(){
 	m_inbox.clear();
 	m_messagesHandler.receiveMessages(&m_inbox,&m_inboxAllocator,getRank());
+
+	if(m_inbox.size() > 0 && m_parameters.showCommunicationEvents() && m_slave_mode == RAY_SLAVE_MODE_EXTENSION){
+		uint64_t microseconds=getMicroSecondsInOne() - m_startingTimeMicroseconds;
+		for(int i=0;i<(int)m_inbox.size();i++){
+			cout<<"[Communication] "<<microseconds<<" microseconds, RECEIVE Source: "<<m_inbox[i]->getSource()<<" Destination: "<<m_inbox[i]->getDestination()<<" Tag: "<<MESSAGES[m_inbox[i]->getTag()]<<endl;
+		}
+	}
 
 	#ifdef ASSERT
 	int receivedMessages=m_inbox.size();

@@ -38,6 +38,7 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class Parameters{
+	bool m_showCommunicationEvents;
 	set<string> m_options;
 	bool m_providedPeakCoverage;
 	bool m_providedMinimumCoverage;
@@ -205,6 +206,7 @@ public:
 	bool readCheckpoints();
 
 	void writeCommandFile();
+	bool showCommunicationEvents();
 };
 
 #endif
