@@ -131,6 +131,9 @@ DESCRIPTION:
        -debug-fusions
               Debugs fusion code.
 
+       -debug-scaffolder
+              Debug the scaffolder.
+
 
 FILES
 

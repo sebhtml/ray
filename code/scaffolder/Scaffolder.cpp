@@ -19,8 +19,6 @@
 
 */
 
-//#define PRINT_RAW_LINK
-
 #include <iostream>
 #include <assembler/ReadFetcher.h>
 #include <scaffolder/Scaffolder.h>
@@ -307,7 +305,9 @@ void Scaffolder::run(){
 	if(m_contigId<(int)(*m_contigs).size()){
 		processContig();
 	}else{
-		cout<<" sending MASTER_RANK,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING"<<endl;
+		if(m_parameters->hasOption("-debug-scaffolder")){
+			cout<<" sending MASTER_RANK,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING"<<endl;
+		}
 		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING,
 			m_parameters->getRank());
 		m_outbox->push_back(aMessage);
@@ -822,27 +822,27 @@ void Scaffolder::processAnnotation(){
 			return;
 		}
 
-		#ifdef PRINT_RAW_LINK
-		cout<<endl;
-		cout<<"AverageDistance: "<<m_parameters->getLibraryMaxAverageLength(m_pairedReadLibrary)<<endl;
-		cout<<"StandardDeviation: "<<m_parameters->getLibraryMaxStandardDeviation(m_pairedReadLibrary)<<endl;
-		cout<<"Path1: "<<(*m_contigNames)[m_contigId]<<endl;
-		cout<<" Length: "<<(*m_contigs)[m_contigId].size()<<endl;
-		cout<<" Position: "<<m_positionOnContig<<endl;
-		cout<<" Coverage: "<<m_receivedCoverage<<endl;
-		cout<<" PathStrand: F"<<endl;
-		cout<<" ReadStrand: "<<strand<<endl;
-		cout<<" ReadLength: "<<m_readLength<<endl;
-		cout<<" PositionInRead: "<<positionOnStrand<<endl;
-		cout<<"Path2: "<<m_pairedForwardDirectionName<<endl;
-		cout<<" Length: "<<m_pairedForwardDirectionLength<<endl;
-		cout<<" Position: "<<m_pairedForwardDirectionPosition<<endl;
-		cout<<" Coverage: "<<m_pairedForwardMarkerCoverage<<endl;
-		cout<<" PathStrand: F"<<endl;
-		cout<<" ReadStrand: F"<<endl;
-		cout<<" ReadLength: "<<m_pairedReadLength<<endl;
-		cout<<" PositionInRead: "<<m_pairedForwardOffset<<endl;
-		#endif
+		if(m_parameters->hasOption("-debug-scaffolder")){
+			cout<<endl;
+			cout<<"AverageDistance: "<<m_parameters->getLibraryMaxAverageLength(m_pairedReadLibrary)<<endl;
+			cout<<"StandardDeviation: "<<m_parameters->getLibraryMaxStandardDeviation(m_pairedReadLibrary)<<endl;
+			cout<<"Path1: "<<(*m_contigNames)[m_contigId]<<endl;
+			cout<<" Length: "<<(*m_contigs)[m_contigId].size()<<endl;
+			cout<<" Position: "<<m_positionOnContig<<endl;
+			cout<<" Coverage: "<<m_receivedCoverage<<endl;
+			cout<<" PathStrand: F"<<endl;
+			cout<<" ReadStrand: "<<strand<<endl;
+			cout<<" ReadLength: "<<m_readLength<<endl;
+			cout<<" PositionInRead: "<<positionOnStrand<<endl;
+			cout<<"Path2: "<<m_pairedForwardDirectionName<<endl;
+			cout<<" Length: "<<m_pairedForwardDirectionLength<<endl;
+			cout<<" Position: "<<m_pairedForwardDirectionPosition<<endl;
+			cout<<" Coverage: "<<m_pairedForwardMarkerCoverage<<endl;
+			cout<<" PathStrand: F"<<endl;
+			cout<<" ReadStrand: F"<<endl;
+			cout<<" ReadLength: "<<m_pairedReadLength<<endl;
+			cout<<" PositionInRead: "<<m_pairedForwardOffset<<endl;
+		}
 
 		bool path1IsLeft=false;
 		bool path1IsRight=false;
@@ -876,9 +876,9 @@ Case 6. (allowed)
 				ScaffoldingLink hit;
 				hit.constructor(distance,m_receivedCoverage,m_pairedForwardMarkerCoverage);
 				m_scaffoldingSummary[(*m_contigNames)[m_contigId]]['F'][m_pairedForwardDirectionName]['R'].push_back(hit);
-				#ifdef PRINT_RAW_LINK
-				cout<<"LINK06 "<<(*m_contigNames)[m_contigId]<<",F,"<<m_pairedForwardDirectionName<<",R,"<<distance<<endl;
-				#endif
+				if(m_parameters->hasOption("-debug-scaffolder")){
+					cout<<"LINK06 "<<(*m_contigNames)[m_contigId]<<",F,"<<m_pairedForwardDirectionName<<",R,"<<distance<<endl;
+				}
 			}
 /*
 Case 1. (allowed)
@@ -892,9 +892,9 @@ Case 1. (allowed)
 			int distanceIn2=m_pairedForwardDirectionPosition+m_pairedReadLength-m_pairedForwardOffset;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0){
-				#ifdef PRINT_RAW_LINK
-				cout<<"LINK01 "<<(*m_contigNames)[m_contigId]<<",R,"<<m_pairedForwardDirectionName<<",F,"<<distance<<endl;
-				#endif
+				if(m_parameters->hasOption("-debug-scaffolder")){
+					cout<<"LINK01 "<<(*m_contigNames)[m_contigId]<<",R,"<<m_pairedForwardDirectionName<<",F,"<<distance<<endl;
+				}
 				ScaffoldingLink hit;
 				hit.constructor(distance,m_receivedCoverage,m_pairedForwardMarkerCoverage);
 				m_scaffoldingSummary[(*m_contigNames)[m_contigId]]['R'][m_pairedForwardDirectionName]['F'].push_back(hit);
@@ -914,9 +914,9 @@ Case 10. (allowed)
 			int distanceIn2=m_pairedForwardDirectionLength-m_pairedForwardDirectionPosition+m_pairedForwardOffset;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0){
-				#ifdef PRINT_RAW_LINK
-				cout<<"LINK10 "<<(*m_contigNames)[m_contigId]<<",R,"<<m_pairedForwardDirectionName<<",R,"<<distance<<endl;
-				#endif
+				if(m_parameters->hasOption("-debug-scaffolder")){
+					cout<<"LINK10 "<<(*m_contigNames)[m_contigId]<<",R,"<<m_pairedForwardDirectionName<<",R,"<<distance<<endl;
+				}
 				ScaffoldingLink hit;
 				hit.constructor(distance,m_receivedCoverage,m_pairedForwardMarkerCoverage);
 				m_scaffoldingSummary[(*m_contigNames)[m_contigId]]['R'][m_pairedForwardDirectionName]['R'].push_back(hit);
@@ -934,9 +934,9 @@ Case 13. (allowed)
 			int distanceIn2=m_pairedForwardDirectionPosition+m_pairedReadLength-m_pairedForwardOffset;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0){
-				#ifdef PRINT_RAW_LINK
-				cout<<"LINK13 "<<(*m_contigNames)[m_contigId]<<",F,"<<m_pairedForwardDirectionName<<",F,"<<distance<<endl;
-				#endif
+				if(m_parameters->hasOption("-debug-scaffolder")){
+					cout<<"LINK13 "<<(*m_contigNames)[m_contigId]<<",F,"<<m_pairedForwardDirectionName<<",F,"<<distance<<endl;
+				}
 
 				ScaffoldingLink hit;
 				hit.constructor(distance,m_receivedCoverage,m_pairedForwardMarkerCoverage);
@@ -1034,27 +1034,27 @@ Case 13. (allowed)
 			return;
 		}
 	
-		#ifdef PRINT_RAW_LINK
-		cout<<endl;
-		cout<<"AverageDistance: "<<m_parameters->getLibraryMaxAverageLength(m_pairedReadLibrary)<<endl;
-		cout<<"StandardDeviation: "<<m_parameters->getLibraryMaxStandardDeviation(m_pairedReadLibrary)<<endl;
-		cout<<"Path1: "<<(*m_contigNames)[m_contigId]<<endl;
-		cout<<" Length: "<<(*m_contigs)[m_contigId].size()<<endl;
-		cout<<" Position: "<<m_positionOnContig<<endl;
-		cout<<" Coverage: "<<m_receivedCoverage<<endl;
-		cout<<" PathStrand: F"<<endl;
-		cout<<" ReadStrand: "<<strand<<endl;
-		cout<<" ReadLength: "<<m_readLength<<endl;
-		cout<<" PositionInRead: "<<positionOnStrand<<endl;
-		cout<<"Path2: "<<m_pairedReverseDirectionName<<endl;
-		cout<<" Length: "<<m_pairedReverseDirectionLength<<endl;
-		cout<<" Position: "<<m_pairedReverseDirectionPosition<<endl;
-		cout<<" Coverage: "<<m_pairedReverseMarkerCoverage<<endl;
-		cout<<" PathStrand: F"<<endl;
-		cout<<" ReadStrand: R"<<endl;
-		cout<<" ReadLength: "<<m_pairedReadLength<<endl;
-		cout<<" PositionInRead: "<<m_pairedReverseOffset<<endl;
-		#endif
+		if(m_parameters->hasOption("-debug-scaffolder")){
+			cout<<endl;
+			cout<<"AverageDistance: "<<m_parameters->getLibraryMaxAverageLength(m_pairedReadLibrary)<<endl;
+			cout<<"StandardDeviation: "<<m_parameters->getLibraryMaxStandardDeviation(m_pairedReadLibrary)<<endl;
+			cout<<"Path1: "<<(*m_contigNames)[m_contigId]<<endl;
+			cout<<" Length: "<<(*m_contigs)[m_contigId].size()<<endl;
+			cout<<" Position: "<<m_positionOnContig<<endl;
+			cout<<" Coverage: "<<m_receivedCoverage<<endl;
+			cout<<" PathStrand: F"<<endl;
+			cout<<" ReadStrand: "<<strand<<endl;
+			cout<<" ReadLength: "<<m_readLength<<endl;
+			cout<<" PositionInRead: "<<positionOnStrand<<endl;
+			cout<<"Path2: "<<m_pairedReverseDirectionName<<endl;
+			cout<<" Length: "<<m_pairedReverseDirectionLength<<endl;
+			cout<<" Position: "<<m_pairedReverseDirectionPosition<<endl;
+			cout<<" Coverage: "<<m_pairedReverseMarkerCoverage<<endl;
+			cout<<" PathStrand: F"<<endl;
+			cout<<" ReadStrand: R"<<endl;
+			cout<<" ReadLength: "<<m_pairedReadLength<<endl;
+			cout<<" PositionInRead: "<<m_pairedReverseOffset<<endl;
+		}
 
 		bool path1IsLeft=false;
 		bool path1IsRight=false;
@@ -1086,9 +1086,9 @@ Case 4. (allowed)
 			int distanceIn2=m_pairedReverseDirectionLength-m_pairedReverseDirectionPosition-m_pairedReverseOffset+m_pairedReadLength;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0){
-				#ifdef PRINT_RAW_LINK
-				cout<<"LINK04 "<<(*m_contigNames)[m_contigId]<<",R,"<<m_pairedReverseDirectionName<<",R,"<<distance<<endl;
-				#endif
+				if(m_parameters->hasOption("-debug-scaffolder")){
+					cout<<"LINK04 "<<(*m_contigNames)[m_contigId]<<",R,"<<m_pairedReverseDirectionName<<",R,"<<distance<<endl;
+				}
 				ScaffoldingLink hit;
 				hit.constructor(distance,m_receivedCoverage,m_pairedReverseMarkerCoverage);
 				m_scaffoldingSummary[(*m_contigNames)[m_contigId]]['R'][m_pairedReverseDirectionName]['R'].push_back(hit);
@@ -1107,9 +1107,9 @@ Case 7. (allowed)
 			int distanceIn2=m_pairedReverseDirectionPosition+m_pairedReverseOffset;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0){
-				#ifdef PRINT_RAW_LINK
-				cout<<"LINK07 "<<(*m_contigNames)[m_contigId]<<",F,"<<m_pairedReverseDirectionName<<",F,"<<distance<<endl;
-				#endif
+				if(m_parameters->hasOption("-debug-scaffolder")){
+					cout<<"LINK07 "<<(*m_contigNames)[m_contigId]<<",F,"<<m_pairedReverseDirectionName<<",F,"<<distance<<endl;
+				}
 				ScaffoldingLink hit;
 				hit.constructor(distance,m_receivedCoverage,m_pairedReverseMarkerCoverage);
 				m_scaffoldingSummary[(*m_contigNames)[m_contigId]]['F'][m_pairedReverseDirectionName]['F'].push_back(hit);
@@ -1128,9 +1128,9 @@ Case 11. (allowed)
 			int distanceIn2=m_pairedReverseDirectionPosition+m_pairedReverseOffset;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0){
-				#ifdef PRINT_RAW_LINK
-				cout<<"LINK11 "<<(*m_contigNames)[m_contigId]<<",R,"<<m_pairedReverseDirectionName<<",F,"<<distance<<endl;
-				#endif
+				if(m_parameters->hasOption("-debug-scaffolder")){
+					cout<<"LINK11 "<<(*m_contigNames)[m_contigId]<<",R,"<<m_pairedReverseDirectionName<<",F,"<<distance<<endl;
+				}
 				ScaffoldingLink hit;
 				hit.constructor(distance,m_receivedCoverage,m_pairedReverseMarkerCoverage);
 				m_scaffoldingSummary[(*m_contigNames)[m_contigId]]['R'][m_pairedReverseDirectionName]['F'].push_back(hit);
@@ -1148,9 +1148,9 @@ Case 16. (allowed)
 			int distanceIn2=m_pairedReverseDirectionLength-m_pairedReverseDirectionPosition-m_pairedReverseOffset+m_pairedReadLength;
 			int distance=range-distanceIn1-distanceIn2;
 			if(distance>0){
-				#ifdef PRINT_RAW_LINK
-				cout<<"LINK16 "<<(*m_contigNames)[m_contigId]<<",F,"<<m_pairedReverseDirectionName<<",R,"<<distance<<endl;
-				#endif
+				if(m_parameters->hasOption("-debug-scaffolder")){
+					cout<<"LINK16 "<<(*m_contigNames)[m_contigId]<<",F,"<<m_pairedReverseDirectionName<<",R,"<<distance<<endl;
+				}
 				ScaffoldingLink hit;
 				hit.constructor(distance,m_receivedCoverage,m_pairedReverseMarkerCoverage);
 				m_scaffoldingSummary[(*m_contigNames)[m_contigId]]['F'][m_pairedReverseDirectionName]['R'].push_back(hit);

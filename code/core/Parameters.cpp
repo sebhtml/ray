@@ -1151,6 +1151,8 @@ void Parameters::showUsage(){
 	cout<<endl;
 	showOption("-debug-fusions","Debugs fusion code.");
 	cout<<endl;
+	showOption("-debug-scaffolder","Debug the scaffolder.");
+	cout<<endl;
 	cout<<endl;
 
 
