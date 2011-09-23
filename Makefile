@@ -30,11 +30,6 @@ HAVE_LIBZ = n
 # y/n
 HAVE_LIBBZ2 = n
 
-# a real-time OS is available
-# (for the function clock_gettime)
-# y/n
-HAVE_CLOCK_GETTIME = n
-
 # use Intel's compiler
 # the name of the Intel MPI C++ compiler is mpiicpc
 # Open-MPI and MPICH2 utilise mpic++ for the name.
@@ -126,10 +121,6 @@ LDFLAGS-$(HAVE_LIBBZ2) += -lbz2
 #debug flag
 CXXFLAGS-$(DEBUG) += -g
 LDFLAGS-$(DEBUG)  += -g
-
-#compile with real-time linux
-CXXFLAGS-$(HAVE_CLOCK_GETTIME) += -DHAVE_CLOCK_GETTIME 
-LDFLAGS-$(HAVE_CLOCK_GETTIME) += -lrt
 
 LDFLAGS-$(GPROF) += -pg -g
 
@@ -232,7 +223,6 @@ showOptions:
 	@echo ASSERT = $(ASSERT)
 	@echo HAVE_LIBZ = $(HAVE_LIBZ)
 	@echo HAVE_LIBBZ2 = $(HAVE_LIBBZ2)
-	@echo HAVE_CLOCK_GETTIME = $(HAVE_CLOCK_GETTIME)
 	@echo INTEL_COMPILER = $(INTEL_COMPILER)
 	@echo MPICXX = $(MPICXX)
 	@echo GPROF = $(GPROF)

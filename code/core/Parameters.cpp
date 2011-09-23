@@ -1140,7 +1140,6 @@ void Parameters::showUsage(){
 	cout<<"  Debugging"<<endl;
 	cout<<endl;
 	showOption("-run-profiler","Runs the profiler as the code runs.");
-	showOptionDescription("Needs HAVE_CLOCK_GETTIME=y at compilation");
 	showOptionDescription("Running the profiler increases running times.");
 	cout<<endl;
 	showOption("-debug-bubbles","Debugs bubble code.");

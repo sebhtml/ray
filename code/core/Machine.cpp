@@ -500,15 +500,18 @@ void Machine::runWithProfiler(){
 	int resolution=100;// milliseconds
 	int parts=1000/resolution;
 
-	int lastTime=getMilliSeconds();
+	uint64_t startingTime=getMilliSeconds();
+
+	uint64_t lastTime=getMilliSeconds();
 
 	/** m_timeToLive goes down to 0 when m_alive is false
  * 	This is called the aging process */
 	while(m_timeToLive){
-		int t=getMilliSeconds();
+		uint64_t t=getMilliSeconds();
 		if(t>=(lastTime+resolution)/parts*parts){
-			int toPrint=t;
-			double seconds=toPrint/(1000.0);
+
+			double seconds=(t-startingTime)/1000.0;
+
 			int balance=sentMessages-receivedMessages;
 			printf("Rank %i: %s Time= %.2f s Speed= %i Sent= %i Received= %i Balance= %i\n",m_rank,SLAVE_MODES[m_slave_mode],
 				seconds,ticks,sentMessages,receivedMessages,balance);

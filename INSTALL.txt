@@ -26,7 +26,6 @@ PREFIX			Where to install stuff
 MAXKMERLENGTH		maximum k-mer length, default is MAXKMERLENGTH=32
 FORCE_PACKING		save memory by not aligning addresses, default is FORCE_PACKING=n
 ASSERT			run assertions too, default is ASSERT=n
-HAVE_CLOCK_GETTIME	enables option -run-profiler, default is HAVE_CLOCK_GETTIME=n
 
 
 For other options, read the Makefile header.

@@ -104,7 +104,7 @@ Tested C++ compilers:
 ## Compilation options
 
 	make PREFIX=build-3000 MAXKMERLENGTH=64 HAVE_LIBZ=y HAVE_LIBBZ2=y \
-	HAVE_CLOCK_GETTIME=n INTEL_COMPILER=n ASSERT=n FORCE_PACKING=y
+	ASSERT=n FORCE_PACKING=y
 	# wait
 	make install
 	ls build-3000

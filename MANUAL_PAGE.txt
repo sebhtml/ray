@@ -117,7 +117,6 @@ DESCRIPTION:
 
        -run-profiler
               Runs the profiler as the code runs.
-              Needs HAVE_CLOCK_GETTIME=y at compilation
               Running the profiler increases running times.
 
        -debug-bubbles

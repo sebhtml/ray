@@ -159,28 +159,29 @@ uint64_t getMemoryUsageInKiBytes(){
 
 /** real-time only ported to real-time POSIX systems */
 uint64_t getMilliSeconds(){
-	uint64_t milliSeconds=0;
-
-	#ifdef OS_POSIX
-	#ifdef HAVE_CLOCK_GETTIME
-	timespec temp;
-	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&temp);
-	uint64_t seconds=temp.tv_sec;
-	uint64_t nanoseconds=temp.tv_nsec;
-	milliSeconds=seconds*1000+nanoseconds/1000/1000;
-	#endif
-	#endif
-
+	uint64_t seconds=0;
+	uint64_t microseconds=0;
+	getMicroSeconds(&seconds,&microseconds);
+	
+	uint64_t milliSeconds=seconds*1000 + microseconds / 1000;
+	
 	return milliSeconds;
 }
 
 /** only ported to POSIX system */
 void getMicroSeconds(uint64_t*seconds,uint64_t*microSeconds){
 	#ifdef OS_POSIX
+
 	struct timeval theTime;
 	gettimeofday(&theTime,NULL);
 	(*seconds)=theTime.tv_sec;
 	(*microSeconds)=theTime.tv_usec;
+
+	#elif defined (OS_WIN)
+	
+	/* TODO: get microseconds is not implemented on Windows */
+	(*seconds)=0;
+	(*microSeconds)=0;
 	#endif
 }
 
@@ -273,13 +274,6 @@ void showRayVersionShort(){
 
 	cout<<"ASSERT: ";
 	#ifdef ASSERT
-	cout<<"y"<<endl;
-	#else
-	cout<<"n"<<endl;
-	#endif
-
-	cout<<"HAVE_CLOCK_GETTIME (real-time Operating System): ";
-	#ifdef HAVE_CLOCK_GETTIME
 	cout<<"y"<<endl;
 	#else
 	cout<<"n"<<endl;
