@@ -48,18 +48,31 @@ uint64_t GridTable::size(){
 }
 
 Vertex*GridTable::find(Kmer*key){
+	#ifdef ASSERT
+	assert(key!=NULL);
+	#endif
+
 	Kmer lowerKey=key->complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 	if(key->isLower(&lowerKey)){
 		lowerKey=*key;
 	}
+
 	return m_hashTable.find(&lowerKey);
 }
 
 KmerCandidate*GridTable::insertInAcademy(Kmer*key){
+	#ifdef ASSERT
+	assert(key!=NULL);
+	#endif
+
 	return m_kmerAcademy.insert(key);
 }
 
 Vertex*GridTable::insert(Kmer*key){
+	#ifdef ASSERT
+	assert(key!=NULL);
+	#endif
+
 	Kmer lowerKey=key->complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 	if(key->isLower(&lowerKey)){
 		lowerKey=*key;
@@ -67,8 +80,11 @@ Vertex*GridTable::insert(Kmer*key){
 	uint64_t sizeBefore=m_hashTable.size();
 	Vertex*entry=m_hashTable.insert(&lowerKey);
 	m_inserted=m_hashTable.size()>sizeBefore;
-	if(m_inserted)
+
+	if(m_inserted){
 		m_size+=2;
+	}
+
 	return entry;
 }
 
@@ -81,7 +97,17 @@ bool GridTable::inserted(){
 }
 
 bool GridTable::isAssembled(Kmer*a){
-	return find(a)->isAssembled();
+	#ifdef ASSERT
+	assert(a!=NULL);
+	#endif
+
+	Vertex*entry=find(a);
+	
+	#ifdef ASSERT
+	assert(entry!=NULL);
+	#endif
+
+	return entry->isAssembled();
 /*
 	Kmer reverse=a->complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 	return getDirections(a).size()>0||getDirections(&reverse).size()>0;
@@ -93,8 +119,15 @@ KmerAcademy*GridTable::getKmerAcademy(){
 }
 
 void GridTable::addRead(Kmer*a,ReadAnnotation*e){
-	Vertex*i=insert(a);
+
+	#ifdef ASSERT
+	assert(a!=NULL);
+	assert(e!=NULL);
+	#endif
+
+	Vertex*i=find(a);
 	i->addRead(a,e);
+
 	#ifdef ASSERT
 	ReadAnnotation*reads=i->getReads(a);
 	assert(reads!=NULL);
@@ -102,33 +135,73 @@ void GridTable::addRead(Kmer*a,ReadAnnotation*e){
 }
 
 ReadAnnotation*GridTable::getReads(Kmer*a){
+
+	#ifdef ASSERT
+	assert(a!=NULL);
+	#endif
+
 	Vertex*i=find(a);
 	if(i==NULL){
 		return NULL;
 	}
+
 	ReadAnnotation*reads=i->getReads(a);
 	return reads;
 }
 
 void GridTable::addDirection(Kmer*a,Direction*d){
-	Vertex*i=insert(a);
+	#ifdef ASSERT
+	assert(a!=NULL);
+	assert(d!=NULL);
+
+	Kmer copy1=*a;
+	Direction copy2=*d;
+	#endif
+
+	Vertex*i=find(a);
+
+	#ifdef ASSERT
+	assert(i!=NULL);
+	#endif
+
 	i->addDirection(a,d);
 }
 
 vector<Direction> GridTable::getDirections(Kmer*a){
+	#ifdef ASSERT
+	assert(a!=NULL);
+	#endif
+
 	Vertex*i=find(a);
+
 	if(i==NULL){
 		vector<Direction> p;
 		return p;
 	}
+
+	#ifdef ASSERT
+	assert(i!=NULL);
+
+	/* do a copy to track to check for a segmentation fault */
+	Vertex copy=*i;
+	assert(copy.m_coverage_lower >= 1);
+	#endif
+
 	return i->getDirections(a);
 }
 
 void GridTable::clearDirections(Kmer*a){
+	#ifdef ASSERT
+	assert(a!=NULL);
+	#endif
+
 	Vertex*i=find(a);
-	if(i!=NULL){
-		i->clearDirections(a);
-	}
+
+	#ifdef ASSERT
+	assert(i!=NULL);
+	#endif
+	
+	i->clearDirections(a);
 }
 
 MyHashTable<Kmer,Vertex>*GridTable::getHashTable(){

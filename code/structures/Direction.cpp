@@ -19,8 +19,8 @@
 
 */
 
-#include<structures/Direction.h>
-#include<stdlib.h>
+#include <structures/Direction.h>
+#include <stdlib.h>
 
 void Direction::constructor(uint64_t wave,int progression,bool lower){
 	m_lower=lower;
@@ -42,6 +42,15 @@ Direction*Direction::getNext(){
 }
 
 void Direction::setNext(Direction*e){
+	#ifdef ASSERT
+	assert(this!=NULL);
+
+	if(e!=NULL){
+		Direction copy=*e;
+		assert(copy.getNext()==NULL || copy.getNext()!=NULL);
+	}
+	#endif
+
 	m_next=e;
 }
 

@@ -27,7 +27,7 @@ using namespace std;
 /**
  * Time complexity: O(GROUPS_PER_LANE) to initializing DefragmentationGroup objects 
  */
-void DefragmentationLane::constructor(int number,int bytePerElement,bool show){
+void DefragmentationLane::constructor(int number,int ,bool ){
 	m_number=number;
 	for(int i=0;i<GROUPS_PER_LANE;i++)
 		m_groups[i].setPointers();

@@ -147,8 +147,26 @@ void Vertex::addRead(Kmer*vertex,ReadAnnotation*e){
 }
 
 void Vertex::addDirection(Kmer*vertex,Direction*e){
+	#ifdef ASSERT
+	Vertex copy0=*this;
+
+	if(m_directions != NULL){
+		Direction copy1=*m_directions;
+		Direction*next=copy1.getNext();
+		assert(next ==NULL || next != NULL);
+	}
+
+	assert(e!=NULL);
+	Direction copy2=*e;
+	assert(copy2.getNext() == NULL);
+	#endif
+
 	e->setNext(m_directions);
 	m_directions=e;
+
+	#ifdef ASSERT
+	assert(m_directions != NULL);
+	#endif
 }
 
 ReadAnnotation*Vertex::getReads(Kmer*vertex){
@@ -157,17 +175,47 @@ ReadAnnotation*Vertex::getReads(Kmer*vertex){
 
 vector<Direction> Vertex::getDirections(Kmer*vertex){
 	bool seekLower=false;
+
 	if(vertex->isEqual(&m_lowerKey)){
 		seekLower=true;
 	}
+
 	vector<Direction> a;
 	Direction*e=m_directions;
+
+	if(e==NULL)
+		return a;
+
+	//#define DEBUG_getDirections
+
+	#ifdef DEBUG_getDirections
+	cout<<"DEBUG_getDirections Initial Pointer= "<<e<<endl;
+	#endif
+
 	while(e!=NULL){
+		#ifdef ASSERT
+		assert(e!=NULL);
+		#endif
+
 		if(e->isLower()==seekLower){
 			a.push_back(*e);
 		}
+
+		// #define DEBUG_bug_20110921
+
+		#ifdef DEBUG_bug_20110921
+		if(e->getProgression() == 0){
+			cout<<"Direction "<<e<<" path "<<e->getWave()<<" position "<<e->getProgression()<<" lower "<<e->isLower()<<" next "<<e->getNext()<<endl;
+		}
+		#endif
+
 		e=e->getNext();
 	}
+
+	#ifdef ASSERT
+	assert(e==NULL);
+	#endif
+
 	return a;
 }
 
@@ -175,7 +223,6 @@ void Vertex::clearDirections(Kmer*a){
 	m_directions=NULL;
 }
 
-/* TODO: write this in binary instead of ASCII */
 void Vertex::write(Kmer*key,ofstream*f,int kmerLength){
 	int coverage=getCoverage(key);
 	key->write(f);

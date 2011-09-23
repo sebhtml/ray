@@ -57,6 +57,11 @@ void JoinerWorker::work(){
 				cout<<"JoinerWorker "<<m_workerIdentifier<<" position: ["<<m_position<<"/"<<m_path->size()<<endl;
 			}
 */
+
+			#ifdef ASSERT
+			assert(m_position < (int)m_path->size());
+			#endif
+
 			Kmer kmer=m_path->at(m_position);
 
 			if(m_reverseStrand)
@@ -64,10 +69,18 @@ void JoinerWorker::work(){
 
 			int destination=kmer.vertexRank(m_parameters->getSize(),
 				m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+
+			#ifdef ASSERT
+			assert(destination < m_parameters->getSize() && destination >= 0);
+			#endif
+
 			int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE);
 			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(elementsPerQuery);
 			int outputPosition=0;
 			kmer.pack(message,&outputPosition);
+
+			//cout<<"Comm"<<m_parameters->getRank()<<" sends to "<<destination<<" tag "<<MESSAGES[RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE]<<endl;
+
 			Message aMessage(message,elementsPerQuery,destination,
 				RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,m_parameters->getRank());
 			m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);

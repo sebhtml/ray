@@ -105,6 +105,10 @@ bool FusionTaskCreator::hasUnassignedTask(){
  * 2011-08-30 -- Code review by Élénie Godzaridis (found bug with new/malloc)
  */
 Worker*FusionTaskCreator::assignNextTask(){
+
+	if(m_currentWorkerIdentifier % 10== 0)
+		cout<<"Rank "<<m_parameters->getRank()<<" FusionTaskCreator assignNextTask ["<<m_currentWorkerIdentifier<<"/"<<m_paths->size()*2<<"]"<<endl;
+
 	FusionWorker*worker=new FusionWorker;
 	worker->constructor(m_currentWorkerIdentifier,&(m_paths->at(m_iterator)),m_pathIdentifiers->at(m_iterator),m_reverseStrand,m_virtualCommunicator,m_parameters,m_outboxAllocator);
 
@@ -122,8 +126,9 @@ Worker*FusionTaskCreator::assignNextTask(){
 
 /** get the result of a worker */
 void FusionTaskCreator::processWorkerResult(Worker*worker){
+
 	if(m_completedJobs % 10== 0)
-		cout<<"Rank "<<m_parameters->getRank()<<" FusionTaskCreator ["<<m_completedJobs<<"/"<<m_paths->size()*2<<"]"<<endl;
+		cout<<"Rank "<<m_parameters->getRank()<<" FusionTaskCreator processWorkerResult ["<<m_completedJobs<<"/"<<m_paths->size()*2<<"]"<<endl;
 
 	FusionWorker*worker2=(FusionWorker*)worker;
 	if(worker2->isPathEliminated()){

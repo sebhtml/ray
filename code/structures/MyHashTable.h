@@ -1040,6 +1040,10 @@ VALUE*MyHashTable<KEY,VALUE>::findKey(KEY*key,bool checkAuxiliary){
  */
 template<class KEY,class VALUE>
 VALUE*MyHashTable<KEY,VALUE>::find(KEY*key){
+	#ifdef ASSERT
+	assert(key!=NULL);
+	#endif
+
 	return findKey(key,true);
 }
 

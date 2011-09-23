@@ -42,7 +42,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 
 		m_activeWorkerIterator.constructor(&m_activeWorkers);
 		m_initiatedIterator=true;
-		m_maximumAliveWorkers=30000;
+		m_maximumAliveWorkers=32768;
 	}
 
 	if(!m_checkedCheckpoint){

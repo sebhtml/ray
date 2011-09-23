@@ -200,13 +200,6 @@ void Machine::start(){
 	m_mp.setScaffolder(&m_scaffolder);
 	m_mp.setVirtualCommunicator(&m_virtualCommunicator);
 
-	int PERSISTENT_ALLOCATOR_CHUNK_SIZE=4194304; // 4 MiB
-	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE,RAY_MALLOC_TYPE_PERSISTENT_DATA_ALLOCATOR,
-		m_parameters.showMemoryAllocations());
-
-	int directionAllocatorChunkSize=4194304; // 4 MiB
-	m_directionsAllocator.constructor(directionAllocatorChunkSize,RAY_MALLOC_TYPE_WAVE_ALLOCATOR,
-		m_parameters.showMemoryAllocations());
 
 	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
 	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
@@ -247,6 +240,15 @@ void Machine::start(){
 	}
 
 	m_parameters.constructor(m_argc,m_argv,getRank());
+
+	int PERSISTENT_ALLOCATOR_CHUNK_SIZE=4194304; // 4 MiB
+	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE,RAY_MALLOC_TYPE_PERSISTENT_DATA_ALLOCATOR,
+		m_parameters.showMemoryAllocations());
+
+	int directionAllocatorChunkSize=4194304; // 4 MiB
+
+	m_directionsAllocator.constructor(directionAllocatorChunkSize,RAY_MALLOC_TYPE_WAVE_ALLOCATOR,
+		m_parameters.showMemoryAllocations());
 
 	/** create the directory for the assembly */
 	

@@ -19,7 +19,7 @@
 
 */
 
-#define PRINT_RAW_LINK
+//#define PRINT_RAW_LINK
 
 #include <iostream>
 #include <assembler/ReadFetcher.h>
@@ -307,6 +307,7 @@ void Scaffolder::run(){
 	if(m_contigId<(int)(*m_contigs).size()){
 		processContig();
 	}else{
+		cout<<" sending MASTER_RANK,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING"<<endl;
 		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING,
 			m_parameters->getRank());
 		m_outbox->push_back(aMessage);

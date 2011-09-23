@@ -157,7 +157,7 @@ int Kmer::vertexRank(int _size,int w,bool color){
 	Kmer b=complementVertex(w,color);
 	if(isLower(&b))
 		b=*this;
-	return b.hash_function_1()%(_size);
+	return b.hash_function_1()%_size;
 }
 
 /**

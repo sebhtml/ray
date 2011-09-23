@@ -109,13 +109,17 @@ void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int get
 
 	#ifdef ASSERT
 	assert(m_seedingData->m_SEEDING_i<m_ed->m_EXTENSION_contigs.size());
+	assert(m_ed->m_EXTENSION_currentPosition < (int) m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size());
+	assert(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size() > 0);
 	#endif
 
 	Kmer vertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
 	int destination=m_parameters->_vertexRank(&vertex);
+
 	for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 		m_buffers.addAt(destination,vertex.getU64(i));
 	}
+
 	m_buffers.addAt(destination,m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i]);
 	m_buffers.addAt(destination,m_ed->m_EXTENSION_currentPosition);
 

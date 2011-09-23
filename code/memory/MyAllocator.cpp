@@ -119,6 +119,18 @@ void*MyAllocator::allocate(int s){
 	void*r=(void*)(((char*)m_chunks[m_currentChunkId])+m_currentPosition);
 	// increase the current position.
 	m_currentPosition+=s;
+
+	#ifdef ASSERT
+	assert(m_currentPosition >= 0 && m_currentPosition <= m_CHUNK_SIZE);
+
+	/* make sure that we can dereference r and use s bytes */
+	char*test=(char*)r;
+	for(int i=0;i<s;i++){
+		test[i]=0;
+	}
+
+	#endif
+
 	return r;
 }
 
@@ -132,6 +144,8 @@ void MyAllocator::clear(){
 	m_chunks.clear();
 	m_currentPosition=0;
 	m_currentChunkId=0;
+
+	m_store.reset();
 }
 
 int MyAllocator::getChunkSize(){

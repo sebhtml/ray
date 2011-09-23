@@ -81,7 +81,7 @@ void Library::detectDistances(){
 
 		m_activeWorkerIterator=m_activeWorkers.begin();
 		m_initiatedIterator=true;
-		m_maximumAliveWorkers=30000;
+		m_maximumAliveWorkers=32768;
 	}
 
 	m_virtualCommunicator->processInbox(&m_activeWorkersToRestore);

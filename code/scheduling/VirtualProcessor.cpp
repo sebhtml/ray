@@ -99,7 +99,7 @@ void VirtualProcessor::constructor(StaticVector*outbox,StaticVector*inbox,RingAl
 	m_parameters=parameters;
 
 	/** the maximum number of workers on this VirtualProcessor */
-	m_maximumAliveWorkers=30000;
+	m_maximumAliveWorkers=32768; /* 2**15 */
 
 	reset();
 }

@@ -67,24 +67,20 @@ uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
 # optimize
 OPTIMIZE = y
 
+# add -g to gcc
+DEBUG = y
+
 # profiling
 GPROF = n
-DEBUG = n
 
 ifeq ($(GPROF),y)
 	OPTIMIZE = n
 	FORCE_PACKING = n
 endif
 
-ifeq ($(DEBUG),y)
-	OPTIMIZE = n
-	FORCE_PACKING = n
-	ASSERT = y 
-endif
-
 PEDANTIC = n
 
-MPICXX-y = mpic++
+MPICXX-y = mpicxx
 
 # mpic++ from an MPI implementation must be reachable with the PATH
 # tested implementations of MPI include Open-MPI and MPICH2
@@ -96,14 +92,13 @@ CXXFLAGS-$(OPTIMIZE) += -O3
 ifeq ($(INTEL_COMPILER),n)
 # g++ options
 ifeq ($(uname_S),Linux)
-	CXXFLAGS += -Wall -std=c++98
-	#CXXFLAGS-$(OPTIMIZE) += -fomit-frame-pointer -finline-functions -funroll-loops
+	CXXFLAGS +=  -Wall -ansi -g #-std=c++98
 	CXXFLAGS-$(PEDANTIC) += -pedantic -Wextra 
 endif
 endif
 
 # profiling
-CXXFLAGS-$(GPROF) += -g -pg -O3
+CXXFLAGS-$(GPROF) += -g -pg
 
 # if you use Intel's mpiicpc, uncomment the following lines
 MPICXX-$(INTEL_COMPILER) = mpiicpc 
@@ -220,9 +215,9 @@ obj-y += code/heuristics/BubbleTool.o code/heuristics/Chooser.o code/heuristics/
  code/heuristics/TipWatchdog.o code/heuristics/RayNovaEngine.o
 
 # inference rule
+#@echo "  MPICXX" $<
 %.o: %.cpp
-	@echo "  MPICXX" $<
-	@$(MPICXX) -c -o $@ $<  $(CXXFLAGS)
+	$(MPICXX) -c -o $@ $<  $(CXXFLAGS)
 
 # the target is Ray
 all: $(TARGETS)
@@ -252,9 +247,9 @@ showOptions:
 	@touch showOptions
 	
 # how to make Ray
+#@echo "  MPICXX $@"
 Ray: showOptions $(obj-y)
-	@echo "  MPICXX $@"
-	@$(MPICXX) $(LDFLAGS) $(obj-y) -o $@
+	$(MPICXX) $(LDFLAGS) $(obj-y) -o $@
 	@echo $(PREFIX) > PREFIX
 	@echo $(TARGETS) > TARGETS
 
