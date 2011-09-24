@@ -741,7 +741,9 @@ void Machine::sendMessages(){
 	if(m_outbox.size() > 0 && m_parameters.showCommunicationEvents() && m_slave_mode == RAY_SLAVE_MODE_EXTENSION){
 		uint64_t microseconds=getMicroSecondsInOne() - m_startingTimeMicroseconds;
 		for(int i=0;i<(int)m_outbox.size();i++){
-			cout<<"[Communication] "<<microseconds<<" microseconds, SEND Source: "<<m_outbox[i]->getSource()<<" Destination: "<<m_outbox[i]->getDestination()<<" Tag: "<<MESSAGES[m_outbox[i]->getTag()]<<endl;
+			cout<<"[Communication] "<<microseconds<<" microseconds, SEND ";
+			m_outbox[i]->print();
+			cout<<endl;
 		}
 	}
 
@@ -760,7 +762,9 @@ void Machine::receiveMessages(){
 	if(m_inbox.size() > 0 && m_parameters.showCommunicationEvents() && m_slave_mode == RAY_SLAVE_MODE_EXTENSION){
 		uint64_t microseconds=getMicroSecondsInOne() - m_startingTimeMicroseconds;
 		for(int i=0;i<(int)m_inbox.size();i++){
-			cout<<"[Communication] "<<microseconds<<" microseconds, RECEIVE Source: "<<m_inbox[i]->getSource()<<" Destination: "<<m_inbox[i]->getDestination()<<" Tag: "<<MESSAGES[m_inbox[i]->getTag()]<<endl;
+			cout<<"[Communication] "<<microseconds<<" microseconds, RECEIVE ";
+			m_inbox[i]->print();
+			cout<<endl;
 		}
 	}
 

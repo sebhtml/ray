@@ -73,6 +73,8 @@ public:
  * Gets the source MPI rank
  */
 	int getSource();
+
+	void print();
 };
 
 #endif

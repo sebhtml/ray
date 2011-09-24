@@ -20,6 +20,9 @@
 */
 
 #include <communication/Message.h>
+#include <iostream>
+#include <communication/mpi_tags.h>
+using namespace std;
 
 /** buffer must be allocated or else it will CORE DUMP. */
 Message::Message(uint64_t*b,int c,int dest,int tag,int source){
@@ -52,3 +55,9 @@ int Message::getSource(){
 	return m_source;
 }
 
+void Message::print(){
+	cout<<"Source: "<<getSource()<<" Destination: "<<getDestination()<<" Tag: "<<MESSAGES[getTag()]<<" Count: "<<getCount();
+	if(m_count > 0){
+		cout<<" Overlay: "<<hex<<m_buffer[0]<<dec;
+	}
+}
