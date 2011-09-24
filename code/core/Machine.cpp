@@ -753,7 +753,7 @@ void Machine::sendMessages(){
 	}
 	#endif
 
-	if(m_outbox.size() > 0 && m_parameters.showCommunicationEvents() && m_slave_mode == RAY_SLAVE_MODE_EXTENSION){
+	if(m_outbox.size() > 0 && m_parameters.showCommunicationEvents() /* && m_slave_mode == RAY_SLAVE_MODE_EXTENSION*/){
 		uint64_t microseconds=getMicroSecondsInOne() - m_startingTimeMicroseconds;
 		for(int i=0;i<(int)m_outbox.size();i++){
 			cout<<"[Communication] "<<microseconds<<" microseconds, SEND ";
@@ -774,7 +774,7 @@ void Machine::receiveMessages(){
 	m_inbox.clear();
 	m_messagesHandler.receiveMessages(&m_inbox,&m_inboxAllocator,getRank());
 
-	if(m_inbox.size() > 0 && m_parameters.showCommunicationEvents() && m_slave_mode == RAY_SLAVE_MODE_EXTENSION){
+	if(m_inbox.size() > 0 && m_parameters.showCommunicationEvents() /*&& m_slave_mode == RAY_SLAVE_MODE_EXTENSION*/){
 		uint64_t microseconds=getMicroSecondsInOne() - m_startingTimeMicroseconds;
 		for(int i=0;i<(int)m_inbox.size();i++){
 			cout<<"[Communication] "<<microseconds<<" microseconds, RECEIVE ";
