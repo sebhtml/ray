@@ -76,6 +76,8 @@ class VirtualCommunicator{
 	// reply types.
 	map<int,int> m_replyTagToQueryTag;
 
+	map<int,int> m_reverseReplyMap;
+
 	int m_rank;
 	int m_size;
 	RingAllocator*m_outboxAllocator;
@@ -200,6 +202,8 @@ public:
 	bool nextIsAlmostFull();
 	void printStatistics();
 	void setDebug();
+
+	int getReplyType(int tag);
 };
 
 #endif

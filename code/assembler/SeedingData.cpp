@@ -103,7 +103,9 @@ void SeedingData::computeSeeds(){
 
 			// only consider the long ones.
 			if(nucleotides>=m_parameters->getMinimumContigLength()){
+				#ifdef SHOW_DISCOVERIES
 				printf("Rank %i discovered a seed with %i vertices\n",m_rank,(int)seed.size());
+				#endif
 				
 				Kmer firstVertex=seed[0];
 				Kmer lastVertex=seed[seed.size()-1];

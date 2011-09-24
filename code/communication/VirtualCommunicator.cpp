@@ -50,7 +50,25 @@ void VirtualCommunicator::setReplyType(int query,int reply){
 	#ifdef ASSERT
 	assert(m_replyTagToQueryTag.count(reply)==0);
 	#endif
+
 	m_replyTagToQueryTag[reply]=query;
+
+	#ifdef ASSERT
+	assert(m_reverseReplyMap.count(query) == 0);
+	#endif
+
+	m_reverseReplyMap[query]=reply;
+}
+
+int VirtualCommunicator::getReplyType(int tag){
+	#ifdef ASSERT
+	if(m_reverseReplyMap.count(tag) == 0){
+		cout<<"Error: "<<MESSAGES[tag]<<" is not in the reverse-map"<<endl;
+	}
+	assert(m_reverseReplyMap.count(tag) > 0);
+	#endif
+	
+	return m_reverseReplyMap[tag];
 }
 
 /** push a message

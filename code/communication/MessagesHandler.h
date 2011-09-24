@@ -39,6 +39,9 @@
  * \author Sébastien Boisvert
  */
 class MessagesHandler{
+
+	set<uint64_t> m_urgentMessages;
+
 	/** messages sent */
 	uint64_t m_sentMessages;
 	/** messages received */
@@ -67,6 +70,9 @@ class MessagesHandler{
 	uint64_t*m_messageStatistics;
 
 	void initialiseMembers();
+
+
+	void probeAndRead(int source,int tag,StaticVector*inbox,RingAllocator*inboxAllocator,int destination);
 
 public:
 	/** initialize the message handler
@@ -106,6 +112,12 @@ public:
 	void appendStatistics(const char*file);
 
 	string getMessagePassingInterfaceImplementation();
+
+	void addUrgentMessage(int tag,int rank);
+	void decodeUrgentMessage(uint64_t code,int*tag,int*rank);
+	uint64_t encodeUrgentMessage(int tag,int rank);
+
+	
 };
 
 #endif

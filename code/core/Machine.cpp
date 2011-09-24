@@ -99,6 +99,16 @@ void Machine::start(){
 
 	m_startingTimeMicroseconds = getMicroSecondsInOne();
 
+	/* list of urgent tags */
+	/* the reply to this types of message will be read in priority */
+	m_urgentList.insert(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE);
+	m_urgentList.insert(RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES);
+	m_urgentList.insert(RAY_MPI_TAG_REQUEST_READ_SEQUENCE);
+	m_urgentList.insert(RAY_MPI_TAG_VERTEX_INFO);
+
+	/* list of slave modes with the communication optimizer enabled */
+	m_slaveModesWithOptimizerEnabled.insert(RAY_SLAVE_MODE_EXTENSION);
+
 	m_initialisedAcademy=false;
 	m_initialisedKiller=false;
 	m_coverageInitialised=false;
@@ -163,7 +173,7 @@ void Machine::start(){
 	MAX_ALLOCATED_MESSAGES_IN_INBOX=1;
 
 	// this peak is attained in VerticesExtractor::deleteVertices
-	m_maximumAllocatedOutputBuffers=17; 
+	m_maximumAllocatedOutputBuffers = MAX_ALLOCATED_OUTPUT_BUFFERS; 
 
 	if(MAX_ALLOCATED_MESSAGES_IN_OUTBOX<m_maximumAllocatedOutputBuffers){
 		MAX_ALLOCATED_MESSAGES_IN_OUTBOX=m_maximumAllocatedOutputBuffers;
@@ -313,6 +323,11 @@ void Machine::start(){
 	MACRO_LIST_ITEM( RAY_MPI_TAG_GET_PATH_VERTEX, max(2,KMER_U64_ARRAY_SIZE) )
 
 	#undef MACRO_LIST_ITEM
+
+	/* set reply-map for other tags too */
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_VERTEX_INFO,RAY_MPI_TAG_VERTEX_INFO_REPLY);
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_REQUEST_READ_SEQUENCE, RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY);
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY);
 
 	/** initialize the VirtualProcessor */
 	m_virtualProcessor.constructor(&m_outbox,&m_inbox,&m_outboxAllocator,&m_parameters,
@@ -1598,8 +1613,26 @@ void Machine::processData(){
 	MachineMethod masterMethod=m_master_methods[m_master_mode];
 	(this->*masterMethod)();
 
+	int messagesBefore=m_outbox.size();
+
 	MachineMethod slaveMethod=m_slave_methods[m_slave_mode];
 	(this->*slaveMethod)();
+
+	int messagesAfter=m_outbox.size();
+
+	/* mark these messages as urgent */
+	if(messagesAfter > messagesBefore && m_slaveModesWithOptimizerEnabled.count(m_slave_mode) > 0){
+		for(int i=messagesBefore;i<messagesAfter;i++){
+			int destination=m_outbox[i]->getDestination();
+			int tag=m_outbox[i]->getTag();
+
+			if(m_urgentList.count(tag) > 0){
+				/* the reply to this message is important */
+				int replyTag=m_virtualCommunicator.getReplyType(tag);
+				m_messagesHandler.addUrgentMessage(replyTag,destination);
+			}
+		}
+	}
 }
 
 void Machine::call_RAY_MASTER_MODE_KILL_RANKS(){

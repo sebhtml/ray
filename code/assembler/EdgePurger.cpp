@@ -27,8 +27,6 @@
 
 //#define DEBUG_EdgePurger
 
-/* code based on assembler/Library.cpp */
-
 void EdgePurger::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
 		int*slaveMode,int*masterMode,VirtualCommunicator*vc,GridTable*subgraph,
 	VirtualProcessor*virtualProcessor){
@@ -142,6 +140,8 @@ void EdgePurger::initializeMethod(){
 	m_SEEDING_i=0;
 	m_graphIterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
 
+	#ifdef DEBUG_EdgePurger
 	cout<<"Will process "<<m_subgraph->size()<<endl;
 	cout<<"Exiting initializeMethod"<<endl;
+	#endif
 }

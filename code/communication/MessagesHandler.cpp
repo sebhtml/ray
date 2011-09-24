@@ -92,6 +92,7 @@ Moreover, at the end it is very easy to MPI_Cancel all the receives not yet matc
     george. 
  */
 void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator,int destination){
+	/* persistent communication is not enabled by default */
 	#ifdef USE_MPI_PERSISTENT_COMMUNICATION
 	int flag;
 	MPI_Status status;
@@ -128,28 +129,72 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 	#else
 
 	/* use MPI_Iprobe */
-	int flag;
-	MPI_Status status;
-	MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&flag,&status);
 
-	/* read at most one message */
-	if(flag){
-		MPI_Datatype datatype=MPI_UNSIGNED_LONG_LONG;
-		int sizeOfType=8;
-		int tag=status.MPI_TAG;
-		int source=status.MPI_SOURCE;
-		int count;
-		MPI_Get_count(&status,datatype,&count);
-	
-		uint64_t*incoming=(uint64_t*)inboxAllocator->allocate(count*sizeOfType);
-		MPI_Recv(incoming,count,datatype,source,tag,MPI_COMM_WORLD,&status);
-		Message aMessage(incoming,count,destination,tag,source);
-		inbox->push_back(aMessage);
+	/* if there are urgent messages, read them first ! */
+	if(m_urgentMessages.size() > 0){
+		for(set<uint64_t>::iterator i=m_urgentMessages.begin();i!=m_urgentMessages.end();i++){
+			uint64_t code=*i;
+			int rank=0;
+			int tag=0;
+			decodeUrgentMessage(code,&tag,&rank);
+
+			probeAndRead(rank,tag,inbox,inboxAllocator,destination);
+
+			/* we have read something ! */
+			if(inbox->size() > 0){
+				/* this message is not urgent anymore */
+				m_urgentMessages.erase(code);
+
+				//cout<<"Got urgent message "<<MESSAGES[tag]<<" rank "<<rank<<endl;
+
+	 			/* we are happy with this message */
+				/* we won't read anything else for now */
+				return;
+			}
+		}
+	}
+
+	/* since we have not read anything successfully, 
+ * 		now we try to read any message */
+	probeAndRead(MPI_ANY_SOURCE,MPI_ANY_TAG,inbox,inboxAllocator,destination);
+
+	/* this message was maybe in the list of urgent messages */
+	if(inbox->size() > 0){
+		uint64_t code=encodeUrgentMessage(inbox->at(0)->getTag(),inbox->at(0)->getSource());
+		m_urgentMessages.erase(code);
 	}
 
 	#endif
 }
 
+void MessagesHandler::probeAndRead(int source,int tag,StaticVector*inbox,RingAllocator*inboxAllocator,int destination){
+	int flag;
+	MPI_Status status;
+	MPI_Iprobe(source,tag,MPI_COMM_WORLD,&flag,&status);
+
+	/* read at most one message */
+	if(flag){
+		MPI_Datatype datatype=MPI_UNSIGNED_LONG_LONG;
+		int tag=status.MPI_TAG;
+		int source=status.MPI_SOURCE;
+		int count=-1;
+		MPI_Get_count(&status,datatype,&count);
+	
+		#ifdef ASSERT
+		assert(count >= 0);
+		#endif
+	
+		uint64_t*incoming=NULL;
+		if(count > 0){
+			incoming=(uint64_t*)inboxAllocator->allocate(count*sizeof(uint64_t));
+		}
+
+		MPI_Recv(incoming,count,datatype,source,tag,MPI_COMM_WORLD,&status);
+
+		Message aMessage(incoming,count,destination,tag,source);
+		inbox->push_back(aMessage);
+	}
+}
 
 void MessagesHandler::initialiseMembers(){
 	#ifdef USE_MPI_PERSISTENT_COMMUNICATION
@@ -268,3 +313,42 @@ string MessagesHandler::getMessagePassingInterfaceImplementation(){
 		implementation<<"Unknown";
 	return implementation.str();
 }
+
+
+void MessagesHandler::addUrgentMessage(int tag,int rank){
+	#ifdef USE_MPI_PERSISTENT_COMMUNICATION
+	/* do nothing */
+	#else
+	//cout<<"Adding urgent: "<<MESSAGES[tag]<<" for rank "<<rank<<endl;
+
+	m_urgentMessages.insert(encodeUrgentMessage(tag,rank));
+
+	if(m_urgentMessages.size() > MAX_ALLOCATED_OUTPUT_BUFFERS){
+		cout<<"Warning, "<<m_urgentMessages.size()<<" urgent messages pending for reception."<<endl;
+
+		for(set<uint64_t>::iterator i=m_urgentMessages.begin();i!=m_urgentMessages.end();i++){
+			uint64_t code=*i;
+			int rank=0;
+			int tag=0;
+			decodeUrgentMessage(code,&tag,&rank);
+			
+			cout<<"- "<<MESSAGES[tag]<<" with rank "<<rank<<endl;
+		}
+	}
+
+	//cout<<"Urgent: "<<m_urgentMessages.size()<<endl;
+	#endif
+}
+
+void MessagesHandler::decodeUrgentMessage(uint64_t code,int*tag,int*rank){
+	(*tag)=code / MAX_NUMBER_OF_MPI_PROCESSES;
+	(*rank) = code % MAX_NUMBER_OF_MPI_PROCESSES;
+}
+
+uint64_t MessagesHandler::encodeUrgentMessage(int tag,int rank){
+	/* convert to 64 bits just to be  sure */
+	uint64_t a=tag;
+
+	return a*MAX_NUMBER_OF_MPI_PROCESSES + rank;
+}
+
