@@ -105,9 +105,11 @@ void Machine::start(){
 	m_urgentList.insert(RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES);
 	m_urgentList.insert(RAY_MPI_TAG_REQUEST_READ_SEQUENCE);
 	m_urgentList.insert(RAY_MPI_TAG_VERTEX_INFO);
+	m_urgentList.insert(RAY_MPI_TAG_TEST_NETWORK_MESSAGE);
 
 	/* list of slave modes with the communication optimizer enabled */
 	m_slaveModesWithOptimizerEnabled.insert(RAY_SLAVE_MODE_EXTENSION);
+	m_slaveModesWithOptimizerEnabled.insert(RAY_SLAVE_MODE_TEST_NETWORK);
 
 	m_initialisedAcademy=false;
 	m_initialisedKiller=false;
@@ -328,6 +330,7 @@ void Machine::start(){
 	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_VERTEX_INFO,RAY_MPI_TAG_VERTEX_INFO_REPLY);
 	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_REQUEST_READ_SEQUENCE, RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY);
 	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY);
+	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_TEST_NETWORK_MESSAGE,RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY);
 
 	/** initialize the VirtualProcessor */
 	m_virtualProcessor.constructor(&m_outbox,&m_inbox,&m_outboxAllocator,&m_parameters,
