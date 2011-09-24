@@ -47,6 +47,10 @@ void MyHashTableIterator<KEY,VALUE>::constructor(MyHashTable<KEY,VALUE>*a){
 	m_i=0;
 	m_table=a;
 	getNext();
+
+	#ifdef ASSERT
+	assert(!a->needsToCompleteResizing());
+	#endif
 }
 
 template<class KEY,class VALUE>

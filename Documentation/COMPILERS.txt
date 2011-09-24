@@ -1,4 +1,4 @@
-Ray is implemented in C++ 1998.
+Ray is implemented in C++ 1998 (ISO/IEC 14882:1998).
 
 Ray compiles with:
 

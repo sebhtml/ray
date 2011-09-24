@@ -469,6 +469,10 @@ void MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message
 		}
 		f.close();
 
+		/* complete the resizing ... */
+		/* Otherwise, the code will fail later on */
+		m_subgraph->completeResizing();
+
 		#ifdef ASSERT
 		assert(m_subgraph->size()==n);
 		#endif
@@ -582,6 +586,25 @@ void MessageProcessor::call_RAY_MPI_TAG_PURGE_NULL_EDGES(Message*message){
 	m_bloomFilter.destructor();
 
 	m_subgraph->completeResizing();
+
+	#ifdef ASSERT
+	GridTableIterator iterator;
+	iterator.constructor(m_subgraph,*m_wordSize,m_parameters);
+
+	uint64_t n=0;
+
+	while(iterator.hasNext()){
+		iterator.next();
+		n++;
+	}
+
+	if(n!= m_subgraph->size()){
+		cout<<"Hilarious error: counted, expected: "<<m_subgraph->size()<<", actual: "<<n<<endl;
+	}
+
+	assert(n== m_subgraph->size());
+	#endif
+
 
 	printf("Rank %i has %i vertices (completed)\n",m_rank,(int)m_subgraph->size());
 	fflush(stdout);
@@ -1792,6 +1815,9 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 	}
 
 	#ifdef ASSERT
+	if(cleared != m_subgraph->size()){
+		cout<<"Hilarious error: cleared, expected: "<<m_subgraph->size()<<", actual: "<<cleared<<endl;
+	}
 	assert(cleared == m_subgraph->size());
 	#endif
 

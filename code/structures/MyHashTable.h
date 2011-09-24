@@ -540,6 +540,8 @@ public:
 	void defragment();
 
 	void completeResizing();
+
+	bool needsToCompleteResizing();
 };
 
 /* get a bucket */
@@ -1158,6 +1160,15 @@ template<class KEY,class VALUE>
 void MyHashTable<KEY,VALUE>::completeResizing(){
 	while(m_resizing)
 		resize();
+
+	#ifdef ASSERT
+	assert(m_auxiliaryTableForIncrementalResize == NULL);
+	#endif
+}
+
+template<class KEY,class VALUE>
+bool MyHashTable<KEY,VALUE>::needsToCompleteResizing(){
+	return m_resizing;
 }
 
 #endif
