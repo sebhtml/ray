@@ -1653,6 +1653,10 @@ void Machine::call_RAY_MASTER_MODE_KILL_RANKS(){
 
 /** make the message-passing interface rank die */
 void Machine::call_RAY_SLAVE_MODE_DIE(){
+
+	/* write the network test data if not already written */
+	m_networkTest.writeData();
+
 	/** write message-passing interface file */
 	ostringstream file;
 	file<<m_parameters.getPrefix()<<"MessagePassingInterface.txt";
