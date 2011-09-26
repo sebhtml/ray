@@ -2215,7 +2215,6 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY(Message*mess
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_I_FINISHED_SCAFFOLDING(Message*message){
-	cout<<"Receiving RAY_MPI_TAG_I_FINISHED_SCAFFOLDING"<<endl;
 	m_scaffolder->m_numberOfRanksFinished++;
 	if(m_scaffolder->m_numberOfRanksFinished==m_parameters->getSize()){
 		m_scaffolder->solve();

@@ -28,7 +28,8 @@
 #include <core/common_functions.h>
 #include <memory/RingAllocator.h>
 #include <structures/StaticVector.h>
-
+#include <map>
+using namespace std;
 
 /**
  * software layer to handler messages
@@ -40,7 +41,7 @@
  */
 class MessagesHandler{
 
-	set<uint64_t> m_urgentMessages;
+	map<uint64_t,uint64_t> m_urgentMessages;
 
 	/** messages sent */
 	uint64_t m_sentMessages;
@@ -87,7 +88,7 @@ public:
  * receive one or zero message.
  * the others, if any, will be picked up in the next iteration
  */
-	void receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator,int destination);
+	void receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator,int destination,uint64_t theTime);
 
 	/** free the ring elements */
 	void freeLeftovers();
@@ -113,7 +114,7 @@ public:
 
 	string getMessagePassingInterfaceImplementation();
 
-	void addUrgentMessage(int tag,int rank);
+	void addUrgentMessage(int tag,int rank,uint64_t theTime);
 	void decodeUrgentMessage(uint64_t code,int*tag,int*rank);
 	uint64_t encodeUrgentMessage(int tag,int rank);
 

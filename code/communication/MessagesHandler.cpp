@@ -91,7 +91,7 @@ Moreover, at the end it is very easy to MPI_Cancel all the receives not yet matc
 
     george. 
  */
-void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator,int destination){
+void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator,int destination,uint64_t microseconds){
 	/* persistent communication is not enabled by default */
 	#ifdef USE_MPI_PERSISTENT_COMMUNICATION
 	int flag;
@@ -130,10 +130,27 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 
 	/* use MPI_Iprobe */
 
+	/* the threshold in microseconds */
+	uint64_t threshold=1000; 
+
 	/* if there are urgent messages, read them first ! */
 	if(m_urgentMessages.size() > 0){
-		for(set<uint64_t>::iterator i=m_urgentMessages.begin();i!=m_urgentMessages.end();i++){
-			uint64_t code=*i;
+		for(map<uint64_t,uint64_t>::iterator i=m_urgentMessages.begin();i!=m_urgentMessages.end();i++){
+			uint64_t messageTime=i->second;
+
+			uint64_t elapsedMicroseconds=microseconds - messageTime;
+
+			/* basically, we won't want to pick up the message so early yet */
+			/* before doing so, we want to check for other messages that are possibly important too. */
+			/* if we don't do that, a few MPI ranks will take over all the other MPI ranks */
+			/* these dominant ranks will only receive the response to their messages and won'T have the time */
+			/* to respond to messages from other MPI ranks... */
+
+			/* if there is only one message awaiting, it will be picked up anyway below... */
+			if(elapsedMicroseconds < threshold)
+				continue;
+
+			uint64_t code=i->first;
 			int rank=0;
 			int tag=0;
 			decodeUrgentMessage(code,&tag,&rank);
@@ -145,7 +162,11 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 				/* this message is not urgent anymore */
 				m_urgentMessages.erase(code);
 
-				//cout<<"Got urgent message "<<MESSAGES[tag]<<" rank "<<rank<<endl;
+				//#define COMMUNIATION_IS_VERBOSE
+
+				#ifdef COMMUNIATION_IS_VERBOSE
+				cout<<"Got urgent message "<<MESSAGES[tag]<<" rank "<<rank<<" original message time= "<<messageTime<<" now= "<<microseconds<<endl;
+				#endif
 
 	 			/* we are happy with this message */
 				/* we won't read anything else for now */
@@ -315,19 +336,19 @@ string MessagesHandler::getMessagePassingInterfaceImplementation(){
 }
 
 
-void MessagesHandler::addUrgentMessage(int tag,int rank){
+void MessagesHandler::addUrgentMessage(int tag,int rank,uint64_t theTime){
 	#ifdef USE_MPI_PERSISTENT_COMMUNICATION
 	/* do nothing */
 	#else
 	//cout<<"Adding urgent: "<<MESSAGES[tag]<<" for rank "<<rank<<endl;
 
-	m_urgentMessages.insert(encodeUrgentMessage(tag,rank));
+	m_urgentMessages[encodeUrgentMessage(tag,rank)]=theTime;
 
 	if(m_urgentMessages.size() > MAX_ALLOCATED_OUTPUT_BUFFERS){
 		cout<<"Warning, "<<m_urgentMessages.size()<<" urgent messages pending for reception."<<endl;
 
-		for(set<uint64_t>::iterator i=m_urgentMessages.begin();i!=m_urgentMessages.end();i++){
-			uint64_t code=*i;
+		for(map<uint64_t,uint64_t>::iterator i=m_urgentMessages.begin();i!=m_urgentMessages.end();i++){
+			uint64_t code=i->first;
 			int rank=0;
 			int tag=0;
 			decodeUrgentMessage(code,&tag,&rank);

@@ -109,7 +109,8 @@ void Machine::start(){
 
 	/* list of slave modes with the communication optimizer enabled */
 	m_slaveModesWithOptimizerEnabled.insert(RAY_SLAVE_MODE_EXTENSION);
-	m_slaveModesWithOptimizerEnabled.insert(RAY_SLAVE_MODE_TEST_NETWORK);
+
+	//m_slaveModesWithOptimizerEnabled.insert(RAY_SLAVE_MODE_TEST_NETWORK);
 
 	m_initialisedAcademy=false;
 	m_initialisedKiller=false;
@@ -774,11 +775,12 @@ void Machine::sendMessages(){
  * next Machine cycle.
  */
 void Machine::receiveMessages(){
+	uint64_t theTime=getMicroSecondsInOne();
 	m_inbox.clear();
-	m_messagesHandler.receiveMessages(&m_inbox,&m_inboxAllocator,getRank());
+	m_messagesHandler.receiveMessages(&m_inbox,&m_inboxAllocator,getRank(),theTime);
 
 	if(m_inbox.size() > 0 && m_parameters.showCommunicationEvents() /*&& m_slave_mode == RAY_SLAVE_MODE_EXTENSION*/){
-		uint64_t microseconds=getMicroSecondsInOne() - m_startingTimeMicroseconds;
+		uint64_t microseconds=theTime - m_startingTimeMicroseconds;
 		for(int i=0;i<(int)m_inbox.size();i++){
 			cout<<"[Communication] "<<microseconds<<" microseconds, RECEIVE ";
 			m_inbox[i]->print();
@@ -1630,9 +1632,10 @@ void Machine::processData(){
 			int tag=m_outbox[i]->getTag();
 
 			if(m_urgentList.count(tag) > 0){
+				uint64_t microseconds=getMicroSecondsInOne();
 				/* the reply to this message is important */
 				int replyTag=m_virtualCommunicator.getReplyType(tag);
-				m_messagesHandler.addUrgentMessage(replyTag,destination);
+				m_messagesHandler.addUrgentMessage(replyTag,destination,microseconds);
 			}
 		}
 	}
