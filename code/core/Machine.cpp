@@ -783,7 +783,7 @@ void Machine::sendMessages(){
  */
 void Machine::receiveMessages(){
 	m_inbox.clear();
-	m_messagesHandler.receiveMessages(&m_inbox,&m_inboxAllocator,getRank(),0);
+	m_messagesHandler.receiveMessages(&m_inbox,&m_inboxAllocator);
 
 	#ifdef ASSERT
 	int receivedMessages=m_inbox.size();

@@ -75,6 +75,8 @@ public:
 	int getSource();
 
 	void print();
+
+	void setBuffer(uint64_t*buffer);
 };
 
 #endif

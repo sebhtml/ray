@@ -22,20 +22,6 @@
 #ifndef _MessagesHandler
 #define _MessagesHandler
 
-/* Ray can use 3 types of methods to receive messages */
-/* round-robin is the default and the best */
-/* persistent communication pumps messages rapidly, but is not fair */
-/* urgent messages are not fair neither */
-
-/* use persistent communication */
-/* presently, this is disabled because we use the communication optimizer */
-//#define USE_MPI_PERSISTENT_COMMUNICATION
-
-//#define USE_URGENT_SCHEME
-
-/* this is the default */
-#define USE_ROUND_ROBIN_BALANCING
-
 #include <mpi.h>
 #include <memory/MyAllocator.h>
 #include <communication/Message.h>
@@ -43,10 +29,15 @@
 #include <memory/RingAllocator.h>
 #include <structures/StaticVector.h>
 
-#ifdef USE_URGENT_SCHEME
-#include <map>
-using namespace std;
-#endif
+/*
+ * linked message
+ */
+class MessageNode{
+public:
+	MessageNode*m_previous;
+	Message m_message;
+	MessageNode*m_next;
+};
 
 /**
  * software layer to handler messages
@@ -57,13 +48,21 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class MessagesHandler{
-	#ifdef USE_ROUND_ROBIN_BALANCING
-	int m_currentRankToTryToReceiveFrom;
-	#endif
+	/** the number of buffered messages in the persistent layer */
+	int m_bufferedMessages;
 
-	#ifdef USE_URGENT_SCHEME
-	map<uint64_t,uint64_t> m_urgentMessages;
-	#endif
+	/** allocators for messages received with persistent requests */
+	MyAllocator m_internalBufferAllocator;
+	MyAllocator m_internalMessageAllocator;
+
+	/** linked lists */
+	MessageNode**m_heads;
+
+	/** linked lists */
+	MessageNode**m_tails;
+
+	/** round-robin head */
+	int m_currentRankToTryToReceiveFrom;
 
 	/** messages sent */
 	uint64_t m_sentMessages;
@@ -77,13 +76,17 @@ class MessagesHandler{
 
 	string m_processorName;
 
-	/** things for persistent communication */
-	#ifdef USE_MPI_PERSISTENT_COMMUNICATION
+	/** the number of persistent requests in the ring */
 	int m_ringSize;
+
+	/** the current persistent request in the ring */
 	int m_head;
+
+	/** the ring of persistent requests */
 	MPI_Request*m_ring;
+
+	/** the ring of buffers for persistent requests */
 	uint8_t*m_buffers;
-	#endif
 
 
 	int m_rank;
@@ -92,10 +95,20 @@ class MessagesHandler{
 	/** this variable stores counts for sent messages */
 	uint64_t*m_messageStatistics;
 
+	/** initialize persistent communication parameters */
 	void initialiseMembers();
 
-
+	/** probe and read a message -- this method is not utilised */
 	void probeAndRead(int source,int tag,StaticVector*inbox,RingAllocator*inboxAllocator,int destination);
+
+	/** pump a message from the persistent ring */
+	void pumpMessageFromPersistentRing();
+
+	/** select and fetch a message from the internal messages using a round-robin policy */
+	void roundRobinReception(StaticVector*inbox,RingAllocator*inboxAllocator);
+
+	/** add a message to the internal messages */
+	void addMessage(Message*a);
 
 public:
 	/** initialize the message handler
@@ -106,11 +119,12 @@ public:
  *  send a message or more
  */
 	void sendMessages(StaticVector*outbox,int source);
+
 	/**
  * receive one or zero message.
  * the others, if any, will be picked up in the next iteration
  */
-	void receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator,int destination,uint64_t theTime);
+	void receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator);
 
 	/** free the ring elements */
 	void freeLeftovers();
@@ -129,18 +143,13 @@ public:
 
 	/** returns the version of the message passing interface standard that is available */
 	void version(int*a,int*b);
+
 	void destructor();
 
 	/** write sent message counts to a file */
 	void appendStatistics(const char*file);
 
 	string getMessagePassingInterfaceImplementation();
-
-	#ifdef USE_URGENT_SCHEME
-	void addUrgentMessage(int tag,int rank,uint64_t theTime);
-	void decodeUrgentMessage(uint64_t code,int*tag,int*rank);
-	uint64_t encodeUrgentMessage(int tag,int rank);
-	#endif
 };
 
 #endif

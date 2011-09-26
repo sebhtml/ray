@@ -30,7 +30,6 @@
 #include <string.h>
 using namespace std;
 
-
 /*
  * send messages,
  */
@@ -56,8 +55,10 @@ void MessagesHandler::sendMessages(StaticVector*outbox,int source){
 
 		//  MPI_Issend
 		//      Synchronous nonblocking. 
-		//      Note that a Wait/Test will complete only when the matching receive is posted
 		MPI_Isend(buffer,count,m_datatype,destination,tag,MPI_COMM_WORLD,&request);
+
+		// we don't need the request object because we use a ring and this ring is never violated. */
+		// this is enforced
 		MPI_Request_free(&request);
 
 		#ifdef ASSERT
@@ -91,8 +92,7 @@ Moreover, at the end it is very easy to MPI_Cancel all the receives not yet matc
 
     george. 
  */
-void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator,int destination,uint64_t microseconds){
-	#ifdef USE_MPI_PERSISTENT_COMMUNICATION
+void MessagesHandler::pumpMessageFromPersistentRing(){
 	/* persistent communication is not enabled by default */
 	int flag;
 	MPI_Status status;
@@ -109,108 +109,160 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 		uint64_t*filledBuffer=(uint64_t*)m_buffers+m_head*MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t);
 
 		// copy it in a safe buffer
-		uint64_t*incoming=(uint64_t*)inboxAllocator->allocate(count*sizeof(uint64_t));
+		// internal buffers are all of length MAXIMUM_MESSAGE_SIZE_IN_BYTES
+		uint64_t*incoming=(uint64_t*)m_internalBufferAllocator.allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
 		memcpy(incoming,filledBuffer,count*sizeof(uint64_t));
 
 		// the request can start again
 		MPI_Start(m_ring+m_head);
 	
-		// add the message in the inbox
-		Message aMessage(incoming,count,destination,tag,source);
-		inbox->push_back(aMessage);
+		// add the message in the internal inbox
+		// this inbox is not the real inbox
+		Message aMessage(incoming,count,m_rank,tag,source);
 
-		m_head++;
-		m_head%=m_ringSize;
+		addMessage(&aMessage);
+
+		if(m_head == m_ringSize-1)
+			m_head = 0;
+		else
+			m_head++;
+	}
+}
+
+void MessagesHandler::addMessage(Message*message){
+
+	m_bufferedMessages ++ ;
+
+	int source=message->getSource();
+
+	// we allocate memory for internal storage
+	// this message may not be returned immediately
+	MessageNode*allocatedMessage = (MessageNode*) m_internalMessageAllocator.allocate(sizeof(MessageNode));
+
+	// the buffer of the message is already allocated in the calling function so eveyrthing is OK 
+	allocatedMessage->m_message = *message; // copy data
+	allocatedMessage->m_next = NULL;
+	allocatedMessage->m_previous = NULL;
+	
+	// there are no message from this source
+	if(m_heads[source] == NULL && m_tails[source] == NULL){
+		#ifdef ASSERT
+		assert(m_heads[source] == NULL && m_tails[source] == NULL);
+		#endif
+
+		m_heads[source] = allocatedMessage;
+		m_tails[source] = allocatedMessage;
+
+	// This source already have messages in the linked lists
+	}else{ // we add at the head
+		#ifdef ASSERT
+		assert(m_heads[source] != NULL && m_tails[source] != NULL);
+		#endif
+
+		// update the previous pointer of the old head
+
+		#ifdef ASSERT
+		assert(m_heads[source]->m_previous == NULL);
+		#endif
+
+		m_heads[source]->m_previous= allocatedMessage;
+
+		// Assign the next pointer for the new head
+		allocatedMessage->m_next = m_heads[source];
+		
+		// we have a new head
+		m_heads[source] = allocatedMessage;
+	}
+}
+
+void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator){
+	// pump messages with persistent communication
+	pumpMessageFromPersistentRing();
+
+	// there is at least one message to fetch
+	if(m_bufferedMessages > 0){
+		while(inbox->size() == 0){
+			// pick a message according to a round-robin policy
+			roundRobinReception(inbox,inboxAllocator);
+		}
+	}
+}
+
+void MessagesHandler::roundRobinReception(StaticVector*inbox,RingAllocator*inboxAllocator){
+	// check if we have one message for m_currentRankToTryToReceiveFrom
+	if(m_tails[m_currentRankToTryToReceiveFrom] != NULL){
+		// we have a message
+		
+		MessageNode*messageNode = m_tails[m_currentRankToTryToReceiveFrom];
+		Message*selectedMessage=&(messageNode->m_message);
+
+		// set the new tail
+		m_tails[m_currentRankToTryToReceiveFrom] = messageNode->m_previous;
+
+		// we just took the last one
+		if(m_tails[m_currentRankToTryToReceiveFrom] == NULL){
+			m_heads[m_currentRankToTryToReceiveFrom] = NULL; // set the head to NULL too
+		}else{
+			// it was not the last one
+			// we need to update the next of the new tail
+			m_tails[m_currentRankToTryToReceiveFrom]->m_next = NULL;
+		}
+
+		#ifdef ASSERT
+		if(m_tails[m_currentRankToTryToReceiveFrom] != NULL)
+			assert(m_tails[m_currentRankToTryToReceiveFrom]->m_next == NULL);
+		#endif
+
+		int count = selectedMessage->getCount();
+
+		// allocate the buffer using the ring buffer for that
+		uint64_t*incoming=(uint64_t*)inboxAllocator->allocate(count*sizeof(uint64_t));
+	
+		// copy the data
+		memcpy(incoming,selectedMessage->getBuffer(),count*sizeof(uint64_t));
+
+		// recycle the old buffer
+		// all internal buffers are MAXIMUM_MESSAGE_SIZE_IN_BYTES bytes, not count 
+		m_internalBufferAllocator.free(selectedMessage->getBuffer(),MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+
+		// set the newly created buffer
+		selectedMessage->setBuffer(incoming);
+
+		// push the message in the inbox 
+		inbox->push_back(*selectedMessage);
+
+		// recycle the old message
+		m_internalMessageAllocator.free(messageNode,sizeof(MessageNode));
 
 		/** update statistics */
 		m_receivedMessages++;
+
+		m_bufferedMessages --;
 	}
-	#elif defined USE_URGENT_SCHEME
-
-	/* use MPI_Iprobe */
-
-	/* the threshold in microseconds */
-	uint64_t threshold=100000; 
-
-	/* if there are urgent messages, read them first ! */
-	if(m_urgentMessages.size() > 0){
-		for(map<uint64_t,uint64_t>::iterator i=m_urgentMessages.begin();i!=m_urgentMessages.end();i++){
-			uint64_t messageTime=i->second;
-
-			uint64_t elapsedMicroseconds=microseconds - messageTime;
-
-			/* basically, we won't want to pick up the message so early yet */
-			/* before doing so, we want to check for other messages that are possibly important too. */
-			/* if we don't do that, a few MPI ranks will take over all the other MPI ranks */
-			/* these dominant ranks will only receive the response to their messages and won'T have the time */
-			/* to respond to messages from other MPI ranks... */
-
-			/* if there is only one message awaiting, it will be picked up anyway below... */
-/*
-			if(elapsedMicroseconds < threshold)
-				continue;
-*/
-
-			uint64_t code=i->first;
-			int rank=0;
-			int tag=0;
-			decodeUrgentMessage(code,&tag,&rank);
-
-			probeAndRead(rank,tag,inbox,inboxAllocator,destination);
-
-			/* we have read something ! */
-			if(inbox->size() > 0){
-				/* this message is not urgent anymore */
-				m_urgentMessages.erase(code);
-
-
-				#ifdef COMMUNICATION_IS_VERBOSE
-				cout<<"Got urgent message "<<MESSAGES[tag]<<" rank "<<rank<<" original message time= "<<messageTime<<" now= "<<microseconds<<endl;
-				#endif
-
-	 			/* we are happy with this message */
-				/* we won't read anything else for now */
-				return;
-			}
-		}
-	}
-
-	/* since we have not read anything successfully, 
- * 		now we try to read any message */
-	probeAndRead(MPI_ANY_SOURCE,MPI_ANY_TAG,inbox,inboxAllocator,destination);
-
-	/* this message was maybe in the list of urgent messages */
-	if(inbox->size() > 0){
-		uint64_t code=encodeUrgentMessage(inbox->at(0)->getTag(),inbox->at(0)->getSource());
-		m_urgentMessages.erase(code);
-	}
-
-	#elif defined USE_ROUND_ROBIN_BALANCING
-
-	/* use round-robin algorithm for balancing */
-	/* since we have not read anything successfully, 
- * 		now we try to read any message from the MPI rank m_currentRankToTryToReceiveFrom */
-	probeAndRead(m_currentRankToTryToReceiveFrom,MPI_ANY_TAG,inbox,inboxAllocator,destination);
 
 	//#define COMMUNICATION_IS_VERBOSE
 
 	#ifdef COMMUNICATION_IS_VERBOSE
 	if(inbox->size() > 0){
-		cout<<"[RoundRobin] received a message from "<<m_currentRankToTryToReceiveFrom<<endl;
+		cout<<"[RoundRobin] received a message from "<<m_currentRankToTryToReceiveFrom<<" buffered messages: "<<m_bufferedMessages<<endl;
 	}
 	#endif
 
 	/* advance the rank to receive from */
-	m_currentRankToTryToReceiveFrom++;
-
-	/* restart the loop */
-	if(m_currentRankToTryToReceiveFrom == m_size)
+	if(m_currentRankToTryToReceiveFrom == m_size-1){
+		/* restart the loop */
 		m_currentRankToTryToReceiveFrom = 0;
+	}else{
+		m_currentRankToTryToReceiveFrom++;
+	}
 
+	#ifdef ASSERT
+	assert(m_bufferedMessages >= 0);
 	#endif
 }
 
+// this code is not utilised, but is kept for reference
 void MessagesHandler::probeAndRead(int source,int tag,StaticVector*inbox,RingAllocator*inboxAllocator,int destination){
 	int flag;
 	MPI_Status status;
@@ -248,7 +300,6 @@ void MessagesHandler::probeAndRead(int source,int tag,StaticVector*inbox,RingAll
 }
 
 void MessagesHandler::initialiseMembers(){
-	#ifdef USE_MPI_PERSISTENT_COMMUNICATION
 	// the ring itself  contain requests ready to receive messages
 	m_ringSize=m_size+16;
 
@@ -263,11 +314,17 @@ void MessagesHandler::initialiseMembers(){
 			MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,m_ring+i);
 		MPI_Start(m_ring+i);
 	}
-	#endif
+
+	m_heads= (MessageNode**) __Malloc(sizeof(MessageNode*)*m_size,RAY_MALLOC_TYPE_COMMUNICATION_LAYER,false);
+	m_tails= (MessageNode**) __Malloc(sizeof(MessageNode*)*m_size,RAY_MALLOC_TYPE_COMMUNICATION_LAYER,false);
+
+	for(int i=0;i<m_size;i++){
+		m_heads[i] = NULL;
+		m_tails[i] = NULL;
+	}
 }
 
 void MessagesHandler::freeLeftovers(){
-	#ifdef USE_MPI_PERSISTENT_COMMUNICATION
 	for(int i=0;i<m_ringSize;i++){
 		MPI_Cancel(m_ring+i);
 		MPI_Request_free(m_ring+i);
@@ -276,10 +333,14 @@ void MessagesHandler::freeLeftovers(){
 	m_ring=NULL;
 	__Free(m_buffers,RAY_MALLOC_TYPE_PERSISTENT_MESSAGE_BUFFERS,false);
 	m_buffers=NULL;
-	#endif
 
 	__Free(m_messageStatistics,RAY_MALLOC_TYPE_MESSAGE_STATISTICS,false);
 	m_messageStatistics=NULL;
+
+	__Free(m_heads,RAY_MALLOC_TYPE_COMMUNICATION_LAYER,false);
+	__Free(m_tails,RAY_MALLOC_TYPE_COMMUNICATION_LAYER,false);
+	m_heads= NULL;
+	m_tails= NULL;
 }
 
 void MessagesHandler::constructor(int*argc,char***argv){
@@ -306,6 +367,12 @@ void MessagesHandler::constructor(int*argc,char***argv){
 	}
 
 	m_currentRankToTryToReceiveFrom=m_rank;
+
+	int chunkSize = 4194304; // 4 MiB
+	m_internalMessageAllocator.constructor(chunkSize,RAY_MALLOC_TYPE_COMMUNICATION_LAYER,false);
+	m_internalBufferAllocator.constructor(chunkSize,RAY_MALLOC_TYPE_COMMUNICATION_LAYER,false);
+
+	m_bufferedMessages=0;
 }
 
 void MessagesHandler::destructor(){
@@ -367,42 +434,3 @@ string MessagesHandler::getMessagePassingInterfaceImplementation(){
 	return implementation.str();
 }
 
-#ifdef USE_URGENT_SCHEME
-void MessagesHandler::addUrgentMessage(int tag,int rank,uint64_t theTime){
-	#ifdef USE_MPI_PERSISTENT_COMMUNICATION
-	/* do nothing */
-	#else
-	//cout<<"Adding urgent: "<<MESSAGES[tag]<<" for rank "<<rank<<endl;
-
-	m_urgentMessages[encodeUrgentMessage(tag,rank)]=theTime;
-
-	if(m_urgentMessages.size() > MAX_ALLOCATED_OUTPUT_BUFFERS){
-		cout<<"Warning, "<<m_urgentMessages.size()<<" urgent messages pending for reception."<<endl;
-
-		for(map<uint64_t,uint64_t>::iterator i=m_urgentMessages.begin();i!=m_urgentMessages.end();i++){
-			uint64_t code=i->first;
-			int rank=0;
-			int tag=0;
-			decodeUrgentMessage(code,&tag,&rank);
-			
-			cout<<"- "<<MESSAGES[tag]<<" with rank "<<rank<<endl;
-		}
-	}
-
-	//cout<<"Urgent: "<<m_urgentMessages.size()<<endl;
-	#endif
-}
-
-void MessagesHandler::decodeUrgentMessage(uint64_t code,int*tag,int*rank){
-	(*tag)=code / MAX_NUMBER_OF_MPI_PROCESSES;
-	(*rank) = code % MAX_NUMBER_OF_MPI_PROCESSES;
-}
-
-uint64_t MessagesHandler::encodeUrgentMessage(int tag,int rank){
-	/* convert to 64 bits just to be  sure */
-	uint64_t a=tag;
-
-	return a*MAX_NUMBER_OF_MPI_PROCESSES + rank;
-}
-
-#endif

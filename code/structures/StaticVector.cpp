@@ -24,6 +24,8 @@
 #include<assert.h>
 #include <core/common_functions.h>
 
+
+
 void StaticVector::constructor(int size,int type,bool show){
 	m_type=type;
 	#ifdef ASSERT
@@ -46,6 +48,7 @@ Message*StaticVector::at(int i){
 	return m_messages+i;
 }
 
+// TODO: the message a should be passed as a pointer
 void StaticVector::push_back(Message a){
 	m_messages[m_size++]=a;
 }

@@ -61,3 +61,8 @@ void Message::print(){
 		cout<<" Overlay: "<<hex<<m_buffer[0]<<dec;
 	}
 }
+
+void Message::setBuffer(uint64_t*buffer){
+	m_buffer = buffer;
+}
+
