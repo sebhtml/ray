@@ -2,7 +2,7 @@ NAME
        Ray - assemble genomes in parallel using the message-passing interface
 
 SYNOPSIS
-       mpirun -np NUMBER_OF_RANKS Ray -k KMERLENGTH -p l1_1.fastq l1_2.fastq -p l2_1.fastq l2_2.fastq -o test
+       mpiexec -np NUMBER_OF_RANKS Ray -k KMERLENGTH -p l1_1.fastq l1_2.fastq -p l2_1.fastq l2_2.fastq -o test
 
 DESCRIPTION:
 

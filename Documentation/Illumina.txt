@@ -4,7 +4,7 @@ Illumina reads are readily usable.
 
 Example with reads from all instruments:
 
-mpirun -np 9999 Ray \
+mpiexec -np 9999 Ray \
 -p Solexa_oldschool_reads_1.fastq Solexa_oldschool_reads_2.fastq \
 -p Illumina_Genome_Analyzer_reads_1.fastq Illumina_Genome_Analyzer_reads_2.fastq \
 -p Illumina_Genome_Analyzer_II_reads_1.fastq Illumina_Genome_Analyzer_II_reads_2.fastq \

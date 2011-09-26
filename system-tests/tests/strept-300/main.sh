@@ -1,4 +1,4 @@
-mpirun -tag-output -np $NSLOTS $RAY_GIT_PATH/Ray \
+mpiexec -tag-output -np $NSLOTS $RAY_GIT_PATH/Ray \
 -p s_1.fasta \
    s_2.fasta \
 -o $TEST_NAME

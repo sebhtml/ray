@@ -4,7 +4,7 @@ To make sure that Open-MPI (if you use Open-MPI) detects the hardware and use
 RDMA.
 
 
-mpirun \
+mpiexec \
 --mca btl_openib_verbose 1 \
 --mca mpi_show_mca_params all \
 --mca btl_openib_use_eager_rdma 1 \

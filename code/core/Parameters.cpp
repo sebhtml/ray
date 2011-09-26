@@ -1047,7 +1047,7 @@ void Parameters::showUsage(){
 	cout<<"NAME"<<endl<<basicSpaces<<"Ray - assemble genomes in parallel using the message-passing interface"<<endl<<endl;
 
 	cout<<"SYNOPSIS"<<endl;
-	cout<<basicSpaces<<"mpirun -np NUMBER_OF_RANKS Ray -k KMERLENGTH -p l1_1.fastq l1_2.fastq -p l2_1.fastq l2_2.fastq -o test"<<endl;
+	cout<<basicSpaces<<"mpiexec -np NUMBER_OF_RANKS Ray -k KMERLENGTH -p l1_1.fastq l1_2.fastq -p l2_1.fastq l2_2.fastq -o test"<<endl;
 	cout<<endl;
 	cout<<"DESCRIPTION:"<<endl;
 
