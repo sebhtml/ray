@@ -50,26 +50,7 @@ bool isValidDNA(char*x);
 /*
  * transform a string in a Kmer
  */
-INLINE
-Kmer wordId(const char*a){
-	Kmer i;
-	int theLen=strlen(a);
-	for(int j=0;j<(int)theLen;j++){
-		uint64_t k=charToCode(a[j]);
-		int bitPosition=2*j;
-		int chunk=bitPosition/64;
-		int bitPositionInChunk=bitPosition%64;
-		#ifdef ASSERT
-		if(!(chunk<i.getNumberOfU64())){
-			cout<<"Chunk="<<chunk<<" positionInKmer="<<j<<" KmerLength="<<strlen(a)<<" bitPosition=" <<bitPosition<<" Chunks="<<i.getNumberOfU64()<<endl;
-		}
-		assert(chunk<i.getNumberOfU64());
-		#endif
-		uint64_t filter=(k<<bitPositionInChunk);
-		i.setU64(chunk,i.getU64(chunk)|filter);
-	}
-	return i;
-}
+Kmer wordId(const char*a);
 
 /*
  * add line breaks to a string

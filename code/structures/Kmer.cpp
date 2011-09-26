@@ -357,3 +357,42 @@ void Kmer::read(ifstream*f){
 		setU64(i,a);
 	}
 }
+
+void Kmer::setU64(int i,uint64_t b){
+	#ifdef ASSERT
+	assert(i<KMER_U64_ARRAY_SIZE);
+	#endif
+	m_u64[i]=b;
+}
+
+uint64_t Kmer::getU64(int i){
+	#ifdef ASSERT
+	assert(i<KMER_U64_ARRAY_SIZE);
+	#endif
+	return m_u64[i];
+}
+
+Kmer Kmer::complementVertex(int wordSize,bool colorSpace){
+	Kmer output;
+	int bitPositionInOutput=0;
+	uint64_t mask=3;
+	/* the order is inverted and nucleotides are complemented */
+	/* this is costly  */
+	for(int positionInMer=wordSize-1;positionInMer>=0;positionInMer--){
+		int u64_id=positionInMer/32;
+		int bitPositionInChunk=(2*positionInMer)%64;
+		uint64_t chunk=getU64(u64_id);
+		uint64_t j=(chunk<<(62-bitPositionInChunk))>>62;
+		
+		if(!colorSpace) /* in color space, reverse complement is just reverse */
+			j=~j&mask;
+
+		int outputChunk=bitPositionInOutput/64;
+		uint64_t oldValue=output.getU64(outputChunk);
+		oldValue=(oldValue|(j<<(bitPositionInOutput%64)));
+		output.setU64(outputChunk,oldValue);
+		bitPositionInOutput+=2;
+	}
+	return output;
+}
+

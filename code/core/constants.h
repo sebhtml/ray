@@ -42,18 +42,6 @@ see <http://www.gnu.org/licenses/>
 #define EXIT_NO_MORE_MEMORY 42
 
 /*
-* - * Define the inline keyword if using 
-*   - * Microsoft Visual C++
-*   - */
-#if defined(__GNUC__)
-#define INLINE inline
-#elif defined(_MSC_VER)
-#define INLINE __forceinline
-#else
-#define INLINE
-#endif
-
-/*
  * Include those libraries for Microsoft Visual C++
  */
 #ifdef _MSC_VER
