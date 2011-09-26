@@ -22,14 +22,31 @@
 #ifndef _MessagesHandler
 #define _MessagesHandler
 
+/* Ray can use 3 types of methods to receive messages */
+/* round-robin is the default and the best */
+/* persistent communication pumps messages rapidly, but is not fair */
+/* urgent messages are not fair neither */
+
+/* use persistent communication */
+/* presently, this is disabled because we use the communication optimizer */
+//#define USE_MPI_PERSISTENT_COMMUNICATION
+
+//#define USE_URGENT_SCHEME
+
+/* this is the default */
+#define USE_ROUND_ROBIN_BALANCING
+
 #include <mpi.h>
 #include <memory/MyAllocator.h>
 #include <communication/Message.h>
 #include <core/common_functions.h>
 #include <memory/RingAllocator.h>
 #include <structures/StaticVector.h>
+
+#ifdef USE_URGENT_SCHEME
 #include <map>
 using namespace std;
+#endif
 
 /**
  * software layer to handler messages
@@ -40,8 +57,13 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class MessagesHandler{
+	#ifdef USE_ROUND_ROBIN_BALANCING
+	int m_currentRankToTryToReceiveFrom;
+	#endif
 
+	#ifdef USE_URGENT_SCHEME
 	map<uint64_t,uint64_t> m_urgentMessages;
+	#endif
 
 	/** messages sent */
 	uint64_t m_sentMessages;
@@ -114,11 +136,11 @@ public:
 
 	string getMessagePassingInterfaceImplementation();
 
+	#ifdef USE_URGENT_SCHEME
 	void addUrgentMessage(int tag,int rank,uint64_t theTime);
 	void decodeUrgentMessage(uint64_t code,int*tag,int*rank);
 	uint64_t encodeUrgentMessage(int tag,int rank);
-
-	
+	#endif
 };
 
 #endif

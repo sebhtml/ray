@@ -24,10 +24,6 @@ see <http://www.gnu.org/licenses/>
 
 #define RAY_VERSION "1.7-devel"
 
-/* use persistent communication */
-/* presently, this is disabled because we use the communication optimizer */
-//#define USE_MPI_PERSISTENT_COMMUNICATION
-
 /* 
  * Define the maximum k-mer length when
  * the compiler/make does not.

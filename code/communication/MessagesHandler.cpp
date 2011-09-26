@@ -92,8 +92,8 @@ Moreover, at the end it is very easy to MPI_Cancel all the receives not yet matc
     george. 
  */
 void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator,int destination,uint64_t microseconds){
-	/* persistent communication is not enabled by default */
 	#ifdef USE_MPI_PERSISTENT_COMMUNICATION
+	/* persistent communication is not enabled by default */
 	int flag;
 	MPI_Status status;
 	MPI_Test(m_ring+m_head,&flag,&status);
@@ -126,12 +126,12 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 		/** update statistics */
 		m_receivedMessages++;
 	}
-	#else
+	#elif defined USE_URGENT_SCHEME
 
 	/* use MPI_Iprobe */
 
 	/* the threshold in microseconds */
-	uint64_t threshold=1000; 
+	uint64_t threshold=100000; 
 
 	/* if there are urgent messages, read them first ! */
 	if(m_urgentMessages.size() > 0){
@@ -147,8 +147,10 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 			/* to respond to messages from other MPI ranks... */
 
 			/* if there is only one message awaiting, it will be picked up anyway below... */
+/*
 			if(elapsedMicroseconds < threshold)
 				continue;
+*/
 
 			uint64_t code=i->first;
 			int rank=0;
@@ -162,9 +164,8 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 				/* this message is not urgent anymore */
 				m_urgentMessages.erase(code);
 
-				//#define COMMUNIATION_IS_VERBOSE
 
-				#ifdef COMMUNIATION_IS_VERBOSE
+				#ifdef COMMUNICATION_IS_VERBOSE
 				cout<<"Got urgent message "<<MESSAGES[tag]<<" rank "<<rank<<" original message time= "<<messageTime<<" now= "<<microseconds<<endl;
 				#endif
 
@@ -184,6 +185,28 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 		uint64_t code=encodeUrgentMessage(inbox->at(0)->getTag(),inbox->at(0)->getSource());
 		m_urgentMessages.erase(code);
 	}
+
+	#elif defined USE_ROUND_ROBIN_BALANCING
+
+	/* use round-robin algorithm for balancing */
+	/* since we have not read anything successfully, 
+ * 		now we try to read any message from the MPI rank m_currentRankToTryToReceiveFrom */
+	probeAndRead(m_currentRankToTryToReceiveFrom,MPI_ANY_TAG,inbox,inboxAllocator,destination);
+
+	//#define COMMUNICATION_IS_VERBOSE
+
+	#ifdef COMMUNICATION_IS_VERBOSE
+	if(inbox->size() > 0){
+		cout<<"[RoundRobin] received a message from "<<m_currentRankToTryToReceiveFrom<<endl;
+	}
+	#endif
+
+	/* advance the rank to receive from */
+	m_currentRankToTryToReceiveFrom++;
+
+	/* restart the loop */
+	if(m_currentRankToTryToReceiveFrom == m_size)
+		m_currentRankToTryToReceiveFrom = 0;
 
 	#endif
 }
@@ -214,6 +237,13 @@ void MessagesHandler::probeAndRead(int source,int tag,StaticVector*inbox,RingAll
 
 		Message aMessage(incoming,count,destination,tag,source);
 		inbox->push_back(aMessage);
+
+		#ifdef ASSERT
+		assert(destination == m_rank);
+		assert(aMessage.getDestination() == m_rank);
+		#endif
+
+		m_receivedMessages++;
 	}
 }
 
@@ -246,9 +276,9 @@ void MessagesHandler::freeLeftovers(){
 	m_ring=NULL;
 	__Free(m_buffers,RAY_MALLOC_TYPE_PERSISTENT_MESSAGE_BUFFERS,false);
 	m_buffers=NULL;
-	__Free(m_messageStatistics,RAY_MALLOC_TYPE_MESSAGE_STATISTICS,false);
 	#endif
 
+	__Free(m_messageStatistics,RAY_MALLOC_TYPE_MESSAGE_STATISTICS,false);
 	m_messageStatistics=NULL;
 }
 
@@ -274,6 +304,8 @@ void MessagesHandler::constructor(int*argc,char***argv){
 			m_messageStatistics[rank*RAY_MPI_TAG_DUMMY+tag]=0;
 		}
 	}
+
+	m_currentRankToTryToReceiveFrom=m_rank;
 }
 
 void MessagesHandler::destructor(){
@@ -335,7 +367,7 @@ string MessagesHandler::getMessagePassingInterfaceImplementation(){
 	return implementation.str();
 }
 
-
+#ifdef USE_URGENT_SCHEME
 void MessagesHandler::addUrgentMessage(int tag,int rank,uint64_t theTime){
 	#ifdef USE_MPI_PERSISTENT_COMMUNICATION
 	/* do nothing */
@@ -373,3 +405,4 @@ uint64_t MessagesHandler::encodeUrgentMessage(int tag,int rank){
 	return a*MAX_NUMBER_OF_MPI_PROCESSES + rank;
 }
 
+#endif

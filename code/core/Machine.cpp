@@ -47,6 +47,9 @@
 
 using namespace std;
 
+/* Pick-up the option -show-communication-events */
+#define USE_EVENTS
+
 Machine::Machine(int argc,char**argv){
 	m_messagesHandler.constructor(&argc,&argv);
 	m_rank=m_messagesHandler.getRank();
@@ -99,6 +102,7 @@ void Machine::start(){
 
 	m_startingTimeMicroseconds = getMicroSecondsInOne();
 
+	#ifdef USE_URGENT_SCHEME
 	/* list of urgent tags */
 	/* the reply to this types of message will be read in priority */
 	m_urgentList.insert(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE);
@@ -111,6 +115,7 @@ void Machine::start(){
 	m_slaveModesWithOptimizerEnabled.insert(RAY_SLAVE_MODE_EXTENSION);
 
 	//m_slaveModesWithOptimizerEnabled.insert(RAY_SLAVE_MODE_TEST_NETWORK);
+	#endif
 
 	m_initialisedAcademy=false;
 	m_initialisedKiller=false;
@@ -757,6 +762,7 @@ void Machine::sendMessages(){
 	}
 	#endif
 
+	#ifdef USE_EVENTS
 	if(m_outbox.size() > 0 && m_parameters.showCommunicationEvents() /* && m_slave_mode == RAY_SLAVE_MODE_EXTENSION*/){
 		uint64_t microseconds=getMicroSecondsInOne() - m_startingTimeMicroseconds;
 		for(int i=0;i<(int)m_outbox.size();i++){
@@ -765,6 +771,7 @@ void Machine::sendMessages(){
 			cout<<endl;
 		}
 	}
+	#endif
 
 	m_messagesHandler.sendMessages(&m_outbox,getRank());
 }
@@ -775,11 +782,17 @@ void Machine::sendMessages(){
  * next Machine cycle.
  */
 void Machine::receiveMessages(){
-	uint64_t theTime=getMicroSecondsInOne();
 	m_inbox.clear();
-	m_messagesHandler.receiveMessages(&m_inbox,&m_inboxAllocator,getRank(),theTime);
+	m_messagesHandler.receiveMessages(&m_inbox,&m_inboxAllocator,getRank(),0);
 
+	#ifdef ASSERT
+	int receivedMessages=m_inbox.size();
+	assert(receivedMessages<=MAX_ALLOCATED_MESSAGES_IN_INBOX);
+	#endif
+
+	#ifdef USE_EVENTS
 	if(m_inbox.size() > 0 && m_parameters.showCommunicationEvents() /*&& m_slave_mode == RAY_SLAVE_MODE_EXTENSION*/){
+		uint64_t theTime=getMicroSecondsInOne();
 		uint64_t microseconds=theTime - m_startingTimeMicroseconds;
 		for(int i=0;i<(int)m_inbox.size();i++){
 			cout<<"[Communication] "<<microseconds<<" microseconds, RECEIVE ";
@@ -787,10 +800,6 @@ void Machine::receiveMessages(){
 			cout<<endl;
 		}
 	}
-
-	#ifdef ASSERT
-	int receivedMessages=m_inbox.size();
-	assert(receivedMessages<=MAX_ALLOCATED_MESSAGES_IN_INBOX);
 	#endif
 }
 
@@ -1620,11 +1629,14 @@ void Machine::processData(){
 	MachineMethod masterMethod=m_master_methods[m_master_mode];
 	(this->*masterMethod)();
 
+	#ifdef USE_URGENT_SCHEME
 	int messagesBefore=m_outbox.size();
+	#endif
 
 	MachineMethod slaveMethod=m_slave_methods[m_slave_mode];
 	(this->*slaveMethod)();
 
+	#ifdef USE_URGENT_SCHEME
 	int messagesAfter=m_outbox.size();
 
 	/* mark these messages as urgent */
@@ -1641,6 +1653,7 @@ void Machine::processData(){
 			}
 		}
 	}
+	#endif
 }
 
 void Machine::call_RAY_MASTER_MODE_KILL_RANKS(){

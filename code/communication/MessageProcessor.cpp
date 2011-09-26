@@ -1418,7 +1418,7 @@ void MessageProcessor::call_RAY_MPI_TAG_FUSION_DONE(Message*message){
 	bool reductionOccured=incoming[0];
 
 	if(reductionOccured){
-		cout<<"Reduction occured from RAY_MPI_TAG_FUSION_DONE!"<<endl;
+		//cout<<"Reduction occured from RAY_MPI_TAG_FUSION_DONE!"<<endl;
 		(*m_nextReductionOccured)=true;
 	}
 
