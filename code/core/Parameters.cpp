@@ -144,6 +144,10 @@ void Parameters::parseCommands(){
 	if(hasOption("-show-communication-events"))
 		m_showCommunicationEvents=true;
 
+	if(hasOption("-test-network-only")){
+		m_options.insert("-write-network-test-raw-data");
+	}
+
 	m_originalCommands=m_commands;
 
 	/* shuffle randomly arguments */
@@ -1139,7 +1143,9 @@ void Parameters::showUsage(){
 
 	cout<<"  Hardware testing"<<endl;
 	cout<<endl;
-	showOption("-test-network-only","Test the network and return.");
+	showOption("-test-network-only","Test the network and return. This option enables -write-network-test-raw-data.");
+	cout<<endl;
+	showOption("-write-network-test-raw-data","Writes one additional file per rank detailing the network test.");
 	cout<<endl;
 
 	cout<<"  Debugging"<<endl;
@@ -1273,6 +1279,8 @@ void Parameters::showUsage(){
 	cout<<"	    	Number of messages sent"<<endl;
 	cout<<"     RayOutput/NetworkTest.txt"<<endl;
 	cout<<"	    	Latencies in microseconds"<<endl;
+	cout<<"     RayOutput/Rank<rank>NetworkTestData.txt"<<endl;
+	cout<<"	    	Network test raw data"<<endl;
 	cout<<endl;
 
 	cout<<"DOCUMENTATION"<<endl;

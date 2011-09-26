@@ -44,6 +44,14 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class NetworkTest{
+	/* details of the network test */
+
+	uint64_t m_averageLatencyInMicroSeconds;
+
+	vector<int> m_destinations;
+	vector<uint64_t> m_sentMicroseconds;
+	vector<uint64_t> m_receivedMicroseconds;
+
 	/* number of words to use for network test */
 	/* a word is 8 bytes */
 	/* MAXIMUM_MESSAGE_SIZE_IN_BYTES is 4000 per default so 
@@ -100,6 +108,8 @@ public:
 	void masterWork();
 	/** work method for the slave mode */
 	void slaveWork();
+
+	void writeData();
 };
 
 #endif

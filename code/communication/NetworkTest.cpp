@@ -46,7 +46,7 @@ void NetworkTest::constructor(int rank,int*masterMode,int*slaveMode,int size,Sta
 	m_rank=rank;
 	m_masterMode=masterMode;
 	m_slaveMode=slaveMode;
-	m_numberOfTestMessages=100000;
+	m_numberOfTestMessages=-1;
 
 	int ranksPerNode=8;
 	int onlineRanksPerNode=8; // default: 8
@@ -58,9 +58,6 @@ void NetworkTest::constructor(int rank,int*masterMode,int*slaveMode,int size,Sta
 	m_sentCurrentTestMessage=false;
 	m_outboxAllocator=outboxAllocator;
 	m_sumOfMicroSeconds=0;
-
-	/* the seed must be different for all MPI ranks */
-	srand(time(NULL)*(1+m_rank));
 
 	/* a word is 8 bytes */
 	/* MAXIMUM_MESSAGE_SIZE_IN_BYTES is 4000 per default so 
@@ -95,6 +92,13 @@ void NetworkTest::constructor(int rank,int*masterMode,int*slaveMode,int size,Sta
  * */
 void NetworkTest::slaveWork(){
 
+	if(m_numberOfTestMessages == -1){
+		m_numberOfTestMessages=m_parameters->getSize()*1000;
+
+		/* the seed must be different for all MPI ranks */
+		srand(time(NULL)*(1+m_rank));
+	}
+
 	#ifdef ASSERT
 	assert(m_numberOfWords*sizeof(uint64_t) <= MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	#endif
@@ -104,8 +108,15 @@ void NetworkTest::slaveWork(){
 			m_startingTimeSeconds=0;
 			m_startingTimeMicroseconds=0;
 			getMicroSeconds(&m_startingTimeSeconds,&m_startingTimeMicroseconds);
+
 			/** send to a random rank */
 			int destination=rand()%m_size;
+
+			if(m_parameters->hasOption("-write-network-test-raw-data")){
+				uint64_t theMicroseconds=m_startingTimeSeconds*1000*1000 + m_startingTimeMicroseconds;
+				m_sentMicroseconds.push_back(theMicroseconds);
+				m_destinations.push_back(destination);
+			}
 
 			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(m_numberOfWords*sizeof(uint64_t));
 			Message aMessage(message,m_numberOfWords,destination,RAY_MPI_TAG_TEST_NETWORK_MESSAGE,m_rank);
@@ -117,6 +128,11 @@ void NetworkTest::slaveWork(){
 			uint64_t endingMicroSeconds=0;
 			getMicroSeconds(&endingSeconds,&endingMicroSeconds);
 			
+			if(m_parameters->hasOption("-write-network-test-raw-data")){
+				uint64_t theMicroseconds=endingSeconds*1000*1000 + endingMicroSeconds;
+				m_receivedMicroseconds.push_back(theMicroseconds);
+			}
+
 			int microSeconds=(endingSeconds-m_startingTimeSeconds)*1000*1000+endingMicroSeconds-m_startingTimeMicroseconds;
 			m_sumOfMicroSeconds+=microSeconds;
 
@@ -124,23 +140,79 @@ void NetworkTest::slaveWork(){
 			m_currentTestMessage++;
 		}
 	}else{
-		int averageLatencyInMicroSeconds=LATENCY_INFORMATION_NOT_AVAILABLE;
+		m_averageLatencyInMicroSeconds=LATENCY_INFORMATION_NOT_AVAILABLE;
 
-		averageLatencyInMicroSeconds=m_sumOfMicroSeconds;
+		m_averageLatencyInMicroSeconds=m_sumOfMicroSeconds;
 
 		if(m_numberOfTestMessages > 0)
-			averageLatencyInMicroSeconds /= m_numberOfTestMessages;
+			m_averageLatencyInMicroSeconds /= m_numberOfTestMessages;
 
-		cout<<"Rank "<<m_rank<<": average latency for "<<(*m_name)<<" when requesting a reply for a message of "<<sizeof(uint64_t)*m_numberOfWords<<" bytes is "<<averageLatencyInMicroSeconds<<" microseconds (10^-6 seconds)"<<endl;
+		cout<<"Rank "<<m_rank<<": average latency for "<<(*m_name)<<" when requesting a reply for a message of "<<sizeof(uint64_t)*m_numberOfWords<<" bytes is "<<m_averageLatencyInMicroSeconds<<" microseconds (10^-6 seconds)"<<endl;
 
 		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-		message[0]=averageLatencyInMicroSeconds;
+		message[0]=m_averageLatencyInMicroSeconds;
 		char*destination=(char*)(message+1);
 		strcpy(destination,m_name->c_str());
 		Message aMessage(message,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),MASTER_RANK,RAY_MPI_TAG_TEST_NETWORK_REPLY,m_rank);
 		m_outbox->push_back(aMessage);
 		(*m_slaveMode)=RAY_SLAVE_MODE_DO_NOTHING;
+
 	}
+}
+
+void NetworkTest::writeData(){
+	/* nothing to write */
+	if(m_sentMicroseconds.size() == 0)
+		return;
+
+	if(m_parameters->hasOption("-write-network-test-raw-data")){
+		ostringstream file;
+		file<<m_parameters->getPrefix();
+		file<<"Rank"<<m_parameters->getRank()<<".NetworkTestData.txt";
+	
+		cout<<"Rank "<<m_parameters->getRank()<<" is writing "<<file.str()<<" (-write-network-test-raw-data)"<<endl;
+
+		ofstream f(file.str().c_str());
+
+		f<<"# tag for test messages: RAY_MPI_TAG_TEST_NETWORK_MESSAGE"<<endl;
+		f<<"# tag for reply messages: RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY"<<endl;
+		f<<"# number of words per message: "<<m_numberOfWords<<endl;
+		f<<"# word size in bytes: "<<sizeof(uint64_t)<<endl;
+		f<<"# number of bytes for test messages: "<<m_numberOfWords*sizeof(uint64_t)<<endl;
+		f<<"# number of bytes for reply messages: 0"<<endl;
+		f<<"# number of test messages: "<<m_numberOfTestMessages<<endl;
+		f<<"# average latency measured in microseconds: "<<m_averageLatencyInMicroSeconds<<endl;
+		f<<"# next line contains column names"<<endl;
+		f<<"# TestMessage SourceRank DestinationRank QueryTimeInMicroseconds ReplyTimeInMicroseconds Latency MessagesSentToDestination"<<endl;
+	
+		#ifdef ASSERT
+		assert(m_sentMicroseconds.size() == m_destinations.size());
+		assert(m_sentMicroseconds.size() == m_receivedMicroseconds.size());
+		assert((int) m_sentMicroseconds.size() == m_numberOfTestMessages);
+		#endif
+
+		map<int,int> counters;
+
+		for(int i=0;i<(int)m_sentMicroseconds.size();i++){
+			uint64_t time1=m_sentMicroseconds[i];
+			uint64_t time2=m_receivedMicroseconds[i];
+			int destination=m_destinations[i];
+			counters[destination] ++ ;
+			f<<i<<"	"<<"	"<<m_parameters->getRank()<<"	"<<destination<<"	"<<time1<<"	"<<time2<<"	"<<time2-time1<<"	"<<counters[destination]<<endl;
+		}
+
+		f<<endl;
+		f<<"# DestinationRank	MessagesSentToDestination"<<endl;
+		for(map<int,int>::iterator i=counters.begin();i!=counters.end();i++){
+			f<<i->first<<"	"<<i->second<<endl;
+		}
+
+		f.close();
+	}
+
+	m_destinations.clear();
+	m_sentMicroseconds.clear();
+	m_receivedMicroseconds.clear();
 }
 
 /** call the master method */

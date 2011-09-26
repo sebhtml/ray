@@ -111,7 +111,10 @@ DESCRIPTION:
   Hardware testing
 
        -test-network-only
-              Test the network and return.
+              Test the network and return. This option enables -write-network-test-raw-data.
+
+       -write-network-test-raw-data
+              Writes one additional file per rank detailing the network test.
 
   Debugging
 
@@ -236,6 +239,8 @@ FILES
 	    	Number of messages sent
      RayOutput/NetworkTest.txt
 	    	Latencies in microseconds
+     RayOutput/Rank<rank>NetworkTestData.txt
+	    	Network test raw data
 
 DOCUMENTATION
 

@@ -831,6 +831,8 @@ void Machine::call_RAY_MASTER_MODE_LOAD_CONFIG(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES(){
+	m_networkTest.writeData();
+
 	m_partitioner.slaveMethod();
 }
 
