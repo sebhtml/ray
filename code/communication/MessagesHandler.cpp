@@ -183,6 +183,7 @@ void MessagesHandler::addMessage(Message*message){
 }
 #endif
 
+#define USE_ROUND_ROBIN
 void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator){
 	#ifdef USE_PERSISTENT_COMMUNICATION
 	// pump messages with persistent communication
@@ -195,10 +196,21 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 			roundRobinReception(inbox,inboxAllocator);
 		}
 	}
-	#else
+	#elif defined USE_ROUND_ROBIN
 
 	// round-robin reception seems to avoid starvation 
+/** round robin with Iprobe will increase the latency because there will be a lot of calls to
+ MPI_Iprobe that yield no messages at all */
+
 	roundRobinReception(inbox,inboxAllocator);
+
+	#else
+
+	// receive any message
+	// it is assumed that MPI is fair
+	// otherwise there may be some starvation
+
+	probeAndRead(MPI_ANY_SOURCE,MPI_ANY_TAG,inbox,inboxAllocator);
 
 	#endif
 }
