@@ -29,6 +29,8 @@
 #include <memory/RingAllocator.h>
 #include <structures/StaticVector.h>
 
+#ifdef USE_PERSISTENT_COMMUNICATION
+
 /*
  * linked message
  */
@@ -39,6 +41,8 @@ public:
 	MessageNode*m_next;
 };
 
+#endif
+
 /**
  * software layer to handler messages
  * it uses persistant communication
@@ -48,6 +52,7 @@ public:
  * \author Sébastien Boisvert
  */
 class MessagesHandler{
+	#ifdef USE_PERSISTENT_COMMUNICATION
 	/** the number of buffered messages in the persistent layer */
 	int m_bufferedMessages;
 
@@ -60,6 +65,8 @@ class MessagesHandler{
 
 	/** linked lists */
 	MessageNode**m_tails;
+
+	#endif
 
 	/** round-robin head */
 	int m_currentRankToTryToReceiveFrom;
@@ -99,16 +106,19 @@ class MessagesHandler{
 	void initialiseMembers();
 
 	/** probe and read a message -- this method is not utilised */
-	void probeAndRead(int source,int tag,StaticVector*inbox,RingAllocator*inboxAllocator,int destination);
+	void probeAndRead(int source,int tag,StaticVector*inbox,RingAllocator*inboxAllocator);
 
+	#ifdef USE_PERSISTENT_COMMUNICATION
 	/** pump a message from the persistent ring */
 	void pumpMessageFromPersistentRing();
+
+	/** add a message to the internal messages */
+	void addMessage(Message*a);
+	#endif
 
 	/** select and fetch a message from the internal messages using a round-robin policy */
 	void roundRobinReception(StaticVector*inbox,RingAllocator*inboxAllocator);
 
-	/** add a message to the internal messages */
-	void addMessage(Message*a);
 
 public:
 	/** initialize the message handler
@@ -118,7 +128,7 @@ public:
 	/**
  *  send a message or more
  */
-	void sendMessages(StaticVector*outbox,int source);
+	void sendMessages(StaticVector*outbox);
 
 	/**
  * receive one or zero message.

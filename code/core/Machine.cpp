@@ -48,7 +48,6 @@
 using namespace std;
 
 /* Pick-up the option -show-communication-events */
-#define USE_EVENTS
 
 Machine::Machine(int argc,char**argv){
 	m_messagesHandler.constructor(&argc,&argv);
@@ -762,7 +761,6 @@ void Machine::sendMessages(){
 	}
 	#endif
 
-	#ifdef USE_EVENTS
 	if(m_outbox.size() > 0 && m_parameters.showCommunicationEvents() /* && m_slave_mode == RAY_SLAVE_MODE_EXTENSION*/){
 		uint64_t microseconds=getMicroSecondsInOne() - m_startingTimeMicroseconds;
 		for(int i=0;i<(int)m_outbox.size();i++){
@@ -771,9 +769,8 @@ void Machine::sendMessages(){
 			cout<<endl;
 		}
 	}
-	#endif
 
-	m_messagesHandler.sendMessages(&m_outbox,getRank());
+	m_messagesHandler.sendMessages(&m_outbox);
 }
 
 /**
@@ -790,8 +787,7 @@ void Machine::receiveMessages(){
 	assert(receivedMessages<=MAX_ALLOCATED_MESSAGES_IN_INBOX);
 	#endif
 
-	#ifdef USE_EVENTS
-	if(m_inbox.size() > 0 && m_parameters.showCommunicationEvents() /*&& m_slave_mode == RAY_SLAVE_MODE_EXTENSION*/){
+	if(m_inbox.size() > 0 && m_parameters.showCommunicationEvents()){
 		uint64_t theTime=getMicroSecondsInOne();
 		uint64_t microseconds=theTime - m_startingTimeMicroseconds;
 		for(int i=0;i<(int)m_inbox.size();i++){
@@ -800,7 +796,6 @@ void Machine::receiveMessages(){
 			cout<<endl;
 		}
 	}
-	#endif
 }
 
 void Machine::call_RAY_SLAVE_MODE_SEND_SEED_LENGTHS(){

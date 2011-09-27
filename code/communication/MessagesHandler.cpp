@@ -30,10 +30,12 @@
 #include <string.h>
 using namespace std;
 
+//#define COMMUNICATION_IS_VERBOSE
+
 /*
  * send messages,
  */
-void MessagesHandler::sendMessages(StaticVector*outbox,int source){
+void MessagesHandler::sendMessages(StaticVector*outbox){
 	for(int i=0;i<(int)outbox->size();i++){
 		Message*aMessage=((*outbox)[i]);
 		int destination=aMessage->getDestination();
@@ -73,6 +75,7 @@ void MessagesHandler::sendMessages(StaticVector*outbox,int source){
 	outbox->clear();
 }
 
+#ifdef USE_PERSISTENT_COMMUNICATION
 /*	
  * receiveMessages is implemented as recommanded by Mr. George Bosilca from
 the University of Tennessee (via the Open-MPI mailing list)
@@ -129,7 +132,10 @@ void MessagesHandler::pumpMessageFromPersistentRing(){
 			m_head++;
 	}
 }
+#endif
 
+
+#ifdef USE_PERSISTENT_COMMUNICATION
 void MessagesHandler::addMessage(Message*message){
 
 	m_bufferedMessages ++ ;
@@ -175,8 +181,10 @@ void MessagesHandler::addMessage(Message*message){
 		m_heads[source] = allocatedMessage;
 	}
 }
+#endif
 
 void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator){
+	#ifdef USE_PERSISTENT_COMMUNICATION
 	// pump messages with persistent communication
 	pumpMessageFromPersistentRing();
 
@@ -187,9 +195,17 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 			roundRobinReception(inbox,inboxAllocator);
 		}
 	}
+	#else
+
+	// round-robin reception seems to avoid starvation 
+	roundRobinReception(inbox,inboxAllocator);
+
+	#endif
 }
 
 void MessagesHandler::roundRobinReception(StaticVector*inbox,RingAllocator*inboxAllocator){
+	#ifdef USE_PERSISTENT_COMMUNICATION
+	// with persistent communication, we fetch the message from the persistent ring
 	// check if we have one message for m_currentRankToTryToReceiveFrom
 	if(m_tails[m_currentRankToTryToReceiveFrom] != NULL){
 		// we have a message
@@ -239,13 +255,25 @@ void MessagesHandler::roundRobinReception(StaticVector*inbox,RingAllocator*inbox
 		m_receivedMessages++;
 
 		m_bufferedMessages --;
+
+		#ifdef ASSERT
+		assert(m_bufferedMessages >= 0);
+		#endif
 	}
 
-	//#define COMMUNICATION_IS_VERBOSE
+	#else
+
+	/* otherwise, we use MPI_Iprobe + MPI_Recv */
+	/* probe and read a message */
+
+	probeAndRead(m_currentRankToTryToReceiveFrom,MPI_ANY_TAG,inbox,inboxAllocator);
+
+	#endif
+	
 
 	#ifdef COMMUNICATION_IS_VERBOSE
 	if(inbox->size() > 0){
-		cout<<"[RoundRobin] received a message from "<<m_currentRankToTryToReceiveFrom<<" buffered messages: "<<m_bufferedMessages<<endl;
+		cout<<"[RoundRobin] received a message from "<<m_currentRankToTryToReceiveFrom<<endl;
 	}
 	#endif
 
@@ -257,13 +285,13 @@ void MessagesHandler::roundRobinReception(StaticVector*inbox,RingAllocator*inbox
 		m_currentRankToTryToReceiveFrom++;
 	}
 
-	#ifdef ASSERT
-	assert(m_bufferedMessages >= 0);
-	#endif
 }
 
 // this code is not utilised, but is kept for reference
-void MessagesHandler::probeAndRead(int source,int tag,StaticVector*inbox,RingAllocator*inboxAllocator,int destination){
+void MessagesHandler::probeAndRead(int source,int tag,StaticVector*inbox,RingAllocator*inboxAllocator){
+	#ifdef COMMUNICATION_IS_VERBOSE
+	//cout<<"call to probeAndRead source="<<source<<""<<endl;
+	#endif
 	int flag;
 	MPI_Status status;
 	MPI_Iprobe(source,tag,MPI_COMM_WORLD,&flag,&status);
@@ -287,11 +315,10 @@ void MessagesHandler::probeAndRead(int source,int tag,StaticVector*inbox,RingAll
 
 		MPI_Recv(incoming,count,datatype,source,tag,MPI_COMM_WORLD,&status);
 
-		Message aMessage(incoming,count,destination,tag,source);
+		Message aMessage(incoming,count,m_rank,tag,source);
 		inbox->push_back(aMessage);
 
 		#ifdef ASSERT
-		assert(destination == m_rank);
 		assert(aMessage.getDestination() == m_rank);
 		#endif
 
@@ -300,6 +327,7 @@ void MessagesHandler::probeAndRead(int source,int tag,StaticVector*inbox,RingAll
 }
 
 void MessagesHandler::initialiseMembers(){
+	#ifdef USE_PERSISTENT_COMMUNICATION
 	// the ring itself  contain requests ready to receive messages
 	m_ringSize=m_size+16;
 
@@ -322,9 +350,11 @@ void MessagesHandler::initialiseMembers(){
 		m_heads[i] = NULL;
 		m_tails[i] = NULL;
 	}
+	#endif
 }
 
 void MessagesHandler::freeLeftovers(){
+	#ifdef USE_PERSISTENT_COMMUNICATION
 	for(int i=0;i<m_ringSize;i++){
 		MPI_Cancel(m_ring+i);
 		MPI_Request_free(m_ring+i);
@@ -341,6 +371,7 @@ void MessagesHandler::freeLeftovers(){
 	__Free(m_tails,RAY_MALLOC_TYPE_COMMUNICATION_LAYER,false);
 	m_heads= NULL;
 	m_tails= NULL;
+	#endif
 }
 
 void MessagesHandler::constructor(int*argc,char***argv){
@@ -368,11 +399,13 @@ void MessagesHandler::constructor(int*argc,char***argv){
 
 	m_currentRankToTryToReceiveFrom=m_rank;
 
+	#ifdef USE_PERSISTENT_COMMUNICATION
 	int chunkSize = 4194304; // 4 MiB
 	m_internalMessageAllocator.constructor(chunkSize,RAY_MALLOC_TYPE_COMMUNICATION_LAYER,false);
 	m_internalBufferAllocator.constructor(chunkSize,RAY_MALLOC_TYPE_COMMUNICATION_LAYER,false);
 
 	m_bufferedMessages=0;
+	#endif
 }
 
 void MessagesHandler::destructor(){
