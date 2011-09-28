@@ -68,6 +68,7 @@ void ExtensionData::destroyStructures(Profiler*m_profiler,bool m_runProfiler){
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
+	//cout<<"m_pairedReadsWithoutMate= "<<m_pairedReadsWithoutMate.size()<<endl;
 	m_pairedReadsWithoutMate.clear();
 
 	MACRO_COLLECT_PROFILING_INFORMATION();

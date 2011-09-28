@@ -73,6 +73,10 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 
 	if(ed->m_EXTENSION_currentSeedIndex==(int)(*seeds).size()
 		|| seeds->size()==0){
+
+
+		MACRO_COLLECT_PROFILING_INFORMATION();
+
 		if((*seeds).size()>0)
 			ed->destructor();
 		ed->getAllocator()->clear();
@@ -126,6 +130,9 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 
 		return;
 	}else if(!ed->m_EXTENSION_initiated){
+
+		MACRO_COLLECT_PROFILING_INFORMATION();
+
 		ed->m_EXTENSION_initiated=true;
 		ed->m_EXTENSION_currentSeedIndex=0;
 		ed->m_EXTENSION_currentPosition=0;
@@ -138,6 +145,8 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		ed->m_flowNumber=0;
 	
 		ed->constructor(m_parameters);
+
+		MACRO_COLLECT_PROFILING_INFORMATION();
 	}
 
 
@@ -1116,6 +1125,9 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 	MACRO_COLLECT_PROFILING_INFORMATION();;
 
 	if(!m_messengerInitiated){
+
+		MACRO_COLLECT_PROFILING_INFORMATION();;
+
 		m_hasPairedSequences=false;
 		*edgesRequested=false;
 		m_pickedInformation=false;
@@ -1130,10 +1142,21 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 		// don't let things accumulate in this structure...
 		// TODO: fix this at the source in the first place...
 		// this code does change the result, but reduces the granularity
-		//
 		if(m_ed->m_expirations.count(previousPosition) > 0){
+			vector<uint64_t>*expired=&(m_ed->m_expirations)[previousPosition];
+
+			// erase these reads from the list of reads without mate 
+			// because they are expired...
+			// this just free some memory and does not change the result.
+			for(int i=0;i<(int)expired->size();i++){
+				uint64_t readId=expired->at(i);
+				m_ed->m_pairedReadsWithoutMate.erase(readId);
+			}
+
 			m_ed->m_expirations.erase(previousPosition);
 		}
+
+		MACRO_COLLECT_PROFILING_INFORMATION();;
 
 		if(theCurrentSize%10000==0){
 			if(theCurrentSize==0 && ed->m_flowNumber ==0){
@@ -1153,6 +1176,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 			printExtensionStatus(currentVertex);
 		}
 		m_messengerInitiated=true;
+
+		MACRO_COLLECT_PROFILING_INFORMATION();;
 
 		uint64_t waveId=getPathUniqueId(theRank,ed->m_EXTENSION_currentSeedIndex);
 		// save wave progress.
@@ -1176,6 +1201,9 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 		Before threshold position, it is useless to fetch read markers.
 		*/
+
+		MACRO_COLLECT_PROFILING_INFORMATION();;
+
 		int progression=ed->m_EXTENSION_extension.size()-1;
 		int threshold=ed->m_EXTENSION_currentSeed.size()-m_parameters->getMaximumDistance();
 		bool getReads=false;
@@ -1217,6 +1245,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 	}else{
 		if(m_sequenceIndexToCache<(int)ed->m_EXTENSION_receivedReads.size()){
+			MACRO_COLLECT_PROFILING_INFORMATION();;
+
 			ReadAnnotation annotation=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache];
 			uint64_t uniqueId=annotation.getUniqueId();
 			ExtensionElement*anElement=ed->getUsedRead(uniqueId);

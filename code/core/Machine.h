@@ -79,7 +79,9 @@ typedef void (Machine::*MachineMethod) ();
 class Machine{
 	uint64_t m_startingTimeMicroseconds;
 
-	Profiler m_profiler;
+	Profiler m_profiler2;
+	Profiler*m_profiler;
+	bool m_runProfiler;
 
 	/** the virtual communicator of the MPI rank */
 	VirtualCommunicator m_virtualCommunicator;

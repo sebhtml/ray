@@ -274,7 +274,11 @@ void Machine::start(){
 		m_parameters.writeCommandFile();
 	}
 
-	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed,&m_subgraph,&m_inbox,&m_profiler);
+	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed,&m_subgraph,&m_inbox,&m_profiler2);
+
+	m_profiler = &m_profiler2;
+	m_runProfiler = m_parameters.runProfiler();
+
 	ostringstream prefixFull;
 	prefixFull<<m_parameters.getMemoryPrefix()<<"_Main";
 	int chunkSize=16777216;
@@ -688,9 +692,9 @@ void Machine::runWithProfiler(){
 
 		if(difference >= tooLong){
 			cout<<"Warning, SlaveMode= "<<SLAVE_MODES[currentSlaveMode]<<" GranularityInMicroseconds= "<<difference<<""<<endl;
-			m_profiler.printStack();
+			m_profiler->printStack();
 		}
-		m_profiler.resetStack();
+		m_profiler->resetStack();
 
 		int messagesSentInProcessData = m_outbox.size() - messagesSentInProcessMessages;
 		sentMessagesInProcessData += messagesSentInProcessData;
@@ -1611,13 +1615,21 @@ void Machine::call_RAY_SLAVE_MODE_AMOS(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_EXTENSION(){
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
 	int maxCoverage=m_parameters.getRepeatCoverage();
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
 	m_seedExtender.extendSeeds(&(m_seedingData->m_SEEDING_seeds),m_ed,getRank(),&m_outbox,&(m_seedingData->m_SEEDING_currentVertex),
 	m_fusionData,&m_outboxAllocator,&(m_seedingData->m_SEEDING_edgesRequested),&(m_seedingData->m_SEEDING_outgoingEdgeIndex),
 	&m_last_value,&(m_seedingData->m_SEEDING_vertexCoverageRequested),m_wordSize,getSize(),&(m_seedingData->m_SEEDING_vertexCoverageReceived),
 	&(m_seedingData->m_SEEDING_receivedVertexCoverage),&m_repeatedLength,&maxCoverage,&(m_seedingData->m_SEEDING_receivedOutgoingEdges),&m_c,
 	m_bubbleData,
 m_parameters.getMinimumCoverage(),&m_oa,&(m_seedingData->m_SEEDING_edgesReceived),&m_slave_mode);
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
 }
 
 /** process data my calling current slave and master methods */
