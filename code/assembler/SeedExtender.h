@@ -53,6 +53,8 @@ class SeedExtender{
 
 	Profiler*m_profiler;
 
+	bool m_runProfiler;
+
 	map<int,map<int,uint64_t> > m_pairedScores;
 
 	int m_extended;

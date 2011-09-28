@@ -548,6 +548,8 @@ void Machine::runWithProfiler(){
 	bool printedCritical=false;
 	bool printedWarning=false;
 
+	map<int,int> granularityValues;
+
 	/** m_timeToLive goes down to 0 when m_alive is false
  * 	This is called the aging process */
 	while(m_timeToLive){
@@ -562,6 +564,15 @@ void Machine::runWithProfiler(){
 				seconds,ticks,sentMessages,sentMessagesInProcessMessages,sentMessagesInProcessData,
 				receivedMessages,balance);
 			fflush(stdout);
+
+			cout<<"Rank "<<m_rank<<" granularity of processData calls"<<endl;
+			for(map<int,int>::iterator i = granularityValues.begin();i!=granularityValues.end();i++){
+				int microSeconds=i->first;
+				int count=i->second;
+				cout<<" "<<microSeconds<<" "<<count<<endl;
+			}
+			cout<<"Rank "<<m_rank<<" END of granularity of processData calls"<<endl;
+			granularityValues.clear();
 
 			if(receivedTags.size() > 0){
 				cout<<"Rank "<<m_parameters.getRank()<<" received in receiveMessages:"<<endl;
@@ -631,9 +642,6 @@ void Machine::runWithProfiler(){
 				distancesForProcessData.clear();
 			}
 
-			m_profiler.print();
-			m_profiler.reset();
-
 			sentMessages=0;
 			sentMessagesInProcessMessages=0;
 			sentMessagesInProcessData=0;
@@ -672,7 +680,25 @@ void Machine::runWithProfiler(){
 */
 
 		// 3. process data according to current slave and master modes
+
+		int currentSlaveMode=m_slave_mode;
+
+		uint64_t startingTime = getMicroSecondsInOne();
 		processData();
+		uint64_t endingTime = getMicroSecondsInOne();
+
+		int difference = endingTime - startingTime;
+		granularityValues[difference] ++ ;
+
+		/* threshold to say something is taking too long */
+		/* in microseconds */
+		int tooLong=128;
+
+		if(difference >= tooLong){
+			cout<<"Warning, SlaveMode= "<<SLAVE_MODES[currentSlaveMode]<<" GranularityInMicroseconds= "<<difference<<""<<endl;
+			m_profiler.printStack();
+		}
+		m_profiler.resetStack();
 
 		int messagesSentInProcessData = m_outbox.size() - messagesSentInProcessMessages;
 		sentMessagesInProcessData += messagesSentInProcessData;

@@ -44,7 +44,7 @@ int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,vector<Kmer>*recei
 BubbleData*bubbleData,
 int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 
-	m_profiler->collect(PROFILER_RAY_SLAVE_MODE_EXTENSION_extendSeeds);
+	MACRO_COLLECT_PROFILING_INFORMATION();
 	
 	/* read the checkpoint */
 	if(!m_checkedCheckpoint){
@@ -190,15 +190,22 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		ed->m_flowNumber=0;
 
 	}else if(!ed->m_EXTENSION_markedCurrentVertexAsAssembled){
+		MACRO_COLLECT_PROFILING_INFORMATION();
+
 		markCurrentVertexAsAssembled(currentVertex,outboxAllocator,outgoingEdgeIndex,outbox,
 size,theRank,ed,vertexCoverageRequested,vertexCoverageReceived,receivedVertexCoverage,
 repeatedLength,maxCoverage,edgesRequested,receivedOutgoingEdges,chooser,bubbleData,minimumCoverage,
 oa,wordSize,seeds);
 	}else if(!ed->m_EXTENSION_enumerateChoices){
+		MACRO_COLLECT_PROFILING_INFORMATION();
+
 		enumerateChoices(edgesRequested,ed,edgesReceived,outboxAllocator,outgoingEdgeIndex,outbox,
 		currentVertex,theRank,vertexCoverageRequested,receivedOutgoingEdges,
 		vertexCoverageReceived,size,receivedVertexCoverage,chooser,wordSize);
 	}else if(!ed->m_EXTENSION_choose){
+
+		MACRO_COLLECT_PROFILING_INFORMATION();
+
 		doChoice(outboxAllocator,outgoingEdgeIndex,outbox,currentVertex,bubbleData,theRank,wordSize,
 	ed,minimumCoverage,*maxCoverage,oa,chooser,seeds,
 edgesRequested,vertexCoverageRequested,vertexCoverageReceived,size,receivedVertexCoverage,edgesReceived,
@@ -213,7 +220,7 @@ void SeedExtender::enumerateChoices(bool*edgesRequested,ExtensionData*ed,bool*ed
 Kmer*currentVertex,int theRank,bool*vertexCoverageRequested,vector<Kmer>*receivedOutgoingEdges,
 bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,int wordSize
 ){
-	m_profiler->collect(PROFILER_RAY_SLAVE_MODE_EXTENSION_enumerateChoices);
+	MACRO_COLLECT_PROFILING_INFORMATION();;
 
 	if(!(*edgesRequested)){
 		ed->m_EXTENSION_coverages->clear();
@@ -224,6 +231,8 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 		(*vertexCoverageRequested)=false;
 		(*outgoingEdgeIndex)=0;
 	}else if((*edgesReceived)){
+
+		MACRO_COLLECT_PROFILING_INFORMATION();
 		if((*outgoingEdgeIndex)<(int)(*receivedOutgoingEdges).size()){
 			Kmer kmer=(*receivedOutgoingEdges)[(*outgoingEdgeIndex)];
 			Kmer reverseComplement=kmer.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
@@ -259,6 +268,9 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				(*vertexCoverageRequested)=true;
 				(*vertexCoverageReceived)=false;
 				(*receivedVertexCoverage)=-1;
+
+				MACRO_COLLECT_PROFILING_INFORMATION();
+
 			}else if((*vertexCoverageReceived)){
 				bool inserted;
 				*((m_cache.insert(kmer,&m_cacheAllocator,&inserted))->getValue())=*receivedVertexCoverage;
@@ -272,8 +284,14 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 					ed->m_EXTENSION_coverages->push_back((*receivedVertexCoverage));
 					ed->m_enumerateChoices_outgoingEdges.push_back(kmer);
 				}
+
+
+				MACRO_COLLECT_PROFILING_INFORMATION();
 			}
 		}else{
+
+			MACRO_COLLECT_PROFILING_INFORMATION();
+
 			receivedOutgoingEdges->clear();
 			ed->m_EXTENSION_enumerateChoices=true;
 			ed->m_EXTENSION_choose=false;
@@ -290,6 +308,8 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 			#endif
 		}
 	}
+				
+	MACRO_COLLECT_PROFILING_INFORMATION();
 }
 
 /**
@@ -312,7 +332,7 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,int
 int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 ){
 
-	m_profiler->collect(PROFILER_RAY_SLAVE_MODE_EXTENSION_doChoice);
+	MACRO_COLLECT_PROFILING_INFORMATION();;
 
 	if(m_expiredReads.count(ed->m_EXTENSION_currentPosition)>0){
 		for(int i=0;i<(int)m_expiredReads[ed->m_EXTENSION_currentPosition].size();i++){
@@ -344,8 +364,13 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 		}
 		m_expiredReads.erase(ed->m_EXTENSION_currentPosition);
 		ed->m_EXTENSION_readIterator=ed->m_EXTENSION_readsInRange->begin();
+
+		MACRO_COLLECT_PROFILING_INFORMATION();
+
 		return;
 	}
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
 
 	// if there is only one choice and reads supporting it
 	if(ed->m_enumerateChoices_outgoingEdges.size()==1&&ed->m_EXTENSION_readsInRange->size()>0){
@@ -396,12 +421,18 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 	// else, do a paired-end or single-end lookup if reads are in range.
 
 	}else{
+
+		MACRO_COLLECT_PROFILING_INFORMATION();
+
 		// stuff in the reads to appropriate arcs.
 		if(!ed->m_EXTENSION_singleEndResolution && ed->m_EXTENSION_readsInRange->size()>0){
 			// try to use single-end reads to resolve the repeat.
 			// for each read in range, ask them their vertex at position (CurrentPositionOnContig-StartPositionOfReadOnContig)
 			// and cumulate the results in
 			if(ed->m_EXTENSION_readIterator!=ed->m_EXTENSION_readsInRange->end()){
+
+				MACRO_COLLECT_PROFILING_INFORMATION();
+
 				m_removedUnfitLibraries=false;
 				// we received the vertex for that read,
 				// now check if it matches one of 
@@ -480,6 +511,9 @@ Presently, insertions or deletions up to 8 are supported.
 						diff=uniqueReadIdentifier-uniqueId;
 					}
 */
+
+					MACRO_COLLECT_PROFILING_INFORMATION();
+
 					int library=pairedRead->getLibrary();
 					ExtensionElement*extensionElement=ed->getUsedRead(uniqueReadIdentifier);
 					if(extensionElement!=NULL){// use to be via readsPositions
@@ -513,6 +547,8 @@ Presently, insertions or deletions up to 8 are supported.
 
 								m_hasPairedSequences=true;
 
+								MACRO_COLLECT_PROFILING_INFORMATION();
+
 								/** only match 1 peak */
 								break;
 							}
@@ -537,6 +573,8 @@ Presently, insertions or deletions up to 8 are supported.
 					setFreeUnmatedPairedReads();
 					return;
 				}
+
+				MACRO_COLLECT_PROFILING_INFORMATION();
 
 				// reads will be set free in 3 cases:
 				//
@@ -611,6 +649,9 @@ Presently, insertions or deletions up to 8 are supported.
 				ed->m_doChoice_tips_Detected=false;
 				m_dfsData->m_doChoice_tips_Initiated=false;
 			}
+
+			MACRO_COLLECT_PROFILING_INFORMATION();
+
 			return;
 		}else if(!ed->m_doChoice_tips_Detected && ed->m_EXTENSION_readsInRange->size()>0){
  			//for each entries in ed->m_enumerateChoices_outgoingEdges, do a dfs of max depth 40.
@@ -628,6 +669,8 @@ Presently, insertions or deletions up to 8 are supported.
 				bubbleData->m_coverages[(*currentVertex)]=ed->m_currentCoverage;
 
 			}
+
+			MACRO_COLLECT_PROFILING_INFORMATION();
 
 			if(m_dfsData->m_doChoice_tips_i<(int)ed->m_enumerateChoices_outgoingEdges.size()){
 				if(!m_dfsData->m_doChoice_tips_dfs_done){
@@ -694,6 +737,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 		// bubbles detection aims polymorphisms and homopolymers stretches.
 		}else if(!bubbleData->m_doChoice_bubbles_Detected && ed->m_EXTENSION_readsInRange->size()>0){
 			
+			MACRO_COLLECT_PROFILING_INFORMATION();
 			bool isGenuineBubble=m_bubbleTool.isGenuineBubble((*currentVertex),&bubbleData->m_BUBBLE_visitedVertices,
 				&bubbleData->m_coverages);
 
@@ -710,6 +754,9 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			bubbleData->m_doChoice_bubbles_Detected=true;
 			return;
 		}
+
+
+		MACRO_COLLECT_PROFILING_INFORMATION();
 
 		bool mustFlowAgain=true;
 
@@ -732,6 +779,8 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 		// no choice possible...
 		if((int)ed->m_EXTENSION_extension->size() > ed->m_previouslyFlowedVertices && mustFlowAgain){
 			m_flowedVertices.push_back(ed->m_EXTENSION_extension->size());
+
+			MACRO_COLLECT_PROFILING_INFORMATION();
 			ed->m_previouslyFlowedVertices = ed->m_EXTENSION_extension->size();
 
 			vector<Kmer> complementedSeed;
@@ -743,11 +792,15 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 
 			printExtensionStatus(currentVertex);
 			cout<<"Rank "<<m_parameters->getRank()<<" is changing direction."<<endl;
+			
+			MACRO_COLLECT_PROFILING_INFORMATION();
 
 			for(int i=ed->m_EXTENSION_extension->size()-1;i>=0;i--){
 				complementedSeed.push_back(ed->m_EXTENSION_extension->at(i).complementVertex(wordSize,
 					m_parameters->getColorSpaceMode()));
 			}
+
+			MACRO_COLLECT_PROFILING_INFORMATION();
 
 			/* increment the flow number */
 			ed->m_flowNumber++;
@@ -766,11 +819,16 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 */
 			ed->m_EXTENSION_directVertexDone=false;
 			ed->m_EXTENSION_VertexAssembled_requested=false;
+			MACRO_COLLECT_PROFILING_INFORMATION();
 		}else{
 			m_flowedVertices.push_back(ed->m_EXTENSION_extension->size());
 			storeExtensionAndGetNextOne(ed,theRank,seeds,currentVertex,bubbleData);
+			MACRO_COLLECT_PROFILING_INFORMATION();
 		}
+
+		MACRO_COLLECT_PROFILING_INFORMATION();
 	}
+	MACRO_COLLECT_PROFILING_INFORMATION();
 }
 
 void SeedExtender::printTree(Kmer root,
@@ -816,6 +874,7 @@ Kmer *currentVertex,BubbleData*bubbleData){
 			cout<<"Stopping extension..."<<endl;
 		}
 
+		MACRO_COLLECT_PROFILING_INFORMATION();
 		if(ed->m_enumerateChoices_outgoingEdges.size()>1 && ed->m_EXTENSION_readsInRange->size()>0
 		&&m_parameters->showEndingContext() && false){ /* don't show this tree. */
 			map<Kmer,set<Kmer> >arcs;
@@ -908,7 +967,7 @@ Kmer *currentVertex,BubbleData*bubbleData){
 void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector*outbox,RingAllocator*outboxAllocator,
   int*outgoingEdgeIndex,int*last_value,Kmer*currentVertex,int theRank,bool*vertexCoverageRequested,int wordSize,int size,vector<vector<Kmer> >*seeds){
 
-	m_profiler->collect(PROFILER_RAY_SLAVE_MODE_EXTENSION_checkIfCurrentVertexIsAssembled);
+	MACRO_COLLECT_PROFILING_INFORMATION();;
 
 	if(!ed->m_EXTENSION_directVertexDone){
 		if(!ed->m_EXTENSION_VertexAssembled_requested){
@@ -971,7 +1030,7 @@ vector<Kmer>*receivedOutgoingEdges,Chooser*chooser,
 BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,vector<vector<Kmer> >*seeds
 ){
 
-	m_profiler->collect(PROFILER_RAY_SLAVE_MODE_EXTENSION_markCurrentVertexAsAssembled);
+	MACRO_COLLECT_PROFILING_INFORMATION();;
 
 	if(!m_messengerInitiated){
 		m_hasPairedSequences=false;
@@ -1027,6 +1086,9 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 		Kmer vertex=*currentVertex;
 		m_vertexMessenger.constructor(vertex,waveId,progression,&m_matesToMeet,m_inbox,outbox,outboxAllocator,m_parameters,getReads);
+
+		MACRO_COLLECT_PROFILING_INFORMATION();;
+
 	}else if(!m_vertexMessenger.isDone()){
 		m_vertexMessenger.work();
 	}else if(!m_pickedInformation){
@@ -1047,11 +1109,16 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 		#endif
 
 		m_sequenceRequested=false;
+
+		MACRO_COLLECT_PROFILING_INFORMATION();;
+
 	}else{
 		if(m_sequenceIndexToCache<(int)ed->m_EXTENSION_receivedReads.size()){
 			ReadAnnotation annotation=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache];
 			uint64_t uniqueId=annotation.getUniqueId();
 			ExtensionElement*anElement=ed->getUsedRead(uniqueId);
+
+			MACRO_COLLECT_PROFILING_INFORMATION();;
 
 			/**
 			 * if the read is still within the range of the peak, update it 
@@ -1126,6 +1193,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 					}
 				}
 
+				MACRO_COLLECT_PROFILING_INFORMATION();;
+
 				m_sequenceIndexToCache++;
 
 			/** this case never happens because m_cacheForRepeatedReads is never populated */
@@ -1151,6 +1220,9 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				m_sequenceRequested=true;
 				m_sequenceReceived=true;
 
+
+				MACRO_COLLECT_PROFILING_INFORMATION();;
+
 			/** send a message to get the read */
 			}else if(!m_sequenceRequested){
 				m_sequenceRequested=true;
@@ -1164,6 +1236,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				message[0]=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache].getReadIndex();
 				Message aMessage(message,1,sequenceRank,RAY_MPI_TAG_REQUEST_READ_SEQUENCE,theRank);
 				outbox->push_back(aMessage);
+
+				MACRO_COLLECT_PROFILING_INFORMATION();;
 
 			/* we received a sequence read */
 			}else if(m_sequenceReceived){
@@ -1181,6 +1255,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				if(availableLength<=wordSize){
 					addRead=false;
 				}
+
+				MACRO_COLLECT_PROFILING_INFORMATION();;
 
 				// don't add it up if its is marked on a repeated vertex and
 				// its mate was not seen yet.
@@ -1246,6 +1322,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 					}
 				}
 
+				MACRO_COLLECT_PROFILING_INFORMATION();;
 
 				/* after making sure the read is sane, we can add it here for sure */
 				if(addRead){
@@ -1297,6 +1374,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 				m_sequenceIndexToCache++;
 				m_sequenceRequested=false;
+
+				MACRO_COLLECT_PROFILING_INFORMATION();;
 			}
 		}else{
 			ed->m_EXTENSION_directVertexDone=true;
@@ -1304,8 +1383,12 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 			ed->m_EXTENSION_enumerateChoices=false;
 			(*edgesRequested)=false;
 			ed->m_EXTENSION_markedCurrentVertexAsAssembled=true;
+
+			MACRO_COLLECT_PROFILING_INFORMATION();;
 		}
 	}
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
 }
 
 SeedExtender::SeedExtender(){
@@ -1340,6 +1423,8 @@ void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAll
 	m_bubbleTool.constructor(parameters);
 
 	m_profiler=profiler;
+
+	m_runProfiler = m_parameters->runProfiler();
 }
 
 void SeedExtender::inspect(ExtensionData*ed,Kmer*currentVertex){

@@ -22,27 +22,35 @@
 #ifndef _Profiler_H
 #define _Profiler_H
 
-extern const char* PROFILE_SYMBOLS[];
-
-#define MACRO_LIST_ITEM(element) element,
-
-/* for profiler */
-enum{
-#include <profiling/profiling_macros.h>
-PROFILER_NUMBER_OF_OBSERVERS
-};
-
-#undef MACRO_LIST_ITEM
+#include <vector>
+#include <stdint.h>
+#include <string>
+using namespace std;
 
 class Profiler{
-	bool m_hasSomething;
-	int m_profile[PROFILER_NUMBER_OF_OBSERVERS];
+	vector<uint64_t> m_timePoints;
+	vector<string> m_functions;
+	vector<string> m_files;
+	vector<int> m_lines;
 public:
 	void constructor();
-	void reset();
-	void collect(int symbol);
-	void print();
+	void resetStack();
+	void printStack();
+	void collect(const char*function,const char*file,int line);
+
 };
 
+#define CONFIG_PROFILER_COLLECT
+
+#ifdef CONFIG_PROFILER_COLLECT
+
+#define MACRO_COLLECT_PROFILING_INFORMATION() \
+	if(m_runProfiler) \
+		m_profiler->collect(__func__,__FILE__,__LINE__);
+
+#else
+#define MACRO_COLLECT_PROFILING_INFORMATION()
 #endif
 
+
+#endif

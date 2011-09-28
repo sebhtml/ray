@@ -19,50 +19,59 @@
 
 */
 
+#include <core/OperatingSystem.h>
 #include <profiling/Profiler.h>
 #include <core/slave_modes.h>
 #include <assert.h>
 #include <iostream>
+#include <iomanip>
 using namespace std;
 
-#define MACRO_LIST_ITEM(x) #x,
-
-const char* PROFILE_SYMBOLS[]={
-#include <profiling/profiling_macros.h>
-"PROFILER_NUMBER_OF_OBSERVERS"
-};
-
-#undef MACRO_LIST_ITEM
-
 void Profiler::constructor(){
-	reset();
 }
 
-void Profiler::reset(){
-	for(int i=0;i<PROFILER_NUMBER_OF_OBSERVERS;i++){
-		m_profile[i]=0;
+void Profiler::resetStack(){
+	m_timePoints.clear();
+	m_functions.clear();
+	m_files.clear();
+	m_lines.clear();
+}
+
+void Profiler::collect(const char*function,const char*file,int line){
+	m_timePoints.push_back(getMicroSecondsInOne());
+	m_functions.push_back(function);
+	m_files.push_back(file);
+	m_lines.push_back(line);
+}
+
+void Profiler::printStack(){
+	cout<<"Number of calls in the stack: "<<m_timePoints.size()<<endl;
+	uint64_t start=0;
+	uint64_t total=0;
+	if(m_timePoints.size() > 0){
+		uint64_t start=m_timePoints[0];
+
+		total=m_timePoints[m_timePoints.size()-1];
+
+		if(m_timePoints.size() > 1)
+			total -= start;
 	}
-	m_hasSomething=false;
-}
 
-void Profiler::collect(int symbol){
-	#ifdef ASSERT
-	assert(symbol < PROFILER_NUMBER_OF_OBSERVERS);
-	#endif
-	m_profile[symbol] ++;
+	for(int i=0;i<(int)m_timePoints.size();i++){
+		int last=i-1;
+		if(last<0)
+			last=0;
+		uint64_t current=m_timePoints[i];
+		uint64_t lastPoint=m_timePoints[last];
+		uint64_t diffWithStart=current-start;
+		uint64_t diffWithLast=current-lastPoint;
 
-	m_hasSomething=true;
-}
+		double ratio=0;
 
-void Profiler::print(){
-	if(!m_hasSomething)
-		return;
+		if(total > 0)
+			ratio=100.00*diffWithLast/total;
 
-	for(int i=0;i<PROFILER_NUMBER_OF_OBSERVERS;i++){
-		int count=m_profile[i];
-		if(count==0)
-			continue;
-
-		cout<<PROFILE_SYMBOLS[i]<<" "<<count<<endl;
+		cout<<i<<"	"<<current<<" microseconds	+"<<diffWithLast<<" from previous ("<<setprecision(2)<<fixed<< ratio<<"%)";
+		cout<<"	+"<<diffWithStart<<" from first	in "<<m_functions[i]<<" inside "<<m_files[i]<<" at line "<<m_lines[i]<<endl;
 	}
 }
