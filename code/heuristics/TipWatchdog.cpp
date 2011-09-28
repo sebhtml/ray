@@ -25,7 +25,7 @@ bool TipWatchdog::getApproval(ExtensionData*ed,DepthFirstSearchData*dfsData,int 
 	int id=dfsData->m_doChoice_tips_newEdges[0];
 	Kmer key=ed->m_enumerateChoices_outgoingEdges[id];
 	int readsInFavorOfThis=ed->m_EXTENSION_readPositionsForVertices[key].size();
-	int coverageAtTheVertexLocation=(*ed->m_EXTENSION_coverages)[id];
+	int coverageAtTheVertexLocation=(ed->m_EXTENSION_coverages)[id];
 
 	// reads are not supportive of this.
 	if(readsInFavorOfThis*10<coverageAtTheVertexLocation){

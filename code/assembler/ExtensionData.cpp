@@ -40,37 +40,44 @@ void ExtensionData::constructor(Parameters*parameters){
 }
 
 void ExtensionData::createStructures(){
-	m_EXTENSION_extension=new vector<Kmer>;
-	m_repeatedValues=new vector<int>;
-	m_extensionCoverageValues=new vector<int>;
-	m_EXTENSION_coverages=new vector<int>;
-	m_EXTENSION_readsInRange=new set<uint64_t>;
-	m_expirations=new map<int,vector<uint64_t> >;
-	m_pairedReadsWithoutMate=new set<uint64_t>;
+	m_EXTENSION_extension.clear();
+	m_repeatedValues.clear();
+	m_extensionCoverageValues.clear();
+	m_EXTENSION_coverages.clear();
+	m_EXTENSION_readsInRange.clear();
+	m_expirations.clear();
+	m_pairedReadsWithoutMate.clear();
+
 	for(int i=0;i<m_numberOfBins;i++){
 		m_database[i].constructor();
 	}
 }
 
 void ExtensionData::destroyStructures(){
-	delete m_EXTENSION_extension;
-	delete m_extensionCoverageValues;
-	delete m_repeatedValues;
-	delete m_EXTENSION_coverages;
-	delete m_EXTENSION_readsInRange;
-	delete m_pairedReadsWithoutMate;
-	delete m_expirations;
+
+	m_EXTENSION_extension.clear();
+	m_extensionCoverageValues.clear();
+	m_repeatedValues.clear();
+	m_EXTENSION_coverages.clear();
+	m_EXTENSION_readsInRange.clear();
+	m_pairedReadsWithoutMate.clear();
+	m_expirations.clear();
 
 	for(int i=0;i<m_numberOfBins;i++){
 		m_database[i].clear();
 	}
 }
 
-void ExtensionData::resetStructures(){
+void ExtensionData::resetStructures(Profiler*m_profiler,bool m_runProfiler){
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
 	m_allocator.reset();
 
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
 	destroyStructures();
-	createStructures();
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
 }
 
 void ExtensionData::destructor(){

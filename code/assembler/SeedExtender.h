@@ -55,6 +55,11 @@ class SeedExtender{
 
 	bool m_runProfiler;
 
+	/* for sliced computation */
+	vector<Kmer> m_complementedSeed;
+	int m_slicedProgression;
+	bool m_slicedComputationStarted;
+
 	map<int,map<int,uint64_t> > m_pairedScores;
 
 	int m_extended;

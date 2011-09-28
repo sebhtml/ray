@@ -105,16 +105,13 @@ void NetworkTest::slaveWork(){
 
 	if(m_currentTestMessage<m_numberOfTestMessages){
 		if(!m_sentCurrentTestMessage){
-			m_startingTimeSeconds=0;
-			m_startingTimeMicroseconds=0;
-			getMicroSeconds(&m_startingTimeSeconds,&m_startingTimeMicroseconds);
+			m_startingTimeMicroseconds=getMicroseconds();
 
 			/** send to a random rank */
 			int destination=rand()%m_size;
 
 			if(m_parameters->hasOption("-write-network-test-raw-data")){
-				uint64_t theMicroseconds=m_startingTimeSeconds*1000*1000 + m_startingTimeMicroseconds;
-				m_sentMicroseconds.push_back(theMicroseconds);
+				m_sentMicroseconds.push_back(m_startingTimeMicroseconds);
 				m_destinations.push_back(destination);
 			}
 
@@ -124,16 +121,13 @@ void NetworkTest::slaveWork(){
 			m_sentCurrentTestMessage=true;
 			//cout<<m_rank<<" sends RAY_MPI_TAG_TEST_NETWORK_MESSAGE to "<<destination<<endl;
 		}else if(m_inbox->size()>0 && m_inbox->at(0)->getTag()==RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY){
-			uint64_t endingSeconds=0;
-			uint64_t endingMicroSeconds=0;
-			getMicroSeconds(&endingSeconds,&endingMicroSeconds);
+			uint64_t endingMicroSeconds=getMicroseconds();
 			
 			if(m_parameters->hasOption("-write-network-test-raw-data")){
-				uint64_t theMicroseconds=endingSeconds*1000*1000 + endingMicroSeconds;
-				m_receivedMicroseconds.push_back(theMicroseconds);
+				m_receivedMicroseconds.push_back(endingMicroSeconds);
 			}
 
-			int microSeconds=(endingSeconds-m_startingTimeSeconds)*1000*1000+endingMicroSeconds-m_startingTimeMicroseconds;
+			int microSeconds=endingMicroSeconds - m_startingTimeMicroseconds;
 			m_sumOfMicroSeconds+=microSeconds;
 
 			m_sentCurrentTestMessage=false;

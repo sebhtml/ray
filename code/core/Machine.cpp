@@ -99,7 +99,7 @@ void Machine::start(){
 		&m_timePrinter);
 	m_partitioner.constructor(&m_outboxAllocator,&m_inbox,&m_outbox,&m_parameters,&m_slave_mode,&m_master_mode);
 
-	m_startingTimeMicroseconds = getMicroSecondsInOne();
+	m_startingTimeMicroseconds = getMicroseconds();
 
 	#ifdef USE_URGENT_SCHEME
 	/* list of urgent tags */
@@ -683,9 +683,9 @@ void Machine::runWithProfiler(){
 
 		int currentSlaveMode=m_slave_mode;
 
-		uint64_t startingTime = getMicroSecondsInOne();
+		uint64_t startingTime = getMicroseconds();
 		processData();
-		uint64_t endingTime = getMicroSecondsInOne();
+		uint64_t endingTime = getMicroseconds();
 
 		int difference = endingTime - startingTime;
 		granularityValues[difference] ++ ;
@@ -732,23 +732,6 @@ void Machine::runWithProfiler(){
 
 		/* increment ticks */
 		ticks++;
-
-		/** provide guidance and audit of the profile */
-
-		if(m_slave_mode != RAY_SLAVE_MODE_DO_NOTHING){
-			int inactivityThresholdInMilliSeconds=1*1000; // 1 second
-			int criticalThresholdInMilliSeconds=10*1000; // 10 seconds
-
-			int difference = t - lastTimePointWithMessagesFromProcessData;
-		
-			if(!printedCritical && difference >= criticalThresholdInMilliSeconds){
-				printedCritical=true;
-				cout<<"Critical: ["<<SLAVE_MODES[m_slave_mode]<<"] last message sent by processData is "<<criticalThresholdInMilliSeconds<<" milliseconds in the past."<<endl;
-			}else if(!printedWarning && difference >= inactivityThresholdInMilliSeconds){
-				printedWarning=true;
-				cout<<"Warning: ["<<SLAVE_MODES[m_slave_mode]<<"] last message sent by processData is "<<inactivityThresholdInMilliSeconds<<" milliseconds in the past."<<endl;
-			}
-		}
 	}
 }
 
@@ -788,7 +771,7 @@ void Machine::sendMessages(){
 	#endif
 
 	if(m_outbox.size() > 0 && m_parameters.showCommunicationEvents() /* && m_slave_mode == RAY_SLAVE_MODE_EXTENSION*/){
-		uint64_t microseconds=getMicroSecondsInOne() - m_startingTimeMicroseconds;
+		uint64_t microseconds=getMicroseconds() - m_startingTimeMicroseconds;
 		for(int i=0;i<(int)m_outbox.size();i++){
 			cout<<"[Communication] "<<microseconds<<" microseconds, SEND ";
 			m_outbox[i]->print();
@@ -814,7 +797,7 @@ void Machine::receiveMessages(){
 	#endif
 
 	if(m_inbox.size() > 0 && m_parameters.showCommunicationEvents()){
-		uint64_t theTime=getMicroSecondsInOne();
+		uint64_t theTime=getMicroseconds();
 		uint64_t microseconds=theTime - m_startingTimeMicroseconds;
 		for(int i=0;i<(int)m_inbox.size();i++){
 			cout<<"[Communication] "<<microseconds<<" microseconds, RECEIVE ";
@@ -1667,7 +1650,7 @@ void Machine::processData(){
 			int tag=m_outbox[i]->getTag();
 
 			if(m_urgentList.count(tag) > 0){
-				uint64_t microseconds=getMicroSecondsInOne();
+				uint64_t microseconds=getMicroseconds();
 				/* the reply to this message is important */
 				int replyTag=m_virtualCommunicator.getReplyType(tag);
 				m_messagesHandler.addUrgentMessage(replyTag,destination,microseconds);

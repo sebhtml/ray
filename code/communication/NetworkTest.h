@@ -89,7 +89,6 @@ class NetworkTest{
 	bool m_sentCurrentTestMessage;
 
 	/** the starting time */
-	uint64_t m_startingTimeSeconds;
 	uint64_t m_startingTimeMicroseconds;
 
 	uint64_t m_sumOfMicroSeconds;

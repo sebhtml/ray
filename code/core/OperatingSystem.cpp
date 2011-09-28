@@ -159,37 +159,26 @@ uint64_t getMemoryUsageInKiBytes(){
 
 /** real-time only ported to real-time POSIX systems */
 uint64_t getMilliSeconds(){
-	uint64_t seconds=0;
-	uint64_t microseconds=0;
-	getMicroSeconds(&seconds,&microseconds);
-	
-	uint64_t milliSeconds=seconds*1000 + microseconds / 1000;
-	
-	return milliSeconds;
-}
-
-uint64_t getMicroSecondsInOne(){
-	uint64_t seconds=0;
-	uint64_t microseconds=0;
-	getMicroSeconds(&seconds,&microseconds);
-	
-	return seconds*1000*1000 + microseconds;
+	return getMicroseconds()/1000;
 }
 
 /** only ported to POSIX system */
-void getMicroSeconds(uint64_t*seconds,uint64_t*microSeconds){
+uint64_t getMicroseconds(){
 	#ifdef OS_POSIX
 
 	struct timeval theTime;
 	gettimeofday(&theTime,NULL);
-	(*seconds)=theTime.tv_sec;
-	(*microSeconds)=theTime.tv_usec;
+	uint64_t seconds=theTime.tv_sec;
+	uint64_t microSeconds=theTime.tv_usec;
+
+	return seconds*1000*1000+microSeconds;
 
 	#elif defined (OS_WIN)
 	
 	/* TODO: get microseconds is not implemented on Windows */
-	(*seconds)=0;
-	(*microSeconds)=0;
+
+	return 0;
+
 	#endif
 }
 

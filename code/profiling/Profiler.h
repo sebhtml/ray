@@ -40,6 +40,16 @@ public:
 
 };
 
+/* if CONFIG_PROFILER_COLLECT is defined, MACRO_COLLECT_PROFILING_INFORMATION() will collect profiling information
+ * if -run-profiler was provided
+ * otherwise, nothing is collected even if -run-profiler is provided 
+ * the default is to define CONFIG_PROFILER_COLLECT 
+ * and enable the profiler with -run-profiler (default is to not enable it)
+ *
+ * m_runProfiler must be a boolean in the context where the MACRO_COLLECT_PROFILING_INFORMATION is written.
+ * and m_profiler must be the instance of the Profiler class and it must be a pointer to it.
+ * */
+
 #define CONFIG_PROFILER_COLLECT
 
 #ifdef CONFIG_PROFILER_COLLECT

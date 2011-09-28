@@ -37,7 +37,7 @@ Parameters*parameters){
 	/** filter invalid choices */
 	set<int> invalidChoices;
 	for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
-		int coverageForI=ed->m_EXTENSION_coverages->at(i);
+		int coverageForI=ed->m_EXTENSION_coverages.at(i);
 		Kmer key=ed->m_enumerateChoices_outgoingEdges[i];
 
 		/** an invalid choice must not have paired reads */
@@ -54,7 +54,7 @@ Parameters*parameters){
 			for(int j=0;j<(int)ed->m_enumerateChoices_outgoingEdges.size();j++){
 				if(i==j)
 					continue;
-				int coverageForJ=ed->m_EXTENSION_coverages->at(j);
+				int coverageForJ=ed->m_EXTENSION_coverages.at(j);
 				if(coverageForJ<2*minimumCoverage){
 					invalid=false;
 					break;
@@ -72,7 +72,7 @@ Parameters*parameters){
 			for(int j=0;j<(int)ed->m_enumerateChoices_outgoingEdges.size();j++){
 				if(i==j)
 					continue;
-				int coverageForJ=ed->m_EXTENSION_coverages->at(j);
+				int coverageForJ=ed->m_EXTENSION_coverages.at(j);
 				if(coverageForJ<minimumCoverage){
 					invalid=false;
 					break;
@@ -90,7 +90,7 @@ Parameters*parameters){
 			for(int j=0;j<(int)ed->m_enumerateChoices_outgoingEdges.size();j++){
 				if(i==j)
 					continue;
-				int coverageForJ=ed->m_EXTENSION_coverages->at(j);
+				int coverageForJ=ed->m_EXTENSION_coverages.at(j);
 				if(coverageForJ<10){
 					invalid=false;
 					break;
@@ -178,7 +178,7 @@ Parameters*parameters){
 	if(pairedChoice!=IMPOSSIBLE_CHOICE){
 		return pairedChoice;
 	}else{
-		if(ed->m_EXTENSION_extension->size()>50000){
+		if(ed->m_EXTENSION_extension.size()>50000){
 			if(!parameters->hasPairedReads()){
 				return IMPOSSIBLE_CHOICE;
 			}
@@ -260,14 +260,14 @@ int OpenAssemblerChooser::getWinner(vector<set<int> >*battleVictories,int choice
 
 void OpenAssemblerChooser::chooseWithCoverage(ExtensionData*ed,int minCoverage,vector<set<int> >*battleVictories){
 	for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
-		int coverageForI=ed->m_EXTENSION_coverages->at(i);
+		int coverageForI=ed->m_EXTENSION_coverages.at(i);
 		Kmer key=ed->m_enumerateChoices_outgoingEdges[i];
 
 		for(int j=0;j<(int)ed->m_enumerateChoices_outgoingEdges.size();j++){
 			if(i==j){
 				continue;
 			}
-			int coverageForJ=ed->m_EXTENSION_coverages->at(j);
+			int coverageForJ=ed->m_EXTENSION_coverages.at(j);
 
 			if(coverageForI>=2*minCoverage && coverageForJ<=minCoverage/2){
 				(*battleVictories)[i].insert(j);

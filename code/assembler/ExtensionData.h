@@ -26,6 +26,7 @@
 #include <structures/Read.h>
 #include <core/Parameters.h>
 #include <assembler/ExtensionElement.h>
+#include <profiling/Profiler.h>
 #include <structures/ReadAnnotation.h>
 #include <core/common_functions.h>
 #include <structures/SplayTree.h>
@@ -50,10 +51,10 @@ class ExtensionData{
 public:
 
 	int m_readType;
-	vector<int>*m_EXTENSION_coverages;
-	vector<Kmer >*m_EXTENSION_extension;
-	vector<int>*m_extensionCoverageValues;
-	vector<int>*m_repeatedValues;
+	vector<int> m_EXTENSION_coverages;
+	vector<Kmer > m_EXTENSION_extension;
+	vector<int> m_extensionCoverageValues;
+	vector<int> m_repeatedValues;
 	// EXTENSION MODE
 	vector<Kmer> m_enumerateChoices_outgoingEdges;
 	bool m_doChoice_tips_Detected;
@@ -121,13 +122,13 @@ public:
 	map<Kmer,vector<uint64_t> > m_EXTENSION_pairedReadsForVertices;
 	int m_currentCoverage;
 
-	set<uint64_t>*m_EXTENSION_readsInRange;
-	set<uint64_t>*m_pairedReadsWithoutMate;
-	map<int,vector<uint64_t> >*m_expirations;
+	set<uint64_t> m_EXTENSION_readsInRange;
+	set<uint64_t> m_pairedReadsWithoutMate;
+	map<int,vector<uint64_t> > m_expirations;
 
 	void lazyDestructor();
 
-	void resetStructures();
+	void resetStructures(Profiler*m_profiler,bool m_runProfiler);
 	ExtensionElement*getUsedRead(uint64_t a);
 	ExtensionElement*addUsedRead(uint64_t a);
 	void removeSequence(uint64_t a);
