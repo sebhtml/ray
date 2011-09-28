@@ -53,19 +53,36 @@ void ExtensionData::createStructures(){
 	}
 }
 
-void ExtensionData::destroyStructures(){
+void ExtensionData::destroyStructures(Profiler*m_profiler,bool m_runProfiler){
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
 
 	m_EXTENSION_extension.clear();
 	m_extensionCoverageValues.clear();
 	m_repeatedValues.clear();
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
 	m_EXTENSION_coverages.clear();
 	m_EXTENSION_readsInRange.clear();
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
 	m_pairedReadsWithoutMate.clear();
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
+	//cout<<"m_expirations.size= "<<m_expirations.size()<<endl;
+
 	m_expirations.clear();
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
 
 	for(int i=0;i<m_numberOfBins;i++){
 		m_database[i].clear();
 	}
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
 }
 
 void ExtensionData::resetStructures(Profiler*m_profiler,bool m_runProfiler){
@@ -75,13 +92,13 @@ void ExtensionData::resetStructures(Profiler*m_profiler,bool m_runProfiler){
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
-	destroyStructures();
+	destroyStructures(m_profiler,m_runProfiler);
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 }
 
 void ExtensionData::destructor(){
-	destroyStructures();
+	destroyStructures(NULL,false);
 	__Free(m_database,RAY_MALLOC_TYPE_EXTENSION_DATA_TREES,m_parameters->showMemoryAllocations());
 }
 

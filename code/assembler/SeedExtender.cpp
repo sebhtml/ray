@@ -585,8 +585,9 @@ Presently, insertions or deletions up to 8 are supported.
 					removeUnfitLibraries();
 					m_removedUnfitLibraries=true;
 
-					// there is a bug with this on human genome infinite loop)
+					// free reads at this position
 					setFreeUnmatedPairedReads();
+
 					return;
 				}
 
@@ -794,7 +795,6 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 
 		// no choice possible...
 		if((int)ed->m_EXTENSION_extension.size() > ed->m_previouslyFlowedVertices && mustFlowAgain){
-			m_flowedVertices.push_back(ed->m_EXTENSION_extension.size());
 
 			MACRO_COLLECT_PROFILING_INFORMATION();
 
@@ -806,7 +806,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			}
 
 			int iterations=0;
-			int maximumIterations=10;
+			int maximumIterations=4;
 
 			MACRO_COLLECT_PROFILING_INFORMATION();
 
@@ -843,6 +843,8 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			cout<<"Rank "<<m_parameters->getRank()<<" is changing direction."<<endl;
 			
 			ed->m_previouslyFlowedVertices = ed->m_EXTENSION_extension.size();
+
+			m_flowedVertices.push_back(ed->m_EXTENSION_extension.size());
 
 			printExtensionStatus(currentVertex);
 
@@ -932,6 +934,7 @@ Kmer *currentVertex,BubbleData*bubbleData){
 		}
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
+
 		if(ed->m_enumerateChoices_outgoingEdges.size()>1 && ed->m_EXTENSION_readsInRange.size()>0
 		&&m_parameters->showEndingContext() && false){ /* don't show this tree. */
 			map<Kmer,set<Kmer> >arcs;
@@ -956,17 +959,27 @@ Kmer *currentVertex,BubbleData*bubbleData){
 
 		}
 
+		MACRO_COLLECT_PROFILING_INFORMATION();
+
 		printExtensionStatus(currentVertex);
+
+		MACRO_COLLECT_PROFILING_INFORMATION();
+
 		cout<<"Rank "<<theRank<<" (extension done) NumberOfFlows: "<<ed->m_flowNumber<<endl;
 
 		m_extended++;
+
+		MACRO_COLLECT_PROFILING_INFORMATION();
 
 		cout<<"Rank "<<m_parameters->getRank()<<" FlowedVertices:";
 		for(int i=0;i<(int)m_flowedVertices.size();i++){
 			cout<<" "<<i<<" "<<m_flowedVertices[i];
 		}
+
 		cout<<endl;
 	
+		MACRO_COLLECT_PROFILING_INFORMATION();
+
 		if(m_parameters->hasOption("-show-distance-summary")){
 			/** show the utilised outer distances */
 			cout<<"Rank "<<theRank<<" utilised outer distances: "<<endl;
@@ -983,7 +996,11 @@ Kmer *currentVertex,BubbleData*bubbleData){
 			}
 		}
 
+		MACRO_COLLECT_PROFILING_INFORMATION();
+
 		ed->m_EXTENSION_contigs.push_back((ed->m_EXTENSION_extension));
+
+		MACRO_COLLECT_PROFILING_INFORMATION();
 	
 		uint64_t id=getPathUniqueId(theRank,ed->m_EXTENSION_currentSeedIndex);
 		ed->m_EXTENSION_identifiers.push_back(id);
@@ -991,6 +1008,8 @@ Kmer *currentVertex,BubbleData*bubbleData){
 
 	/** reset the observations for outer distances utilised during the extension */
 	m_pairedScores.clear();
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
 
 	ed->resetStructures(m_profiler,m_runProfiler);
 	m_matesToMeet.clear();
@@ -1028,6 +1047,8 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 
 	if(!ed->m_EXTENSION_directVertexDone){
 		if(!ed->m_EXTENSION_VertexAssembled_requested){
+
+			MACRO_COLLECT_PROFILING_INFORMATION();;
 			delete m_dfsData;
 			m_dfsData=new DepthFirstSearchData;
 
@@ -1040,6 +1061,8 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 				
 			}
 			ed->m_EXTENSION_VertexAssembled_requested=true;
+	
+			MACRO_COLLECT_PROFILING_INFORMATION();;
 
 			/* if the position is not 0 on flow 0, we don't need to send this message */
 			if(!(ed->m_EXTENSION_currentPosition==0 && ed->m_flowNumber==0)){
@@ -1056,6 +1079,7 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			(*outbox).push_back(aMessage);
 			ed->m_EXTENSION_VertexAssembled_received=false;
 
+			MACRO_COLLECT_PROFILING_INFORMATION();;
 		}else if(ed->m_EXTENSION_VertexAssembled_received){
 			ed->m_EXTENSION_reverseVertexDone=false;
 			ed->m_EXTENSION_directVertexDone=true;
@@ -1078,6 +1102,8 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			ed->m_EXTENSION_reads_requested=false;
 			m_messengerInitiated=false;
 	}
+
+	MACRO_COLLECT_PROFILING_INFORMATION();;
 }
 
 void SeedExtender::markCurrentVertexAsAssembled(Kmer*currentVertex,RingAllocator*outboxAllocator,int*outgoingEdgeIndex, 
@@ -1097,6 +1123,16 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 		if(theCurrentSize == 0){
 			m_slicedComputationStarted = false;
+		}
+
+		int previousPosition=theCurrentSize - 1;
+
+		// don't let things accumulate in this structure...
+		// TODO: fix this at the source in the first place...
+		// this code does change the result, but reduces the granularity
+		//
+		if(m_ed->m_expirations.count(previousPosition) > 0){
+			m_ed->m_expirations.erase(previousPosition);
 		}
 
 		if(theCurrentSize%10000==0){
@@ -1632,12 +1668,19 @@ void SeedExtender::removeUnfitLibraries(){
 
 void SeedExtender::setFreeUnmatedPairedReads(){
 	if(!m_hasPairedSequences){// avoid infinite loops.
+		//cout<<"No pairs"<<endl;
 		return;
 	}
+
 	if(m_ed->m_expirations.count(m_ed->m_EXTENSION_extension.size())==0){
+		//cout<<"Nothing expires"<<endl;
 		return;
 	}
+
 	vector<uint64_t>*expired=&(m_ed->m_expirations)[m_ed->m_EXTENSION_extension.size()];
+
+	//cout<<"Items expiring: "<<expired->size()<<endl;
+
 	for(int i=0;i<(int)expired->size();i++){
 		uint64_t readId=expired->at(i);
 		if(m_ed->m_pairedReadsWithoutMate.count(readId)>0){
@@ -1670,6 +1713,14 @@ void SeedExtender::printExtensionStatus(Kmer*currentVertex){
 		m_ed->m_EXTENSION_currentSeedIndex,m_ed->m_flowNumber);
 
 	fflush(stdout);
+
+/*
+	cout<<"Expiration.size= "<<(m_ed->m_expirations).size()<<endl;
+	cout<<"Entries: "<<endl;
+	for(map<int,vector<uint64_t> >::iterator i=m_ed->m_expirations.begin();i!=m_ed->m_expirations.end();i++){
+		cout<<i->first<<" "<<i->second.size()<<endl;
+	}
+*/
 
 	if(m_parameters->showMemoryUsage()){
 		showMemoryUsage(theRank);

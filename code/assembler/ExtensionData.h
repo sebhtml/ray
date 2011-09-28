@@ -46,7 +46,7 @@ class ExtensionData{
 	MyAllocator m_allocator;
 
 	void createStructures();
-	void destroyStructures();
+	void destroyStructures(Profiler*m_profiler,bool m_runProfiler);
 
 public:
 

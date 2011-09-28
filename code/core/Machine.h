@@ -77,12 +77,6 @@ typedef void (Machine::*MachineMethod) ();
  * \author Sébastien Boisvert
  */
 class Machine{
-	#ifdef USE_URGENT_SCHEME
-	/* for Ray communication optimizer */
-	set<int> m_urgentList;
-	set<int> m_slaveModesWithOptimizerEnabled;
-	#endif
-
 	uint64_t m_startingTimeMicroseconds;
 
 	Profiler m_profiler;

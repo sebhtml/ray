@@ -55,7 +55,7 @@ public:
 #ifdef CONFIG_PROFILER_COLLECT
 
 #define MACRO_COLLECT_PROFILING_INFORMATION() \
-	if(m_runProfiler) \
+	if(m_runProfiler && m_profiler != NULL) \
 		m_profiler->collect(__func__,__FILE__,__LINE__);
 
 #else
