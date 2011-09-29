@@ -46,6 +46,8 @@ void showMemoryUsage(int rank);
 
 uint64_t getMicroseconds();
 
+uint64_t getThreadMicroseconds();
+
 /** create a directory */
 void createDirectory(const char*directory);
 

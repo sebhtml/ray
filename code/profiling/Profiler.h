@@ -50,8 +50,6 @@ public:
  * and m_profiler must be the instance of the Profiler class and it must be a pointer to it.
  * */
 
-#define CONFIG_PROFILER_COLLECT
-
 #ifdef CONFIG_PROFILER_COLLECT
 
 #define MACRO_COLLECT_PROFILING_INFORMATION() \

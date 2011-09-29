@@ -92,13 +92,15 @@ using namespace std;
 /* include some files */
 
 #ifdef OS_POSIX
+
 #include <unistd.h> /* getpid */
-#include <time.h> /* gettimeofday*/
-#include <sys/time.h>  /* possibly clock_gettime  */
+#include <time.h> /* possibly clock_gettime  */
+#include <sys/time.h>  /* gettimeofday*/ 
 #include <sys/stat.h>	/* mkdir */
 #include <sys/types.h> /* mode_t */
-#endif
-#ifdef OS_WIN
+
+#elif defined OS_WIN
+
 #include <windows.h> /* GetCurrentProcessId */
 			/* CreateDirectory */
 #endif
@@ -176,9 +178,37 @@ uint64_t getMicroseconds(){
 	#elif defined (OS_WIN)
 	
 	/* TODO: get microseconds is not implemented on Windows */
+	// could start with this: http://www.decompile.com/cpp/faq/windows_timer_api.htm
 
 	return 0;
 
+	#endif
+}
+
+uint64_t getThreadMicroseconds(){
+	#ifdef OS_POSIX
+
+	#ifdef CONFIG_CLOCK_GETTIME
+	struct timespec timeValue;
+
+	int returnValue=clock_gettime(CLOCK_THREAD_CPUTIME_ID,&timeValue);
+
+	if(returnValue != 0){
+	}
+
+	uint64_t seconds=timeValue.tv_sec;
+	uint64_t nanoSeconds=timeValue.tv_nsec;
+
+	return seconds*1000*1000 + nanoSeconds / 1000;
+
+	#else
+
+	return getMicroseconds();
+
+	#endif
+
+	#elif defined OS_WIN
+	return getMicroseconds();
 	#endif
 }
 

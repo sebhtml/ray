@@ -53,6 +53,11 @@ FORCE_PACKING = n
 # y/n
 ASSERT = y
 
+
+CONFIG_PROFILER_COLLECT=y
+CONFIG_CLOCK_GETTIME=n
+
+
 # end of compilation options
 #############################################
 
@@ -114,6 +119,9 @@ LDFLAGS-$(HAVE_LIBZ) += -lz
 # pack data in memory to save space
 CXXFLAGS-$(FORCE_PACKING) += -DFORCE_PACKING
 
+CXXFLAGS-$(CONFIG_PROFILER_COLLECT) += -D CONFIG_PROFILER_COLLECT
+CXXFLAGS-$(CONFIG_CLOCK_GETTIME) += -D CONFIG_CLOCK_GETTIME
+
 #compile with libbz2
 CXXFLAGS-$(HAVE_LIBBZ2) += -DHAVE_LIBBZ2 
 LDFLAGS-$(HAVE_LIBBZ2) += -lbz2
@@ -123,6 +131,7 @@ CXXFLAGS-$(DEBUG) += -g
 LDFLAGS-$(DEBUG)  += -g
 
 LDFLAGS-$(GPROF) += -pg -g
+LDFLAGS-$(CONFIG_CLOCK_GETTIME) += -l rt
 
 CXXFLAGS += $(CXXFLAGS-y)
 LDFLAGS += $(LDFLAGS-y)

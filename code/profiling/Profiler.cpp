@@ -38,7 +38,7 @@ void Profiler::resetStack(){
 }
 
 void Profiler::collect(const char*function,const char*file,int line){
-	m_timePoints.push_back(getMicroseconds());
+	m_timePoints.push_back(getThreadMicroseconds());
 	m_functions.push_back(function);
 	m_files.push_back(file);
 	m_lines.push_back(line);

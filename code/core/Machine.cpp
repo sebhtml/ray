@@ -679,9 +679,9 @@ void Machine::runWithProfiler(){
 
 		int currentSlaveMode=m_slave_mode;
 
-		uint64_t startingTime = getMicroseconds();
+		uint64_t startingTime = getThreadMicroseconds();
 		processData();
-		uint64_t endingTime = getMicroseconds();
+		uint64_t endingTime = getThreadMicroseconds();
 
 		int difference = endingTime - startingTime;
 		granularityValues[difference] ++ ;
