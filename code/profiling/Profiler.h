@@ -32,12 +32,27 @@ class Profiler{
 	vector<string> m_functions;
 	vector<string> m_files;
 	vector<int> m_lines;
+
+	bool m_enabled;
+
+	int m_threshold;
+
+	map<int,int> m_granularityValues;
+
+	/* store the granularities for each slave mode */
+	map<int,map<int,uint64_t> > m_observedGranularities;
+
 public:
-	void constructor();
+	void constructor(bool enabled);
 	void resetStack();
 	void printStack();
 	void collect(const char*function,const char*file,int line);
+	bool isEnabled();
+	int getThreshold();
 
+	void addGranularity(int mode,int microseconds);
+	void printGranularities(int rank);
+	void printAllGranularities();
 };
 
 /* if CONFIG_PROFILER_COLLECT is defined, MACRO_COLLECT_PROFILING_INFORMATION() will collect profiling information
@@ -46,14 +61,14 @@ public:
  * the default is to define CONFIG_PROFILER_COLLECT 
  * and enable the profiler with -run-profiler (default is to not enable it)
  *
- * m_runProfiler must be a boolean in the context where the MACRO_COLLECT_PROFILING_INFORMATION is written.
+ * m_profiler must be a boolean in the context where the MACRO_COLLECT_PROFILING_INFORMATION is written.
  * and m_profiler must be the instance of the Profiler class and it must be a pointer to it.
  * */
 
 #ifdef CONFIG_PROFILER_COLLECT
 
 #define MACRO_COLLECT_PROFILING_INFORMATION() \
-	if(m_runProfiler && m_profiler != NULL) \
+	if(m_profiler != NULL && m_profiler->isEnabled()) \
 		m_profiler->collect(__func__,__FILE__,__LINE__);
 
 #else

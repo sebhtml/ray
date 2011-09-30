@@ -277,7 +277,11 @@ void Machine::start(){
 	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed,&m_subgraph,&m_inbox,&m_profiler2);
 
 	m_profiler = &m_profiler2;
-	m_runProfiler = m_parameters.runProfiler();
+	m_profiler->constructor(m_parameters.runProfiler());
+
+	m_verticesExtractor.setProfiler(m_profiler);
+	m_kmerAcademyBuilder.setProfiler(m_profiler);
+	m_edgePurger.setProfiler(m_profiler);
 
 	ostringstream prefixFull;
 	prefixFull<<m_parameters.getMemoryPrefix()<<"_Main";
@@ -544,8 +548,6 @@ void Machine::runWithProfiler(){
 	bool printedCritical=false;
 	bool printedWarning=false;
 
-	map<int,int> granularityValues;
-
 	/** m_timeToLive goes down to 0 when m_alive is false
  * 	This is called the aging process */
 	while(m_timeToLive){
@@ -561,14 +563,7 @@ void Machine::runWithProfiler(){
 				receivedMessages,balance);
 			fflush(stdout);
 
-			cout<<"Rank "<<m_rank<<" granularity of processData calls"<<endl;
-			for(map<int,int>::iterator i = granularityValues.begin();i!=granularityValues.end();i++){
-				int microSeconds=i->first;
-				int count=i->second;
-				cout<<" "<<microSeconds<<" "<<count<<endl;
-			}
-			cout<<"Rank "<<m_rank<<" END of granularity of processData calls"<<endl;
-			granularityValues.clear();
+			m_profiler->printGranularities(m_rank);
 
 			if(receivedTags.size() > 0){
 				cout<<"Rank "<<m_parameters.getRank()<<" received in receiveMessages:"<<endl;
@@ -684,11 +679,12 @@ void Machine::runWithProfiler(){
 		uint64_t endingTime = getThreadMicroseconds();
 
 		int difference = endingTime - startingTime;
-		granularityValues[difference] ++ ;
+		
+		m_profiler->addGranularity(currentSlaveMode,difference);
 
 		/* threshold to say something is taking too long */
 		/* in microseconds */
-		int tooLong=128;
+		int tooLong=m_profiler->getThreshold();
 
 		if(difference >= tooLong){
 			cout<<"Warning, SlaveMode= "<<SLAVE_MODES[currentSlaveMode]<<" GranularityInMicroseconds= "<<difference<<""<<endl;
@@ -729,6 +725,8 @@ void Machine::runWithProfiler(){
 		/* increment ticks */
 		ticks++;
 	}
+
+	m_profiler->printAllGranularities();
 }
 
 int Machine::getRank(){
@@ -1047,6 +1045,9 @@ void Machine::call_RAY_MASTER_MODE_DO_NOTHING(){}
 void Machine::call_RAY_SLAVE_MODE_DO_NOTHING(){}
 
 void Machine::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(){
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
 	if(!m_initialisedAcademy){
 		m_kmerAcademyBuilder.constructor(m_size,&m_parameters,&m_subgraph);
 		(m_mode_send_vertices_sequence_id)=0;
@@ -1067,9 +1068,14 @@ void Machine::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(){
 			&m_slave_mode
 		);
 
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
 }
 
 void Machine::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
 	m_verticesExtractor.process(		&m_mode_send_vertices_sequence_id,
 			&m_myReads,
 			&m_reverseComplementVertex,
@@ -1081,6 +1087,8 @@ void Machine::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 			&m_outboxAllocator,
 			&m_slave_mode
 		);
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
 }
 
 void Machine::call_RAY_MASTER_MODE_PURGE_NULL_EDGES(){
@@ -1094,7 +1102,12 @@ void Machine::call_RAY_MASTER_MODE_PURGE_NULL_EDGES(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_PURGE_NULL_EDGES(){
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
 	m_edgePurger.work();
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
 }
 
 void Machine::call_RAY_MASTER_MODE_WRITE_KMERS(){

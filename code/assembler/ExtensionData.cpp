@@ -53,7 +53,7 @@ void ExtensionData::createStructures(){
 	}
 }
 
-void ExtensionData::destroyStructures(Profiler*m_profiler,bool m_runProfiler){
+void ExtensionData::destroyStructures(Profiler*m_profiler){
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
@@ -86,20 +86,20 @@ void ExtensionData::destroyStructures(Profiler*m_profiler,bool m_runProfiler){
 	MACRO_COLLECT_PROFILING_INFORMATION();
 }
 
-void ExtensionData::resetStructures(Profiler*m_profiler,bool m_runProfiler){
+void ExtensionData::resetStructures(Profiler*m_profiler){
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
 	m_allocator.reset();
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
-	destroyStructures(m_profiler,m_runProfiler);
+	destroyStructures(m_profiler);
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 }
 
 void ExtensionData::destructor(){
-	destroyStructures(NULL,false);
+	destroyStructures(NULL);
 	__Free(m_database,RAY_MALLOC_TYPE_EXTENSION_DATA_TREES,m_parameters->showMemoryAllocations());
 }
 

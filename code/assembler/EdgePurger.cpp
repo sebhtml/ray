@@ -48,6 +48,9 @@ void EdgePurger::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocato
 }
 
 void EdgePurger::work(){
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
 	/* master control */
 	if(m_inbox->size()>0&&m_inbox->at(0)->getTag()==RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY){
 		m_masterCountFinished++;
@@ -60,6 +63,7 @@ void EdgePurger::work(){
 		return;
 	}
 
+	MACRO_COLLECT_PROFILING_INFORMATION();
 	if(!m_checkedCheckpoint){
 		if(m_parameters->hasCheckpoint("GenomeGraph")){
 			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY,m_parameters->getRank());
@@ -70,7 +74,11 @@ void EdgePurger::work(){
 		m_checkedCheckpoint=true;
 	}
 
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
 	mainLoop();
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
 }
 
 void EdgePurger::finalizeMethod(){
@@ -144,4 +152,8 @@ void EdgePurger::initializeMethod(){
 	cout<<"Will process "<<m_subgraph->size()<<endl;
 	cout<<"Exiting initializeMethod"<<endl;
 	#endif
+}
+
+void EdgePurger::setProfiler(Profiler*profiler){
+	m_profiler = profiler;
 }

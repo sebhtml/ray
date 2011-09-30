@@ -81,7 +81,6 @@ class Machine{
 
 	Profiler m_profiler2;
 	Profiler*m_profiler;
-	bool m_runProfiler;
 
 	/** the virtual communicator of the MPI rank */
 	VirtualCommunicator m_virtualCommunicator;

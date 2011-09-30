@@ -485,6 +485,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 				// the many choices we have
 				uint64_t uniqueId=*(ed->m_EXTENSION_readIterator);
 				ExtensionElement*element=ed->getUsedRead(uniqueId);
+
 				#ifdef ASSERT
 				assert(element!=NULL);
 				#endif
@@ -895,7 +896,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 
 			MACRO_COLLECT_PROFILING_INFORMATION();
 
-			ed->resetStructures(m_profiler,m_runProfiler);
+			ed->resetStructures(m_profiler);
 
 			MACRO_COLLECT_PROFILING_INFORMATION();
 
@@ -1077,7 +1078,7 @@ Kmer *currentVertex,BubbleData*bubbleData){
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
-	ed->resetStructures(m_profiler,m_runProfiler);
+	ed->resetStructures(m_profiler);
 	m_matesToMeet.clear();
 
 	m_cacheAllocator.clear();
@@ -1208,9 +1209,22 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 			for(int i=0;i<(int)expired->size();i++){
 				uint64_t readId=expired->at(i);
 				m_ed->m_pairedReadsWithoutMate.erase(readId);
+
+				// remove the mate too if necessary
+				// this only free memory and does change the result
+				ExtensionElement*element=ed->getUsedRead(readId);
+				if(element != NULL && element->hasPairedRead()){
+					PairedRead*pairedRead=element->getPairedRead();
+					uint64_t mateId=pairedRead->getUniqueId();
+
+					m_matesToMeet.erase(mateId);
+				}
+
+				m_matesToMeet.erase(readId);
 			}
 
 			m_ed->m_expirations.erase(previousPosition);
+
 		}
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
@@ -1286,9 +1300,18 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 		*receivedVertexCoverage=m_vertexMessenger.getCoverageValue();
 		ed->m_currentCoverage=*receivedVertexCoverage;
 		bool inserted;
+
+		MACRO_COLLECT_PROFILING_INFORMATION();
+
 		*((m_cache.insert(*currentVertex,&m_cacheAllocator,&inserted))->getValue())=ed->m_currentCoverage;
+
+		MACRO_COLLECT_PROFILING_INFORMATION();
+
 		uint64_t compactEdges=m_vertexMessenger.getEdges();
 		*receivedOutgoingEdges=currentVertex->_getOutgoingEdges(compactEdges,m_parameters->getWordSize());
+
+		MACRO_COLLECT_PROFILING_INFORMATION();
+
 		ed->m_EXTENSION_extension.push_back((*currentVertex));
 		ed->m_extensionCoverageValues.push_back(*receivedVertexCoverage);
 
@@ -1622,8 +1645,6 @@ void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAll
 	m_bubbleTool.constructor(parameters);
 
 	m_profiler=profiler;
-
-	m_runProfiler = m_parameters->runProfiler();
 }
 
 void SeedExtender::inspect(ExtensionData*ed,Kmer*currentVertex){

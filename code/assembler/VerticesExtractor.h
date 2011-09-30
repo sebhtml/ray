@@ -32,6 +32,7 @@
 #include <memory/RingAllocator.h>
 #include <structures/Read.h>
 #include <set>
+#include <profiling/Profiler.h>
 #include <vector>
 using namespace std;
 
@@ -44,6 +45,8 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class VerticesExtractor{
+	Profiler*m_profiler;
+
 	/** checkpointing */
 	bool m_checkedCheckpoint;
 
@@ -98,6 +101,8 @@ public:
 
 	bool isDistributionCompleted();
 	void setDistributionAsCompleted();
+
+	void setProfiler(Profiler*profiler);
 };
 
 #endif

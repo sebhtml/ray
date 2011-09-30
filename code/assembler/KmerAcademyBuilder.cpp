@@ -45,6 +45,9 @@ void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
 				RingAllocator*m_outboxAllocator,
 				int*m_mode
 				){
+	
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
 	if(this->m_outbox==NULL){
 		m_rank=rank;
 		this->m_mode=m_mode;
@@ -72,6 +75,8 @@ void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
 	if(m_inbox->size()>0&&m_inbox->at(0)->getTag()==RAY_MPI_TAG_KMER_ACADEMY_DATA_REPLY){
 		m_pendingMessages--;
 	}
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
 
 	if(m_pendingMessages!=0){
 		return;
@@ -103,6 +108,7 @@ void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
 			m_bufferedData.showStatistics(m_parameters->getRank());
 
 		}
+		MACRO_COLLECT_PROFILING_INFORMATION();
 	}else{
 		if(m_mode_send_vertices_sequence_id_position==0){
 			(*m_myReads)[(*m_mode_send_vertices_sequence_id)]->getSeq(m_readSequence,m_parameters->getColorSpaceMode(),false);
@@ -127,8 +133,13 @@ void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
 
 		memcpy(memory,m_readSequence+p,wordSize);
 		memory[wordSize]='\0';
+
+		MACRO_COLLECT_PROFILING_INFORMATION();
+
 		if(isValidDNA(memory)){
 			Kmer a=wordId(memory);
+
+			MACRO_COLLECT_PROFILING_INFORMATION();
 
 			// reverse complement
 			Kmer reverseComplementKmer=a.complementVertex(wordSize,m_parameters->getColorSpaceMode());
@@ -146,6 +157,8 @@ void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
 			if(m_bufferedData.flush(rankToFlush,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_KMER_ACADEMY_DATA,m_outboxAllocator,m_outbox,rank,false)){
 				m_pendingMessages++;
 			}
+
+			MACRO_COLLECT_PROFILING_INFORMATION();
 		}
 
 		(m_mode_send_vertices_sequence_id_position++);
@@ -153,7 +166,15 @@ void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
 			(*m_mode_send_vertices_sequence_id)++;
 			(m_mode_send_vertices_sequence_id_position)=0;
 		}
+			
+		MACRO_COLLECT_PROFILING_INFORMATION();
 	}
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
+}
+
+void KmerAcademyBuilder::setProfiler(Profiler*profiler){
+	m_profiler = profiler;
 }
 
 void KmerAcademyBuilder::constructor(int size,Parameters*parameters,GridTable*graph){

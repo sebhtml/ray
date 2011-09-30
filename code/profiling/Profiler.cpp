@@ -27,7 +27,9 @@
 #include <iomanip>
 using namespace std;
 
-void Profiler::constructor(){
+void Profiler::constructor(bool isEnabled){
+	m_enabled = isEnabled;
+	m_threshold = 64;
 }
 
 void Profiler::resetStack(){
@@ -76,9 +78,72 @@ void Profiler::printStack(){
 		if(total > 0)
 			ratio=100.00*diffWithLast/total;
 
-		cout<<i<<"	"<<current<<" microseconds	+"<<diffWithLast<<" from previous ("<<setprecision(2)<<fixed<< ratio<<"%)";
+		cout<<i<<"	"<<current<<" microseconds	+ "<<diffWithLast<<" from previous ("<<setprecision(2)<<fixed<< ratio<<"%)";
 		//cout<<"	+"<<diffWithStart<<" from first";
 		cout<<"	in "<<m_functions[i]<<" inside "<<m_files[i]<<" at line "<<m_lines[i]<<endl;
 	}
 	cout<<"End of stack"<<endl;
+}
+
+bool Profiler::isEnabled(){
+	return m_enabled;
+}
+
+int Profiler::getThreshold(){
+	return m_threshold;
+}
+
+void Profiler::addGranularity(int mode,int microseconds){
+	m_granularityValues[microseconds] ++ ;
+	m_observedGranularities[mode][microseconds] ++;
+}
+
+void Profiler::printGranularities(int rank){
+	cout<<"Rank "<<rank<<" granularity of processData calls"<<endl;
+	for(map<int,int>::iterator i = m_granularityValues.begin();i!= m_granularityValues.end();i++){
+		int microSeconds=i->first;
+		int count=i->second;
+		cout<<" "<<microSeconds<<" "<<count<<endl;
+	}
+	cout<<"Rank "<<rank<<" END of granularity of processData calls"<<endl;
+	m_granularityValues.clear();
+}
+
+/* report a summary of granularities */
+void Profiler::printAllGranularities(){
+	cout<<"Summary of granularities"<<endl;
+
+	for(map<int,map<int,uint64_t> >::iterator i=m_observedGranularities.begin();
+		i!=m_observedGranularities.end();i++){
+		cout<<"RaySlaveMode= "<<SLAVE_MODES[i->first]<<endl;
+		cout<<"Sampled granularities:"<<endl;
+
+		uint64_t total=0;
+		for(map<int,uint64_t>::iterator j=i->second.begin();j!=i->second.end();j++){
+			total += j->second;
+		}
+
+		uint64_t cumulativeValue=0;
+
+		for(map<int,uint64_t>::iterator j=i->second.begin();j!=i->second.end();j++){
+			int granularity=j->first;
+			uint64_t count=j->second;
+			cumulativeValue += count;
+			double ratio=100.0*count;
+			double ratio2=100.0*cumulativeValue;
+
+			if(total > 0){
+				ratio /= total;
+				ratio2 /= total;
+			}
+
+			cout<<"	"<<granularity<<"	"<<count<<"	"<<setprecision(2)<<fixed<<ratio<<"%";
+			cout<<"	CumulativeRatio: "<<setprecision(2)<<fixed<<ratio2<<"%";
+			cout<<endl;
+		}
+		cout<<"/End of sampled granularities"<<endl;
+		cout<<endl;
+	}
+
+	m_observedGranularities.clear();
 }

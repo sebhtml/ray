@@ -29,6 +29,7 @@
 #include <core/common_functions.h>
 #include <structures/ArrayOfReads.h>
 #include <communication/Message.h>
+#include <profiling/Profiler.h>
 #include <memory/RingAllocator.h>
 #include <structures/Read.h>
 #include <set>
@@ -44,6 +45,8 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class KmerAcademyBuilder{
+	Profiler*m_profiler;
+
 	/** this we check the checkpoint ? */
 	bool m_checkedCheckpoint;
 
@@ -70,6 +73,7 @@ public:
 	BufferedData m_buffersForOutgoingEdgesToDelete;
 
 	void constructor(int size,Parameters*parameters,GridTable*graph);
+	void setProfiler(Profiler*profiler);
 	void process(int*m_mode_send_vertices_sequence_id,
 				ArrayOfReads*m_myReads,
 				bool*m_reverseComplementVertex,

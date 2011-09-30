@@ -1,0 +1,19 @@
+
+Compile Ray with
+
+
+Run Ray with -run-profiler
+
+
+Extract profiling information
+
+	grep "from previous" coli.Log |awk '{print $4" "$9" "$10" "$11" "$14}' > stats
+
+
+Remove the +
+
+	sed -i 's/+//g' stats
+
+Sort the entries:
+
+	cat stats|sort -n -r|less

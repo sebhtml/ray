@@ -53,8 +53,6 @@ class SeedExtender{
 
 	Profiler*m_profiler;
 
-	bool m_runProfiler;
-
 	/* for sliced computation */
 	vector<Kmer> m_complementedSeed;
 	int m_slicedProgression;

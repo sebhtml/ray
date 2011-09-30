@@ -46,7 +46,7 @@ class ExtensionData{
 	MyAllocator m_allocator;
 
 	void createStructures();
-	void destroyStructures(Profiler*m_profiler,bool m_runProfiler);
+	void destroyStructures(Profiler*m_profiler);
 
 public:
 
@@ -128,7 +128,7 @@ public:
 
 	void lazyDestructor();
 
-	void resetStructures(Profiler*m_profiler,bool m_runProfiler);
+	void resetStructures(Profiler*m_profiler);
 	ExtensionElement*getUsedRead(uint64_t a);
 	ExtensionElement*addUsedRead(uint64_t a);
 	void removeSequence(uint64_t a);

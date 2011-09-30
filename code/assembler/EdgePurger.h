@@ -29,6 +29,7 @@
 #include <map>
 #include <graph/GridTable.h>
 #include <graph/GridTableIterator.h>
+#include <profiling/Profiler.h>
 #include <set>
 #include <stdint.h>
 #include <assembler/EdgePurgerWorker.h>
@@ -44,6 +45,8 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class EdgePurger : public TaskCreator {
+	Profiler*m_profiler;
+
 	/** checkpointing */
 	bool m_checkedCheckpoint;
 
@@ -76,6 +79,8 @@ public:
 	virtual Worker* assignNextTask();
 	virtual void processWorkerResult(Worker*);
 	virtual void destroyWorker(Worker*);
+
+	void setProfiler(Profiler*profiler);
 };
 
 #endif
