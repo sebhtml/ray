@@ -1,3 +1,11 @@
+VERSION = 1
+PATCHLEVEL = 7
+SUBLEVEL = 0
+EXTRAVERSION = 
+NAME = Magical Luminary of Celestial Bodies
+
+RAY_VERSION = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)
+
 # author: Sébastien Boisvert
 # Makefile for the ray assembler
 # Objects appended to obj-y are compiled and linked.
@@ -53,13 +61,13 @@ FORCE_PACKING = n
 # y/n
 ASSERT = y
 
-
+# collect profiling information with -run-profiler
+# if set to n, the code is not even compiled in
 CONFIG_PROFILER_COLLECT=y
+
+# use the precision clock
+# needs -l rt too
 CONFIG_CLOCK_GETTIME=n
-
-
-# end of compilation options
-#############################################
 
 # OS detection based on git Makefile
 uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
@@ -84,7 +92,7 @@ MPICXX-y = mpicxx
 
 # mpic++ from an MPI implementation must be reachable with the PATH
 # tested implementations of MPI include Open-MPI and MPICH2
-CXXFLAGS = -Icode
+CXXFLAGS = -Icode 
 
 # optimization
 CXXFLAGS-$(OPTIMIZE) += -O3
@@ -99,15 +107,14 @@ endif
 
 # profiling
 CXXFLAGS-$(GPROF) += -g -pg
+LDFLAGS-$(GPROF) += -pg -g
 
 # if you use Intel's mpiicpc, uncomment the following lines
 MPICXX-$(INTEL_COMPILER) = mpiicpc 
 CXXFLAGS-$(INTEL_COMPILER) += -DMPICH_IGNORE_CXX_SEEK -DMPICH_SKIP_MPICXX
 
-MPICXX = $(MPICXX-y)
-
 #maximum k-mer length
-CXXFLAGS += -D MAXKMERLENGTH=$(MAXKMERLENGTH)
+CXXFLAGS-y += -D MAXKMERLENGTH=$(MAXKMERLENGTH)
 
 # compile assertions
 CXXFLAGS-$(ASSERT) += -DASSERT
@@ -115,12 +122,6 @@ CXXFLAGS-$(ASSERT) += -DASSERT
 #compile with libz
 CXXFLAGS-$(HAVE_LIBZ) += -DHAVE_LIBZ
 LDFLAGS-$(HAVE_LIBZ) += -lz
-
-# pack data in memory to save space
-CXXFLAGS-$(FORCE_PACKING) += -DFORCE_PACKING
-
-CXXFLAGS-$(CONFIG_PROFILER_COLLECT) += -D CONFIG_PROFILER_COLLECT
-CXXFLAGS-$(CONFIG_CLOCK_GETTIME) += -D CONFIG_CLOCK_GETTIME
 
 #compile with libbz2
 CXXFLAGS-$(HAVE_LIBBZ2) += -DHAVE_LIBBZ2 
@@ -130,13 +131,22 @@ LDFLAGS-$(HAVE_LIBBZ2) += -lbz2
 CXXFLAGS-$(DEBUG) += -g
 LDFLAGS-$(DEBUG)  += -g
 
-LDFLAGS-$(GPROF) += -pg -g
+# pack data in memory to save space
+CXXFLAGS-$(FORCE_PACKING) += -DFORCE_PACKING
+
+CXXFLAGS-$(CONFIG_PROFILER_COLLECT) += -D CONFIG_PROFILER_COLLECT
+CXXFLAGS-$(CONFIG_CLOCK_GETTIME) += -D CONFIG_CLOCK_GETTIME
 LDFLAGS-$(CONFIG_CLOCK_GETTIME) += -l rt
+CXXFLAGS-y += -D RAY_VERSION=\"$(RAY_VERSION)\"
 
 CXXFLAGS += $(CXXFLAGS-y)
 LDFLAGS += $(LDFLAGS-y)
 
-TARGETS=Ray $(TARGETS-y)
+MPICXX = $(MPICXX-y)
+
+TARGETS=Ray
+
+# object files
 
 #memory
 obj-y += code/memory/ReusableMemoryStore.o code/memory/MyAllocator.o code/memory/RingAllocator.o \
@@ -158,9 +168,6 @@ obj-y += code/format/ColorSpaceDecoder.o code/format/ColorSpaceLoader.o code/for
 code/format/FastqLoader.o code/format/SffLoader.o \
 code/format/Amos.o
 
-obj-$(HAVE_LIBBZ2) += code/format/FastqBz2Loader.o 
-obj-$(HAVE_LIBZ) += code/format/FastqGzLoader.o 
-
 #core
 obj-y += code/core/slave_modes.o code/core/Machine.o code/core/Parameters.o code/core/common_functions.o
 obj-y += code/core/OperatingSystem.o
@@ -172,6 +179,8 @@ obj-$(HAVE_LIBBZ2) += code/compression/BzReader.o
 
 #cryptography
 obj-y += code/cryptography/crypto.o
+obj-$(HAVE_LIBBZ2) += code/format/FastqBz2Loader.o 
+obj-$(HAVE_LIBZ) += code/format/FastqGzLoader.o 
 
 #graph
 obj-y += code/graph/GridTable.o code/graph/GridTableIterator.o code/graph/CoverageDistribution.o 
@@ -216,10 +225,13 @@ obj-y += code/profiling/Profiler.o
 obj-y += code/heuristics/BubbleTool.o code/heuristics/Chooser.o code/heuristics/OpenAssemblerChooser.o \
  code/heuristics/TipWatchdog.o code/heuristics/RayNovaEngine.o
 
+#################################
+
 # inference rule
 #@echo "  MPICXX" $<
 %.o: %.cpp
-	$(MPICXX) -c -o $@ $<  $(CXXFLAGS)
+	@$(MPICXX) -c -o $@ $<  $(CXXFLAGS)
+	@echo MPICXX $<
 
 # the target is Ray
 all: $(TARGETS)
@@ -248,15 +260,14 @@ showOptions:
 	@touch showOptions
 	
 # how to make Ray
-#@echo "  MPICXX $@"
 Ray: showOptions $(obj-y)
-	$(MPICXX) $(LDFLAGS) $(obj-y) -o $@
+	@$(MPICXX) $(LDFLAGS) $(obj-y) -o $@
+	@echo MPICXX $@
 	@echo $(PREFIX) > PREFIX
 	@echo $(TARGETS) > TARGETS
 
 clean:
-	@rm -f $(TARGETS) $(obj-y) showOptions PREFIX TARGETS
-	@echo CLEAN
+	rm -f $(TARGETS) $(obj-y) showOptions PREFIX TARGETS
 
 install: 
 	@scripts/install.sh
