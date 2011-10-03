@@ -268,4 +268,4 @@ COPYRIGHT
        You have received a copy of the GNU General Public License
        along with this program (see LICENSE).
 
-Ray 1.7-devel
+Ray 1.7.0
