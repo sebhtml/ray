@@ -1,3 +1,5 @@
+. ../scripts/load-modules.sh
+
 CODE=../code
 mpicxx -g $CODE/memory/malloc_types.cpp \
 $CODE/communication/MessagesHandler.cpp \

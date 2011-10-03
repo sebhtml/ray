@@ -1,3 +1,5 @@
+. ../scripts/load-modules.sh
+
 CODE=../code
 
 mpicxx -I. $CODE/memory/malloc_types.cpp \
