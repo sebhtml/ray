@@ -1,22 +1,11 @@
 * run regression tests (+backup on colosse)
 * run unit tests
-* update ChangedLog (based on git log)
-* set ASSERT to no and set MAXKMERLENGTH to 32
-* check version in constants.h + manual
-* Update the manual (new options, etc.)
-* test compilation on a git clone __on 5 different computers__ (make + make install): 
- - ls30
- - iceman (colosse2)
- - cortex
- - globe,
- - lw132
- - Visual Studio (VirtualBox)
+* check version in Makefile
+* ./Ray -help > MANUAL_PAGE.txt
 * git tag vx.y.z
-* close the milestone in trac
 * git checkout tag,
-* compile the manual
 * do a tar.bz2, compile it (make + make install) and test it
 * upload the tarball on sf
 * update the web site (download + manual)
-* post an email on the list including changes (ChangeLog) 
+* post an email on the list including changes (dump-changes)
 * update the seqanswer thread
