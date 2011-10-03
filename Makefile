@@ -267,7 +267,8 @@ Ray: showOptions $(obj-y)
 	@echo $(TARGETS) > TARGETS
 
 clean:
-	rm -f $(TARGETS) $(obj-y) showOptions PREFIX TARGETS
+	@rm -f $(TARGETS) $(obj-y) showOptions PREFIX TARGETS
+	@echo CLEAN
 
 install: 
 	@scripts/install.sh

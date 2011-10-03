@@ -1,5 +1,7 @@
 # build Ray executables for system tests
 
+module load compilers/gcc/4.4.2 mpi/openmpi/1.4.3_gcc
+
 cd $RAY_GIT_PATH/system-tests
 
 rm -rf builds

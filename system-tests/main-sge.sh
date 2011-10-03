@@ -11,6 +11,9 @@
 
 
 export RAY_GIT_PATH=~/git-clones/ray
+export PATH=$RAY_GIT_PATH/scripts:$PATH
+export PATH=~/software/MUMmer3.22:$PATH
+export PATH=~/software/amos-2.0.8/build/bin:$PATH
 
 suffix=$(date +%Y-%m-%d-%H-%M-%S)
 
@@ -78,7 +81,7 @@ do
 	echo "" >> ../../$outputFile.validationEntries
 	echo "$(date) Job $testName has been validated."
 	cd ../..
-done
+done &> ValidationErrors.txt
 
 for job in $(cat jobs)
 do
