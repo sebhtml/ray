@@ -42,6 +42,9 @@ using namespace std;
 // TODO: convert this to Worker
 class IndexerWorker /*: public Worker*/{
 
+	map<int,map<int,int> >*m_forwardStatistics;
+	map<int,map<int,int> >*m_reverseStatistics;
+
 	ofstream*m_readMarkerFile;
 
 	ArrayOfReads*m_reads;
@@ -67,7 +70,9 @@ class IndexerWorker /*: public Worker*/{
 public:
 	void constructor(int sequenceId,Parameters*parameters,RingAllocator*outboxAllocator,
 		VirtualCommunicator*vc,uint64_t workerId,ArrayOfReads*a,MyAllocator*allocator,
-	ofstream*f);
+	ofstream*f,
+	map<int,map<int,int> >*forwardStatistics,
+	map<int,map<int,int> >*reverseStatistics);
 
 /** work a little bit 
 	 * the class Worker provides no implementation for that 

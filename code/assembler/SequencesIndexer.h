@@ -34,6 +34,7 @@
 #include <structures/SplayTreeIterator.h>
 #include <structures/StaticVector.h>
 #include <structures/ArrayOfReads.h>
+#include <map>
 #include <structures/Read.h>
 #include <vector>
 #include <fstream>
@@ -46,6 +47,9 @@ using namespace std;
 class SequencesIndexer{
 
 	ofstream m_readMarkerFile;
+
+	map<int,map<int,int> >m_forwardStatistics;
+	map<int,map<int,int> >m_reverseStatistics;
 
 	/** for checkpointing */
 	bool m_checkedCheckpoint;

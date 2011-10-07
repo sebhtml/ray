@@ -24,8 +24,12 @@
 
 void IndexerWorker::constructor(int sequenceId,Parameters*parameters,RingAllocator*outboxAllocator,
 	VirtualCommunicator*vc,uint64_t workerId,ArrayOfReads*a,MyAllocator*allocator,
-	ofstream*f){
+	ofstream*f,
+	map<int,map<int,int> >*forwardStatistics,
+	map<int,map<int,int> >*reverseStatistics){
 
+	m_forwardStatistics=forwardStatistics;
+	m_reverseStatistics=reverseStatistics;
 	m_readMarkerFile=f;
 	m_reads=a;
 	m_allocator=allocator;
@@ -197,6 +201,16 @@ void IndexerWorker::work(){
 			}
 			(*m_readMarkerFile)<<endl;
 
+		}
+
+		if(m_parameters->hasOption("-write-marker-summary")){
+			int forwardOffset = m_reads->at(m_workerId)->getForwardOffset();
+			int reverseOffset = m_reads->at(m_workerId)->getReverseOffset();
+			int forwardCoverage = m_coverages.at(forwardOffset);
+			int reverseCoverage = m_coverages.at(reverseOffset);
+
+			(*m_forwardStatistics)[forwardOffset][forwardCoverage] ++ ;
+			(*m_reverseStatistics)[reverseOffset][reverseCoverage] ++ ;
 		}
 
 		m_vertices.destructor(m_allocator);

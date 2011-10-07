@@ -1097,6 +1097,8 @@ void Parameters::showUsage(){
 	showOption("-write-contig-paths","Writes contig paths with coverage values");
 	showOptionDescription("to RayOutput/Rank<rank>.RayContigPaths.txt");
 	cout<<endl;
+	showOption("-write-marker-summary","Writes marker statistics.");
+	cout<<endl;
 
 	cout<<"  Memory usage"<<endl;
 	cout<<endl;

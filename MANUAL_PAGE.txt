@@ -61,6 +61,9 @@ DESCRIPTION:
               Writes contig paths with coverage values
               to RayOutput/Rank<rank>.RayContigPaths.txt
 
+       -write-marker-summary
+              Writes marker statistics.
+
   Memory usage
 
        -show-memory-usage

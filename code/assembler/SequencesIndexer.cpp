@@ -109,7 +109,8 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 
 				bool flag;
 				m_aliveWorkers.insert(m_theSequenceId,&m_workAllocator,&flag)->getValue()->constructor(m_theSequenceId,m_parameters,m_outboxAllocator,m_virtualCommunicator,
-					m_theSequenceId,m_myReads,&m_workAllocator,&m_readMarkerFile);
+					m_theSequenceId,m_myReads,&m_workAllocator,&m_readMarkerFile,&m_forwardStatistics,
+					&m_reverseStatistics);
 				m_activeWorkers.insert(m_theSequenceId,&m_workAllocator,&flag);
 				int population=m_aliveWorkers.size();
 				if(population>m_maximumWorkers){
@@ -160,6 +161,43 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 		if(m_parameters->hasOption("-write-read-markers")){
 			m_readMarkerFile.close();
 		}
+
+		if(m_parameters->hasOption("-write-marker-summary")){
+
+			ostringstream file1;
+			file1<<m_parameters->getPrefix()<<"Rank"<<m_parameters->getRank()<<".ForwardMarkerSummary.txt";
+			string fileName1=file1.str();
+			ofstream f1(fileName1.c_str());
+
+			for(map<int,map<int,int> >::iterator i=m_forwardStatistics.begin();i!=m_forwardStatistics.end();i++){
+				int offset=i->first;
+				for(map<int,int>::iterator j=i->second.begin();j!=i->second.end();j++){
+					int coverage=j->first;
+					int count=j->second;
+					f1<<offset<<"	"<<coverage<<"	"<<count<<endl;
+				}
+			}
+			f1.close();
+
+			ostringstream file2;
+			file2<<m_parameters->getPrefix()<<"Rank"<<m_parameters->getRank()<<".ReverseMarkerSummary.txt";
+			string fileName2=file2.str();
+			ofstream f2(fileName2.c_str());
+
+			for(map<int,map<int,int> >::iterator i=m_reverseStatistics.begin();i!=m_reverseStatistics.end();i++){
+				int offset=i->first;
+				for(map<int,int>::iterator j=i->second.begin();j!=i->second.end();j++){
+					int coverage=j->first;
+					int count=j->second;
+					f2<<offset<<"	"<<coverage<<"	"<<count<<endl;
+				}
+			}
+			f2.close();
+
+		}
+
+		m_forwardStatistics.clear();
+		m_reverseStatistics.clear();
 	}
 }
 
