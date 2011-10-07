@@ -23,7 +23,10 @@
 #include <string.h>
 
 void IndexerWorker::constructor(int sequenceId,Parameters*parameters,RingAllocator*outboxAllocator,
-	VirtualCommunicator*vc,uint64_t workerId,ArrayOfReads*a,MyAllocator*allocator){
+	VirtualCommunicator*vc,uint64_t workerId,ArrayOfReads*a,MyAllocator*allocator,
+	ofstream*f){
+
+	m_readMarkerFile=f;
 	m_reads=a;
 	m_allocator=allocator;
 	m_sequenceId=sequenceId;
@@ -176,6 +179,26 @@ void IndexerWorker::work(){
 		}
 
 	}else{
+		if(m_parameters->hasOption("-write-read-markers")){
+			#ifdef ASSERT
+			assert(m_readMarkerFile != NULL);
+			#endif
+
+			// append read marker information to a file.
+			(*m_readMarkerFile)<<m_sequenceId<<" Count: "<<m_coverages.size();
+
+			(*m_readMarkerFile)<<" Selections:";
+			(*m_readMarkerFile)<<" "<<m_reads->at(m_workerId)->getForwardOffset();
+			(*m_readMarkerFile)<<" "<<m_reads->at(m_workerId)->getReverseOffset();
+
+			(*m_readMarkerFile)<<" Values:";
+			for(int i=0;i<(int)m_coverages.size();i++){
+				(*m_readMarkerFile)<<" "<<i<<" "<<m_coverages.at(i);
+			}
+			(*m_readMarkerFile)<<endl;
+
+		}
+
 		m_vertices.destructor(m_allocator);
 		m_coverages.destructor(m_allocator);
 		m_done=true;

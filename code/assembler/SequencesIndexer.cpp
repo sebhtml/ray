@@ -109,7 +109,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 
 				bool flag;
 				m_aliveWorkers.insert(m_theSequenceId,&m_workAllocator,&flag)->getValue()->constructor(m_theSequenceId,m_parameters,m_outboxAllocator,m_virtualCommunicator,
-					m_theSequenceId,m_myReads,&m_workAllocator);
+					m_theSequenceId,m_myReads,&m_workAllocator,&m_readMarkerFile);
 				m_activeWorkers.insert(m_theSequenceId,&m_workAllocator,&flag);
 				int population=m_aliveWorkers.size();
 				if(population>m_maximumWorkers){
@@ -156,6 +156,10 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 			cout<<"Rank "<<m_parameters->getRank()<<": Freeing unused assembler memory: "<<freed/1024<<" KiB freed"<<endl;
 			showMemoryUsage(m_rank);
 		}
+
+		if(m_parameters->hasOption("-write-read-markers")){
+			m_readMarkerFile.close();
+		}
 	}
 }
 
@@ -179,6 +183,13 @@ void SequencesIndexer::constructor(Parameters*parameters,RingAllocator*outboxAll
 	m_maximumWorkers=0;
 	m_theSequenceId=0;
 	m_virtualCommunicator=vc;
+
+	if(m_parameters->hasOption("-write-read-markers")){
+		ostringstream file;
+		file<<m_parameters->getPrefix()<<"Rank"<<m_parameters->getRank()<<".OptimalReadMarkers.txt";
+		string fileName=file.str();
+		m_readMarkerFile.open(fileName.c_str());
+	}
 }
 
 void SequencesIndexer::setReadiness(){

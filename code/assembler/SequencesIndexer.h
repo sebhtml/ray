@@ -36,6 +36,7 @@
 #include <structures/ArrayOfReads.h>
 #include <structures/Read.h>
 #include <vector>
+#include <fstream>
 using namespace std;
 
 /*
@@ -43,6 +44,9 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class SequencesIndexer{
+
+	ofstream m_readMarkerFile;
+
 	/** for checkpointing */
 	bool m_checkedCheckpoint;
 

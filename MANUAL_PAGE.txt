@@ -48,6 +48,9 @@ DESCRIPTION:
               The resulting file is not utilised by Ray.
               The resulting file is very large.
 
+       -write-read-markers
+              Writes read markers to disk.
+
        -write-seeds
               Writes seed DNA sequences to RayOutput/Rank<rank>.RaySeeds.fasta
 
@@ -200,6 +203,8 @@ FILES
 
      RayOutput/SeedLengthDistribution.txt
          Distribution of seed length
+     RayOutput/Rank<rank>.OptimalReadMarkers.txt
+         Read markers.
      RayOutput/Rank<rank>.RaySeeds.fasta
          Seed DNA sequences, required option: -write-seeds
      RayOutput/Rank<rank>.RayExtensions.fasta

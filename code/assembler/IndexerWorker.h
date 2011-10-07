@@ -30,6 +30,8 @@
 #include <structures/ArrayOfReads.h>
 #include <structures/DynamicVector.h>
 #include <scheduling/Worker.h>
+#include <fstream>
+using namespace std;
 
 /**
  * this class is a worker for sequence indexing
@@ -39,6 +41,9 @@
 
 // TODO: convert this to Worker
 class IndexerWorker /*: public Worker*/{
+
+	ofstream*m_readMarkerFile;
+
 	ArrayOfReads*m_reads;
 	int m_sequenceId;
 	bool m_done;
@@ -61,7 +66,8 @@ class IndexerWorker /*: public Worker*/{
 	DynamicVector<int> m_coverages;
 public:
 	void constructor(int sequenceId,Parameters*parameters,RingAllocator*outboxAllocator,
-		VirtualCommunicator*vc,uint64_t workerId,ArrayOfReads*a,MyAllocator*allocator);
+		VirtualCommunicator*vc,uint64_t workerId,ArrayOfReads*a,MyAllocator*allocator,
+	ofstream*f);
 
 /** work a little bit 
 	 * the class Worker provides no implementation for that 

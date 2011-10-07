@@ -84,8 +84,6 @@ Parameters::Parameters(){
 
 	/** use the new NovaEngine (TM) */
 	m_options.insert("-use-NovaEngine");
-
-	m_options.insert("-write-contig-paths");
 }
 
 bool Parameters::showExtensionChoice(){
@@ -1090,6 +1088,8 @@ void Parameters::showUsage(){
 	showOptionDescription("The resulting file is not utilised by Ray.");
 	showOptionDescription("The resulting file is very large.");
 	cout<<endl;
+	showOption("-write-read-markers","Writes read markers to disk.");
+	cout<<endl;
 	showOption("-write-seeds","Writes seed DNA sequences to RayOutput/Rank<rank>.RaySeeds.fasta");
 	cout<<endl;
 	showOption("-write-extensions","Writes extension DNA sequences to RayOutput/Rank<rank>.RayExtensions.fasta");
@@ -1234,6 +1234,8 @@ void Parameters::showUsage(){
 	cout<<endl;
 	cout<<"     RayOutput/SeedLengthDistribution.txt"<<endl;
 	cout<<"         Distribution of seed length"<<endl;
+	cout<<"     RayOutput/Rank<rank>.OptimalReadMarkers.txt"<<endl;
+	cout<<"         Read markers."<<endl;
 	cout<<"     RayOutput/Rank<rank>.RaySeeds.fasta"<<endl;
 	cout<<"         Seed DNA sequences, required option: -write-seeds"<<endl;
 	cout<<"     RayOutput/Rank<rank>.RayExtensions.fasta"<<endl;
