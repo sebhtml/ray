@@ -1115,6 +1115,8 @@ void Parameters::showUsage(){
 	cout<<endl;
 	showOption("-show-distance-summary","Shows summary of outer distances used for an extension path.");
 	cout<<endl;
+	showOption("-show-consensus","Shows the consensus when a choice is done.");
+	cout<<endl;
 
 	cout<<"  Assembly options (defaults work well)"<<endl;
 	cout<<endl;

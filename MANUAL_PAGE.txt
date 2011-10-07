@@ -82,6 +82,9 @@ DESCRIPTION:
        -show-distance-summary
               Shows summary of outer distances used for an extension path.
 
+       -show-consensus
+              Shows the consensus when a choice is done.
+
   Assembly options (defaults work well)
 
        -color-space

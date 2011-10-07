@@ -104,6 +104,9 @@ map<Kmer,set<Kmer> >*arcs,map<Kmer,int>*coverages,int depth,set<Kmer>*visited);
 
 	void readCheckpoint();
 	void writeCheckpoint();
+
+	void showSequences();
+
 public:
 	bool m_sequenceReceived;
 	bool m_sequenceRequested;

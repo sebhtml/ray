@@ -489,6 +489,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 				#ifdef ASSERT
 				assert(element!=NULL);
 				#endif
+
 				int startPosition=element->getPosition();
 
 /**
@@ -674,8 +675,15 @@ Presently, insertions or deletions up to 8 are supported.
 
 				ed->m_EXTENSION_singleEndResolution=true;
 
-				if(m_parameters->showExtensionChoice())
+				if(m_parameters->showExtensionChoice()){
 					inspect(ed,currentVertex);
+					
+				}
+
+				if(m_parameters->hasOption("-show-consensus")){
+					showSequences();
+				}
+
 				int choice=(*oa).choose(ed,&(*chooser),minimumCoverage,(maxCoverage),m_parameters);
 				if(choice!=IMPOSSIBLE_CHOICE){
 					if(m_parameters->showExtensionChoice()){
@@ -1899,3 +1907,72 @@ void SeedExtender::readCheckpoint(){
 	#endif
 
 }
+
+/* display the contig and overlapping reads. */
+void SeedExtender::showSequences(){
+
+
+	int firstPosition=m_ed->m_EXTENSION_extension.size()-1;
+
+	for(set<uint64_t>::iterator i=m_ed->m_EXTENSION_readsInRange.begin();i!=m_ed->m_EXTENSION_readsInRange.end();i++){
+		uint64_t uniqueId=*i;
+		ExtensionElement*element=m_ed->getUsedRead(uniqueId);
+
+		int startPosition=element->getPosition();
+		if(startPosition < firstPosition)
+			firstPosition = startPosition;
+	}
+
+	// print the contig
+	vector<Kmer> lastBits;
+
+	for(int i=firstPosition;i<(int)m_ed->m_EXTENSION_extension.size();i++){
+		lastBits.push_back(m_ed->m_EXTENSION_extension[i]);
+	}
+
+	string sequence = convertToString(&lastBits,
+					m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+
+	cout<<"Consensus starting at "<<firstPosition<<endl;
+	cout<<sequence<<endl;
+
+	for(set<uint64_t>::iterator i=m_ed->m_EXTENSION_readsInRange.begin();i!=m_ed->m_EXTENSION_readsInRange.end();i++){
+		uint64_t uniqueId=*i;
+		ExtensionElement*element=m_ed->getUsedRead(uniqueId);
+
+		int startPosition=element->getPosition();
+		char strand=element->getStrand();
+		int offset=element->getStrandPosition();
+
+		char readSequence[RAY_MAXIMUM_READ_LENGTH];
+		element->getSequence(readSequence,m_parameters);
+
+		string theSequence=readSequence;
+		if(strand == 'R'){
+			theSequence = reverseComplement(&theSequence);
+		}
+
+		int diff=startPosition - firstPosition;
+		for(int j=0;j<diff;j++)
+			cout<<" ";
+		cout<<theSequence.substr(offset,theSequence.length()-offset);
+		cout<<"  Read "<<uniqueId<<" "<<startPosition<<" "<<strand<<" "<<offset;
+
+		if(element->hasPairedRead()){
+			PairedRead*pairedRead=element->getPairedRead();
+			uint64_t mateId=pairedRead->getUniqueId();
+			ExtensionElement*element2=m_ed->getUsedRead(mateId);
+
+			if(element2 != NULL){
+
+				int startPosition2=element2->getPosition();
+				char strand2=element2->getStrand();
+				int offset2=element2->getStrandPosition();
+
+				cout<<" Paired with: "<<mateId<<" "<<startPosition2<<" "<<strand2<<" "<<offset2;
+			}
+		}
+		cout<<endl;
+	}
+}
+
