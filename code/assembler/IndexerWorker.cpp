@@ -191,6 +191,10 @@ void IndexerWorker::work(){
 			// append read marker information to a file.
 			(*m_readMarkerFile)<<m_sequenceId<<" Count: "<<m_coverages.size();
 
+			#ifdef ASSERT
+			assert(m_workerId < m_reads->size());
+			#endif
+
 			(*m_readMarkerFile)<<" Selections:";
 			(*m_readMarkerFile)<<" "<<m_reads->at(m_workerId)->getForwardOffset();
 			(*m_readMarkerFile)<<" "<<m_reads->at(m_workerId)->getReverseOffset();
@@ -204,13 +208,37 @@ void IndexerWorker::work(){
 		}
 
 		if(m_parameters->hasOption("-write-marker-summary")){
-			int forwardOffset = m_reads->at(m_workerId)->getForwardOffset();
-			int reverseOffset = m_reads->at(m_workerId)->getReverseOffset();
-			int forwardCoverage = m_coverages.at(forwardOffset);
-			int reverseCoverage = m_coverages.at(reverseOffset);
+			#ifdef ASSERT
+			assert(m_workerId < m_reads->size());
+			#endif
 
-			(*m_forwardStatistics)[forwardOffset][forwardCoverage] ++ ;
-			(*m_reverseStatistics)[reverseOffset][reverseCoverage] ++ ;
+			int forwardOffset = m_reads->at(m_workerId)->getForwardOffset();
+
+			if(forwardOffset < m_coverages.size() && m_coverages.size() > 0){
+				#ifdef ASSERT
+				assert(m_coverages.size() > 0);
+				#endif
+
+				int forwardCoverage = m_coverages.at(forwardOffset);
+				(*m_forwardStatistics)[forwardOffset][forwardCoverage] ++ ;
+			}else{
+				// invalid selection, probably because there are nothing to poke around
+				(*m_forwardStatistics)[-1][-1] ++ ;
+			}
+
+			int reverseOffset = m_reads->at(m_workerId)->getReverseOffset();
+
+			if(reverseOffset < m_coverages.size() && m_coverages.size() > 0){
+				#ifdef ASSERT
+				assert(m_coverages.size() > 0);
+				#endif
+
+				int reverseCoverage = m_coverages.at(m_coverages.size()- 1 - reverseOffset);
+				(*m_reverseStatistics)[reverseOffset][reverseCoverage] ++ ;
+			}else{
+				// invalid selection, probably because there are nothing to poke around
+				(*m_reverseStatistics)[-1][-1] ++ ;
+			}
 		}
 
 		m_vertices.destructor(m_allocator);

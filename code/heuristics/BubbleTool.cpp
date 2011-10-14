@@ -64,6 +64,7 @@ map<Kmer ,int>*coverages){
 	#ifdef NO_BUBBLES
 	return false;
 	#endif
+
 	if((*coverages)[root]>=m_parameters->getRepeatCoverage()){
 		return false;
 	}

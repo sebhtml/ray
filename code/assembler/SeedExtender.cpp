@@ -673,6 +673,8 @@ Presently, insertions or deletions up to 8 are supported.
 					return;
 				}
 
+				MACRO_COLLECT_PROFILING_INFORMATION();
+
 				ed->m_EXTENSION_singleEndResolution=true;
 
 				if(m_parameters->showExtensionChoice()){
@@ -704,6 +706,8 @@ Presently, insertions or deletions up to 8 are supported.
 
 				ed->m_doChoice_tips_Detected=false;
 				m_dfsData->m_doChoice_tips_Initiated=false;
+
+				MACRO_COLLECT_PROFILING_INFORMATION();
 			}
 
 			MACRO_COLLECT_PROFILING_INFORMATION();
