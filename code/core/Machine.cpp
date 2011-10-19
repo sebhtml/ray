@@ -543,10 +543,9 @@ void Machine::runWithProfiler(){
 	vector<int> distancesForProcessMessages;
 	vector<int> distancesForProcessData;
 
-	uint64_t lastTimePointWithMessagesFromProcessData=lastTime;
 
-	bool printedCritical=false;
-	bool printedWarning=false;
+
+	bool profilerVerbose=m_parameters.hasOption("-with-profiler-details");
 
 	/** m_timeToLive goes down to 0 when m_alive is false
  * 	This is called the aging process */
@@ -557,15 +556,20 @@ void Machine::runWithProfiler(){
 			double seconds=(t-startingTime)/1000.0;
 
 			int balance=sentMessages-receivedMessages;
-			printf("Rank %i: %s Time= %.2f s Speed= %i Sent= %i (processMessages: %i, processData: %i) Received= %i Balance= %i\n",
-				m_rank,SLAVE_MODES[m_slave_mode],
-				seconds,ticks,sentMessages,sentMessagesInProcessMessages,sentMessagesInProcessData,
-				receivedMessages,balance);
-			fflush(stdout);
 
-			m_profiler->printGranularities(m_rank);
+			if(profilerVerbose){
+				printf("Rank %i: %s Time= %.2f s Speed= %i Sent= %i (processMessages: %i, processData: %i) Received= %i Balance= %i\n",
+					m_rank,SLAVE_MODES[m_slave_mode],
+					seconds,ticks,sentMessages,sentMessagesInProcessMessages,sentMessagesInProcessData,
+					receivedMessages,balance);
+				fflush(stdout);
 
-			if(receivedTags.size() > 0){
+				m_profiler->printGranularities(m_rank);
+			}
+
+			m_profiler->clearGranularities();
+
+			if(receivedTags.size() > 0 && profilerVerbose){
 				cout<<"Rank "<<m_parameters.getRank()<<" received in receiveMessages:"<<endl;
 				for(map<int,int>::iterator i=receivedTags.begin();i!=receivedTags.end();i++){
 					int tag=i->first;
@@ -574,7 +578,7 @@ void Machine::runWithProfiler(){
 				}
 			}
 
-			if(sentTagsInProcessMessages.size() > 0){
+			if(sentTagsInProcessMessages.size() > 0 && profilerVerbose){
 				cout<<"Rank "<<m_parameters.getRank()<<" sent in processMessages:"<<endl;
 				for(map<int,int>::iterator i=sentTagsInProcessMessages.begin();i!=sentTagsInProcessMessages.end();i++){
 					int tag=i->first;
@@ -601,10 +605,11 @@ void Machine::runWithProfiler(){
 				}
 				#endif
 
-				distancesForProcessMessages.clear();
 			}
 
-			if(sentTagsInProcessData.size() > 0){
+			distancesForProcessMessages.clear();
+
+			if(sentTagsInProcessData.size() > 0 && profilerVerbose){
 				cout<<"Rank "<<m_parameters.getRank()<<" sent in processData:"<<endl;
 				for(map<int,int>::iterator i=sentTagsInProcessData.begin();i!=sentTagsInProcessData.end();i++){
 					int tag=i->first;
@@ -630,8 +635,9 @@ void Machine::runWithProfiler(){
 				}
 				#endif
 
-				distancesForProcessData.clear();
 			}
+
+			distancesForProcessData.clear();
 
 			sentMessages=0;
 			sentMessagesInProcessMessages=0;
@@ -690,22 +696,12 @@ void Machine::runWithProfiler(){
 			cout<<"Warning, SlaveMode= "<<SLAVE_MODES[currentSlaveMode]<<" GranularityInMicroseconds= "<<difference<<""<<endl;
 			m_profiler->printStack();
 		}
+
 		m_profiler->resetStack();
 
 		int messagesSentInProcessData = m_outbox.size() - messagesSentInProcessMessages;
 		sentMessagesInProcessData += messagesSentInProcessData;
 		sentMessages += messagesSentInProcessData;
-
-		if(messagesSentInProcessData> 0){
-/*
-			int distance=t - lastTickWhenSentMessageInProcessData;
-			lastTickWhenSentMessageInProcessData=t;
-			distancesForProcessData.push_back(distance);
-*/
-			lastTimePointWithMessagesFromProcessData=t;
-			printedCritical=false;
-			printedWarning=false;
-		}
 
 		for(int i=0;i<messagesSentInProcessMessages;i++){
 			sentTagsInProcessMessages[m_outbox[i]->getTag()]++;

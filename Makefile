@@ -1,8 +1,8 @@
 VERSION = 1
 PATCHLEVEL = 7
-SUBLEVEL = 0
+SUBLEVEL = 1
 EXTRAVERSION = 
-NAME = Magical Luminary of Celestial Bodies
+NAME = Deep Curtain of Broad Ranges
 
 RAY_VERSION = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)
 

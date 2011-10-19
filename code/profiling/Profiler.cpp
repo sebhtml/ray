@@ -145,5 +145,8 @@ void Profiler::printAllGranularities(){
 		cout<<endl;
 	}
 
+}
+
+void Profiler::clearGranularities(){
 	m_observedGranularities.clear();
 }

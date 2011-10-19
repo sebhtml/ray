@@ -86,11 +86,14 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		m_cacheAllocator.clear();
 		m_cache.clear();
 
+		MACRO_COLLECT_PROFILING_INFORMATION();
+
 		printf("Rank %i is extending seeds [%i/%i] (completed)\n",theRank,(int)(*seeds).size(),(int)(*seeds).size());
 		double ratio=(0.0+m_extended)/seeds->size()*100.0;
 		printf("Rank %i extended %i seeds out of %i (%.2f%%)\n",theRank,m_extended,(int)seeds->size(),ratio);
 		fflush(stdout);
 
+		MACRO_COLLECT_PROFILING_INFORMATION();
 		if(m_parameters->showMemoryUsage()){
 			showMemoryUsage(theRank);
 		}
@@ -565,6 +568,9 @@ Presently, insertions or deletions up to 8 are supported.
 					int library=pairedRead->getLibrary();
 					ExtensionElement*extensionElement=ed->getUsedRead(uniqueReadIdentifier);
 					if(extensionElement!=NULL){// use to be via readsPositions
+
+						MACRO_COLLECT_PROFILING_INFORMATION();
+
 						char theLeftStrand=extensionElement->getStrand();
 						int startingPositionOnPath=extensionElement->getPosition();
 
@@ -572,6 +578,7 @@ Presently, insertions or deletions up to 8 are supported.
 						int observedFragmentLength=(startPosition-startingPositionOnPath)+ed->m_EXTENSION_receivedLength+extensionElement->getStrandPosition()-element->getStrandPosition();
 						int multiplier=3;
 
+						MACRO_COLLECT_PROFILING_INFORMATION();
 						/* iterate over all peaks */
 						for(int peak=0;peak<m_parameters->getLibraryPeaks(library);peak++){
 							int expectedFragmentLength=m_parameters->getLibraryAverageLength(library,peak);
@@ -603,6 +610,8 @@ Presently, insertions or deletions up to 8 are supported.
 						}
 					}
 
+					MACRO_COLLECT_PROFILING_INFORMATION();
+
 					// add it anyway as a single-end match too!
 					/* add it as single-end read if not repeated. */
 					//if(repeatValueForRightRead<repeatThreshold){
@@ -610,9 +619,13 @@ Presently, insertions or deletions up to 8 are supported.
 						ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(distance);
 					}
 
+					MACRO_COLLECT_PROFILING_INFORMATION();
+
 					ed->m_EXTENSION_readIterator++;
 				}
 			}else{
+				MACRO_COLLECT_PROFILING_INFORMATION();
+
 				if(!m_removedUnfitLibraries){
 					removeUnfitLibraries();
 					m_removedUnfitLibraries=true;
@@ -682,9 +695,13 @@ Presently, insertions or deletions up to 8 are supported.
 					
 				}
 
+				MACRO_COLLECT_PROFILING_INFORMATION();
+
 				if(m_parameters->hasOption("-show-consensus")){
 					showSequences();
 				}
+
+				MACRO_COLLECT_PROFILING_INFORMATION();
 
 				int choice=(*oa).choose(ed,&(*chooser),minimumCoverage,(maxCoverage),m_parameters);
 				if(choice!=IMPOSSIBLE_CHOICE){
@@ -880,6 +897,8 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			/** inspect the local setup */
 			if(m_parameters->showEndingContext()){
 				inspect(ed,currentVertex);
+
+				showSequences();
 			}
 
 			m_slicedComputationStarted=false;
@@ -925,7 +944,10 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 
 			MACRO_COLLECT_PROFILING_INFORMATION();
 		}else{
+			MACRO_COLLECT_PROFILING_INFORMATION();
+
 			storeExtensionAndGetNextOne(ed,theRank,seeds,currentVertex,bubbleData);
+
 			MACRO_COLLECT_PROFILING_INFORMATION();
 		}
 
@@ -1014,6 +1036,8 @@ Kmer *currentVertex,BubbleData*bubbleData){
 		if(m_parameters->showEndingContext()){
 			cout<<"Choosing... (impossible!)"<<endl;
 			inspect(ed,currentVertex);
+
+			showSequences();
 			cout<<"Stopping extension..."<<endl;
 		}
 

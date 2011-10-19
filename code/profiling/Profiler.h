@@ -53,6 +53,8 @@ public:
 	void addGranularity(int mode,int microseconds);
 	void printGranularities(int rank);
 	void printAllGranularities();
+
+	void clearGranularities();
 };
 
 /* if CONFIG_PROFILER_COLLECT is defined, MACRO_COLLECT_PROFILING_INFORMATION() will collect profiling information

@@ -1154,8 +1154,10 @@ void Parameters::showUsage(){
 
 	cout<<"  Debugging"<<endl;
 	cout<<endl;
-	showOption("-run-profiler","Runs the profiler as the code runs.");
+	showOption("-run-profiler","Runs the profiler as the code runs. By default, only show granularity warnings.");
 	showOptionDescription("Running the profiler increases running times.");
+	cout<<endl;
+	showOption("-with-profiler-details","Shows number of messages sent and received in each methods during in each time slices (epochs). Needs -run-profiler.");
 	cout<<endl;
 	showOption("-show-communication-events","Shows all messages sent and received.");
 	cout<<endl;

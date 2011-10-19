@@ -268,23 +268,44 @@ bool fileExists(const char*file){
 }
 
 void showRayVersionShort(){
-	cout<<"Ray version "<<RAY_VERSION<<" ";
-
-	#if defined(RAY_64_BITS)
-	cout<<"RAY_64_BITS"<<endl;
-	#elif defined(RAY_32_BITS)
-	cout<<"RAY_32_BITS"<<endl;
-	#endif
+	cout<<"Ray version "<<RAY_VERSION<<endl;
 
 	cout<<"License: GNU General Public License"<<endl;
 
 	cout<<endl;
 	cout<<"MAXKMERLENGTH: "<<MAXKMERLENGTH<<endl;
 	cout<<"KMER_U64_ARRAY_SIZE: "<<KMER_U64_ARRAY_SIZE<<endl;
-
 	cout<<"MAXIMUM_MESSAGE_SIZE_IN_BYTES: "<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<" bytes"<<endl;
-	cout<<"FORCE_PACKING (don't align addresses on 8 bytes): ";
 
+/*
+content
+	cout<<"option"; 
+	#ifdef option
+	cout<<"y";
+	#else
+	cout<<"n";
+	#endif
+	cout<<endl;
+
+list
+ FORCE_PACKING 
+ ASSERT 
+ HAVE_LIBZ 
+ HAVE_LIBBZ2 
+ CONFIG_PROFILER_COLLECT 
+ CONFIG_CLOCK_GETTIME 
+ __linux__ 
+ _MSC_VER 
+ __GNUC__ 
+ RAY_32_BITS 
+ RAY_64_BITS
+
+for i in $(cat list ); do exp="s/option/$i/g"; sed $exp content; done > list2
+*/
+
+	/* generated code */
+
+	cout<<"FORCE_PACKING = ";
 	#ifdef FORCE_PACKING
 	cout<<"y";
 	#else
@@ -292,27 +313,85 @@ void showRayVersionShort(){
 	#endif
 	cout<<endl;
 
-	cout<<"ASSERT: ";
+	cout<<"ASSERT = ";
 	#ifdef ASSERT
-	cout<<"y"<<endl;
+	cout<<"y";
 	#else
-	cout<<"n"<<endl;
+	cout<<"n";
 	#endif
+	cout<<endl;
 
-	// show libraries
-	cout<<"HAVE_LIBZ (gz support): ";
+	cout<<"HAVE_LIBZ = ";
 	#ifdef HAVE_LIBZ
-	cout<<"y"<<endl;
+	cout<<"y";
 	#else
-	cout<<"n"<<endl;
+	cout<<"n";
 	#endif
+	cout<<endl;
 
-	cout<<"HAVE_LIBBZ2 (bz2 support): ";
+	cout<<"HAVE_LIBBZ2 = ";
 	#ifdef HAVE_LIBBZ2
-	cout<<"y"<<endl;
+	cout<<"y";
 	#else
-	cout<<"n"<<endl;
+	cout<<"n";
 	#endif
+	cout<<endl;
+
+	cout<<"CONFIG_PROFILER_COLLECT = ";
+	#ifdef CONFIG_PROFILER_COLLECT
+	cout<<"y";
+	#else
+	cout<<"n";
+	#endif
+	cout<<endl;
+
+	cout<<"CONFIG_CLOCK_GETTIME = ";
+	#ifdef CONFIG_CLOCK_GETTIME
+	cout<<"y";
+	#else
+	cout<<"n";
+	#endif
+	cout<<endl;
+
+	cout<<"__linux__ = ";
+	#ifdef __linux__
+	cout<<"y";
+	#else
+	cout<<"n";
+	#endif
+	cout<<endl;
+
+	cout<<"_MSC_VER = ";
+	#ifdef _MSC_VER
+	cout<<"y";
+	#else
+	cout<<"n";
+	#endif
+	cout<<endl;
+
+	cout<<"__GNUC__ = ";
+	#ifdef __GNUC__
+	cout<<"y";
+	#else
+	cout<<"n";
+	#endif
+	cout<<endl;
+
+	cout<<"RAY_32_BITS = ";
+	#ifdef RAY_32_BITS
+	cout<<"y";
+	#else
+	cout<<"n";
+	#endif
+	cout<<endl;
+
+	cout<<"RAY_64_BITS = ";
+	#ifdef RAY_64_BITS
+	cout<<"y";
+	#else
+	cout<<"n";
+	#endif
+	cout<<endl;
 
 }
 
@@ -322,22 +401,6 @@ void showRayVersion(MessagesHandler*messagesHandler,bool fullReport){
 	cout<<endl;
 	cout<<"Rank "<<MASTER_RANK<<": Operating System: ";
 	cout<<getOperatingSystem()<<endl;
-
-	// show OS, only Linux
-	cout<<"Linux (__linux__): ";
-	#ifdef __linux__
-	cout<<"y"<<endl;
-	#else
-	cout<<"n"<<endl;
-	#endif
-
-
-	cout<<"GNU system (__GNUC__): ";
-	#ifdef __GNUC__
-	cout<<"y"<<endl;
-	#else
-	cout<<"n"<<endl;
-	#endif
 
 
 	cout<<"Message-passing interface"<<endl;

@@ -192,7 +192,7 @@ void IndexerWorker::work(){
 			(*m_readMarkerFile)<<m_sequenceId<<" Count: "<<m_coverages.size();
 
 			#ifdef ASSERT
-			assert(m_workerId < m_reads->size());
+			assert(m_workerId < (int)m_reads->size());
 			#endif
 
 			(*m_readMarkerFile)<<" Selections:";
@@ -209,7 +209,7 @@ void IndexerWorker::work(){
 
 		if(m_parameters->hasOption("-write-marker-summary")){
 			#ifdef ASSERT
-			assert(m_workerId < m_reads->size());
+			assert(m_workerId < (int)m_reads->size());
 			#endif
 
 			int forwardOffset = m_reads->at(m_workerId)->getForwardOffset();
