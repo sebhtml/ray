@@ -24,6 +24,7 @@
 
 #include<time.h>
 #include<vector>
+#include <fstream>
 #include<string>
 using namespace std;
 
@@ -32,6 +33,8 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class TimePrinter{
+	ofstream m_file;
+	bool m_fileSet;
 	time_t m_last;
 	time_t m_startingTime;
 	time_t m_lastTime;
@@ -39,9 +42,14 @@ class TimePrinter{
 	vector<string> m_descriptions;
 	vector<int> m_durations;
 
-	void printDifference(int s);
+	void printDifference(int s,ostream*stream);
+
+	void printDurationsInStream(ostream*stream,struct tm*t);
+	void printElapsedTimeInStream(ostream*stream, string description,struct tm*timeinfo,
+int differenceWithLast);
 public:
 	void printElapsedTime(string description);
+	void setFile(string prefix);
 	void constructor();
 	void printDurations();
 	void printDifferenceFromStart(int rank);

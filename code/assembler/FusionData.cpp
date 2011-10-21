@@ -144,7 +144,6 @@ void FusionData::readyBuffers(){
 void FusionData::constructor(int size,int max,int rank,StaticVector*outbox,
 		RingAllocator*outboxAllocator,int wordSize,
 		ExtensionData*ed,SeedingData*seedingData,int*mode,Parameters*parameters){
-	m_timer.constructor();
 	m_parameters=parameters;
 	m_processedCheckpoint=false;
 	m_debugFusionCode=m_parameters->hasOption("-debug-fusions");
@@ -628,5 +627,4 @@ void FusionData::initialise(){
 	m_FUSION_direct_fusionDone=false;
 	m_FUSION_first_done=false;
 	m_FUSION_paths_requested=false;
-	m_timer.constructor();
 }

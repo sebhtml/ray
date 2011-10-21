@@ -272,6 +272,8 @@ void Machine::start(){
 	if(m_parameters.getRank() == MASTER_RANK){
 		createDirectory(directory.c_str());
 		m_parameters.writeCommandFile();
+
+		m_timePrinter.setFile(m_parameters.getPrefix());
 	}
 
 	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed,&m_subgraph,&m_inbox,&m_profiler2);
@@ -406,8 +408,6 @@ m_seedingData,
 	&m_oa,
 	&m_numberOfRanksWithCoverageData,&m_seedExtender,
 	&m_master_mode,&m_isFinalFusion,&m_si);
-
-	m_timePrinter.constructor();
 
 	if(m_argc==1||((string)m_argv[1])=="--help"){
 		if(isMaster()){

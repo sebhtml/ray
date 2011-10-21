@@ -22,29 +22,44 @@
 #include<stdio.h>
 #include<assembler/TimePrinter.h>
 #include<iostream>
+#include <sstream>
 using namespace std;
 
 void TimePrinter::printElapsedTime(string description){
-	time_t m_endingTime=time(NULL);
+
+	m_endingTime=time(NULL);
 	int differenceWithLast=m_endingTime-m_lastTime;
 	m_lastTime=m_endingTime;
 	struct tm * timeinfo;
 	timeinfo=localtime(&m_endingTime);
-	cout<<endl;
-	cout<<"***"<<endl;
-	cout<<"Step: "<<description<<endl;
-	cout<<"Date: "<<asctime(timeinfo);
-	cout<<"Elapsed time: ";
-	printDifference(differenceWithLast);
-	int totalSeconds=m_endingTime-m_startingTime;
-	cout<<endl;
-	cout<<"Since beginning: ";
-	printDifference(totalSeconds);
-	cout<<endl;
+
 	m_descriptions.push_back(description);
 	m_durations.push_back(differenceWithLast);
-	cout<<"***"<<endl;
-	cout<<endl;
+
+	printElapsedTimeInStream(&cout,description,timeinfo,differenceWithLast);
+
+	cout<<"m_fileSet= "<<m_fileSet<<endl;
+
+	if(m_fileSet){
+		printElapsedTimeInStream(&m_file,description,timeinfo,differenceWithLast);
+	}
+}
+
+void TimePrinter::printElapsedTimeInStream(ostream*stream,string description,struct tm*timeinfo,
+int differenceWithLast){
+	(*stream)<<endl;
+	(*stream)<<"***"<<endl;
+	(*stream)<<"Step: "<<description<<endl;
+	(*stream)<<"Date: "<<asctime(timeinfo);
+	(*stream)<<"Elapsed time: ";
+	printDifference(differenceWithLast,stream);
+	int totalSeconds=m_endingTime-m_startingTime;
+	(*stream)<<endl;
+	(*stream)<<"Since beginning: ";
+	printDifference(totalSeconds,stream);
+	(*stream)<<endl;
+	(*stream)<<"***"<<endl;
+	(*stream)<<endl;
 	fflush(stdout);
 }
 
@@ -59,7 +74,7 @@ void TimePrinter::printDifferenceFromStart(int rank){
 	m_last=endingTime;
 	int differenceWithLast=endingTime-m_startingTime;
 	cout<<"Rank "<<rank<<": I am still running... ";
-	printDifference(differenceWithLast);
+	printDifference(differenceWithLast,&cout);
 	cout<<endl;
 }
 
@@ -67,9 +82,25 @@ void TimePrinter::constructor(){
 	m_startingTime=m_lastTime=m_endingTime=time(NULL);
 	m_descriptions.clear();
 	m_durations.clear();
+
+	cout<<"Calling TimePrinter::constructor"<<endl;
+	m_fileSet=false;
+	cout<<"m_fileSet= "<<m_fileSet<<endl;
 }
 
-void TimePrinter::printDifference(int difference){
+void TimePrinter::setFile(string prefix){
+	ostringstream fileName;
+	fileName<<prefix<<"ElapsedTime.txt";
+
+	m_file.open(fileName.str().c_str(),ios_base::out);
+
+	cout<<"Opening "<<fileName.str()<<endl;
+
+	m_fileSet=true;
+	cout<<"m_fileSet= "<<m_fileSet<<endl;
+}
+
+void TimePrinter::printDifference(int difference,ostream*stream){
 	int minutes=difference/60;
 	int seconds=difference%60;
 	int hours=minutes/60;
@@ -80,42 +111,56 @@ void TimePrinter::printDifference(int difference){
 	bool printed=false;
 
 	if(days>0){
-		cout<<days<<" days";
+		(*stream)<<days<<" days";
 		printed=true;
 	}
 	if(hours>0){
 		if(printed){
-			cout<<", ";
+			(*stream)<<", ";
 		}
 		printed=true;
-		cout<<hours<<" hours";
+		(*stream)<<hours<<" hours";
 	}
 	if(minutes>0){
 		if(printed){
-			cout<<", ";
+			(*stream)<<", ";
 		}
 		printed=true;
-		cout<<minutes<<" minutes";
+		(*stream)<<minutes<<" minutes";
 	}
 
 	if(printed){
-		cout<<", ";
+		(*stream)<<", ";
 	}
-	cout<<seconds<<" seconds";
+	(*stream)<<seconds<<" seconds";
 }
 
 void TimePrinter::printDurations(){
+
 	m_endingTime=time(NULL);
 	struct tm * timeinfo;
 	timeinfo=localtime(&m_endingTime);
 	m_descriptions.push_back("Total");
 	m_durations.push_back(m_endingTime-m_startingTime);
-	cout<<"\nElapsed time for each step, "<<asctime(timeinfo)<<endl;
+
+	printDurationsInStream(&cout,timeinfo);
+
+	cout<<"m_fileSet= "<<m_fileSet<<endl;
+
+	if(m_fileSet){
+		printDurationsInStream(&m_file,timeinfo);
+		m_file.close();
+		cout<<"Closing the file"<<endl;
+	}
+}
+
+void TimePrinter::printDurationsInStream(ostream*stream,struct tm*timeinfo){
+	(*stream)<<"\nElapsed time for each step, "<<asctime(timeinfo)<<endl;
 	for(int i=0;i<(int)m_descriptions.size();i++){
 		string text=m_descriptions[i];
 		int seconds=m_durations[i];
-		cout<<" "<<text<<": ";
-		printDifference(seconds);
-		cout<<endl;
+		(*stream)<<" "<<text<<": ";
+		printDifference(seconds,stream);
+		(*stream)<<endl;
 	}
 }

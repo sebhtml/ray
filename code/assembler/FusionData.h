@@ -48,7 +48,6 @@ class FusionData{
 	/* indicator for checkpoint */
 	bool m_processedCheckpoint;
 
-	TimePrinter m_timer;
 	SplayTree<Kmer ,Direction*>m_cacheForRepeatedVertices;
 	MyAllocator m_cacheAllocator;
 
