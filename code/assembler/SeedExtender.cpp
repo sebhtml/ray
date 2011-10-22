@@ -392,63 +392,11 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
-/*
-	// if there is only one choice and reads supporting it
-	// this code makes things faster but some code below is necessary.
-	if(ed->m_enumerateChoices_outgoingEdges.size()==1&&ed->m_EXTENSION_readsInRange.size()>0){
-		#ifdef ASSERT
-		assert(ed->m_EXTENSION_coverages.at(0)>=m_parameters->getMinimumCoverageToStore());
-		#endif
-		(*currentVertex)=ed->m_enumerateChoices_outgoingEdges[0]; 
-		ed->m_EXTENSION_choose=true; 
-		ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false; 
-		ed->m_EXTENSION_directVertexDone=false; 
-		ed->m_EXTENSION_VertexAssembled_requested=false; 
-		return; 
-	}
-*/
-
-
-	if(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_currentSeed.size()){
-
-
-		for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
-			if(m_ed->m_enumerateChoices_outgoingEdges[i]==
-				m_ed->m_EXTENSION_currentSeed[m_ed->m_EXTENSION_currentPosition]){
-				(*currentVertex)=ed->m_enumerateChoices_outgoingEdges[i]; 
-				ed->m_EXTENSION_choose=true; 
-				ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false; 
-				ed->m_EXTENSION_directVertexDone=false; 
-				ed->m_EXTENSION_VertexAssembled_requested=false; 
-				return;
-			}
-		}
-
-		#define SHOW_EXTEND_WITH_SEED
-		#ifdef SHOW_EXTEND_WITH_SEED
-		int wordSize = m_parameters->getWordSize();
-		cout<<"Error: The seed contains a choice not supported by the graph."<<endl;
-		cout<<"Extension length: "<<m_ed->m_EXTENSION_extension.size()<<" vertices"<<endl;
-		cout<<"position="<<m_ed->m_EXTENSION_currentPosition<<" "<<(m_ed->m_EXTENSION_currentSeed[m_ed->m_EXTENSION_currentPosition]).idToWord(wordSize,m_parameters->getColorSpaceMode())<<" with "<<m_ed->m_enumerateChoices_outgoingEdges.size()<<" choices ";
-		cout<<endl;
-		cout<<"Seed length: "<<m_ed->m_EXTENSION_currentSeed.size()<<" vertices"<<endl;
-		cout<<"Choices: ";
-		for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
-			cout<<" "<<(m_ed->m_enumerateChoices_outgoingEdges[i]).idToWord(wordSize,m_parameters->getColorSpaceMode());
-		}
-		cout<<endl;
-
-		#endif
-
-		#ifdef ASSERT
-		assert(false);
-		#endif
-
-	}else{
+	if(1){
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
 		// stuff in the reads to appropriate arcs.
-		if(!ed->m_EXTENSION_singleEndResolution && ed->m_EXTENSION_readsInRange.size()>0) {
+		if(!ed->m_EXTENSION_singleEndResolution) {
 			// try to use single-end reads to resolve the repeat.
 			// for each read in range, ask them their vertex at position (CurrentPositionOnContig-StartPositionOfReadOnContig)
 			// and cumulate the results in
@@ -561,7 +509,7 @@ Presently, insertions or deletions up to 8 are supported.
 						ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(distance);	
 					}
 					ed->m_EXTENSION_readIterator++;
-				}else{
+				}else{// the read is paired
 					PairedRead*pairedRead=element->getPairedRead();
 					uint64_t uniqueReadIdentifier=pairedRead->getUniqueId();
 
@@ -569,6 +517,8 @@ Presently, insertions or deletions up to 8 are supported.
 
 					int library=pairedRead->getLibrary();
 					ExtensionElement*extensionElement=ed->getUsedRead(uniqueReadIdentifier);
+
+					// the mate of the read has been seen before
 					if(extensionElement!=NULL){// use to be via readsPositions
 
 						MACRO_COLLECT_PROFILING_INFORMATION();
@@ -625,6 +575,10 @@ Presently, insertions or deletions up to 8 are supported.
 					ed->m_EXTENSION_readIterator++;
 				}
 			}else{
+
+
+			// we processed all reads for this position
+			// now let us check which choice is more supported.
 				MACRO_COLLECT_PROFILING_INFORMATION();
 
 				if(!m_removedUnfitLibraries){
@@ -650,13 +604,6 @@ Presently, insertions or deletions up to 8 are supported.
 							break;// can'T free if there are no pairs
 						}
 						uint64_t uniqueId=ed->m_sequencesToFree[i];
-/*
-						#ifdef HUNT_INFINITE_BUG
-						if(m_ed->m_EXTENSION_extension.size()>10000){
-							cout<<"Removing "<<uniqueId<<"  now="<<m_ed->m_EXTENSION_extension.size()-1<<endl;
-						}
-						#endif
-*/
 						m_ed->m_pairedReadsWithoutMate.erase(uniqueId);
 
 						// free the sequence
@@ -668,16 +615,6 @@ Presently, insertions or deletions up to 8 are supported.
 						assert(element!=NULL);
 						#endif
 
-/*
-						char*read=element->getSequence();
-						if(read!=NULL){
-							#ifdef ASSERT
-							assert(read!=NULL);
-							#endif
-							element->removeSequence();
-							ed->getAllocator()->free(read,strlen(read)+1);
-						}
-*/
 
 						// remove it
 						ed->removeSequence(uniqueId);
@@ -704,10 +641,11 @@ Presently, insertions or deletions up to 8 are supported.
 
 				MACRO_COLLECT_PROFILING_INFORMATION();
 
-				int choice=IMPOSSIBLE_CHOICE; //chooseWithSeed();
+				//int choice=IMPOSSIBLE_CHOICE; 
+				int choice=chooseWithSeed();
 
 				// else, do a paired-end or single-end lookup if reads are in range.
-				if(choice == IMPOSSIBLE_CHOICE)
+				if(choice == IMPOSSIBLE_CHOICE &&  ed->m_EXTENSION_readsInRange.size()>0)
 					choice=(*oa).choose(ed,&(*chooser),minimumCoverage,(maxCoverage),m_parameters);
 
 				if(choice!=IMPOSSIBLE_CHOICE){
@@ -952,6 +890,12 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			MACRO_COLLECT_PROFILING_INFORMATION();
 		}else{
 			MACRO_COLLECT_PROFILING_INFORMATION();
+
+/*
+			cout<<"Extension is done"<<endl;
+			cout<<"Extension size: "<<ed->m_EXTENSION_extension.size()<<endl;
+			cout<<"Previously flowed: "<<ed->m_previouslyFlowedVertices<<endl;
+*/
 
 			storeExtensionAndGetNextOne(ed,theRank,seeds,currentVertex,bubbleData);
 
