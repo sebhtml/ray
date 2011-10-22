@@ -81,6 +81,7 @@ Parameters::Parameters(){
 	m_showEndingContext=false;
 	m_writeKmers=false;
 	m_showExtensionChoice=false;
+	m_showReadPlacement=false;
 
 	/** use the new NovaEngine (TM) */
 	m_options.insert("-use-NovaEngine");
@@ -144,6 +145,10 @@ void Parameters::parseCommands(){
 
 	if(hasOption("-test-network-only")){
 		m_options.insert("-write-network-test-raw-data");
+	}
+
+	if(hasOption("-show-read-placement")){
+		m_showReadPlacement=true;
 	}
 
 	m_originalCommands=m_commands;
@@ -1492,4 +1497,8 @@ bool Parameters::readCheckpoints(){
 
 bool Parameters::showCommunicationEvents(){
 	return m_showCommunicationEvents;
+}
+
+bool Parameters::showReadPlacement(){
+	return m_showReadPlacement;
 }

@@ -38,6 +38,7 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class Parameters{
+	bool m_showReadPlacement;
 	bool m_showCommunicationEvents;
 	set<string> m_options;
 	bool m_providedPeakCoverage;
@@ -207,6 +208,7 @@ public:
 
 	void writeCommandFile();
 	bool showCommunicationEvents();
+	bool showReadPlacement();
 };
 
 #endif

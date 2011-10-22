@@ -107,6 +107,9 @@ map<Kmer,set<Kmer> >*arcs,map<Kmer,int>*coverages,int depth,set<Kmer>*visited);
 
 	void showSequences();
 
+	void processExpiredReads();
+	int chooseWithSeed();
+
 public:
 	bool m_sequenceReceived;
 	bool m_sequenceRequested;

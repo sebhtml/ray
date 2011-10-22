@@ -384,44 +384,17 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
 	if(m_expiredReads.count(ed->m_EXTENSION_currentPosition)>0){
-		for(int i=0;i<(int)m_expiredReads[ed->m_EXTENSION_currentPosition].size();i++){
-			uint64_t uniqueId=m_expiredReads[ed->m_EXTENSION_currentPosition][i];
-			ed->m_EXTENSION_readsInRange.erase(uniqueId);
-
-			// free the sequence
-			ExtensionElement*element=ed->getUsedRead(uniqueId);
-			if(element==NULL){
-				continue;
-			}
-			#ifdef ASSERT
-			assert(element!=NULL);
-			#endif
-/*
-			char*read=element->getSequence();
-			if(read==NULL){
-				continue;
-			}
-			#ifdef ASSERT
-			assert(read!=NULL);
-			#endif
-			
-*/
-/*
-			element->removeSequence();
-			ed->getAllocator()->free(read,strlen(read)+1);
-*/
-		}
-		m_expiredReads.erase(ed->m_EXTENSION_currentPosition);
-		ed->m_EXTENSION_readIterator=ed->m_EXTENSION_readsInRange.begin();
-
-		MACRO_COLLECT_PROFILING_INFORMATION();
+		
+		processExpiredReads();
 
 		return;
 	}
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
+/*
 	// if there is only one choice and reads supporting it
+	// this code makes things faster but some code below is necessary.
 	if(ed->m_enumerateChoices_outgoingEdges.size()==1&&ed->m_EXTENSION_readsInRange.size()>0){
 		#ifdef ASSERT
 		assert(ed->m_EXTENSION_coverages.at(0)>=m_parameters->getMinimumCoverageToStore());
@@ -433,31 +406,35 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 		ed->m_EXTENSION_VertexAssembled_requested=false; 
 		return; 
 	}
+*/
 
-	// use the seed to extend the thing.
-	if(ed->m_EXTENSION_currentPosition<(int)ed->m_EXTENSION_currentSeed.size()){
 
-		for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
-			if(ed->m_enumerateChoices_outgoingEdges[i]==ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition]){
+	if(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_currentSeed.size()){
+
+
+		for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
+			if(m_ed->m_enumerateChoices_outgoingEdges[i]==
+				m_ed->m_EXTENSION_currentSeed[m_ed->m_EXTENSION_currentPosition]){
 				(*currentVertex)=ed->m_enumerateChoices_outgoingEdges[i]; 
 				ed->m_EXTENSION_choose=true; 
 				ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false; 
 				ed->m_EXTENSION_directVertexDone=false; 
 				ed->m_EXTENSION_VertexAssembled_requested=false; 
-				return; 
+				return;
 			}
 		}
 
 		#define SHOW_EXTEND_WITH_SEED
 		#ifdef SHOW_EXTEND_WITH_SEED
+		int wordSize = m_parameters->getWordSize();
 		cout<<"Error: The seed contains a choice not supported by the graph."<<endl;
-		cout<<"Extension length: "<<ed->m_EXTENSION_extension.size()<<" vertices"<<endl;
-		cout<<"position="<<ed->m_EXTENSION_currentPosition<<" "<<(ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition]).idToWord(wordSize,m_parameters->getColorSpaceMode())<<" with "<<ed->m_enumerateChoices_outgoingEdges.size()<<" choices ";
+		cout<<"Extension length: "<<m_ed->m_EXTENSION_extension.size()<<" vertices"<<endl;
+		cout<<"position="<<m_ed->m_EXTENSION_currentPosition<<" "<<(m_ed->m_EXTENSION_currentSeed[m_ed->m_EXTENSION_currentPosition]).idToWord(wordSize,m_parameters->getColorSpaceMode())<<" with "<<m_ed->m_enumerateChoices_outgoingEdges.size()<<" choices ";
 		cout<<endl;
-		cout<<"Seed length: "<<ed->m_EXTENSION_currentSeed.size()<<" vertices"<<endl;
+		cout<<"Seed length: "<<m_ed->m_EXTENSION_currentSeed.size()<<" vertices"<<endl;
 		cout<<"Choices: ";
-		for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
-			cout<<" "<<(ed->m_enumerateChoices_outgoingEdges[i]).idToWord(wordSize,m_parameters->getColorSpaceMode());
+		for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
+			cout<<" "<<(m_ed->m_enumerateChoices_outgoingEdges[i]).idToWord(wordSize,m_parameters->getColorSpaceMode());
 		}
 		cout<<endl;
 
@@ -467,14 +444,11 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 		assert(false);
 		#endif
 
-	// else, do a paired-end or single-end lookup if reads are in range.
-
 	}else{
-
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
 		// stuff in the reads to appropriate arcs.
-		if(!ed->m_EXTENSION_singleEndResolution && ed->m_EXTENSION_readsInRange.size()>0){
+		if(!ed->m_EXTENSION_singleEndResolution && ed->m_EXTENSION_readsInRange.size()>0) {
 			// try to use single-end reads to resolve the repeat.
 			// for each read in range, ask them their vertex at position (CurrentPositionOnContig-StartPositionOfReadOnContig)
 			// and cumulate the results in
@@ -541,14 +515,48 @@ Presently, insertions or deletions up to 8 are supported.
 				assert(element->getType()==TYPE_SINGLE_END||element->getType()==TYPE_RIGHT_END||element->getType()==TYPE_LEFT_END);
 				#endif
 
+				/** get the k-mer of the read at the corresponding offset */
 				ed->m_EXTENSION_receivedReadVertex=kmerAtPosition(theSequence,distance,wordSize,theRightStrand,m_parameters->getColorSpaceMode());
 				// process each edge separately.
 				// got a match!
 
+				// if this k-mer matches with any of the available choice, call it an agreement */
+				// we loop over the choices
+				// there is a maximum of 4 choices so doing it like that is
+				// probably as fast as doing a set of the choices to
+				// enable O(log(4)) time complexity
+
+				bool match=false;
+				for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
+					if(ed->m_EXTENSION_receivedReadVertex ==
+						ed->m_enumerateChoices_outgoingEdges.at(i)){
+						// there is a match !
+
+						// do something about the agreement
+						element->increaseAgreement();
+						match=true;
+	
+						//cout<<"Matched "<<uniqueId<<endl;
+
+						break;
+					}
+				}
+				if(!match && m_parameters->showReadPlacement()){
+					cout<<"No match, read k-mer is "<<
+						ed->m_EXTENSION_receivedReadVertex.idToWord(m_parameters->getWordSize(),
+						m_parameters->getColorSpaceMode())<<endl;
+					cout<<ed->m_enumerateChoices_outgoingEdges.size()<<" choices:"<<endl;
+					for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
+						cout<<" "<<i<<" "<<
+						ed->m_enumerateChoices_outgoingEdges.at(i).idToWord(
+							m_parameters->getWordSize(),
+							m_parameters->getColorSpaceMode())<<endl;
+					}
+				}
+
 				if(!element->hasPairedRead()){
 					/* we only use single-end reads on
 					non-repeated vertices */
-					//if(repeatValueForRightRead<repeatThreshold){
 					if(ed->m_currentCoverage<m_parameters->getRepeatCoverage()){
 						ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(distance);	
 					}
@@ -556,12 +564,6 @@ Presently, insertions or deletions up to 8 are supported.
 				}else{
 					PairedRead*pairedRead=element->getPairedRead();
 					uint64_t uniqueReadIdentifier=pairedRead->getUniqueId();
-/*
-					int diff=uniqueId-uniqueReadIdentifier;
-					if(uniqueReadIdentifier>uniqueId){
-						diff=uniqueReadIdentifier-uniqueId;
-					}
-*/
 
 					MACRO_COLLECT_PROFILING_INFORMATION();
 
@@ -589,7 +591,6 @@ Presently, insertions or deletions up to 8 are supported.
 					&&( (theLeftStrand=='F' && theRightStrand=='R')
 						||(theLeftStrand=='R' && theRightStrand=='F'))
 					// the bridging pair is meaningless if both start in repeats
-					//&&repeatLengthForLeftRead<repeatThreshold){
 					/* left read is safe so we don't care if right read is on a
 					repeated region really. */){
 							// it matches!
@@ -614,7 +615,7 @@ Presently, insertions or deletions up to 8 are supported.
 
 					// add it anyway as a single-end match too!
 					/* add it as single-end read if not repeated. */
-					//if(repeatValueForRightRead<repeatThreshold){
+					//if(repeatValueForRightRead<repeatThreshold)
 					if(ed->m_currentCoverage<m_parameters->getRepeatCoverage()){
 						ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(distance);
 					}
@@ -703,7 +704,12 @@ Presently, insertions or deletions up to 8 are supported.
 
 				MACRO_COLLECT_PROFILING_INFORMATION();
 
-				int choice=(*oa).choose(ed,&(*chooser),minimumCoverage,(maxCoverage),m_parameters);
+				int choice=IMPOSSIBLE_CHOICE; //chooseWithSeed();
+
+				// else, do a paired-end or single-end lookup if reads are in range.
+				if(choice == IMPOSSIBLE_CHOICE)
+					choice=(*oa).choose(ed,&(*chooser),minimumCoverage,(maxCoverage),m_parameters);
+
 				if(choice!=IMPOSSIBLE_CHOICE){
 					if(m_parameters->showExtensionChoice()){
 						cout<<"Selection: "<<choice+1<<endl;
@@ -718,6 +724,7 @@ Presently, insertions or deletions up to 8 are supported.
 					ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
 					ed->m_EXTENSION_directVertexDone=false;
 					ed->m_EXTENSION_VertexAssembled_requested=false;
+
 					return;
 				}
 
@@ -903,14 +910,14 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 
 			m_slicedComputationStarted=false;
 
-			cout<<"Rank "<<m_parameters->getRank()<<" is changing direction."<<endl;
-			
 			ed->m_previouslyFlowedVertices = ed->m_EXTENSION_extension.size();
 
 			m_flowedVertices.push_back(ed->m_EXTENSION_extension.size());
 
 			printExtensionStatus(currentVertex);
 
+			cout<<"Rank "<<m_parameters->getRank()<<" is changing direction."<<endl;
+			
 			#ifdef ASSERT
 			assert(m_complementedSeed.size() == ed->m_EXTENSION_extension.size());
 			#endif
@@ -1209,6 +1216,12 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 	MACRO_COLLECT_PROFILING_INFORMATION();
 }
 
+/**
+ * in this method:
+ * - the coverage of the vertex is obtained
+ * - the reads having a read marker on this vertex are gathered
+ * - the owner of the vertex is advised that there is a path passing on it 
+ *   */
 void SeedExtender::markCurrentVertexAsAssembled(Kmer*currentVertex,RingAllocator*outboxAllocator,int*outgoingEdgeIndex, 
 StaticVector*outbox,int size,int theRank,ExtensionData*ed,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,bool*edgesRequested,
@@ -1323,6 +1336,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
 	}else if(!m_vertexMessenger.isDone()){
+		// the vertex messenger gather information in a parallel way
 		m_vertexMessenger.work();
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
@@ -1333,6 +1347,22 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 		m_sequenceIndexToCache=0;
 		ed->m_EXTENSION_receivedReads=m_vertexMessenger.getReadAnnotations();
+
+		if(m_parameters->showReadPlacement()){
+			int currentPosition=ed->m_EXTENSION_extension.size();
+			cout<<"[showReadPlacement] Position: "<<currentPosition<<" K-mer: ";
+			cout<<currentVertex->idToWord(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+			cout<<" Coverage: "<<ed->m_currentCoverage<<endl;
+			cout<<"[showReadPlacement] ";
+			cout<<ed->m_EXTENSION_receivedReads.size()<<" read markers at position "<<currentPosition;
+			for(int i=0;i<(int)ed->m_EXTENSION_receivedReads.size();i++){
+				ReadAnnotation annotation=ed->m_EXTENSION_receivedReads[i];
+				uint64_t uniqueId=annotation.getUniqueId();
+				cout<<" "<<uniqueId;
+			}
+			cout<<endl;
+		}
+
 		*receivedVertexCoverage=m_vertexMessenger.getCoverageValue();
 		ed->m_currentCoverage=*receivedVertexCoverage;
 		bool inserted;
@@ -1360,6 +1390,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
 	}else{
+		// process each received marker and decide if 
+		// if it will be utilised or not
 		if(m_sequenceIndexToCache<(int)ed->m_EXTENSION_receivedReads.size()){
 			MACRO_COLLECT_PROFILING_INFORMATION();
 
@@ -1382,10 +1414,10 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 			 * will let the scaffolder deal with it if it is too difficult.
 			 * */
 			if(anElement!=NULL){
-				if(m_parameters->hasOption("-show-read-placement")){
+				if(m_parameters->showReadPlacement()){
 					int currentPosition=ed->m_EXTENSION_extension.size()-1;
 					int previousPosition=anElement->getPosition();
-					cout<<"Rank "<<m_parameters->getRank()<<" Notice: Read "<<uniqueId<<" already placed at "<<previousPosition<<", current is "<<currentPosition<<endl;
+					cout<<"[showReadPlacement] Rank "<<m_parameters->getRank()<<" Notice: Read "<<uniqueId<<" already placed at "<<previousPosition<<", current is "<<currentPosition<<endl;
 				}
 
 				if(ed->m_EXTENSION_readsInRange.count(uniqueId)==0 && anElement->hasPairedRead()){
@@ -1439,8 +1471,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 							/** free the mate to avoid infinite loops */
 							extensionElement->freezePlacement();
 
-							if(m_parameters->hasOption("-show-read-placement"))
-								cout<<"Rank "<<m_parameters->getRank()<<" Updated Read "<<uniqueId<<" to "<<startPosition<<" Mate is "<<mateId<<" at "<<startingPositionOnPath<<endl;
+							if(m_parameters->showReadPlacement())
+								cout<<"[showReadPlacement] Rank "<<m_parameters->getRank()<<" Updated Read "<<uniqueId<<" to "<<startPosition<<" Mate is "<<mateId<<" at "<<startingPositionOnPath<<endl;
 						}
 					}
 				}
@@ -1513,13 +1545,13 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				// don't add it up if its is marked on a repeated vertex and
 				// its mate was not seen yet.
 				
+				// TODO: is 3* really the best we can do ?
 				if(addRead && ed->m_currentCoverage>=3*m_parameters->getPeakCoverage()){
 					// the vertex is repeated
 					if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
 						uint64_t mateId=ed->m_EXTENSION_pairedRead.getUniqueId();
 						// the mate is required to allow proper placement
 						
-
 						ExtensionElement*extensionElement=ed->getUsedRead(mateId);
 
 						if(extensionElement==NULL){
@@ -1578,9 +1610,16 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 				/* after making sure the read is sane, we can add it here for sure */
 				if(addRead){
-					//cout<<"Adding read "<<uniqueId<<" at "<<position<<endl;
+					
+					if(m_parameters->showReadPlacement()){
+						cout<<"[showReadPlacement] Adding read "<<uniqueId<<" at "<<position<<endl;
+					}
+
 					m_matesToMeet.erase(uniqueId);
 					ExtensionElement*element=ed->addUsedRead(uniqueId);
+	
+					// the first vertex obviously agrees.
+					element->increaseAgreement();
 
 					element->setSequence(m_receivedString,ed->getAllocator());
 					element->setStartingPosition(startPosition);
@@ -1598,8 +1637,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 		
 					int expiryPosition=position+readLength-positionOnStrand-wordSize;
 		
-					if(m_parameters->hasOption("-show-read-placement")){
-						cout<<"Read "<<uniqueId<<" will expire at "<<expiryPosition<<endl;
+					if(m_parameters->showReadPlacement()){
+						cout<<"[showReadPlacement] Read "<<uniqueId<<" will expire at "<<expiryPosition<<endl;
 					}
 
 					MACRO_COLLECT_PROFILING_INFORMATION();
@@ -2004,3 +2043,106 @@ void SeedExtender::showSequences(){
 	}
 }
 
+void SeedExtender::processExpiredReads(){
+	for(int i=0;i<(int)m_expiredReads[m_ed->m_EXTENSION_currentPosition].size();i++){
+		uint64_t uniqueId=m_expiredReads[m_ed->m_EXTENSION_currentPosition][i];
+		m_ed->m_EXTENSION_readsInRange.erase(uniqueId);
+
+		// free the sequence
+		ExtensionElement*element=m_ed->getUsedRead(uniqueId);
+		if(element==NULL){
+			if(m_parameters->showReadPlacement()){
+				cout<<"[showReadPlacement] warning: read "<<uniqueId<<" should expire but is unavailable at position ";
+				cout<<m_ed->m_EXTENSION_currentPosition<<endl;
+			}
+			continue;
+		}
+
+		if(m_parameters->showReadPlacement()){
+			int maximumAgreement=element->getReadLength() - m_parameters->getWordSize() + 1;
+			int agreement = element->getAgreement();
+			double ratio = 0;
+			if(maximumAgreement > 0){
+				ratio = (0.0+agreement) / maximumAgreement*100;
+			}
+
+			// the read is no longer in range
+			cout<<"[showReadPlacement] read "<<uniqueId<<" is no longer in range at position ";
+			cout<<m_ed->m_EXTENSION_currentPosition<<" and its agreement is ";
+			cout<<agreement<<"/"<<maximumAgreement<<" "<<ratio<<"%";
+			if(ratio < 50.0){
+				cout<<" could be better placed !"<<endl;
+			}else{
+				cout<<" fair enough !"<<endl;
+			}
+		
+		}
+
+		#ifdef ASSERT
+		assert(element!=NULL);
+		#endif
+
+/*
+		char*read=element->getSequence();
+		if(read==NULL){
+			continue;
+		}
+		#ifdef ASSERT
+		assert(read!=NULL);
+		#endif
+		
+
+
+		element->removeSequence();
+		ed->getAllocator()->free(read,strlen(read)+1);
+*/
+	}
+	m_expiredReads.erase(m_ed->m_EXTENSION_currentPosition);
+	m_ed->m_EXTENSION_readIterator=m_ed->m_EXTENSION_readsInRange.begin();
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
+}
+
+int SeedExtender::chooseWithSeed(){
+	// use the seed to extend the thing.
+
+	if(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_currentSeed.size()){
+
+		for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
+			if(m_ed->m_enumerateChoices_outgoingEdges[i]==
+				m_ed->m_EXTENSION_currentSeed[m_ed->m_EXTENSION_currentPosition]){
+/*
+				(*currentVertex)=ed->m_enumerateChoices_outgoingEdges[i]; 
+				ed->m_EXTENSION_choose=true; 
+				ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false; 
+				ed->m_EXTENSION_directVertexDone=false; 
+				ed->m_EXTENSION_VertexAssembled_requested=false; 
+*/
+				return i;
+			}
+		}
+
+		#define SHOW_EXTEND_WITH_SEED
+		#ifdef SHOW_EXTEND_WITH_SEED
+		int wordSize = m_parameters->getWordSize();
+		cout<<"Error: The seed contains a choice not supported by the graph."<<endl;
+		cout<<"Extension length: "<<m_ed->m_EXTENSION_extension.size()<<" vertices"<<endl;
+		cout<<"position="<<m_ed->m_EXTENSION_currentPosition<<" "<<(m_ed->m_EXTENSION_currentSeed[m_ed->m_EXTENSION_currentPosition]).idToWord(wordSize,m_parameters->getColorSpaceMode())<<" with "<<m_ed->m_enumerateChoices_outgoingEdges.size()<<" choices ";
+		cout<<endl;
+		cout<<"Seed length: "<<m_ed->m_EXTENSION_currentSeed.size()<<" vertices"<<endl;
+		cout<<"Choices: ";
+		for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
+			cout<<" "<<(m_ed->m_enumerateChoices_outgoingEdges[i]).idToWord(wordSize,m_parameters->getColorSpaceMode());
+		}
+		cout<<endl;
+
+		#endif
+
+		#ifdef ASSERT
+		assert(false);
+		#endif
+	}
+
+	return IMPOSSIBLE_CHOICE;
+}

@@ -38,8 +38,6 @@ void TimePrinter::printElapsedTime(string description){
 
 	printElapsedTimeInStream(&cout,description,timeinfo,differenceWithLast);
 
-	cout<<"m_fileSet= "<<m_fileSet<<endl;
-
 	if(m_fileSet){
 		printElapsedTimeInStream(&m_file,description,timeinfo,differenceWithLast);
 	}
@@ -83,9 +81,7 @@ void TimePrinter::constructor(){
 	m_descriptions.clear();
 	m_durations.clear();
 
-	cout<<"Calling TimePrinter::constructor"<<endl;
 	m_fileSet=false;
-	cout<<"m_fileSet= "<<m_fileSet<<endl;
 }
 
 void TimePrinter::setFile(string prefix){
@@ -94,10 +90,7 @@ void TimePrinter::setFile(string prefix){
 
 	m_file.open(fileName.str().c_str(),ios_base::out);
 
-	cout<<"Opening "<<fileName.str()<<endl;
-
 	m_fileSet=true;
-	cout<<"m_fileSet= "<<m_fileSet<<endl;
 }
 
 void TimePrinter::printDifference(int difference,ostream*stream){
@@ -144,8 +137,6 @@ void TimePrinter::printDurations(){
 	m_durations.push_back(m_endingTime-m_startingTime);
 
 	printDurationsInStream(&cout,timeinfo);
-
-	cout<<"m_fileSet= "<<m_fileSet<<endl;
 
 	if(m_fileSet){
 		printDurationsInStream(&m_file,timeinfo);

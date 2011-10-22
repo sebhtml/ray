@@ -92,6 +92,8 @@ void ExtensionElement::removeSequence(){
 
 void ExtensionElement::constructor(){
 	m_canMove=true;
+
+	m_agreement=0;
 }
 
 bool ExtensionElement::canMove(){
@@ -100,4 +102,16 @@ bool ExtensionElement::canMove(){
 
 void ExtensionElement::freezePlacement(){
 	m_canMove=false;
+}
+
+void ExtensionElement::increaseAgreement(){
+	m_agreement ++ ;
+}
+
+int ExtensionElement::getAgreement(){
+	return m_agreement;
+}
+
+int ExtensionElement::getReadLength(){
+	return m_read.length();
 }

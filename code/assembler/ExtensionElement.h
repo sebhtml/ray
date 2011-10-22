@@ -40,6 +40,10 @@ class ExtensionElement{
 	bool m_hasPairedRead;
 	uint8_t m_type;
 	bool m_canMove;
+
+	/** the overall agreement of this molecular target */
+	uint16_t m_agreement;
+	
 public:
 	bool m_activated;
 
@@ -55,6 +59,7 @@ public:
 	char getStrand();
 	PairedRead*getPairedRead();
 	void getSequence(char*sequence,Parameters*p);
+	int getReadLength();
 	bool isLeftEnd();
 	bool isRightEnd();
 	int getType();
@@ -62,6 +67,10 @@ public:
 	void constructor();
 	bool canMove();
 	void freezePlacement();
+
+	void increaseAgreement();
+	int getAgreement();
+
 } ATTRIBUTE_PACKED;
 
 #endif
