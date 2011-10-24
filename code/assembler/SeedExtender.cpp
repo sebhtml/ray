@@ -1579,7 +1579,9 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 					assert(readLength==(int)strlen(m_receivedString));
 					#endif
 		
-					int expiryPosition=position+readLength-positionOnStrand-wordSize;
+					// without the +1, it would be the last k-mer provided
+					// by the read
+					int expiryPosition=position+readLength-positionOnStrand-wordSize+1;
 		
 					if(m_parameters->showReadPlacement()){
 						cout<<"[showReadPlacement] Read "<<uniqueId<<" will expire at "<<expiryPosition<<endl;
