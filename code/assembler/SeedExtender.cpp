@@ -396,7 +396,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
 		// stuff in the reads to appropriate arcs.
-		if(!ed->m_EXTENSION_singleEndResolution) {
+		if(!ed->m_EXTENSION_singleEndResolution){
 			// try to use single-end reads to resolve the repeat.
 			// for each read in range, ask them their vertex at position (CurrentPositionOnContig-StartPositionOfReadOnContig)
 			// and cumulate the results in

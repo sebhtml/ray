@@ -127,10 +127,16 @@ Worker*FusionTaskCreator::assignNextTask(){
 /** get the result of a worker */
 void FusionTaskCreator::processWorkerResult(Worker*worker){
 
-	if(m_completedJobs % 10== 0)
+	if(m_completedJobs % 10== 0){
 		cout<<"Rank "<<m_parameters->getRank()<<" FusionTaskCreator processWorkerResult ["<<m_completedJobs<<"/"<<m_paths->size()*2<<"]"<<endl;
 
+		if(m_parameters->showMemoryUsage()){
+			showMemoryUsage(m_parameters->getRank());
+		}
+	}
+
 	FusionWorker*worker2=(FusionWorker*)worker;
+
 	if(worker2->isPathEliminated()){
 		if(m_parameters->hasOption("-debug-fusions"))
 			cout<<"eliminated !"<<endl;
