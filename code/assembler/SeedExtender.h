@@ -41,6 +41,7 @@ class DepthFirstSearchData;
 #include <heuristics/BubbleTool.h>
 #include <heuristics/OpenAssemblerChooser.h>
 #include <graph/GridTable.h>
+#include <assembler/SeedingData.h>
 
 using namespace std;
 
@@ -51,7 +52,13 @@ using namespace std;
 class SeedExtender{
 	bool m_checkedCheckpoint;
 
+	uint64_t m_sumOfCoveragesInSeed;
+
 	Profiler*m_profiler;
+
+	int*m_mode;
+
+	SeedingData*m_seedingData;
 
 	/* for sliced computation */
 	vector<Kmer> m_complementedSeed;
@@ -70,6 +77,7 @@ class SeedExtender{
 	vector<int> m_flowedVertices;
 
 	StaticVector*m_inbox;
+	StaticVector*m_outbox;
 
 	DepthFirstSearchData*m_dfsData;
 	bool m_removedUnfitLibraries;
@@ -102,13 +110,18 @@ class SeedExtender{
 	void printTree(Kmer root,
 map<Kmer,set<Kmer> >*arcs,map<Kmer,int>*coverages,int depth,set<Kmer>*visited);
 
-	void readCheckpoint();
+	void readCheckpoint(FusionData*fusionData);
 	void writeCheckpoint();
 
 	void showSequences();
 
 	void processExpiredReads();
 	int chooseWithSeed();
+
+	void initializeExtensions(vector<vector<Kmer> >*seeds);
+	void finalizeExtensions(vector<vector<Kmer> >*seeds,FusionData*fusionData);
+	void checkedCurrentVertex();
+	void skipSeed(vector<vector<Kmer> >*seeds);
 
 public:
 	bool m_sequenceReceived;
@@ -157,7 +170,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 	set<uint64_t>*getEliminatedSeeds();
 
 	void constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed,GridTable*table,StaticVector*inbox,
-	Profiler*profiler);
+	Profiler*profiler,StaticVector*outbox,SeedingData*seedingData,int*mode);
 };
 
 

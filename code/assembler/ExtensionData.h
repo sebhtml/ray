@@ -89,7 +89,6 @@ public:
 	bool m_EXTENSION_read_vertex_received;
 	bool m_EXTENSION_read_vertex_requested;
 	Kmer m_EXTENSION_receivedReadVertex;
-	bool m_mode_EXTENSION;
 	bool m_EXTENSION_currentRankIsDone;
 	bool m_EXTENSION_currentRankIsSet;
 	bool m_EXTENSION_currentRankIsStarted;

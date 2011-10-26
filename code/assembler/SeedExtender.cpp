@@ -42,7 +42,7 @@ void SeedExtender::extendSeeds(vector<vector<Kmer> >*seeds,ExtensionData*ed,int 
 int*last_value,bool*vertexCoverageRequested,int wordSize,int size,bool*vertexCoverageReceived,
 int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,vector<Kmer>*receivedOutgoingEdges,Chooser*chooser,
 BubbleData*bubbleData,
-int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
+int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*mode){
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 	
@@ -51,17 +51,11 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 		m_checkedCheckpoint=true;
 		if(m_parameters->hasCheckpoint("Extensions")){
 
-			readCheckpoint();
+			readCheckpoint(fusionData);
 	
 			(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_EXTENSION_IS_DONE,theRank);
 			outbox->push_back(aMessage);
-	
-			// store the reverse map
-			for(int i=0;i<(int)ed->m_EXTENSION_identifiers.size();i++){
-				uint64_t id=ed->m_EXTENSION_identifiers[i];
-				fusionData->m_FUSION_identifier_map[id]=i;
-			}
 	
 			return;
 		}
@@ -74,105 +68,14 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 	if(ed->m_EXTENSION_currentSeedIndex==(int)(*seeds).size()
 		|| seeds->size()==0){
 
-
-		MACRO_COLLECT_PROFILING_INFORMATION();
-
-		if((*seeds).size()>0)
-			ed->destructor();
-
-		MACRO_COLLECT_PROFILING_INFORMATION();
-
-		ed->getAllocator()->clear();
-		m_cacheAllocator.clear();
-		m_cache.clear();
-
-		MACRO_COLLECT_PROFILING_INFORMATION();
-
-		printf("Rank %i is extending seeds [%i/%i] (completed)\n",theRank,(int)(*seeds).size(),(int)(*seeds).size());
-		double ratio=(0.0+m_extended)/seeds->size()*100.0;
-		printf("Rank %i extended %i seeds out of %i (%.2f%%)\n",theRank,m_extended,(int)seeds->size(),ratio);
-		fflush(stdout);
-
-		MACRO_COLLECT_PROFILING_INFORMATION();
-		if(m_parameters->showMemoryUsage()){
-			showMemoryUsage(theRank);
-		}
-
-		ed->m_mode_EXTENSION=false;
-	
-		MACRO_COLLECT_PROFILING_INFORMATION();
-
-		// store the reverse map
-		for(int i=0;i<(int)ed->m_EXTENSION_identifiers.size();i++){
-			uint64_t id=ed->m_EXTENSION_identifiers[i];
-			fusionData->m_FUSION_identifier_map[id]=i;
-		}
-
-		#ifdef ASSERT
-		assert(m_ed->m_EXTENSION_identifiers.size()==m_ed->m_EXTENSION_contigs.size());
-		#endif
-
-		MACRO_COLLECT_PROFILING_INFORMATION();
-
-		/* write checkpoint */
-		if(m_parameters->writeCheckpoints())
-			writeCheckpoint();
-
-		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
-		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_EXTENSION_IS_DONE,theRank);
-		outbox->push_back(aMessage);
-
-		MACRO_COLLECT_PROFILING_INFORMATION();
-
-		/** write extensions for debugging purposes */
-		if(m_parameters->hasOption("-write-extensions")){
-			ostringstream fileName;
-			fileName<<m_parameters->getPrefix()<<"Rank"<<m_parameters->getRank()<<"RayExtensions.fasta";
-			ofstream f(fileName.str().c_str());
-			for(int i=0;i<(int)ed->m_EXTENSION_identifiers.size();i++){
-				uint64_t id=ed->m_EXTENSION_identifiers[i];
-				f<<">RayExtension-"<<id<<endl;
-
-				f<<addLineBreaks(convertToString(&(ed->m_EXTENSION_contigs.at(i)),
-					m_parameters->getWordSize(),m_parameters->getColorSpaceMode()),
-					m_parameters->getColumns());
-			}
-			f.close();
-		}
-
-		MACRO_COLLECT_PROFILING_INFORMATION();
+		finalizeExtensions(seeds,fusionData);
 
 		return;
 	}else if(!ed->m_EXTENSION_initiated){
 
-		MACRO_COLLECT_PROFILING_INFORMATION();
+		initializeExtensions(seeds);
 
-		ed->m_EXTENSION_initiated=true;
-		ed->m_EXTENSION_currentSeedIndex=0;
-		ed->m_EXTENSION_currentPosition=0;
-
-		MACRO_COLLECT_PROFILING_INFORMATION();
-
-		// this will probably needs to be sliced...
-		ed->m_EXTENSION_currentSeed=(*seeds)[ed->m_EXTENSION_currentSeedIndex];
-
-		MACRO_COLLECT_PROFILING_INFORMATION();
-
-		(*currentVertex)=ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition];
-
-		ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
-		ed->m_EXTENSION_directVertexDone=false;
-		ed->m_EXTENSION_VertexAssembled_requested=false;
-		ed->m_previouslyFlowedVertices=0;
-		ed->m_flowNumber=0;
-	
-		MACRO_COLLECT_PROFILING_INFORMATION();
-
-		ed->constructor(m_parameters);
-
-		MACRO_COLLECT_PROFILING_INFORMATION();
 	}
-
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
@@ -188,23 +91,9 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
 	// only check that at bootstrap.
 
 	if(!ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled){
-		if(!(ed->m_EXTENSION_currentPosition<(int)ed->m_EXTENSION_currentSeed.size())
-		&& ed->m_flowNumber==1
- ){
-			ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
-			ed->m_EXTENSION_markedCurrentVertexAsAssembled=false;
 
-			ed->m_EXTENSION_reads_requested=false;
-			m_messengerInitiated=false;
-			
-			ed->m_EXTENSION_directVertexDone=false;
-			ed->m_EXTENSION_VertexMarkAssembled_requested=false;
-			(*vertexCoverageRequested)=false;
-		}else{
-			checkIfCurrentVertexIsAssembled(ed,outbox,outboxAllocator,outgoingEdgeIndex,last_value,
+		checkIfCurrentVertexIsAssembled(ed,outbox,outboxAllocator,outgoingEdgeIndex,last_value,
 	currentVertex,theRank,vertexCoverageRequested,wordSize,size,seeds);
-		}
-
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
 	}else if(
@@ -215,24 +104,8 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode){
  		/* we have not exited the seed */
 		&& ed->m_EXTENSION_currentPosition<(int)ed->m_EXTENSION_currentSeed.size()
 		){
-		cout<<"Rank "<<m_parameters->getRank()<<" skips seed ["<<ed->m_EXTENSION_currentSeedIndex<<"/"<<
-			(*seeds).size()<<"]"<<endl;
-
-		ed->m_EXTENSION_currentSeedIndex++;// skip the current one.
-		ed->m_EXTENSION_currentPosition=0;
-
-
-		ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
-		ed->m_EXTENSION_directVertexDone=false;
-		ed->m_EXTENSION_VertexAssembled_requested=false;
-		if(ed->m_EXTENSION_currentSeedIndex<(int)(*seeds).size()){
-			ed->m_EXTENSION_currentSeed=(*seeds)[ed->m_EXTENSION_currentSeedIndex];
-			(*currentVertex)=ed->m_EXTENSION_currentSeed[ed->m_EXTENSION_currentPosition];
-		}
-		ed->m_previouslyFlowedVertices=0;
-		ed->m_flowNumber=0;
-
-		MACRO_COLLECT_PROFILING_INFORMATION();
+		
+		skipSeed(seeds);
 
 	}else if(!ed->m_EXTENSION_markedCurrentVertexAsAssembled){
 		MACRO_COLLECT_PROFILING_INFORMATION();
@@ -489,7 +362,7 @@ Presently, insertions or deletions up to 8 are supported.
 						break;
 					}
 				}
-				if(!match && m_parameters->showReadPlacement()){
+				if(!match && m_parameters->showReadPlacement() && false){
 					cout<<"No match, read k-mer is "<<
 						ed->m_EXTENSION_receivedReadVertex.idToWord(m_parameters->getWordSize(),
 						m_parameters->getColorSpaceMode())<<endl;
@@ -1099,7 +972,12 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
-	if(!ed->m_EXTENSION_directVertexDone){
+	if(!(ed->m_EXTENSION_currentPosition<(int)ed->m_EXTENSION_currentSeed.size())
+		&& ed->m_flowNumber==1){
+
+		checkedCurrentVertex();
+
+	}else if(!ed->m_EXTENSION_directVertexDone){
 		if(!ed->m_EXTENSION_VertexAssembled_requested){
 
 			MACRO_COLLECT_PROFILING_INFORMATION();
@@ -1150,14 +1028,19 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			}
 		}
 	}else if(!ed->m_EXTENSION_reverseVertexDone){
-			ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
-			ed->m_EXTENSION_markedCurrentVertexAsAssembled=false;
-			ed->m_EXTENSION_directVertexDone=false;
-			ed->m_EXTENSION_reads_requested=false;
-			m_messengerInitiated=false;
+
+		checkedCurrentVertex();
 	}
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
+}
+
+void SeedExtender::checkedCurrentVertex(){
+	m_ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
+	m_ed->m_EXTENSION_markedCurrentVertexAsAssembled=false;
+	m_ed->m_EXTENSION_directVertexDone=false;
+	m_ed->m_EXTENSION_reads_requested=false;
+	m_messengerInitiated=false;
 }
 
 /**
@@ -1556,7 +1439,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				if(addRead){
 					
 					if(m_parameters->showReadPlacement()){
-						cout<<"[showReadPlacement] Adding read "<<uniqueId<<" at "<<position<<endl;
+						cout<<"[showReadPlacement] Adding read "<<uniqueId<<" at "<<position;
+						cout<<" with read offset "<<positionOnStrand<<endl;
 					}
 
 					m_matesToMeet.erase(uniqueId);
@@ -1647,7 +1531,14 @@ set<uint64_t>*SeedExtender::getEliminatedSeeds(){
 }
 
 void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed,
-	GridTable*subgraph,StaticVector*inbox,Profiler*profiler){
+	GridTable*subgraph,StaticVector*inbox,Profiler*profiler,StaticVector*outbox,
+	SeedingData*seedingData,int*mode){
+
+	m_seedingData=seedingData;
+
+	m_outbox=outbox;
+
+	m_mode=mode;
 
 	m_checkedCheckpoint=false;
 
@@ -1880,7 +1771,7 @@ void SeedExtender::writeCheckpoint(){
 	f.close();
 }
 
-void SeedExtender::readCheckpoint(){
+void SeedExtender::readCheckpoint(FusionData*fusionData){
 	cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint Extensions"<<endl;
 	ifstream f(m_parameters->getCheckpointFile("Extensions").c_str());
 
@@ -1919,6 +1810,11 @@ void SeedExtender::readCheckpoint(){
 	assert(m_ed->m_EXTENSION_identifiers.size()==m_ed->m_EXTENSION_contigs.size());
 	#endif
 
+	// store the reverse map
+	for(int i=0;i<(int)m_ed->m_EXTENSION_identifiers.size();i++){
+		uint64_t id=m_ed->m_EXTENSION_identifiers[i];
+		fusionData->m_FUSION_identifier_map[id]=i;
+	}
 }
 
 /* display the contig and overlapping reads. */
@@ -2006,6 +1902,8 @@ void SeedExtender::processExpiredReads(){
 
 		if(m_parameters->showReadPlacement()){
 			int maximumAgreement=element->getReadLength() - m_parameters->getWordSize() + 1;
+			maximumAgreement -= element->getStrandPosition();
+
 			int agreement = element->getAgreement();
 			double ratio = 0;
 			if(maximumAgreement > 0){
@@ -2091,4 +1989,126 @@ int SeedExtender::chooseWithSeed(){
 	}
 
 	return IMPOSSIBLE_CHOICE;
+}
+
+void SeedExtender::finalizeExtensions(vector<vector<Kmer> >*seeds,FusionData*fusionData){
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
+	if((*seeds).size()>0)
+		m_ed->destructor();
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
+	m_ed->getAllocator()->clear();
+	m_cacheAllocator.clear();
+	m_cache.clear();
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
+	printf("Rank %i is extending seeds [%i/%i] (completed)\n",
+		m_parameters->getRank(),(int)(*seeds).size(),(int)(*seeds).size());
+	double ratio=(0.0+m_extended)/seeds->size()*100.0;
+	printf("Rank %i extended %i seeds out of %i (%.2f%%)\n",m_parameters->getRank(),
+		m_extended,(int)seeds->size(),ratio);
+	fflush(stdout);
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
+	if(m_parameters->showMemoryUsage()){
+		showMemoryUsage(m_parameters->getRank());
+	}
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
+	// store the reverse map
+	for(int i=0;i<(int)m_ed->m_EXTENSION_identifiers.size();i++){
+		uint64_t id=m_ed->m_EXTENSION_identifiers[i];
+		fusionData->m_FUSION_identifier_map[id]=i;
+	}
+
+	#ifdef ASSERT
+	assert(m_ed->m_EXTENSION_identifiers.size()==m_ed->m_EXTENSION_contigs.size());
+	#endif
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
+	/* write checkpoint */
+	if(m_parameters->writeCheckpoints())
+		writeCheckpoint();
+
+	(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
+	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_EXTENSION_IS_DONE,m_parameters->getRank());
+	m_outbox->push_back(aMessage);
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
+	/** write extensions for debugging purposes */
+	if(m_parameters->hasOption("-write-extensions")){
+		ostringstream fileName;
+		fileName<<m_parameters->getPrefix()<<"Rank"<<m_parameters->getRank()<<"RayExtensions.fasta";
+		ofstream f(fileName.str().c_str());
+		for(int i=0;i<(int)m_ed->m_EXTENSION_identifiers.size();i++){
+			uint64_t id=m_ed->m_EXTENSION_identifiers[i];
+			f<<">RayExtension-"<<id<<endl;
+
+			f<<addLineBreaks(convertToString(&(m_ed->m_EXTENSION_contigs.at(i)),
+				m_parameters->getWordSize(),m_parameters->getColorSpaceMode()),
+				m_parameters->getColumns());
+		}
+		f.close();
+	}
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
+}
+
+void SeedExtender::initializeExtensions(vector<vector<Kmer> >*seeds){
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
+	m_ed->m_EXTENSION_initiated=true;
+	m_ed->m_EXTENSION_currentSeedIndex=0;
+	m_ed->m_EXTENSION_currentPosition=0;
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
+	// this will probably needs to be sliced...
+	m_ed->m_EXTENSION_currentSeed=(*seeds)[m_ed->m_EXTENSION_currentSeedIndex];
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
+	(m_seedingData->m_SEEDING_currentVertex)=m_ed->m_EXTENSION_currentSeed[m_ed->m_EXTENSION_currentPosition];
+
+	m_ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
+	m_ed->m_EXTENSION_directVertexDone=false;
+	m_ed->m_EXTENSION_VertexAssembled_requested=false;
+	m_ed->m_previouslyFlowedVertices=0;
+	m_ed->m_flowNumber=0;
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
+	m_ed->constructor(m_parameters);
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
+}
+
+void SeedExtender::skipSeed(vector<vector<Kmer> >*seeds){
+	cout<<"Rank "<<m_parameters->getRank()<<" skips seed ["<<m_ed->m_EXTENSION_currentSeedIndex<<"/"<<
+		(*seeds).size()<<"]"<<endl;
+
+	m_ed->m_EXTENSION_currentSeedIndex++;// skip the current one.
+	m_ed->m_EXTENSION_currentPosition=0;
+
+
+	m_ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false;
+	m_ed->m_EXTENSION_directVertexDone=false;
+	m_ed->m_EXTENSION_VertexAssembled_requested=false;
+	if(m_ed->m_EXTENSION_currentSeedIndex<(int)(*seeds).size()){
+		m_ed->m_EXTENSION_currentSeed=(*seeds)[m_ed->m_EXTENSION_currentSeedIndex];
+		m_seedingData->m_SEEDING_currentVertex=m_ed->m_EXTENSION_currentSeed[m_ed->m_EXTENSION_currentPosition];
+	}
+	m_ed->m_previouslyFlowedVertices=0;
+	m_ed->m_flowNumber=0;
+
+	MACRO_COLLECT_PROFILING_INFORMATION();
+
 }

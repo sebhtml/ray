@@ -112,7 +112,6 @@ void Machine::start(){
 	m_messageSentForEdgesDistribution=false;
 	m_numberOfRanksDoneSeeding=0;
 	m_numberOfMachinesReadyForEdgesDistribution=0;
-	m_ed->m_mode_EXTENSION=false;
 	m_aborted=false;
 	m_readyToSeed=0;
 	m_wordSize=-1;
@@ -276,7 +275,8 @@ void Machine::start(){
 		m_timePrinter.setFile(m_parameters.getPrefix());
 	}
 
-	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed,&m_subgraph,&m_inbox,&m_profiler2);
+	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed,&m_subgraph,&m_inbox,&m_profiler2,
+		&m_outbox,m_seedingData,&m_slave_mode);
 
 	m_profiler = &m_profiler2;
 	m_profiler->constructor(m_parameters.runProfiler());
