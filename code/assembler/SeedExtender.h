@@ -53,6 +53,7 @@ class SeedExtender{
 	bool m_checkedCheckpoint;
 
 	uint64_t m_sumOfCoveragesInSeed;
+	map<int,int> m_localCoverageDistribution;
 
 	Profiler*m_profiler;
 

@@ -36,6 +36,9 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class SeedWorker : public Worker {
+
+	int m_mainVertexCoverage;
+
 	map<Kmer,int> m_cache;
 	uint64_t m_workerIdentifier;
 	bool m_finished;

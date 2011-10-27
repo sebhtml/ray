@@ -193,22 +193,10 @@ void SeedWorker::do_1_1_test(){
 			vector<uint64_t> elements;
 			m_virtualCommunicator->getMessageResponseElements(m_workerIdentifier,&elements);
 			uint8_t edges=elements[0];
-			int coverage=elements[1];
+			m_mainVertexCoverage=elements[1];
 			
-/*
-			if(coverage==1 || coverage >= 10*m_parameters->getPeakCoverage()){
 
-				if(m_parameters->debugSeeds()){
-					cout<<"SeedWorker: skipping vertex with coverage value "<<coverage<<" PeakCoverage= "<<m_parameters->getPeakCoverage()<<endl;
-				}
-
-				m_SEEDING_1_1_test_result=false;
-				m_SEEDING_1_1_test_done=true;
-				return;
-			}
-*/
-
-			m_cache[m_SEEDING_currentVertex]=coverage;
+			m_cache[m_SEEDING_currentVertex]=m_mainVertexCoverage;
 
 			m_SEEDING_receivedIngoingEdges=m_SEEDING_currentVertex._getIngoingEdges(edges,m_wordSize);
 
@@ -295,6 +283,13 @@ void SeedWorker::do_1_1_test(){
 			int coverage=m_ingoingCoverages[i];
 			Kmer vertex=m_SEEDING_receivedIngoingEdges[i];
 			oneParent=true;
+
+			// we want seeds to be unique 
+			if(coverage>= 2*m_mainVertexCoverage){
+				oneParent=false;
+				break;
+			}
+
 			for(int j=0;j<(int)m_ingoingCoverages.size();j++){
 				if(i==j){
 					continue;
@@ -317,6 +312,13 @@ void SeedWorker::do_1_1_test(){
 			int coverage=m_outgoingCoverages[i];
 			Kmer vertex=m_SEEDING_receivedOutgoingEdges[i];
 			oneChild=true;
+
+			// we want seeds to be unique 
+			if(coverage>= 2*m_mainVertexCoverage){
+				oneParent=false;
+				break;
+			}
+
 			for(int j=0;j<(int)m_outgoingCoverages.size();j++){
 				if(i==j){
 					continue;

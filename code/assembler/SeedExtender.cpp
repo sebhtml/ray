@@ -1075,7 +1075,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 		// don't let things accumulate in this structure...
 		// TODO: fix this at the source in the first place...
-		// this code does change the result, but reduces the granularity
+		// this code does not change the result, but reduces the granularity
 		if(m_ed->m_expirations.count(previousPosition) > 0){
 			vector<uint64_t>*expired=&(m_ed->m_expirations)[previousPosition];
 
@@ -1192,6 +1192,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 		*receivedVertexCoverage=m_vertexMessenger.getCoverageValue();
 		ed->m_currentCoverage=*receivedVertexCoverage;
+
+
 		bool inserted;
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
@@ -1207,6 +1209,35 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 		ed->m_EXTENSION_extension.push_back((*currentVertex));
 		ed->m_extensionCoverageValues.push_back(*receivedVertexCoverage);
+
+		// add the coverage to the sum because this vertex is 
+		// part of the seed
+		if(ed->m_EXTENSION_extension.size () <= ed->m_EXTENSION_currentSeed.size()){
+			if(ed->m_EXTENSION_extension.size () == 1){
+				m_localCoverageDistribution.clear();
+			}
+
+			cout<<ed->m_EXTENSION_extension.size ()-1<<"	"<<*receivedVertexCoverage<<endl;
+
+			m_localCoverageDistribution[*receivedVertexCoverage] ++;
+
+			if(ed->m_EXTENSION_extension.size () == ed->m_EXTENSION_currentSeed.size()){
+				int peak=1;
+				int count=0;
+				for(map<int,int>::iterator i=m_localCoverageDistribution.begin();
+					i!=m_localCoverageDistribution.end();i++){
+					cout<<" "<<i->first<<"	"<<i->second<<endl;
+					if(i->second > count){
+						count = i->second;
+						peak=i->first;
+					}
+				}
+		
+				cout<<"Flow number= "<<ed->m_flowNumber<<endl;
+				cout<<"Peak coverage of the seed= "<<peak<<endl;
+				cout<<"Length of the seed= "<<ed->m_EXTENSION_currentSeed.size()<<endl;
+			}
+		}
 
 		#ifdef ASSERT
 		assert(ed->m_currentCoverage<=m_parameters->getMaximumAllowedCoverage());
