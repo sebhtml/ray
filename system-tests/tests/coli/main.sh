@@ -1,4 +1,5 @@
-mpiexec -tag-output -np $NSLOTS  $RAY_GIT_PATH/Ray  \
+mpiexec -output-filename $TEST_NAME \
+-np $NSLOTS  $RAY_GIT_PATH/Ray  \
 -p SRR001665_1.fastq \
    SRR001665_2.fastq \
 -p SRR001666_1.fastq \
