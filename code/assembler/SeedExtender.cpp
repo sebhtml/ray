@@ -1404,7 +1404,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				// its mate was not seen yet.
 				
 				// TODO: is 3* really the best we can do ?
-				if(addRead && ed->m_currentCoverage>=3*m_parameters->getPeakCoverage()){
+				if(addRead && ed->m_currentCoverage>=2*m_parameters->getPeakCoverage()){
 					// the vertex is repeated
 					if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
 						uint64_t mateId=ed->m_EXTENSION_pairedRead.getUniqueId();
