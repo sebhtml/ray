@@ -1217,7 +1217,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				m_localCoverageDistribution.clear();
 			}
 
-			cout<<ed->m_EXTENSION_extension.size ()-1<<"	"<<*receivedVertexCoverage<<endl;
+			// cout<<ed->m_EXTENSION_extension.size ()-1<<"	"<<*receivedVertexCoverage<<endl;
 
 			m_localCoverageDistribution[*receivedVertexCoverage] ++;
 
@@ -1226,7 +1226,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				int count=0;
 				for(map<int,int>::iterator i=m_localCoverageDistribution.begin();
 					i!=m_localCoverageDistribution.end();i++){
-					cout<<" "<<i->first<<"	"<<i->second<<endl;
+					//cout<<" "<<i->first<<"	"<<i->second<<endl;
 					if(i->second > count){
 						count = i->second;
 						peak=i->first;
@@ -1404,7 +1404,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				// its mate was not seen yet.
 				
 				// TODO: is 3* really the best we can do ?
-				if(addRead && ed->m_currentCoverage>=3*m_parameters->getPeakCoverage()){
+				if(addRead && ed->m_currentCoverage>=2*m_parameters->getPeakCoverage()){
 					// the vertex is repeated
 					if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
 						uint64_t mateId=ed->m_EXTENSION_pairedRead.getUniqueId();

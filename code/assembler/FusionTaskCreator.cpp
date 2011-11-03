@@ -106,8 +106,13 @@ bool FusionTaskCreator::hasUnassignedTask(){
  */
 Worker*FusionTaskCreator::assignNextTask(){
 
-	if(m_currentWorkerIdentifier % 10== 0)
+	if(m_currentWorkerIdentifier % 10== 0){
 		cout<<"Rank "<<m_parameters->getRank()<<" FusionTaskCreator assignNextTask ["<<m_currentWorkerIdentifier<<"/"<<m_paths->size()*2<<"]"<<endl;
+
+		if(m_parameters->showMemoryUsage()){
+			showMemoryUsage(m_parameters->getRank());
+		}
+	}
 
 	FusionWorker*worker=new FusionWorker;
 	worker->constructor(m_currentWorkerIdentifier,&(m_paths->at(m_iterator)),m_pathIdentifiers->at(m_iterator),m_reverseStrand,m_virtualCommunicator,m_parameters,m_outboxAllocator);
