@@ -452,13 +452,15 @@ void MessagesHandler::version(int*a,int*b){
 void MessagesHandler::appendStatistics(const char*file){
 	/** add an entry for RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY
  * 	because this message is sent after writting the current file
+ *
+ * 	actually, this RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY is not accounted for because
+ * 	it is sent after printing the statistics.
  */
-	m_messageStatistics[MASTER_RANK*RAY_MPI_TAG_DUMMY+RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY]++;
 	m_sentMessages++;
 
 	ofstream fp;
 	fp.open(file,ios_base::out|ios_base::app);
-	int activePeers=0;
+	vector<int> activePeers;
 	for(int destination=0;destination<m_size;destination++){
 		bool active=false;
 		for(int tag=0;tag<RAY_MPI_TAG_DUMMY;tag++){
@@ -472,12 +474,19 @@ void MessagesHandler::appendStatistics(const char*file){
 			fp<<m_rank<<"\t"<<destination<<"\t"<<MESSAGES[tag]<<"\t"<<count<<"\n";
 		}
 		if(active)
-			activePeers++;
+			activePeers.push_back(destination);
 	}
 	fp.close();
 
 	cout<<"Rank "<<m_rank<<": sent "<<m_sentMessages<<" messages, received "<<m_receivedMessages<<" messages."<<endl;
-	cout<<"Rank "<<m_rank<<": Active peers: "<<activePeers<<endl;
+	cout<<"Rank "<<m_rank<<": Active peers (including self): "<<activePeers.size()<<" list:";
+	for(int i=0;i<(int)activePeers.size();i++){
+		cout<<" "<<activePeers[i];
+	}
+	cout<<endl;
+
+
+	cout<<endl;
 }
 
 string MessagesHandler::getMessagePassingInterfaceImplementation(){

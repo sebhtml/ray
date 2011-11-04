@@ -34,6 +34,8 @@
 #include <core/constants.h>
 #include <core/common_functions.h>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 using namespace std;
 
 /**
@@ -71,7 +73,7 @@ void MessageRouter::routeOutcomingMessages(){
 		// the message has no routing tag
 		// we must check that the channel is authorized.
 
-		Message*aMessage=m_outbox->at(0);
+		Message*aMessage=m_outbox->at(i);
 
 		int communicationTag=aMessage->getTag();
 
@@ -98,9 +100,9 @@ void MessageRouter::routeOutcomingMessages(){
 		//       or
 		//       - destination is the intermediate rank of the source
 
-		int intermediateSource=-1;
+		int intermediateSource=getIntermediateRank(trueSource);
 
-		if(isReachable(trueSource,trueDestination,&intermediateSource)){
+		if(isReachable(trueSource,trueDestination)){
 			#ifdef CONFIG_ROUTER_VERBOSITY
 			cout<<__func__<<" Rank "<<trueSource<<" can reach "<<trueDestination<<" without routing"<<endl;
 			#endif
@@ -126,6 +128,16 @@ void MessageRouter::routeOutcomingMessages(){
 		cout<<__func__<<" rerouted message (trueSource="<<trueSource<<" trueDestination="<<trueDestination<<" to intermediateSource "<<intermediateSource<<endl;
 		#endif
 	}
+
+	// check that all messages are routable
+	#ifdef ASSERT
+
+	for(int i=0;i<numberOfMessages;i++){
+		Message*aMessage=m_outbox->at(i);
+		assert(isReachable(aMessage->getSource(),aMessage->getDestination()));
+	}
+	#endif
+
 }
 
 /*
@@ -163,17 +175,20 @@ int MessageRouter::getRoutingTag(int tag,int source,int destination){
 	return result;
 }
 
-bool MessageRouter::isReachable(int source,int destination,int*intermediateSource){
+/**
+ * a rank can only speak to itself and to its intermediate rank 
+ */
+bool MessageRouter::isReachable(int source,int destination){
 	/* a rank can communicate with itself, obviously */
 	if(source==destination)
 		return true;
 
 	/* compute intermediate peers */
-	*intermediateSource=getIntermediateRank(source);
+	int intermediateSource=getIntermediateRank(source);
 	int intermediateDestination=getIntermediateRank(destination);
 
 	/* if the intermediate rank for the source is the destination */
-	if(*intermediateSource==destination)
+	if(intermediateSource==destination)
 		return true;
 
 	/* if the source is the intermediate rank for the destination */
@@ -181,7 +196,7 @@ bool MessageRouter::isReachable(int source,int destination,int*intermediateSourc
 		return true;
 
 	/* an intermediate node can communicate with any other intermediate node */
-	if(intermediateDestination==destination && *intermediateSource==source)
+	if(intermediateDestination==destination && intermediateSource==source)
 		return true;
 	
 	/* otherwise it is not allowed*/
@@ -212,14 +227,64 @@ MessageRouter::MessageRouter(){
 	m_enabled=false;
 }
 
-void MessageRouter::enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*outboxAllocator,int rank){
+void MessageRouter::enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*outboxAllocator,int rank,
+	string prefix,int numberOfRanks){
 	cout<<endl;
-	cout<<"Enabled message routing, GroupSize=8"<<endl;
+
+	cout<<"Enabled message routing"<<endl;
+
 	m_inbox=inbox;
 	m_outbox=outbox;
 	m_outboxAllocator=outboxAllocator;
 	m_rank=rank;
 	m_enabled=true;
+
+	generateRoutes(numberOfRanks);
+
+	ostringstream file;
+	file<<prefix<<"Rank"<<rank<<".Connections.txt";
+
+	ofstream f(file.str().c_str());
+	
+	vector<int> peers;
+	for(int i=0;i<numberOfRanks;i++){
+		if(isReachable(rank,i))
+			peers.push_back(i);
+	}
+
+	f<<peers.size()<<"	";
+
+	for(int i=0;i<(int)peers.size();i++){
+		if(i!=0)
+			f<<" ";
+		f<<peers[i];
+	}
+
+	f.close();
+
+	ostringstream file2;
+
+	file2<<prefix<<"Rank"<<rank<<".Routes.txt";
+
+	ofstream f2(file2.str().c_str());
+
+	f2<<"#Source	Destination	Hops	Route"<<endl;
+
+	for(int i=0;i<numberOfRanks;i++){
+		vector<int> route;
+		getRoute(rank,i,&route);
+		f2<<rank<<"	"<<i<<"	"<<route.size()-1<<"	";
+
+		for(int i=0;i<(int)route.size();i++){
+			if(i!=0)
+				f2<<" ";
+			f2<<route[i];
+		}
+
+		f2<<endl;
+	}
+
+	f2.close();
 }
 
 /**
@@ -352,6 +417,10 @@ void MessageRouter::rerouteMessage(Message*message,int destination){
 	message->setSource(m_rank);
 	message->setDestination(destination);
 
+	#ifdef ASSERT
+	assert(isReachable(m_rank,destination));
+	#endif
+
 	m_outbox->push_back(*message);
 }
 
@@ -387,4 +456,58 @@ int MessageRouter::getDestination(int tag){
 
 }
 
+void MessageRouter::getRoute(int source,int destination,vector<int>*route){
+	int currentVertex=source;
+	route->push_back(currentVertex);
 
+	while(currentVertex!=destination){
+		currentVertex=m_routes[source][destination][currentVertex];
+		route->push_back(currentVertex);
+	}
+}
+
+void MessageRouter::generateRoutes(int n){
+	generateRoutesByGroups(n);
+}
+
+void MessageRouter::generateRoutesByGroups(int n){
+	for(int source=0;source<n;source++){
+		int intermediateSource=getIntermediateRank(source);
+		for(int destination=0;destination<n;destination++){
+			int intermediateDestination=getIntermediateRank(destination);
+			
+			// same rank
+			// source -> destination
+			if(source==destination){
+				m_routes[source][destination][source]=destination;
+
+			// direct communication is allowed
+			// source -> destination
+			}else if(source==intermediateSource && destination==intermediateDestination){
+				m_routes[source][destination][source]=destination;
+
+			// destination is the intermediate source
+			// source -> destination
+			}else if(intermediateSource==destination){
+				m_routes[source][destination][source]=destination;
+			
+			// source is the intermediate destination
+			// source -> destination
+			}else if(source==intermediateDestination){
+				m_routes[source][destination][source]=destination;
+			// source and destination have the same intermediate
+			// source -> intermediateSource -> destination
+			}else if(intermediateSource==intermediateDestination){
+				m_routes[source][destination][source]=intermediateSource;
+				m_routes[source][destination][intermediateSource]=destination;
+			
+			// source and destination have a different intermediate
+			// source -> intermediateSource -> intermediateDestination -> destination
+			}else{
+				m_routes[source][destination][source]=intermediateSource;
+				m_routes[source][destination][intermediateSource]=intermediateDestination;
+				m_routes[source][destination][intermediateDestination]=destination;
+			}
+		}
+	}
+}

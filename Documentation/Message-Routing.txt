@@ -1,0 +1,21 @@
+Having too many connections can be bad.
+
+Let's say we have 64 ranks.
+
+Let's say that we want the ranks to be grouped in 8.
+
+
+Then, when rank 3 want to send a message to rank 55, it is required
+to get the intermediate ranks.
+
+
+rank 3 -> intermediate(rank 3) -> intermediate(rank 55) -> rank 55
+
+
+
+rank 3 sends to rank 0
+rank 0 sends to rank 48
+rank 3 sends to rank 0
+rank 0 sends to rank 48
+rank 48 sends to rank 55
+rank 48 sends to rank 55

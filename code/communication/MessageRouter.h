@@ -25,6 +25,10 @@
 #include <memory/RingAllocator.h>
 #include <structures/StaticVector.h>
 #include <communication/Message.h>
+#include <vector>
+#include <map>
+#include <string>
+using namespace std;
 
 /**
  * \author Sébastien Boisvert
@@ -47,10 +51,18 @@ class MessageRouter{
 	StaticVector*m_inbox;
 	StaticVector*m_outbox;
 	RingAllocator*m_outboxAllocator;
-	
 	int m_rank;
 
-	bool isReachable(int destination,int source,int*intermediateSource);
+/** routes
+ * source
+ * 	destination
+ * 		vertex1
+ * 			vertex2
+ */
+	map<int,map<int,map<int,int> > > m_routes;
+
+
+
 	int getIntermediateRank(int rank);
 	int getRoutingTag(int tag,int source,int destination);
 
@@ -64,14 +76,23 @@ class MessageRouter{
 
 	/** get the tag from a routing tag */
 	int getTag(int tag);
+
+	void getRoute(int source,int destination,vector<int>*route);
+
+	void generateRoutes(int n);
+	void generateRoutesByGroups(int n);
 public:
 	MessageRouter();
+
+	bool isReachable(int destination,int source);
+	
 
 	void routeOutcomingMessages();
 	void routeIncomingMessages();
 
 	bool isEnabled();
-	void enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*outboxAllocator,int rank);
+	void enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*outboxAllocator,int rank,
+string prefix,int numberOfRanks);
 
 	bool isRoutingTag(int tag);
 };

@@ -246,11 +246,6 @@ void Machine::start(){
 
 	m_parameters.constructor(m_argc,m_argv,getRank());
 
-	// options are loaded from here
-	if(m_parameters.hasOption("-route-messages")){
-		m_router.enable(&m_inbox,&m_outbox,&m_outboxAllocator,m_parameters.getRank());
-	}
-
 	int PERSISTENT_ALLOCATOR_CHUNK_SIZE=4194304; // 4 MiB
 	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE,RAY_MALLOC_TYPE_PERSISTENT_DATA_ALLOCATOR,
 		m_parameters.showMemoryAllocations());
@@ -273,11 +268,19 @@ void Machine::start(){
 
 	m_messagesHandler.barrier();
 	
+	// create the directory
 	if(m_parameters.getRank() == MASTER_RANK){
 		createDirectory(directory.c_str());
 		m_parameters.writeCommandFile();
 
 		m_timePrinter.setFile(m_parameters.getPrefix());
+	}
+
+	// options are loaded from here
+	// plus the directory exists now
+	if(m_parameters.hasOption("-route-messages")){
+		m_router.enable(&m_inbox,&m_outbox,&m_outboxAllocator,m_parameters.getRank(),
+			m_parameters.getPrefix(),m_parameters.getSize());
 	}
 
 	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed,&m_subgraph,&m_inbox,&m_profiler2,
@@ -781,6 +784,12 @@ void Machine::sendMessages(){
 	}
 	#endif
 
+	if(m_router.isEnabled()){
+		// if message routing is enabled,
+		// generate routing tags.
+		m_router.routeOutcomingMessages();
+	}
+
 	if(m_outbox.size() > 0 && m_parameters.showCommunicationEvents() /* && m_slave_mode == RAY_SLAVE_MODE_EXTENSION*/){
 		uint64_t microseconds=getMicroseconds() - m_startingTimeMicroseconds;
 		for(int i=0;i<(int)m_outbox.size();i++){
@@ -788,12 +797,6 @@ void Machine::sendMessages(){
 			m_outbox[i]->print();
 			cout<<endl;
 		}
-	}
-
-	if(m_router.isEnabled()){
-		// if message routing is enabled,
-		// generate routing tags.
-		m_router.routeOutcomingMessages();
 	}
 
 	m_messagesHandler.sendMessages(&m_outbox);
