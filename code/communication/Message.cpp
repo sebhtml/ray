@@ -56,7 +56,9 @@ int Message::getSource(){
 }
 
 void Message::print(){
-	cout<<"Source: "<<getSource()<<" Destination: "<<getDestination()<<" Tag: "<<MESSAGES[getTag()]<<" Count: "<<getCount();
+	uint8_t shortTag=getTag();
+
+	cout<<"Source: "<<getSource()<<" Destination: "<<getDestination()<<" Tag: "<<MESSAGES[shortTag]<<" Count: "<<getCount();
 	if(m_count > 0){
 		cout<<" Overlay: "<<hex<<m_buffer[0]<<dec;
 	}
@@ -66,3 +68,14 @@ void Message::setBuffer(uint64_t*buffer){
 	m_buffer = buffer;
 }
 
+void Message::setTag(int tag){
+	m_tag=tag;
+}
+
+void Message::setSource(int source){
+	m_source=source;
+}
+
+void Message::setDestination(int destination){
+	m_dest=destination;
+}

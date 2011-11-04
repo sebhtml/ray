@@ -246,6 +246,11 @@ void Machine::start(){
 
 	m_parameters.constructor(m_argc,m_argv,getRank());
 
+	// options are loaded from here
+	if(m_parameters.hasOption("-route-messages")){
+		m_router.enable(&m_inbox,&m_outbox,&m_outboxAllocator,m_parameters.getRank());
+	}
+
 	int PERSISTENT_ALLOCATOR_CHUNK_SIZE=4194304; // 4 MiB
 	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE,RAY_MALLOC_TYPE_PERSISTENT_DATA_ALLOCATOR,
 		m_parameters.showMemoryAllocations());
@@ -734,6 +739,16 @@ void Machine::processMessages(){
 	assert(m_inbox.size()>=0&&m_inbox.size()<=1);
 	#endif
 
+	// if routing is enabled, we want to strip the routing tags if it
+	// is required
+	if(m_router.isEnabled() && m_inbox.size()>0){
+		m_router.routeIncomingMessages();
+
+		// if the message has routing tag, we don't need to process it...
+		if(m_router.isRoutingTag(m_inbox[0]->getTag()))
+			return;
+	}
+
 	if(m_inbox.size()>0){
 		m_mp.processMessage((m_inbox[0]));
 	}
@@ -741,6 +756,12 @@ void Machine::processMessages(){
 
 void Machine::sendMessages(){
 	#ifdef ASSERT
+	if(m_outboxAllocator.getCount() > m_maximumAllocatedOutputBuffers){
+		cout<<"Error, allocated "<<m_outboxAllocator.getCount()<<" buffers, but maximum is ";
+		cout<<m_maximumAllocatedOutputBuffers<<endl;
+		cout<<" outboxSize= "<<m_outbox.size()<<endl;
+	}
+
 	assert(m_outboxAllocator.getCount()<=m_maximumAllocatedOutputBuffers);
 	m_outboxAllocator.resetCount();
 	int messagesToSend=m_outbox.size();
@@ -767,6 +788,12 @@ void Machine::sendMessages(){
 			m_outbox[i]->print();
 			cout<<endl;
 		}
+	}
+
+	if(m_router.isEnabled()){
+		// if message routing is enabled,
+		// generate routing tags.
+		m_router.routeOutcomingMessages();
 	}
 
 	m_messagesHandler.sendMessages(&m_outbox);

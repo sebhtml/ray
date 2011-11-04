@@ -1068,6 +1068,11 @@ void Parameters::showUsage(){
 	showOptionDescription("Larger k-mers utilise more memory.");
 	cout<<endl;
 
+	cout<<"  Large number of cores"<<endl;
+	cout<<endl;
+	showOption("-route-messages","Enables Ray message router.");
+	cout<<endl;
+
 	cout<<"  Inputs"<<endl;
 	cout<<endl;
 	showOption("-p leftSequenceFile rightSequenceFile [averageOuterDistance standardDeviation]","Provides two files containing paired-end reads.");

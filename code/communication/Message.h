@@ -77,6 +77,12 @@ public:
 	void print();
 
 	void setBuffer(uint64_t*buffer);
+
+	void setTag(int tag);
+
+	void setSource(int source);
+
+	void setDestination(int destination);
 };
 
 #endif

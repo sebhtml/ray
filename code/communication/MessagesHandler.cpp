@@ -67,8 +67,13 @@ void MessagesHandler::sendMessages(StaticVector*outbox){
 		assert(request==MPI_REQUEST_NULL);
 		#endif
 
+		// if the message was re-routed, we don't care
+		// we only fetch the tag for statistics
+		uint8_t shortTag=tag;
+
 		/** update statistics */
-		m_messageStatistics[destination*RAY_MPI_TAG_DUMMY+tag]++;
+		m_messageStatistics[destination*RAY_MPI_TAG_DUMMY+shortTag]++;
+
 		m_sentMessages++;
 	}
 

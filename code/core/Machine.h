@@ -64,6 +64,7 @@
 #include <communication/NetworkTest.h>
 #include <assembler/FusionTaskCreator.h>
 #include <assembler/JoinerTaskCreator.h>
+#include <communication/MessageRouter.h>
 using namespace std;
 
 
@@ -78,6 +79,8 @@ typedef void (Machine::*MachineMethod) ();
  */
 class Machine{
 	uint64_t m_startingTimeMicroseconds;
+
+	MessageRouter m_router;
 
 	Profiler m_profiler2;
 	Profiler*m_profiler;
