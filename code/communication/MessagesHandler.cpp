@@ -458,14 +458,26 @@ void MessagesHandler::appendStatistics(const char*file){
 
 	ofstream fp;
 	fp.open(file,ios_base::out|ios_base::app);
+	int activePeers=0;
 	for(int destination=0;destination<m_size;destination++){
+		bool active=false;
 		for(int tag=0;tag<RAY_MPI_TAG_DUMMY;tag++){
 			uint64_t count=m_messageStatistics[destination*RAY_MPI_TAG_DUMMY+tag];
+
+			if(count==0)
+				continue;
+
+			active=true;
+
 			fp<<m_rank<<"\t"<<destination<<"\t"<<MESSAGES[tag]<<"\t"<<count<<"\n";
 		}
+		if(active)
+			activePeers++;
 	}
 	fp.close();
+
 	cout<<"Rank "<<m_rank<<": sent "<<m_sentMessages<<" messages, received "<<m_receivedMessages<<" messages."<<endl;
+	cout<<"Rank "<<m_rank<<": Active peers: "<<activePeers<<endl;
 }
 
 string MessagesHandler::getMessagePassingInterfaceImplementation(){
