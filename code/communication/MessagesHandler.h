@@ -28,8 +28,10 @@
 #include <core/common_functions.h>
 #include <memory/RingAllocator.h>
 #include <structures/StaticVector.h>
+#include <vector>
+using namespace std;
 
-#ifdef USE_PERSISTENT_COMMUNICATION
+#ifdef CONFIG_PERSISTENT_COMMUNICATION
 
 /*
  * linked message
@@ -52,6 +54,9 @@ public:
  * \author Sébastien Boisvert
  */
 class MessagesHandler{
+
+	vector<int> m_connections;
+
 	#ifdef USE_PERSISTENT_COMMUNICATION
 	/** the number of buffered messages in the persistent layer */
 	int m_bufferedMessages;
@@ -69,7 +74,7 @@ class MessagesHandler{
 	#endif
 
 	/** round-robin head */
-	int m_currentRankToTryToReceiveFrom;
+	int m_currentRankIndexToTryToReceiveFrom;
 
 	/** messages sent */
 	uint64_t m_sentMessages;
@@ -119,7 +124,11 @@ class MessagesHandler{
 	/** select and fetch a message from the internal messages using a round-robin policy */
 	void roundRobinReception(StaticVector*inbox,RingAllocator*inboxAllocator);
 
+	#ifdef CONFIG_PERSISTENT_COMMUNICATION
 
+	roundRobinReception_persistent();
+
+	#endif
 public:
 	/** initialize the message handler
  * 	*/
@@ -160,6 +169,10 @@ public:
 	void appendStatistics(const char*file);
 
 	string getMessagePassingInterfaceImplementation();
+
+	void setConnections(vector<int>*connections);
 };
 
 #endif
+
+

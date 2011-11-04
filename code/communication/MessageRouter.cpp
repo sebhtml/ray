@@ -38,41 +38,21 @@
 #include <sstream>
 using namespace std;
 
+#define RAY_ROUTING_TAG_TAG_OFFSET 0
+#define RAY_ROUTING_TAG_TAG_SIZE 8
+#define RAY_ROUTING_TAG_SOURCE_OFFSET RAY_ROUTING_TAG_TAG_SIZE
+#define RAY_ROUTING_TAG_SOURCE_SIZE 11
+#define RAY_ROUTING_TAG_DESTINATION_OFFSET (RAY_ROUTING_TAG_TAG_SIZE+RAY_ROUTING_TAG_SOURCE_SIZE)
+#define RAY_ROUTING_TAG_DESTINATION_SIZE 11
+#define RAY_ROUTING_TAG_BIT_OFFSET (RAY_ROUTING_TAG_TAG_SIZE+RAY_ROUTING_TAG_SOURCE_SIZE+RAY_ROUTING_TAG_DESTINATION_SIZE)
+
 /**
  * route outcoming messages
  */
 void MessageRouter::routeOutcomingMessages(){
 	int numberOfMessages=m_outbox->size();
 
-	if(numberOfMessages==0)
-		return;
-
 	for(int i=0;i<numberOfMessages;i++){
-
-		// the general idea of routing a message:
-		//
-		//
-		// Cases: (starting with simpler cases)
-		//
-		//
-		// case 1: source and destination are the same (1 hop, no routing required)
-		// case 2:  source and destination are allowed to communicate (1 hop, no routing required)
-		//   happens when 
-		//       - source is the intermediate rank of the destination
-		//       or
-		//       - destination is the intermediate rank of the source
-		// case 3:  source and destination share the same intermediate rank (2 hops, some routing)
-		// case 4:  source and destination don't share the same intermediate rank (3 hops, full routing)
-		//
-		//
-		// see Documentation/Message-Routing.txt
-		//
-		//             1	                 2                              3
-		// trueSource -> sourceIntermediateRank -> destinationIntermediateRank -> trueDestination
-	
-		// the message has no routing tag
-		// we must check that the channel is authorized.
-
 		Message*aMessage=m_outbox->at(i);
 
 		int communicationTag=aMessage->getTag();
@@ -87,42 +67,23 @@ void MessageRouter::routeOutcomingMessages(){
 		}
 
 		// at this point, the message has no routing information yet.
-
 		int trueSource=aMessage->getSource();
 		int trueDestination=aMessage->getDestination();
 
-		// for the first 2 cases, nothing is required...
-		//
-		// - source and destination are the same (1 hop, no routing required)
-		// - source and destination are allowed to communicate (1 hop, no routing required)
-		//   happens when 
-		//       - source is the intermediate rank of the destination
-		//       or
-		//       - destination is the intermediate rank of the source
-
-		int intermediateSource=getIntermediateRank(trueSource);
-
-		if(isReachable(trueSource,trueDestination)){
+		// if it is reachable, no further routing is required
+		if(isConnected(trueSource,trueDestination)){
 			#ifdef CONFIG_ROUTER_VERBOSITY
 			cout<<__func__<<" Rank "<<trueSource<<" can reach "<<trueDestination<<" without routing"<<endl;
 			#endif
 			continue;
 		}
-
-		// for the 2 other cases, routing is required.
-		//
-		// The 2 cases are:
-		//
-		// - source and destination share the same intermediate rank (2 hops, some routing)
-		// - source and destination don't share the same intermediate rank (3 hops, full routing)
-		//
-		// Regardless of which case we have, we have to send to intermediateSource anyway.
-
+	
+		// re-route the message by re-writing the tag
 		int routingTag=getRoutingTag(communicationTag,trueSource,trueDestination);
-
-		// re-route the message
 		aMessage->setTag(routingTag);
-		aMessage->setDestination(intermediateSource);
+
+		int nextRank=getNextRankInRoute(trueSource,trueDestination,m_rank);
+		aMessage->setDestination(nextRank);
 
 		#ifdef CONFIG_ROUTER_VERBOSITY
 		cout<<__func__<<" rerouted message (trueSource="<<trueSource<<" trueDestination="<<trueDestination<<" to intermediateSource "<<intermediateSource<<endl;
@@ -131,13 +92,13 @@ void MessageRouter::routeOutcomingMessages(){
 
 	// check that all messages are routable
 	#ifdef ASSERT
-
 	for(int i=0;i<numberOfMessages;i++){
 		Message*aMessage=m_outbox->at(i);
-		assert(isReachable(aMessage->getSource(),aMessage->getDestination()));
+		if(!isConnected(aMessage->getSource(),aMessage->getDestination()))
+			cout<<aMessage->getSource()<<" and "<<aMessage->getDestination()<<" are not connected !"<<endl;
+		assert(isConnected(aMessage->getSource(),aMessage->getDestination()));
 	}
 	#endif
-
 }
 
 /*
@@ -153,20 +114,24 @@ void MessageRouter::routeOutcomingMessages(){
  *
  * 8+11+11+1 = 31
  */
-
 int MessageRouter::getRoutingTag(int tag,int source,int destination){
-	uint64_t routingTag=tag;
+	uint64_t routingTag=0;
+
+	uint64_t largeTag=tag;
+	largeTag<<=RAY_ROUTING_TAG_TAG_OFFSET;
+	routingTag|=largeTag;
 	
 	// set the routing tag to 1
-	uint64_t routingEnabled=(1<<30);
+	uint64_t routingEnabled=1;
+	routingEnabled<<=RAY_ROUTING_TAG_BIT_OFFSET;
 	routingTag|=routingEnabled;
 
 	uint64_t largeSource=source;
-	largeSource<<=8;
+	largeSource<<=RAY_ROUTING_TAG_SOURCE_OFFSET;
 	routingTag|=largeSource;
 
 	uint64_t largeDestination=destination;
-	largeDestination<<=(8+11);
+	largeDestination<<=RAY_ROUTING_TAG_DESTINATION_OFFSET;
 	routingTag|=largeDestination;
 
 	// should be alright because we use 31 bits only.
@@ -176,44 +141,19 @@ int MessageRouter::getRoutingTag(int tag,int source,int destination){
 }
 
 /**
- * a rank can only speak to itself and to its intermediate rank 
+ * a rank can only speak to things listed in connections
  */
-bool MessageRouter::isReachable(int source,int destination){
-	/* a rank can communicate with itself, obviously */
-	if(source==destination)
-		return true;
-
-	/* compute intermediate peers */
-	int intermediateSource=getIntermediateRank(source);
-	int intermediateDestination=getIntermediateRank(destination);
-
-	/* if the intermediate rank for the source is the destination */
-	if(intermediateSource==destination)
-		return true;
-
-	/* if the source is the intermediate rank for the destination */
-	if(source==intermediateDestination)
-		return true;
-
-	/* an intermediate node can communicate with any other intermediate node */
-	if(intermediateDestination==destination && intermediateSource==source)
-		return true;
-	
-	/* otherwise it is not allowed*/
-	return false;
+bool MessageRouter::isConnected(int source,int destination){
+	// check that a connection exists
+	return m_connections[source].count(destination)>0;
 }
 
-int MessageRouter::getIntermediateRank(int rank){
-	int groupSize=8;
-
-	return rank-rank % groupSize;
-}
-
+/**
+ * a tag is a routing tag is its routing bit is set to 1
+ */
 bool MessageRouter::isRoutingTag(int tag){
 	uint64_t data=tag;
-
-	int bitNumber=30;
-
+	int bitNumber=RAY_ROUTING_TAG_BIT_OFFSET;
 	int bitValue=(data<<(63-bitNumber)) >> 63;
 	
 	return bitValue==1;
@@ -228,10 +168,12 @@ MessageRouter::MessageRouter(){
 }
 
 void MessageRouter::enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*outboxAllocator,int rank,
-	string prefix,int numberOfRanks){
+	string prefix,int numberOfRanks,int coresPerNode){
+
+	m_coresPerNode=coresPerNode;
 	cout<<endl;
 
-	cout<<"Enabled message routing"<<endl;
+	cout<<"[MessageRouter] Enabled message routing"<<endl;
 
 	m_inbox=inbox;
 	m_outbox=outbox;
@@ -239,35 +181,28 @@ void MessageRouter::enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*
 	m_rank=rank;
 	m_enabled=true;
 
+	// generate the routes
 	generateRoutes(numberOfRanks);
 
+	// dump the connections in a file
 	ostringstream file;
 	file<<prefix<<"Rank"<<rank<<".Connections.txt";
-
 	ofstream f(file.str().c_str());
-	
-	vector<int> peers;
-	for(int i=0;i<numberOfRanks;i++){
-		if(isReachable(rank,i))
-			peers.push_back(i);
-	}
+	f<<m_connections[m_rank].size()<<"	";
 
-	f<<peers.size()<<"	";
-
-	for(int i=0;i<(int)peers.size();i++){
-		if(i!=0)
+	for(set<int>::iterator i=m_connections[m_rank].begin();
+		i!=m_connections[m_rank].end();i++){
+		if(i!=m_connections[m_rank].begin())
 			f<<" ";
-		f<<peers[i];
+		f<<*i;
 	}
 
 	f.close();
 
+	// dump the routes in a file
 	ostringstream file2;
-
 	file2<<prefix<<"Rank"<<rank<<".Routes.txt";
-
 	ofstream f2(file2.str().c_str());
-
 	f2<<"#Source	Destination	Hops	Route"<<endl;
 
 	for(int i=0;i<numberOfRanks;i++){
@@ -288,7 +223,8 @@ void MessageRouter::enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*
 }
 
 /**
- * route incoming messages */
+ * route incoming messages 
+ */
 void MessageRouter::routeIncomingMessages(){
 	int numberOfMessages=m_inbox->size();
 
@@ -298,35 +234,10 @@ void MessageRouter::routeIncomingMessages(){
 
 	// otherwise, we have exactly one precious message.
 	
-	// see Documentation/Message-Routing.txt
-	//
-	//             1	                 2                              3
-	// trueSource -> sourceIntermediateRank -> destinationIntermediateRank -> trueDestination
-	//
-	//
-		// case 1: source and destination are the same (1 hop, no routing required)
-		// case 2:  source and destination are allowed to communicate (1 hop, no routing required)
-		//   happens when 
-		//       - source is the intermediate rank of the destination
-		//       or
-		//       - destination is the intermediate rank of the source
-		// case 3:  source and destination share the same intermediate rank (2 hops, some routing)
-		// case 4:  source and destination don't share the same intermediate rank (3 hops, full routing)
-
-
-	// there are these cases when we receive a message
-	//
-	// case 1: the tag is not a routing tag
-	// 	then we have nothing to do.
-	// case 2: the tag is a routing tag, but the trueSource is m_rank 
-	// 	in this case, we have to stript the tag to remove routing data
-	// case 3: the tag is a routing tag and 1 more hop is required
-	// case 4: the tag is a routing tag and 2 more hop is required
-	
 	Message*aMessage=m_inbox->at(0);
-
 	int tag=aMessage->getTag();
 
+	// if the message has no routing tag, then we can sefely receive it as is
 	if(!isRoutingTag(tag)){
 		// nothing to do
 		#ifdef CONFIG_ROUTER_VERBOSITY
@@ -339,10 +250,10 @@ void MessageRouter::routeIncomingMessages(){
 	int trueSource=getSource(tag);
 	int trueDestination=getDestination(tag);
 
+	// this is the final destination
 	// we have received the message
 	// we need to restore the original information now.
 	if(trueDestination==m_rank){
-
 		#ifdef CONFIG_ROUTER_VERBOSITY
 		cout<<__func__<<" message has reached destination, must strip routing information"<<endl;
 		#endif
@@ -362,47 +273,20 @@ void MessageRouter::routeIncomingMessages(){
 
 	// at this point, we know that we need to forward
 	// the message to another peer
+	int nextRank=getNextRankInRoute(trueSource,trueDestination,m_rank);
 
-	//             1	                 2                              3
-	// trueSource -> sourceIntermediateRank -> destinationIntermediateRank -> trueDestination
-
-	int sourceIntermediateRank=getIntermediateRank(trueSource);
-	int destinationIntermediateRank=getIntermediateRank(trueDestination);
-	
-	// this condition will process the following cases:
-	//
-	// ** trueSource -> destinationIntermediateRank -> trueDestination
-	//	
-	//	(sourceIntermediateRank and destinationIntermediateRank are the same)
-	//
-	// ** trueSource -> sourceIntermediateRank -> destinationIntermediateRank -> trueDestination
-	//
-	if(m_rank==destinationIntermediateRank){
-		// here, we need to send a message onto the network.
-
-		#ifdef CONFIG_ROUTER_VERBOSITY
-		cout<<__func__<<" message has 1 more hop (last destination) to do, trueSource="<<trueSource<<" trueDestination= "<<trueDestination<<endl;
-		#endif
+	#ifdef CONFIG_ROUTER_VERBOSITY
+	cout<<__func__<<" message has been sent to the next one, trueSource="<<trueSource<<" trueDestination= "<<trueDestination<<endl;
+	#endif
 		
-		rerouteMessage(aMessage,trueDestination);
-
-	}else if(m_rank== sourceIntermediateRank){
-
-		// here, we need to send a message onto the network.
-		
-		#ifdef ASSERT
-		assert(m_rank!=destinationIntermediateRank);
-		#endif
-
-		#ifdef CONFIG_ROUTER_VERBOSITY
-		cout<<__func__<<" message has 2 more hops to do, trueSource="<<trueSource<<" trueDestination= "<<trueDestination<<" sourceIntermediateRank="<<sourceIntermediateRank<<" (*)destinationIntermediateRank="<<destinationIntermediateRank<<endl;
-		#endif
-
-		rerouteMessage(aMessage,destinationIntermediateRank);
-	}
+	// we forward the message
+	forwardMessage(aMessage,nextRank);
 }
 
-void MessageRouter::rerouteMessage(Message*message,int destination){
+/**
+ * forward a message to follow a route
+ */
+void MessageRouter::forwardMessage(Message*message,int destination){
 	int count=message->getCount();
 
 	// allocate a buffer from the ring
@@ -418,7 +302,7 @@ void MessageRouter::rerouteMessage(Message*message,int destination){
 	message->setDestination(destination);
 
 	#ifdef ASSERT
-	assert(isReachable(m_rank,destination));
+	assert(isConnected(m_rank,destination));
 	#endif
 
 	m_outbox->push_back(*message);
@@ -429,8 +313,8 @@ void MessageRouter::rerouteMessage(Message*message,int destination){
  */
 int MessageRouter::getTag(int tag){
 	uint64_t data=tag;
-	data<<=(64-8);
-	data>>=(64-8);
+	data<<=(sizeof(uint64_t)*8-(RAY_ROUTING_TAG_TAG_OFFSET+RAY_ROUTING_TAG_TAG_SIZE));
+	data>>=(sizeof(uint64_t)*8-RAY_ROUTING_TAG_TAG_SIZE);
 	return data;
 }
 
@@ -439,10 +323,9 @@ int MessageRouter::getTag(int tag){
  */
 int MessageRouter::getSource(int tag){
 	uint64_t data=tag;
-	data<<=(64-(8+11));
-	data>>=(64-11);
+	data<<=(sizeof(uint64_t)*8-(RAY_ROUTING_TAG_SOURCE_OFFSET+RAY_ROUTING_TAG_SOURCE_SIZE));
+	data>>=(sizeof(uint64_t)*8-RAY_ROUTING_TAG_SOURCE_SIZE);
 	return data;
-
 }
 
 /**
@@ -450,32 +333,103 @@ int MessageRouter::getSource(int tag){
  */
 int MessageRouter::getDestination(int tag){
 	uint64_t data=tag;
-	data<<=(64-(8+11+11));
-	data>>=(64-11);
+	data<<=(sizeof(uint64_t)*8-(RAY_ROUTING_TAG_DESTINATION_OFFSET+RAY_ROUTING_TAG_DESTINATION_SIZE));
+	data>>=(sizeof(uint64_t)*8-RAY_ROUTING_TAG_DESTINATION_SIZE);
 	return data;
-
 }
 
+/**
+ * get the route between two points
+ */
 void MessageRouter::getRoute(int source,int destination,vector<int>*route){
 	int currentVertex=source;
 	route->push_back(currentVertex);
 
 	while(currentVertex!=destination){
-		currentVertex=m_routes[source][destination][currentVertex];
+		currentVertex=getNextRankInRoute(source,destination,currentVertex);
 		route->push_back(currentVertex);
 	}
 }
 
+/**
+ * generate routes and connections
+ */
 void MessageRouter::generateRoutes(int n){
 	generateRoutesByGroups(n);
 }
 
+int MessageRouter::getIntermediateRank(int rank){
+	return rank-rank % m_coresPerNode;
+}
+
+/**
+ * given n ranks, they are grouped in groups.
+ * in each group, only one rank is allowed to communicate with the reprentative rank of
+ * other groups.
+ *
+ * a rank can communicate with itself and with its intermediate rank
+ *
+ * if a rank is intermediate, it can reach any intermediate rank too.
+ *
+ * This maps well on super-computers with the same number of cores on each node
+ *
+ * For instance, if a node has 8 cores, then 8 ranks per group is correct.
+ *
+ * this method populates these attributes:
+ *
+ * 	- m_connections
+ * 	- m_routes
+ */
 void MessageRouter::generateRoutesByGroups(int n){
+// the general idea of routing a message:
+//
+//
+// Cases: (starting with simpler cases)
+//
+//
+// case 1: source and destination are the same (1 hop, no routing required)
+// case 2:  source and destination are allowed to communicate (1 hop, no routing required)
+//   happens when 
+//       - source is the intermediate rank of the destination
+//       or
+//       - destination is the intermediate rank of the source
+// case 3:  source and destination share the same intermediate rank (2 hops, some routing)
+// case 4:  source and destination don't share the same intermediate rank (3 hops, full routing)
+//
+//
+// see Documentation/Message-Routing.txt
+//
+//             1	                 2                              3
+// trueSource -> sourceIntermediateRank -> destinationIntermediateRank -> trueDestination
+
+// the message has no routing tag
+// we must check that the channel is authorized.
+
 	for(int source=0;source<n;source++){
 		int intermediateSource=getIntermediateRank(source);
+	
+		// can connect with self.
+		m_connections[source].insert(source);
+
+		// can connect with the intermediate source
+		m_connections[source].insert(intermediateSource);
+
 		for(int destination=0;destination<n;destination++){
 			int intermediateDestination=getIntermediateRank(destination);
+
+			// an intermediate node can connect with any intermediate node
+			if(destination==intermediateDestination && source==intermediateSource)
+				m_connections[source].insert(intermediateDestination);
 			
+			// if the source is the intermediate destination, add a link
+			// this is within the same group
+			if(source==intermediateDestination)
+				m_connections[source].insert(destination);
+
+			// peers in the same group are allowed to connect
+			if(intermediateSource==intermediateDestination)
+				m_connections[source].insert(destination);
+
 			// same rank
 			// source -> destination
 			if(source==destination){
@@ -496,10 +450,10 @@ void MessageRouter::generateRoutesByGroups(int n){
 			}else if(source==intermediateDestination){
 				m_routes[source][destination][source]=destination;
 			// source and destination have the same intermediate
-			// source -> intermediateSource -> destination
+			// source -> destination
+			// it is faster like this
 			}else if(intermediateSource==intermediateDestination){
-				m_routes[source][destination][source]=intermediateSource;
-				m_routes[source][destination][intermediateSource]=destination;
+				m_routes[source][destination][source]=destination;
 			
 			// source and destination have a different intermediate
 			// source -> intermediateSource -> intermediateDestination -> destination
@@ -509,5 +463,20 @@ void MessageRouter::generateRoutesByGroups(int n){
 				m_routes[source][destination][intermediateDestination]=destination;
 			}
 		}
+	}
+}
+
+int MessageRouter::getNextRankInRoute(int source,int destination,int rank){
+	#ifdef ASSERT
+	assert(m_routes[source][destination].count(rank)==1);
+	#endif
+
+	return m_routes[source][destination][rank];
+}
+
+void MessageRouter::getConnections(int source,vector<int>*connections){
+	for(set<int>::iterator i=m_connections[m_rank].begin();
+		i!=m_connections[m_rank].end();i++){
+		connections->push_back(*i);
 	}
 }

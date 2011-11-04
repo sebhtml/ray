@@ -38,6 +38,9 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class Parameters{
+
+	int m_coresPerNode;
+
 	bool m_showReadPlacement;
 	bool m_showCommunicationEvents;
 	set<string> m_options;
@@ -209,6 +212,8 @@ public:
 	void writeCommandFile();
 	bool showCommunicationEvents();
 	bool showReadPlacement();
+
+	int getCoresPerNode();
 };
 
 #endif

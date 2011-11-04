@@ -38,6 +38,20 @@ DESCRIPTION:
        -o outputDirectory
               Specifies the directory for outputted files. Default is RayOutput
 
+  Message routing for large number of cores
+
+       -route-messages
+              Enables Ray message router.
+              With this option, only one rank per node will communicate with other nodes.
+              Messages will be routed accordingly.
+              Files generated: Rank<x>.Connections.txt and Rank<x>.Routes.txt
+
+       -cores-per-node coresPerNode
+              Sets the number of cores per node. The default is 8.
+              This is only used to compute routes if -route-messages is provided.
+
+  Other outputs
+
        -amos
               Writes the AMOS file called RayOutput/AMOS.afg
               An AMOS file contains read positions on contigs.
@@ -128,8 +142,11 @@ DESCRIPTION:
   Debugging
 
        -run-profiler
-              Runs the profiler as the code runs.
+              Runs the profiler as the code runs. By default, only show granularity warnings.
               Running the profiler increases running times.
+
+       -with-profiler-details
+              Shows number of messages sent and received in each methods during in each time slices (epochs). Needs -run-profiler.
 
        -show-communication-events
               Shows all messages sent and received.
@@ -279,4 +296,4 @@ COPYRIGHT
        You have received a copy of the GNU General Public License
        along with this program (see LICENSE).
 
-Ray 1.7.0
+Ray 1.7.1

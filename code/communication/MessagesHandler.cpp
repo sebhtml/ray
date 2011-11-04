@@ -80,7 +80,7 @@ void MessagesHandler::sendMessages(StaticVector*outbox){
 	outbox->clear();
 }
 
-#ifdef USE_PERSISTENT_COMMUNICATION
+#ifdef CONFIG_PERSISTENT_COMMUNICATION
 /*	
  * receiveMessages is implemented as recommanded by Mr. George Bosilca from
 the University of Tennessee (via the Open-MPI mailing list)
@@ -140,7 +140,7 @@ void MessagesHandler::pumpMessageFromPersistentRing(){
 #endif
 
 
-#ifdef USE_PERSISTENT_COMMUNICATION
+#ifdef CONFIG_PERSISTENT_COMMUNICATION
 void MessagesHandler::addMessage(Message*message){
 
 	m_bufferedMessages ++ ;
@@ -188,9 +188,9 @@ void MessagesHandler::addMessage(Message*message){
 }
 #endif
 
-#define USE_ROUND_ROBIN
+#define CONFIG_ROUND_ROBIN
 void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllocator){
-	#ifdef USE_PERSISTENT_COMMUNICATION
+	#ifdef CONFIG_PERSISTENT_COMMUNICATION
 	// pump messages with persistent communication
 	pumpMessageFromPersistentRing();
 
@@ -201,7 +201,7 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 			roundRobinReception(inbox,inboxAllocator);
 		}
 	}
-	#elif defined USE_ROUND_ROBIN
+	#elif defined CONFIG_ROUND_ROBIN
 
 	// round-robin reception seems to avoid starvation 
 /** round robin with Iprobe will increase the latency because there will be a lot of calls to
@@ -220,8 +220,8 @@ void MessagesHandler::receiveMessages(StaticVector*inbox,RingAllocator*inboxAllo
 	#endif
 }
 
-void MessagesHandler::roundRobinReception(StaticVector*inbox,RingAllocator*inboxAllocator){
-	#ifdef USE_PERSISTENT_COMMUNICATION
+#ifdef CONFIG_PERSISTENT_COMMUNICATION
+void MessagesHandler::roundRobinReception_persistent(){
 	// with persistent communication, we fetch the message from the persistent ring
 	// check if we have one message for m_currentRankToTryToReceiveFrom
 	if(m_tails[m_currentRankToTryToReceiveFrom] != NULL){
@@ -278,28 +278,37 @@ void MessagesHandler::roundRobinReception(StaticVector*inbox,RingAllocator*inbox
 		#endif
 	}
 
+
+}
+#endif
+
+
+void MessagesHandler::roundRobinReception(StaticVector*inbox,RingAllocator*inboxAllocator){
+	#ifdef CONFIG_PERSISTENT_COMMUNICATION
+
+	roundRobinReception_persistent();
+
 	#else
 
 	/* otherwise, we use MPI_Iprobe + MPI_Recv */
 	/* probe and read a message */
 
-	probeAndRead(m_currentRankToTryToReceiveFrom,MPI_ANY_TAG,inbox,inboxAllocator);
+	probeAndRead(m_connections[m_currentRankIndexToTryToReceiveFrom],MPI_ANY_TAG,inbox,inboxAllocator);
 
 	#endif
-	
 
 	#ifdef COMMUNICATION_IS_VERBOSE
 	if(inbox->size() > 0){
-		cout<<"[RoundRobin] received a message from "<<m_currentRankToTryToReceiveFrom<<endl;
+		cout<<"[RoundRobin] received a message from "<<m_currentRankIndexToTryToReceiveFrom<<endl;
 	}
 	#endif
 
 	/* advance the rank to receive from */
-	if(m_currentRankToTryToReceiveFrom == m_size-1){
+	if(m_currentRankIndexToTryToReceiveFrom == (int)m_connections.size()-1){
 		/* restart the loop */
-		m_currentRankToTryToReceiveFrom = 0;
+		m_currentRankIndexToTryToReceiveFrom= 0;
 	}else{
-		m_currentRankToTryToReceiveFrom++;
+		m_currentRankIndexToTryToReceiveFrom++;
 	}
 
 }
@@ -344,7 +353,7 @@ void MessagesHandler::probeAndRead(int source,int tag,StaticVector*inbox,RingAll
 }
 
 void MessagesHandler::initialiseMembers(){
-	#ifdef USE_PERSISTENT_COMMUNICATION
+	#ifdef CONFIG_PERSISTENT_COMMUNICATION
 	// the ring itself  contain requests ready to receive messages
 	m_ringSize=m_size+16;
 
@@ -371,7 +380,7 @@ void MessagesHandler::initialiseMembers(){
 }
 
 void MessagesHandler::freeLeftovers(){
-	#ifdef USE_PERSISTENT_COMMUNICATION
+	#ifdef CONFIG_PERSISTENT_COMMUNICATION
 	for(int i=0;i<m_ringSize;i++){
 		MPI_Cancel(m_ring+i);
 		MPI_Request_free(m_ring+i);
@@ -414,15 +423,20 @@ void MessagesHandler::constructor(int*argc,char***argv){
 		}
 	}
 
-	m_currentRankToTryToReceiveFrom=m_rank;
+	// start with the first connection
+	m_currentRankIndexToTryToReceiveFrom=0;
 
-	#ifdef USE_PERSISTENT_COMMUNICATION
+	#ifdef CONFIG_PERSISTENT_COMMUNICATION
 	int chunkSize = 4194304; // 4 MiB
 	m_internalMessageAllocator.constructor(chunkSize,RAY_MALLOC_TYPE_COMMUNICATION_LAYER,false);
 	m_internalBufferAllocator.constructor(chunkSize,RAY_MALLOC_TYPE_COMMUNICATION_LAYER,false);
 
 	m_bufferedMessages=0;
 	#endif
+
+	// initialize connections
+	for(int i=0;i<m_size;i++)
+		m_connections.push_back(i);
 }
 
 void MessagesHandler::destructor(){
@@ -505,3 +519,11 @@ string MessagesHandler::getMessagePassingInterfaceImplementation(){
 	return implementation.str();
 }
 
+// set connections to probe from
+void MessagesHandler::setConnections(vector<int>*connections){
+	m_connections.clear();
+	for(int i=0;i<(int)connections->size();i++)
+		m_connections.push_back(connections->at(i));
+
+	cout<<"[MessagesHandler] Will use "<<m_connections.size()<<" connections for round-robin reception."<<endl;
+}

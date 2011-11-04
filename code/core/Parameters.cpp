@@ -83,6 +83,8 @@ Parameters::Parameters(){
 	m_showExtensionChoice=false;
 	m_showReadPlacement=false;
 
+	m_coresPerNode=8;
+
 	/** use the new NovaEngine (TM) */
 	m_options.insert("-use-NovaEngine");
 }
@@ -237,6 +239,9 @@ void Parameters::parseCommands(){
 	set<string> kmerSetting;
 	kmerSetting.insert("-k");
 
+	set<string> coresPerNode;
+	coresPerNode.insert("-cores-per-node");
+
 	set<string> reduceMemoryUsage;
 	reduceMemoryUsage.insert("-r");
 
@@ -285,6 +290,7 @@ void Parameters::parseCommands(){
 	toAdd.push_back(interleavedCommands);
 	toAdd.push_back(reduceMemoryUsage);
 	toAdd.push_back(memoryMappedFileCommands);
+	toAdd.push_back(coresPerNode);
 	toAdd.push_back(showMemory);	
 	toAdd.push_back(debugBubbles);
 	toAdd.push_back(debugSeeds);
@@ -588,7 +594,20 @@ void Parameters::parseCommands(){
 			token=m_commands[i];
 			m_peakCoverage=atoi(token.c_str());
 			m_providedPeakCoverage=true;
+		}else if(coresPerNode.count(token)>0){
+			i++;
+			int items=m_commands.size()-i;
 
+			if(items<1){
+				if(m_rank==MASTER_RANK){
+					cout<<"Error: "<<token<<" needs 1 item but you provided only "<<items<<endl;
+				}
+				m_error=true;
+				return;
+			}
+			token=m_commands[i];
+			m_coresPerNode=atoi(token.c_str());
+			
 		}else if(kmerSetting.count(token)>0){
 			i++;
 			int items=m_commands.size()-i;
@@ -1068,10 +1087,6 @@ void Parameters::showUsage(){
 	showOptionDescription("Larger k-mers utilise more memory.");
 	cout<<endl;
 
-	cout<<"  Large number of cores"<<endl;
-	cout<<endl;
-	showOption("-route-messages","Enables Ray message router.");
-	cout<<endl;
 
 	cout<<"  Inputs"<<endl;
 	cout<<endl;
@@ -1089,6 +1104,20 @@ void Parameters::showUsage(){
 	cout<<"  Outputs"<<endl;
 	cout<<endl;
 	showOption("-o outputDirectory","Specifies the directory for outputted files. Default is RayOutput");
+	cout<<endl;
+
+	cout<<"  Message routing for large number of cores"<<endl;
+	cout<<endl;
+	showOption("-route-messages","Enables Ray message router.");
+	showOptionDescription("With this option, only one rank per node will communicate with other nodes.");
+	showOptionDescription("Messages will be routed accordingly.");
+	showOptionDescription("Files generated: Rank<x>.Connections.txt and Rank<x>.Routes.txt");
+	cout<<endl;
+	showOption("-cores-per-node coresPerNode", "Sets the number of cores per node. The default is 8.");
+	showOptionDescription("This is only used to compute routes if -route-messages is provided.");
+	cout<<endl;
+
+	cout<<"  Other outputs"<<endl;
 	cout<<endl;
 	showOption("-amos","Writes the AMOS file called RayOutput/AMOS.afg");
 	showOptionDescription("An AMOS file contains read positions on contigs.");
@@ -1506,4 +1535,8 @@ bool Parameters::showCommunicationEvents(){
 
 bool Parameters::showReadPlacement(){
 	return m_showReadPlacement;
+}
+
+int Parameters::getCoresPerNode(){
+	return m_coresPerNode;
 }

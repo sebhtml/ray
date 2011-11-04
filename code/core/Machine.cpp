@@ -280,7 +280,13 @@ void Machine::start(){
 	// plus the directory exists now
 	if(m_parameters.hasOption("-route-messages")){
 		m_router.enable(&m_inbox,&m_outbox,&m_outboxAllocator,m_parameters.getRank(),
-			m_parameters.getPrefix(),m_parameters.getSize());
+			m_parameters.getPrefix(),m_parameters.getSize(),
+			m_parameters.getCoresPerNode());
+
+		// update the connections
+		vector<int> connections;
+		m_router.getConnections(m_parameters.getRank(),&connections);
+		m_messagesHandler.setConnections(&connections);
 	}
 
 	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed,&m_subgraph,&m_inbox,&m_profiler2,

@@ -47,6 +47,8 @@ using namespace std;
  * bit 30: 1 = tag is a routing tag, 0 = tag is not a routing tag
  */
 class MessageRouter{
+	int m_coresPerNode;
+
 	bool m_enabled;
 	StaticVector*m_inbox;
 	StaticVector*m_outbox;
@@ -61,12 +63,15 @@ class MessageRouter{
  */
 	map<int,map<int,map<int,int> > > m_routes;
 
-
+/**
+ * connections
+ */
+	map<int,set<int> > m_connections;
 
 	int getIntermediateRank(int rank);
 	int getRoutingTag(int tag,int source,int destination);
 
-	void rerouteMessage(Message*message,int destination);
+	void forwardMessage(Message*message,int destination);
 
 	/** get the source from a routing tag */
 	int getSource(int tag);
@@ -79,22 +84,25 @@ class MessageRouter{
 
 	void getRoute(int source,int destination,vector<int>*route);
 
+	int getNextRankInRoute(int source,int destination,int rank);
+
 	void generateRoutes(int n);
 	void generateRoutesByGroups(int n);
+
+	bool isConnected(int destination,int source);
 public:
 	MessageRouter();
-
-	bool isReachable(int destination,int source);
-	
 
 	void routeOutcomingMessages();
 	void routeIncomingMessages();
 
 	bool isEnabled();
 	void enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*outboxAllocator,int rank,
-string prefix,int numberOfRanks);
+string prefix,int numberOfRanks,int coresPerNode);
 
 	bool isRoutingTag(int tag);
+
+	void getConnections(int source,vector<int>*connections);
 };
 
 #endif
