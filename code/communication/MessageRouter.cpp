@@ -36,6 +36,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <math.h> /* for log */
 using namespace std;
 
 #define RAY_ROUTING_TAG_TAG_OFFSET 0
@@ -45,6 +46,286 @@ using namespace std;
 #define RAY_ROUTING_TAG_DESTINATION_OFFSET (RAY_ROUTING_TAG_TAG_SIZE+RAY_ROUTING_TAG_SOURCE_SIZE)
 #define RAY_ROUTING_TAG_DESTINATION_SIZE 11
 #define RAY_ROUTING_TAG_BIT_OFFSET (RAY_ROUTING_TAG_TAG_SIZE+RAY_ROUTING_TAG_SOURCE_SIZE+RAY_ROUTING_TAG_DESTINATION_SIZE)
+
+/*
+#define CONFIG_ROUTER_VERBOSITY
+#define ASSERT
+*/
+
+void MessageRouter::viewConnections(){
+	for(int i=0;i<m_size;i++){
+		cout<<i<<"	"<<m_connections[i].size()<<"	";
+		for(set<int>::iterator j=m_connections[i].begin();j!=m_connections[i].end();j++){
+			if(j!=m_connections[i].begin())
+				cout<<" ";
+			cout<<*j;
+		}
+		cout<<endl;
+	}
+}
+
+void MessageRouter::makeConnections(string type){
+	cout<<"[MessageRouter::makeConnections] type: "<<type<<endl;
+	if(type=="random"){
+		makeConnections_randomGraph();
+	}else if(type=="group"){
+		makeConnections_withGroups();
+	}else if(type=="complete"){
+		makeConnections_complete();
+	}else{// the default is random
+		makeConnections_randomGraph();
+	}
+}
+
+/**
+ * complete graph
+ */
+void MessageRouter::makeConnections_complete(){
+	for(int i=0;i<m_size;i++){
+		for(int j=0;j<m_size;j++){
+			m_connections[i].insert(j);
+		}
+	}
+}
+
+/**
+ * create random connections
+ */
+void MessageRouter::makeConnections_randomGraph(){
+
+	srand(4);
+
+	// insert self
+	for(int i=0;i<m_size;i++)
+		m_connections[i].insert(i);
+
+	int connectionsPerVertex=log(m_size)/log(2)/2;
+
+	cout<<"[MessageRouter] vertices: "<<m_size<<endl;
+	cout<<"[MessageRouter] connectionsPerVertex: "<<connectionsPerVertex<<endl;
+
+	//
+	for(int connectionNumber=0;connectionNumber<connectionsPerVertex;connectionNumber++){
+
+		for(int source=0;source<m_size;source++){
+
+			// add an edge bool added=false;
+			bool added=false;
+			while(!added){
+				int destination=rand()%m_size;
+
+				// if already set, find another one
+				if(m_connections[source].count(destination)>0)
+					continue;
+			
+				m_connections[source].insert(destination);
+				m_connections[destination].insert(source);
+				added=true;
+			}
+		}
+	}
+}
+
+/**
+ * Dijkstra's_algorithm
+ */
+void MessageRouter::findShortestPath(int source,int destination,vector<int>*route){
+
+	// assign tentative distances
+	map<int,int> tentativeDistances;
+	
+	for(int i=0;i<m_size;i++)
+		tentativeDistances[i]=9999;
+
+	tentativeDistances[source]=0;
+
+	map<int,int> previousVertices;
+
+	// create a set of unvisited vertices
+	set<int> unvisited;
+
+	for(int i=0;i<m_size;i++)
+		unvisited.insert(i);
+
+	// create a current vertex
+	int current=source;
+
+	// create an index of distances
+	map<int,set<int> > verticesWithDistance;
+
+	for(map<int,int>::iterator i=tentativeDistances.begin();i!=tentativeDistances.end();i++){
+		verticesWithDistance[i->second].insert(i->first);
+	}
+
+	while(!unvisited.empty()){
+	
+		// calculate the tentative distance
+		// of each neighbors of the current
+		for(set<int>::iterator neighbor=m_connections[current].begin();
+			neighbor!=m_connections[current].end();neighbor++){
+			int theNeighbor=*neighbor;
+
+			// we are only interested in unvisited neighbors
+			if(unvisited.count(theNeighbor)>0){
+				int distance=tentativeDistances[current]+1;
+				int oldDistance=tentativeDistances[theNeighbor];
+
+				// the new distance is better
+				if(distance < oldDistance){
+					tentativeDistances[theNeighbor]=distance;
+					previousVertices[theNeighbor]=current;
+
+					// update the distance index
+					verticesWithDistance[oldDistance].erase(theNeighbor);
+					verticesWithDistance[distance].insert(theNeighbor);
+				}
+			}
+		}
+
+		// mark the current vertex as not used
+		unvisited.erase(current);
+
+		// remove it as well from the index
+		int theDistance=tentativeDistances[current];
+		verticesWithDistance[theDistance].erase(current);
+
+		if(verticesWithDistance[theDistance].size()==0)
+			verticesWithDistance.erase(theDistance);
+
+		// the next current is the one in unvisited vertices
+		// with the lowest distance
+		
+		int bestDistance=-1;
+
+		// find it using the index
+		// the index contains only unvisited vertices
+		for(map<int,set<int> >::iterator myIterator=verticesWithDistance.begin();
+			myIterator!=verticesWithDistance.end();myIterator++){
+
+			int theDistance=myIterator->first;
+
+			// we are done if all the remaining distances are greater
+			if(bestDistance!=-1 && theDistance > bestDistance)
+				break;
+
+			// find a vertex with the said distance
+			for(set<int>::iterator i=myIterator->second.begin();
+				i!=myIterator->second.end();i++){
+				int vertex=*i;
+
+				if(theDistance < bestDistance || bestDistance==-1){
+					current=vertex;
+					bestDistance=tentativeDistances[vertex];
+
+					// we can break because all the other remaining 
+					// for this distance have the same distance (obviously)
+					break;
+				}
+			}
+		}
+	}
+
+	// generate the route
+	current=destination;
+	while(current!=source){
+		route->push_back(current);
+		current=previousVertices[current];
+	}
+
+	route->push_back(source);
+
+	// invert the route
+	int left=0;
+	int right=route->size()-1;
+	while(left<right){
+		int t=(*route)[left];
+		(*route)[left]=(*route)[right];
+		(*route)[right]=t;
+		left++;
+		right--;
+	}
+
+	#ifdef CONFIG_ROUTER_VERBOSITY
+	// print the best distance
+	cout<<"Shortest path from "<<source<<" to "<<destination<<" is "<<tentativeDistances[destination]<<"	";
+	cout<<"Path:	"<<route->size()<<"	";
+	for(int i=0;i<(int)route->size();i++){
+		cout<<" "<<route->at(i);
+	}
+	cout<<endl;
+	#endif
+}
+
+void MessageRouter::printRoute(int source,int destination){
+	cout<<"[printRoute] Source: "<<source<<"	Destination: "<<destination<<"	";
+
+	vector<int> route;
+	getRoute(source,destination,&route);
+
+	cout<<"Size: "<<route.size()<<"	Route: ";
+
+	for(int i=0;i<(int)route.size();i++){
+		if(i!=0)
+			cout<<" ";
+		cout<<route[i];
+	}
+	cout<<"	Hops: "<<route.size()-1<<endl;
+}
+
+void MessageRouter::makeRoutes(){
+
+	int step=m_size/60+1;
+
+	for(int source=0;source<m_size;source++){
+
+		#ifndef CONFIG_ROUTER_VERBOSITY
+		cout<<"[MessageRouter::makeRoutes] "<<source<<" ";
+		cout.flush();
+		#endif
+
+		for(int destination=0;destination<m_size;destination++){
+			#ifndef CONFIG_ROUTER_VERBOSITY
+			if(destination%step==0){
+				cout<<"*";
+				cout.flush();
+			}
+			#endif
+
+			if(destination<source)
+				continue;
+
+			vector<int> route;
+			findShortestPath(source,destination,&route);
+
+			for(int i=0;i<(int)route.size()-1;i++){
+				// add the route
+				m_routes[source][destination][route[i]]=route[i+1];
+
+				// add the reverse route
+				m_routes[destination][source][route[i+1]]=route[i];
+
+			}
+
+			#ifdef CONFIG_ROUTER_VERBOSITY
+			printRoute(source,destination);
+
+			printRoute(destination,source);
+			#endif
+		}
+
+		#ifndef CONFIG_ROUTER_VERBOSITY
+		double ratio=source*100.0/m_size;
+		cout<<" "<<ratio<<"%"<<endl;
+		#endif
+	}
+}
+
+void MessageRouter::viewRoutes(){
+	for(int i=0;i<m_size;i++)
+		for(int j=0;j<m_size;j++)
+			printRoute(i,j);
+}
+
 
 /**
  * route outcoming messages
@@ -56,6 +337,11 @@ void MessageRouter::routeOutcomingMessages(){
 		Message*aMessage=m_outbox->at(i);
 
 		int communicationTag=aMessage->getTag();
+
+		// don't route messages with direct tags
+		// these are terminal control messages
+		if(m_directTags.count(communicationTag)>0)
+			continue;
 
 		// - first, the message may have been already routed when it was received (also
 		// in a routed version). In this case, nothing must be done.
@@ -168,9 +454,11 @@ MessageRouter::MessageRouter(){
 }
 
 void MessageRouter::enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*outboxAllocator,int rank,
-	string prefix,int numberOfRanks,int coresPerNode){
+	string prefix,int numberOfRanks,int coresPerNode,string type){
 
 	m_coresPerNode=coresPerNode;
+	m_size=numberOfRanks;
+
 	cout<<endl;
 
 	cout<<"[MessageRouter] Enabled message routing"<<endl;
@@ -181,42 +469,58 @@ void MessageRouter::enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*
 	m_rank=rank;
 	m_enabled=true;
 
-	// generate the routes
-	generateRoutes(numberOfRanks);
+	// generate the connections
+	makeConnections(type);
 
+	// generate the routes
+	makeRoutes();
+
+	if(m_rank==0)
+		writeFiles(prefix);
+}
+
+void MessageRouter::writeFiles(string prefix){
 	// dump the connections in a file
 	ostringstream file;
-	file<<prefix<<"Rank"<<rank<<".Connections.txt";
+	file<<prefix<<"Connections.txt";
 	ofstream f(file.str().c_str());
-	f<<m_connections[m_rank].size()<<"	";
 
-	for(set<int>::iterator i=m_connections[m_rank].begin();
-		i!=m_connections[m_rank].end();i++){
-		if(i!=m_connections[m_rank].begin())
-			f<<" ";
-		f<<*i;
+	f<<"#Rank	Count	Connections"<<endl;
+
+	for(int rank=0;rank<m_size;rank++){
+		f<<rank<<"	"<<m_connections[rank].size()<<"	";
+
+		for(set<int>::iterator i=m_connections[rank].begin();
+			i!=m_connections[rank].end();i++){
+			if(i!=m_connections[rank].begin())
+				f<<" ";
+			f<<*i;
+		}
+		f<<endl;
 	}
 
 	f.close();
 
 	// dump the routes in a file
 	ostringstream file2;
-	file2<<prefix<<"Rank"<<rank<<".Routes.txt";
+	file2<<prefix<<"Routes.txt";
 	ofstream f2(file2.str().c_str());
 	f2<<"#Source	Destination	Hops	Route"<<endl;
 
-	for(int i=0;i<numberOfRanks;i++){
-		vector<int> route;
-		getRoute(rank,i,&route);
-		f2<<rank<<"	"<<i<<"	"<<route.size()-1<<"	";
+	for(int rank=0;rank<m_size;rank++){
+		for(int i=0;i<m_size;i++){
+			vector<int> route;
+			getRoute(rank,i,&route);
+			f2<<rank<<"	"<<i<<"	"<<route.size()-1<<"	";
 
-		for(int i=0;i<(int)route.size();i++){
-			if(i!=0)
-				f2<<" ";
-			f2<<route[i];
+			for(int i=0;i<(int)route.size();i++){
+				if(i!=0)
+					f2<<" ";
+				f2<<route[i];
+			}
+
+			f2<<endl;
 		}
-
-		f2<<endl;
 	}
 
 	f2.close();
@@ -351,13 +655,6 @@ void MessageRouter::getRoute(int source,int destination,vector<int>*route){
 	}
 }
 
-/**
- * generate routes and connections
- */
-void MessageRouter::generateRoutes(int n){
-	generateRoutesByGroups(n);
-}
-
 int MessageRouter::getIntermediateRank(int rank){
 	return rank-rank % m_coresPerNode;
 }
@@ -380,7 +677,7 @@ int MessageRouter::getIntermediateRank(int rank){
  * 	- m_connections
  * 	- m_routes
  */
-void MessageRouter::generateRoutesByGroups(int n){
+void MessageRouter::makeConnections_withGroups(){
 // the general idea of routing a message:
 //
 //
@@ -405,7 +702,7 @@ void MessageRouter::generateRoutesByGroups(int n){
 // the message has no routing tag
 // we must check that the channel is authorized.
 
-	for(int source=0;source<n;source++){
+	for(int source=0;source<m_size;source++){
 		int intermediateSource=getIntermediateRank(source);
 	
 		// can connect with self.
@@ -414,7 +711,8 @@ void MessageRouter::generateRoutesByGroups(int n){
 		// can connect with the intermediate source
 		m_connections[source].insert(intermediateSource);
 
-		for(int destination=0;destination<n;destination++){
+		for(int destination=0;destination<m_size;destination++){
+
 			int intermediateDestination=getIntermediateRank(destination);
 
 			// an intermediate node can connect with any intermediate node
@@ -479,4 +777,8 @@ void MessageRouter::getConnections(int source,vector<int>*connections){
 		i!=m_connections[m_rank].end();i++){
 		connections->push_back(*i);
 	}
+}
+
+void MessageRouter::addDirectTag(int tag){
+	m_directTags.insert(tag);
 }

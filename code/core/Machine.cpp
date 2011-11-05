@@ -281,12 +281,18 @@ void Machine::start(){
 	if(m_parameters.hasOption("-route-messages")){
 		m_router.enable(&m_inbox,&m_outbox,&m_outboxAllocator,m_parameters.getRank(),
 			m_parameters.getPrefix(),m_parameters.getSize(),
-			m_parameters.getCoresPerNode());
+			m_parameters.getCoresPerNode(),m_parameters.getConnectionType());
 
 		// update the connections
 		vector<int> connections;
 		m_router.getConnections(m_parameters.getRank(),&connections);
 		m_messagesHandler.setConnections(&connections);
+
+		// terminal control messages can not be routed.
+		/*
+		m_router.addDirectTag(RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON);
+		m_router.addDirectTag(RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY);
+		*/
 	}
 
 	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed,&m_subgraph,&m_inbox,&m_profiler2,
@@ -359,7 +365,7 @@ void Machine::start(){
 	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),&m_outbox,&m_outboxAllocator,&m_slave_mode,&m_parameters,&m_wordSize,&m_subgraph,&m_inbox,&m_virtualCommunicator);
 
 	m_alive=true;
-	m_timeToLive=1024;
+	m_timeToLive=2097152;
 	m_loadSequenceStep=false;
 	m_totalLetters=0;
 
@@ -672,7 +678,9 @@ void Machine::runWithProfiler(){
 		receivedMessages+=m_inbox.size();
 		
 		for(int i=0;i<(int)m_inbox.size();i++){
-			receivedTags[m_inbox[i]->getTag()]++;
+			// stript routing information, if any
+			uint8_t tag=m_inbox[i]->getTag();
+			receivedTags[tag]++;
 		}
 
 		// 2. process the received message, if any
@@ -718,11 +726,15 @@ void Machine::runWithProfiler(){
 		sentMessages += messagesSentInProcessData;
 
 		for(int i=0;i<messagesSentInProcessMessages;i++){
-			sentTagsInProcessMessages[m_outbox[i]->getTag()]++;
+			// stript routing information, if any
+			uint8_t tag=m_outbox[i]->getTag();
+			sentTagsInProcessMessages[tag]++;
 		}
 
 		for(int i=messagesSentInProcessMessages;i<(int)m_outbox.size();i++){
-			sentTagsInProcessData[m_outbox[i]->getTag()]++;
+			// stript routing information, if any
+			uint8_t tag=m_outbox[i]->getTag();
+			sentTagsInProcessData[tag]++;
 		}
 
 		// 4. send messages
@@ -778,7 +790,7 @@ void Machine::sendMessages(){
 		cout<<"Fatal: "<<messagesToSend<<" messages to send, but max is "<<MAX_ALLOCATED_MESSAGES_IN_OUTBOX<<endl;
 		cout<<"tags=";
 		for(int i=0;i<(int)m_outbox.size();i++){
-			int tag=m_outbox[i]->getTag();
+			uint8_t tag=m_outbox[i]->getTag();
 			cout<<" "<<MESSAGES[tag]<<endl;
 		}
 		cout<<endl;
@@ -786,7 +798,8 @@ void Machine::sendMessages(){
 
 	assert(messagesToSend<=MAX_ALLOCATED_MESSAGES_IN_OUTBOX);
 	if(messagesToSend>MAX_ALLOCATED_MESSAGES_IN_OUTBOX){
-		cout<<"Tag="<<m_outbox[0]->getTag()<<" n="<<messagesToSend<<" max="<<MAX_ALLOCATED_MESSAGES_IN_OUTBOX<<endl;
+		uint8_t tag=m_outbox[0]->getTag();
+		cout<<"Tag="<<tag<<" n="<<messagesToSend<<" max="<<MAX_ALLOCATED_MESSAGES_IN_OUTBOX<<endl;
 	}
 	#endif
 

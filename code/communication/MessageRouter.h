@@ -54,6 +54,9 @@ class MessageRouter{
 	StaticVector*m_outbox;
 	RingAllocator*m_outboxAllocator;
 	int m_rank;
+	int m_size;
+
+	set<int> m_directTags;
 
 /** routes
  * source
@@ -86,10 +89,20 @@ class MessageRouter{
 
 	int getNextRankInRoute(int source,int destination,int rank);
 
-	void generateRoutes(int n);
-	void generateRoutesByGroups(int n);
-
 	bool isConnected(int destination,int source);
+
+	void makeConnections(string type);
+	void makeConnections_randomGraph();
+	void makeConnections_withGroups();
+	void makeConnections_complete();
+
+	void viewConnections();
+	void findShortestPath(int source,int destination,vector<int>*route);
+	void printRoute(int source,int destination);
+	void makeRoutes();
+	void viewRoutes();
+
+	void writeFiles(string prefix);
 public:
 	MessageRouter();
 
@@ -98,11 +111,13 @@ public:
 
 	bool isEnabled();
 	void enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*outboxAllocator,int rank,
-string prefix,int numberOfRanks,int coresPerNode);
+string prefix,int numberOfRanks,int coresPerNode,string type);
 
 	bool isRoutingTag(int tag);
 
 	void getConnections(int source,vector<int>*connections);
+
+	void addDirectTag(int tag);
 };
 
 #endif

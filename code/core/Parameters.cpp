@@ -242,6 +242,9 @@ void Parameters::parseCommands(){
 	set<string> coresPerNode;
 	coresPerNode.insert("-cores-per-node");
 
+	set<string> connectionType;
+	connectionType.insert("-connection-type");
+
 	set<string> reduceMemoryUsage;
 	reduceMemoryUsage.insert("-r");
 
@@ -291,6 +294,7 @@ void Parameters::parseCommands(){
 	toAdd.push_back(reduceMemoryUsage);
 	toAdd.push_back(memoryMappedFileCommands);
 	toAdd.push_back(coresPerNode);
+	toAdd.push_back(connectionType);
 	toAdd.push_back(showMemory);	
 	toAdd.push_back(debugBubbles);
 	toAdd.push_back(debugSeeds);
@@ -594,6 +598,21 @@ void Parameters::parseCommands(){
 			token=m_commands[i];
 			m_peakCoverage=atoi(token.c_str());
 			m_providedPeakCoverage=true;
+	
+		}else if(connectionType.count(token)>0){
+			i++;
+			int items=m_commands.size()-i;
+
+			if(items<1){
+				if(m_rank==MASTER_RANK){
+					cout<<"Error: "<<token<<" needs 1 item but you provided only "<<items<<endl;
+				}
+				m_error=true;
+				return;
+			}
+			token=m_commands[i];
+			m_connectionType=token;
+
 		}else if(coresPerNode.count(token)>0){
 			i++;
 			int items=m_commands.size()-i;
@@ -1106,16 +1125,6 @@ void Parameters::showUsage(){
 	showOption("-o outputDirectory","Specifies the directory for outputted files. Default is RayOutput");
 	cout<<endl;
 
-	cout<<"  Message routing for large number of cores"<<endl;
-	cout<<endl;
-	showOption("-route-messages","Enables Ray message router.");
-	showOptionDescription("With this option, only one rank per node will communicate with other nodes.");
-	showOptionDescription("Messages will be routed accordingly.");
-	showOptionDescription("Files generated: Rank<x>.Connections.txt and Rank<x>.Routes.txt");
-	cout<<endl;
-	showOption("-cores-per-node coresPerNode", "Sets the number of cores per node. The default is 8.");
-	showOptionDescription("This is only used to compute routes if -route-messages is provided.");
-	cout<<endl;
 
 	cout<<"  Other outputs"<<endl;
 	cout<<endl;
@@ -1182,6 +1191,20 @@ void Parameters::showUsage(){
 	showOption("-read-checkpoints","Read checkpoint files");
 	cout<<endl;
 	showOption("-read-write-checkpoints","Read and write checkpoint files");
+	cout<<endl;
+
+	cout<<"  Message routing for large number of cores"<<endl;
+	cout<<endl;
+	showOption("-route-messages","Enables the Ray message router. Disabled by default.");
+	showOptionDescription("Messages will be routed accordingly so that any rank can communicate directly with only a few others.");
+	showOptionDescription("Without -route-messages, any rank can communicate directly with any other rank.");
+	showOptionDescription("Files generated: Connections.txt and Routes.txt");
+	cout<<endl;
+	showOption("-connection-type type","Sets the connection type for routes.");
+	showOptionDescription("Accepted values are group, random and complete. Default is random.");
+	cout<<endl;
+	showOption("-cores-per-node coresPerNode", "Sets the number of cores per node. The default is 8.");
+	showOptionDescription("This is only used to compute routes if -route-messages and -connection-type group are provided together.");
 	cout<<endl;
 
 	cout<<"  Hardware testing"<<endl;
@@ -1539,4 +1562,8 @@ bool Parameters::showReadPlacement(){
 
 int Parameters::getCoresPerNode(){
 	return m_coresPerNode;
+}
+
+string Parameters::getConnectionType(){
+	return m_connectionType;
 }

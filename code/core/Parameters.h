@@ -40,6 +40,7 @@ using namespace std;
 class Parameters{
 
 	int m_coresPerNode;
+	string m_connectionType;
 
 	bool m_showReadPlacement;
 	bool m_showCommunicationEvents;
@@ -214,6 +215,7 @@ public:
 	bool showReadPlacement();
 
 	int getCoresPerNode();
+	string getConnectionType();
 };
 
 #endif
