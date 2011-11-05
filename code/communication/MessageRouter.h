@@ -25,14 +25,15 @@
 #include <memory/RingAllocator.h>
 #include <structures/StaticVector.h>
 #include <communication/Message.h>
-#include <vector>
 #include <map>
+#include <core/constants.h>
+#include <vector>
 #include <string>
 using namespace std;
 
 /**
- * \author Sébastien Boisvert
- * \reviewedBy __
+ * \author Sébastien Boisvert 2011-11-04
+ * \reviewedBy Elénie Godzaridis 2011-11-05
  *
  * the MessageRouter makes communication more efficient.
  *
@@ -42,9 +43,8 @@ using namespace std;
  * int tag
  *
  * bits 0 to 7: tag (8 bits, values from 0 to 255, 256 possible values)
- * bits 8 to 18: true source (11 bits, values from 0 to 2047, 2048 possible values)
- * bits 19 to 29: true destination (11 bits, values from 0 to 2047, 2048 possible values)
- * bit 30: 1 = tag is a routing tag, 0 = tag is not a routing tag
+ * bits 8 to 19: true source (12 bits, values from 0 to 4095, 4096 possible values)
+ * bits 20 to 31: true destination (12 bits, values from 0 to 4095, 4096 possible values)
  */
 class MessageRouter{
 	int m_coresPerNode;
@@ -53,10 +53,8 @@ class MessageRouter{
 	StaticVector*m_inbox;
 	StaticVector*m_outbox;
 	RingAllocator*m_outboxAllocator;
-	int m_rank;
+	Rank m_rank;
 	int m_size;
-
-	set<int> m_directTags;
 
 /** routes
  * source
@@ -64,45 +62,61 @@ class MessageRouter{
  * 		vertex1
  * 			vertex2
  */
-	map<int,map<int,map<int,int> > > m_routes;
+	vector<vector<map<Rank,Rank> > > m_routes;
 
 /**
  * connections
  */
-	map<int,set<int> > m_connections;
+	vector<set<Rank> > m_connections;
 
-	int getIntermediateRank(int rank);
-	int getRoutingTag(int tag,int source,int destination);
+	
+	void forwardMessage(Message*message,Rank destination);
 
-	void forwardMessage(Message*message,int destination);
+	void getRoute(Rank source,Rank destination,vector<Rank>*route);
 
-	/** get the source from a routing tag */
-	int getSource(int tag);
+	Rank getNextRankInRoute(Rank source,Rank destination,Rank rank);
 
-	/** get the destination from a routing tag */
-	int getDestination(int tag);
+	bool isConnected(Rank destination,Rank source);
 
-	/** get the tag from a routing tag */
-	int getTag(int tag);
+	/************************************************/
+	/** methods to build connections */
 
-	void getRoute(int source,int destination,vector<int>*route);
-
-	int getNextRankInRoute(int source,int destination,int rank);
-
-	bool isConnected(int destination,int source);
-
+	/** general method to make connections */
 	void makeConnections(string type);
-	void makeConnections_randomGraph();
-	void makeConnections_withGroups();
+
+	/** random connections */
+	void makeConnections_random();
+
+	/** grouped connections */
+	void makeConnections_group();
+	int getIntermediateRank(Rank rank);
+
+	/** complete connections */
 	void makeConnections_complete();
 
-	void viewConnections();
-	void findShortestPath(int source,int destination,vector<int>*route);
-	void printRoute(int source,int destination);
+	/** find shortest paths between all pairs */
 	void makeRoutes();
-	void viewRoutes();
+
+	void findShortestPath(Rank source,Rank destination,vector<Rank>*route);
+	void printRoute(Rank source,Rank destination);
 
 	void writeFiles(string prefix);
+
+	/********************************************/
+	/* stuff for routing tags */
+
+	/** build a routing tag */
+	RoutingTag getRoutingTag(Tag tag,Rank source,Rank destination);
+
+	/** get the source from a routing tag */
+	Rank getSource(RoutingTag tag);
+
+	/** get the destination from a routing tag */
+	Rank getDestination(RoutingTag tag);
+
+	/** get the tag from a routing tag */
+	Tag getTag(RoutingTag tag);
+
 public:
 	MessageRouter();
 
@@ -110,14 +124,12 @@ public:
 	void routeIncomingMessages();
 
 	bool isEnabled();
-	void enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*outboxAllocator,int rank,
+	void enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*outboxAllocator,Rank rank,
 string prefix,int numberOfRanks,int coresPerNode,string type);
 
-	bool isRoutingTag(int tag);
+	bool isRoutingTag(Tag tag);
 
-	void getConnections(int source,vector<int>*connections);
-
-	void addDirectTag(int tag);
+	void getConnections(Rank source,vector<Rank>*connections);
 };
 
 #endif

@@ -22,6 +22,11 @@ see <http://www.gnu.org/licenses/>
 #ifndef _constants
 #define _constants
 
+typedef int Rank;
+typedef int Tag;
+typedef int RoutingTag;
+typedef int Distance;
+
 #ifndef RAY_VERSION
 #define RAY_VERSION "Unknown"
 #endif
@@ -85,7 +90,7 @@ see <http://www.gnu.org/licenses/>
 
 
 /* the maximum of processes is utilized to construct unique hyperfusions IDs */
-// with routing enabled, MAX_NUMBER_OF_MPI_PROCESSES is 2048
+// with routing enabled, MAX_NUMBER_OF_MPI_PROCESSES is 4096
 #define MAX_NUMBER_OF_MPI_PROCESSES 1000000
 #define INVALID_RANK MAX_NUMBER_OF_MPI_PROCESSES
 
