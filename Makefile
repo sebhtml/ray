@@ -59,7 +59,7 @@ FORCE_PACKING = n
 # compile assertions
 # Ray may be faster when ASSERT=n
 # y/n
-ASSERT = y
+ASSERT = n
 
 # collect profiling information with -run-profiler
 # if set to n, the code is not even compiled in
