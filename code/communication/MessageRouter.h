@@ -61,12 +61,20 @@ class MessageRouter{
 /**
  * Number of relayed messages if the relay checker is activated.
  */
-	map<Tag,int> m_relayedMessages;
+	map<Tag,int> m_relayedMessagesFrom0;
+
+	map<Tag,int> m_relayedMessagesTo0;
 
 /**
  * A list of tags to check with the relay checker.
+ * from 0
  */
-	set<Tag> m_tagsToCheckForRelay;
+	set<Tag> m_tagsToCheckForRelayFrom0;
+	
+/**
+ * Tags to check to 0
+ */
+	set<Tag> m_tagsToCheckForRelayTo0;
 
 /**
  * Is the router activated at all ?
@@ -118,12 +126,17 @@ class MessageRouter{
 /**
  * number of relays
  */
-	vector<int> m_relayEvents;
+	vector<Tag> m_relayEvents;
 
 /**
  * Number of relay events between any destination and source 0
  */
-	vector<int> m_relayEventsWith0;
+	vector<Tag> m_relayEventsTo0;
+
+/**
+ * Number of relay events between source 0 and any destination
+ */
+	vector<Tag> m_relayEventsFrom0;
 
 /**************** METHODS ***************************/
 
@@ -232,9 +245,15 @@ string prefix,int numberOfRanks,int coresPerNode,string type);
 
 /**
  * We actually only need to monitor a few message tags
- * for relay events. They are added with this method.
+ * for relay events. They are added with this method
+ * if they are sent from 0
  */
-	void addTagToCheckForRelay(Tag tag);
+	void addTagToCheckForRelayFrom0(Tag tag);
+
+/**
+ * Tags to monitor when sent to 0
+ */
+	void addTagToCheckForRelayTo0(Tag tag);
 
 /**
  * Unless the relayChecker component is activated with

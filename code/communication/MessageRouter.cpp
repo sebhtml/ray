@@ -162,7 +162,15 @@ void MessageRouter::routeIncomingMessages(){
 	if(m_relayCheckerActivated){
 		Tag trueTag=getTag(routingTag);
 
-		m_relayedMessages[trueTag]++;
+		if(trueSource==MASTER_RANK){
+			m_relayedMessagesFrom0[trueTag]++;
+			//cout<<"relayed message from 0 tag= "<<MESSAGES[trueTag]<<endl;
+		}
+
+		if(trueDestination==MASTER_RANK){
+			m_relayedMessagesTo0[trueTag]++;
+			//cout<<"relayed message to 0 tag= "<<MESSAGES[trueTag]<<endl;
+		}
 	}
 
 	// we forward the message
@@ -527,18 +535,12 @@ void MessageRouter::makeRoutes(){
 			}
 			#endif
 
-			if(destination<source)
-				continue;
-
 			vector<Rank> route;
 			findShortestPath(source,destination,&route);
 
 			for(int i=0;i<(int)route.size()-1;i++){
 				// add the route
 				m_routes[source][destination][route[i]]=route[i+1];
-
-				// add the reverse route
-				m_routes[destination][source][route[i+1]]=route[i];
 			}
 
 			#ifdef CONFIG_ROUTER_VERBOSITY
@@ -609,7 +611,8 @@ void MessageRouter::countRelayEvents(){
 	// initialize the relay events
 	for(Rank source=0;source<m_size;source++){
 		m_relayEvents.push_back(0);
-		m_relayEventsWith0.push_back(0);
+		m_relayEventsTo0.push_back(0);
+		m_relayEventsFrom0.push_back(0);
 	}
 	
 	// compute the relay events
@@ -626,7 +629,12 @@ void MessageRouter::countRelayEvents(){
 				// also count relay events
 				// for the source=0
 				if(source==0)
-					m_relayEventsWith0[relayRank]++;
+					m_relayEventsFrom0[relayRank]++;
+
+				// count the relay events
+				// to the source 0 from any destination
+				if(destination==0)
+					m_relayEventsTo0[relayRank]++;
 			}
 		}
 	}
@@ -727,26 +735,43 @@ void MessageRouter::activateRelayChecker(){
 	m_relayCheckerActivated=true;
 }
 
-void MessageRouter::addTagToCheckForRelay(Tag tag){
-	m_tagsToCheckForRelay.insert(tag);
+void MessageRouter::addTagToCheckForRelayFrom0(Tag tag){
+	m_tagsToCheckForRelayFrom0.insert(tag);
+}
+
+void MessageRouter::addTagToCheckForRelayTo0(Tag tag){
+	m_tagsToCheckForRelayTo0.insert(tag);
 }
 
 bool MessageRouter::hasCompletedRelayEvents(){
-	int expected=m_relayEventsWith0[m_rank];
+	// check relay events from 0
+	int expected=m_relayEventsFrom0[m_rank];
 
-	for(set<Tag>::iterator i=m_tagsToCheckForRelay.begin();
-		i!=m_tagsToCheckForRelay.end();i++){
+	for(set<Tag>::iterator i=m_tagsToCheckForRelayFrom0.begin();
+		i!=m_tagsToCheckForRelayFrom0.end();i++){
 
 		Tag tag=*i;
-		int actual=m_relayedMessages[tag];
+		int actual=m_relayedMessagesFrom0[tag];
 
 		if(actual!=expected){
-			cout<<"hasCompletedRelayEvents tag="<<MESSAGES[tag];
-			cout<<" rank="<<m_rank<<" expected: "<<expected<<" actual: "<<actual<<" "<<endl;
 			return false;
 		}
 	}
 	
+	// check relay events to 0
+	expected=m_relayEventsTo0[m_rank];
+
+	for(set<Tag>::iterator i=m_tagsToCheckForRelayTo0.begin();
+		i!=m_tagsToCheckForRelayTo0.end();i++){
+
+		Tag tag=*i;
+		int actual=m_relayedMessagesTo0[tag];
+
+		if(actual!=expected){
+			return false;
+		}
+	}
+
 	return true;
 }
 

@@ -289,8 +289,8 @@ void Machine::start(){
 		m_messagesHandler.setConnections(&connections);
 
 		// terminal control messages can not be routed.
-		m_router.addTagToCheckForRelay(RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON);
-		m_router.addTagToCheckForRelay(RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY);
+		m_router.addTagToCheckForRelayFrom0(RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON);
+		m_router.addTagToCheckForRelayTo0(RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY);
 	}
 
 	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed,&m_subgraph,&m_inbox,&m_profiler2,
