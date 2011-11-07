@@ -158,14 +158,21 @@ void MessageRouter::routeIncomingMessages(){
 	cout<<__func__<<" message has been sent to the next one, trueSource="<<trueSource<<" trueDestination= "<<trueDestination<<endl;
 	#endif
 		
+	// process the relay event if necessary
+	if(m_relayCheckerActivated){
+		Tag trueTag=getTag(routingTag);
+
+		m_relayedMessages[trueTag]++;
+	}
+
 	// we forward the message
-	forwardMessage(aMessage,nextRank);
+	relayMessage(aMessage,nextRank);
 }
 
 /**
  * forward a message to follow a route
  */
-void MessageRouter::forwardMessage(Message*message,Rank destination){
+void MessageRouter::relayMessage(Message*message,Rank destination){
 	int count=message->getCount();
 
 	// allocate a buffer from the ring
@@ -187,6 +194,9 @@ void MessageRouter::forwardMessage(Message*message,Rank destination){
 	m_outbox->push_back(*message);
 }
 
+/**
+ * Make connections with a given type
+ */
 void MessageRouter::makeConnections(string type){
 	cout<<"[MessageRouter::makeConnections] type: "<<type<<endl;
 
@@ -233,9 +243,7 @@ void MessageRouter::makeConnections_random(){
 	cout<<"[MessageRouter] vertices: "<<m_size<<endl;
 	cout<<"[MessageRouter] connectionsPerVertex: "<<connectionsPerVertex<<endl;
 
-	//
 	for(int connectionNumber=0;connectionNumber<connectionsPerVertex;connectionNumber++){
-
 		for(Rank source=0;source<m_size;source++){
 
 			// add an edge bool added=false;
@@ -255,6 +263,9 @@ void MessageRouter::makeConnections_random(){
 	}
 }
 
+/**
+ * Get an intermediate for the type group
+ */
 int MessageRouter::getIntermediateRank(Rank rank){
 	return rank-rank % m_coresPerNode;
 }
@@ -333,6 +344,7 @@ void MessageRouter::makeConnections_group(){
 
 /**
  * Dijkstra's algorithm
+ * All weights are 1
  */
 void MessageRouter::findShortestPath(Rank source,Rank destination,vector<Rank>*route){
 
@@ -440,6 +452,7 @@ void MessageRouter::findShortestPath(Rank source,Rank destination,vector<Rank>*r
 	route->push_back(source);
 
 	// invert the route
+	// because the one we have is from destination to source
 	int left=0;
 	int right=route->size()-1;
 	while(left<right){
@@ -461,6 +474,9 @@ void MessageRouter::findShortestPath(Rank source,Rank destination,vector<Rank>*r
 	#endif
 }
 
+/**
+ * Print a route
+ */
 void MessageRouter::printRoute(Rank source,Rank destination){
 	cout<<"[printRoute] Source: "<<source<<"	Destination: "<<destination<<"	";
 
@@ -477,6 +493,10 @@ void MessageRouter::printRoute(Rank source,Rank destination){
 	cout<<"	Hops: "<<route.size()-1<<endl;
 }
 
+/**
+ * Compute the routing tables.
+ * This is done for all pairs of ranks
+ */
 void MessageRouter::makeRoutes(){
 
 	// append empty routes
@@ -489,17 +509,18 @@ void MessageRouter::makeRoutes(){
 		m_routes.push_back(a);
 	}
 
+	#ifdef CONFIG_ROUTER_VERBOSITY
 	int step=m_size/60+1;
+	#endif
 
 	for(Rank source=0;source<m_size;source++){
 
 		#ifndef CONFIG_ROUTER_VERBOSITY
-		cout<<"[MessageRouter::makeRoutes] "<<source<<" ";
-		cout.flush();
+		cout<<"[MessageRouter::makeRoutes] "<<source<<" "<<endl;
 		#endif
 
 		for(Rank destination=0;destination<m_size;destination++){
-			#ifndef CONFIG_ROUTER_VERBOSITY
+			#ifdef CONFIG_ROUTER_VERBOSITY
 			if(destination%step==0){
 				cout<<"*";
 				cout.flush();
@@ -518,7 +539,6 @@ void MessageRouter::makeRoutes(){
 
 				// add the reverse route
 				m_routes[destination][source][route[i+1]]=route[i];
-
 			}
 
 			#ifdef CONFIG_ROUTER_VERBOSITY
@@ -528,7 +548,7 @@ void MessageRouter::makeRoutes(){
 			#endif
 		}
 
-		#ifndef CONFIG_ROUTER_VERBOSITY
+		#ifdef CONFIG_ROUTER_VERBOSITY
 		double ratio=source*100.0/m_size;
 		cout<<" "<<ratio<<"%"<<endl;
 		#endif
@@ -557,6 +577,8 @@ MessageRouter::MessageRouter(){
 void MessageRouter::enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*outboxAllocator,Rank rank,
 	string prefix,int numberOfRanks,int coresPerNode,string type){
 
+	m_relayCheckerActivated=false;
+
 	m_coresPerNode=coresPerNode;
 	m_size=numberOfRanks;
 
@@ -576,14 +598,47 @@ void MessageRouter::enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*
 	// generate the routes
 	makeRoutes();
 
+	// count relay events
+	countRelayEvents();
+
 	if(m_rank==0)
 		writeFiles(prefix);
 }
 
+void MessageRouter::countRelayEvents(){
+	// initialize the relay events
+	for(Rank source=0;source<m_size;source++){
+		m_relayEvents.push_back(0);
+		m_relayEventsWith0.push_back(0);
+	}
+	
+	// compute the relay events
+	for(Rank source=0;source<m_size;source++){
+		for(Rank destination=0;destination<m_size;destination++){
+			vector<Rank> route;
+			getRoute(source,destination,&route);
+		
+			// relay events occur between the source and the destination
+			for(int i=1;i<(int)route.size()-1;i++){
+				Rank relayRank=route[i];
+				m_relayEvents[relayRank]++;
+
+				// also count relay events
+				// for the source=0
+				if(source==0)
+					m_relayEventsWith0[relayRank]++;
+			}
+		}
+	}
+}
+
+/**
+ * Write files.
+ */
 void MessageRouter::writeFiles(string prefix){
 	// dump the connections in a file
 	ostringstream file;
-	file<<prefix<<"Connections.txt";
+	file<<prefix<<"Routing.Connections.txt";
 	ofstream f(file.str().c_str());
 
 	f<<"#Rank	Count	Connections"<<endl;
@@ -604,7 +659,7 @@ void MessageRouter::writeFiles(string prefix){
 
 	// dump the routes in a file
 	ostringstream file2;
-	file2<<prefix<<"Routes.txt";
+	file2<<prefix<<"Routing.Routes.txt";
 	ofstream f2(file2.str().c_str());
 	f2<<"#Source	Destination	Hops	Route"<<endl;
 
@@ -625,6 +680,18 @@ void MessageRouter::writeFiles(string prefix){
 	}
 
 	f2.close();
+
+	// write relay events
+	ostringstream file3;
+	file3<<prefix<<"Routing.RelayEvents.txt";
+	ofstream f3(file3.str().c_str());
+	f3<<"#Source	RelayEvents"<<endl;
+
+	for(Rank rank=0;rank<m_size;rank++){
+		f3<<rank<<"	"<<m_relayEvents[rank]<<endl;
+	}
+
+	f3.close();
 }
 
 /**
@@ -654,6 +721,33 @@ void MessageRouter::getConnections(Rank source,vector<Rank>*connections){
 		i!=m_connections[m_rank].end();i++){
 		connections->push_back(*i);
 	}
+}
+
+void MessageRouter::activateRelayChecker(){
+	m_relayCheckerActivated=true;
+}
+
+void MessageRouter::addTagToCheckForRelay(Tag tag){
+	m_tagsToCheckForRelay.insert(tag);
+}
+
+bool MessageRouter::hasCompletedRelayEvents(){
+	int expected=m_relayEventsWith0[m_rank];
+
+	for(set<Tag>::iterator i=m_tagsToCheckForRelay.begin();
+		i!=m_tagsToCheckForRelay.end();i++){
+
+		Tag tag=*i;
+		int actual=m_relayedMessages[tag];
+
+		if(actual!=expected){
+			cout<<"hasCompletedRelayEvents tag="<<MESSAGES[tag];
+			cout<<" rank="<<m_rank<<" expected: "<<expected<<" actual: "<<actual<<" "<<endl;
+			return false;
+		}
+	}
+	
+	return true;
 }
 
 //_-------------------------------------------------
@@ -735,5 +829,4 @@ RoutingTag MessageRouter::getRoutingTag(Tag tag,Rank source,Rank destination){
 
 	return result;
 }
-
 

@@ -1198,7 +1198,7 @@ void Parameters::showUsage(){
 	showOption("-route-messages","Enables the Ray message router. Disabled by default.");
 	showOptionDescription("Messages will be routed accordingly so that any rank can communicate directly with only a few others.");
 	showOptionDescription("Without -route-messages, any rank can communicate directly with any other rank.");
-	showOptionDescription("Files generated: Connections.txt and Routes.txt");
+	showOptionDescription("Files generated: Routing.Connections.txt, Routing.Routes.txt and Routing.RelayEvents.txt");
 	cout<<endl;
 	showOption("-connection-type type","Sets the connection type for routes.");
 	showOptionDescription("Accepted values are group, random and complete. Default is random.");

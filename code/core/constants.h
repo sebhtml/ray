@@ -22,11 +22,6 @@ see <http://www.gnu.org/licenses/>
 #ifndef _constants
 #define _constants
 
-typedef int Rank;
-typedef int Tag;
-typedef int RoutingTag;
-typedef int Distance;
-
 #ifndef RAY_VERSION
 #define RAY_VERSION "Unknown"
 #endif

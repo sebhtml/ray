@@ -231,7 +231,11 @@ void createDirectory(const char*directory){
  *     */
 	mode_t mode=S_IRWXU | S_IRWXG;
 
-	int status=mkdir(directory,mode);
+	#ifdef ASSERT
+	int status=
+	#endif
+
+	mkdir(directory,mode);
 
 	#ifdef ASSERT
 	assert(status==0);

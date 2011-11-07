@@ -1103,6 +1103,16 @@ void MessageProcessor::call_RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON(Message*message){
 	(*m_mode)=RAY_SLAVE_MODE_DIE;
 }
 
+void MessageProcessor::call_RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER(Message*message){
+
+	m_router->activateRelayChecker();
+
+	Message aMessage(NULL,0,message->getSource(),RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY,m_rank);
+	m_outbox->push_back(aMessage);
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY(Message*message){}
+
 void MessageProcessor::call_RAY_MPI_TAG_I_GO_NOW(Message*message){
 }
 
@@ -2257,6 +2267,7 @@ void MessageProcessor::setScaffolder(Scaffolder*a){
 }
 
 void MessageProcessor::constructor(
+MessageRouter*router,
 SeedingData*seedingData,
 Library*m_library,
 bool*m_ready,
@@ -2307,6 +2318,8 @@ SeedExtender*seedExtender,int*m_master_mode,
 bool*m_isFinalFusion,
 SequencesIndexer*m_si){
 	m_count=0;
+
+	m_router=router;
 
 	this->m_sequencesLoader=sequencesLoader;
 	this->m_verticesExtractor=m_verticesExtractor;

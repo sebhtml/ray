@@ -23,6 +23,7 @@
 #define _Message_H
 
 #include <stdint.h>
+#include <core/types.h>
 
 /**
  * In Ray, every message is a Message.
@@ -45,44 +46,45 @@ class Message{
 
 	/** the Message-passing interface rank destination 
  * 	Must be >=0 and <= MPI_Comm_size()-1 */
-	int m_dest;
+	Rank m_destination;
 
 	/**
  * 	Ray message-passing interface message tags are named RAY_MPI_TAG_<something>
  * 	see mpi_tag_macros.h 
  */
-	int m_tag;
+	Tag m_tag;
 
 	/** the message-passing interface rank source 
  * 	Must be >=0 and <= MPI_Comm_size()-1 */
-	int m_source;
+	Rank m_source;
 public:
 	Message();
-	Message(uint64_t*b,int c,int dest,int tag,int source);
+	Message(uint64_t*b,int c,Rank dest,Tag tag,Rank source);
 	uint64_t*getBuffer();
 	int getCount();
 /**
  * Returns the destination MPI rank
  */
-	int getDestination();
+	Rank getDestination();
+
 /**
  * Returns the message tag (RAY_MPI_TAG_something)
  */
-	int getTag();
+	Tag getTag();
 /**
  * Gets the source MPI rank
  */
-	int getSource();
+	Rank getSource();
 
 	void print();
 
 	void setBuffer(uint64_t*buffer);
 
-	void setTag(int tag);
+	void setTag(Tag tag);
 
-	void setSource(int source);
+	void setSource(Rank source);
 
-	void setDestination(int destination);
+	void setDestination(Rank destination);
 };
 
 #endif

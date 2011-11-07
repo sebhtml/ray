@@ -141,7 +141,6 @@ void TimePrinter::printDurations(){
 	if(m_fileSet){
 		printDurationsInStream(&m_file,timeinfo);
 		m_file.close();
-		cout<<"Closing the file"<<endl;
 	}
 }
 

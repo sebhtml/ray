@@ -25,10 +25,10 @@
 using namespace std;
 
 /** buffer must be allocated or else it will CORE DUMP. */
-Message::Message(uint64_t*b,int c,int dest,int tag,int source){
+Message::Message(uint64_t*b,int c,Rank dest,Tag tag,Rank source){
 	m_buffer=b;
 	m_count=c;
-	m_dest=dest;
+	m_destination=dest;
 	m_tag=tag;
 	m_source=source;
 }
@@ -41,11 +41,11 @@ int Message::getCount(){
 	return m_count;
 }
 
-int Message::getDestination(){
-	return m_dest;
+Rank Message::getDestination(){
+	return m_destination;
 }
 
-int Message::getTag(){
+Tag Message::getTag(){
 	return m_tag;
 }
 
@@ -68,14 +68,14 @@ void Message::setBuffer(uint64_t*buffer){
 	m_buffer = buffer;
 }
 
-void Message::setTag(int tag){
+void Message::setTag(Tag tag){
 	m_tag=tag;
 }
 
-void Message::setSource(int source){
+void Message::setSource(Rank source){
 	m_source=source;
 }
 
-void Message::setDestination(int destination){
-	m_dest=destination;
+void Message::setDestination(Rank destination){
+	m_destination=destination;
 }

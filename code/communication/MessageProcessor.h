@@ -45,6 +45,7 @@
 #include <scaffolder/Scaffolder.h>
 #include <communication/VirtualCommunicator.h>
 #include <structures/BloomFilter.h>
+#include <communication/MessageRouter.h>
 using namespace std;
 
 
@@ -61,6 +62,9 @@ typedef void (MessageProcessor::*FNMETHOD) (Message*message);
  * \author Sébastien Boisvert
  */
 class MessageProcessor{
+
+	MessageRouter*m_router;
+
 	int m_kmerAcademyFinishedRanks;
 	BloomFilter m_bloomFilter;
 
@@ -150,6 +154,7 @@ class MessageProcessor{
 	
 public:
 	void constructor(
+MessageRouter*router,
 SeedingData*seedingData,
 Library*m_library,
 bool*m_ready,

@@ -135,7 +135,6 @@ class Machine{
 	int m_size;
 	int m_totalLetters;
 	bool m_alive;
-	int m_timeToLive;
 	bool m_loadSequenceStep;
 	char*m_inputFile;
 	int m_sequence_ready_machines;

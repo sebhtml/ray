@@ -289,10 +289,8 @@ void Machine::start(){
 		m_messagesHandler.setConnections(&connections);
 
 		// terminal control messages can not be routed.
-		/*
-		m_router.addDirectTag(RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON);
-		m_router.addDirectTag(RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY);
-		*/
+		m_router.addTagToCheckForRelay(RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON);
+		m_router.addTagToCheckForRelay(RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY);
 	}
 
 	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed,&m_subgraph,&m_inbox,&m_profiler2,
@@ -365,7 +363,6 @@ void Machine::start(){
 	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),&m_outbox,&m_outboxAllocator,&m_slave_mode,&m_parameters,&m_wordSize,&m_subgraph,&m_inbox,&m_virtualCommunicator);
 
 	m_alive=true;
-	m_timeToLive=2097152;
 	m_loadSequenceStep=false;
 	m_totalLetters=0;
 
@@ -382,6 +379,7 @@ void Machine::start(){
 	}
 
 	m_mp.constructor(
+&m_router,
 m_seedingData,
 &m_library,&m_ready,
 &m_verticesExtractor,
@@ -507,9 +505,7 @@ void Machine::run(){
  * it is similar to the main loop of a video game, actually, but without a display.
  */
 void Machine::runVanilla(){
-	/** m_timeToLive goes down to 0 when m_alive is false
- * 	This is called the aging process */
-	while(m_timeToLive){
+	while(m_alive || (m_router.isEnabled() && !m_router.hasCompletedRelayEvents())){
 		// 1. receive the message (0 or 1 message is received)
 		// blazing fast, receives 0 or 1 message, never more, never less, other messages will wait for the next iteration !
 		receiveMessages(); 
@@ -525,10 +521,6 @@ void Machine::runVanilla(){
 		// 4. send messages
 		// fast, sends at most 17 messages. In most case it is either 0 or 1 message.,..
 		sendMessages();
-
-		/** make it die if necessary */
-		if(!m_alive)
-			m_timeToLive--;
 	}
 }
 
@@ -563,13 +555,9 @@ void Machine::runWithProfiler(){
 	vector<int> distancesForProcessMessages;
 	vector<int> distancesForProcessData;
 
-
-
 	bool profilerVerbose=m_parameters.hasOption("-with-profiler-details");
 
-	/** m_timeToLive goes down to 0 when m_alive is false
- * 	This is called the aging process */
-	while(m_timeToLive){
+	while(m_alive  || (m_router.isEnabled() && !m_router.hasCompletedRelayEvents())){
 		uint64_t t=getMilliSeconds();
 		if(t>=(lastTime+resolution)/parts*parts){
 
@@ -739,10 +727,6 @@ void Machine::runWithProfiler(){
 
 		// 4. send messages
 		sendMessages();
-
-		/** make it die if necessary */
-		if(!m_alive)
-			m_timeToLive--;
 
 		/* increment ticks */
 		ticks++;
@@ -1763,13 +1747,26 @@ void Machine::call_RAY_MASTER_MODE_KILL_ALL_MPI_RANKS(){
 		FILE*fp=fopen(file.str().c_str(),"w+");
 		fprintf(fp,"# Source\tDestination\tTag\tCount\n");
 		fclose(fp);
-	}
+
+		// activate the relay checker
+		m_numberOfRanksDone=0;
+		for(Rank i=0;i<m_parameters.getSize();i++){
+			Message aMessage(NULL,0,i,RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER,getRank());
+			m_outbox.push_back(aMessage);
+		}
+
+	// another rank activated its relay checker
+	}else if(m_inbox.size()>0 && m_inbox[0]->getTag()==RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY){
+		m_numberOfRanksDone++;
+
+	// do nothing and wait
+	}else if(m_numberOfRanksDone!=m_parameters.getSize()){
 
 	/** for the first to process (getSize()-1) -- the last -- we directly send it
  * a message.
  * For the other ones, we wait for the response of the previous.
  */
-	if(m_machineRank==m_parameters.getSize()-1 || 
+	}else if(m_machineRank==m_parameters.getSize()-1 || 
 	(m_inbox.size()>0 && m_inbox[0]->getTag()==RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY)){
 
 		/**
