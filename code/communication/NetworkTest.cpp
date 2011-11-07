@@ -95,8 +95,14 @@ void NetworkTest::slaveWork(){
 	if(m_numberOfTestMessages == -1){
 		m_numberOfTestMessages=m_parameters->getSize()*1000;
 
+		m_gatherRawData=m_parameters->hasOption("-write-network-test-raw-data");
 		/* the seed must be different for all MPI ranks */
 		srand(time(NULL)*(1+m_rank));
+
+		// reserve space to have constant insertion
+		// after 
+		m_sentMicroseconds.reserve(m_numberOfTestMessages);
+		m_destinations.reserve(m_numberOfTestMessages);
 	}
 
 	#ifdef ASSERT
@@ -110,7 +116,7 @@ void NetworkTest::slaveWork(){
 			/** send to a random rank */
 			int destination=rand()%m_size;
 
-			if(m_parameters->hasOption("-write-network-test-raw-data")){
+			if(m_gatherRawData){
 				m_sentMicroseconds.push_back(m_startingTimeMicroseconds);
 				m_destinations.push_back(destination);
 			}
@@ -123,7 +129,7 @@ void NetworkTest::slaveWork(){
 		}else if(m_inbox->size()>0 && m_inbox->at(0)->getTag()==RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY){
 			uint64_t endingMicroSeconds=getMicroseconds();
 			
-			if(m_parameters->hasOption("-write-network-test-raw-data")){
+			if(m_gatherRawData){
 				m_receivedMicroseconds.push_back(endingMicroSeconds);
 			}
 
@@ -159,7 +165,7 @@ void NetworkTest::writeData(){
 	if(m_sentMicroseconds.size() == 0)
 		return;
 
-	if(m_parameters->hasOption("-write-network-test-raw-data")){
+	if(m_gatherRawData){
 		ostringstream file;
 		file<<m_parameters->getPrefix();
 		file<<"Rank"<<m_parameters->getRank()<<".NetworkTestData.txt";

@@ -44,6 +44,11 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class NetworkTest{
+/**
+ * do we gather raw data
+ */
+	bool m_gatherRawData;
+
 	/* details of the network test */
 
 	uint64_t m_averageLatencyInMicroSeconds;
