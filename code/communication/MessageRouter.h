@@ -185,11 +185,6 @@ class MessageRouter{
 
 	void writeFiles(string prefix);
 
-/**
- * Count the theoretical relay events
- */
-	void countRelayEvents();
-
 	/********************************************/
 	/* stuff for routing tags */
 

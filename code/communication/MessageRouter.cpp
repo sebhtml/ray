@@ -164,12 +164,10 @@ void MessageRouter::routeIncomingMessages(){
 
 		if(trueSource==MASTER_RANK){
 			m_relayedMessagesFrom0[trueTag]++;
-			//cout<<"relayed message from 0 tag= "<<MESSAGES[trueTag]<<endl;
 		}
 
 		if(trueDestination==MASTER_RANK){
 			m_relayedMessagesTo0[trueTag]++;
-			//cout<<"relayed message to 0 tag= "<<MESSAGES[trueTag]<<endl;
 		}
 	}
 
@@ -396,7 +394,16 @@ void MessageRouter::findShortestPath(Rank source,Rank destination,vector<Rank>*r
 				Distance oldDistance=tentativeDistances[theNeighbor];
 
 				// the new distance is better
-				if(newDistance < oldDistance){
+				// if the oldDistance for theNeighbor and the newDistance
+				// for theNeighbor in respect to current are equal, then
+				// choose the one having the previousVertex with the least
+				// relay events. The previous vertex is current or the one
+				// stored in previousVertices
+				if(newDistance < oldDistance || 
+					// distances are equal and current has less relay events
+				(newDistance==oldDistance && previousVertices.count(theNeighbor)>0
+				&& m_relayEvents[current] < m_relayEvents[previousVertices[theNeighbor]])){
+
 					tentativeDistances[theNeighbor]=newDistance;
 					previousVertices[theNeighbor]=current;
 
@@ -507,6 +514,13 @@ void MessageRouter::printRoute(Rank source,Rank destination){
  */
 void MessageRouter::makeRoutes(){
 
+	// initialize the relay events
+	for(Rank source=0;source<m_size;source++){
+		m_relayEvents.push_back(0);
+		m_relayEventsTo0.push_back(0);
+		m_relayEventsFrom0.push_back(0);
+	}
+
 	// append empty routes
 	for(Rank i=0;i<m_size;i++){
 		vector<map<Rank,Rank> > a;
@@ -541,6 +555,24 @@ void MessageRouter::makeRoutes(){
 			for(int i=0;i<(int)route.size()-1;i++){
 				// add the route
 				m_routes[source][destination][route[i]]=route[i+1];
+			}
+
+			// add the relay information
+			// the relay ranks are all the ranks in the route
+			// minus the source and minus the destination
+			for(int i=1;i<(int)route.size()-1;i++){
+				Rank relayRank=route[i];
+
+				// general relay data
+				m_relayEvents[relayRank]++;
+
+				// relay data from 0
+				if(source==MASTER_RANK)
+					m_relayEventsFrom0[relayRank]++;
+
+				// relay data to 0
+				if(destination==MASTER_RANK)
+					m_relayEventsTo0[relayRank]++;
 			}
 
 			#ifdef CONFIG_ROUTER_VERBOSITY
@@ -600,44 +632,8 @@ void MessageRouter::enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*
 	// generate the routes
 	makeRoutes();
 
-	// count relay events
-	countRelayEvents();
-
 	if(m_rank==0)
 		writeFiles(prefix);
-}
-
-void MessageRouter::countRelayEvents(){
-	// initialize the relay events
-	for(Rank source=0;source<m_size;source++){
-		m_relayEvents.push_back(0);
-		m_relayEventsTo0.push_back(0);
-		m_relayEventsFrom0.push_back(0);
-	}
-	
-	// compute the relay events
-	for(Rank source=0;source<m_size;source++){
-		for(Rank destination=0;destination<m_size;destination++){
-			vector<Rank> route;
-			getRoute(source,destination,&route);
-		
-			// relay events occur between the source and the destination
-			for(int i=1;i<(int)route.size()-1;i++){
-				Rank relayRank=route[i];
-				m_relayEvents[relayRank]++;
-
-				// also count relay events
-				// for the source=0
-				if(source==0)
-					m_relayEventsFrom0[relayRank]++;
-
-				// count the relay events
-				// to the source 0 from any destination
-				if(destination==0)
-					m_relayEventsTo0[relayRank]++;
-			}
-		}
-	}
 }
 
 /**
