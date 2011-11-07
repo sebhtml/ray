@@ -632,8 +632,36 @@ void MessageRouter::enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*
 	// generate the routes
 	makeRoutes();
 
+	removeUnusedConnections();
+
 	if(m_rank==0)
 		writeFiles(prefix);
+}
+
+void MessageRouter::removeUnusedConnections(){
+	// clear connections
+	for(Rank source=0;source<m_size;source++){
+		m_connections[source].clear();
+
+		// add self
+		m_connections[source].insert(source);
+	}
+
+	// generate connections using the routes
+	for(Rank source=0;source<m_size;source++){
+		for(Rank destination=0;destination<m_size;destination++){
+			vector<Rank> route;
+			getRoute(source,destination,&route);
+			for(int i=0;i<(int)route.size()-1;i++){
+				Rank rank1=route[i];
+				Rank rank2=route[i+1];
+	
+				// add the connections
+				m_connections[rank1].insert(rank2);
+				m_connections[rank2].insert(rank1);
+			}
+		}
+	}
 }
 
 /**

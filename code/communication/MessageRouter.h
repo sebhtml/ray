@@ -183,6 +183,8 @@ class MessageRouter{
 	/** print a route */
 	void printRoute(Rank source,Rank destination);
 
+	void removeUnusedConnections();
+
 	void writeFiles(string prefix);
 
 	/********************************************/
