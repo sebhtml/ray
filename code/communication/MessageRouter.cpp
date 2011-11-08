@@ -34,6 +34,7 @@
 #include <core/common_functions.h>
 #include <algorithm> /* random_shuffle */
 #include <iostream>
+#include <core/statistics.h>
 #include <fstream>
 #include <sstream>
 #include <math.h> /* for log */
@@ -213,6 +214,10 @@ void MessageRouter::makeConnections(string type){
 		m_connections.push_back(a);
 	}
 
+	// insert self
+	for(Rank i=0;i<m_size;i++)
+		m_connections[i].insert(i);
+
 	if(type=="random"){
 		makeConnections_random();
 	}else if(type=="group"){
@@ -239,11 +244,50 @@ void MessageRouter::makeConnections_complete(){
  * create random connections
  */
 void MessageRouter::makeConnections_random(){
+	makeConnections_random_method_Erdos_Renyi_G_n_m();
+	//makeConnections_random_method_sebastien();
+}
+
+void MessageRouter::makeConnections_random_method_Erdos_Renyi_G_n_m(){
+
+	// create a set of all edges
+	vector<vector<Rank> > edges;
+	for(Rank i=0;i<m_size;i++){
+		for(Rank j=0;j<m_size;j++){
+			// don't generate a pair for (i,i)
+			if(i==j)
+				continue;
+		
+			// don't generate a pair for (i,j) if i<j because
+			// (j,i) will be processed anyway
+			if(i<j)
+				continue;
+			vector<Rank> pair;
+			pair.push_back(i);
+			pair.push_back(j);
+			edges.push_back(pair);
+		}
+	}
+
+	// shuffle the edges
+	srand(99);
+	std::random_shuffle(edges.begin(),edges.end());
+
+	// add the edges
+	int connectionsPerVertex=log(m_size)/log(2);
+	int numberOfEdgesToAdd=m_size*connectionsPerVertex/2;
+
+	for(int i=0;i<numberOfEdgesToAdd;i++){
+		Rank source=edges[i][0];
+		Rank destination=edges[i][1];
+		m_connections[source].insert(destination);
+		m_connections[destination].insert(source);
+	}
+}
+
+void MessageRouter::makeConnections_random_method_sebastien(){
 	srand(4);
 
-	// insert self
-	for(Rank i=0;i<m_size;i++)
-		m_connections[i].insert(i);
 
 	int connectionsPerVertex=log(m_size)/log(2)/2;
 
@@ -268,6 +312,7 @@ void MessageRouter::makeConnections_random(){
 			}
 		}
 	}
+
 }
 
 /**
@@ -323,9 +368,6 @@ void MessageRouter::makeConnections_group(){
 	for(Rank source=0;source<m_size;source++){
 		int intermediateSource=getIntermediateRank(source);
 	
-		// can connect with self.
-		m_connections[source].insert(source);
-
 		// can connect with the intermediate source
 		m_connections[source].insert(intermediateSource);
 
@@ -628,6 +670,9 @@ void MessageRouter::enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*
 	m_rank=rank;
 	m_enabled=true;
 
+	if(type=="")
+		type="random";
+
 	// generate the connections
 	makeConnections(type);
 
@@ -637,7 +682,7 @@ void MessageRouter::enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*
 	removeUnusedConnections();
 
 	if(m_rank==0)
-		writeFiles(prefix);
+		writeFiles(prefix,type);
 }
 
 void MessageRouter::removeUnusedConnections(){
@@ -669,7 +714,7 @@ void MessageRouter::removeUnusedConnections(){
 /**
  * Write files.
  */
-void MessageRouter::writeFiles(string prefix){
+void MessageRouter::writeFiles(string prefix,string type){
 	// dump the connections in a file
 	ostringstream file;
 	file<<prefix<<"Routing.Connections.txt";
@@ -726,6 +771,106 @@ void MessageRouter::writeFiles(string prefix){
 	}
 
 	f3.close();
+
+	// dump the routes in a file
+	ostringstream file4;
+	file4<<prefix<<"Routing.Summary.txt";
+	ofstream f4(file4.str().c_str());
+
+	int numberOfVertices=m_size;
+
+	int numberOfEdges=0;
+
+	vector<int> connectivities;
+
+	for(Rank i=0;i<m_size;i++){
+		vector<Rank> connections;
+
+		getConnections(i,&connections);
+
+		// remove the self edge
+		connectivities.push_back(connections.size()-1);
+
+		for(Rank j=0;j<m_size;j++){
+			// we only count the edges with i >= j
+			// because (i,j) and (j,i) are the same
+			if(i<j)
+				continue;
+	
+			if(isConnected(i,j))
+				numberOfEdges++;
+		}
+	}
+
+	f4<<"Type: "<<type<<endl;
+	f4<<endl;
+
+	f4<<"NumberOfVertices: "<<numberOfVertices<<endl;
+	f4<<"NumberOfEdges: "<<numberOfEdges-m_size<<endl;
+	f4<<"NumberOfEdgesInCompleteGraph: "<<numberOfVertices*(numberOfVertices-1)<<endl;
+	f4<<endl;
+	f4<<"NumberOfConnectionsPerVertex"<<endl;
+	f4<<"   Frequencies:"<<endl;
+
+	map<int,int> connectionFrequencies;
+	for(Rank i=0;i<m_size;i++){
+		vector<Rank> connections;
+		getConnections(i,&connections);
+		connectionFrequencies[connections.size()-1]++;
+	}
+
+	int totalForEdges=0;
+
+	for(map<int,int>::iterator i=connectionFrequencies.begin();
+		i!=connectionFrequencies.end();i++){
+		totalForEdges+=i->second;
+	}
+
+	for(map<int,int>::iterator i=connectionFrequencies.begin();
+		i!=connectionFrequencies.end();i++){
+		f4<<"        "<<i->first<<"    "<<i->second<<"    "<<i->second*100.0/totalForEdges<<"%"<<endl;
+	}
+	
+	f4<<"        "<<"Total"<<"    "<<totalForEdges<<"    100.00%"<<endl;
+
+	f4<<"   Average: "<<getAverage(&connectivities)<<endl;
+	f4<<"   StandardDeviation: "<<getStandardDeviation(&connectivities)<<endl;
+
+	f4<<endl;
+	f4<<"NumberOfRelayEventsPerVertex"<<endl;
+
+	f4<<"   Average: "<<getAverage(&m_relayEvents)<<endl;
+	f4<<"   StandardDeviation: "<<getStandardDeviation(&m_relayEvents)<<endl;
+
+	f4<<endl;
+	f4<<"RouteLength"<<endl;
+
+	f4<<"   Frequencies:"<<endl;
+	map<int,int> pathLengths;
+
+	for(Rank i=0;i<m_size;i++){
+		for(Rank j=0;j<m_size;j++){
+			vector<Rank> route;
+			getRoute(i,j,&route);
+
+			// we remove the source vertex
+			pathLengths[route.size()-1]++;
+		}
+	}
+
+	int totalForPaths=0;
+	for(map<int,int>::iterator i=pathLengths.begin();
+		i!=pathLengths.end();i++){
+		totalForPaths+=i->second;
+	}
+
+	for(map<int,int>::iterator i=pathLengths.begin();
+		i!=pathLengths.end();i++){
+		f4<<"        "<<i->first<<"    "<<i->second<<"    "<<i->second*100.0/totalForPaths<<"%"<<endl;
+	}
+	f4<<"        "<<"Total"<<"    "<<totalForPaths<<"    100.00%"<<endl;
+
+	f4.close();
 }
 
 /**
@@ -751,8 +896,8 @@ int MessageRouter::getNextRankInRoute(Rank source,Rank destination,Rank rank){
 }
 
 void MessageRouter::getConnections(Rank source,vector<Rank>*connections){
-	for(set<Rank>::iterator i=m_connections[m_rank].begin();
-		i!=m_connections[m_rank].end();i++){
+	for(set<Rank>::iterator i=m_connections[source].begin();
+		i!=m_connections[source].end();i++){
 		connections->push_back(*i);
 	}
 }

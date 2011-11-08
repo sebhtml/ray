@@ -166,6 +166,8 @@ class MessageRouter{
 
 	/** random connections */
 	void makeConnections_random();
+	void makeConnections_random_method_Erdos_Renyi_G_n_m();
+	void makeConnections_random_method_sebastien();
 
 	/** grouped connections */
 	void makeConnections_group();
@@ -185,7 +187,7 @@ class MessageRouter{
 
 	void removeUnusedConnections();
 
-	void writeFiles(string prefix);
+	void writeFiles(string prefix,string type);
 
 	/********************************************/
 	/* stuff for routing tags */

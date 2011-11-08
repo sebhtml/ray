@@ -22,7 +22,7 @@
 #include <math.h> /* for sqrt */
 #include <stdint.h>
 
-int getAverage(vector<int>*values){
+double getAverage(vector<int>*values){
 	int i=0;
 	int n=values->size();
 	int sum=0;
@@ -31,7 +31,7 @@ int getAverage(vector<int>*values){
 		i++;
 	}
 
-	int average=sum;
+	double average=sum;
 
 	if(n > 0){
 		average /= n;
@@ -41,10 +41,10 @@ int getAverage(vector<int>*values){
 }
 
 /** compute the standard deviation */
-int getStandardDeviation(vector<int>*x){
+double getStandardDeviation(vector<int>*x){
 	int i=0;
 
-	int averageValue=getAverage(x);
+	double averageValue=getAverage(x);
 	uint64_t sum=0;
 
 	int n=x->size();
@@ -55,10 +55,10 @@ int getStandardDeviation(vector<int>*x){
 		i++;
 	}
 
-	int standardDeviation=(int)sqrt((sum+0.0));
+	double standardDeviation=sqrt(sum+0.0);
 	
 	if(n > 0){
-		standardDeviation=(int)sqrt((sum+0.0)/n);
+		standardDeviation=sqrt((sum+0.0)/n);
 	}
 
 	return standardDeviation;

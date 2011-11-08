@@ -27,6 +27,7 @@
 #include <core/OperatingSystem.h>
 #include <fstream>
 #include <stdlib.h>
+#include <core/statistics.h>
 #include <core/constants.h>
 #include <iostream>
 using namespace std;
@@ -242,6 +243,17 @@ void NetworkTest::masterWork(){
 		ofstream f(file.str().c_str());
 		f<<"# average latency in microseconds (10^-6 seconds) when requesting a reply for a message of "<<sizeof(uint64_t)*m_numberOfWords<<" bytes"<<endl;
 		f<<"# Message passing interface rank\tName\tLatency in microseconds"<<endl;
+
+		vector<int> latencies;
+		for(int i=0;i<m_size;i++){
+			int latency=m_latencies[i];
+			if(latency!=LATENCY_INFORMATION_NOT_AVAILABLE)
+				latencies.push_back(latency);
+		}
+
+		f<<"# AverageForAllRanks: "<<getAverage(&latencies)<<endl;
+		f<<"# StandardDeviation: "<<getStandardDeviation(&latencies)<<endl;
+
 		for(int i=0;i<m_size;i++){
 			int latency=m_latencies[i];
 			if(latency==LATENCY_INFORMATION_NOT_AVAILABLE)

@@ -24,9 +24,9 @@
 #include <vector>
 using namespace std;
 
-int getAverage(vector<int>*values);
+double getAverage(vector<int>*values);
 
 /** compute the standard deviation */
-int getStandardDeviation(vector<int>*x);
+double getStandardDeviation(vector<int>*x);
 
 #endif
