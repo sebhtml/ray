@@ -32,6 +32,7 @@
 #include <string.h> /* for memcpy */
 #include <assert.h>
 #include <core/common_functions.h>
+#include <algorithm> /* random_shuffle */
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -535,57 +536,58 @@ void MessageRouter::makeRoutes(){
 	int step=m_size/60+1;
 	#endif
 
+	// make a liste of pairs
+	vector<vector<Rank> > pairs;
+
 	for(Rank source=0;source<m_size;source++){
-
-		#ifndef CONFIG_ROUTER_VERBOSITY
-		cout<<"[MessageRouter::makeRoutes] "<<source<<" "<<endl;
-		#endif
-
 		for(Rank destination=0;destination<m_size;destination++){
-			#ifdef CONFIG_ROUTER_VERBOSITY
-			if(destination%step==0){
-				cout<<"*";
-				cout.flush();
-			}
-			#endif
+			vector<Rank> pair;
+			pair.push_back(source);
+			pair.push_back(destination);
+			pairs.push_back(pair);
+		}
+	}
 
-			vector<Rank> route;
-			findShortestPath(source,destination,&route);
+	// shuffle the list
+	// we need the same seed on all ranks
+	srand(5);
+	std::random_shuffle(pairs.begin(),pairs.end());
 
-			for(int i=0;i<(int)route.size()-1;i++){
-				// add the route
-				m_routes[source][destination][route[i]]=route[i+1];
-			}
+	cout<<"Computing routes, please wait..."<<endl;
 
-			// add the relay information
-			// the relay ranks are all the ranks in the route
-			// minus the source and minus the destination
-			for(int i=1;i<(int)route.size()-1;i++){
-				Rank relayRank=route[i];
+	// compute routes using the random order
+	for(int i=0;i<(int)pairs.size();i++){
+		Rank source=pairs[i][0];
+		Rank destination=pairs[i][1];
 
-				// general relay data
-				m_relayEvents[relayRank]++;
+		vector<Rank> route;
+		findShortestPath(source,destination,&route);
 
-				// relay data from 0
-				if(source==MASTER_RANK)
-					m_relayEventsFrom0[relayRank]++;
-
-				// relay data to 0
-				if(destination==MASTER_RANK)
-					m_relayEventsTo0[relayRank]++;
-			}
-
-			#ifdef CONFIG_ROUTER_VERBOSITY
-			printRoute(source,destination);
-
-			printRoute(destination,source);
-			#endif
+		for(int i=0;i<(int)route.size()-1;i++){
+			// add the route
+			m_routes[source][destination][route[i]]=route[i+1];
 		}
 
-		#ifdef CONFIG_ROUTER_VERBOSITY
-		double ratio=source*100.0/m_size;
-		cout<<" "<<ratio<<"%"<<endl;
-		#endif
+		// add the relay information
+		// the relay ranks are all the ranks in the route
+		// minus the source and minus the destination
+		for(int i=1;i<(int)route.size()-1;i++){
+			Rank relayRank=route[i];
+
+			// general relay data
+			m_relayEvents[relayRank]++;
+
+			// relay data from 0
+			if(source==MASTER_RANK)
+				m_relayEventsFrom0[relayRank]++;
+
+			// relay data to 0
+			if(destination==MASTER_RANK)
+				m_relayEventsTo0[relayRank]++;
+		}
+
+		if(m_rank==MASTER_RANK)
+			printRoute(source,destination);
 	}
 }
 
