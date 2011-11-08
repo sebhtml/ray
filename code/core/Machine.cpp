@@ -457,7 +457,7 @@ m_seedingData,
 
 	m_messagesHandler.barrier();
 
-	if(isMaster() && !m_aborted){
+	if(isMaster() && !m_aborted && !m_parameters.hasOption("-test-network-only")){
 		m_scaffolder.printFinalMessage();
 		cout<<endl;
 		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<endl;
