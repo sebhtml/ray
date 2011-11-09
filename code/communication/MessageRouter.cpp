@@ -807,7 +807,7 @@ void MessageRouter::writeFiles(string prefix,string type){
 
 	f4<<"NumberOfVertices: "<<numberOfVertices<<endl;
 	f4<<"NumberOfEdges: "<<numberOfEdges-m_size<<endl;
-	f4<<"NumberOfEdgesInCompleteGraph: "<<numberOfVertices*(numberOfVertices-1)<<endl;
+	f4<<"NumberOfEdgesInCompleteGraph: "<<numberOfVertices*(numberOfVertices-1)/2<<endl;
 	f4<<endl;
 	f4<<"NumberOfConnectionsPerVertex"<<endl;
 	f4<<"   Frequencies:"<<endl;
