@@ -39,6 +39,9 @@ using namespace std;
 /** a graph for connections between compute cores */
 class ConnectionGraph{
 
+/** verbosity */
+	bool m_verbose;
+
 	/** the type of the graph */
 	string m_type;
 
@@ -134,7 +137,7 @@ public:
 	void writeFiles(string prefix);
 
 /** build the graph. */
-	void buildGraph(int numberOfVertices,string method,int groupSize);
+	void buildGraph(int numberOfVertices,string method,int groupSize,bool verbosity);
 
 
 /**

@@ -5,4 +5,4 @@ graph_main.cpp \
 ../code/core/statistics.cpp \
 -o graph_main
 
-./graph_main 512
+./graph_main 4096

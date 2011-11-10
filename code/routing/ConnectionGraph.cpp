@@ -25,7 +25,8 @@
  * Make connections with a given type
  */
 void ConnectionGraph::makeConnections(string type){
-	cout<<"[ConnectionGraph::makeConnections] type: "<<type<<endl;
+	if(m_verbose)
+		cout<<"[ConnectionGraph::makeConnections] type: "<<type<<endl;
 
 	// append empty sets
 	for(Rank i=0;i<m_size;i++){
@@ -397,10 +398,17 @@ void ConnectionGraph::makeRoutes(){
 		std::random_shuffle(pairs.begin(),pairs.end());
 	}
 
-	cout<<"Computing routes, please wait..."<<endl;
+	if(m_verbose)
+		cout<<"Computing routes, please wait..."<<endl;
+
+	int done=0;
 
 	// compute routes using the random order
 	for(int i=0;i<(int)pairs.size();i++){
+
+		if(done%100==0 && m_verbose)
+			cout<<"makeRoutes "<<done<<"/"<<pairs.size()<<" "<<done/(0.0+pairs.size())*100<<"%"<<endl;
+
 		Rank source=pairs[i][0];
 		Rank destination=pairs[i][1];
 
@@ -431,6 +439,7 @@ void ConnectionGraph::makeRoutes(){
 				m_relayEventsTo0[relayRank]++;
 		}
 
+		done++;
 	}
 }
 
@@ -658,7 +667,10 @@ void ConnectionGraph::removeUnusedConnections(){
 	}
 }
 
-void ConnectionGraph::buildGraph(int numberOfRanks,string type,int groupSize){
+void ConnectionGraph::buildGraph(int numberOfRanks,string type,int groupSize,bool verbosity){
+
+	m_verbose=verbosity;
+
 	m_size=numberOfRanks;
 
 	// only used for type 'group'

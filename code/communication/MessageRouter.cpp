@@ -213,7 +213,7 @@ void MessageRouter::enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*
 
 	m_relayCheckerActivated=false;
 	
-	m_graph.buildGraph(numberOfRanks,type,coresPerNode);
+	m_graph.buildGraph(numberOfRanks,type,coresPerNode,rank==MASTER_RANK);
 
 	m_size=numberOfRanks;
 
