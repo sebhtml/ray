@@ -28,6 +28,7 @@
 #include <map>
 #include <core/constants.h>
 #include <vector>
+#include <routing/ConnectionGraph.h>
 #include <string>
 using namespace std;
 
@@ -47,16 +48,6 @@ using namespace std;
  * bits 20 to 31: true destination (12 bits, values from 0 to 4095, 4096 possible values)
  */
 class MessageRouter{
-/**
- * Number of cores for the group sub-command.
- * Only useful with -route-messages -connection-type group -cores-per-node X
- */
-	int m_coresPerNode;
-
-/**
- * Is the relay checker activated
- */
-	bool m_relayCheckerActivated;
 
 /**
  * Number of relayed messages if the relay checker is activated.
@@ -64,6 +55,15 @@ class MessageRouter{
 	map<Tag,int> m_relayedMessagesFrom0;
 
 	map<Tag,int> m_relayedMessagesTo0;
+
+
+/**  the connection graph */
+	ConnectionGraph m_graph;
+
+/**
+ * Is the relay checker activated
+ */
+	bool m_relayCheckerActivated;
 
 /**
  * A list of tags to check with the relay checker.
@@ -106,88 +106,11 @@ class MessageRouter{
  */
 	int m_size;
 
-/** 
- * routes contained in the route tables
- *
- * data:
- *
- * source
- * 	destination
- * 		vertex1
- * 			vertex2
- */
-	vector<vector<map<Rank,Rank> > > m_routes;
 
-/**
- * connections
- */
-	vector<set<Rank> > m_connections;
-
-/**
- * number of relays
- */
-	vector<Tag> m_relayEvents;
-
-/**
- * Number of relay events between any destination and source 0
- */
-	vector<Tag> m_relayEventsTo0;
-
-/**
- * Number of relay events between source 0 and any destination
- */
-	vector<Tag> m_relayEventsFrom0;
 
 /**************** METHODS ***************************/
 
 	void relayMessage(Message*message,Rank destination);
-
-/**
- * Get a route between a source and a destination
- */
-	void getRoute(Rank source,Rank destination,vector<Rank>*route);
-
-/**
- * Get the next rank to relay the message after <rank> for the route between
- * source and destination
- */
-	Rank getNextRankInRoute(Rank source,Rank destination,Rank rank);
-
-/**
- * Is there a up-link between a source and a destination
- */
-	bool isConnected(Rank source,Rank destination);
-
-	/************************************************/
-	/** methods to build connections */
-
-	/** general method to make connections */
-	void makeConnections(string type);
-
-	/** random connections */
-	void makeConnections_random();
-	void makeConnections_random_method_Erdos_Renyi_G_n_m();
-	void makeConnections_random_method_sebastien();
-
-	/** grouped connections */
-	void makeConnections_group();
-	int getIntermediateRank(Rank rank);
-
-	/** complete connections */
-	void makeConnections_complete();
-
-	/** find shortest paths between all pairs */
-	void makeRoutes();
-
-	/** find the shortest path between a source and a destination */
-	void findShortestPath(Rank source,Rank destination,vector<Rank>*route);
-
-	/** print a route */
-	void printRoute(Rank source,Rank destination);
-
-	void removeUnusedConnections();
-
-	void writeFiles(string prefix,string type);
 
 	/********************************************/
 	/* stuff for routing tags */
@@ -228,10 +151,6 @@ string prefix,int numberOfRanks,int coresPerNode,string type);
 
 	bool isRoutingTag(Tag tag);
 
-/**
- * Get the connections for a source
- */
-	void getConnections(Rank source,vector<Rank>*connections);
 
 /**
  * Check if relayed messages have completed their transit.
@@ -260,6 +179,8 @@ string prefix,int numberOfRanks,int coresPerNode,string type);
  * executed whatsoever.
  */
 	void activateRelayChecker();
+
+	ConnectionGraph*getGraph();
 };
 
 #endif

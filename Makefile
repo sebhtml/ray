@@ -159,6 +159,7 @@ obj-y += code/communication/mpi_tags.o code/communication/VirtualCommunicator.o 
 code/communication/Message.o code/communication/MessageProcessor.o code/communication/MessagesHandler.o
 obj-y += code/communication/NetworkTest.o
 obj-y += code/communication/MessageRouter.o
+obj-y += code/routing/ConnectionGraph.o
 
 # scheduling stuff
 obj-y += code/scheduling/VirtualProcessor.o

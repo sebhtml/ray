@@ -1105,7 +1105,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
-		if(theCurrentSize%10000==0){
+		if(theCurrentSize%100==0){
 			if(theCurrentSize==0 && ed->m_flowNumber ==0){
 
 				m_flowedVertices.clear();
@@ -1698,11 +1698,6 @@ void SeedExtender::removeUnfitLibraries(){
 			}else if(j->second.size()>10){// to restore reads for a library, we need at least 5
 				for(int k=0;k<(int)j->second.size();k++){
 					uint64_t uniqueId=reads[library][k];
-					#ifdef HUNT_INFINITE_BUG
-					if(m_ed->m_EXTENSION_extension.size()>10000){
-						cout<<"Restoring Value="<<j->second[k]<<" Expected="<<averageLength<<" Dev="<<stddev<<" MeanForLibrary="<<mean<<" n="<<n<<endl;
-					}
-					#endif
 					m_ed->m_sequencesToFree.push_back(uniqueId);
 				}
 			}
@@ -1739,11 +1734,6 @@ void SeedExtender::setFreeUnmatedPairedReads(){
 		uint64_t readId=expired->at(i);
 		if(m_ed->m_pairedReadsWithoutMate.count(readId)>0){
 			m_ed->m_sequencesToFree.push_back(readId); // RECYCLING IS desactivated
-			#ifdef HUNT_INFINITE_BUG
-			if(m_ed->m_EXTENSION_extension.size()>10000){
-				cout<<"Expired: Now="<<m_ed->m_EXTENSION_extension.size()-1<<" Id="<<readId<<endl;
-			}
-			#endif
 		}
 	}
 	m_ed->m_expirations.erase(m_ed->m_EXTENSION_extension.size());

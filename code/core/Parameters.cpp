@@ -145,9 +145,11 @@ void Parameters::parseCommands(){
 	if(hasOption("-show-communication-events"))
 		m_showCommunicationEvents=true;
 
+/*
 	if(hasOption("-test-network-only")){
 		m_options.insert("-write-network-test-raw-data");
 	}
+*/
 
 	if(hasOption("-show-read-placement")){
 		m_showReadPlacement=true;
@@ -1209,7 +1211,7 @@ void Parameters::showUsage(){
 
 	cout<<"  Hardware testing"<<endl;
 	cout<<endl;
-	showOption("-test-network-only","Test the network and return. This option enables -write-network-test-raw-data.");
+	showOption("-test-network-only","Tests the network and returns.");
 	cout<<endl;
 	showOption("-write-network-test-raw-data","Writes one additional file per rank detailing the network test.");
 	cout<<endl;

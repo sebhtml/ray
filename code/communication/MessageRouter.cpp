@@ -32,12 +32,6 @@
 #include <string.h> /* for memcpy */
 #include <assert.h>
 #include <core/common_functions.h>
-#include <algorithm> /* random_shuffle */
-#include <iostream>
-#include <core/statistics.h>
-#include <fstream>
-#include <sstream>
-#include <math.h> /* for log */
 using namespace std;
 
 /*
@@ -70,7 +64,7 @@ void MessageRouter::routeOutcomingMessages(){
 		Rank trueDestination=aMessage->getDestination();
 
 		// if it is reachable, no further routing is required
-		if(isConnected(trueSource,trueDestination)){
+		if(m_graph.isConnected(trueSource,trueDestination)){
 			#ifdef CONFIG_ROUTER_VERBOSITY
 			cout<<__func__<<" Rank "<<trueSource<<" can reach "<<trueDestination<<" without routing"<<endl;
 			#endif
@@ -81,7 +75,7 @@ void MessageRouter::routeOutcomingMessages(){
 		RoutingTag routingTag=getRoutingTag(communicationTag,trueSource,trueDestination);
 		aMessage->setTag(routingTag);
 
-		Rank nextRank=getNextRankInRoute(trueSource,trueDestination,m_rank);
+		Rank nextRank=m_graph.getNextRankInRoute(trueSource,trueDestination,m_rank);
 		aMessage->setDestination(nextRank);
 
 		#ifdef CONFIG_ROUTER_VERBOSITY
@@ -93,9 +87,9 @@ void MessageRouter::routeOutcomingMessages(){
 	#ifdef ASSERT
 	for(int i=0;i<numberOfMessages;i++){
 		Message*aMessage=m_outbox->at(i);
-		if(!isConnected(aMessage->getSource(),aMessage->getDestination()))
+		if(!m_graph.isConnected(aMessage->getSource(),aMessage->getDestination()))
 			cout<<aMessage->getSource()<<" and "<<aMessage->getDestination()<<" are not connected !"<<endl;
-		assert(isConnected(aMessage->getSource(),aMessage->getDestination()));
+		assert(m_graph.isConnected(aMessage->getSource(),aMessage->getDestination()));
 	}
 	#endif
 }
@@ -154,7 +148,7 @@ void MessageRouter::routeIncomingMessages(){
 
 	// at this point, we know that we need to forward
 	// the message to another peer
-	int nextRank=getNextRankInRoute(trueSource,trueDestination,m_rank);
+	int nextRank=m_graph.getNextRankInRoute(trueSource,trueDestination,m_rank);
 
 	#ifdef CONFIG_ROUTER_VERBOSITY
 	cout<<__func__<<" message has been sent to the next one, trueSource="<<trueSource<<" trueDestination= "<<trueDestination<<endl;
@@ -196,450 +190,12 @@ void MessageRouter::relayMessage(Message*message,Rank destination){
 	message->setDestination(destination);
 
 	#ifdef ASSERT
-	assert(isConnected(m_rank,destination));
+	assert(m_graph.isConnected(m_rank,destination));
 	#endif
 
 	m_outbox->push_back(*message);
 }
 
-/**
- * Make connections with a given type
- */
-void MessageRouter::makeConnections(string type){
-	cout<<"[MessageRouter::makeConnections] type: "<<type<<endl;
-
-	// append empty sets
-	for(Rank i=0;i<m_size;i++){
-		set<Rank> a;
-		m_connections.push_back(a);
-	}
-
-	// insert self
-	for(Rank i=0;i<m_size;i++)
-		m_connections[i].insert(i);
-
-	if(type=="random"){
-		makeConnections_random();
-	}else if(type=="group"){
-		makeConnections_group();
-	}else if(type=="complete"){
-		makeConnections_complete();
-	}else{// the default is random
-		makeConnections_random();
-	}
-}
-
-/**
- * complete graph
- */
-void MessageRouter::makeConnections_complete(){
-	for(Rank i=0;i<m_size;i++){
-		for(Rank j=0;j<m_size;j++){
-			m_connections[i].insert(j);
-		}
-	}
-}
-
-/**
- * create random connections
- */
-void MessageRouter::makeConnections_random(){
-	makeConnections_random_method_Erdos_Renyi_G_n_m();
-	//makeConnections_random_method_sebastien();
-}
-
-void MessageRouter::makeConnections_random_method_Erdos_Renyi_G_n_m(){
-
-	// create a set of all edges
-	vector<vector<Rank> > edges;
-	for(Rank i=0;i<m_size;i++){
-		for(Rank j=0;j<m_size;j++){
-			// don't generate a pair for (i,i)
-			if(i==j)
-				continue;
-		
-			// don't generate a pair for (i,j) if i<j because
-			// (j,i) will be processed anyway
-			if(i<j)
-				continue;
-			vector<Rank> pair;
-			pair.push_back(i);
-			pair.push_back(j);
-			edges.push_back(pair);
-		}
-	}
-
-	// shuffle the edges
-	srand(99);
-	std::random_shuffle(edges.begin(),edges.end());
-
-	// add the edges
-	int connectionsPerVertex=log(m_size)/log(2);
-	int numberOfEdgesToAdd=m_size*connectionsPerVertex/2;
-
-	for(int i=0;i<numberOfEdgesToAdd;i++){
-		Rank source=edges[i][0];
-		Rank destination=edges[i][1];
-		m_connections[source].insert(destination);
-		m_connections[destination].insert(source);
-	}
-}
-
-void MessageRouter::makeConnections_random_method_sebastien(){
-	srand(4);
-
-
-	int connectionsPerVertex=log(m_size)/log(2)/2;
-
-	cout<<"[MessageRouter] vertices: "<<m_size<<endl;
-	cout<<"[MessageRouter] connectionsPerVertex: "<<connectionsPerVertex<<endl;
-
-	for(int connectionNumber=0;connectionNumber<connectionsPerVertex;connectionNumber++){
-		for(Rank source=0;source<m_size;source++){
-
-			// add an edge bool added=false;
-			bool added=false;
-			while(!added){
-				Rank destination=rand()%m_size;
-
-				// if already set, find another one
-				if(m_connections[source].count(destination)>0)
-					continue;
-			
-				m_connections[source].insert(destination);
-				m_connections[destination].insert(source);
-				added=true;
-			}
-		}
-	}
-
-}
-
-/**
- * Get an intermediate for the type group
- */
-int MessageRouter::getIntermediateRank(Rank rank){
-	return rank-rank % m_coresPerNode;
-}
-
-/**
- * given n ranks, they are grouped in groups.
- * in each group, only one rank is allowed to communicate with the reprentative rank of
- * other groups.
- *
- * a rank can communicate with itself and with its intermediate rank
- *
- * if a rank is intermediate, it can reach any intermediate rank too.
- *
- * This maps well on super-computers with the same number of cores on each node
- *
- * For instance, if a node has 8 cores, then 8 ranks per group is correct.
- *
- * this method populates these attributes:
- *
- * 	- m_connections
- * 	- m_routes
- */
-void MessageRouter::makeConnections_group(){
-// the general idea of routing a message:
-//
-//
-// Cases: (starting with simpler cases)
-//
-//
-// case 1: source and destination are the same (1 hop, no routing required)
-// case 2:  source and destination are allowed to communicate (1 hop, no routing required)
-//   happens when 
-//       - source is the intermediate rank of the destination
-//       or
-//       - destination is the intermediate rank of the source
-// case 3:  source and destination share the same intermediate rank (2 hops, some routing)
-// case 4:  source and destination don't share the same intermediate rank (3 hops, full routing)
-//
-//
-// see Documentation/Message-Routing.txt
-//
-//             1	                 2                              3
-// trueSource -> sourceIntermediateRank -> destinationIntermediateRank -> trueDestination
-
-// the message has no routing tag
-// we must check that the channel is authorized.
-
-	for(Rank source=0;source<m_size;source++){
-		int intermediateSource=getIntermediateRank(source);
-	
-		// can connect with the intermediate source
-		m_connections[source].insert(intermediateSource);
-
-		for(Rank destination=0;destination<m_size;destination++){
-
-			int intermediateDestination=getIntermediateRank(destination);
-
-			// an intermediate node can connect with any intermediate node
-			if(destination==intermediateDestination && source==intermediateSource)
-				m_connections[source].insert(intermediateDestination);
-			
-			// if the source is the intermediate destination, add a link
-			// this is within the same group
-			if(source==intermediateDestination)
-				m_connections[source].insert(destination);
-
-			// peers in the same group are allowed to connect
-			if(intermediateSource==intermediateDestination)
-				m_connections[source].insert(destination);
-		}
-	}
-}
-
-/**
- * Dijkstra's algorithm
- * All weights are 1
- */
-void MessageRouter::findShortestPath(Rank source,Rank destination,vector<Rank>*route){
-
-	// assign tentative distances
-	map<Rank,Distance> tentativeDistances;
-	
-	for(Rank i=0;i<m_size;i++)
-		tentativeDistances[i]=9999;
-
-	tentativeDistances[source]=0;
-
-	map<Rank,Rank> previousVertices;
-
-	// create a set of unvisited vertices
-	set<Rank> unvisited;
-
-	for(Rank i=0;i<m_size;i++)
-		unvisited.insert(i);
-
-	// create a current vertex
-	Rank current=source;
-
-	// create an index of distances
-	map<Distance,set<Rank> > verticesWithDistance;
-
-	for(map<Rank,Distance>::iterator i=tentativeDistances.begin();i!=tentativeDistances.end();i++){
-		verticesWithDistance[i->second].insert(i->first);
-	}
-
-	while(!unvisited.empty()){
-	
-		// calculate the tentative distance
-		// of each neighbors of the current
-		for(set<Rank>::iterator neighbor=m_connections[current].begin();
-			neighbor!=m_connections[current].end();neighbor++){
-			Rank theNeighbor=*neighbor;
-
-			// we are only interested in unvisited neighbors
-			if(unvisited.count(theNeighbor)>0){
-				Distance newDistance=tentativeDistances[current]+1;
-				Distance oldDistance=tentativeDistances[theNeighbor];
-
-				// the new distance is better
-				// if the oldDistance for theNeighbor and the newDistance
-				// for theNeighbor in respect to current are equal, then
-				// choose the one having the previousVertex with the least
-				// relay events. The previous vertex is current or the one
-				// stored in previousVertices
-				if(newDistance < oldDistance || 
-					// distances are equal and current has less relay events
-				(newDistance==oldDistance && previousVertices.count(theNeighbor)>0
-				&& m_relayEvents[current] < m_relayEvents[previousVertices[theNeighbor]])){
-
-					tentativeDistances[theNeighbor]=newDistance;
-					previousVertices[theNeighbor]=current;
-
-					// update the distance index
-					verticesWithDistance[oldDistance].erase(theNeighbor);
-					verticesWithDistance[newDistance].insert(theNeighbor);
-				}
-			}
-		}
-
-		// mark the current vertex as not used
-		unvisited.erase(current);
-
-		// remove it as well from the index
-		Distance theDistance=tentativeDistances[current];
-		verticesWithDistance[theDistance].erase(current);
-
-		if(verticesWithDistance[theDistance].size()==0)
-			verticesWithDistance.erase(theDistance);
-
-		// the next current is the one in unvisited vertices
-		// with the lowest distance
-		
-		Distance bestDistance=-1;
-
-		// find it using the index
-		// the index contains only unvisited vertices
-		for(map<Distance,set<Rank> >::iterator myIterator=verticesWithDistance.begin();
-			myIterator!=verticesWithDistance.end();myIterator++){
-
-			Distance theDistance=myIterator->first;
-
-			// we are done if all the remaining distances are greater
-			if(bestDistance!=-1 && theDistance > bestDistance)
-				break;
-
-			// find a vertex with the said distance
-			for(set<Rank>::iterator i=myIterator->second.begin();
-				i!=myIterator->second.end();i++){
-				Rank vertex=*i;
-
-				if(theDistance < bestDistance || bestDistance==-1){
-					current=vertex;
-					bestDistance=tentativeDistances[vertex];
-
-					// we can break because all the other remaining 
-					// for this distance have the same distance (obviously)
-					break;
-				}
-			}
-		}
-	}
-
-	// generate the route
-	current=destination;
-	while(current!=source){
-		route->push_back(current);
-		current=previousVertices[current];
-	}
-
-	route->push_back(source);
-
-	// invert the route
-	// because the one we have is from destination to source
-	int left=0;
-	int right=route->size()-1;
-	while(left<right){
-		Rank t=(*route)[left];
-		(*route)[left]=(*route)[right];
-		(*route)[right]=t;
-		left++;
-		right--;
-	}
-
-	#ifdef CONFIG_ROUTER_VERBOSITY
-	// print the best distance
-	cout<<"Shortest path from "<<source<<" to "<<destination<<" is "<<tentativeDistances[destination]<<"	";
-	cout<<"Path:	"<<route->size()<<"	";
-	for(int i=0;i<(int)route->size();i++){
-		cout<<" "<<route->at(i);
-	}
-	cout<<endl;
-	#endif
-}
-
-/**
- * Print a route
- */
-void MessageRouter::printRoute(Rank source,Rank destination){
-	cout<<"[printRoute] Source: "<<source<<"	Destination: "<<destination<<"	";
-
-	vector<Rank> route;
-	getRoute(source,destination,&route);
-
-	cout<<"Size: "<<route.size()<<"	Route: ";
-
-	for(int i=0;i<(int)route.size();i++){
-		if(i!=0)
-			cout<<" ";
-		cout<<route[i];
-	}
-	cout<<"	Hops: "<<route.size()-1<<endl;
-}
-
-/**
- * Compute the routing tables.
- * This is done for all pairs of ranks
- */
-void MessageRouter::makeRoutes(){
-
-	// initialize the relay events
-	for(Rank source=0;source<m_size;source++){
-		m_relayEvents.push_back(0);
-		m_relayEventsTo0.push_back(0);
-		m_relayEventsFrom0.push_back(0);
-	}
-
-	// append empty routes
-	for(Rank i=0;i<m_size;i++){
-		vector<map<Rank,Rank> > a;
-		for(Rank j=0;j<m_size;j++){
-			map<Rank,Rank> b;
-			a.push_back(b);
-		}
-		m_routes.push_back(a);
-	}
-
-	#ifdef CONFIG_ROUTER_VERBOSITY
-	int step=m_size/60+1;
-	#endif
-
-	// make a liste of pairs
-	vector<vector<Rank> > pairs;
-
-	for(Rank source=0;source<m_size;source++){
-		for(Rank destination=0;destination<m_size;destination++){
-			vector<Rank> pair;
-			pair.push_back(source);
-			pair.push_back(destination);
-			pairs.push_back(pair);
-		}
-	}
-
-	// shuffle the list
-	// we need the same seed on all ranks
-	srand(5);
-	std::random_shuffle(pairs.begin(),pairs.end());
-
-	cout<<"Computing routes, please wait..."<<endl;
-
-	// compute routes using the random order
-	for(int i=0;i<(int)pairs.size();i++){
-		Rank source=pairs[i][0];
-		Rank destination=pairs[i][1];
-
-		vector<Rank> route;
-		findShortestPath(source,destination,&route);
-
-		for(int i=0;i<(int)route.size()-1;i++){
-			// add the route
-			m_routes[source][destination][route[i]]=route[i+1];
-		}
-
-		// add the relay information
-		// the relay ranks are all the ranks in the route
-		// minus the source and minus the destination
-		for(int i=1;i<(int)route.size()-1;i++){
-			Rank relayRank=route[i];
-
-			// general relay data
-			m_relayEvents[relayRank]++;
-
-			// relay data from 0
-			if(source==MASTER_RANK)
-				m_relayEventsFrom0[relayRank]++;
-
-			// relay data to 0
-			if(destination==MASTER_RANK)
-				m_relayEventsTo0[relayRank]++;
-		}
-
-		if(m_rank==MASTER_RANK)
-			printRoute(source,destination);
-	}
-}
-
-/**
- * a rank can only speak to things listed in connections
- */
-bool MessageRouter::isConnected(Rank source,Rank destination){
-	// check that a connection exists
-	return m_connections[source].count(destination)>0;
-}
 
 /**
  * a tag is a routing tag is its routing bit is set to 1
@@ -656,8 +212,9 @@ void MessageRouter::enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*
 	string prefix,int numberOfRanks,int coresPerNode,string type){
 
 	m_relayCheckerActivated=false;
+	
+	m_graph.buildGraph(numberOfRanks,type,coresPerNode);
 
-	m_coresPerNode=coresPerNode;
 	m_size=numberOfRanks;
 
 	cout<<endl;
@@ -670,236 +227,9 @@ void MessageRouter::enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*
 	m_rank=rank;
 	m_enabled=true;
 
-	if(type=="")
-		type="random";
-
-	// generate the connections
-	makeConnections(type);
-
-	// generate the routes
-	makeRoutes();
-
-	removeUnusedConnections();
 
 	if(m_rank==0)
-		writeFiles(prefix,type);
-}
-
-void MessageRouter::removeUnusedConnections(){
-	// clear connections
-	for(Rank source=0;source<m_size;source++){
-		m_connections[source].clear();
-
-		// add self
-		m_connections[source].insert(source);
-	}
-
-	// generate connections using the routes
-	for(Rank source=0;source<m_size;source++){
-		for(Rank destination=0;destination<m_size;destination++){
-			vector<Rank> route;
-			getRoute(source,destination,&route);
-			for(int i=0;i<(int)route.size()-1;i++){
-				Rank rank1=route[i];
-				Rank rank2=route[i+1];
-	
-				// add the connections
-				m_connections[rank1].insert(rank2);
-				m_connections[rank2].insert(rank1);
-			}
-		}
-	}
-}
-
-/**
- * Write files.
- */
-void MessageRouter::writeFiles(string prefix,string type){
-	// dump the connections in a file
-	ostringstream file;
-	file<<prefix<<"Routing.Connections.txt";
-	ofstream f(file.str().c_str());
-
-	f<<"#Rank	Count	Connections"<<endl;
-
-	for(Rank rank=0;rank<m_size;rank++){
-		f<<rank<<"	"<<m_connections[rank].size()<<"	";
-
-		for(set<Rank>::iterator i=m_connections[rank].begin();
-			i!=m_connections[rank].end();i++){
-			if(i!=m_connections[rank].begin())
-				f<<" ";
-			f<<*i;
-		}
-		f<<endl;
-	}
-
-	f.close();
-
-	// dump the routes in a file
-	ostringstream file2;
-	file2<<prefix<<"Routing.Routes.txt";
-	ofstream f2(file2.str().c_str());
-	f2<<"#Source	Destination	Hops	Route"<<endl;
-
-	for(Rank rank=0;rank<m_size;rank++){
-		for(Rank i=0;i<m_size;i++){
-			vector<Rank> route;
-			getRoute(rank,i,&route);
-			f2<<rank<<"	"<<i<<"	"<<route.size()-1<<"	";
-
-			for(int i=0;i<(int)route.size();i++){
-				if(i!=0)
-					f2<<" ";
-				f2<<route[i];
-			}
-
-			f2<<endl;
-		}
-	}
-
-	f2.close();
-
-	// write relay events
-	ostringstream file3;
-	file3<<prefix<<"Routing.RelayEvents.txt";
-	ofstream f3(file3.str().c_str());
-	f3<<"#Source	RelayEvents"<<endl;
-
-	for(Rank rank=0;rank<m_size;rank++){
-		f3<<rank<<"	"<<m_relayEvents[rank]<<endl;
-	}
-
-	f3.close();
-
-	// dump the routes in a file
-	ostringstream file4;
-	file4<<prefix<<"Routing.Summary.txt";
-	ofstream f4(file4.str().c_str());
-
-	int numberOfVertices=m_size;
-
-	int numberOfEdges=0;
-
-	vector<int> connectivities;
-
-	for(Rank i=0;i<m_size;i++){
-		vector<Rank> connections;
-
-		getConnections(i,&connections);
-
-		// remove the self edge
-		connectivities.push_back(connections.size()-1);
-
-		for(Rank j=0;j<m_size;j++){
-			// we only count the edges with i >= j
-			// because (i,j) and (j,i) are the same
-			if(i<j)
-				continue;
-	
-			if(isConnected(i,j))
-				numberOfEdges++;
-		}
-	}
-
-	f4<<"Type: "<<type<<endl;
-	f4<<endl;
-
-	f4<<"NumberOfVertices: "<<numberOfVertices<<endl;
-	f4<<"NumberOfEdges: "<<numberOfEdges-m_size<<endl;
-	f4<<"NumberOfEdgesInCompleteGraph: "<<numberOfVertices*(numberOfVertices-1)/2<<endl;
-	f4<<endl;
-	f4<<"NumberOfConnectionsPerVertex"<<endl;
-	f4<<"   Frequencies:"<<endl;
-
-	map<int,int> connectionFrequencies;
-	for(Rank i=0;i<m_size;i++){
-		vector<Rank> connections;
-		getConnections(i,&connections);
-		connectionFrequencies[connections.size()-1]++;
-	}
-
-	int totalForEdges=0;
-
-	for(map<int,int>::iterator i=connectionFrequencies.begin();
-		i!=connectionFrequencies.end();i++){
-		totalForEdges+=i->second;
-	}
-
-	for(map<int,int>::iterator i=connectionFrequencies.begin();
-		i!=connectionFrequencies.end();i++){
-		f4<<"        "<<i->first<<"    "<<i->second<<"    "<<i->second*100.0/totalForEdges<<"%"<<endl;
-	}
-	
-	f4<<"        "<<"Total"<<"    "<<totalForEdges<<"    100.00%"<<endl;
-
-	f4<<"   Average: "<<getAverage(&connectivities)<<endl;
-	f4<<"   StandardDeviation: "<<getStandardDeviation(&connectivities)<<endl;
-
-	f4<<endl;
-	f4<<"NumberOfRelayEventsPerVertex"<<endl;
-
-	f4<<"   Average: "<<getAverage(&m_relayEvents)<<endl;
-	f4<<"   StandardDeviation: "<<getStandardDeviation(&m_relayEvents)<<endl;
-
-	f4<<endl;
-	f4<<"RouteLength"<<endl;
-
-	f4<<"   Frequencies:"<<endl;
-	map<int,int> pathLengths;
-
-	for(Rank i=0;i<m_size;i++){
-		for(Rank j=0;j<m_size;j++){
-			vector<Rank> route;
-			getRoute(i,j,&route);
-
-			// we remove the source vertex
-			pathLengths[route.size()-1]++;
-		}
-	}
-
-	int totalForPaths=0;
-	for(map<int,int>::iterator i=pathLengths.begin();
-		i!=pathLengths.end();i++){
-		totalForPaths+=i->second;
-	}
-
-	for(map<int,int>::iterator i=pathLengths.begin();
-		i!=pathLengths.end();i++){
-		f4<<"        "<<i->first<<"    "<<i->second<<"    "<<i->second*100.0/totalForPaths<<"%"<<endl;
-	}
-	f4<<"        "<<"Total"<<"    "<<totalForPaths<<"    100.00%"<<endl;
-
-	f4.close();
-}
-
-/**
- * get the route between two points
- */
-void MessageRouter::getRoute(Rank source,Rank destination,vector<int>*route){
-	int currentVertex=source;
-	route->push_back(currentVertex);
-
-	while(currentVertex!=destination){
-		currentVertex=getNextRankInRoute(source,destination,currentVertex);
-		route->push_back(currentVertex);
-	}
-}
-
-
-int MessageRouter::getNextRankInRoute(Rank source,Rank destination,Rank rank){
-	#ifdef ASSERT
-	assert(m_routes[source][destination].count(rank)==1);
-	#endif
-
-	return m_routes[source][destination][rank];
-}
-
-void MessageRouter::getConnections(Rank source,vector<Rank>*connections){
-	for(set<Rank>::iterator i=m_connections[source].begin();
-		i!=m_connections[source].end();i++){
-		connections->push_back(*i);
-	}
+		m_graph.writeFiles(prefix);
 }
 
 void MessageRouter::activateRelayChecker(){
@@ -916,7 +246,7 @@ void MessageRouter::addTagToCheckForRelayTo0(Tag tag){
 
 bool MessageRouter::hasCompletedRelayEvents(){
 	// check relay events from 0
-	int expected=m_relayEventsFrom0[m_rank];
+	int expected=m_graph.getRelaysFrom0(m_rank);
 
 	for(set<Tag>::iterator i=m_tagsToCheckForRelayFrom0.begin();
 		i!=m_tagsToCheckForRelayFrom0.end();i++){
@@ -930,7 +260,7 @@ bool MessageRouter::hasCompletedRelayEvents(){
 	}
 	
 	// check relay events to 0
-	expected=m_relayEventsTo0[m_rank];
+	expected=m_graph.getRelaysTo0(m_rank);
 
 	for(set<Tag>::iterator i=m_tagsToCheckForRelayTo0.begin();
 		i!=m_tagsToCheckForRelayTo0.end();i++){
@@ -1026,3 +356,6 @@ RoutingTag MessageRouter::getRoutingTag(Tag tag,Rank source,Rank destination){
 	return result;
 }
 
+ConnectionGraph*MessageRouter::getGraph(){
+	return &m_graph;
+}

@@ -470,7 +470,8 @@ void MessagesHandler::appendStatistics(const char*file){
  * 	actually, this RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY is not accounted for because
  * 	it is sent after printing the statistics.
  */
-	m_sentMessages++;
+
+	cout<<"MessagesHandler::appendStatistics file= "<<file<<endl;
 
 	ofstream fp;
 	fp.open(file,ios_base::out|ios_base::app);
