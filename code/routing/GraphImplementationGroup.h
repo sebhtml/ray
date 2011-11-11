@@ -40,6 +40,7 @@ class GraphImplementationGroup : public GraphImplementation{
 protected:
 
 	void computeRoute(Rank a,Rank b,vector<Rank>*route);
+	bool isConnected(Rank source,Rank destination);
 	Rank getNextRankInRoute(Rank source,Rank destination,Rank rank);
 
 public:

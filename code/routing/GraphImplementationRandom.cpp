@@ -103,3 +103,13 @@ void GraphImplementationRandom::makeRoutes(){
 	computeRelayEvents();
 }
 
+bool GraphImplementationRandom::isConnected(Rank source,Rank destination){
+	// communicating with itself is always allowed
+	if(source==destination)
+		return true;
+
+	// check that a connection exists
+	return m_outcomingConnections[source].count(destination)>0;
+}
+
+

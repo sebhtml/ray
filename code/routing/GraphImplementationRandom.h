@@ -33,6 +33,7 @@ protected:
 	void computeRoute(Rank a,Rank b,vector<Rank>*route);
 
 	Rank getNextRankInRoute(Rank source,Rank destination,Rank rank);
+	bool isConnected(Rank source,Rank destination);
 public:
 
 	void makeConnections(int n);

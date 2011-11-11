@@ -29,7 +29,7 @@ using namespace std;
 
 class DeBruijnVertex{
 public:
-	uint8_t m_digits;
+	uint8_t m_digits[16];
 };
 
 /**
@@ -45,24 +45,25 @@ class GraphImplementationDeBruijn : public GraphImplementation{
 	int getPower(int base,int exponent);
 
 /** convert a number to a de Bruijn vertex */
-	void convertToDeBruijn(int i,vector<int>*tuple);
+	void convertToDeBruijn(int i,DeBruijnVertex*tuple);
 
 /** get the children of a de Bruijn vertex */
-	void getChildren(vector<int>*vertex,vector<vector<int> >*children);
-	void getParents(vector<int>*vertex,vector<vector<int> >*children);
+	void getChildren(DeBruijnVertex*vertex,vector<DeBruijnVertex>*children);
+	void getParents(DeBruijnVertex*vertex,vector<DeBruijnVertex>*children);
 
 /** convert a de Bruijn vertex to base 10 */
-	int convertToBase10(vector<int>*vertex);
+	int convertToBase10(DeBruijnVertex*vertex);
 
-	void printVertex(vector<int>*a);
+	void printVertex(DeBruijnVertex*a);
 	bool isAPowerOf(int n,int base);
 
-	int getMaximumOverlap(vector<int>*a,vector<int>*b);
+	int getMaximumOverlap(DeBruijnVertex*a,DeBruijnVertex*b);
 
 protected:
 
 	void computeRoute(Rank a,Rank b,vector<Rank>*route);
 	Rank getNextRankInRoute(Rank source,Rank destination,Rank rank);
+	bool isConnected(Rank source,Rank destination);
 public:
 
 	void makeConnections(int n);

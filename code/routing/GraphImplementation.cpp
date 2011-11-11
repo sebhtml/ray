@@ -25,15 +25,6 @@
 #include <algorithm> /* random_shuffle */
 using namespace std;
 
-bool GraphImplementation::isConnected(Rank source,Rank destination){
-	// communicating with itself is always allowed
-	if(source==destination)
-		return true;
-
-	// check that a connection exists
-	return m_outcomingConnections[source].count(destination)>0;
-}
-
 void GraphImplementation::getOutcomingConnections(Rank source,vector<Rank>*connections){
 	for(set<Rank>::iterator i=m_outcomingConnections[source].begin();
 		i!=m_outcomingConnections[source].end();i++){
@@ -51,6 +42,9 @@ void GraphImplementation::getIncomingConnections(Rank source,vector<Rank>*connec
 /**
  * Dijkstra's algorithm
  * All weights are 1
+ *
+ * furthermore, we minimize saturation of vertices
+ * by minimizing the relay points
  */
 void GraphImplementation::findShortestPath(Rank source,Rank destination,vector<Rank>*route){
 
@@ -217,8 +211,6 @@ void GraphImplementation::getRoute(Rank source,Rank destination,vector<Rank>*rou
  * This is done for all pairs of ranks
  */
 void GraphImplementation::computeRoutes(){
-
-
 	// initialize the relay events
 	for(Rank source=0;source<m_size;source++){
 		m_relayEvents.push_back(0);

@@ -1181,11 +1181,13 @@ void Parameters::showUsage(){
 	showOptionDescription("Messages will be routed accordingly so that any rank can communicate directly with only a few others.");
 	showOptionDescription("Without -route-messages, any rank can communicate directly with any other rank.");
 	showOptionDescription("Files generated: Routing.Connections.txt, Routing.Routes.txt and Routing.RelayEvents.txt");
+	showOptionDescription("and Routing.Summary.txt");
 	cout<<endl;
 	showOption("-connection-type type","Sets the connection type for routes.");
 	showOptionDescription("Accepted values are debruijn, group, random and complete. Default is debruijn.");
 	showOptionDescription("With the type debruijn, the number of ranks must be a power of something.");
 	showOptionDescription("Examples: 256 = 16*16, 512=8*8*8, 49=7*7, and so on.");
+	showOptionDescription("Otherwise, don't use debruijn routing but use another one");
 	cout<<endl;
 
 	cout<<"  Hardware testing"<<endl;

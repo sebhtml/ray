@@ -9,7 +9,8 @@ int main(int argc,char**argv){
 
 	graph.buildGraph(n,argv[2],true);
 
-	//graph.writeFiles("./");
+	if(atoi(argv[3]))
+		graph.writeFiles("./");
 
 	return 0;
 }

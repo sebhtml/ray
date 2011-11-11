@@ -133,3 +133,14 @@ Rank GraphImplementationGroup::getNextRankInRoute(Rank source,Rank destination,R
 
 	return m_routes[source][destination][rank];
 }
+
+bool GraphImplementationGroup::isConnected(Rank source,Rank destination){
+	// communicating with itself is always allowed
+	if(source==destination)
+		return true;
+
+	// check that a connection exists
+	return m_outcomingConnections[source].count(destination)>0;
+}
+
+

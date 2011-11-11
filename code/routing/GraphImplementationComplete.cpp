@@ -54,3 +54,9 @@ void GraphImplementationComplete::makeRoutes(){
 Rank GraphImplementationComplete::getNextRankInRoute(Rank source,Rank destination,Rank rank){
 	return destination;
 }
+
+bool GraphImplementationComplete::isConnected(Rank source,Rank destination){
+	return true;
+}
+
+

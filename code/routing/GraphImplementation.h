@@ -64,16 +64,16 @@ protected:
 	vector<int> m_relayEventsFrom0;
 
 
-
 /**
- * connections
+ * outcoming connections
  */
 	vector<set<Rank> > m_outcomingConnections;
 
+/**
+ * incoming connections
+ */
 	vector<set<Rank> > m_incomingConnections;
 
-	virtual void computeRoute(Rank a,Rank b,vector<Rank>*route) = 0;
-	
 	void computeRoutes();
 
 	/** find the shortest path between a source and a destination */
@@ -81,16 +81,19 @@ protected:
 
 	void computeRelayEvents();
 
+	virtual void computeRoute(Rank a,Rank b,vector<Rank>*route) = 0;
+	
 public:
-
-	void setVerbosity(bool verbosity);
 
 	virtual void makeConnections(int n) =0;
 	
 	virtual void makeRoutes() = 0;
 
+/** get the next rank in a route */
 	virtual Rank getNextRankInRoute(Rank source,Rank destination,Rank rank) = 0;
 	
+	virtual bool isConnected(Rank i,Rank j) = 0;
+
 	virtual ~GraphImplementation(){ /* nothing */} /* and no trailing ; */
 
 	void getRoute(Rank source,Rank destination,vector<Rank>*route);
@@ -102,7 +105,7 @@ public:
 
 	void getIncomingConnections(Rank rank,vector<Rank>*connections);
 
-	bool isConnected(Rank i,Rank j);
+	void setVerbosity(bool verbosity);
 
 	int getRelays(Rank rank);
 	int getRelaysTo0(Rank rank);

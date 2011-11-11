@@ -31,12 +31,12 @@ int GraphImplementationDeBruijn::getPower(int base,int exponent){
 }
 
 /**
- * 
+ *  convert a number to a de Bruijn vertex
  */
-void GraphImplementationDeBruijn::convertToDeBruijn(int i,vector<int>*tuple){
+void GraphImplementationDeBruijn::convertToDeBruijn(int i,DeBruijnVertex*tuple){
 	for(int power=0;power<m_digits;power++){
 		int value=(i%getPower(m_base,power+1))/getPower(m_base,power);
-		tuple->push_back(value);
+		tuple->m_digits[power]=value;
 	}
 }
 
@@ -131,15 +131,15 @@ void GraphImplementationDeBruijn::makeConnections(int n){
 	//
 	//
 	for(Rank i=0;i<m_size;i++){
-		vector<int> deBruijnVertex;
+		DeBruijnVertex deBruijnVertex;
 		convertToDeBruijn(i,&deBruijnVertex);
 
-		vector<vector<int> > children;
+		vector<DeBruijnVertex> children;
 		getChildren(&deBruijnVertex,&children);
 
 		//cout<<children.size()<<" children"<<endl;
 
-		for(int j=0;j<(int)children.size();j++){
+		for(int j=0;j<m_base;j++){
 
 			int otherVertex=convertToBase10(&(children[j]));
 			int rank2=otherVertex % m_size;
@@ -159,10 +159,10 @@ void GraphImplementationDeBruijn::makeConnections(int n){
 			//cout<<"MPI "<<i<<" -> "<<rank2<<endl;
 		}
 
-		vector<vector<int> > parents;
+		vector<DeBruijnVertex> parents;
 		getParents(&deBruijnVertex,&parents);
 
-		for(int j=0;j<(int)parents.size();j++){
+		for(int j=0;j<m_base;j++){
 
 			int otherVertex=convertToBase10(&(parents[j]));
 			int rank2=otherVertex % m_size;
@@ -172,61 +172,78 @@ void GraphImplementationDeBruijn::makeConnections(int n){
 	}
 }
 
-void GraphImplementationDeBruijn::getChildren(vector<int>*vertex,vector<vector<int> >*children){
+/** shift the vertex 1 time on the left
+ * and for i from 0 to m_base-1 add i at the end
+ */
+void GraphImplementationDeBruijn::getChildren(DeBruijnVertex*vertex,vector<DeBruijnVertex>*children){
 	for(int i=0;i<m_base;i++){
-		vector<int> child;
+		DeBruijnVertex child;
 		for(int j=1;j<m_digits;j++)
-			child.push_back(vertex->at(j));
-		child.push_back(i);
+			child.m_digits[j-1]=vertex->m_digits[j];
+		child.m_digits[m_digits-1]=i;
 
 		children->push_back(child);
 	}
 }
 
-void GraphImplementationDeBruijn::getParents(vector<int>*vertex,vector<vector<int> >*parents){
+/** shift ou the right and
+ * for i from 0 to m_base-1 add i at the beginning
+ */
+void GraphImplementationDeBruijn::getParents(DeBruijnVertex*vertex,vector<DeBruijnVertex>*parents){
 	for(int i=0;i<m_base;i++){
-		vector<int> parent;
+		DeBruijnVertex parent;
 
-		parent.push_back(i);
+		parent.m_digits[0]=i;
 		for(int j=0;j<m_digits-1;j++)
-			parent.push_back(vertex->at(j));
+			parent.m_digits[j+1]=vertex->m_digits[j];
 
 		parents->push_back(parent);
 	}
 }
 
-int GraphImplementationDeBruijn::convertToBase10(vector<int>*vertex){
+/* base m_base to base 10 */
+int GraphImplementationDeBruijn::convertToBase10(DeBruijnVertex*vertex){
 	int a=0;
-	int n=vertex->size();
-	for(int i=0;i<n;i++){
-		a+=vertex->at(i)*getPower(m_base,i);
+	for(int i=0;i<m_digits;i++){
+		a+=vertex->m_digits[i]*getPower(m_base,i);
 	}
 	return a;
 }
 
-void GraphImplementationDeBruijn::printVertex(vector<int>*a){
-	for(int i=0;i<(int)a->size();i++){
+void GraphImplementationDeBruijn::printVertex(DeBruijnVertex*a){
+	for(int i=0;i<m_digits;i++){
 		if(i!=0)
 			cout<<",";
-		cout<<a->at(i);
+		cout<<a->m_digits[i];
 	}
 }
 
+/** with de Bruijn routing, no route are pre-computed at all */
 void GraphImplementationDeBruijn::computeRoute(Rank a,Rank b,vector<Rank>*route){
 	/* do nothing because this is not utilised */
 }
 
+/** with de Bruijn routing, no route are pre-computed at all */
 void GraphImplementationDeBruijn::makeRoutes(){
 	/* we don't compute any routes */
 	
+	/* compute relay points */
 	computeRelayEvents();
 }
 
+/** to get the next rank,
+ * we need to shift the current one time on the left
+ * then, we find the maximum overlap
+ * between the current and the destination
+ *
+ * This value is the index of the digit in destination
+ * that we want to append to the next rank in the route
+ */
 Rank GraphImplementationDeBruijn::getNextRankInRoute(Rank source,Rank destination,Rank current){
 	/* use de Bruijn property */
-	vector<int> sourceVertex;
-	vector<int> destinationVertex;
-	vector<int> currentVertex;
+	DeBruijnVertex sourceVertex;
+	DeBruijnVertex destinationVertex;
+	DeBruijnVertex currentVertex;
 
 	convertToDeBruijn(source,&sourceVertex);
 	convertToDeBruijn(destination,&destinationVertex);
@@ -260,9 +277,9 @@ Rank GraphImplementationDeBruijn::getNextRankInRoute(Rank source,Rank destinatio
 	// (0,2,2) -> (2,2,1)	
 	
 	// do a left shift
-	vector<int> next;
-	for(int i=1;i<(int)currentVertex.size();i++){
-		next.push_back(currentVertex[i]);
+	DeBruijnVertex next;
+	for(int i=1;i<m_digits;i++){
+		next.m_digits[i-1]=currentVertex.m_digits[i];
 	}
 
 	// here we need to choose a digit from the destination
@@ -275,28 +292,35 @@ Rank GraphImplementationDeBruijn::getNextRankInRoute(Rank source,Rank destinatio
 	int overlapSize=getMaximumOverlap(&currentVertex,&destinationVertex);
 
 	// append the digit
-	next.push_back(destinationVertex[overlapSize]);
+	next.m_digits[m_digits-1]=destinationVertex.m_digits[overlapSize];
 	
-	return convertToBase10(&next);
+	int nextRank=convertToBase10(&next) % m_size;
+
+	return nextRank;
 }
 
-int GraphImplementationDeBruijn::getMaximumOverlap(vector<int>*a,vector<int>*b){
-	int n=a->size();
+/**
+ * here we find the maximum overlap between
+ * 2 de Bruijn vertices
+ *
+ * we don't look for a perfect match
+ */
+int GraphImplementationDeBruijn::getMaximumOverlap(DeBruijnVertex*a,DeBruijnVertex*b){
 
 	// we don't verify if they are exact matches
 	// because if it would be the case, nothing would
 	// need to be routed anywhere
-	int numberOfMatches=n-1;
+	int numberOfMatches=m_digits-1;
 
 	while(1){
 		// check for numberOfMatches
-		int positionInA=n-numberOfMatches;
+		int positionInA=m_digits-numberOfMatches;
 		int positionInB=0;
 
 		bool match=true;
 
-		while(positionInA<n){
-			if(a->at(positionInA) != b->at(positionInB)){
+		while(positionInA<m_digits){
+			if(a->m_digits[positionInA] != b->m_digits[positionInB]){
 				match=false;
 				break;
 			}
@@ -312,3 +336,26 @@ int GraphImplementationDeBruijn::getMaximumOverlap(vector<int>*a,vector<int>*b){
 
 	return 0; /* will never be reached */
 }
+
+/** just verify the de Bruijn property
+ * also, we allow any vertex to communicate with itself
+ * regardless of the de Bruijn property
+ */
+bool GraphImplementationDeBruijn::isConnected(Rank source,Rank destination){
+	// communicating with itself is always allowed
+	if(source==destination)
+		return true;
+
+	// otherwise, we look for the de Bruijn property
+	DeBruijnVertex sourceVertex;
+	convertToDeBruijn(source,&sourceVertex);
+
+	DeBruijnVertex destinationVertex;
+	convertToDeBruijn(destination,&destinationVertex);
+
+	int overlap=getMaximumOverlap(&sourceVertex,&destinationVertex);
+
+	return overlap==m_digits-1;
+}
+
+
