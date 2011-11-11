@@ -58,49 +58,8 @@ class ConnectionGraph{
  */
 	int m_size;
 
-/** 
- * routes contained in the route tables
- *
- * data:
- *
- * source
- * 	destination
- * 		vertex1
- * 			vertex2
- */
-	vector<vector<map<Rank,Rank> > > m_routes;
-
-/**
- * number of relays
- */
-	vector<Tag> m_relayEvents;
-
-/**
- * Number of relay events between any destination and source 0
- */
-	vector<Tag> m_relayEventsTo0;
-
-/**
- * Number of relay events between source 0 and any destination
- */
-	vector<Tag> m_relayEventsFrom0;
-
-/** remove useless connections */
-	void removeUnusedConnections();
-
-/**
- * Get a route between a source and a destination
- */
-	void getRoute(Rank source,Rank destination,vector<Rank>*route);
-
 	/************************************************/
 	/** methods to build connections */
-
-	/** find shortest paths between all pairs */
-	void makeRoutes();
-
-	/** find the shortest path between a source and a destination */
-	void findShortestPath(Rank source,Rank destination,vector<Rank>*route);
 
 	/** print a route */
 	void printRoute(Rank source,Rank destination);

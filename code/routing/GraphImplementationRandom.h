@@ -28,9 +28,16 @@
  * random graph with n*log(n)/2 edges
  */
 class GraphImplementationRandom : public GraphImplementation{
+
+protected:
+	void computeRoute(Rank a,Rank b,vector<Rank>*route);
+
+	Rank getNextRankInRoute(Rank source,Rank destination,Rank rank);
 public:
 
 	void makeConnections(int n);
+	void makeRoutes();
+
 };
 
 #endif

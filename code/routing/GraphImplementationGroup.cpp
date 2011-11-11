@@ -107,4 +107,20 @@ void GraphImplementationGroup::makeConnections(int n){
 	}
 }
 
+void GraphImplementationGroup::computeRoute(Rank a,Rank b,vector<Rank>*route){
+	findShortestPath(a,b,route);
+}
 
+void GraphImplementationGroup::makeRoutes(){
+	computeRoutes();
+
+	computeRelayEvents();
+}
+
+Rank GraphImplementationGroup::getNextRankInRoute(Rank source,Rank destination,Rank rank){
+	#ifdef ASSERT
+	assert(m_routes[source][destination].count(rank)==1);
+	#endif
+
+	return m_routes[source][destination][rank];
+}

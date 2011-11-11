@@ -28,9 +28,16 @@
  * complete graph 
  */
 class GraphImplementationComplete : public GraphImplementation{
+	
+protected:
+
+	void computeRoute(Rank a,Rank b,vector<Rank>*route);
+	Rank getNextRankInRoute(Rank source,Rank destination,Rank rank);
+
 public:
 
 	void makeConnections(int n);
+	void makeRoutes();
 };
 
 #endif

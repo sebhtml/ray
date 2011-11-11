@@ -84,3 +84,22 @@ void GraphImplementationRandom::makeConnections(int n){
 		m_connections[destination].insert(source);
 	}
 }
+
+void GraphImplementationRandom::computeRoute(Rank a,Rank b,vector<Rank>*route){
+	findShortestPath(a,b,route);
+}
+
+Rank GraphImplementationRandom::getNextRankInRoute(Rank source,Rank destination,Rank rank){
+	#ifdef ASSERT
+	assert(m_routes[source][destination].count(rank)==1);
+	#endif
+
+	return m_routes[source][destination][rank];
+}
+
+void GraphImplementationRandom::makeRoutes(){
+	computeRoutes();
+
+	computeRelayEvents();
+}
+

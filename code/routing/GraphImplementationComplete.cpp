@@ -39,4 +39,16 @@ void GraphImplementationComplete::makeConnections(int n){
 	}
 }
 
+void GraphImplementationComplete::computeRoute(Rank a,Rank b,vector<Rank>*route){
+	/* not necessary */
+}
 
+void GraphImplementationComplete::makeRoutes(){
+	/* no routes are computed */
+
+	computeRelayEvents();
+}
+
+Rank GraphImplementationComplete::getNextRankInRoute(Rank source,Rank destination,Rank rank){
+	return destination;
+}

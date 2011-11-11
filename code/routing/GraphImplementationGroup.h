@@ -36,10 +36,16 @@ class GraphImplementationGroup : public GraphImplementation{
 	int m_coresPerNode;
 
 	int getIntermediateRank(Rank rank);
+	
+protected:
+
+	void computeRoute(Rank a,Rank b,vector<Rank>*route);
+	Rank getNextRankInRoute(Rank source,Rank destination,Rank rank);
 
 public:
 
 	void makeConnections(int n);
+	void makeRoutes();
 };
 
 #endif

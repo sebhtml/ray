@@ -10,4 +10,6 @@ graph_main.cpp \
 ../code/routing/GraphImplementationComplete.cpp \
 -o graph_main
 
-./graph_main 512 debruijn
+echo "Done compiling !"
+
+./graph_main 4096 debruijn

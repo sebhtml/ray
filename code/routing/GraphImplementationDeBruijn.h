@@ -24,7 +24,13 @@
 
 #include <routing/GraphImplementation.h>
 #include <vector>
+#include <stdint.h>
 using namespace std;
+
+class DeBruijnVertex{
+public:
+	uint8_t m_digits;
+};
 
 /**
  * de Bruijn graph
@@ -32,23 +38,34 @@ using namespace std;
  */
 class GraphImplementationDeBruijn : public GraphImplementation{
 
+	int m_base;
+
+	int m_digits;
+
 	int getPower(int base,int exponent);
 
 /** convert a number to a de Bruijn vertex */
-	void convertToDeBruijn(int i,int base,int digits,vector<int>*tuple);
+	void convertToDeBruijn(int i,vector<int>*tuple);
 
 /** get the children of a de Bruijn vertex */
 	void getChildren(vector<int>*vertex,vector<vector<int> >*children,int base);
 
 /** convert a de Bruijn vertex to base 10 */
-	int convertToBase10(vector<int>*vertex,int base);
+	int convertToBase10(vector<int>*vertex);
 
 	void printVertex(vector<int>*a);
 	bool isAPowerOf(int n,int base);
 
+	int getMaximumOverlap(vector<int>*a,vector<int>*b);
+
+protected:
+
+	void computeRoute(Rank a,Rank b,vector<Rank>*route);
+	Rank getNextRankInRoute(Rank source,Rank destination,Rank rank);
 public:
 
 	void makeConnections(int n);
+	void makeRoutes();
 };
 
 #endif

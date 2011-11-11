@@ -33,10 +33,9 @@ int GraphImplementationDeBruijn::getPower(int base,int exponent){
 /**
  * 
  */
-void GraphImplementationDeBruijn::convertToDeBruijn(int i,int base,int digits,
-vector<int>*tuple){
-	for(int power=0;power<digits;power++){
-		int value=(i%getPower(base,power+1))/getPower(base,power);
+void GraphImplementationDeBruijn::convertToDeBruijn(int i,vector<int>*tuple){
+	for(int power=0;power<m_digits;power++){
+		int value=(i%getPower(m_base,power+1))/getPower(m_base,power);
 		tuple->push_back(value);
 	}
 }
@@ -89,10 +88,13 @@ void GraphImplementationDeBruijn::makeConnections(int n){
 	}
 
 	if(m_verbose){
-		cout<<"using "<<digits<<" digits with base "<<base<<endl;
-		cout<<"The MPI graph has "<<m_size<<" vertices"<<endl;
-		cout<<"The de Bruijn graph has "<<deBruijnGraphSize<<" vertices"<<endl;
+		cout<<"[GraphImplementationDeBruijn::makeConnections] using "<<digits<<" digits with base "<<base<<endl;
+		cout<<"[GraphImplementationDeBruijn::makeConnections] The MPI graph has "<<m_size<<" vertices"<<endl;
+		cout<<"[GraphImplementationDeBruijn::makeConnections] The de Bruijn graph has "<<deBruijnGraphSize<<" vertices"<<endl;
 	}
+
+	m_base=base;
+	m_digits=digits;
 
 	//
 	// example:
@@ -129,7 +131,7 @@ void GraphImplementationDeBruijn::makeConnections(int n){
 	//
 	for(Rank i=0;i<m_size;i++){
 		vector<int> deBruijnVertex;
-		convertToDeBruijn(i,base,digits,&deBruijnVertex);
+		convertToDeBruijn(i,&deBruijnVertex);
 
 		vector<vector<int> > children;
 		getChildren(&deBruijnVertex,&children,base);
@@ -138,7 +140,7 @@ void GraphImplementationDeBruijn::makeConnections(int n){
 
 		for(int j=0;j<(int)children.size();j++){
 
-			int otherVertex=convertToBase10(&(children[j]),base);
+			int otherVertex=convertToBase10(&(children[j]));
 			int rank2=otherVertex % m_size;
 			
 			cout<<"de Bruijn ";
@@ -167,11 +169,11 @@ void GraphImplementationDeBruijn::getChildren(vector<int>*vertex,vector<vector<i
 	}
 }
 
-int GraphImplementationDeBruijn::convertToBase10(vector<int>*vertex,int base){
+int GraphImplementationDeBruijn::convertToBase10(vector<int>*vertex){
 	int a=0;
 	int n=vertex->size();
 	for(int i=0;i<n;i++){
-		a+=vertex->at(i)*getPower(base,i);
+		a+=vertex->at(i)*getPower(m_base,i);
 	}
 	return a;
 }
@@ -182,4 +184,102 @@ void GraphImplementationDeBruijn::printVertex(vector<int>*a){
 			cout<<",";
 		cout<<a->at(i);
 	}
+}
+
+void GraphImplementationDeBruijn::computeRoute(Rank a,Rank b,vector<Rank>*route){
+	/* do nothing because this is not utilised */
+}
+
+void GraphImplementationDeBruijn::makeRoutes(){
+	/* we don't compute any routes */
+	
+	computeRelayEvents();
+}
+
+Rank GraphImplementationDeBruijn::getNextRankInRoute(Rank source,Rank destination,Rank current){
+	/* use de Bruijn property */
+	vector<int> sourceVertex;
+	vector<int> destinationVertex;
+	vector<int> currentVertex;
+
+	convertToDeBruijn(source,&sourceVertex);
+	convertToDeBruijn(destination,&destinationVertex);
+	convertToDeBruijn(current,&currentVertex);
+
+	// example:
+	//
+	// base = 16
+	// digits = 3
+	//
+	// source = (0,4,2)
+	// destination = (9,8,7)
+	//
+	// the path is
+	//
+	// (0,4,2) -> (4,2,9) -> (2,9,8) -> (9,8,7)
+	//
+	// so for sure we have to shift the current by one on the left
+	//
+	// then the problem is how to choose which symbol to add 
+	//
+	// let's say that
+	//
+	// current = (4,2,9)
+	//
+	// then we should return (2,9,8) rapidly
+	//
+	// source=(0,2,2)
+	// destination=(2,2,1)
+	//
+	// (0,2,2) -> (2,2,1)	
+	
+	// do a left shift
+	vector<int> next;
+	for(int i=1;i<(int)currentVertex.size();i++){
+		next.push_back(currentVertex[i]);
+	}
+
+	// here we need to choose a digit from the destination
+	// and append it to the next
+	// case 1 destination can be obtained with 1 shift, overlap is 2
+	// case 2 destination can be obtained with 2 shifts, overlap is 1
+	// case 3 ...
+	// case m_digits destination can be obtained with m_digits shifts, overlap is 0
+	
+	int overlapSize=getMaximumOverlap(&currentVertex,&destinationVertex);
+
+	// append the digit
+	next.push_back(destinationVertex[overlapSize]);
+	
+	return convertToBase10(&next);
+}
+
+int GraphImplementationDeBruijn::getMaximumOverlap(vector<int>*a,vector<int>*b){
+	int n=a->size();
+
+	int numberOfMatches=n;
+
+	while(1){
+		// check for numberOfMatches
+		int positionInA=n-numberOfMatches;
+		int positionInB=0;
+
+		bool match=true;
+
+		while(positionInA<n){
+			if(a->at(positionInA) != b->at(positionInB)){
+				match=false;
+				break;
+			}
+			positionInA++;
+			positionInB++;
+		}
+
+		if(match)
+			return numberOfMatches;
+
+		numberOfMatches--;
+	}
+
+	return 0; /* will never be reached */
 }
