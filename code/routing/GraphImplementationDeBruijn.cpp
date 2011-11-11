@@ -241,11 +241,11 @@ void GraphImplementationDeBruijn::makeRoutes(){
  */
 Rank GraphImplementationDeBruijn::getNextRankInRoute(Rank source,Rank destination,Rank current){
 	/* use de Bruijn property */
-	DeBruijnVertex sourceVertex;
 	DeBruijnVertex destinationVertex;
 	DeBruijnVertex currentVertex;
 
-	convertToDeBruijn(source,&sourceVertex);
+	// we don't need to convert source
+
 	convertToDeBruijn(destination,&destinationVertex);
 	convertToDeBruijn(current,&currentVertex);
 
