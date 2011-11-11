@@ -39,7 +39,6 @@ using namespace std;
  */
 class Parameters{
 
-	int m_coresPerNode;
 	string m_connectionType;
 
 	bool m_showReadPlacement;

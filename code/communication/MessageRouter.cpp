@@ -209,11 +209,11 @@ MessageRouter::MessageRouter(){
 }
 
 void MessageRouter::enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*outboxAllocator,Rank rank,
-	string prefix,int numberOfRanks,int coresPerNode,string type){
+	string prefix,int numberOfRanks,string type){
 
 	m_relayCheckerActivated=false;
 	
-	m_graph.buildGraph(numberOfRanks,type,coresPerNode,rank==MASTER_RANK);
+	m_graph.buildGraph(numberOfRanks,type,rank==MASTER_RANK);
 
 	m_size=numberOfRanks;
 

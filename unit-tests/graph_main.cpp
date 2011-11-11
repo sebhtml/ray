@@ -7,7 +7,7 @@ int main(int argc,char**argv){
 
 	ConnectionGraph graph;
 
-	graph.buildGraph(n,"random",8,true);
+	graph.buildGraph(n,argv[2],true);
 
 	graph.writeFiles("./");
 

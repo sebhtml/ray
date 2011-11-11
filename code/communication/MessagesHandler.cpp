@@ -522,7 +522,21 @@ string MessagesHandler::getMessagePassingInterfaceImplementation(){
 
 // set connections to probe from
 void MessagesHandler::setConnections(vector<int>*connections){
+
+	bool hasSelf=false;
+	for(int i=0;i<(int)connections->size();i++){
+		if(connections->at(i)==m_rank){
+			hasSelf=true;
+			break;
+		}
+	}
+
 	m_connections.clear();
+
+	// add the self rank
+	if(!hasSelf)
+		m_connections.push_back(m_rank);
+
 	for(int i=0;i<(int)connections->size();i++)
 		m_connections.push_back(connections->at(i));
 

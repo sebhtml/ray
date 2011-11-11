@@ -29,9 +29,11 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <math.h> /* for log */
-#include <algorithm> /* random_shuffle */
-
+#include <routing/GraphImplementation.h>
+#include <routing/GraphImplementationRandom.h>
+#include <routing/GraphImplementationGroup.h>
+#include <routing/GraphImplementationDeBruijn.h>
+#include <routing/GraphImplementationComplete.h>
 #include <string>
 #include <core/types.h>
 using namespace std;
@@ -39,22 +41,22 @@ using namespace std;
 /** a graph for connections between compute cores */
 class ConnectionGraph{
 
+	string m_type;
+
+	GraphImplementation*m_implementation;
+
+	GraphImplementationRandom m_random;
+	GraphImplementationComplete m_complete;
+	GraphImplementationDeBruijn m_deBruijn;
+	GraphImplementationGroup m_group;
+
 /** verbosity */
 	bool m_verbose;
-
-	/** the type of the graph */
-	string m_type;
 
 /**
  * The number of ranks
  */
 	int m_size;
-
-/**
- * Number of cores for the group sub-command.
- * Only useful with -route-messages -connection-type group -cores-per-node X
- */
-	int m_coresPerNode;
 
 /** 
  * routes contained in the route tables
@@ -67,11 +69,6 @@ class ConnectionGraph{
  * 			vertex2
  */
 	vector<vector<map<Rank,Rank> > > m_routes;
-
-/**
- * connections
- */
-	vector<set<Rank> > m_connections;
 
 /**
  * number of relays
@@ -99,19 +96,6 @@ class ConnectionGraph{
 	/************************************************/
 	/** methods to build connections */
 
-	/** general method to make connections */
-	void makeConnections(string type);
-
-	/** random connections */
-	void makeConnections_random();
-
-	/** grouped connections */
-	void makeConnections_group();
-	int getIntermediateRank(Rank rank);
-
-	/** complete connections */
-	void makeConnections_complete();
-
 	/** find shortest paths between all pairs */
 	void makeRoutes();
 
@@ -137,13 +121,7 @@ public:
 	void writeFiles(string prefix);
 
 /** build the graph. */
-	void buildGraph(int numberOfVertices,string method,int groupSize,bool verbosity);
-
-
-/**
- * Get the connections for a source
- */
-	void getConnections(Rank source,vector<Rank>*connections);
+	void buildGraph(int numberOfVertices,string method,bool verbosity);
 
 
 	/** get the number of paths that contain rank from 0 to any vertex */
@@ -151,6 +129,8 @@ public:
 
 	/** get the number of paths that contain rank from any vertex to vertex 0  */
 	int getRelaysTo0(Rank rank);
+
+	void getConnections(Rank i,vector<Rank>*connections);
 
 };
 

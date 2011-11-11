@@ -281,7 +281,7 @@ void Machine::start(){
 	if(m_parameters.hasOption("-route-messages")){
 		m_router.enable(&m_inbox,&m_outbox,&m_outboxAllocator,m_parameters.getRank(),
 			m_parameters.getPrefix(),m_parameters.getSize(),
-			m_parameters.getCoresPerNode(),m_parameters.getConnectionType());
+			m_parameters.getConnectionType());
 
 		// update the connections
 		vector<int> connections;

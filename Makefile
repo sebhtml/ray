@@ -154,12 +154,21 @@ code/memory/malloc_types.o
 obj-y += code/memory/allocator.o
 obj-y += code/memory/DefragmentationGroup.o code/memory/ChunkAllocatorWithDefragmentation.o code/memory/DefragmentationLane.o
 
+# routing stuff for option -route-messages
+#
+obj-y += code/routing/GraphImplementation.o
+obj-y += code/routing/GraphImplementationRandom.o
+obj-y += code/routing/GraphImplementationComplete.o
+obj-y += code/routing/GraphImplementationDeBruijn.o
+obj-y += code/routing/GraphImplementationGroup.o
+obj-y += code/routing/ConnectionGraph.o
+
 #communication
 obj-y += code/communication/mpi_tags.o code/communication/VirtualCommunicator.o code/communication/BufferedData.o \
 code/communication/Message.o code/communication/MessageProcessor.o code/communication/MessagesHandler.o
 obj-y += code/communication/NetworkTest.o
 obj-y += code/communication/MessageRouter.o
-obj-y += code/routing/ConnectionGraph.o
+
 
 # scheduling stuff
 obj-y += code/scheduling/VirtualProcessor.o

@@ -20,180 +20,21 @@
 */
 
 #include <routing/ConnectionGraph.h>
-
-/**
- * Make connections with a given type
- */
-void ConnectionGraph::makeConnections(string type){
-	if(m_verbose)
-		cout<<"[ConnectionGraph::makeConnections] type: "<<type<<endl;
-
-	// append empty sets
-	for(Rank i=0;i<m_size;i++){
-		set<Rank> a;
-		m_connections.push_back(a);
-	}
-
-	// insert self
-	for(Rank i=0;i<m_size;i++)
-		m_connections[i].insert(i);
-
-	if(type=="random"){
-		makeConnections_random();
-	}else if(type=="group"){
-		makeConnections_group();
-	}else if(type=="complete"){
-		makeConnections_complete();
-	}else{// the default is random
-		makeConnections_random();
-	}
-}
-
-/**
- * complete graph
- */
-void ConnectionGraph::makeConnections_complete(){
-	for(Rank i=0;i<m_size;i++){
-		for(Rank j=0;j<m_size;j++){
-			m_connections[i].insert(j);
-		}
-	}
-}
-
-/**
- * create random connections
- */
-void ConnectionGraph::makeConnections_random(){
-	// create a set of all edges
-	vector<vector<Rank> > edges;
-	vector<int> identifiers;
-	int k=0;
-	for(Rank i=0;i<m_size;i++){
-		for(Rank j=0;j<m_size;j++){
-			// don't generate a pair for (i,i)
-			if(i==j)
-				continue;
-		
-			// don't generate a pair for (i,j) if i<j because
-			// (j,i) will be processed anyway
-			if(i<j)
-				continue;
-
-			vector<Rank> pair;
-			pair.push_back(i);
-			pair.push_back(j);
-			edges.push_back(pair);
-
-			identifiers.push_back(k);
-
-			k++;
-		}
-	}
-
-	// shuffle the edges
-	// we shuffle a lot
-	for(int i=0;i<32;i++){
-		srand(i*i*i+2*i);
-		std::random_shuffle(identifiers.begin(),identifiers.end());
-	}
-
-	// add the edges
-	int connectionsPerVertex=log(m_size)/log(2);
-	int numberOfEdgesToAdd=m_size*connectionsPerVertex/2;
-
-	// the first numberOfEdgesToAdd edges
-	for(int i=0;i<numberOfEdgesToAdd;i++){
-		int identifier=identifiers[i];
-		Rank source=edges[identifier][0];
-		Rank destination=edges[identifier][1];
-
-		// add the edge in both directions
-		m_connections[source].insert(destination);
-		m_connections[destination].insert(source);
-	}
-}
-
-/**
- * Get an intermediate for the type group
- */
-int ConnectionGraph::getIntermediateRank(Rank rank){
-	return rank-rank % m_coresPerNode;
-}
-
-/**
- * given n ranks, they are grouped in groups.
- * in each group, only one rank is allowed to communicate with the reprentative rank of
- * other groups.
- *
- * a rank can communicate with itself and with its intermediate rank
- *
- * if a rank is intermediate, it can reach any intermediate rank too.
- *
- * This maps well on super-computers with the same number of cores on each node
- *
- * For instance, if a node has 8 cores, then 8 ranks per group is correct.
- *
- * this method populates these attributes:
- *
- * 	- m_connections
- * 	- m_routes
- */
-void ConnectionGraph::makeConnections_group(){
-// the general idea of routing a message:
-//
-//
-// Cases: (starting with simpler cases)
-//
-//
-// case 1: source and destination are the same (1 hop, no routing required)
-// case 2:  source and destination are allowed to communicate (1 hop, no routing required)
-//   happens when 
-//       - source is the intermediate rank of the destination
-//       or
-//       - destination is the intermediate rank of the source
-// case 3:  source and destination share the same intermediate rank (2 hops, some routing)
-// case 4:  source and destination don't share the same intermediate rank (3 hops, full routing)
-//
-//
-// see Documentation/Message-Routing.txt
-//
-//             1	                 2                              3
-// trueSource -> sourceIntermediateRank -> destinationIntermediateRank -> trueDestination
-
-// the message has no routing tag
-// we must check that the channel is authorized.
-
-	for(Rank source=0;source<m_size;source++){
-		int intermediateSource=getIntermediateRank(source);
-	
-		// can connect with the intermediate source
-		m_connections[source].insert(intermediateSource);
-
-		for(Rank destination=0;destination<m_size;destination++){
-
-			int intermediateDestination=getIntermediateRank(destination);
-
-			// an intermediate node can connect with any intermediate node
-			if(destination==intermediateDestination && source==intermediateSource)
-				m_connections[source].insert(intermediateDestination);
-			
-			// if the source is the intermediate destination, add a link
-			// this is within the same group
-			if(source==intermediateDestination)
-				m_connections[source].insert(destination);
-
-			// peers in the same group are allowed to connect
-			if(intermediateSource==intermediateDestination)
-				m_connections[source].insert(destination);
-		}
-	}
-}
+#include <algorithm> /* random_shuffle */
+#include <stdlib.h>
 
 /**
  * Dijkstra's algorithm
  * All weights are 1
  */
 void ConnectionGraph::findShortestPath(Rank source,Rank destination,vector<Rank>*route){
+
+	// same vertex
+	if(source==destination){
+		route->push_back(source);
+		route->push_back(destination);
+		return;
+	}
 
 	// assign tentative distances
 	map<Rank,Distance> tentativeDistances;
@@ -225,8 +66,12 @@ void ConnectionGraph::findShortestPath(Rank source,Rank destination,vector<Rank>
 	
 		// calculate the tentative distance
 		// of each neighbors of the current
-		for(set<Rank>::iterator neighbor=m_connections[current].begin();
-			neighbor!=m_connections[current].end();neighbor++){
+		vector<int> connections;
+
+		m_implementation->getConnections(current,&connections);
+
+		for(vector<Rank>::iterator neighbor=connections.begin();
+			neighbor!=connections.end();neighbor++){
 			Rank theNeighbor=*neighbor;
 
 			// we are only interested in unvisited neighbors
@@ -441,14 +286,15 @@ void ConnectionGraph::makeRoutes(){
 
 		done++;
 	}
+
+	cout<<"makeRoutes "<<done<<"/"<<pairs.size()<<" "<<done/(0.0+pairs.size())*100<<"%"<<endl;
 }
 
 /**
  * a rank can only speak to things listed in connections
  */
 bool ConnectionGraph::isConnected(Rank source,Rank destination){
-	// check that a connection exists
-	return m_connections[source].count(destination)>0;
+	return m_implementation->isConnected(source,destination);
 }
 
 /**
@@ -463,11 +309,14 @@ void ConnectionGraph::writeFiles(string prefix){
 	f<<"#Rank	Count	Connections"<<endl;
 
 	for(Rank rank=0;rank<m_size;rank++){
-		f<<rank<<"	"<<m_connections[rank].size()<<"	";
+		vector<Rank> connections;
+		getConnections(rank,&connections);
 
-		for(set<Rank>::iterator i=m_connections[rank].begin();
-			i!=m_connections[rank].end();i++){
-			if(i!=m_connections[rank].begin())
+		f<<rank<<"	"<<connections.size()<<"	";
+
+		for(vector<Rank>::iterator i=connections.begin();
+			i!=connections.end();i++){
+			if(i!=connections.begin())
 				f<<" ";
 			f<<*i;
 		}
@@ -528,8 +377,7 @@ void ConnectionGraph::writeFiles(string prefix){
 
 		getConnections(i,&connections);
 
-		// remove the self edge
-		connectivities.push_back(connections.size()-1);
+		connectivities.push_back(connections.size());
 
 		for(Rank j=0;j<m_size;j++){
 			// we only count the edges with i >= j
@@ -556,7 +404,7 @@ void ConnectionGraph::writeFiles(string prefix){
 	for(Rank i=0;i<m_size;i++){
 		vector<Rank> connections;
 		getConnections(i,&connections);
-		connectionFrequencies[connections.size()-1]++;
+		connectionFrequencies[connections.size()]++;
 	}
 
 	int totalForEdges=0;
@@ -635,57 +483,34 @@ int ConnectionGraph::getNextRankInRoute(Rank source,Rank destination,Rank rank){
 }
 
 void ConnectionGraph::getConnections(Rank source,vector<Rank>*connections){
-	for(set<Rank>::iterator i=m_connections[source].begin();
-		i!=m_connections[source].end();i++){
-		connections->push_back(*i);
-	}
+	m_implementation->getConnections(source,connections);
 }
 
-void ConnectionGraph::removeUnusedConnections(){
-	// clear connections
-	for(Rank source=0;source<m_size;source++){
-		m_connections[source].clear();
-
-		// add self
-		m_connections[source].insert(source);
-	}
-
-	// generate connections using the routes
-	for(Rank source=0;source<m_size;source++){
-		for(Rank destination=0;destination<m_size;destination++){
-			vector<Rank> route;
-			getRoute(source,destination,&route);
-			for(int i=0;i<(int)route.size()-1;i++){
-				Rank rank1=route[i];
-				Rank rank2=route[i+1];
-	
-				// add the connections
-				m_connections[rank1].insert(rank2);
-				m_connections[rank2].insert(rank1);
-			}
-		}
-	}
-}
-
-void ConnectionGraph::buildGraph(int numberOfRanks,string type,int groupSize,bool verbosity){
-
+void ConnectionGraph::buildGraph(int numberOfRanks,string type,bool verbosity){
 	m_verbose=verbosity;
 
 	m_size=numberOfRanks;
 
-	// only used for type 'group'
-	m_coresPerNode=groupSize;
-
 	if(type=="")
-		type="random";
+		type="debruijn";
 
-	// generate the connections
-	makeConnections(type);
+	m_implementation=NULL;
+
+	m_type=type;
+
+	if(type=="random")
+		m_implementation=&m_random;
+	else if(type=="group")
+		m_implementation=&m_group;
+	else if(type=="debruijn")
+		m_implementation=&m_deBruijn;
+	else if(type=="complete")
+		m_implementation=&m_complete;
+
+	m_implementation->makeConnections(m_size);
 
 	// generate the routes
 	makeRoutes();
-
-	removeUnusedConnections();
 }
 
 int ConnectionGraph::getRelaysFrom0(Rank rank){
