@@ -74,7 +74,8 @@ void GraphImplementationDeBruijn::makeConnections(int n){
 
 	for(int i=0;i<m_size;i++){
 		set<Rank> b;
-		m_connections.push_back(b);
+		m_outcomingConnections.push_back(b);
+		m_incomingConnections.push_back(b);
 	}
 
 	m_verbose=true;
@@ -134,15 +135,16 @@ void GraphImplementationDeBruijn::makeConnections(int n){
 		convertToDeBruijn(i,&deBruijnVertex);
 
 		vector<vector<int> > children;
-		getChildren(&deBruijnVertex,&children,base);
+		getChildren(&deBruijnVertex,&children);
 
-		cout<<children.size()<<" children"<<endl;
+		//cout<<children.size()<<" children"<<endl;
 
 		for(int j=0;j<(int)children.size();j++){
 
 			int otherVertex=convertToBase10(&(children[j]));
 			int rank2=otherVertex % m_size;
 			
+/*
 			cout<<"de Bruijn ";
 			printVertex(&deBruijnVertex);
 			cout<<" ("<<i<<")";
@@ -150,22 +152,46 @@ void GraphImplementationDeBruijn::makeConnections(int n){
 			printVertex(&(children[j]));
 			cout<<" ("<<otherVertex<<")";
 			cout<<endl;
+*/
 
-			// insert the self link
-			m_connections[i].insert(rank2);
-			cout<<"MPI "<<i<<" -> "<<rank2<<endl;
+			m_outcomingConnections[i].insert(rank2);
+
+			//cout<<"MPI "<<i<<" -> "<<rank2<<endl;
+		}
+
+		vector<vector<int> > parents;
+		getParents(&deBruijnVertex,&parents);
+
+		for(int j=0;j<(int)parents.size();j++){
+
+			int otherVertex=convertToBase10(&(parents[j]));
+			int rank2=otherVertex % m_size;
+			
+			m_incomingConnections[i].insert(rank2);
 		}
 	}
 }
 
-void GraphImplementationDeBruijn::getChildren(vector<int>*vertex,vector<vector<int> >*children,int base){
-	for(int i=0;i<base;i++){
+void GraphImplementationDeBruijn::getChildren(vector<int>*vertex,vector<vector<int> >*children){
+	for(int i=0;i<m_base;i++){
 		vector<int> child;
-		for(int j=1;j<(int)vertex->size();j++)
+		for(int j=1;j<m_digits;j++)
 			child.push_back(vertex->at(j));
 		child.push_back(i);
 
 		children->push_back(child);
+	}
+}
+
+void GraphImplementationDeBruijn::getParents(vector<int>*vertex,vector<vector<int> >*parents){
+	for(int i=0;i<m_base;i++){
+		vector<int> parent;
+
+		parent.push_back(i);
+		for(int j=0;j<m_digits-1;j++)
+			parent.push_back(vertex->at(j));
+
+		parents->push_back(parent);
 	}
 }
 
@@ -257,7 +283,10 @@ Rank GraphImplementationDeBruijn::getNextRankInRoute(Rank source,Rank destinatio
 int GraphImplementationDeBruijn::getMaximumOverlap(vector<int>*a,vector<int>*b){
 	int n=a->size();
 
-	int numberOfMatches=n;
+	// we don't verify if they are exact matches
+	// because if it would be the case, nothing would
+	// need to be routed anywhere
+	int numberOfMatches=n-1;
 
 	while(1){
 		// check for numberOfMatches

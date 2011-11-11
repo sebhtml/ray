@@ -12,4 +12,4 @@ graph_main.cpp \
 
 echo "Done compiling !"
 
-./graph_main 4096 debruijn
+time ./graph_main 4096 debruijn

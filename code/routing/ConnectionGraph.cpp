@@ -61,7 +61,7 @@ void ConnectionGraph::writeFiles(string prefix){
 
 	for(Rank rank=0;rank<m_size;rank++){
 		vector<Rank> connections;
-		m_implementation->getConnections(rank,&connections);
+		m_implementation->getOutcomingConnections(rank,&connections);
 
 		f<<rank<<"	"<<connections.size()<<"	";
 
@@ -130,7 +130,7 @@ void ConnectionGraph::writeFiles(string prefix){
 	for(Rank i=0;i<m_size;i++){
 		vector<Rank> connections;
 
-		getConnections(i,&connections);
+		m_implementation->getOutcomingConnections(i,&connections);
 
 		connectivities.push_back(connections.size());
 
@@ -152,13 +152,13 @@ void ConnectionGraph::writeFiles(string prefix){
 	f4<<"NumberOfEdges: "<<numberOfEdges-m_size<<endl;
 	f4<<"NumberOfEdgesInCompleteGraph: "<<numberOfVertices*(numberOfVertices-1)/2<<endl;
 	f4<<endl;
-	f4<<"NumberOfConnectionsPerVertex"<<endl;
+	f4<<"NumberOfOutcomingConnectionsPerVertex"<<endl;
 	f4<<"   Frequencies:"<<endl;
 
 	map<int,int> connectionFrequencies;
 	for(Rank i=0;i<m_size;i++){
 		vector<Rank> connections;
-		getConnections(i,&connections);
+		m_implementation->getOutcomingConnections(i,&connections);
 		connectionFrequencies[connections.size()]++;
 	}
 
@@ -220,8 +220,8 @@ int ConnectionGraph::getNextRankInRoute(Rank source,Rank destination,Rank rank){
 	return m_implementation->getNextRankInRoute(source,destination,rank);
 }
 
-void ConnectionGraph::getConnections(Rank source,vector<Rank>*connections){
-	m_implementation->getConnections(source,connections);
+void ConnectionGraph::getIncomingConnections(Rank source,vector<Rank>*connections){
+	m_implementation->getIncomingConnections(source,connections);
 }
 
 void ConnectionGraph::buildGraph(int numberOfRanks,string type,bool verbosity){

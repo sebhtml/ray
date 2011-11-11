@@ -19,7 +19,7 @@
 
 */
 
-// #define CONFIG_ROUTER_VERBOSITY
+//#define CONFIG_ROUTER_VERBOSITY
 
 /**
  * \brief Message router implementation
@@ -50,6 +50,11 @@ void MessageRouter::routeOutcomingMessages(){
 
 		Tag communicationTag=aMessage->getTag();
 
+		#ifdef CONFIG_ROUTER_VERBOSITY
+		uint8_t printableTag=communicationTag;
+		cout<<"routeOutcomingMessages tag= "<<MESSAGES[printableTag]<<endl;
+		#endif
+
 		// - first, the message may have been already routed when it was received (also
 		// in a routed version). In this case, nothing must be done.
 		if(isRoutingTag(communicationTag)){
@@ -79,7 +84,7 @@ void MessageRouter::routeOutcomingMessages(){
 		aMessage->setDestination(nextRank);
 
 		#ifdef CONFIG_ROUTER_VERBOSITY
-		cout<<__func__<<" rerouted message (trueSource="<<trueSource<<" trueDestination="<<trueDestination<<" to intermediateSource "<<intermediateSource<<endl;
+		cout<<__func__<<" relayed message (trueSource="<<trueSource<<" trueDestination="<<trueDestination<<" to intermediateSource "<<nextRank<<endl;
 		#endif
 	}
 

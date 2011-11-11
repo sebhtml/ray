@@ -31,12 +31,19 @@ bool GraphImplementation::isConnected(Rank source,Rank destination){
 		return true;
 
 	// check that a connection exists
-	return m_connections[source].count(destination)>0;
+	return m_outcomingConnections[source].count(destination)>0;
 }
 
-void GraphImplementation::getConnections(Rank source,vector<Rank>*connections){
-	for(set<Rank>::iterator i=m_connections[source].begin();
-		i!=m_connections[source].end();i++){
+void GraphImplementation::getOutcomingConnections(Rank source,vector<Rank>*connections){
+	for(set<Rank>::iterator i=m_outcomingConnections[source].begin();
+		i!=m_outcomingConnections[source].end();i++){
+		connections->push_back(*i);
+	}
+}
+
+void GraphImplementation::getIncomingConnections(Rank source,vector<Rank>*connections){
+	for(set<Rank>::iterator i=m_incomingConnections[source].begin();
+		i!=m_incomingConnections[source].end();i++){
 		connections->push_back(*i);
 	}
 }
@@ -86,7 +93,7 @@ void GraphImplementation::findShortestPath(Rank source,Rank destination,vector<R
 		// of each neighbors of the current
 		vector<int> connections;
 
-		getConnections(current,&connections);
+		getOutcomingConnections(current,&connections);
 
 		for(vector<Rank>::iterator neighbor=connections.begin();
 			neighbor!=connections.end();neighbor++){
@@ -211,6 +218,7 @@ void GraphImplementation::getRoute(Rank source,Rank destination,vector<Rank>*rou
  */
 void GraphImplementation::computeRoutes(){
 
+
 	// initialize the relay events
 	for(Rank source=0;source<m_size;source++){
 		m_relayEvents.push_back(0);
@@ -290,6 +298,10 @@ void GraphImplementation::computeRoutes(){
 }
 
 void GraphImplementation::computeRelayEvents(){
+
+	if(m_verbose)
+		cout<<"computeRelayEvents"<<endl;
+
 	m_relayEvents.clear();
 	m_relayEventsFrom0.clear();
 	m_relayEventsTo0.clear();
@@ -302,6 +314,8 @@ void GraphImplementation::computeRelayEvents(){
 	}
 
 	for(Rank source=0;source<m_size;source++){
+		if(source%100==0)
+			cout<<source<<"/"<<m_size<<endl;
 		for(Rank destination=0;destination<m_size;destination++){
 			vector<Rank> route;
 			getRoute(source,destination,&route);
@@ -326,6 +340,8 @@ void GraphImplementation::computeRelayEvents(){
 	
 		}
 	}
+	
+	cout<<m_size<<"/"<<m_size<<endl;
 }
 
 int GraphImplementation::getRelaysFrom0(Rank rank){
@@ -339,3 +355,8 @@ int GraphImplementation::getRelaysTo0(Rank rank){
 int GraphImplementation::getRelays(Rank rank){
 	return m_relayEvents[rank];
 }
+
+void GraphImplementation::setVerbosity(bool verbosity){
+	m_verbose=verbosity;
+}
+

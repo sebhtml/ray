@@ -20,6 +20,7 @@
 */
 
 #include <routing/GraphImplementationGroup.h>
+#include <assert.h>
 
 /**
  * Get an intermediate for the type group
@@ -53,7 +54,8 @@ void GraphImplementationGroup::makeConnections(int n){
 
 	for(int i=0;i<m_size;i++){
 		set<Rank> b;
-		m_connections.push_back(b);
+		m_incomingConnections.push_back(b);
+		m_outcomingConnections.push_back(b);
 	}
 
 
@@ -85,24 +87,31 @@ void GraphImplementationGroup::makeConnections(int n){
 		int intermediateSource=getIntermediateRank(source);
 	
 		// can connect with the intermediate source
-		m_connections[source].insert(intermediateSource);
+		m_outcomingConnections[source].insert(intermediateSource);
+		m_incomingConnections[intermediateSource].insert(source);
 
 		for(Rank destination=0;destination<m_size;destination++){
 
 			int intermediateDestination=getIntermediateRank(destination);
 
 			// an intermediate node can connect with any intermediate node
-			if(destination==intermediateDestination && source==intermediateSource)
-				m_connections[source].insert(intermediateDestination);
+			if(destination==intermediateDestination && source==intermediateSource){
+				m_outcomingConnections[source].insert(intermediateDestination);
+				m_incomingConnections[intermediateDestination].insert(source);
+			}
 			
 			// if the source is the intermediate destination, add a link
 			// this is within the same group
-			if(source==intermediateDestination)
-				m_connections[source].insert(destination);
+			if(source==intermediateDestination){
+				m_outcomingConnections[source].insert(destination);
+				m_incomingConnections[destination].insert(source);
+			}
 
 			// peers in the same group are allowed to connect
-			if(intermediateSource==intermediateDestination)
-				m_connections[source].insert(destination);
+			if(intermediateSource==intermediateDestination){
+				m_outcomingConnections[source].insert(destination);
+				m_incomingConnections[destination].insert(source);
+			}
 		}
 	}
 }

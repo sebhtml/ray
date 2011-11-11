@@ -68,7 +68,9 @@ protected:
 /**
  * connections
  */
-	vector<set<Rank> > m_connections;
+	vector<set<Rank> > m_outcomingConnections;
+
+	vector<set<Rank> > m_incomingConnections;
 
 	virtual void computeRoute(Rank a,Rank b,vector<Rank>*route) = 0;
 	
@@ -80,6 +82,8 @@ protected:
 	void computeRelayEvents();
 
 public:
+
+	void setVerbosity(bool verbosity);
 
 	virtual void makeConnections(int n) =0;
 	
@@ -94,7 +98,9 @@ public:
 /**
  * Get the connections for a source
  */
-	void getConnections(Rank source,vector<Rank>*connections);
+	void getOutcomingConnections(Rank source,vector<Rank>*connections);
+
+	void getIncomingConnections(Rank rank,vector<Rank>*connections);
 
 	bool isConnected(Rank i,Rank j);
 

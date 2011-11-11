@@ -48,7 +48,8 @@ class GraphImplementationDeBruijn : public GraphImplementation{
 	void convertToDeBruijn(int i,vector<int>*tuple);
 
 /** get the children of a de Bruijn vertex */
-	void getChildren(vector<int>*vertex,vector<vector<int> >*children,int base);
+	void getChildren(vector<int>*vertex,vector<vector<int> >*children);
+	void getParents(vector<int>*vertex,vector<vector<int> >*children);
 
 /** convert a de Bruijn vertex to base 10 */
 	int convertToBase10(vector<int>*vertex);

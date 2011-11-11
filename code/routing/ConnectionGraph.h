@@ -89,7 +89,7 @@ public:
 	/** get the number of paths that contain rank from any vertex to vertex 0  */
 	int getRelaysTo0(Rank rank);
 
-	void getConnections(Rank i,vector<Rank>*connections);
+	void getIncomingConnections(Rank i,vector<Rank>*connections);
 
 };
 

@@ -29,12 +29,14 @@ void GraphImplementationComplete::makeConnections(int n){
 
 	for(int i=0;i<m_size;i++){
 		set<Rank> b;
-		m_connections.push_back(b);
+		m_incomingConnections.push_back(b);
+		m_outcomingConnections.push_back(b);
 	}
 
 	for(Rank i=0;i<m_size;i++){
 		for(Rank j=0;j<m_size;j++){
-			m_connections[i].insert(j);
+			m_outcomingConnections[i].insert(j);
+			m_incomingConnections[j].insert(i);
 		}
 	}
 }

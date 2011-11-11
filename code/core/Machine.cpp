@@ -285,7 +285,7 @@ void Machine::start(){
 
 		// update the connections
 		vector<int> connections;
-		m_router.getGraph()->getConnections(m_parameters.getRank(),&connections);
+		m_router.getGraph()->getIncomingConnections(m_parameters.getRank(),&connections);
 		m_messagesHandler.setConnections(&connections);
 
 		// terminal control messages can not be routed.

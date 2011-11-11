@@ -22,18 +22,15 @@
 #include <routing/GraphImplementationRandom.h>
 #include <math.h> /* for log */
 #include <algorithm> /* random_shuffle */
+#include <assert.h>
 
 void GraphImplementationRandom::makeConnections(int n){
 	m_size=n;
 
 	for(int i=0;i<m_size;i++){
 		set<Rank> b;
-		m_connections.push_back(b);
-	}
-
-	// add self edges
-	for(int i=0;i<m_size;i++){
-		m_connections[i].insert(i);
+		m_outcomingConnections.push_back(b);
+		m_incomingConnections.push_back(b);
 	}
 
 	// create a set of all edges
@@ -80,8 +77,11 @@ void GraphImplementationRandom::makeConnections(int n){
 		Rank destination=edges[identifier][1];
 
 		// add the edge in both directions
-		m_connections[source].insert(destination);
-		m_connections[destination].insert(source);
+		m_outcomingConnections[source].insert(destination);
+		m_outcomingConnections[destination].insert(source);
+
+		m_incomingConnections[destination].insert(source);
+		m_incomingConnections[source].insert(destination);
 	}
 }
 
