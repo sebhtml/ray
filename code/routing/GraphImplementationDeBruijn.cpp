@@ -19,6 +19,8 @@
 
 */
 
+//#define CONFIG_ROUTING_DE_BRUIJN_COMPUTE_ROUTES
+
 #include <routing/GraphImplementationDeBruijn.h>
 #include <iostream>
 using namespace std;
@@ -97,107 +99,14 @@ void GraphImplementationDeBruijn::makeConnections(int n){
 	m_base=base;
 	m_digits=digits;
 
-	//
-	// example:
-	// the current vertex is (0,1,0)
-	// according to Mr de Bruijn, the 16 children are
-	// (1,0,0)
-	// (1,0,1)
-	// ...
-	// (1,0,14)
-	// (1,0,15)
-	//
-	// we need to map vertices from one graph to another
-	//
-	// *******************
-	// ** from de Bruijn base <base> to base 10
-	//
-	// for a de Bruijn graph vertex (i,j,k), its base 10 value is
-	// v_bruijn = k*base^0 + j*base^1 + i*base^2
-	//
-	// we basically need special objects for this numbers in base <base>
-	//
-	// *******************
-	// ** from de Bruijn base 10 to MPI base 10
-	//
-	// its corresponding vertex in the MPI graph is simply
-	// v_bruijn % m_size
-	//
-	// ** from MPI base 10 to de Bruijn base 10
-	//
-	// it is the same because de Bruijn contains the other.
-	//
-	// ** de Bruijn base 10 to de Bruijn base <base>
-	//
-	//
+	// make all connections.
 	for(Rank i=0;i<m_size;i++){
-		DeBruijnVertex deBruijnVertex;
-		convertToDeBruijn(i,&deBruijnVertex);
-
-		vector<DeBruijnVertex> children;
-		getChildren(&deBruijnVertex,&children);
-
-		//cout<<children.size()<<" children"<<endl;
-
-		for(int j=0;j<m_base;j++){
-
-			int otherVertex=convertToBase10(&(children[j]));
-			int rank2=otherVertex % m_size;
-			
-/*
-			cout<<"de Bruijn ";
-			printVertex(&deBruijnVertex);
-			cout<<" ("<<i<<")";
-			cout<<" -> ";
-			printVertex(&(children[j]));
-			cout<<" ("<<otherVertex<<")";
-			cout<<endl;
-*/
-
-			m_outcomingConnections[i].insert(rank2);
-
-			//cout<<"MPI "<<i<<" -> "<<rank2<<endl;
+		for(Rank j=0;j<m_size;j++){
+			if(computeConnection(i,j)){
+				m_outcomingConnections[i].insert(j);
+				m_incomingConnections[j].insert(i);
+			}
 		}
-
-		vector<DeBruijnVertex> parents;
-		getParents(&deBruijnVertex,&parents);
-
-		for(int j=0;j<m_base;j++){
-
-			int otherVertex=convertToBase10(&(parents[j]));
-			int rank2=otherVertex % m_size;
-			
-			m_incomingConnections[i].insert(rank2);
-		}
-	}
-}
-
-/** shift the vertex 1 time on the left
- * and for i from 0 to m_base-1 add i at the end
- */
-void GraphImplementationDeBruijn::getChildren(DeBruijnVertex*vertex,vector<DeBruijnVertex>*children){
-	for(int i=0;i<m_base;i++){
-		DeBruijnVertex child;
-		for(int j=1;j<m_digits;j++)
-			child.m_digits[j-1]=vertex->m_digits[j];
-		child.m_digits[m_digits-1]=i;
-
-		children->push_back(child);
-	}
-}
-
-/** shift ou the right and
- * for i from 0 to m_base-1 add i at the beginning
- */
-void GraphImplementationDeBruijn::getParents(DeBruijnVertex*vertex,vector<DeBruijnVertex>*parents){
-	for(int i=0;i<m_base;i++){
-		DeBruijnVertex parent;
-
-		parent.m_digits[0]=i;
-		for(int j=0;j<m_digits-1;j++)
-			parent.m_digits[j+1]=vertex->m_digits[j];
-
-		parents->push_back(parent);
 	}
 }
 
@@ -219,14 +128,42 @@ void GraphImplementationDeBruijn::printVertex(DeBruijnVertex*a){
 }
 
 /** with de Bruijn routing, no route are pre-computed at all */
-void GraphImplementationDeBruijn::computeRoute(Rank a,Rank b,vector<Rank>*route){
+void GraphImplementationDeBruijn::computeRoute(Rank source,Rank destination,vector<Rank>*route){
 	/* do nothing because this is not utilised */
+
+	Rank currentVertex=source;
+	route->push_back(currentVertex);
+
+	while(currentVertex!=destination){
+		currentVertex=computeNextRankInRoute(source,destination,currentVertex);
+		route->push_back(currentVertex);
+	}
+}
+
+Rank GraphImplementationDeBruijn::getNextRankInRoute(Rank source,Rank destination,Rank rank){
+	#ifdef CONFIG_ROUTING_DE_BRUIJN_COMPUTE_ROUTES
+
+	#ifdef ASSERT
+	assert(m_routes[source][destination].count(rank)==1);
+	#endif
+
+	return m_routes[source][destination][rank];
+
+	#else /* compute it right away */
+
+	return computeNextRankInRoute(source,destination,rank);
+
+	#endif
 }
 
 /** with de Bruijn routing, no route are pre-computed at all */
 void GraphImplementationDeBruijn::makeRoutes(){
 	/* we don't compute any routes */
 	
+	#ifdef CONFIG_ROUTING_DE_BRUIJN_COMPUTE_ROUTES
+	computeRoutes();
+	#endif
+
 	/* compute relay points */
 	computeRelayEvents();
 }
@@ -239,7 +176,7 @@ void GraphImplementationDeBruijn::makeRoutes(){
  * This value is the index of the digit in destination
  * that we want to append to the next rank in the route
  */
-Rank GraphImplementationDeBruijn::getNextRankInRoute(Rank source,Rank destination,Rank current){
+Rank GraphImplementationDeBruijn::computeNextRankInRoute(Rank source,Rank destination,Rank current){
 	/* use de Bruijn property */
 	DeBruijnVertex destinationVertex;
 	DeBruijnVertex currentVertex;
@@ -337,14 +274,18 @@ int GraphImplementationDeBruijn::getMaximumOverlap(DeBruijnVertex*a,DeBruijnVert
 	return 0; /* will never be reached */
 }
 
+bool GraphImplementationDeBruijn::isConnected(Rank source,Rank destination){
+	if(source==destination)
+		return true;
+
+	return m_outcomingConnections[source].count(destination)==1;
+}
+
 /** just verify the de Bruijn property
  * also, we allow any vertex to communicate with itself
  * regardless of the de Bruijn property
  */
-bool GraphImplementationDeBruijn::isConnected(Rank source,Rank destination){
-	// communicating with itself is always allowed
-	if(source==destination)
-		return true;
+bool GraphImplementationDeBruijn::computeConnection(Rank source,Rank destination){
 
 	// otherwise, we look for the de Bruijn property
 	DeBruijnVertex sourceVertex;

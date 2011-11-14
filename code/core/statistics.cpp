@@ -50,7 +50,7 @@ double getStandardDeviation(vector<int>*x){
 	int n=x->size();
 
 	while(i<n){
-		int diff=(x->at(i)-averageValue);
+		int diff=(int)(x->at(i)-averageValue);
 		sum+=diff*diff;
 		i++;
 	}

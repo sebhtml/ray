@@ -19,7 +19,7 @@
 
 */
 
-//#define CONFIG_ROUTER_VERBOSITY
+//#define CONFIG_ROUTING_VERBOSITY
 
 /**
  * \brief Message router implementation
@@ -35,7 +35,7 @@
 using namespace std;
 
 /*
-#define CONFIG_ROUTER_VERBOSITY
+#define CONFIG_ROUTING_VERBOSITY
 #define ASSERT
 */
 
@@ -50,7 +50,7 @@ void MessageRouter::routeOutcomingMessages(){
 
 		Tag communicationTag=aMessage->getTag();
 
-		#ifdef CONFIG_ROUTER_VERBOSITY
+		#ifdef CONFIG_ROUTING_VERBOSITY
 		uint8_t printableTag=communicationTag;
 		cout<<"routeOutcomingMessages tag= "<<MESSAGES[printableTag]<<endl;
 		#endif
@@ -58,7 +58,7 @@ void MessageRouter::routeOutcomingMessages(){
 		// - first, the message may have been already routed when it was received (also
 		// in a routed version). In this case, nothing must be done.
 		if(isRoutingTag(communicationTag)){
-			#ifdef CONFIG_ROUTER_VERBOSITY
+			#ifdef CONFIG_ROUTING_VERBOSITY
 			cout<<__func__<<" Message has already a routing tag."<<endl;
 			#endif
 			continue;
@@ -70,7 +70,7 @@ void MessageRouter::routeOutcomingMessages(){
 
 		// if it is reachable, no further routing is required
 		if(m_graph.isConnected(trueSource,trueDestination)){
-			#ifdef CONFIG_ROUTER_VERBOSITY
+			#ifdef CONFIG_ROUTING_VERBOSITY
 			cout<<__func__<<" Rank "<<trueSource<<" can reach "<<trueDestination<<" without routing"<<endl;
 			#endif
 			continue;
@@ -83,7 +83,7 @@ void MessageRouter::routeOutcomingMessages(){
 		Rank nextRank=m_graph.getNextRankInRoute(trueSource,trueDestination,m_rank);
 		aMessage->setDestination(nextRank);
 
-		#ifdef CONFIG_ROUTER_VERBOSITY
+		#ifdef CONFIG_ROUTING_VERBOSITY
 		cout<<__func__<<" relayed message (trueSource="<<trueSource<<" trueDestination="<<trueDestination<<" to intermediateSource "<<nextRank<<endl;
 		#endif
 	}
@@ -117,7 +117,7 @@ void MessageRouter::routeIncomingMessages(){
 	// if the message has no routing tag, then we can sefely receive it as is
 	if(!isRoutingTag(tag)){
 		// nothing to do
-		#ifdef CONFIG_ROUTER_VERBOSITY
+		#ifdef CONFIG_ROUTING_VERBOSITY
 		cout<<__func__<<" message has no routing tag, nothing to do"<<endl;
 		#endif
 
@@ -134,7 +134,7 @@ void MessageRouter::routeIncomingMessages(){
 	// we have received the message
 	// we need to restore the original information now.
 	if(trueDestination==m_rank){
-		#ifdef CONFIG_ROUTER_VERBOSITY
+		#ifdef CONFIG_ROUTING_VERBOSITY
 		cout<<__func__<<" message has reached destination, must strip routing information"<<endl;
 		#endif
 
@@ -155,7 +155,7 @@ void MessageRouter::routeIncomingMessages(){
 	// the message to another peer
 	int nextRank=m_graph.getNextRankInRoute(trueSource,trueDestination,m_rank);
 
-	#ifdef CONFIG_ROUTER_VERBOSITY
+	#ifdef CONFIG_ROUTING_VERBOSITY
 	cout<<__func__<<" message has been sent to the next one, trueSource="<<trueSource<<" trueDestination= "<<trueDestination<<endl;
 	#endif
 		

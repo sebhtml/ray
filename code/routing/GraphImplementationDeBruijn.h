@@ -47,10 +47,6 @@ class GraphImplementationDeBruijn : public GraphImplementation{
 /** convert a number to a de Bruijn vertex */
 	void convertToDeBruijn(int i,DeBruijnVertex*tuple);
 
-/** get the children of a de Bruijn vertex */
-	void getChildren(DeBruijnVertex*vertex,vector<DeBruijnVertex>*children);
-	void getParents(DeBruijnVertex*vertex,vector<DeBruijnVertex>*children);
-
 /** convert a de Bruijn vertex to base 10 */
 	int convertToBase10(DeBruijnVertex*vertex);
 
@@ -58,6 +54,9 @@ class GraphImplementationDeBruijn : public GraphImplementation{
 	bool isAPowerOf(int n,int base);
 
 	int getMaximumOverlap(DeBruijnVertex*a,DeBruijnVertex*b);
+
+	Rank computeNextRankInRoute(Rank source,Rank destination,Rank rank);
+	bool computeConnection(Rank source,Rank destination);
 
 protected:
 

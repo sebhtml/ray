@@ -67,7 +67,7 @@ void GraphImplementationRandom::makeConnections(int n){
 	}
 
 	// add the edges
-	int connectionsPerVertex=log(m_size)/log(2);
+	int connectionsPerVertex=(int) (log(m_size)/log(2));
 	int numberOfEdgesToAdd=m_size*connectionsPerVertex/2;
 
 	// the first numberOfEdgesToAdd edges
