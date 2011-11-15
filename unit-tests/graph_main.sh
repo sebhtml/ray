@@ -14,7 +14,7 @@ graph_main.cpp \
 
 echo "Done compiling !"
 
-#time ./graph_main 512 debruijn 1
+time ./graph_main 512 debruijn 1
 #time ./graph_main 512 debruijn 1
 #time ./graph_main 511 debruijn 1
 #time ./graph_main 320 kautz 1

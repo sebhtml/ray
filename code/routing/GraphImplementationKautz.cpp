@@ -203,22 +203,23 @@ void GraphImplementationKautz::makeRoutes(){
  * that we want to append to the next rank in the route
  */
 Rank GraphImplementationKautz::computeNextRankInRoute(Rank source,Rank destination,Rank current){
-	Tuple currentVertex=m_graphToKautz[current];
-	Tuple destinationVertex=m_graphToKautz[destination];
+	Tuple*currentVertex=&(m_graphToKautz[current]);
+	Tuple*destinationVertex=&(m_graphToKautz[destination]);
 
 	// do a left shift
 	Tuple next;
 	for(int i=1;i<m_diameter;i++){
-		next.m_digits[i-1]=currentVertex.m_digits[i];
+		next.m_digits[i-1]=currentVertex->m_digits[i];
 	}
 	
-	int overlapSize=getMaximumOverlap(&currentVertex,&destinationVertex);
+	int overlapSize=getMaximumOverlap(currentVertex,destinationVertex);
 
 	// append the digit
-	next.m_digits[m_diameter-1]=destinationVertex.m_digits[overlapSize];
+	next.m_digits[m_diameter-1]=destinationVertex->m_digits[overlapSize];
 	
 	int inBase10=convertToBase10(&next);
 
+	// get the corresponding MPI rank for the Kautz vertex
 	int nextRank=m_kautzToGraph[inBase10];
 
 	return nextRank;
@@ -274,11 +275,12 @@ bool GraphImplementationKautz::isConnected(Rank source,Rank destination){
  */
 bool GraphImplementationKautz::computeConnection(Rank source,Rank destination){
 
-	Tuple sourceVertex=m_graphToKautz[source];
+	// fetch the tuples from the cache table
+	Tuple*sourceVertex=&(m_graphToKautz[source]);
+	Tuple*destinationVertex=&(m_graphToKautz[destination]);
 
-	Tuple destinationVertex=m_graphToKautz[destination];
-
-	int overlap=getMaximumOverlap(&sourceVertex,&destinationVertex);
+	// compute the maximum overlap
+	int overlap=getMaximumOverlap(sourceVertex,destinationVertex);
 
 	bool connected=overlap==m_diameter-1;
 

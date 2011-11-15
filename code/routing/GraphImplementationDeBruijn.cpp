@@ -229,19 +229,19 @@ void GraphImplementationDeBruijn::makeRoutes(){
  */
 Rank GraphImplementationDeBruijn::computeNextRankInRoute(Rank source,Rank destination,Rank current){
 
-	Tuple destinationVertex=m_graphToDeBruijn[destination];
-	Tuple currentVertex=m_graphToDeBruijn[current];
+	Tuple*destinationVertex=&(m_graphToDeBruijn[destination]);
+	Tuple*currentVertex=&(m_graphToDeBruijn[current]);
 	
 	// do a left shift
 	Tuple next;
 	for(int i=1;i<m_diameter;i++){
-		next.m_digits[i-1]=currentVertex.m_digits[i];
+		next.m_digits[i-1]=currentVertex->m_digits[i];
 	}
 	
-	int overlapSize=getMaximumOverlap(&currentVertex,&destinationVertex);
+	int overlapSize=getMaximumOverlap(currentVertex,destinationVertex);
 
 	// append the digit
-	next.m_digits[m_diameter-1]=destinationVertex.m_digits[overlapSize];
+	next.m_digits[m_diameter-1]=destinationVertex->m_digits[overlapSize];
 	
 	int nextRank=convertToBase10(&next) % m_size;
 
@@ -300,10 +300,10 @@ bool GraphImplementationDeBruijn::isConnected(Rank source,Rank destination){
 bool GraphImplementationDeBruijn::computeConnection(Rank source,Rank destination){
 
 	// otherwise, we look for the de Bruijn property
-	Tuple sourceVertex=m_graphToDeBruijn[source];
-	Tuple destinationVertex=m_graphToDeBruijn[destination];
+	Tuple*sourceVertex=&(m_graphToDeBruijn[source]);
+	Tuple*destinationVertex=&(m_graphToDeBruijn[destination]);
 
-	int overlap=getMaximumOverlap(&sourceVertex,&destinationVertex);
+	int overlap=getMaximumOverlap(sourceVertex,destinationVertex);
 
 	return overlap==m_diameter-1;
 }
