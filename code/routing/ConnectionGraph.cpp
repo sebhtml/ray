@@ -149,7 +149,7 @@ void ConnectionGraph::writeFiles(string prefix){
 	f4<<endl;
 
 	f4<<"NumberOfVertices: "<<numberOfVertices<<endl;
-	f4<<"NumberOfEdges: "<<numberOfEdges-m_size<<endl;
+	f4<<"NumberOfEdges: "<<numberOfEdges<<endl;
 	f4<<"NumberOfEdgesInCompleteGraph: "<<numberOfVertices*(numberOfVertices-1)/2<<endl;
 	f4<<endl;
 	f4<<"NumberOfOutcomingConnectionsPerVertex"<<endl;
