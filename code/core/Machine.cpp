@@ -1700,8 +1700,9 @@ void Machine::call_RAY_SLAVE_MODE_DIE(){
 	/** write message-passing interface file */
 	ostringstream file;
 	file<<m_parameters.getPrefix()<<"MessagePassingInterface.txt";
-	const char*outputFile=file.str().c_str();
-	m_messagesHandler.appendStatistics(outputFile);
+
+	string fileInString=file.str();
+	m_messagesHandler.appendStatistics(fileInString.c_str());
 
 	/** actually die */
 	m_alive=false;
