@@ -133,26 +133,18 @@ void ConnectionGraph::writeFiles(string prefix){
 		m_implementation->getOutcomingConnections(i,&connections);
 
 		connectivities.push_back(connections.size());
+		numberOfEdges+=connections.size();
 
-		for(Rank j=0;j<m_size;j++){
-			// we only count the edges with i >= j
-			// because (i,j) and (j,i) are the same
-			if(i<j)
-				continue;
-	
-			if(isConnected(i,j))
-				numberOfEdges++;
-		}
 	}
 
 	f4<<"Type: "<<m_type<<endl;
 	f4<<endl;
 
 	f4<<"NumberOfVertices: "<<numberOfVertices<<endl;
-	f4<<"NumberOfEdges: "<<numberOfEdges<<endl;
-	f4<<"NumberOfEdgesInCompleteGraph: "<<numberOfVertices*(numberOfVertices-1)/2<<endl;
+	f4<<"NumberOfArcs: "<<numberOfEdges<<endl;
+	f4<<"NumberOfArcsInCompleteGraph: "<<numberOfVertices*(numberOfVertices-1)<<endl;
 	f4<<endl;
-	f4<<"NumberOfOutcomingConnectionsPerVertex"<<endl;
+	f4<<"NumberOfOutcomingArcsPerVertex"<<endl;
 	f4<<"   Frequencies:"<<endl;
 
 	map<int,int> connectionFrequencies;
@@ -229,22 +221,30 @@ void ConnectionGraph::buildGraph(int numberOfRanks,string type,bool verbosity){
 
 	m_size=numberOfRanks;
 
-	if(type=="")
+	if(type==""){
 		type="debruijn";
+	}
 
 	m_implementation=NULL;
-
-	m_type=type;
 
 	if(type=="random"){
 		m_implementation=&m_random;
 	}else if(type=="group"){
 		m_implementation=&m_group;
-	}else if(type=="debruijn"){
+	}else if(type=="debruijn" && m_deBruijn.isValid(numberOfRanks)){
 		m_implementation=&m_deBruijn;
+		cout<<"valid"<<endl;
 	}else if(type=="complete"){
 		m_implementation=&m_complete;
+	}else if(type=="kautz" && m_kautz.isValid(numberOfRanks)){
+		m_implementation=&m_kautz;
+	}else{
+		cout<<"Warning: using a complete graph because type "<<type<<" can not used with "<<numberOfRanks<<" vertices"<<endl;
+		type="complete";
+		m_implementation=&m_complete;
 	}
+
+	m_type=type;
 
 	m_implementation->makeConnections(m_size);
 

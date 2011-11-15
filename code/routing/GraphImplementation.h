@@ -22,6 +22,15 @@
 #ifndef _GraphImplementation_h
 #define _GraphImplementation_h
 
+#include <stdint.h>
+
+class Tuple{
+public:
+	uint8_t m_digits[16];
+};
+
+
+
 #include <vector>
 #include <set>
 #include <map>

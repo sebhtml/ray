@@ -19,13 +19,13 @@
 
 */
 
-//#define CONFIG_ROUTING_DE_BRUIJN_COMPUTE_ROUTES
+//#define CONFIG_ROUTING_KAUTZ_COMPUTE_ROUTES
 
-#include <routing/GraphImplementationDeBruijn.h>
+#include <routing/GraphImplementationKautz.h>
 #include <iostream>
 using namespace std;
 
-int GraphImplementationDeBruijn::getPower(int base,int exponent){
+int GraphImplementationKautz::getPower(int base,int exponent){
 	int a=1;
 	while(exponent--)
 		a*=base;
@@ -35,14 +35,14 @@ int GraphImplementationDeBruijn::getPower(int base,int exponent){
 /**
  *  convert a number to a de Bruijn vertex
  */
-void GraphImplementationDeBruijn::convertToDeBruijn(int i,Tuple*tuple){
+void GraphImplementationKautz::convertToBase(int i,Tuple*tuple){
 	for(int power=0;power<m_diameter;power++){
 		int value=(i%getPower(m_base,power+1))/getPower(m_base,power);
 		tuple->m_digits[power]=value;
 	}
 }
 
-bool GraphImplementationDeBruijn::isAPowerOf(int n,int base){
+bool GraphImplementationKautz::isAPowerOf(int n,int base){
 	int remaining=n;
 	
 	while(remaining>1){
@@ -53,66 +53,74 @@ bool GraphImplementationDeBruijn::isAPowerOf(int n,int base){
 	return true;
 }
 
-void GraphImplementationDeBruijn::configureGraph(int n){
-	int base=-1;
-
-	int maxBase=32;
-
-	// use the binary de Bruijn graph
-	if(isAPowerOf(n,2)){
-		maxBase=2;
+/**
+ * a Kautz vertex has no identical consecutive symbols
+ */
+bool GraphImplementationKautz::isAKautzVertex(Tuple*vertex){
+	for(int i=0;i<m_diameter-1;i++){
+		if(vertex->m_digits[i]==vertex->m_digits[i+1])
+			return false;
 	}
+	return true;
+}
 
-	while(maxBase>=n)
-		maxBase/=2;
-
-	for(int i=maxBase;i>=2;i--){
-		if(isAPowerOf(n,i)){
-			base=i;
-			break;
+void GraphImplementationKautz::configureGraph(int n){
+	// given a degree k and a diameter d,
+	// the number of vertices is (k+1)*k^(d-1)
+	//
+	// let's see if we can find a match.
+	
+	bool found=false;
+	for(int degree=2;degree<10;degree++){
+		for(int diameter=2;diameter<10;diameter++){
+			int vertices=(degree+1)*getPower(degree,diameter-1);
+			if(vertices==n){
+				found=true;
+				m_degree=degree;
+				m_diameter=diameter;
+				m_base=m_degree+1;
+				m_size=n;
+		
+				break;
+			}
 		}
 	}
 
-	if(base==-1){
-		cout<<"Error, "<<n<<" is not a power of anything."<<endl;
-		m_base=base;
-		return;
+	if(!found){
+		cout<<"Error: cannot create a Kautz graph with "<<n<<" vertices"<<endl;
+		m_base=-1;
 	}
-
-	int digits=1;
-
-	while(n > getPower(base,digits)){
-		digits++;
-	}
-
-	m_base=base;
-	m_diameter=digits;
-	m_size=n;
-	m_verbose=true;
 }
 
-void GraphImplementationDeBruijn::makeConnections(int n){
-
+void GraphImplementationKautz::makeConnections(int n){
+	
 	configureGraph(n);
 
-	if(m_verbose){
-		cout<<"[GraphImplementationDeBruijn::makeConnections] using "<<m_diameter<<" for diameter with base ";
-		cout<<m_base<<endl;
-		cout<<"[GraphImplementationDeBruijn::makeConnections] The MPI graph has "<<m_size<<" vertices"<<endl;
-		cout<<"[GraphImplementationDeBruijn::makeConnections] The de Bruijn graph has "<<m_size<<" vertices"<<endl;
+	int iterator=0;
+
+	cout<<"[GraphImplementationKautz::makeConnections] degree= "<<m_degree<<" diameter= "<<m_diameter;
+	cout<<" base= "<<m_base<<" vertices= "<<n<<endl;
+
+	while((int)m_graphToKautz.size()<n){
+		Tuple kautzVertex;
+		convertToBase(iterator,&kautzVertex);
+
+		if(isAKautzVertex(&kautzVertex)){
+			// direct mapping
+			m_graphToKautz.push_back(kautzVertex);
+			
+			// reverse mapping
+			m_kautzToGraph[iterator]=m_graphToKautz.size()-1;
+		}
+
+		iterator++;
 	}
 
-	for(Rank i=0;i<m_size;i++){
+	// create empty lists
+	for(int i=0;i<m_size;i++){
 		set<Rank> b;
 		m_outcomingConnections.push_back(b);
 		m_incomingConnections.push_back(b);
-	}
-
-	// populate vertices
-	for(Rank i=0;i<m_size;i++){
-		Tuple a;
-		convertToDeBruijn(i,&a);
-		m_graphToDeBruijn.push_back(a);
 	}
 
 	// make all connections.
@@ -124,10 +132,12 @@ void GraphImplementationDeBruijn::makeConnections(int n){
 			}
 		}
 	}
+
+	cout<<"Done computing connections"<<endl;
 }
 
 /* base m_base to base 10 */
-int GraphImplementationDeBruijn::convertToBase10(Tuple*vertex){
+int GraphImplementationKautz::convertToBase10(Tuple*vertex){
 	int a=0;
 	for(int i=0;i<m_diameter;i++){
 		a+=vertex->m_digits[i]*getPower(m_base,i);
@@ -135,16 +145,16 @@ int GraphImplementationDeBruijn::convertToBase10(Tuple*vertex){
 	return a;
 }
 
-void GraphImplementationDeBruijn::printVertex(Tuple*a){
+void GraphImplementationKautz::printVertex(Tuple*a){
 	for(int i=0;i<m_diameter;i++){
 		if(i!=0)
 			cout<<",";
-		cout<<a->m_digits[i];
+		cout<<(int)a->m_digits[i];
 	}
 }
 
 /** with de Bruijn routing, no route are pre-computed at all */
-void GraphImplementationDeBruijn::computeRoute(Rank source,Rank destination,vector<Rank>*route){
+void GraphImplementationKautz::computeRoute(Rank source,Rank destination,vector<Rank>*route){
 	/* do nothing because this is not utilised */
 
 	Rank currentVertex=source;
@@ -156,8 +166,8 @@ void GraphImplementationDeBruijn::computeRoute(Rank source,Rank destination,vect
 	}
 }
 
-Rank GraphImplementationDeBruijn::getNextRankInRoute(Rank source,Rank destination,Rank rank){
-	#ifdef CONFIG_ROUTING_DE_BRUIJN_COMPUTE_ROUTES
+Rank GraphImplementationKautz::getNextRankInRoute(Rank source,Rank destination,Rank rank){
+	#ifdef CONFIG_ROUTING_DE_KAUTZ_COMPUTE_ROUTES
 
 	#ifdef ASSERT
 	assert(m_routes[source][destination].count(rank)==1);
@@ -173,10 +183,10 @@ Rank GraphImplementationDeBruijn::getNextRankInRoute(Rank source,Rank destinatio
 }
 
 /** with de Bruijn routing, no route are pre-computed at all */
-void GraphImplementationDeBruijn::makeRoutes(){
+void GraphImplementationKautz::makeRoutes(){
 	/* we don't compute any routes */
 	
-	#ifdef CONFIG_ROUTING_DE_BRUIJN_COMPUTE_ROUTES
+	#ifdef CONFIG_ROUTING_DE_KAUTZ_COMPUTE_ROUTES
 	computeRoutes();
 	#endif
 
@@ -191,47 +201,11 @@ void GraphImplementationDeBruijn::makeRoutes(){
  *
  * This value is the index of the digit in destination
  * that we want to append to the next rank in the route
- *
- *	// example:
-	//
-	// base = 16
-	// digits = 3
-	//
-	// source = (0,4,2)
-	// destination = (9,8,7)
-	//
-	// the path is
-	//
-	// (0,4,2) -> (4,2,9) -> (2,9,8) -> (9,8,7)
-	//
-	// so for sure we have to shift the current by one on the left
-	//
-	// then the problem is how to choose which symbol to add 
-	//
-	// let's say that
-	//
-	// current = (4,2,9)
-	//
-	// then we should return (2,9,8) rapidly
-	//
-	// source=(0,2,2)
-	// destination=(2,2,1)
-	//
-	// (0,2,2) -> (2,2,1)	
-
-	// here we need to choose a digit from the destination
-	// and append it to the next
-	// case 1 destination can be obtained with 1 shift, overlap is 2
-	// case 2 destination can be obtained with 2 shifts, overlap is 1
-	// case 3 ...
-	// case m_digits destination can be obtained with m_digits shifts, overlap is 0
-
  */
-Rank GraphImplementationDeBruijn::computeNextRankInRoute(Rank source,Rank destination,Rank current){
+Rank GraphImplementationKautz::computeNextRankInRoute(Rank source,Rank destination,Rank current){
+	Tuple currentVertex=m_graphToKautz[current];
+	Tuple destinationVertex=m_graphToKautz[destination];
 
-	Tuple destinationVertex=m_graphToDeBruijn[destination];
-	Tuple currentVertex=m_graphToDeBruijn[current];
-	
 	// do a left shift
 	Tuple next;
 	for(int i=1;i<m_diameter;i++){
@@ -243,7 +217,9 @@ Rank GraphImplementationDeBruijn::computeNextRankInRoute(Rank source,Rank destin
 	// append the digit
 	next.m_digits[m_diameter-1]=destinationVertex.m_digits[overlapSize];
 	
-	int nextRank=convertToBase10(&next) % m_size;
+	int inBase10=convertToBase10(&next);
+
+	int nextRank=m_kautzToGraph[inBase10];
 
 	return nextRank;
 }
@@ -254,7 +230,7 @@ Rank GraphImplementationDeBruijn::computeNextRankInRoute(Rank source,Rank destin
  *
  * we don't look for a perfect match
  */
-int GraphImplementationDeBruijn::getMaximumOverlap(Tuple*a,Tuple*b){
+int GraphImplementationKautz::getMaximumOverlap(Tuple*a,Tuple*b){
 
 	// we don't verify if they are exact matches
 	// because if it would be the case, nothing would
@@ -286,30 +262,32 @@ int GraphImplementationDeBruijn::getMaximumOverlap(Tuple*a,Tuple*b){
 	return 0; /* will never be reached */
 }
 
-bool GraphImplementationDeBruijn::isConnected(Rank source,Rank destination){
+bool GraphImplementationKautz::isConnected(Rank source,Rank destination){
 	if(source==destination)
 		return true;
 
 	return m_outcomingConnections[source].count(destination)==1;
 }
 
-/** just verify the de Bruijn property
- * also, we allow any vertex to communicate with itself
- * regardless of the de Bruijn property
+/** 
+ * just verify the overlap property
  */
-bool GraphImplementationDeBruijn::computeConnection(Rank source,Rank destination){
+bool GraphImplementationKautz::computeConnection(Rank source,Rank destination){
 
-	// otherwise, we look for the de Bruijn property
-	Tuple sourceVertex=m_graphToDeBruijn[source];
-	Tuple destinationVertex=m_graphToDeBruijn[destination];
+	Tuple sourceVertex=m_graphToKautz[source];
+
+	Tuple destinationVertex=m_graphToKautz[destination];
 
 	int overlap=getMaximumOverlap(&sourceVertex,&destinationVertex);
 
-	return overlap==m_diameter-1;
+	bool connected=overlap==m_diameter-1;
+
+	return connected;
 }
 
-bool GraphImplementationDeBruijn::isValid(int n){
+bool GraphImplementationKautz::isValid(int n){
 	configureGraph(n);
 
 	return m_base!=-1;
 }
+

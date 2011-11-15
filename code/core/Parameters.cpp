@@ -1184,10 +1184,11 @@ void Parameters::showUsage(){
 	showOptionDescription("and Routing.Summary.txt");
 	cout<<endl;
 	showOption("-connection-type type","Sets the connection type for routes.");
-	showOptionDescription("Accepted values are debruijn, group, random and complete. Default is debruijn.");
+	showOptionDescription("Accepted values are debruijn, group, random, kautz and complete. Default is debruijn.");
 	showOptionDescription("With the type debruijn, the number of ranks must be a power of something.");
 	showOptionDescription("Examples: 256 = 16*16, 512=8*8*8, 49=7*7, and so on.");
 	showOptionDescription("Otherwise, don't use debruijn routing but use another one");
+	showOptionDescription("With the type kautz, the number of ranks n must be n=(k+1)*k^(d-1) for some k and d");
 	cout<<endl;
 
 	cout<<"  Hardware testing"<<endl;

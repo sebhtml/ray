@@ -160,6 +160,7 @@ obj-y += code/routing/GraphImplementation.o
 obj-y += code/routing/GraphImplementationRandom.o
 obj-y += code/routing/GraphImplementationComplete.o
 obj-y += code/routing/GraphImplementationDeBruijn.o
+obj-y += code/routing/GraphImplementationKautz.o
 obj-y += code/routing/GraphImplementationGroup.o
 obj-y += code/routing/ConnectionGraph.o
 

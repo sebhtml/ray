@@ -291,9 +291,6 @@ void GraphImplementation::computeRoutes(){
 
 void GraphImplementation::computeRelayEvents(){
 
-	if(m_verbose)
-		cout<<"computeRelayEvents"<<endl;
-
 	m_relayEvents.clear();
 	m_relayEventsFrom0.clear();
 	m_relayEventsTo0.clear();

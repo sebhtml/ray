@@ -35,6 +35,9 @@ void GraphImplementationComplete::makeConnections(int n){
 
 	for(Rank i=0;i<m_size;i++){
 		for(Rank j=0;j<m_size;j++){
+			if(i==j)
+				continue;
+
 			m_outcomingConnections[i].insert(j);
 			m_incomingConnections[j].insert(i);
 		}

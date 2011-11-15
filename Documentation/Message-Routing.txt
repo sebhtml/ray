@@ -19,3 +19,16 @@ rank 3 sends to rank 0
 rank 0 sends to rank 48
 rank 48 sends to rank 55
 rank 48 sends to rank 55
+
+To route messages with Ray, you need to provide the option -route-messages.
+
+You can also provide the type using -connection-type <type>
+
+== Connection types ==
+
+- complete (same as not using -route-messages)
+- group (as described above, not really good because it is not balanced)
+- random (the graph has random n*log2(n)/2 edges)
+- debruijn (better than random, but needs a power of something)
+- kautz (better than debruijn, but needs n ranks where n=(k+1)*k^(d-1) where k and d are two integers.
+

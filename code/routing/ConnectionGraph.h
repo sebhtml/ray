@@ -33,6 +33,7 @@
 #include <routing/GraphImplementationRandom.h>
 #include <routing/GraphImplementationGroup.h>
 #include <routing/GraphImplementationDeBruijn.h>
+#include <routing/GraphImplementationKautz.h>
 #include <routing/GraphImplementationComplete.h>
 #include <string>
 #include <core/types.h>
@@ -48,6 +49,7 @@ class ConnectionGraph{
 	GraphImplementationRandom m_random;
 	GraphImplementationComplete m_complete;
 	GraphImplementationDeBruijn m_deBruijn;
+	GraphImplementationKautz m_kautz;
 	GraphImplementationGroup m_group;
 
 /** verbosity */

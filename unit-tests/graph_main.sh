@@ -1,5 +1,6 @@
 
-g++ -I ../code -Wall -O3 \
+g++ -I ../code -Wall \
+ -g \
 graph_main.cpp \
 ../code/routing/ConnectionGraph.cpp \
 ../code/core/statistics.cpp \
@@ -7,12 +8,16 @@ graph_main.cpp \
 ../code/routing/GraphImplementationGroup.cpp \
 ../code/routing/GraphImplementationRandom.cpp \
 ../code/routing/GraphImplementationDeBruijn.cpp \
+../code/routing/GraphImplementationKautz.cpp \
 ../code/routing/GraphImplementationComplete.cpp \
 -o graph_main
 
 echo "Done compiling !"
 
-time ./graph_main 128 debruijn 1
+#time ./graph_main 512 debruijn 1
+#time ./graph_main 512 debruijn 1
+#time ./graph_main 511 debruijn 1
+#time ./graph_main 320 kautz 1
 #time ./graph_main 256 complete 1
 #time ./graph_main 128 random 1
 #time ./graph_main 200 group 1

@@ -19,8 +19,8 @@
 
 */
 
-#ifndef _GraphImplementationDeBruijn_h
-#define _GraphImplementationDeBruijn_h
+#ifndef _GraphImplementationKautz_h
+#define _GraphImplementationKautz_h
 
 #include <routing/GraphImplementation.h>
 #include <vector>
@@ -30,10 +30,22 @@ using namespace std;
 /**
  * de Bruijn graph
  * n must be a power of something
+ * \see http://www.sciencedirect.com/science/article/pii/S0140366497000741
+ *
+ * \see http://pl.atyp.us/wordpress/index.php/2007/12/the-kautz-graph/
+ *
+ * \see http://planetmath.org/encyclopedia/KautzGraph.html
+ *
+ * \see http://www.sciencedirect.com/science/article/pii/089812219500146P
+ *
  */
-class GraphImplementationDeBruijn : public GraphImplementation{
+class GraphImplementationKautz: public GraphImplementation{
 
-	vector<Tuple> m_graphToDeBruijn;
+	vector<Tuple> m_graphToKautz;
+
+	map<int,int> m_kautzToGraph;
+
+	int m_degree;
 
 	int m_base;
 
@@ -43,10 +55,10 @@ class GraphImplementationDeBruijn : public GraphImplementation{
 
 	int getPower(int base,int exponent);
 
-/** convert a number to a de Bruijn vertex */
-	void convertToDeBruijn(int i,Tuple*tuple);
+/** convert a number to another base */
+	void convertToBase(int i,Tuple*tuple);
 
-/** convert a de Bruijn vertex to base 10 */
+/** convert a vertex to base 10 */
 	int convertToBase10(Tuple*vertex);
 
 	void printVertex(Tuple*a);
@@ -56,6 +68,7 @@ class GraphImplementationDeBruijn : public GraphImplementation{
 
 	Rank computeNextRankInRoute(Rank source,Rank destination,Rank rank);
 	bool computeConnection(Rank source,Rank destination);
+	bool isAKautzVertex(Tuple*vertex);
 
 protected:
 
