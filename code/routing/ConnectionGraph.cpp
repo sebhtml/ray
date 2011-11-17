@@ -238,6 +238,8 @@ void ConnectionGraph::buildGraph(int numberOfRanks,string type,bool verbosity){
 		m_implementation=&m_complete;
 	}else if(type=="kautz" && m_kautz.isValid(numberOfRanks)){
 		m_implementation=&m_kautz;
+	}else if(type=="experimental" && m_experimental.isValid(numberOfRanks)){
+		m_implementation=&m_experimental;
 	}else{
 		cout<<"Warning: using a complete graph because type "<<type<<" can not used with "<<numberOfRanks<<" vertices"<<endl;
 		type="complete";

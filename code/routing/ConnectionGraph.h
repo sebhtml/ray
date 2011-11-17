@@ -34,6 +34,7 @@
 #include <routing/GraphImplementationGroup.h>
 #include <routing/GraphImplementationDeBruijn.h>
 #include <routing/GraphImplementationKautz.h>
+#include <routing/GraphImplementationExperimental.h>
 #include <routing/GraphImplementationComplete.h>
 #include <string>
 #include <core/types.h>
@@ -50,6 +51,7 @@ class ConnectionGraph{
 	GraphImplementationComplete m_complete;
 	GraphImplementationDeBruijn m_deBruijn;
 	GraphImplementationKautz m_kautz;
+	GraphImplementationExperimental m_experimental;
 	GraphImplementationGroup m_group;
 
 /** verbosity */

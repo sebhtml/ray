@@ -9,12 +9,13 @@ graph_main.cpp \
 ../code/routing/GraphImplementationRandom.cpp \
 ../code/routing/GraphImplementationDeBruijn.cpp \
 ../code/routing/GraphImplementationKautz.cpp \
+../code/routing/GraphImplementationExperimental.cpp \
 ../code/routing/GraphImplementationComplete.cpp \
 -o graph_main
 
 echo "Done compiling !"
 
-time ./graph_main 512 debruijn 1
+time ./graph_main 480 experimental 1
 #time ./graph_main 512 debruijn 1
 #time ./graph_main 511 debruijn 1
 #time ./graph_main 320 kautz 1
