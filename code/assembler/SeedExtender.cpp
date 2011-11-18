@@ -1403,7 +1403,6 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				// don't add it up if its is marked on a repeated vertex and
 				// its mate was not seen yet.
 				
-				// TODO: is 3* really the best we can do ?
 				if(addRead && ed->m_currentCoverage>=2*m_parameters->getPeakCoverage()){
 					// the vertex is repeated
 					if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
