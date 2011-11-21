@@ -25,6 +25,7 @@
 #include <structures/StaticVector.h>
 #include <communication/BufferedData.h>
 #include <graph/GridTable.h>
+#include <profiling/Derivative.h>
 #include <core/Parameters.h>
 #include <core/common_functions.h>
 #include <structures/ArrayOfReads.h>
@@ -46,6 +47,8 @@ using namespace std;
  */
 class KmerAcademyBuilder{
 	Profiler*m_profiler;
+
+	Derivative m_derivative;
 
 	/** this we check the checkpoint ? */
 	bool m_checkedCheckpoint;

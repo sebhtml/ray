@@ -78,6 +78,8 @@ char complementNucleotide(char c);
 string reverseComplement(string*a);
 
 
+void printTheSeconds(int seconds,ostream*stream);
+
 
 #endif
 

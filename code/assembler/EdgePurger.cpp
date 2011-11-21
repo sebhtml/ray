@@ -133,6 +133,10 @@ void EdgePurger::processWorkerResult(Worker*){
 		cout<<"Rank "<<m_parameters->getRank()<<" is purging edges ["<<m_completedJobs+1;
 		cout<<"/"<<m_subgraph->size()<<"]"<<endl;
 		cout.flush();
+
+		m_derivative.addX(m_completedJobs);
+		m_derivative.printStatus();
+		m_derivative.printEstimatedTime(m_subgraph->size());
 	}
 }
 

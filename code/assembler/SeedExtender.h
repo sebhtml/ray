@@ -34,6 +34,7 @@ class DepthFirstSearchData;
 #include <core/Parameters.h>
 #include <memory/RingAllocator.h>
 #include <memory/MyAllocator.h>
+#include <profiling/Derivative.h>
 #include <assembler/ReadFetcher.h>
 #include <assembler/FusionData.h>
 #include <assembler/BubbleData.h>
@@ -50,6 +51,8 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class SeedExtender{
+	Derivative m_derivative;
+
 	bool m_checkedCheckpoint;
 
 	uint64_t m_sumOfCoveragesInSeed;

@@ -30,6 +30,7 @@
 #include <graph/GridTable.h>
 #include <graph/GridTableIterator.h>
 #include <profiling/Profiler.h>
+#include <profiling/Derivative.h>
 #include <set>
 #include <stdint.h>
 #include <assembler/EdgePurgerWorker.h>
@@ -49,6 +50,8 @@ class EdgePurger : public TaskCreator {
 
 	/** checkpointing */
 	bool m_checkedCheckpoint;
+
+	Derivative m_derivative;
 
 	uint64_t m_SEEDING_i;
 	GridTable*m_subgraph;

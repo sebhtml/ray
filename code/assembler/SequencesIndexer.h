@@ -35,6 +35,7 @@
 #include <structures/StaticVector.h>
 #include <structures/ArrayOfReads.h>
 #include <map>
+#include <profiling/Derivative.h>
 #include <structures/Read.h>
 #include <vector>
 #include <fstream>
@@ -45,6 +46,7 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class SequencesIndexer{
+	Derivative m_derivative;
 
 	ofstream m_readMarkerFile;
 

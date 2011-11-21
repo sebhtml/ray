@@ -95,6 +95,11 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 				if(m_theSequenceId%10000==0){
 					printf("Rank %i is selecting optimal read markers [%i/%i]\n",m_rank,m_theSequenceId+1,(int)m_myReads->size());
 					fflush(stdout);
+
+					m_derivative.addX(m_theSequenceId);
+					m_derivative.printStatus();
+					m_derivative.printEstimatedTime(m_myReads->size());
+
 					if(m_parameters->showMemoryUsage())
 						showMemoryUsage(m_rank);
 				}

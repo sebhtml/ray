@@ -31,6 +31,7 @@
 #include <graph/GridTable.h>
 #include <memory/RingAllocator.h>
 #include <structures/Read.h>
+#include <profiling/Derivative.h>
 #include <set>
 #include <profiling/Profiler.h>
 #include <vector>
@@ -45,6 +46,8 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class VerticesExtractor{
+	Derivative m_derivative;
+
 	Profiler*m_profiler;
 
 	/** checkpointing */

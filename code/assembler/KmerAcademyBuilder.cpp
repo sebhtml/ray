@@ -90,6 +90,10 @@ void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
 		}
 		printf("Rank %i is counting k-mers in sequence reads %s[%i/%i]\n",rank,reverse.c_str(),(int)*m_mode_send_vertices_sequence_id+1,(int)m_myReads->size());
 		fflush(stdout);
+
+		m_derivative.addX(*m_mode_send_vertices_sequence_id);
+		m_derivative.printStatus();
+		m_derivative.printEstimatedTime(m_myReads->size());
 	}
 
 	if(*m_mode_send_vertices_sequence_id>(int)m_myReads->size()-1){

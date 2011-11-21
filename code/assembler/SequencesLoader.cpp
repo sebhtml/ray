@@ -249,8 +249,8 @@ bool SequencesLoader::loadSequences(int rank,int size,
 
 	uint64_t sequences=endingSequenceId-startingSequenceId+1;
 
-	cout<<"Rank "<<m_rank<<" : partition is ["<<startingSequenceId+1;
-	cout<<";"<<endingSequenceId+1<<"], "<<sequences<<" sequence reads"<<endl;
+	cout<<"Rank "<<m_rank<<" : partition is ["<<startingSequenceId;
+	cout<<";"<<endingSequenceId<<"], "<<sequences<<" sequence reads"<<endl;
 
 	m_distribution_currentSequenceId=0;
 	m_loader.constructor(m_parameters->getMemoryPrefix().c_str(),m_parameters->showMemoryAllocations());
