@@ -197,7 +197,7 @@ void GraphImplementation::findShortestPath(Rank source,Rank destination,vector<R
 }
 
 void GraphImplementation::getRoute(Rank source,Rank destination,vector<Rank>*route){
-	cout<<"getRoute source: "<<source<<" destination: "<<destination<<endl;
+
 	Rank currentVertex=source;
 	route->push_back(currentVertex);
 

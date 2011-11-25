@@ -216,10 +216,15 @@ void ConnectionGraph::getIncomingConnections(Rank source,vector<Rank>*connection
 	m_implementation->getIncomingConnections(source,connections);
 }
 
-void ConnectionGraph::buildGraph(int numberOfRanks,string type,bool verbosity){
+void ConnectionGraph::buildGraph(int numberOfRanks,string type,bool verbosity,
+int degree){
 	m_verbose=verbosity;
 
 	m_size=numberOfRanks;
+
+	/** provide the user-provided degree for those
+ * requiring it */
+	m_deBruijn.setDegree(degree);
 
 	if(type==""){
 		type="debruijn";
@@ -233,7 +238,6 @@ void ConnectionGraph::buildGraph(int numberOfRanks,string type,bool verbosity){
 		m_implementation=&m_group;
 	}else if(type=="debruijn" && m_deBruijn.isValid(numberOfRanks)){
 		m_implementation=&m_deBruijn;
-		cout<<"valid"<<endl;
 	}else if(type=="complete"){
 		m_implementation=&m_complete;
 	}else if(type=="kautz" && m_kautz.isValid(numberOfRanks)){
@@ -247,6 +251,8 @@ void ConnectionGraph::buildGraph(int numberOfRanks,string type,bool verbosity){
 	}
 
 	m_type=type;
+	
+	m_implementation->setVerbosity(m_verbose);
 
 	m_implementation->makeConnections(m_size);
 

@@ -39,6 +39,8 @@ using namespace std;
  */
 class Parameters{
 
+	int m_degree;
+
 	string m_connectionType;
 
 	bool m_showReadPlacement;
@@ -215,6 +217,8 @@ public:
 
 	int getCoresPerNode();
 	string getConnectionType();
+
+	int getRoutingDegree();
 };
 
 #endif

@@ -84,7 +84,7 @@ public:
 	void writeFiles(string prefix);
 
 /** build the graph. */
-	void buildGraph(int numberOfVertices,string method,bool verbosity);
+	void buildGraph(int numberOfVertices,string method,bool verbosity,int degree);
 
 
 	/** get the number of paths that contain rank from 0 to any vertex */

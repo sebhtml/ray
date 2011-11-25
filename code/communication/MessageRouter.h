@@ -147,7 +147,7 @@ public:
  * This could be a constructor.
  */
 	void enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*outboxAllocator,Rank rank,
-string prefix,int numberOfRanks,string type);
+string prefix,int numberOfRanks,string type,int degree);
 
 	bool isRoutingTag(Tag tag);
 

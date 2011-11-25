@@ -85,6 +85,9 @@ Parameters::Parameters(){
 
 	/** use the new NovaEngine (TM) */
 	m_options.insert("-use-NovaEngine");
+
+	/** the default is to not use a default value */
+	m_degree=2;
 }
 
 bool Parameters::showExtensionChoice(){
@@ -239,6 +242,9 @@ void Parameters::parseCommands(){
 	set<string> kmerSetting;
 	kmerSetting.insert("-k");
 
+	set<string> routingDegree;
+	routingDegree.insert("-routing-graph-degree");
+
 	set<string> connectionType;
 	connectionType.insert("-connection-type");
 
@@ -287,6 +293,7 @@ void Parameters::parseCommands(){
 	toAdd.push_back(outputAmosCommands);
 	toAdd.push_back(outputFileCommands);
 	toAdd.push_back(kmerSetting);
+	toAdd.push_back(routingDegree);
 	toAdd.push_back(interleavedCommands);
 	toAdd.push_back(reduceMemoryUsage);
 	toAdd.push_back(memoryMappedFileCommands);
@@ -608,6 +615,20 @@ void Parameters::parseCommands(){
 			}
 			token=m_commands[i];
 			m_connectionType=token;
+
+		}else if(routingDegree.count(token)>0){
+			i++;
+			int items=m_commands.size()-i;
+
+			if(items<1){
+				if(m_rank==MASTER_RANK){
+					cout<<"Error: "<<token<<" needs 1 item, you provided only "<<items<<endl;
+				}
+				m_error=true;
+				return;
+			}
+			token=m_commands[i];
+			m_degree=atoi(token.c_str());
 
 		}else if(kmerSetting.count(token)>0){
 			i++;
@@ -1191,6 +1212,9 @@ void Parameters::showUsage(){
 	showOptionDescription("With the type kautz, the number of ranks n must be n=(k+1)*k^(d-1) for some k and d");
 	cout<<endl;
 
+	showOption("-routing-graph-degree degree","Specifies the outgoing degree for the routing graph.");
+	cout<<endl;
+
 	cout<<"  Hardware testing"<<endl;
 	cout<<endl;
 	showOption("-test-network-only","Tests the network and returns.");
@@ -1546,4 +1570,8 @@ bool Parameters::showReadPlacement(){
 
 string Parameters::getConnectionType(){
 	return m_connectionType;
+}
+
+int Parameters::getRoutingDegree(){
+	return m_degree;
 }

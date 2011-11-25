@@ -3,13 +3,24 @@
 
 int main(int argc,char**argv){
 
-	int n=atoi(argv[1]);
+	int index=0;
+	index++;
+
+	int n=atoi(argv[index++]);
+
+	string type=argv[index++];
 
 	ConnectionGraph graph;
 
-	graph.buildGraph(n,argv[2],true);
+	int degree=atoi(argv[index++]);
 
-	if(atoi(argv[3]))
+	bool writeFiles=atoi(argv[index++]);
+
+	bool verbosity=true;
+
+	graph.buildGraph(n,type,verbosity,degree);
+
+	if(writeFiles)
 		graph.writeFiles("./");
 
 	return 0;

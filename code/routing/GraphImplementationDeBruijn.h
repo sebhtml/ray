@@ -33,6 +33,9 @@ using namespace std;
  */
 class GraphImplementationDeBruijn : public GraphImplementation{
 
+	/** the user-provided degree */
+	int m_degree;
+
 	vector<Tuple> m_graphToDeBruijn;
 
 	int m_base;
@@ -66,6 +69,8 @@ public:
 
 	void makeConnections(int n);
 	void makeRoutes();
+
+	void setDegree(int degree);
 
 	bool isValid(int n);
 };

@@ -58,9 +58,10 @@ void GraphImplementationDeBruijn::configureGraph(int n){
 
 	int maxBase=32;
 
-	// use the binary de Bruijn graph
-	if(isAPowerOf(n,2)){
-		maxBase=2;
+
+	// use the user-provided degree, if any
+	if(isAPowerOf(n,m_degree)){
+		maxBase=m_degree;
 	}
 
 	while(maxBase>=n)
@@ -88,7 +89,6 @@ void GraphImplementationDeBruijn::configureGraph(int n){
 	m_base=base;
 	m_diameter=digits;
 	m_size=n;
-	m_verbose=true;
 }
 
 void GraphImplementationDeBruijn::makeConnections(int n){
@@ -312,4 +312,8 @@ bool GraphImplementationDeBruijn::isValid(int n){
 	configureGraph(n);
 
 	return m_base!=-1;
+}
+
+void GraphImplementationDeBruijn::setDegree(int degree){
+	m_degree=degree;
 }
