@@ -95,8 +95,6 @@ Machine::Machine(int argc,char**argv){
 }
 
 void Machine::start(){
-	m_networkTest.constructor(m_rank,&m_master_mode,&m_slave_mode,m_size,&m_inbox,&m_outbox,&m_parameters,&m_outboxAllocator,m_messagesHandler.getName(),
-		&m_timePrinter);
 	m_partitioner.constructor(&m_outboxAllocator,&m_inbox,&m_outbox,&m_parameters,&m_slave_mode,&m_master_mode);
 
 	m_startingTimeMicroseconds = getMicroseconds();
@@ -245,6 +243,10 @@ void Machine::start(){
 	}
 
 	m_parameters.constructor(m_argc,m_argv,getRank());
+
+	// initiate the network test.
+	m_networkTest.constructor(m_rank,&m_master_mode,&m_slave_mode,m_size,&m_inbox,&m_outbox,&m_parameters,&m_outboxAllocator,m_messagesHandler.getName(),
+		&m_timePrinter);
 
 	int PERSISTENT_ALLOCATOR_CHUNK_SIZE=4194304; // 4 MiB
 	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE,RAY_MALLOC_TYPE_PERSISTENT_DATA_ALLOCATOR,

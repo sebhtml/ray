@@ -47,11 +47,7 @@ class NetworkTest{
 /**
  * do we gather raw data
  */
-	bool m_gatherRawData;
-
-	/* details of the network test */
-
-	uint64_t m_averageLatencyInMicroSeconds;
+	bool m_writeRawData;
 
 	vector<int> m_destinations;
 	vector<uint64_t> m_sentMicroseconds;
@@ -93,17 +89,14 @@ class NetworkTest{
 	/** the current test message has been sent ? */
 	bool m_sentCurrentTestMessage;
 
-	/** the starting time */
-	uint64_t m_startingTimeMicroseconds;
-
-	uint64_t m_sumOfMicroSeconds;
-
 	/** latencies */
 	map<int,int> m_latencies;
 	map<int,string> m_names;
 
 	/* processor name */
 	string*m_name;
+
+	int getModeLatency();
 public:
 	/** initialize the NetworkTest */
 	void constructor(int rank,int*masterMode,int*slaveMode,int size,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,RingAllocator*outboxAllocator,
