@@ -97,7 +97,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 					fflush(stdout);
 
 					m_derivative.addX(m_theSequenceId);
-					m_derivative.printStatus();
+					m_derivative.printStatus(SLAVE_MODES[RAY_SLAVE_MODE_INDEX_SEQUENCES]);
 					m_derivative.printEstimatedTime(m_myReads->size());
 
 					if(m_parameters->showMemoryUsage())

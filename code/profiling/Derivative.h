@@ -36,7 +36,7 @@ public:
 	Derivative();
 	void addX(int x);
 	double getLastSlope();
-	void printStatus();
+	void printStatus(const char*mode);
 	void printEstimatedTime(int n);
 	void clear();
 };

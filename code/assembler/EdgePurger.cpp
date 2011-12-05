@@ -135,7 +135,7 @@ void EdgePurger::processWorkerResult(Worker*){
 		cout.flush();
 
 		m_derivative.addX(m_completedJobs);
-		m_derivative.printStatus();
+		m_derivative.printStatus(SLAVE_MODES[RAY_SLAVE_MODE_PURGE_NULL_EDGES]);
 		m_derivative.printEstimatedTime(m_subgraph->size());
 	}
 }

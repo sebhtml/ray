@@ -1758,7 +1758,7 @@ void SeedExtender::printExtensionStatus(Kmer*currentVertex){
 	fflush(stdout);
 
 	m_derivative.addX(m_ed->m_EXTENSION_extension.size());
-	m_derivative.printStatus();
+	m_derivative.printStatus(SLAVE_MODES[RAY_SLAVE_MODE_EXTENSION]);
 
 /*
 	cout<<"Expiration.size= "<<(m_ed->m_expirations).size()<<endl;

@@ -92,7 +92,7 @@ void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
 		fflush(stdout);
 
 		m_derivative.addX(*m_mode_send_vertices_sequence_id);
-		m_derivative.printStatus();
+		m_derivative.printStatus(SLAVE_MODES[RAY_SLAVE_MODE_BUILD_KMER_ACADEMY]);
 		m_derivative.printEstimatedTime(m_myReads->size());
 	}
 

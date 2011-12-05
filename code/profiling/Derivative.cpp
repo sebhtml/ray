@@ -41,11 +41,11 @@ double Derivative::getLastSlope(){
 	return slope;
 }
 
-void Derivative::printStatus(){
+void Derivative::printStatus(const char*mode){
 	if(m_xValues.size()<2)
 		return;
 
-	cout<<"Speed: "<<getLastSlope()<<" units/second"<<endl;
+	cout<<"Speed "<<mode<<" "<<getLastSlope()<<" units/second"<<endl;
 }
 
 void Derivative::clear(){
