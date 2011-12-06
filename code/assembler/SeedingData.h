@@ -30,6 +30,7 @@ class SeedExtender;
 #include <structures/SplayTreeIterator.h>
 #include <structures/SplayNode.h>
 #include <structures/Vertex.h>
+#include <structures/AssemblySeed.h>
 #include <graph/GridTableIterator.h>
 #include <core/common_functions.h>
 #include <assembler/SeedWorker.h>
@@ -109,7 +110,7 @@ public:
 	int m_SEEDING_outgoing_index;
 	bool m_SEEDING_outgoing_choice_done;
 	int m_SEEDING_currentRank;
-	vector<vector<Kmer> > m_SEEDING_seeds;
+	vector<AssemblySeed> m_SEEDING_seeds;
 	vector<int> m_SEEDING_outgoingCoverages;
 	vector<uint64_t> m_SEEDING_outgoingKeys;
 	bool m_SEEDING_vertexKeyAndCoverageRequested;

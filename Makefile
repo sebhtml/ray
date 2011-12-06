@@ -203,6 +203,7 @@ obj-y += code/graph/CoverageGatherer.o code/graph/KmerAcademy.o code/graph/KmerA
 obj-y += code/structures/Kmer.o \
 code/structures/ArrayOfReads.o  code/structures/Direction.o code/structures/PairedRead.o code/structures/ReadAnnotation.o code/structures/Read.o  \
 code/structures/StaticVector.o code/structures/Vertex.o code/structures/BloomFilter.o
+obj-y += code/structures/AssemblySeed.o
 
 #scaffolder
 obj-y += code/scaffolder/Scaffolder.o 

@@ -2028,7 +2028,7 @@ void MessageProcessor::call_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION(Message*mes
 			int length=m_seedingData->m_SEEDING_seeds[i].size();
 			f.write((char*)&length,sizeof(int));
 			for(int j=0;j<(int)m_seedingData->m_SEEDING_seeds[i].size();j++){
-				m_seedingData->m_SEEDING_seeds[i][j].write(&f);
+				m_seedingData->m_SEEDING_seeds[i].at(j)->write(&f);
 			}
 		}
 		f.close();

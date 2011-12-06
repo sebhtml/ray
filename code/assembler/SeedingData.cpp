@@ -31,7 +31,7 @@
 #include <communication/mpi_tags.h>
 #include <assembler/SeedWorker.h>
 
-bool myComparator_sort(const vector<Kmer>&a,const vector<Kmer>&b){
+bool myComparator_sort(const AssemblySeed & a,const AssemblySeed & b){
 	return a.size()>b.size();
 }
 
@@ -118,7 +118,12 @@ void SeedingData::computeSeeds(){
 					if(m_parameters->showMemoryUsage()){
 						showMemoryUsage(m_rank);
 					}
-					m_SEEDING_seeds.push_back(seed);
+
+					AssemblySeed theSeed;
+					for(int i=0;i<(int)seed.size();i++)
+						theSeed.push_back(&(seed[i]));
+
+					m_SEEDING_seeds.push_back(theSeed);
 				}
 			}
 		}
@@ -198,7 +203,8 @@ void SeedingData::computeSeeds(){
 		#endif
 
 		// sort the seeds by length
-		std::sort(m_SEEDING_seeds.begin(),m_SEEDING_seeds.end(),myComparator_sort);
+		std::sort(m_SEEDING_seeds.begin(),
+			m_SEEDING_seeds.end(),myComparator_sort);
 
 		/** write seeds for debugging purposes */
 		if(m_parameters->hasOption("-write-seeds")){
@@ -209,7 +215,7 @@ void SeedingData::computeSeeds(){
 				uint64_t id=getPathUniqueId(m_parameters->getRank(),i);
 				f<<">RaySeed-"<<id<<endl;
 
-				f<<addLineBreaks(convertToString(&(m_SEEDING_seeds[i]),
+				f<<addLineBreaks(convertToString(m_SEEDING_seeds[i].getVertices(),
 					m_parameters->getWordSize(),m_parameters->getColorSpaceMode()),
 					m_parameters->getColumns());
 			}
@@ -347,13 +353,13 @@ void SeedingData::loadCheckpoint(){
 	int n=0;
 	f.read((char*)&n,sizeof(int));
 	for(int i=0;i<n;i++){
-		vector<Kmer> seed;
+		AssemblySeed seed;
 		int vertices=0;
 		f.read((char*)&vertices,sizeof(int));
 		for(int j=0;j<vertices;j++){
 			Kmer kmer;
 			kmer.read(&f);
-			seed.push_back(kmer);
+			seed.push_back(&kmer);
 		}
 		m_SEEDING_seeds.push_back(seed);
 	}

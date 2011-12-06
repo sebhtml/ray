@@ -26,6 +26,7 @@
 #include <structures/Read.h>
 #include <core/Parameters.h>
 #include <assembler/ExtensionElement.h>
+#include <structures/AssemblySeed.h>
 #include <profiling/Profiler.h>
 #include <structures/ReadAnnotation.h>
 #include <core/common_functions.h>
@@ -76,7 +77,9 @@ public:
 	/** the current flow number */
 	int m_flowNumber;
 
-	vector<Kmer > m_EXTENSION_currentSeed;
+	/** TODO could be a pointer to the original thing... */
+	AssemblySeed m_EXTENSION_currentSeed;
+
 	int m_EXTENSION_numberOfRanksDone;
 	vector<vector<Kmer > > m_EXTENSION_contigs;
 	bool m_EXTENSION_checkedIfCurrentVertexIsAssembled;
