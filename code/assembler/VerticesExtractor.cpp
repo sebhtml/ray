@@ -74,7 +74,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		return;
 	}
 
-	if(*m_mode_send_vertices_sequence_id%100000==0 &&m_mode_send_vertices_sequence_id_position==0
+	if(*m_mode_send_vertices_sequence_id%10000==0 &&m_mode_send_vertices_sequence_id_position==0
 	&&*m_mode_send_vertices_sequence_id<(int)m_myReads->size()){
 		string reverse="";
 		if(*m_reverseComplementVertex==true){
@@ -84,7 +84,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 		fflush(stdout);
 
 		m_derivative.addX(*m_mode_send_vertices_sequence_id);
-		m_derivative.printStatus(SLAVE_MODES[RAY_SLAVE_MODE_EXTRACT_VERTICES]);
+		m_derivative.printStatus(SLAVE_MODES[RAY_SLAVE_MODE_EXTRACT_VERTICES],RAY_SLAVE_MODE_EXTRACT_VERTICES);
 		m_derivative.printEstimatedTime(m_myReads->size());
 	}
 
@@ -110,6 +110,7 @@ void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
 			m_bufferedDataForIngoingEdges.showStatistics(m_parameters->getRank());
 			m_bufferedDataForOutgoingEdges.showStatistics(m_parameters->getRank());
 
+			m_derivative.writeFile(&cout);
 		}
 	}else{
 

@@ -23,11 +23,14 @@
 #define _Derivative_h
 
 #include <vector>
+#include <fstream>
 #include <core/OperatingSystem.h>
+#include <map>
 #include <stdint.h>
 using namespace std;
 
 class Derivative{
+	map<int,vector<int> > m_data;
 
 	vector<uint64_t> m_timeValues;
 	vector<int> m_xValues;
@@ -35,10 +38,12 @@ class Derivative{
 public:
 	Derivative();
 	void addX(int x);
-	double getLastSlope();
-	void printStatus(const char*mode);
+	int getLastSlope();
+	void printStatus(const char*mode,int modeIdentifier);
 	void printEstimatedTime(int n);
 	void clear();
+
+	void writeFile(ostream*f);
 };
 
 #endif

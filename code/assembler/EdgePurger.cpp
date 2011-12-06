@@ -90,6 +90,8 @@ void EdgePurger::finalizeMethod(){
 	m_parameters->getRank());
 	m_outbox->push_back(aMessage);
 
+	m_derivative.writeFile(&cout);
+
 	if(m_parameters->showMemoryUsage()){
 		showMemoryUsage(m_parameters->getRank());
 	}
@@ -135,7 +137,7 @@ void EdgePurger::processWorkerResult(Worker*){
 		cout.flush();
 
 		m_derivative.addX(m_completedJobs);
-		m_derivative.printStatus(SLAVE_MODES[RAY_SLAVE_MODE_PURGE_NULL_EDGES]);
+		m_derivative.printStatus(SLAVE_MODES[RAY_SLAVE_MODE_PURGE_NULL_EDGES],RAY_SLAVE_MODE_PURGE_NULL_EDGES);
 		m_derivative.printEstimatedTime(m_subgraph->size());
 	}
 }

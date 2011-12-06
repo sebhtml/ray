@@ -97,7 +97,7 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 					fflush(stdout);
 
 					m_derivative.addX(m_theSequenceId);
-					m_derivative.printStatus(SLAVE_MODES[RAY_SLAVE_MODE_INDEX_SEQUENCES]);
+					m_derivative.printStatus(SLAVE_MODES[RAY_SLAVE_MODE_INDEX_SEQUENCES],RAY_SLAVE_MODE_INDEX_SEQUENCES);
 					m_derivative.printEstimatedTime(m_myReads->size());
 
 					if(m_parameters->showMemoryUsage())
@@ -143,6 +143,8 @@ void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,m_rank);
 		m_outbox->push_back(aMessage);
+
+		m_derivative.writeFile(&cout);
 
 		m_virtualCommunicator->printStatistics();
 

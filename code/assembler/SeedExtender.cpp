@@ -1758,7 +1758,8 @@ void SeedExtender::printExtensionStatus(Kmer*currentVertex){
 	fflush(stdout);
 
 	m_derivative.addX(m_ed->m_EXTENSION_extension.size());
-	m_derivative.printStatus(SLAVE_MODES[RAY_SLAVE_MODE_EXTENSION]);
+	m_derivative.printStatus(SLAVE_MODES[RAY_SLAVE_MODE_EXTENSION],
+		RAY_SLAVE_MODE_EXTENSION);
 
 /*
 	cout<<"Expiration.size= "<<(m_ed->m_expirations).size()<<endl;
@@ -2062,6 +2063,8 @@ void SeedExtender::finalizeExtensions(vector<vector<Kmer> >*seeds,FusionData*fus
 	(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_EXTENSION_IS_DONE,m_parameters->getRank());
 	m_outbox->push_back(aMessage);
+
+	m_derivative.writeFile(&cout);
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 

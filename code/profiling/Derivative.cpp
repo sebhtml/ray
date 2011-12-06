@@ -21,6 +21,7 @@
 
 #include <profiling/Derivative.h>
 #include <core/common_functions.h>
+#include <core/statistics.h>
 
 Derivative::Derivative(){
 }
@@ -30,22 +31,29 @@ void Derivative::addX(int x){
 	m_timeValues.push_back(getMicroseconds());
 }
 
-double Derivative::getLastSlope(){
+int Derivative::getLastSlope(){
 	if(m_xValues.size()<2)
 		return 0;
 
 	int n=m_xValues.size();
 
-	double slope=1000*1000*(m_xValues[n-1]-m_xValues[n-2]+0.0)/(m_timeValues[n-1]-m_timeValues[n-2]+0.0);
+	int slope=1000*1000*(m_xValues[n-1]-m_xValues[n-2]+0.0)/(m_timeValues[n-1]-m_timeValues[n-2]+0.0);
+
+	if(slope<0)
+		return 0;
 
 	return slope;
 }
 
-void Derivative::printStatus(const char*mode){
+void Derivative::printStatus(const char*mode,int modeIdentifier){
 	if(m_xValues.size()<2)
 		return;
 
-	cout<<"Speed "<<mode<<" "<<getLastSlope()<<" units/second"<<endl;
+	int value=getLastSlope();
+
+	cout<<"Speed "<<mode<<" "<<value<<" units/second"<<endl;
+
+	m_data[modeIdentifier].push_back(value);
 }
 
 void Derivative::clear(){
@@ -72,4 +80,12 @@ void Derivative::printEstimatedTime(int total){
 	printTheSeconds(remainingSeconds,&cout);
 
 	cout<<endl;
+}
+
+void Derivative::writeFile(ostream*f){
+	for(map<int,vector<int> >::iterator i=m_data.begin();
+		i!=m_data.end();i++){
+		int average=getAverage(&(i->second));
+		*f<<"AverageSpeed "<<SLAVE_MODES[i->first]<<"	"<<average<<" units/second"<<endl;
+	}
 }

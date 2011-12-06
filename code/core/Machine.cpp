@@ -1503,7 +1503,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		}
 
 	}else if(m_CLEAR_n==getSize() && !m_isFinalFusion && m_currentCycleStep==1){
-		cout<<"cycleStep= "<<m_currentCycleStep<<endl;
+		//cout<<"cycleStep= "<<m_currentCycleStep<<endl;
 		m_currentCycleStep++;
 		m_CLEAR_n=-1;
 
@@ -1513,7 +1513,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		}
 		m_DISTRIBUTE_n=0;
 	}else if(m_DISTRIBUTE_n==getSize() && !m_isFinalFusion && m_currentCycleStep==2){
-		cout<<"cycleStep= "<<m_currentCycleStep<<endl;
+		//cout<<"cycleStep= "<<m_currentCycleStep<<endl;
 		m_currentCycleStep++;
 		m_DISTRIBUTE_n=-1;
 		m_isFinalFusion=true;
@@ -1523,11 +1523,11 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		}
 		m_FINISH_n=0;
 	}else if(m_FINISH_n==getSize() && m_isFinalFusion && m_currentCycleStep==3){
-		cout<<"cycleStep= "<<m_currentCycleStep<<endl;
+		//cout<<"cycleStep= "<<m_currentCycleStep<<endl;
 		m_currentCycleStep++;
 		int count=0;
 
-		cout<<"DEBUG m_reductionOccured= "<<m_reductionOccured<<endl;
+		//cout<<"DEBUG m_reductionOccured= "<<m_reductionOccured<<endl;
 
 		/* if paths were merged in RAY_MPI_TAG_FINISH_FUSIONS,
 		then we want to continue these mergeing events */
@@ -1547,7 +1547,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		m_FINISH_n=-1;
 		m_CLEAR_n=0;
 	}else if(m_CLEAR_n==getSize() && m_isFinalFusion && m_currentCycleStep==4){
-		cout<<"cycleStep= "<<m_currentCycleStep<<endl;
+		//cout<<"cycleStep= "<<m_currentCycleStep<<endl;
 		m_CLEAR_n=-1;
 		m_currentCycleStep++;
 
@@ -1559,7 +1559,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 	
 		cout<<"Rank 0: starting distribution step"<<endl;
 	}else if(m_DISTRIBUTE_n==getSize() && m_isFinalFusion && m_currentCycleStep==5){
-		cout<<"cycleStep= "<<m_currentCycleStep<<endl;
+		//cout<<"cycleStep= "<<m_currentCycleStep<<endl;
 		m_currentCycleStep++;
 
 		/* if we have the checkpoint, we want to jump to the final step now */
@@ -1590,10 +1590,10 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		if(m_cycleNumber == 0)
 			m_reductionOccured = true;
 
-		cout<<"cycleStep= "<<m_currentCycleStep<<endl;
+		//cout<<"cycleStep= "<<m_currentCycleStep<<endl;
 		m_fusionData->m_FUSION_numberOfRanksDone=-1;
 
-		cout<<"DEBUG m_reductionOccured= "<<m_reductionOccured<<endl;
+		//cout<<"DEBUG m_reductionOccured= "<<m_reductionOccured<<endl;
 
 		if(!m_reductionOccured || m_cycleNumber == lastAllowedCycleNumber){ 
 			m_mustStop=true;
