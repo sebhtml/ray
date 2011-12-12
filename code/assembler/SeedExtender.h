@@ -52,6 +52,9 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class SeedExtender{
+
+	int m_currentPeakCoverage;
+
 	Derivative m_derivative;
 
 	bool m_checkedCheckpoint;

@@ -730,7 +730,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			cout<<"Rank "<<m_parameters->getRank()<<" is changing direction."<<endl;
 			
 			#ifdef ASSERT
-			assert(m_complementedSeed.size() == ed->m_EXTENSION_extension.size());
+			assert(m_complementedSeed.size() == (int)ed->m_EXTENSION_extension.size());
 			#endif
 
 			MACRO_COLLECT_PROFILING_INFORMATION();
@@ -1122,6 +1122,10 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 			
 				/* flow #0 is the seed */
 				ed->m_flowNumber++;
+
+				m_currentPeakCoverage=m_ed->m_EXTENSION_currentSeed.getPeakCoverage();
+
+				cout<<"Current peak coverage -> "<<m_currentPeakCoverage<<endl;
 			}
 			printExtensionStatus(currentVertex);
 		}
@@ -1377,7 +1381,12 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				// don't add it up if its is marked on a repeated vertex and
 				// its mate was not seen yet.
 				
-				if(addRead && ed->m_currentCoverage>=2*m_parameters->getPeakCoverage()){
+				int thresholdCoverage=2*m_currentPeakCoverage;
+				//int thresholdCoverage=2*m_parameters->getPeakCoverage();
+
+				//cout<<"THreshold= "<<thresholdCoverage<<endl;
+
+				if(addRead && ed->m_currentCoverage>= thresholdCoverage){
 					// the vertex is repeated
 					if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
 						uint64_t mateId=ed->m_EXTENSION_pairedRead.getUniqueId();
@@ -1956,27 +1965,10 @@ int SeedExtender::chooseWithSeed(){
 			m_ed->m_EXTENSION_currentSeed.resetCoverageValues();
 		}
 
-		// add coverage data
-		int currentCoverage=m_ed->m_EXTENSION_coverages[m_ed->m_EXTENSION_coverages.size()-1];
-		m_ed->m_EXTENSION_currentSeed.addCoverageValue(currentCoverage);
-
-		// we are done with the seed
-		if(m_ed->m_EXTENSION_currentPosition==(int)m_ed->m_EXTENSION_currentSeed.size()-1){
-			m_ed->m_EXTENSION_currentSeed.computePeakCoverage();
-			cout<<"SeedPeakKmerCoverage= "<<m_ed->m_EXTENSION_currentSeed.getPeakCoverage();
-		}
-
 		Kmer*kmerInSeed=m_ed->m_EXTENSION_currentSeed.at(m_ed->m_EXTENSION_currentPosition);
 
 		for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
 			if(m_ed->m_enumerateChoices_outgoingEdges[i]== *kmerInSeed ){
-/*
-				(*currentVertex)=ed->m_enumerateChoices_outgoingEdges[i]; 
-				ed->m_EXTENSION_choose=true; 
-				ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=false; 
-				ed->m_EXTENSION_directVertexDone=false; 
-				ed->m_EXTENSION_VertexAssembled_requested=false; 
-*/
 				return i;
 			}
 		}

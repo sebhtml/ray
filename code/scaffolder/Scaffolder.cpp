@@ -418,7 +418,10 @@ void Scaffolder::performSummary(){
 
 	int standardDeviation=(int)sqrt(sumOfSquares);
 
-	cout<<"contig: "<<(*m_contigNames)[m_contigId]<<" vertices: "<<m_vertexCoverageValues.size()<<" averageCoverage: "<<mean<<" standardDeviation: "<<standardDeviation<<" peakCoverage: "<<m_parameters->getPeakCoverage()<<" repeatCoverage: "<<m_parameters->getRepeatCoverage()<<endl;
+	int peakCoverage=getMode(&m_vertexCoverageValues);
+	int repeatCoverage=2*peakCoverage;
+
+	cout<<"contig: "<<(*m_contigNames)[m_contigId]<<" vertices: "<<m_vertexCoverageValues.size()<<" averageCoverage: "<<mean<<" standardDeviation: "<<standardDeviation<<" peakCoverage: "<<peakCoverage<<" repeatCoverage: "<<repeatCoverage<<endl;
 
 	#ifdef SCAFFOLDER_SHOW_DISTRIBUTION
 	cout<<"Distribution "<<endl;

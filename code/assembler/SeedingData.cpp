@@ -94,6 +94,11 @@ void SeedingData::computeSeeds(){
 		if(m_aliveWorkers[workerId].isDone()){
 			m_workersDone.push_back(workerId);
 			vector<Kmer> seed=*(m_aliveWorkers[workerId].getSeed());
+			vector<int>*coverageValues=m_aliveWorkers[workerId].getCoverageVector();
+
+			#ifdef ASSERT
+			assert(seed.size() == coverageValues->size());
+			#endif
 
 			int nucleotides=seed.size()+(m_wordSize)-1;
 
@@ -120,8 +125,14 @@ void SeedingData::computeSeeds(){
 					}
 
 					AssemblySeed theSeed;
-					for(int i=0;i<(int)seed.size();i++)
+					for(int i=0;i<(int)seed.size();i++){
 						theSeed.push_back(&(seed[i]));
+						theSeed.addCoverageValue(coverageValues->at(i));
+					}
+
+					theSeed.computePeakCoverage();
+
+					cout<<"Got a seed, peak coverage: "<<theSeed.getPeakCoverage()<<endl;
 
 					m_SEEDING_seeds.push_back(theSeed);
 				}

@@ -351,6 +351,10 @@ vector<Kmer>*SeedWorker::getSeed(){
 	return &m_SEEDING_seed;
 }
 
+vector<int>*SeedWorker::getCoverageVector(){
+	return &m_coverages;
+}
+
 uint64_t SeedWorker::getWorkerIdentifier(){
 	return m_workerIdentifier;
 }

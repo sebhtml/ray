@@ -29,4 +29,6 @@ double getAverage(vector<int>*values);
 /** compute the standard deviation */
 double getStandardDeviation(vector<int>*x);
 
+int getMode(vector<int>*x);
+
 #endif

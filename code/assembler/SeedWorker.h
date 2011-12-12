@@ -71,6 +71,7 @@ class SeedWorker : public Worker {
 
 	vector<Kmer> m_SEEDING_seed;
 	vector<int> m_coverages;
+
 	bool m_SEEDING_firstVertexParentTestDone;	
 	set<Kmer> m_SEEDING_vertices;
 	Kmer m_SEEDING_first;
@@ -88,7 +89,10 @@ class SeedWorker : public Worker {
 public:
 	void constructor(Kmer*vertex,Parameters*parameters,RingAllocator*outboxAllocator,
 		VirtualCommunicator*vc,uint64_t workerId);
+
 	vector<Kmer>*getSeed();
+	vector<int>*getCoverageVector();
+
 	void do_1_1_test();
 
 	/** work a little bit 

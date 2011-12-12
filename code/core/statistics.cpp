@@ -21,6 +21,8 @@
 #include <core/statistics.h>
 #include <math.h> /* for sqrt */
 #include <stdint.h>
+#include <map>
+using namespace std;
 
 double getAverage(vector<int>*values){
 	int i=0;
@@ -62,4 +64,21 @@ double getStandardDeviation(vector<int>*x){
 	}
 
 	return standardDeviation;
+}
+
+int getMode(vector<int>*x){
+	map<int,int> data;
+	for(int i=0;i<(int)x->size();i++){
+		data[x->at(i)]++;
+	}
+	int best=-1;
+
+	for(map<int,int>::iterator i=data.begin();
+		i!=data.end();i++){
+		if(data.count(best)==0 || i->second > data[best]){
+			best=i->first;
+		}
+	}
+
+	return best;
 }

@@ -71,6 +71,8 @@ void AssemblySeed::computePeakCoverage(){
 	}
 
 	cout<<"mode= "<<best<<" length= "<<m_vertices.size()<<endl;
+
+	m_peakCoverage=best;
 }
 
 int AssemblySeed::getPeakCoverage(){
