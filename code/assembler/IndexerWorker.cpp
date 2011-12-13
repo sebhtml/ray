@@ -21,6 +21,7 @@
 
 #include <assembler/IndexerWorker.h>
 #include <string.h>
+#include <core/statistics.h>
 
 void IndexerWorker::constructor(int sequenceId,Parameters*parameters,RingAllocator*outboxAllocator,
 	VirtualCommunicator*vc,uint64_t workerId,ArrayOfReads*a,MyAllocator*allocator,
@@ -86,7 +87,11 @@ void IndexerWorker::work(){
 		}
 	}else if(!m_forwardIndexed){
 		if(!m_vertexIsDone){
+
+			// the position is selected with an algorithm
 			int selectedPosition=-1;
+
+#ifdef CONFIG_USE_COVERAGE_DISTRIBUTION
 			// find a vertex that is not an error and that is not repeated
 			for(int i=0;i<(int)m_coverages.size()/2;i++){
 				int coverage=(m_coverages).at(i);
@@ -107,6 +112,30 @@ void IndexerWorker::work(){
 				}
 	
 			}
+
+#else
+	// get the average
+	// take the first above the average/2
+	// gg
+
+			vector<int> data;
+
+			for(int i=0;i<(int)m_coverages.size();i++){
+				int coverageValue=m_coverages.at(i);
+				data.push_back(coverageValue);
+			}
+
+			int threshold=getThreshold(&data);
+
+			for(int i=0;i<(int)m_coverages.size();i++){
+				if(m_coverages.at(i)>=threshold){
+					selectedPosition=i;
+					break;
+				}
+			}
+
+#endif
+
 			// index it
 			if(selectedPosition!=-1){
 				Kmer vertex=(m_vertices).at(selectedPosition);
@@ -134,7 +163,11 @@ void IndexerWorker::work(){
 		}
 	}else if(!m_reverseIndexed){
 		if(!m_vertexIsDone){
+			// the position is selected with an algorithm
 			int selectedPosition=-1;
+
+#ifdef CONFIG_USE_COVERAGE_DISTRIBUTION
+
 			// find a vertex that is not an error and that is not repeated
 			for(int i=(int)(m_coverages).size()-1;i>=(int)m_coverages.size()/2;i--){
 				int coverage=(m_coverages).at(i);
@@ -155,6 +188,29 @@ void IndexerWorker::work(){
 				}
 	
 			}
+
+#else
+	// get the average
+	// take the first above the average/2
+	// gg
+
+			vector<int> data;
+
+			for(int i=0;i<(int)m_coverages.size();i++){
+				int coverageValue=m_coverages.at(i);
+				data.push_back(coverageValue);
+			}
+
+			int threshold=getThreshold(&data);
+
+			for(int i=m_coverages.size()-1;i>=0;i--){
+				if(m_coverages.at(i)>=threshold){
+					selectedPosition=i;
+					break;
+				}
+			}
+
+#endif
 
 			// index it
 			if(selectedPosition!=-1){
@@ -200,9 +256,17 @@ void IndexerWorker::work(){
 			(*m_readMarkerFile)<<" "<<m_reads->at(m_workerId)->getReverseOffset();
 
 			(*m_readMarkerFile)<<" Values:";
+
+			vector<int> data;
+
 			for(int i=0;i<(int)m_coverages.size();i++){
-				(*m_readMarkerFile)<<" "<<i<<" "<<m_coverages.at(i);
+				int coverageValue=m_coverages.at(i);
+				(*m_readMarkerFile)<<" "<<i<<" "<<coverageValue;
+				data.push_back(coverageValue);
 			}
+
+			(*m_readMarkerFile)<<" average: "<<getAverage(&data);
+
 			(*m_readMarkerFile)<<endl;
 
 		}
@@ -251,4 +315,39 @@ uint64_t IndexerWorker::getWorkerIdentifier(){
 	return m_workerId;
 }
 
+// we want a (local) threshold that removes things that are errors
+int IndexerWorker::getThreshold(vector<int>*data){
+	// now, we know that repeats will add bias to the average...
+	// so if the average is too large
+	// we want to correct this
+	
+	int multiplicator=2;
 
+	int bestScore=0;
+	int bestEntry=-1;
+
+	for(int value=10;value>=1;value--){
+		int bin1=value;
+		int bin2=value*multiplicator;
+		
+		int bin1Count=0;
+		int bin2Count=0;
+
+		for(int i=0;i<(int)data->size();i++){
+			int point=data->at(i);
+			if(point<=bin1)
+				bin1Count++;
+			if(point>=bin2)
+				bin2Count++;
+		}
+		
+		int score=bin1Count+bin2Count;
+
+		if(bestEntry==-1 || score > bestScore){
+			bestEntry=value;
+			bestScore=score;
+		}
+	}
+
+	return multiplicator*bestEntry;
+}

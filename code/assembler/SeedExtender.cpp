@@ -1381,8 +1381,11 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				// don't add it up if its is marked on a repeated vertex and
 				// its mate was not seen yet.
 				
+				#ifdef CONFIG_USE_COVERAGE_DISTRIBUTION
+				int thresholdCoverage=2*m_parameters->getPeakCoverage();
+				#else
 				int thresholdCoverage=2*m_currentPeakCoverage;
-				//int thresholdCoverage=2*m_parameters->getPeakCoverage();
+				#endif
 
 				//cout<<"THreshold= "<<thresholdCoverage<<endl;
 

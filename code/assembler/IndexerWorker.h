@@ -67,6 +67,9 @@ class IndexerWorker /*: public Worker*/{
 
 	DynamicVector<Kmer> m_vertices;
 	DynamicVector<int> m_coverages;
+
+	int getThreshold(vector<int>*data);
+
 public:
 	void constructor(int sequenceId,Parameters*parameters,RingAllocator*outboxAllocator,
 		VirtualCommunicator*vc,uint64_t workerId,ArrayOfReads*a,MyAllocator*allocator,
