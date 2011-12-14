@@ -1038,11 +1038,9 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	if(m_parameters.getMinimumCoverage()> m_parameters.getPeakCoverage()
 	|| m_parameters.getPeakCoverage()==m_parameters.getRepeatCoverage()
 	|| m_parameters.getPeakCoverage()==1){
-		m_master_mode=RAY_MASTER_MODE_KILL_ALL_MPI_RANKS;
-		m_aborted=true;
-		cout<<"Rank 0: Assembler panic: no peak observed in the k-mer coverage distribution."<<endl;
-		cout<<"Rank 0: to deal with the sequencing error rate, try to lower the k-mer length (-k)"<<endl;
-		return;
+		cout<<"Warning: no peak observed in the k-mer coverage distribution."<<endl;
+		cout<<"to deal with the sequencing error rate, try to lower the k-mer length (-k)"<<endl;
+		cout<<"If you are using RNA-Seq or metagenomic data, then you can ignore this warning."<<endl;
 	}
 
 	// see these values to everyone.
@@ -1050,6 +1048,7 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 	buffer[0]=m_parameters.getMinimumCoverage();
 	buffer[1]=m_parameters.getPeakCoverage();
 	buffer[2]=m_parameters.getRepeatCoverage();
+
 	m_numberOfRanksWithCoverageData=0;
 	for(int i=0;i<getSize();i++){
 		Message aMessage(buffer,3,i,RAY_MPI_TAG_SEND_COVERAGE_VALUES,getRank());
