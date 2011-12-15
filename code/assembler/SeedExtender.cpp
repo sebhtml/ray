@@ -37,6 +37,9 @@
 #include <math.h> /* sqrt */
 using namespace std;
 
+#define REPEAT_MULTIPLIER 2
+#define FRAGMENT_MULTIPLIER 2
+
 /** extend the seeds */
 void SeedExtender::extendSeeds(vector<AssemblySeed>*seeds,ExtensionData*ed,int theRank,StaticVector*outbox,
   Kmer*currentVertex,FusionData*fusionData,RingAllocator*outboxAllocator,bool*edgesRequested,int*outgoingEdgeIndex,
@@ -375,7 +378,9 @@ Presently, insertions or deletions up to 8 are supported.
 					}
 				}
 
-				int theRepeatedCoverage=m_currentPeakCoverage*3;
+				int fancyMultiplier=REPEAT_MULTIPLIER;
+
+				int theRepeatedCoverage=m_currentPeakCoverage*fancyMultiplier;
 
 				#ifdef CONFIG_USE_COVERAGE_DISTRIBUTION
 				theRepeatedCoverage=m_parameters->getRepeatCoverage();
@@ -648,8 +653,15 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 		}else if(!bubbleData->m_doChoice_bubbles_Detected && ed->m_EXTENSION_readsInRange.size()>0){
 			
 			MACRO_COLLECT_PROFILING_INFORMATION();
+
+			int repeatCoverage=REPEAT_MULTIPLIER*m_currentPeakCoverage;
+
+			#ifdef CONFIG_USE_COVERAGE_DISTRIBUTION
+			repeatCoverage=m_parameters->getRepeatCoverage();
+			#endif
+
 			bool isGenuineBubble=m_bubbleTool.isGenuineBubble((*currentVertex),&bubbleData->m_BUBBLE_visitedVertices,
-				&bubbleData->m_coverages);
+				&bubbleData->m_coverages, repeatCoverage);
 
 			// support indels of 1 as well as mismatch polymorphisms.
 			if(isGenuineBubble){
@@ -1294,7 +1306,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 						anElement->getSequence(m_receivedString,m_parameters);
 						int rightReadLength=(int)strlen(m_receivedString);
 						int observedFragmentLength=(startPosition-startingPositionOnPath)+rightReadLength+extensionElement->getStrandPosition()-positionOnStrand;
-						int multiplier=3;
+						int multiplier=FRAGMENT_MULTIPLIER;
 
 						int library=ed->m_EXTENSION_pairedRead.getLibrary();
 
@@ -1439,7 +1451,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 						//int repeatLengthForLeftRead=ed->m_repeatedValues->at(startingPositionOnPath);
 						int observedFragmentLength=(startPosition-startingPositionOnPath)+ed->m_EXTENSION_receivedLength+extensionElement->getStrandPosition()-positionOnStrand;
-						int multiplier=3;
+						int multiplier=FRAGMENT_MULTIPLIER;
 
 						int library=ed->m_EXTENSION_pairedRead.getLibrary();
 

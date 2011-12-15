@@ -1396,7 +1396,8 @@ void Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 		string contig=convertToString(&(m_ed->m_EXTENSION_contigs[i]),m_parameters.getWordSize(),m_parameters.getColorSpaceMode());
 		
 		string withLineBreaks=addLineBreaks(contig,m_parameters.getColumns());
-		fp<<">contig-"<<uniqueId<<" "<<contig.length()<<" nucleotides"<<endl<<withLineBreaks<<endl;
+		fp<<">contig-"<<uniqueId<<" "<<contig.length()<<" nucleotides"<<endl<<withLineBreaks;
+
 	}
 	cout<<"Rank "<<m_rank<<" appended "<<total<<" elements"<<endl;
 	fp.close();

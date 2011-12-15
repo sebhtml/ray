@@ -40,7 +40,7 @@ class BubbleTool{
 	Kmer m_choice;
 public:
 	bool isGenuineBubble(Kmer root, vector<vector<Kmer > >*trees,
-map<Kmer ,int>*coverages);
+map<Kmer ,int>*coverages,int repeatCoverage);
 	void constructor(Parameters*p);
 
 	Kmer getTraversalStartingPoint();

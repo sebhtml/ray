@@ -60,12 +60,12 @@ map<Kmer,int>*coverages){
  *
  */
 bool BubbleTool::isGenuineBubble(Kmer root,vector<vector<Kmer > >*trees,
-map<Kmer ,int>*coverages){
+map<Kmer ,int>*coverages,int repeatCoverage){
 	#ifdef NO_BUBBLES
 	return false;
 	#endif
 
-	if((*coverages)[root]>=m_parameters->getRepeatCoverage()){
+	if((*coverages)[root]>= repeatCoverage){
 		return false;
 	}
 
@@ -126,7 +126,7 @@ map<Kmer ,int>*coverages){
 		return false;
 	}
 
-	if((*coverages)[target]>=m_parameters->getRepeatCoverage()){
+	if((*coverages)[target]>= repeatCoverage){
 		return false;
 	}
 
