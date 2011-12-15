@@ -37,6 +37,9 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class VertexMessenger{
+	
+	int m_peakCoverage;
+
 	set<uint64_t>::iterator m_mateIterator;
 	Parameters*m_parameters;
 	StaticVector*m_inbox;
@@ -63,7 +66,7 @@ class VertexMessenger{
 	void getReadsForRepeatedVertex();
 public:
 	void constructor(Kmer vertex,uint64_t wave,int pos,set<uint64_t>*matesToMeet,StaticVector*inbox,StaticVector*outbox,
-	RingAllocator*outboxAllocator,Parameters*parameters,bool getReads);
+	RingAllocator*outboxAllocator,Parameters*parameters,bool getReads,int peakCoverage);
 	bool isDone();
 	void work();
 	uint16_t getCoverageValue();

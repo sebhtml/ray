@@ -81,7 +81,7 @@ void VertexMessenger::work(){
 			m_numberOfAnnotations=0;
 			m_annotations.clear();
 			m_isDone=true;
-		}else if(m_coverageValue>=3*m_parameters->getPeakCoverage()){
+		}else if(m_coverageValue>=3* m_peakCoverage){
 			getReadsForRepeatedVertex();
 		}else{
 			getReadsForUniqueVertex();
@@ -207,7 +207,10 @@ uint16_t VertexMessenger::getCoverageValue(){
 }
 
 void VertexMessenger::constructor(Kmer vertex,uint64_t wave,int pos,set<uint64_t>*matesToMeet,StaticVector*inbox,StaticVector*outbox,
-	RingAllocator*outboxAllocator,Parameters*parameters,bool getReads){
+	RingAllocator*outboxAllocator,Parameters*parameters,bool getReads,int peakCoverage){
+
+	m_peakCoverage=peakCoverage;
+
 	m_getReads=getReads;
 	m_inbox=inbox;
 	m_outbox=outbox;

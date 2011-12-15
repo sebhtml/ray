@@ -1165,7 +1165,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 			getReads=true;
 
 		Kmer vertex=*currentVertex;
-		m_vertexMessenger.constructor(vertex,waveId,progression,&m_matesToMeet,m_inbox,outbox,outboxAllocator,m_parameters,getReads);
+		m_vertexMessenger.constructor(vertex,waveId,progression,&m_matesToMeet,m_inbox,outbox,outboxAllocator,m_parameters,getReads,
+			m_currentPeakCoverage);
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
