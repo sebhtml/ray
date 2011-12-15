@@ -1035,6 +1035,9 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 
 	m_coverageDistribution.clear();
 
+	// display a warning
+	// for RNA-Seq and for méta-genomes, this is not important
+	//
 	if(m_parameters.getMinimumCoverage()> m_parameters.getPeakCoverage()
 	|| m_parameters.getPeakCoverage()==m_parameters.getRepeatCoverage()
 	|| m_parameters.getPeakCoverage()==1){
@@ -1661,14 +1664,10 @@ void Machine::call_RAY_SLAVE_MODE_EXTENSION(){
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
-	int maxCoverage=m_parameters.getRepeatCoverage();
-
-	MACRO_COLLECT_PROFILING_INFORMATION();
-
 	m_seedExtender.extendSeeds(&(m_seedingData->m_SEEDING_seeds),m_ed,getRank(),&m_outbox,&(m_seedingData->m_SEEDING_currentVertex),
 	m_fusionData,&m_outboxAllocator,&(m_seedingData->m_SEEDING_edgesRequested),&(m_seedingData->m_SEEDING_outgoingEdgeIndex),
 	&m_last_value,&(m_seedingData->m_SEEDING_vertexCoverageRequested),m_wordSize,getSize(),&(m_seedingData->m_SEEDING_vertexCoverageReceived),
-	&(m_seedingData->m_SEEDING_receivedVertexCoverage),&m_repeatedLength,&maxCoverage,&(m_seedingData->m_SEEDING_receivedOutgoingEdges),&m_c,
+	&(m_seedingData->m_SEEDING_receivedVertexCoverage),&m_repeatedLength,&(m_seedingData->m_SEEDING_receivedOutgoingEdges),&m_c,
 	m_bubbleData,
 m_parameters.getMinimumCoverage(),&m_oa,&(m_seedingData->m_SEEDING_edgesReceived),&m_slave_mode);
 

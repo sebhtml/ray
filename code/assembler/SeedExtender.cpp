@@ -41,7 +41,7 @@ using namespace std;
 void SeedExtender::extendSeeds(vector<AssemblySeed>*seeds,ExtensionData*ed,int theRank,StaticVector*outbox,
   Kmer*currentVertex,FusionData*fusionData,RingAllocator*outboxAllocator,bool*edgesRequested,int*outgoingEdgeIndex,
 int*last_value,bool*vertexCoverageRequested,int wordSize,int size,bool*vertexCoverageReceived,
-int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,vector<Kmer>*receivedOutgoingEdges,Chooser*chooser,
+int*receivedVertexCoverage,int*repeatedLength,vector<Kmer>*receivedOutgoingEdges,Chooser*chooser,
 BubbleData*bubbleData,
 int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*mode){
 
@@ -113,7 +113,7 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*mode){
 
 		markCurrentVertexAsAssembled(currentVertex,outboxAllocator,outgoingEdgeIndex,outbox,
 size,theRank,ed,vertexCoverageRequested,vertexCoverageReceived,receivedVertexCoverage,
-repeatedLength,maxCoverage,edgesRequested,receivedOutgoingEdges,chooser,bubbleData,minimumCoverage,
+repeatedLength,edgesRequested,receivedOutgoingEdges,chooser,bubbleData,minimumCoverage,
 oa,wordSize,seeds);
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
@@ -128,7 +128,7 @@ oa,wordSize,seeds);
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
 		doChoice(outboxAllocator,outgoingEdgeIndex,outbox,currentVertex,bubbleData,theRank,wordSize,
-	ed,minimumCoverage,*maxCoverage,oa,chooser,seeds,
+	ed,minimumCoverage,oa,chooser,seeds,
 edgesRequested,vertexCoverageRequested,vertexCoverageReceived,size,receivedVertexCoverage,edgesReceived,
 receivedOutgoingEdges);
 	}
@@ -248,7 +248,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 void SeedExtender::doChoice(RingAllocator*outboxAllocator,int*outgoingEdgeIndex,StaticVector*outbox,
 	Kmer*currentVertex,BubbleData*bubbleData,int theRank,
 	int wordSize,
-ExtensionData*ed,int minimumCoverage,int maxCoverage,OpenAssemblerChooser*oa,Chooser*chooser,
+ExtensionData*ed,int minimumCoverage,OpenAssemblerChooser*oa,Chooser*chooser,
 	vector<AssemblySeed>*seeds,
 bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,int size,
 int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
@@ -375,10 +375,16 @@ Presently, insertions or deletions up to 8 are supported.
 					}
 				}
 
+				int theRepeatedCoverage=m_currentPeakCoverage*3;
+
+				#ifdef CONFIG_USE_COVERAGE_DISTRIBUTION
+				theRepeatedCoverage=m_parameters->getRepeatCoverage();
+				#endif
+
 				if(!element->hasPairedRead()){
 					/* we only use single-end reads on
 					non-repeated vertices */
-					if(ed->m_currentCoverage<m_parameters->getRepeatCoverage()){
+					if(ed->m_currentCoverage< theRepeatedCoverage){
 						ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(distance);	
 					}
 					ed->m_EXTENSION_readIterator++;
@@ -439,7 +445,7 @@ Presently, insertions or deletions up to 8 are supported.
 					// add it anyway as a single-end match too!
 					/* add it as single-end read if not repeated. */
 					//if(repeatValueForRightRead<repeatThreshold)
-					if(ed->m_currentCoverage<m_parameters->getRepeatCoverage()){
+					if(ed->m_currentCoverage< theRepeatedCoverage){
 						ed->m_EXTENSION_readPositionsForVertices[ed->m_EXTENSION_receivedReadVertex].push_back(distance);
 					}
 
@@ -1064,7 +1070,7 @@ void SeedExtender::checkedCurrentVertex(){
  *   */
 void SeedExtender::markCurrentVertexAsAssembled(Kmer*currentVertex,RingAllocator*outboxAllocator,int*outgoingEdgeIndex, 
 StaticVector*outbox,int size,int theRank,ExtensionData*ed,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
-	int*receivedVertexCoverage,int*repeatedLength,int*maxCoverage,bool*edgesRequested,
+	int*receivedVertexCoverage,int*repeatedLength,bool*edgesRequested,
 vector<Kmer>*receivedOutgoingEdges,Chooser*chooser,
 BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,vector<AssemblySeed>*seeds
 ){
