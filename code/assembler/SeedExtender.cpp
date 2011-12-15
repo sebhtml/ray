@@ -37,9 +37,6 @@
 #include <math.h> /* sqrt */
 using namespace std;
 
-#define REPEAT_MULTIPLIER 2
-#define FRAGMENT_MULTIPLIER 2
-
 /** extend the seeds */
 void SeedExtender::extendSeeds(vector<AssemblySeed>*seeds,ExtensionData*ed,int theRank,StaticVector*outbox,
   Kmer*currentVertex,FusionData*fusionData,RingAllocator*outboxAllocator,bool*edgesRequested,int*outgoingEdgeIndex,

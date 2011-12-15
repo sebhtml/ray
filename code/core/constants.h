@@ -34,6 +34,14 @@ see <http://www.gnu.org/licenses/>
 #define MAXKMERLENGTH 32
 #endif
 
+// some multipliers
+
+/** something occuring twice is repeated */
+#define REPEAT_MULTIPLIER 2
+
+/** 3 standard deviations on both sides of a normal distribution include most points */
+#define FRAGMENT_MULTIPLIER 3
+
 #include <stdlib.h> /* for __WORDSIZE hopefully */
 #include <stdint.h>
 

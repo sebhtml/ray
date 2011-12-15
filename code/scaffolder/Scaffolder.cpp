@@ -378,11 +378,20 @@ void Scaffolder::sendSummary(){
 
 void Scaffolder::performSummary(){
 
-	uint64_t sum=0;
 
 	#ifdef ASSERT
 	assert(m_contigId < (int)m_contigs->size());
 	assert(m_vertexCoverageValues.size() == (*m_contigs)[m_contigId].size());
+	#endif
+
+	uint64_t sum=0;
+
+	int peakCoverage=getMode(&m_vertexCoverageValues);
+
+	int repeatCoverage=peakCoverage*REPEAT_MULTIPLIER;
+
+	#ifdef CONFIG_USE_COVERAGE_DISTRIBUTION
+	repeatCoverage=m_parameters->getRepeatCoverage();
 	#endif
 
 	map<int,int> distribution;
@@ -391,7 +400,7 @@ void Scaffolder::performSummary(){
 		int coverageValue=m_vertexCoverageValues[i];
 		distribution[coverageValue]++;
 
-		if(coverageValue < m_parameters->getRepeatCoverage()){
+		if(coverageValue < repeatCoverage){
 			sum+=coverageValue;
 			n++;
 		}
@@ -407,7 +416,7 @@ void Scaffolder::performSummary(){
 	for(int i=0;i<(int)m_vertexCoverageValues.size();i++){
 		int coverageValue=m_vertexCoverageValues[i];
 		int diff=coverageValue-mean;
-		if(coverageValue < m_parameters->getRepeatCoverage()){
+		if(coverageValue < repeatCoverage){
 			sumOfSquares+= diff*diff;
 		}
 	}
@@ -418,17 +427,24 @@ void Scaffolder::performSummary(){
 
 	int standardDeviation=(int)sqrt(sumOfSquares);
 
+/*
 	int peakCoverage=getMode(&m_vertexCoverageValues);
-	int repeatCoverage=2*peakCoverage;
+	int repeatCoverage=REPEAT_MULTIPLIER*peakCoverage;
+*/
 
-	cout<<"contig: "<<(*m_contigNames)[m_contigId]<<" vertices: "<<m_vertexCoverageValues.size()<<" averageCoverage: "<<mean<<" standardDeviation: "<<standardDeviation<<" peakCoverage: "<<peakCoverage<<" repeatCoverage: "<<repeatCoverage<<endl;
+	cout<<"contig: "<<(*m_contigNames)[m_contigId]<<" vertices: "<<m_vertexCoverageValues.size();
+	cout<<" averageCoverage: "<<mean<<" standardDeviation: "<<standardDeviation;
 
+	cout<<" peakCoverage: "<<peakCoverage<<" repeatCoverage: "<<repeatCoverage<<endl;
+
+/*
 	#ifdef SCAFFOLDER_SHOW_DISTRIBUTION
 	cout<<"Distribution "<<endl;
 	for(map<int,int>::iterator i=distribution.begin();i!=distribution.end();i++){
 		cout<<" "<<i->first<<"	"<<i->second<<endl;
 	}
 	#endif
+*/
 
 	/* write coverage values to a file if requested */
 	if(m_parameters->hasOption("-write-contig-paths")){
@@ -489,6 +505,11 @@ void Scaffolder::performSummary(){
 						  && (mean-numberOfStandardDeviations*standardDeviation) <= coverage2 && coverage2 <= (mean+numberOfStandardDeviations*standardDeviation)){
 							veryRawDistances.push_back(distance);
 						}
+/*
+						if(coverage1 < repeatCoverage && coverage2 < repeatCoverage){
+							veryRawDistances.push_back(distance);
+						}
+*/
 					}
 
 					int count=veryRawDistances.size();
@@ -620,7 +641,8 @@ void Scaffolder::processVertex(Kmer*vertex){
 		}
 
 	}else if(m_coverageReceived){
-		if(m_receivedCoverage<m_parameters->getRepeatCoverage()){
+		/* anyway these entries will be checked after anyway... */
+		if(1 /*m_receivedCoverage<m_parameters->getRepeatCoverage()*/){
 			if(!m_initialisedFetcher){
 				m_readFetcher.constructor(vertex,m_outboxAllocator,m_inbox,
 				m_outbox,m_parameters,m_virtualCommunicator,m_workerId);
@@ -790,8 +812,9 @@ void Scaffolder::processAnnotation(){
 		invalidVertex=false;
 
 		/* the hit is invalid */
-		if((*m_contigNames)[m_contigId]==m_pairedForwardDirectionName
-		||!(m_pairedForwardMarkerCoverage<m_parameters->getRepeatCoverage())
+		if((*m_contigNames)[m_contigId]==m_pairedForwardDirectionName // it maps on the same, quite useless...
+
+		/*||!(m_pairedForwardMarkerCoverage<m_parameters->getRepeatCoverage() )*/
 		|| !m_pairedForwardHasDirection || invalidVertex){
 			m_forwardDirectionLengthRequested=true;
 			m_forwardDirectionLengthReceived=true;
@@ -1005,7 +1028,9 @@ Case 13. (allowed)
 
 		/* the hit is invalid */
 		if((*m_contigNames)[m_contigId]==m_pairedReverseDirectionName
-		||!(m_pairedReverseMarkerCoverage<m_parameters->getRepeatCoverage())
+
+		// the coverage will be assessed later, I think. 
+		/* ||!(m_pairedReverseMarkerCoverage<m_parameters->getRepeatCoverage())  */
 		|| !m_pairedReverseHasDirection || invalidVertex){
 			m_reverseDirectionLengthRequested=true;
 			m_reverseDirectionLengthReceived=true;
