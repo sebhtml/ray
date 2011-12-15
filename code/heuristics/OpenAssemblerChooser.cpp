@@ -22,16 +22,16 @@
 #include<heuristics/OpenAssemblerChooser.h>
 #include<heuristics/Chooser.h>
 
-void OpenAssemblerChooser::updateMultiplicators(int m_peakCoverage){
+void OpenAssemblerChooser::updateMultiplicators(){
 	m_singleEndMultiplicator=2.0;
 	m_pairedEndMultiplicator=2.0;
 }
 
-void OpenAssemblerChooser::constructor(int m_peakCoverage){
-	updateMultiplicators(m_peakCoverage);
+void OpenAssemblerChooser::constructor(){
+	updateMultiplicators();
 }
 
-int OpenAssemblerChooser::choose(ExtensionData*ed,Chooser*m_c,int minimumCoverage,int m_maxCoverage,
+int OpenAssemblerChooser::choose(ExtensionData*ed,Chooser*m_c,int minimumCoverage,
 Parameters*parameters){
 
 	/** filter invalid choices */
@@ -164,7 +164,7 @@ Parameters*parameters){
 	}
 
 
-	m_c->chooseWithPairedReads(ed,minimumCoverage,m_maxCoverage,m_pairedEndMultiplicator,&battleVictories,parameters);
+	m_c->chooseWithPairedReads(ed,m_pairedEndMultiplicator,&battleVictories,parameters);
 	
 	int pairedChoice=getWinner(&battleVictories,ed->m_enumerateChoices_outgoingEdges.size());
 
@@ -178,11 +178,13 @@ Parameters*parameters){
 	if(pairedChoice!=IMPOSSIBLE_CHOICE){
 		return pairedChoice;
 	}else{
+		/** TODO: verify it this really improves assemblies . */
 		if(ed->m_EXTENSION_extension.size()>50000){
 			if(!parameters->hasPairedReads()){
 				return IMPOSSIBLE_CHOICE;
 			}
 		}
+
 		// if both have paired reads and that is not enough for one of them to win, then abort
 		int withPairedReads=0;
 		
@@ -260,6 +262,7 @@ int OpenAssemblerChooser::getWinner(vector<set<int> >*battleVictories,int choice
 
 void OpenAssemblerChooser::chooseWithCoverage(ExtensionData*ed,int minCoverage,vector<set<int> >*battleVictories){
 	for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
+
 		int coverageForI=ed->m_EXTENSION_coverages.at(i);
 		Kmer key=ed->m_enumerateChoices_outgoingEdges[i];
 

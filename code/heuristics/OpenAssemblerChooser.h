@@ -41,7 +41,7 @@ class OpenAssemblerChooser{
 
 	double m_singleEndMultiplicator;
 	double m_pairedEndMultiplicator;
-	void updateMultiplicators(int a);
+	void updateMultiplicators();
 
 	int getWinner(vector<set<int> >*battleVictories,int choices);
 	
@@ -50,9 +50,10 @@ class OpenAssemblerChooser{
  */
 	void chooseWithCoverage(ExtensionData*ed,int minCoverage,vector<set<int> >*battleVictories);
 public:
-	int choose(ExtensionData*m_ed,Chooser*m_c,int m_minimumCoverage,int m_maxCoverage,
+	int choose(ExtensionData*m_ed,Chooser*m_c,int m_minimumCoverage,
 	Parameters*parameters);
-	void constructor(int peak);
+
+	void constructor();
 
 };
 

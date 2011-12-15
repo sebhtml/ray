@@ -782,7 +782,7 @@ void MessageProcessor::call_RAY_MPI_TAG_SEND_COVERAGE_VALUES(Message*message){
 	m_parameters->setMinimumCoverage(incoming[0]);
 	m_parameters->setPeakCoverage(incoming[1]);
 	m_parameters->setRepeatCoverage(incoming[2]);
-	m_oa->constructor(m_parameters->getPeakCoverage());
+	m_oa->constructor();
 
 	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_SEND_COVERAGE_VALUES_REPLY,m_rank);
 	m_outbox->push_back(aMessage);

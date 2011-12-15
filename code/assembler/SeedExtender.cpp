@@ -34,6 +34,7 @@
 #include <assert.h>
 #include <heuristics/BubbleTool.h>
 #include <cryptography/crypto.h>
+#include <math.h> /* sqrt */
 using namespace std;
 
 /** extend the seeds */
@@ -516,9 +517,18 @@ Presently, insertions or deletions up to 8 are supported.
 				//int choice=IMPOSSIBLE_CHOICE; 
 				int choice=chooseWithSeed();
 
+				// square root sounds better than divided by something...
+				int minimumCoverageToProvide=sqrt(m_currentPeakCoverage);
+
+				// old behavior
+				#ifdef CONFIG_USE_COVERAGE_DISTRIBUTION
+				minimumCoverageToProvide=minimumCoverage;
+				#endif
+
 				// else, do a paired-end or single-end lookup if reads are in range.
-				if(choice == IMPOSSIBLE_CHOICE &&  ed->m_EXTENSION_readsInRange.size()>0)
-					choice=(*oa).choose(ed,&(*chooser),minimumCoverage,(maxCoverage),m_parameters);
+				if(choice == IMPOSSIBLE_CHOICE &&  ed->m_EXTENSION_readsInRange.size()>0){
+					choice=(*oa).choose(ed,&(*chooser),minimumCoverageToProvide,m_parameters);
+				}
 
 				if(choice!=IMPOSSIBLE_CHOICE){
 					if(m_parameters->showExtensionChoice()){
@@ -1124,6 +1134,11 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				ed->m_flowNumber++;
 
 				m_currentPeakCoverage=m_ed->m_EXTENSION_currentSeed.getPeakCoverage();
+
+				// Ray v1.7 and earlier have CONFIG_USE_COVERAGE_DISTRIBUTION=y behavior
+				#ifdef CONFIG_USE_COVERAGE_DISTRIBUTION
+				m_currentPeakCoverage=m_parameters->getPeakCoverage();
+				#endif
 
 				cout<<"Current peak coverage -> "<<m_currentPeakCoverage<<endl;
 			}
