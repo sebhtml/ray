@@ -299,7 +299,6 @@ bool MessageRouter::isRoutingTag(Tag tag){
 }
 
 /**
- * * bits 0 to 7: tag (8 bits, values from 0 to 255, 256 possible values)
  */
 int MessageRouter::getTag(int tag){
 	uint64_t data=tag;
@@ -309,7 +308,6 @@ int MessageRouter::getTag(int tag){
 }
 
 /**
- * * bits 8 to 18: true source (11 bits, values from 0 to 2047, 2048 possible values)
  */
 int MessageRouter::getSource(int tag){
 	uint64_t data=tag;
@@ -319,7 +317,6 @@ int MessageRouter::getSource(int tag){
 }
 
 /**
- * * bits 19 to 29: true destination (11 bits, values from 0 to 2047, 2048 possible values)
  */
 int MessageRouter::getDestination(int tag){
 	uint64_t data=tag;
