@@ -695,8 +695,11 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 		}
 */
 
+		int maximumNumberOfFlowCycles=8;
+
 		// no choice possible...
-		if((int)ed->m_EXTENSION_extension.size() > ed->m_previouslyFlowedVertices && mustFlowAgain){
+		if((int)ed->m_EXTENSION_extension.size() > ed->m_previouslyFlowedVertices && mustFlowAgain 
+		&& ed->m_flowNumber < maximumNumberOfFlowCycles){
 
 			MACRO_COLLECT_PROFILING_INFORMATION();
 
