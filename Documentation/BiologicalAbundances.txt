@@ -1,0 +1,78 @@
+
+With Ray, you can generate biological abundances.
+
+
+For example, let's say we have 1_1.fastq and 1_2.fastq containing a lot of sequences
+from a given microbiome. To get the biological abundances of all NCBI viruses and
+all NCBI bacteria as well as identified contigs, you can use Ray for that.
+
+For any species that you want to check in your sample, you need to provided a single fasta
+file. This file can contain chromosomes, genes, or both.
+
+Now, you need a directory containing all viruses in fasta format (one virus per file) and
+another directory containing all bacteria in fasta format (one bacterium per file as well).
+
+These can be downloaded from NCBI right awayé
+
+== Command ==
+
+mpiexec -n 64 Ray \
+-p 1_1.fastq -p 1_2.fastq \
+-search NCBI-bacteria-directory \
+-search NCBI-viruses-directory \
+-o RayMicrobiomeAnalysis
+
+== Input directories ==
+
+NCBI-bacteria-directory/ecoli.fasta
+NCBI-bacteria-directory/spneumo.fasta
+...
+
+NCBI-viruses-directory/phix.fasta
+...
+
+
+== Output ==
+
+RayMicrobiomeAnalysis/ contains the usual files.
+
+For a list of output files, see Ray -help
+
+The new files produced by the -search option are:
+
+
+RayMicrobiomeAnalysis/
+	BiologicalAbundances/
+		DenovoAssembly/
+			Contigs.tsv
+			Identifications.tsv
+
+		NCBI-bacteria-directory/
+			Summary.tsv
+			ecoli.tsv
+			spneumo.tsv
+			...
+
+		NCBI-viruses-directory/
+			Summary.tsv
+			phix.tsv
+			...
+
+Each of these .tsv files (except Identifications which contains
+identifications for contigs) contains these fields:
+
+
+Category	SequenceName	LengthInKmers	Matches	Ratio	ModeKmerCoverage
+
+
+For any category, there is a line with SequenceName set to 'All'. This line summarizes
+the corresponding category.
+
+The Summary.tsv files contain all the summary lines of the corresponding search
+directory.
+
+
+Identifications.tsv contains things that are similar to contigs.
+Each line has these fields:
+
+Contig	LengthInKmers	Category	SequenceName	LengthInKmers	Matches	Ratio
