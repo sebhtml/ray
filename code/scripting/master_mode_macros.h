@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2011  Sébastien Boisvert
+    Copyright (C) 2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -18,6 +18,8 @@
 	see <http://www.gnu.org/licenses/>
 
 */
+
+// this is the list of a master modes, including useless legacy ones
 
 MACRO_LIST_ITEM( RAY_MASTER_MODE_LOAD_CONFIG )
 MACRO_LIST_ITEM( RAY_MASTER_MODE_LOAD_SEQUENCES )
@@ -50,4 +52,4 @@ MACRO_LIST_ITEM( RAY_MASTER_MODE_WRITE_KMERS )
 MACRO_LIST_ITEM( RAY_MASTER_MODE_KILL_ALL_MPI_RANKS )
 MACRO_LIST_ITEM( RAY_MASTER_MODE_TEST_NETWORK )
 MACRO_LIST_ITEM( RAY_MASTER_MODE_COUNT_FILE_ENTRIES )
-
+MACRO_LIST_ITEM( RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS )

@@ -26,7 +26,7 @@
 #define MACRO_LIST_ITEM(x) x,
 
 enum RayMasterMode {
-#include <core/master_mode_macros.h>
+#include <scripting/master_mode_macros.h>
 RAY_MASTER_MODE_DUMMY
 };
 

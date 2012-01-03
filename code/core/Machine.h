@@ -66,6 +66,8 @@
 #include <assembler/JoinerTaskCreator.h>
 #include <communication/MessageRouter.h>
 #include <scheduling/SwitchMan.h>
+#include <search-engine/Searcher.h>
+#include <scripting/RayScriptEngine.h>
 using namespace std;
 
 
@@ -83,7 +85,11 @@ class Machine{
 
 	MessageRouter m_router;
 
+	Searcher m_searcher;
+
 	SwitchMan m_switchMan;
+
+	RayScriptEngine m_scriptEngine;
 
 	Profiler m_profiler2;
 	Profiler*m_profiler;
@@ -290,9 +296,9 @@ class Machine{
 
 	#define MACRO_LIST_ITEM(x) void call_ ## x();
 	/** master mode callback  prototypes */
-	#include <core/master_mode_macros.h>
+	#include <scripting/master_mode_macros.h>
 	/** slave mode callback prototypes */
-	#include <core/slave_mode_macros.h>
+	#include <scripting/slave_mode_macros.h>
 	#undef MACRO_LIST_ITEM
 	
 public:
@@ -302,6 +308,8 @@ public:
 	Machine(int argc,char**argv);
 	void start();
 	~Machine();
+
+
 };
 
 

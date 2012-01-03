@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -99,6 +99,8 @@ Machine::Machine(int argc,char**argv){
 
 void Machine::start(){
 	m_partitioner.constructor(&m_outboxAllocator,&m_inbox,&m_outbox,&m_parameters,&m_slave_mode,&m_master_mode);
+
+	m_searcher.constructor(&m_parameters,&m_outbox,&m_master_mode,&m_timePrinter,&m_switchMan,&m_slave_mode);
 
 	m_startingTimeMicroseconds = getMicroseconds();
 
@@ -323,64 +325,15 @@ void Machine::start(){
 
 	m_virtualCommunicator.constructor(m_rank,m_size,&m_outboxAllocator,&m_inbox,&m_outbox);
 
-	/************************************************************************************/
-	/** configure the virtual communicator. */
-	/* ## concatenates 2 symbols */
-
-	#define MACRO_LIST_ITEM(x,y) \
-	m_virtualCommunicator.setReplyType( x, x ## _REPLY ); \
-	m_virtualCommunicator.setElementsPerQuery( x, y );
-
-	/* define the number of words for particular message tags */
-
-	MACRO_LIST_ITEM( RAY_MPI_TAG_GET_CONTIG_CHUNK,		MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t) )
-	MACRO_LIST_ITEM( RAY_MPI_TAG_REQUEST_VERTEX_READS, 		max(5,KMER_U64_ARRAY_SIZE+1) )
-	MACRO_LIST_ITEM( RAY_MPI_TAG_GET_READ_MATE, 		4 )
-	MACRO_LIST_ITEM( RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,	KMER_U64_ARRAY_SIZE )
-	MACRO_LIST_ITEM( RAY_MPI_TAG_ATTACH_SEQUENCE,		KMER_U64_ARRAY_SIZE+4 )
-	MACRO_LIST_ITEM( RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,	max(2,KMER_U64_ARRAY_SIZE))
-	MACRO_LIST_ITEM( RAY_MPI_TAG_HAS_PAIRED_READ,		1 )
-	MACRO_LIST_ITEM( RAY_MPI_TAG_GET_READ_MARKERS,		3+2*KMER_U64_ARRAY_SIZE )
-	MACRO_LIST_ITEM( RAY_MPI_TAG_GET_PATH_LENGTH,		1 )
-	MACRO_LIST_ITEM( RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION,	max(KMER_U64_ARRAY_SIZE,5) )
-	MACRO_LIST_ITEM( RAY_MPI_TAG_SCAFFOLDING_LINKS, 		7 )
-	MACRO_LIST_ITEM( RAY_MPI_TAG_CONTIG_INFO,			2)
-	MACRO_LIST_ITEM( RAY_MPI_TAG_ASK_READ_LENGTH, 		3 )
-	MACRO_LIST_ITEM( RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE, KMER_U64_ARRAY_SIZE )
-	MACRO_LIST_ITEM( RAY_MPI_TAG_ASK_VERTEX_PATH, (KMER_U64_ARRAY_SIZE + 2) )
-	MACRO_LIST_ITEM( RAY_MPI_TAG_GET_PATH_VERTEX, max(2,KMER_U64_ARRAY_SIZE) )
-
-	#undef MACRO_LIST_ITEM
-
-	/* set reply-map for other tags too */
-	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_VERTEX_INFO,RAY_MPI_TAG_VERTEX_INFO_REPLY);
-	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_REQUEST_READ_SEQUENCE, RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY);
-	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY);
-	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_TEST_NETWORK_MESSAGE,RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY);
+	m_scriptEngine.configureVirtualCommunicator(&m_virtualCommunicator);
 
 	/***********************************************************************************/
 	/** initialize the VirtualProcessor */
 	m_virtualProcessor.constructor(&m_outbox,&m_inbox,&m_outboxAllocator,&m_parameters,
 		&m_virtualCommunicator);
 
-	/************************************************************************************/
-	// configure the switch man
-	// this is where steps can be added or removed.
 
-	vector<RayMasterMode> steps;
-
-	#define MACRO_LIST_ITEM(x) \
-	steps.push_back(x);
-
-	MACRO_LIST_ITEM( RAY_MASTER_MODE_TEST_NETWORK )
-	MACRO_LIST_ITEM( RAY_MASTER_MODE_COUNT_FILE_ENTRIES )
-
-	#undef MACRO_LIST_ITEM
-
-	for(int i=0;i<(int)steps.size()-1;i++){
-		m_switchMan.addNextMasterMode(steps[i],steps[i+1]);
-	}
-
+	m_scriptEngine.configureSwitchMan(&m_switchMan);
 
 	m_library.constructor(getRank(),&m_outbox,&m_outboxAllocator,&m_sequence_id,&m_sequence_idInFile,
 		m_ed,getSize(),&m_timePrinter,&m_slave_mode,&m_master_mode,
@@ -772,19 +725,24 @@ void Machine::processMessages(){
 	assert(m_inbox.size()>=0&&m_inbox.size()<=1);
 	#endif
 
+	if(m_inbox.size()==0)
+		return;
+
+
 	// if routing is enabled, we want to strip the routing tags if it
 	// is required
-	if(m_router.isEnabled() && m_inbox.size()>0){
-		m_router.routeIncomingMessages();
-
-		// if the message has routing tag, we don't need to process it...
-		if(m_router.isRoutingTag(m_inbox[0]->getTag()))
+	if(m_router.isEnabled()){
+		if(m_router.routeIncomingMessages()){
+			// if the message has routing tag, we don't need to process it...
 			return;
+		}
 	}
 
-	if(m_inbox.size()>0){
-		m_mp.processMessage((m_inbox[0]));
-	}
+	// check if the tag is in the list of slave switches
+	m_switchMan.openSlaveModeLocally(m_inbox[0]->getTag(),&m_slave_mode,m_rank);
+
+	// process the message as is
+	m_mp.processMessage((m_inbox[0]));
 }
 
 void Machine::sendMessages(){
@@ -892,6 +850,14 @@ void Machine::call_RAY_MASTER_MODE_LOAD_CONFIG(){
 	}
 
 	m_master_mode=RAY_MASTER_MODE_TEST_NETWORK;
+}
+
+void Machine::call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS(){
+	m_searcher.countElements_masterMethod();
+}
+
+void Machine::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
+	m_searcher.countElements_slaveMethod();
 }
 
 void Machine::call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES(){
@@ -1828,12 +1794,15 @@ Machine::~Machine(){
 
 void Machine::assignMasterHandlers(){
 	#define MACRO_LIST_ITEM(x) m_master_methods[x]=&Machine::call_ ## x ;
-	#include <core/master_mode_macros.h>
+	#include <scripting/master_mode_macros.h>
 	#undef MACRO_LIST_ITEM
+
 }
 
 void Machine::assignSlaveHandlers(){
 	#define MACRO_LIST_ITEM(x) m_slave_methods[x]=&Machine::call_ ## x ;
-	#include <core/slave_mode_macros.h>
+	#include <scripting/slave_mode_macros.h>
 	#undef MACRO_LIST_ITEM
 }
+
+

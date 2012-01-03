@@ -101,13 +101,14 @@ void MessageRouter::routeOutcomingMessages(){
 
 /**
  * route incoming messages 
+ * \returns true if rerouted something.
  */
-void MessageRouter::routeIncomingMessages(){
+bool MessageRouter::routeIncomingMessages(){
 	int numberOfMessages=m_inbox->size();
 
 	// we have no message
 	if(numberOfMessages==0)
-		return;
+		return false;
 
 	// otherwise, we have exactly one precious message.
 	
@@ -121,7 +122,7 @@ void MessageRouter::routeIncomingMessages(){
 		cout<<__func__<<" message has no routing tag, nothing to do"<<endl;
 		#endif
 
-		return;
+		return false;
 	}
 
 	// we have a routing tag
@@ -144,7 +145,7 @@ void MessageRouter::routeIncomingMessages(){
 		Tag trueTag=getTag(routingTag);
 		aMessage->setTag(trueTag);
 
-		return;
+		return false;
 	}
 
 	#ifdef ASSERT
@@ -174,6 +175,9 @@ void MessageRouter::routeIncomingMessages(){
 
 	// we forward the message
 	relayMessage(aMessage,nextRank);
+
+	// propagate the information about routing
+	return true;
 }
 
 /**

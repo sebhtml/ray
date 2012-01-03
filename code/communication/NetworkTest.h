@@ -77,6 +77,8 @@ class NetworkTest{
 	/** the master mode, always RAY_SLAVE_MODE_DO_NOTHING for rank >0 */
 	int *m_masterMode;
 
+	bool m_sentData;
+
 	/** message-passing interface rank */
 	int m_rank;
 	/** number of ranks */

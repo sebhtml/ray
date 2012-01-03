@@ -34,8 +34,8 @@ extern const char* MESSAGES[];
 
 #define MACRO_LIST_ITEM(element) element,
 
-enum {
-#include <communication/mpi_tag_macros.h>
+enum RayMPITag {
+#include <scripting/mpi_tag_macros.h>
 RAY_MPI_TAG_DUMMY
 };
 

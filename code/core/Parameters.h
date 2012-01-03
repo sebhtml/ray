@@ -39,6 +39,8 @@ using namespace std;
  */
 class Parameters{
 
+	vector<string> m_searchDirectories;
+
 	int m_degree;
 
 	string m_connectionType;
@@ -219,6 +221,8 @@ public:
 	string getConnectionType();
 
 	int getRoutingDegree();
+
+	vector<string>*getSearchDirectories();
 };
 
 #endif

@@ -23,26 +23,61 @@
 
 #include <map>
 #include <core/master_modes.h>
+#include <structures/StaticVector.h>
+#include <communication/Message.h>
 using namespace std;
 
+/**
+ * the switchman controls the workflow on all ranks
+ * he is the one who decides when something must be done.
+ * \author Sébastien Boisvert
+ * \date 2012-01-02
+ */
 class SwitchMan{
-	int m_target;
+	/** number of cores */
+	int m_size;
 	int m_counter;
 
+/** a list of switches describing the order of the master modes */
 	map<int,int> m_switches;
 
+/** a table to convert a tag to a slave mode */
+	map<int,int> m_tagToSlaveModeTable;
+
+/** run some assertions */
 	void runAssertions();
 
 public:
 	void constructor(int numberOfRanks);
 	void reset();
 	bool allRanksAreReady();
-	void addReadyRank();
 
 	int getNextMasterMode(int currentMode);
 
 	void addNextMasterMode(int a,int b);
 
+	void addSlaveSwitch(int tag,int slaveMode);
+
+	/** remotely open a slave mode */
+	void openSlaveMode(RayMPITag tag,StaticVector*outbox,Rank source,Rank destination);
+
+	/** open a slave mode locally */
+	void openSlaveModeLocally(int tag,int*slaveMode,int rank);
+
+	/** close a slave mode remotely */
+	void closeSlaveMode(int source);
+
+	/** locally close a slave mode */
+	void closeSlaveModeLocally(StaticVector*outbox,int*slaveMode,Rank source);
+
+	/** begin a master mode */
+	void openMasterMode(RayMPITag tag,StaticVector*outbox,Rank source);
+
+	/** close a master mode */
+	void closeMasterMode(int*masterMode);
+
+	/** send an empty message */
+	void sendEmptyMessage(StaticVector*outbox,Rank source,Rank destination,RayMPITag tag);
 };
 
 #endif

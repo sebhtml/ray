@@ -108,6 +108,10 @@ void NetworkTest::slaveWork(){
 
 	if(m_currentTestMessage<m_numberOfTestMessages){
 		if(!m_sentCurrentTestMessage){
+
+			if(m_currentTestMessage==0)
+				m_sentData=false;
+
 			uint64_t startingTimeMicroseconds=getMicroseconds();
 
 			/** send to a random rank */
@@ -129,7 +133,7 @@ void NetworkTest::slaveWork(){
 			m_sentCurrentTestMessage=false;
 			m_currentTestMessage++;
 		}
-	}else{
+	}else if(!m_sentData){
 		// we finished gathering data.
 		// now we compute the mode for the latency
 		// TODO: this should probably done after everyone has finished
@@ -142,10 +146,13 @@ void NetworkTest::slaveWork(){
 		message[0]=latency;
 		char*destination=(char*)(message+1);
 		strcpy(destination,m_name->c_str());
-		Message aMessage(message,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),MASTER_RANK,RAY_MPI_TAG_SWITCH_MAN_SIGNAL,m_rank);
+		Message aMessage(message,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),MASTER_RANK,RAY_MPI_TAG_TEST_NETWORK_REPLY,m_rank);
 		m_outbox->push_back(aMessage);
-		(*m_slaveMode)=RAY_SLAVE_MODE_DO_NOTHING;
 
+		m_sentData=true;
+
+	}else if(m_inbox->hasMessage(RAY_MPI_TAG_TEST_NETWORK_REPLY_REPLY)){
+		m_switchMan->closeSlaveModeLocally(m_outbox,m_slaveMode,m_parameters->getRank());
 	}
 }
 
@@ -215,15 +222,11 @@ void NetworkTest::masterWork(){
 	if(!m_initialisedNetworkTest){
 		cout<<"Rank 0: testing the network, please wait..."<<endl;
 		cout<<endl;
-		for(int i=0;i<m_size;i++){
-			Message aMessage(NULL,0,i,RAY_MPI_TAG_TEST_NETWORK,m_rank);
-			m_outbox->push_back(aMessage);
-		}
 
-		m_switchMan->reset();
+		m_switchMan->openMasterMode(RAY_MPI_TAG_TEST_NETWORK,m_outbox,m_rank);
 
 		m_initialisedNetworkTest=true;
-	}else if(m_inbox->size()>0&&(*m_inbox)[0]->getTag()==RAY_MPI_TAG_SWITCH_MAN_SIGNAL){
+	}else if(m_inbox->size()>0&&(*m_inbox)[0]->getTag()==RAY_MPI_TAG_TEST_NETWORK_REPLY){
 		int rank=m_inbox->at(0)->getSource();
 		int latency=m_inbox->at(0)->getBuffer()[0];
 		uint64_t*buffer=m_inbox->at(0)->getBuffer();
@@ -231,6 +234,9 @@ void NetworkTest::masterWork(){
 		string stringName=name;
 		m_names[rank]=stringName;
 		m_latencies[rank]=latency;
+
+		m_switchMan->sendEmptyMessage(m_outbox,m_rank,rank,RAY_MPI_TAG_TEST_NETWORK_REPLY_REPLY);
+
 	}else if(m_switchMan->allRanksAreReady()){
 		ostringstream file;
 		file<<m_parameters->getPrefix();
@@ -262,7 +268,7 @@ void NetworkTest::masterWork(){
 		f.close();
 		m_latencies.clear();
 
-		(*m_masterMode)=m_switchMan->getNextMasterMode(*m_masterMode);
+		m_switchMan->closeMasterMode(m_masterMode);
 
 		cout<<endl;
 		cout<<"Rank "<<m_parameters->getRank()<<" wrote "<<file.str()<<endl;

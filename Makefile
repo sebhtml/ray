@@ -1,8 +1,8 @@
-VERSION = 1
-PATCHLEVEL = 7
-SUBLEVEL = 1
-EXTRAVERSION = 
-NAME = Deep Curtain of Broad Ranges
+VERSION = 2
+PATCHLEVEL = 0
+SUBLEVEL = 0
+EXTRAVERSION = -devel
+NAME = Dark Astrocyte of Knowledge
 
 RAY_VERSION = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)
 
@@ -177,6 +177,11 @@ obj-y += code/scheduling/VirtualProcessor.o
 obj-y += code/scheduling/TaskCreator.o
 obj-y += code/scheduling/SwitchMan.o
 
+# search engine
+obj-y += code/search-engine/Searcher.o
+
+obj-y += code/scripting/RayScriptEngine.o
+
 #formats
 obj-y += code/format/ColorSpaceDecoder.o code/format/ColorSpaceLoader.o code/format/FastaLoader.o \
 code/format/FastqLoader.o code/format/SffLoader.o \
@@ -277,7 +282,7 @@ showOptions:
 	
 # how to make Ray
 Ray: showOptions $(obj-y)
-	$(MPICXX) $(LDFLAGS) $(obj-y) -o $@
+	@$(MPICXX) $(LDFLAGS) $(obj-y) -o $@
 	@echo MPICXX $@
 	@echo $(PREFIX) > PREFIX
 	@echo $(TARGETS) > TARGETS

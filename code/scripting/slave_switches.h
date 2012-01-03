@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C) 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -16,20 +16,12 @@
     You have received a copy of the GNU General Public License
     along with this program (COPYING).  
 	see <http://www.gnu.org/licenses/>
+
 */
 
-#ifndef _slave_modes
-#define _slave_modes
+// this is a list of wake-up switches for slave modes
 
-extern const char* SLAVE_MODES[];
+MACRO_LIST_ITEM( RAY_MPI_TAG_TEST_NETWORK, RAY_SLAVE_MODE_TEST_NETWORK )
+MACRO_LIST_ITEM( RAY_MPI_TAG_COUNT_SEARCH_ELEMENTS, RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS )
 
-#define MACRO_LIST_ITEM(element) element,
 
-enum RaySlaveMode {
-#include <scripting/slave_mode_macros.h>
-RAY_SLAVE_MODE_DUMMY
-};
-
-#undef MACRO_LIST_ITEM
-
-#endif

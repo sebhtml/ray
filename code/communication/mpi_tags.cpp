@@ -27,7 +27,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #define MACRO_LIST_ITEM(element) #element,
 
 const char* MESSAGES[]={
-#include <communication/mpi_tag_macros.h>
+#include <scripting/mpi_tag_macros.h>
 "RAY_MPI_TAG_DUMMY"
 };
 

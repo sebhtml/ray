@@ -138,7 +138,7 @@ public:
 /**
  * Callback method to call after receiving messages from the network into the inbox
  */
-	void routeIncomingMessages();
+	bool routeIncomingMessages();
 
 	bool isEnabled();
 

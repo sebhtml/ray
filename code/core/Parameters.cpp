@@ -283,6 +283,10 @@ void Parameters::parseCommands(){
 	setPeakCoverage.insert("-peakCoverage");
 	setRepeatCoverage.insert("-repeatCoverage");
 
+
+	set<string> searchOption;
+	searchOption.insert("-search");
+
 	vector<set<string> > toAdd;
 	toAdd.push_back(showExtensionChoiceOption);
 	toAdd.push_back(setRepeatCoverage);
@@ -295,6 +299,7 @@ void Parameters::parseCommands(){
 	toAdd.push_back(kmerSetting);
 	toAdd.push_back(routingDegree);
 	toAdd.push_back(interleavedCommands);
+	toAdd.push_back(searchOption);
 	toAdd.push_back(reduceMemoryUsage);
 	toAdd.push_back(memoryMappedFileCommands);
 	toAdd.push_back(connectionType);
@@ -629,6 +634,21 @@ void Parameters::parseCommands(){
 			}
 			token=m_commands[i];
 			m_degree=atoi(token.c_str());
+
+		}else if(searchOption.count(token)>0){
+			i++;
+			int items=m_commands.size()-i;
+
+			if(items<1){
+				if(m_rank==MASTER_RANK){
+					cout<<"Error: "<<token<<" needs 1 item, you provided only "<<items<<endl;
+				}
+				m_error=true;
+				return;
+			}
+			token=m_commands[i];
+
+			m_searchDirectories.push_back(token);
 
 		}else if(kmerSetting.count(token)>0){
 			i++;
@@ -1574,4 +1594,8 @@ string Parameters::getConnectionType(){
 
 int Parameters::getRoutingDegree(){
 	return m_degree;
+}
+
+vector<string>*Parameters::getSearchDirectories(){
+	return &m_searchDirectories;
 }

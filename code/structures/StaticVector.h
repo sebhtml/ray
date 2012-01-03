@@ -23,6 +23,7 @@
 #define _StaticVector
 
 #include <communication/Message.h>
+#include <communication/mpi_tags.h>
 
 /**
  * A static vector of Message.
@@ -43,6 +44,8 @@ public:
 	int size();
 	void clear();
 	void constructor(int size,int type,bool show);
+
+	bool hasMessage(RayMPITag tag);
 };
 
 #endif

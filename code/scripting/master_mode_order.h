@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C) 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -16,20 +16,13 @@
     You have received a copy of the GNU General Public License
     along with this program (COPYING).  
 	see <http://www.gnu.org/licenses/>
+
 */
 
-#ifndef _slave_modes
-#define _slave_modes
+// the Ray engine will run these master modes in sequence
+// for those who support the feature.
 
-extern const char* SLAVE_MODES[];
+MACRO_LIST_ITEM( RAY_MASTER_MODE_TEST_NETWORK )
+MACRO_LIST_ITEM( RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS )
+MACRO_LIST_ITEM( RAY_MASTER_MODE_COUNT_FILE_ENTRIES )
 
-#define MACRO_LIST_ITEM(element) element,
-
-enum RaySlaveMode {
-#include <scripting/slave_mode_macros.h>
-RAY_SLAVE_MODE_DUMMY
-};
-
-#undef MACRO_LIST_ITEM
-
-#endif

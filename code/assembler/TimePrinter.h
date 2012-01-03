@@ -22,6 +22,8 @@
 #ifndef _TimePrinter
 #define _TimePrinter
 
+
+// TODO: move this class in the core
 #include<time.h>
 #include<vector>
 #include <fstream>

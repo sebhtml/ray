@@ -728,9 +728,7 @@ void MessageProcessor::call_RAY_MPI_TAG_TEST_NETWORK_MESSAGE(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY(Message*message){}
 
-void MessageProcessor::call_RAY_MPI_TAG_TEST_NETWORK(Message*message){
-	(*m_mode)=RAY_SLAVE_MODE_TEST_NETWORK;
-}
+void MessageProcessor::call_RAY_MPI_TAG_TEST_NETWORK(Message*message){}
 
 void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message){
 	m_subgraph->getKmerAcademy()->completeResizing();
@@ -2384,7 +2382,7 @@ MessageProcessor::MessageProcessor(){
 
 void MessageProcessor::assignHandlers(){
 	#define MACRO_LIST_ITEM(x) m_methods[x]=&MessageProcessor::call_ ## x ;
-	#include <communication/mpi_tag_macros.h>
+	#include <scripting/mpi_tag_macros.h>
 	#undef MACRO_LIST_ITEM
 }
 
@@ -2404,10 +2402,13 @@ void MessageProcessor::call_RAY_MPI_TAG_FILE_ENTRY_COUNT_REPLY(Message*message){
 
 /* the switch man do the accounting for ready ranks */
 void MessageProcessor::call_RAY_MPI_TAG_SWITCH_MAN_SIGNAL(Message*message){
-	m_switchMan->addReadyRank();
+	m_switchMan->closeSlaveMode(message->getSource());
 }
 
 void MessageProcessor::setSwitchMan(SwitchMan*a){
 	m_switchMan=a;
 }
 
+void MessageProcessor::call_RAY_MPI_TAG_COUNT_SEARCH_ELEMENTS(Message*message){}
+void MessageProcessor::call_RAY_MPI_TAG_TEST_NETWORK_REPLY(Message*message){}
+void MessageProcessor::call_RAY_MPI_TAG_TEST_NETWORK_REPLY_REPLY(Message*message){}

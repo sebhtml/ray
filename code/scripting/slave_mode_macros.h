@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2011  Sébastien Boisvert
+    Copyright (C) 2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -18,6 +18,8 @@
 	see <http://www.gnu.org/licenses/>
 
 */
+
+// this is a list of slave modes
 
 MACRO_LIST_ITEM( RAY_SLAVE_MODE_LOAD_SEQUENCES )
 MACRO_LIST_ITEM( RAY_SLAVE_MODE_START_SEEDING )
@@ -42,3 +44,4 @@ MACRO_LIST_ITEM( RAY_SLAVE_MODE_WRITE_KMERS )
 MACRO_LIST_ITEM( RAY_SLAVE_MODE_DIE )
 MACRO_LIST_ITEM( RAY_SLAVE_MODE_TEST_NETWORK )
 MACRO_LIST_ITEM( RAY_SLAVE_MODE_COUNT_FILE_ENTRIES )
+MACRO_LIST_ITEM( RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS )

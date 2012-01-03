@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -16,20 +16,24 @@
     You have received a copy of the GNU General Public License
     along with this program (COPYING).  
 	see <http://www.gnu.org/licenses/>
+
 */
 
-#ifndef _slave_modes
-#define _slave_modes
+#ifndef _RayScriptEngine_h
+#define _RayScriptEngine_h
 
-extern const char* SLAVE_MODES[];
+#include <scheduling/SwitchMan.h>
+#include <communication/VirtualCommunicator.h>
 
-#define MACRO_LIST_ITEM(element) element,
+class RayScriptEngine{
 
-enum RaySlaveMode {
-#include <scripting/slave_mode_macros.h>
-RAY_SLAVE_MODE_DUMMY
+public:
+
+	void configureSwitchMan(SwitchMan*i);
+	void configureVirtualCommunicator(VirtualCommunicator*i);
+	void configureMasterHandlers();
+
 };
 
-#undef MACRO_LIST_ITEM
-
 #endif
+
