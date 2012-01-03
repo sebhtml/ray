@@ -10,7 +10,7 @@ Ray is documented in
 - README.md  (general)
 - INSTALL.txt  (quick installation)
 
-## Solutions*
+## Solutions (all bundled in a single Product called Ray)
 
 - de novo genome assembly (original Ray Technology, re-branded to géno-Ray Technology)
 - quantification of contig abundance (con-Ray Technology)
@@ -21,7 +21,6 @@ Ray is documented in
 - de novo meta-genome assembly (méta-Ray Technology)
 - quantification of microbiome consortia members (éco-Ray Technology)
 
-* All solutions are bundled in a single Product called Ray
 
 see Documentation/BiologicalAbundances.txt
 
