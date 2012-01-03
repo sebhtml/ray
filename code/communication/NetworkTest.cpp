@@ -142,7 +142,7 @@ void NetworkTest::slaveWork(){
 		message[0]=latency;
 		char*destination=(char*)(message+1);
 		strcpy(destination,m_name->c_str());
-		Message aMessage(message,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),MASTER_RANK,RAY_MPI_TAG_TEST_NETWORK_REPLY,m_rank);
+		Message aMessage(message,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),MASTER_RANK,RAY_MPI_TAG_SWITCH_MAN_SIGNAL,m_rank);
 		m_outbox->push_back(aMessage);
 		(*m_slaveMode)=RAY_SLAVE_MODE_DO_NOTHING;
 
@@ -219,9 +219,11 @@ void NetworkTest::masterWork(){
 			Message aMessage(NULL,0,i,RAY_MPI_TAG_TEST_NETWORK,m_rank);
 			m_outbox->push_back(aMessage);
 		}
-		m_doneWithNetworkTest=0;
+
+		m_switchMan->reset();
+
 		m_initialisedNetworkTest=true;
-	}else if(m_inbox->size()>0&&(*m_inbox)[0]->getTag()==RAY_MPI_TAG_TEST_NETWORK_REPLY){
+	}else if(m_inbox->size()>0&&(*m_inbox)[0]->getTag()==RAY_MPI_TAG_SWITCH_MAN_SIGNAL){
 		int rank=m_inbox->at(0)->getSource();
 		int latency=m_inbox->at(0)->getBuffer()[0];
 		uint64_t*buffer=m_inbox->at(0)->getBuffer();
@@ -229,8 +231,7 @@ void NetworkTest::masterWork(){
 		string stringName=name;
 		m_names[rank]=stringName;
 		m_latencies[rank]=latency;
-		m_doneWithNetworkTest++;
-	}else if(m_doneWithNetworkTest==m_size){
+	}else if(m_switchMan->allRanksAreReady()){
 		ostringstream file;
 		file<<m_parameters->getPrefix();
 		file<<"NetworkTest.txt";
@@ -261,7 +262,7 @@ void NetworkTest::masterWork(){
 		f.close();
 		m_latencies.clear();
 
-		(*m_masterMode)=RAY_MASTER_MODE_COUNT_FILE_ENTRIES;
+		(*m_masterMode)=m_switchMan->getNextMasterMode(*m_masterMode);
 
 		cout<<endl;
 		cout<<"Rank "<<m_parameters->getRank()<<" wrote "<<file.str()<<endl;
@@ -295,4 +296,8 @@ int NetworkTest::getModeLatency(){
 	}
 	
 	return maxLatency;
+}
+
+void NetworkTest::setSwitchMan(SwitchMan*a){
+	m_switchMan=a;
 }

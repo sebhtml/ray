@@ -175,6 +175,7 @@ obj-y += code/communication/MessageRouter.o
 # scheduling stuff
 obj-y += code/scheduling/VirtualProcessor.o
 obj-y += code/scheduling/TaskCreator.o
+obj-y += code/scheduling/SwitchMan.o
 
 #formats
 obj-y += code/format/ColorSpaceDecoder.o code/format/ColorSpaceLoader.o code/format/FastaLoader.o \
@@ -276,7 +277,7 @@ showOptions:
 	
 # how to make Ray
 Ray: showOptions $(obj-y)
-	@$(MPICXX) $(LDFLAGS) $(obj-y) -o $@
+	$(MPICXX) $(LDFLAGS) $(obj-y) -o $@
 	@echo MPICXX $@
 	@echo $(PREFIX) > PREFIX
 	@echo $(TARGETS) > TARGETS

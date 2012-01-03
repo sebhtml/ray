@@ -720,8 +720,6 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER(Mes
 	}
 }
 
-void MessageProcessor::call_RAY_MPI_TAG_TEST_NETWORK_REPLY(Message*message){}
-
 /* we reply with an empty message */
 void MessageProcessor::call_RAY_MPI_TAG_TEST_NETWORK_MESSAGE(Message*message){
 	Message aMessage(NULL,0,message->getSource(),RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY,m_rank);
@@ -2403,4 +2401,13 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_FILE_ENTRY_COUNTS(Message*messag
 void MessageProcessor::call_RAY_MPI_TAG_REQUEST_FILE_ENTRY_COUNTS_REPLY(Message*message){}
 void MessageProcessor::call_RAY_MPI_TAG_FILE_ENTRY_COUNT(Message*message){}
 void MessageProcessor::call_RAY_MPI_TAG_FILE_ENTRY_COUNT_REPLY(Message*message){}
+
+/* the switch man do the accounting for ready ranks */
+void MessageProcessor::call_RAY_MPI_TAG_SWITCH_MAN_SIGNAL(Message*message){
+	m_switchMan->addReadyRank();
+}
+
+void MessageProcessor::setSwitchMan(SwitchMan*a){
+	m_switchMan=a;
+}
 

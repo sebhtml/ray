@@ -53,6 +53,9 @@ Machine::Machine(int argc,char**argv){
 	m_messagesHandler.constructor(&argc,&argv);
 	m_rank=m_messagesHandler.getRank();
 	m_size=m_messagesHandler.getSize();
+
+	m_switchMan.constructor(m_size);
+
 	if(isMaster() && argc==1){
 		m_parameters.showUsage();
 		exit(EXIT_NEEDS_ARGUMENTS);
@@ -202,7 +205,7 @@ void Machine::start(){
 
 	m_mp.setScaffolder(&m_scaffolder);
 	m_mp.setVirtualCommunicator(&m_virtualCommunicator);
-
+	m_mp.setSwitchMan(&m_switchMan);
 
 	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
 	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
@@ -247,6 +250,8 @@ void Machine::start(){
 	// initiate the network test.
 	m_networkTest.constructor(m_rank,&m_master_mode,&m_slave_mode,m_size,&m_inbox,&m_outbox,&m_parameters,&m_outboxAllocator,m_messagesHandler.getName(),
 		&m_timePrinter);
+
+	m_networkTest.setSwitchMan(&m_switchMan);
 
 	int PERSISTENT_ALLOCATOR_CHUNK_SIZE=4194304; // 4 MiB
 	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE,RAY_MALLOC_TYPE_PERSISTENT_DATA_ALLOCATOR,
@@ -318,6 +323,7 @@ void Machine::start(){
 
 	m_virtualCommunicator.constructor(m_rank,m_size,&m_outboxAllocator,&m_inbox,&m_outbox);
 
+	/************************************************************************************/
 	/** configure the virtual communicator. */
 	/* ## concatenates 2 symbols */
 
@@ -352,9 +358,29 @@ void Machine::start(){
 	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY);
 	m_virtualCommunicator.setReplyType(RAY_MPI_TAG_TEST_NETWORK_MESSAGE,RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY);
 
+	/***********************************************************************************/
 	/** initialize the VirtualProcessor */
 	m_virtualProcessor.constructor(&m_outbox,&m_inbox,&m_outboxAllocator,&m_parameters,
 		&m_virtualCommunicator);
+
+	/************************************************************************************/
+	// configure the switch man
+	// this is where steps can be added or removed.
+
+	vector<RayMasterMode> steps;
+
+	#define MACRO_LIST_ITEM(x) \
+	steps.push_back(x);
+
+	MACRO_LIST_ITEM( RAY_MASTER_MODE_TEST_NETWORK )
+	MACRO_LIST_ITEM( RAY_MASTER_MODE_COUNT_FILE_ENTRIES )
+
+	#undef MACRO_LIST_ITEM
+
+	for(int i=0;i<(int)steps.size()-1;i++){
+		m_switchMan.addNextMasterMode(steps[i],steps[i+1]);
+	}
+
 
 	m_library.constructor(getRank(),&m_outbox,&m_outboxAllocator,&m_sequence_id,&m_sequence_idInFile,
 		m_ed,getSize(),&m_timePrinter,&m_slave_mode,&m_master_mode,

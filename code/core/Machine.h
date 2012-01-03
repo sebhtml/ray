@@ -65,6 +65,7 @@
 #include <assembler/FusionTaskCreator.h>
 #include <assembler/JoinerTaskCreator.h>
 #include <communication/MessageRouter.h>
+#include <scheduling/SwitchMan.h>
 using namespace std;
 
 
@@ -81,6 +82,8 @@ class Machine{
 	uint64_t m_startingTimeMicroseconds;
 
 	MessageRouter m_router;
+
+	SwitchMan m_switchMan;
 
 	Profiler m_profiler2;
 	Profiler*m_profiler;
@@ -131,7 +134,7 @@ class Machine{
 	int m_last_value;
 	time_t m_lastTime;
 	bool m_mode_send_outgoing_edges;
-	int m_rank;
+	Rank m_rank;
 	int m_size;
 	int m_totalLetters;
 	bool m_alive;
@@ -152,6 +155,7 @@ class Machine{
 	bool m_showMessages;
 	bool m_mode_send_ingoing_edges;
 
+	// TODO: use RayMasterMode and RaySlaveMode
 	int m_slave_mode;
 	int m_master_mode;
 

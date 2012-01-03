@@ -25,7 +25,7 @@ extern const char* SLAVE_MODES[];
 
 #define MACRO_LIST_ITEM(element) element,
 
-enum{
+enum RaySlaveMode {
 #include <core/slave_mode_macros.h>
 RAY_SLAVE_MODE_DUMMY
 };

@@ -45,6 +45,7 @@
 #include <scaffolder/Scaffolder.h>
 #include <communication/VirtualCommunicator.h>
 #include <structures/BloomFilter.h>
+#include <scheduling/SwitchMan.h>
 #include <communication/MessageRouter.h>
 using namespace std;
 
@@ -84,6 +85,10 @@ class MessageProcessor{
 	uint64_t m_sentinelValue;
 
 	SeedingData*m_seedingData;
+
+	/* switch man for synchronization
+ */
+	SwitchMan*m_switchMan;
 
 	// data for processing
 	bool*m_ready;
@@ -212,6 +217,7 @@ SequencesIndexer*m_si
 	void flushBuffers();
 	void setScaffolder(Scaffolder*a);
 	void setVirtualCommunicator(VirtualCommunicator*a);
+	void setSwitchMan(SwitchMan*a);
 };
 
 #endif

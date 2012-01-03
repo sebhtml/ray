@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -18,18 +18,31 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#ifndef _master_modes
-#define _master_modes
+#ifndef _SwitchMan_H
+#define _SwitchMan_H
 
-/* generate the enum list with a macro */
+#include <map>
+#include <core/master_modes.h>
+using namespace std;
 
-#define MACRO_LIST_ITEM(x) x,
+class SwitchMan{
+	int m_target;
+	int m_counter;
 
-enum RayMasterMode {
-#include <core/master_mode_macros.h>
-RAY_MASTER_MODE_DUMMY
+	map<int,int> m_switches;
+
+	void runAssertions();
+
+public:
+	void constructor(int numberOfRanks);
+	void reset();
+	bool allRanksAreReady();
+	void addReadyRank();
+
+	int getNextMasterMode(int currentMode);
+
+	void addNextMasterMode(int a,int b);
+
 };
-
-#undef MACRO_LIST_ITEM
 
 #endif

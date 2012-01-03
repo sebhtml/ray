@@ -26,6 +26,7 @@
 #include <assembler/TimePrinter.h>
 #include <memory/RingAllocator.h>
 #include <string>
+#include <scheduling/SwitchMan.h>
 #include <map>
 using namespace std;
 
@@ -44,6 +45,9 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class NetworkTest{
+
+	SwitchMan*m_switchMan;
+
 /**
  * do we gather raw data
  */
@@ -69,9 +73,10 @@ class NetworkTest{
 	/** parameter object */
 	Parameters*m_parameters;
 	/** the slave mode */
-	int*m_slaveMode;
+	int *m_slaveMode;
 	/** the master mode, always RAY_SLAVE_MODE_DO_NOTHING for rank >0 */
-	int*m_masterMode;
+	int *m_masterMode;
+
 	/** message-passing interface rank */
 	int m_rank;
 	/** number of ranks */
@@ -99,7 +104,7 @@ class NetworkTest{
 	int getModeLatency();
 public:
 	/** initialize the NetworkTest */
-	void constructor(int rank,int*masterMode,int*slaveMode,int size,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,RingAllocator*outboxAllocator,
+	void constructor(Rank rank,int *masterMode,int *slaveMode,int size,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,RingAllocator*outboxAllocator,
 		string*name,TimePrinter*timePrinter);
 	/** work method for the master mode */
 	void masterWork();
@@ -107,6 +112,8 @@ public:
 	void slaveWork();
 
 	void writeData();
+
+	void setSwitchMan(SwitchMan*a);
 };
 
 #endif
