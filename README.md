@@ -10,38 +10,28 @@ Ray is documented in
 - README.md  (general)
 - INSTALL.txt  (quick installation)
 
-## Features & quick facts
+## Solutions*
 
-- Ray is a high-performance peer-to-peer software.
- - http://dskernel.blogspot.com/2011/07/understand-main-loop-of-message-passing.html
+- de novo genome assembly (original Ray Technology, re-branded to géno-Ray Technology)
+- quantification of contig abundance (con-Ray Technology)
 
-- Ray can be utilised as a k-mer counter.
-- Ray builds a k-mer graph (subgraph of a full de Bruijn graph).
-- Ray finds paths in this graph.
+- de novo transcriptome assembly (trans-Ray Technology)
+- quantification of transcript expression (express-Ray Technology)
 
-- Ray is implemented in C++, version ISO/IEC 14882:1998.
-- Ray utilises the message-passing interface (MPI), version 2.2.
-- Ray supports various network interconnects, thanks to the message-passing interface (MessagesHandler).
-- Ray is cloud-ready thanks to the message-passing interface.
- - http://aws.amazon.com/ec2/hpc-applications/
+- de novo meta-genome assembly (méta-Ray Technology)
+- quantification of microbiome consortia members (éco-Ray Technology)
 
-- Ray utilises distributed sparse hash tables with double hashing (MyHashTable).
-- Ray utilises smart pointers.
-- Ray does garbage collection using real-time memory defragmentation & compaction (DefragmentationGroup).
-- Ray utilises a Bloom filter to avoid storing most of the erroneous k-mers in memory.
+* All solutions are bundled in a single Product called Ray
 
-- Ray utilises virtual communication (VirtualCommunicator).
- - http://dskernel.blogspot.com/2011/01/virtual-communicator.html
- - http://dskernel.blogspot.com/2011/06/more-on-virtual-communication-with.html 
+see Documentation/BiologicalAbundances.txt
 
-- Ray supports substitution DNA sequencing errors (Illumina).
-- Ray supports indels DNA sequencing errors (Pacific Biosciences, 454). <b>In development</b>
-- Ray supports paired reads to traverse repeats.
-- Ray outputs scaffolds (+ many other useful files).
+## Re-usable software components (all GPL)
 
-- Ray is open source with the GNU General Public License.
-- Ray is a single executable called Ray (Ray.exe on Microsoft Windows).
-- Ray is easy to install and easy to use.
+- Ray VirtualCommunicator
+- Ray VirtualProcessor
+- Ray SwitchMan
+- Ray ScriptEngine (compile-time)
+- Ray MessageRouter
 
 # Website
 
