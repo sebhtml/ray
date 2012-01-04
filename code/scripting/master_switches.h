@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C) 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -19,16 +19,6 @@
 
 */
 
-#ifndef _types_h
-#define _types_h
+MACRO_LIST_ITEM( RAY_MASTER_MODE_TEST_NETWORK, RAY_MPI_TAG_TEST_NETWORK )
+MACRO_LIST_ITEM( RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS, RAY_MPI_TAG_COUNT_SEARCH_ELEMENTS )
 
-typedef int Rank;
-
-/* although RayMPITag is defined, routing tag are not valid RayMPITag instances. */
-typedef int Tag;
-
-typedef int RoutingTag;
-
-typedef int Distance;
-
-#endif

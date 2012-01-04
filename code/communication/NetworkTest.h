@@ -106,7 +106,7 @@ class NetworkTest{
 	int getModeLatency();
 public:
 	/** initialize the NetworkTest */
-	void constructor(Rank rank,int *masterMode,int *slaveMode,int size,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,RingAllocator*outboxAllocator,
+	void constructor(Rank rank,int size,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,RingAllocator*outboxAllocator,
 		string*name,TimePrinter*timePrinter);
 	/** work method for the master mode */
 	void masterWork();

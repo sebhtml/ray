@@ -21,6 +21,9 @@
 #ifndef _master_modes
 #define _master_modes
 
+
+extern const char* MASTER_MODES[];
+
 /* generate the enum list with a macro */
 
 #define MACRO_LIST_ITEM(x) x,

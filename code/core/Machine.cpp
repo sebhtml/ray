@@ -98,9 +98,9 @@ Machine::Machine(int argc,char**argv){
 }
 
 void Machine::start(){
-	m_partitioner.constructor(&m_outboxAllocator,&m_inbox,&m_outbox,&m_parameters,&m_slave_mode,&m_master_mode);
+	m_partitioner.constructor(&m_outboxAllocator,&m_inbox,&m_outbox,&m_parameters,&m_switchMan);
 
-	m_searcher.constructor(&m_parameters,&m_outbox,&m_master_mode,&m_timePrinter,&m_switchMan,&m_slave_mode);
+	m_searcher.constructor(&m_parameters,&m_outbox,&m_timePrinter,&m_switchMan);
 
 	m_startingTimeMicroseconds = getMicroseconds();
 
@@ -161,8 +161,6 @@ void Machine::start(){
 	m_messagesHandler.barrier();
 
 	m_parameters.setSize(getSize());
-	m_parameters.setSlaveModePointer(&m_slave_mode);
-	m_parameters.setMasterModePointer(&m_master_mode);
 	MAX_ALLOCATED_MESSAGES_IN_OUTBOX=getSize();
 	MAX_ALLOCATED_MESSAGES_IN_INBOX=1;
 
@@ -181,36 +179,37 @@ void Machine::start(){
 	m_inbox.constructor(MAX_ALLOCATED_MESSAGES_IN_INBOX,RAY_MALLOC_TYPE_INBOX_VECTOR,m_parameters.showMemoryAllocations());
 	m_outbox.constructor(MAX_ALLOCATED_MESSAGES_IN_OUTBOX,RAY_MALLOC_TYPE_OUTBOX_VECTOR,m_parameters.showMemoryAllocations());
 
-	m_scaffolder.constructor(&m_outbox,&m_inbox,&m_outboxAllocator,&m_parameters,&m_slave_mode,
-	&m_virtualCommunicator);
+	m_scaffolder.constructor(&m_outbox,&m_inbox,&m_outboxAllocator,&m_parameters,
+	&m_virtualCommunicator,&m_switchMan);
 
-	m_edgePurger.constructor(&m_outbox,&m_inbox,&m_outboxAllocator,&m_parameters,&m_slave_mode,&m_master_mode,
+	m_edgePurger.constructor(&m_outbox,&m_inbox,&m_outboxAllocator,&m_parameters,m_switchMan.getSlaveModePointer(),m_switchMan.getMasterModePointer(),
 	&m_virtualCommunicator,&m_subgraph,&m_virtualProcessor);
 
-	m_coverageGatherer.constructor(&m_parameters,&m_inbox,&m_outbox,&m_slave_mode,&m_subgraph,
+	m_coverageGatherer.constructor(&m_parameters,&m_inbox,&m_outbox,m_switchMan.getSlaveModePointer(),&m_subgraph,
 		&m_outboxAllocator);
 
 
 	m_fusionTaskCreator.constructor(&m_virtualProcessor,&m_outbox,
-		&m_outboxAllocator,&m_slave_mode,&m_parameters,&(m_ed->m_EXTENSION_contigs),
+		&m_outboxAllocator,m_switchMan.getSlaveModePointer(),&m_parameters,&(m_ed->m_EXTENSION_contigs),
 		&(m_ed->m_EXTENSION_identifiers),&(m_fusionData->m_FUSION_eliminated),
 		&m_virtualCommunicator);
 
 	m_joinerTaskCreator.constructor(&m_virtualProcessor,&m_outbox,
-		&m_outboxAllocator,&m_slave_mode,&m_parameters,&(m_ed->m_EXTENSION_contigs),
+		&m_outboxAllocator,m_switchMan.getSlaveModePointer(),&m_parameters,&(m_ed->m_EXTENSION_contigs),
 		&(m_ed->m_EXTENSION_identifiers),&(m_fusionData->m_FUSION_eliminated),
 		&m_virtualCommunicator,&(m_fusionData->m_FINISH_newFusions));
 
 
-	m_amos.constructor(&m_parameters,&m_outboxAllocator,&m_outbox,m_fusionData,m_ed,&m_master_mode,&m_slave_mode,&m_scaffolder,
+	m_amos.constructor(&m_parameters,&m_outboxAllocator,&m_outbox,m_fusionData,m_ed,m_switchMan.getMasterModePointer(),m_switchMan.getSlaveModePointer(),&m_scaffolder,
 		&m_inbox,&m_virtualCommunicator);
 
 	m_mp.setScaffolder(&m_scaffolder);
 	m_mp.setVirtualCommunicator(&m_virtualCommunicator);
 	m_mp.setSwitchMan(&m_switchMan);
 
-	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
-	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+	m_switchMan.setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
+	m_switchMan.setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
+
 	m_mode_AttachSequences=false;
 	m_startEdgeDistribution=false;
 
@@ -250,7 +249,7 @@ void Machine::start(){
 	m_parameters.constructor(m_argc,m_argv,getRank());
 
 	// initiate the network test.
-	m_networkTest.constructor(m_rank,&m_master_mode,&m_slave_mode,m_size,&m_inbox,&m_outbox,&m_parameters,&m_outboxAllocator,m_messagesHandler.getName(),
+	m_networkTest.constructor(m_rank,m_size,&m_inbox,&m_outbox,&m_parameters,&m_outboxAllocator,m_messagesHandler.getName(),
 		&m_timePrinter);
 
 	m_networkTest.setSwitchMan(&m_switchMan);
@@ -303,7 +302,7 @@ void Machine::start(){
 	}
 
 	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed,&m_subgraph,&m_inbox,&m_profiler2,
-		&m_outbox,m_seedingData,&m_slave_mode);
+		&m_outbox,m_seedingData,m_switchMan.getSlaveModePointer());
 
 	m_profiler = &m_profiler2;
 	m_profiler->constructor(m_parameters.runProfiler());
@@ -321,7 +320,7 @@ void Machine::start(){
 	m_sl.constructor(m_size,&m_diskAllocator,&m_myReads);
 
 	m_fusionData->constructor(getSize(),MAXIMUM_MESSAGE_SIZE_IN_BYTES,getRank(),&m_outbox,&m_outboxAllocator,m_parameters.getWordSize(),
-		m_ed,m_seedingData,&m_slave_mode,&m_parameters);
+		m_ed,m_seedingData,m_switchMan.getSlaveModePointer(),&m_parameters);
 
 	m_virtualCommunicator.constructor(m_rank,m_size,&m_outboxAllocator,&m_inbox,&m_outbox);
 
@@ -336,12 +335,12 @@ void Machine::start(){
 	m_scriptEngine.configureSwitchMan(&m_switchMan);
 
 	m_library.constructor(getRank(),&m_outbox,&m_outboxAllocator,&m_sequence_id,&m_sequence_idInFile,
-		m_ed,getSize(),&m_timePrinter,&m_slave_mode,&m_master_mode,
+		m_ed,getSize(),&m_timePrinter,m_switchMan.getSlaveModePointer(),m_switchMan.getMasterModePointer(),
 	&m_parameters,&m_fileId,m_seedingData,&m_inbox,&m_virtualCommunicator);
 
 	m_subgraph.constructor(getRank(),&m_parameters);
 	
-	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),&m_outbox,&m_outboxAllocator,&m_slave_mode,&m_parameters,&m_wordSize,&m_subgraph,&m_inbox,&m_virtualCommunicator);
+	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),&m_outbox,&m_outboxAllocator,m_switchMan.getSlaveModePointer(),&m_parameters,&m_wordSize,&m_subgraph,&m_inbox,&m_virtualCommunicator);
 
 	m_alive=true;
 	m_loadSequenceStep=false;
@@ -382,7 +381,7 @@ m_seedingData,
 	&m_identifiers,
 	&m_mode_sendDistribution,
 	&m_alive,
-	&m_slave_mode,
+	m_switchMan.getSlaveModePointer(),
 	&m_allPaths,
 	&m_last_value,
 	&m_ranksDoneAttachingReads,
@@ -406,7 +405,7 @@ m_seedingData,
 				&m_outbox,&m_inbox,
 	&m_oa,
 	&m_numberOfRanksWithCoverageData,&m_seedExtender,
-	&m_master_mode,&m_isFinalFusion,&m_si);
+	m_switchMan.getMasterModePointer(),&m_isFinalFusion,&m_si);
 
 	if(m_argc==1||((string)m_argv[1])=="--help"){
 		if(isMaster()){
@@ -415,7 +414,7 @@ m_seedingData,
 		}
 	}else{
 		if(isMaster()){
-			m_master_mode=RAY_MASTER_MODE_LOAD_CONFIG;
+			m_switchMan.setMasterMode(RAY_MASTER_MODE_LOAD_CONFIG);
 			m_sl.constructor(getSize(),&m_diskAllocator,
 				&m_myReads);
 		}
@@ -548,7 +547,7 @@ void Machine::runWithProfiler(){
 
 			if(profilerVerbose){
 				printf("Rank %i: %s Time= %.2f s Speed= %i Sent= %i (processMessages: %i, processData: %i) Received= %i Balance= %i\n",
-					m_rank,SLAVE_MODES[m_slave_mode],
+					m_rank,SLAVE_MODES[m_switchMan.getSlaveMode()],
 					seconds,ticks,sentMessages,sentMessagesInProcessMessages,sentMessagesInProcessData,
 					receivedMessages,balance);
 				fflush(stdout);
@@ -669,7 +668,7 @@ void Machine::runWithProfiler(){
 
 		// 3. process data according to current slave and master modes
 
-		int currentSlaveMode=m_slave_mode;
+		int currentSlaveMode=m_switchMan.getSlaveMode();
 
 		uint64_t startingTime = getThreadMicroseconds();
 		processData();
@@ -739,7 +738,7 @@ void Machine::processMessages(){
 	}
 
 	// check if the tag is in the list of slave switches
-	m_switchMan.openSlaveModeLocally(m_inbox[0]->getTag(),&m_slave_mode,m_rank);
+	m_switchMan.openSlaveModeLocally(m_inbox[0]->getTag(),m_rank);
 
 	// process the message as is
 	m_mp.processMessage((m_inbox[0]));
@@ -779,7 +778,7 @@ void Machine::sendMessages(){
 		m_router.routeOutcomingMessages();
 	}
 
-	if(m_outbox.size() > 0 && m_parameters.showCommunicationEvents() /* && m_slave_mode == RAY_SLAVE_MODE_EXTENSION*/){
+	if(m_outbox.size() > 0 && m_parameters.showCommunicationEvents() /* && SlaveMode = RAY_SLAVE_MODE_EXTENSION*/){
 		uint64_t microseconds=getMicroseconds() - m_startingTimeMicroseconds;
 		for(int i=0;i<(int)m_outbox.size();i++){
 			cout<<"[Communication] "<<microseconds<<" microseconds, SEND ";
@@ -829,14 +828,14 @@ void Machine::call_RAY_MASTER_MODE_LOAD_CONFIG(){
 			m_parameters.showUsage();
 			m_aborted=true;
 			f.close();
-			m_master_mode=RAY_MASTER_MODE_KILL_ALL_MPI_RANKS;
+			m_switchMan.setMasterMode(RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
 			return;
 		}
 	}
 
 	if(m_parameters.getError()){
 		m_aborted=true;
-		m_master_mode=RAY_MASTER_MODE_KILL_ALL_MPI_RANKS;
+		m_switchMan.setMasterMode(RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
 		return;
 	}
 
@@ -849,7 +848,7 @@ void Machine::call_RAY_MASTER_MODE_LOAD_CONFIG(){
 		m_outbox.push_back(aMessage);
 	}
 
-	m_master_mode=RAY_MASTER_MODE_TEST_NETWORK;
+	m_switchMan.setMasterMode(RAY_MASTER_MODE_TEST_NETWORK);
 }
 
 void Machine::call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS(){
@@ -883,12 +882,12 @@ void Machine::call_RAY_MASTER_MODE_LOAD_SEQUENCES(){
 	&m_loadSequenceStep,
 	m_bubbleData,
 	&m_lastTime,
-	&m_parameters,&m_master_mode,&m_slave_mode
+	&m_parameters,m_switchMan.getMasterModePointer(),m_switchMan.getSlaveModePointer()
 );
 	if(!res){
 		m_aborted=true;
-		m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
-		m_master_mode=RAY_MASTER_MODE_KILL_ALL_MPI_RANKS;
+		m_switchMan.setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
+		m_switchMan.setMasterMode(RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
 		return;
 	}
 
@@ -905,7 +904,7 @@ void Machine::call_RAY_MASTER_MODE_LOAD_SEQUENCES(){
 		i,RAY_MPI_TAG_LOAD_SEQUENCES,getRank());
 		m_outbox.push_back(aMessage);
 	}
-	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+	m_switchMan.setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
 }
 
 void Machine::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
@@ -915,7 +914,7 @@ void Machine::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
 	&m_loadSequenceStep,
 	m_bubbleData,
 	&m_lastTime,
-	&m_parameters,&m_master_mode,&m_slave_mode
+	&m_parameters,m_switchMan.getMasterModePointer(),m_switchMan.getSlaveModePointer()
 );
 }
 
@@ -927,7 +926,7 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION(){
 		Message aMessage(NULL,0,i,RAY_MPI_TAG_START_VERTICES_DISTRIBUTION,getRank());
 		m_outbox.push_back(aMessage);
 	}
-	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+	m_switchMan.setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
 }
 
 void Machine::call_RAY_MASTER_MODE_START_EDGES_DISTRIBUTION(){
@@ -970,7 +969,7 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 		cout<<"Rank 0: Assembler panic: no k-mers found in reads."<<endl;
 		cout<<"Rank 0: Perhaps reads are shorter than the k-mer length (change -k)."<<endl;
 		m_aborted=true;
-		m_master_mode=RAY_MASTER_MODE_KILL_ALL_MPI_RANKS;
+		m_switchMan.setMasterMode(RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
 		return;
 	}
 	m_numberOfMachinesDoneSendingCoverage=-1;
@@ -1049,7 +1048,7 @@ void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
 		Message aMessage(buffer,3,i,RAY_MPI_TAG_SEND_COVERAGE_VALUES,getRank());
 		m_outbox.push_back(aMessage);
 	}
-	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+	m_switchMan.setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
 }
 
 void Machine::call_RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING(){
@@ -1062,7 +1061,7 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING(){
 		Message aMessage(NULL,0,i,RAY_MPI_TAG_BUILD_GRAPH,getRank());
 		m_outbox.push_back(aMessage);
 	}
-	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+	m_switchMan.setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
 }
 
 void Machine::call_RAY_MASTER_MODE_DO_NOTHING(){}
@@ -1090,7 +1089,7 @@ void Machine::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(){
 			m_wordSize,
 			getSize(),
 			&m_outboxAllocator,
-			&m_slave_mode
+			m_switchMan.getSlaveModePointer()
 		);
 
 
@@ -1110,14 +1109,14 @@ void Machine::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 			m_wordSize,
 			getSize(),
 			&m_outboxAllocator,
-			&m_slave_mode
+			m_switchMan.getSlaveModePointer()
 		);
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 }
 
 void Machine::call_RAY_MASTER_MODE_PURGE_NULL_EDGES(){
-	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+	m_switchMan.setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
 	m_timePrinter.printElapsedTime("Graph construction");
 	cout<<endl;
 	for(int i=0;i<getSize();i++){
@@ -1134,6 +1133,7 @@ void Machine::call_RAY_SLAVE_MODE_PURGE_NULL_EDGES(){
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 }
+
 
 void Machine::call_RAY_MASTER_MODE_WRITE_KMERS(){
 	if(!m_writeKmerInitialised){
@@ -1155,7 +1155,7 @@ void Machine::call_RAY_MASTER_MODE_WRITE_KMERS(){
 			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getPrefix()<<"kmers.txt"<<endl;
 		}
 
-		m_master_mode=RAY_MASTER_MODE_TRIGGER_INDEXING;
+		m_switchMan.closeMasterMode();
 
 		if(m_parameters.hasCheckpoint("GenomeGraph"))
 			return;
@@ -1214,11 +1214,11 @@ void Machine::call_RAY_SLAVE_MODE_WRITE_KMERS(){
 
 	Message aMessage(buffer,outputPosition,MASTER_RANK,RAY_MPI_TAG_WRITE_KMERS_REPLY,getRank());
 	m_outbox.push_back(aMessage);
-	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
+	m_switchMan.setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
 }
 
 void Machine::call_RAY_MASTER_MODE_TRIGGER_INDEXING(){
-	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+	m_switchMan.setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
 	
 	m_timePrinter.printElapsedTime("Edge purge");
 	cout<<endl;
@@ -1236,7 +1236,7 @@ void Machine::call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS(){
 		Message aMessage(NULL,0, i, RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION,getRank());
 		m_outbox.push_back(aMessage);
 	}
-	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+	m_switchMan.setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
 }
 
 void Machine::call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS(){
@@ -1252,13 +1252,14 @@ void Machine::call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS(){
 			RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION,getRank());
 		m_outbox.push_back(aMessage);
 	}
-	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+	m_switchMan.setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
 }
 
 void Machine::call_RAY_MASTER_MODE_PREPARE_SEEDING(){
 	m_ranksDoneAttachingReads=-1;
 	m_readyToSeed=getSize();
-	m_master_mode=RAY_MASTER_MODE_TRIGGER_SEEDING;
+	
+	m_switchMan.closeMasterMode();
 }
 
 void Machine::call_RAY_SLAVE_MODE_ASSEMBLE_WAVES(){
@@ -1275,7 +1276,7 @@ void Machine::call_RAY_SLAVE_MODE_FINISH_FUSIONS(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
-	m_fusionData->distribute(m_seedingData,m_ed,m_rank,&m_outboxAllocator,&m_outbox,getSize(),&m_slave_mode);
+	m_fusionData->distribute(m_seedingData,m_ed,m_rank,&m_outboxAllocator,&m_outbox,getSize(),m_switchMan.getSlaveModePointer());
 }
 
 void Machine::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
@@ -1292,7 +1293,7 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_SEEDING(){
 		Message aMessage(NULL,0,i,RAY_MPI_TAG_START_SEEDING,getRank());
 		m_outbox.push_back(aMessage);
 	}
-	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+	m_switchMan.setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
 }
 
 void Machine::call_RAY_SLAVE_MODE_START_SEEDING(){
@@ -1308,7 +1309,7 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_DETECTION(){
 		m_outbox.push_back(aMessage);
 	}
 	m_numberOfRanksDoneDetectingDistances=0;
-	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+	m_switchMan.setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
 }
 
 void Machine::call_RAY_MASTER_MODE_ASK_DISTANCES(){
@@ -1318,17 +1319,19 @@ void Machine::call_RAY_MASTER_MODE_ASK_DISTANCES(){
 		Message aMessage(NULL,0,i,RAY_MPI_TAG_ASK_LIBRARY_DISTANCES,getRank());
 		m_outbox.push_back(aMessage);
 	}
-	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+	m_switchMan.setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
 }
 
 void Machine::call_RAY_MASTER_MODE_START_UPDATING_DISTANCES(){
 	m_numberOfRanksDoneSendingDistances=-1;
 	m_parameters.computeAverageDistances();
-	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
-	m_master_mode=RAY_MASTER_MODE_UPDATE_DISTANCES;
+	m_switchMan.setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
+	
 	m_fileId=0;
 	m_sequence_idInFile=0;
 	m_sequence_id=0;
+
+	m_switchMan.closeMasterMode();
 }
 
 void Machine::call_RAY_MASTER_MODE_INDEX_SEQUENCES(){
@@ -1336,7 +1339,7 @@ void Machine::call_RAY_MASTER_MODE_INDEX_SEQUENCES(){
 
 void Machine::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(){
 
-	m_si.attachReads(&m_myReads,&m_outboxAllocator,&m_outbox,&m_slave_mode,m_wordSize,
+	m_si.attachReads(&m_myReads,&m_outboxAllocator,&m_outbox,m_switchMan.getSlaveModePointer(),m_wordSize,
 	m_size,m_rank);
 }
 
@@ -1345,7 +1348,7 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_EXTENSIONS(){
 		Message aMessage(NULL,0,i,RAY_MPI_TAG_ASK_EXTENSION,getRank());
 		m_outbox.push_back(aMessage);
 	}
-	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+	m_switchMan.setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
 }
 
 void Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
@@ -1418,7 +1421,7 @@ void Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 		f.close();
 	}
 
-	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
+	m_switchMan.setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
 	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_EXTENSION_DATA_END,getRank());
 	m_outbox.push_back(aMessage);
 }
@@ -1443,16 +1446,19 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_FUSIONS(){
 	m_timePrinter.printElapsedTime("Bidirectional extension of seeds");
 	cout<<endl;
 	
-	m_master_mode=RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS;
 	m_cycleNumber=0;
+
+	m_switchMan.closeMasterMode();
 }
+
 
 void Machine::call_RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS(){
 
 	m_reductionOccured=true;
-	m_master_mode=RAY_MASTER_MODE_START_FUSION_CYCLE;
 	m_cycleStarted=false;
 	m_mustStop=false;
+	
+	m_switchMan.closeMasterMode();
 }
 
 void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
@@ -1564,7 +1570,8 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 			cout<<"Rank "<<m_parameters.getRank()<<" cycleNumber= "<<m_cycleNumber<<endl;
 			m_timePrinter.printElapsedTime("Merging of redundant contigs");
 			cout<<endl;
-			m_master_mode=RAY_MASTER_MODE_ASK_EXTENSIONS;
+
+			m_switchMan.setMasterMode(RAY_MASTER_MODE_ASK_EXTENSIONS);
 
 			m_ed->m_EXTENSION_currentRankIsSet=false;
 			m_ed->m_EXTENSION_rank=-1;
@@ -1610,7 +1617,8 @@ void Machine::call_RAY_MASTER_MODE_ASK_EXTENSIONS(){
 	if(m_ed->m_EXTENSION_rank==getSize()){
 		m_timePrinter.printElapsedTime("Generation of contigs");
 		if(m_parameters.useAmos()){
-			m_master_mode=RAY_MASTER_MODE_AMOS;
+			m_switchMan.setMasterMode(RAY_MASTER_MODE_AMOS);
+
 			m_ed->m_EXTENSION_currentRankIsStarted=false;
 			m_ed->m_EXTENSION_currentPosition=0;
 			m_ed->m_EXTENSION_rank=0;
@@ -1619,7 +1627,9 @@ void Machine::call_RAY_MASTER_MODE_ASK_EXTENSIONS(){
 			m_ed->m_EXTENSION_reads_requested=false;
 			cout<<endl;
 		}else{
-			m_master_mode=RAY_MASTER_MODE_SCAFFOLDER;
+
+			m_switchMan.closeMasterMode();
+
 			m_scaffolder.m_numberOfRanksFinished=0;
 		}
 		
@@ -1642,7 +1652,7 @@ void Machine::call_RAY_MASTER_MODE_SCAFFOLDER(){
 		Message aMessage(NULL,0,i,RAY_MPI_TAG_START_SCAFFOLDER,getRank());
 		m_outbox.push_back(aMessage);
 	}
-	m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+	m_switchMan.setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
 }
 
 void Machine::call_RAY_SLAVE_MODE_SCAFFOLDER(){
@@ -1662,17 +1672,17 @@ void Machine::call_RAY_SLAVE_MODE_EXTENSION(){
 	&m_last_value,&(m_seedingData->m_SEEDING_vertexCoverageRequested),m_wordSize,getSize(),&(m_seedingData->m_SEEDING_vertexCoverageReceived),
 	&(m_seedingData->m_SEEDING_receivedVertexCoverage),&m_repeatedLength,&(m_seedingData->m_SEEDING_receivedOutgoingEdges),&m_c,
 	m_bubbleData,
-m_parameters.getMinimumCoverage(),&m_oa,&(m_seedingData->m_SEEDING_edgesReceived),&m_slave_mode);
+m_parameters.getMinimumCoverage(),&m_oa,&(m_seedingData->m_SEEDING_edgesReceived),m_switchMan.getSlaveModePointer());
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 }
 
 /** process data my calling current slave and master methods */
 void Machine::processData(){
-	MachineMethod masterMethod=m_master_methods[m_master_mode];
+	MachineMethod masterMethod=m_master_methods[m_switchMan.getMasterMode()];
 	(this->*masterMethod)();
 
-	MachineMethod slaveMethod=m_slave_methods[m_slave_mode];
+	MachineMethod slaveMethod=m_slave_methods[m_switchMan.getSlaveMode()];
 	(this->*slaveMethod)();
 }
 
@@ -1681,7 +1691,7 @@ void Machine::call_RAY_MASTER_MODE_KILL_RANKS(){
 		m_timePrinter.printElapsedTime("Scaffolding of contigs");
 	}
 
-	m_master_mode=RAY_MASTER_MODE_KILL_ALL_MPI_RANKS;
+	m_switchMan.closeMasterMode();
 }
 
 /** make the message-passing interface rank die */
@@ -1711,7 +1721,7 @@ void Machine::call_RAY_SLAVE_MODE_DIE(){
  * 	the aging process takes a while -- 1024 cycles.
  * 	after that, it is death itself.
  * 	*/
-	m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
+	m_switchMan.setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
 }
 
 /**
@@ -1767,7 +1777,7 @@ void Machine::call_RAY_MASTER_MODE_KILL_ALL_MPI_RANKS(){
  * 			Rank 0 is the last to kill
  */
 		if(m_machineRank==0){
-			m_master_mode=RAY_MASTER_MODE_DO_NOTHING;
+			m_switchMan.setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
 		}
 
 		/** send a killer message */

@@ -36,8 +36,6 @@
  **/
 class Searcher{
 	Parameters*m_parameters;
-	int*m_slaveMode;
-	int*m_masterMode;
 	SwitchMan*m_switchMan;
 	VirtualCommunicator*m_virtualCommunicator;
 	StaticVector*m_outbox;
@@ -54,8 +52,7 @@ public:
 	void countElements_masterMethod();
 	void countElements_slaveMethod();
 
-	void constructor(Parameters*parameters,StaticVector*outbox,int*masterMode,TimePrinter*timePrinter,SwitchMan*switchMan,
-		int*slaveMode);
+	void constructor(Parameters*parameters,StaticVector*outbox,TimePrinter*timePrinter,SwitchMan*switchMan);
 };
 
 #endif

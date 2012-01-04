@@ -47,12 +47,22 @@ void RayScriptEngine::configureSwitchMan(SwitchMan*switchMan){
 	}
 
 
-	#define MACRO_LIST_ITEM(x,y) \
-	switchMan->addSlaveSwitch(x,y);
+	#define MACRO_LIST_ITEM(mpiTag,slaveMode) \
+	switchMan->addSlaveSwitch(mpiTag,slaveMode);
 	
 	#include <scripting/slave_switches.h>
 
 	#undef MACRO_LIST_ITEM
+
+	#define MACRO_LIST_ITEM(masterMode,mpiTag) \
+	switchMan->addMasterSwitch(masterMode,mpiTag);
+	
+	#include <scripting/master_switches.h>
+
+	#undef MACRO_LIST_ITEM
+
+
+
 }
 
 void RayScriptEngine::configureVirtualCommunicator(VirtualCommunicator*virtualCommunicator){

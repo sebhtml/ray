@@ -27,6 +27,7 @@
 #include <memory/RingAllocator.h>
 #include <assembler/Loader.h>
 #include <map>
+#include <scheduling/SwitchMan.h>
 using namespace std;
 
 /**
@@ -34,6 +35,8 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class Partitioner{
+	SwitchMan*m_switchMan;
+
 	/** the loader */
 	Loader m_loader;
 	/** did we initialize the master peer */
@@ -58,10 +61,6 @@ class Partitioner{
 	map<int,uint64_t> m_masterCounts;
 
 	/** --- Below are the only elements necessary to bind Partitioner to the Ray software stack */
-	/** master mode */
-	int*m_masterMode;
-	/** slave mode */
-	int*m_slaveMode;
 	/** allocator for outgoing messages */
 	RingAllocator*m_outboxAllocator;
 	/** message inbox */
@@ -75,7 +74,7 @@ class Partitioner{
 
 public:
 	void constructor(RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,
-	int*slaveMode,int*masterMode);
+	SwitchMan*switchMan);
 	void masterMethod();
 	void slaveMethod();
 };

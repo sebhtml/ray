@@ -1473,29 +1473,6 @@ bool Parameters::hasPairedReads(){
 int Parameters::_vertexRank(Kmer*a){
 	return a->vertexRank(m_size,m_wordSize,m_colorSpaceMode);
 }
-int Parameters::getSlaveMode(){
-	return *m_slaveMode;
-}
-
-void Parameters::setSlaveMode(int a){
-	*m_slaveMode=a;
-}
-
-void Parameters::setSlaveModePointer(int*a){
-	m_slaveMode=a;
-}
-
-int Parameters::getMasterMode(){
-	return *m_masterMode;
-}
-
-void Parameters::setMasterMode(int a){
-	*m_masterMode=a;
-}
-
-void Parameters::setMasterModePointer(int*a){
-	m_masterMode=a;
-}
 
 string Parameters::getScaffoldFile(){
 	ostringstream a;

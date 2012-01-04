@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C) 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -19,16 +19,13 @@
 
 */
 
-#ifndef _types_h
-#define _types_h
+#include <core/master_modes.h>
 
-typedef int Rank;
+#define MACRO_LIST_ITEM(x) #x,
 
-/* although RayMPITag is defined, routing tag are not valid RayMPITag instances. */
-typedef int Tag;
+const char* MASTER_MODES[]={
+#include <scripting/master_mode_macros.h>
+"RAY_MASTER_MODE_DUMMY"
+};
 
-typedef int RoutingTag;
-
-typedef int Distance;
-
-#endif
+#undef MACRO_LIST_ITEM

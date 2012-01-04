@@ -32,6 +32,8 @@
 #include <sstream>
 #include <scaffolder/ScaffoldingLink.h>
 #include <scaffolder/SummarizedLink.h>
+#include <scheduling/SwitchMan.h>
+
 using namespace std;
 
 /**
@@ -40,6 +42,8 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class Scaffolder{
+	SwitchMan*m_switchMan;
+	
 	int m_rankIdForContig;
 	bool m_hasContigSequence_Initialised;
 	FILE*m_fp;
@@ -132,7 +136,6 @@ class Scaffolder{
 	StaticVector*m_inbox;
 	StaticVector*m_outbox;
 	RingAllocator*m_outboxAllocator;
-	int*m_slave_mode;
 	bool m_ready;
 
 	/**
@@ -167,7 +170,7 @@ public:
  *	Constructor of the scaffolder
  */
 	void constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
-		int*slaveMode,VirtualCommunicator*vc);
+		VirtualCommunicator*vc,SwitchMan*switchMan);
 	void run();
 	void setContigPaths(vector<uint64_t>*names,vector<vector<Kmer> >*paths);
 	void addMasterLink(SummarizedLink*link);

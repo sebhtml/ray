@@ -191,6 +191,7 @@ code/format/Amos.o
 obj-y += code/core/slave_modes.o code/core/Machine.o code/core/Parameters.o code/core/common_functions.o
 obj-y += code/core/OperatingSystem.o
 obj-y += code/core/statistics.o
+obj-y += code/core/master_modes.o
 
 #compression
 

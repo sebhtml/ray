@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -35,6 +35,7 @@
 #include <assembler/FusionData.h>
 #include <core/Parameters.h>
 
+
 void MessageProcessor::call_RAY_MPI_TAG_LOAD_SEQUENCES(Message*message){
 	uint32_t*incoming=(uint32_t*)message->getBuffer();
 	for(int i=0;i<(int)incoming[0];i++){
@@ -42,7 +43,6 @@ void MessageProcessor::call_RAY_MPI_TAG_LOAD_SEQUENCES(Message*message){
 			cout<<"Rank "<<m_parameters->getRank()<<" RAY_MPI_TAG_LOAD_SEQUENCES File "<<i<<" "<<incoming[i+1]<<endl;
 		m_parameters->setNumberOfSequences(i,incoming[1+i]);
 	}
-	(*m_mode)=RAY_SLAVE_MODE_LOAD_SEQUENCES;
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_CONTIG_INFO(Message*message){
@@ -504,7 +504,6 @@ void MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message
 		f.close();
 	}
 
-	(*m_mode)=RAY_SLAVE_MODE_INDEX_SEQUENCES;
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_SEQUENCES_READY(Message*message){
@@ -660,7 +659,6 @@ void MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_START_VERTICES_DISTRIBUTION(Message*message){
-	(*m_mode)=RAY_SLAVE_MODE_BUILD_KMER_ACADEMY;
 	m_bloomFilter.constructor();
 }
 
@@ -745,7 +743,7 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*me
 
 	(*m_mode_send_coverage_iterator)=0;
 	(*m_mode_sendDistribution)=true;
-	(*m_mode)=RAY_SLAVE_MODE_SEND_DISTRIBUTION;
+
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_COVERAGE_DATA_REPLY(Message*message){
@@ -791,6 +789,7 @@ void MessageProcessor::call_RAY_MPI_TAG_READY_TO_SEED(Message*message){
 	}
 }
 
+// TODO: move checkpointing code in checkpointing.
 void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 	/* read checkpoints ReadOffsets and OptimalMarkers */
 	
@@ -881,7 +880,6 @@ void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 
 
 
-	(*m_mode)=RAY_SLAVE_MODE_START_SEEDING;
 	if(m_parameters->showMemoryUsage()){
 		int allocatedBytes=m_si->getAllocator()->getNumberOfChunks()*m_si->getAllocator()->getChunkSize();
 		cout<<"Rank "<<m_parameters->getRank()<<": memory usage for  optimal read markers= "<<allocatedBytes/1024<<" KiB"<<endl;
@@ -1062,7 +1060,6 @@ void MessageProcessor::call_RAY_MPI_TAG_SEEDING_IS_OVER(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_REQUEST_SEED_LENGTHS(Message*message){
-	(*m_mode)=RAY_SLAVE_MODE_SEND_SEED_LENGTHS;
 	m_seedingData->m_initialized=false;
 }
 
@@ -1095,9 +1092,7 @@ void MessageProcessor::call_RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS(Message*mes
 
 void MessageProcessor::call_RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY(Message*message){}
 
-void MessageProcessor::call_RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON(Message*message){
-	(*m_mode)=RAY_SLAVE_MODE_DIE;
-}
+void MessageProcessor::call_RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON(Message*message){}
 
 void MessageProcessor::call_RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER(Message*message){
 
@@ -1185,7 +1180,6 @@ void MessageProcessor::call_RAY_MPI_TAG_EXTENSION_IS_DONE(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_ASK_EXTENSION(Message*message){
 	(m_ed->m_EXTENSION_initiated)=false;
-	(*m_mode)=RAY_SLAVE_MODE_EXTENSION;
 	(*m_last_value)=-1;
 	m_verticesExtractor->showBuffers();
 
@@ -1229,7 +1223,6 @@ void MessageProcessor::call_RAY_MPI_TAG_MARK_AS_ASSEMBLED(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_ASK_EXTENSION_DATA(Message*message){
-	(*m_mode)=RAY_SLAVE_MODE_SEND_EXTENSION_DATA;
 	(m_seedingData->m_SEEDING_i)=0;
 	(m_ed->m_EXTENSION_currentPosition)=0;
 }
@@ -1401,7 +1394,6 @@ void MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REPLY(Message*mess
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_ASSEMBLE_WAVES(Message*message){
-	(*m_mode)=RAY_SLAVE_MODE_ASSEMBLE_WAVES;
 	(m_seedingData->m_SEEDING_i)=0;
 }
 
@@ -1413,7 +1405,6 @@ void MessageProcessor::call_RAY_MPI_TAG_ASSEMBLE_WAVES_DONE(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_START_FUSION(Message*message){
-	(*m_mode)=RAY_SLAVE_MODE_FUSION;
 	(m_seedingData->m_SEEDING_i)=0;
 	m_fusionData->initialise();
 }
@@ -1905,8 +1896,8 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY(Message*message){
 	(*m_CLEAR_n)++;
 }
 
+
 void MessageProcessor::call_RAY_MPI_TAG_FINISH_FUSIONS(Message*message){
-	(*m_mode)=RAY_SLAVE_MODE_FINISH_FUSIONS;
 	(m_seedingData->m_SEEDING_i)=0;
 	(m_ed->m_EXTENSION_currentPosition)=0;
 	m_fusionData->m_FUSION_first_done=false;
@@ -1928,7 +1919,6 @@ void MessageProcessor::call_RAY_MPI_TAG_FINISH_FUSIONS_FINISHED(Message*message)
 
 void MessageProcessor::call_RAY_MPI_TAG_DISTRIBUTE_FUSIONS(Message*message){
 	m_fusionData->readyBuffers();
-	(*m_mode)=RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS;
 	(m_seedingData->m_SEEDING_i)=0;
 	(m_ed->m_EXTENSION_currentPosition)=0;
 }
@@ -2003,7 +1993,6 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_PATH_VERTEX_REPLY(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_WRITE_AMOS(Message*message){
-	(*m_mode)=RAY_SLAVE_MODE_AMOS;
 	m_ed->m_EXTENSION_initiated=false;
 	m_ed->m_EXTENSION_currentPosition=((uint64_t*)message->getBuffer())[0];
 }
@@ -2030,7 +2019,6 @@ void MessageProcessor::call_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION(Message*mes
 		f.close();
 	}
 
-	(*m_mode)=RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION;
 	(m_seedingData->m_SEEDING_i)=0;
 	(m_ed->m_EXTENSION_currentPosition)=0;
 	m_ed->m_EXTENSION_reads_requested=false;
@@ -2060,7 +2048,6 @@ void MessageProcessor::call_RAY_MPI_TAG_LIBRARY_DISTANCE(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_ASK_LIBRARY_DISTANCES(Message*message){
-	(*m_mode)=RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES;
 	m_library->allocateBuffers();
 }
 
@@ -2254,9 +2241,7 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_CONTIG_CHUNK(Message*message){
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_RAY_MPI_TAG_START_SCAFFOLDER(Message*message){
-	(*m_mode)=RAY_SLAVE_MODE_SCAFFOLDER;
-}
+void MessageProcessor::call_RAY_MPI_TAG_START_SCAFFOLDER(Message*message){}
 
 void MessageProcessor::setScaffolder(Scaffolder*a){
 	m_scaffolder=a;
@@ -2390,9 +2375,7 @@ void MessageProcessor::setVirtualCommunicator(VirtualCommunicator*a){
 	m_virtualCommunicator=a;
 }
 
-void MessageProcessor::call_RAY_MPI_TAG_COUNT_FILE_ENTRIES(Message*message){
-	(*m_mode)=RAY_SLAVE_MODE_COUNT_FILE_ENTRIES;
-}
+void MessageProcessor::call_RAY_MPI_TAG_COUNT_FILE_ENTRIES(Message*message){}
 
 void MessageProcessor::call_RAY_MPI_TAG_COUNT_FILE_ENTRIES_REPLY(Message*message){}
 void MessageProcessor::call_RAY_MPI_TAG_REQUEST_FILE_ENTRY_COUNTS(Message*message){}
@@ -2401,7 +2384,7 @@ void MessageProcessor::call_RAY_MPI_TAG_FILE_ENTRY_COUNT(Message*message){}
 void MessageProcessor::call_RAY_MPI_TAG_FILE_ENTRY_COUNT_REPLY(Message*message){}
 
 /* the switch man do the accounting for ready ranks */
-void MessageProcessor::call_RAY_MPI_TAG_SWITCH_MAN_SIGNAL(Message*message){
+void MessageProcessor::call_RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL(Message*message){
 	m_switchMan->closeSlaveMode(message->getSource());
 }
 

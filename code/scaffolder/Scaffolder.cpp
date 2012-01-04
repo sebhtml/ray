@@ -277,8 +277,9 @@ void Scaffolder::printInStream(ostream*outputStream){
 }
 
 void Scaffolder::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
-	int*slaveMode,VirtualCommunicator*vc){
-	m_slave_mode=slaveMode;
+	VirtualCommunicator*vc,SwitchMan*switchMan){
+
+	m_switchMan=switchMan;
 	m_virtualCommunicator=vc;
 	m_outbox=outbox;
 	m_inbox=inbox;
@@ -311,7 +312,8 @@ void Scaffolder::run(){
 		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING,
 			m_parameters->getRank());
 		m_outbox->push_back(aMessage);
-		(*m_slave_mode)=RAY_SLAVE_MODE_DO_NOTHING;
+
+		m_switchMan->setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
 	}
 }
 
@@ -1324,7 +1326,8 @@ void Scaffolder::writeScaffolds(){
 		}
 	}else{
 		fclose(m_fp);
-		m_parameters->setMasterMode(RAY_MASTER_MODE_KILL_RANKS);
+
+		m_switchMan->closeMasterMode();
 	}
 }
 

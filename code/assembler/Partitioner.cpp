@@ -23,15 +23,15 @@
 #include <stdlib.h>
 
 void Partitioner::constructor(RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,
-	int*slaveMode,int*masterMode){
+	SwitchMan*switchMan){
+
+	m_switchMan=switchMan;
 	m_outboxAllocator=outboxAllocator;
 	m_inbox=inbox;
 	m_outbox=outbox;
 	m_parameters=parameters;
 	m_initiatedMaster=false;
 	m_initiatedSlave=false;
-	m_slaveMode=slaveMode;
-	m_masterMode=masterMode;
 	m_loader.constructor(m_parameters->getMemoryPrefix().c_str(),m_parameters->showMemoryAllocations());
 }
 
@@ -111,7 +111,6 @@ void Partitioner::masterMethod(){
 			f2.close();
 			cout<<"Rank "<<m_parameters->getRank()<<" wrote "<<fileName.str()<<endl;
 
-			(*m_masterMode)=RAY_MASTER_MODE_LOAD_SEQUENCES;
 
 			/* write the partition */
 			ostringstream fileName2;
@@ -131,6 +130,8 @@ void Partitioner::masterMethod(){
 			}
 			f3.close();
 			cout<<"Rank "<<m_parameters->getRank()<<" wrote "<<fileName2.str()<<endl;
+
+			m_switchMan->closeMasterMode();
 		}
 	}
 }
@@ -240,8 +241,9 @@ void Partitioner::slaveMethod(){
 		}else{
 			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_REQUEST_FILE_ENTRY_COUNTS_REPLY,m_parameters->getRank());
 			m_outbox->push_back(aMessage);
-			(*m_slaveMode)=RAY_SLAVE_MODE_DO_NOTHING;
 			m_slaveCounts.clear();
+
+			m_switchMan->setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
 		}
 	}
 }

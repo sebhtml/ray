@@ -35,7 +35,7 @@ using namespace std;
 #define LATENCY_INFORMATION_NOT_AVAILABLE 123123123
 
 /** initialize the NetworkTest */
-void NetworkTest::constructor(int rank,int*masterMode,int*slaveMode,int size,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,RingAllocator*outboxAllocator,
+void NetworkTest::constructor(int rank,int size,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,RingAllocator*outboxAllocator,
 	string*name,TimePrinter*timePrinter){
 	m_timePrinter=timePrinter;
 	m_name=name;
@@ -45,8 +45,6 @@ void NetworkTest::constructor(int rank,int*masterMode,int*slaveMode,int size,Sta
 	m_initialisedNetworkTest=false;
 	m_size=size;
 	m_rank=rank;
-	m_masterMode=masterMode;
-	m_slaveMode=slaveMode;
 
 	int ranksPerNode=8;
 	int onlineRanksPerNode=8; // default: 8
@@ -152,7 +150,7 @@ void NetworkTest::slaveWork(){
 		m_sentData=true;
 
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_TEST_NETWORK_REPLY_REPLY)){
-		m_switchMan->closeSlaveModeLocally(m_outbox,m_slaveMode,m_parameters->getRank());
+		m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
 	}
 }
 
@@ -223,7 +221,7 @@ void NetworkTest::masterWork(){
 		cout<<"Rank 0: testing the network, please wait..."<<endl;
 		cout<<endl;
 
-		m_switchMan->openMasterMode(RAY_MPI_TAG_TEST_NETWORK,m_outbox,m_rank);
+		m_switchMan->openMasterMode(m_outbox,m_rank);
 
 		m_initialisedNetworkTest=true;
 	}else if(m_inbox->size()>0&&(*m_inbox)[0]->getTag()==RAY_MPI_TAG_TEST_NETWORK_REPLY){
@@ -268,7 +266,7 @@ void NetworkTest::masterWork(){
 		f.close();
 		m_latencies.clear();
 
-		m_switchMan->closeMasterMode(m_masterMode);
+		m_switchMan->closeMasterMode();
 
 		cout<<endl;
 		cout<<"Rank "<<m_parameters->getRank()<<" wrote "<<file.str()<<endl;
@@ -277,14 +275,14 @@ void NetworkTest::masterWork(){
 		cout<<endl;
 		
 		if(m_parameters->hasOption("-test-network-only")){
-			(*m_masterMode)=RAY_MASTER_MODE_KILL_ALL_MPI_RANKS;
+			m_switchMan->setMasterMode(RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
 			return;
 		}
 
 		/* no files */
 		if(m_parameters->getNumberOfFiles()==0){
 			cout<<"Rank "<<m_parameters->getRank()<<": no input files, aborting."<<endl;
-			(*m_masterMode)=RAY_MASTER_MODE_KILL_ALL_MPI_RANKS;
+			m_switchMan->setMasterMode(RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
 		}
 	}
 }

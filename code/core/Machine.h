@@ -161,9 +161,6 @@ class Machine{
 	bool m_showMessages;
 	bool m_mode_send_ingoing_edges;
 
-	// TODO: use RayMasterMode and RaySlaveMode
-	int m_slave_mode;
-	int m_master_mode;
 
 	bool m_startEdgeDistribution;
 	bool m_mode_AttachSequences;

@@ -20,17 +20,14 @@
 
 #include <search-engine/Searcher.h>
 
-void Searcher::constructor(Parameters*parameters,StaticVector*outbox,int*masterMode,TimePrinter*timePrinter,SwitchMan*switchMan,
-	int*slaveMode){
+void Searcher::constructor(Parameters*parameters,StaticVector*outbox,TimePrinter*timePrinter,SwitchMan*switchMan){
 	m_countElementsSlaveStarted=false;
 	m_countElementsMasterStarted=false;
 
 	m_outbox=outbox;
 	m_parameters=parameters;
-	m_masterMode=masterMode;
 	m_timePrinter=timePrinter;
 	m_switchMan=switchMan;
-	m_slaveMode=slaveMode;
 }
 
 void Searcher::countElements_masterMethod(){
@@ -40,11 +37,11 @@ void Searcher::countElements_masterMethod(){
 
 		cout<<"Opening master mode outbox= "<<m_outbox<<endl;
 
-		m_switchMan->openMasterMode(RAY_MPI_TAG_COUNT_SEARCH_ELEMENTS,m_outbox,m_parameters->getRank());
+		m_switchMan->openMasterMode(m_outbox,m_parameters->getRank());
 	}
 
 	if(m_switchMan->allRanksAreReady()){
-		m_switchMan->closeMasterMode(m_masterMode);
+		m_switchMan->closeMasterMode();
 
 		m_timePrinter->printElapsedTime("Counting search category elements");
 		cout<<endl;
@@ -59,7 +56,7 @@ void Searcher::countElements_slaveMethod(){
 
 		cout<<"Searcher, slave step "<<endl;
 
-		m_switchMan->closeSlaveModeLocally(m_outbox,m_slaveMode,m_parameters->getRank());
+		m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
 	}
 }
 

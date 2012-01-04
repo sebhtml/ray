@@ -25,6 +25,8 @@
 #include <core/master_modes.h>
 #include <structures/StaticVector.h>
 #include <communication/Message.h>
+#include <core/slave_modes.h>
+#include <core/master_modes.h>
 using namespace std;
 
 /**
@@ -34,15 +36,21 @@ using namespace std;
  * \date 2012-01-02
  */
 class SwitchMan{
+
+	RaySlaveMode m_slaveMode;
+	RayMasterMode m_masterMode;
+
 	/** number of cores */
 	int m_size;
 	int m_counter;
 
 /** a list of switches describing the order of the master modes */
-	map<int,int> m_switches;
+	map<RayMasterMode,RayMasterMode> m_switches;
 
 /** a table to convert a tag to a slave mode */
-	map<int,int> m_tagToSlaveModeTable;
+	map<Tag,RaySlaveMode> m_tagToSlaveModeTable;
+
+	map<RayMasterMode,Tag> m_masterModeToTagTable;
 
 /** run some assertions */
 	void runAssertions();
@@ -52,32 +60,43 @@ public:
 	void reset();
 	bool allRanksAreReady();
 
-	int getNextMasterMode(int currentMode);
+	RayMasterMode getNextMasterMode(RayMasterMode currentMode);
 
-	void addNextMasterMode(int a,int b);
+	void addNextMasterMode(RayMasterMode a,RayMasterMode b);
 
-	void addSlaveSwitch(int tag,int slaveMode);
+	void addSlaveSwitch(Tag tag,RaySlaveMode slaveMode);
+
+	void addMasterSwitch(RayMasterMode masterMode,Tag tag);
 
 	/** remotely open a slave mode */
-	void openSlaveMode(RayMPITag tag,StaticVector*outbox,Rank source,Rank destination);
+	void openSlaveMode(Tag tag,StaticVector*outbox,Rank source,Rank destination);
 
 	/** open a slave mode locally */
-	void openSlaveModeLocally(int tag,int*slaveMode,int rank);
+	void openSlaveModeLocally(Tag tag,Rank rank);
 
 	/** close a slave mode remotely */
-	void closeSlaveMode(int source);
+	void closeSlaveMode(Rank source);
 
 	/** locally close a slave mode */
-	void closeSlaveModeLocally(StaticVector*outbox,int*slaveMode,Rank source);
+	void closeSlaveModeLocally(StaticVector*outbox,Rank source);
 
 	/** begin a master mode */
-	void openMasterMode(RayMPITag tag,StaticVector*outbox,Rank source);
+	// TODO: add an option SERIAL or PARALLEL */
+	void openMasterMode(StaticVector*outbox,Rank source);
 
 	/** close a master mode */
-	void closeMasterMode(int*masterMode);
+	void closeMasterMode();
 
 	/** send an empty message */
-	void sendEmptyMessage(StaticVector*outbox,Rank source,Rank destination,RayMPITag tag);
+	void sendEmptyMessage(StaticVector*outbox,Rank source,Rank destination,Tag tag);
+
+	RaySlaveMode getSlaveMode();
+	int*getSlaveModePointer();
+	void setSlaveMode(RaySlaveMode mode);
+
+	RayMasterMode getMasterMode();
+	int*getMasterModePointer();
+	void setMasterMode(RayMasterMode mode);
 };
 
 #endif
