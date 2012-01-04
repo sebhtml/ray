@@ -25,13 +25,13 @@ see <http://www.gnu.org/licenses/>
 
 extern const char* MALLOC_TYPES[];
 
-#define MACRO_LIST_ITEM(x) x,
+#define ITEM(x) x,
 
 enum{
-#include <memory/malloc_type_macros.h>
-MALLOC_TYPES_H_DUMMY
+#include <scripting/malloc_types.txt>
+RAY_MALLOC_TYPE_DUMMY
 };
 
-#undef MACRO_LIST_ITEM
+#undef ITEM
 
 #endif

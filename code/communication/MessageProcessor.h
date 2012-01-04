@@ -153,9 +153,9 @@ class MessageProcessor{
 	/*
  * generate prototypes with the list and a macro
  */
-	#define MACRO_LIST_ITEM(x) void call_ ## x ( Message*m ) ;
-	#include <scripting/mpi_tag_macros.h>
-	#undef MACRO_LIST_ITEM
+	#define ITEM(x) void call_ ## x ( Message*m ) ;
+	#include <scripting/mpi_tags.txt>
+	#undef ITEM
 	
 public:
 	void constructor(

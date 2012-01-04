@@ -21,11 +21,11 @@
 
 #include <core/slave_modes.h>
 
-#define MACRO_LIST_ITEM(x) #x,
+#define ITEM(x) #x,
 
 const char* SLAVE_MODES[]={
-#include <scripting/slave_mode_macros.h>
+#include <scripting/slave_modes.txt>
 "RAY_SLAVE_MODE_DUMMY"
 };
 
-#undef MACRO_LIST_ITEM
+#undef ITEM

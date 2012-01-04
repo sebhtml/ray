@@ -1803,16 +1803,16 @@ Machine::~Machine(){
 }
 
 void Machine::assignMasterHandlers(){
-	#define MACRO_LIST_ITEM(x) m_master_methods[x]=&Machine::call_ ## x ;
-	#include <scripting/master_mode_macros.h>
-	#undef MACRO_LIST_ITEM
+	#define ITEM(x) m_master_methods[x]=&Machine::call_ ## x ;
+	#include <scripting/master_modes.txt>
+	#undef ITEM
 
 }
 
 void Machine::assignSlaveHandlers(){
-	#define MACRO_LIST_ITEM(x) m_slave_methods[x]=&Machine::call_ ## x ;
-	#include <scripting/slave_mode_macros.h>
-	#undef MACRO_LIST_ITEM
+	#define ITEM(x) m_slave_methods[x]=&Machine::call_ ## x ;
+	#include <scripting/slave_modes.txt>
+	#undef ITEM
 }
 
 

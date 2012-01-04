@@ -2366,9 +2366,9 @@ MessageProcessor::MessageProcessor(){
 }
 
 void MessageProcessor::assignHandlers(){
-	#define MACRO_LIST_ITEM(x) m_methods[x]=&MessageProcessor::call_ ## x ;
-	#include <scripting/mpi_tag_macros.h>
-	#undef MACRO_LIST_ITEM
+	#define ITEM(x) m_methods[x]=&MessageProcessor::call_ ## x ;
+	#include <scripting/mpi_tags.txt>
+	#undef ITEM
 }
 
 void MessageProcessor::setVirtualCommunicator(VirtualCommunicator*a){

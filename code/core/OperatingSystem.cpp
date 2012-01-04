@@ -450,31 +450,31 @@ void showRayVersion(MessagesHandler*messagesHandler,bool fullReport){
 
 	#ifdef SHOW_ITEMS
 	int count=0;
-	#define MACRO_LIST_ITEM(x) count++;
+	#define ITEM(x) count++;
 	#include <core/master_mode_macros.h>
-	#undef MACRO_LIST_ITEM
+	#undef ITEM
 	cout<<"Ray master modes ( "<<count<<" )"<<endl;
-	#define MACRO_LIST_ITEM(x) printf(" %i %s\n",x,#x);fflush(stdout);
+	#define ITEM(x) printf(" %i %s\n",x,#x);fflush(stdout);
 	#include <core/master_mode_macros.h>
-	#undef MACRO_LIST_ITEM
+	#undef ITEM
 	cout<<endl;
 	count=0;
-	#define MACRO_LIST_ITEM(x) count++;
+	#define ITEM(x) count++;
 	#include <core/slave_mode_macros.h>
-	#undef MACRO_LIST_ITEM
+	#undef ITEM
 	cout<<"Ray slave modes ( "<<count<<" )"<<endl;
-	#define MACRO_LIST_ITEM(x) printf(" %i %s\n",x,#x);fflush(stdout);
+	#define ITEM(x) printf(" %i %s\n",x,#x);fflush(stdout);
 	#include <core/slave_mode_macros.h>
-	#undef MACRO_LIST_ITEM
+	#undef ITEM
 	cout<<endl;
 	count=0;
-	#define MACRO_LIST_ITEM(x) count++;
+	#define ITEM(x) count++;
 	#include <communication/mpi_tag_macros.h>
-	#undef MACRO_LIST_ITEM
+	#undef ITEM
 	cout<<"Ray MPI tags ( "<<count<<" )"<<endl;
-	#define MACRO_LIST_ITEM(x) printf(" %i %s\n",x,#x);fflush(stdout);
+	#define ITEM(x) printf(" %i %s\n",x,#x);fflush(stdout);
 	#include <communication/mpi_tag_macros.h>
-	#undef MACRO_LIST_ITEM
+	#undef ITEM
 	#endif
 	cout<<endl;
 }

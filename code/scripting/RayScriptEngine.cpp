@@ -35,57 +35,54 @@ void RayScriptEngine::configureSwitchMan(SwitchMan*switchMan){
 
 	vector<RayMasterMode> steps;
 
-	#define MACRO_LIST_ITEM(x) \
+	#define ITEM(x) \
 	steps.push_back(x);
 
-	#include <scripting/master_mode_order.h>
+	#include <scripting/master_mode_order.txt>
 
-	#undef MACRO_LIST_ITEM
+	#undef ITEM
 
 	for(int i=0;i<(int)steps.size()-1;i++){
 		switchMan->addNextMasterMode(steps[i],steps[i+1]);
 	}
 
 
-	#define MACRO_LIST_ITEM(mpiTag,slaveMode) \
+	#define ITEM(mpiTag,slaveMode) \
 	switchMan->addSlaveSwitch(mpiTag,slaveMode);
 	
-	#include <scripting/slave_switches.h>
+	#include <scripting/slave_switches.txt>
 
-	#undef MACRO_LIST_ITEM
+	#undef ITEM
 
-	#define MACRO_LIST_ITEM(masterMode,mpiTag) \
+	#define ITEM(masterMode,mpiTag) \
 	switchMan->addMasterSwitch(masterMode,mpiTag);
 	
-	#include <scripting/master_switches.h>
+	#include <scripting/master_switches.txt>
 
-	#undef MACRO_LIST_ITEM
-
-
-
+	#undef ITEM
 }
 
 void RayScriptEngine::configureVirtualCommunicator(VirtualCommunicator*virtualCommunicator){
 	/** configure the virtual communicator. */
 	/* ## concatenates 2 symbols */
 
-	#define MACRO_LIST_ITEM(x,y) \
+	#define ITEM(x,y) \
 	virtualCommunicator->setElementsPerQuery( x, y );
 
 	/* define the number of words for particular message tags */
 
-	#include <scripting/tag_size_macros.h>
+	#include <scripting/tag_sizes.txt>
 
-	#undef MACRO_LIST_ITEM
+	#undef ITEM
 
 	/* set reply-map for other tags too */
 
-	#define MACRO_LIST_ITEM(x,y) \
+	#define ITEM(x,y) \
 	virtualCommunicator->setReplyType(x,y);
 
-	#include <scripting/reply_tag_macros.h>
+	#include <scripting/reply_tags.txt>
 
-	#undef MACRO_LIST_ITEM
+	#undef ITEM
 
 }
 

@@ -26,13 +26,13 @@ extern const char* MASTER_MODES[];
 
 /* generate the enum list with a macro */
 
-#define MACRO_LIST_ITEM(x) x,
+#define ITEM(x) x,
 
 enum RayMasterMode {
-#include <scripting/master_mode_macros.h>
+#include <scripting/master_modes.txt>
 RAY_MASTER_MODE_DUMMY
 };
 
-#undef MACRO_LIST_ITEM
+#undef ITEM
 
 #endif

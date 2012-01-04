@@ -25,11 +25,11 @@ see <http://www.gnu.org/licenses/>
 /* use a macro to define the array 
  * #x means x in quotes   FOO becomes "FOO" */
 
-#define MACRO_LIST_ITEM(x) #x,
+#define ITEM(x) #x,
 
 const char* MALLOC_TYPES[]={
-#include <memory/malloc_type_macros.h>
+#include <scripting/malloc_types.txt>
 };
 
-#undef MACRO_LIST_ITEM
+#undef ITEM
 

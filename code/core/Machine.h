@@ -291,12 +291,14 @@ class Machine{
 
 	/** generate the prototypes using macros */
 
-	#define MACRO_LIST_ITEM(x) void call_ ## x();
+	#define ITEM(x) void call_ ## x();
 	/** master mode callback  prototypes */
-	#include <scripting/master_mode_macros.h>
+	#include <scripting/master_modes.txt>
+
 	/** slave mode callback prototypes */
-	#include <scripting/slave_mode_macros.h>
-	#undef MACRO_LIST_ITEM
+	#include <scripting/slave_modes.txt>
+
+	#undef ITEM
 	
 public:
 	/*
