@@ -203,6 +203,8 @@ void Machine::start(){
 	m_amos.constructor(&m_parameters,&m_outboxAllocator,&m_outbox,m_fusionData,m_ed,m_switchMan.getMasterModePointer(),m_switchMan.getSlaveModePointer(),&m_scaffolder,
 		&m_inbox,&m_virtualCommunicator);
 
+	m_mp.assignHandlers(&m_scriptEngine);
+
 	m_mp.setScaffolder(&m_scaffolder);
 	m_mp.setVirtualCommunicator(&m_virtualCommunicator);
 	m_mp.setSwitchMan(&m_switchMan);
@@ -1679,10 +1681,10 @@ m_parameters.getMinimumCoverage(),&m_oa,&(m_seedingData->m_SEEDING_edgesReceived
 
 /** process data my calling current slave and master methods */
 void Machine::processData(){
-	MachineMethod masterMethod=m_master_methods[m_switchMan.getMasterMode()];
+	MachineMasterHandler masterMethod=m_master_methods[m_switchMan.getMasterMode()];
 	(this->*masterMethod)();
 
-	MachineMethod slaveMethod=m_slave_methods[m_switchMan.getSlaveMode()];
+	MachineSlaveHandler slaveMethod=m_slave_methods[m_switchMan.getSlaveMode()];
 	(this->*slaveMethod)();
 }
 
@@ -1803,16 +1805,26 @@ Machine::~Machine(){
 }
 
 void Machine::assignMasterHandlers(){
-	#define ITEM(x) m_master_methods[x]=&Machine::call_ ## x ;
-	#include <scripting/master_modes.txt>
-	#undef ITEM
+	vector<RayMasterMode> modes;
+	vector<MachineMasterHandler> handlers;
 
+	m_scriptEngine.configureMasterHandlers(&modes,&handlers);
+
+	for(int i=0;i<(int)modes.size();i++){
+		m_master_methods[modes[i]]=handlers[i];
+	}
 }
 
 void Machine::assignSlaveHandlers(){
-	#define ITEM(x) m_slave_methods[x]=&Machine::call_ ## x ;
-	#include <scripting/slave_modes.txt>
-	#undef ITEM
+
+	vector<RaySlaveMode> modes;
+	vector<MachineSlaveHandler> handlers;
+
+	m_scriptEngine.configureSlaveHandlers(&modes,&handlers);
+
+	for(int i=0;i<(int)modes.size();i++){
+		m_slave_methods[modes[i]]=handlers[i];
+	}
 }
 
 

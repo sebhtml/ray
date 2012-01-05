@@ -70,13 +70,6 @@
 #include <scripting/RayScriptEngine.h>
 using namespace std;
 
-
-/**
-* Main class of the application. Runs the main program loop on each MPI rank.
-*/
-class Machine;
-typedef void (Machine::*MachineMethod) ();
-
 /**
  * \author Sébastien Boisvert
  */
@@ -116,8 +109,8 @@ class Machine{
 
 	Amos m_amos;
 
-	MachineMethod m_master_methods[64];
-	MachineMethod m_slave_methods[64];
+	MachineSlaveHandler m_master_methods[64];
+	MachineMasterHandler m_slave_methods[64];
 
 	bool m_mustStop;
 
@@ -289,6 +282,14 @@ class Machine{
 	void assignMasterHandlers();
 	void assignSlaveHandlers();
 
+public:
+	/*
+ * this is the only public bit
+ */
+	Machine(int argc,char**argv);
+	void start();
+	~Machine();
+
 	/** generate the prototypes using macros */
 
 	#define ITEM(x) void call_ ## x();
@@ -299,16 +300,6 @@ class Machine{
 	#include <scripting/slave_modes.txt>
 
 	#undef ITEM
-	
-public:
-	/*
- * this is the only public bit
- */
-	Machine(int argc,char**argv);
-	void start();
-	~Machine();
-
-
 };
 
 

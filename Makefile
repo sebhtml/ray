@@ -76,6 +76,9 @@ uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
 OPTIMIZE = y
 
 # add -g to gcc
+# see "Is there a downside to leaving in debug symbols in release builds?"
+# http://stackoverflow.com/questions/5569644/is-there-a-downside-to-leaving-in-debug-symbols-in-release-builds
+# in short: the executable is larger, but symbols are in a different section (thus the code is not slower)
 DEBUG = y
 
 # profiling
@@ -100,7 +103,7 @@ CXXFLAGS-$(OPTIMIZE) += -O3
 ifeq ($(INTEL_COMPILER),n)
 # g++ options
 ifeq ($(uname_S),Linux)
-	CXXFLAGS +=  -Wall -ansi -g #-std=c++98
+	CXXFLAGS +=  -Wall -ansi  #-std=c++98
 	CXXFLAGS-$(PEDANTIC) += -pedantic -Wextra 
 endif
 endif

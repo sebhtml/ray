@@ -60,7 +60,7 @@ void MessageProcessor::call_RAY_MPI_TAG_CONTIG_INFO_REPLY(Message*message){
 
 void MessageProcessor::processMessage(Message*message){
 	int tag=message->getTag();
-	FNMETHOD f=m_methods[tag];
+	MessageProcessorHandler f=m_methods[tag];
 	(this->*f)(message);
 }
 
@@ -931,7 +931,8 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message)
 		int bufferPosition=i;
 		vertex.unpack(incoming,&bufferPosition);
 
-		string kmerStr=vertex.idToWord(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+		//string kmerStr=vertex.idToWord(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+
 		Vertex*node=m_subgraph->find(&vertex);
 		int coverage=1;
 		if(node!=NULL)
@@ -2361,14 +2362,18 @@ MessageProcessor::MessageProcessor(){
 	m_consumed=0;
 	m_sentinelValue=0;
 	m_sentinelValue--;// overflow it in an obvious manner
-	
-	assignHandlers();
 }
 
-void MessageProcessor::assignHandlers(){
-	#define ITEM(x) m_methods[x]=&MessageProcessor::call_ ## x ;
-	#include <scripting/mpi_tags.txt>
-	#undef ITEM
+void MessageProcessor::assignHandlers(RayScriptEngine*scriptEngine){
+	
+	vector<Tag> tags;
+	vector<MessageProcessorHandler> handlers;
+
+	scriptEngine->configureMessageHandlers(&tags,&handlers);
+
+	for(int i=0;i<(int)tags.size();i++){
+		m_methods[tags[i]]=handlers[i];
+	}
 }
 
 void MessageProcessor::setVirtualCommunicator(VirtualCommunicator*a){

@@ -47,13 +47,8 @@
 #include <structures/BloomFilter.h>
 #include <scheduling/SwitchMan.h>
 #include <communication/MessageRouter.h>
+#include <scripting/RayScriptEngine.h>
 using namespace std;
-
-
-class MessageProcessor; /* needed to define FNMETHOD */
-
-/* define method pointers with 1 argument of type Message* */
-typedef void (MessageProcessor::*FNMETHOD) (Message*message);
 
 /**
  * MessageProcessor receives all the messages of a MPI rank
@@ -80,7 +75,7 @@ class MessageProcessor{
 	/** the array of callback methods 
  * 	as of 2011-07-21, there are 167 MPI tags*/
 	/* 2011-09-20 -> 146 callbacks */
-	FNMETHOD m_methods[256];
+	MessageProcessorHandler m_methods[256];
 
 	uint64_t m_sentinelValue;
 
@@ -148,16 +143,11 @@ class MessageProcessor{
 	int*m_numberOfRanksWithCoverageData;
 	SeedExtender*seedExtender;
 
-	void assignHandlers();
 
-	/*
- * generate prototypes with the list and a macro
- */
-	#define ITEM(x) void call_ ## x ( Message*m ) ;
-	#include <scripting/mpi_tags.txt>
-	#undef ITEM
-	
 public:
+
+	void assignHandlers(RayScriptEngine*engine);
+
 	void constructor(
 MessageRouter*router,
 SeedingData*seedingData,
@@ -218,6 +208,14 @@ SequencesIndexer*m_si
 	void setScaffolder(Scaffolder*a);
 	void setVirtualCommunicator(VirtualCommunicator*a);
 	void setSwitchMan(SwitchMan*a);
+
+	/*
+ * generate prototypes with the list and a macro
+ */
+	#define ITEM(x) void call_ ## x ( Message*m ) ;
+	#include <scripting/mpi_tags.txt>
+	#undef ITEM
+	
 };
 
 #endif

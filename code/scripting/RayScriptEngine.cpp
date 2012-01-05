@@ -26,6 +26,7 @@
 #include <core/master_modes.h>
 #include <core/constants.h>
 #include <structures/Kmer.h>
+#include <core/Machine.h>
 using namespace std;
 
 void RayScriptEngine::configureSwitchMan(SwitchMan*switchMan){
@@ -86,5 +87,35 @@ void RayScriptEngine::configureVirtualCommunicator(VirtualCommunicator*virtualCo
 
 }
 
-void RayScriptEngine::configureMasterHandlers(){
+void RayScriptEngine::configureMessageHandlers(vector<Tag>*tags,vector<MessageProcessorHandler>*handlers){
+
+	#define ITEM(tag) \
+	tags->push_back(tag); \
+	handlers->push_back( &MessageProcessor::call_ ## tag );
+
+	#include <scripting/mpi_tags.txt>
+	
+	#undef ITEM
+}
+
+void RayScriptEngine::configureMasterHandlers(vector<RayMasterMode>*modes,vector<MachineMasterHandler>*handlers){
+
+	#define ITEM(masterMode) \
+	modes->push_back(masterMode); \
+	handlers->push_back( &Machine::call_ ## masterMode );
+
+	#include <scripting/master_modes.txt>
+
+	#undef ITEM
+}
+
+void RayScriptEngine::configureSlaveHandlers(vector<RaySlaveMode>*modes,vector<MachineSlaveHandler>*handlers){
+
+	#define ITEM(slaveMode) \
+	modes->push_back(slaveMode) ; \
+	handlers->push_back( &Machine::call_ ## slaveMode);
+
+	#include <scripting/slave_modes.txt>
+
+	#undef ITEM
 }

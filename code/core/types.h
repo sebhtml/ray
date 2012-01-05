@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -30,5 +30,25 @@ typedef int Tag;
 typedef int RoutingTag;
 
 typedef int Distance;
+
+
+class MessageProcessor; /* needed to define MessageProcessorHandler */
+class Message;
+
+/* define method pointers with 1 argument of type Message* */
+typedef void (MessageProcessor::*MessageProcessorHandler) (Message*message);
+
+
+/**
+* Main class of the application. Runs the main program loop on each MPI rank.
+*/
+
+class Machine;
+
+typedef void (Machine::*MachineSlaveHandler) ();
+
+typedef void (Machine::*MachineMasterHandler) ();
+
+
 
 #endif
