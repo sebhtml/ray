@@ -44,18 +44,47 @@ The new files produced by the -search option are:
 RayMicrobiomeAnalysis/
 	BiologicalAbundances/
 		DenovoAssembly/
-			Contigs.tsv
-			Identifications.tsv
+			Summary.tsv
+			Contigs/
+				Identifications.tsv
+				Summary.tsv
+				Coverage/
+					contig-0.tsv
+					...
+				CoverageDistribution/
+					contig-0.tsv
+					...
 
 		NCBI-bacteria-directory/
 			Summary.tsv
-			ecoli.tsv
-			spneumo.tsv
+			ecoli/
+				Summary.tsv
+				Coverage/
+					ecoli-seq1.tsv
+					...
+				CoverageDistribution/
+					ecoli-seq1.tsv
+					...
+			spneumo/
+				Summary.tsv
+				Coverage/
+					ecoli-seq1.tsv
+					...
+				CoverageDistribution/
+					ecoli-seq1.tsv
+					...
 			...
 
 		NCBI-viruses-directory/
 			Summary.tsv
-			phix.tsv
+			phix/
+				Summary.tsv
+				Coverage/
+					phix-seq1.tsv
+					...
+				CoverageDistribution/
+					phix-seq1.tsv
+					...
 			...
 
 Each of these .tsv files (except Identifications which contains
@@ -78,4 +107,13 @@ Each line has these fields:
 Contig	LengthInKmers	Category	SequenceName	LengthInKmers	Matches	Ratio
 
 
+== Implementation design ==
 
+All the sequences are counted. Then, a partition is computed.
+Each MPI rank then gives each of its sequences to one of its workers.
+The worker generate detailed files on disk but send summary information
+to MPI rank 0.
+
+MPI rank 0 writes all summary files in the end.
+
+The virtual processor and communicator are heavily utilised here.
