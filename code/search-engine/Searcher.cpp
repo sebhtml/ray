@@ -215,6 +215,9 @@ void Searcher::countContigKmers_slaveHandler(){
 		}
 		f1.close();
 
+		// empty the coverage distribution
+		m_coverageDistribution.clear();
+
 		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 		int bufferSize=0;
 		buffer[bufferSize++]=contigName;
