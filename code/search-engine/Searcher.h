@@ -27,8 +27,11 @@
 #include <memory/RingAllocator.h>
 #include <structures/StaticVector.h>
 #include <assembler/TimePrinter.h>
+#include <stdint.h>
 #include <vector>
 #include <string>
+#include <map>
+using namespace std;
 
 /**
  * This class searches for sequences in the de Bruijn graph
@@ -43,6 +46,9 @@ class Searcher{
 	RingAllocator*m_outboxAllocator;
 	TimePrinter*m_timePrinter;
 
+	/** the identifier to give to the virtual communicator */
+	uint64_t m_workerId;
+
 	vector<string> categoryFiles;
 
 	// for counting entries in category files
@@ -52,6 +58,30 @@ class Searcher{
 	// for counting stuff in contigs
 	bool m_countContigKmersSlaveStarted;
 	bool m_countContigKmersMasterStarted;
+
+	vector<vector<Kmer> >*m_contigs;
+	vector<uint64_t>*m_contigNames;
+
+	int m_contig;
+	int m_contigPosition;
+
+	// for the virtual communicator
+	
+	vector<uint64_t> m_activeWorkers;
+
+	ofstream m_currentCoverageFile;
+	bool m_waitingForAbundanceReply;
+
+	map<int,int> m_coverageDistribution;
+
+	/** for the master rank */
+	ofstream m_contigSummaryFile;
+	ofstream m_identificationFile;
+
+	/** flag */
+	bool m_requestedCoverage;
+
+	void showContigAbundanceProgress();
 public:
 
 	void countElements_masterMethod();
@@ -60,7 +90,10 @@ public:
 	void countContigKmers_masterHandler();
 	void countContigKmers_slaveHandler();
 
-	void constructor(Parameters*parameters,StaticVector*outbox,TimePrinter*timePrinter,SwitchMan*switchMan);
+	void constructor(Parameters*parameters,StaticVector*outbox,TimePrinter*timePrinter,SwitchMan*switchMan,
+	VirtualCommunicator*m_vc,StaticVector*inbox,RingAllocator*outboxAllocator);
+
+	void setContigs(vector<vector<Kmer> >*paths,vector<uint64_t>*names);
 };
 
 #endif

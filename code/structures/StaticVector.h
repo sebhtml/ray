@@ -40,6 +40,8 @@ class StaticVector{
 public:
 	Message*operator[](int i);
 	Message*at(int i);
+
+	// TODO: messages should be passed by reference or pointer
 	void push_back(Message a);
 	int size();
 	void clear();

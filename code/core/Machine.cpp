@@ -100,7 +100,8 @@ Machine::Machine(int argc,char**argv){
 void Machine::start(){
 	m_partitioner.constructor(&m_outboxAllocator,&m_inbox,&m_outbox,&m_parameters,&m_switchMan);
 
-	m_searcher.constructor(&m_parameters,&m_outbox,&m_timePrinter,&m_switchMan);
+	m_searcher.constructor(&m_parameters,&m_outbox,&m_timePrinter,&m_switchMan,&m_virtualCommunicator,&m_inbox,
+		&m_outboxAllocator);
 
 	m_startingTimeMicroseconds = getMicroseconds();
 
@@ -1376,6 +1377,7 @@ void Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 	int total=0;
 
 	m_scaffolder.setContigPaths(&(m_ed->m_EXTENSION_identifiers),&(m_ed->m_EXTENSION_contigs));
+	m_searcher.setContigs(&(m_ed->m_EXTENSION_contigs),&(m_ed->m_EXTENSION_identifiers));
 
 	for(int i=0;i<(int)m_ed->m_EXTENSION_contigs.size();i++){
 		uint64_t uniqueId=m_ed->m_EXTENSION_identifiers[i];
