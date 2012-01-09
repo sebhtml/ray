@@ -19,8 +19,13 @@
 
 */
 
-// the Ray engine will run these master modes in sequence
-// for those who support the feature.
+/* The Ray engine will run these master modes in series 
+in a parallel and distributed way.
+This is for modes that support the feature.
+Not all master modes have yet been ported to that list.
+
+-Sébastien Boisvert, 2011-01-08
+*/
 
 ITEM( RAY_MASTER_MODE_TEST_NETWORK )
 ITEM( RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS )
@@ -54,6 +59,8 @@ ITEM( RAY_MASTER_MODE_START_FUSION_CYCLE )
 ITEM( RAY_MASTER_MODE_ASK_EXTENSIONS )
 ITEM( RAY_MASTER_MODE_SCAFFOLDER )
 ITEM( RAY_MASTER_MODE_WRITE_SCAFFOLDS )
+
+ITEM( RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES )
 
 // the last steps
 ITEM( RAY_MASTER_MODE_KILL_RANKS )

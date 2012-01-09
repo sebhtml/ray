@@ -19,7 +19,13 @@
 
 */
 
-// this is a list of wake-up switches for slave modes
+/* This is a list of wake-up switches for slave modes.
+When a MPI tag is received, it is searched in this list.
+If a switch is found, the current slave mode of the MPI rank 
+is switched to the corresponding slave mode.
+
+-Sébastien Boisvert, 2012-01-08
+*/
 
 ITEM( RAY_MPI_TAG_TEST_NETWORK, 		RAY_SLAVE_MODE_TEST_NETWORK )
 ITEM( RAY_MPI_TAG_COUNT_SEARCH_ELEMENTS, 	RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS )
@@ -42,7 +48,7 @@ ITEM( RAY_MPI_TAG_WRITE_AMOS, RAY_SLAVE_MODE_AMOS )
 ITEM( RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION, RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION )
 ITEM( RAY_MPI_TAG_ASK_LIBRARY_DISTANCES, RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES )
 ITEM( RAY_MPI_TAG_COUNT_FILE_ENTRIES, RAY_SLAVE_MODE_COUNT_FILE_ENTRIES )
-
+ITEM( RAY_MPI_TAG_CONTIG_BIOLOGICAL_ABUNDANCES, RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES )
 
 
 

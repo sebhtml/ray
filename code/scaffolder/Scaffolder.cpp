@@ -202,6 +202,7 @@ averageValues[1],countValues[1],standardDeviationValues[1]);
 	}
 	f2.close();
 	f3.close();
+
 }
 
 void Scaffolder::printFinalMessage(){
@@ -1328,7 +1329,11 @@ void Scaffolder::writeScaffolds(){
 		fclose(m_fp);
 
 		m_switchMan->closeMasterMode();
+
+		m_timePrinter->printElapsedTime("Scaffolding of contigs");
 	}
 }
 
-
+void Scaffolder::setTimePrinter(TimePrinter*a){
+	m_timePrinter=a;
+}

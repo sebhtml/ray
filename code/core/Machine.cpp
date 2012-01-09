@@ -181,6 +181,7 @@ void Machine::start(){
 
 	m_scaffolder.constructor(&m_outbox,&m_inbox,&m_outboxAllocator,&m_parameters,
 	&m_virtualCommunicator,&m_switchMan);
+	m_scaffolder.setTimePrinter(&m_timePrinter);
 
 	m_edgePurger.constructor(&m_outbox,&m_inbox,&m_outboxAllocator,&m_parameters,m_switchMan.getSlaveModePointer(),m_switchMan.getMasterModePointer(),
 	&m_virtualCommunicator,&m_subgraph,&m_virtualProcessor);
@@ -237,7 +238,6 @@ void Machine::start(){
 		showRayVersion(&m_messagesHandler,fullReport);
 
 		if(!fullReport){
-			m_timePrinter.printElapsedTime("Beginning of computation");
 			cout<<endl;
 		}
 	}
@@ -874,7 +874,7 @@ void Machine::call_RAY_MASTER_MODE_COUNT_FILE_ENTRIES(){
 /** actually, call_RAY_MASTER_MODE_LOAD_SEQUENCES 
  * writes the AMOS file */
 void Machine::call_RAY_MASTER_MODE_LOAD_SEQUENCES(){
-	m_timePrinter.printElapsedTime("File partitioning");
+	m_timePrinter.printElapsedTime("Counting biological sequences in files");
 	cout<<endl;
 
 	/** this won't write anything if -amos was not provided */
@@ -1066,10 +1066,6 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING(){
 	m_switchMan.setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
 }
 
-void Machine::call_RAY_MASTER_MODE_DO_NOTHING(){}
-
-void Machine::call_RAY_SLAVE_MODE_DO_NOTHING(){}
-
 void Machine::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(){
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
@@ -1222,7 +1218,7 @@ void Machine::call_RAY_SLAVE_MODE_WRITE_KMERS(){
 void Machine::call_RAY_MASTER_MODE_TRIGGER_INDEXING(){
 	m_switchMan.setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
 	
-	m_timePrinter.printElapsedTime("Edge purge");
+	m_timePrinter.printElapsedTime("Null edge purging");
 	cout<<endl;
 
 	for(int i=0;i<getSize();i++){
@@ -1334,9 +1330,6 @@ void Machine::call_RAY_MASTER_MODE_START_UPDATING_DISTANCES(){
 	m_sequence_id=0;
 
 	m_switchMan.closeMasterMode();
-}
-
-void Machine::call_RAY_MASTER_MODE_INDEX_SEQUENCES(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(){
@@ -1570,7 +1563,7 @@ void Machine::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 		/* the other condition is that we have to stop */
 		if(m_mustStop || m_parameters.hasCheckpoint("ContigPaths")){
 			cout<<"Rank "<<m_parameters.getRank()<<" cycleNumber= "<<m_cycleNumber<<endl;
-			m_timePrinter.printElapsedTime("Merging of redundant contigs");
+			m_timePrinter.printElapsedTime("Merging of redundant paths");
 			cout<<endl;
 
 			m_switchMan.setMasterMode(RAY_MASTER_MODE_ASK_EXTENSIONS);
@@ -1689,10 +1682,6 @@ void Machine::processData(){
 }
 
 void Machine::call_RAY_MASTER_MODE_KILL_RANKS(){
-	if(m_scaffolder.m_numberOfRanksFinished==getSize()){
-		m_timePrinter.printElapsedTime("Scaffolding of contigs");
-	}
-
 	m_switchMan.closeMasterMode();
 }
 
@@ -1826,5 +1815,28 @@ void Machine::assignSlaveHandlers(){
 		m_slave_methods[modes[i]]=handlers[i];
 	}
 }
+
+void Machine::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
+	m_searcher.countContigKmers_slaveHandler();
+}
+
+void Machine::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
+	m_searcher.countContigKmers_masterHandler();
+}
+
+/* append empty implementations */
+/* if one of them need to be implemented in an non-empty fashion, it must 
+ * first be removed from scripting/empty_slave_handlers.txt 
+ * or  scripting/empty_master_handlers.txt
+ * and added here as a call_*
+ */
+
+#define ITEM(mode) \
+void Machine::call_ ## mode (){}
+
+#include <scripting/empty_slave_handlers.txt>
+#include <scripting/empty_master_handlers.txt>
+
+#undef ITEM
 
 

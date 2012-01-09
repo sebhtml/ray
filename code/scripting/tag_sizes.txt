@@ -20,7 +20,15 @@
 */
 
 
-// this file contains the number of elements per tag
+/*
+This file contains the number of elements per tag.
+It is used to configure communication/VirtualCommunicator.cpp.
+Note that it is scripting/RayScriptEngine.cpp that parses this
+list.
+
+
+-Sébastien Boisvert, 2011-01-08
+*/
 
 ITEM( RAY_MPI_TAG_GET_CONTIG_CHUNK,		MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t) )
 ITEM( RAY_MPI_TAG_REQUEST_VERTEX_READS, 		max(5,KMER_U64_ARRAY_SIZE+1) )

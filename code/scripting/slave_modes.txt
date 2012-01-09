@@ -19,7 +19,16 @@
 
 */
 
-// this is a list of slave modes
+/*
+This is a list of slave modes,
+This is list is clean of legacy modes, I think.
+The files core/slave_modes.h and core/slave_modes.cpp as well as
+the declaration of handlers in core/Machine.h are generated using
+this fancy list of items.
+
+
+-Sébastien Boisvert, 2011-01-08
+*/
 
 ITEM( RAY_SLAVE_MODE_LOAD_SEQUENCES )
 ITEM( RAY_SLAVE_MODE_START_SEEDING )
@@ -45,3 +54,4 @@ ITEM( RAY_SLAVE_MODE_DIE )
 ITEM( RAY_SLAVE_MODE_TEST_NETWORK )
 ITEM( RAY_SLAVE_MODE_COUNT_FILE_ENTRIES )
 ITEM( RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS )
+ITEM( RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES )

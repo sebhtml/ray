@@ -23,6 +23,9 @@
 void Searcher::constructor(Parameters*parameters,StaticVector*outbox,TimePrinter*timePrinter,SwitchMan*switchMan){
 	m_countElementsSlaveStarted=false;
 	m_countElementsMasterStarted=false;
+	
+	m_countContigKmersMasterStarted=false;
+	m_countContigKmersSlaveStarted=false;
 
 	m_outbox=outbox;
 	m_parameters=parameters;
@@ -35,15 +38,13 @@ void Searcher::countElements_masterMethod(){
 	if(!m_countElementsMasterStarted){
 		m_countElementsMasterStarted=true;
 
-		cout<<"Opening master mode outbox= "<<m_outbox<<endl;
-
 		m_switchMan->openMasterMode(m_outbox,m_parameters->getRank());
 	}
 
 	if(m_switchMan->allRanksAreReady()){
 		m_switchMan->closeMasterMode();
 
-		m_timePrinter->printElapsedTime("Counting search category elements");
+		m_timePrinter->printElapsedTime("Counting search category sequences");
 		cout<<endl;
 	}
 }
@@ -54,7 +55,31 @@ void Searcher::countElements_slaveMethod(){
 
 		m_countElementsSlaveStarted=true;
 
-		cout<<"Searcher, slave step "<<endl;
+		m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
+	}
+}
+
+void Searcher::countContigKmers_masterHandler(){
+
+	if(!m_countContigKmersMasterStarted){
+		m_countContigKmersMasterStarted=true;
+
+		m_switchMan->openMasterMode(m_outbox,m_parameters->getRank());
+	}
+
+	if(m_switchMan->allRanksAreReady()){
+		m_switchMan->closeMasterMode();
+
+		m_timePrinter->printElapsedTime("Counting contig biological abundances");
+		cout<<endl;
+	}
+}
+
+void Searcher::countContigKmers_slaveHandler(){
+
+	if(!m_countContigKmersSlaveStarted){
+
+		m_countElementsSlaveStarted=true;
 
 		m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
 	}

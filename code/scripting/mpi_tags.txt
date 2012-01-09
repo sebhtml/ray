@@ -19,6 +19,17 @@
 
 */
 
+/* This is the list of all MPI tags in Ray.
+The declaration of handlers in communication/MessageProcessor.h is automated using this list.
+The enumeration of tags in communication/mpi_tags.h and communication/mpi_tags.cpp
+is also automated.
+Some MPI tags are legacy and should be removed.
+
+
+-Sébastien Boisvert, 2012-01-08
+*/
+
+
 ITEM( RAY_MPI_TAG_LOAD_SEQUENCES )
 ITEM( RAY_MPI_TAG_WELCOME )
 ITEM( RAY_MPI_TAG_SEQUENCES_READY )
@@ -170,3 +181,4 @@ ITEM( RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER )
 ITEM( RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY )
 ITEM( RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL )
 ITEM( RAY_MPI_TAG_COUNT_SEARCH_ELEMENTS )
+ITEM( RAY_MPI_TAG_CONTIG_BIOLOGICAL_ABUNDANCES )

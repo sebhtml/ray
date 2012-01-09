@@ -19,6 +19,14 @@
 
 */
 
+/* 
+This list contains symbols for memory allocation.
+It is used to generate memory/malloc_types.h and memory/malloc_types.cpp
+This is useful when using the option -show-memory-allocations of Ray.
+
+-Sébastien Boisvert, 2011-01-08
+*/
+
 ITEM( RAY_MALLOC_TYPE_SEED_EXTENDER_CACHE )
 ITEM( RAY_MALLOC_TYPE_EXTENSION_DATA_TREES )
 ITEM( RAY_MALLOC_TYPE_EXTENSION_DATA_ALLOCATOR )

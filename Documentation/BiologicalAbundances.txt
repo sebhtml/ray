@@ -6,13 +6,13 @@ For example, let's say we have 1_1.fastq and 1_2.fastq containing a lot of seque
 from a given microbiome. To get the biological abundances of all NCBI viruses and
 all NCBI bacteria as well as identified contigs, you can use Ray for that.
 
-For any species that you want to check in your sample, you need to provided a single fasta
+For any species that you want to check in your sample, you need to provide a single fasta
 file. This file can contain chromosomes, genes, or both.
 
 Now, you need a directory containing all viruses in fasta format (one virus per file) and
 another directory containing all bacteria in fasta format (one bacterium per file as well).
 
-These can be downloaded from NCBI right awayé
+These can be downloaded from NCBI right away.
 
 == Command ==
 

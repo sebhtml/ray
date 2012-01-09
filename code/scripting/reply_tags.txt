@@ -20,7 +20,17 @@
 */
 
 
-// this file contains the reply tags
+/* This file contains the reply tags.
+Usually, the reply tag of <tagA> is <tagA>_REPLY.
+However, this is not a rule, otherwise we would not need this 
+list.
+It is used to configure communication/VirtualCommunicator.cpp.
+Note that it is scripting/RayScriptEngine.cpp that parses this
+list.
+
+
+-Sébastien Boisvert, 2011-01-08
+*/
 
 ITEM( RAY_MPI_TAG_GET_CONTIG_CHUNK,		RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY )
 ITEM( RAY_MPI_TAG_REQUEST_VERTEX_READS,	RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY )

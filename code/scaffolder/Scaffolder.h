@@ -33,6 +33,7 @@
 #include <scaffolder/ScaffoldingLink.h>
 #include <scaffolder/SummarizedLink.h>
 #include <scheduling/SwitchMan.h>
+#include <assembler/TimePrinter.h>
 
 using namespace std;
 
@@ -44,6 +45,8 @@ using namespace std;
 class Scaffolder{
 	SwitchMan*m_switchMan;
 	
+	TimePrinter*m_timePrinter;
+
 	int m_rankIdForContig;
 	bool m_hasContigSequence_Initialised;
 	FILE*m_fp;
@@ -178,6 +181,8 @@ public:
 	void addMasterContig(uint64_t name,int length);
 	void writeScaffolds();
 	void printFinalMessage();
+
+	void setTimePrinter(TimePrinter*a);
 };
 
 #endif

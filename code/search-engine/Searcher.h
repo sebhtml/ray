@@ -45,12 +45,20 @@ class Searcher{
 
 	vector<string> categoryFiles;
 
+	// for counting entries in category files
 	bool m_countElementsMasterStarted;
 	bool m_countElementsSlaveStarted;
+
+	// for counting stuff in contigs
+	bool m_countContigKmersSlaveStarted;
+	bool m_countContigKmersMasterStarted;
 public:
 
 	void countElements_masterMethod();
 	void countElements_slaveMethod();
+
+	void countContigKmers_masterHandler();
+	void countContigKmers_slaveHandler();
 
 	void constructor(Parameters*parameters,StaticVector*outbox,TimePrinter*timePrinter,SwitchMan*switchMan);
 };

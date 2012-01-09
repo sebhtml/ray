@@ -19,7 +19,14 @@
 
 */
 
-// this is the list of a master modes, including useless legacy ones
+/*
+This is the list of a master modes, including useless legacy ones.
+The files core/master_modes.h and core/master_modes.cpp as well as
+the declaration of handlers in core/Machine.h are generated using
+this handy list.
+
+-Sébastien Boisvert, 2011-01-08
+*/
 
 ITEM( RAY_MASTER_MODE_LOAD_CONFIG )
 ITEM( RAY_MASTER_MODE_LOAD_SEQUENCES )
@@ -53,3 +60,4 @@ ITEM( RAY_MASTER_MODE_KILL_ALL_MPI_RANKS )
 ITEM( RAY_MASTER_MODE_TEST_NETWORK )
 ITEM( RAY_MASTER_MODE_COUNT_FILE_ENTRIES )
 ITEM( RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS )
+ITEM( RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES )
