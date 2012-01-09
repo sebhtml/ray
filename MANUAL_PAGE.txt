@@ -38,18 +38,6 @@ DESCRIPTION:
        -o outputDirectory
               Specifies the directory for outputted files. Default is RayOutput
 
-  Message routing for large number of cores
-
-       -route-messages
-              Enables Ray message router.
-              With this option, only one rank per node will communicate with other nodes.
-              Messages will be routed accordingly.
-              Files generated: Rank<x>.Connections.txt and Rank<x>.Routes.txt
-
-       -cores-per-node coresPerNode
-              Sets the number of cores per node. The default is 8.
-              This is only used to compute routes if -route-messages is provided.
-
   Other outputs
 
        -amos
@@ -131,10 +119,30 @@ DESCRIPTION:
        -read-write-checkpoints
               Read and write checkpoint files
 
+  Message routing for large number of cores
+
+       -route-messages
+              Enables the Ray message router. Disabled by default.
+              Messages will be routed accordingly so that any rank can communicate directly with only a few others.
+              Without -route-messages, any rank can communicate directly with any other rank.
+              Files generated: Routing.Connections.txt, Routing.Routes.txt and Routing.RelayEvents.txt
+              and Routing.Summary.txt
+
+       -connection-type type
+              Sets the connection type for routes.
+              Accepted values are debruijn, group, random, kautz and complete. Default is debruijn.
+              With the type debruijn, the number of ranks must be a power of something.
+              Examples: 256 = 16*16, 512=8*8*8, 49=7*7, and so on.
+              Otherwise, don't use debruijn routing but use another one
+              With the type kautz, the number of ranks n must be n=(k+1)*k^(d-1) for some k and d
+
+       -routing-graph-degree degree
+              Specifies the outgoing degree for the routing graph.
+
   Hardware testing
 
        -test-network-only
-              Test the network and return. This option enables -write-network-test-raw-data.
+              Tests the network and returns.
 
        -write-network-test-raw-data
               Writes one additional file per rank detailing the network test.
@@ -296,4 +304,4 @@ COPYRIGHT
        You have received a copy of the GNU General Public License
        along with this program (see LICENSE).
 
-Ray 1.7.1
+Ray 2.0.0-devel
