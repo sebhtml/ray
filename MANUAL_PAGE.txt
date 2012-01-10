@@ -34,6 +34,7 @@ DESCRIPTION:
               Provides a file containing single-end reads.
 
   Search in the de Bruijn graph
+
        -search searchDirectory
               Provides a directory containing fasta files to be searched in the de Bruijn graph.
               Biological abundances will be written to RayOutput/BiologicalAbundances
@@ -101,6 +102,9 @@ DESCRIPTION:
               Shows the consensus when a choice is done.
 
   Assembly options (defaults work well)
+
+       -minimum-contig-length
+              Changes the minimum contig length, default is 100
 
        -color-space
               Runs in color-space

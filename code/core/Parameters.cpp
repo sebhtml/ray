@@ -19,7 +19,7 @@
 
 */
 
-/* TODO: add option -minimumContigLength
+/* 
  * TODO: add option -minimumScaffoldLength
  */
 
@@ -283,11 +283,14 @@ void Parameters::parseCommands(){
 	setPeakCoverage.insert("-peakCoverage");
 	setRepeatCoverage.insert("-repeatCoverage");
 
+	set<string> minimumContigLength;
+	minimumContigLength.insert("-minimum-contig-length");
 
 	set<string> searchOption;
 	searchOption.insert("-search");
 
 	vector<set<string> > toAdd;
+	toAdd.push_back(minimumContigLength);
 	toAdd.push_back(showExtensionChoiceOption);
 	toAdd.push_back(setRepeatCoverage);
 	toAdd.push_back(setPeakCoverage);
@@ -649,6 +652,26 @@ void Parameters::parseCommands(){
 			token=m_commands[i];
 
 			m_searchDirectories.push_back(token);
+
+		}else if(minimumContigLength.count(token)>0){
+			i++;
+			int items=m_commands.size()-i;
+
+			if(items<1){
+				if(m_rank==MASTER_RANK){
+					cout<<"Error: "<<token<<" needs 1 item, you provided only "<<items<<endl;
+				}
+				m_error=true;
+				return;
+			}
+			token=m_commands[i];
+			m_minimumContigLength=atoi(token.c_str());
+
+			if(m_rank==MASTER_RANK){
+				cout<<endl;
+				cout<<"Rank "<<MASTER_RANK<<" the minimum contig length is "<<m_minimumContigLength<<endl;
+				cout<<endl;
+			}
 
 		}else if(kmerSetting.count(token)>0){
 			i++;
@@ -1144,6 +1167,7 @@ void Parameters::showUsage(){
 	cout<<endl;
 
 	cout<<"  Search in the de Bruijn graph"<<endl;
+	cout<<endl;
 	showOption("-search searchDirectory","Provides a directory containing fasta files to be searched in the de Bruijn graph.");
 	showOptionDescription("Biological abundances will be written to RayOutput/BiologicalAbundances");
 	showOptionDescription("See Documentation/BiologicalAbundances.txt");
@@ -1157,7 +1181,6 @@ void Parameters::showUsage(){
 	cout<<endl;
 	showOption("-o outputDirectory","Specifies the directory for outputted files. Default is RayOutput");
 	cout<<endl;
-
 
 	cout<<"  Other outputs"<<endl;
 	cout<<endl;
@@ -1203,6 +1226,10 @@ void Parameters::showUsage(){
 
 	cout<<"  Assembly options (defaults work well)"<<endl;
 	cout<<endl;
+	
+	showOption("-minimum-contig-length","Changes the minimum contig length, default is 100");
+	cout<<endl;
+
 	showOption("-color-space","Runs in color-space");
 	showOptionDescription("Needs csfasta files. Activated automatically if csfasta files are provided.");
 	cout<<endl;
