@@ -33,6 +33,11 @@ DESCRIPTION:
        -s sequenceFile
               Provides a file containing single-end reads.
 
+       -search searchDirectory
+              Provides a directory containing fasta files to be searched in the de Bruijn graph.
+              Biological abundances will be written to RayOutput/BiologicalAbundances
+              See Documentation/BiologicalAbundances.txt
+
   Outputs
 
        -o outputDirectory

@@ -25,6 +25,7 @@
 using namespace std;
 
 //#define CONFIG_CONTIG_ABUNDANCE_VERBOSE
+//#define CONFIG_COUNT_ELEMENTS_VERBOSE
 
 void Searcher::constructor(Parameters*parameters,StaticVector*outbox,TimePrinter*timePrinter,SwitchMan*switchMan,
 	VirtualCommunicator*vc,StaticVector*inbox,RingAllocator*outboxAllocator){
@@ -50,11 +51,28 @@ void Searcher::countElements_masterMethod(){
 
 	if(!m_countElementsMasterStarted){
 		m_countElementsMasterStarted=true;
+		m_ranksDoneCounting=0;
 
 		m_switchMan->openMasterMode(m_outbox,m_parameters->getRank());
-	}
+	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_COUNTING_DONE)){
+		m_ranksDoneCounting++;
+	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_ELEMENTS)){
+		Message*message=m_inbox->at(0);
+		uint64_t*buffer=message->getBuffer();
+		int directory=buffer[0];
+		int file=buffer[1];
+		int count=buffer[2];
 
-	if(m_switchMan->allRanksAreReady()){
+		m_searchDirectories[directory].setCount(file,count);
+
+		// send a response
+		m_switchMan->sendEmptyMessage(m_outbox,m_parameters->getRank(),message->getSource(),RAY_MPI_TAG_SEARCH_ELEMENTS_REPLY);
+
+	}else if(m_ranksDoneCounting==m_parameters->getSize()){
+		m_ranksDoneCounting=-1;
+		
+		m_switchMan->sendToAll(m_outbox,m_parameters->getRank(),RAY_MPI_TAG_SEARCH_SHARE_COUNTS);
+	}else if(m_switchMan->allRanksAreReady()){
 		m_switchMan->closeMasterMode();
 
 		m_timePrinter->printElapsedTime("Counting search category sequences");
@@ -67,6 +85,111 @@ void Searcher::countElements_slaveMethod(){
 	if(!m_countElementsSlaveStarted){
 
 		m_countElementsSlaveStarted=true;
+		m_listedDirectories=false;
+
+		#ifdef CONFIG_COUNT_ELEMENTS_VERBOSE
+		cout<<"init"<<endl;
+		#endif
+
+	}else if(!m_listedDirectories){
+		#ifdef CONFIG_COUNT_ELEMENTS_VERBOSE
+		cout<<"listing"<<endl;
+		#endif
+
+		vector<string>*directories=m_parameters->getSearchDirectories();
+		for(int i=0;i<(int)directories->size();i++){
+			SearchDirectory entry;
+			entry.constructor(directories->at(i));
+			m_searchDirectories.push_back(entry);
+		}
+
+		m_listedDirectories=true;
+		
+		m_countedDirectories=false;
+	}else if(!m_countedDirectories){
+		#ifdef CONFIG_COUNT_ELEMENTS_VERBOSE
+		cout<<"counting"<<endl;
+		#endif
+
+		// no communication here
+		int fileNumber=0;
+
+		for(int i=0;i<(int)m_searchDirectories.size();i++){
+			int count=m_searchDirectories[i].getSize();
+			for(int j=0;j<count;j++){
+				if(fileNumber%m_parameters->getSize() == m_parameters->getRank()){
+					#ifdef CONFIG_COUNT_ELEMENTS_VERBOSE
+					cout<<"Hop counting"<<endl;
+					#endif
+
+					m_searchDirectories[i].countEntriesInFile(j);
+					cout<<"Rank "<<m_parameters->getRank()<<" "<<*(m_searchDirectories[i].getDirectoryName())<<""<<*(m_searchDirectories[i].getFileName(j))<<" -> "<<m_searchDirectories[i].getCount(j)<<endl;
+				}
+				fileNumber++;
+			}
+		}
+		m_countedDirectories=true;
+
+		#ifdef CONFIG_COUNT_ELEMENTS_VERBOSE
+		cout<<"done counting"<<endl;
+		#endif
+		m_sharedCounts=false;
+		m_shareCounts=false;
+
+		// tell root that we are done
+		m_switchMan->sendEmptyMessage(m_outbox,m_parameters->getRank(),MASTER_RANK,RAY_MPI_TAG_SEARCH_COUNTING_DONE);
+
+	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_SHARE_COUNTS)){
+		m_shareCounts=true;
+		m_directoryIterator=0;
+		m_fileIterator=0;
+		m_waiting=false;
+	
+		#ifdef CONFIG_COUNT_ELEMENTS_VERBOSE
+		cout<<"Received RAY_MPI_TAG_SEARCH_SHARE_COUNTS"<<endl;
+		#endif
+
+		cout<<"Rank "<<m_parameters->getRank()<<" syncing with master"<<endl;
+	}else if(!m_sharedCounts && m_shareCounts){
+		if(m_directoryIterator==(int)m_searchDirectories.size()){
+			m_sharedCounts=true;
+		}else if(m_fileIterator==(int)m_searchDirectories[m_directoryIterator].getSize()){
+			cout<<"Rank "<<m_parameters->getRank()<<" synced "<<*(m_searchDirectories[m_directoryIterator].getDirectoryName())<<endl;
+
+			m_fileIterator=0;
+			m_directoryIterator++;
+		}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_ELEMENTS_REPLY)){
+			#ifdef CONFIG_COUNT_ELEMENTS_VERBOSE
+			cout<<"received RAY_MPI_TAG_SEARCH_ELEMENTS_REPLY, resuming work"<<endl;
+			#endif
+
+			m_waiting=false;
+		}else if(!m_waiting){
+			
+			int count=m_searchDirectories[m_directoryIterator].getCount(m_fileIterator);
+
+			// sent a response
+			uint64_t*buffer2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+			int bufferSize=0;
+			buffer2[bufferSize++]=m_directoryIterator;
+			buffer2[bufferSize++]=m_fileIterator;
+			buffer2[bufferSize++]=count;
+
+			Message aMessage(buffer2,bufferSize,MASTER_RANK,
+				RAY_MPI_TAG_SEARCH_ELEMENTS,m_parameters->getRank());
+
+			m_outbox->push_back(aMessage);
+
+			m_waiting=true;
+
+		
+			#ifdef CONFIG_COUNT_ELEMENTS_VERBOSE
+			cout<<"Rank "<<m_parameters->getRank()<<" Sending RAY_MPI_TAG_SEARCH_ELEMENTS "<<m_directoryIterator<<" "<<m_fileIterator<<endl;
+			#endif
+
+			m_fileIterator++;
+		}
+	}else if(m_sharedCounts){
 
 		m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
 	}

@@ -159,6 +159,13 @@ void SwitchMan::sendEmptyMessage(StaticVector*outbox,Rank source,Rank destinatio
 	outbox->push_back(aMessage);
 }
 
+void SwitchMan::sendToAll(StaticVector*outbox,Rank source,Tag tag){
+	for(int i=0;i<m_size;i++){
+		Message aMessage(NULL,0,i,tag,source);
+		outbox->push_back(aMessage);
+	}
+}
+
 void SwitchMan::openSlaveModeLocally(Tag tag,Rank rank){
 	if(m_tagToSlaveModeTable.count(tag)==0)
 		return;

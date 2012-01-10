@@ -25,6 +25,7 @@
 #include <scheduling/SwitchMan.h>
 #include <communication/VirtualCommunicator.h>
 #include <memory/RingAllocator.h>
+#include <search-engine/SearchDirectory.h>
 #include <structures/StaticVector.h>
 #include <assembler/TimePrinter.h>
 #include <stdint.h>
@@ -59,8 +60,20 @@ class Searcher{
 	bool m_countContigKmersSlaveStarted;
 	bool m_countContigKmersMasterStarted;
 
+	// for counting sequences
+	bool m_listedDirectories;
+	bool m_countedDirectories;
+	bool m_shareCounts;
+	bool m_sharedCounts;
+	int m_directoryIterator;
+	int m_fileIterator;
+	bool m_waiting;
+
 	vector<vector<Kmer> >*m_contigs;
 	vector<uint64_t>*m_contigNames;
+
+	// synchronization
+	int m_ranksDoneCounting;
 
 	int m_contig;
 	int m_contigPosition;
@@ -73,6 +86,8 @@ class Searcher{
 	bool m_waitingForAbundanceReply;
 
 	map<int,int> m_coverageDistribution;
+
+	vector<SearchDirectory> m_searchDirectories;
 
 	/** for the master rank */
 	ofstream m_contigSummaryFile;

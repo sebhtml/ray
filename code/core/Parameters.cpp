@@ -1143,6 +1143,11 @@ void Parameters::showUsage(){
 	showOption("-s sequenceFile","Provides a file containing single-end reads.");
 	cout<<endl;
 
+	showOption("-search searchDirectory","Provides a directory containing fasta files to be searched in the de Bruijn graph.");
+	showOptionDescription("Biological abundances will be written to RayOutput/BiologicalAbundances");
+	showOptionDescription("See Documentation/BiologicalAbundances.txt");
+	cout<<endl;
+
 	cout<<"  Outputs"<<endl;
 	cout<<endl;
 	showOption("-o outputDirectory","Specifies the directory for outputted files. Default is RayOutput");

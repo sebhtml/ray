@@ -97,6 +97,8 @@ public:
 	RayMasterMode getMasterMode();
 	int*getMasterModePointer();
 	void setMasterMode(RayMasterMode mode);
+
+	void sendToAll(StaticVector*outbox,Rank source,Tag tag);
 };
 
 #endif
