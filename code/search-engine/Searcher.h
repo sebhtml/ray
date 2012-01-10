@@ -69,6 +69,8 @@ class Searcher{
 	int m_fileIterator;
 	bool m_waiting;
 
+	bool m_writeDetailedFiles;
+
 	vector<vector<Kmer> >*m_contigs;
 	vector<uint64_t>*m_contigNames;
 

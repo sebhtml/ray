@@ -26,6 +26,7 @@ using namespace std;
 
 //#define CONFIG_CONTIG_ABUNDANCE_VERBOSE
 //#define CONFIG_COUNT_ELEMENTS_VERBOSE
+//#define CONFIG_DEBUG_IOPS
 
 void Searcher::constructor(Parameters*parameters,StaticVector*outbox,TimePrinter*timePrinter,SwitchMan*switchMan,
 	VirtualCommunicator*vc,StaticVector*inbox,RingAllocator*outboxAllocator){
@@ -216,15 +217,17 @@ void Searcher::countContigKmers_masterHandler(){
 		string directory3Str=directory3.str();
 		createDirectory(directory3Str.c_str());
 
-		ostringstream directory4;
-		directory4<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Contigs/Coverage";
-		string directory4Str=directory4.str();
-		createDirectory(directory4Str.c_str());
+		if(m_writeDetailedFiles){
+			ostringstream directory4;
+			directory4<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Contigs/Coverage";
+			string directory4Str=directory4.str();
+			createDirectory(directory4Str.c_str());
 
-		ostringstream directory5;
-		directory5<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Contigs/CoverageDistribution";
-		string directory5Str=directory5.str();
-		createDirectory(directory5Str.c_str());
+			ostringstream directory5;
+			directory5<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Contigs/CoverageDistribution";
+			string directory5Str=directory5.str();
+			createDirectory(directory5Str.c_str());
+		}
 
 		ostringstream summary;
 		summary<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Contigs/Summary.tsv";
@@ -285,6 +288,7 @@ void Searcher::countContigKmers_masterHandler(){
 }
 
 void Searcher::countContigKmers_slaveHandler(){
+	// Process virtual messages
 	m_virtualCommunicator->forceFlush();
 	m_virtualCommunicator->processInbox(&m_activeWorkers);
 	m_activeWorkers.clear();
@@ -302,6 +306,8 @@ void Searcher::countContigKmers_slaveHandler(){
 
 		m_waitingForAbundanceReply=false;
 
+		m_writeDetailedFiles=m_parameters->hasOption("-search-detailed");
+
 	// we have finished our part
 	}else if(m_contig == (int) m_contigs->size()){
 		m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
@@ -317,26 +323,52 @@ void Searcher::countContigKmers_slaveHandler(){
 
 		int lengthInKmers=(*m_contigs)[m_contig].size();
 
-		m_currentCoverageFile.close();
+		#ifdef CONFIG_DEBUG_IOPS
+		cout<<"Closing file"<<endl;
+		#endif
+
+		if(m_writeDetailedFiles){
+			m_currentCoverageFile.close();
+		}
 
 		// write the coverage distribution
 		ostringstream file1;
 		file1<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Contigs/CoverageDistribution/contig-"<<contigName<<".tsv";
-		ofstream f1(file1.str().c_str());
-		f1<<"#KmerCoverage	Count"<<endl;
+
+		#ifdef CONFIG_DEBUG_IOPS
+		cout<<"Opening file"<<endl;
+		#endif
+
+		ofstream f1;
+		if(m_writeDetailedFiles){
+			f1.open(file1.str().c_str());
+			f1<<"#KmerCoverage	Count"<<endl;
+		}
+
 		int mode=0;
 		int modeCount=0;
 
 		for(map<int,int>::iterator i=m_coverageDistribution.begin();i!=m_coverageDistribution.end();i++){
 			int count=i->second;
 			int coverage=i->first;
-			f1<<coverage<<"	"<<count<<endl;
+
+			if(m_writeDetailedFiles){
+				f1<<coverage<<"	"<<count<<endl;
+			}
+
 			if(count>modeCount){
 				mode=coverage;
 				modeCount=count;
 			}
 		}
-		f1.close();
+
+		if(m_writeDetailedFiles){
+			f1.close();
+		}
+
+		#ifdef CONFIG_DEBUG_IOPS
+		cout<<"Closing file"<<endl;
+		#endif
 
 		// empty the coverage distribution
 		m_coverageDistribution.clear();
@@ -401,21 +433,28 @@ void Searcher::countContigKmers_slaveHandler(){
 		int coverage=data[0];
 
 		if(m_contigPosition==0){
-			#ifdef CONFIG_CONTIG_ABUNDANCE_VERBOSE
+			#ifdef CONFIG_DEBUG_IOPS
 			cout<<"Opening file"<<endl;
 			#endif
+
 			uint64_t contigName=m_contigNames->at(m_contig);
 			ostringstream file2;
 			file2<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Contigs/Coverage/contig-"<<contigName<<".tsv";
-			m_currentCoverageFile.open(file2.str().c_str());
-			m_currentCoverageFile<<"#KmerPosition	KmerCoverage"<<endl;
+
+			if(m_writeDetailedFiles){
+				m_currentCoverageFile.open(file2.str().c_str());
+				m_currentCoverageFile<<"#KmerPosition	KmerCoverage"<<endl;
+			}
 		}
 
 		if(m_contigPosition % 1000 == 0 || m_contigPosition==(int)m_contigs->at(m_contig).size()-1){
 			showContigAbundanceProgress();
 		}
 
-		m_currentCoverageFile<<m_contigPosition+1<<"	"<<coverage<<endl;
+		if(m_writeDetailedFiles){
+			m_currentCoverageFile<<m_contigPosition+1<<"	"<<coverage<<endl;
+		}
+
 		m_coverageDistribution[coverage]++;
 
 		m_contigPosition++;
