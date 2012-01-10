@@ -89,6 +89,7 @@ public:
 
 	/** send an empty message */
 	void sendEmptyMessage(StaticVector*outbox,Rank source,Rank destination,Tag tag);
+	void sendMessage(uint64_t*buffer,int count,StaticVector*outbox,Rank source,Rank destination,Tag tag);
 
 	RaySlaveMode getSlaveMode();
 	int*getSlaveModePointer();
@@ -99,6 +100,7 @@ public:
 	void setMasterMode(RayMasterMode mode);
 
 	void sendToAll(StaticVector*outbox,Rank source,Tag tag);
+	void sendMessageToAll(uint64_t*buffer,int count,StaticVector*outbox,Rank source,Tag tag);
 };
 
 #endif

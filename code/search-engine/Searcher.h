@@ -76,6 +76,13 @@ class Searcher{
 
 	// synchronization
 	int m_ranksDoneCounting;
+	int m_ranksDoneSharing;
+	int m_ranksSynced;
+	bool m_synchronizationIsDone;
+
+	int m_masterDirectoryIterator;
+	int m_masterFileIterator;
+	bool m_sendCounts;
 
 	int m_contig;
 	int m_contigPosition;

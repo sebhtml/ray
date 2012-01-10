@@ -100,8 +100,7 @@ void SwitchMan::openSlaveMode(Tag tag,StaticVector*outbox,Rank source,Rank desti
 	assert(source == MASTER_RANK);
 	#endif
 
-	Message aMessage(NULL,0,destination,tag,source);
-	outbox->push_back(aMessage);
+	sendMessage(NULL,0,outbox,source,destination,tag);
 }
 
 /** send a signal to the switchman */
@@ -155,14 +154,21 @@ void SwitchMan::closeMasterMode(){
 }
 
 void SwitchMan::sendEmptyMessage(StaticVector*outbox,Rank source,Rank destination,Tag tag){
-	Message aMessage(NULL,0,destination,tag,source);
+	sendMessage(NULL,0,outbox,source,destination,tag);
+}
+
+void SwitchMan::sendMessage(uint64_t*buffer,int count,StaticVector*outbox,Rank source,Rank destination,Tag tag){
+	Message aMessage(buffer,count,destination,tag,source);
 	outbox->push_back(aMessage);
 }
 
 void SwitchMan::sendToAll(StaticVector*outbox,Rank source,Tag tag){
+	sendMessageToAll(NULL,0,outbox,source,tag);
+}
+
+void SwitchMan::sendMessageToAll(uint64_t*buffer,int count,StaticVector*outbox,Rank source,Tag tag){
 	for(int i=0;i<m_size;i++){
-		Message aMessage(NULL,0,i,tag,source);
-		outbox->push_back(aMessage);
+		sendMessage(buffer,count,outbox,source,i,tag);
 	}
 }
 

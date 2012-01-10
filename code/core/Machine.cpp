@@ -875,7 +875,8 @@ void Machine::call_RAY_MASTER_MODE_COUNT_FILE_ENTRIES(){
 /** actually, call_RAY_MASTER_MODE_LOAD_SEQUENCES 
  * writes the AMOS file */
 void Machine::call_RAY_MASTER_MODE_LOAD_SEQUENCES(){
-	m_timePrinter.printElapsedTime("Counting biological sequences in files");
+
+	m_timePrinter.printElapsedTime("Counting sequences to assemble");
 	cout<<endl;
 
 	/** this won't write anything if -amos was not provided */

@@ -53,8 +53,13 @@ void Searcher::countElements_masterMethod(){
 	if(!m_countElementsMasterStarted){
 		m_countElementsMasterStarted=true;
 		m_ranksDoneCounting=0;
-
+		m_sendCounts=false;
+		m_ranksDoneSharing=0;
 		m_switchMan->openMasterMode(m_outbox,m_parameters->getRank());
+	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_MASTER_COUNT_REPLY)){
+		m_ranksSynced++;
+	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_SHARING_COMPLETED)){
+		m_ranksDoneSharing++;
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_COUNTING_DONE)){
 		m_ranksDoneCounting++;
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_ELEMENTS)){
@@ -73,10 +78,46 @@ void Searcher::countElements_masterMethod(){
 		m_ranksDoneCounting=-1;
 		
 		m_switchMan->sendToAll(m_outbox,m_parameters->getRank(),RAY_MPI_TAG_SEARCH_SHARE_COUNTS);
+
+	}else if(m_ranksDoneSharing==m_parameters->getSize()){
+		m_sendCounts=true;
+
+		m_masterDirectoryIterator=0;
+		m_masterFileIterator=0;
+
+		m_ranksSynced=m_parameters->getSize();
+
+		m_ranksDoneSharing=-1;
+	}else if(m_sendCounts){
+		if(m_masterDirectoryIterator==(int)m_searchDirectories.size()){
+			m_sendCounts=false;
+			
+			m_switchMan->sendToAll(m_outbox,m_parameters->getRank(),RAY_MPI_TAG_SEARCH_MASTER_SHARING_DONE);
+		}else if(m_masterFileIterator==(int)m_searchDirectories[m_masterDirectoryIterator].getSize()){
+			m_masterDirectoryIterator++;
+			m_masterFileIterator=0;
+		}else if(m_ranksSynced == m_parameters->getSize()){
+
+			int count=m_searchDirectories[m_masterDirectoryIterator].getCount(m_masterFileIterator);
+
+			uint64_t*buffer2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+			int bufferSize=0;
+			buffer2[bufferSize++]=m_masterDirectoryIterator;
+			buffer2[bufferSize++]=m_masterFileIterator;
+			buffer2[bufferSize++]=count;
+
+			m_switchMan->sendMessageToAll(buffer2,bufferSize,m_outbox,m_parameters->getRank(),RAY_MPI_TAG_SEARCH_MASTER_COUNT);
+
+			m_ranksSynced=0;
+
+			m_masterFileIterator++;
+		}
+
 	}else if(m_switchMan->allRanksAreReady()){
 		m_switchMan->closeMasterMode();
 
-		m_timePrinter->printElapsedTime("Counting search category sequences");
+		m_timePrinter->printElapsedTime("Counting sequences to search");
+
 		cout<<endl;
 	}
 }
@@ -91,6 +132,24 @@ void Searcher::countElements_slaveMethod(){
 		#ifdef CONFIG_COUNT_ELEMENTS_VERBOSE
 		cout<<"init"<<endl;
 		#endif
+
+	// the counting is completed.
+	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_MASTER_SHARING_DONE)){
+		m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
+
+	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_MASTER_COUNT)){
+		Message*message=m_inbox->at(0);
+		uint64_t*buffer=message->getBuffer();
+		int directory=buffer[0];
+		int file=buffer[1];
+		int count=buffer[2];
+
+		m_searchDirectories[directory].setCount(file,count);
+
+		//cout<<"Rank "<<m_parameters->getRank()<<" : RAY_MPI_TAG_SEARCH_MASTER_COUNT "<<directory<<" "<<file<<" "<<count<<" from "<<message->getSource()<<endl;
+
+		// send a response
+		m_switchMan->sendEmptyMessage(m_outbox,m_parameters->getRank(),message->getSource(),RAY_MPI_TAG_SEARCH_MASTER_COUNT_REPLY);
 
 	}else if(!m_listedDirectories){
 		#ifdef CONFIG_COUNT_ELEMENTS_VERBOSE
@@ -153,7 +212,12 @@ void Searcher::countElements_slaveMethod(){
 		cout<<"Rank "<<m_parameters->getRank()<<" syncing with master"<<endl;
 	}else if(!m_sharedCounts && m_shareCounts){
 		if(m_directoryIterator==(int)m_searchDirectories.size()){
+
+			m_switchMan->sendEmptyMessage(m_outbox,m_parameters->getRank(),MASTER_RANK,RAY_MPI_TAG_SEARCH_SHARING_COMPLETED);
+
 			m_sharedCounts=true;
+
+			m_synchronizationIsDone=false;
 		}else if(m_fileIterator==(int)m_searchDirectories[m_directoryIterator].getSize()){
 			cout<<"Rank "<<m_parameters->getRank()<<" synced "<<*(m_searchDirectories[m_directoryIterator].getDirectoryName())<<endl;
 
@@ -168,6 +232,13 @@ void Searcher::countElements_slaveMethod(){
 		}else if(!m_waiting){
 			
 			int count=m_searchDirectories[m_directoryIterator].getCount(m_fileIterator);
+
+			// we don't need to sync stuff with 0 sequences
+			// because 0 is the default value
+			if(count==0){
+				m_fileIterator++;
+				return;
+			}
 
 			// sent a response
 			uint64_t*buffer2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
@@ -190,9 +261,6 @@ void Searcher::countElements_slaveMethod(){
 
 			m_fileIterator++;
 		}
-	}else if(m_sharedCounts){
-
-		m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
 	}
 }
 
