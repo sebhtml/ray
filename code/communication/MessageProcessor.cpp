@@ -891,7 +891,10 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message)
 		//string kmerStr=vertex.idToWord(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 
 		Vertex*node=m_subgraph->find(&vertex);
-		int coverage=1;
+
+		// if it is not there, then it has a coverage of 0
+		int coverage=0;
+
 		if(node!=NULL)
 			coverage=node->getCoverage(&vertex);
 		message2[i]=coverage;

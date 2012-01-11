@@ -750,9 +750,10 @@ void Machine::processMessages(){
 void Machine::sendMessages(){
 	#ifdef ASSERT
 	if(m_outboxAllocator.getCount() > m_maximumAllocatedOutputBuffers){
-		cout<<"Error, allocated "<<m_outboxAllocator.getCount()<<" buffers, but maximum is ";
+		cout<<"Rank "<<m_rank<<" Error, allocated "<<m_outboxAllocator.getCount()<<" buffers, but maximum is ";
 		cout<<m_maximumAllocatedOutputBuffers<<endl;
 		cout<<" outboxSize= "<<m_outbox.size()<<endl;
+		cout<<"This means that too many messages were created in this time slice."<<endl;
 	}
 
 	assert(m_outboxAllocator.getCount()<=m_maximumAllocatedOutputBuffers);

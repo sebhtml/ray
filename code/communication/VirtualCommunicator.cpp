@@ -96,7 +96,9 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 	m_pushedMessages++;
 	#ifdef ASSERT
 	if(m_elementsForWorkers.count(workerId)>0){
-		cout<<"Error: there is already a pending message for worker "<<workerId<<" tag="<<MESSAGES[message->getTag()]<<endl;
+		cout<<"Error: there is already a pending message for worker "<<workerId<<", will not add message with tag="<<MESSAGES[message->getTag()]<<endl;
+		cout<<"Did you forget to pull a reply with isMessageProcessed and getMessageResponseElements ?"<<endl;
+		cout<<"It is likely if you mix virtual messages with bare messages !"<<endl;
 	}
 	assert(m_elementsForWorkers.count(workerId)==0);
 	#endif
@@ -161,6 +163,9 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 	assert(threshold<=(int)(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)));
 	if(currentSize>threshold){
 		cout<<"Fatal: too much bits, tag= "<<MESSAGES[tag]<<" Threshold= "<<threshold<<" pushed messages; Actual= "<<currentSize<<" pushed messages; Period= "<<period<<" uint64_t/message; Count= "<<count<<" Priority= "<<newPriority<<" Destination: "<<destination<<endl;
+		cout<<"This usually means that you did not use the VirtualCommunicator API correctly."<<endl;
+		cout<<"Be careful not to push too many messages if the VirtualCommunicator is not ready."<<endl;
+		cout<<"IMPORTANT: did you add entries in  scripting/reply_tags.txt and scripting/tag_sizes.txt ?"<<endl;
 	}
 	assert(currentSize<=threshold);
 	#endif

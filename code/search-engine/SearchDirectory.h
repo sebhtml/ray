@@ -24,6 +24,7 @@
 
 #include <string>
 #include <structures/Kmer.h>
+#include <fstream>
 #include <vector>
 using namespace std;
 
@@ -34,7 +35,21 @@ class SearchDirectory{
 	vector<string> m_files;
 	vector<int> m_counts;
 
+	/** sequence lazy loader */
+	bool m_hasFile;
+	int m_currentSequencePosition;
+	string m_currentSequenceHeader;
+	string m_currentSequenceBuffer;
+	int m_currentFile;
+	int m_currentSequence;
+
+	bool m_noMoreSequence;
+	ifstream m_currentFileStream;
+
 	void readDirectory();
+
+	/** lazy load some sequences */
+	void loadSomeSequence();
 
 public:
 	void constructor(string path);
@@ -48,9 +63,9 @@ public:
 
 	// sequence reader
 	void createSequenceReader(int file,int sequence);
-	bool hasNextKmer();
+	bool hasNextKmer(int kmerLength);
 	void iterateToNextKmer();
-	void getNextKmer(Kmer*kmer);
+	void getNextKmer(int kmerLength,Kmer*kmer);
 
 	string getCurrentSequenceName();
 };

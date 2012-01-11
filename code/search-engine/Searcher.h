@@ -96,7 +96,12 @@ class Searcher{
 
 	map<int,int> m_coverageDistribution;
 
-	vector<SearchDirectory> m_searchDirectories;
+	/** search directory objects */
+	SearchDirectory*m_searchDirectories;
+	int m_searchDirectories_size;
+
+	// state for sending biological abundances */
+	bool m_sequenceAbundanceSent;
 
 	/** for the master rank */
 	ofstream m_contigSummaryFile;
@@ -110,10 +115,17 @@ class Searcher{
 
 	int m_matches;
 
+	/** k-mer length */
+	int m_kmerLength;
+
 	/** flag */
 	bool m_requestedCoverage;
 
 	int m_numberOfKmers;
+
+	/** partition */
+	int m_firstSequence;
+	int m_lastSequence;
 
 	/** states for sequence abundances */
 	bool m_countSequenceKmersSlaveStarted;
@@ -123,11 +135,18 @@ class Searcher{
 
 	int m_sequenceIterator;
 	int m_globalSequenceIterator;
+	int m_globalFileIterator;
 
 	void showContigAbundanceProgress();
 	void createTrees();
 
 	string getBaseName(string a);
+
+	void showSequenceAbundanceProgress();
+
+	bool isSequenceOwner();
+
+	void printDirectoryStart();
 public:
 
 	void countElements_masterMethod();

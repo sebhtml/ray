@@ -51,6 +51,9 @@ void Searcher::constructor(Parameters*parameters,StaticVector*outbox,TimePrinter
 	m_parameters=parameters;
 	m_timePrinter=timePrinter;
 	m_switchMan=switchMan;
+
+	m_searchDirectories_size=0;
+	m_searchDirectories=NULL;
 }
 
 void Searcher::countElements_masterMethod(){
@@ -93,8 +96,8 @@ void Searcher::countElements_masterMethod(){
 		m_ranksSynced=m_parameters->getSize();
 
 		m_ranksDoneSharing=-1;
-	}else if(m_sendCounts){
-		if(m_masterDirectoryIterator==(int)m_searchDirectories.size()){
+	}else if(m_sendCounts && m_ranksSynced == m_parameters->getSize()){
+		if(m_masterDirectoryIterator==m_searchDirectories_size){
 			m_sendCounts=false;
 			
 			m_switchMan->sendToAll(m_outbox,m_parameters->getRank(),RAY_MPI_TAG_SEARCH_MASTER_SHARING_DONE);
@@ -162,10 +165,37 @@ void Searcher::countElements_slaveMethod(){
 		#endif
 
 		vector<string>*directories=m_parameters->getSearchDirectories();
+
+		// We don't use a a vector for m_searchDirectories
+		// because default copy constructors
+		// don't manage ifstream attributes correctly
+		// which results in a compilation error
+	
+		if(directories->size() > 0){
+			m_searchDirectories_size=directories->size();
+
+			//cout<<"malloc with "<<m_searchDirectories_size<<" sizeof(SearchDirectory) is "<<sizeof(SearchDirectory)<<endl;
+
+			// can not use malloc here because
+			// the constructors of vector, ifstream and folks 
+			// must be called.
+			m_searchDirectories=new SearchDirectory[m_searchDirectories_size];
+
+			#ifdef ASSERT
+			assert(m_searchDirectories!=NULL);
+			#endif
+		}
+
 		for(int i=0;i<(int)directories->size();i++){
-			SearchDirectory entry;
-			entry.constructor(directories->at(i));
-			m_searchDirectories.push_back(entry);
+			//cout<<"before constructor"<<endl;
+
+			#ifdef ASSERT
+			assert(m_searchDirectories!=NULL);
+			#endif
+
+			// this is an important line
+			m_searchDirectories[i].constructor(directories->at(i));
+			//cout<<"after constructor"<<endl;
 		}
 
 		m_listedDirectories=true;
@@ -179,7 +209,7 @@ void Searcher::countElements_slaveMethod(){
 		// no communication here
 		int fileNumber=0;
 
-		for(int i=0;i<(int)m_searchDirectories.size();i++){
+		for(int i=0;i<(int)m_searchDirectories_size;i++){
 			int count=m_searchDirectories[i].getSize();
 			for(int j=0;j<count;j++){
 				if(fileNumber%m_parameters->getSize() == m_parameters->getRank()){
@@ -188,7 +218,7 @@ void Searcher::countElements_slaveMethod(){
 					#endif
 
 					m_searchDirectories[i].countEntriesInFile(j);
-					cout<<"Rank "<<m_parameters->getRank()<<" "<<*(m_searchDirectories[i].getDirectoryName())<<""<<*(m_searchDirectories[i].getFileName(j))<<" -> "<<m_searchDirectories[i].getCount(j)<<endl;
+					cout<<"Rank "<<m_parameters->getRank()<<" "<<*(m_searchDirectories[i].getDirectoryName())<<"/"<<*(m_searchDirectories[i].getFileName(j))<<" -> "<<m_searchDirectories[i].getCount(j)<<endl;
 				}
 				fileNumber++;
 			}
@@ -216,7 +246,7 @@ void Searcher::countElements_slaveMethod(){
 
 		cout<<"Rank "<<m_parameters->getRank()<<" syncing with master"<<endl;
 	}else if(!m_sharedCounts && m_shareCounts){
-		if(m_directoryIterator==(int)m_searchDirectories.size()){
+		if(m_directoryIterator==m_searchDirectories_size){
 
 			m_switchMan->sendEmptyMessage(m_outbox,m_parameters->getRank(),MASTER_RANK,RAY_MPI_TAG_SEARCH_SHARING_COMPLETED);
 
@@ -558,6 +588,10 @@ void Searcher::countSequenceKmers_masterHandler(){
 		#endif
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEQUENCE_ABUNDANCE)){
 
+		#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
+		cout<<"Master here, receiving RAY_MPI_TAG_SEQUENCE_ABUNDANCE"<<endl;
+		#endif
+
 		Message*message=m_inbox->at(0);
 		uint64_t*buffer=message->getBuffer();
 		int directory=buffer[0];
@@ -570,7 +604,8 @@ void Searcher::countSequenceKmers_masterHandler(){
 
 		double ratio=(0.0+matches)/lengthInKmers;
 
-		cout<<m_fileNames[directory][file]<<"	"<<name<<"	"<<lengthInKmers<<"	"<<matches<<"	"<<ratio<<"	"<<mode<<endl;
+		if(matches>0)
+			cout<<m_fileNames[directory][file]<<"	"<<name<<"	"<<lengthInKmers<<"	"<<matches<<"	"<<ratio<<"	"<<mode<<endl;
 
 		// sent a response
 		uint64_t*buffer2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
@@ -605,19 +640,49 @@ void Searcher::countSequenceKmers_slaveHandler(){
 
 	if(!m_countSequenceKmersSlaveStarted){
 
+		#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
+		cout<<"Starting countSequenceKmers_slaveHandler"<<endl;
+		#endif
+
 		createTrees();
 
 		m_directoryIterator=0;
 		m_fileIterator=0;
+		m_globalFileIterator=0;
 		m_sequenceIterator=0;
 		m_globalSequenceIterator=0;
 
 		m_countSequenceKmersSlaveStarted=true;
-		m_waiting=false;
 		m_createdSequenceReader=false;
 
+		m_kmerLength=m_parameters->getWordSize();
+
+		// compute partition
+		int total=0;
+		for(int i=0;i<(int)m_searchDirectories_size;i++){
+			for(int j=0;j<(int)m_searchDirectories[i].getSize();j++){
+				total+=m_searchDirectories[i].getCount(j);
+			}
+		}
+
+		int slice=total/m_parameters->getSize();
+	
+		int rank=m_parameters->getRank();
+		m_firstSequence=rank*slice;
+		m_lastSequence=(rank+1)*slice;
+	
+		if(rank==m_parameters->getSize()-1){
+			m_lastSequence=total-1;
+		}
+
+		//int toProcess=m_lastSequence-m_firstSequence+1;
+
+		//cout<<"Rank "<<rank<<" partition: "<<m_firstSequence<<" to "<<m_lastSequence<<" (total: "<<toProcess<<")"<<endl;
+	
+		printDirectoryStart();
+
 	// all directories were processed
-	}else if(m_directoryIterator==(int)m_searchDirectories.size()){
+	}else if(m_directoryIterator==m_searchDirectories_size){
 	
 		#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
 		cout<<"Finished countSequenceKmers_slaveHandler"<<endl;
@@ -638,32 +703,42 @@ void Searcher::countSequenceKmers_slaveHandler(){
 		m_fileIterator=0;
 		m_sequenceIterator=0;
 
+		printDirectoryStart();
+
 	// all sequences in a file were processed
 	}else if(m_sequenceIterator==m_searchDirectories[m_directoryIterator].getCount(m_fileIterator)){
 		m_fileIterator++;
+		m_globalFileIterator++;
 		m_sequenceIterator=0;
 
 		#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
 		cout<<"Next file"<<endl;
 		#endif
 	
-	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEQUENCE_ABUNDANCE_REPLY)){
-		m_waiting=false;
-
-	// not ready
-	}else if(m_waiting){
-		// wait
-
 	// this sequence is not owned by me
-	}else if(m_globalSequenceIterator%m_parameters->getSize()!=m_parameters->getRank()){
+	}else if(!isSequenceOwner()){
+
+		showSequenceAbundanceProgress();
+
+		// skip the file
+		// ownership is on a per-file basis
+		m_fileIterator++;
+		m_globalFileIterator++;
+		m_sequenceIterator=0;
+
 		// skip the sequence
-		m_sequenceIterator++;
-		m_globalSequenceIterator++;
+		//m_sequenceIterator++;
+		//m_globalSequenceIterator++;
+		
+		#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
+		cout<<"Skipping"<<endl;
+		#endif
+
 	}else if(!m_createdSequenceReader){
 		// initiate the reader I guess
 	
 		#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
-		cout<<" create sequence reader"<<endl;
+		cout<<"Create sequence reader"<<endl;
 		#endif
 
 		m_searchDirectories[m_directoryIterator].createSequenceReader(m_fileIterator,m_sequenceIterator);
@@ -673,10 +748,15 @@ void Searcher::countSequenceKmers_slaveHandler(){
 		m_matches=0;
 		m_createdSequenceReader=true;
 
+		m_requestedCoverage=false;
+
+		m_sequenceAbundanceSent=false;
+
 	// compute abundances
 	}else if(m_createdSequenceReader){
-		if(!m_searchDirectories[m_directoryIterator].hasNextKmer()){
-
+		if(!m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength)
+			&& !m_sequenceAbundanceSent){
+			
 			// process the thing, possibly send it to be written
 
 			int mode=0;
@@ -692,17 +772,28 @@ void Searcher::countSequenceKmers_slaveHandler(){
 				}
 			}
 
+			showSequenceAbundanceProgress();
+
+			// don't send things with 0 matches
+			if(m_matches==0){
+				
+				#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
+				cout<<"No matches, not sending"<<endl;
+				#endif
+
+				m_sequenceIterator++;
+				m_globalSequenceIterator++;
+				m_createdSequenceReader=false;
+
+				m_sequenceAbundanceSent=true;
+
+				return;
+
+			}
+
 			#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
 			cout<<"dir "<<m_directoryIterator<<" file "<<m_fileIterator<<" sequence "<<m_sequenceIterator<<" global "<<m_globalSequenceIterator<<" mode "<<mode<<endl;
 			#endif
-
-			m_sequenceIterator++;
-			m_globalSequenceIterator++;
-
-			m_createdSequenceReader=false;
-
-			if(m_matches==0)
-				return;
 
 			uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 			int bufferSize=0;
@@ -721,21 +812,52 @@ void Searcher::countSequenceKmers_slaveHandler(){
 
 			int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_SEQUENCE_ABUNDANCE);
 
+			#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
+			cout<<"End reached, sending out a RAY_MPI_TAG_SEQUENCE_ABUNDANCE"<<endl;
+			#endif
+
 			Message aMessage(buffer,elementsPerQuery,MASTER_RANK,RAY_MPI_TAG_SEQUENCE_ABUNDANCE,m_parameters->getRank());
 
 			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
-			m_waiting=true;
 
+			m_sequenceAbundanceSent=true;
+
+		}else if(!m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength) 
+		&& m_virtualCommunicator->isMessageProcessed(m_workerId)){
+
+			#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
+			cout<<"Received response for RAY_MPI_TAG_SEQUENCE_ABUNDANCE"<<endl;
+			#endif
+
+			vector<uint64_t> data;
+			m_virtualCommunicator->getMessageResponseElements(m_workerId,&data);
+
+			m_sequenceIterator++;
+			m_globalSequenceIterator++;
+			m_createdSequenceReader=false;
+			m_requestedCoverage=false;
+			m_sequenceAbundanceSent=false;
+
+		}else if(!m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength)){
+			// we have to wait because we sent the summary 
+			// and the response is not there yet
+
+		// k-mers are available
 		}else if(!m_requestedCoverage){
 	
 			uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 			int bufferPosition=0;
 			Kmer kmer;
-			m_searchDirectories[m_directoryIterator].getNextKmer(&kmer);
+			m_searchDirectories[m_directoryIterator].getNextKmer(m_kmerLength,&kmer);
 			kmer.pack(buffer,&bufferPosition);
 
 			int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE);
 
+			#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
+			if(m_numberOfKmers%1000==0)
+				cout<<"Sending RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE, position="<<m_numberOfKmers<<endl;
+			#endif
+	
 			Message aMessage(buffer,elementsPerQuery,
 				m_parameters->_vertexRank(&kmer),
 				RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_parameters->getRank());
@@ -743,26 +865,29 @@ void Searcher::countSequenceKmers_slaveHandler(){
 			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 	
 			m_requestedCoverage=true;
-		
-		}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
+
+		}else if(m_requestedCoverage && m_virtualCommunicator->isMessageProcessed(m_workerId)){
 			
 			vector<uint64_t> data;
 			m_virtualCommunicator->getMessageResponseElements(m_workerId,&data);
 			int coverage=data[0];
 
-			m_coverageDistribution[coverage]++;
 
 			m_requestedCoverage=false;
 			m_searchDirectories[m_directoryIterator].iterateToNextKmer();
 
-			m_numberOfKmers++;
 
-			if(coverage>0)
+			if(coverage>0){
+				m_coverageDistribution[coverage]++;
 				m_matches++;
+			}
 
 			#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
-			cout<<"Received coverage"<<endl;
+			if(m_numberOfKmers%1000==0)
+				cout<<"Received coverage position = "<<m_numberOfKmers<<" val= "<<coverage<<endl;
 			#endif
+			
+			m_numberOfKmers++;
 		}
 	}
 }
@@ -776,7 +901,7 @@ void Searcher::createTrees(){
 
 	bool lazy=true;
 
-	for(int i=0;i<(int)m_searchDirectories.size();i++){
+	for(int i=0;i<m_searchDirectories_size;i++){
 		string*directory=m_searchDirectories[i].getDirectoryName();
 
 		string baseName=getBaseName(*directory);
@@ -802,6 +927,11 @@ void Searcher::createTrees(){
 			int theLength=file->length();
 			// .fasta is 6
 
+			#ifdef ASSERT
+			assert(theLength>0);
+			#endif
+
+			//cout<<"code 5"<<endl;
 			string theFile=file->substr(0,theLength-6);
 
 			ostringstream directory3;
@@ -828,16 +958,58 @@ string Searcher::getBaseName(string a){
 	int lastPosition=theLength-1;
 	
 	// remove trailing slashes
-	while(lastPosition>=0 && a[lastPosition]=='/'){
+	while(lastPosition>0 && a[lastPosition]=='/'){
 		lastPosition--;
 	}
+
+	#ifdef ASSERT
+	assert(lastPosition>=0);
+	assert(a[lastPosition]!='/');
+	#endif
 
 	int lastSlash=lastPosition;
 
 	// find the last slash
-	while(lastSlash>=0 && a[lastSlash]!='/'){
+	while(lastSlash>0 && a[lastSlash]!='/'){
 		lastSlash--;
 	}
 
-	return a.substr(lastSlash,a.length());
+	#ifdef ASSERT
+	for(int i=lastSlash;i<=lastPosition;i++){
+		assert(a[i]!='/');
+	}
+	#endif
+
+	#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
+	cout<<"Input= "<<a<<" lastSlash= "<<lastSlash<<" lastPosition="<<lastPosition<<endl;
+	cout<<"code 3"<<endl;
+
+	#endif
+
+	int count=lastPosition-lastSlash+1;
+
+	return a.substr(lastSlash,count);
+}
+
+void Searcher::showSequenceAbundanceProgress(){
+	// show progress
+	if(m_globalSequenceIterator % 100==0 || m_sequenceIterator == m_searchDirectories[m_directoryIterator].getCount(m_fileIterator)){
+		cout<<"Rank "<<m_parameters->getRank()<<" biological abundances ";
+		cout<<m_globalSequenceIterator<<" ["<<m_directoryIterator+1;
+		cout<<"/"<<m_searchDirectories_size<<"] ["<<m_fileIterator+1<<"/";
+		cout<<m_searchDirectories[m_directoryIterator].getSize()<<"] ["<<m_sequenceIterator+1;
+		cout<<"/"<<m_searchDirectories[m_directoryIterator].getCount(m_fileIterator)<<"]"<<endl;
+	}
+
+}
+
+bool Searcher::isSequenceOwner(){
+	return m_globalFileIterator%m_parameters->getSize()==m_parameters->getRank();
+}
+
+void Searcher::printDirectoryStart(){
+	if(! (m_directoryIterator< m_searchDirectories_size))
+		return;
+
+	cout<<"Rank "<<m_parameters->getRank()<<" starting to process "<<m_directoryNames[m_directoryIterator]<<endl;
 }
