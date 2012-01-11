@@ -22,6 +22,7 @@
 #include <fstream>
 #include <sstream>
 #include <core/OperatingSystem.h>
+#include <stdio.h> /* for fopen, fprintf and fclose */
 using namespace std;
 
 //#define CONFIG_CONTIG_ABUNDANCE_VERBOSE
@@ -33,6 +34,8 @@ void Searcher::constructor(Parameters*parameters,StaticVector*outbox,TimePrinter
 	VirtualCommunicator*vc,StaticVector*inbox,RingAllocator*outboxAllocator){
 
 	m_inbox=inbox;
+
+	m_activeFiles=0;
 
 	m_virtualCommunicator=vc;
 
@@ -218,7 +221,8 @@ void Searcher::countElements_slaveMethod(){
 					#endif
 
 					m_searchDirectories[i].countEntriesInFile(j);
-					cout<<"Rank "<<m_parameters->getRank()<<" "<<*(m_searchDirectories[i].getDirectoryName())<<"/"<<*(m_searchDirectories[i].getFileName(j))<<" -> "<<m_searchDirectories[i].getCount(j)<<endl;
+					cout<<"Rank "<<m_parameters->getRank()<<" "<<*(m_searchDirectories[i].getDirectoryName())<<"/"<<*(m_searchDirectories[i].getFileName(j));
+					cout<<" -> "<<m_searchDirectories[i].getCount(j)<<" sequences"<<endl;
 				}
 				fileNumber++;
 			}
@@ -315,12 +319,12 @@ void Searcher::countContigKmers_masterHandler(){
 		string directory2Str=directory2.str();
 		createDirectory(directory2Str.c_str());
 
-		ostringstream directory3;
-		directory3<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Contigs";
-		string directory3Str=directory3.str();
-		createDirectory(directory3Str.c_str());
-
 		if(m_writeDetailedFiles){
+			ostringstream directory3;
+			directory3<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Contigs";
+			string directory3Str=directory3.str();
+			createDirectory(directory3Str.c_str());
+
 			ostringstream directory4;
 			directory4<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Contigs/Coverage";
 			string directory4Str=directory4.str();
@@ -333,24 +337,17 @@ void Searcher::countContigKmers_masterHandler(){
 		}
 
 		ostringstream summary;
-		summary<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Contigs/Summary.tsv";
+		summary<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Contigs.tsv";
 
 		m_contigSummaryFile.open(summary.str().c_str());
 
-		m_contigSummaryFile<<"#Category	SequenceName LengthInKmers Matches Ratio ModeKmerCoverage"<<endl;
-
-		// create an empty summary at thet top level
-		ostringstream summary2;
-		summary2<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Summary.tsv";
-		ofstream f3(summary2.str().c_str());
-		f3<<"#Category	SequenceName LengthInKmers Matches Ratio ModeKmerCoverage"<<endl;
-		f3.close();
+		m_contigSummaryFile<<"#Category	SequenceName	LengthInKmers	Matches	Ratio	ModeKmerCoverage"<<endl;
 
 		// create an empty file for identifications
 		ostringstream identifications;
-		identifications<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Contigs/Identifications.tsv";
+		identifications<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Identifications.tsv";
 		m_identificationFile.open(identifications.str().c_str());
-		m_identificationFile<<"#Contig LengthInKmers Category SequenceName LengthInKmers Matches Ratio"<<endl;
+		m_identificationFile<<"#Contig	LengthInKmers	Category	SequenceNumber	SequenceName	LengthInKmers	Matches	Ratio"<<endl;
 
 		m_switchMan->openMasterMode(m_outbox,m_parameters->getRank());
 
@@ -367,8 +364,6 @@ void Searcher::countContigKmers_masterHandler(){
 
 		m_contigSummaryFile<<"Contigs	contig-"<<name<<"	"<<length<<"	"<<length<<"	1.00	"<<mode<<endl;
 	
-		m_identificationFile<<"contig-"<<name<<"	"<<length<<"	UnknownCategory	UnknownSequence	UnknownLength	UnknownMatches	UnknownRatio"<<endl;
-
 		// sent a response
 		uint64_t*buffer2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
@@ -592,20 +587,66 @@ void Searcher::countSequenceKmers_masterHandler(){
 		cout<<"Master here, receiving RAY_MPI_TAG_SEQUENCE_ABUNDANCE"<<endl;
 		#endif
 
+		int bufferPosition=0;
+
 		Message*message=m_inbox->at(0);
 		uint64_t*buffer=message->getBuffer();
-		int directory=buffer[0];
-		int file=buffer[1];
-		//int sequence=buffer[2];
-		int lengthInKmers=buffer[3];
-		int matches=buffer[4];
-		int mode=buffer[5];
-		char*name=(char*)(buffer+6);
+		int directory=buffer[bufferPosition++];
+		int file=buffer[bufferPosition++];
+		int sequence=buffer[bufferPosition++];
+		int lengthInKmers=buffer[bufferPosition++];
+		int matches=buffer[bufferPosition++];
+		int mode=buffer[bufferPosition++];
+
+		char*name=(char*)(buffer+bufferPosition++);
 
 		double ratio=(0.0+matches)/lengthInKmers;
 
-		if(matches>0)
-			cout<<m_fileNames[directory][file]<<"	"<<name<<"	"<<lengthInKmers<<"	"<<matches<<"	"<<ratio<<"	"<<mode<<endl;
+
+		// open the file
+		if(m_arrayOfFiles.count(directory)==0 || m_arrayOfFiles[directory].count(file)==0){
+			// create the directory
+			if(m_arrayOfFiles.count(directory)==0){
+				ostringstream directoryPath;
+				directoryPath<<m_parameters->getPrefix()<<"/BiologicalAbundances/"<<*(m_searchDirectories[directory].getDirectoryName());
+				createDirectory(directoryPath.str().c_str());
+			}
+
+			ostringstream fileName;
+			fileName<<m_parameters->getPrefix()<<"/BiologicalAbundances/"<<*(m_searchDirectories[directory].getDirectoryName())<<"/";
+		
+			// add the file name without the .fasta
+			string*theFileName=m_searchDirectories[directory].getFileName(file);
+			fileName<<theFileName->substr(0,theFileName->length()-6)<<".tsv";
+
+			m_arrayOfFiles[directory][file]=fopen(fileName.str().c_str(),"w");
+			
+			m_activeFiles++;
+
+			fprintf(m_arrayOfFiles[directory][file],"#Category	SequenceNumber	SequenceName	LengthInKmers	Matches	Ratio	ModeKmerCoverage\n");
+		
+			cout<<"Opened "<<fileName.str()<<", active file descriptors: "<<m_activeFiles<<endl;
+		}
+
+		if(matches>0){
+			ostringstream content;
+			content<<m_fileNames[directory][file]<<"	"<<sequence<<"	"<<name<<"	"<<lengthInKmers<<"	"<<matches<<"	"<<ratio<<"	"<<mode<<endl;
+
+			fprintf(m_arrayOfFiles[directory][file],content.str().c_str());
+		}
+
+		// is it the last sequence in this file ?
+		bool isLast=(sequence == m_searchDirectories[directory].getCount(file)-1);
+
+		// close the file
+		if(isLast){
+			fclose(m_arrayOfFiles[directory][file]);
+			m_activeFiles--;
+
+			cout<<"Closed file "<<directory<<" "<<file<<", active file descriptors: "<<m_activeFiles<<endl;
+
+			m_arrayOfFiles[directory].erase(file);
+		}
 
 		// sent a response
 		uint64_t*buffer2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
@@ -694,6 +735,7 @@ void Searcher::countSequenceKmers_slaveHandler(){
 	}else if(m_fileIterator==(int)m_searchDirectories[m_directoryIterator].getSize()){
 	
 		cout<<"Rank "<<m_parameters->getRank()<<" has processed its entries from "<<m_directoryNames[m_directoryIterator]<<endl;
+		cout<<endl;
 
 		#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
 		cout<<"next directory"<<endl;
@@ -1011,5 +1053,6 @@ void Searcher::printDirectoryStart(){
 	if(! (m_directoryIterator< m_searchDirectories_size))
 		return;
 
+	cout<<endl;
 	cout<<"Rank "<<m_parameters->getRank()<<" starting to process "<<m_directoryNames[m_directoryIterator]<<endl;
 }

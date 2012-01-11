@@ -44,10 +44,9 @@ The new files produced by the -search option are:
 RayMicrobiomeAnalysis/
 	BiologicalAbundances/
 		DenovoAssembly/
-			Summary.tsv
+			Contigs.tsv
+			Identifications.tsv
 			Contigs/
-				Identifications.tsv
-				Summary.tsv
 				Coverage/
 					contig-0.tsv
 					...
@@ -56,17 +55,16 @@ RayMicrobiomeAnalysis/
 					...
 
 		NCBI-bacteria-directory/
-			Summary.tsv
+			ecoli.tsv
 			ecoli/
-				Summary.tsv
 				Coverage/
 					ecoli-seq1.tsv
 					...
 				CoverageDistribution/
 					ecoli-seq1.tsv
 					...
+			spneumo.tsv
 			spneumo/
-				Summary.tsv
 				Coverage/
 					ecoli-seq1.tsv
 					...
@@ -76,9 +74,8 @@ RayMicrobiomeAnalysis/
 			...
 
 		NCBI-viruses-directory/
-			Summary.tsv
+			phix.tsv
 			phix/
-				Summary.tsv
 				Coverage/
 					phix-seq1.tsv
 					...
@@ -88,10 +85,13 @@ RayMicrobiomeAnalysis/
 			...
 
 Each of these .tsv files (except Identifications which contains
-identifications for contigs) contains these fields:
+identifications for contigs) contains these fields (7 fields):
 
 
-Category	SequenceName	LengthInKmers	Matches	Ratio	ModeKmerCoverage
+Category	SequenceNumber	SequenceName	LengthInKmers	Matches	Ratio	ModeKmerCoverage
+
+
+(Contigs.tsv does not have the column SequenceNumber.)
 
 
 For any category, there is a line with SequenceName set to 'All'. This line summarizes

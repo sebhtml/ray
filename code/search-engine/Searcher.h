@@ -29,6 +29,8 @@
 #include <structures/StaticVector.h>
 #include <assembler/TimePrinter.h>
 #include <stdint.h>
+#include <fstream>
+#include <stdio.h> /*for FILE */
 #include <vector>
 #include <string>
 #include <map>
@@ -122,6 +124,12 @@ class Searcher{
 	bool m_requestedCoverage;
 
 	int m_numberOfKmers;
+
+	/** files to write */
+	map<int,map<int,FILE*> > m_arrayOfFiles;
+
+	/** track the descriptors */
+	int m_activeFiles;
 
 	/** partition */
 	int m_firstSequence;
