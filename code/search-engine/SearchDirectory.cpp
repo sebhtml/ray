@@ -60,6 +60,9 @@ void SearchDirectory::readDirectory(){
 			if(fileName.find(".fasta")==string::npos)
 				continue;
 
+			if(fileName==".fasta")
+				continue;
+
 			m_files.push_back(fileName);
 		}
 		closedir (dir);
@@ -124,3 +127,19 @@ void SearchDirectory::setCount(int file,int count){
 	m_counts[file]=count;
 }
 
+void SearchDirectory::createSequenceReader(int file,int sequence){
+}
+
+bool SearchDirectory::hasNextKmer(){
+	return false;
+}
+
+void SearchDirectory::iterateToNextKmer(){
+}
+
+void SearchDirectory::getNextKmer(Kmer*kmer){
+}
+
+string SearchDirectory::getCurrentSequenceName(){
+	return "Unknown";
+}

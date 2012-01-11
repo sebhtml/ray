@@ -102,10 +102,32 @@ class Searcher{
 	ofstream m_contigSummaryFile;
 	ofstream m_identificationFile;
 
+	// base names of directories
+	vector<string> m_directoryNames;
+
+	// base names of files
+	vector<vector<string> > m_fileNames;
+
+	int m_matches;
+
 	/** flag */
 	bool m_requestedCoverage;
 
+	int m_numberOfKmers;
+
+	/** states for sequence abundances */
+	bool m_countSequenceKmersSlaveStarted;
+	bool m_countSequenceKmersMasterStarted;
+
+	bool m_createdSequenceReader;
+
+	int m_sequenceIterator;
+	int m_globalSequenceIterator;
+
 	void showContigAbundanceProgress();
+	void createTrees();
+
+	string getBaseName(string a);
 public:
 
 	void countElements_masterMethod();
@@ -114,6 +136,9 @@ public:
 	void countContigKmers_masterHandler();
 	void countContigKmers_slaveHandler();
 
+	void countSequenceKmers_masterHandler();
+	void countSequenceKmers_slaveHandler();
+	
 	void constructor(Parameters*parameters,StaticVector*outbox,TimePrinter*timePrinter,SwitchMan*switchMan,
 	VirtualCommunicator*m_vc,StaticVector*inbox,RingAllocator*outboxAllocator);
 

@@ -1830,6 +1830,15 @@ void Machine::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 	m_searcher.countContigKmers_masterHandler();
 }
 
+void Machine::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
+	m_searcher.countSequenceKmers_slaveHandler();
+}
+
+void Machine::call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
+	m_searcher.countSequenceKmers_masterHandler();
+}
+
+
 /* append empty implementations */
 /* if one of them need to be implemented in an non-empty fashion, it must 
  * first be removed from scripting/empty_slave_handlers.txt 

@@ -238,6 +238,10 @@ void createDirectory(const char*directory){
 	mkdir(directory,mode);
 
 	#ifdef ASSERT
+	if(status!=0){
+		cout<<"mkdir returned status "<<status<<endl;
+	}
+
 	assert(status==0);
 	#endif
 	

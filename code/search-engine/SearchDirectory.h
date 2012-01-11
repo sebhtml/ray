@@ -23,6 +23,7 @@
 #define _SearchDirectory_h
 
 #include <string>
+#include <structures/Kmer.h>
 #include <vector>
 using namespace std;
 
@@ -44,6 +45,14 @@ public:
 	int getSize();
 
 	void setCount(int file,int count);
+
+	// sequence reader
+	void createSequenceReader(int file,int sequence);
+	bool hasNextKmer();
+	void iterateToNextKmer();
+	void getNextKmer(Kmer*kmer);
+
+	string getCurrentSequenceName();
 };
 
 #endif

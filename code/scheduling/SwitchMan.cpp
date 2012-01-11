@@ -26,7 +26,7 @@
 #include <iostream>
 using namespace std;
 
-//#define CONFIG_SWITCHMAN_VERBOSITY
+// #define CONFIG_SWITCHMAN_VERBOSITY
 
 void SwitchMan::constructor(int numberOfCores){
 	m_size=numberOfCores;
