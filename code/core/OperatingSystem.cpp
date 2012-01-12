@@ -239,7 +239,7 @@ void createDirectory(const char*directory){
 
 	#ifdef ASSERT
 	if(status!=0){
-		cout<<"mkdir returned status "<<status<<endl;
+		cout<<"mkdir returned status "<<status<<" with directory= "<<directory<<endl;
 	}
 
 	assert(status==0);

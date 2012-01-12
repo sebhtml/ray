@@ -148,13 +148,13 @@ class Searcher{
 	void showContigAbundanceProgress();
 	void createTrees();
 
-	string getBaseName(string a);
-
 	void showSequenceAbundanceProgress();
 
 	bool isSequenceOwner();
 
 	void printDirectoryStart();
+
+	string getBaseName(string a);
 public:
 
 	void countElements_masterMethod();
@@ -170,6 +170,8 @@ public:
 	VirtualCommunicator*m_vc,StaticVector*inbox,RingAllocator*outboxAllocator);
 
 	void setContigs(vector<vector<Kmer> >*paths,vector<uint64_t>*names);
+
+
 };
 
 #endif

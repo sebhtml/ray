@@ -604,16 +604,24 @@ void Searcher::countSequenceKmers_masterHandler(){
 
 
 		// open the file
-		if(m_arrayOfFiles.count(directory)==0 || m_arrayOfFiles[directory].count(file)==0){
+		// don't open it if there are 0 matches
+		if((m_arrayOfFiles.count(directory)==0 || m_arrayOfFiles[directory].count(file)==0) && matches>0){
+			
+			string*theDirectoryPath=m_searchDirectories[directory].getDirectoryName();
+			string baseName=getBaseName(*theDirectoryPath);
+
 			// create the directory
 			if(m_arrayOfFiles.count(directory)==0){
 				ostringstream directoryPath;
-				directoryPath<<m_parameters->getPrefix()<<"/BiologicalAbundances/"<<*(m_searchDirectories[directory].getDirectoryName());
+				directoryPath<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
+				directoryPath<<baseName;
+
 				createDirectory(directoryPath.str().c_str());
 			}
 
 			ostringstream fileName;
-			fileName<<m_parameters->getPrefix()<<"/BiologicalAbundances/"<<*(m_searchDirectories[directory].getDirectoryName())<<"/";
+			fileName<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
+			fileName<<baseName<<"/";
 		
 			// add the file name without the .fasta
 			string*theFileName=m_searchDirectories[directory].getFileName(file);
@@ -628,6 +636,7 @@ void Searcher::countSequenceKmers_masterHandler(){
 			cout<<"Opened "<<fileName.str()<<", active file descriptors: "<<m_activeFiles<<endl;
 		}
 
+		// write the file if there are not 0 matches
 		if(matches>0){
 			ostringstream content;
 			content<<m_fileNames[directory][file]<<"	"<<sequence<<"	"<<name<<"	"<<lengthInKmers<<"	"<<matches<<"	"<<ratio<<"	"<<mode<<endl;
@@ -639,7 +648,10 @@ void Searcher::countSequenceKmers_masterHandler(){
 		bool isLast=(sequence == m_searchDirectories[directory].getCount(file)-1);
 
 		// close the file
-		if(isLast){
+		// even if there is 0 matches,
+		// we need to close the file...
+		// if it exists of course
+		if(isLast && m_arrayOfFiles.count(directory)>0 && m_arrayOfFiles[directory].count(file)>0){
 			fclose(m_arrayOfFiles[directory][file]);
 			m_activeFiles--;
 
@@ -768,9 +780,6 @@ void Searcher::countSequenceKmers_slaveHandler(){
 		m_globalFileIterator++;
 		m_sequenceIterator=0;
 
-		// skip the sequence
-		//m_sequenceIterator++;
-		//m_globalSequenceIterator++;
 		
 		#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
 		cout<<"Skipping"<<endl;
@@ -816,8 +825,12 @@ void Searcher::countSequenceKmers_slaveHandler(){
 
 			showSequenceAbundanceProgress();
 
+			bool isLast=(m_sequenceIterator== m_searchDirectories[m_directoryIterator].getCount(m_fileIterator)-1);
+
 			// don't send things with 0 matches
-			if(m_matches==0){
+			// is it is the last, send it anyway
+			// because we need to close files on the other end
+			if(!isLast && m_matches==0){
 				
 				#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
 				cout<<"No matches, not sending"<<endl;
@@ -929,6 +942,11 @@ void Searcher::countSequenceKmers_slaveHandler(){
 				cout<<"Received coverage position = "<<m_numberOfKmers<<" val= "<<coverage<<endl;
 			#endif
 			
+			if(m_numberOfKmers%10000==0 && m_numberOfKmers > 0){
+				cout<<"Rank "<<m_parameters->getRank()<<" processing sequence "<<m_globalSequenceIterator;
+				cout<<" ProcessedKmers= "<<m_numberOfKmers<<endl;
+			}
+
 			m_numberOfKmers++;
 		}
 	}
@@ -996,9 +1014,32 @@ void Searcher::createTrees(){
 }
 
 string Searcher::getBaseName(string a){
+	// absolute path:
+	// /pubseq/sra/RayKmerSearchStuff/2011-12-23/Bacteria-Genomes
+	//   returns Bacteria-Genomes
+	//
+	// absolute path
+	//   /Data
+	//     returns Data
+	//
+	// relative path:
+	// dragonborn/dna-sequences
+	//   returns dna-sequences
+	//
+	// relative path:
+	//
+	// LocalDatabase
+	//   returns LocalDatabase
+	//
+	// LocalDatabase/
+	//   returns LocalDatabase
+	//
+	// LocalDatabase//
+	//   returns LocalDatabase
+
 	int theLength=a.length();
 	int lastPosition=theLength-1;
-	
+
 	// remove trailing slashes
 	while(lastPosition>0 && a[lastPosition]=='/'){
 		lastPosition--;
@@ -1006,9 +1047,14 @@ string Searcher::getBaseName(string a){
 
 	#ifdef ASSERT
 	assert(lastPosition>=0);
+	assert(lastPosition!=0);
 	assert(a[lastPosition]!='/');
 	#endif
 
+	// only keep the base name 
+	// find a slash, if any, before lastPosition
+	// if there are no slash, then the lastSlash will be
+	// 0
 	int lastSlash=lastPosition;
 
 	// find the last slash
@@ -1016,8 +1062,30 @@ string Searcher::getBaseName(string a){
 		lastSlash--;
 	}
 
+	// at this point, lastSlash may point
+	// to a slash
+	// if not, it is 0
+	// note that it can be 0 and point to a
+	// slash
+	
+	// skip the slash, if any
+	if(a[lastSlash]=='/'){
+		lastSlash++;
+	}else{
+		#ifdef ASSERT
+		assert(lastSlash==0);
+		#endif
+	}
+	
+	// at this point, we have 2 positions
+	// from lastSlash to lastPosition inclusively,
+	// there is no slash.
 	#ifdef ASSERT
 	for(int i=lastSlash;i<=lastPosition;i++){
+		if(a[i]=='/'){
+			cout<<"Input= "<<a<<" lastSlash= "<<lastSlash<<" lastPosition="<<lastPosition<<endl;
+		}
+
 		assert(a[i]!='/');
 	}
 	#endif
@@ -1029,6 +1097,10 @@ string Searcher::getBaseName(string a){
 	#endif
 
 	int count=lastPosition-lastSlash+1;
+
+	#ifdef ASSERT
+	assert(count>0);
+	#endif
 
 	return a.substr(lastSlash,count);
 }

@@ -236,7 +236,10 @@ void SearchDirectory::getNextKmer(int kmerLength,Kmer*kmer){
 }
 
 string SearchDirectory::getCurrentSequenceName(){
-	int maximumLength=40;
+	int maximumLength=64;
+
+	// per default, just returns the header without any parsing...
+	#ifdef CONFIG_USE_NCBI_HEADERS
 	// if '|' are there, this is the NCBI format
 	// skip 4 '|' and return the rest
 	size_t position=m_currentSequenceHeader.find_last_of('|');
@@ -257,8 +260,10 @@ string SearchDirectory::getCurrentSequenceName(){
 		return m_currentSequenceHeader.substr(position,maximumLength);
 	}
 
+	#endif
+
 	// otherwise
-	// remove the '>' and keep only 100 characters.
+	// remove the '>' and keep only maximumLength characters.
 	//cout<<"code 108"<<endl;
 
 	#ifdef ASSERT
