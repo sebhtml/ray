@@ -31,6 +31,9 @@ using namespace std;
 //#define CONFIG_DEBUG_IOPS
 //#define CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
 
+
+#define CONFIG_FORCE_VALUE_FOR_MAXIMUM_SPEED false
+
 void Searcher::constructor(Parameters*parameters,StaticVector*outbox,TimePrinter*timePrinter,SwitchMan*switchMan,
 	VirtualCommunicator*vc,StaticVector*inbox,RingAllocator*outboxAllocator){
 
@@ -684,6 +687,19 @@ void Searcher::countSequenceKmers_masterHandler(){
 
 }
 
+/** massively parallel implementation of
+ * the biological abundance problem solver.
+ * each MPI rankcount things.
+ *
+ * any MPI rank will have 0 or 1 file descriptor for reading.
+ * the master MPI rank will have between 0 and NumberOfRanks
+ * inclusively file descriptors for writing.
+ *
+ * VirtualCommunicator service is provided by VirtualCommunicator and by
+ * BufferedData (legacy, but better in some cases)
+ *
+ * \author Sébastien Boisvert
+ */
 void Searcher::countSequenceKmers_slaveHandler(){
 
 	// Process virtual messages
@@ -741,6 +757,7 @@ void Searcher::countSequenceKmers_slaveHandler(){
 		m_bufferedData.constructor(m_parameters->getSize(),MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
 			RAY_MALLOC_TYPE_KMER_ACADEMY_BUFFER,m_parameters->showMemoryAllocations(),KMER_U64_ARRAY_SIZE);
 
+		m_kmersProcessed=0;
 
 	// all directories were processed
 	}else if(m_directoryIterator==m_searchDirectories_size){
@@ -748,6 +765,8 @@ void Searcher::countSequenceKmers_slaveHandler(){
 		#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
 		cout<<"Finished countSequenceKmers_slaveHandler"<<endl;
 		#endif
+
+		showProcessedKmers();
 
 		m_bufferedData.showStatistics(m_parameters->getRank());
 
@@ -814,13 +833,16 @@ void Searcher::countSequenceKmers_slaveHandler(){
 		m_sequenceAbundanceSent=false;
 
 		m_derivative.clear();
+		m_derivative.addX(m_numberOfKmers);
 
 	// compute abundances
 	}else if(m_createdSequenceReader){
-		if(m_pendingMessages==0 
-			&& !m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength)
+		if(m_pendingMessages==0  && m_bufferedData.isEmpty() &&  /* nothing to flush... */
+			 !m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength)
 			&& !m_sequenceAbundanceSent){
 			
+			m_derivative.addX(m_numberOfKmers);
+
 			// process the thing, possibly send it to be written
 
 			int mode=0;
@@ -907,17 +929,57 @@ void Searcher::countSequenceKmers_slaveHandler(){
 			m_requestedCoverage=false;
 			m_sequenceAbundanceSent=false;
 
-		}else if(m_pendingMessages==0 && !m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength)){
+		}else if(m_pendingMessages==0 && !m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength) 
+				 && m_bufferedData.isEmpty()){
+
 			// we have to wait because we sent the summary 
 			// and the response is not there yet
 
 		// k-mers are available
-		}else if(m_pendingMessages==0 && !m_requestedCoverage){
+		}else if(m_pendingMessages==0 && !m_requestedCoverage && m_bufferedData.isEmpty() ){
 	
 			// don't use message aggregation ?
 			// true= no multiplexing
 			// false= multiplexing
-			bool force=true;
+			//
+			// if this is set to true
+			// thie whole thing will be 10 to 100 
+			// times slower
+			//
+			// Actual numbers:
+			//
+			// force=true
+			// 	Speed= 25000
+			//
+			// force=false
+			//	Speed= 800000
+			//
+			//	speedup: 32
+			//
+			// this would be a good switch it Ray would
+			// be a commercial product.
+			//
+			// - Raytrek Ray 8 Free Edition
+			// - Raytrek Ray 8i 00.54.222.1 Edition Opal (including 10x speed increase)
+			//
+			// In fact, switching off BufferedData and VirtualCommunicator
+			// everywhere would mean that assembling
+			// a bacteria genome (~ 5 minutes) would
+			// take 5 hours.
+			//
+			// this impressive speed-up could be further improved
+			// by trading the BufferedData for a VirtualCommunicator
+			// (both provide the service of VirtualCommunicator,
+			// but BufferedData is manual while VirtualCommunicator
+			// is automated
+			// Furthermore, VirtualCommunicator can be used with VirtualProcessor
+			// so tasks can be splitted...
+			//
+			// but here this is not feasible because tasks are input-output-bounded
+			// spawning workers would spawn too many file descriptors
+			//and it would kill the virtual file system, if any.
+
+			bool force=CONFIG_FORCE_VALUE_FOR_MAXIMUM_SPEED;
 
 			// pull k-mers from the sequence and fill buffers
 			// if one of the buffer if full,
@@ -990,17 +1052,17 @@ void Searcher::countSequenceKmers_slaveHandler(){
 					cout<<"Received coverage position = "<<m_numberOfKmers<<" val= "<<coverage<<endl;
 				#endif
 			
-				if(m_numberOfKmers%10000==0 && m_numberOfKmers > 0){
+				if(false && m_numberOfKmers%10000==0 && m_numberOfKmers > 0){
 					cout<<"Rank "<<m_parameters->getRank()<<" processing sequence "<<m_globalSequenceIterator;
 					cout<<" ProcessedKmers= "<<m_numberOfKmers<<endl;
-
-					m_derivative.addX(m_numberOfKmers);
-					m_derivative.printStatus(SLAVE_MODES[m_switchMan->getSlaveMode()],
-						m_switchMan->getSlaveMode());
-
 				}
 
 				m_numberOfKmers++;
+				m_kmersProcessed++;
+
+				if(m_kmersProcessed%1000000==0){
+					showProcessedKmers();
+				}
 			}
 
 			m_requestedCoverage=false;
@@ -1181,6 +1243,11 @@ void Searcher::showSequenceAbundanceProgress(){
 		cout<<"/"<<m_searchDirectories_size<<"] ["<<m_fileIterator+1<<"/";
 		cout<<m_searchDirectories[m_directoryIterator].getSize()<<"] ["<<m_sequenceIterator+1;
 		cout<<"/"<<m_searchDirectories[m_directoryIterator].getCount(m_fileIterator)<<"]"<<endl;
+
+		// display the speed obtained.
+		m_derivative.printStatus(SLAVE_MODES[m_switchMan->getSlaveMode()],
+				m_switchMan->getSlaveMode());
+
 	}
 
 }
@@ -1195,4 +1262,8 @@ void Searcher::printDirectoryStart(){
 
 	cout<<endl;
 	cout<<"Rank "<<m_parameters->getRank()<<" starting to process "<<m_directoryNames[m_directoryIterator]<<endl;
+}
+
+void Searcher::showProcessedKmers(){
+	cout<<"Rank "<<m_parameters->getRank()<<": Searcher: processed k-mers so far: "<<m_kmersProcessed<<endl;
 }

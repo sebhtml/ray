@@ -41,17 +41,25 @@ using namespace std;
 /**
  * This class searches for sequences in the de Bruijn graph
  * It outputs biological abundance readouts
+ * \author Sébastien Boisvert
  **/
 class Searcher{
-	/** manually buffered data */
-
+	/** number of pending messages */
 	int m_pendingMessages;
 
+	/** total number of kmers processed */
+	uint64_t m_kmersProcessed;
+
+	/** manually buffered data */
 	BufferedData m_bufferedData;
 
+	/** point-wise derivative for speed readouts */
 	Derivative m_derivative;
 
+	/** the Ray parameters */
 	Parameters*m_parameters;
+
+	/** the switchman */
 	SwitchMan*m_switchMan;
 	VirtualCommunicator*m_virtualCommunicator;
 	StaticVector*m_outbox;
@@ -61,8 +69,6 @@ class Searcher{
 
 	/** the identifier to give to the virtual communicator */
 	uint64_t m_workerId;
-
-	vector<string> categoryFiles;
 
 	// for counting entries in category files
 	bool m_countElementsMasterStarted;
@@ -81,8 +87,10 @@ class Searcher{
 	int m_fileIterator;
 	bool m_waiting;
 
+	/** option that indicates if detailed reports are needed */
 	bool m_writeDetailedFiles;
 
+	/** contig paths */
 	vector<vector<Kmer> >*m_contigs;
 	vector<uint64_t>*m_contigNames;
 
@@ -96,13 +104,16 @@ class Searcher{
 	int m_masterFileIterator;
 	bool m_sendCounts;
 
+	/** contig iterator */
 	int m_contig;
+
+	/** contig position iterator */
 	int m_contigPosition;
 
 	// for the virtual communicator
-	
 	vector<uint64_t> m_activeWorkers;
 
+	/** file to write coverage distribution */
 	ofstream m_currentCoverageFile;
 	bool m_waitingForAbundanceReply;
 
@@ -125,6 +136,7 @@ class Searcher{
 	// base names of files
 	vector<vector<string> > m_fileNames;
 
+	/** number of matches for a sequence */
 	int m_matches;
 
 	/** k-mer length */
@@ -149,11 +161,17 @@ class Searcher{
 	bool m_countSequenceKmersSlaveStarted;
 	bool m_countSequenceKmersMasterStarted;
 
+	/** state */
 	bool m_createdSequenceReader;
 
+	/** iteraetor */
 	int m_sequenceIterator;
 	int m_globalSequenceIterator;
 	int m_globalFileIterator;
+
+
+//_-----------------_//
+
 
 	void showContigAbundanceProgress();
 	void createTrees();
@@ -165,6 +183,8 @@ class Searcher{
 	void printDirectoryStart();
 
 	string getBaseName(string a);
+
+	void showProcessedKmers();
 public:
 
 	void countElements_masterMethod();
@@ -181,8 +201,7 @@ public:
 
 	void setContigs(vector<vector<Kmer> >*paths,vector<uint64_t>*names);
 
-
-};
+}; /* Searcher */
 
 #endif
 

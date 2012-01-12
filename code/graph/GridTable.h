@@ -41,6 +41,11 @@ class GridTable{
 	uint64_t m_size;
 	bool m_inserted;
 
+	uint64_t m_findOperations;
+
+	/** verbosity */
+	bool m_verbose;
+
 public:
 	void constructor(int rank,Parameters*a);
 	uint64_t size();

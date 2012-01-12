@@ -41,6 +41,10 @@ void GridTable::constructor(int rank,Parameters*parameters){
 	if(m_parameters->showMemoryUsage()){
 		showMemoryUsage(rank);
 	}
+
+	m_findOperations=0;
+
+	m_verbose=false;
 }
 
 uint64_t GridTable::size(){
@@ -57,7 +61,21 @@ Vertex*GridTable::find(Kmer*key){
 		lowerKey=*key;
 	}
 
-	return m_hashTable.find(&lowerKey);
+	m_findOperations++;
+
+	// show some love on screen
+	if(m_verbose && m_findOperations%100000==0){
+		m_hashTable.toggleVerbosity();
+	}
+
+	Vertex*vertex= m_hashTable.find(&lowerKey);
+
+	// turns off verbosity
+	if(m_verbose && m_findOperations%100000==0){
+		m_hashTable.toggleVerbosity();
+	}
+
+	return vertex;
 }
 
 KmerCandidate*GridTable::insertInAcademy(Kmer*key){

@@ -386,6 +386,9 @@ VALUE*MyHashTableGroup<KEY,VALUE>::find(int bucket,KEY*key,ChunkAllocatorWithDef
  */
 template<class KEY,class VALUE>
 class MyHashTable{
+	/** is this table verbose */
+	bool m_verbose;
+
 	/** currently doing incremental resizing ? */
 	bool m_resizing;
 
@@ -479,6 +482,9 @@ class MyHashTable{
 	VALUE*findKey(KEY*key,bool checkAuxiliary);
 
 public:
+	
+	void toggleVerbosity();
+
 	/** unused constructor  */
 	MyHashTable();
 
@@ -791,6 +797,11 @@ void MyHashTable<KEY,VALUE>::constructor(int mallocType,bool showMalloc,int rank
 	constructor(defaultSize,mallocType,showMalloc,rank);
 }
 
+template<class KEY,class VALUE>
+void MyHashTable<KEY,VALUE>::toggleVerbosity(){
+	m_verbose=!m_verbose;
+}
+
 /** build the hash table given a number of buckets 
  * this is private actually 
  * */
@@ -807,6 +818,8 @@ void MyHashTable<KEY,VALUE>::constructor(uint64_t buckets,int mallocType,bool sh
 
 	/** set the message-passing interface rank number */
 	m_rank=rank;
+
+	m_verbose=false;
 	
 	m_allocator.constructor(sizeof(VALUE),showMalloc);
 	m_mallocType=mallocType;
@@ -1014,7 +1027,8 @@ void MyHashTable<KEY,VALUE>::findBucketWithKey(KEY*key,uint64_t*probe,int*group,
  * finds a key
  */
 template<class KEY,class VALUE>
-VALUE*MyHashTable<KEY,VALUE>::findKey(KEY*key,bool checkAuxiliary){
+VALUE*MyHashTable<KEY,VALUE>::findKey(KEY*key,bool checkAuxiliary){ /* for verbosity */
+
 	if(m_resizing && checkAuxiliary){
 		/* check the new one first */
 		VALUE*result=m_auxiliaryTableForIncrementalResize->find(key);
@@ -1033,6 +1047,22 @@ VALUE*MyHashTable<KEY,VALUE>::findKey(KEY*key,bool checkAuxiliary){
 	assert(bucketInGroup<m_numberOfBucketsInGroup);
 	#endif
 	
+	if(m_verbose){
+		cout<<"GridTable (service provided by MyHashTable) -> found key [";
+		for(int i=0;i<key->getNumberOfU64();i++){
+			if(i>0)
+				cout<<" ";
+
+			cout<<hex<<""<<key->getU64(i)<<dec;
+		}
+		cout<<"] on rank "<<m_rank;
+		cout<<" in group "<<group<<" in bucket "<<bucketInGroup;
+		cout<<" after "<<probe<<" probe operation";
+		if(probe>1)
+			cout<<"s";
+		cout<<endl;
+	}
+
 	/** ask the group to find the key */
 	return m_groups[group].find(bucketInGroup,key,&m_allocator);
 }
