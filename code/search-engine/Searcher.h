@@ -33,6 +33,7 @@
 #include <stdio.h> /*for FILE */
 #include <vector>
 #include <string>
+#include <profiling/Derivative.h>
 #include <map>
 using namespace std;
 
@@ -41,6 +42,8 @@ using namespace std;
  * It outputs biological abundance readouts
  **/
 class Searcher{
+	Derivative m_derivative;
+
 	Parameters*m_parameters;
 	SwitchMan*m_switchMan;
 	VirtualCommunicator*m_virtualCommunicator;

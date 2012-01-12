@@ -803,6 +803,8 @@ void Searcher::countSequenceKmers_slaveHandler(){
 
 		m_sequenceAbundanceSent=false;
 
+		m_derivative.clear();
+
 	// compute abundances
 	}else if(m_createdSequenceReader){
 		if(!m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength)
@@ -945,6 +947,11 @@ void Searcher::countSequenceKmers_slaveHandler(){
 			if(m_numberOfKmers%10000==0 && m_numberOfKmers > 0){
 				cout<<"Rank "<<m_parameters->getRank()<<" processing sequence "<<m_globalSequenceIterator;
 				cout<<" ProcessedKmers= "<<m_numberOfKmers<<endl;
+
+				m_derivative.addX(m_numberOfKmers);
+				m_derivative.printStatus(SLAVE_MODES[m_switchMan->getSlaveMode()],
+					m_switchMan->getSlaveMode());
+
 			}
 
 			m_numberOfKmers++;
