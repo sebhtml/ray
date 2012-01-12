@@ -87,6 +87,7 @@ public:
 
 	/**
  *		returns the number of flushed devices.
+ *		TODO: this should be called flushAnyNonEmptyBuffer
  */
 	int flushAll(int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank);
 	bool isEmpty()const;

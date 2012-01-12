@@ -110,6 +110,14 @@ bool BufferedData::isEmpty()const{
 	return true;
 }
 
+/** Attempt to flush any buffer
+ * Returns 0 if all buffers are empty
+ * Returns 1 if a buffer was flushed
+ *
+ * This method does not flush more than one buffer at once
+ *
+ * \author Sébastien Boisvert
+ */
 int BufferedData::flushAll(int tag,RingAllocator*outboxAllocator,StaticVector*outbox,int rank){
 	if(isEmpty()){
 		return 0;
@@ -177,7 +185,7 @@ bool BufferedData::needsFlushing(int destination,int period){
 
 void BufferedData::showStatistics(int rank){
 	double ratio=100.0*m_flushedMessages/m_pushedMessages;
-	cout<<"Rank "<<rank<<" : VirtualCommunicator: "<<m_pushedMessages;
+	cout<<"Rank "<<rank<<" : VirtualCommunicator (service provided by BufferedData): "<<m_pushedMessages;
 	cout<<" virtual messages generated "<<m_flushedMessages;
 	cout<<" real messages ("<<ratio<<"%)"<<endl;
 }

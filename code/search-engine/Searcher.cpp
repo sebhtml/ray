@@ -749,6 +749,8 @@ void Searcher::countSequenceKmers_slaveHandler(){
 		cout<<"Finished countSequenceKmers_slaveHandler"<<endl;
 		#endif
 
+		m_bufferedData.showStatistics(m_parameters->getRank());
+
 		m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
 
 	// all files in a directory were processed
@@ -815,7 +817,8 @@ void Searcher::countSequenceKmers_slaveHandler(){
 
 	// compute abundances
 	}else if(m_createdSequenceReader){
-		if(!m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength)
+		if(m_pendingMessages==0 
+			&& !m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength)
 			&& !m_sequenceAbundanceSent){
 			
 			// process the thing, possibly send it to be written
@@ -887,7 +890,8 @@ void Searcher::countSequenceKmers_slaveHandler(){
 
 			m_sequenceAbundanceSent=true;
 
-		}else if(!m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength) 
+		}else if(m_pendingMessages==0 && 
+		!m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength) 
 		&& m_virtualCommunicator->isMessageProcessed(m_workerId)){
 
 			#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
@@ -903,29 +907,55 @@ void Searcher::countSequenceKmers_slaveHandler(){
 			m_requestedCoverage=false;
 			m_sequenceAbundanceSent=false;
 
-		}else if(!m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength)){
+		}else if(m_pendingMessages==0 && !m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength)){
 			// we have to wait because we sent the summary 
 			// and the response is not there yet
 
 		// k-mers are available
-		}else if(!m_requestedCoverage){
+		}else if(m_pendingMessages==0 && !m_requestedCoverage){
 	
+			// don't use message aggregation ?
+			// true= no multiplexing
+			// false= multiplexing
 			bool force=true;
 
-			Kmer kmer;
-			m_searchDirectories[m_directoryIterator].getNextKmer(m_kmerLength,&kmer);
+			// pull k-mers from the sequence and fill buffers
+			// if one of the buffer if full,
+			// flush it and return and wait for a response
 
-			int rankToFlush=m_parameters->_vertexRank(&kmer);
+			bool gatheringKmers=true;
 
-			// pack the k-mer
-			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
-				m_bufferedData.addAt(rankToFlush,kmer.getU64(i));
+			while(gatheringKmers && m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength)){
+				Kmer kmer;
+				m_searchDirectories[m_directoryIterator].getNextKmer(m_kmerLength,&kmer);
+				m_searchDirectories[m_directoryIterator].iterateToNextKmer();
+
+				int rankToFlush=m_parameters->_vertexRank(&kmer);
+
+				// pack the k-mer
+				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+					m_bufferedData.addAt(rankToFlush,kmer.getU64(i));
+				}
+
+				// force flush the message
+				if(m_bufferedData.flush(rankToFlush,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_outboxAllocator,m_outbox,
+					m_parameters->getRank(),force)){
+					m_pendingMessages++;
+					gatheringKmers=false;
+				}
 			}
 
-			// force flush the message
-			if(m_bufferedData.flush(rankToFlush,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_outboxAllocator,m_outbox,
-				m_parameters->getRank(),force)){
-				m_pendingMessages++;
+			// at this point, we flushed something
+			// or we processed all k-mers
+			// if nothing was flushed, we force something now
+			if(m_pendingMessages==0){
+
+				m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_outboxAllocator,
+					m_outbox,m_parameters->getRank());
+
+				#ifdef ASSERT
+				assert(m_pendingMessages>0);
+				#endif
 			}
 
 			#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
@@ -935,39 +965,57 @@ void Searcher::countSequenceKmers_slaveHandler(){
 	
 			m_requestedCoverage=true;
 
-		}else if(m_requestedCoverage && m_inbox->hasMessage(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY)){
+		}else if(m_pendingMessages > 0 &&
+				m_requestedCoverage && m_inbox->hasMessage(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY)){
+
 			Message*message=m_inbox->at(0);
 			uint64_t*buffer=message->getBuffer();
-			//int count=message->getCount();
+			int count=message->getCount();
 
-			// get the coverage.
-			int coverage=buffer[0];
+			m_pendingMessages--;
+
+			// iterate over the coverage values
+			for(int i=0;i<count;i+=KMER_U64_ARRAY_SIZE){
+
+				// get the coverage.
+				int coverage=buffer[i];
+
+				if(coverage>0){
+					m_coverageDistribution[coverage]++;
+					m_matches++;
+				}
+
+				#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
+				if(m_numberOfKmers%1000==0)
+					cout<<"Received coverage position = "<<m_numberOfKmers<<" val= "<<coverage<<endl;
+				#endif
+			
+				if(m_numberOfKmers%10000==0 && m_numberOfKmers > 0){
+					cout<<"Rank "<<m_parameters->getRank()<<" processing sequence "<<m_globalSequenceIterator;
+					cout<<" ProcessedKmers= "<<m_numberOfKmers<<endl;
+
+					m_derivative.addX(m_numberOfKmers);
+					m_derivative.printStatus(SLAVE_MODES[m_switchMan->getSlaveMode()],
+						m_switchMan->getSlaveMode());
+
+				}
+
+				m_numberOfKmers++;
+			}
 
 			m_requestedCoverage=false;
-			m_searchDirectories[m_directoryIterator].iterateToNextKmer();
 
+		// we processed all the k-mers
+		// now we need to flush the remaining half-full buffers
+		// this section is now used if 
+		// force=true 
+		// in the above code
+		}else if(m_pendingMessages==0 && !m_bufferedData.isEmpty()){
 
-			if(coverage>0){
-				m_coverageDistribution[coverage]++;
-				m_matches++;
-			}
-
-			#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
-			if(m_numberOfKmers%1000==0)
-				cout<<"Received coverage position = "<<m_numberOfKmers<<" val= "<<coverage<<endl;
-			#endif
-			
-			if(m_numberOfKmers%10000==0 && m_numberOfKmers > 0){
-				cout<<"Rank "<<m_parameters->getRank()<<" processing sequence "<<m_globalSequenceIterator;
-				cout<<" ProcessedKmers= "<<m_numberOfKmers<<endl;
-
-				m_derivative.addX(m_numberOfKmers);
-				m_derivative.printStatus(SLAVE_MODES[m_switchMan->getSlaveMode()],
-					m_switchMan->getSlaveMode());
-
-			}
-
-			m_numberOfKmers++;
+			m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_outboxAllocator,
+				m_outbox,m_parameters->getRank());
+	
+			m_requestedCoverage=true;
 		}
 	}
 }
