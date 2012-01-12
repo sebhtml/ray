@@ -347,7 +347,8 @@ void Searcher::countContigKmers_masterHandler(){
 
 		m_contigSummaryFile.open(summary.str().c_str());
 
-		m_contigSummaryFile<<"#Category	SequenceName	LengthInKmers	Matches	Ratio	ModeKmerCoverage"<<endl;
+		m_contigSummaryFile<<"#Category	SequenceName	LengthInKmers	Matches	Ratio	ModeKmerCoverage";
+		m_contigSummaryFile<<"	MeanKmerCoverage"<<endl;
 
 		// create an empty file for identifications
 		ostringstream identifications;
@@ -364,11 +365,16 @@ void Searcher::countContigKmers_masterHandler(){
 
 		Message*message=m_inbox->at(0);
 		uint64_t*buffer=message->getBuffer();
-		uint64_t name=buffer[0];
-		int length=buffer[1];
-		int mode=buffer[2];
 
-		m_contigSummaryFile<<"Contigs	contig-"<<name<<"	"<<length<<"	"<<length<<"	1.00	"<<mode<<endl;
+		int bufferPosition=0;
+
+		uint64_t name=buffer[bufferPosition++];
+		int length=buffer[bufferPosition++];
+		int mode=buffer[bufferPosition++];
+		int mean=buffer[bufferPosition++];
+
+		m_contigSummaryFile<<"Contigs	contig-"<<name<<"	"<<length<<"	"<<length<<"	1.00	"<<mode;
+		m_contigSummaryFile<<"	"<<mean<<endl;
 	
 		// sent a response
 		uint64_t*buffer2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
@@ -450,6 +456,8 @@ void Searcher::countContigKmers_slaveHandler(){
 		}
 
 		int mode=0;
+		uint64_t sum=0;
+		uint64_t totalCount=0;
 		int modeCount=0;
 
 		for(map<int,int>::iterator i=m_coverageDistribution.begin();i!=m_coverageDistribution.end();i++){
@@ -464,7 +472,15 @@ void Searcher::countContigKmers_slaveHandler(){
 				mode=coverage;
 				modeCount=count;
 			}
+
+			sum+=coverage*count;
+			totalCount+=count;
 		}
+
+		double mean=sum;
+
+		if(totalCount>0)
+			mean=(0.0+sum)/totalCount;
 
 		if(m_writeDetailedFiles){
 			f1.close();
@@ -482,6 +498,7 @@ void Searcher::countContigKmers_slaveHandler(){
 		buffer[bufferSize++]=contigName;
 		buffer[bufferSize++]=lengthInKmers;
 		buffer[bufferSize++]=mode;
+		buffer[bufferSize++]=mean;
 
 		int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_CONTIG_ABUNDANCE);
 
@@ -603,6 +620,7 @@ void Searcher::countSequenceKmers_masterHandler(){
 		int lengthInKmers=buffer[bufferPosition++];
 		int matches=buffer[bufferPosition++];
 		int mode=buffer[bufferPosition++];
+		int mean=buffer[bufferPosition++];
 
 		char*name=(char*)(buffer+bufferPosition++);
 
@@ -637,7 +655,7 @@ void Searcher::countSequenceKmers_masterHandler(){
 			
 			m_activeFiles++;
 
-			fprintf(m_arrayOfFiles[directory][file],"#Category	SequenceNumber	SequenceName	LengthInKmers	Matches	Ratio	ModeKmerCoverage\n");
+			fprintf(m_arrayOfFiles[directory][file],"#Category	SequenceNumber	SequenceName	LengthInKmers	Matches	Ratio	ModeKmerCoverage	MeanKmerCoverage\n");
 		
 			cout<<"Opened "<<fileName.str()<<", active file descriptors: "<<m_activeFiles<<endl;
 		}
@@ -645,7 +663,7 @@ void Searcher::countSequenceKmers_masterHandler(){
 		// write the file if there are not 0 matches
 		if(matches>0){
 			ostringstream content;
-			content<<m_fileNames[directory][file]<<"	"<<sequence<<"	"<<name<<"	"<<lengthInKmers<<"	"<<matches<<"	"<<ratio<<"	"<<mode<<endl;
+			content<<m_fileNames[directory][file]<<"	"<<sequence<<"	"<<name<<"	"<<lengthInKmers<<"	"<<matches<<"	"<<ratio<<"	"<<mode<<"	"<<mean<<endl;
 
 			fprintf(m_arrayOfFiles[directory][file],content.str().c_str());
 		}
@@ -847,6 +865,8 @@ void Searcher::countSequenceKmers_slaveHandler(){
 
 			int mode=0;
 			int modeCount=0;
+			uint64_t sum=0;
+			uint64_t totalCount=0;
 
 			for(map<int,int>::iterator i=m_coverageDistribution.begin();i!=m_coverageDistribution.end();i++){
 				int count=i->second;
@@ -856,7 +876,15 @@ void Searcher::countSequenceKmers_slaveHandler(){
 					mode=coverage;
 					modeCount=count;
 				}
+
+				sum+=coverage*count;
+				totalCount+=count;
 			}
+
+			double mean=sum;
+
+			if(totalCount>0)
+				mean=(0.0+sum)/totalCount;
 
 			showSequenceAbundanceProgress();
 
@@ -893,6 +921,7 @@ void Searcher::countSequenceKmers_slaveHandler(){
 			buffer[bufferSize++]=m_numberOfKmers;
 			buffer[bufferSize++]=m_matches;
 			buffer[bufferSize++]=mode;
+			buffer[bufferSize++]=mean;
 			
 			char*name=(char*)(buffer+bufferSize);
 
