@@ -33,6 +33,7 @@
 #include <stdio.h> /*for FILE */
 #include <vector>
 #include <string>
+#include <communication/BufferedData.h>
 #include <profiling/Derivative.h>
 #include <map>
 using namespace std;
@@ -42,6 +43,12 @@ using namespace std;
  * It outputs biological abundance readouts
  **/
 class Searcher{
+	/** manually buffered data */
+
+	int m_pendingMessages;
+
+	BufferedData m_bufferedData;
+
 	Derivative m_derivative;
 
 	Parameters*m_parameters;

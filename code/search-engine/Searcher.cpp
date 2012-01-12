@@ -20,6 +20,7 @@
 
 #include <search-engine/Searcher.h>
 #include <fstream>
+#include <memory/malloc_types.h>
 #include <sstream>
 #include <core/OperatingSystem.h>
 #include <stdio.h> /* for fopen, fprintf and fclose */
@@ -57,6 +58,8 @@ void Searcher::constructor(Parameters*parameters,StaticVector*outbox,TimePrinter
 
 	m_searchDirectories_size=0;
 	m_searchDirectories=NULL;
+
+	m_pendingMessages=0;
 }
 
 void Searcher::countElements_masterMethod(){
@@ -734,6 +737,11 @@ void Searcher::countSequenceKmers_slaveHandler(){
 	
 		printDirectoryStart();
 
+
+		m_bufferedData.constructor(m_parameters->getSize(),MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
+			RAY_MALLOC_TYPE_KMER_ACADEMY_BUFFER,m_parameters->showMemoryAllocations(),KMER_U64_ARRAY_SIZE);
+
+
 	// all directories were processed
 	}else if(m_directoryIterator==m_searchDirectories_size){
 	
@@ -902,33 +910,38 @@ void Searcher::countSequenceKmers_slaveHandler(){
 		// k-mers are available
 		}else if(!m_requestedCoverage){
 	
-			uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
-			int bufferPosition=0;
+			bool force=true;
+
 			Kmer kmer;
 			m_searchDirectories[m_directoryIterator].getNextKmer(m_kmerLength,&kmer);
-			kmer.pack(buffer,&bufferPosition);
 
-			int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE);
+			int rankToFlush=m_parameters->_vertexRank(&kmer);
+
+			// pack the k-mer
+			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+				m_bufferedData.addAt(rankToFlush,kmer.getU64(i));
+			}
+
+			// force flush the message
+			if(m_bufferedData.flush(rankToFlush,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_outboxAllocator,m_outbox,
+				m_parameters->getRank(),force)){
+				m_pendingMessages++;
+			}
 
 			#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
 			if(m_numberOfKmers%1000==0)
 				cout<<"Sending RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE, position="<<m_numberOfKmers<<endl;
 			#endif
 	
-			Message aMessage(buffer,elementsPerQuery,
-				m_parameters->_vertexRank(&kmer),
-				RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_parameters->getRank());
-
-			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
-	
 			m_requestedCoverage=true;
 
-		}else if(m_requestedCoverage && m_virtualCommunicator->isMessageProcessed(m_workerId)){
-			
-			vector<uint64_t> data;
-			m_virtualCommunicator->getMessageResponseElements(m_workerId,&data);
-			int coverage=data[0];
+		}else if(m_requestedCoverage && m_inbox->hasMessage(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY)){
+			Message*message=m_inbox->at(0);
+			uint64_t*buffer=message->getBuffer();
+			//int count=message->getCount();
 
+			// get the coverage.
+			int coverage=buffer[0];
 
 			m_requestedCoverage=false;
 			m_searchDirectories[m_directoryIterator].iterateToNextKmer();
