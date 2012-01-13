@@ -371,7 +371,9 @@ void Searcher::countContigKmers_masterHandler(){
 		uint64_t name=buffer[bufferPosition++];
 		int length=buffer[bufferPosition++];
 		int mode=buffer[bufferPosition++];
-		int mean=buffer[bufferPosition++];
+
+		double*bufferDouble=(double*)(buffer+bufferPosition++);
+		double mean=bufferDouble[0];
 
 		m_contigSummaryFile<<"Contigs	contig-"<<name<<"	"<<length<<"	"<<length<<"	1.00	"<<mode;
 		m_contigSummaryFile<<"	"<<mean<<endl;
@@ -509,7 +511,9 @@ void Searcher::countContigKmers_slaveHandler(){
 		buffer[bufferSize++]=contigName;
 		buffer[bufferSize++]=lengthInKmers;
 		buffer[bufferSize++]=mode;
-		buffer[bufferSize++]=mean;
+		
+		double*bufferDouble=(double*)(buffer+bufferSize++);
+		bufferDouble[0]=mean;
 
 		int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_CONTIG_ABUNDANCE);
 
@@ -586,7 +590,8 @@ void Searcher::countContigKmers_slaveHandler(){
 			}
 
 			#ifdef ASSERT
-			assert(m_contig<(int)(*m_contigs)[m_contig].size());
+			assert(m_contig<(int)(*m_contigs).size());
+			assert(m_contigPosition<(int)(*m_contigs)[m_contig].size());
 			#endif
 
 			// get the kmer
