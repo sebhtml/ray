@@ -740,98 +740,6 @@ void Searcher::countSequenceKmers_masterHandler(){
 			m_rankToCall++;
 		}
 
-		
-	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEQUENCE_ABUNDANCE)){
-
-		#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
-		cout<<"Master here, receiving RAY_MPI_TAG_SEQUENCE_ABUNDANCE"<<endl;
-		#endif
-
-		int bufferPosition=0;
-
-		Message*message=m_inbox->at(0);
-		uint64_t*buffer=message->getBuffer();
-		int directory=buffer[bufferPosition++];
-		int file=buffer[bufferPosition++];
-		int sequence=buffer[bufferPosition++];
-		int lengthInKmers=buffer[bufferPosition++];
-		int matches=buffer[bufferPosition++];
-		int mode=buffer[bufferPosition++];
-		int mean=buffer[bufferPosition++];
-
-		char*name=(char*)(buffer+bufferPosition++);
-
-		double ratio=(0.0+matches)/lengthInKmers;
-
-
-		// open the file
-		// don't open it if there are 0 matches
-		if((m_arrayOfFiles.count(directory)==0 || m_arrayOfFiles[directory].count(file)==0) && matches>0){
-			
-			string*theDirectoryPath=m_searchDirectories[directory].getDirectoryName();
-			string baseName=getBaseName(*theDirectoryPath);
-
-			// create the directory
-			if(m_arrayOfFiles.count(directory)==0){
-				ostringstream directoryPath;
-				directoryPath<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
-				directoryPath<<baseName;
-
-				createDirectory(directoryPath.str().c_str());
-			}
-
-			ostringstream fileName;
-			fileName<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
-			fileName<<baseName<<"/";
-		
-			// add the file name without the .fasta
-			string*theFileName=m_searchDirectories[directory].getFileName(file);
-			fileName<<theFileName->substr(0,theFileName->length()-6)<<".tsv";
-
-			m_arrayOfFiles[directory][file]=fopen(fileName.str().c_str(),"w");
-			
-			m_activeFiles++;
-
-			fprintf(m_arrayOfFiles[directory][file],"#Category	SequenceNumber	SequenceName	LengthInKmers	Matches	Ratio	ModeKmerCoverage	MeanKmerCoverage\n");
-		
-			cout<<"Opened "<<fileName.str()<<", active file descriptors: "<<m_activeFiles<<endl;
-		}
-
-		// write the file if there are not 0 matches
-		if(matches>0){
-			ostringstream content;
-			content<<m_fileNames[directory][file]<<"	"<<sequence<<"	"<<name<<"	"<<lengthInKmers<<"	"<<matches<<"	"<<ratio<<"	"<<mode<<"	"<<mean<<endl;
-
-			fprintf(m_arrayOfFiles[directory][file],content.str().c_str());
-		}
-
-		// is it the last sequence in this file ?
-		bool isLast=(sequence == m_searchDirectories[directory].getCount(file)-1);
-
-		// close the file
-		// even if there is 0 matches,
-		// we need to close the file...
-		// if it exists of course
-		if(isLast && m_arrayOfFiles.count(directory)>0 && m_arrayOfFiles[directory].count(file)>0){
-			fclose(m_arrayOfFiles[directory][file]);
-			m_activeFiles--;
-
-			cout<<"Closed file "<<directory<<" "<<file<<", active file descriptors: "<<m_activeFiles<<endl;
-
-			m_arrayOfFiles[directory].erase(file);
-		}
-
-		// sent a response
-		uint64_t*buffer2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-
-		int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_SEQUENCE_ABUNDANCE);
-
-		Message aMessage(buffer2,elementsPerQuery,
-			message->getSource(),
-			RAY_MPI_TAG_SEQUENCE_ABUNDANCE_REPLY,m_parameters->getRank());
-
-		m_outbox->push_back(aMessage);
-
 	}else if(m_switchMan->allRanksAreReady()){
 		m_switchMan->closeMasterMode();
 
@@ -1007,16 +915,13 @@ void Searcher::countSequenceKmers_slaveHandler(){
 
 		m_requestedCoverage=false;
 
-		m_sequenceAbundanceSent=false;
-
 		m_derivative.clear();
 		m_derivative.addX(m_numberOfKmers);
 
 	// compute abundances
 	}else if(m_createdSequenceReader && !m_finished){
 		if(m_pendingMessages==0  && m_bufferedData.isEmpty() &&  /* nothing to flush... */
-			 !m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength)
-			&& !m_sequenceAbundanceSent){
+			 !m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength)){
 			
 			m_derivative.addX(m_numberOfKmers);
 
@@ -1052,6 +957,7 @@ void Searcher::countSequenceKmers_slaveHandler(){
 			assert(m_fileIterator<m_searchDirectories[m_directoryIterator].getSize());
 			#endif
 
+			// is it the last sequence in this file ?
 			bool isLast=(m_sequenceIterator== m_searchDirectories[m_directoryIterator].getCount(m_fileIterator)-1);
 
 			// don't send things with 0 matches
@@ -1067,8 +973,6 @@ void Searcher::countSequenceKmers_slaveHandler(){
 				m_globalSequenceIterator++;
 				m_createdSequenceReader=false;
 
-				m_sequenceAbundanceSent=true;
-
 				return;
 
 			}
@@ -1077,50 +981,85 @@ void Searcher::countSequenceKmers_slaveHandler(){
 			cout<<"dir "<<m_directoryIterator<<" file "<<m_fileIterator<<" sequence "<<m_sequenceIterator<<" global "<<m_globalSequenceIterator<<" mode "<<mode<<endl;
 			#endif
 
-			uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-			int bufferSize=0;
-			buffer[bufferSize++]=m_directoryIterator;
-			buffer[bufferSize++]=m_fileIterator;
-			buffer[bufferSize++]=m_sequenceIterator;
-			buffer[bufferSize++]=m_numberOfKmers;
-			buffer[bufferSize++]=m_matches;
-			buffer[bufferSize++]=mode;
-			buffer[bufferSize++]=mean;
-			
-			char*name=(char*)(buffer+bufferSize);
-
-			string sequenceName=m_searchDirectories[m_directoryIterator].getCurrentSequenceName();
+			double ratio=(0.0+m_matches)/m_numberOfKmers;
 	
-			strcpy(name,sequenceName.c_str());
+			// open the file
+			// don't open it if there are 0 matches
+			if((m_arrayOfFiles.count(m_directoryIterator)==0 || 
+				m_arrayOfFiles[m_directoryIterator].count(m_fileIterator)==0) && m_matches>0){
+				
+				string*theDirectoryPath=m_searchDirectories[m_directoryIterator].getDirectoryName();
+				string baseName=getBaseName(*theDirectoryPath);
+	
+	
+				ostringstream fileName;
+				fileName<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
+				fileName<<baseName<<"/";
+			
+				// add the file name without the .fasta
+				string*theFileName=m_searchDirectories[m_directoryIterator].getFileName(m_fileIterator);
+				fileName<<theFileName->substr(0,theFileName->length()-6)<<".tsv";
+	
+				m_arrayOfFiles[m_directoryIterator][m_fileIterator]=fopen(fileName.str().c_str(),"w");
+				
+				#ifdef ASSERT
+				assert(m_activeFiles==0); // it is 0 or 1... 
+				#endif
+	
+				m_activeFiles++;
+		
+				#ifdef ASSERT
+				assert(m_activeFiles==1); // it is 0 or 1... 
+				#endif
+	
+				fprintf(m_arrayOfFiles[m_directoryIterator][m_fileIterator],
+					"#Category	SequenceNumber	SequenceName	LengthInKmers	Matches	Ratio	ModeKmerCoverage	MeanKmerCoverage\n");
+		
+				cout<<"Opened "<<fileName.str()<<", active file descriptors: "<<m_activeFiles<<endl;
+			}
+	
+			// write the file if there are not 0 matches
+			if(m_matches>0){
+				ostringstream content;
+				
+				string sequenceName=m_searchDirectories[m_directoryIterator].getCurrentSequenceName();
 
-			int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_SEQUENCE_ABUNDANCE);
+				content<<m_fileNames[m_directoryIterator][m_fileIterator];
+				content<<"	"<<m_sequenceIterator<<"	"<<sequenceName<<"	"<<m_numberOfKmers;
+				content<<"	"<<m_matches<<"	"<<ratio<<"	"<<mode<<"	"<<mean<<endl;
+	
+				fprintf(m_arrayOfFiles[m_directoryIterator][m_fileIterator],content.str().c_str());
+			}
+	
+			// close the file
+			// even if there is 0 matches,
+			// we need to close the file...
+			// if it exists of course
+			if(isLast && m_arrayOfFiles.count(m_directoryIterator)>0 
+				&& m_arrayOfFiles[m_directoryIterator].count(m_fileIterator)>0){
+	
+				fclose(m_arrayOfFiles[m_directoryIterator][m_fileIterator]);
+	
+				#ifdef ASSERT
+				assert(m_activeFiles==1);
+				#endif
+	
+				m_activeFiles--;
+	
+				#ifdef ASSERT
+				assert(m_activeFiles==0);
+				#endif
+	
+				cout<<"Closed file "<<m_directoryIterator<<" "<<m_fileIterator<<", active file descriptors: "<<m_activeFiles<<endl;
+	
+				m_arrayOfFiles[m_directoryIterator].erase(m_fileIterator);
+			}
 
-			#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
-			cout<<"End reached, sending out a RAY_MPI_TAG_SEQUENCE_ABUNDANCE"<<endl;
-			#endif
-
-			Message aMessage(buffer,elementsPerQuery,MASTER_RANK,RAY_MPI_TAG_SEQUENCE_ABUNDANCE,m_parameters->getRank());
-
-			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
-
-			m_sequenceAbundanceSent=true;
-
-		}else if(m_pendingMessages==0 && 
-		!m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength) 
-		&& m_virtualCommunicator->isMessageProcessed(m_workerId)){
-
-			#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
-			cout<<"Received response for RAY_MPI_TAG_SEQUENCE_ABUNDANCE"<<endl;
-			#endif
-
-			vector<uint64_t> data;
-			m_virtualCommunicator->getMessageResponseElements(m_workerId,&data);
-
+			// go to the next sequence
 			m_sequenceIterator++;
 			m_globalSequenceIterator++;
 			m_createdSequenceReader=false;
 			m_requestedCoverage=false;
-			m_sequenceAbundanceSent=false;
 
 		}else if(m_pendingMessages==0 && !m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength) 
 				 && m_bufferedData.isEmpty()){
@@ -1302,7 +1241,7 @@ void Searcher::createTrees(){
 		cout<<"create dir "<<directory2Str<<endl;
 		#endif
 
-		if(!lazy && m_parameters->getRank()==MASTER_RANK)
+		if(m_parameters->getRank()==MASTER_RANK)
 			createDirectory(directory2Str.c_str());
 
 		m_directoryNames.push_back(baseName);

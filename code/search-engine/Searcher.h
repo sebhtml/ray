@@ -131,9 +131,6 @@ class Searcher{
 	SearchDirectory*m_searchDirectories;
 	int m_searchDirectories_size;
 
-	// state for sending biological abundances */
-	bool m_sequenceAbundanceSent;
-
 	/** for the master rank */
 	ofstream m_contigSummaryFile;
 	ofstream m_identificationFile;
