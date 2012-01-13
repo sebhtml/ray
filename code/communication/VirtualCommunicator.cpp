@@ -34,6 +34,7 @@ void VirtualCommunicator::setElementsPerQuery(int tag,int size){
 	#ifdef ASSERT
 	assert(m_elementSizes.count(tag)==0);
 	#endif
+
 	m_elementSizes[tag]=size;
 }
 
@@ -42,6 +43,7 @@ int VirtualCommunicator::getElementsPerQuery(int tag){
 	#ifdef ASSERT
 	assert(m_elementSizes.count(tag)!=0);
 	#endif
+
 	return m_elementSizes[tag];
 }
 
@@ -106,6 +108,7 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 	m_localPushedMessageStatus=true;
 
 	int destination=message->getDestination();
+
 	#ifdef ASSERT
 	if(!(destination>=0&&destination<m_size)){
 		cout<<"Error: tag="<<message->getTag()<<" destination="<<destination<<" (INVALID)"<<endl;
@@ -132,9 +135,11 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 	}
 	int newPriority=oldPriority+count;
 	m_priorityQueue[newPriority].insert(elementId);
+
 	#ifdef ASSERT
 	assert(count>0);
 	#endif
+
 	uint64_t*buffer=(uint64_t*)message->getBuffer();
 	for(int i=0;i<count;i++){// count is probably 1...
 		uint64_t element=buffer[i];
@@ -157,6 +162,8 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
  *	maximum number of pushed messages
  */
 	int threshold=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)/period;
+
+	/** this whole block makes sure that the communicator is not overloaded */
 	#ifdef ASSERT
 	assert(m_elementSizes.count(tag)>0);
 	assert(period>=1);
@@ -169,6 +176,7 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 	}
 	assert(currentSize<=threshold);
 	#endif
+
 	if(currentSize>=threshold){
 		// must flush the message
 		flushMessage(tag,destination);
@@ -181,18 +189,23 @@ void VirtualCommunicator::flushMessage(int tag,int destination){
 	#endif
 
 	m_flushedMessages++;
+
 	#ifdef ASSERT
 	assert(m_messageContent.count(tag)>0&&m_messageContent[tag].count(destination)>0);
 	#endif
+
+	// find the priority and erase it
 	int priority=m_messageContent[tag][destination].size();
 	uint64_t elementId=getPathUniqueId(destination,tag);
 	m_priorityQueue[priority].erase(elementId);
 	if(m_priorityQueue[priority].size()==0){
 		m_priorityQueue.erase(priority);
 	}
+
 	m_activeDestination=destination;
 	m_activeTag=tag;
 	int currentSize=priority;
+
 	#ifdef ASSERT
 	if(currentSize==0){
 		cout<<"Cannot flush empty buffer!"<<endl;
@@ -264,9 +277,11 @@ void VirtualCommunicator::processInbox(vector<uint64_t>*activeWorkers){
 		if(m_replyTagToQueryTag.count(incomingTag)==0){
 			return;
 		}
+
 		#ifdef ASSERT
 		assert(m_replyTagToQueryTag.count(incomingTag)>0);
 		#endif
+
 		int queryTag=m_replyTagToQueryTag[incomingTag];
 		if(m_activeTag==queryTag&&m_activeDestination==source){
 			#ifdef DEBUG_VIRTUAL_COMMUNICATOR
@@ -276,9 +291,11 @@ void VirtualCommunicator::processInbox(vector<uint64_t>*activeWorkers){
 			m_pendingMessages--;
 			cout.flush();
 			uint64_t*buffer=(uint64_t*)message->getBuffer();
+
 			#ifdef ASSERT
 			assert(m_elementSizes.count(queryTag)>0);
 			#endif
+
 			int elementsPerWorker=m_elementSizes[queryTag];
 			vector<uint64_t> workers=m_workerCurrentIdentifiers[m_activeTag][m_activeDestination];
 			m_workerCurrentIdentifiers[m_activeTag][m_activeDestination].clear();
@@ -296,6 +313,9 @@ void VirtualCommunicator::processInbox(vector<uint64_t>*activeWorkers){
 			}
 			assert(count==(int)workers.size()*elementsPerWorker);
 			#endif
+
+			// add the workers to a list
+			// so they can be activated again
 			for(int i=0;i<(int)workers.size();i++){
 				uint64_t workerId=workers[i];
 				activeWorkers->push_back(workerId);
@@ -303,22 +323,30 @@ void VirtualCommunicator::processInbox(vector<uint64_t>*activeWorkers){
 					cout<<"Reactivating "<<workerId<<" tag="<<queryTag<<endl;
 				}
 				int basePosition=i*elementsPerWorker;
+
 				#ifdef ASSERT
 				if(m_elementsForWorkers.count(workerId)>0){
 					cout<<"there already are elements for "<<workerId<<endl;
 				}
 				assert(m_elementsForWorkers.count(workerId)==0);
 				#endif
+
+				// classify the data and bins
 				for(int j=0;j<elementsPerWorker;j++){
 					uint64_t element=buffer[basePosition+j];
 					m_elementsForWorkers[workerId].push_back(element);
 				}
+
+				// make sure that is someone 
+				// asks if workerId can fetch its thing,
+				// it will return true.
 				#ifdef ASSERT
 				assert(isMessageProcessed(workerId));
 				#endif
 			}
 		}
 	}
+
 	#ifdef ASSERT
 	assert(m_pendingMessages>=0);
 	#endif
@@ -349,22 +377,31 @@ void VirtualCommunicator::forceFlush(){
 	if(m_debug){
 		cout<<__func__<<endl;
 	}
+
 	if(m_priorityQueue.size()==0){
 		if(m_debug){
 			cout<<"queue is empty"<<endl;
 		}
 		return;
 	}
+
+	// if forceFlush is called
+	// and there are no message
+	// the thing will crash 
+	// it is designed like that
 	#ifdef ASSERT
 	assert(!m_priorityQueue.rbegin()->second.empty());
 	#endif
+
 	uint64_t elementId=*(m_priorityQueue.rbegin()->second.begin());
 	int selectedDestination=getRankFromPathUniqueId(elementId);
 	int selectedTag=getIdFromPathUniqueId(elementId);
+
 	#ifdef ASSERT
 	assert(m_messageContent.count(selectedTag)>0&&m_messageContent[selectedTag].count(selectedDestination)>0);
 	assert(!m_messageContent[selectedTag][selectedDestination].empty());
 	#endif
+
 	flushMessage(selectedTag,selectedDestination);
 }
 
@@ -385,6 +422,7 @@ bool VirtualCommunicator::nextIsAlmostFull(){
 	int currentSize=m_messageContent[selectedTag][selectedDestination].size();
 	int threshold=MAXIMUM_MESSAGE_SIZE_IN_BYTES/8;
 	int value=currentSize*period;
+
 	return value>=threshold;
 }
 
@@ -396,6 +434,8 @@ void VirtualCommunicator::printStatistics(){
 	cout<<" real messages ("<<ratio<<"%)"<<endl;
 }
 
+/** debugging will display a lot of messages */
 void VirtualCommunicator::setDebug(){
 	m_debug=true;
 }
+
