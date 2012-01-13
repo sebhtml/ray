@@ -27,6 +27,9 @@ using namespace std;
 void ReusableMemoryStore::constructor(){
 }
 
+/** returns true if size bytes can be allocated
+ * from the garbage stack
+ */
 bool ReusableMemoryStore::hasAddressesToReuse(int size){
 	bool test=m_toReuse.count(size)>0;
 	#ifdef ASSERT
@@ -43,37 +46,47 @@ void*ReusableMemoryStore::reuseAddress(int size){
 	#endif
 
 	Element*tmp=m_toReuse[size];
+
 	#ifdef ASSERT
 	assert(tmp!=NULL);
 	#endif
+
 	Element*next=(Element*)tmp->m_next;
 	m_toReuse[size]=next;
 	if(m_toReuse[size]==NULL){
 		m_toReuse.erase(size);
 	}
+
 	#ifdef ASSERT
 	if(m_toReuse.count(size)>0){
 		assert(m_toReuse[size]!=NULL);
 	}
 	#endif
+
 	return tmp;
 }
-
+/**
+ * add size bytes to the garbage stack
+ */
 void ReusableMemoryStore::addAddressToReuse(void*p,int size){
 	/** don't free these tiny bits -- sizeof(Element) is 8 bytes on a 64-bit system */
 	if(size<(int)sizeof(Element)){
 		return;
 	}
+
 	#ifdef ASSERT
 	assert(p!=NULL);
 	#endif
+
 	Element*ptr=(Element*)p;
 	ptr->m_next=NULL;
 	if(m_toReuse.count(size)>0){
 		Element*next=m_toReuse[size];
+
 		#ifdef ASSERT
 		assert(next!=NULL);
 		#endif
+
 		ptr->m_next=next;
 	}
 	m_toReuse[size]=ptr;

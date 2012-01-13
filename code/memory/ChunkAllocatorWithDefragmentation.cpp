@@ -21,12 +21,18 @@
 #include <memory/ChunkAllocatorWithDefragmentation.h>
 #include <memory/malloc_types.h>
 #include <memory/allocator.h>
+
 #ifdef ASSERT
 #include <assert.h>
 #endif
+
 #include <iostream>
 using namespace std;
 
+/** this does nothing
+ * defragmentation instead occurs sometimes when
+ * deallocate() is called
+ */
 void ChunkAllocatorWithDefragmentation::defragment(){
 }
 
@@ -76,13 +82,20 @@ void ChunkAllocatorWithDefragmentation::constructor(int bytesPerElement,bool sho
 	m_cellOccupancies=(uint8_t*)__Malloc(ELEMENTS_PER_GROUP*sizeof(uint8_t),RAY_MALLOC_TYPE_DEFRAG_LANE,show);
 	m_show=show;
 	m_bytesPerElement=bytesPerElement;
+
+	// initially, the allocator has
+	// no line
 	for(int i=0;i<NUMBER_OF_LANES;i++)
 		m_defragmentationLanes[i]=NULL;
+
+	// furthermore, the fast lane
+	// Is not set
 	m_fastLane=NULL;
 	m_numberOfLanes=0;
 }
 
 /**
+ * This method updates the fast lane
  * update:
  *  m_fastLane
  *  m_fastGroup
@@ -116,23 +129,32 @@ void ChunkAllocatorWithDefragmentation::updateFastLane(int n){
  * allocate memory
  */
 SmartPointer ChunkAllocatorWithDefragmentation::allocate(int n){ /** 64 is the number of buckets in a MyHashTableGroup */
+
+	// presently, this code only allocate things between 1 and 64 * sizeof(something)
 	#ifdef ASSERT
 	if(!(n>=1 && n<=64))
 		cout<<"n= "<<n<<endl;
 	assert(n>=1&&n<=64);
 	#endif
 
+	// we need to update the fast lane
 	if(m_fastLane==NULL || !m_fastLane->canAllocate(n,m_bytesPerElement,m_show)){
 		updateFastLane(n);
 	}
 
+	// the fast lane gives us a smart pointer
+	// a small smart pointer can only be resolved with the context of
+	// a DefragmentationGroup
 	int group;
 	SmallSmartPointer smallSmartPointer=m_fastLane->allocate(n,m_bytesPerElement,&group);
 
 	/** build the SmartPointer with the
- *	SmallSmartPointer, DefragmentationLane id, and DefragmentationGroup id */
+ *	SmallSmartPointer, DefragmentationLane id, and DefragmentationGroup id 
+* SmartPointer are unique contrary to SmallSmartPointer which are not
+*/
 	int globalGroup=m_fastLane->getNumber()*GROUPS_PER_LANE+group;
 	SmartPointer smartPointer=globalGroup*ELEMENTS_PER_GROUP+smallSmartPointer;
+
 	return smartPointer;
 }
 
@@ -153,6 +175,7 @@ void ChunkAllocatorWithDefragmentation::deallocate(SmartPointer a){
 	int groupInLane=group%GROUPS_PER_LANE;
 
 	/** forward the SmallSmartPointer to the DefragmentationGroup */
+	// this may trigger some defragmentation
 	SmallSmartPointer smallSmartPointer=a%ELEMENTS_PER_GROUP;
 	m_defragmentationLanes[correctLaneId]->getGroup(groupInLane)->deallocate(smallSmartPointer,m_bytesPerElement,m_cellContents,m_cellOccupancies);
 }
@@ -164,6 +187,10 @@ void*ChunkAllocatorWithDefragmentation::getPointer(SmartPointer a){
 	if(a==SmartPointer_NULL)
 		return NULL;
 
+	// to get the virtual address from a SmartPointer,
+	// we need to find in which DefragmentationGroup it is
+	// and then we just ask this DefragmentationGroup
+	// for what we want
 	int group=a/ELEMENTS_PER_GROUP;
 	int correctLaneId=group/GROUPS_PER_LANE;
 	int groupInLane=group%GROUPS_PER_LANE;
@@ -173,7 +200,9 @@ void*ChunkAllocatorWithDefragmentation::getPointer(SmartPointer a){
 	return m_defragmentationLanes[correctLaneId]->getGroup(groupInLane)->getPointer(smallSmartPointer,m_bytesPerElement);
 }
 
+// empty constructor
 ChunkAllocatorWithDefragmentation::ChunkAllocatorWithDefragmentation(){}
 
+// empty desctructor
 ChunkAllocatorWithDefragmentation::~ChunkAllocatorWithDefragmentation(){}
 

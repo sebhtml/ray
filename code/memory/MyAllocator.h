@@ -42,6 +42,8 @@ class MyAllocator{
 	int m_currentPosition;
 	int m_currentChunkId;
 	int m_CHUNK_SIZE;
+
+/** garbage store, memory will be reused */
 	ReusableMemoryStore m_store;
 
 	void addChunk();
@@ -53,14 +55,17 @@ public:
  */
 	void print();
 	void clear();
+
 	/**
  * assign a size to the allocator.
  */
 	void constructor(int a,int type,bool show);
+
 /**
  * allocate memory
  */
 	void*allocate(int s);
+
 	~MyAllocator();
 	int getChunkSize();
 	int getNumberOfChunks();
@@ -72,6 +77,8 @@ public:
  	* reset the chunk to reuse it properly.
  	*/
 	void reset();
+
+/** free memory */
 	void free(void*a,int b);
 };
 

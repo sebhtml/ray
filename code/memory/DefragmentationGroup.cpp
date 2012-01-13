@@ -22,6 +22,9 @@
 /* TODO: replace m_allocatedSizes with a bitmap */
 
 /* run low-level assertions, pretty slow but that helped for the development. */
+/* even if ASSERT is defined, the low-level assertions are not */
+/* compiled unless LOW_LEVEL_ASSERT is defined */
+
 /* #define LOW_LEVEL_ASSERT */
 
 #include <memory/DefragmentationGroup.h>
@@ -40,7 +43,11 @@ using namespace std;
 #define AVAILABLE 0
 #define UTILISED 1
 
+/** value for an occupied chunk in the array */
 #define BUSY_CHUNK 18446744073709551615UL
+
+/** the threshold for defragmentation **/
+#define CONFIG_DEFRAGMENTATION_THRESHOLD 2048
 
 /**
  *  Return true if the DefragmentationGroup can allocate n elements 
@@ -53,6 +60,7 @@ bool DefragmentationGroup::canAllocate(int n){
 	#ifdef ASSERT
 	assert((ELEMENTS_PER_GROUP-m_freeSliceStart)<=m_availableElements);
 	#endif
+
 	return (ELEMENTS_PER_GROUP-m_freeSliceStart)>=n;
 }
 
@@ -97,6 +105,7 @@ bool DefragmentationGroup::canAllocate(int n){
  *
  */
 SmallSmartPointer DefragmentationGroup::allocate(int n){
+	/* verify pre-conditions */
 	#ifdef ASSERT
 	assert(n>0);
 	assert(canAllocate(n));
@@ -114,6 +123,7 @@ SmallSmartPointer DefragmentationGroup::allocate(int n){
  * */
 	SmallSmartPointer returnValue=getAvailableSmallSmartPointer();
 
+	/* make sure that this handle is not used already */
 	#ifdef ASSERT
 	assert(m_allocatedSizes[returnValue]==0);
 	#endif
@@ -122,13 +132,17 @@ SmallSmartPointer DefragmentationGroup::allocate(int n){
 	m_allocatedOffsets[returnValue]=m_freeSliceStart;
 	m_allocatedSizes[returnValue]=n;
 
+	/** make sure that the meta-data was stored correctly */
 	#ifdef ASSERT
 	assert(m_allocatedSizes[returnValue]==n);
 	assert(m_allocatedOffsets[returnValue]==m_freeSliceStart);
 	#endif
 
+	/** move the frontier */
 	m_freeSliceStart+=n;
 
+	/** assert that all things on the right of the frontier **/
+	/* are freed */
 	#ifdef LOW_LEVEL_ASSERT
 	for(int i=m_freeSliceStart;i<ELEMENTS_PER_GROUP;i++){
 		if(getBit(i)!=AVAILABLE){
@@ -139,8 +153,12 @@ SmallSmartPointer DefragmentationGroup::allocate(int n){
 	}
 	#endif
 
+	/* since we allocated n elements */
+	/* we have n less elements left */
 	m_availableElements-=n;
 	
+	// make sure that the number of available elements
+	// is valid
 	#ifdef ASSERT
 	if(m_availableElements<0)
 		cout<<"m_availableElements "<<m_availableElements<<endl;
@@ -148,6 +166,7 @@ SmallSmartPointer DefragmentationGroup::allocate(int n){
 	assert(m_availableElements<=ELEMENTS_PER_GROUP);
 	#endif
 
+	// finally return safely the handle
 	return returnValue;
 }
 
@@ -168,8 +187,10 @@ SmallSmartPointer DefragmentationGroup::allocate(int n){
  * O(ELEMENTS_PER_GROUP) otherwise
  */
 SmallSmartPointer DefragmentationGroup::getAvailableSmallSmartPointer(){
+	/* try to find a handle in the fast pointers */
+	/* O(FAST_POINTERS), FAST_POINTERS = 256 I think */
 	for(int i=0;i<FAST_POINTERS;i++)
-		if(m_allocatedSizes[m_fastPointers[i]]==0)
+		if(m_allocatedSizes[m_fastPointers[i]]==0) /** it is available ! */
 			return m_fastPointers[i];
 
 	/**
@@ -179,25 +200,40 @@ SmallSmartPointer DefragmentationGroup::getAvailableSmallSmartPointer(){
 
 	SmallSmartPointer returnValue=0;
 
+	// populate fast pointers
+	// purge fast pointers that are allocated
 	int fast=0;
 	while(m_allocatedSizes[m_fastPointers[fast]]==0 && fast<FAST_POINTERS)
 		fast++;
 
 	int i=0;
 
+	// populate fast pointers
+	// with available handles
+	// O(ELEMENTS_PER_GROUP), ELEMENTS_PER_GROUP= 65536
 	for(i=0;i<ELEMENTS_PER_GROUP;i++){
 		if(m_allocatedSizes[i]==0){
 			m_fastPointers[fast++]=i;
 			/* always update returnValue to return the last one observed */
+			/* otherwise, if the first one is returned, it will be useless */
+			/* as a fast pointer */
+
+			/* TODO: possibly set returnValue to a handle that is not a fast pointer if possible */
+			
 			returnValue=i;
 		}
+
+		// add the fast pointer
 		while(m_allocatedSizes[m_fastPointers[fast]]==0 && fast<FAST_POINTERS)
 			fast++;
+
 		/** we populated m_fastPointers */
+		/** we can stop now **/
 		if(fast==FAST_POINTERS)
 			break;
 	}
 
+	/* return a handle */
 	return returnValue;
 }
 
@@ -206,11 +242,12 @@ SmallSmartPointer DefragmentationGroup::getAvailableSmallSmartPointer(){
  * defragment
  * done.
  *
- * Time complexity: O(n) when< 4096 elements are in the fragmented zone
+ * Time complexity: O(n) when< CONFIG_DEFRAGMENTATION_THRESHOLD elements are in the fragmented zone
  * Otherwise, O(ELEMENTS_PER_GROUP) for the call to defragment()
  */
 void DefragmentationGroup::deallocate(SmallSmartPointer a,int bytesPerElement,uint16_t*cellContent,
 	uint8_t*cellOccupancies){
+
 	#ifdef LOW_LEVEL_ASSERT
 	assert((ELEMENTS_PER_GROUP-m_freeSliceStart)<=m_availableElements);
 	for(int i=m_freeSliceStart;i<ELEMENTS_PER_GROUP;i++){
@@ -228,12 +265,15 @@ void DefragmentationGroup::deallocate(SmallSmartPointer a,int bytesPerElement,ui
 	assert(m_allocatedSizes[a]>0);
 	#endif
 
+	// fetch meta-data
 	int allocatedSize=m_allocatedSizes[a];
 	int offset=m_allocatedOffsets[a];
 
 	/** set the size to 0 for this SmallSmartPointer */
 	m_allocatedSizes[a]=0;
 
+	// this is a special case
+	/* in which the region touches the frontier */
 	if(offset+allocatedSize==m_freeSliceStart){
 		m_freeSliceStart=offset;
 	}
@@ -252,6 +292,7 @@ void DefragmentationGroup::deallocate(SmallSmartPointer a,int bytesPerElement,ui
 	assert(m_allocatedSizes[a]==0);
 	#endif
 	
+	/* we have more elements available now */
 	m_availableElements+=allocatedSize;
 
 	#ifdef ASSERT
@@ -272,7 +313,8 @@ void DefragmentationGroup::deallocate(SmallSmartPointer a,int bytesPerElement,ui
  *	in general we don't defragment (fast), but sometimes we do (slow)
  *	many fast events plus a few slow events is hopefully more fast than slow.
  * 	*/
-	int threshold=2048; // 2Ki elements
+	int threshold=CONFIG_DEFRAGMENTATION_THRESHOLD ; // 2Ki elements
+
 	if(fragmentedElements>=threshold)
 		defragment(bytesPerElement,cellContent,cellOccupancies);
 }
@@ -376,7 +418,16 @@ int DefragmentationGroup::getFreeSliceStart(){
 	return m_freeSliceStart;
 }
 
-/*
+/**
+ * defragmentation is O(ELEMENTS_PER_GROUP)
+ * there is a frontier called m_freeSliceStart
+ * on the left, things are fragmented
+ * on the right, things are free and nothing is allocated
+ * What this code does is just linearly compact the gaps
+ * from left to right
+ * while doing so, meta-data
+ * are moved correctly.
+ * \author Sébastien Boisvert
  */
 bool DefragmentationGroup::defragment(int bytesPerElement,uint16_t*cellContents,uint8_t*cellOccupancies){
 
@@ -385,6 +436,7 @@ bool DefragmentationGroup::defragment(int bytesPerElement,uint16_t*cellContents,
 		cellOccupancies[i]=0;
 	}
 
+	
 	for(int i=0;i<ELEMENTS_PER_GROUP;i++){
 		/* otherwise we don't want to register it because it may overwrite someone else */
 		if(m_allocatedSizes[i]!=0){

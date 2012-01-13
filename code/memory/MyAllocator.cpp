@@ -55,6 +55,10 @@ void MyAllocator::addChunk(){
 	m_currentPosition=0;
 }
 
+/** this is a chunk allocator 
+ * when a chunk is consumed totally,
+ * a new one is created
+ */
 void*MyAllocator::allocate(int s){
 	#ifdef ASSERT
 	assert(s!=0);
@@ -117,6 +121,7 @@ void*MyAllocator::allocate(int s){
 
 	// the address is the head of currentCHunk+ m_currentPosition bytes
 	void*r=(void*)(((char*)m_chunks[m_currentChunkId])+m_currentPosition);
+
 	// increase the current position.
 	m_currentPosition+=s;
 

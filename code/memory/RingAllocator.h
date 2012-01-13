@@ -36,16 +36,28 @@ using namespace std;
 class RingAllocator{
 	int m_type;
 	int m_count;
+
+/** the number of memory cells */
 	int m_chunks;
+
 	bool m_show;
+
+/** the number of bytes, linear in the number of chunks/cells */
 	int m_numberOfBytes;
 	int m_max;
+
+/** memory block */
 	uint8_t*m_memory;
+
+/** the head */
 	int m_current;
 public:
 	RingAllocator();
 	void constructor(int chunks,int size,int type,bool show);
+
+/** allocate memory */
 	void*allocate(int a);
+
 	int getSize();
 	void clear();
 	void resetCount();

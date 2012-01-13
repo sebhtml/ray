@@ -36,8 +36,7 @@ void RingAllocator::constructor(int chunks,int size,int type,bool show){
 	m_show=show;
 }
 
-RingAllocator::RingAllocator(){
-}
+RingAllocator::RingAllocator(){}
 
 /*
  * allocate a chunk of m_max bytes in constant time
@@ -50,9 +49,14 @@ void*RingAllocator::allocate(int a){
 	}
 	assert(a<=m_max);
 	#endif
+
 	void*address=(void*)(m_memory+m_current*m_max);
 
 	m_current++;
+
+	// depending on the architecture
+	// branching (if) can be faster than integer division/modulo
+
 	m_current%=m_chunks;
 
 	return address;

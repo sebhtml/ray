@@ -127,6 +127,8 @@ SmallSmartPointer DefragmentationLane::allocate(int n,int bytesPerElement,int*gr
 	assert(m_fastGroup<m_numberOfActiveGroups);
 	#endif
 
+	// the fast group is always valid
+	// this is an invariant
 	(*group)=m_fastGroup;
 
 	return m_groups[m_fastGroup].allocate(n);

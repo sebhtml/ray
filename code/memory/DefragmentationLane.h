@@ -23,12 +23,15 @@
 
 #include <memory/DefragmentationGroup.h>
 
+/** value for a invalid DefragmentationGroup */
 #define INVALID_GROUP 123467
 
 /** 
  * the number of DefragmentationGroup per DefragmentationLane
  */
 #define GROUPS_PER_LANE 1024
+
+/** the number of DefragmentationGroup */
 #define NUMBER_OF_FAST_GROUPS 128
 
 /**
@@ -42,14 +45,19 @@
 class DefragmentationLane{
 	/** the identifier of the DefragmentationLane */
 	int m_number;
+
 	/** list of DefragmentationGroup */
 	DefragmentationGroup m_groups[GROUPS_PER_LANE];
+
 	/** fast DefragmentationGroup objects */
 	int m_fastGroups[NUMBER_OF_FAST_GROUPS];
+
 	/** the fastest DefragmentationGroup object */
 	int m_fastGroup;
+
 	/** the number of active DefragmentationGroup objects */
 	int m_numberOfActiveGroups;
+
 	/** the number of fast DefragmentationGroup objects */
 	int m_numberOfFastGroups;
 
@@ -59,16 +67,22 @@ class DefragmentationLane{
 public:
 	/** allocate a SmallSmartPointer */
 	SmallSmartPointer allocate(int n,int bytesPerElement,int*group);
+
 	/** initialize the DefragmentationLane */
 	void constructor(int number,int bytesPerElement,bool show);
+
 	/** can the DefragmentationLane allocate n elements ? */
 	bool canAllocate(int n,int bytesPerElement,bool show);
+
 	/** return memory to the pool */
 	void deallocate(SmallSmartPointer a);
+
 	/** get the identifier of the DefragmentationLane */
 	int getNumber();
+
 	/** get a DefragmentationGroup directly */
 	DefragmentationGroup*getGroup(int i);
+
 };
 
 

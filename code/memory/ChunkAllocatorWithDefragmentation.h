@@ -54,7 +54,10 @@ typedef uint32_t SmartPointer;
 class ChunkAllocatorWithDefragmentation{
 	DefragmentationLane*m_fastLane;
 	int m_numberOfLanes;
+
+	/** anxiliary table used by defragment() */
 	uint16_t*m_cellContents;
+	/** anxiliary table used by defragment() */
 	uint8_t*m_cellOccupancies;
 
 	/** show memory allocations */
@@ -66,6 +69,7 @@ class ChunkAllocatorWithDefragmentation{
 	/** the first DefragmentationLane  */
 	DefragmentationLane*m_defragmentationLanes[NUMBER_OF_LANES];
 
+	/** update the fast lane */
 	void updateFastLane(int n);
 public:
 	/**

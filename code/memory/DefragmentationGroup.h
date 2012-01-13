@@ -41,6 +41,9 @@
 typedef uint16_t SmallSmartPointer;
 
 /**
+ * This class does the complex logic
+ * for memory allocation and deallocation,
+ * including defragmentation using compacting
  * \author Sébastien Boisvert
  */
 class DefragmentationGroup{
