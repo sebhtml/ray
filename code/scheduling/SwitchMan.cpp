@@ -38,6 +38,7 @@ void SwitchMan::constructor(int numberOfCores){
 
 }
 
+/** reset the sole counter */
 void SwitchMan::reset(){
 	m_counter=0;
 	#ifdef ASSERT
@@ -49,6 +50,7 @@ bool SwitchMan::allRanksAreReady(){
 	#ifdef ASSERT
 	runAssertions();
 	#endif
+
 	return m_counter==m_size;
 }
 
@@ -97,7 +99,7 @@ void SwitchMan::openSlaveMode(Tag tag,StaticVector*outbox,Rank source,Rank desti
 	#endif
 
 	#ifdef ASSERT
-	assert(source == MASTER_RANK);
+	assert(source == MASTER_RANK); // only master can do that
 	#endif
 
 	sendMessage(NULL,0,outbox,source,destination,tag);
@@ -112,6 +114,8 @@ void SwitchMan::closeSlaveModeLocally(StaticVector*outbox,Rank source){
 
 	sendEmptyMessage(outbox,source,MASTER_RANK,RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL);
 
+	// set the slave mode to do nothing
+	// that is not productive...
 	setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
 }
 
@@ -133,11 +137,12 @@ void SwitchMan::openMasterMode(StaticVector*outbox,Rank source){
 	assert(outbox!=NULL);
 	#endif
 
-
+	// open the slave mode on each MPI rank
 	for(Rank i=0;i<m_size;i++){
 		openSlaveMode(tag,outbox,source,i);
 	}
 
+	// reset the counter
 	reset();
 }
 
@@ -147,9 +152,11 @@ void SwitchMan::closeMasterMode(){
 	cout<<"Closing master mode on rank "<<MASTER_RANK<<endl;
 	#endif
 
+	// get the next master mode from the table
 	RayMasterMode currentMasterMode=getMasterMode();
 	RayMasterMode nextMode=getNextMasterMode(currentMasterMode);
 
+	// set the new master mode
 	setMasterMode(nextMode);
 }
 
@@ -158,6 +165,7 @@ void SwitchMan::sendEmptyMessage(StaticVector*outbox,Rank source,Rank destinatio
 }
 
 void SwitchMan::sendMessage(uint64_t*buffer,int count,StaticVector*outbox,Rank source,Rank destination,Tag tag){
+	// send a message
 	Message aMessage(buffer,count,destination,tag,source);
 	outbox->push_back(aMessage);
 }
@@ -180,6 +188,7 @@ void SwitchMan::openSlaveModeLocally(Tag tag,Rank rank){
 	cout<<"Opening locally slave mode on rank "<<rank<<endl;
 	#endif
 
+	// translate the MPI tag to a slave mode 
 	RaySlaveMode desiredSlaveMode=m_tagToSlaveModeTable[tag];
 
 	setSlaveMode(desiredSlaveMode);
@@ -226,3 +235,4 @@ void SwitchMan::addMasterSwitch(RayMasterMode masterMode,Tag tag){
 
 	m_masterModeToTagTable[masterMode]=tag;
 }
+
