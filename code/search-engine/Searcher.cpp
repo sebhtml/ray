@@ -709,9 +709,38 @@ void Searcher::countSequenceKmers_masterHandler(){
 
 		m_countSequenceKmersMasterStarted=true;
 
+		m_numberOfRanksThatFinishedSequenceAbundances=0;
+		m_rankToCall=0;
+
 		#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
 		cout<<"MASTER START countSequenceKmers_masterHandler"<<endl;
 		#endif
+
+	// a rank finished computing abundances in its files
+	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEQUENCE_ABUNDANCE_FINISHED)){
+		m_numberOfRanksThatFinishedSequenceAbundances++;
+
+		// ask the first rank to write its files
+		if(m_numberOfRanksThatFinishedSequenceAbundances==m_parameters->getSize()){
+			m_switchMan->sendEmptyMessage(m_outbox,m_parameters->getRank(),m_rankToCall,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCES);
+			m_rankToCall++;
+		}
+		
+	// a rank has written all its files
+	}else if(m_inbox->hasMessage(RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_REPLY)){
+
+		/// all ranks have written their files
+		if(m_rankToCall == m_parameters->getSize()){
+
+			m_switchMan->sendToAll(m_outbox,m_parameters->getRank(),RAY_MPI_TAG_SEQUENCE_ABUNDANCE_YOU_CAN_GO_HOME);
+
+		// otherwise, ask the next rank to write its files
+		}else{
+			m_switchMan->sendEmptyMessage(m_outbox,m_parameters->getRank(),m_rankToCall,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCES);
+			m_rankToCall++;
+		}
+
+		
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEQUENCE_ABUNDANCE)){
 
 		#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
@@ -859,6 +888,12 @@ void Searcher::countSequenceKmers_slaveHandler(){
 		int total=0;
 		for(int i=0;i<(int)m_searchDirectories_size;i++){
 			for(int j=0;j<(int)m_searchDirectories[i].getSize();j++){
+
+				#ifdef ASSERT
+				assert(i<m_searchDirectories_size);
+				assert(j<m_searchDirectories[i].getSize());
+				#endif
+
 				total+=m_searchDirectories[i].getCount(j);
 			}
 		}
@@ -882,8 +917,10 @@ void Searcher::countSequenceKmers_slaveHandler(){
 
 		m_kmersProcessed=0;
 
+		m_finished=false;
+
 	// all directories were processed
-	}else if(m_directoryIterator==m_searchDirectories_size){
+	}else if(m_directoryIterator==m_searchDirectories_size && !m_finished){
 	
 		#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
 		cout<<"Finished countSequenceKmers_slaveHandler"<<endl;
@@ -893,10 +930,27 @@ void Searcher::countSequenceKmers_slaveHandler(){
 
 		m_bufferedData.showStatistics(m_parameters->getRank());
 
+		// tell master that we have finished our task
+		m_switchMan->sendEmptyMessage(m_outbox,m_parameters->getRank(),MASTER_RANK,RAY_MPI_TAG_SEQUENCE_ABUNDANCE_FINISHED);
+	
+		// don't come here again.
+		m_finished=true;
+
+	}else if(m_inbox->hasMessage(RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCES)){
+		
+		// write files
+		// code to be added...
+
+		// now that we have written files, we can signal master about it
+		m_switchMan->sendEmptyMessage(m_outbox,m_parameters->getRank(),MASTER_RANK,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_REPLY);
+
+	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEQUENCE_ABUNDANCE_YOU_CAN_GO_HOME)){
+
+		// this kills the batman
 		m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
 
 	// all files in a directory were processed
-	}else if(m_fileIterator==(int)m_searchDirectories[m_directoryIterator].getSize()){
+	}else if(!m_finished && m_fileIterator==(int)m_searchDirectories[m_directoryIterator].getSize()){
 	
 		cout<<"Rank "<<m_parameters->getRank()<<" has processed its entries from "<<m_directoryNames[m_directoryIterator]<<endl;
 		cout<<endl;
@@ -912,7 +966,7 @@ void Searcher::countSequenceKmers_slaveHandler(){
 		printDirectoryStart();
 
 	// all sequences in a file were processed
-	}else if(m_sequenceIterator==m_searchDirectories[m_directoryIterator].getCount(m_fileIterator)){
+	}else if(!m_finished && m_sequenceIterator==m_searchDirectories[m_directoryIterator].getCount(m_fileIterator)){
 		m_fileIterator++;
 		m_globalFileIterator++;
 		m_sequenceIterator=0;
@@ -922,7 +976,7 @@ void Searcher::countSequenceKmers_slaveHandler(){
 		#endif
 	
 	// this sequence is not owned by me
-	}else if(!isSequenceOwner()){
+	}else if(!isSequenceOwner() && !m_finished){
 
 		showSequenceAbundanceProgress();
 
@@ -937,7 +991,7 @@ void Searcher::countSequenceKmers_slaveHandler(){
 		cout<<"Skipping"<<endl;
 		#endif
 
-	}else if(!m_createdSequenceReader){
+	}else if(!m_createdSequenceReader && !m_finished){
 		// initiate the reader I guess
 	
 		#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
@@ -959,7 +1013,7 @@ void Searcher::countSequenceKmers_slaveHandler(){
 		m_derivative.addX(m_numberOfKmers);
 
 	// compute abundances
-	}else if(m_createdSequenceReader){
+	}else if(m_createdSequenceReader && !m_finished){
 		if(m_pendingMessages==0  && m_bufferedData.isEmpty() &&  /* nothing to flush... */
 			 !m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength)
 			&& !m_sequenceAbundanceSent){
@@ -992,6 +1046,11 @@ void Searcher::countSequenceKmers_slaveHandler(){
 				mean=(0.0+sum)/totalCount;
 
 			showSequenceAbundanceProgress();
+
+			#ifdef ASSERT
+			assert(m_directoryIterator<m_searchDirectories_size);
+			assert(m_fileIterator<m_searchDirectories[m_directoryIterator].getSize());
+			#endif
 
 			bool isLast=(m_sequenceIterator== m_searchDirectories[m_directoryIterator].getCount(m_fileIterator)-1);
 
@@ -1166,6 +1225,11 @@ void Searcher::countSequenceKmers_slaveHandler(){
 
 			Message*message=m_inbox->at(0);
 			uint64_t*buffer=message->getBuffer();
+
+			#ifdef ASSERT
+			assert(message!=NULL);
+			#endif
+
 			int count=message->getCount();
 
 			m_pendingMessages--;

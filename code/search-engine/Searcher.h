@@ -46,6 +46,8 @@ using namespace std;
 class Searcher{
 	/** number of pending messages */
 	int m_pendingMessages;
+	
+	int m_numberOfRanksThatFinishedSequenceAbundances;
 
 	/** total number of kmers processed */
 	uint64_t m_kmersProcessed;
@@ -109,6 +111,12 @@ class Searcher{
 
 	/** contig position iterator */
 	int m_contigPosition;
+
+	/** only used by master, tells which rank to call next */
+	int m_rankToCall;
+
+	/** indicates if the rank has sent a control message already */
+	bool m_finished;
 
 	// for the virtual communicator
 	vector<uint64_t> m_activeWorkers;
