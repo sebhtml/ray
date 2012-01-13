@@ -4,8 +4,7 @@ Ray compiles with:
 
 	- GNU C++ (gcc/g++)
 	- clang++/LLVM
-	- Microsoft Visual Studio
+	- Microsoft Visual Studio	(some constants must be defined, check the Makefile for -Dstuff)
 	- Intel C++ (icpc)
-
-
-
+	- pgi (The Portland Group)	(-Wall and -ansi must be removed from the Makefile)
+	- pathscale

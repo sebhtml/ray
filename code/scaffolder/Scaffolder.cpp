@@ -25,6 +25,10 @@
 #include <communication/Message.h>
 #include <algorithm> /* for sort */
 #include <vector>
+
+/* this header was missing, but the code compiled with clang++, gcc, intel, pgi, but not pathscale. pathscale was right */
+#include <stdio.h> 
+
 #include <fstream>
 #include <scaffolder/ScaffoldingVertex.h>
 #include <scaffolder/ScaffoldingEdge.h>

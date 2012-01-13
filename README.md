@@ -57,7 +57,7 @@ see Documentation/BiologicalAbundances.txt
 
 # Installation
 
-You need a C++ compiler, make, an implementation of MPI.
+You need a C++ compiler (supporting C++ 1998), make, an implementation of MPI (supporting MPI 2.2).
 
 ## Compilation
 
