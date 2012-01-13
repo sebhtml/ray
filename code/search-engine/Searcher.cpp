@@ -418,6 +418,12 @@ void Searcher::countContigKmers_slaveHandler(){
 
 		m_writeDetailedFiles=m_parameters->hasOption("-search-detailed");
 
+		// this is not implemented
+		m_writeDetailedFiles=false;
+
+		m_bufferedData.constructor(m_parameters->getSize(),MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
+			RAY_MALLOC_TYPE_KMER_ACADEMY_BUFFER,m_parameters->showMemoryAllocations(),KMER_U64_ARRAY_SIZE);
+
 	// we have finished our part
 	}else if(m_contig == (int) m_contigs->size()){
 		m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
@@ -426,8 +432,13 @@ void Searcher::countContigKmers_slaveHandler(){
 		cout<<"Processed all contigs"<<endl;
 		#endif
 
+		#ifdef ASSERT
+		assert(m_bufferedData.isEmpty());
+		#endif
+
 	// we finished a contig
-	}else if(m_contigPosition==(int)(*m_contigs)[m_contig].size()){
+	}else if(!m_requestedCoverage && m_contigPosition==(int)(*m_contigs)[m_contig].size()
+		&& m_bufferedData.isEmpty()){
 
 		uint64_t contigName=(*m_contigNames)[m_contig];
 
@@ -518,6 +529,12 @@ void Searcher::countContigKmers_slaveHandler(){
 		m_contig++;
 
 		m_waitingForAbundanceReply=true;
+
+		#ifdef ASSERT
+		assert(m_bufferedData.isEmpty());
+		#endif
+
+	// pull the reply
 	}else if(m_waitingForAbundanceReply && m_virtualCommunicator->isMessageProcessed(m_workerId)){
 		#ifdef CONFIG_CONTIG_ABUNDANCE_VERBOSE
 		cout<<"Received reply for abundance"<<endl;
@@ -526,60 +543,151 @@ void Searcher::countContigKmers_slaveHandler(){
 		m_waitingForAbundanceReply=false;
 		vector<uint64_t> data;
 		m_virtualCommunicator->getMessageResponseElements(m_workerId,&data);
-	}else if(!m_waitingForAbundanceReply && !m_requestedCoverage){
+
+	// process contig kmers
+	}else if(!m_waitingForAbundanceReply && !m_requestedCoverage && m_pendingMessages==0 
+		 && m_contigPosition < (int)(*m_contigs)[m_contig].size()){ // we still have things to process
+
 		#ifdef CONFIG_CONTIG_ABUNDANCE_VERBOSE
 		cout<<"Requesting coverage at "<<m_contigPosition<<endl;
 		#endif
 
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
-		int bufferPosition=0;
-		Kmer*kmer=&((*m_contigs)[m_contig][m_contigPosition]);
-		kmer->pack(buffer,&bufferPosition);
 
-		int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE);
+		bool force=CONFIG_FORCE_VALUE_FOR_MAXIMUM_SPEED;
 
-		Message aMessage(buffer,elementsPerQuery,
-			m_parameters->_vertexRank(kmer),
-			RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_parameters->getRank());
+		// pull k-mers from the sequence and fill buffers
+		// if one of the buffer if full,
+		// flush it and return and wait for a response
 
-		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
+		bool gatheringKmers=true;
+
+		while(gatheringKmers && m_contigPosition < (int)(*m_contigs)[m_contig].size()){
+
+			// show some information
+			if(m_contigPosition==0){
+				#ifdef CONFIG_DEBUG_IOPS
+				cout<<"Opening file"<<endl;
+				#endif
 	
-		m_requestedCoverage=true;
-	}else if(!m_waitingForAbundanceReply &&m_requestedCoverage && m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		#ifdef CONFIG_CONTIG_ABUNDANCE_VERBOSE
-		cout<<"Receiving coverage at "<<m_contigPosition<<endl;
-		#endif
-		vector<uint64_t> data;
-		m_virtualCommunicator->getMessageResponseElements(m_workerId,&data);
-		int coverage=data[0];
+				if(m_writeDetailedFiles){
 
-		if(m_contigPosition==0){
-			#ifdef CONFIG_DEBUG_IOPS
-			cout<<"Opening file"<<endl;
+					uint64_t contigName=m_contigNames->at(m_contig);
+					ostringstream file2;
+					file2<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Contigs/Coverage/contig-"<<contigName<<".tsv";
+
+					m_currentCoverageFile.open(file2.str().c_str());
+					m_currentCoverageFile<<"#KmerPosition	KmerCoverage"<<endl;
+				}
+			}
+	
+			// show progression
+			if(m_contigPosition % 1000 == 0 || m_contigPosition==(int)m_contigs->at(m_contig).size()-1){
+				showContigAbundanceProgress();
+			}
+
+			#ifdef ASSERT
+			assert(m_contig<(int)(*m_contigs)[m_contig].size());
 			#endif
 
-			uint64_t contigName=m_contigNames->at(m_contig);
-			ostringstream file2;
-			file2<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Contigs/Coverage/contig-"<<contigName<<".tsv";
+			// get the kmer
+			Kmer*kmer=&((*m_contigs)[m_contig][m_contigPosition]);
+			m_contigPosition++;
 
-			if(m_writeDetailedFiles){
-				m_currentCoverageFile.open(file2.str().c_str());
-				m_currentCoverageFile<<"#KmerPosition	KmerCoverage"<<endl;
+			int rankToFlush=m_parameters->_vertexRank(kmer);
+
+			// pack the k-mer
+			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+				m_bufferedData.addAt(rankToFlush,kmer->getU64(i));
+			}
+
+			// force flush the message
+			if(m_bufferedData.flush(rankToFlush,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_outboxAllocator,m_outbox,
+				m_parameters->getRank(),force)){
+
+				m_pendingMessages++;
+				gatheringKmers=false;
 			}
 		}
 
-		if(m_contigPosition % 1000 == 0 || m_contigPosition==(int)m_contigs->at(m_contig).size()-1){
-			showContigAbundanceProgress();
+		// at this point, we flushed something
+		// or we processed all k-mers
+		// if nothing was flushed, we force something now
+		if(m_pendingMessages==0){
+
+			m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_outboxAllocator,
+				m_outbox,m_parameters->getRank());
+
+			#ifdef ASSERT
+			assert(m_pendingMessages>0);
+			#endif
 		}
 
-		if(m_writeDetailedFiles){
-			m_currentCoverageFile<<m_contigPosition+1<<"	"<<coverage<<endl;
+		m_requestedCoverage=true;
+
+		#ifdef ASSERT
+		assert(m_pendingMessages>0);
+		#endif
+
+	// receive the coverage values
+	}else if(!m_waitingForAbundanceReply &&m_requestedCoverage && m_pendingMessages > 0
+			 && m_inbox->hasMessage(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY)){
+
+		Message*message=m_inbox->at(0);
+		uint64_t*buffer=message->getBuffer();
+		int count=message->getCount();
+
+		m_pendingMessages--;
+
+		#ifdef ASSERT
+		if(m_pendingMessages!=0){
+			cout<<"m_pendingMessages is "<<m_pendingMessages<<" but should be "<<m_pendingMessages<<endl;
 		}
 
-		m_coverageDistribution[coverage]++;
+		assert(m_pendingMessages==0);
+		#endif
 
-		m_contigPosition++;
+		// iterate over the coverage values
+		for(int i=0;i<count;i+=KMER_U64_ARRAY_SIZE){
+
+			// get the coverage.
+			int coverage=buffer[i];
+
+			#ifdef ASSERT
+			assert(coverage>0);
+			#endif
+
+			m_coverageDistribution[coverage]++;
+
+			if(m_writeDetailedFiles){
+				m_currentCoverageFile<<"Unknown"<<"	"<<coverage<<endl;
+			}
+		}
+
+		#ifdef CONFIG_CONTIG_ABUNDANCE_VERBOSE
+		cout<<"Receiving coverage at "<<m_contigPosition<<endl;
+		#endif
+
 		m_requestedCoverage=false;
+
+		#ifdef ASSERT
+		assert(m_pendingMessages==0);
+		assert(m_requestedCoverage==false);
+		#endif
+
+	// we finished all the work, but now we must flush stuff
+	}else if(!m_bufferedData.isEmpty() 
+		&& m_pendingMessages==0){ // only flush one thing at any time
+
+		// we flush some of what is left
+		m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_outboxAllocator,
+			m_outbox,m_parameters->getRank());
+
+		// and it is as if we had requested it for real.
+		m_requestedCoverage=true;
+
+		#ifdef ASSERT
+		assert(m_pendingMessages>0);
+		#endif
 	}
 }
 
@@ -771,9 +879,6 @@ void Searcher::countSequenceKmers_slaveHandler(){
 	
 		printDirectoryStart();
 
-
-		m_bufferedData.constructor(m_parameters->getSize(),MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
-			RAY_MALLOC_TYPE_KMER_ACADEMY_BUFFER,m_parameters->showMemoryAllocations(),KMER_U64_ARRAY_SIZE);
 
 		m_kmersProcessed=0;
 
