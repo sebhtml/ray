@@ -20,14 +20,14 @@
 */
 
 #include <math.h>
-#include <heuristics/RayNovaEngine.h>
+#include <heuristics/NovaEngine.h>
 #include <assert.h>
 
 /**
  * The implementation of this method is test-driven.
  * It tries to generalize a lot of cases
  */
-int RayNovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoices,bool show){
+int NovaEngine::choose(vector<map<int,int> >*distances,set<int>*invalidChoices,bool show){
 	vector<double> novaScores;
 	int choices=distances->size();
 

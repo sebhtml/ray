@@ -47,7 +47,7 @@
 #include <structures/BloomFilter.h>
 #include <scheduling/SwitchMan.h>
 #include <communication/MessageRouter.h>
-#include <scripting/RayScriptEngine.h>
+#include <scripting/ScriptEngine.h>
 using namespace std;
 
 /**
@@ -146,7 +146,7 @@ class MessageProcessor{
 
 public:
 
-	void assignHandlers(RayScriptEngine*engine);
+	void assignHandlers(ScriptEngine*engine);
 
 	void constructor(
 MessageRouter*router,

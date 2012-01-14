@@ -2291,7 +2291,7 @@ MessageProcessor::MessageProcessor(){
 	m_sentinelValue--;// overflow it in an obvious manner
 }
 
-void MessageProcessor::assignHandlers(RayScriptEngine*scriptEngine){
+void MessageProcessor::assignHandlers(ScriptEngine*scriptEngine){
 	
 	vector<Tag> tags;
 	vector<MessageProcessorHandler> handlers;

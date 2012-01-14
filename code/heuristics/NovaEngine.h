@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011, 2012  Sébastien Boisvert
+    Copyright (C) 2011  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -19,24 +19,23 @@
 
 */
 
-#ifndef _RayScriptEngine_h
-#define _RayScriptEngine_h
+#ifndef _NovaEngine_H
+#define _NovaEngine_H
 
-#include <scheduling/SwitchMan.h>
-#include <core/types.h>
-#include <communication/VirtualCommunicator.h>
+#include <vector>
+#include <heuristics/Chooser.h>
+#include <map>
+#include <set>
+using namespace std;
 
-class RayScriptEngine{
-
+/** This the new Ray NovaEngine(*) 
+ *NovaEngine decides where to go in the k-mer graph
+ * \author Sébastien Boisvert
+ */
+class NovaEngine{
 public:
-
-	void configureSwitchMan(SwitchMan*i);
-	void configureVirtualCommunicator(VirtualCommunicator*i);
-	
-	void configureMessageHandlers(vector<Tag>*tags,vector<MessageProcessorHandler>*handlers);
-	void configureMasterHandlers(vector<RayMasterMode>*modes,vector<MachineMasterHandler>*handlers);
-	void configureSlaveHandlers(vector<RaySlaveMode>*modes,vector<MachineSlaveHandler>*handlers);
-
+	/** choose where to go */
+	int choose(vector<map<int,int> >*distances,set<int>*invalidChoices,bool show);
 };
 
 #endif

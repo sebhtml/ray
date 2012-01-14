@@ -19,7 +19,7 @@
 
 */
 
-#include <scripting/RayScriptEngine.h>
+#include <scripting/ScriptEngine.h>
 #include <vector>
 #include <scheduling/SwitchMan.h>
 #include <core/slave_modes.h>
@@ -29,7 +29,7 @@
 #include <core/Machine.h>
 using namespace std;
 
-void RayScriptEngine::configureSwitchMan(SwitchMan*switchMan){
+void ScriptEngine::configureSwitchMan(SwitchMan*switchMan){
 	// configure the switch man
 	//
 	// this is where steps can be added or removed.
@@ -63,7 +63,7 @@ void RayScriptEngine::configureSwitchMan(SwitchMan*switchMan){
 	#undef ITEM
 }
 
-void RayScriptEngine::configureVirtualCommunicator(VirtualCommunicator*virtualCommunicator){
+void ScriptEngine::configureVirtualCommunicator(VirtualCommunicator*virtualCommunicator){
 	/** configure the virtual communicator. */
 	/* ## concatenates 2 symbols */
 
@@ -87,7 +87,7 @@ void RayScriptEngine::configureVirtualCommunicator(VirtualCommunicator*virtualCo
 
 }
 
-void RayScriptEngine::configureMessageHandlers(vector<Tag>*tags,vector<MessageProcessorHandler>*handlers){
+void ScriptEngine::configureMessageHandlers(vector<Tag>*tags,vector<MessageProcessorHandler>*handlers){
 
 	#define ITEM(tag) \
 	tags->push_back(tag); \
@@ -98,7 +98,7 @@ void RayScriptEngine::configureMessageHandlers(vector<Tag>*tags,vector<MessagePr
 	#undef ITEM
 }
 
-void RayScriptEngine::configureMasterHandlers(vector<RayMasterMode>*modes,vector<MachineMasterHandler>*handlers){
+void ScriptEngine::configureMasterHandlers(vector<RayMasterMode>*modes,vector<MachineMasterHandler>*handlers){
 
 	#define ITEM(masterMode) \
 	modes->push_back(masterMode); \
@@ -109,7 +109,7 @@ void RayScriptEngine::configureMasterHandlers(vector<RayMasterMode>*modes,vector
 	#undef ITEM
 }
 
-void RayScriptEngine::configureSlaveHandlers(vector<RaySlaveMode>*modes,vector<MachineSlaveHandler>*handlers){
+void ScriptEngine::configureSlaveHandlers(vector<RaySlaveMode>*modes,vector<MachineSlaveHandler>*handlers){
 
 	#define ITEM(slaveMode) \
 	modes->push_back(slaveMode) ; \

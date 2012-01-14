@@ -1,4 +1,4 @@
-#include <heuristics/RayNovaEngine.h>
+#include <heuristics/NovaEngine.h>
 #include <map>
 #include <set>
 #include <vector>
@@ -22,7 +22,7 @@ Choice: 2
 
 */
 int main(int argc,char**argv){
-	RayNovaEngine m_novaEngine;
+	NovaEngine m_novaEngine;
 	set<int> invalid;
 	char*fileName=argv[1];
 	ifstream f(fileName);

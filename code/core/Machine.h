@@ -67,7 +67,7 @@
 #include <communication/MessageRouter.h>
 #include <scheduling/SwitchMan.h>
 #include <search-engine/Searcher.h>
-#include <scripting/RayScriptEngine.h>
+#include <scripting/ScriptEngine.h>
 using namespace std;
 
 /**
@@ -82,7 +82,7 @@ class Machine{
 
 	SwitchMan m_switchMan;
 
-	RayScriptEngine m_scriptEngine;
+	ScriptEngine m_scriptEngine;
 
 	Profiler m_profiler2;
 	Profiler*m_profiler;

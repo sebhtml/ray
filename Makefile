@@ -185,7 +185,7 @@ obj-y += code/search-engine/Searcher.o
 obj-y += code/search-engine/SearchDirectory.o
 obj-y += code/search-engine/ContigSearchEntry.o
 
-obj-y += code/scripting/RayScriptEngine.o
+obj-y += code/scripting/ScriptEngine.o
 
 #formats
 obj-y += code/format/ColorSpaceDecoder.o code/format/ColorSpaceLoader.o code/format/FastaLoader.o \
@@ -250,7 +250,7 @@ obj-y += code/profiling/Derivative.o
 
 # heuristics
 obj-y += code/heuristics/BubbleTool.o code/heuristics/Chooser.o code/heuristics/OpenAssemblerChooser.o \
- code/heuristics/TipWatchdog.o code/heuristics/RayNovaEngine.o
+ code/heuristics/TipWatchdog.o code/heuristics/NovaEngine.o
 
 #################################
 
