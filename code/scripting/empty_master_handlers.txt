@@ -28,5 +28,4 @@ is done with this list.
 */
 
 ITEM( RAY_MASTER_MODE_DO_NOTHING )
-ITEM( RAY_MASTER_MODE_INDEX_SEQUENCES )
 

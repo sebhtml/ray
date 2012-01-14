@@ -65,7 +65,7 @@ void Searcher::constructor(Parameters*parameters,StaticVector*outbox,TimePrinter
 	m_pendingMessages=0;
 }
 
-void Searcher::countElements_masterMethod(){
+void Searcher::call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS(){
 
 	if(!m_countElementsMasterStarted){
 		m_countElementsMasterStarted=true;
@@ -309,7 +309,7 @@ void Searcher::countElements_slaveMethod(){
 	}
 }
 
-void Searcher::countContigKmers_masterHandler(){
+void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 
 	if(!m_countContigKmersMasterStarted){
 		m_countContigKmersMasterStarted=true;
@@ -731,7 +731,7 @@ void Searcher::showContigAbundanceProgress(){
 
 }
 
-void Searcher::countSequenceKmers_masterHandler(){
+void Searcher::call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 	if(!m_countSequenceKmersMasterStarted){
 
 		m_switchMan->openMasterMode(m_outbox,m_parameters->getRank());
@@ -742,7 +742,7 @@ void Searcher::countSequenceKmers_masterHandler(){
 		m_rankToCall=0;
 
 		#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
-		cout<<"MASTER START countSequenceKmers_masterHandler"<<endl;
+		cout<<"MASTER START call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES"<<endl;
 		#endif
 
 	// a rank finished computing abundances in its files
@@ -792,7 +792,7 @@ void Searcher::countSequenceKmers_masterHandler(){
  *
  * \author Sébastien Boisvert
  */
-void Searcher::countSequenceKmers_slaveHandler(){
+void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 	// Process virtual messages
 	m_virtualCommunicator->forceFlush();
@@ -805,7 +805,7 @@ void Searcher::countSequenceKmers_slaveHandler(){
 	if(!m_countSequenceKmersSlaveStarted){
 
 		#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
-		cout<<"Starting countSequenceKmers_slaveHandler"<<endl;
+		cout<<"Starting call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES"<<endl;
 		#endif
 
 		createTrees();
@@ -860,7 +860,7 @@ void Searcher::countSequenceKmers_slaveHandler(){
 	}else if(m_directoryIterator==m_searchDirectories_size && !m_finished){
 	
 		#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
-		cout<<"Finished countSequenceKmers_slaveHandler"<<endl;
+		cout<<"Finished call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES"<<endl;
 		#endif
 
 		showProcessedKmers();

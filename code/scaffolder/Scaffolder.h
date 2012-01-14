@@ -179,7 +179,7 @@ public:
 	void addMasterLink(SummarizedLink*link);
 	void solve();
 	void addMasterContig(uint64_t name,int length);
-	void writeScaffolds();
+	void call_RAY_MASTER_MODE_WRITE_SCAFFOLDS();
 	void printFinalMessage();
 
 	void setTimePrinter(TimePrinter*a);

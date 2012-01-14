@@ -216,7 +216,7 @@ void NetworkTest::writeData(){
 }
 
 /** call the master method */
-void NetworkTest::masterWork(){
+void NetworkTest::call_RAY_MASTER_MODE_TEST_NETWORK (){
 	if(!m_initialisedNetworkTest){
 		cout<<"Rank 0: testing the network, please wait..."<<endl;
 		cout<<endl;

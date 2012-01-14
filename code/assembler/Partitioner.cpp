@@ -35,7 +35,7 @@ void Partitioner::constructor(RingAllocator*outboxAllocator,StaticVector*inbox,S
 	m_loader.constructor(m_parameters->getMemoryPrefix().c_str(),m_parameters->showMemoryAllocations());
 }
 
-void Partitioner::masterMethod(){
+void Partitioner::call_RAY_MASTER_MODE_COUNT_FILE_ENTRIES(){
 	/** tell every peer to count entries in files in parallel */
 	if(!m_initiatedMaster){
 		m_initiatedMaster=true;

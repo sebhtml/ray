@@ -195,14 +195,14 @@ class Searcher{
 	void showProcessedKmers();
 public:
 
-	void countElements_masterMethod();
+	void call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS();
 	void countElements_slaveMethod();
 
-	void countContigKmers_masterHandler();
+	void call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES();
 	void countContigKmers_slaveHandler();
 
-	void countSequenceKmers_masterHandler();
-	void countSequenceKmers_slaveHandler();
+	void call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES();
+	void call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES();
 	
 	void constructor(Parameters*parameters,StaticVector*outbox,TimePrinter*timePrinter,SwitchMan*switchMan,
 	VirtualCommunicator*m_vc,StaticVector*inbox,RingAllocator*outboxAllocator);

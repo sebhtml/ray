@@ -31,7 +31,7 @@
 using namespace std;
 
 /* send the information to all ranks */
-void Library::updateDistances(){
+void Library::call_RAY_MASTER_MODE_UPDATE_DISTANCES(){
 	if(m_currentLibrary<m_parameters->getNumberOfLibraries()){
 		/** don't send information for manually-provided information */
 		if(!m_parameters->isAutomatic(m_currentLibrary)){

@@ -1247,7 +1247,7 @@ void Scaffolder::getContigSequence(uint64_t id){
 	}
 }
 
-void Scaffolder::writeScaffolds(){
+void Scaffolder::call_RAY_MASTER_MODE_WRITE_SCAFFOLDS(){
 	if(!m_initialised){
 		m_initialised=true;
 		m_scaffoldId=0;

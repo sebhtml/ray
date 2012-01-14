@@ -467,7 +467,7 @@ m_seedingData,
 }
 
 void Machine::call_RAY_MASTER_MODE_WRITE_SCAFFOLDS(){
-	m_scaffolder.writeScaffolds();
+	m_scaffolder.call_RAY_MASTER_MODE_WRITE_SCAFFOLDS();
 }
 
 /**
@@ -856,7 +856,7 @@ void Machine::call_RAY_MASTER_MODE_LOAD_CONFIG(){
 }
 
 void Machine::call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS(){
-	m_searcher.countElements_masterMethod();
+	m_searcher.call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS();
 }
 
 void Machine::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
@@ -870,7 +870,7 @@ void Machine::call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES(){
 }
 
 void Machine::call_RAY_MASTER_MODE_COUNT_FILE_ENTRIES(){
-	m_partitioner.masterMethod();
+	m_partitioner.call_RAY_MASTER_MODE_COUNT_FILE_ENTRIES();
 }
 
 /** actually, call_RAY_MASTER_MODE_LOAD_SEQUENCES 
@@ -932,10 +932,6 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION(){
 		m_outbox.push_back(aMessage);
 	}
 	m_switchMan.setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
-}
-
-void Machine::call_RAY_MASTER_MODE_START_EDGES_DISTRIBUTION(){
-	m_numberOfMachinesReadyForEdgesDistribution=-1;
 }
 
 void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
@@ -1289,11 +1285,13 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_SEEDING(){
 	cout<<endl;
 	m_readyToSeed=-1;
 	m_numberOfRanksDoneSeeding=0;
+
 	// tell everyone to seed now.
 	for(int i=0;i<getSize();i++){
 		Message aMessage(NULL,0,i,RAY_MPI_TAG_START_SEEDING,getRank());
 		m_outbox.push_back(aMessage);
 	}
+
 	m_switchMan.setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
 }
 
@@ -1438,7 +1436,7 @@ void Machine::call_RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES(){
 }
 
 void Machine::call_RAY_MASTER_MODE_UPDATE_DISTANCES(){
-	m_library.updateDistances();
+	m_library.call_RAY_MASTER_MODE_UPDATE_DISTANCES();
 }
 
 void Machine::call_RAY_MASTER_MODE_TRIGGER_FUSIONS(){
@@ -1643,7 +1641,7 @@ void Machine::call_RAY_MASTER_MODE_ASK_EXTENSIONS(){
 }
 
 void Machine::call_RAY_MASTER_MODE_AMOS(){
-	m_amos.masterMode();
+	m_amos.call_RAY_MASTER_MODE_AMOS();
 }
 
 void Machine::call_RAY_MASTER_MODE_SCAFFOLDER(){
@@ -1724,7 +1722,7 @@ void Machine::call_RAY_SLAVE_MODE_DIE(){
  * control logic
  */
 void Machine::call_RAY_MASTER_MODE_TEST_NETWORK(){
-	m_networkTest.masterWork();
+	m_networkTest.call_RAY_MASTER_MODE_TEST_NETWORK();
 }
 
 void Machine::call_RAY_SLAVE_MODE_TEST_NETWORK(){
@@ -1828,15 +1826,15 @@ void Machine::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 }
 
 void Machine::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
-	m_searcher.countContigKmers_masterHandler();
+	m_searcher.call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES();
 }
 
 void Machine::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
-	m_searcher.countSequenceKmers_slaveHandler();
+	m_searcher.call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES();
 }
 
 void Machine::call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
-	m_searcher.countSequenceKmers_masterHandler();
+	m_searcher.call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES();
 }
 
 

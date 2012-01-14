@@ -58,7 +58,7 @@ class Amos{
 	int m_mode_send_vertices_sequence_id_position;
 	vector<uint64_t> m_activeWorkers;
 public:
-	void masterMode();
+	void call_RAY_MASTER_MODE_AMOS();
 	void slaveMode();
 	void constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*outbox,
 		FusionData*fusionData,ExtensionData*extensionData,int*masterMode,int*slaveMode,Scaffolder*scaffolder,

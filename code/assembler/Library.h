@@ -92,7 +92,7 @@ class Library{
 public:
 	Library();
 	void allocateBuffers();
-	void updateDistances();
+	void call_RAY_MASTER_MODE_UPDATE_DISTANCES();
 	void setReadiness();
 	int getRank();
 	int getSize();

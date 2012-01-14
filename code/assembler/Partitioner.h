@@ -75,7 +75,7 @@ class Partitioner{
 public:
 	void constructor(RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,
 	SwitchMan*switchMan);
-	void masterMethod();
+	void call_RAY_MASTER_MODE_COUNT_FILE_ENTRIES();
 	void slaveMethod();
 };
 

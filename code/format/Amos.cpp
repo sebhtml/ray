@@ -48,7 +48,7 @@ void Amos::constructor(Parameters*parameters,RingAllocator*outboxAllocator,Stati
 	m_workerId=0;
 }
 
-void Amos::masterMode(){
+void Amos::call_RAY_MASTER_MODE_AMOS(){
 	if(!m_ed->m_EXTENSION_currentRankIsStarted){
 		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
 		message[0]=m_ed->m_EXTENSION_currentPosition;

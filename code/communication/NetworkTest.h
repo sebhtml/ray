@@ -109,7 +109,7 @@ public:
 	void constructor(Rank rank,int size,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,RingAllocator*outboxAllocator,
 		string*name,TimePrinter*timePrinter);
 	/** work method for the master mode */
-	void masterWork();
+	void call_RAY_MASTER_MODE_TEST_NETWORK ();
 	/** work method for the slave mode */
 	void slaveWork();
 
