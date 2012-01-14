@@ -394,7 +394,7 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 
 		contigSummaryFile.open(summary.str().c_str());
 
-		contigSummaryFile<<"#Category	Sequence	K-mer length	Length (in k-mers)	Mode k-mer coverage depth";
+		contigSummaryFile<<"#Category	Sequence name	K-mer length	Length in k-mers	Mode k-mer coverage depth";
 		contigSummaryFile<<"	Mean k-mer coverage depth";
 		contigSummaryFile<<"	Total k-mer coverage depth	Total sample k-mer coverage depth";
 		contigSummaryFile<<"	K-mer coverage depth proportion"<<endl;
@@ -1041,8 +1041,12 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				assert(m_activeFiles==1); // it is 0 or 1... 
 				#endif
 	
+				ostringstream header;
+				header<<"#Category	Sequence number	Sequence name	K-mer length	Length in k-mers";
+				header<<"	Matches in k-mers	Ratio	Mode k-mer coverage depth	Mean k-mer coverage depth"<<endl;
+
 				fprintf(m_arrayOfFiles[m_directoryIterator][m_fileIterator],
-					"#Category	SequenceNumber	SequenceName	LengthInKmers	Matches	Ratio	ModeKmerCoverage	MeanKmerCoverage\n");
+					"%s",header.str().c_str());
 		
 				cout<<"Opened "<<fileName.str()<<", active file descriptors: "<<m_activeFiles<<endl;
 			}
@@ -1054,7 +1058,8 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				string sequenceName=m_searchDirectories[m_directoryIterator].getCurrentSequenceName();
 
 				content<<m_fileNames[m_directoryIterator][m_fileIterator];
-				content<<"	"<<m_sequenceIterator<<"	"<<sequenceName<<"	"<<m_numberOfKmers;
+				content<<"	"<<m_sequenceIterator<<"	"<<sequenceName<<"	"<<m_parameters->getWordSize();
+				content<<"	"<<m_numberOfKmers;
 				content<<"	"<<m_matches<<"	"<<ratio<<"	"<<mode<<"	"<<mean<<endl;
 	
 				fprintf(m_arrayOfFiles[m_directoryIterator][m_fileIterator],
