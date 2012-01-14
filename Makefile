@@ -79,7 +79,7 @@ OPTIMIZE = y
 # see "Is there a downside to leaving in debug symbols in release builds?"
 # http://stackoverflow.com/questions/5569644/is-there-a-downside-to-leaving-in-debug-symbols-in-release-builds
 # in short: the executable is larger, but symbols are in a different section (thus the code is not slower)
-DEBUG = y
+DEBUG = n
 
 # profiling
 GPROF = n
