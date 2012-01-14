@@ -342,13 +342,6 @@ void Searcher::countContigKmers_masterHandler(){
 			createDirectory(directory5Str.c_str());
 		}
 
-		ostringstream summary;
-		summary<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Contigs.tsv";
-
-		m_contigSummaryFile.open(summary.str().c_str());
-
-		m_contigSummaryFile<<"#Category	SequenceName	LengthInKmers	Matches	Ratio	ModeKmerCoverage";
-		m_contigSummaryFile<<"	MeanKmerCoverage"<<endl;
 
 		// create an empty file for identifications
 		ostringstream identifications;
@@ -372,12 +365,15 @@ void Searcher::countContigKmers_masterHandler(){
 		int length=buffer[bufferPosition++];
 		int mode=buffer[bufferPosition++];
 
+		//int totalCoverage=mode*length;
+
 		double*bufferDouble=(double*)(buffer+bufferPosition++);
 		double mean=bufferDouble[0];
 
-		m_contigSummaryFile<<"Contigs	contig-"<<name<<"	"<<length<<"	"<<length<<"	1.00	"<<mode;
-		m_contigSummaryFile<<"	"<<mean<<endl;
-	
+		ContigSearchEntry entry(name,length,mode,mean);
+
+		m_listOfContigEntries.push_back(entry);
+
 		// sent a response
 		uint64_t*buffer2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
@@ -389,7 +385,35 @@ void Searcher::countContigKmers_masterHandler(){
 
 		m_outbox->push_back(aMessage);
 	}else if(m_switchMan->allRanksAreReady()){
-		m_contigSummaryFile.close();
+
+		// write the contig file
+
+		ofstream contigSummaryFile;
+		ostringstream summary;
+		summary<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Contigs.tsv";
+
+		contigSummaryFile.open(summary.str().c_str());
+
+		contigSummaryFile<<"#Category	Sequence	K-mer length	Length (in k-mers)	Mode k-mer coverage depth";
+		contigSummaryFile<<"	Mean k-mer coverage depth";
+		contigSummaryFile<<"	Total k-mer coverage depth	Total sample k-mer coverage depth";
+		contigSummaryFile<<"	K-mer coverage depth proportion"<<endl;
+
+		// count the total
+		uint64_t total=0;
+		for(int i=0;i<(int)m_listOfContigEntries.size();i++){
+			total+=m_listOfContigEntries[i].getTotal();
+		}
+
+		// write entries
+		for(int i=0;i<(int)m_listOfContigEntries.size();i++){
+			m_listOfContigEntries[i].write(&contigSummaryFile,total,m_parameters->getWordSize());
+		}
+
+		m_listOfContigEntries.clear();
+
+		contigSummaryFile.close();
+
 		m_identificationFile.close();
 
 		m_timePrinter->printElapsedTime("Counting contig biological abundances");

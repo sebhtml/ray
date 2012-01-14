@@ -21,22 +21,24 @@
 #ifndef _Searcher_h
 #define _Searcher_h
 
-#include <core/Parameters.h>
-#include <scheduling/SwitchMan.h>
-#include <communication/VirtualCommunicator.h>
-#include <memory/RingAllocator.h>
-#include <search-engine/SearchDirectory.h>
-#include <structures/StaticVector.h>
-#include <assembler/TimePrinter.h>
 #include <stdint.h>
 #include <fstream>
 #include <stdio.h> /*for FILE */
 #include <vector>
 #include <string>
-#include <communication/BufferedData.h>
-#include <profiling/Derivative.h>
 #include <map>
 using namespace std;
+
+#include <core/Parameters.h>
+#include <scheduling/SwitchMan.h>
+#include <communication/VirtualCommunicator.h>
+#include <communication/BufferedData.h>
+#include <memory/RingAllocator.h>
+#include <search-engine/SearchDirectory.h>
+#include <search-engine/ContigSearchEntry.h>
+#include <structures/StaticVector.h>
+#include <assembler/TimePrinter.h>
+#include <profiling/Derivative.h>
 
 /**
  * This class searches for sequences in the de Bruijn graph
@@ -68,6 +70,8 @@ class Searcher{
 	StaticVector*m_inbox;
 	RingAllocator*m_outboxAllocator;
 	TimePrinter*m_timePrinter;
+
+	vector<ContigSearchEntry> m_listOfContigEntries;
 
 	/** the identifier to give to the virtual communicator */
 	uint64_t m_workerId;
@@ -132,7 +136,6 @@ class Searcher{
 	int m_searchDirectories_size;
 
 	/** for the master rank */
-	ofstream m_contigSummaryFile;
 	ofstream m_identificationFile;
 
 	// base names of directories

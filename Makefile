@@ -183,6 +183,7 @@ obj-y += code/scheduling/SwitchMan.o
 # search engine
 obj-y += code/search-engine/Searcher.o
 obj-y += code/search-engine/SearchDirectory.o
+obj-y += code/search-engine/ContigSearchEntry.o
 
 obj-y += code/scripting/RayScriptEngine.o
 
