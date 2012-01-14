@@ -1033,7 +1033,8 @@ void Searcher::countSequenceKmers_slaveHandler(){
 				content<<"	"<<m_sequenceIterator<<"	"<<sequenceName<<"	"<<m_numberOfKmers;
 				content<<"	"<<m_matches<<"	"<<ratio<<"	"<<mode<<"	"<<mean<<endl;
 	
-				fprintf(m_arrayOfFiles[m_directoryIterator][m_fileIterator],content.str().c_str());
+				fprintf(m_arrayOfFiles[m_directoryIterator][m_fileIterator],
+				"%s",content.str().c_str());
 			}
 	
 			// close the file
