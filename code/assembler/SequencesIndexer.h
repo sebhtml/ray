@@ -83,7 +83,7 @@ class SequencesIndexer{
 
 public:
 
-	void attachReads(
+	void call_RAY_SLAVE_MODE_INDEX_SEQUENCES(
 ArrayOfReads*m_myReads,
 				RingAllocator*m_outboxAllocator,
 				StaticVector*m_outbox,

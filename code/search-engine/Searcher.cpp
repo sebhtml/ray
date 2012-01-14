@@ -139,7 +139,7 @@ void Searcher::call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS(){
 	}
 }
 
-void Searcher::countElements_slaveMethod(){
+void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 
 	if(!m_countElementsSlaveStarted){
 
@@ -423,7 +423,7 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 	}
 }
 
-void Searcher::countContigKmers_slaveHandler(){
+void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 	// Process virtual messages
 	m_virtualCommunicator->forceFlush();
 	m_virtualCommunicator->processInbox(&m_activeWorkers);

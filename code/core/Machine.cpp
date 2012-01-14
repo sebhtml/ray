@@ -820,7 +820,7 @@ void Machine::receiveMessages(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_SEND_SEED_LENGTHS(){
-	m_seedingData->sendSeedLengths();
+	m_seedingData->call_RAY_SLAVE_MODE_SEND_SEED_LENGTHS();
 }
 
 void Machine::call_RAY_MASTER_MODE_LOAD_CONFIG(){
@@ -860,13 +860,13 @@ void Machine::call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
-	m_searcher.countElements_slaveMethod();
+	m_searcher.call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS();
 }
 
 void Machine::call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES(){
 	m_networkTest.writeData();
 
-	m_partitioner.slaveMethod();
+	m_partitioner.call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES();
 }
 
 void Machine::call_RAY_MASTER_MODE_COUNT_FILE_ENTRIES(){
@@ -913,7 +913,9 @@ void Machine::call_RAY_MASTER_MODE_LOAD_SEQUENCES(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
-	m_sl.loadSequences(getRank(),getSize(),
+	// TODO: initialise this parameters in the constructor
+
+	m_sl.call_RAY_SLAVE_MODE_LOAD_SEQUENCES(getRank(),getSize(),
 	&m_outbox,
 	&m_outboxAllocator,
 	&m_loadSequenceStep,
@@ -1076,7 +1078,9 @@ void Machine::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(){
 
 		m_si.constructor(&m_parameters,&m_outboxAllocator,&m_inbox,&m_outbox,&m_virtualCommunicator);
 	}
-	m_kmerAcademyBuilder.process(		&m_mode_send_vertices_sequence_id,
+	
+	// TODO: initialise these things in the constructor
+	m_kmerAcademyBuilder.call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(		&m_mode_send_vertices_sequence_id,
 			&m_myReads,
 			&m_reverseComplementVertex,
 			getRank(),
@@ -1097,7 +1101,8 @@ void Machine::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
-	m_verticesExtractor.process(		&m_mode_send_vertices_sequence_id,
+	// TODO: initialise these in the constructor
+	m_verticesExtractor.call_RAY_SLAVE_MODE_EXTRACT_VERTICES(		&m_mode_send_vertices_sequence_id,
 			&m_myReads,
 			&m_reverseComplementVertex,
 			getRank(),
@@ -1126,7 +1131,7 @@ void Machine::call_RAY_SLAVE_MODE_PURGE_NULL_EDGES(){
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
-	m_edgePurger.work();
+	m_edgePurger.call_RAY_SLAVE_MODE_PURGE_NULL_EDGES();
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 }
@@ -1269,15 +1274,17 @@ void Machine::call_RAY_SLAVE_MODE_ASSEMBLE_WAVES(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_FINISH_FUSIONS(){
-	m_joinerTaskCreator.finishFusions();
+	m_joinerTaskCreator.call_RAY_SLAVE_MODE_FINISH_FUSIONS();
 }
 
 void Machine::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
-	m_fusionData->distribute(m_seedingData,m_ed,m_rank,&m_outboxAllocator,&m_outbox,getSize(),m_switchMan.getSlaveModePointer());
+
+	// TODO: initialise these things in the constructor
+	m_fusionData->call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(m_seedingData,m_ed,m_rank,&m_outboxAllocator,&m_outbox,getSize(),m_switchMan.getSlaveModePointer());
 }
 
 void Machine::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
-	m_coverageGatherer.work();
+	m_coverageGatherer.call_RAY_SLAVE_MODE_SEND_DISTRIBUTION();
 }
 
 void Machine::call_RAY_MASTER_MODE_TRIGGER_SEEDING(){
@@ -1296,7 +1303,7 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_SEEDING(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_START_SEEDING(){
-	m_seedingData->computeSeeds();
+	m_seedingData->call_RAY_SLAVE_MODE_START_SEEDING();
 }
 
 void Machine::call_RAY_MASTER_MODE_TRIGGER_DETECTION(){
@@ -1335,7 +1342,8 @@ void Machine::call_RAY_MASTER_MODE_START_UPDATING_DISTANCES(){
 
 void Machine::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(){
 
-	m_si.attachReads(&m_myReads,&m_outboxAllocator,&m_outbox,m_switchMan.getSlaveModePointer(),m_wordSize,
+	// TODO: initialise these things in the constructor
+	m_si.call_RAY_SLAVE_MODE_INDEX_SEQUENCES(&m_myReads,&m_outboxAllocator,&m_outbox,m_switchMan.getSlaveModePointer(),m_wordSize,
 	m_size,m_rank);
 }
 
@@ -1424,15 +1432,15 @@ void Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_FUSION(){
-	m_fusionTaskCreator.makeFusions();
+	m_fusionTaskCreator.call_RAY_SLAVE_MODE_FUSION();
 }
 
 void Machine::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
-	m_library.detectDistances();
+	m_library.call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION();
 }
 
 void Machine::call_RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES(){
-	m_library.sendLibraryDistances();
+	m_library.call_RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES();
 }
 
 void Machine::call_RAY_MASTER_MODE_UPDATE_DISTANCES(){
@@ -1653,18 +1661,20 @@ void Machine::call_RAY_MASTER_MODE_SCAFFOLDER(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_SCAFFOLDER(){
-	m_scaffolder.run();
+	m_scaffolder.call_RAY_SLAVE_MODE_SCAFFOLDER();
 }
 
 void Machine::call_RAY_SLAVE_MODE_AMOS(){
-	m_amos.slaveMode();
+	m_amos.call_RAY_SLAVE_MODE_AMOS();
 }
 
 void Machine::call_RAY_SLAVE_MODE_EXTENSION(){
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
-	m_seedExtender.extendSeeds(&(m_seedingData->m_SEEDING_seeds),m_ed,getRank(),&m_outbox,&(m_seedingData->m_SEEDING_currentVertex),
+	// TODO: initialise these things in the constructor
+
+	m_seedExtender.call_RAY_SLAVE_MODE_EXTENSION(&(m_seedingData->m_SEEDING_seeds),m_ed,getRank(),&m_outbox,&(m_seedingData->m_SEEDING_currentVertex),
 	m_fusionData,&m_outboxAllocator,&(m_seedingData->m_SEEDING_edgesRequested),&(m_seedingData->m_SEEDING_outgoingEdgeIndex),
 	&m_last_value,&(m_seedingData->m_SEEDING_vertexCoverageRequested),m_wordSize,getSize(),&(m_seedingData->m_SEEDING_vertexCoverageReceived),
 	&(m_seedingData->m_SEEDING_receivedVertexCoverage),&m_repeatedLength,&(m_seedingData->m_SEEDING_receivedOutgoingEdges),&m_c,
@@ -1726,7 +1736,7 @@ void Machine::call_RAY_MASTER_MODE_TEST_NETWORK(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_TEST_NETWORK(){
-	m_networkTest.slaveWork();
+	m_networkTest.call_RAY_SLAVE_MODE_TEST_NETWORK();
 }
 
 /**
@@ -1822,7 +1832,7 @@ void Machine::assignSlaveHandlers(){
 }
 
 void Machine::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
-	m_searcher.countContigKmers_slaveHandler();
+	m_searcher.call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES();
 }
 
 void Machine::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){

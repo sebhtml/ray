@@ -96,9 +96,9 @@ public:
 	void setReadiness();
 	int getRank();
 	int getSize();
-	void detectDistances();
+	void call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION();
 
-	void sendLibraryDistances();
+	void call_RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES();
 
 	void constructor(int m_rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator,
 	int*m_sequence_id,int*m_sequence_idInFile,ExtensionData*m_ed,int m_size,

@@ -23,7 +23,7 @@
 #include <assembler/FusionWorker.h>
 #include <core/OperatingSystem.h>
 
-void FusionTaskCreator::makeFusions(){
+void FusionTaskCreator::call_RAY_SLAVE_MODE_FUSION(){
 
 	mainLoop();
 }

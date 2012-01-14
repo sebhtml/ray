@@ -75,7 +75,7 @@ void Library::call_RAY_MASTER_MODE_UPDATE_DISTANCES(){
 	}
 }
 
-void Library::detectDistances(){
+void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 	if(!m_initiatedIterator){
 		m_SEEDING_i=0;
 
@@ -236,7 +236,7 @@ void Library::allocateBuffers(){
 	}
 }
 
-void Library::sendLibraryDistances(){
+void Library::call_RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES(){
 	if(m_ready!=0){
 		return;
 	}

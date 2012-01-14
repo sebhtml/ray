@@ -29,7 +29,7 @@
 #include <communication/Message.h>
 #include <memory/malloc_types.h>
 
-void SequencesIndexer::attachReads(ArrayOfReads*m_myReads,
+void SequencesIndexer::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(ArrayOfReads*m_myReads,
 				RingAllocator*m_outboxAllocator,
 				StaticVector*m_outbox,
 				int*m_mode,

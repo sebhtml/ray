@@ -196,10 +196,10 @@ class Searcher{
 public:
 
 	void call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS();
-	void countElements_slaveMethod();
+	void call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS();
 
 	void call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES();
-	void countContigKmers_slaveHandler();
+	void call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES();
 
 	void call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES();
 	void call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES();

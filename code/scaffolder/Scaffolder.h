@@ -174,7 +174,7 @@ public:
  */
 	void constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
 		VirtualCommunicator*vc,SwitchMan*switchMan);
-	void run();
+	void call_RAY_SLAVE_MODE_SCAFFOLDER();
 	void setContigPaths(vector<uint64_t>*names,vector<vector<Kmer> >*paths);
 	void addMasterLink(SummarizedLink*link);
 	void solve();

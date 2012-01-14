@@ -29,7 +29,7 @@ using namespace std;
 
 #define SHOW_FUSION
 
-void FusionData::distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int getRank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox,int getSize1,int*m_mode){
+void FusionData::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(SeedingData*m_seedingData,ExtensionData*m_ed,int getRank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox,int getSize1,int*m_mode){
 
 	/** read the checkpoint ContigPaths */
 	if(!m_processedCheckpoint){

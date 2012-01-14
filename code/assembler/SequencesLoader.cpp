@@ -191,7 +191,7 @@ bool SequencesLoader::writeSequencesToAMOSFile(int rank,int size,
 	return true;
 }
 
-bool SequencesLoader::loadSequences(int rank,int size,
+bool SequencesLoader::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(int rank,int size,
 	StaticVector*m_outbox,
 	RingAllocator*m_outboxAllocator,
 	bool*m_loadSequenceStep,BubbleData*m_bubbleData,

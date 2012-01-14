@@ -67,7 +67,7 @@ void Amos::call_RAY_MASTER_MODE_AMOS(){
 	}
 }
 
-void Amos::slaveMode(){
+void Amos::call_RAY_SLAVE_MODE_AMOS(){
 	if(!m_ed->m_EXTENSION_initiated){
 		cout<<"Rank "<<m_parameters->getRank()<<" is appending positions to "<<m_parameters->getAmosFile()<<endl;
 		m_amosFile=fopen(m_parameters->getAmosFile().c_str(),"a+");

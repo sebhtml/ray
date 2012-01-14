@@ -61,7 +61,7 @@ public:
 		vector<vector<Kmer> >*newPaths
 );
 
-	void finishFusions();
+	void call_RAY_SLAVE_MODE_FINISH_FUSIONS();
 
 	/** initialize the whole thing */
 	void initializeMethod();

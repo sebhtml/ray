@@ -72,7 +72,7 @@ public:
 	void constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
 		int*slaveMode,int*masterMode,VirtualCommunicator*vc,GridTable*graph,VirtualProcessor*virtualProcessor);
 
-	void work();
+	void call_RAY_SLAVE_MODE_PURGE_NULL_EDGES();
 
 	/** initialize the whole thing */
 	virtual void initializeMethod();

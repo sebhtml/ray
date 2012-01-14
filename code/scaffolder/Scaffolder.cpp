@@ -294,7 +294,7 @@ void Scaffolder::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocato
 	m_workerId=0;
 }
 
-void Scaffolder::run(){
+void Scaffolder::call_RAY_SLAVE_MODE_SCAFFOLDER(){
 	if(!m_initialised){
 		m_initialised=true;
 		m_ready=true;

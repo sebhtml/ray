@@ -121,7 +121,7 @@ void CoverageGatherer::writeKmers(){
 	m_coverageIterator=m_distributionOfCoverage.begin();
 }
 
-void CoverageGatherer::work(){
+void CoverageGatherer::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
 
 	if(m_distributionOfCoverage.size()==0){
 		#ifdef ASSERT

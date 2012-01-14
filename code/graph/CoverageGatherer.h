@@ -46,7 +46,7 @@ class CoverageGatherer{
 public:
 	void constructor(Parameters*parameters,StaticVector*inbox,StaticVector*outbox,int*slaveMode,
 		GridTable*subgraph,RingAllocator*outboxAllocator);
-	void work();
+	void call_RAY_SLAVE_MODE_SEND_DISTRIBUTION();
 	void writeKmers();
 };
 

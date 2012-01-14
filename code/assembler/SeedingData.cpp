@@ -35,7 +35,7 @@ bool myComparator_sort(const AssemblySeed & a,const AssemblySeed & b){
 	return a.size()>b.size();
 }
 
-void SeedingData::computeSeeds(){
+void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 	if(!m_initiatedIterator){
 		m_last=time(NULL);
 
@@ -301,7 +301,7 @@ void SeedingData::updateStates(){
 	m_virtualCommunicator->resetGlobalPushedMessageStatus();
 }
 
-void SeedingData::sendSeedLengths(){
+void SeedingData::call_RAY_SLAVE_MODE_SEND_SEED_LENGTHS(){
 	if(!m_initialized){
 		for(int i=0;i<(int)m_SEEDING_seeds.size();i++){
 			int length=m_SEEDING_seeds[i].size()+m_parameters->getWordSize()-1;

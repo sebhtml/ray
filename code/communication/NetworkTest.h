@@ -110,8 +110,9 @@ public:
 		string*name,TimePrinter*timePrinter);
 	/** work method for the master mode */
 	void call_RAY_MASTER_MODE_TEST_NETWORK ();
+
 	/** work method for the slave mode */
-	void slaveWork();
+	void call_RAY_SLAVE_MODE_TEST_NETWORK();
 
 	void writeData();
 

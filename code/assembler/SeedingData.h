@@ -119,13 +119,15 @@ public:
 	SeedExtender*m_seedExtender;
 	int getRank();
 	int getSize();
-	void computeSeeds();
+	void call_RAY_SLAVE_MODE_START_SEEDING();
 
 	void constructor(SeedExtender*seedExtender,int rank,int size,StaticVector*outbox,RingAllocator*outboxAllocator,
 		int*mode,Parameters*parameters,int*wordSize,GridTable*subgraph,
 		StaticVector*inbox,VirtualCommunicator*vc);
 	void updateStates();
-	void sendSeedLengths();
+
+	void call_RAY_SLAVE_MODE_SEND_SEED_LENGTHS();
+
 	bool m_initialized;
 	void writeSeedStatistics();
 };

@@ -80,7 +80,7 @@ class VerticesExtractor{
 public:
 
 	void constructor(int size,Parameters*parameters,GridTable*graph);
-	void process(int*m_mode_send_vertices_sequence_id,
+	void call_RAY_SLAVE_MODE_EXTRACT_VERTICES(int*m_mode_send_vertices_sequence_id,
 				ArrayOfReads*m_myReads,
 				bool*m_reverseComplementVertex,
 				int rank,

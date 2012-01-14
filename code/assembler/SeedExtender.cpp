@@ -38,7 +38,7 @@
 using namespace std;
 
 /** extend the seeds */
-void SeedExtender::extendSeeds(vector<AssemblySeed>*seeds,ExtensionData*ed,int theRank,StaticVector*outbox,
+void SeedExtender::call_RAY_SLAVE_MODE_EXTENSION(vector<AssemblySeed>*seeds,ExtensionData*ed,int theRank,StaticVector*outbox,
   Kmer*currentVertex,FusionData*fusionData,RingAllocator*outboxAllocator,bool*edgesRequested,int*outgoingEdgeIndex,
 int*last_value,bool*vertexCoverageRequested,int wordSize,int size,bool*vertexCoverageReceived,
 int*receivedVertexCoverage,int*repeatedLength,vector<Kmer>*receivedOutgoingEdges,Chooser*chooser,

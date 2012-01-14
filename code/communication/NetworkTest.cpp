@@ -97,7 +97,7 @@ void NetworkTest::constructor(int rank,int size,StaticVector*inbox,StaticVector*
  *   write this information to a file.
  *
  * */
-void NetworkTest::slaveWork(){
+void NetworkTest::call_RAY_SLAVE_MODE_TEST_NETWORK(){
 
 
 	#ifdef ASSERT

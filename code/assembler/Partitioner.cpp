@@ -136,7 +136,7 @@ void Partitioner::call_RAY_MASTER_MODE_COUNT_FILE_ENTRIES(){
 	}
 }
 
-void Partitioner::slaveMethod(){
+void Partitioner::call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES(){
 	/** initialize the slave */
 	if(!m_initiatedSlave){
 		m_initiatedSlave=true;

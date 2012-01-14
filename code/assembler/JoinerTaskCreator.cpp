@@ -23,7 +23,7 @@
 #include <assembler/JoinerWorker.h>
 #include <core/OperatingSystem.h>
 
-void JoinerTaskCreator::finishFusions(){
+void JoinerTaskCreator::call_RAY_SLAVE_MODE_FINISH_FUSIONS(){
 	mainLoop();
 }
 

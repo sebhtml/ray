@@ -116,7 +116,7 @@ public:
 
 	set<uint64_t> m_FUSION_eliminated;
 
-	void distribute(SeedingData*m_seedingData,ExtensionData*m_ed,int getRank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox,int getSize,int*m_mode);
+	void call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(SeedingData*m_seedingData,ExtensionData*m_ed,int getRank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox,int getSize,int*m_mode);
 
 	void constructor(int size,int maxSize,int rank,StaticVector*m_outbox,
 		RingAllocator*m_outboxAllocator,int wordSize,

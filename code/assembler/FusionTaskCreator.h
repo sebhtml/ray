@@ -56,7 +56,7 @@ public:
 		RingAllocator*outboxAllocator,int*mode,Parameters*parameters,vector<vector<Kmer> >*paths,vector<uint64_t>*pathIdentifiers,
 		set<uint64_t>*eliminated,VirtualCommunicator*virtualCommunicator);
 
-	void makeFusions();
+	void call_RAY_SLAVE_MODE_FUSION();
 
 	/** initialize the whole thing */
 	void initializeMethod();

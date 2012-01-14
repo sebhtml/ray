@@ -31,7 +31,7 @@
 #include <core/common_functions.h>
 #include <memory/malloc_types.h>
 
-void VerticesExtractor::process(int*m_mode_send_vertices_sequence_id,
+void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(int*m_mode_send_vertices_sequence_id,
 				ArrayOfReads*m_myReads,
 				bool*m_reverseComplementVertex,
 				int rank,

@@ -47,7 +47,7 @@ void EdgePurger::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocato
 	m_virtualProcessor=virtualProcessor;
 }
 
-void EdgePurger::work(){
+void EdgePurger::call_RAY_SLAVE_MODE_PURGE_NULL_EDGES(){
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 

@@ -33,7 +33,7 @@
 #include <fstream>
 using namespace std;
 
-void KmerAcademyBuilder::process(int*m_mode_send_vertices_sequence_id,
+void KmerAcademyBuilder::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(int*m_mode_send_vertices_sequence_id,
 				ArrayOfReads*m_myReads,
 				bool*m_reverseComplementVertex,
 				int rank,
