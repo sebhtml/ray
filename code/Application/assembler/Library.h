@@ -25,7 +25,6 @@
 #include <communication/BufferedData.h>
 #include <assembler/ExtensionData.h>
 #include <core/common_functions.h>
-#include <map>
 #include <structures/StaticVector.h>
 #include <profiling/TimePrinter.h>
 #include <assembler/ReadFetcher.h>
@@ -34,6 +33,10 @@
 #include <assembler/SeedingData.h>
 #include <memory/RingAllocator.h>
 #include <assembler/LibraryWorker.h>
+#include <handlers/SlaveModeHandler.h>
+#include <handlers/MasterModeHandler.h>
+
+#include <map>
 using namespace std;
 
 /*
@@ -44,7 +47,7 @@ using namespace std;
  * messages are grouped by the virtual communicator.
  * \author Sébastien Boisvert
  */
-class Library{
+class Library : public SlaveModeHandler, public MasterModeHandler{
 	int m_currentLibrary;
 	int m_ranksThatReplied;
 	int m_informationSent;

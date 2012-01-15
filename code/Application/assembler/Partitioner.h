@@ -26,15 +26,18 @@
 #include <core/Parameters.h>
 #include <memory/RingAllocator.h>
 #include <assembler/Loader.h>
-#include <map>
 #include <scheduling/SwitchMan.h>
+#include <handlers/SlaveModeHandler.h>
+#include <handlers/MasterModeHandler.h>
+
+#include <map>
 using namespace std;
 
 /**
  * This class counts the number of entries in each input file in parallel 
  * \author Sébastien Boisvert
  */
-class Partitioner{
+class Partitioner : public SlaveModeHandler, public MasterModeHandler{
 	SwitchMan*m_switchMan;
 
 	/** the loader */

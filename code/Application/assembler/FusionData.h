@@ -25,23 +25,25 @@
 class SeedingData;
 
 #include <structures/Direction.h>
-#include <vector>
 #include <core/Parameters.h>
-#include <set>
 #include <structures/StaticVector.h>
-#include <map>
 #include <assembler/SeedingData.h>
 #include <assembler/ExtensionData.h>
 #include <memory/RingAllocator.h>
 #include <communication/BufferedData.h>
 #include <profiling/TimePrinter.h>
+#include <handlers/SlaveModeHandler.h>
+
+#include <vector>
+#include <map>
+#include <set>
 using namespace std;
 
 /*
  * Contains information regarding fusion of extensions.
  * \author Sébastien Boisvert
  */
-class FusionData{
+class FusionData {
 	/** debug fusion code */
 	bool m_debugFusionCode;
 

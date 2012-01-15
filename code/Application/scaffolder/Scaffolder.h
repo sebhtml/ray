@@ -35,6 +35,9 @@
 #include <scheduling/SwitchMan.h>
 #include <profiling/TimePrinter.h>
 
+#include <handlers/SlaveModeHandler.h>
+#include <handlers/MasterModeHandler.h>
+
 using namespace std;
 
 /**
@@ -42,7 +45,7 @@ using namespace std;
  *
  * \author Sébastien Boisvert
  */
-class Scaffolder{
+class Scaffolder : public SlaveModeHandler, public MasterModeHandler{
 	SwitchMan*m_switchMan;
 	
 	TimePrinter*m_timePrinter;

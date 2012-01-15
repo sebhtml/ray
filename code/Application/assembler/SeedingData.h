@@ -34,6 +34,8 @@ class SeedExtender;
 #include <graph/GridTableIterator.h>
 #include <core/common_functions.h>
 #include <assembler/SeedWorker.h>
+#include <handlers/SlaveModeHandler.h>
+
 #include <set>
 using namespace std;
 
@@ -45,7 +47,7 @@ using namespace std;
  * communicator and the later groups messages.
  * \author Sébastien Boisvert
  */
-class SeedingData{
+class SeedingData : public SlaveModeHandler{
 	/** checkpointing */
 	bool m_checkedCheckpoint;
 

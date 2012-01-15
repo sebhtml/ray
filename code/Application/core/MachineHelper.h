@@ -25,12 +25,14 @@
 #include <memory/RingAllocator.h>
 #include <structures/StaticVector.h>
 #include <scheduling/SwitchMan.h>
+#include <handlers/MasterModeHandler.h>
+
 #include <stdint.h>
 #include <map>
 using namespace std;
 
 /** \author Sébastien Boisvert */
-class MachineHelper{
+class MachineHelper: public MasterModeHandler{
 	int m_argc;
 	char**m_argv;
 	Parameters*m_parameters;

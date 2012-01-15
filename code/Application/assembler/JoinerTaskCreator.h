@@ -27,17 +27,19 @@
 #include <scheduling/VirtualProcessor.h>
 #include <structures/StaticVector.h>
 #include <core/Parameters.h>
-#include <vector>
 #include <communication/VirtualCommunicator.h>
 #include <memory/RingAllocator.h>
-#include <set>
 #include <structures/Kmer.h>
+#include <handlers/SlaveModeHandler.h>
+
+#include <vector>
+#include <set>
 using namespace std;
 
 /**
  * The class creates and kills workers for the fusion of
  * similar paths */
-class JoinerTaskCreator: public TaskCreator{
+class JoinerTaskCreator: public TaskCreator, public SlaveModeHandler {
 	VirtualCommunicator*m_virtualCommunicator;
 	RingAllocator*m_outboxAllocator;
 	Parameters*m_parameters;

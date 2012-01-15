@@ -25,15 +25,17 @@
 #include <core/Parameters.h>
 #include <structures/StaticVector.h>
 #include <graph/GridTable.h>
+#include <memory/RingAllocator.h>
+#include <handlers/SlaveModeHandler.h>
+
 #include <stdint.h>
 #include <map>
-#include <memory/RingAllocator.h>
 using namespace std;
 
 /**
  * \author Sébastien Boisvert
  */
-class CoverageGatherer{
+class CoverageGatherer : public SlaveModeHandler {
 	map<int,uint64_t> m_distributionOfCoverage;
 	map<int,uint64_t>::iterator m_coverageIterator;
 	bool m_waiting;

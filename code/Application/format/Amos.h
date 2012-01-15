@@ -24,13 +24,16 @@
 #include <core/Parameters.h>
 #include <structures/StaticVector.h>
 #include <memory/RingAllocator.h>
-#include <stdio.h>
 #include <assembler/FusionData.h>
 #include <assembler/ExtensionData.h>
 #include <scaffolder/Scaffolder.h>
 #include <assembler/ReadFetcher.h>
-#include <stdint.h>
 #include <communication/VirtualCommunicator.h>
+#include <handlers/SlaveModeHandler.h>
+#include <handlers/MasterModeHandler.h>
+
+#include <stdio.h>
+#include <stdint.h>
 #include <vector>
 using namespace std;
 
@@ -39,7 +42,7 @@ using namespace std;
  * \see http://sourceforge.net/apps/mediawiki/amos/index.php?title=Message_Types
  * \author Sébastien Boisvert
  */
-class Amos{
+class Amos : public SlaveModeHandler, public MasterModeHandler {
 	VirtualCommunicator*m_virtualCommunicator;
 	StaticVector*m_inbox;
 	uint64_t m_workerId;

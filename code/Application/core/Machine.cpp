@@ -494,10 +494,6 @@ m_seedingData,
 	m_messagesHandler.destructor();
 }
 
-void Machine::call_RAY_MASTER_MODE_WRITE_SCAFFOLDS(){
-	m_scaffolder.call_RAY_MASTER_MODE_WRITE_SCAFFOLDS();
-}
-
 /**
  * runWithProfiler if -run-profiler is provided
  * otherwise, run runVanilla()
@@ -849,30 +845,10 @@ void Machine::receiveMessages(){
 	}
 }
 
-void Machine::call_RAY_SLAVE_MODE_SEND_SEED_LENGTHS(){
-	m_seedingData->call_RAY_SLAVE_MODE_SEND_SEED_LENGTHS();
-}
-
-void Machine::call_RAY_MASTER_MODE_LOAD_CONFIG(){
-	m_helper.call_RAY_MASTER_MODE_LOAD_CONFIG();
-}
-
-void Machine::call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS(){
-	m_searcher.call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS();
-}
-
-void Machine::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
-	m_searcher.call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS();
-}
-
 void Machine::call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES(){
 	m_networkTest.writeData();
 
 	m_partitioner.call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES();
-}
-
-void Machine::call_RAY_MASTER_MODE_COUNT_FILE_ENTRIES(){
-	m_partitioner.call_RAY_MASTER_MODE_COUNT_FILE_ENTRIES();
 }
 
 /** actually, call_RAY_MASTER_MODE_LOAD_SEQUENCES 
@@ -937,10 +913,6 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION(){
 		m_outbox.push_back(aMessage);
 	}
 	m_switchMan.setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
-}
-
-void Machine::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES(){
-	m_helper.call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES();
 }
 
 void Machine::call_RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING(){
@@ -1164,20 +1136,6 @@ void Machine::call_RAY_SLAVE_MODE_ASSEMBLE_WAVES(){
 	}
 }
 
-void Machine::call_RAY_SLAVE_MODE_FINISH_FUSIONS(){
-	m_joinerTaskCreator.call_RAY_SLAVE_MODE_FINISH_FUSIONS();
-}
-
-void Machine::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
-
-	// TODO: initialise these things in the constructor
-	m_fusionData->call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(m_seedingData,m_ed,m_rank,&m_outboxAllocator,&m_outbox,getSize(),m_switchMan.getSlaveModePointer());
-}
-
-void Machine::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
-	m_coverageGatherer.call_RAY_SLAVE_MODE_SEND_DISTRIBUTION();
-}
-
 void Machine::call_RAY_MASTER_MODE_TRIGGER_SEEDING(){
 	m_timePrinter.printElapsedTime("Selection of optimal read markers");
 	cout<<endl;
@@ -1191,10 +1149,6 @@ void Machine::call_RAY_MASTER_MODE_TRIGGER_SEEDING(){
 	}
 
 	m_switchMan.setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
-}
-
-void Machine::call_RAY_SLAVE_MODE_START_SEEDING(){
-	m_seedingData->call_RAY_SLAVE_MODE_START_SEEDING();
 }
 
 void Machine::call_RAY_MASTER_MODE_TRIGGER_DETECTION(){
@@ -1320,22 +1274,6 @@ void Machine::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 	m_switchMan.setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
 	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_EXTENSION_DATA_END,getRank());
 	m_outbox.push_back(aMessage);
-}
-
-void Machine::call_RAY_SLAVE_MODE_FUSION(){
-	m_fusionTaskCreator.call_RAY_SLAVE_MODE_FUSION();
-}
-
-void Machine::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
-	m_library.call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION();
-}
-
-void Machine::call_RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES(){
-	m_library.call_RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES();
-}
-
-void Machine::call_RAY_MASTER_MODE_UPDATE_DISTANCES(){
-	m_library.call_RAY_MASTER_MODE_UPDATE_DISTANCES();
 }
 
 void Machine::call_RAY_MASTER_MODE_TRIGGER_FUSIONS(){
@@ -1539,24 +1477,12 @@ void Machine::call_RAY_MASTER_MODE_ASK_EXTENSIONS(){
 	}
 }
 
-void Machine::call_RAY_MASTER_MODE_AMOS(){
-	m_amos.call_RAY_MASTER_MODE_AMOS();
-}
-
 void Machine::call_RAY_MASTER_MODE_SCAFFOLDER(){
 	for(int i=0;i<getSize();i++){
 		Message aMessage(NULL,0,i,RAY_MPI_TAG_START_SCAFFOLDER,getRank());
 		m_outbox.push_back(aMessage);
 	}
 	m_switchMan.setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
-}
-
-void Machine::call_RAY_SLAVE_MODE_SCAFFOLDER(){
-	m_scaffolder.call_RAY_SLAVE_MODE_SCAFFOLDER();
-}
-
-void Machine::call_RAY_SLAVE_MODE_AMOS(){
-	m_amos.call_RAY_SLAVE_MODE_AMOS();
 }
 
 void Machine::call_RAY_SLAVE_MODE_EXTENSION(){
@@ -1620,18 +1546,6 @@ void Machine::call_RAY_SLAVE_MODE_DIE(){
  * 	after that, it is death itself.
  * 	*/
 	m_switchMan.setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
-}
-
-/**
- * test the network.
- * control logic
- */
-void Machine::call_RAY_MASTER_MODE_TEST_NETWORK(){
-	m_networkTest.call_RAY_MASTER_MODE_TEST_NETWORK();
-}
-
-void Machine::call_RAY_SLAVE_MODE_TEST_NETWORK(){
-	m_networkTest.call_RAY_SLAVE_MODE_TEST_NETWORK();
 }
 
 /**
@@ -1703,39 +1617,60 @@ Machine::~Machine(){
 	m_bubbleData=NULL;
 }
 
+void Machine::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
+
+	// TODO: initialise these things in the constructor
+	m_fusionData->call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(m_seedingData,m_ed,m_rank,&m_outboxAllocator,&m_outbox,getSize(),m_switchMan.getSlaveModePointer());
+}
+
 void Machine::assignMasterHandlers(){
 	
+	// set defaults
 	#define ITEM(mode) \
 	m_masterModeHandler.setObjectHandler(mode,this);
 
 	#include <scripting/master_modes.txt>
 
 	#undef ITEM
+
+	// overwrite defaults
+	m_masterModeHandler.setObjectHandler(RAY_MASTER_MODE_LOAD_CONFIG,&m_helper);
+	m_masterModeHandler.setObjectHandler(RAY_MASTER_MODE_SEND_COVERAGE_VALUES,&m_helper);
+	m_masterModeHandler.setObjectHandler(RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES,&m_searcher);
+	m_masterModeHandler.setObjectHandler(RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES,&m_searcher);
+	m_masterModeHandler.setObjectHandler(RAY_MASTER_MODE_TEST_NETWORK,& m_networkTest);
+	m_masterModeHandler.setObjectHandler(RAY_MASTER_MODE_AMOS, &m_amos);
+	m_masterModeHandler.setObjectHandler(RAY_MASTER_MODE_UPDATE_DISTANCES, &m_library);
+	m_masterModeHandler.setObjectHandler(RAY_MASTER_MODE_WRITE_SCAFFOLDS, &m_scaffolder);
+	m_masterModeHandler.setObjectHandler(RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS, &m_searcher);
+	m_masterModeHandler.setObjectHandler(RAY_MASTER_MODE_COUNT_FILE_ENTRIES, &m_partitioner);
+
 }
 
 void Machine::assignSlaveHandlers(){
+	// set defaults
 	#define ITEM(mode) \
 	m_slaveModeHandler.setObjectHandler(mode, this);
 
 	#include <scripting/slave_modes.txt>
 
 	#undef ITEM
-}
 
-void Machine::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
-	m_searcher.call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES();
-}
+	// overwrite defaults
+	m_slaveModeHandler.setObjectHandler(RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES,&m_searcher);
+	m_slaveModeHandler.setObjectHandler(RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES, &m_searcher);
+	m_slaveModeHandler.setObjectHandler(RAY_SLAVE_MODE_TEST_NETWORK, &m_networkTest);
+	m_slaveModeHandler.setObjectHandler(RAY_SLAVE_MODE_AMOS, &m_amos);
+	m_slaveModeHandler.setObjectHandler(RAY_SLAVE_MODE_SCAFFOLDER, &m_scaffolder);
+	m_slaveModeHandler.setObjectHandler(RAY_SLAVE_MODE_FUSION, &m_fusionTaskCreator );
+	m_slaveModeHandler.setObjectHandler(RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION, &m_library);
+	m_slaveModeHandler.setObjectHandler(RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES, &m_library);
+	m_slaveModeHandler.setObjectHandler(RAY_SLAVE_MODE_START_SEEDING,m_seedingData);
+	m_slaveModeHandler.setObjectHandler(RAY_SLAVE_MODE_FINISH_FUSIONS, &m_joinerTaskCreator);
+	m_slaveModeHandler.setObjectHandler(RAY_SLAVE_MODE_SEND_DISTRIBUTION,&m_coverageGatherer);
+	m_slaveModeHandler.setObjectHandler(RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS, &m_searcher);
+	m_slaveModeHandler.setObjectHandler(RAY_SLAVE_MODE_SEND_SEED_LENGTHS, m_seedingData);
 
-void Machine::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
-	m_searcher.call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES();
-}
-
-void Machine::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
-	m_searcher.call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES();
-}
-
-void Machine::call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
-	m_searcher.call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES();
 }
 
 void Machine::assignMessageTagHandlers(){

@@ -25,8 +25,11 @@
 #include <core/Parameters.h>
 #include <profiling/TimePrinter.h>
 #include <memory/RingAllocator.h>
-#include <string>
 #include <scheduling/SwitchMan.h>
+#include <handlers/MasterModeHandler.h>
+#include <handlers/SlaveModeHandler.h>
+
+#include <string>
 #include <map>
 using namespace std;
 
@@ -44,7 +47,7 @@ using namespace std;
  *          - slave and master modes.
  * \author Sébastien Boisvert
  */
-class NetworkTest{
+class NetworkTest : public SlaveModeHandler, public MasterModeHandler {
 
 	SwitchMan*m_switchMan;
 
