@@ -80,6 +80,8 @@ Machine::Machine(int argc,char**argv){
 		}
 	}
 
+	m_helper.constructor(argc,argv,&m_parameters,&m_switchMan,&m_outboxAllocator,&m_outbox,&m_aborted);
+
 	cout<<"Rank "<<m_rank<<": Rank= "<<m_rank<<" Size= "<<m_size<<" ProcessIdentifier= "<<portableProcessId()<<" ProcessorName= "<<*(m_messagesHandler.getName())<<endl;
 
 	m_argc=argc;
@@ -825,34 +827,7 @@ void Machine::call_RAY_SLAVE_MODE_SEND_SEED_LENGTHS(){
 
 void Machine::call_RAY_MASTER_MODE_LOAD_CONFIG(){
 
-	if(m_argc==2 && m_argv[1][0]!='-'){
-		ifstream f(m_argv[1]);
-		if(!f){
-			cout<<"Rank "<<getRank()<<" invalid input file."<<endl;
-			m_parameters.showUsage();
-			m_aborted=true;
-			f.close();
-			m_switchMan.setMasterMode(RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
-			return;
-		}
-	}
-
-	if(m_parameters.getError()){
-		m_aborted=true;
-		m_switchMan.setMasterMode(RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
-		return;
-	}
-
-	uint64_t*message=(uint64_t*)m_outboxAllocator.allocate(2*sizeof(uint64_t));
-	message[0]=m_parameters.getWordSize();
-	message[1]=m_parameters.getColorSpaceMode();
-
-	for(int i=0;i<getSize();i++){
-		Message aMessage(message,2,i,RAY_MPI_TAG_SET_WORD_SIZE,getRank());
-		m_outbox.push_back(aMessage);
-	}
-
-	m_switchMan.setMasterMode(RAY_MASTER_MODE_TEST_NETWORK);
+	m_helper.call_RAY_MASTER_MODE_LOAD_CONFIG();
 }
 
 void Machine::call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS(){

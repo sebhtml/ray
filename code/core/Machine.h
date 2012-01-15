@@ -65,6 +65,7 @@
 #include <assembler/FusionTaskCreator.h>
 #include <assembler/JoinerTaskCreator.h>
 #include <communication/MessageRouter.h>
+#include <core/MachineHelper.h>
 #include <scheduling/SwitchMan.h>
 #include <search-engine/Searcher.h>
 #include <scripting/ScriptEngine.h>
@@ -75,6 +76,8 @@ using namespace std;
  */
 class Machine{
 	uint64_t m_startingTimeMicroseconds;
+
+	MachineHelper m_helper;
 
 	MessageRouter m_router;
 
