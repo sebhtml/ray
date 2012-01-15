@@ -33,7 +33,7 @@
 #include <scaffolder/ScaffoldingLink.h>
 #include <scaffolder/SummarizedLink.h>
 #include <scheduling/SwitchMan.h>
-#include <assembler/TimePrinter.h>
+#include <profiling/TimePrinter.h>
 
 using namespace std;
 

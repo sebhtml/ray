@@ -87,17 +87,6 @@ void ScriptEngine::configureVirtualCommunicator(VirtualCommunicator*virtualCommu
 
 }
 
-void ScriptEngine::configureMessageHandlers(vector<Tag>*tags,vector<MessageProcessorHandler>*handlers){
-
-	#define ITEM(tag) \
-	tags->push_back(tag); \
-	handlers->push_back( &MessageProcessor::call_ ## tag );
-
-	#include <scripting/mpi_tags.txt>
-	
-	#undef ITEM
-}
-
 void ScriptEngine::configureMasterHandlers(vector<RayMasterMode>*modes,vector<MachineMasterHandler>*handlers){
 
 	#define ITEM(masterMode) \

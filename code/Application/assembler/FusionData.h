@@ -34,7 +34,7 @@ class SeedingData;
 #include <assembler/ExtensionData.h>
 #include <memory/RingAllocator.h>
 #include <communication/BufferedData.h>
-#include <assembler/TimePrinter.h>
+#include <profiling/TimePrinter.h>
 using namespace std;
 
 /*

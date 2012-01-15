@@ -95,7 +95,7 @@ MPICXX-y = mpicxx
 
 # mpic++ from an MPI implementation must be reachable with the PATH
 # tested implementations of MPI include Open-MPI and MPICH2
-CXXFLAGS = -Icode 
+CXXFLAGS = -I code/Application -I code/Platform
 
 # optimization
 CXXFLAGS-$(OPTIMIZE) += -O3
@@ -151,115 +151,134 @@ TARGETS=Ray
 
 # object files
 
+######## <Platform>
+
 #memory
-obj-y += code/memory/ReusableMemoryStore.o code/memory/MyAllocator.o code/memory/RingAllocator.o \
-code/memory/malloc_types.o 
-obj-y += code/memory/allocator.o
-obj-y += code/memory/DefragmentationGroup.o code/memory/ChunkAllocatorWithDefragmentation.o code/memory/DefragmentationLane.o
+obj-y += code/Platform/memory/ReusableMemoryStore.o code/Platform/memory/MyAllocator.o code/Platform/memory/RingAllocator.o \
+code/Platform/memory/malloc_types.o 
+obj-y += code/Platform/memory/allocator.o
+obj-y += code/Platform/memory/DefragmentationGroup.o code/Platform/memory/ChunkAllocatorWithDefragmentation.o code/Platform/memory/DefragmentationLane.o
 
 # routing stuff for option -route-messages
 #
-obj-y += code/routing/GraphImplementation.o
-obj-y += code/routing/GraphImplementationRandom.o
-obj-y += code/routing/GraphImplementationComplete.o
-obj-y += code/routing/GraphImplementationDeBruijn.o
-obj-y += code/routing/GraphImplementationKautz.o
-obj-y += code/routing/GraphImplementationExperimental.o
-obj-y += code/routing/GraphImplementationGroup.o
-obj-y += code/routing/ConnectionGraph.o
+obj-y += code/Platform/routing/GraphImplementation.o
+obj-y += code/Platform/routing/GraphImplementationRandom.o
+obj-y += code/Platform/routing/GraphImplementationComplete.o
+obj-y += code/Platform/routing/GraphImplementationDeBruijn.o
+obj-y += code/Platform/routing/GraphImplementationKautz.o
+obj-y += code/Platform/routing/GraphImplementationExperimental.o
+obj-y += code/Platform/routing/GraphImplementationGroup.o
+obj-y += code/Platform/routing/ConnectionGraph.o
 
 #communication
-obj-y += code/communication/mpi_tags.o code/communication/VirtualCommunicator.o code/communication/BufferedData.o \
-code/communication/Message.o code/communication/MessageProcessor.o code/communication/MessagesHandler.o
-obj-y += code/communication/NetworkTest.o
-obj-y += code/communication/MessageRouter.o
-
+obj-y += code/Platform/communication/mpi_tags.o code/Platform/communication/VirtualCommunicator.o code/Platform/communication/BufferedData.o \
+code/Platform/communication/Message.o code/Platform/communication/MessageProcessor.o code/Platform/communication/MessagesHandler.o
+obj-y += code/Platform/communication/NetworkTest.o
+obj-y += code/Platform/communication/MessageRouter.o
 
 # scheduling stuff
-obj-y += code/scheduling/VirtualProcessor.o
-obj-y += code/scheduling/TaskCreator.o
-obj-y += code/scheduling/SwitchMan.o
-
-# search engine
-obj-y += code/search-engine/Searcher.o
-obj-y += code/search-engine/SearchDirectory.o
-obj-y += code/search-engine/ContigSearchEntry.o
-
-obj-y += code/scripting/ScriptEngine.o
-
-#formats
-obj-y += code/format/ColorSpaceDecoder.o code/format/ColorSpaceLoader.o code/format/FastaLoader.o \
-code/format/FastqLoader.o code/format/SffLoader.o \
-code/format/Amos.o
+obj-y += code/Platform/scheduling/VirtualProcessor.o
+obj-y += code/Platform/scheduling/TaskCreator.o
+obj-y += code/Platform/scheduling/SwitchMan.o
+obj-y += code/Platform/scripting/ScriptEngine.o
 
 #core
-obj-y += code/core/slave_modes.o code/core/Machine.o 
-obj-y += code/core/MachineHelper.o
-obj-y += code/core/Parameters.o code/core/common_functions.o
-obj-y += code/core/OperatingSystem.o
-obj-y += code/core/statistics.o
-obj-y += code/core/master_modes.o
+obj-y += code/Platform/core/slave_modes.o 
+obj-y += code/Platform/core/OperatingSystem.o
+obj-y += code/Platform/core/master_modes.o
 
-#compression
+obj-y +=  code/Platform/structures/BloomFilter.o
+obj-y += code/Platform/structures/StaticVector.o 
 
-obj-$(HAVE_LIBBZ2) += code/compression/BzReader.o  
-
-#cryptography
-obj-y += code/cryptography/crypto.o
-obj-$(HAVE_LIBBZ2) += code/format/FastqBz2Loader.o 
-obj-$(HAVE_LIBZ) += code/format/FastqGzLoader.o 
-
-#graph
-obj-y += code/graph/GridTable.o code/graph/GridTableIterator.o code/graph/CoverageDistribution.o 
-obj-y += code/graph/CoverageGatherer.o code/graph/KmerAcademy.o code/graph/KmerAcademyIterator.o
-
-#structures
-obj-y += code/structures/Kmer.o \
-code/structures/ArrayOfReads.o  code/structures/Direction.o code/structures/PairedRead.o code/structures/ReadAnnotation.o code/structures/Read.o  \
-code/structures/StaticVector.o code/structures/Vertex.o code/structures/BloomFilter.o
-obj-y += code/structures/AssemblySeed.o
-
-#scaffolder
-obj-y += code/scaffolder/Scaffolder.o 
-obj-y += code/scaffolder/ScaffoldingLink.o
-obj-y += code/scaffolder/SummarizedLink.o
-obj-y += code/scaffolder/ScaffoldingAlgorithm.o
-obj-y += code/scaffolder/ScaffoldingVertex.o
-obj-y += code/scaffolder/ScaffoldingEdge.o
-
-obj-y += code/pairs/LibraryPeakFinder.o
-
-#assembler
-obj-y += code/assembler/VertexMessenger.o \
-code/assembler/ReadFetcher.o code/assembler/LibraryWorker.o code/assembler/IndexerWorker.o  \
-code/assembler/SeedWorker.o code/assembler/ExtensionElement.o \
-code/assembler/DepthFirstSearchData.o code/assembler/SeedingData.o \
-code/assembler/FusionData.o code/assembler/Library.o code/assembler/Loader.o \
-code/assembler/SeedExtender.o code/assembler/SequencesIndexer.o \
-code/assembler/SequencesLoader.o \
-code/assembler/TimePrinter.o code/assembler/VerticesExtractor.o \
-code/assembler/ray_main.o code/assembler/ExtensionData.o 
-obj-y += code/assembler/KmerAcademyBuilder.o
-obj-y += code/assembler/EdgePurger.o code/assembler/EdgePurgerWorker.o
-obj-y += code/assembler/Partitioner.o
-obj-y += code/assembler/FusionWorker.o 
-obj-y += code/assembler/FusionTaskCreator.o
-obj-y += code/assembler/JoinerWorker.o 
-obj-y += code/assembler/JoinerTaskCreator.o
-
-obj-y += code/profiling/Profiler.o
-obj-y += code/profiling/Derivative.o
-obj-y += code/profiling/TickLogger.o
-
-# heuristics
-obj-y += code/heuristics/BubbleTool.o code/heuristics/Chooser.o code/heuristics/OpenAssemblerChooser.o \
- code/heuristics/TipWatchdog.o code/heuristics/NovaEngine.o
+obj-y += code/Platform/profiling/Profiler.o
+obj-y += code/Platform/profiling/Derivative.o
+obj-y += code/Platform/profiling/TickLogger.o
+obj-y += code/Platform/profiling/TimePrinter.o
 
 # handlers
 
-obj-y += code/handlers/SlaveModeHandler.o
-obj-y += code/handlers/MasterModeHandler.o
-obj-y += code/handlers/MessageTagHandler.o
+obj-y += code/Platform/handlers/SlaveModeHandler.o
+obj-y += code/Platform/handlers/MasterModeHandler.o
+obj-y += code/Platform/handlers/MessageTagHandler.o
+
+
+
+######## </Platform>
+
+
+######## <Application>
+
+# search engine
+obj-y += code/Application/search-engine/Searcher.o
+obj-y += code/Application/search-engine/SearchDirectory.o
+obj-y += code/Application/search-engine/ContigSearchEntry.o
+
+#formats
+obj-y += code/Application/format/ColorSpaceDecoder.o code/Application/format/ColorSpaceLoader.o code/Application/format/FastaLoader.o \
+code/Application/format/FastqLoader.o code/Application/format/SffLoader.o \
+code/Application/format/Amos.o
+
+#core
+
+obj-y += code/Application/core/Machine.o 
+obj-y += code/Application/core/MachineHelper.o
+obj-y += code/Application/core/Parameters.o code/Application/core/common_functions.o
+obj-y += code/Application/core/statistics.o
+
+#compression
+
+obj-$(HAVE_LIBBZ2) += code/Application/compression/BzReader.o  
+
+#cryptography
+obj-y += code/Application/cryptography/crypto.o
+obj-$(HAVE_LIBBZ2) += code/Application/format/FastqBz2Loader.o 
+obj-$(HAVE_LIBZ) += code/Application/format/FastqGzLoader.o 
+
+#graph
+obj-y += code/Application/graph/GridTable.o code/Application/graph/GridTableIterator.o code/Application/graph/CoverageDistribution.o 
+obj-y += code/Application/graph/CoverageGatherer.o code/Application/graph/KmerAcademy.o code/Application/graph/KmerAcademyIterator.o
+
+#structures
+obj-y += code/Application/structures/Kmer.o \
+code/Application/structures/ArrayOfReads.o  code/Application/structures/Direction.o \
+ code/Application/structures/PairedRead.o code/Application/structures/ReadAnnotation.o code/Application/structures/Read.o  \
+code/Application/structures/Vertex.o
+obj-y += code/Application/structures/AssemblySeed.o
+
+#scaffolder
+obj-y += code/Application/scaffolder/Scaffolder.o 
+obj-y += code/Application/scaffolder/ScaffoldingLink.o
+obj-y += code/Application/scaffolder/SummarizedLink.o
+obj-y += code/Application/scaffolder/ScaffoldingAlgorithm.o
+obj-y += code/Application/scaffolder/ScaffoldingVertex.o
+obj-y += code/Application/scaffolder/ScaffoldingEdge.o
+
+obj-y += code/Application/pairs/LibraryPeakFinder.o
+
+#assembler
+obj-y += code/Application/assembler/VertexMessenger.o \
+code/Application/assembler/ReadFetcher.o code/Application/assembler/LibraryWorker.o code/Application/assembler/IndexerWorker.o  \
+code/Application/assembler/SeedWorker.o code/Application/assembler/ExtensionElement.o \
+code/Application/assembler/DepthFirstSearchData.o code/Application/assembler/SeedingData.o \
+code/Application/assembler/FusionData.o code/Application/assembler/Library.o code/Application/assembler/Loader.o \
+code/Application/assembler/SeedExtender.o code/Application/assembler/SequencesIndexer.o \
+code/Application/assembler/SequencesLoader.o \
+ code/Application/assembler/VerticesExtractor.o \
+code/Application/assembler/ray_main.o code/Application/assembler/ExtensionData.o 
+obj-y += code/Application/assembler/KmerAcademyBuilder.o
+obj-y += code/Application/assembler/EdgePurger.o code/Application/assembler/EdgePurgerWorker.o
+obj-y += code/Application/assembler/Partitioner.o
+obj-y += code/Application/assembler/FusionWorker.o 
+obj-y += code/Application/assembler/FusionTaskCreator.o
+obj-y += code/Application/assembler/JoinerWorker.o 
+obj-y += code/Application/assembler/JoinerTaskCreator.o
+
+# heuristics
+obj-y += code/Application/heuristics/BubbleTool.o code/Application/heuristics/Chooser.o code/Application/heuristics/OpenAssemblerChooser.o \
+ code/Application/heuristics/TipWatchdog.o code/Application/heuristics/NovaEngine.o
+
+
+######## </Application>
 
 #################################
 

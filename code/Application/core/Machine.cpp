@@ -210,8 +210,6 @@ void Machine::start(){
 	m_amos.constructor(&m_parameters,&m_outboxAllocator,&m_outbox,m_fusionData,m_ed,m_switchMan.getMasterModePointer(),m_switchMan.getSlaveModePointer(),&m_scaffolder,
 		&m_inbox,&m_virtualCommunicator);
 
-	m_mp.assignHandlers(&m_scriptEngine);
-
 	m_mp.setScaffolder(&m_scaffolder);
 	m_mp.setVirtualCommunicator(&m_virtualCommunicator);
 	m_mp.setSwitchMan(&m_switchMan);

@@ -38,7 +38,7 @@
 #include <vector>
 #include <memory/RingAllocator.h>
 #include <assembler/DepthFirstSearchData.h>
-#include <assembler/TimePrinter.h>
+#include <profiling/TimePrinter.h>
 #include <assembler/SequencesIndexer.h>
 #include <assembler/SeedExtender.h>
 #include <assembler/SequencesLoader.h>

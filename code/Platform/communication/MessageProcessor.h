@@ -81,11 +81,6 @@ class MessageProcessor : public MessageTagHandler {
 
 	SequencesLoader*m_sequencesLoader;
 
-	/** the array of callback methods 
- * 	as of 2011-07-21, there are 167 MPI tags*/
-	/* 2011-09-20 -> 146 callbacks */
-	MessageProcessorHandler m_methods[256];
-
 	uint64_t m_sentinelValue;
 
 	SeedingData*m_seedingData;

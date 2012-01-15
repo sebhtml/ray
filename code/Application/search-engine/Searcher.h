@@ -37,7 +37,7 @@ using namespace std;
 #include <search-engine/SearchDirectory.h>
 #include <search-engine/ContigSearchEntry.h>
 #include <structures/StaticVector.h>
-#include <assembler/TimePrinter.h>
+#include <profiling/TimePrinter.h>
 #include <profiling/Derivative.h>
 #include <handlers/SlaveModeHandler.h>
 #include <handlers/MasterModeHandler.h>

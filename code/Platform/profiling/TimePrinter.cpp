@@ -21,7 +21,7 @@
 
 #include <stdio.h>
 #include <core/common_functions.h>
-#include <assembler/TimePrinter.h>
+#include <profiling/TimePrinter.h>
 #include <iostream>
 #include <sstream>
 using namespace std;

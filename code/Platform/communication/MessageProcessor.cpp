@@ -2278,18 +2278,6 @@ MessageProcessor::MessageProcessor(){
 	m_sentinelValue--;// overflow it in an obvious manner
 }
 
-void MessageProcessor::assignHandlers(ScriptEngine*scriptEngine){
-	
-	vector<Tag> tags;
-	vector<MessageProcessorHandler> handlers;
-
-	scriptEngine->configureMessageHandlers(&tags,&handlers);
-
-	for(int i=0;i<(int)tags.size();i++){
-		m_methods[tags[i]]=handlers[i];
-	}
-}
-
 void MessageProcessor::setVirtualCommunicator(VirtualCommunicator*a){
 	m_virtualCommunicator=a;
 }

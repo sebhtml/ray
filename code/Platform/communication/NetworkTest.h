@@ -23,7 +23,7 @@
 
 #include <structures/StaticVector.h>
 #include <core/Parameters.h>
-#include <assembler/TimePrinter.h>
+#include <profiling/TimePrinter.h>
 #include <memory/RingAllocator.h>
 #include <string>
 #include <scheduling/SwitchMan.h>

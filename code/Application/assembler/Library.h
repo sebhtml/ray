@@ -27,7 +27,7 @@
 #include <core/common_functions.h>
 #include <map>
 #include <structures/StaticVector.h>
-#include <assembler/TimePrinter.h>
+#include <profiling/TimePrinter.h>
 #include <assembler/ReadFetcher.h>
 #include <communication/VirtualCommunicator.h>
 #include <core/Parameters.h>
