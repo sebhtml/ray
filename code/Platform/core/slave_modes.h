@@ -25,7 +25,7 @@ extern const char* SLAVE_MODES[];
 
 #define ITEM(element) element,
 
-enum RaySlaveMode {
+enum SlaveMode {
 #include <scripting/slave_modes.txt>
 RAY_SLAVE_MODE_DUMMY
 };

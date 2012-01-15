@@ -61,7 +61,7 @@ void StaticVector::clear(){
 	m_size=0;
 }
 
-bool StaticVector::hasMessage(RayMPITag tag){
+bool StaticVector::hasMessage(MessageTag tag){
 	for(int i=0;i<m_size;i++){
 		if(at(i)->getTag()==tag)
 			return true;

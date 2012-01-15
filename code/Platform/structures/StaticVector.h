@@ -47,7 +47,7 @@ public:
 	void clear();
 	void constructor(int size,int type,bool show);
 
-	bool hasMessage(RayMPITag tag);
+	bool hasMessage(MessageTag tag);
 };
 
 #endif

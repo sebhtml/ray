@@ -34,7 +34,7 @@ extern const char* MESSAGES[];
 
 #define ITEM(element) element,
 
-enum RayMPITag {
+enum MessageTag {
 #include <scripting/mpi_tags.txt>
 RAY_MPI_TAG_DUMMY
 };

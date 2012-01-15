@@ -34,7 +34,7 @@ void ScriptEngine::configureSwitchMan(SwitchMan*switchMan){
 	//
 	// this is where steps can be added or removed.
 
-	vector<RayMasterMode> steps;
+	vector<MasterMode> steps;
 
 	#define ITEM(x) \
 	steps.push_back(x);

@@ -40,7 +40,7 @@ class MasterModeHandler{
 	MasterModeHandler*m_objects[MAXIMUM_NUMBER_OF_MASTER_HANDLERS];
 
 /** set the method to call for a given master mode */
-	void setMethodHandler(RayMasterMode mode,MasterModeHandlerMethod method);
+	void setMethodHandler(MasterMode mode,MasterModeHandlerMethod method);
 
 public:
 
@@ -53,10 +53,10 @@ public:
 	#undef ITEM
 
 	/** call the handler */
-	void callHandler(RayMasterMode mode);
+	void callHandler(MasterMode mode);
 
 /** set the correct object to call for a given master mode */
-	void setObjectHandler(RayMasterMode mode, MasterModeHandler*object);
+	void setObjectHandler(MasterMode mode, MasterModeHandler*object);
 
 /** initialise default object and method handlers */
 	MasterModeHandler();

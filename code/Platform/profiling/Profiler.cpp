@@ -115,7 +115,7 @@ void Profiler::printAllGranularities(){
 
 	for(map<int,map<int,uint64_t> >::iterator i=m_observedGranularities.begin();
 		i!=m_observedGranularities.end();i++){
-		cout<<"RaySlaveMode= "<<SLAVE_MODES[i->first]<<endl;
+		cout<<"SlaveMode= "<<SLAVE_MODES[i->first]<<endl;
 		cout<<"Sampled granularities:"<<endl;
 
 		uint64_t total=0;

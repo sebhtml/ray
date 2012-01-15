@@ -34,7 +34,7 @@ void MasterModeHandler::call_ ## mode (){}
 
 #undef ITEM
 
-void MasterModeHandler::callHandler(RayMasterMode mode){
+void MasterModeHandler::callHandler(MasterMode mode){
 	MasterModeHandler*object=m_objects[mode];
 
 	#ifdef ASSERT
@@ -69,7 +69,7 @@ MasterModeHandler::MasterModeHandler(){
 	#undef ITEM
 }
 
-void MasterModeHandler::setObjectHandler(RayMasterMode mode,MasterModeHandler*object){
+void MasterModeHandler::setObjectHandler(MasterMode mode,MasterModeHandler*object){
 	#ifdef ASSERT
 	assert(object!=NULL);
 	#endif
@@ -77,7 +77,7 @@ void MasterModeHandler::setObjectHandler(RayMasterMode mode,MasterModeHandler*ob
 	m_objects[mode]=object;
 }
 
-void MasterModeHandler::setMethodHandler(RayMasterMode mode,MasterModeHandlerMethod method){
+void MasterModeHandler::setMethodHandler(MasterMode mode,MasterModeHandlerMethod method){
 	#ifdef ASSERT
 	assert(method!=NULL);
 	#endif

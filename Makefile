@@ -172,7 +172,7 @@ obj-y += code/Platform/routing/ConnectionGraph.o
 
 #communication
 obj-y += code/Platform/communication/mpi_tags.o code/Platform/communication/VirtualCommunicator.o code/Platform/communication/BufferedData.o \
-code/Platform/communication/Message.o code/Platform/communication/MessageProcessor.o code/Platform/communication/MessagesHandler.o
+code/Platform/communication/Message.o  code/Platform/communication/MessagesHandler.o
 obj-y += code/Platform/communication/MessageRouter.o
 
 # scheduling stuff
@@ -207,8 +207,9 @@ obj-y += code/Platform/handlers/MessageTagHandler.o
 
 ######## <Application>
 
-
+# communication
 obj-y += code/Application/communication/NetworkTest.o
+obj-y += code/Application/communication/MessageProcessor.o
 
 # search engine
 obj-y += code/Application/search-engine/Searcher.o

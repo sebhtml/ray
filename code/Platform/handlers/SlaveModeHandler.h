@@ -40,7 +40,7 @@ class SlaveModeHandler{
 	SlaveModeHandler*m_objects[MAXIMUM_NUMBER_OF_SLAVE_HANDLERS];
 
 /** set the method to call for a given slave mode */
-	void setMethodHandler(RaySlaveMode mode,SlaveModeHandlerMethod method);
+	void setMethodHandler(SlaveMode mode,SlaveModeHandlerMethod method);
 
 public:
 
@@ -53,13 +53,13 @@ public:
 	#undef ITEM
 
 /** call the handler for a given slave mode */
-	void callHandler(RaySlaveMode mode);
+	void callHandler(SlaveMode mode);
 
 /** initialise default object and method handlers */
 	SlaveModeHandler();
 
 /** set the object to call for a slave mode */
-	void setObjectHandler(RaySlaveMode mode,SlaveModeHandler*object);
+	void setObjectHandler(SlaveMode mode,SlaveModeHandler*object);
 
 };
 

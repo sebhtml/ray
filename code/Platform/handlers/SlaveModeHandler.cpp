@@ -33,7 +33,7 @@ void SlaveModeHandler::call_ ## mode (){}
 
 #undef ITEM
 
-void SlaveModeHandler::callHandler(RaySlaveMode mode){
+void SlaveModeHandler::callHandler(SlaveMode mode){
 	SlaveModeHandler*object=m_objects[mode];
 
 	#ifdef ASSERT
@@ -68,7 +68,7 @@ SlaveModeHandler::SlaveModeHandler(){
 
 }
 
-void SlaveModeHandler::setObjectHandler(RaySlaveMode mode,SlaveModeHandler*object){
+void SlaveModeHandler::setObjectHandler(SlaveMode mode,SlaveModeHandler*object){
 	#ifdef ASSERT
 	assert(object!=NULL);
 	#endif
@@ -76,7 +76,7 @@ void SlaveModeHandler::setObjectHandler(RaySlaveMode mode,SlaveModeHandler*objec
 	m_objects[mode]=object;
 }
 
-void SlaveModeHandler::setMethodHandler(RaySlaveMode mode,SlaveModeHandlerMethod method){
+void SlaveModeHandler::setMethodHandler(SlaveMode mode,SlaveModeHandlerMethod method){
 	#ifdef ASSERT
 	assert(method!=NULL);
 	#endif

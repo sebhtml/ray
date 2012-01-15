@@ -45,20 +45,20 @@ using namespace std;
  */
 class TickLogger{
 	vector<uint64_t> m_slaveCounts;
-	vector<RaySlaveMode> m_slaveModes;
-	RaySlaveMode m_lastSlaveMode;
+	vector<SlaveMode> m_slaveModes;
+	SlaveMode m_lastSlaveMode;
 	uint64_t m_slaveCount;
 
 	vector<uint64_t> m_masterCounts;
-	vector<RayMasterMode> m_masterModes;
-	RayMasterMode m_lastMasterMode;
+	vector<MasterMode> m_masterModes;
+	MasterMode m_lastMasterMode;
 	uint64_t m_masterCount;
 public:
 
 	TickLogger();
 
-	void logSlaveTick(RaySlaveMode i);
-	void logMasterTick(RayMasterMode i);
+	void logSlaveTick(SlaveMode i);
+	void logMasterTick(MasterMode i);
 
 	void printSlaveTicks(ofstream*file);
 	void printMasterTicks(ofstream*file);

@@ -24,7 +24,7 @@
 
 typedef int Rank;
 
-/* although RayMPITag is defined, routing tag are not valid RayMPITag instances. */
+/* although MessageTag is defined, routing tag are not valid MessageTag instances. */
 typedef int Tag;
 
 typedef int RoutingTag;

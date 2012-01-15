@@ -37,12 +37,12 @@ using namespace std;
  */
 class SwitchMan{
 /** the current slave mode of the rank */
-	RaySlaveMode m_slaveMode;
+	SlaveMode m_slaveMode;
 
 /** the current master mode of the rank */
-	RayMasterMode m_masterMode;
+	MasterMode m_masterMode;
 	
-	RayMasterMode m_lastMasterMode;
+	MasterMode m_lastMasterMode;
 
 	/** number of cores */
 	int m_size;
@@ -51,13 +51,13 @@ class SwitchMan{
 	int m_counter;
 
 /** a list of switches describing the order of the master modes */
-	map<RayMasterMode,RayMasterMode> m_switches;
+	map<MasterMode,MasterMode> m_switches;
 
 /** a table to convert a tag to a slave mode */
-	map<Tag,RaySlaveMode> m_tagToSlaveModeTable;
+	map<Tag,SlaveMode> m_tagToSlaveModeTable;
 
 /** a table containing mapping from master modes to MPI tags */
-	map<RayMasterMode,Tag> m_masterModeToTagTable;
+	map<MasterMode,Tag> m_masterModeToTagTable;
 
 /** run some assertions */
 	void runAssertions();
@@ -75,17 +75,17 @@ public:
 
 /** according to scripting/master_mode_order.txt, returns
  * the next master mode to set */
-	RayMasterMode getNextMasterMode(RayMasterMode currentMode);
+	MasterMode getNextMasterMode(MasterMode currentMode);
 
 /**
  * add a master mode associated to another */
-	void addNextMasterMode(RayMasterMode a,RayMasterMode b);
+	void addNextMasterMode(MasterMode a,MasterMode b);
 
 /** add a slave switch */
-	void addSlaveSwitch(Tag tag,RaySlaveMode slaveMode);
+	void addSlaveSwitch(Tag tag,SlaveMode slaveMode);
 
 /** add a master switch */
-	void addMasterSwitch(RayMasterMode masterMode,Tag tag);
+	void addMasterSwitch(MasterMode masterMode,Tag tag);
 
 	/** remotely open a slave mode */
 	void openSlaveMode(Tag tag,StaticVector*outbox,Rank source,Rank destination);
@@ -113,22 +113,22 @@ public:
 	void sendMessage(uint64_t*buffer,int count,StaticVector*outbox,Rank source,Rank destination,Tag tag);
 
 /** get the current slave mode */
-	RaySlaveMode getSlaveMode();
+	SlaveMode getSlaveMode();
 
 /** get the current slave mode pointer */
 	int*getSlaveModePointer();
 
 /** change the slave mode manually */
-	void setSlaveMode(RaySlaveMode mode);
+	void setSlaveMode(SlaveMode mode);
 
 /** get the master mode */
-	RayMasterMode getMasterMode();
+	MasterMode getMasterMode();
 
 /** get the master mode pointer */
 	int*getMasterModePointer();
 
 /** changes the master mode manually */
-	void setMasterMode(RayMasterMode mode);
+	void setMasterMode(MasterMode mode);
 
 /** send a message to all MPI ranks */
 	void sendToAll(StaticVector*outbox,Rank source,Tag tag);

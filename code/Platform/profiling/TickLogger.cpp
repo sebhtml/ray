@@ -26,7 +26,7 @@ using namespace std;
 //#define CONFIG_DISPLAY_TICKS
 #define CONFIG_TICK_STEPPING 1000000
 
-void TickLogger::logSlaveTick(RaySlaveMode i){
+void TickLogger::logSlaveTick(SlaveMode i){
 	#ifdef ASSERT
 	assert(i!=RAY_SLAVE_MODE_DUMMY);
 	#endif
@@ -58,7 +58,7 @@ void TickLogger::logSlaveTick(RaySlaveMode i){
 	#endif
 }
 
-void TickLogger::logMasterTick(RayMasterMode i){
+void TickLogger::logMasterTick(MasterMode i){
 	// this is the same as the last one
 	if(i==m_lastMasterMode){
 		m_masterCount++;

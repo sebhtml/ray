@@ -73,7 +73,7 @@ void SwitchMan::runAssertions(){
 }
 
 
-RayMasterMode SwitchMan::getNextMasterMode(RayMasterMode currentMode){
+MasterMode SwitchMan::getNextMasterMode(MasterMode currentMode){
 	#ifdef ASSERT
 	if(m_switches.count(currentMode)==0){
 		cout<<"CurrentMode= "<<MASTER_MODES[currentMode]<<endl;
@@ -85,7 +85,7 @@ RayMasterMode SwitchMan::getNextMasterMode(RayMasterMode currentMode){
 	return m_switches[currentMode];
 }
 
-void SwitchMan::addNextMasterMode(RayMasterMode a,RayMasterMode b){
+void SwitchMan::addNextMasterMode(MasterMode a,MasterMode b){
 	#ifdef ASSERT
 	assert(m_switches.count(a)==0);
 	#endif
@@ -153,7 +153,7 @@ void SwitchMan::closeMasterMode(){
 	#endif
 
 	// get the next master mode from the table
-	RayMasterMode currentMasterMode=getMasterMode();
+	MasterMode currentMasterMode=getMasterMode();
 
 	if(currentMasterMode==RAY_MASTER_MODE_DO_NOTHING)
 		currentMasterMode=m_lastMasterMode;
@@ -162,7 +162,7 @@ void SwitchMan::closeMasterMode(){
 	cout<<"[SwitchMan::closeMasterMode] Current master mode -> "<<MASTER_MODES[currentMasterMode]<<endl;
 	#endif
 
-	RayMasterMode nextMode=getNextMasterMode(currentMasterMode);
+	MasterMode nextMode=getNextMasterMode(currentMasterMode);
 
 	#ifdef CONFIG_SWITCHMAN_VERBOSITY
 	cout<<"[SwitchMan::closeMasterMode] Next master mode -> "<<MASTER_MODES[nextMode]<<endl;
@@ -201,7 +201,7 @@ void SwitchMan::openSlaveModeLocally(Tag tag,Rank rank){
 	#endif
 
 	// translate the MPI tag to a slave mode 
-	RaySlaveMode desiredSlaveMode=m_tagToSlaveModeTable[tag];
+	SlaveMode desiredSlaveMode=m_tagToSlaveModeTable[tag];
 
 	#ifdef CONFIG_SWITCHMAN_VERBOSITY
 	cout<<"[SwitchMan::openSlaveModeLocally] Slave switch triggered, Tag -> "<<MESSAGES[tag]<<endl;
@@ -211,7 +211,7 @@ void SwitchMan::openSlaveModeLocally(Tag tag,Rank rank){
 	setSlaveMode(desiredSlaveMode);
 }
 
-void SwitchMan::addSlaveSwitch(Tag tag,RaySlaveMode slaveMode){
+void SwitchMan::addSlaveSwitch(Tag tag,SlaveMode slaveMode){
 	#ifdef ASSERT
 	assert(m_tagToSlaveModeTable.count(tag)==0);
 	#endif
@@ -219,7 +219,7 @@ void SwitchMan::addSlaveSwitch(Tag tag,RaySlaveMode slaveMode){
 	m_tagToSlaveModeTable[tag]=slaveMode;
 }
 
-RaySlaveMode SwitchMan::getSlaveMode(){
+SlaveMode SwitchMan::getSlaveMode(){
 	return m_slaveMode;
 }
 
@@ -228,15 +228,15 @@ int*SwitchMan::getSlaveModePointer(){
 	return (int*)pointer;
 }
 
-void SwitchMan::setSlaveMode(RaySlaveMode mode){
+void SwitchMan::setSlaveMode(SlaveMode mode){
 	m_slaveMode=mode;
 }
 
-RayMasterMode SwitchMan::getMasterMode(){
+MasterMode SwitchMan::getMasterMode(){
 	return m_masterMode;
 }
 
-void SwitchMan::setMasterMode(RayMasterMode mode){
+void SwitchMan::setMasterMode(MasterMode mode){
 	m_masterMode=mode;
 
 	if(mode!=RAY_MASTER_MODE_DO_NOTHING)
@@ -248,7 +248,7 @@ int*SwitchMan::getMasterModePointer(){
 	return(int*)pointer;
 }
 
-void SwitchMan::addMasterSwitch(RayMasterMode masterMode,Tag tag){
+void SwitchMan::addMasterSwitch(MasterMode masterMode,Tag tag){
 	#ifdef ASSERT
 	assert(m_masterModeToTagTable.count(masterMode)==0);
 	#endif

@@ -28,7 +28,7 @@ extern const char* MASTER_MODES[];
 
 #define ITEM(x) x,
 
-enum RayMasterMode {
+enum MasterMode {
 #include <scripting/master_modes.txt>
 RAY_MASTER_MODE_DUMMY
 };

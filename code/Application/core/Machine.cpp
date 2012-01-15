@@ -1504,12 +1504,12 @@ m_parameters.getMinimumCoverage(),&m_oa,&(m_seedingData->m_SEEDING_edgesReceived
 /** process data my calling current slave and master methods */
 void Machine::processData(){
 	// call the master method first
-	RayMasterMode master=m_switchMan.getMasterMode();
+	MasterMode master=m_switchMan.getMasterMode();
 	m_masterModeHandler.callHandler(master);
 	m_tickLogger.logMasterTick(master);
 
 	// then call the slave method
-	RaySlaveMode slave=m_switchMan.getSlaveMode();
+	SlaveMode slave=m_switchMan.getSlaveMode();
 	m_slaveModeHandler.callHandler(slave);
 	m_tickLogger.logSlaveTick(slave);
 }
