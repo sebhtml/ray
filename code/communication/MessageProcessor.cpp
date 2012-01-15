@@ -56,8 +56,8 @@ void MessageProcessor::call_RAY_MPI_TAG_CONTIG_INFO(Message*message){
 
 void MessageProcessor::processMessage(Message*message){
 	int tag=message->getTag();
-	MessageProcessorHandler f=m_methods[tag];
-	(this->*f)(message);
+	MessageProcessorHandler method=m_methods[tag];
+	(this->*method)(message);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_SCAFFOLDING_LINKS(Message*message){
@@ -343,7 +343,6 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT(Message*message
 void MessageProcessor::call_RAY_MPI_TAG_BUILD_GRAPH(Message*message){
 	m_verticesExtractor->constructor(m_parameters->getSize(),m_parameters,m_subgraph);
 	*m_mode_send_vertices_sequence_id=0;
-	*m_mode=RAY_SLAVE_MODE_EXTRACT_VERTICES;
 }
 
 /*
@@ -543,10 +542,6 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA_REPLY(Message*message){
 	m_verticesExtractor->setReadiness();
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_WRITE_KMERS(Message*message){
-	*m_mode=RAY_SLAVE_MODE_WRITE_KMERS;
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_PURGE_NULL_EDGES(Message*message){
@@ -1187,9 +1182,6 @@ void MessageProcessor::call_RAY_MPI_TAG_EXTENSION_DATA(Message*message){
 
 	Message aMessage(NULL,0,message->getSource(),RAY_MPI_TAG_EXTENSION_DATA_REPLY,m_rank);
 	m_outbox->push_back(aMessage);
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_EXTENSION_END(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_EXTENSION_DATA_END(Message*message){
