@@ -25,6 +25,9 @@
 #include <memory/RingAllocator.h>
 #include <structures/StaticVector.h>
 #include <scheduling/SwitchMan.h>
+#include <stdint.h>
+#include <map>
+using namespace std;
 
 /** \author Sébastien Boisvert */
 class MachineHelper{
@@ -35,12 +38,22 @@ class MachineHelper{
 	RingAllocator*m_outboxAllocator;
 	StaticVector*m_outbox;
 	bool*m_aborted;
+	map<int,uint64_t>*m_coverageDistribution;
+	int*m_numberOfMachinesDoneSendingCoverage;
+	int*m_numberOfRanksWithCoverageData;
+
+	int getRank();
+
 public:
 	void constructor(int argc,char**argv,Parameters*parameters,
 		SwitchMan*switchMan,RingAllocator*outboxAllocator,
-		StaticVector*outbox,bool*aborted);
+		StaticVector*outbox,bool*aborted,
+	map<int,uint64_t>*coverageDistribution,
+	int*numberOfMachinesDoneSendingCoverage,int*numberOfRanksWithCoverageData
+);
 
 	void call_RAY_MASTER_MODE_LOAD_CONFIG();
+	void call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES();
 };
 
 #endif
