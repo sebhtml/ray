@@ -479,7 +479,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message
 void MessageProcessor::call_RAY_MPI_TAG_SEQUENCES_READY(Message*message){
 	(*m_sequence_ready_machines)++;
 	if(*m_sequence_ready_machines==m_size){
-		(*m_master_mode)=RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION;
+		m_switchMan->closeMasterMode();
 	}
 }
 
@@ -676,7 +676,7 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION(M
 void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER(Message*message){
 	(*m_numberOfMachinesReadyToSendDistribution)++;
 	if((*m_numberOfMachinesReadyToSendDistribution)==m_size){
-		(*m_master_mode)=RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS;
+		m_switchMan->closeMasterMode();
 	}
 }
 
@@ -687,6 +687,7 @@ void MessageProcessor::call_RAY_MPI_TAG_TEST_NETWORK_MESSAGE(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message){
+	// complete incremental resizing, if any
 	m_subgraph->getKmerAcademy()->completeResizing();
 
 	printf("Rank %i has %i k-mers (completed)\n",m_rank,(int)m_subgraph->getKmerAcademy()->size());
@@ -721,7 +722,7 @@ void MessageProcessor::call_RAY_MPI_TAG_COVERAGE_DATA(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_COVERAGE_END(Message*message){
 	(*m_numberOfMachinesDoneSendingCoverage)++;
 	if((*m_numberOfMachinesDoneSendingCoverage)==m_size){
-		(*m_master_mode)=RAY_MASTER_MODE_SEND_COVERAGE_VALUES;
+		m_switchMan->closeMasterMode();
 	}
 }
 
@@ -2071,14 +2072,14 @@ void MessageProcessor::call_RAY_MPI_TAG_KMER_ACADEMY_DATA(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED(Message*message){
 	m_kmerAcademyFinishedRanks++;
 	if(m_kmerAcademyFinishedRanks==m_parameters->getSize()){
-		(*m_master_mode)=RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS;
+		m_switchMan->closeMasterMode();
 	}
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_SEND_COVERAGE_VALUES_REPLY(Message*message){
 	(*m_numberOfRanksWithCoverageData)++;
 	if((*m_numberOfRanksWithCoverageData)==m_size){
-		(*m_master_mode)=RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING;
+		m_switchMan->closeMasterMode();
 	}
 }
 

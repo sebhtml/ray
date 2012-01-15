@@ -26,7 +26,7 @@
 #include <iostream>
 using namespace std;
 
-// #define CONFIG_SWITCHMAN_VERBOSITY
+//#define CONFIG_SWITCHMAN_VERBOSITY
 
 void SwitchMan::constructor(int numberOfCores){
 	m_size=numberOfCores;
@@ -57,7 +57,7 @@ bool SwitchMan::allRanksAreReady(){
 void SwitchMan::closeSlaveMode(Rank source){
 
 	#ifdef CONFIG_SWITCHMAN_VERBOSITY
-	cout<<"Closing remotely slave mode on rank "<<source<<endl;
+	cout<<"[SwitchMan::closeSlaveMode] Closing remotely slave mode on rank "<<source<<endl;
 	#endif
 
 	m_counter++;
@@ -95,7 +95,7 @@ void SwitchMan::addNextMasterMode(RayMasterMode a,RayMasterMode b){
 
 void SwitchMan::openSlaveMode(Tag tag,StaticVector*outbox,Rank source,Rank destination){
 	#ifdef CONFIG_SWITCHMAN_VERBOSITY
-	cout<<"Opening remotely slave mode on rank "<<destination<<endl;
+	cout<<"[SwitchMan::openSlaveMode] Opening remotely slave mode on rank "<<destination<<endl;
 	#endif
 
 	#ifdef ASSERT
@@ -109,7 +109,7 @@ void SwitchMan::openSlaveMode(Tag tag,StaticVector*outbox,Rank source,Rank desti
 void SwitchMan::closeSlaveModeLocally(StaticVector*outbox,Rank source){
 
 	#ifdef CONFIG_SWITCHMAN_VERBOSITY
-	cout<<"Closing locally slave mode on rank "<<source<<endl;
+	cout<<"[SwitchMan::closeSlaveModeLocally] Closing locally slave mode on rank "<<source<<endl;
 	#endif
 
 	sendEmptyMessage(outbox,source,MASTER_RANK,RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL);
@@ -128,8 +128,8 @@ void SwitchMan::openMasterMode(StaticVector*outbox,Rank source){
 	Tag tag=m_masterModeToTagTable[m_masterMode];
 
 	#ifdef CONFIG_SWITCHMAN_VERBOSITY
-	cout<<"Opening master mode on rank "<<source<<endl;
-	cout<<"tag= "<<MESSAGES[tag]<<" source= "<<source<<" Outbox= "<<outbox<<endl;
+	cout<<"[SwitchMan::openMasterMode] Opening master mode on rank "<<source<<endl;
+	cout<<"[SwitchMan::openMasterMode] tag= "<<MESSAGES[tag]<<" source= "<<source<<" Outbox= "<<outbox<<endl;
 	#endif
 
 	#ifdef ASSERT
@@ -149,12 +149,24 @@ void SwitchMan::openMasterMode(StaticVector*outbox,Rank source){
 void SwitchMan::closeMasterMode(){
 
 	#ifdef CONFIG_SWITCHMAN_VERBOSITY
-	cout<<"Closing master mode on rank "<<MASTER_RANK<<endl;
+	cout<<"[SwitchMan::closeMasterMode] Closing master mode on rank "<<MASTER_RANK<<endl;
 	#endif
 
 	// get the next master mode from the table
 	RayMasterMode currentMasterMode=getMasterMode();
+
+	if(currentMasterMode==RAY_MASTER_MODE_DO_NOTHING)
+		currentMasterMode=m_lastMasterMode;
+
+	#ifdef CONFIG_SWITCHMAN_VERBOSITY
+	cout<<"[SwitchMan::closeMasterMode] Current master mode -> "<<MASTER_MODES[currentMasterMode]<<endl;
+	#endif
+
 	RayMasterMode nextMode=getNextMasterMode(currentMasterMode);
+
+	#ifdef CONFIG_SWITCHMAN_VERBOSITY
+	cout<<"[SwitchMan::closeMasterMode] Next master mode -> "<<MASTER_MODES[nextMode]<<endl;
+	#endif
 
 	// set the new master mode
 	setMasterMode(nextMode);
@@ -185,11 +197,16 @@ void SwitchMan::openSlaveModeLocally(Tag tag,Rank rank){
 		return;
 
 	#ifdef CONFIG_SWITCHMAN_VERBOSITY
-	cout<<"Opening locally slave mode on rank "<<rank<<endl;
+	cout<<"[SwitchMan::openSlaveModeLocally] Opening locally slave mode on rank "<<rank<<endl;
 	#endif
 
 	// translate the MPI tag to a slave mode 
 	RaySlaveMode desiredSlaveMode=m_tagToSlaveModeTable[tag];
+
+	#ifdef CONFIG_SWITCHMAN_VERBOSITY
+	cout<<"[SwitchMan::openSlaveModeLocally] Slave switch triggered, Tag -> "<<MESSAGES[tag]<<endl;
+	cout<<"[SwitchMan::openSlaveModeLocally] Slave mode -> "<<SLAVE_MODES[desiredSlaveMode]<<endl;
+	#endif
 
 	setSlaveMode(desiredSlaveMode);
 }
@@ -221,6 +238,9 @@ RayMasterMode SwitchMan::getMasterMode(){
 
 void SwitchMan::setMasterMode(RayMasterMode mode){
 	m_masterMode=mode;
+
+	if(mode!=RAY_MASTER_MODE_DO_NOTHING)
+		m_lastMasterMode=mode;
 }
 
 int*SwitchMan::getMasterModePointer(){

@@ -41,6 +41,8 @@ class SwitchMan{
 
 /** the current master mode of the rank */
 	RayMasterMode m_masterMode;
+	
+	RayMasterMode m_lastMasterMode;
 
 	/** number of cores */
 	int m_size;

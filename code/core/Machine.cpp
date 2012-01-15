@@ -884,6 +884,7 @@ void Machine::call_RAY_MASTER_MODE_LOAD_SEQUENCES(){
 		i,RAY_MPI_TAG_LOAD_SEQUENCES,getRank());
 		m_outbox.push_back(aMessage);
 	}
+
 	m_switchMan.setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
 }
 
@@ -1103,6 +1104,7 @@ void Machine::call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS(){
 }
 
 void Machine::call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS(){
+
 	if(!m_coverageInitialised){
 		m_timePrinter.printElapsedTime("K-mer counting");
 		cout<<endl;
@@ -1115,6 +1117,7 @@ void Machine::call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS(){
 			RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION,getRank());
 		m_outbox.push_back(aMessage);
 	}
+
 	m_switchMan.setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
 }
 
