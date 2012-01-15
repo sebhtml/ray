@@ -31,9 +31,15 @@ void MessageTagHandler::call_ ## tag(Message*message){}
 #undef ITEM
 
 void MessageTagHandler::callHandler(Tag messageTag,Message*message){
-	MessageTagHandlerMethod handlerMethod=m_methods[messageTag];
-
 	MessageTagHandler*handlerObject=m_objects[messageTag];
+
+	// it is useless to call base implementations
+	// because they are empty
+	if(handlerObject==this)
+		return;
+
+	// otherwise, fetch the method and call it
+	MessageTagHandlerMethod handlerMethod=m_methods[messageTag];
 
 	(handlerObject->*handlerMethod)(message);
 }

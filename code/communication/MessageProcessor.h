@@ -218,13 +218,121 @@ SequencesIndexer*m_si
 	void setVirtualCommunicator(VirtualCommunicator*a);
 	void setSwitchMan(SwitchMan*a);
 
-	/*
- * generate prototypes with the list and a macro
- */
-	#define ITEM(x) void call_ ## x ( Message*m ) ;
-	#include <scripting/mpi_tags.txt>
-	#undef ITEM
+// list of declarations
+
+	void call_RAY_MPI_TAG_LOAD_SEQUENCES(Message*message);
+	void call_RAY_MPI_TAG_CONTIG_INFO(Message*message);
+	void call_RAY_MPI_TAG_SCAFFOLDING_LINKS(Message*message);
+	void call_RAY_MPI_TAG_GET_READ_MARKERS(Message*message);
+	void call_RAY_MPI_TAG_GET_READ_MATE(Message*message);
+	void call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message);
+	void call_RAY_MPI_TAG_SET_WORD_SIZE(Message*message);
+	void call_RAY_MPI_TAG_VERTEX_READS(Message*message);
+	void call_RAY_MPI_TAG_VERTEX_INFO(Message*message);
+	void call_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT(Message*message);
+	void call_RAY_MPI_TAG_BUILD_GRAPH(Message*message);
+	void call_RAY_MPI_TAG_VERTEX_READS_FROM_LIST(Message*message);
+	void call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message);
+	void call_RAY_MPI_TAG_SEQUENCES_READY(Message*message);
+	void call_RAY_MPI_TAG_VERTICES_DATA(Message*message);
+	void call_RAY_MPI_TAG_VERTICES_DATA_REPLY(Message*message);
+	void call_RAY_MPI_TAG_PURGE_NULL_EDGES(Message*message);
+	void call_RAY_MPI_TAG_VERTICES_DISTRIBUTED(Message*message);
+	void call_RAY_MPI_TAG_OUT_EDGES_DATA_REPLY(Message*message);
+	void call_RAY_MPI_TAG_OUT_EDGES_DATA(Message*message);
+	void call_RAY_MPI_TAG_START_VERTICES_DISTRIBUTION(Message*message);
+	void call_RAY_MPI_TAG_IN_EDGES_DATA_REPLY(Message*message);
+	void call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message);
+	void call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION(Message*message);
+	void call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER(Message*message);
+	void call_RAY_MPI_TAG_TEST_NETWORK_MESSAGE(Message*message);
+	void call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message);
+	void call_RAY_MPI_TAG_COVERAGE_DATA(Message*message);
+	void call_RAY_MPI_TAG_COVERAGE_END(Message*message);
+	void call_RAY_MPI_TAG_SEND_COVERAGE_VALUES(Message*message);
+	void call_RAY_MPI_TAG_READY_TO_SEED(Message*message);
+	void call_RAY_MPI_TAG_START_SEEDING(Message*message);
+	void call_RAY_MPI_TAG_GET_COVERAGE_AND_MARK(Message*message);
+	void call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message);
+	void call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY(Message*message);
+	void call_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES(Message*message);
+	void call_RAY_MPI_TAG_REQUEST_VERTEX_EDGES(Message*message);
+	void call_RAY_MPI_TAG_REQUEST_VERTEX_EDGES_REPLY(Message*message);
+	void call_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY(Message*message);
+	void call_RAY_MPI_TAG_SEEDING_IS_OVER(Message*message);
+	void call_RAY_MPI_TAG_REQUEST_SEED_LENGTHS(Message*message);
+	void call_RAY_MPI_TAG_SEND_SEED_LENGTHS(Message*message);
+	void call_RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS(Message*message);
+	void call_RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER(Message*message);
+	void call_RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS(Message*message);
+	void call_RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY(Message*message);
+	void call_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES(Message*message);
+	void call_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY(Message*message);
+	void call_RAY_MPI_TAG_EXTENSION_IS_DONE(Message*message);
+	void call_RAY_MPI_TAG_ASK_EXTENSION(Message*message);
+	void call_RAY_MPI_TAG_ASK_IS_ASSEMBLED(Message*message);
+	void call_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY(Message*message);
+	void call_RAY_MPI_TAG_ASK_EXTENSION_DATA(Message*message);
+	void call_RAY_MPI_TAG_EXTENSION_DATA_REPLY(Message*message);
+	void call_RAY_MPI_TAG_EXTENSION_DATA(Message*message);
+	void call_RAY_MPI_TAG_EXTENSION_DATA_END(Message*message);
+	void call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message);
+	void call_RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY(Message*message);
+	void call_RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION(Message*message);
+	void call_RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY(Message*message);
+	void call_RAY_MPI_TAG_ASK_READ_LENGTH(Message*message);
+	void call_RAY_MPI_TAG_ASK_READ_LENGTH_REPLY(Message*message);
+	void call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY(Message*message);
+	void call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION(Message*message);
+	void call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REPLY(Message*message);
+	void call_RAY_MPI_TAG_ASSEMBLE_WAVES(Message*message);
+	void call_RAY_MPI_TAG_ASSEMBLE_WAVES_DONE(Message*message);
+	void call_RAY_MPI_TAG_START_FUSION(Message*message);
+	void call_RAY_MPI_TAG_FUSION_DONE(Message*message);
+	void call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE(Message*message);
+	void call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY(Message*message);
+	void call_RAY_MPI_TAG_GET_PATH_LENGTH(Message*message);
+	void call_RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION(Message*message);
+	void call_RAY_MPI_TAG_GET_PATH_LENGTH_REPLY(Message*message);
+	void call_RAY_MPI_TAG_ASK_VERTEX_PATHS(Message*message);
+	void call_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY(Message*message);
+	void call_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END(Message*message);
+	void call_RAY_MPI_TAG_ASK_VERTEX_PATH(Message*message);
+	void call_RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY(Message*message);
+	void call_RAY_MPI_TAG_HAS_PAIRED_READ(Message*message);
+	void call_RAY_MPI_TAG_HAS_PAIRED_READ_REPLY(Message*message);
+	void call_RAY_MPI_TAG_GET_PAIRED_READ(Message*message);
+	void call_RAY_MPI_TAG_GET_PAIRED_READ_REPLY(Message*message);
+	void call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message);
+	void call_RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY(Message*message);
+	void call_RAY_MPI_TAG_FINISH_FUSIONS(Message*message);
+	void call_RAY_MPI_TAG_FINISH_FUSIONS_FINISHED(Message*message);
+	void call_RAY_MPI_TAG_DISTRIBUTE_FUSIONS(Message*message);
+	void call_RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY(Message*message);
+	void call_RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED(Message*message);
+	void call_RAY_MPI_TAG_EXTENSION_START(Message*message);
+	void call_RAY_MPI_TAG_ELIMINATE_PATH(Message*message);
+	void call_RAY_MPI_TAG_GET_PATH_VERTEX(Message*message);
+	void call_RAY_MPI_TAG_GET_PATH_VERTEX_REPLY(Message*message);
+	void call_RAY_MPI_TAG_WRITE_AMOS(Message*message);
+	void call_RAY_MPI_TAG_WRITE_AMOS_REPLY(Message*message);
+	void call_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION(Message*message);
+	void call_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE(Message*message);
+	void call_RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY(Message*message);
+	void call_RAY_MPI_TAG_LIBRARY_DISTANCE(Message*message);
+	void call_RAY_MPI_TAG_ASK_LIBRARY_DISTANCES(Message*message);
+	void call_RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED(Message*message);
+	void call_RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION(Message*message);
+	void call_RAY_MPI_TAG_KMER_ACADEMY_DATA(Message*message);
+	void call_RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED(Message*message);
+	void call_RAY_MPI_TAG_SEND_COVERAGE_VALUES_REPLY(Message*message);
+	void call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE(Message*message);
+	void call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY(Message*message);
+	void call_RAY_MPI_TAG_I_FINISHED_SCAFFOLDING(Message*message);
+	void call_RAY_MPI_TAG_GET_CONTIG_CHUNK(Message*message);
+	void call_RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL(Message*message);
 	
 };
 
 #endif
+	

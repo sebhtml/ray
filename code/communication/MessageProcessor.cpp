@@ -2303,17 +2303,4 @@ void MessageProcessor::setSwitchMan(SwitchMan*a){
 	m_switchMan=a;
 }
 
-/* append empty implementations */
-/* if one of them need to be implemented in an non-empty fashion, it must 
- * first be removed from scripting/empty_tag_handlers.txt 
- * and added here as a call_*
- */
-
-#define ITEM(tag) \
-void MessageProcessor::call_ ## tag (Message*message){}
-
-#include <scripting/empty_tag_handlers.txt>
-
-#undef ITEM
-
 
