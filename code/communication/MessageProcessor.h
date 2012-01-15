@@ -22,33 +22,42 @@
 #ifndef _MessageProcessor
 #define _MessageProcessor
 
+
+#include <vector>
+using namespace std;
+
 #include <memory/RingAllocator.h>
+#include <memory/MyAllocator.h>
+
+#include <heuristics/OpenAssemblerChooser.h>
+
+#include <structures/ArrayOfReads.h>
+#include <structures/SplayTree.h>
+#include <structures/StaticVector.h>
+#include <structures/ReadAnnotation.h>
+#include <structures/Vertex.h>
+#include <structures/BloomFilter.h>
+
 #include <assembler/Library.h>
 #include <assembler/SequencesIndexer.h>
 #include <assembler/SeedingData.h>
-#include <heuristics/OpenAssemblerChooser.h>
-#include <structures/ArrayOfReads.h>
-#include <communication/Message.h>
-#include <vector>
-#include <structures/SplayTree.h>
-#include <structures/StaticVector.h>
 #include <assembler/SeedExtender.h>
 #include <assembler/SequencesLoader.h>
 #include <assembler/FusionData.h>
-#include <structures/ReadAnnotation.h>
 #include <assembler/VerticesExtractor.h>
+
 #include <graph/GridTable.h>
 #include <core/Parameters.h>
-#include <communication/BufferedData.h>
-#include <memory/MyAllocator.h>
-#include <structures/Vertex.h>
 #include <scaffolder/Scaffolder.h>
+
+#include <communication/Message.h>
+#include <communication/BufferedData.h>
 #include <communication/VirtualCommunicator.h>
-#include <structures/BloomFilter.h>
-#include <scheduling/SwitchMan.h>
 #include <communication/MessageRouter.h>
+
+#include <scheduling/SwitchMan.h>
 #include <scripting/ScriptEngine.h>
-using namespace std;
+#include <handlers/MessageTagHandler.h>
 
 /**
  * MessageProcessor receives all the messages of a MPI rank
@@ -57,7 +66,7 @@ using namespace std;
  * Sometimes, a message will generate a reply (_REPLY)
  * \author Sébastien Boisvert
  */
-class MessageProcessor{
+class MessageProcessor : public MessageTagHandler {
 
 	MessageRouter*m_router;
 

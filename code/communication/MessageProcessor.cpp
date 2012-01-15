@@ -54,12 +54,6 @@ void MessageProcessor::call_RAY_MPI_TAG_CONTIG_INFO(Message*message){
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::processMessage(Message*message){
-	int tag=message->getTag();
-	MessageProcessorHandler method=m_methods[tag];
-	(this->*method)(message);
-}
-
 void MessageProcessor::call_RAY_MPI_TAG_SCAFFOLDING_LINKS(Message*message){
 	uint64_t*incoming=(uint64_t*)message->getBuffer();
 

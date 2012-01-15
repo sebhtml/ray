@@ -255,6 +255,12 @@ obj-y += code/profiling/TickLogger.o
 obj-y += code/heuristics/BubbleTool.o code/heuristics/Chooser.o code/heuristics/OpenAssemblerChooser.o \
  code/heuristics/TipWatchdog.o code/heuristics/NovaEngine.o
 
+# handlers
+
+obj-y += code/handlers/SlaveModeHandler.o
+obj-y += code/handlers/MasterModeHandler.o
+obj-y += code/handlers/MessageTagHandler.o
+
 #################################
 
 # inference rule

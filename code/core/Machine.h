@@ -73,6 +73,10 @@
 #include <scheduling/SwitchMan.h>
 #include <search-engine/Searcher.h>
 #include <scripting/ScriptEngine.h>
+
+#include <handlers/MessageTagHandler.h>
+#include <handlers/SlaveModeHandler.h>
+#include <handlers/MessageTagHandler.h>
 using namespace std;
 
 /**
@@ -80,6 +84,7 @@ using namespace std;
  */
 class Machine{
 	TickLogger m_tickLogger;
+	MessageTagHandler m_messageTagHandler;
 
 	uint64_t m_startingTimeMicroseconds;
 
@@ -291,6 +296,7 @@ class Machine{
 	void assignMasterHandlers();
 	void assignSlaveHandlers();
 
+	void assignMessageTagHandlers();
 public:
 	/*
  * this is the only public bit

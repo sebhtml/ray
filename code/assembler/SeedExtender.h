@@ -44,6 +44,7 @@ class DepthFirstSearchData;
 #include <heuristics/OpenAssemblerChooser.h>
 #include <graph/GridTable.h>
 #include <assembler/SeedingData.h>
+#include <handlers/SlaveModeHandler.h>
 
 using namespace std;
 
@@ -51,7 +52,7 @@ using namespace std;
  * Performs the extension of seeds.
  * \author Sébastien Boisvert
  */
-class SeedExtender{
+class SeedExtender : public SlaveModeHandler {
 
 	int m_currentPeakCoverage;
 

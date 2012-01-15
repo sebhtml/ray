@@ -98,6 +98,8 @@ Machine::Machine(int argc,char**argv){
 
 	assignMasterHandlers();
 	assignSlaveHandlers();
+
+	assignMessageTagHandlers();
 }
 
 void Machine::start(){
@@ -768,11 +770,13 @@ void Machine::processMessages(){
 		}
 	}
 
-	// check if the tag is in the list of slave switches
-	m_switchMan.openSlaveModeLocally(m_inbox[0]->getTag(),m_rank);
+	Message*message=m_inbox[0];
+	Tag messageTag=message->getTag();
 
-	// process the message as is
-	m_mp.processMessage((m_inbox[0]));
+	// check if the tag is in the list of slave switches
+	m_switchMan.openSlaveModeLocally(messageTag,m_rank);
+
+	m_messageTagHandler.callHandler(messageTag,message);
 }
 
 void Machine::sendMessages(){
@@ -1756,4 +1760,11 @@ void Machine::call_ ## mode (){}
 
 #undef ITEM
 
+void Machine::assignMessageTagHandlers(){
+	#define ITEM(tag) \
+	m_messageTagHandler.setObjectHandler(tag, &m_mp);
 
+	#include <scripting/mpi_tags.txt>
+
+	#undef ITEM
+}

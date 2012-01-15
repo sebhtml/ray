@@ -34,9 +34,13 @@ typedef int Distance;
 
 class MessageProcessor; /* needed to define MessageProcessorHandler */
 class Message;
+class MessageTagHandler;
 
 /* define method pointers with 1 argument of type Message* */
 typedef void (MessageProcessor::*MessageProcessorHandler) (Message*message);
+
+/* new interface */
+typedef void (MessageTagHandler::*MessageTagHandlerMethod) (Message*message);
 
 
 /**

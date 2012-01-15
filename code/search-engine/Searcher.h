@@ -39,13 +39,15 @@ using namespace std;
 #include <structures/StaticVector.h>
 #include <assembler/TimePrinter.h>
 #include <profiling/Derivative.h>
+#include <handlers/SlaveModeHandler.h>
+#include <handlers/MasterModeHandler.h>
 
 /**
  * This class searches for sequences in the de Bruijn graph
  * It outputs biological abundance readouts
  * \author Sébastien Boisvert
  **/
-class Searcher{
+class Searcher : public SlaveModeHandler, public MasterModeHandler {
 	/** number of pending messages */
 	int m_pendingMessages;
 	
