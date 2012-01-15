@@ -65,6 +65,10 @@
 #include <assembler/FusionTaskCreator.h>
 #include <assembler/JoinerTaskCreator.h>
 #include <communication/MessageRouter.h>
+
+#include <profiling/Profiler.h>
+#include <profiling/TickLogger.h>
+
 #include <core/MachineHelper.h>
 #include <scheduling/SwitchMan.h>
 #include <search-engine/Searcher.h>
@@ -75,6 +79,8 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class Machine{
+	TickLogger m_tickLogger;
+
 	uint64_t m_startingTimeMicroseconds;
 
 	MachineHelper m_helper;

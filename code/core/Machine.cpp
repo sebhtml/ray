@@ -458,6 +458,31 @@ m_seedingData,
 	}
 
 	m_messagesHandler.barrier();
+
+
+	// log ticks
+	if(m_parameters.getRank()==MASTER_RANK){
+		ostringstream scheduling;
+		scheduling<<m_parameters.getPrefix()<<"/Scheduling/";
+		createDirectory(scheduling.str().c_str());
+	}
+
+	// wait for master to create the directory.
+	m_messagesHandler.barrier();
+	
+	ostringstream masterTicks;
+	masterTicks<<m_parameters.getPrefix()<<"/Scheduling/"<<m_parameters.getRank()<<".MasterTicks.txt";
+	ofstream f1(masterTicks.str().c_str());
+	m_tickLogger.printMasterTicks(&f1);
+	f1.close();
+
+	ostringstream slaveTicks;
+	slaveTicks<<m_parameters.getPrefix()<<"/Scheduling/"<<m_parameters.getRank()<<".SlaveTicks.txt";
+	ofstream f2(slaveTicks.str().c_str());
+	m_tickLogger.printSlaveTicks(&f2);
+	f2.close();
+
+
 	m_messagesHandler.freeLeftovers();
 	m_persistentAllocator.clear();
 	m_directionsAllocator.clear();
@@ -1550,11 +1575,15 @@ m_parameters.getMinimumCoverage(),&m_oa,&(m_seedingData->m_SEEDING_edgesReceived
 
 /** process data my calling current slave and master methods */
 void Machine::processData(){
-	MachineMasterHandler masterMethod=m_master_methods[m_switchMan.getMasterMode()];
+	RayMasterMode master=m_switchMan.getMasterMode();
+	MachineMasterHandler masterMethod=m_master_methods[master];
 	(this->*masterMethod)();
+	m_tickLogger.logMasterTick(master);
 
-	MachineSlaveHandler slaveMethod=m_slave_methods[m_switchMan.getSlaveMode()];
+	RaySlaveMode slave=m_switchMan.getSlaveMode();
+	MachineSlaveHandler slaveMethod=m_slave_methods[slave];
 	(this->*slaveMethod)();
+	m_tickLogger.logSlaveTick(slave);
 }
 
 void Machine::call_RAY_MASTER_MODE_KILL_RANKS(){

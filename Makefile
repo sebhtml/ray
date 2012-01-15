@@ -249,6 +249,7 @@ obj-y += code/assembler/JoinerTaskCreator.o
 
 obj-y += code/profiling/Profiler.o
 obj-y += code/profiling/Derivative.o
+obj-y += code/profiling/TickLogger.o
 
 # heuristics
 obj-y += code/heuristics/BubbleTool.o code/heuristics/Chooser.o code/heuristics/OpenAssemblerChooser.o \
