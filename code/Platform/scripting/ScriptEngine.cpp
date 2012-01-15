@@ -86,25 +86,3 @@ void ScriptEngine::configureVirtualCommunicator(VirtualCommunicator*virtualCommu
 	#undef ITEM
 
 }
-
-void ScriptEngine::configureMasterHandlers(vector<RayMasterMode>*modes,vector<MachineMasterHandler>*handlers){
-
-	#define ITEM(masterMode) \
-	modes->push_back(masterMode); \
-	handlers->push_back( &Machine::call_ ## masterMode );
-
-	#include <scripting/master_modes.txt>
-
-	#undef ITEM
-}
-
-void ScriptEngine::configureSlaveHandlers(vector<RaySlaveMode>*modes,vector<MachineSlaveHandler>*handlers){
-
-	#define ITEM(slaveMode) \
-	modes->push_back(slaveMode) ; \
-	handlers->push_back( &Machine::call_ ## slaveMode);
-
-	#include <scripting/slave_modes.txt>
-
-	#undef ITEM
-}

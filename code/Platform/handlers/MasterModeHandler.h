@@ -21,12 +21,26 @@
 #ifndef _MasterModeHandler_h
 #define _MasterModeHandler_h
 
+#include <core/types.h>
+#include <core/master_modes.h>
+
+#define MAXIMUM_NUMBER_OF_MASTER_HANDLERS 64
+
 /**
  * base class for handling master modes 
  * \author Sébastien Boisvert
  * with help from Élénie Godzaridis for the design
  */
 class MasterModeHandler{
+
+/** a list of methods to call */
+	MasterModeHandlerMethod m_methods[MAXIMUM_NUMBER_OF_MASTER_HANDLERS];
+
+/** a list of objects to use for calling methods */
+	MasterModeHandler*m_objects[MAXIMUM_NUMBER_OF_MASTER_HANDLERS];
+
+/** set the method to call for a given master mode */
+	void setMethodHandler(RayMasterMode mode,MasterModeHandlerMethod method);
 
 public:
 
@@ -37,6 +51,15 @@ public:
 	#include <scripting/master_modes.txt>
 
 	#undef ITEM
+
+	/** call the handler */
+	void callHandler(RayMasterMode mode);
+
+/** set the correct object to call for a given master mode */
+	void setObjectHandler(RayMasterMode mode, MasterModeHandler*object);
+
+/** initialise default object and method handlers */
+	MasterModeHandler();
 
 };
 

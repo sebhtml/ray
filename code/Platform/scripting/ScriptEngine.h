@@ -32,9 +32,6 @@ public:
 
 	void configureSwitchMan(SwitchMan*i);
 	void configureVirtualCommunicator(VirtualCommunicator*i);
-	
-	void configureMasterHandlers(vector<RayMasterMode>*modes,vector<MachineMasterHandler>*handlers);
-	void configureSlaveHandlers(vector<RaySlaveMode>*modes,vector<MachineSlaveHandler>*handlers);
 
 };
 

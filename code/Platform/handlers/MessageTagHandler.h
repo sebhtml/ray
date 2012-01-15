@@ -32,9 +32,14 @@
  * with help from Élénie Godzaridis for the design
  */
 class MessageTagHandler{
+
+/** table of method handlers */
 	MessageTagHandlerMethod m_methods[MAXIMUM_NUMBER_OF_TAG_HANDLERS];
+
+/** table of object handlers */
 	MessageTagHandler*m_objects[MAXIMUM_NUMBER_OF_TAG_HANDLERS];
 
+/** sets the method to call for a given message tag */
 	void setMethodHandler(Tag messageTag,MessageTagHandlerMethod method);
 
 public:
@@ -49,8 +54,10 @@ public:
 	/** call the correct handler for a tag on a message */
 	void callHandler(Tag messageTag,Message*message);
 
+/** set the object to call for a given tag */
 	void setObjectHandler(Tag messageTag,MessageTagHandler*object);
 
+/** set default object and method handlers */
 	MessageTagHandler();
 };
 

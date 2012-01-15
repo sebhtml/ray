@@ -20,6 +20,10 @@
 
 #include <handlers/MessageTagHandler.h>
 #include <communication/mpi_tags.h>
+#ifdef ASSERT
+#include <assert.h>
+#endif
+#include <stdlib.h> /* for NULL */
 
 // define empty implementations
 // these are virtual and can be overwritten
@@ -33,6 +37,10 @@ void MessageTagHandler::call_ ## tag(Message*message){}
 void MessageTagHandler::callHandler(Tag messageTag,Message*message){
 	MessageTagHandler*handlerObject=m_objects[messageTag];
 
+	#ifdef ASSERT
+	assert(handlerObject!=NULL);
+	#endif
+
 	// it is useless to call base implementations
 	// because they are empty
 	if(handlerObject==this)
@@ -40,6 +48,10 @@ void MessageTagHandler::callHandler(Tag messageTag,Message*message){
 
 	// otherwise, fetch the method and call it
 	MessageTagHandlerMethod handlerMethod=m_methods[messageTag];
+
+	#ifdef ASSERT
+	assert(handlerMethod!=NULL);
+	#endif
 
 	(handlerObject->*handlerMethod)(message);
 }
@@ -56,9 +68,17 @@ MessageTagHandler::MessageTagHandler(){
 }
 
 void MessageTagHandler::setObjectHandler(Tag messageTag,MessageTagHandler*object){
+	#ifdef ASSERT
+	assert(object!=NULL);
+	#endif
+
 	m_objects[messageTag]=object;
 }
 
 void MessageTagHandler::setMethodHandler(Tag tag,MessageTagHandlerMethod method){
+	#ifdef ASSERT
+	assert(method!=NULL);
+	#endif
+
 	m_methods[tag]=method;
 }

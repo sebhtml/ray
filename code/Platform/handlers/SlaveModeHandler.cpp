@@ -19,7 +19,13 @@
 */
 
 #include <handlers/SlaveModeHandler.h>
+#ifdef ASSERT
+#include <assert.h>
+#endif
+#include <stdlib.h> /* for NULL */
 
+// define empty implementations
+//
 #define ITEM(mode) \
 void SlaveModeHandler::call_ ## mode (){}
 
@@ -27,4 +33,53 @@ void SlaveModeHandler::call_ ## mode (){}
 
 #undef ITEM
 
+void SlaveModeHandler::callHandler(RaySlaveMode mode){
+	SlaveModeHandler*object=m_objects[mode];
 
+	#ifdef ASSERT
+	assert(object!=NULL);
+	#endif
+
+	// don't call it if it is this
+	if(object==this)
+		return;
+
+	// otherwise, fetch the method
+	SlaveModeHandlerMethod method=m_methods[mode];
+
+	#ifdef ASSERT
+	assert(method!=NULL);
+	#endif
+
+	// call it
+	(object->*method) (   );
+}
+
+SlaveModeHandler::SlaveModeHandler(){
+	// assign the methods and the default object handlers
+	// the default is this for the objects
+	#define ITEM(mode) \
+	setMethodHandler(mode, &SlaveModeHandler::call_ ## mode ); \
+	setObjectHandler(mode, this ); 
+
+	#include <scripting/slave_modes.txt>
+
+	#undef ITEM
+
+}
+
+void SlaveModeHandler::setObjectHandler(RaySlaveMode mode,SlaveModeHandler*object){
+	#ifdef ASSERT
+	assert(object!=NULL);
+	#endif
+
+	m_objects[mode]=object;
+}
+
+void SlaveModeHandler::setMethodHandler(RaySlaveMode mode,SlaveModeHandlerMethod method){
+	#ifdef ASSERT
+	assert(method!=NULL);
+	#endif
+
+	m_methods[mode]=method;
+}

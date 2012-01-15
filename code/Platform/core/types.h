@@ -43,11 +43,11 @@ typedef void (MessageTagHandler::*MessageTagHandlerMethod) (Message*message);
 * Main class of the application. Runs the main program loop on each MPI rank.
 */
 
-class Machine;
+class SlaveModeHandler;
+typedef void (SlaveModeHandler::*SlaveModeHandlerMethod) ();
 
-typedef void (Machine::*MachineSlaveHandler) ();
-
-typedef void (Machine::*MachineMasterHandler) ();
+class MasterModeHandler;
+typedef void (MasterModeHandler::*MasterModeHandlerMethod) ();
 
 
 

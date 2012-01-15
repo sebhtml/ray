@@ -1577,14 +1577,14 @@ m_parameters.getMinimumCoverage(),&m_oa,&(m_seedingData->m_SEEDING_edgesReceived
 
 /** process data my calling current slave and master methods */
 void Machine::processData(){
+	// call the master method first
 	RayMasterMode master=m_switchMan.getMasterMode();
-	MachineMasterHandler masterMethod=m_master_methods[master];
-	(this->*masterMethod)();
+	m_masterModeHandler.callHandler(master);
 	m_tickLogger.logMasterTick(master);
 
+	// then call the slave method
 	RaySlaveMode slave=m_switchMan.getSlaveMode();
-	MachineSlaveHandler slaveMethod=m_slave_methods[slave];
-	(this->*slaveMethod)();
+	m_slaveModeHandler.callHandler(slave);
 	m_tickLogger.logSlaveTick(slave);
 }
 
@@ -1704,26 +1704,22 @@ Machine::~Machine(){
 }
 
 void Machine::assignMasterHandlers(){
-	vector<RayMasterMode> modes;
-	vector<MachineMasterHandler> handlers;
+	
+	#define ITEM(mode) \
+	m_masterModeHandler.setObjectHandler(mode,this);
 
-	m_scriptEngine.configureMasterHandlers(&modes,&handlers);
+	#include <scripting/master_modes.txt>
 
-	for(int i=0;i<(int)modes.size();i++){
-		m_master_methods[modes[i]]=handlers[i];
-	}
+	#undef ITEM
 }
 
 void Machine::assignSlaveHandlers(){
+	#define ITEM(mode) \
+	m_slaveModeHandler.setObjectHandler(mode, this);
 
-	vector<RaySlaveMode> modes;
-	vector<MachineSlaveHandler> handlers;
+	#include <scripting/slave_modes.txt>
 
-	m_scriptEngine.configureSlaveHandlers(&modes,&handlers);
-
-	for(int i=0;i<(int)modes.size();i++){
-		m_slave_methods[modes[i]]=handlers[i];
-	}
+	#undef ITEM
 }
 
 void Machine::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
@@ -1741,22 +1737,6 @@ void Machine::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 void Machine::call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 	m_searcher.call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES();
 }
-
-
-/* append empty implementations */
-/* if one of them need to be implemented in an non-empty fashion, it must 
- * first be removed from scripting/empty_slave_handlers.txt 
- * or  scripting/empty_master_handlers.txt
- * and added here as a call_*
- */
-
-#define ITEM(mode) \
-void Machine::call_ ## mode (){}
-
-#include <scripting/empty_slave_handlers.txt>
-#include <scripting/empty_master_handlers.txt>
-
-#undef ITEM
 
 void Machine::assignMessageTagHandlers(){
 	#define ITEM(tag) \

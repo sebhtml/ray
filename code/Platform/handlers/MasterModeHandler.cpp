@@ -19,6 +19,13 @@
 */
 
 #include <handlers/MasterModeHandler.h>
+#include <communication/mpi_tags.h>
+#include <core/types.h>
+#include <stdlib.h> /* for NULL */
+
+#ifdef ASSERT
+#include <assert.h>
+#endif
 
 #define ITEM(mode) \
 void MasterModeHandler::call_ ## mode (){}
@@ -27,4 +34,52 @@ void MasterModeHandler::call_ ## mode (){}
 
 #undef ITEM
 
+void MasterModeHandler::callHandler(RayMasterMode mode){
+	MasterModeHandler*object=m_objects[mode];
 
+	#ifdef ASSERT
+	assert(object!=NULL);
+	#endif
+
+	// don't do it if it is this because it does nothing
+	if(object==this)
+		return;
+
+	/** otherwise, fetch the method and call it*/
+
+	MasterModeHandlerMethod method=m_methods[mode];
+
+	#ifdef ASSERT
+	assert(method!=NULL);
+	#endif
+
+	(object->*method)();
+}
+
+MasterModeHandler::MasterModeHandler(){
+	// assign handler methods
+	// also assign default handler objects
+
+	#define ITEM(mode) \
+	setMethodHandler(mode, &MasterModeHandler::call_ ## mode); \
+	setObjectHandler(mode, this) ;
+
+	#include <scripting/master_modes.txt>
+
+	#undef ITEM
+}
+
+void MasterModeHandler::setObjectHandler(RayMasterMode mode,MasterModeHandler*object){
+	#ifdef ASSERT
+	assert(object!=NULL);
+	#endif
+
+	m_objects[mode]=object;
+}
+
+void MasterModeHandler::setMethodHandler(RayMasterMode mode,MasterModeHandlerMethod method){
+	#ifdef ASSERT
+	assert(method!=NULL);
+	#endif
+	m_methods[mode]=method;
+}

@@ -21,12 +21,26 @@
 #ifndef _SlaveModeHandler_h
 #define _SlaveModeHandler_h
 
+#define MAXIMUM_NUMBER_OF_SLAVE_HANDLERS  64
+
+#include <core/slave_modes.h>
+#include <core/types.h>
+
 /**
  * base class for handling slave modes 
  * \author Sébastien Boisvert
  * with help from Élénie Godzaridis for the design
  */
 class SlaveModeHandler{
+
+/** table of slave methods */
+	SlaveModeHandlerMethod m_methods[MAXIMUM_NUMBER_OF_SLAVE_HANDLERS];
+
+/** table of slave objects */
+	SlaveModeHandler*m_objects[MAXIMUM_NUMBER_OF_SLAVE_HANDLERS];
+
+/** set the method to call for a given slave mode */
+	void setMethodHandler(RaySlaveMode mode,SlaveModeHandlerMethod method);
 
 public:
 
@@ -37,6 +51,15 @@ public:
 	#include <scripting/slave_modes.txt>
 
 	#undef ITEM
+
+/** call the handler for a given slave mode */
+	void callHandler(RaySlaveMode mode);
+
+/** initialise default object and method handlers */
+	SlaveModeHandler();
+
+/** set the object to call for a slave mode */
+	void setObjectHandler(RaySlaveMode mode,SlaveModeHandler*object);
 
 };
 
