@@ -1,3 +1,8 @@
+# to build an application that uses Ray Platform
+# you need to call the make with:
+#
+# make RAY_APPLICATION_SCRIPTS=/path/to/scripts (see example in ../Application/scripting)
+#
 
 MPICXX = mpicxx
 
@@ -55,15 +60,26 @@ obj-y += handlers/MessageTagHandler.o
 
 ######## </Platform>
 
+# set RAY_APPLICATION_SCRIPTS to the scripts
+# of Ray Application if none are provided
+ifndef $(RAY_APPLICATION_SCRIPTS)
+	RAY_APPLICATION_SCRIPTS=../Application/scripting
+endif
+
+ifndef $(RAY_PLATFORM)
+	RAY_PLATFORM=.
+endif
+
 all: libRayPlatform.a
 
 libRayPlatform.a: $(obj-y)
 	$(AR) rcs  libRayPlatform.a $(obj-y)
+	@echo "RAY_APPLICATION_SCRIPTS= $(RAY_APPLICATION_SCRIPTS)"
 
 # inference rule
 #@echo "  MPICXX" $<
 %.o: %.cpp
-	$(MPICXX) -c -o $@ $<  $(CXXFLAGS) -I../Application/scripting -I.
+	$(MPICXX) -c -o $@ $<  $(CXXFLAGS) -I$(RAY_APPLICATION_SCRIPTS) -I$(RAY_PLATFORM)
 
 clean:
 	@rm -f libRayPlatform.a $(obj-y)

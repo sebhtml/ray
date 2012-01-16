@@ -81,16 +81,27 @@ obj-y += heuristics/BubbleTool.o heuristics/Chooser.o heuristics/OpenAssemblerCh
 
 ######## </Application>
 
+#assume that we want to use Ray Platform shipped with Ray Application
+ifndef $(RAY_PLATFORM)
+	RAY_PLATFORM=../Platform
+endif
+
+ifndef $(RAY_APPLICATION_SCRIPTS)
+	RAY_APPLICATION_SCRIPTS=./scripting
+endif
+
+ifndef $(RAY_APPLICATION)
+	RAY_APPLICATION=.
+endif
+
 all: libRayApplication.a
 
 libRayApplication.a: $(obj-y)
 	$(AR) rcs  libRayApplication.a $(obj-y)
 
-
 # inference rule
-#@echo "  MPICXX" $<
 %.o: %.cpp
-	$(MPICXX) -c -o $@ $<  $(CXXFLAGS) -I../Platform -I. -I./scripting
+	$(MPICXX) -c -o $@ $<  $(CXXFLAGS) -I$(RAY_PLATFORM) -I$(RAY_APPLICATION) -I$(RAY_APPLICATION_SCRIPTS)
 
 clean:
 	@rm -f libRayApplication.a $(obj-y)

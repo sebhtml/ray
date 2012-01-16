@@ -14,7 +14,7 @@
     GNU General Public License for more details.
 
     You have received a copy of the GNU General Public License
-    along with this program (COPYING).  
+    along with this program (gpl-3.0.txt).  
 	see <http://www.gnu.org/licenses/>
 */
 
@@ -624,7 +624,9 @@ void Machine::configureVirtualCommunicator(VirtualCommunicator*virtualCommunicat
 void Machine::showRayVersionShort(){
 	cout<<"Ray version "<<RAY_VERSION<<endl;
 
-	cout<<"License: GNU General Public License"<<endl;
+	cout<<"Licenses:"<<endl;
+	cout<<"Ray Platform: GNU Lesser General Public License version 3"<<endl;
+	cout<<"Ray Application: GNU General Public License version 3"<<endl;
 
 	cout<<endl;
 	cout<<"MAXKMERLENGTH: "<<MAXKMERLENGTH<<endl;

@@ -195,7 +195,6 @@ code/Platform/libRayPlatform.a:
 	@echo "Building Ray Platform"
 	@cd code/Platform; make MPICXX="$(MPICXX)" CXXFLAGS="$(CXXFLAGS)" ; cd ../..
 
-
 clean:
 	@rm -f $(TARGETS) showOptions PREFIX TARGETS
 	@echo "Cleaning Ray Application"
