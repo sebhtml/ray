@@ -26,36 +26,182 @@
 #include <structures/StaticVector.h>
 #include <scheduling/SwitchMan.h>
 #include <handlers/MasterModeHandler.h>
+#include <handlers/SlaveModeHandler.h>
+#include <assembler/ExtensionData.h>
+#include <assembler/FusionData.h>
+#include <profiling/Profiler.h>
+#include <communication/NetworkTest.h>
+#include <assembler/Partitioner.h>
+#include <assembler/SequencesLoader.h>
+#include <assembler/SeedingData.h>
+#include <communication/MessagesHandler.h>
+#include <scaffolder/Scaffolder.h>
+#include <assembler/SeedExtender.h>
+#include <profiling/TimePrinter.h>
+#include <heuristics/OpenAssemblerChooser.h>
+#include <assembler/BubbleData.h>
+#include <search-engine/Searcher.h>
+#include <structures/ArrayOfReads.h>
+#include <assembler/VerticesExtractor.h>
+#include <assembler/EdgePurger.h>
+#include <graph/GridTable.h>
+#include <assembler/KmerAcademyBuilder.h>
+#include <communication/VirtualCommunicator.h>
+#include <graph/CoverageGatherer.h>
+#include <assembler/SequencesIndexer.h>
 
 #include <stdint.h>
 #include <map>
 using namespace std;
 
-/** \author Sébastien Boisvert */
-class MachineHelper: public MasterModeHandler{
+/** this file contains __legacy code__
+ * Old handlers are here.
+ * TODO: move them elsewhere ?
+ * \author Sébastien Boisvert */
+class MachineHelper: public MasterModeHandler, public SlaveModeHandler{
+
+	SequencesLoader*m_sl;
+	time_t*m_lastTime;
+	bool*m_writeKmerInitialised;
+	Partitioner*m_partitioner;
+	map<int,map<int,uint64_t> > m_edgeDistribution;
+
+	VirtualCommunicator*m_virtualCommunicator;
+	KmerAcademyBuilder*m_kmerAcademyBuilder;
+
+	int*m_mode_send_vertices_sequence_id;
+	CoverageGatherer*m_coverageGatherer;
+	GridTable*m_subgraph;
+	SequencesIndexer*m_si;
+
+	ArrayOfReads*m_myReads;
+	int*m_last_value;
+	VerticesExtractor*m_verticesExtractor;
+	EdgePurger*m_edgePurger;
+
+	int m_coverageRank;
+	Searcher*m_searcher;
+
+	int*m_numberOfRanksDoneSeeding;
+	int*m_numberOfRanksDoneDetectingDistances;
+	int*m_numberOfRanksDoneSendingDistances;
+	bool m_loadSequenceStep;
+
+	bool m_cycleStarted;
+	Chooser m_c;
+	int*m_CLEAR_n;
+	int*m_DISTRIBUTE_n;
+	int*m_FINISH_n;
+	OpenAssemblerChooser*m_oa;
+	bool*m_isFinalFusion;
+	BubbleData*m_bubbleData;
+	bool*m_alive;
+	TimePrinter*m_timePrinter;
+	SeedExtender*m_seedExtender;
+	Scaffolder*m_scaffolder;
+	MessagesHandler*m_messagesHandler;
+
+	bool m_coverageInitialised;
+	int m_currentCycleStep;
+	int m_cycleNumber;
+	ExtensionData*m_ed;
+	FusionData*m_fusionData;
+	Profiler*m_profiler;
+	NetworkTest*m_networkTest;
+	SeedingData*m_seedingData;
+
+	bool m_mustStop;
+	bool*m_reductionOccured;
+	/** indicator of the killer initialization */
+	bool m_initialisedKiller;
+
+	int m_machineRank;
+	int m_numberOfRanksDone;
+
+	int*m_numberOfMachinesDoneSendingVertices;
+	bool*m_initialisedAcademy;
+	int*m_repeatedLength;
+	int*m_readyToSeed;
+	int*m_ranksDoneAttachingReads;
+	// SEQUENCE DISTRIBUTION
+	bool m_reverseComplementVertex;
+
 	int m_argc;
 	char**m_argv;
 	Parameters*m_parameters;
 	SwitchMan*m_switchMan;
 	RingAllocator*m_outboxAllocator;
 	StaticVector*m_outbox;
+	StaticVector*m_inbox;
 	bool*m_aborted;
 	map<int,uint64_t>*m_coverageDistribution;
 	int*m_numberOfMachinesDoneSendingCoverage;
 	int*m_numberOfRanksWithCoverageData;
 
 	int getRank();
+	int getSize();
 
 public:
 	void constructor(int argc,char**argv,Parameters*parameters,
 		SwitchMan*switchMan,RingAllocator*outboxAllocator,
 		StaticVector*outbox,bool*aborted,
 	map<int,uint64_t>*coverageDistribution,
-	int*numberOfMachinesDoneSendingCoverage,int*numberOfRanksWithCoverageData
+	int*numberOfMachinesDoneSendingCoverage,int*numberOfRanksWithCoverageData,
+bool*reductionOccured,ExtensionData*ed,FusionData*fusionData,
+Profiler*p,NetworkTest*nt,SeedingData*sd,
+TimePrinter*timePrinter,SeedExtender*seedExtender,Scaffolder*scaffolder,MessagesHandler*messagesHandler,
+StaticVector*inbox,	OpenAssemblerChooser*oa,	bool*isFinalFusion,	BubbleData*bubbleData, bool*alive,
+ int*CLEAR_n,int*DISTRIBUTE_n,int*FINISH_n,Searcher*searcher,
+	int*numberOfRanksDoneSeeding,	int*numberOfRanksDoneDetectingDistances,	int*numberOfRanksDoneSendingDistances,
+	ArrayOfReads*myReads,	int*last_value,	VerticesExtractor*verticesExtractor,	EdgePurger*edgePurger,
+int*mode_send_vertices_sequence_id,CoverageGatherer*coverageGatherer,GridTable*m_subgraph,SequencesIndexer*m_si,
+VirtualCommunicator*virtualCommunicator,KmerAcademyBuilder*kmerAcademyBuilder,
+	int*numberOfMachinesDoneSendingVertices,
+	bool*initialisedAcademy,
+	int*repeatedLength,
+	int*readyToSeed,
+	int*ranksDoneAttachingReads,
+SequencesLoader*sl,time_t*lastTime,bool*writeKmerInitialised,Partitioner*partitioner
 );
+
 
 	void call_RAY_MASTER_MODE_LOAD_CONFIG();
 	void call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES();
+	void call_RAY_MASTER_MODE_WRITE_KMERS();
+	void call_RAY_MASTER_MODE_LOAD_SEQUENCES();
+	void call_RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION();
+	void call_RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING();
+	void call_RAY_MASTER_MODE_PURGE_NULL_EDGES();
+	void call_RAY_MASTER_MODE_TRIGGER_INDEXING();
+	void call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS();
+	void call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS();
+	void call_RAY_MASTER_MODE_PREPARE_SEEDING();
+	void call_RAY_MASTER_MODE_TRIGGER_SEEDING();
+	void call_RAY_MASTER_MODE_TRIGGER_DETECTION();
+	void call_RAY_MASTER_MODE_ASK_DISTANCES();
+	void call_RAY_MASTER_MODE_START_UPDATING_DISTANCES();
+	void call_RAY_MASTER_MODE_TRIGGER_EXTENSIONS();
+	void call_RAY_MASTER_MODE_TRIGGER_FUSIONS();
+	void call_RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS();
+	void call_RAY_MASTER_MODE_START_FUSION_CYCLE();
+	void call_RAY_MASTER_MODE_ASK_EXTENSIONS();
+	void call_RAY_MASTER_MODE_SCAFFOLDER();
+	void call_RAY_MASTER_MODE_KILL_RANKS();
+	void call_RAY_MASTER_MODE_KILL_ALL_MPI_RANKS();
+
+	void call_RAY_SLAVE_MODE_LOAD_SEQUENCES();
+	void call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY();
+	void call_RAY_SLAVE_MODE_EXTRACT_VERTICES();
+	void call_RAY_SLAVE_MODE_PURGE_NULL_EDGES();
+	void call_RAY_SLAVE_MODE_WRITE_KMERS();
+	void call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES();
+	void call_RAY_SLAVE_MODE_ASSEMBLE_WAVES();
+	void call_RAY_SLAVE_MODE_INDEX_SEQUENCES();
+	void call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA();
+	void call_RAY_SLAVE_MODE_EXTENSION();
+	void call_RAY_SLAVE_MODE_DIE();
+	void call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS();
+
 };
 
 #endif

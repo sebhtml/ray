@@ -85,7 +85,6 @@ public:
 				bool*m_reverseComplementVertex,
 				int rank,
 				StaticVector*m_outbox,
-				bool*m_mode_send_vertices,
 				int m_wordSize,
 				int size,
 				RingAllocator*m_outboxAllocator,

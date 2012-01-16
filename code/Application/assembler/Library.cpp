@@ -172,10 +172,10 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 	}
 }
 
-void Library::constructor(int m_rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator,int*m_sequence_id,int*m_sequence_idInFile,ExtensionData*m_ed,
+void Library::constructor(int m_rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator,ExtensionData*m_ed,
 int m_size,
 TimePrinter*m_timePrinter,int*m_mode,int*m_master_mode,
-Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,StaticVector*inbox,VirtualCommunicator*vc
+Parameters*m_parameters,SeedingData*m_seedingData,StaticVector*inbox,VirtualCommunicator*vc
 ){
 	this->m_rank=m_rank;
 	m_currentLibrary=0;
@@ -185,15 +185,12 @@ Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,StaticVector*inbo
 	#ifdef ASSERT
 	assert(this->m_outboxAllocator!=NULL);
 	#endif
-	this->m_sequence_id=m_sequence_id;
-	this->m_sequence_idInFile=m_sequence_idInFile;
 	this->m_ed=m_ed;
 	this->m_size=m_size;
 	this->m_timePrinter=m_timePrinter;
 	this->m_mode=m_mode;
 	this->m_master_mode=m_master_mode;
 	this->m_parameters=m_parameters;
-	this->m_fileId=m_fileId;
 	this->m_seedingData=m_seedingData;
 	m_ready=0;
 	m_virtualCommunicator=vc;

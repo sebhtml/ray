@@ -44,7 +44,6 @@
 #include <assembler/SequencesLoader.h>
 #include <assembler/Library.h>
 #include <graph/CoverageGatherer.h>
-#include <heuristics/Chooser.h>
 #include <communication/MessageProcessor.h>
 #include <structures/Vertex.h>
 #include <heuristics/OpenAssemblerChooser.h>
@@ -81,9 +80,12 @@
 using namespace std;
 
 /**
+ * This class builds handler objects
+ * and sets the handlers using the API of
+ * ComputeCore.
  * \author Sébastien Boisvert
  */
-class Machine : public MasterModeHandler, public SlaveModeHandler{
+class Machine{
 
 	ComputeCore m_computeCore;
 
@@ -112,20 +114,14 @@ class Machine : public MasterModeHandler, public SlaveModeHandler{
 	Partitioner m_partitioner;
 	NetworkTest m_networkTest;
 	EdgePurger m_edgePurger;
-	map<int,map<int,uint64_t> > m_edgeDistribution;
 
 	KmerAcademyBuilder m_kmerAcademyBuilder;
 	bool m_initialisedAcademy;
 	CoverageGatherer m_coverageGatherer;
-	bool m_coverageInitialised;
-	int m_coverageRank;
 
 	Amos m_amos;
 
-	bool m_mustStop;
-
 	Library m_library;
-	int m_currentCycleStep;
 	MessagesHandler*m_messagesHandler;
 	MyAllocator m_diskAllocator;
 
@@ -143,12 +139,10 @@ class Machine : public MasterModeHandler, public SlaveModeHandler{
 	int m_size;
 	int m_totalLetters;
 	bool*m_alive;
-	bool m_loadSequenceStep;
 	char*m_inputFile;
 	int m_sequence_ready_machines;
 	bool m_messageSentForVerticesDistribution;
 
-	Chooser m_c;
 	SequencesIndexer m_si;
 	SeedExtender m_seedExtender;
 
@@ -169,13 +163,8 @@ class Machine : public MasterModeHandler, public SlaveModeHandler{
 	int m_ranksDoneAttachingReads;
 	int m_numberOfMachinesReadyToSendDistribution;
 	int m_numberOfRanksDoneSeeding;
-	int m_numberOfRanksDone;
 	bool m_writeKmerInitialised;
 	FusionData*m_fusionData;
-
-	/** indicator of the killer initialization */
-	bool m_initialisedKiller;
-	int m_machineRank;
 
 	int m_mode_send_coverage_iterator;
 
@@ -201,9 +190,6 @@ class Machine : public MasterModeHandler, public SlaveModeHandler{
 	int m_numberOfMachinesDoneSendingEdges;
 	GridTable m_subgraph;
 
-	// SEQUENCE DISTRIBUTION
-	bool m_reverseComplementVertex;
-
 	Scaffolder m_scaffolder;
 
 	// memory allocators
@@ -226,7 +212,6 @@ class Machine : public MasterModeHandler, public SlaveModeHandler{
 
 	bool m_mode_send_vertices;
 	int m_mode_send_vertices_sequence_id;
-	int m_mode_send_vertices_sequence_id_position;
 	int m_numberOfMachinesDoneSendingVertices;
 	int m_sequence_id;
 	int m_fileId;
@@ -240,7 +225,6 @@ class Machine : public MasterModeHandler, public SlaveModeHandler{
 	// COLLECTING things.
 	vector<uint64_t> m_identifiers;
 	// FINISHING.
-	int m_cycleNumber;
 	int m_FINISH_n;
 	int m_DISTRIBUTE_n;
 	bool m_isFinalFusion;
@@ -250,7 +234,6 @@ class Machine : public MasterModeHandler, public SlaveModeHandler{
 	#ifdef ASSERT
 	set<int> m_collisions;
 	#endif
-	bool m_cycleStarted;
 	bool m_reductionOccured;
 
 	#ifdef SHOW_SENT_MESSAGES
@@ -291,41 +274,6 @@ public:
 	Machine(int argc,char**argv);
 	void start();
 	~Machine();
-
-	void call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES();
-	void call_RAY_SLAVE_MODE_LOAD_SEQUENCES();
-	void call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY();
-	void call_RAY_SLAVE_MODE_EXTRACT_VERTICES();
-	void call_RAY_SLAVE_MODE_PURGE_NULL_EDGES();
-	void call_RAY_SLAVE_MODE_WRITE_KMERS();
-	void call_RAY_SLAVE_MODE_ASSEMBLE_WAVES();
-	void call_RAY_SLAVE_MODE_INDEX_SEQUENCES();
-	void call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS();
-	void call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA();
-	void call_RAY_SLAVE_MODE_EXTENSION();
-	void call_RAY_SLAVE_MODE_DIE();
-	
-	void call_RAY_MASTER_MODE_LOAD_SEQUENCES();
-	void call_RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION();
-	void call_RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING();
-	void call_RAY_MASTER_MODE_PURGE_NULL_EDGES();
-	void call_RAY_MASTER_MODE_WRITE_KMERS();
-	void call_RAY_MASTER_MODE_TRIGGER_INDEXING();
-	void call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS();
-	void call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS();
-	void call_RAY_MASTER_MODE_PREPARE_SEEDING();
-	void call_RAY_MASTER_MODE_TRIGGER_SEEDING();
-	void call_RAY_MASTER_MODE_TRIGGER_DETECTION();
-	void call_RAY_MASTER_MODE_ASK_DISTANCES();
-	void call_RAY_MASTER_MODE_START_UPDATING_DISTANCES();
-	void call_RAY_MASTER_MODE_TRIGGER_EXTENSIONS();
-	void call_RAY_MASTER_MODE_TRIGGER_FUSIONS();
-	void call_RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS();
-	void call_RAY_MASTER_MODE_START_FUSION_CYCLE();
-	void call_RAY_MASTER_MODE_ASK_EXTENSIONS();
-	void call_RAY_MASTER_MODE_SCAFFOLDER();
-	void call_RAY_MASTER_MODE_KILL_RANKS();
-	void call_RAY_MASTER_MODE_KILL_ALL_MPI_RANKS();
 };
 
 #endif

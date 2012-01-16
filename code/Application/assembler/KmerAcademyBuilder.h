@@ -83,7 +83,6 @@ public:
 				int rank,
 				StaticVector*m_outbox,
 				StaticVector*m_inbox,
-				bool*m_mode_send_vertices,
 				int m_wordSize,
 				int size,
 				RingAllocator*m_outboxAllocator,

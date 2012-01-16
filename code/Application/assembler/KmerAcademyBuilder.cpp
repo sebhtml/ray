@@ -39,7 +39,6 @@ void KmerAcademyBuilder::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(int*m_mode_send_
 				int rank,
 				StaticVector*m_outbox,
 				StaticVector*m_inbox,
-				bool*m_mode_send_vertices,
 				int wordSize,
 				int size,
 				RingAllocator*m_outboxAllocator,

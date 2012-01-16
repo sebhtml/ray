@@ -36,7 +36,6 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(int*m_mode_send_ver
 				bool*m_reverseComplementVertex,
 				int rank,
 				StaticVector*m_outbox,
-				bool*m_mode_send_vertices,
 				int wordSize,
 				int size,
 				RingAllocator*m_outboxAllocator,

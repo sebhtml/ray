@@ -60,8 +60,6 @@ class Library : public SlaveModeHandler, public MasterModeHandler{
 	int m_rank;
 	StaticVector*m_outbox;
 	StaticVector*m_inbox;
-	int*m_sequence_id;
-	int*m_sequence_idInFile;
 	ExtensionData*m_ed;
 	RingAllocator*m_outboxAllocator;
 	int m_size;
@@ -69,7 +67,6 @@ class Library : public SlaveModeHandler, public MasterModeHandler{
 	int*m_mode;
 	int*m_master_mode;
 	Parameters*m_parameters;
-	int*m_fileId;
 	SeedingData*m_seedingData;
 	int m_libraryIterator;
 	map<int,map<int,int> > m_libraryDistances;
@@ -104,9 +101,9 @@ public:
 	void call_RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES();
 
 	void constructor(int m_rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator,
-	int*m_sequence_id,int*m_sequence_idInFile,ExtensionData*m_ed,int m_size,
+	ExtensionData*m_ed,int m_size,
 TimePrinter*m_timePrinter,int*m_mode,int*m_master_mode,
-Parameters*m_parameters,int*m_fileId,SeedingData*m_seedingData,StaticVector*inbox,VirtualCommunicator*vc
+Parameters*m_parameters,SeedingData*m_seedingData,StaticVector*inbox,VirtualCommunicator*vc
 );
 
 };
