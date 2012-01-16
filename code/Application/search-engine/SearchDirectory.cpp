@@ -232,6 +232,26 @@ void SearchDirectory::getNextKmer(int kmerLength,Kmer*kmer){
 	char sequenceBuffer[400];
 	memcpy(sequenceBuffer,m_currentSequenceBuffer.c_str()+m_currentSequencePosition,kmerLength);
 	sequenceBuffer[kmerLength]='\0';
+
+	// convert bases to upper case
+	for(int i=0;i<kmerLength;i++){
+		char nucleotide=sequenceBuffer[i];
+		switch (nucleotide){
+			case 'a':
+				nucleotide='A';
+				break;
+			case 't':
+				nucleotide='T';
+				break;
+			case 'c':
+				nucleotide='C';
+				break;
+			case 'G':
+				nucleotide='G';
+				break;
+		}
+	}
+
 	*kmer=wordId(sequenceBuffer);
 }
 
