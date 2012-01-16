@@ -317,9 +317,9 @@ void SearchDirectory::loadSomeSequence(){
 	int lines=100;
 	int loaded=0;
 	for(int i=0;i<lines;i++){
-		char line[10000];
+		char line[100000];
 		int position=m_currentFileStream.tellg();
-		m_currentFileStream.getline(line,10000);
+		m_currentFileStream.getline(line,100000);
 
 		// we reached the next sequence
 		// rollback to where we were before
