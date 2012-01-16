@@ -54,7 +54,7 @@ bool ConnectionGraph::isConnected(Rank source,Rank destination){
 void ConnectionGraph::writeFiles(string prefix){
 	// dump the connections in a file
 	ostringstream file;
-	file<<prefix<<"Routing.Connections.txt";
+	file<<prefix<<"Connections.txt";
 	ofstream f(file.str().c_str());
 
 	f<<"#Rank	Count	Connections"<<endl;
@@ -78,7 +78,7 @@ void ConnectionGraph::writeFiles(string prefix){
 
 	// dump the routes in a file
 	ostringstream file2;
-	file2<<prefix<<"Routing.Routes.txt";
+	file2<<prefix<<"Routes.txt";
 	ofstream f2(file2.str().c_str());
 	f2<<"#Source	Destination	Hops	Route"<<endl;
 
@@ -102,7 +102,7 @@ void ConnectionGraph::writeFiles(string prefix){
 
 	// write relay events
 	ostringstream file3;
-	file3<<prefix<<"Routing.RelayEvents.txt";
+	file3<<prefix<<"RelayEvents.txt";
 	ofstream f3(file3.str().c_str());
 	f3<<"#Source	RelayEvents"<<endl;
 
@@ -118,7 +118,7 @@ void ConnectionGraph::writeFiles(string prefix){
 
 	// dump the routes in a file
 	ostringstream file4;
-	file4<<prefix<<"Routing.Summary.txt";
+	file4<<prefix<<"Summary.txt";
 	ofstream f4(file4.str().c_str());
 
 	int numberOfVertices=m_size;

@@ -308,11 +308,18 @@ void Machine::start(){
 		m_timePrinter.setFile(m_parameters.getPrefix());
 	}
 
+	ostringstream routingPrefix;
+	routingPrefix<<m_parameters.getPrefix()<<"/Routing/";
+
 	// options are loaded from here
 	// plus the directory exists now
 	if(m_parameters.hasOption("-route-messages")){
+
+		if(m_parameters.getRank()== MASTER_RANK)
+			createDirectory(routingPrefix.str().c_str());
+
 		m_router->enable(m_inbox,m_outbox,m_outboxAllocator,m_parameters.getRank(),
-			m_parameters.getPrefix(),m_parameters.getSize(),
+			routingPrefix.str(),m_parameters.getSize(),
 			m_parameters.getConnectionType(),m_parameters.getRoutingDegree());
 
 		// update the connections

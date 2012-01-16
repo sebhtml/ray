@@ -237,7 +237,7 @@ void MessageRouter::enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*
 	m_enabled=true;
 
 
-	if(m_rank==0)
+	if(m_rank==MASTER_RANK)
 		m_graph.writeFiles(prefix);
 }
 

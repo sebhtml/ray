@@ -316,6 +316,7 @@ void ComputeCore::processMessages(){
 }
 
 void ComputeCore::sendMessages(){
+	// assert that we did not overflow the ring
 	#ifdef ASSERT
 	if(m_outboxAllocator.getCount() > m_maximumAllocatedOutputBuffers){
 		cout<<"Rank "<<m_rank<<" Error, allocated "<<m_outboxAllocator.getCount()<<" buffers, but maximum is ";
@@ -344,6 +345,7 @@ void ComputeCore::sendMessages(){
 	}
 	#endif
 
+	// route messages if the router is enabled
 	if(m_router.isEnabled()){
 		// if message routing is enabled,
 		// generate routing tags.
@@ -351,7 +353,7 @@ void ComputeCore::sendMessages(){
 	}
 
 	// parameters.showCommunicationEvents() 
-	if(m_outbox.size() > 0 && m_showCommunicationEvents /* && SlaveMode = RAY_SLAVE_MODE_EXTENSION*/){
+	if( m_showCommunicationEvents && m_outbox.size() > 0){
 		uint64_t microseconds=getMicroseconds() - m_startingTimeMicroseconds;
 		for(int i=0;i<(int)m_outbox.size();i++){
 			cout<<"[Communication] "<<microseconds<<" microseconds, SEND ";
@@ -360,6 +362,7 @@ void ComputeCore::sendMessages(){
 		}
 	}
 
+	// finally, send the messages
 	m_messagesHandler.sendMessages(&m_outbox);
 }
 

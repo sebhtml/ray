@@ -39,14 +39,23 @@
 #include <stdint.h>
 
 /** this class is a compute core
+ * to use it, you must set the handlers of your program
+ * using setMessageTagObjectHandler(), setSlaveModeObjectHandler(),
+ * and setMasterModeObjectHandler().
+ *
+ * after that, you simply have to call run()
+ *
  * \author Sébastien Boisvert
  */
 class ComputeCore{
-
+/** the maximum number of messages with a non-NULL buffers in
+ * the outbox */
 	int m_maximumAllocatedOutputBuffers;
 
+/** the maximum number of messages in the outbox */
 	int m_maximumNumberOfOutboxMessages;
-	// always 1
+
+/** the maximum number of inbox messages */
 	int m_maximumNumberOfInboxMessages;
 
 	/** the virtual communicator of the MPI rank */
@@ -63,10 +72,16 @@ class ComputeCore{
 	bool m_profilerVerbose;
 	bool m_runProfiler;
 
+/** the profiler
+ * enabled with -run-profiler
+ */
 	Profiler m_profiler;
 
+/** the switch man */
 	SwitchMan m_switchMan;
 	TickLogger m_tickLogger;
+
+/** the message router */
 	MessageRouter m_router;
 
 	StaticVector m_outbox;
@@ -75,8 +90,13 @@ class ComputeCore{
 	/** middleware to handle messages */
 	MessagesHandler m_messagesHandler;
 
+/** this object handles messages */
 	MessageTagHandler m_messageTagHandler;
+
+/** this object handles master modes */
 	MasterModeHandler m_masterModeHandler;
+
+/* this object handles slave modes */
 	SlaveModeHandler m_slaveModeHandler;
 
 	// allocator for outgoing messages
@@ -85,6 +105,7 @@ class ComputeCore{
 	// allocator for ingoing messages
 	RingAllocator m_inboxAllocator;
 
+/** is the program alive ? */
 	bool m_alive;
 
 	void runVanilla();
@@ -97,12 +118,19 @@ class ComputeCore{
 
 public:
 
+/** add a slave mode handler */
 	void setSlaveModeObjectHandler(SlaveMode mode,SlaveModeHandler*object);
+
+/** add a master mode handler */
 	void setMasterModeObjectHandler(MasterMode mode,MasterModeHandler*object);
+
+/** add a message tag handler */
 	void setMessageTagObjectHandler(MessageTag tag,MessageTagHandler*object);
 
+	/** this is the main method */
 	void run();
 
+	/** get the middleware object */
 	MessagesHandler*getMessagesHandler();
 
 	void constructor(int*argc,char***argv);
