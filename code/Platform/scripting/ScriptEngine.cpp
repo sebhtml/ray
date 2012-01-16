@@ -24,9 +24,6 @@
 #include <scheduling/SwitchMan.h>
 #include <core/slave_modes.h>
 #include <core/master_modes.h>
-#include <core/constants.h>
-#include <structures/Kmer.h>
-#include <core/Machine.h>
 using namespace std;
 
 void ScriptEngine::configureSwitchMan(SwitchMan*switchMan){
@@ -39,7 +36,7 @@ void ScriptEngine::configureSwitchMan(SwitchMan*switchMan){
 	#define ITEM(x) \
 	steps.push_back(x);
 
-	#include <scripting/master_mode_order.txt>
+	#include <master_mode_order.txt>
 
 	#undef ITEM
 
@@ -51,38 +48,16 @@ void ScriptEngine::configureSwitchMan(SwitchMan*switchMan){
 	#define ITEM(mpiTag,slaveMode) \
 	switchMan->addSlaveSwitch(mpiTag,slaveMode);
 	
-	#include <scripting/slave_switches.txt>
+	#include <slave_switches.txt>
 
 	#undef ITEM
 
 	#define ITEM(masterMode,mpiTag) \
 	switchMan->addMasterSwitch(masterMode,mpiTag);
 	
-	#include <scripting/master_switches.txt>
+	#include <master_switches.txt>
 
 	#undef ITEM
 }
 
-void ScriptEngine::configureVirtualCommunicator(VirtualCommunicator*virtualCommunicator){
-	/** configure the virtual communicator. */
-	/* ## concatenates 2 symbols */
 
-	#define ITEM(x,y) \
-	virtualCommunicator->setElementsPerQuery( x, y );
-
-	/* define the number of words for particular message tags */
-
-	#include <scripting/tag_sizes.txt>
-
-	#undef ITEM
-
-	/* set reply-map for other tags too */
-
-	#define ITEM(x,y) \
-	virtualCommunicator->setReplyType(x,y);
-
-	#include <scripting/reply_tags.txt>
-
-	#undef ITEM
-
-}

@@ -20,7 +20,7 @@
 */
 
 #include <memory/RingAllocator.h>
-#include <core/common_functions.h>
+#include <memory/allocator.h>
 #include <assert.h>
 #include <iostream>
 using namespace std;

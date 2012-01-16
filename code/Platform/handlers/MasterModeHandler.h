@@ -48,7 +48,7 @@ public:
 	#define ITEM(x) virtual void call_ ## x();
 
 	/** master mode callback prototypes */
-	#include <scripting/master_modes.txt>
+	#include <master_modes.txt>
 
 	#undef ITEM
 

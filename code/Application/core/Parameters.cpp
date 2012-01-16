@@ -23,20 +23,22 @@
  * TODO: add option -minimumScaffoldLength
  */
 
+#include <core/OperatingSystem.h>
 #include<core/common_functions.h>
-#include<assert.h>
-#include<math.h>
 #include<core/Parameters.h>
+#include <pairs/LibraryPeakFinder.h>
+#include<structures/Read.h>
+#include<assembler/Loader.h>
+#include <memory/MyAllocator.h>
+
 #include<string>
 #include<sstream>
-#include <pairs/LibraryPeakFinder.h>
 #include<iostream>
 #include<vector>
 #include<cstdlib>
 #include<fstream>
-#include<structures/Read.h>
-#include<assembler/Loader.h>
-#include <memory/MyAllocator.h>
+#include<assert.h>
+#include<math.h>
 using namespace std;
 
 void Parameters::getIndexes(int count,vector<int>*out){

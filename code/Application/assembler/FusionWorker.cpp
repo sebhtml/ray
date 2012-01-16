@@ -21,6 +21,8 @@
 
 
 #include <assembler/FusionWorker.h>
+#include <iostream>
+using namespace std;
 
 bool FusionWorker::isDone(){
 	return m_isDone;

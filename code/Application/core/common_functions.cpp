@@ -31,7 +31,7 @@
 #include <iostream>
 #include <string>
 #include <cstring>
-//#include <core/OperatingSystem.h>
+#include <core/OperatingSystem.h>
 #include <sstream>
 
 using namespace std;
@@ -105,10 +105,6 @@ Kmer kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool color){
 	}
 	Kmer error;
 	return error;
-}
-
-int roundNumber(int s,int alignment){
-	return ((s/alignment)+1)*alignment;
 }
 
 uint64_t getPathUniqueId(int rank,int id){
@@ -202,38 +198,4 @@ Kmer wordId(const char*a){
 	return i;
 }
 
-void printTheSeconds(int difference,ostream*stream){
-	int minutes=difference/60;
-	int seconds=difference%60;
-	int hours=minutes/60;
-	minutes=minutes%60;
-	int days=hours/24;
-	hours=hours%24;
 
-	bool printed=false;
-
-	if(days>0){
-		(*stream)<<days<<" days";
-		printed=true;
-	}
-	if(hours>0){
-		if(printed){
-			(*stream)<<", ";
-		}
-		printed=true;
-		(*stream)<<hours<<" hours";
-	}
-	if(minutes>0){
-		if(printed){
-			(*stream)<<", ";
-		}
-		printed=true;
-		(*stream)<<minutes<<" minutes";
-	}
-
-	if(printed){
-		(*stream)<<", ";
-	}
-	(*stream)<<seconds<<" seconds";
-
-}

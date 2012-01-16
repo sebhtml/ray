@@ -92,6 +92,11 @@ class VirtualCommunicator{
 	// flush a message associated to a tag and a destination
 	void flushMessage(int tag,int destination);
 
+
+	int getDestinationFromMessageUniqueId(uint64_t a);
+	int getTagFromMessageUniqueId(uint64_t a);
+	uint64_t getMessageUniqueId(int destination,int tag);
+
 public:
 	/**
  * initiate the object

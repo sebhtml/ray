@@ -23,7 +23,6 @@
 #define _BufferedData
 
 #include <stdint.h>
-#include <core/common_functions.h>
 #include <memory/MyAllocator.h>
 #include <structures/StaticVector.h>
 #include <memory/RingAllocator.h>

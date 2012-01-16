@@ -28,7 +28,7 @@ see <http://www.gnu.org/licenses/>
 #define ITEM(x) #x,
 
 const char* MALLOC_TYPES[]={
-#include <scripting/malloc_types.txt>
+#include <malloc_types.txt>
 };
 
 #undef ITEM

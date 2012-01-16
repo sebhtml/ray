@@ -20,8 +20,10 @@
 */
 
 #include <profiling/Derivative.h>
-#include <core/common_functions.h>
 #include <core/statistics.h>
+#include <core/slave_modes.h>
+#include <core/OperatingSystem.h>
+
 
 Derivative::Derivative(){
 }

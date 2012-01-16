@@ -267,6 +267,13 @@ class Machine{
 	void assignSlaveHandlers();
 
 	void assignMessageTagHandlers();
+
+	void configureVirtualCommunicator(VirtualCommunicator*virtualCommunicator);
+
+	void showRayVersion(MessagesHandler*messagesHandler,bool fullReport);
+
+	void showRayVersionShort();
+
 public:
 	/*
  * this is the only public bit

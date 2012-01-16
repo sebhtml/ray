@@ -21,6 +21,8 @@
 
 
 #include <assembler/JoinerWorker.h>
+#include <iostream>
+using namespace std;
 
 bool JoinerWorker::isDone(){
 	return m_isDone;

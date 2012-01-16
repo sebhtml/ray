@@ -20,6 +20,8 @@
 */
 
 #include <assembler/ReadFetcher.h>
+#include <core/OperatingSystem.h>
+
 #include <assert.h>
 #include <iostream>
 using namespace std;

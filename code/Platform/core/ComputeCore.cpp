@@ -20,8 +20,13 @@
 */
 
 #include <core/ComputeCore.h>
-#include <iostream>
 #include <core/OperatingSystem.h>
+
+#ifdef ASSERT
+#include <assert.h>
+#endif
+
+#include <iostream>
 using namespace std;
 
 void ComputeCore::setSlaveModeObjectHandler(SlaveMode mode,SlaveModeHandler*object){

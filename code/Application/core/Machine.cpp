@@ -128,6 +128,8 @@ m_virtualCommunicator,&m_kmerAcademyBuilder,
 	assignMasterHandlers();
 	assignSlaveHandlers();
 	assignMessageTagHandlers();
+
+	configureVirtualCommunicator(m_virtualCommunicator);
 }
 
 void Machine::start(){
@@ -362,8 +364,7 @@ void Machine::start(){
 	m_fusionData->constructor(getSize(),MAXIMUM_MESSAGE_SIZE_IN_BYTES,getRank(),m_outbox,m_outboxAllocator,m_parameters.getWordSize(),
 		m_ed,m_seedingData,m_switchMan->getSlaveModePointer(),&m_parameters);
 
-	m_scriptEngine.configureVirtualCommunicator(m_virtualCommunicator);
-
+	configureVirtualCommunicator(m_virtualCommunicator);
 
 	m_scriptEngine.configureSwitchMan(m_switchMan);
 
@@ -543,7 +544,7 @@ void Machine::assignMasterHandlers(){
 	#define ITEM(mode) \
 	m_computeCore.setMasterModeObjectHandler(mode,&m_helper);
 
-	#include <scripting/master_modes.txt>
+	#include <master_modes.txt>
 
 	#undef ITEM
 
@@ -566,7 +567,7 @@ void Machine::assignSlaveHandlers(){
 	#define ITEM(mode) \
 	m_computeCore.setSlaveModeObjectHandler(mode, &m_helper);
 
-	#include <scripting/slave_modes.txt>
+	#include <slave_modes.txt>
 
 	#undef ITEM
 
@@ -591,7 +592,227 @@ void Machine::assignMessageTagHandlers(){
 	#define ITEM(tag) \
 	m_computeCore.setMessageTagObjectHandler(tag, &m_mp);
 
-	#include <scripting/mpi_tags.txt>
+	#include <mpi_tags.txt>
 
 	#undef ITEM
 }
+
+void Machine::configureVirtualCommunicator(VirtualCommunicator*virtualCommunicator){
+	/** configure the virtual communicator. */
+	/* ## concatenates 2 symbols */
+
+	#define ITEM(x,y) \
+	virtualCommunicator->setElementsPerQuery( x, y );
+
+	/* define the number of words for particular message tags */
+
+	#include <tag_sizes.txt>
+
+	#undef ITEM
+
+	/* set reply-map for other tags too */
+
+	#define ITEM(x,y) \
+	virtualCommunicator->setReplyType(x,y);
+
+	#include <reply_tags.txt>
+
+	#undef ITEM
+
+}
+
+void Machine::showRayVersionShort(){
+	cout<<"Ray version "<<RAY_VERSION<<endl;
+
+	cout<<"License: GNU General Public License"<<endl;
+
+	cout<<endl;
+	cout<<"MAXKMERLENGTH: "<<MAXKMERLENGTH<<endl;
+	cout<<"KMER_U64_ARRAY_SIZE: "<<KMER_U64_ARRAY_SIZE<<endl;
+	cout<<"MAXIMUM_MESSAGE_SIZE_IN_BYTES: "<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<" bytes"<<endl;
+
+/*
+content
+	cout<<"option"; 
+	#ifdef option
+	cout<<"y";
+	#else
+	cout<<"n";
+	#endif
+	cout<<endl;
+
+list
+ FORCE_PACKING 
+ ASSERT 
+ HAVE_LIBZ 
+ HAVE_LIBBZ2 
+ CONFIG_PROFILER_COLLECT 
+ CONFIG_CLOCK_GETTIME 
+ __linux__ 
+ _MSC_VER 
+ __GNUC__ 
+ RAY_32_BITS 
+ RAY_64_BITS
+
+for i in $(cat list ); do exp="s/option/$i/g"; sed $exp content; done > list2
+*/
+
+	/* generated code */
+
+	cout<<"FORCE_PACKING = ";
+	#ifdef FORCE_PACKING
+	cout<<"y";
+	#else
+	cout<<"n";
+	#endif
+	cout<<endl;
+
+	cout<<"ASSERT = ";
+	#ifdef ASSERT
+	cout<<"y";
+	#else
+	cout<<"n";
+	#endif
+	cout<<endl;
+
+	cout<<"HAVE_LIBZ = ";
+	#ifdef HAVE_LIBZ
+	cout<<"y";
+	#else
+	cout<<"n";
+	#endif
+	cout<<endl;
+
+	cout<<"HAVE_LIBBZ2 = ";
+	#ifdef HAVE_LIBBZ2
+	cout<<"y";
+	#else
+	cout<<"n";
+	#endif
+	cout<<endl;
+
+	cout<<"CONFIG_PROFILER_COLLECT = ";
+	#ifdef CONFIG_PROFILER_COLLECT
+	cout<<"y";
+	#else
+	cout<<"n";
+	#endif
+	cout<<endl;
+
+	cout<<"CONFIG_CLOCK_GETTIME = ";
+	#ifdef CONFIG_CLOCK_GETTIME
+	cout<<"y";
+	#else
+	cout<<"n";
+	#endif
+	cout<<endl;
+
+	cout<<"__linux__ = ";
+	#ifdef __linux__
+	cout<<"y";
+	#else
+	cout<<"n";
+	#endif
+	cout<<endl;
+
+	cout<<"_MSC_VER = ";
+	#ifdef _MSC_VER
+	cout<<"y";
+	#else
+	cout<<"n";
+	#endif
+	cout<<endl;
+
+	cout<<"__GNUC__ = ";
+	#ifdef __GNUC__
+	cout<<"y";
+	#else
+	cout<<"n";
+	#endif
+	cout<<endl;
+
+	cout<<"RAY_32_BITS = ";
+	#ifdef RAY_32_BITS
+	cout<<"y";
+	#else
+	cout<<"n";
+	#endif
+	cout<<endl;
+
+	cout<<"RAY_64_BITS = ";
+	#ifdef RAY_64_BITS
+	cout<<"y";
+	#else
+	cout<<"n";
+	#endif
+	cout<<endl;
+
+}
+
+void Machine::showRayVersion(MessagesHandler*messagesHandler,bool fullReport){
+	showRayVersionShort();
+
+	cout<<endl;
+	cout<<"Rank "<<MASTER_RANK<<": Operating System: ";
+	cout<<getOperatingSystem()<<endl;
+
+
+	cout<<"Message-passing interface"<<endl;
+	cout<<endl;
+	cout<<"Rank "<<MASTER_RANK<<": Message-Passing Interface implementation: ";
+	cout<<messagesHandler->getMessagePassingInterfaceImplementation()<<endl;
+
+	int version;
+	int subversion;
+	messagesHandler->version(&version,&subversion);
+
+	cout<<"Rank "<<MASTER_RANK<<": Message-Passing Interface standard version: "<<version<<"."<<subversion<<""<<endl;
+
+
+	cout<<endl;
+
+	#define SHOW_SIZEOF
+
+	if(!fullReport)
+		return;
+
+	cout<<endl;
+
+	cout<<"Number of MPI ranks: "<<messagesHandler->getSize()<<endl;
+	cout<<"Ray master MPI rank: "<<MASTER_RANK<<endl;
+	cout<<"Ray slave MPI ranks: 0-"<<messagesHandler->getSize()-1<<endl;
+	cout<<endl;
+
+
+	#ifdef SHOW_ITEMS
+	int count=0;
+	#define ITEM(x) count++;
+	#include <core/master_mode_macros.h>
+	#undef ITEM
+	cout<<"Ray master modes ( "<<count<<" )"<<endl;
+	#define ITEM(x) printf(" %i %s\n",x,#x);fflush(stdout);
+	#include <core/master_mode_macros.h>
+	#undef ITEM
+	cout<<endl;
+	count=0;
+	#define ITEM(x) count++;
+	#include <core/slave_mode_macros.h>
+	#undef ITEM
+	cout<<"Ray slave modes ( "<<count<<" )"<<endl;
+	#define ITEM(x) printf(" %i %s\n",x,#x);fflush(stdout);
+	#include <core/slave_mode_macros.h>
+	#undef ITEM
+	cout<<endl;
+	count=0;
+	#define ITEM(x) count++;
+	#include <communication/mpi_tag_macros.h>
+	#undef ITEM
+	cout<<"Ray MPI tags ( "<<count<<" )"<<endl;
+	#define ITEM(x) printf(" %i %s\n",x,#x);fflush(stdout);
+	#include <communication/mpi_tag_macros.h>
+	#undef ITEM
+	#endif
+	cout<<endl;
+}
+
+

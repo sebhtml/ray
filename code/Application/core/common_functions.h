@@ -61,8 +61,6 @@ string convertToString(vector<Kmer>*b,int m_wordSize,bool color);
 
 Kmer kmerAtPosition(const char*string,int pos,int w,char strand,bool color);
 
-int roundNumber(int number,int alignment);
-
 uint64_t getPathUniqueId(int rank,int id);
 int getIdFromPathUniqueId(uint64_t a);
 int getRankFromPathUniqueId(uint64_t a);
@@ -76,9 +74,6 @@ char complementNucleotide(char c);
  *  complement the sequence of a biological thing
  */
 string reverseComplement(string*a);
-
-
-void printTheSeconds(int seconds,ostream*stream);
 
 
 #endif

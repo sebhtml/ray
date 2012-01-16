@@ -21,8 +21,7 @@
 #include <scheduling/SwitchMan.h>
 #include <assert.h>
 #include <vector>
-#include <core/constants.h>
-#include <iostream>
+#include <core/OperatingSystem.h>
 #include <iostream>
 using namespace std;
 

@@ -30,7 +30,7 @@
 #define ITEM(tag) \
 void MessageTagHandler::call_ ## tag(Message*message){}
 
-#include <scripting/mpi_tags.txt>
+#include <mpi_tags.txt>
 
 #undef ITEM
 
@@ -62,7 +62,7 @@ MessageTagHandler::MessageTagHandler(){
 	setMethodHandler(tag, & MessageTagHandler::call_ ## tag); \
 	setObjectHandler(tag, this);
 
-	#include <scripting/mpi_tags.txt>
+	#include <mpi_tags.txt>
 
 	#undef ITEM
 }

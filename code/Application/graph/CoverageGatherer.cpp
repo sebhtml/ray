@@ -20,6 +20,7 @@
 */
 
 #include <graph/CoverageGatherer.h>
+#include <core/OperatingSystem.h>
 #ifdef ASSERT
 #include <assert.h>
 #endif

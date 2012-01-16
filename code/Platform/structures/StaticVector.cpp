@@ -19,11 +19,9 @@
 
 */
 
-#include <core/constants.h>
 #include<structures/StaticVector.h>
 #include<assert.h>
-#include <core/common_functions.h>
-
+#include <memory/allocator.h>
 
 
 void StaticVector::constructor(int size,int type,bool show){

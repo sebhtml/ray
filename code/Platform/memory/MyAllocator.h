@@ -82,5 +82,7 @@ public:
 	void free(void*a,int b);
 };
 
+int roundNumber(int number,int alignment);
+
 
 #endif

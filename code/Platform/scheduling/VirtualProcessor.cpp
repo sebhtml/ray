@@ -19,6 +19,9 @@
 */
 
 #include <scheduling/VirtualProcessor.h>
+
+#include <iostream>
+using namespace std;
 #ifdef ASSERT
 #include <assert.h>
 #endif

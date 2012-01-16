@@ -19,12 +19,13 @@
 
 */
 
-#include <core/constants.h>
 #include <communication/MessagesHandler.h>
-#include <core/common_functions.h>
+#include <memory/allocator.h>
+#include <memory/malloc_types.h>
+#include <core/OperatingSystem.h>
+
 #include <fstream>
 #include <assert.h>
-#include <memory/malloc_types.h>
 #include <iostream>
 #include <sstream>
 #include <string.h>

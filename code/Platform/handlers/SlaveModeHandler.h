@@ -48,7 +48,7 @@ public:
 	#define ITEM(x) virtual void call_ ## x();
 
 	/** slave mode callback prototypes */
-	#include <scripting/slave_modes.txt>
+	#include <slave_modes.txt>
 
 	#undef ITEM
 

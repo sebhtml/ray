@@ -48,7 +48,7 @@ public:
 	#define ITEM(x) virtual void call_ ## x(Message*message);
 
 	/** message tag prototypes */
-	#include <scripting/mpi_tags.txt>
+	#include <mpi_tags.txt>
 
 	#undef ITEM
 

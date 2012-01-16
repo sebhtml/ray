@@ -29,7 +29,7 @@
 #define ITEM(mode) \
 void SlaveModeHandler::call_ ## mode (){}
 
-#include <scripting/slave_modes.txt>
+#include <slave_modes.txt>
 
 #undef ITEM
 
@@ -62,7 +62,7 @@ SlaveModeHandler::SlaveModeHandler(){
 	setMethodHandler(mode, &SlaveModeHandler::call_ ## mode ); \
 	setObjectHandler(mode, this ); 
 
-	#include <scripting/slave_modes.txt>
+	#include <slave_modes.txt>
 
 	#undef ITEM
 

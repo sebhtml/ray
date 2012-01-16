@@ -20,6 +20,10 @@
 
 #include <scheduling/TaskCreator.h>
 
+#ifdef ASSERT
+#include <assert.h>
+#endif
+
 /* #define DEBUG_TASK_CREATOR */
 
 /** the main loop for a task creator */

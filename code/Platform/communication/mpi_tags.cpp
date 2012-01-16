@@ -27,7 +27,7 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 #define ITEM(element) #element,
 
 const char* MESSAGES[]={
-#include <scripting/mpi_tags.txt>
+#include <mpi_tags.txt>
 "RAY_MPI_TAG_DUMMY"
 };
 

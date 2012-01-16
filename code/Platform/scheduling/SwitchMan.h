@@ -73,7 +73,7 @@ public:
 /** returns true if all ranks finished their current slave mode */
 	bool allRanksAreReady();
 
-/** according to scripting/master_mode_order.txt, returns
+/** according to master_mode_order.txt, returns
  * the next master mode to set */
 	MasterMode getNextMasterMode(MasterMode currentMode);
 

@@ -23,6 +23,7 @@
 #include <communication/BufferedData.h>
 #include <memory/RingAllocator.h>
 #include <stdio.h>
+#include <memory/allocator.h>
 #include <stdlib.h>
 #include <structures/StaticVector.h>
 #include <iostream>

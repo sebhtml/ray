@@ -19,6 +19,7 @@
 
 */
 
+#include <core/OperatingSystem.h>
 #include <iostream>
 #include <assembler/ReadFetcher.h>
 #include <scaffolder/Scaffolder.h>

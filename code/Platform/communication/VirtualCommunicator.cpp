@@ -20,11 +20,12 @@
 
 /* #define DEBUG_VIRTUAL_COMMUNICATOR */
 
-#include <core/constants.h>
-#include <assert.h>
 #include <communication/VirtualCommunicator.h>
-#include <core/common_functions.h>
+#include <core/OperatingSystem.h>
+
+#include <assert.h>
 #include <iostream>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 using namespace std;
@@ -123,7 +124,7 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 	/**  generate   a group key for the message 
  * 	this is used for priority calculation
  * 	*/
-	uint64_t elementId=getPathUniqueId(destination,tag);
+	uint64_t elementId=getMessageUniqueId(destination,tag);
 	int oldPriority=0;
 	/* delete old priority */
 	if(m_messageContent.count(tag)>0&&m_messageContent[tag].count(destination)>0){
@@ -172,7 +173,7 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 		cout<<"Fatal: too much bits, tag= "<<MESSAGES[tag]<<" Threshold= "<<threshold<<" pushed messages; Actual= "<<currentSize<<" pushed messages; Period= "<<period<<" uint64_t/message; Count= "<<count<<" Priority= "<<newPriority<<" Destination: "<<destination<<endl;
 		cout<<"This usually means that you did not use the VirtualCommunicator API correctly."<<endl;
 		cout<<"Be careful not to push too many messages if the VirtualCommunicator is not ready."<<endl;
-		cout<<"IMPORTANT: did you add entries in  scripting/reply_tags.txt and scripting/tag_sizes.txt ?"<<endl;
+		cout<<"IMPORTANT: did you add entries in  reply_tags.txt and tag_sizes.txt ?"<<endl;
 	}
 	assert(currentSize<=threshold);
 	#endif
@@ -196,7 +197,7 @@ void VirtualCommunicator::flushMessage(int tag,int destination){
 
 	// find the priority and erase it
 	int priority=m_messageContent[tag][destination].size();
-	uint64_t elementId=getPathUniqueId(destination,tag);
+	uint64_t elementId=getMessageUniqueId(destination,tag);
 	m_priorityQueue[priority].erase(elementId);
 	if(m_priorityQueue[priority].size()==0){
 		m_priorityQueue.erase(priority);
@@ -394,8 +395,8 @@ void VirtualCommunicator::forceFlush(){
 	#endif
 
 	uint64_t elementId=*(m_priorityQueue.rbegin()->second.begin());
-	int selectedDestination=getRankFromPathUniqueId(elementId);
-	int selectedTag=getIdFromPathUniqueId(elementId);
+	int selectedDestination=getDestinationFromMessageUniqueId(elementId);
+	int selectedTag=getTagFromMessageUniqueId(elementId);
 
 	#ifdef ASSERT
 	assert(m_messageContent.count(selectedTag)>0&&m_messageContent[selectedTag].count(selectedDestination)>0);
@@ -415,8 +416,8 @@ bool VirtualCommunicator::nextIsAlmostFull(){
 	}
 	
 	uint64_t elementId=*(m_priorityQueue.rbegin()->second.begin());
-	int selectedDestination=getRankFromPathUniqueId(elementId);
-	int selectedTag=getIdFromPathUniqueId(elementId);
+	int selectedDestination=getDestinationFromMessageUniqueId(elementId);
+	int selectedTag=getTagFromMessageUniqueId(elementId);
 	
 	int period=m_elementSizes[selectedTag];
 	int currentSize=m_messageContent[selectedTag][selectedDestination].size();
@@ -438,4 +439,20 @@ void VirtualCommunicator::printStatistics(){
 void VirtualCommunicator::setDebug(){
 	m_debug=true;
 }
+
+uint64_t VirtualCommunicator::getMessageUniqueId(int destination ,int tag){
+	uint64_t a=tag;
+	a=a*MAX_NUMBER_OF_MPI_PROCESSES+destination;
+	return a;
+}
+
+int VirtualCommunicator::getTagFromMessageUniqueId(uint64_t a){
+	return a/MAX_NUMBER_OF_MPI_PROCESSES;
+}
+
+int VirtualCommunicator::getDestinationFromMessageUniqueId(uint64_t a){
+	int rank=a%MAX_NUMBER_OF_MPI_PROCESSES;
+	return rank;
+}
+
 

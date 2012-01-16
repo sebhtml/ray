@@ -19,9 +19,10 @@
 
 */
 
-#include <stdio.h>
-#include <core/common_functions.h>
 #include <profiling/TimePrinter.h>
+#include <core/OperatingSystem.h>
+
+#include <stdio.h>
 #include <iostream>
 #include <sstream>
 using namespace std;

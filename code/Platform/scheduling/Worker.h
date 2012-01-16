@@ -22,7 +22,6 @@
 #define _Worker_h
 
 #include <stdint.h>
-#include <core/Parameters.h>
 #include <memory/RingAllocator.h>
 #include <communication/VirtualCommunicator.h>
 

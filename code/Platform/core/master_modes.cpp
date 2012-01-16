@@ -24,7 +24,7 @@
 #define ITEM(x) #x,
 
 const char* MASTER_MODES[]={
-#include <scripting/master_modes.txt>
+#include <master_modes.txt>
 "RAY_MASTER_MODE_DUMMY"
 };
 

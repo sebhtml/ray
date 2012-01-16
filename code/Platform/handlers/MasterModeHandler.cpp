@@ -30,7 +30,7 @@
 #define ITEM(mode) \
 void MasterModeHandler::call_ ## mode (){}
 
-#include <scripting/master_modes.txt>
+#include <master_modes.txt>
 
 #undef ITEM
 
@@ -64,7 +64,7 @@ MasterModeHandler::MasterModeHandler(){
 	setMethodHandler(mode, &MasterModeHandler::call_ ## mode); \
 	setObjectHandler(mode, this) ;
 
-	#include <scripting/master_modes.txt>
+	#include <master_modes.txt>
 
 	#undef ITEM
 }

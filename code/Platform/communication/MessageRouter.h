@@ -25,11 +25,11 @@
 #include <memory/RingAllocator.h>
 #include <structures/StaticVector.h>
 #include <communication/Message.h>
-#include <map>
-#include <core/constants.h>
-#include <vector>
 #include <routing/ConnectionGraph.h>
+
 #include <string>
+#include <map>
+#include <vector>
 using namespace std;
 
 /**

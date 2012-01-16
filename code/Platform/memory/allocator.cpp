@@ -25,7 +25,8 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <core/constants.h>
+#include <core/OperatingSystem.h>
+//#include <core/constants.h>
 using namespace std;
 
 /**

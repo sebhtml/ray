@@ -25,7 +25,7 @@
 #include <mpi.h>
 #include <memory/MyAllocator.h>
 #include <communication/Message.h>
-#include <core/common_functions.h>
+//#include <core/common_functions.h>
 #include <memory/RingAllocator.h>
 #include <structures/StaticVector.h>
 #include <vector>

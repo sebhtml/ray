@@ -28,7 +28,7 @@ extern const char* MALLOC_TYPES[];
 #define ITEM(x) x,
 
 enum{
-#include <scripting/malloc_types.txt>
+#include <malloc_types.txt>
 RAY_MALLOC_TYPE_DUMMY
 };
 

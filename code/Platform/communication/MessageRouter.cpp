@@ -31,7 +31,7 @@
 #include <communication/MessageRouter.h>
 #include <string.h> /* for memcpy */
 #include <assert.h>
-#include <core/common_functions.h>
+#include <core/OperatingSystem.h>
 using namespace std;
 
 /*

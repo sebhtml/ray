@@ -22,9 +22,36 @@
 #ifndef _OperatingSystem_h
 #define _OperatingSystem_h
 
+/* EXIT_SUCCESS 0 (defined in stdlib.h) */
+#define EXIT_NEEDS_ARGUMENTS 5
+#define EXIT_NO_MORE_MEMORY 42
+
+/*
+ Open-MPI eager threshold is 4k (4096), and this include Open-MPI's metadata.
+ tests show that 4096-100 bytes are sent eagerly, too.
+ divide that by eight and you get the number of 64-bit integers 
+ allowed in a single eager communication
+
+ * "4096 is rendezvous. For eager, try 4000 or lower. "
+ *  --Eugene Loh  (Oracle)
+ *  http://www.open-mpi.org/community/lists/devel/2010/11/8700.php
+ *
+ */
+
+#define MAXIMUM_MESSAGE_SIZE_IN_BYTES 4000
+
+#define MASTER_RANK 0
+
+/* the maximum of processes is utilized to construct unique hyperfusions IDs */
+// with routing enabled, MAX_NUMBER_OF_MPI_PROCESSES is 4096
+#define MAX_NUMBER_OF_MPI_PROCESSES 1000000
+#define INVALID_RANK MAX_NUMBER_OF_MPI_PROCESSES
+
+
+
 /** only this file knows the operating system */
 #include <string>
-#include <core/constants.h> 
+//#include <core/constants.h> 
 #include <communication/MessagesHandler.h>
 using namespace std;
 
@@ -53,8 +80,8 @@ void createDirectory(const char*directory);
 
 bool fileExists(const char*file);
 
-void showRayVersion(MessagesHandler*messagesHandler,bool fullReport);
+void printTheSeconds(int seconds,ostream*stream);
 
-void showRayVersionShort();
+
 
 #endif

@@ -24,12 +24,6 @@
 #include <string>
 #include <fstream>
 #include <assert.h>
-#include <structures/Kmer.h>
-#include <structures/Vertex.h>
-#include <structures/Direction.h>
-#include <structures/PairedRead.h>
-#include <structures/Read.h>
-
 using namespace std;
 
 /*
@@ -275,218 +269,44 @@ bool fileExists(const char*file){
 	#endif
 }
 
-void showRayVersionShort(){
-	cout<<"Ray version "<<RAY_VERSION<<endl;
-
-	cout<<"License: GNU General Public License"<<endl;
-
-	cout<<endl;
-	cout<<"MAXKMERLENGTH: "<<MAXKMERLENGTH<<endl;
-	cout<<"KMER_U64_ARRAY_SIZE: "<<KMER_U64_ARRAY_SIZE<<endl;
-	cout<<"MAXIMUM_MESSAGE_SIZE_IN_BYTES: "<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<" bytes"<<endl;
-
-/*
-content
-	cout<<"option"; 
-	#ifdef option
-	cout<<"y";
-	#else
-	cout<<"n";
-	#endif
-	cout<<endl;
-
-list
- FORCE_PACKING 
- ASSERT 
- HAVE_LIBZ 
- HAVE_LIBBZ2 
- CONFIG_PROFILER_COLLECT 
- CONFIG_CLOCK_GETTIME 
- __linux__ 
- _MSC_VER 
- __GNUC__ 
- RAY_32_BITS 
- RAY_64_BITS
-
-for i in $(cat list ); do exp="s/option/$i/g"; sed $exp content; done > list2
-*/
-
-	/* generated code */
-
-	cout<<"FORCE_PACKING = ";
-	#ifdef FORCE_PACKING
-	cout<<"y";
-	#else
-	cout<<"n";
-	#endif
-	cout<<endl;
-
-	cout<<"ASSERT = ";
-	#ifdef ASSERT
-	cout<<"y";
-	#else
-	cout<<"n";
-	#endif
-	cout<<endl;
-
-	cout<<"HAVE_LIBZ = ";
-	#ifdef HAVE_LIBZ
-	cout<<"y";
-	#else
-	cout<<"n";
-	#endif
-	cout<<endl;
-
-	cout<<"HAVE_LIBBZ2 = ";
-	#ifdef HAVE_LIBBZ2
-	cout<<"y";
-	#else
-	cout<<"n";
-	#endif
-	cout<<endl;
-
-	cout<<"CONFIG_PROFILER_COLLECT = ";
-	#ifdef CONFIG_PROFILER_COLLECT
-	cout<<"y";
-	#else
-	cout<<"n";
-	#endif
-	cout<<endl;
-
-	cout<<"CONFIG_CLOCK_GETTIME = ";
-	#ifdef CONFIG_CLOCK_GETTIME
-	cout<<"y";
-	#else
-	cout<<"n";
-	#endif
-	cout<<endl;
-
-	cout<<"__linux__ = ";
-	#ifdef __linux__
-	cout<<"y";
-	#else
-	cout<<"n";
-	#endif
-	cout<<endl;
-
-	cout<<"_MSC_VER = ";
-	#ifdef _MSC_VER
-	cout<<"y";
-	#else
-	cout<<"n";
-	#endif
-	cout<<endl;
-
-	cout<<"__GNUC__ = ";
-	#ifdef __GNUC__
-	cout<<"y";
-	#else
-	cout<<"n";
-	#endif
-	cout<<endl;
-
-	cout<<"RAY_32_BITS = ";
-	#ifdef RAY_32_BITS
-	cout<<"y";
-	#else
-	cout<<"n";
-	#endif
-	cout<<endl;
-
-	cout<<"RAY_64_BITS = ";
-	#ifdef RAY_64_BITS
-	cout<<"y";
-	#else
-	cout<<"n";
-	#endif
-	cout<<endl;
-
-}
-
-void showRayVersion(MessagesHandler*messagesHandler,bool fullReport){
-	showRayVersionShort();
-
-	cout<<endl;
-	cout<<"Rank "<<MASTER_RANK<<": Operating System: ";
-	cout<<getOperatingSystem()<<endl;
-
-
-	cout<<"Message-passing interface"<<endl;
-	cout<<endl;
-	cout<<"Rank "<<MASTER_RANK<<": Message-Passing Interface implementation: ";
-	cout<<messagesHandler->getMessagePassingInterfaceImplementation()<<endl;
-
-	int version;
-	int subversion;
-	messagesHandler->version(&version,&subversion);
-
-	cout<<"Rank "<<MASTER_RANK<<": Message-Passing Interface standard version: "<<version<<"."<<subversion<<""<<endl;
-
-
-	cout<<endl;
-
-	#define SHOW_SIZEOF
-
-	if(!fullReport)
-		return;
-
-	#ifdef SHOW_SIZEOF
-	cout<<"Size of structures"<<endl;
-	cout<<endl;
-	cout<<"KMER_BYTES "<<KMER_BYTES<<endl;
-	cout<<"KMER_UINT64_T "<<KMER_UINT64_T<<endl;
-	cout<<"KMER_UINT64_T_MODULO "<<KMER_UINT64_T_MODULO<<endl;
-
-	cout<<" sizeof(Vertex)="<<sizeof(Vertex)<<endl;
-	cout<<" sizeof(Direction)="<<sizeof(Direction)<<endl;
-	cout<<" sizeof(ReadAnnotation)="<<sizeof(ReadAnnotation)<<endl;
-	cout<<" sizeof(Read)="<<sizeof(Read)<<endl;
-	cout<<" sizeof(PairedRead)="<<sizeof(PairedRead)<<endl;
-	#endif
-
-	cout<<endl;
-
-	cout<<"Number of MPI ranks: "<<messagesHandler->getSize()<<endl;
-	cout<<"Ray master MPI rank: "<<MASTER_RANK<<endl;
-	cout<<"Ray slave MPI ranks: 0-"<<messagesHandler->getSize()-1<<endl;
-	cout<<endl;
-
-
-	#ifdef SHOW_ITEMS
-	int count=0;
-	#define ITEM(x) count++;
-	#include <core/master_mode_macros.h>
-	#undef ITEM
-	cout<<"Ray master modes ( "<<count<<" )"<<endl;
-	#define ITEM(x) printf(" %i %s\n",x,#x);fflush(stdout);
-	#include <core/master_mode_macros.h>
-	#undef ITEM
-	cout<<endl;
-	count=0;
-	#define ITEM(x) count++;
-	#include <core/slave_mode_macros.h>
-	#undef ITEM
-	cout<<"Ray slave modes ( "<<count<<" )"<<endl;
-	#define ITEM(x) printf(" %i %s\n",x,#x);fflush(stdout);
-	#include <core/slave_mode_macros.h>
-	#undef ITEM
-	cout<<endl;
-	count=0;
-	#define ITEM(x) count++;
-	#include <communication/mpi_tag_macros.h>
-	#undef ITEM
-	cout<<"Ray MPI tags ( "<<count<<" )"<<endl;
-	#define ITEM(x) printf(" %i %s\n",x,#x);fflush(stdout);
-	#include <communication/mpi_tag_macros.h>
-	#undef ITEM
-	#endif
-	cout<<endl;
-}
-
 void showMemoryUsage(int rank){
 	uint64_t count=getMemoryUsageInKiBytes();
 	cout<<"Rank "<<rank<<": assembler memory usage: "<<count<<" KiB"<<endl;
 	cout.flush();
 }
 
+void printTheSeconds(int difference,ostream*stream){
+	int minutes=difference/60;
+	int seconds=difference%60;
+	int hours=minutes/60;
+	minutes=minutes%60;
+	int days=hours/24;
+	hours=hours%24;
 
+	bool printed=false;
+
+	if(days>0){
+		(*stream)<<days<<" days";
+		printed=true;
+	}
+	if(hours>0){
+		if(printed){
+			(*stream)<<", ";
+		}
+		printed=true;
+		(*stream)<<hours<<" hours";
+	}
+	if(minutes>0){
+		if(printed){
+			(*stream)<<", ";
+		}
+		printed=true;
+		(*stream)<<minutes<<" minutes";
+	}
+
+	if(printed){
+		(*stream)<<", ";
+	}
+	(*stream)<<seconds<<" seconds";
+
+}

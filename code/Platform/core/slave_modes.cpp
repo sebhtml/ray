@@ -24,7 +24,7 @@
 #define ITEM(x) #x,
 
 const char* SLAVE_MODES[]={
-#include <scripting/slave_modes.txt>
+#include <slave_modes.txt>
 "RAY_SLAVE_MODE_DUMMY"
 };
 

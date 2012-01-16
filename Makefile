@@ -63,7 +63,7 @@ ASSERT = n
 
 # collect profiling information with -run-profiler
 # if set to n, the code is not even compiled in
-CONFIG_PROFILER_COLLECT=y
+CONFIG_PROFILER_COLLECT=n
 
 # use the precision clock
 # needs -l rt too
@@ -95,7 +95,7 @@ MPICXX-y = mpicxx
 
 # mpic++ from an MPI implementation must be reachable with the PATH
 # tested implementations of MPI include Open-MPI and MPICH2
-CXXFLAGS = -I code/Application -I code/Platform
+CXXFLAGS = 
 
 # optimization
 CXXFLAGS-$(OPTIMIZE) += -O3
@@ -103,7 +103,7 @@ CXXFLAGS-$(OPTIMIZE) += -O3
 ifeq ($(INTEL_COMPILER),n)
 # g++ options
 ifeq ($(uname_S),Linux)
-	CXXFLAGS +=  -Wall -ansi  #-std=c++98
+	CXXFLAGS += -Wall -ansi  #-std=c++98
 	CXXFLAGS-$(PEDANTIC) += -pedantic -Wextra 
 endif
 endif
@@ -140,7 +140,7 @@ CXXFLAGS-$(FORCE_PACKING) += -DFORCE_PACKING
 CXXFLAGS-$(CONFIG_PROFILER_COLLECT) += -D CONFIG_PROFILER_COLLECT
 CXXFLAGS-$(CONFIG_CLOCK_GETTIME) += -D CONFIG_CLOCK_GETTIME
 LDFLAGS-$(CONFIG_CLOCK_GETTIME) += -l rt
-CXXFLAGS-y += -D RAY_VERSION=\"$(RAY_VERSION)\"
+CXXFLAGS-y += -D RAY_VERSION=\\\"$(RAY_VERSION)\\\"
 
 CXXFLAGS += $(CXXFLAGS-y)
 LDFLAGS += $(LDFLAGS-y)
@@ -151,149 +151,12 @@ TARGETS=Ray
 
 # object files
 
-######## <Platform>
-
-#memory
-obj-y += code/Platform/memory/ReusableMemoryStore.o code/Platform/memory/MyAllocator.o code/Platform/memory/RingAllocator.o \
-code/Platform/memory/malloc_types.o 
-obj-y += code/Platform/memory/allocator.o
-obj-y += code/Platform/memory/DefragmentationGroup.o code/Platform/memory/ChunkAllocatorWithDefragmentation.o code/Platform/memory/DefragmentationLane.o
-
-# routing stuff for option -route-messages
-#
-obj-y += code/Platform/routing/GraphImplementation.o
-obj-y += code/Platform/routing/GraphImplementationRandom.o
-obj-y += code/Platform/routing/GraphImplementationComplete.o
-obj-y += code/Platform/routing/GraphImplementationDeBruijn.o
-obj-y += code/Platform/routing/GraphImplementationKautz.o
-obj-y += code/Platform/routing/GraphImplementationExperimental.o
-obj-y += code/Platform/routing/GraphImplementationGroup.o
-obj-y += code/Platform/routing/ConnectionGraph.o
-
-#communication
-obj-y += code/Platform/communication/mpi_tags.o code/Platform/communication/VirtualCommunicator.o code/Platform/communication/BufferedData.o \
-code/Platform/communication/Message.o  code/Platform/communication/MessagesHandler.o
-obj-y += code/Platform/communication/MessageRouter.o
-
-# scheduling stuff
-obj-y += code/Platform/scheduling/VirtualProcessor.o
-obj-y += code/Platform/scheduling/TaskCreator.o
-obj-y += code/Platform/scheduling/SwitchMan.o
-obj-y += code/Platform/scripting/ScriptEngine.o
-
-#core
-obj-y += code/Platform/core/slave_modes.o 
-obj-y += code/Platform/core/OperatingSystem.o
-obj-y += code/Platform/core/master_modes.o
-obj-y += code/Platform/core/ComputeCore.o
-
-obj-y +=  code/Platform/structures/BloomFilter.o
-obj-y += code/Platform/structures/StaticVector.o 
-
-obj-y += code/Platform/profiling/Profiler.o
-obj-y += code/Platform/profiling/Derivative.o
-obj-y += code/Platform/profiling/TickLogger.o
-obj-y += code/Platform/profiling/TimePrinter.o
-
-# handlers
-
-obj-y += code/Platform/handlers/SlaveModeHandler.o
-obj-y += code/Platform/handlers/MasterModeHandler.o
-obj-y += code/Platform/handlers/MessageTagHandler.o
-
-
-
-######## </Platform>
-
-
-######## <Application>
-
-# communication
-obj-y += code/Application/communication/NetworkTest.o
-obj-y += code/Application/communication/MessageProcessor.o
-
-# search engine
-obj-y += code/Application/search-engine/Searcher.o
-obj-y += code/Application/search-engine/SearchDirectory.o
-obj-y += code/Application/search-engine/ContigSearchEntry.o
-
-#formats
-obj-y += code/Application/format/ColorSpaceDecoder.o code/Application/format/ColorSpaceLoader.o code/Application/format/FastaLoader.o \
-code/Application/format/FastqLoader.o code/Application/format/SffLoader.o \
-code/Application/format/Amos.o
-
-#core
-
-obj-y += code/Application/core/Machine.o 
-obj-y += code/Application/core/MachineHelper.o
-obj-y += code/Application/core/Parameters.o code/Application/core/common_functions.o
-obj-y += code/Application/core/statistics.o
-
-#compression
-
-obj-$(HAVE_LIBBZ2) += code/Application/compression/BzReader.o  
-
-#cryptography
-obj-y += code/Application/cryptography/crypto.o
-obj-$(HAVE_LIBBZ2) += code/Application/format/FastqBz2Loader.o 
-obj-$(HAVE_LIBZ) += code/Application/format/FastqGzLoader.o 
-
-#graph
-obj-y += code/Application/graph/GridTable.o code/Application/graph/GridTableIterator.o code/Application/graph/CoverageDistribution.o 
-obj-y += code/Application/graph/CoverageGatherer.o code/Application/graph/KmerAcademy.o code/Application/graph/KmerAcademyIterator.o
-
-#structures
-obj-y += code/Application/structures/Kmer.o \
-code/Application/structures/ArrayOfReads.o  code/Application/structures/Direction.o \
- code/Application/structures/PairedRead.o code/Application/structures/ReadAnnotation.o code/Application/structures/Read.o  \
-code/Application/structures/Vertex.o
-obj-y += code/Application/structures/AssemblySeed.o
-
-#scaffolder
-obj-y += code/Application/scaffolder/Scaffolder.o 
-obj-y += code/Application/scaffolder/ScaffoldingLink.o
-obj-y += code/Application/scaffolder/SummarizedLink.o
-obj-y += code/Application/scaffolder/ScaffoldingAlgorithm.o
-obj-y += code/Application/scaffolder/ScaffoldingVertex.o
-obj-y += code/Application/scaffolder/ScaffoldingEdge.o
-
-obj-y += code/Application/pairs/LibraryPeakFinder.o
-
-#assembler
-obj-y += code/Application/assembler/VertexMessenger.o \
-code/Application/assembler/ReadFetcher.o code/Application/assembler/LibraryWorker.o code/Application/assembler/IndexerWorker.o  \
-code/Application/assembler/SeedWorker.o code/Application/assembler/ExtensionElement.o \
-code/Application/assembler/DepthFirstSearchData.o code/Application/assembler/SeedingData.o \
-code/Application/assembler/FusionData.o code/Application/assembler/Library.o code/Application/assembler/Loader.o \
-code/Application/assembler/SeedExtender.o code/Application/assembler/SequencesIndexer.o \
-code/Application/assembler/SequencesLoader.o \
- code/Application/assembler/VerticesExtractor.o \
-code/Application/assembler/ray_main.o code/Application/assembler/ExtensionData.o 
-obj-y += code/Application/assembler/KmerAcademyBuilder.o
-obj-y += code/Application/assembler/EdgePurger.o code/Application/assembler/EdgePurgerWorker.o
-obj-y += code/Application/assembler/Partitioner.o
-obj-y += code/Application/assembler/FusionWorker.o 
-obj-y += code/Application/assembler/FusionTaskCreator.o
-obj-y += code/Application/assembler/JoinerWorker.o 
-obj-y += code/Application/assembler/JoinerTaskCreator.o
-
-# heuristics
-obj-y += code/Application/heuristics/BubbleTool.o code/Application/heuristics/Chooser.o code/Application/heuristics/OpenAssemblerChooser.o \
- code/Application/heuristics/TipWatchdog.o code/Application/heuristics/NovaEngine.o
-
-
-######## </Application>
-
 #################################
 
-# inference rule
-#@echo "  MPICXX" $<
-%.o: %.cpp
-	@$(MPICXX) -c -o $@ $<  $(CXXFLAGS)
-	@echo MPICXX $<
 
 # the target is Ray
 all: $(TARGETS)
+
 
 showOptions: 
 	@echo ""
@@ -319,14 +182,26 @@ showOptions:
 	@touch showOptions
 	
 # how to make Ray
-Ray: showOptions $(obj-y)
-	@$(MPICXX) $(LDFLAGS) $(obj-y) -o $@
-	@echo MPICXX $@
+Ray: showOptions code/Platform/libRayPlatform.a code/Application/libRayApplication.a
+	$(MPICXX) $(LDFLAGS)  code/Application/libRayApplication.a code/Platform/libRayPlatform.a -o $@
 	@echo $(PREFIX) > PREFIX
 	@echo $(TARGETS) > TARGETS
 
+code/Application/libRayApplication.a:
+	@echo "Building Ray Application"
+	@cd code/Application; make MPICXX="$(MPICXX)" CXXFLAGS="$(CXXFLAGS)"; cd ../..
+
+code/Platform/libRayPlatform.a:
+	@echo "Building Ray Platform"
+	@cd code/Platform; make MPICXX="$(MPICXX)" CXXFLAGS="$(CXXFLAGS)" ; cd ../..
+
+
 clean:
-	@rm -f $(TARGETS) $(obj-y) showOptions PREFIX TARGETS
+	@rm -f $(TARGETS) showOptions PREFIX TARGETS
+	@echo "Cleaning Ray Application"
+	@(cd code/Application; make clean; cd ../..)
+	@echo "Cleaning Ray Platform"
+	@cd code/Platform;make clean; cd ../..
 	@echo CLEAN
 
 install: 

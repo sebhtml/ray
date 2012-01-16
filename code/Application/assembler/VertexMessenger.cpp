@@ -20,6 +20,8 @@
 
 #include <assembler/VertexMessenger.h>
 #include <communication/Message.h>
+#include <core/OperatingSystem.h>
+
 #include <stdint.h>
 #include <assert.h>
 #include <stdio.h>

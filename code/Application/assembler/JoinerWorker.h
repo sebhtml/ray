@@ -24,10 +24,12 @@
 
 #include <communication/VirtualCommunicator.h>
 #include <scheduling/Worker.h>
+#include <structures/Kmer.h>
+#include <core/Parameters.h>
+
 #include <stdint.h>
 #include <map>
 #include <vector>
-#include <structures/Kmer.h>
 using namespace std;
 
 /**

@@ -19,10 +19,11 @@
 
 */
 
-#include <core/common_functions.h>
+#include <memory/allocator.h>
 #include <memory/MyAllocator.h>
 #include <stdlib.h>
 #include <memory/malloc_types.h>
+#include <core/OperatingSystem.h>
 #include <iostream>
 #include <stdio.h>
 #include <assert.h>
@@ -173,6 +174,10 @@ void MyAllocator::free(void*a,int b){
 }
 
 MyAllocator::MyAllocator(){
+}
+
+int roundNumber(int s,int alignment){
+	return ((s/alignment)+1)*alignment;
 }
 
 
