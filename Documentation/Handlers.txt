@@ -1,0 +1,36 @@
+
+Modularity of Ray using handlers
+Sébastien Boisvert
+2011-01-16
+
+In Ray, the code to execute that depends on slave modes, master modes, and message tags
+is handled by handlers.
+
+There are 3 handler classes:
+
+- MessageTagHandler
+- MasterModeHandler
+- SlaveModeHandler
+
+To these are associated these handler methods:
+
+- MessageTagHandlerMethod
+- MasterModeHandlerMethod
+- SlaveModeHandlerMethod
+
+== Example ==
+
+Let's say we have a class Searcher that inherits from MasterModeHandler.
+
+And let's say that this class has a method called call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(),
+which is a MasterModeHandlerMethod.
+
+To set the correct handler object, the following code has to be written:
+
+
+m_computeCore.setMasterModeObjectHandler(RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES,&m_searcher);
+
+Where m_computeCore is the instance of ComputeCore and where
+m_searcher is an instance of Searcher.
+
+This makes Ray (or any application using the Ray platform) modular.
