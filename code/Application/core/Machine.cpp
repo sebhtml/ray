@@ -364,8 +364,6 @@ void Machine::start(){
 	m_fusionData->constructor(getSize(),MAXIMUM_MESSAGE_SIZE_IN_BYTES,getRank(),m_outbox,m_outboxAllocator,m_parameters.getWordSize(),
 		m_ed,m_seedingData,m_switchMan->getSlaveModePointer(),&m_parameters);
 
-	configureVirtualCommunicator(m_virtualCommunicator);
-
 	m_scriptEngine.configureSwitchMan(m_switchMan);
 
 	m_library.constructor(getRank(),m_outbox,m_outboxAllocator,
