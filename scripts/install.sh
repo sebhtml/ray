@@ -14,7 +14,8 @@ cp INSTALL.txt $PREFIX
 cp AUTHORS $PREFIX
 cp code/Application/gpl-3.0.txt $PREFIX
 cp code/Platform/lgpl-3.0.txt $PREFIX
-cp code/Application/libRayApplication.a $PREFIX
-cp code/Platform/libRayPlatform.a $PREFIX
+#cp code/Application/libRayApplication.a $PREFIX
+#cp code/Platform/libRayPlatform.a $PREFIX
+cp LICENSE.txt $PREFIX
 
 ls $PREFIX
