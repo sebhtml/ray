@@ -99,7 +99,6 @@ class VirtualProcessor{
 
 	map<uint64_t,Worker*> m_aliveWorkers;
 
-	Parameters*m_parameters;
 	StaticVector*m_inbox;
 	StaticVector*m_outbox;
 	RingAllocator*m_outboxAllocator;
@@ -109,7 +108,7 @@ class VirtualProcessor{
 
 public:
 	/** actually initialize the VirtualProcessor */
-	void constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
+	void constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,
 		VirtualCommunicator*vc);
 
 	/** reset everything in the VirtualProcessor */

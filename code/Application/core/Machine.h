@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -69,6 +69,7 @@
 #include <profiling/Profiler.h>
 #include <profiling/TickLogger.h>
 
+#include <core/ComputeCore.h>
 #include <core/MachineHelper.h>
 #include <scheduling/SwitchMan.h>
 #include <search-engine/Searcher.h>
@@ -83,31 +84,27 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class Machine : public MasterModeHandler, public SlaveModeHandler{
-	TickLogger m_tickLogger;
-	MessageTagHandler m_messageTagHandler;
-	MasterModeHandler m_masterModeHandler;
-	SlaveModeHandler m_slaveModeHandler;
 
-	uint64_t m_startingTimeMicroseconds;
+	ComputeCore m_computeCore;
 
 	MachineHelper m_helper;
 
-	MessageRouter m_router;
 
 	Searcher m_searcher;
 
-	SwitchMan m_switchMan;
+	SwitchMan*m_switchMan;
+	TickLogger*m_tickLogger;
+	MessageRouter*m_router;
 
 	ScriptEngine m_scriptEngine;
 
-	Profiler m_profiler2;
 	Profiler*m_profiler;
 
 	/** the virtual communicator of the MPI rank */
-	VirtualCommunicator m_virtualCommunicator;
+	VirtualCommunicator*m_virtualCommunicator;
 
 	/** the virtual processor of the MPI rank */
-	VirtualProcessor m_virtualProcessor;
+	VirtualProcessor*m_virtualProcessor;
 
 	FusionTaskCreator m_fusionTaskCreator;
 	JoinerTaskCreator m_joinerTaskCreator;
@@ -127,13 +124,9 @@ class Machine : public MasterModeHandler, public SlaveModeHandler{
 
 	bool m_mustStop;
 
-	int MAX_ALLOCATED_MESSAGES_IN_OUTBOX;
-	// always 1
-	int MAX_ALLOCATED_MESSAGES_IN_INBOX;
-
 	Library m_library;
 	int m_currentCycleStep;
-	MessagesHandler m_messagesHandler;
+	MessagesHandler*m_messagesHandler;
 	MyAllocator m_diskAllocator;
 
 	int m_numberOfRanksWithCoverageData;
@@ -149,7 +142,7 @@ class Machine : public MasterModeHandler, public SlaveModeHandler{
 	Rank m_rank;
 	int m_size;
 	int m_totalLetters;
-	bool m_alive;
+	bool*m_alive;
 	bool m_loadSequenceStep;
 	char*m_inputFile;
 	int m_sequence_ready_machines;
@@ -192,8 +185,8 @@ class Machine : public MasterModeHandler, public SlaveModeHandler{
 	// read, strand, position
 	int m_numberOfRanksDoneSendingDistances;
 
-	StaticVector m_outbox;
-	StaticVector m_inbox;
+	StaticVector*m_outbox;
+	StaticVector*m_inbox;
 
 	ExtensionData*m_ed;
 
@@ -218,10 +211,10 @@ class Machine : public MasterModeHandler, public SlaveModeHandler{
 	// cleaned everynow and then.
 	
 	// allocator for outgoing messages
-	RingAllocator m_outboxAllocator;
+	RingAllocator*m_outboxAllocator;
 	
 	// allocator for ingoing messages
-	RingAllocator m_inboxAllocator;
+	RingAllocator*m_inboxAllocator;
 	
 	// allocator for persistent data
 	MyAllocator m_persistentAllocator;
@@ -279,18 +272,13 @@ class Machine : public MasterModeHandler, public SlaveModeHandler{
  * 	4) process data, this depends on the master-mode and slave-mode states.
  * 	5) send messages
  */
-	void run();
 	bool isMaster();
-	void receiveMessages();
 	void loadSequences();
-	void processMessages();
-	void processMessage(Message*message);
-	void sendMessages();
 	void checkRequests();
-	void processData();
+
+
 	int getRank();
-	void runWithProfiler();
-	void runVanilla();
+
 
 	void assignMasterHandlers();
 	void assignSlaveHandlers();

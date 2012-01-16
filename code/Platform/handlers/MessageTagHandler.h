@@ -23,6 +23,7 @@
 
 #include <communication/Message.h>
 #include <core/types.h>
+#include <communication/mpi_tags.h>
 
 #define MAXIMUM_NUMBER_OF_TAG_HANDLERS 256
 

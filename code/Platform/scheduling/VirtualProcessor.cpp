@@ -85,7 +85,7 @@ void VirtualProcessor::updateStates(){
 }
 
 /** actually initialize the VirtualProcessor */
-void VirtualProcessor::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
+void VirtualProcessor::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,
 		VirtualCommunicator*vc){
 
 	#ifdef DEBUG_VIRTUAL_PROCESSOR
@@ -96,7 +96,6 @@ void VirtualProcessor::constructor(StaticVector*outbox,StaticVector*inbox,RingAl
 	m_virtualCommunicator=vc;
 	m_inbox=inbox;
 	m_outboxAllocator=outboxAllocator;
-	m_parameters=parameters;
 
 	/** the maximum number of workers on this VirtualProcessor */
 	m_maximumAliveWorkers=32768; /* 2**15 */

@@ -185,6 +185,7 @@ obj-y += code/Platform/scripting/ScriptEngine.o
 obj-y += code/Platform/core/slave_modes.o 
 obj-y += code/Platform/core/OperatingSystem.o
 obj-y += code/Platform/core/master_modes.o
+obj-y += code/Platform/core/ComputeCore.o
 
 obj-y +=  code/Platform/structures/BloomFilter.o
 obj-y += code/Platform/structures/StaticVector.o 
