@@ -2,6 +2,8 @@
 With Ray, you can generate biological abundances.
 
 
+
+
 For example, let's say we have 1_1.fastq and 1_2.fastq containing a lot of sequences
 from a given microbiome. To get the biological abundances of all NCBI viruses and
 all NCBI bacteria as well as identified contigs, you can use Ray for that.
@@ -85,10 +87,8 @@ RayMicrobiomeAnalysis/
 			...
 
 Each of these .tsv files (except Identifications which contains
-identifications for contigs) contains these fields (7 fields):
+identifications for contigs) contains these fields (? fields):
 
-
-Category	SequenceNumber	SequenceName	LengthInKmers	Matches	Ratio	ModeKmerCoverage
 
 
 (Contigs.tsv does not have the column SequenceNumber.)
@@ -104,7 +104,7 @@ directory.
 Identifications.tsv contains things that are similar to contigs.
 Each line has these fields:
 
-Contig	LengthInKmers	Category	SequenceName	LengthInKmers	Matches	Ratio
+<headers of Identifications.tsv>
 
 
 == Implementation design ==

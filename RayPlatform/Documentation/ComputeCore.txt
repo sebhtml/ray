@@ -1,0 +1,34 @@
+TUESDAY, JANUARY 17, 2012
+
+Ray Platform: a message-passing-interface programming framework
+The first pieces of Ray were put together in a git repository on 21 January 2010. Since that, Ray has undergo numerous major refactoring events.
+
+The biggest changes to date are those of a few days ago. The source code of Ray is now divided in Ray Platform (around 13000 source lines of code including comments and blank lines) and Ray Application (around 29 000 source lines of code including comments and blank lines).
+
+Ray Platform compiles independently of Ray Application -- it can be reused over and over again. I changed the license too. While Ray Application is still licensed under the GNU General Public License, version 3, Ray Platform is licensed under the GNU Lesser General Public License, version 3.
+
+This means that Ray Platform can be incorporated in proprietary software (for free, if that matters). If changes are made to Ray Platform, however, these have to be shared.
+
+How it works ?
+
+The main class of the Ray Platform is ComputeCore. It represents a process mapped to a single processor core. An instance of this class has a message inbox, a message outbox, a virtual processor and a virtual communicator. The programmer can use the application programming interface to register callbacks for message tags, slave modes and master modes.
+
+Message tag handlers
+
+Any MPI message tag (type of message) has a default callback method to handle it that does nothing at all. Let's say the MPI tag is called MPI_TAG_GET_COFFEE. The corresponding callback is call_MPI_TAG_GET_COFFEE. The empty callbacks are generated in MessageTagHandler automatically. To overwrite one, a class that inherits from MessageTagHandler has to be defined with the appropriate new handler (with the same name). Then, the programmer needs to register an instance of this new class as being the handler of the MPI tag.
+
+m_computeCore.setMessageTagObjectHandler(MPI_TAG_GET_COFFEE, &m_coffeeHandler);
+
+Henceforth, when a message is received, Ray Platform will call m_coffeeHandler.call_MPI_TAG_GET_COFFEE(message).
+
+
+Master and slave modes 
+
+In the Ray Platform, each ComputeCore has a current master mode and a current slave mode. The master mode of all ranks but the master is MASTER_RANK_DO_NOTHING. Just like for the message tags, the default handlers for slave modes and master modes can be overwritten with custom ones.
+
+
+Links
+
+Ray Platform
+Charm++
+Posted by Sébastien Boisvert at 9:39 AM

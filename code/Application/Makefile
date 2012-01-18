@@ -83,7 +83,7 @@ obj-y += heuristics/BubbleTool.o heuristics/Chooser.o heuristics/OpenAssemblerCh
 
 #assume that we want to use Ray Platform shipped with Ray Application
 ifndef $(RAY_PLATFORM)
-	RAY_PLATFORM=../Platform
+	RAY_PLATFORM=../../RayPlatform
 endif
 
 ifndef $(RAY_APPLICATION_SCRIPTS)

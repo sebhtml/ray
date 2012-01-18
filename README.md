@@ -3,6 +3,8 @@
 Ray is a parallel de novo genome assembler that utilises the message-passing interface everywhere
 and is implemented using peer-to-peer communication.
 
+Ray is implemented using the Ray Platform, a message-passing-interface programming framework.
+
 Ray is documented in
 
 - Documentation/  (many files)

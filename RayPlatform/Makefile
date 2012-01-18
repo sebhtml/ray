@@ -63,7 +63,7 @@ obj-y += handlers/MessageTagHandler.o
 # set RAY_APPLICATION_SCRIPTS to the scripts
 # of Ray Application if none are provided
 ifndef $(RAY_APPLICATION_SCRIPTS)
-	RAY_APPLICATION_SCRIPTS=../Application/scripting
+	RAY_APPLICATION_SCRIPTS=../code/Application/scripting
 endif
 
 ifndef $(RAY_PLATFORM)
