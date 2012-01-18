@@ -23,6 +23,7 @@
 
 #include <stdint.h>
 #include <fstream>
+#include <stdint.h> /* for uint64_t */
 #include <stdio.h> /*for FILE */
 #include <vector>
 #include <string>
@@ -76,6 +77,20 @@ class Searcher : public SlaveModeHandler, public MasterModeHandler, public Messa
 	StaticVector*m_inbox;
 	RingAllocator*m_outboxAllocator;
 	TimePrinter*m_timePrinter;
+
+	/** counts for each contig for the current sequence
+ * being processed */
+	map<uint64_t,int> m_contigCounts;
+
+	// state of the machine
+	bool m_checkedHits;
+
+	map<uint64_t,int> m_contigLengths;
+
+	// iterators for hits
+	map<int,vector<uint64_t> > m_sortedHits;
+	map<int,vector<uint64_t> >::reverse_iterator m_sortedHitsIterator;
+	vector<uint64_t>::iterator m_sortedHitsIterator2;
 
 	vector<ContigSearchEntry> m_listOfContigEntries;
 
@@ -142,7 +157,7 @@ class Searcher : public SlaveModeHandler, public MasterModeHandler, public Messa
 	int m_searchDirectories_size;
 
 	/** for the master rank */
-	ofstream m_identificationFile;
+	map<int,FILE*> m_identificationFiles;
 
 	// base names of directories
 	vector<string> m_directoryNames;

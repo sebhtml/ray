@@ -345,13 +345,6 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 			createDirectory(directory5Str.c_str());
 		}
 
-
-		// create an empty file for identifications
-		ostringstream identifications;
-		identifications<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Identifications.tsv";
-		m_identificationFile.open(identifications.str().c_str());
-		m_identificationFile<<"#Contig	LengthInKmers	Category	SequenceNumber	SequenceName	LengthInKmers	Matches	Ratio"<<endl;
-
 		m_switchMan->openMasterMode(m_outbox,m_parameters->getRank());
 
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_CONTIG_ABUNDANCE)){
@@ -406,6 +399,8 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		uint64_t total=0;
 		for(int i=0;i<(int)m_listOfContigEntries.size();i++){
 			total+=m_listOfContigEntries[i].getTotal();
+
+			m_contigLengths[m_listOfContigEntries[i].getName()]=m_listOfContigEntries[i].getLength();
 		}
 
 		// write entries
@@ -416,8 +411,6 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		m_listOfContigEntries.clear();
 
 		contigSummaryFile.close();
-
-		m_identificationFile.close();
 
 		m_timePrinter->printElapsedTime("Counting contig biological abundances");
 		cout<<endl;
@@ -758,6 +751,94 @@ void Searcher::call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			m_rankToCall++;
 		}
 		
+	}else if(m_inbox->hasMessage(RAY_MPI_TAG_CONTIG_IDENTIFICATION)){
+
+		Message*message=m_inbox->at(0);
+
+		uint64_t*messageBuffer=message->getBuffer();
+
+
+		// process the message
+		int bufferPosition=0;
+		uint64_t contig=messageBuffer[bufferPosition++];
+
+		#ifdef ASSERT
+		assert(m_contigLengths.count(contig)>0);
+		#endif
+
+		int kmerLength=m_parameters->getWordSize();
+		int contigLength=m_contigLengths[contig];
+		int count=messageBuffer[bufferPosition++];
+
+		#ifdef ASSERT
+		assert(kmerLength>0);
+		assert(contigLength>0);
+		assert(count>0);
+		#endif
+
+		int directoryIterator=messageBuffer[bufferPosition++];
+		int fileIterator=messageBuffer[bufferPosition++];
+
+		#ifdef ASSERT
+		assert(directoryIterator<m_searchDirectories_size);
+		assert(fileIterator<m_searchDirectories[directoryIterator].getSize());
+		#endif
+
+		string category=m_fileNames[directoryIterator][fileIterator];
+
+		int sequenceIterator=messageBuffer[bufferPosition++];
+
+		int numberOfKmers=messageBuffer[bufferPosition++];
+
+		// the number of matches can not be greater than
+		// the number of k-mers in the query sequence
+		// otherwise, it does not make sense
+		#ifdef ASSERT
+		assert(count <= numberOfKmers);
+		#endif
+
+		char*sequenceName=(char*) (messageBuffer+bufferPosition);
+
+		// contigLength can not be 0 anyway
+		double ratio=(0.0+count)/contigLength;
+
+		// open the file for reading
+		if(count>0 && ( m_identificationFiles.count(directoryIterator)==0)){
+
+			// create an empty file for identifications
+			ostringstream identifications;
+
+			string*theDirectoryPath=m_searchDirectories[m_directoryIterator].getDirectoryName();
+			string baseName=getBaseName(*theDirectoryPath);
+			identifications<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
+			identifications<<baseName<<"/ContigIdentifications.tsv";
+
+			m_identificationFiles[directoryIterator]=fopen(identifications.str().c_str(),"w");
+
+			ostringstream line;
+		
+			// push header
+			line<<"#Contig	K-mer length	Contig length in k-mers	Category	";
+			line<<"Sequence number Sequence name";
+			line<<"	Sequence length in k-mers	Matches in contig	Contig length ratio"<<endl;
+
+			fprintf(m_identificationFiles[directoryIterator],"%s",line.str().c_str());
+		}
+
+		// write an entry in the file
+	
+		ostringstream line;
+		line<<"contig-"<<contig<<"	"<<kmerLength<<"	"<<contigLength;
+		line<<"	"<<category;
+		line<<"	"<<sequenceIterator<<"	"<<sequenceName<<"	";
+		line<<numberOfKmers<<"	"<<count<<"	"<<ratio<<endl;
+
+		fprintf(m_identificationFiles[directoryIterator],"%s",line.str().c_str());
+
+		// send a reply
+		m_switchMan->sendEmptyMessage(m_outbox,m_parameters->getRank(),
+			message->getSource(),RAY_MPI_TAG_CONTIG_IDENTIFICATION_REPLY);
+
 	// a rank has written all its files
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_REPLY)){
 
@@ -772,12 +853,21 @@ void Searcher::call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			m_rankToCall++;
 		}
 
+	// this step is over
 	}else if(m_switchMan->allRanksAreReady()){
 		m_switchMan->closeMasterMode();
 
 		m_timePrinter->printElapsedTime("Counting sequence biological abundances");
 
 		cout<<endl;
+
+		for(map<int,FILE*>::iterator i=m_identificationFiles.begin();
+			i!=m_identificationFiles.end();i++){
+			fclose(i->second);
+		}
+
+		m_identificationFiles.clear();
+		m_contigLengths.clear();
 	}
 
 }
@@ -848,6 +938,8 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			m_lastSequence=total-1;
 		}
 
+		m_checkedHits=true;
+
 		//int toProcess=m_lastSequence-m_firstSequence+1;
 
 		//cout<<"Rank "<<rank<<" partition: "<<m_firstSequence<<" to "<<m_lastSequence<<" (total: "<<toProcess<<")"<<endl;
@@ -858,6 +950,100 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		m_kmersProcessed=0;
 
 		m_finished=false;
+
+	// we must check the hits
+	}else if(!m_checkedHits){
+	
+		// all hits were processed
+		if(m_sortedHitsIterator==m_sortedHits.rend()){
+			m_checkedHits=true;
+
+			// go to the next sequence
+			m_sequenceIterator++;
+			m_globalSequenceIterator++;
+			m_createdSequenceReader=false;
+			m_requestedCoverage=false;
+
+			#ifdef ASSERT
+			assert(m_pendingMessages==0);
+			#endif
+
+			cout<<"Done checking hits"<<endl;
+
+		// the current contig hits group has been processed
+		}else if(m_sortedHitsIterator2 == m_sortedHitsIterator->second.end()){
+			m_sortedHitsIterator++;
+
+			if(m_sortedHitsIterator!=m_sortedHits.rend())
+				m_sortedHitsIterator2=m_sortedHitsIterator->second.begin();
+	
+		// receive the reply
+		}else if(m_inbox->hasMessage(RAY_MPI_TAG_CONTIG_IDENTIFICATION_REPLY)){
+			m_pendingMessages--;
+			
+			// next! ,please.
+			m_sortedHitsIterator2++;
+
+		// wait for a reply
+		}else if(m_pendingMessages>0){
+			// wait
+			
+		// at this point, we have a valid iterator
+		}else{
+	
+			#ifdef ASSERT
+			assert(m_pendingMessages==0);
+			assert(m_sortedHitsIterator!=m_sortedHits.rend());
+			assert(m_sortedHitsIterator2!=m_sortedHitsIterator->second.end());
+			#endif
+
+			// here, m_contigCounts contains thing related to contig counts
+			// seed a message to root with these information:
+			//
+			// directory
+			// file
+			// sequenceNumber
+			// sequenceName (possibly long) 
+			// <wordSize is known on the other end>
+			// sequenceLength
+			//
+			// number of contigs that have a hit
+			//
+			//  for each contig hit:
+			//
+			// contigName
+			// <contig length is known on the other end>
+			// Matches on the contig in k-mers
+		
+			uint64_t contig=*m_sortedHitsIterator2;
+			int count=m_sortedHitsIterator->first;
+
+			uint64_t*messageBuffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	
+			int bufferPosition=0;
+			messageBuffer[bufferPosition++]=contig;
+			messageBuffer[bufferPosition++]=count;
+			messageBuffer[bufferPosition++]=m_directoryIterator;
+			messageBuffer[bufferPosition++]=m_fileIterator;
+			messageBuffer[bufferPosition++]=m_sequenceIterator;
+			messageBuffer[bufferPosition++]=m_numberOfKmers;
+
+			char*sequence=(char*) (messageBuffer+bufferPosition);
+			
+			string sequenceName=m_searchDirectories[m_directoryIterator].getCurrentSequenceName();
+
+			strcpy(sequence,sequenceName.c_str());
+
+			// here, the message is ready to be send.
+
+			Message aMessage(messageBuffer,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
+				MASTER_RANK,RAY_MPI_TAG_CONTIG_IDENTIFICATION,m_parameters->getRank());
+
+			m_outbox->push_back(aMessage);
+		
+			m_pendingMessages++;
+
+		}
 
 	// all directories were processed
 	}else if(m_directoryIterator==m_searchDirectories_size && !m_finished){
@@ -931,6 +1117,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		cout<<"Skipping"<<endl;
 		#endif
 
+	// start a sequence
 	}else if(!m_createdSequenceReader && !m_finished){
 		// initiate the reader I guess
 	
@@ -941,6 +1128,9 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		m_searchDirectories[m_directoryIterator].createSequenceReader(m_fileIterator,m_sequenceIterator);
 
 		m_coverageDistribution.clear();
+
+		m_contigCounts.clear();
+
 		m_numberOfKmers=0;
 		m_matches=0;
 		m_createdSequenceReader=true;
@@ -952,6 +1142,8 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 	// compute abundances
 	}else if(m_createdSequenceReader && !m_finished){
+
+		// the current sequence has been processed
 		if(m_pendingMessages==0  && m_bufferedData.isEmpty() &&  /* nothing to flush... */
 			 !m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength)){
 			
@@ -1067,6 +1259,13 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 	
 				fprintf(m_arrayOfFiles[m_directoryIterator][m_fileIterator],
 				"%s",content.str().c_str());
+
+				m_sortedHits.clear();
+
+				// sort hits
+				for(map<uint64_t,int>::iterator i=m_contigCounts.begin();i!=m_contigCounts.end();i++){
+					m_sortedHits[i->second].push_back(i->first);
+				}
 			}
 	
 			// close the file
@@ -1093,12 +1292,16 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				m_arrayOfFiles[m_directoryIterator].erase(m_fileIterator);
 			}
 
-			// go to the next sequence
-			m_sequenceIterator++;
-			m_globalSequenceIterator++;
-			m_createdSequenceReader=false;
-			m_requestedCoverage=false;
+			m_checkedHits=false;
 
+			cout<<"Will check hits later "<<endl;
+
+			m_sortedHitsIterator=m_sortedHits.rbegin();
+
+			if(m_sortedHitsIterator!=m_sortedHits.rend())
+				m_sortedHitsIterator2=m_sortedHitsIterator->second.begin();
+
+		// we have to wait for a reply
 		}else if(m_pendingMessages==0 && !m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength) 
 				 && m_bufferedData.isEmpty()){
 
@@ -1106,6 +1309,8 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			// and the response is not there yet
 
 		// k-mers are available
+		// pull data from the sequence
+		// and throw messages onto the network
 		}else if(m_pendingMessages==0 && !m_requestedCoverage && m_bufferedData.isEmpty() ){
 	
 			// don't use message aggregation ?
@@ -1231,12 +1436,31 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			// iterate over the coverage values
 			for(int i=0;i<count;i+=period){
 
+				int bufferPosition=i;
 				// get the coverage.
-				int coverage=buffer[i];
+				int coverage=buffer[bufferPosition++];
 
 				if(coverage>0){
 					m_coverageDistribution[coverage]++;
 					m_matches++;
+
+					int numberOfPaths=buffer[bufferPosition++];
+	
+					#ifdef ASSERT
+					set<uint64_t> observed;
+					#endif
+
+					for(int j=0;j<numberOfPaths;j++){
+						uint64_t contigPath=buffer[bufferPosition++];
+						m_contigCounts[contigPath]++;
+	
+						// we don't care if the vertex is repeated
+						// for now.
+						#ifdef ASSERT
+						assert(observed.count(contigPath)==0);
+						observed.insert(contigPath);
+						#endif
+					}
 				}
 
 				#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
@@ -1469,12 +1693,14 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 
 	int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_COVERAGE_AND_PATHS);
 
+	int pathsThatCanBePacked=period-KMER_U64_ARRAY_SIZE-1;
+
 	for(int i=0;i<count;i+=period){
+
+		// unpack the k-mer from the message buffer
 		Kmer vertex;
 		int bufferPosition=i;
 		vertex.unpack(incoming,&bufferPosition);
-
-		//string kmerStr=vertex.idToWord(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 
 		Vertex*node=m_subgraph->find(&vertex);
 
@@ -1484,7 +1710,36 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 		if(node!=NULL)
 			coverage=node->getCoverage(&vertex);
 
-		message2[i]=coverage;
+		int outputBufferPosition=i;
+		message2[outputBufferPosition++]=coverage;
+
+		if(node!=NULL){
+			vector<Direction> paths=node->getDirections(&vertex);
+
+			set<uint64_t> contigPaths;
+
+			// remove duplicates
+			for(int j=0;j<(int)paths.size();j++){
+				contigPaths.insert(paths[j].getWave());
+			}
+
+			// store the place where the count will be deposited
+			int positionForCount=outputBufferPosition++;
+			
+			int processed=0;
+
+			for(set<uint64_t>::iterator j=contigPaths.begin();j!=contigPaths.end();j++){
+				message2[outputBufferPosition++]=*j;
+				processed++;
+
+				// we just don't send them all because
+				// repeats are repeated
+				if(processed==pathsThatCanBePacked)
+					break;
+			}
+	
+			message2[positionForCount]=processed;
+		}
 	}
 
 	Message aMessage(message2,count,source,RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY,

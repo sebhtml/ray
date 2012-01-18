@@ -53,10 +53,15 @@ class SearchDirectory{
 
 public:
 	void constructor(string path);
+
+/** get the number of sequences in the file */
 	int getCount(int i);
+
 	string*getFileName(int i);
 	string*getDirectoryName();
 	void countEntriesInFile(int j);
+
+/** get the number of files in the directory */
 	int getSize();
 
 	void setCount(int file,int count);
