@@ -136,7 +136,7 @@ void Machine::start(){
 	m_partitioner.constructor(m_outboxAllocator,m_inbox,m_outbox,&m_parameters,m_switchMan);
 
 	m_searcher.constructor(&m_parameters,m_outbox,&m_timePrinter,m_switchMan,m_virtualCommunicator,m_inbox,
-		m_outboxAllocator);
+		m_outboxAllocator,&m_subgraph);
 
 	m_initialisedAcademy=false;
 	m_writeKmerInitialised=false;
@@ -593,6 +593,9 @@ void Machine::assignMessageTagHandlers(){
 	#include <mpi_tags.txt>
 
 	#undef ITEM
+
+	m_computeCore.setMessageTagObjectHandler(RAY_MPI_TAG_GET_COVERAGE_AND_PATHS, &m_searcher);
+	m_computeCore.setMessageTagObjectHandler(RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY, &m_searcher);
 }
 
 void Machine::configureVirtualCommunicator(VirtualCommunicator*virtualCommunicator){

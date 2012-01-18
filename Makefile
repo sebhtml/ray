@@ -4,6 +4,9 @@ SUBLEVEL = 0
 EXTRAVERSION = -beta5
 NAME = Dark Astrocyte of Knowledge
 
+# number of cores to use for compilation
+J=1
+
 RAY_VERSION = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)
 
 # author: Sébastien Boisvert
@@ -189,11 +192,11 @@ Ray: showOptions code/Platform/libRayPlatform.a code/Application/libRayApplicati
 
 code/Application/libRayApplication.a:
 	@echo "Building Ray Application"
-	@cd code/Application; make MPICXX="$(MPICXX)" CXXFLAGS="$(CXXFLAGS)"; cd ../..
+	@cd code/Application; make MPICXX="$(MPICXX)" CXXFLAGS="$(CXXFLAGS)" -j $(J) ; cd ../..
 
 code/Platform/libRayPlatform.a:
 	@echo "Building Ray Platform"
-	@cd code/Platform; make MPICXX="$(MPICXX)" CXXFLAGS="$(CXXFLAGS)" ; cd ../..
+	@cd code/Platform; make MPICXX="$(MPICXX)" CXXFLAGS="$(CXXFLAGS)" -j $(J) ; cd ../..
 
 clean:
 	@rm -f $(TARGETS) showOptions PREFIX TARGETS

@@ -19,6 +19,7 @@
 */
 
 #include <search-engine/Searcher.h>
+#include <structures/Vertex.h>
 #include <fstream>
 #include <memory/malloc_types.h>
 #include <sstream>
@@ -35,7 +36,9 @@ using namespace std;
 #define CONFIG_FORCE_VALUE_FOR_MAXIMUM_SPEED false
 
 void Searcher::constructor(Parameters*parameters,StaticVector*outbox,TimePrinter*timePrinter,SwitchMan*switchMan,
-	VirtualCommunicator*vc,StaticVector*inbox,RingAllocator*outboxAllocator){
+	VirtualCommunicator*vc,StaticVector*inbox,RingAllocator*outboxAllocator,
+GridTable*graph){
+	m_subgraph=graph;
 
 	m_inbox=inbox;
 
@@ -1161,14 +1164,26 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 				int rankToFlush=m_parameters->_vertexRank(&kmer);
 
+				int added=0;
 				// pack the k-mer
 				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 					m_bufferedData.addAt(rankToFlush,kmer.getU64(i));
+					added++;
 				}
 
+				int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_COVERAGE_AND_PATHS);
+
+				// pad the thing to the ground
+				while(added<period){
+					m_bufferedData.addAt(rankToFlush,0);
+					added++;
+				}
+	
 				// force flush the message
-				if(m_bufferedData.flush(rankToFlush,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_outboxAllocator,m_outbox,
+				if(m_bufferedData.flush(rankToFlush,period,
+					RAY_MPI_TAG_GET_COVERAGE_AND_PATHS,m_outboxAllocator,m_outbox,
 					m_parameters->getRank(),force)){
+
 					m_pendingMessages++;
 					gatheringKmers=false;
 				}
@@ -1179,7 +1194,8 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			// if nothing was flushed, we force something now
 			if(m_pendingMessages==0){
 
-				m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_outboxAllocator,
+				m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_GET_COVERAGE_AND_PATHS,
+					m_outboxAllocator,
 					m_outbox,m_parameters->getRank());
 
 				#ifdef ASSERT
@@ -1194,8 +1210,9 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 	
 			m_requestedCoverage=true;
 
+		// we have a response
 		}else if(m_pendingMessages > 0 &&
-				m_requestedCoverage && m_inbox->hasMessage(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY)){
+				m_requestedCoverage && m_inbox->hasMessage(RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY)){
 
 			Message*message=m_inbox->at(0);
 			uint64_t*buffer=message->getBuffer();
@@ -1208,8 +1225,11 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 			m_pendingMessages--;
 
+			// the size (number of uint64_t) of things per vertex
+			int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_COVERAGE_AND_PATHS);
+
 			// iterate over the coverage values
-			for(int i=0;i<count;i+=KMER_U64_ARRAY_SIZE){
+			for(int i=0;i<count;i+=period){
 
 				// get the coverage.
 				int coverage=buffer[i];
@@ -1246,7 +1266,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		// in the above code
 		}else if(m_pendingMessages==0 && !m_bufferedData.isEmpty()){
 
-			m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_outboxAllocator,
+			m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_GET_COVERAGE_AND_PATHS,m_outboxAllocator,
 				m_outbox,m_parameters->getRank());
 	
 			m_requestedCoverage=true;
@@ -1438,4 +1458,39 @@ void Searcher::printDirectoryStart(){
 
 void Searcher::showProcessedKmers(){
 	cout<<"Rank "<<m_parameters->getRank()<<": Searcher: processed k-mers so far: "<<m_kmersProcessed<<endl;
+}
+
+void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
+	void*buffer=message->getBuffer();
+	int source=message->getSource();
+	uint64_t*incoming=(uint64_t*)buffer;
+	int count=message->getCount();
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(count*sizeof(uint64_t));
+
+	int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_COVERAGE_AND_PATHS);
+
+	for(int i=0;i<count;i+=period){
+		Kmer vertex;
+		int bufferPosition=i;
+		vertex.unpack(incoming,&bufferPosition);
+
+		//string kmerStr=vertex.idToWord(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+
+		Vertex*node=m_subgraph->find(&vertex);
+
+		// if it is not there, then it has a coverage of 0
+		int coverage=0;
+
+		if(node!=NULL)
+			coverage=node->getCoverage(&vertex);
+
+		message2[i]=coverage;
+	}
+
+	Message aMessage(message2,count,source,RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY,
+		m_parameters->getRank());
+	m_outbox->push_back(aMessage);
+}
+
+void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY(Message*message){
 }

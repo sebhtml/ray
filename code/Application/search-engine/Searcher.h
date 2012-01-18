@@ -27,6 +27,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <graph/GridTable.h>
 using namespace std;
 
 #include <core/Parameters.h>
@@ -41,13 +42,16 @@ using namespace std;
 #include <profiling/Derivative.h>
 #include <handlers/SlaveModeHandler.h>
 #include <handlers/MasterModeHandler.h>
+#include <handlers/MessageTagHandler.h>
 
 /**
  * This class searches for sequences in the de Bruijn graph
  * It outputs biological abundance readouts
  * \author Sébastien Boisvert
  **/
-class Searcher : public SlaveModeHandler, public MasterModeHandler {
+class Searcher : public SlaveModeHandler, public MasterModeHandler, public MessageTagHandler {
+	GridTable*m_subgraph;
+
 	/** number of pending messages */
 	int m_pendingMessages;
 	
@@ -207,9 +211,13 @@ public:
 	void call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES();
 	
 	void constructor(Parameters*parameters,StaticVector*outbox,TimePrinter*timePrinter,SwitchMan*switchMan,
-	VirtualCommunicator*m_vc,StaticVector*inbox,RingAllocator*outboxAllocator);
+	VirtualCommunicator*m_vc,StaticVector*inbox,RingAllocator*outboxAllocator,
+		GridTable*graph);
 
 	void setContigs(vector<vector<Kmer> >*paths,vector<uint64_t>*names);
+
+	void call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message);
+	void call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY(Message*message);
 
 }; /* Searcher */
 
