@@ -185,14 +185,14 @@ showOptions:
 	@touch showOptions
 	
 # how to make Ray
-Ray: showOptions RayPlatform/libRayPlatform.a code/Application/libRayApplication.a
-	$(MPICXX) $(LDFLAGS)  code/Application/libRayApplication.a RayPlatform/libRayPlatform.a -o $@
+Ray: showOptions RayPlatform/libRayPlatform.a code/libRayApplication.a
+	$(MPICXX) $(LDFLAGS)  code/libRayApplication.a RayPlatform/libRayPlatform.a -o $@
 	@echo $(PREFIX) > PREFIX
 	@echo $(TARGETS) > TARGETS
 
-code/Application/libRayApplication.a:
+code/libRayApplication.a:
 	@echo "Building Ray Application"
-	@cd code/Application; make MPICXX="$(MPICXX)" CXXFLAGS="$(CXXFLAGS)" -j $(J) ; cd ../..
+	@cd code; make MPICXX="$(MPICXX)" CXXFLAGS="$(CXXFLAGS)" -j $(J) ; cd ..
 
 RayPlatform/libRayPlatform.a:
 	@echo "Building Ray Platform"
@@ -201,7 +201,7 @@ RayPlatform/libRayPlatform.a:
 clean:
 	@rm -f $(TARGETS) showOptions PREFIX TARGETS
 	@echo "Cleaning Ray Application"
-	@(cd code/Application; make clean; cd ../..)
+	@(cd code; make clean; cd ..)
 	@echo "Cleaning Ray Platform"
 	@cd RayPlatform;make clean; cd ..
 	@echo CLEAN
