@@ -121,6 +121,10 @@ void SwitchMan::closeSlaveModeLocally(StaticVector*outbox,Rank source){
 void SwitchMan::openMasterMode(StaticVector*outbox,Rank source){
 
 	#ifdef ASSERT
+	if(m_masterModeToTagTable.count(m_masterMode)==0){
+		cout<<"Error, master mode is "<<MASTER_MODES[m_masterMode]<<endl;
+	}
+
 	assert(m_masterModeToTagTable.count(m_masterMode)>0);
 	#endif
 

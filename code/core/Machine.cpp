@@ -619,7 +619,6 @@ void Machine::configureVirtualCommunicator(VirtualCommunicator*virtualCommunicat
 	#include <reply_tags.txt>
 
 	#undef ITEM
-
 }
 
 void Machine::showRayVersionShort(){
