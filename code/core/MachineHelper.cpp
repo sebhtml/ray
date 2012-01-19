@@ -278,6 +278,8 @@ int MachineHelper::getRank(){
 }
 
 void MachineHelper::call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES(){
+	// we only write the files, if any, when everyone is done with it
+	// otherwise, the measured latency would be higher...
 	m_networkTest->writeData();
 
 	m_partitioner->call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES();
