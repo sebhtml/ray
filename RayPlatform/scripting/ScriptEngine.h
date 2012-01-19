@@ -26,13 +26,12 @@
 #include <core/types.h>
 #include <communication/VirtualCommunicator.h>
 
+/** this class configure the switchman */
 class ScriptEngine{
 
 public:
 
 	void configureSwitchMan(SwitchMan*i);
-	void configureVirtualCommunicator(VirtualCommunicator*i);
-
 };
 
 #endif

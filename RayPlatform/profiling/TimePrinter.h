@@ -30,8 +30,9 @@
 #include<string>
 using namespace std;
 
-/*
+/**
  * Prints the current local time.
+ * Also, prints the elapsed time since the beginning.
  * \author Sébastien Boisvert
  */
 class TimePrinter{

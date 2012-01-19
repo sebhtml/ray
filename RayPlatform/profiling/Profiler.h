@@ -27,6 +27,18 @@
 #include <string>
 using namespace std;
 
+/**
+ * when enabled, this profiler collects data and 
+ * reports some things.
+ * To collect something somewhere, add the line
+ *
+ * MACRO_COLLECT_PROFILING_INFORMATION();
+ *
+ * Also, the code (your application and RayPlatform) 
+ * must be compiled with -D CONFIG_PROFILER_COLLECT
+ *
+ * To compile the profiling code.
+ */
 class Profiler{
 	vector<uint64_t> m_timePoints;
 	vector<string> m_functions;
@@ -46,11 +58,16 @@ public:
 	void constructor(bool enabled);
 	void resetStack();
 	void printStack();
+
+/** collect information */
 	void collect(const char*function,const char*file,int line);
+
 	bool isEnabled();
 	int getThreshold();
 
+/** add information about a task */
 	void addGranularity(int mode,int microseconds);
+
 	void printGranularities(int rank);
 	void printAllGranularities();
 

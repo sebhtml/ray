@@ -33,7 +33,7 @@ using namespace std;
 
 #ifdef CONFIG_PERSISTENT_COMMUNICATION
 
-/*
+/**
  * linked message
  */
 class MessageNode{

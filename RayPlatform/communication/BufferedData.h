@@ -27,7 +27,7 @@
 #include <structures/StaticVector.h>
 #include <memory/RingAllocator.h>
 
-/*
+/**
  *  This class accumulates messages and flush them when the threshold is reached.
  *
  *  Messages are added in a periodic manner, and 4096 (-) something is the _real_ threshold.

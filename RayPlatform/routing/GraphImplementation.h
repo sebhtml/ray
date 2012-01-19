@@ -24,12 +24,13 @@
 
 #include <stdint.h>
 
+/**
+ * a tuple for message routing
+ * */
 class Tuple{
 public:
 	uint8_t m_digits[16];
 };
-
-
 
 #include <vector>
 #include <set>

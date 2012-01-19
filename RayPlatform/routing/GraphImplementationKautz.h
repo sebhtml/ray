@@ -28,7 +28,7 @@
 using namespace std;
 
 /**
- * de Bruijn graph
+ * Kautz graph
  * n must be a power of something
  * \see http://www.sciencedirect.com/science/article/pii/S0140366497000741
  *

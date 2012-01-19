@@ -49,4 +49,4 @@ Thread pools:
 Structures:
 
 - very space-efficient sparse hash table (structures/MyHashTable.h);
-- a splay tree (structures/SplayTree.h) é
+- a splay tree (structures/SplayTree.h).

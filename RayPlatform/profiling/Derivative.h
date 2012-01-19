@@ -29,6 +29,10 @@
 #include <stdint.h>
 using namespace std;
 
+/**
+ * this class stores the progress of a computation task.
+ * When asked, it prints the estimated remaining time.
+ */
 class Derivative{
 	map<int,vector<int> > m_data;
 
