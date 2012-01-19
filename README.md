@@ -51,7 +51,7 @@ see Documentation/BiologicalAbundances.txt
 
 - Users: denovoassembler-users AT lists.sourceforge.net
 
-- Read it one gmane: http://blog.gmane.org/gmane.science.biology.ray-genome-assembler
+- Read it on gmane: http://blog.gmane.org/gmane.science.biology.ray-genome-assembler
 
 - Development/hacking: denovoassembler-devel AT lists.sourceforge.net
 
@@ -71,16 +71,10 @@ You need a C++ compiler (supporting C++ 1998), make, an implementation of MPI (s
 
 ## Change the compiler
 
-	make PREFIX=build MPICXX=/software/openmpi-1.4.3/bin/mpic++
+	make PREFIX=build2000 MPICXX=/software/openmpi-1.4.3/bin/mpicxx
 	make install
 
-Tested C++ compilers:
-
-- GNU C++ compiler (g++)
-- Intel C++ compiler (icpc)
-- clang++/LLVM (clang++)
-- Microsoft Visual C++
-
+Tested C++ compilers: see Documentation/COMPILERS.txt
 
 ## Use large k-mers
 
@@ -116,7 +110,7 @@ To run Ray on paired reads:
 
 RayOutput/Contigs.fasta and RayOutput/Scaffolds.fasta
 
-type Ray -help for a full list
+type Ray -help for a full list of options and outputs
 
 
 # Color space
