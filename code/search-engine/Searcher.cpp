@@ -762,6 +762,8 @@ void Searcher::call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		int bufferPosition=0;
 		uint64_t contig=messageBuffer[bufferPosition++];
 
+		char strand=messageBuffer[bufferPosition++];
+
 		#ifdef ASSERT
 		assert(m_contigLengths.count(contig)>0);
 		#endif
@@ -805,6 +807,11 @@ void Searcher::call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		// contigLength can not be 0 anyway
 		double ratio=(0.0+count)/contigLength;
 
+		double sequenceRatio=count;
+
+		if(numberOfKmers!=0)
+			sequenceRatio/=numberOfKmers;
+
 		// open the file for reading
 		if(count>0 && ( m_identificationFiles.count(directoryIterator)==0)){
 
@@ -821,9 +828,10 @@ void Searcher::call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			ostringstream line;
 		
 			// push header
-			line<<"#Contig	K-mer length	Contig length in k-mers	Category	";
+			line<<"#Contig	K-mer length	Contig length in k-mers	Contig strand	Category	";
 			line<<"Sequence number Sequence name";
-			line<<"	Sequence length in k-mers	Matches in contig	Contig length ratio"<<endl;
+			line<<"	Sequence length in k-mers	Matches in contig	Contig length ratio";
+			line<<"	Sequence length ratio"<<endl;
 
 			fprintf(m_identificationFiles[directoryIterator],"%s",line.str().c_str());
 		}
@@ -832,9 +840,10 @@ void Searcher::call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 	
 		ostringstream line;
 		line<<"contig-"<<contig<<"	"<<kmerLength<<"	"<<contigLength;
+		line<<"	"<<strand;
 		line<<"	"<<category;
 		line<<"	"<<sequenceIterator<<"	"<<sequenceName<<"	";
-		line<<numberOfKmers<<"	"<<count<<"	"<<ratio<<endl;
+		line<<numberOfKmers<<"	"<<count<<"	"<<ratio<<"	"<<sequenceRatio<<endl;
 
 		fprintf(m_identificationFiles[directoryIterator],"%s",line.str().c_str());
 
@@ -958,7 +967,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 	}else if(!m_checkedHits){
 	
 		// all hits were processed
-		if(m_sortedHitsIterator==m_sortedHits.rend()){
+		if(m_sortedHitsIterator==m_sortedHits.end()){
 			m_checkedHits=true;
 
 			// go to the next sequence
@@ -973,19 +982,13 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 			cout<<"Done checking hits"<<endl;
 
-		// the current contig hits group has been processed
-		}else if(m_sortedHitsIterator2 == m_sortedHitsIterator->second.end()){
-			m_sortedHitsIterator++;
-
-			if(m_sortedHitsIterator!=m_sortedHits.rend())
-				m_sortedHitsIterator2=m_sortedHitsIterator->second.begin();
 	
 		// receive the reply
 		}else if(m_inbox->hasMessage(RAY_MPI_TAG_CONTIG_IDENTIFICATION_REPLY)){
 			m_pendingMessages--;
 			
 			// next! ,please.
-			m_sortedHitsIterator2++;
+			m_sortedHitsIterator++;
 
 		// wait for a reply
 		}else if(m_pendingMessages>0){
@@ -996,8 +999,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 	
 			#ifdef ASSERT
 			assert(m_pendingMessages==0);
-			assert(m_sortedHitsIterator!=m_sortedHits.rend());
-			assert(m_sortedHitsIterator2!=m_sortedHitsIterator->second.end());
+			assert(m_sortedHitsIterator!=m_sortedHits.end());
 			#endif
 
 			// here, m_contigCounts contains thing related to contig counts
@@ -1018,13 +1020,17 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			// <contig length is known on the other end>
 			// Matches on the contig in k-mers
 		
-			uint64_t contig=*m_sortedHitsIterator2;
-			int count=m_sortedHitsIterator->first;
+			ContigHit hit=*m_sortedHitsIterator;
+			
+			uint64_t contig=hit.getContig();
+			int count=hit.getMatches();
+			char strand=hit.getStrand();
 
 			uint64_t*messageBuffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	
 			int bufferPosition=0;
 			messageBuffer[bufferPosition++]=contig;
+			messageBuffer[bufferPosition++]=strand;
 			messageBuffer[bufferPosition++]=count;
 			messageBuffer[bufferPosition++]=m_directoryIterator;
 			messageBuffer[bufferPosition++]=m_fileIterator;
@@ -1265,14 +1271,32 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 				m_sortedHits.clear();
 
+				//cout<<"Adding hits for sequence "<<m_sequenceIterator<<endl;
+
+				// store the hits
 				// sort hits
-				for(map<uint64_t,set<int> >::iterator i=m_contigCounts.begin();i!=m_contigCounts.end();i++){
+				for(map<uint64_t,set<int> >::iterator i=m_contigCounts['F'].begin();i!=m_contigCounts['F'].end();i++){
 					int matches=i->second.size();
 					uint64_t contig=i->first;
-					m_sortedHits[matches].push_back(contig);
-					
-					//cout<<"contig-"<<contig<<" has "<<matches<<" matches"<<endl;
+
+					ContigHit hit(m_sequenceIterator,contig,'F',matches);
+					m_sortedHits.push_back(hit);
+				
+					//cout<<"contig-"<<contig<<" has "<<matches<<" matches on strand 'F'"<<endl;
+					//cout.flush();
 				}
+
+				for(map<uint64_t,set<int> >::iterator i=m_contigCounts['R'].begin();i!=m_contigCounts['R'].end();i++){
+					int matches=i->second.size();
+					uint64_t contig=i->first;
+
+					ContigHit hit(m_sequenceIterator,contig,'R',matches);
+					m_sortedHits.push_back(hit);
+					
+					//cout<<"contig-"<<contig<<" has "<<matches<<" matches on strand 'R'"<<endl;
+					//cout.flush();
+				}
+
 			}
 	
 			// close the file
@@ -1301,12 +1325,10 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 			m_checkedHits=false;
 
-			cout<<"Will check hits later "<<endl;
+			//cout<<"Will check hits later "<<endl;
+			//cout<<"At least "<<m_sortedHits.size()<<endl;
 
-			m_sortedHitsIterator=m_sortedHits.rbegin();
-
-			if(m_sortedHitsIterator!=m_sortedHits.rend())
-				m_sortedHitsIterator2=m_sortedHitsIterator->second.begin();
+			m_sortedHitsIterator=m_sortedHits.begin();
 
 		// we have to wait for a reply
 		}else if(m_pendingMessages==0 && !m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength) 
@@ -1535,6 +1557,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 					for(int j=0;j<numberOfPaths;j++){
 						uint64_t contigPath=buffer[bufferPosition++];
 						int contigPosition=buffer[bufferPosition++];
+						char strand=buffer[bufferPosition++];
 
 						#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
 						cout<<"Contig Data "<<contigPath<<" "<<contigPosition<<endl;
@@ -1553,7 +1576,8 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 						// a contig position can only be utilised once
 						// for all the sequence queried
-						if(m_contigCounts.count(contigPath)>0 && m_contigCounts[contigPath].count(contigPosition)>0){
+						if((m_contigCounts['F'].count(contigPath)>0 && m_contigCounts['F'][contigPath].count(contigPosition)>0)
+							||(m_contigCounts['R'].count(contigPath)>0 && m_contigCounts['R'][contigPath].count(contigPosition)>0)){
 
 							#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
 							cout<<"Skipping because we already used contig "<<contigPosition<<" (contig position: "<<contigPosition<<" for current sequence"<<endl;
@@ -1567,10 +1591,9 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 						#endif
 
 						int theContigPosition=contigPosition;
-						//theContigPosition=m_contigCounts[contigPath].size();// for testing purposes TODO: remove this line
 
 						// add the contig position
-						m_contigCounts[contigPath].insert(theContigPosition);
+						m_contigCounts[strand][contigPath].insert(theContigPosition);
 
 						// mark it as utilised for the current sequence position
 						m_observedPaths[sequencePosition].insert(contigPath);
@@ -1838,7 +1861,7 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 	//  an index
 	//  a total
 	//  a list of pairs
-	int pathsThatCanBePacked=(period-KMER_U64_ARRAY_SIZE-1-1-3)/2;
+	int pathsThatCanBePacked=(period-KMER_U64_ARRAY_SIZE-1-1-3)/3;
 
 	#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
 	cout<<"Meta: count= "<<count<<" period= "<<period<<endl;
@@ -1901,7 +1924,17 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 		message2[positionForTotal]=0;
 
 		if(node!=NULL){
-			vector<Direction> paths=node->getDirections(&vertex);
+			Kmer lowerKey=node->m_lowerKey;
+			
+			bool weHaveLowerKey=lowerKey.isEqual(&vertex);
+
+			vector<Direction> paths;
+
+			Direction*a=node->m_directions;
+			while(a!=NULL){
+				paths.push_back(*a);
+				a=a->getNext();
+			}
 
 			#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
 			cout<<"paths found: "<<paths.size()<<endl;
@@ -1920,6 +1953,10 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 
 				uint64_t path=paths[pathIndex].getWave();
 				int contigPosition=paths[pathIndex].getProgression();
+				char strand='F';
+
+				if(weHaveLowerKey!=paths[pathIndex].isLower())
+					strand='R';
 
 				#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
 				cout<<"Index= "<<pathIndex<<" Storing Contig Data "<<path<<" "<<contigPosition<<endl;
@@ -1928,6 +1965,7 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 				//store the contig path
 				message2[outputBufferPosition++]=path; // path identifier
 				message2[outputBufferPosition++]=contigPosition; // path position
+				message2[outputBufferPosition++]=strand;
 
 				processed++;
 				

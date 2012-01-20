@@ -12,6 +12,7 @@ obj-y += communication/MessageProcessor.o
 obj-y += search-engine/Searcher.o
 obj-y += search-engine/SearchDirectory.o
 obj-y += search-engine/ContigSearchEntry.o
+obj-y += search-engine/ContigHit.o
 
 #formats
 obj-y += format/ColorSpaceDecoder.o format/ColorSpaceLoader.o format/FastaLoader.o \

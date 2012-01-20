@@ -44,6 +44,7 @@ using namespace std;
 #include <handlers/SlaveModeHandler.h>
 #include <handlers/MasterModeHandler.h>
 #include <handlers/MessageTagHandler.h>
+#include <search-engine/ContigHit.h>
 
 /**
  * This class searches for sequences in the de Bruijn graph
@@ -81,8 +82,8 @@ class Searcher : public SlaveModeHandler, public MasterModeHandler, public Messa
 	/** counts for each contig for the current sequence
  * being processed
  *
- * map<contig, set<position > > */
-	map<uint64_t,set<int> > m_contigCounts;
+ * map<char, map<contig, set<position > > > */
+	map<char, map<uint64_t,set<int> > > m_contigCounts;
 
 /** the set of observed paths for the current position */
 	map<int,set<uint64_t > > m_observedPaths;
@@ -93,9 +94,9 @@ class Searcher : public SlaveModeHandler, public MasterModeHandler, public Messa
 	map<uint64_t,int> m_contigLengths;
 
 	// iterators for hits
-	map<int,vector<uint64_t> > m_sortedHits;
-	map<int,vector<uint64_t> >::reverse_iterator m_sortedHitsIterator;
-	vector<uint64_t>::iterator m_sortedHitsIterator2;
+	vector<ContigHit> m_sortedHits;
+
+	vector<ContigHit>::iterator m_sortedHitsIterator;
 
 	vector<ContigSearchEntry> m_listOfContigEntries;
 
