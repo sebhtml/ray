@@ -12,8 +12,8 @@ cp README.md $PREFIX
 cp MANUAL_PAGE.txt $PREFIX
 cp INSTALL.txt $PREFIX
 cp AUTHORS $PREFIX
-cp code/Application/gpl-3.0.txt $PREFIX
-cp code/Platform/lgpl-3.0.txt $PREFIX
+cp code/gpl-3.0.txt $PREFIX
+cp RayPlatform/lgpl-3.0.txt $PREFIX
 #cp code/Application/libRayApplication.a $PREFIX
 #cp code/Platform/libRayPlatform.a $PREFIX
 cp LICENSE.txt $PREFIX
