@@ -33,6 +33,7 @@ using namespace std;
 //#define CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
 //#define CONFIG_CONTIG_IDENTITY_VERBOSE
 
+#define CONFIG_SEARCH_THRESHOLD 0.10
 #define CONFIG_FORCE_VALUE_FOR_MAXIMUM_SPEED false
 
 void Searcher::constructor(Parameters*parameters,StaticVector*outbox,TimePrinter*timePrinter,SwitchMan*switchMan,
@@ -812,8 +813,17 @@ void Searcher::call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		if(numberOfKmers!=0)
 			sequenceRatio/=numberOfKmers;
 
+		bool thresholdIsGood=false;
+
+		if(ratio >= CONFIG_SEARCH_THRESHOLD)
+			thresholdIsGood=true;
+
+		if(sequenceRatio >= CONFIG_SEARCH_THRESHOLD)
+			thresholdIsGood=true;
+
 		// open the file for reading
-		if(count>0 && ( m_identificationFiles.count(directoryIterator)==0)){
+		if(thresholdIsGood &&
+			count>0 && ( m_identificationFiles.count(directoryIterator)==0)){
 
 			// create an empty file for identifications
 			ostringstream identifications;
@@ -829,7 +839,7 @@ void Searcher::call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		
 			// push header
 			line<<"#Contig	K-mer length	Contig length in k-mers	Contig strand	Category	";
-			line<<"Sequence number Sequence name";
+			line<<"Sequence number	Sequence name";
 			line<<"	Sequence length in k-mers	Matches in contig	Contig length ratio";
 			line<<"	Sequence length ratio"<<endl;
 
@@ -838,14 +848,16 @@ void Searcher::call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 		// write an entry in the file
 	
-		ostringstream line;
-		line<<"contig-"<<contig<<"	"<<kmerLength<<"	"<<contigLength;
-		line<<"	"<<strand;
-		line<<"	"<<category;
-		line<<"	"<<sequenceIterator<<"	"<<sequenceName<<"	";
-		line<<numberOfKmers<<"	"<<count<<"	"<<ratio<<"	"<<sequenceRatio<<endl;
+		if(thresholdIsGood){
+			ostringstream line;
+			line<<"contig-"<<contig<<"	"<<kmerLength<<"	"<<contigLength;
+			line<<"	"<<strand;
+			line<<"	"<<category;
+			line<<"	"<<sequenceIterator<<"	"<<sequenceName<<"	";
+			line<<numberOfKmers<<"	"<<count<<"	"<<ratio<<"	"<<sequenceRatio<<endl;
 
-		fprintf(m_identificationFiles[directoryIterator],"%s",line.str().c_str());
+			fprintf(m_identificationFiles[directoryIterator],"%s",line.str().c_str());
+		}
 
 		// send a reply
 		m_switchMan->sendEmptyMessage(m_outbox,m_parameters->getRank(),
@@ -1215,10 +1227,15 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			#endif
 
 			double ratio=(0.0+m_matches)/m_numberOfKmers;
+
+			bool thresholdIsGood=false;
+	
+			if(ratio >= CONFIG_SEARCH_THRESHOLD)
+				thresholdIsGood=true;
 	
 			// open the file
 			// don't open it if there are 0 matches
-			if((m_arrayOfFiles.count(m_directoryIterator)==0 || 
+			if(thresholdIsGood && (m_arrayOfFiles.count(m_directoryIterator)==0 || 
 				m_arrayOfFiles[m_directoryIterator].count(m_fileIterator)==0) && m_matches>0){
 				
 				string*theDirectoryPath=m_searchDirectories[m_directoryIterator].getDirectoryName();
@@ -1256,7 +1273,8 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			}
 	
 			// write the file if there are not 0 matches
-			if(m_matches>0){
+			if(m_matches>0 && thresholdIsGood){
+
 				ostringstream content;
 				
 				string sequenceName=m_searchDirectories[m_directoryIterator].getCurrentSequenceName();
