@@ -40,10 +40,6 @@ DESCRIPTION:
               Biological abundances will be written to RayOutput/BiologicalAbundances
               See Documentation/BiologicalAbundances.txt
 
-       -search-detailed
-              Turns on detailed search. This will generate numerous sequences and may crash your file system.
-              Disabled by default.
-
   Outputs
 
        -o outputDirectory
@@ -139,8 +135,8 @@ DESCRIPTION:
               Enables the Ray message router. Disabled by default.
               Messages will be routed accordingly so that any rank can communicate directly with only a few others.
               Without -route-messages, any rank can communicate directly with any other rank.
-              Files generated: Routing.Connections.txt, Routing.Routes.txt and Routing.RelayEvents.txt
-              and Routing.Summary.txt
+              Files generated: Routing/Connections.txt, Routing/Routes.txt and Routing/RelayEvents.txt
+              and Routing/Summary.txt
 
        -connection-type type
               Sets the connection type for routes.
@@ -318,4 +314,4 @@ COPYRIGHT
        You have received a copy of the GNU General Public License
        along with this program (see LICENSE).
 
-Ray 2.0.0-devel
+Ray 2.0.0-beta6
