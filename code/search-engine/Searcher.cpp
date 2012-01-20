@@ -1267,7 +1267,11 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 				// sort hits
 				for(map<uint64_t,set<int> >::iterator i=m_contigCounts.begin();i!=m_contigCounts.end();i++){
-					m_sortedHits[i->second.size()].push_back(i->first);
+					int matches=i->second.size();
+					uint64_t contig=i->first;
+					m_sortedHits[matches].push_back(contig);
+					
+					//cout<<"contig-"<<contig<<" has "<<matches<<" matches"<<endl;
 				}
 			}
 	
@@ -1508,6 +1512,10 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 					int index=buffer[bufferPosition++];
 					int total=buffer[bufferPosition++];
 	
+					if(numberOfPaths==0){
+						//cout<<"WARNING sequence position "<<sequencePosition<<" has coverage "<<coverage<<" but no contig path"<<endl;
+					}
+
 					#ifdef ASSERT
 					assert(numberOfPaths<=total);
 					assert(index<=total);
