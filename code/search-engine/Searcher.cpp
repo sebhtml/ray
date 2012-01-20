@@ -799,6 +799,7 @@ void Searcher::call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		#ifdef ASSERT
 		if(count> numberOfKmers){
 			cout<<"Error: "<<count<<" k-mers observed, but the contig has only "<<numberOfKmers<<endl;
+			cout<<"Sequence= "<<sequenceIterator<<endl;
 		}
 		assert(count <= numberOfKmers);
 		#endif
@@ -992,7 +993,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			assert(m_pendingMessages==0);
 			#endif
 
-			cout<<"Done checking hits"<<endl;
+			//cout<<"Done checking hits"<<endl;
 
 	
 		// receive the reply
@@ -1048,6 +1049,16 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			messageBuffer[bufferPosition++]=m_fileIterator;
 			messageBuffer[bufferPosition++]=m_sequenceIterator;
 			messageBuffer[bufferPosition++]=m_numberOfKmers;
+
+			#ifdef ASSERT
+			if(count > m_numberOfKmers){
+				cout<<"Error before sending, count= "<<count<<" m_numberOfKmers= "<<m_numberOfKmers<<endl;
+				cout<<"m_sequenceIterator= "<<m_sequenceIterator<<endl;
+				cout<<"contig= "<<contig<<" strand= "<<strand<<endl;
+				cout<<"m_sortedHits.size()= "<<m_sortedHits.size()<<endl;
+			}
+			assert(count <= m_numberOfKmers);
+			#endif
 
 			char*sequence=(char*) (messageBuffer+bufferPosition);
 			
@@ -1151,6 +1162,9 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		m_coverageDistribution.clear();
 
 		m_contigCounts.clear();
+
+		m_sortedHits.clear();
+		m_sortedHitsIterator=m_sortedHits.begin();
 
 		m_numberOfKmers=0;
 		m_matches=0;
@@ -1300,6 +1314,11 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 					ContigHit hit(m_sequenceIterator,contig,'F',matches);
 					m_sortedHits.push_back(hit);
 				
+					// the number of matches can not exceed the length
+					#ifdef ASSERT
+					assert(matches <= m_numberOfKmers);
+					#endif
+
 					//cout<<"contig-"<<contig<<" has "<<matches<<" matches on strand 'F'"<<endl;
 					//cout.flush();
 				}
@@ -1311,6 +1330,11 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 					ContigHit hit(m_sequenceIterator,contig,'R',matches);
 					m_sortedHits.push_back(hit);
 					
+					// the number of matches can not exceed the length
+					#ifdef ASSERT
+					assert(matches <= m_numberOfKmers);
+					#endif
+
 					//cout<<"contig-"<<contig<<" has "<<matches<<" matches on strand 'R'"<<endl;
 					//cout.flush();
 				}
@@ -1612,6 +1636,11 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 						// add the contig position
 						m_contigCounts[strand][contigPath].insert(theContigPosition);
+
+						// the number of matches can not exceed the length
+						#ifdef ASSERT
+						assert((int)m_contigCounts[strand][contigPath].size()<= m_numberOfKmers);
+						#endif
 
 						// mark it as utilised for the current sequence position
 						m_observedPaths[sequencePosition].insert(contigPath);
