@@ -79,8 +79,13 @@ class Searcher : public SlaveModeHandler, public MasterModeHandler, public Messa
 	TimePrinter*m_timePrinter;
 
 	/** counts for each contig for the current sequence
- * being processed */
-	map<uint64_t,int> m_contigCounts;
+ * being processed
+ *
+ * map<contig, set<position > > */
+	map<uint64_t,set<int> > m_contigCounts;
+
+/** the set of observed paths for the current position */
+	map<int,set<uint64_t > > m_observedPaths;
 
 	// state of the machine
 	bool m_checkedHits;

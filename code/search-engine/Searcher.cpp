@@ -31,7 +31,7 @@ using namespace std;
 //#define CONFIG_COUNT_ELEMENTS_VERBOSE
 //#define CONFIG_DEBUG_IOPS
 //#define CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
-
+//#define CONFIG_CONTIG_IDENTITY_VERBOSE
 
 #define CONFIG_FORCE_VALUE_FOR_MAXIMUM_SPEED false
 
@@ -794,6 +794,9 @@ void Searcher::call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		// the number of k-mers in the query sequence
 		// otherwise, it does not make sense
 		#ifdef ASSERT
+		if(count> numberOfKmers){
+			cout<<"Error: "<<count<<" k-mers observed, but the contig has only "<<numberOfKmers<<endl;
+		}
 		assert(count <= numberOfKmers);
 		#endif
 
@@ -1263,8 +1266,8 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				m_sortedHits.clear();
 
 				// sort hits
-				for(map<uint64_t,int>::iterator i=m_contigCounts.begin();i!=m_contigCounts.end();i++){
-					m_sortedHits[i->second].push_back(i->first);
+				for(map<uint64_t,set<int> >::iterator i=m_contigCounts.begin();i!=m_contigCounts.end();i++){
+					m_sortedHits[i->second.size()].push_back(i->first);
 				}
 			}
 	
@@ -1376,6 +1379,18 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 					added++;
 				}
 
+				#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
+				cout<<"Will request stuff at sequence position "<<m_numberOfKmers<<endl;
+				#endif
+
+				// add the sequence position
+				m_bufferedData.addAt(rankToFlush,m_numberOfKmers);
+				added++;
+
+				// this little guy have to be right after iterateToNextKmer()
+				// otherwise, it is buggy.
+				m_numberOfKmers++;
+
 				int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_COVERAGE_AND_PATHS);
 
 				// pad the thing to the ground
@@ -1428,38 +1443,132 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 			int count=message->getCount();
 
+/* TODO: implement responses 
+			uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(count*sizeof(uint64_t));
+			int outputBufferPosition=0;
+*/
+
 			m_pendingMessages--;
+
+			#ifdef ASSERT
+			assert(m_pendingMessages==0);
+			#endif
 
 			// the size (number of uint64_t) of things per vertex
 			int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_COVERAGE_AND_PATHS);
 
+			#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
+			cout<<endl;
+			cout<<"RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY"<<endl;
+			cout<<"meta count= "<<count<<" period= "<<period<<endl;
+			#endif
+
+			#ifdef ASSERT
+			assert(count%period==0);
+			#endif
+
 			// iterate over the coverage values
 			for(int i=0;i<count;i+=period){
+	// the message contains:
+	//  a k-mer
+	//  sequence position
+	//  a coverage value
+	//  a count
+	//  an index
+	//  a total
+	//  a list of pairs
 
 				int bufferPosition=i;
+
+				Kmer kmer;
+
+				// unpack the k-mer
+				// we will need it if it is repeated.
+				kmer.unpack(buffer,&bufferPosition);
+
+				int sequencePosition=buffer[bufferPosition++];
+	
+				#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
+				cout<<"sequence position "<<sequencePosition<<endl;
+				#endif
+
 				// get the coverage.
 				int coverage=buffer[bufferPosition++];
 
-				if(coverage>0){
+				#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
+				cout<<"Coverage is "<<coverage<<endl;
+				#endif
+
+				if(coverage>0){// the k-mer exists
+
 					m_coverageDistribution[coverage]++;
 					m_matches++;
 
 					int numberOfPaths=buffer[bufferPosition++];
+					int index=buffer[bufferPosition++];
+					int total=buffer[bufferPosition++];
 	
 					#ifdef ASSERT
-					set<uint64_t> observed;
+					assert(numberOfPaths<=total);
+					assert(index<=total);
 					#endif
+
+					#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
+					cout<<"Paths: "<<numberOfPaths<<" total: "<<total<<endl;
+					#endif
+	
+					bool reply=false;
+
+					// this flag will say if we need to send another message
+					// TODO: implement it
+					if(index < total)
+						reply=true;
 
 					for(int j=0;j<numberOfPaths;j++){
 						uint64_t contigPath=buffer[bufferPosition++];
-						m_contigCounts[contigPath]++;
+						int contigPosition=buffer[bufferPosition++];
+
+						#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
+						cout<<"Contig Data "<<contigPath<<" "<<contigPosition<<endl;
+						#endif
+
+						// don't process the same item twice for the current position
+						if(m_observedPaths.count(sequencePosition)>0 
+							&& m_observedPaths[sequencePosition].count(contigPath)>0){  // a contig path can only be processed once per position<
+
+							#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
+							cout<<"Skipping because we already used "<<contigPath<<" for position "<<sequencePosition<<endl;
+							#endif
+
+							continue; // 
+						}
+
+						// a contig position can only be utilised once
+						// for all the sequence queried
+						if(m_contigCounts.count(contigPath)>0 && m_contigCounts[contigPath].count(contigPosition)>0){
+
+							#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
+							cout<<"Skipping because we already used contig "<<contigPosition<<" (contig position: "<<contigPosition<<" for current sequence"<<endl;
+							#endif
+
+							continue;  //
+						}
+
+						#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
+						cout<<"Adding contig "<<contigPath<<", position "<<contigPosition<<" for current sequence at position "<<sequencePosition<<endl;
+						#endif
+
+						int theContigPosition=contigPosition;
+						//theContigPosition=m_contigCounts[contigPath].size();// for testing purposes TODO: remove this line
+
+						// add the contig position
+						m_contigCounts[contigPath].insert(theContigPosition);
+
+						// mark it as utilised for the current sequence position
+						m_observedPaths[sequencePosition].insert(contigPath);
 	
 						// we don't care if the vertex is repeated
 						// for now.
-						#ifdef ASSERT
-						assert(observed.count(contigPath)==0);
-						observed.insert(contigPath);
-						#endif
 					}
 				}
 
@@ -1473,7 +1582,6 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 					cout<<" ProcessedKmers= "<<m_numberOfKmers<<endl;
 				}
 
-				m_numberOfKmers++;
 				m_kmersProcessed++;
 
 				if(m_kmersProcessed%1000000==0){
@@ -1481,7 +1589,20 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				}
 			}
 
-			m_requestedCoverage=false;
+			if(false){ // this is a repeated vertex, we need to fetch more stuff
+				// not implemented yet
+				/*
+				Message aMessage(message2,count,source,RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY,
+					m_parameters->getRank());
+				m_outbox->push_back(aMessage);
+				*/
+
+			}else{
+				m_requestedCoverage=false;
+		
+				// clear observed contigs for future sequence positions
+				m_observedPaths.clear();
+			}
 
 		// we processed all the k-mers
 		// now we need to flush the remaining half-full buffers
@@ -1685,15 +1806,40 @@ void Searcher::showProcessedKmers(){
 }
 
 void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
+
+	#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
+	cout<<endl;
+	cout<<"call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS"<<endl;
+	#endif
+
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
 	uint64_t*incoming=(uint64_t*)buffer;
 	int count=message->getCount();
+
+	// reply buffer
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(count*sizeof(uint64_t));
 
 	int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_COVERAGE_AND_PATHS);
 
-	int pathsThatCanBePacked=period-KMER_U64_ARRAY_SIZE-1;
+	// the message contains:
+	//  a k-mer
+	//  sequencePosition
+	//  a coverage value
+	//  a count
+	//  an index
+	//  a total
+	//  a list of pairs
+	int pathsThatCanBePacked=(period-KMER_U64_ARRAY_SIZE-1-1-3)/2;
+
+	#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
+	cout<<"Meta: count= "<<count<<" period= "<<period<<endl;
+	cout<<"Capacity: "<<pathsThatCanBePacked<<" paths."<<endl;
+	#endif
+
+	#ifdef ASSERT
+	assert(count%period==0);
+	#endif
 
 	for(int i=0;i<count;i+=period){
 
@@ -1704,43 +1850,103 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 
 		Vertex*node=m_subgraph->find(&vertex);
 
+		int sequencePosition=incoming[bufferPosition++];
+
+		#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
+		cout<<"Sequence position: "<<sequencePosition<<endl;
+		#endif
+
+		bufferPosition++;// skip the coverage
+		bufferPosition++;// skip the count
+		int pathIndex=incoming[bufferPosition++]; // get the index
+
+		#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
+		cout<<"Will use index "<<pathIndex<<endl;
+		#endif
+
+		bufferPosition++; // skip the total
+
 		// if it is not there, then it has a coverage of 0
 		int coverage=0;
 
-		if(node!=NULL)
+		if(node!=NULL){
 			coverage=node->getCoverage(&vertex);
+			
+			#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
+			cout<<"Not NULL, coverage= "<<coverage<<endl;
+			#endif
+		}
 
 		int outputBufferPosition=i;
+		vertex.pack(message2,&outputBufferPosition);// pack the k-mer
+		message2[outputBufferPosition++]=sequencePosition; // pack the sequence position, we will need it
 		message2[outputBufferPosition++]=coverage;
+
+		// store the place where the count will be deposited
+		int positionForCount=outputBufferPosition++;
+		int positionForIndex=outputBufferPosition++;
+		int positionForTotal=outputBufferPosition++;
+
+		// set things to 0 for now
+		message2[positionForCount]=0;
+		message2[positionForIndex]=0;
+		message2[positionForTotal]=0;
 
 		if(node!=NULL){
 			vector<Direction> paths=node->getDirections(&vertex);
 
-			set<uint64_t> contigPaths;
+			#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
+			cout<<"paths found: "<<paths.size()<<endl;
+			#endif
 
 			// remove duplicates
-			for(int j=0;j<(int)paths.size();j++){
-				contigPaths.insert(paths[j].getWave());
-			}
+			set<uint64_t> contigPaths;
 
-			// store the place where the count will be deposited
-			int positionForCount=outputBufferPosition++;
-			
 			int processed=0;
 
-			for(set<uint64_t>::iterator j=contigPaths.begin();j!=contigPaths.end();j++){
-				message2[outputBufferPosition++]=*j;
+			while(pathIndex<(int)paths.size()){
+
+				#ifdef ASSERT
+				assert(pathIndex<(int)paths.size());
+				#endif
+
+				uint64_t path=paths[pathIndex].getWave();
+				int contigPosition=paths[pathIndex].getProgression();
+
+				#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
+				cout<<"Index= "<<pathIndex<<" Storing Contig Data "<<path<<" "<<contigPosition<<endl;
+				#endif
+
+				//store the contig path
+				message2[outputBufferPosition++]=path; // path identifier
+				message2[outputBufferPosition++]=contigPosition; // path position
+
 				processed++;
+				
+				pathIndex++;
 
 				// we just don't send them all because
 				// repeats are repeated
 				if(processed==pathsThatCanBePacked)
 					break;
+
 			}
 	
 			message2[positionForCount]=processed;
+			message2[positionForIndex]=pathIndex;
+			message2[positionForTotal]=paths.size();
+
+			#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
+			cout<<"Processed: "<<processed<<" NewIndex: "<<pathIndex<<" Total: "<<paths.size()<<endl;
+			#endif
 		}
 	}
+
+	#ifdef ASSERT
+	assert(count*sizeof(uint64_t)<=MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	#endif
+
+
 
 	Message aMessage(message2,count,source,RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY,
 		m_parameters->getRank());
