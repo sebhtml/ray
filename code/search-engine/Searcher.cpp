@@ -829,7 +829,7 @@ void Searcher::call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			// create an empty file for identifications
 			ostringstream identifications;
 
-			string*theDirectoryPath=m_searchDirectories[m_directoryIterator].getDirectoryName();
+			string*theDirectoryPath=m_searchDirectories[directoryIterator].getDirectoryName();
 			string baseName=getBaseName(*theDirectoryPath);
 			identifications<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
 			identifications<<baseName<<"/ContigIdentifications.tsv";
