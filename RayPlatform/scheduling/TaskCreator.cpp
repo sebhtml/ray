@@ -19,6 +19,7 @@
 */
 
 #include <scheduling/TaskCreator.h>
+#include <stdlib.h> /* for NULL */
 
 #ifdef ASSERT
 #include <assert.h>
