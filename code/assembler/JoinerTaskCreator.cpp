@@ -150,3 +150,8 @@ void JoinerTaskCreator::destroyWorker(Worker*worker){
 	delete worker;
 }
 
+void JoinerTaskCreator::registerPlugin(ComputeCore*core){
+
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_FINISH_FUSIONS, this);
+
+}

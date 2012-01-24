@@ -35,6 +35,7 @@
 #include <assembler/LibraryWorker.h>
 #include <handlers/SlaveModeHandler.h>
 #include <handlers/MasterModeHandler.h>
+#include <core/ComputeCore.h>
 
 #include <map>
 using namespace std;
@@ -47,7 +48,7 @@ using namespace std;
  * messages are grouped by the virtual communicator.
  * \author Sébastien Boisvert
  */
-class Library : public SlaveModeHandler, public MasterModeHandler{
+class Library : public SlaveModeHandler, public MasterModeHandler, public CorePlugin{
 	int m_currentLibrary;
 	int m_ranksThatReplied;
 	int m_informationSent;
@@ -106,6 +107,7 @@ TimePrinter*m_timePrinter,int*m_mode,int*m_master_mode,
 Parameters*m_parameters,SeedingData*m_seedingData,StaticVector*inbox,VirtualCommunicator*vc
 );
 
+	void registerPlugin(ComputeCore*core);
 };
 
 #endif

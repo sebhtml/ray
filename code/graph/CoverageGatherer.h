@@ -27,6 +27,7 @@
 #include <graph/GridTable.h>
 #include <memory/RingAllocator.h>
 #include <handlers/SlaveModeHandler.h>
+#include <core/ComputeCore.h>
 
 #include <stdint.h>
 #include <map>
@@ -35,7 +36,7 @@ using namespace std;
 /**
  * \author Sébastien Boisvert
  */
-class CoverageGatherer : public SlaveModeHandler {
+class CoverageGatherer : public SlaveModeHandler, public CorePlugin{
 	map<int,uint64_t> m_distributionOfCoverage;
 	map<int,uint64_t>::iterator m_coverageIterator;
 	bool m_waiting;
@@ -50,6 +51,8 @@ public:
 		GridTable*subgraph,RingAllocator*outboxAllocator);
 	void call_RAY_SLAVE_MODE_SEND_DISTRIBUTION();
 	void writeKmers();
+
+	void registerPlugin(ComputeCore*core);
 };
 
 #endif

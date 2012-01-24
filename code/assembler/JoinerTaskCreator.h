@@ -31,6 +31,7 @@
 #include <memory/RingAllocator.h>
 #include <structures/Kmer.h>
 #include <handlers/SlaveModeHandler.h>
+#include <core/ComputeCore.h>
 
 #include <vector>
 #include <set>
@@ -39,7 +40,7 @@ using namespace std;
 /**
  * The class creates and kills workers for the fusion of
  * similar paths */
-class JoinerTaskCreator: public TaskCreator, public SlaveModeHandler {
+class JoinerTaskCreator: public TaskCreator, public SlaveModeHandler, public CorePlugin{
 	VirtualCommunicator*m_virtualCommunicator;
 	RingAllocator*m_outboxAllocator;
 	Parameters*m_parameters;
@@ -83,6 +84,7 @@ public:
 	/** destroy a worker */
 	void destroyWorker(Worker*worker);
 
+	void registerPlugin(ComputeCore*core);
 };
 
 #endif

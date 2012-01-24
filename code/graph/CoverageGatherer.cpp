@@ -198,3 +198,7 @@ void CoverageGatherer::constructor(Parameters*parameters,StaticVector*inbox,Stat
 	m_subgraph=subgraph;
 }
 
+void CoverageGatherer::registerPlugin(ComputeCore*core){
+
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEND_DISTRIBUTION, this);
+}

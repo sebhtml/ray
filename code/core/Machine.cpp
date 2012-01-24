@@ -722,20 +722,6 @@ void Machine::showRayVersion(MessagesHandler*messagesHandler,bool fullReport){
 }
 
 void Machine::registerPlugins(){
-
-	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION, &m_library);
-	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES, &m_library);
-	m_computeCore.setMasterModeObjectHandler(RAY_MASTER_MODE_UPDATE_DISTANCES, &m_library);
-
-	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_START_SEEDING,m_seedingData);
-	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEND_SEED_LENGTHS, m_seedingData);
-
-	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_FINISH_FUSIONS, &m_joinerTaskCreator);
-
-	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEND_DISTRIBUTION,&m_coverageGatherer);
-
-	m_computeCore.setMasterModeObjectHandler(RAY_MASTER_MODE_COUNT_FILE_ENTRIES, &m_partitioner);
-
 	m_computeCore.registerPlugin(&m_amos);
 	m_computeCore.registerPlugin(&m_searcher);
 	m_computeCore.registerPlugin(&m_networkTest);
@@ -743,4 +729,9 @@ void Machine::registerPlugins(){
 	m_computeCore.registerPlugin(&m_scaffolder);
 	m_computeCore.registerPlugin(&m_fusionTaskCreator);
 	m_computeCore.registerPlugin(&m_helper);
+	m_computeCore.registerPlugin(&m_library);
+	m_computeCore.registerPlugin(m_seedingData);
+	m_computeCore.registerPlugin(&m_joinerTaskCreator);
+	m_computeCore.registerPlugin(&m_coverageGatherer);
+	m_computeCore.registerPlugin(&m_partitioner);
 }

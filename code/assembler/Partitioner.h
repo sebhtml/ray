@@ -29,6 +29,7 @@
 #include <scheduling/SwitchMan.h>
 #include <handlers/SlaveModeHandler.h>
 #include <handlers/MasterModeHandler.h>
+#include <core/ComputeCore.h>
 
 #include <map>
 using namespace std;
@@ -37,7 +38,7 @@ using namespace std;
  * This class counts the number of entries in each input file in parallel 
  * \author Sébastien Boisvert
  */
-class Partitioner : public SlaveModeHandler, public MasterModeHandler{
+class Partitioner : public SlaveModeHandler, public MasterModeHandler, public CorePlugin{
 	SwitchMan*m_switchMan;
 
 	/** the loader */
@@ -80,6 +81,8 @@ public:
 	SwitchMan*switchMan);
 	void call_RAY_MASTER_MODE_COUNT_FILE_ENTRIES();
 	void call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES();
+
+	void registerPlugin(ComputeCore*core);
 };
 
 #endif

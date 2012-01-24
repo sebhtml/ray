@@ -377,3 +377,11 @@ void SeedingData::loadCheckpoint(){
 	cout<<"Rank "<<m_parameters->getRank()<<" loaded "<<n<<" seeds from checkpoint Seeds"<<endl;
 	f.close();
 }
+
+void SeedingData::registerPlugin(ComputeCore*core){
+
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_START_SEEDING, this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEND_SEED_LENGTHS, this);
+
+
+}

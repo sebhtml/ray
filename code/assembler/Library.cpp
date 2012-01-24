@@ -305,3 +305,9 @@ void Library::updateStates(){
 
 	m_virtualCommunicator->resetGlobalPushedMessageStatus();
 }
+
+void Library::registerPlugin(ComputeCore*core){
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION, this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_UPDATE_DISTANCES, this);
+}

@@ -35,6 +35,7 @@ class SeedExtender;
 #include <core/common_functions.h>
 #include <assembler/SeedWorker.h>
 #include <handlers/SlaveModeHandler.h>
+#include <core/ComputeCore.h>
 
 #include <set>
 using namespace std;
@@ -47,7 +48,7 @@ using namespace std;
  * communicator and the later groups messages.
  * \author Sébastien Boisvert
  */
-class SeedingData : public SlaveModeHandler{
+class SeedingData : public SlaveModeHandler, public CorePlugin{
 	/** checkpointing */
 	bool m_checkedCheckpoint;
 
@@ -132,6 +133,8 @@ public:
 
 	bool m_initialized;
 	void writeSeedStatistics();
+
+	void registerPlugin(ComputeCore*core);
 };
 
 #endif
