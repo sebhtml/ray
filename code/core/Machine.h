@@ -274,6 +274,8 @@ class Machine{
 
 	void showRayVersionShort();
 
+	void registerPlugins();
+
 public:
 	/*
  * this is the only public bit

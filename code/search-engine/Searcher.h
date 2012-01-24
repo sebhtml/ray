@@ -45,13 +45,14 @@ using namespace std;
 #include <handlers/MasterModeHandler.h>
 #include <handlers/MessageTagHandler.h>
 #include <search-engine/ContigHit.h>
+#include <core/CorePlugin.h>
 
 /**
  * This class searches for sequences in the de Bruijn graph
  * It outputs biological abundance readouts
  * \author Sébastien Boisvert
  **/
-class Searcher : public SlaveModeHandler, public MasterModeHandler, public MessageTagHandler {
+class Searcher : public SlaveModeHandler, public MasterModeHandler, public MessageTagHandler, public CorePlugin {
 	GridTable*m_subgraph;
 
 	/** number of pending messages */
@@ -239,6 +240,8 @@ public:
 
 	void call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message);
 	void call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY(Message*message);
+
+	void registerPlugin(ComputeCore*core);
 
 }; /* Searcher */
 

@@ -506,3 +506,7 @@ void ComputeCore::setMaximumNumberOfOutboxBuffers(int maxNumberOfBuffers){
 	if(m_maximumNumberOfOutboxMessages < m_maximumAllocatedOutputBuffers)
 		m_maximumNumberOfOutboxMessages=m_maximumAllocatedOutputBuffers;
 }
+
+void ComputeCore::registerPlugin(CorePlugin*plugin){
+	plugin->registerPlugin(this);
+}

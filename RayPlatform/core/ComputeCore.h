@@ -35,6 +35,7 @@
 #include <memory/RingAllocator.h>
 #include <scheduling/VirtualProcessor.h>
 #include <communication/VirtualCommunicator.h>
+#include <core/CorePlugin.h>
 
 #include <stdint.h>
 
@@ -158,6 +159,8 @@ public:
 	int getMaximumNumberOfAllocatedInboxMessages();
 	int getMaximumNumberOfAllocatedOutboxMessages();
 	void setMaximumNumberOfOutboxBuffers(int maxNumberOfBuffers);
+	
+	void registerPlugin(CorePlugin*plugin);
 };
 
 #endif

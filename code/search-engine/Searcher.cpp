@@ -20,11 +20,13 @@
 
 #include <search-engine/Searcher.h>
 #include <structures/Vertex.h>
-#include <fstream>
 #include <memory/malloc_types.h>
-#include <sstream>
 #include <core/OperatingSystem.h>
+#include <core/ComputeCore.h>
+
 #include <stdio.h> /* for fopen, fprintf and fclose */
+#include <fstream>
+#include <sstream>
 using namespace std;
 
 //#define CONFIG_CONTIG_ABUNDANCE_VERBOSE
@@ -2047,4 +2049,18 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 }
 
 void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY(Message*message){
+}
+
+void Searcher::registerPlugin(ComputeCore*core){
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES,this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES, this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS, this);
+
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES,this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES, this);
+
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_GET_COVERAGE_AND_PATHS,this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY, this);
+
 }

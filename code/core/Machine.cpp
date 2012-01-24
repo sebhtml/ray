@@ -129,6 +129,8 @@ m_virtualCommunicator,&m_kmerAcademyBuilder,
 	assignSlaveHandlers();
 	assignMessageTagHandlers();
 
+	registerPlugins();
+
 	configureVirtualCommunicator(m_virtualCommunicator);
 }
 
@@ -549,13 +551,13 @@ void Machine::assignMasterHandlers(){
 	// overwrite defaults
 	m_computeCore.setMasterModeObjectHandler(RAY_MASTER_MODE_LOAD_CONFIG,&m_helper);
 	m_computeCore.setMasterModeObjectHandler(RAY_MASTER_MODE_SEND_COVERAGE_VALUES,&m_helper);
-	m_computeCore.setMasterModeObjectHandler(RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES,&m_searcher);
-	m_computeCore.setMasterModeObjectHandler(RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES,&m_searcher);
+
 	m_computeCore.setMasterModeObjectHandler(RAY_MASTER_MODE_TEST_NETWORK,& m_networkTest);
 	m_computeCore.setMasterModeObjectHandler(RAY_MASTER_MODE_AMOS, &m_amos);
 	m_computeCore.setMasterModeObjectHandler(RAY_MASTER_MODE_UPDATE_DISTANCES, &m_library);
 	m_computeCore.setMasterModeObjectHandler(RAY_MASTER_MODE_WRITE_SCAFFOLDS, &m_scaffolder);
-	m_computeCore.setMasterModeObjectHandler(RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS, &m_searcher);
+
+
 	m_computeCore.setMasterModeObjectHandler(RAY_MASTER_MODE_COUNT_FILE_ENTRIES, &m_partitioner);
 
 }
@@ -570,8 +572,6 @@ void Machine::assignSlaveHandlers(){
 	#undef ITEM
 
 	// overwrite defaults
-	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES,&m_searcher);
-	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES, &m_searcher);
 	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_TEST_NETWORK, &m_networkTest);
 	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_AMOS, &m_amos);
 	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_SCAFFOLDER, &m_scaffolder);
@@ -581,7 +581,8 @@ void Machine::assignSlaveHandlers(){
 	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_START_SEEDING,m_seedingData);
 	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_FINISH_FUSIONS, &m_joinerTaskCreator);
 	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEND_DISTRIBUTION,&m_coverageGatherer);
-	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS, &m_searcher);
+
+
 	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEND_SEED_LENGTHS, m_seedingData);
 
 }
@@ -594,8 +595,6 @@ void Machine::assignMessageTagHandlers(){
 
 	#undef ITEM
 
-	m_computeCore.setMessageTagObjectHandler(RAY_MPI_TAG_GET_COVERAGE_AND_PATHS, &m_searcher);
-	m_computeCore.setMessageTagObjectHandler(RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY, &m_searcher);
 }
 
 void Machine::configureVirtualCommunicator(VirtualCommunicator*virtualCommunicator){
@@ -817,4 +816,6 @@ void Machine::showRayVersion(MessagesHandler*messagesHandler,bool fullReport){
 	cout<<endl;
 }
 
-
+void Machine::registerPlugins(){
+	m_computeCore.registerPlugin(&m_searcher);
+}
