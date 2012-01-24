@@ -124,11 +124,6 @@ m_virtualCommunicator,&m_kmerAcademyBuilder,
 
 );
 
-	// assign handlers
-	assignMasterHandlers();
-	assignSlaveHandlers();
-	assignMessageTagHandlers();
-
 	registerPlugins();
 
 	configureVirtualCommunicator(m_virtualCommunicator);
@@ -538,65 +533,6 @@ Machine::~Machine(){
 	m_bubbleData=NULL;
 }
 
-void Machine::assignMasterHandlers(){
-	
-	// set defaults
-	#define ITEM(mode) \
-	m_computeCore.setMasterModeObjectHandler(mode,&m_helper);
-
-	#include <master_modes.txt>
-
-	#undef ITEM
-
-	// overwrite defaults
-	m_computeCore.setMasterModeObjectHandler(RAY_MASTER_MODE_LOAD_CONFIG,&m_helper);
-	m_computeCore.setMasterModeObjectHandler(RAY_MASTER_MODE_SEND_COVERAGE_VALUES,&m_helper);
-
-	m_computeCore.setMasterModeObjectHandler(RAY_MASTER_MODE_TEST_NETWORK,& m_networkTest);
-	m_computeCore.setMasterModeObjectHandler(RAY_MASTER_MODE_AMOS, &m_amos);
-	m_computeCore.setMasterModeObjectHandler(RAY_MASTER_MODE_UPDATE_DISTANCES, &m_library);
-	m_computeCore.setMasterModeObjectHandler(RAY_MASTER_MODE_WRITE_SCAFFOLDS, &m_scaffolder);
-
-
-	m_computeCore.setMasterModeObjectHandler(RAY_MASTER_MODE_COUNT_FILE_ENTRIES, &m_partitioner);
-
-}
-
-void Machine::assignSlaveHandlers(){
-	// set defaults
-	#define ITEM(mode) \
-	m_computeCore.setSlaveModeObjectHandler(mode, &m_helper);
-
-	#include <slave_modes.txt>
-
-	#undef ITEM
-
-	// overwrite defaults
-	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_TEST_NETWORK, &m_networkTest);
-	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_AMOS, &m_amos);
-	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_SCAFFOLDER, &m_scaffolder);
-	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_FUSION, &m_fusionTaskCreator );
-	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION, &m_library);
-	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES, &m_library);
-	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_START_SEEDING,m_seedingData);
-	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_FINISH_FUSIONS, &m_joinerTaskCreator);
-	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEND_DISTRIBUTION,&m_coverageGatherer);
-
-
-	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEND_SEED_LENGTHS, m_seedingData);
-
-}
-
-void Machine::assignMessageTagHandlers(){
-	#define ITEM(tag) \
-	m_computeCore.setMessageTagObjectHandler(tag, &m_mp);
-
-	#include <mpi_tags.txt>
-
-	#undef ITEM
-
-}
-
 void Machine::configureVirtualCommunicator(VirtualCommunicator*virtualCommunicator){
 	/** configure the virtual communicator. */
 	/* ## concatenates 2 symbols */
@@ -772,8 +708,6 @@ void Machine::showRayVersion(MessagesHandler*messagesHandler,bool fullReport){
 
 	cout<<endl;
 
-	#define SHOW_SIZEOF
-
 	if(!fullReport)
 		return;
 
@@ -784,38 +718,52 @@ void Machine::showRayVersion(MessagesHandler*messagesHandler,bool fullReport){
 	cout<<"Ray slave MPI ranks: 0-"<<messagesHandler->getSize()-1<<endl;
 	cout<<endl;
 
-
-	#ifdef SHOW_ITEMS
-	int count=0;
-	#define ITEM(x) count++;
-	#include <core/master_mode_macros.h>
-	#undef ITEM
-	cout<<"Ray master modes ( "<<count<<" )"<<endl;
-	#define ITEM(x) printf(" %i %s\n",x,#x);fflush(stdout);
-	#include <core/master_mode_macros.h>
-	#undef ITEM
-	cout<<endl;
-	count=0;
-	#define ITEM(x) count++;
-	#include <core/slave_mode_macros.h>
-	#undef ITEM
-	cout<<"Ray slave modes ( "<<count<<" )"<<endl;
-	#define ITEM(x) printf(" %i %s\n",x,#x);fflush(stdout);
-	#include <core/slave_mode_macros.h>
-	#undef ITEM
-	cout<<endl;
-	count=0;
-	#define ITEM(x) count++;
-	#include <communication/mpi_tag_macros.h>
-	#undef ITEM
-	cout<<"Ray MPI tags ( "<<count<<" )"<<endl;
-	#define ITEM(x) printf(" %i %s\n",x,#x);fflush(stdout);
-	#include <communication/mpi_tag_macros.h>
-	#undef ITEM
-	#endif
 	cout<<endl;
 }
 
 void Machine::registerPlugins(){
+	// set defaults
+	#define ITEM(mode) \
+	m_computeCore.setSlaveModeObjectHandler(mode, &m_helper);
+
+	#include <slave_modes.txt>
+
+	#undef ITEM
+
+	// overwrite defaults
+	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_AMOS, &m_amos);
+	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_FUSION, &m_fusionTaskCreator );
+	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION, &m_library);
+	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES, &m_library);
+	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_START_SEEDING,m_seedingData);
+	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_FINISH_FUSIONS, &m_joinerTaskCreator);
+	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEND_DISTRIBUTION,&m_coverageGatherer);
+
+	m_computeCore.setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEND_SEED_LENGTHS, m_seedingData);
+
+	
+	// set defaults
+	#define ITEM(mode) \
+	m_computeCore.setMasterModeObjectHandler(mode,&m_helper);
+
+	#include <master_modes.txt>
+
+	#undef ITEM
+
+	// overwrite defaults
+	m_computeCore.setMasterModeObjectHandler(RAY_MASTER_MODE_LOAD_CONFIG,&m_helper);
+	m_computeCore.setMasterModeObjectHandler(RAY_MASTER_MODE_SEND_COVERAGE_VALUES,&m_helper);
+
+	m_computeCore.setMasterModeObjectHandler(RAY_MASTER_MODE_AMOS, &m_amos);
+	m_computeCore.setMasterModeObjectHandler(RAY_MASTER_MODE_UPDATE_DISTANCES, &m_library);
+
+
+
+	m_computeCore.setMasterModeObjectHandler(RAY_MASTER_MODE_COUNT_FILE_ENTRIES, &m_partitioner);
+
+
 	m_computeCore.registerPlugin(&m_searcher);
+	m_computeCore.registerPlugin(&m_networkTest);
+	m_computeCore.registerPlugin(&m_mp);
+	m_computeCore.registerPlugin(&m_scaffolder);
 }

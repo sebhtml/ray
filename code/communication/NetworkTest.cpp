@@ -30,6 +30,7 @@
 #include <core/statistics.h>
 #include <core/constants.h>
 #include <iostream>
+#include <core/ComputeCore.h>
 using namespace std;
 
 #define LATENCY_INFORMATION_NOT_AVAILABLE 123123123
@@ -304,4 +305,9 @@ int NetworkTest::getModeLatency(){
 
 void NetworkTest::setSwitchMan(SwitchMan*a){
 	m_switchMan=a;
+}
+
+void NetworkTest::registerPlugin(ComputeCore*core){
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_TEST_NETWORK, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_TEST_NETWORK, this);
 }

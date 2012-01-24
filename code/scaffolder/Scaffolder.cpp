@@ -20,22 +20,23 @@
 */
 
 #include <core/OperatingSystem.h>
-#include <iostream>
 #include <assembler/ReadFetcher.h>
 #include <scaffolder/Scaffolder.h>
 #include <communication/Message.h>
-#include <algorithm> /* for sort */
-#include <vector>
-
-/* this header was missing, but the code compiled with clang++, gcc, intel, pgi, but not pathscale. pathscale was right */
-#include <stdio.h> 
-
-#include <fstream>
+#include <core/ComputeCore.h>
 #include <scaffolder/ScaffoldingVertex.h>
 #include <scaffolder/ScaffoldingEdge.h>
 #include <scaffolder/ScaffoldingAlgorithm.h>
-#include <sstream>
 #include <core/statistics.h>
+
+/* this header was missing, but the code compiled with clang++, gcc, intel, pgi, but not pathscale. pathscale was right */
+#include <stdio.h> 
+#include <algorithm> /* for sort */
+#include <iostream>
+#include <vector>
+
+#include <fstream>
+#include <sstream>
 #include <assert.h>
 #include <math.h> /* for sqrt */
 using namespace std;
@@ -1341,4 +1342,9 @@ void Scaffolder::call_RAY_MASTER_MODE_WRITE_SCAFFOLDS(){
 
 void Scaffolder::setTimePrinter(TimePrinter*a){
 	m_timePrinter=a;
+}
+
+void Scaffolder::registerPlugin(ComputeCore*core){
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_SCAFFOLDER, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_WRITE_SCAFFOLDS, this);
 }

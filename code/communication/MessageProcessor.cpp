@@ -34,6 +34,7 @@
 #include <structures/SplayTreeIterator.h>
 #include <assembler/FusionData.h>
 #include <core/Parameters.h>
+#include <core/ComputeCore.h>
 
 void MessageProcessor::call_RAY_MPI_TAG_LOAD_SEQUENCES(Message*message){
 	uint32_t*incoming=(uint32_t*)message->getBuffer();
@@ -2291,4 +2292,116 @@ void MessageProcessor::setSwitchMan(SwitchMan*a){
 	m_switchMan=a;
 }
 
-
+void MessageProcessor::registerPlugin(ComputeCore*core){
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_LOAD_SEQUENCES, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_CONTIG_INFO, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_SCAFFOLDING_LINKS, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_GET_READ_MARKERS, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_GET_READ_MATE, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_REQUEST_VERTEX_READS, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_SET_WORD_SIZE, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_VERTEX_READS, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_VERTEX_INFO, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_BUILD_GRAPH, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_VERTEX_READS_FROM_LIST, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_START_INDEXING_SEQUENCES, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_SEQUENCES_READY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_VERTICES_DATA, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_VERTICES_DATA_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_PURGE_NULL_EDGES, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_VERTICES_DISTRIBUTED, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_OUT_EDGES_DATA_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_OUT_EDGES_DATA, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_START_VERTICES_DISTRIBUTION, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_IN_EDGES_DATA_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_IN_EDGES_DATA, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_TEST_NETWORK_MESSAGE, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_COVERAGE_DATA, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_COVERAGE_END, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_SEND_COVERAGE_VALUES, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_READY_TO_SEED, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_START_SEEDING, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_GET_COVERAGE_AND_MARK, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_REQUEST_VERTEX_EDGES, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_REQUEST_VERTEX_EDGES_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_SEEDING_IS_OVER, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_REQUEST_SEED_LENGTHS, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_SEND_SEED_LENGTHS, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_EXTENSION_IS_DONE, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_ASK_EXTENSION, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_ASK_IS_ASSEMBLED, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_ASK_EXTENSION_DATA, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_EXTENSION_DATA_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_EXTENSION_DATA, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_EXTENSION_DATA_END, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_ATTACH_SEQUENCE, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_ASK_READ_LENGTH, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_ASK_READ_LENGTH_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_SAVE_WAVE_PROGRESSION, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_ASSEMBLE_WAVES, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_ASSEMBLE_WAVES_DONE, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_START_FUSION, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_FUSION_DONE, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_GET_PATH_LENGTH, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_GET_PATH_LENGTH_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_ASK_VERTEX_PATHS, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_ASK_VERTEX_PATH, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_HAS_PAIRED_READ, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_HAS_PAIRED_READ_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_GET_PAIRED_READ, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_GET_PAIRED_READ_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_CLEAR_DIRECTIONS, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_FINISH_FUSIONS, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_FINISH_FUSIONS_FINISHED, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_DISTRIBUTE_FUSIONS, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_EXTENSION_START, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_ELIMINATE_PATH, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_GET_PATH_VERTEX, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_GET_PATH_VERTEX_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_WRITE_AMOS, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_WRITE_AMOS_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_LIBRARY_DISTANCE, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_ASK_LIBRARY_DISTANCES, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_KMER_ACADEMY_DATA, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_SEND_COVERAGE_VALUES_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_REQUEST_READ_SEQUENCE, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_I_FINISHED_SCAFFOLDING, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_GET_CONTIG_CHUNK, this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL, this);
+}

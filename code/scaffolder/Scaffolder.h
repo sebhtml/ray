@@ -37,6 +37,7 @@
 
 #include <handlers/SlaveModeHandler.h>
 #include <handlers/MasterModeHandler.h>
+#include <core/CorePlugin.h>
 
 using namespace std;
 
@@ -45,7 +46,7 @@ using namespace std;
  *
  * \author Sébastien Boisvert
  */
-class Scaffolder : public SlaveModeHandler, public MasterModeHandler{
+class Scaffolder : public SlaveModeHandler, public MasterModeHandler, public CorePlugin{
 	SwitchMan*m_switchMan;
 	
 	TimePrinter*m_timePrinter;
@@ -186,6 +187,8 @@ public:
 	void printFinalMessage();
 
 	void setTimePrinter(TimePrinter*a);
+
+	void registerPlugin(ComputeCore*core);
 };
 
 #endif

@@ -28,6 +28,7 @@
 #include <scheduling/SwitchMan.h>
 #include <handlers/MasterModeHandler.h>
 #include <handlers/SlaveModeHandler.h>
+#include <core/ComputeCore.h>
 
 #include <string>
 #include <map>
@@ -47,7 +48,7 @@ using namespace std;
  *          - slave and master modes.
  * \author Sébastien Boisvert
  */
-class NetworkTest : public SlaveModeHandler, public MasterModeHandler {
+class NetworkTest : public SlaveModeHandler, public MasterModeHandler, public CorePlugin {
 
 	SwitchMan*m_switchMan;
 
@@ -120,6 +121,8 @@ public:
 	void writeData();
 
 	void setSwitchMan(SwitchMan*a);
+
+	void registerPlugin(ComputeCore*core);
 };
 
 #endif

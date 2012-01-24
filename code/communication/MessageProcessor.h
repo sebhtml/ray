@@ -58,6 +58,7 @@ using namespace std;
 #include <scheduling/SwitchMan.h>
 #include <scripting/ScriptEngine.h>
 #include <handlers/MessageTagHandler.h>
+#include <core/CorePlugin.h>
 
 /**
  * MessageProcessor receives all the messages of a MPI rank
@@ -66,7 +67,7 @@ using namespace std;
  * Sometimes, a message will generate a reply (_REPLY)
  * \author Sébastien Boisvert
  */
-class MessageProcessor : public MessageTagHandler {
+class MessageProcessor : public MessageTagHandler, public CorePlugin {
 
 	MessageRouter*m_router;
 
@@ -327,6 +328,7 @@ SequencesIndexer*m_si
 	void call_RAY_MPI_TAG_GET_CONTIG_CHUNK(Message*message);
 	void call_RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL(Message*message);
 	
+	void registerPlugin(ComputeCore*core);
 };
 
 #endif
