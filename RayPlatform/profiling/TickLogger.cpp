@@ -138,7 +138,7 @@ void TickLogger::printMasterTicks(ofstream*file){
 	assert(m_masterModes.size()==m_masterCounts.size());
 	#endif
 	
-	(*file)<<"Index	Master mode	Number of ticks	Ratio"<<endl;
+	(*file)<<"Index	Master mode	Number of ticks"<<endl;
 
 	uint64_t total=0;
 
@@ -151,7 +151,7 @@ void TickLogger::printMasterTicks(ofstream*file){
 		if(total!=0)
 			ratio/=total;
 
-		(*file)<<i<<"	"<<MASTER_MODES[m_masterModes[i]]<<"	"<<m_masterCounts[i]<<"	"<<ratio<<endl;
+		(*file)<<i<<"	"<<MASTER_MODES[m_masterModes[i]]<<"	"<<m_masterCounts[i]<<endl;
 	}
 
 	m_masterModes.clear();
