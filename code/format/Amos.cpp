@@ -215,3 +215,11 @@ void Amos::call_RAY_SLAVE_MODE_AMOS(){
 	}
 
 }
+
+void Amos::registerPlugin(ComputeCore*core){
+	// overwrite defaults
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_AMOS, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_AMOS, this);
+
+
+}

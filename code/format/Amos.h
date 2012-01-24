@@ -31,6 +31,7 @@
 #include <communication/VirtualCommunicator.h>
 #include <handlers/SlaveModeHandler.h>
 #include <handlers/MasterModeHandler.h>
+#include <core/ComputeCore.h>
 
 #include <stdio.h>
 #include <stdint.h>
@@ -42,7 +43,7 @@ using namespace std;
  * \see http://sourceforge.net/apps/mediawiki/amos/index.php?title=Message_Types
  * \author Sébastien Boisvert
  */
-class Amos : public SlaveModeHandler, public MasterModeHandler {
+class Amos : public SlaveModeHandler, public MasterModeHandler, public CorePlugin{
 	VirtualCommunicator*m_virtualCommunicator;
 	StaticVector*m_inbox;
 	uint64_t m_workerId;
@@ -66,6 +67,8 @@ public:
 	void constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*outbox,
 		FusionData*fusionData,ExtensionData*extensionData,int*masterMode,int*slaveMode,Scaffolder*scaffolder,
 StaticVector*inbox,VirtualCommunicator*virtualCommunicator);
+
+	void registerPlugin(ComputeCore*core);
 };
 
 

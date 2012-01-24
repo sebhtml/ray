@@ -1027,4 +1027,41 @@ int MachineHelper::getSize(){
 	return m_parameters->getSize();
 }
 
+void MachineHelper::registerPlugin(ComputeCore*core){
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_LOAD_CONFIG, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_SEND_COVERAGE_VALUES, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_WRITE_KMERS, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_LOAD_SEQUENCES, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_PURGE_NULL_EDGES, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_TRIGGER_INDEXING, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_PREPARE_SEEDING, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_TRIGGER_SEEDING, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_TRIGGER_DETECTION, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_ASK_DISTANCES, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_START_UPDATING_DISTANCES, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_TRIGGER_EXTENSIONS, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_TRIGGER_FUSIONS, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_START_FUSION_CYCLE, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_ASK_EXTENSIONS, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_SCAFFOLDER, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_KILL_RANKS, this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_KILL_ALL_MPI_RANKS, this);
 
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_LOAD_SEQUENCES, this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_BUILD_KMER_ACADEMY, this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_EXTRACT_VERTICES, this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_PURGE_NULL_EDGES, this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_WRITE_KMERS, this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_COUNT_FILE_ENTRIES, this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_ASSEMBLE_WAVES, this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_INDEX_SEQUENCES, this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEND_EXTENSION_DATA, this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_EXTENSION, this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_DIE, this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS, this);
+}

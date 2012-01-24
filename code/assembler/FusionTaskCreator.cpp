@@ -157,3 +157,6 @@ void FusionTaskCreator::destroyWorker(Worker*worker){
 	delete worker;
 }
 
+void FusionTaskCreator::registerPlugin(ComputeCore*core){
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_FUSION, this);
+}

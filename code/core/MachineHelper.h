@@ -49,6 +49,7 @@
 #include <communication/VirtualCommunicator.h>
 #include <graph/CoverageGatherer.h>
 #include <assembler/SequencesIndexer.h>
+#include <core/ComputeCore.h>
 
 #include <stdint.h>
 #include <map>
@@ -58,7 +59,7 @@ using namespace std;
  * Old handlers are here.
  * TODO: move them elsewhere ?
  * \author Sébastien Boisvert */
-class MachineHelper: public MasterModeHandler, public SlaveModeHandler{
+class MachineHelper: public MasterModeHandler, public SlaveModeHandler, public CorePlugin{
 
 	SequencesLoader*m_sl;
 	time_t*m_lastTime;
@@ -202,6 +203,7 @@ SequencesLoader*sl,time_t*lastTime,bool*writeKmerInitialised,Partitioner*partiti
 	void call_RAY_SLAVE_MODE_DIE();
 	void call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS();
 
+	void registerPlugin(ComputeCore*core);
 };
 
 #endif
