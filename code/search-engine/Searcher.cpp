@@ -35,7 +35,7 @@ using namespace std;
 //#define CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
 //#define CONFIG_CONTIG_IDENTITY_VERBOSE
 
-#define CONFIG_SEARCH_THRESHOLD 0.10
+#define CONFIG_SEARCH_THRESHOLD 0.001
 #define CONFIG_FORCE_VALUE_FOR_MAXIMUM_SPEED false
 
 void Searcher::constructor(Parameters*parameters,StaticVector*outbox,TimePrinter*timePrinter,SwitchMan*switchMan,
