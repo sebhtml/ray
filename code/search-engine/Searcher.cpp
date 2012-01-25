@@ -395,8 +395,8 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 
 		contigSummaryFile.open(summary.str().c_str());
 
-		contigSummaryFile<<"#Category	Sequence name	K-mer length	Length in k-mers	Mode k-mer coverage depth";
-		contigSummaryFile<<"	Mean k-mer coverage depth";
+		contigSummaryFile<<"#Contig name	K-mer length	Length in k-mers	Mode k-mer coverage depth";
+		contigSummaryFile<<"";
 		contigSummaryFile<<"	Total k-mer coverage depth	Total sample k-mer coverage depth";
 		contigSummaryFile<<"	K-mer coverage depth proportion"<<endl;
 
@@ -843,7 +843,7 @@ void Searcher::call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			ostringstream line;
 		
 			// push header
-			line<<"#Contig	K-mer length	Contig length in k-mers	Contig strand	Category	";
+			line<<"#Contig name	K-mer length	Contig length in k-mers	Contig strand	Category	";
 			line<<"Sequence number	Sequence name";
 			line<<"	Sequence length in k-mers	Matches in contig	Contig length ratio";
 			line<<"	Sequence length ratio"<<endl;
@@ -1208,10 +1208,12 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				totalCount+=count;
 			}
 
+/*
 			double mean=sum;
 
 			if(totalCount>0)
 				mean=(0.0+sum)/totalCount;
+*/
 
 			showSequenceAbundanceProgress();
 
@@ -1282,7 +1284,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 	
 				ostringstream header;
 				header<<"#Category	Sequence number	Sequence name	K-mer length	Length in k-mers";
-				header<<"	Matches in k-mers	Ratio	Mode k-mer coverage depth	Mean k-mer coverage depth"<<endl;
+				header<<"	Matches in k-mers	Ratio	Mode k-mer coverage depth"<<endl;
 
 				fprintf(m_arrayOfFiles[m_directoryIterator][m_fileIterator],
 					"%s",header.str().c_str());
@@ -1300,7 +1302,8 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				content<<m_fileNames[m_directoryIterator][m_fileIterator];
 				content<<"	"<<m_sequenceIterator<<"	"<<sequenceName<<"	"<<m_parameters->getWordSize();
 				content<<"	"<<m_numberOfKmers;
-				content<<"	"<<m_matches<<"	"<<ratio<<"	"<<mode<<"	"<<mean<<endl;
+				content<<"	"<<m_matches<<"	"<<ratio<<"	";
+				content<<mode<<endl;
 	
 				fprintf(m_arrayOfFiles[m_directoryIterator][m_fileIterator],
 				"%s",content.str().c_str());

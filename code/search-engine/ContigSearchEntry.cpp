@@ -56,9 +56,10 @@ void ContigSearchEntry::write(ofstream*file,uint64_t total,int kmerLength){
 	if(total!=0)
 		ratio/=total;
 
-	(*file)<<"Contigs	contig-"<<getName()<<"	"<<kmerLength;
+	(*file)<<"contig-"<<getName()<<"	"<<kmerLength;
 	(*file)<<"	"<<getLength();
 	(*file)<<"	"<<getMode();
-	(*file)<<"	"<<getMean()<<"	"<<getTotal()<<"	";
+	//(*file)<<"	"<<getMean();
+	(*file)<<"	"<<getTotal()<<"	";
 	(*file)<<total<<"	"<<ratio<<endl;
 }
