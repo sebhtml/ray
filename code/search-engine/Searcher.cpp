@@ -1445,6 +1445,17 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				m_searchDirectories[m_directoryIterator].getNextKmer(m_kmerLength,&kmer);
 				m_searchDirectories[m_directoryIterator].iterateToNextKmer();
 
+				// if the k-mer contains non-standard character,
+				// skip it
+
+				if(m_searchDirectories[m_directoryIterator].kmerContainsN()){
+					m_numberOfKmers++; // the number of k-mers for the sequence
+
+					m_kmersProcessed++; // the total number of k-mers processed
+
+					continue;
+				}
+
 				int rankToFlush=m_parameters->_vertexRank(&kmer);
 
 				int added=0;
@@ -1494,7 +1505,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 					m_outbox,m_parameters->getRank());
 
 				#ifdef ASSERT
-				assert(m_pendingMessages>0);
+				assert(m_pendingMessages>=0);
 				#endif
 			}
 

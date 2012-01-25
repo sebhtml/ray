@@ -30,6 +30,8 @@ using namespace std;
 
 class SearchDirectory{
 
+	bool m_hasN;
+
 	string m_path;
 
 	vector<string> m_files;
@@ -71,6 +73,8 @@ public:
 	bool hasNextKmer(int kmerLength);
 	void iterateToNextKmer();
 	void getNextKmer(int kmerLength,Kmer*kmer);
+
+	bool kmerContainsN();
 
 	string getCurrentSequenceName();
 };

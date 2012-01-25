@@ -229,6 +229,9 @@ void SearchDirectory::iterateToNextKmer(){
 }
 
 void SearchDirectory::getNextKmer(int kmerLength,Kmer*kmer){
+
+	m_hasN=false;
+
 	char sequenceBuffer[400];
 	memcpy(sequenceBuffer,m_currentSequenceBuffer.c_str()+m_currentSequencePosition,kmerLength);
 	sequenceBuffer[kmerLength]='\0';
@@ -246,13 +249,25 @@ void SearchDirectory::getNextKmer(int kmerLength,Kmer*kmer){
 			case 'c':
 				nucleotide='C';
 				break;
-			case 'G':
+			case 'g':
 				nucleotide='G';
 				break;
 		}
+
+		if(nucleotide!='A' && nucleotide!='T' && nucleotide!='C'
+			&& nucleotide!='G'){
+
+			m_hasN=true;
+		}
+		sequenceBuffer[i]=nucleotide;
 	}
 
 	*kmer=wordId(sequenceBuffer);
+
+}
+
+bool SearchDirectory::kmerContainsN(){
+	return m_hasN;
 }
 
 string SearchDirectory::getCurrentSequenceName(){
