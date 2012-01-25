@@ -34,6 +34,7 @@ using namespace std;
 //#define CONFIG_DEBUG_IOPS
 //#define CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
 //#define CONFIG_CONTIG_IDENTITY_VERBOSE
+//#define CONFIG_DEBUG_COLORS
 
 #define CONFIG_SEARCH_THRESHOLD 0.001
 #define CONFIG_FORCE_VALUE_FOR_MAXIMUM_SPEED false
@@ -1178,6 +1179,23 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 		m_derivative.clear();
 		m_derivative.addX(m_numberOfKmers);
+
+		// check if we need to color the graph 
+		// for this sequence...
+
+		m_mustAddColors=false;
+
+		if(m_searchDirectories[m_directoryIterator].hasCurrentSequenceIdentifier()){
+			uint64_t identifier=m_searchDirectories[m_directoryIterator].getCurrentSequenceIdentifier();
+
+			if(identifier!=DUMMY_IDENTIFIER){
+				#ifdef CONFIG_DEBUG_COLORS
+				cout<<"Will add colors for identifier= "<<identifier<<endl;
+				#endif
+
+				m_mustAddColors=true;
+			}
+		}
 
 	// compute abundances
 	}else if(m_createdSequenceReader && !m_finished){

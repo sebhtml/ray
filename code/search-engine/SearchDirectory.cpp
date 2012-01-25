@@ -356,3 +356,60 @@ void SearchDirectory::loadSomeSequence(){
 	m_currentSequencePosition=0;
 	m_currentSequenceBuffer=newContent.str();
 }
+
+/**
+ * \see http://www.ncbi.nlm.nih.gov/RefSeq/RSfaq.html
+ */
+bool SearchDirectory::hasCurrentSequenceIdentifier(){
+
+	//cout<<"Identifier= "<<m_currentSequenceHeader<<endl;
+
+	// this means that the sequences are not genome sequences
+	// but are genes or something like that.
+	if(m_currentSequenceHeader.find("|:") != string::npos){
+		//cout<<"Contains '|:'"<<endl;
+
+		return false;
+	}
+
+	if(m_currentSequenceHeader.find(">gi|") == string::npos)
+		return false;
+
+	if(m_currentSequenceHeader.find(">gi|")==0)
+		return true;
+
+	return false;
+}
+
+uint64_t SearchDirectory::getCurrentSequenceIdentifier(){
+	int count=0;
+	int i=0;
+
+	while(i<m_currentSequenceHeader.length() && count<2){
+		if(m_currentSequenceHeader[i]=='|')
+			count++;
+		
+		
+		i++;
+	}
+
+	if(count!=2)
+		return DUMMY_IDENTIFIER; // return a dummy identifier
+
+	// >gi|1234|
+	//
+	// 0123456789
+	//
+	// 9-4-1 = 4
+	//
+	string content=m_currentSequenceHeader.substr(4,i-4-1);
+
+	istringstream aStream;
+	aStream.str(content);
+
+	uint64_t identifier;
+
+	aStream>>identifier;
+
+	return identifier;
+}

@@ -28,6 +28,8 @@
 #include <vector>
 using namespace std;
 
+#define DUMMY_IDENTIFIER 999999999999
+
 class SearchDirectory{
 
 	bool m_hasN;
@@ -77,6 +79,10 @@ public:
 	bool kmerContainsN();
 
 	string getCurrentSequenceName();
+
+	bool hasCurrentSequenceIdentifier();
+
+	uint64_t getCurrentSequenceIdentifier();
 };
 
 #endif

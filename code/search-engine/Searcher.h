@@ -53,6 +53,11 @@ using namespace std;
  * \author Sébastien Boisvert
  **/
 class Searcher : public SlaveModeHandler, public MasterModeHandler, public MessageTagHandler, public CorePlugin {
+
+	/** indicates if colors must be added for this sequence. **/
+	bool m_mustAddColors;
+
+	/** the part of the de Bruijn graph that the current ranks owns **/
 	GridTable*m_subgraph;
 
 	bool m_startedColors;
