@@ -55,6 +55,8 @@ using namespace std;
 class Searcher : public SlaveModeHandler, public MasterModeHandler, public MessageTagHandler, public CorePlugin {
 	GridTable*m_subgraph;
 
+	bool m_startedColors;
+
 	/** number of pending messages */
 	int m_pendingMessages;
 	
@@ -232,6 +234,10 @@ public:
 	void call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES();
 	void call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES();
 	
+	void call_RAY_MASTER_MODE_ADD_COLORS();
+	void call_RAY_SLAVE_MODE_ADD_COLORS();
+	void call_RAY_MPI_TAG_ADD_KMER_COLOR(Message*message);
+
 	void constructor(Parameters*parameters,StaticVector*outbox,TimePrinter*timePrinter,SwitchMan*switchMan,
 	VirtualCommunicator*m_vc,StaticVector*inbox,RingAllocator*outboxAllocator,
 		GridTable*graph);

@@ -45,6 +45,8 @@ GridTable*graph){
 
 	m_inbox=inbox;
 
+	m_startedColors=false;
+
 	m_activeFiles=0;
 
 	m_virtualCommunicator=vc;
@@ -2050,14 +2052,39 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 
 void Searcher::registerPlugin(ComputeCore*core){
 	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES,this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES,this);
+
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES, this);
 	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES, this);
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS, this);
 
 	core->setMasterModeObjectHandler(RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS, this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES,this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES, this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS, this);
 
 	core->setMessageTagObjectHandler(RAY_MPI_TAG_GET_COVERAGE_AND_PATHS,this);
-	core->setMessageTagObjectHandler(RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY, this);
 
+	// configure graph coloring things
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_ADD_COLORS, this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_ADD_COLORS,this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_ADD_KMER_COLOR, this);
+}
+
+void Searcher::call_RAY_MPI_TAG_ADD_KMER_COLOR(Message*message){
+	// add the color
+}
+
+void Searcher::call_RAY_MASTER_MODE_ADD_COLORS(){
+	if(!m_startedColors){
+		m_switchMan->openMasterMode(m_outbox,m_parameters->getRank());
+		m_startedColors=true;
+	}else if(m_switchMan->allRanksAreReady()){
+		m_switchMan->closeMasterMode();
+
+		m_timePrinter->printElapsedTime("Graph coloring");
+
+		cout<<endl;
+	}
+}
+
+void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
+	m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
 }
