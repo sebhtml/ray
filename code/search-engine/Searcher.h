@@ -239,7 +239,6 @@ public:
 	void setContigs(vector<vector<Kmer> >*paths,vector<uint64_t>*names);
 
 	void call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message);
-	void call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY(Message*message);
 
 	void registerPlugin(ComputeCore*core);
 

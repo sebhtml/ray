@@ -2048,9 +2048,6 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 	m_outbox->push_back(aMessage);
 }
 
-void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY(Message*message){
-}
-
 void Searcher::registerPlugin(ComputeCore*core){
 	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES,this);
 	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES, this);

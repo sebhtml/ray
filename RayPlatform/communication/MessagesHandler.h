@@ -54,6 +54,7 @@ public:
  * \author Sébastien Boisvert
  */
 class MessagesHandler{
+	bool m_destroyed;
 
 	vector<int> m_connections;
 

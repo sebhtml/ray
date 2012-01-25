@@ -231,9 +231,6 @@ void Machine::start(){
 	m_mp.setVirtualCommunicator(m_virtualCommunicator);
 	m_mp.setSwitchMan(m_switchMan);
 
-	m_switchMan->setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
-	m_switchMan->setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
-
 	m_mode_AttachSequences=false;
 	m_startEdgeDistribution=false;
 
@@ -360,8 +357,6 @@ void Machine::start(){
 
 	m_fusionData->constructor(getSize(),MAXIMUM_MESSAGE_SIZE_IN_BYTES,getRank(),m_outbox,m_outboxAllocator,m_parameters.getWordSize(),
 		m_ed,m_seedingData,m_switchMan->getSlaveModePointer(),&m_parameters);
-
-	m_scriptEngine.configureSwitchMan(m_switchMan);
 
 	m_library.constructor(getRank(),m_outbox,m_outboxAllocator,
 		m_ed,getSize(),&m_timePrinter,m_switchMan->getSlaveModePointer(),m_switchMan->getMasterModePointer(),

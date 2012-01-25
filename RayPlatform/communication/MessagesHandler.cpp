@@ -402,6 +402,8 @@ void MessagesHandler::freeLeftovers(){
 }
 
 void MessagesHandler::constructor(int*argc,char***argv){
+	m_destroyed=false;
+
 	m_sentMessages=0;
 	m_receivedMessages=0;
 	m_datatype=MPI_UNSIGNED_LONG_LONG;
@@ -441,7 +443,10 @@ void MessagesHandler::constructor(int*argc,char***argv){
 }
 
 void MessagesHandler::destructor(){
-	MPI_Finalize();
+	if(!m_destroyed){
+		MPI_Finalize();
+		m_destroyed=true;
+	}
 }
 
 string*MessagesHandler::getName(){

@@ -21,12 +21,14 @@
 #ifndef _SwitchMan_H
 #define _SwitchMan_H
 
-#include <map>
 #include <core/master_modes.h>
 #include <structures/StaticVector.h>
 #include <communication/Message.h>
 #include <core/slave_modes.h>
 #include <core/master_modes.h>
+
+#include <map>
+#include <vector>
 using namespace std;
 
 /**
@@ -58,6 +60,9 @@ class SwitchMan{
 
 /** a table containing mapping from master modes to MPI tags */
 	map<MasterMode,Tag> m_masterModeToTagTable;
+
+/** the order of the master modes */
+	vector<MasterMode> m_masterModeOrder;
 
 /** run some assertions */
 	void runAssertions();
@@ -135,6 +140,10 @@ public:
 
 /** send a message to all MPI ranks, possibly with data */
 	void sendMessageToAll(uint64_t*buffer,int count,StaticVector*outbox,Rank source,Tag tag);
+
+	void addMasterMode(MasterMode masterMode);
+
+	vector<MasterMode>*getMasterModeOrder();
 };
 
 #endif

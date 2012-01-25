@@ -24,6 +24,11 @@
 
 class ComputeCore;
 
+/** 
+ * In the Ray Platform, plugins are registered onto the
+ * core (ComputeCore).
+ * The only method of this interface is to register the plugin.
+ */
 class CorePlugin{
 public:
 	virtual void registerPlugin(ComputeCore*computeCore);

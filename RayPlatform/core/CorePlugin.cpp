@@ -21,5 +21,6 @@
 
 #include <core/CorePlugin.h>
 
+// empty implementation
 void CorePlugin::registerPlugin(ComputeCore*computeCore){
 }

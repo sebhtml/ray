@@ -30,14 +30,28 @@
 using namespace std;
 
 void ComputeCore::setSlaveModeObjectHandler(SlaveMode mode,SlaveModeHandler*object){
+	#ifdef CONFIG_DEBUG_CORE
+	cout<<"setSlaveModeObjectHandler "<<SLAVE_MODES[mode]<<" to "<<object<<endl;
+	#endif
+
 	m_slaveModeHandler.setObjectHandler(mode,object);
 }
 
 void ComputeCore::setMasterModeObjectHandler(MasterMode mode,MasterModeHandler*object){
+
+	#ifdef CONFIG_DEBUG_CORE
+	cout<<"setMasterModeObjectHandler "<<MASTER_MODES[mode]<<" to "<<object<<endl;
+	#endif
+
 	m_masterModeHandler.setObjectHandler(mode,object);
 }
 
 void ComputeCore::setMessageTagObjectHandler(MessageTag tag,MessageTagHandler*object){
+
+	#ifdef CONFIG_DEBUG_CORE
+	cout<<"setMessageTagObjectHandler "<<MESSAGES[tag]<<" to "<<object<<endl;
+	#endif
+
 	m_messageTagHandler.setObjectHandler(tag,object);
 }
 
@@ -63,7 +77,13 @@ void ComputeCore::run(){
  * it is similar to the main loop of a video game, actually, but without a display.
  */
 void ComputeCore::runVanilla(){
+
+	#ifdef CONFIG_DEBUG_CORE
+	cout<<"m_alive= "<<m_alive<<endl;
+	#endif
+
 	while(m_alive || (m_router.isEnabled() && !m_router.hasCompletedRelayEvents())){
+		
 		// 1. receive the message (0 or 1 message is received)
 		// blazing fast, receives 0 or 1 message, never more, never less, other messages will wait for the next iteration !
 		receiveMessages(); 
@@ -80,6 +100,10 @@ void ComputeCore::runVanilla(){
 		// fast, sends at most 17 messages. In most case it is either 0 or 1 message.,..
 		sendMessages();
 	}
+
+	#ifdef CONFIG_DEBUG_CORE
+	cout<<"m_alive= "<<m_alive<<endl;
+	#endif
 }
 
 /*
@@ -411,6 +435,8 @@ void ComputeCore::processData(){
 
 void ComputeCore::constructor(int*argc,char***argv){
 
+	m_alive=true;
+
 	m_messagesHandler.constructor(argc,argv);
 
 	m_runProfiler=false;
@@ -429,6 +455,27 @@ void ComputeCore::constructor(int*argc,char***argv){
 
 	m_maximumNumberOfOutboxMessages=m_size;
 	m_maximumNumberOfInboxMessages=1;
+
+
+	// configure the switchman
+	
+	getInbox()->constructor(getMaximumNumberOfAllocatedInboxMessages(),RAY_MALLOC_TYPE_INBOX_VECTOR,false);
+	getOutbox()->constructor(getMaximumNumberOfAllocatedOutboxMessages(),RAY_MALLOC_TYPE_OUTBOX_VECTOR,false);
+
+	ScriptEngine engine;
+	getSwitchMan()->constructor(getMessagesHandler()->getSize());
+
+	engine.configureSwitchMan(getSwitchMan());
+
+	// set default modes
+	
+	getSwitchMan()->setMasterMode(RAY_MASTER_MODE_DO_NOTHING); 
+	getSwitchMan()->setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
+
+	if(getMessagesHandler()->getRank()==MASTER_RANK){
+		MasterMode mode=getSwitchMan()->getMasterModeOrder()->at(0);
+		getSwitchMan()->setMasterMode(mode);
+	}
 }
 
 void ComputeCore::enableProfiler(){
@@ -509,4 +556,12 @@ void ComputeCore::setMaximumNumberOfOutboxBuffers(int maxNumberOfBuffers){
 
 void ComputeCore::registerPlugin(CorePlugin*plugin){
 	plugin->registerPlugin(this);
+}
+
+void ComputeCore::destructor(){
+	getMessagesHandler()->destructor();
+}
+
+void ComputeCore::stop(){
+	m_alive=false;
 }

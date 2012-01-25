@@ -40,10 +40,13 @@ void ScriptEngine::configureSwitchMan(SwitchMan*switchMan){
 
 	#undef ITEM
 
+	for(int i=0;i<(int)steps.size();i++){
+		switchMan->addMasterMode(steps[i]);
+	}
+
 	for(int i=0;i<(int)steps.size()-1;i++){
 		switchMan->addNextMasterMode(steps[i],steps[i+1]);
 	}
-
 
 	#define ITEM(mpiTag,slaveMode) \
 	switchMan->addSlaveSwitch(mpiTag,slaveMode);

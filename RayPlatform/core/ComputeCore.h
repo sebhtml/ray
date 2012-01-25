@@ -36,7 +36,11 @@
 #include <scheduling/VirtualProcessor.h>
 #include <communication/VirtualCommunicator.h>
 #include <core/CorePlugin.h>
+#include <memory/malloc_types.h>
+#include <core/OperatingSystem.h>
+#include <scripting/ScriptEngine.h>
 
+#include <stdlib.h>
 #include <stdint.h>
 
 /** this class is a compute core
@@ -153,6 +157,8 @@ public:
 
 	bool*getLife();
 
+	void stop();
+
 	VirtualProcessor*getVirtualProcessor();
 	VirtualCommunicator*getVirtualCommunicator();
 
@@ -161,6 +167,8 @@ public:
 	void setMaximumNumberOfOutboxBuffers(int maxNumberOfBuffers);
 	
 	void registerPlugin(CorePlugin*plugin);
+
+	void destructor();
 };
 
 #endif

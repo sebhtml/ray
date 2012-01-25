@@ -232,6 +232,10 @@ int*SwitchMan::getSlaveModePointer(){
 }
 
 void SwitchMan::setSlaveMode(SlaveMode mode){
+	#ifdef CONFIG_SWITCHMAN_VERBOSITY
+	cout<<"setSlaveMode "<<SLAVE_MODES[mode]<<endl;
+	#endif
+
 	m_slaveMode=mode;
 }
 
@@ -240,6 +244,11 @@ MasterMode SwitchMan::getMasterMode(){
 }
 
 void SwitchMan::setMasterMode(MasterMode mode){
+
+	#ifdef CONFIG_SWITCHMAN_VERBOSITY
+	cout<<"setMasterMode "<<MASTER_MODES[mode]<<endl;
+	#endif
+
 	m_masterMode=mode;
 
 	if(mode!=RAY_MASTER_MODE_DO_NOTHING)
@@ -259,3 +268,10 @@ void SwitchMan::addMasterSwitch(MasterMode masterMode,Tag tag){
 	m_masterModeToTagTable[masterMode]=tag;
 }
 
+void SwitchMan::addMasterMode(MasterMode mode){
+	m_masterModeOrder.push_back(mode);
+}
+
+vector<MasterMode>*SwitchMan::getMasterModeOrder(){
+	return &m_masterModeOrder;
+}
