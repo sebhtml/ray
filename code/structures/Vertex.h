@@ -25,9 +25,11 @@
 #include <structures/ReadAnnotation.h>
 #include <structures/Direction.h>
 #include <structures/Kmer.h>
+#include <core/common_functions.h>
+#include <search-engine/ColorSet.h>
+
 #include <fstream>
 #include <stdint.h>
-#include <core/common_functions.h>
 #include <vector>
 using namespace std;
 
@@ -40,7 +42,10 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class Vertex{
+	
+	VirtualKmerColorHandle m_color;
 
+// TODO: move these attributes in the private or protected zone
 public:
 	Kmer m_lowerKey;
 	/*

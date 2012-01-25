@@ -13,6 +13,8 @@ obj-y += search-engine/Searcher.o
 obj-y += search-engine/SearchDirectory.o
 obj-y += search-engine/ContigSearchEntry.o
 obj-y += search-engine/ContigHit.o
+obj-y += search-engine/ColorSet.o
+obj-y += search-engine/VirtualKmerColor.o
 
 #formats
 obj-y += format/ColorSpaceDecoder.o format/ColorSpaceLoader.o format/FastaLoader.o \
