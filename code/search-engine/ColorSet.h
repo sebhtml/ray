@@ -40,7 +40,10 @@ class ColorSet{
 	vector<VirtualKmerColor> m_translationTable;
 
 /** an index on the virtual colors **/
-	map<PhysicalKmerColor,vector<VirtualKmerColorHandle> > m_index;
+	map<PhysicalKmerColor,set<VirtualKmerColorHandle> > m_index;
+
+	VirtualKmerColorHandle allocateVirtualColor();
+
 public:
 	
 	ColorSet();

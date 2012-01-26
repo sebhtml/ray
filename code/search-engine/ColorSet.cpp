@@ -19,7 +19,7 @@
 
 */
 
-//#define CONFIG_DEBUG_VIRTUAL_COLORS
+#define CONFIG_DEBUG_VIRTUAL_COLORS
 
 #include <search-engine/ColorSet.h>
 
@@ -48,8 +48,8 @@ VirtualKmerColorHandle ColorSet::getVirtualColorHandle(vector<PhysicalKmerColor>
 		PhysicalKmerColor physicalColor=colors->at(i);
 
 		if(m_index.count(physicalColor)>0){
-			for(int j=0;j<(int)m_index[physicalColor].size();j++){
-				VirtualKmerColorHandle handle=m_index[physicalColor][j];
+			for(set<VirtualKmerColorHandle>::iterator j=m_index[physicalColor].begin();j!=m_index[physicalColor].end();j++){
+				VirtualKmerColorHandle handle= *j;
 
 				counts[handle]++;
 			}
@@ -72,22 +72,22 @@ VirtualKmerColorHandle ColorSet::getVirtualColorHandle(vector<PhysicalKmerColor>
 
 	// otherwise, we need to add a new color and index it
 
-	VirtualKmerColor newColor;
-	
-	VirtualKmerColorHandle newVirtualColor=m_translationTable.size();
+	VirtualKmerColorHandle newVirtualColor=allocateVirtualColor();
 
+	#ifdef ASSERT
+	assert(newVirtualColor>=0 && newVirtualColor <m_translationTable.size());
+	assert(m_translationTable[newVirtualColor].getColors()->size()==0);
+	assert(m_translationTable[newVirtualColor].getReferences()==0);
+	#endif
+	
 	// add physical colors
 	for(int i=0;i<numberOfColors;i++){
 		PhysicalKmerColor physicalColor=colors->at(i);
-		newColor.addPhysicalColor(physicalColor);
+		m_translationTable[newVirtualColor].addPhysicalColor(physicalColor);
 
 		// index it
-		m_index[physicalColor].push_back(newVirtualColor);
+		m_index[physicalColor].insert(newVirtualColor);
 	}
-
-	// add the new virtual color
-	m_translationTable.push_back(newColor);
-
 
 	#ifdef CONFIG_DEBUG_VIRTUAL_COLORS
 	cout<<"Created a new color!"<<endl;
@@ -96,6 +96,11 @@ VirtualKmerColorHandle ColorSet::getVirtualColorHandle(vector<PhysicalKmerColor>
 		cout<<" "<<colors->at(i);
 	}
 	cout<<endl;
+
+	cout<<"Now with "<<getNumberOfVirtualColors()<<" virtual colors for "<<getNumberOfPhysicalColors()<<" physical colors."<<endl;
+
+	if(getNumberOfVirtualColors()%1000==0)
+		printSummary();
 
 	#endif
 
@@ -177,4 +182,36 @@ void ColorSet::printSummary(){
 		if(colors->size()>0)
 			cout<<endl;
 	}
+}
+
+VirtualKmerColorHandle ColorSet::allocateVirtualColor(){
+	// if there is a virtual color with 0 reference,
+	// use it
+	
+	for(VirtualKmerColorHandle i=1;i<m_translationTable.size();i++){
+		if(m_translationTable[i].getReferences()==0){
+			set<PhysicalKmerColor>*oldColors=m_translationTable[i].getColors();
+			for(set<PhysicalKmerColor>::iterator j=oldColors->begin();
+				j!=oldColors->end();j++){
+				PhysicalKmerColor oldColor=*j;
+
+				if(m_index.count(oldColor) > 0){
+					m_index[oldColor].erase(i);
+				}
+			}
+
+			// erase all colors
+			m_translationTable[i].getColors()->clear();
+
+			// re-use a virtual color
+			return i;
+		}
+	}
+
+	// otherwise, create a new one
+	
+	VirtualKmerColor newColor;
+	m_translationTable.push_back(newColor);
+
+	return m_translationTable.size()-1;
 }

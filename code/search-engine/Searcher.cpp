@@ -984,6 +984,8 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 		m_finished=false;
 
+		m_derivative.clear();
+
 	// we must check the hits
 	}else if(!m_checkedHits){
 	
@@ -1180,9 +1182,6 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 		m_requestedCoverage=false;
 
-		m_derivative.clear();
-		m_derivative.addX(m_numberOfKmers);
-
 	// compute abundances
 	}else if(m_createdSequenceReader && !m_finished){
 
@@ -1190,8 +1189,6 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		if(m_pendingMessages==0  && m_bufferedData.isEmpty() &&  /* nothing to flush... */
 			 !m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength)){
 			
-			m_derivative.addX(m_numberOfKmers);
-
 			// process the thing, possibly send it to be written
 
 			int mode=0;
@@ -1903,7 +1900,25 @@ void Searcher::printDirectoryStart(){
 }
 
 void Searcher::showProcessedKmers(){
+	if(m_directoryIterator < m_searchDirectories_size &&
+  		m_fileIterator < m_searchDirectories[m_directoryIterator].getSize()
+		&& m_sequenceIterator < m_searchDirectories[m_directoryIterator].getCount(m_fileIterator)){
+
+		cout<<"Rank "<<m_parameters->getRank()<<" biological abundances ";
+		cout<<m_globalSequenceIterator<<" ["<<m_directoryIterator+1;
+		cout<<"/"<<m_searchDirectories_size<<"] ["<<m_fileIterator+1<<"/";
+		cout<<m_searchDirectories[m_directoryIterator].getSize()<<"] ["<<m_sequenceIterator+1;
+		cout<<"/"<<m_searchDirectories[m_directoryIterator].getCount(m_fileIterator)<<"]"<<endl;
+	}
+
 	cout<<"Rank "<<m_parameters->getRank()<<": Searcher: processed k-mers so far: "<<m_kmersProcessed<<endl;
+
+	m_derivative.addX(m_kmersProcessed);
+
+	// display the speed obtained.
+	m_derivative.printStatus(SLAVE_MODES[m_switchMan->getSlaveMode()],
+			m_switchMan->getSlaveMode());
+
 }
 
 void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
@@ -2205,6 +2220,8 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		assert(m_bufferedData.isEmpty());
 		#endif
 
+		m_derivative.clear();
+
 	// all directories were processed
 	}else if(m_directoryIterator==m_searchDirectories_size){
 	
@@ -2232,16 +2249,6 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 
 		printDirectoryStart();
 
-	// all sequences in a file were processed
-	}else if(m_sequenceIterator==m_searchDirectories[m_directoryIterator].getCount(m_fileIterator)){
-		m_fileIterator++;
-		m_globalFileIterator++;
-		m_sequenceIterator=0;
-
-		#ifdef CONFIG_DEBUG_COLORS
-		cout<<" file processed.."<<endl;
-		#endif
-
 	// this sequence is not owned by me
 	}else if(!isSequenceOwner()){
 
@@ -2255,6 +2262,16 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 
 		#ifdef CONFIG_DEBUG_COLORS
 		cout<<"is not owner"<<endl;
+		#endif
+
+	// all sequences in a file were processed
+	}else if(m_sequenceIterator==m_searchDirectories[m_directoryIterator].getCount(m_fileIterator)){
+		m_fileIterator++;
+		m_globalFileIterator++;
+		m_sequenceIterator=0;
+
+		#ifdef CONFIG_DEBUG_COLORS
+		cout<<" file processed.."<<endl;
 		#endif
 
 	// start a sequence
@@ -2271,9 +2288,6 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		m_createdSequenceReader=true;
 
 		m_sentColor=false;
-
-		m_derivative.clear();
-		m_derivative.addX(m_numberOfKmers);
 
 		// check if we need to color the graph 
 		// for this sequence...
@@ -2303,8 +2317,6 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		if(m_pendingMessages==0  && m_bufferedData.isEmpty() &&  /* nothing to flush... */
 			 !m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength)){
 			
-			m_derivative.addX(m_numberOfKmers);
-
 			showSequenceAbundanceProgress();
 
 			#ifdef ASSERT
