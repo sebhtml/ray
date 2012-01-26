@@ -34,6 +34,8 @@ void Vertex::constructor(){
 	m_readsStartingHere=NULL;
 	m_directions=NULL;
 	m_assembled=false;
+
+	m_color=0;
 }
 
 void Vertex::assemble(){
@@ -265,3 +267,12 @@ void Vertex::writeAnnotations(Kmer*key,ofstream*f,int kmerLength,bool color){
 		ptr=ptr->getNext();
 	}
 }
+
+VirtualKmerColorHandle Vertex::getVirtualColor(){
+	return m_color;
+}
+
+void Vertex::setVirtualColor(VirtualKmerColorHandle handle){
+	m_color=handle;
+}
+

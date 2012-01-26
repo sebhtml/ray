@@ -390,11 +390,11 @@ bool SearchDirectory::hasCurrentSequenceIdentifier(){
 
 	// this means that the sequences are not genome sequences
 	// but are genes or something like that.
-	if(m_currentSequenceHeader.find("|:") != string::npos){
+	//if(m_currentSequenceHeader.find("|:") != string::npos){
 		//cout<<"Contains '|:'"<<endl;
 
-		return false;
-	}
+		//return false;
+	//}
 
 	if(m_currentSequenceHeader.find(">gi|") == string::npos)
 		return false;
@@ -409,7 +409,7 @@ uint64_t SearchDirectory::getCurrentSequenceIdentifier(){
 	int count=0;
 	int i=0;
 
-	while(i<m_currentSequenceHeader.length() && count<2){
+	while(i<(int)m_currentSequenceHeader.length() && count<2){
 		if(m_currentSequenceHeader[i]=='|')
 			count++;
 		

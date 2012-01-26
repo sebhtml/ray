@@ -39,11 +39,17 @@ public:
 	
 	ColorSet();
 
-	VirtualKmerColorHandle getVirtualColor(vector<PhysicalKmerColor>*colors);
+	VirtualKmerColorHandle getVirtualColorHandle(vector<PhysicalKmerColor>*colors);
 
 	void incrementReferences(VirtualKmerColorHandle handle);
 	void decrementReferences(VirtualKmerColorHandle handle);
 	
+	VirtualKmerColor*getVirtualColor(VirtualKmerColorHandle handle);
+
+	int getNumberOfPhysicalColors();
+	int getNumberOfVirtualColors();
+
+	void printSummary();
 };
 
 #endif

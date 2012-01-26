@@ -927,6 +927,11 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 	if(!m_countSequenceKmersSlaveStarted){
 
+		int virtualColors=m_colorSet.getNumberOfVirtualColors();
+		int physicalColors=m_colorSet.getNumberOfPhysicalColors();
+		cout<<"Rank "<<m_parameters->getRank()<<" colored the graph with "<<physicalColors<<" real colors using "<<virtualColors<<" virtual colors"<<endl;
+		m_colorSet.printSummary();
+
 		#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
 		cout<<"Starting call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES"<<endl;
 		#endif
@@ -1607,12 +1612,12 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 					cout<<"Paths: "<<numberOfPaths<<" total: "<<total<<endl;
 					#endif
 	
-					bool reply=false;
+					//bool reply=false;
 
 					// this flag will say if we need to send another message
 					// TODO: implement it
-					if(index < total)
-						reply=true;
+					//if(index < total)
+						//reply=true;
 
 					for(int j=0;j<numberOfPaths;j++){
 						uint64_t contigPath=buffer[bufferPosition++];
@@ -2089,6 +2094,61 @@ void Searcher::call_RAY_MPI_TAG_ADD_KMER_COLOR(Message*message){
 	cout<<"Sending reply to "<<message->getSource()<<" slaveMode= "<<SLAVE_MODES[m_switchMan->getSlaveMode()]<<endl;
 	#endif
 
+	int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_ADD_KMER_COLOR);
+	uint64_t*buffer=message->getBuffer();
+	int count=message->getCount();
+
+	for(int i=0;i<count;i+=period){
+		Kmer kmer;
+		int bufferPosition=i;
+
+		kmer.unpack(buffer,&bufferPosition);
+
+		uint64_t color=buffer[bufferPosition++];
+	
+		Vertex*node=m_subgraph->find(&kmer);
+
+		// the k-mer does not exist
+		if(node==NULL){
+			continue;
+		}
+
+		VirtualKmerColorHandle virtualColorHandle=node->getVirtualColor();
+
+		// the physical color is already there
+		if(m_colorSet.getVirtualColor(virtualColorHandle)->hasColor(color)){
+			continue;
+		}
+
+		// we need to get a virtual color with said physical colors
+		vector<PhysicalKmerColor> requestedColors;
+		set<PhysicalKmerColor>*oldColors=m_colorSet.getVirtualColor(virtualColorHandle)->getColors();
+
+		for(set<PhysicalKmerColor>::iterator i=oldColors->begin();i!=oldColors->end();i++){
+			requestedColors.push_back(*i);
+		}
+		requestedColors.push_back(color);
+
+		VirtualKmerColorHandle newVirtualColor=m_colorSet.getVirtualColorHandle(&requestedColors);
+
+		node->setVirtualColor(newVirtualColor);
+
+		m_colorSet.incrementReferences(newVirtualColor);
+		m_colorSet.decrementReferences(virtualColorHandle);
+
+		#ifdef ASSERT
+		assert(m_colorSet.getVirtualColor(newVirtualColor)->hasColor(color));
+
+		if(m_colorSet.getVirtualColor(newVirtualColor)->getColors()->size() != requestedColors.size()){
+			cout<<"Expected: "<<requestedColors.size()<<" Actual: "<<m_colorSet.getVirtualColor(newVirtualColor)->getColors()->size()<<endl;
+			cout<<"new color: "<<color<<endl;
+			cout<<"new virtual color="<<newVirtualColor<<endl;
+		}
+
+		assert(m_colorSet.getVirtualColor(newVirtualColor)->getColors()->size() == requestedColors.size());
+		#endif
+	}
+
 	// send reply
 	m_switchMan->sendEmptyMessage(m_outbox,m_parameters->getRank(),message->getSource(),RAY_MPI_TAG_ADD_KMER_COLOR_REPLY);
 }
@@ -2159,6 +2219,7 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		cout<<"Finished."<<endl;
 		#endif
 
+
 	// all files in a directory were processed
 	}else if(m_fileIterator==(int)m_searchDirectories[m_directoryIterator].getSize()){
 	
@@ -2220,11 +2281,11 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		m_mustAddColors=false;
 
 		if(m_searchDirectories[m_directoryIterator].hasCurrentSequenceIdentifier()){
-			uint64_t identifier=m_searchDirectories[m_directoryIterator].getCurrentSequenceIdentifier();
+			m_color=m_searchDirectories[m_directoryIterator].getCurrentSequenceIdentifier();
 
-			if(identifier!=DUMMY_IDENTIFIER){
+			if(m_color!=DUMMY_IDENTIFIER){
 				#ifdef CONFIG_DEBUG_COLORS
-				cout<<"Will add colors for identifier= "<<identifier<<endl;
+				cout<<"Will add colors for identifier= "<<m_color<<endl;
 				#endif
 
 				m_mustAddColors=true;
@@ -2312,6 +2373,9 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 				}
 
 				uint64_t color=0;
+
+				if(m_mustAddColors)
+					color=m_color;
 
 				// add the color
 				m_bufferedData.addAt(rankToFlush,color);

@@ -25,13 +25,14 @@
 
 #include <stdint.h>
 #include <vector>
+#include <set>
 using namespace std;
 
 typedef uint32_t PhysicalKmerColor;
 
 class VirtualKmerColor{
 	uint64_t m_references;
-	vector<PhysicalKmerColor> m_colors;
+	set<PhysicalKmerColor> m_colors;
 public:
 	VirtualKmerColor();
 
@@ -41,6 +42,10 @@ public:
 	void decrementReferences();
 
 	uint64_t getReferences();
+
+	set<PhysicalKmerColor>*getColors();
+
+	bool hasColor(PhysicalKmerColor color);
 };
 
 #endif

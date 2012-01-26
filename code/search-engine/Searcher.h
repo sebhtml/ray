@@ -46,6 +46,7 @@ using namespace std;
 #include <handlers/MessageTagHandler.h>
 #include <search-engine/ContigHit.h>
 #include <core/CorePlugin.h>
+#include <search-engine/ColorSet.h>
 
 /**
  * This class searches for sequences in the de Bruijn graph
@@ -53,6 +54,11 @@ using namespace std;
  * \author Sébastien Boisvert
  **/
 class Searcher : public SlaveModeHandler, public MasterModeHandler, public MessageTagHandler, public CorePlugin {
+
+/** translator for virtual colors **/
+	ColorSet m_colorSet;
+
+	PhysicalKmerColor m_color;
 
 	/** indicates if colors must be added for this sequence. **/
 	bool m_mustAddColors;

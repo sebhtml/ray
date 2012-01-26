@@ -42,9 +42,17 @@ void VirtualKmerColor::decrementReferences(){
 }
 
 void VirtualKmerColor::addPhysicalColor(PhysicalKmerColor color){
-	m_colors.push_back(color);
+	m_colors.insert(color);
 }
 
 uint64_t VirtualKmerColor::getReferences(){
 	return m_references;
+}
+
+set<PhysicalKmerColor>*VirtualKmerColor::getColors(){
+	return & m_colors;
+}
+
+bool VirtualKmerColor::hasColor(PhysicalKmerColor color){
+	return m_colors.count(color)>0;
 }

@@ -101,6 +101,10 @@ public:
 	void write(Kmer*key,ofstream*f,int kmerLength);
 	void writeAnnotations(Kmer*key,ofstream*f,int kmerLength,bool color);
 
+	VirtualKmerColorHandle getVirtualColor();
+
+	void setVirtualColor(VirtualKmerColorHandle handle);
+
 } ATTRIBUTE_PACKED;
 
 #endif
