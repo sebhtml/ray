@@ -931,8 +931,6 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		cout<<"Starting call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES"<<endl;
 		#endif
 
-		createTrees();
-
 		m_directoryIterator=0;
 		m_fileIterator=0;
 		m_globalFileIterator=0;
@@ -1180,23 +1178,6 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		m_derivative.clear();
 		m_derivative.addX(m_numberOfKmers);
 
-		// check if we need to color the graph 
-		// for this sequence...
-
-		m_mustAddColors=false;
-
-		if(m_searchDirectories[m_directoryIterator].hasCurrentSequenceIdentifier()){
-			uint64_t identifier=m_searchDirectories[m_directoryIterator].getCurrentSequenceIdentifier();
-
-			if(identifier!=DUMMY_IDENTIFIER){
-				#ifdef CONFIG_DEBUG_COLORS
-				cout<<"Will add colors for identifier= "<<identifier<<endl;
-				#endif
-
-				m_mustAddColors=true;
-			}
-		}
-
 	// compute abundances
 	}else if(m_createdSequenceReader && !m_finished){
 
@@ -1407,7 +1388,8 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		// k-mers are available
 		// pull data from the sequence
 		// and throw messages onto the network
-		}else if(m_pendingMessages==0 && !m_requestedCoverage && m_bufferedData.isEmpty() ){
+		}else if(m_pendingMessages==0 && !m_requestedCoverage ){
+			/*	&& m_bufferedData.isEmpty() ){*/ // TODO: remove the last condition, it is not necessary and it would accelerate the thing...
 	
 			// don't use message aggregation ?
 			// true= no multiplexing
@@ -2102,6 +2084,13 @@ void Searcher::registerPlugin(ComputeCore*core){
 
 void Searcher::call_RAY_MPI_TAG_ADD_KMER_COLOR(Message*message){
 	// add the color
+	
+	#ifdef CONFIG_DEBUG_COLORS
+	cout<<"Sending reply to "<<message->getSource()<<" slaveMode= "<<SLAVE_MODES[m_switchMan->getSlaveMode()]<<endl;
+	#endif
+
+	// send reply
+	m_switchMan->sendEmptyMessage(m_outbox,m_parameters->getRank(),message->getSource(),RAY_MPI_TAG_ADD_KMER_COLOR_REPLY);
 }
 
 void Searcher::call_RAY_MASTER_MODE_ADD_COLORS(){
@@ -2118,5 +2107,331 @@ void Searcher::call_RAY_MASTER_MODE_ADD_COLORS(){
 }
 
 void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
-	m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
+
+	// Process virtual messages
+	m_virtualCommunicator->forceFlush();
+	m_virtualCommunicator->processInbox(&m_activeWorkers);
+
+	// this contains a list of workers that received something
+	// here, we only have one worker.
+	m_activeWorkers.clear();
+
+	if(!m_colorSequenceKmersSlaveStarted){
+
+		createTrees();
+
+		m_directoryIterator=0;
+		m_fileIterator=0;
+		m_globalFileIterator=0;
+		m_sequenceIterator=0;
+		m_globalSequenceIterator=0;
+
+		m_colorSequenceKmersSlaveStarted=true;
+		m_createdSequenceReader=false;
+
+		m_kmerLength=m_parameters->getWordSize();
+
+		printDirectoryStart();
+
+		m_kmersProcessed=0;
+
+		m_pendingMessages=0;
+
+		#ifdef CONFIG_DEBUG_COLORS
+		cout<<"m_colorSequenceKmersSlaveStarted := true"<<endl;
+		#endif
+
+		#ifdef ASSERT
+		assert(m_bufferedData.isEmpty());
+		#endif
+
+	// all directories were processed
+	}else if(m_directoryIterator==m_searchDirectories_size){
+	
+		showProcessedKmers();
+
+		m_bufferedData.showStatistics(m_parameters->getRank());
+
+		// this kills the batman
+		m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
+
+		#ifdef CONFIG_DEBUG_COLORS
+		cout<<"Finished."<<endl;
+		#endif
+
+	// all files in a directory were processed
+	}else if(m_fileIterator==(int)m_searchDirectories[m_directoryIterator].getSize()){
+	
+		cout<<"Rank "<<m_parameters->getRank()<<" has colored its entries from "<<m_directoryNames[m_directoryIterator]<<endl;
+		cout<<endl;
+
+		m_directoryIterator++;
+		m_fileIterator=0;
+		m_sequenceIterator=0;
+
+		printDirectoryStart();
+
+	// all sequences in a file were processed
+	}else if(m_sequenceIterator==m_searchDirectories[m_directoryIterator].getCount(m_fileIterator)){
+		m_fileIterator++;
+		m_globalFileIterator++;
+		m_sequenceIterator=0;
+
+		#ifdef CONFIG_DEBUG_COLORS
+		cout<<" file processed.."<<endl;
+		#endif
+
+	// this sequence is not owned by me
+	}else if(!isSequenceOwner()){
+
+		showSequenceAbundanceProgress();
+
+		// skip the file
+		// ownership is on a per-file basis
+		m_fileIterator++;
+		m_globalFileIterator++;
+		m_sequenceIterator=0;
+
+		#ifdef CONFIG_DEBUG_COLORS
+		cout<<"is not owner"<<endl;
+		#endif
+
+	// start a sequence
+	}else if(!m_createdSequenceReader){
+		// initiate the reader I guess
+	
+		#ifdef CONFIG_DEBUG_COLORS
+		cout<<"Creating sequence reader."<<endl;
+		#endif
+
+		m_searchDirectories[m_directoryIterator].createSequenceReader(m_fileIterator,m_sequenceIterator);
+
+		m_numberOfKmers=0;
+		m_createdSequenceReader=true;
+
+		m_sentColor=false;
+
+		m_derivative.clear();
+		m_derivative.addX(m_numberOfKmers);
+
+		// check if we need to color the graph 
+		// for this sequence...
+
+		m_mustAddColors=false;
+
+		if(m_searchDirectories[m_directoryIterator].hasCurrentSequenceIdentifier()){
+			uint64_t identifier=m_searchDirectories[m_directoryIterator].getCurrentSequenceIdentifier();
+
+			if(identifier!=DUMMY_IDENTIFIER){
+				#ifdef CONFIG_DEBUG_COLORS
+				cout<<"Will add colors for identifier= "<<identifier<<endl;
+				#endif
+
+				m_mustAddColors=true;
+			}
+		}
+
+		#ifdef ASSERT
+		assert(m_bufferedData.isEmpty());
+		assert(m_pendingMessages==0);
+		#endif
+
+	// compute abundances
+	}else if(m_createdSequenceReader){
+		// the current sequence has been processed
+		if(m_pendingMessages==0  && m_bufferedData.isEmpty() &&  /* nothing to flush... */
+			 !m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength)){
+			
+			m_derivative.addX(m_numberOfKmers);
+
+			showSequenceAbundanceProgress();
+
+			#ifdef ASSERT
+			assert(m_directoryIterator<m_searchDirectories_size);
+			assert(m_fileIterator<m_searchDirectories[m_directoryIterator].getSize());
+			#endif
+
+			m_sequenceIterator++;
+			m_globalSequenceIterator++;
+			m_createdSequenceReader=false;
+
+			#ifdef CONFIG_DEBUG_COLORS
+			cout<<"Finished sequence"<<endl;
+			#endif
+
+		// k-mers are available
+		// pull data from the sequence
+		// and throw messages onto the network
+		}else if(m_pendingMessages==0 && !m_sentColor ){
+	
+			bool force=CONFIG_FORCE_VALUE_FOR_MAXIMUM_SPEED;
+
+			// pull k-mers from the sequence and fill buffers
+			// if one of the buffer if full,
+			// flush it and return and wait for a response
+
+			bool gatheringKmers=true;
+
+			#ifdef ASSERT
+			assert(m_pendingMessages==0);
+			#endif
+
+			#ifdef CONFIG_DEBUG_COLORS
+			cout<<"Sending colors"<<endl;
+			#endif
+
+			while(gatheringKmers && m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength)){
+
+				Kmer kmer;
+				m_searchDirectories[m_directoryIterator].getNextKmer(m_kmerLength,&kmer);
+				m_searchDirectories[m_directoryIterator].iterateToNextKmer();
+
+				// if the k-mer contains non-standard character,
+				// skip it
+
+				if(m_searchDirectories[m_directoryIterator].kmerContainsN()){
+
+					if(m_kmersProcessed%1000000==0){
+						showProcessedKmers();
+					}
+
+					m_numberOfKmers++; // the number of k-mers for the sequence
+
+					m_kmersProcessed++; // the total number of k-mers processed
+
+					continue;
+				}
+
+				int rankToFlush=m_parameters->_vertexRank(&kmer);
+
+				int added=0;
+				// pack the k-mer
+				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+					m_bufferedData.addAt(rankToFlush,kmer.getU64(i));
+					added++;
+				}
+
+				uint64_t color=0;
+
+				// add the color
+				m_bufferedData.addAt(rankToFlush,color);
+				added++;
+
+				if(m_kmersProcessed%1000000==0){
+					showProcessedKmers();
+				}
+
+				// this little guy have to be right after iterateToNextKmer()
+				// otherwise, it is buggy.
+				m_numberOfKmers++;
+				m_kmersProcessed++;
+
+				int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_ADD_KMER_COLOR);
+
+				#ifdef ASSERT
+				assert(period == added);
+				#endif
+
+				// force flush the message
+				if(m_bufferedData.flush(rankToFlush,period,
+					RAY_MPI_TAG_ADD_KMER_COLOR,m_outboxAllocator,m_outbox,
+					m_parameters->getRank(),force)){
+
+					m_pendingMessages++;
+					gatheringKmers=false;
+
+					#ifdef CONFIG_DEBUG_COLORS
+					cout<<"flushed a message."<<endl;
+					#endif
+
+					#ifdef ASSERT
+					assert(m_pendingMessages>0);
+					assert(m_pendingMessages==1);
+					#endif
+				}
+			}
+
+			#ifdef CONFIG_DEBUG_COLORS
+			cout<<"While loop finished"<<endl;
+			cout<<"       m_pendingMessages= "<<m_pendingMessages<<endl;
+			#endif
+
+			// at this point, we flushed something
+			// or we processed all k-mers
+			// if nothing was flushed, we force something now
+			if(m_pendingMessages==0){
+
+				#ifdef CONFIG_DEBUG_COLORS
+				cout<<" m_pendingMessages is 0, will now try to flush something..."<<endl;
+				#endif
+
+				m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_ADD_KMER_COLOR,
+					m_outboxAllocator,
+					m_outbox,m_parameters->getRank());
+
+				#ifdef ASSERT
+				assert(m_pendingMessages>=0);
+				#endif
+			}
+
+			#ifdef CONFIG_DEBUG_COLORS
+			cout<<"m_pendingMessages= "<<m_pendingMessages<<endl;
+			#endif
+
+			m_sentColor=true;
+
+			#ifdef CONFIG_DEBUG_COLORS
+			cout<<"Will wait for a reply. "<<endl;
+			#endif
+
+		// we have a response
+		}else if(m_pendingMessages > 0 &&
+				m_sentColor && m_inbox->hasMessage(RAY_MPI_TAG_ADD_KMER_COLOR_REPLY)){
+
+			#ifdef ASSERT
+			assert(m_pendingMessages==1);
+			#endif
+
+			#ifdef CONFIG_DEBUG_COLORS
+			cout<<"received RAY_MPI_TAG_ADD_KMER_COLOR_REPLY, pending= "<<m_pendingMessages<<endl;
+			#endif
+
+			m_pendingMessages--;
+
+			#ifdef ASSERT
+			assert(m_pendingMessages==0);
+			#endif
+
+			m_sentColor=false;
+
+			#ifdef CONFIG_DEBUG_COLORS
+			cout<<"now => received RAY_MPI_TAG_ADD_KMER_COLOR_REPLY, pending= "<<m_pendingMessages<<endl;
+			#endif
+
+		// we processed all the k-mers
+		// now we need to flush the remaining half-full buffers
+		// this section is now used if 
+		// force=true 
+		// in the above code
+		}else if(m_pendingMessages==0 && !m_bufferedData.isEmpty()){
+
+			#ifdef ASSERT
+			assert(m_pendingMessages==0);
+			#endif
+
+			m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_ADD_KMER_COLOR,m_outboxAllocator,
+				m_outbox,m_parameters->getRank());
+	
+			#ifdef ASSERT
+			assert(m_pendingMessages>0);
+			#endif
+
+			#ifdef CONFIG_DEBUG_COLORS
+			cout<<"Flushed something, m_pendingMessages="<<m_pendingMessages<<endl;
+			cout<<"Will wait for a reply... 998"<<endl;
+			#endif
+
+			m_sentColor=true;
+		}
+	}
 }

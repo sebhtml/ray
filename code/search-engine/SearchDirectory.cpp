@@ -144,8 +144,16 @@ void SearchDirectory::createSequenceReader(int file,int sequence){
 		cout<<"Closing current file"<<endl;
 		#endif
 
+		#ifdef ASSERT
+		assert(m_currentFileStream.is_open());
+		#endif
+
 		m_currentFileStream.close();
 		m_hasFile=false;
+
+		#ifdef ASSERT
+		assert(!m_currentFileStream.is_open());
+		#endif
 	}
 
 	// open the file
@@ -165,13 +173,17 @@ void SearchDirectory::createSequenceReader(int file,int sequence){
 		m_currentSequence=-1;// start at the beginning
 
 		m_hasFile=true;
+
+		#ifdef ASSERT
+		assert(m_currentFileStream.is_open());
+		#endif
 	}
 
 	#ifdef ASSERT
 	assert(m_hasFile);
 	assert(m_currentFile==file);
 	
-	if(m_currentSequence>sequence){
+	if(m_currentSequence>=sequence){
 		cout<<"m_currentSequence: "<<m_currentSequence<<" sequence: "<<sequence<<endl;
 	}
 	
@@ -218,6 +230,18 @@ bool SearchDirectory::hasNextKmer(int kmerLength){
 	}
 
 	if(((int)m_currentSequenceBuffer.length() - m_currentSequencePosition) <kmerLength){
+
+		// close the file and reset the thing
+		if(m_currentSequence == getCount(m_currentFile)-1 && m_hasFile){
+			#ifdef ASSERT
+			assert(m_currentFileStream.is_open());
+			#endif
+
+			// remove the current file.
+			m_currentFileStream.close();
+			m_hasFile=false;
+		}
+
 		return false;
 	}
 

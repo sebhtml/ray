@@ -57,6 +57,9 @@ class Searcher : public SlaveModeHandler, public MasterModeHandler, public Messa
 	/** indicates if colors must be added for this sequence. **/
 	bool m_mustAddColors;
 
+	bool m_sentColor;
+	bool m_colorSequenceKmersSlaveStarted;
+
 	/** the part of the de Bruijn graph that the current ranks owns **/
 	GridTable*m_subgraph;
 
