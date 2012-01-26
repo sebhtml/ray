@@ -182,10 +182,12 @@ void ColorSet::printColors(){
 
 	for(int i=0;i<(int)m_translationTable.size();i++){
 		cout<<"Virtual color: "<<i<<endl;
-		set<PhysicalKmerColor>*colors=m_translationTable[i].getColors();
+
 		uint64_t references=m_translationTable[i].getReferences();
-		cout<<" Number of physical colors: "<<colors->size()<<endl;
 		cout<<" References: "<<references<<endl;
+
+		set<PhysicalKmerColor>*colors=m_translationTable[i].getColors();
+		cout<<" Number of physical colors: "<<colors->size()<<endl;
 		cout<<" Physical colors: "<<endl;
 		cout<<"  ";
 		
@@ -249,11 +251,13 @@ uint64_t ColorSet::getHash(set<PhysicalKmerColor>*colors){
 
 	for(set<PhysicalKmerColor>::iterator i=colors->begin();i!=colors->end();i++){
 		PhysicalKmerColor color=*i;
+
 		uint64_t localHash=uniform_hashing_function_1_64_64(color);
 		hashValue ^= localHash;
 		
 		operations++;
 
+		// don't hash more than 8 things
 		if(operations==8)
 			break;
 	}

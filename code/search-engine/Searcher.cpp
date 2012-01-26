@@ -1150,6 +1150,8 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 		showSequenceAbundanceProgress();
 
+		m_globalSequenceIterator+=m_searchDirectories[m_directoryIterator].getCount(m_fileIterator);
+
 		// skip the file
 		// ownership is on a per-file basis
 		m_fileIterator++;
@@ -2262,6 +2264,8 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 
 		showSequenceAbundanceProgress();
 
+		m_globalSequenceIterator+=m_searchDirectories[m_directoryIterator].getCount(m_fileIterator);
+
 		// skip the file
 		// ownership is on a per-file basis
 		m_fileIterator++;
@@ -2300,19 +2304,14 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		// check if we need to color the graph 
 		// for this sequence...
 
-		m_mustAddColors=false;
+		m_mustAddColors=true;
 
-		if(m_searchDirectories[m_directoryIterator].hasCurrentSequenceIdentifier()){
-			m_color=m_searchDirectories[m_directoryIterator].getCurrentSequenceIdentifier();
+		// maximum value for a uint64_t:
+		// 18446744073709551615
+		// xxxx000yyyyyyyyyyyyy
+		//    10000000000000000
 
-			if(m_color!=DUMMY_IDENTIFIER){
-				#ifdef CONFIG_DEBUG_COLORS
-				cout<<"Will add colors for identifier= "<<m_color<<endl;
-				#endif
-
-				m_mustAddColors=true;
-			}
-		}
+		m_color= m_globalSequenceIterator + COLOR_NAMESPACE * (m_directoryIterator);
 
 		#ifdef ASSERT
 		assert(m_bufferedData.isEmpty());
@@ -2370,8 +2369,7 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 				// if the k-mer contains non-standard character,
 				// skip it
 
-				if(!m_mustAddColors // skip because it must not be colored
-					|| m_searchDirectories[m_directoryIterator].kmerContainsN()){
+				if( m_searchDirectories[m_directoryIterator].kmerContainsN()){
 
 					if(m_kmersProcessed%1000000==0){
 						showProcessedKmers();
@@ -2393,10 +2391,7 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 					added++;
 				}
 
-				uint64_t color=0;
-
-				if(m_mustAddColors)
-					color=m_color;
+				uint64_t color=m_color;
 
 				// add the color
 				m_bufferedData.addAt(rankToFlush,color);

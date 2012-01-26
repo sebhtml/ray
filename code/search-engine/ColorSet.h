@@ -29,10 +29,18 @@
 #include <map>
 using namespace std;
 
+// maximum value for a uint64_t:
+// 18446744073709551615
+// xxxx000yyyyyyyyyyyyy
+//    10000000000000000
+#define COLOR_NAMESPACE 10000000000000000
+
 typedef uint32_t VirtualKmerColorHandle;
 
 /** This class is a translation table for
  * allocated virtual colors. 
+ *
+ * This is the Flyweight design pattern.
  */
 class ColorSet{
 

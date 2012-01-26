@@ -28,7 +28,7 @@
 #include <set>
 using namespace std;
 
-typedef uint32_t PhysicalKmerColor;
+typedef uint64_t PhysicalKmerColor;
 
 /**
  * An implementation of a virtual color type.
