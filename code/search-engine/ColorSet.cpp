@@ -19,10 +19,12 @@
 
 */
 
-#define CONFIG_DEBUG_VIRTUAL_COLORS
+//#define CONFIG_DEBUG_VIRTUAL_COLORS
 
 #include <search-engine/ColorSet.h>
+#include <cryptography/crypto.h>
 
+#include <stdint.h>
 #include <iostream>
 using namespace std;
 
@@ -34,45 +36,45 @@ ColorSet::ColorSet(){
 	VirtualKmerColor voidColor;
 	m_translationTable.push_back(voidColor);
 
+	m_hashOperations=0;
+	m_bruteOperations=0;
+	m_newFromOldOperations=0;
+	m_newOperations=0;
 }
 
-VirtualKmerColorHandle ColorSet::getVirtualColorHandle(vector<PhysicalKmerColor>*colors){
-	// try to find the color
+VirtualKmerColorHandle ColorSet::getVirtualColorHandle(set<PhysicalKmerColor>*colors){
+
+	// first, try to find it with the fast-access table
 	
-	map<VirtualKmerColorHandle,int> counts;
+	uint64_t hashValue=getHash(colors);
 
-	int numberOfColors=colors->size();
+	// verify the hash
+	if(m_fastAccessTable.count(hashValue)){
+		for(set<VirtualKmerColorHandle>::iterator i=m_fastAccessTable[hashValue].begin();
+			i!=m_fastAccessTable[hashValue].end();i++){
+			
+			VirtualKmerColorHandle possibleChoice=*i;
 
-	// try to find a color with the characteristics
-	for(int i=0;i<numberOfColors;i++){
-		PhysicalKmerColor physicalColor=colors->at(i);
+			if(m_translationTable[possibleChoice].hasColors(colors)){
 
-		if(m_index.count(physicalColor)>0){
-			for(set<VirtualKmerColorHandle>::iterator j=m_index[physicalColor].begin();j!=m_index[physicalColor].end();j++){
-				VirtualKmerColorHandle handle= *j;
+				m_hashOperations++;
 
-				counts[handle]++;
+				return possibleChoice;
 			}
-		}
-	}
-
-	for(map<VirtualKmerColorHandle,int>::iterator i=counts.begin();
-		i!=counts.end();i++){
-		
-		VirtualKmerColorHandle handle=i->first;
-		int count=i->second;
-
-		// we found it
-		if(count==numberOfColors
-			 && (int)getVirtualColor(handle)->getColors()->size() == numberOfColors){
-
-			return handle;
 		}
 	}
 
 	// otherwise, we need to add a new color and index it
 
+	int oldSize=m_translationTable.size();
+
 	VirtualKmerColorHandle newVirtualColor=allocateVirtualColor();
+
+	if(m_translationTable.size()==oldSize){
+		m_newFromOldOperations++;
+	}else{
+		m_newOperations++;
+	}
 
 	#ifdef ASSERT
 	assert(newVirtualColor>=0 && newVirtualColor <m_translationTable.size());
@@ -81,19 +83,20 @@ VirtualKmerColorHandle ColorSet::getVirtualColorHandle(vector<PhysicalKmerColor>
 	#endif
 	
 	// add physical colors
-	for(int i=0;i<numberOfColors;i++){
-		PhysicalKmerColor physicalColor=colors->at(i);
+	for(set<PhysicalKmerColor>::iterator i=colors->begin();i!=colors->end();i++){
+		PhysicalKmerColor physicalColor=*i;
 		m_translationTable[newVirtualColor].addPhysicalColor(physicalColor);
 
-		// index it
-		m_index[physicalColor].insert(newVirtualColor);
+		m_physicalColors.insert(physicalColor);
 	}
+	
+	m_fastAccessTable[hashValue].insert(newVirtualColor); // remove collision
 
 	#ifdef CONFIG_DEBUG_VIRTUAL_COLORS
 	cout<<"Created a new color!"<<endl;
 	cout<<"Physical colors: "<<endl;
-	for(int i=0;i<(int)colors->size();i++){
-		cout<<" "<<colors->at(i);
+	for(set<PhysicalKmerColor>::iterator i=colors->begin();i!=colors->end();i++){
+		cout<<" "<<*i;
 	}
 	cout<<endl;
 
@@ -137,6 +140,8 @@ void ColorSet::decrementReferences(VirtualKmerColorHandle handle){
 	if(handle>0 && m_translationTable[handle].getReferences()==0){
 		
 		// destroy it at will
+		// actually, they are simply not removed.
+		// instead, they are re-used.
 	}
 }
 
@@ -152,7 +157,7 @@ VirtualKmerColor*ColorSet::getVirtualColor(VirtualKmerColorHandle handle){
 }
 
 int ColorSet::getNumberOfPhysicalColors(){
-	return m_index.size();
+	return m_physicalColors.size();
 }
 
 int ColorSet::getNumberOfVirtualColors(){
@@ -165,6 +170,16 @@ void ColorSet::printSummary(){
 	cout<<"Number of real colors: "<<getNumberOfPhysicalColors()<<endl;
 	cout<<"Number of virtual colors: "<<getNumberOfVirtualColors()<<endl;
 	cout<<endl;
+	cout<<"Operations"<<endl;
+	cout<<" Fetched with fast access: "<<m_hashOperations<<endl;
+	cout<<" Fetched with brute-force: "<<m_bruteOperations<<endl;
+	cout<<" Fetched new from old: "<<m_newFromOldOperations<<endl;
+	cout<<" Fetched new: "<<m_newOperations<<endl;
+	cout<<endl;
+}
+
+void ColorSet::printColors(){
+
 	for(int i=0;i<(int)m_translationTable.size();i++){
 		cout<<"Virtual color: "<<i<<endl;
 		set<PhysicalKmerColor>*colors=m_translationTable[i].getColors();
@@ -182,6 +197,7 @@ void ColorSet::printSummary(){
 		if(colors->size()>0)
 			cout<<endl;
 	}
+
 }
 
 VirtualKmerColorHandle ColorSet::allocateVirtualColor(){
@@ -194,9 +210,16 @@ VirtualKmerColorHandle ColorSet::allocateVirtualColor(){
 			for(set<PhysicalKmerColor>::iterator j=oldColors->begin();
 				j!=oldColors->end();j++){
 				PhysicalKmerColor oldColor=*j;
+			}
 
-				if(m_index.count(oldColor) > 0){
-					m_index[oldColor].erase(i);
+			uint64_t hashValue=getHash(m_translationTable[i].getColors());
+
+			// remove the entry from the fast access table
+			if(m_fastAccessTable.count(hashValue)>0 && m_fastAccessTable[hashValue].count(i) > 0){
+				m_fastAccessTable[hashValue].erase(hashValue);
+
+				if(m_fastAccessTable[hashValue].size()==0){
+					m_fastAccessTable.erase(hashValue);
 				}
 			}
 
@@ -215,3 +238,30 @@ VirtualKmerColorHandle ColorSet::allocateVirtualColor(){
 
 	return m_translationTable.size()-1;
 }
+
+uint64_t ColorSet::getHash(set<PhysicalKmerColor>*colors){
+	if(colors->size()==0)
+		return 0;
+
+	uint64_t hashValue=*(colors->begin());
+
+	int operations=0;
+
+	for(set<PhysicalKmerColor>::iterator i=colors->begin();i!=colors->end();i++){
+		PhysicalKmerColor color=*i;
+		uint64_t localHash=uniform_hashing_function_1_64_64(color);
+		hashValue ^= localHash;
+		
+		operations++;
+
+		if(operations==8)
+			break;
+	}
+
+	#ifdef ASSERT
+	assert(colors->size()>0);
+	#endif
+
+	return hashValue;
+}
+

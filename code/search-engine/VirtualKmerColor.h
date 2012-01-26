@@ -53,6 +53,8 @@ public:
 	set<PhysicalKmerColor>*getColors();
 
 	bool hasColor(PhysicalKmerColor color);
+
+	bool hasColors(set<PhysicalKmerColor>*colors);
 };
 
 #endif

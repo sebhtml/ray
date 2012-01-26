@@ -930,7 +930,9 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		int virtualColors=m_colorSet.getNumberOfVirtualColors();
 		int physicalColors=m_colorSet.getNumberOfPhysicalColors();
 		cout<<"Rank "<<m_parameters->getRank()<<" colored the graph with "<<physicalColors<<" real colors using "<<virtualColors<<" virtual colors"<<endl;
+
 		m_colorSet.printSummary();
+		m_colorSet.printColors();
 
 		#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
 		cout<<"Starting call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES"<<endl;
@@ -1919,6 +1921,9 @@ void Searcher::showProcessedKmers(){
 	m_derivative.printStatus(SLAVE_MODES[m_switchMan->getSlaveMode()],
 			m_switchMan->getSlaveMode());
 
+	if(m_switchMan->getSlaveMode()==RAY_SLAVE_MODE_ADD_COLORS){
+		m_colorSet.printSummary();
+	}
 }
 
 void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
@@ -2136,14 +2141,17 @@ void Searcher::call_RAY_MPI_TAG_ADD_KMER_COLOR(Message*message){
 		}
 
 		// we need to get a virtual color with said physical colors
-		vector<PhysicalKmerColor> requestedColors;
+		set<PhysicalKmerColor> requestedColors;
 		set<PhysicalKmerColor>*oldColors=m_colorSet.getVirtualColor(virtualColorHandle)->getColors();
 
 		for(set<PhysicalKmerColor>::iterator i=oldColors->begin();i!=oldColors->end();i++){
-			requestedColors.push_back(*i);
+			requestedColors.insert(*i);
 		}
-		requestedColors.push_back(color);
 
+		// add the received color.
+		requestedColors.insert(color);
+
+		// get a virtual color with the requested physical colors
 		VirtualKmerColorHandle newVirtualColor=m_colorSet.getVirtualColorHandle(&requestedColors);
 
 		node->setVirtualColor(newVirtualColor);

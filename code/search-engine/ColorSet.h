@@ -36,20 +36,29 @@ typedef uint32_t VirtualKmerColorHandle;
  */
 class ColorSet{
 
+	uint64_t m_hashOperations;
+	uint64_t m_bruteOperations;
+	uint64_t m_newFromOldOperations;
+	uint64_t m_newOperations;
+
 /** the table of virtual colors **/
 	vector<VirtualKmerColor> m_translationTable;
 
-/** an index on the virtual colors **/
-	map<PhysicalKmerColor,set<VirtualKmerColorHandle> > m_index;
+	set<PhysicalKmerColor> m_physicalColors;
 
 	VirtualKmerColorHandle allocateVirtualColor();
+
+/** fast access table **/
+	map<uint64_t,set<VirtualKmerColorHandle> > m_fastAccessTable;
+
+	uint64_t getHash(set<PhysicalKmerColor>*colors);
 
 public:
 	
 	ColorSet();
 
 /** get a handle to a virtual color */
-	VirtualKmerColorHandle getVirtualColorHandle(vector<PhysicalKmerColor>*colors);
+	VirtualKmerColorHandle getVirtualColorHandle(set<PhysicalKmerColor>*colors);
 
 	void incrementReferences(VirtualKmerColorHandle handle);
 	void decrementReferences(VirtualKmerColorHandle handle);
@@ -60,6 +69,7 @@ public:
 	int getNumberOfVirtualColors();
 
 	void printSummary();
+	void printColors();
 };
 
 #endif

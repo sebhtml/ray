@@ -56,3 +56,30 @@ set<PhysicalKmerColor>*VirtualKmerColor::getColors(){
 bool VirtualKmerColor::hasColor(PhysicalKmerColor color){
 	return m_colors.count(color)>0;
 }
+
+bool VirtualKmerColor::hasColors(set<PhysicalKmerColor>*colors){
+
+	// verify the count
+	if(colors->size()==getColors()->size()){
+		bool correct=true;
+
+		// verify the colors
+		for(set<PhysicalKmerColor>::iterator i=colors->begin();
+			i!=colors->end();i++){
+
+			PhysicalKmerColor physicalColor=*i;
+
+			if(!hasColor(physicalColor)){
+				correct=false;
+				break;
+			}
+		}
+
+		// we found the correct choice already !
+		if(correct){
+			return true;
+		}
+	}
+
+	return false;
+}

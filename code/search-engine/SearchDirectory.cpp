@@ -78,7 +78,7 @@ void SearchDirectory::readDirectory(){
 
 int SearchDirectory::getCount(int i){
 	#ifdef ASSERT
-	if(i>=m_counts.size()){
+	if(i>=(int)m_counts.size()){
 		cout<<"Error, file= "<<i<<" but size= "<<m_counts.size()<<endl;
 		cout<<"Directory= "<<getDirectoryName()<<endl;
 
