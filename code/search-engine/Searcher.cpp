@@ -2350,7 +2350,8 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 				// if the k-mer contains non-standard character,
 				// skip it
 
-				if(m_searchDirectories[m_directoryIterator].kmerContainsN()){
+				if(!m_mustAddColors // skip because it must not be colored
+					|| m_searchDirectories[m_directoryIterator].kmerContainsN()){
 
 					if(m_kmersProcessed%1000000==0){
 						showProcessedKmers();
