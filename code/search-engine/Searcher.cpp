@@ -499,7 +499,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		uint64_t totalCount=0;
 		int modeCount=0;
 
-		for(map<int,int>::iterator i=m_coverageDistribution.begin();i!=m_coverageDistribution.end();i++){
+		for(map<int,uint64_t>::iterator i=m_coverageDistribution.begin();i!=m_coverageDistribution.end();i++){
 			int count=i->second;
 			int coverage=i->first;
 
@@ -932,7 +932,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		cout<<"Rank "<<m_parameters->getRank()<<" colored the graph with "<<physicalColors<<" real colors using "<<virtualColors<<" virtual colors"<<endl;
 
 		m_colorSet.printSummary();
-		m_colorSet.printColors();
+		//m_colorSet.printColors();
 
 		#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
 		cout<<"Starting call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES"<<endl;
@@ -1184,6 +1184,9 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		m_matches=0;
 		m_createdSequenceReader=true;
 
+		m_coloredMatches=0;
+		m_coloredCoverageDistribution.clear();
+
 		m_requestedCoverage=false;
 
 	// compute abundances
@@ -1197,10 +1200,9 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 			int mode=0;
 			int modeCount=0;
-			uint64_t sum=0;
-			uint64_t totalCount=0;
 
-			for(map<int,int>::iterator i=m_coverageDistribution.begin();i!=m_coverageDistribution.end();i++){
+			// compute the mode
+			for(map<int,uint64_t>::iterator i=m_coverageDistribution.begin();i!=m_coverageDistribution.end();i++){
 				int count=i->second;
 				int coverage=i->first;
 
@@ -1208,9 +1210,6 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 					mode=coverage;
 					modeCount=count;
 				}
-
-				sum+=coverage*count;
-				totalCount+=count;
 			}
 
 /*
@@ -1245,6 +1244,23 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 				return;
 
+			}
+
+			// compute the colored mode
+			
+			int coloredMode=0;
+			int coloredModeCount=0;
+
+			for(map<int,uint64_t>::iterator i=m_coloredCoverageDistribution.begin();
+				i!=m_coloredCoverageDistribution.end();i++){
+
+				int count=i->second;
+				int coverage=i->first;
+
+				if(count>coloredModeCount){
+					coloredMode=coverage;
+					coloredModeCount=count;
+				}
 			}
 
 			#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
@@ -1289,7 +1305,12 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 	
 				ostringstream header;
 				header<<"#Category	Sequence number	Sequence name	K-mer length	Length in k-mers";
-				header<<"	Matches in k-mers	Ratio	Mode k-mer coverage depth"<<endl;
+				header<<"	K-mer matches	Ratio	Mode k-mer coverage depth";
+
+				header<<"	Uniquely colored k-mer matches";
+				header<<"	Ratio	Mode uniquely colored k-mer coverage depth";
+				header<<endl;
+	
 
 				fprintf(m_arrayOfFiles[m_directoryIterator][m_fileIterator],
 					"%s",header.str().c_str());
@@ -1308,7 +1329,17 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				content<<"	"<<m_sequenceIterator<<"	"<<sequenceName<<"	"<<m_parameters->getWordSize();
 				content<<"	"<<m_numberOfKmers;
 				content<<"	"<<m_matches<<"	"<<ratio<<"	";
-				content<<mode<<endl;
+				content<<mode;
+
+				double coloredRatio=m_coloredMatches;
+
+				if(m_numberOfKmers!=0)
+					coloredRatio/=m_numberOfKmers;
+
+				content<<"	"<<m_coloredMatches<<"	"<<coloredRatio;
+				content<<"	"<<coloredMode<<endl;
+
+				content<<endl;
 	
 				fprintf(m_arrayOfFiles[m_directoryIterator][m_fileIterator],
 				"%s",content.str().c_str());
@@ -1595,6 +1626,13 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 					m_coverageDistribution[coverage]++;
 					m_matches++;
+
+					bool colorsAreUniqueInNamespaces=buffer[bufferPosition++];
+
+					if(colorsAreUniqueInNamespaces){
+						m_coloredCoverageDistribution[coverage]++;
+						m_coloredMatches++;
+					}
 
 					int numberOfPaths=buffer[bufferPosition++];
 					int index=buffer[bufferPosition++];
@@ -1953,7 +1991,7 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 	//  an index
 	//  a total
 	//  a list of pairs
-	int pathsThatCanBePacked=(period-KMER_U64_ARRAY_SIZE-1-1-3)/3;
+	int pathsThatCanBePacked=(period-KMER_U64_ARRAY_SIZE-1-1-1-3)/3;
 
 	#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
 	cout<<"Meta: count= "<<count<<" period= "<<period<<endl;
@@ -1980,6 +2018,8 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 		#endif
 
 		bufferPosition++;// skip the coverage
+
+		bufferPosition++;// skip the uniqueness
 		bufferPosition++;// skip the count
 		int pathIndex=incoming[bufferPosition++]; // get the index
 
@@ -2004,6 +2044,36 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 		vertex.pack(message2,&outputBufferPosition);// pack the k-mer
 		message2[outputBufferPosition++]=sequencePosition; // pack the sequence position, we will need it
 		message2[outputBufferPosition++]=coverage;
+
+		bool uniqueness=false;
+
+		if(node!=NULL){
+			// check the colors
+			VirtualKmerColorHandle color=node->getVirtualColor();
+			set<PhysicalKmerColor>*physicalColors=m_colorSet.getVirtualColor(color)->getColors();
+
+			// verify that there is only one color in each namespace
+			
+			uniqueness=true;
+
+			map<int,int> counts;
+
+			for(set<PhysicalKmerColor>::iterator j=physicalColors->begin();
+				j!=physicalColors->end();j++){
+				PhysicalKmerColor physicalColor=*j;
+		
+				int nameSpace=physicalColor/COLOR_NAMESPACE;
+			
+				counts[nameSpace]++;
+				if(counts[nameSpace]>1){
+					uniqueness=false;
+					break;
+				}
+			}
+		}
+
+		// store the uniqueness of the color
+		message2[outputBufferPosition++]=uniqueness;
 
 		// store the place where the count will be deposited
 		int positionForCount=outputBufferPosition++;

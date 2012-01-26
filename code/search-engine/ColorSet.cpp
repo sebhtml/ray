@@ -70,7 +70,7 @@ VirtualKmerColorHandle ColorSet::getVirtualColorHandle(set<PhysicalKmerColor>*co
 
 	VirtualKmerColorHandle newVirtualColor=allocateVirtualColor();
 
-	if(m_translationTable.size()==oldSize){
+	if((int)m_translationTable.size()==oldSize){
 		m_newFromOldOperations++;
 	}else{
 		m_newOperations++;

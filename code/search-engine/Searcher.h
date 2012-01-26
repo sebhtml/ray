@@ -173,7 +173,8 @@ class Searcher : public SlaveModeHandler, public MasterModeHandler, public Messa
 	ofstream m_currentCoverageFile;
 	bool m_waitingForAbundanceReply;
 
-	map<int,int> m_coverageDistribution;
+	map<int,uint64_t> m_coverageDistribution;
+	map<int,uint64_t> m_coloredCoverageDistribution;
 
 	/** search directory objects */
 	SearchDirectory*m_searchDirectories;
@@ -190,6 +191,7 @@ class Searcher : public SlaveModeHandler, public MasterModeHandler, public Messa
 
 	/** number of matches for a sequence */
 	int m_matches;
+	int m_coloredMatches;
 
 	/** k-mer length */
 	int m_kmerLength;
