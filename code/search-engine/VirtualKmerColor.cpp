@@ -58,6 +58,9 @@ bool VirtualKmerColor::hasColor(PhysicalKmerColor color){
 }
 
 bool VirtualKmerColor::hasColors(set<PhysicalKmerColor>*colors){
+	if(colors->size()!=getColors()->size()){
+		return false;
+	}
 
 	// verify the count
 	if(colors->size()==getColors()->size()){

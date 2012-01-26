@@ -28,10 +28,16 @@
 #include <set>
 using namespace std;
 
+/** a physical color contains its namespace **/
 typedef uint64_t PhysicalKmerColor;
 
 /**
  * An implementation of a virtual color type.
+ * A virtual color can be translated to a set of physical colors.
+ *
+ * This class utilises the Flyweight design pattern.
+ *
+ * \author: Sébastien Boisvert
  */
 class VirtualKmerColor{
 
@@ -40,6 +46,7 @@ class VirtualKmerColor{
 
 /** the list of physical colors **/
 	set<PhysicalKmerColor> m_colors;
+
 public:
 	VirtualKmerColor();
 

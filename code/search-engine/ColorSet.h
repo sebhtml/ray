@@ -41,24 +41,44 @@ typedef uint32_t VirtualKmerColorHandle;
  * allocated virtual colors. 
  *
  * This is the Flyweight design pattern.
+ *
+ * \author: Sébastien Boisvert
+ *
+ * Frédéric Raymond proposed the idea of using color namespaces.
  */
 class ColorSet{
 
-	uint64_t m_hashOperations;
-	uint64_t m_bruteOperations;
+/** number of direct access operations **/
+	uint64_t m_hashDirectOperations;
+
+/** number of size-related hash operations **/
+	uint64_t m_hashSizeOperations;
+
+/** number of brute-force hash operations **/
+	uint64_t m_hashBruteForceOperations;
+
+/** number of recycling operations **/
 	uint64_t m_newFromOldOperations;
+
+/** number of creations **/
 	uint64_t m_newOperations;
+
+/** a list of available handles **/
+	set<VirtualKmerColorHandle> m_availableHandles;
 
 /** the table of virtual colors **/
 	vector<VirtualKmerColor> m_translationTable;
 
+/** a list of physical colors **/
 	set<PhysicalKmerColor> m_physicalColors;
 
+/** allocates a virtual color handle **/
 	VirtualKmerColorHandle allocateVirtualColor();
 
 /** fast access table **/
 	map<uint64_t,set<VirtualKmerColorHandle> > m_fastAccessTable;
 
+/** get the hash value for a set of colors **/
 	uint64_t getHash(set<PhysicalKmerColor>*colors);
 
 public:
@@ -68,7 +88,10 @@ public:
 /** get a handle to a virtual color */
 	VirtualKmerColorHandle getVirtualColorHandle(set<PhysicalKmerColor>*colors);
 
+/** increment the references for a virtual color **/
 	void incrementReferences(VirtualKmerColorHandle handle);
+
+/** decrement the references for a virtual color **/
 	void decrementReferences(VirtualKmerColorHandle handle);
 	
 	VirtualKmerColor*getVirtualColor(VirtualKmerColorHandle handle);
