@@ -208,11 +208,6 @@ VirtualKmerColorHandle ColorSet::allocateVirtualColor(){
 	
 	for(VirtualKmerColorHandle i=1;i<m_translationTable.size();i++){
 		if(m_translationTable[i].getReferences()==0){
-			set<PhysicalKmerColor>*oldColors=m_translationTable[i].getColors();
-			for(set<PhysicalKmerColor>::iterator j=oldColors->begin();
-				j!=oldColors->end();j++){
-				PhysicalKmerColor oldColor=*j;
-			}
 
 			uint64_t hashValue=getHash(m_translationTable[i].getColors());
 
@@ -220,6 +215,7 @@ VirtualKmerColorHandle ColorSet::allocateVirtualColor(){
 			if(m_fastAccessTable.count(hashValue)>0 && m_fastAccessTable[hashValue].count(i) > 0){
 				m_fastAccessTable[hashValue].erase(hashValue);
 
+				// remove the entry from the table if it was the last
 				if(m_fastAccessTable[hashValue].size()==0){
 					m_fastAccessTable.erase(hashValue);
 				}
