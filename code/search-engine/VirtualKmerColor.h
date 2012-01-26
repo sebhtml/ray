@@ -30,8 +30,15 @@ using namespace std;
 
 typedef uint32_t PhysicalKmerColor;
 
+/**
+ * An implementation of a virtual color type.
+ */
 class VirtualKmerColor{
+
+/** half the number of k-mers using this virtual color **/
 	uint64_t m_references;
+
+/** the list of physical colors **/
 	set<PhysicalKmerColor> m_colors;
 public:
 	VirtualKmerColor();

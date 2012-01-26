@@ -31,14 +31,21 @@ using namespace std;
 
 typedef uint32_t VirtualKmerColorHandle;
 
+/** This class is a translation table for
+ * allocated virtual colors. 
+ */
 class ColorSet{
+
+/** the table of virtual colors **/
 	vector<VirtualKmerColor> m_translationTable;
 
+/** an index on the virtual colors **/
 	map<PhysicalKmerColor,vector<VirtualKmerColorHandle> > m_index;
 public:
 	
 	ColorSet();
 
+/** get a handle to a virtual color */
 	VirtualKmerColorHandle getVirtualColorHandle(vector<PhysicalKmerColor>*colors);
 
 	void incrementReferences(VirtualKmerColorHandle handle);
