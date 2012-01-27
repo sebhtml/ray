@@ -230,7 +230,7 @@ class Searcher : public SlaveModeHandler, public MasterModeHandler, public Messa
 	void showContigAbundanceProgress();
 	void createTrees();
 
-	void showSequenceAbundanceProgress();
+	uint64_t m_lastPrinted;
 
 	bool isSequenceOwner();
 

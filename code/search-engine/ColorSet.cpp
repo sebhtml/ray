@@ -72,64 +72,72 @@ VirtualKmerColorHandle ColorSet::getVirtualColorHandle(set<PhysicalKmerColor>*co
 		#endif
 
 		// if there is only one virtual color, it is easy
-		//
+		
+		VirtualKmerColorHandle onlyChoice=*(m_fastAccessTable[hashValue].begin());
+
 		// if only 1 has the number of colors
 		// return it
-		if(m_fastAccessTable[hashValue].size()==1){
+		if(m_fastAccessTable[hashValue].size()==1 // only 1
+			&& m_translationTable[onlyChoice].getColors()->size() == colors->size() // same size
+			&& m_translationTable[onlyChoice].hasColors(colors)){ // same colors
 
 			m_hashDirectOperations++;
 
 			return *(m_fastAccessTable[hashValue].begin());
-		}
+		}else{
 
-		#ifdef ASSERT
-		assert(m_fastAccessTable[hashValue].size()>1);
-		#endif
+			#ifdef ASSERT
+			assert(m_fastAccessTable[hashValue].size()>=1);
+			#endif
 
-		VirtualKmerColorHandle selection=*(m_fastAccessTable[hashValue].begin());
-		int numberOfHits=0;
+			VirtualKmerColorHandle selection=*(m_fastAccessTable[hashValue].begin());
+			int numberOfHits=0;
 
-		// try to find one with the correct number of colors
-		for(set<VirtualKmerColorHandle>::iterator i=m_fastAccessTable[hashValue].begin();
-			i!=m_fastAccessTable[hashValue].end();i++){
-			
-			VirtualKmerColorHandle possibleChoice=*i;
-
-			if(m_translationTable[possibleChoice].getColors()->size() == colors->size()){
-				selection=possibleChoice;
-
-				numberOfHits++;
+			// try to find one with the correct number of colors
+			for(set<VirtualKmerColorHandle>::iterator i=m_fastAccessTable[hashValue].begin();
+				i!=m_fastAccessTable[hashValue].end();i++){
+				
+				VirtualKmerColorHandle possibleChoice=*i;
+	
+				if(m_translationTable[possibleChoice].getColors()->size() == colors->size()){
+					selection=possibleChoice;
+	
+					numberOfHits++;
+				}
 			}
-		}
-
-		// only one has the correct number of physical colors
-		if(numberOfHits==1){
-
-			m_hashSizeOperations++;
-
-			return selection;
-		}
-
-		#ifdef ASSERT
-		assert(numberOfHits>1);
-		#endif
-
-		// otherwise try to match the count and  the colors
-		for(set<VirtualKmerColorHandle>::iterator i=m_fastAccessTable[hashValue].begin();
-			i!=m_fastAccessTable[hashValue].end();i++){
-			
-			VirtualKmerColorHandle possibleChoice=*i;
-
-			if(m_translationTable[possibleChoice].getColors()->size() == colors->size() // same count
-			&&  m_translationTable[possibleChoice].hasColors(colors)){ // same colors
-
-				m_hashBruteForceOperations++;
-
-				return possibleChoice;
+	
+			// only one has the correct number of physical colors
+			if(numberOfHits==1 
+				&& m_translationTable[selection].getColors()->size() == colors->size() // same size
+				&& m_translationTable[selection].hasColors(colors)){ // same colors
+	
+				m_hashSizeOperations++;
+	
+				return selection;
+			}else{
+	
+				#ifdef ASSERT
+				assert(numberOfHits>=0);
+				#endif
+		
+				// otherwise try to match the count and  the colors
+				for(set<VirtualKmerColorHandle>::iterator i=m_fastAccessTable[hashValue].begin();
+					i!=m_fastAccessTable[hashValue].end();i++){
+					
+					VirtualKmerColorHandle possibleChoice=*i;
+		
+					if(m_translationTable[possibleChoice].getColors()->size() == colors->size() // same count
+					&&  m_translationTable[possibleChoice].hasColors(colors)){ // same colors
+		
+						m_hashBruteForceOperations++;
+		
+						return possibleChoice;
+					}
+				}
 			}
 		}
 	}
-
+	
 	// otherwise, we need to add a new color and index it
 
 	int oldSize=m_translationTable.size();
@@ -167,6 +175,9 @@ VirtualKmerColorHandle ColorSet::getVirtualColorHandle(set<PhysicalKmerColor>*co
 	// remove collision
 	// because we use a set
 	m_fastAccessTable[hashValue].insert(newVirtualColor); 
+	
+	// set the hash value
+	m_translationTable[newVirtualColor].setHash(hashValue);
 
 	#ifdef CONFIG_DEBUG_VIRTUAL_COLORS
 	cout<<"Created a new color!"<<endl;
@@ -187,6 +198,7 @@ VirtualKmerColorHandle ColorSet::getVirtualColorHandle(set<PhysicalKmerColor>*co
 	assert(m_fastAccessTable.count(hashValue)>0);
 	assert(m_fastAccessTable[hashValue].size()>0);
 	assert(m_fastAccessTable[hashValue].count(newVirtualColor)>0);
+	assert(hashValue==m_translationTable[newVirtualColor].getHash());
 	#endif
 
 	return newVirtualColor;
@@ -236,6 +248,9 @@ void ColorSet::decrementReferences(VirtualKmerColorHandle handle){
 	// destroy the color if it is not used anymore
 	// and if it is not the color 0
 	if(handle>0 && m_translationTable[handle].getReferences()==0){
+
+		// erase all colors
+		m_translationTable[handle].getColors()->clear();
 		
 		// destroy it at will
 		// actually, they are simply not removed.
@@ -245,6 +260,30 @@ void ColorSet::decrementReferences(VirtualKmerColorHandle handle){
 
 		// but we don't remove it from the hash table
 		// because it may be useful sometime
+		// correction: we do remove it right now.
+	
+		uint64_t hashValue=m_translationTable[handle].getHash();
+
+		#ifdef ASSERT
+		assert(m_fastAccessTable.count(hashValue)>0);
+		assert(m_fastAccessTable[hashValue].count(handle)>0);
+		#endif
+
+		m_fastAccessTable[hashValue].erase(handle);
+
+		// remove the entry from the table if it was the last
+		if(m_fastAccessTable[hashValue].size()==0){
+			m_fastAccessTable.erase(hashValue);
+		}
+
+		#ifdef ASSERT
+		if(m_fastAccessTable.count(hashValue)>0){
+			assert(m_fastAccessTable[hashValue].count(handle)==0);
+		}
+
+		assert(m_availableHandles.count(handle)>0);
+		assert(m_translationTable[handle].getColors()->size()==0);
+		#endif
 	}
 }
 
@@ -271,8 +310,8 @@ int ColorSet::getNumberOfVirtualColors(){
 void ColorSet::printSummary(){
 	cout<<endl;
 	cout<<"Coloring summary"<<endl;
-	cout<<"  Number of real colors: "<<getNumberOfPhysicalColors()<<endl;
 	cout<<"  Number of virtual colors: "<<getNumberOfVirtualColors()<<endl;
+	cout<<"  Number of real colors: "<<getNumberOfPhysicalColors()<<endl;
 	cout<<endl;
 	cout<<"  Operations"<<endl;
 	cout<<"    Fetched with direct fast access: "<<m_hashDirectOperations<<endl;
@@ -315,23 +354,6 @@ VirtualKmerColorHandle ColorSet::allocateVirtualColor(){
 	if(m_availableHandles.size()>0){
 
 		VirtualKmerColorHandle handle= *(m_availableHandles.begin());
-
-		uint64_t hashValue=getHash(m_translationTable[handle].getColors());
-
-		// remove the entry from the fast access table
-		if(m_fastAccessTable.count(hashValue)>0 
-			&& m_fastAccessTable[hashValue].count(handle) > 0){
-
-			m_fastAccessTable[hashValue].erase(handle);
-
-			// remove the entry from the table if it was the last
-			if(m_fastAccessTable[hashValue].size()==0){
-				m_fastAccessTable.erase(hashValue);
-			}
-		}
-
-		// erase all colors
-		m_translationTable[handle].getColors()->clear();
 
 		// we don't remove it here from the available list.
 		// instead, it will be removed from the avaialble list

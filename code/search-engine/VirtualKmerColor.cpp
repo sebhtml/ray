@@ -86,3 +86,11 @@ bool VirtualKmerColor::hasColors(set<PhysicalKmerColor>*colors){
 
 	return false;
 }
+
+void VirtualKmerColor::setHash(uint64_t hash){
+	m_hash=hash;
+}
+
+uint64_t VirtualKmerColor::getHash(){
+	return m_hash;
+}

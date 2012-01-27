@@ -47,6 +47,8 @@ class VirtualKmerColor{
 /** the list of physical colors **/
 	set<PhysicalKmerColor> m_colors;
 
+	uint64_t m_hash;
+
 public:
 	VirtualKmerColor();
 
@@ -62,6 +64,9 @@ public:
 	bool hasColor(PhysicalKmerColor color);
 
 	bool hasColors(set<PhysicalKmerColor>*colors);
+
+	void setHash(uint64_t hash);
+	uint64_t getHash();
 };
 
 #endif

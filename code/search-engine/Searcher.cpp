@@ -988,6 +988,9 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 		m_derivative.clear();
 
+		m_lastPrinted=0;
+		m_derivative.addX(m_kmersProcessed);
+
 	// we must check the hits
 	}else if(!m_checkedHits){
 	
@@ -1148,8 +1151,6 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 	// this sequence is not owned by me
 	}else if(!isSequenceOwner() && !m_finished){
 
-		showSequenceAbundanceProgress();
-
 		m_globalSequenceIterator+=m_searchDirectories[m_directoryIterator].getCount(m_fileIterator);
 
 		// skip the file
@@ -1157,7 +1158,6 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		m_fileIterator++;
 		m_globalFileIterator++;
 		m_sequenceIterator=0;
-
 		
 		#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
 		cout<<"Skipping"<<endl;
@@ -1219,7 +1219,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				mean=(0.0+sum)/totalCount;
 */
 
-			showSequenceAbundanceProgress();
+			showProcessedKmers();
 
 			#ifdef ASSERT
 			assert(m_directoryIterator<m_searchDirectories_size);
@@ -1490,6 +1490,8 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 					m_kmersProcessed++; // the total number of k-mers processed
 
+					showProcessedKmers();
+
 					continue;
 				}
 
@@ -1513,6 +1515,9 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				// this little guy have to be right after iterateToNextKmer()
 				// otherwise, it is buggy.
 				m_numberOfKmers++;
+				m_kmersProcessed++;
+
+				showProcessedKmers();
 
 				int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_COVERAGE_AND_PATHS);
 
@@ -1721,12 +1726,6 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 					cout<<"Rank "<<m_parameters->getRank()<<" processing sequence "<<m_globalSequenceIterator;
 					cout<<" ProcessedKmers= "<<m_numberOfKmers<<endl;
 				}
-
-				m_kmersProcessed++;
-
-				if(m_kmersProcessed%1000000==0){
-					showProcessedKmers();
-				}
 			}
 
 			if(false){ // this is a repeated vertex, we need to fetch more stuff
@@ -1912,23 +1911,6 @@ string Searcher::getBaseName(string a){
 	return a.substr(lastSlash,count);
 }
 
-void Searcher::showSequenceAbundanceProgress(){
-	// show progress
-	if(m_globalSequenceIterator % 100==0 || m_sequenceIterator == m_searchDirectories[m_directoryIterator].getCount(m_fileIterator)){
-		cout<<"Rank "<<m_parameters->getRank()<<" biological abundances ";
-		cout<<m_globalSequenceIterator<<" ["<<m_directoryIterator+1;
-		cout<<"/"<<m_searchDirectories_size<<"] ["<<m_fileIterator+1<<"/";
-		cout<<m_searchDirectories[m_directoryIterator].getSize()<<"] ["<<m_sequenceIterator+1;
-		cout<<"/"<<m_searchDirectories[m_directoryIterator].getCount(m_fileIterator)<<"]"<<endl;
-
-		// display the speed obtained.
-		m_derivative.printStatus(SLAVE_MODES[m_switchMan->getSlaveMode()],
-				m_switchMan->getSlaveMode());
-
-	}
-
-}
-
 bool Searcher::isSequenceOwner(){
 	return m_globalFileIterator%m_parameters->getSize()==m_parameters->getRank();
 }
@@ -1942,6 +1924,10 @@ void Searcher::printDirectoryStart(){
 }
 
 void Searcher::showProcessedKmers(){
+	if(m_kmersProcessed < m_lastPrinted + 1000000){
+		return;
+	}
+
 	if(m_directoryIterator < m_searchDirectories_size &&
   		m_fileIterator < m_searchDirectories[m_directoryIterator].getSize()
 		&& m_sequenceIterator < m_searchDirectories[m_directoryIterator].getCount(m_fileIterator)){
@@ -1964,6 +1950,8 @@ void Searcher::showProcessedKmers(){
 	if(m_switchMan->getSlaveMode()==RAY_SLAVE_MODE_ADD_COLORS){
 		m_colorSet.printSummary();
 	}
+
+	m_lastPrinted=m_kmersProcessed;
 }
 
 void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
@@ -2302,6 +2290,11 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 
 		m_derivative.clear();
 
+		m_lastPrinted=0;
+		m_derivative.addX(m_kmersProcessed);
+
+		cout<<"Rank "<<m_parameters->getRank()<<" will add colors."<<endl;
+
 	// all directories were processed
 	}else if(m_directoryIterator==m_searchDirectories_size){
 	
@@ -2332,9 +2325,9 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 	// this sequence is not owned by me
 	}else if(!isSequenceOwner()){
 
-		showSequenceAbundanceProgress();
-
 		m_globalSequenceIterator+=m_searchDirectories[m_directoryIterator].getCount(m_fileIterator);
+		
+		showProcessedKmers();
 
 		// skip the file
 		// ownership is on a per-file basis
@@ -2394,7 +2387,6 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		if(m_pendingMessages==0  && m_bufferedData.isEmpty() &&  /* nothing to flush... */
 			 !m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength)){
 			
-			showSequenceAbundanceProgress();
 
 			#ifdef ASSERT
 			assert(m_directoryIterator<m_searchDirectories_size);
@@ -2441,13 +2433,11 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 
 				if( m_searchDirectories[m_directoryIterator].kmerContainsN()){
 
-					if(m_kmersProcessed%1000000==0){
-						showProcessedKmers();
-					}
-
 					m_numberOfKmers++; // the number of k-mers for the sequence
 
 					m_kmersProcessed++; // the total number of k-mers processed
+
+					showProcessedKmers();
 
 					continue;
 				}
@@ -2467,14 +2457,12 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 				m_bufferedData.addAt(rankToFlush,color);
 				added++;
 
-				if(m_kmersProcessed%1000000==0){
-					showProcessedKmers();
-				}
-
 				// this little guy have to be right after iterateToNextKmer()
 				// otherwise, it is buggy.
 				m_numberOfKmers++;
 				m_kmersProcessed++;
+
+				showProcessedKmers();
 
 				int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_ADD_KMER_COLOR);
 
