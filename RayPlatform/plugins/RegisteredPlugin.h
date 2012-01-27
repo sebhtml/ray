@@ -25,6 +25,7 @@
 #include <core/types.h>
 #include <set>
 #include <string>
+#include <iostream>
 using namespace std;
 
 /**
@@ -69,7 +70,7 @@ public:
 	bool hasMasterMode(MasterMode mode);
 	bool hasMessageTag(MessageTag tag);
 
-	void print();
+	void print(ostream*stream);
 };
 
 #endif

@@ -964,25 +964,25 @@ void ComputeCore::setPluginName(PluginHandle plugin,string name){
 	m_plugins[plugin].setName(name);
 }
 
-void ComputeCore::printPlugins(){
-	cout<<endl;
-	cout<<"ComputeCore: printing plugins"<<endl;
-	cout<<endl;
-	cout<<" Number of plugins: "<<m_plugins.size()<<endl;
-	cout<<endl;
+void ComputeCore::printPlugins(ostream*stream){
+	(*stream)<<endl;
+	(*stream)<<"ComputeCore: printing plugins"<<endl;
+	(*stream)<<endl;
+	(*stream)<<" Number of plugins: "<<m_plugins.size()<<endl;
+	(*stream)<<endl;
 
 	int j=0;
 
 	for(map<PluginHandle,RegisteredPlugin>::iterator i=m_plugins.begin();
 		i!=m_plugins.end();i++){
-		cout<<"-------------------------------"<<endl;
-		cout<<" Handle: "<<i->first<<endl;
-		i->second.print();
-		cout<<"-------------------------------"<<endl;
-		cout<<endl;
+		(*stream)<<"-------------------------------"<<endl;
+		(*stream)<<" Handle: "<<i->first<<endl;
+		i->second.print(stream);
+		(*stream)<<"-------------------------------"<<endl;
+		(*stream)<<endl;
 		j++;
 	}
 
-	cout<<"ComputeCore: finished printing plugins"<<endl;
-	cout<<endl;
+	(*stream)<<"ComputeCore: finished printing plugins"<<endl;
+	(*stream)<<endl;
 }

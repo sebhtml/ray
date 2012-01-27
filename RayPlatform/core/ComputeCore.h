@@ -40,8 +40,10 @@
 #include <memory/malloc_types.h>
 #include <core/OperatingSystem.h>
 
+#include <iostream>
 #include <stdlib.h>
 #include <stdint.h>
+using namespace std;
 
 /** this class is a compute core
  * to use it, you must set the handlers of your program
@@ -224,7 +226,7 @@ public:
 
 	void setPluginName(PluginHandle plugin,string name);
 
-	void printPlugins();
+	void printPlugins(ostream*stream);
 };
 
 #endif

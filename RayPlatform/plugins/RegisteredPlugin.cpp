@@ -83,20 +83,24 @@ string RegisteredPlugin::getName(){
 	return m_name;
 }
 
-void RegisteredPlugin::print(){
+void RegisteredPlugin::print(ostream*stream){
 
-	cout<<" Name: "<<getName()<<endl;
+	(*stream)<<" Name: "<<getName()<<endl;
+	(*stream)<<endl;
 
-	cout<<" Allocated master mode handles: "<<m_allocatedMasterModes.size()<<endl;
-	cout<<"   Handles with a registered handler: "<<m_registeredMasterModeHandlers.size()<<endl;
-	cout<<"   Handles with a registered symbol: "<<m_registeredMasterModeSymbols.size()<<endl;
+	(*stream)<<" Allocated master mode handles: "<<m_allocatedMasterModes.size()<<endl;
+	(*stream)<<"   Handles with a registered handler: "<<m_registeredMasterModeHandlers.size()<<endl;
+	(*stream)<<"   Handles with a registered symbol: "<<m_registeredMasterModeSymbols.size()<<endl;
+	(*stream)<<endl;
 
-	cout<<" Allocated slave mode handles: "<<m_allocatedSlaveModes.size()<<endl;
-	cout<<"   Handles with a registered handler: "<<m_registeredSlaveModeHandlers.size()<<endl;
-	cout<<"   Handles with a registered symbol: "<<m_registeredSlaveModeSymbols.size()<<endl;
+	(*stream)<<" Allocated slave mode handles: "<<m_allocatedSlaveModes.size()<<endl;
+	(*stream)<<"   Handles with a registered handler: "<<m_registeredSlaveModeHandlers.size()<<endl;
+	(*stream)<<"   Handles with a registered symbol: "<<m_registeredSlaveModeSymbols.size()<<endl;
+	(*stream)<<endl;
 
-	cout<<" Allocated message tag handles: "<<m_allocatedMessageTags.size()<<endl;
-	cout<<"   Handles with a registered handler: "<<m_registeredMessageTagHandlers.size()<<endl;
-	cout<<"   Handles with a registered symbol: "<<m_registeredMessageTagSymbols.size()<<endl;
+	(*stream)<<" Allocated message tag handles: "<<m_allocatedMessageTags.size()<<endl;
+	(*stream)<<"   Handles with a registered handler: "<<m_registeredMessageTagHandlers.size()<<endl;
+	(*stream)<<"   Handles with a registered symbol: "<<m_registeredMessageTagSymbols.size()<<endl;
+	(*stream)<<endl;
 
 }

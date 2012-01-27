@@ -124,8 +124,6 @@ m_virtualCommunicator,&m_kmerAcademyBuilder,
 
 );
 
-	registerPlugins();
-
 	configureVirtualCommunicator(m_virtualCommunicator);
 	configureSwitchMan(m_switchMan);
 }
@@ -313,6 +311,9 @@ void Machine::start(){
 
 		m_timePrinter.setFile(m_parameters.getPrefix());
 	}
+
+	// register the plugins.
+	registerPlugins();
 
 	ostringstream routingPrefix;
 	routingPrefix<<m_parameters.getPrefix()<<"/Routing/";
@@ -808,5 +809,22 @@ void Machine::registerPlugins(){
 	m_computeCore.registerPlugin(&m_partitioner);
 	m_computeCore.registerPlugin(&m_seedExtender);
 
-	m_computeCore.printPlugins();
+	if(m_parameters.getRank()==MASTER_RANK){
+		ostringstream directory;
+		directory<<m_parameters.getPrefix()<<"/Plugins";
+
+		string file=directory.str();
+		createDirectory(file.c_str());
+	}
+	
+	m_messagesHandler->barrier();
+
+	ostringstream fileName;
+	fileName<<m_parameters.getPrefix()<<"/Plugins/"<<m_parameters.getRank()<<".Plugins.txt";
+
+	ofstream f(fileName.str().c_str());
+
+	m_computeCore.printPlugins(&f);
+
+	f.close();
 }
