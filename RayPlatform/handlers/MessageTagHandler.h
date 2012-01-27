@@ -34,23 +34,12 @@
  */
 class MessageTagHandler{
 
-/** table of method handlers */
-	MessageTagHandlerMethod m_methods[MAXIMUM_NUMBER_OF_TAG_HANDLERS];
-
 /** table of object handlers */
 	MessageTagHandler*m_objects[MAXIMUM_NUMBER_OF_TAG_HANDLERS];
 
-/** sets the method to call for a given message tag */
-	void setMethodHandler(Tag messageTag,MessageTagHandlerMethod method);
-
 public:
-	// generate the prototypes with the list */
-	#define ITEM(x) virtual void call_ ## x(Message*message);
 
-	/** message tag prototypes */
-	#include <mpi_tags.txt>
-
-	#undef ITEM
+	virtual void call(Message*message);
 
 	/** call the correct handler for a tag on a message */
 	void callHandler(Tag messageTag,Message*message);

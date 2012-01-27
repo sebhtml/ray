@@ -27,59 +27,28 @@
 #include <assert.h>
 #endif
 
-#define ITEM(mode) \
-void MasterModeHandler::call_ ## mode (){}
-
-#include <master_modes.txt>
-
-#undef ITEM
-
 void MasterModeHandler::callHandler(MasterMode mode){
 	MasterModeHandler*object=m_objects[mode];
 
-	#ifdef ASSERT
-	assert(object!=NULL);
-	#endif
-
-	// don't do it if it is this because it does nothing
-	if(object==this)
+	// don't do it if it is NULL because it does nothing
+	if(object==NULL)
 		return;
 
 	/** otherwise, fetch the method and call it*/
 
-	MasterModeHandlerMethod method=m_methods[mode];
-
-	#ifdef ASSERT
-	assert(method!=NULL);
-	#endif
-
-	(object->*method)();
+	object->call();
 }
 
 MasterModeHandler::MasterModeHandler(){
-	// assign handler methods
-	// also assign default handler objects
-
-	#define ITEM(mode) \
-	setMethodHandler(mode, &MasterModeHandler::call_ ## mode); \
-	setObjectHandler(mode, this) ;
-
-	#include <master_modes.txt>
-
-	#undef ITEM
+	for(int i=0;i<MAXIMUM_NUMBER_OF_MASTER_HANDLERS;i++){
+		m_objects[i]=NULL;
+	}
 }
 
 void MasterModeHandler::setObjectHandler(MasterMode mode,MasterModeHandler*object){
-	#ifdef ASSERT
-	assert(object!=NULL);
-	#endif
-
 	m_objects[mode]=object;
 }
 
-void MasterModeHandler::setMethodHandler(MasterMode mode,MasterModeHandlerMethod method){
-	#ifdef ASSERT
-	assert(method!=NULL);
-	#endif
-	m_methods[mode]=method;
+void MasterModeHandler::call(){
 }
+

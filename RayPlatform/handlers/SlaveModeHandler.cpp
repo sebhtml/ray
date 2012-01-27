@@ -24,62 +24,27 @@
 #endif
 #include <stdlib.h> /* for NULL */
 
-// define empty implementations
-//
-#define ITEM(mode) \
-void SlaveModeHandler::call_ ## mode (){}
-
-#include <slave_modes.txt>
-
-#undef ITEM
-
 void SlaveModeHandler::callHandler(SlaveMode mode){
 	SlaveModeHandler*object=m_objects[mode];
 
-	#ifdef ASSERT
-	assert(object!=NULL);
-	#endif
-
-	// don't call it if it is this
-	if(object==this)
+	// don't call it if it is NULL
+	if(object==NULL)
 		return;
 
-	// otherwise, fetch the method
-	SlaveModeHandlerMethod method=m_methods[mode];
-
-	#ifdef ASSERT
-	assert(method!=NULL);
-	#endif
-
 	// call it
-	(object->*method) (   );
+	object->call();
 }
 
 SlaveModeHandler::SlaveModeHandler(){
-	// assign the methods and the default object handlers
-	// the default is this for the objects
-	#define ITEM(mode) \
-	setMethodHandler(mode, &SlaveModeHandler::call_ ## mode ); \
-	setObjectHandler(mode, this ); 
-
-	#include <slave_modes.txt>
-
-	#undef ITEM
-
+	for(int i=0;i<MAXIMUM_NUMBER_OF_SLAVE_HANDLERS;i++){
+		m_objects[i]=NULL;
+	}
 }
 
 void SlaveModeHandler::setObjectHandler(SlaveMode mode,SlaveModeHandler*object){
-	#ifdef ASSERT
-	assert(object!=NULL);
-	#endif
-
 	m_objects[mode]=object;
 }
 
-void SlaveModeHandler::setMethodHandler(SlaveMode mode,SlaveModeHandlerMethod method){
-	#ifdef ASSERT
-	assert(method!=NULL);
-	#endif
-
-	m_methods[mode]=method;
+void SlaveModeHandler::call(){
 }
+

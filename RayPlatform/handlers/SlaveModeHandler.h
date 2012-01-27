@@ -33,24 +33,12 @@
  */
 class SlaveModeHandler{
 
-/** table of slave methods */
-	SlaveModeHandlerMethod m_methods[MAXIMUM_NUMBER_OF_SLAVE_HANDLERS];
-
 /** table of slave objects */
 	SlaveModeHandler*m_objects[MAXIMUM_NUMBER_OF_SLAVE_HANDLERS];
 
-/** set the method to call for a given slave mode */
-	void setMethodHandler(SlaveMode mode,SlaveModeHandlerMethod method);
-
 public:
 
-	// generate the prototypes with the list */
-	#define ITEM(x) virtual void call_ ## x();
-
-	/** slave mode callback prototypes */
-	#include <slave_modes.txt>
-
-	#undef ITEM
+	virtual void call();
 
 /** call the handler for a given slave mode */
 	void callHandler(SlaveMode mode);
@@ -60,7 +48,6 @@ public:
 
 /** set the object to call for a slave mode */
 	void setObjectHandler(SlaveMode mode,SlaveModeHandler*object);
-
 };
 
 #endif

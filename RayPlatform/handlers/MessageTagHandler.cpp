@@ -25,60 +25,26 @@
 #endif
 #include <stdlib.h> /* for NULL */
 
-// define empty implementations
-// these are virtual and can be overwritten
-#define ITEM(tag) \
-void MessageTagHandler::call_ ## tag(Message*message){}
-
-#include <mpi_tags.txt>
-
-#undef ITEM
-
 void MessageTagHandler::callHandler(Tag messageTag,Message*message){
 	MessageTagHandler*handlerObject=m_objects[messageTag];
 
-	#ifdef ASSERT
-	assert(handlerObject!=NULL);
-	#endif
-
 	// it is useless to call base implementations
 	// because they are empty
-	if(handlerObject==this)
+	if(handlerObject==NULL)
 		return;
 
-	// otherwise, fetch the method and call it
-	MessageTagHandlerMethod handlerMethod=m_methods[messageTag];
-
-	#ifdef ASSERT
-	assert(handlerMethod!=NULL);
-	#endif
-
-	(handlerObject->*handlerMethod)(message);
+	handlerObject->call(message);
 }
 
 MessageTagHandler::MessageTagHandler(){
-	// assign handler methods and default handler objects
-	#define ITEM(tag) \
-	setMethodHandler(tag, & MessageTagHandler::call_ ## tag); \
-	setObjectHandler(tag, this);
-
-	#include <mpi_tags.txt>
-
-	#undef ITEM
+	for(int i=0;i<MAXIMUM_NUMBER_OF_TAG_HANDLERS;i++){
+		m_objects[i]=NULL;
+	}
 }
 
 void MessageTagHandler::setObjectHandler(Tag messageTag,MessageTagHandler*object){
-	#ifdef ASSERT
-	assert(object!=NULL);
-	#endif
-
 	m_objects[messageTag]=object;
 }
 
-void MessageTagHandler::setMethodHandler(Tag tag,MessageTagHandlerMethod method){
-	#ifdef ASSERT
-	assert(method!=NULL);
-	#endif
-
-	m_methods[tag]=method;
+void MessageTagHandler::call(Message*message){
 }

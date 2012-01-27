@@ -31,24 +31,4 @@ typedef int RoutingTag;
 
 typedef int Distance;
 
-
-class Message;
-class MessageTagHandler;
-
-/* new interface */
-typedef void (MessageTagHandler::*MessageTagHandlerMethod) (Message*message);
-
-
-/**
-* Main class of the application. Runs the main program loop on each MPI rank.
-*/
-
-class SlaveModeHandler;
-typedef void (SlaveModeHandler::*SlaveModeHandlerMethod) ();
-
-class MasterModeHandler;
-typedef void (MasterModeHandler::*MasterModeHandlerMethod) ();
-
-
-
 #endif

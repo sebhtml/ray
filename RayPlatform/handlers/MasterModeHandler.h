@@ -33,24 +33,12 @@
  */
 class MasterModeHandler{
 
-/** a list of methods to call */
-	MasterModeHandlerMethod m_methods[MAXIMUM_NUMBER_OF_MASTER_HANDLERS];
-
 /** a list of objects to use for calling methods */
 	MasterModeHandler*m_objects[MAXIMUM_NUMBER_OF_MASTER_HANDLERS];
 
-/** set the method to call for a given master mode */
-	void setMethodHandler(MasterMode mode,MasterModeHandlerMethod method);
-
 public:
 
-	// generate the prototypes with the list */
-	#define ITEM(x) virtual void call_ ## x();
-
-	/** master mode callback prototypes */
-	#include <master_modes.txt>
-
-	#undef ITEM
+	virtual void call();
 
 	/** call the handler */
 	void callHandler(MasterMode mode);
