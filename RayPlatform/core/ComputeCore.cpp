@@ -116,6 +116,19 @@ void ComputeCore::setMessageTagObjectHandler(PluginHandle plugin,MessageTag tag,
  */
 void ComputeCore::run(){
 
+	if(m_pluginRegistrationsInProgress.size()>0){
+		cout<<"ComputeCore: Error, can not start the main loop because there are plugin registrations in progress"<<endl;
+		cout<<" Plugins: "<<endl;
+		for(set<PluginHandle>::iterator i=m_pluginRegistrationsInProgress.begin();
+			i!=m_pluginRegistrationsInProgress.end();i++){
+			cout<<" Handle: "<<*i<<" Name: "<<m_plugins[*i].getName()<<endl;
+		}
+	}
+
+	#ifdef ASSERT
+	assert(m_pluginRegistrationsInProgress.size()==0);
+	#endif
+
 	m_startingTimeMicroseconds = getMicroseconds();
 
 	if(m_runProfiler){
@@ -503,6 +516,8 @@ void ComputeCore::constructor(int*argc,char***argv){
 	m_rank=m_messagesHandler.getRank();
 	m_size=m_messagesHandler.getSize();
 
+	m_switchMan.constructor(m_rank,m_size);
+
 	m_virtualCommunicator.constructor(m_rank,m_size,&m_outboxAllocator,&m_inbox,&m_outbox);
 
 	/***********************************************************************************/
@@ -518,8 +533,6 @@ void ComputeCore::constructor(int*argc,char***argv){
 	
 	getInbox()->constructor(getMaximumNumberOfAllocatedInboxMessages(),RAY_MALLOC_TYPE_INBOX_VECTOR,false);
 	getOutbox()->constructor(getMaximumNumberOfAllocatedOutboxMessages(),RAY_MALLOC_TYPE_OUTBOX_VECTOR,false);
-
-	getSwitchMan()->constructor(getMessagesHandler()->getSize());
 
 	// set default modes
 	
@@ -858,10 +871,10 @@ void ComputeCore::beginPluginRegistration(PluginHandle plugin){
 
 void ComputeCore::endPluginRegistration(PluginHandle plugin){
 
-	if(validationPluginRegistrationInProgress(plugin))
+	if(!validationPluginRegistrationInProgress(plugin))
 		return;
 
-	if(validationPluginRegistrationNotClosed(plugin))
+	if(!validationPluginRegistrationClosed(plugin))
 		return;
 
 	#ifdef ASSERT
@@ -916,7 +929,7 @@ bool ComputeCore::validationPluginRegistrationNotClosed(PluginHandle plugin){
 }
 
 bool ComputeCore::validationPluginRegistrationClosed(PluginHandle plugin){
-	if(!m_pluginRegistrationsClosed.count(plugin)>0){
+	if(m_pluginRegistrationsClosed.count(plugin)>0){
 		cout<<"Error, plugin "<<plugin<<" can not be opened for registration because it was closed in the past"<<endl;
 		return false;
 	}

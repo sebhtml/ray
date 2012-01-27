@@ -69,8 +69,6 @@ Machine::Machine(int argc,char**argv){
 	m_virtualCommunicator=m_computeCore.getVirtualCommunicator();
 	m_virtualProcessor=m_computeCore.getVirtualProcessor();
 
-	m_switchMan->constructor(m_size);
-
 	if(isMaster() && argc==1){
 		m_parameters.showUsage();
 		exit(EXIT_NEEDS_ARGUMENTS);

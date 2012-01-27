@@ -27,7 +27,8 @@ using namespace std;
 
 //#define CONFIG_SWITCHMAN_VERBOSITY
 
-void SwitchMan::constructor(int numberOfCores){
+void SwitchMan::constructor(Rank rank,int numberOfCores){
+	m_rank=rank;
 	m_size=numberOfCores;
 	reset();
 
@@ -275,3 +276,12 @@ void SwitchMan::addMasterMode(MasterMode mode){
 vector<MasterMode>*SwitchMan::getMasterModeOrder(){
 	return &m_masterModeOrder;
 }
+
+Rank SwitchMan::getRank(){
+	return m_rank;
+}
+
+int SwitchMan::getSize(){
+	return m_size;
+}
+

@@ -46,6 +46,9 @@ class SwitchMan{
 	
 	MasterMode m_lastMasterMode;
 
+/** the rank **/
+	Rank m_rank;
+
 	/** number of cores */
 	int m_size;
 
@@ -70,7 +73,7 @@ class SwitchMan{
 public:
 
 /** the switchman is constructed with a number of cores */
-	void constructor(int numberOfRanks);
+	void constructor(int rank,int numberOfRanks);
 
 /** reset */
 	void reset();
@@ -144,6 +147,10 @@ public:
 	void addMasterMode(MasterMode masterMode);
 
 	vector<MasterMode>*getMasterModeOrder();
+
+	Rank getRank();
+
+	int getSize();
 };
 
 #endif
