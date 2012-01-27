@@ -307,7 +307,10 @@ void Library::updateStates(){
 }
 
 void Library::registerPlugin(ComputeCore*core){
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION, this);
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES, this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_UPDATE_DISTANCES, this);
+	m_adapter_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION.setObject(this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION, &m_adapter_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION);
+	m_adapter_RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES.setObject(this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES, &m_adapter_RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES);
+	m_adapter_RAY_MASTER_MODE_UPDATE_DISTANCES.setObject(this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_UPDATE_DISTANCES, &m_adapter_RAY_MASTER_MODE_UPDATE_DISTANCES);
 }

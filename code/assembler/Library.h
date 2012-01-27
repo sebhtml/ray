@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -36,6 +36,7 @@
 #include <handlers/SlaveModeHandler.h>
 #include <handlers/MasterModeHandler.h>
 #include <core/ComputeCore.h>
+#include <assembler/Library_adapters.h>
 
 #include <map>
 using namespace std;
@@ -48,7 +49,12 @@ using namespace std;
  * messages are grouped by the virtual communicator.
  * \author Sébastien Boisvert
  */
-class Library : public SlaveModeHandler, public MasterModeHandler, public CorePlugin{
+class Library :  public CorePlugin{
+
+	Adapter_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION m_adapter_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION;
+	Adapter_RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES m_adapter_RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES;
+	Adapter_RAY_MASTER_MODE_UPDATE_DISTANCES m_adapter_RAY_MASTER_MODE_UPDATE_DISTANCES;
+
 	int m_currentLibrary;
 	int m_ranksThatReplied;
 	int m_informationSent;
@@ -111,3 +117,4 @@ Parameters*m_parameters,SeedingData*m_seedingData,StaticVector*inbox,VirtualComm
 };
 
 #endif
+
