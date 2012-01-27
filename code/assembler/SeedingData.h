@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -34,11 +34,12 @@ class SeedExtender;
 #include <graph/GridTableIterator.h>
 #include <core/common_functions.h>
 #include <assembler/SeedWorker.h>
-#include <handlers/SlaveModeHandler.h>
 #include <core/ComputeCore.h>
 
 #include <set>
 using namespace std;
+
+#include <assembler/SeedingData_adapters.h>
 
 /*
  * Computes seeds in the k-mer graph.
@@ -48,7 +49,11 @@ using namespace std;
  * communicator and the later groups messages.
  * \author Sébastien Boisvert
  */
-class SeedingData : public SlaveModeHandler, public CorePlugin{
+class SeedingData : public CorePlugin{
+
+	Adapter_RAY_SLAVE_MODE_START_SEEDING m_adapter_RAY_SLAVE_MODE_START_SEEDING;
+	Adapter_RAY_SLAVE_MODE_SEND_SEED_LENGTHS m_adapter_RAY_SLAVE_MODE_SEND_SEED_LENGTHS;
+
 	/** checkpointing */
 	bool m_checkedCheckpoint;
 

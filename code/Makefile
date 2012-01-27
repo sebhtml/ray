@@ -75,6 +75,7 @@ assembler/SeedWorker.o assembler/ExtensionElement.o \
 assembler/DepthFirstSearchData.o assembler/SeedingData.o \
 assembler/FusionData.o assembler/Library.o assembler/Loader.o \
 obj-y += assembler/Library_adapters.o
+obj-y += assembler/SeedingData_adapters.o
 
 obj-y += assembler/SeedExtender.o assembler/SequencesIndexer.o \
 assembler/SequencesLoader.o \

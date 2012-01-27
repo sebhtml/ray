@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -380,8 +380,10 @@ void SeedingData::loadCheckpoint(){
 
 void SeedingData::registerPlugin(ComputeCore*core){
 
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_START_SEEDING, this);
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEND_SEED_LENGTHS, this);
+	m_adapter_RAY_SLAVE_MODE_START_SEEDING.setObject(this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_START_SEEDING, &m_adapter_RAY_SLAVE_MODE_START_SEEDING);
 
+	m_adapter_RAY_SLAVE_MODE_SEND_SEED_LENGTHS.setObject(this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEND_SEED_LENGTHS, &m_adapter_RAY_SLAVE_MODE_SEND_SEED_LENGTHS);
 
 }
