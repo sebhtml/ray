@@ -199,6 +199,6 @@ void CoverageGatherer::constructor(Parameters*parameters,StaticVector*inbox,Stat
 }
 
 void CoverageGatherer::registerPlugin(ComputeCore*core){
-
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEND_DISTRIBUTION, this);
+	m_adapter_RAY_SLAVE_MODE_SEND_DISTRIBUTION.setObject(this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEND_DISTRIBUTION, &m_adapter_RAY_SLAVE_MODE_SEND_DISTRIBUTION);
 }

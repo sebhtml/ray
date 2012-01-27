@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2011  Sébastien Boisvert
+    Copyright (C) 2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -26,17 +26,21 @@
 #include <structures/StaticVector.h>
 #include <graph/GridTable.h>
 #include <memory/RingAllocator.h>
-#include <handlers/SlaveModeHandler.h>
 #include <core/ComputeCore.h>
 
 #include <stdint.h>
 #include <map>
 using namespace std;
 
+#include <graph/CoverageGatherer_adapters.h>
+
 /**
  * \author Sébastien Boisvert
  */
-class CoverageGatherer : public SlaveModeHandler, public CorePlugin{
+class CoverageGatherer : public CorePlugin{
+
+	Adapter_RAY_SLAVE_MODE_SEND_DISTRIBUTION m_adapter_RAY_SLAVE_MODE_SEND_DISTRIBUTION;
+
 	map<int,uint64_t> m_distributionOfCoverage;
 	map<int,uint64_t>::iterator m_coverageIterator;
 	bool m_waiting;

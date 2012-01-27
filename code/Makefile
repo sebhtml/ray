@@ -46,6 +46,7 @@ obj-$(HAVE_LIBZ) += format/FastqGzLoader.o
 #graph
 obj-y += graph/GridTable.o graph/GridTableIterator.o graph/CoverageDistribution.o 
 obj-y += graph/CoverageGatherer.o graph/KmerAcademy.o graph/KmerAcademyIterator.o
+obj-y += graph/CoverageGatherer_adapters.o
 
 #structures
 
