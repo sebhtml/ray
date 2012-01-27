@@ -462,20 +462,13 @@ void ComputeCore::constructor(int*argc,char***argv){
 	getInbox()->constructor(getMaximumNumberOfAllocatedInboxMessages(),RAY_MALLOC_TYPE_INBOX_VECTOR,false);
 	getOutbox()->constructor(getMaximumNumberOfAllocatedOutboxMessages(),RAY_MALLOC_TYPE_OUTBOX_VECTOR,false);
 
-	ScriptEngine engine;
 	getSwitchMan()->constructor(getMessagesHandler()->getSize());
-
-	engine.configureSwitchMan(getSwitchMan());
 
 	// set default modes
 	
 	getSwitchMan()->setMasterMode(RAY_MASTER_MODE_DO_NOTHING); 
 	getSwitchMan()->setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
 
-	if(getMessagesHandler()->getRank()==MASTER_RANK){
-		MasterMode mode=getSwitchMan()->getMasterModeOrder()->at(0);
-		getSwitchMan()->setMasterMode(mode);
-	}
 }
 
 void ComputeCore::enableProfiler(){

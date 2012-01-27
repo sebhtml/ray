@@ -38,7 +38,6 @@
 #include <core/CorePlugin.h>
 #include <memory/malloc_types.h>
 #include <core/OperatingSystem.h>
-#include <scripting/ScriptEngine.h>
 
 #include <stdlib.h>
 #include <stdint.h>

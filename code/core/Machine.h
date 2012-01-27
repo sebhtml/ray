@@ -72,7 +72,6 @@
 #include <core/MachineHelper.h>
 #include <scheduling/SwitchMan.h>
 #include <search-engine/Searcher.h>
-#include <scripting/ScriptEngine.h>
 
 #include <handlers/MessageTagHandler.h>
 #include <handlers/SlaveModeHandler.h>
@@ -97,8 +96,6 @@ class Machine{
 	SwitchMan*m_switchMan;
 	TickLogger*m_tickLogger;
 	MessageRouter*m_router;
-
-	ScriptEngine m_scriptEngine;
 
 	Profiler*m_profiler;
 
@@ -263,6 +260,7 @@ class Machine{
 	int getRank();
 
 	void configureVirtualCommunicator(VirtualCommunicator*virtualCommunicator);
+	void configureSwitchMan(SwitchMan*switchMan);
 
 	void showRayVersion(MessagesHandler*messagesHandler,bool fullReport);
 

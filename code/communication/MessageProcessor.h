@@ -56,7 +56,6 @@ using namespace std;
 #include <communication/MessageRouter.h>
 
 #include <scheduling/SwitchMan.h>
-#include <scripting/ScriptEngine.h>
 #include <core/CorePlugin.h>
 
 #include <communication/MessageProcessor_adapters.h>
@@ -263,8 +262,6 @@ class MessageProcessor :  public CorePlugin {
 
 
 public:
-
-	void assignHandlers(ScriptEngine*engine);
 
 	void constructor(
 MessageRouter*router,

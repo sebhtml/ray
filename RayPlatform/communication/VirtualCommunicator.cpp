@@ -173,7 +173,7 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 		cout<<"Fatal: too much bits, tag= "<<MESSAGES[tag]<<" Threshold= "<<threshold<<" pushed messages; Actual= "<<currentSize<<" pushed messages; Period= "<<period<<" uint64_t/message; Count= "<<count<<" Priority= "<<newPriority<<" Destination: "<<destination<<endl;
 		cout<<"This usually means that you did not use the VirtualCommunicator API correctly."<<endl;
 		cout<<"Be careful not to push too many messages if the VirtualCommunicator is not ready."<<endl;
-		cout<<"IMPORTANT: did you add entries in  reply_tags.txt and tag_sizes.txt ?"<<endl;
+		cout<<"IMPORTANT: did you add entries for reply tags.txt and tag sizes ?"<<endl;
 	}
 	assert(currentSize<=threshold);
 	#endif

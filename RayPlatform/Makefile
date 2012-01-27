@@ -34,7 +34,6 @@ obj-y += communication/MessageRouter.o
 obj-y += scheduling/VirtualProcessor.o
 obj-y += scheduling/TaskCreator.o
 obj-y += scheduling/SwitchMan.o
-obj-y += scripting/ScriptEngine.o
 
 #core
 obj-y += core/slave_modes.o 
