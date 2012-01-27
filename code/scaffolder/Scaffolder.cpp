@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2011  Sébastien Boisvert
+    Copyright (C) 2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -1345,6 +1345,9 @@ void Scaffolder::setTimePrinter(TimePrinter*a){
 }
 
 void Scaffolder::registerPlugin(ComputeCore*core){
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_SCAFFOLDER, this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_WRITE_SCAFFOLDS, this);
+	m_adapter_RAY_SLAVE_MODE_SCAFFOLDER.setObject(this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_SCAFFOLDER, &m_adapter_RAY_SLAVE_MODE_SCAFFOLDER);
+
+	m_adapter_RAY_MASTER_MODE_WRITE_SCAFFOLDS.setObject(this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_WRITE_SCAFFOLDS, &m_adapter_RAY_MASTER_MODE_WRITE_SCAFFOLDS);
 }

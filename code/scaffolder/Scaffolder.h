@@ -39,6 +39,8 @@
 #include <handlers/MasterModeHandler.h>
 #include <core/CorePlugin.h>
 
+#include <scaffolder/Scaffolder_adapters.h>
+
 using namespace std;
 
 /**
@@ -46,7 +48,11 @@ using namespace std;
  *
  * \author Sébastien Boisvert
  */
-class Scaffolder : public SlaveModeHandler, public MasterModeHandler, public CorePlugin{
+class Scaffolder :  public CorePlugin{
+
+	Adapter_RAY_MASTER_MODE_WRITE_SCAFFOLDS m_adapter_RAY_MASTER_MODE_WRITE_SCAFFOLDS;
+	Adapter_RAY_SLAVE_MODE_SCAFFOLDER m_adapter_RAY_SLAVE_MODE_SCAFFOLDER;
+
 	SwitchMan*m_switchMan;
 	
 	TimePrinter*m_timePrinter;

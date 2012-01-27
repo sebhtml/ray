@@ -56,6 +56,8 @@ obj-y += structures/AssemblySeed.o
 
 #scaffolder
 obj-y += scaffolder/Scaffolder.o 
+obj-y += scaffolder/Scaffolder_adapters.o
+
 obj-y += scaffolder/ScaffoldingLink.o
 obj-y += scaffolder/SummarizedLink.o
 obj-y += scaffolder/ScaffoldingAlgorithm.o
