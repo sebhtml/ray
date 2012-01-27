@@ -21,8 +21,6 @@
 #ifndef _SlaveModeHandler_h
 #define _SlaveModeHandler_h
 
-#define MAXIMUM_NUMBER_OF_SLAVE_HANDLERS  64
-
 #include <core/slave_modes.h>
 #include <core/types.h>
 

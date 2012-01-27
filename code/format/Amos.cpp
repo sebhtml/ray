@@ -217,10 +217,18 @@ void Amos::call_RAY_SLAVE_MODE_AMOS(){
 }
 
 void Amos::registerPlugin(ComputeCore*core){
+	PluginHandle plugin=core->allocatePluginHandle();
 
+	core->beginPluginRegistration(plugin);
+	core->setPluginName(plugin,"Amos");
+
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_AMOS);
 	m_adapter_RAY_SLAVE_MODE_AMOS.setObject(this);
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_AMOS, &m_adapter_RAY_SLAVE_MODE_AMOS);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_AMOS, &m_adapter_RAY_SLAVE_MODE_AMOS);
 
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_AMOS);
 	m_adapter_RAY_MASTER_MODE_AMOS.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_AMOS, &m_adapter_RAY_MASTER_MODE_AMOS);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_AMOS, &m_adapter_RAY_MASTER_MODE_AMOS);
+
+	core->endPluginRegistration(plugin);
 }

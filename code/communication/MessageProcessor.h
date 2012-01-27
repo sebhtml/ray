@@ -56,7 +56,7 @@ using namespace std;
 #include <communication/MessageRouter.h>
 
 #include <scheduling/SwitchMan.h>
-#include <core/CorePlugin.h>
+#include <plugins/CorePlugin.h>
 
 #include <communication/MessageProcessor_adapters.h>
 

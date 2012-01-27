@@ -40,8 +40,12 @@ obj-y += core/slave_modes.o
 obj-y += core/OperatingSystem.o
 obj-y += core/master_modes.o
 obj-y += core/ComputeCore.o
-obj-y += core/CorePlugin.o
 obj-y += core/statistics.o
+
+# plugin architecture
+
+obj-y += plugins/CorePlugin.o
+obj-y += plugins/RegisteredPlugin.o
 
 # structures
 obj-y += structures/StaticVector.o 
@@ -57,6 +61,9 @@ obj-y += profiling/TimePrinter.o
 obj-y += handlers/SlaveModeHandler.o
 obj-y += handlers/MasterModeHandler.o
 obj-y += handlers/MessageTagHandler.o
+
+#cryptography
+obj-y += cryptography/crypto.o
 
 ######## </Platform>
 

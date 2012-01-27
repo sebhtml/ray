@@ -309,11 +309,21 @@ void NetworkTest::setSwitchMan(SwitchMan*a){
 
 void NetworkTest::registerPlugin(ComputeCore*core){
 
-	m_adapter_RAY_SLAVE_MODE_TEST_NETWORK.setObject(this);
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_TEST_NETWORK, &m_adapter_RAY_SLAVE_MODE_TEST_NETWORK);
+	PluginHandle plugin = core->allocatePluginHandle();
 
+	core->beginPluginRegistration(plugin);
+
+	core->setPluginName(plugin,"NetworkTest");
+
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_TEST_NETWORK);
+	m_adapter_RAY_SLAVE_MODE_TEST_NETWORK.setObject(this);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_TEST_NETWORK, &m_adapter_RAY_SLAVE_MODE_TEST_NETWORK);
+
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_TEST_NETWORK);
 	m_adapter_RAY_MASTER_MODE_TEST_NETWORK.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_TEST_NETWORK, &m_adapter_RAY_MASTER_MODE_TEST_NETWORK);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_TEST_NETWORK, &m_adapter_RAY_MASTER_MODE_TEST_NETWORK);
+
+	core->endPluginRegistration(plugin);
 }
 
 

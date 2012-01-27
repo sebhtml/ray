@@ -21,11 +21,13 @@
 #ifndef _slave_modes
 #define _slave_modes
 
-extern const char* SLAVE_MODES[];
+#include <core/types.h>
+
+extern char SLAVE_MODES[MAXIMUM_NUMBER_OF_SLAVE_HANDLERS][128];
 
 #define ITEM(element) element,
 
-enum SlaveMode {
+enum SlaveModeEnum {
 #include <slave_modes.txt>
 RAY_SLAVE_MODE_DUMMY
 };

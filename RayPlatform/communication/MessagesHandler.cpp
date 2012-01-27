@@ -492,7 +492,7 @@ void MessagesHandler::appendStatistics(const char*file){
 
 			active=true;
 
-			fp<<m_rank<<"\t"<<destination<<"\t"<<MESSAGES[tag]<<"\t"<<count<<"\n";
+			fp<<m_rank<<"\t"<<destination<<"\t"<<MESSAGE_TAGS[tag]<<"\t"<<count<<"\n";
 		}
 		if(active)
 			activePeers.push_back(destination);

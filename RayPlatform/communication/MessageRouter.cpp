@@ -52,7 +52,7 @@ void MessageRouter::routeOutcomingMessages(){
 
 		#ifdef CONFIG_ROUTING_VERBOSITY
 		uint8_t printableTag=communicationTag;
-		cout<<"routeOutcomingMessages tag= "<<MESSAGES[printableTag]<<endl;
+		cout<<"routeOutcomingMessages tag= "<<MESSAGE_TAGS[printableTag]<<endl;
 		#endif
 
 		// - first, the message may have been already routed when it was received (also

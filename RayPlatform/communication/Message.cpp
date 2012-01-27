@@ -58,7 +58,7 @@ int Message::getSource(){
 void Message::print(){
 	uint8_t shortTag=getTag();
 
-	cout<<"Source: "<<getSource()<<" Destination: "<<getDestination()<<" Tag: "<<MESSAGES[shortTag]<<" Count: "<<getCount();
+	cout<<"Source: "<<getSource()<<" Destination: "<<getDestination()<<" Tag: "<<MESSAGE_TAGS[shortTag]<<" Count: "<<getCount();
 	if(m_count > 0){
 		cout<<" Overlay: "<<hex<<m_buffer[0]<<dec;
 	}

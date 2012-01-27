@@ -35,7 +35,8 @@
 #include <memory/RingAllocator.h>
 #include <scheduling/VirtualProcessor.h>
 #include <communication/VirtualCommunicator.h>
-#include <core/CorePlugin.h>
+#include <plugins/CorePlugin.h>
+#include <plugins/RegisteredPlugin.h>
 #include <memory/malloc_types.h>
 #include <core/OperatingSystem.h>
 
@@ -52,6 +53,15 @@
  * \author Sébastien Boisvert
  */
 class ComputeCore{
+	set<PluginHandle> m_pluginRegistrationsInProgress;
+	set<PluginHandle> m_pluginRegistrationsClosed;
+
+	set<SlaveMode> m_allocatedSlaveModes;
+	set<MasterMode> m_allocatedMasterModes;
+	set<MessageTag> m_allocatedMessageTags;
+
+	map<PluginHandle,RegisteredPlugin> m_plugins;
+
 /** the maximum number of messages with a non-NULL buffers in
  * the outbox */
 	int m_maximumAllocatedOutputBuffers;
@@ -109,6 +119,11 @@ class ComputeCore{
 	// allocator for ingoing messages
 	RingAllocator m_inboxAllocator;
 
+	PluginHandle m_currentPluginToAllocate;
+	SlaveMode m_currentSlaveModeToAllocate;
+	MasterMode m_currentMasterModeToAllocate;
+	MessageTag m_currentMessageTagToAllocate;
+
 /** is the program alive ? */
 	bool m_alive;
 
@@ -120,16 +135,54 @@ class ComputeCore{
 	void processData();
 	void processMessages();
 
+	PluginHandle generatePluginHandle();
+
+	bool validationPluginAllocated(PluginHandle plugin);
+	bool validationPluginRegistrationNotInProgress(PluginHandle plugin);
+	bool validationPluginRegistrationInProgress(PluginHandle plugin);
+	bool validationPluginRegistrationNotClosed(PluginHandle plugin);
+	bool validationPluginRegistrationClosed(PluginHandle plugin);
+	bool validationSlaveModeOwnership(PluginHandle plugin,SlaveMode handle);
+	bool validationMasterModeOwnership(PluginHandle plugin,MasterMode handle);
+	bool validationMessageTagOwnership(PluginHandle plugin,MessageTag handle);
+
 public:
 
+/** allocate an handle for a plugin **/
+	PluginHandle allocatePluginHandle();
+
+/** start the registration process for a plugin **/
+	void beginPluginRegistration(PluginHandle plugin);
+
+/** end the registration process for a plugin **/
+	void endPluginRegistration(PluginHandle plugin);
+
+/** allocate a slave mode for a handle **/
+	SlaveMode allocateSlaveModeHandle(PluginHandle plugin,SlaveMode desiredValue);
+
+/** allocate a master mode **/
+	MasterMode allocateMasterModeHandle(PluginHandle plugin,MasterMode desiredValue);
+
+/** allocate a handle for a message tag **/
+	MessageTag allocateMessageTagHandle(PluginHandle plugin, MessageTag desiredValue);
+	
 /** add a slave mode handler */
-	void setSlaveModeObjectHandler(SlaveMode mode,SlaveModeHandler*object);
+	void setSlaveModeObjectHandler(PluginHandle plugin,SlaveMode mode,SlaveModeHandler*object);
 
 /** add a master mode handler */
-	void setMasterModeObjectHandler(MasterMode mode,MasterModeHandler*object);
+	void setMasterModeObjectHandler(PluginHandle plugin,MasterMode mode,MasterModeHandler*object);
 
 /** add a message tag handler */
-	void setMessageTagObjectHandler(MessageTag tag,MessageTagHandler*object);
+	void setMessageTagObjectHandler(PluginHandle plugin,MessageTag tag,MessageTagHandler*object);
+
+/** sets the symbol for a slave mode **/
+	void setSlaveModeSymbol(PluginHandle plugin,SlaveMode mode,char*symbol);
+
+/** sets the symbol for a master mode **/
+	void setMasterModeSymbol(PluginHandle plugin,MasterMode mode,char*symbol);
+
+/** set the symbol for a message tag **/
+	void setMessageTagSymbol(PluginHandle plugin,MessageTag mode,char*symbol);
 
 	/** this is the main method */
 	void run();
@@ -168,6 +221,11 @@ public:
 	void registerPlugin(CorePlugin*plugin);
 
 	void destructor();
+
+	void setPluginName(PluginHandle plugin,string name);
+
+	void printPlugins();
 };
 
 #endif
+

@@ -66,7 +66,7 @@ void VirtualCommunicator::setReplyType(int query,int reply){
 int VirtualCommunicator::getReplyType(int tag){
 	#ifdef ASSERT
 	if(m_reverseReplyMap.count(tag) == 0){
-		cout<<"Error: "<<MESSAGES[tag]<<" is not in the reverse-map"<<endl;
+		cout<<"Error: "<<MESSAGE_TAGS[tag]<<" is not in the reverse-map"<<endl;
 	}
 	assert(m_reverseReplyMap.count(tag) > 0);
 	#endif
@@ -91,7 +91,7 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 	#ifdef ASSERT
 	if(count > period){
 		cout<<"Error, count= "<<count<<" but period is "<<period<<endl;
-		cout<<"Tag= "<<MESSAGES[tag]<<endl;
+		cout<<"Tag= "<<MESSAGE_TAGS[tag]<<endl;
 	}
 	assert(count<=period);
 	#endif
@@ -99,7 +99,7 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 	m_pushedMessages++;
 	#ifdef ASSERT
 	if(m_elementsForWorkers.count(workerId)>0){
-		cout<<"Error: there is already a pending message for worker "<<workerId<<", will not add message with tag="<<MESSAGES[message->getTag()]<<endl;
+		cout<<"Error: there is already a pending message for worker "<<workerId<<", will not add message with tag="<<MESSAGE_TAGS[message->getTag()]<<endl;
 		cout<<"Did you forget to pull a reply with isMessageProcessed and getMessageResponseElements ?"<<endl;
 		cout<<"It is likely if you mix virtual messages with bare messages !"<<endl;
 	}
@@ -170,7 +170,7 @@ void VirtualCommunicator::pushMessage(uint64_t workerId,Message*message){
 	assert(period>=1);
 	assert(threshold<=(int)(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)));
 	if(currentSize>threshold){
-		cout<<"Fatal: too much bits, tag= "<<MESSAGES[tag]<<" Threshold= "<<threshold<<" pushed messages; Actual= "<<currentSize<<" pushed messages; Period= "<<period<<" uint64_t/message; Count= "<<count<<" Priority= "<<newPriority<<" Destination: "<<destination<<endl;
+		cout<<"Fatal: too much bits, tag= "<<MESSAGE_TAGS[tag]<<" Threshold= "<<threshold<<" pushed messages; Actual= "<<currentSize<<" pushed messages; Period= "<<period<<" uint64_t/message; Count= "<<count<<" Priority= "<<newPriority<<" Destination: "<<destination<<endl;
 		cout<<"This usually means that you did not use the VirtualCommunicator API correctly."<<endl;
 		cout<<"Be careful not to push too many messages if the VirtualCommunicator is not ready."<<endl;
 		cout<<"IMPORTANT: did you add entries for reply tags.txt and tag sizes ?"<<endl;
@@ -310,7 +310,7 @@ void VirtualCommunicator::processInbox(vector<uint64_t>*activeWorkers){
 			}
 			assert(count>0);
 			if(count!=(int)workers.size()*elementsPerWorker){
-				cout<<"Rank="<<m_rank<<" Count="<<count<<" Workers="<<workers.size()<<" ElementsPerWorker="<<elementsPerWorker<<" QueryTag="<<MESSAGES[queryTag]<<endl;
+				cout<<"Rank="<<m_rank<<" Count="<<count<<" Workers="<<workers.size()<<" ElementsPerWorker="<<elementsPerWorker<<" QueryTag="<<MESSAGE_TAGS[queryTag]<<endl;
 			}
 			assert(count==(int)workers.size()*elementsPerWorker);
 			#endif

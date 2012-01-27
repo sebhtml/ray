@@ -21,11 +21,5 @@
 
 #include <core/master_modes.h>
 
-#define ITEM(x) #x,
+char MASTER_MODES[MAXIMUM_NUMBER_OF_MASTER_HANDLERS][128];
 
-const char* MASTER_MODES[]={
-#include <master_modes.txt>
-"RAY_MASTER_MODE_DUMMY"
-};
-
-#undef ITEM

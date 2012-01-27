@@ -81,7 +81,7 @@ void JoinerWorker::work(){
 			int outputPosition=0;
 			kmer.pack(message,&outputPosition);
 
-			//cout<<"Comm"<<m_parameters->getRank()<<" sends to "<<destination<<" tag "<<MESSAGES[RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE]<<endl;
+			//cout<<"Comm"<<m_parameters->getRank()<<" sends to "<<destination<<" tag "<<MESSAGE_TAGS[RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE]<<endl;
 
 			Message aMessage(message,elementsPerQuery,destination,
 				RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,m_parameters->getRank());

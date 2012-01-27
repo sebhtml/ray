@@ -37,7 +37,7 @@
 
 #include <handlers/SlaveModeHandler.h>
 #include <handlers/MasterModeHandler.h>
-#include <core/CorePlugin.h>
+#include <plugins/CorePlugin.h>
 
 #include <scaffolder/Scaffolder_adapters.h>
 

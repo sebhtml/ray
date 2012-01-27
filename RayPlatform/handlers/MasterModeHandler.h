@@ -24,8 +24,6 @@
 #include <core/types.h>
 #include <core/master_modes.h>
 
-#define MAXIMUM_NUMBER_OF_MASTER_HANDLERS 64
-
 /**
  * base class for handling master modes 
  * \author Sébastien Boisvert

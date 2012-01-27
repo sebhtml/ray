@@ -25,8 +25,6 @@
 #include <core/types.h>
 #include <communication/mpi_tags.h>
 
-#define MAXIMUM_NUMBER_OF_TAG_HANDLERS 256
-
 /**
  * base class for handling message tags
  * \author Sébastien Boisvert

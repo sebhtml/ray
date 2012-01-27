@@ -24,12 +24,5 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 
 #include <communication/mpi_tags.h>
 
-#define ITEM(element) #element,
-
-const char* MESSAGES[]={
-#include <mpi_tags.txt>
-"RAY_MPI_TAG_DUMMY"
-};
-
-#undef ITEM
+char MESSAGE_TAGS[MAXIMUM_NUMBER_OF_TAG_HANDLERS][128];
 

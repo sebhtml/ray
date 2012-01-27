@@ -21,14 +21,15 @@
 #ifndef _master_modes
 #define _master_modes
 
+#include <core/types.h>
 
-extern const char* MASTER_MODES[];
+extern char MASTER_MODES[MAXIMUM_NUMBER_OF_MASTER_HANDLERS][128];
 
 /* generate the enum list with a macro */
 
 #define ITEM(x) x,
 
-enum MasterMode {
+enum MasterModeEnum {
 #include <master_modes.txt>
 RAY_MASTER_MODE_DUMMY
 };

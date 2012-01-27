@@ -21,11 +21,4 @@
 
 #include <core/slave_modes.h>
 
-#define ITEM(x) #x,
-
-const char* SLAVE_MODES[]={
-#include <slave_modes.txt>
-"RAY_SLAVE_MODE_DUMMY"
-};
-
-#undef ITEM
+char SLAVE_MODES[MAXIMUM_NUMBER_OF_SLAVE_HANDLERS][128];

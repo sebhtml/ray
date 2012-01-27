@@ -1028,109 +1028,151 @@ int MachineHelper::getSize(){
 }
 
 void MachineHelper::registerPlugin(ComputeCore*core){
+	PluginHandle plugin=core->allocatePluginHandle();
+
+	core->beginPluginRegistration(plugin);
+
+	core->setPluginName(plugin,"MachineHelper");
+
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_LOAD_CONFIG);
 	m_adapter_RAY_MASTER_MODE_LOAD_CONFIG.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_LOAD_CONFIG, &m_adapter_RAY_MASTER_MODE_LOAD_CONFIG);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_LOAD_CONFIG, &m_adapter_RAY_MASTER_MODE_LOAD_CONFIG);
 
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_SEND_COVERAGE_VALUES);
 	m_adapter_RAY_MASTER_MODE_SEND_COVERAGE_VALUES.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_SEND_COVERAGE_VALUES, &m_adapter_RAY_MASTER_MODE_SEND_COVERAGE_VALUES);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_SEND_COVERAGE_VALUES, &m_adapter_RAY_MASTER_MODE_SEND_COVERAGE_VALUES);
 
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_WRITE_KMERS);
 	m_adapter_RAY_MASTER_MODE_WRITE_KMERS.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_WRITE_KMERS, &m_adapter_RAY_MASTER_MODE_WRITE_KMERS);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_WRITE_KMERS, &m_adapter_RAY_MASTER_MODE_WRITE_KMERS);
 
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_LOAD_SEQUENCES);
 	m_adapter_RAY_MASTER_MODE_LOAD_SEQUENCES.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_LOAD_SEQUENCES, &m_adapter_RAY_MASTER_MODE_LOAD_SEQUENCES);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_LOAD_SEQUENCES, &m_adapter_RAY_MASTER_MODE_LOAD_SEQUENCES);
 
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION);
 	m_adapter_RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION, &m_adapter_RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION, &m_adapter_RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION);
 
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING);
 	m_adapter_RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING, &m_adapter_RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING, &m_adapter_RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING);
 
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_PURGE_NULL_EDGES);
 	m_adapter_RAY_MASTER_MODE_PURGE_NULL_EDGES.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_PURGE_NULL_EDGES, &m_adapter_RAY_MASTER_MODE_PURGE_NULL_EDGES);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_PURGE_NULL_EDGES, &m_adapter_RAY_MASTER_MODE_PURGE_NULL_EDGES);
 
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_TRIGGER_INDEXING);
 	m_adapter_RAY_MASTER_MODE_TRIGGER_INDEXING.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_TRIGGER_INDEXING, &m_adapter_RAY_MASTER_MODE_TRIGGER_INDEXING);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_TRIGGER_INDEXING, &m_adapter_RAY_MASTER_MODE_TRIGGER_INDEXING);
 
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS);
 	m_adapter_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS, &m_adapter_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS, &m_adapter_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS);
 
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS);
 	m_adapter_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS, &m_adapter_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS, &m_adapter_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS);
 
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_PREPARE_SEEDING);
 	m_adapter_RAY_MASTER_MODE_PREPARE_SEEDING.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_PREPARE_SEEDING, &m_adapter_RAY_MASTER_MODE_PREPARE_SEEDING);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_PREPARE_SEEDING, &m_adapter_RAY_MASTER_MODE_PREPARE_SEEDING);
 
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_TRIGGER_SEEDING);
 	m_adapter_RAY_MASTER_MODE_TRIGGER_SEEDING.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_TRIGGER_SEEDING, &m_adapter_RAY_MASTER_MODE_TRIGGER_SEEDING);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_TRIGGER_SEEDING, &m_adapter_RAY_MASTER_MODE_TRIGGER_SEEDING);
 
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_TRIGGER_DETECTION);
 	m_adapter_RAY_MASTER_MODE_TRIGGER_DETECTION.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_TRIGGER_DETECTION, &m_adapter_RAY_MASTER_MODE_TRIGGER_DETECTION);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_TRIGGER_DETECTION, &m_adapter_RAY_MASTER_MODE_TRIGGER_DETECTION);
 
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_ASK_DISTANCES);
 	m_adapter_RAY_MASTER_MODE_ASK_DISTANCES.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_ASK_DISTANCES, &m_adapter_RAY_MASTER_MODE_ASK_DISTANCES);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_ASK_DISTANCES, &m_adapter_RAY_MASTER_MODE_ASK_DISTANCES);
 
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_START_UPDATING_DISTANCES);
 	m_adapter_RAY_MASTER_MODE_START_UPDATING_DISTANCES.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_START_UPDATING_DISTANCES, &m_adapter_RAY_MASTER_MODE_START_UPDATING_DISTANCES);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_START_UPDATING_DISTANCES, &m_adapter_RAY_MASTER_MODE_START_UPDATING_DISTANCES);
 
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_TRIGGER_EXTENSIONS);
 	m_adapter_RAY_MASTER_MODE_TRIGGER_EXTENSIONS.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_TRIGGER_EXTENSIONS, &m_adapter_RAY_MASTER_MODE_TRIGGER_EXTENSIONS);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_TRIGGER_EXTENSIONS, &m_adapter_RAY_MASTER_MODE_TRIGGER_EXTENSIONS);
 
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_TRIGGER_FUSIONS);
 	m_adapter_RAY_MASTER_MODE_TRIGGER_FUSIONS.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_TRIGGER_FUSIONS, &m_adapter_RAY_MASTER_MODE_TRIGGER_FUSIONS);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_TRIGGER_FUSIONS, &m_adapter_RAY_MASTER_MODE_TRIGGER_FUSIONS);
 
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS);
 	m_adapter_RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS, &m_adapter_RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS, &m_adapter_RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS);
 
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_START_FUSION_CYCLE);
 	m_adapter_RAY_MASTER_MODE_START_FUSION_CYCLE.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_START_FUSION_CYCLE, &m_adapter_RAY_MASTER_MODE_START_FUSION_CYCLE);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_START_FUSION_CYCLE, &m_adapter_RAY_MASTER_MODE_START_FUSION_CYCLE);
 
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_ASK_EXTENSIONS);
 	m_adapter_RAY_MASTER_MODE_ASK_EXTENSIONS.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_ASK_EXTENSIONS, &m_adapter_RAY_MASTER_MODE_ASK_EXTENSIONS);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_ASK_EXTENSIONS, &m_adapter_RAY_MASTER_MODE_ASK_EXTENSIONS);
 
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_SCAFFOLDER);
 	m_adapter_RAY_MASTER_MODE_SCAFFOLDER.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_SCAFFOLDER, &m_adapter_RAY_MASTER_MODE_SCAFFOLDER);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_SCAFFOLDER, &m_adapter_RAY_MASTER_MODE_SCAFFOLDER);
 
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_KILL_RANKS);
 	m_adapter_RAY_MASTER_MODE_KILL_RANKS.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_KILL_RANKS, &m_adapter_RAY_MASTER_MODE_KILL_RANKS);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_KILL_RANKS, &m_adapter_RAY_MASTER_MODE_KILL_RANKS);
 
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
 	m_adapter_RAY_MASTER_MODE_KILL_ALL_MPI_RANKS.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_KILL_ALL_MPI_RANKS, &m_adapter_RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_KILL_ALL_MPI_RANKS, &m_adapter_RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
 
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_LOAD_SEQUENCES);
 	m_adapter_RAY_SLAVE_MODE_LOAD_SEQUENCES.setObject(this);
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_LOAD_SEQUENCES, &m_adapter_RAY_SLAVE_MODE_LOAD_SEQUENCES);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_LOAD_SEQUENCES, &m_adapter_RAY_SLAVE_MODE_LOAD_SEQUENCES);
 
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY);
 	m_adapter_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY.setObject(this);
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_BUILD_KMER_ACADEMY, &m_adapter_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY, &m_adapter_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY);
 
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_EXTRACT_VERTICES);
 	m_adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES.setObject(this);
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_EXTRACT_VERTICES, &m_adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_EXTRACT_VERTICES, &m_adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES);
 
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_PURGE_NULL_EDGES);
 	m_adapter_RAY_SLAVE_MODE_PURGE_NULL_EDGES.setObject(this);
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_PURGE_NULL_EDGES, &m_adapter_RAY_SLAVE_MODE_PURGE_NULL_EDGES);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_PURGE_NULL_EDGES, &m_adapter_RAY_SLAVE_MODE_PURGE_NULL_EDGES);
 
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_WRITE_KMERS);
 	m_adapter_RAY_SLAVE_MODE_WRITE_KMERS.setObject(this);
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_WRITE_KMERS, &m_adapter_RAY_SLAVE_MODE_WRITE_KMERS);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_WRITE_KMERS, &m_adapter_RAY_SLAVE_MODE_WRITE_KMERS);
 
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_COUNT_FILE_ENTRIES);
 	m_adapter_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES.setObject(this);
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_COUNT_FILE_ENTRIES, &m_adapter_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_COUNT_FILE_ENTRIES, &m_adapter_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES);
 
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_ASSEMBLE_WAVES);
 	m_adapter_RAY_SLAVE_MODE_ASSEMBLE_WAVES.setObject(this);
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_ASSEMBLE_WAVES, &m_adapter_RAY_SLAVE_MODE_ASSEMBLE_WAVES);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_ASSEMBLE_WAVES, &m_adapter_RAY_SLAVE_MODE_ASSEMBLE_WAVES);
 
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_INDEX_SEQUENCES);
 	m_adapter_RAY_SLAVE_MODE_INDEX_SEQUENCES.setObject(this);
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_INDEX_SEQUENCES, &m_adapter_RAY_SLAVE_MODE_INDEX_SEQUENCES);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_INDEX_SEQUENCES, &m_adapter_RAY_SLAVE_MODE_INDEX_SEQUENCES);
 
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_SEND_EXTENSION_DATA);
 	m_adapter_RAY_SLAVE_MODE_SEND_EXTENSION_DATA.setObject(this);
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEND_EXTENSION_DATA, &m_adapter_RAY_SLAVE_MODE_SEND_EXTENSION_DATA);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_SEND_EXTENSION_DATA, &m_adapter_RAY_SLAVE_MODE_SEND_EXTENSION_DATA);
 
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_EXTENSION);
 	m_adapter_RAY_SLAVE_MODE_EXTENSION.setObject(this);
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_EXTENSION, &m_adapter_RAY_SLAVE_MODE_EXTENSION);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_EXTENSION, &m_adapter_RAY_SLAVE_MODE_EXTENSION);
 
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_DIE);
 	m_adapter_RAY_SLAVE_MODE_DIE.setObject(this);
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_DIE, &m_adapter_RAY_SLAVE_MODE_DIE);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_DIE, &m_adapter_RAY_SLAVE_MODE_DIE);
 
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS);
 	m_adapter_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS.setObject(this);
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS, &m_adapter_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS, &m_adapter_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS);
 
+	core->endPluginRegistration(plugin);
 }

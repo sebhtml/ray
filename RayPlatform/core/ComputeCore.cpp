@@ -21,6 +21,8 @@
 
 #include <core/ComputeCore.h>
 #include <core/OperatingSystem.h>
+#include <cryptography/crypto.h>
+#include <stdlib.h>
 
 #ifdef ASSERT
 #include <assert.h>
@@ -29,30 +31,82 @@
 #include <iostream>
 using namespace std;
 
-void ComputeCore::setSlaveModeObjectHandler(SlaveMode mode,SlaveModeHandler*object){
+void ComputeCore::setSlaveModeObjectHandler(PluginHandle plugin,SlaveMode mode,SlaveModeHandler*object){
+	if(!validationPluginAllocated(plugin))
+		return;
+
+	if(!validationPluginRegistrationInProgress(plugin))
+		return;
+
+	if(!validationSlaveModeOwnership(plugin,mode))
+		return;
+
 	#ifdef CONFIG_DEBUG_CORE
 	cout<<"setSlaveModeObjectHandler "<<SLAVE_MODES[mode]<<" to "<<object<<endl;
 	#endif
 
+	#ifdef ASSERT
+	assert(m_plugins.count(plugin)>0);
+	assert(m_plugins[plugin].hasSlaveMode(mode));
+	assert(m_pluginRegistrationsInProgress.count(plugin)>0);
+	assert(m_pluginRegistrationsClosed.count(plugin)==0);
+	#endif
+
 	m_slaveModeHandler.setObjectHandler(mode,object);
+
+	m_plugins[plugin].addRegisteredSlaveModeHandler(mode);
 }
 
-void ComputeCore::setMasterModeObjectHandler(MasterMode mode,MasterModeHandler*object){
+void ComputeCore::setMasterModeObjectHandler(PluginHandle plugin,MasterMode mode,MasterModeHandler*object){
+	if(!validationPluginAllocated(plugin))
+		return;
+
+	if(!validationPluginRegistrationInProgress(plugin))
+		return;
+
+	if(!validationMasterModeOwnership(plugin,mode))
+		return;
 
 	#ifdef CONFIG_DEBUG_CORE
 	cout<<"setMasterModeObjectHandler "<<MASTER_MODES[mode]<<" to "<<object<<endl;
 	#endif
 
+	#ifdef ASSERT
+	assert(m_plugins.count(plugin)>0);
+	assert(m_plugins[plugin].hasMasterMode(mode));
+	assert(m_pluginRegistrationsInProgress.count(plugin)>0);
+	assert(m_pluginRegistrationsClosed.count(plugin)==0);
+	#endif
+
 	m_masterModeHandler.setObjectHandler(mode,object);
+
+	m_plugins[plugin].addRegisteredMasterModeHandler(mode);
 }
 
-void ComputeCore::setMessageTagObjectHandler(MessageTag tag,MessageTagHandler*object){
+void ComputeCore::setMessageTagObjectHandler(PluginHandle plugin,MessageTag tag,MessageTagHandler*object){
+	if(!validationPluginAllocated(plugin))
+		return;
+
+	if(!validationPluginRegistrationInProgress(plugin))
+		return;
+
+	if(!validationMessageTagOwnership(plugin,tag))
+		return;
 
 	#ifdef CONFIG_DEBUG_CORE
-	cout<<"setMessageTagObjectHandler "<<MESSAGES[tag]<<" to "<<object<<endl;
+	cout<<"setMessageTagObjectHandler "<<MESSAGE_TAGS[tag]<<" to "<<object<<endl;
+	#endif
+
+	#ifdef ASSERT
+	assert(m_plugins.count(plugin)>0);
+	assert(m_plugins[plugin].hasMessageTag(tag));
+	assert(m_pluginRegistrationsInProgress.count(plugin)>0);
+	assert(m_pluginRegistrationsClosed.count(plugin)==0);
 	#endif
 
 	m_messageTagHandler.setObjectHandler(tag,object);
+
+	m_plugins[plugin].addRegisteredMessageTagHandler(tag);
 }
 
 
@@ -164,7 +218,7 @@ void ComputeCore::runWithProfiler(){
 				for(map<int,int>::iterator i=receivedTags.begin();i!=receivedTags.end();i++){
 					int tag=i->first;
 					int count=i->second;
-					cout<<"Rank "<<m_messagesHandler.getRank()<<"        "<<MESSAGES[tag]<<"	"<<count<<endl;
+					cout<<"Rank "<<m_messagesHandler.getRank()<<"        "<<MESSAGE_TAGS[tag]<<"	"<<count<<endl;
 				}
 			}
 
@@ -173,7 +227,7 @@ void ComputeCore::runWithProfiler(){
 				for(map<int,int>::iterator i=sentTagsInProcessMessages.begin();i!=sentTagsInProcessMessages.end();i++){
 					int tag=i->first;
 					int count=i->second;
-					cout<<"Rank "<<m_messagesHandler.getRank()<<"        "<<MESSAGES[tag]<<"	"<<count<<endl;
+					cout<<"Rank "<<m_messagesHandler.getRank()<<"        "<<MESSAGE_TAGS[tag]<<"	"<<count<<endl;
 				}
 
 /*
@@ -204,7 +258,7 @@ void ComputeCore::runWithProfiler(){
 				for(map<int,int>::iterator i=sentTagsInProcessData.begin();i!=sentTagsInProcessData.end();i++){
 					int tag=i->first;
 					int count=i->second;
-					cout<<"Rank "<<m_messagesHandler.getRank()<<"        "<<MESSAGES[tag]<<"	"<<count<<endl;
+					cout<<"Rank "<<m_messagesHandler.getRank()<<"        "<<MESSAGE_TAGS[tag]<<"	"<<count<<endl;
 				}
 /*
 				int average2=getAverage(&distancesForProcessData);
@@ -362,7 +416,7 @@ void ComputeCore::sendMessages(){
 		cout<<"tags=";
 		for(int i=0;i<(int)m_outbox.size();i++){
 			uint8_t tag=m_outbox[i]->getTag();
-			cout<<" "<<MESSAGES[tag]<<endl;
+			cout<<" "<<MESSAGE_TAGS[tag]<<endl;
 		}
 		cout<<endl;
 	}
@@ -435,6 +489,9 @@ void ComputeCore::processData(){
 
 void ComputeCore::constructor(int*argc,char***argv){
 
+	srand(portableProcessId() * getMicroseconds());
+
+
 	m_alive=true;
 
 	m_messagesHandler.constructor(argc,argv);
@@ -469,6 +526,20 @@ void ComputeCore::constructor(int*argc,char***argv){
 	getSwitchMan()->setMasterMode(RAY_MASTER_MODE_DO_NOTHING); 
 	getSwitchMan()->setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
 
+	for(int i=0;i<MAXIMUM_NUMBER_OF_MASTER_HANDLERS;i++){
+		strcpy(MASTER_MODES[i],"UnnamedMasterMode");
+	}
+	for(int i=0;i<MAXIMUM_NUMBER_OF_SLAVE_HANDLERS;i++){
+		strcpy(SLAVE_MODES[i],"UnnamedSlaveMode");
+	}
+	for(int i=0;i<MAXIMUM_NUMBER_OF_TAG_HANDLERS;i++){
+		strcpy(MESSAGE_TAGS[i],"UnnamedMessageTag");
+	}
+
+	m_currentPluginToAllocate=0;
+	m_currentSlaveModeToAllocate=0;
+	m_currentMasterModeToAllocate=0;
+	m_currentMessageTagToAllocate=0;
 }
 
 void ComputeCore::enableProfiler(){
@@ -557,4 +628,361 @@ void ComputeCore::destructor(){
 
 void ComputeCore::stop(){
 	m_alive=false;
+}
+
+void ComputeCore::setSlaveModeSymbol(PluginHandle plugin,SlaveMode mode,char*symbol){
+	if(!validationPluginAllocated(plugin))
+		return;
+	
+	if(!validationPluginRegistrationInProgress(plugin))
+		return;
+
+	if(!validationSlaveModeOwnership(plugin,mode))
+		return;
+
+	#ifdef ASSERT
+	assert(mode>=0);
+	assert(mode<MAXIMUM_NUMBER_OF_SLAVE_HANDLERS);
+	#endif
+
+	#ifdef ASSERT
+	assert(m_plugins.count(plugin)>0);
+	assert(m_plugins[plugin].hasSlaveMode(mode));
+	assert(m_pluginRegistrationsInProgress.count(plugin)>0);
+	assert(m_pluginRegistrationsClosed.count(plugin)==0);
+	#endif
+
+	strcpy(SLAVE_MODES[mode],symbol);
+
+	m_plugins[plugin].addRegisteredSlaveModeSymbol(mode);
+}
+
+void ComputeCore::setMasterModeSymbol(PluginHandle plugin,MasterMode mode,char*symbol){
+	
+	if(!validationPluginAllocated(plugin))
+		return;
+
+	if(!validationPluginRegistrationInProgress(plugin))
+		return;
+
+	if(!validationMasterModeOwnership(plugin,mode))
+		return;
+
+	#ifdef ASSERT
+	assert(mode>=0);
+	assert(mode<MAXIMUM_NUMBER_OF_MASTER_HANDLERS);
+	#endif
+
+	#ifdef ASSERT
+	assert(m_plugins.count(plugin)>0);
+	assert(m_plugins[plugin].hasMasterMode(mode));
+	assert(m_pluginRegistrationsInProgress.count(plugin)>0);
+	assert(m_pluginRegistrationsClosed.count(plugin)==0);
+	#endif
+
+	strcpy(MASTER_MODES[mode],symbol);
+
+	m_plugins[plugin].addRegisteredMasterModeSymbol(mode);
+}
+
+void ComputeCore::setMessageTagSymbol(PluginHandle plugin,MessageTag tag,char*symbol){
+
+	if(!validationPluginAllocated(plugin))
+		return;
+
+	if(!validationPluginRegistrationInProgress(plugin))
+		return;
+
+	if(!validationMessageTagOwnership(plugin,tag))
+		return;
+
+	#ifdef ASSERT
+	assert(tag>=0);
+	assert(tag<MAXIMUM_NUMBER_OF_TAG_HANDLERS);
+	#endif
+
+	#ifdef ASSERT
+	assert(m_plugins.count(plugin)>0);
+	assert(m_plugins[plugin].hasMessageTag(tag));
+	assert(m_pluginRegistrationsInProgress.count(plugin)>0);
+	assert(m_pluginRegistrationsClosed.count(plugin)==0);
+	#endif
+
+	strcpy(MESSAGE_TAGS[tag],symbol);
+
+	m_plugins[plugin].addRegisteredMessageTagSymbol(tag);
+}
+
+PluginHandle ComputeCore::allocatePluginHandle(){
+	PluginHandle handle=generatePluginHandle();
+	
+	while(m_plugins.count(handle)>0){
+		handle=generatePluginHandle();
+	}
+
+	RegisteredPlugin plugin;
+
+	m_plugins[handle]=plugin;
+
+	return handle;
+}
+
+SlaveMode ComputeCore::allocateSlaveModeHandle(PluginHandle plugin,SlaveMode desiredValue){
+
+	if(!validationPluginAllocated(plugin))
+		return -1;
+
+	if(!validationPluginRegistrationInProgress(plugin))
+		return -1;
+
+	#ifdef ASSERT
+	assert(m_plugins.count(plugin)>0);
+	assert(m_pluginRegistrationsInProgress.count(plugin)>0);
+	assert(m_pluginRegistrationsClosed.count(plugin)==0);
+	#endif
+
+	SlaveMode handle=desiredValue;
+
+	while(m_allocatedSlaveModes.count(handle)>0){
+		handle=m_currentSlaveModeToAllocate++;
+	}
+
+	#ifdef ASSERT
+	assert(m_allocatedSlaveModes.count(handle)==0);
+	#endif
+
+	m_allocatedSlaveModes.insert(handle);
+
+	m_plugins[plugin].addAllocatedSlaveMode(handle);
+
+	#ifdef ASSERT
+	assert(m_allocatedSlaveModes.count(handle)>0);
+	assert(m_plugins[plugin].hasSlaveMode(handle));
+	assert(m_pluginRegistrationsInProgress.count(plugin)>0);
+	assert(m_pluginRegistrationsClosed.count(plugin)==0);
+	#endif
+	
+	return handle;
+}
+
+MasterMode ComputeCore::allocateMasterModeHandle(PluginHandle plugin,MasterMode desiredValue){
+
+	if(!validationPluginAllocated(plugin))
+		return -1;
+
+	if(!validationPluginRegistrationInProgress(plugin))
+		return -1;
+
+
+	#ifdef ASSERT
+	assert(m_plugins.count(plugin)>0);
+	#endif
+
+	MasterMode handle=desiredValue;
+
+	while(m_allocatedMasterModes.count(handle)>0){
+		handle=m_currentMasterModeToAllocate++;
+	}
+
+	#ifdef ASSERT
+	assert(m_allocatedMasterModes.count(handle)==0);
+	#endif
+
+	m_allocatedMasterModes.insert(handle);
+
+	m_plugins[plugin].addAllocatedMasterMode(handle);
+
+	#ifdef ASSERT
+	assert(m_allocatedMasterModes.count(handle)>0);
+	assert(m_plugins[plugin].hasMasterMode(handle));
+	assert(m_pluginRegistrationsInProgress.count(plugin)>0);
+	assert(m_pluginRegistrationsClosed.count(plugin)==0);
+	#endif
+
+	return handle; 
+}
+
+MessageTag ComputeCore::allocateMessageTagHandle(PluginHandle plugin,MessageTag desiredValue){
+
+	if(!validationPluginAllocated(plugin))
+		return -1;
+
+	if(!validationPluginRegistrationInProgress(plugin))
+		return -1;
+
+	#ifdef ASSERT
+	assert(m_plugins.count(plugin)>0);
+	assert(m_pluginRegistrationsInProgress.count(plugin)>0);
+	assert(m_pluginRegistrationsClosed.count(plugin)==0);
+	#endif
+
+	MessageTag handle=desiredValue;
+
+	while(m_allocatedMessageTags.count(handle)>0){
+		handle=m_currentMessageTagToAllocate++;
+	}
+
+	#ifdef ASSERT
+	assert(m_allocatedMessageTags.count(handle)==0);
+	#endif
+
+	m_allocatedMessageTags.insert(handle);
+
+	m_plugins[plugin].addAllocatedMessageTag(handle);
+
+	#ifdef ASSERT
+	assert(m_allocatedMessageTags.count(handle)>0);
+	assert(m_plugins[plugin].hasMessageTag(handle));
+	#endif
+
+	return handle;
+}
+
+void ComputeCore::beginPluginRegistration(PluginHandle plugin){
+	if(!validationPluginAllocated(plugin))
+		return;
+
+	if(!validationPluginRegistrationNotInProgress(plugin))
+		return;
+
+	if(!validationPluginRegistrationNotClosed(plugin))
+		return;
+
+	#ifdef ASSERT
+	assert(m_pluginRegistrationsInProgress.count(plugin)==0);
+	assert(m_pluginRegistrationsClosed.count(plugin)==0);
+	#endif
+
+	m_pluginRegistrationsInProgress.insert(plugin);
+}
+
+void ComputeCore::endPluginRegistration(PluginHandle plugin){
+
+	if(validationPluginRegistrationInProgress(plugin))
+		return;
+
+	if(validationPluginRegistrationNotClosed(plugin))
+		return;
+
+	#ifdef ASSERT
+	assert(m_pluginRegistrationsInProgress.count(plugin)>0);
+	assert(m_pluginRegistrationsClosed.count(plugin)==0);
+	#endif
+
+	m_pluginRegistrationsInProgress.erase(plugin);
+	m_pluginRegistrationsClosed.insert(plugin);
+}
+
+PluginHandle ComputeCore::generatePluginHandle(){
+	uint64_t randomNumber=rand();
+
+	return uniform_hashing_function_1_64_64(randomNumber);
+}
+
+bool ComputeCore::validationPluginAllocated(PluginHandle plugin){
+	if(!m_plugins.count(plugin)>0){
+		cout<<"Error, plugin "<<plugin<<" is not allocated"<<endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool ComputeCore::validationPluginRegistrationNotInProgress(PluginHandle plugin){
+	if(m_pluginRegistrationsInProgress.count(plugin)>0){
+		cout<<"Error, plugin "<<plugin<<" is already open for registration"<<endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool ComputeCore::validationPluginRegistrationInProgress(PluginHandle plugin){
+	if(!m_pluginRegistrationsInProgress.count(plugin)>0){
+		cout<<"Error, plugin "<<plugin<<" is not open for registration"<<endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool ComputeCore::validationPluginRegistrationNotClosed(PluginHandle plugin){
+	if(m_pluginRegistrationsClosed.count(plugin)>0){
+		cout<<"Error, plugin "<<plugin<<" can not be opened for registration because it was closed in the past"<<endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool ComputeCore::validationPluginRegistrationClosed(PluginHandle plugin){
+	if(!m_pluginRegistrationsClosed.count(plugin)>0){
+		cout<<"Error, plugin "<<plugin<<" can not be opened for registration because it was closed in the past"<<endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool ComputeCore::validationSlaveModeOwnership(PluginHandle plugin,SlaveMode handle){
+	if(!m_plugins[plugin].hasSlaveMode(handle)){
+		cout<<"Error, plugin "<<m_plugins[plugin].getName();
+		cout<<" ("<<plugin<<") has no ownership on slave mode "<<handle<<endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool ComputeCore::validationMasterModeOwnership(PluginHandle plugin,MasterMode handle){
+	if(!m_plugins[plugin].hasMasterMode(handle)){
+		cout<<"Error, plugin "<<m_plugins[plugin].getName();
+		cout<<" ("<<plugin<<") has no ownership on slave mode "<<handle<<endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool ComputeCore::validationMessageTagOwnership(PluginHandle plugin,MessageTag handle){
+	if(!m_plugins[plugin].hasMessageTag(handle)){
+		cout<<"Error, plugin "<<m_plugins[plugin].getName();
+		cout<<" ("<<plugin<<") has no ownership on slave mode "<<handle<<endl;
+		return false;
+	}
+
+	return true;
+}
+
+void ComputeCore::setPluginName(PluginHandle plugin,string name){
+	if(!validationPluginAllocated(plugin))
+		return;
+
+	if(!validationPluginRegistrationInProgress(plugin))
+		return;
+
+	m_plugins[plugin].setName(name);
+}
+
+void ComputeCore::printPlugins(){
+	cout<<endl;
+	cout<<"ComputeCore: printing plugins"<<endl;
+	cout<<endl;
+	cout<<" Number of plugins: "<<m_plugins.size()<<endl;
+	cout<<endl;
+
+	int j=0;
+
+	for(map<PluginHandle,RegisteredPlugin>::iterator i=m_plugins.begin();
+		i!=m_plugins.end();i++){
+		cout<<" Handle: "<<i->first<<endl;
+		cout<<"-------------------------------"<<endl;
+		i->second.print();
+		cout<<"-------------------------------"<<endl;
+		cout<<endl;
+		j++;
+	}
+
+	cout<<"ComputeCore: finished printing plugins"<<endl;
+	cout<<endl;
 }

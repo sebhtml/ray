@@ -39,8 +39,6 @@ obj-y += core/Parameters.o core/common_functions.o
 
 obj-$(HAVE_LIBBZ2) += compression/BzReader.o  
 
-#cryptography
-obj-y += cryptography/crypto.o
 obj-$(HAVE_LIBBZ2) += format/FastqBz2Loader.o 
 obj-$(HAVE_LIBZ) += format/FastqGzLoader.o 
 

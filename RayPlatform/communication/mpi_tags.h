@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -17,9 +17,6 @@
     along with this program (lgpl-3.0.txt).  
 	see <http://www.gnu.org/licenses/>
 
- 	Funding:
-Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Research (Master's award: 200910MDR-215249-172830 and Doctoral award: 200902CGM-204212-172830).
-
 */
 
 #ifndef _mpi_tags
@@ -28,13 +25,14 @@ Sébastien Boisvert has a scholarship from the Canadian Institutes of Health Res
 // tags for MPI
 // these are the message types used by Ray
 // Ray instances like to communicate a lots!
-//
 
-extern const char* MESSAGES[];
+#include <core/types.h>
+
+extern char MESSAGE_TAGS[MAXIMUM_NUMBER_OF_TAG_HANDLERS][128];
 
 #define ITEM(element) element,
 
-enum MessageTag {
+enum MessageTagEnum {
 #include <mpi_tags.txt>
 RAY_MPI_TAG_DUMMY
 };

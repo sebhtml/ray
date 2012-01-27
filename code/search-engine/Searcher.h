@@ -45,8 +45,8 @@ using namespace std;
 #include <handlers/MasterModeHandler.h>
 #include <handlers/MessageTagHandler.h>
 #include <search-engine/ContigHit.h>
-#include <core/CorePlugin.h>
 #include <search-engine/ColorSet.h>
+#include <plugins/CorePlugin.h>
 
 #include <search-engine/Searcher_adapters.h>
 

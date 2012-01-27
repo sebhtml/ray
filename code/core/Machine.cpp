@@ -549,7 +549,7 @@ void Machine::configureSwitchMan(SwitchMan*switchMan){
 
 	for(int i=0;i<(int)steps.size();i++){
 		#ifdef ASSERT
-		assert(i<steps.size());
+		assert(i<(int)steps.size());
 		#endif
 
 		switchMan->addMasterMode(steps[i]);
@@ -557,7 +557,7 @@ void Machine::configureSwitchMan(SwitchMan*switchMan){
 
 	for(int i=0;i<(int)steps.size()-1;i++){
 		#ifdef ASSERT
-		assert(i+1<steps.size());
+		assert(i+1<(int)steps.size());
 		#endif
 
 		switchMan->addNextMasterMode(steps[i],steps[i+1]);
@@ -789,4 +789,6 @@ void Machine::registerPlugins(){
 	m_computeCore.registerPlugin(&m_joinerTaskCreator);
 	m_computeCore.registerPlugin(&m_coverageGatherer);
 	m_computeCore.registerPlugin(&m_partitioner);
+
+	m_computeCore.printPlugins();
 }

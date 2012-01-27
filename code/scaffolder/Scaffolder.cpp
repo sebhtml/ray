@@ -1345,9 +1345,18 @@ void Scaffolder::setTimePrinter(TimePrinter*a){
 }
 
 void Scaffolder::registerPlugin(ComputeCore*core){
-	m_adapter_RAY_SLAVE_MODE_SCAFFOLDER.setObject(this);
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_SCAFFOLDER, &m_adapter_RAY_SLAVE_MODE_SCAFFOLDER);
+	PluginHandle plugin=core->allocatePluginHandle();
 
+	core->beginPluginRegistration(plugin);
+	core->setPluginName(plugin,"Scaffolder");
+
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_SCAFFOLDER);
+	m_adapter_RAY_SLAVE_MODE_SCAFFOLDER.setObject(this);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_SCAFFOLDER, &m_adapter_RAY_SLAVE_MODE_SCAFFOLDER);
+
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_WRITE_SCAFFOLDS);
 	m_adapter_RAY_MASTER_MODE_WRITE_SCAFFOLDS.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_WRITE_SCAFFOLDS, &m_adapter_RAY_MASTER_MODE_WRITE_SCAFFOLDS);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_WRITE_SCAFFOLDS, &m_adapter_RAY_MASTER_MODE_WRITE_SCAFFOLDS);
+
+	core->endPluginRegistration(plugin);
 }

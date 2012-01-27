@@ -251,7 +251,14 @@ void Partitioner::call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES(){
 }
 
 void Partitioner::registerPlugin(ComputeCore*core){
-	m_adapter_RAY_MASTER_MODE_COUNT_FILE_ENTRIES.setObject(this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_COUNT_FILE_ENTRIES,&m_adapter_RAY_MASTER_MODE_COUNT_FILE_ENTRIES);
+	PluginHandle plugin=core->allocatePluginHandle();
 
+	core->beginPluginRegistration(plugin);
+	core->setPluginName(plugin,"Partitioner");
+
+	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_COUNT_FILE_ENTRIES);
+	m_adapter_RAY_MASTER_MODE_COUNT_FILE_ENTRIES.setObject(this);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_COUNT_FILE_ENTRIES,&m_adapter_RAY_MASTER_MODE_COUNT_FILE_ENTRIES);
+
+	core->endPluginRegistration(plugin);
 }

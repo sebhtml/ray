@@ -379,11 +379,18 @@ void SeedingData::loadCheckpoint(){
 }
 
 void SeedingData::registerPlugin(ComputeCore*core){
+	PluginHandle plugin=core->allocatePluginHandle();
 
+	core->beginPluginRegistration(plugin);
+	core->setPluginName(plugin,"SeedingData");
+
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_START_SEEDING);
 	m_adapter_RAY_SLAVE_MODE_START_SEEDING.setObject(this);
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_START_SEEDING, &m_adapter_RAY_SLAVE_MODE_START_SEEDING);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_START_SEEDING, &m_adapter_RAY_SLAVE_MODE_START_SEEDING);
 
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_SEND_SEED_LENGTHS);
 	m_adapter_RAY_SLAVE_MODE_SEND_SEED_LENGTHS.setObject(this);
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEND_SEED_LENGTHS, &m_adapter_RAY_SLAVE_MODE_SEND_SEED_LENGTHS);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_SEND_SEED_LENGTHS, &m_adapter_RAY_SLAVE_MODE_SEND_SEED_LENGTHS);
 
+	core->endPluginRegistration(plugin);
 }

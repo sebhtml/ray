@@ -132,7 +132,7 @@ void SwitchMan::openMasterMode(StaticVector*outbox,Rank source){
 
 	#ifdef CONFIG_SWITCHMAN_VERBOSITY
 	cout<<"[SwitchMan::openMasterMode] Opening master mode on rank "<<source<<endl;
-	cout<<"[SwitchMan::openMasterMode] tag= "<<MESSAGES[tag]<<" source= "<<source<<" Outbox= "<<outbox<<endl;
+	cout<<"[SwitchMan::openMasterMode] tag= "<<MESSAGE_TAGS[tag]<<" source= "<<source<<" Outbox= "<<outbox<<endl;
 	#endif
 
 	#ifdef ASSERT
@@ -207,7 +207,7 @@ void SwitchMan::openSlaveModeLocally(Tag tag,Rank rank){
 	SlaveMode desiredSlaveMode=m_tagToSlaveModeTable[tag];
 
 	#ifdef CONFIG_SWITCHMAN_VERBOSITY
-	cout<<"[SwitchMan::openSlaveModeLocally] Slave switch triggered, Tag -> "<<MESSAGES[tag]<<endl;
+	cout<<"[SwitchMan::openSlaveModeLocally] Slave switch triggered, Tag -> "<<MESSAGE_TAGS[tag]<<endl;
 	cout<<"[SwitchMan::openSlaveModeLocally] Slave mode -> "<<SLAVE_MODES[desiredSlaveMode]<<endl;
 	#endif
 

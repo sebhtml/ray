@@ -158,6 +158,15 @@ void FusionTaskCreator::destroyWorker(Worker*worker){
 }
 
 void FusionTaskCreator::registerPlugin(ComputeCore*core){
+	PluginHandle plugin=core->allocatePluginHandle();
+
+	core->beginPluginRegistration(plugin);
+
+	core->setPluginName(plugin,"FusionTaskCreator");
+
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_FUSION);
 	m_adapter_RAY_SLAVE_MODE_FUSION.setObject(this);
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_FUSION, &m_adapter_RAY_SLAVE_MODE_FUSION);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_FUSION, &m_adapter_RAY_SLAVE_MODE_FUSION);
+
+	core->endPluginRegistration(plugin);
 }

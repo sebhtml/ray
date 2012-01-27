@@ -22,13 +22,27 @@
 #ifndef _types_h
 #define _types_h
 
+#include <stdint.h>
+
 typedef int Rank;
 
 /* although MessageTag is defined, routing tag are not valid MessageTag instances. */
 typedef int Tag;
 
+typedef int MessageTag;
+
+typedef int SlaveMode;
+
+typedef int MasterMode;
+
 typedef int RoutingTag;
 
 typedef int Distance;
+
+#define MAXIMUM_NUMBER_OF_MASTER_HANDLERS 64
+#define MAXIMUM_NUMBER_OF_SLAVE_HANDLERS  64
+#define MAXIMUM_NUMBER_OF_TAG_HANDLERS 256
+
+typedef uint64_t PluginHandle;
 
 #endif

@@ -151,7 +151,14 @@ void JoinerTaskCreator::destroyWorker(Worker*worker){
 }
 
 void JoinerTaskCreator::registerPlugin(ComputeCore*core){
-	m_adapter_RAY_SLAVE_MODE_FINISH_FUSIONS.setObject(this);
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_FINISH_FUSIONS, &m_adapter_RAY_SLAVE_MODE_FINISH_FUSIONS);
+	PluginHandle plugin=core->allocatePluginHandle();
 
+	core->beginPluginRegistration(plugin);
+	core->setPluginName(plugin,"JoinerTaskCreator");
+
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_FINISH_FUSIONS);
+	m_adapter_RAY_SLAVE_MODE_FINISH_FUSIONS.setObject(this);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_FINISH_FUSIONS, &m_adapter_RAY_SLAVE_MODE_FINISH_FUSIONS);
+
+	core->endPluginRegistration(plugin);
 }
