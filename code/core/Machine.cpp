@@ -338,8 +338,25 @@ void Machine::start(){
 		m_router->addTagToCheckForRelayTo0(RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY);
 	}
 
+	// set the attributes of the seed extender.
 	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed,&m_subgraph,m_inbox,m_profiler,
-		m_outbox,m_seedingData,m_switchMan->getSlaveModePointer());
+		m_outbox,m_seedingData,m_switchMan->getSlaveModePointer(),&(m_seedingData->m_SEEDING_vertexCoverageRequested),
+		&(m_seedingData->m_SEEDING_vertexCoverageReceived),m_outboxAllocator,m_fusionData,
+		&(m_seedingData->m_SEEDING_seeds),m_bubbleData,&(m_seedingData->m_SEEDING_edgesRequested),
+		&(m_seedingData->m_SEEDING_edgesReceived),&(m_seedingData->m_SEEDING_outgoingEdgeIndex),
+		&(m_seedingData->m_SEEDING_currentVertex),&(m_seedingData->m_SEEDING_receivedVertexCoverage),
+		&(m_seedingData->m_SEEDING_receivedOutgoingEdges),&m_c,&m_oa);
+
+	
+/*
+&(m_seedingData->m_SEEDING_seeds),m_ed,getRank(),m_outbox,&(m_seedingData->m_SEEDING_currentVertex),
+	m_fusionData,m_outboxAllocator,&(m_seedingData->m_SEEDING_edgesRequested),&(m_seedingData->m_SEEDING_outgoingEdgeIndex),
+	m_last_value,&(m_seedingData->m_SEEDING_vertexCoverageRequested),m_parameters->getWordSize(),getSize(),&(m_seedingData->m_SEEDING_vertexCoverageReceived),
+	&(m_seedingData->m_SEEDING_receivedVertexCoverage),m_repeatedLength,&(m_seedingData->m_SEEDING_receivedOutgoingEdges),&m_c,
+	m_bubbleData,
+m_parameters->getMinimumCoverage(),m_oa,&(m_seedingData->m_SEEDING_edgesReceived),m_switchMan->getSlaveModePointer()
+*/
+
 
 	m_profiler = m_computeCore.getProfiler();
 	m_profiler->constructor(m_parameters.runProfiler());
@@ -789,6 +806,7 @@ void Machine::registerPlugins(){
 	m_computeCore.registerPlugin(&m_joinerTaskCreator);
 	m_computeCore.registerPlugin(&m_coverageGatherer);
 	m_computeCore.registerPlugin(&m_partitioner);
+	m_computeCore.registerPlugin(&m_seedExtender);
 
 	m_computeCore.printPlugins();
 }

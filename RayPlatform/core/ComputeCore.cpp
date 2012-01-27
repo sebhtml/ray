@@ -975,8 +975,8 @@ void ComputeCore::printPlugins(){
 
 	for(map<PluginHandle,RegisteredPlugin>::iterator i=m_plugins.begin();
 		i!=m_plugins.end();i++){
-		cout<<" Handle: "<<i->first<<endl;
 		cout<<"-------------------------------"<<endl;
+		cout<<" Handle: "<<i->first<<endl;
 		i->second.print();
 		cout<<"-------------------------------"<<endl;
 		cout<<endl;

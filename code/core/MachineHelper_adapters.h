@@ -146,14 +146,6 @@ public:
 	void call();
 };
 
-class Adapter_RAY_MASTER_MODE_TRIGGER_EXTENSIONS: public MasterModeHandler{
-	MachineHelper*m_object;
-
-public:
-	void setObject(MachineHelper*object);
-	void call();
-};
-
 class Adapter_RAY_MASTER_MODE_TRIGGER_FUSIONS: public MasterModeHandler{
 	MachineHelper*m_object;
 
@@ -283,14 +275,6 @@ public:
 	void call();
 };
 
-class Adapter_RAY_SLAVE_MODE_EXTENSION: public SlaveModeHandler{
-	MachineHelper*m_object;
-
-public:
-	void setObject(MachineHelper*object);
-	void call();
-};
-
 class Adapter_RAY_SLAVE_MODE_DIE: public SlaveModeHandler{
 	MachineHelper*m_object;
 
@@ -306,5 +290,16 @@ public:
 	void setObject(MachineHelper*object);
 	void call();
 };
+
+class Adapter_RAY_MASTER_MODE_TRIGGER_EXTENSIONS: public MasterModeHandler{
+	MachineHelper*m_object;
+
+public:
+	void setObject(MachineHelper*object);
+	void call();
+};
+
+
+
 
 #endif

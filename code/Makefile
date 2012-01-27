@@ -1,11 +1,9 @@
 
 
-# core and graph
+# core 
 
+obj-y += assembler/ray_main.o 
 obj-y += core/Machine.o 
-obj-y += heuristics/BubbleTool.o heuristics/Chooser.o heuristics/OpenAssemblerChooser.o
-obj-y += heuristics/TipWatchdog.o heuristics/NovaEngine.o
-
 obj-y += core/Parameters.o core/common_functions.o
 obj-$(HAVE_LIBBZ2) += compression/BzReader.o  
 
@@ -21,15 +19,12 @@ obj-y +=  structures/Direction.o  structures/PairedRead.o structures/ReadAnnotat
 obj-y += structures/Read.o structures/Vertex.o
 
 obj-y += format/ColorSpaceDecoder.o format/ColorSpaceLoader.o 
-obj-y += format/FastaLoader.o format/FastqLoader.o format/SffLoader.o 
+obj-y += format/FastaLoader.o format/FastqLoader.o format/SffLoader.o  assembler/Loader.o 
 
-obj-y += assembler/VertexMessenger.o assembler/ReadFetcher.o
-obj-y += assembler/IndexerWorker.o assembler/SeedWorker.o assembler/ExtensionElement.o 
-obj-y += assembler/DepthFirstSearchData.o assembler/Loader.o 
+obj-y += assembler/IndexerWorker.o 
 
-obj-y += assembler/SeedExtender.o assembler/SequencesIndexer.o 
+obj-y += assembler/SequencesIndexer.o 
 obj-y += assembler/SequencesLoader.o assembler/VerticesExtractor.o 
-obj-y += assembler/ray_main.o assembler/ExtensionData.o 
 obj-y += assembler/KmerAcademyBuilder.o
 obj-y += assembler/EdgePurger.o assembler/EdgePurgerWorker.o
 
@@ -38,7 +33,6 @@ obj-y += assembler/EdgePurger.o assembler/EdgePurgerWorker.o
 obj-y += assembler/FusionTaskCreator_adapters.o
 obj-y += assembler/FusionWorker.o 
 obj-y += assembler/FusionTaskCreator.o assembler/FusionData.o 
-
 
 # plugin Scaffolder
 
@@ -49,7 +43,6 @@ obj-y += scaffolder/SummarizedLink.o
 obj-y += scaffolder/ScaffoldingAlgorithm.o
 obj-y += scaffolder/ScaffoldingVertex.o
 obj-y += scaffolder/ScaffoldingEdge.o
-
 
 # plugin Searcher
 
@@ -86,7 +79,6 @@ obj-y += format/Amos.o
 obj-y += communication/NetworkTest_adapters.o
 obj-y += communication/NetworkTest.o
 
-
 # plugin JoinerTaskCreator
 
 obj-y += assembler/JoinerTaskCreator_adapters.o
@@ -99,10 +91,9 @@ obj-y += assembler/JoinerTaskCreator.o
 obj-y += core/MachineHelper_adapters.o
 obj-y += core/MachineHelper.o
 
-
 # plugin SeedingData
 
-obj-y += structures/AssemblySeed.o
+obj-y += structures/AssemblySeed.o assembler/SeedWorker.o
 obj-y += assembler/SeedingData_adapters.o
 obj-y += assembler/SeedingData.o 
 
@@ -111,6 +102,17 @@ obj-y += assembler/SeedingData.o
 obj-y += assembler/Library_adapters.o
 obj-y += pairs/LibraryPeakFinder.o assembler/LibraryWorker.o 
 obj-y += assembler/Library.o 
+
+# plugin SeedExtender
+
+obj-y += assembler/SeedExtender_adapters.o
+obj-y += assembler/SeedExtender.o
+obj-y += assembler/VertexMessenger.o assembler/ReadFetcher.o
+obj-y += heuristics/BubbleTool.o heuristics/Chooser.o heuristics/OpenAssemblerChooser.o
+obj-y += heuristics/TipWatchdog.o heuristics/NovaEngine.o
+obj-y += assembler/ExtensionElement.o 
+obj-y += assembler/DepthFirstSearchData.o 
+obj-y += assembler/ExtensionData.o 
 
 
 #######################################################

@@ -87,7 +87,7 @@ using namespace std;
 class Machine{
 
 	ComputeCore m_computeCore;
-
+	Chooser m_c;
 	MachineHelper m_helper;
 
 

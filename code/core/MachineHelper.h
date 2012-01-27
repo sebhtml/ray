@@ -127,7 +127,6 @@ class MachineHelper: public CorePlugin{
 	bool m_loadSequenceStep;
 
 	bool m_cycleStarted;
-	Chooser m_c;
 	int*m_CLEAR_n;
 	int*m_DISTRIBUTE_n;
 	int*m_FINISH_n;
@@ -237,7 +236,6 @@ SequencesLoader*sl,time_t*lastTime,bool*writeKmerInitialised,Partitioner*partiti
 	void call_RAY_SLAVE_MODE_ASSEMBLE_WAVES();
 	void call_RAY_SLAVE_MODE_INDEX_SEQUENCES();
 	void call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA();
-	void call_RAY_SLAVE_MODE_EXTENSION();
 	void call_RAY_SLAVE_MODE_DIE();
 	void call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS();
 

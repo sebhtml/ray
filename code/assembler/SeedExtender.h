@@ -45,14 +45,36 @@ class DepthFirstSearchData;
 #include <graph/GridTable.h>
 #include <assembler/SeedingData.h>
 #include <handlers/SlaveModeHandler.h>
+#include <core/ComputeCore.h>
 
+#include <assembler/SeedExtender_adapters.h>
 using namespace std;
 
 /*
  * Performs the extension of seeds.
  * \author Sébastien Boisvert
  */
-class SeedExtender : public SlaveModeHandler {
+class SeedExtender: public CorePlugin  {
+
+	Adapter_RAY_SLAVE_MODE_EXTENSION m_adapter_RAY_SLAVE_MODE_EXTENSION;
+
+// all these parameters are not attributes.
+	vector<AssemblySeed>*m_seeds;
+  	Kmer*m_currentVertex;
+	FusionData*m_fusionData;
+	RingAllocator*m_outboxAllocator;
+	bool*m_edgesRequested;
+	int*m_outgoingEdgeIndex;
+	int m_last_value;
+	bool*m_vertexCoverageRequested;
+	bool*m_vertexCoverageReceived;
+	int*m_receivedVertexCoverage;
+	vector<Kmer>*m_receivedOutgoingEdges;
+	Chooser*m_chooser;
+	BubbleData*m_bubbleData;
+	OpenAssemblerChooser*m_oa;
+	bool*m_edgesReceived;
+	int*m_mode;
 
 	int m_currentPeakCoverage;
 
@@ -64,8 +86,6 @@ class SeedExtender : public SlaveModeHandler {
 	map<int,int> m_localCoverageDistribution;
 
 	Profiler*m_profiler;
-
-	int*m_mode;
 
 	SeedingData*m_seedingData;
 
@@ -133,6 +153,41 @@ map<Kmer,set<Kmer> >*arcs,map<Kmer,int>*coverages,int depth,set<Kmer>*visited);
 	void checkedCurrentVertex();
 	void skipSeed(vector<AssemblySeed>*seeds);
 
+/** store the current extension and fetch the next one **/
+	void storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<AssemblySeed>*seeds,Kmer*currentVertex,
+		BubbleData*bubbleData);
+
+/** given the current vertex, enumerate the choices **/
+	void enumerateChoices(bool*edgesRequested,ExtensionData*ed,bool*edgesReceived,RingAllocator*outboxAllocator,
+		int*outgoingEdgeIndex,StaticVector*outbox,
+Kmer*currentVertex,int theRank,bool*vertexCoverageRequested,vector<Kmer>*receivedOutgoingEdges,
+bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
+int wordSize);
+
+/** check if the current vertex is already assembled **/
+	void checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector*outbox,RingAllocator*outboxAllocator,
+	 int*outgoingEdgeIndex,int*last_value,Kmer*currentVertex,int theRank,bool*vertexCoverageRequested,
+	int wordSize,int size,vector<AssemblySeed>*seeds);
+
+/** mark the current vertex as assembled **/
+	void markCurrentVertexAsAssembled(Kmer *currentVertex,RingAllocator*outboxAllocator,int*outgoingEdgeIndex,
+ StaticVector*outbox,int size,int theRank,ExtensionData*ed,bool*vertexCoverageRequested,
+		bool*vertexCoverageReceived,int*receivedVertexCoverage,
+	bool*edgesRequested,
+vector<Kmer>*receivedOutgoingEdges,Chooser*chooser,
+BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,vector<AssemblySeed>*seeds);
+
+/** choose where to go next **/
+	void doChoice(RingAllocator*outboxAllocator,int*outgoingEdgeIndex,StaticVector*outbox,Kmer*currentVertex,
+BubbleData*bubbleData,int theRank,int wordSize,
+ExtensionData*ed,int minimumCoverage,OpenAssemblerChooser*oa,Chooser*chooser,
+	vector<AssemblySeed>*seeds,
+bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,int size,
+int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges);
+
+
+
+
 public:
 	bool m_sequenceReceived;
 	bool m_sequenceRequested;
@@ -141,46 +196,21 @@ public:
 
 	SeedExtender();
 
-	void enumerateChoices(bool*edgesRequested,ExtensionData*ed,bool*edgesReceived,RingAllocator*outboxAllocator,
-		int*outgoingEdgeIndex,StaticVector*outbox,
-Kmer*currentVertex,int theRank,bool*vertexCoverageRequested,vector<Kmer>*receivedOutgoingEdges,
-bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
-int wordSize);
-
-	void checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector*outbox,RingAllocator*outboxAllocator,
-	 int*outgoingEdgeIndex,int*last_value,Kmer*currentVertex,int theRank,bool*vertexCoverageRequested,
-	int wordSize,int size,vector<AssemblySeed>*seeds);
-
-	void markCurrentVertexAsAssembled(Kmer *currentVertex,RingAllocator*outboxAllocator,int*outgoingEdgeIndex,
- StaticVector*outbox,int size,int theRank,ExtensionData*ed,bool*vertexCoverageRequested,
-		bool*vertexCoverageReceived,int*receivedVertexCoverage,int*repeatedLength,
-	bool*edgesRequested,
-vector<Kmer>*receivedOutgoingEdges,Chooser*chooser,
-BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,vector<AssemblySeed>*seeds);
-
-	void call_RAY_SLAVE_MODE_EXTENSION(vector<AssemblySeed>*seeds,ExtensionData*ed,int theRank,StaticVector*outbox,Kmer*currentVertex,
-	FusionData*fusionData,RingAllocator*outboxAllocator,bool*edgesRequested,int*outgoingEdgeIndex,
-int*last_value,bool*vertexCoverageRequested,int wordSize,int size,bool*vertexCoverageReceived,
-int*receivedVertexCoverage,int*repeatedLength,vector<Kmer>*receivedOutgoingEdges,Chooser*chooser,
-BubbleData*bubbleData,
-int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*m_mode);
-
-	void doChoice(RingAllocator*outboxAllocator,int*outgoingEdgeIndex,StaticVector*outbox,Kmer*currentVertex,
-BubbleData*bubbleData,int theRank,int wordSize,
-ExtensionData*ed,int minimumCoverage,OpenAssemblerChooser*oa,Chooser*chooser,
-	vector<AssemblySeed>*seeds,
-bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,int size,
-int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges);
-
 	vector<Direction>*getDirections();
-
-	void storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<AssemblySeed>*seeds,Kmer*currentVertex,
-		BubbleData*bubbleData);
 
 	set<uint64_t>*getEliminatedSeeds();
 
 	void constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed,GridTable*table,StaticVector*inbox,
-	Profiler*profiler,StaticVector*outbox,SeedingData*seedingData,int*mode);
+	Profiler*profiler,StaticVector*outbox,SeedingData*seedingData,int*mode,
+	bool*vertexCoverageRequested,bool*vertexCoverageReceived,RingAllocator*outboxAllocator,
+		FusionData*fusionData,vector<AssemblySeed>*seeds,BubbleData*bubbleData,
+		bool*edgesRequested,bool*edgesReceived,int*outgoingEdgeIndex,Kmer*currentVertex,
+	int*receivedVertexCoverage,vector<Kmer>*receivedOutgoingEdges,Chooser*chooser,
+		OpenAssemblerChooser*oa);
+
+	void call_RAY_SLAVE_MODE_EXTENSION();
+
+	void registerPlugin(ComputeCore*core);
 };
 
 

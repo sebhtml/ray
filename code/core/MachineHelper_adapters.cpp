@@ -277,14 +277,6 @@ void Adapter_RAY_SLAVE_MODE_SEND_EXTENSION_DATA::call(){
 	m_object->call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA();
 }
 
-void Adapter_RAY_SLAVE_MODE_EXTENSION::setObject(MachineHelper*object){
-	m_object=object;
-}
-
-void Adapter_RAY_SLAVE_MODE_EXTENSION::call(){
-	m_object->call_RAY_SLAVE_MODE_EXTENSION();
-}
-
 void Adapter_RAY_SLAVE_MODE_DIE::setObject(MachineHelper*object){
 	m_object=object;
 }

@@ -38,12 +38,7 @@
 using namespace std;
 
 /** extend the seeds */
-void SeedExtender::call_RAY_SLAVE_MODE_EXTENSION(vector<AssemblySeed>*seeds,ExtensionData*ed,int theRank,StaticVector*outbox,
-  Kmer*currentVertex,FusionData*fusionData,RingAllocator*outboxAllocator,bool*edgesRequested,int*outgoingEdgeIndex,
-int*last_value,bool*vertexCoverageRequested,int wordSize,int size,bool*vertexCoverageReceived,
-int*receivedVertexCoverage,int*repeatedLength,vector<Kmer>*receivedOutgoingEdges,Chooser*chooser,
-BubbleData*bubbleData,
-int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*mode){
+void SeedExtender::call_RAY_SLAVE_MODE_EXTENSION(){
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 	
@@ -52,11 +47,11 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*mode){
 		m_checkedCheckpoint=true;
 		if(m_parameters->hasCheckpoint("Extensions")){
 
-			readCheckpoint(fusionData);
+			readCheckpoint(m_fusionData);
 	
 			(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
-			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_EXTENSION_IS_DONE,theRank);
-			outbox->push_back(aMessage);
+			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_EXTENSION_IS_DONE,m_parameters->getRank());
+			m_outbox->push_back(aMessage);
 	
 			return;
 		}
@@ -66,15 +61,15 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*mode){
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
-	if(ed->m_EXTENSION_currentSeedIndex==(int)(*seeds).size()
-		|| seeds->size()==0){
+	if(m_ed->m_EXTENSION_currentSeedIndex==(int)(*m_seeds).size()
+		|| m_seeds->size()==0){
 
-		finalizeExtensions(seeds,fusionData);
+		finalizeExtensions(m_seeds,m_fusionData);
 
 		return;
-	}else if(!ed->m_EXTENSION_initiated){
+	}else if(!m_ed->m_EXTENSION_initiated){
 
-		initializeExtensions(seeds);
+		initializeExtensions(m_seeds);
 
 	}
 
@@ -91,46 +86,46 @@ int minimumCoverage,OpenAssemblerChooser*oa,bool*edgesReceived,int*mode){
 	
 	// only check that at bootstrap.
 
-	if(!ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled){
+	if(!m_ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled){
 
-		checkIfCurrentVertexIsAssembled(ed,outbox,outboxAllocator,outgoingEdgeIndex,last_value,
-	currentVertex,theRank,vertexCoverageRequested,wordSize,size,seeds);
+	checkIfCurrentVertexIsAssembled(m_ed,m_outbox,m_outboxAllocator,m_outgoingEdgeIndex,&m_last_value,
+m_currentVertex,m_parameters->getRank(),m_vertexCoverageRequested,m_parameters->getWordSize(),m_parameters->getSize(),m_seeds);
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
 	}else if(
 		/* the first flow */
-		ed->m_flowNumber==1 
+		m_ed->m_flowNumber==1 
  		/* vertex is assembled already */
-		&& ed->m_EXTENSION_vertexIsAssembledResult 
+		&& m_ed->m_EXTENSION_vertexIsAssembledResult 
  		/* we have not exited the seed */
-		&& ed->m_EXTENSION_currentPosition<(int)ed->m_EXTENSION_currentSeed.size()
+		&& m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_currentSeed.size()
 		){
 		
-		skipSeed(seeds);
+		skipSeed(m_seeds);
 
-	}else if(!ed->m_EXTENSION_markedCurrentVertexAsAssembled){
+	}else if(!m_ed->m_EXTENSION_markedCurrentVertexAsAssembled){
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
-		markCurrentVertexAsAssembled(currentVertex,outboxAllocator,outgoingEdgeIndex,outbox,
-size,theRank,ed,vertexCoverageRequested,vertexCoverageReceived,receivedVertexCoverage,
-repeatedLength,edgesRequested,receivedOutgoingEdges,chooser,bubbleData,minimumCoverage,
-oa,wordSize,seeds);
+		markCurrentVertexAsAssembled(m_currentVertex,m_outboxAllocator,m_outgoingEdgeIndex,m_outbox,
+m_parameters->getSize(),m_parameters->getRank(),m_ed,m_vertexCoverageRequested,m_vertexCoverageReceived,m_receivedVertexCoverage,
+m_edgesRequested,m_receivedOutgoingEdges,m_chooser,m_bubbleData,m_parameters->getMinimumCoverage(),
+m_oa,m_parameters->getWordSize(),m_seeds);
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
-	}else if(!ed->m_EXTENSION_enumerateChoices){
+	}else if(!m_ed->m_EXTENSION_enumerateChoices){
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
-		enumerateChoices(edgesRequested,ed,edgesReceived,outboxAllocator,outgoingEdgeIndex,outbox,
-		currentVertex,theRank,vertexCoverageRequested,receivedOutgoingEdges,
-		vertexCoverageReceived,size,receivedVertexCoverage,chooser,wordSize);
-	}else if(!ed->m_EXTENSION_choose){
+		enumerateChoices(m_edgesRequested,m_ed,m_edgesReceived,m_outboxAllocator,m_outgoingEdgeIndex,m_outbox,
+		m_currentVertex,m_parameters->getRank(),m_vertexCoverageRequested,m_receivedOutgoingEdges,
+		m_vertexCoverageReceived,m_parameters->getSize(),m_receivedVertexCoverage,m_chooser,m_parameters->getWordSize());
+	}else if(!m_ed->m_EXTENSION_choose){
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
-		doChoice(outboxAllocator,outgoingEdgeIndex,outbox,currentVertex,bubbleData,theRank,wordSize,
-	ed,minimumCoverage,oa,chooser,seeds,
-edgesRequested,vertexCoverageRequested,vertexCoverageReceived,size,receivedVertexCoverage,edgesReceived,
-receivedOutgoingEdges);
+		doChoice(m_outboxAllocator,m_outgoingEdgeIndex,m_outbox,m_currentVertex,m_bubbleData,m_parameters->getRank(),m_parameters->getWordSize(),
+	m_ed,m_parameters->getMinimumCoverage(),m_oa,m_chooser,m_seeds,
+m_edgesRequested,m_vertexCoverageRequested,m_vertexCoverageReceived,m_parameters->getSize(),m_receivedVertexCoverage,m_edgesReceived,
+m_receivedOutgoingEdges);
 	}
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
@@ -1082,7 +1077,7 @@ void SeedExtender::checkedCurrentVertex(){
  *   */
 void SeedExtender::markCurrentVertexAsAssembled(Kmer*currentVertex,RingAllocator*outboxAllocator,int*outgoingEdgeIndex, 
 StaticVector*outbox,int size,int theRank,ExtensionData*ed,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
-	int*receivedVertexCoverage,int*repeatedLength,bool*edgesRequested,
+	int*receivedVertexCoverage,bool*edgesRequested,
 vector<Kmer>*receivedOutgoingEdges,Chooser*chooser,
 BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,vector<AssemblySeed>*seeds
 ){
@@ -1582,7 +1577,29 @@ set<uint64_t>*SeedExtender::getEliminatedSeeds(){
 
 void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed,
 	GridTable*subgraph,StaticVector*inbox,Profiler*profiler,StaticVector*outbox,
-	SeedingData*seedingData,int*mode){
+	SeedingData*seedingData,int*mode,
+bool*vertexCoverageRequested,
+bool*vertexCoverageReceived,RingAllocator*outboxAllocator,FusionData*fusionData,
+vector<AssemblySeed>*seeds,BubbleData*bubbleData,
+bool*edgesRequested,bool*edgesReceived,
+int*outgoingEdgeIndex,Kmer*currentVertex,int*receivedVertexCoverage,
+vector<Kmer>*receivedOutgoingEdges,
+Chooser*chooser,OpenAssemblerChooser*oa
+){
+	m_oa=oa;
+	m_chooser=chooser;
+	m_receivedOutgoingEdges=receivedOutgoingEdges;
+	m_receivedVertexCoverage=receivedVertexCoverage;
+	m_currentVertex=currentVertex;
+	m_outgoingEdgeIndex=outgoingEdgeIndex;
+	m_edgesRequested=edgesRequested;
+	m_edgesReceived=edgesReceived;
+	m_bubbleData=bubbleData;
+	m_seeds=seeds;
+	m_fusionData=fusionData;
+	m_outboxAllocator=outboxAllocator;
+	m_vertexCoverageReceived=vertexCoverageReceived;
+	m_vertexCoverageRequested=vertexCoverageRequested;
 
 	m_seedingData=seedingData;
 
@@ -2160,4 +2177,18 @@ void SeedExtender::skipSeed(vector<AssemblySeed>*seeds){
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
+}
+
+void SeedExtender::registerPlugin(ComputeCore*core){
+	PluginHandle plugin=core->allocatePluginHandle();
+
+	core->beginPluginRegistration(plugin);
+
+	core->setPluginName(plugin,"SeedExtender");
+
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_EXTENSION);
+	m_adapter_RAY_SLAVE_MODE_EXTENSION.setObject(this);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_EXTENSION,&m_adapter_RAY_SLAVE_MODE_EXTENSION);
+
+	core->endPluginRegistration(plugin);
 }

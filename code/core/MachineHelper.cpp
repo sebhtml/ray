@@ -153,6 +153,7 @@ SequencesLoader*sl,time_t*lastTime,bool*writeKmerInitialised,Partitioner*partiti
 	m_numberOfRanksWithCoverageData=numberOfRanksWithCoverageData;
 
 	m_initialisedKiller=false;
+
 }
 
 void MachineHelper::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES (){
@@ -910,22 +911,6 @@ void MachineHelper::call_RAY_MASTER_MODE_SCAFFOLDER(){
 	m_switchMan->setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
 }
 
-void MachineHelper::call_RAY_SLAVE_MODE_EXTENSION(){
-
-	MACRO_COLLECT_PROFILING_INFORMATION();
-
-	// TODO: initialise these things in the constructor
-
-	m_seedExtender->call_RAY_SLAVE_MODE_EXTENSION(&(m_seedingData->m_SEEDING_seeds),m_ed,getRank(),m_outbox,&(m_seedingData->m_SEEDING_currentVertex),
-	m_fusionData,m_outboxAllocator,&(m_seedingData->m_SEEDING_edgesRequested),&(m_seedingData->m_SEEDING_outgoingEdgeIndex),
-	m_last_value,&(m_seedingData->m_SEEDING_vertexCoverageRequested),m_parameters->getWordSize(),getSize(),&(m_seedingData->m_SEEDING_vertexCoverageReceived),
-	&(m_seedingData->m_SEEDING_receivedVertexCoverage),m_repeatedLength,&(m_seedingData->m_SEEDING_receivedOutgoingEdges),&m_c,
-	m_bubbleData,
-m_parameters->getMinimumCoverage(),m_oa,&(m_seedingData->m_SEEDING_edgesReceived),m_switchMan->getSlaveModePointer());
-
-	MACRO_COLLECT_PROFILING_INFORMATION();
-}
-
 void MachineHelper::call_RAY_MASTER_MODE_KILL_RANKS(){
 	m_switchMan->closeMasterMode();
 }
@@ -1161,10 +1146,6 @@ void MachineHelper::registerPlugin(ComputeCore*core){
 	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_SEND_EXTENSION_DATA);
 	m_adapter_RAY_SLAVE_MODE_SEND_EXTENSION_DATA.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_SEND_EXTENSION_DATA, &m_adapter_RAY_SLAVE_MODE_SEND_EXTENSION_DATA);
-
-	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_EXTENSION);
-	m_adapter_RAY_SLAVE_MODE_EXTENSION.setObject(this);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_EXTENSION, &m_adapter_RAY_SLAVE_MODE_EXTENSION);
 
 	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_DIE);
 	m_adapter_RAY_SLAVE_MODE_DIE.setObject(this);
