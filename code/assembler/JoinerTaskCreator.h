@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C)  2011  Sébastien Boisvert
+    Copyright (C)  2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -30,17 +30,21 @@
 #include <communication/VirtualCommunicator.h>
 #include <memory/RingAllocator.h>
 #include <structures/Kmer.h>
-#include <handlers/SlaveModeHandler.h>
 #include <core/ComputeCore.h>
 
 #include <vector>
 #include <set>
 using namespace std;
 
+#include <assembler/JoinerTaskCreator_adapters.h>
+
 /**
  * The class creates and kills workers for the fusion of
  * similar paths */
-class JoinerTaskCreator: public TaskCreator, public SlaveModeHandler, public CorePlugin{
+class JoinerTaskCreator: public TaskCreator,  public CorePlugin{
+
+	Adapter_RAY_SLAVE_MODE_FINISH_FUSIONS m_adapter_RAY_SLAVE_MODE_FINISH_FUSIONS;
+
 	VirtualCommunicator*m_virtualCommunicator;
 	RingAllocator*m_outboxAllocator;
 	Parameters*m_parameters;

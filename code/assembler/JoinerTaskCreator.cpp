@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C)  2011  Sébastien Boisvert
+    Copyright (C)  2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -151,7 +151,7 @@ void JoinerTaskCreator::destroyWorker(Worker*worker){
 }
 
 void JoinerTaskCreator::registerPlugin(ComputeCore*core){
-
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_FINISH_FUSIONS, this);
+	m_adapter_RAY_SLAVE_MODE_FINISH_FUSIONS.setObject(this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_FINISH_FUSIONS, &m_adapter_RAY_SLAVE_MODE_FINISH_FUSIONS);
 
 }

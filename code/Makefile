@@ -92,6 +92,7 @@ obj-y += assembler/FusionTaskCreator_adapters.o
 
 obj-y += assembler/JoinerWorker.o 
 obj-y += assembler/JoinerTaskCreator.o
+obj-y += assembler/JoinerTaskCreator_adapters.o
 
 # heuristics
 obj-y += heuristics/BubbleTool.o heuristics/Chooser.o heuristics/OpenAssemblerChooser.o \
