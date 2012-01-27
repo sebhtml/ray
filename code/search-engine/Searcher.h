@@ -48,12 +48,25 @@ using namespace std;
 #include <core/CorePlugin.h>
 #include <search-engine/ColorSet.h>
 
+#include <search-engine/Searcher_adapters.h>
+
 /**
  * This class searches for sequences in the de Bruijn graph
  * It outputs biological abundance readouts
  * \author Sébastien Boisvert
  **/
-class Searcher : public SlaveModeHandler, public MasterModeHandler, public MessageTagHandler, public CorePlugin {
+class Searcher :  public CorePlugin {
+
+	Adapter_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS m_adapter_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS;
+	Adapter_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES m_adapter_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES;
+	Adapter_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES m_adapter_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES;
+	Adapter_RAY_SLAVE_MODE_ADD_COLORS m_adapter_RAY_SLAVE_MODE_ADD_COLORS;
+	Adapter_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS m_adapter_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS;
+	Adapter_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES m_adapter_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES;
+	Adapter_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES m_adapter_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES;
+	Adapter_RAY_MASTER_MODE_ADD_COLORS m_adapter_RAY_MASTER_MODE_ADD_COLORS;
+	Adapter_RAY_MPI_TAG_ADD_KMER_COLOR m_adapter_RAY_MPI_TAG_ADD_KMER_COLOR;
+	Adapter_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS m_adapter_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS;
 
 /** translator for virtual colors **/
 	ColorSet m_colorSet;
@@ -265,6 +278,7 @@ public:
 	void registerPlugin(ComputeCore*core);
 
 }; /* Searcher */
+
 
 #endif
 

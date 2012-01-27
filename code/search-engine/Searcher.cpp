@@ -2150,21 +2150,36 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 }
 
 void Searcher::registerPlugin(ComputeCore*core){
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES,this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES,this);
+	m_adapter_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES.setObject(this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES,&m_adapter_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES);
 
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES, this);
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES, this);
+	m_adapter_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES.setObject(this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES,&m_adapter_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES);
 
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS, this);
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS, this);
+	m_adapter_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES.setObject(this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES,&m_adapter_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES);
 
-	core->setMessageTagObjectHandler(RAY_MPI_TAG_GET_COVERAGE_AND_PATHS,this);
+	m_adapter_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES.setObject(this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES,&m_adapter_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES);
+
+	m_adapter_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS.setObject(this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS,&m_adapter_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS);
+
+	m_adapter_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS.setObject(this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS,&m_adapter_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS);
+
+	m_adapter_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS.setObject(this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_GET_COVERAGE_AND_PATHS,&m_adapter_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS);
 
 	// configure graph coloring things
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_ADD_COLORS, this);
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_ADD_COLORS,this);
-	core->setMessageTagObjectHandler(RAY_MPI_TAG_ADD_KMER_COLOR, this);
+	m_adapter_RAY_MASTER_MODE_ADD_COLORS.setObject(this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_ADD_COLORS,&m_adapter_RAY_MASTER_MODE_ADD_COLORS);
+
+	m_adapter_RAY_SLAVE_MODE_ADD_COLORS.setObject(this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_ADD_COLORS,&m_adapter_RAY_SLAVE_MODE_ADD_COLORS);
+
+	m_adapter_RAY_MPI_TAG_ADD_KMER_COLOR.setObject(this);
+	core->setMessageTagObjectHandler(RAY_MPI_TAG_ADD_KMER_COLOR,&m_adapter_RAY_MPI_TAG_ADD_KMER_COLOR);
 }
 
 void Searcher::call_RAY_MPI_TAG_ADD_KMER_COLOR(Message*message){
@@ -2573,3 +2588,4 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		}
 	}
 }
+
