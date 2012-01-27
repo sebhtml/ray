@@ -1,130 +1,138 @@
 
 
-MPICXX = mpicxx
-
-######## <Application>
-
-# communication
-obj-y += communication/NetworkTest.o
-obj-y += communication/NetworkTest_adapters.o
-
-obj-y += communication/MessageProcessor.o
-obj-y += communication/MessageProcessor_adapters.o
-
-# search engine
-obj-y += search-engine/Searcher.o
-obj-y += search-engine/Searcher_adapters.o
-
-obj-y += search-engine/SearchDirectory.o
-obj-y += search-engine/ContigSearchEntry.o
-obj-y += search-engine/ContigHit.o
-obj-y += search-engine/ColorSet.o
-obj-y += search-engine/VirtualKmerColor.o
-
-#formats
-obj-y += format/ColorSpaceDecoder.o format/ColorSpaceLoader.o format/FastaLoader.o \
-format/FastqLoader.o format/SffLoader.o \
-format/Amos.o
-
-obj-y += format/Amos_adapters.o
-
-#core
+# core and graph
 
 obj-y += core/Machine.o 
-obj-y += core/MachineHelper.o
-obj-y += core/MachineHelper_adapters.o
+obj-y += heuristics/BubbleTool.o heuristics/Chooser.o heuristics/OpenAssemblerChooser.o
+obj-y += heuristics/TipWatchdog.o heuristics/NovaEngine.o
+
 obj-y += core/Parameters.o core/common_functions.o
-
-#compression
-
 obj-$(HAVE_LIBBZ2) += compression/BzReader.o  
 
 obj-$(HAVE_LIBBZ2) += format/FastqBz2Loader.o 
 obj-$(HAVE_LIBZ) += format/FastqGzLoader.o 
 
-#graph
+obj-y += graph/KmerAcademy.o graph/KmerAcademyIterator.o
 obj-y += graph/GridTable.o graph/GridTableIterator.o graph/CoverageDistribution.o 
-obj-y += graph/CoverageGatherer.o graph/KmerAcademy.o graph/KmerAcademyIterator.o
-obj-y += graph/CoverageGatherer_adapters.o
-
-#structures
 
 obj-y +=  structures/BloomFilter.o
-obj-y += structures/Kmer.o \
-structures/ArrayOfReads.o  structures/Direction.o \
- structures/PairedRead.o structures/ReadAnnotation.o structures/Read.o  \
-structures/Vertex.o
-obj-y += structures/AssemblySeed.o
+obj-y += structures/Kmer.o structures/ArrayOfReads.o 
+obj-y +=  structures/Direction.o  structures/PairedRead.o structures/ReadAnnotation.o 
+obj-y += structures/Read.o structures/Vertex.o
 
-#scaffolder
-obj-y += scaffolder/Scaffolder.o 
+obj-y += format/ColorSpaceDecoder.o format/ColorSpaceLoader.o 
+obj-y += format/FastaLoader.o format/FastqLoader.o format/SffLoader.o 
+
+obj-y += assembler/VertexMessenger.o assembler/ReadFetcher.o
+obj-y += assembler/IndexerWorker.o assembler/SeedWorker.o assembler/ExtensionElement.o 
+obj-y += assembler/DepthFirstSearchData.o assembler/Loader.o 
+
+obj-y += assembler/SeedExtender.o assembler/SequencesIndexer.o 
+obj-y += assembler/SequencesLoader.o assembler/VerticesExtractor.o 
+obj-y += assembler/ray_main.o assembler/ExtensionData.o 
+obj-y += assembler/KmerAcademyBuilder.o
+obj-y += assembler/EdgePurger.o assembler/EdgePurgerWorker.o
+
+# plugin FusionTaskCreator
+
+obj-y += assembler/FusionTaskCreator_adapters.o
+obj-y += assembler/FusionWorker.o 
+obj-y += assembler/FusionTaskCreator.o assembler/FusionData.o 
+
+
+# plugin Scaffolder
+
 obj-y += scaffolder/Scaffolder_adapters.o
-
+obj-y += scaffolder/Scaffolder.o 
 obj-y += scaffolder/ScaffoldingLink.o
 obj-y += scaffolder/SummarizedLink.o
 obj-y += scaffolder/ScaffoldingAlgorithm.o
 obj-y += scaffolder/ScaffoldingVertex.o
 obj-y += scaffolder/ScaffoldingEdge.o
 
-obj-y += pairs/LibraryPeakFinder.o
 
-#assembler
-obj-y += assembler/VertexMessenger.o \
-assembler/ReadFetcher.o assembler/LibraryWorker.o assembler/IndexerWorker.o  \
-assembler/SeedWorker.o assembler/ExtensionElement.o \
-assembler/DepthFirstSearchData.o assembler/SeedingData.o \
-assembler/FusionData.o assembler/Library.o assembler/Loader.o 
+# plugin Searcher
 
-obj-y += assembler/Library_adapters.o
-obj-y += assembler/SeedingData_adapters.o
+obj-y += search-engine/Searcher_adapters.o
+obj-y += search-engine/Searcher.o
+obj-y += search-engine/SearchDirectory.o
+obj-y += search-engine/ContigSearchEntry.o
+obj-y += search-engine/ContigHit.o
+obj-y += search-engine/ColorSet.o
+obj-y += search-engine/VirtualKmerColor.o
 
-obj-y += assembler/SeedExtender.o assembler/SequencesIndexer.o \
-assembler/SequencesLoader.o \
- assembler/VerticesExtractor.o \
-assembler/ray_main.o assembler/ExtensionData.o 
-obj-y += assembler/KmerAcademyBuilder.o
-obj-y += assembler/EdgePurger.o assembler/EdgePurgerWorker.o
+# plugin CoverageGatherer
+
+obj-y += graph/CoverageGatherer.o 
+obj-y += graph/CoverageGatherer_adapters.o
+
+# plugin Partitioner
+
 obj-y += assembler/Partitioner.o
 obj-y += assembler/Partitioner_adapters.o
 
-obj-y += assembler/FusionWorker.o 
-obj-y += assembler/FusionTaskCreator.o
-obj-y += assembler/FusionTaskCreator_adapters.o
+# plugin MessageProcessor
 
+obj-y += communication/MessageProcessor_adapters.o
+obj-y += communication/MessageProcessor.o
+
+# plugin Amos
+
+obj-y += format/Amos_adapters.o
+obj-y += format/Amos.o
+
+# plugin NetworkTest
+
+obj-y += communication/NetworkTest_adapters.o
+obj-y += communication/NetworkTest.o
+
+
+# plugin JoinerTaskCreator
+
+obj-y += assembler/JoinerTaskCreator_adapters.o
 obj-y += assembler/JoinerWorker.o 
 obj-y += assembler/JoinerTaskCreator.o
-obj-y += assembler/JoinerTaskCreator_adapters.o
-
-# heuristics
-obj-y += heuristics/BubbleTool.o heuristics/Chooser.o heuristics/OpenAssemblerChooser.o \
- heuristics/TipWatchdog.o heuristics/NovaEngine.o
 
 
-######## </Application>
+# plugin MachineHelper
+
+obj-y += core/MachineHelper_adapters.o
+obj-y += core/MachineHelper.o
+
+
+# plugin SeedingData
+
+obj-y += structures/AssemblySeed.o
+obj-y += assembler/SeedingData_adapters.o
+obj-y += assembler/SeedingData.o 
+
+# plugin Library
+
+obj-y += assembler/Library_adapters.o
+obj-y += pairs/LibraryPeakFinder.o assembler/LibraryWorker.o 
+obj-y += assembler/Library.o 
+
+
+#######################################################
+
+MPICXX = mpicxx
+AR= ar
 
 #assume that we want to use Ray Platform shipped with Ray Application
 ifndef $(RAY_PLATFORM)
 	RAY_PLATFORM=../RayPlatform
 endif
 
-ifndef $(RAY_APPLICATION_SCRIPTS)
-	RAY_APPLICATION_SCRIPTS=./scripting
-endif
+all: TheRayGenomeAssembler.a
 
-ifndef $(RAY_APPLICATION)
-	RAY_APPLICATION=.
-endif
-
-all: libRayApplication.a
-
-libRayApplication.a: $(obj-y)
-	$(AR) rcs  libRayApplication.a $(obj-y)
+TheRayGenomeAssembler.a: $(obj-y)
+	$(AR) rcs  TheRayGenomeAssembler.a $(obj-y)
 
 # inference rule
 %.o: %.cpp
-	$(MPICXX) -c -o $@ $<  $(CXXFLAGS) -I$(RAY_PLATFORM) -I$(RAY_APPLICATION) -I$(RAY_APPLICATION_SCRIPTS)
+	$(MPICXX) -c -o $@ $<  $(CXXFLAGS) -I$(RAY_PLATFORM) -I. -I./scripting
 
 clean:
-	@rm -f libRayApplication.a $(obj-y)
+	@rm -f TheRayGenomeAssembler.a $(obj-y)
 	@echo CLEAN
 

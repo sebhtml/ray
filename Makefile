@@ -185,12 +185,12 @@ showOptions:
 	@touch showOptions
 	
 # how to make Ray
-Ray: showOptions RayPlatform/libRayPlatform.a code/libRayApplication.a
-	$(MPICXX) $(LDFLAGS)  code/libRayApplication.a RayPlatform/libRayPlatform.a -o $@
+Ray: showOptions RayPlatform/libRayPlatform.a code/TheRayGenomeAssembler.a
+	$(MPICXX) $(LDFLAGS)  code/TheRayGenomeAssembler.a RayPlatform/libRayPlatform.a -o $@
 	@echo $(PREFIX) > PREFIX
 	@echo $(TARGETS) > TARGETS
 
-code/libRayApplication.a:
+code/TheRayGenomeAssembler.a:
 	@echo "Building Ray Application"
 	@cd code; make MPICXX="$(MPICXX)" CXXFLAGS="$(CXXFLAGS)" -j $(J) ; cd ..
 
