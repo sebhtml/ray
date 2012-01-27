@@ -6,10 +6,15 @@ MPICXX = mpicxx
 
 # communication
 obj-y += communication/NetworkTest.o
+obj-y += communication/NetworkTest_adapters.o
+
 obj-y += communication/MessageProcessor.o
+obj-y += communication/MessageProcessor_adapters.o
 
 # search engine
 obj-y += search-engine/Searcher.o
+obj-y += search-engine/Searcher_adapters.o
+
 obj-y += search-engine/SearchDirectory.o
 obj-y += search-engine/ContigSearchEntry.o
 obj-y += search-engine/ContigHit.o
@@ -65,13 +70,17 @@ assembler/ReadFetcher.o assembler/LibraryWorker.o assembler/IndexerWorker.o  \
 assembler/SeedWorker.o assembler/ExtensionElement.o \
 assembler/DepthFirstSearchData.o assembler/SeedingData.o \
 assembler/FusionData.o assembler/Library.o assembler/Loader.o \
-assembler/SeedExtender.o assembler/SequencesIndexer.o \
+obj-y += assembler/Library_adapters.o
+
+obj-y += assembler/SeedExtender.o assembler/SequencesIndexer.o \
 assembler/SequencesLoader.o \
  assembler/VerticesExtractor.o \
 assembler/ray_main.o assembler/ExtensionData.o 
 obj-y += assembler/KmerAcademyBuilder.o
 obj-y += assembler/EdgePurger.o assembler/EdgePurgerWorker.o
 obj-y += assembler/Partitioner.o
+obj-y += assembler/Partitioner_adapters.o
+
 obj-y += assembler/FusionWorker.o 
 obj-y += assembler/FusionTaskCreator.o
 obj-y += assembler/JoinerWorker.o 
