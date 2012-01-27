@@ -22,13 +22,7 @@
 #include <assembler/Partitioner_adapters.h>
 #include <assembler/Partitioner.h>
 
-void Adapter_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES::setObject(Partitioner*object){
-	m_object=object;
-}
 
-void Adapter_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES::call(){
-	m_object->call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES();
-}
 
 void Adapter_RAY_MASTER_MODE_COUNT_FILE_ENTRIES::setObject(Partitioner*object){
 	m_object=object;

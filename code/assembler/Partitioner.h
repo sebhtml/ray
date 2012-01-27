@@ -42,7 +42,6 @@ using namespace std;
  */
 class Partitioner :  public CorePlugin{
 
-	Adapter_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES m_adapter_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES;
 	Adapter_RAY_MASTER_MODE_COUNT_FILE_ENTRIES m_adapter_RAY_MASTER_MODE_COUNT_FILE_ENTRIES;
 
 	SwitchMan*m_switchMan;

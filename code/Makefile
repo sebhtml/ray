@@ -30,6 +30,7 @@ format/Amos.o
 
 obj-y += core/Machine.o 
 obj-y += core/MachineHelper.o
+obj-y += core/MachineHelper_adapters.o
 obj-y += core/Parameters.o core/common_functions.o
 
 #compression
