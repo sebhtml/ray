@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C)  2011  Sébastien Boisvert
+    Copyright (C)  2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -38,10 +38,15 @@
 #include <set>
 using namespace std;
 
+#include <assembler/FusionTaskCreator_adapters.h>
+
 /**
  * The class creates and kills workers for the fusion of
  * similar paths */
-class FusionTaskCreator: public TaskCreator, public MasterModeHandler, public SlaveModeHandler, public CorePlugin {
+class FusionTaskCreator: public TaskCreator, public CorePlugin {
+
+	Adapter_RAY_SLAVE_MODE_FUSION m_adapter_RAY_SLAVE_MODE_FUSION;
+
 	VirtualCommunicator*m_virtualCommunicator;
 	RingAllocator*m_outboxAllocator;
 	Parameters*m_parameters;

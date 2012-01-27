@@ -87,6 +87,8 @@ obj-y += assembler/Partitioner_adapters.o
 
 obj-y += assembler/FusionWorker.o 
 obj-y += assembler/FusionTaskCreator.o
+obj-y += assembler/FusionTaskCreator_adapters.o
+
 obj-y += assembler/JoinerWorker.o 
 obj-y += assembler/JoinerTaskCreator.o
 
