@@ -25,7 +25,8 @@ obj-y += search-engine/VirtualKmerColor.o
 obj-y += format/ColorSpaceDecoder.o format/ColorSpaceLoader.o format/FastaLoader.o \
 format/FastqLoader.o format/SffLoader.o \
 format/Amos.o
-obj-y += Amos_adapters.o
+
+obj-y += format/Amos_adapters.o
 
 #core
 
@@ -74,7 +75,8 @@ obj-y += assembler/VertexMessenger.o \
 assembler/ReadFetcher.o assembler/LibraryWorker.o assembler/IndexerWorker.o  \
 assembler/SeedWorker.o assembler/ExtensionElement.o \
 assembler/DepthFirstSearchData.o assembler/SeedingData.o \
-assembler/FusionData.o assembler/Library.o assembler/Loader.o \
+assembler/FusionData.o assembler/Library.o assembler/Loader.o 
+
 obj-y += assembler/Library_adapters.o
 obj-y += assembler/SeedingData_adapters.o
 
