@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2011  Sébastien Boisvert
+    Copyright (C) 2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -31,6 +31,8 @@
 #include <handlers/MasterModeHandler.h>
 #include <core/ComputeCore.h>
 
+#include <assembler/Partitioner_adapters.h>
+
 #include <map>
 using namespace std;
 
@@ -38,7 +40,11 @@ using namespace std;
  * This class counts the number of entries in each input file in parallel 
  * \author Sébastien Boisvert
  */
-class Partitioner : public SlaveModeHandler, public MasterModeHandler, public CorePlugin{
+class Partitioner :  public CorePlugin{
+
+	Adapter_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES m_adapter_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES;
+	Adapter_RAY_MASTER_MODE_COUNT_FILE_ENTRIES m_adapter_RAY_MASTER_MODE_COUNT_FILE_ENTRIES;
+
 	SwitchMan*m_switchMan;
 
 	/** the loader */
