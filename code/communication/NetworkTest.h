@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2011  Sébastien Boisvert
+    Copyright (C) 2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -34,6 +34,8 @@
 #include <map>
 using namespace std;
 
+#include <communication/NetworkTest_adapters.h>
+
 /**
  * This class tests the network
  * Tested elements:
@@ -48,7 +50,10 @@ using namespace std;
  *          - slave and master modes.
  * \author Sébastien Boisvert
  */
-class NetworkTest : public SlaveModeHandler, public MasterModeHandler, public CorePlugin {
+class NetworkTest :  public CorePlugin {
+
+	Adapter_RAY_SLAVE_MODE_TEST_NETWORK m_adapter_RAY_SLAVE_MODE_TEST_NETWORK;
+	Adapter_RAY_MASTER_MODE_TEST_NETWORK m_adapter_RAY_MASTER_MODE_TEST_NETWORK;
 
 	SwitchMan*m_switchMan;
 

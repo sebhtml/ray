@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2011  Sébastien Boisvert
+    Copyright (C) 2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -308,6 +308,12 @@ void NetworkTest::setSwitchMan(SwitchMan*a){
 }
 
 void NetworkTest::registerPlugin(ComputeCore*core){
-	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_TEST_NETWORK, this);
-	core->setMasterModeObjectHandler(RAY_MASTER_MODE_TEST_NETWORK, this);
+
+	m_adapter_RAY_SLAVE_MODE_TEST_NETWORK.setObject(this);
+	core->setSlaveModeObjectHandler(RAY_SLAVE_MODE_TEST_NETWORK, &m_adapter_RAY_SLAVE_MODE_TEST_NETWORK);
+
+	m_adapter_RAY_MASTER_MODE_TEST_NETWORK.setObject(this);
+	core->setMasterModeObjectHandler(RAY_MASTER_MODE_TEST_NETWORK, &m_adapter_RAY_MASTER_MODE_TEST_NETWORK);
 }
+
+
