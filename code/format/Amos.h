@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2011  Sébastien Boisvert
+    Copyright (C) 2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -29,8 +29,6 @@
 #include <scaffolder/Scaffolder.h>
 #include <assembler/ReadFetcher.h>
 #include <communication/VirtualCommunicator.h>
-#include <handlers/SlaveModeHandler.h>
-#include <handlers/MasterModeHandler.h>
 #include <core/ComputeCore.h>
 
 #include <stdio.h>
@@ -38,12 +36,18 @@
 #include <vector>
 using namespace std;
 
+#include <format/Amos_adapters.h>
+
 /**
  * AMOS specification is available : http://sourceforge.net/apps/mediawiki/amos/index.php?title=AMOS
  * \see http://sourceforge.net/apps/mediawiki/amos/index.php?title=Message_Types
  * \author Sébastien Boisvert
  */
-class Amos : public SlaveModeHandler, public MasterModeHandler, public CorePlugin{
+class Amos :  public CorePlugin{
+
+	Adapter_RAY_SLAVE_MODE_AMOS m_adapter_RAY_SLAVE_MODE_AMOS;
+	Adapter_RAY_MASTER_MODE_AMOS m_adapter_RAY_MASTER_MODE_AMOS;
+
 	VirtualCommunicator*m_virtualCommunicator;
 	StaticVector*m_inbox;
 	uint64_t m_workerId;

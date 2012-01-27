@@ -25,6 +25,7 @@ obj-y += search-engine/VirtualKmerColor.o
 obj-y += format/ColorSpaceDecoder.o format/ColorSpaceLoader.o format/FastaLoader.o \
 format/FastqLoader.o format/SffLoader.o \
 format/Amos.o
+obj-y += Amos_adapters.o
 
 #core
 
