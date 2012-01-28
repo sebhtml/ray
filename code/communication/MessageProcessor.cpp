@@ -335,11 +335,6 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT(Message*message
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_RAY_MPI_TAG_BUILD_GRAPH(Message*message){
-	m_verticesExtractor->constructor(m_parameters->getSize(),m_parameters,m_subgraph);
-	*m_mode_send_vertices_sequence_id=0;
-}
-
 /*
  * <--vertex--><--pointer--><--numberOfMates--><--mates -->
  */
@@ -2337,10 +2332,6 @@ void MessageProcessor::registerPlugin(ComputeCore*core){
 	core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT);
 	m_adapter_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT, &m_adapter_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT);
-
-	core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_BUILD_GRAPH);
-	m_adapter_RAY_MPI_TAG_BUILD_GRAPH.setObject(this);
-	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_BUILD_GRAPH, &m_adapter_RAY_MPI_TAG_BUILD_GRAPH);
 
 	core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_VERTEX_READS_FROM_LIST);
 	m_adapter_RAY_MPI_TAG_VERTEX_READS_FROM_LIST.setObject(this);

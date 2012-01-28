@@ -1,15 +1,23 @@
-
+# author Sébastien Boisvert
+#
+# the code is distributed in a small Ray core that is built on top
+# of the Ray platform.
+#
+# Then, plugins (interface CorePlugin in the Ray Platform)
+# are simply added onto the core (class ComputeCore in the
+# Ray Platform).
 
 # core 
 
-obj-y += assembler/ray_main.o 
-obj-y += core/Machine.o 
+obj-y += assembler/ray_main.o core/Machine.o 
 obj-y += core/Parameters.o core/common_functions.o
 
+# plugin VerticesExtractor
+
+obj-y += assembler/VerticesExtractor_adapters.o
+obj-y += assembler/VerticesExtractor.o 
 obj-y += graph/GridTable.o graph/GridTableIterator.o
 obj-y += structures/Vertex.o
-obj-y += assembler/VerticesExtractor.o 
-
 
 # plugin EdgePurger
 

@@ -112,15 +112,6 @@ void Adapter_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT::call(Message*message){
 }
 
 
-void Adapter_RAY_MPI_TAG_BUILD_GRAPH::setObject(MessageProcessor*object){
-	m_object=object;
-}
-
-void Adapter_RAY_MPI_TAG_BUILD_GRAPH::call(Message*message){
-	m_object->call_RAY_MPI_TAG_BUILD_GRAPH(message);
-}
-
-
 void Adapter_RAY_MPI_TAG_VERTEX_READS_FROM_LIST::setObject(MessageProcessor*object){
 	m_object=object;
 }

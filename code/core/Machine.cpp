@@ -364,6 +364,9 @@ void Machine::start(){
 	m_kmerAcademyBuilder.setProfiler(m_profiler);
 	m_edgePurger.setProfiler(m_profiler);
 
+	m_verticesExtractor.constructor(m_parameters.getSize(),&m_parameters,&m_subgraph,
+		m_outbox,m_outboxAllocator,&m_myReads);
+
 	ostringstream prefixFull;
 	prefixFull<<m_parameters.getMemoryPrefix()<<"_Main";
 	int chunkSize=16777216;
@@ -798,26 +801,38 @@ void Machine::showRayVersion(MessagesHandler*messagesHandler,bool fullReport){
 
 void Machine::registerPlugins(){
 	cout<<endl;
-	m_computeCore.registerPlugin(&m_networkTest);
-	m_computeCore.registerPlugin(&m_partitioner);
-	m_computeCore.registerPlugin(&m_sl);
-	m_computeCore.registerPlugin(&m_kmerAcademyBuilder);
-	m_computeCore.registerPlugin(&m_edgePurger);
-	m_computeCore.registerPlugin(&m_coverageGatherer);
-	m_computeCore.registerPlugin(&m_si);
+
 	m_computeCore.registerPlugin(&m_mp);
 	m_computeCore.registerPlugin(&m_helper);
-	m_computeCore.registerPlugin(&m_library);
+
+	m_computeCore.registerPlugin(&m_networkTest);
+
+	m_computeCore.registerPlugin(&m_partitioner);
+	m_computeCore.registerPlugin(&m_sl);
+
+	m_computeCore.registerPlugin(&m_kmerAcademyBuilder);
+	m_computeCore.registerPlugin(&m_coverageGatherer);
+	m_computeCore.registerPlugin(&m_verticesExtractor);
+	m_computeCore.registerPlugin(&m_edgePurger);
+
+	m_computeCore.registerPlugin(&m_si);
 	m_computeCore.registerPlugin(m_seedingData);
+	m_computeCore.registerPlugin(&m_library);
+
 	m_computeCore.registerPlugin(&m_seedExtender);
+
 	m_computeCore.registerPlugin(m_fusionData);
 	m_computeCore.registerPlugin(&m_fusionTaskCreator);
 	m_computeCore.registerPlugin(&m_joinerTaskCreator);
-	m_computeCore.registerPlugin(&m_scaffolder);
+
 	m_computeCore.registerPlugin(&m_amos);
+	m_computeCore.registerPlugin(&m_scaffolder);
+
 	m_computeCore.registerPlugin(&m_searcher);
 
 	cout<<endl;
+	
+	// write a report about plugins
 
 	if(m_parameters.getRank()==MASTER_RANK){
 		ostringstream directory;

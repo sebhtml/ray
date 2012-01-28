@@ -350,25 +350,6 @@ void MachineHelper::call_RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING(){
 	m_switchMan->setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
 }
 
-void MachineHelper::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
-
-	MACRO_COLLECT_PROFILING_INFORMATION();
-
-	// TODO: initialise these in the constructor
-	m_verticesExtractor->call_RAY_SLAVE_MODE_EXTRACT_VERTICES(		m_mode_send_vertices_sequence_id,
-			m_myReads,
-			&m_reverseComplementVertex,
-			getRank(),
-			m_outbox,
-			m_parameters->getWordSize(),
-			getSize(),
-			m_outboxAllocator,
-			m_switchMan->getSlaveModePointer()
-		);
-
-	MACRO_COLLECT_PROFILING_INFORMATION();
-}
-
 void MachineHelper::call_RAY_MASTER_MODE_PURGE_NULL_EDGES(){
 	m_switchMan->setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
 	m_timePrinter->printElapsedTime("Graph construction");
@@ -1045,10 +1026,6 @@ void MachineHelper::registerPlugin(ComputeCore*core){
 	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
 	m_adapter_RAY_MASTER_MODE_KILL_ALL_MPI_RANKS.setObject(this);
 	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_KILL_ALL_MPI_RANKS, &m_adapter_RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
-
-	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_EXTRACT_VERTICES);
-	m_adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES.setObject(this);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_EXTRACT_VERTICES, &m_adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES);
 
 	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_WRITE_KMERS);
 	m_adapter_RAY_SLAVE_MODE_WRITE_KMERS.setObject(this);

@@ -31,21 +31,12 @@
 #include <core/common_functions.h>
 #include <memory/malloc_types.h>
 
-void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(int*m_mode_send_vertices_sequence_id,
-				ArrayOfReads*m_myReads,
-				bool*m_reverseComplementVertex,
-				int rank,
-				StaticVector*m_outbox,
-				int wordSize,
-				int size,
-				RingAllocator*m_outboxAllocator,
-				int*m_mode
-				){
+void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
 	if(this->m_outbox==NULL){
-		m_rank=rank;
+		m_rank=m_parameters->getRank();
 		this->m_mode=m_mode;
 		this->m_outbox=m_outbox;
 		this->m_outboxAllocator=m_outboxAllocator;
@@ -59,7 +50,7 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(int*m_mode_send_ver
 		m_checkedCheckpoint=true;
 		if(m_parameters->hasCheckpoint("GenomeGraph")){
 			cout<<"Rank "<<m_parameters->getRank()<<": checkpoint GenomeGraph exists, not extracting vertices."<<endl;
-			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_VERTICES_DISTRIBUTED,rank);
+			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_VERTICES_DISTRIBUTED,m_parameters->getRank());
 			m_outbox->push_back(aMessage);
 			m_finished=true;
 			return;
@@ -73,26 +64,26 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(int*m_mode_send_ver
 		return;
 	}
 
-	if(*m_mode_send_vertices_sequence_id%10000==0 &&m_mode_send_vertices_sequence_id_position==0
-	&&*m_mode_send_vertices_sequence_id<(int)m_myReads->size()){
+	if(m_mode_send_vertices_sequence_id%10000==0 &&m_mode_send_vertices_sequence_id_position==0
+	&&m_mode_send_vertices_sequence_id<(int)m_myReads->size()){
 		string reverse="";
-		if(*m_reverseComplementVertex==true){
+		if(m_reverseComplementVertex==true){
 			reverse="(reverse complement) ";
 		}
-		printf("Rank %i is computing vertices & edges %s[%i/%i]\n",rank,reverse.c_str(),(int)*m_mode_send_vertices_sequence_id+1,(int)m_myReads->size());
+		printf("Rank %i is computing vertices & edges %s[%i/%i]\n",m_parameters->getRank(),reverse.c_str(),(int)m_mode_send_vertices_sequence_id+1,(int)m_myReads->size());
 		fflush(stdout);
 
-		m_derivative.addX(*m_mode_send_vertices_sequence_id);
+		m_derivative.addX(m_mode_send_vertices_sequence_id);
 		m_derivative.printStatus(SLAVE_MODES[RAY_SLAVE_MODE_EXTRACT_VERTICES],RAY_SLAVE_MODE_EXTRACT_VERTICES);
 		m_derivative.printEstimatedTime(m_myReads->size());
 	}
 
-	if(*m_mode_send_vertices_sequence_id>(int)m_myReads->size()-1){
+	if(m_mode_send_vertices_sequence_id>(int)m_myReads->size()-1){
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
 		// flush data
-		flushAll(m_outboxAllocator,m_outbox,rank);
+		flushAll(m_outboxAllocator,m_outbox,m_parameters->getRank());
 		if(m_pendingMessages==0){
 			#ifdef ASSERT
 			assert(m_bufferedData.isEmpty());
@@ -100,10 +91,10 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(int*m_mode_send_ver
 			assert(m_bufferedDataForOutgoingEdges.isEmpty());
 			#endif
 
-			Message aMessage(NULL,0, MASTER_RANK, RAY_MPI_TAG_VERTICES_DISTRIBUTED,rank);
+			Message aMessage(NULL,0, MASTER_RANK, RAY_MPI_TAG_VERTICES_DISTRIBUTED,m_parameters->getRank());
 			m_outbox->push_back(aMessage);
 			m_finished=true;
-			printf("Rank %i is computing vertices & edges [%i/%i] (completed)\n",rank,(int)*m_mode_send_vertices_sequence_id,(int)m_myReads->size());
+			printf("Rank %i is computing vertices & edges [%i/%i] (completed)\n",m_parameters->getRank(),(int)m_mode_send_vertices_sequence_id,(int)m_myReads->size());
 			fflush(stdout);
 			m_bufferedData.showStatistics(m_parameters->getRank());
 			m_bufferedDataForIngoingEdges.showStatistics(m_parameters->getRank());
@@ -116,15 +107,15 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(int*m_mode_send_ver
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
 		if(m_mode_send_vertices_sequence_id_position==0){
-			(*m_myReads)[(*m_mode_send_vertices_sequence_id)]->getSeq(m_readSequence,m_parameters->getColorSpaceMode(),false);
+			(*m_myReads)[(m_mode_send_vertices_sequence_id)]->getSeq(m_readSequence,m_parameters->getColorSpaceMode(),false);
 		
 			//cout<<"DEBUG Read="<<*m_mode_send_vertices_sequence_id<<" color="<<m_parameters->getColorSpaceMode()<<" Seq= "<<m_readSequence<<endl;
 		}
 		int len=strlen(m_readSequence);
 
-		if(len<wordSize){
+		if(len<m_parameters->getWordSize()){
 			m_hasPreviousVertex=false;
-			(*m_mode_send_vertices_sequence_id)++;
+			(m_mode_send_vertices_sequence_id)++;
 			(m_mode_send_vertices_sequence_id_position)=0;
 			return;
 		}
@@ -132,15 +123,15 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(int*m_mode_send_ver
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
 		char memory[1000];
-		int lll=len-wordSize+1;
+		int lll=len-m_parameters->getWordSize()+1;
 		
 		#ifdef ASSERT
 		assert(m_readSequence!=NULL);
 		#endif
 
 		int p=(m_mode_send_vertices_sequence_id_position);
-		memcpy(memory,m_readSequence+p,wordSize);
-		memory[wordSize]='\0';
+		memcpy(memory,m_readSequence+p,m_parameters->getWordSize());
+		memory[m_parameters->getWordSize()]='\0';
 
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
@@ -159,7 +150,8 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(int*m_mode_send_ver
 				m_bufferedData.addAt(rankToFlush,a.getU64(i));
 			}
 
-			if(m_bufferedData.flush(rankToFlush,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_bufferedData.flush(rankToFlush,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,
+				m_parameters->getRank(),false)){
 				m_pendingMessages++;
 			}
 
@@ -179,12 +171,13 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(int*m_mode_send_ver
 				}
 
 				if(m_bufferedDataForOutgoingEdges.needsFlushing(outgoingRank,2*KMER_U64_ARRAY_SIZE)){
-					if(m_bufferedData.flush(outgoingRank,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true)){
+					if(m_bufferedData.flush(outgoingRank,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,
+						m_parameters->getRank(),true)){
 						m_pendingMessages++;
 					}
 				}
 
-				if(m_bufferedDataForOutgoingEdges.flush(outgoingRank,2*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,rank,false)){
+				if(m_bufferedDataForOutgoingEdges.flush(outgoingRank,2*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,m_parameters->getRank(),false)){
 					m_pendingMessages++;
 				}
 
@@ -198,12 +191,12 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(int*m_mode_send_ver
 				}
 
 				if(m_bufferedDataForIngoingEdges.needsFlushing(ingoingRank,2*KMER_U64_ARRAY_SIZE)){
-					if(m_bufferedData.flush(ingoingRank,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true)){
+					if(m_bufferedData.flush(ingoingRank,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,m_parameters->getRank(),true)){
 						m_pendingMessages++;
 					}
 				}
 
-				if(m_bufferedDataForIngoingEdges.flush(ingoingRank,2*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,rank,false)){
+				if(m_bufferedDataForIngoingEdges.flush(ingoingRank,2*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,m_parameters->getRank(),false)){
 					m_pendingMessages++;
 				}
 
@@ -211,14 +204,14 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(int*m_mode_send_ver
 			}
 
 			// reverse complement
-			Kmer b=a.complementVertex(wordSize,m_parameters->getColorSpaceMode());
+			Kmer b=a.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 
 			rankToFlush=m_parameters->_vertexRank(&b);
 			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 				m_bufferedData.addAt(rankToFlush,b.getU64(i));
 			}
 
-			if(m_bufferedData.flush(rankToFlush,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_bufferedData.flush(rankToFlush,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,m_parameters->getRank(),false)){
 				m_pendingMessages++;
 			}
 
@@ -236,12 +229,12 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(int*m_mode_send_ver
 				MACRO_COLLECT_PROFILING_INFORMATION();
 
 				if(m_bufferedDataForOutgoingEdges.needsFlushing(outgoingRank,2*KMER_U64_ARRAY_SIZE)){
-					if(m_bufferedData.flush(outgoingRank,1*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true)){
+					if(m_bufferedData.flush(outgoingRank,1*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,m_parameters->getRank(),true)){
 						m_pendingMessages++;
 					}
 				}
 
-				if(m_bufferedDataForOutgoingEdges.flush(outgoingRank,2*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,rank,false)){
+				if(m_bufferedDataForOutgoingEdges.flush(outgoingRank,2*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,m_parameters->getRank(),false)){
 					m_pendingMessages++;
 				}
 
@@ -259,12 +252,12 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(int*m_mode_send_ver
 				MACRO_COLLECT_PROFILING_INFORMATION();
 
 				if(m_bufferedDataForIngoingEdges.needsFlushing(ingoingRank,2*KMER_U64_ARRAY_SIZE)){
-					if(m_bufferedData.flush(ingoingRank,1*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank,true)){
+					if(m_bufferedData.flush(ingoingRank,1*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,m_parameters->getRank(),true)){
 						m_pendingMessages++;
 					}
 				}
 
-				if(m_bufferedDataForIngoingEdges.flush(ingoingRank,2*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,rank,false)){
+				if(m_bufferedDataForIngoingEdges.flush(ingoingRank,2*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,m_parameters->getRank(),false)){
 					m_pendingMessages++;
 				}
 				MACRO_COLLECT_PROFILING_INFORMATION();
@@ -283,20 +276,24 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(int*m_mode_send_ver
 		(m_mode_send_vertices_sequence_id_position++);
 		if((m_mode_send_vertices_sequence_id_position)==lll){
 			m_hasPreviousVertex=false;
-			(*m_mode_send_vertices_sequence_id)++;
+			(m_mode_send_vertices_sequence_id)++;
 			(m_mode_send_vertices_sequence_id_position)=0;
 		}
 	}
 	MACRO_COLLECT_PROFILING_INFORMATION();
 }
 
-void VerticesExtractor::constructor(int size,Parameters*parameters,GridTable*graph){
+void VerticesExtractor::constructor(int size,Parameters*parameters,GridTable*graph,
+	StaticVector*outbox,RingAllocator*outboxAllocator,ArrayOfReads*reads){
+
+	m_myReads=reads;
 	m_checkedCheckpoint=false;
 	m_subgraph=graph;
 	m_parameters=parameters;
 	m_finished=false;
 	m_distributionIsCompleted=false;
-	m_outbox=NULL;
+	m_outbox=outbox;
+	m_outboxAllocator=outboxAllocator;
 	m_mode_send_vertices_sequence_id_position=0;
 	m_hasPreviousVertex=false;
 	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_VERTEX_EXTRACTOR_BUFFERS,m_parameters->showMemoryAllocations(),KMER_U64_ARRAY_SIZE);
@@ -316,15 +313,15 @@ void VerticesExtractor::setReadiness(){
 
 void VerticesExtractor::flushAll(RingAllocator*m_outboxAllocator,StaticVector*m_outbox,int rank){
 	if(!m_bufferedData.isEmpty()){
-		m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,rank);
+		m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,m_parameters->getRank());
 		return;
 	}
 	if(!m_bufferedDataForOutgoingEdges.isEmpty()){
-		m_pendingMessages+=m_bufferedDataForOutgoingEdges.flushAll(RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,rank);
+		m_pendingMessages+=m_bufferedDataForOutgoingEdges.flushAll(RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,m_parameters->getRank());
 		return;
 	}
 	if(!m_bufferedDataForIngoingEdges.isEmpty()){
-		m_pendingMessages+=m_bufferedDataForIngoingEdges.flushAll(RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,rank);
+		m_pendingMessages+=m_bufferedDataForIngoingEdges.flushAll(RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,m_parameters->getRank());
 		return;
 	}
 }
@@ -362,4 +359,18 @@ void VerticesExtractor::setDistributionAsCompleted(){
 
 void VerticesExtractor::setProfiler(Profiler*profiler){
 	m_profiler = profiler;
+}
+
+void VerticesExtractor::registerPlugin(ComputeCore*core){
+	PluginHandle plugin=core->allocatePluginHandle();
+
+	core->beginPluginRegistration(plugin);
+	core->setPluginName(plugin,"VerticesExtractor");
+
+
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_EXTRACT_VERTICES);
+	m_adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES.setObject(this);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_EXTRACT_VERTICES, &m_adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES);
+
+	core->endPluginRegistration(plugin);
 }

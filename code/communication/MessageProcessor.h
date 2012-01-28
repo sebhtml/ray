@@ -79,7 +79,6 @@ class MessageProcessor :  public CorePlugin {
 	Adapter_RAY_MPI_TAG_VERTEX_READS m_adapter_RAY_MPI_TAG_VERTEX_READS;
 	Adapter_RAY_MPI_TAG_VERTEX_INFO m_adapter_RAY_MPI_TAG_VERTEX_INFO;
 	Adapter_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT m_adapter_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
-	Adapter_RAY_MPI_TAG_BUILD_GRAPH m_adapter_RAY_MPI_TAG_BUILD_GRAPH;
 	Adapter_RAY_MPI_TAG_VERTEX_READS_FROM_LIST m_adapter_RAY_MPI_TAG_VERTEX_READS_FROM_LIST;
 	Adapter_RAY_MPI_TAG_START_INDEXING_SEQUENCES m_adapter_RAY_MPI_TAG_START_INDEXING_SEQUENCES;
 	Adapter_RAY_MPI_TAG_SEQUENCES_READY m_adapter_RAY_MPI_TAG_SEQUENCES_READY;
@@ -336,7 +335,6 @@ SequencesIndexer*m_si
 	void call_RAY_MPI_TAG_VERTEX_READS(Message*message);
 	void call_RAY_MPI_TAG_VERTEX_INFO(Message*message);
 	void call_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT(Message*message);
-	void call_RAY_MPI_TAG_BUILD_GRAPH(Message*message);
 	void call_RAY_MPI_TAG_VERTEX_READS_FROM_LIST(Message*message);
 	void call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message);
 	void call_RAY_MPI_TAG_SEQUENCES_READY(Message*message);

@@ -79,9 +79,13 @@
 using namespace std;
 
 /**
- * This class builds handler objects
- * and sets the handlers using the API of
+ * This class builds plugin objects
+ * and register them using the API of
  * ComputeCore.
+ *
+ * Each plugin will register things with the
+ * core.
+ *
  * \author Sébastien Boisvert
  */
 class Machine{

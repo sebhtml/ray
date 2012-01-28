@@ -32,8 +32,11 @@
 #include <memory/RingAllocator.h>
 #include <structures/Read.h>
 #include <profiling/Derivative.h>
-#include <set>
 #include <profiling/Profiler.h>
+#include <core/ComputeCore.h>
+#include <assembler/VerticesExtractor_adapters.h>
+
+#include <set>
 #include <vector>
 using namespace std;
 
@@ -45,7 +48,9 @@ using namespace std;
  * their respective owners.
  * \author Sébastien Boisvert
  */
-class VerticesExtractor{
+class VerticesExtractor: public CorePlugin{
+	Adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES m_adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES;
+
 	Derivative m_derivative;
 
 	Profiler*m_profiler;
@@ -62,6 +67,7 @@ class VerticesExtractor{
 	RingAllocator*m_outboxAllocator;
 	StaticVector*m_outbox;
 	int*m_mode;
+	int m_mode_send_vertices_sequence_id;
 	int m_mode_send_vertices_sequence_id_position;
 
 	bool m_hasPreviousVertex;
@@ -73,23 +79,20 @@ class VerticesExtractor{
 
 	int m_pendingMessages;
 
+	ArrayOfReads*m_myReads;
 	BufferedData m_bufferedData;
 	int m_size;
+	
+/** useless state, legacy code **/
+	bool m_reverseComplementVertex;
 
 	bool m_finished;
 public:
 
-	void constructor(int size,Parameters*parameters,GridTable*graph);
-	void call_RAY_SLAVE_MODE_EXTRACT_VERTICES(int*m_mode_send_vertices_sequence_id,
-				ArrayOfReads*m_myReads,
-				bool*m_reverseComplementVertex,
-				int rank,
-				StaticVector*m_outbox,
-				int m_wordSize,
-				int size,
-				RingAllocator*m_outboxAllocator,
-				int*m_mode
-			);
+	void constructor(int size,Parameters*parameters,GridTable*graph,
+StaticVector*outbox,RingAllocator*outboxAllocator,ArrayOfReads*myReads
+);
+	void call_RAY_SLAVE_MODE_EXTRACT_VERTICES();
 	void setReadiness();
 	
 	bool finished();
@@ -105,6 +108,8 @@ public:
 	void setDistributionAsCompleted();
 
 	void setProfiler(Profiler*profiler);
+
+	void registerPlugin(ComputeCore*core);
 };
 
 #endif
