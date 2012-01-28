@@ -28,7 +28,7 @@ using namespace std;
 
 void TickLogger::logSlaveTick(SlaveMode i){
 	#ifdef ASSERT
-	assert(i!=RAY_SLAVE_MODE_DUMMY);
+	assert(i!=INVALID_HANDLE);
 	#endif
 
 	// this is the same as the last one
@@ -36,7 +36,7 @@ void TickLogger::logSlaveTick(SlaveMode i){
 		m_slaveCount++;
 
 	// this case occurs once during the first call
-	}else if(m_lastSlaveMode==RAY_SLAVE_MODE_DUMMY){
+	}else if(m_lastSlaveMode==INVALID_HANDLE){
 		// start the new entry
 		m_lastSlaveMode=i;
 		m_slaveCount=1;
@@ -94,7 +94,7 @@ void TickLogger::printSlaveTicks(ofstream*file){
 	m_slaveCounts.push_back(m_slaveCount);
 	
 	// reset the entry
-	m_lastSlaveMode=RAY_SLAVE_MODE_DUMMY;
+	m_lastSlaveMode=INVALID_HANDLE;
 	m_slaveCount=0;
 
 	// print stuff
@@ -131,7 +131,7 @@ void TickLogger::printMasterTicks(ofstream*file){
 	m_masterCounts.push_back(m_masterCount);
 
 	// reset the entry
-	m_lastMasterMode=RAY_MASTER_MODE_DUMMY;
+	m_lastMasterMode=INVALID_HANDLE;
 	m_masterCount=0;
 
 	// print stuff
@@ -161,8 +161,8 @@ void TickLogger::printMasterTicks(ofstream*file){
 }
 
 TickLogger::TickLogger(){
-	m_lastSlaveMode=RAY_SLAVE_MODE_DUMMY;
-	m_lastMasterMode=RAY_MASTER_MODE_DUMMY;
+	m_lastSlaveMode=INVALID_HANDLE;
+	m_lastMasterMode=INVALID_HANDLE;
 	m_slaveCount=0;
 	m_masterCount=0;
 }

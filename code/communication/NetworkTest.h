@@ -52,6 +52,8 @@ using namespace std;
  */
 class NetworkTest :  public CorePlugin {
 
+	SlaveMode RAY_SLAVE_MODE_TEST_NETWORK;
+
 	Adapter_RAY_SLAVE_MODE_TEST_NETWORK m_adapter_RAY_SLAVE_MODE_TEST_NETWORK;
 	Adapter_RAY_MASTER_MODE_TEST_NETWORK m_adapter_RAY_MASTER_MODE_TEST_NETWORK;
 
@@ -134,6 +136,7 @@ public:
 	void setSwitchMan(SwitchMan*a);
 
 	void registerPlugin(ComputeCore*core);
+	void resolveSymbols(ComputeCore*core);
 };
 
 #endif

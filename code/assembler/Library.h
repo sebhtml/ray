@@ -51,6 +51,10 @@ using namespace std;
  */
 class Library :  public CorePlugin{
 
+	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
+	SlaveMode RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION;
+	SlaveMode RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES;
+	
 	Adapter_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION m_adapter_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION;
 	Adapter_RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES m_adapter_RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES;
 	Adapter_RAY_MASTER_MODE_UPDATE_DISTANCES m_adapter_RAY_MASTER_MODE_UPDATE_DISTANCES;
@@ -114,6 +118,7 @@ Parameters*m_parameters,SeedingData*m_seedingData,StaticVector*inbox,VirtualComm
 );
 
 	void registerPlugin(ComputeCore*core);
+	void resolveSymbols(ComputeCore*core);
 };
 
 #endif

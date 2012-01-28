@@ -39,6 +39,11 @@ using namespace std;
  */
 class CoverageGatherer : public CorePlugin{
 
+	
+
+	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
+	SlaveMode RAY_SLAVE_MODE_SEND_DISTRIBUTION;
+
 	Adapter_RAY_SLAVE_MODE_SEND_DISTRIBUTION m_adapter_RAY_SLAVE_MODE_SEND_DISTRIBUTION;
 
 	map<int,uint64_t> m_distributionOfCoverage;
@@ -57,6 +62,8 @@ public:
 	void writeKmers();
 
 	void registerPlugin(ComputeCore*core);
+
+	void resolveSymbols(ComputeCore*core);
 };
 
 #endif

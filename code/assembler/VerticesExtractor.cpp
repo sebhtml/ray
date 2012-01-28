@@ -362,15 +362,19 @@ void VerticesExtractor::setProfiler(Profiler*profiler){
 }
 
 void VerticesExtractor::registerPlugin(ComputeCore*core){
-	PluginHandle plugin=core->allocatePluginHandle();
+	m_plugin=core->allocatePluginHandle();
 
-	core->beginPluginRegistration(plugin);
+	PluginHandle plugin=m_plugin;
+
 	core->setPluginName(plugin,"VerticesExtractor");
 
-
-	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_EXTRACT_VERTICES);
+	RAY_SLAVE_MODE_EXTRACT_VERTICES=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_EXTRACT_VERTICES);
 	m_adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_EXTRACT_VERTICES, &m_adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES);
+	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_EXTRACT_VERTICES,"RAY_SLAVE_MODE_EXTRACT_VERTICES");
 
-	core->endPluginRegistration(plugin);
+}
+
+void VerticesExtractor::resolveSymbols(ComputeCore*core){
+	RAY_SLAVE_MODE_EXTRACT_VERTICES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_EXTRACT_VERTICES");
 }

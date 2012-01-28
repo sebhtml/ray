@@ -2181,14 +2181,17 @@ void SeedExtender::skipSeed(vector<AssemblySeed>*seeds){
 
 void SeedExtender::registerPlugin(ComputeCore*core){
 	PluginHandle plugin=core->allocatePluginHandle();
-
-	core->beginPluginRegistration(plugin);
+	m_plugin=plugin;
 
 	core->setPluginName(plugin,"SeedExtender");
 
-	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_EXTENSION);
+	RAY_SLAVE_MODE_EXTENSION=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_EXTENSION);
 	m_adapter_RAY_SLAVE_MODE_EXTENSION.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_EXTENSION,&m_adapter_RAY_SLAVE_MODE_EXTENSION);
+	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_EXTENSION,"RAY_SLAVE_MODE_EXTENSION");
+}
 
-	core->endPluginRegistration(plugin);
+void SeedExtender::resolveSymbols(ComputeCore*core){
+	RAY_SLAVE_MODE_EXTENSION=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_EXTENSION");
+	RAY_SLAVE_MODE_DO_NOTHING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DO_NOTHING");
 }

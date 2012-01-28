@@ -26,10 +26,13 @@
 #include <communication/Message.h>
 #include <core/slave_modes.h>
 #include <core/master_modes.h>
+#include <plugins/CorePlugin.h>
 
 #include <map>
 #include <vector>
 using namespace std;
+
+class ComputeCore;
 
 /**
  * the switchman controls the workflow on all ranks
@@ -37,7 +40,9 @@ using namespace std;
  * \author Sébastien Boisvert
  * \date 2012-01-02
  */
-class SwitchMan{
+class SwitchMan: public CorePlugin{
+	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
+
 /** the current slave mode of the rank */
 	SlaveMode m_slaveMode;
 
@@ -151,6 +156,9 @@ public:
 	Rank getRank();
 
 	int getSize();
+
+	void registerPlugin(ComputeCore*core);
+	void resolveSymbols(ComputeCore*core);
 };
 
 #endif

@@ -45,4 +45,6 @@ typedef int Distance;
 
 typedef uint64_t PluginHandle;
 
+#define INVALID_HANDLE -1
+
 #endif

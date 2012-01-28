@@ -43,6 +43,9 @@ using namespace std;
  * similar paths */
 class JoinerTaskCreator: public TaskCreator,  public CorePlugin{
 
+	SlaveMode RAY_SLAVE_MODE_FINISH_FUSIONS;
+	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
+
 	Adapter_RAY_SLAVE_MODE_FINISH_FUSIONS m_adapter_RAY_SLAVE_MODE_FINISH_FUSIONS;
 
 	VirtualCommunicator*m_virtualCommunicator;
@@ -89,6 +92,7 @@ public:
 	void destroyWorker(Worker*worker);
 
 	void registerPlugin(ComputeCore*core);
+	void resolveSymbols(ComputeCore*core);
 };
 
 #endif

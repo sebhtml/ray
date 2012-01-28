@@ -263,9 +263,6 @@ class Machine{
 
 	int getRank();
 
-	void configureVirtualCommunicator(VirtualCommunicator*virtualCommunicator);
-	void configureSwitchMan(SwitchMan*switchMan);
-
 	void showRayVersion(MessagesHandler*messagesHandler,bool fullReport);
 
 	void showRayVersionShort();

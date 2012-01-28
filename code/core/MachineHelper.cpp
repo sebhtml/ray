@@ -61,6 +61,89 @@ void MachineHelper::call_RAY_MASTER_MODE_LOAD_CONFIG(){
 	m_switchMan->setMasterMode(RAY_MASTER_MODE_TEST_NETWORK);
 }
 
+
+void MachineHelper::configureSwitchMan(SwitchMan*switchMan){
+	#ifdef ASSERT
+	assert(switchMan!=NULL);
+	#endif
+
+	// configure the switch man
+	//
+	// this is where steps can be added or removed.
+
+	vector<MasterMode> steps;
+
+	#define ITEM(x) \
+	steps.push_back(x);
+
+	#include <master_mode_order.txt>
+
+	#undef ITEM
+
+	for(int i=0;i<(int)steps.size();i++){
+		#ifdef ASSERT
+		assert(i<(int)steps.size());
+		#endif
+
+		switchMan->addMasterMode(steps[i]);
+	}
+
+	for(int i=0;i<(int)steps.size()-1;i++){
+		#ifdef ASSERT
+		assert(i+1<(int)steps.size());
+		#endif
+
+		switchMan->addNextMasterMode(steps[i],steps[i+1]);
+	}
+
+	#define ITEM(mpiTag,slaveMode) \
+	switchMan->addSlaveSwitch(mpiTag,slaveMode);
+	
+	#include <slave_switches.txt>
+
+	#undef ITEM
+
+	#define ITEM(masterMode,mpiTag) \
+	switchMan->addMasterSwitch(masterMode,mpiTag);
+	
+	#include <master_switches.txt>
+
+	#undef ITEM
+
+	if(m_messagesHandler->getRank()==MASTER_RANK){
+		MasterMode mode=switchMan->getMasterModeOrder()->at(0);
+		switchMan->setMasterMode(mode);
+	}
+}
+
+void MachineHelper::configureVirtualCommunicator(VirtualCommunicator*virtualCommunicator){
+
+	#ifdef ASSERT
+	assert(virtualCommunicator!=NULL);
+	#endif
+
+	/** configure the virtual communicator. */
+	/* ## concatenates 2 symbols */
+
+	#define ITEM(x,y) \
+	virtualCommunicator->setElementsPerQuery( x, y );
+
+	/* define the number of words for particular message tags */
+
+	#include <tag_sizes.txt>
+
+	#undef ITEM
+
+	/* set reply-map for other tags too */
+
+	#define ITEM(x,y) \
+	virtualCommunicator->setReplyType(x,y);
+
+	#include <reply_tags.txt>
+
+	#undef ITEM
+}
+
 void MachineHelper::constructor(int argc,char**argv,Parameters*parameters,
 SwitchMan*switchMan,RingAllocator*outboxAllocator,
 		StaticVector*outbox,bool*aborted,
@@ -922,8 +1005,7 @@ int MachineHelper::getSize(){
 
 void MachineHelper::registerPlugin(ComputeCore*core){
 	PluginHandle plugin=core->allocatePluginHandle();
-
-	core->beginPluginRegistration(plugin);
+	m_plugin=plugin;
 
 	core->setPluginName(plugin,"MachineHelper");
 
@@ -1019,21 +1101,53 @@ void MachineHelper::registerPlugin(ComputeCore*core){
 	m_adapter_RAY_MASTER_MODE_KILL_ALL_MPI_RANKS.setObject(this);
 	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_KILL_ALL_MPI_RANKS, &m_adapter_RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
 
-	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_WRITE_KMERS);
+
+	RAY_SLAVE_MODE_WRITE_KMERS=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_WRITE_KMERS);
 	m_adapter_RAY_SLAVE_MODE_WRITE_KMERS.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_WRITE_KMERS, &m_adapter_RAY_SLAVE_MODE_WRITE_KMERS);
+	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_WRITE_KMERS,"RAY_SLAVE_MODE_WRITE_KMERS");
 
-	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_ASSEMBLE_WAVES);
+	RAY_SLAVE_MODE_ASSEMBLE_WAVES=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_ASSEMBLE_WAVES);
 	m_adapter_RAY_SLAVE_MODE_ASSEMBLE_WAVES.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_ASSEMBLE_WAVES, &m_adapter_RAY_SLAVE_MODE_ASSEMBLE_WAVES);
+	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_ASSEMBLE_WAVES,"RAY_SLAVE_MODE_ASSEMBLE_WAVES");
 
-	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_SEND_EXTENSION_DATA);
+	RAY_SLAVE_MODE_SEND_EXTENSION_DATA=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_SEND_EXTENSION_DATA);
 	m_adapter_RAY_SLAVE_MODE_SEND_EXTENSION_DATA.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_SEND_EXTENSION_DATA, &m_adapter_RAY_SLAVE_MODE_SEND_EXTENSION_DATA);
+	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_SEND_EXTENSION_DATA,"RAY_SLAVE_MODE_SEND_EXTENSION_DATA");
 
-	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_DIE);
+	RAY_SLAVE_MODE_DIE=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_DIE);
 	m_adapter_RAY_SLAVE_MODE_DIE.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_DIE, &m_adapter_RAY_SLAVE_MODE_DIE);
+	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_DIE,"RAY_SLAVE_MODE_DIE");
+}
 
-	core->endPluginRegistration(plugin);
+void MachineHelper::resolveSymbols(ComputeCore*core){
+	RAY_SLAVE_MODE_ADD_COLORS=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_ADD_COLORS");
+	RAY_SLAVE_MODE_AMOS=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_AMOS");
+	RAY_SLAVE_MODE_ASSEMBLE_WAVES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_ASSEMBLE_WAVES");
+	RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION");
+	RAY_SLAVE_MODE_BUILD_KMER_ACADEMY=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_BUILD_KMER_ACADEMY");
+	RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES");
+	RAY_SLAVE_MODE_COUNT_FILE_ENTRIES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_COUNT_FILE_ENTRIES");
+	RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS");
+	RAY_SLAVE_MODE_DIE=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DIE");
+	RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS");
+	RAY_SLAVE_MODE_DO_NOTHING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DO_NOTHING");
+	RAY_SLAVE_MODE_EXTRACT_VERTICES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_EXTRACT_VERTICES");
+	RAY_SLAVE_MODE_FINISH_FUSIONS=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_FINISH_FUSIONS");
+	RAY_SLAVE_MODE_FUSION=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_FUSION");
+	RAY_SLAVE_MODE_INDEX_SEQUENCES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_INDEX_SEQUENCES");
+	RAY_SLAVE_MODE_LOAD_SEQUENCES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_LOAD_SEQUENCES");
+	RAY_SLAVE_MODE_SCAFFOLDER=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_SCAFFOLDER");
+	RAY_SLAVE_MODE_SEND_DISTRIBUTION=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_SEND_DISTRIBUTION");
+	RAY_SLAVE_MODE_SEND_EXTENSION_DATA=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_SEND_EXTENSION_DATA");
+	RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES");
+	RAY_SLAVE_MODE_SEND_SEED_LENGTHS=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_SEND_SEED_LENGTHS");
+	RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES");
+	RAY_SLAVE_MODE_START_SEEDING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_START_SEEDING");
+	RAY_SLAVE_MODE_TEST_NETWORK=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_TEST_NETWORK");
+	RAY_SLAVE_MODE_WRITE_KMERS=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_WRITE_KMERS");
+	RAY_SLAVE_MODE_EXTENSION=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_EXTENSION");
 }

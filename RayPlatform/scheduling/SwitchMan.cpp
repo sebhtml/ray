@@ -23,6 +23,7 @@
 #include <vector>
 #include <core/OperatingSystem.h>
 #include <iostream>
+#include <core/ComputeCore.h>
 using namespace std;
 
 //#define CONFIG_SWITCHMAN_VERBOSITY
@@ -36,6 +37,10 @@ void SwitchMan::constructor(Rank rank,int numberOfCores){
 	runAssertions();
 	#endif
 
+	// set default modes
+	
+	setMasterMode(RAY_MASTER_MODE_DO_NOTHING); 
+	setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
 }
 
 /** reset the sole counter */
@@ -285,3 +290,15 @@ int SwitchMan::getSize(){
 	return m_size;
 }
 
+void SwitchMan::registerPlugin(ComputeCore*core){
+	m_plugin=core->allocatePluginHandle();
+
+	core->setPluginName(m_plugin,"SwitchMan");
+
+	RAY_SLAVE_MODE_DO_NOTHING=core->allocateSlaveModeHandle(m_plugin,RAY_SLAVE_MODE_DO_NOTHING);
+	core->setSlaveModeSymbol(m_plugin,RAY_SLAVE_MODE_DO_NOTHING,"RAY_SLAVE_MODE_DO_NOTHING");
+}
+
+void SwitchMan::resolveSymbols(ComputeCore*core){
+	RAY_SLAVE_MODE_DO_NOTHING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DO_NOTHING");
+}

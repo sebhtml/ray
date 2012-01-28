@@ -49,6 +49,11 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class VerticesExtractor: public CorePlugin{
+	
+	
+
+	SlaveMode RAY_SLAVE_MODE_EXTRACT_VERTICES;
+
 	Adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES m_adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES;
 
 	Derivative m_derivative;
@@ -110,6 +115,7 @@ StaticVector*outbox,RingAllocator*outboxAllocator,ArrayOfReads*myReads
 	void setProfiler(Profiler*profiler);
 
 	void registerPlugin(ComputeCore*core);
+	void resolveSymbols(ComputeCore*core);
 };
 
 #endif

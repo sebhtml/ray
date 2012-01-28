@@ -252,17 +252,20 @@ void Partitioner::call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES(){
 
 void Partitioner::registerPlugin(ComputeCore*core){
 	PluginHandle plugin=core->allocatePluginHandle();
-
-	core->beginPluginRegistration(plugin);
+	m_plugin=plugin;
 	core->setPluginName(plugin,"Partitioner");
 
 	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_COUNT_FILE_ENTRIES);
 	m_adapter_RAY_MASTER_MODE_COUNT_FILE_ENTRIES.setObject(this);
 	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_COUNT_FILE_ENTRIES,&m_adapter_RAY_MASTER_MODE_COUNT_FILE_ENTRIES);
 
-	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_COUNT_FILE_ENTRIES);
+	RAY_SLAVE_MODE_COUNT_FILE_ENTRIES=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_COUNT_FILE_ENTRIES);
 	m_adapter_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_COUNT_FILE_ENTRIES, &m_adapter_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES);
+	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_COUNT_FILE_ENTRIES,"RAY_SLAVE_MODE_COUNT_FILE_ENTRIES");
+}
 
-	core->endPluginRegistration(plugin);
+void Partitioner::resolveSymbols(ComputeCore*core){
+	RAY_SLAVE_MODE_DO_NOTHING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DO_NOTHING");
+	RAY_SLAVE_MODE_COUNT_FILE_ENTRIES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_COUNT_FILE_ENTRIES");
 }

@@ -31,11 +31,10 @@
 #include <iostream>
 using namespace std;
 
+//#define CONFIG_DEBUG_SLAVE_SYMBOLS
+
 void ComputeCore::setSlaveModeObjectHandler(PluginHandle plugin,SlaveMode mode,SlaveModeHandler*object){
 	if(!validationPluginAllocated(plugin))
-		return;
-
-	if(!validationPluginRegistrationInProgress(plugin))
 		return;
 
 	if(!validationSlaveModeOwnership(plugin,mode))
@@ -48,8 +47,6 @@ void ComputeCore::setSlaveModeObjectHandler(PluginHandle plugin,SlaveMode mode,S
 	#ifdef ASSERT
 	assert(m_plugins.count(plugin)>0);
 	assert(m_plugins[plugin].hasSlaveMode(mode));
-	assert(m_pluginRegistrationsInProgress.count(plugin)>0);
-	assert(m_pluginRegistrationsClosed.count(plugin)==0);
 	#endif
 
 	m_slaveModeHandler.setObjectHandler(mode,object);
@@ -59,9 +56,6 @@ void ComputeCore::setSlaveModeObjectHandler(PluginHandle plugin,SlaveMode mode,S
 
 void ComputeCore::setMasterModeObjectHandler(PluginHandle plugin,MasterMode mode,MasterModeHandler*object){
 	if(!validationPluginAllocated(plugin))
-		return;
-
-	if(!validationPluginRegistrationInProgress(plugin))
 		return;
 
 	if(!validationMasterModeOwnership(plugin,mode))
@@ -74,8 +68,6 @@ void ComputeCore::setMasterModeObjectHandler(PluginHandle plugin,MasterMode mode
 	#ifdef ASSERT
 	assert(m_plugins.count(plugin)>0);
 	assert(m_plugins[plugin].hasMasterMode(mode));
-	assert(m_pluginRegistrationsInProgress.count(plugin)>0);
-	assert(m_pluginRegistrationsClosed.count(plugin)==0);
 	#endif
 
 	m_masterModeHandler.setObjectHandler(mode,object);
@@ -85,9 +77,6 @@ void ComputeCore::setMasterModeObjectHandler(PluginHandle plugin,MasterMode mode
 
 void ComputeCore::setMessageTagObjectHandler(PluginHandle plugin,MessageTag tag,MessageTagHandler*object){
 	if(!validationPluginAllocated(plugin))
-		return;
-
-	if(!validationPluginRegistrationInProgress(plugin))
 		return;
 
 	if(!validationMessageTagOwnership(plugin,tag))
@@ -100,8 +89,6 @@ void ComputeCore::setMessageTagObjectHandler(PluginHandle plugin,MessageTag tag,
 	#ifdef ASSERT
 	assert(m_plugins.count(plugin)>0);
 	assert(m_plugins[plugin].hasMessageTag(tag));
-	assert(m_pluginRegistrationsInProgress.count(plugin)>0);
-	assert(m_pluginRegistrationsClosed.count(plugin)==0);
 	#endif
 
 	m_messageTagHandler.setObjectHandler(tag,object);
@@ -115,19 +102,6 @@ void ComputeCore::setMessageTagObjectHandler(PluginHandle plugin,MessageTag tag,
  * otherwise, run runVanilla()
  */
 void ComputeCore::run(){
-
-	if(m_pluginRegistrationsInProgress.size()>0){
-		cout<<"ComputeCore: Error, can not start the main loop because there are plugin registrations in progress"<<endl;
-		cout<<" Plugins: "<<endl;
-		for(set<PluginHandle>::iterator i=m_pluginRegistrationsInProgress.begin();
-			i!=m_pluginRegistrationsInProgress.end();i++){
-			cout<<" Handle: "<<*i<<" Name: "<<m_plugins[*i].getName()<<endl;
-		}
-	}
-
-	#ifdef ASSERT
-	assert(m_pluginRegistrationsInProgress.size()==0);
-	#endif
 
 	m_startingTimeMicroseconds = getMicroseconds();
 
@@ -534,11 +508,6 @@ void ComputeCore::constructor(int*argc,char***argv){
 	getInbox()->constructor(getMaximumNumberOfAllocatedInboxMessages(),RAY_MALLOC_TYPE_INBOX_VECTOR,false);
 	getOutbox()->constructor(getMaximumNumberOfAllocatedOutboxMessages(),RAY_MALLOC_TYPE_OUTBOX_VECTOR,false);
 
-	// set default modes
-	
-	getSwitchMan()->setMasterMode(RAY_MASTER_MODE_DO_NOTHING); 
-	getSwitchMan()->setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
-
 	for(int i=0;i<MAXIMUM_NUMBER_OF_MASTER_HANDLERS;i++){
 		strcpy(MASTER_MODES[i],"UnnamedMasterMode");
 	}
@@ -553,6 +522,8 @@ void ComputeCore::constructor(int*argc,char***argv){
 	m_currentSlaveModeToAllocate=0;
 	m_currentMasterModeToAllocate=0;
 	m_currentMessageTagToAllocate=0;
+
+	registerPlugin(&m_switchMan);
 }
 
 void ComputeCore::enableProfiler(){
@@ -652,19 +623,19 @@ void ComputeCore::stop(){
 	m_alive=false;
 }
 
-void ComputeCore::setSlaveModeSymbol(PluginHandle plugin,SlaveMode mode,char*symbol){
+void ComputeCore::setSlaveModeSymbol(PluginHandle plugin,SlaveMode mode,const char*symbol){
 	if(!validationPluginAllocated(plugin))
 		return;
 	
-	if(!validationPluginRegistrationInProgress(plugin))
-		return;
-
 	if(!validationSlaveModeOwnership(plugin,mode))
 		return;
 
 	if(!validationSlaveModeSymbolAvailable(plugin,symbol)){
 		return;
 	}
+
+	if(!validationSlaveModeSymbolNotRegistered(plugin,mode))
+		return;
 
 	#ifdef ASSERT
 	assert(mode>=0);
@@ -674,22 +645,26 @@ void ComputeCore::setSlaveModeSymbol(PluginHandle plugin,SlaveMode mode,char*sym
 	#ifdef ASSERT
 	assert(m_plugins.count(plugin)>0);
 	assert(m_plugins[plugin].hasSlaveMode(mode));
-	assert(m_pluginRegistrationsInProgress.count(plugin)>0);
-	assert(m_pluginRegistrationsClosed.count(plugin)==0);
 	#endif
 
 	strcpy(SLAVE_MODES[mode],symbol);
 
 	m_plugins[plugin].addRegisteredSlaveModeSymbol(mode);
+
+	m_registeredSlaveModeSymbols.insert(mode);
+
+	m_slaveModeSymbols[symbol]=mode;
+
+	#ifdef CONFIG_DEBUG_SLAVE_SYMBOLS
+	cout<<"Registered slave mode "<<mode<<" to symbol "<<symbol<<endl;
+	#endif
 }
 
-void ComputeCore::setMasterModeSymbol(PluginHandle plugin,MasterMode mode,char*symbol){
+void ComputeCore::setMasterModeSymbol(PluginHandle plugin,MasterMode mode,const char*symbol){
 	
 	if(!validationPluginAllocated(plugin))
 		return;
 
-	if(!validationPluginRegistrationInProgress(plugin))
-		return;
 
 	if(!validationMasterModeOwnership(plugin,mode))
 		return;
@@ -697,6 +672,9 @@ void ComputeCore::setMasterModeSymbol(PluginHandle plugin,MasterMode mode,char*s
 	if(!validationMasterModeSymbolAvailable(plugin,symbol)){
 		return;
 	}
+
+	if(!validationMasterModeSymbolNotRegistered(plugin,mode))
+		return;
 
 	#ifdef ASSERT
 	assert(mode>=0);
@@ -706,29 +684,29 @@ void ComputeCore::setMasterModeSymbol(PluginHandle plugin,MasterMode mode,char*s
 	#ifdef ASSERT
 	assert(m_plugins.count(plugin)>0);
 	assert(m_plugins[plugin].hasMasterMode(mode));
-	assert(m_pluginRegistrationsInProgress.count(plugin)>0);
-	assert(m_pluginRegistrationsClosed.count(plugin)==0);
 	#endif
 
 	strcpy(MASTER_MODES[mode],symbol);
 
 	m_plugins[plugin].addRegisteredMasterModeSymbol(mode);
+
+	m_registeredMasterModeSymbols.insert(mode);
 }
 
-void ComputeCore::setMessageTagSymbol(PluginHandle plugin,MessageTag tag,char*symbol){
+void ComputeCore::setMessageTagSymbol(PluginHandle plugin,MessageTag tag,const char*symbol){
 
 	if(!validationPluginAllocated(plugin))
 		return;
 
-	if(!validationPluginRegistrationInProgress(plugin))
-		return;
 
 	if(!validationMessageTagOwnership(plugin,tag))
 		return;
 
-	if(!validationMessageTagSymbolAvailable(plugin,symbol)){
+	if(!validationMessageTagSymbolAvailable(plugin,symbol))
 		return;
-	}
+
+	if(!validationMessageTagSymbolNotRegistered(plugin,tag))
+		return;
 
 	#ifdef ASSERT
 	assert(tag>=0);
@@ -738,13 +716,13 @@ void ComputeCore::setMessageTagSymbol(PluginHandle plugin,MessageTag tag,char*sy
 	#ifdef ASSERT
 	assert(m_plugins.count(plugin)>0);
 	assert(m_plugins[plugin].hasMessageTag(tag));
-	assert(m_pluginRegistrationsInProgress.count(plugin)>0);
-	assert(m_pluginRegistrationsClosed.count(plugin)==0);
 	#endif
 
 	strcpy(MESSAGE_TAGS[tag],symbol);
 
 	m_plugins[plugin].addRegisteredMessageTagSymbol(tag);
+
+	m_registeredMessageTagSymbols.insert(tag);
 }
 
 PluginHandle ComputeCore::allocatePluginHandle(){
@@ -764,15 +742,11 @@ PluginHandle ComputeCore::allocatePluginHandle(){
 SlaveMode ComputeCore::allocateSlaveModeHandle(PluginHandle plugin,SlaveMode desiredValue){
 
 	if(!validationPluginAllocated(plugin))
-		return -1;
+		return INVALID_HANDLE;
 
-	if(!validationPluginRegistrationInProgress(plugin))
-		return -1;
 
 	#ifdef ASSERT
 	assert(m_plugins.count(plugin)>0);
-	assert(m_pluginRegistrationsInProgress.count(plugin)>0);
-	assert(m_pluginRegistrationsClosed.count(plugin)==0);
 	#endif
 
 	SlaveMode handle=desiredValue;
@@ -792,8 +766,6 @@ SlaveMode ComputeCore::allocateSlaveModeHandle(PluginHandle plugin,SlaveMode des
 	#ifdef ASSERT
 	assert(m_allocatedSlaveModes.count(handle)>0);
 	assert(m_plugins[plugin].hasSlaveMode(handle));
-	assert(m_pluginRegistrationsInProgress.count(plugin)>0);
-	assert(m_pluginRegistrationsClosed.count(plugin)==0);
 	#endif
 	
 	return handle;
@@ -802,10 +774,7 @@ SlaveMode ComputeCore::allocateSlaveModeHandle(PluginHandle plugin,SlaveMode des
 MasterMode ComputeCore::allocateMasterModeHandle(PluginHandle plugin,MasterMode desiredValue){
 
 	if(!validationPluginAllocated(plugin))
-		return -1;
-
-	if(!validationPluginRegistrationInProgress(plugin))
-		return -1;
+		return INVALID_HANDLE;
 
 
 	#ifdef ASSERT
@@ -829,8 +798,6 @@ MasterMode ComputeCore::allocateMasterModeHandle(PluginHandle plugin,MasterMode 
 	#ifdef ASSERT
 	assert(m_allocatedMasterModes.count(handle)>0);
 	assert(m_plugins[plugin].hasMasterMode(handle));
-	assert(m_pluginRegistrationsInProgress.count(plugin)>0);
-	assert(m_pluginRegistrationsClosed.count(plugin)==0);
 	#endif
 
 	return handle; 
@@ -839,15 +806,10 @@ MasterMode ComputeCore::allocateMasterModeHandle(PluginHandle plugin,MasterMode 
 MessageTag ComputeCore::allocateMessageTagHandle(PluginHandle plugin,MessageTag desiredValue){
 
 	if(!validationPluginAllocated(plugin))
-		return -1;
-
-	if(!validationPluginRegistrationInProgress(plugin))
-		return -1;
+		return INVALID_HANDLE;
 
 	#ifdef ASSERT
 	assert(m_plugins.count(plugin)>0);
-	assert(m_pluginRegistrationsInProgress.count(plugin)>0);
-	assert(m_pluginRegistrationsClosed.count(plugin)==0);
 	#endif
 
 	MessageTag handle=desiredValue;
@@ -872,41 +834,6 @@ MessageTag ComputeCore::allocateMessageTagHandle(PluginHandle plugin,MessageTag 
 	return handle;
 }
 
-void ComputeCore::beginPluginRegistration(PluginHandle plugin){
-	if(!validationPluginAllocated(plugin))
-		return;
-
-	if(!validationPluginRegistrationNotInProgress(plugin))
-		return;
-
-	if(!validationPluginRegistrationNotClosed(plugin))
-		return;
-
-	#ifdef ASSERT
-	assert(m_pluginRegistrationsInProgress.count(plugin)==0);
-	assert(m_pluginRegistrationsClosed.count(plugin)==0);
-	#endif
-
-	m_pluginRegistrationsInProgress.insert(plugin);
-}
-
-void ComputeCore::endPluginRegistration(PluginHandle plugin){
-
-	if(!validationPluginRegistrationInProgress(plugin))
-		return;
-
-	if(!validationPluginRegistrationClosed(plugin))
-		return;
-
-	#ifdef ASSERT
-	assert(m_pluginRegistrationsInProgress.count(plugin)>0);
-	assert(m_pluginRegistrationsClosed.count(plugin)==0);
-	#endif
-
-	m_pluginRegistrationsInProgress.erase(plugin);
-	m_pluginRegistrationsClosed.insert(plugin);
-}
-
 PluginHandle ComputeCore::generatePluginHandle(){
 	uint64_t randomNumber=rand();
 
@@ -916,42 +843,6 @@ PluginHandle ComputeCore::generatePluginHandle(){
 bool ComputeCore::validationPluginAllocated(PluginHandle plugin){
 	if(!m_plugins.count(plugin)>0){
 		cout<<"Error, plugin "<<plugin<<" is not allocated"<<endl;
-		return false;
-	}
-
-	return true;
-}
-
-bool ComputeCore::validationPluginRegistrationNotInProgress(PluginHandle plugin){
-	if(m_pluginRegistrationsInProgress.count(plugin)>0){
-		cout<<"Error, plugin "<<plugin<<" is already open for registration"<<endl;
-		return false;
-	}
-
-	return true;
-}
-
-bool ComputeCore::validationPluginRegistrationInProgress(PluginHandle plugin){
-	if(!m_pluginRegistrationsInProgress.count(plugin)>0){
-		cout<<"Error, plugin "<<plugin<<" is not open for registration"<<endl;
-		return false;
-	}
-
-	return true;
-}
-
-bool ComputeCore::validationPluginRegistrationNotClosed(PluginHandle plugin){
-	if(m_pluginRegistrationsClosed.count(plugin)>0){
-		cout<<"Error, plugin "<<plugin<<" can not be opened for registration because it was closed in the past"<<endl;
-		return false;
-	}
-
-	return true;
-}
-
-bool ComputeCore::validationPluginRegistrationClosed(PluginHandle plugin){
-	if(m_pluginRegistrationsClosed.count(plugin)>0){
-		cout<<"Error, plugin "<<plugin<<" can not be opened for registration because it was closed in the past"<<endl;
 		return false;
 	}
 
@@ -992,9 +883,6 @@ void ComputeCore::setPluginName(PluginHandle plugin,string name){
 	if(!validationPluginAllocated(plugin))
 		return;
 
-	if(!validationPluginRegistrationInProgress(plugin))
-		return;
-
 	m_plugins[plugin].setName(name);
 
 	cout<<"Rank "<<m_rank<<" loaded plugin "<<m_plugins[plugin].getName()<<", handle is "<<plugin<<endl;
@@ -1027,9 +915,6 @@ void ComputeCore::setMessageTagReplyTag(PluginHandle plugin,MessageTag tag,Messa
 	if(!validationPluginAllocated(plugin))
 		return;
 
-	if(!validationPluginRegistrationInProgress(plugin))
-		return;
-
 	if(!validationMessageTagOwnership(plugin,tag))
 		return;
 
@@ -1038,12 +923,12 @@ void ComputeCore::setMessageTagReplyTag(PluginHandle plugin,MessageTag tag,Messa
 	m_virtualCommunicator.setReplyType(tag,replyTag);
 }
 
-SlaveMode ComputeCore::getSlaveModeFromSymbol(PluginHandle plugin,char*symbol){
+SlaveMode ComputeCore::getSlaveModeFromSymbol(PluginHandle plugin,const char*symbol){
 	if(!validationPluginAllocated(plugin))
-		return -1;
+		return INVALID_HANDLE;
 
 	if(!validationSlaveModeSymbolRegistered(plugin,symbol))
-		return -1;
+		return INVALID_HANDLE;
 
 	string key=symbol;
 
@@ -1052,19 +937,23 @@ SlaveMode ComputeCore::getSlaveModeFromSymbol(PluginHandle plugin,char*symbol){
 		
 		m_plugins[plugin].addResolvedSlaveMode(handle);
 
+		#ifdef CONFIG_DEBUG_SLAVE_SYMBOLS
+		cout<<"Plugin "<<m_plugins[plugin].getName()<<" resolved symbol "<<symbol<<" to slave mode "<<handle<<endl;
+		#endif
+
 		return handle;
 	}
 
-	return -1;
+	return INVALID_HANDLE;
 }
 
-MasterMode ComputeCore::getMasterModeFromSymbol(PluginHandle plugin,char*symbol){
+MasterMode ComputeCore::getMasterModeFromSymbol(PluginHandle plugin,const char*symbol){
 
 	if(!validationPluginAllocated(plugin))
-		return -1;
+		return INVALID_HANDLE;
 
 	if(!validationMasterModeSymbolRegistered(plugin,symbol))
-		return -1;
+		return INVALID_HANDLE;
 
 	string key=symbol;
 
@@ -1076,16 +965,16 @@ MasterMode ComputeCore::getMasterModeFromSymbol(PluginHandle plugin,char*symbol)
 		return handle;
 	}
 
-	return -1;
+	return INVALID_HANDLE;
 }
 
-MessageTag ComputeCore::getMessageTagFromSymbol(PluginHandle plugin,char*symbol){
+MessageTag ComputeCore::getMessageTagFromSymbol(PluginHandle plugin,const char*symbol){
 
 	if(!validationPluginAllocated(plugin))
-		return -1;
+		return INVALID_HANDLE;
 
 	if(!validationMessageTagSymbolRegistered(plugin,symbol))
-		return -1;
+		return INVALID_HANDLE;
 
 	string key=symbol;
 
@@ -1097,10 +986,10 @@ MessageTag ComputeCore::getMessageTagFromSymbol(PluginHandle plugin,char*symbol)
 		return handle;
 	}
 
-	return -1;
+	return INVALID_HANDLE;
 }
 
-bool ComputeCore::validationMessageTagSymbolAvailable(PluginHandle plugin,char*symbol){
+bool ComputeCore::validationMessageTagSymbolAvailable(PluginHandle plugin,const char*symbol){
 	string key=symbol;
 
 	if(m_messageTagSymbols.count(key)>0){
@@ -1111,7 +1000,7 @@ bool ComputeCore::validationMessageTagSymbolAvailable(PluginHandle plugin,char*s
 	return true;
 }
 
-bool ComputeCore::validationSlaveModeSymbolAvailable(PluginHandle plugin,char*symbol){
+bool ComputeCore::validationSlaveModeSymbolAvailable(PluginHandle plugin,const char*symbol){
 
 	string key=symbol;
 
@@ -1124,7 +1013,7 @@ bool ComputeCore::validationSlaveModeSymbolAvailable(PluginHandle plugin,char*sy
 
 }
 
-bool ComputeCore::validationMasterModeSymbolAvailable(PluginHandle plugin,char*symbol){
+bool ComputeCore::validationMasterModeSymbolAvailable(PluginHandle plugin,const char*symbol){
 
 	string key=symbol;
 
@@ -1136,7 +1025,7 @@ bool ComputeCore::validationMasterModeSymbolAvailable(PluginHandle plugin,char*s
 	return true;
 }
 
-bool ComputeCore::validationMessageTagSymbolRegistered(PluginHandle plugin,char*symbol){
+bool ComputeCore::validationMessageTagSymbolRegistered(PluginHandle plugin,const char*symbol){
 	string key=symbol;
 
 	if(m_messageTagSymbols.count(key)==0){
@@ -1147,12 +1036,12 @@ bool ComputeCore::validationMessageTagSymbolRegistered(PluginHandle plugin,char*
 	return true;
 }
 
-bool ComputeCore::validationSlaveModeSymbolRegistered(PluginHandle plugin,char*symbol){
+bool ComputeCore::validationSlaveModeSymbolRegistered(PluginHandle plugin,const char*symbol){
 
 	string key=symbol;
 
 	if(m_slaveModeSymbols.count(key)==0){
-		cout<<"Error, plugin "<<plugin<<" can not fetch symbol "<<symbol<<" because it is not registered."<<endl;
+		cout<<"Error, plugin "<<plugin<<" (name: "<<m_plugins[plugin].getName()<<") can not fetch symbol "<<symbol<<" because it is not registered."<<endl;
 		return false;
 	}
 
@@ -1160,12 +1049,43 @@ bool ComputeCore::validationSlaveModeSymbolRegistered(PluginHandle plugin,char*s
 
 }
 
-bool ComputeCore::validationMasterModeSymbolRegistered(PluginHandle plugin,char*symbol){
+bool ComputeCore::validationMasterModeSymbolRegistered(PluginHandle plugin,const char*symbol){
 
 	string key=symbol;
 
 	if(m_masterModeSymbols.count(key)==0){
 		cout<<"Error, plugin "<<plugin<<" can not fetch symbol "<<symbol<<" because it is not registered."<<endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool ComputeCore::validationMessageTagSymbolNotRegistered(PluginHandle plugin,MessageTag handle){
+
+	if(m_registeredMessageTagSymbols.count(handle)>0){
+		cout<<"Error, plugin "<<plugin<<" can not register symbol for message tag "<<handle <<" because it already has a symbol."<<endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool ComputeCore::validationSlaveModeSymbolNotRegistered(PluginHandle plugin,SlaveMode handle){
+
+	if(m_registeredSlaveModeSymbols.count(handle)>0){
+		cout<<"Error, plugin "<<plugin<<" can not register symbol for slave mode "<<handle <<" because it already has a symbol."<<endl;
+		return false;
+	}
+
+	return true;
+
+}
+
+bool ComputeCore::validationMasterModeSymbolNotRegistered(PluginHandle plugin,MasterMode handle){
+
+	if(m_registeredMasterModeSymbols.count(handle)>0){
+		cout<<"Error, plugin "<<plugin<<" can not register symbol for master mode "<<handle <<" because it already has a symbol."<<endl;
 		return false;
 	}
 

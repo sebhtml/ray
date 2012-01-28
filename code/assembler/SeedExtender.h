@@ -56,6 +56,9 @@ using namespace std;
  */
 class SeedExtender: public CorePlugin  {
 
+	SlaveMode RAY_SLAVE_MODE_EXTENSION;
+	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
+
 	Adapter_RAY_SLAVE_MODE_EXTENSION m_adapter_RAY_SLAVE_MODE_EXTENSION;
 
 // all these parameters are not attributes.
@@ -211,6 +214,7 @@ public:
 	void call_RAY_SLAVE_MODE_EXTENSION();
 
 	void registerPlugin(ComputeCore*core);
+	void resolveSymbols(ComputeCore*core);
 };
 
 

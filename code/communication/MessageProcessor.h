@@ -69,6 +69,8 @@ using namespace std;
  */
 class MessageProcessor :  public CorePlugin {
 
+	SlaveMode RAY_SLAVE_MODE_PURGE_NULL_EDGES;
+
 	Adapter_RAY_MPI_TAG_LOAD_SEQUENCES m_adapter_RAY_MPI_TAG_LOAD_SEQUENCES;
 	Adapter_RAY_MPI_TAG_CONTIG_INFO m_adapter_RAY_MPI_TAG_CONTIG_INFO;
 	Adapter_RAY_MPI_TAG_SCAFFOLDING_LINKS m_adapter_RAY_MPI_TAG_SCAFFOLDING_LINKS;
@@ -437,6 +439,7 @@ SequencesIndexer*m_si
 	void call_RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL(Message*message);
 	
 	void registerPlugin(ComputeCore*core);
+	void resolveSymbols(ComputeCore*core);
 };
 
 #endif

@@ -346,13 +346,17 @@ void SequencesLoader::registerPlugin(ComputeCore*core){
 
 	PluginHandle plugin=core->allocatePluginHandle();
 
-	core->beginPluginRegistration(plugin);
+	m_plugin=plugin;
 
 	core->setPluginName(plugin,"SequencesLoader");
 
-	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_LOAD_SEQUENCES);
+	RAY_SLAVE_MODE_LOAD_SEQUENCES=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_LOAD_SEQUENCES);
 	m_adapter_RAY_SLAVE_MODE_LOAD_SEQUENCES.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_LOAD_SEQUENCES, &m_adapter_RAY_SLAVE_MODE_LOAD_SEQUENCES);
+	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_LOAD_SEQUENCES,"RAY_SLAVE_MODE_LOAD_SEQUENCES");
+}
 
-	core->endPluginRegistration(plugin);
+void SequencesLoader::resolveSymbols(ComputeCore*core){
+	RAY_SLAVE_MODE_LOAD_SEQUENCES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_LOAD_SEQUENCES");
+	RAY_SLAVE_MODE_DO_NOTHING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DO_NOTHING");
 }

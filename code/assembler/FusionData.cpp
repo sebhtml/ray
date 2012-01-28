@@ -633,14 +633,16 @@ void FusionData::registerPlugin(ComputeCore*core){
 
 	PluginHandle plugin=core->allocatePluginHandle();
 
-	core->beginPluginRegistration(plugin);
-
+	m_plugin=plugin;
 	core->setPluginName(plugin,"FusionData");
 
-	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS);
+	RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS);
 	m_adapter_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS, &m_adapter_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS);
+	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS,"RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS");
+}
 
-	core->endPluginRegistration(plugin);
-
+void FusionData::resolveSymbols(ComputeCore*core){
+	RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS");
+	RAY_SLAVE_MODE_DO_NOTHING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DO_NOTHING");
 }

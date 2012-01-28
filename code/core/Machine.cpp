@@ -123,9 +123,6 @@ m_virtualCommunicator,&m_kmerAcademyBuilder,
 
 );
 
-
-	configureVirtualCommunicator(m_virtualCommunicator);
-	configureSwitchMan(m_switchMan);
 }
 
 void Machine::start(){
@@ -552,87 +549,6 @@ Machine::~Machine(){
 	m_bubbleData=NULL;
 }
 
-void Machine::configureSwitchMan(SwitchMan*switchMan){
-	#ifdef ASSERT
-	assert(switchMan!=NULL);
-	#endif
-
-	// configure the switch man
-	//
-	// this is where steps can be added or removed.
-
-	vector<MasterMode> steps;
-
-	#define ITEM(x) \
-	steps.push_back(x);
-
-	#include <master_mode_order.txt>
-
-	#undef ITEM
-
-	for(int i=0;i<(int)steps.size();i++){
-		#ifdef ASSERT
-		assert(i<(int)steps.size());
-		#endif
-
-		switchMan->addMasterMode(steps[i]);
-	}
-
-	for(int i=0;i<(int)steps.size()-1;i++){
-		#ifdef ASSERT
-		assert(i+1<(int)steps.size());
-		#endif
-
-		switchMan->addNextMasterMode(steps[i],steps[i+1]);
-	}
-
-	#define ITEM(mpiTag,slaveMode) \
-	switchMan->addSlaveSwitch(mpiTag,slaveMode);
-	
-	#include <slave_switches.txt>
-
-	#undef ITEM
-
-	#define ITEM(masterMode,mpiTag) \
-	switchMan->addMasterSwitch(masterMode,mpiTag);
-	
-	#include <master_switches.txt>
-
-	#undef ITEM
-
-	if(m_messagesHandler->getRank()==MASTER_RANK){
-		MasterMode mode=switchMan->getMasterModeOrder()->at(0);
-		switchMan->setMasterMode(mode);
-	}
-}
-
-void Machine::configureVirtualCommunicator(VirtualCommunicator*virtualCommunicator){
-
-	#ifdef ASSERT
-	assert(virtualCommunicator!=NULL);
-	#endif
-
-	/** configure the virtual communicator. */
-	/* ## concatenates 2 symbols */
-
-	#define ITEM(x,y) \
-	virtualCommunicator->setElementsPerQuery( x, y );
-
-	/* define the number of words for particular message tags */
-
-	#include <tag_sizes.txt>
-
-	#undef ITEM
-
-	/* set reply-map for other tags too */
-
-	#define ITEM(x,y) \
-	virtualCommunicator->setReplyType(x,y);
-
-	#include <reply_tags.txt>
-
-	#undef ITEM
-}
 
 void Machine::showRayVersionShort(){
 	cout<<"Ray version "<<RAY_VERSION<<endl;
@@ -833,6 +749,9 @@ void Machine::registerPlugins(){
 	// resolve the symbols
 	
 	m_computeCore.resolveSymbols();
+
+	m_helper.configureVirtualCommunicator(m_virtualCommunicator);
+	m_helper.configureSwitchMan(m_switchMan);
 
 	cout<<endl;
 	

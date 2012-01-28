@@ -249,14 +249,16 @@ void KmerAcademyBuilder::setDistributionAsCompleted(){
 void KmerAcademyBuilder::registerPlugin(ComputeCore*core){
 	PluginHandle plugin=core->allocatePluginHandle();
 
-	core->beginPluginRegistration(plugin);
+	m_plugin=plugin;
 
 	core->setPluginName(plugin,"KmerAcademyBuilder");
 	
-	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY);
+	RAY_SLAVE_MODE_BUILD_KMER_ACADEMY=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY);
 	m_adapter_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY, &m_adapter_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY);
+	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY,"RAY_SLAVE_MODE_BUILD_KMER_ACADEMY");
+}
 
-	core->endPluginRegistration(plugin);
-
+void KmerAcademyBuilder::resolveSymbols(ComputeCore*core){
+	RAY_SLAVE_MODE_BUILD_KMER_ACADEMY=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_BUILD_KMER_ACADEMY");
 }

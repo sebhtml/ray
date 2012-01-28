@@ -50,6 +50,10 @@ using namespace std;
  */
 class EdgePurger : public TaskCreator, public CorePlugin {
 
+	SlaveMode RAY_SLAVE_MODE_PURGE_NULL_EDGES;
+
+	
+
 	Adapter_RAY_SLAVE_MODE_PURGE_NULL_EDGES m_adapter_RAY_SLAVE_MODE_PURGE_NULL_EDGES;
 
 	Profiler*m_profiler;
@@ -92,6 +96,7 @@ public:
 	void setProfiler(Profiler*profiler);
 
 	void registerPlugin(ComputeCore*core);
+	void resolveSymbols(ComputeCore*core);
 };
 
 #endif

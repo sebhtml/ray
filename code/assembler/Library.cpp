@@ -308,21 +308,28 @@ void Library::updateStates(){
 
 void Library::registerPlugin(ComputeCore*core){
 	PluginHandle plugin=core->allocatePluginHandle();
+	m_plugin=plugin;
 
-	core->beginPluginRegistration(plugin);
 	core->setPluginName(plugin,"Library");
 
-	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION);
+	RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION);
 	m_adapter_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION, &m_adapter_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION);
+	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION,"RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION");
 
-	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES);
+	RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES);
 	m_adapter_RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES, &m_adapter_RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES);
+	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES,"RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES");
 
 	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_UPDATE_DISTANCES);
 	m_adapter_RAY_MASTER_MODE_UPDATE_DISTANCES.setObject(this);
 	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_UPDATE_DISTANCES, &m_adapter_RAY_MASTER_MODE_UPDATE_DISTANCES);
 
-	core->endPluginRegistration(plugin);
+}
+
+void Library::resolveSymbols(ComputeCore*core){
+	RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES");
+	RAY_SLAVE_MODE_DO_NOTHING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DO_NOTHING");
+	RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION");
 }

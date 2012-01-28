@@ -51,6 +51,11 @@ using namespace std;
  */
 class SeedingData : public CorePlugin{
 
+	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
+	SlaveMode RAY_SLAVE_MODE_START_SEEDING;
+	SlaveMode RAY_SLAVE_MODE_SEND_SEED_LENGTHS;
+
+
 	Adapter_RAY_SLAVE_MODE_START_SEEDING m_adapter_RAY_SLAVE_MODE_START_SEEDING;
 	Adapter_RAY_SLAVE_MODE_SEND_SEED_LENGTHS m_adapter_RAY_SLAVE_MODE_SEND_SEED_LENGTHS;
 
@@ -140,6 +145,7 @@ public:
 	void writeSeedStatistics();
 
 	void registerPlugin(ComputeCore*core);
+	void resolveSymbols(ComputeCore*core);
 };
 
 #endif

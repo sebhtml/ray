@@ -22,6 +22,8 @@
 #ifndef _CorePlugin_h
 #define _CorePlugin_h
 
+#include <core/types.h>
+
 class ComputeCore;
 
 /** 
@@ -30,6 +32,11 @@ class ComputeCore;
  * The only method of this interface is to register the plugin.
  */
 class CorePlugin{
+
+protected:
+
+	PluginHandle m_plugin;
+
 public:
 
 /** register the plugin **/

@@ -63,6 +63,34 @@ using namespace std;
  * \author Sébastien Boisvert */
 class MachineHelper: public CorePlugin{
 
+	SlaveMode RAY_SLAVE_MODE_EXTENSION;
+	SlaveMode RAY_SLAVE_MODE_ADD_COLORS;
+	SlaveMode RAY_SLAVE_MODE_AMOS;
+	SlaveMode RAY_SLAVE_MODE_ASSEMBLE_WAVES;
+	SlaveMode RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION;
+	SlaveMode RAY_SLAVE_MODE_BUILD_KMER_ACADEMY;
+	SlaveMode RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES;
+	SlaveMode RAY_SLAVE_MODE_COUNT_FILE_ENTRIES;
+	SlaveMode RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS;
+	SlaveMode RAY_SLAVE_MODE_DIE;
+	SlaveMode RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS;
+	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
+	SlaveMode RAY_SLAVE_MODE_EXTRACT_VERTICES;
+	SlaveMode RAY_SLAVE_MODE_FINISH_FUSIONS;
+	SlaveMode RAY_SLAVE_MODE_FUSION;
+	SlaveMode RAY_SLAVE_MODE_INDEX_SEQUENCES;
+	SlaveMode RAY_SLAVE_MODE_LOAD_SEQUENCES;
+	SlaveMode RAY_SLAVE_MODE_SCAFFOLDER;
+	SlaveMode RAY_SLAVE_MODE_SEND_DISTRIBUTION;
+	SlaveMode RAY_SLAVE_MODE_SEND_EXTENSION_DATA;
+	SlaveMode RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES;
+	SlaveMode RAY_SLAVE_MODE_SEND_SEED_LENGTHS;
+	SlaveMode RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES;
+	SlaveMode RAY_SLAVE_MODE_START_SEEDING;
+	SlaveMode RAY_SLAVE_MODE_TEST_NETWORK;
+	SlaveMode RAY_SLAVE_MODE_WRITE_KMERS;
+
+
 	Adapter_RAY_MASTER_MODE_LOAD_CONFIG m_adapter_RAY_MASTER_MODE_LOAD_CONFIG;
 	Adapter_RAY_MASTER_MODE_SEND_COVERAGE_VALUES m_adapter_RAY_MASTER_MODE_SEND_COVERAGE_VALUES;
 	Adapter_RAY_MASTER_MODE_WRITE_KMERS m_adapter_RAY_MASTER_MODE_WRITE_KMERS;
@@ -89,7 +117,6 @@ class MachineHelper: public CorePlugin{
 	Adapter_RAY_SLAVE_MODE_WRITE_KMERS m_adapter_RAY_SLAVE_MODE_WRITE_KMERS;
 	Adapter_RAY_SLAVE_MODE_ASSEMBLE_WAVES m_adapter_RAY_SLAVE_MODE_ASSEMBLE_WAVES;
 	Adapter_RAY_SLAVE_MODE_SEND_EXTENSION_DATA m_adapter_RAY_SLAVE_MODE_SEND_EXTENSION_DATA;
-	Adapter_RAY_SLAVE_MODE_EXTENSION m_adapter_RAY_SLAVE_MODE_EXTENSION;
 	Adapter_RAY_SLAVE_MODE_DIE m_adapter_RAY_SLAVE_MODE_DIE;
 
 	SequencesLoader*m_sl;
@@ -172,6 +199,7 @@ class MachineHelper: public CorePlugin{
 	int getRank();
 	int getSize();
 
+
 public:
 	void constructor(int argc,char**argv,Parameters*parameters,
 		SwitchMan*switchMan,RingAllocator*outboxAllocator,
@@ -194,6 +222,11 @@ VirtualCommunicator*virtualCommunicator,KmerAcademyBuilder*kmerAcademyBuilder,
 	int*ranksDoneAttachingReads,
 SequencesLoader*sl,time_t*lastTime,bool*writeKmerInitialised,Partitioner*partitioner
 );
+
+	void configureVirtualCommunicator(VirtualCommunicator*virtualCommunicator);
+	void configureSwitchMan(SwitchMan*switchMan);
+
+
 
 
 	void call_RAY_MASTER_MODE_LOAD_CONFIG();
@@ -226,6 +259,7 @@ SequencesLoader*sl,time_t*lastTime,bool*writeKmerInitialised,Partitioner*partiti
 	void call_RAY_SLAVE_MODE_DIE();
 
 	void registerPlugin(ComputeCore*core);
+	void resolveSymbols(ComputeCore*core);
 };
 
 #endif

@@ -282,16 +282,19 @@ void SequencesIndexer::updateStates(){
 void SequencesIndexer::registerPlugin(ComputeCore*core){
 
 	PluginHandle plugin=core->allocatePluginHandle();
-
-	core->beginPluginRegistration(plugin);
+	m_plugin=plugin;
 
 	core->setPluginName(plugin,"SequencesIndexer");
 
-	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_INDEX_SEQUENCES);
+	RAY_SLAVE_MODE_INDEX_SEQUENCES=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_INDEX_SEQUENCES);
 	m_adapter_RAY_SLAVE_MODE_INDEX_SEQUENCES.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_INDEX_SEQUENCES,
 		&m_adapter_RAY_SLAVE_MODE_INDEX_SEQUENCES);
+	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_INDEX_SEQUENCES,"RAY_SLAVE_MODE_INDEX_SEQUENCES");
 
-	core->endPluginRegistration(plugin);
+}
 
+void SequencesIndexer::resolveSymbols(ComputeCore*core){
+	RAY_SLAVE_MODE_INDEX_SEQUENCES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_INDEX_SEQUENCES");
+	RAY_SLAVE_MODE_DO_NOTHING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DO_NOTHING");
 }

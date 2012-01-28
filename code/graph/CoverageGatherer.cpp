@@ -200,13 +200,16 @@ void CoverageGatherer::constructor(Parameters*parameters,StaticVector*inbox,Stat
 
 void CoverageGatherer::registerPlugin(ComputeCore*core){
 	PluginHandle plugin=core->allocatePluginHandle();
-
-	core->beginPluginRegistration(plugin);
+	m_plugin=plugin;
 	core->setPluginName(plugin,"CoverageGatherer");
 
-	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_SEND_DISTRIBUTION);
+	RAY_SLAVE_MODE_SEND_DISTRIBUTION=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_SEND_DISTRIBUTION);
 	m_adapter_RAY_SLAVE_MODE_SEND_DISTRIBUTION.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_SEND_DISTRIBUTION, &m_adapter_RAY_SLAVE_MODE_SEND_DISTRIBUTION);
+	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_SEND_DISTRIBUTION,"RAY_SLAVE_MODE_SEND_DISTRIBUTION");
+}
 
-	core->endPluginRegistration(plugin);
+void CoverageGatherer::resolveSymbols(ComputeCore*core){
+	RAY_SLAVE_MODE_SEND_DISTRIBUTION=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_SEND_DISTRIBUTION");
+	RAY_SLAVE_MODE_DO_NOTHING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DO_NOTHING");
 }

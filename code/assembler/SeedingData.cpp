@@ -380,17 +380,24 @@ void SeedingData::loadCheckpoint(){
 
 void SeedingData::registerPlugin(ComputeCore*core){
 	PluginHandle plugin=core->allocatePluginHandle();
+	m_plugin=plugin;
 
-	core->beginPluginRegistration(plugin);
 	core->setPluginName(plugin,"SeedingData");
 
-	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_START_SEEDING);
+	RAY_SLAVE_MODE_START_SEEDING=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_START_SEEDING);
 	m_adapter_RAY_SLAVE_MODE_START_SEEDING.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_START_SEEDING, &m_adapter_RAY_SLAVE_MODE_START_SEEDING);
+	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_START_SEEDING,"RAY_SLAVE_MODE_START_SEEDING");
 
-	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_SEND_SEED_LENGTHS);
+	RAY_SLAVE_MODE_SEND_SEED_LENGTHS=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_SEND_SEED_LENGTHS);
 	m_adapter_RAY_SLAVE_MODE_SEND_SEED_LENGTHS.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_SEND_SEED_LENGTHS, &m_adapter_RAY_SLAVE_MODE_SEND_SEED_LENGTHS);
+	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_SEND_SEED_LENGTHS,"RAY_SLAVE_MODE_SEND_SEED_LENGTHS");
 
-	core->endPluginRegistration(plugin);
+}
+
+void SeedingData::resolveSymbols(ComputeCore*core){
+	RAY_SLAVE_MODE_START_SEEDING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_START_SEEDING");
+	RAY_SLAVE_MODE_DO_NOTHING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DO_NOTHING");
+	RAY_SLAVE_MODE_SEND_SEED_LENGTHS=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_SEND_SEED_LENGTHS");
 }

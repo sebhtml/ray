@@ -25,13 +25,4 @@
 
 extern char SLAVE_MODES[MAXIMUM_NUMBER_OF_SLAVE_HANDLERS][128];
 
-#define ITEM(element) element,
-
-enum SlaveModeEnum {
-#include <slave_modes.txt>
-RAY_SLAVE_MODE_DUMMY
-};
-
-#undef ITEM
-
 #endif

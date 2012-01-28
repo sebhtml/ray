@@ -62,12 +62,13 @@ class ComputeCore{
 	map<string,SlaveMode> m_slaveModeSymbols;
 	map<string,MessageTag> m_messageTagSymbols;
 
-	set<PluginHandle> m_pluginRegistrationsInProgress;
-	set<PluginHandle> m_pluginRegistrationsClosed;
-
 	set<SlaveMode> m_allocatedSlaveModes;
 	set<MasterMode> m_allocatedMasterModes;
 	set<MessageTag> m_allocatedMessageTags;
+
+	set<SlaveMode> m_registeredSlaveModeSymbols;
+	set<MasterMode> m_registeredMasterModeSymbols;
+	set<MessageTag> m_registeredMessageTagSymbols;
 
 	map<PluginHandle,RegisteredPlugin> m_plugins;
 
@@ -147,31 +148,25 @@ class ComputeCore{
 	PluginHandle generatePluginHandle();
 
 	bool validationPluginAllocated(PluginHandle plugin);
-	bool validationPluginRegistrationNotInProgress(PluginHandle plugin);
-	bool validationPluginRegistrationInProgress(PluginHandle plugin);
-	bool validationPluginRegistrationNotClosed(PluginHandle plugin);
-	bool validationPluginRegistrationClosed(PluginHandle plugin);
 	bool validationSlaveModeOwnership(PluginHandle plugin,SlaveMode handle);
 	bool validationMasterModeOwnership(PluginHandle plugin,MasterMode handle);
 	bool validationMessageTagOwnership(PluginHandle plugin,MessageTag handle);
 
-	bool validationMessageTagSymbolAvailable(PluginHandle plugin, char*symbol);
-	bool validationSlaveModeSymbolAvailable(PluginHandle plugin, char*symbol);
-	bool validationMasterModeSymbolAvailable(PluginHandle plugin, char*symbol);
-	bool validationMessageTagSymbolRegistered(PluginHandle plugin, char*symbol);
-	bool validationSlaveModeSymbolRegistered(PluginHandle plugin, char*symbol);
-	bool validationMasterModeSymbolRegistered(PluginHandle plugin, char*symbol);
+	bool validationMessageTagSymbolAvailable(PluginHandle plugin,const char*symbol);
+	bool validationSlaveModeSymbolAvailable(PluginHandle plugin,const char*symbol);
+	bool validationMasterModeSymbolAvailable(PluginHandle plugin,const char*symbol);
+	bool validationMessageTagSymbolRegistered(PluginHandle plugin,const char*symbol);
+	bool validationSlaveModeSymbolRegistered(PluginHandle plugin,const char*symbol);
+	bool validationMasterModeSymbolRegistered(PluginHandle plugin,const char*symbol);
+
+	bool validationMessageTagSymbolNotRegistered(PluginHandle plugin,MessageTag handle);
+	bool validationSlaveModeSymbolNotRegistered(PluginHandle plugin,SlaveMode handle);
+	bool validationMasterModeSymbolNotRegistered(PluginHandle plugin,MasterMode handle);
 
 public:
 
 /** allocate an handle for a plugin **/
 	PluginHandle allocatePluginHandle();
-
-/** start the registration process for a plugin **/
-	void beginPluginRegistration(PluginHandle plugin);
-
-/** end the registration process for a plugin **/
-	void endPluginRegistration(PluginHandle plugin);
 
 /** allocate a slave mode for a handle **/
 	SlaveMode allocateSlaveModeHandle(PluginHandle plugin,SlaveMode desiredValue);
@@ -192,22 +187,22 @@ public:
 	void setMessageTagObjectHandler(PluginHandle plugin,MessageTag tag,MessageTagHandler*object);
 
 /** sets the symbol for a slave mode **/
-	void setSlaveModeSymbol(PluginHandle plugin,SlaveMode mode,char*symbol);
+	void setSlaveModeSymbol(PluginHandle plugin,SlaveMode mode,const char*symbol);
 
 /** sets the symbol for a master mode **/
-	void setMasterModeSymbol(PluginHandle plugin,MasterMode mode,char*symbol);
+	void setMasterModeSymbol(PluginHandle plugin,MasterMode mode,const char*symbol);
 
 /** set the symbol for a message tag **/
-	void setMessageTagSymbol(PluginHandle plugin,MessageTag mode,char*symbol);
+	void setMessageTagSymbol(PluginHandle plugin,MessageTag mode,const char*symbol);
 
 /** get a slave mode from its symbol **/
-	SlaveMode getSlaveModeFromSymbol(PluginHandle plugin,char*symbol);
+	SlaveMode getSlaveModeFromSymbol(PluginHandle plugin,const char*symbol);
 
 /** get a master mode from its symbol **/
-	MasterMode getMasterModeFromSymbol(PluginHandle plugin,char*symbol);
+	MasterMode getMasterModeFromSymbol(PluginHandle plugin,const char*symbol);
 
 /** get a message tag from its symbol **/
-	MessageTag getMessageTagFromSymbol(PluginHandle plugin,char*symbol);
+	MessageTag getMessageTagFromSymbol(PluginHandle plugin,const char*symbol);
 
 /** set the reply tag for a message tag **/
 	void setMessageTagReplyTag(PluginHandle plugin,MessageTag messageTag,MessageTag replyTag);

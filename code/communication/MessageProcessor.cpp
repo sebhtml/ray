@@ -2289,8 +2289,8 @@ void MessageProcessor::setSwitchMan(SwitchMan*a){
 
 void MessageProcessor::registerPlugin(ComputeCore*core){
 	PluginHandle plugin=core->allocatePluginHandle();
+	m_plugin=plugin;
 
-	core->beginPluginRegistration(plugin);
 	core->setPluginName(plugin,"MessageProcessor");
 
 	core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_LOAD_SEQUENCES);
@@ -2732,8 +2732,10 @@ void MessageProcessor::registerPlugin(ComputeCore*core){
 	core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL);
 	m_adapter_RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL, &m_adapter_RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL);
+}
 
-	core->endPluginRegistration(plugin);
+void MessageProcessor::resolveSymbols(ComputeCore*core){
+	RAY_SLAVE_MODE_PURGE_NULL_EDGES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_PURGE_NULL_EDGES");
 }
 
 

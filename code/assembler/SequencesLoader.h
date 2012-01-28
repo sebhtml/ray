@@ -45,6 +45,11 @@ using namespace std;
  */
 class SequencesLoader : public CorePlugin{
 
+	
+
+	SlaveMode RAY_SLAVE_MODE_LOAD_SEQUENCES;
+	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
+
 	Adapter_RAY_SLAVE_MODE_LOAD_SEQUENCES m_adapter_RAY_SLAVE_MODE_LOAD_SEQUENCES;
 
 	MyAllocator*m_persistentAllocator;
@@ -79,5 +84,6 @@ public:
 		Parameters*parameters,StaticVector*outbox,SlaveMode*mode);
 
 	void registerPlugin(ComputeCore*core);
+	void resolveSymbols(ComputeCore*core);
 };
 #endif

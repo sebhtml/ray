@@ -50,6 +50,9 @@ using namespace std;
  */
 class SequencesIndexer: public CorePlugin{
 
+	SlaveMode RAY_SLAVE_MODE_INDEX_SEQUENCES;
+	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
+
 	Adapter_RAY_SLAVE_MODE_INDEX_SEQUENCES m_adapter_RAY_SLAVE_MODE_INDEX_SEQUENCES;
 
 	Derivative m_derivative;
@@ -104,6 +107,7 @@ public:
 	MyAllocator*getAllocator();
 
 	void registerPlugin(ComputeCore*core);
+	void resolveSymbols(ComputeCore*core);
 };
 
 #endif

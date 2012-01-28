@@ -50,6 +50,10 @@ using namespace std;
  */
 class KmerAcademyBuilder : public CorePlugin{
 
+	
+
+	SlaveMode RAY_SLAVE_MODE_BUILD_KMER_ACADEMY;
+
 	Adapter_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY m_adapter_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY;
 
 	Profiler*m_profiler;
@@ -112,6 +116,7 @@ SlaveMode*mode,RingAllocator*outboxAllocator
 	void setDistributionAsCompleted();
 
 	void registerPlugin(ComputeCore*core);
+	void resolveSymbols(ComputeCore*core);
 };
 
 #endif
