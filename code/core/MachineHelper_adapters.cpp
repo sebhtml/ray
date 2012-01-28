@@ -213,14 +213,6 @@ void Adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES::call(){
 	m_object->call_RAY_SLAVE_MODE_EXTRACT_VERTICES();
 }
 
-void Adapter_RAY_SLAVE_MODE_PURGE_NULL_EDGES::setObject(MachineHelper*object){
-	m_object=object;
-}
-
-void Adapter_RAY_SLAVE_MODE_PURGE_NULL_EDGES::call(){
-	m_object->call_RAY_SLAVE_MODE_PURGE_NULL_EDGES();
-}
-
 void Adapter_RAY_SLAVE_MODE_WRITE_KMERS::setObject(MachineHelper*object){
 	m_object=object;
 }

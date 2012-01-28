@@ -10,6 +10,10 @@ obj-y += graph/GridTable.o graph/GridTableIterator.o
 obj-y += structures/Vertex.o
 obj-y += assembler/VerticesExtractor.o 
 
+
+# plugin EdgePurger
+
+obj-y += assembler/EdgePurger_adapters.o
 obj-y += assembler/EdgePurger.o assembler/EdgePurgerWorker.o
 
 # plugin KmerAcademyBuilder

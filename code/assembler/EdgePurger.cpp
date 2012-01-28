@@ -163,3 +163,16 @@ void EdgePurger::initializeMethod(){
 void EdgePurger::setProfiler(Profiler*profiler){
 	m_profiler = profiler;
 }
+
+void EdgePurger::registerPlugin(ComputeCore*core){
+	PluginHandle plugin=core->allocatePluginHandle();
+
+	core->beginPluginRegistration(plugin);
+	core->setPluginName(plugin,"EdgePurger");
+
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_PURGE_NULL_EDGES);
+	m_adapter_RAY_SLAVE_MODE_PURGE_NULL_EDGES.setObject(this);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_PURGE_NULL_EDGES, &m_adapter_RAY_SLAVE_MODE_PURGE_NULL_EDGES);
+
+	core->endPluginRegistration(plugin);
+}

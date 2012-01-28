@@ -379,10 +379,6 @@ void MachineHelper::call_RAY_MASTER_MODE_PURGE_NULL_EDGES(){
 	}
 }
 
-void MachineHelper::call_RAY_SLAVE_MODE_PURGE_NULL_EDGES(){
-	m_edgePurger->call_RAY_SLAVE_MODE_PURGE_NULL_EDGES();
-}
-
 void MachineHelper::call_RAY_MASTER_MODE_WRITE_KMERS(){
 	if(!(*m_writeKmerInitialised)){
 		(*m_writeKmerInitialised)=true;
@@ -1053,10 +1049,6 @@ void MachineHelper::registerPlugin(ComputeCore*core){
 	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_EXTRACT_VERTICES);
 	m_adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_EXTRACT_VERTICES, &m_adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES);
-
-	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_PURGE_NULL_EDGES);
-	m_adapter_RAY_SLAVE_MODE_PURGE_NULL_EDGES.setObject(this);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_PURGE_NULL_EDGES, &m_adapter_RAY_SLAVE_MODE_PURGE_NULL_EDGES);
 
 	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_WRITE_KMERS);
 	m_adapter_RAY_SLAVE_MODE_WRITE_KMERS.setObject(this);

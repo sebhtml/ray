@@ -26,15 +26,18 @@
 #include <memory/RingAllocator.h>
 #include <structures/StaticVector.h>
 #include <communication/VirtualCommunicator.h>
-#include <map>
 #include <graph/GridTable.h>
 #include <graph/GridTableIterator.h>
 #include <profiling/Profiler.h>
 #include <profiling/Derivative.h>
-#include <set>
-#include <stdint.h>
 #include <assembler/EdgePurgerWorker.h>
 #include <scheduling/TaskCreator.h>
+#include <core/ComputeCore.h>
+#include <assembler/EdgePurger_adapters.h>
+
+#include <map>
+#include <set>
+#include <stdint.h>
 using namespace std;
 
 /**
@@ -45,7 +48,10 @@ using namespace std;
  * EdgePurger.cpp remove these edges.
  * \author Sébastien Boisvert
  */
-class EdgePurger : public TaskCreator {
+class EdgePurger : public TaskCreator, public CorePlugin {
+
+	Adapter_RAY_SLAVE_MODE_PURGE_NULL_EDGES m_adapter_RAY_SLAVE_MODE_PURGE_NULL_EDGES;
+
 	Profiler*m_profiler;
 
 	/** checkpointing */
@@ -84,6 +90,8 @@ public:
 	virtual void destroyWorker(Worker*);
 
 	void setProfiler(Profiler*profiler);
+
+	void registerPlugin(ComputeCore*core);
 };
 
 #endif
