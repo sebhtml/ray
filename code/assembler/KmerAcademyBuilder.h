@@ -33,6 +33,9 @@
 #include <profiling/Profiler.h>
 #include <memory/RingAllocator.h>
 #include <structures/Read.h>
+#include <core/ComputeCore.h>
+#include <assembler/KmerAcademyBuilder_adapters.h>
+
 #include <set>
 #include <vector>
 using namespace std;
@@ -45,7 +48,10 @@ using namespace std;
  * their respective owners.
  * \author Sébastien Boisvert
  */
-class KmerAcademyBuilder{
+class KmerAcademyBuilder : public CorePlugin{
+
+	Adapter_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY m_adapter_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY;
+
 	Profiler*m_profiler;
 
 	Derivative m_derivative;
@@ -62,11 +68,18 @@ class KmerAcademyBuilder{
 	int m_rank;
 	RingAllocator*m_outboxAllocator;
 	StaticVector*m_outbox;
+	StaticVector*m_inbox;
 	int*m_mode;
+
+/** this attribute is not used, it is an artefact. **/
+	bool m_reverseComplementVertex;
+
+	int m_mode_send_vertices_sequence_id;
 	int m_mode_send_vertices_sequence_id_position;
 
 	int m_pendingMessages;
 
+	ArrayOfReads*m_myReads;
 	BufferedData m_bufferedData;
 	int m_size;
 
@@ -77,19 +90,15 @@ public:
 	BufferedData m_buffersForIngoingEdgesToDelete;
 	BufferedData m_buffersForOutgoingEdgesToDelete;
 
-	void constructor(int size,Parameters*parameters,GridTable*graph);
+	void constructor(int size,Parameters*parameters,GridTable*graph,
+		ArrayOfReads*myReads,StaticVector*inbox,StaticVector*outbox,
+SlaveMode*mode,RingAllocator*outboxAllocator
+);
+
 	void setProfiler(Profiler*profiler);
-	void call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(int*m_mode_send_vertices_sequence_id,
-				ArrayOfReads*m_myReads,
-				bool*m_reverseComplementVertex,
-				int rank,
-				StaticVector*m_outbox,
-				StaticVector*m_inbox,
-				int m_wordSize,
-				int size,
-				RingAllocator*m_outboxAllocator,
-				int*m_mode
-			);
+
+	void call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY();
+
 	void setReadiness();
 
 	bool finished();
@@ -101,6 +110,8 @@ public:
 	void showBuffers();
 	bool isDistributionCompleted();
 	void setDistributionAsCompleted();
+
+	void registerPlugin(ComputeCore*core);
 };
 
 #endif

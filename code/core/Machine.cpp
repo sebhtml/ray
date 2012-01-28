@@ -349,7 +349,8 @@ void Machine::start(){
 		&(m_seedingData->m_SEEDING_receivedOutgoingEdges),&m_c,&m_oa);
 
 
-	m_kmerAcademyBuilder.constructor(m_parameters.getSize(),&m_parameters,&m_subgraph);
+	m_kmerAcademyBuilder.constructor(m_parameters.getSize(),&m_parameters,&m_subgraph,
+		&m_myReads,m_inbox,m_outbox,m_switchMan->getSlaveModePointer(),m_outboxAllocator);
 
 	m_si.constructor(&m_parameters,m_outboxAllocator,m_inbox,m_outbox,m_virtualCommunicator,
 		m_switchMan->getSlaveModePointer(),&m_myReads);
@@ -797,9 +798,10 @@ void Machine::showRayVersion(MessagesHandler*messagesHandler,bool fullReport){
 
 void Machine::registerPlugins(){
 	cout<<endl;
+	m_computeCore.registerPlugin(&m_networkTest);
+	m_computeCore.registerPlugin(&m_kmerAcademyBuilder);
 	m_computeCore.registerPlugin(&m_amos);
 	m_computeCore.registerPlugin(&m_searcher);
-	m_computeCore.registerPlugin(&m_networkTest);
 	m_computeCore.registerPlugin(&m_mp);
 	m_computeCore.registerPlugin(&m_scaffolder);
 	m_computeCore.registerPlugin(&m_fusionTaskCreator);

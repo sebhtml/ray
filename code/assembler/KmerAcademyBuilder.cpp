@@ -33,31 +33,14 @@
 #include <fstream>
 using namespace std;
 
-void KmerAcademyBuilder::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(int*m_mode_send_vertices_sequence_id,
-				ArrayOfReads*m_myReads,
-				bool*m_reverseComplementVertex,
-				int rank,
-				StaticVector*m_outbox,
-				StaticVector*m_inbox,
-				int wordSize,
-				int size,
-				RingAllocator*m_outboxAllocator,
-				int*m_mode
-				){
+void KmerAcademyBuilder::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(){
 	
 	if(!m_initialised){
 		m_initialised=true;
-		(*m_mode_send_vertices_sequence_id)=0;
+		(m_mode_send_vertices_sequence_id)=0;
 	}
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
-
-	if(this->m_outbox==NULL){
-		m_rank=rank;
-		this->m_mode=m_mode;
-		this->m_outbox=m_outbox;
-		this->m_outboxAllocator=m_outboxAllocator;
-	}
 
 	if(m_finished)
 		return;
@@ -66,7 +49,7 @@ void KmerAcademyBuilder::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(int*m_mode_send_
 		m_checkedCheckpoint=true;
 		if(m_parameters->hasCheckpoint("GenomeGraph")){
 			cout<<"Rank "<<m_parameters->getRank()<<": checkpoint GenomeGraph exists, not counting k-mers."<<endl;
-			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED,rank);
+			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED,m_parameters->getRank());
 			m_outbox->push_back(aMessage);
 			m_finished=true;
 			return;
@@ -86,32 +69,34 @@ void KmerAcademyBuilder::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(int*m_mode_send_
 		return;
 	}
 
-	if(*m_mode_send_vertices_sequence_id%10000==0 &&m_mode_send_vertices_sequence_id_position==0
-	&&*m_mode_send_vertices_sequence_id<(int)m_myReads->size()){
+	if(m_mode_send_vertices_sequence_id%10000==0 &&m_mode_send_vertices_sequence_id_position==0
+	&&m_mode_send_vertices_sequence_id<(int)m_myReads->size()){
 		string reverse="";
-		if(*m_reverseComplementVertex==true){
+		if(m_reverseComplementVertex==true){
 			reverse="(reverse complement) ";
 		}
-		printf("Rank %i is counting k-mers in sequence reads %s[%i/%i]\n",rank,reverse.c_str(),(int)*m_mode_send_vertices_sequence_id+1,(int)m_myReads->size());
+		printf("Rank %i is counting k-mers in sequence reads %s[%i/%i]\n",m_parameters->getRank(),
+			reverse.c_str(),(int)m_mode_send_vertices_sequence_id+1,(int)m_myReads->size());
 		fflush(stdout);
 
-		m_derivative.addX(*m_mode_send_vertices_sequence_id);
+		m_derivative.addX(m_mode_send_vertices_sequence_id);
 		m_derivative.printStatus(SLAVE_MODES[RAY_SLAVE_MODE_BUILD_KMER_ACADEMY],RAY_SLAVE_MODE_BUILD_KMER_ACADEMY);
 		m_derivative.printEstimatedTime(m_myReads->size());
 	}
 
-	if(*m_mode_send_vertices_sequence_id>(int)m_myReads->size()-1){
+	if(m_mode_send_vertices_sequence_id>(int)m_myReads->size()-1){
 		// flush data
-		flushAll(m_outboxAllocator,m_outbox,rank);
+		flushAll(m_outboxAllocator,m_outbox,m_parameters->getRank());
 		if(m_pendingMessages==0){
 			#ifdef ASSERT
 			assert(m_bufferedData.isEmpty());
 			#endif
 
-			Message aMessage(NULL,0, MASTER_RANK,RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED,rank);
+			Message aMessage(NULL,0, MASTER_RANK,RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED,m_parameters->getRank());
 			m_outbox->push_back(aMessage);
 			m_finished=true;
-			printf("Rank %i is counting k-mers in sequence reads [%i/%i] (completed)\n",rank,(int)*m_mode_send_vertices_sequence_id,(int)m_myReads->size());
+			printf("Rank %i is counting k-mers in sequence reads [%i/%i] (completed)\n",
+				m_parameters->getRank(),(int)m_mode_send_vertices_sequence_id,(int)m_myReads->size());
 			fflush(stdout);
 			m_bufferedData.showStatistics(m_parameters->getRank());
 
@@ -122,19 +107,19 @@ void KmerAcademyBuilder::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(int*m_mode_send_
 		MACRO_COLLECT_PROFILING_INFORMATION();
 	}else{
 		if(m_mode_send_vertices_sequence_id_position==0){
-			(*m_myReads)[(*m_mode_send_vertices_sequence_id)]->getSeq(m_readSequence,m_parameters->getColorSpaceMode(),false);
+			(*m_myReads)[(m_mode_send_vertices_sequence_id)]->getSeq(m_readSequence,m_parameters->getColorSpaceMode(),false);
 		
 		}
 		int len=strlen(m_readSequence);
 
-		if(len<wordSize){
-			(*m_mode_send_vertices_sequence_id)++;
+		if(len<m_parameters->getWordSize()){
+			(m_mode_send_vertices_sequence_id)++;
 			(m_mode_send_vertices_sequence_id_position)=0;
 			return;
 		}
 
 		char memory[MAXKMERLENGTH+1];
-		int lll=len-wordSize+1;
+		int lll=len-m_parameters->getWordSize()+1;
 		
 		#ifdef ASSERT
 		assert(m_readSequence!=NULL);
@@ -142,8 +127,8 @@ void KmerAcademyBuilder::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(int*m_mode_send_
 
 		int p=(m_mode_send_vertices_sequence_id_position);
 
-		memcpy(memory,m_readSequence+p,wordSize);
-		memory[wordSize]='\0';
+		memcpy(memory,m_readSequence+p,m_parameters->getWordSize());
+		memory[m_parameters->getWordSize()]='\0';
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
@@ -153,7 +138,7 @@ void KmerAcademyBuilder::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(int*m_mode_send_
 			MACRO_COLLECT_PROFILING_INFORMATION();
 
 			// reverse complement
-			Kmer reverseComplementKmer=a.complementVertex(wordSize,m_parameters->getColorSpaceMode());
+			Kmer reverseComplementKmer=a.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 
 			Kmer lowerKmer=a;
 			if(reverseComplementKmer<lowerKmer)
@@ -165,7 +150,8 @@ void KmerAcademyBuilder::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(int*m_mode_send_
 				m_bufferedData.addAt(rankToFlush,lowerKmer.getU64(i));
 			}
 
-			if(m_bufferedData.flush(rankToFlush,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_KMER_ACADEMY_DATA,m_outboxAllocator,m_outbox,rank,false)){
+			if(m_bufferedData.flush(rankToFlush,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_KMER_ACADEMY_DATA,m_outboxAllocator,m_outbox,
+				m_parameters->getRank(),false)){
 				m_pendingMessages++;
 			}
 
@@ -174,7 +160,7 @@ void KmerAcademyBuilder::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(int*m_mode_send_
 
 		(m_mode_send_vertices_sequence_id_position++);
 		if((m_mode_send_vertices_sequence_id_position)==lll){
-			(*m_mode_send_vertices_sequence_id)++;
+			(m_mode_send_vertices_sequence_id)++;
 			(m_mode_send_vertices_sequence_id_position)=0;
 		}
 			
@@ -188,13 +174,26 @@ void KmerAcademyBuilder::setProfiler(Profiler*profiler){
 	m_profiler = profiler;
 }
 
-void KmerAcademyBuilder::constructor(int size,Parameters*parameters,GridTable*graph){
+void KmerAcademyBuilder::constructor(int size,Parameters*parameters,GridTable*graph,
+	ArrayOfReads*myReads,StaticVector*inbox,StaticVector*outbox,
+SlaveMode*mode,RingAllocator*outboxAllocator){
+
+
+	m_mode=mode;
+	m_outbox=outbox;
+	m_outboxAllocator=outboxAllocator;
+	m_inbox=inbox;
+
+	m_myReads=myReads;
 	m_checkedCheckpoint=false;
 	m_subgraph=graph;
 	m_parameters=parameters;
 	m_finished=false;
 	m_distributionIsCompleted=false;
-	m_outbox=NULL;
+
+	m_reverseComplementVertex=false;
+
+	m_mode_send_vertices_sequence_id=0;
 	m_mode_send_vertices_sequence_id_position=0;
 	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),RAY_MALLOC_TYPE_KMER_ACADEMY_BUFFER,m_parameters->showMemoryAllocations(),KMER_U64_ARRAY_SIZE);
 	
@@ -202,6 +201,8 @@ void KmerAcademyBuilder::constructor(int size,Parameters*parameters,GridTable*gr
 	m_size=size;
 
 	m_initialised=false;
+
+	m_rank=m_parameters->getRank();
 }
 
 void KmerAcademyBuilder::setReadiness(){
@@ -243,4 +244,19 @@ bool KmerAcademyBuilder::isDistributionCompleted(){
 
 void KmerAcademyBuilder::setDistributionAsCompleted(){
 	m_distributionIsCompleted=true;
+}
+
+void KmerAcademyBuilder::registerPlugin(ComputeCore*core){
+	PluginHandle plugin=core->allocatePluginHandle();
+
+	core->beginPluginRegistration(plugin);
+
+	core->setPluginName(plugin,"KmerAcademyBuilder");
+	
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY);
+	m_adapter_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY.setObject(this);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY, &m_adapter_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY);
+
+	core->endPluginRegistration(plugin);
+
 }

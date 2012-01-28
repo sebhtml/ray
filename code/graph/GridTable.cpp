@@ -172,8 +172,11 @@ void GridTable::addDirection(Kmer*a,Direction*d){
 	assert(a!=NULL);
 	assert(d!=NULL);
 
-	Kmer copy1=*a;
-	Direction copy2=*d;
+	// the commented code was used when non-NULL pointers were invalid
+	// according to /proc/self/maps
+	//
+	//Kmer copy1=*a;
+	//Direction copy2=*d;
 	#endif
 
 	Vertex*i=find(a);

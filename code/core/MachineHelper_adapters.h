@@ -202,15 +202,6 @@ public:
 	void call();
 };
 
-
-class Adapter_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY: public SlaveModeHandler{
-	MachineHelper*m_object;
-
-public:
-	void setObject(MachineHelper*object);
-	void call();
-};
-
 class Adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES: public SlaveModeHandler{
 	MachineHelper*m_object;
 

@@ -6,17 +6,19 @@ obj-y += assembler/ray_main.o
 obj-y += core/Machine.o 
 obj-y += core/Parameters.o core/common_functions.o
 
-obj-y += graph/KmerAcademy.o graph/KmerAcademyIterator.o
 obj-y += graph/GridTable.o graph/GridTableIterator.o
+obj-y += structures/Vertex.o
+obj-y += assembler/VerticesExtractor.o 
 
+obj-y += assembler/EdgePurger.o assembler/EdgePurgerWorker.o
+
+# plugin KmerAcademyBuilder
+
+obj-y += assembler/KmerAcademyBuilder_adapters.o
+obj-y += assembler/KmerAcademyBuilder.o
 obj-y +=  structures/BloomFilter.o
 obj-y += structures/Kmer.o
-obj-y +=  structures/Direction.o  structures/PairedRead.o structures/ReadAnnotation.o 
-obj-y += structures/Vertex.o
-
-obj-y += assembler/VerticesExtractor.o 
-obj-y += assembler/KmerAcademyBuilder.o
-obj-y += assembler/EdgePurger.o assembler/EdgePurgerWorker.o
+obj-y += graph/KmerAcademy.o graph/KmerAcademyIterator.o
 
 # plugin SequencesLoader
 
@@ -81,6 +83,7 @@ obj-y += communication/MessageProcessor.o
 obj-y += assembler/SequencesIndexer_adapters.o 
 obj-y += assembler/SequencesIndexer.o 
 obj-y += assembler/IndexerWorker.o 
+obj-y +=  structures/PairedRead.o structures/ReadAnnotation.o 
 
 # plugin Amos
 
@@ -119,6 +122,7 @@ obj-y += assembler/Library.o
 
 obj-y += assembler/SeedExtender_adapters.o
 obj-y += assembler/SeedExtender.o
+obj-y +=  structures/Direction.o
 obj-y += assembler/VertexMessenger.o assembler/ReadFetcher.o
 obj-y += heuristics/BubbleTool.o heuristics/Chooser.o heuristics/OpenAssemblerChooser.o
 obj-y += heuristics/TipWatchdog.o heuristics/NovaEngine.o
