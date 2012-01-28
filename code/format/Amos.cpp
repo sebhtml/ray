@@ -150,7 +150,8 @@ void Amos::call_RAY_SLAVE_MODE_AMOS(){
 			m_ed->m_EXTENSION_reads_received=false;
 			Kmer vertex=m_ed->m_EXTENSION_contigs[m_contigId][m_mode_send_vertices_sequence_id_position];
 
-			m_readFetcher.constructor(&vertex,m_outboxAllocator,m_inbox,m_outbox,m_parameters,m_virtualCommunicator,m_workerId);
+			m_readFetcher.constructor(&vertex,m_outboxAllocator,m_inbox,m_outbox,m_parameters,m_virtualCommunicator,m_workerId,
+ RAY_MPI_TAG_REQUEST_VERTEX_READS);
 
 			// iterator on reads
 			m_fusionData->m_FUSION_path_id=0;
@@ -239,4 +240,9 @@ void Amos::resolveSymbols(ComputeCore*core){
 
 	RAY_MASTER_MODE_AMOS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_AMOS");
 	RAY_MASTER_MODE_SCAFFOLDER=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_SCAFFOLDER");
+
+	RAY_MPI_TAG_ASK_READ_LENGTH=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ASK_READ_LENGTH");
+	RAY_MPI_TAG_WRITE_AMOS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_WRITE_AMOS");
+	RAY_MPI_TAG_WRITE_AMOS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_WRITE_AMOS_REPLY");
+	RAY_MPI_TAG_REQUEST_VERTEX_READS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_REQUEST_VERTEX_READS");
 }

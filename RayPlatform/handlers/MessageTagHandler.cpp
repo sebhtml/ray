@@ -25,7 +25,7 @@
 #endif
 #include <stdlib.h> /* for NULL */
 
-void MessageTagHandler::callHandler(Tag messageTag,Message*message){
+void MessageTagHandler::callHandler(MessageTag messageTag,Message*message){
 	MessageTagHandler*handlerObject=m_objects[messageTag];
 
 	// it is useless to call base implementations
@@ -42,7 +42,7 @@ MessageTagHandler::MessageTagHandler(){
 	}
 }
 
-void MessageTagHandler::setObjectHandler(Tag messageTag,MessageTagHandler*object){
+void MessageTagHandler::setObjectHandler(MessageTag messageTag,MessageTagHandler*object){
 	m_objects[messageTag]=object;
 }
 

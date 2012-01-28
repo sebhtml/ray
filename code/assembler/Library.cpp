@@ -132,7 +132,10 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 				}
 				#endif
 
-				m_aliveWorkers[m_SEEDING_i].constructor(m_SEEDING_i,m_seedingData,m_virtualCommunicator,m_outboxAllocator,m_parameters,m_inbox,m_outbox,&m_libraryDistances,&m_detectedDistances,&m_allocator);
+				m_aliveWorkers[m_SEEDING_i].constructor(m_SEEDING_i,m_seedingData,m_virtualCommunicator,m_outboxAllocator,m_parameters,m_inbox,m_outbox,&m_libraryDistances,&m_detectedDistances,&m_allocator,
+					RAY_MPI_TAG_GET_READ_MATE, RAY_MPI_TAG_REQUEST_VERTEX_READS
+					);
+
 				m_activeWorkers.insert(m_SEEDING_i);
 				int population=m_aliveWorkers.size();
 				if(population>m_maximumWorkers){
@@ -327,6 +330,10 @@ void Library::registerPlugin(ComputeCore*core){
 	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_UPDATE_DISTANCES, &m_adapter_RAY_MASTER_MODE_UPDATE_DISTANCES);
 	core->setMasterModeSymbol(plugin,RAY_MASTER_MODE_UPDATE_DISTANCES,"RAY_MASTER_MODE_UPDATE_DISTANCES");
 
+	RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION_REPLY);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION_REPLY,"RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION_REPLY");
+
+
 }
 
 void Library::resolveSymbols(ComputeCore*core){
@@ -336,4 +343,15 @@ void Library::resolveSymbols(ComputeCore*core){
 
 	RAY_MASTER_MODE_TRIGGER_EXTENSIONS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_TRIGGER_EXTENSIONS");
 	RAY_MASTER_MODE_UPDATE_DISTANCES=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_UPDATE_DISTANCES");
+
+	RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED");
+	RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE");
+	RAY_MPI_TAG_LIBRARY_DISTANCE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_LIBRARY_DISTANCE");
+	RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION");
+	RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION_REPLY");
+
+	RAY_MPI_TAG_GET_READ_MATE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_READ_MATE");
+	RAY_MPI_TAG_REQUEST_VERTEX_READS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_REQUEST_VERTEX_READS");
+
+	RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION_REPLY");
 }

@@ -22,12 +22,17 @@
 #ifndef _MessagesHandler
 #define _MessagesHandler
 
-#include <mpi.h>
+#include <mpi.h> // this is the only reference to MPI
+
 #include <memory/MyAllocator.h>
 #include <communication/Message.h>
 //#include <core/common_functions.h>
 #include <memory/RingAllocator.h>
 #include <structures/StaticVector.h>
+#include <plugins/CorePlugin.h>
+
+class ComputeCore;
+
 #include <vector>
 using namespace std;
 
@@ -53,7 +58,10 @@ public:
  * This boxes of messages could be implemented with something else than message-passing interface.
  * \author Sébastien Boisvert
  */
-class MessagesHandler{
+class MessagesHandler: public CorePlugin{
+
+	MessageTag RAY_MPI_TAG_DUMMY;
+
 	bool m_destroyed;
 
 	vector<int> m_connections;
@@ -130,6 +138,9 @@ class MessagesHandler{
 	roundRobinReception_persistent();
 
 	#endif
+
+	void createBuffers();
+
 public:
 	/** initialize the message handler
  * 	*/
@@ -172,6 +183,9 @@ public:
 	string getMessagePassingInterfaceImplementation();
 
 	void setConnections(vector<int>*connections);
+
+	void registerPlugin(ComputeCore*core);
+	void resolveSymbols(ComputeCore*core);
 };
 
 #endif

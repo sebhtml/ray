@@ -27,7 +27,14 @@ void IndexerWorker::constructor(int sequenceId,Parameters*parameters,RingAllocat
 	VirtualCommunicator*vc,uint64_t workerId,ArrayOfReads*a,MyAllocator*allocator,
 	ofstream*f,
 	map<int,map<int,int> >*forwardStatistics,
-	map<int,map<int,int> >*reverseStatistics){
+	map<int,map<int,int> >*reverseStatistics,
+
+	MessageTag RAY_MPI_TAG_ATTACH_SEQUENCE,
+	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE
+){
+
+	this->RAY_MPI_TAG_ATTACH_SEQUENCE=RAY_MPI_TAG_ATTACH_SEQUENCE;
+	this->RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE=RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE;
 
 	m_forwardStatistics=forwardStatistics;
 	m_reverseStatistics=reverseStatistics;

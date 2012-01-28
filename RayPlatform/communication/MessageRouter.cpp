@@ -32,6 +32,7 @@
 #include <string.h> /* for memcpy */
 #include <assert.h>
 #include <core/OperatingSystem.h>
+#include <core/ComputeCore.h>
 using namespace std;
 
 /*
@@ -48,7 +49,7 @@ void MessageRouter::routeOutcomingMessages(){
 	for(int i=0;i<numberOfMessages;i++){
 		Message*aMessage=m_outbox->at(i);
 
-		Tag communicationTag=aMessage->getTag();
+		MessageTag communicationTag=aMessage->getTag();
 
 		#ifdef CONFIG_ROUTING_VERBOSITY
 		uint8_t printableTag=communicationTag;
@@ -113,7 +114,7 @@ bool MessageRouter::routeIncomingMessages(){
 	// otherwise, we have exactly one precious message.
 	
 	Message*aMessage=m_inbox->at(0);
-	Tag tag=aMessage->getTag();
+	MessageTag tag=aMessage->getTag();
 
 	// if the message has no routing tag, then we can sefely receive it as is
 	if(!isRoutingTag(tag)){
@@ -142,7 +143,7 @@ bool MessageRouter::routeIncomingMessages(){
 		// we must update the original source and original tag
 		aMessage->setSource(trueSource);
 		
-		Tag trueTag=getTag(routingTag);
+		MessageTag trueTag=getTag(routingTag);
 		aMessage->setTag(trueTag);
 
 		return false;
@@ -162,7 +163,7 @@ bool MessageRouter::routeIncomingMessages(){
 		
 	// process the relay event if necessary
 	if(m_relayCheckerActivated){
-		Tag trueTag=getTag(routingTag);
+		MessageTag trueTag=getTag(routingTag);
 
 		if(trueSource==MASTER_RANK){
 			m_relayedMessagesFrom0[trueTag]++;
@@ -245,11 +246,11 @@ void MessageRouter::activateRelayChecker(){
 	m_relayCheckerActivated=true;
 }
 
-void MessageRouter::addTagToCheckForRelayFrom0(Tag tag){
+void MessageRouter::addTagToCheckForRelayFrom0(MessageTag tag){
 	m_tagsToCheckForRelayFrom0.insert(tag);
 }
 
-void MessageRouter::addTagToCheckForRelayTo0(Tag tag){
+void MessageRouter::addTagToCheckForRelayTo0(MessageTag tag){
 	m_tagsToCheckForRelayTo0.insert(tag);
 }
 
@@ -257,10 +258,10 @@ bool MessageRouter::hasCompletedRelayEvents(){
 	// check relay events from 0
 	int expected=m_graph.getRelaysFrom0(m_rank);
 
-	for(set<Tag>::iterator i=m_tagsToCheckForRelayFrom0.begin();
+	for(set<MessageTag>::iterator i=m_tagsToCheckForRelayFrom0.begin();
 		i!=m_tagsToCheckForRelayFrom0.end();i++){
 
-		Tag tag=*i;
+		MessageTag tag=*i;
 		int actual=m_relayedMessagesFrom0[tag];
 
 		if(actual!=expected){
@@ -271,10 +272,10 @@ bool MessageRouter::hasCompletedRelayEvents(){
 	// check relay events to 0
 	expected=m_graph.getRelaysTo0(m_rank);
 
-	for(set<Tag>::iterator i=m_tagsToCheckForRelayTo0.begin();
+	for(set<MessageTag>::iterator i=m_tagsToCheckForRelayTo0.begin();
 		i!=m_tagsToCheckForRelayTo0.end();i++){
 
-		Tag tag=*i;
+		MessageTag tag=*i;
 		int actual=m_relayedMessagesTo0[tag];
 
 		if(actual!=expected){
@@ -296,7 +297,7 @@ bool MessageRouter::hasCompletedRelayEvents(){
 #define RAY_ROUTING_TAG_DESTINATION_OFFSET (RAY_ROUTING_TAG_TAG_SIZE+RAY_ROUTING_TAG_SOURCE_SIZE)
 #define RAY_ROUTING_TAG_DESTINATION_SIZE 12
 
-bool MessageRouter::isRoutingTag(Tag tag){
+bool MessageRouter::isRoutingTag(MessageTag tag){
 	// the only case that could be an issue is sender=0 receiver=0
 	// but in this case, no routing is required (self send)
 	return getSource(tag)>0||getDestination(tag)>0;
@@ -341,7 +342,7 @@ int MessageRouter::getDestination(int tag){
  *
  * 8+12+12=32
  */
-RoutingTag MessageRouter::getRoutingTag(Tag tag,Rank source,Rank destination){
+RoutingTag MessageRouter::getRoutingTag(MessageTag tag,Rank source,Rank destination){
 	uint64_t routingTag=0;
 
 	uint64_t largeTag=tag;
@@ -364,4 +365,25 @@ RoutingTag MessageRouter::getRoutingTag(Tag tag,Rank source,Rank destination){
 
 ConnectionGraph*MessageRouter::getGraph(){
 	return &m_graph;
+}
+
+void MessageRouter::registerPlugin(ComputeCore*core){
+	m_plugin=core->allocatePluginHandle();
+	PluginHandle plugin=m_plugin;
+
+	core->setPluginName(m_plugin,"MessageRouter");
+
+	RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY,"RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY");
+
+}
+
+void MessageRouter::resolveSymbols(ComputeCore*core){
+	RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON");
+	RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY");
+	RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY");
+
+	// terminal control messages can not be routed.
+	addTagToCheckForRelayFrom0(RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON);
+	addTagToCheckForRelayTo0(RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY);
 }

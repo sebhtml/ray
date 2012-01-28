@@ -25,7 +25,7 @@
 using namespace std;
 
 /** buffer must be allocated or else it will CORE DUMP. */
-Message::Message(uint64_t*b,int c,Rank dest,Tag tag,Rank source){
+Message::Message(uint64_t*b,int c,Rank dest,MessageTag tag,Rank source){
 	m_buffer=b;
 	m_count=c;
 	m_destination=dest;
@@ -45,7 +45,7 @@ Rank Message::getDestination(){
 	return m_destination;
 }
 
-Tag Message::getTag(){
+MessageTag Message::getTag(){
 	return m_tag;
 }
 
@@ -68,7 +68,7 @@ void Message::setBuffer(uint64_t*buffer){
 	m_buffer = buffer;
 }
 
-void Message::setTag(Tag tag){
+void Message::setTag(MessageTag tag){
 	m_tag=tag;
 }
 

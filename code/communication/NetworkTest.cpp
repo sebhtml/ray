@@ -343,6 +343,20 @@ void NetworkTest::registerPlugin(ComputeCore*core){
 	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_TEST_NETWORK, &m_adapter_RAY_MASTER_MODE_TEST_NETWORK);
 	core->setMasterModeSymbol(plugin,RAY_MASTER_MODE_TEST_NETWORK,"RAY_MASTER_MODE_TEST_NETWORK");
 
+	RAY_MPI_TAG_TEST_NETWORK=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_TEST_NETWORK);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_TEST_NETWORK,"RAY_MPI_TAG_TEST_NETWORK");
+
+	RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY,"RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY");
+
+	RAY_MPI_TAG_TEST_NETWORK_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_TEST_NETWORK_REPLY);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_TEST_NETWORK_REPLY,"RAY_MPI_TAG_TEST_NETWORK_REPLY");
+
+	RAY_MPI_TAG_TEST_NETWORK_REPLY_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_TEST_NETWORK_REPLY_REPLY);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_TEST_NETWORK_REPLY_REPLY,"RAY_MPI_TAG_TEST_NETWORK_REPLY_REPLY");
+
+	RAY_MPI_TAG_TEST_NETWORK_WRITE_DATA=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_TEST_NETWORK_WRITE_DATA);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_TEST_NETWORK_WRITE_DATA,"RAY_MPI_TAG_TEST_NETWORK_WRITE_DATA");
 }
 
 void NetworkTest::resolveSymbols(ComputeCore*core){
@@ -351,4 +365,12 @@ void NetworkTest::resolveSymbols(ComputeCore*core){
 
 	RAY_MASTER_MODE_KILL_ALL_MPI_RANKS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_KILL_ALL_MPI_RANKS");
 	RAY_MASTER_MODE_TEST_NETWORK=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_TEST_NETWORK");
+
+	RAY_MPI_TAG_TEST_NETWORK_MESSAGE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_TEST_NETWORK_MESSAGE");
+	RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY");
+	RAY_MPI_TAG_TEST_NETWORK_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_TEST_NETWORK_REPLY");
+	RAY_MPI_TAG_TEST_NETWORK_REPLY_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_TEST_NETWORK_REPLY_REPLY");
+	RAY_MPI_TAG_TEST_NETWORK_WRITE_DATA=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_TEST_NETWORK_WRITE_DATA");
+
+	RAY_MPI_TAG_TEST_NETWORK=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_TEST_NETWORK");
 }

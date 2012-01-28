@@ -33,7 +33,14 @@ bool LibraryWorker::isDone(){
 }
 
 void LibraryWorker::constructor(uint64_t id,SeedingData*seedingData,VirtualCommunicator*virtualCommunicator,RingAllocator*outboxAllocator,Parameters*parameters,
-StaticVector*inbox,StaticVector*outbox,	map<int,map<int,int> >*libraryDistances,int*detectedDistances,MyAllocator*allocator){
+StaticVector*inbox,StaticVector*outbox,	map<int,map<int,int> >*libraryDistances,int*detectedDistances,MyAllocator*allocator,
+MessageTag RAY_MPI_TAG_GET_READ_MATE,
+MessageTag RAY_MPI_TAG_REQUEST_VERTEX_READS
+){
+
+	this->RAY_MPI_TAG_GET_READ_MATE=RAY_MPI_TAG_GET_READ_MATE;
+	this->RAY_MPI_TAG_REQUEST_VERTEX_READS=RAY_MPI_TAG_REQUEST_VERTEX_READS;
+
 	m_done=false;
 	m_parameters=parameters;
 	m_SEEDING_i=id;
@@ -76,7 +83,8 @@ void LibraryWorker::work(){
 			#endif
 			Kmer*vertex=m_seedingData->m_SEEDING_seeds[m_SEEDING_i].at(m_EXTENSION_currentPosition);
 		
-			m_readFetcher.constructor(vertex,m_outboxAllocator,m_inbox,m_outbox,m_parameters,m_virtualCommunicator,m_SEEDING_i);
+			m_readFetcher.constructor(vertex,m_outboxAllocator,m_inbox,m_outbox,m_parameters,m_virtualCommunicator,
+				m_SEEDING_i,RAY_MPI_TAG_REQUEST_VERTEX_READS);
 			#ifdef ASSERT
 			assert(!m_readFetcher.isDone());
 			#endif

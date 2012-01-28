@@ -129,7 +129,6 @@ class ComputeCore{
 	// allocator for ingoing messages
 	RingAllocator m_inboxAllocator;
 
-	PluginHandle m_currentPluginToAllocate;
 	SlaveMode m_currentSlaveModeToAllocate;
 	MasterMode m_currentMasterModeToAllocate;
 	MessageTag m_currentMessageTagToAllocate;
@@ -249,6 +248,8 @@ public:
 	void setPluginName(PluginHandle plugin,string name);
 
 	void printPlugins(ostream*stream);
+
+	void setPluginDescription(PluginHandle handle,string text);
 };
 
 #endif

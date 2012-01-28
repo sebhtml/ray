@@ -37,6 +37,9 @@ using namespace std;
  */
 class SeedWorker : public Worker {
 
+	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
+	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE;
+
 	int m_mainVertexCoverage;
 
 	map<Kmer,int> m_cache;
@@ -88,7 +91,11 @@ class SeedWorker : public Worker {
 	VirtualCommunicator*m_virtualCommunicator;
 public:
 	void constructor(Kmer*vertex,Parameters*parameters,RingAllocator*outboxAllocator,
-		VirtualCommunicator*vc,uint64_t workerId);
+		VirtualCommunicator*vc,uint64_t workerId,
+
+	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,
+	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE
+);
 
 	vector<Kmer>*getSeed();
 	vector<int>*getCoverageVector();

@@ -257,8 +257,18 @@ void KmerAcademyBuilder::registerPlugin(ComputeCore*core){
 	m_adapter_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY, &m_adapter_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY,"RAY_SLAVE_MODE_BUILD_KMER_ACADEMY");
+
+	RAY_MPI_TAG_KMER_ACADEMY_DATA_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_KMER_ACADEMY_DATA_REPLY);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_KMER_ACADEMY_DATA_REPLY,"RAY_MPI_TAG_KMER_ACADEMY_DATA_REPLY");
+
 }
 
 void KmerAcademyBuilder::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_BUILD_KMER_ACADEMY=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_BUILD_KMER_ACADEMY");
+
+	RAY_MPI_TAG_KMER_ACADEMY_DATA=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_KMER_ACADEMY_DATA");
+	RAY_MPI_TAG_KMER_ACADEMY_DATA_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_KMER_ACADEMY_DATA_REPLY");
+	RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED");
+
+	RAY_MPI_TAG_KMER_ACADEMY_DATA_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_KMER_ACADEMY_DATA_REPLY");
 }

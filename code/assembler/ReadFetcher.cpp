@@ -27,7 +27,10 @@
 using namespace std;
 
 void ReadFetcher::constructor(Kmer*vertex,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,
-VirtualCommunicator*vc,uint64_t workerId){
+VirtualCommunicator*vc,uint64_t workerId,
+	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_READS
+){
+	this->RAY_MPI_TAG_REQUEST_VERTEX_READS=RAY_MPI_TAG_REQUEST_VERTEX_READS;
 	m_workerId=workerId;
 	m_virtualCommunicator=vc;
 	m_parameters=parameters;

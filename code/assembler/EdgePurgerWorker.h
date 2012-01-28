@@ -38,6 +38,9 @@
  * \author Sébastien Boisvert
  */
 class EdgePurgerWorker : public Worker {
+
+	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE;
+
 	bool m_outgoingInitialised;
 	bool m_ingoingInitialised;
 	int m_iterator;
@@ -57,7 +60,7 @@ class EdgePurgerWorker : public Worker {
 	VirtualCommunicator*m_virtualCommunicator;
 public:
 	void constructor(uint64_t workerId,Vertex*vertex,Kmer*currentKmer,GridTable*subgraph,VirtualCommunicator*virtualCommunicator,RingAllocator*outboxAllocator,Parameters*parameters,
-		StaticVector*inbox,StaticVector*outbox);
+		StaticVector*inbox,StaticVector*outbox,MessageTag tag);
 
 	/** work a little bit 
 	 * the class Worker provides no implementation for that 

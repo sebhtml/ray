@@ -43,6 +43,12 @@ using namespace std;
  * similar paths */
 class JoinerTaskCreator: public TaskCreator,  public CorePlugin{
 
+	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH;
+	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE;
+	MessageTag RAY_MPI_TAG_GET_PATH_LENGTH;
+	MessageTag RAY_MPI_TAG_GET_PATH_VERTEX;
+	MessageTag RAY_MPI_TAG_FINISH_FUSIONS_FINISHED;
+
 	SlaveMode RAY_SLAVE_MODE_FINISH_FUSIONS;
 	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
 

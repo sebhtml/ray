@@ -34,6 +34,7 @@ using namespace std;
 class RegisteredPlugin{
 
 	string m_name;
+	string m_description;
 
 	set<MessageTag> m_allocatedMessageTags;
 	set<MessageTag> m_registeredMessageTagHandlers;
@@ -56,7 +57,10 @@ public:
 	RegisteredPlugin();
 
 	void setName(string name);
+	void setDescription(string text);
+
 	string getName();
+	string getDescription();
 
 	void addRegisteredMasterModeSymbol(MasterMode masterMode);
 	void addAllocatedMasterMode(MasterMode masterMode);

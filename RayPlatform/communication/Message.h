@@ -52,14 +52,14 @@ class Message{
  * 	Ray message-passing interface message tags are named RAY_MPI_TAG_<something>
  * 	see mpi_tag_macros.h 
  */
-	Tag m_tag;
+	MessageTag m_tag;
 
 	/** the message-passing interface rank source 
  * 	Must be >=0 and <= MPI_Comm_size()-1 */
 	Rank m_source;
 public:
 	Message();
-	Message(uint64_t*b,int c,Rank dest,Tag tag,Rank source);
+	Message(uint64_t*b,int c,Rank dest,MessageTag tag,Rank source);
 	uint64_t*getBuffer();
 	int getCount();
 /**
@@ -70,7 +70,7 @@ public:
 /**
  * Returns the message tag (RAY_MPI_TAG_something)
  */
-	Tag getTag();
+	MessageTag getTag();
 /**
  * Gets the source MPI rank
  */
@@ -80,7 +80,7 @@ public:
 
 	void setBuffer(uint64_t*buffer);
 
-	void setTag(Tag tag);
+	void setTag(MessageTag tag);
 
 	void setSource(Rank source);
 

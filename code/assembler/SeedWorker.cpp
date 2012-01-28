@@ -123,7 +123,14 @@ bool SeedWorker::isDone(){
 }
 
 void SeedWorker::constructor(Kmer*key,Parameters*parameters,RingAllocator*outboxAllocator,
-		VirtualCommunicator*virtualCommunicator,uint64_t workerId){
+		VirtualCommunicator*virtualCommunicator,uint64_t workerId,
+
+	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,
+	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE
+){
+	this->RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE=RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE;
+	this->RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT=RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
+
 	m_workerIdentifier=workerId;
 	m_virtualCommunicator=virtualCommunicator;
 	m_finished=false;

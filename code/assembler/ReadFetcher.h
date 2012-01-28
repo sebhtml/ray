@@ -38,6 +38,8 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class ReadFetcher{
+	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_READS;
+
 	uint64_t m_workerId;
 	VirtualCommunicator*m_virtualCommunicator;
 	Parameters*m_parameters;
@@ -53,7 +55,10 @@ public:
 	/**
  *	Initiate the object with a Kmer
  */
-	void constructor(Kmer*vertex,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,VirtualCommunicator*vc,uint64_t workerId);
+	void constructor(Kmer*vertex,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,VirtualCommunicator*vc,uint64_t workerId,
+	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_READS
+
+);
 
 /**
  * Returns true if done

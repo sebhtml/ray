@@ -789,11 +789,4 @@ public:
 	void call(Message*message);
 };
 
-class Adapter_RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL: public MessageTagHandler{
-	MessageProcessor*m_object;
-public:
-	void setObject(MessageProcessor*object);
-	void call(Message*message);
-};
-
 #endif

@@ -45,7 +45,7 @@ using namespace std;
  */
 class SequencesLoader : public CorePlugin{
 
-	
+	MessageTag RAY_MPI_TAG_SEQUENCES_READY;
 
 	SlaveMode RAY_SLAVE_MODE_LOAD_SEQUENCES;
 	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;

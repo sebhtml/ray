@@ -43,6 +43,10 @@ public:
  * \author Sébastien Boisvert
  */
 class LibraryWorker : public Worker {
+
+	MessageTag RAY_MPI_TAG_GET_READ_MATE;
+	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_READS;
+
 	bool m_done;
 	ReadFetcher m_readFetcher;
 	map<int,map<int,int> >*m_libraryDistances;
@@ -68,7 +72,10 @@ public:
 
 	void constructor(uint64_t id,SeedingData*seedingData,VirtualCommunicator*virtualCommunicator,RingAllocator*outboxAllocator,
 	Parameters*parameters,StaticVector*inbox,StaticVector*outbox,map<int,map<int,int> >*libraryDistances,int*detectedDistances,
-		MyAllocator*allocator);
+		MyAllocator*allocator,
+MessageTag RAY_MPI_TAG_GET_READ_MATE,
+	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_READS
+);
 
 	/** work a little bit 
 	 * the class Worker provides no implementation for that 

@@ -37,10 +37,6 @@ void SwitchMan::constructor(Rank rank,int numberOfCores){
 	runAssertions();
 	#endif
 
-	// set default modes
-	
-	setMasterMode(RAY_MASTER_MODE_DO_NOTHING); 
-	setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
 }
 
 /** reset the sole counter */
@@ -98,7 +94,7 @@ void SwitchMan::addNextMasterMode(MasterMode a,MasterMode b){
 	m_switches[a]=b;
 }
 
-void SwitchMan::openSlaveMode(Tag tag,StaticVector*outbox,Rank source,Rank destination){
+void SwitchMan::openSlaveMode(MessageTag tag,StaticVector*outbox,Rank source,Rank destination){
 	#ifdef CONFIG_SWITCHMAN_VERBOSITY
 	cout<<"[SwitchMan::openSlaveMode] Opening remotely slave mode on rank "<<destination<<endl;
 	#endif
@@ -134,7 +130,7 @@ void SwitchMan::openMasterMode(StaticVector*outbox,Rank source){
 	assert(m_masterModeToTagTable.count(m_masterMode)>0);
 	#endif
 
-	Tag tag=m_masterModeToTagTable[m_masterMode];
+	MessageTag tag=m_masterModeToTagTable[m_masterMode];
 
 	#ifdef CONFIG_SWITCHMAN_VERBOSITY
 	cout<<"[SwitchMan::openMasterMode] Opening master mode on rank "<<source<<endl;
@@ -181,27 +177,27 @@ void SwitchMan::closeMasterMode(){
 	setMasterMode(nextMode);
 }
 
-void SwitchMan::sendEmptyMessage(StaticVector*outbox,Rank source,Rank destination,Tag tag){
+void SwitchMan::sendEmptyMessage(StaticVector*outbox,Rank source,Rank destination,MessageTag tag){
 	sendMessage(NULL,0,outbox,source,destination,tag);
 }
 
-void SwitchMan::sendMessage(uint64_t*buffer,int count,StaticVector*outbox,Rank source,Rank destination,Tag tag){
+void SwitchMan::sendMessage(uint64_t*buffer,int count,StaticVector*outbox,Rank source,Rank destination,MessageTag tag){
 	// send a message
 	Message aMessage(buffer,count,destination,tag,source);
 	outbox->push_back(aMessage);
 }
 
-void SwitchMan::sendToAll(StaticVector*outbox,Rank source,Tag tag){
+void SwitchMan::sendToAll(StaticVector*outbox,Rank source,MessageTag tag){
 	sendMessageToAll(NULL,0,outbox,source,tag);
 }
 
-void SwitchMan::sendMessageToAll(uint64_t*buffer,int count,StaticVector*outbox,Rank source,Tag tag){
+void SwitchMan::sendMessageToAll(uint64_t*buffer,int count,StaticVector*outbox,Rank source,MessageTag tag){
 	for(int i=0;i<m_size;i++){
 		sendMessage(buffer,count,outbox,source,i,tag);
 	}
 }
 
-void SwitchMan::openSlaveModeLocally(Tag tag,Rank rank){
+void SwitchMan::openSlaveModeLocally(MessageTag tag,Rank rank){
 	if(m_tagToSlaveModeTable.count(tag)==0)
 		return;
 
@@ -220,7 +216,7 @@ void SwitchMan::openSlaveModeLocally(Tag tag,Rank rank){
 	setSlaveMode(desiredSlaveMode);
 }
 
-void SwitchMan::addSlaveSwitch(Tag tag,SlaveMode slaveMode){
+void SwitchMan::addSlaveSwitch(MessageTag tag,SlaveMode slaveMode){
 	#ifdef ASSERT
 	assert(m_tagToSlaveModeTable.count(tag)==0);
 	#endif
@@ -266,7 +262,7 @@ int*SwitchMan::getMasterModePointer(){
 	return(int*)pointer;
 }
 
-void SwitchMan::addMasterSwitch(MasterMode masterMode,Tag tag){
+void SwitchMan::addMasterSwitch(MasterMode masterMode,MessageTag tag){
 	#ifdef ASSERT
 	assert(m_masterModeToTagTable.count(masterMode)==0);
 	#endif
@@ -290,8 +286,14 @@ int SwitchMan::getSize(){
 	return m_size;
 }
 
+/* the switch man do the accounting for ready ranks */
+void SwitchMan::call_RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL(Message*message){
+	closeSlaveMode(message->getSource());
+}
+
 void SwitchMan::registerPlugin(ComputeCore*core){
 	m_plugin=core->allocatePluginHandle();
+	PluginHandle plugin=m_plugin;
 
 	core->setPluginName(m_plugin,"SwitchMan");
 
@@ -300,10 +302,35 @@ void SwitchMan::registerPlugin(ComputeCore*core){
 
 	RAY_MASTER_MODE_DO_NOTHING=core->allocateMasterModeHandle(m_plugin,RAY_MASTER_MODE_DO_NOTHING);
 	core->setMasterModeSymbol(m_plugin,RAY_MASTER_MODE_DO_NOTHING,"RAY_MASTER_MODE_DO_NOTHING");
+
+	RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL=core->allocateMessageTagHandle(m_plugin,RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL);
+	m_adapter_RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL.setObject(this);
+	core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL, &m_adapter_RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL);
+	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL,"RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL");
+
+	RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON,"RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON");
+
+	RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY,"RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY");
+
 }
 
 void SwitchMan::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_DO_NOTHING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DO_NOTHING");
 
 	RAY_MASTER_MODE_DO_NOTHING=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_DO_NOTHING");
+
+	RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL");
+	RAY_MPI_TAG_DUMMY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_DUMMY");
+
+	RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON");
+	RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY");
+
+	// set default modes
+	
+	setMasterMode(RAY_MASTER_MODE_DO_NOTHING); 
+	setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
 }
+
+

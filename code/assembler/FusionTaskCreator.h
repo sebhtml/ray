@@ -45,6 +45,11 @@ using namespace std;
  * similar paths */
 class FusionTaskCreator: public TaskCreator, public CorePlugin {
 
+	MessageTag RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY;
+	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH;
+	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE;
+	MessageTag RAY_MPI_TAG_GET_PATH_LENGTH;
+	MessageTag RAY_MPI_TAG_FUSION_DONE;
 	
 
 	SlaveMode RAY_SLAVE_MODE_FUSION;

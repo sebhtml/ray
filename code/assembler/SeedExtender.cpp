@@ -1009,6 +1009,7 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			MACRO_COLLECT_PROFILING_INFORMATION();
 			delete m_dfsData;
 			m_dfsData=new DepthFirstSearchData;
+			m_dfsData->setTags(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,	RAY_MPI_TAG_REQUEST_VERTEX_EDGES,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES);
 
 			m_receivedDirections.clear();
 			if(ed->m_EXTENSION_currentSeedIndex%10==0 && ed->m_EXTENSION_currentPosition==0 
@@ -1194,7 +1195,14 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 		Kmer vertex=*currentVertex;
 		m_vertexMessenger.constructor(vertex,waveId,progression,&m_matesToMeet,m_inbox,outbox,outboxAllocator,m_parameters,getReads,
-			m_currentPeakCoverage);
+			m_currentPeakCoverage,
+	RAY_MPI_TAG_VERTEX_INFO,
+	RAY_MPI_TAG_VERTEX_INFO_REPLY,
+	RAY_MPI_TAG_VERTEX_READS,
+	RAY_MPI_TAG_VERTEX_READS_FROM_LIST,
+	RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY,
+	RAY_MPI_TAG_VERTEX_READS_REPLY
+);
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
@@ -1618,6 +1626,7 @@ Chooser*chooser,OpenAssemblerChooser*oa
 	m_inbox=inbox;
 	m_subgraph=subgraph;
 	m_dfsData=new DepthFirstSearchData;
+	m_dfsData->setTags(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,	RAY_MPI_TAG_REQUEST_VERTEX_EDGES,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES);
 	m_cache.constructor();
 	m_ed=ed;
 	this->m_directionsAllocator=m_directionsAllocator;
@@ -2189,9 +2198,31 @@ void SeedExtender::registerPlugin(ComputeCore*core){
 	m_adapter_RAY_SLAVE_MODE_EXTENSION.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_EXTENSION,&m_adapter_RAY_SLAVE_MODE_EXTENSION);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_EXTENSION,"RAY_SLAVE_MODE_EXTENSION");
+	RAY_MPI_TAG_CONTIG_INFO_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_CONTIG_INFO_REPLY);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_CONTIG_INFO_REPLY,"RAY_MPI_TAG_CONTIG_INFO_REPLY");
+
+	RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY,"RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY");
+
 }
 
 void SeedExtender::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_EXTENSION=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_EXTENSION");
 	RAY_SLAVE_MODE_DO_NOTHING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DO_NOTHING");
+
+	RAY_MPI_TAG_ASK_IS_ASSEMBLED=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ASK_IS_ASSEMBLED");
+	RAY_MPI_TAG_EXTENSION_IS_DONE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_EXTENSION_IS_DONE");
+	RAY_MPI_TAG_REQUEST_READ_SEQUENCE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_REQUEST_READ_SEQUENCE");
+	RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE");
+	RAY_MPI_TAG_REQUEST_VERTEX_EDGES=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_REQUEST_VERTEX_EDGES");
+	RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES");
+
+	RAY_MPI_TAG_VERTEX_INFO=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_VERTEX_INFO");
+	RAY_MPI_TAG_VERTEX_INFO_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_VERTEX_INFO_REPLY");
+	RAY_MPI_TAG_VERTEX_READS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_VERTEX_READS");
+	RAY_MPI_TAG_VERTEX_READS_FROM_LIST=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_VERTEX_READS_FROM_LIST");
+	RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY");
+	RAY_MPI_TAG_VERTEX_READS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_VERTEX_READS_REPLY");
+	RAY_MPI_TAG_CONTIG_INFO_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_CONTIG_INFO_REPLY");
+	RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY");
 }

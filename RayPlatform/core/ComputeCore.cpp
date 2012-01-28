@@ -33,13 +33,18 @@ using namespace std;
 
 //#define CONFIG_DEBUG_SLAVE_SYMBOLS
 //#define CONFIG_DEBUG_MASTER_SYMBOLS
+//#define CONFIG_DEBUG_TAG_SYMBOLS
+//#define CONFIG_DEBUG_processData
+//#define CONFIG_DEBUG_CORE
 
 void ComputeCore::setSlaveModeObjectHandler(PluginHandle plugin,SlaveMode mode,SlaveModeHandler*object){
 	if(!validationPluginAllocated(plugin))
 		return;
 
-	if(!validationSlaveModeOwnership(plugin,mode))
+	if(!validationSlaveModeOwnership(plugin,mode)){
+		cout<<"was trying to set object handler for mode "<<mode<<endl;
 		return;
+	}
 
 	#ifdef CONFIG_DEBUG_CORE
 	cout<<"setSlaveModeObjectHandler "<<SLAVE_MODES[mode]<<" to "<<object<<endl;
@@ -378,7 +383,15 @@ void ComputeCore::processMessages(){
 	}
 
 	Message*message=m_inbox[0];
-	Tag messageTag=message->getTag();
+	MessageTag messageTag=message->getTag();
+
+	#ifdef ASSERT
+	assert(messageTag!=INVALID_HANDLE);
+	assert(m_allocatedMessageTags.count(messageTag)>0);
+	string symbol=MESSAGE_TAGS[messageTag];
+	assert(m_messageTagSymbols.count(symbol));
+	assert(m_messageTagSymbols[symbol]==messageTag);
+	#endif
 
 	// check if the tag is in the list of slave switches
 	m_switchMan.openSlaveModeLocally(messageTag,m_rank);
@@ -403,8 +416,8 @@ void ComputeCore::sendMessages(){
 		cout<<"Fatal: "<<messagesToSend<<" messages to send, but max is "<<m_maximumNumberOfOutboxMessages<<endl;
 		cout<<"tags=";
 		for(int i=0;i<(int)m_outbox.size();i++){
-			uint8_t tag=m_outbox[i]->getTag();
-			cout<<" "<<MESSAGE_TAGS[tag]<<endl;
+			MessageTag tag=m_outbox[i]->getTag();
+			cout<<" "<<MESSAGE_TAGS[tag]<<" handle= "<<tag<<endl;
 		}
 		cout<<endl;
 	}
@@ -467,11 +480,37 @@ void ComputeCore::processData(){
 
 	// call the master method first
 	MasterMode master=m_switchMan.getMasterMode();
+
+	#ifdef RayPlatform_ASSERT
+	assert(master!=INVALID_HANDLE);
+	assert(m_allocatedMasterModes.count(master)>0);
+	string masterSymbol=MASTER_MODES[master];
+	assert(m_masterModeSymbols.count(masterSymbol)>0);
+	assert(m_masterModeSymbols[masterSymbol]==master);
+	#endif
+
+	#ifdef CONFIG_DEBUG_processData
+	cout<<"master mode -> "<<MASTER_MODES[master]<<" handle is "<<master<<endl;
+	#endif
+
 	m_masterModeHandler.callHandler(master);
 	m_tickLogger.logMasterTick(master);
 
 	// then call the slave method
 	SlaveMode slave=m_switchMan.getSlaveMode();
+
+	#ifdef RayPlatform_ASSERT
+	assert(slave!=INVALID_HANDLE);
+	assert(m_allocatedSlaveModes.count(slave)>0);
+	string slaveSymbol=SLAVE_MODES[slave];
+	assert(m_slaveModeSymbols.count(slaveSymbol)>0);
+	assert(m_slaveModeSymbols[slaveSymbol]==slave);
+	#endif
+
+	#ifdef CONFIG_DEBUG_processData
+	cout<<"slave mode -> "<<SLAVE_MODES[slave]<<" handle is "<<slave<<endl;
+	#endif
+
 	m_slaveModeHandler.callHandler(slave);
 	m_tickLogger.logSlaveTick(slave);
 }
@@ -520,12 +559,9 @@ void ComputeCore::constructor(int*argc,char***argv){
 		strcpy(MESSAGE_TAGS[i],"UnnamedMessageTag");
 	}
 
-	m_currentPluginToAllocate=0;
 	m_currentSlaveModeToAllocate=0;
 	m_currentMasterModeToAllocate=0;
 	m_currentMessageTagToAllocate=0;
-
-	registerPlugin(&m_switchMan);
 }
 
 void ComputeCore::enableProfiler(){
@@ -611,6 +647,12 @@ void ComputeCore::registerPlugin(CorePlugin*plugin){
 }
 
 void ComputeCore::resolveSymbols(){
+	
+	// register built-in plugins
+	registerPlugin(&m_switchMan);
+	registerPlugin(&m_router);
+	registerPlugin(&m_messagesHandler);
+
 	for(int i=0;i<(int)m_listOfPlugins.size();i++){
 		CorePlugin*plugin=m_listOfPlugins[i];
 		plugin->resolveSymbols(this);
@@ -629,8 +671,10 @@ void ComputeCore::setSlaveModeSymbol(PluginHandle plugin,SlaveMode mode,const ch
 	if(!validationPluginAllocated(plugin))
 		return;
 	
-	if(!validationSlaveModeOwnership(plugin,mode))
+	if(!validationSlaveModeOwnership(plugin,mode)){
+		cout<<"was trying to set symbol "<<symbol<<" to mode "<<mode<<endl;
 		return;
+	}
 
 	if(!validationSlaveModeSymbolAvailable(plugin,symbol)){
 		return;
@@ -727,6 +771,8 @@ void ComputeCore::setMessageTagSymbol(PluginHandle plugin,MessageTag tag,const c
 	m_plugins[plugin].addRegisteredMessageTagSymbol(tag);
 
 	m_registeredMessageTagSymbols.insert(tag);
+
+	m_messageTagSymbols[symbol]=tag;
 }
 
 PluginHandle ComputeCore::allocatePluginHandle(){
@@ -866,7 +912,7 @@ bool ComputeCore::validationSlaveModeOwnership(PluginHandle plugin,SlaveMode han
 bool ComputeCore::validationMasterModeOwnership(PluginHandle plugin,MasterMode handle){
 	if(!m_plugins[plugin].hasMasterMode(handle)){
 		cout<<"Error, plugin "<<m_plugins[plugin].getName();
-		cout<<" ("<<plugin<<") has no ownership on slave mode "<<handle<<endl;
+		cout<<" ("<<plugin<<") has no ownership on master mode "<<handle<<endl;
 		return false;
 	}
 
@@ -876,7 +922,7 @@ bool ComputeCore::validationMasterModeOwnership(PluginHandle plugin,MasterMode h
 bool ComputeCore::validationMessageTagOwnership(PluginHandle plugin,MessageTag handle){
 	if(!m_plugins[plugin].hasMessageTag(handle)){
 		cout<<"Error, plugin "<<m_plugins[plugin].getName();
-		cout<<" ("<<plugin<<") has no ownership on slave mode "<<handle<<endl;
+		cout<<" ("<<plugin<<") has no ownership on message tag mode "<<handle<<endl;
 		return false;
 	}
 
@@ -988,6 +1034,10 @@ MessageTag ComputeCore::getMessageTagFromSymbol(PluginHandle plugin,const char*s
 
 		m_plugins[plugin].addResolvedMessageTag(handle);
 
+		#ifdef CONFIG_DEBUG_TAG_SYMBOLS
+		cout<<" symbol "<<symbol<<" is resolved as message tag handle "<<handle<<endl;
+		#endif
+
 		return handle;
 	}
 
@@ -1097,3 +1147,10 @@ bool ComputeCore::validationMasterModeSymbolNotRegistered(PluginHandle plugin,Ma
 	return true;
 }
 
+void ComputeCore::setPluginDescription(PluginHandle plugin,string a){
+
+	if(!validationPluginAllocated(plugin))
+		return;
+
+	m_plugins[plugin].setDescription(a);
+}

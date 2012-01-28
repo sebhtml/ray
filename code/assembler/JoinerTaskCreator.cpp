@@ -113,7 +113,13 @@ Worker*JoinerTaskCreator::assignNextTask(){
 
 	JoinerWorker*worker=new JoinerWorker;
 	worker->constructor(m_currentWorkerIdentifier,&(m_paths->at(m_iterator)),m_pathIdentifiers->at(m_iterator),m_reverseStrand,m_virtualCommunicator,m_parameters,m_outboxAllocator,
-	m_newPaths);
+	m_newPaths,
+
+	RAY_MPI_TAG_ASK_VERTEX_PATH,
+	RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,
+	RAY_MPI_TAG_GET_PATH_LENGTH,
+	RAY_MPI_TAG_GET_PATH_VERTEX
+);
 
 
 	m_currentWorkerIdentifier++;
@@ -165,4 +171,10 @@ void JoinerTaskCreator::registerPlugin(ComputeCore*core){
 void JoinerTaskCreator::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_FINISH_FUSIONS=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_FINISH_FUSIONS");
 	RAY_SLAVE_MODE_DO_NOTHING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DO_NOTHING");
+
+	RAY_MPI_TAG_ASK_VERTEX_PATH=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ASK_VERTEX_PATH");
+	RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE");
+	RAY_MPI_TAG_GET_PATH_LENGTH=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_PATH_LENGTH");
+	RAY_MPI_TAG_GET_PATH_VERTEX=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_PATH_VERTEX");
+	RAY_MPI_TAG_FINISH_FUSIONS_FINISHED=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_FINISH_FUSIONS_FINISHED");
 }

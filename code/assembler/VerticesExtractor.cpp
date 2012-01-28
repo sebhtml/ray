@@ -372,8 +372,31 @@ void VerticesExtractor::registerPlugin(ComputeCore*core){
 	m_adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_EXTRACT_VERTICES, &m_adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_EXTRACT_VERTICES,"RAY_SLAVE_MODE_EXTRACT_VERTICES");
+
+	RAY_MPI_TAG_WRITE_KMERS=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_WRITE_KMERS);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_WRITE_KMERS,"RAY_MPI_TAG_WRITE_KMERS");
+
+	RAY_MPI_TAG_WRITE_KMERS_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_WRITE_KMERS_REPLY);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_WRITE_KMERS_REPLY,"RAY_MPI_TAG_WRITE_KMERS_REPLY");
+
+	RAY_MPI_TAG_BUILD_GRAPH=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_BUILD_GRAPH);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_BUILD_GRAPH,"RAY_MPI_TAG_BUILD_GRAPH");
+	RAY_MPI_TAG_VERTEX_INFO_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_VERTEX_INFO_REPLY);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_VERTEX_INFO_REPLY,"RAY_MPI_TAG_VERTEX_INFO_REPLY");
+
 }
 
 void VerticesExtractor::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_EXTRACT_VERTICES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_EXTRACT_VERTICES");
+
+	RAY_MPI_TAG_IN_EDGES_DATA=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_IN_EDGES_DATA");
+	RAY_MPI_TAG_OUT_EDGES_DATA=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_OUT_EDGES_DATA");
+	RAY_MPI_TAG_VERTICES_DATA=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_VERTICES_DATA");
+	RAY_MPI_TAG_VERTICES_DISTRIBUTED=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_VERTICES_DISTRIBUTED");
+
+	RAY_MPI_TAG_WRITE_KMERS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_WRITE_KMERS");
+	RAY_MPI_TAG_WRITE_KMERS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_WRITE_KMERS_REPLY");
+
+	RAY_MPI_TAG_BUILD_GRAPH=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_BUILD_GRAPH");
+	RAY_MPI_TAG_VERTEX_INFO_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_VERTEX_INFO_REPLY");
 }

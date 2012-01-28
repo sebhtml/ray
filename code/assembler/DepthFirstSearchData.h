@@ -39,12 +39,22 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class DepthFirstSearchData{
+
+	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE;
+	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_EDGES;
+	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES;
+
 	bool m_outgoingEdgesDone;
 
 	map<Kmer,vector<Kmer> > m_outgoingEdges;
 	map<Kmer,vector<Kmer> > m_ingoingEdges;
 
 public:
+	void setTags(
+	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,
+	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_EDGES,
+	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES
+);
 
 	bool m_maxDepthReached;
 	bool m_doChoice_tips_dfs_initiated;

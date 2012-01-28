@@ -27,6 +27,8 @@
 #include <core/slave_modes.h>
 #include <core/master_modes.h>
 #include <plugins/CorePlugin.h>
+#include <handlers/MessageTagHandler.h>
+#include <scheduling/SwitchMan_adapters.h>
 
 #include <map>
 #include <vector>
@@ -40,7 +42,14 @@ class ComputeCore;
  * \author Sébastien Boisvert
  * \date 2012-01-02
  */
-class SwitchMan: public CorePlugin{
+class SwitchMan: public CorePlugin {
+
+	Adapter_RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL m_adapter_RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL ;
+
+	MessageTag RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON;
+	MessageTag RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY;
+	MessageTag RAY_MPI_TAG_DUMMY;
+	MessageTag RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL;
 
 	MasterMode RAY_MASTER_MODE_DO_NOTHING;
 	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
@@ -66,10 +75,10 @@ class SwitchMan: public CorePlugin{
 	map<MasterMode,MasterMode> m_switches;
 
 /** a table to convert a tag to a slave mode */
-	map<Tag,SlaveMode> m_tagToSlaveModeTable;
+	map<MessageTag,SlaveMode> m_tagToSlaveModeTable;
 
 /** a table containing mapping from master modes to MPI tags */
-	map<MasterMode,Tag> m_masterModeToTagTable;
+	map<MasterMode,MessageTag> m_masterModeToTagTable;
 
 /** the order of the master modes */
 	vector<MasterMode> m_masterModeOrder;
@@ -97,16 +106,16 @@ public:
 	void addNextMasterMode(MasterMode a,MasterMode b);
 
 /** add a slave switch */
-	void addSlaveSwitch(Tag tag,SlaveMode slaveMode);
+	void addSlaveSwitch(MessageTag tag,SlaveMode slaveMode);
 
 /** add a master switch */
-	void addMasterSwitch(MasterMode masterMode,Tag tag);
+	void addMasterSwitch(MasterMode masterMode,MessageTag tag);
 
 	/** remotely open a slave mode */
-	void openSlaveMode(Tag tag,StaticVector*outbox,Rank source,Rank destination);
+	void openSlaveMode(MessageTag tag,StaticVector*outbox,Rank source,Rank destination);
 
 	/** open a slave mode locally */
-	void openSlaveModeLocally(Tag tag,Rank rank);
+	void openSlaveModeLocally(MessageTag tag,Rank rank);
 
 	/** close a slave mode remotely */
 	void closeSlaveMode(Rank source);
@@ -122,10 +131,10 @@ public:
 	void closeMasterMode();
 
 	/** send an empty message */
-	void sendEmptyMessage(StaticVector*outbox,Rank source,Rank destination,Tag tag);
+	void sendEmptyMessage(StaticVector*outbox,Rank source,Rank destination,MessageTag tag);
 
 /** sends a message with a full list of parameters */
-	void sendMessage(uint64_t*buffer,int count,StaticVector*outbox,Rank source,Rank destination,Tag tag);
+	void sendMessage(uint64_t*buffer,int count,StaticVector*outbox,Rank source,Rank destination,MessageTag tag);
 
 /** get the current slave mode */
 	SlaveMode getSlaveMode();
@@ -146,10 +155,10 @@ public:
 	void setMasterMode(MasterMode mode);
 
 /** send a message to all MPI ranks */
-	void sendToAll(StaticVector*outbox,Rank source,Tag tag);
+	void sendToAll(StaticVector*outbox,Rank source,MessageTag tag);
 
 /** send a message to all MPI ranks, possibly with data */
-	void sendMessageToAll(uint64_t*buffer,int count,StaticVector*outbox,Rank source,Tag tag);
+	void sendMessageToAll(uint64_t*buffer,int count,StaticVector*outbox,Rank source,MessageTag tag);
 
 	void addMasterMode(MasterMode masterMode);
 
@@ -161,6 +170,10 @@ public:
 
 	void registerPlugin(ComputeCore*core);
 	void resolveSymbols(ComputeCore*core);
+
+	void addDummy(ComputeCore*core);
+
+	void call_RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL(Message*message);
 };
 
 #endif

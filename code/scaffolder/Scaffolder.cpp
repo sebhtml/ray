@@ -654,7 +654,9 @@ void Scaffolder::processVertex(Kmer*vertex){
 		if(1 /*m_receivedCoverage<m_parameters->getRepeatCoverage()*/){
 			if(!m_initialisedFetcher){
 				m_readFetcher.constructor(vertex,m_outboxAllocator,m_inbox,
-				m_outbox,m_parameters,m_virtualCommunicator,m_workerId);
+				m_outbox,m_parameters,m_virtualCommunicator,m_workerId,
+					RAY_MPI_TAG_REQUEST_VERTEX_READS);
+
 				m_readAnnotationId=0;
 				m_initialisedFetcher=true;
 				m_hasPairRequested=false;
@@ -1360,10 +1362,32 @@ void Scaffolder::registerPlugin(ComputeCore*core){
 	m_adapter_RAY_MASTER_MODE_WRITE_SCAFFOLDS.setObject(this);
 	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_WRITE_SCAFFOLDS, &m_adapter_RAY_MASTER_MODE_WRITE_SCAFFOLDS);
 	core->setMasterModeSymbol(plugin,RAY_MASTER_MODE_WRITE_SCAFFOLDS,"RAY_MASTER_MODE_WRITE_SCAFFOLDS");
+
+	RAY_MPI_TAG_SCAFFOLDING_LINKS_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_SCAFFOLDING_LINKS_REPLY);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_SCAFFOLDING_LINKS_REPLY,"RAY_MPI_TAG_SCAFFOLDING_LINKS_REPLY");
+
+	RAY_MPI_TAG_START_SCAFFOLDER=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_START_SCAFFOLDER);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_START_SCAFFOLDER,"RAY_MPI_TAG_START_SCAFFOLDER");
 }
 
 void Scaffolder::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_SCAFFOLDER=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_SCAFFOLDER");
 	RAY_SLAVE_MODE_DO_NOTHING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DO_NOTHING");
 	RAY_MASTER_MODE_WRITE_SCAFFOLDS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_WRITE_SCAFFOLDS");
+
+	RAY_MPI_TAG_CONTIG_INFO=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_CONTIG_INFO");
+	RAY_MPI_TAG_GET_CONTIG_CHUNK=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_CONTIG_CHUNK");
+	RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION");
+	RAY_MPI_TAG_GET_PATH_LENGTH=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_PATH_LENGTH");
+	RAY_MPI_TAG_GET_READ_MARKERS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_READ_MARKERS");
+	RAY_MPI_TAG_GET_READ_MATE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_READ_MATE");
+	RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT");
+	RAY_MPI_TAG_HAS_PAIRED_READ=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_HAS_PAIRED_READ");
+	RAY_MPI_TAG_I_FINISHED_SCAFFOLDING=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_I_FINISHED_SCAFFOLDING");
+	RAY_MPI_TAG_SCAFFOLDING_LINKS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SCAFFOLDING_LINKS");
+
+	RAY_MPI_TAG_REQUEST_VERTEX_READS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_REQUEST_VERTEX_READS");
+
+	RAY_MPI_TAG_SCAFFOLDING_LINKS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SCAFFOLDING_LINKS_REPLY");
+	RAY_MPI_TAG_START_SCAFFOLDER=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_START_SCAFFOLDER");
 }

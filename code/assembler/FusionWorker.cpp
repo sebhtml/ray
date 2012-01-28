@@ -253,7 +253,16 @@ uint64_t FusionWorker::getWorkerIdentifier(){
 }
 
 void FusionWorker::constructor(uint64_t number,vector<Kmer>*path,uint64_t identifier,bool reverseStrand,
-	VirtualCommunicator*virtualCommunicator,Parameters*parameters,RingAllocator*outboxAllocator){
+	VirtualCommunicator*virtualCommunicator,Parameters*parameters,RingAllocator*outboxAllocator,
+
+	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH,
+	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,
+	MessageTag RAY_MPI_TAG_GET_PATH_LENGTH
+){
+	this->RAY_MPI_TAG_GET_PATH_LENGTH=RAY_MPI_TAG_GET_PATH_LENGTH;
+	this->RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE=RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE;
+	this->RAY_MPI_TAG_ASK_VERTEX_PATH=RAY_MPI_TAG_ASK_VERTEX_PATH;
+	
 	m_virtualCommunicator=virtualCommunicator;
 	m_workerIdentifier=number;
 	m_initializedGathering=false;

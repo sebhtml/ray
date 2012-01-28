@@ -118,7 +118,8 @@ Worker* EdgePurger::assignNextTask(){
 
 	//EdgePurgerWorker*worker=(EdgePurgerWorker*)m_workerAllocator.allocate(sizeof(EdgePurgerWorker));
 	EdgePurgerWorker*worker=new EdgePurgerWorker;
-	worker->constructor(m_SEEDING_i,vertex,currentKmer,m_subgraph,m_virtualCommunicator,m_outboxAllocator,m_parameters,m_inbox,m_outbox);
+	worker->constructor(m_SEEDING_i,vertex,currentKmer,m_subgraph,m_virtualCommunicator,m_outboxAllocator,m_parameters,m_inbox,m_outbox,
+		RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE);
 
 	m_SEEDING_i++;
 
@@ -176,9 +177,22 @@ void EdgePurger::registerPlugin(ComputeCore*core){
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_PURGE_NULL_EDGES, &m_adapter_RAY_SLAVE_MODE_PURGE_NULL_EDGES);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_PURGE_NULL_EDGES,"RAY_SLAVE_MODE_PURGE_NULL_EDGES");
 
+	RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY,"RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY");
+
+	RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY,"RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY");
+
+
 }
 
 void EdgePurger::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_PURGE_NULL_EDGES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_PURGE_NULL_EDGES");
 	RAY_MASTER_MODE_WRITE_KMERS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_WRITE_KMERS");
+
+	RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY");
+	RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE");
+
+	RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY");
+
 }

@@ -25,6 +25,7 @@ using namespace std;
 
 RegisteredPlugin::RegisteredPlugin(){
 	m_name="UnnamedPlugin";
+	m_name="No description available";
 }
 
 void RegisteredPlugin::setName(string name){
@@ -86,6 +87,7 @@ string RegisteredPlugin::getName(){
 void RegisteredPlugin::print(ostream*stream){
 
 	(*stream)<<" Name: "<<getName()<<endl;
+	(*stream)<<" Description: "<<getDescription()<<endl;
 	(*stream)<<endl;
 	
 	(*stream)<<" Allocated handles"<<endl;
@@ -131,4 +133,12 @@ void RegisteredPlugin::addResolvedSlaveMode(SlaveMode handle){
 
 void RegisteredPlugin::addResolvedMasterMode(MasterMode handle){
 	m_resolvedMasterModes.insert(handle);
+}
+
+void RegisteredPlugin::setDescription(string a){
+	m_description=a;
+}
+
+string RegisteredPlugin::getDescription(){
+	return m_description;
 }

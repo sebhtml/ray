@@ -40,10 +40,10 @@ public:
 	virtual void call(Message*message);
 
 	/** call the correct handler for a tag on a message */
-	void callHandler(Tag messageTag,Message*message);
+	void callHandler(MessageTag messageTag,Message*message);
 
 /** set the object to call for a given tag */
-	void setObjectHandler(Tag messageTag,MessageTagHandler*object);
+	void setObjectHandler(MessageTag messageTag,MessageTagHandler*object);
 
 /** set default object and method handlers */
 	MessageTagHandler();

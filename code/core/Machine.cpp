@@ -331,9 +331,6 @@ void Machine::start(){
 		m_router->getGraph()->getIncomingConnections(m_parameters.getRank(),&connections);
 		m_messagesHandler->setConnections(&connections);
 
-		// terminal control messages can not be routed.
-		m_router->addTagToCheckForRelayFrom0(RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON);
-		m_router->addTagToCheckForRelayTo0(RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY);
 	}
 
 	// set the attributes of the seed extender.

@@ -23,6 +23,7 @@
 #include <memory/allocator.h>
 #include <memory/malloc_types.h>
 #include <core/OperatingSystem.h>
+#include <core/ComputeCore.h>
 
 #include <fstream>
 #include <assert.h>
@@ -418,6 +419,11 @@ void MessagesHandler::constructor(int*argc,char***argv){
 	initialiseMembers();
 	m_processorName=serverName;
 
+
+}
+
+void MessagesHandler::createBuffers(){
+
 	/** initialize message statistics to 0 */
 	m_messageStatistics=(uint64_t*)__Malloc(RAY_MPI_TAG_DUMMY*m_size*sizeof(uint64_t),RAY_MALLOC_TYPE_MESSAGE_STATISTICS,false);
 	for(int rank=0;rank<m_size;rank++){
@@ -547,4 +553,19 @@ void MessagesHandler::setConnections(vector<int>*connections){
 		m_connections.push_back(connections->at(i));
 
 	cout<<"[MessagesHandler] Will use "<<m_connections.size()<<" connections for round-robin reception."<<endl;
+}
+
+void MessagesHandler::registerPlugin(ComputeCore*core){
+	m_plugin=core->allocatePluginHandle();
+	core->setPluginName(m_plugin,"MessagesHandler");
+	core->setPluginDescription(m_plugin,"RayPlatform MPI wrapper)");
+
+	RAY_MPI_TAG_DUMMY=core->allocateMessageTagHandle(m_plugin,RAY_MPI_TAG_DUMMY);
+	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_DUMMY,"RAY_MPI_TAG_DUMMY");
+
+	createBuffers();
+}
+
+void MessagesHandler::resolveSymbols(ComputeCore*core){
+	RAY_MPI_TAG_DUMMY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_DUMMY");
 }

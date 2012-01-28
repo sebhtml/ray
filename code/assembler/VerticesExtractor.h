@@ -49,6 +49,16 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class VerticesExtractor: public CorePlugin{
+
+	MessageTag RAY_MPI_TAG_VERTEX_INFO_REPLY;
+	MessageTag RAY_MPI_TAG_BUILD_GRAPH;
+	MessageTag RAY_MPI_TAG_WRITE_KMERS;
+	MessageTag RAY_MPI_TAG_WRITE_KMERS_REPLY;
+
+	MessageTag RAY_MPI_TAG_IN_EDGES_DATA;
+	MessageTag RAY_MPI_TAG_OUT_EDGES_DATA;
+	MessageTag RAY_MPI_TAG_VERTICES_DATA;
+	MessageTag RAY_MPI_TAG_VERTICES_DISTRIBUTED;
 	
 	SlaveMode RAY_SLAVE_MODE_EXTRACT_VERTICES;
 

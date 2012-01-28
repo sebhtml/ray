@@ -30,13 +30,4 @@
 
 extern char MESSAGE_TAGS[MAXIMUM_NUMBER_OF_TAG_HANDLERS][128];
 
-#define ITEM(element) element,
-
-enum MessageTagEnum {
-#include <mpi_tags.txt>
-RAY_MPI_TAG_DUMMY
-};
-
-#undef ITEM
-
 #endif

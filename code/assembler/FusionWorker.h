@@ -36,6 +36,11 @@ using namespace std;
  * FusionWorker merge a path with another path
  */
 class FusionWorker: public Worker{
+
+	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH;
+	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE;
+	MessageTag RAY_MPI_TAG_GET_PATH_LENGTH;
+
 	bool m_requestedNumberOfPaths;
 	uint64_t m_workerIdentifier;
 	bool m_isDone;
@@ -61,7 +66,13 @@ class FusionWorker: public Worker{
 	bool m_requestedPath;
 public:
 	void constructor(uint64_t i,vector<Kmer>*path,uint64_t identifier,bool reverseStrand,
-VirtualCommunicator*virtualCommunicator,Parameters*parameters,RingAllocator*outboxAllocator);
+VirtualCommunicator*virtualCommunicator,Parameters*parameters,RingAllocator*outboxAllocator,
+	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH,
+	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,
+	MessageTag RAY_MPI_TAG_GET_PATH_LENGTH
+
+
+);
 
 	/* a method for Worker interface */
 	void work();

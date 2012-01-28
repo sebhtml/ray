@@ -50,10 +50,14 @@ using namespace std;
  */
 class EdgePurger : public TaskCreator, public CorePlugin {
 
+	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY;
+
+	MessageTag RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY;
+	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE;
+
 	MasterMode RAY_MASTER_MODE_WRITE_KMERS;
 	SlaveMode RAY_SLAVE_MODE_PURGE_NULL_EDGES;
 
-	
 
 	Adapter_RAY_SLAVE_MODE_PURGE_NULL_EDGES m_adapter_RAY_SLAVE_MODE_PURGE_NULL_EDGES;
 

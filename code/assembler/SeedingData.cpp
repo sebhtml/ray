@@ -167,7 +167,10 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 				m_splayTreeIterator.next();
 				Kmer vertexKey=*(m_splayTreeIterator.getKey());
 
-				m_aliveWorkers[m_SEEDING_i].constructor(&vertexKey,m_parameters,m_outboxAllocator,m_virtualCommunicator,m_SEEDING_i);
+				m_aliveWorkers[m_SEEDING_i].constructor(&vertexKey,m_parameters,m_outboxAllocator,m_virtualCommunicator,m_SEEDING_i,
+RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,
+RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE
+);
 				m_activeWorkers.insert(m_SEEDING_i);
 
 				int population=m_aliveWorkers.size();
@@ -394,10 +397,22 @@ void SeedingData::registerPlugin(ComputeCore*core){
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_SEND_SEED_LENGTHS, &m_adapter_RAY_SLAVE_MODE_SEND_SEED_LENGTHS);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_SEND_SEED_LENGTHS,"RAY_SLAVE_MODE_SEND_SEED_LENGTHS");
 
+	RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY,"RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY");
+
 }
 
 void SeedingData::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_START_SEEDING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_START_SEEDING");
 	RAY_SLAVE_MODE_DO_NOTHING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DO_NOTHING");
 	RAY_SLAVE_MODE_SEND_SEED_LENGTHS=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_SEND_SEED_LENGTHS");
+
+	RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT");
+	RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE");
+
+	RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS");
+	RAY_MPI_TAG_SEEDING_IS_OVER=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SEEDING_IS_OVER");
+	RAY_MPI_TAG_SEND_SEED_LENGTHS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SEND_SEED_LENGTHS");
+	RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY");
+
 }

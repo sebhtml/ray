@@ -91,7 +91,11 @@ void EdgePurgerWorker::work(){
 }
 
 void EdgePurgerWorker::constructor(uint64_t workerId,Vertex*vertex,Kmer*currentKmer,GridTable*subgraph,VirtualCommunicator*virtualCommunicator,RingAllocator*outboxAllocator,Parameters*parameters,
-		StaticVector*inbox,StaticVector*outbox){
+		StaticVector*inbox,StaticVector*outbox,
+	MessageTag tag){
+
+	RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE=tag;
+
 	m_workerId=workerId;
 	m_vertex=vertex;
 	m_currentKmer=*currentKmer;

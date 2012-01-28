@@ -22,6 +22,7 @@
 
 #include <communication/VirtualCommunicator.h>
 #include <core/OperatingSystem.h>
+#include <core/types.h>
 
 #include <assert.h>
 #include <iostream>
@@ -34,6 +35,7 @@ using namespace std;
 void VirtualCommunicator::setElementsPerQuery(int tag,int size){
 	#ifdef ASSERT
 	assert(m_elementSizes.count(tag)==0);
+	assert(tag!=INVALID_HANDLE);
 	#endif
 
 	m_elementSizes[tag]=size;

@@ -38,6 +38,13 @@ using namespace std;
  */
 class VertexMessenger{
 	
+	MessageTag RAY_MPI_TAG_VERTEX_INFO;
+	MessageTag RAY_MPI_TAG_VERTEX_INFO_REPLY;
+	MessageTag RAY_MPI_TAG_VERTEX_READS;
+	MessageTag RAY_MPI_TAG_VERTEX_READS_FROM_LIST;
+	MessageTag RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY;
+	MessageTag RAY_MPI_TAG_VERTEX_READS_REPLY;
+
 	int m_peakCoverage;
 
 	set<uint64_t>::iterator m_mateIterator;
@@ -66,7 +73,15 @@ class VertexMessenger{
 	void getReadsForRepeatedVertex();
 public:
 	void constructor(Kmer vertex,uint64_t wave,int pos,set<uint64_t>*matesToMeet,StaticVector*inbox,StaticVector*outbox,
-	RingAllocator*outboxAllocator,Parameters*parameters,bool getReads,int peakCoverage);
+	RingAllocator*outboxAllocator,Parameters*parameters,bool getReads,int peakCoverage,
+	MessageTag RAY_MPI_TAG_VERTEX_INFO,
+	MessageTag RAY_MPI_TAG_VERTEX_INFO_REPLY,
+	MessageTag RAY_MPI_TAG_VERTEX_READS,
+	MessageTag RAY_MPI_TAG_VERTEX_READS_FROM_LIST,
+	MessageTag RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY,
+	MessageTag RAY_MPI_TAG_VERTEX_READS_REPLY
+);
+
 	bool isDone();
 	void work();
 	uint16_t getCoverageValue();

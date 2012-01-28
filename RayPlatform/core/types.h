@@ -26,9 +26,6 @@
 
 typedef int Rank;
 
-/* although MessageTag is defined, routing tag are not valid MessageTag instances. */
-typedef int Tag;
-
 typedef int MessageTag;
 
 typedef int SlaveMode;
@@ -45,6 +42,6 @@ typedef int Distance;
 
 typedef uint64_t PluginHandle;
 
-#define INVALID_HANDLE -1
+#define INVALID_HANDLE -9876
 
 #endif

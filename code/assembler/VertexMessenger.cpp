@@ -209,7 +209,22 @@ uint16_t VertexMessenger::getCoverageValue(){
 }
 
 void VertexMessenger::constructor(Kmer vertex,uint64_t wave,int pos,set<uint64_t>*matesToMeet,StaticVector*inbox,StaticVector*outbox,
-	RingAllocator*outboxAllocator,Parameters*parameters,bool getReads,int peakCoverage){
+	RingAllocator*outboxAllocator,Parameters*parameters,bool getReads,int peakCoverage,
+
+	MessageTag RAY_MPI_TAG_VERTEX_INFO,
+	MessageTag RAY_MPI_TAG_VERTEX_INFO_REPLY,
+	MessageTag RAY_MPI_TAG_VERTEX_READS,
+	MessageTag RAY_MPI_TAG_VERTEX_READS_FROM_LIST,
+	MessageTag RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY,
+	MessageTag RAY_MPI_TAG_VERTEX_READS_REPLY
+){
+
+	this->RAY_MPI_TAG_VERTEX_INFO=RAY_MPI_TAG_VERTEX_INFO;
+	this->RAY_MPI_TAG_VERTEX_INFO_REPLY=RAY_MPI_TAG_VERTEX_INFO_REPLY;
+	this->RAY_MPI_TAG_VERTEX_READS=RAY_MPI_TAG_VERTEX_READS;
+	this->RAY_MPI_TAG_VERTEX_READS_FROM_LIST=RAY_MPI_TAG_VERTEX_READS_FROM_LIST;
+	this->RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY=RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY;
+	this->RAY_MPI_TAG_VERTEX_READS_REPLY=RAY_MPI_TAG_VERTEX_READS_REPLY;
 
 	m_peakCoverage=peakCoverage;
 

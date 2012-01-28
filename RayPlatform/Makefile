@@ -1,3 +1,7 @@
+# author: Sébastien Boisvert
+#
+# based on http://www.ravnborg.org/kbuild/makefiles.html
+#
 # to build an application that uses Ray Platform
 # you need to call the make with:
 #
@@ -34,6 +38,7 @@ obj-y += communication/MessageRouter.o
 obj-y += scheduling/VirtualProcessor.o
 obj-y += scheduling/TaskCreator.o
 obj-y += scheduling/SwitchMan.o
+obj-y += scheduling/SwitchMan_adapters.o
 
 #core
 obj-y += core/slave_modes.o 

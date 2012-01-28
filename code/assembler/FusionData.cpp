@@ -645,4 +645,11 @@ void FusionData::registerPlugin(ComputeCore*core){
 void FusionData::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS");
 	RAY_SLAVE_MODE_DO_NOTHING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DO_NOTHING");
+
+	RAY_MPI_TAG_ASK_VERTEX_PATHS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ASK_VERTEX_PATHS");
+	RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED");
+	RAY_MPI_TAG_FINISH_FUSIONS_FINISHED=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_FINISH_FUSIONS_FINISHED");
+	RAY_MPI_TAG_GET_PATH_LENGTH=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_PATH_LENGTH");
+	RAY_MPI_TAG_GET_PATH_VERTEX=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_PATH_VERTEX");
+	RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY");
 }

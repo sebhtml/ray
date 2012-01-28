@@ -36,6 +36,12 @@ using namespace std;
  * JoinerWorker merge a path with another path
  */
 class JoinerWorker: public Worker{
+
+	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH;
+	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE;
+	MessageTag RAY_MPI_TAG_GET_PATH_LENGTH;
+	MessageTag RAY_MPI_TAG_GET_PATH_VERTEX;
+
 	bool m_requestedNumberOfPaths;
 	uint64_t m_workerIdentifier;
 	bool m_isDone;
@@ -77,7 +83,12 @@ class JoinerWorker: public Worker{
 public:
 	void constructor(uint64_t i,vector<Kmer>*path,uint64_t identifier,bool reverseStrand,
 VirtualCommunicator*virtualCommunicator,Parameters*parameters,RingAllocator*outboxAllocator,
-vector<vector<Kmer> >*newPaths
+vector<vector<Kmer> >*newPaths,
+
+	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH,
+	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,
+	MessageTag RAY_MPI_TAG_GET_PATH_LENGTH,
+	MessageTag RAY_MPI_TAG_GET_PATH_VERTEX
 );
 
 	/* a method for Worker interface */

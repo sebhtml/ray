@@ -108,7 +108,11 @@ void SequencesIndexer::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(){
 				bool flag;
 				m_aliveWorkers.insert(m_theSequenceId,&m_workAllocator,&flag)->getValue()->constructor(m_theSequenceId,m_parameters,m_outboxAllocator,m_virtualCommunicator,
 					m_theSequenceId,m_myReads,&m_workAllocator,&m_readMarkerFile,&m_forwardStatistics,
-					&m_reverseStatistics);
+					&m_reverseStatistics,
+	RAY_MPI_TAG_ATTACH_SEQUENCE,
+	RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE
+);
+
 				m_activeWorkers.insert(m_theSequenceId,&m_workAllocator,&flag);
 				int population=m_aliveWorkers.size();
 				if(population>m_maximumWorkers){
@@ -292,9 +296,35 @@ void SequencesIndexer::registerPlugin(ComputeCore*core){
 		&m_adapter_RAY_SLAVE_MODE_INDEX_SEQUENCES);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_INDEX_SEQUENCES,"RAY_SLAVE_MODE_INDEX_SEQUENCES");
 
+	RAY_MPI_TAG_GET_READ_MARKERS_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GET_READ_MARKERS_REPLY);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_READ_MARKERS_REPLY,"RAY_MPI_TAG_GET_READ_MARKERS_REPLY");
+
+	RAY_MPI_TAG_GET_READ_MATE_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GET_READ_MATE_REPLY);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_READ_MATE_REPLY,"RAY_MPI_TAG_GET_READ_MATE_REPLY");
+
+	RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY,"RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY");
+
+	RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY,"RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY");
+
+	RAY_MPI_TAG_VERTEX_READS_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_VERTEX_READS_REPLY);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_VERTEX_READS_REPLY,"RAY_MPI_TAG_VERTEX_READS_REPLY");
+
 }
 
 void SequencesIndexer::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_INDEX_SEQUENCES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_INDEX_SEQUENCES");
 	RAY_SLAVE_MODE_DO_NOTHING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DO_NOTHING");
+
+	RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY");
+
+	RAY_MPI_TAG_ATTACH_SEQUENCE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ATTACH_SEQUENCE");
+	RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE");
+
+	RAY_MPI_TAG_GET_READ_MARKERS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_READ_MARKERS_REPLY");
+	RAY_MPI_TAG_GET_READ_MATE_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_READ_MATE_REPLY");
+	RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY");
+	RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY");
+	RAY_MPI_TAG_VERTEX_READS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_VERTEX_READS_REPLY");
 }

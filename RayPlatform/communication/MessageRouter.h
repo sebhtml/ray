@@ -26,6 +26,10 @@
 #include <structures/StaticVector.h>
 #include <communication/Message.h>
 #include <routing/ConnectionGraph.h>
+#include <core/types.h>
+#include <plugins/CorePlugin.h>
+
+class ComputeCore;
 
 #include <string>
 #include <map>
@@ -47,14 +51,18 @@ using namespace std;
  * bits 8 to 19: true source (12 bits, values from 0 to 4095, 4096 possible values)
  * bits 20 to 31: true destination (12 bits, values from 0 to 4095, 4096 possible values)
  */
-class MessageRouter{
+class MessageRouter: public CorePlugin {
+
+	MessageTag RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY;
+	MessageTag RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON;
+	MessageTag RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY;
 
 /**
  * Number of relayed messages if the relay checker is activated.
  */
-	map<Tag,int> m_relayedMessagesFrom0;
+	map<MessageTag,int> m_relayedMessagesFrom0;
 
-	map<Tag,int> m_relayedMessagesTo0;
+	map<MessageTag,int> m_relayedMessagesTo0;
 
 
 /**  the connection graph */
@@ -69,12 +77,12 @@ class MessageRouter{
  * A list of tags to check with the relay checker.
  * from 0
  */
-	set<Tag> m_tagsToCheckForRelayFrom0;
+	set<MessageTag> m_tagsToCheckForRelayFrom0;
 	
 /**
  * Tags to check to 0
  */
-	set<Tag> m_tagsToCheckForRelayTo0;
+	set<MessageTag> m_tagsToCheckForRelayTo0;
 
 /**
  * Is the router activated at all ?
@@ -116,7 +124,7 @@ class MessageRouter{
 	/* stuff for routing tags */
 
 	/** build a routing tag */
-	RoutingTag getRoutingTag(Tag tag,Rank source,Rank destination);
+	RoutingTag getRoutingTag(MessageTag tag,Rank source,Rank destination);
 
 	/** get the source from a routing tag */
 	Rank getSource(RoutingTag tag);
@@ -125,7 +133,7 @@ class MessageRouter{
 	Rank getDestination(RoutingTag tag);
 
 	/** get the tag from a routing tag */
-	Tag getTag(RoutingTag tag);
+	MessageTag getTag(RoutingTag tag);
 
 public:
 	MessageRouter();
@@ -149,7 +157,7 @@ public:
 	void enable(StaticVector*inbox,StaticVector*outbox,RingAllocator*outboxAllocator,Rank rank,
 string prefix,int numberOfRanks,string type,int degree);
 
-	bool isRoutingTag(Tag tag);
+	bool isRoutingTag(MessageTag tag);
 
 
 /**
@@ -166,12 +174,12 @@ string prefix,int numberOfRanks,string type,int degree);
  * for relay events. They are added with this method
  * if they are sent from 0
  */
-	void addTagToCheckForRelayFrom0(Tag tag);
+	void addTagToCheckForRelayFrom0(MessageTag tag);
 
 /**
  * Tags to monitor when sent to 0
  */
-	void addTagToCheckForRelayTo0(Tag tag);
+	void addTagToCheckForRelayTo0(MessageTag tag);
 
 /**
  * Unless the relayChecker component is activated with
@@ -181,6 +189,9 @@ string prefix,int numberOfRanks,string type,int degree);
 	void activateRelayChecker();
 
 	ConnectionGraph*getGraph();
+
+	void registerPlugin(ComputeCore*core);
+	void resolveSymbols(ComputeCore*core);
 };
 
 #endif

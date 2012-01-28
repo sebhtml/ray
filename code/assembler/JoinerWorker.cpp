@@ -485,8 +485,19 @@ uint64_t JoinerWorker::getWorkerIdentifier(){
 
 void JoinerWorker::constructor(uint64_t number,vector<Kmer>*path,uint64_t identifier,bool reverseStrand,
 	VirtualCommunicator*virtualCommunicator,Parameters*parameters,RingAllocator*outboxAllocator,
-vector<vector<Kmer> >*newPaths
+vector<vector<Kmer> >*newPaths,
+
+	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH,
+	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,
+	MessageTag RAY_MPI_TAG_GET_PATH_LENGTH,
+	MessageTag RAY_MPI_TAG_GET_PATH_VERTEX
 ){
+
+	this->RAY_MPI_TAG_ASK_VERTEX_PATH=RAY_MPI_TAG_ASK_VERTEX_PATH;
+	this->RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE=RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE;
+	this->RAY_MPI_TAG_GET_PATH_LENGTH=RAY_MPI_TAG_GET_PATH_LENGTH;
+	this->RAY_MPI_TAG_GET_PATH_VERTEX=RAY_MPI_TAG_GET_PATH_VERTEX;
+
 	m_newPaths=newPaths;
 	m_virtualCommunicator=virtualCommunicator;
 	m_workerIdentifier=number;

@@ -1003,14 +1003,5 @@ void Adapter_RAY_MPI_TAG_GET_CONTIG_CHUNK::call(Message*message){
 }
 
 
-void Adapter_RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL::setObject(MessageProcessor*object){
-	m_object=object;
-}
-
-void Adapter_RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL::call(Message*message){
-	m_object->call_RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL(message);
-}
-
-
 
 

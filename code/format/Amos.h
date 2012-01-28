@@ -45,6 +45,11 @@ using namespace std;
  */
 class Amos :  public CorePlugin{
 
+	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_READS;
+	MessageTag RAY_MPI_TAG_ASK_READ_LENGTH;
+	MessageTag RAY_MPI_TAG_WRITE_AMOS;
+	MessageTag RAY_MPI_TAG_WRITE_AMOS_REPLY;
+
 	MasterMode RAY_MASTER_MODE_AMOS;
 	MasterMode RAY_MASTER_MODE_SCAFFOLDER;
 

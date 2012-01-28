@@ -42,6 +42,9 @@ using namespace std;
 // TODO: convert this to Worker
 class IndexerWorker /*: public Worker*/{
 
+	MessageTag RAY_MPI_TAG_ATTACH_SEQUENCE;
+	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE;
+
 	map<int,map<int,int> >*m_forwardStatistics;
 	map<int,map<int,int> >*m_reverseStatistics;
 
@@ -75,7 +78,10 @@ public:
 		VirtualCommunicator*vc,uint64_t workerId,ArrayOfReads*a,MyAllocator*allocator,
 	ofstream*f,
 	map<int,map<int,int> >*forwardStatistics,
-	map<int,map<int,int> >*reverseStatistics);
+	map<int,map<int,int> >*reverseStatistics,
+	MessageTag RAY_MPI_TAG_ATTACH_SEQUENCE,
+	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE
+);
 
 /** work a little bit 
 	 * the class Worker provides no implementation for that 

@@ -1,5 +1,7 @@
 # author Sébastien Boisvert
 #
+# based on http://www.ravnborg.org/kbuild/makefiles.html
+#
 # the code is distributed in a small Ray core that is built on top
 # of the Ray platform.
 #

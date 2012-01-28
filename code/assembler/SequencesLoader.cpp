@@ -359,4 +359,6 @@ void SequencesLoader::registerPlugin(ComputeCore*core){
 void SequencesLoader::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_LOAD_SEQUENCES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_LOAD_SEQUENCES");
 	RAY_SLAVE_MODE_DO_NOTHING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DO_NOTHING");
+
+	RAY_MPI_TAG_SEQUENCES_READY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SEQUENCES_READY");
 }
