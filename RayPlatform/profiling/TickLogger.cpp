@@ -115,7 +115,9 @@ void TickLogger::printSlaveTicks(ofstream*file){
 		if(total!=0)
 			ratio/=total;
 
-		(*file)<<i<<"	"<<SLAVE_MODES[m_slaveModes[i]]<<"	"<<m_slaveCounts[i]<<"	"<<ratio<<endl;
+		(*file)<<i<<"	"<<SLAVE_MODES[m_slaveModes[i]]<<"	"<<m_slaveCounts[i];
+		//<<"	"<<ratio<<endl;
+		(*file)<<endl;
 	}
 
 	m_slaveModes.clear();
