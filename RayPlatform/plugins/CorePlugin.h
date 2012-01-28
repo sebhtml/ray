@@ -31,7 +31,12 @@ class ComputeCore;
  */
 class CorePlugin{
 public:
+
+/** register the plugin **/
 	virtual void registerPlugin(ComputeCore*computeCore);
+
+/** resolve the symbols **/
+	virtual void resolveSymbols(ComputeCore*core);
 };
 
 #endif

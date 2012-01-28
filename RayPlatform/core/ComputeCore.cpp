@@ -632,7 +632,16 @@ void ComputeCore::setMaximumNumberOfOutboxBuffers(int maxNumberOfBuffers){
 }
 
 void ComputeCore::registerPlugin(CorePlugin*plugin){
+	m_listOfPlugins.push_back(plugin);
+
 	plugin->registerPlugin(this);
+}
+
+void ComputeCore::resolveSymbols(){
+	for(int i=0;i<(int)m_listOfPlugins.size();i++){
+		CorePlugin*plugin=m_listOfPlugins[i];
+		plugin->resolveSymbols(this);
+	}
 }
 
 void ComputeCore::destructor(){
@@ -652,6 +661,10 @@ void ComputeCore::setSlaveModeSymbol(PluginHandle plugin,SlaveMode mode,char*sym
 
 	if(!validationSlaveModeOwnership(plugin,mode))
 		return;
+
+	if(!validationSlaveModeSymbolAvailable(plugin,symbol)){
+		return;
+	}
 
 	#ifdef ASSERT
 	assert(mode>=0);
@@ -681,6 +694,10 @@ void ComputeCore::setMasterModeSymbol(PluginHandle plugin,MasterMode mode,char*s
 	if(!validationMasterModeOwnership(plugin,mode))
 		return;
 
+	if(!validationMasterModeSymbolAvailable(plugin,symbol)){
+		return;
+	}
+
 	#ifdef ASSERT
 	assert(mode>=0);
 	assert(mode<MAXIMUM_NUMBER_OF_MASTER_HANDLERS);
@@ -708,6 +725,10 @@ void ComputeCore::setMessageTagSymbol(PluginHandle plugin,MessageTag tag,char*sy
 
 	if(!validationMessageTagOwnership(plugin,tag))
 		return;
+
+	if(!validationMessageTagSymbolAvailable(plugin,symbol)){
+		return;
+	}
 
 	#ifdef ASSERT
 	assert(tag>=0);
@@ -1001,3 +1022,153 @@ void ComputeCore::printPlugins(ostream*stream){
 	(*stream)<<"ComputeCore: finished printing plugins"<<endl;
 	(*stream)<<endl;
 }
+
+void ComputeCore::setMessageTagReplyTag(PluginHandle plugin,MessageTag tag,MessageTag replyTag){
+	if(!validationPluginAllocated(plugin))
+		return;
+
+	if(!validationPluginRegistrationInProgress(plugin))
+		return;
+
+	if(!validationMessageTagOwnership(plugin,tag))
+		return;
+
+	m_plugins[plugin].addRegisteredMessageTagReplyTag(tag);
+
+	m_virtualCommunicator.setReplyType(tag,replyTag);
+}
+
+SlaveMode ComputeCore::getSlaveModeFromSymbol(PluginHandle plugin,char*symbol){
+	if(!validationPluginAllocated(plugin))
+		return -1;
+
+	if(!validationSlaveModeSymbolRegistered(plugin,symbol))
+		return -1;
+
+	string key=symbol;
+
+	if(m_slaveModeSymbols.count(key)>0){
+		SlaveMode handle=m_slaveModeSymbols[key];
+		
+		m_plugins[plugin].addResolvedSlaveMode(handle);
+
+		return handle;
+	}
+
+	return -1;
+}
+
+MasterMode ComputeCore::getMasterModeFromSymbol(PluginHandle plugin,char*symbol){
+
+	if(!validationPluginAllocated(plugin))
+		return -1;
+
+	if(!validationMasterModeSymbolRegistered(plugin,symbol))
+		return -1;
+
+	string key=symbol;
+
+	if(m_masterModeSymbols.count(key)>0){
+		MasterMode handle=m_masterModeSymbols[key];
+
+		m_plugins[plugin].addResolvedMasterMode(handle);
+
+		return handle;
+	}
+
+	return -1;
+}
+
+MessageTag ComputeCore::getMessageTagFromSymbol(PluginHandle plugin,char*symbol){
+
+	if(!validationPluginAllocated(plugin))
+		return -1;
+
+	if(!validationMessageTagSymbolRegistered(plugin,symbol))
+		return -1;
+
+	string key=symbol;
+
+	if(m_messageTagSymbols.count(key)>0){
+		MessageTag handle=m_messageTagSymbols[key];
+
+		m_plugins[plugin].addResolvedMessageTag(handle);
+
+		return handle;
+	}
+
+	return -1;
+}
+
+bool ComputeCore::validationMessageTagSymbolAvailable(PluginHandle plugin,char*symbol){
+	string key=symbol;
+
+	if(m_messageTagSymbols.count(key)>0){
+		cout<<"Error, plugin "<<plugin<<" can not register symbol "<<symbol<<" because it is already registered."<<endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool ComputeCore::validationSlaveModeSymbolAvailable(PluginHandle plugin,char*symbol){
+
+	string key=symbol;
+
+	if(m_slaveModeSymbols.count(key)>0){
+		cout<<"Error, plugin "<<plugin<<" can not register symbol "<<symbol<<" because it is already registered."<<endl;
+		return false;
+	}
+
+	return true;
+
+}
+
+bool ComputeCore::validationMasterModeSymbolAvailable(PluginHandle plugin,char*symbol){
+
+	string key=symbol;
+
+	if(m_masterModeSymbols.count(key)>0){
+		cout<<"Error, plugin "<<plugin<<" can not register symbol "<<symbol<<" because it is already registered."<<endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool ComputeCore::validationMessageTagSymbolRegistered(PluginHandle plugin,char*symbol){
+	string key=symbol;
+
+	if(m_messageTagSymbols.count(key)==0){
+		cout<<"Error, plugin "<<plugin<<" can not fetch symbol "<<symbol<<" because it is not registered."<<endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool ComputeCore::validationSlaveModeSymbolRegistered(PluginHandle plugin,char*symbol){
+
+	string key=symbol;
+
+	if(m_slaveModeSymbols.count(key)==0){
+		cout<<"Error, plugin "<<plugin<<" can not fetch symbol "<<symbol<<" because it is not registered."<<endl;
+		return false;
+	}
+
+	return true;
+
+}
+
+bool ComputeCore::validationMasterModeSymbolRegistered(PluginHandle plugin,char*symbol){
+
+	string key=symbol;
+
+	if(m_masterModeSymbols.count(key)==0){
+		cout<<"Error, plugin "<<plugin<<" can not fetch symbol "<<symbol<<" because it is not registered."<<endl;
+		return false;
+	}
+
+	return true;
+}
+

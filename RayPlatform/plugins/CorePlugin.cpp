@@ -24,3 +24,7 @@
 // empty implementation
 void CorePlugin::registerPlugin(ComputeCore*computeCore){
 }
+
+void CorePlugin::resolveSymbols(ComputeCore*core){
+}
+

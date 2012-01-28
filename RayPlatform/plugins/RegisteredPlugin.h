@@ -35,17 +35,21 @@ class RegisteredPlugin{
 
 	string m_name;
 
-	set<SlaveMode> m_allocatedSlaveModes;
-	set<MasterMode> m_allocatedMasterModes;
 	set<MessageTag> m_allocatedMessageTags;
-
-	set<SlaveMode> m_registeredSlaveModeHandlers;
-	set<MasterMode> m_registeredMasterModeHandlers;
 	set<MessageTag> m_registeredMessageTagHandlers;
+	set<MessageTag> m_registeredMessageTagSymbols;
+	set<MessageTag> m_registeredMessageTagReplyTags;
+	set<MessageTag> m_resolvedMessageTags;
 
 	set<SlaveMode> m_registeredSlaveModeSymbols;
+	set<SlaveMode> m_allocatedSlaveModes;
+	set<SlaveMode> m_registeredSlaveModeHandlers;
+	set<SlaveMode> m_resolvedSlaveModes;
+
+	set<MasterMode> m_allocatedMasterModes;
+	set<MasterMode> m_registeredMasterModeHandlers;
 	set<MasterMode> m_registeredMasterModeSymbols;
-	set<MessageTag> m_registeredMessageTagSymbols;
+	set<MasterMode> m_resolvedMasterModes;
 
 public:
 
@@ -54,17 +58,21 @@ public:
 	void setName(string name);
 	string getName();
 
-	void addAllocatedSlaveMode(SlaveMode slaveMode);
-	void addAllocatedMasterMode(MasterMode masterMode);
-	void addAllocatedMessageTag(MessageTag messageTag);
-
-	void addRegisteredSlaveModeHandler(SlaveMode slaveMode);
-	void addRegisteredMasterModeHandler(MasterMode masterMode);
-	void addRegisteredMessageTagHandler(MessageTag messageTag);
-
-	void addRegisteredSlaveModeSymbol(SlaveMode slaveMode);
 	void addRegisteredMasterModeSymbol(MasterMode masterMode);
+	void addAllocatedMasterMode(MasterMode masterMode);
+	void addRegisteredMasterModeHandler(MasterMode masterMode);
+	void addResolvedMasterMode(MasterMode masterMode);
+
+	void addAllocatedMessageTag(MessageTag messageTag);
+	void addRegisteredMessageTagHandler(MessageTag messageTag);
 	void addRegisteredMessageTagSymbol(MessageTag messageTag);
+	void addRegisteredMessageTagReplyTag(MessageTag messageTag);
+	void addResolvedMessageTag(MessageTag handle);
+
+	void addAllocatedSlaveMode(SlaveMode slaveMode);
+	void addRegisteredSlaveModeHandler(SlaveMode slaveMode);
+	void addRegisteredSlaveModeSymbol(SlaveMode slaveMode);
+	void addResolvedSlaveMode(SlaveMode handle);
 
 	bool hasSlaveMode(SlaveMode mode);
 	bool hasMasterMode(MasterMode mode);

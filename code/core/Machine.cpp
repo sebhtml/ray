@@ -830,6 +830,10 @@ void Machine::registerPlugins(){
 
 	m_computeCore.registerPlugin(&m_searcher);
 
+	// resolve the symbols
+	
+	m_computeCore.resolveSymbols();
+
 	cout<<endl;
 	
 	// write a report about plugins

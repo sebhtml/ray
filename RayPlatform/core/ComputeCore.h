@@ -55,6 +55,13 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class ComputeCore{
+
+	vector<CorePlugin*> m_listOfPlugins;
+
+	map<string,MasterMode> m_masterModeSymbols;
+	map<string,SlaveMode> m_slaveModeSymbols;
+	map<string,MessageTag> m_messageTagSymbols;
+
 	set<PluginHandle> m_pluginRegistrationsInProgress;
 	set<PluginHandle> m_pluginRegistrationsClosed;
 
@@ -148,6 +155,13 @@ class ComputeCore{
 	bool validationMasterModeOwnership(PluginHandle plugin,MasterMode handle);
 	bool validationMessageTagOwnership(PluginHandle plugin,MessageTag handle);
 
+	bool validationMessageTagSymbolAvailable(PluginHandle plugin, char*symbol);
+	bool validationSlaveModeSymbolAvailable(PluginHandle plugin, char*symbol);
+	bool validationMasterModeSymbolAvailable(PluginHandle plugin, char*symbol);
+	bool validationMessageTagSymbolRegistered(PluginHandle plugin, char*symbol);
+	bool validationSlaveModeSymbolRegistered(PluginHandle plugin, char*symbol);
+	bool validationMasterModeSymbolRegistered(PluginHandle plugin, char*symbol);
+
 public:
 
 /** allocate an handle for a plugin **/
@@ -186,6 +200,18 @@ public:
 /** set the symbol for a message tag **/
 	void setMessageTagSymbol(PluginHandle plugin,MessageTag mode,char*symbol);
 
+/** get a slave mode from its symbol **/
+	SlaveMode getSlaveModeFromSymbol(PluginHandle plugin,char*symbol);
+
+/** get a master mode from its symbol **/
+	MasterMode getMasterModeFromSymbol(PluginHandle plugin,char*symbol);
+
+/** get a message tag from its symbol **/
+	MessageTag getMessageTagFromSymbol(PluginHandle plugin,char*symbol);
+
+/** set the reply tag for a message tag **/
+	void setMessageTagReplyTag(PluginHandle plugin,MessageTag messageTag,MessageTag replyTag);
+
 	/** this is the main method */
 	void run();
 
@@ -221,6 +247,7 @@ public:
 	void setMaximumNumberOfOutboxBuffers(int maxNumberOfBuffers);
 	
 	void registerPlugin(CorePlugin*plugin);
+	void resolveSymbols();
 
 	void destructor();
 
