@@ -46,6 +46,9 @@ void NetworkTest::constructor(int rank,int size,StaticVector*inbox,StaticVector*
 	m_initialisedNetworkTest=false;
 	m_size=size;
 	m_rank=rank;
+	
+	m_ranksFinished=0;
+	m_askedToWriteFiles=false;
 
 	int ranksPerNode=8;
 	int onlineRanksPerNode=8; // default: 8
@@ -150,7 +153,16 @@ void NetworkTest::call_RAY_SLAVE_MODE_TEST_NETWORK(){
 
 		m_sentData=true;
 
+		m_gotResponse=false;
+
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_TEST_NETWORK_REPLY_REPLY)){
+		m_gotResponse=true;
+
+	}else if(m_gotResponse && m_inbox->hasMessage(RAY_MPI_TAG_TEST_NETWORK_WRITE_DATA)){
+		// we only write the files, if any, when everyone is done with it
+		// otherwise, the measured latency would be higher...
+		writeData();
+
 		m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
 	}
 }
@@ -236,6 +248,8 @@ void NetworkTest::call_RAY_MASTER_MODE_TEST_NETWORK (){
 
 		m_switchMan->sendEmptyMessage(m_outbox,m_rank,rank,RAY_MPI_TAG_TEST_NETWORK_REPLY_REPLY);
 
+		m_ranksFinished++;
+
 	}else if(m_switchMan->allRanksAreReady()){
 		ostringstream file;
 		file<<m_parameters->getPrefix();
@@ -285,6 +299,11 @@ void NetworkTest::call_RAY_MASTER_MODE_TEST_NETWORK (){
 			cout<<"Rank "<<m_parameters->getRank()<<": no input files, aborting."<<endl;
 			m_switchMan->setMasterMode(RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
 		}
+	}else if(m_ranksFinished==m_size && !m_askedToWriteFiles){
+		
+		m_switchMan->sendToAll(m_outbox,m_parameters->getRank(),RAY_MPI_TAG_TEST_NETWORK_WRITE_DATA);
+
+		m_askedToWriteFiles=true;
 	}
 }
 

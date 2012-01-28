@@ -56,6 +56,12 @@ class NetworkTest :  public CorePlugin {
 	Adapter_RAY_MASTER_MODE_TEST_NETWORK m_adapter_RAY_MASTER_MODE_TEST_NETWORK;
 
 	SwitchMan*m_switchMan;
+	
+/** indicates if a rank got a response from master **/
+	bool m_gotResponse;
+
+	bool m_askedToWriteFiles;
+	int m_ranksFinished;
 
 /**
  * do we gather raw data

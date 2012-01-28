@@ -210,14 +210,6 @@ public:
 	void call();
 };
 
-class Adapter_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES: public SlaveModeHandler{
-	MachineHelper*m_object;
-
-public:
-	void setObject(MachineHelper*object);
-	void call();
-};
-
 class Adapter_RAY_SLAVE_MODE_ASSEMBLE_WAVES: public SlaveModeHandler{
 	MachineHelper*m_object;
 

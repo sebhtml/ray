@@ -278,14 +278,6 @@ int MachineHelper::getRank(){
 	return m_parameters->getRank();
 }
 
-void MachineHelper::call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES(){
-	// we only write the files, if any, when everyone is done with it
-	// otherwise, the measured latency would be higher...
-	m_networkTest->writeData();
-
-	m_partitioner->call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES();
-}
-
 /** actually, call_RAY_MASTER_MODE_LOAD_SEQUENCES 
  * writes the AMOS file */
 void MachineHelper::call_RAY_MASTER_MODE_LOAD_SEQUENCES(){
@@ -1030,10 +1022,6 @@ void MachineHelper::registerPlugin(ComputeCore*core){
 	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_WRITE_KMERS);
 	m_adapter_RAY_SLAVE_MODE_WRITE_KMERS.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_WRITE_KMERS, &m_adapter_RAY_SLAVE_MODE_WRITE_KMERS);
-
-	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_COUNT_FILE_ENTRIES);
-	m_adapter_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES.setObject(this);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_COUNT_FILE_ENTRIES, &m_adapter_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES);
 
 	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_ASSEMBLE_WAVES);
 	m_adapter_RAY_SLAVE_MODE_ASSEMBLE_WAVES.setObject(this);

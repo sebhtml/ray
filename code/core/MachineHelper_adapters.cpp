@@ -213,14 +213,6 @@ void Adapter_RAY_SLAVE_MODE_WRITE_KMERS::call(){
 	m_object->call_RAY_SLAVE_MODE_WRITE_KMERS();
 }
 
-void Adapter_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES::setObject(MachineHelper*object){
-	m_object=object;
-}
-
-void Adapter_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES::call(){
-	m_object->call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES();
-}
-
 void Adapter_RAY_SLAVE_MODE_ASSEMBLE_WAVES::setObject(MachineHelper*object){
 	m_object=object;
 }

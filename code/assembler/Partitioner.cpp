@@ -260,5 +260,9 @@ void Partitioner::registerPlugin(ComputeCore*core){
 	m_adapter_RAY_MASTER_MODE_COUNT_FILE_ENTRIES.setObject(this);
 	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_COUNT_FILE_ENTRIES,&m_adapter_RAY_MASTER_MODE_COUNT_FILE_ENTRIES);
 
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_COUNT_FILE_ENTRIES);
+	m_adapter_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES.setObject(this);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_COUNT_FILE_ENTRIES, &m_adapter_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES);
+
 	core->endPluginRegistration(plugin);
 }

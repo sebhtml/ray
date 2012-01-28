@@ -35,4 +35,12 @@ public:
 	void call();
 };
 
+class Adapter_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES: public SlaveModeHandler{
+	Partitioner*m_object;
+
+public:
+	void setObject(Partitioner*object);
+	void call();
+};
+
 #endif
