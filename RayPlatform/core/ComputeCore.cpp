@@ -32,6 +32,7 @@
 using namespace std;
 
 //#define CONFIG_DEBUG_SLAVE_SYMBOLS
+//#define CONFIG_DEBUG_MASTER_SYMBOLS
 
 void ComputeCore::setSlaveModeObjectHandler(PluginHandle plugin,SlaveMode mode,SlaveModeHandler*object){
 	if(!validationPluginAllocated(plugin))
@@ -463,6 +464,7 @@ void ComputeCore::receiveMessages(){
 
 /** process data my calling current slave and master methods */
 void ComputeCore::processData(){
+
 	// call the master method first
 	MasterMode master=m_switchMan.getMasterMode();
 	m_masterModeHandler.callHandler(master);
@@ -691,6 +693,8 @@ void ComputeCore::setMasterModeSymbol(PluginHandle plugin,MasterMode mode,const 
 	m_plugins[plugin].addRegisteredMasterModeSymbol(mode);
 
 	m_registeredMasterModeSymbols.insert(mode);
+
+	m_masterModeSymbols[symbol]=mode;
 }
 
 void ComputeCore::setMessageTagSymbol(PluginHandle plugin,MessageTag tag,const char*symbol){
@@ -889,18 +893,15 @@ void ComputeCore::setPluginName(PluginHandle plugin,string name){
 }
 
 void ComputeCore::printPlugins(ostream*stream){
-	(*stream)<<endl;
-	(*stream)<<"ComputeCore: printing plugins"<<endl;
-	(*stream)<<endl;
-	(*stream)<<" Number of plugins: "<<m_plugins.size()<<endl;
+	(*stream)<<"Number of plugins: "<<m_plugins.size()<<endl;
 	(*stream)<<endl;
 
 	int j=0;
 
 	for(map<PluginHandle,RegisteredPlugin>::iterator i=m_plugins.begin();
 		i!=m_plugins.end();i++){
-		(*stream)<<"-------------------------------"<<endl;
-		(*stream)<<" Handle: "<<i->first<<endl;
+		(*stream)<<endl;
+		(*stream)<<"Handle: "<<i->first<<endl;
 		i->second.print(stream);
 		(*stream)<<"-------------------------------"<<endl;
 		(*stream)<<endl;
@@ -961,6 +962,10 @@ MasterMode ComputeCore::getMasterModeFromSymbol(PluginHandle plugin,const char*s
 		MasterMode handle=m_masterModeSymbols[key];
 
 		m_plugins[plugin].addResolvedMasterMode(handle);
+
+		#ifdef CONFIG_DEBUG_MASTER_SYMBOLS
+		cout<<"symbol "<<symbol<<" is resolved as master mode "<<handle<<endl;
+		#endif
 
 		return handle;
 	}
@@ -1029,7 +1034,7 @@ bool ComputeCore::validationMessageTagSymbolRegistered(PluginHandle plugin,const
 	string key=symbol;
 
 	if(m_messageTagSymbols.count(key)==0){
-		cout<<"Error, plugin "<<plugin<<" can not fetch symbol "<<symbol<<" because it is not registered."<<endl;
+		cout<<"Error, plugin "<<plugin<<" (name: "<<m_plugins[plugin].getName()<<") can not fetch symbol "<<symbol<<" because it is not registered."<<endl;
 		return false;
 	}
 
@@ -1054,7 +1059,7 @@ bool ComputeCore::validationMasterModeSymbolRegistered(PluginHandle plugin,const
 	string key=symbol;
 
 	if(m_masterModeSymbols.count(key)==0){
-		cout<<"Error, plugin "<<plugin<<" can not fetch symbol "<<symbol<<" because it is not registered."<<endl;
+		cout<<"Error, plugin "<<plugin<<" (name: "<<m_plugins[plugin].getName()<<") can not fetch symbol "<<symbol<<" because it is not registered."<<endl;
 		return false;
 	}
 

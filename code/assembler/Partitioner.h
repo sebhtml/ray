@@ -42,7 +42,7 @@ using namespace std;
  */
 class Partitioner :  public CorePlugin{
 
-	
+	MasterMode RAY_MASTER_MODE_COUNT_FILE_ENTRIES;
 
 	SlaveMode RAY_SLAVE_MODE_COUNT_FILE_ENTRIES;
 	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;

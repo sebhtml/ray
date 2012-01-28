@@ -52,6 +52,9 @@ using namespace std;
  */
 class NetworkTest :  public CorePlugin {
 
+	MasterMode RAY_MASTER_MODE_KILL_ALL_MPI_RANKS;
+	MasterMode  RAY_MASTER_MODE_TEST_NETWORK;
+
 	SlaveMode RAY_SLAVE_MODE_TEST_NETWORK;
 
 	Adapter_RAY_SLAVE_MODE_TEST_NETWORK m_adapter_RAY_SLAVE_MODE_TEST_NETWORK;

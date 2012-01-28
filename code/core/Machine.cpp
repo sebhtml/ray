@@ -459,10 +459,6 @@ m_seedingData,
 			m_parameters.showUsage();
 		}
 	}else{
-		if(isMaster()){
-			m_switchMan->setMasterMode(RAY_MASTER_MODE_LOAD_CONFIG);
-		}
-
 		m_lastTime=time(NULL);
 		m_computeCore.run();
 	}
@@ -763,16 +759,14 @@ void Machine::registerPlugins(){
 
 		string file=directory.str();
 		createDirectory(file.c_str());
-	}
 	
-	m_messagesHandler->barrier();
+		ostringstream fileName;
+		fileName<<m_parameters.getPrefix()<<"/Plugins/"<<m_parameters.getRank()<<".Plugins.txt";
 
-	ostringstream fileName;
-	fileName<<m_parameters.getPrefix()<<"/Plugins/"<<m_parameters.getRank()<<".Plugins.txt";
+		ofstream f(fileName.str().c_str());
 
-	ofstream f(fileName.str().c_str());
+		m_computeCore.printPlugins(&f);
 
-	m_computeCore.printPlugins(&f);
-
-	f.close();
+		f.close();
+	}
 }

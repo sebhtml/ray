@@ -297,8 +297,13 @@ void SwitchMan::registerPlugin(ComputeCore*core){
 
 	RAY_SLAVE_MODE_DO_NOTHING=core->allocateSlaveModeHandle(m_plugin,RAY_SLAVE_MODE_DO_NOTHING);
 	core->setSlaveModeSymbol(m_plugin,RAY_SLAVE_MODE_DO_NOTHING,"RAY_SLAVE_MODE_DO_NOTHING");
+
+	RAY_MASTER_MODE_DO_NOTHING=core->allocateMasterModeHandle(m_plugin,RAY_MASTER_MODE_DO_NOTHING);
+	core->setMasterModeSymbol(m_plugin,RAY_MASTER_MODE_DO_NOTHING,"RAY_MASTER_MODE_DO_NOTHING");
 }
 
 void SwitchMan::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_DO_NOTHING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DO_NOTHING");
+
+	RAY_MASTER_MODE_DO_NOTHING=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_DO_NOTHING");
 }

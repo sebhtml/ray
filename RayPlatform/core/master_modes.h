@@ -25,15 +25,4 @@
 
 extern char MASTER_MODES[MAXIMUM_NUMBER_OF_MASTER_HANDLERS][128];
 
-/* generate the enum list with a macro */
-
-#define ITEM(x) x,
-
-enum MasterModeEnum {
-#include <master_modes.txt>
-RAY_MASTER_MODE_DUMMY
-};
-
-#undef ITEM
-
 #endif

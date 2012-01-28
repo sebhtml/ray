@@ -372,7 +372,6 @@ void VerticesExtractor::registerPlugin(ComputeCore*core){
 	m_adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_EXTRACT_VERTICES, &m_adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_EXTRACT_VERTICES,"RAY_SLAVE_MODE_EXTRACT_VERTICES");
-
 }
 
 void VerticesExtractor::resolveSymbols(ComputeCore*core){

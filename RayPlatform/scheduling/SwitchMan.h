@@ -41,6 +41,8 @@ class ComputeCore;
  * \date 2012-01-02
  */
 class SwitchMan: public CorePlugin{
+
+	MasterMode RAY_MASTER_MODE_DO_NOTHING;
 	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
 
 /** the current slave mode of the rank */

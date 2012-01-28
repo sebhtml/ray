@@ -2736,6 +2736,18 @@ void MessageProcessor::registerPlugin(ComputeCore*core){
 
 void MessageProcessor::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_PURGE_NULL_EDGES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_PURGE_NULL_EDGES");
+
+	RAY_MASTER_MODE_ASK_DISTANCES=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_ASK_DISTANCES");
+	RAY_MASTER_MODE_DO_NOTHING=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_DO_NOTHING");
+	RAY_MASTER_MODE_PREPARE_SEEDING=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_PREPARE_SEEDING");
+	RAY_MASTER_MODE_PURGE_NULL_EDGES=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_PURGE_NULL_EDGES");
+	RAY_MASTER_MODE_START_UPDATING_DISTANCES=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_START_UPDATING_DISTANCES");
+	RAY_MASTER_MODE_TRIGGER_DETECTION=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_TRIGGER_DETECTION");
+	RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS");
+	RAY_MASTER_MODE_TRIGGER_FUSIONS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_TRIGGER_FUSIONS");
+	RAY_MASTER_MODE_TRIGGER_SEEDING=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_TRIGGER_SEEDING");
+	RAY_MASTER_MODE_WRITE_SCAFFOLDS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_WRITE_SCAFFOLDS");
+
 }
 
 

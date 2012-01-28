@@ -227,12 +227,16 @@ void Amos::registerPlugin(ComputeCore*core){
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_AMOS, &m_adapter_RAY_SLAVE_MODE_AMOS);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_AMOS,"RAY_SLAVE_MODE_AMOS");
 
-	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_AMOS);
+	RAY_MASTER_MODE_AMOS=core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_AMOS);
 	m_adapter_RAY_MASTER_MODE_AMOS.setObject(this);
 	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_AMOS, &m_adapter_RAY_MASTER_MODE_AMOS);
+	core->setMasterModeSymbol(plugin,RAY_MASTER_MODE_AMOS,"RAY_MASTER_MODE_AMOS");
 }
 
 void Amos::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_AMOS=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_AMOS");
 	RAY_SLAVE_MODE_DO_NOTHING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DO_NOTHING");
+
+	RAY_MASTER_MODE_AMOS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_AMOS");
+	RAY_MASTER_MODE_SCAFFOLDER=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_SCAFFOLDER");
 }

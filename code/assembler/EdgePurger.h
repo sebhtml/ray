@@ -50,6 +50,7 @@ using namespace std;
  */
 class EdgePurger : public TaskCreator, public CorePlugin {
 
+	MasterMode RAY_MASTER_MODE_WRITE_KMERS;
 	SlaveMode RAY_SLAVE_MODE_PURGE_NULL_EDGES;
 
 	

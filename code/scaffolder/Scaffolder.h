@@ -50,7 +50,7 @@ using namespace std;
  */
 class Scaffolder :  public CorePlugin{
 
-	
+	MasterMode RAY_MASTER_MODE_WRITE_SCAFFOLDS;
 
 	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
 	SlaveMode RAY_SLAVE_MODE_SCAFFOLDER;

@@ -180,4 +180,5 @@ void EdgePurger::registerPlugin(ComputeCore*core){
 
 void EdgePurger::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_PURGE_NULL_EDGES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_PURGE_NULL_EDGES");
+	RAY_MASTER_MODE_WRITE_KMERS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_WRITE_KMERS");
 }

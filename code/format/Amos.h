@@ -45,6 +45,9 @@ using namespace std;
  */
 class Amos :  public CorePlugin{
 
+	MasterMode RAY_MASTER_MODE_AMOS;
+	MasterMode RAY_MASTER_MODE_SCAFFOLDER;
+
 	SlaveMode RAY_SLAVE_MODE_AMOS;
 	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
 

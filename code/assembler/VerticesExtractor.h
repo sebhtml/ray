@@ -50,8 +50,6 @@ using namespace std;
  */
 class VerticesExtractor: public CorePlugin{
 	
-	
-
 	SlaveMode RAY_SLAVE_MODE_EXTRACT_VERTICES;
 
 	Adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES m_adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES;

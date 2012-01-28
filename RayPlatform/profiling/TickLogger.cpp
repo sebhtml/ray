@@ -59,12 +59,16 @@ void TickLogger::logSlaveTick(SlaveMode i){
 }
 
 void TickLogger::logMasterTick(MasterMode i){
+	#ifdef ASSERT
+	assert(i!=INVALID_HANDLE);
+	#endif
+
 	// this is the same as the last one
 	if(i==m_lastMasterMode){
 		m_masterCount++;
 
 	// this case occurs once during the first call
-	}else if(m_lastMasterMode==RAY_MASTER_MODE_DUMMY){
+	}else if(m_lastMasterMode==INVALID_HANDLE){
 		// start the new entry
 		m_lastMasterMode=i;
 		m_masterCount=1;
