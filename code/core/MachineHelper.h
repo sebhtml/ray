@@ -96,7 +96,6 @@ class MachineHelper: public CorePlugin{
 	Adapter_RAY_SLAVE_MODE_SEND_EXTENSION_DATA m_adapter_RAY_SLAVE_MODE_SEND_EXTENSION_DATA;
 	Adapter_RAY_SLAVE_MODE_EXTENSION m_adapter_RAY_SLAVE_MODE_EXTENSION;
 	Adapter_RAY_SLAVE_MODE_DIE m_adapter_RAY_SLAVE_MODE_DIE;
-	Adapter_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS m_adapter_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS;
 
 	SequencesLoader*m_sl;
 	time_t*m_lastTime;
@@ -235,7 +234,6 @@ SequencesLoader*sl,time_t*lastTime,bool*writeKmerInitialised,Partitioner*partiti
 	void call_RAY_SLAVE_MODE_ASSEMBLE_WAVES();
 	void call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA();
 	void call_RAY_SLAVE_MODE_DIE();
-	void call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS();
 
 	void registerPlugin(ComputeCore*core);
 };

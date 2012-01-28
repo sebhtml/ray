@@ -29,7 +29,12 @@ obj-y += assembler/EdgePurger.o assembler/EdgePurgerWorker.o
 
 obj-y += assembler/FusionTaskCreator_adapters.o
 obj-y += assembler/FusionWorker.o 
-obj-y += assembler/FusionTaskCreator.o assembler/FusionData.o 
+obj-y += assembler/FusionTaskCreator.o 
+
+# plugin FusionData
+
+obj-y += assembler/FusionData_adapters.o
+obj-y += assembler/FusionData.o 
 
 # plugin Scaffolder
 

@@ -275,14 +275,6 @@ public:
 	void call();
 };
 
-class Adapter_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS: public SlaveModeHandler{
-	MachineHelper*m_object;
-
-public:
-	void setObject(MachineHelper*object);
-	void call();
-};
-
 class Adapter_RAY_MASTER_MODE_TRIGGER_EXTENSIONS: public MasterModeHandler{
 	MachineHelper*m_object;
 

@@ -982,13 +982,6 @@ void MachineHelper::call_RAY_MASTER_MODE_KILL_ALL_MPI_RANKS(){
 	}
 }
 
-void MachineHelper::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
-
-	// TODO: initialise these things in the constructor
-	m_fusionData->call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(m_seedingData,m_ed,m_parameters->getRank(),
-		m_outboxAllocator,m_outbox,getSize(),m_switchMan->getSlaveModePointer());
-}
-
 int MachineHelper::getSize(){
 	return m_parameters->getSize();
 }
@@ -1127,10 +1120,6 @@ void MachineHelper::registerPlugin(ComputeCore*core){
 	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_DIE);
 	m_adapter_RAY_SLAVE_MODE_DIE.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_DIE, &m_adapter_RAY_SLAVE_MODE_DIE);
-
-	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS);
-	m_adapter_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS.setObject(this);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS, &m_adapter_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS);
 
 	core->endPluginRegistration(plugin);
 }

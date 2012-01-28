@@ -975,6 +975,8 @@ void ComputeCore::setPluginName(PluginHandle plugin,string name){
 		return;
 
 	m_plugins[plugin].setName(name);
+
+	cout<<"Rank "<<m_rank<<" loaded plugin "<<m_plugins[plugin].getName()<<", handle is "<<plugin<<endl;
 }
 
 void ComputeCore::printPlugins(ostream*stream){

@@ -277,13 +277,4 @@ void Adapter_RAY_SLAVE_MODE_DIE::call(){
 	m_object->call_RAY_SLAVE_MODE_DIE();
 }
 
-void Adapter_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS::setObject(MachineHelper*object){
-	m_object=object;
-}
-
-void Adapter_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS::call(){
-	m_object->call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS();
-}
-
-
 

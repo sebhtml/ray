@@ -374,6 +374,11 @@ void Machine::start(){
 	m_fusionData->constructor(getSize(),MAXIMUM_MESSAGE_SIZE_IN_BYTES,getRank(),m_outbox,m_outboxAllocator,m_parameters.getWordSize(),
 		m_ed,m_seedingData,m_switchMan->getSlaveModePointer(),&m_parameters);
 
+/*
+ m_seedingData,m_ed,m_parameters->getRank(),
+		m_outboxAllocator,m_outbox,getSize(),m_switchMan->getSlaveModePointer()
+*/
+
 	m_library.constructor(getRank(),m_outbox,m_outboxAllocator,
 		m_ed,getSize(),&m_timePrinter,m_switchMan->getSlaveModePointer(),m_switchMan->getMasterModePointer(),
 	&m_parameters,m_seedingData,m_inbox,m_virtualCommunicator);
@@ -792,6 +797,7 @@ void Machine::showRayVersion(MessagesHandler*messagesHandler,bool fullReport){
 }
 
 void Machine::registerPlugins(){
+	cout<<endl;
 	m_computeCore.registerPlugin(&m_amos);
 	m_computeCore.registerPlugin(&m_searcher);
 	m_computeCore.registerPlugin(&m_networkTest);
@@ -805,7 +811,9 @@ void Machine::registerPlugins(){
 	m_computeCore.registerPlugin(&m_coverageGatherer);
 	m_computeCore.registerPlugin(&m_partitioner);
 	m_computeCore.registerPlugin(&m_seedExtender);
+	m_computeCore.registerPlugin(m_fusionData);
 	m_computeCore.registerPlugin(&m_si);
+	cout<<endl;
 
 	if(m_parameters.getRank()==MASTER_RANK){
 		ostringstream directory;

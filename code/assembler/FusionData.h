@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -34,6 +34,9 @@ class SeedingData;
 #include <profiling/TimePrinter.h>
 #include <handlers/SlaveModeHandler.h>
 
+#include <core/ComputeCore.h>
+#include <assembler/FusionData_adapters.h>
+
 #include <vector>
 #include <map>
 #include <set>
@@ -41,9 +44,15 @@ using namespace std;
 
 /*
  * Contains information regarding fusion of extensions.
+ * This is a legacy class with public attributes, 
+ * TODO: make attributes private..
+ *
  * \author Sébastien Boisvert
  */
-class FusionData {
+class FusionData : public CorePlugin {
+
+	Adapter_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS m_adapter_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS;
+
 	/** debug fusion code */
 	bool m_debugFusionCode;
 
@@ -118,7 +127,7 @@ public:
 
 	set<uint64_t> m_FUSION_eliminated;
 
-	void call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(SeedingData*m_seedingData,ExtensionData*m_ed,int getRank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox,int getSize,int*m_mode);
+	void call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS();
 
 	void constructor(int size,int maxSize,int rank,StaticVector*m_outbox,
 		RingAllocator*m_outboxAllocator,int wordSize,
@@ -134,6 +143,8 @@ public:
 	void readyBuffers();
 	void getPaths(Kmer vertex);
 	void initialise();
+
+	void registerPlugin(ComputeCore*core);
 };
 
 #endif

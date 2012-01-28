@@ -29,7 +29,7 @@ using namespace std;
 
 #define SHOW_FUSION
 
-void FusionData::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(SeedingData*m_seedingData,ExtensionData*m_ed,int getRank,RingAllocator*m_outboxAllocator,StaticVector*m_outbox,int getSize1,int*m_mode){
+void FusionData::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
 
 	/** read the checkpoint ContigPaths */
 	if(!m_processedCheckpoint){
@@ -75,12 +75,12 @@ void FusionData::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(SeedingData*m_seedingDat
 		return;
 	}
 	if(!m_buffers.isEmpty() && m_seedingData->m_SEEDING_i==(uint64_t)m_ed->m_EXTENSION_contigs.size()){
-		m_ready+=m_buffers.flushAll(RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY,m_outboxAllocator,m_outbox,getRank);
+		m_ready+=m_buffers.flushAll(RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY,m_outboxAllocator,m_outbox,getRank());
 		return;
 	}else if(m_buffers.isEmpty() && m_seedingData->m_SEEDING_i==(uint64_t)m_ed->m_EXTENSION_contigs.size()){
-		printf("Rank %i is distributing fusions [%i/%i] (completed)\n",getRank,(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
+		printf("Rank %i is distributing fusions [%i/%i] (completed)\n",getRank(),(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
 		fflush(stdout);
-		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED,getRank);
+		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED,getRank());
 		m_outbox->push_back(aMessage);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		m_buffers.showStatistics(m_parameters->getRank());
@@ -98,10 +98,10 @@ void FusionData::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(SeedingData*m_seedingDat
 
 	if(m_ed->m_EXTENSION_currentPosition==0){
 		if(m_seedingData->m_SEEDING_i%10==0){
-			printf("Rank %i is distributing fusions [%i/%i]\n",getRank,(int)(m_seedingData->m_SEEDING_i+1),(int)m_ed->m_EXTENSION_contigs.size());
+			printf("Rank %i is distributing fusions [%i/%i]\n",getRank(),(int)(m_seedingData->m_SEEDING_i+1),(int)m_ed->m_EXTENSION_contigs.size());
 			fflush(stdout);
 			if(m_parameters->showMemoryUsage()){
-				showMemoryUsage(getRank);
+				showMemoryUsage(getRank());
 				showDate();
 			}
 		}
@@ -123,7 +123,7 @@ void FusionData::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(SeedingData*m_seedingDat
 	m_buffers.addAt(destination,m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i]);
 	m_buffers.addAt(destination,m_ed->m_EXTENSION_currentPosition);
 
-	if(m_buffers.flush(destination,KMER_U64_ARRAY_SIZE+2,RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY,m_outboxAllocator,m_outbox,getRank,false)){
+	if(m_buffers.flush(destination,KMER_U64_ARRAY_SIZE+2,RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY,m_outboxAllocator,m_outbox,getRank(),false)){
 		m_ready++;
 	}
 
@@ -627,4 +627,20 @@ void FusionData::initialise(){
 	m_FUSION_direct_fusionDone=false;
 	m_FUSION_first_done=false;
 	m_FUSION_paths_requested=false;
+}
+
+void FusionData::registerPlugin(ComputeCore*core){
+
+	PluginHandle plugin=core->allocatePluginHandle();
+
+	core->beginPluginRegistration(plugin);
+
+	core->setPluginName(plugin,"FusionData");
+
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS);
+	m_adapter_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS.setObject(this);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS, &m_adapter_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS);
+
+	core->endPluginRegistration(plugin);
+
 }
