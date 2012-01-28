@@ -793,11 +793,13 @@ void Parameters::writeCommandFile(){
 	f2.close();
 }
 
-void Parameters::constructor(int argc,char**argv,int rank){
+void Parameters::constructor(int argc,char**argv,int rank,int size){
 	m_maximumDistance=0;
 	m_totalNumberOfSequences=0;
 
 	m_rank=rank;
+	m_size=size;
+
 	bool hasCommandFile=false;
 	if(argc==2){
 		ifstream f(argv[1]);

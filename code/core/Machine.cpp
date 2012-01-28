@@ -107,6 +107,7 @@ Machine::Machine(int argc,char**argv){
 
 	m_ed=new ExtensionData();
 
+	// construct titans
 	m_helper.constructor(argc,argv,&m_parameters,m_switchMan,m_outboxAllocator,m_outbox,&m_aborted,
 		&m_coverageDistribution,&m_numberOfMachinesDoneSendingCoverage,&m_numberOfRanksWithCoverageData,
 	&m_reductionOccured,m_ed,m_fusionData,m_profiler,&m_networkTest,m_seedingData,
@@ -121,6 +122,7 @@ m_virtualCommunicator,&m_kmerAcademyBuilder,
 &m_sl,&m_lastTime,&m_writeKmerInitialised,&m_partitioner
 
 );
+
 
 	configureVirtualCommunicator(m_virtualCommunicator);
 	configureSwitchMan(m_switchMan);
@@ -263,7 +265,7 @@ void Machine::start(){
 		return;
 	}
 
-	m_parameters.constructor(m_argc,m_argv,getRank());
+	m_parameters.constructor(m_argc,m_argv,getRank(),m_size);
 
 	if(m_parameters.runProfiler())
 		m_computeCore.enableProfiler();
@@ -346,15 +348,12 @@ void Machine::start(){
 		&(m_seedingData->m_SEEDING_currentVertex),&(m_seedingData->m_SEEDING_receivedVertexCoverage),
 		&(m_seedingData->m_SEEDING_receivedOutgoingEdges),&m_c,&m_oa);
 
-	
-/*
-&(m_seedingData->m_SEEDING_seeds),m_ed,getRank(),m_outbox,&(m_seedingData->m_SEEDING_currentVertex),
-	m_fusionData,m_outboxAllocator,&(m_seedingData->m_SEEDING_edgesRequested),&(m_seedingData->m_SEEDING_outgoingEdgeIndex),
-	m_last_value,&(m_seedingData->m_SEEDING_vertexCoverageRequested),m_parameters->getWordSize(),getSize(),&(m_seedingData->m_SEEDING_vertexCoverageReceived),
-	&(m_seedingData->m_SEEDING_receivedVertexCoverage),m_repeatedLength,&(m_seedingData->m_SEEDING_receivedOutgoingEdges),&m_c,
-	m_bubbleData,
-m_parameters->getMinimumCoverage(),m_oa,&(m_seedingData->m_SEEDING_edgesReceived),m_switchMan->getSlaveModePointer()
-*/
+
+	m_kmerAcademyBuilder.constructor(m_parameters.getSize(),&m_parameters,&m_subgraph);
+
+	m_si.constructor(&m_parameters,m_outboxAllocator,m_inbox,m_outbox,m_virtualCommunicator,
+		m_switchMan->getSlaveModePointer(),&m_myReads);
+
 
 
 	m_profiler = m_computeCore.getProfiler();
@@ -806,6 +805,7 @@ void Machine::registerPlugins(){
 	m_computeCore.registerPlugin(&m_coverageGatherer);
 	m_computeCore.registerPlugin(&m_partitioner);
 	m_computeCore.registerPlugin(&m_seedExtender);
+	m_computeCore.registerPlugin(&m_si);
 
 	if(m_parameters.getRank()==MASTER_RANK){
 		ostringstream directory;

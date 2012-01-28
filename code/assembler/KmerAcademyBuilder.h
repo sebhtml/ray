@@ -57,6 +57,8 @@ class KmerAcademyBuilder{
 	bool m_distributionIsCompleted;
 	Parameters*m_parameters;
 
+	bool m_initialised;
+
 	int m_rank;
 	RingAllocator*m_outboxAllocator;
 	StaticVector*m_outbox;

@@ -45,6 +45,11 @@ void KmerAcademyBuilder::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(int*m_mode_send_
 				int*m_mode
 				){
 	
+	if(!m_initialised){
+		m_initialised=true;
+		(*m_mode_send_vertices_sequence_id)=0;
+	}
+
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
 	if(this->m_outbox==NULL){
@@ -195,6 +200,8 @@ void KmerAcademyBuilder::constructor(int size,Parameters*parameters,GridTable*gr
 	
 	m_pendingMessages=0;
 	m_size=size;
+
+	m_initialised=false;
 }
 
 void KmerAcademyBuilder::setReadiness(){

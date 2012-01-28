@@ -365,16 +365,7 @@ void MachineHelper::call_RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING(){
 
 void MachineHelper::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(){
 
-	MACRO_COLLECT_PROFILING_INFORMATION();
 
-	if(!(*m_initialisedAcademy)){
-		m_kmerAcademyBuilder->constructor(m_parameters->getSize(),m_parameters,m_subgraph);
-		(*m_mode_send_vertices_sequence_id)=0;
-		(*m_initialisedAcademy)=true;
-
-		m_si->constructor(m_parameters,m_outboxAllocator,m_inbox,m_outbox,m_virtualCommunicator);
-	}
-	
 	// TODO: initialise these things in the constructor
 	m_kmerAcademyBuilder->call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(		m_mode_send_vertices_sequence_id,
 			m_myReads,
@@ -387,9 +378,6 @@ void MachineHelper::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(){
 			m_outboxAllocator,
 			m_switchMan->getSlaveModePointer()
 		);
-
-
-	MACRO_COLLECT_PROFILING_INFORMATION();
 }
 
 void MachineHelper::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
@@ -611,13 +599,6 @@ void MachineHelper::call_RAY_MASTER_MODE_START_UPDATING_DISTANCES(){
 	m_switchMan->setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
 	
 	m_switchMan->closeMasterMode();
-}
-
-void MachineHelper::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(){
-
-	// TODO: initialise these things in the constructor
-	m_si->call_RAY_SLAVE_MODE_INDEX_SEQUENCES(m_myReads,m_outboxAllocator,m_outbox,m_switchMan->getSlaveModePointer(),m_parameters->getWordSize(),
-	m_parameters->getSize(),m_parameters->getRank());
 }
 
 void MachineHelper::call_RAY_MASTER_MODE_TRIGGER_EXTENSIONS(){
@@ -1138,10 +1119,6 @@ void MachineHelper::registerPlugin(ComputeCore*core){
 	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_ASSEMBLE_WAVES);
 	m_adapter_RAY_SLAVE_MODE_ASSEMBLE_WAVES.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_ASSEMBLE_WAVES, &m_adapter_RAY_SLAVE_MODE_ASSEMBLE_WAVES);
-
-	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_INDEX_SEQUENCES);
-	m_adapter_RAY_SLAVE_MODE_INDEX_SEQUENCES.setObject(this);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_INDEX_SEQUENCES, &m_adapter_RAY_SLAVE_MODE_INDEX_SEQUENCES);
 
 	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_SEND_EXTENSION_DATA);
 	m_adapter_RAY_SLAVE_MODE_SEND_EXTENSION_DATA.setObject(this);

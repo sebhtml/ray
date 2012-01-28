@@ -259,14 +259,6 @@ public:
 	void call();
 };
 
-class Adapter_RAY_SLAVE_MODE_INDEX_SEQUENCES: public SlaveModeHandler{
-	MachineHelper*m_object;
-
-public:
-	void setObject(MachineHelper*object);
-	void call();
-};
-
 class Adapter_RAY_SLAVE_MODE_SEND_EXTENSION_DATA: public SlaveModeHandler{
 	MachineHelper*m_object;
 

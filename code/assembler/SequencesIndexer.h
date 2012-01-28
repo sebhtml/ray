@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -34,9 +34,12 @@
 #include <structures/SplayTreeIterator.h>
 #include <structures/StaticVector.h>
 #include <structures/ArrayOfReads.h>
-#include <map>
 #include <profiling/Derivative.h>
 #include <structures/Read.h>
+#include <assembler/SequencesIndexer_adapters.h>
+#include <core/ComputeCore.h>
+
+#include <map>
 #include <vector>
 #include <fstream>
 using namespace std;
@@ -45,7 +48,10 @@ using namespace std;
  * Computes optimal read markers using workers.
  * \author Sébastien Boisvert
  */
-class SequencesIndexer{
+class SequencesIndexer: public CorePlugin{
+
+	Adapter_RAY_SLAVE_MODE_INDEX_SEQUENCES m_adapter_RAY_SLAVE_MODE_INDEX_SEQUENCES;
+
 	Derivative m_derivative;
 
 	ofstream m_readMarkerFile;
@@ -66,6 +72,9 @@ class SequencesIndexer{
 	int m_maximumAliveWorkers;
 	int m_maximumWorkers;
 
+	SlaveMode*m_mode;
+	StaticVector*m_outbox;
+
 	VirtualCommunicator*m_virtualCommunicator;
 	SplayTree<uint64_t,char> m_activeWorkers;
 	SplayTreeIterator<uint64_t,char> m_activeWorkerIterator;
@@ -77,26 +86,24 @@ class SequencesIndexer{
 	vector<uint64_t> m_waitingWorkers;
 	vector<uint64_t> m_activeWorkersToRestore;
 
+	ArrayOfReads*m_myReads;
+	RingAllocator*m_outboxAllocator;
+
 	bool m_initiatedIterator;
 	int m_theSequenceId;
 	void updateStates();
 
 public:
 
-	void call_RAY_SLAVE_MODE_INDEX_SEQUENCES(
-ArrayOfReads*m_myReads,
-				RingAllocator*m_outboxAllocator,
-				StaticVector*m_outbox,
-				int*m_mode,
-				int m_wordSize,
-				int m_size,
-				int m_rank
-);
+	void call_RAY_SLAVE_MODE_INDEX_SEQUENCES();
 
 	void constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,
-	VirtualCommunicator*vc);
+	VirtualCommunicator*vc,SlaveMode*mode,ArrayOfReads*myReads);
+
 	void setReadiness();
 	MyAllocator*getAllocator();
+
+	void registerPlugin(ComputeCore*core);
 };
 
 #endif

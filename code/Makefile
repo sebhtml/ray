@@ -21,9 +21,6 @@ obj-y += structures/Read.o structures/Vertex.o
 obj-y += format/ColorSpaceDecoder.o format/ColorSpaceLoader.o 
 obj-y += format/FastaLoader.o format/FastqLoader.o format/SffLoader.o  assembler/Loader.o 
 
-obj-y += assembler/IndexerWorker.o 
-
-obj-y += assembler/SequencesIndexer.o 
 obj-y += assembler/SequencesLoader.o assembler/VerticesExtractor.o 
 obj-y += assembler/KmerAcademyBuilder.o
 obj-y += assembler/EdgePurger.o assembler/EdgePurgerWorker.o
@@ -69,6 +66,12 @@ obj-y += assembler/Partitioner_adapters.o
 obj-y += communication/MessageProcessor_adapters.o
 obj-y += communication/MessageProcessor.o
 
+# plugin SequencesIndexer
+
+obj-y += assembler/SequencesIndexer_adapters.o 
+obj-y += assembler/SequencesIndexer.o 
+obj-y += assembler/IndexerWorker.o 
+
 # plugin Amos
 
 obj-y += format/Amos_adapters.o
@@ -84,7 +87,6 @@ obj-y += communication/NetworkTest.o
 obj-y += assembler/JoinerTaskCreator_adapters.o
 obj-y += assembler/JoinerWorker.o 
 obj-y += assembler/JoinerTaskCreator.o
-
 
 # plugin MachineHelper
 

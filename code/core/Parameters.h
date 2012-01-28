@@ -116,7 +116,7 @@ class Parameters{
 public:
 	Parameters();
 	string getReceivedMessagesFile();
-	void constructor(int argc,char**argv,int rank);
+	void constructor(int argc,char**argv,Rank rank,int size);
 	bool isInitiated();
 	vector<string> getAllFiles();
 	string getDirectory();

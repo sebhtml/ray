@@ -34,6 +34,9 @@ using namespace std;
  */
 void*__Malloc(int c,int mallocType,bool show){
 	#ifdef ASSERT
+	if(c==0){
+		cout<<"Requested "<<c<<" bytes of type "<<MALLOC_TYPES[mallocType]<<endl;
+	}
 	assert(c!=0);
 	assert(c>0);
 	#endif

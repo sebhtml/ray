@@ -261,14 +261,6 @@ void Adapter_RAY_SLAVE_MODE_ASSEMBLE_WAVES::call(){
 	m_object->call_RAY_SLAVE_MODE_ASSEMBLE_WAVES();
 }
 
-void Adapter_RAY_SLAVE_MODE_INDEX_SEQUENCES::setObject(MachineHelper*object){
-	m_object=object;
-}
-
-void Adapter_RAY_SLAVE_MODE_INDEX_SEQUENCES::call(){
-	m_object->call_RAY_SLAVE_MODE_INDEX_SEQUENCES();
-}
-
 void Adapter_RAY_SLAVE_MODE_SEND_EXTENSION_DATA::setObject(MachineHelper*object){
 	m_object=object;
 }

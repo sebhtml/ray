@@ -29,14 +29,7 @@
 #include <communication/Message.h>
 #include <memory/malloc_types.h>
 
-void SequencesIndexer::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(ArrayOfReads*m_myReads,
-				RingAllocator*m_outboxAllocator,
-				StaticVector*m_outbox,
-				int*m_mode,
-				int m_wordSize,
-				int m_size,
-				int m_rank
-			){
+void SequencesIndexer::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(){
 	if(!m_initiatedIterator){
 		m_theSequenceId=0;
 
@@ -208,7 +201,15 @@ void SequencesIndexer::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(ArrayOfReads*m_myRead
 	}
 }
 
-void SequencesIndexer::constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,VirtualCommunicator*vc){
+void SequencesIndexer::constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,VirtualCommunicator*vc,
+SlaveMode*mode,
+	ArrayOfReads*myReads
+){
+	m_mode=mode;
+	m_outboxAllocator=outboxAllocator;
+	m_myReads=myReads;
+	m_outbox=outbox;
+
 	m_parameters=parameters;
 	m_checkedCheckpoint=false;
 
@@ -276,4 +277,21 @@ void SequencesIndexer::updateStates(){
 	m_activeWorkersToRestore.clear();
 
 	m_virtualCommunicator->resetGlobalPushedMessageStatus();
+}
+
+void SequencesIndexer::registerPlugin(ComputeCore*core){
+
+	PluginHandle plugin=core->allocatePluginHandle();
+
+	core->beginPluginRegistration(plugin);
+
+	core->setPluginName(plugin,"SequencesIndexer");
+
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_INDEX_SEQUENCES);
+	m_adapter_RAY_SLAVE_MODE_INDEX_SEQUENCES.setObject(this);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_INDEX_SEQUENCES,
+		&m_adapter_RAY_SLAVE_MODE_INDEX_SEQUENCES);
+
+	core->endPluginRegistration(plugin);
+
 }
