@@ -205,14 +205,6 @@ void Adapter_RAY_MASTER_MODE_KILL_ALL_MPI_RANKS::call(){
 	m_object->call_RAY_MASTER_MODE_KILL_ALL_MPI_RANKS();
 }
 
-void Adapter_RAY_SLAVE_MODE_LOAD_SEQUENCES::setObject(MachineHelper*object){
-	m_object=object;
-}
-
-void Adapter_RAY_SLAVE_MODE_LOAD_SEQUENCES::call(){
-	m_object->call_RAY_SLAVE_MODE_LOAD_SEQUENCES();
-}
-
 void Adapter_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY::setObject(MachineHelper*object){
 	m_object=object;
 }

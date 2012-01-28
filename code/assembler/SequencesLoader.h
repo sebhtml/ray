@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -30,6 +30,9 @@
 #include <communication/Message.h>
 #include <structures/Read.h>
 #include <assembler/BubbleData.h>
+#include <core/ComputeCore.h>
+#include <assembler/SequencesLoader_adapters.h>
+
 #include <time.h>
 #include <vector>
 using namespace std;
@@ -40,7 +43,10 @@ using namespace std;
  *
  * \author Sébastien Boisvert
  */
-class SequencesLoader{
+class SequencesLoader : public CorePlugin{
+
+	Adapter_RAY_SLAVE_MODE_LOAD_SEQUENCES m_adapter_RAY_SLAVE_MODE_LOAD_SEQUENCES;
+
 	MyAllocator*m_persistentAllocator;
 	ArrayOfReads*m_myReads;
 	Parameters*m_parameters;
@@ -53,17 +59,15 @@ class SequencesLoader{
 	bool m_isInterleavedFile;
 	int m_rank;
 	int m_size;
+	
+	StaticVector*m_outbox;
+	SlaveMode*m_mode;
 
 	void registerSequence();
 
 public:
-	bool call_RAY_SLAVE_MODE_LOAD_SEQUENCES(int rank,int size,StaticVector*m_outbox,
-	RingAllocator*m_outboxAllocator,
-	bool*m_loadSequenceStep,
-	BubbleData*m_bubbleData,
-	time_t*m_lastTime,
-	Parameters*m_parameters,int*m_master_mode,int*m_mode
-);
+	bool call_RAY_SLAVE_MODE_LOAD_SEQUENCES();
+
 	bool writeSequencesToAMOSFile(int rank,int size,StaticVector*m_outbox,
 	RingAllocator*m_outboxAllocator,
 	bool*m_loadSequenceStep,
@@ -71,6 +75,9 @@ public:
 	time_t*m_lastTime,
 	Parameters*m_parameters,int*m_master_mode,int*m_mode);
 
-	void constructor(int size,MyAllocator*m_persistentAllocator,ArrayOfReads*m_myReads);
+	void constructor(int size,MyAllocator*m_persistentAllocator,ArrayOfReads*m_myReads,
+		Parameters*parameters,StaticVector*outbox,SlaveMode*mode);
+
+	void registerPlugin(ComputeCore*core);
 };
 #endif

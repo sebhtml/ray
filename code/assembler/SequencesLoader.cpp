@@ -191,17 +191,8 @@ bool SequencesLoader::writeSequencesToAMOSFile(int rank,int size,
 	return true;
 }
 
-bool SequencesLoader::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(int rank,int size,
-	StaticVector*m_outbox,
-	RingAllocator*m_outboxAllocator,
-	bool*m_loadSequenceStep,BubbleData*m_bubbleData,
-	time_t*m_lastTime,
-	Parameters*m_parameters,int*m_master_mode,int*m_mode
-){
-	m_rank=rank;
+bool SequencesLoader::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
 
-	this->m_parameters=m_parameters;
-	
 	printf("Rank %i is loading sequence reads\n",m_rank);
 	fflush(stdout);
 
@@ -219,7 +210,7 @@ bool SequencesLoader::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(int rank,int size,
 			m_myReads->push_back(&myRead);
 		}
 
-		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_SEQUENCES_READY,rank);
+		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_SEQUENCES_READY,m_rank);
 		m_outbox->push_back(aMessage);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 
@@ -237,13 +228,13 @@ bool SequencesLoader::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(int rank,int size,
 		totalNumberOfSequences+=m_parameters->getNumberOfSequences(i);
 	}
 
-	uint64_t sequencesPerRank=totalNumberOfSequences/size;
-	uint64_t sequencesOnRanksBeforeThisOne=rank*sequencesPerRank;
+	uint64_t sequencesPerRank=totalNumberOfSequences/m_size;
+	uint64_t sequencesOnRanksBeforeThisOne=m_rank*sequencesPerRank;
 	
 	uint64_t startingSequenceId=sequencesOnRanksBeforeThisOne;
 	uint64_t endingSequenceId=startingSequenceId+sequencesPerRank-1;
 
-	if(rank==size-1){
+	if(m_rank==m_size-1){
 		endingSequenceId=totalNumberOfSequences-1;
 	}
 
@@ -311,7 +302,7 @@ bool SequencesLoader::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(int rank,int size,
 	}
 	
 	m_loader.clear();
-	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_SEQUENCES_READY,rank);
+	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_SEQUENCES_READY,m_rank);
 	m_outbox->push_back(aMessage);
 	(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 
@@ -338,9 +329,30 @@ bool SequencesLoader::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(int rank,int size,
 	return true;
 }
 
-void SequencesLoader::constructor(int size,MyAllocator*allocator,ArrayOfReads*reads){
+void SequencesLoader::constructor(int size,MyAllocator*allocator,ArrayOfReads*reads,Parameters*parameters,
+	StaticVector*outbox,SlaveMode*mode){
+
+	m_mode=mode;
+	m_parameters=parameters;
+	m_rank=m_parameters->getRank();
 	m_size=size;
 	m_persistentAllocator=allocator;
 	m_myReads=reads;
 	m_myReads->constructor(allocator);
+	m_outbox=outbox;
+}
+
+void SequencesLoader::registerPlugin(ComputeCore*core){
+
+	PluginHandle plugin=core->allocatePluginHandle();
+
+	core->beginPluginRegistration(plugin);
+
+	core->setPluginName(plugin,"SequencesLoader");
+
+	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_LOAD_SEQUENCES);
+	m_adapter_RAY_SLAVE_MODE_LOAD_SEQUENCES.setObject(this);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_LOAD_SEQUENCES, &m_adapter_RAY_SLAVE_MODE_LOAD_SEQUENCES);
+
+	core->endPluginRegistration(plugin);
 }

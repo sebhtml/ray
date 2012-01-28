@@ -369,7 +369,8 @@ void Machine::start(){
 	m_diskAllocator.constructor(chunkSize,RAY_MALLOC_TYPE_DATA_ALLOCATOR,
 		m_parameters.showMemoryAllocations());
 
-	m_sl.constructor(m_size,&m_diskAllocator,&m_myReads);
+	m_sl.constructor(m_size,&m_diskAllocator,&m_myReads,&m_parameters,m_outbox,
+		m_switchMan->getSlaveModePointer());
 
 	m_fusionData->constructor(getSize(),MAXIMUM_MESSAGE_SIZE_IN_BYTES,getRank(),m_outbox,m_outboxAllocator,m_parameters.getWordSize(),
 		m_ed,m_seedingData,m_switchMan->getSlaveModePointer(),&m_parameters);
@@ -459,8 +460,6 @@ m_seedingData,
 	}else{
 		if(isMaster()){
 			m_switchMan->setMasterMode(RAY_MASTER_MODE_LOAD_CONFIG);
-			m_sl.constructor(getSize(),&m_diskAllocator,
-				&m_myReads);
 		}
 
 		m_lastTime=time(NULL);
@@ -813,6 +812,8 @@ void Machine::registerPlugins(){
 	m_computeCore.registerPlugin(&m_seedExtender);
 	m_computeCore.registerPlugin(m_fusionData);
 	m_computeCore.registerPlugin(&m_si);
+	m_computeCore.registerPlugin(&m_sl);
+
 	cout<<endl;
 
 	if(m_parameters.getRank()==MASTER_RANK){

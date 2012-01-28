@@ -326,19 +326,6 @@ void MachineHelper::call_RAY_MASTER_MODE_LOAD_SEQUENCES(){
 	m_switchMan->setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
 }
 
-void MachineHelper::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
-	// TODO: initialise this parameters in the constructor
-
-	m_sl->call_RAY_SLAVE_MODE_LOAD_SEQUENCES(getRank(),getSize(),
-	m_outbox,
-	m_outboxAllocator,
-	&m_loadSequenceStep,
-	m_bubbleData,
-	m_lastTime,
-	m_parameters,m_switchMan->getMasterModePointer(),m_switchMan->getSlaveModePointer()
-);
-}
-
 void MachineHelper::call_RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION(){
 	m_timePrinter->printElapsedTime("Sequence loading");
 	cout<<endl;
@@ -1084,10 +1071,6 @@ void MachineHelper::registerPlugin(ComputeCore*core){
 	core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
 	m_adapter_RAY_MASTER_MODE_KILL_ALL_MPI_RANKS.setObject(this);
 	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_KILL_ALL_MPI_RANKS, &m_adapter_RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
-
-	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_LOAD_SEQUENCES);
-	m_adapter_RAY_SLAVE_MODE_LOAD_SEQUENCES.setObject(this);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_LOAD_SEQUENCES, &m_adapter_RAY_SLAVE_MODE_LOAD_SEQUENCES);
 
 	core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY);
 	m_adapter_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY.setObject(this);

@@ -5,25 +5,29 @@
 obj-y += assembler/ray_main.o 
 obj-y += core/Machine.o 
 obj-y += core/Parameters.o core/common_functions.o
-obj-$(HAVE_LIBBZ2) += compression/BzReader.o  
-
-obj-$(HAVE_LIBBZ2) += format/FastqBz2Loader.o 
-obj-$(HAVE_LIBZ) += format/FastqGzLoader.o 
 
 obj-y += graph/KmerAcademy.o graph/KmerAcademyIterator.o
-obj-y += graph/GridTable.o graph/GridTableIterator.o graph/CoverageDistribution.o 
+obj-y += graph/GridTable.o graph/GridTableIterator.o
 
 obj-y +=  structures/BloomFilter.o
-obj-y += structures/Kmer.o structures/ArrayOfReads.o 
+obj-y += structures/Kmer.o
 obj-y +=  structures/Direction.o  structures/PairedRead.o structures/ReadAnnotation.o 
-obj-y += structures/Read.o structures/Vertex.o
+obj-y += structures/Vertex.o
 
-obj-y += format/ColorSpaceDecoder.o format/ColorSpaceLoader.o 
-obj-y += format/FastaLoader.o format/FastqLoader.o format/SffLoader.o  assembler/Loader.o 
-
-obj-y += assembler/SequencesLoader.o assembler/VerticesExtractor.o 
+obj-y += assembler/VerticesExtractor.o 
 obj-y += assembler/KmerAcademyBuilder.o
 obj-y += assembler/EdgePurger.o assembler/EdgePurgerWorker.o
+
+# plugin SequencesLoader
+
+obj-y += assembler/SequencesLoader_adapters.o 
+obj-y += assembler/SequencesLoader.o 
+obj-y += structures/Read.o  structures/ArrayOfReads.o 
+obj-y += format/ColorSpaceDecoder.o format/ColorSpaceLoader.o 
+obj-y += format/FastaLoader.o format/FastqLoader.o format/SffLoader.o  assembler/Loader.o 
+obj-$(HAVE_LIBBZ2) += compression/BzReader.o  
+obj-$(HAVE_LIBBZ2) += format/FastqBz2Loader.o 
+obj-$(HAVE_LIBZ) += format/FastqGzLoader.o 
 
 # plugin FusionTaskCreator
 
@@ -60,6 +64,7 @@ obj-y += search-engine/VirtualKmerColor.o
 
 obj-y += graph/CoverageGatherer.o 
 obj-y += graph/CoverageGatherer_adapters.o
+obj-y += graph/CoverageDistribution.o 
 
 # plugin Partitioner
 
