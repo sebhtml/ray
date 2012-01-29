@@ -56,6 +56,7 @@ using namespace std;
 class ComputeCore{
 
 	bool m_hasFirstMode;
+	bool m_firstRegistration;
 
 	vector<CorePlugin*> m_listOfPlugins;
 

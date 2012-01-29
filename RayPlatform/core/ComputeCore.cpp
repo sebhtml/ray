@@ -517,6 +517,8 @@ void ComputeCore::processData(){
 
 void ComputeCore::constructor(int*argc,char***argv){
 
+	m_firstRegistration=true;
+
 	m_hasFirstMode=false;
 
 	srand(portableProcessId() * getMicroseconds());
@@ -571,14 +573,6 @@ void ComputeCore::constructor(int*argc,char***argv){
 	m_currentSlaveModeToAllocate=0;
 	m_currentMasterModeToAllocate=0;
 	m_currentMessageTagToAllocate=0;
-
-
-	// register some built-in plugins
-
-	registerPlugin(&m_switchMan);
-	registerPlugin(&m_router);
-	registerPlugin(&m_virtualCommunicator);
-	registerPlugin(&m_virtualProcessor);
 
 }
 
@@ -659,6 +653,20 @@ void ComputeCore::setMaximumNumberOfOutboxBuffers(int maxNumberOfBuffers){
 }
 
 void ComputeCore::registerPlugin(CorePlugin*plugin){
+	
+	if(m_firstRegistration){
+
+		m_firstRegistration=false;
+
+		// register some built-in plugins
+
+		registerPlugin(&m_switchMan);
+		registerPlugin(&m_router);
+		registerPlugin(&m_virtualCommunicator);
+		registerPlugin(&m_virtualProcessor);
+
+	}
+
 	m_listOfPlugins.push_back(plugin);
 
 	plugin->registerPlugin(this);
