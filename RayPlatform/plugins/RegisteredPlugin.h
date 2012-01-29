@@ -35,6 +35,8 @@ class RegisteredPlugin{
 
 	string m_name;
 	string m_description;
+	string m_authors;
+	string m_license;
 
 	set<MessageTag> m_allocatedMessageTags;
 	set<MessageTag> m_registeredMessageTagHandlers;
@@ -51,21 +53,27 @@ class RegisteredPlugin{
 	set<MasterMode> m_registeredMasterModeHandlers;
 	set<MasterMode> m_registeredMasterModeSymbols;
 	set<MasterMode> m_resolvedMasterModes;
+	set<MasterMode> m_registeredMasterModeSwitches;
 
 public:
 
 	RegisteredPlugin();
 
-	void setName(string name);
-	void setDescription(string text);
+	void setPluginName(const char*name);
+	void setPluginDescription(const char*text);
+	void setPluginAuthors(const char*text);
+	void setPluginLicense(const char*text);
 
-	string getName();
-	string getDescription();
+	string getPluginName();
+	string getPluginDescription();
+	string getPluginLicense();
+	string getPluginAuthors();
 
 	void addRegisteredMasterModeSymbol(MasterMode masterMode);
 	void addAllocatedMasterMode(MasterMode masterMode);
 	void addRegisteredMasterModeHandler(MasterMode masterMode);
 	void addResolvedMasterMode(MasterMode masterMode);
+	void addRegisteredMasterModeSwitch(MasterMode mode);
 
 	void addAllocatedMessageTag(MessageTag messageTag);
 	void addRegisteredMessageTagHandler(MessageTag messageTag);

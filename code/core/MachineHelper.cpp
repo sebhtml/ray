@@ -103,13 +103,6 @@ void MachineHelper::configureSwitchMan(SwitchMan*switchMan){
 
 	#undef ITEM
 
-	#define ITEM(masterMode,mpiTag) \
-	switchMan->addMasterSwitch(masterMode,mpiTag);
-	
-	#include <master_switches.txt>
-
-	#undef ITEM
-
 	if(m_messagesHandler->getRank()==MASTER_RANK){
 		MasterMode mode=switchMan->getMasterModeOrder()->at(0);
 		switchMan->setMasterMode(mode);

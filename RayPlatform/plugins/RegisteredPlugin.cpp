@@ -24,11 +24,13 @@
 using namespace std;
 
 RegisteredPlugin::RegisteredPlugin(){
-	m_name="UnnamedPlugin";
+	m_name="No name available";
 	m_description="No description available";
+	m_authors="No authors available";
+	m_license="No license available";
 }
 
-void RegisteredPlugin::setName(string name){
+void RegisteredPlugin::setPluginName(const char*name){
 	m_name=name;
 }
 
@@ -80,14 +82,16 @@ bool RegisteredPlugin::hasMessageTag(MessageTag tag){
 	return m_allocatedMessageTags.count(tag)>0;
 }
 
-string RegisteredPlugin::getName(){
+string RegisteredPlugin::getPluginName(){
 	return m_name;
 }
 
 void RegisteredPlugin::print(ostream*stream){
 
-	(*stream)<<" Name: "<<getName()<<endl;
-	(*stream)<<" Description: "<<getDescription()<<endl;
+	(*stream)<<" Name: "<<getPluginName()<<endl;
+	(*stream)<<" Description: "<<getPluginDescription()<<endl;
+	(*stream)<<" Authors: "<<getPluginAuthors()<<endl;
+	(*stream)<<" License: "<<getPluginLicense()<<endl;
 	(*stream)<<endl;
 	
 	(*stream)<<" Allocated handles"<<endl;
@@ -96,6 +100,7 @@ void RegisteredPlugin::print(ostream*stream){
 	(*stream)<<"  -> Allocated master mode handles: "<<m_allocatedMasterModes.size()<<endl;
 	(*stream)<<"     -> with a registered handler: "<<m_registeredMasterModeHandlers.size()<<endl;
 	(*stream)<<"     -> with a registered symbol: "<<m_registeredMasterModeSymbols.size()<<endl;
+	(*stream)<<"     -> with a registered switch: "<<m_registeredMasterModeSwitches.size()<<endl;
 	(*stream)<<endl;
 
 	(*stream)<<"  -> Allocated slave mode handles: "<<m_allocatedSlaveModes.size()<<endl;
@@ -135,10 +140,31 @@ void RegisteredPlugin::addResolvedMasterMode(MasterMode handle){
 	m_resolvedMasterModes.insert(handle);
 }
 
-void RegisteredPlugin::setDescription(string a){
+void RegisteredPlugin::setPluginDescription(const char*a){
 	m_description=a;
 }
 
-string RegisteredPlugin::getDescription(){
+void RegisteredPlugin::setPluginAuthors(const char*a){
+	m_authors=a;
+}
+
+void RegisteredPlugin::setPluginLicense(const char*a){
+	m_license=a;
+}
+
+string RegisteredPlugin::getPluginDescription(){
 	return m_description;
 }
+
+string RegisteredPlugin::getPluginLicense(){
+	return m_license;
+}
+
+string RegisteredPlugin::getPluginAuthors(){
+	return m_authors;
+}
+
+void RegisteredPlugin::addRegisteredMasterModeSwitch(MasterMode mode){
+	m_registeredMasterModeSwitches.insert(mode);
+}
+

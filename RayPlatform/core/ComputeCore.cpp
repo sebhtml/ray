@@ -908,7 +908,7 @@ bool ComputeCore::validationPluginAllocated(PluginHandle plugin){
 
 bool ComputeCore::validationSlaveModeOwnership(PluginHandle plugin,SlaveMode handle){
 	if(!m_plugins[plugin].hasSlaveMode(handle)){
-		cout<<"Error, plugin "<<m_plugins[plugin].getName();
+		cout<<"Error, plugin "<<m_plugins[plugin].getPluginName();
 		cout<<" ("<<plugin<<") has no ownership on slave mode "<<handle<<endl;
 		return false;
 	}
@@ -918,7 +918,7 @@ bool ComputeCore::validationSlaveModeOwnership(PluginHandle plugin,SlaveMode han
 
 bool ComputeCore::validationMasterModeOwnership(PluginHandle plugin,MasterMode handle){
 	if(!m_plugins[plugin].hasMasterMode(handle)){
-		cout<<"Error, plugin "<<m_plugins[plugin].getName();
+		cout<<"Error, plugin "<<m_plugins[plugin].getPluginName();
 		cout<<" ("<<plugin<<") has no ownership on master mode "<<handle<<endl;
 		return false;
 	}
@@ -928,7 +928,7 @@ bool ComputeCore::validationMasterModeOwnership(PluginHandle plugin,MasterMode h
 
 bool ComputeCore::validationMessageTagOwnership(PluginHandle plugin,MessageTag handle){
 	if(!m_plugins[plugin].hasMessageTag(handle)){
-		cout<<"Error, plugin "<<m_plugins[plugin].getName();
+		cout<<"Error, plugin "<<m_plugins[plugin].getPluginName();
 		cout<<" ("<<plugin<<") has no ownership on message tag mode "<<handle<<endl;
 		return false;
 	}
@@ -936,13 +936,13 @@ bool ComputeCore::validationMessageTagOwnership(PluginHandle plugin,MessageTag h
 	return true;
 }
 
-void ComputeCore::setPluginName(PluginHandle plugin,string name){
+void ComputeCore::setPluginName(PluginHandle plugin,const char*name){
 	if(!validationPluginAllocated(plugin))
 		return;
 
-	m_plugins[plugin].setName(name);
+	m_plugins[plugin].setPluginName(name);
 
-	cout<<"Rank "<<m_rank<<" loaded plugin "<<m_plugins[plugin].getName()<<", handle is "<<plugin<<endl;
+	cout<<"Rank "<<m_rank<<" loaded plugin "<<m_plugins[plugin].getPluginName()<<", handle is "<<plugin<<endl;
 }
 
 void ComputeCore::printPlugins(ostream*stream){
@@ -992,7 +992,7 @@ SlaveMode ComputeCore::getSlaveModeFromSymbol(PluginHandle plugin,const char*sym
 		m_plugins[plugin].addResolvedSlaveMode(handle);
 
 		#ifdef CONFIG_DEBUG_SLAVE_SYMBOLS
-		cout<<"Plugin "<<m_plugins[plugin].getName()<<" resolved symbol "<<symbol<<" to slave mode "<<handle<<endl;
+		cout<<"Plugin "<<m_plugins[plugin].getPluginName()<<" resolved symbol "<<symbol<<" to slave mode "<<handle<<endl;
 		#endif
 
 		return handle;
@@ -1091,7 +1091,7 @@ bool ComputeCore::validationMessageTagSymbolRegistered(PluginHandle plugin,const
 	string key=symbol;
 
 	if(m_messageTagSymbols.count(key)==0){
-		cout<<"Error, plugin "<<plugin<<" (name: "<<m_plugins[plugin].getName()<<") can not fetch symbol "<<symbol<<" because it is not registered."<<endl;
+		cout<<"Error, plugin "<<plugin<<" (name: "<<m_plugins[plugin].getPluginName()<<") can not fetch symbol "<<symbol<<" because it is not registered."<<endl;
 		return false;
 	}
 
@@ -1103,7 +1103,7 @@ bool ComputeCore::validationSlaveModeSymbolRegistered(PluginHandle plugin,const 
 	string key=symbol;
 
 	if(m_slaveModeSymbols.count(key)==0){
-		cout<<"Error, plugin "<<plugin<<" (name: "<<m_plugins[plugin].getName()<<") can not fetch symbol "<<symbol<<" because it is not registered."<<endl;
+		cout<<"Error, plugin "<<plugin<<" (name: "<<m_plugins[plugin].getPluginName()<<") can not fetch symbol "<<symbol<<" because it is not registered."<<endl;
 		return false;
 	}
 
@@ -1116,7 +1116,7 @@ bool ComputeCore::validationMasterModeSymbolRegistered(PluginHandle plugin,const
 	string key=symbol;
 
 	if(m_masterModeSymbols.count(key)==0){
-		cout<<"Error, plugin "<<plugin<<" (name: "<<m_plugins[plugin].getName()<<") can not fetch symbol "<<symbol<<" because it is not registered."<<endl;
+		cout<<"Error, plugin "<<plugin<<" (name: "<<m_plugins[plugin].getPluginName()<<") can not fetch symbol "<<symbol<<" because it is not registered."<<endl;
 		return false;
 	}
 
@@ -1154,10 +1154,37 @@ bool ComputeCore::validationMasterModeSymbolNotRegistered(PluginHandle plugin,Ma
 	return true;
 }
 
-void ComputeCore::setPluginDescription(PluginHandle plugin,string a){
+void ComputeCore::setPluginDescription(PluginHandle plugin,const char*a){
 
 	if(!validationPluginAllocated(plugin))
 		return;
 
-	m_plugins[plugin].setDescription(a);
+	m_plugins[plugin].setPluginDescription(a);
+}
+
+void ComputeCore::setMasterModeSwitch(PluginHandle plugin,MasterMode mode,MessageTag tag){
+	if(!validationPluginAllocated(plugin))
+		return;
+
+	if(!validationMasterModeOwnership(plugin,mode))
+		return;
+
+	m_switchMan.addMasterSwitch(mode,tag);
+
+	m_plugins[plugin].addRegisteredMasterModeSwitch(mode);
+}
+
+void ComputeCore::setPluginAuthors(PluginHandle plugin,const char*text){
+	if(!validationPluginAllocated(plugin))
+		return;
+
+	m_plugins[plugin].setPluginAuthors(text);
+}
+
+void ComputeCore::setPluginLicense(PluginHandle plugin,const char*text){
+	if(!validationPluginAllocated(plugin))
+		return;
+
+	m_plugins[plugin].setPluginLicense(text);
+
 }

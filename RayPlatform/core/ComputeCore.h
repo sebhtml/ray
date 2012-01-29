@@ -162,49 +162,6 @@ class ComputeCore{
 	bool validationMasterModeSymbolNotRegistered(PluginHandle plugin,MasterMode handle);
 
 public:
-
-/** allocate an handle for a plugin **/
-	PluginHandle allocatePluginHandle();
-
-/** allocate a slave mode for a handle **/
-	SlaveMode allocateSlaveModeHandle(PluginHandle plugin,SlaveMode desiredValue);
-
-/** allocate a master mode **/
-	MasterMode allocateMasterModeHandle(PluginHandle plugin,MasterMode desiredValue);
-
-/** allocate a handle for a message tag **/
-	MessageTag allocateMessageTagHandle(PluginHandle plugin, MessageTag desiredValue);
-	
-/** add a slave mode handler */
-	void setSlaveModeObjectHandler(PluginHandle plugin,SlaveMode mode,SlaveModeHandler*object);
-
-/** add a master mode handler */
-	void setMasterModeObjectHandler(PluginHandle plugin,MasterMode mode,MasterModeHandler*object);
-
-/** add a message tag handler */
-	void setMessageTagObjectHandler(PluginHandle plugin,MessageTag tag,MessageTagHandler*object);
-
-/** sets the symbol for a slave mode **/
-	void setSlaveModeSymbol(PluginHandle plugin,SlaveMode mode,const char*symbol);
-
-/** sets the symbol for a master mode **/
-	void setMasterModeSymbol(PluginHandle plugin,MasterMode mode,const char*symbol);
-
-/** set the symbol for a message tag **/
-	void setMessageTagSymbol(PluginHandle plugin,MessageTag mode,const char*symbol);
-
-/** get a slave mode from its symbol **/
-	SlaveMode getSlaveModeFromSymbol(PluginHandle plugin,const char*symbol);
-
-/** get a master mode from its symbol **/
-	MasterMode getMasterModeFromSymbol(PluginHandle plugin,const char*symbol);
-
-/** get a message tag from its symbol **/
-	MessageTag getMessageTagFromSymbol(PluginHandle plugin,const char*symbol);
-
-/** set the reply tag for a message tag **/
-	void setMessageTagReplyTag(PluginHandle plugin,MessageTag messageTag,MessageTag replyTag);
-
 	/** this is the main method */
 	void run();
 
@@ -244,11 +201,77 @@ public:
 
 	void destructor();
 
-	void setPluginName(PluginHandle plugin,string name);
-
 	void printPlugins(ostream*stream);
 
-	void setPluginDescription(PluginHandle handle,string text);
+/********************************************************************/
+/** the methods below are available for plugin registration **/
+
+/** allocate an handle for a plugin **/
+	PluginHandle allocatePluginHandle();
+
+/** sets the name of a plugin **/
+	void setPluginName(PluginHandle plugin,const char*name);
+
+/** sets the description of a plugin **/
+	void setPluginDescription(PluginHandle handle,const char*text);
+
+/** sets the authors of a plugin **/
+	void setPluginAuthors(PluginHandle handle,const char*text);
+
+/** sets the license of a plugin **/
+	void setPluginLicense(PluginHandle handle,const char*text);
+
+
+
+/** allocate a slave mode for a handle **/
+	SlaveMode allocateSlaveModeHandle(PluginHandle plugin,SlaveMode desiredValue);
+
+/** sets the symbol for a slave mode **/
+	void setSlaveModeSymbol(PluginHandle plugin,SlaveMode mode,const char*symbol);
+
+/** add a slave mode handler */
+	void setSlaveModeObjectHandler(PluginHandle plugin,SlaveMode mode,SlaveModeHandler*object);
+
+/** get a slave mode from its symbol **/
+	SlaveMode getSlaveModeFromSymbol(PluginHandle plugin,const char*symbol);
+
+
+
+
+/** allocate a master mode **/
+	MasterMode allocateMasterModeHandle(PluginHandle plugin,MasterMode desiredValue);
+
+/** sets the symbol for a master mode **/
+	void setMasterModeSymbol(PluginHandle plugin,MasterMode mode,const char*symbol);
+
+/** get a master mode from its symbol **/
+	MasterMode getMasterModeFromSymbol(PluginHandle plugin,const char*symbol);
+
+/** add a master mode handler */
+	void setMasterModeObjectHandler(PluginHandle plugin,MasterMode mode,MasterModeHandler*object);
+
+/** sets the master mode switch for a master mode
+ * this tells the core which message tag is to be automaticalled broadcasted for 
+ * a given master mode **/
+	void setMasterModeSwitch(PluginHandle plugin,MasterMode mode,MessageTag tag);
+
+
+
+/** allocate a handle for a message tag **/
+	MessageTag allocateMessageTagHandle(PluginHandle plugin, MessageTag desiredValue);
+	
+/** set the symbol for a message tag **/
+	void setMessageTagSymbol(PluginHandle plugin,MessageTag mode,const char*symbol);
+
+/** get a message tag from its symbol **/
+	MessageTag getMessageTagFromSymbol(PluginHandle plugin,const char*symbol);
+
+/** add a message tag handler */
+	void setMessageTagObjectHandler(PluginHandle plugin,MessageTag tag,MessageTagHandler*object);
+
+/** set the reply tag for a message tag **/
+	void setMessageTagReplyTag(PluginHandle plugin,MessageTag messageTag,MessageTag replyTag);
+
 };
 
 #endif

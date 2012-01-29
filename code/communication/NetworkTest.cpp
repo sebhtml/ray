@@ -332,6 +332,9 @@ void NetworkTest::registerPlugin(ComputeCore*core){
 	m_plugin=plugin;
 
 	core->setPluginName(plugin,"NetworkTest");
+	core->setPluginAuthors(plugin,"Sébastien Boisvert");
+	core->setPluginLicense(plugin,"GNU General Public License version 3");
+	core->setPluginDescription(plugin,"This is a plugin used to test the network latency.");
 
 	RAY_SLAVE_MODE_TEST_NETWORK=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_TEST_NETWORK);
 	m_adapter_RAY_SLAVE_MODE_TEST_NETWORK.setObject(this);
@@ -373,4 +376,6 @@ void NetworkTest::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_TEST_NETWORK_WRITE_DATA=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_TEST_NETWORK_WRITE_DATA");
 
 	RAY_MPI_TAG_TEST_NETWORK=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_TEST_NETWORK");
+
+	core->setMasterModeSwitch(m_plugin,RAY_MASTER_MODE_TEST_NETWORK, RAY_MPI_TAG_TEST_NETWORK);
 }
