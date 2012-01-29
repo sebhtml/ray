@@ -19,9 +19,11 @@
 */
 
 #include <scheduling/VirtualProcessor.h>
+#include <core/ComputeCore.h>
 
 #include <iostream>
 using namespace std;
+
 #ifdef ASSERT
 #include <assert.h>
 #endif
@@ -251,4 +253,16 @@ void VirtualProcessor::printStatistics(){
 	cout<<"VirtualProcessor: completed jobs: "<<m_completedJobs<<endl;
 
 	m_virtualCommunicator->printStatistics();
+}
+
+void VirtualProcessor::registerPlugin(ComputeCore*core){
+	m_plugin=core->allocatePluginHandle();
+
+	core->setPluginName(m_plugin,"VirtualProcessor");
+	core->setPluginDescription(m_plugin,"A thread pool running on 1 physical thread (bundled with RayPlatform)");
+
+}
+
+void VirtualProcessor::resolveSymbols(ComputeCore*core){
+
 }

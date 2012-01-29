@@ -1,0 +1,4 @@
+
+The application programming interface for plugins is all in the class ComputeCore.
+
+see RayPlatform/core/ComputeCore.h

@@ -23,6 +23,7 @@
 #include <communication/VirtualCommunicator.h>
 #include <core/OperatingSystem.h>
 #include <core/types.h>
+#include <core/ComputeCore.h>
 
 #include <assert.h>
 #include <iostream>
@@ -457,4 +458,12 @@ int VirtualCommunicator::getDestinationFromMessageUniqueId(uint64_t a){
 	return rank;
 }
 
+void VirtualCommunicator::registerPlugin(ComputeCore*core){
+	m_plugin=core->allocatePluginHandle();
+	core->setPluginName(m_plugin,"VirtualCommunicator");
+	core->setPluginDescription(m_plugin,"Multiplexing and demultiplexing of worker messages (bundled with RayPlatform)");
+}
 
+void VirtualCommunicator::resolveSymbols(ComputeCore*core){
+
+}

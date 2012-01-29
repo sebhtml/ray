@@ -23,13 +23,15 @@
 #ifndef _VirtualCommunicator
 #define _VirtualCommunicator
 
-#include <map>
-#include <vector>
 #include <memory/RingAllocator.h>
 #include <structures/StaticVector.h>
 #include <communication/Message.h>
-#include <stdint.h>
 #include <memory/MyAllocator.h>
+#include <plugins/CorePlugin.h>
+
+#include <map>
+#include <vector>
+#include <stdint.h>
 #include <queue>
 using namespace std;
 
@@ -46,7 +48,7 @@ using namespace std;
 * this class is event-driven and tag-specific and destination-specific
  * \author Sébastien Boisvert
 */
-class VirtualCommunicator{
+class VirtualCommunicator: public CorePlugin{
 	bool m_debug;
 	uint64_t m_pushedMessages;
 	uint64_t m_flushedMessages;
@@ -209,6 +211,9 @@ public:
 	void setDebug();
 
 	int getReplyType(int tag);
+
+	void registerPlugin(ComputeCore*core);
+	void resolveSymbols(ComputeCore*core);
 };
 
 #endif

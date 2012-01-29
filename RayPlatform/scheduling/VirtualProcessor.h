@@ -21,11 +21,15 @@
 #ifndef _VirtualProcessor_h
 #define _VirtualProcessor_h
 
-#include <set>
-#include <vector>
 #include <structures/StaticVector.h>
 #include <memory/RingAllocator.h>
 #include <scheduling/Worker.h>
+#include <plugins/CorePlugin.h>
+
+class ComputeCore;
+
+#include <set>
+#include <vector>
 using namespace std;
 
 /* workflow:
@@ -80,7 +84,7 @@ work()
  *
  * \author Sébastien Boisvert
 */
-class VirtualProcessor{
+class VirtualProcessor: public CorePlugin{
 
 	uint64_t m_currentWorker;
 
@@ -134,6 +138,9 @@ public:
 	bool hasWorkToDo();
 
 	void printStatistics();
+
+	void registerPlugin(ComputeCore*core);
+	void resolveSymbols(ComputeCore*core);
 };
 
 #endif

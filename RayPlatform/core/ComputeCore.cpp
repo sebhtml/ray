@@ -658,6 +658,8 @@ void ComputeCore::resolveSymbols(){
 	// register built-in plugins
 	registerPlugin(&m_switchMan);
 	registerPlugin(&m_router);
+	registerPlugin(&m_virtualCommunicator);
+	registerPlugin(&m_virtualProcessor);
 	registerPlugin(&m_messagesHandler);
 
 	for(int i=0;i<(int)m_listOfPlugins.size();i++){
