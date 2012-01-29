@@ -313,6 +313,7 @@ void Library::registerPlugin(ComputeCore*core){
 	m_plugin=plugin;
 
 	core->setPluginName(plugin,"Library");
+	core->setPluginDescription(plugin,"Obtains an estimation of library lengths");
 
 	RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION);
 	m_adapter_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION.setObject(this);

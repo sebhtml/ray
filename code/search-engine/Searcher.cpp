@@ -2562,6 +2562,7 @@ void Searcher::registerPlugin(ComputeCore*core){
 	m_plugin=plugin;
 
 	core->setPluginName(plugin,"Searcher");
+	core->setPluginDescription(plugin,"Add colors in the graph and search things");
 
 	RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES=core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES);
 	m_adapter_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES.setObject(this);

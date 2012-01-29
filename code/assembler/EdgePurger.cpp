@@ -170,6 +170,7 @@ void EdgePurger::registerPlugin(ComputeCore*core){
 	m_plugin=plugin;
 
 	core->setPluginName(plugin,"EdgePurger");
+	core->setPluginDescription(plugin,"Deals with invalid edges");
 
 	RAY_SLAVE_MODE_PURGE_NULL_EDGES=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_PURGE_NULL_EDGES);
 	m_adapter_RAY_SLAVE_MODE_PURGE_NULL_EDGES.setObject(this);

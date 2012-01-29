@@ -25,7 +25,7 @@ using namespace std;
 
 RegisteredPlugin::RegisteredPlugin(){
 	m_name="UnnamedPlugin";
-	m_name="No description available";
+	m_description="No description available";
 }
 
 void RegisteredPlugin::setName(string name){
