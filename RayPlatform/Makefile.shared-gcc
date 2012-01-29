@@ -1,0 +1,19 @@
+# author: Sébastien Boisvert
+#
+# based on http://www.ravnborg.org/kbuild/makefiles.html
+#
+
+include common.mk
+
+all: libRayPlatform.so
+
+libRayPlatform.so: $(obj-y)
+	$(MPICXX) -shared -Wl,-soname,libRayPlatform.so -o libRayPlatform.so $(obj-y) -lc
+
+# inference rule
+%.o: %.cpp
+	$(MPICXX) -fPIC $(CXXFLAGS) -I. -c -o $@ $< 
+
+clean:
+	$(RM) -f libRayPlatform.so $(obj-y)
+
