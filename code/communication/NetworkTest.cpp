@@ -377,5 +377,7 @@ void NetworkTest::resolveSymbols(ComputeCore*core){
 
 	RAY_MPI_TAG_TEST_NETWORK=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_TEST_NETWORK");
 
-	core->setMasterModeSwitch(m_plugin,RAY_MASTER_MODE_TEST_NETWORK, RAY_MPI_TAG_TEST_NETWORK);
+	core->setMasterModeToMessageTagSwitch(m_plugin,RAY_MASTER_MODE_TEST_NETWORK, RAY_MPI_TAG_TEST_NETWORK);
+
+	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_TEST_NETWORK,                 RAY_SLAVE_MODE_TEST_NETWORK);
 }

@@ -387,6 +387,7 @@ void VerticesExtractor::registerPlugin(ComputeCore*core){
 
 void VerticesExtractor::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_EXTRACT_VERTICES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_EXTRACT_VERTICES");
+	RAY_SLAVE_MODE_WRITE_KMERS=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_WRITE_KMERS");
 
 	RAY_MPI_TAG_IN_EDGES_DATA=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_IN_EDGES_DATA");
 	RAY_MPI_TAG_OUT_EDGES_DATA=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_OUT_EDGES_DATA");
@@ -398,4 +399,8 @@ void VerticesExtractor::resolveSymbols(ComputeCore*core){
 
 	RAY_MPI_TAG_BUILD_GRAPH=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_BUILD_GRAPH");
 	RAY_MPI_TAG_VERTEX_INFO_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_VERTEX_INFO_REPLY");
+
+
+	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_BUILD_GRAPH,          RAY_SLAVE_MODE_EXTRACT_VERTICES );
+	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_WRITE_KMERS,   RAY_SLAVE_MODE_WRITE_KMERS);
 }

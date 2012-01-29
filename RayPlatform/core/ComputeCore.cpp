@@ -954,9 +954,10 @@ void ComputeCore::printPlugins(ostream*stream){
 	for(map<PluginHandle,RegisteredPlugin>::iterator i=m_plugins.begin();
 		i!=m_plugins.end();i++){
 		(*stream)<<endl;
-		(*stream)<<"Handle: "<<i->first<<endl;
+		(*stream)<<"+++ PluginHandle: "<<i->first<<endl;
+		(*stream)<<endl;
 		i->second.print(stream);
-		(*stream)<<"-------------------------------"<<endl;
+		(*stream)<<"---------------------------------------"<<endl;
 		(*stream)<<endl;
 		j++;
 	}
@@ -1162,7 +1163,7 @@ void ComputeCore::setPluginDescription(PluginHandle plugin,const char*a){
 	m_plugins[plugin].setPluginDescription(a);
 }
 
-void ComputeCore::setMasterModeSwitch(PluginHandle plugin,MasterMode mode,MessageTag tag){
+void ComputeCore::setMasterModeToMessageTagSwitch(PluginHandle plugin,MasterMode mode,MessageTag tag){
 	if(!validationPluginAllocated(plugin))
 		return;
 
@@ -1171,7 +1172,7 @@ void ComputeCore::setMasterModeSwitch(PluginHandle plugin,MasterMode mode,Messag
 
 	m_switchMan.addMasterSwitch(mode,tag);
 
-	m_plugins[plugin].addRegisteredMasterModeSwitch(mode);
+	m_plugins[plugin].addRegisteredMasterModeToMessageTagSwitch(mode);
 }
 
 void ComputeCore::setPluginAuthors(PluginHandle plugin,const char*text){
@@ -1186,5 +1187,18 @@ void ComputeCore::setPluginLicense(PluginHandle plugin,const char*text){
 		return;
 
 	m_plugins[plugin].setPluginLicense(text);
+
+}
+
+void ComputeCore::setMessageTagToSlaveModeSwitch(PluginHandle plugin,MessageTag tag,SlaveMode mode){
+	if(!validationPluginAllocated(plugin))
+		return;
+
+	if(!validationMessageTagOwnership(plugin,tag))
+		return;
+
+	m_switchMan.addSlaveSwitch(tag,mode);
+
+	m_plugins[plugin].addRegisteredMessageTagToSlaveModeSwitch(tag);
 
 }

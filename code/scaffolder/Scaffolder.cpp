@@ -1390,4 +1390,6 @@ void Scaffolder::resolveSymbols(ComputeCore*core){
 
 	RAY_MPI_TAG_SCAFFOLDING_LINKS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SCAFFOLDING_LINKS_REPLY");
 	RAY_MPI_TAG_START_SCAFFOLDER=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_START_SCAFFOLDER");
+
+	core->setMessageTagToSlaveModeSwitch(m_plugin, RAY_MPI_TAG_START_SCAFFOLDER,             RAY_SLAVE_MODE_SCAFFOLDER );
 }

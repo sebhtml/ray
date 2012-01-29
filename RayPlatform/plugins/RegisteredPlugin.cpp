@@ -97,29 +97,30 @@ void RegisteredPlugin::print(ostream*stream){
 	(*stream)<<" Allocated handles"<<endl;
 	(*stream)<<endl;
 
-	(*stream)<<"  -> Allocated master mode handles: "<<m_allocatedMasterModes.size()<<endl;
-	(*stream)<<"     -> with a registered handler: "<<m_registeredMasterModeHandlers.size()<<endl;
+	(*stream)<<"  -> Allocated MasterMode handles: "<<m_allocatedMasterModes.size()<<endl;
 	(*stream)<<"     -> with a registered symbol: "<<m_registeredMasterModeSymbols.size()<<endl;
-	(*stream)<<"     -> with a registered switch: "<<m_registeredMasterModeSwitches.size()<<endl;
+	(*stream)<<"     -> with a registered MasterModeHandler: "<<m_registeredMasterModeHandlers.size()<<endl;
+	(*stream)<<"     -> with a registered MasterMode-to-MessageTag switch: "<<m_registeredMasterModeToMessageTagSwitches.size()<<endl;
 	(*stream)<<endl;
 
-	(*stream)<<"  -> Allocated slave mode handles: "<<m_allocatedSlaveModes.size()<<endl;
-	(*stream)<<"     -> with a registered handler: "<<m_registeredSlaveModeHandlers.size()<<endl;
+	(*stream)<<"  -> Allocated SlaveMode handles: "<<m_allocatedSlaveModes.size()<<endl;
 	(*stream)<<"     -> with a registered symbol: "<<m_registeredSlaveModeSymbols.size()<<endl;
+	(*stream)<<"     -> with a registered SlaveModeHandler: "<<m_registeredSlaveModeHandlers.size()<<endl;
 	(*stream)<<endl;
 
-	(*stream)<<"  -> Allocated message tag handles: "<<m_allocatedMessageTags.size()<<endl;
-	(*stream)<<"     -> with a registered handler: "<<m_registeredMessageTagHandlers.size()<<endl;
+	(*stream)<<"  -> Allocated MessageTag handles: "<<m_allocatedMessageTags.size()<<endl;
 	(*stream)<<"     -> with a registered symbol: "<<m_registeredMessageTagSymbols.size()<<endl;
-	(*stream)<<"     -> with a registered reply tag: "<<m_registeredMessageTagReplyTags.size()<<endl;
+	(*stream)<<"     -> with a registered MessageTagHandler: "<<m_registeredMessageTagHandlers.size()<<endl;
+	(*stream)<<"     -> with a registered MessageTag-to-SlaveMode switch: "<<m_registeredMessageTagToSlaveModeSwitches.size()<<endl;
+	(*stream)<<"     -> with a registered reply MessageTag: "<<m_registeredMessageTagReplyTags.size()<<endl;
 	(*stream)<<endl;
 
 	(*stream)<<" Resolved symbols"<<endl;
 
 	(*stream)<<endl;
-	(*stream)<<"  -> Resolved master mode symbols: "<<m_resolvedMasterModes.size()<<endl;
-	(*stream)<<"  -> Resolved slave mode symbols: "<<m_resolvedSlaveModes.size()<<endl;
-	(*stream)<<"  -> Resolved message tag symbols: "<<m_resolvedMessageTags.size()<<endl;
+	(*stream)<<"  -> Resolved MasterMode symbols: "<<m_resolvedMasterModes.size()<<endl;
+	(*stream)<<"  -> Resolved SlaveMode symbols: "<<m_resolvedSlaveModes.size()<<endl;
+	(*stream)<<"  -> Resolved MessageTag symbols: "<<m_resolvedMessageTags.size()<<endl;
 
 	(*stream)<<endl;
 }
@@ -164,7 +165,11 @@ string RegisteredPlugin::getPluginAuthors(){
 	return m_authors;
 }
 
-void RegisteredPlugin::addRegisteredMasterModeSwitch(MasterMode mode){
-	m_registeredMasterModeSwitches.insert(mode);
+void RegisteredPlugin::addRegisteredMasterModeToMessageTagSwitch(MasterMode mode){
+	m_registeredMasterModeToMessageTagSwitches.insert(mode);
+}
+
+void RegisteredPlugin::addRegisteredMessageTagToSlaveModeSwitch(SlaveMode mode){
+	m_registeredMessageTagToSlaveModeSwitches.insert(mode);
 }
 

@@ -253,7 +253,11 @@ void Partitioner::call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES(){
 void Partitioner::registerPlugin(ComputeCore*core){
 	PluginHandle plugin=core->allocatePluginHandle();
 	m_plugin=plugin;
+
 	core->setPluginName(plugin,"Partitioner");
+	core->setPluginDescription(plugin,"A plugin that counts sequences in files in parallel");
+	core->setPluginAuthors(plugin,"Sébastien Boisvert");
+	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_MASTER_MODE_COUNT_FILE_ENTRIES=core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_COUNT_FILE_ENTRIES);
 	m_adapter_RAY_MASTER_MODE_COUNT_FILE_ENTRIES.setObject(this);
@@ -300,4 +304,6 @@ void Partitioner::resolveSymbols(ComputeCore*core){
 
 	RAY_MPI_TAG_COUNT_FILE_ENTRIES=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_COUNT_FILE_ENTRIES");
 	RAY_MPI_TAG_COUNT_FILE_ENTRIES_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_COUNT_FILE_ENTRIES_REPLY");
+
+	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_COUNT_FILE_ENTRIES, RAY_SLAVE_MODE_COUNT_FILE_ENTRIES );
 }

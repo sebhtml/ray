@@ -2563,6 +2563,8 @@ void Searcher::registerPlugin(ComputeCore*core){
 
 	core->setPluginName(plugin,"Searcher");
 	core->setPluginDescription(plugin,"Add colors in the graph and search things");
+	core->setPluginAuthors(plugin,"Sébastien Boisvert");
+	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES=core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES);
 	m_adapter_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES.setObject(this);
@@ -2719,8 +2721,13 @@ void Searcher::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_ADD_COLORS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ADD_COLORS");
 	RAY_MPI_TAG_ADD_KMER_COLOR_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ADD_KMER_COLOR_REPLY");
 
-	core->setMasterModeSwitch(m_plugin,RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS, RAY_MPI_TAG_COUNT_SEARCH_ELEMENTS);
-	core->setMasterModeSwitch(m_plugin,RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES, RAY_MPI_TAG_CONTIG_BIOLOGICAL_ABUNDANCES);
-	core->setMasterModeSwitch(m_plugin,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES,   RAY_MPI_TAG_SEQUENCE_BIOLOGICAL_ABUNDANCES);
-	core->setMasterModeSwitch(m_plugin,RAY_MASTER_MODE_ADD_COLORS, RAY_MPI_TAG_ADD_COLORS );
+	core->setMasterModeToMessageTagSwitch(m_plugin,RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS, RAY_MPI_TAG_COUNT_SEARCH_ELEMENTS);
+	core->setMasterModeToMessageTagSwitch(m_plugin,RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES, RAY_MPI_TAG_CONTIG_BIOLOGICAL_ABUNDANCES);
+	core->setMasterModeToMessageTagSwitch(m_plugin,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES,   RAY_MPI_TAG_SEQUENCE_BIOLOGICAL_ABUNDANCES);
+	core->setMasterModeToMessageTagSwitch(m_plugin,RAY_MASTER_MODE_ADD_COLORS, RAY_MPI_TAG_ADD_COLORS );
+
+	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_COUNT_SEARCH_ELEMENTS,        RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS);
+	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_SEQUENCE_BIOLOGICAL_ABUNDANCES, RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES);
+	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_ADD_COLORS, RAY_SLAVE_MODE_ADD_COLORS );
+	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_CONTIG_BIOLOGICAL_ABUNDANCES, RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES);
 }

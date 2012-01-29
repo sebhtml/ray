@@ -96,13 +96,6 @@ void MachineHelper::configureSwitchMan(SwitchMan*switchMan){
 		switchMan->addNextMasterMode(steps[i],steps[i+1]);
 	}
 
-	#define ITEM(mpiTag,slaveMode) \
-	switchMan->addSlaveSwitch(mpiTag,slaveMode);
-	
-	#include <slave_switches.txt>
-
-	#undef ITEM
-
 	if(m_messagesHandler->getRank()==MASTER_RANK){
 		MasterMode mode=switchMan->getMasterModeOrder()->at(0);
 		switchMan->setMasterMode(mode);

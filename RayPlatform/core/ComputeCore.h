@@ -223,21 +223,6 @@ public:
 
 
 
-/** allocate a slave mode for a handle **/
-	SlaveMode allocateSlaveModeHandle(PluginHandle plugin,SlaveMode desiredValue);
-
-/** sets the symbol for a slave mode **/
-	void setSlaveModeSymbol(PluginHandle plugin,SlaveMode mode,const char*symbol);
-
-/** add a slave mode handler */
-	void setSlaveModeObjectHandler(PluginHandle plugin,SlaveMode mode,SlaveModeHandler*object);
-
-/** get a slave mode from its symbol **/
-	SlaveMode getSlaveModeFromSymbol(PluginHandle plugin,const char*symbol);
-
-
-
-
 /** allocate a master mode **/
 	MasterMode allocateMasterModeHandle(PluginHandle plugin,MasterMode desiredValue);
 
@@ -253,8 +238,23 @@ public:
 /** sets the master mode switch for a master mode
  * this tells the core which message tag is to be automaticalled broadcasted for 
  * a given master mode **/
-	void setMasterModeSwitch(PluginHandle plugin,MasterMode mode,MessageTag tag);
+	void setMasterModeToMessageTagSwitch(PluginHandle plugin,MasterMode mode,MessageTag tag);
 
+
+
+
+
+/** allocate a slave mode for a handle **/
+	SlaveMode allocateSlaveModeHandle(PluginHandle plugin,SlaveMode desiredValue);
+
+/** sets the symbol for a slave mode **/
+	void setSlaveModeSymbol(PluginHandle plugin,SlaveMode mode,const char*symbol);
+
+/** add a slave mode handler */
+	void setSlaveModeObjectHandler(PluginHandle plugin,SlaveMode mode,SlaveModeHandler*object);
+
+/** get a slave mode from its symbol **/
+	SlaveMode getSlaveModeFromSymbol(PluginHandle plugin,const char*symbol);
 
 
 /** allocate a handle for a message tag **/
@@ -271,6 +271,13 @@ public:
 
 /** set the reply tag for a message tag **/
 	void setMessageTagReplyTag(PluginHandle plugin,MessageTag messageTag,MessageTag replyTag);
+
+/** sets the slave switch for a slave mode
+ * this tells the core which slave mode to switch to when receiving a particular message tag **/
+	void setMessageTagToSlaveModeSwitch(PluginHandle plugin,MessageTag tag,SlaveMode mode);
+
+
+
 
 };
 

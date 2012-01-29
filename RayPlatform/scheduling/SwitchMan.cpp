@@ -296,6 +296,9 @@ void SwitchMan::registerPlugin(ComputeCore*core){
 	PluginHandle plugin=m_plugin;
 
 	core->setPluginName(m_plugin,"SwitchMan");
+	core->setPluginDescription(m_plugin,"Parallel coordinator (bundled with RayPlatform)");
+	core->setPluginAuthors(m_plugin,"Sébastien Boisvert");
+	core->setPluginLicense(m_plugin,"GNU Lesser General License version 3");
 
 	RAY_SLAVE_MODE_DO_NOTHING=core->allocateSlaveModeHandle(m_plugin,RAY_SLAVE_MODE_DO_NOTHING);
 	core->setSlaveModeSymbol(m_plugin,RAY_SLAVE_MODE_DO_NOTHING,"RAY_SLAVE_MODE_DO_NOTHING");
@@ -318,6 +321,7 @@ void SwitchMan::registerPlugin(ComputeCore*core){
 
 void SwitchMan::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_DO_NOTHING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DO_NOTHING");
+	RAY_SLAVE_MODE_DIE=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DIE");
 
 	RAY_MASTER_MODE_DO_NOTHING=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_DO_NOTHING");
 
@@ -326,6 +330,8 @@ void SwitchMan::resolveSymbols(ComputeCore*core){
 
 	RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON");
 	RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY");
+
+	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON, RAY_SLAVE_MODE_DIE );
 
 	// set default modes
 	

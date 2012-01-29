@@ -38,22 +38,25 @@ class RegisteredPlugin{
 	string m_authors;
 	string m_license;
 
-	set<MessageTag> m_allocatedMessageTags;
-	set<MessageTag> m_registeredMessageTagHandlers;
-	set<MessageTag> m_registeredMessageTagSymbols;
-	set<MessageTag> m_registeredMessageTagReplyTags;
+	set<MasterMode> m_resolvedMasterModes;
+	set<SlaveMode> m_resolvedSlaveModes;
 	set<MessageTag> m_resolvedMessageTags;
 
-	set<SlaveMode> m_registeredSlaveModeSymbols;
-	set<SlaveMode> m_allocatedSlaveModes;
-	set<SlaveMode> m_registeredSlaveModeHandlers;
-	set<SlaveMode> m_resolvedSlaveModes;
-
 	set<MasterMode> m_allocatedMasterModes;
-	set<MasterMode> m_registeredMasterModeHandlers;
 	set<MasterMode> m_registeredMasterModeSymbols;
-	set<MasterMode> m_resolvedMasterModes;
-	set<MasterMode> m_registeredMasterModeSwitches;
+	set<MasterMode> m_registeredMasterModeHandlers;
+	set<MasterMode> m_registeredMasterModeToMessageTagSwitches;
+
+	set<SlaveMode> m_allocatedSlaveModes;
+	set<SlaveMode> m_registeredSlaveModeSymbols;
+	set<SlaveMode> m_registeredSlaveModeHandlers;
+
+	set<MessageTag> m_allocatedMessageTags;
+	set<MessageTag> m_registeredMessageTagSymbols;
+	set<MessageTag> m_registeredMessageTagHandlers;
+	set<MessageTag> m_registeredMessageTagReplyTags;
+	set<MessageTag> m_registeredMessageTagToSlaveModeSwitches;
+	
 
 public:
 
@@ -73,18 +76,19 @@ public:
 	void addAllocatedMasterMode(MasterMode masterMode);
 	void addRegisteredMasterModeHandler(MasterMode masterMode);
 	void addResolvedMasterMode(MasterMode masterMode);
-	void addRegisteredMasterModeSwitch(MasterMode mode);
+	void addRegisteredMasterModeToMessageTagSwitch(MasterMode mode);
+
+	void addAllocatedSlaveMode(SlaveMode slaveMode);
+	void addRegisteredSlaveModeHandler(SlaveMode slaveMode);
+	void addRegisteredSlaveModeSymbol(SlaveMode slaveMode);
+	void addResolvedSlaveMode(SlaveMode handle);
 
 	void addAllocatedMessageTag(MessageTag messageTag);
 	void addRegisteredMessageTagHandler(MessageTag messageTag);
 	void addRegisteredMessageTagSymbol(MessageTag messageTag);
 	void addRegisteredMessageTagReplyTag(MessageTag messageTag);
 	void addResolvedMessageTag(MessageTag handle);
-
-	void addAllocatedSlaveMode(SlaveMode slaveMode);
-	void addRegisteredSlaveModeHandler(SlaveMode slaveMode);
-	void addRegisteredSlaveModeSymbol(SlaveMode slaveMode);
-	void addResolvedSlaveMode(SlaveMode handle);
+	void addRegisteredMessageTagToSlaveModeSwitch(MessageTag handle);
 
 	bool hasSlaveMode(SlaveMode mode);
 	bool hasMasterMode(MasterMode mode);

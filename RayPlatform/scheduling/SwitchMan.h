@@ -53,6 +53,7 @@ class SwitchMan: public CorePlugin {
 
 	MasterMode RAY_MASTER_MODE_DO_NOTHING;
 	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
+	SlaveMode RAY_SLAVE_MODE_DIE;
 
 /** the current slave mode of the rank */
 	SlaveMode m_slaveMode;
