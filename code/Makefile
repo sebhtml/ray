@@ -9,162 +9,296 @@
 # are simply added onto the core (class ComputeCore in the
 # Ray Platform).
 
+MPICXX = mpicxx
+LD = ld
+RM = rm
+CXXFLAGS= -O3 -Wall -ansi
+
 # core 
 
-obj-y += assembler/ray_main.o core/Machine.o 
-obj-y += core/Parameters.o core/common_functions.o
+core-y += assembler/ray_main.o core/Machine.o 
+core-y += core/Parameters.o core/common_functions.o
+
+ray_core.o: $(core-y)
+	$(LD) -r $^ -o $@
+
+obj-y += $(core-y)
 
 # plugin VerticesExtractor
 
-obj-y += assembler/VerticesExtractor_adapters.o
-obj-y += assembler/VerticesExtractor.o 
-obj-y += graph/GridTable.o graph/GridTableIterator.o
-obj-y += structures/Vertex.o
+VerticesExtractor-y += assembler/VerticesExtractor_adapters.o
+VerticesExtractor-y += assembler/VerticesExtractor.o 
+VerticesExtractor-y += graph/GridTable.o graph/GridTableIterator.o
+VerticesExtractor-y += structures/Vertex.o
+
+ray_plugin_VerticesExtractor.o: $(VerticesExtractor-y)
+	$(LD) -r $^ -o $@
+
+obj-y += $(VerticesExtractor-y)
+
+PLUGINS-y += ray_plugin_VerticesExtractor.o
 
 # plugin EdgePurger
 
-obj-y += assembler/EdgePurger_adapters.o
-obj-y += assembler/EdgePurger.o assembler/EdgePurgerWorker.o
+EdgePurger-y += assembler/EdgePurger_adapters.o
+EdgePurger-y += assembler/EdgePurger.o assembler/EdgePurgerWorker.o
+
+ray_plugin_EdgePurger.o: $(EdgePurger-y)
+	$(LD) -r $^ -o $@
+
+obj-y += $(EdgePurger-y)
+
+PLUGINS-y += ray_plugin_EdgePurger.o
 
 # plugin KmerAcademyBuilder
 
-obj-y += assembler/KmerAcademyBuilder_adapters.o
-obj-y += assembler/KmerAcademyBuilder.o
-obj-y +=  structures/BloomFilter.o
-obj-y += structures/Kmer.o
-obj-y += graph/KmerAcademy.o graph/KmerAcademyIterator.o
+KmerAcademyBuilder-y += assembler/KmerAcademyBuilder_adapters.o
+KmerAcademyBuilder-y += assembler/KmerAcademyBuilder.o
+KmerAcademyBuilder-y +=  structures/BloomFilter.o
+KmerAcademyBuilder-y += structures/Kmer.o
+KmerAcademyBuilder-y += graph/KmerAcademy.o graph/KmerAcademyIterator.o
+
+ray_plugin_KmerAcademyBuilder.o: $(KmerAcademyBuilder-y)
+	$(LD) -r $^ -o $@
+
+obj-y += $(KmerAcademyBuilder-y)
+
+PLUGINS-y += ray_plugin_KmerAcademyBuilder.o
 
 # plugin SequencesLoader
 
-obj-y += assembler/SequencesLoader_adapters.o 
-obj-y += assembler/SequencesLoader.o 
-obj-y += structures/Read.o  structures/ArrayOfReads.o 
-obj-y += format/ColorSpaceDecoder.o format/ColorSpaceLoader.o 
-obj-y += format/FastaLoader.o format/FastqLoader.o format/SffLoader.o  assembler/Loader.o 
-obj-$(HAVE_LIBBZ2) += compression/BzReader.o  
-obj-$(HAVE_LIBBZ2) += format/FastqBz2Loader.o 
-obj-$(HAVE_LIBZ) += format/FastqGzLoader.o 
+SequencesLoader-y += assembler/SequencesLoader_adapters.o 
+SequencesLoader-y += assembler/SequencesLoader.o 
+SequencesLoader-y += structures/Read.o  structures/ArrayOfReads.o 
+SequencesLoader-y += format/ColorSpaceDecoder.o format/ColorSpaceLoader.o 
+SequencesLoader-y += format/FastaLoader.o format/FastqLoader.o format/SffLoader.o  assembler/Loader.o 
+SequencesLoader-$(HAVE_LIBBZ2) += compression/BzReader.o  
+SequencesLoader-$(HAVE_LIBBZ2) += format/FastqBz2Loader.o 
+SequencesLoader-$(HAVE_LIBZ) += format/FastqGzLoader.o 
+
+ray_plugin_SequencesLoader.o: $(SequencesLoader-y)
+	$(LD) -r $^ -o $@
+
+obj-y += $(KmerAcademyBuilder-y)
+
+PLUGINS-y += ray_plugin_SequencesLoader.o
 
 # plugin FusionTaskCreator
 
-obj-y += assembler/FusionTaskCreator_adapters.o
-obj-y += assembler/FusionWorker.o 
-obj-y += assembler/FusionTaskCreator.o 
+FusionTaskCreator-y += assembler/FusionTaskCreator_adapters.o
+FusionTaskCreator-y += assembler/FusionWorker.o 
+FusionTaskCreator-y += assembler/FusionTaskCreator.o 
+
+ray_plugin_FusionTaskCreator.o: $(FusionTaskCreator-y)
+	$(LD) -r $^ -o $@
+
+obj-y += $(FusionTaskCreator-y)
+
+PLUGINS-y += ray_plugin_FusionTaskCreator.o
 
 # plugin FusionData
 
-obj-y += assembler/FusionData_adapters.o
-obj-y += assembler/FusionData.o 
+FusionData-y += assembler/FusionData_adapters.o
+FusionData-y += assembler/FusionData.o 
+
+ray_plugin_FusionData.o: $(FusionData-y)
+	$(LD) -r $^ -o $@
+
+obj-y += $(FusionData-y)
+
+PLUGINS-y += ray_plugin_FusionData.o
 
 # plugin Scaffolder
 
-obj-y += scaffolder/Scaffolder_adapters.o
-obj-y += scaffolder/Scaffolder.o 
-obj-y += scaffolder/ScaffoldingLink.o
-obj-y += scaffolder/SummarizedLink.o
-obj-y += scaffolder/ScaffoldingAlgorithm.o
-obj-y += scaffolder/ScaffoldingVertex.o
-obj-y += scaffolder/ScaffoldingEdge.o
+Scaffolder-y += scaffolder/Scaffolder_adapters.o
+Scaffolder-y += scaffolder/Scaffolder.o 
+Scaffolder-y += scaffolder/ScaffoldingLink.o
+Scaffolder-y += scaffolder/SummarizedLink.o
+Scaffolder-y += scaffolder/ScaffoldingAlgorithm.o
+Scaffolder-y += scaffolder/ScaffoldingVertex.o
+Scaffolder-y += scaffolder/ScaffoldingEdge.o
+
+ray_plugin_Scaffolder.o: $(Scaffolder-y)
+	$(LD) -r $^ -o $@
+
+obj-y += $(Scaffolder-y)
+
+PLUGINS-y += ray_plugin_Scaffolder.o
 
 # plugin Searcher
 
-obj-y += search-engine/Searcher_adapters.o
-obj-y += search-engine/Searcher.o
-obj-y += search-engine/SearchDirectory.o
-obj-y += search-engine/ContigSearchEntry.o
-obj-y += search-engine/ContigHit.o
-obj-y += search-engine/ColorSet.o
-obj-y += search-engine/VirtualKmerColor.o
+Searcher-y += search-engine/Searcher_adapters.o
+Searcher-y += search-engine/Searcher.o
+Searcher-y += search-engine/SearchDirectory.o
+Searcher-y += search-engine/ContigSearchEntry.o
+Searcher-y += search-engine/ContigHit.o
+Searcher-y += search-engine/ColorSet.o
+Searcher-y += search-engine/VirtualKmerColor.o
+
+ray_plugin_Searcher.o: $(Searcher-y)
+	$(LD) -r $^ -o $@
+
+obj-y += $(Searcher-y)
+
+PLUGINS-y += ray_plugin_Searcher.o
 
 # plugin CoverageGatherer
 
-obj-y += graph/CoverageGatherer.o 
-obj-y += graph/CoverageGatherer_adapters.o
-obj-y += graph/CoverageDistribution.o 
+CoverageGatherer-y += graph/CoverageGatherer.o 
+CoverageGatherer-y += graph/CoverageGatherer_adapters.o
+CoverageGatherer-y += graph/CoverageDistribution.o 
+
+ray_plugin_CoverageGatherer.o: $(CoverageGatherer-y)
+	$(LD) -r $^ -o $@
+
+obj-y += $(CoverageGatherer-y)
+
+PLUGINS-y += ray_plugin_CoverageGatherer.o
 
 # plugin Partitioner
 
-obj-y += assembler/Partitioner.o
-obj-y += assembler/Partitioner_adapters.o
+Partitioner-y += assembler/Partitioner.o
+Partitioner-y += assembler/Partitioner_adapters.o
+
+ray_plugin_Partitioner.o: $(Partitioner-y)
+	$(LD) -r $^ -o $@
+
+obj-y += $(Partitioner-y)
+
+PLUGINS-y += ray_plugin_Partitioner.o
 
 # plugin MessageProcessor
 
-obj-y += communication/MessageProcessor_adapters.o
-obj-y += communication/MessageProcessor.o
+MessageProcessor-y += communication/MessageProcessor_adapters.o
+MessageProcessor-y += communication/MessageProcessor.o
+
+ray_plugin_MessageProcessor.o: $(MessageProcessor-y)
+	$(LD) -r $^ -o $@
+
+obj-y += $(MessageProcessor-y)
+
+PLUGINS-y += ray_plugin_MessageProcessor.o
 
 # plugin SequencesIndexer
 
-obj-y += assembler/SequencesIndexer_adapters.o 
-obj-y += assembler/SequencesIndexer.o 
-obj-y += assembler/IndexerWorker.o 
-obj-y +=  structures/PairedRead.o structures/ReadAnnotation.o 
+SequencesIndexer-y += assembler/SequencesIndexer_adapters.o 
+SequencesIndexer-y += assembler/SequencesIndexer.o 
+SequencesIndexer-y += assembler/IndexerWorker.o 
+SequencesIndexer-y +=  structures/PairedRead.o structures/ReadAnnotation.o 
+
+ray_plugin_SequencesIndexer.o: $(SequencesIndexer-y)
+	$(LD) -r $^ -o $@
+
+obj-y += $(SequencesIndexer-y)
+
+PLUGINS-y += ray_plugin_SequencesIndexer.o
 
 # plugin Amos
 
-obj-y += format/Amos_adapters.o
-obj-y += format/Amos.o
+Amos-y += format/Amos_adapters.o
+Amos-y += format/Amos.o
+
+ray_plugin_Amos.o: $(Amos-y)
+	$(LD) -r $^ -o $@
+
+obj-y += $(Amos-y)
+
+PLUGINS-y += ray_plugin_Amos.o
 
 # plugin NetworkTest
 
-obj-y += communication/NetworkTest_adapters.o
-obj-y += communication/NetworkTest.o
+NetworkTest-y += communication/NetworkTest_adapters.o
+NetworkTest-y += communication/NetworkTest.o
+
+ray_plugin_NetworkTest.o: $(NetworkTest-y)
+	$(LD) -r $^ -o $@
+
+obj-y += $(NetworkTest-y)
+
+PLUGINS-y += ray_plugin_NetworkTest.o
 
 # plugin JoinerTaskCreator
 
-obj-y += assembler/JoinerTaskCreator_adapters.o
-obj-y += assembler/JoinerWorker.o 
-obj-y += assembler/JoinerTaskCreator.o
+JoinerTaskCreator-y += assembler/JoinerTaskCreator_adapters.o
+JoinerTaskCreator-y += assembler/JoinerWorker.o 
+JoinerTaskCreator-y += assembler/JoinerTaskCreator.o
+
+ray_plugin_JoinerTaskCreator.o: $(JoinerTaskCreator-y)
+	$(LD) -r $^ -o $@
+
+obj-y += $(JoinerTaskCreator-y)
+
+PLUGINS-y += ray_plugin_JoinerTaskCreator.o
 
 # plugin MachineHelper
 
-obj-y += core/MachineHelper_adapters.o
-obj-y += core/MachineHelper.o
+MachineHelper-y += core/MachineHelper_adapters.o
+MachineHelper-y += core/MachineHelper.o
+
+ray_plugin_MachineHelper.o: $(MachineHelper-y)
+	$(LD) -r $^ -o $@
+
+obj-y += $(MachineHelper-y)
+
+PLUGINS-y += ray_plugin_MachineHelper.o
 
 # plugin SeedingData
 
-obj-y += structures/AssemblySeed.o assembler/SeedWorker.o
-obj-y += assembler/SeedingData_adapters.o
-obj-y += assembler/SeedingData.o 
+SeedingData-y += structures/AssemblySeed.o assembler/SeedWorker.o
+SeedingData-y += assembler/SeedingData_adapters.o
+SeedingData-y += assembler/SeedingData.o 
+
+ray_plugin_SeedingData.o: $(SeedingData-y)
+	$(LD) -r $^ -o $@
+
+obj-y += $(SeedingData-y)
+
+PLUGINS-y += ray_plugin_SeedingData.o
 
 # plugin Library
 
-obj-y += assembler/Library_adapters.o
-obj-y += pairs/LibraryPeakFinder.o assembler/LibraryWorker.o 
-obj-y += assembler/Library.o 
+Library-y += assembler/Library_adapters.o
+Library-y += pairs/LibraryPeakFinder.o assembler/LibraryWorker.o 
+Library-y += assembler/Library.o 
+
+ray_plugin_Library.o: $(Library-y)
+	$(LD) -r $^ -o $@
+
+obj-y += $(Library-y)
+
+PLUGINS-y += ray_plugin_Library.o
 
 # plugin SeedExtender
 
-obj-y += assembler/SeedExtender_adapters.o
-obj-y += assembler/SeedExtender.o
-obj-y +=  structures/Direction.o
-obj-y += assembler/VertexMessenger.o assembler/ReadFetcher.o
-obj-y += heuristics/BubbleTool.o heuristics/Chooser.o heuristics/OpenAssemblerChooser.o
-obj-y += heuristics/TipWatchdog.o heuristics/NovaEngine.o
-obj-y += assembler/ExtensionElement.o 
-obj-y += assembler/DepthFirstSearchData.o 
-obj-y += assembler/ExtensionData.o 
+SeedExtender-y += assembler/SeedExtender_adapters.o
+SeedExtender-y += assembler/SeedExtender.o
+SeedExtender-y +=  structures/Direction.o
+SeedExtender-y += assembler/VertexMessenger.o assembler/ReadFetcher.o
+SeedExtender-y += heuristics/BubbleTool.o heuristics/Chooser.o heuristics/OpenAssemblerChooser.o
+SeedExtender-y += heuristics/TipWatchdog.o heuristics/NovaEngine.o
+SeedExtender-y += assembler/ExtensionElement.o 
+SeedExtender-y += assembler/DepthFirstSearchData.o 
+SeedExtender-y += assembler/ExtensionData.o 
 
+ray_plugin_SeedExtender.o: $(SeedExtender-y)
+	$(LD) -r $^ -o $@
 
-#######################################################
+obj-y += $(SeedExtender-y)
 
-MPICXX = mpicxx
-AR= ar
+PLUGINS-y += ray_plugin_SeedExtender.o
 
 #assume that we want to use Ray Platform shipped with Ray Application
 ifndef $(RAY_PLATFORM)
 	RAY_PLATFORM=../RayPlatform
 endif
 
-all: TheRayGenomeAssembler.a
-
-TheRayGenomeAssembler.a: $(obj-y)
-	$(AR) rcs  TheRayGenomeAssembler.a $(obj-y)
+all: ray_core.o $(PLUGINS-y)
 
 # inference rule
 %.o: %.cpp
-	$(MPICXX) -c -o $@ $<  $(CXXFLAGS) -I$(RAY_PLATFORM) -I. -I./scripting
+	$(MPICXX) $(CXXFLAGS) -I$(RAY_PLATFORM) -I. -I./scripting -c -o $@ $<
 
 clean:
-	@rm -f TheRayGenomeAssembler.a $(obj-y)
-	@echo CLEAN
+	$(RM) -f ray_core.o $(PLUGINS-y) $(obj-y)
+
 

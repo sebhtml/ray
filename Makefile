@@ -150,15 +150,13 @@ LDFLAGS += $(LDFLAGS-y)
 
 MPICXX = $(MPICXX-y)
 
-TARGETS=Ray
-
 # object files
 
 #################################
 
 
 # the target is Ray
-all: $(TARGETS)
+all: Ray
 
 
 showOptions: 
@@ -185,21 +183,19 @@ showOptions:
 	@touch showOptions
 	
 # how to make Ray
-Ray: showOptions RayPlatform/libRayPlatform.a code/TheRayGenomeAssembler.a
-	$(MPICXX) $(LDFLAGS)  code/TheRayGenomeAssembler.a RayPlatform/libRayPlatform.a -o $@
+Ray: showOptions RayPlatform/libRayPlatform.a code/ray_core.o
+	$(MPICXX) $(LDFLAGS)  code/*.o RayPlatform/libRayPlatform.a -o $@
 	@echo $(PREFIX) > PREFIX
-	@echo $(TARGETS) > TARGETS
+	@echo Ray > TARGETS
 
-code/TheRayGenomeAssembler.a:
-	@echo "Building Ray Application"
-	@cd code; make MPICXX="$(MPICXX)" CXXFLAGS="$(CXXFLAGS)" -j $(J) ; cd ..
+code/ray_core.o:
+	@cd code; make MPICXX="$(MPICXX)" CXXFLAGS="$(CXXFLAGS)" -j $(J) all ; cd ..
 
 RayPlatform/libRayPlatform.a:
-	@echo "Building Ray Platform"
 	@cd RayPlatform; make MPICXX="$(MPICXX)" CXXFLAGS="$(CXXFLAGS)" -j $(J) ; cd ..
 
 clean:
-	@rm -f $(TARGETS) showOptions PREFIX TARGETS
+	@rm -f Ray showOptions PREFIX TARGETS
 	@echo "Cleaning Ray Application"
 	@(cd code; make clean; cd ..)
 	@echo "Cleaning Ray Platform"
