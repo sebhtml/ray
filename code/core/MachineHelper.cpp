@@ -925,6 +925,9 @@ void MachineHelper::registerPlugin(ComputeCore*core){
 	m_plugin=plugin;
 
 	core->setPluginName(plugin,"MachineHelper");
+	core->setPluginDescription(plugin,"Legacy plugin for some master modes");
+	core->setPluginAuthors(plugin,"Sébastien Boisvert");
+	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_MASTER_MODE_LOAD_CONFIG=core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_LOAD_CONFIG);
 	m_adapter_RAY_MASTER_MODE_LOAD_CONFIG.setObject(this);

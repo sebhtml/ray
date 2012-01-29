@@ -260,6 +260,8 @@ void VirtualProcessor::registerPlugin(ComputeCore*core){
 
 	core->setPluginName(m_plugin,"VirtualProcessor");
 	core->setPluginDescription(m_plugin,"A thread pool running on 1 physical thread (bundled with RayPlatform)");
+	core->setPluginAuthors(m_plugin,"Sébastien Boisvert");
+	core->setPluginLicense(m_plugin,"GNU Lesser General License version 3");
 
 }
 

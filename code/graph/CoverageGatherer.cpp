@@ -201,7 +201,11 @@ void CoverageGatherer::constructor(Parameters*parameters,StaticVector*inbox,Stat
 void CoverageGatherer::registerPlugin(ComputeCore*core){
 	PluginHandle plugin=core->allocatePluginHandle();
 	m_plugin=plugin;
+
 	core->setPluginName(plugin,"CoverageGatherer");
+	core->setPluginDescription(plugin,"Sends coverage depth frequencies");
+	core->setPluginAuthors(plugin,"Sébastien Boisvert");
+	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_SEND_DISTRIBUTION=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_SEND_DISTRIBUTION);
 	m_adapter_RAY_SLAVE_MODE_SEND_DISTRIBUTION.setObject(this);

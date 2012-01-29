@@ -2193,6 +2193,8 @@ void SeedExtender::registerPlugin(ComputeCore*core){
 
 	core->setPluginName(plugin,"SeedExtender");
 	core->setPluginDescription(plugin,"Computes long genome paths in the graph.");
+	core->setPluginAuthors(plugin,"Sébastien Boisvert");
+	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_EXTENSION=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_EXTENSION);
 	m_adapter_RAY_SLAVE_MODE_EXTENSION.setObject(this);

@@ -349,6 +349,9 @@ void SequencesLoader::registerPlugin(ComputeCore*core){
 	m_plugin=plugin;
 
 	core->setPluginName(plugin,"SequencesLoader");
+	core->setPluginDescription(plugin,"Loads DNA");
+	core->setPluginAuthors(plugin,"Sébastien Boisvert");
+	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_LOAD_SEQUENCES=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_LOAD_SEQUENCES);
 	m_adapter_RAY_SLAVE_MODE_LOAD_SEQUENCES.setObject(this);

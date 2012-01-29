@@ -366,6 +366,9 @@ void VerticesExtractor::registerPlugin(ComputeCore*core){
 	PluginHandle plugin=m_plugin;
 
 	core->setPluginName(plugin,"VerticesExtractor");
+	core->setPluginDescription(plugin,"Builds the distributed de Bruijn graph");
+	core->setPluginAuthors(plugin,"Sébastien Boisvert");
+	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_EXTRACT_VERTICES=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_EXTRACT_VERTICES);
 	m_adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES.setObject(this);

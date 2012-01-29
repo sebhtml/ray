@@ -372,6 +372,9 @@ void MessageRouter::registerPlugin(ComputeCore*core){
 	PluginHandle plugin=m_plugin;
 
 	core->setPluginName(m_plugin,"MessageRouter");
+	core->setPluginDescription(m_plugin,"message router for large jobs (bundled with RayPlatform)");
+	core->setPluginAuthors(m_plugin,"Sébastien Boisvert");
+	core->setPluginLicense(m_plugin,"GNU Lesser General License version 3");
 
 	RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY,"RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY");

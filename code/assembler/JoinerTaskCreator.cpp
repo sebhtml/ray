@@ -161,6 +161,9 @@ void JoinerTaskCreator::registerPlugin(ComputeCore*core){
 	m_plugin=plugin;
 
 	core->setPluginName(plugin,"JoinerTaskCreator");
+	core->setPluginDescription(plugin,"Similar paths are joined");
+	core->setPluginAuthors(plugin,"Sébastien Boisvert");
+	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_FINISH_FUSIONS=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_FINISH_FUSIONS);
 	m_adapter_RAY_SLAVE_MODE_FINISH_FUSIONS.setObject(this);

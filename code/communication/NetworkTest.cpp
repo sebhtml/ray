@@ -332,9 +332,9 @@ void NetworkTest::registerPlugin(ComputeCore*core){
 	m_plugin=plugin;
 
 	core->setPluginName(plugin,"NetworkTest");
+	core->setPluginDescription(plugin,"This is a plugin used to test the network latency.");
 	core->setPluginAuthors(plugin,"Sébastien Boisvert");
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
-	core->setPluginDescription(plugin,"This is a plugin used to test the network latency.");
 
 	RAY_SLAVE_MODE_TEST_NETWORK=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_TEST_NETWORK);
 	m_adapter_RAY_SLAVE_MODE_TEST_NETWORK.setObject(this);

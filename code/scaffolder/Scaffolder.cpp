@@ -1352,6 +1352,9 @@ void Scaffolder::registerPlugin(ComputeCore*core){
 	m_plugin=plugin;
 
 	core->setPluginName(plugin,"Scaffolder");
+	core->setPluginDescription(plugin,"Greedy conservative scaffolder");
+	core->setPluginAuthors(plugin,"Sébastien Boisvert");
+	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_SCAFFOLDER=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_SCAFFOLDER);
 	m_adapter_RAY_SLAVE_MODE_SCAFFOLDER.setObject(this);

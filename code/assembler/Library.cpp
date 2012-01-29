@@ -314,6 +314,8 @@ void Library::registerPlugin(ComputeCore*core){
 
 	core->setPluginName(plugin,"Library");
 	core->setPluginDescription(plugin,"Obtains an estimation of library lengths");
+	core->setPluginAuthors(plugin,"Sébastien Boisvert");
+	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION);
 	m_adapter_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION.setObject(this);

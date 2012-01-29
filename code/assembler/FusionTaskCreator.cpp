@@ -168,6 +168,9 @@ void FusionTaskCreator::registerPlugin(ComputeCore*core){
 	m_plugin=plugin;
 
 	core->setPluginName(plugin,"FusionTaskCreator");
+	core->setPluginDescription(plugin,"Contained paths are dumped");
+	core->setPluginAuthors(plugin,"Sébastien Boisvert");
+	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_FUSION=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_FUSION);
 	m_adapter_RAY_SLAVE_MODE_FUSION.setObject(this);

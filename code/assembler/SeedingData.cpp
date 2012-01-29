@@ -386,6 +386,9 @@ void SeedingData::registerPlugin(ComputeCore*core){
 	m_plugin=plugin;
 
 	core->setPluginName(plugin,"SeedingData");
+	core->setPluginDescription(plugin,"Computes unique paths in the graph");
+	core->setPluginAuthors(plugin,"Sébastien Boisvert");
+	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_START_SEEDING=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_START_SEEDING);
 	m_adapter_RAY_SLAVE_MODE_START_SEEDING.setObject(this);

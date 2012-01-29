@@ -556,8 +556,11 @@ void MessagesHandler::setConnections(vector<int>*connections){
 
 void MessagesHandler::registerPlugin(ComputeCore*core){
 	m_plugin=core->allocatePluginHandle();
+
 	core->setPluginName(m_plugin,"MessagesHandler");
-	core->setPluginDescription(m_plugin,"RayPlatform MPI wrapper)");
+	core->setPluginDescription(m_plugin,"MPI wrapper with round-robin policy (bundled with RayPlatform)");
+	core->setPluginAuthors(m_plugin,"Sébastien Boisvert");
+	core->setPluginLicense(m_plugin,"GNU Lesser General License version 3");
 
 	RAY_MPI_TAG_DUMMY=core->allocateMessageTagHandle(m_plugin,RAY_MPI_TAG_DUMMY);
 	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_DUMMY,"RAY_MPI_TAG_DUMMY");

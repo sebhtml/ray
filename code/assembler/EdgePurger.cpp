@@ -171,6 +171,8 @@ void EdgePurger::registerPlugin(ComputeCore*core){
 
 	core->setPluginName(plugin,"EdgePurger");
 	core->setPluginDescription(plugin,"Deals with invalid edges");
+	core->setPluginAuthors(plugin,"Sébastien Boisvert");
+	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_PURGE_NULL_EDGES=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_PURGE_NULL_EDGES);
 	m_adapter_RAY_SLAVE_MODE_PURGE_NULL_EDGES.setObject(this);

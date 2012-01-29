@@ -288,6 +288,9 @@ void SequencesIndexer::registerPlugin(ComputeCore*core){
 	m_plugin=plugin;
 
 	core->setPluginName(plugin,"SequencesIndexer");
+	core->setPluginDescription(plugin,"Index the DNA readouts");
+	core->setPluginAuthors(plugin,"Sébastien Boisvert");
+	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_INDEX_SEQUENCES=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_INDEX_SEQUENCES);
 	m_adapter_RAY_SLAVE_MODE_INDEX_SEQUENCES.setObject(this);

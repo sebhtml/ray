@@ -251,7 +251,10 @@ void KmerAcademyBuilder::registerPlugin(ComputeCore*core){
 	m_plugin=plugin;
 
 	core->setPluginName(plugin,"KmerAcademyBuilder");
-	
+	core->setPluginDescription(plugin,"Filter out almost all sequencing errors with a Bloom filter and an academy");
+	core->setPluginAuthors(plugin,"Sébastien Boisvert");
+	core->setPluginLicense(plugin,"GNU General Public License version 3");
+
 	RAY_SLAVE_MODE_BUILD_KMER_ACADEMY=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY);
 	m_adapter_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY, &m_adapter_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY);

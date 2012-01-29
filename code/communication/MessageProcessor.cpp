@@ -2287,6 +2287,9 @@ void MessageProcessor::registerPlugin(ComputeCore*core){
 	m_plugin=plugin;
 
 	core->setPluginName(plugin,"MessageProcessor");
+	core->setPluginDescription(plugin,"Legacy plugin for message tags");
+	core->setPluginAuthors(plugin,"Sébastien Boisvert");
+	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_MPI_TAG_LOAD_SEQUENCES=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_LOAD_SEQUENCES);
 	m_adapter_RAY_MPI_TAG_LOAD_SEQUENCES.setObject(this);

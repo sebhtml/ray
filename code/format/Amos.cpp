@@ -221,6 +221,9 @@ void Amos::registerPlugin(ComputeCore*core){
 	m_plugin=plugin;
 
 	core->setPluginName(plugin,"Amos");
+	core->setPluginDescription(plugin,"Writes the assembly in the Amos format");
+	core->setPluginAuthors(plugin,"Sébastien Boisvert");
+	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_AMOS=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_AMOS);
 	m_adapter_RAY_SLAVE_MODE_AMOS.setObject(this);

@@ -633,7 +633,11 @@ void FusionData::registerPlugin(ComputeCore*core){
 	PluginHandle plugin=core->allocatePluginHandle();
 
 	m_plugin=plugin;
+
 	core->setPluginName(plugin,"FusionData");
+	core->setPluginDescription(plugin,"This plugin propagates paths");
+	core->setPluginAuthors(plugin,"Sébastien Boisvert");
+	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS);
 	m_adapter_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS.setObject(this);
