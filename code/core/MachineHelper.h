@@ -340,9 +340,6 @@ VirtualCommunicator*virtualCommunicator,KmerAcademyBuilder*kmerAcademyBuilder,
 SequencesLoader*sl,time_t*lastTime,bool*writeKmerInitialised,Partitioner*partitioner
 );
 
-	void configureSwitchMan(SwitchMan*switchMan);
-
-
 	void call_RAY_MASTER_MODE_LOAD_CONFIG();
 	void call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES();
 	void call_RAY_MASTER_MODE_WRITE_KMERS();

@@ -270,14 +270,6 @@ void SwitchMan::addMasterSwitch(MasterMode masterMode,MessageTag tag){
 	m_masterModeToTagTable[masterMode]=tag;
 }
 
-void SwitchMan::addMasterMode(MasterMode mode){
-	m_masterModeOrder.push_back(mode);
-}
-
-vector<MasterMode>*SwitchMan::getMasterModeOrder(){
-	return &m_masterModeOrder;
-}
-
 Rank SwitchMan::getRank(){
 	return m_rank;
 }
@@ -317,6 +309,12 @@ void SwitchMan::registerPlugin(ComputeCore*core){
 	RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY,"RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY");
 
+	// set default modes
+	// these symbols are resolved already
+	
+	setMasterMode(RAY_MASTER_MODE_DO_NOTHING); 
+	setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
+
 }
 
 void SwitchMan::resolveSymbols(ComputeCore*core){
@@ -333,10 +331,6 @@ void SwitchMan::resolveSymbols(ComputeCore*core){
 
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON, RAY_SLAVE_MODE_DIE );
 
-	// set default modes
-	
-	setMasterMode(RAY_MASTER_MODE_DO_NOTHING); 
-	setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
 }
 
 

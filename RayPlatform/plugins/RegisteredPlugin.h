@@ -46,6 +46,8 @@ class RegisteredPlugin{
 	set<MasterMode> m_registeredMasterModeSymbols;
 	set<MasterMode> m_registeredMasterModeHandlers;
 	set<MasterMode> m_registeredMasterModeToMessageTagSwitches;
+	set<MasterMode> m_registeredMasterModeNextMasterModes;
+	set<MasterMode> m_registeredFirstMasterModes;
 
 	set<SlaveMode> m_allocatedSlaveModes;
 	set<SlaveMode> m_registeredSlaveModeSymbols;
@@ -78,6 +80,8 @@ public:
 	void addRegisteredMasterModeHandler(MasterMode masterMode);
 	void addResolvedMasterMode(MasterMode masterMode);
 	void addRegisteredMasterModeToMessageTagSwitch(MasterMode mode);
+	void addRegisteredMasterModeNextMasterMode(MasterMode mode);
+	void addRegisteredFirstMasterMode(MasterMode mode);
 
 	void addAllocatedSlaveMode(SlaveMode slaveMode);
 	void addRegisteredSlaveModeHandler(SlaveMode slaveMode);

@@ -294,6 +294,7 @@ void Partitioner::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_COUNT_FILE_ENTRIES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_COUNT_FILE_ENTRIES");
 
 	RAY_MASTER_MODE_COUNT_FILE_ENTRIES=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_COUNT_FILE_ENTRIES");
+	RAY_MASTER_MODE_LOAD_SEQUENCES=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_LOAD_SEQUENCES");
 
 	RAY_MPI_TAG_COUNT_FILE_ENTRIES=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_COUNT_FILE_ENTRIES");
 	RAY_MPI_TAG_COUNT_FILE_ENTRIES_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_COUNT_FILE_ENTRIES_REPLY");
@@ -306,4 +307,6 @@ void Partitioner::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_COUNT_FILE_ENTRIES_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_COUNT_FILE_ENTRIES_REPLY");
 
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_COUNT_FILE_ENTRIES, RAY_SLAVE_MODE_COUNT_FILE_ENTRIES );
+
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_COUNT_FILE_ENTRIES,RAY_MASTER_MODE_LOAD_SEQUENCES);
 }

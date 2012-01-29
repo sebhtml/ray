@@ -61,6 +61,7 @@ class NetworkTest :  public CorePlugin {
 
 	MasterMode RAY_MASTER_MODE_KILL_ALL_MPI_RANKS;
 	MasterMode  RAY_MASTER_MODE_TEST_NETWORK;
+	MasterMode RAY_MASTER_MODE_COUNT_FILE_ENTRIES;
 
 	SlaveMode RAY_SLAVE_MODE_TEST_NETWORK;
 

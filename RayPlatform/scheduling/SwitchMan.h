@@ -81,9 +81,6 @@ class SwitchMan: public CorePlugin {
 /** a table containing mapping from master modes to MPI tags */
 	map<MasterMode,MessageTag> m_masterModeToTagTable;
 
-/** the order of the master modes */
-	vector<MasterMode> m_masterModeOrder;
-
 /** run some assertions */
 	void runAssertions();
 

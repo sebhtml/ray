@@ -55,6 +55,8 @@ using namespace std;
  */
 class ComputeCore{
 
+	bool m_hasFirstMode;
+
 	vector<CorePlugin*> m_listOfPlugins;
 
 	map<string,MasterMode> m_masterModeSymbols;
@@ -240,7 +242,17 @@ public:
  * a given master mode **/
 	void setMasterModeToMessageTagSwitch(PluginHandle plugin,MasterMode mode,MessageTag tag);
 
+/* The Ray engine will run these master modes in series 
+in a parallel and distributed way.
+This is for modes that support the feature.
+Not all master modes have yet been ported to that list.
 
+-Sébastien Boisvert, 2011-01-08
+*/
+	void setMasterModeNextMasterMode(PluginHandle plugin,MasterMode mode,MasterMode next);
+
+/** defines the entry point of the application **/
+	void setFirstMasterMode(PluginHandle plugin,MasterMode mode);
 
 
 

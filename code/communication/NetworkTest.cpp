@@ -360,12 +360,13 @@ void NetworkTest::registerPlugin(ComputeCore*core){
 
 	RAY_MPI_TAG_TEST_NETWORK_WRITE_DATA=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_TEST_NETWORK_WRITE_DATA);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_TEST_NETWORK_WRITE_DATA,"RAY_MPI_TAG_TEST_NETWORK_WRITE_DATA");
+
 }
 
 void NetworkTest::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_TEST_NETWORK=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_TEST_NETWORK");
 
-
+	RAY_MASTER_MODE_COUNT_FILE_ENTRIES=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_COUNT_FILE_ENTRIES");
 	RAY_MASTER_MODE_KILL_ALL_MPI_RANKS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_KILL_ALL_MPI_RANKS");
 	RAY_MASTER_MODE_TEST_NETWORK=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_TEST_NETWORK");
 
@@ -380,4 +381,7 @@ void NetworkTest::resolveSymbols(ComputeCore*core){
 	core->setMasterModeToMessageTagSwitch(m_plugin,RAY_MASTER_MODE_TEST_NETWORK, RAY_MPI_TAG_TEST_NETWORK);
 
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_TEST_NETWORK,                 RAY_SLAVE_MODE_TEST_NETWORK);
+
+
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_TEST_NETWORK,RAY_MASTER_MODE_COUNT_FILE_ENTRIES);
 }

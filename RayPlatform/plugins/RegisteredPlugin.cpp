@@ -105,6 +105,8 @@ void RegisteredPlugin::print(ostream*stream){
 	(*stream)<<"   -> with a registered symbol: "<<m_registeredMasterModeSymbols.size()<<endl;
 	(*stream)<<"   -> with a registered MasterModeHandler: "<<m_registeredMasterModeHandlers.size()<<endl;
 	(*stream)<<"   -> with a registered MasterMode-to-MessageTag switch: "<<m_registeredMasterModeToMessageTagSwitches.size()<<endl;
+	(*stream)<<"   -> with a registered next MasterMode: "<<m_registeredMasterModeNextMasterModes.size()<<endl;
+	(*stream)<<"   -> registered as first MasterMode: "<<m_registeredFirstMasterModes.size()<<endl;
 	(*stream)<<endl;
 
 	(*stream)<<"-> Allocated SlaveMode handles: "<<m_allocatedSlaveModes.size()<<endl;
@@ -180,4 +182,12 @@ void RegisteredPlugin::addRegisteredMessageTagReplyMessageTag(MessageTag tag){
 
 void RegisteredPlugin::addRegisteredMessageTagSize(MessageTag tag){
 	m_registeredMessageTagSizes.insert(tag);
+}
+
+void RegisteredPlugin::addRegisteredMasterModeNextMasterMode(MasterMode mode){
+	m_registeredMasterModeNextMasterModes.insert(mode);
+}
+
+void RegisteredPlugin::addRegisteredFirstMasterMode(MasterMode mode){
+	m_registeredFirstMasterModes.insert(mode);
 }

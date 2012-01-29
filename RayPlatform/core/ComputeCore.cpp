@@ -517,6 +517,8 @@ void ComputeCore::processData(){
 
 void ComputeCore::constructor(int*argc,char***argv){
 
+	m_hasFirstMode=false;
+
 	srand(portableProcessId() * getMicroseconds());
 
 
@@ -569,6 +571,15 @@ void ComputeCore::constructor(int*argc,char***argv){
 	m_currentSlaveModeToAllocate=0;
 	m_currentMasterModeToAllocate=0;
 	m_currentMessageTagToAllocate=0;
+
+
+	// register some built-in plugins
+
+	registerPlugin(&m_switchMan);
+	registerPlugin(&m_router);
+	registerPlugin(&m_virtualCommunicator);
+	registerPlugin(&m_virtualProcessor);
+
 }
 
 void ComputeCore::enableProfiler(){
@@ -655,12 +666,7 @@ void ComputeCore::registerPlugin(CorePlugin*plugin){
 
 void ComputeCore::resolveSymbols(){
 	
-	// register built-in plugins
-	registerPlugin(&m_switchMan);
-	registerPlugin(&m_router);
-	registerPlugin(&m_virtualCommunicator);
-	registerPlugin(&m_virtualProcessor);
-	registerPlugin(&m_messagesHandler);
+	registerPlugin(&m_messagesHandler); // must be the last registered
 
 	for(int i=0;i<(int)m_listOfPlugins.size();i++){
 		CorePlugin*plugin=m_listOfPlugins[i];
@@ -922,6 +928,8 @@ bool ComputeCore::validationMasterModeOwnership(PluginHandle plugin,MasterMode h
 	if(!m_plugins[plugin].hasMasterMode(handle)){
 		cout<<"Error, plugin "<<m_plugins[plugin].getPluginName();
 		cout<<" ("<<plugin<<") has no ownership on master mode "<<handle<<endl;
+		cout<<" public symbol is "<<MASTER_MODES[handle]<<endl;
+
 		return false;
 	}
 
@@ -1226,3 +1234,39 @@ void ComputeCore::setMessageTagSize(PluginHandle plugin,MessageTag tag,int size)
 	m_plugins[plugin].addRegisteredMessageTagSize(tag);
 }
 
+void ComputeCore::setMasterModeNextMasterMode(PluginHandle plugin,MasterMode current,MasterMode next){
+
+	if(!validationPluginAllocated(plugin))
+		return;
+
+	if(!validationMasterModeOwnership(plugin,current))
+		return;
+
+	m_switchMan.addNextMasterMode(current,next);
+
+	// configure the switch man
+	//
+	// this is where steps can be added or removed.
+
+	m_plugins[plugin].addRegisteredMasterModeNextMasterMode(current);
+}
+
+void ComputeCore::setFirstMasterMode(PluginHandle plugin,MasterMode mode){
+	if(!validationPluginAllocated(plugin))
+		return;
+
+	if(!validationMasterModeOwnership(plugin,mode))
+		return;
+
+	if(m_hasFirstMode)
+		cout<<"Error, already has a first master mode."<<endl;
+
+	m_hasFirstMode=true;
+
+	/** the computation will start there **/
+	if(m_rank == MASTER_RANK){
+		m_switchMan.setMasterMode(mode);
+	}
+
+	m_plugins[plugin].addRegisteredFirstMasterMode(mode);
+}

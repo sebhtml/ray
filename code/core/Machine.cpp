@@ -701,11 +701,9 @@ void Machine::showRayVersion(MessagesHandler*messagesHandler,bool fullReport){
 void Machine::registerPlugins(){
 	cout<<endl;
 
-	m_computeCore.registerPlugin(&m_mp);
 	m_computeCore.registerPlugin(&m_helper);
-
+	m_computeCore.registerPlugin(&m_mp);
 	m_computeCore.registerPlugin(&m_networkTest);
-
 	m_computeCore.registerPlugin(&m_partitioner);
 	m_computeCore.registerPlugin(&m_sl);
 
@@ -733,12 +731,9 @@ void Machine::registerPlugins(){
 	
 	m_computeCore.resolveSymbols();
 
-	m_helper.configureSwitchMan(m_switchMan);
-
 	cout<<endl;
 	
 	// write a report about plugins
-
 	if(m_parameters.getRank()==MASTER_RANK){
 		ostringstream directory;
 		directory<<m_parameters.getPrefix()<<"/Plugins";
