@@ -19,7 +19,6 @@
 
 */
 
-#include <memory/malloc_types.h>
 #include <memory/allocator.h>
 #include <iostream>
 #include <assert.h>
@@ -32,10 +31,10 @@ using namespace std;
 /**
  * wrapper around malloc
  */
-void*__Malloc(int c,int mallocType,bool show){
+void*__Malloc(int c,const char*description,bool show){
 	#ifdef ASSERT
 	if(c==0){
-		cout<<"Requested "<<c<<" bytes of type "<<MALLOC_TYPES[mallocType]<<endl;
+		cout<<"Requested "<<c<<" bytes of type "<<description<<endl;
 	}
 	assert(c!=0);
 	assert(c>0);
@@ -44,14 +43,14 @@ void*__Malloc(int c,int mallocType,bool show){
 	a=malloc(c);
 	if(a==NULL){
 		cout<<"Critical exception: The system is out of memory, returned NULL."<<endl;
-		cout<<"Requested "<<c<<" bytes of type "<<MALLOC_TYPES[mallocType]<<endl;
+		cout<<"Requested "<<c<<" bytes of type "<<description<<endl;
 		exit(EXIT_NO_MORE_MEMORY);
 	}
 
 	assert(a!=NULL);
 
 	if(show){
-		printf("%s %i\t%s\t%i bytes, ret\t%p\t%s\n",__FILE__,__LINE__,__func__,c,a,MALLOC_TYPES[mallocType]);
+		printf("%s %i\t%s\t%i bytes, ret\t%p\t%s\n",__FILE__,__LINE__,__func__,c,a,description);
 		fflush(stdout);
 	}
 	return a;
@@ -60,9 +59,9 @@ void*__Malloc(int c,int mallocType,bool show){
 /**
  * wrapper around free
  */
-void __Free(void*a,int mallocType,bool show){
+void __Free(void*a,const char*description,bool show){
 	if(show){
-		printf("%s %i\t%s\t%p\t%s\n",__FILE__,__LINE__,__func__,a,MALLOC_TYPES[mallocType]);
+		printf("%s %i\t%s\t%p\t%s\n",__FILE__,__LINE__,__func__,a,description);
 		fflush(stdout);
 	}
 

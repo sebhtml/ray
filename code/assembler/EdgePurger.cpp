@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <core/OperatingSystem.h>
-#include <memory/malloc_types.h>
 
 //#define DEBUG_EdgePurger
 

@@ -45,7 +45,7 @@ class BufferedData{
 	int m_period;
 	uint64_t m_flushedMessages;
 	uint64_t m_pushedMessages;
-	int m_type;
+	char m_type[100];
 	int*m_sizes;
 	int m_ranks;
 	bool m_show;
@@ -59,7 +59,7 @@ public:
  *
 	 the capacity is measured in uint64_t
  */
-	void constructor(int numberOfRanks,int capacity,int type,bool show,int period);
+	void constructor(int numberOfRanks,int capacity,const char*type,bool show,int period);
 /*
  * Get the number of appended elements for MPI rank i
  */

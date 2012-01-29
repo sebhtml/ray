@@ -13,8 +13,7 @@ MPICXX = mpicxx
 ######## <Platform>
 
 #memory
-obj-y += memory/ReusableMemoryStore.o memory/MyAllocator.o memory/RingAllocator.o \
-memory/malloc_types.o 
+obj-y += memory/ReusableMemoryStore.o memory/MyAllocator.o memory/RingAllocator.o 
 obj-y += memory/allocator.o
 obj-y += memory/DefragmentationGroup.o memory/ChunkAllocatorWithDefragmentation.o memory/DefragmentationLane.o
 

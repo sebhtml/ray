@@ -36,7 +36,7 @@ class StaticVector{
 	Message*m_messages;
 	int m_size;
 	int m_maxSize;
-	int m_type;
+	char m_type[100];
 public:
 	Message*operator[](int i);
 	Message*at(int i);
@@ -45,7 +45,7 @@ public:
 	void push_back(Message a);
 	int size();
 	void clear();
-	void constructor(int size,int type,bool show);
+	void constructor(int size,const char*type,bool show);
 
 	bool hasMessage(MessageTag tag);
 };

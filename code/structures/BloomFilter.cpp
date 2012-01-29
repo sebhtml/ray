@@ -19,7 +19,6 @@
 */
 
 #include <structures/BloomFilter.h>
-#include <memory/malloc_types.h>
 #include <structures/Kmer.h>
 #include <memory/allocator.h>
 #include <iostream>
@@ -73,7 +72,7 @@ Basically, these are used in XOR hash functions below...
 
 	int requiredBytes=m_bits/8;
 	int required8Bytes=requiredBytes/8;
-	m_bitmap=(uint64_t*)__Malloc(required8Bytes*sizeof(uint64_t), RAY_MALLOC_TYPE_BLOOM_FILTER, false); /* about 62 MB of memory */
+	m_bitmap=(uint64_t*)__Malloc(required8Bytes*sizeof(uint64_t), "RAY_MALLOC_TYPE_BLOOM_FILTER", false); /* about 62 MB of memory */
 
 	#ifdef ASSERT
 	assert(required8Bytes > 0);
@@ -148,7 +147,7 @@ void BloomFilter::destructor(){
 	assert(m_bits > 0);
 	#endif
 
-	__Free(m_bitmap,RAY_MALLOC_TYPE_BLOOM_FILTER,false);
+	__Free(m_bitmap,"RAY_MALLOC_TYPE_BLOOM_FILTER",false);
 	m_bitmap=NULL;
 	m_bits=0;
 	m_hashFunctions=0;

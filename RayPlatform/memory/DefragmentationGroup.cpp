@@ -31,7 +31,6 @@
 #include <memory/allocator.h>
 #include <stdlib.h>
 #include <string.h>
-#include <memory/malloc_types.h>
 #include <iostream>
 using namespace std;
 
@@ -341,11 +340,11 @@ void DefragmentationGroup::constructor(int bytesPerElement,bool show){
 
 	m_freeSliceStart=0;
 	/** allocate the memory */
-	m_block=(uint8_t*)__Malloc(ELEMENTS_PER_GROUP*bytesPerElement,RAY_MALLOC_TYPE_DEFRAG_GROUP,show);
+	m_block=(uint8_t*)__Malloc(ELEMENTS_PER_GROUP*bytesPerElement,"RAY_MALLOC_TYPE_DEFRAG_GROUP",show);
 
 	/** initialise sizes */
-	m_allocatedSizes=(uint8_t*)__Malloc(ELEMENTS_PER_GROUP*sizeof(uint8_t),RAY_MALLOC_TYPE_DEFRAG_GROUP,show);
-	m_allocatedOffsets=(uint16_t*)__Malloc(ELEMENTS_PER_GROUP*sizeof(uint16_t),RAY_MALLOC_TYPE_DEFRAG_GROUP,show);
+	m_allocatedSizes=(uint8_t*)__Malloc(ELEMENTS_PER_GROUP*sizeof(uint8_t),"RAY_MALLOC_TYPE_DEFRAG_GROUP",show);
+	m_allocatedOffsets=(uint16_t*)__Malloc(ELEMENTS_PER_GROUP*sizeof(uint16_t),"RAY_MALLOC_TYPE_DEFRAG_GROUP",show);
 	
 	for(int i=0;i<ELEMENTS_PER_GROUP;i++){
 		m_allocatedSizes[i]=0;
@@ -361,11 +360,11 @@ void DefragmentationGroup::constructor(int bytesPerElement,bool show){
  * Free memory
  */
 void DefragmentationGroup::destructor(bool show){
-	__Free(m_block,RAY_MALLOC_TYPE_DEFRAG_GROUP,show);
+	__Free(m_block,"RAY_MALLOC_TYPE_DEFRAG_GROUP",show);
 	m_block=NULL;
-	__Free(m_allocatedSizes,RAY_MALLOC_TYPE_DEFRAG_GROUP,show);
+	__Free(m_allocatedSizes,"RAY_MALLOC_TYPE_DEFRAG_GROUP",show);
 	m_allocatedSizes=NULL;
-	__Free(m_allocatedOffsets,RAY_MALLOC_TYPE_DEFRAG_GROUP,show);
+	__Free(m_allocatedOffsets,"RAY_MALLOC_TYPE_DEFRAG_GROUP",show);
 	m_allocatedOffsets=NULL;
 }
 

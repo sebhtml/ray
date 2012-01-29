@@ -24,7 +24,6 @@
 #include <core/OperatingSystem.h>
 #include <sstream>
 #include <communication/Message.h>
-#include <memory/malloc_types.h>
 using namespace std;
 
 #define SHOW_FUSION
@@ -138,7 +137,7 @@ void FusionData::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
 
 void FusionData::readyBuffers(){
 	m_buffers.constructor(m_size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
-		RAY_MALLOC_TYPE_FUSION_BUFFERS,m_parameters->showMemoryAllocations(),KMER_U64_ARRAY_SIZE+2);
+		"RAY_MALLOC_TYPE_FUSION_BUFFERS",m_parameters->showMemoryAllocations(),KMER_U64_ARRAY_SIZE+2);
 }
 
 void FusionData::constructor(int size,int max,int rank,StaticVector*outbox,
@@ -148,7 +147,7 @@ void FusionData::constructor(int size,int max,int rank,StaticVector*outbox,
 	m_processedCheckpoint=false;
 	m_debugFusionCode=m_parameters->hasOption("-debug-fusions");
 	m_seedingData=seedingData;
-	m_cacheAllocator.constructor(4194304,RAY_MALLOC_TYPE_FUSION_CACHING,m_parameters->showMemoryAllocations());
+	m_cacheAllocator.constructor(4194304,"RAY_MALLOC_TYPE_FUSION_CACHING",m_parameters->showMemoryAllocations());
 	m_cacheForRepeatedVertices.constructor();
 	m_mode=mode;
 	m_ed=ed;

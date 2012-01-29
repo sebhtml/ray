@@ -18,7 +18,6 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include <memory/malloc_types.h>
 #include <graph/GridTableIterator.h>
 #include <cryptography/crypto.h>
 #include <core/OperatingSystem.h>
@@ -189,15 +188,6 @@ void Machine::start(){
 
 	m_computeCore.setMaximumNumberOfOutboxBuffers(MAX_ALLOCATED_OUTPUT_BUFFERS);
 
-	m_inboxAllocator->constructor(m_computeCore.getMaximumNumberOfAllocatedInboxMessages(),MAXIMUM_MESSAGE_SIZE_IN_BYTES,
-		RAY_MALLOC_TYPE_INBOX_ALLOCATOR,m_parameters.showMemoryAllocations());
-
-	m_outboxAllocator->constructor(MAX_ALLOCATED_OUTPUT_BUFFERS,MAXIMUM_MESSAGE_SIZE_IN_BYTES,
-		RAY_MALLOC_TYPE_OUTBOX_ALLOCATOR,m_parameters.showMemoryAllocations());
-
-	m_inbox->constructor(m_computeCore.getMaximumNumberOfAllocatedInboxMessages(),RAY_MALLOC_TYPE_INBOX_VECTOR,m_parameters.showMemoryAllocations());
-	m_outbox->constructor(m_computeCore.getMaximumNumberOfAllocatedOutboxMessages(),RAY_MALLOC_TYPE_OUTBOX_VECTOR,m_parameters.showMemoryAllocations());
-
 	m_scaffolder.constructor(m_outbox,m_inbox,m_outboxAllocator,&m_parameters,
 	m_virtualCommunicator,m_switchMan);
 	m_scaffolder.setTimePrinter(&m_timePrinter);
@@ -280,12 +270,12 @@ void Machine::start(){
 	m_networkTest.setSwitchMan(m_switchMan);
 
 	int PERSISTENT_ALLOCATOR_CHUNK_SIZE=4194304; // 4 MiB
-	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE,RAY_MALLOC_TYPE_PERSISTENT_DATA_ALLOCATOR,
+	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE,"RAY_MALLOC_TYPE_PERSISTENT_DATA_ALLOCATOR",
 		m_parameters.showMemoryAllocations());
 
 	int directionAllocatorChunkSize=4194304; // 4 MiB
 
-	m_directionsAllocator.constructor(directionAllocatorChunkSize,RAY_MALLOC_TYPE_WAVE_ALLOCATOR,
+	m_directionsAllocator.constructor(directionAllocatorChunkSize,"RAY_MALLOC_TYPE_WAVE_ALLOCATOR",
 		m_parameters.showMemoryAllocations());
 
 	/** create the directory for the assembly */
@@ -364,7 +354,7 @@ void Machine::start(){
 	ostringstream prefixFull;
 	prefixFull<<m_parameters.getMemoryPrefix()<<"_Main";
 	int chunkSize=16777216;
-	m_diskAllocator.constructor(chunkSize,RAY_MALLOC_TYPE_DATA_ALLOCATOR,
+	m_diskAllocator.constructor(chunkSize,"RAY_MALLOC_TYPE_DATA_ALLOCATOR",
 		m_parameters.showMemoryAllocations());
 
 	m_sl.constructor(m_size,&m_diskAllocator,&m_myReads,&m_parameters,m_outbox,

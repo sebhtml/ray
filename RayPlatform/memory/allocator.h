@@ -1,6 +1,6 @@
 /*
 Ray
-Copyright (C)  2010, 2011  Sébastien Boisvert
+Copyright (C)  2010, 2011, 2012  Sébastien Boisvert
 
 http://DeNovoAssembler.SourceForge.Net/
 
@@ -22,10 +22,10 @@ see <http://www.gnu.org/licenses/>
 /**
  * allocate c bytes of type mallocType
  */
-void*__Malloc(int c,int mallocType,bool show);
+void*__Malloc(int c,const char*description,bool show);
 
 /**
  * free bytes of mallocType
  */
-void __Free(void*a,int mallocType,bool show);
+void __Free(void*a,const char*description,bool show);
 

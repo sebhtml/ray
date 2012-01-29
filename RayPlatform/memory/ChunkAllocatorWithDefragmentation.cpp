@@ -19,7 +19,6 @@
 */
 
 #include <memory/ChunkAllocatorWithDefragmentation.h>
-#include <memory/malloc_types.h>
 #include <memory/allocator.h>
 
 #ifdef ASSERT
@@ -67,19 +66,19 @@ void ChunkAllocatorWithDefragmentation::destructor(){
 			if(lane->getGroup(group)->isOnline())
 				lane->getGroup(group)->destructor(m_show);
 		}
-		__Free(lane,RAY_MALLOC_TYPE_DEFRAG_LANE,m_show);
+		__Free(lane,"RAY_MALLOC_TYPE_DEFRAG_LANE",m_show);
 		m_defragmentationLanes[i]=NULL;
 	}
-	__Free(m_cellOccupancies,RAY_MALLOC_TYPE_DEFRAG_LANE,m_show);
-	__Free(m_cellContents,RAY_MALLOC_TYPE_DEFRAG_LANE,m_show);
+	__Free(m_cellOccupancies,"RAY_MALLOC_TYPE_DEFRAG_LANE",m_show);
+	__Free(m_cellContents,"RAY_MALLOC_TYPE_DEFRAG_LANE",m_show);
 	m_cellContents=NULL;
 	m_cellOccupancies=NULL;
 }
 
 /** constructor almost does nothing  */
 void ChunkAllocatorWithDefragmentation::constructor(int bytesPerElement,bool show){
-	m_cellContents=(uint16_t*)__Malloc(ELEMENTS_PER_GROUP*sizeof(uint16_t),RAY_MALLOC_TYPE_DEFRAG_LANE,show);
-	m_cellOccupancies=(uint8_t*)__Malloc(ELEMENTS_PER_GROUP*sizeof(uint8_t),RAY_MALLOC_TYPE_DEFRAG_LANE,show);
+	m_cellContents=(uint16_t*)__Malloc(ELEMENTS_PER_GROUP*sizeof(uint16_t),"RAY_MALLOC_TYPE_DEFRAG_LANE",show);
+	m_cellOccupancies=(uint8_t*)__Malloc(ELEMENTS_PER_GROUP*sizeof(uint8_t),"RAY_MALLOC_TYPE_DEFRAG_LANE",show);
 	m_show=show;
 	m_bytesPerElement=bytesPerElement;
 
@@ -115,7 +114,7 @@ void ChunkAllocatorWithDefragmentation::updateFastLane(int n){
 	/** we need to add a defragmentation lane because the existing lanes have
  * 	no group that can allocate the query */
 	
-	DefragmentationLane*defragmentationLane=(DefragmentationLane*)__Malloc(sizeof(DefragmentationLane),RAY_MALLOC_TYPE_DEFRAG_LANE,m_show);
+	DefragmentationLane*defragmentationLane=(DefragmentationLane*)__Malloc(sizeof(DefragmentationLane),"RAY_MALLOC_TYPE_DEFRAG_LANE",m_show);
 	defragmentationLane->constructor(m_numberOfLanes,m_bytesPerElement,m_show);
 
 	m_defragmentationLanes[m_numberOfLanes++]=defragmentationLane;

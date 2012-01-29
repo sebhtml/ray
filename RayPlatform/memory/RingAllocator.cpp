@@ -21,15 +21,17 @@
 
 #include <memory/RingAllocator.h>
 #include <memory/allocator.h>
+
+#include <string.h>
 #include <assert.h>
 #include <iostream>
 using namespace std;
 
-void RingAllocator::constructor(int chunks,int size,int type,bool show){
+void RingAllocator::constructor(int chunks,int size,const char*type,bool show){
 	resetCount();
 	m_chunks=chunks;
 	m_max=size;
-	m_type=type;
+	strcpy(m_type,type);
 	m_numberOfBytes=m_chunks*m_max;
 	m_memory=(uint8_t*)__Malloc(sizeof(uint8_t)*m_chunks*m_max,m_type,show);
 	m_current=0;

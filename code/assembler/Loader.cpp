@@ -28,7 +28,6 @@
 #include <assembler/Loader.h>
 #include <stdlib.h>
 #include <structures/Read.h>
-#include <memory/malloc_types.h>
 using namespace std;
 
 void Loader::constructor(const char*prefix,bool show){
@@ -38,7 +37,7 @@ void Loader::constructor(const char*prefix,bool show){
 	ostringstream prefixFull;
 	prefixFull<<prefix<<"_Loader";
 	m_show=show;
-	m_allocator.constructor(4194304,RAY_MALLOC_TYPE_LOADER_ALLOCATOR,m_show);
+	m_allocator.constructor(4194304,"RAY_MALLOC_TYPE_LOADER_ALLOCATOR",m_show);
 	m_reads.constructor(&m_allocator);
 }
 

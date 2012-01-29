@@ -466,7 +466,7 @@ class MyHashTable{
 /**
  * the type of memory allocation 
  */
-	int m_mallocType;
+	char m_mallocType[100];
 
 /**
  * show the allocation events ?
@@ -475,7 +475,7 @@ class MyHashTable{
 
 	/**
  * build the buckets and the hash */
-	void constructor(uint64_t buckets,int mallocType,bool showMalloc,int rank);
+	void constructor(uint64_t buckets,const char*mallocType,bool showMalloc,int rank);
 
 /*
  * find a key, but specify if the auxiliary table should be searched also */
@@ -497,7 +497,7 @@ public:
 	bool isAvailable(uint64_t a);
 	/**
  * build the buckets and the hash */
-	void constructor(int mallocType,bool showMalloc,int rank);
+	void constructor(const char*mallocType,bool showMalloc,int rank);
 
 	/**
  * find a seat given a key */
@@ -791,7 +791,7 @@ uint64_t MyHashTable<KEY,VALUE>::size(){
  * Allocate the theater and mark the buckets as available
  */
 template<class KEY,class VALUE>
-void MyHashTable<KEY,VALUE>::constructor(int mallocType,bool showMalloc,int rank){
+void MyHashTable<KEY,VALUE>::constructor(const char*mallocType,bool showMalloc,int rank){
 	/** build the hash with a default size */
 	uint64_t defaultSize=524288;
 	constructor(defaultSize,mallocType,showMalloc,rank);
@@ -806,7 +806,7 @@ void MyHashTable<KEY,VALUE>::toggleVerbosity(){
  * this is private actually 
  * */
 template<class KEY,class VALUE>
-void MyHashTable<KEY,VALUE>::constructor(uint64_t buckets,int mallocType,bool showMalloc,int rank){
+void MyHashTable<KEY,VALUE>::constructor(uint64_t buckets,const char*mallocType,bool showMalloc,int rank){
 	/** this is the maximum acceptable load factor. */
 	/** based on Figure 42 on page 531 of
  * 	The Art of Computer Programming, Second Edition, by Donald E. Knuth
@@ -822,7 +822,8 @@ void MyHashTable<KEY,VALUE>::constructor(uint64_t buckets,int mallocType,bool sh
 	m_verbose=false;
 	
 	m_allocator.constructor(sizeof(VALUE),showMalloc);
-	m_mallocType=mallocType;
+	strcpy(m_mallocType,mallocType);
+
 	m_showMalloc=showMalloc;
 
 	/* use the provided number of buckets */

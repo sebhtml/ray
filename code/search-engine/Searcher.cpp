@@ -20,7 +20,6 @@
 
 #include <search-engine/Searcher.h>
 #include <structures/Vertex.h>
-#include <memory/malloc_types.h>
 #include <core/OperatingSystem.h>
 #include <core/ComputeCore.h>
 
@@ -450,7 +449,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		m_writeDetailedFiles=false;
 
 		m_bufferedData.constructor(m_parameters->getSize(),MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
-			RAY_MALLOC_TYPE_KMER_ACADEMY_BUFFER,m_parameters->showMemoryAllocations(),KMER_U64_ARRAY_SIZE);
+			"RAY_MALLOC_TYPE_KMER_ACADEMY_BUFFER",m_parameters->showMemoryAllocations(),KMER_U64_ARRAY_SIZE);
 
 	// we have finished our part
 	}else if(m_contig == (int) m_contigs->size()){

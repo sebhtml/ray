@@ -22,7 +22,6 @@
 /* TODO: free sequence in ExtensionElement objects when they are not needed anymore */
 
 #include <core/constants.h>
-#include <memory/malloc_types.h>
 #include <string.h>
 #include <structures/StaticVector.h>
 #include <heuristics/TipWatchdog.h>
@@ -1622,7 +1621,7 @@ Chooser*chooser,OpenAssemblerChooser*oa
 	ostringstream prefixFull;
 	m_parameters=parameters;
 	prefixFull<<m_parameters->getMemoryPrefix()<<"_SeedExtender";
-	m_cacheAllocator.constructor(4194304,RAY_MALLOC_TYPE_SEED_EXTENDER_CACHE,m_parameters->showMemoryAllocations());
+	m_cacheAllocator.constructor(4194304,"RAY_MALLOC_TYPE_SEED_EXTENDER_CACHE",m_parameters->showMemoryAllocations());
 	m_inbox=inbox;
 	m_subgraph=subgraph;
 	m_dfsData=new DepthFirstSearchData;

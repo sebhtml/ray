@@ -20,7 +20,6 @@
 */
 
 #include <structures/Kmer.h>
-#include <memory/malloc_types.h>
 #include <assert.h>
 #include <graph/GridTable.h>
 #include <core/OperatingSystem.h>
@@ -33,7 +32,7 @@ void GridTable::constructor(int rank,Parameters*parameters){
 	m_parameters=parameters;
 	m_kmerAcademy.constructor(rank,m_parameters);
 	m_size=0;
-	m_hashTable.constructor(RAY_MALLOC_TYPE_GRID_TABLE,
+	m_hashTable.constructor("RAY_MALLOC_TYPE_GRID_TABLE",
 		m_parameters->showMemoryAllocations(),m_parameters->getRank());
 
 	m_inserted=false;

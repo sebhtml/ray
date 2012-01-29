@@ -546,8 +546,15 @@ void ComputeCore::constructor(int*argc,char***argv){
 
 	// configure the switchman
 	
-	getInbox()->constructor(getMaximumNumberOfAllocatedInboxMessages(),RAY_MALLOC_TYPE_INBOX_VECTOR,false);
-	getOutbox()->constructor(getMaximumNumberOfAllocatedOutboxMessages(),RAY_MALLOC_TYPE_OUTBOX_VECTOR,false);
+	getInbox()->constructor(getMaximumNumberOfAllocatedInboxMessages(),"RAY_MALLOC_TYPE_INBOX_VECTOR",false);
+	getOutbox()->constructor(getMaximumNumberOfAllocatedOutboxMessages(),"RAY_MALLOC_TYPE_OUTBOX_VECTOR",false);
+
+	m_inboxAllocator.constructor(getMaximumNumberOfAllocatedInboxMessages(),MAXIMUM_MESSAGE_SIZE_IN_BYTES,
+		"RAY_MALLOC_TYPE_INBOX_ALLOCATOR",false);
+
+	m_outboxAllocator.constructor(getMaximumNumberOfAllocatedOutboxMessages(),MAXIMUM_MESSAGE_SIZE_IN_BYTES,
+		"RAY_MALLOC_TYPE_OUTBOX_ALLOCATOR",false);
+
 
 	for(int i=0;i<MAXIMUM_NUMBER_OF_MASTER_HANDLERS;i++){
 		strcpy(MASTER_MODES[i],"UnnamedMasterMode");

@@ -36,7 +36,7 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class MyAllocator{
-	int m_type;
+	char m_type[101];
 	bool m_show;
 	vector<void*>m_chunks;
 	int m_currentPosition;
@@ -59,7 +59,7 @@ public:
 	/**
  * assign a size to the allocator.
  */
-	void constructor(int a,int type,bool show);
+	void constructor(int a,const char*type,bool show);
 
 /**
  * allocate memory

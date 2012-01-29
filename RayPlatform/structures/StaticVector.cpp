@@ -19,13 +19,15 @@
 
 */
 
-#include<structures/StaticVector.h>
-#include<assert.h>
+#include <structures/StaticVector.h>
 #include <memory/allocator.h>
 
+#include <assert.h>
+#include <string.h>
 
-void StaticVector::constructor(int size,int type,bool show){
-	m_type=type;
+void StaticVector::constructor(int size,const char* type,bool show){
+	strcpy(m_type,type);
+
 	#ifdef ASSERT
 	assert(size!=0);
 	#endif

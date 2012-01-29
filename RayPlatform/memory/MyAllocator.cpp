@@ -22,7 +22,6 @@
 #include <memory/allocator.h>
 #include <memory/MyAllocator.h>
 #include <stdlib.h>
-#include <memory/malloc_types.h>
 #include <core/OperatingSystem.h>
 #include <iostream>
 #include <stdio.h>
@@ -39,10 +38,10 @@ void MyAllocator::reset(){
 }
 
 /** the constructor does not allocate a chunk */
-void MyAllocator::constructor(int chunkSize,int type,bool show){
+void MyAllocator::constructor(int chunkSize,const char*type,bool show){
 	m_show=show;
 	m_CHUNK_SIZE=chunkSize; 
-	m_type=type;
+	strcpy(m_type,type);
 }
 
 /**  add a chunk of memory */

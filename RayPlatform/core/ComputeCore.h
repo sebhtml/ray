@@ -37,7 +37,6 @@
 #include <communication/VirtualCommunicator.h>
 #include <plugins/CorePlugin.h>
 #include <plugins/RegisteredPlugin.h>
-#include <memory/malloc_types.h>
 #include <core/OperatingSystem.h>
 
 #include <iostream>

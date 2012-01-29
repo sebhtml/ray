@@ -19,24 +19,27 @@
 
 */
 
-#include <assert.h>
 #include <communication/BufferedData.h>
 #include <memory/RingAllocator.h>
-#include <stdio.h>
 #include <memory/allocator.h>
-#include <stdlib.h>
 #include <structures/StaticVector.h>
+
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
 #include <iostream>
 using namespace std;
 
 // the capacity is measured in uint64_t
-void BufferedData::constructor(int numberOfRanks,int capacity,int type,bool show,int period){
+void BufferedData::constructor(int numberOfRanks,int capacity,const char*type,bool show,int period){
 	m_period=period;
 	m_flushedMessages=0;
 	m_count=0;
 	m_pushedMessages=0;
 	m_show=show;
-	m_type=type;
+	strcpy(m_type,type);
+
 	#ifdef DEBUG_BUFFERS
 	printf("BufferedData::constructor\n");
 	fflush(stdout);

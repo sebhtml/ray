@@ -25,7 +25,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <communication/mpi_tags.h>
-#include <memory/malloc_types.h>
 #include <communication/Message.h>
 #include <core/constants.h>
 #include <core/master_modes.h>
@@ -112,7 +111,7 @@ void Amos::call_RAY_SLAVE_MODE_AMOS(){
 		if(!m_ed->m_EXTENSION_reads_requested){
 			if(m_mode_send_vertices_sequence_id_position==0){
 				string seq=convertToString(&(m_ed->m_EXTENSION_contigs[m_contigId]),m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
-				char*qlt=(char*)__Malloc(seq.length()+1,RAY_MASTER_MODE_AMOS,m_parameters->showMemoryAllocations());
+				char*qlt=(char*)__Malloc(seq.length()+1,"RAY_MASTER_MODE_AMOS",m_parameters->showMemoryAllocations());
 				strcpy(qlt,seq.c_str());
 				for(int i=0;i<(int)strlen(qlt);i++){
 					qlt[i]='D';
@@ -138,7 +137,7 @@ void Amos::call_RAY_SLAVE_MODE_AMOS(){
 				#endif
 
 				m_ed->m_EXTENSION_currentPosition++;
-				__Free(qlt,RAY_MALLOC_TYPE_AMOS,m_parameters->showMemoryAllocations());
+				__Free(qlt,"RAY_MALLOC_TYPE_AMOS",m_parameters->showMemoryAllocations());
 			}
 
 			if(m_mode_send_vertices_sequence_id_position%10000==0){

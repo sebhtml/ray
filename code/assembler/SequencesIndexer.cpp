@@ -27,7 +27,6 @@
 #include <assembler/Loader.h>
 #include <core/common_functions.h>
 #include <communication/Message.h>
-#include <memory/malloc_types.h>
 
 void SequencesIndexer::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(){
 	if(!m_initiatedIterator){
@@ -218,10 +217,10 @@ SlaveMode*mode,
 	m_checkedCheckpoint=false;
 
 	int chunkSize=4194304; // 4 MiB
-	m_allocator.constructor(chunkSize,RAY_MALLOC_TYPE_OPTIMAL_READ_MARKERS,
+	m_allocator.constructor(chunkSize,"RAY_MALLOC_TYPE_OPTIMAL_READ_MARKERS",
 		m_parameters->showMemoryAllocations());
 
-	m_workAllocator.constructor(chunkSize,RAY_MALLOC_TYPE_OPTIMAL_READ_MARKER_WORKERS,
+	m_workAllocator.constructor(chunkSize,"RAY_MALLOC_TYPE_OPTIMAL_READ_MARKER_WORKERS",
 		m_parameters->showMemoryAllocations());
 
 	m_initiatedIterator=false;

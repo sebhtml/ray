@@ -21,7 +21,6 @@
 
 #include <communication/MessagesHandler.h>
 #include <memory/allocator.h>
-#include <memory/malloc_types.h>
 #include <core/OperatingSystem.h>
 #include <core/ComputeCore.h>
 
@@ -359,8 +358,8 @@ void MessagesHandler::initialiseMembers(){
 	// the ring itself  contain requests ready to receive messages
 	m_ringSize=m_size+16;
 
-	m_ring=(MPI_Request*)__Malloc(sizeof(MPI_Request)*m_ringSize,RAY_MALLOC_TYPE_PERSISTENT_MESSAGE_RING,false);
-	m_buffers=(uint8_t*)__Malloc(MAXIMUM_MESSAGE_SIZE_IN_BYTES*m_ringSize,RAY_MALLOC_TYPE_PERSISTENT_MESSAGE_BUFFERS,false);
+	m_ring=(MPI_Request*)__Malloc(sizeof(MPI_Request)*m_ringSize,"RAY_MALLOC_TYPE_PERSISTENT_MESSAGE_RING",false);
+	m_buffers=(uint8_t*)__Malloc(MAXIMUM_MESSAGE_SIZE_IN_BYTES*m_ringSize,"RAY_MALLOC_TYPE_PERSISTENT_MESSAGE_BUFFERS",false);
 	m_head=0;
 
 	// post a few receives.
@@ -371,8 +370,8 @@ void MessagesHandler::initialiseMembers(){
 		MPI_Start(m_ring+i);
 	}
 
-	m_heads= (MessageNode**) __Malloc(sizeof(MessageNode*)*m_size,RAY_MALLOC_TYPE_COMMUNICATION_LAYER,false);
-	m_tails= (MessageNode**) __Malloc(sizeof(MessageNode*)*m_size,RAY_MALLOC_TYPE_COMMUNICATION_LAYER,false);
+	m_heads= (MessageNode**) __Malloc(sizeof(MessageNode*)*m_size,"RAY_MALLOC_TYPE_COMMUNICATION_LAYER",false);
+	m_tails= (MessageNode**) __Malloc(sizeof(MessageNode*)*m_size,"RAY_MALLOC_TYPE_COMMUNICATION_LAYER",false);
 
 	for(int i=0;i<m_size;i++){
 		m_heads[i] = NULL;
@@ -387,16 +386,16 @@ void MessagesHandler::freeLeftovers(){
 		MPI_Cancel(m_ring+i);
 		MPI_Request_free(m_ring+i);
 	}
-	__Free(m_ring,RAY_MALLOC_TYPE_PERSISTENT_MESSAGE_RING,false);
+	__Free(m_ring,"RAY_MALLOC_TYPE_PERSISTENT_MESSAGE_RING",false);
 	m_ring=NULL;
-	__Free(m_buffers,RAY_MALLOC_TYPE_PERSISTENT_MESSAGE_BUFFERS,false);
+	__Free(m_buffers,"RAY_MALLOC_TYPE_PERSISTENT_MESSAGE_BUFFERS",false);
 	m_buffers=NULL;
 
-	__Free(m_messageStatistics,RAY_MALLOC_TYPE_MESSAGE_STATISTICS,false);
+	__Free(m_messageStatistics,"RAY_MALLOC_TYPE_MESSAGE_STATISTICS",false);
 	m_messageStatistics=NULL;
 
-	__Free(m_heads,RAY_MALLOC_TYPE_COMMUNICATION_LAYER,false);
-	__Free(m_tails,RAY_MALLOC_TYPE_COMMUNICATION_LAYER,false);
+	__Free(m_heads,"RAY_MALLOC_TYPE_COMMUNICATION_LAYER",false);
+	__Free(m_tails,"RAY_MALLOC_TYPE_COMMUNICATION_LAYER",false);
 	m_heads= NULL;
 	m_tails= NULL;
 	#endif
@@ -425,7 +424,7 @@ void MessagesHandler::constructor(int*argc,char***argv){
 void MessagesHandler::createBuffers(){
 
 	/** initialize message statistics to 0 */
-	m_messageStatistics=(uint64_t*)__Malloc(RAY_MPI_TAG_DUMMY*m_size*sizeof(uint64_t),RAY_MALLOC_TYPE_MESSAGE_STATISTICS,false);
+	m_messageStatistics=(uint64_t*)__Malloc(RAY_MPI_TAG_DUMMY*m_size*sizeof(uint64_t),"RAY_MALLOC_TYPE_MESSAGE_STATISTICS",false);
 	for(int rank=0;rank<m_size;rank++){
 		for(int tag=0;tag<RAY_MPI_TAG_DUMMY;tag++){
 			m_messageStatistics[rank*RAY_MPI_TAG_DUMMY+tag]=0;
@@ -437,8 +436,8 @@ void MessagesHandler::createBuffers(){
 
 	#ifdef CONFIG_PERSISTENT_COMMUNICATION
 	int chunkSize = 4194304; // 4 MiB
-	m_internalMessageAllocator.constructor(chunkSize,RAY_MALLOC_TYPE_COMMUNICATION_LAYER,false);
-	m_internalBufferAllocator.constructor(chunkSize,RAY_MALLOC_TYPE_COMMUNICATION_LAYER,false);
+	m_internalMessageAllocator.constructor(chunkSize,"RAY_MALLOC_TYPE_COMMUNICATION_LAYER",false);
+	m_internalBufferAllocator.constructor(chunkSize,"RAY_MALLOC_TYPE_COMMUNICATION_LAYER",false);
 
 	m_bufferedMessages=0;
 	#endif

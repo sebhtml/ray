@@ -34,7 +34,7 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class RingAllocator{
-	int m_type;
+	char m_type[100];
 	int m_count;
 
 /** the number of memory cells */
@@ -53,7 +53,7 @@ class RingAllocator{
 	int m_current;
 public:
 	RingAllocator();
-	void constructor(int chunks,int size,int type,bool show);
+	void constructor(int chunks,int size,const char*type,bool show);
 
 /** allocate memory */
 	void*allocate(int a);
