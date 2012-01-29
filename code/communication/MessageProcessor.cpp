@@ -3016,6 +3016,28 @@ void MessageProcessor::resolveSymbols(ComputeCore*core){
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION, RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION);
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_ASK_LIBRARY_DISTANCES, RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES);
 
+
+	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_GET_CONTIG_CHUNK,             RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY );
+	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_REQUEST_VERTEX_READS, RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY );
+	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_GET_READ_MATE,                RAY_MPI_TAG_GET_READ_MATE_REPLY );
+	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,      RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY );
+	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_ATTACH_SEQUENCE,              RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY );
+	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,     RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY );
+	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_HAS_PAIRED_READ,              RAY_MPI_TAG_HAS_PAIRED_READ_REPLY );
+	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_GET_READ_MARKERS,             RAY_MPI_TAG_GET_READ_MARKERS_REPLY );
+	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_GET_PATH_LENGTH,              RAY_MPI_TAG_GET_PATH_LENGTH_REPLY );
+	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION,   RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION_REPLY );
+	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_SCAFFOLDING_LINKS,            RAY_MPI_TAG_SCAFFOLDING_LINKS_REPLY );
+	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_CONTIG_INFO,                  RAY_MPI_TAG_CONTIG_INFO_REPLY );
+	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_ASK_READ_LENGTH,              RAY_MPI_TAG_ASK_READ_LENGTH_REPLY );
+	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,        RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY );
+	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_ASK_VERTEX_PATH,              RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY );
+	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_GET_PATH_VERTEX,              RAY_MPI_TAG_GET_PATH_VERTEX_REPLY );
+	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_VERTEX_INFO,                  RAY_MPI_TAG_VERTEX_INFO_REPLY );
+	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_REQUEST_READ_SEQUENCE,                RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY );
+	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES,        RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY );
+	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_TEST_NETWORK_MESSAGE,                 RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY );
+
 }
 
 

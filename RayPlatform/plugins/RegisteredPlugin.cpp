@@ -177,3 +177,6 @@ void RegisteredPlugin::addRegisteredMessageTagToSlaveModeSwitch(SlaveMode mode){
 	m_registeredMessageTagToSlaveModeSwitches.insert(mode);
 }
 
+void RegisteredPlugin::addRegisteredMessageTagReplyMessageTag(MessageTag tag){
+	m_registeredMessageTagReplyMessageTags.insert(tag);
+}

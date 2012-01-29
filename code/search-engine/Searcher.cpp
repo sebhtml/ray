@@ -2730,4 +2730,9 @@ void Searcher::resolveSymbols(ComputeCore*core){
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_SEQUENCE_BIOLOGICAL_ABUNDANCES, RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES);
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_ADD_COLORS, RAY_SLAVE_MODE_ADD_COLORS );
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_CONTIG_BIOLOGICAL_ABUNDANCES, RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES);
+
+
+	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_CONTIG_ABUNDANCE,             RAY_MPI_TAG_CONTIG_ABUNDANCE_REPLY );
+
+	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_GET_COVERAGE_AND_PATHS,       RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY );
 }

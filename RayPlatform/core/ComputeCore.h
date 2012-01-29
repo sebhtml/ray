@@ -276,8 +276,8 @@ public:
  * this tells the core which slave mode to switch to when receiving a particular message tag **/
 	void setMessageTagToSlaveModeSwitch(PluginHandle plugin,MessageTag tag,SlaveMode mode);
 
-
-
+/** sets the reply tag for a message tag **/
+	void setMessageTagReplyMessageTag(PluginHandle plugin,MessageTag tag,MessageTag reply);
 
 };
 

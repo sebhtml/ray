@@ -122,14 +122,6 @@ void MachineHelper::configureVirtualCommunicator(VirtualCommunicator*virtualComm
 
 	#undef ITEM
 
-	/* set reply-map for other tags too */
-
-	#define ITEM(x,y) \
-	virtualCommunicator->setReplyType(x,y);
-
-	#include <reply_tags.txt>
-
-	#undef ITEM
 }
 
 void MachineHelper::constructor(int argc,char**argv,Parameters*parameters,

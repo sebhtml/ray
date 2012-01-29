@@ -1213,3 +1213,15 @@ void ComputeCore::setMessageTagToSlaveModeSwitch(PluginHandle plugin,MessageTag 
 	m_plugins[plugin].addRegisteredMessageTagToSlaveModeSwitch(tag);
 
 }
+
+void ComputeCore::setMessageTagReplyMessageTag(PluginHandle plugin,MessageTag tag,MessageTag reply){
+	if(!validationPluginAllocated(plugin))
+		return;
+
+	if(!validationMessageTagOwnership(plugin,tag))
+		return;
+
+	m_virtualCommunicator.setReplyType(tag,reply);
+
+	m_plugins[plugin].addRegisteredMessageTagReplyMessageTag(tag);
+}
