@@ -117,6 +117,7 @@ void RegisteredPlugin::print(ostream*stream){
 	(*stream)<<"   -> with a registered MessageTagHandler: "<<m_registeredMessageTagHandlers.size()<<endl;
 	(*stream)<<"   -> with a registered MessageTag-to-SlaveMode switch: "<<m_registeredMessageTagToSlaveModeSwitches.size()<<endl;
 	(*stream)<<"   -> with a registered reply MessageTag: "<<m_registeredMessageTagReplyTags.size()<<endl;
+	(*stream)<<"   -> with a registered size: "<<m_registeredMessageTagSizes.size()<<endl;
 	(*stream)<<endl;
 
 	(*stream)<<"Resolved symbols"<<endl;
@@ -127,10 +128,6 @@ void RegisteredPlugin::print(ostream*stream){
 	(*stream)<<"-> Resolved MessageTag symbols: "<<m_resolvedMessageTags.size()<<endl;
 
 	(*stream)<<endl;
-}
-
-void RegisteredPlugin::addRegisteredMessageTagReplyTag(MessageTag handle){
-	m_registeredMessageTagReplyTags.insert(handle);
 }
 
 void RegisteredPlugin::addResolvedMessageTag(MessageTag handle){
@@ -179,4 +176,8 @@ void RegisteredPlugin::addRegisteredMessageTagToSlaveModeSwitch(SlaveMode mode){
 
 void RegisteredPlugin::addRegisteredMessageTagReplyMessageTag(MessageTag tag){
 	m_registeredMessageTagReplyMessageTags.insert(tag);
+}
+
+void RegisteredPlugin::addRegisteredMessageTagSize(MessageTag tag){
+	m_registeredMessageTagSizes.insert(tag);
 }

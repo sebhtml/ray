@@ -3038,6 +3038,23 @@ void MessageProcessor::resolveSymbols(ComputeCore*core){
 	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES,        RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY );
 	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_TEST_NETWORK_MESSAGE,                 RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY );
 
+	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_GET_CONTIG_CHUNK,             MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t) );
+	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_REQUEST_VERTEX_READS,                 max(5,KMER_U64_ARRAY_SIZE+1) );
+	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_GET_READ_MATE,                4 );
+	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,      KMER_U64_ARRAY_SIZE );
+	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_ATTACH_SEQUENCE,              KMER_U64_ARRAY_SIZE+4 );
+	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,     max(2,KMER_U64_ARRAY_SIZE));
+	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_HAS_PAIRED_READ,              1 );
+	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_GET_READ_MARKERS,             3+2*KMER_U64_ARRAY_SIZE );
+	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_GET_PATH_LENGTH,              1 );
+	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION,   max(KMER_U64_ARRAY_SIZE,5) );
+	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_SCAFFOLDING_LINKS,            7 );
+	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_CONTIG_INFO,                  2);
+	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_ASK_READ_LENGTH,              3 );
+	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE, KMER_U64_ARRAY_SIZE );
+	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_ASK_VERTEX_PATH, (KMER_U64_ARRAY_SIZE + 2) );
+	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_GET_PATH_VERTEX, max(2,KMER_U64_ARRAY_SIZE) );
+
 }
 
 

@@ -57,6 +57,7 @@ class RegisteredPlugin{
 	set<MessageTag> m_registeredMessageTagReplyTags;
 	set<MessageTag> m_registeredMessageTagToSlaveModeSwitches;
 	set<MessageTag> m_registeredMessageTagReplyMessageTags;
+	set<MessageTag> m_registeredMessageTagSizes;
 
 public:
 
@@ -86,10 +87,10 @@ public:
 	void addAllocatedMessageTag(MessageTag messageTag);
 	void addRegisteredMessageTagHandler(MessageTag messageTag);
 	void addRegisteredMessageTagSymbol(MessageTag messageTag);
-	void addRegisteredMessageTagReplyTag(MessageTag messageTag);
 	void addResolvedMessageTag(MessageTag handle);
 	void addRegisteredMessageTagToSlaveModeSwitch(MessageTag handle);
 	void addRegisteredMessageTagReplyMessageTag(MessageTag tag);
+	void addRegisteredMessageTagSize(MessageTag tag);
 
 	bool hasSlaveMode(SlaveMode mode);
 	bool hasMasterMode(MasterMode mode);

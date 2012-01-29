@@ -977,18 +977,6 @@ void ComputeCore::printPlugins(string directory){
 
 }
 
-void ComputeCore::setMessageTagReplyTag(PluginHandle plugin,MessageTag tag,MessageTag replyTag){
-	if(!validationPluginAllocated(plugin))
-		return;
-
-	if(!validationMessageTagOwnership(plugin,tag))
-		return;
-
-	m_plugins[plugin].addRegisteredMessageTagReplyTag(tag);
-
-	m_virtualCommunicator.setReplyType(tag,replyTag);
-}
-
 SlaveMode ComputeCore::getSlaveModeFromSymbol(PluginHandle plugin,const char*symbol){
 	if(!validationPluginAllocated(plugin))
 		return INVALID_HANDLE;
@@ -1225,3 +1213,16 @@ void ComputeCore::setMessageTagReplyMessageTag(PluginHandle plugin,MessageTag ta
 
 	m_plugins[plugin].addRegisteredMessageTagReplyMessageTag(tag);
 }
+
+void ComputeCore::setMessageTagSize(PluginHandle plugin,MessageTag tag,int size){
+	if(!validationPluginAllocated(plugin))
+		return;
+
+	if(!validationMessageTagOwnership(plugin,tag))
+		return;
+
+	m_virtualCommunicator.setElementsPerQuery(tag,size);
+
+	m_plugins[plugin].addRegisteredMessageTagSize(tag);
+}
+

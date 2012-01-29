@@ -104,26 +104,6 @@ void MachineHelper::configureSwitchMan(SwitchMan*switchMan){
 	}
 }
 
-void MachineHelper::configureVirtualCommunicator(VirtualCommunicator*virtualCommunicator){
-
-	#ifdef ASSERT
-	assert(virtualCommunicator!=NULL);
-	#endif
-
-	/** configure the virtual communicator. */
-	/* ## concatenates 2 symbols */
-
-	#define ITEM(x,y) \
-	virtualCommunicator->setElementsPerQuery( x, y );
-
-	/* define the number of words for particular message tags */
-
-	#include <tag_sizes.txt>
-
-	#undef ITEM
-
-}
-
 void MachineHelper::constructor(int argc,char**argv,Parameters*parameters,
 SwitchMan*switchMan,RingAllocator*outboxAllocator,
 		StaticVector*outbox,bool*aborted,

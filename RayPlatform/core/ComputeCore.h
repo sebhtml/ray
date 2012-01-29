@@ -257,6 +257,7 @@ public:
 	SlaveMode getSlaveModeFromSymbol(PluginHandle plugin,const char*symbol);
 
 
+
 /** allocate a handle for a message tag **/
 	MessageTag allocateMessageTagHandle(PluginHandle plugin, MessageTag desiredValue);
 	
@@ -269,9 +270,6 @@ public:
 /** add a message tag handler */
 	void setMessageTagObjectHandler(PluginHandle plugin,MessageTag tag,MessageTagHandler*object);
 
-/** set the reply tag for a message tag **/
-	void setMessageTagReplyTag(PluginHandle plugin,MessageTag messageTag,MessageTag replyTag);
-
 /** sets the slave switch for a slave mode
  * this tells the core which slave mode to switch to when receiving a particular message tag **/
 	void setMessageTagToSlaveModeSwitch(PluginHandle plugin,MessageTag tag,SlaveMode mode);
@@ -279,6 +277,8 @@ public:
 /** sets the reply tag for a message tag **/
 	void setMessageTagReplyMessageTag(PluginHandle plugin,MessageTag tag,MessageTag reply);
 
+/** sets the number of elements for a message tag **/
+	void setMessageTagSize(PluginHandle plugin,MessageTag tag,int size);
 };
 
 #endif

@@ -733,7 +733,6 @@ void Machine::registerPlugins(){
 	
 	m_computeCore.resolveSymbols();
 
-	m_helper.configureVirtualCommunicator(m_virtualCommunicator);
 	m_helper.configureSwitchMan(m_switchMan);
 
 	cout<<endl;

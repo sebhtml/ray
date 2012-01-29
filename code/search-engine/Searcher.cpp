@@ -2735,4 +2735,19 @@ void Searcher::resolveSymbols(ComputeCore*core){
 	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_CONTIG_ABUNDANCE,             RAY_MPI_TAG_CONTIG_ABUNDANCE_REPLY );
 
 	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_GET_COVERAGE_AND_PATHS,       RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY );
+
+	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_CONTIG_ABUNDANCE, 4);
+
+/** data fields:
+ *   - k-mer (KMER_U64_ARRAY_SIZE)
+ *     - sequence position (1)
+ *       - coverage (1)
+ *         - number of paths (1)
+ *           - path index (1)
+ *             - total number of paths (1)
+ *               - list of paths (n*2)
+ *               **/
+	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_GET_COVERAGE_AND_PATHS, KMER_U64_ARRAY_SIZE+1+1+1+3+4*3 );
+
+	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_ADD_KMER_COLOR, KMER_U64_ARRAY_SIZE+1 );
 }
