@@ -11,6 +11,7 @@
 
 MPICXX = mpicxx
 LD = ld
+AR = ar
 RM = rm
 CXXFLAGS= -O3 -Wall -ansi
 
@@ -18,9 +19,6 @@ CXXFLAGS= -O3 -Wall -ansi
 
 core-y += assembler/ray_main.o core/Machine.o 
 core-y += core/Parameters.o core/common_functions.o
-
-ray_core.o: $(core-y)
-	$(LD) -r $^ -o $@
 
 obj-y += $(core-y)
 
@@ -31,9 +29,6 @@ VerticesExtractor-y += assembler/VerticesExtractor.o
 VerticesExtractor-y += graph/GridTable.o graph/GridTableIterator.o
 VerticesExtractor-y += structures/Vertex.o
 
-ray_plugin_VerticesExtractor.o: $(VerticesExtractor-y)
-	$(LD) -r $^ -o $@
-
 obj-y += $(VerticesExtractor-y)
 
 PLUGINS-y += ray_plugin_VerticesExtractor.o
@@ -42,9 +37,6 @@ PLUGINS-y += ray_plugin_VerticesExtractor.o
 
 EdgePurger-y += assembler/EdgePurger_adapters.o
 EdgePurger-y += assembler/EdgePurger.o assembler/EdgePurgerWorker.o
-
-ray_plugin_EdgePurger.o: $(EdgePurger-y)
-	$(LD) -r $^ -o $@
 
 obj-y += $(EdgePurger-y)
 
@@ -57,9 +49,6 @@ KmerAcademyBuilder-y += assembler/KmerAcademyBuilder.o
 KmerAcademyBuilder-y +=  structures/BloomFilter.o
 KmerAcademyBuilder-y += structures/Kmer.o
 KmerAcademyBuilder-y += graph/KmerAcademy.o graph/KmerAcademyIterator.o
-
-ray_plugin_KmerAcademyBuilder.o: $(KmerAcademyBuilder-y)
-	$(LD) -r $^ -o $@
 
 obj-y += $(KmerAcademyBuilder-y)
 
@@ -76,10 +65,7 @@ SequencesLoader-$(HAVE_LIBBZ2) += compression/BzReader.o
 SequencesLoader-$(HAVE_LIBBZ2) += format/FastqBz2Loader.o 
 SequencesLoader-$(HAVE_LIBZ) += format/FastqGzLoader.o 
 
-ray_plugin_SequencesLoader.o: $(SequencesLoader-y)
-	$(LD) -r $^ -o $@
-
-obj-y += $(KmerAcademyBuilder-y)
+obj-y += $(SequencesLoader-y)
 
 PLUGINS-y += ray_plugin_SequencesLoader.o
 
@@ -89,9 +75,6 @@ FusionTaskCreator-y += assembler/FusionTaskCreator_adapters.o
 FusionTaskCreator-y += assembler/FusionWorker.o 
 FusionTaskCreator-y += assembler/FusionTaskCreator.o 
 
-ray_plugin_FusionTaskCreator.o: $(FusionTaskCreator-y)
-	$(LD) -r $^ -o $@
-
 obj-y += $(FusionTaskCreator-y)
 
 PLUGINS-y += ray_plugin_FusionTaskCreator.o
@@ -100,9 +83,6 @@ PLUGINS-y += ray_plugin_FusionTaskCreator.o
 
 FusionData-y += assembler/FusionData_adapters.o
 FusionData-y += assembler/FusionData.o 
-
-ray_plugin_FusionData.o: $(FusionData-y)
-	$(LD) -r $^ -o $@
 
 obj-y += $(FusionData-y)
 
@@ -118,8 +98,6 @@ Scaffolder-y += scaffolder/ScaffoldingAlgorithm.o
 Scaffolder-y += scaffolder/ScaffoldingVertex.o
 Scaffolder-y += scaffolder/ScaffoldingEdge.o
 
-ray_plugin_Scaffolder.o: $(Scaffolder-y)
-	$(LD) -r $^ -o $@
 
 obj-y += $(Scaffolder-y)
 
@@ -135,9 +113,6 @@ Searcher-y += search-engine/ContigHit.o
 Searcher-y += search-engine/ColorSet.o
 Searcher-y += search-engine/VirtualKmerColor.o
 
-ray_plugin_Searcher.o: $(Searcher-y)
-	$(LD) -r $^ -o $@
-
 obj-y += $(Searcher-y)
 
 PLUGINS-y += ray_plugin_Searcher.o
@@ -148,9 +123,6 @@ CoverageGatherer-y += graph/CoverageGatherer.o
 CoverageGatherer-y += graph/CoverageGatherer_adapters.o
 CoverageGatherer-y += graph/CoverageDistribution.o 
 
-ray_plugin_CoverageGatherer.o: $(CoverageGatherer-y)
-	$(LD) -r $^ -o $@
-
 obj-y += $(CoverageGatherer-y)
 
 PLUGINS-y += ray_plugin_CoverageGatherer.o
@@ -160,9 +132,6 @@ PLUGINS-y += ray_plugin_CoverageGatherer.o
 Partitioner-y += assembler/Partitioner.o
 Partitioner-y += assembler/Partitioner_adapters.o
 
-ray_plugin_Partitioner.o: $(Partitioner-y)
-	$(LD) -r $^ -o $@
-
 obj-y += $(Partitioner-y)
 
 PLUGINS-y += ray_plugin_Partitioner.o
@@ -171,9 +140,6 @@ PLUGINS-y += ray_plugin_Partitioner.o
 
 MessageProcessor-y += communication/MessageProcessor_adapters.o
 MessageProcessor-y += communication/MessageProcessor.o
-
-ray_plugin_MessageProcessor.o: $(MessageProcessor-y)
-	$(LD) -r $^ -o $@
 
 obj-y += $(MessageProcessor-y)
 
@@ -186,9 +152,6 @@ SequencesIndexer-y += assembler/SequencesIndexer.o
 SequencesIndexer-y += assembler/IndexerWorker.o 
 SequencesIndexer-y +=  structures/PairedRead.o structures/ReadAnnotation.o 
 
-ray_plugin_SequencesIndexer.o: $(SequencesIndexer-y)
-	$(LD) -r $^ -o $@
-
 obj-y += $(SequencesIndexer-y)
 
 PLUGINS-y += ray_plugin_SequencesIndexer.o
@@ -198,9 +161,6 @@ PLUGINS-y += ray_plugin_SequencesIndexer.o
 Amos-y += format/Amos_adapters.o
 Amos-y += format/Amos.o
 
-ray_plugin_Amos.o: $(Amos-y)
-	$(LD) -r $^ -o $@
-
 obj-y += $(Amos-y)
 
 PLUGINS-y += ray_plugin_Amos.o
@@ -209,9 +169,6 @@ PLUGINS-y += ray_plugin_Amos.o
 
 NetworkTest-y += communication/NetworkTest_adapters.o
 NetworkTest-y += communication/NetworkTest.o
-
-ray_plugin_NetworkTest.o: $(NetworkTest-y)
-	$(LD) -r $^ -o $@
 
 obj-y += $(NetworkTest-y)
 
@@ -223,9 +180,6 @@ JoinerTaskCreator-y += assembler/JoinerTaskCreator_adapters.o
 JoinerTaskCreator-y += assembler/JoinerWorker.o 
 JoinerTaskCreator-y += assembler/JoinerTaskCreator.o
 
-ray_plugin_JoinerTaskCreator.o: $(JoinerTaskCreator-y)
-	$(LD) -r $^ -o $@
-
 obj-y += $(JoinerTaskCreator-y)
 
 PLUGINS-y += ray_plugin_JoinerTaskCreator.o
@@ -234,9 +188,6 @@ PLUGINS-y += ray_plugin_JoinerTaskCreator.o
 
 MachineHelper-y += core/MachineHelper_adapters.o
 MachineHelper-y += core/MachineHelper.o
-
-ray_plugin_MachineHelper.o: $(MachineHelper-y)
-	$(LD) -r $^ -o $@
 
 obj-y += $(MachineHelper-y)
 
@@ -248,9 +199,6 @@ SeedingData-y += structures/AssemblySeed.o assembler/SeedWorker.o
 SeedingData-y += assembler/SeedingData_adapters.o
 SeedingData-y += assembler/SeedingData.o 
 
-ray_plugin_SeedingData.o: $(SeedingData-y)
-	$(LD) -r $^ -o $@
-
 obj-y += $(SeedingData-y)
 
 PLUGINS-y += ray_plugin_SeedingData.o
@@ -260,9 +208,6 @@ PLUGINS-y += ray_plugin_SeedingData.o
 Library-y += assembler/Library_adapters.o
 Library-y += pairs/LibraryPeakFinder.o assembler/LibraryWorker.o 
 Library-y += assembler/Library.o 
-
-ray_plugin_Library.o: $(Library-y)
-	$(LD) -r $^ -o $@
 
 obj-y += $(Library-y)
 
@@ -280,25 +225,28 @@ SeedExtender-y += assembler/ExtensionElement.o
 SeedExtender-y += assembler/DepthFirstSearchData.o 
 SeedExtender-y += assembler/ExtensionData.o 
 
-ray_plugin_SeedExtender.o: $(SeedExtender-y)
-	$(LD) -r $^ -o $@
-
 obj-y += $(SeedExtender-y)
 
 PLUGINS-y += ray_plugin_SeedExtender.o
+
 
 #assume that we want to use Ray Platform shipped with Ray Application
 ifndef $(RAY_PLATFORM)
 	RAY_PLATFORM=../RayPlatform
 endif
 
-all: ray_core.o $(PLUGINS-y)
+TARGET=TheRayGenomeAssembler.a
+
+all: $(TARGET) 
+
+$(TARGET): $(obj-y)
+	$(AR) rcs $@ $^
 
 # inference rule
 %.o: %.cpp
 	$(MPICXX) $(CXXFLAGS) -I$(RAY_PLATFORM) -I. -I./scripting -c -o $@ $<
 
 clean:
-	$(RM) -f ray_core.o $(PLUGINS-y) $(obj-y)
+	$(RM) -f ray_core.o $(PLUGINS-y) $(obj-y) $(TARGET)
 
 

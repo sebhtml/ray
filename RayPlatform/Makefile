@@ -8,7 +8,7 @@ include common.mk
 all: libRayPlatform.a
 
 libRayPlatform.a: $(obj-y)
-	$(AR) rcs  libRayPlatform.a $(obj-y)
+	$(AR) rcs $@ $^
 
 # inference rule
 %.o: %.cpp

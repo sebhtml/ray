@@ -1,7 +1,7 @@
 VERSION = 2
 PATCHLEVEL = 0
 SUBLEVEL = 0
-EXTRAVERSION = -beta6
+EXTRAVERSION = -rc1
 NAME = Dark Astrocyte of Knowledge
 
 # number of cores to use for compilation
@@ -158,7 +158,6 @@ MPICXX = $(MPICXX-y)
 # the target is Ray
 all: Ray
 
-
 showOptions: 
 	@echo ""
 	@echo "Compilation options (you can change them of course)"
@@ -183,12 +182,12 @@ showOptions:
 	@touch showOptions
 	
 # how to make Ray
-Ray: showOptions RayPlatform/libRayPlatform.a code/ray_core.o
-	$(MPICXX) $(LDFLAGS)  code/*.o RayPlatform/libRayPlatform.a -o $@
+Ray: showOptions RayPlatform/libRayPlatform.a code/TheRayGenomeAssembler.a
+	$(MPICXX) $(LDFLAGS)  code/TheRayGenomeAssembler.a RayPlatform/libRayPlatform.a -o $@
 	@echo $(PREFIX) > PREFIX
 	@echo Ray > TARGETS
 
-code/ray_core.o:
+code/TheRayGenomeAssembler.a:
 	@cd code; make MPICXX="$(MPICXX)" CXXFLAGS="$(CXXFLAGS)" -j $(J) all ; cd ..
 
 RayPlatform/libRayPlatform.a:
