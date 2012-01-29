@@ -201,7 +201,7 @@ public:
 
 	void destructor();
 
-	void printPlugins(ostream*stream);
+	void printPlugins(string directory);
 
 /********************************************************************/
 /** the methods below are available for plugin registration **/

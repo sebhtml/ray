@@ -947,25 +947,34 @@ void ComputeCore::setPluginName(PluginHandle plugin,const char*name){
 	cout<<"Rank "<<m_rank<<" loaded plugin "<<m_plugins[plugin].getPluginName()<<", handle is "<<plugin<<endl;
 }
 
-void ComputeCore::printPlugins(ostream*stream){
-	(*stream)<<"Number of plugins: "<<m_plugins.size()<<endl;
-	(*stream)<<endl;
+void ComputeCore::printPlugins(string directory){
 
-	int j=0;
+/*
+	ostringstream list;
+	list<<directory<<"/list.txt";
+
+	ofstream f1(list.str().c_str());
 
 	for(map<PluginHandle,RegisteredPlugin>::iterator i=m_plugins.begin();
 		i!=m_plugins.end();i++){
-		(*stream)<<endl;
-		(*stream)<<"+++ PluginHandle: "<<i->first<<endl;
-		(*stream)<<endl;
-		i->second.print(stream);
-		(*stream)<<"---------------------------------------"<<endl;
-		(*stream)<<endl;
-		j++;
+		
+		f1<<i->first<<"	plugin_"<<i->second.getPluginName()<<endl;
 	}
 
-	(*stream)<<"ComputeCore: finished printing plugins"<<endl;
-	(*stream)<<endl;
+	f1.close();
+*/
+
+	for(map<PluginHandle,RegisteredPlugin>::iterator i=m_plugins.begin();
+		i!=m_plugins.end();i++){
+
+		ostringstream file;
+		file<<directory<<"/plugin_"<<i->second.getPluginName()<<".txt";
+
+		ofstream f2(file.str().c_str());
+		i->second.print(&f2);
+		f2.close();
+	}
+
 }
 
 void ComputeCore::setMessageTagReplyTag(PluginHandle plugin,MessageTag tag,MessageTag replyTag){

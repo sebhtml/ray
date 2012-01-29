@@ -20,6 +20,10 @@
 */
 
 #include <plugins/RegisteredPlugin.h>
+#include <core/slave_modes.h>
+#include <core/master_modes.h>
+#include <communication/mpi_tags.h>
+
 #include <iostream>
 using namespace std;
 
@@ -88,39 +92,39 @@ string RegisteredPlugin::getPluginName(){
 
 void RegisteredPlugin::print(ostream*stream){
 
-	(*stream)<<" Name: "<<getPluginName()<<endl;
-	(*stream)<<" Description: "<<getPluginDescription()<<endl;
-	(*stream)<<" Authors: "<<getPluginAuthors()<<endl;
-	(*stream)<<" License: "<<getPluginLicense()<<endl;
+	(*stream)<<"Name: "<<getPluginName()<<endl;
+	(*stream)<<"Description: "<<getPluginDescription()<<endl;
+	(*stream)<<"Authors: "<<getPluginAuthors()<<endl;
+	(*stream)<<"License: "<<getPluginLicense()<<endl;
 	(*stream)<<endl;
 	
-	(*stream)<<" Allocated handles"<<endl;
+	(*stream)<<"Allocated handles"<<endl;
 	(*stream)<<endl;
 
-	(*stream)<<"  -> Allocated MasterMode handles: "<<m_allocatedMasterModes.size()<<endl;
-	(*stream)<<"     -> with a registered symbol: "<<m_registeredMasterModeSymbols.size()<<endl;
-	(*stream)<<"     -> with a registered MasterModeHandler: "<<m_registeredMasterModeHandlers.size()<<endl;
-	(*stream)<<"     -> with a registered MasterMode-to-MessageTag switch: "<<m_registeredMasterModeToMessageTagSwitches.size()<<endl;
+	(*stream)<<"-> Allocated MasterMode handles: "<<m_allocatedMasterModes.size()<<endl;
+	(*stream)<<"   -> with a registered symbol: "<<m_registeredMasterModeSymbols.size()<<endl;
+	(*stream)<<"   -> with a registered MasterModeHandler: "<<m_registeredMasterModeHandlers.size()<<endl;
+	(*stream)<<"   -> with a registered MasterMode-to-MessageTag switch: "<<m_registeredMasterModeToMessageTagSwitches.size()<<endl;
 	(*stream)<<endl;
 
-	(*stream)<<"  -> Allocated SlaveMode handles: "<<m_allocatedSlaveModes.size()<<endl;
-	(*stream)<<"     -> with a registered symbol: "<<m_registeredSlaveModeSymbols.size()<<endl;
-	(*stream)<<"     -> with a registered SlaveModeHandler: "<<m_registeredSlaveModeHandlers.size()<<endl;
+	(*stream)<<"-> Allocated SlaveMode handles: "<<m_allocatedSlaveModes.size()<<endl;
+	(*stream)<<"   -> with a registered symbol: "<<m_registeredSlaveModeSymbols.size()<<endl;
+	(*stream)<<"   -> with a registered SlaveModeHandler: "<<m_registeredSlaveModeHandlers.size()<<endl;
 	(*stream)<<endl;
 
-	(*stream)<<"  -> Allocated MessageTag handles: "<<m_allocatedMessageTags.size()<<endl;
-	(*stream)<<"     -> with a registered symbol: "<<m_registeredMessageTagSymbols.size()<<endl;
-	(*stream)<<"     -> with a registered MessageTagHandler: "<<m_registeredMessageTagHandlers.size()<<endl;
-	(*stream)<<"     -> with a registered MessageTag-to-SlaveMode switch: "<<m_registeredMessageTagToSlaveModeSwitches.size()<<endl;
-	(*stream)<<"     -> with a registered reply MessageTag: "<<m_registeredMessageTagReplyTags.size()<<endl;
+	(*stream)<<"-> Allocated MessageTag handles: "<<m_allocatedMessageTags.size()<<endl;
+	(*stream)<<"   -> with a registered symbol: "<<m_registeredMessageTagSymbols.size()<<endl;
+	(*stream)<<"   -> with a registered MessageTagHandler: "<<m_registeredMessageTagHandlers.size()<<endl;
+	(*stream)<<"   -> with a registered MessageTag-to-SlaveMode switch: "<<m_registeredMessageTagToSlaveModeSwitches.size()<<endl;
+	(*stream)<<"   -> with a registered reply MessageTag: "<<m_registeredMessageTagReplyTags.size()<<endl;
 	(*stream)<<endl;
 
-	(*stream)<<" Resolved symbols"<<endl;
+	(*stream)<<"Resolved symbols"<<endl;
 
 	(*stream)<<endl;
-	(*stream)<<"  -> Resolved MasterMode symbols: "<<m_resolvedMasterModes.size()<<endl;
-	(*stream)<<"  -> Resolved SlaveMode symbols: "<<m_resolvedSlaveModes.size()<<endl;
-	(*stream)<<"  -> Resolved MessageTag symbols: "<<m_resolvedMessageTags.size()<<endl;
+	(*stream)<<"-> Resolved MasterMode symbols: "<<m_resolvedMasterModes.size()<<endl;
+	(*stream)<<"-> Resolved SlaveMode symbols: "<<m_resolvedSlaveModes.size()<<endl;
+	(*stream)<<"-> Resolved MessageTag symbols: "<<m_resolvedMessageTags.size()<<endl;
 
 	(*stream)<<endl;
 }

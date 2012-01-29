@@ -747,13 +747,6 @@ void Machine::registerPlugins(){
 		string file=directory.str();
 		createDirectory(file.c_str());
 	
-		ostringstream fileName;
-		fileName<<m_parameters.getPrefix()<<"/Plugins/"<<m_parameters.getRank()<<".Plugins.txt";
-
-		ofstream f(fileName.str().c_str());
-
-		m_computeCore.printPlugins(&f);
-
-		f.close();
+		m_computeCore.printPlugins(file);
 	}
 }
