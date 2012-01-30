@@ -1,6 +1,6 @@
 
-NetworkTest-y += communication/NetworkTest_adapters.o
-NetworkTest-y += communication/NetworkTest.o
+NetworkTest-y += plugin_NetworkTest/NetworkTest_adapters.o
+NetworkTest-y += plugin_NetworkTest/NetworkTest.o
 
 obj-y += $(NetworkTest-y)
 

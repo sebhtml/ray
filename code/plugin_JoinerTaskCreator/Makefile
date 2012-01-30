@@ -1,7 +1,7 @@
 
-JoinerTaskCreator-y += assembler/JoinerTaskCreator_adapters.o
-JoinerTaskCreator-y += assembler/JoinerWorker.o 
-JoinerTaskCreator-y += assembler/JoinerTaskCreator.o
+JoinerTaskCreator-y += plugin_JoinerTaskCreator/JoinerTaskCreator_adapters.o
+JoinerTaskCreator-y += plugin_JoinerTaskCreator/JoinerWorker.o 
+JoinerTaskCreator-y += plugin_JoinerTaskCreator/JoinerTaskCreator.o
 
 obj-y += $(JoinerTaskCreator-y)
 

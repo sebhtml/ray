@@ -23,10 +23,10 @@
 #define _EdgePurgerWorker_H
 
 #include <stdint.h>
-#include <structures/Kmer.h>
-#include <structures/Vertex.h>
+#include <plugin_KmerAcademyBuilder/Kmer.h>
+#include <plugin_VerticesExtractor/Vertex.h>
 #include <memory/RingAllocator.h>
-#include <graph/GridTable.h>
+#include <plugin_VerticesExtractor/GridTable.h>
 #include <application_core/Parameters.h>
 #include <structures/StaticVector.h>
 #include <scheduling/Worker.h>

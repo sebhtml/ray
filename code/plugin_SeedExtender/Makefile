@@ -1,13 +1,13 @@
 
-SeedExtender-y += assembler/SeedExtender_adapters.o
-SeedExtender-y += assembler/SeedExtender.o
-SeedExtender-y +=  structures/Direction.o
-SeedExtender-y += assembler/VertexMessenger.o assembler/ReadFetcher.o
-SeedExtender-y += heuristics/BubbleTool.o heuristics/Chooser.o heuristics/OpenAssemblerChooser.o
-SeedExtender-y += heuristics/TipWatchdog.o heuristics/NovaEngine.o
-SeedExtender-y += assembler/ExtensionElement.o 
-SeedExtender-y += assembler/DepthFirstSearchData.o 
-SeedExtender-y += assembler/ExtensionData.o 
+SeedExtender-y += plugin_SeedExtender/SeedExtender_adapters.o
+SeedExtender-y += plugin_SeedExtender/SeedExtender.o
+SeedExtender-y +=  plugin_SeedExtender/Direction.o
+SeedExtender-y += plugin_SeedExtender/VertexMessenger.o plugin_SeedExtender/ReadFetcher.o
+SeedExtender-y += plugin_SeedExtender/BubbleTool.o plugin_SeedExtender/Chooser.o plugin_SeedExtender/OpenAssemblerChooser.o
+SeedExtender-y += plugin_SeedExtender/TipWatchdog.o plugin_SeedExtender/NovaEngine.o
+SeedExtender-y += plugin_SeedExtender/ExtensionElement.o 
+SeedExtender-y += plugin_SeedExtender/DepthFirstSearchData.o 
+SeedExtender-y += plugin_SeedExtender/ExtensionData.o 
 
 obj-y += $(SeedExtender-y)
 

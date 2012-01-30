@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include <communication/mpi_tags.h>
 #include <communication/Message.h>
-#include <core/constants.h>
+#include <application_core/constants.h>
 #include <core/master_modes.h>
 #include <core/slave_modes.h>
 #include <application_core/Parameters.h>

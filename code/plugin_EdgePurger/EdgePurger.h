@@ -26,8 +26,8 @@
 #include <memory/RingAllocator.h>
 #include <structures/StaticVector.h>
 #include <communication/VirtualCommunicator.h>
-#include <graph/GridTable.h>
-#include <graph/GridTableIterator.h>
+#include <plugin_VerticesExtractor/GridTable.h>
+#include <plugin_VerticesExtractor/GridTableIterator.h>
 #include <profiling/Profiler.h>
 #include <profiling/Derivative.h>
 #include <plugin_EdgePurger/EdgePurgerWorker.h>

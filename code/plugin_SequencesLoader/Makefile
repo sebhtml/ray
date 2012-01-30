@@ -1,12 +1,12 @@
 
-SequencesLoader-y += assembler/SequencesLoader_adapters.o 
-SequencesLoader-y += assembler/SequencesLoader.o 
-SequencesLoader-y += structures/Read.o  structures/ArrayOfReads.o 
-SequencesLoader-y += format/ColorSpaceDecoder.o format/ColorSpaceLoader.o 
-SequencesLoader-y += format/FastaLoader.o format/FastqLoader.o format/SffLoader.o  assembler/Loader.o 
-SequencesLoader-$(HAVE_LIBBZ2) += compression/BzReader.o  
-SequencesLoader-$(HAVE_LIBBZ2) += format/FastqBz2Loader.o 
-SequencesLoader-$(HAVE_LIBZ) += format/FastqGzLoader.o 
+SequencesLoader-y += plugin_SequencesLoader/SequencesLoader_adapters.o 
+SequencesLoader-y += plugin_SequencesLoader/SequencesLoader.o 
+SequencesLoader-y += plugin_SequencesLoader/Read.o  plugin_SequencesLoader/ArrayOfReads.o 
+SequencesLoader-y += plugin_SequencesLoader/ColorSpaceDecoder.o plugin_SequencesLoader/ColorSpaceLoader.o 
+SequencesLoader-y += plugin_SequencesLoader/FastaLoader.o plugin_SequencesLoader/FastqLoader.o plugin_SequencesLoader/SffLoader.o  plugin_SequencesLoader/Loader.o 
+SequencesLoader-$(HAVE_LIBBZ2) += plugin_SequencesLoader/BzReader.o  
+SequencesLoader-$(HAVE_LIBBZ2) += plugin_SequencesLoader/FastqBz2Loader.o 
+SequencesLoader-$(HAVE_LIBZ) += plugin_SequencesLoader/FastqGzLoader.o 
 
 obj-y += $(SequencesLoader-y)
 

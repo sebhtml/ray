@@ -1,7 +1,7 @@
 
-Library-y += assembler/Library_adapters.o
-Library-y += pairs/LibraryPeakFinder.o assembler/LibraryWorker.o 
-Library-y += assembler/Library.o 
+Library-y += plugin_Library/Library_adapters.o
+Library-y += plugin_Library/LibraryPeakFinder.o plugin_Library/LibraryWorker.o 
+Library-y += plugin_Library/Library.o 
 
 obj-y += $(Library-y)
 

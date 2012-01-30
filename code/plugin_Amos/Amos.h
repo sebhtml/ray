@@ -24,10 +24,10 @@
 #include <application_core/Parameters.h>
 #include <structures/StaticVector.h>
 #include <memory/RingAllocator.h>
-#include <assembler/FusionData.h>
-#include <assembler/ExtensionData.h>
-#include <scaffolder/Scaffolder.h>
-#include <assembler/ReadFetcher.h>
+#include <plugin_FusionData/FusionData.h>
+#include <plugin_SeedExtender/ExtensionData.h>
+#include <plugin_Scaffolder/Scaffolder.h>
+#include <plugin_SeedExtender/ReadFetcher.h>
 #include <communication/VirtualCommunicator.h>
 #include <core/ComputeCore.h>
 

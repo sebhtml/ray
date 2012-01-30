@@ -18,19 +18,19 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include <graph/GridTableIterator.h>
+#include <plugin_VerticesExtractor/GridTableIterator.h>
 #include <cryptography/crypto.h>
 #include <core/OperatingSystem.h>
 #include <structures/SplayNode.h>
 #include <application_core/Machine.h>
 #include <core/statistics.h>
-#include <assembler/VerticesExtractor.h>
+#include <plugin_VerticesExtractor/VerticesExtractor.h>
 #include <profiling/Profiler.h>
 #include <sstream>
 #include <communication/Message.h>
 #include <time.h>
-#include <heuristics/TipWatchdog.h>
-#include <heuristics/BubbleTool.h>
+#include <plugin_SeedExtender/TipWatchdog.h>
+#include <plugin_SeedExtender/BubbleTool.h>
 #include <assert.h>
 #include <application_core/common_functions.h>
 #include <iostream>
@@ -38,10 +38,10 @@
 #include <plugin_CoverageGatherer/CoverageDistribution.h>
 #include <string.h>
 #include <structures/SplayTreeIterator.h>
-#include <structures/Read.h>
-#include <assembler/Loader.h>
+#include <plugin_SequencesLoader/Read.h>
+#include <plugin_SequencesLoader/Loader.h>
 #include <memory/MyAllocator.h>
-#include <core/constants.h>
+#include <application_core/constants.h>
 #include <algorithm>
 
 using namespace std;

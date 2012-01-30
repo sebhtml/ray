@@ -22,7 +22,7 @@
 #include <cryptography/crypto.h>
 #include <assert.h>
 #include <stdio.h>
-#include <core/constants.h>
+#include <application_core/constants.h>
 #include <time.h>
 #include <vector>
 #include <fstream>

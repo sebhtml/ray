@@ -24,7 +24,7 @@
 
 #include <application_core/Parameters.h>
 #include <structures/StaticVector.h>
-#include <graph/GridTable.h>
+#include <plugin_VerticesExtractor/GridTable.h>
 #include <memory/RingAllocator.h>
 #include <core/ComputeCore.h>
 

@@ -1,10 +1,10 @@
 
 
-KmerAcademyBuilder-y += assembler/KmerAcademyBuilder_adapters.o
-KmerAcademyBuilder-y += assembler/KmerAcademyBuilder.o
-KmerAcademyBuilder-y +=  structures/BloomFilter.o
-KmerAcademyBuilder-y += structures/Kmer.o
-KmerAcademyBuilder-y += graph/KmerAcademy.o graph/KmerAcademyIterator.o
+KmerAcademyBuilder-y += plugin_KmerAcademyBuilder/KmerAcademyBuilder_adapters.o
+KmerAcademyBuilder-y += plugin_KmerAcademyBuilder/KmerAcademyBuilder.o
+KmerAcademyBuilder-y +=  plugin_KmerAcademyBuilder/BloomFilter.o
+KmerAcademyBuilder-y += plugin_KmerAcademyBuilder/Kmer.o
+KmerAcademyBuilder-y += plugin_KmerAcademyBuilder/KmerAcademy.o plugin_KmerAcademyBuilder/KmerAcademyIterator.o
 
 obj-y += $(KmerAcademyBuilder-y)
 

@@ -1,6 +1,6 @@
 
-MessageProcessor-y += communication/MessageProcessor_adapters.o
-MessageProcessor-y += communication/MessageProcessor.o
+MessageProcessor-y += plugin_MessageProcessor/MessageProcessor_adapters.o
+MessageProcessor-y += plugin_MessageProcessor/MessageProcessor.o
 
 obj-y += $(MessageProcessor-y)
 

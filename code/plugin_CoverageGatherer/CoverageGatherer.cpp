@@ -29,10 +29,10 @@
 #include <core/slave_modes.h>
 #include <stdio.h>
 #include <stdint.h>
-#include <core/constants.h>
-#include <structures/Kmer.h>
-#include <graph/GridTableIterator.h>
-#include <graph/KmerAcademyIterator.h>
+#include <application_core/constants.h>
+#include <plugin_KmerAcademyBuilder/Kmer.h>
+#include <plugin_VerticesExtractor/GridTableIterator.h>
+#include <plugin_KmerAcademyBuilder/KmerAcademyIterator.h>
 #include <sstream>
 using namespace std;
 

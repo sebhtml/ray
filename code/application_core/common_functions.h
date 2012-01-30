@@ -23,9 +23,9 @@ see <http://www.gnu.org/licenses/>
 #define _common_functions
 
 #include <memory/allocator.h>
-#include <structures/Kmer.h>
+#include <plugin_KmerAcademyBuilder/Kmer.h>
 #include <string>
-#include <core/constants.h>
+#include <application_core/constants.h>
 #include <core/slave_modes.h>
 #include <iostream>
 #include <core/master_modes.h>

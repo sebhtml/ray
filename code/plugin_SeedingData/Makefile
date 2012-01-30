@@ -1,7 +1,7 @@
 
-SeedingData-y += structures/AssemblySeed.o assembler/SeedWorker.o
-SeedingData-y += assembler/SeedingData_adapters.o
-SeedingData-y += assembler/SeedingData.o 
+SeedingData-y += plugin_SeedingData/AssemblySeed.o plugin_SeedingData/SeedWorker.o
+SeedingData-y += plugin_SeedingData/SeedingData_adapters.o
+SeedingData-y += plugin_SeedingData/SeedingData.o 
 
 obj-y += $(SeedingData-y)
 
