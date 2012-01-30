@@ -16,23 +16,17 @@
     You have received a copy of the GNU General Public License
     along with this program (gpl-3.0.txt).  
 	see <http://www.gnu.org/licenses/>
+
 */
 
-#include <format/Amos.h>
-#include <format/Amos_adapters.h>
+#include <plugin_CoverageGatherer/CoverageGatherer.h>
+#include <plugin_CoverageGatherer/CoverageGatherer_adapters.h>
 
-void Adapter_RAY_SLAVE_MODE_AMOS::setObject(Amos*object){
+void Adapter_RAY_SLAVE_MODE_SEND_DISTRIBUTION::setObject(CoverageGatherer*object){
 	m_object=object;
 }
 
-void Adapter_RAY_SLAVE_MODE_AMOS::call(){
-	m_object->call_RAY_SLAVE_MODE_AMOS();
+void Adapter_RAY_SLAVE_MODE_SEND_DISTRIBUTION::call(){
+	m_object->call_RAY_SLAVE_MODE_SEND_DISTRIBUTION();
 }
 
-void Adapter_RAY_MASTER_MODE_AMOS::setObject(Amos*object){
-	m_object=object;
-}
-
-void Adapter_RAY_MASTER_MODE_AMOS::call(){
-	m_object->call_RAY_MASTER_MODE_AMOS();
-}

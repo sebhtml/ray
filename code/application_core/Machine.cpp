@@ -35,7 +35,7 @@
 #include <application_core/common_functions.h>
 #include <iostream>
 #include <fstream>
-#include <graph/CoverageDistribution.h>
+#include <plugin_CoverageGatherer/CoverageDistribution.h>
 #include <string.h>
 #include <structures/SplayTreeIterator.h>
 #include <structures/Read.h>

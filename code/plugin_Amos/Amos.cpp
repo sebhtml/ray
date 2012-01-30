@@ -19,7 +19,7 @@
 
 */
 
-#include <format/Amos.h>
+#include <plugin_Amos/Amos.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>

@@ -1,7 +1,7 @@
 
-CoverageGatherer-y += graph/CoverageGatherer.o 
-CoverageGatherer-y += graph/CoverageGatherer_adapters.o
-CoverageGatherer-y += graph/CoverageDistribution.o 
+CoverageGatherer-y += plugin_CoverageGatherer/CoverageGatherer.o 
+CoverageGatherer-y += plugin_CoverageGatherer/CoverageGatherer_adapters.o
+CoverageGatherer-y += plugin_CoverageGatherer/CoverageDistribution.o 
 
 obj-y += $(CoverageGatherer-y)
 

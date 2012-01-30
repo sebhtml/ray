@@ -36,7 +36,7 @@
 #include <vector>
 using namespace std;
 
-#include <format/Amos_adapters.h>
+#include <plugin_Amos/Amos_adapters.h>
 
 /**
  * AMOS specification is available : http://sourceforge.net/apps/mediawiki/amos/index.php?title=AMOS

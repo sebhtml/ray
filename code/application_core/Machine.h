@@ -43,7 +43,7 @@
 #include <assembler/SeedExtender.h>
 #include <assembler/SequencesLoader.h>
 #include <assembler/Library.h>
-#include <graph/CoverageGatherer.h>
+#include <plugin_CoverageGatherer/CoverageGatherer.h>
 #include <communication/MessageProcessor.h>
 #include <structures/Vertex.h>
 #include <heuristics/OpenAssemblerChooser.h>
@@ -55,7 +55,7 @@
 #include <application_core/Parameters.h>
 #include <memory/MyAllocator.h>
 #include <assembler/VerticesExtractor.h>
-#include <format/Amos.h>
+#include <plugin_Amos/Amos.h>
 #include <set>
 #include <time.h>
 #include <assembler/KmerAcademyBuilder.h>

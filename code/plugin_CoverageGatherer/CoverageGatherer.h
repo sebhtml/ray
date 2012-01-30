@@ -32,7 +32,7 @@
 #include <map>
 using namespace std;
 
-#include <graph/CoverageGatherer_adapters.h>
+#include <plugin_CoverageGatherer/CoverageGatherer_adapters.h>
 
 /**
  * \author Sébastien Boisvert

@@ -47,7 +47,7 @@
 #include <graph/GridTable.h>
 #include <assembler/KmerAcademyBuilder.h>
 #include <communication/VirtualCommunicator.h>
-#include <graph/CoverageGatherer.h>
+#include <plugin_CoverageGatherer/CoverageGatherer.h>
 #include <assembler/SequencesIndexer.h>
 #include <core/ComputeCore.h>
 

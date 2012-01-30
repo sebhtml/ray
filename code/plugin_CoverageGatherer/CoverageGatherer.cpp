@@ -19,7 +19,7 @@
 
 */
 
-#include <graph/CoverageGatherer.h>
+#include <plugin_CoverageGatherer/CoverageGatherer.h>
 #include <core/OperatingSystem.h>
 #ifdef ASSERT
 #include <assert.h>

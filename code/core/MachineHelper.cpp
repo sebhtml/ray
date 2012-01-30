@@ -21,7 +21,7 @@
 #include <core/MachineHelper.h>
 #include <communication/mpi_tags.h>
 #include <communication/Message.h>
-#include <graph/CoverageDistribution.h>
+#include <plugin_CoverageGatherer/CoverageDistribution.h>
 #include <profiling/Profiler.h>
 #include <heuristics/Chooser.h>
 

@@ -19,7 +19,7 @@
 
 */
 
-#include <graph/CoverageDistribution.h>
+#include <plugin_CoverageGatherer/CoverageDistribution.h>
 #include <iostream>
 #include <fstream>
 #include <map>
