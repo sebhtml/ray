@@ -370,20 +370,20 @@ void VerticesExtractor::registerPlugin(ComputeCore*core){
 	core->setPluginAuthors(plugin,"Sébastien Boisvert");
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
-	RAY_SLAVE_MODE_EXTRACT_VERTICES=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_EXTRACT_VERTICES);
+	RAY_SLAVE_MODE_EXTRACT_VERTICES=core->allocateSlaveModeHandle(plugin);
 	m_adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_EXTRACT_VERTICES, &m_adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_EXTRACT_VERTICES,"RAY_SLAVE_MODE_EXTRACT_VERTICES");
 
-	RAY_MPI_TAG_WRITE_KMERS=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_WRITE_KMERS);
+	RAY_MPI_TAG_WRITE_KMERS=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_WRITE_KMERS,"RAY_MPI_TAG_WRITE_KMERS");
 
-	RAY_MPI_TAG_WRITE_KMERS_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_WRITE_KMERS_REPLY);
+	RAY_MPI_TAG_WRITE_KMERS_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_WRITE_KMERS_REPLY,"RAY_MPI_TAG_WRITE_KMERS_REPLY");
 
-	RAY_MPI_TAG_BUILD_GRAPH=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_BUILD_GRAPH);
+	RAY_MPI_TAG_BUILD_GRAPH=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_BUILD_GRAPH,"RAY_MPI_TAG_BUILD_GRAPH");
-	RAY_MPI_TAG_VERTEX_INFO_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_VERTEX_INFO_REPLY);
+	RAY_MPI_TAG_VERTEX_INFO_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_VERTEX_INFO_REPLY,"RAY_MPI_TAG_VERTEX_INFO_REPLY");
 
 }

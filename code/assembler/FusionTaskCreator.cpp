@@ -172,12 +172,12 @@ void FusionTaskCreator::registerPlugin(ComputeCore*core){
 	core->setPluginAuthors(plugin,"Sébastien Boisvert");
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
-	RAY_SLAVE_MODE_FUSION=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_FUSION);
+	RAY_SLAVE_MODE_FUSION=core->allocateSlaveModeHandle(plugin);
 	m_adapter_RAY_SLAVE_MODE_FUSION.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_FUSION, &m_adapter_RAY_SLAVE_MODE_FUSION);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_FUSION,"RAY_SLAVE_MODE_FUSION");
 
-	RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY);
+	RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY,"RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY");
 
 }

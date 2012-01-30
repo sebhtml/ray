@@ -292,25 +292,24 @@ void SequencesIndexer::registerPlugin(ComputeCore*core){
 	core->setPluginAuthors(plugin,"Sébastien Boisvert");
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
-	RAY_SLAVE_MODE_INDEX_SEQUENCES=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_INDEX_SEQUENCES);
+	RAY_SLAVE_MODE_INDEX_SEQUENCES=core->allocateSlaveModeHandle(plugin);
 	m_adapter_RAY_SLAVE_MODE_INDEX_SEQUENCES.setObject(this);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_INDEX_SEQUENCES,
-		&m_adapter_RAY_SLAVE_MODE_INDEX_SEQUENCES);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_INDEX_SEQUENCES,&m_adapter_RAY_SLAVE_MODE_INDEX_SEQUENCES);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_INDEX_SEQUENCES,"RAY_SLAVE_MODE_INDEX_SEQUENCES");
 
-	RAY_MPI_TAG_GET_READ_MARKERS_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GET_READ_MARKERS_REPLY);
+	RAY_MPI_TAG_GET_READ_MARKERS_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_READ_MARKERS_REPLY,"RAY_MPI_TAG_GET_READ_MARKERS_REPLY");
 
-	RAY_MPI_TAG_GET_READ_MATE_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GET_READ_MATE_REPLY);
+	RAY_MPI_TAG_GET_READ_MATE_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_READ_MATE_REPLY,"RAY_MPI_TAG_GET_READ_MATE_REPLY");
 
-	RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY);
+	RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY,"RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY");
 
-	RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY);
+	RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY,"RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY");
 
-	RAY_MPI_TAG_VERTEX_READS_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_VERTEX_READS_REPLY);
+	RAY_MPI_TAG_VERTEX_READS_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_VERTEX_READS_REPLY,"RAY_MPI_TAG_VERTEX_READS_REPLY");
 
 }

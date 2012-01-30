@@ -1356,20 +1356,20 @@ void Scaffolder::registerPlugin(ComputeCore*core){
 	core->setPluginAuthors(plugin,"Sébastien Boisvert");
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
-	RAY_SLAVE_MODE_SCAFFOLDER=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_SCAFFOLDER);
+	RAY_SLAVE_MODE_SCAFFOLDER=core->allocateSlaveModeHandle(plugin);
 	m_adapter_RAY_SLAVE_MODE_SCAFFOLDER.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_SCAFFOLDER, &m_adapter_RAY_SLAVE_MODE_SCAFFOLDER);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_SCAFFOLDER,"RAY_SLAVE_MODE_SCAFFOLDER");
 
-	RAY_MASTER_MODE_WRITE_SCAFFOLDS=core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_WRITE_SCAFFOLDS);
+	RAY_MASTER_MODE_WRITE_SCAFFOLDS=core->allocateMasterModeHandle(plugin);
 	m_adapter_RAY_MASTER_MODE_WRITE_SCAFFOLDS.setObject(this);
 	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_WRITE_SCAFFOLDS, &m_adapter_RAY_MASTER_MODE_WRITE_SCAFFOLDS);
 	core->setMasterModeSymbol(plugin,RAY_MASTER_MODE_WRITE_SCAFFOLDS,"RAY_MASTER_MODE_WRITE_SCAFFOLDS");
 
-	RAY_MPI_TAG_SCAFFOLDING_LINKS_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_SCAFFOLDING_LINKS_REPLY);
+	RAY_MPI_TAG_SCAFFOLDING_LINKS_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_SCAFFOLDING_LINKS_REPLY,"RAY_MPI_TAG_SCAFFOLDING_LINKS_REPLY");
 
-	RAY_MPI_TAG_START_SCAFFOLDER=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_START_SCAFFOLDER);
+	RAY_MPI_TAG_START_SCAFFOLDER=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_START_SCAFFOLDER,"RAY_MPI_TAG_START_SCAFFOLDER");
 }
 

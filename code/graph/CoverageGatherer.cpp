@@ -207,21 +207,21 @@ void CoverageGatherer::registerPlugin(ComputeCore*core){
 	core->setPluginAuthors(plugin,"Sébastien Boisvert");
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
-	RAY_SLAVE_MODE_SEND_DISTRIBUTION=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_SEND_DISTRIBUTION);
+	RAY_SLAVE_MODE_SEND_DISTRIBUTION=core->allocateSlaveModeHandle(plugin);
 	m_adapter_RAY_SLAVE_MODE_SEND_DISTRIBUTION.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_SEND_DISTRIBUTION, &m_adapter_RAY_SLAVE_MODE_SEND_DISTRIBUTION);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_SEND_DISTRIBUTION,"RAY_SLAVE_MODE_SEND_DISTRIBUTION");
 
-	RAY_MPI_TAG_COVERAGE_DATA_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_COVERAGE_DATA_REPLY);
+	RAY_MPI_TAG_COVERAGE_DATA_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_COVERAGE_DATA_REPLY,"RAY_MPI_TAG_COVERAGE_DATA_REPLY");
 
-	RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION_REPLY);
+	RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION_REPLY,"RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION_REPLY");
 
-	RAY_MPI_TAG_GET_COVERAGE_AND_MARK_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GET_COVERAGE_AND_MARK_REPLY);
+	RAY_MPI_TAG_GET_COVERAGE_AND_MARK_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_COVERAGE_AND_MARK_REPLY,"RAY_MPI_TAG_GET_COVERAGE_AND_MARK_REPLY");
 
-	RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY);
+	RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY,"RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY");
 
 }

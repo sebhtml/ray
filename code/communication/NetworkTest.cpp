@@ -336,29 +336,29 @@ void NetworkTest::registerPlugin(ComputeCore*core){
 	core->setPluginAuthors(plugin,"Sébastien Boisvert");
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
-	RAY_SLAVE_MODE_TEST_NETWORK=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_TEST_NETWORK);
+	RAY_SLAVE_MODE_TEST_NETWORK=core->allocateSlaveModeHandle(plugin);
 	m_adapter_RAY_SLAVE_MODE_TEST_NETWORK.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_TEST_NETWORK, &m_adapter_RAY_SLAVE_MODE_TEST_NETWORK);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_TEST_NETWORK,"RAY_SLAVE_MODE_TEST_NETWORK");
 
-	RAY_MASTER_MODE_TEST_NETWORK=core->allocateMasterModeHandle(plugin,RAY_MASTER_MODE_TEST_NETWORK);
+	RAY_MASTER_MODE_TEST_NETWORK=core->allocateMasterModeHandle(plugin);
 	m_adapter_RAY_MASTER_MODE_TEST_NETWORK.setObject(this);
 	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_TEST_NETWORK, &m_adapter_RAY_MASTER_MODE_TEST_NETWORK);
 	core->setMasterModeSymbol(plugin,RAY_MASTER_MODE_TEST_NETWORK,"RAY_MASTER_MODE_TEST_NETWORK");
 
-	RAY_MPI_TAG_TEST_NETWORK=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_TEST_NETWORK);
+	RAY_MPI_TAG_TEST_NETWORK=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_TEST_NETWORK,"RAY_MPI_TAG_TEST_NETWORK");
 
-	RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY);
+	RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY,"RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY");
 
-	RAY_MPI_TAG_TEST_NETWORK_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_TEST_NETWORK_REPLY);
+	RAY_MPI_TAG_TEST_NETWORK_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_TEST_NETWORK_REPLY,"RAY_MPI_TAG_TEST_NETWORK_REPLY");
 
-	RAY_MPI_TAG_TEST_NETWORK_REPLY_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_TEST_NETWORK_REPLY_REPLY);
+	RAY_MPI_TAG_TEST_NETWORK_REPLY_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_TEST_NETWORK_REPLY_REPLY,"RAY_MPI_TAG_TEST_NETWORK_REPLY_REPLY");
 
-	RAY_MPI_TAG_TEST_NETWORK_WRITE_DATA=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_TEST_NETWORK_WRITE_DATA);
+	RAY_MPI_TAG_TEST_NETWORK_WRITE_DATA=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_TEST_NETWORK_WRITE_DATA,"RAY_MPI_TAG_TEST_NETWORK_WRITE_DATA");
 
 }

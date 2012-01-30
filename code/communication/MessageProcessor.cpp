@@ -2291,547 +2291,547 @@ void MessageProcessor::registerPlugin(ComputeCore*core){
 	core->setPluginAuthors(plugin,"Sébastien Boisvert");
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
-	RAY_MPI_TAG_LOAD_SEQUENCES=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_LOAD_SEQUENCES);
+	RAY_MPI_TAG_LOAD_SEQUENCES=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_LOAD_SEQUENCES.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_LOAD_SEQUENCES, &m_adapter_RAY_MPI_TAG_LOAD_SEQUENCES);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_LOAD_SEQUENCES,"RAY_MPI_TAG_LOAD_SEQUENCES");
 
-	RAY_MPI_TAG_CONTIG_INFO=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_CONTIG_INFO);
+	RAY_MPI_TAG_CONTIG_INFO=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_CONTIG_INFO.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_CONTIG_INFO, &m_adapter_RAY_MPI_TAG_CONTIG_INFO);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_CONTIG_INFO,"RAY_MPI_TAG_CONTIG_INFO");
 
-	RAY_MPI_TAG_SCAFFOLDING_LINKS=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_SCAFFOLDING_LINKS);
+	RAY_MPI_TAG_SCAFFOLDING_LINKS=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_SCAFFOLDING_LINKS.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_SCAFFOLDING_LINKS, &m_adapter_RAY_MPI_TAG_SCAFFOLDING_LINKS);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_SCAFFOLDING_LINKS,"RAY_MPI_TAG_SCAFFOLDING_LINKS");
 
-	RAY_MPI_TAG_GET_READ_MARKERS=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GET_READ_MARKERS);
+	RAY_MPI_TAG_GET_READ_MARKERS=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_GET_READ_MARKERS.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_GET_READ_MARKERS, &m_adapter_RAY_MPI_TAG_GET_READ_MARKERS);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_READ_MARKERS,"RAY_MPI_TAG_GET_READ_MARKERS");
 
-	RAY_MPI_TAG_GET_READ_MATE=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GET_READ_MATE);
+	RAY_MPI_TAG_GET_READ_MATE=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_GET_READ_MATE.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_GET_READ_MATE, &m_adapter_RAY_MPI_TAG_GET_READ_MATE);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_READ_MATE,"RAY_MPI_TAG_GET_READ_MATE");
 
-	RAY_MPI_TAG_REQUEST_VERTEX_READS=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_REQUEST_VERTEX_READS);
+	RAY_MPI_TAG_REQUEST_VERTEX_READS=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_REQUEST_VERTEX_READS.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_REQUEST_VERTEX_READS, &m_adapter_RAY_MPI_TAG_REQUEST_VERTEX_READS);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_REQUEST_VERTEX_READS,"RAY_MPI_TAG_REQUEST_VERTEX_READS");
 
-	RAY_MPI_TAG_SET_WORD_SIZE=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_SET_WORD_SIZE);
+	RAY_MPI_TAG_SET_WORD_SIZE=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_SET_WORD_SIZE.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_SET_WORD_SIZE, &m_adapter_RAY_MPI_TAG_SET_WORD_SIZE);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_SET_WORD_SIZE,"RAY_MPI_TAG_SET_WORD_SIZE");
 
-	RAY_MPI_TAG_VERTEX_READS=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_VERTEX_READS);
+	RAY_MPI_TAG_VERTEX_READS=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_VERTEX_READS.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_VERTEX_READS, &m_adapter_RAY_MPI_TAG_VERTEX_READS);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_VERTEX_READS,"RAY_MPI_TAG_VERTEX_READS");
 
-	RAY_MPI_TAG_VERTEX_INFO=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_VERTEX_INFO);
+	RAY_MPI_TAG_VERTEX_INFO=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_VERTEX_INFO.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_VERTEX_INFO, &m_adapter_RAY_MPI_TAG_VERTEX_INFO);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_VERTEX_INFO,"RAY_MPI_TAG_VERTEX_INFO");
 
-	RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT);
+	RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT, &m_adapter_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,"RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT");
 
-	RAY_MPI_TAG_VERTEX_READS_FROM_LIST=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_VERTEX_READS_FROM_LIST);
+	RAY_MPI_TAG_VERTEX_READS_FROM_LIST=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_VERTEX_READS_FROM_LIST.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_VERTEX_READS_FROM_LIST, &m_adapter_RAY_MPI_TAG_VERTEX_READS_FROM_LIST);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_VERTEX_READS_FROM_LIST,"RAY_MPI_TAG_VERTEX_READS_FROM_LIST");
 
-	RAY_MPI_TAG_START_INDEXING_SEQUENCES=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_START_INDEXING_SEQUENCES);
+	RAY_MPI_TAG_START_INDEXING_SEQUENCES=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_START_INDEXING_SEQUENCES.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_START_INDEXING_SEQUENCES, &m_adapter_RAY_MPI_TAG_START_INDEXING_SEQUENCES);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_START_INDEXING_SEQUENCES,"RAY_MPI_TAG_START_INDEXING_SEQUENCES");
 
-	RAY_MPI_TAG_SEQUENCES_READY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_SEQUENCES_READY);
+	RAY_MPI_TAG_SEQUENCES_READY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_SEQUENCES_READY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_SEQUENCES_READY, &m_adapter_RAY_MPI_TAG_SEQUENCES_READY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_SEQUENCES_READY,"RAY_MPI_TAG_SEQUENCES_READY");
 
-	RAY_MPI_TAG_VERTICES_DATA=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_VERTICES_DATA);
+	RAY_MPI_TAG_VERTICES_DATA=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_VERTICES_DATA.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_VERTICES_DATA, &m_adapter_RAY_MPI_TAG_VERTICES_DATA);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_VERTICES_DATA,"RAY_MPI_TAG_VERTICES_DATA");
 
-	RAY_MPI_TAG_VERTICES_DATA_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_VERTICES_DATA_REPLY);
+	RAY_MPI_TAG_VERTICES_DATA_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_VERTICES_DATA_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_VERTICES_DATA_REPLY, &m_adapter_RAY_MPI_TAG_VERTICES_DATA_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_VERTICES_DATA_REPLY,"RAY_MPI_TAG_VERTICES_DATA_REPLY");
 
-	RAY_MPI_TAG_PURGE_NULL_EDGES=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_PURGE_NULL_EDGES);
+	RAY_MPI_TAG_PURGE_NULL_EDGES=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_PURGE_NULL_EDGES.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_PURGE_NULL_EDGES, &m_adapter_RAY_MPI_TAG_PURGE_NULL_EDGES);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_PURGE_NULL_EDGES,"RAY_MPI_TAG_PURGE_NULL_EDGES");
 
-	RAY_MPI_TAG_VERTICES_DISTRIBUTED=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_VERTICES_DISTRIBUTED);
+	RAY_MPI_TAG_VERTICES_DISTRIBUTED=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_VERTICES_DISTRIBUTED.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_VERTICES_DISTRIBUTED, &m_adapter_RAY_MPI_TAG_VERTICES_DISTRIBUTED);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_VERTICES_DISTRIBUTED,"RAY_MPI_TAG_VERTICES_DISTRIBUTED");
 
-	RAY_MPI_TAG_OUT_EDGES_DATA_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_OUT_EDGES_DATA_REPLY);
+	RAY_MPI_TAG_OUT_EDGES_DATA_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_OUT_EDGES_DATA_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_OUT_EDGES_DATA_REPLY, &m_adapter_RAY_MPI_TAG_OUT_EDGES_DATA_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_OUT_EDGES_DATA_REPLY,"RAY_MPI_TAG_OUT_EDGES_DATA_REPLY");
 
-	RAY_MPI_TAG_OUT_EDGES_DATA=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_OUT_EDGES_DATA);
+	RAY_MPI_TAG_OUT_EDGES_DATA=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_OUT_EDGES_DATA.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_OUT_EDGES_DATA, &m_adapter_RAY_MPI_TAG_OUT_EDGES_DATA);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_OUT_EDGES_DATA,"RAY_MPI_TAG_OUT_EDGES_DATA");
 
-	RAY_MPI_TAG_START_VERTICES_DISTRIBUTION=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_START_VERTICES_DISTRIBUTION);
+	RAY_MPI_TAG_START_VERTICES_DISTRIBUTION=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_START_VERTICES_DISTRIBUTION.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_START_VERTICES_DISTRIBUTION, &m_adapter_RAY_MPI_TAG_START_VERTICES_DISTRIBUTION);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_START_VERTICES_DISTRIBUTION,"RAY_MPI_TAG_START_VERTICES_DISTRIBUTION");
 
-	RAY_MPI_TAG_IN_EDGES_DATA_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_IN_EDGES_DATA_REPLY);
+	RAY_MPI_TAG_IN_EDGES_DATA_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_IN_EDGES_DATA_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_IN_EDGES_DATA_REPLY, &m_adapter_RAY_MPI_TAG_IN_EDGES_DATA_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_IN_EDGES_DATA_REPLY,"RAY_MPI_TAG_IN_EDGES_DATA_REPLY");
 
-	RAY_MPI_TAG_IN_EDGES_DATA=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_IN_EDGES_DATA);
+	RAY_MPI_TAG_IN_EDGES_DATA=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_IN_EDGES_DATA.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_IN_EDGES_DATA, &m_adapter_RAY_MPI_TAG_IN_EDGES_DATA);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_IN_EDGES_DATA,"RAY_MPI_TAG_IN_EDGES_DATA");
 
-	RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION);
+	RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION, &m_adapter_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION,"RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION");
 
-	RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER);
+	RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER, &m_adapter_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER,"RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER");
 
-	RAY_MPI_TAG_TEST_NETWORK_MESSAGE=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_TEST_NETWORK_MESSAGE);
+	RAY_MPI_TAG_TEST_NETWORK_MESSAGE=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_TEST_NETWORK_MESSAGE.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_TEST_NETWORK_MESSAGE, &m_adapter_RAY_MPI_TAG_TEST_NETWORK_MESSAGE);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_TEST_NETWORK_MESSAGE,"RAY_MPI_TAG_TEST_NETWORK_MESSAGE");
 
-	RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION);
+	RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION, &m_adapter_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION,"RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION");
 
-	RAY_MPI_TAG_COVERAGE_DATA=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_COVERAGE_DATA);
+	RAY_MPI_TAG_COVERAGE_DATA=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_COVERAGE_DATA.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_COVERAGE_DATA, &m_adapter_RAY_MPI_TAG_COVERAGE_DATA);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_COVERAGE_DATA,"RAY_MPI_TAG_COVERAGE_DATA");
 
-	RAY_MPI_TAG_COVERAGE_END=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_COVERAGE_END);
+	RAY_MPI_TAG_COVERAGE_END=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_COVERAGE_END.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_COVERAGE_END, &m_adapter_RAY_MPI_TAG_COVERAGE_END);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_COVERAGE_END,"RAY_MPI_TAG_COVERAGE_END");
 
-	RAY_MPI_TAG_SEND_COVERAGE_VALUES=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_SEND_COVERAGE_VALUES);
+	RAY_MPI_TAG_SEND_COVERAGE_VALUES=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_SEND_COVERAGE_VALUES.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_SEND_COVERAGE_VALUES, &m_adapter_RAY_MPI_TAG_SEND_COVERAGE_VALUES);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_SEND_COVERAGE_VALUES,"RAY_MPI_TAG_SEND_COVERAGE_VALUES");
 
-	RAY_MPI_TAG_READY_TO_SEED=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_READY_TO_SEED);
+	RAY_MPI_TAG_READY_TO_SEED=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_READY_TO_SEED.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_READY_TO_SEED, &m_adapter_RAY_MPI_TAG_READY_TO_SEED);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_READY_TO_SEED,"RAY_MPI_TAG_READY_TO_SEED");
 
-	RAY_MPI_TAG_START_SEEDING=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_START_SEEDING);
+	RAY_MPI_TAG_START_SEEDING=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_START_SEEDING.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_START_SEEDING, &m_adapter_RAY_MPI_TAG_START_SEEDING);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_START_SEEDING,"RAY_MPI_TAG_START_SEEDING");
 
-	RAY_MPI_TAG_GET_COVERAGE_AND_MARK=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GET_COVERAGE_AND_MARK);
+	RAY_MPI_TAG_GET_COVERAGE_AND_MARK=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_GET_COVERAGE_AND_MARK.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_GET_COVERAGE_AND_MARK, &m_adapter_RAY_MPI_TAG_GET_COVERAGE_AND_MARK);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_COVERAGE_AND_MARK,"RAY_MPI_TAG_GET_COVERAGE_AND_MARK");
 
-	RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE);
+	RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE, &m_adapter_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,"RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE");
 
-	RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY);
+	RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY, &m_adapter_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY,"RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY");
 
-	RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES);
+	RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES, &m_adapter_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES,"RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES");
 
-	RAY_MPI_TAG_REQUEST_VERTEX_EDGES=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_REQUEST_VERTEX_EDGES);
+	RAY_MPI_TAG_REQUEST_VERTEX_EDGES=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_REQUEST_VERTEX_EDGES.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_REQUEST_VERTEX_EDGES, &m_adapter_RAY_MPI_TAG_REQUEST_VERTEX_EDGES);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_REQUEST_VERTEX_EDGES,"RAY_MPI_TAG_REQUEST_VERTEX_EDGES");
 
-	RAY_MPI_TAG_REQUEST_VERTEX_EDGES_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_REQUEST_VERTEX_EDGES_REPLY);
+	RAY_MPI_TAG_REQUEST_VERTEX_EDGES_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_REQUEST_VERTEX_EDGES_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_REQUEST_VERTEX_EDGES_REPLY, &m_adapter_RAY_MPI_TAG_REQUEST_VERTEX_EDGES_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_REQUEST_VERTEX_EDGES_REPLY,"RAY_MPI_TAG_REQUEST_VERTEX_EDGES_REPLY");
 
-	RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY);
+	RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY, &m_adapter_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY,"RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY");
 
-	RAY_MPI_TAG_SEEDING_IS_OVER=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_SEEDING_IS_OVER);
+	RAY_MPI_TAG_SEEDING_IS_OVER=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_SEEDING_IS_OVER.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_SEEDING_IS_OVER, &m_adapter_RAY_MPI_TAG_SEEDING_IS_OVER);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_SEEDING_IS_OVER,"RAY_MPI_TAG_SEEDING_IS_OVER");
 
-	RAY_MPI_TAG_REQUEST_SEED_LENGTHS=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_REQUEST_SEED_LENGTHS);
+	RAY_MPI_TAG_REQUEST_SEED_LENGTHS=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_REQUEST_SEED_LENGTHS.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_REQUEST_SEED_LENGTHS, &m_adapter_RAY_MPI_TAG_REQUEST_SEED_LENGTHS);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_REQUEST_SEED_LENGTHS,"RAY_MPI_TAG_REQUEST_SEED_LENGTHS");
 
-	RAY_MPI_TAG_SEND_SEED_LENGTHS=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_SEND_SEED_LENGTHS);
+	RAY_MPI_TAG_SEND_SEED_LENGTHS=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_SEND_SEED_LENGTHS.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_SEND_SEED_LENGTHS, &m_adapter_RAY_MPI_TAG_SEND_SEED_LENGTHS);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_SEND_SEED_LENGTHS,"RAY_MPI_TAG_SEND_SEED_LENGTHS");
 
-	RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS);
+	RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS, &m_adapter_RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS,"RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS");
 
-	RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER);
+	RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER, &m_adapter_RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER,"RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER");
 
-	RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS);
+	RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS, &m_adapter_RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS,"RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS");
 
-	RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY);
+	RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY, &m_adapter_RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,"RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY");
 
-	RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES);
+	RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES, &m_adapter_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES,"RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES");
 
-	RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY);
+	RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY, &m_adapter_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY,"RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY");
 
-	RAY_MPI_TAG_EXTENSION_IS_DONE=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_EXTENSION_IS_DONE);
+	RAY_MPI_TAG_EXTENSION_IS_DONE=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_EXTENSION_IS_DONE.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_EXTENSION_IS_DONE, &m_adapter_RAY_MPI_TAG_EXTENSION_IS_DONE);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_EXTENSION_IS_DONE,"RAY_MPI_TAG_EXTENSION_IS_DONE");
 
-	RAY_MPI_TAG_ASK_EXTENSION=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ASK_EXTENSION);
+	RAY_MPI_TAG_ASK_EXTENSION=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_ASK_EXTENSION.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_EXTENSION, &m_adapter_RAY_MPI_TAG_ASK_EXTENSION);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_EXTENSION,"RAY_MPI_TAG_ASK_EXTENSION");
 
-	RAY_MPI_TAG_ASK_IS_ASSEMBLED=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ASK_IS_ASSEMBLED);
+	RAY_MPI_TAG_ASK_IS_ASSEMBLED=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_IS_ASSEMBLED, &m_adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_IS_ASSEMBLED,"RAY_MPI_TAG_ASK_IS_ASSEMBLED");
 
-	RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY);
+	RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY, &m_adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY,"RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY");
 
-	RAY_MPI_TAG_ASK_EXTENSION_DATA=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ASK_EXTENSION_DATA);
+	RAY_MPI_TAG_ASK_EXTENSION_DATA=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_ASK_EXTENSION_DATA.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_EXTENSION_DATA, &m_adapter_RAY_MPI_TAG_ASK_EXTENSION_DATA);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_EXTENSION_DATA,"RAY_MPI_TAG_ASK_EXTENSION_DATA");
 
-	RAY_MPI_TAG_EXTENSION_DATA_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_EXTENSION_DATA_REPLY);
+	RAY_MPI_TAG_EXTENSION_DATA_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_EXTENSION_DATA_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_EXTENSION_DATA_REPLY, &m_adapter_RAY_MPI_TAG_EXTENSION_DATA_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_EXTENSION_DATA_REPLY,"RAY_MPI_TAG_EXTENSION_DATA_REPLY");
 
-	RAY_MPI_TAG_EXTENSION_DATA=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_EXTENSION_DATA);
+	RAY_MPI_TAG_EXTENSION_DATA=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_EXTENSION_DATA.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_EXTENSION_DATA, &m_adapter_RAY_MPI_TAG_EXTENSION_DATA);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_EXTENSION_DATA,"RAY_MPI_TAG_EXTENSION_DATA");
 
-	RAY_MPI_TAG_EXTENSION_DATA_END=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_EXTENSION_DATA_END);
+	RAY_MPI_TAG_EXTENSION_DATA_END=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_EXTENSION_DATA_END.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_EXTENSION_DATA_END, &m_adapter_RAY_MPI_TAG_EXTENSION_DATA_END);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_EXTENSION_DATA_END,"RAY_MPI_TAG_EXTENSION_DATA_END");
 
-	RAY_MPI_TAG_ATTACH_SEQUENCE=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ATTACH_SEQUENCE);
+	RAY_MPI_TAG_ATTACH_SEQUENCE=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_ATTACH_SEQUENCE.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ATTACH_SEQUENCE, &m_adapter_RAY_MPI_TAG_ATTACH_SEQUENCE);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ATTACH_SEQUENCE,"RAY_MPI_TAG_ATTACH_SEQUENCE");
 
-	RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY);
+	RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY, &m_adapter_RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY,"RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY");
 
-	RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION);
+	RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION, &m_adapter_RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION,"RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION");
 
-	RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY);
+	RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY, &m_adapter_RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY,"RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY");
 
-	RAY_MPI_TAG_ASK_READ_LENGTH=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ASK_READ_LENGTH);
+	RAY_MPI_TAG_ASK_READ_LENGTH=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_ASK_READ_LENGTH.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_READ_LENGTH, &m_adapter_RAY_MPI_TAG_ASK_READ_LENGTH);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_READ_LENGTH,"RAY_MPI_TAG_ASK_READ_LENGTH");
 
-	RAY_MPI_TAG_ASK_READ_LENGTH_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ASK_READ_LENGTH_REPLY);
+	RAY_MPI_TAG_ASK_READ_LENGTH_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_ASK_READ_LENGTH_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_READ_LENGTH_REPLY, &m_adapter_RAY_MPI_TAG_ASK_READ_LENGTH_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_READ_LENGTH_REPLY,"RAY_MPI_TAG_ASK_READ_LENGTH_REPLY");
 
-	RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY);
+	RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY, &m_adapter_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY,"RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY");
 
-	RAY_MPI_TAG_SAVE_WAVE_PROGRESSION=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_SAVE_WAVE_PROGRESSION);
+	RAY_MPI_TAG_SAVE_WAVE_PROGRESSION=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_SAVE_WAVE_PROGRESSION, &m_adapter_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_SAVE_WAVE_PROGRESSION,"RAY_MPI_TAG_SAVE_WAVE_PROGRESSION");
 
-	RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REPLY);
+	RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REPLY, &m_adapter_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REPLY,"RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REPLY");
 
-	RAY_MPI_TAG_ASSEMBLE_WAVES=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ASSEMBLE_WAVES);
+	RAY_MPI_TAG_ASSEMBLE_WAVES=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_ASSEMBLE_WAVES.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASSEMBLE_WAVES, &m_adapter_RAY_MPI_TAG_ASSEMBLE_WAVES);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASSEMBLE_WAVES,"RAY_MPI_TAG_ASSEMBLE_WAVES");
 
-	RAY_MPI_TAG_ASSEMBLE_WAVES_DONE=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ASSEMBLE_WAVES_DONE);
+	RAY_MPI_TAG_ASSEMBLE_WAVES_DONE=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_ASSEMBLE_WAVES_DONE.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASSEMBLE_WAVES_DONE, &m_adapter_RAY_MPI_TAG_ASSEMBLE_WAVES_DONE);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASSEMBLE_WAVES_DONE,"RAY_MPI_TAG_ASSEMBLE_WAVES_DONE");
 
-	RAY_MPI_TAG_START_FUSION=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_START_FUSION);
+	RAY_MPI_TAG_START_FUSION=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_START_FUSION.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_START_FUSION, &m_adapter_RAY_MPI_TAG_START_FUSION);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_START_FUSION,"RAY_MPI_TAG_START_FUSION");
 
-	RAY_MPI_TAG_FUSION_DONE=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_FUSION_DONE);
+	RAY_MPI_TAG_FUSION_DONE=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_FUSION_DONE.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_FUSION_DONE, &m_adapter_RAY_MPI_TAG_FUSION_DONE);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_FUSION_DONE,"RAY_MPI_TAG_FUSION_DONE");
 
-	RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE);
+	RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE, &m_adapter_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,"RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE");
 
-	RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY);
+	RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY, &m_adapter_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY,"RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY");
 
-	RAY_MPI_TAG_GET_PATH_LENGTH=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GET_PATH_LENGTH);
+	RAY_MPI_TAG_GET_PATH_LENGTH=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_GET_PATH_LENGTH.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_GET_PATH_LENGTH, &m_adapter_RAY_MPI_TAG_GET_PATH_LENGTH);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_PATH_LENGTH,"RAY_MPI_TAG_GET_PATH_LENGTH");
 
-	RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION);
+	RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION, &m_adapter_RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION,"RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION");
 
-	RAY_MPI_TAG_GET_PATH_LENGTH_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GET_PATH_LENGTH_REPLY);
+	RAY_MPI_TAG_GET_PATH_LENGTH_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_GET_PATH_LENGTH_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_GET_PATH_LENGTH_REPLY, &m_adapter_RAY_MPI_TAG_GET_PATH_LENGTH_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_PATH_LENGTH_REPLY,"RAY_MPI_TAG_GET_PATH_LENGTH_REPLY");
 
-	RAY_MPI_TAG_ASK_VERTEX_PATHS=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ASK_VERTEX_PATHS);
+	RAY_MPI_TAG_ASK_VERTEX_PATHS=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_ASK_VERTEX_PATHS.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_VERTEX_PATHS, &m_adapter_RAY_MPI_TAG_ASK_VERTEX_PATHS);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_VERTEX_PATHS,"RAY_MPI_TAG_ASK_VERTEX_PATHS");
 
-	RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY);
+	RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY, &m_adapter_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY,"RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY");
 
-	RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END);
+	RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END, &m_adapter_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END,"RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END");
 
-	RAY_MPI_TAG_ASK_VERTEX_PATH=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ASK_VERTEX_PATH);
+	RAY_MPI_TAG_ASK_VERTEX_PATH=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_ASK_VERTEX_PATH.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_VERTEX_PATH, &m_adapter_RAY_MPI_TAG_ASK_VERTEX_PATH);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_VERTEX_PATH,"RAY_MPI_TAG_ASK_VERTEX_PATH");
 
-	RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY);
+	RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY, &m_adapter_RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY,"RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY");
 
-	RAY_MPI_TAG_HAS_PAIRED_READ=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_HAS_PAIRED_READ);
+	RAY_MPI_TAG_HAS_PAIRED_READ=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_HAS_PAIRED_READ.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_HAS_PAIRED_READ, &m_adapter_RAY_MPI_TAG_HAS_PAIRED_READ);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_HAS_PAIRED_READ,"RAY_MPI_TAG_HAS_PAIRED_READ");
 
-	RAY_MPI_TAG_HAS_PAIRED_READ_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_HAS_PAIRED_READ_REPLY);
+	RAY_MPI_TAG_HAS_PAIRED_READ_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_HAS_PAIRED_READ_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_HAS_PAIRED_READ_REPLY, &m_adapter_RAY_MPI_TAG_HAS_PAIRED_READ_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_HAS_PAIRED_READ_REPLY,"RAY_MPI_TAG_HAS_PAIRED_READ_REPLY");
 
-	RAY_MPI_TAG_GET_PAIRED_READ=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GET_PAIRED_READ);
+	RAY_MPI_TAG_GET_PAIRED_READ=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_GET_PAIRED_READ.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_GET_PAIRED_READ, &m_adapter_RAY_MPI_TAG_GET_PAIRED_READ);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_PAIRED_READ,"RAY_MPI_TAG_GET_PAIRED_READ");
 
-	RAY_MPI_TAG_GET_PAIRED_READ_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GET_PAIRED_READ_REPLY);
+	RAY_MPI_TAG_GET_PAIRED_READ_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_GET_PAIRED_READ_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_GET_PAIRED_READ_REPLY, &m_adapter_RAY_MPI_TAG_GET_PAIRED_READ_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_PAIRED_READ_REPLY,"RAY_MPI_TAG_GET_PAIRED_READ_REPLY");
 
-	RAY_MPI_TAG_CLEAR_DIRECTIONS=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_CLEAR_DIRECTIONS);
+	RAY_MPI_TAG_CLEAR_DIRECTIONS=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_CLEAR_DIRECTIONS.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_CLEAR_DIRECTIONS, &m_adapter_RAY_MPI_TAG_CLEAR_DIRECTIONS);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_CLEAR_DIRECTIONS,"RAY_MPI_TAG_CLEAR_DIRECTIONS");
 
-	RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY);
+	RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY, &m_adapter_RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY,"RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY");
 
-	RAY_MPI_TAG_FINISH_FUSIONS=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_FINISH_FUSIONS);
+	RAY_MPI_TAG_FINISH_FUSIONS=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_FINISH_FUSIONS.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_FINISH_FUSIONS, &m_adapter_RAY_MPI_TAG_FINISH_FUSIONS);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_FINISH_FUSIONS,"RAY_MPI_TAG_FINISH_FUSIONS");
 
-	RAY_MPI_TAG_FINISH_FUSIONS_FINISHED=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_FINISH_FUSIONS_FINISHED);
+	RAY_MPI_TAG_FINISH_FUSIONS_FINISHED=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_FINISH_FUSIONS_FINISHED.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_FINISH_FUSIONS_FINISHED, &m_adapter_RAY_MPI_TAG_FINISH_FUSIONS_FINISHED);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_FINISH_FUSIONS_FINISHED,"RAY_MPI_TAG_FINISH_FUSIONS_FINISHED");
 
-	RAY_MPI_TAG_DISTRIBUTE_FUSIONS=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_DISTRIBUTE_FUSIONS);
+	RAY_MPI_TAG_DISTRIBUTE_FUSIONS=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_DISTRIBUTE_FUSIONS.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_DISTRIBUTE_FUSIONS, &m_adapter_RAY_MPI_TAG_DISTRIBUTE_FUSIONS);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_DISTRIBUTE_FUSIONS,"RAY_MPI_TAG_DISTRIBUTE_FUSIONS");
 
-	RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY);
+	RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY, &m_adapter_RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY,"RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY");
 
-	RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED);
+	RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED, &m_adapter_RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED,"RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED");
 
-	RAY_MPI_TAG_EXTENSION_START=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_EXTENSION_START);
+	RAY_MPI_TAG_EXTENSION_START=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_EXTENSION_START.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_EXTENSION_START, &m_adapter_RAY_MPI_TAG_EXTENSION_START);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_EXTENSION_START,"RAY_MPI_TAG_EXTENSION_START");
 
-	RAY_MPI_TAG_ELIMINATE_PATH=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ELIMINATE_PATH);
+	RAY_MPI_TAG_ELIMINATE_PATH=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_ELIMINATE_PATH.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ELIMINATE_PATH, &m_adapter_RAY_MPI_TAG_ELIMINATE_PATH);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ELIMINATE_PATH,"RAY_MPI_TAG_ELIMINATE_PATH");
 
-	RAY_MPI_TAG_GET_PATH_VERTEX=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GET_PATH_VERTEX);
+	RAY_MPI_TAG_GET_PATH_VERTEX=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_GET_PATH_VERTEX.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_GET_PATH_VERTEX, &m_adapter_RAY_MPI_TAG_GET_PATH_VERTEX);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_PATH_VERTEX,"RAY_MPI_TAG_GET_PATH_VERTEX");
 
-	RAY_MPI_TAG_GET_PATH_VERTEX_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GET_PATH_VERTEX_REPLY);
+	RAY_MPI_TAG_GET_PATH_VERTEX_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_GET_PATH_VERTEX_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_GET_PATH_VERTEX_REPLY, &m_adapter_RAY_MPI_TAG_GET_PATH_VERTEX_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_PATH_VERTEX_REPLY,"RAY_MPI_TAG_GET_PATH_VERTEX_REPLY");
 
-	RAY_MPI_TAG_WRITE_AMOS=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_WRITE_AMOS);
+	RAY_MPI_TAG_WRITE_AMOS=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_WRITE_AMOS.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_WRITE_AMOS, &m_adapter_RAY_MPI_TAG_WRITE_AMOS);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_WRITE_AMOS,"RAY_MPI_TAG_WRITE_AMOS");
 
-	RAY_MPI_TAG_WRITE_AMOS_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_WRITE_AMOS_REPLY);
+	RAY_MPI_TAG_WRITE_AMOS_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_WRITE_AMOS_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_WRITE_AMOS_REPLY, &m_adapter_RAY_MPI_TAG_WRITE_AMOS_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_WRITE_AMOS_REPLY,"RAY_MPI_TAG_WRITE_AMOS_REPLY");
 
-	RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION);
+	RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION, &m_adapter_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION,"RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION");
 
-	RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE);
+	RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE, &m_adapter_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE,"RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE");
 
-	RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY);
+	RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY, &m_adapter_RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY,"RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY");
 
-	RAY_MPI_TAG_LIBRARY_DISTANCE=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_LIBRARY_DISTANCE);
+	RAY_MPI_TAG_LIBRARY_DISTANCE=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_LIBRARY_DISTANCE.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_LIBRARY_DISTANCE, &m_adapter_RAY_MPI_TAG_LIBRARY_DISTANCE);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_LIBRARY_DISTANCE,"RAY_MPI_TAG_LIBRARY_DISTANCE");
 
-	RAY_MPI_TAG_ASK_LIBRARY_DISTANCES=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ASK_LIBRARY_DISTANCES);
+	RAY_MPI_TAG_ASK_LIBRARY_DISTANCES=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_ASK_LIBRARY_DISTANCES.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_LIBRARY_DISTANCES, &m_adapter_RAY_MPI_TAG_ASK_LIBRARY_DISTANCES);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_LIBRARY_DISTANCES,"RAY_MPI_TAG_ASK_LIBRARY_DISTANCES");
 
-	RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED);
+	RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED, &m_adapter_RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED,"RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED");
 
-	RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION);
+	RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION, &m_adapter_RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION,"RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION");
 
-	RAY_MPI_TAG_KMER_ACADEMY_DATA=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_KMER_ACADEMY_DATA);
+	RAY_MPI_TAG_KMER_ACADEMY_DATA=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_KMER_ACADEMY_DATA.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_KMER_ACADEMY_DATA, &m_adapter_RAY_MPI_TAG_KMER_ACADEMY_DATA);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_KMER_ACADEMY_DATA,"RAY_MPI_TAG_KMER_ACADEMY_DATA");
 
-	RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED);
+	RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED, &m_adapter_RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED,"RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED");
 
-	RAY_MPI_TAG_SEND_COVERAGE_VALUES_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_SEND_COVERAGE_VALUES_REPLY);
+	RAY_MPI_TAG_SEND_COVERAGE_VALUES_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_SEND_COVERAGE_VALUES_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_SEND_COVERAGE_VALUES_REPLY, &m_adapter_RAY_MPI_TAG_SEND_COVERAGE_VALUES_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_SEND_COVERAGE_VALUES_REPLY,"RAY_MPI_TAG_SEND_COVERAGE_VALUES_REPLY");
 
-	RAY_MPI_TAG_REQUEST_READ_SEQUENCE=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_REQUEST_READ_SEQUENCE);
+	RAY_MPI_TAG_REQUEST_READ_SEQUENCE=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_REQUEST_READ_SEQUENCE.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_REQUEST_READ_SEQUENCE, &m_adapter_RAY_MPI_TAG_REQUEST_READ_SEQUENCE);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_REQUEST_READ_SEQUENCE,"RAY_MPI_TAG_REQUEST_READ_SEQUENCE");
 
-	RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY);
+	RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY, &m_adapter_RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY,"RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY");
 
-	RAY_MPI_TAG_I_FINISHED_SCAFFOLDING=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING);
+	RAY_MPI_TAG_I_FINISHED_SCAFFOLDING=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_I_FINISHED_SCAFFOLDING.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING, &m_adapter_RAY_MPI_TAG_I_FINISHED_SCAFFOLDING);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING,"RAY_MPI_TAG_I_FINISHED_SCAFFOLDING");
 
-	RAY_MPI_TAG_GET_CONTIG_CHUNK=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GET_CONTIG_CHUNK);
+	RAY_MPI_TAG_GET_CONTIG_CHUNK=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_GET_CONTIG_CHUNK.setObject(this);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_GET_CONTIG_CHUNK, &m_adapter_RAY_MPI_TAG_GET_CONTIG_CHUNK);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_CONTIG_CHUNK,"RAY_MPI_TAG_GET_CONTIG_CHUNK");

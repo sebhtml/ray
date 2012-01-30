@@ -2196,14 +2196,15 @@ void SeedExtender::registerPlugin(ComputeCore*core){
 	core->setPluginAuthors(plugin,"Sébastien Boisvert");
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
-	RAY_SLAVE_MODE_EXTENSION=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_EXTENSION);
+	RAY_SLAVE_MODE_EXTENSION=core->allocateSlaveModeHandle(plugin);
 	m_adapter_RAY_SLAVE_MODE_EXTENSION.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_EXTENSION,&m_adapter_RAY_SLAVE_MODE_EXTENSION);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_EXTENSION,"RAY_SLAVE_MODE_EXTENSION");
-	RAY_MPI_TAG_CONTIG_INFO_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_CONTIG_INFO_REPLY);
+
+	RAY_MPI_TAG_CONTIG_INFO_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_CONTIG_INFO_REPLY,"RAY_MPI_TAG_CONTIG_INFO_REPLY");
 
-	RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY);
+	RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY,"RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY");
 
 }

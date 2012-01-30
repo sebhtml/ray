@@ -639,7 +639,7 @@ void FusionData::registerPlugin(ComputeCore*core){
 	core->setPluginAuthors(plugin,"Sébastien Boisvert");
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
-	RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS);
+	RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS=core->allocateSlaveModeHandle(plugin);
 	m_adapter_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS, &m_adapter_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS,"RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS");

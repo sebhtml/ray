@@ -390,17 +390,17 @@ void SeedingData::registerPlugin(ComputeCore*core){
 	core->setPluginAuthors(plugin,"Sébastien Boisvert");
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
-	RAY_SLAVE_MODE_START_SEEDING=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_START_SEEDING);
+	RAY_SLAVE_MODE_START_SEEDING=core->allocateSlaveModeHandle(plugin);
 	m_adapter_RAY_SLAVE_MODE_START_SEEDING.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_START_SEEDING, &m_adapter_RAY_SLAVE_MODE_START_SEEDING);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_START_SEEDING,"RAY_SLAVE_MODE_START_SEEDING");
 
-	RAY_SLAVE_MODE_SEND_SEED_LENGTHS=core->allocateSlaveModeHandle(plugin,RAY_SLAVE_MODE_SEND_SEED_LENGTHS);
+	RAY_SLAVE_MODE_SEND_SEED_LENGTHS=core->allocateSlaveModeHandle(plugin);
 	m_adapter_RAY_SLAVE_MODE_SEND_SEED_LENGTHS.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_SEND_SEED_LENGTHS, &m_adapter_RAY_SLAVE_MODE_SEND_SEED_LENGTHS);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_SEND_SEED_LENGTHS,"RAY_SLAVE_MODE_SEND_SEED_LENGTHS");
 
-	RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY);
+	RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY,"RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY");
 
 }
