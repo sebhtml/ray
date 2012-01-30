@@ -59,7 +59,7 @@
 #include <set>
 #include <time.h>
 #include <assembler/KmerAcademyBuilder.h>
-#include <assembler/EdgePurger.h>
+#include <plugin_EdgePurger/EdgePurger.h>
 #include <communication/NetworkTest.h>
 #include <assembler/FusionTaskCreator.h>
 #include <assembler/JoinerTaskCreator.h>

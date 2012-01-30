@@ -30,10 +30,10 @@
 #include <graph/GridTableIterator.h>
 #include <profiling/Profiler.h>
 #include <profiling/Derivative.h>
-#include <assembler/EdgePurgerWorker.h>
+#include <plugin_EdgePurger/EdgePurgerWorker.h>
 #include <scheduling/TaskCreator.h>
 #include <core/ComputeCore.h>
-#include <assembler/EdgePurger_adapters.h>
+#include <plugin_EdgePurger/EdgePurger_adapters.h>
 
 #include <map>
 #include <set>

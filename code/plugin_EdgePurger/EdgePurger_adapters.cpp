@@ -18,8 +18,8 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include <assembler/EdgePurger.h>
-#include <assembler/EdgePurger_adapters.h>
+#include <plugin_EdgePurger/EdgePurger.h>
+#include <plugin_EdgePurger/EdgePurger_adapters.h>
 
 void Adapter_RAY_SLAVE_MODE_PURGE_NULL_EDGES::setObject(EdgePurger*object){
 	m_object=object;

@@ -19,7 +19,7 @@
 
 */
 
-#include <assembler/EdgePurger.h>
+#include <plugin_EdgePurger/EdgePurger.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <core/OperatingSystem.h>

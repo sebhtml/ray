@@ -43,7 +43,7 @@
 #include <search-engine/Searcher.h>
 #include <structures/ArrayOfReads.h>
 #include <assembler/VerticesExtractor.h>
-#include <assembler/EdgePurger.h>
+#include <plugin_EdgePurger/EdgePurger.h>
 #include <graph/GridTable.h>
 #include <assembler/KmerAcademyBuilder.h>
 #include <communication/VirtualCommunicator.h>
