@@ -1338,8 +1338,6 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				content<<"	"<<m_coloredMatches<<"	"<<coloredRatio;
 				content<<"	"<<coloredMode<<endl;
 
-				content<<endl;
-	
 				fprintf(m_arrayOfFiles[m_directoryIterator][m_fileIterator],
 				"%s",content.str().c_str());
 
