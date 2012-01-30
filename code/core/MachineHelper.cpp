@@ -888,6 +888,7 @@ void MachineHelper::call_RAY_MASTER_MODE_KILL_ALL_MPI_RANKS(){
 
 	// another rank activated its relay checker
 	}else if(m_inbox->size()>0 && (*m_inbox)[0]->getTag()==RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY){
+
 		m_numberOfRanksDone++;
 
 	// do nothing and wait
@@ -906,6 +907,7 @@ void MachineHelper::call_RAY_MASTER_MODE_KILL_ALL_MPI_RANKS(){
 		if(m_machineRank==0){
 			m_switchMan->setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
 		}
+
 
 		/** send a killer message */
 		Message aMessage(NULL,0,m_machineRank,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON,getRank());
@@ -1064,6 +1066,15 @@ void MachineHelper::registerPlugin(ComputeCore*core){
 	m_adapter_RAY_SLAVE_MODE_DIE.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_DIE, &m_adapter_RAY_SLAVE_MODE_DIE);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_DIE,"RAY_SLAVE_MODE_DIE");
+
+	RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY,"RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY");
+
+	RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON,"RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON");
+
+	RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY=core->allocateMessageTagHandle(plugin,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY,"RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY");
 
 }
 
@@ -1238,6 +1249,17 @@ void MachineHelper::resolveSymbols(ComputeCore*core){
 
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_KILL_RANKS,RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
 
+	RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON");
+	RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY");
+	RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY");
 
+	RAY_SLAVE_MODE_DIE=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DIE");
+
+	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON, RAY_SLAVE_MODE_DIE);
+
+	// terminal control messages can not be routed.
+	// the router needs to know that
+	core->getRouter()->addTagToCheckForRelayFrom0(RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON);
+	core->getRouter()->addTagToCheckForRelayTo0(RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY);
 
 }

@@ -1,10 +1,8 @@
 . ../scripts/load-modules.sh
 
-CODE=../code
-mpicxx -g $CODE/memory/malloc_types.cpp \
-$CODE/communication/MessagesHandler.cpp \
-$CODE/communication/Message.cpp \
-$CODE/structures/StaticVector.cpp \
+mpicxx -g ../RayPlatform/communication/MessagesHandler.cpp \
+../RayPlatform/communication/Message.cpp \
+../RayPlatform/structures/StaticVector.cpp \
 $CODE/communication/mpi_tags.cpp \
 $CODE/memory/allocator.cpp \
 $CODE/memory/RingAllocator.cpp \

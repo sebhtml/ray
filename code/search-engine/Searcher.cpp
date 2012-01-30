@@ -1639,9 +1639,10 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 					}
 
 					int numberOfPaths=buffer[bufferPosition++];
+/*
 					int index=buffer[bufferPosition++];
 					int total=buffer[bufferPosition++];
-	
+	*/
 					if(numberOfPaths==0){
 						//cout<<"WARNING sequence position "<<sequencePosition<<" has coverage "<<coverage<<" but no contig path"<<endl;
 					}
