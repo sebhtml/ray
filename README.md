@@ -26,14 +26,6 @@ Ray is documented in
 
 see Documentation/BiologicalAbundances.txt
 
-## Re-usable software components (all GPL)
-
-- Ray VirtualCommunicator
-- Ray VirtualProcessor
-- Ray SwitchMan
-- Ray ScriptEngine (compile-time)
-- Ray MessageRouter
-
 # Website
 
 - http://denovoassembler.sf.net
@@ -41,6 +33,8 @@ see Documentation/BiologicalAbundances.txt
 # Code repository
 
 - http://github.com/sebhtml/ray
+
+- http://github.com/sebhtml/RayPlatform
 
 - To get a ChangeLog:
 

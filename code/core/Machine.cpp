@@ -535,10 +535,11 @@ Machine::~Machine(){
 
 void Machine::showRayVersionShort(){
 	cout<<"Ray version "<<RAY_VERSION<<endl;
-
-	cout<<"Licenses:"<<endl;
-	cout<<"Ray Platform: GNU Lesser General Public License version 3"<<endl;
-	cout<<"Ray Application: GNU General Public License version 3"<<endl;
+	cout<<"License for Ray: GNU General Public License version 3"<<endl;
+	cout<<endl;
+	cout<<"RayPlatform version: "<<m_computeCore.getRayPlatformVersion()<<endl;
+	cout<<"License for RayPlatform: GNU Lesser General Public License version 3"<<endl;
+	cout<<endl;
 
 	cout<<endl;
 	cout<<"MAXKMERLENGTH: "<<MAXKMERLENGTH<<endl;
