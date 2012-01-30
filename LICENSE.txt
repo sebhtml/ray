@@ -1,5 +1,6 @@
+The Ray Application is licensed under the GNU General Public License version 3.
+see gpl-3.0.txt
+
 The Ray Platform is licensed under the GNU Lesser General Public License version 3.
 see RayPlatform/lgpl-3.0.txt
 
-The Ray Application is licensed under the GNU General Public License version 3.
-see code/gpl-3.0.txt
