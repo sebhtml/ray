@@ -22,7 +22,7 @@
 #include <cryptography/crypto.h>
 #include <core/OperatingSystem.h>
 #include <structures/SplayNode.h>
-#include <core/Machine.h>
+#include <application_core/Machine.h>
 #include <core/statistics.h>
 #include <assembler/VerticesExtractor.h>
 #include <profiling/Profiler.h>
@@ -32,7 +32,7 @@
 #include <heuristics/TipWatchdog.h>
 #include <heuristics/BubbleTool.h>
 #include <assert.h>
-#include <core/common_functions.h>
+#include <application_core/common_functions.h>
 #include <iostream>
 #include <fstream>
 #include <graph/CoverageDistribution.h>

@@ -22,7 +22,7 @@
 #include<stdlib.h>
 #include<format/ColorSpaceLoader.h>
 #include<fstream>
-#include<core/common_functions.h>
+#include<application_core/common_functions.h>
 #include<iostream>
 #include<string.h>
 #include <assert.h>

@@ -21,7 +21,7 @@
 #ifndef _MachineHelper_h
 #define _MachineHelper_h
 
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 #include <memory/RingAllocator.h>
 #include <structures/StaticVector.h>
 #include <scheduling/SwitchMan.h>

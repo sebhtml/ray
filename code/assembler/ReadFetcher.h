@@ -25,7 +25,7 @@
 #include <vector>
 #include <structures/ReadAnnotation.h>
 #include <structures/StaticVector.h>
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 #include <stdint.h>
 #include <memory/RingAllocator.h>
 #include <communication/VirtualCommunicator.h>

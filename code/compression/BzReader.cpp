@@ -26,7 +26,7 @@
 #include <compression/BzReader.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <core/common_functions.h>
+#include <application_core/common_functions.h>
 
 void BzReader::open(const char*file){
 	int error;

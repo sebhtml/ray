@@ -22,8 +22,8 @@
 #ifndef _KmerAcademyIterator
 #define _KmerAcademyIterator
 
-#include <core/Parameters.h>
-#include <core/common_functions.h>
+#include <application_core/Parameters.h>
+#include <application_core/common_functions.h>
 #include <structures/MyHashTableIterator.h>
 #include <graph/KmerAcademy.h>
 

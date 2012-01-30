@@ -23,10 +23,10 @@
 #define _BubbleTool
 
 #include <vector>
-#include <core/common_functions.h>
+#include <application_core/common_functions.h>
 #include <map>
 #include <structures/Kmer.h>
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 using namespace std;
 
 /*

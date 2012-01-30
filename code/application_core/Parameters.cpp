@@ -24,8 +24,8 @@
  */
 
 #include <core/OperatingSystem.h>
-#include<core/common_functions.h>
-#include<core/Parameters.h>
+#include<application_core/common_functions.h>
+#include<application_core/Parameters.h>
 #include <pairs/LibraryPeakFinder.h>
 #include<structures/Read.h>
 #include<assembler/Loader.h>

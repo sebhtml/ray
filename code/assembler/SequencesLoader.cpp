@@ -26,7 +26,7 @@ Ray
 #include<assembler/BubbleData.h>
 #include<assert.h>
 #include<vector>
-#include<core/common_functions.h>
+#include<application_core/common_functions.h>
 #include<assembler/Loader.h>
 #include<structures/Read.h>
 #include<iostream>

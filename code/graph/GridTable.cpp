@@ -23,7 +23,7 @@
 #include <assert.h>
 #include <graph/GridTable.h>
 #include <core/OperatingSystem.h>
-#include <core/common_functions.h>
+#include <application_core/common_functions.h>
 #include <cryptography/crypto.h>
 #include <stdlib.h>
 #include <stdio.h>

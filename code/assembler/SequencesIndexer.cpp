@@ -23,9 +23,9 @@
 #include <core/OperatingSystem.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 #include <assembler/Loader.h>
-#include <core/common_functions.h>
+#include <application_core/common_functions.h>
 #include <communication/Message.h>
 
 void SequencesIndexer::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(){

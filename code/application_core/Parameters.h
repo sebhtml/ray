@@ -23,7 +23,7 @@
 #define _Parameters
 
 #include<map>
-#include<core/common_functions.h>
+#include<application_core/common_functions.h>
 #include<set>
 #include<string>
 #include<vector>

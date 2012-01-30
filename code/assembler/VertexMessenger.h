@@ -26,7 +26,7 @@
 #include <structures/Kmer.h>
 #include <structures/StaticVector.h>
 #include <memory/RingAllocator.h>
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 #include <vector>
 #include <set>
 using namespace std;

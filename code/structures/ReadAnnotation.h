@@ -22,7 +22,7 @@
 #ifndef _ReadAnnotation
 #define _ReadAnnotation
 
-#include <core/common_functions.h>
+#include <application_core/common_functions.h>
 #include <fstream>
 using namespace std;
 

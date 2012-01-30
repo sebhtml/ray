@@ -23,7 +23,7 @@
 #define _Direction
 
 #include <stdint.h>
-#include <core/common_functions.h>
+#include <application_core/common_functions.h>
 
 /*
  * a direction is a wave and a progression.

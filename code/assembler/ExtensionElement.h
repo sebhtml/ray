@@ -24,7 +24,7 @@
 
 #include <structures/PairedRead.h>
 #include <memory/MyAllocator.h>
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 
 /*
  * An extension element is a read mapped on an

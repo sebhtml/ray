@@ -24,9 +24,9 @@
 #include <communication/mpi_tags.h>
 #include <sstream>
 #include <core/OperatingSystem.h>
-#include <core/common_functions.h>
+#include <application_core/common_functions.h>
 #include <assert.h>
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 using namespace std;
 
 /* send the information to all ranks */

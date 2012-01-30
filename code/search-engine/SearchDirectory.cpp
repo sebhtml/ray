@@ -29,7 +29,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <core/common_functions.h> /* for wordId */
+#include <application_core/common_functions.h> /* for wordId */
 using namespace std;
 
 

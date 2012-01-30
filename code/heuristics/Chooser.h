@@ -23,7 +23,7 @@
 #define _Chooser
 
 #include <assembler/ExtensionData.h>
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 
 #define IMPOSSIBLE_CHOICE -1
 

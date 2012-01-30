@@ -20,7 +20,7 @@
 */
 
 #include<structures/PairedRead.h>
-#include<core/common_functions.h>
+#include<application_core/common_functions.h>
 #include<assert.h>
 
 void PairedRead::constructor(int rank,int id,int library){

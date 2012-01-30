@@ -31,7 +31,7 @@
 #include <graph/GridTable.h>
 using namespace std;
 
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 #include <scheduling/SwitchMan.h>
 #include <communication/VirtualCommunicator.h>
 #include <communication/BufferedData.h>

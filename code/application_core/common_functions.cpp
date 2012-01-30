@@ -26,7 +26,7 @@
 #include <time.h>
 #include <vector>
 #include <fstream>
-#include <core/common_functions.h>
+#include <application_core/common_functions.h>
 #include <stdlib.h>
 #include <iostream>
 #include <string>

@@ -24,12 +24,12 @@
 
 #include <structures/PairedRead.h>
 #include <structures/Read.h>
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 #include <assembler/ExtensionElement.h>
 #include <structures/AssemblySeed.h>
 #include <profiling/Profiler.h>
 #include <structures/ReadAnnotation.h>
-#include <core/common_functions.h>
+#include <application_core/common_functions.h>
 #include <structures/SplayTree.h>
 #include <map>
 #include <set>

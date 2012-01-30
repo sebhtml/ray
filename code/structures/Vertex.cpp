@@ -23,7 +23,7 @@
 #include<vector>
 #include<structures/Vertex.h>
 #include<cstdlib>
-#include<core/common_functions.h>
+#include<application_core/common_functions.h>
 #include<iostream>
 using namespace std;
 

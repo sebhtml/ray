@@ -32,7 +32,7 @@ class SeedExtender;
 #include <structures/Vertex.h>
 #include <structures/AssemblySeed.h>
 #include <graph/GridTableIterator.h>
-#include <core/common_functions.h>
+#include <application_core/common_functions.h>
 #include <assembler/SeedWorker.h>
 #include <core/ComputeCore.h>
 

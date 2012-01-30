@@ -22,7 +22,7 @@
 #ifndef _Scaffolder
 #define _Scaffolder
 
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 #include <structures/StaticVector.h>
 #include <vector>
 #include <memory/RingAllocator.h>

@@ -24,7 +24,7 @@
 
 #include <memory/MyAllocator.h>
 #include <structures/Kmer.h>
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 #include <structures/MyHashTable.h>
 #include <stdint.h>
 

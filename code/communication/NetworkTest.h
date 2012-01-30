@@ -22,7 +22,7 @@
 #define _NetworkTest_H
 
 #include <structures/StaticVector.h>
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 #include <profiling/TimePrinter.h>
 #include <memory/RingAllocator.h>
 #include <scheduling/SwitchMan.h>

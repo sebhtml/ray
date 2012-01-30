@@ -20,7 +20,7 @@
 */
 
 #include <heuristics/Chooser.h>
-#include <core/common_functions.h>
+#include <application_core/common_functions.h>
 
 void Chooser::chooseWithPairedReads(ExtensionData*m_ed,
 	double __PAIRED_MULTIPLIER,

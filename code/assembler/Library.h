@@ -24,12 +24,12 @@
 
 #include <communication/BufferedData.h>
 #include <assembler/ExtensionData.h>
-#include <core/common_functions.h>
+#include <application_core/common_functions.h>
 #include <structures/StaticVector.h>
 #include <profiling/TimePrinter.h>
 #include <assembler/ReadFetcher.h>
 #include <communication/VirtualCommunicator.h>
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 #include <assembler/SeedingData.h>
 #include <memory/RingAllocator.h>
 #include <assembler/LibraryWorker.h>

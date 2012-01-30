@@ -23,7 +23,7 @@
 #define _Partitioner_H
 
 #include <structures/StaticVector.h>
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 #include <memory/RingAllocator.h>
 #include <assembler/Loader.h>
 #include <scheduling/SwitchMan.h>

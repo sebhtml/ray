@@ -29,7 +29,7 @@
 #include <scaffolder/Scaffolder.h>
 #include <graph/GridTable.h>
 #include <communication/MessagesHandler.h>
-#include <core/common_functions.h>
+#include <application_core/common_functions.h>
 #include <assembler/Partitioner.h>
 #include <structures/ArrayOfReads.h>
 #include <structures/StaticVector.h>
@@ -52,7 +52,7 @@
 #include <communication/Message.h>
 #include <structures/SplayTreeIterator.h>
 #include <structures/Read.h>
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 #include <memory/MyAllocator.h>
 #include <assembler/VerticesExtractor.h>
 #include <format/Amos.h>

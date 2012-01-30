@@ -25,7 +25,7 @@
 #include <structures/Kmer.h>
 #include <memory/MyAllocator.h>
 #include <graph/KmerAcademy.h>
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 #include <structures/Vertex.h>
 
 /**

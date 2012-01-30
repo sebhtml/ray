@@ -29,7 +29,7 @@
 #include <core/constants.h>
 #include <core/master_modes.h>
 #include <core/slave_modes.h>
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 
 void Amos::constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*outbox,
 	FusionData*fusionData,ExtensionData*extensionData,int*masterMode,int*slaveMode,Scaffolder*scaffolder,

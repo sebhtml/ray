@@ -28,7 +28,7 @@
 #include <communication/Message.h>
 #include <time.h>
 #include <structures/StaticVector.h>
-#include <core/common_functions.h>
+#include <application_core/common_functions.h>
 
 void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 

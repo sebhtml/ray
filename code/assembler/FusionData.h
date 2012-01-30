@@ -25,7 +25,7 @@
 class SeedingData;
 
 #include <structures/Direction.h>
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 #include <structures/StaticVector.h>
 #include <assembler/SeedingData.h>
 #include <assembler/ExtensionData.h>

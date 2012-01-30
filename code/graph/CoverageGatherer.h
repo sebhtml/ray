@@ -22,7 +22,7 @@
 #ifndef _CoverageGatherer_H
 #define _CoverageGatherer_H
 
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 #include <structures/StaticVector.h>
 #include <graph/GridTable.h>
 #include <memory/RingAllocator.h>

@@ -26,14 +26,14 @@
 #include <structures/Read.h>
 #include <communication/MessageProcessor.h>
 #include <structures/StaticVector.h>
-#include <core/common_functions.h>
+#include <application_core/common_functions.h>
 #include <structures/ReadAnnotation.h>
 #include <structures/SplayTree.h>
 #include <structures/Direction.h>
 #include <structures/SplayNode.h>
 #include <structures/SplayTreeIterator.h>
 #include <assembler/FusionData.h>
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 #include <core/ComputeCore.h>
 
 void MessageProcessor::call_RAY_MPI_TAG_LOAD_SEQUENCES(Message*message){

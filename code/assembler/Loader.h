@@ -22,7 +22,7 @@
 #ifndef _Loader
 #define _Loader
 
-#include <core/common_functions.h>
+#include <application_core/common_functions.h>
 #include <vector>
 #include <memory/MyAllocator.h>
 #include <structures/Read.h>

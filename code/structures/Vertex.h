@@ -25,7 +25,7 @@
 #include <structures/ReadAnnotation.h>
 #include <structures/Direction.h>
 #include <structures/Kmer.h>
-#include <core/common_functions.h>
+#include <application_core/common_functions.h>
 #include <search-engine/ColorSet.h>
 
 #include <fstream>

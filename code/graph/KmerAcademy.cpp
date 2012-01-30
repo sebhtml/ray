@@ -22,12 +22,12 @@
 #include <core/OperatingSystem.h>
 #include <assert.h>
 #include <graph/KmerAcademy.h>
-#include <core/common_functions.h>
+#include <application_core/common_functions.h>
 #include <iostream>
 #include <cryptography/crypto.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 using namespace std;
 
 void KmerAcademy::constructor(int rank,Parameters*parameters){

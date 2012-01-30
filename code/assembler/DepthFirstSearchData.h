@@ -27,10 +27,10 @@
 #include <map>
 #include <assembler/SeedingData.h>
 #include <set>
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 #include <memory/RingAllocator.h>
 #include <structures/StaticVector.h>
-#include <core/common_functions.h>
+#include <application_core/common_functions.h>
 using namespace std;
 
 /*

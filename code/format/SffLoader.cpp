@@ -19,7 +19,7 @@
 
 */
 
-#include <core/common_functions.h>
+#include <application_core/common_functions.h>
 #include <cstring>
 #include <fstream>
 #include <string>

@@ -27,7 +27,7 @@
 #include <structures/Vertex.h>
 #include <memory/RingAllocator.h>
 #include <graph/GridTable.h>
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 #include <structures/StaticVector.h>
 #include <scheduling/Worker.h>
 #include <communication/VirtualCommunicator.h>

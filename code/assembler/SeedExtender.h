@@ -25,13 +25,13 @@
 class FusionData;
 class DepthFirstSearchData;
 
-#include <core/common_functions.h>
+#include <application_core/common_functions.h>
 #include <communication/Message.h>
 #include <vector>
 #include <profiling/Profiler.h>
 #include <assembler/VertexMessenger.h>
 #include <assembler/ExtensionData.h>
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 #include <structures/AssemblySeed.h>
 #include <memory/RingAllocator.h>
 #include <memory/MyAllocator.h>

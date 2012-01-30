@@ -22,7 +22,7 @@
 #ifndef _SequencesLoader
 #define _SequencesLoader
 
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 #include <memory/RingAllocator.h>
 #include <assembler/Loader.h>
 #include <memory/MyAllocator.h>

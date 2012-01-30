@@ -20,7 +20,7 @@
 */
 
 #include <iostream>
-#include <core/Machine.h>
+#include <application_core/Machine.h>
 #include <stdlib.h>
 using namespace std;
 

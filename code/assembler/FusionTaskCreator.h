@@ -26,7 +26,7 @@
 #include <scheduling/TaskCreator.h>
 #include <scheduling/VirtualProcessor.h>
 #include <structures/StaticVector.h>
-#include <core/Parameters.h>
+#include <application_core/Parameters.h>
 #include <communication/VirtualCommunicator.h>
 #include <memory/RingAllocator.h>
 #include <structures/Kmer.h>

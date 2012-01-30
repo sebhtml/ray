@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <communication/mpi_tags.h>
-#include <core/common_functions.h>
+#include <application_core/common_functions.h>
 #include <stdint.h>
 #include <iostream>
 using namespace std;

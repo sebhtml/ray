@@ -19,7 +19,7 @@
 */
 
 #include<assert.h>
-#include<core/common_functions.h>
+#include<application_core/common_functions.h>
 #include<structures/Read.h>
 #include<cstdlib>
 #include<iostream>
