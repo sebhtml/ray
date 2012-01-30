@@ -742,5 +742,14 @@ void Machine::registerPlugins(){
 		createDirectory(file.c_str());
 	
 		m_computeCore.printPlugins(file);
+
+		// write the version of RayPlatform
+		
+		ostringstream versionFile;
+		versionFile<<m_parameters.getPrefix()<<"/RayPlatform_Version.txt";
+
+		ofstream f7(versionFile.str().c_str());
+		f7<<"RayPlatform "<<m_computeCore.getRayPlatformVersion()<<endl;
+		f7.close();
 	}
 }
