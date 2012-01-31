@@ -1,5 +1,7 @@
 # build Ray executables for system tests
 
+SLOTS=4
+
 module load compilers/gcc/4.4.2 mpi/openmpi/1.4.3_gcc
 
 cd $RAY_GIT_PATH/system-tests
@@ -13,18 +15,18 @@ for k in 32 64 96 128
 do
 	make clean
 	echo "$(date) Building k=$k"
-	make MAXKMERLENGTH=$k -j 30 PREFIX=$RAY_GIT_PATH/system-tests/builds/build-$k ASSERT=y &> /dev/null
+	make MAXKMERLENGTH=$k -j $SLOTS PREFIX=$RAY_GIT_PATH/system-tests/builds/build-$k ASSERT=y 
 	make install
 done
 
 make clean
 echo "$(date) Building Ray with compression support"
-make -j 30 PREFIX=$RAY_GIT_PATH/system-tests/builds/build-compression HAVE_LIBZ=y HAVE_LIBBZ2=y ASSERT=y &> /dev/null
+make -j $SLOTS PREFIX=$RAY_GIT_PATH/system-tests/builds/build-compression HAVE_LIBZ=y HAVE_LIBBZ2=y ASSERT=y 
 make install
 
 echo "$(date) Building vanilla Ray"
 make clean
-make MAXKMERLENGTH=32 ASSERT=y -j 30 &> /dev/null
+make MAXKMERLENGTH=32 ASSERT=y -j $SLOTS
 
 cd $RAY_GIT_PATH/system-tests
 
