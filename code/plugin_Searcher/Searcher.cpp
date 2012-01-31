@@ -1640,17 +1640,22 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 					}
 
 					int numberOfPaths=buffer[bufferPosition++];
-					int index=buffer[bufferPosition++];
-					int total=buffer[bufferPosition++];
+
+					#ifdef ASSERT
+
+					int index=buffer[bufferPosition];
+					int total=buffer[bufferPosition+1];
+
+					assert(numberOfPaths<=total);
+					assert(index<=total);
+					#endif
+
+					bufferPosition++; // skip the index
+					bufferPosition++; // skip th total
 
 					if(numberOfPaths==0){
 						//cout<<"WARNING sequence position "<<sequencePosition<<" has coverage "<<coverage<<" but no contig path"<<endl;
 					}
-
-					#ifdef ASSERT
-					assert(numberOfPaths<=total);
-					assert(index<=total);
-					#endif
 
 					#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
 					cout<<"Paths: "<<numberOfPaths<<" total: "<<total<<endl;

@@ -371,7 +371,7 @@ Presently, insertions or deletions up to 8 are supported.
 
 				int fancyMultiplier=REPEAT_MULTIPLIER;
 
-				int theRepeatedCoverage=m_currentPeakCoverage*fancyMultiplier;
+				COVERAGE_TYPE theRepeatedCoverage=m_currentPeakCoverage*fancyMultiplier;
 
 				#ifdef CONFIG_USE_COVERAGE_DISTRIBUTION
 				theRepeatedCoverage=m_parameters->getRepeatCoverage();
@@ -1254,6 +1254,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 		ed->m_extensionCoverageValues.push_back(*receivedVertexCoverage);
 
 		#ifdef ASSERT
+		if(ed->m_currentCoverage > m_parameters->getMaximumAllowedCoverage())
+			cout<<"Error: m_currentCoverage= "<<ed->m_currentCoverage<<" getMaximumAllowedCoverage: "<<m_parameters->getMaximumAllowedCoverage()<<endl;
 		assert(ed->m_currentCoverage<=m_parameters->getMaximumAllowedCoverage());
 		#endif
 
@@ -1418,9 +1420,9 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				// its mate was not seen yet.
 				
 				#ifdef CONFIG_USE_COVERAGE_DISTRIBUTION
-				int thresholdCoverage=2*m_parameters->getPeakCoverage();
+				COVERAGE_TYPE thresholdCoverage=2*m_parameters->getPeakCoverage();
 				#else
-				int thresholdCoverage=2*m_currentPeakCoverage;
+				COVERAGE_TYPE thresholdCoverage=2*m_currentPeakCoverage;
 				#endif
 
 				//cout<<"THreshold= "<<thresholdCoverage<<endl;

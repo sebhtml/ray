@@ -1085,7 +1085,7 @@ void Parameters::printFinalMessage(){
 	cout<<"Rank "<<MASTER_RANK<<" wrote library statistics"<<endl;
 }
 
-int Parameters::getMaximumAllowedCoverage(){
+COVERAGE_TYPE Parameters::getMaximumAllowedCoverage(){
 	COVERAGE_TYPE a=0;
 	a--;
 	return a;

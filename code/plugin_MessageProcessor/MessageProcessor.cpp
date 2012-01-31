@@ -514,7 +514,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 		assert(candidate!=NULL);
 		#endif
 
-		if(candidate->m_count<m_parameters->getMinimumCoverageToStore())
+		if((int) candidate->m_count<m_parameters->getMinimumCoverageToStore())
 			continue;
 
 		Vertex*tmp=m_subgraph->insert(&l);

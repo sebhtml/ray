@@ -542,8 +542,12 @@ void Machine::showRayVersionShort(){
 	cout<<endl;
 
 	cout<<endl;
+	COVERAGE_TYPE maximumCoverageDepth=0;
+	maximumCoverageDepth--; // underflow it
+
 	cout<<"MAXKMERLENGTH: "<<MAXKMERLENGTH<<endl;
 	cout<<"KMER_U64_ARRAY_SIZE: "<<KMER_U64_ARRAY_SIZE<<endl;
+	cout<<"Maximum coverage depth stored by COVERAGE_TYPE: "<<maximumCoverageDepth<<endl;
 	cout<<"MAXIMUM_MESSAGE_SIZE_IN_BYTES: "<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<" bytes"<<endl;
 
 /*

@@ -101,8 +101,30 @@ see <http://www.gnu.org/licenses/>
 
 /*
  * this is the type used to store coverage values
+ *
+ * possible values are:
+ *
+ * - uint8_t for coverage values from 0 to 256-1
+ * - uint16_t for coverage values from 0 to 65536-1
+ * - uint32_t for coverage values from 0 to 4294967296-1
+ *
+ *
  */
-#define COVERAGE_TYPE uint16_t
+
+#ifndef CONFIG_MAXIMUM_COVERAGE
+	#define CONFIG_MAXIMUM_COVERAGE 99999
+#endif
+
+
+#if CONFIG_MAXIMUM_COVERAGE < 256
+	typedef uint8_t COVERAGE_TYPE ;
+#elif CONFIG_MAXIMUM_COVERAGE < 65536
+	typedef uint16_t COVERAGE_TYPE;
+#elif CONFIG_MAXIMUM_COVERAGE < 4294967296
+	typedef uint32_t COVERAGE_TYPE;
+#else
+	typedef uint64_t COVERAGE_TYPE;
+#endif
 
 /** 32-bit or 64-bit system */
 

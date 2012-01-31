@@ -161,7 +161,7 @@ public:
 	int getIdFromGlobalId(uint64_t a);
 	int getMaximumDistance();
 	uint64_t getGlobalIdFromRankAndLocalId(int rank,int id);
-	int getMaximumAllowedCoverage();
+	COVERAGE_TYPE getMaximumAllowedCoverage();
 	int getMinimumCoverage();
 	void setMinimumCoverage(int a);
 	Kmer _complementVertex(Kmer*a);
