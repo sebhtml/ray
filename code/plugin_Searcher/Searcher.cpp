@@ -930,8 +930,11 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		int physicalColors=m_colorSet.getNumberOfPhysicalColors();
 		cout<<"Rank "<<m_parameters->getRank()<<" colored the graph with "<<physicalColors<<" real colors using "<<virtualColors<<" virtual colors"<<endl;
 
-		m_colorSet.printSummary();
-		//m_colorSet.printColors();
+		if(m_parameters->getRank()==MASTER_RANK){
+			cout<<"VIRTUAL COLOR SUMMARY"<<endl;
+			m_colorSet.printSummary();
+			m_colorSet.printColors();
+		}
 
 		#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
 		cout<<"Starting call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES"<<endl;
