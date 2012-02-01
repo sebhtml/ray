@@ -926,8 +926,8 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 	if(!m_countSequenceKmersSlaveStarted){
 
-		int virtualColors=m_colorSet.getNumberOfVirtualColors();
-		int physicalColors=m_colorSet.getNumberOfPhysicalColors();
+		int virtualColors=m_colorSet.getTotalNumberOfVirtualColors();
+		int physicalColors=m_colorSet.getTotalNumberOfPhysicalColors();
 		cout<<"Rank "<<m_parameters->getRank()<<" colored the graph with "<<physicalColors<<" real colors using "<<virtualColors<<" virtual colors"<<endl;
 
 		if(m_parameters->getRank()==MASTER_RANK){
@@ -2043,7 +2043,7 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 		if(node!=NULL){
 			// check the colors
 			VirtualKmerColorHandle color=node->getVirtualColor();
-			set<PhysicalKmerColor>*physicalColors=m_colorSet.getVirtualColor(color)->getColors();
+			set<PhysicalKmerColor>*physicalColors=m_colorSet.getPhysicalColors(color);
 
 			// verify that there is only one color in each namespace
 			
@@ -2183,23 +2183,12 @@ void Searcher::call_RAY_MPI_TAG_ADD_KMER_COLOR(Message*message){
 		VirtualKmerColorHandle virtualColorHandle=node->getVirtualColor();
 
 		// the physical color is already there
-		if(m_colorSet.getVirtualColor(virtualColorHandle)->hasColor(color)){
+		if(m_colorSet.virtualColorHasPhysicalColor(virtualColorHandle,color)){
 			continue;
 		}
 
-		// we need to get a virtual color with said physical colors
-		set<PhysicalKmerColor> requestedColors;
-		set<PhysicalKmerColor>*oldColors=m_colorSet.getVirtualColor(virtualColorHandle)->getColors();
-
-		for(set<PhysicalKmerColor>::iterator i=oldColors->begin();i!=oldColors->end();i++){
-			requestedColors.insert(*i);
-		}
-
-		// add the received color.
-		requestedColors.insert(color);
-
 		// get a virtual color with the requested physical colors
-		VirtualKmerColorHandle newVirtualColor=m_colorSet.getVirtualColorHandle(&requestedColors);
+		VirtualKmerColorHandle newVirtualColor=m_colorSet.getVirtualColorFrom(virtualColorHandle,color);
 
 		node->setVirtualColor(newVirtualColor);
 
@@ -2207,15 +2196,13 @@ void Searcher::call_RAY_MPI_TAG_ADD_KMER_COLOR(Message*message){
 		m_colorSet.decrementReferences(virtualColorHandle);
 
 		#ifdef ASSERT
-		assert(m_colorSet.getVirtualColor(newVirtualColor)->hasColor(color));
+		assert(m_colorSet.virtualColorHasPhysicalColor(newVirtualColor,color));
 
-		if(m_colorSet.getVirtualColor(newVirtualColor)->getColors()->size() != requestedColors.size()){
-			cout<<"Expected: "<<requestedColors.size()<<" Actual: "<<m_colorSet.getVirtualColor(newVirtualColor)->getColors()->size()<<endl;
-			cout<<"new color: "<<color<<endl;
-			cout<<"new virtual color="<<newVirtualColor<<endl;
-		}
-
-		assert(m_colorSet.getVirtualColor(newVirtualColor)->getColors()->size() == requestedColors.size());
+		// maybe this color was purged..
+		//assert(m_colorSet.getNumberOfPhysicalColors(virtualColorHandle)+1 == m_colorSet.getNumberOfPhysicalColors(newVirtualColor));
+		
+		assert(m_colorSet.getNumberOfReferences(newVirtualColor)>=1);
+		assert(m_colorSet.getNumberOfReferences(virtualColorHandle)>=0);
 		#endif
 	}
 

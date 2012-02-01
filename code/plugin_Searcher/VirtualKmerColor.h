@@ -57,16 +57,24 @@ public:
 	void incrementReferences();
 	void decrementReferences();
 
-	uint64_t getReferences();
+	uint64_t getNumberOfReferences();
 
-	set<PhysicalKmerColor>*getColors();
+	set<PhysicalKmerColor>*getPhysicalColors();
 
-	bool hasColor(PhysicalKmerColor color);
+	bool hasPhysicalColor(PhysicalKmerColor color);
 
-	bool hasColors(set<PhysicalKmerColor>*colors);
+	bool hasPhysicalColors(set<PhysicalKmerColor>*colors);
 
 	void setHash(uint64_t hash);
 	uint64_t getHash();
+
+	int getNumberOfPhysicalColors();
+
+	void clear();
+
+	bool virtualColorHasAllPhysicalColorsOf(VirtualKmerColor*a);
+
+	void copyPhysicalColors(VirtualKmerColor*a);
 };
 
 #endif

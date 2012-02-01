@@ -29,6 +29,12 @@ VirtualKmerColor::VirtualKmerColor(){
 	m_references=0;
 }
 
+void VirtualKmerColor::clear(){
+	m_colors.clear();
+	m_hash=0;
+	m_references=0;
+}
+
 void VirtualKmerColor::incrementReferences(){
 	m_references++;
 }
@@ -45,25 +51,25 @@ void VirtualKmerColor::addPhysicalColor(PhysicalKmerColor color){
 	m_colors.insert(color);
 }
 
-uint64_t VirtualKmerColor::getReferences(){
+uint64_t VirtualKmerColor::getNumberOfReferences(){
 	return m_references;
 }
 
-set<PhysicalKmerColor>*VirtualKmerColor::getColors(){
+set<PhysicalKmerColor>*VirtualKmerColor::getPhysicalColors(){
 	return & m_colors;
 }
 
-bool VirtualKmerColor::hasColor(PhysicalKmerColor color){
+bool VirtualKmerColor::hasPhysicalColor(PhysicalKmerColor color){
 	return m_colors.count(color)>0;
 }
 
-bool VirtualKmerColor::hasColors(set<PhysicalKmerColor>*colors){
-	if(colors->size()!=getColors()->size()){
+bool VirtualKmerColor::hasPhysicalColors(set<PhysicalKmerColor>*colors){
+	if((int)colors->size()!=getNumberOfPhysicalColors()){
 		return false;
 	}
 
 	// verify the count
-	if(colors->size()==getColors()->size()){
+	if((int)colors->size()==getNumberOfPhysicalColors()){
 		bool correct=true;
 
 		// verify the colors
@@ -72,7 +78,7 @@ bool VirtualKmerColor::hasColors(set<PhysicalKmerColor>*colors){
 
 			PhysicalKmerColor physicalColor=*i;
 
-			if(!hasColor(physicalColor)){
+			if(!hasPhysicalColor(physicalColor)){
 				correct=false;
 				break;
 			}
@@ -93,4 +99,35 @@ void VirtualKmerColor::setHash(uint64_t hash){
 
 uint64_t VirtualKmerColor::getHash(){
 	return m_hash;
+}
+
+int VirtualKmerColor::getNumberOfPhysicalColors(){
+	return m_colors.size();
+}
+
+bool VirtualKmerColor::virtualColorHasAllPhysicalColorsOf(VirtualKmerColor*a){
+	set<PhysicalKmerColor>*colors=a->getPhysicalColors();
+
+	for(set<PhysicalKmerColor>::iterator i=colors->begin();
+		i!=colors->end();i++){
+		
+		PhysicalKmerColor color=*i;
+
+		if(!hasPhysicalColor(color))
+			return false;
+	}
+
+	return true;
+}
+
+void VirtualKmerColor::copyPhysicalColors(VirtualKmerColor*a){
+	set<PhysicalKmerColor>*colors=a->getPhysicalColors();
+
+	for(set<PhysicalKmerColor>::iterator i=colors->begin();
+		i!=colors->end();i++){
+
+		PhysicalKmerColor color=*i;
+
+		addPhysicalColor(color);
+	}
 }
