@@ -30,9 +30,17 @@ VirtualKmerColor::VirtualKmerColor(){
 }
 
 void VirtualKmerColor::clear(){
+	
+	#ifdef ASSERT
+	assert(getNumberOfReferences()==0);
+	#endif
+
 	m_colors.clear();
 	m_hash=0;
-	m_references=0;
+
+	#ifdef ASSERT
+	assert(getNumberOfPhysicalColors()==0);
+	#endif
 }
 
 void VirtualKmerColor::incrementReferences(){
@@ -97,7 +105,7 @@ void VirtualKmerColor::setHash(uint64_t hash){
 	m_hash=hash;
 }
 
-uint64_t VirtualKmerColor::getHash(){
+uint64_t VirtualKmerColor::getCachedHashValue(){
 	return m_hash;
 }
 

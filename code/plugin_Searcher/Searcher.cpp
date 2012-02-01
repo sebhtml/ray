@@ -18,6 +18,8 @@
 	see <http://www.gnu.org/licenses/>
 */
 
+#define PROCESSED_PERIOD 1000000
+
 #include <plugin_Searcher/Searcher.h>
 #include <plugin_VerticesExtractor/Vertex.h>
 #include <core/OperatingSystem.h>
@@ -1929,7 +1931,7 @@ void Searcher::printDirectoryStart(){
 }
 
 void Searcher::showProcessedKmers(){
-	if(m_kmersProcessed < m_lastPrinted + 1000000){
+	if(m_kmersProcessed < m_lastPrinted + PROCESSED_PERIOD){
 		return;
 	}
 
@@ -2146,8 +2148,6 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 	#ifdef ASSERT
 	assert(count*sizeof(uint64_t)<=MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	#endif
-
-
 
 	Message aMessage(message2,count,source,RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY,
 		m_parameters->getRank());

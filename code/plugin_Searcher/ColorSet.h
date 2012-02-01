@@ -79,7 +79,7 @@ class ColorSet{
 
 	map<PhysicalKmerColor,map<int,map<uint64_t,set<VirtualKmerColorHandle> > > > m_index;
 
-	int m_maximumHashOperations;
+	uint64_t m_collisions;
 
 
 

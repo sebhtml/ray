@@ -66,7 +66,7 @@ public:
 	bool hasPhysicalColors(set<PhysicalKmerColor>*colors);
 
 	void setHash(uint64_t hash);
-	uint64_t getHash();
+	uint64_t getCachedHashValue();
 
 	int getNumberOfPhysicalColors();
 
