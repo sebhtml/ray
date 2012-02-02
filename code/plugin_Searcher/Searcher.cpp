@@ -18,7 +18,7 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#define PROCESSED_PERIOD 10000
+#define PROCESSED_PERIOD 1000
 
 #include <plugin_Searcher/Searcher.h>
 #include <plugin_VerticesExtractor/Vertex.h>

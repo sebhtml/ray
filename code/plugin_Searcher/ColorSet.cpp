@@ -187,6 +187,7 @@ void ColorSet::printSummary(){
 	cout<<endl;
 	cout<<"Operations"<<endl;
 	cout<<endl;
+	cout<<"Keys in index: "<<m_index.size()<<endl;
 	cout<<"Observed collisions when populating the index: "<<m_collisions<<endl;
 	cout<<endl;
 
@@ -352,57 +353,6 @@ VirtualKmerColorHandle ColorSet::getVirtualColorFrom(VirtualKmerColorHandle hand
 	// update its hash...
 
 	VirtualKmerColor*oldVirtualColor=getVirtualColor(handle);
-
-	// case 1. no virtual color has the physical color
-	if(m_index.count(color)==0){
-		// no virtual color has this physical color...
-		
-		m_operations[OPERATION_NO_VIRTUAL_COLOR_HAS_PHYSICAL_COLOR_CREATION]++;
-
-		#ifdef ASSERT_LOW_LEVEL
-		assertNoVirtualColorDuplicates(handle,color,365);
-		#endif
-
-		return createVirtualColorFrom(handle,color);
-	}
-
-	// at this point, at least a virtual color has the physical color
-	
-	#ifdef ASSERT
-	assert(m_index.count(color)>0);
-	assert(m_index[color].size()!=0);
-	assert(m_index[color].size()>=1);
-	#endif
-
-	int oldNumberOfColors=getNumberOfPhysicalColors(handle);
-	int targetNumberOfColors=oldNumberOfColors+1;
-
-	#ifdef ASSERT
-	assert(targetNumberOfColors>=1);
-	#endif
-
-	// see if any of them have the correct number of colors
-	
-	// case 2. no virtual color has the correct number of physical colors
-	if(m_index[color].count(targetNumberOfColors)==0){
-
-		// no virtual color with thte physical color
-		// has the correct number of colors
-
-		m_operations[OPERATION_NO_VIRTUAL_COLOR_HAS_COUNT_CREATION]++;
-
-		#ifdef ASSERT_LOW_LEVEL
-		assertNoVirtualColorDuplicates(handle,color,397);
-		#endif
-	
-		return createVirtualColorFrom(handle,color);
-	}
-
-	#ifdef ASSERT
-	assert(m_index[color].count(targetNumberOfColors)>0);
-	assert(m_index[color][targetNumberOfColors].size()>=1);
-	#endif
-
 	// check if any of them have the correct hash
 	
 	uint64_t oldHash=oldVirtualColor->getCachedHashValue();
@@ -416,7 +366,7 @@ VirtualKmerColorHandle ColorSet::getVirtualColorFrom(VirtualKmerColorHandle hand
 	uint64_t expectedHash=applyHashOperation(oldHash,color);
 
 	// case 3. no virtual color has the expected hash value
-	if(m_index[color][targetNumberOfColors].count(expectedHash)==0){
+	if(m_index.count(expectedHash)==0){
 
 		// at this point
 		// at least one virtual color has the color and the correct number
@@ -435,15 +385,15 @@ VirtualKmerColorHandle ColorSet::getVirtualColorFrom(VirtualKmerColorHandle hand
 	}
 
 	#ifdef ASSERT
-	assert(m_index[color][targetNumberOfColors].count(expectedHash)>0);
-	assert(m_index[color][targetNumberOfColors][expectedHash].size()>=1);
+	assert(m_index.count(expectedHash)>0);
+	assert(m_index[expectedHash].size()>=1);
 	#endif
 
 	// for each of the hits
 	// check if they have all the required colors
 	// if so, return it
 	
-	set<VirtualKmerColorHandle>*hits=&(m_index[color][targetNumberOfColors][expectedHash]);
+	set<VirtualKmerColorHandle>*hits=&(m_index[expectedHash]);
 
 	//cout<<"hits "<<hits->size()<<endl;
 
@@ -536,74 +486,22 @@ bool ColorSet::virtualColorHasPhysicalColor(VirtualKmerColorHandle handle,Physic
 void ColorSet::removeVirtualColorFromIndex(VirtualKmerColorHandle handle){
 
 	VirtualKmerColor*virtualColor=getVirtualColor(handle);
-	set<PhysicalKmerColor>*colors=virtualColor->getPhysicalColors();
 
 	uint64_t hashValue=virtualColor->getCachedHashValue();
-	int numberOfPhysicalColors=virtualColor->getNumberOfPhysicalColors();
 
-	// purge things from the index
-	for(set<PhysicalKmerColor>::iterator i=colors->begin();
-		i!=colors->end();i++){
-		
-		PhysicalKmerColor physicalColor=*i;
+	m_index[hashValue].erase(handle);
 
-		#ifdef ASSERT
-		assert(m_index.count(physicalColor)>0);
-		assert(m_index[physicalColor].count(numberOfPhysicalColors)>0);
-		assert(m_index[physicalColor][numberOfPhysicalColors].count(hashValue)>0);
-		#endif
-
-		m_index[physicalColor][numberOfPhysicalColors][hashValue].erase(handle);
-
-		// No other has the same hash value
-		if(m_index[physicalColor][numberOfPhysicalColors][hashValue].size()==0){
-			m_index[physicalColor][numberOfPhysicalColors].erase(hashValue);
-		}
-
-		// no other has the same number of colors
-		if(m_index[physicalColor][numberOfPhysicalColors].size()==0){
-			m_index[physicalColor].erase(numberOfPhysicalColors);
-		}
-
-		// No other have this color.
-		if(m_index[physicalColor].size()==0){
-			m_index.erase(physicalColor);
-		}
-	}
-
-
+	if(m_index[hashValue].size()==0)
+		m_index.erase(hashValue);
 }
 
 void ColorSet::addVirtualColorToIndex(VirtualKmerColorHandle handle){
 
 	VirtualKmerColor*virtualColor=getVirtualColor(handle);
-	set<PhysicalKmerColor>*colors=virtualColor->getPhysicalColors();
 
 	uint64_t hashValue=virtualColor->getCachedHashValue();
-	int numberOfPhysicalColors=virtualColor->getNumberOfPhysicalColors();
 
-	// index it
-	for(set<PhysicalKmerColor>::iterator i=colors->begin();i!=colors->end();i++){
-	
-		PhysicalKmerColor physicalColor=*i;
-		m_index[physicalColor][numberOfPhysicalColors][hashValue].insert(handle);
-
-		#ifdef ASSERT
-		assert(m_index[physicalColor][numberOfPhysicalColors][hashValue].size()>=1);
-		#endif
-
-		if(m_index[physicalColor][numberOfPhysicalColors][hashValue].size()>1){
-			cout<<"Warning: collision !, with "<<m_index[physicalColor][numberOfPhysicalColors][hashValue].size()<<" elements in bucket";
-			cout<<", hash feather is valued at "<<hashValue<<" for "<<colors->size()<<" colors, the list is";
-			for(set<PhysicalKmerColor>::iterator j=colors->begin();j!=colors->end();j++){
-				cout<<" "<<*j;
-			}
-			cout<<" virtual color: "<<handle<<" indexed physical color: "<<physicalColor;
-			cout<<endl;
-			m_collisions++;
-		}
-	}
-
+	m_index[hashValue].insert(handle);
 }
 
 VirtualKmerColorHandle ColorSet::createVirtualColorHandleFromScratch(){
@@ -635,14 +533,6 @@ void ColorSet::assertNoVirtualColorDuplicates(VirtualKmerColorHandle handle,Phys
 				printPhysicalColors(&desiredColors);
 				cout<<"previous virtual color was ";
 				cout<<handle<<" with exactly "<<getVirtualColor(handle)->getNumberOfPhysicalColors()<<" physical colors"<<endl;
-
-				set<PhysicalKmerColor>*colors4=getVirtualColor(i)->getPhysicalColors();
-				for(set<PhysicalKmerColor>::iterator j=colors4->begin();j!=colors4->end();j++){
-					assert(m_index.count(*j)>0);
-					assert(m_index[*j].count(getVirtualColor(i)->getNumberOfPhysicalColors())>0);
-					assert(m_index[*j][getVirtualColor(i)->getNumberOfPhysicalColors()].count(getVirtualColor(i)->getCachedHashValue())>0);
-					assert(m_index[*j][getVirtualColor(i)->getNumberOfPhysicalColors()][getVirtualColor(i)->getCachedHashValue()].count(i)>0);
-				}
 
 				printPhysicalColors(getVirtualColor(handle)->getPhysicalColors());
 			}

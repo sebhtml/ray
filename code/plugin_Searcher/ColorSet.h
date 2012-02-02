@@ -76,16 +76,7 @@ class ColorSet{
 /** a list of physical colors **/
 	set<PhysicalKmerColor> m_physicalColors;
 
-/** index
- * physical color
- * 	number of physical colors
- * 		hash value
- * 			list of virtual colors that:
- * 				have the physical color
- * 				have <number of physical colors> colors
- * 				have the hash <hash value>
- */
-	map<PhysicalKmerColor,map<int,map<uint64_t,set<VirtualKmerColorHandle> > > > m_index;
+	map<uint64_t,set<VirtualKmerColorHandle> > m_index;
 
 	uint64_t m_collisions;
 
