@@ -44,6 +44,8 @@ class SearchDirectory{
 	int m_currentSequencePosition;
 	string m_currentSequenceHeader;
 	string m_currentSequenceBuffer;
+	int m_currentSequenceNumberOfAvailableKmers;
+
 	int m_currentFile;
 	int m_currentSequence;
 
@@ -71,7 +73,9 @@ public:
 	void setCount(int file,int count);
 
 	// sequence reader
-	void createSequenceReader(int file,int sequence);
+	void createSequenceReader(int file,int sequence,int kmerLength);
+
+	int getCurrentSequenceLengthInKmers();
 	bool hasNextKmer(int kmerLength);
 	void iterateToNextKmer();
 	void getNextKmer(int kmerLength,Kmer*kmer);

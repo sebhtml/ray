@@ -110,6 +110,11 @@ class Searcher :  public CorePlugin {
 /** translator for virtual colors **/
 	ColorSet m_colorSet;
 
+	uint64_t m_processedFiles;
+	uint64_t m_processedSequences;
+	uint64_t m_sequencesToProcess;
+	uint64_t m_filesToProcess;
+
 	PhysicalKmerColor m_color;
 
 	/** indicates if colors must be added for this sequence. **/
@@ -275,6 +280,8 @@ class Searcher :  public CorePlugin {
 	int m_globalSequenceIterator;
 	int m_globalFileIterator;
 
+	int m_currentLength;
+
 
 //_-----------------_//
 
@@ -284,7 +291,7 @@ class Searcher :  public CorePlugin {
 
 	uint64_t m_lastPrinted;
 
-	bool isSequenceOwner();
+	bool isFileOwner(int globalFile);
 
 	void printDirectoryStart();
 

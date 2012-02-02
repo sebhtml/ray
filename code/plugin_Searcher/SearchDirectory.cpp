@@ -138,7 +138,7 @@ void SearchDirectory::setCount(int file,int count){
 	m_counts[file]=count;
 }
 
-void SearchDirectory::createSequenceReader(int file,int sequence){
+void SearchDirectory::createSequenceReader(int file,int sequence,int kmerLength){
 
 	#ifdef ASSERT
 	assert(file<(int)m_files.size());
@@ -226,6 +226,28 @@ void SearchDirectory::createSequenceReader(int file,int sequence){
 	#ifdef CONFIG_SEARCH_DIR_VERBOSE
 	cout<<"Ready to process sequence "<<sequence<<endl;
 	#endif
+
+
+	/* at this point, we are ready to read. but first, we want to get the number of k-mers to
+ * pump */
+
+	m_currentSequenceNumberOfAvailableKmers=0;
+
+/*
+	Kmer dummy;
+	
+	while(hasNextKmer(kmerLength)){
+		getNextKmer(kmerLength,&dummy);
+		m_currentSequenceNumberOfAvailableKmers++;
+		iterateToNextKmer();
+	}
+
+	m_currentFileStream.seekg(currentLocation);
+*/
+}
+
+int SearchDirectory::getCurrentSequenceLengthInKmers(){
+	return m_currentSequenceNumberOfAvailableKmers;
 }
 
 bool SearchDirectory::hasNextKmer(int kmerLength){
