@@ -995,6 +995,9 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		m_lastPrinted=0;
 		m_derivative.addX(m_kmersProcessed);
 
+		m_processedFiles=0;
+		m_processedSequences=0;
+
 	// we must check the hits
 	}else if(!m_checkedHits){
 	
@@ -1144,6 +1147,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 	// all sequences in a file were processed
 	}else if(!m_finished && m_sequenceIterator==m_searchDirectories[m_directoryIterator].getCount(m_fileIterator)){
+
 		m_fileIterator++;
 		m_globalFileIterator++;
 		m_sequenceIterator=0;
@@ -1152,6 +1156,8 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		cout<<"Next file"<<endl;
 		#endif
 	
+		m_processedFiles++;
+
 	// this sequence is not owned by me
 	}else if(!isFileOwner(m_globalFileIterator) && !m_finished){
 
@@ -1194,6 +1200,8 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		m_coloredCoverageDistribution.clear();
 
 		m_requestedCoverage=false;
+
+		m_processedSequences++;
 
 	// compute abundances
 	}else if(m_createdSequenceReader && !m_finished){
@@ -2284,6 +2292,7 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 
 		m_processedFiles=0;
 		m_processedSequences=0;
+
 		m_sequencesToProcess=0;
 		m_filesToProcess=0;
 
