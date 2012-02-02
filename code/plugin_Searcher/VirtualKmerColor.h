@@ -72,7 +72,7 @@ public:
 
 	void clear();
 
-	bool virtualColorHasAllPhysicalColorsOf(VirtualKmerColor*a);
+	bool virtualColorHasAllPhysicalColorsOf(VirtualKmerColor*a,PhysicalKmerColor color);
 
 	void copyPhysicalColors(VirtualKmerColor*a);
 };

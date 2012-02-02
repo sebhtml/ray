@@ -106,7 +106,8 @@ CXXFLAGS-$(OPTIMIZE) += -O3
 ifeq ($(INTEL_COMPILER),n)
 # g++ options
 ifeq ($(uname_S),Linux)
-	CXXFLAGS += -Wall -ansi  #-std=c++98
+	#-std=c++98
+	CXXFLAGS += -Wall -ansi
 	CXXFLAGS-$(PEDANTIC) += -pedantic -Wextra 
 endif
 endif

@@ -65,8 +65,7 @@ class ColorSet{
 	int OPERATION_allocateVirtualColorHandle ;
 	int OPERATION_DUMMY ;
 
-
-	uint64_t m_operations[16];
+	uint64_t m_operations[32];
 
 /** a list of available handles **/
 	set<VirtualKmerColorHandle> m_availableHandles;
@@ -77,6 +76,15 @@ class ColorSet{
 /** a list of physical colors **/
 	set<PhysicalKmerColor> m_physicalColors;
 
+/** index
+ * physical color
+ * 	number of physical colors
+ * 		hash value
+ * 			list of virtual colors that:
+ * 				have the physical color
+ * 				have <number of physical colors> colors
+ * 				have the hash <hash value>
+ */
 	map<PhysicalKmerColor,map<int,map<uint64_t,set<VirtualKmerColorHandle> > > > m_index;
 
 	uint64_t m_collisions;
@@ -85,6 +93,7 @@ class ColorSet{
 
 /** get the hash value for a set of colors **/
 	uint64_t getHash(set<PhysicalKmerColor>*colors);
+
 /** allocates a virtual color handle **/
 	VirtualKmerColorHandle allocateVirtualColorHandle();
 
@@ -100,6 +109,15 @@ class ColorSet{
 	VirtualKmerColorHandle createVirtualColorFrom(VirtualKmerColorHandle handle,PhysicalKmerColor color);
 
 	bool virtualColorHasAllPhysicalColorsOf(VirtualKmerColorHandle toInvestigate,VirtualKmerColorHandle list);
+
+	void addVirtualColorToIndex(VirtualKmerColorHandle handle);
+	void removeVirtualColorFromIndex(VirtualKmerColorHandle handle);
+
+	VirtualKmerColorHandle createVirtualColorHandleFromScratch();
+
+	void assertNoVirtualColorDuplicates(VirtualKmerColorHandle handle,PhysicalKmerColor color,int id);
+
+	void printPhysicalColors(set<PhysicalKmerColor>*colors);
 public:
 	
 	ColorSet();
@@ -117,7 +135,7 @@ public:
 	VirtualKmerColorHandle getVirtualColorFrom(VirtualKmerColorHandle handle,PhysicalKmerColor color);
 
 	int getTotalNumberOfPhysicalColors();
-	int getTotalNumberOfVirtualColors();
+	uint64_t getTotalNumberOfVirtualColors();
 
 	void printSummary();
 	void printColors();

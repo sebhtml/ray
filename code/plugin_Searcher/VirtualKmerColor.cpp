@@ -20,23 +20,25 @@
 */
 
 #include <plugin_Searcher/VirtualKmerColor.h>
-
+#include <iostream>
+using namespace std;
 #ifdef ASSERT
 #include <assert.h>
 #endif
 
 VirtualKmerColor::VirtualKmerColor(){
-	m_references=0;
+	clear();
 }
 
 void VirtualKmerColor::clear(){
 	
+	m_references=0;
+	m_colors.clear();
+	m_hash=0;
+
 	#ifdef ASSERT
 	assert(getNumberOfReferences()==0);
 	#endif
-
-	m_colors.clear();
-	m_hash=0;
 
 	#ifdef ASSERT
 	assert(getNumberOfPhysicalColors()==0);
@@ -56,6 +58,11 @@ void VirtualKmerColor::decrementReferences(){
 }
 
 void VirtualKmerColor::addPhysicalColor(PhysicalKmerColor color){
+
+	#ifdef ASSERT
+	assert(!hasPhysicalColor(color));
+	#endif
+
 	m_colors.insert(color);
 }
 
@@ -72,33 +79,19 @@ bool VirtualKmerColor::hasPhysicalColor(PhysicalKmerColor color){
 }
 
 bool VirtualKmerColor::hasPhysicalColors(set<PhysicalKmerColor>*colors){
-	if((int)colors->size()!=getNumberOfPhysicalColors()){
-		return false;
-	}
 
-	// verify the count
-	if((int)colors->size()==getNumberOfPhysicalColors()){
-		bool correct=true;
+	// verify the colors
+	for(set<PhysicalKmerColor>::iterator i=colors->begin();
+		i!=colors->end();i++){
 
-		// verify the colors
-		for(set<PhysicalKmerColor>::iterator i=colors->begin();
-			i!=colors->end();i++){
+		PhysicalKmerColor physicalColor=*i;
 
-			PhysicalKmerColor physicalColor=*i;
-
-			if(!hasPhysicalColor(physicalColor)){
-				correct=false;
-				break;
-			}
-		}
-
-		// we found the correct choice already !
-		if(correct){
-			return true;
+		if(!hasPhysicalColor(physicalColor)){
+			return false;
 		}
 	}
 
-	return false;
+	return true;
 }
 
 void VirtualKmerColor::setHash(uint64_t hash){
@@ -110,19 +103,43 @@ uint64_t VirtualKmerColor::getCachedHashValue(){
 }
 
 int VirtualKmerColor::getNumberOfPhysicalColors(){
-	return m_colors.size();
+	return getPhysicalColors()->size();
 }
 
-bool VirtualKmerColor::virtualColorHasAllPhysicalColorsOf(VirtualKmerColor*a){
-	set<PhysicalKmerColor>*colors=a->getPhysicalColors();
+bool VirtualKmerColor::virtualColorHasAllPhysicalColorsOf(VirtualKmerColor*a,PhysicalKmerColor color){
+	
+	// we are searching for a virtual color with only the physical color <color> and 
+	// the physical colors of VirtualKmerColor <a>
 
-	for(set<PhysicalKmerColor>::iterator i=colors->begin();
-		i!=colors->end();i++){
-		
-		PhysicalKmerColor color=*i;
+	// this don't have the physical color <color>
+	if(!hasPhysicalColor(color)){
+		//cout<<"bah don't have color "<<color<<endl;
+		//
+		return false;
+	}
 
-		if(!hasPhysicalColor(color))
-			return false;
+	// this does not have the correct number of physical colors
+	if((a->getNumberOfPhysicalColors()+1) != getNumberOfPhysicalColors()){
+/*
+		cout<<" mew wrong count"<<endl;
+		cout<<"Expected: "<<(a->getNumberOfPhysicalColors()+1)<<" Actual: "<<getNumberOfPhysicalColors()<<endl;
+		cout<<"a->getNumberOfPhysicalColors()-> "<<a->getNumberOfPhysicalColors()<<endl;
+*/
+
+		return false;
+	}
+
+	// we don't need to check the hash because it was done
+	// upstream already, hopefully...
+	// anyway, the class VirtualKmerColor does not have the methods 
+	// to do hash checking
+	
+	// the current virtual color does not have all the required 
+	// physical colors
+	if(!hasPhysicalColors(a->getPhysicalColors())){
+		//cout<<"ah don't have all physical colors"<<endl;
+		//
+		return false;
 	}
 
 	return true;

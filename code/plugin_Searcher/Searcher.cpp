@@ -18,7 +18,7 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#define PROCESSED_PERIOD 1000000
+#define PROCESSED_PERIOD 10000
 
 #include <plugin_Searcher/Searcher.h>
 #include <plugin_VerticesExtractor/Vertex.h>
@@ -1956,6 +1956,7 @@ void Searcher::showProcessedKmers(){
 
 	if(m_switchMan->getSlaveMode()==RAY_SLAVE_MODE_ADD_COLORS){
 		m_colorSet.printSummary();
+		//m_colorSet.printColors();
 	}
 
 	m_lastPrinted=m_kmersProcessed;
@@ -2183,11 +2184,14 @@ void Searcher::call_RAY_MPI_TAG_ADD_KMER_COLOR(Message*message){
 		VirtualKmerColorHandle virtualColorHandle=node->getVirtualColor();
 
 		// the physical color is already there
+		// we don't need to add it...
 		if(m_colorSet.virtualColorHasPhysicalColor(virtualColorHandle,color)){
 			continue;
 		}
 
 		// get a virtual color with the requested physical colors
+		// it will fetch an already existing virtual color, if any
+		// otherwise, it will create a new one.
 		VirtualKmerColorHandle newVirtualColor=m_colorSet.getVirtualColorFrom(virtualColorHandle,color);
 
 		node->setVirtualColor(newVirtualColor);
