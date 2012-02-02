@@ -1,11 +1,15 @@
-#include <scaffolder/ScaffoldingAlgorithm.h>
-#include <scaffolder/ScaffoldingVertex.h>
-#include <scaffolder/ScaffoldingEdge.h>
+#include <plugin_Scaffolder/ScaffoldingAlgorithm.h>
+#include <plugin_Scaffolder/ScaffoldingVertex.h>
+#include <plugin_Scaffolder/ScaffoldingEdge.h>
 #include <string>
 #include <iostream>
 using namespace std;
 
 int main(int argc,char**argv){
+
+	if(argc==1)
+		return 0;
+
 	string vertexFile=argv[1];
 	string edgeFile=argv[2];
 
@@ -14,6 +18,10 @@ int main(int argc,char**argv){
 
 	{
 	ifstream f(vertexFile.c_str());
+
+	if(!f)
+		return 0;
+
 	int n=0;
 	while(!f.eof()){
 		string token="";

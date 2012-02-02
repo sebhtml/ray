@@ -1,8 +1,8 @@
 
 g++ scaffolder_test.cpp \
- ../code/scaffolder/ScaffoldingVertex.cpp \
- ../code/scaffolder/ScaffoldingEdge.cpp \
- ../code/scaffolder/ScaffoldingAlgorithm.cpp \
+ ../code/plugin_Scaffolder/ScaffoldingVertex.cpp \
+ ../code/plugin_Scaffolder/ScaffoldingEdge.cpp \
+ ../code/plugin_Scaffolder/ScaffoldingAlgorithm.cpp \
  -O3 -o scaffolderTest -I ../code -I .. \
 -Wall
 

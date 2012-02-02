@@ -1,4 +1,4 @@
-#include <graph/CoverageDistribution.h>
+#include <plugin_CoverageGatherer/CoverageDistribution.h>
 #include <string>
 #include <map>
 #include <unit-tests/unitTest.h>

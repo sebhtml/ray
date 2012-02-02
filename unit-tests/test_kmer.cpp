@@ -1,10 +1,10 @@
 
-#include <structures/Vertex.h>
+#include <plugin_VerticesExtractor/Vertex.h>
 #include <unit-tests/unitTest.h>
-#include <structures/Kmer.h>
-#include <core/constants.h>
+#include <plugin_KmerAcademyBuilder/Kmer.h>
+#include <application_core/constants.h>
 #include <set>
-#include <core/common_functions.h>
+#include <application_core/common_functions.h>
 #include <vector>
 #include <assert.h>
 #include <string>
