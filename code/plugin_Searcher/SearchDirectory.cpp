@@ -116,7 +116,8 @@ void SearchDirectory::countEntriesInFile(int fileNumber){
 
 	while(!f.eof()){
 		f.getline(line,10000);
-		if(strlen(line)>0 && line[0]=='>'){
+
+		if(lineIsSequenceHeader(line)){
 			count++;
 		}
 	}
@@ -204,8 +205,11 @@ void SearchDirectory::createSequenceReader(int file,int sequence,int kmerLength)
 	
 	while(m_currentSequence<sequence && !m_currentFileStream.eof()){
 		char line[10000];
-		m_currentFileStream.getline(line,10000);
-		if(strlen(line)>0 && line[0]=='>'){
+
+		readLineFromFile(line,10000);
+
+		if(lineIsSequenceHeader(line)){
+
 			m_currentSequence++;
 			// we have the header
 			m_currentSequenceHeader=line;
@@ -232,18 +236,17 @@ void SearchDirectory::createSequenceReader(int file,int sequence,int kmerLength)
  * pump */
 
 	m_currentSequenceNumberOfAvailableKmers=0;
+}
 
-/*
-	Kmer dummy;
-	
-	while(hasNextKmer(kmerLength)){
-		getNextKmer(kmerLength,&dummy);
-		m_currentSequenceNumberOfAvailableKmers++;
-		iterateToNextKmer();
+void SearchDirectory::readLineFromFile(char*line,int length){
+	// use the buffer
+	if(m_bufferedLine.length()>0){
+		strcpy(line,m_bufferedLine.c_str());
+		m_bufferedLine.clear();
+		return;
 	}
-
-	m_currentFileStream.seekg(currentLocation);
-*/
+	
+	m_currentFileStream.getline(line,length);
 }
 
 int SearchDirectory::getCurrentSequenceLengthInKmers(){
@@ -387,13 +390,18 @@ void SearchDirectory::loadSomeSequence(){
 	int loaded=0;
 	for(int i=0;i<lines;i++){
 		char line[100000];
-		int position=m_currentFileStream.tellg();
-		m_currentFileStream.getline(line,100000);
+
+		readLineFromFile(line,100000);
 
 		// we reached the next sequence
 		// rollback to where we were before
-		if(strlen(line)>0 && line[0]=='>'){
-			m_currentFileStream.seekg(position);// return to the old place
+		if(lineIsSequenceHeader(line)){
+
+			#ifdef ASSERT
+			assert(m_bufferedLine.length()==0);
+			#endif
+
+			m_bufferedLine=line;
 			m_noMoreSequence=true;
 			break; // we don't add this line and we stop here
 		}
@@ -409,6 +417,10 @@ void SearchDirectory::loadSomeSequence(){
 	// set the new content.
 	m_currentSequencePosition=0;
 	m_currentSequenceBuffer=newContent.str();
+}
+
+bool SearchDirectory::lineIsSequenceHeader(char*line){
+	return strlen(line)>0 && line[0]=='>';
 }
 
 /**

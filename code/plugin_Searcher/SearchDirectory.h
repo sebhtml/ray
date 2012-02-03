@@ -32,6 +32,9 @@ using namespace std;
 
 class SearchDirectory{
 
+/** this is to avoid using tellg() and seekg() **/
+	string m_bufferedLine;
+
 	bool m_hasN;
 
 	string m_path;
@@ -56,6 +59,11 @@ class SearchDirectory{
 
 	/** lazy load some sequences */
 	void loadSomeSequence();
+
+
+	void readLineFromFile(char*line,int length);
+
+	bool lineIsSequenceHeader(char*line);
 
 public:
 	void constructor(string path);
