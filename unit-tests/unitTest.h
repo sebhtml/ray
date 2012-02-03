@@ -22,15 +22,21 @@
 #ifndef _unitTest
 #define _unitTest
 
+/* assertEquals is a macro because we want line numbers */
+
 #define assertEquals(expected,actual) \
 if(expected!=actual) {\
 	cout<<endl; \
+	cout<<"FAIL"<<endl; \
 	cout<<"Failed unit test (assertEquals)"<<endl; \
 	cout<<"Expected: "<<expected<<endl; \
 	cout<<"Actual: "<<actual<<endl; \
 	cout<<"File: "<<__FILE__<<endl; \
 	cout<<"Function: "<<__func__<<endl; \
 	cout<<"Line: "<<__LINE__<<endl; \
-} 
+}else{ \
+	cout<<endl; \
+	cout<<"PASS"<<endl; \
+}
 
 #endif

@@ -1,24 +1,33 @@
-CODE=../code
+function buildRay(){
+	
+	MAXKMERLENGTH=$1
 
-g++ $CODE/structures/Direction.cpp $CODE/structures/ReadAnnotation.cpp $CODE/memory/malloc_types.cpp  $CODE/structures/Vertex.cpp test_kmer.cpp  $CODE/core/common_functions.cpp $CODE/structures/Kmer.cpp $CODE/cryptography/crypto.cpp -I$CODE -I. -D MAXKMERLENGTH=32 -DASSERT -I..
-./a.out TGAAATGGAAATGGTCTGGGAAG
+	mpicxx ../code/plugin_SeedExtender/Direction.cpp ../code/plugin_SequencesIndexer/ReadAnnotation.cpp \
+../RayPlatform/*/*.cpp  ../code/plugin_VerticesExtractor/Vertex.cpp test_kmer.cpp  ../code/application_core/common_functions.cpp  \
+../code/plugin_KmerAcademyBuilder/Kmer.cpp -I$CODE -I. -D MAXKMERLENGTH=$MAXKMERLENGTH -DASSERT -I../code -I .. -I ../RayPlatform
 
-g++ $CODE/structures/Direction.cpp  $CODE/structures/ReadAnnotation.cpp $CODE/memory/malloc_types.cpp  $CODE/structures/Vertex.cpp test_kmer.cpp  $CODE/core/common_functions.cpp $CODE/structures/Kmer.cpp $CODE/cryptography/crypto.cpp -I$CODE -I. -D MAXKMERLENGTH=64 -DASSERT -I..
+}
+
+buildRay 32
+./a.out \
+TGAAATGGAAATGGTCTGGGAAG
+
+buildRay 64
 ./a.out \
 TGAAATGGAAATGGTCTGGGAAAAACAACTAAAAGATATTATTGTAGTA
 
-g++ $CODE/structures/Direction.cpp  $CODE/structures/ReadAnnotation.cpp $CODE/memory/malloc_types.cpp  $CODE/structures/Vertex.cpp test_kmer.cpp $CODE/core/common_functions.cpp  $CODE/structures/Kmer.cpp $CODE/cryptography/crypto.cpp -I$CODE -I. -D MAXKMERLENGTH=96 -DASSERT -I..
+buildRay 96
 ./a.out \
 TGAAATGGAAATGGTCTGGGAAAAACAACTAAAAGATATTATTGTAGTAGCTGGTTTTGAAATTTATGACGCTGAAATAACTCCCCACTA
 
-g++ $CODE/structures/Direction.cpp  $CODE/structures/ReadAnnotation.cpp $CODE/memory/malloc_types.cpp  $CODE/structures/Vertex.cpp test_kmer.cpp $CODE/core/common_functions.cpp $CODE/structures/Kmer.cpp  $CODE/cryptography/crypto.cpp -I$CODE -I. -D MAXKMERLENGTH=128 -DASSERT -I..
+buildRay 128
 ./a.out \
 TGAAATGGAAATGGTCTGGGAAAAACAACTAAAAGATATTATTGTAGTAGCTGGTTTTGAAATTTATGACGCTGAAATAACTCCCCACTATATTTTCACCAAATTTATT
 
-g++ $CODE/structures/Direction.cpp  $CODE/structures/ReadAnnotation.cpp $CODE/memory/malloc_types.cpp  $CODE/structures/Vertex.cpp test_kmer.cpp $CODE/core/common_functions.cpp $CODE/structures/Kmer.cpp $CODE/cryptography/crypto.cpp  -I$CODE -I. -D MAXKMERLENGTH=75 -DASSERT -I..
+buildRay 75
 ./a.out \
 TGAAATGGAAATGGTCTGGGAAAAACAACTAAAAGATATTATTGTAGTAGCTGGTTTTGAAATTTATGACGCT
 
-g++ $CODE/structures/Direction.cpp  $CODE/structures/ReadAnnotation.cpp $CODE/memory/malloc_types.cpp  $CODE/structures/Vertex.cpp test_kmer.cpp $CODE/core/common_functions.cpp $CODE/structures/Kmer.cpp $CODE/cryptography/crypto.cpp  -I$CODE -I. -D MAXKMERLENGTH=50 -DASSERT -I..
+buildRay 50
 ./a.out \
 TGAAATGGAAATGGTCTGGGAAAAACAACTAAAAGATATTAT
