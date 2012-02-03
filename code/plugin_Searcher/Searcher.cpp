@@ -2382,12 +2382,17 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 	// all sequences in a file were processed
 	}else if(m_sequenceIterator==m_searchDirectories[m_directoryIterator].getCount(m_fileIterator) ){
 
+		if(m_pendingMessages>0){
+			// wait for it
+			//
+
+
 		// we processed all the k-mers
 		// now we need to flush the remaining half-full buffers
 		// this section is now used if 
 		// force=true 
 		// in the above code
-		if(!m_bufferedData.isEmpty()){
+		}else if(!m_bufferedData.isEmpty()){
 
 			#ifdef ASSERT
 			assert(m_pendingMessages==0);
@@ -2446,8 +2451,7 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		m_color= m_globalSequenceIterator + COLOR_NAMESPACE * (m_directoryIterator);
 
 		#ifdef ASSERT
-		assert(m_bufferedData.isEmpty());
-		assert(m_pendingMessages==0);
+		//assert(m_pendingMessages==0); not used anymore
 		#endif
 
 		m_sequencesToProcessInFile=m_searchDirectories[m_directoryIterator].getCount(m_fileIterator);

@@ -408,15 +408,14 @@ VirtualKmerColorHandle ColorSet::getVirtualColorFrom(VirtualKmerColorHandle hand
 		
 		VirtualKmerColor*toCheck=getVirtualColor(virtualColorToInvestigate);
 
-		#ifdef ASSERT
-		assert(virtualColorHasPhysicalColor(virtualColorToInvestigate,color));
-		#endif
-
 		//cout<<"Checking virtual color "<<virtualColorToInvestigate<<endl;
 
 		if(toCheck->virtualColorHasAllPhysicalColorsOf(oldVirtualColor,color)){
 
-		
+			#ifdef ASSERT
+			assert(virtualColorHasPhysicalColor(virtualColorToInvestigate,color));
+			#endif
+	
 			m_operations[OPERATION_VIRTUAL_COLOR_HAS_COLORS_FETCH]++;
 			return virtualColorToInvestigate;
 		}
