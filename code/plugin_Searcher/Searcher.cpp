@@ -18,7 +18,7 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#define PROCESSED_PERIOD 100000
+#define PROCESSED_PERIOD 100000 /* 2^18 */
 
 #include <plugin_Searcher/Searcher.h>
 #include <plugin_VerticesExtractor/Vertex.h>
@@ -1203,6 +1203,8 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 		m_processedSequences++;
 
+		m_sequencesToProcessInFile=m_searchDirectories[m_directoryIterator].getCount(m_fileIterator);
+
 	// compute abundances
 	}else if(m_createdSequenceReader && !m_finished){
 
@@ -1957,9 +1959,10 @@ void Searcher::showProcessedKmers(){
 	}
 
 	cout<<"Rank "<<m_parameters->getRank()<<" "<<SLAVE_MODES[m_switchMan->getSlaveMode()]<<" processed files: "<<m_processedFiles<<"/"<<m_filesToProcess<<endl;
-	cout<<"Rank "<<m_parameters->getRank()<<" "<<SLAVE_MODES[m_switchMan->getSlaveMode()]<<" processed sequences: "<<m_processedSequences-1<<"/"<<m_sequencesToProcess<<endl;
+	cout<<"Rank "<<m_parameters->getRank()<<" "<<SLAVE_MODES[m_switchMan->getSlaveMode()]<<" processed sequences in file: "<<m_sequenceIterator<<"/"<<m_sequencesToProcessInFile<<endl;
+	cout<<"Rank "<<m_parameters->getRank()<<" "<<SLAVE_MODES[m_switchMan->getSlaveMode()]<<" total processed sequences: "<<m_processedSequences-1<<"/"<<m_sequencesToProcess<<endl;
 	cout<<"Rank "<<m_parameters->getRank()<<" "<<SLAVE_MODES[m_switchMan->getSlaveMode()]<<" processed k-mers for current sequence: "<<m_numberOfKmers<<"/"<<m_currentLength<<endl;
-	cout<<"Rank "<<m_parameters->getRank()<<" "<<SLAVE_MODES[m_switchMan->getSlaveMode()]<<" total processed k-mers so far: "<<m_kmersProcessed<<endl;
+	cout<<"Rank "<<m_parameters->getRank()<<" "<<SLAVE_MODES[m_switchMan->getSlaveMode()]<<" total processed k-mers: "<<m_kmersProcessed<<endl;
 
 	m_derivative.addX(m_kmersProcessed);
 
@@ -2309,6 +2312,29 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 
 		cout<<"Rank "<<m_parameters->getRank()<<" will add colors, "<<m_sequencesToProcess<<" sequences in "<<m_filesToProcess<<" files to process"<<endl;
 
+	// we have a response
+	}else if(m_pendingMessages > 0 &&
+			m_inbox->hasMessage(RAY_MPI_TAG_ADD_KMER_COLOR_REPLY)){
+
+		#ifdef ASSERT
+		assert(m_pendingMessages==1);
+		#endif
+
+		#ifdef CONFIG_DEBUG_COLORS
+		cout<<"received RAY_MPI_TAG_ADD_KMER_COLOR_REPLY, pending= "<<m_pendingMessages<<endl;
+		#endif
+
+		m_pendingMessages--;
+
+		#ifdef ASSERT
+		assert(m_pendingMessages==0);
+		#endif
+
+
+		#ifdef CONFIG_DEBUG_COLORS
+		cout<<"now => received RAY_MPI_TAG_ADD_KMER_COLOR_REPLY, pending= "<<m_pendingMessages<<endl;
+		#endif
+
 	// all directories were processed
 	}else if(m_directoryIterator==m_searchDirectories_size){
 	
@@ -2354,16 +2380,43 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		#endif
 
 	// all sequences in a file were processed
-	}else if(m_sequenceIterator==m_searchDirectories[m_directoryIterator].getCount(m_fileIterator)){
-		m_fileIterator++;
-		m_globalFileIterator++;
-		m_sequenceIterator=0;
+	}else if(m_sequenceIterator==m_searchDirectories[m_directoryIterator].getCount(m_fileIterator) ){
 
-		#ifdef CONFIG_DEBUG_COLORS
-		cout<<" file processed.."<<endl;
-		#endif
+		// we processed all the k-mers
+		// now we need to flush the remaining half-full buffers
+		// this section is now used if 
+		// force=true 
+		// in the above code
+		if(!m_bufferedData.isEmpty()){
 
-		m_processedFiles++;
+			#ifdef ASSERT
+			assert(m_pendingMessages==0);
+			#endif
+
+			m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_ADD_KMER_COLOR,m_outboxAllocator,
+				m_outbox,m_parameters->getRank());
+
+			#ifdef ASSERT
+			assert(m_pendingMessages>0);
+			#endif
+
+		// finished the file
+		}else if(m_pendingMessages==0){
+
+			#ifdef ASSERT
+			assert(m_bufferedData.isEmpty());
+			#endif
+
+			m_fileIterator++;
+			m_globalFileIterator++;
+			m_sequenceIterator=0;
+
+			#ifdef CONFIG_DEBUG_COLORS
+			cout<<" file processed.."<<endl;
+			#endif
+
+			m_processedFiles++;
+		}
 
 	// start a sequence
 	}else if(!m_createdSequenceReader){
@@ -2379,8 +2432,6 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 
 		m_numberOfKmers=0;
 		m_createdSequenceReader=true;
-
-		m_sentColor=false;
 
 		// check if we need to color the graph 
 		// for this sequence...
@@ -2399,13 +2450,15 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		assert(m_pendingMessages==0);
 		#endif
 
+		m_sequencesToProcessInFile=m_searchDirectories[m_directoryIterator].getCount(m_fileIterator);
+
 		m_processedSequences++;
 
 	// compute abundances
 	}else if(m_createdSequenceReader){
+
 		// the current sequence has been processed
-		if(m_pendingMessages==0  && m_bufferedData.isEmpty() &&  /* nothing to flush... */
-			 !m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength)){
+		if( !m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength)){
 			
 
 			#ifdef ASSERT
@@ -2424,7 +2477,7 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		// k-mers are available
 		// pull data from the sequence
 		// and throw messages onto the network
-		}else if(m_pendingMessages==0 && !m_sentColor ){
+		}else if(m_pendingMessages==0 ){
 	
 			bool force=CONFIG_FORCE_VALUE_FOR_MAXIMUM_SPEED;
 
@@ -2509,89 +2562,10 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 				}
 			}
 
-			#ifdef CONFIG_DEBUG_COLORS
-			cout<<"While loop finished"<<endl;
-			cout<<"       m_pendingMessages= "<<m_pendingMessages<<endl;
-			#endif
-
-			// at this point, we flushed something
-			// or we processed all k-mers
-			// if nothing was flushed, we force something now
-			if(m_pendingMessages==0){
-
-				#ifdef CONFIG_DEBUG_COLORS
-				cout<<" m_pendingMessages is 0, will now try to flush something..."<<endl;
-				#endif
-
-				m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_ADD_KMER_COLOR,
-					m_outboxAllocator,
-					m_outbox,m_parameters->getRank());
-
-				#ifdef ASSERT
-				assert(m_pendingMessages>=0);
-				#endif
-			}
-
-			#ifdef CONFIG_DEBUG_COLORS
-			cout<<"m_pendingMessages= "<<m_pendingMessages<<endl;
-			#endif
-
-			m_sentColor=true;
-
-			#ifdef CONFIG_DEBUG_COLORS
-			cout<<"Will wait for a reply. "<<endl;
-			#endif
-
-		// we have a response
-		}else if(m_pendingMessages > 0 &&
-				m_sentColor && m_inbox->hasMessage(RAY_MPI_TAG_ADD_KMER_COLOR_REPLY)){
-
-			#ifdef ASSERT
-			assert(m_pendingMessages==1);
-			#endif
-
-			#ifdef CONFIG_DEBUG_COLORS
-			cout<<"received RAY_MPI_TAG_ADD_KMER_COLOR_REPLY, pending= "<<m_pendingMessages<<endl;
-			#endif
-
-			m_pendingMessages--;
-
-			#ifdef ASSERT
-			assert(m_pendingMessages==0);
-			#endif
-
-			m_sentColor=false;
-
-			#ifdef CONFIG_DEBUG_COLORS
-			cout<<"now => received RAY_MPI_TAG_ADD_KMER_COLOR_REPLY, pending= "<<m_pendingMessages<<endl;
-			#endif
-
-		// we processed all the k-mers
-		// now we need to flush the remaining half-full buffers
-		// this section is now used if 
-		// force=true 
-		// in the above code
-		}else if(m_pendingMessages==0 && !m_bufferedData.isEmpty()){
-
-			#ifdef ASSERT
-			assert(m_pendingMessages==0);
-			#endif
-
-			m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_ADD_KMER_COLOR,m_outboxAllocator,
-				m_outbox,m_parameters->getRank());
-	
-			#ifdef ASSERT
-			assert(m_pendingMessages>0);
-			#endif
-
-			#ifdef CONFIG_DEBUG_COLORS
-			cout<<"Flushed something, m_pendingMessages="<<m_pendingMessages<<endl;
-			cout<<"Will wait for a reply... 998"<<endl;
-			#endif
-
-			m_sentColor=true;
 		}
+	
 	}
+
 }
 
 void Searcher::registerPlugin(ComputeCore*core){

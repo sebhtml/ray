@@ -112,6 +112,8 @@ class Searcher :  public CorePlugin {
 
 	uint64_t m_processedFiles;
 	uint64_t m_processedSequences;
+
+	uint64_t m_sequencesToProcessInFile;
 	uint64_t m_sequencesToProcess;
 	uint64_t m_filesToProcess;
 
@@ -120,7 +122,6 @@ class Searcher :  public CorePlugin {
 	/** indicates if colors must be added for this sequence. **/
 	bool m_mustAddColors;
 
-	bool m_sentColor;
 	bool m_colorSequenceKmersSlaveStarted;
 
 	/** the part of the de Bruijn graph that the current ranks owns **/
