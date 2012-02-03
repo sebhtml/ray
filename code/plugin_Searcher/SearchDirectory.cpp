@@ -34,6 +34,9 @@ using namespace std;
 
 
 void SearchDirectory::constructor(string path){
+	m_hasBufferedLine=false;
+	strcpy(m_bufferedLine,"");
+
 	m_path=path;
 
 	// list entries
@@ -45,9 +48,12 @@ void SearchDirectory::constructor(string path){
 	}
 
 	m_hasFile=false;
+
+	m_currentFileStream=NULL;
 }
 
 string*SearchDirectory::getFileName(int j){
+
 	return &m_files[j];
 }
 
@@ -154,19 +160,27 @@ void SearchDirectory::createSequenceReader(int file,int sequence,int kmerLength)
 		#endif
 
 		#ifdef ASSERT
-		assert(m_currentFileStream.is_open());
+		//assert(m_currentFileStream.is_open());
 		#endif
 
-		m_currentFileStream.close();
+		fclose(m_currentFileStream);
+		m_currentFileStream=NULL;
 		m_hasFile=false;
 
 		#ifdef ASSERT
-		assert(!m_currentFileStream.is_open());
+		//assert(!m_currentFileStream.is_open());
+		assert(m_currentFileStream==NULL);
 		#endif
+
 	}
 
 	// open the file
 	if(!m_hasFile){
+
+		#ifdef ASSERT
+		assert(m_currentFileStream==NULL);
+		#endif
+
 		ostringstream fileName;
 		fileName<<m_path<<"/"<<m_files[file];
 
@@ -175,7 +189,7 @@ void SearchDirectory::createSequenceReader(int file,int sequence,int kmerLength)
 		cout<<"File has "<<getCount(file)<<" sequences"<<endl;
 		#endif
 
-		m_currentFileStream.open(fileName.str().c_str());
+		m_currentFileStream=fopen(fileName.str().c_str(),"r");
 		m_currentFile=file;
 	
 		// we set it to -1 to be able to pick up 0
@@ -184,14 +198,16 @@ void SearchDirectory::createSequenceReader(int file,int sequence,int kmerLength)
 		m_hasFile=true;
 
 		#ifdef ASSERT
-		assert(m_currentFileStream.is_open());
+		//assert(m_currentFileStream.is_open());
+		assert(m_currentFileStream!=NULL);
+		assert(m_hasFile);
 		#endif
 	}
 
 	#ifdef ASSERT
 	assert(m_hasFile);
 	assert(m_currentFile==file);
-	
+	assert(m_currentFileStream!=NULL);
 	if(m_currentSequence>=sequence){
 		cout<<"m_currentSequence: "<<m_currentSequence<<" sequence: "<<sequence<<endl;
 	}
@@ -203,16 +219,19 @@ void SearchDirectory::createSequenceReader(int file,int sequence,int kmerLength)
 
 	// here we want to advance to the sequence 
 	
-	while(m_currentSequence<sequence && !m_currentFileStream.eof()){
-		char line[10000];
+	while(m_currentSequence<sequence && !feof(m_currentFileStream)){
+		
+		char line[CONFIG_COLORED_LINE_MAX_LENGTH];
+		strcpy(line,"");
 
-		readLineFromFile(line,10000);
+		readLineFromFile(line,CONFIG_COLORED_LINE_MAX_LENGTH);
 
 		if(lineIsSequenceHeader(line)){
 
 			m_currentSequence++;
+
 			// we have the header
-			m_currentSequenceHeader=line;
+			strcpy(m_currentSequenceHeader,line);
 		}
 	}
 
@@ -223,7 +242,7 @@ void SearchDirectory::createSequenceReader(int file,int sequence,int kmerLength)
 	assert(m_currentSequence==sequence);
 	#endif
 
-	m_currentSequenceBuffer.clear();
+	strcpy(m_currentSequenceBuffer,"");
 	m_currentSequencePosition=0;
 	m_noMoreSequence=false;
 
@@ -236,62 +255,151 @@ void SearchDirectory::createSequenceReader(int file,int sequence,int kmerLength)
  * pump */
 
 	m_currentSequenceNumberOfAvailableKmers=0;
+
+	#ifdef ASSERT
+	assert(strlen(m_currentSequenceHeader)>0);
+	assert(m_currentSequenceHeader[0]=='>');
+	assert(strlen(m_currentSequenceBuffer)==0);
+	assert(!m_noMoreSequence);
+	assert(m_currentFileStream!=NULL);
+	#endif
 }
 
 void SearchDirectory::readLineFromFile(char*line,int length){
 	// use the buffer
-	if(m_bufferedLine.length()>0){
-		strcpy(line,m_bufferedLine.c_str());
-		m_bufferedLine.clear();
+	if(m_hasBufferedLine){
+		#ifdef ASSERT
+		assert(m_hasBufferedLine);
+		#endif
+
+		strcpy(line,m_bufferedLine);
+		strcpy(m_bufferedLine,"");
+		m_hasBufferedLine=false;
+
+		#ifdef CONFIG_SEARCH_DIR_VERBOSE
+		cout<<"Using buffered line!"<<endl;
+		#endif
+
+		#ifdef ASSERT
+		assert(!m_hasBufferedLine);
+		#endif
+
 		return;
 	}
 	
-	m_currentFileStream.getline(line,length);
+	#ifdef ASSERT
+	assert(strlen(m_bufferedLine)==0);
+	assert(!m_hasBufferedLine);
+	assert(m_currentFileStream!=NULL);
+	#endif
+
+	#ifdef ASSERT
+	assert(line!=NULL);
+	assert(length>0);
+	assert(m_currentFileStream!=NULL);
+	#endif
+
+	fgets(line,length,m_currentFileStream);
 }
 
 int SearchDirectory::getCurrentSequenceLengthInKmers(){
+
 	return m_currentSequenceNumberOfAvailableKmers;
 }
 
 bool SearchDirectory::hasNextKmer(int kmerLength){
+
+	#ifdef ASSERT
+	assert(kmerLength>0);
+	#endif
+
 	// attempt to load some data
-	if(((int)m_currentSequenceBuffer.length() - m_currentSequencePosition) < kmerLength
-		&& !m_noMoreSequence){
+	if( !m_noMoreSequence  && ((int)strlen(m_currentSequenceBuffer) - m_currentSequencePosition) < kmerLength
+		){
+
+		#ifdef CONFIG_SEARCH_DIR_VERBOSE
+		cout<<"hasNextKmer calls loadSomeSequence()"<<endl;
+
+		cout<<"hasNextKmer returns true kmer= "<<kmerLength<<" position= "<<m_currentSequencePosition;
+		cout<<" buffer: "<<strlen(m_currentSequenceBuffer)<<endl;
+		#endif
 
 		// load some more
 		loadSomeSequence();
+
+		#ifdef CONFIG_SEARCH_DIR_VERBOSE
+		cout<<"after"<<endl;
+		#endif
 	}
 
-	if(((int)m_currentSequenceBuffer.length() - m_currentSequencePosition) <kmerLength){
+	if(((int)strlen(m_currentSequenceBuffer) - m_currentSequencePosition) <kmerLength){
 
 		// close the file and reset the thing
-		if(m_currentSequence == getCount(m_currentFile)-1 && m_hasFile){
+		if(m_hasFile && m_currentSequence == getCount(m_currentFile)-1){
+
+			#ifdef CONFIG_SEARCH_DIR_VERBOSE
+			cout<<"Closing file in hasNextKmer"<<endl;
+			#endif
+
 			#ifdef ASSERT
-			assert(m_currentFileStream.is_open());
+			//assert(m_currentFileStream.is_open());
+			assert(m_currentFileStream!=NULL);
 			#endif
 
 			// remove the current file.
-			m_currentFileStream.close();
+			fclose(m_currentFileStream);
 			m_hasFile=false;
+			m_currentFileStream=NULL;
+
+			#ifdef ASSERT
+			//assert(!m_currentFileStream.is_open());
+			#endif
+
+			#ifdef ASSERT
+			assert(m_hasFile==false);
+			assert(m_currentFileStream==NULL);
+			#endif
 		}
+
+		#ifdef CONFIG_SEARCH_DIR_VERBOSE
+		cout<<"don't have more k-mers"<<endl;
+		#endif
 
 		return false;
 	}
+
+	#ifdef CONFIG_SEARCH_DIR_VERBOSE
+	cout<<"hasNextKmer returns true kmer= "<<kmerLength<<" position= "<<m_currentSequencePosition;
+	cout<<" buffer: "<<strlen(m_currentSequenceBuffer)<<endl;
+	#endif
 
 	return true;
 }
 
 void SearchDirectory::iterateToNextKmer(){
+
 	m_currentSequencePosition++;
 }
 
 void SearchDirectory::getNextKmer(int kmerLength,Kmer*kmer){
 
+	#ifdef ASSERT
+	assert(kmerLength>0);
+	#endif
+
+	#ifdef CONFIG_SEARCH_DIR_VERBOSE
+	cout<<"getNextKmer m_currentSequencePosition= "<<m_currentSequencePosition<<endl;
+	#endif
+
 	m_hasN=false;
 
 	char sequenceBuffer[400];
-	memcpy(sequenceBuffer,m_currentSequenceBuffer.c_str()+m_currentSequencePosition,kmerLength);
+	memcpy(sequenceBuffer,m_currentSequenceBuffer+m_currentSequencePosition,kmerLength);
 	sequenceBuffer[kmerLength]='\0';
+
+	#ifdef ASSERT
+	assert((int)strlen(sequenceBuffer)==kmerLength);
+	#endif
 
 	// convert bases to upper case
 	for(int i=0;i<kmerLength;i++){
@@ -316,6 +424,7 @@ void SearchDirectory::getNextKmer(int kmerLength,Kmer*kmer){
 
 			m_hasN=true;
 		}
+
 		sequenceBuffer[i]=nucleotide;
 	}
 
@@ -324,32 +433,36 @@ void SearchDirectory::getNextKmer(int kmerLength,Kmer*kmer){
 }
 
 bool SearchDirectory::kmerContainsN(){
+
 	return m_hasN;
 }
 
 string SearchDirectory::getCurrentSequenceName(){
+
 	int maximumLength=64;
+
+	string currentSequenceHeader=m_currentSequenceHeader;
 
 	// per default, just returns the header without any parsing...
 	#ifdef CONFIG_USE_NCBI_HEADERS
 	// if '|' are there, this is the NCBI format
 	// skip 4 '|' and return the rest
-	size_t position=m_currentSequenceHeader.find_last_of('|');
+	size_t position=currentSequenceHeader.find_last_of('|');
 
 	if(position!=string::npos){
-		if(position+2<m_currentSequenceHeader.length()){
+		if(position+2<currentSequenceHeader.length()){
 			position+=2;
 		}
 
 		#ifdef ASSERT
-		if(position>=m_currentSequenceHeader.length()){
-			cout<<"Header= "<<m_currentSequenceHeader<<endl;
+		if(position>=currentSequenceHeader.length()){
+			cout<<"Header= "<<currentSequenceHeader<<endl;
 		}
-		assert(position<m_currentSequenceHeader.length());
+		assert(position<currentSequenceHeader.length());
 		#endif
 
 		//skip the '|' and the ' '
-		return m_currentSequenceHeader.substr(position,maximumLength);
+		return currentSequenceHeader.substr(position,maximumLength);
 	}
 
 	#endif
@@ -359,13 +472,13 @@ string SearchDirectory::getCurrentSequenceName(){
 	//cout<<"code 108"<<endl;
 
 	#ifdef ASSERT
-	if(m_currentSequenceHeader.length()==0){
-		cout<<"m_currentSequenceHeader is empty, fatal"<<endl;
+	if(currentSequenceHeader.length()==0){
+		cout<<"currentSequenceHeader is empty, fatal"<<endl;
 	}
-	assert(m_currentSequenceHeader.length()>0);
+	assert(currentSequenceHeader.length()>0);
 	#endif
 
-	return m_currentSequenceHeader.substr(1,maximumLength);
+	return currentSequenceHeader.substr(1,maximumLength);
 }
 
 // load in chunks
@@ -373,41 +486,83 @@ void SearchDirectory::loadSomeSequence(){
 	if(m_noMoreSequence)
 		return;
 
+	#ifdef ASSERT
+	assert(m_currentFileStream!=NULL);
+	assert(!m_noMoreSequence);
+	#endif
+
 	#ifdef CONFIG_SEARCH_DIR_VERBOSE
 	cout<<"Loading some more bits"<<endl;
 	#endif
 
-	ostringstream newContent;
+	char newContent[CONFIG_COLORED_LINE_MAX_LENGTH];
+	int contentPosition=0;
+	strcpy(newContent,"");
 	
 	// copy old content
 	// discard already processed content -- the bytes 
 	// before m_currentSequencePosition that is
 	//cout<<"code 203"<<endl;
-	newContent<<m_currentSequenceBuffer.substr(m_currentSequencePosition,m_currentSequenceBuffer.length());
+	
+	int theLength=strlen(m_currentSequenceBuffer);
+
+	while(m_currentSequencePosition<theLength){
+
+		#ifdef ASSERT
+		assert(theLength>0);
+		#endif
+
+		newContent[contentPosition++]=m_currentSequenceBuffer[m_currentSequencePosition++];
+	}
+
+	newContent[contentPosition]='\0';
 
 	// load some lines
 	int lines=100;
 	int loaded=0;
-	for(int i=0;i<lines;i++){
-		char line[100000];
+	int i=0;
 
-		readLineFromFile(line,100000);
+	#ifdef CONFIG_SEARCH_DIR_VERBOSE
+	cout<<"after copying remainings, newContent is "<<strlen(newContent)<<endl;
+	#endif
+
+	while(!feof(m_currentFileStream) && (i++ < lines)){
+
+		char line[CONFIG_COLORED_LINE_MAX_LENGTH];
+		strcpy(line,"");
+
+		readLineFromFile(line,CONFIG_COLORED_LINE_MAX_LENGTH);
 
 		// we reached the next sequence
 		// rollback to where we were before
 		if(lineIsSequenceHeader(line)){
 
 			#ifdef ASSERT
-			assert(m_bufferedLine.length()==0);
+			assert(strlen(m_bufferedLine)==0);
+			assert(!m_hasBufferedLine);
 			#endif
 
-			m_bufferedLine=line;
-			m_noMoreSequence=true;
-			break; // we don't add this line and we stop here
-		}
+			strcpy(m_bufferedLine,line);
 
-		newContent<<line;
-		loaded++;
+			m_noMoreSequence=true;
+
+			m_hasBufferedLine=true;
+
+			#ifdef CONFIG_SEARCH_DIR_VERBOSE
+			cout<<"THe line is a header, buffering"<<endl;
+			#endif
+
+			break; // we don't add this line and we stop here
+		}else{
+
+			strcat(newContent,line);
+			loaded++;
+		}
+	}
+
+	/* there is no more sequence if the end was reached... */
+	if(feof(m_currentFileStream)){
+		m_noMoreSequence=true;
 	}
 
 	#ifdef CONFIG_SEARCH_DIR_VERBOSE
@@ -416,10 +571,19 @@ void SearchDirectory::loadSomeSequence(){
 
 	// set the new content.
 	m_currentSequencePosition=0;
-	m_currentSequenceBuffer=newContent.str();
+	strcpy(m_currentSequenceBuffer,newContent);
+
+	#ifdef ASSERT
+	assert(m_currentSequencePosition==0);
+	#endif
+
+	#ifdef CONFIG_SEARCH_DIR_VERBOSE
+	cout<<"new m_currentSequenceBuffer has "<<strlen(m_currentSequenceBuffer)<<" nucleotides"<<endl;
+	#endif
 }
 
 bool SearchDirectory::lineIsSequenceHeader(char*line){
+
 	return strlen(line)>0 && line[0]=='>';
 }
 
@@ -427,6 +591,8 @@ bool SearchDirectory::lineIsSequenceHeader(char*line){
  * \see http://www.ncbi.nlm.nih.gov/RefSeq/RSfaq.html
  */
 bool SearchDirectory::hasCurrentSequenceIdentifier(){
+
+	string currentSequenceHeader=m_currentSequenceHeader;
 
 	//cout<<"Identifier= "<<m_currentSequenceHeader<<endl;
 
@@ -438,10 +604,10 @@ bool SearchDirectory::hasCurrentSequenceIdentifier(){
 		//return false;
 	//}
 
-	if(m_currentSequenceHeader.find(">gi|") == string::npos)
+	if(currentSequenceHeader.find(">gi|") == string::npos)
 		return false;
 
-	if(m_currentSequenceHeader.find(">gi|")==0)
+	if(currentSequenceHeader.find(">gi|")==0)
 		return true;
 
 	return false;
@@ -451,8 +617,10 @@ uint64_t SearchDirectory::getCurrentSequenceIdentifier(){
 	int count=0;
 	int i=0;
 
-	while(i<(int)m_currentSequenceHeader.length() && count<2){
-		if(m_currentSequenceHeader[i]=='|')
+	string currentSequenceHeader=m_currentSequenceHeader;
+
+	while(i<(int)currentSequenceHeader.length() && count<2){
+		if(currentSequenceHeader[i]=='|')
 			count++;
 		
 		
@@ -468,7 +636,7 @@ uint64_t SearchDirectory::getCurrentSequenceIdentifier(){
 	//
 	// 9-4-1 = 4
 	//
-	string content=m_currentSequenceHeader.substr(4,i-4-1);
+	string content=currentSequenceHeader.substr(4,i-4-1);
 
 	istringstream aStream;
 	aStream.str(content);

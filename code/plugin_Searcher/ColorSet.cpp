@@ -185,10 +185,11 @@ void ColorSet::printSummary(){
 	cout<<"  Number of virtual colors: "<<getTotalNumberOfVirtualColors()<<endl;
 	cout<<"  Number of real colors: "<<getTotalNumberOfPhysicalColors()<<endl;
 	cout<<endl;
-	cout<<"Operations"<<endl;
-	cout<<endl;
 	cout<<"Keys in index: "<<m_index.size()<<endl;
 	cout<<"Observed collisions when populating the index: "<<m_collisions<<endl;
+	cout<<endl;
+
+	cout<<"Operations"<<endl;
 	cout<<endl;
 
 	cout<<"  OPERATION_getVirtualColorFrom operations: "<<m_operations[OPERATION_getVirtualColorFrom]<<endl;

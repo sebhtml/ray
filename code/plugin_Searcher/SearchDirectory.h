@@ -29,11 +29,19 @@
 using namespace std;
 
 #define DUMMY_IDENTIFIER 999999999999
+#define CONFIG_COLORED_LINE_MAX_LENGTH 10000
 
+/**
+ * This class represents a directory
+ * with fasta files
+ * to be used for coloring
+ */
 class SearchDirectory{
 
+	bool m_hasBufferedLine;
+
 /** this is to avoid using tellg() and seekg() **/
-	string m_bufferedLine;
+	char m_bufferedLine[CONFIG_COLORED_LINE_MAX_LENGTH];
 
 	bool m_hasN;
 
@@ -45,15 +53,15 @@ class SearchDirectory{
 	/** sequence lazy loader */
 	bool m_hasFile;
 	int m_currentSequencePosition;
-	string m_currentSequenceHeader;
-	string m_currentSequenceBuffer;
+	char m_currentSequenceHeader[CONFIG_COLORED_LINE_MAX_LENGTH];
+	char m_currentSequenceBuffer[CONFIG_COLORED_LINE_MAX_LENGTH];
 	int m_currentSequenceNumberOfAvailableKmers;
 
 	int m_currentFile;
 	int m_currentSequence;
 
 	bool m_noMoreSequence;
-	ifstream m_currentFileStream;
+	FILE* m_currentFileStream;
 
 	void readDirectory();
 
