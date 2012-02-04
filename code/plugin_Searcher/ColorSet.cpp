@@ -39,7 +39,8 @@ ColorSet::ColorSet(){
 	getVirtualColor(voidColor)->clear();
 
 	int i=0;
-
+	
+	OPERATION_IN_PLACE_ONE_REFERENCE=i++;
 	OPERATION_NO_VIRTUAL_COLOR_HAS_PHYSICAL_COLOR_CREATION=i++;
 	OPERATION_NO_VIRTUAL_COLOR_HAS_COUNT_CREATION=i++;
 	OPERATION_NO_VIRTUAL_COLOR_HAS_HASH_CREATION=i++;
@@ -194,6 +195,7 @@ void ColorSet::printSummary(){
 
 	cout<<"  OPERATION_getVirtualColorFrom operations: "<<m_operations[OPERATION_getVirtualColorFrom]<<endl;
 	cout<<endl;
+	cout<<"  OPERATION_IN_PLACE_ONE_REFERENCE: "<<m_operations[OPERATION_IN_PLACE_ONE_REFERENCE]<<endl;
 	cout<<"  OPERATION_NO_VIRTUAL_COLOR_HAS_PHYSICAL_COLOR_CREATION operations: "<<m_operations[OPERATION_NO_VIRTUAL_COLOR_HAS_PHYSICAL_COLOR_CREATION]<<endl;
 	cout<<"  OPERATION_NO_VIRTUAL_COLOR_HAS_COUNT_CREATION operations: "<<m_operations[OPERATION_NO_VIRTUAL_COLOR_HAS_COUNT_CREATION]<<endl;
 	cout<<"  OPERATION_NO_VIRTUAL_COLOR_HAS_HASH_CREATION operations: "<<m_operations[OPERATION_NO_VIRTUAL_COLOR_HAS_HASH_CREATION]<<endl;
@@ -349,9 +351,6 @@ VirtualKmerColorHandle ColorSet::getVirtualColorFrom(VirtualKmerColorHandle hand
 
 	m_physicalColors.insert(color);
 
-	// case X.: the virtual color has only one reference
-	// in that case, we can just add the color to it and
-	// update its hash...
 
 	VirtualKmerColor*oldVirtualColor=getVirtualColor(handle);
 	// check if any of them have the correct hash
@@ -368,6 +367,29 @@ VirtualKmerColorHandle ColorSet::getVirtualColorFrom(VirtualKmerColorHandle hand
 
 	// case 3. no virtual color has the expected hash value
 	if(m_index.count(expectedHash)==0){
+
+		// case X.: the virtual color has only one reference
+		// in that case, we can just add the color to it and
+		// update its hash...
+		// but before doing that, we need to check that no one has the expectedHash
+	
+		if(oldVirtualColor->getNumberOfReferences()==1){
+			// we can update it, no problem
+			// because nobody is using it
+			// it is the copy-on-write design pattern I guess
+
+			removeVirtualColorFromIndex(handle);
+
+			oldVirtualColor->addPhysicalColor(color);
+			oldVirtualColor->setHash(expectedHash);
+
+			addVirtualColorToIndex(handle);
+
+			m_operations[OPERATION_IN_PLACE_ONE_REFERENCE]++;
+
+			return handle;
+		}
+
 
 		// at this point
 		// at least one virtual color has the color and the correct number
