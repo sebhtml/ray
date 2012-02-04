@@ -39,6 +39,7 @@ using namespace std;
 
 #define CONFIG_SEARCH_THRESHOLD 0.001
 #define CONFIG_FORCE_VALUE_FOR_MAXIMUM_SPEED false
+#define CONFIG_NICELY_ASSEMBLED_KMER_POSITION 512
 
 void Searcher::constructor(Parameters*parameters,StaticVector*outbox,TimePrinter*timePrinter,SwitchMan*switchMan,
 	VirtualCommunicator*vc,StaticVector*inbox,RingAllocator*outboxAllocator,
@@ -1647,6 +1648,8 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 					m_matches++;
 
 					bool colorsAreUniqueInNamespaces=buffer[bufferPosition++];
+	
+					bool nicelyAssembled=buffer[bufferPosition++];
 
 					if(colorsAreUniqueInNamespaces){
 						m_coloredCoverageDistribution[coverage]++;
@@ -1667,7 +1670,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 					bufferPosition++; // skip the index
 					bufferPosition++; // skip th total
 
-					if(numberOfPaths>0 && colorsAreUniqueInNamespaces){
+					if(numberOfPaths>0 && nicelyAssembled && colorsAreUniqueInNamespaces){
 						
 						m_coloredAssembledCoverageDistribution[coverage]++;
 						m_coloredAssembledMatches++;
@@ -2093,6 +2096,10 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 		// store the uniqueness of the color
 		message2[outputBufferPosition++]=uniqueness;
 
+		int nicelyAssembledPosition=outputBufferPosition++;
+
+		message2[nicelyAssembledPosition]=false;
+
 		// store the place where the count will be deposited
 		int positionForCount=outputBufferPosition++;
 		int positionForIndex=outputBufferPosition++;
@@ -2103,6 +2110,7 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 		message2[positionForIndex]=0;
 		message2[positionForTotal]=0;
 
+
 		if(node!=NULL){
 			Kmer lowerKey=node->m_lowerKey;
 			
@@ -2110,11 +2118,29 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 
 			vector<Direction> paths;
 
+			/* here, we just want to find a path with
+ 			* a good progression */
+
 			Direction*a=node->m_directions;
+
+			bool nicelyAssembled=false;
+
 			while(a!=NULL){
 				paths.push_back(*a);
+
+				int progression=a->getProgression();
+
+				//cout<<"PROGRESSION "<<progression<<endl;
+
+				if(progression>= CONFIG_NICELY_ASSEMBLED_KMER_POSITION){
+					nicelyAssembled=true;
+				}
+
 				a=a->getNext();
 			}
+
+			/* update the flag for nicely assembled */
+			message2[nicelyAssembledPosition]=nicelyAssembled;
 
 			#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
 			cout<<"paths found: "<<paths.size()<<endl;
@@ -2795,7 +2821,7 @@ void Searcher::resolveSymbols(ComputeCore*core){
  *             - total number of paths (1)
  *               - list of paths (n*2)
  *               **/
-	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_GET_COVERAGE_AND_PATHS, KMER_U64_ARRAY_SIZE+1+1+1+3+4*3 );
+	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_GET_COVERAGE_AND_PATHS, KMER_U64_ARRAY_SIZE+1+1+1+1+3+4*3 );
 
 	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_ADD_KMER_COLOR, KMER_U64_ARRAY_SIZE+1 );
 
