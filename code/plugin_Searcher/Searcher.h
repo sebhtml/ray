@@ -233,6 +233,7 @@ class Searcher :  public CorePlugin {
 
 	map<int,uint64_t> m_coverageDistribution;
 	map<int,uint64_t> m_coloredCoverageDistribution;
+	map<int,uint64_t> m_coloredAssembledCoverageDistribution;
 
 	/** search directory objects */
 	SearchDirectory*m_searchDirectories;
@@ -250,6 +251,7 @@ class Searcher :  public CorePlugin {
 	/** number of matches for a sequence */
 	int m_matches;
 	int m_coloredMatches;
+	int m_coloredAssembledMatches;
 
 	/** k-mer length */
 	int m_kmerLength;
@@ -299,6 +301,9 @@ class Searcher :  public CorePlugin {
 	string getBaseName(string a);
 
 	void showProcessedKmers();
+
+	int getDistributionMode(map<int,uint64_t>*distribution);
+
 public:
 
 	void call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS();

@@ -42,7 +42,7 @@ void SearchDirectory::constructor(string path){
 	// list entries
 	readDirectory();
 
-	// initialise enpty counts
+	// initialise empty counts
 	for(int i=0;i<(int)m_files.size();i++){
 		m_counts.push_back(0);
 	}
@@ -300,6 +300,12 @@ void SearchDirectory::readLineFromFile(char*line,int length){
 	#endif
 
 	fgets(line,length,m_currentFileStream);
+
+	// remove the new line symbol, if any
+	
+	if(line[strlen(line)-1]=='\n'){
+		line[strlen(line)-1]='\0';
+	}
 }
 
 int SearchDirectory::getCurrentSequenceLengthInKmers(){
@@ -320,21 +326,27 @@ bool SearchDirectory::hasNextKmer(int kmerLength){
 		#ifdef CONFIG_SEARCH_DIR_VERBOSE
 		cout<<"hasNextKmer calls loadSomeSequence()"<<endl;
 
-		cout<<"hasNextKmer returns true kmer= "<<kmerLength<<" position= "<<m_currentSequencePosition;
-		cout<<" buffer: "<<strlen(m_currentSequenceBuffer)<<endl;
 		#endif
 
 		// load some more
 		loadSomeSequence();
 
 		#ifdef CONFIG_SEARCH_DIR_VERBOSE
+		cout<<"hasNextKmer returns true kmer= "<<kmerLength<<" position= "<<m_currentSequencePosition;
+		cout<<" buffer: "<<strlen(m_currentSequenceBuffer)<<endl;
+		#endif
+
+		#ifdef CONFIG_SEARCH_DIR_VERBOSE
 		cout<<"after"<<endl;
 		#endif
 	}
 
+	// if we still don't have enough data
+	// we are done
 	if(((int)strlen(m_currentSequenceBuffer) - m_currentSequencePosition) <kmerLength){
 
 		// close the file and reset the thing
+		// if the sequence is the last one
 		if(m_hasFile && m_currentSequence == getCount(m_currentFile)-1){
 
 			#ifdef CONFIG_SEARCH_DIR_VERBOSE
@@ -483,6 +495,8 @@ string SearchDirectory::getCurrentSequenceName(){
 
 // load in chunks
 void SearchDirectory::loadSomeSequence(){
+
+	// nothing to load
 	if(m_noMoreSequence)
 		return;
 
