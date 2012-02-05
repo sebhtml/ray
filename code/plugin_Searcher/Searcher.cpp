@@ -39,7 +39,7 @@ using namespace std;
 
 #define CONFIG_SEARCH_THRESHOLD 0.001
 #define CONFIG_FORCE_VALUE_FOR_MAXIMUM_SPEED false
-#define CONFIG_NICELY_ASSEMBLED_KMER_POSITION 512
+#define CONFIG_NICELY_ASSEMBLED_KMER_POSITION 128
 
 void Searcher::constructor(Parameters*parameters,StaticVector*outbox,TimePrinter*timePrinter,SwitchMan*switchMan,
 	VirtualCommunicator*vc,StaticVector*inbox,RingAllocator*outboxAllocator,
