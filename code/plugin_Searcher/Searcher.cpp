@@ -1321,7 +1321,8 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			}
 	
 			// write the file if there are not 0 matches
-			if(m_matches>0 && thresholdIsGood){
+			if(m_matches>0 && thresholdIsGood && coloredAssembledMode !=0 
+				&& coloredAssembledMode < 4*coloredMode ){
 
 				ostringstream content;
 				
