@@ -1,5 +1,6 @@
-#include <core/common_functions.h>
-#include <structures/Kmer.h>
+#include <application_core/common_functions.h>
+#include <unit-tests/unitTest.h>
+#include <plugin_KmerAcademyBuilder/Kmer.h>
 #include <map>
 #include <stdlib.h>
 #include <time.h>
@@ -43,6 +44,9 @@ void f2(){
 		if(counts[i]>=max){
 			cout<<counts[i]<<" and Max="<<max<<endl;
 		}
+	
+		assertIsLower(max,counts[i]);
+
 		assert(counts[i]<max);
 		assert(counts[i]>min);
 	}
@@ -80,6 +84,9 @@ void f1(){
 		if(counts[i]>=max){
 			cout<<counts[i]<<" and Max="<<max<<endl;
 		}
+
+		assertIsLower(max,counts[i]);
+
 		assert(counts[i]<max);
 		assert(counts[i]>min);
 	}
