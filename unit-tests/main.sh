@@ -25,7 +25,7 @@ function printFancy(){
 }
 
 
-file=main-$(date +%Y-%m-%d-%H-%M-%S)-$(getHandle)-.txt
+file=main-$(date +%Y-%m-%d-%H-%M-%S)-$(getHandle).txt
 
 (
 
@@ -79,6 +79,7 @@ failCount=$(grep FAIL *.log|wc -l)
 total=$(($passCount+$failCount))
 errors=$(grep error *.log|wc -l)
 
+echo "Total."
 printFancy $passCount $failCount $total $errors
 
 
