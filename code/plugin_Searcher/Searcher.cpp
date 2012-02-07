@@ -1986,6 +1986,11 @@ void Searcher::showProcessedKmers(){
 	}
 
 	m_lastPrinted=m_kmersProcessed;
+
+	if(m_parameters->showMemoryUsage()){
+		showMemoryUsage(m_parameters->getRank());
+	}
+
 }
 
 void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){

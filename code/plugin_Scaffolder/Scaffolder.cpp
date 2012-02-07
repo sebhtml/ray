@@ -612,10 +612,21 @@ void Scaffolder::processVertex(Kmer*vertex){
 			printf("Rank %i: gathering scaffold links [%i/%i] [%i/%i] (completed)\n",m_parameters->getRank(),
 				m_contigId+1,(int)(*m_contigs).size(),
 				m_positionOnContig+1,(int)(*m_contigs)[m_contigId].size());
+
+			if(m_parameters->showMemoryUsage()){
+				showMemoryUsage(m_parameters->getRank());
+			}
+
+
 		}else if(m_positionOnContig%10000==0){
 			printf("Rank %i: gathering scaffold links [%i/%i] [%i/%i]\n",m_parameters->getRank(),
 				m_contigId+1,(int)(*m_contigs).size(),
 				m_positionOnContig+1,(int)(*m_contigs)[m_contigId].size());
+
+
+			if(m_parameters->showMemoryUsage()){
+				showMemoryUsage(m_parameters->getRank());
+			}
 		}
 	}else if(!m_coverageReceived
 		&&m_virtualCommunicator->isMessageProcessed(m_workerId)){

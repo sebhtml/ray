@@ -79,7 +79,8 @@ Parameters::Parameters(){
 	m_profiler=false;
 	m_debugBubbles=false;
 	m_debugSeeds=false;
-	m_showMemoryUsage=false;
+	m_showMemoryUsage=true;
+
 	m_showEndingContext=false;
 	m_writeKmers=false;
 	m_showExtensionChoice=false;
