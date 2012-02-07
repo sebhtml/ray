@@ -1275,7 +1275,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				entryIsWorthy=true;
 			}
 
-			if(coloredAssembledMode >= 4*coloredMode){
+			if(coloredAssembledMode >= 10*coloredMode){
 				entryIsWorthy=false;
 			}
 
