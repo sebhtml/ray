@@ -1407,6 +1407,10 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 					//cout.flush();
 				}
 
+				/* also dump the distribution */
+				/* write it in BiologicalAbundances/Directory/FileName/SequenceNumber.tsv */
+
+				dumpDistributions();
 			}
 	
 			// close the file
@@ -2620,6 +2624,66 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		}
 	
 	}
+
+}
+
+void Searcher::dumpDistributions(){
+
+	string*theDirectoryPath=m_searchDirectories[m_directoryIterator].getDirectoryName();
+	string baseName=getBaseName(*theDirectoryPath);
+
+	ostringstream directoryName;
+	directoryName<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
+	directoryName<<baseName<<"/";
+
+	// add the file name without the .fasta
+	string*theFileName=m_searchDirectories[m_directoryIterator].getFileName(m_fileIterator);
+	string sequenceFileName=theFileName->substr(0,theFileName->length()-6);
+	directoryName<<sequenceFileName;
+
+	if(!m_searchDirectories[m_directoryIterator].hasDirectory(m_fileIterator)){
+		createDirectory(directoryName.str().c_str());
+		m_searchDirectories[m_directoryIterator].setCreatedDirectory(m_fileIterator);
+	}
+
+	ostringstream rawDistribution;
+
+	rawDistribution<<directoryName.str()<<"/"<<m_sequenceIterator<<".RawDistribution.tsv";
+	
+	ofstream f1(rawDistribution.str().c_str());
+	f1<<"Coverage depth	Frequency"<<endl;
+
+	for(map<int,uint64_t>::iterator i=m_coverageDistribution.begin();
+		i!=m_coverageDistribution.end();i++){
+		f1<<i->first<<"	"<<i->second<<endl;
+	}
+	f1.close();
+
+	ostringstream uniquelyColoredDistribution;
+	uniquelyColoredDistribution<<directoryName.str()<<"/"<<m_sequenceIterator<<".UniquelyColoredDistribution.tsv";
+	
+	ofstream f2(uniquelyColoredDistribution.str().c_str());
+	f1<<"Coverage depth	Frequency"<<endl;
+
+	for(map<int,uint64_t>::iterator i=m_coloredCoverageDistribution.begin();
+		i!=m_coloredCoverageDistribution.end();i++){
+		f2<<i->first<<"	"<<i->second<<endl;
+	}
+	f2.close();
+
+
+	ostringstream uniquelyColoredAndAssembledDistribution;
+	uniquelyColoredAndAssembledDistribution<<directoryName.str()<<"/"<<m_sequenceIterator<<".UniquelyColoredAssembledDistribution.tsv";
+	
+	ofstream f3(uniquelyColoredAndAssembledDistribution.str().c_str());
+	f1<<"Coverage depth	Frequency"<<endl;
+
+	for(map<int,uint64_t>::iterator i=m_coloredAssembledCoverageDistribution.begin();
+		i!=m_coloredAssembledCoverageDistribution.end();i++){
+		f3<<i->first<<"	"<<i->second<<endl;
+	}
+	f3.close();
+
 
 }
 

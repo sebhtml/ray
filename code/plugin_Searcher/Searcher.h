@@ -304,6 +304,7 @@ class Searcher :  public CorePlugin {
 
 	int getDistributionMode(map<int,uint64_t>*distribution);
 
+	void dumpDistributions();
 public:
 
 	void call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS();

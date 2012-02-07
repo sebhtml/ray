@@ -661,3 +661,11 @@ uint64_t SearchDirectory::getCurrentSequenceIdentifier(){
 
 	return identifier;
 }
+
+bool SearchDirectory::hasDirectory(int file){
+	return m_createdDirectories.count(file)>0;
+}
+
+void SearchDirectory::setCreatedDirectory(int file){
+	m_createdDirectories.insert(file);
+}

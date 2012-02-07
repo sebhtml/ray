@@ -22,8 +22,10 @@
 #ifndef _SearchDirectory_h
 #define _SearchDirectory_h
 
-#include <string>
 #include <plugin_KmerAcademyBuilder/Kmer.h>
+
+#include <set>
+#include <string>
 #include <fstream>
 #include <vector>
 using namespace std;
@@ -49,6 +51,8 @@ class SearchDirectory{
 
 	vector<string> m_files;
 	vector<int> m_counts;
+
+	set<int> m_createdDirectories;
 
 	/** sequence lazy loader */
 	bool m_hasFile;
@@ -103,6 +107,9 @@ public:
 	bool hasCurrentSequenceIdentifier();
 
 	uint64_t getCurrentSequenceIdentifier();
+
+	bool hasDirectory(int file);
+	void setCreatedDirectory(int file);
 };
 
 #endif
