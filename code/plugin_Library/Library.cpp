@@ -81,6 +81,11 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 		m_activeWorkerIterator=m_activeWorkers.begin();
 		m_initiatedIterator=true;
 		m_maximumAliveWorkers=32768;
+
+		if(!m_parameters->hasPairedReads()){
+			completeSlaveMode();
+			return;
+		}
 	}
 
 	m_virtualCommunicator->processInbox(&m_activeWorkersToRestore);
@@ -159,18 +164,7 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 		printf("Rank %i is calculating library lengths [%i/%i] (completed)\n",getRank(),(int)m_seedingData->m_SEEDING_seeds.size(),(int)m_seedingData->m_SEEDING_seeds.size());
 		fflush(stdout);
 		
-		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE,getRank());
-		m_outbox->push_back(aMessage);
-		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
-		m_allocator.clear();
-
-		printf("Rank %i: peak number of workers: %i, maximum: %i\n",m_rank,m_maximumWorkers,m_maximumAliveWorkers);
-		fflush(stdout);
-		m_virtualCommunicator->printStatistics();
-
-		if(m_parameters->showMemoryUsage()){
-			showMemoryUsage(m_rank);
-		}
+		completeSlaveMode();
 	}
 }
 
@@ -360,4 +354,21 @@ void Library::resolveSymbols(ComputeCore*core){
 
 
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_UPDATE_DISTANCES,RAY_MASTER_MODE_TRIGGER_FUSIONS);
+}
+
+void Library::completeSlaveMode(){
+
+	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE,getRank());
+	m_outbox->push_back(aMessage);
+	(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
+	m_allocator.clear();
+
+	printf("Rank %i: peak number of workers: %i, maximum: %i\n",m_rank,m_maximumWorkers,m_maximumAliveWorkers);
+	fflush(stdout);
+	m_virtualCommunicator->printStatistics();
+
+	if(m_parameters->showMemoryUsage()){
+		showMemoryUsage(m_rank);
+	}
+
 }

@@ -112,6 +112,9 @@ class Library :  public CorePlugin{
 
 	MyAllocator m_allocator;
 	void updateStates();
+
+	void completeSlaveMode();
+
 public:
 	Library();
 	void allocateBuffers();
