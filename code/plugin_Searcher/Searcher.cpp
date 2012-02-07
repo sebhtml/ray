@@ -1269,9 +1269,19 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			if(ratio >= CONFIG_SEARCH_THRESHOLD)
 				thresholdIsGood=true;
 	
+			bool entryIsWorthy=false;
+
+			if(m_matches>0 && ratio >= CONFIG_SEARCH_THRESHOLD && coloredAssembledMode !=0){
+				entryIsWorthy=true;
+			}
+
+			if(coloredAssembledMode >= 4*coloredMode){
+				entryIsWorthy=false;
+			}
+
 			// open the file
 			// don't open it if there are 0 matches
-			if(thresholdIsGood && (m_arrayOfFiles.count(m_directoryIterator)==0 || 
+			if(entryIsWorthy && (m_arrayOfFiles.count(m_directoryIterator)==0 || 
 				m_arrayOfFiles[m_directoryIterator].count(m_fileIterator)==0) && m_matches>0){
 				
 				string*theDirectoryPath=m_searchDirectories[m_directoryIterator].getDirectoryName();
@@ -1321,8 +1331,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			}
 	
 			// write the file if there are not 0 matches
-			if(m_matches>0 && thresholdIsGood && coloredAssembledMode !=0 
-				&& coloredAssembledMode < 4*coloredMode ){
+			if(entryIsWorthy ){
 
 				ostringstream content;
 				
