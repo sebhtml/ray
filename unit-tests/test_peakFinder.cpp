@@ -49,8 +49,11 @@ int main(int argc,char**argv){
 
 	f.close();
 
-	assertEquals(averages.size(),deviations.size());
-	assertEquals(averages.size(),expectedAverages.size());
+	for(int i=0;i<averages.size();i++){
+		cout<<"Peak "<<i<<" "<<averages[i]<<" "<<deviations[i]<<endl;
+	}
+
+	assertEquals(expectedAverages.size(), averages.size());
 
 	for(int i=0;i<averages.size();i++){
 		int expectedDown=expectedAverages[i]-expectedDeviations[i];

@@ -19,188 +19,129 @@
 */
 
 #include <plugin_Library/LibraryPeakFinder.h>
+#include <core/statistics.h>
 #include <math.h>
 #include <iostream>
 #include <stdint.h>
-#ifdef ASSERT
 #include <assert.h>
-#endif
 using namespace std;
 
-/* find the peak */
-void callPeak(vector<int>*x,vector<int>*y,int peak,vector<int>*peakAverages,vector<int>*peakStandardDeviation,
-	int minX,int maxX){
-	int step=5000;
-	int middle=(maxX-minX)/2;
-	int first=x->at(peak)-step;
-	int last=x->at(peak)+step;
-
-	/** correct the first */
-	if(x->at(peak)>middle && first<middle)
-		first=middle;
-
-	/** correct the last */
-	if(x->at(peak)<middle && last>middle)
-		last=middle;
-
-	int i=0;
-	uint64_t sum=0;
-	int n=0;
-	double thresold=0.001;
-	int dataPoints=0;
-
-	//cout<<"first "<<first<<" last "<<last<<endl;
-	/** compute the average around the possible peak */
-	while(i<(int)x->size()){
-		if(x->at(i)>=first && x->at(i) <= last && y->at(i)> y->at(peak)*thresold){
-			sum+=x->at(i)*y->at(i);
-			n+=y->at(i);
-			dataPoints+=1;
-		}
-		i+=1;
-	}
-
-	int average=sum/n;
-
-	int minimumDatapoints=2;
-
-	//cout<<"points "<<dataPoints<<endl;
-	/** requires at least 2 data points */
-	if(dataPoints<minimumDatapoints)
-		return;
-
-	sum=0;
-	i=0;
-
-	/** compute the standard deviation */
-	while(i<(int)x->size()){
-		if(x->at(i)>=first && x->at(i) <= last && y->at(i)> y->at(peak)*thresold){
-			int diff=(x->at(i)-average);
-			sum+=diff*diff*y->at(i);
-		}
-		i+=1;
-	}
-
-	int standardDeviation=(int)pow(((sum+0.0)/n),0.5);
-
-	/** compute the quality of the peak */
-	first=average-standardDeviation;
-	last=average+standardDeviation;
-	i=0;
-	int busy=0;
-	while(i<(int)y->size()){
-		if(x->at(i)>=first && x->at(i) <= last)
-			busy+=1;
-		i+=1;
-	}
-
-	double occupancy=(busy+0.0)/(last-first+1)*100;
-
-	/* minimum quality is thresold % */
-	int threshold=20;
-	if(occupancy<threshold)
-		return;
-	
-	#ifdef VERBOSE
-	cout<<"Peak Average= "<<average<<" StandardDeviation= "<<standardDeviation<<" Count= "<<n<<" Points= "<<dataPoints<<" Quality= "<<occupancy<<" %"<<endl;
-	#endif
-
-	peakAverages->push_back(average);
-	peakStandardDeviation->push_back(standardDeviation);
-}
+#define CONFIG_SOFT_SIGNAL_THRESHOLD 32
 
 /** find multiple peaks in the distribution of inserts for a library */
 void LibraryPeakFinder::findPeaks(vector<int>*x,vector<int>*y,vector<int>*peakAverages,vector<int>*peakStandardDeviation){
-	/* return if there is no data */
-	if(x->size()==0)
-		return;
 
-	/** if this is simulated data with no standard deviation.*/
-	int lowQuality=0;
-	int highQuality=0;
-	int lowThreshold=500;
-	int highThreshold=10000;
-	int qualityPeak=0;
+	vector<int> backgroundData;
+	
 	for(int i=0;i<(int)y->size();i++){
-		if(y->at(i)<lowThreshold){
-			lowQuality++;
-		}else if(y->at(i)>highThreshold){
-			highQuality++;
-			qualityPeak=x->at(i);
+		if(y->at(i) < CONFIG_SOFT_SIGNAL_THRESHOLD){
+			backgroundData.push_back(y->at(i));
 		}
 	}
-	#ifdef VERBOSE
-	cout<<"Low= "<<lowQuality<<" High= "<<highQuality<<endl;
-	#endif
-	if(((lowQuality+highQuality) == (int)y->size()) && (highQuality == 1)){
-		#ifdef VERBOSE
-		cout<<"No deviation! Peak 0 "<<qualityPeak<<" 0"<<endl;
-		#endif
-		/** only one data point was interesting actually */
-		peakAverages->push_back(qualityPeak);
-		peakStandardDeviation->push_back(0);
-		return;
+
+	int signalMode=getMode(&backgroundData);
+	int signalAverage=getAverage(&backgroundData);
+
+	cout<<"Mode= "<<signalMode<<" signalAverage= "<<signalAverage<<endl;
+
+	int signalThreshold=signalAverage;
+
+	int minimumAccumulatedNoiseSignals=8;
+	int minimumAccumulatedWorthySignals=16;
+	int accumulatedNoiseSignals=0;
+	int accumulatedWorthySignals=0;
+
+	vector<int> bestHits;
+
+	bool hasHit=false;
+	int bestHit=-1;
+	
+	for(int i=0;i<(int)x->size();i++){
+		int x1=x->at(i);
+		int y1=y->at(i);
+
+		/* skip the noise */
+		if(y1 < signalThreshold){
+			accumulatedNoiseSignals++;
+
+			if(hasHit
+				&& accumulatedNoiseSignals >= minimumAccumulatedNoiseSignals
+			){
+				cout<<"CURRENT IS NOISE, "<<x1<<endl;
+				bestHits.push_back(bestHit);
+				hasHit=false;
+				cout<<"GOT HIT "<<x->at(bestHit)<<endl;
+			}
+
+			accumulatedWorthySignals=0;
+
+			//cout<<"DATA	"<<x1<<"	"<<y1<<"	NOISE"<<endl;
+			continue;
+		}
+
+		//cout<<"DATA	"<<x1<<"	"<<y1<<"	WORTHY"<<endl;
+
+		/* if we don't have a hit, take this one */
+		if(!hasHit && accumulatedWorthySignals >= minimumAccumulatedWorthySignals){
+			accumulatedWorthySignals=0;
+			hasHit=true;
+			bestHit=i;
+		}
+
+		accumulatedWorthySignals++;
+		accumulatedNoiseSignals=0;
+
+		/* this is better than the old stuff, take it */
+
+		if(hasHit && y1 > y->at(bestHit) && accumulatedWorthySignals >= minimumAccumulatedWorthySignals){
+			bestHit=i;
+		}
 	}
 
-	/** data is more complex, needs some serious data analysis */
+	/* harvest crops */
 
-	int minI=0;
-	int maxI=x->size()-1;
+	for(int i=0;i<(int)bestHits.size();i++){
+		int index=bestHits[i];
 
-	int minimumCount=5;
+		int left=index-1;
+		
+		int accumulated=0;
+		while(left>=0 && accumulated<minimumAccumulatedNoiseSignals){
+			if(y->at(left) < signalThreshold){
+				accumulated++;
+			}
+			left--;
+		}
 
-	while(minI<(int)x->size() && y->at(minI)<minimumCount)
-		minI+=1;
+		accumulated=0;
+		int right=index+1;
+		while(right<(int)y->size() && accumulated < minimumAccumulatedNoiseSignals){
+			if(y->at(right) < signalThreshold){
+				accumulated++;
+			}
+			right++;
+		}
 
-	while(maxI>=0 && y->at(maxI)<minimumCount)
-		maxI-=1;
+		vector<int> data;
+		vector<int> frequencies;
 
-	if(minI>=(int)x->size())
-		minI=x->size()-1;
-	if(maxI<0)
-		maxI=0;
+		if(left<0)
+			left=0;
 
-	#ifdef ASSERT
-	assert(minI<(int)x->size());
-	assert(maxI<(int)x->size());
-	#endif
+		if(right>=(int)y->size())
+			right=y->size()-1;
 
-	int minX=x->at(minI);
-	int maxX=x->at(maxI);
-	int middle=(maxX-minX)/2;
+		for(int j=left;j<=right;j++){
+			data.push_back(x->at(j));
+			frequencies.push_back(y->at(j));
+		}
 
-	int i=0;
-	int peakLeft=i;
-	/** find a peak on the left side */
-	while(i<(int)x->size() && x->at(i)<middle){
-		if(y->at(i)>y->at(peakLeft))
-			peakLeft=i;
-		i+=1;
-	}
+		int average=getAverageFromFrequencies(&data,&frequencies);
+		int standardDeviation=getDeviationFromFrequencies(&data,&frequencies);
 
-	int peakRight=i;
-	/** find a peak on the right side */
-	while(i<(int)x->size() && x->at(i)<=maxX){
-		if(y->at(i)>y->at(peakRight))
-			peakRight=i;
-		i+=1;
-	}
-
-	/** peaks must be at least 1000 apart */
-	int step=1000;
-
-	/* there is one peak */
-	if(x->at(peakRight)<x->at(peakLeft)+step){
-		//cout<<"1 peak"<<endl;
-		int peak=peakLeft;
-		if(y->at(peakRight)>y->at(peakLeft))
-			peak=peakRight;
-		callPeak(x,y,peak,peakAverages,peakStandardDeviation,minX,maxX);
-
-	/* there are two peaks */
-	}else{
-		//cout<<"2 peaks "<<x->at(peakLeft)<<" and "<<x->at(peakRight)<<endl;
-		callPeak(x,y,peakLeft,peakAverages,peakStandardDeviation,minX,maxX);
-		callPeak(x,y,peakRight,peakAverages,peakStandardDeviation,minX,maxX);
+		peakAverages->push_back(average);
+		peakStandardDeviation->push_back(standardDeviation);
 	}
 }
+
+

@@ -29,6 +29,8 @@ using namespace std;
  */
 class LibraryPeakFinder{
 
+
+
 public:
 /** finds one or two peaks in the distribution of frequencies for outer distances */
 	void findPeaks(vector<int>*x,vector<int>*y,vector<int>*peakAverages,vector<int>*peakStandardDeviation);
