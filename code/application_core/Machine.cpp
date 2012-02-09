@@ -51,6 +51,9 @@ using namespace std;
 Machine::Machine(int argc,char**argv){
 
 	void constructor(int*argc,char**argv);
+
+	m_computeCore.setMaximumNumberOfOutboxBuffers(MAX_ALLOCATED_OUTPUT_BUFFERS);
+
 	m_computeCore.constructor(&argc,&argv);
 	m_messagesHandler=m_computeCore.getMessagesHandler();
 
@@ -185,8 +188,6 @@ void Machine::start(){
 	m_parameters.setSize(getSize());
 
 	// this peak is attained in VerticesExtractor::deleteVertices
-
-	m_computeCore.setMaximumNumberOfOutboxBuffers(MAX_ALLOCATED_OUTPUT_BUFFERS);
 
 	m_scaffolder.constructor(m_outbox,m_inbox,m_outboxAllocator,&m_parameters,
 	m_virtualCommunicator,m_switchMan);
