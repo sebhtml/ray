@@ -2651,7 +2651,7 @@ void Searcher::dumpDistributions(){
 	rawDistribution<<directoryName.str()<<"/"<<m_sequenceIterator<<".RawDistribution.tsv";
 	
 	ofstream f1(rawDistribution.str().c_str());
-	f1<<"Coverage depth	Frequency"<<endl;
+	f1<<"#Coverage depth	Frequency"<<endl;
 
 	for(map<int,uint64_t>::iterator i=m_coverageDistribution.begin();
 		i!=m_coverageDistribution.end();i++){
@@ -2663,7 +2663,7 @@ void Searcher::dumpDistributions(){
 	uniquelyColoredDistribution<<directoryName.str()<<"/"<<m_sequenceIterator<<".UniquelyColoredDistribution.tsv";
 	
 	ofstream f2(uniquelyColoredDistribution.str().c_str());
-	f1<<"Coverage depth	Frequency"<<endl;
+	f2<<"#Coverage depth	Frequency"<<endl;
 
 	for(map<int,uint64_t>::iterator i=m_coloredCoverageDistribution.begin();
 		i!=m_coloredCoverageDistribution.end();i++){
@@ -2676,7 +2676,7 @@ void Searcher::dumpDistributions(){
 	uniquelyColoredAndAssembledDistribution<<directoryName.str()<<"/"<<m_sequenceIterator<<".UniquelyColoredAssembledDistribution.tsv";
 	
 	ofstream f3(uniquelyColoredAndAssembledDistribution.str().c_str());
-	f1<<"Coverage depth	Frequency"<<endl;
+	f3<<"#Coverage depth	Frequency"<<endl;
 
 	for(map<int,uint64_t>::iterator i=m_coloredAssembledCoverageDistribution.begin();
 		i!=m_coloredAssembledCoverageDistribution.end();i++){
