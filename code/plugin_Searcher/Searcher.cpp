@@ -1264,11 +1264,13 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 			double ratio=(0.0+m_matches)/m_numberOfKmers;
 
+/*
 			bool thresholdIsGood=false;
 	
 			if(ratio >= CONFIG_SEARCH_THRESHOLD)
 				thresholdIsGood=true;
-	
+*/
+
 			bool entryIsWorthy=false;
 
 			if(m_matches>0 && ratio >= CONFIG_SEARCH_THRESHOLD && coloredAssembledMode !=0){
