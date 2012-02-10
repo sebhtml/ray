@@ -47,7 +47,7 @@ using namespace std;
 #include <plugin_Searcher/ContigHit.h>
 #include <plugin_Searcher/ColorSet.h>
 #include <plugins/CorePlugin.h>
-
+#include <plugin_Searcher/QualityCaller.h>
 #include <plugin_Searcher/Searcher_adapters.h>
 
 /**
@@ -56,6 +56,8 @@ using namespace std;
  * \author Sébastien Boisvert
  **/
 class Searcher :  public CorePlugin {
+
+	QualityCaller m_caller;
 
 	MessageTag RAY_MPI_TAG_ADD_COLORS;
 	MessageTag RAY_MPI_TAG_ADD_KMER_COLOR_REPLY;

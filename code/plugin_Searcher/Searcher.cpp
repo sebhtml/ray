@@ -28,6 +28,7 @@
 #include <stdio.h> /* for fopen, fprintf and fclose */
 #include <fstream>
 #include <sstream>
+#include <math.h> /* sqrt */
 using namespace std;
 
 //#define CONFIG_CONTIG_ABUNDANCE_VERBOSE
@@ -1321,6 +1322,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				header<<"	Uniquely colored assembled k-mer matches";
 				header<<"	Ratio	Mode uniquely colored assembled k-mer coverage depth";
 
+				header<<"	Quality1	Quality2	Quality3";
 				header<<"	Demultiplexed k-mer observations";
 
 				header<<endl;
@@ -1361,6 +1363,10 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 				content<<"	"<<m_coloredAssembledMatches<<"	"<<coloredAssembledRatio;
 				content<<"	"<<coloredAssembledMode;
+
+				content<<"	"<<m_caller.computeQuality(&m_coloredCoverageDistribution,&m_coverageDistribution);
+				content<<"	"<<m_caller.computeQuality(&m_coloredAssembledCoverageDistribution,&m_coverageDistribution);
+				content<<"	"<<m_caller.computeQuality(&m_coloredAssembledCoverageDistribution,&m_coloredCoverageDistribution);
 
 				uint64_t demultiplexedObservations=coloredAssembledMode*m_matches;
 
@@ -1412,7 +1418,14 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				/* also dump the distribution */
 				/* write it in BiologicalAbundances/Directory/FileName/SequenceNumber.tsv */
 
-				dumpDistributions();
+				// don't dump too many of these distribution
+				// otherwise, it may result in too many files
+
+				if(false && m_sequenceIterator<=0){
+
+					dumpDistributions();
+
+				}
 			}
 	
 			// close the file
