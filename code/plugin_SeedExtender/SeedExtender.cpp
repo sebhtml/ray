@@ -520,7 +520,7 @@ Presently, insertions or deletions up to 8 are supported.
 				int choice=chooseWithSeed();
 
 				// square root sounds better than divided by something...
-				int minimumCoverageToProvide=sqrt(m_currentPeakCoverage);
+				int minimumCoverageToProvide=(int)sqrt(m_currentPeakCoverage);
 
 				// old behavior
 				#ifdef CONFIG_USE_COVERAGE_DISTRIBUTION

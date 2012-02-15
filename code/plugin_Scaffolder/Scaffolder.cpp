@@ -534,8 +534,8 @@ void Scaffolder::performSummary(){
 						continue;
 					}
 
-					int averageValue=getAverage(&veryRawDistances);
-					int standardDeviationValue=getStandardDeviation(&veryRawDistances);
+					int averageValue=(int)getAverage(&veryRawDistances);
+					int standardDeviationValue=(int)getStandardDeviation(&veryRawDistances);
 					/* this summary information will be sent to MASTER later */
 					SummarizedLink entry(leftContig,leftStrand,rightContig,rightStrand,averageValue,count,standardDeviationValue);
 					m_summary.push_back(entry);

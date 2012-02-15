@@ -40,7 +40,7 @@ void LibraryPeakFinder::findPeaks(vector<int>*x,vector<int>*y,vector<int>*peakAv
 	}
 
 	int signalMode=getMode(&backgroundData);
-	int signalAverage=getAverage(&backgroundData);
+	int signalAverage=(int)getAverage(&backgroundData);
 
 	cout<<"Mode= "<<signalMode<<" signalAverage= "<<signalAverage<<endl;
 
