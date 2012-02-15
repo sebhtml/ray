@@ -10,6 +10,9 @@ add_executable( Ray
 RayPlatform/handlers/MessageTagHandler.cpp
 RayPlatform/handlers/SlaveModeHandler.cpp
 RayPlatform/handlers/MasterModeHandler.cpp
+RayPlatform/handlers/MessageTagExecutor.cpp
+RayPlatform/handlers/SlaveModeExecutor.cpp
+RayPlatform/handlers/MasterModeExecutor.cpp
 RayPlatform/core/master_modes.cpp
 RayPlatform/core/ComputeCore.cpp
 RayPlatform/core/slave_modes.cpp
