@@ -111,7 +111,7 @@ void BzReader::close(){
 	fclose(m_file);
 	m_bzFile=NULL;
 	m_file=NULL;
-	__Free(m_buffer,RAY_MALLOC_TYPE_BZ2,false);
+	__Free(m_buffer,"RAY_MALLOC_TYPE_BZ2",false);
 }
 
 #endif
