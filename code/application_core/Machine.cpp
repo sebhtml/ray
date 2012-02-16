@@ -71,39 +71,52 @@ Machine::Machine(int argc,char**argv){
 	m_virtualCommunicator=m_computeCore.getVirtualCommunicator();
 	m_virtualProcessor=m_computeCore.getVirtualProcessor();
 
-	if(isMaster() && argc==1){
-		m_parameters.showUsage();
-		exit(EXIT_NEEDS_ARGUMENTS);
+	if(argc==1){
+		if(isMaster())
+			m_parameters.showUsage();
+
+		m_computeCore.destructor();
+
+		m_aborted=true;
+
 	}else if(argc==2){
 		string param=argv[1];
 		if(param.find("help")!=string::npos){
-			m_parameters.showUsage();
-			m_messagesHandler->destructor();
-			exit(EXIT_NEEDS_ARGUMENTS);
+			if(isMaster())
+				m_parameters.showUsage();
+			m_computeCore.destructor();
+			m_aborted=true;
 		}else if(param.find("usage")!=string::npos){
-			m_parameters.showUsage();
-			m_messagesHandler->destructor();
-			exit(EXIT_NEEDS_ARGUMENTS);
+			if(isMaster())
+				m_parameters.showUsage();
+			m_computeCore.destructor();
+			m_aborted=true;
 		}else if(param.find("man")!=string::npos){
-			m_parameters.showUsage();
-			m_messagesHandler->destructor();
-			exit(EXIT_NEEDS_ARGUMENTS);
+			if(isMaster())
+				m_parameters.showUsage();
+			m_computeCore.destructor();
+			m_aborted=true;
 		}else if(param.find("-version")!=string::npos){
-			showRayVersionShort();
-			m_messagesHandler->destructor();
-			exit(EXIT_NEEDS_ARGUMENTS);
+			if(isMaster())
+				showRayVersionShort();
+			m_computeCore.destructor();
+			m_aborted=true;
 		}
 	}
-
+	
+	if(m_aborted)
+		return;
 
 	cout<<"Rank "<<m_rank<<": Rank= "<<m_rank<<" Size= "<<m_size<<" ProcessIdentifier= "<<portableProcessId()<<" ProcessorName= "<<*(m_messagesHandler->getName())<<endl;
 
 	m_argc=argc;
 	m_argv=argv;
 	m_bubbleData=new BubbleData();
+
 	#ifdef SHOW_SENT_MESSAGES
 	m_stats=new StatisticsData();
 	#endif
+
 	m_fusionData=new FusionData();
 	m_seedingData=new SeedingData();
 
@@ -128,6 +141,10 @@ m_virtualCommunicator,&m_kmerAcademyBuilder,
 }
 
 void Machine::start(){
+
+	if(m_aborted)
+		return;
+
 	m_partitioner.constructor(m_outboxAllocator,m_inbox,m_outbox,&m_parameters,m_switchMan);
 
 	m_searcher.constructor(&m_parameters,m_outbox,&m_timePrinter,m_switchMan,m_virtualCommunicator,m_inbox,
@@ -249,7 +266,7 @@ void Machine::start(){
 
 	/** only show the version. */
 	if(fullReport){
-		m_messagesHandler->destructor();
+		m_computeCore.destructor();
 		return;
 	}
 
@@ -286,7 +303,7 @@ void Machine::start(){
 		if(m_parameters.getRank() == MASTER_RANK)
 			cout<<"Error, "<<directory<<" already exists, change the -o parameter to another value."<<endl;
 
-		m_messagesHandler->destructor();
+		m_computeCore.destructor();
 		return;
 	}
 
@@ -513,7 +530,7 @@ m_seedingData,
 
 	m_diskAllocator.clear();
 
-	m_messagesHandler->destructor();
+	m_computeCore.destructor();
 }
 
 int Machine::getRank(){
