@@ -1,5 +1,8 @@
 #!/usr/bin/python
-"""Documentation
+"""Dump the content of the 'selfMap.psl' file
+
+Usage:
+    dumpPsl.py
 """
 # 2022    0       0       0       0       0       0       0       +       contig-0        2022    0       2022    contig-0        2022    0       2022    1       2022,   0,      0,
 
