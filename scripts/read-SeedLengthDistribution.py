@@ -25,6 +25,6 @@ if __name__ == '__main__':
 	    total += int(tokens[0]) * count
 	    n += count
 	
-
     print total
     print n
+
