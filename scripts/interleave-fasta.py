@@ -23,12 +23,12 @@ if __name__ == '__main__':
     with open(file1) as f1:
         with open(file2) as f2:
             while True:
-	            line = f1.readline()
-	            if line.strip() == "":
-		            break
-		        
-	            print line.strip()
-	            print f1.readline().strip()
-	            print f2.readline().strip()
-	            print f2.readline().strip()
+                line = f1.readline()
+                if line.strip() == "":
+                    break
+                
+                print line.strip()
+                print f1.readline().strip()
+                print f2.readline().strip()
+                print f2.readline().strip()
 
