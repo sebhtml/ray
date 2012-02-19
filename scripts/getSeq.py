@@ -14,7 +14,7 @@ if __name__ = '__main__':
         fasta_file = sys.argv[1]
         sequence_name = sys.argv[2]
     except:
-        print __doc__:
+        print __doc__
         sys.exit(1)
 
     dump = False
