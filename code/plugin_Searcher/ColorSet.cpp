@@ -179,66 +179,73 @@ uint64_t ColorSet::getTotalNumberOfVirtualColors(){
 	return m_virtualColors.size();
 }
 
-void ColorSet::printSummary(){
-	cout<<endl;
-	cout<<"**********************************************************"<<endl;
-	cout<<"Coloring summary"<<endl;
-	cout<<"  Number of virtual colors: "<<getTotalNumberOfVirtualColors()<<endl;
-	cout<<"  Number of real colors: "<<getTotalNumberOfPhysicalColors()<<endl;
-	cout<<endl;
-	cout<<"Keys in index: "<<m_index.size()<<endl;
-	cout<<"Observed collisions when populating the index: "<<m_collisions<<endl;
-	cout<<endl;
+void ColorSet::printSummary(ostream*out){
 
-	cout<<"Operations"<<endl;
-	cout<<endl;
+	(*out)<<endl;
+	(*out)<<"**********************************************************"<<endl;
+	(*out)<<"Coloring summary"<<endl;
+	(*out)<<"  Number of virtual colors: "<<getTotalNumberOfVirtualColors()<<endl;
+	(*out)<<"  Number of real colors: "<<getTotalNumberOfPhysicalColors()<<endl;
+	(*out)<<endl;
+	(*out)<<"Keys in index: "<<m_index.size()<<endl;
+	(*out)<<"Observed collisions when populating the index: "<<m_collisions<<endl;
+	(*out)<<"COLOR_NAMESPACE= "<<COLOR_NAMESPACE<<endl;
+	(*out)<<endl;
 
-	cout<<"  OPERATION_getVirtualColorFrom operations: "<<m_operations[OPERATION_getVirtualColorFrom]<<endl;
-	cout<<endl;
-	cout<<"  OPERATION_IN_PLACE_ONE_REFERENCE: "<<m_operations[OPERATION_IN_PLACE_ONE_REFERENCE]<<endl;
-	cout<<"  OPERATION_NO_VIRTUAL_COLOR_HAS_PHYSICAL_COLOR_CREATION operations: "<<m_operations[OPERATION_NO_VIRTUAL_COLOR_HAS_PHYSICAL_COLOR_CREATION]<<endl;
-	cout<<"  OPERATION_NO_VIRTUAL_COLOR_HAS_COUNT_CREATION operations: "<<m_operations[OPERATION_NO_VIRTUAL_COLOR_HAS_COUNT_CREATION]<<endl;
-	cout<<"  OPERATION_NO_VIRTUAL_COLOR_HAS_HASH_CREATION operations: "<<m_operations[OPERATION_NO_VIRTUAL_COLOR_HAS_HASH_CREATION]<<endl;
-	cout<<"  OPERATION_VIRTUAL_COLOR_HAS_COLORS_FETCH operations: "<<m_operations[OPERATION_VIRTUAL_COLOR_HAS_COLORS_FETCH]<<endl;
-	cout<<"  OPERATION_NO_VIRTUAL_COLOR_HAS_COLORS_CREATION operations: "<<m_operations[OPERATION_NO_VIRTUAL_COLOR_HAS_COLORS_CREATION]<<endl;
-	cout<<endl;
-	cout<<"  OPERATION_createVirtualColorFrom  operations: "<<m_operations[OPERATION_createVirtualColorFrom]<<endl;
-	cout<<endl;
-	cout<<"  OPERATION_allocateVirtualColorHandle operations: "<<m_operations[OPERATION_allocateVirtualColorHandle]<<endl;
-	cout<<"  OPERATION_NEW_FROM_EMPTY operations: "<<m_operations[OPERATION_NEW_FROM_EMPTY]<<endl;
-	cout<<"  OPERATION_NEW_FROM_SCRATCH operations: "<<m_operations[OPERATION_NEW_FROM_SCRATCH]<<endl;
-	cout<<endl;
-	cout<<"  OPERATION_applyHashOperation operations: "<<m_operations[OPERATION_applyHashOperation]<<endl;
-	cout<<"  OPERATION_getHash operations: "<<m_operations[OPERATION_getHash]<<endl;
-	cout<<endl;
-	cout<<"  OPERATION_incrementReferences  operations: "<<m_operations[OPERATION_incrementReferences]<<endl;
-	cout<<"  OPERATION_decrementReferences  operations: "<<m_operations[OPERATION_decrementReferences]<<endl;
-	cout<<endl;
-	cout<<"  OPERATION_purgeVirtualColor  operations: "<<m_operations[OPERATION_purgeVirtualColor]<<endl;
-	cout<<"**********************************************************"<<endl;
-	cout<<endl;
+	(*out)<<"Operations"<<endl;
+	(*out)<<endl;
+
+	(*out)<<"  OPERATION_getVirtualColorFrom operations: "<<m_operations[OPERATION_getVirtualColorFrom]<<endl;
+	(*out)<<endl;
+	(*out)<<"  OPERATION_IN_PLACE_ONE_REFERENCE: "<<m_operations[OPERATION_IN_PLACE_ONE_REFERENCE]<<endl;
+	(*out)<<"  OPERATION_NO_VIRTUAL_COLOR_HAS_PHYSICAL_COLOR_CREATION operations: "<<m_operations[OPERATION_NO_VIRTUAL_COLOR_HAS_PHYSICAL_COLOR_CREATION]<<endl;
+	(*out)<<"  OPERATION_NO_VIRTUAL_COLOR_HAS_COUNT_CREATION operations: "<<m_operations[OPERATION_NO_VIRTUAL_COLOR_HAS_COUNT_CREATION]<<endl;
+	(*out)<<"  OPERATION_NO_VIRTUAL_COLOR_HAS_HASH_CREATION operations: "<<m_operations[OPERATION_NO_VIRTUAL_COLOR_HAS_HASH_CREATION]<<endl;
+	(*out)<<"  OPERATION_VIRTUAL_COLOR_HAS_COLORS_FETCH operations: "<<m_operations[OPERATION_VIRTUAL_COLOR_HAS_COLORS_FETCH]<<endl;
+	(*out)<<"  OPERATION_NO_VIRTUAL_COLOR_HAS_COLORS_CREATION operations: "<<m_operations[OPERATION_NO_VIRTUAL_COLOR_HAS_COLORS_CREATION]<<endl;
+	(*out)<<endl;
+	(*out)<<"  OPERATION_createVirtualColorFrom  operations: "<<m_operations[OPERATION_createVirtualColorFrom]<<endl;
+	(*out)<<endl;
+	(*out)<<"  OPERATION_allocateVirtualColorHandle operations: "<<m_operations[OPERATION_allocateVirtualColorHandle]<<endl;
+	(*out)<<"  OPERATION_NEW_FROM_EMPTY operations: "<<m_operations[OPERATION_NEW_FROM_EMPTY]<<endl;
+	(*out)<<"  OPERATION_NEW_FROM_SCRATCH operations: "<<m_operations[OPERATION_NEW_FROM_SCRATCH]<<endl;
+	(*out)<<endl;
+	(*out)<<"  OPERATION_applyHashOperation operations: "<<m_operations[OPERATION_applyHashOperation]<<endl;
+	(*out)<<"  OPERATION_getHash operations: "<<m_operations[OPERATION_getHash]<<endl;
+	(*out)<<endl;
+	(*out)<<"  OPERATION_incrementReferences  operations: "<<m_operations[OPERATION_incrementReferences]<<endl;
+	(*out)<<"  OPERATION_decrementReferences  operations: "<<m_operations[OPERATION_decrementReferences]<<endl;
+	(*out)<<endl;
+	(*out)<<"  OPERATION_purgeVirtualColor  operations: "<<m_operations[OPERATION_purgeVirtualColor]<<endl;
+	(*out)<<"**********************************************************"<<endl;
+	(*out)<<endl;
 }
 
-void ColorSet::printColors(){
+void ColorSet::printColors(ostream*out){
+
+	(*out)<<"Coloring summary"<<endl;
+	(*out)<<"  Number of virtual colors: "<<getTotalNumberOfVirtualColors()<<endl;
+	(*out)<<"  Number of real colors: "<<getTotalNumberOfPhysicalColors()<<endl;
+	(*out)<<endl;
 
 	for(int i=0;i< (int)getTotalNumberOfVirtualColors();i++){
-		cout<<"Virtual color: "<<i<<endl;
+		(*out)<<"Virtual color: "<<i<<endl;
 
 		uint64_t references=getVirtualColor(i)->getNumberOfReferences();
-		cout<<" References: "<<references<<endl;
+		(*out)<<" References: "<<references<<endl;
 
 		set<PhysicalKmerColor>*colors=getVirtualColor(i)->getPhysicalColors();
-		cout<<" Number of physical colors: "<<colors->size()<<endl;
-		cout<<" Physical colors: "<<endl;
-		cout<<"  ";
+		(*out)<<" Number of physical colors: "<<colors->size()<<endl;
+		(*out)<<" Physical colors: "<<endl;
+		(*out)<<"  ";
 		
 		for(set<PhysicalKmerColor>::iterator j=colors->begin();j!=colors->end();j++){
-			cout<<" "<<*j;
+			(*out)<<" "<<*j;
 		}
-		cout<<endl;
+		(*out)<<endl;
 
 		if(colors->size()>0)
-			cout<<endl;
+			(*out)<<endl;
 	}
 
 }

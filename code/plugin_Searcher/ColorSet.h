@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <vector>
 #include <map>
+#include <iostream>
 using namespace std;
 
 // maximum value for a uint64_t:
@@ -129,8 +130,8 @@ public:
 	int getTotalNumberOfPhysicalColors();
 	uint64_t getTotalNumberOfVirtualColors();
 
-	void printSummary();
-	void printColors();
+	void printSummary(ostream*out);
+	void printColors(ostream*out);
 
 	set<PhysicalKmerColor>*getPhysicalColors(VirtualKmerColorHandle handle);
 

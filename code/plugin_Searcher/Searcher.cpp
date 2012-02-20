@@ -341,6 +341,11 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		string directory2Str=directory2.str();
 		createDirectory(directory2Str.c_str());
 
+		ostringstream colors;
+		colors<<m_parameters->getPrefix()<<"/BiologicalAbundances/_Coloring";
+		string directory87=colors.str();
+		createDirectory(directory87.c_str());
+
 		if(m_writeDetailedFiles){
 			ostringstream directory3;
 			directory3<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Contigs";
@@ -871,8 +876,23 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		cout<<"Rank "<<m_parameters->getRank()<<" colored the graph with "<<physicalColors<<" real colors using "<<virtualColors<<" virtual colors"<<endl;
 
 		cout<<"VIRTUAL COLOR SUMMARY"<<endl;
-		m_colorSet.printSummary();
-		m_colorSet.printColors();
+
+		ostringstream summaryFile;
+		summaryFile<<m_parameters->getPrefix()<<"/BiologicalAbundances/_Coloring/"<<m_parameters->getRank()<<".Operations.txt";
+		ofstream f1(summaryFile.str().c_str());
+
+		m_colorSet.printSummary(&f1);
+
+		f1.close();
+
+		ostringstream virtualStuff;
+		virtualStuff<<m_parameters->getPrefix()<<"/BiologicalAbundances/_Coloring/"<<m_parameters->getRank()<<".VirtualColors.txt";
+		ofstream f2(virtualStuff.str().c_str());
+
+		
+		m_colorSet.printColors(&f2);
+
+		f2.close();
 
 		#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
 		cout<<"Starting call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES"<<endl;
@@ -1938,7 +1958,7 @@ void Searcher::showProcessedKmers(){
 	if(m_switchMan->getSlaveMode()==RAY_SLAVE_MODE_ADD_COLORS){
 		
 
-		m_colorSet.printSummary();
+		m_colorSet.printSummary(&cout);
 		//m_colorSet.printColors();
 	}
 
