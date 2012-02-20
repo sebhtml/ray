@@ -346,6 +346,11 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		string directory87=colors.str();
 		createDirectory(directory87.c_str());
 
+		ostringstream frequencies;
+		frequencies<<m_parameters->getPrefix()<<"/BiologicalAbundances/_Frequencies";
+		string frequencyDirectory=frequencies.str();
+		createDirectory(frequencyDirectory.c_str());
+
 		if(m_writeDetailedFiles){
 			ostringstream directory3;
 			directory3<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Contigs";
@@ -843,6 +848,9 @@ void Searcher::call_RAY_SLAVE_MODE_SEARCHER_CLOSE(){
 	assert(m_activeFiles==0);
 	#endif
 
+	// close the distribution writer
+	m_writer.close();
+
 	m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
 }
 
@@ -870,6 +878,14 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 	m_activeWorkers.clear();
 
 	if(!m_countSequenceKmersSlaveStarted){
+
+		ostringstream frequencies;
+		frequencies<<m_parameters->getPrefix()<<"/BiologicalAbundances/_Frequencies";
+		string frequencyDirectory=frequencies.str();
+
+		// build the writer
+		m_writer.setBase(frequencyDirectory.c_str());
+		m_writer.setRank(m_parameters->getRank());
 
 		int virtualColors=m_colorSet.getTotalNumberOfVirtualColors();
 		int physicalColors=m_colorSet.getTotalNumberOfPhysicalColors();
@@ -1367,19 +1383,16 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				#ifdef ASSERT
 				assert(m_pendingMessages==1);
 				#endif
-			}
 
-			/* also dump the distribution */
-			/* write it in BiologicalAbundances/Directory/FileName/SequenceNumber.tsv */
+				/* also dump the distribution */
+				/* write it in BiologicalAbundances/Directory/FileName/SequenceNumber.tsv */
 	
-			// don't dump too many of these distribution
-			// otherwise, it may result in too many files
+				// don't dump too many of these distribution
+				// otherwise, it may result in too many files
 	
-			if(false){
-
 				dumpDistributions();
-
 			}
+
 
 			// no hits to check...
 			if(m_pendingMessages==0){
@@ -2593,62 +2606,9 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 
 void Searcher::dumpDistributions(){
 
-	string*theDirectoryPath=m_searchDirectories[m_directoryIterator].getDirectoryName();
-	string baseName=getBaseName(*theDirectoryPath);
-
-	ostringstream directoryName;
-	directoryName<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
-	directoryName<<baseName<<"/";
-
-	// add the file name without the .fasta
-	string*theFileName=m_searchDirectories[m_directoryIterator].getFileName(m_fileIterator);
-	string sequenceFileName=theFileName->substr(0,theFileName->length()-6);
-	directoryName<<sequenceFileName;
-
-	if(!m_searchDirectories[m_directoryIterator].hasDirectory(m_fileIterator)){
-		createDirectory(directoryName.str().c_str());
-		m_searchDirectories[m_directoryIterator].setCreatedDirectory(m_fileIterator);
-	}
-
-	ostringstream rawDistribution;
-
-	rawDistribution<<directoryName.str()<<"/"<<m_sequenceIterator<<".RawDistribution.tsv";
-	
-	ofstream f1(rawDistribution.str().c_str());
-	f1<<"#Coverage depth	Frequency"<<endl;
-
-	for(map<int,uint64_t>::iterator i=m_coverageDistribution.begin();
-		i!=m_coverageDistribution.end();i++){
-		f1<<i->first<<"	"<<i->second<<endl;
-	}
-	f1.close();
-
-	ostringstream uniquelyColoredDistribution;
-	uniquelyColoredDistribution<<directoryName.str()<<"/"<<m_sequenceIterator<<".UniquelyColoredDistribution.tsv";
-	
-	ofstream f2(uniquelyColoredDistribution.str().c_str());
-	f2<<"#Coverage depth	Frequency"<<endl;
-
-	for(map<int,uint64_t>::iterator i=m_coloredCoverageDistribution.begin();
-		i!=m_coloredCoverageDistribution.end();i++){
-		f2<<i->first<<"	"<<i->second<<endl;
-	}
-	f2.close();
-
-
-	ostringstream uniquelyColoredAndAssembledDistribution;
-	uniquelyColoredAndAssembledDistribution<<directoryName.str()<<"/"<<m_sequenceIterator<<".UniquelyColoredAssembledDistribution.tsv";
-	
-	ofstream f3(uniquelyColoredAndAssembledDistribution.str().c_str());
-	f3<<"#Coverage depth	Frequency"<<endl;
-
-	for(map<int,uint64_t>::iterator i=m_coloredAssembledCoverageDistribution.begin();
-		i!=m_coloredAssembledCoverageDistribution.end();i++){
-		f3<<i->first<<"	"<<i->second<<endl;
-	}
-	f3.close();
-
-
+	m_writer.write(m_directoryIterator,m_fileIterator,m_sequenceIterator,
+		&m_coverageDistribution,&m_coloredCoverageDistribution,
+		&m_coloredAssembledCoverageDistribution);
 }
 
 int Searcher::getDistributionMode(map<int,uint64_t>*distribution){

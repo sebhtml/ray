@@ -49,6 +49,7 @@ using namespace std;
 #include <plugins/CorePlugin.h>
 #include <plugin_Searcher/QualityCaller.h>
 #include <plugin_Searcher/Searcher_adapters.h>
+#include <plugin_Searcher/DistributionWriter.h>
 
 /**
  * This class searches for sequences in the de Bruijn graph
@@ -122,6 +123,9 @@ class Searcher :  public CorePlugin {
 
 /** translator for virtual colors **/
 	ColorSet m_colorSet;
+
+/** an object that writes files */
+	DistributionWriter m_writer;
 
 	uint64_t m_processedFiles;
 	uint64_t m_processedSequences;
