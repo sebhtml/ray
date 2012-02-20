@@ -20,6 +20,8 @@
 
 #define PROCESSED_PERIOD 100000 /* 2^18 */
 
+#define CONFIG_DOUBLE_PRECISION 5
+
 #include <plugin_Searcher/Searcher.h>
 #include <plugin_VerticesExtractor/Vertex.h>
 #include <core/OperatingSystem.h>
@@ -811,6 +813,31 @@ void Searcher::call_RAY_SLAVE_MODE_SEARCHER_CLOSE(){
 
 	m_identificationFiles.clear();
 
+	// close abundance files
+
+	// close the file
+	// even if there is 0 matches,
+	// we need to close the file...
+	// if it exists of course
+
+	for(map<int,FILE*>::iterator i=m_arrayOfFiles.begin();
+		i!=m_arrayOfFiles.end();i++){
+
+		int directoryIterator=i->first;
+
+		fclose(m_arrayOfFiles[directoryIterator]);
+
+		cout<<"Closed file "<<m_directoryIterator<<" "<<m_fileIterator<<", active file descriptors: "<<m_activeFiles<<endl;
+
+		m_activeFiles--;
+	}
+
+	m_arrayOfFiles.clear();
+
+	#ifdef ASSERT
+	assert(m_activeFiles==0);
+	#endif
+
 	m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
 }
 
@@ -907,6 +934,23 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		m_processedFiles=0;
 		m_processedSequences=0;
 
+	}else if(m_pendingMessages > 0 && m_inbox->hasMessage(RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY_REPLY)){
+
+		// We are ready to check the hits
+		
+		#ifdef CONFIG_DEBUG_IOPS
+		cout<<"Received RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY_REPLY"<<endl;
+		cout<<"Is ready to check hits"<<endl;
+		#endif
+
+		m_checkedHits=false;
+
+		m_pendingMessages--;
+
+		#ifdef ASSERT
+		assert(m_pendingMessages==0);
+		#endif
+
 	// we must check the hits
 	}else if(!m_checkedHits){
 	
@@ -971,8 +1015,8 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			char strand=hit.getStrand();
 
 			uint64_t*messageBuffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-	
 			int bufferPosition=0;
+
 			messageBuffer[bufferPosition++]=contig;
 			messageBuffer[bufferPosition++]=strand;
 			messageBuffer[bufferPosition++]=count;
@@ -1118,12 +1162,15 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 		m_sequencesToProcessInFile=m_searchDirectories[m_directoryIterator].getCount(m_fileIterator);
 
+		m_processedAbundance=false;
+
 	// compute abundances
 	}else if(m_createdSequenceReader && !m_finished){
 
 		// the current sequence has been processed
 		if(m_pendingMessages==0  && m_bufferedData.isEmpty() &&  /* nothing to flush... */
-			 !m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength)){
+			 !m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength)
+			&& !m_processedAbundance){
 			
 			// process the thing, possibly send it to be written
 
@@ -1191,102 +1238,14 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				entryIsWorthy=false;
 			}
 
-			// open the file
-			// don't open it if there are 0 matches
-			if(entryIsWorthy && (m_arrayOfFiles.count(m_directoryIterator)==0 || 
-				m_arrayOfFiles[m_directoryIterator].count(m_fileIterator)==0) && m_matches>0){
-				
-				string*theDirectoryPath=m_searchDirectories[m_directoryIterator].getDirectoryName();
-				string baseName=getBaseName(*theDirectoryPath);
-	
-	
-				ostringstream fileName;
-				fileName<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
-				fileName<<baseName<<"/";
-			
-				// add the file name without the .fasta
-				string*theFileName=m_searchDirectories[m_directoryIterator].getFileName(m_fileIterator);
-				fileName<<theFileName->substr(0,theFileName->length()-6)<<".tsv";
-	
-				m_arrayOfFiles[m_directoryIterator][m_fileIterator]=fopen(fileName.str().c_str(),"w");
-				
-				#ifdef ASSERT
-				assert(m_activeFiles==0); // it is 0 or 1... 
-				#endif
-	
-				m_activeFiles++;
-		
-				#ifdef ASSERT
-				assert(m_activeFiles==1); // it is 0 or 1... 
-				#endif
-	
-				ostringstream header;
-				header<<"#Category	Sequence number	Sequence name	K-mer length	Length in k-mers";
-				
-				header<<"	K-mer matches	Ratio	Mode k-mer coverage depth";
 
-				header<<"	Uniquely colored k-mer matches";
-				header<<"	Ratio	Mode uniquely colored k-mer coverage depth";
+			m_sortedHits.clear();
 
-				header<<"	Uniquely colored assembled k-mer matches";
-				header<<"	Ratio	Mode uniquely colored assembled k-mer coverage depth";
+			if(entryIsWorthy){
 
-				header<<"	Quality1	Quality2	Quality3";
-				header<<"	Demultiplexed k-mer observations";
-
-				header<<endl;
-	
-
-				fprintf(m_arrayOfFiles[m_directoryIterator][m_fileIterator],
-					"%s",header.str().c_str());
-		
-				cout<<"Opened "<<fileName.str()<<", active file descriptors: "<<m_activeFiles<<endl;
-			}
-	
-			// write the file if there are not 0 matches
-			if(entryIsWorthy ){
-
-				ostringstream content;
-				
-				string sequenceName=m_searchDirectories[m_directoryIterator].getCurrentSequenceName();
-
-				content<<m_fileNames[m_directoryIterator][m_fileIterator];
-				content<<"	"<<m_sequenceIterator<<"	"<<sequenceName<<"	"<<m_parameters->getWordSize();
-				content<<"	"<<m_numberOfKmers;
-
-				content<<"	"<<m_matches<<"	"<<ratio<<"	";
-				content<<mode;
-
-				double coloredRatio=m_coloredMatches;
-
-				if(m_numberOfKmers!=0)
-					coloredRatio/=m_numberOfKmers;
-
-				content<<"	"<<m_coloredMatches<<"	"<<coloredRatio;
-				content<<"	"<<coloredMode;
-
-				double coloredAssembledRatio=m_coloredAssembledMatches;
-
-				if(m_numberOfKmers!=0)
-					coloredAssembledRatio/=m_numberOfKmers;
-
-				content<<"	"<<m_coloredAssembledMatches<<"	"<<coloredAssembledRatio;
-				content<<"	"<<coloredAssembledMode;
-
-				content<<"	"<<m_caller.computeQuality(&m_coloredCoverageDistribution,&m_coverageDistribution);
-				content<<"	"<<m_caller.computeQuality(&m_coloredAssembledCoverageDistribution,&m_coverageDistribution);
-				content<<"	"<<m_caller.computeQuality(&m_coloredAssembledCoverageDistribution,&m_coloredCoverageDistribution);
-
-				uint64_t demultiplexedObservations=coloredAssembledMode*m_matches;
-
-				content<<"	"<<demultiplexedObservations;
-
-				content<<endl;
-
-				fprintf(m_arrayOfFiles[m_directoryIterator][m_fileIterator],
-				"%s",content.str().c_str());
-
-				m_sortedHits.clear();
+				double qualityColoredVsAll=m_caller.computeQuality(&m_coloredCoverageDistribution,&m_coverageDistribution);
+				double qualityAssembledVsAll=m_caller.computeQuality(&m_coloredAssembledCoverageDistribution,&m_coverageDistribution);
+				double qualityAssembledVsColored=m_caller.computeQuality(&m_coloredAssembledCoverageDistribution,&m_coloredCoverageDistribution);
 
 				//cout<<"Adding hits for sequence "<<m_sequenceIterator<<endl;
 
@@ -1298,20 +1257,20 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 					ContigHit hit(m_sequenceIterator,contig,'F',matches);
 					m_sortedHits.push_back(hit);
-				
+		
 					// the number of matches can not exceed the length
 					#ifdef ASSERT
 					assert(matches <= m_numberOfKmers);
 					#endif
-
+		
 					//cout<<"contig-"<<contig<<" has "<<matches<<" matches on strand 'F'"<<endl;
 					//cout.flush();
 				}
-
+		
 				for(map<uint64_t,set<int> >::iterator i=m_contigCounts['R'].begin();i!=m_contigCounts['R'].end();i++){
 					int matches=i->second.size();
 					uint64_t contig=i->first;
-
+		
 					ContigHit hit(m_sequenceIterator,contig,'R',matches);
 					m_sortedHits.push_back(hit);
 					
@@ -1319,54 +1278,100 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 					#ifdef ASSERT
 					assert(matches <= m_numberOfKmers);
 					#endif
-
+		
 					//cout<<"contig-"<<contig<<" has "<<matches<<" matches on strand 'R'"<<endl;
 					//cout.flush();
 				}
+		
+				// send a message to write the abundances
 
-				/* also dump the distribution */
-				/* write it in BiologicalAbundances/Directory/FileName/SequenceNumber.tsv */
+				uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+				int bufferPosition=0;
 
-				// don't dump too many of these distribution
-				// otherwise, it may result in too many files
+				// pack stuff.
 
-				if(false && m_sequenceIterator<=0){
+				buffer[bufferPosition++]=m_directoryIterator;
+				buffer[bufferPosition++]=m_fileIterator;
+				buffer[bufferPosition++]=m_sequenceIterator;
 
-					dumpDistributions();
-
-				}
-			}
-	
-			// close the file
-			// even if there is 0 matches,
-			// we need to close the file...
-			// if it exists of course
-			if(isLast && m_arrayOfFiles.count(m_directoryIterator)>0 
-				&& m_arrayOfFiles[m_directoryIterator].count(m_fileIterator)>0){
-	
-				fclose(m_arrayOfFiles[m_directoryIterator][m_fileIterator]);
-	
 				#ifdef ASSERT
-				assert(m_activeFiles==1);
+				assert(m_directoryIterator==(int)buffer[0]);
+				assert(m_fileIterator==(int)buffer[1]);
+				assert(m_sequenceIterator==(int)buffer[2]);
 				#endif
-	
-				m_activeFiles--;
-	
+
+				buffer[bufferPosition++]=m_numberOfKmers;
+
+				buffer[bufferPosition++]=m_matches;
+				buffer[bufferPosition++]=mode;
+
+				buffer[bufferPosition++]=m_coloredMatches;
+				buffer[bufferPosition++]=coloredMode;
+
+				buffer[bufferPosition++]=m_coloredAssembledMatches;
+				buffer[bufferPosition++]=coloredAssembledMode;
+
+				buffer[bufferPosition++]=entryIsWorthy;
+
+				buffer[bufferPosition++]=qualityColoredVsAll*CONFIG_DOUBLE_PRECISION;
+				buffer[bufferPosition++]=qualityAssembledVsAll*CONFIG_DOUBLE_PRECISION;
+				buffer[bufferPosition++]=qualityAssembledVsColored*CONFIG_DOUBLE_PRECISION;
+
+				string sequenceName=m_searchDirectories[m_directoryIterator].getCurrentSequenceName();
+
+				char*sequenceNameFromMessage=(char*)(buffer+bufferPosition);
+				strcpy(sequenceNameFromMessage,sequenceName.c_str());
+
+				// the rank that can write to this directory.
+				int writer=getAbundanceWriter(m_directoryIterator);
+
+				Message aMessage(buffer,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
+					writer,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY,
+					m_parameters->getRank());
+
+				m_outbox->push_back(aMessage);
+
 				#ifdef ASSERT
-				assert(m_activeFiles==0);
+				assert(m_directoryIterator==(int)buffer[0]);
+				assert(m_fileIterator==(int)buffer[1]);
+				assert(m_sequenceIterator==(int)buffer[2]);
+				assert(m_outbox->size()>0);
 				#endif
-	
-				cout<<"Closed file "<<m_directoryIterator<<" "<<m_fileIterator<<", active file descriptors: "<<m_activeFiles<<endl;
-	
-				m_arrayOfFiles[m_directoryIterator].erase(m_fileIterator);
+
+				#ifdef ASSERT
+				assert(m_pendingMessages==0);
+				#endif
+
+				m_pendingMessages++;
+				
+				#ifdef ASSERT
+				assert(m_pendingMessages==1);
+				#endif
 			}
 
-			m_checkedHits=false;
+			/* also dump the distribution */
+			/* write it in BiologicalAbundances/Directory/FileName/SequenceNumber.tsv */
+	
+			// don't dump too many of these distribution
+			// otherwise, it may result in too many files
+	
+			if(false){
+
+				dumpDistributions();
+
+			}
+
+			// no hits to check...
+			if(m_pendingMessages==0){
+				m_checkedHits=false;
+			}
 
 			//cout<<"Will check hits later "<<endl;
 			//cout<<"At least "<<m_sortedHits.size()<<endl;
 
 			m_sortedHitsIterator=m_sortedHits.begin();
+
+			m_processedAbundance=true;
 
 		// we have to wait for a reply
 		}else if(m_pendingMessages==0 && !m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength) 
@@ -1720,6 +1725,12 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			m_requestedCoverage=true;
 		}
 	}
+}
+
+int Searcher::getAbundanceWriter(int directory){
+
+	/* things are distributed here too */
+	return directory % m_parameters->getSize();
 }
 
 int Searcher::getWriter(int directory){
@@ -2640,6 +2651,150 @@ int Searcher::getDistributionMode(map<int,uint64_t>*distribution){
 	return mode;
 }
 
+void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
+
+	// unpack stuff
+	
+	int bufferPosition=0;
+	uint64_t*buffer=message->getBuffer();
+
+
+
+	int directoryIterator=buffer[bufferPosition++];
+	int fileIterator=buffer[bufferPosition++];
+	int sequenceIterator=buffer[bufferPosition++];
+
+	//cout<<"Received sequenceIterator= "<<sequenceIterator<<endl;
+
+	int numberOfKmers=buffer[bufferPosition++];
+
+	int matches=buffer[bufferPosition++];
+	int mode=buffer[bufferPosition++];
+
+	int coloredMatches=buffer[bufferPosition++];
+	int coloredMode=buffer[bufferPosition++];
+
+	int coloredAssembledMatches=buffer[bufferPosition++];
+	int coloredAssembledMode=buffer[bufferPosition++];
+
+	bool entryIsWorthy=buffer[bufferPosition++];
+
+	double qualityColoredVsAll=(buffer[bufferPosition++]+0.0)/CONFIG_DOUBLE_PRECISION;
+	double qualityAssembledVsAll=(buffer[bufferPosition++]+0.0)/CONFIG_DOUBLE_PRECISION;
+	double qualityAssembledVsColored=(buffer[bufferPosition++]+0.0)/CONFIG_DOUBLE_PRECISION;
+
+	char*sequenceNameFromMessage=(char*)buffer+bufferPosition;
+
+
+	// open the file
+	// don't open it if there are 0 matches
+	if(entryIsWorthy && matches > 0 && m_arrayOfFiles.count(directoryIterator)==0) {
+		
+		string*theDirectoryPath=m_searchDirectories[directoryIterator].getDirectoryName();
+		string baseName=getBaseName(*theDirectoryPath);
+
+
+		ostringstream fileName;
+		fileName<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
+		fileName<<baseName<<"/";
+	
+		// add the file name without the .fasta
+		fileName<<"SequenceAbundances.tsv";
+
+		m_arrayOfFiles[directoryIterator]=fopen(fileName.str().c_str(),"w");
+		
+		#ifdef ASSERT
+		assert(m_activeFiles>=0); // it is 0 or 1 or something else
+		#endif
+
+		m_activeFiles++;
+
+		#ifdef ASSERT
+		assert(m_activeFiles>=1); 
+		#endif
+
+		ostringstream header;
+		header<<"#Category	Sequence number	Sequence name	K-mer length	Length in k-mers";
+		
+		header<<"	K-mer matches	Ratio	Mode k-mer coverage depth";
+
+		header<<"	Uniquely colored k-mer matches";
+		header<<"	Ratio	Mode uniquely colored k-mer coverage depth";
+
+		header<<"	Uniquely colored assembled k-mer matches";
+		header<<"	Ratio	Mode uniquely colored assembled k-mer coverage depth";
+
+		header<<"	Quality1	Quality2	Quality3";
+		header<<"	Demultiplexed k-mer observations";
+
+		header<<endl;
+
+
+		fprintf(m_arrayOfFiles[directoryIterator],
+			"%s",header.str().c_str());
+
+		cout<<"Opened "<<fileName.str()<<", active file descriptors: "<<m_activeFiles<<endl;
+	}
+
+
+	// write the file if there are not 0 matches
+	if(entryIsWorthy ){
+
+		ostringstream content;
+		
+		string sequenceName=sequenceNameFromMessage;
+
+		double ratio=(0.0+matches)/numberOfKmers;
+
+		content<<m_fileNames[directoryIterator][fileIterator];
+		content<<"	"<<sequenceIterator<<"	"<<sequenceName<<"	"<<m_parameters->getWordSize();
+		content<<"	"<<numberOfKmers;
+
+		content<<"	"<<matches<<"	"<<ratio<<"	";
+		content<<mode;
+
+		double coloredRatio=coloredMatches;
+
+		if(numberOfKmers!=0)
+			coloredRatio/=numberOfKmers;
+
+		content<<"	"<<coloredMatches<<"	"<<coloredRatio;
+		content<<"	"<<coloredMode;
+
+		double coloredAssembledRatio=coloredAssembledMatches;
+
+		if(numberOfKmers!=0)
+			coloredAssembledRatio/=numberOfKmers;
+
+		content<<"	"<<coloredAssembledMatches<<"	"<<coloredAssembledRatio;
+		content<<"	"<<coloredAssembledMode;
+
+		content<<"	"<<qualityColoredVsAll;
+		content<<"	"<<qualityAssembledVsAll;
+		content<<"	"<<qualityAssembledVsColored;
+
+		uint64_t demultiplexedObservations=coloredAssembledMode*matches;
+
+		content<<"	"<<demultiplexedObservations;
+
+		content<<endl;
+
+		#ifdef ASSERT
+		assert(m_arrayOfFiles.count(directoryIterator)>0);
+		#endif
+
+		fprintf(m_arrayOfFiles[directoryIterator],
+			"%s",content.str().c_str());
+
+	}
+
+	// send a reply
+	//
+	m_switchMan->sendEmptyMessage(m_outbox,m_parameters->getRank(),
+		message->getSource(),RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY_REPLY);
+
+}
+
 void Searcher::call_RAY_MPI_TAG_CONTIG_IDENTIFICATION(Message*message){
 
        	uint64_t*messageBuffer=message->getBuffer();
@@ -2745,9 +2900,9 @@ void Searcher::call_RAY_MPI_TAG_CONTIG_IDENTIFICATION(Message*message){
        		fprintf(m_identificationFiles[directoryIterator],"%s",line.str().c_str());
        	}
 
-		// send a reply
-		m_switchMan->sendEmptyMessage(m_outbox,m_parameters->getRank(),
-			message->getSource(),RAY_MPI_TAG_CONTIG_IDENTIFICATION_REPLY);
+	// send a reply
+	m_switchMan->sendEmptyMessage(m_outbox,m_parameters->getRank(),
+		message->getSource(),RAY_MPI_TAG_CONTIG_IDENTIFICATION_REPLY);
 }
 
 void Searcher::registerPlugin(ComputeCore*core){
@@ -2872,6 +3027,14 @@ void Searcher::registerPlugin(ComputeCore*core){
 	RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_REPLY,"RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_REPLY");
 
+	RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY=core->allocateMessageTagHandle(plugin);
+	m_adapter_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY.setObject(this);
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY,&m_adapter_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY,"RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY");
+
+	RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY_REPLY=core->allocateMessageTagHandle(plugin);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY_REPLY,"RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY_REPLY");
+
 	RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCES=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCES,"RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCES");
 
@@ -2926,6 +3089,8 @@ void Searcher::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_SEQUENCE_ABUNDANCE_FINISHED=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SEQUENCE_ABUNDANCE_FINISHED");
 	RAY_MPI_TAG_SEQUENCE_ABUNDANCE_YOU_CAN_GO_HOME=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SEQUENCE_ABUNDANCE_YOU_CAN_GO_HOME");
 	RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_REPLY");
+	RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY");
+	RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY_REPLY");
 	RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCES=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCES");
 
 	RAY_MPI_TAG_COUNT_SEARCH_ELEMENTS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_COUNT_SEARCH_ELEMENTS");

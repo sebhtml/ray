@@ -131,4 +131,12 @@ void Adapter_RAY_MPI_TAG_CONTIG_IDENTIFICATION::call(Message*message){
 	m_object->call_RAY_MPI_TAG_CONTIG_IDENTIFICATION(message);
 }
 
+void Adapter_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY::setObject(Searcher*object){
+	m_object=object;
+}
+
+void Adapter_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY::call(Message*message){
+	m_object->call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(message);
+}
+
 

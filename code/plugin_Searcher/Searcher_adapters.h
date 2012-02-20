@@ -123,5 +123,14 @@ public:
         void call(Message*message);
 };
 
+class Adapter_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY: public MessageTagHandler{
+        Searcher*m_object;
+public:
+        void setObject(Searcher*object);
+        void call(Message*message);
+};
+
+
+
 #endif
 

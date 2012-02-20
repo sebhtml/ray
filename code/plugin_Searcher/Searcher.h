@@ -87,6 +87,8 @@ class Searcher :  public CorePlugin {
 	MessageTag RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_REPLY;
 	MessageTag RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCES;
 	MessageTag RAY_MPI_TAG_SEARCHER_CLOSE;
+	MessageTag RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY;
+	MessageTag RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY_REPLY;
 
 	MasterMode RAY_MASTER_MODE_KILL_RANKS;
 	MasterMode RAY_MASTER_MODE_ADD_COLORS;
@@ -116,6 +118,7 @@ class Searcher :  public CorePlugin {
 	Adapter_RAY_MPI_TAG_ADD_KMER_COLOR m_adapter_RAY_MPI_TAG_ADD_KMER_COLOR;
 	Adapter_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS m_adapter_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS;
 	Adapter_RAY_MPI_TAG_CONTIG_IDENTIFICATION m_adapter_RAY_MPI_TAG_CONTIG_IDENTIFICATION;
+	Adapter_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY m_adapter_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY;
 
 /** translator for virtual colors **/
 	ColorSet m_colorSet;
@@ -257,6 +260,9 @@ class Searcher :  public CorePlugin {
 	// base names of directories
 	vector<string> m_directoryNames;
 
+/** for a sequence, indicates if its abundance was processed. */
+	bool m_processedAbundance;
+
 	// base names of files
 	vector<vector<string> > m_fileNames;
 
@@ -274,7 +280,7 @@ class Searcher :  public CorePlugin {
 	int m_numberOfKmers;
 
 	/** files to write */
-	map<int,map<int,FILE*> > m_arrayOfFiles;
+	map<int,FILE* > m_arrayOfFiles;
 
 	/** track the descriptors */
 	int m_activeFiles;
@@ -320,6 +326,7 @@ class Searcher :  public CorePlugin {
 
 	int getWriter(int directory);
 
+	int getAbundanceWriter(int directory);
 public:
 
 	void call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS();
@@ -347,9 +354,9 @@ public:
 	void setContigs(vector<vector<Kmer> >*paths,vector<uint64_t>*names);
 
 	void call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message);
+	void call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message);
 
 	void registerPlugin(ComputeCore*core);
-
 	void resolveSymbols(ComputeCore*core);
 
 }; /* Searcher */
