@@ -29,6 +29,16 @@ void Adapter_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS::call(){
 	m_object->call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS();
 }
 
+
+void Adapter_RAY_SLAVE_MODE_SEARCHER_CLOSE::setObject(Searcher*object){
+	m_object=object;
+}
+
+void Adapter_RAY_SLAVE_MODE_SEARCHER_CLOSE::call(){
+	m_object->call_RAY_SLAVE_MODE_SEARCHER_CLOSE();
+}
+
+
 void Adapter_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES::setObject(Searcher*object){
 	m_object=object;
 }
@@ -85,6 +95,18 @@ void Adapter_RAY_MASTER_MODE_ADD_COLORS::call(){
 	m_object->call_RAY_MASTER_MODE_ADD_COLORS();
 }
 
+
+void Adapter_RAY_MASTER_MODE_SEARCHER_CLOSE::setObject(Searcher*object){
+	m_object=object;
+}
+
+void Adapter_RAY_MASTER_MODE_SEARCHER_CLOSE::call(){
+	m_object->call_RAY_MASTER_MODE_SEARCHER_CLOSE();
+}
+
+
+
+
 void Adapter_RAY_MPI_TAG_ADD_KMER_COLOR::setObject(Searcher*object){
 	m_object=object;
 }
@@ -99,6 +121,14 @@ void Adapter_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS::setObject(Searcher*object){
 
 void Adapter_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS::call(Message*message){
 	m_object->call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(message);
+}
+
+void Adapter_RAY_MPI_TAG_CONTIG_IDENTIFICATION::setObject(Searcher*object){
+	m_object=object;
+}
+
+void Adapter_RAY_MPI_TAG_CONTIG_IDENTIFICATION::call(Message*message){
+	m_object->call_RAY_MPI_TAG_CONTIG_IDENTIFICATION(message);
 }
 
 

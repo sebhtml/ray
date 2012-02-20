@@ -41,6 +41,15 @@ public:
 	void call();
 };
 
+class Adapter_RAY_SLAVE_MODE_SEARCHER_CLOSE: public SlaveModeHandler{
+	Searcher*m_object;
+public:
+	void setObject(Searcher*object);
+	void call();
+};
+
+
+
 class Adapter_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES: public SlaveModeHandler{
 	Searcher*m_object;
 public:
@@ -84,6 +93,15 @@ public:
         void call();
 };
 
+class Adapter_RAY_MASTER_MODE_SEARCHER_CLOSE: public MasterModeHandler{
+        Searcher*m_object;
+public:
+        void setObject(Searcher*object);
+        void call();
+};
+
+
+
 class Adapter_RAY_MPI_TAG_ADD_KMER_COLOR: public MessageTagHandler{
         Searcher*m_object;
 public:
@@ -92,6 +110,13 @@ public:
 };
 
 class Adapter_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS: public MessageTagHandler{
+        Searcher*m_object;
+public:
+        void setObject(Searcher*object);
+        void call(Message*message);
+};
+
+class Adapter_RAY_MPI_TAG_CONTIG_IDENTIFICATION: public MessageTagHandler{
         Searcher*m_object;
 public:
         void setObject(Searcher*object);

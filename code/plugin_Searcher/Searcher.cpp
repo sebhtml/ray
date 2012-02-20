@@ -47,6 +47,8 @@ void Searcher::constructor(Parameters*parameters,StaticVector*outbox,TimePrinter
 GridTable*graph){
 	m_subgraph=graph;
 
+	m_closedFiles=false;
+
 	m_inbox=inbox;
 
 	m_startedColors=false;
@@ -760,118 +762,6 @@ void Searcher::call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			m_rankToCall++;
 		}
 		
-	}else if(m_inbox->hasMessage(RAY_MPI_TAG_CONTIG_IDENTIFICATION)){
-
-		Message*message=m_inbox->at(0);
-
-		uint64_t*messageBuffer=message->getBuffer();
-
-
-		// process the message
-		int bufferPosition=0;
-		uint64_t contig=messageBuffer[bufferPosition++];
-
-		char strand=messageBuffer[bufferPosition++];
-
-		#ifdef ASSERT
-		assert(m_contigLengths.count(contig)>0);
-		#endif
-
-		int kmerLength=m_parameters->getWordSize();
-		int contigLength=m_contigLengths[contig];
-		int count=messageBuffer[bufferPosition++];
-
-		#ifdef ASSERT
-		assert(kmerLength>0);
-		assert(contigLength>0);
-		assert(count>0);
-		#endif
-
-		int directoryIterator=messageBuffer[bufferPosition++];
-		int fileIterator=messageBuffer[bufferPosition++];
-
-		#ifdef ASSERT
-		assert(directoryIterator<m_searchDirectories_size);
-		assert(fileIterator<m_searchDirectories[directoryIterator].getSize());
-		#endif
-
-		string category=m_fileNames[directoryIterator][fileIterator];
-
-		int sequenceIterator=messageBuffer[bufferPosition++];
-
-		int numberOfKmers=messageBuffer[bufferPosition++];
-
-		// the number of matches can not be greater than
-		// the number of k-mers in the query sequence
-		// otherwise, it does not make sense
-		#ifdef ASSERT
-		if(count> numberOfKmers){
-			cout<<"Error: "<<count<<" k-mers observed, but the contig has only "<<numberOfKmers<<endl;
-			cout<<"Sequence= "<<sequenceIterator<<endl;
-		}
-		assert(count <= numberOfKmers);
-		#endif
-
-		char*sequenceName=(char*) (messageBuffer+bufferPosition);
-
-		// contigLength can not be 0 anyway
-		double ratio=(0.0+count)/contigLength;
-
-		double sequenceRatio=count;
-
-		if(numberOfKmers!=0)
-			sequenceRatio/=numberOfKmers;
-
-		bool thresholdIsGood=false;
-
-		if(ratio >= CONFIG_SEARCH_THRESHOLD)
-			thresholdIsGood=true;
-
-		if(sequenceRatio >= CONFIG_SEARCH_THRESHOLD)
-			thresholdIsGood=true;
-
-		// open the file for reading
-		if(thresholdIsGood &&
-			count>0 && ( m_identificationFiles.count(directoryIterator)==0)){
-
-			// create an empty file for identifications
-			ostringstream identifications;
-
-			string*theDirectoryPath=m_searchDirectories[directoryIterator].getDirectoryName();
-			string baseName=getBaseName(*theDirectoryPath);
-			identifications<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
-			identifications<<baseName<<"/ContigIdentifications.tsv";
-
-			m_identificationFiles[directoryIterator]=fopen(identifications.str().c_str(),"w");
-
-			ostringstream line;
-		
-			// push header
-			line<<"#Contig name	K-mer length	Contig length in k-mers	Contig strand	Category	";
-			line<<"Sequence number	Sequence name";
-			line<<"	Sequence length in k-mers	Matches in contig	Contig length ratio";
-			line<<"	Sequence length ratio"<<endl;
-
-			fprintf(m_identificationFiles[directoryIterator],"%s",line.str().c_str());
-		}
-
-		// write an entry in the file
-	
-		if(thresholdIsGood){
-			ostringstream line;
-			line<<"contig-"<<contig<<"	"<<kmerLength<<"	"<<contigLength;
-			line<<"	"<<strand;
-			line<<"	"<<category;
-			line<<"	"<<sequenceIterator<<"	"<<sequenceName<<"	";
-			line<<numberOfKmers<<"	"<<count<<"	"<<ratio<<"	"<<sequenceRatio<<endl;
-
-			fprintf(m_identificationFiles[directoryIterator],"%s",line.str().c_str());
-		}
-
-		// send a reply
-		m_switchMan->sendEmptyMessage(m_outbox,m_parameters->getRank(),
-			message->getSource(),RAY_MPI_TAG_CONTIG_IDENTIFICATION_REPLY);
-
 	// a rank has written all its files
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_REPLY)){
 
@@ -894,15 +784,34 @@ void Searcher::call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 		cout<<endl;
 
-		for(map<int,FILE*>::iterator i=m_identificationFiles.begin();
-			i!=m_identificationFiles.end();i++){
-			fclose(i->second);
-		}
 
-		m_identificationFiles.clear();
 		m_contigLengths.clear();
 	}
 
+}
+
+void Searcher::call_RAY_MASTER_MODE_SEARCHER_CLOSE(){
+
+	if(!m_closedFiles){
+		m_switchMan->openMasterMode(m_outbox,m_parameters->getRank());
+		m_closedFiles=true;
+	}else if(m_switchMan->allRanksAreReady()){
+		m_switchMan->closeMasterMode();
+	}
+
+}
+
+void Searcher::call_RAY_SLAVE_MODE_SEARCHER_CLOSE(){
+
+	// close identification files
+	for(map<int,FILE*>::iterator i=m_identificationFiles.begin();
+		i!=m_identificationFiles.end();i++){
+		fclose(i->second);
+	}
+
+	m_identificationFiles.clear();
+
+	m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
 }
 
 /** massively parallel implementation of
@@ -1091,7 +1000,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			// here, the message is ready to be send.
 
 			Message aMessage(messageBuffer,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
-				MASTER_RANK,RAY_MPI_TAG_CONTIG_IDENTIFICATION,m_parameters->getRank());
+				getWriter(m_directoryIterator),RAY_MPI_TAG_CONTIG_IDENTIFICATION,m_parameters->getRank());
 
 			m_outbox->push_back(aMessage);
 		
@@ -1811,6 +1720,10 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			m_requestedCoverage=true;
 		}
 	}
+}
+
+int Searcher::getWriter(int directory){
+	return directory % m_parameters->getSize();
 }
 
 /**
@@ -2722,6 +2635,116 @@ int Searcher::getDistributionMode(map<int,uint64_t>*distribution){
 	return mode;
 }
 
+void Searcher::call_RAY_MPI_TAG_CONTIG_IDENTIFICATION(Message*message){
+
+       	uint64_t*messageBuffer=message->getBuffer();
+
+       	// process the message
+       	int bufferPosition=0;
+       	uint64_t contig=messageBuffer[bufferPosition++];
+
+       	char strand=messageBuffer[bufferPosition++];
+
+       	#ifdef ASSERT
+       	assert(m_contigLengths.count(contig)>0);
+       	#endif
+
+       	int kmerLength=m_parameters->getWordSize();
+       	int contigLength=m_contigLengths[contig];
+       	int count=messageBuffer[bufferPosition++];
+
+       	#ifdef ASSERT
+       	assert(kmerLength>0);
+       	assert(contigLength>0);
+       	assert(count>0);
+       	#endif
+
+       	int directoryIterator=messageBuffer[bufferPosition++];
+       	int fileIterator=messageBuffer[bufferPosition++];
+
+       	#ifdef ASSERT
+       	assert(directoryIterator<m_searchDirectories_size);
+       	assert(fileIterator<m_searchDirectories[directoryIterator].getSize());
+       	#endif
+
+       	string category=m_fileNames[directoryIterator][fileIterator];
+
+       	int sequenceIterator=messageBuffer[bufferPosition++];
+
+       	int numberOfKmers=messageBuffer[bufferPosition++];
+
+       	// the number of matches can not be greater than
+       	// the number of k-mers in the query sequence
+       	// otherwise, it does not make sense
+       	#ifdef ASSERT
+       	if(count> numberOfKmers){
+       		cout<<"Error: "<<count<<" k-mers observed, but the contig has only "<<numberOfKmers<<endl;
+       		cout<<"Sequence= "<<sequenceIterator<<endl;
+       	}
+       	assert(count <= numberOfKmers);
+       	#endif
+
+       	char*sequenceName=(char*) (messageBuffer+bufferPosition);
+
+       	// contigLength can not be 0 anyway
+       	double ratio=(0.0+count)/contigLength;
+
+       	double sequenceRatio=count;
+
+       	if(numberOfKmers!=0)
+       		sequenceRatio/=numberOfKmers;
+
+       	bool thresholdIsGood=false;
+
+       	if(ratio >= CONFIG_SEARCH_THRESHOLD)
+       		thresholdIsGood=true;
+
+       	if(sequenceRatio >= CONFIG_SEARCH_THRESHOLD)
+       		thresholdIsGood=true;
+
+       	// open the file for reading
+       	if(thresholdIsGood &&
+       		count>0 && ( m_identificationFiles.count(directoryIterator)==0)){
+
+       		// create an empty file for identifications
+       		ostringstream identifications;
+
+       		string*theDirectoryPath=m_searchDirectories[directoryIterator].getDirectoryName();
+       		string baseName=getBaseName(*theDirectoryPath);
+       		identifications<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
+       		identifications<<baseName<<"/ContigIdentifications.tsv";
+
+       		m_identificationFiles[directoryIterator]=fopen(identifications.str().c_str(),"w");
+
+       		ostringstream line;
+       	
+       		// push header
+       		line<<"#Contig name	K-mer length	Contig length in k-mers	Contig strand	Category	";
+       		line<<"Sequence number	Sequence name";
+       		line<<"	Sequence length in k-mers	Matches in contig	Contig length ratio";
+       		line<<"	Sequence length ratio"<<endl;
+
+       		fprintf(m_identificationFiles[directoryIterator],"%s",line.str().c_str());
+       	}
+
+       	// write an entry in the file
+       
+       	if(thresholdIsGood){
+       		ostringstream line;
+       		line<<"contig-"<<contig<<"	"<<kmerLength<<"	"<<contigLength;
+       		line<<"	"<<strand;
+       		line<<"	"<<category;
+       		line<<"	"<<sequenceIterator<<"	"<<sequenceName<<"	";
+       		line<<numberOfKmers<<"	"<<count<<"	"<<ratio<<"	"<<sequenceRatio<<endl;
+
+       		fprintf(m_identificationFiles[directoryIterator],"%s",line.str().c_str());
+       	}
+
+		// send a reply
+		m_switchMan->sendEmptyMessage(m_outbox,m_parameters->getRank(),
+			message->getSource(),RAY_MPI_TAG_CONTIG_IDENTIFICATION_REPLY);
+}
+
 void Searcher::registerPlugin(ComputeCore*core){
 
 	PluginHandle plugin=core->allocatePluginHandle();
@@ -2753,6 +2776,10 @@ void Searcher::registerPlugin(ComputeCore*core){
 	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_ADD_COLORS,&m_adapter_RAY_MASTER_MODE_ADD_COLORS);
 	core->setMasterModeSymbol(plugin,RAY_MASTER_MODE_ADD_COLORS,"RAY_MASTER_MODE_ADD_COLORS");
 
+	RAY_MASTER_MODE_SEARCHER_CLOSE=core->allocateMasterModeHandle(plugin);
+	m_adapter_RAY_MASTER_MODE_SEARCHER_CLOSE.setObject(this);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_SEARCHER_CLOSE,&m_adapter_RAY_MASTER_MODE_SEARCHER_CLOSE);
+	core->setMasterModeSymbol(plugin,RAY_MASTER_MODE_SEARCHER_CLOSE,"RAY_MASTER_MODE_SEARCHER_CLOSE");
 
 	RAY_SLAVE_MODE_ADD_COLORS=core->allocateSlaveModeHandle(plugin);
 	m_adapter_RAY_SLAVE_MODE_ADD_COLORS.setObject(this);
@@ -2774,6 +2801,10 @@ void Searcher::registerPlugin(ComputeCore*core){
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS,&m_adapter_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS,"RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS");
 
+	RAY_SLAVE_MODE_SEARCHER_CLOSE=core->allocateSlaveModeHandle(plugin);
+	m_adapter_RAY_SLAVE_MODE_SEARCHER_CLOSE.setObject(this);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_SEARCHER_CLOSE,&m_adapter_RAY_SLAVE_MODE_SEARCHER_CLOSE);
+	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_SEARCHER_CLOSE,"RAY_SLAVE_MODE_SEARCHER_CLOSE");
 
 	RAY_MPI_TAG_GET_COVERAGE_AND_PATHS=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS.setObject(this);
@@ -2809,6 +2840,9 @@ void Searcher::registerPlugin(ComputeCore*core){
 	RAY_MPI_TAG_SEARCH_SHARE_COUNTS=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_SEARCH_SHARE_COUNTS,"RAY_MPI_TAG_SEARCH_SHARE_COUNTS");
 
+	RAY_MPI_TAG_SEARCHER_CLOSE=core->allocateMessageTagHandle(plugin);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_SEARCHER_CLOSE,"RAY_MPI_TAG_SEARCHER_CLOSE");
+
 	RAY_MPI_TAG_SEARCH_SHARING_COMPLETED=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_SEARCH_SHARING_COMPLETED,"RAY_MPI_TAG_SEARCH_SHARING_COMPLETED");
 
@@ -2843,6 +2877,8 @@ void Searcher::registerPlugin(ComputeCore*core){
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ADD_KMER_COLOR_REPLY,"RAY_MPI_TAG_ADD_KMER_COLOR_REPLY");
 
 	RAY_MPI_TAG_CONTIG_IDENTIFICATION=core->allocateMessageTagHandle(plugin);
+	m_adapter_RAY_MPI_TAG_CONTIG_IDENTIFICATION.setObject(this);
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_CONTIG_IDENTIFICATION,&m_adapter_RAY_MPI_TAG_CONTIG_IDENTIFICATION);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_CONTIG_IDENTIFICATION,"RAY_MPI_TAG_CONTIG_IDENTIFICATION");
 
 	RAY_MPI_TAG_CONTIG_IDENTIFICATION_REPLY=core->allocateMessageTagHandle(plugin);
@@ -2855,12 +2891,14 @@ void Searcher::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES");
 	RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES");
 	RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS");
+	RAY_SLAVE_MODE_SEARCHER_CLOSE=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_SEARCHER_CLOSE");
 
 	RAY_MASTER_MODE_ADD_COLORS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_ADD_COLORS");
 	RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS");
 	RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES");
 	RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES");
 	RAY_MASTER_MODE_KILL_RANKS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_KILL_RANKS");
+	RAY_MASTER_MODE_SEARCHER_CLOSE=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_SEARCHER_CLOSE");
 
 	RAY_MPI_TAG_ADD_KMER_COLOR=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ADD_KMER_COLOR");
 	RAY_MPI_TAG_ADD_KMER_COLOR_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ADD_KMER_COLOR_REPLY");
@@ -2888,17 +2926,20 @@ void Searcher::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_COUNT_SEARCH_ELEMENTS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_COUNT_SEARCH_ELEMENTS");
 	RAY_MPI_TAG_ADD_COLORS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ADD_COLORS");
 	RAY_MPI_TAG_ADD_KMER_COLOR_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ADD_KMER_COLOR_REPLY");
+	RAY_MPI_TAG_SEARCHER_CLOSE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SEARCHER_CLOSE");
+
 
 	core->setMasterModeToMessageTagSwitch(m_plugin,RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS, RAY_MPI_TAG_COUNT_SEARCH_ELEMENTS);
 	core->setMasterModeToMessageTagSwitch(m_plugin,RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES, RAY_MPI_TAG_CONTIG_BIOLOGICAL_ABUNDANCES);
 	core->setMasterModeToMessageTagSwitch(m_plugin,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES,   RAY_MPI_TAG_SEQUENCE_BIOLOGICAL_ABUNDANCES);
 	core->setMasterModeToMessageTagSwitch(m_plugin,RAY_MASTER_MODE_ADD_COLORS, RAY_MPI_TAG_ADD_COLORS );
+	core->setMasterModeToMessageTagSwitch(m_plugin,RAY_MASTER_MODE_SEARCHER_CLOSE,RAY_MPI_TAG_SEARCHER_CLOSE);
 
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_COUNT_SEARCH_ELEMENTS,        RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS);
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_SEQUENCE_BIOLOGICAL_ABUNDANCES, RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES);
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_ADD_COLORS, RAY_SLAVE_MODE_ADD_COLORS );
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_CONTIG_BIOLOGICAL_ABUNDANCES, RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES);
-
+	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_SEARCHER_CLOSE,RAY_SLAVE_MODE_SEARCHER_CLOSE);
 
 	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_CONTIG_ABUNDANCE,             RAY_MPI_TAG_CONTIG_ABUNDANCE_REPLY );
 
@@ -2924,7 +2965,8 @@ void Searcher::resolveSymbols(ComputeCore*core){
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES,RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS);
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS,RAY_MASTER_MODE_ADD_COLORS);
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_ADD_COLORS,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES);
-	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES,RAY_MASTER_MODE_KILL_RANKS);
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES, RAY_MASTER_MODE_SEARCHER_CLOSE);
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_SEARCHER_CLOSE, RAY_MASTER_MODE_KILL_RANKS);
 
 }
 
