@@ -1723,7 +1723,12 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 }
 
 int Searcher::getWriter(int directory){
-	return directory % m_parameters->getSize();
+
+	return MASTER_RANK;
+
+	/* things are distributed here too */
+	// TODO: distribute the writing too...
+	//return directory % m_parameters->getSize();
 }
 
 /**
