@@ -1797,8 +1797,18 @@ void Searcher::createTrees(){
 		cout<<"create dir "<<directory2Str<<endl;
 		#endif
 
-		if(m_parameters->getRank()==MASTER_RANK)
+		ostringstream fileForFiles;
+		fileForFiles<<directory2Str<<"/_Files.tsv";
+
+		ofstream files;
+
+		if(m_parameters->getRank()==MASTER_RANK){
 			createDirectory(directory2Str.c_str());
+
+			files.open(fileForFiles.str().c_str());
+
+			files<<"#FileNumber	FileName	Sequences"<<endl;
+		}
 
 		m_directoryNames.push_back(baseName);
 
@@ -1830,9 +1840,19 @@ void Searcher::createTrees(){
 				createDirectory(directory3Str.c_str());
 
 			directories.push_back(theFile);
+
+			int numberOfSequences=m_searchDirectories[i].getCount(j);
+
+			if(m_parameters->getRank()==MASTER_RANK){
+				files<<j<<"	"<<theFile<<"	"<<numberOfSequences<<endl;
+
+			}
 		}
 
 		m_fileNames.push_back(directories);
+
+		if(m_parameters->getRank()==MASTER_RANK)
+			files.close();
 	}
 }
 
