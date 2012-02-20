@@ -1,3 +1,13 @@
+* 2012-02-20 This is outdated.
+
+If you want to contribute, clone the repository, make changes
+and I (Sébastien Boisvert) will pull from you after reviewing
+the code changes.
+
+The workflow below is too complex.
+
+
+
 == Guidelines ==
 
 You can clone the ray git repository.

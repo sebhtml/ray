@@ -36,10 +36,11 @@ see Documentation/BiologicalAbundances.txt
 
 - http://github.com/sebhtml/RayPlatform
 
-- To get a ChangeLog:
 
-	./scripts/dump-ChangeLog.sh > ChangeLog
-	less ChangeLog
+If you want to contribute, clone the repository, make changes
+and I (Sébastien Boisvert) will pull from you after reviewing
+the code changes.
+
 
 # Mailing lists
 
