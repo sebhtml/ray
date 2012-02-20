@@ -20,7 +20,7 @@
 
 #define PROCESSED_PERIOD 100000 /* 2^18 */
 
-#define CONFIG_DOUBLE_PRECISION 5
+#define CONFIG_DOUBLE_PRECISION 100000
 
 #include <plugin_Searcher/Searcher.h>
 #include <plugin_VerticesExtractor/Vertex.h>

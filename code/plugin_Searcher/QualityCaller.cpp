@@ -69,9 +69,6 @@ double QualityCaller::computeQuality(map<int,uint64_t>*array1,map<int,uint64_t>*
 	vector<int> y1Values;
 	vector<int> y2Values;
 
-	/* a minimum of 90 is required for any signal */
-	int minimumY=90;
-
 	/* get the x at which the peak occurs */
 
 	bool hasBestX=false;
@@ -113,9 +110,6 @@ double QualityCaller::computeQuality(map<int,uint64_t>*array1,map<int,uint64_t>*
 		if(x1<minimumX)
 			continue;
 
-		if(y1 < minimumY)
-			continue;
-
 		/* array2 should alwayas have this point */
 		if(array2->count(x1) > 0){
 
@@ -142,7 +136,7 @@ double QualityCaller::computeQuality(map<int,uint64_t>*array1,map<int,uint64_t>*
 		cout<<"only "<<y1Values.size()<<" points."<<endl;
 		#endif
 
-		return 0.0;
+		return 0.01234;
 	}
 
 	double correlation=computeCorrelation(&y1Values,&y2Values);
