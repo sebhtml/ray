@@ -1,11 +1,9 @@
-* 2012-02-20 This is outdated.
 
 If you want to contribute, clone the repository, make changes
 and I (Sébastien Boisvert) will pull from you after reviewing
 the code changes.
 
-The workflow below is too complex.
-
+You can also submit a signed-off patch.
 
 
 == Guidelines ==
@@ -46,13 +44,13 @@ From http://ariejan.net/2009/10/26/how-to-create-and-apply-a-patch-with-git/
 
 === create a patch from changes to the master branch ===
 
-git format-patch master --stdout > fix.patch
+git format-patch -s master --stdout > fix.patch
 
 === create a patch from a specific commit ===
 
 you can create a patch from a commit too:
 
-git format-patch -1 cdefecb3ab --stdout > fix.patch
+git format-patch -s -1 cdefecb3ab --stdout > fix.patch
 
 === check, sign and apply the patch (done by the maintainer of Ray) ===
 
@@ -72,5 +70,6 @@ CommitDate: Thu Jul 21 08:04:17 2011 -0400
 
     SMU MSG
     
+    Signed-off-by: Joe Connaissant <LOL@lol.com>
     Signed-off-by: Sébastien Boisvert <Sebastien.Boisvert.3@ulaval.ca>
 
