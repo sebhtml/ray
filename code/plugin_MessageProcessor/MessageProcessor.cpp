@@ -170,7 +170,12 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 		Kmer vertex;
 		int bufferPosition=i;
 		vertex.unpack(buffer,&bufferPosition);
-		ReadAnnotation*ptr=(ReadAnnotation*)buffer[bufferPosition++];
+
+		// another fancy trick to receive a pointer.
+		ReadAnnotation*ptr;
+		uint64_t*placeHolder=(uint64_t*)&ptr;
+		*placeHolder=buffer[bufferPosition++];
+
 		Kmer complement=m_parameters->_complementVertex(&vertex);
 		bool isLower=vertex<complement;
 		if(ptr==NULL){
@@ -196,8 +201,10 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 			outgoingMessage[j+1]=INVALID_RANK;
 		}
 
-		uint64_t*placeHolder=(uint64_t*)&ptr;
+		// send the void*
+		placeHolder=(uint64_t*)&ptr;
 		outgoingMessage[j]=*placeHolder;
+
 		j+=5;
 	}
 	Message aMessage(outgoingMessage,j,message->getSource(),RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY,m_rank);
