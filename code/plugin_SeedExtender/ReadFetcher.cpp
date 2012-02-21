@@ -56,7 +56,11 @@ void ReadFetcher::work(){
 		uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 		int bufferPosition=0;
 		m_vertex.pack(message2,&bufferPosition);
-		message2[bufferPosition++]=(uint64_t)m_pointer;
+
+		// fancy trick to transmit a void* over the network
+		uint64_t*placeHolder=(uint64_t*)&m_pointer;
+		message2[bufferPosition++]=*placeHolder;
+
 		int destination=m_parameters->_vertexRank(&m_vertex);
 		Message aMessage(message2,bufferPosition,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,m_parameters->getRank());
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
@@ -64,10 +68,15 @@ void ReadFetcher::work(){
 	}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
 		vector<uint64_t> buffer;
 		m_virtualCommunicator->getMessageResponseElements(m_workerId,&buffer);
+
 		#ifdef ASSERT
 		assert((int)buffer.size()==5);
 		#endif
-		m_pointer=(void*)buffer[0];
+
+		// fancy trick to transmit a void* over the network
+		uint64_t*placeHolder=(uint64_t*)&m_pointer;
+		*placeHolder=buffer[0];
+
 		int rank=buffer[1];
 		if(rank!=INVALID_RANK){
 			#ifdef ASSERT

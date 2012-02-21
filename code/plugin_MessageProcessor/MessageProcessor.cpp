@@ -196,7 +196,8 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 			outgoingMessage[j+1]=INVALID_RANK;
 		}
 
-		outgoingMessage[j]=(uint64_t)ptr;
+		uint64_t*placeHolder=(uint64_t*)&ptr;
+		outgoingMessage[j]=*placeHolder;
 		j+=5;
 	}
 	Message aMessage(outgoingMessage,j,message->getSource(),RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY,m_rank);
