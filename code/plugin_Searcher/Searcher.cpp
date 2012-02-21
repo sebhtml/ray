@@ -26,6 +26,7 @@
 #include <plugin_VerticesExtractor/Vertex.h>
 #include <core/OperatingSystem.h>
 #include <core/ComputeCore.h>
+#include <plugin_Searcher/ColoredPeakFinder.h>
 
 #include <stdio.h> /* for fopen, fprintf and fclose */
 #include <fstream>
@@ -1284,6 +1285,30 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				double qualityAssembledVsAll=m_caller.computeQuality(&m_coloredAssembledCoverageDistribution,&m_coverageDistribution);
 				double qualityAssembledVsColored=m_caller.computeQuality(&m_coloredAssembledCoverageDistribution,&m_coloredCoverageDistribution);
 
+				vector<int> xValues;
+				vector<int> yValues;
+				vector<int> peaks;
+				vector<int> deviations;
+
+				bool hasHighFrequency=false;
+
+				for(map<int,uint64_t>::iterator i=m_coloredAssembledCoverageDistribution.begin();
+					i!=m_coloredAssembledCoverageDistribution.end();i++){
+					
+					xValues.push_back(i->first);
+					yValues.push_back(i->second);
+		
+					if(i->second >= 1024){
+						hasHighFrequency=true;
+					}
+				}
+	
+				ColoredPeakFinder peakCaller;
+				peakCaller.findPeaks(&xValues,&yValues,&peaks,&deviations);
+
+				bool hasPeak=peaks.size()>=1;
+
+
 				//cout<<"Adding hits for sequence "<<m_sequenceIterator<<endl;
 
 				// store the hits
@@ -1353,6 +1378,9 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				buffer[bufferPosition++]=qualityColoredVsAll*CONFIG_DOUBLE_PRECISION;
 				buffer[bufferPosition++]=qualityAssembledVsAll*CONFIG_DOUBLE_PRECISION;
 				buffer[bufferPosition++]=qualityAssembledVsColored*CONFIG_DOUBLE_PRECISION;
+
+				buffer[bufferPosition++]=hasPeak;
+				buffer[bufferPosition++]=hasHighFrequency;
 
 				string sequenceName=m_searchDirectories[m_directoryIterator].getCurrentSequenceName();
 
@@ -2702,6 +2730,9 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 	double qualityAssembledVsAll=(buffer[bufferPosition++]+0.0)/CONFIG_DOUBLE_PRECISION;
 	double qualityAssembledVsColored=(buffer[bufferPosition++]+0.0)/CONFIG_DOUBLE_PRECISION;
 
+	bool hasPeak=(bool)buffer[bufferPosition++];
+	bool hasHighFrequency=(bool)buffer[bufferPosition++];
+
 	char*sequenceNameFromMessage=(char*)buffer+bufferPosition;
 
 
@@ -2744,6 +2775,7 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 		header<<"	Ratio	Mode uniquely colored assembled k-mer coverage depth";
 
 		header<<"	Quality1	Quality2	Quality3";
+		header<<"	Has peak ?	Has high frequency ?";
 		header<<"	Demultiplexed k-mer observations";
 
 		header<<endl;
@@ -2792,10 +2824,12 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 		content<<"	"<<qualityAssembledVsAll;
 		content<<"	"<<qualityAssembledVsColored;
 
-		uint64_t demultiplexedObservations=coloredAssembledMode*matches;
+		content<<"	"<<hasPeak<<"	"<<hasHighFrequency;
 
-		if(qualityColoredVsAll==0 || qualityAssembledVsAll == 0 || qualityAssembledVsColored== 0){
-			demultiplexedObservations=0;
+		uint64_t demultiplexedObservations=0;
+
+		if(hasPeak || hasHighFrequency){
+			demultiplexedObservations=coloredAssembledMode*matches;
 		}
 
 		content<<"	"<<demultiplexedObservations;
