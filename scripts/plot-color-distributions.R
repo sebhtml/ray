@@ -76,21 +76,9 @@ while(i <= length(d3[[1]])){
 	i=i+1
 }
 
-print("d2")
-print (d2Full)
-print("d3")
-print (d3Full)
-
-cor_d1_d2=cor(d1Full[1:length(d2Full)],d2Full)
-cor_d2_d3=cor(d2Full[1:length(d3Full)],d3Full)
-cor_d1_d3=cor(d1Full[1:length(d3Full)],d3Full)
-
 png(paste(prefix,".png",sep=""))
 plot(d1[[1]],d1[[2]],type='b',col='black',xlim=c(0,maxX),xlab='K-mer coverage depth',
-ylab='Frequency',main=paste("Distributions of k-mer coverage depth\n",
-" Correlation black-blue: ",cor_d1_d2,"\n",
-" Correlation black-green: ",cor_d1_d3,"\n",
-" Correlation blue-green: ",cor_d2_d3,sep=""),
+ylab='Frequency',main=paste("Distributions of k-mer coverage depth\n"),
 log='y')
 
 lines(d2[[1]],d2[[2]],col='blue',type='b')
@@ -98,10 +86,4 @@ lines(d3[[1]],d3[[2]],col='green',type='b')
 
 dev.off()
 
-#png(paste(prefix,"-scattered-blue-green.png",sep=""))
-#plot(d2Full,d3Full)
-#dev.off()
 
-#png(paste(prefix,"-scattered-black-blue.png",sep=""))
-#plot(d1Full,d2Full)
-#dev.off()
