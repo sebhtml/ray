@@ -2794,6 +2794,10 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 
 		uint64_t demultiplexedObservations=coloredAssembledMode*matches;
 
+		if(qualityColoredVsAll==0 || qualityAssembledVsAll == 0 || qualityAssembledVsColored== 0){
+			demultiplexedObservations=0;
+		}
+
 		content<<"	"<<demultiplexedObservations;
 
 		content<<endl;

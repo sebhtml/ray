@@ -136,7 +136,7 @@ double QualityCaller::computeQuality(map<int,uint64_t>*array1,map<int,uint64_t>*
 		cout<<"only "<<y1Values.size()<<" points."<<endl;
 		#endif
 
-		return 0.01234;
+		return 0;
 	}
 
 	double correlation=computeCorrelation(&y1Values,&y2Values);
