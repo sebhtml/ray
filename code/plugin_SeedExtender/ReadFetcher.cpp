@@ -60,8 +60,12 @@ void ReadFetcher::work(){
 		// fancy trick to transmit a void* over the network
 		message2[bufferPosition++]=pack_pointer((void**)&m_pointer);
 
+		int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_READS);
+
 		int destination=m_parameters->_vertexRank(&m_vertex);
-		Message aMessage(message2,bufferPosition,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,m_parameters->getRank());
+
+		Message aMessage(message2,period,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,m_parameters->getRank());
+
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		m_readsRequested=true;
 	}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
@@ -103,8 +107,11 @@ void ReadFetcher::work(){
 
 			message2[bufferPosition++]=pack_pointer((void**)&m_pointer);
 
+			int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_READS);
+
 			int destination=m_parameters->_vertexRank(&m_vertex);
-			Message aMessage(message2,bufferPosition,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,m_parameters->getRank());
+			Message aMessage(message2,period,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,m_parameters->getRank());
+
 			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		}
 	}

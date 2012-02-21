@@ -166,7 +166,17 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 
 	int j=0;
 
-	for(int i=0;i<message->getCount();i+=KMER_U64_ARRAY_SIZE+1){
+	int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_READS);
+
+	int offset=0;
+
+	int OFFSET_POINTER=offset++;
+	int OFFSET_RANK=offset++;
+	int OFFSET_READ_INDEX=offset++;
+	int OFFSET_POSITION_ON_STRAND=offset++;
+	int OFFSET_STRAND=offset++;
+
+	for(int i=0;i<message->getCount();i+=period){
 		Kmer vertex;
 		int bufferPosition=i;
 		vertex.unpack(buffer,&bufferPosition);
@@ -178,35 +188,44 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 
 		Kmer complement=m_parameters->_complementVertex(&vertex);
 		bool isLower=vertex<complement;
+
+		/* prime the thing */
 		if(ptr==NULL){
 			ptr=m_subgraph->getReads(&vertex);
 		}
 	
 		bool gotOne=false;
+
 		while(ptr!=NULL&&!gotOne){
+
 			int rank=ptr->getRank();
+
 			#ifdef ASSERT
 			assert(rank>=0&&rank<m_parameters->getSize());
 			#endif
+
 			if(ptr->isLower()==isLower){
-				outgoingMessage[j+1]=rank;
-				outgoingMessage[j+2]=ptr->getReadIndex();
-				outgoingMessage[j+3]=ptr->getPositionOnStrand();
-				outgoingMessage[j+4]=ptr->getStrand();
+				outgoingMessage[j+OFFSET_RANK]=rank;
+				outgoingMessage[j+OFFSET_READ_INDEX]=ptr->getReadIndex();
+				outgoingMessage[j+OFFSET_POSITION_ON_STRAND]=ptr->getPositionOnStrand();
+				outgoingMessage[j+OFFSET_STRAND]=ptr->getStrand();
+
 				gotOne=true;
 			}
+
 			ptr=ptr->getNext();
 		}
 		if(!gotOne){
-			outgoingMessage[j+1]=INVALID_RANK;
+			outgoingMessage[j+OFFSET_RANK]=INVALID_RANK;
 		}
 
 		// send the void*
-		outgoingMessage[j]=pack_pointer((void**)&ptr);
+		outgoingMessage[j+OFFSET_POINTER]=pack_pointer((void**)&ptr);
 
-		j+=5;
+		j+=period;
 	}
-	Message aMessage(outgoingMessage,j,message->getSource(),RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY,m_rank);
+
+	Message aMessage(outgoingMessage,message->getCount(),message->getSource(),RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY,m_rank);
 	m_outbox->push_back(aMessage);
 }
 
