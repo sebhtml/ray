@@ -1784,6 +1784,16 @@ void Searcher::createTrees(){
 
 	bool lazy=true;
 
+	ofstream directoriesFile;
+
+	if(m_parameters->getRank()==MASTER_RANK){
+		ostringstream directory6;
+		directory6<<m_parameters->getPrefix()<<"/BiologicalAbundances/_Directories.tsv";
+	
+		directoriesFile.open(directory6.str().c_str());
+		directoriesFile<<"#Directory	DirectoryName	Files"<<endl;
+	}
+
 	for(int i=0;i<m_searchDirectories_size;i++){
 		string*directory=m_searchDirectories[i].getDirectoryName();
 
@@ -1808,6 +1818,9 @@ void Searcher::createTrees(){
 			files.open(fileForFiles.str().c_str());
 
 			files<<"#FileNumber	FileName	Sequences"<<endl;
+
+			directoriesFile<<i<<"	"<<baseName<<"	"<<m_searchDirectories[i].getSize()<<endl;
+
 		}
 
 		m_directoryNames.push_back(baseName);
@@ -1851,8 +1864,13 @@ void Searcher::createTrees(){
 
 		m_fileNames.push_back(directories);
 
-		if(m_parameters->getRank()==MASTER_RANK)
+		if(m_parameters->getRank()==MASTER_RANK){
 			files.close();
+		}
+	}
+
+	if(m_parameters->getRank()==MASTER_RANK){
+		directoriesFile.close();
 	}
 }
 
