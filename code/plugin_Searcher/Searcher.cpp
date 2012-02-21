@@ -1619,7 +1619,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				cout<<"Coverage is "<<coverage<<endl;
 				#endif
 
-				if(coverage>0){// the k-mer exists
+				if(coverage>= 2){// the k-mer exists
 
 					m_coverageDistribution[coverage]++;
 					m_matches++;
