@@ -69,52 +69,17 @@ double QualityCaller::computeQuality(map<int,uint64_t>*array1,map<int,uint64_t>*
 	vector<int> y1Values;
 	vector<int> y2Values;
 
-	/* get the x at which the peak occurs */
-
-	bool hasBestX=false;
-	int bestX=-1;
-
-	for(map<int,uint64_t>::iterator i=array1->begin();i!=array1->end();i++){
-		int x1=i->first;
-		int y1=i->second;
-
-		if(!hasBestX && x1!=1){
-			hasBestX=true;
-			bestX=x1;
-		}
-
-		if(y1 > (int)(*array1)[bestX] && x1!=1){
-			bestX=x1;
-		}
-	}
-
-	int minimumX=2;
-
-	/** if there are a lot of points and the peak is not at 2
- * then we skip 2 and 3 because they are most likely outliers 
- * and we have plenty of data to dig from */
-	if(bestX!=2 && array1->size()>= 16){
-		minimumX=4;
-	}
-
 	#ifdef CONFIG_CALLER_VERBOSE
 	cout<<"peakY for array1 "<<bestX<<endl;
 	#endif
-
-	bool hasTwo=false;
 
 	for(map<int,uint64_t>::iterator i=array1->begin();i!=array1->end();i++){
 		int x1=i->first;
 		int y1=i->second;
 		
-		if(x1<minimumX)
-			continue;
 
 		/* array2 should alwayas have this point */
 		if(array2->count(x1) > 0){
-
-			if(x1==2)
-				hasTwo=true;
 
 			int y2=(*array2)[x1];
 
@@ -125,18 +90,6 @@ double QualityCaller::computeQuality(map<int,uint64_t>*array1,map<int,uint64_t>*
 			y1Values.push_back(y1);
 			y2Values.push_back(y2);
 		}
-	}
-
-	/* few points without a signal at 2 indicates a clear 
- * false positive */
-	if(y1Values.size()< 16 && !hasTwo){
-
-		#ifdef CONFIG_CALLER_VERBOSE
-		cout<<"Does not have 2 and not enough points."<<endl;
-		cout<<"only "<<y1Values.size()<<" points."<<endl;
-		#endif
-
-		return 0;
 	}
 
 	double correlation=computeCorrelation(&y1Values,&y2Values);
