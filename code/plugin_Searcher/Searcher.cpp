@@ -901,14 +901,15 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 		f1.close();
 
+		#ifdef CONFIG_DEBUG_COLORS
+
 		ostringstream virtualStuff;
 		virtualStuff<<m_parameters->getPrefix()<<"/BiologicalAbundances/_Coloring/"<<m_parameters->getRank()<<".VirtualColors.txt";
 		ofstream f2(virtualStuff.str().c_str());
-
-		
 		m_colorSet.printColors(&f2);
-
 		f2.close();
+
+		#endif
 
 		#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
 		cout<<"Starting call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES"<<endl;
