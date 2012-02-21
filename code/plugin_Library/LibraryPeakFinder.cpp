@@ -31,6 +31,15 @@ using namespace std;
 /** find multiple peaks in the distribution of inserts for a library */
 void LibraryPeakFinder::findPeaks(vector<int>*x,vector<int>*y,vector<int>*peakAverages,vector<int>*peakStandardDeviation){
 
+	/* the special case of simulated data
+ * with a standard deviation of 0 */
+	if(x->size()==1 && y->at(0) >= 4096){
+		peakAverages->push_back(x->at(0));
+		peakStandardDeviation->push_back(0);
+
+		return;
+	}
+
 	vector<int> backgroundData;
 	
 	for(int i=0;i<(int)y->size();i++){
