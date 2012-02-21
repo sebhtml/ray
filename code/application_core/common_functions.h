@@ -75,6 +75,8 @@ char complementNucleotide(char c);
  */
 string reverseComplement(string*a);
 
+uint64_t pack_pointer(void**pointer);
+void unpack_pointer(void**pointer,uint64_t integerValue);
 
 #endif
 

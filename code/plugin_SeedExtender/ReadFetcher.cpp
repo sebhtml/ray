@@ -58,8 +58,7 @@ void ReadFetcher::work(){
 		m_vertex.pack(message2,&bufferPosition);
 
 		// fancy trick to transmit a void* over the network
-		uint64_t*placeHolder=(uint64_t*)&m_pointer;
-		message2[bufferPosition++]=*placeHolder;
+		message2[bufferPosition++]=pack_pointer((void**)&m_pointer);
 
 		int destination=m_parameters->_vertexRank(&m_vertex);
 		Message aMessage(message2,bufferPosition,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,m_parameters->getRank());
@@ -74,8 +73,7 @@ void ReadFetcher::work(){
 		#endif
 
 		// fancy trick to transmit a void* over the network
-		uint64_t*placeHolder=(uint64_t*)&m_pointer;
-		*placeHolder=buffer[0];
+		unpack_pointer((void**)&m_pointer,buffer[0]);
 
 		int rank=buffer[1];
 		if(rank!=INVALID_RANK){
@@ -102,7 +100,9 @@ void ReadFetcher::work(){
 			uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 			int bufferPosition=0;
 			m_vertex.pack(message2,&bufferPosition);
-			message2[bufferPosition++]=(uint64_t)m_pointer;
+
+			message2[bufferPosition++]=pack_pointer((void**)&m_pointer);
+
 			int destination=m_parameters->_vertexRank(&m_vertex);
 			Message aMessage(message2,bufferPosition,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,m_parameters->getRank());
 			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);

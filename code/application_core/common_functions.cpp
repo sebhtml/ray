@@ -198,4 +198,42 @@ Kmer wordId(const char*a){
 	return i;
 }
 
+/** pack the pointer in a uint64_t */
+uint64_t pack_pointer(void**pointer){
+	if( NUMBER_OF_BITS == 64){
+
+		uint64_t*placeHolder=(uint64_t*)pointer;
+		uint64_t integerValue=*placeHolder;
+
+		return integerValue;
+	
+	}else if(NUMBER_OF_BITS == 32){
+
+		uint32_t*placeHolder=(uint32_t*)pointer;
+		uint32_t integerValue=*placeHolder;
+
+		return integerValue;
+	}
+
+	return 0; // not supported
+}
+
+void unpack_pointer(void**pointer,uint64_t integerValue){
+
+	if( NUMBER_OF_BITS == 64){
+
+		uint64_t*placeHolder=(uint64_t*)pointer;
+
+		*placeHolder=integerValue;
+
+	}else if(NUMBER_OF_BITS == 32){
+
+		uint32_t*placeHolder=(uint32_t*)pointer;
+
+		*placeHolder=integerValue;
+	}
+
+}
+
+
 
