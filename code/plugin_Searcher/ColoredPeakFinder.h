@@ -29,7 +29,7 @@ using namespace std;
  */
 class ColoredPeakFinder{
 
-
+	void findObviousPeak(vector<int>*x,vector<int>*y,vector<int>*peakAverages,vector<int>*peakStandardDeviation);
 
 public:
 /** finds one or two peaks in the distribution of frequencies for outer distances */

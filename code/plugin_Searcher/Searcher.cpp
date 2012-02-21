@@ -2733,7 +2733,7 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 	bool hasPeak=(bool)buffer[bufferPosition++];
 	bool hasHighFrequency=(bool)buffer[bufferPosition++];
 
-	char*sequenceNameFromMessage=(char*)buffer+bufferPosition;
+	char*sequenceNameFromMessage=(char*)(buffer+bufferPosition);
 
 
 	// open the file

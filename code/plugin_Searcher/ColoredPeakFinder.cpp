@@ -28,17 +28,82 @@ using namespace std;
 
 #define CONFIG_SOFT_SIGNAL_THRESHOLD 32
 
-/** find multiple peaks in the distribution of inserts for a library */
-void ColoredPeakFinder::findPeaks(vector<int>*x,vector<int>*y,vector<int>*peakAverages,vector<int>*peakStandardDeviation){
+/*
+ * this algorithm is really simple
+ * it only works with smooth data however 
+ */
+void ColoredPeakFinder::findObviousPeak(vector<int>*x,vector<int>*y,vector<int>*peakAverages,vector<int>*peakStandardDeviation){
 
-	/* the special case of simulated data
- * with a standard deviation of 0 */
-	if(x->size()==1 && y->at(0) >= 4096){
-		peakAverages->push_back(x->at(0));
+	// just find a point for which everything on the left is increasing and everything on the right is increasing
+	
+	int minimumLeft=2;
+	int minimumRight=8;
+
+	if((int)y->size() < minimumLeft+ minimumRight + 1)
+		return;
+
+
+	for(int center=1;center<(int)y->size();center++){
+		int left=0;
+		int right=0;
+
+		//cout<<"Trying center at x= "<<x->at(center)<<endl;
+
+		int currentLeft=center-1;
+
+		while(currentLeft>=0){
+			if(y->at(currentLeft) >= y->at(currentLeft+1)){
+				break; // not increasing
+			}
+
+			left++;
+			currentLeft--;
+		}
+
+		// this center is not good
+		if(left < minimumLeft){
+			//cout<<"On left: "<<left<<" is not enough"<<endl;
+			continue;
+		}
+
+		int currentRight=center+1;
+	
+		while(currentRight<(int)y->size()){
+			if(y->at(currentRight) >= y->at(currentRight-1)){
+				break; // not decreasing
+			}
+
+			right++;
+			currentRight++;
+		}
+
+		// not enough data on the right
+		if(right < minimumRight){
+			//cout<<"On right: "<<right<<" is not enough"<<endl;
+			continue;
+		}
+
+		// we found a peak
+		int peak=x->at(center);
+
+		cout<<"findObviousPeak says: "<<peak<<endl;
+
+		peakAverages->push_back(peak);
 		peakStandardDeviation->push_back(0);
 
 		return;
 	}
+}
+
+
+/** find multiple peaks in the distribution of inserts for a library */
+void ColoredPeakFinder::findPeaks(vector<int>*x,vector<int>*y,vector<int>*peakAverages,vector<int>*peakStandardDeviation){
+
+	findObviousPeak(x,y,peakAverages,peakStandardDeviation);
+
+	// we found something the easy way
+	if(peakAverages->size()>0)
+		return;
 
 	vector<int> backgroundData;
 	
