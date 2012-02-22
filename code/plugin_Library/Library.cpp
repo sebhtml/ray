@@ -19,6 +19,8 @@
 
 */
 
+//#define GUILLIMIN_BUG
+
 #include <plugin_SequencesIndexer/ReadAnnotation.h>
 #include <plugin_Library/Library.h>
 #include <communication/mpi_tags.h>
@@ -88,15 +90,89 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 		}
 	}
 
+	#ifdef GUILLIMIN_BUG
+	if(m_inbox->hasMessage(RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY)){
+		Message*message=m_inbox->at(0);
+		uint64_t*buffer=message->getBuffer();
+		if(m_parameters->getRank()==message->getSource()){
+			cout<<endl;
+			cout<<"Globally receiving RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY from "<<message->getSource()<<endl;
+			cout<<"Inbox: "<<m_inbox->size()<<" Outbox: "<<m_outbox->size()<<endl;
+			for(int p=0;p<message->getCount();p++){
+				cout<<"; "<<p<<" -> "<<buffer[p];
+			}
+			cout<<endl;
+			cout<<"This is before m_virtualCommunicator->processInbox()"<<endl;
+		}
+	}
+	#endif
+
+
 	m_virtualCommunicator->processInbox(&m_activeWorkersToRestore);
 
+	#ifdef GUILLIMIN_BUG
+	if(m_inbox->hasMessage(RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY)){
+		Message*message=m_inbox->at(0);
+		uint64_t*buffer=message->getBuffer();
+		if(m_parameters->getRank()==message->getSource()){
+			cout<<endl;
+			cout<<"Globally receiving RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY from "<<message->getSource()<<endl;
+			cout<<"Inbox: "<<m_inbox->size()<<" Outbox: "<<m_outbox->size()<<endl;
+			for(int p=0;p<message->getCount();p++){
+				cout<<"; "<<p<<" -> "<<buffer[p];
+			}
+			cout<<endl;
+			cout<<"This is after m_virtualCommunicator->processInbox()"<<endl;
+		}
+	}
 
-	if(!m_virtualCommunicator->isReady()){
+	if(m_outbox->hasMessage(RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY)){
+		Message*message=m_outbox->at(0);
+		uint64_t*buffer=message->getBuffer();
+		if(m_parameters->getRank()==message->getDestination()){
+			cout<<endl;
+			cout<<"Globally sending RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY to "<<message->getDestination()<<endl;
+			cout<<"Inbox: "<<m_inbox->size()<<" Outbox: "<<m_outbox->size()<<endl;
+			for(int p=0;p<message->getCount();p++){
+				cout<<"; "<<p<<" -> "<<buffer[p];
+			}
+			cout<<endl;
+			cout<<"This is before the code in call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION()"<<endl;
+		}
+	}
+
+	#endif
+	
+	/* there is a strange bug that is avoided by waiting an
+		extra tick before doing actual stuff.
+		if we don't wait for m_outbox to be flushed, we get
+		2 messages in the outbox and something strange happens
+		
+		the bug does not happen on 
+
+			- Mammouth Parallel II;
+			- colosse
+			- ls30
+
+		the bug occurs only on
+
+			- guillimin
+	*/
+	if(!m_virtualCommunicator->isReady() || m_outbox->size() > 0){
+		#ifdef GUILLIMIN_BUG
+		if(m_inbox->size()>0 || m_outbox->size()>0){
+			cout<<"m_virtualCommunicator is not ready yet."<<endl;
+			cout<<"Inbox: "<<m_inbox->size()<<" Outbox: "<<m_outbox->size()<<endl;
+			cout<<"returning."<<endl;
+		}
+		#endif
+
 		return;
 	}
 
 	if(m_activeWorkerIterator!=m_activeWorkers.end()){
 		uint64_t workerId=*m_activeWorkerIterator;
+
 		#ifdef ASSERT
 		if(m_aliveWorkers.count(workerId)==0){
 			cout<<"Error: "<<workerId<<" is not in alive workers "<<m_activeWorkers.size()<<endl;
@@ -104,6 +180,7 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 		assert(m_aliveWorkers.count(workerId)>0);
 		assert(!m_aliveWorkers[workerId].isDone());
 		#endif
+
 		m_virtualCommunicator->resetLocalPushedMessageStatus();
 
 		//force the worker to work until he finishes or pushes something on the stack
@@ -128,7 +205,8 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 			// there is at least one worker to start
 			// AND
 			// the number of alive workers is below the maximum
-			if(m_SEEDING_i<m_seedingData->m_SEEDING_seeds.size()&&(int)m_aliveWorkers.size()<m_maximumAliveWorkers){
+			if(m_SEEDING_i<m_seedingData->m_SEEDING_seeds.size()
+				&&(int)m_aliveWorkers.size()<m_maximumAliveWorkers){
 
 				#ifdef ASSERT
 				if(m_SEEDING_i==0){
@@ -136,6 +214,7 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 				}
 				#endif
 
+				// create a worker
 				m_aliveWorkers[m_SEEDING_i].constructor(m_SEEDING_i,m_seedingData,m_virtualCommunicator,m_outboxAllocator,m_parameters,m_inbox,m_outbox,&m_libraryDistances,&m_detectedDistances,&m_allocator,
 					RAY_MPI_TAG_GET_READ_MATE, RAY_MPI_TAG_REQUEST_VERTEX_READS
 					);
@@ -147,7 +226,35 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 				}
 				m_SEEDING_i++;
 			}else{
-				m_virtualCommunicator->forceFlush();
+	
+				/* if there are no active workers and we failed to add
+				new workers above, then we need to flush something right
+				now
+				otherwise, it is safe to wait a little longer */
+				if(m_activeWorkers.empty()){
+					m_virtualCommunicator->forceFlush();
+				}
+
+				#ifdef GUILLIMIN_BUG
+				if(m_outbox->size()>0){
+					cout<<endl;
+					cout<<"Produced messages with forceFlush()"<<endl;
+				
+					cout<<"Inbox: "<<m_inbox->size()<<" Outbox: "<<m_outbox->size()<<endl;
+
+					for(int p=0;p<m_outbox->size();p++){
+						cout<<endl;
+						cout<<"Message "<<p<<" destination "<<m_outbox->at(p)->getDestination();
+						cout<<" tag "<<MESSAGE_TAGS[m_outbox->at(p)->getTag()]<<endl;
+						cout<<"Content"<<endl;
+						uint64_t*buffer=m_outbox->at(p)->getBuffer();
+						for(int q=0;q<m_outbox->at(p)->getCount();q++){
+							cout<<"; "<<q<<" -> "<<buffer[q];
+						}
+						cout<<endl;
+					}
+				}
+				#endif
 			}
 		}
 
@@ -166,6 +273,28 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 		
 		completeSlaveMode();
 	}
+
+	#ifdef GUILLIMIN_BUG
+	for(int i=0;i<(int)m_outbox->size();i++){
+
+		if(m_outbox->at(i)->getTag()!=RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY){
+			continue;
+		}
+
+		Message*message=m_outbox->at(i);
+		uint64_t*buffer=message->getBuffer();
+		if(m_parameters->getRank()==message->getDestination()){
+			cout<<endl;
+			cout<<"Globally sending RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY to "<<message->getDestination()<<endl;
+			cout<<"Inbox: "<<m_inbox->size()<<" Outbox: "<<m_outbox->size()<<endl;
+			for(int p=0;p<message->getCount();p++){
+				cout<<"; "<<p<<" -> "<<buffer[p];
+			}
+			cout<<endl;
+			cout<<"This is after the code in call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION()"<<endl;
+		}
+	}
+	#endif
 }
 
 void Library::constructor(int m_rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator,ExtensionData*m_ed,
@@ -302,6 +431,23 @@ void Library::updateStates(){
 	m_virtualCommunicator->resetGlobalPushedMessageStatus();
 }
 
+void Library::completeSlaveMode(){
+
+	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE,getRank());
+	m_outbox->push_back(aMessage);
+	(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
+	m_allocator.clear();
+
+	printf("Rank %i: peak number of workers: %i, maximum: %i\n",m_rank,m_maximumWorkers,m_maximumAliveWorkers);
+	fflush(stdout);
+	m_virtualCommunicator->printStatistics();
+
+	if(m_parameters->showMemoryUsage()){
+		showMemoryUsage(m_rank);
+	}
+
+}
+
 void Library::registerPlugin(ComputeCore*core){
 	PluginHandle plugin=core->allocatePluginHandle();
 	m_plugin=plugin;
@@ -349,6 +495,7 @@ void Library::resolveSymbols(ComputeCore*core){
 
 	RAY_MPI_TAG_GET_READ_MATE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_READ_MATE");
 	RAY_MPI_TAG_REQUEST_VERTEX_READS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_REQUEST_VERTEX_READS");
+	RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY");
 
 	RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION_REPLY");
 
@@ -356,19 +503,4 @@ void Library::resolveSymbols(ComputeCore*core){
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_UPDATE_DISTANCES,RAY_MASTER_MODE_TRIGGER_FUSIONS);
 }
 
-void Library::completeSlaveMode(){
 
-	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE,getRank());
-	m_outbox->push_back(aMessage);
-	(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
-	m_allocator.clear();
-
-	printf("Rank %i: peak number of workers: %i, maximum: %i\n",m_rank,m_maximumWorkers,m_maximumAliveWorkers);
-	fflush(stdout);
-	m_virtualCommunicator->printStatistics();
-
-	if(m_parameters->showMemoryUsage()){
-		showMemoryUsage(m_rank);
-	}
-
-}

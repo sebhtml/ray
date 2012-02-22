@@ -22,6 +22,8 @@
 #include <plugin_SeedExtender/ReadFetcher.h>
 #include <core/OperatingSystem.h>
 
+//#define GUILLIMIN_BUG
+
 #include <assert.h>
 #include <iostream>
 using namespace std;
@@ -57,35 +59,72 @@ void ReadFetcher::work(){
 		int bufferPosition=0;
 		m_vertex.pack(message2,&bufferPosition);
 
+		uint64_t integerValue=pack_pointer((void**)&m_pointer);
+
 		// fancy trick to transmit a void* over the network
-		message2[bufferPosition++]=pack_pointer((void**)&m_pointer);
+		message2[bufferPosition++]=integerValue;
 
 		int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_READS);
 
+		// do some padding
+		while(bufferPosition<period){
+			message2[bufferPosition++]=0;
+		}
+
 		int destination=m_parameters->_vertexRank(&m_vertex);
+
+		#ifdef GUILLIMIN_BUG
+		if(m_parameters->getRank()==destination){
+			cout<<endl;
+			cout<<"worker: "<<m_workerId<<endl;
+			cout<<"Sending9 RAY_MPI_TAG_REQUEST_VERTEX_READS ptr="<<m_pointer<<" ";
+			cout<<" integerValue= "<<integerValue<<" to "<<destination<<endl;
+			for(int i=0;i<period;i++)
+				cout<<" "<<i<<" -> "<<message2[i];
+			cout<<endl;
+		}
+		#endif
 
 		Message aMessage(message2,period,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,m_parameters->getRank());
 
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		m_readsRequested=true;
+
 	}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
 		vector<uint64_t> buffer;
 		m_virtualCommunicator->getMessageResponseElements(m_workerId,&buffer);
 
+		int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_READS);
+
 		#ifdef ASSERT
-		assert((int)buffer.size()==5);
+		assert((int)buffer.size()==period);
+		#endif
+
+		int destination=m_parameters->_vertexRank(&m_vertex);
+
+		#ifdef GUILLIMIN_BUG
+		if(m_parameters->getRank()==destination){
+			cout<<endl;
+			cout<<"worker: "<<m_workerId<<endl;
+			cout<<"Receiving RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY ptr="<<m_pointer<<" from "<<endl;
+			for(int i=0;i<period;i++)
+				cout<<" "<<i<<" -> "<<buffer[i];
+			cout<<endl;
+		}
 		#endif
 
 		// fancy trick to transmit a void* over the network
 		unpack_pointer((void**)&m_pointer,buffer[0]);
 
 		int rank=buffer[1];
+
 		if(rank!=INVALID_RANK){
+
 			#ifdef ASSERT
 			if(!(rank>=0&&rank<m_parameters->getSize())){
 				cout<<"Error rank="<<rank<<endl;
 				cout<<"Buffer: ";
-				for(int i=0;i<5;i++){
+				for(int i=0;i<period;i++){
 					cout<<buffer[i]<<" ";
 				}
 				cout<<endl;
@@ -93,10 +132,28 @@ void ReadFetcher::work(){
 			assert(rank>=0&&rank<m_parameters->getSize());
 			#endif
 
+			int readIndex=buffer[2];
+			int position=buffer[3];
+			char strand=(char)buffer[4];
+
+			int destination=m_parameters->_vertexRank(&m_vertex);
+
+			#ifdef ASSERT
+			assert(readIndex>=0);
+			assert(position>=0);
+
+			if(!(strand=='F'||strand=='R')){
+				cout<<"Error, invalid strand from "<<destination<<" strand= "<<strand<<" or ";
+				cout<<buffer[4]<<endl;
+			}
+			assert(strand=='F'||strand=='R');
+			#endif
+
 			ReadAnnotation readAnnotation;
-			readAnnotation.constructor(rank,buffer[2],buffer[3],buffer[4],false);
+			readAnnotation.constructor(rank,readIndex,position,strand,false);
 			m_reads.push_back(readAnnotation);
 		}
+
 		if(m_pointer==NULL){
 			m_done=true;
 		}else{
@@ -105,12 +162,32 @@ void ReadFetcher::work(){
 			int bufferPosition=0;
 			m_vertex.pack(message2,&bufferPosition);
 
-			message2[bufferPosition++]=pack_pointer((void**)&m_pointer);
+			uint64_t integerValue=pack_pointer((void**)&m_pointer);
+			message2[bufferPosition++]=integerValue;
 
 			int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_READS);
 
+			// do some padding
+			while(bufferPosition<period){
+				message2[bufferPosition++]=0;
+			}
+
+
 			int destination=m_parameters->_vertexRank(&m_vertex);
 			Message aMessage(message2,period,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,m_parameters->getRank());
+
+			#ifdef GUILLIMIN_BUG
+			if(m_parameters->getRank()==destination){
+				cout<<endl;
+				cout<<"worker: "<<m_workerId<<endl;
+				cout<<"Sending11 RAY_MPI_TAG_REQUEST_VERTEX_READS ptr="<<m_pointer<<" ";
+				cout<<" integerValue= "<<integerValue<<" to "<<destination<<endl;
+				
+				for(int i=0;i<period;i++)
+					cout<<" "<<i<<" -> "<<message2[i];
+				cout<<endl;
+			}
+			#endif
 
 			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		}

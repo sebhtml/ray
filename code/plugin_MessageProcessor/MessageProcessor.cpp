@@ -19,6 +19,8 @@
 
 */
 
+//#define GUILLIMIN_BUG
+
 #include <application_core/constants.h>
 #include <string.h>
 #include <core/OperatingSystem.h>
@@ -161,10 +163,19 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_READ_MATE(Message*message){
  *        list of ReadAnnotation
  */
 void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
+
 	uint64_t*buffer=(uint64_t*)message->getBuffer();
 	uint64_t*outgoingMessage=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
-	int j=0;
+
+	#ifdef GUILLIMIN_BUG
+	bool printBug=m_rank==message->getSource();
+
+	if(printBug){
+		cout<<endl;
+		cout<<"MessageProcessor Receiving RAY_MPI_TAG_REQUEST_VERTEX_READS from "<<message->getSource()<<endl;
+	}
+	#endif
 
 	int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_READS);
 
@@ -176,6 +187,17 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 	int OFFSET_POSITION_ON_STRAND=offset++;
 	int OFFSET_STRAND=offset++;
 
+	#ifdef ASSERT
+	assert(message->getCount()%period ==0);
+	#endif
+
+	#ifdef GUILLIMIN_BUG
+	if(printBug){
+		cout<<"Count: "<<message->getCount()<<" period "<<period<<endl;
+		cout<<"multiplexed messages: "<<message->getCount()/period<<endl;
+	}
+	#endif
+
 	for(int i=0;i<message->getCount();i+=period){
 		Kmer vertex;
 		int bufferPosition=i;
@@ -184,7 +206,19 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 		// another fancy trick to receive a pointer.
 		ReadAnnotation*ptr;
 
-		unpack_pointer((void**)&ptr, buffer[bufferPosition++]);
+		uint64_t integerValue=buffer[bufferPosition++];
+		unpack_pointer((void**)&ptr, integerValue);
+
+		#ifdef GUILLIMIN_BUG
+		if(printBug){
+			cout<<"Pointer: "<<ptr<<" integerValue= "<<integerValue<<endl;
+
+			for(int k=0;k<period;k++){
+				cout<<" "<<k<<" -> "<<buffer[i+k];
+			}
+			cout<<endl;
+		}
+		#endif
 
 		Kmer complement=m_parameters->_complementVertex(&vertex);
 		bool isLower=vertex<complement;
@@ -205,28 +239,56 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 			#endif
 
 			if(ptr->isLower()==isLower){
-				outgoingMessage[j+OFFSET_RANK]=rank;
-				outgoingMessage[j+OFFSET_READ_INDEX]=ptr->getReadIndex();
-				outgoingMessage[j+OFFSET_POSITION_ON_STRAND]=ptr->getPositionOnStrand();
-				outgoingMessage[j+OFFSET_STRAND]=ptr->getStrand();
+				outgoingMessage[i+OFFSET_RANK]=rank;
+				outgoingMessage[i+OFFSET_READ_INDEX]=ptr->getReadIndex();
+				outgoingMessage[i+OFFSET_POSITION_ON_STRAND]=ptr->getPositionOnStrand();
+				outgoingMessage[i+OFFSET_STRAND]=ptr->getStrand();
 
 				gotOne=true;
 			}
 
 			ptr=ptr->getNext();
 		}
+
 		if(!gotOne){
-			outgoingMessage[j+OFFSET_RANK]=INVALID_RANK;
+			outgoingMessage[i+OFFSET_RANK]=INVALID_RANK;
 		}
 
 		// send the void*
-		outgoingMessage[j+OFFSET_POINTER]=pack_pointer((void**)&ptr);
+		outgoingMessage[i+OFFSET_POINTER]=pack_pointer((void**)&ptr);
 
-		j+=period;
+		#ifdef GUILLIMIN_BUG
+		if(printBug){
+			cout<<"Will send pointer "<<ptr<<" back"<<endl;
+			for(int p=0;p<period;p++){
+				cout<<" "<<p<<" -> "<<outgoingMessage[i+p];
+			}
+			cout<<endl;
+		}
+		#endif
+
 	}
+
+	#ifdef GUILLIMIN_BUG
+	if(printBug){
+		cout<<endl;
+		cout<<"MessageProcessor Sending response RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY to "<<message->getSource()<<endl;
+		cout<<"RAY_MPI_TAG_REQUEST_VERTEX_READS= "<<RAY_MPI_TAG_REQUEST_VERTEX_READS<<endl;
+		cout<<"RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY= "<<RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY<<endl;
+	}
+	#endif
 
 	Message aMessage(outgoingMessage,message->getCount(),message->getSource(),RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY,m_rank);
 	m_outbox->push_back(aMessage);
+
+	#ifdef GUILLIMIN_BUG
+	if(printBug){
+		for(int k=0;k<message->getCount();k++){
+			cout<<"; "<<k<<" -> "<<outgoingMessage[k];
+		}
+		cout<<endl;
+	}
+	#endif
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_SET_WORD_SIZE(Message*message){
