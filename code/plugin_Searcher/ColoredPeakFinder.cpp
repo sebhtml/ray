@@ -120,8 +120,8 @@ void ColoredPeakFinder::findPeaks(vector<int>*x,vector<int>*y,vector<int>*peakAv
 
 	int signalThreshold=signalAverage;
 
-	int minimumAccumulatedNoiseSignals=8;
-	int minimumAccumulatedWorthySignals=16;
+	int minimumAccumulatedNoiseSignals=3;
+	int minimumAccumulatedWorthySignals=8;
 	int accumulatedNoiseSignals=0;
 	int accumulatedWorthySignals=0;
 
@@ -145,6 +145,8 @@ void ColoredPeakFinder::findPeaks(vector<int>*x,vector<int>*y,vector<int>*peakAv
 				bestHits.push_back(bestHit);
 				hasHit=false;
 				cout<<"GOT HIT "<<x->at(bestHit)<<endl;
+				cout<<" accumulatedNoiseSignals="<<accumulatedNoiseSignals<<endl;
+				cout<<" accumulatedWorthySignals="<<accumulatedWorthySignals<<endl;
 			}
 
 			accumulatedWorthySignals=0;
@@ -157,6 +159,7 @@ void ColoredPeakFinder::findPeaks(vector<int>*x,vector<int>*y,vector<int>*peakAv
 
 		/* if we don't have a hit, take this one */
 		if(!hasHit && accumulatedWorthySignals >= minimumAccumulatedWorthySignals){
+
 			accumulatedWorthySignals=0;
 			hasHit=true;
 			bestHit=i;
@@ -215,6 +218,9 @@ void ColoredPeakFinder::findPeaks(vector<int>*x,vector<int>*y,vector<int>*peakAv
 
 		peakAverages->push_back(average);
 		peakStandardDeviation->push_back(standardDeviation);
+		
+		// we don't care if there are more than 1 peak
+		return;
 	}
 }
 
