@@ -42,4 +42,13 @@ public:
 	void call();
 };
 
+class Adapter_RAY_MPI_TAG_TOUCH_TAXON: public MessageTagHandler{
+	PhylogenyViewer*m_object;
+
+public:
+
+	void setObject(PhylogenyViewer*object);
+	void call(Message*m);
+};
+
 #endif

@@ -3176,7 +3176,8 @@ void Searcher::registerPlugin(ComputeCore*core){
 
 	core->setObjectSymbol(m_plugin,m_parameters,"/RayAssembler/ObjectStore/Parameters.ray");
 	core->setObjectSymbol(m_plugin,m_subgraph,"/RayAssembler/ObjectStore/deBruijnGraph_part.ray");
-	core->setObjectSymbol(m_plugin,&m_colorSet,"RayAssembler/ObjectStore/VirtualColorManagementUnit.ray");
+	core->setObjectSymbol(m_plugin,&m_colorSet,"/RayAssembler/ObjectStore/VirtualColorManagementUnit.ray");
+	core->setObjectSymbol(m_plugin,m_timePrinter,"/RayAssembler/ObjectStore/Timer.ray");
 }
 
 void Searcher::resolveSymbols(ComputeCore*core){

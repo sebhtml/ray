@@ -23,19 +23,22 @@
 [sboisver12@colosse1 2012-01-25]$ ls
 Genome-to-Taxon.tsv  Taxon-Names.tsv  Taxon-Types.tsv  TreeOfLife-Edges.tsv
 
-3. for each sequence, also add an extra color for its genome identifier using a distinct namespace  [DONE]
-4. Color things [DONE]
+1. for each sequence, also add an extra color for its genome identifier using a distinct namespace  [DONE]
+2. Color things [DONE]
 
-1. Use the vertices to get a list of identifiers. [DONE]
-2. With this list, load only the relevant pairs from Genome-to-Taxon.tsv. (use an iterator)  [DONE]
-x. generate a list of relevant taxon identifiers  [DONE]
+3. Use the vertices to get a list of identifiers. [DONE]
+4. With this list, load only the relevant pairs from Genome-to-Taxon.tsv. (use an iterator)  [DONE]
+5. generate a list of relevant taxon identifiers  [DONE]
 
-y. iteratively load the tree of life (using an iterator-like approach) and fetch things to complete paths to root
+6. synchronize taxons [DONE]
 
-5. For each vertex, get the best guess in the tree
+7. iteratively load the tree of life (using an iterator-like approach) and fetch things to complete paths to root
+
+8. For each vertex, get the best guess in the tree
 	for instance if a k-mer has 3 things on it, try to find a common ancestor in the tree
-6. synchronize the tree with master
-7. output BiologicalAbundances/_Phylogeny/Hits.tsv
+
+9. synchronize the tree with master
+10. output BiologicalAbundances/_Phylogeny/Hits.tsv
 
 also add a Unknown category, which are the k-mers without colors but assembled de novo
 
@@ -52,7 +55,7 @@ also add a Unknown category, which are the k-mers without colors but assembled d
 #include <handlers/MessageTagHandler.h>
 #include <application_core/Parameters.h>
 #include <plugin_VerticesExtractor/GridTable.h>
-
+#include <profiling/TimePrinter.h>
 
 #include <plugin_PhylogenyViewer/PhylogenyViewer_adapters.h>
 
@@ -67,12 +70,29 @@ using namespace std;
  */
 class PhylogenyViewer: public CorePlugin{
 
+/* slave states */
 	bool m_extractedColorsForPhylogeny;
 	bool m_loadedTaxonsForPhylogeny;
+	bool m_sentTaxonsToMaster;
+	bool m_sentTaxonControlMessage;
+	bool m_messageSent;
+	bool m_messageReceived;
+	bool m_synced;
+
+	set<uint64_t>::iterator m_taxonIterator;
+
+/* master states */
+
+	int m_ranksThatLoadedTaxons;
+	bool m_mustSync;
+	int m_responses;
 
 	set<PhysicalKmerColor> m_colorsForPhylogeny;
 	set<uint64_t> m_taxonsForPhylogeny;
+	set<uint64_t> m_taxonsForPhylogenyMaster;
 	map<uint64_t,uint64_t> m_genomeToTaxon;
+
+	map<uint64_t,uint64_t> m_tree;
 
 	GridTable*m_subgraph;
 	Parameters*m_parameters;
@@ -86,27 +106,41 @@ class PhylogenyViewer: public CorePlugin{
 
 	StaticVector*m_inbox;
 	RingAllocator*m_inboxAllocator;
+	TimePrinter*m_timePrinter;
 
 	ComputeCore*m_core;
 
 	bool m_started;
 
+
 	MasterMode RAY_MASTER_MODE_PHYLOGENY_MAIN;
 	MasterMode RAY_MASTER_MODE_KILL_RANKS;
 
 	SlaveMode RAY_SLAVE_MODE_PHYLOGENY_MAIN;
+
 	MessageTag RAY_MPI_TAG_PHYLOGENY_MAIN;
+	MessageTag RAY_MPI_TAG_TOUCH_TAXON;
+	MessageTag RAY_MPI_TAG_TOUCH_TAXON_REPLY;
+	MessageTag RAY_MPI_TAG_SYNCED_TAXONS;
+	MessageTag RAY_MPI_TAG_LOADED_TAXONS;
 
 	Adapter_RAY_MASTER_MODE_PHYLOGENY_MAIN m_adapter_RAY_MASTER_MODE_PHYLOGENY_MAIN;
 	Adapter_RAY_SLAVE_MODE_PHYLOGENY_MAIN m_adapter_RAY_SLAVE_MODE_PHYLOGENY_MAIN;
-	
+	Adapter_RAY_MPI_TAG_TOUCH_TAXON m_adapter_RAY_MPI_TAG_TOUCH_TAXON;
+
 	void extractColorsForPhylogeny();
 	void loadTaxons();
+
+	void sendTaxonsToMaster();
+	void sendTaxonsFromMaster();
+	void copyTaxonsFromSecondaryTable();
 
 public:
 
 	void call_RAY_MASTER_MODE_PHYLOGENY_MAIN();
 	void call_RAY_SLAVE_MODE_PHYLOGENY_MAIN();
+
+	void call_RAY_MPI_TAG_TOUCH_TAXON(Message*message);
 
 	void registerPlugin(ComputeCore*core);
 	void resolveSymbols(ComputeCore*core);

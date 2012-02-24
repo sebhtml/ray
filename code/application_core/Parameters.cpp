@@ -667,9 +667,6 @@ void Parameters::parseCommands(){
 			i++;
 			string taxonNames=m_commands[i];
 
-
-			m_searchDirectories.push_back(token);
-
 		}else if(searchOption.count(token)>0){
 
 			i++;

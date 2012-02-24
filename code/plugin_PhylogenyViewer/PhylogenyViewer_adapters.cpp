@@ -36,4 +36,11 @@ void Adapter_RAY_MASTER_MODE_PHYLOGENY_MAIN::call(){
 	m_object->call_RAY_MASTER_MODE_PHYLOGENY_MAIN();
 }
 
+void Adapter_RAY_MPI_TAG_TOUCH_TAXON::setObject(PhylogenyViewer*object){
+	m_object=object;
+}
+
+void Adapter_RAY_MPI_TAG_TOUCH_TAXON::call(Message*message){
+	m_object->call_RAY_MPI_TAG_TOUCH_TAXON(message);
+}
 
