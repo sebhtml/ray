@@ -113,7 +113,14 @@ void Searcher::call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS(){
 	}else if(m_ranksDoneCounting==m_parameters->getSize()){
 		m_ranksDoneCounting=-1;
 		
-		m_switchMan->sendToAll(m_outbox,m_parameters->getRank(),RAY_MPI_TAG_SEARCH_SHARE_COUNTS);
+		#ifdef ASSERT
+		assert(m_parameters->getRank() == 0);
+		#endif
+
+		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+		buffer[0]=m_totalNumberOfKmerObservations;
+
+		m_switchMan->sendMessageToAll(buffer,1,m_outbox,m_parameters->getRank(),RAY_MPI_TAG_SEARCH_SHARE_COUNTS);
 
 	}else if(m_ranksDoneSharing==m_parameters->getSize()){
 		m_sendCounts=true;
@@ -264,6 +271,16 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 		m_switchMan->sendEmptyMessage(m_outbox,m_parameters->getRank(),MASTER_RANK,RAY_MPI_TAG_SEARCH_COUNTING_DONE);
 
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_SHARE_COUNTS)){
+
+		Message*message=m_inbox->at(0);
+		uint64_t*buffer=message->getBuffer();
+		
+		#ifdef ASSERT
+		assert(message->getCount()==1);
+		#endif
+
+		m_totalNumberOfKmerObservations=buffer[0];
+
 		m_shareCounts=true;
 		m_directoryIterator=0;
 		m_fileIterator=0;
@@ -442,6 +459,9 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		cout<<endl;
 
 		m_switchMan->closeMasterMode();
+
+		m_totalNumberOfKmerObservations=total;
+
 	}
 }
 
@@ -2817,6 +2837,7 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 		header<<"	Quality1	Quality2	Quality3";
 		header<<"	Has peak ?	Has high frequency ?";
 		header<<"	Demultiplexed k-mer observations";
+		header<<"	K-mer observation proportion";
 
 		header<<endl;
 
@@ -2874,6 +2895,11 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 
 		content<<"	"<<demultiplexedObservations;
 
+		double proportion=demultiplexedObservations;
+		if(m_totalNumberOfKmerObservations!=0)
+			proportion/=m_totalNumberOfKmerObservations;
+
+		content<<"	"<<proportion;
 		content<<endl;
 
 		#ifdef ASSERT

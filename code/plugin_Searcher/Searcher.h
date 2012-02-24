@@ -135,6 +135,8 @@ class Searcher :  public CorePlugin {
 	uint64_t m_sequencesToProcess;
 	uint64_t m_filesToProcess;
 
+	uint64_t m_totalNumberOfKmerObservations;
+	
 	PhysicalKmerColor m_color;
 	PhysicalKmerColor m_identifier;
 
