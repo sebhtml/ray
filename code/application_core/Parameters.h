@@ -38,6 +38,7 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class Parameters{
+	string m_genomeToTaxonFile;
 
 	vector<string> m_searchDirectories;
 
@@ -217,6 +218,8 @@ public:
 	int getRoutingDegree();
 
 	vector<string>*getSearchDirectories();
+
+	string getGenomeToTaxonFile();
 };
 
 #endif

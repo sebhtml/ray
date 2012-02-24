@@ -20,6 +20,7 @@
 
 #include <plugin_PhylogenyViewer/PhylogenyViewer.h>
 #include <plugin_VerticesExtractor/GridTableIterator.h>
+#include <plugin_PhylogenyViewer/GenomeToTaxonLoader.h>
 
 //#define DEBUG_PHYLOGENY
 
@@ -44,6 +45,10 @@ void PhylogenyViewer::call_RAY_SLAVE_MODE_PHYLOGENY_MAIN(){
 
 		extractColorsForPhylogeny();
 
+	}else if(!m_loadedTaxonsForPhylogeny){
+	
+		loadTaxons();
+
 	}else if(m_outbox->size()==0){
 		#ifdef DEBUG_PHYLOGENY
 		cout<<"Rank "<<m_rank<<" is closing call_RAY_SLAVE_MODE_PHYLOGENY_MAIN"<<endl;
@@ -51,6 +56,44 @@ void PhylogenyViewer::call_RAY_SLAVE_MODE_PHYLOGENY_MAIN(){
 
 		m_switchMan->closeSlaveModeLocally(m_outbox,m_rank);
 	}
+}
+
+/*
+ * Loads taxons by fetching pairs in a conversion file.
+ */
+void PhylogenyViewer::loadTaxons(){
+
+	if(!m_parameters->hasOption("-with-phylogeny")){
+		m_loadedTaxonsForPhylogeny=true;
+
+		return;
+	}
+
+	string genomeToTaxonFile=m_parameters->getGenomeToTaxonFile();
+
+	GenomeToTaxonLoader genomeToTaxonUnit;
+
+	genomeToTaxonUnit.load(genomeToTaxonFile);
+
+	while(genomeToTaxonUnit.hasNext()){
+	
+		uint64_t genome;
+		uint64_t taxon;
+
+		genomeToTaxonUnit.getNext(&genome,&taxon);
+
+		if(m_colorsForPhylogeny.count(genome)>0){
+			m_taxonsForPhylogeny.insert(taxon);
+			
+			m_genomeToTaxon[genome]=taxon;
+		}
+	}
+
+	cout<<"Rank "<<m_rank<<" loaded "<<m_taxonsForPhylogeny.size()<<" taxons."<<endl;
+
+	m_colorsForPhylogeny.clear();
+
+	m_loadedTaxonsForPhylogeny=true;
 }
 
 /**
@@ -132,6 +175,22 @@ void PhylogenyViewer::registerPlugin(ComputeCore*core){
 
 	RAY_MPI_TAG_PHYLOGENY_MAIN=core->allocateMessageTagHandle(m_plugin);
 	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_PHYLOGENY_MAIN,"RAY_MPI_TAG_PHYLOGENY_MAIN");
+
+
+	m_switchMan=core->getSwitchMan();
+	m_outbox=core->getOutbox();
+	m_inbox=core->getInbox();
+	m_outboxAllocator=core->getOutboxAllocator();
+	m_inboxAllocator=core->getInboxAllocator();
+
+	m_rank=core->getMessagesHandler()->getRank();
+	m_size=core->getMessagesHandler()->getSize();
+	m_extractedColorsForPhylogeny=false;
+	m_loadedTaxonsForPhylogeny=false;
+
+	m_core=core;
+
+
 }
 
 void PhylogenyViewer::resolveSymbols(ComputeCore*core){
@@ -149,22 +208,11 @@ void PhylogenyViewer::resolveSymbols(ComputeCore*core){
 
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_PHYLOGENY_MAIN,RAY_MASTER_MODE_KILL_RANKS);
 
-	m_switchMan=core->getSwitchMan();
-	m_outbox=core->getOutbox();
-	m_inbox=core->getInbox();
-	m_outboxAllocator=core->getOutboxAllocator();
-	m_inboxAllocator=core->getInboxAllocator();
 
 	m_parameters=(Parameters*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/Parameters.ray");
 
 	m_subgraph=(GridTable*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/deBruijnGraph_part.ray");
 	m_colorSet=(ColorSet*)core->getObjectFromSymbol(m_plugin,"RayAssembler/ObjectStore/VirtualColorManagementUnit.ray");
-	m_rank=core->getMessagesHandler()->getRank();
-	m_size=core->getMessagesHandler()->getSize();
-
-	m_extractedColorsForPhylogeny=false;
-
-	m_core=core;
 
 }
 

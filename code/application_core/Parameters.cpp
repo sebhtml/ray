@@ -292,7 +292,11 @@ void Parameters::parseCommands(){
 	set<string> searchOption;
 	searchOption.insert("-search");
 
+	set<string> phylogeny;
+	phylogeny.insert("-with-phylogeny");
+
 	vector<set<string> > toAdd;
+	toAdd.push_back(phylogeny);
 	toAdd.push_back(minimumContigLength);
 	toAdd.push_back(showExtensionChoiceOption);
 	toAdd.push_back(setRepeatCoverage);
@@ -641,7 +645,33 @@ void Parameters::parseCommands(){
 			token=m_commands[i];
 			m_degree=atoi(token.c_str());
 
+		}else if(phylogeny.count(token)>0){
+
+			cout<<"Enabling CorePlugin 'PhylogenyViewer'"<<endl;
+
+			i++;
+			int items=m_commands.size()-i;
+
+			if(items<3){
+				if(m_rank==MASTER_RANK){
+					cout<<"Error: "<<token<<" needs 3 item, but you provided "<<items<<endl;
+				}
+
+				m_error=true;
+				return;
+			}
+
+			m_genomeToTaxonFile=m_commands[i];
+			i++;
+			string tree=m_commands[i];
+			i++;
+			string taxonNames=m_commands[i];
+
+
+			m_searchDirectories.push_back(token);
+
 		}else if(searchOption.count(token)>0){
+
 			i++;
 			int items=m_commands.size()-i;
 
@@ -1171,11 +1201,16 @@ void Parameters::showUsage(){
 	showOption("-s sequenceFile","Provides a file containing single-end reads.");
 	cout<<endl;
 
-	cout<<"  Search in the de Bruijn graph"<<endl;
+	cout<<"  Biological abundances and phylogeny "<<endl;
 	cout<<endl;
 	showOption("-search searchDirectory","Provides a directory containing fasta files to be searched in the de Bruijn graph.");
 	showOptionDescription("Biological abundances will be written to RayOutput/BiologicalAbundances");
 	showOptionDescription("See Documentation/BiologicalAbundances.txt");
+	cout<<endl;
+
+	showOption("-with-phylogeny Genome-to-Taxon.tsv TreeOfLife-Edges.tsv Taxon-Names.tsv","Provides a phylogeny.");
+	showOptionDescription("See Documentation/Phylogeny.txt for details.");
+
 	cout<<endl;
 	
 /*
@@ -1620,3 +1655,8 @@ int Parameters::getRoutingDegree(){
 vector<string>*Parameters::getSearchDirectories(){
 	return &m_searchDirectories;
 }
+
+string Parameters::getGenomeToTaxonFile(){
+	return m_genomeToTaxonFile;
+}
+

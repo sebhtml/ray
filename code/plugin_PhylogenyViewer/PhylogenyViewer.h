@@ -26,9 +26,9 @@ Genome-to-Taxon.tsv  Taxon-Names.tsv  Taxon-Types.tsv  TreeOfLife-Edges.tsv
 3. for each sequence, also add an extra color for its genome identifier using a distinct namespace  [DONE]
 4. Color things [DONE]
 
-1. Use the vertices to get a list of identifiers.
-2. With this list, load only the relevant pairs from Genome-to-Taxon.tsv. (use an iterator)
-x. generate a list of relevant taxon identifiers
+1. Use the vertices to get a list of identifiers. [DONE]
+2. With this list, load only the relevant pairs from Genome-to-Taxon.tsv. (use an iterator)  [DONE]
+x. generate a list of relevant taxon identifiers  [DONE]
 
 y. iteratively load the tree of life (using an iterator-like approach) and fetch things to complete paths to root
 
@@ -53,9 +53,12 @@ also add a Unknown category, which are the k-mers without colors but assembled d
 #include <application_core/Parameters.h>
 #include <plugin_VerticesExtractor/GridTable.h>
 
+
 #include <plugin_PhylogenyViewer/PhylogenyViewer_adapters.h>
 
 #include <set>
+#include <stdint.h>
+#include <map>
 using namespace std;
 
 /** 
@@ -65,8 +68,11 @@ using namespace std;
 class PhylogenyViewer: public CorePlugin{
 
 	bool m_extractedColorsForPhylogeny;
+	bool m_loadedTaxonsForPhylogeny;
 
 	set<PhysicalKmerColor> m_colorsForPhylogeny;
+	set<uint64_t> m_taxonsForPhylogeny;
+	map<uint64_t,uint64_t> m_genomeToTaxon;
 
 	GridTable*m_subgraph;
 	Parameters*m_parameters;
@@ -95,6 +101,7 @@ class PhylogenyViewer: public CorePlugin{
 	Adapter_RAY_SLAVE_MODE_PHYLOGENY_MAIN m_adapter_RAY_SLAVE_MODE_PHYLOGENY_MAIN;
 	
 	void extractColorsForPhylogeny();
+	void loadTaxons();
 
 public:
 
