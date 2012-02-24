@@ -914,7 +914,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		int physicalColors=m_colorSet.getTotalNumberOfPhysicalColors();
 		cout<<"Rank "<<m_parameters->getRank()<<" colored the graph with "<<physicalColors<<" real colors using "<<virtualColors<<" virtual colors"<<endl;
 
-		cout<<"VIRTUAL COLOR SUMMARY"<<endl;
+		//cout<<"VIRTUAL COLOR SUMMARY"<<endl;
 
 		ostringstream summaryFile;
 		summaryFile<<m_parameters->getPrefix()<<"/BiologicalAbundances/_Coloring/"<<m_parameters->getRank()<<".Operations.txt";
@@ -2584,17 +2584,16 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 
 		/* unique identifiers have their own namespace */
 
-		uint64_t theIdentifier=m_color;
+		m_identifier=m_color;
 
 		if(m_searchDirectories[m_directoryIterator].hasCurrentSequenceIdentifier()){
-			theIdentifier=m_searchDirectories[m_directoryIterator].getCurrentSequenceIdentifier();
+			uint64_t theIdentifier=m_searchDirectories[m_directoryIterator].getCurrentSequenceIdentifier();
 
+			uint64_t nameSpace=PHYLOGENY_NAMESPACE;
+			nameSpace*= COLOR_NAMESPACE;
+			m_identifier=theIdentifier + nameSpace;
 		}
 
-		uint64_t nameSpace=PHYLOGENY_NAMESPACE;
-		nameSpace*= COLOR_NAMESPACE;
-
-		m_identifier=theIdentifier + nameSpace;
 
 		#ifdef DEBUG_PHYLOGENY
 		cout<<"[phylogeny] identifier= "<<m_identifier<<endl;
@@ -3176,6 +3175,8 @@ void Searcher::registerPlugin(ComputeCore*core){
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_CONTIG_IDENTIFICATION_REPLY,"RAY_MPI_TAG_CONTIG_IDENTIFICATION_REPLY");
 
 	core->setObjectSymbol(m_plugin,m_parameters,"/RayAssembler/ObjectStore/Parameters.ray");
+	core->setObjectSymbol(m_plugin,m_subgraph,"/RayAssembler/ObjectStore/deBruijnGraph_part.ray");
+	core->setObjectSymbol(m_plugin,&m_colorSet,"RayAssembler/ObjectStore/VirtualColorManagementUnit.ray");
 }
 
 void Searcher::resolveSymbols(ComputeCore*core){
