@@ -32,9 +32,12 @@ using namespace std;
 
 // maximum value for a uint64_t:
 // 18446744073709551615
-// xxxx000yyyyyyyyyyyyy
+// xxxxyyyyyyyyyyyyyyyy
 //    10000000000000000
 #define COLOR_NAMESPACE 10000000000000000
+
+// colors in the phylogeny namespace: 1024 * 10000000000000000 + identifier 
+#define PHYLOGENY_NAMESPACE 1024
 
 typedef uint32_t VirtualKmerColorHandle;
 

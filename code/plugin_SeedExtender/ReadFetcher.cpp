@@ -100,9 +100,9 @@ void ReadFetcher::work(){
 		assert((int)buffer.size()==period);
 		#endif
 
-		int destination=m_parameters->_vertexRank(&m_vertex);
 
 		#ifdef GUILLIMIN_BUG
+		int destination=m_parameters->_vertexRank(&m_vertex);
 		if(m_parameters->getRank()==destination){
 			cout<<endl;
 			cout<<"worker: "<<m_workerId<<endl;

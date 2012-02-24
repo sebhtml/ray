@@ -41,6 +41,8 @@ using namespace std;
 //#define CONFIG_CONTIG_IDENTITY_VERBOSE
 //#define CONFIG_DEBUG_COLORS
 
+//#define DEBUG_PHYLOGENY
+
 #define CONFIG_SEARCH_THRESHOLD 0.001
 #define CONFIG_FORCE_VALUE_FOR_MAXIMUM_SPEED false
 #define CONFIG_NICELY_ASSEMBLED_KMER_POSITION 0
@@ -2283,8 +2285,7 @@ void Searcher::call_RAY_MPI_TAG_ADD_KMER_COLOR(Message*message){
 
 		kmer.unpack(buffer,&bufferPosition);
 
-		uint64_t color=buffer[bufferPosition++];
-	
+
 		Vertex*node=m_subgraph->find(&kmer);
 
 		// the k-mer does not exist
@@ -2293,39 +2294,54 @@ void Searcher::call_RAY_MPI_TAG_ADD_KMER_COLOR(Message*message){
 			continue;
 		}
 
-		//cout<<"kmer exists"<<endl;
+		PhysicalKmerColor color=buffer[bufferPosition++];
 
-		VirtualKmerColorHandle virtualColorHandle=node->getVirtualColor();
+		PhysicalKmerColor colorForPhylogeny=buffer[bufferPosition++];
 
-		// the physical color is already there
-		// we don't need to add it...
-		if(m_colorSet.virtualColorHasPhysicalColor(virtualColorHandle,color)){
-			continue;
+		addColorToKmer(node,color);
+
+		/* don't add it if it is the same */
+		if(colorForPhylogeny != color){
+			addColorToKmer(node,colorForPhylogeny);
 		}
 
-		// get a virtual color with the requested physical colors
-		// it will fetch an already existing virtual color, if any
-		// otherwise, it will create a new one.
-		VirtualKmerColorHandle newVirtualColor=m_colorSet.getVirtualColorFrom(virtualColorHandle,color);
-
-		node->setVirtualColor(newVirtualColor);
-
-		m_colorSet.incrementReferences(newVirtualColor);
-		m_colorSet.decrementReferences(virtualColorHandle);
-
-		#ifdef ASSERT
-		assert(m_colorSet.virtualColorHasPhysicalColor(newVirtualColor,color));
-
-		// maybe this color was purged..
-		//assert(m_colorSet.getNumberOfPhysicalColors(virtualColorHandle)+1 == m_colorSet.getNumberOfPhysicalColors(newVirtualColor));
-		
-		assert(m_colorSet.getNumberOfReferences(newVirtualColor)>=1);
-		assert(m_colorSet.getNumberOfReferences(virtualColorHandle)>=0);
-		#endif
 	}
 
 	// send reply
 	m_switchMan->sendEmptyMessage(m_outbox,m_parameters->getRank(),message->getSource(),RAY_MPI_TAG_ADD_KMER_COLOR_REPLY);
+}
+
+void Searcher::addColorToKmer(Vertex*node,PhysicalKmerColor color){
+	//cout<<"kmer exists"<<endl;
+
+	VirtualKmerColorHandle virtualColorHandle=node->getVirtualColor();
+
+	// the physical color is already there
+	// we don't need to add it...
+	if(m_colorSet.virtualColorHasPhysicalColor(virtualColorHandle,color)){
+		return;
+	}
+
+	// get a virtual color with the requested physical colors
+	// it will fetch an already existing virtual color, if any
+	// otherwise, it will create a new one.
+	VirtualKmerColorHandle newVirtualColor=m_colorSet.getVirtualColorFrom(virtualColorHandle,color);
+
+	node->setVirtualColor(newVirtualColor);
+
+	m_colorSet.incrementReferences(newVirtualColor);
+	m_colorSet.decrementReferences(virtualColorHandle);
+
+	#ifdef ASSERT
+	assert(m_colorSet.virtualColorHasPhysicalColor(newVirtualColor,color));
+
+	// maybe this color was purged..
+	//assert(m_colorSet.getNumberOfPhysicalColors(virtualColorHandle)+1 == m_colorSet.getNumberOfPhysicalColors(newVirtualColor));
+	
+	assert(m_colorSet.getNumberOfReferences(newVirtualColor)>=1);
+	assert(m_colorSet.getNumberOfReferences(virtualColorHandle)>=0);
+	#endif
+
 }
 
 void Searcher::call_RAY_MASTER_MODE_ADD_COLORS(){
@@ -2546,6 +2562,21 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 
 		m_color= m_globalSequenceIterator + COLOR_NAMESPACE * (m_directoryIterator);
 
+		/* unique identifiers have their own namespace */
+
+		uint64_t theIdentifier=m_color;
+
+		if(m_searchDirectories[m_directoryIterator].hasCurrentSequenceIdentifier()){
+			theIdentifier=m_searchDirectories[m_directoryIterator].getCurrentSequenceIdentifier();
+
+		}
+
+		m_identifier=theIdentifier + COLOR_NAMESPACE * PHYLOGENY_NAMESPACE;
+
+		#ifdef DEBUG_PHYLOGENY
+		cout<<"[phylogeny] identifier= "<<m_identifier<<endl;
+		#endif
+
 		#ifdef ASSERT
 		//assert(m_pendingMessages==0); not used anymore
 		#endif
@@ -2631,6 +2662,12 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 
 				// add the color
 				m_bufferedData.addAt(rankToFlush,color);
+				added++;
+
+				/* also add the GenBank identifier for phylogeny analyses */
+
+				uint64_t identifier=m_identifier;
+				m_bufferedData.addAt(rankToFlush,identifier);
 				added++;
 
 				// this little guy have to be right after iterateToNextKmer()
@@ -3185,7 +3222,7 @@ void Searcher::resolveSymbols(ComputeCore*core){
  *               **/
 	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_GET_COVERAGE_AND_PATHS, KMER_U64_ARRAY_SIZE+1+1+1+1+3+4*3 );
 
-	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_ADD_KMER_COLOR, KMER_U64_ARRAY_SIZE+1 );
+	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_ADD_KMER_COLOR, KMER_U64_ARRAY_SIZE+2 );
 
 
 

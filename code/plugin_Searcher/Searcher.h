@@ -135,6 +135,7 @@ class Searcher :  public CorePlugin {
 	uint64_t m_filesToProcess;
 
 	PhysicalKmerColor m_color;
+	PhysicalKmerColor m_identifier;
 
 	bool m_closedFiles;
 
@@ -331,6 +332,9 @@ class Searcher :  public CorePlugin {
 	int getWriter(int directory);
 
 	int getAbundanceWriter(int directory);
+
+	void addColorToKmer(Vertex*node,PhysicalKmerColor color);
+
 public:
 
 	void call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS();
