@@ -36,6 +36,9 @@ y. iteratively load the tree of life (using an iterator-like approach) and fetch
 	for instance if a k-mer has 3 things on it, try to find a common ancestor in the tree
 6. synchronize the tree with master
 7. output BiologicalAbundances/_Phylogeny/Hits.tsv
+
+also add a Unknown category, which are the k-mers without colors but assembled de novo
+
 */
 
 #ifndef _PhylogenyViewer_h
@@ -43,13 +46,46 @@ y. iteratively load the tree of life (using an iterator-like approach) and fetch
 
 #include <core/ComputeCore.h>
 #include <plugins/CorePlugin.h>
+#include <handlers/SlaveModeHandler.h>
+#include <handlers/MasterModeHandler.h>
+#include <handlers/MessageTagHandler.h>
+#include <application_core/Parameters.h>
+
+#include <plugin_PhylogenyViewer/PhylogenyViewer_adapters.h>
 
 /** 
  * a plugin to know what is present in a sample 
  */
 class PhylogenyViewer: public CorePlugin{
 
+	Parameters*m_parameters;
+	SwitchMan*m_switchMan;
+	StaticVector*m_outbox;
+	RingAllocator*m_outboxAllocator;
+	
+	Rank m_rank;
+	int m_size;
+
+	StaticVector*m_inbox;
+	RingAllocator*m_inboxAllocator;
+
+	ComputeCore*m_core;
+
+	bool m_started;
+
+	MasterMode RAY_MASTER_MODE_PHYLOGENY_MAIN;
+	MasterMode RAY_MASTER_MODE_KILL_RANKS;
+
+	SlaveMode RAY_SLAVE_MODE_PHYLOGENY_MAIN;
+	MessageTag RAY_MPI_TAG_PHYLOGENY_MAIN;
+
+	Adapter_RAY_MASTER_MODE_PHYLOGENY_MAIN m_adapter_RAY_MASTER_MODE_PHYLOGENY_MAIN;
+	Adapter_RAY_SLAVE_MODE_PHYLOGENY_MAIN m_adapter_RAY_SLAVE_MODE_PHYLOGENY_MAIN;
+	
 public:
+
+	void call_RAY_MASTER_MODE_PHYLOGENY_MAIN();
+	void call_RAY_SLAVE_MODE_PHYLOGENY_MAIN();
 
 	void registerPlugin(ComputeCore*core);
 	void resolveSymbols(ComputeCore*core);

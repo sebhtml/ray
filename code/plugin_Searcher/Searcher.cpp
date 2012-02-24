@@ -2571,7 +2571,10 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 
 		}
 
-		m_identifier=theIdentifier + COLOR_NAMESPACE * PHYLOGENY_NAMESPACE;
+		uint64_t nameSpace=PHYLOGENY_NAMESPACE;
+		nameSpace*= COLOR_NAMESPACE;
+
+		m_identifier=theIdentifier + nameSpace;
 
 		#ifdef DEBUG_PHYLOGENY
 		cout<<"[phylogeny] identifier= "<<m_identifier<<endl;
@@ -3146,6 +3149,7 @@ void Searcher::registerPlugin(ComputeCore*core){
 	RAY_MPI_TAG_CONTIG_IDENTIFICATION_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_CONTIG_IDENTIFICATION_REPLY,"RAY_MPI_TAG_CONTIG_IDENTIFICATION_REPLY");
 
+	core->setObjectSymbol(m_plugin,m_parameters,"/RayAssembler/ObjectStore/Parameters.ray");
 }
 
 void Searcher::resolveSymbols(ComputeCore*core){
@@ -3161,6 +3165,7 @@ void Searcher::resolveSymbols(ComputeCore*core){
 	RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES");
 	RAY_MASTER_MODE_KILL_RANKS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_KILL_RANKS");
 	RAY_MASTER_MODE_SEARCHER_CLOSE=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_SEARCHER_CLOSE");
+	RAY_MASTER_MODE_PHYLOGENY_MAIN=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_PHYLOGENY_MAIN");
 
 	RAY_MPI_TAG_ADD_KMER_COLOR=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ADD_KMER_COLOR");
 	RAY_MPI_TAG_ADD_KMER_COLOR_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ADD_KMER_COLOR_REPLY");
@@ -3230,7 +3235,7 @@ void Searcher::resolveSymbols(ComputeCore*core){
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS,RAY_MASTER_MODE_ADD_COLORS);
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_ADD_COLORS,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES);
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES, RAY_MASTER_MODE_SEARCHER_CLOSE);
-	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_SEARCHER_CLOSE, RAY_MASTER_MODE_KILL_RANKS);
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_SEARCHER_CLOSE, RAY_MASTER_MODE_PHYLOGENY_MAIN);
 
 }
 
