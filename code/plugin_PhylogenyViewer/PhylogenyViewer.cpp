@@ -21,6 +21,7 @@
 #include <plugin_PhylogenyViewer/PhylogenyViewer.h>
 #include <plugin_VerticesExtractor/GridTableIterator.h>
 #include <plugin_PhylogenyViewer/GenomeToTaxonLoader.h>
+#include <plugin_PhylogenyViewer/PhylogeneticTreeLoader.h>
 
 //#define DEBUG_PHYLOGENY
 
@@ -83,7 +84,7 @@ void PhylogenyViewer::call_RAY_MASTER_MODE_PHYLOGENY_MAIN(){
 
 void PhylogenyViewer::copyTaxonsFromSecondaryTable(){
 
-	for(set<uint64_t>::iterator i=m_taxonsForPhylogenyMaster.begin();
+	for(set<TaxonIdentifier>::iterator i=m_taxonsForPhylogenyMaster.begin();
 		i!=m_taxonsForPhylogenyMaster.end();i++){
 
 		m_taxonsForPhylogeny.insert(*i);
@@ -129,8 +130,13 @@ void PhylogenyViewer::call_RAY_SLAVE_MODE_PHYLOGENY_MAIN(){
 		cout<<"Rank "<<m_rank<<" has "<<m_taxonsForPhylogeny.size()<<" taxons after syncing with master"<<endl;
 
 		m_synced=true;
+		m_loadedTree=false;
 
 	}else if(!m_synced){
+
+	}else if(!m_loadedTree){
+
+		loadTree();
 	
 	}else if(m_outbox->size()==0){
 
@@ -138,6 +144,7 @@ void PhylogenyViewer::call_RAY_SLAVE_MODE_PHYLOGENY_MAIN(){
 		cout<<"Rank "<<m_rank<<" is closing call_RAY_SLAVE_MODE_PHYLOGENY_MAIN"<<endl;
 		#endif
 
+		cout<<endl;
 		m_switchMan->closeSlaveModeLocally(m_outbox,m_rank);
 	}
 }
@@ -148,7 +155,7 @@ void PhylogenyViewer::call_RAY_MPI_TAG_TOUCH_TAXON(Message*message){
 	int count=message->getCount();
 
 	for(int i=0;i<count;i++){
-		uint64_t taxon=buffer[i];
+		TaxonIdentifier taxon=buffer[i];
 
 		m_taxonsForPhylogenyMaster.insert(taxon);
 	}
@@ -157,13 +164,115 @@ void PhylogenyViewer::call_RAY_MPI_TAG_TOUCH_TAXON(Message*message){
 		message->getSource(),RAY_MPI_TAG_TOUCH_TAXON_REPLY);
 }
 
+void PhylogenyViewer::loadTree(){
+	
+	if(!m_parameters->hasOption("-with-phylogeny")){
+		m_loadedTree=true;
+
+		return;
+	}
+
+	string treeFile=m_parameters->getTreeFile();
+
+	PhylogeneticTreeLoader loader;
+
+	bool growed=true;
+
+	int iteration=0;
+
+	while(growed){
+
+		// we fetch everything relevant
+		loader.load(treeFile);
+
+		int oldSize=m_taxonsForPhylogeny.size();
+
+		while(loader.hasNext()){
+
+			TaxonIdentifier parent;
+			TaxonIdentifier child;
+	
+			loader.getNext(&parent,&child);
+
+			if(m_taxonsForPhylogeny.count(child) > 0){
+				
+				m_taxonsForPhylogeny.insert(parent);
+
+				m_treeChildren[parent].insert(child);
+	
+				m_treeParents[child]=parent;
+			}
+		}
+
+		int newSize=m_taxonsForPhylogeny.size();
+
+		growed=(newSize > oldSize);
+
+		cout<<"Rank "<<m_rank<<" "<<"loadTree iteration= "<<iteration<<" oldSize= "<<oldSize<<" newSize= "<<newSize<<endl;
+
+		iteration++;
+	}
+
+	testPaths();
+
+	m_loadedTree=true;
+}
+
+void PhylogenyViewer::testPaths(){
+	for(set<TaxonIdentifier>::iterator i=m_taxonsForPhylogeny.begin();i!=m_taxonsForPhylogeny.end();i++){
+		TaxonIdentifier taxon=*i;
+
+		vector<TaxonIdentifier> path;
+
+		getTaxonPathFromRoot(taxon,&path);
+
+		cout<<endl;
+		cout<<"Taxon= "<<taxon<<endl;
+		for(int i=0;i<(int)path.size();i++){
+			cout<<" / "<<path[i];
+		}
+		cout<<endl;
+	}
+}
+
+void PhylogenyViewer::getTaxonPathFromRoot(TaxonIdentifier taxon,vector<TaxonIdentifier>*path){
+
+	TaxonIdentifier current=taxon;
+
+	vector<TaxonIdentifier> reversePath;
+
+	reversePath.push_back(current);
+
+	while(m_treeParents.count(current)>0){
+		TaxonIdentifier parent=m_treeParents[current];
+	
+		current=parent;
+
+		reversePath.push_back(current);
+	}
+
+	int i=reversePath.size()-1;
+
+	while(i>=0){
+		TaxonIdentifier current=reversePath[i];
+		path->push_back(current);
+
+		i--;
+	}
+}
+
 /*
  * Loads taxons by fetching pairs in a conversion file.
  */
 void PhylogenyViewer::loadTaxons(){
 
 	if(!m_parameters->hasOption("-with-phylogeny")){
+
 		m_loadedTaxonsForPhylogeny=true;
+		m_sentTaxonsToMaster=false;
+		m_taxonIterator=m_taxonsForPhylogeny.begin();
+		m_messageSent=false;
+		m_messageReceived=true;
 
 		return;
 	}
@@ -176,8 +285,8 @@ void PhylogenyViewer::loadTaxons(){
 
 	while(genomeToTaxonUnit.hasNext()){
 	
-		uint64_t genome;
-		uint64_t taxon;
+		GenomeIdentifier genome;
+		TaxonIdentifier taxon;
 
 		genomeToTaxonUnit.getNext(&genome,&taxon);
 
@@ -193,11 +302,8 @@ void PhylogenyViewer::loadTaxons(){
 	m_colorsForPhylogeny.clear();
 
 	m_loadedTaxonsForPhylogeny=true;
-
 	m_sentTaxonsToMaster=false;
-
 	m_taxonIterator=m_taxonsForPhylogeny.begin();
-
 	m_messageSent=false;
 	m_messageReceived=true;
 }
@@ -225,7 +331,7 @@ void PhylogenyViewer::sendTaxonsFromMaster(){
 		int bufferPosition=0;
 
 		while(bufferPosition<maximum && m_taxonIterator!= m_taxonsForPhylogeny.end()){
-			uint64_t taxon=*m_taxonIterator;
+			TaxonIdentifier taxon=*m_taxonIterator;
 			buffer[bufferPosition]=taxon;
 			bufferPosition++;
 			m_taxonIterator++;
@@ -274,7 +380,7 @@ void PhylogenyViewer::sendTaxonsToMaster(){
 		int bufferPosition=0;
 
 		while(bufferPosition<maximum && m_taxonIterator!= m_taxonsForPhylogeny.end()){
-			uint64_t taxon=*m_taxonIterator;
+			TaxonIdentifier taxon=*m_taxonIterator;
 			buffer[bufferPosition]=taxon;
 			bufferPosition++;
 			m_taxonIterator++;

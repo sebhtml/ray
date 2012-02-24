@@ -19,6 +19,7 @@
 */
 
 #include <plugin_PhylogenyViewer/PhylogeneticTreeLoader.h>
+#include <plugin_PhylogenyViewer/types.h>
 
 #include <assert.h>
 #include <iostream>
@@ -73,14 +74,14 @@ bool PhylogeneticTreeLoader::hasNext(){
 	return m_current<m_size;
 }
 
-void PhylogeneticTreeLoader::getNext(uint64_t*parent,uint64_t*child){
+void PhylogeneticTreeLoader::getNext(TaxonIdentifier*parent,TaxonIdentifier*child){
 
 	if(m_current % STEPPING == 0){
 		cout<<"PhylogeneticTreeLoader::getNext "<<m_current<<"/"<<m_size<<endl;
 	}
 
-	uint64_t l1;
-	uint64_t l2;
+	TaxonIdentifier l1;
+	TaxonIdentifier l2;
 
 	m_stream>>l1>>l2;
 
@@ -88,5 +89,9 @@ void PhylogeneticTreeLoader::getNext(uint64_t*parent,uint64_t*child){
 	*child=l2;
 
 	m_current++;
+
+	if(m_current==m_size){
+		m_stream.close();
+	}
 }
 

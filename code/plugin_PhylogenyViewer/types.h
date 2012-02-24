@@ -18,35 +18,14 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#ifndef _PhylogeneticTreeLoader_h
-#define _PhylogeneticTreeLoader_h
+#ifndef _PhylogenyTypes_h
+#define _PhylogenyTypes_h
 
-
-#include <plugin_PhylogenyViewer/types.h>
-
-#include <string>
 #include <stdint.h>
-#include <fstream>
-using namespace std;
 
-/**
- * A loader for tree files
- *
- * \author Sébastien Boisvert
- */
-class PhylogeneticTreeLoader{
-	
-	ifstream m_stream;
+typedef uint64_t TaxonIdentifier;
 
-	int STEPPING;
-
-	uint64_t m_size;
-	uint64_t m_current;
-
-public:
-	void load(string file);
-	bool hasNext();
-	void getNext(TaxonIdentifier*parent,TaxonIdentifier*child);
-};
+typedef uint64_t GenomeIdentifier;
 
 #endif
+

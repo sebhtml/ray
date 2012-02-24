@@ -39,6 +39,7 @@ using namespace std;
  */
 class Parameters{
 	string m_genomeToTaxonFile;
+	string m_treeFile;
 
 	vector<string> m_searchDirectories;
 
@@ -220,6 +221,7 @@ public:
 	vector<string>*getSearchDirectories();
 
 	string getGenomeToTaxonFile();
+	string getTreeFile();
 };
 
 #endif

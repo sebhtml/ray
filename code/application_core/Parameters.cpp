@@ -663,7 +663,7 @@ void Parameters::parseCommands(){
 
 			m_genomeToTaxonFile=m_commands[i];
 			i++;
-			string tree=m_commands[i];
+			m_treeFile=m_commands[i];
 			i++;
 			string taxonNames=m_commands[i];
 
@@ -1657,3 +1657,6 @@ string Parameters::getGenomeToTaxonFile(){
 	return m_genomeToTaxonFile;
 }
 
+string Parameters::getTreeFile(){
+	return m_treeFile;
+}

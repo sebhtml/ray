@@ -19,6 +19,7 @@
 */
 
 #include <plugin_PhylogenyViewer/GenomeToTaxonLoader.h>
+#include <plugin_PhylogenyViewer/types.h>
 
 #include <assert.h>
 #include <iostream>
@@ -73,14 +74,14 @@ bool GenomeToTaxonLoader::hasNext(){
 	return m_current<m_size;
 }
 
-void GenomeToTaxonLoader::getNext(uint64_t*genome,uint64_t*taxon){
+void GenomeToTaxonLoader::getNext(GenomeIdentifier*genome,TaxonIdentifier*taxon){
 
 	if(m_current % STEPPING == 0){
 		cout<<"GenomeToTaxonLoader::getNext "<<m_current<<"/"<<m_size<<endl;
 	}
 
-	uint64_t loadedGenome;
-	uint64_t loadedTaxon;
+	GenomeIdentifier loadedGenome;
+	TaxonIdentifier loadedTaxon;
 
 	m_stream>>loadedGenome>>loadedTaxon;
 
@@ -88,5 +89,9 @@ void GenomeToTaxonLoader::getNext(uint64_t*genome,uint64_t*taxon){
 	(*taxon)=loadedTaxon;
 
 	m_current++;
+
+	if(m_current== m_size){
+		m_stream.close();
+	}
 }
 

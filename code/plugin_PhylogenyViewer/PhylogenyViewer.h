@@ -32,13 +32,15 @@ Genome-to-Taxon.tsv  Taxon-Names.tsv  Taxon-Types.tsv  TreeOfLife-Edges.tsv
 
 6. synchronize taxons [DONE]
 
-7. iteratively load the tree of life (using an iterator-like approach) and fetch things to complete paths to root
+7. iteratively load the tree of life (using an iterator-like approach) and fetch things to complete paths to root [DONE]
 
 8. For each vertex, get the best guess in the tree
 	for instance if a k-mer has 3 things on it, try to find a common ancestor in the tree
 
 9. synchronize the tree with master
-10. output BiologicalAbundances/_Phylogeny/Hits.tsv
+10. load taxon names
+
+11. output BiologicalAbundances/_Phylogeny/Hits.tsv
 
 also add a Unknown category, which are the k-mers without colors but assembled de novo
 
@@ -57,6 +59,7 @@ also add a Unknown category, which are the k-mers without colors but assembled d
 #include <plugin_VerticesExtractor/GridTable.h>
 #include <profiling/TimePrinter.h>
 
+#include <plugin_PhylogenyViewer/types.h>
 #include <plugin_PhylogenyViewer/PhylogenyViewer_adapters.h>
 
 #include <set>
@@ -78,8 +81,9 @@ class PhylogenyViewer: public CorePlugin{
 	bool m_messageSent;
 	bool m_messageReceived;
 	bool m_synced;
+	bool m_loadedTree;
 
-	set<uint64_t>::iterator m_taxonIterator;
+	set<TaxonIdentifier>::iterator m_taxonIterator;
 
 /* master states */
 
@@ -88,11 +92,12 @@ class PhylogenyViewer: public CorePlugin{
 	int m_responses;
 
 	set<PhysicalKmerColor> m_colorsForPhylogeny;
-	set<uint64_t> m_taxonsForPhylogeny;
-	set<uint64_t> m_taxonsForPhylogenyMaster;
-	map<uint64_t,uint64_t> m_genomeToTaxon;
+	set<TaxonIdentifier> m_taxonsForPhylogeny;
+	set<TaxonIdentifier> m_taxonsForPhylogenyMaster;
+	map<GenomeIdentifier,TaxonIdentifier> m_genomeToTaxon;
 
-	map<uint64_t,uint64_t> m_tree;
+	map<TaxonIdentifier,set<TaxonIdentifier> > m_treeChildren;
+	map<TaxonIdentifier,TaxonIdentifier> m_treeParents;
 
 	GridTable*m_subgraph;
 	Parameters*m_parameters;
@@ -134,7 +139,11 @@ class PhylogenyViewer: public CorePlugin{
 	void sendTaxonsToMaster();
 	void sendTaxonsFromMaster();
 	void copyTaxonsFromSecondaryTable();
+	void loadTree();
+	
+	void testPaths();
 
+	void getTaxonPathFromRoot(TaxonIdentifier taxon,vector<TaxonIdentifier>*path);
 public:
 
 	void call_RAY_MASTER_MODE_PHYLOGENY_MAIN();

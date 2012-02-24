@@ -21,6 +21,9 @@
 #ifndef _GenomeToTaxonLoader_h
 #define _GenomeToTaxonLoader_h
 
+
+#include <plugin_PhylogenyViewer/types.h>
+
 #include <string>
 #include <stdint.h>
 #include <fstream>
@@ -43,7 +46,7 @@ class GenomeToTaxonLoader{
 public:
 	void load(string file);
 	bool hasNext();
-	void getNext(uint64_t*genome,uint64_t*taxon);
+	void getNext(GenomeIdentifier*genome,TaxonIdentifier*taxon);
 };
 
 #endif
