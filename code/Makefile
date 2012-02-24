@@ -20,25 +20,7 @@ TARGET=TheRayGenomeAssembler.a
 all: $(TARGET) 
 
 include application_core/Makefile
-include plugin_MachineHelper/Makefile
-include plugin_Library/Makefile
-include plugin_FusionTaskCreator/Makefile
-include plugin_NetworkTest/Makefile
-include plugin_SequencesLoader/Makefile
-include plugin_VerticesExtractor/Makefile
-include plugin_JoinerTaskCreator/Makefile
-include plugin_SeedingData/Makefile
-include plugin_FusionData/Makefile
-include plugin_CoverageGatherer/Makefile
-include plugin_SeedExtender/Makefile
-include plugin_MessageProcessor/Makefile
-include plugin_Partitioner/Makefile
-include plugin_SequencesIndexer/Makefile
-include plugin_Amos/Makefile
-include plugin_KmerAcademyBuilder/Makefile
-include plugin_EdgePurger/Makefile
-include plugin_Searcher/Makefile
-include plugin_Scaffolder/Makefile
+include plugin_*/Makefile
 
 $(TARGET): $(obj-y)
 	$(AR) rcs $@ $^

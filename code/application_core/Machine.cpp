@@ -750,6 +750,8 @@ void Machine::registerPlugins(){
 
 	m_computeCore.registerPlugin(&m_searcher);
 
+	m_computeCore.registerPlugin(&m_phylogeny);
+
 	// resolve the symbols
 	
 	m_computeCore.resolveSymbols();

@@ -76,6 +76,8 @@
 #include <handlers/MessageTagHandler.h>
 #include <handlers/SlaveModeHandler.h>
 #include <handlers/MessageTagHandler.h>
+#include <plugin_PhylogenyViewer/PhylogenyViewer.h>
+
 using namespace std;
 
 /**
@@ -115,6 +117,7 @@ class Machine{
 	Partitioner m_partitioner;
 	NetworkTest m_networkTest;
 	EdgePurger m_edgePurger;
+	PhylogenyViewer m_phylogeny;
 
 	KmerAcademyBuilder m_kmerAcademyBuilder;
 	bool m_initialisedAcademy;
