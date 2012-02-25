@@ -68,7 +68,7 @@ void PhylogenyViewer::call_RAY_MASTER_MODE_PHYLOGENY_MAIN(){
 
 			m_taxonIterator=m_taxonsForPhylogeny.begin();
 
-			m_responses=0;
+			m_responses=m_size;
 			m_messageSent=false;
 
 			cout<<"Rank "<<m_rank<<" is starting taxon syncing across the compute tribe."<<endl;
