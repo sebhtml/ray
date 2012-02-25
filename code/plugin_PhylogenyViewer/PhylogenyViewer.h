@@ -37,13 +37,13 @@ Genome-to-Taxon.tsv  Taxon-Names.tsv  Taxon-Types.tsv  TreeOfLife-Edges.tsv
 8. load taxon names [DONE]
 
 9. For each vertex, get the best guess in the tree
-	for instance if a k-mer has 3 things on it, try to find a common ancestor in the tree
+	for instance if a k-mer has 3 things on it, try to find a common ancestor in the tree [DONE]
 
-10. synchronize the tree with master
+10. also add a Unknown category, which are the k-mers without colors but assembled de novo [DONE]
 
-11. output BiologicalAbundances/_Phylogeny/Hits.tsv
+11. synchronize the tree with master
 
-also add a Unknown category, which are the k-mers without colors but assembled de novo
+12. output BiologicalAbundances/_Phylogeny/Hits.txt
 
 */
 
@@ -83,6 +83,7 @@ class PhylogenyViewer: public CorePlugin{
 	bool m_messageReceived;
 	bool m_synced;
 	bool m_loadedTree;
+	bool m_gatheredObservations;
 
 	set<TaxonIdentifier>::iterator m_taxonIterator;
 
@@ -92,12 +93,17 @@ class PhylogenyViewer: public CorePlugin{
 	bool m_mustSync;
 	int m_responses;
 
+	set<GenomeIdentifier> m_warnings;
+
 	set<PhysicalKmerColor> m_colorsForPhylogeny;
 	set<TaxonIdentifier> m_taxonsForPhylogeny;
 	set<TaxonIdentifier> m_taxonsForPhylogenyMaster;
 	map<GenomeIdentifier,TaxonIdentifier> m_genomeToTaxon;
 
 	map<TaxonIdentifier,string> m_taxonNames;
+
+	map<TaxonIdentifier,uint64_t> m_taxonObservations;
+	uint64_t m_unknown;
 
 	map<TaxonIdentifier,set<TaxonIdentifier> > m_treeChildren;
 	map<TaxonIdentifier,TaxonIdentifier> m_treeParents;
@@ -151,6 +157,18 @@ class PhylogenyViewer: public CorePlugin{
 	void loadTaxonNames();
 
 	string getTaxonName(TaxonIdentifier taxon);
+
+	void gatherKmerObservations();
+	void classifySignal(vector<TaxonIdentifier>*taxons,int kmerCoverage,Vertex*vertex,Kmer*key);
+
+	void printTaxonPath(TaxonIdentifier taxon,vector<TaxonIdentifier>*path);
+
+	TaxonIdentifier getTaxonParent(TaxonIdentifier taxon);
+
+	void showObservations();
+
+	TaxonIdentifier findCommonAncestor(vector<TaxonIdentifier>*taxons);
+
 public:
 
 	void call_RAY_MASTER_MODE_PHYLOGENY_MAIN();

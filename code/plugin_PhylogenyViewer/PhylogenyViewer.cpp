@@ -84,12 +84,17 @@ void PhylogenyViewer::call_RAY_MASTER_MODE_PHYLOGENY_MAIN(){
 }
 
 void PhylogenyViewer::copyTaxonsFromSecondaryTable(){
+	int before=m_taxonsForPhylogeny.size();
 
 	for(set<TaxonIdentifier>::iterator i=m_taxonsForPhylogenyMaster.begin();
 		i!=m_taxonsForPhylogenyMaster.end();i++){
 
 		m_taxonsForPhylogeny.insert(*i);
 	}
+
+	int after=m_taxonsForPhylogeny.size();
+
+	cout<<"[PhylogenyViewer::copyTaxonsFromSecondaryTable] "<<before<<" -> "<<after<<endl;
 
 	#ifdef ASSERT
 	assert(m_taxonsForPhylogeny.size() == m_taxonsForPhylogenyMaster.size());
@@ -139,6 +144,10 @@ void PhylogenyViewer::call_RAY_SLAVE_MODE_PHYLOGENY_MAIN(){
 
 		loadTree();
 	
+	}else if(!m_gatheredObservations){
+	
+		gatherKmerObservations();
+
 	}else if(m_outbox->size()==0){
 
 		#ifdef DEBUG_PHYLOGENY
@@ -220,6 +229,275 @@ void PhylogenyViewer::loadTree(){
 	testPaths();
 
 	m_loadedTree=true;
+
+	m_gatheredObservations=false;
+}
+
+void PhylogenyViewer::gatherKmerObservations(){
+
+	GridTableIterator iterator;
+	iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
+
+	//* only fetch half of the iterated things because we just need one k-mer
+	// for any pair of reverse-complement k-mers 
+	
+	int parity=0;
+
+	map<int,uint64_t> frequencies;
+
+	while(iterator.hasNext()){
+
+		#ifdef ASSERT
+		assert(parity==0 || parity==1);
+		#endif
+
+		if(parity==0){
+			parity=1;
+		}else if(parity==1){
+			parity=0;
+
+			continue; // we only need data with parity=0
+		}
+
+		Vertex*node=iterator.next();
+		Kmer key=*(iterator.getKey());
+		
+		int kmerCoverage=node->getCoverage(&key);
+
+		VirtualKmerColorHandle color=node->getVirtualColor();
+		set<PhysicalKmerColor>*physicalColors=m_colorSet->getPhysicalColors(color);
+
+		vector<TaxonIdentifier> taxons;
+
+		for(set<PhysicalKmerColor>::iterator j=physicalColors->begin();
+			j!=physicalColors->end();j++){
+
+			PhysicalKmerColor physicalColor=*j;
+	
+			uint64_t nameSpace=physicalColor/COLOR_NAMESPACE;
+		
+			if(nameSpace==PHYLOGENY_NAMESPACE){
+				PhysicalKmerColor colorForPhylogeny=physicalColor % COLOR_NAMESPACE;
+
+				#ifdef ASSERT
+				if(m_colorsForPhylogeny.count(colorForPhylogeny)==0){
+					//cout<<"Error: color "<<colorForPhylogeny<<" should be in m_colorsForPhylogeny which contains "<<m_colorsForPhylogeny.size()<<endl;
+				}
+
+				//assert(m_colorsForPhylogeny.count(colorForPhylogeny)>0);
+
+				if(m_genomeToTaxon.count(colorForPhylogeny)==0){
+
+					if(m_warnings.count(colorForPhylogeny)>0){
+						continue;
+					}
+
+					cout<<"Warning, color "<<colorForPhylogeny<<" is not stored, "<<m_genomeToTaxon.size()<<" available for translation:"<<endl;
+
+					for(map<GenomeIdentifier,TaxonIdentifier>::iterator i=m_genomeToTaxon.begin();i!=m_genomeToTaxon.end();i++){
+						cout<<" "<<i->first<<"->"<<i->second;
+					}
+					cout<<endl;
+
+					m_warnings.insert(colorForPhylogeny);
+
+					continue;
+				}
+				//assert(m_genomeToTaxon.count(colorForPhylogeny)>0);
+				#endif
+
+				#ifdef ASSERT
+				assert(m_genomeToTaxon.count(colorForPhylogeny)>0);
+				#endif
+
+				TaxonIdentifier taxon=m_genomeToTaxon[colorForPhylogeny];
+
+				taxons.push_back(taxon);
+			}
+		}
+
+		classifySignal(&taxons,kmerCoverage,node,&key);
+
+		int count=taxons.size();
+
+		frequencies[count]++;
+	}
+	
+	cout<<endl;
+	cout<<"Taxon frequencies (only one DNA strand selected)"<<endl;
+	cout<<"Count	Frequency"<<endl;
+	for(map<int,uint64_t>::iterator i=frequencies.begin();i!=frequencies.end();i++){
+		cout<<""<<i->first<<"	"<<i->second<<endl;
+	}
+
+	showObservations();
+
+	m_gatheredObservations=true;
+}
+
+void PhylogenyViewer::showObservations(){
+
+	cout<<endl;
+	cout<<"Taxon observations"<<endl;
+	for(map<TaxonIdentifier,uint64_t>::iterator i=m_taxonObservations.begin();
+		i!=m_taxonObservations.end();i++){
+
+		TaxonIdentifier taxon=i->first;
+		uint64_t count=i->second;
+
+		cout<<endl;
+		cout<<">>>>>>>>>>> "<<getTaxonName(taxon)<<" ["<<taxon<<"]"<<endl;
+		cout<<" path: ";
+		vector<TaxonIdentifier> path;
+
+		getTaxonPathFromRoot(taxon,&path);
+		printTaxonPath(taxon,&path);
+
+		cout<<" k-mer observations: "<<count<<endl;
+	}
+
+	cout<<endl;
+	cout<<">>>>>>>>>>> Unknown"<<endl;
+	cout<<" path: / ???"<<endl;
+	cout<<" k-mer observations: "<<m_unknown<<endl;
+}
+
+void PhylogenyViewer::classifySignal(vector<TaxonIdentifier>*taxons,int kmerCoverage,Vertex*vertex,Kmer*key){
+	// given a list of taxon,
+	// place the kmer coverage somewhere in
+	// the tree
+	//
+	// case 1.
+	// if there are 0 taxons, this is unknown stuff
+	//
+	// case 2.
+	// if there is one taxon, place the coverage on it
+	//
+	// case 3.
+	// if there is at least 2 taxons and they all have the same parent
+	//
+	// case 4.
+	// if there is at least 2 taxons and they don't have the same parent
+	//  but they have a common ancestor
+	
+	if(taxons->size()==0){
+		m_unknown+=kmerCoverage; // case 1.
+
+	}else if(taxons->size()==1){
+		TaxonIdentifier taxon=taxons->at(0);
+
+		m_taxonObservations[taxon]+=kmerCoverage; // case 2.
+
+	}else{ // more than 1
+
+		#ifdef ASSERT
+		assert(taxons->size()>1);
+		#endif
+
+		// a taxon can only have one parent,
+		// simply check if they have all the same parent...
+
+		map<TaxonIdentifier,int> parentCount;
+
+		for(int i=0;i<(int)taxons->size();i++){
+			TaxonIdentifier taxon=taxons->at(i);
+
+			if(m_treeParents.count(taxon)==0){
+				continue;
+			}
+
+			TaxonIdentifier parent=getTaxonParent(taxon);
+
+			parentCount[parent]++;
+		}
+
+		if(parentCount.size()==1){ // only 1 common ancestor, easy
+			
+			#ifdef ASSERT
+			assert(parentCount.begin()->second == (int)taxons->size());
+			#endif
+
+			TaxonIdentifier taxon=parentCount.begin()->first;
+
+			m_taxonObservations[taxon]+=kmerCoverage; // case 3.
+
+			return;
+		}
+
+		// at this point, we have more than one taxon and
+		// they don't share the same parent
+
+		// since we have a tree, find the nearest common ancestor
+		// in the worst case, the common ancestor is the root
+
+		#ifdef ASSERT
+		assert(parentCount.size()>1);
+		#endif
+
+		TaxonIdentifier taxon=findCommonAncestor(taxons);
+
+		// classify it
+		m_taxonObservations[taxon]+=kmerCoverage; // case 4.
+	}
+}
+
+TaxonIdentifier PhylogenyViewer::findCommonAncestor(vector<TaxonIdentifier>*taxons){
+
+	map<TaxonIdentifier,int> counts;
+
+	// for a deep tree, this algorithm would not be really fast.
+	// so instead of computing path to the root,
+	// the algorithm should stop when one ancestor is found
+
+	vector<TaxonIdentifier> currentTaxons;
+
+	for(int i=0;i<(int)taxons->size();i++){
+		TaxonIdentifier taxon=taxons->at(i);
+		currentTaxons.push_back(taxon);
+	}
+
+	while(1){
+		int blocked=0;
+
+		// compute each path to the root
+		for(int i=0;i<(int)currentTaxons.size();i++){
+			TaxonIdentifier taxon=currentTaxons[i];
+
+			// no more parents
+			if(m_treeParents.count(taxon)==0){
+				blocked++;
+				continue;
+			}
+
+			TaxonIdentifier parent=m_treeParents[taxon];
+
+			counts[parent]++;
+
+			// we found a common ancestor
+			// this is the deepest
+			if(counts[parent]==(int)currentTaxons.size()){ 
+				return parent;
+			}
+			
+			currentTaxons[i]=parent; // update it
+		}
+
+		if(blocked==(int)currentTaxons.size()){ // this will happen if it is not a tree
+			
+			cout<<"Error, this is not a tree..."<<endl;
+			break;
+		}
+	}
+
+	return 999999999999;
+}
+
+TaxonIdentifier PhylogenyViewer::getTaxonParent(TaxonIdentifier taxon){
+	if(m_treeParents.count(taxon)>0){
+		return m_treeParents[taxon];
+	}
+
+	return 999999999999;
 }
 
 void PhylogenyViewer::loadTaxonNames(){
@@ -258,6 +536,7 @@ string PhylogenyViewer::getTaxonName(TaxonIdentifier taxon){
 }
 
 void PhylogenyViewer::testPaths(){
+	cout<<endl;
 	cout<<"[PhylogenyViewer::testPaths]"<<endl;
 
 	for(set<TaxonIdentifier>::iterator i=m_taxonsForPhylogeny.begin();i!=m_taxonsForPhylogeny.end();i++){
@@ -268,14 +547,23 @@ void PhylogenyViewer::testPaths(){
 		getTaxonPathFromRoot(taxon,&path);
 
 		cout<<endl;
-		cout<<"Taxon= "<<taxon<<endl;
-		for(int i=0;i<(int)path.size();i++){
 
-			TaxonIdentifier taxon=path[i];
-			cout<<" / "<<getTaxonName(taxon)<<" ["<<taxon<<"] ";
-		}
-		cout<<endl;
+		printTaxonPath(taxon,&path);
 	}
+	cout<<endl;
+}
+
+void PhylogenyViewer::printTaxonPath(TaxonIdentifier taxon,vector<TaxonIdentifier>*path){
+
+	//cout<<"Taxon= "<<taxon<<endl;
+
+	for(int i=0;i<(int)path->size();i++){
+
+		TaxonIdentifier taxon=(*path)[i];
+		cout<<" / "<<getTaxonName(taxon)<<" ["<<taxon<<"] ";
+	}
+	cout<<endl;
+
 }
 
 void PhylogenyViewer::getTaxonPathFromRoot(TaxonIdentifier taxon,vector<TaxonIdentifier>*path){
