@@ -357,7 +357,7 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		createDirectory(directory1Str.c_str());
 
 		ostringstream directory2;
-		directory2<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly";
+		directory2<<m_parameters->getPrefix()<<"/BiologicalAbundances/_DeNovoAssembly";
 		string directory2Str=directory2.str();
 		createDirectory(directory2Str.c_str());
 
@@ -373,17 +373,17 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 
 		if(m_writeDetailedFiles){
 			ostringstream directory3;
-			directory3<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Contigs";
+			directory3<<m_parameters->getPrefix()<<"/BiologicalAbundances/_DeNovoAssembly/Contigs";
 			string directory3Str=directory3.str();
 			createDirectory(directory3Str.c_str());
 
 			ostringstream directory4;
-			directory4<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Contigs/Coverage";
+			directory4<<m_parameters->getPrefix()<<"/BiologicalAbundances/_DeNovoAssembly/Contigs/Coverage";
 			string directory4Str=directory4.str();
 			createDirectory(directory4Str.c_str());
 
 			ostringstream directory5;
-			directory5<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Contigs/CoverageDistribution";
+			directory5<<m_parameters->getPrefix()<<"/BiologicalAbundances/_DeNovoAssembly/Contigs/CoverageDistribution";
 			string directory5Str=directory5.str();
 			createDirectory(directory5Str.c_str());
 		}
@@ -429,7 +429,7 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 
 		ofstream contigSummaryFile;
 		ostringstream summary;
-		summary<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Contigs.tsv";
+		summary<<m_parameters->getPrefix()<<"/BiologicalAbundances/_DeNovoAssembly/Contigs.tsv";
 
 		contigSummaryFile.open(summary.str().c_str());
 
@@ -522,7 +522,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 
 		// write the coverage distribution
 		ostringstream file1;
-		file1<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Contigs/CoverageDistribution/contig-"<<contigName<<".tsv";
+		file1<<m_parameters->getPrefix()<<"/BiologicalAbundances/_DeNovoAssembly/Contigs/CoverageDistribution/contig-"<<contigName<<".tsv";
 
 		#ifdef CONFIG_DEBUG_IOPS
 		cout<<"Opening file"<<endl;
@@ -643,7 +643,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 
 					uint64_t contigName=m_contigNames->at(m_contig);
 					ostringstream file2;
-					file2<<m_parameters->getPrefix()<<"/BiologicalAbundances/DeNovoAssembly/Contigs/Coverage/contig-"<<contigName<<".tsv";
+					file2<<m_parameters->getPrefix()<<"/BiologicalAbundances/m_DeNovoAssembly/Contigs/Coverage/contig-"<<contigName<<".tsv";
 
 					m_currentCoverageFile.open(file2.str().c_str());
 					m_currentCoverageFile<<"#KmerPosition	KmerCoverage"<<endl;

@@ -43,7 +43,7 @@ Genome-to-Taxon.tsv  Taxon-Names.tsv  Taxon-Types.tsv  TreeOfLife-Edges.tsv
 
 11. synchronize the tree with master [DONE]
 
-12. output BiologicalAbundances/_Phylogeny/Hits.txt
+12. output BiologicalAbundances/_Phylogeny/Hits.txt [DONE]
 
 */
 
@@ -171,9 +171,9 @@ class PhylogenyViewer: public CorePlugin{
 
 	void gatherKmerObservations();
 	void classifySignal(vector<TaxonIdentifier>*taxons,int kmerCoverage,Vertex*vertex,Kmer*key);
-	void printTaxonPath(TaxonIdentifier taxon,vector<TaxonIdentifier>*path);
+	void printTaxonPath(TaxonIdentifier taxon,vector<TaxonIdentifier>*path,ostream*stream);
 	TaxonIdentifier getTaxonParent(TaxonIdentifier taxon);
-	void showObservations();
+	void showObservations(ostream*stream);
 	void sendTreeCounts();
 	TaxonIdentifier findCommonAncestor(vector<TaxonIdentifier>*taxons);
 	void call_RAY_MPI_TAG_TAXON_OBSERVATIONS(Message*m);

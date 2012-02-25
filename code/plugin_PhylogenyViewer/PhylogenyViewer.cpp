@@ -23,6 +23,7 @@
 #include <plugin_PhylogenyViewer/GenomeToTaxonLoader.h>
 #include <plugin_PhylogenyViewer/PhylogeneticTreeLoader.h>
 #include <plugin_PhylogenyViewer/TaxonNameLoader.h>
+#include <core/OperatingSystem.h>
 
 //#define DEBUG_PHYLOGENY
 
@@ -88,7 +89,20 @@ void PhylogenyViewer::call_RAY_MASTER_MODE_PHYLOGENY_MAIN(){
 
 		cout<<"Global observations"<<endl;
 	
-		showObservations();
+		showObservations(&cout);
+
+		ostringstream hitFile;
+		hitFile<<m_parameters->getPrefix()<<"/BiologicalAbundances/_Phylogeny";
+
+		createDirectory(hitFile.str().c_str());
+
+		hitFile<<"/Taxons.txt";
+
+		ofstream f(hitFile.str().c_str());
+
+		showObservations(&f);
+
+		f.close();
 
 		m_timePrinter->printElapsedTime("Loading tree");
 
@@ -426,7 +440,7 @@ void PhylogenyViewer::gatherKmerObservations(){
 
 	cout<<"Taxon observations"<<endl;
 
-	showObservations();
+	showObservations(&cout);
 
 	m_gatheredObservations=true;
 
@@ -438,30 +452,30 @@ void PhylogenyViewer::gatherKmerObservations(){
 	m_countIterator=m_taxonObservations.begin();
 }
 
-void PhylogenyViewer::showObservations(){
+void PhylogenyViewer::showObservations(ostream*stream){
 
-	cout<<endl;
+	(*stream)<<endl;
 	for(map<TaxonIdentifier,uint64_t>::iterator i=m_taxonObservations.begin();
 		i!=m_taxonObservations.end();i++){
 
 		TaxonIdentifier taxon=i->first;
 		uint64_t count=i->second;
 
-		cout<<endl;
-		cout<<">>>>>>>>>>> "<<getTaxonName(taxon)<<" ["<<taxon<<"]"<<endl;
-		cout<<" path: ";
+		(*stream)<<endl;
+		(*stream)<<"Taxon: "<<getTaxonName(taxon)<<" ["<<taxon<<"]"<<endl;
+		(*stream)<<" path: ";
 		vector<TaxonIdentifier> path;
 
 		getTaxonPathFromRoot(taxon,&path);
-		printTaxonPath(taxon,&path);
+		printTaxonPath(taxon,&path,stream);
 
-		cout<<" k-mer observations: "<<count<<endl;
+		(*stream)<<" k-mer observations: "<<count<<endl;
 	}
 
-	cout<<endl;
-	cout<<">>>>>>>>>>> Unknown"<<endl;
-	cout<<" path: / ???"<<endl;
-	cout<<" k-mer observations: "<<m_unknown<<endl;
+	(*stream)<<endl;
+	(*stream)<<"Taxon: Unknown"<<endl;
+	(*stream)<<" path: / ???"<<endl;
+	(*stream)<<" k-mer observations: "<<m_unknown<<endl;
 }
 
 void PhylogenyViewer::classifySignal(vector<TaxonIdentifier>*taxons,int kmerCoverage,Vertex*vertex,Kmer*key){
@@ -654,21 +668,21 @@ void PhylogenyViewer::testPaths(){
 
 		cout<<endl;
 
-		printTaxonPath(taxon,&path);
+		printTaxonPath(taxon,&path,&cout);
 	}
 	cout<<endl;
 }
 
-void PhylogenyViewer::printTaxonPath(TaxonIdentifier taxon,vector<TaxonIdentifier>*path){
+void PhylogenyViewer::printTaxonPath(TaxonIdentifier taxon,vector<TaxonIdentifier>*path,ostream*stream){
 
 	//cout<<"Taxon= "<<taxon<<endl;
 
 	for(int i=0;i<(int)path->size();i++){
 
 		TaxonIdentifier taxon=(*path)[i];
-		cout<<" / "<<getTaxonName(taxon)<<" ["<<taxon<<"] ";
+		(*stream)<<" / "<<getTaxonName(taxon)<<" ["<<taxon<<"] ";
 	}
-	cout<<endl;
+	(*stream)<<endl;
 
 }
 
