@@ -22,6 +22,7 @@
 #include <plugin_VerticesExtractor/GridTableIterator.h>
 #include <plugin_PhylogenyViewer/GenomeToTaxonLoader.h>
 #include <plugin_PhylogenyViewer/PhylogeneticTreeLoader.h>
+#include <plugin_PhylogenyViewer/TaxonNameLoader.h>
 
 //#define DEBUG_PHYLOGENY
 
@@ -213,12 +214,52 @@ void PhylogenyViewer::loadTree(){
 		iteration++;
 	}
 
+	// load taxonNames
+	loadTaxonNames();
+
 	testPaths();
 
 	m_loadedTree=true;
 }
 
+void PhylogenyViewer::loadTaxonNames(){
+
+	if(!m_parameters->hasOption("-with-phylogeny")){
+		return;
+	}
+
+	string file=m_parameters->getTaxonNameFile();
+
+	TaxonNameLoader loader;
+
+	loader.load(file);
+
+	while(loader.hasNext()){
+
+		TaxonIdentifier taxon;
+		string name;
+
+		loader.getNext(&taxon,&name);
+
+		if(m_taxonsForPhylogeny.count(taxon)>0){
+			m_taxonNames[taxon]=name;
+		}
+	}
+
+	cout<<"Rank "<<m_rank<<" loaded taxon names from "<<file<<endl;
+}
+
+string PhylogenyViewer::getTaxonName(TaxonIdentifier taxon){
+	if(m_taxonNames.count(taxon)>0){
+		return m_taxonNames[taxon];
+	}
+
+	return "CachingError";
+}
+
 void PhylogenyViewer::testPaths(){
+	cout<<"[PhylogenyViewer::testPaths]"<<endl;
+
 	for(set<TaxonIdentifier>::iterator i=m_taxonsForPhylogeny.begin();i!=m_taxonsForPhylogeny.end();i++){
 		TaxonIdentifier taxon=*i;
 
@@ -229,7 +270,9 @@ void PhylogenyViewer::testPaths(){
 		cout<<endl;
 		cout<<"Taxon= "<<taxon<<endl;
 		for(int i=0;i<(int)path.size();i++){
-			cout<<" / "<<path[i];
+
+			TaxonIdentifier taxon=path[i];
+			cout<<" / "<<getTaxonName(taxon)<<" ["<<taxon<<"] ";
 		}
 		cout<<endl;
 	}

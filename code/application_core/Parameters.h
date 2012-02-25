@@ -40,6 +40,7 @@ using namespace std;
 class Parameters{
 	string m_genomeToTaxonFile;
 	string m_treeFile;
+	string m_taxonNameFile;
 
 	vector<string> m_searchDirectories;
 
@@ -222,6 +223,8 @@ public:
 
 	string getGenomeToTaxonFile();
 	string getTreeFile();
+	string getTaxonNameFile();
+
 };
 
 #endif

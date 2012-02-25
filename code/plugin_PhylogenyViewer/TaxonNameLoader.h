@@ -18,8 +18,8 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#ifndef _PhylogeneticTreeLoader_h
-#define _PhylogeneticTreeLoader_h
+#ifndef _TaxonNameLoader_h
+#define _TaxonNameLoader_h
 
 
 #include <plugin_PhylogenyViewer/types.h>
@@ -30,11 +30,11 @@
 using namespace std;
 
 /**
- * A loader for tree files
+ * A loader for names
  *
  * \author Sébastien Boisvert
  */
-class PhylogeneticTreeLoader{
+class TaxonNameLoader{
 	
 	ifstream m_stream;
 
@@ -44,7 +44,7 @@ class PhylogeneticTreeLoader{
 public:
 	void load(string file);
 	bool hasNext();
-	void getNext(TaxonIdentifier*parent,TaxonIdentifier*child);
+	void getNext(TaxonIdentifier*taxon,string*name);
 };
 
 #endif

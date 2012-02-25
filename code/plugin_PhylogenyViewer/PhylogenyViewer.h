@@ -34,11 +34,12 @@ Genome-to-Taxon.tsv  Taxon-Names.tsv  Taxon-Types.tsv  TreeOfLife-Edges.tsv
 
 7. iteratively load the tree of life (using an iterator-like approach) and fetch things to complete paths to root [DONE]
 
-8. For each vertex, get the best guess in the tree
+8. load taxon names [DONE]
+
+9. For each vertex, get the best guess in the tree
 	for instance if a k-mer has 3 things on it, try to find a common ancestor in the tree
 
-9. synchronize the tree with master
-10. load taxon names
+10. synchronize the tree with master
 
 11. output BiologicalAbundances/_Phylogeny/Hits.tsv
 
@@ -96,6 +97,8 @@ class PhylogenyViewer: public CorePlugin{
 	set<TaxonIdentifier> m_taxonsForPhylogenyMaster;
 	map<GenomeIdentifier,TaxonIdentifier> m_genomeToTaxon;
 
+	map<TaxonIdentifier,string> m_taxonNames;
+
 	map<TaxonIdentifier,set<TaxonIdentifier> > m_treeChildren;
 	map<TaxonIdentifier,TaxonIdentifier> m_treeParents;
 
@@ -144,6 +147,10 @@ class PhylogenyViewer: public CorePlugin{
 	void testPaths();
 
 	void getTaxonPathFromRoot(TaxonIdentifier taxon,vector<TaxonIdentifier>*path);
+
+	void loadTaxonNames();
+
+	string getTaxonName(TaxonIdentifier taxon);
 public:
 
 	void call_RAY_MASTER_MODE_PHYLOGENY_MAIN();

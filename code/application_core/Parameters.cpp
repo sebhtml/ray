@@ -665,7 +665,7 @@ void Parameters::parseCommands(){
 			i++;
 			m_treeFile=m_commands[i];
 			i++;
-			string taxonNames=m_commands[i];
+			m_taxonNameFile=m_commands[i];
 
 		}else if(searchOption.count(token)>0){
 
@@ -1659,4 +1659,8 @@ string Parameters::getGenomeToTaxonFile(){
 
 string Parameters::getTreeFile(){
 	return m_treeFile;
+}
+
+string Parameters::getTaxonNameFile(){
+	return m_taxonNameFile;
 }

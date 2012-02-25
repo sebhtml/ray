@@ -18,14 +18,16 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include <plugin_PhylogenyViewer/PhylogeneticTreeLoader.h>
+#include <plugin_PhylogenyViewer/TaxonNameLoader.h>
 #include <plugin_PhylogenyViewer/types.h>
 
 #include <assert.h>
+#include <string.h>
+#include <sstream>
 #include <iostream>
 using namespace std;
 
-void PhylogeneticTreeLoader::load(string file){
+void TaxonNameLoader::load(string file){
 
 	m_current=0;
 	m_size=0;
@@ -39,22 +41,14 @@ void PhylogeneticTreeLoader::load(string file){
 
 	}
 	
-	int count=0;
-
 	while(!m_stream.eof()){
-		string a="";
+		char line[1024];
+		line[0]='\0';
+		m_stream.getline(line,1024);
 
-		m_stream>>a;
-
-		if(a!=""){
-			count++;
-
-			if(count==2){
-				count=0;
-				m_size++;
-			}
+		if(strlen(line)>0){
+			m_size++;
 		}
-
 	}
 
 	m_stream.close();
@@ -64,19 +58,52 @@ void PhylogeneticTreeLoader::load(string file){
 	cout<<"File "<<file<<" has "<<m_size<<" entries"<<endl;
 }
 
-bool PhylogeneticTreeLoader::hasNext(){
+bool TaxonNameLoader::hasNext(){
 	return m_current<m_size;
 }
 
-void PhylogeneticTreeLoader::getNext(TaxonIdentifier*parent,TaxonIdentifier*child){
+void TaxonNameLoader::getNext(TaxonIdentifier*taxon,string*name){
 
-	TaxonIdentifier l1;
-	TaxonIdentifier l2;
+	char line[1024];
+	line[0]='\0';
+	m_stream.getline(line,1024);
 
-	m_stream>>l1>>l2;
+	string theLine=line;
 
-	*parent=l1;
-	*child=l2;
+	int firstTab=0;
+	int secondTab=0;
+
+	int tabSymbols=0;
+
+	while(firstTab<(int)theLine.length() && tabSymbols!=1){
+		if(theLine[firstTab]=='\t'){
+			tabSymbols++;
+		}
+		firstTab++;
+	}
+
+	tabSymbols=0;
+
+	while(secondTab<(int)theLine.length() && tabSymbols!=2){
+		if(theLine[secondTab]=='\t'){
+			tabSymbols++;
+		}
+		secondTab++;
+	}
+
+
+	TaxonIdentifier theTaxon;
+	string theName;
+
+	istringstream virtualStream;
+	virtualStream.str(theLine);
+	virtualStream>>theTaxon;
+
+	int symbols=secondTab-firstTab-1;
+	theName=theLine.substr(firstTab,symbols);
+
+	(*taxon)=theTaxon;
+	(*name)=theName;
 
 	m_current++;
 
