@@ -41,6 +41,11 @@ void PhylogenyViewer::call_RAY_MASTER_MODE_PHYLOGENY_MAIN(){
 
 		m_mustSync=false;
 
+	}else if(m_inbox->hasMessage(RAY_MPI_TAG_TAXON_OBSERVATIONS)){
+
+		Message*message=m_inbox->at(0);
+		call_RAY_MPI_TAG_TAXON_OBSERVATIONS(message);
+	
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_LOADED_TAXONS)){
 		
 		m_ranksThatLoadedTaxons++;
@@ -76,6 +81,14 @@ void PhylogenyViewer::call_RAY_MASTER_MODE_PHYLOGENY_MAIN(){
 
 
 	}else if(m_switchMan->allRanksAreReady()){
+
+		// copy synced data
+		m_unknown=m_unknownMaster;
+		m_taxonObservations=m_taxonObservationsMaster;
+
+		cout<<"Global observations"<<endl;
+	
+		showObservations();
 
 		m_timePrinter->printElapsedTime("Loading tree");
 
@@ -148,6 +161,10 @@ void PhylogenyViewer::call_RAY_SLAVE_MODE_PHYLOGENY_MAIN(){
 	
 		gatherKmerObservations();
 
+	}else if(!m_syncedTree){
+		
+		sendTreeCounts();
+
 	}else if(m_outbox->size()==0){
 
 		#ifdef DEBUG_PHYLOGENY
@@ -157,6 +174,83 @@ void PhylogenyViewer::call_RAY_SLAVE_MODE_PHYLOGENY_MAIN(){
 		cout<<endl;
 		m_switchMan->closeSlaveModeLocally(m_outbox,m_rank);
 	}
+}
+
+void PhylogenyViewer::sendTreeCounts(){
+	if(m_messageReceived && m_countIterator==m_taxonObservations.end()){
+	
+		m_syncedTree=true;
+
+	}else if(!m_messageSent){
+
+		#ifdef ASSERT
+		assert(m_countIterator!= m_taxonObservations.end());
+		#endif
+
+		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+
+		int maximum=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t);
+
+		int bufferPosition=0;
+
+		if(!m_unknownSent){// send unknown observations too
+			buffer[bufferPosition++]=UNKNOWN_TAXON;
+			buffer[bufferPosition++]=m_unknown;
+
+			m_unknownSent=true;
+		}
+
+		while(bufferPosition<maximum && m_countIterator!= m_taxonObservations.end()){
+			TaxonIdentifier taxon=m_countIterator->first;
+			uint64_t count=m_countIterator->second;
+
+			buffer[bufferPosition++]=taxon;
+			buffer[bufferPosition++]=count;
+			m_countIterator++;
+		}
+		
+		#ifdef ASSERT
+		assert(bufferPosition!=0);
+		#endif
+
+		m_switchMan->sendMessage(buffer,bufferPosition,m_outbox,m_rank,MASTER_RANK,RAY_MPI_TAG_TAXON_OBSERVATIONS);
+
+		m_messageSent=true;
+		m_messageReceived=false;
+
+	}else if(m_inbox->hasMessage(RAY_MPI_TAG_TAXON_OBSERVATIONS_REPLY)){
+
+		m_messageReceived=true;
+		m_messageSent=false;
+	}
+
+
+}
+
+void PhylogenyViewer::call_RAY_MPI_TAG_TAXON_OBSERVATIONS(Message*message){
+	uint64_t*buffer=message->getBuffer();
+
+	int count=message->getCount();
+
+	#ifdef ASSERT
+	assert(count%2==0);
+	assert(m_rank==MASTER_RANK);
+	#endif
+
+	for(int i=0;i<count;i+=2){
+		TaxonIdentifier taxon=buffer[i];
+		uint64_t count=buffer[i+1];
+
+		if(taxon==UNKNOWN_TAXON){
+			m_unknownMaster+=count;
+			continue;
+		}
+
+		m_taxonObservationsMaster[taxon]+=count;
+	}
+
+	m_switchMan->sendEmptyMessage(m_outbox,m_parameters->getRank(),
+		message->getSource(),RAY_MPI_TAG_TAXON_OBSERVATIONS_REPLY);
 }
 
 void PhylogenyViewer::call_RAY_MPI_TAG_TOUCH_TAXON(Message*message){
@@ -330,15 +424,23 @@ void PhylogenyViewer::gatherKmerObservations(){
 		cout<<""<<i->first<<"	"<<i->second<<endl;
 	}
 
+	cout<<"Taxon observations"<<endl;
+
 	showObservations();
 
 	m_gatheredObservations=true;
+
+	m_syncedTree=false;
+	m_unknownSent=false;
+	m_messageReceived=true;
+	m_messageSent=false;
+
+	m_countIterator=m_taxonObservations.begin();
 }
 
 void PhylogenyViewer::showObservations(){
 
 	cout<<endl;
-	cout<<"Taxon observations"<<endl;
 	for(map<TaxonIdentifier,uint64_t>::iterator i=m_taxonObservations.begin();
 		i!=m_taxonObservations.end();i++){
 
@@ -833,6 +935,12 @@ void PhylogenyViewer::registerPlugin(ComputeCore*core){
 	RAY_MPI_TAG_TOUCH_TAXON_REPLY=core->allocateMessageTagHandle(m_plugin);
 	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_TOUCH_TAXON_REPLY,"RAY_MPI_TAG_TOUCH_TAXON_REPLY");
 
+	RAY_MPI_TAG_TAXON_OBSERVATIONS=core->allocateMessageTagHandle(m_plugin);
+	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_TAXON_OBSERVATIONS,"RAY_MPI_TAG_TAXON_OBSERVATIONS");
+
+	RAY_MPI_TAG_TAXON_OBSERVATIONS_REPLY=core->allocateMessageTagHandle(m_plugin);
+	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_TAXON_OBSERVATIONS_REPLY,"RAY_MPI_TAG_TAXON_OBSERVATIONS_REPLY");
+
 	m_switchMan=core->getSwitchMan();
 	m_outbox=core->getOutbox();
 	m_inbox=core->getInbox();
@@ -843,9 +951,9 @@ void PhylogenyViewer::registerPlugin(ComputeCore*core){
 	m_size=core->getMessagesHandler()->getSize();
 	m_extractedColorsForPhylogeny=false;
 
+	UNKNOWN_TAXON=COLOR_NAMESPACE;
+
 	m_core=core;
-
-
 }
 
 void PhylogenyViewer::resolveSymbols(ComputeCore*core){
@@ -858,6 +966,8 @@ void PhylogenyViewer::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_TOUCH_TAXON_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_TOUCH_TAXON_REPLY");
 	RAY_MPI_TAG_LOADED_TAXONS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_LOADED_TAXONS");
 	RAY_MPI_TAG_SYNCED_TAXONS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SYNCED_TAXONS");
+	RAY_MPI_TAG_TAXON_OBSERVATIONS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_TAXON_OBSERVATIONS");
+	RAY_MPI_TAG_TAXON_OBSERVATIONS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_TAXON_OBSERVATIONS_REPLY");
 
 	RAY_SLAVE_MODE_PHYLOGENY_MAIN=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_PHYLOGENY_MAIN");
 

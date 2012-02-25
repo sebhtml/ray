@@ -41,7 +41,7 @@ Genome-to-Taxon.tsv  Taxon-Names.tsv  Taxon-Types.tsv  TreeOfLife-Edges.tsv
 
 10. also add a Unknown category, which are the k-mers without colors but assembled de novo [DONE]
 
-11. synchronize the tree with master
+11. synchronize the tree with master [DONE]
 
 12. output BiologicalAbundances/_Phylogeny/Hits.txt
 
@@ -84,6 +84,10 @@ class PhylogenyViewer: public CorePlugin{
 	bool m_synced;
 	bool m_loadedTree;
 	bool m_gatheredObservations;
+	bool m_syncedTree;
+	bool m_unknownSent;
+
+	map<TaxonIdentifier,uint64_t>::iterator m_countIterator;
 
 	set<TaxonIdentifier>::iterator m_taxonIterator;
 
@@ -103,7 +107,12 @@ class PhylogenyViewer: public CorePlugin{
 	map<TaxonIdentifier,string> m_taxonNames;
 
 	map<TaxonIdentifier,uint64_t> m_taxonObservations;
+	map<TaxonIdentifier,uint64_t> m_taxonObservationsMaster;
+
+	TaxonIdentifier UNKNOWN_TAXON;
+
 	uint64_t m_unknown;
+	uint64_t m_unknownMaster;
 
 	map<TaxonIdentifier,set<TaxonIdentifier> > m_treeChildren;
 	map<TaxonIdentifier,TaxonIdentifier> m_treeParents;
@@ -137,6 +146,8 @@ class PhylogenyViewer: public CorePlugin{
 	MessageTag RAY_MPI_TAG_TOUCH_TAXON_REPLY;
 	MessageTag RAY_MPI_TAG_SYNCED_TAXONS;
 	MessageTag RAY_MPI_TAG_LOADED_TAXONS;
+	MessageTag RAY_MPI_TAG_TAXON_OBSERVATIONS;
+	MessageTag RAY_MPI_TAG_TAXON_OBSERVATIONS_REPLY;
 
 	Adapter_RAY_MASTER_MODE_PHYLOGENY_MAIN m_adapter_RAY_MASTER_MODE_PHYLOGENY_MAIN;
 	Adapter_RAY_SLAVE_MODE_PHYLOGENY_MAIN m_adapter_RAY_SLAVE_MODE_PHYLOGENY_MAIN;
@@ -160,20 +171,17 @@ class PhylogenyViewer: public CorePlugin{
 
 	void gatherKmerObservations();
 	void classifySignal(vector<TaxonIdentifier>*taxons,int kmerCoverage,Vertex*vertex,Kmer*key);
-
 	void printTaxonPath(TaxonIdentifier taxon,vector<TaxonIdentifier>*path);
-
 	TaxonIdentifier getTaxonParent(TaxonIdentifier taxon);
-
 	void showObservations();
-
+	void sendTreeCounts();
 	TaxonIdentifier findCommonAncestor(vector<TaxonIdentifier>*taxons);
+	void call_RAY_MPI_TAG_TAXON_OBSERVATIONS(Message*m);
 
 public:
 
 	void call_RAY_MASTER_MODE_PHYLOGENY_MAIN();
 	void call_RAY_SLAVE_MODE_PHYLOGENY_MAIN();
-
 	void call_RAY_MPI_TAG_TOUCH_TAXON(Message*message);
 
 	void registerPlugin(ComputeCore*core);
