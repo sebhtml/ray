@@ -381,6 +381,10 @@ void PhylogenyViewer::classifySignal(vector<TaxonIdentifier>*taxons,int kmerCove
 	//  but they have a common ancestor
 	
 	if(taxons->size()==0){
+
+		if(!vertex->isAssembled()) // most likely a sequencing error
+			return;
+
 		m_unknown+=kmerCoverage; // case 1.
 
 	}else if(taxons->size()==1){
