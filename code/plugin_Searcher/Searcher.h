@@ -349,6 +349,8 @@ class Searcher :  public CorePlugin {
 
 	void createRootDirectories();
 
+	/* count the k-mer observations */
+	uint64_t countKmerObservations();
 public:
 
 	void call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS();

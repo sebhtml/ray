@@ -27,6 +27,7 @@
 #include <core/OperatingSystem.h>
 #include <core/ComputeCore.h>
 #include <plugin_Searcher/ColoredPeakFinder.h>
+#include <plugin_VerticesExtractor/GridTableIterator.h>
 
 #include <stdio.h> /* for fopen, fprintf and fclose */
 #include <fstream>
@@ -146,7 +147,20 @@ void Searcher::call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS(){
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_SHARING_COMPLETED)){
 		m_ranksDoneSharing++;
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_COUNTING_DONE)){
+
+		uint64_t*buffer=m_inbox->at(0)->getBuffer();
+
+		#ifdef ASSERT
+		assert(m_inbox->at(0)->getCount()==1);
+		#endif
+
+		uint64_t count=buffer[0];
+
+		/* agglomerate the count */
+		m_totalNumberOfKmerObservations+=count;
+
 		m_ranksDoneCounting++;
+
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_ELEMENTS)){
 		Message*message=m_inbox->at(0);
 		uint64_t*buffer=message->getBuffer();
@@ -167,6 +181,8 @@ void Searcher::call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS(){
 		#endif
 
 		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+
+		// send the total
 		buffer[0]=m_totalNumberOfKmerObservations;
 
 		m_switchMan->sendMessageToAll(buffer,1,m_outbox,m_parameters->getRank(),RAY_MPI_TAG_SEARCH_SHARE_COUNTS);
@@ -227,6 +243,9 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 		#ifdef CONFIG_COUNT_ELEMENTS_VERBOSE
 		cout<<"init"<<endl;
 		#endif
+
+
+	
 
 	// the counting is completed.
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_MASTER_SHARING_DONE)){
@@ -319,8 +338,16 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 		m_sharedCounts=false;
 		m_shareCounts=false;
 
+		// count the k-mer observations for the part of the graph
+
+		uint64_t localKmerObservations=countKmerObservations();
+
+		uint64_t*buffer2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+		int bufferSize=0;
+		buffer2[bufferSize++]=localKmerObservations;
+
 		// tell root that we are done
-		m_switchMan->sendEmptyMessage(m_outbox,m_parameters->getRank(),MASTER_RANK,RAY_MPI_TAG_SEARCH_COUNTING_DONE);
+		m_switchMan->sendMessage(buffer2,bufferSize,m_outbox,m_parameters->getRank(),MASTER_RANK,RAY_MPI_TAG_SEARCH_COUNTING_DONE);
 
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_SHARE_COUNTS)){
 
@@ -395,6 +422,73 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 			m_fileIterator++;
 		}
 	}
+}
+
+uint64_t Searcher::countKmerObservations(){
+
+	uint64_t total=0;
+
+	GridTableIterator iterator;
+	iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
+
+	//* only fetch half of the iterated things because we just need one k-mer
+	// for any pair of reverse-complement k-mers 
+	
+	int parity=0;
+
+	map<int,uint64_t> frequencies;
+
+	while(iterator.hasNext()){
+
+		#ifdef ASSERT
+		assert(parity==0 || parity==1);
+		#endif
+
+		Vertex*node=iterator.next();
+		Kmer key=*(iterator.getKey());
+		
+		if(parity==0){
+			parity=1;
+		}else if(parity==1){
+			parity=0;
+
+			continue; // we only need data with parity=0
+		}
+
+		// check for assembly paths
+
+		/* here, we just want to find a path with
+		* a good progression */
+
+		Direction*a=node->m_directions;
+		bool nicelyAssembled=false;
+
+		while(a!=NULL){
+			int progression=a->getProgression();
+
+			if(progression>= CONFIG_NICELY_ASSEMBLED_KMER_POSITION){
+				nicelyAssembled=true;
+			}
+
+			a=a->getNext();
+		}
+
+		if(!nicelyAssembled){
+			continue; // the k-mer is not nicely assembled...
+		}
+
+		#ifdef ASSERT
+		assert(nicelyAssembled);
+		#endif
+
+		// at this point, we have a nicely assembled k-mer
+		
+		int kmerCoverage=node->getCoverage(&key);
+
+		total+=kmerCoverage;
+	}
+	
+	return total;
 }
 
 void Searcher::createRootDirectories(){
@@ -499,9 +593,8 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		contigSummaryFile<<"	Proportion"<<endl;
 
 		// count the total
-		uint64_t total=0;
+		uint64_t total=m_totalNumberOfKmerObservations;
 		for(int i=0;i<(int)m_listOfContigEntries.size();i++){
-			total+=m_listOfContigEntries[i].getTotal();
 
 			m_contigLengths[m_listOfContigEntries[i].getName()]=m_listOfContigEntries[i].getLength();
 		}
@@ -519,8 +612,6 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		cout<<endl;
 
 		m_switchMan->closeMasterMode();
-
-		m_totalNumberOfKmerObservations=total;
 	}
 }
 
@@ -3310,6 +3401,8 @@ void Searcher::registerPlugin(ComputeCore*core){
 	core->setObjectSymbol(m_plugin,&m_colorSet,"/RayAssembler/ObjectStore/VirtualColorManagementUnit.ray");
 	core->setObjectSymbol(m_plugin,m_timePrinter,"/RayAssembler/ObjectStore/Timer.ray");
 	core->setObjectSymbol(m_plugin,this,"/RayAssembler/ObjectStore/plugin_Searcher.ray");
+
+	m_totalNumberOfKmerObservations=0;
 }
 
 void Searcher::resolveSymbols(ComputeCore*core){
