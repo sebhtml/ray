@@ -460,7 +460,6 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		m_switchMan->closeMasterMode();
 
 		m_totalNumberOfKmerObservations=total;
-
 	}
 }
 
@@ -859,12 +858,15 @@ void Searcher::call_RAY_SLAVE_MODE_SEARCHER_CLOSE(){
 
 		fclose(m_arrayOfFiles[directoryIterator]);
 
+		fclose(m_arrayOfFilesShort[directoryIterator]);
+
 		cout<<"Closed file "<<m_directoryIterator<<" "<<m_fileIterator<<", active file descriptors: "<<m_activeFiles<<endl;
 
 		m_activeFiles--;
 	}
 
 	m_arrayOfFiles.clear();
+	m_arrayOfFilesShort.clear();
 
 	#ifdef ASSERT
 	assert(m_activeFiles==0);
@@ -2801,16 +2803,25 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 		string*theDirectoryPath=m_searchDirectories[directoryIterator].getDirectoryName();
 		string baseName=getBaseName(*theDirectoryPath);
 
-
 		ostringstream fileName;
 		fileName<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
 		fileName<<baseName<<"/";
-	
 		// add the file name without the .fasta
-		fileName<<"SequenceAbundances.tsv";
+		fileName<<"SequenceAbundancesRaw.tsv";
 
 		m_arrayOfFiles[directoryIterator]=fopen(fileName.str().c_str(),"w");
 		
+
+		// also create a shorter version of the file
+		ostringstream fileName2;
+		fileName2<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
+		fileName2<<baseName<<"/";
+		// add the file name without the .fasta
+		fileName2<<"SequenceAbundances.tsv";
+
+		m_arrayOfFilesShort[directoryIterator]=fopen(fileName2.str().c_str(),"w");
+
+
 		#ifdef ASSERT
 		assert(m_activeFiles>=0); // it is 0 or 1 or something else
 		#endif
@@ -2835,13 +2846,25 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 		header<<"	Quality1	Quality2	Quality3";
 		header<<"	Has peak ?	Has high frequency ?";
 		header<<"	Demultiplexed k-mer observations";
-		header<<"	K-mer observation proportion";
+		header<<"	Total	Proportion";
 
 		header<<endl;
 
-
 		fprintf(m_arrayOfFiles[directoryIterator],
 			"%s",header.str().c_str());
+
+		ostringstream header2;
+		header2<<"#Category	Sequence number	Sequence name";
+		
+		header2<<"	Demultiplexed k-mer observations";
+		header2<<"	Total";
+		header2<<"	Proportion";
+
+		header2<<endl;
+
+		fprintf(m_arrayOfFilesShort[directoryIterator],
+			"%s",header2.str().c_str());
+
 
 		cout<<"Opened "<<fileName.str()<<", active file descriptors: "<<m_activeFiles<<endl;
 	}
@@ -2897,16 +2920,33 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 		if(m_totalNumberOfKmerObservations!=0)
 			proportion/=m_totalNumberOfKmerObservations;
 
-		content<<"	"<<proportion;
+		content<<"	"<<m_totalNumberOfKmerObservations<<"	"<<proportion;
 		content<<endl;
 
 		#ifdef ASSERT
 		assert(m_arrayOfFiles.count(directoryIterator)>0);
+		assert(m_arrayOfFilesShort.count(directoryIterator)>0);
 		#endif
 
 		fprintf(m_arrayOfFiles[directoryIterator],
 			"%s",content.str().c_str());
 
+
+		// also write a shorter version
+
+		if(demultiplexedObservations>0){
+			ostringstream content2;
+
+			content2<<m_fileNames[directoryIterator][fileIterator];
+			content2<<"	"<<sequenceIterator<<"	"<<sequenceName;
+
+			content2<<"	"<<demultiplexedObservations<<"	"<<m_totalNumberOfKmerObservations;
+			content2<<"	"<<proportion;
+			content2<<endl;
+
+			fprintf(m_arrayOfFilesShort[directoryIterator],
+				"%s",content2.str().c_str());
+		}
 	}
 
 	// send a reply

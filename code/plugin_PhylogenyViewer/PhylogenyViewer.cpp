@@ -96,7 +96,7 @@ void PhylogenyViewer::call_RAY_MASTER_MODE_PHYLOGENY_MAIN(){
 
 		createDirectory(hitFile.str().c_str());
 
-		hitFile<<"/KmerObservations.xml";
+		hitFile<<"/Taxons.xml";
 
 		ofstream f(hitFile.str().c_str());
 
@@ -533,8 +533,6 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 				ratio/=m_totalNumberOfKmerObservations;
 	
 			(*stream)<<"<proportion>"<<ratio<<"</proportion></taxon>"<<endl;
-	
-			(*stream)<<"</taxon>"<<endl;
 		}
 	}
 

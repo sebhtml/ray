@@ -291,6 +291,7 @@ class Searcher :  public CorePlugin {
 
 	/** files to write */
 	map<int,FILE* > m_arrayOfFiles;
+	map<int,FILE* > m_arrayOfFilesShort;
 
 	/** track the descriptors */
 	int m_activeFiles;
