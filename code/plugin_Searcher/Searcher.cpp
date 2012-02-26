@@ -45,7 +45,6 @@ using namespace std;
 
 #define CONFIG_SEARCH_THRESHOLD 0.001
 #define CONFIG_FORCE_VALUE_FOR_MAXIMUM_SPEED false
-#define CONFIG_NICELY_ASSEMBLED_KMER_POSITION 0
 
 void Searcher::constructor(Parameters*parameters,StaticVector*outbox,TimePrinter*timePrinter,SwitchMan*switchMan,
 	VirtualCommunicator*vc,StaticVector*inbox,RingAllocator*outboxAllocator,
@@ -3027,6 +3026,10 @@ void Searcher::call_RAY_MPI_TAG_CONTIG_IDENTIFICATION(Message*message){
 		message->getSource(),RAY_MPI_TAG_CONTIG_IDENTIFICATION_REPLY);
 }
 
+uint64_t Searcher::getTotalNumberOfKmerObservations(){
+	return m_totalNumberOfKmerObservations;
+}
+
 void Searcher::registerPlugin(ComputeCore*core){
 
 	PluginHandle plugin=core->allocatePluginHandle();
@@ -3178,6 +3181,7 @@ void Searcher::registerPlugin(ComputeCore*core){
 	core->setObjectSymbol(m_plugin,m_subgraph,"/RayAssembler/ObjectStore/deBruijnGraph_part.ray");
 	core->setObjectSymbol(m_plugin,&m_colorSet,"/RayAssembler/ObjectStore/VirtualColorManagementUnit.ray");
 	core->setObjectSymbol(m_plugin,m_timePrinter,"/RayAssembler/ObjectStore/Timer.ray");
+	core->setObjectSymbol(m_plugin,this,"/RayAssembler/ObjectStore/plugin_Searcher.ray");
 }
 
 void Searcher::resolveSymbols(ComputeCore*core){

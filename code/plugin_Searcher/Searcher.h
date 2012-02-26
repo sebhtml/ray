@@ -51,6 +51,8 @@ using namespace std;
 #include <plugin_Searcher/Searcher_adapters.h>
 #include <plugin_Searcher/DistributionWriter.h>
 
+#define CONFIG_NICELY_ASSEMBLED_KMER_POSITION 0
+
 /**
  * This class searches for sequences in the de Bruijn graph
  * It outputs biological abundance readouts
@@ -369,6 +371,8 @@ public:
 
 	void registerPlugin(ComputeCore*core);
 	void resolveSymbols(ComputeCore*core);
+
+	uint64_t getTotalNumberOfKmerObservations();
 
 }; /* Searcher */
 

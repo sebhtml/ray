@@ -96,11 +96,11 @@ void PhylogenyViewer::call_RAY_MASTER_MODE_PHYLOGENY_MAIN(){
 
 		createDirectory(hitFile.str().c_str());
 
-		hitFile<<"/Taxons.txt";
+		hitFile<<"/KmerObservations.xml";
 
 		ofstream f(hitFile.str().c_str());
 
-		showObservations(&f);
+		showObservations_XML(&f);
 
 		f.close();
 
@@ -359,6 +359,9 @@ void PhylogenyViewer::gatherKmerObservations(){
 		assert(parity==0 || parity==1);
 		#endif
 
+		Vertex*node=iterator.next();
+		Kmer key=*(iterator.getKey());
+		
 		if(parity==0){
 			parity=1;
 		}else if(parity==1){
@@ -367,8 +370,33 @@ void PhylogenyViewer::gatherKmerObservations(){
 			continue; // we only need data with parity=0
 		}
 
-		Vertex*node=iterator.next();
-		Kmer key=*(iterator.getKey());
+		// check for assembly paths
+
+		/* here, we just want to find a path with
+		* a good progression */
+
+		Direction*a=node->m_directions;
+		bool nicelyAssembled=false;
+
+		while(a!=NULL){
+			int progression=a->getProgression();
+
+			if(progression>= CONFIG_NICELY_ASSEMBLED_KMER_POSITION){
+				nicelyAssembled=true;
+			}
+
+			a=a->getNext();
+		}
+
+		if(!nicelyAssembled){
+			continue; // the k-mer is not nicely assembled...
+		}
+
+		#ifdef ASSERT
+		assert(nicelyAssembled);
+		#endif
+
+		// at this point, we have a nicely assembled k-mer
 		
 		int kmerCoverage=node->getCoverage(&key);
 
@@ -452,6 +480,67 @@ void PhylogenyViewer::gatherKmerObservations(){
 	m_countIterator=m_taxonObservations.begin();
 }
 
+void PhylogenyViewer::showObservations_XML(ostream*stream){
+
+	(*stream)<<"<root>"<<endl;
+
+	(*stream)<<"<totalKmerObservations>"<<m_totalNumberOfKmerObservations<<"</totalKmerObservations>"<<endl;
+
+	(*stream)<<"<taxon><identifier>unknown</identifier><name>unknown</name>"<<endl;
+	(*stream)<<"<path>unknown</path>"<<endl;
+	(*stream)<<"<kmerObservations>"<<m_unknown<<"</kmerObservations>";
+
+	double ratio=m_unknown;
+	if(m_totalNumberOfKmerObservations!=0)
+		ratio/=m_totalNumberOfKmerObservations;
+
+	(*stream)<<"<proportion>"<<ratio<<"</proportion></taxon>"<<endl;
+
+	map<uint64_t,set<TaxonIdentifier> > sortedHits;
+
+	// create an index to print them in a sorted way
+	for(map<TaxonIdentifier,uint64_t>::iterator i=m_taxonObservations.begin();
+		i!=m_taxonObservations.end();i++){
+
+		TaxonIdentifier taxon=i->first;
+		uint64_t count=i->second;
+
+		sortedHits[count].insert(taxon);
+	}
+
+	for(map<uint64_t,set<TaxonIdentifier> >::reverse_iterator i=sortedHits.rbegin();
+		i!=sortedHits.rend();i++){
+
+		uint64_t count=i->first;
+
+		for(set<TaxonIdentifier>::iterator j=i->second.begin();j!=i->second.end();j++){
+
+			TaxonIdentifier taxon=*j;
+
+			(*stream)<<"<taxon><identifier>"<<taxon<<"</identifier><name>"<<getTaxonName(taxon)<<"</name>"<<endl;
+		
+			(*stream)<<"<path>"<<endl;
+			vector<TaxonIdentifier> path;
+	
+			getTaxonPathFromRoot(taxon,&path);
+			printTaxonPath(taxon,&path,stream);
+	
+			(*stream)<<"</path>"<<endl;
+			(*stream)<<"<kmerObservations>"<<count<<"</kmerObservations>";
+	
+			double ratio=count;
+			if(m_totalNumberOfKmerObservations!=0)
+				ratio/=m_totalNumberOfKmerObservations;
+	
+			(*stream)<<"<proportion>"<<ratio<<"</proportion></taxon>"<<endl;
+	
+			(*stream)<<"</taxon>"<<endl;
+		}
+	}
+
+	(*stream)<<"</root>"<<endl;
+}
+
 void PhylogenyViewer::showObservations(ostream*stream){
 
 	(*stream)<<endl;
@@ -496,10 +585,9 @@ void PhylogenyViewer::classifySignal(vector<TaxonIdentifier>*taxons,int kmerCove
 	// if there is at least 2 taxons and they don't have the same parent
 	//  but they have a common ancestor
 	
-	if(taxons->size()==0){
 
-		if(!vertex->isAssembled()) // most likely a sequencing error
-			return;
+
+	if(taxons->size()==0){
 
 		m_unknown+=kmerCoverage; // case 1.
 
@@ -868,6 +956,9 @@ void PhylogenyViewer::extractColorsForPhylogeny(){
 
 	while(iterator.hasNext()){
 
+		Vertex*node=iterator.next();
+		Kmer key=*(iterator.getKey());
+
 		#ifdef ASSERT
 		assert(parity==0 || parity==1);
 		#endif
@@ -879,9 +970,6 @@ void PhylogenyViewer::extractColorsForPhylogeny(){
 
 			continue; // we only need data with parity=0
 		}
-
-		Vertex*node=iterator.next();
-		Kmer key=*(iterator.getKey());
 
 		VirtualKmerColorHandle color=node->getVirtualColor();
 		set<PhysicalKmerColor>*physicalColors=m_colorSet->getPhysicalColors(color);
@@ -911,6 +999,8 @@ void PhylogenyViewer::extractColorsForPhylogeny(){
 	m_extractedColorsForPhylogeny=true;
 
 	m_loadedTaxonsForPhylogeny=false;
+
+	m_totalNumberOfKmerObservations=m_searcher->getTotalNumberOfKmerObservations();
 }
 
 void PhylogenyViewer::registerPlugin(ComputeCore*core){
@@ -996,5 +1086,6 @@ void PhylogenyViewer::resolveSymbols(ComputeCore*core){
 	m_colorSet=(ColorSet*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/VirtualColorManagementUnit.ray");
 	m_timePrinter=(TimePrinter*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/Timer.ray");
 
+	m_searcher=(Searcher*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/plugin_Searcher.ray");
 }
 

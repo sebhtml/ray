@@ -60,6 +60,7 @@ Genome-to-Taxon.tsv  Taxon-Names.tsv  Taxon-Types.tsv  TreeOfLife-Edges.tsv
 #include <plugin_VerticesExtractor/GridTable.h>
 #include <profiling/TimePrinter.h>
 
+#include <plugin_Searcher/Searcher.h>
 #include <plugin_PhylogenyViewer/types.h>
 #include <plugin_PhylogenyViewer/PhylogenyViewer_adapters.h>
 
@@ -135,6 +136,7 @@ class PhylogenyViewer: public CorePlugin{
 
 	bool m_started;
 
+	Searcher*m_searcher;
 
 	MasterMode RAY_MASTER_MODE_PHYLOGENY_MAIN;
 	MasterMode RAY_MASTER_MODE_KILL_RANKS;
@@ -152,6 +154,8 @@ class PhylogenyViewer: public CorePlugin{
 	Adapter_RAY_MASTER_MODE_PHYLOGENY_MAIN m_adapter_RAY_MASTER_MODE_PHYLOGENY_MAIN;
 	Adapter_RAY_SLAVE_MODE_PHYLOGENY_MAIN m_adapter_RAY_SLAVE_MODE_PHYLOGENY_MAIN;
 	Adapter_RAY_MPI_TAG_TOUCH_TAXON m_adapter_RAY_MPI_TAG_TOUCH_TAXON;
+
+	uint64_t m_totalNumberOfKmerObservations;
 
 	void extractColorsForPhylogeny();
 	void loadTaxons();
@@ -174,6 +178,7 @@ class PhylogenyViewer: public CorePlugin{
 	void printTaxonPath(TaxonIdentifier taxon,vector<TaxonIdentifier>*path,ostream*stream);
 	TaxonIdentifier getTaxonParent(TaxonIdentifier taxon);
 	void showObservations(ostream*stream);
+	void showObservations_XML(ostream*stream);
 	void sendTreeCounts();
 	TaxonIdentifier findCommonAncestor(vector<TaxonIdentifier>*taxons);
 	void call_RAY_MPI_TAG_TAXON_OBSERVATIONS(Message*m);
