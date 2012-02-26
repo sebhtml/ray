@@ -60,6 +60,9 @@ using namespace std;
  **/
 class Searcher :  public CorePlugin {
 
+/* the number of colored k-mers for a contig */
+	int m_coloredKmers;
+
 	QualityCaller m_caller;
 
 	MessageTag RAY_MPI_TAG_ADD_COLORS;
@@ -92,6 +95,8 @@ class Searcher :  public CorePlugin {
 	MessageTag RAY_MPI_TAG_SEARCHER_CLOSE;
 	MessageTag RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY;
 	MessageTag RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY_REPLY;
+	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS;
+	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS_REPLY;
 
 	MasterMode RAY_MASTER_MODE_KILL_RANKS;
 	MasterMode RAY_MASTER_MODE_ADD_COLORS;
@@ -123,6 +128,7 @@ class Searcher :  public CorePlugin {
 	Adapter_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS m_adapter_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS;
 	Adapter_RAY_MPI_TAG_CONTIG_IDENTIFICATION m_adapter_RAY_MPI_TAG_CONTIG_IDENTIFICATION;
 	Adapter_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY m_adapter_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY;
+	Adapter_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS m_adapter_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS;
 
 /** translator for virtual colors **/
 	ColorSet m_colorSet;
@@ -362,6 +368,7 @@ public:
 
 	void call_RAY_MPI_TAG_ADD_KMER_COLOR(Message*message);
 	void call_RAY_MPI_TAG_CONTIG_IDENTIFICATION(Message*message);
+	void call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS(Message*m);
 
 	void constructor(Parameters*parameters,StaticVector*outbox,TimePrinter*timePrinter,SwitchMan*switchMan,
 	VirtualCommunicator*m_vc,StaticVector*inbox,RingAllocator*outboxAllocator,

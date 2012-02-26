@@ -83,6 +83,53 @@ GridTable*graph){
 	m_pendingMessages=0;
 }
 
+void Searcher::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS(Message*message){
+
+	void*buffer=message->getBuffer();
+	int source=message->getSource();
+	uint64_t*incoming=(uint64_t*)buffer;
+	int count=message->getCount();
+	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(count*sizeof(uint64_t));
+
+	int period=KMER_U64_ARRAY_SIZE+2;
+
+	int outputPosition=0;
+
+	for(int i=0;i<count;i+= period){
+
+		Kmer vertex;
+		int bufferPosition=i;
+		vertex.unpack(incoming,&bufferPosition);
+
+		Vertex*node=m_subgraph->find(&vertex);
+
+		outputPosition+=KMER_U64_ARRAY_SIZE;
+
+		// if it is not there, then it has a coverage of 0
+		int coverage=0;
+		int numberOfPhysicalColors=0;
+
+		if(node!=NULL){
+			coverage=node->getCoverage(&vertex);
+
+			VirtualKmerColorHandle color=node->getVirtualColor();
+			set<PhysicalKmerColor>*physicalColors=m_colorSet.getPhysicalColors(color);
+
+			numberOfPhysicalColors=physicalColors->size();
+		}
+
+		message2[outputPosition++]=coverage;
+		message2[outputPosition++]=numberOfPhysicalColors;
+	}
+
+	Rank rank=m_parameters->getRank();
+
+	Message aMessage(message2,count,source,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS_REPLY,rank);
+	m_outbox->push_back(aMessage);
+}
+
+
+
 void Searcher::call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS(){
 
 	if(!m_countElementsMasterStarted){
@@ -412,6 +459,7 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 
 		uint64_t name=buffer[bufferPosition++];
 		int length=buffer[bufferPosition++];
+		int coloredKmers=(int)buffer[bufferPosition++];
 		int mode=buffer[bufferPosition++];
 
 		//int totalCoverage=mode*length;
@@ -419,7 +467,7 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		double*bufferDouble=(double*)(buffer+bufferPosition++);
 		double mean=bufferDouble[0];
 
-		ContigSearchEntry entry(name,length,mode,mean);
+		ContigSearchEntry entry(name,length,mode,mean,coloredKmers);
 
 		m_listOfContigEntries.push_back(entry);
 
@@ -443,10 +491,12 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 
 		contigSummaryFile.open(summary.str().c_str());
 
-		contigSummaryFile<<"#Contig name	K-mer length	Length in k-mers	Mode k-mer coverage depth";
-		contigSummaryFile<<"";
-		contigSummaryFile<<"	Total k-mer coverage depth	Total sample k-mer coverage depth";
-		contigSummaryFile<<"	K-mer coverage depth proportion"<<endl;
+		contigSummaryFile<<"#Contig name	K-mer length	Length in k-mers";
+		contigSummaryFile<<"	Colored k-mers";
+		contigSummaryFile<<"	Proportion";
+		contigSummaryFile<<"	Mode k-mer coverage depth";
+		contigSummaryFile<<"	K-mer observations	Total";
+		contigSummaryFile<<"	Proportion"<<endl;
 
 		// count the total
 		uint64_t total=0;
@@ -489,6 +539,8 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		m_contigPosition=0;
 		m_countContigKmersSlaveStarted=true;
 		m_workerId=0;
+
+		m_coloredKmers=0;
 		m_requestedCoverage=false;
 
 		m_waitingForAbundanceReply=false;
@@ -575,13 +627,11 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		cout<<"Closing file"<<endl;
 		#endif
 
-		// empty the coverage distribution
-		m_coverageDistribution.clear();
-
 		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 		int bufferSize=0;
 		buffer[bufferSize++]=contigName;
 		buffer[bufferSize++]=lengthInKmers;
+		buffer[bufferSize++]=m_coloredKmers;
 		buffer[bufferSize++]=mode;
 		
 		double*bufferDouble=(double*)(buffer+bufferSize++);
@@ -609,6 +659,10 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		#ifdef ASSERT
 		assert(m_bufferedData.isEmpty());
 		#endif
+
+		// empty the coverage distribution
+		m_coverageDistribution.clear();
+		m_coloredKmers=0;
 
 	// pull the reply
 	}else if(m_waitingForAbundanceReply && m_virtualCommunicator->isMessageProcessed(m_workerId)){
@@ -672,13 +726,19 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 
 			int rankToFlush=m_parameters->_vertexRank(kmer);
 
+			int period=KMER_U64_ARRAY_SIZE+2;
+
 			// pack the k-mer
 			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 				m_bufferedData.addAt(rankToFlush,kmer->getU64(i));
 			}
 
+			// do some padding
+			m_bufferedData.addAt(rankToFlush,0);
+			m_bufferedData.addAt(rankToFlush,0);
+
 			// force flush the message
-			if(m_bufferedData.flush(rankToFlush,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_outboxAllocator,m_outbox,
+			if(m_bufferedData.flush(rankToFlush,period,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS,m_outboxAllocator,m_outbox,
 				m_parameters->getRank(),force)){
 
 				m_pendingMessages++;
@@ -691,7 +751,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		// if nothing was flushed, we force something now
 		if(m_pendingMessages==0){
 
-			m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_outboxAllocator,
+			m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS,m_outboxAllocator,
 				m_outbox,m_parameters->getRank());
 
 			#ifdef ASSERT
@@ -707,7 +767,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 
 	// receive the coverage values
 	}else if(!m_waitingForAbundanceReply &&m_requestedCoverage && m_pendingMessages > 0
-			 && m_inbox->hasMessage(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY)){
+			 && m_inbox->hasMessage(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS_REPLY)){
 
 		Message*message=m_inbox->at(0);
 		uint64_t*buffer=message->getBuffer();
@@ -723,17 +783,27 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		assert(m_pendingMessages==0);
 		#endif
 
+		int period=KMER_U64_ARRAY_SIZE+2;
+
 		// iterate over the coverage values
-		for(int i=0;i<count;i+=KMER_U64_ARRAY_SIZE){
+		for(int i=0;i<count;i+=period){
+
+			int bufferPosition=i;
+			bufferPosition+=KMER_U64_ARRAY_SIZE;
 
 			// get the coverage.
-			int coverage=buffer[i];
+			int coverage=buffer[bufferPosition++];
+			int colors=(int)buffer[bufferPosition++];
 
 			#ifdef ASSERT
 			assert(coverage>0);
 			#endif
 
 			m_coverageDistribution[coverage]++;
+
+			if(colors>0){
+				m_coloredKmers++;
+			}
 
 			if(m_writeDetailedFiles){
 				m_currentCoverageFile<<"Unknown"<<"	"<<coverage<<endl;
@@ -756,7 +826,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		&& m_pendingMessages==0){ // only flush one thing at any time
 
 		// we flush some of what is left
-		m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_outboxAllocator,
+		m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS,m_outboxAllocator,
 			m_outbox,m_parameters->getRank());
 
 		// and it is as if we had requested it for real.
@@ -3224,6 +3294,14 @@ void Searcher::registerPlugin(ComputeCore*core){
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_CONTIG_IDENTIFICATION,&m_adapter_RAY_MPI_TAG_CONTIG_IDENTIFICATION);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_CONTIG_IDENTIFICATION,"RAY_MPI_TAG_CONTIG_IDENTIFICATION");
 
+	RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS=core->allocateMessageTagHandle(m_plugin);
+	m_adapter_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS.setObject(this);
+	core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS,&m_adapter_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS);
+	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS,"RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS");
+	
+	RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS_REPLY=core->allocateMessageTagHandle(m_plugin);
+	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS_REPLY,"RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS_REPLY");
+
 	RAY_MPI_TAG_CONTIG_IDENTIFICATION_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_CONTIG_IDENTIFICATION_REPLY,"RAY_MPI_TAG_CONTIG_IDENTIFICATION_REPLY");
 
@@ -3278,7 +3356,9 @@ void Searcher::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_ADD_COLORS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ADD_COLORS");
 	RAY_MPI_TAG_ADD_KMER_COLOR_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ADD_KMER_COLOR_REPLY");
 	RAY_MPI_TAG_SEARCHER_CLOSE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SEARCHER_CLOSE");
-
+	
+	RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS");
+	RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS_REPLY");
 
 	core->setMasterModeToMessageTagSwitch(m_plugin,RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS, RAY_MPI_TAG_COUNT_SEARCH_ELEMENTS);
 	core->setMasterModeToMessageTagSwitch(m_plugin,RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES, RAY_MPI_TAG_CONTIG_BIOLOGICAL_ABUNDANCES);
@@ -3296,7 +3376,7 @@ void Searcher::resolveSymbols(ComputeCore*core){
 
 	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_GET_COVERAGE_AND_PATHS,       RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY );
 
-	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_CONTIG_ABUNDANCE, 4);
+	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_CONTIG_ABUNDANCE, 5);
 
 /** data fields:
  *   - k-mer (KMER_U64_ARRAY_SIZE)

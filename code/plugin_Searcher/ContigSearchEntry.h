@@ -30,8 +30,11 @@ class ContigSearchEntry{
 	int m_length;
 	int m_modeCoverage;
 	double m_meanCoverage;
+	int m_coloredKmers;
+
 public:
-	ContigSearchEntry(uint64_t name,int length,int mode,double mean);
+	ContigSearchEntry(uint64_t name,int length,int mode,double mean,int coloredKmers);
+
 	uint64_t getName();
 	int getLength();
 	int getMode();

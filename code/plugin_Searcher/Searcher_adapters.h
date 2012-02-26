@@ -130,7 +130,12 @@ public:
         void call(Message*message);
 };
 
-
+class Adapter_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS: public MessageTagHandler{
+        Searcher*m_object;
+public:
+        void setObject(Searcher*object);
+        void call(Message*message);
+};
 
 #endif
 

@@ -21,11 +21,13 @@
 #include <plugin_Searcher/ContigSearchEntry.h>
 
 
-ContigSearchEntry::ContigSearchEntry(uint64_t name,int length,int mode,double mean){
+ContigSearchEntry::ContigSearchEntry(uint64_t name,int length,int mode,double mean,int coloredKmers){
 	m_name=name;
 	m_length=length;
 	m_modeCoverage=mode;
 	m_meanCoverage=mean;
+
+	m_coloredKmers=coloredKmers;
 }
 
 uint64_t ContigSearchEntry::getName(){
@@ -58,6 +60,14 @@ void ContigSearchEntry::write(ofstream*file,uint64_t total,int kmerLength){
 
 	(*file)<<"contig-"<<getName()<<"	"<<kmerLength;
 	(*file)<<"	"<<getLength();
+	(*file)<<"	"<<m_coloredKmers;
+
+	double ratioColored=m_coloredKmers;
+	if(getLength()!=0){
+		ratioColored/=getLength();
+	}
+
+	(*file)<<"	"<<ratioColored;
 	(*file)<<"	"<<getMode();
 	//(*file)<<"	"<<getMean();
 	(*file)<<"	"<<getTotal()<<"	";
