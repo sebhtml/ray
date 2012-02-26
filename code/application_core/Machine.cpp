@@ -18,6 +18,8 @@
 	see <http://www.gnu.org/licenses/>
 */
 
+// TODO -- there should not be any plugin construction in this file
+
 #include <plugin_VerticesExtractor/GridTableIterator.h>
 #include <cryptography/crypto.h>
 #include <core/OperatingSystem.h>

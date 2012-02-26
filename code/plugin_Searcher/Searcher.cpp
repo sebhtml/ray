@@ -86,6 +86,9 @@ GridTable*graph){
 void Searcher::call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS(){
 
 	if(!m_countElementsMasterStarted){
+
+		createRootDirectories();
+
 		m_countElementsMasterStarted=true;
 		m_ranksDoneCounting=0;
 		m_sendCounts=false;
@@ -170,6 +173,9 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 
 		m_countElementsSlaveStarted=true;
 		m_listedDirectories=false;
+
+		m_bufferedData.constructor(m_parameters->getSize(),MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
+			"RAY_MALLOC_TYPE_:Searcher",m_parameters->showMemoryAllocations(),KMER_U64_ARRAY_SIZE);
 
 		#ifdef CONFIG_COUNT_ELEMENTS_VERBOSE
 		cout<<"init"<<endl;
@@ -344,48 +350,53 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 	}
 }
 
+void Searcher::createRootDirectories(){
+
+	// create directories 
+	ostringstream directory1;
+	directory1<<m_parameters->getPrefix()<<"/BiologicalAbundances";
+	string directory1Str=directory1.str();
+	createDirectory(directory1Str.c_str());
+
+	ostringstream directory2;
+	directory2<<m_parameters->getPrefix()<<"/BiologicalAbundances/_DeNovoAssembly";
+	string directory2Str=directory2.str();
+	createDirectory(directory2Str.c_str());
+
+	ostringstream colors;
+	colors<<m_parameters->getPrefix()<<"/BiologicalAbundances/_Coloring";
+	string directory87=colors.str();
+	createDirectory(directory87.c_str());
+
+	ostringstream frequencies;
+	frequencies<<m_parameters->getPrefix()<<"/BiologicalAbundances/_Frequencies";
+	string frequencyDirectory=frequencies.str();
+	createDirectory(frequencyDirectory.c_str());
+
+	if(m_writeDetailedFiles){
+		ostringstream directory3;
+		directory3<<m_parameters->getPrefix()<<"/BiologicalAbundances/_DeNovoAssembly/Contigs";
+		string directory3Str=directory3.str();
+		createDirectory(directory3Str.c_str());
+
+		ostringstream directory4;
+		directory4<<m_parameters->getPrefix()<<"/BiologicalAbundances/_DeNovoAssembly/Contigs/Coverage";
+		string directory4Str=directory4.str();
+		createDirectory(directory4Str.c_str());
+
+		ostringstream directory5;
+		directory5<<m_parameters->getPrefix()<<"/BiologicalAbundances/_DeNovoAssembly/Contigs/CoverageDistribution";
+		string directory5Str=directory5.str();
+		createDirectory(directory5Str.c_str());
+	}
+
+}
+
 void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 
 	if(!m_countContigKmersMasterStarted){
 		m_countContigKmersMasterStarted=true;
 
-		// create directories 
-		ostringstream directory1;
-		directory1<<m_parameters->getPrefix()<<"/BiologicalAbundances";
-		string directory1Str=directory1.str();
-		createDirectory(directory1Str.c_str());
-
-		ostringstream directory2;
-		directory2<<m_parameters->getPrefix()<<"/BiologicalAbundances/_DeNovoAssembly";
-		string directory2Str=directory2.str();
-		createDirectory(directory2Str.c_str());
-
-		ostringstream colors;
-		colors<<m_parameters->getPrefix()<<"/BiologicalAbundances/_Coloring";
-		string directory87=colors.str();
-		createDirectory(directory87.c_str());
-
-		ostringstream frequencies;
-		frequencies<<m_parameters->getPrefix()<<"/BiologicalAbundances/_Frequencies";
-		string frequencyDirectory=frequencies.str();
-		createDirectory(frequencyDirectory.c_str());
-
-		if(m_writeDetailedFiles){
-			ostringstream directory3;
-			directory3<<m_parameters->getPrefix()<<"/BiologicalAbundances/_DeNovoAssembly/Contigs";
-			string directory3Str=directory3.str();
-			createDirectory(directory3Str.c_str());
-
-			ostringstream directory4;
-			directory4<<m_parameters->getPrefix()<<"/BiologicalAbundances/_DeNovoAssembly/Contigs/Coverage";
-			string directory4Str=directory4.str();
-			createDirectory(directory4Str.c_str());
-
-			ostringstream directory5;
-			directory5<<m_parameters->getPrefix()<<"/BiologicalAbundances/_DeNovoAssembly/Contigs/CoverageDistribution";
-			string directory5Str=directory5.str();
-			createDirectory(directory5Str.c_str());
-		}
 
 		m_switchMan->openMasterMode(m_outbox,m_parameters->getRank());
 
@@ -486,9 +497,6 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 
 		// this is not implemented
 		m_writeDetailedFiles=false;
-
-		m_bufferedData.constructor(m_parameters->getSize(),MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
-			"RAY_MALLOC_TYPE_KMER_ACADEMY_BUFFER",m_parameters->showMemoryAllocations(),KMER_U64_ARRAY_SIZE);
 
 	// we have finished our part
 	}else if(m_contig == (int) m_contigs->size()){
@@ -888,6 +896,8 @@ void Searcher::call_RAY_SLAVE_MODE_SEARCHER_CLOSE(){
  *
  * VirtualCommunicator service is provided by VirtualCommunicator and by
  * BufferedData (legacy, but better in some cases)
+ *
+ * TODO: contig identification should be done elsewhere do reduce the overall communication burden.
  *
  * \author Sébastien Boisvert
  */
@@ -3301,14 +3311,14 @@ void Searcher::resolveSymbols(ComputeCore*core){
 
 	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_ADD_KMER_COLOR, KMER_U64_ARRAY_SIZE+2 );
 
+	/* RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS is the entry point */
 
-
-	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES,RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS);
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS,RAY_MASTER_MODE_ADD_COLORS);
-	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_ADD_COLORS,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES);
+
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_ADD_COLORS,RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES);
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES);
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES, RAY_MASTER_MODE_SEARCHER_CLOSE);
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_SEARCHER_CLOSE, RAY_MASTER_MODE_PHYLOGENY_MAIN);
-
 }
 
 

@@ -341,6 +341,8 @@ class Searcher :  public CorePlugin {
 
 	void addColorToKmer(Vertex*node,PhysicalKmerColor color);
 
+	void createRootDirectories();
+
 public:
 
 	void call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS();
