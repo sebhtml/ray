@@ -163,15 +163,16 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				(*receivedVertexCoverage)=*(m_cache.find(kmer,false)->getValue());
 
 				#ifdef ASSERT
-				assert((*receivedVertexCoverage)<=m_parameters->getMaximumAllowedCoverage());
+				assert((COVERAGE_TYPE)(*receivedVertexCoverage)<=m_parameters->getMaximumAllowedCoverage());
 				#endif
+
 			}else if(!(*vertexCoverageRequested)&&(m_cache).find(reverseComplement,false)!=NULL){
 				(*vertexCoverageRequested)=true;
 				(*vertexCoverageReceived)=true;
 				(*receivedVertexCoverage)=*(m_cache.find(reverseComplement,false)->getValue());
 
 				#ifdef ASSERT
-				assert((*receivedVertexCoverage)<=m_parameters->getMaximumAllowedCoverage());
+				assert((COVERAGE_TYPE)(*receivedVertexCoverage)<=m_parameters->getMaximumAllowedCoverage());
 				#endif
 
 			}else if(!(*vertexCoverageRequested)){
@@ -193,9 +194,11 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				*((m_cache.insert(kmer,&m_cacheAllocator,&inserted))->getValue())=*receivedVertexCoverage;
 				(*outgoingEdgeIndex)++;
 				(*vertexCoverageRequested)=false;
+
 				#ifdef ASSERT
-				assert((*receivedVertexCoverage)<=m_parameters->getMaximumAllowedCoverage());
+				assert((COVERAGE_TYPE)(*receivedVertexCoverage)<=m_parameters->getMaximumAllowedCoverage());
 				#endif
+
 				int coverageValue=*receivedVertexCoverage;
 				if(coverageValue>=m_parameters->getMinimumCoverageToStore()){
 					ed->m_EXTENSION_coverages.push_back((*receivedVertexCoverage));
