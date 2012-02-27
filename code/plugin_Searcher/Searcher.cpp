@@ -1184,6 +1184,8 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		#endif
 
 	// we must check the hits
+	// hits are checked for contig identification
+	// TODO: this code uses a lot of memory I believe.
 	}else if(!m_checkedHits){
 	
 		// all hits were processed
@@ -1274,6 +1276,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			strcpy(sequence,sequenceName.c_str());
 
 			// here, the message is ready to be send.
+			// the filtering is done on the other end...
 
 			Message aMessage(messageBuffer,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
 				getWriter(m_directoryIterator),RAY_MPI_TAG_CONTIG_IDENTIFICATION,m_parameters->getRank());
@@ -1453,23 +1456,13 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 			double ratio=(0.0+m_matches)/m_numberOfKmers;
 
-/*
-			bool thresholdIsGood=false;
-	
-			if(ratio >= CONFIG_SEARCH_THRESHOLD)
-				thresholdIsGood=true;
-*/
 
+			// to be worthy, an entry needs a minimum number of matches
 			bool entryIsWorthy=false;
 
-			if(m_matches>0 && ratio >= CONFIG_SEARCH_THRESHOLD && coloredAssembledMode !=0){
+			if(ratio >= CONFIG_SEARCH_THRESHOLD){
 				entryIsWorthy=true;
 			}
-
-			if(coloredAssembledMode >= 10*coloredMode){
-				entryIsWorthy=false;
-			}
-
 
 			m_sortedHits.clear();
 
@@ -2969,7 +2962,7 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 
 	// open the file
 	// don't open it if there are 0 matches
-	if(entryIsWorthy && matches > 0 && m_arrayOfFiles.count(directoryIterator)==0) {
+	if(entryIsWorthy && m_arrayOfFiles.count(directoryIterator)==0) {
 		
 		string*theDirectoryPath=m_searchDirectories[directoryIterator].getDirectoryName();
 		string baseName=getBaseName(*theDirectoryPath);
