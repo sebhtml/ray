@@ -14,14 +14,15 @@ Ray is documented in
 
 ## Solutions (all bundled in a single Product called Ray)
 
-- de novo genome assembly (original Ray Technology, re-branded to géno-Ray Technology)
-- quantification of contig abundance (con-Ray Technology)
+- de novo genome assembly
+- quantification of contig abundance
 
-- de novo transcriptome assembly (trans-Ray Technology)
-- quantification of transcript expression (express-Ray Technology)
+- de novo meta-genome assembly (algorithms: méta-Ray)
+- quantification of microbiome consortia members (algorithms: Colored Rays)
+- phylogenetic profiling based of virtual coloring (in development)
 
-- de novo meta-genome assembly (méta-Ray Technology)
-- quantification of microbiome consortia members (éco-Ray Technology)
+- de novo transcriptome assembly (works, but not tested a lot)
+- quantification of transcript expression (algorithms: Colored Rays)
 
 
 see Documentation/BiologicalAbundances.txt
