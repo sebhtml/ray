@@ -29,7 +29,7 @@ padding-left:30px;
 }
 
 .name{
-font-size: 34px;
+font-size: 24px;
 }
 
 .observations{
@@ -68,7 +68,11 @@ Total:
       <xsl:for-each select="root/entry">
 <div class="taxon">
           <div>
-		<span class="name"><xsl:value-of select="name"/></span>
+		<span class="name">
+<xsl:value-of select="file"/><br />
+<xsl:value-of select="name"/>
+
+</span>
 
 		<xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text>
 
