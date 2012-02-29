@@ -40,8 +40,8 @@ DESCRIPTION:
               Biological abundances will be written to RayOutput/BiologicalAbundances
               See Documentation/BiologicalAbundances.txt
 
-       -with-phylogeny Genome-to-Taxon.tsv TreeOfLife-Edges.tsv Taxon-Names.tsv
-              Provides a phylogeny.
+       -with-taxonomy Genome-to-Taxon.tsv TreeOfLife-Edges.tsv Taxons.tsv
+              Provides a taxonomy.
               See Documentation/Phylogeny.txt for details.
 
   Outputs

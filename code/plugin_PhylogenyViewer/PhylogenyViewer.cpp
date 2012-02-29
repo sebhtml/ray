@@ -92,7 +92,7 @@ void PhylogenyViewer::call_RAY_MASTER_MODE_PHYLOGENY_MAIN(){
 		showObservations(&cout);
 
 		ostringstream hitFile;
-		hitFile<<m_parameters->getPrefix()<<"/BiologicalAbundances/_Phylogeny";
+		hitFile<<m_parameters->getPrefix()<<"/BiologicalAbundances/_Taxonomy";
 
 		createDirectory(hitFile.str().c_str());
 
@@ -284,7 +284,7 @@ void PhylogenyViewer::call_RAY_MPI_TAG_TOUCH_TAXON(Message*message){
 
 void PhylogenyViewer::loadTree(){
 	
-	if(!m_parameters->hasOption("-with-phylogeny")){
+	if(!m_parameters->hasOption("-with-taxonomy")){
 		m_loadedTree=true;
 
 		return;
@@ -492,15 +492,16 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 
 	(*stream)<<"<totalAssembledKmerObservations>"<<m_totalNumberOfKmerObservations<<"</totalAssembledKmerObservations>"<<endl;
 
-	(*stream)<<"<taxon><identifier>unknown</identifier><name>unknown</name>"<<endl;
-	(*stream)<<"<path>unknown</path>"<<endl;
+	(*stream)<<"<entry>";
+	(*stream)<<"<taxon><identifier>unknown</identifier><name>unknown</name><rank>unknown</rank></taxon>"<<endl;
+	(*stream)<<"<path></path>"<<endl;
 	(*stream)<<"<assembledKmerObservations>"<<m_unknown<<"</assembledKmerObservations>";
 
 	double ratio=m_unknown;
 	if(m_totalNumberOfKmerObservations!=0)
 		ratio/=m_totalNumberOfKmerObservations;
 
-	(*stream)<<"<proportion>"<<ratio<<"</proportion></taxon>"<<endl;
+	(*stream)<<"<proportion>"<<ratio<<"</proportion></entry>"<<endl;
 
 	map<uint64_t,set<TaxonIdentifier> > sortedHits;
 
@@ -523,22 +524,22 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 
 			TaxonIdentifier taxon=*j;
 
-			(*stream)<<"<taxon><identifier>"<<taxon<<"</identifier><name>"<<getTaxonName(taxon)<<"</name>"<<endl;
-		
-			(*stream)<<"<path>"<<endl;
+			(*stream)<<"<entry>"<<endl;
+
+			printTaxon_XML(taxon,stream);
+
 			vector<TaxonIdentifier> path;
 	
 			getTaxonPathFromRoot(taxon,&path);
-			printTaxonPath(taxon,&path,stream);
+			printTaxonPath_XML(taxon,&path,stream);
 	
-			(*stream)<<"</path>"<<endl;
 			(*stream)<<"<assembledKmerObservations>"<<count<<"</assembledKmerObservations>";
 	
 			double ratio=count;
 			if(m_totalNumberOfKmerObservations!=0)
 				ratio/=m_totalNumberOfKmerObservations;
 	
-			(*stream)<<"<proportion>"<<ratio<<"</proportion></taxon>"<<endl;
+			(*stream)<<"<proportion>"<<ratio<<"</proportion></entry>"<<endl;
 		}
 	}
 
@@ -714,7 +715,7 @@ TaxonIdentifier PhylogenyViewer::getTaxonParent(TaxonIdentifier taxon){
 
 void PhylogenyViewer::loadTaxonNames(){
 
-	if(!m_parameters->hasOption("-with-phylogeny")){
+	if(!m_parameters->hasOption("-with-taxonomy")){
 		return;
 	}
 
@@ -728,11 +729,13 @@ void PhylogenyViewer::loadTaxonNames(){
 
 		TaxonIdentifier taxon;
 		string name;
+		string rank;
 
-		loader.getNext(&taxon,&name);
+		loader.getNext(&taxon,&name,&rank);
 
 		if(m_taxonsForPhylogeny.count(taxon)>0){
 			m_taxonNames[taxon]=name;
+			m_taxonRanks[taxon]=rank;
 		}
 	}
 
@@ -775,6 +778,36 @@ void PhylogenyViewer::testPaths(){
 		printTaxonPath(taxon,&path,&cout);
 	}
 	cout<<endl;
+}
+
+void PhylogenyViewer::printTaxonPath_XML(TaxonIdentifier taxon,vector<TaxonIdentifier>*path,ostream*stream){
+
+	(*stream)<<"<path>"<<endl;
+	//cout<<"Taxon= "<<taxon<<endl;
+
+	for(int i=0;i<(int)path->size();i++){
+
+		TaxonIdentifier taxon2=(*path)[i];
+
+		printTaxon_XML(taxon2,stream);
+	}
+
+	(*stream)<<"</path>"<<endl;
+}
+
+void PhylogenyViewer::printTaxon_XML(TaxonIdentifier taxon,ostream*stream){
+	string name=getTaxonName(taxon);
+	string rank=getTaxonRank(taxon);
+
+	(*stream)<<"<taxon><name>"<<name<<"</name><rank>"<<rank<<"</rank><identifier>"<<taxon<<"</identifier></taxon>"<<endl;
+}
+
+string PhylogenyViewer::getTaxonRank(TaxonIdentifier taxon){
+	if(m_taxonRanks.count(taxon)==0){
+		return "CachingError";
+	}
+
+	return m_taxonRanks[taxon];
 }
 
 void PhylogenyViewer::printTaxonPath(TaxonIdentifier taxon,vector<TaxonIdentifier>*path,ostream*stream){
@@ -821,7 +854,7 @@ void PhylogenyViewer::getTaxonPathFromRoot(TaxonIdentifier taxon,vector<TaxonIde
  */
 void PhylogenyViewer::loadTaxons(){
 
-	if(!m_parameters->hasOption("-with-phylogeny")){
+	if(!m_parameters->hasOption("-with-taxonomy")){
 
 		m_loadedTaxonsForPhylogeny=true;
 		m_sentTaxonsToMaster=false;

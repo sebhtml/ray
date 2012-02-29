@@ -293,7 +293,7 @@ void Parameters::parseCommands(){
 	searchOption.insert("-search");
 
 	set<string> phylogeny;
-	phylogeny.insert("-with-phylogeny");
+	phylogeny.insert("-with-taxonomy");
 
 	vector<set<string> > toAdd;
 	toAdd.push_back(phylogeny);
@@ -1205,7 +1205,7 @@ void Parameters::showUsage(){
 	showOptionDescription("See Documentation/BiologicalAbundances.txt");
 	cout<<endl;
 
-	showOption("-with-phylogeny Genome-to-Taxon.tsv TreeOfLife-Edges.tsv Taxon-Names.tsv","Provides a phylogeny.");
+	showOption("-with-taxonomy Genome-to-Taxon.tsv TreeOfLife-Edges.tsv Taxons.tsv","Provides a taxonomy.");
 	showOptionDescription("See Documentation/Phylogeny.txt for details.");
 
 	cout<<endl;

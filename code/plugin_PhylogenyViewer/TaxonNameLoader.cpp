@@ -62,7 +62,7 @@ bool TaxonNameLoader::hasNext(){
 	return m_current<m_size;
 }
 
-void TaxonNameLoader::getNext(TaxonIdentifier*taxon,string*name){
+void TaxonNameLoader::getNext(TaxonIdentifier*taxon,string*name,string*rank){
 
 	char line[1024];
 	line[0]='\0';
@@ -104,6 +104,8 @@ void TaxonNameLoader::getNext(TaxonIdentifier*taxon,string*name){
 
 	(*taxon)=theTaxon;
 	(*name)=theName;
+
+	(*rank)=theLine.substr(secondTab);
 
 	m_current++;
 

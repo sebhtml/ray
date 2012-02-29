@@ -106,6 +106,7 @@ class PhylogenyViewer: public CorePlugin{
 	map<GenomeIdentifier,TaxonIdentifier> m_genomeToTaxon;
 
 	map<TaxonIdentifier,string> m_taxonNames;
+	map<TaxonIdentifier,string> m_taxonRanks;
 
 	map<TaxonIdentifier,uint64_t> m_taxonObservations;
 	map<TaxonIdentifier,uint64_t> m_taxonObservationsMaster;
@@ -178,10 +179,14 @@ class PhylogenyViewer: public CorePlugin{
 	void printTaxonPath(TaxonIdentifier taxon,vector<TaxonIdentifier>*path,ostream*stream);
 	TaxonIdentifier getTaxonParent(TaxonIdentifier taxon);
 	void showObservations(ostream*stream);
-	void showObservations_XML(ostream*stream);
 	void sendTreeCounts();
 	TaxonIdentifier findCommonAncestor(vector<TaxonIdentifier>*taxons);
 	void call_RAY_MPI_TAG_TAXON_OBSERVATIONS(Message*m);
+	string getTaxonRank(TaxonIdentifier taxon);
+
+	void showObservations_XML(ostream*stream);
+	void printTaxonPath_XML(TaxonIdentifier taxon,vector<TaxonIdentifier>*path,ostream*stream);
+	void printTaxon_XML(TaxonIdentifier taxon,ostream*stream);
 public:
 
 	void call_RAY_MASTER_MODE_PHYLOGENY_MAIN();

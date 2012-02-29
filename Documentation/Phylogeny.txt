@@ -14,10 +14,10 @@ This script can do the job: https://github.com/sebhtml/NGS-Pipelines/blob/master
 mpiexec -n 4 Ray \
 -p s1.fastq s2.fastq \
 -search NCBI-Bacteria \
--with-phylogeny \
-Genome-to-Taxon.tsv 
+-with-taxonomy \
+Genome-to-Taxon.tsv \
 TreeOfLife-Edges.tsv \
-Taxon-Names.tsv \
+Taxons.tsv
 
 
 NCBI-Bacteria contains one fasta file per strain/species.
@@ -32,18 +32,29 @@ The identifiers (225853611 in this example) are used to place things in the tree
 
 == Genome-to-Taxon.tsv ==
 
-GenBankIdentifier<tab>taxonIdentifier<newline>
+each line has 2 columns (tab-separated):
+
+	GenBankIdentifier	taxonIdentifier
+
+both are integers
 
 
 == TreeOfLife-Edges.tsv format ==
 
-parentTaxonIdentifier<tab>childTaxonIdentifier<newline>
+each line has 2 columns (tab-separated):
+	
+	parentTaxonIdentifier	childTaxonIdentifier
 
 
-== Taxon-Names.tsv ==
+both are integers
 
-taxonIdentifier<tab>taxonName<tab>-1<tab>levelIdentifier<newline>
+== Taxons.tsv ==
+
+each line has 3 columns (tab-separated):
+
+	taxonIdentifier	taxonName
 
 
-
-
+taxonIdentifier is an integer
+taxonName is a string
+taxonomicRank is a string

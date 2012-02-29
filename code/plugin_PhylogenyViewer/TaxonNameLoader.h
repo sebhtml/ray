@@ -44,7 +44,7 @@ class TaxonNameLoader{
 public:
 	void load(string file);
 	bool hasNext();
-	void getNext(TaxonIdentifier*taxon,string*name);
+	void getNext(TaxonIdentifier*taxon,string*name,string*rank);
 };
 
 #endif
