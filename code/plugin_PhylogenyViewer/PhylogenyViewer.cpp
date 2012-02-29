@@ -735,7 +735,19 @@ void PhylogenyViewer::loadTaxonNames(){
 
 string PhylogenyViewer::getTaxonName(TaxonIdentifier taxon){
 	if(m_taxonNames.count(taxon)>0){
-		return m_taxonNames[taxon];
+		string value=m_taxonNames[taxon];
+		
+		for(int i=0;i<(int)value.length();i++){
+
+			char symbol=value[i];
+
+			/* < and > are not allowed in XML files unless they are un tag names */
+			if(symbol=='<' || symbol=='>'){
+				value[i]='_';
+			}
+		}
+
+		return value; /* return sane taxon name */
 	}
 
 	return "CachingError";
