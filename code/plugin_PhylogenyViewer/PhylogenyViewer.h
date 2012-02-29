@@ -182,7 +182,7 @@ class PhylogenyViewer: public CorePlugin{
 	void sendTreeCounts();
 	TaxonIdentifier findCommonAncestor(vector<TaxonIdentifier>*taxons);
 	void call_RAY_MPI_TAG_TAXON_OBSERVATIONS(Message*m);
-
+	string getSampleName();
 public:
 
 	void call_RAY_MASTER_MODE_PHYLOGENY_MAIN();

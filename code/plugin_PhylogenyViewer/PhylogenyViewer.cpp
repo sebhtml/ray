@@ -480,9 +480,53 @@ void PhylogenyViewer::gatherKmerObservations(){
 	m_countIterator=m_taxonObservations.begin();
 }
 
+string PhylogenyViewer::getSampleName(){
+	string sample=m_parameters->getPrefix();
+
+	/* start is 0 if the only '/' is at the end 
+ *  	otherwise, start is like using the command line 'basename' */
+	int start=0;
+
+	int numberOfSlashes=0;
+
+	for(int i=0;i<(int)sample.length();i++){
+		if(sample[i]=='/'){
+			numberOfSlashes++;
+		}
+	}
+
+	if(numberOfSlashes>=2){
+		numberOfSlashes=0;
+		int position=sample.length()-1;
+		while(position>=0){
+			if(sample[position]=='/'){
+				if(numberOfSlashes==1){ /* this is the second slash */
+					position++; /* move past the second '/' from the end  */
+					break; /* end the loop */
+				}
+
+				numberOfSlashes++;
+				position--;
+			}
+		}
+	}
+
+	int end=sample.length()-1;
+	end--; // remove the trailing '/' added by getPrefix()
+
+	int length=end-start+1;
+
+	return sample.substr(start,length);
+}
+
 void PhylogenyViewer::showObservations_XML(ostream*stream){
 
 	(*stream)<<"<root>"<<endl;
+
+	/* add the sample name in the XML file */
+	(*stream)<<"<sample>";
+	(*stream)<<getSampleName();
+	(*stream)<<"</sample>"<<endl;
 
 	(*stream)<<"<totalKmerObservations>"<<m_totalNumberOfKmerObservations<<"</totalKmerObservations>"<<endl;
 
