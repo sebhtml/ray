@@ -3078,6 +3078,10 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 			demultiplexedObservations=coloredAssembledMode*matches;
 		}
 
+		if(coloredAssembledMode >= 10* coloredMode){ // this means that the entry is invalid usually
+			demultiplexedObservations=0;
+		}
+
 		content<<"	"<<demultiplexedObservations;
 
 		double proportion=demultiplexedObservations;
