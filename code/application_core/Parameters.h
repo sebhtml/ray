@@ -224,7 +224,7 @@ public:
 	string getGenomeToTaxonFile();
 	string getTreeFile();
 	string getTaxonNameFile();
-
+	string getSampleName();
 };
 
 #endif

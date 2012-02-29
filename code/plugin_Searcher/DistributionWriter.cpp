@@ -102,6 +102,7 @@ void DistributionWriter::openFile(){
 
 	cout<<"Opened "<<rawDistribution.str()<<endl;
 
+	m_output<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"<<endl;
 	m_output<<"<root>"<<endl;
 
 	m_gotFile=true;

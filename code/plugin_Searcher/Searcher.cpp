@@ -1025,8 +1025,10 @@ void Searcher::call_RAY_SLAVE_MODE_SEARCHER_CLOSE(){
 
 		int directoryIterator=i->first;
 
+		fprintf(m_arrayOfFiles[directoryIterator],"</root>");
 		fclose(m_arrayOfFiles[directoryIterator]);
 
+		fprintf(m_arrayOfFilesShort[directoryIterator],"</root>");
 		fclose(m_arrayOfFilesShort[directoryIterator]);
 
 		cout<<"Closed file "<<m_directoryIterator<<" "<<m_fileIterator<<", active file descriptors: "<<m_activeFiles<<endl;
@@ -2971,7 +2973,7 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 		fileName<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
 		fileName<<baseName<<"/";
 		// add the file name without the .fasta
-		fileName<<"SequenceAbundancesRaw.tsv";
+		fileName<<"SequenceAbundancesRaw.xml";
 
 		m_arrayOfFiles[directoryIterator]=fopen(fileName.str().c_str(),"w");
 		
@@ -2981,7 +2983,8 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 		fileName2<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
 		fileName2<<baseName<<"/";
 		// add the file name without the .fasta
-		fileName2<<"SequenceAbundances.tsv";
+		fileName2<<"SequenceAbundances.xml";
+
 
 		m_arrayOfFilesShort[directoryIterator]=fopen(fileName2.str().c_str(),"w");
 
@@ -2995,6 +2998,33 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 		#ifdef ASSERT
 		assert(m_activeFiles>=1); 
 		#endif
+
+		ostringstream content88;
+		content88<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"<<endl;
+
+		content88<<"<root><sample>"<<m_parameters->getSampleName()<<"</sample><searchDirectory>"<<baseName<<"</searchDirectory>"<<endl;
+	
+		content88<<"<totalAssembledKmerObservations>"<<m_totalNumberOfKmerObservations;
+		content88<<"</totalAssembledKmerObservations>"<<endl;
+
+		fprintf(m_arrayOfFilesShort[directoryIterator],
+			"%s",content88.str().c_str());
+
+		fprintf(m_arrayOfFiles[directoryIterator],
+			"%s",content88.str().c_str());
+
+		cout<<"Opened "<<fileName.str()<<", active file descriptors: "<<m_activeFiles<<endl;
+	}
+
+
+	// write the file if there are not 0 matches
+	if(entryIsWorthy ){
+
+		ostringstream content;
+		
+		string sequenceName=sequenceNameFromMessage;
+
+		double ratio=(0.0+matches)/numberOfKmers;
 
 		ostringstream header;
 		header<<"#Category	Sequence number	Sequence name	K-mer length	Length in k-mers";
@@ -3014,63 +3044,37 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 
 		header<<endl;
 
-		fprintf(m_arrayOfFiles[directoryIterator],
-			"%s",header.str().c_str());
-
-		ostringstream header2;
-		header2<<"#Category	Sequence number	Sequence name";
 		
-		header2<<"	Demultiplexed k-mer observations";
-		header2<<"	Total";
-		header2<<"	Proportion";
-
-		header2<<endl;
-
-		fprintf(m_arrayOfFilesShort[directoryIterator],
-			"%s",header2.str().c_str());
-
-
-		cout<<"Opened "<<fileName.str()<<", active file descriptors: "<<m_activeFiles<<endl;
-	}
-
-
-	// write the file if there are not 0 matches
-	if(entryIsWorthy ){
-
-		ostringstream content;
+		content<<"<entry><file>"<<m_fileNames[directoryIterator][fileIterator]<<"</file>"<<endl;
+		content<<"<sequence>"<<sequenceIterator<<"</sequence><name>"<<sequenceName<<"</name>"<<endl;
+		content<<"<kmerLength>"<<m_parameters->getWordSize();
 		
-		string sequenceName=sequenceNameFromMessage;
+		content<<"</kmerLength><lengthInKmers>"<<numberOfKmers<<"</lengthInKmers>"<<endl;
 
-		double ratio=(0.0+matches)/numberOfKmers;
-
-		content<<m_fileNames[directoryIterator][fileIterator];
-		content<<"	"<<sequenceIterator<<"	"<<sequenceName<<"	"<<m_parameters->getWordSize();
-		content<<"	"<<numberOfKmers;
-
-		content<<"	"<<matches<<"	"<<ratio<<"	";
-		content<<mode;
+		content<<"<raw><kmerMatches>"<<matches<<"</kmerMatches><proportion>"<<ratio<<"</proportion><modeKmerCoverage>";
+		content<<mode<<"</modeKmerCoverage></raw>"<<endl;
 
 		double coloredRatio=coloredMatches;
 
 		if(numberOfKmers!=0)
 			coloredRatio/=numberOfKmers;
 
-		content<<"	"<<coloredMatches<<"	"<<coloredRatio;
-		content<<"	"<<coloredMode;
+		content<<"<uniquelyColored><kmerMatches>"<<coloredMatches<<"</kmerMatches><proportion>"<<coloredRatio<<"</proportion>";
+		content<<"<modeKmerCoverage>"<<coloredMode<<"</modeKmerCoverage></uniquelyColored>"<<endl;
 
 		double coloredAssembledRatio=coloredAssembledMatches;
 
 		if(numberOfKmers!=0)
 			coloredAssembledRatio/=numberOfKmers;
 
-		content<<"	"<<coloredAssembledMatches<<"	"<<coloredAssembledRatio;
-		content<<"	"<<coloredAssembledMode;
+		content<<"<uniquelyColoredAndAssembled><kmerMatches>"<<coloredAssembledMatches<<"</kmerMatches><proportion>"<<coloredAssembledRatio;
+		content<<"</proportion><modeKmerCoverage>"<<coloredAssembledMode<<"</modeKmerCoverage></uniquelyColoredAndAssembled>"<<endl;
 
-		content<<"	"<<qualityColoredVsAll;
-		content<<"	"<<qualityAssembledVsAll;
-		content<<"	"<<qualityAssembledVsColored;
+		content<<"<qualityControl><correlationColoredVsRaw>"<<qualityColoredVsAll<<"</correlationColoredVsRaw>";
+		content<<"<correlationAssembledVsRaw>"<<qualityAssembledVsAll<<"</correlationAssembledVsRaw>";
+		content<<"<correlationAssembledVsColored>"<<qualityAssembledVsColored<<"</correlationAssembledVsColored>";
 
-		content<<"	"<<hasPeak<<"	"<<hasHighFrequency;
+		content<<"<hasPeak>"<<hasPeak<<"</hasPeak><hasHighFrequency>"<<hasHighFrequency<<"</hasHighFrequency></qualityControl>"<<endl;
 
 		uint64_t demultiplexedObservations=0;
 
@@ -3082,14 +3086,13 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 			demultiplexedObservations=0;
 		}
 
-		content<<"	"<<demultiplexedObservations;
+		content<<"<demultiplexedKmerObservations>"<<demultiplexedObservations<<"</demultiplexedKmerObservations>";
 
 		double proportion=demultiplexedObservations;
 		if(m_totalNumberOfKmerObservations!=0)
 			proportion/=m_totalNumberOfKmerObservations;
 
-		content<<"	"<<m_totalNumberOfKmerObservations<<"	"<<proportion;
-		content<<endl;
+		content<<"<proportion>"<<proportion<<"</proportion></entry>"<<endl;
 
 		#ifdef ASSERT
 		assert(m_arrayOfFiles.count(directoryIterator)>0);
@@ -3103,13 +3106,15 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 		// also write a shorter version
 
 		if(demultiplexedObservations>0){
+
+
 			ostringstream content2;
 
-			content2<<m_fileNames[directoryIterator][fileIterator];
-			content2<<"	"<<sequenceIterator<<"	"<<sequenceName;
+			content2<<"<entry><file>"<<m_fileNames[directoryIterator][fileIterator]<<"</file>"<<endl;
+			content2<<"<sequence>"<<sequenceIterator<<"</sequence><name>"<<sequenceName<<"</name>"<<endl;
 
-			content2<<"	"<<demultiplexedObservations<<"	"<<m_totalNumberOfKmerObservations;
-			content2<<"	"<<proportion;
+			content2<<"<demultiplexedKmerObservations>"<<demultiplexedObservations<<"</demultiplexedKmerObservations>";
+			content2<<"<proportion>"<<proportion<<"</proportion></entry>";
 			content2<<endl;
 
 			fprintf(m_arrayOfFilesShort[directoryIterator],
