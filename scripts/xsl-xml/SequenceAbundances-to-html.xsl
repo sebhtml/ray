@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <xsl:stylesheet version="1.0"
 xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -15,7 +15,7 @@ font-family: Arial;
 
 .taxon{
 border-style:solid; 
-background: #44ee44;
+background: #FFFF33;
 
 margin-top:50px;
 margin-bottom:50px;
@@ -30,15 +30,6 @@ padding-left:30px;
 
 .name{
 font-size: 34px;
-}
-
-.path{
-color:black;
-border-style:solid; 
-padding-top:20px;
-padding-bottom:20px;
-padding-right:20px;
-padding-left:20px;
 }
 
 .observations{
@@ -67,13 +58,14 @@ padding-left:5px;
 </head>
   <body>
     <h1>Sample: <xsl:value-of select="root/sample"/></h1>
-    <h2>Taxons from BiologicalAbundances/_Phylogeny/Taxons.xml</h2>
+    <h2>Demultiplexed biological abundances from BiologicalAbundances/<xsl:value-of select="root/searchDirectory"/>/BiologicalAbundances.xml</h2>
+	<h2>Produced by Ray technologies</h2>
 <div>
 Total:
-   <xsl:value-of select="root/totalKmerObservations"/>
+   <xsl:value-of select="root/totalAssembledKmerObservations"/>
 </div>
 
-      <xsl:for-each select="root/taxon">
+      <xsl:for-each select="root/entry">
 <div class="taxon">
           <div>
 		<span class="name"><xsl:value-of select="name"/></span>
@@ -84,10 +76,9 @@ Total:
 	</div>
 
 <div class="observations">
-          <xsl:value-of select="kmerObservations"/> / <xsl:value-of select="/root/totalKmerObservations"/>
+          <xsl:value-of select="demultiplexedKmerObservations"/> / <xsl:value-of select="/root/totalAssembledKmerObservations"/>
 </div>
 
-          <div class="path"><xsl:value-of select="path"/></div>
 </div>
       </xsl:for-each>
 
