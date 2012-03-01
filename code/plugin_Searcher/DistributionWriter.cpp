@@ -37,12 +37,13 @@ void DistributionWriter::setRank(Rank rank){
 }
 
 void DistributionWriter::write(int directory,int file,int sequence,
-	map<int,uint64_t>*all,map<int,uint64_t>*uniquelyColored,map<int,uint64_t>*uniquelyColoredAndAssembled){
+	map<int,uint64_t>*all,map<int,uint64_t>*uniquelyColored,map<int,uint64_t>*uniquelyColoredAndAssembled,
+	const char*directoryName,const char*fileName){
 
 	openFile();
 
 	m_output<<"<entry><directory>";
-	m_output<<directory<<"</directory><file>"<<file<<"</file><sequence>";
+	m_output<<directoryName<<"</directory><file>"<<fileName<<"</file><sequence>";
 	m_output<<sequence<<"</sequence>"<<endl;
 
 	m_output<<"<raw>"<<endl;

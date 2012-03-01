@@ -340,7 +340,8 @@ class Searcher :  public CorePlugin {
 	int getDistributionMode(map<int,uint64_t>*distribution);
 
 	void dumpDistributions();
-
+	string getDirectoryBaseName(int i);
+	string getFileBaseName(int i,int j);
 	int getWriter(int directory);
 
 	int getAbundanceWriter(int directory);

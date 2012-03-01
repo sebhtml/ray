@@ -2013,9 +2013,8 @@ void Searcher::createTrees(){
 	}
 
 	for(int i=0;i<m_searchDirectories_size;i++){
-		string*directory=m_searchDirectories[i].getDirectoryName();
 
-		string baseName=getBaseName(*directory);
+		string baseName=getDirectoryBaseName(i);
 
 		ostringstream directory2;
 		directory2<<m_parameters->getPrefix()<<"/BiologicalAbundances/"<<baseName;
@@ -2046,17 +2045,8 @@ void Searcher::createTrees(){
 		vector<string> directories;
 
 		for(int j=0;j<(int)m_searchDirectories[i].getSize();j++){
-			string*file=m_searchDirectories[i].getFileName(j);
 
-			int theLength=file->length();
-			// .fasta is 6
-
-			#ifdef ASSERT
-			assert(theLength>0);
-			#endif
-
-			//cout<<"code 5"<<endl;
-			string theFile=file->substr(0,theLength-6);
+			string theFile=getFileBaseName(i,j);
 
 			ostringstream directory3;
 			directory3<<m_parameters->getPrefix()<<"/BiologicalAbundances/"<<baseName<<"/"<<theFile;
@@ -2090,6 +2080,23 @@ void Searcher::createTrees(){
 	if(m_parameters->getRank()==MASTER_RANK){
 		directoriesFile.close();
 	}
+}
+
+string Searcher::getFileBaseName(int i,int j){
+			
+	string*file=m_searchDirectories[i].getFileName(j);
+
+	int theLength=file->length();
+	// .fasta is 6
+
+	#ifdef ASSERT
+	assert(theLength>0);
+	#endif
+
+	//cout<<"code 5"<<endl;
+	string theFile=file->substr(0,theLength-6);
+
+	return theFile;
 }
 
 string Searcher::getBaseName(string a){
@@ -2898,10 +2905,13 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 }
 
 void Searcher::dumpDistributions(){
+	string directoryName=getDirectoryBaseName(m_directoryIterator);
+	string fileName=getFileBaseName(m_directoryIterator,m_fileIterator);
 
 	m_writer.write(m_directoryIterator,m_fileIterator,m_sequenceIterator,
 		&m_coverageDistribution,&m_coloredCoverageDistribution,
-		&m_coloredAssembledCoverageDistribution);
+		&m_coloredAssembledCoverageDistribution,directoryName.c_str(),
+		fileName.c_str());
 }
 
 int Searcher::getDistributionMode(map<int,uint64_t>*distribution){
@@ -2966,8 +2976,7 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 	// don't open it if there are 0 matches
 	if(entryIsWorthy && m_arrayOfFiles.count(directoryIterator)==0) {
 		
-		string*theDirectoryPath=m_searchDirectories[directoryIterator].getDirectoryName();
-		string baseName=getBaseName(*theDirectoryPath);
+		string baseName=getDirectoryBaseName(directoryIterator);
 
 		ostringstream fileName;
 		fileName<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
@@ -3237,6 +3246,14 @@ void Searcher::call_RAY_MPI_TAG_CONTIG_IDENTIFICATION(Message*message){
 	// send a reply
 	m_switchMan->sendEmptyMessage(m_outbox,m_parameters->getRank(),
 		message->getSource(),RAY_MPI_TAG_CONTIG_IDENTIFICATION_REPLY);
+}
+
+string Searcher::getDirectoryBaseName(int directoryIterator){
+
+	string*theDirectoryPath=m_searchDirectories[directoryIterator].getDirectoryName();
+	string baseName=getBaseName(*theDirectoryPath);
+
+	return baseName;
 }
 
 uint64_t Searcher::getTotalNumberOfKmerObservations(){

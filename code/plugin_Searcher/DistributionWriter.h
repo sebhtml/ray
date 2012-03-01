@@ -47,7 +47,8 @@ public:
 	void setRank(Rank rank);
 
 	void write(int directory,int file,int sequence,
-		map<int,uint64_t>*all,map<int,uint64_t>*uniquelyColored,map<int,uint64_t>*uniquelyColoredAndAssembled);
+		map<int,uint64_t>*all,map<int,uint64_t>*uniquelyColored,map<int,uint64_t>*uniquelyColoredAndAssembled,
+	const char*directoryName,const char*fileName);
 
 	void close();
 };
