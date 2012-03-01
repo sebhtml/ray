@@ -1205,7 +1205,7 @@ void Parameters::showUsage(){
 	showOptionDescription("See Documentation/BiologicalAbundances.txt");
 	cout<<endl;
 
-	showOption("-with-taxonomy Genome-to-Taxon.tsv TreeOfLife-Edges.tsv Taxons.tsv","Provides a taxonomy.");
+	showOption("-with-taxonomy Genome-to-Taxon.tsv TreeOfLife-Edges.tsv Taxon-Names.tsv","Provides a taxonomy.");
 	showOptionDescription("See Documentation/Phylogeny.txt for details.");
 
 	cout<<endl;

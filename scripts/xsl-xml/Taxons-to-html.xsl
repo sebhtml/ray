@@ -72,8 +72,12 @@ padding-left:5px;
     <h2>Taxonomic profiling from BiologicalAbundances/_Taxonomy/Taxons.xml</h2>
 	<h2>Produced by Ray technologies</h2>
 <div>
-Total:
+Total assembled k-mer observations:
    <xsl:value-of select="root/totalAssembledKmerObservations"/>
+</div>
+<div>
+Total colored assembled k-mer observations:
+   <xsl:value-of select="root/totalColoredAssembledKmerObservations"/>
 </div>
 
       <xsl:for-each select="root/entry">
@@ -83,11 +87,16 @@ Total:
 
 		<xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text>
 
-          	<span class="proportion"><xsl:value-of select="100* proportion"/>%</span>
+          	<span class="proportion"><xsl:value-of select="100* proportion"/>% <small>assembled</small></span>
+
+		<xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text>
+
+          	<span class="proportion"><xsl:value-of select="100* proportion"/>% <small>colored</small></span>
 	</div>
 
 <div class="observations">
-          <xsl:value-of select="assembledKmerObservations"/> / <xsl:value-of select="/root/totalAssembledKmerObservations"/>
+          Assembled k-mer observations:
+<xsl:value-of select="assembledKmerObservations"/> / <xsl:value-of select="/root/totalAssembledKmerObservations"/>
 </div>
 
           <div class="path">

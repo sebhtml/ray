@@ -492,6 +492,10 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 
 	(*stream)<<"<totalAssembledKmerObservations>"<<m_totalNumberOfKmerObservations<<"</totalAssembledKmerObservations>"<<endl;
 
+	uint64_t totalColoredAssembledKmerObservations=m_totalNumberOfKmerObservations-m_unknown;
+
+	(*stream)<<"<totalColoredAssembledKmerObservations>"<<totalColoredAssembledKmerObservations<<"</totalColoredAssembledKmerObservations>"<<endl;
+
 	(*stream)<<"<entry>";
 	(*stream)<<"<taxon><identifier>unknown</identifier><name>unknown</name><rank>unknown</rank></taxon>"<<endl;
 	(*stream)<<"<path></path>"<<endl;
@@ -539,7 +543,16 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 			if(m_totalNumberOfKmerObservations!=0)
 				ratio/=m_totalNumberOfKmerObservations;
 	
-			(*stream)<<"<proportion>"<<ratio<<"</proportion></entry>"<<endl;
+			(*stream)<<"<proportion>"<<ratio<<"</proportion>";
+
+			double coloredRatio=count;
+
+			if(totalColoredAssembledKmerObservations!=0){
+				coloredRatio/=totalColoredAssembledKmerObservations;
+			}
+
+			(*stream)<<"<coloredProportion>"<<coloredRatio<<"</coloredProportion>";
+			(*stream)<<"</entry>"<<endl;
 		}
 	}
 

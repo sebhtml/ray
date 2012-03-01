@@ -61,7 +61,7 @@ padding-left:5px;
     <h2>Demultiplexed biological abundances from BiologicalAbundances/<xsl:value-of select="root/searchDirectory"/>/BiologicalAbundances.xml</h2>
 	<h2>Produced by Ray technologies</h2>
 <div>
-Total:
+Total assembled k-mer observations:
    <xsl:value-of select="root/totalAssembledKmerObservations"/>
 </div>
 
@@ -80,6 +80,7 @@ Total:
 	</div>
 
 <div class="observations">
+Demultiplexed k-mer observations:
           <xsl:value-of select="demultiplexedKmerObservations"/> / <xsl:value-of select="/root/totalAssembledKmerObservations"/>
 </div>
 
