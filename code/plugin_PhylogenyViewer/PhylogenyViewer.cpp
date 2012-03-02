@@ -312,7 +312,11 @@ void PhylogenyViewer::loadTree(){
 	
 			loader.getNext(&parent,&child);
 
-			if(m_taxonsForPhylogeny.count(child) > 0){
+			if(parent==child){
+				cout<<"Error: parent and child are the same: "<<parent<<" and "<<child<<endl;
+			}
+
+			if(m_loadAllTree || (m_taxonsForPhylogeny.count(child) > 0) && parent!=child){
 				
 				m_taxonsForPhylogeny.insert(parent);
 
@@ -844,12 +848,19 @@ void PhylogenyViewer::getTaxonPathFromRoot(TaxonIdentifier taxon,vector<TaxonIde
 
 	reversePath.push_back(current);
 
+	int maximum=100;
+
 	while(m_treeParents.count(current)>0){
 		TaxonIdentifier parent=m_treeParents[current];
 	
 		current=parent;
 
 		reversePath.push_back(current);
+
+		if((int)reversePath.size()==maximum){
+			cout<<"Warning: path is too long with "<<reversePath.size()<<" vertices."<<endl;
+			break;
+		}
 	}
 
 	int i=reversePath.size()-1;
@@ -1118,6 +1129,8 @@ void PhylogenyViewer::registerPlugin(ComputeCore*core){
 	m_extractedColorsForPhylogeny=false;
 
 	UNKNOWN_TAXON=COLOR_NAMESPACE;
+
+	m_loadAllTree=true;
 
 	m_core=core;
 }

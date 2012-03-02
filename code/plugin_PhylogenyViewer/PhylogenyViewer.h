@@ -156,6 +156,8 @@ class PhylogenyViewer: public CorePlugin{
 	Adapter_RAY_SLAVE_MODE_PHYLOGENY_MAIN m_adapter_RAY_SLAVE_MODE_PHYLOGENY_MAIN;
 	Adapter_RAY_MPI_TAG_TOUCH_TAXON m_adapter_RAY_MPI_TAG_TOUCH_TAXON;
 
+	bool m_loadAllTree;
+
 	uint64_t m_totalNumberOfKmerObservations;
 
 	void extractColorsForPhylogeny();
