@@ -316,7 +316,7 @@ void PhylogenyViewer::loadTree(){
 				cout<<"Error: parent and child are the same: "<<parent<<" and "<<child<<endl;
 			}
 
-			if(m_loadAllTree || (m_taxonsForPhylogeny.count(child) > 0) && parent!=child){
+			if((m_loadAllTree || (m_taxonsForPhylogeny.count(child) > 0)) && parent!=child){
 				
 				m_taxonsForPhylogeny.insert(parent);
 
@@ -423,6 +423,7 @@ void PhylogenyViewer::gatherKmerObservations(){
 				if(m_colorsForPhylogeny.count(colorForPhylogeny)==0){
 					//cout<<"Error: color "<<colorForPhylogeny<<" should be in m_colorsForPhylogeny which contains "<<m_colorsForPhylogeny.size()<<endl;
 				}
+				#endif
 
 				//assert(m_colorsForPhylogeny.count(colorForPhylogeny)>0);
 
@@ -434,17 +435,17 @@ void PhylogenyViewer::gatherKmerObservations(){
 
 					cout<<"Warning, color "<<colorForPhylogeny<<" is not stored, "<<m_genomeToTaxon.size()<<" available for translation:"<<endl;
 
+					#ifdef VERBOSE
 					for(map<GenomeIdentifier,TaxonIdentifier>::iterator i=m_genomeToTaxon.begin();i!=m_genomeToTaxon.end();i++){
 						cout<<" "<<i->first<<"->"<<i->second;
 					}
 					cout<<endl;
+					#endif
 
 					m_warnings.insert(colorForPhylogeny);
 
 					continue;
 				}
-				//assert(m_genomeToTaxon.count(colorForPhylogeny)>0);
-				#endif
 
 				#ifdef ASSERT
 				assert(m_genomeToTaxon.count(colorForPhylogeny)>0);

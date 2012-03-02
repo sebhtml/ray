@@ -86,7 +86,9 @@ void ColoredPeakFinder::findObviousPeak(vector<int>*x,vector<int>*y,vector<int>*
 		// we found a peak
 		int peak=x->at(center);
 
+		#ifdef VERBOSE
 		cout<<"findObviousPeak says: "<<peak<<endl;
+		#endif
 
 		peakAverages->push_back(peak);
 		peakStandardDeviation->push_back(0);
@@ -113,10 +115,12 @@ void ColoredPeakFinder::findPeaks(vector<int>*x,vector<int>*y,vector<int>*peakAv
 		}
 	}
 
-	int signalMode=getMode(&backgroundData);
 	int signalAverage=(int)getAverage(&backgroundData);
 
+	#ifdef VERBOSE
+	int signalMode=getMode(&backgroundData);
 	cout<<"Mode= "<<signalMode<<" signalAverage= "<<signalAverage<<endl;
+	#endif
 
 	int signalThreshold=signalAverage;
 
