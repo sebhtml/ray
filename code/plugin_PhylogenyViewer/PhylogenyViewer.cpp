@@ -429,18 +429,16 @@ void PhylogenyViewer::gatherKmerObservations(){
 
 				if(m_genomeToTaxon.count(colorForPhylogeny)==0){
 
-					if(m_warnings.count(colorForPhylogeny)>0){
-						continue;
-					}
+					if(m_warnings.count(colorForPhylogeny)==0){
+						cout<<"Warning, color "<<colorForPhylogeny<<" is not stored, "<<m_genomeToTaxon.size()<<" available for translation:"<<endl;
 
-					cout<<"Warning, color "<<colorForPhylogeny<<" is not stored, "<<m_genomeToTaxon.size()<<" available for translation:"<<endl;
-
-					#ifdef VERBOSE
-					for(map<GenomeIdentifier,TaxonIdentifier>::iterator i=m_genomeToTaxon.begin();i!=m_genomeToTaxon.end();i++){
-						cout<<" "<<i->first<<"->"<<i->second;
+						#ifdef VERBOSE
+						for(map<GenomeIdentifier,TaxonIdentifier>::iterator i=m_genomeToTaxon.begin();i!=m_genomeToTaxon.end();i++){
+							cout<<" "<<i->first<<"->"<<i->second;
+						}
+						cout<<endl;
+						#endif
 					}
-					cout<<endl;
-					#endif
 
 					m_warnings.insert(colorForPhylogeny);
 
@@ -630,22 +628,30 @@ void PhylogenyViewer::classifySignal(vector<TaxonIdentifier>*taxons,int kmerCove
 
 		map<TaxonIdentifier,int> parentCount;
 
+		int found=0;
+
 		for(int i=0;i<(int)taxons->size();i++){
 			TaxonIdentifier taxon=taxons->at(i);
 
 			if(m_treeParents.count(taxon)==0){
+				
+				cout<<"Warning: Taxon "<<taxon<<" is not in the tree"<<endl;
 				continue;
 			}
 
 			TaxonIdentifier parent=getTaxonParent(taxon);
 
 			parentCount[parent]++;
+			found++;
 		}
 
 		if(parentCount.size()==1){ // only 1 common ancestor, easy
 			
 			#ifdef ASSERT
-			assert(parentCount.begin()->second == (int)taxons->size());
+			if(!(parentCount.begin()->second == found)){
+				cout<<"Error: taxons: "<<taxons->size()<<", parentCount: "<<parentCount.size()<<" 1 element with "<<parentCount.begin()->second<<" taxons"<<endl;
+			}
+			assert(parentCount.begin()->second == found);
 			#endif
 
 			TaxonIdentifier taxon=parentCount.begin()->first;
