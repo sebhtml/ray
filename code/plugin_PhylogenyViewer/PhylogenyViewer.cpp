@@ -508,7 +508,8 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 	if(m_totalNumberOfKmerObservations!=0)
 		ratio/=m_totalNumberOfKmerObservations;
 
-	(*stream)<<"<proportion>"<<ratio<<"</proportion></entry>"<<endl;
+	(*stream)<<"<proportion>"<<ratio<<"</proportion>";
+	(*stream)<<"<coloredProportion>-</coloredProportion></entry>"<<endl;
 
 	map<uint64_t,set<TaxonIdentifier> > sortedHits;
 
