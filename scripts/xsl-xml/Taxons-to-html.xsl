@@ -91,13 +91,19 @@ Total colored assembled k-mer observations:
 
 		<xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text>
 
-          	<span class="proportion"><xsl:value-of select="100* proportion"/>% <small>colored</small></span>
+          	<span class="proportion"><xsl:value-of select="100* coloredProportion"/>% <small>colored</small></span>
 	</div>
 
 <div class="observations">
           Assembled k-mer observations:
 <xsl:value-of select="assembledKmerObservations"/> / <xsl:value-of select="/root/totalAssembledKmerObservations"/>
 </div>
+
+<div class="observations">
+          Assembled k-mer observations (over colored tribe):
+<xsl:value-of select="assembledKmerObservations"/> / <xsl:value-of select="/root/totalColoredAssembledKmerObservations"/>
+</div>
+
 
           <div class="path">
 
