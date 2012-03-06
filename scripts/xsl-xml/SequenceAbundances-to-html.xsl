@@ -55,6 +55,13 @@ padding-left:5px;
 }
 
 </style>
+
+<title>
+Sample: <xsl:value-of select="root/sample"/>
+</title>
+
+
+
 </head>
   <body>
     <h1>Sample: <xsl:value-of select="root/sample"/></h1>
@@ -66,6 +73,10 @@ Total assembled k-mer observations:
 </div>
 
       <xsl:for-each select="root/entry">
+
+
+<xsl:if test="demultiplexedKmerObservations/text() != '0'">
+
 <div class="taxon">
           <div>
 		<span class="name">
@@ -85,6 +96,9 @@ Demultiplexed k-mer observations:
 </div>
 
 </div>
+
+</xsl:if>
+
       </xsl:for-each>
 
   </body>

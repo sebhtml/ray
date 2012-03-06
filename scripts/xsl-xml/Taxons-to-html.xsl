@@ -64,6 +64,14 @@ padding-left:5px;
 }
 
 </style>
+
+
+<title>
+Sample: <xsl:value-of select="root/sample"/>
+</title>
+
+
+
 </head>
   <body>
     <h1>Sample: <xsl:value-of select="root/sample"/></h1>
