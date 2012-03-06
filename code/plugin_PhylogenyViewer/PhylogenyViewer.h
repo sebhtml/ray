@@ -111,6 +111,8 @@ class PhylogenyViewer: public CorePlugin{
 	map<TaxonIdentifier,uint64_t> m_taxonObservations;
 	map<TaxonIdentifier,uint64_t> m_taxonObservationsMaster;
 
+	map<TaxonIdentifier,uint64_t> m_taxonRecursiveObservations;
+
 	TaxonIdentifier UNKNOWN_TAXON;
 
 	uint64_t m_unknown;
@@ -189,6 +191,7 @@ class PhylogenyViewer: public CorePlugin{
 	void showObservations_XML(ostream*stream);
 	void printTaxonPath_XML(TaxonIdentifier taxon,vector<TaxonIdentifier>*path,ostream*stream);
 	void printTaxon_XML(TaxonIdentifier taxon,ostream*stream);
+	uint64_t getRecursiveCount(TaxonIdentifier taxon);
 public:
 
 	void call_RAY_MASTER_MODE_PHYLOGENY_MAIN();

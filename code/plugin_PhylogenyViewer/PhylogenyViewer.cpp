@@ -18,6 +18,8 @@
 	see <http://www.gnu.org/licenses/>
 */
 
+#define DEBUG_RECURSION
+
 #include <plugin_PhylogenyViewer/PhylogenyViewer.h>
 #include <plugin_VerticesExtractor/GridTableIterator.h>
 #include <plugin_PhylogenyViewer/GenomeToTaxonLoader.h>
@@ -532,6 +534,12 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 
 			TaxonIdentifier taxon=*j;
 
+			uint64_t recursiveCount=getRecursiveCount(taxon);
+
+			if(count==0){
+				continue;
+			}
+
 			(*stream)<<"<entry>"<<endl;
 
 			printTaxon_XML(taxon,stream);
@@ -541,8 +549,10 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 			getTaxonPathFromRoot(taxon,&path);
 			printTaxonPath_XML(taxon,&path,stream);
 	
+			(*stream)<<"<self>"<<endl;
 			(*stream)<<"<assembledKmerObservations>"<<count<<"</assembledKmerObservations>";
-	
+
+
 			double ratio=count;
 			if(m_totalNumberOfKmerObservations!=0)
 				ratio/=m_totalNumberOfKmerObservations;
@@ -556,11 +566,67 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 			}
 
 			(*stream)<<"<coloredProportion>"<<coloredRatio<<"</coloredProportion>";
+			(*stream)<<"</self>"<<endl;
+
+			(*stream)<<"<recursive>";
+			(*stream)<<"<assembledKmerObservations>";
+			(*stream)<<recursiveCount;
+			(*stream)<<"</assembledKmerObservations>"<<endl;
+
+
+			double ratio2=recursiveCount;
+			if(m_totalNumberOfKmerObservations!=0)
+				ratio2/=m_totalNumberOfKmerObservations;
+	
+			(*stream)<<"<proportion>"<<ratio2<<"</proportion>";
+
+			double coloredRatio2=recursiveCount;
+
+			if(totalColoredAssembledKmerObservations!=0){
+				coloredRatio2/=totalColoredAssembledKmerObservations;
+			}
+
+			(*stream)<<"<coloredProportion>"<<coloredRatio2<<"</coloredProportion>";
+			(*stream)<<"</recursive>"<<endl;
+
 			(*stream)<<"</entry>"<<endl;
 		}
 	}
 
 	(*stream)<<"</root>"<<endl;
+}
+
+uint64_t PhylogenyViewer::getRecursiveCount(TaxonIdentifier taxon){
+
+	if(m_taxonRecursiveObservations.count(taxon)>0){
+
+		#ifdef DEBUG_RECURSION
+		cout<<"[fast return] for taxon "<<getTaxonName(taxon)<<" value= ";
+		cout<<m_taxonRecursiveObservations[taxon]<<endl;
+		#endif
+
+		return m_taxonRecursiveObservations[taxon];
+	}
+
+	uint64_t count=0;
+
+	if(m_taxonObservations.count(taxon)>0){
+		count=m_taxonObservations[taxon];
+	}
+
+	if(m_treeChildren.count(taxon)>0){
+		for(set<TaxonIdentifier>::iterator i=m_treeChildren[taxon].begin();
+			i!=m_treeChildren[taxon].end();i++){
+			
+			TaxonIdentifier child=*i;
+
+			count+=getRecursiveCount(child);
+		}
+	}
+
+	m_taxonRecursiveObservations[taxon]=count;
+
+	return count;
 }
 
 void PhylogenyViewer::showObservations(ostream*stream){

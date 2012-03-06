@@ -52,13 +52,11 @@ padding-left:10px;
 }
 
 .proportion{
-color: white;
-background: black;
-border-color: white;
-font-size: 48px;
+font-size: 14px;
 
 border-style:solid; 
 
+margin: 5px;
 padding-top:5px;
 padding-bottom:5px;
 padding-right:5px;
@@ -82,26 +80,49 @@ Total colored assembled k-mer observations:
 
       <xsl:for-each select="root/entry">
 <div class="taxon">
-          <div>
-		<span class="name"><xsl:value-of select="taxon/name"/></span>
+		<div class="name"><xsl:value-of select="taxon/name"/></div>
 
-		<xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text>
+<div>
+self
 
-          	<span class="proportion"><xsl:value-of select="100* proportion"/>% <small>assembled</small></span>
-
-		<xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text>
-
-          	<span class="proportion"><xsl:value-of select="100* coloredProportion"/>% <small>colored</small></span>
-	</div>
-
+          	<div class="proportion"><xsl:value-of select="100* self/proportion"/>% <small>assembled</small>
 <div class="observations">
           Assembled k-mer observations:
-<xsl:value-of select="assembledKmerObservations"/> / <xsl:value-of select="/root/totalAssembledKmerObservations"/>
+<xsl:value-of select="self/assembledKmerObservations"/> / <xsl:value-of select="/root/totalAssembledKmerObservations"/>
 </div>
+</div>
+
+
+
+          	<div class="proportion"><xsl:value-of select="100* self/coloredProportion"/>% <small>colored</small>
 
 <div class="observations">
           Assembled k-mer observations (over colored tribe):
-<xsl:value-of select="assembledKmerObservations"/> / <xsl:value-of select="/root/totalColoredAssembledKmerObservations"/>
+<xsl:value-of select="self/assembledKmerObservations"/> / <xsl:value-of select="/root/totalColoredAssembledKmerObservations"/>
+</div>
+</div>
+</div>
+
+<div>
+recursive
+
+          	<div class="proportion"><xsl:value-of select="100* recursive/proportion"/>% <small>assembled</small>
+<div class="observations">
+          Assembled k-mer observations:
+<xsl:value-of select="recursive/assembledKmerObservations"/> / <xsl:value-of select="/root/totalAssembledKmerObservations"/>
+</div>
+</div>
+
+
+
+          	<div class="proportion"><xsl:value-of select="100* recursive/coloredProportion"/>% <small>colored</small>
+
+<div class="observations">
+          Assembled k-mer observations (over colored tribe):
+<xsl:value-of select="recursive/assembledKmerObservations"/> / <xsl:value-of select="/root/totalColoredAssembledKmerObservations"/>
+</div>
+</div>
+
 </div>
 
 
@@ -120,6 +141,7 @@ Total colored assembled k-mer observations:
 </ul>
 
 </div>
+
 </div>
       </xsl:for-each>
 
