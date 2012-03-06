@@ -1028,8 +1028,6 @@ void Searcher::call_RAY_SLAVE_MODE_SEARCHER_CLOSE(){
 		fprintf(m_arrayOfFiles[directoryIterator],"</root>");
 		fclose(m_arrayOfFiles[directoryIterator]);
 
-		fprintf(m_arrayOfFilesShort[directoryIterator],"</root>");
-		fclose(m_arrayOfFilesShort[directoryIterator]);
 
 		cout<<"Closed file "<<m_directoryIterator<<" "<<m_fileIterator<<", active file descriptors: "<<m_activeFiles<<endl;
 
@@ -1037,7 +1035,6 @@ void Searcher::call_RAY_SLAVE_MODE_SEARCHER_CLOSE(){
 	}
 
 	m_arrayOfFiles.clear();
-	m_arrayOfFilesShort.clear();
 
 	#ifdef ASSERT
 	assert(m_activeFiles==0);
@@ -2982,22 +2979,10 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 		fileName<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
 		fileName<<baseName<<"/";
 		// add the file name without the .fasta
-		fileName<<"SequenceAbundancesRaw.xml";
+		fileName<<"SequenceAbundances.xml";
 
 		m_arrayOfFiles[directoryIterator]=fopen(fileName.str().c_str(),"w");
 		
-
-		// also create a shorter version of the file
-		ostringstream fileName2;
-		fileName2<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
-		fileName2<<baseName<<"/";
-		// add the file name without the .fasta
-		fileName2<<"SequenceAbundances.xml";
-
-
-		m_arrayOfFilesShort[directoryIterator]=fopen(fileName2.str().c_str(),"w");
-
-
 		#ifdef ASSERT
 		assert(m_activeFiles>=0); // it is 0 or 1 or something else
 		#endif
@@ -3015,9 +3000,6 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 	
 		content88<<"<totalAssembledKmerObservations>"<<m_totalNumberOfKmerObservations;
 		content88<<"</totalAssembledKmerObservations>"<<endl;
-
-		fprintf(m_arrayOfFilesShort[directoryIterator],
-			"%s",content88.str().c_str());
 
 		fprintf(m_arrayOfFiles[directoryIterator],
 			"%s",content88.str().c_str());
@@ -3105,7 +3087,6 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 
 		#ifdef ASSERT
 		assert(m_arrayOfFiles.count(directoryIterator)>0);
-		assert(m_arrayOfFilesShort.count(directoryIterator)>0);
 		#endif
 
 		fprintf(m_arrayOfFiles[directoryIterator],
@@ -3126,8 +3107,6 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 			content2<<"<proportion>"<<proportion<<"</proportion></entry>";
 			content2<<endl;
 
-			fprintf(m_arrayOfFilesShort[directoryIterator],
-				"%s",content2.str().c_str());
 		}
 	}
 
