@@ -511,86 +511,75 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 		ratio/=m_totalNumberOfKmerObservations;
 
 	(*stream)<<"<proportion>"<<ratio<<"</proportion>";
-	(*stream)<<"<coloredProportion>-</coloredProportion></entry>"<<endl;
+	(*stream)<<"<coloredProportion>0</coloredProportion></entry>"<<endl;
 
-	map<uint64_t,set<TaxonIdentifier> > sortedHits;
-
-	// create an index to print them in a sorted way
-	for(map<TaxonIdentifier,uint64_t>::iterator i=m_taxonObservations.begin();
-		i!=m_taxonObservations.end();i++){
+	for(map<TaxonIdentifier,string>::iterator i=m_taxonNames.begin();
+		i!=m_taxonNames.end();i++){
 
 		TaxonIdentifier taxon=i->first;
-		uint64_t count=i->second;
 
-		sortedHits[count].insert(taxon);
-	}
+		uint64_t count=0;
 
-	for(map<uint64_t,set<TaxonIdentifier> >::reverse_iterator i=sortedHits.rbegin();
-		i!=sortedHits.rend();i++){
-
-		uint64_t count=i->first;
-
-		for(set<TaxonIdentifier>::iterator j=i->second.begin();j!=i->second.end();j++){
-
-			TaxonIdentifier taxon=*j;
-
-			uint64_t recursiveCount=getRecursiveCount(taxon);
-
-			if(count==0){
-				continue;
-			}
-
-			(*stream)<<"<entry>"<<endl;
-
-			printTaxon_XML(taxon,stream);
-
-			vector<TaxonIdentifier> path;
-	
-			getTaxonPathFromRoot(taxon,&path);
-			printTaxonPath_XML(taxon,&path,stream);
-	
-			(*stream)<<"<self>"<<endl;
-			(*stream)<<"<assembledKmerObservations>"<<count<<"</assembledKmerObservations>";
-
-
-			double ratio=count;
-			if(m_totalNumberOfKmerObservations!=0)
-				ratio/=m_totalNumberOfKmerObservations;
-	
-			(*stream)<<"<proportion>"<<ratio<<"</proportion>";
-
-			double coloredRatio=count;
-
-			if(totalColoredAssembledKmerObservations!=0){
-				coloredRatio/=totalColoredAssembledKmerObservations;
-			}
-
-			(*stream)<<"<coloredProportion>"<<coloredRatio<<"</coloredProportion>";
-			(*stream)<<"</self>"<<endl;
-
-			(*stream)<<"<recursive>";
-			(*stream)<<"<assembledKmerObservations>";
-			(*stream)<<recursiveCount;
-			(*stream)<<"</assembledKmerObservations>"<<endl;
-
-
-			double ratio2=recursiveCount;
-			if(m_totalNumberOfKmerObservations!=0)
-				ratio2/=m_totalNumberOfKmerObservations;
-	
-			(*stream)<<"<proportion>"<<ratio2<<"</proportion>";
-
-			double coloredRatio2=recursiveCount;
-
-			if(totalColoredAssembledKmerObservations!=0){
-				coloredRatio2/=totalColoredAssembledKmerObservations;
-			}
-
-			(*stream)<<"<coloredProportion>"<<coloredRatio2<<"</coloredProportion>";
-			(*stream)<<"</recursive>"<<endl;
-
-			(*stream)<<"</entry>"<<endl;
+		if(m_taxonObservations.count(taxon)>0){
+			count=m_taxonObservations[taxon];
 		}
+
+		uint64_t recursiveCount=getRecursiveCount(taxon);
+
+		if(recursiveCount==0){
+			continue;
+		}
+
+		(*stream)<<"<entry>"<<endl;
+
+		printTaxon_XML(taxon,stream);
+
+		vector<TaxonIdentifier> path;
+
+		getTaxonPathFromRoot(taxon,&path);
+		printTaxonPath_XML(taxon,&path,stream);
+
+		(*stream)<<"<self>"<<endl;
+		(*stream)<<"<assembledKmerObservations>"<<count<<"</assembledKmerObservations>";
+
+
+		double ratio=count;
+		if(m_totalNumberOfKmerObservations!=0)
+			ratio/=m_totalNumberOfKmerObservations;
+
+		(*stream)<<"<proportion>"<<ratio<<"</proportion>";
+
+		double coloredRatio=count;
+
+		if(totalColoredAssembledKmerObservations!=0){
+			coloredRatio/=totalColoredAssembledKmerObservations;
+		}
+
+		(*stream)<<"<coloredProportion>"<<coloredRatio<<"</coloredProportion>";
+		(*stream)<<"</self>"<<endl;
+
+		(*stream)<<"<recursive>";
+		(*stream)<<"<assembledKmerObservations>";
+		(*stream)<<recursiveCount;
+		(*stream)<<"</assembledKmerObservations>"<<endl;
+
+
+		double ratio2=recursiveCount;
+		if(m_totalNumberOfKmerObservations!=0)
+			ratio2/=m_totalNumberOfKmerObservations;
+
+		(*stream)<<"<proportion>"<<ratio2<<"</proportion>";
+
+		double coloredRatio2=recursiveCount;
+
+		if(totalColoredAssembledKmerObservations!=0){
+			coloredRatio2/=totalColoredAssembledKmerObservations;
+		}
+
+		(*stream)<<"<coloredProportion>"<<coloredRatio2<<"</coloredProportion>";
+		(*stream)<<"</recursive>"<<endl;
+
+		(*stream)<<"</entry>"<<endl;
 	}
 
 	(*stream)<<"</root>"<<endl;
