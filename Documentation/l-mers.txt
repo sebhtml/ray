@@ -1,0 +1,102 @@
+2012-03-07/Sébastien Boisvert
+
+Given a sequence, a sliding window can be utilised to generated k-mers.
+
+
+Sequence:
+
+------------------------
+
+k-mers:
+
+***************
+ ***************
+  ***************
+   ***************
+    ***************
+     ***************
+      ***************
+       ***************
+        ***************
+         ***************
+          ***************
+
+
+This works for de novo assembly.
+
+But let's say we want to search for sequences in the de Bruijn 
+graph.
+
+
+Precisely, we want to search for a sequence
+that have some mismatches in respect to the sequence used for
+de novo assembly.
+
+So this is the sequence we are searching for:
+
+
+-----------X------------
+
+***********X***
+ **********X****
+  *********X*****
+   ********X******
+    *******X*******
+     ******X********
+      *****X*********
+       ****X**********
+        ***X***********
+         **X************
+          *X*************
+
+
+Since X is not in the k-mers in the graph, the sequence won't be detected.
+
+One way to deal with this is to build an index of l-mers, parts of k-mers.
+
+Each MPI rank has an array of all possible l-mers.
+
+irb(main):001:0> 4**5
+=> 1024
+irb(main):002:0> 4**10
+=> 1048576
+
+
+== Adding a k-mer entry to a l-mer entry ==
+
+
+add(l-mer,k-mer)
+	index=convertLmerToInteger(l-mer,lmerLength)
+
+	table[index].add(k-mer)
+
+
+The table is an array of managed k-mers (with defragmentation).
+
+
+
+== Searching for the closest k-mer in the graph ==
+
+If there is more than 1 hit with the same lowest score, take any.
+
+
+search(k-mer)
+	l-mers = GetLmersFromKmer(k-mer)
+
+	hits={}
+
+	for l-mer in l-mers
+		k-mers = table[index]
+		for j in k-mers
+			hits[j]++
+
+	return best hit
+
+The obvious problem here is that an entry in the table will contain a lot of k-mers.
+
+Otherwise, a k-mer could be sent to all MPI ranks so that they can search for it.
+But that would not be efficient at all.
+
+Send-to-all communication patterns are just bad.
+
+
