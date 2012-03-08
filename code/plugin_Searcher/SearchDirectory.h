@@ -77,6 +77,7 @@ class SearchDirectory{
 
 	bool lineIsSequenceHeader(char*line);
 
+	string filterName(string a);
 public:
 	void constructor(string path);
 

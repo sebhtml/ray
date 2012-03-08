@@ -474,7 +474,7 @@ string SearchDirectory::getCurrentSequenceName(){
 		#endif
 
 		//skip the '|' and the ' '
-		return currentSequenceHeader.substr(position,maximumLength);
+		return filterName(currentSequenceHeader.substr(position,maximumLength));
 	}
 
 	#endif
@@ -490,7 +490,7 @@ string SearchDirectory::getCurrentSequenceName(){
 	assert(currentSequenceHeader.length()>0);
 	#endif
 
-	return currentSequenceHeader.substr(1,maximumLength);
+	return filterName(currentSequenceHeader.substr(1,maximumLength));
 }
 
 // load in chunks
@@ -668,4 +668,14 @@ bool SearchDirectory::hasDirectory(int file){
 
 void SearchDirectory::setCreatedDirectory(int file){
 	m_createdDirectories.insert(file);
+}
+
+string SearchDirectory::filterName(string a){
+	for(int i=0;i<(int)a.length();i++){
+		if(a[i]=='<' || a[i]=='>' || a[i]=='&'){
+			a[i]='_';
+		}
+	}
+
+	return a;
 }
