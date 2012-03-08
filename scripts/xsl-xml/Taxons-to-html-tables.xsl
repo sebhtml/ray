@@ -67,6 +67,7 @@ Total colored assembled k-mer observations:
 
       <xsl:for-each select="root/entry">
 
+        <xsl:sort data-type="number" order="descending" select="recursive/assembledKmerObservations" />
 	<xsl:if test="taxon/rank/text() = 'kingdom'">
 
 	<tr><td><xsl:value-of select="taxon/name"/></td><td>
@@ -85,6 +86,8 @@ Total colored assembled k-mer observations:
 <th>Colored proportion</th></tr>
 
       <xsl:for-each select="root/entry">
+
+        <xsl:sort data-type="number" order="descending" select="recursive/assembledKmerObservations" />
 
 	<xsl:if test="taxon/rank/text() = 'phylum'">
 
@@ -106,6 +109,7 @@ Total colored assembled k-mer observations:
 
       <xsl:for-each select="root/entry">
 
+        <xsl:sort data-type="number" order="descending" select="recursive/assembledKmerObservations" />
 	<xsl:if test="taxon/rank/text() = 'class'">
 
 	<tr><td><xsl:value-of select="taxon/name"/></td><td>
@@ -127,6 +131,7 @@ Total colored assembled k-mer observations:
 
       <xsl:for-each select="root/entry">
 
+        <xsl:sort data-type="number" order="descending" select="recursive/assembledKmerObservations" />
 	<xsl:if test="taxon/rank/text() = 'order'">
 
 	<tr><td><xsl:value-of select="taxon/name"/></td><td>
@@ -149,6 +154,7 @@ Total colored assembled k-mer observations:
 
       <xsl:for-each select="root/entry">
 
+        <xsl:sort data-type="number" order="descending" select="recursive/assembledKmerObservations" />
 	<xsl:if test="taxon/rank/text() = 'family'">
 
 	<tr><td><xsl:value-of select="taxon/name"/></td><td>
@@ -170,6 +176,7 @@ Total colored assembled k-mer observations:
 
       <xsl:for-each select="root/entry">
 
+        <xsl:sort data-type="number" order="descending" select="recursive/assembledKmerObservations" />
 	<xsl:if test="taxon/rank/text() = 'genus'">
 
 	<tr><td><xsl:value-of select="taxon/name"/></td><td>
@@ -191,6 +198,7 @@ Total colored assembled k-mer observations:
 
       <xsl:for-each select="root/entry">
 
+        <xsl:sort data-type="number" order="descending" select="recursive/assembledKmerObservations" />
 	<xsl:if test="taxon/rank/text() = 'species'">
 
 	<tr><td><xsl:value-of select="taxon/name"/></td><td>
