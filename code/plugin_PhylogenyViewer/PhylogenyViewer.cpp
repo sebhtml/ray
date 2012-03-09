@@ -91,7 +91,7 @@ void PhylogenyViewer::call_RAY_MASTER_MODE_PHYLOGENY_MAIN(){
 
 		cout<<"Global observations"<<endl;
 	
-		showObservations(&cout);
+		//showObservations(&cout);
 
 		ostringstream hitFile;
 		hitFile<<m_parameters->getPrefix()<<"/BiologicalAbundances/_Taxonomy";
@@ -473,7 +473,7 @@ void PhylogenyViewer::gatherKmerObservations(){
 
 	cout<<"Taxon observations"<<endl;
 
-	showObservations(&cout);
+	//showObservations(&cout);
 
 	m_gatheredObservations=true;
 
@@ -714,6 +714,11 @@ void PhylogenyViewer::classifySignal(vector<TaxonIdentifier>*taxons,int kmerCove
 
 			m_taxonObservations[taxon]+=kmerCoverage; // case 3.
 
+			return;
+		}
+
+		if(parentCount.size()==0){
+			cout<<"Error, no parents, returning now."<<endl;
 			return;
 		}
 
