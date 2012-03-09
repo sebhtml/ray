@@ -219,6 +219,41 @@ void ColorSet::printSummary(ostream*out){
 	(*out)<<"  OPERATION_purgeVirtualColor  operations: "<<m_operations[OPERATION_purgeVirtualColor]<<endl;
 	(*out)<<"**********************************************************"<<endl;
 	(*out)<<endl;
+
+	// print frequencies
+	
+	map<int,uint64_t>  referenceFrequencies;
+	map<int,uint64_t> colorFrequencies;
+
+
+	for(int i=0;i< (int)getTotalNumberOfVirtualColors();i++){
+		uint64_t references=getVirtualColor(i)->getNumberOfReferences();
+
+		referenceFrequencies[references]++;
+
+		set<PhysicalKmerColor>*colors=getVirtualColor(i)->getPhysicalColors();
+
+		colorFrequencies[colors->size()]++;
+	}
+
+	(*out)<<endl;
+	(*out)<<"<referencesPerVirtualColor><frequencies>"<<endl;
+
+	for(map<int,uint64_t>::iterator i=referenceFrequencies.begin();i!=referenceFrequencies.end();
+		i++){
+		
+		(*out)<<i->first<<"	"<<i->second<<endl;
+	}
+	(*out)<<"</frequencies></referencesPerVirtualColor>"<<endl;
+
+	(*out)<<"<physicalColorsPerVirtualColor><frequencies>"<<endl;
+
+	for(map<int,uint64_t>::iterator i=colorFrequencies.begin();i!=colorFrequencies.end();
+		i++){
+		
+		(*out)<<i->first<<"	"<<i->second<<endl;
+	}
+	(*out)<<"</frequencies></physicalColorsPerVirtualColor>"<<endl;
 }
 
 void ColorSet::printColors(ostream*out){
