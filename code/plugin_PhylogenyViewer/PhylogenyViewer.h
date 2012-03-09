@@ -192,6 +192,10 @@ class PhylogenyViewer: public CorePlugin{
 	void printTaxonPath_XML(TaxonIdentifier taxon,vector<TaxonIdentifier>*path,ostream*stream);
 	void printTaxon_XML(TaxonIdentifier taxon,ostream*stream);
 	uint64_t getRecursiveCount(TaxonIdentifier taxon);
+
+	void populateRanks(map<string,uint64_t>*rankSelfObservations,
+		map<string,uint64_t>*rankRecursiveObservations);
+	uint64_t getSelfCount(TaxonIdentifier taxon);
 public:
 
 	void call_RAY_MASTER_MODE_PHYLOGENY_MAIN();

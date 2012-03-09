@@ -73,7 +73,7 @@ Total colored assembled k-mer observations:
 	<tr><td><xsl:value-of select="taxon/name"/></td><td>
 
 <xsl:value-of select="recursive/assembledKmerObservations"/> </td><td>
-          	<xsl:value-of select="100* recursive/coloredProportion"/>%
+          	<xsl:value-of select="100* recursive/coloredProportionInRank"/>%
 </td></tr>
 </xsl:if>
 
@@ -94,7 +94,7 @@ Total colored assembled k-mer observations:
 	<tr><td><xsl:value-of select="taxon/name"/></td><td>
 
 <xsl:value-of select="recursive/assembledKmerObservations"/> </td><td>
-          	<xsl:value-of select="100* recursive/coloredProportion"/>%
+          	<xsl:value-of select="100* recursive/coloredProportionInRank"/>%
 </td></tr>
 </xsl:if>
 
@@ -115,7 +115,7 @@ Total colored assembled k-mer observations:
 	<tr><td><xsl:value-of select="taxon/name"/></td><td>
 
 <xsl:value-of select="recursive/assembledKmerObservations"/> </td><td>
-          	<xsl:value-of select="100* recursive/coloredProportion"/>%
+          	<xsl:value-of select="100* recursive/coloredProportionInRank"/>%
 </td></tr>
 </xsl:if>
 
@@ -137,7 +137,7 @@ Total colored assembled k-mer observations:
 	<tr><td><xsl:value-of select="taxon/name"/></td><td>
 
 <xsl:value-of select="recursive/assembledKmerObservations"/> </td><td>
-          	<xsl:value-of select="100* recursive/coloredProportion"/>%
+          	<xsl:value-of select="100* recursive/coloredProportionInRank"/>%
 </td></tr>
 </xsl:if>
 
@@ -160,7 +160,7 @@ Total colored assembled k-mer observations:
 	<tr><td><xsl:value-of select="taxon/name"/></td><td>
 
 <xsl:value-of select="recursive/assembledKmerObservations"/> </td><td>
-          	<xsl:value-of select="100* recursive/coloredProportion"/>%
+          	<xsl:value-of select="100* recursive/coloredProportionInRank"/>%
 </td></tr>
 </xsl:if>
 
@@ -182,7 +182,7 @@ Total colored assembled k-mer observations:
 	<tr><td><xsl:value-of select="taxon/name"/></td><td>
 
 <xsl:value-of select="recursive/assembledKmerObservations"/> </td><td>
-          	<xsl:value-of select="100* recursive/coloredProportion"/>%
+          	<xsl:value-of select="100* recursive/coloredProportionInRank"/>%
 </td></tr>
 </xsl:if>
 
@@ -204,7 +204,7 @@ Total colored assembled k-mer observations:
 	<tr><td><xsl:value-of select="taxon/name"/></td><td>
 
 <xsl:value-of select="recursive/assembledKmerObservations"/> </td><td>
-          	<xsl:value-of select="100* recursive/coloredProportion"/>%
+          	<xsl:value-of select="100* recursive/coloredProportionInRank"/>%
 </td></tr>
 </xsl:if>
 
