@@ -92,7 +92,7 @@ void Searcher::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS(Message*messa
 	int count=message->getCount();
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(count*sizeof(uint64_t));
 
-	int period=KMER_U64_ARRAY_SIZE+2;
+	int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS);
 
 	int outputPosition=0;
 
@@ -104,6 +104,7 @@ void Searcher::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS(Message*messa
 
 		Vertex*node=m_subgraph->find(&vertex);
 
+		int position=(int)incoming[bufferPosition++];
 		outputPosition+=KMER_U64_ARRAY_SIZE;
 
 		// if it is not there, then it has a coverage of 0
@@ -119,6 +120,7 @@ void Searcher::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS(Message*messa
 			numberOfPhysicalColors=physicalColors->size();
 		}
 
+		message2[outputPosition++]=position;
 		message2[outputPosition++]=coverage;
 		message2[outputPosition++]=numberOfPhysicalColors;
 	}
@@ -515,22 +517,16 @@ void Searcher::createRootDirectories(){
 	createDirectory(frequencyDirectory.c_str());
 
 	if(m_writeDetailedFiles){
-		ostringstream directory3;
-		directory3<<m_parameters->getPrefix()<<"/BiologicalAbundances/_DeNovoAssembly/Contigs";
-		string directory3Str=directory3.str();
-		createDirectory(directory3Str.c_str());
-
 		ostringstream directory4;
-		directory4<<m_parameters->getPrefix()<<"/BiologicalAbundances/_DeNovoAssembly/Contigs/Coverage";
+		directory4<<m_parameters->getPrefix()<<"/BiologicalAbundances/_DeNovoAssembly/Coverage";
 		string directory4Str=directory4.str();
 		createDirectory(directory4Str.c_str());
 
 		ostringstream directory5;
-		directory5<<m_parameters->getPrefix()<<"/BiologicalAbundances/_DeNovoAssembly/Contigs/CoverageDistribution";
+		directory5<<m_parameters->getPrefix()<<"/BiologicalAbundances/_DeNovoAssembly/CoverageDistribution";
 		string directory5Str=directory5.str();
 		createDirectory(directory5Str.c_str());
 	}
-
 }
 
 void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
@@ -636,13 +632,32 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 
 		m_waitingForAbundanceReply=false;
 
-		m_writeDetailedFiles=m_parameters->hasOption("-search-detailed");
-
 		// this is not implemented
-		m_writeDetailedFiles=false;
+		// 2012-03-09: this is always enabled.
+		m_writeDetailedFiles=true;
+
+		if(m_writeDetailedFiles){
+			ostringstream file2;
+			file2<<m_parameters->getPrefix()<<"/BiologicalAbundances/_DeNovoAssembly/";
+			file2<<m_parameters->getRank()<<".CoverageData.xml";
+
+			m_currentCoverageFile.open(file2.str().c_str());
+
+			m_currentCoverageFile<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"<<endl;
+			m_currentCoverageFile<<"<root>"<<endl;
+		}
 
 	// we have finished our part
 	}else if(m_contig == (int) m_contigs->size()){
+
+		/* close the XML file */
+		if(m_writeDetailedFiles){
+	
+			m_currentCoverageFile<<"</root>"<<endl;
+
+			m_currentCoverageFile.close();
+		}
+
 		m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
 
 		#ifdef CONFIG_CONTIG_ABUNDANCE_VERBOSE
@@ -665,22 +680,28 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		cout<<"Closing file"<<endl;
 		#endif
 
-		if(m_writeDetailedFiles){
-			m_currentCoverageFile.close();
-		}
-
-		// write the coverage distribution
-		ostringstream file1;
-		file1<<m_parameters->getPrefix()<<"/BiologicalAbundances/_DeNovoAssembly/Contigs/CoverageDistribution/contig-"<<contigName<<".tsv";
-
 		#ifdef CONFIG_DEBUG_IOPS
 		cout<<"Opening file"<<endl;
 		#endif
 
-		ofstream f1;
-		if(m_writeDetailedFiles){
-			f1.open(file1.str().c_str());
-			f1<<"#KmerCoverage	Count"<<endl;
+		if(m_writeDetailedFiles){ /* now we write coverage frequencies */
+
+			for(int i=0;i<(int)m_coverageValues.size();i++){
+				int position=i;
+				int coverage=m_coverageValues[position];
+				int colors=m_colorValues[position];
+
+				#ifdef ASSERT
+				assert(coverage>=2);
+				assert(colors>=0);
+				#endif
+
+				m_currentCoverageFile<<position<<"	"<<coverage<<"	"<<colors<<endl;
+			}
+
+			m_currentCoverageFile<<"</coverageDepths>"<<endl;
+			m_currentCoverageFile<<"<coverageFrequencies>"<<endl;
+			m_currentCoverageFile<<"#KmerCoverage	Count"<<endl;
 		}
 
 		int mode=0;
@@ -693,7 +714,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 			int coverage=i->first;
 
 			if(m_writeDetailedFiles){
-				f1<<coverage<<"	"<<count<<endl;
+				m_currentCoverageFile<<coverage<<"	"<<count<<endl;
 			}
 
 			if(count>modeCount){
@@ -704,15 +725,16 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 			sum+=coverage*count;
 			totalCount+=count;
 		}
+	
+		if(m_writeDetailedFiles){
+			m_currentCoverageFile<<"</coverageFrequencies></contig>"<<endl;
+		}
 
 		double mean=sum;
 
 		if(totalCount>0)
 			mean=(0.0+sum)/totalCount;
 
-		if(m_writeDetailedFiles){
-			f1.close();
-		}
 
 		#ifdef CONFIG_DEBUG_IOPS
 		cout<<"Closing file"<<endl;
@@ -793,10 +815,19 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 				if(m_writeDetailedFiles){
 
 					uint64_t contigName=m_contigNames->at(m_contig);
-					ostringstream file2;
-					file2<<m_parameters->getPrefix()<<"/BiologicalAbundances/m_DeNovoAssembly/Contigs/Coverage/contig-"<<contigName<<".tsv";
 
-					m_currentCoverageFile.open(file2.str().c_str());
+					int length=(*m_contigs)[m_contig].size();
+					m_coverageValues.resize(length);
+					m_colorValues.resize(length);
+
+					for(int i=0;i<(int)length;i++){
+						m_coverageValues[i]=-1;
+						m_colorValues[i]=-1;
+					}
+
+					m_currentCoverageFile<<"<contig><name>contig-"<<contigName<<"</name>";
+					m_currentCoverageFile<<"<lengthInKmers>"<<length<<"</lengthInKmers>"<<endl;
+					m_currentCoverageFile<<"<coverageDepths>"<<endl;
 					m_currentCoverageFile<<"#KmerPosition	KmerCoverage"<<endl;
 				}
 			}
@@ -813,20 +844,29 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 
 			// get the kmer
 			Kmer*kmer=&((*m_contigs)[m_contig][m_contigPosition]);
-			m_contigPosition++;
 
 			int rankToFlush=m_parameters->_vertexRank(kmer);
 
-			int period=KMER_U64_ARRAY_SIZE+2;
+			int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS);
+			int added=0;
 
 			// pack the k-mer
 			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 				m_bufferedData.addAt(rankToFlush,kmer->getU64(i));
+				added++;
 			}
 
-			// do some padding
-			m_bufferedData.addAt(rankToFlush,0);
-			m_bufferedData.addAt(rankToFlush,0);
+			m_bufferedData.addAt(rankToFlush,m_contigPosition);
+			added++;
+
+			while(added<period){
+
+				m_bufferedData.addAt(rankToFlush,0);
+				added++;
+			}
+
+
+			m_contigPosition++;
 
 			// force flush the message
 			if(m_bufferedData.flush(rankToFlush,period,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS,m_outboxAllocator,m_outbox,
@@ -874,13 +914,15 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		assert(m_pendingMessages==0);
 		#endif
 
-		int period=KMER_U64_ARRAY_SIZE+2;
+		int period=KMER_U64_ARRAY_SIZE+3;
 
 		// iterate over the coverage values
 		for(int i=0;i<count;i+=period){
 
 			int bufferPosition=i;
 			bufferPosition+=KMER_U64_ARRAY_SIZE;
+
+			int position=(int)buffer[bufferPosition++];
 
 			// get the coverage.
 			int coverage=buffer[bufferPosition++];
@@ -897,7 +939,8 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 			}
 
 			if(m_writeDetailedFiles){
-				m_currentCoverageFile<<"Unknown"<<"	"<<coverage<<endl;
+				m_coverageValues[position]=coverage;
+				m_colorValues[position]=colors;
 			}
 		}
 
@@ -3481,6 +3524,8 @@ void Searcher::resolveSymbols(ComputeCore*core){
 	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_GET_COVERAGE_AND_PATHS, KMER_U64_ARRAY_SIZE+1+1+1+1+3+4*3 );
 
 	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_ADD_KMER_COLOR, KMER_U64_ARRAY_SIZE+2 );
+
+	core->setMessageTagSize(m_plugin,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS,KMER_U64_ARRAY_SIZE+3);
 
 	/* RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS is the entry point */
 

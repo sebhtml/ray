@@ -1210,11 +1210,6 @@ void Parameters::showUsage(){
 
 	cout<<endl;
 	
-/*
-	showOption("-search-detailed","Turns on detailed search. This will generate numerous sequences and may crash your file system.");
-	showOptionDescription("Disabled by default.");
-	cout<<endl;
-*/
 
 	cout<<"  Outputs"<<endl;
 	cout<<endl;

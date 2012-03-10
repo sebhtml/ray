@@ -260,6 +260,11 @@ class Searcher :  public CorePlugin {
 
 	/** file to write coverage distribution */
 	ofstream m_currentCoverageFile;
+
+	/** a vector to store coverage values */
+	vector<int> m_coverageValues;
+	vector<int> m_colorValues;
+
 	bool m_waitingForAbundanceReply;
 
 	map<int,uint64_t> m_coverageDistribution;
