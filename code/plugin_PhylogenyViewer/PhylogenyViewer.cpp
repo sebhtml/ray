@@ -340,7 +340,8 @@ void PhylogenyViewer::loadTree(){
 	// load taxonNames
 	loadTaxonNames();
 
-	testPaths();
+	// don't test paths in production
+	//testPaths();
 
 	m_loadedTree=true;
 
@@ -464,6 +465,10 @@ void PhylogenyViewer::gatherKmerObservations(){
 		frequencies[count]++;
 	}
 	
+/*
+ *
+ * TODO: move this in colored operation files
+ *
 	cout<<endl;
 	cout<<"Taxon frequencies (only one DNA strand selected)"<<endl;
 	cout<<"Count	Frequency"<<endl;
@@ -472,6 +477,7 @@ void PhylogenyViewer::gatherKmerObservations(){
 	}
 
 	cout<<"Taxon observations"<<endl;
+*/
 
 	//showObservations(&cout);
 
