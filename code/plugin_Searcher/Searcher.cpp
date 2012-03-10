@@ -687,7 +687,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		if(m_writeDetailedFiles){ /* now we write coverage frequencies */
 
 			for(int i=0;i<(int)m_coverageValues.size();i++){
-				int position=i;
+				int position=i+1;
 				int coverage=m_coverageValues[position];
 				int colors=m_colorValues[position];
 
@@ -828,7 +828,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 					m_currentCoverageFile<<"<contig><name>contig-"<<contigName<<"</name>";
 					m_currentCoverageFile<<"<lengthInKmers>"<<length<<"</lengthInKmers>"<<endl;
 					m_currentCoverageFile<<"<coverageDepths>"<<endl;
-					m_currentCoverageFile<<"#KmerPosition	KmerCoverage"<<endl;
+					m_currentCoverageFile<<"#KmerPosition	KmerCoverage	PhysicalColors"<<endl;
 				}
 			}
 	
