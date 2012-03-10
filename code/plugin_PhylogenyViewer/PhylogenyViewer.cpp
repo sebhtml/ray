@@ -859,7 +859,7 @@ TaxonIdentifier PhylogenyViewer::findCommonAncestor(vector<TaxonIdentifier>*taxo
 
 		if(blocked==(int)currentTaxons.size()){ // this will happen if it is not a tree
 			
-			cout<<"Error, this is not a tree..."<<endl;
+			cout<<"Error, this is not a tree, blocked: "<<blocked<<" currentTaxons: "<<currentTaxons.size()<<endl;
 			break;
 		}
 	}
