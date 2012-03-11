@@ -688,8 +688,8 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 
 			for(int i=0;i<(int)m_coverageValues.size();i++){
 				int position=i+1;
-				int coverage=m_coverageValues[position];
-				int colors=m_colorValues[position];
+				int coverage=m_coverageValues[i];
+				int colors=m_colorValues[i];
 
 				#ifdef ASSERT
 				assert(coverage>=2);
