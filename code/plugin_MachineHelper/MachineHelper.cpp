@@ -241,7 +241,9 @@ void MachineHelper::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES (){
 	outputFile<<"PeakCoverage:\t"<<m_parameters->getPeakCoverage()<<endl;
 	outputFile<<"RepeatCoverage:\t"<<m_parameters->getRepeatCoverage()<<endl;
 	outputFile<<"Number of k-mers with at least MinimumCoverage:\t"<<genomeKmers<<" k-mers"<<endl;
-	outputFile<<"Estimated genome length:\t"<<genomeKmers/2<<" nucleotides"<<endl;
+
+	// don't report this as it is not accurate with the new algorithms
+	//outputFile<<"Estimated genome length:\t"<<genomeKmers/2<<" nucleotides"<<endl;
 	outputFile<<"Percentage of vertices with coverage "<<lowestCoverage<<":\t"<<percentageSeenOnce<<" %"<<endl;
 	outputFile<<"DistributionFile: "<<file<<endl;
 
