@@ -56,6 +56,8 @@ Total assembled k-mer observations:
 
       <xsl:for-each select="root/entry">
 
+        <xsl:sort data-type="number" order="descending" select="demultiplexedKmerObservations" />
+
 <xsl:if test="demultiplexedKmerObservations/text() != '0'">
 
 <tr><td>
