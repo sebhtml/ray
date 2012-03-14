@@ -89,25 +89,35 @@ void PhylogenyViewer::call_RAY_MASTER_MODE_PHYLOGENY_MAIN(){
 		m_unknown=m_unknownMaster;
 		m_taxonObservations=m_taxonObservationsMaster;
 
-		cout<<"Global observations"<<endl;
+		//cout<<"Global observations"<<endl;
 	
 		//showObservations(&cout);
 
 		ostringstream hitFile;
 		hitFile<<m_parameters->getPrefix()<<"/BiologicalAbundances/_Taxonomy";
 
-		createDirectory(hitFile.str().c_str());
+		string directory=hitFile.str();
+		//cout<<"Before createDirectory "<<directory<<endl;
+		createDirectory(directory.c_str());
 
 		hitFile<<"/Taxons.xml";
 
-		ofstream f(hitFile.str().c_str());
+		string file=hitFile.str();
+		ofstream f(file.c_str());
 
+		#ifdef ASSERT
+		assert(f.is_open());
+		#endif
+
+		//cout<<"Before showObservations_XML"<<endl;
 		showObservations_XML(&f);
 
+		//cout<<"Before f.close"<<endl;
 		f.close();
 
 		m_timePrinter->printElapsedTime("Loading tree");
 
+		//cout<<"Before closeMasterMode"<<endl;
 		m_switchMan->closeMasterMode();
 	}
 }

@@ -116,6 +116,9 @@ class Parameters{
 	bool m_showExtensionChoice;
 
 	void getIndexes(int count,vector<int>*out);
+
+	string getBaseName(string directory);
+	bool isDirectorySeparator(char a);
 public:
 	Parameters();
 	string getReceivedMessagesFile();

@@ -1663,40 +1663,31 @@ string Parameters::getTaxonNameFile(){
 string Parameters::getSampleName(){
 	string sample=getPrefix();
 
-	/* start is 0 if the only '/' is at the end 
- *  	otherwise, start is like using the command line 'basename' */
-	int start=0;
-
-	int numberOfSlashes=0;
-
-	for(int i=0;i<(int)sample.length();i++){
-		if(sample[i]=='/'){
-			numberOfSlashes++;
-		}
-	}
-
-	if(numberOfSlashes>=2){
-		numberOfSlashes=0;
-		int position=sample.length()-1;
-		while(position>=0){
-			if(sample[position]=='/'){
-				if(numberOfSlashes==1){ /* this is the second slash */
-					position++; /* move past the second '/' from the end  */
-					break; /* end the loop */
-				}
-
-				numberOfSlashes++;
-				position--;
-			}
-		}
-	}
-
-	int end=sample.length()-1;
-	end--; // remove the trailing '/' added by getPrefix()
-
-	int length=end-start+1;
-
-	return sample.substr(start,length);
+	return getBaseName(sample);
 }
 
+string Parameters::getBaseName(string directory){
 
+	int last=directory.length()-1;
+	while(last>0 && isDirectorySeparator(directory[last])){
+		last--;
+	}
+
+	int first=last;
+	while(first>0 && !isDirectorySeparator(directory[first])){
+		first--;
+	}
+
+	if(isDirectorySeparator(directory[first])){
+		first++;
+	}
+
+	int length=last-first+1;
+
+	return directory.substr(first,length);
+}
+
+bool Parameters::isDirectorySeparator(char a){
+	/* POSIX or Redmond separator */
+	return a=='/' || a=='\\';
+}
