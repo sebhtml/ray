@@ -22,6 +22,7 @@
 */
 
 //#define DEBUG_NEIGHBOURHOOD_COMMUNICATION
+//#define DEBUG_NEIGHBOURHOOD_PATHS
 
 #include <plugin_GenomeNeighbourhood/GenomeNeighbourhood.h>
 
@@ -42,12 +43,47 @@ void GenomeNeighbourhood::processLinks(int mode){
 	Kmer currentKmer=m_stackOfVertices.top();
 	int depth=m_stackOfDepths.top();
 
-	if(!m_linksRequested){
+	if(!m_numberOfPathsRequested){
+
+		// send a message to request the links of the current vertex
+		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
+		int bufferPosition=0;
+		currentKmer.pack(buffer,&bufferPosition);
+	
+		Rank destination=m_parameters->_vertexRank(&currentKmer);
+
+		Message aMessage(buffer,m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE),
+			destination,RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,m_rank);
+
+		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
+
+		m_numberOfPathsReceived=false;
+
+		// keep up the good work for now
+		m_linksRequested=false;
+		m_linksReceived=false;
+
+		m_numberOfPathsRequested=true;
+
+	}else if(!m_numberOfPathsReceived && m_virtualCommunicator->isMessageProcessed(m_workerId)){
+
+		vector<uint64_t> elements;
+		m_virtualCommunicator->getMessageResponseElements(m_workerId,&elements);
+
+		m_paths=elements[0];
+
+		#ifdef DEBUG_NEIGHBOURHOOD_PATHS
+		cout<<"Number of paths: "<<m_paths<<endl;
+		#endif
+
+		m_numberOfPathsReceived=true;
+		
+
+	}else if(m_numberOfPathsReceived && !m_linksRequested){
 
 		#ifdef DEBUG_NEIGHBOURHOOD_COMMUNICATION
 		cout<<"Sending message RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT to "<<endl;
 		#endif
-
 
 		// send a message to request the links of the current vertex
 		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
@@ -63,19 +99,18 @@ void GenomeNeighbourhood::processLinks(int mode){
 
 		m_linksRequested=true;
 		m_linksReceived=false;
-		m_visited.insert(currentKmer);
 
 		#ifdef DEBUG_NEIGHBOURHOOD_COMMUNICATION
 		cout<<"Message sent, RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT, will wait for a reply "<<endl;
 		#endif
 
 
-	}else if(!m_linksReceived && m_virtualCommunicator->isMessageProcessed(m_workerId)){
+	}else if(m_numberOfPathsReceived &&
+		!m_linksReceived && m_virtualCommunicator->isMessageProcessed(m_workerId)){
 
 		#ifdef DEBUG_NEIGHBOURHOOD_COMMUNICATION
 		cout<<"Message received, RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT"<<endl;
 		#endif
-
 
 		vector<uint64_t> elements;
 		m_virtualCommunicator->getMessageResponseElements(m_workerId,&elements);
@@ -103,6 +138,8 @@ void GenomeNeighbourhood::processLinks(int mode){
 		// remove the current vertex from the stack
 		m_stackOfVertices.pop();
 		m_stackOfDepths.pop();
+
+		m_visited.insert(currentKmer);
 
 		// add new links
 		
@@ -141,10 +178,9 @@ void GenomeNeighbourhood::processLinks(int mode){
 		m_linksReceived=true;
 
 	}else if(m_linksRequested && m_linksReceived){
-
-		// keep up the good work for now
-		m_linksRequested=false;
-		m_linksReceived=false;
+		
+		// restart the adventure
+		m_numberOfPathsRequested=false;
 	}
 }
 
@@ -178,7 +214,8 @@ void GenomeNeighbourhood::processSide(int mode){
 
 		createStacks(kmer);
 
-		m_linksRequested=false;
+		m_numberOfPathsRequested=false;
+
 		m_visited.clear();
 		m_maximumDepth=1024;
 
@@ -366,6 +403,7 @@ void GenomeNeighbourhood::resolveSymbols(ComputeCore*core){
 
 	RAY_MPI_TAG_NEIGHBOURHOOD=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_NEIGHBOURHOOD");
 	RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT");
+	RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE");
 
 	core->setMasterModeToMessageTagSwitch(m_plugin,RAY_MASTER_MODE_NEIGHBOURHOOD,RAY_MPI_TAG_NEIGHBOURHOOD);
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_NEIGHBOURHOOD,RAY_SLAVE_MODE_NEIGHBOURHOOD);

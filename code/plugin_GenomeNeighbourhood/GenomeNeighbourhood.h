@@ -73,6 +73,9 @@ class GenomeNeighbourhood: public CorePlugin{
 	int m_maximumDepth;
 	bool m_linksRequested;
 	bool m_linksReceived;
+	int m_paths;
+	bool m_numberOfPathsRequested;
+	bool m_numberOfPathsReceived;
 
 	/* virtual communication */
 	VirtualCommunicator*m_virtualCommunicator;
@@ -92,6 +95,7 @@ class GenomeNeighbourhood: public CorePlugin{
 
 	MessageTag RAY_MPI_TAG_NEIGHBOURHOOD;
 	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
+	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE;
 
 	Adapter_RAY_SLAVE_MODE_NEIGHBOURHOOD m_adapter_RAY_SLAVE_MODE_NEIGHBOURHOOD;
 	Adapter_RAY_MASTER_MODE_NEIGHBOURHOOD m_adapter_RAY_MASTER_MODE_NEIGHBOURHOOD;
