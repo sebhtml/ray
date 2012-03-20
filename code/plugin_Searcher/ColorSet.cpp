@@ -179,7 +179,7 @@ uint64_t ColorSet::getTotalNumberOfVirtualColors(){
 	return m_virtualColors.size();
 }
 
-void ColorSet::printSummary(ostream*out){
+void ColorSet::printSummary(ostream*out,bool xml){
 
 	(*out)<<endl;
 	(*out)<<"**********************************************************"<<endl;
@@ -219,6 +219,10 @@ void ColorSet::printSummary(ostream*out){
 	(*out)<<"  OPERATION_purgeVirtualColor  operations: "<<m_operations[OPERATION_purgeVirtualColor]<<endl;
 	(*out)<<"**********************************************************"<<endl;
 	(*out)<<endl;
+
+	if(!xml){
+		return;
+	}
 
 	// print frequencies
 	

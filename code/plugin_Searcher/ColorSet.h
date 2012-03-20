@@ -133,7 +133,7 @@ public:
 	int getTotalNumberOfPhysicalColors();
 	uint64_t getTotalNumberOfVirtualColors();
 
-	void printSummary(ostream*out);
+	void printSummary(ostream*out,bool xml);
 	void printColors(ostream*out);
 
 	set<PhysicalKmerColor>*getPhysicalColors(VirtualKmerColorHandle handle);

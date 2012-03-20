@@ -1134,7 +1134,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		summaryFile<<m_parameters->getPrefix()<<"/BiologicalAbundances/_Coloring/"<<m_parameters->getRank()<<".Operations.txt";
 		ofstream f1(summaryFile.str().c_str());
 
-		m_colorSet.printSummary(&f1);
+		m_colorSet.printSummary(&f1,true);
 
 		f1.close();
 
@@ -2274,7 +2274,7 @@ void Searcher::showProcessedKmers(){
 	if(m_switchMan->getSlaveMode()==RAY_SLAVE_MODE_ADD_COLORS){
 		
 
-		m_colorSet.printSummary(&cout);
+		m_colorSet.printSummary(&cout,false);
 		//m_colorSet.printColors();
 	}
 
