@@ -319,8 +319,32 @@ void Machine::start(){
 		m_timePrinter.setFile(m_parameters.getPrefix());
 	}
 
+	cout<<endl;
+
 	// register the plugins.
 	registerPlugins();
+
+	cout<<endl;
+	
+	// write a report about plugins
+	if(m_parameters.getRank()==MASTER_RANK){
+		ostringstream directory;
+		directory<<m_parameters.getPrefix()<<"/Plugins";
+
+		string file=directory.str();
+		createDirectory(file.c_str());
+	
+		m_computeCore.printPlugins(file);
+
+		// write the version of RayPlatform
+		
+		ostringstream versionFile;
+		versionFile<<m_parameters.getPrefix()<<"/RayPlatform_Version.txt";
+
+		ofstream f7(versionFile.str().c_str());
+		f7<<"RayPlatform "<<m_computeCore.getRayPlatformVersion()<<endl;
+		f7.close();
+	}
 
 	ostringstream routingPrefix;
 	routingPrefix<<m_parameters.getPrefix()<<"/Routing/";
@@ -724,59 +748,32 @@ void Machine::showRayVersion(MessagesHandler*messagesHandler,bool fullReport){
 }
 
 void Machine::registerPlugins(){
-	cout<<endl;
 
 	m_computeCore.registerPlugin(&m_helper);
 	m_computeCore.registerPlugin(&m_mp);
 	m_computeCore.registerPlugin(&m_networkTest);
 	m_computeCore.registerPlugin(&m_partitioner);
 	m_computeCore.registerPlugin(&m_sl);
-
 	m_computeCore.registerPlugin(&m_kmerAcademyBuilder);
 	m_computeCore.registerPlugin(&m_coverageGatherer);
 	m_computeCore.registerPlugin(&m_verticesExtractor);
 	m_computeCore.registerPlugin(&m_edgePurger);
-
 	m_computeCore.registerPlugin(&m_si);
 	m_computeCore.registerPlugin(m_seedingData);
 	m_computeCore.registerPlugin(&m_library);
-
 	m_computeCore.registerPlugin(&m_seedExtender);
-
 	m_computeCore.registerPlugin(m_fusionData);
 	m_computeCore.registerPlugin(&m_fusionTaskCreator);
 	m_computeCore.registerPlugin(&m_joinerTaskCreator);
-
 	m_computeCore.registerPlugin(&m_amos);
 	m_computeCore.registerPlugin(&m_scaffolder);
-
 	m_computeCore.registerPlugin(&m_searcher);
-
 	m_computeCore.registerPlugin(&m_phylogeny);
+	m_computeCore.registerPlugin(&m_genomeNeighbourhood);
 
 	// resolve the symbols
-	
+	// this is done here because we want to write a summary for
+	// each plugin
+	// otherwise, symbols are resolved when ComputeCore::run() is called.
 	m_computeCore.resolveSymbols();
-
-	cout<<endl;
-	
-	// write a report about plugins
-	if(m_parameters.getRank()==MASTER_RANK){
-		ostringstream directory;
-		directory<<m_parameters.getPrefix()<<"/Plugins";
-
-		string file=directory.str();
-		createDirectory(file.c_str());
-	
-		m_computeCore.printPlugins(file);
-
-		// write the version of RayPlatform
-		
-		ostringstream versionFile;
-		versionFile<<m_parameters.getPrefix()<<"/RayPlatform_Version.txt";
-
-		ofstream f7(versionFile.str().c_str());
-		f7<<"RayPlatform "<<m_computeCore.getRayPlatformVersion()<<endl;
-		f7.close();
-	}
 }

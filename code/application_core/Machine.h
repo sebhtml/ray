@@ -22,23 +22,65 @@
 #ifndef _Machine
 #define _Machine
 
-/** virtual stuff */
-#include <communication/VirtualCommunicator.h>
-#include <scheduling/VirtualProcessor.h>
+/** Chapter I. stuff pulled from RayPlatform, called The Platform hereafter */
 
+/** the heart of RayPlatform  **/
+/** ComputeCore is a facade (a design pattern) **/
+#include <core/ComputeCore.h>
+
+/** communication */
+#include <communication/VirtualCommunicator.h> /** virtual stuff */
+#include <communication/Message.h>
+#include <communication/MessageRouter.h>
+#include <communication/MessagesHandler.h> /** MPI wrapper **/
+
+/** scheduling, virtual pools */
+#include <scheduling/VirtualProcessor.h> /** thread pool **/
+
+/** distributed scheduler, this is a state machine */
+/* design pattern: state */
+#include <scheduling/SwitchMan.h>  
+
+/** memory stuff */
+#include <memory/RingAllocator.h>
+#include <memory/MyAllocator.h>
+
+/** data structure */
+#include <structures/StaticVector.h>
+#include <structures/SplayTree.h>
+#include <structures/SplayTreeIterator.h>
+
+/** run-time code profiling */
+#include <profiling/TimePrinter.h>
+#include <profiling/Profiler.h>
+#include <profiling/TickLogger.h>
+
+/** interfaces to define adapters compatible with RayPlatform **/
+#include <handlers/MessageTagHandler.h>
+#include <handlers/SlaveModeHandler.h>
+#include <handlers/MessageTagHandler.h>
+
+
+/** Chapter II.  stuff related to the Ray Genome Assembler **/
+
+/** stuff specific to the Ray assembler that don't fit elsewhere */
+
+#include <application_core/common_functions.h> /* common code for all plugins */
+#include <application_core/Parameters.h> /* command-line parsing */
+
+// also in this category is application_core/Machine.h 
+
+
+/** list of RayPlatform CorePlugin objects for the Ray genome software suite. */
+/* (in no particular order) */
+
+#include <plugin_SeedExtender/DepthFirstSearchData.h>
+#include <plugin_GenomeNeighbourhood/GenomeNeighbourhood.h>
 #include <plugin_Scaffolder/Scaffolder.h>
 #include <plugin_VerticesExtractor/GridTable.h>
-#include <communication/MessagesHandler.h>
-#include <application_core/common_functions.h>
 #include <plugin_Partitioner/Partitioner.h>
 #include <plugin_SequencesLoader/ArrayOfReads.h>
-#include <structures/StaticVector.h>
 #include <plugin_SeedingData/SeedingData.h>
-#include <map>
-#include <vector>
-#include <memory/RingAllocator.h>
-#include <plugin_SeedExtender/DepthFirstSearchData.h>
-#include <profiling/TimePrinter.h>
 #include <plugin_SequencesIndexer/SequencesIndexer.h>
 #include <plugin_SeedExtender/SeedExtender.h>
 #include <plugin_SequencesLoader/SequencesLoader.h>
@@ -47,36 +89,25 @@
 #include <plugin_MessageProcessor/MessageProcessor.h>
 #include <plugin_VerticesExtractor/Vertex.h>
 #include <plugin_SeedExtender/OpenAssemblerChooser.h>
-#include <structures/SplayTree.h>
 #include <plugin_SeedExtender/BubbleData.h>
-#include <communication/Message.h>
-#include <structures/SplayTreeIterator.h>
-#include <plugin_SequencesLoader/Read.h>
-#include <application_core/Parameters.h>
-#include <memory/MyAllocator.h>
 #include <plugin_VerticesExtractor/VerticesExtractor.h>
 #include <plugin_Amos/Amos.h>
-#include <set>
-#include <time.h>
 #include <plugin_KmerAcademyBuilder/KmerAcademyBuilder.h>
 #include <plugin_EdgePurger/EdgePurger.h>
 #include <plugin_NetworkTest/NetworkTest.h>
 #include <plugin_FusionTaskCreator/FusionTaskCreator.h>
 #include <plugin_JoinerTaskCreator/JoinerTaskCreator.h>
-#include <communication/MessageRouter.h>
-
-#include <profiling/Profiler.h>
-#include <profiling/TickLogger.h>
-
-#include <core/ComputeCore.h>
-#include <plugin_MachineHelper/MachineHelper.h>
-#include <scheduling/SwitchMan.h>
+#include <plugin_SequencesLoader/Read.h>
 #include <plugin_Searcher/Searcher.h>
-
-#include <handlers/MessageTagHandler.h>
-#include <handlers/SlaveModeHandler.h>
-#include <handlers/MessageTagHandler.h>
+#include <plugin_MachineHelper/MachineHelper.h>
 #include <plugin_PhylogenyViewer/PhylogenyViewer.h>
+#include <plugin_GenomeNeighbourhood/GenomeNeighbourhood.h>
+
+/** C++ bits **/
+#include <map>
+#include <vector>
+#include <set>
+#include <time.h>
 
 using namespace std;
 
@@ -95,6 +126,11 @@ class Machine{
 	ComputeCore m_computeCore;
 	Chooser m_c;
 	MachineHelper m_helper;
+
+/** a plugin to compute a global map of the genome (or meta-genome or 
+ * transcriptome) studied 
+ */
+	GenomeNeighbourhood m_genomeNeighbourhood;
 
 
 	Searcher m_searcher;
