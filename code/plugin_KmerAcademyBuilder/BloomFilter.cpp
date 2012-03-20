@@ -74,6 +74,13 @@ Basically, these are used in XOR hash functions below...
 	int required8Bytes=requiredBytes/8;
 	m_bitmap=(uint64_t*)__Malloc(required8Bytes*sizeof(uint64_t), "RAY_MALLOC_TYPE_BLOOM_FILTER", false); /* about 62 MB of memory */
 
+	cout<<"[BloomFilter] allocated "<<requiredBytes<<" bytes for table"<<endl;
+	cout<<"[BloomFilter] hash numbers:";
+	for(int i=0;i<m_hashFunctions;i++){
+		cout<<hex<<" "<<m_hashNumbers[i];
+	}
+	cout<<dec<<endl;
+
 	#ifdef ASSERT
 	assert(required8Bytes > 0);
 	assert(m_bitmap != NULL);

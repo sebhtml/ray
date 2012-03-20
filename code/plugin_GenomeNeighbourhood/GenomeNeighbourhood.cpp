@@ -33,12 +33,7 @@
 #define FETCH_PARENTS 0
 #define FETCH_CHILDREN 1
 
-void GenomeNeighbourhood::processLinks(int mode){
-
-	#ifdef ASSERT
-	assert(!m_stackOfVertices.empty());
-	assert(m_stackOfVertices.size() == m_stackOfDepths.size());
-	#endif
+void GenomeNeighbourhood::fetchPaths(){
 
 	Kmer currentKmer=m_stackOfVertices.top();
 	int depth=m_stackOfDepths.top();
@@ -77,9 +72,76 @@ void GenomeNeighbourhood::processLinks(int mode){
 		#endif
 
 		m_numberOfPathsReceived=true;
-		
+		m_pathIndex=0;
 
-	}else if(m_numberOfPathsReceived && !m_linksRequested){
+		m_requestedPath=false;
+		m_receivedPath=false;
+
+	}else if(m_pathIndex == m_paths){
+
+		m_fetchedPaths=true;
+
+	}else if(m_numberOfPathsReceived && !m_requestedPath){
+		Kmer kmer=currentKmer;
+
+		if(m_reverseStrand)
+			kmer=kmer.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+
+		int destination=kmer.vertexRank(m_parameters->getSize(),
+			m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+
+		int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_ASK_VERTEX_PATH);
+
+		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(elementsPerQuery);
+
+		int outputPosition=0;
+		kmer.pack(message,&outputPosition);
+		message[outputPosition++]=m_pathIndex;
+
+		Message aMessage(message,elementsPerQuery,destination,
+			RAY_MPI_TAG_ASK_VERTEX_PATH,m_parameters->getRank());
+
+		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
+
+		m_requestedPath=true;
+		m_receivedPath=false;
+
+	}else if(!m_receivedPath && m_virtualCommunicator->isMessageProcessed(m_workerId)){
+		vector<uint64_t> response;
+		m_virtualCommunicator->getMessageResponseElements(m_workerId,&response);
+
+		int bufferPosition=0;
+
+		/* skip the k-mer because we don't need it */
+		bufferPosition+=KMER_U64_ARRAY_SIZE;
+		uint64_t pathIdentifier=response[bufferPosition++];
+		int progression=response[bufferPosition++];
+
+		m_pathIndex++;
+
+		m_receivedPath=true;
+
+
+		m_requestedPath=false;
+		m_receivedPath=false;
+	}
+}
+
+void GenomeNeighbourhood::processLinks(int mode){
+
+	#ifdef ASSERT
+	assert(!m_stackOfVertices.empty());
+	assert(m_stackOfVertices.size() == m_stackOfDepths.size());
+	#endif
+
+	Kmer currentKmer=m_stackOfVertices.top();
+	int depth=m_stackOfDepths.top();
+
+	if(!m_fetchedPaths){
+
+		fetchPaths();
+
+	}else if(m_fetchedPaths && !m_linksRequested){
 
 		#ifdef DEBUG_NEIGHBOURHOOD_COMMUNICATION
 		cout<<"Sending message RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT to "<<endl;
@@ -105,7 +167,7 @@ void GenomeNeighbourhood::processLinks(int mode){
 		#endif
 
 
-	}else if(m_numberOfPathsReceived &&
+	}else if(m_fetchedPaths &&
 		!m_linksReceived && m_virtualCommunicator->isMessageProcessed(m_workerId)){
 
 		#ifdef DEBUG_NEIGHBOURHOOD_COMMUNICATION
@@ -177,9 +239,10 @@ void GenomeNeighbourhood::processLinks(int mode){
 
 		m_linksReceived=true;
 
-	}else if(m_linksRequested && m_linksReceived){
+	}else if(m_fetchedPaths && m_linksRequested && m_linksReceived){
 		
 		// restart the adventure
+		m_fetchedPaths=false;
 		m_numberOfPathsRequested=false;
 	}
 }
@@ -215,6 +278,7 @@ void GenomeNeighbourhood::processSide(int mode){
 		createStacks(kmer);
 
 		m_numberOfPathsRequested=false;
+		m_fetchedPaths=false;
 
 		m_visited.clear();
 		m_maximumDepth=1024;
@@ -404,6 +468,7 @@ void GenomeNeighbourhood::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_NEIGHBOURHOOD=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_NEIGHBOURHOOD");
 	RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT");
 	RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE");
+	RAY_MPI_TAG_ASK_VERTEX_PATH=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ASK_VERTEX_PATH");
 
 	core->setMasterModeToMessageTagSwitch(m_plugin,RAY_MASTER_MODE_NEIGHBOURHOOD,RAY_MPI_TAG_NEIGHBOURHOOD);
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_NEIGHBOURHOOD,RAY_SLAVE_MODE_NEIGHBOURHOOD);

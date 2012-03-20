@@ -1695,12 +1695,20 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH(Message*message){
 		/* increment because there is padding */
 		pos++;
 
+		#ifdef ASSERT
+		assert(i<(int)paths.size());
+		#endif
+
 		Direction d=paths[i];
 		kmer.pack(message2,&outputPosition);
 		message2[outputPosition++]=d.getWave();
 
 		#ifdef ASSERT
-		assert(getRankFromPathUniqueId(d.getWave())<m_size);
+		Rank rank=getRankFromPathUniqueId(d.getWave());
+		if(rank>=m_size){
+			cout<<"Fatal error: rank: "<<rank<<endl;
+		}
+		assert(rank<m_size);
 		#endif
 
 		message2[outputPosition++]=d.getProgression();

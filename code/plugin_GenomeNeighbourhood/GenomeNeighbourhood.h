@@ -74,8 +74,13 @@ class GenomeNeighbourhood: public CorePlugin{
 	bool m_linksRequested;
 	bool m_linksReceived;
 	int m_paths;
+	int m_pathIndex;
 	bool m_numberOfPathsRequested;
 	bool m_numberOfPathsReceived;
+	bool m_fetchedPaths;
+	bool m_receivedPath;
+	bool m_requestedPath;
+	bool m_reverseStrand;
 
 	/* virtual communication */
 	VirtualCommunicator*m_virtualCommunicator;
@@ -96,6 +101,7 @@ class GenomeNeighbourhood: public CorePlugin{
 	MessageTag RAY_MPI_TAG_NEIGHBOURHOOD;
 	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
 	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE;
+	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH;
 
 	Adapter_RAY_SLAVE_MODE_NEIGHBOURHOOD m_adapter_RAY_SLAVE_MODE_NEIGHBOURHOOD;
 	Adapter_RAY_MASTER_MODE_NEIGHBOURHOOD m_adapter_RAY_MASTER_MODE_NEIGHBOURHOOD;
@@ -109,6 +115,7 @@ class GenomeNeighbourhood: public CorePlugin{
 	void processSide(int mode);
 	void processLinks(int mode);
 
+	void fetchPaths();
 public:
 
 	void registerPlugin(ComputeCore*core);
