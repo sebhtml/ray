@@ -38,9 +38,69 @@ void GenomeNeighbourhood::call_RAY_MASTER_MODE_NEIGHBOURHOOD(){
 	}
 }
 
+/**
+ * for each contig owned by the current compute core,
+ * search on its left and on its right in the distributed de
+ * Bruijn graph.
+ *
+ * send items to master.
+ *
+ * each item is (leftContig	strand	rightContig	strand	verticesInGap)
+ *
+ * to do so, do a depth first search with a maximum depth
+ *
+ *
+ * message used and what is needed:
+ *
+ *    - get the edges of a vertex
+ *    RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT
+ *      period: registered via RayPlatform, fetch it for there
+ *      input: a k-mer
+ *      output: edges (1 element), coverage (1 element)
+ *      multiplexing: supported
+ *
+ *
+ * used tags for paths: 
+ *
+ *	RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE
+ *	RAY_MPI_TAG_ASK_VERTEX_PATH
+ *	RAY_MPI_TAG_GET_PATH_LENGTH
+ *
+ *    - get the path length for a path
+ *    RAY_MPI_TAG_GET_PATH_LENGTH
+ *      period: 1
+ *      input: path unique identifier (usually the the contig name)
+ *      output: the length of the path, measured in k-mers
+ *
+ *
+ * prototype 1: don't use Message Multiplexing, because the thing may be fast without it
+ *              like scaffolding.
+ */
 void GenomeNeighbourhood::call_RAY_SLAVE_MODE_NEIGHBOURHOOD(){
 
-	m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getMessagesHandler()->getRank());
+	if(!m_slaveStarted){
+		m_contigIndex=0;
+		m_doneLeftSide=false;
+		m_doneRightSide=false;
+
+		m_slaveStarted=true;
+
+	}else if(m_contigIndex<(int)m_contigs->size()){ /* there is still work to do */
+
+		if(!m_doneRightSide){
+			m_doneRightSide=true;
+
+			m_doneLeftSide=false;
+		}else if(!m_doneLeftSide){
+			m_doneLeftSide=true;
+
+		}else{
+			m_contigIndex++;
+		}
+	}else{
+
+		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getMessagesHandler()->getRank());
+	}
 }
 
 /**
@@ -89,9 +149,14 @@ void GenomeNeighbourhood::resolveSymbols(ComputeCore*core){
 
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_NEIGHBOURHOOD,RAY_MASTER_MODE_KILL_RANKS);
 
-	m_started=false;
+	// fetch parallel shared objects
 	m_timePrinter=(TimePrinter*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/Timer.ray");
+	m_contigs=(vector<vector<Kmer> >*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/ContigPaths.ray");
+	m_contigNames=(vector<uint64_t>*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/ContigNames.ray");
 
 	m_core=core;
+	m_started=false;
+
+	m_slaveStarted=false;
 }
 

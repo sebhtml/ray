@@ -29,6 +29,12 @@
 #include <core/ComputeCore.h>
 #include <plugins/CorePlugin.h>
 #include <plugin_GenomeNeighbourhood/GenomeNeighbourhood_adapters.h>
+#include <plugin_KmerAcademyBuilder/Kmer.h>
+
+#include <vector>
+#include <string>
+#include <stdint.h> /* for uint64_t */
+using namespace std;
 
 /**
  * The plugin GenomeNeighbourhood outputs a file file
@@ -43,6 +49,11 @@
 class GenomeNeighbourhood: public CorePlugin{
 
 	bool m_started;
+	bool m_slaveStarted;
+	int m_contigIndex;
+	bool m_doneLeftSide;
+	bool m_doneRightSide;
+
 
 	ComputeCore*m_core;
 
@@ -58,6 +69,10 @@ class GenomeNeighbourhood: public CorePlugin{
 
 	Adapter_RAY_SLAVE_MODE_NEIGHBOURHOOD m_adapter_RAY_SLAVE_MODE_NEIGHBOURHOOD;
 	Adapter_RAY_MASTER_MODE_NEIGHBOURHOOD m_adapter_RAY_MASTER_MODE_NEIGHBOURHOOD;
+
+	/** contig paths */
+	vector<vector<Kmer> >*m_contigs;
+	vector<uint64_t>*m_contigNames;
 
 public:
 

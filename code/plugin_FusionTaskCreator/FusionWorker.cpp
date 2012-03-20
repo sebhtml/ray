@@ -42,6 +42,8 @@ void FusionWorker::work(){
 /*
   used tags:
 
+TODO: does the code pay attention when the coverage indicates a repeated k-mer ? repeats slow things down...
+
 	RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE
 	RAY_MPI_TAG_ASK_VERTEX_PATH
 	RAY_MPI_TAG_GET_PATH_LENGTH

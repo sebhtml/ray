@@ -197,6 +197,9 @@ class Searcher :  public CorePlugin {
 	// state of the machine
 	bool m_checkedHits;
 
+/**
+ * this is only populated on master
+ */
 	map<uint64_t,int> m_contigLengths;
 
 	// iterators for hits
