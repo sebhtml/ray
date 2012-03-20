@@ -23,6 +23,26 @@
 #define _GenomeNeighbourhood_adapters_h
 
 
+#include <handlers/SlaveModeHandler.h>
+#include <handlers/MasterModeHandler.h>
+#include <handlers/MessageTagHandler.h>
+
+class GenomeNeighbourhood;
+
+class Adapter_RAY_MASTER_MODE_NEIGHBOURHOOD: public MasterModeHandler{
+	GenomeNeighbourhood*m_object;
+public:
+	void setObject(GenomeNeighbourhood*object);
+	void call();
+};
+
+class Adapter_RAY_SLAVE_MODE_NEIGHBOURHOOD: public SlaveModeHandler{
+	GenomeNeighbourhood*m_object;
+
+public:
+	void setObject(GenomeNeighbourhood*object);
+	void call();
+};
 
 
 #endif /* _GenomeNeighbourhood_adapters_h */

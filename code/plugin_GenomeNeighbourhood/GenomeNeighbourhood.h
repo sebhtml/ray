@@ -25,8 +25,9 @@
 #ifndef _GenomeNeighbourhood_h
 #define _GenomeNeighbourhood_h
 
-#include <plugins/CorePlugin.h>
+#include <profiling/TimePrinter.h>
 #include <core/ComputeCore.h>
+#include <plugins/CorePlugin.h>
 #include <plugin_GenomeNeighbourhood/GenomeNeighbourhood_adapters.h>
 
 /**
@@ -40,12 +41,31 @@
  * \
  * */
 class GenomeNeighbourhood: public CorePlugin{
+
+	bool m_started;
+
+	ComputeCore*m_core;
+
+	TimePrinter*m_timePrinter;
+
+	SlaveMode RAY_SLAVE_MODE_NEIGHBOURHOOD;
+
+	MasterMode RAY_MASTER_MODE_KILL_RANKS;
+	MasterMode RAY_MASTER_MODE_NEIGHBOURHOOD;
+
+	MessageTag RAY_MPI_TAG_NEIGHBOURHOOD;
+
+
+	Adapter_RAY_SLAVE_MODE_NEIGHBOURHOOD m_adapter_RAY_SLAVE_MODE_NEIGHBOURHOOD;
+	Adapter_RAY_MASTER_MODE_NEIGHBOURHOOD m_adapter_RAY_MASTER_MODE_NEIGHBOURHOOD;
+
 public:
 
 	void registerPlugin(ComputeCore*core);
 	void resolveSymbols(ComputeCore*core);
 
-
+	void call_RAY_SLAVE_MODE_NEIGHBOURHOOD();
+	void call_RAY_MASTER_MODE_NEIGHBOURHOOD();
 };
 
 #endif

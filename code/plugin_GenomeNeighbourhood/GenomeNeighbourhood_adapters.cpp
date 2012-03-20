@@ -20,5 +20,26 @@
 */
 
 #include <plugin_GenomeNeighbourhood/GenomeNeighbourhood_adapters.h>
+#include <plugin_GenomeNeighbourhood/GenomeNeighbourhood.h>
+
+void Adapter_RAY_SLAVE_MODE_NEIGHBOURHOOD::setObject(GenomeNeighbourhood*object){
+	m_object=object;
+}
+
+void Adapter_RAY_SLAVE_MODE_NEIGHBOURHOOD::call(){
+	m_object->call_RAY_SLAVE_MODE_NEIGHBOURHOOD();
+}
+
+void Adapter_RAY_MASTER_MODE_NEIGHBOURHOOD::setObject(GenomeNeighbourhood*object){
+	m_object=object;
+}
+
+void Adapter_RAY_MASTER_MODE_NEIGHBOURHOOD::call(){
+	m_object->call_RAY_MASTER_MODE_NEIGHBOURHOOD();
+}
+
+
+
+#undef CLASS_FOR_ADAPTERS
 
 

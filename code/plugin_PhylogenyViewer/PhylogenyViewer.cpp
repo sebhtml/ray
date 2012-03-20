@@ -1300,6 +1300,7 @@ void PhylogenyViewer::resolveSymbols(ComputeCore*core){
 
 	RAY_MASTER_MODE_PHYLOGENY_MAIN=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_PHYLOGENY_MAIN");
 	RAY_MASTER_MODE_KILL_RANKS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_KILL_RANKS");
+	RAY_MASTER_MODE_NEIGHBOURHOOD=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_NEIGHBOURHOOD");
 
 	RAY_MPI_TAG_PHYLOGENY_MAIN=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_PHYLOGENY_MAIN");
 	RAY_MPI_TAG_TOUCH_TAXON=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_TOUCH_TAXON");
@@ -1308,13 +1309,13 @@ void PhylogenyViewer::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_SYNCED_TAXONS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SYNCED_TAXONS");
 	RAY_MPI_TAG_TAXON_OBSERVATIONS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_TAXON_OBSERVATIONS");
 	RAY_MPI_TAG_TAXON_OBSERVATIONS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_TAXON_OBSERVATIONS_REPLY");
-
+	
 	RAY_SLAVE_MODE_PHYLOGENY_MAIN=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_PHYLOGENY_MAIN");
 
 	core->setMasterModeToMessageTagSwitch(m_plugin,RAY_MASTER_MODE_PHYLOGENY_MAIN,RAY_MPI_TAG_PHYLOGENY_MAIN);
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_PHYLOGENY_MAIN,RAY_SLAVE_MODE_PHYLOGENY_MAIN);
 
-	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_PHYLOGENY_MAIN,RAY_MASTER_MODE_KILL_RANKS);
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_PHYLOGENY_MAIN,RAY_MASTER_MODE_NEIGHBOURHOOD);
 
 
 	m_parameters=(Parameters*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/Parameters.ray");

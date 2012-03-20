@@ -50,6 +50,9 @@ using namespace std;
 
 /* Pick-up the option -show-communication-events */
 
+/**
+ * called before Machine::start()
+ */
 Machine::Machine(int argc,char**argv){
 
 	void constructor(int*argc,char**argv);
@@ -142,6 +145,15 @@ m_virtualCommunicator,&m_kmerAcademyBuilder,
 
 }
 
+/**
+ * start the software
+ * this method does these things:
+ *
+ *  1. create plugins
+ *  2. register plugins
+ *  3. resolve symbols (not necessary)
+ *  4. hit the push-button device to start the computation distributed cores (ComputeCore::run())
+ */
 void Machine::start(){
 
 	if(m_aborted)
@@ -149,9 +161,12 @@ void Machine::start(){
 
 	m_partitioner.constructor(m_outboxAllocator,m_inbox,m_outbox,&m_parameters,m_switchMan);
 
+	// TODO: move this in plugin Searcher 
 	m_searcher.constructor(&m_parameters,m_outbox,&m_timePrinter,m_switchMan,m_virtualCommunicator,m_inbox,
 		m_outboxAllocator,&m_subgraph);
 
+	// set legacy states
+	// some of them are not used anymore
 	m_initialisedAcademy=false;
 	m_writeKmerInitialised=false;
 	m_timePrinter.constructor();
@@ -207,7 +222,11 @@ void Machine::start(){
 	m_parameters.setSize(getSize());
 
 	// this peak is attained in VerticesExtractor::deleteVertices
+	// 2012-03-20: which peaks ?
 
+
+	/**
+ * 		build the plugins now */
 	m_scaffolder.constructor(m_outbox,m_inbox,m_outboxAllocator,&m_parameters,
 	m_virtualCommunicator,m_switchMan);
 	m_scaffolder.setTimePrinter(&m_timePrinter);
@@ -244,10 +263,15 @@ void Machine::start(){
 
 	m_messagesHandler->barrier();
 
+	// TODO: check if 65536 is really a limit.
+	// the limit is probably in a header somewhere in application_core or in RayPlatform.
+	// with routing enabled, the limit is 4096 compute cores.
+	
 	int maximumNumberOfProcesses=65536;
 	if(getSize()>maximumNumberOfProcesses){
 		cout<<"The maximum number of processes is "<<maximumNumberOfProcesses<<" (this can be changed in the code)"<<endl;
 	}
+
 	assert(getSize()<=maximumNumberOfProcesses);
 
 	bool fullReport=false;
