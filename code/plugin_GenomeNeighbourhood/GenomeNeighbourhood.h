@@ -30,10 +30,13 @@
 #include <plugins/CorePlugin.h>
 #include <plugin_GenomeNeighbourhood/GenomeNeighbourhood_adapters.h>
 #include <plugin_KmerAcademyBuilder/Kmer.h>
+#include <communication/VirtualCommunicator.h>
+#include <application_core/Parameters.h>
 
 #include <vector>
 #include <string>
 #include <stdint.h> /* for uint64_t */
+#include <stack>
 using namespace std;
 
 /**
@@ -48,12 +51,35 @@ using namespace std;
  * */
 class GenomeNeighbourhood: public CorePlugin{
 
+	Parameters*m_parameters;
+
+	stack<Kmer> m_stackOfVertices;
+	stack<int> m_stackOfDepths;
+
+/** states of the state machine */
+	int m_contigIndex;
 	bool m_started;
 	bool m_slaveStarted;
-	int m_contigIndex;
 	bool m_doneLeftSide;
 	bool m_doneRightSide;
+	bool m_startedLeft;
+	bool m_startedRight;
 
+	bool m_doneSide;
+	bool m_startedSide;
+
+	/* graph surfing */
+	set<Kmer> m_visited;
+	int m_maximumDepth;
+	bool m_linksRequested;
+	bool m_linksReceived;
+
+	/* virtual communication */
+	VirtualCommunicator*m_virtualCommunicator;
+	vector<uint64_t> m_activeWorkers;
+	Rank m_rank;
+	uint64_t m_workerId;
+	RingAllocator*m_outboxAllocator;
 
 	ComputeCore*m_core;
 
@@ -65,7 +91,7 @@ class GenomeNeighbourhood: public CorePlugin{
 	MasterMode RAY_MASTER_MODE_NEIGHBOURHOOD;
 
 	MessageTag RAY_MPI_TAG_NEIGHBOURHOOD;
-
+	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
 
 	Adapter_RAY_SLAVE_MODE_NEIGHBOURHOOD m_adapter_RAY_SLAVE_MODE_NEIGHBOURHOOD;
 	Adapter_RAY_MASTER_MODE_NEIGHBOURHOOD m_adapter_RAY_MASTER_MODE_NEIGHBOURHOOD;
@@ -73,6 +99,11 @@ class GenomeNeighbourhood: public CorePlugin{
 	/** contig paths */
 	vector<vector<Kmer> >*m_contigs;
 	vector<uint64_t>*m_contigNames;
+
+
+	void createStacks(Kmer a);
+	void processSide(int mode);
+	void processLinks(int mode);
 
 public:
 

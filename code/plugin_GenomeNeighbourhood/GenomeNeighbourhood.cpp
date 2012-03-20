@@ -21,7 +21,191 @@
 \author Sébastien Boisvert
 */
 
+//#define DEBUG_NEIGHBOURHOOD_COMMUNICATION
+
 #include <plugin_GenomeNeighbourhood/GenomeNeighbourhood.h>
+
+#ifdef ASSERT
+#include <assert.h>
+#endif
+
+#define FETCH_PARENTS 0
+#define FETCH_CHILDREN 1
+
+void GenomeNeighbourhood::processLinks(int mode){
+
+	#ifdef ASSERT
+	assert(!m_stackOfVertices.empty());
+	assert(m_stackOfVertices.size() == m_stackOfDepths.size());
+	#endif
+
+	Kmer currentKmer=m_stackOfVertices.top();
+	int depth=m_stackOfDepths.top();
+
+	if(!m_linksRequested){
+
+		#ifdef DEBUG_NEIGHBOURHOOD_COMMUNICATION
+		cout<<"Sending message RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT to "<<endl;
+		#endif
+
+
+		// send a message to request the links of the current vertex
+		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
+		int bufferPosition=0;
+		currentKmer.pack(buffer,&bufferPosition);
+	
+		Rank destination=m_parameters->_vertexRank(&currentKmer);
+
+		Message aMessage(buffer,m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT),
+			destination,RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,m_rank);
+
+		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
+
+		m_linksRequested=true;
+		m_linksReceived=false;
+		m_visited.insert(currentKmer);
+
+		#ifdef DEBUG_NEIGHBOURHOOD_COMMUNICATION
+		cout<<"Message sent, RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT, will wait for a reply "<<endl;
+		#endif
+
+
+	}else if(!m_linksReceived && m_virtualCommunicator->isMessageProcessed(m_workerId)){
+
+		#ifdef DEBUG_NEIGHBOURHOOD_COMMUNICATION
+		cout<<"Message received, RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT"<<endl;
+		#endif
+
+
+		vector<uint64_t> elements;
+		m_virtualCommunicator->getMessageResponseElements(m_workerId,&elements);
+
+		#ifdef ASSERT
+		assert((int)elements.size()>=2);
+		#endif
+
+		uint8_t edges=elements[0];
+		int coverage=elements[1];
+
+		#ifdef ASSERT
+		assert(coverage>0);
+		#endif
+
+		vector<Kmer> parents=currentKmer._getIngoingEdges(edges,m_parameters->getWordSize());
+		vector<Kmer> children=currentKmer._getOutgoingEdges(edges,m_parameters->getWordSize());
+
+		#ifdef DEBUG_NEIGHBOURHOOD_COMMUNICATION
+		cout<<"information: "<<parents.size()<<" parents, "<<children.size()<<" children"<<endl;
+		#endif
+
+		int nextDepth=depth+1;
+
+		// remove the current vertex from the stack
+		m_stackOfVertices.pop();
+		m_stackOfDepths.pop();
+
+		// add new links
+		
+		vector<Kmer>*links=&parents;
+
+		#ifdef ASSERT
+		assert(mode==FETCH_CHILDREN || mode==FETCH_PARENTS);
+		#endif
+
+		if(mode==FETCH_CHILDREN){
+			links=&children;
+
+		}else if(mode==FETCH_PARENTS){
+			links=&parents;
+		}
+
+		#ifdef ASSERT
+		assert(m_stackOfDepths.size()==m_stackOfVertices.size());
+		#endif
+
+		for(int i=0;i<(int)links->size();i++){
+
+			#ifdef ASSERT
+			assert(i<(int) links->size());
+			#endif
+
+			Kmer newKmer=links->at(i);
+
+			if(nextDepth<= m_maximumDepth && m_visited.count(newKmer)==0){
+		
+				m_stackOfVertices.push(newKmer);
+				m_stackOfDepths.push(nextDepth);
+			}
+		}
+
+		m_linksReceived=true;
+
+	}else if(m_linksRequested && m_linksReceived){
+
+		// keep up the good work for now
+		m_linksRequested=false;
+		m_linksReceived=false;
+	}
+}
+
+void GenomeNeighbourhood::processSide(int mode){
+
+	#ifdef ASSERT
+	assert(mode==FETCH_CHILDREN || mode==FETCH_PARENTS);
+	#endif
+
+	if(!m_startedSide){
+
+		#ifdef ASSERT
+		assert(m_contigIndex < (int)m_contigs->size());
+		#endif
+
+		int contigLength=m_contigs->at(m_contigIndex).size();
+
+		#ifdef ASSERT
+		assert(contigLength>=1);
+		#endif
+
+		Kmer kmer;
+
+		if(mode==FETCH_CHILDREN){
+			kmer=m_contigs->at(m_contigIndex).at(contigLength-1);
+
+		}else if(mode==FETCH_PARENTS){
+
+			kmer=m_contigs->at(m_contigIndex).at(0);
+		}
+
+		createStacks(kmer);
+
+		m_linksRequested=false;
+		m_visited.clear();
+		m_maximumDepth=1024;
+
+		m_startedSide=true;
+
+	}else if(!m_stackOfVertices.empty()){
+		
+		processLinks(mode);
+
+	}else{
+		m_doneSide=true;
+	}
+
+}
+
+
+void GenomeNeighbourhood::createStacks(Kmer a){
+	while(!m_stackOfVertices.empty()){
+		m_stackOfVertices.pop();
+	}
+	while(!m_stackOfDepths.empty()){
+		m_stackOfDepths.pop();
+	}
+
+	m_stackOfVertices.push(a);
+	m_stackOfDepths.push(0);
+}
 
 void GenomeNeighbourhood::call_RAY_MASTER_MODE_NEIGHBOURHOOD(){
 
@@ -37,6 +221,7 @@ void GenomeNeighbourhood::call_RAY_MASTER_MODE_NEIGHBOURHOOD(){
 		m_core->getSwitchMan()->closeMasterMode();
 	}
 }
+
 
 /**
  * for each contig owned by the current compute core,
@@ -78,26 +263,65 @@ void GenomeNeighbourhood::call_RAY_MASTER_MODE_NEIGHBOURHOOD(){
  */
 void GenomeNeighbourhood::call_RAY_SLAVE_MODE_NEIGHBOURHOOD(){
 
-	if(!m_slaveStarted){
-		m_contigIndex=0;
-		m_doneLeftSide=false;
-		m_doneRightSide=false;
+	/* force flush everything ! */
+	m_virtualCommunicator->forceFlush();
+	m_virtualCommunicator->processInbox(&m_activeWorkers);
+	m_activeWorkers.clear();
 
+
+	if(!m_slaveStarted){
+
+		m_contigIndex=0;
+
+		m_doneLeftSide=false;
+		m_startedLeft=false;
+		m_doneRightSide=false;
+		m_startedRight=false;
+	
 		m_slaveStarted=true;
 
 	}else if(m_contigIndex<(int)m_contigs->size()){ /* there is still work to do */
 
-		if(!m_doneRightSide){
-			m_doneRightSide=true;
+		// left side
+		if(!m_doneLeftSide){
+	
+			if(!m_startedLeft){
+				m_startedLeft=true;
+				m_startedSide=false;
+				m_doneSide=false;
+			}else if(!m_doneSide){
+				processSide(FETCH_PARENTS);
+			}else{
+				m_doneLeftSide=true;
+			}
 
-			m_doneLeftSide=false;
-		}else if(!m_doneLeftSide){
-			m_doneLeftSide=true;
+		// right side
+		}else if(!m_doneRightSide){
+		
+			if(!m_startedRight){
+				m_startedRight=true;
+				m_startedSide=false;
+				m_doneSide=false;
+			}else if(!m_doneSide){
+				processSide(FETCH_CHILDREN);
+			}else{
+				m_doneRightSide=true;
+			}
+
 
 		}else{
 			m_contigIndex++;
+
+			m_doneLeftSide=false;
+			m_startedLeft=false;
+			m_doneRightSide=false;
+			m_startedRight=false;
 		}
 	}else{
+
+		#ifdef ASSERT
+		assert(m_contigIndex == (int)m_contigs->size());
+		#endif
 
 		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getMessagesHandler()->getRank());
 	}
@@ -141,6 +365,7 @@ void GenomeNeighbourhood::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_NEIGHBOURHOOD=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_NEIGHBOURHOOD");
 
 	RAY_MPI_TAG_NEIGHBOURHOOD=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_NEIGHBOURHOOD");
+	RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT");
 
 	core->setMasterModeToMessageTagSwitch(m_plugin,RAY_MASTER_MODE_NEIGHBOURHOOD,RAY_MPI_TAG_NEIGHBOURHOOD);
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_NEIGHBOURHOOD,RAY_SLAVE_MODE_NEIGHBOURHOOD);
@@ -153,9 +378,16 @@ void GenomeNeighbourhood::resolveSymbols(ComputeCore*core){
 	m_timePrinter=(TimePrinter*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/Timer.ray");
 	m_contigs=(vector<vector<Kmer> >*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/ContigPaths.ray");
 	m_contigNames=(vector<uint64_t>*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/ContigNames.ray");
+	m_parameters=(Parameters*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/Parameters.ray");
+
+	m_virtualCommunicator=core->getVirtualCommunicator();
 
 	m_core=core;
 	m_started=false;
+
+	m_rank=core->getMessagesHandler()->getRank();
+	m_outboxAllocator=core->getOutboxAllocator();
+	m_workerId=0;
 
 	m_slaveStarted=false;
 }
