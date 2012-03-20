@@ -65,6 +65,15 @@ You need a C++ compiler (supporting C++ 1998), make, an implementation of MPI (s
 	make install
 	ls build
 
+## Compilation using CMake
+
+	tar xjf Ray-x.y.z.tar.bz2
+	cd Ray-x.y.z
+	mkdir build
+	cd build
+	cmake ..
+	make
+
 ## Change the compiler
 
 	make PREFIX=build2000 MPICXX=/software/openmpi-1.4.3/bin/mpicxx

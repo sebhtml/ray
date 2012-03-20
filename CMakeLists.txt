@@ -7,12 +7,13 @@ include_directories( RayPlatform code )
 
 add_executable( Ray
 
+
+RayPlatform/handlers/MasterModeExecutor.cpp
 RayPlatform/handlers/MessageTagHandler.cpp
 RayPlatform/handlers/SlaveModeHandler.cpp
 RayPlatform/handlers/MasterModeHandler.cpp
-RayPlatform/handlers/MessageTagExecutor.cpp
 RayPlatform/handlers/SlaveModeExecutor.cpp
-RayPlatform/handlers/MasterModeExecutor.cpp
+RayPlatform/handlers/MessageTagExecutor.cpp
 RayPlatform/core/master_modes.cpp
 RayPlatform/core/ComputeCore.cpp
 RayPlatform/core/slave_modes.cpp
@@ -51,7 +52,6 @@ RayPlatform/communication/MessageRouter.cpp
 RayPlatform/communication/Message.cpp
 RayPlatform/communication/mpi_tags.cpp
 RayPlatform/communication/BufferedData.cpp
-
 code/plugin_MachineHelper/MachineHelper.cpp
 code/plugin_MachineHelper/MachineHelper_adapters.cpp
 code/plugin_Library/Library.cpp
@@ -136,6 +136,9 @@ code/plugin_Searcher/ContigHit.cpp
 code/plugin_Searcher/Searcher.cpp
 code/plugin_Searcher/ContigSearchEntry.cpp
 code/plugin_Searcher/VirtualKmerColor.cpp
+code/plugin_Searcher/DistributionWriter.cpp
+code/plugin_Searcher/ColoredPeakFinder.cpp
+code/plugin_Searcher/QualityCaller.cpp
 code/plugin_Searcher/SearchDirectory.cpp
 code/plugin_Scaffolder/Scaffolder.cpp
 code/plugin_Scaffolder/SummarizedLink.cpp
@@ -144,5 +147,13 @@ code/plugin_Scaffolder/ScaffoldingVertex.cpp
 code/plugin_Scaffolder/ScaffoldingEdge.cpp
 code/plugin_Scaffolder/Scaffolder_adapters.cpp
 code/plugin_Scaffolder/ScaffoldingLink.cpp
+code/plugin_GenomeNeighbourhood/GenomeNeighbourhood.cpp
+code/plugin_GenomeNeighbourhood/GenomeNeighbourhood_adapters.cpp
+code/plugin_PhylogenyViewer/GenomeToTaxonLoader.cpp
+code/plugin_PhylogenyViewer/PhylogenyViewer_adapters.cpp
+code/plugin_PhylogenyViewer/PhylogenyViewer.cpp
+code/plugin_PhylogenyViewer/PhylogeneticTreeLoader.cpp
+code/plugin_PhylogenyViewer/TaxonNameLoader.cpp
 
 )
+
