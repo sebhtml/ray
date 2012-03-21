@@ -107,9 +107,12 @@ class GenomeNeighbourhood: public CorePlugin{
 	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
 	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE;
 	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH;
+	MessageTag RAY_MPI_TAG_NEIGHBOURHOOD_DATA;
+	MessageTag RAY_MPI_TAG_NEIGHBOURHOOD_DATA_REPLY;
 
 	Adapter_RAY_SLAVE_MODE_NEIGHBOURHOOD m_adapter_RAY_SLAVE_MODE_NEIGHBOURHOOD;
 	Adapter_RAY_MASTER_MODE_NEIGHBOURHOOD m_adapter_RAY_MASTER_MODE_NEIGHBOURHOOD;
+	Adapter_RAY_MPI_TAG_NEIGHBOURHOOD_DATA m_adapter_RAY_MPI_TAG_NEIGHBOURHOOD_DATA;
 
 	/** contig paths */
 	vector<vector<Kmer> >*m_contigs;
@@ -119,6 +122,17 @@ class GenomeNeighbourhood: public CorePlugin{
 	vector<Neighbour> m_leftNeighbours;
 	vector<Neighbour> m_rightNeighbours;
 
+/** sending neighbours **/
+
+	bool m_sentRightNeighbours;
+	bool m_sentLeftNeighbours;
+	int m_neighbourIndex;
+	bool m_selectedHits;
+	bool m_receivedReply;
+	bool m_sentEntry;
+
+	map<uint64_t,int>*m_contigLengths;
+
 /** private parts **/
 
 	void createStacks(Kmer a);
@@ -126,6 +140,9 @@ class GenomeNeighbourhood: public CorePlugin{
 	void processLinks(int mode);
 	void resetKmerStates();
 	void fetchPaths(int mode);
+	void selectHits();
+	void sendLeftNeighbours();
+	void sendRightNeighbours();
 
 public:
 
@@ -134,6 +151,7 @@ public:
 
 	void call_RAY_SLAVE_MODE_NEIGHBOURHOOD();
 	void call_RAY_MASTER_MODE_NEIGHBOURHOOD();
+	void call_RAY_MPI_TAG_NEIGHBOURHOOD_DATA(Message*message);
 };
 
 #endif

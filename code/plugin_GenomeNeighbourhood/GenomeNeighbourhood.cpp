@@ -23,7 +23,7 @@
 
 //#define DEBUG_NEIGHBOURHOOD_COMMUNICATION
 //#define DEBUG_NEIGHBOURHOOD_PATHS
-#define DEBUG_NEIGHBOUR_LISTING
+//#define DEBUG_NEIGHBOUR_LISTING
 //#define DEBUG_SIDE
 
 
@@ -36,6 +36,47 @@
 
 #define FETCH_PARENTS 0x0345678
 #define FETCH_CHILDREN 0x1810230
+
+void GenomeNeighbourhood::call_RAY_MPI_TAG_NEIGHBOURHOOD_DATA(Message*message){
+	
+	uint64_t*incoming=(uint64_t*)message->getBuffer();
+	int position=0;
+
+	/* progressions are on the 'F' strand.
+ * if a contig is on the 'R' strand, then the actual position is
+ * really length(contig) - position
+ *
+ * it is sent this way because only master has the length on contigs
+ *
+ */
+	uint64_t leftContig=incoming[position++];
+	char leftVertexStrand=incoming[position++];
+	int leftProgressionInContig=incoming[position++];
+
+	uint64_t rightContig=incoming[position++];
+	char rightVertexStrand=incoming[position++];
+	int rightProgressionInContig=incoming[position++];
+
+	int gapSizeInKmers=incoming[position++];
+
+	#ifdef ASSERT
+	assert(m_rank==0x00);
+	assert(m_contigLengths->count(leftContig)>0);
+	assert(m_contigLengths->count(rightContig)>0);
+	assert(leftProgressionInContig < m_contigLengths->operator[](leftContig));
+	assert(rightProgressionInContig< m_contigLengths->operator[](rightContig));
+	assert(leftProgressionInContig>=0);
+	assert(rightProgressionInContig>=0);
+	#endif
+
+	int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_NEIGHBOURHOOD_DATA);
+
+	uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(period*sizeof(uint64_t));
+	Message aMessage(buffer,period,message->getSource(),RAY_MPI_TAG_NEIGHBOURHOOD_DATA_REPLY,
+		m_parameters->getRank());
+
+	m_core->getOutbox()->push_back(aMessage);
+}
 
 void GenomeNeighbourhood::fetchPaths(int mode){
 
@@ -488,6 +529,95 @@ void GenomeNeighbourhood::call_RAY_MASTER_MODE_NEIGHBOURHOOD(){
 	}
 }
 
+void GenomeNeighbourhood::selectHits(){
+	/** we have all the neighbours, unfiltered... **/
+	/* process neighbours */
+
+	map<uint64_t,int> leftMinimums;
+	map<uint64_t,int> leftMaximums;
+	map<uint64_t,int> rightMinimums;
+	map<uint64_t,int> rightMaximums;
+
+	for(int i=0;i<(int)m_leftNeighbours.size();i++){
+		uint64_t contig=m_leftNeighbours[i].getContig();
+		int progression=m_leftNeighbours[i].getProgression();
+
+		if(leftMinimums.count(contig)==0 || progression < leftMinimums[contig]){
+			leftMinimums[contig]=progression;
+		}
+
+		if(leftMaximums.count(contig)==0 || progression > leftMaximums[contig]){
+			leftMaximums[contig]=progression;
+		}
+
+	}
+
+	for(int i=0;i<(int)m_rightNeighbours.size();i++){
+		uint64_t contig=m_rightNeighbours[i].getContig();
+		int progression=m_rightNeighbours[i].getProgression();
+
+		if(rightMinimums.count(contig)==0 || progression < rightMinimums[contig]){
+			rightMinimums[contig]=progression;
+		}
+
+		if(rightMaximums.count(contig)==0 || progression > rightMaximums[contig]){
+			rightMaximums[contig]=progression;
+		}
+	}
+
+	vector<Neighbour> leftNeighbours;
+
+	for(int i=0;i<(int)m_leftNeighbours.size();i++){
+		uint64_t contig=m_leftNeighbours[i].getContig();
+		int progression=m_leftNeighbours[i].getProgression();
+
+		if(progression!=leftMinimums[contig] && progression != leftMaximums[contig]){
+			continue;
+		}
+
+		leftNeighbours.push_back(m_leftNeighbours[i]);
+
+		#ifdef DEBUG_NEIGHBOUR_LISTING
+		cout<<"[GenomeNeighbourhood] ITEM LEFT ";
+
+		cout<<"contig-"<<m_leftNeighbours[i].getContig()<<" "<<m_leftNeighbours[i].getStrand();
+		cout<<" "<<m_leftNeighbours[i].getProgression()<<"(TODO) ";
+
+		cout<<" contig-"<<contigName<<" "<<contigStrand<<" 0 ";
+
+		cout<<m_leftNeighbours[i].getDepth()<<endl;
+		
+		#endif
+	}
+
+	m_leftNeighbours=leftNeighbours;
+
+	vector<Neighbour> rightNeighbours;
+
+	for(int i=0;i<(int)m_rightNeighbours.size();i++){
+
+		uint64_t contig=m_rightNeighbours[i].getContig();
+		int progression=m_rightNeighbours[i].getProgression();
+
+		if(progression!=rightMinimums[contig] && progression != rightMaximums[contig]){
+			continue;
+		}
+
+		rightNeighbours.push_back(m_rightNeighbours[i]);
+
+		#ifdef DEBUG_NEIGHBOUR_LISTING
+		cout<<"[GenomeNeighbourhood] ITEM RIGHT ";
+
+		cout<<"contig-"<<contigName<<" "<<contigStrand<<" "<<contigLength-1;
+
+		cout<<" contig-"<<m_rightNeighbours[i].getContig()<<" "<<m_rightNeighbours[i].getStrand();
+		cout<<" "<<m_rightNeighbours[i].getProgression()<<"(TODO) ";
+
+		cout<<m_rightNeighbours[i].getDepth()<<endl;
+		#endif
+	}
+
+}
 
 /**
  * for each contig owned by the current compute core,
@@ -581,91 +711,33 @@ void GenomeNeighbourhood::call_RAY_SLAVE_MODE_NEIGHBOURHOOD(){
 				m_startedSide=false;
 				m_doneSide=false;
 			}else if(!m_doneSide){
+
 				processSide(FETCH_CHILDREN);
 			}else{
 				m_doneRightSide=true;
+				m_selectedHits=false;
 			}
 
+
+		}else if(!m_selectedHits){
+
+			selectHits();
+
+			m_selectedHits=true;
+			m_sentLeftNeighbours=false;
+			m_neighbourIndex=0;
+			m_sentEntry=false;
+			m_receivedReply=false;
+
+		}else if(!m_sentLeftNeighbours){
+
+			sendLeftNeighbours();
+
+		}else if(!m_sentRightNeighbours){
+
+			sendRightNeighbours();
 
 		}else{
-
-			/** we have all the neighbours, unfiltered... **/
-			/* process neighbours */
-
-			map<uint64_t,int> leftMinimums;
-			map<uint64_t,int> leftMaximums;
-			map<uint64_t,int> rightMinimums;
-			map<uint64_t,int> rightMaximums;
-
-			for(int i=0;i<(int)m_leftNeighbours.size();i++){
-				uint64_t contig=m_leftNeighbours[i].getContig();
-				int progression=m_leftNeighbours[i].getProgression();
-
-				if(leftMinimums.count(contig)==0 || progression < leftMinimums[contig]){
-					leftMinimums[contig]=progression;
-				}
-
-				if(leftMaximums.count(contig)==0 || progression > leftMaximums[contig]){
-					leftMaximums[contig]=progression;
-				}
-
-			}
-
-			for(int i=0;i<(int)m_rightNeighbours.size();i++){
-				uint64_t contig=m_rightNeighbours[i].getContig();
-				int progression=m_rightNeighbours[i].getProgression();
-
-				if(rightMinimums.count(contig)==0 || progression < rightMinimums[contig]){
-					rightMinimums[contig]=progression;
-				}
-
-				if(rightMaximums.count(contig)==0 || progression > rightMaximums[contig]){
-					rightMaximums[contig]=progression;
-				}
-			}
-
-			#ifdef DEBUG_NEIGHBOUR_LISTING
-
-			for(int i=0;i<(int)m_leftNeighbours.size();i++){
-				uint64_t contig=m_leftNeighbours[i].getContig();
-				int progression=m_leftNeighbours[i].getProgression();
-
-				if(progression!=leftMinimums[contig] && progression != leftMaximums[contig]){
-					continue;
-				}
-
-				cout<<"[GenomeNeighbourhood] ITEM LEFT ";
-
-				cout<<"contig-"<<m_leftNeighbours[i].getContig()<<" "<<m_leftNeighbours[i].getStrand();
-				cout<<" "<<m_leftNeighbours[i].getProgression()<<"(TODO) ";
-
-				cout<<" contig-"<<contigName<<" "<<contigStrand<<" 0 ";
-
-				cout<<m_leftNeighbours[i].getDepth()<<endl;
-			}
-
-			for(int i=0;i<(int)m_rightNeighbours.size();i++){
-
-				uint64_t contig=m_rightNeighbours[i].getContig();
-				int progression=m_rightNeighbours[i].getProgression();
-
-				if(progression!=rightMinimums[contig] && progression != rightMaximums[contig]){
-					continue;
-				}
-
-				cout<<"[GenomeNeighbourhood] ITEM RIGHT ";
-
-				cout<<"contig-"<<contigName<<" "<<contigStrand<<" "<<contigLength-1;
-
-				cout<<" contig-"<<m_rightNeighbours[i].getContig()<<" "<<m_rightNeighbours[i].getStrand();
-				cout<<" "<<m_rightNeighbours[i].getProgression()<<"(TODO) ";
-
-				cout<<m_rightNeighbours[i].getDepth()<<endl;
-			}
-
-
-			#endif
-
 
 			/* continue the work */
 			m_contigIndex++;
@@ -685,6 +757,72 @@ void GenomeNeighbourhood::call_RAY_SLAVE_MODE_NEIGHBOURHOOD(){
 
 		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getMessagesHandler()->getRank());
 	}
+}
+
+void GenomeNeighbourhood::sendRightNeighbours(){
+
+	if(m_neighbourIndex < (int)m_rightNeighbours.size()){
+
+		m_neighbourIndex++;
+	}else{
+		m_sentRightNeighbours=true;
+
+	}
+}
+
+void GenomeNeighbourhood::sendLeftNeighbours(){
+
+	if(m_neighbourIndex< (int)m_leftNeighbours.size()){
+		if(!m_sentEntry){
+			m_sentEntry=true;
+
+			// send a message to request the links of the current vertex
+			uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
+
+			Rank destination=0x0;
+			int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_NEIGHBOURHOOD_DATA);
+
+			#ifdef ASSERT
+			assert(period > 0);
+			#endif
+
+			int outputPosition=0;
+			buffer[outputPosition++]=m_leftNeighbours[m_neighbourIndex].getContig();
+			buffer[outputPosition++]=m_leftNeighbours[m_neighbourIndex].getStrand();
+			buffer[outputPosition++]=m_leftNeighbours[m_neighbourIndex].getProgression();
+			buffer[outputPosition++]=m_contigNames->at(m_contigIndex);
+			buffer[outputPosition++]='F';
+			buffer[outputPosition++]=0;
+			buffer[outputPosition++]=m_leftNeighbours[m_neighbourIndex].getDepth();
+
+			Message aMessage(buffer,period,
+				destination,RAY_MPI_TAG_NEIGHBOURHOOD_DATA,m_rank);
+
+			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
+
+			m_receivedReply=false;
+
+		}else if(!m_receivedReply && m_virtualCommunicator->isMessageProcessed(m_workerId)){
+
+			vector<uint64_t> elements;
+			m_virtualCommunicator->getMessageResponseElements(m_workerId,&elements);
+
+
+			m_receivedReply=true;
+			m_sentEntry=false;
+
+			m_neighbourIndex++;
+		}
+	}else{
+
+		m_sentLeftNeighbours=true;
+		m_sentRightNeighbours=false;
+		m_sentEntry=false;
+		m_receivedReply=false;
+
+		m_neighbourIndex=0;
+	}
+
 }
 
 /**
@@ -711,8 +849,25 @@ void GenomeNeighbourhood::registerPlugin(ComputeCore*core){
 	m_adapter_RAY_SLAVE_MODE_NEIGHBOURHOOD.setObject(this);
 	core->setSlaveModeObjectHandler(m_plugin,RAY_SLAVE_MODE_NEIGHBOURHOOD,&m_adapter_RAY_SLAVE_MODE_NEIGHBOURHOOD);
 
+	RAY_MPI_TAG_NEIGHBOURHOOD_DATA=core->allocateMessageTagHandle(m_plugin);
+	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_NEIGHBOURHOOD_DATA,"RAY_MPI_TAG_NEIGHBOURHOOD_DATA");
+	m_adapter_RAY_MPI_TAG_NEIGHBOURHOOD_DATA.setObject(this);
+	core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_NEIGHBOURHOOD_DATA,&m_adapter_RAY_MPI_TAG_NEIGHBOURHOOD_DATA);
+
 	RAY_MPI_TAG_NEIGHBOURHOOD=core->allocateMessageTagHandle(m_plugin);
 	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_NEIGHBOURHOOD,"RAY_MPI_TAG_NEIGHBOURHOOD");
+
+	RAY_MPI_TAG_NEIGHBOURHOOD_DATA_REPLY=core->allocateMessageTagHandle(m_plugin);
+	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_NEIGHBOURHOOD_DATA_REPLY,"RAY_MPI_TAG_NEIGHBOURHOOD_DATA_REPLY");
+
+	core->setMessageTagReplyMessageTag(m_plugin,RAY_MPI_TAG_NEIGHBOURHOOD_DATA,RAY_MPI_TAG_NEIGHBOURHOOD_DATA_REPLY);
+
+	/* 
+ * 	contig1, strand1, position1
+ * 	contig2, strand2, position2
+ *      gap size
+ */
+	core->setMessageTagSize(m_plugin,RAY_MPI_TAG_NEIGHBOURHOOD_DATA,7);
 }
 
 /**
@@ -729,6 +884,8 @@ void GenomeNeighbourhood::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE");
 	RAY_MPI_TAG_ASK_VERTEX_PATH=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ASK_VERTEX_PATH");
 
+/* configure workflow */
+
 	core->setMasterModeToMessageTagSwitch(m_plugin,RAY_MASTER_MODE_NEIGHBOURHOOD,RAY_MPI_TAG_NEIGHBOURHOOD);
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_NEIGHBOURHOOD,RAY_SLAVE_MODE_NEIGHBOURHOOD);
 
@@ -741,6 +898,8 @@ void GenomeNeighbourhood::resolveSymbols(ComputeCore*core){
 	m_contigs=(vector<vector<Kmer> >*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/ContigPaths.ray");
 	m_contigNames=(vector<uint64_t>*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/ContigNames.ray");
 	m_parameters=(Parameters*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/Parameters.ray");
+	m_contigLengths=(map<uint64_t,int>*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/ContigLengths.ray");
+
 
 	m_virtualCommunicator=core->getVirtualCommunicator();
 

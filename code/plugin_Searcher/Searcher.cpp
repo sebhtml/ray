@@ -1029,8 +1029,9 @@ void Searcher::call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 		cout<<endl;
 
-
-		m_contigLengths.clear();
+		// this will be used by other plugins because
+		// it is a registered shared object
+		//m_contigLengths.clear();
 	}
 
 }
@@ -3442,6 +3443,8 @@ void Searcher::registerPlugin(ComputeCore*core){
 	core->setObjectSymbol(m_plugin,&m_colorSet,"/RayAssembler/ObjectStore/VirtualColorManagementUnit.ray");
 	core->setObjectSymbol(m_plugin,m_timePrinter,"/RayAssembler/ObjectStore/Timer.ray");
 	core->setObjectSymbol(m_plugin,this,"/RayAssembler/ObjectStore/plugin_Searcher.ray");
+	core->setObjectSymbol(m_plugin,&m_contigLengths,"/RayAssembler/ObjectStore/ContigLengths.ray");
+
 
 	m_totalNumberOfKmerObservations=0;
 }

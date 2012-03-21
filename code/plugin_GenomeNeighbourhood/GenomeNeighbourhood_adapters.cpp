@@ -38,6 +38,14 @@ void Adapter_RAY_MASTER_MODE_NEIGHBOURHOOD::call(){
 	m_object->call_RAY_MASTER_MODE_NEIGHBOURHOOD();
 }
 
+void Adapter_RAY_MPI_TAG_NEIGHBOURHOOD_DATA::setObject(GenomeNeighbourhood*object){
+	m_object=object;
+}
+
+void Adapter_RAY_MPI_TAG_NEIGHBOURHOOD_DATA::call(Message*message){
+	m_object->call_RAY_MPI_TAG_NEIGHBOURHOOD_DATA(message);
+}
+
 
 
 #undef CLASS_FOR_ADAPTERS

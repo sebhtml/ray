@@ -44,5 +44,16 @@ public:
 	void call();
 };
 
+class Adapter_RAY_MPI_TAG_NEIGHBOURHOOD_DATA: public MessageTagHandler{
+	GenomeNeighbourhood*m_object;
+
+public:
+	void setObject(GenomeNeighbourhood*object);
+	void call(Message*message);
+};
+
+
 
 #endif /* _GenomeNeighbourhood_adapters_h */
+
+
