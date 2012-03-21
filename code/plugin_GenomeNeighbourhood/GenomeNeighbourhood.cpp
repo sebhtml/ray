@@ -67,6 +67,8 @@ void GenomeNeighbourhood::call_RAY_MPI_TAG_NEIGHBOURHOOD_DATA(Message*message){
 	assert(rightProgressionInContig< m_contigLengths->operator[](rightContig));
 	assert(leftProgressionInContig>=0);
 	assert(rightProgressionInContig>=0);
+	assert(leftVertexStrand=='F' || leftVertexStrand=='R');
+	assert(rightVertexStrand=='F' || rightVertexStrand == 'R');
 	#endif
 
 	int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_NEIGHBOURHOOD_DATA);
@@ -680,10 +682,11 @@ void GenomeNeighbourhood::call_RAY_SLAVE_MODE_NEIGHBOURHOOD(){
 
 	}else if(m_contigIndex<(int)m_contigs->size()){ /* there is still work to do */
 
+/*
 		uint64_t contigName=m_contigNames->at(m_contigIndex);
 		char contigStrand='F';
 		int contigLength=m_contigs->at(m_contigIndex).size();
-
+*/
 
 		// left side
 		if(!m_doneLeftSide){
@@ -763,7 +766,51 @@ void GenomeNeighbourhood::sendRightNeighbours(){
 
 	if(m_neighbourIndex < (int)m_rightNeighbours.size()){
 
-		m_neighbourIndex++;
+		if(!m_sentEntry){
+			m_sentEntry=true;
+
+			// send a message to request the links of the current vertex
+			uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
+
+			Rank destination=0x0;
+			int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_NEIGHBOURHOOD_DATA);
+
+			#ifdef ASSERT
+			assert(period > 0);
+			#endif
+
+			int outputPosition=0;
+
+			buffer[outputPosition++]=m_contigNames->at(m_contigIndex);
+			buffer[outputPosition++]='F';
+			buffer[outputPosition++]=m_contigs->at(m_contigIndex).size()-1;
+
+			buffer[outputPosition++]=m_rightNeighbours[m_neighbourIndex].getContig();
+			buffer[outputPosition++]=m_rightNeighbours[m_neighbourIndex].getStrand();
+			buffer[outputPosition++]=m_rightNeighbours[m_neighbourIndex].getProgression();
+
+			buffer[outputPosition++]=m_rightNeighbours[m_neighbourIndex].getDepth();
+
+			Message aMessage(buffer,period,
+				destination,RAY_MPI_TAG_NEIGHBOURHOOD_DATA,m_rank);
+
+			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
+
+			m_receivedReply=false;
+
+		}else if(!m_receivedReply && m_virtualCommunicator->isMessageProcessed(m_workerId)){
+
+			vector<uint64_t> elements;
+			m_virtualCommunicator->getMessageResponseElements(m_workerId,&elements);
+
+
+			m_receivedReply=true;
+			m_sentEntry=false;
+
+			m_neighbourIndex++;
+		}
+
+
 	}else{
 		m_sentRightNeighbours=true;
 
@@ -787,12 +834,15 @@ void GenomeNeighbourhood::sendLeftNeighbours(){
 			#endif
 
 			int outputPosition=0;
+
 			buffer[outputPosition++]=m_leftNeighbours[m_neighbourIndex].getContig();
 			buffer[outputPosition++]=m_leftNeighbours[m_neighbourIndex].getStrand();
 			buffer[outputPosition++]=m_leftNeighbours[m_neighbourIndex].getProgression();
+
 			buffer[outputPosition++]=m_contigNames->at(m_contigIndex);
 			buffer[outputPosition++]='F';
 			buffer[outputPosition++]=0;
+
 			buffer[outputPosition++]=m_leftNeighbours[m_neighbourIndex].getDepth();
 
 			Message aMessage(buffer,period,
