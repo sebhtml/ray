@@ -23,6 +23,10 @@
 
 //#define DEBUG_NEIGHBOURHOOD_COMMUNICATION
 //#define DEBUG_NEIGHBOURHOOD_PATHS
+#define DEBUG_NEIGHBOUR_LISTING
+//#define DEBUG_SIDE
+
+
 
 #include <plugin_GenomeNeighbourhood/GenomeNeighbourhood.h>
 
@@ -30,10 +34,10 @@
 #include <assert.h>
 #endif
 
-#define FETCH_PARENTS 0x0
-#define FETCH_CHILDREN 0x1
+#define FETCH_PARENTS 0x0345678
+#define FETCH_CHILDREN 0x1810230
 
-void GenomeNeighbourhood::fetchPaths(){
+void GenomeNeighbourhood::fetchPaths(int mode){
 
 	Kmer currentKmer=m_stackOfVertices.top();
 	int depth=m_stackOfDepths.top();
@@ -45,6 +49,15 @@ void GenomeNeighbourhood::fetchPaths(){
 	}
 
 	if(!m_numberOfPathsRequested){
+
+		#ifdef DEBUG_SIDE
+		if(mode==FETCH_PARENTS){
+			cout<<"[DEBUG_SIDE] FETCH_PARENTS RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE"<<endl;
+		}else if(mode==FETCH_CHILDREN){
+			cout<<"[DEBUG_SIDE] FETCH_CHILDREN RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE"<<endl;
+		}
+		#endif
+
 
 		#ifdef DEBUG_NEIGHBOURHOOD_COMMUNICATION
 		cout<<"Sending RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE"<<endl;
@@ -82,7 +95,7 @@ void GenomeNeighbourhood::fetchPaths(){
 		#endif
 
 		#ifdef DEBUG_NEIGHBOURHOOD_PATHS
-		cout<<"Number of paths: "<<m_paths<<endl;
+		cout<<"Number of paths: "<<m_paths<<" depth: "<<depth<<" useReverse= "<<m_reverseStrand<<endl;
 		#endif
 
 		m_numberOfPathsReceived=true;
@@ -98,6 +111,16 @@ void GenomeNeighbourhood::fetchPaths(){
 		#endif
 
 		m_fetchedPaths=true;
+
+	
+		#ifdef DEBUG_SIDE
+		if(mode==FETCH_PARENTS){
+			cout<<"[DEBUG_SIDE] FETCH_PARENTS finished fetching n="<<m_paths<<endl;
+		}else if(mode==FETCH_CHILDREN){
+			cout<<"[DEBUG_SIDE] FETCH_CHILDREN finished fetching n="<<m_paths<<endl;
+		}
+		#endif
+
 
 	}else if(m_numberOfPathsReceived && !m_requestedPath){
 
@@ -124,7 +147,7 @@ void GenomeNeighbourhood::fetchPaths(){
 		m_requestedPath=true;
 		m_receivedPath=false;
 
-	}else if(!m_receivedPath && m_virtualCommunicator->isMessageProcessed(m_workerId)){
+	}else if(m_numberOfPathsReceived && !m_receivedPath && m_virtualCommunicator->isMessageProcessed(m_workerId)){
 		vector<uint64_t> response;
 		m_virtualCommunicator->getMessageResponseElements(m_workerId,&response);
 
@@ -134,6 +157,43 @@ void GenomeNeighbourhood::fetchPaths(){
 		bufferPosition+=KMER_U64_ARRAY_SIZE;
 		uint64_t pathIdentifier=response[bufferPosition++];
 		int progression=response[bufferPosition++];
+
+		
+		int minimumDepth=1;
+
+		#ifdef DEBUG_NEIGHBOURHOOD_PATHS
+		cout<<"Received path mode=";
+		if(mode==FETCH_PARENTS){
+			cout<<"FETCH_PARENTS";
+		}else{
+			cout<<"FETCH_CHILDREN";
+		}
+		cout<<" path is "<<pathIdentifier<<endl;
+		#endif
+
+		/** add the path **/
+
+		if(pathIdentifier != (*m_contigNames)[m_contigIndex]
+			//&& m_foundContigs.count(pathIdentifier)==0
+			&& depth >= minimumDepth){
+
+			char strand='F';
+			if(m_reverseStrand){
+				strand='R';
+			}
+
+			Neighbour friendlyNeighbour(strand,depth,pathIdentifier,progression);
+		
+			if(mode==FETCH_PARENTS){
+				m_leftNeighbours.push_back(friendlyNeighbour);
+
+			}else if(mode == FETCH_CHILDREN){
+
+				m_rightNeighbours.push_back(friendlyNeighbour);
+			}
+
+			m_foundContigs.insert(pathIdentifier);
+		}
 
 		m_pathIndex++;
 
@@ -161,16 +221,27 @@ void GenomeNeighbourhood::processLinks(int mode){
 	if(!m_directDone){
 		if(!m_fetchedPaths){
 
-			fetchPaths();
+			fetchPaths(mode);
 		}else{
 		
+			#ifdef DEBUG_SIDE
+			if(mode==FETCH_PARENTS){
+				cout<<"[DEBUG_SIDE] Fetched direct paths for mode FETCH_PARENTS, n="<<m_paths<<endl;
+			}else if(mode==FETCH_CHILDREN){
+				cout<<"[DEBUG_SIDE] Fetched direct paths for mode FETCH_CHILDREN, n="<<m_paths<<endl;
+			}
+			#endif
+
+
 			#ifdef DEBUG_NEIGHBOURHOOD_COMMUNICATION
 			cout<<"m_directDone= True"<<endl;
 			#endif
 
 			m_directDone=true;
-			//m_fetchedPaths=false;
+			m_fetchedPaths=false;
 			m_numberOfPathsRequested=false;
+			m_numberOfPathsReceived=false;
+
 			m_reverseDone=false;
 
 			m_reverseStrand=true;
@@ -180,10 +251,19 @@ void GenomeNeighbourhood::processLinks(int mode){
 	}else if(!m_reverseDone){
 		if(!m_fetchedPaths){
 
-			fetchPaths();
+			fetchPaths(mode);
 
 		}else{
 			
+			#ifdef DEBUG_SIDE
+			if(mode==FETCH_PARENTS){
+				cout<<"[DEBUG_SIDE] Fetched reverse paths for mode FETCH_PARENTS, n="<<m_paths<<endl;
+			}else if(mode==FETCH_CHILDREN){
+				cout<<"[DEBUG_SIDE] Fetched reverse paths for mode FETCH_CHILDREN, n="<<m_paths<<endl;
+			}
+			#endif
+
+		
 			#ifdef DEBUG_NEIGHBOURHOOD_COMMUNICATION
 			cout<<"m_reverseDone= True"<<endl;
 			#endif
@@ -216,7 +296,6 @@ void GenomeNeighbourhood::processLinks(int mode){
 		#ifdef DEBUG_NEIGHBOURHOOD_COMMUNICATION
 		cout<<"Message sent, RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT, will wait for a reply "<<endl;
 		#endif
-
 
 	}else if(m_fetchedPaths &&
 		!m_linksReceived && m_virtualCommunicator->isMessageProcessed(m_workerId)){
@@ -273,6 +352,22 @@ void GenomeNeighbourhood::processLinks(int mode){
 		assert(m_stackOfDepths.size()==m_stackOfVertices.size());
 		#endif
 
+		/** we don't continue if we found something interesting... **/
+
+/*
+		bool foundSomethingReallyCool=false;
+
+		if(mode==FETCH_CHILDREN){
+			if(!m_rightNeighbours.empty()){
+				foundSomethingReallyCool=true;
+			}
+		}else if(mode==FETCH_PARENTS){
+			if(!m_leftNeighbours.empty()){
+				foundSomethingReallyCool=true;
+			}
+		}
+*/
+
 		for(int i=0;i<(int)links->size();i++){
 
 			#ifdef ASSERT
@@ -281,7 +376,8 @@ void GenomeNeighbourhood::processLinks(int mode){
 
 			Kmer newKmer=links->at(i);
 
-			if(nextDepth<= m_maximumDepth && m_visited.count(newKmer)==0){
+			if(nextDepth<= m_maximumDepth && m_visited.count(newKmer)==0
+				/*&& !foundSomethingReallyCool*/ ){
 		
 				m_stackOfVertices.push(newKmer);
 				m_stackOfDepths.push(nextDepth);
@@ -332,9 +428,18 @@ void GenomeNeighbourhood::processSide(int mode){
 		resetKmerStates();
 
 		m_visited.clear();
+		m_foundContigs.clear();
 		m_maximumDepth=1024;
 
 		m_startedSide=true;
+
+		#ifdef DEBUG_SIDE
+		if(mode==FETCH_PARENTS){
+			cout<<"Starting mode FETCH_PARENTS"<<endl;
+		}else if(mode==FETCH_CHILDREN){
+			cout<<"Starting mode FETCH_CHILDREN"<<endl;
+		}
+		#endif
 
 	}else if(!m_stackOfVertices.empty()){
 		
@@ -348,10 +453,12 @@ void GenomeNeighbourhood::processSide(int mode){
 
 void GenomeNeighbourhood::resetKmerStates(){
 	m_numberOfPathsRequested=false;
+	m_numberOfPathsReceived=false;
 	m_fetchedPaths=false;
 	m_directDone=false;
 	m_reverseDone=false;
 
+	m_reverseStrand=false;
 }
 
 void GenomeNeighbourhood::createStacks(Kmer a){
@@ -439,7 +546,14 @@ void GenomeNeighbourhood::call_RAY_SLAVE_MODE_NEIGHBOURHOOD(){
 	
 		m_slaveStarted=true;
 
+		m_virtualCommunicator->resetCounters();
+
 	}else if(m_contigIndex<(int)m_contigs->size()){ /* there is still work to do */
+
+		uint64_t contigName=m_contigNames->at(m_contigIndex);
+		char contigStrand='F';
+		int contigLength=m_contigs->at(m_contigIndex).size();
+
 
 		// left side
 		if(!m_doneLeftSide){
@@ -448,6 +562,11 @@ void GenomeNeighbourhood::call_RAY_SLAVE_MODE_NEIGHBOURHOOD(){
 				m_startedLeft=true;
 				m_startedSide=false;
 				m_doneSide=false;
+
+
+				m_leftNeighbours.clear();
+				m_rightNeighbours.clear();
+
 			}else if(!m_doneSide){
 				processSide(FETCH_PARENTS);
 			}else{
@@ -469,6 +588,78 @@ void GenomeNeighbourhood::call_RAY_SLAVE_MODE_NEIGHBOURHOOD(){
 
 
 		}else{
+
+			/** we have all the neighbours, unfiltered... **/
+			/* process neighbours */
+
+			map<uint64_t,int> leftMinimums;
+			map<uint64_t,int> leftMaximums;
+			map<uint64_t,int> rightMinimums;
+			map<uint64_t,int> rightMaximums;
+
+			for(int i=0;i<(int)m_leftNeighbours.size();i++){
+				uint64_t contig=m_leftNeighbours[i].getContig();
+				int progression=m_leftNeighbours[i].getProgression();
+
+				if(leftMinimums.count(contig)==0 || progression < leftMinimums[contig]){
+					leftMinimums[contig]=progression;
+				}
+
+				if(leftMaximums.count(contig)==0 || progression > leftMaximums[contig]){
+					leftMaximums[contig]=progression;
+				}
+
+			}
+
+			for(int i=0;i<(int)m_rightNeighbours.size();i++){
+				uint64_t contig=m_rightNeighbours[i].getContig();
+				int progression=m_rightNeighbours[i].getProgression();
+
+				if(rightMinimums.count(contig)==0 || progression < rightMinimums[contig]){
+					rightMinimums[contig]=progression;
+				}
+
+				if(rightMaximums.count(contig)==0 || progression > rightMaximums[contig]){
+					rightMaximums[contig]=progression;
+				}
+			}
+
+			#ifdef DEBUG_NEIGHBOUR_LISTING
+
+			for(int i=0;i<(int)m_leftNeighbours.size();i++){
+				uint64_t contig=m_leftNeighbours[i].getContig();
+				int progression=m_leftNeighbours[i].getProgression();
+
+				if(progression!=leftMinimums[contig] && progression != leftMaximums[contig]){
+					continue;
+				}
+
+				cout<<"[GenomeNeighbourhood] ITEM LEFT contig-"<<contigName<<" "<<contigStrand<<" 0 ";
+				cout<<"contig-"<<m_leftNeighbours[i].getContig()<<" "<<m_leftNeighbours[i].getStrand();
+				cout<<" "<<m_leftNeighbours[i].getProgression()<<"(TODO) ";
+				cout<<m_leftNeighbours[i].getDepth()<<endl;
+			}
+
+			for(int i=0;i<(int)m_rightNeighbours.size();i++){
+
+				uint64_t contig=m_rightNeighbours[i].getContig();
+				int progression=m_rightNeighbours[i].getProgression();
+
+				if(progression!=rightMinimums[contig] && progression != rightMaximums[contig]){
+					continue;
+				}
+
+				cout<<"[GenomeNeighbourhood] ITEM RIGHT contig-"<<contigName<<" "<<contigStrand<<" "<<contigLength-1;
+				cout<<"contig-"<<m_rightNeighbours[i].getContig()<<" "<<m_rightNeighbours[i].getStrand();
+				cout<<" "<<m_rightNeighbours[i].getProgression()<<"(TODO) ";
+				cout<<m_rightNeighbours[i].getDepth()<<endl;
+			}
+
+
+			#endif
+
+
+			/* continue the work */
 			m_contigIndex++;
 
 			m_doneLeftSide=false;
@@ -481,6 +672,8 @@ void GenomeNeighbourhood::call_RAY_SLAVE_MODE_NEIGHBOURHOOD(){
 		#ifdef ASSERT
 		assert(m_contigIndex == (int)m_contigs->size());
 		#endif
+
+		m_virtualCommunicator->printStatistics();
 
 		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getMessagesHandler()->getRank());
 	}

@@ -49,6 +49,9 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 		#ifdef ASSERT
 		m_splayTreeIterator.hasNext();
 		#endif
+
+
+		m_virtualCommunicator->resetCounters();
 	}
 
 	if(!m_checkedCheckpoint){
@@ -313,6 +316,9 @@ void SeedingData::call_RAY_SLAVE_MODE_SEND_SEED_LENGTHS(){
 		m_iterator=m_slaveSeedLengths.begin();
 		m_initialized=true;
 		m_communicatorWasTriggered=false;
+
+
+		m_virtualCommunicator->resetCounters();
 	}
 
 	if(m_inbox->size()==1&&(*m_inbox)[0]->getTag()==RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY)

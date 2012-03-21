@@ -29,6 +29,7 @@
 #include <core/ComputeCore.h>
 #include <plugins/CorePlugin.h>
 #include <plugin_GenomeNeighbourhood/GenomeNeighbourhood_adapters.h>
+#include <plugin_GenomeNeighbourhood/Neighbour.h>
 #include <plugin_KmerAcademyBuilder/Kmer.h>
 #include <communication/VirtualCommunicator.h>
 #include <application_core/Parameters.h>
@@ -70,6 +71,7 @@ class GenomeNeighbourhood: public CorePlugin{
 
 	/* graph surfing */
 	set<Kmer> m_visited;
+	set<uint64_t> m_foundContigs;
 	int m_maximumDepth;
 	bool m_linksRequested;
 	bool m_linksReceived;
@@ -113,12 +115,18 @@ class GenomeNeighbourhood: public CorePlugin{
 	vector<vector<Kmer> >*m_contigs;
 	vector<uint64_t>*m_contigNames;
 
+/** genome folks in the neighbourhood **/
+	vector<Neighbour> m_leftNeighbours;
+	vector<Neighbour> m_rightNeighbours;
+
+/** private parts **/
 
 	void createStacks(Kmer a);
 	void processSide(int mode);
 	void processLinks(int mode);
 	void resetKmerStates();
-	void fetchPaths();
+	void fetchPaths(int mode);
+
 public:
 
 	void registerPlugin(ComputeCore*core);

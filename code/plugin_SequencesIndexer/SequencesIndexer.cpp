@@ -35,6 +35,9 @@ void SequencesIndexer::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(){
 		m_activeWorkerIterator.constructor(&m_activeWorkers);
 		m_initiatedIterator=true;
 		m_maximumAliveWorkers=32768;
+
+
+		m_virtualCommunicator->resetCounters();
 	}
 
 	if(!m_checkedCheckpoint){

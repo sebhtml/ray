@@ -88,6 +88,9 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 			completeSlaveMode();
 			return;
 		}
+
+
+		m_virtualCommunicator->resetCounters();
 	}
 
 	#ifdef GUILLIMIN_BUG
