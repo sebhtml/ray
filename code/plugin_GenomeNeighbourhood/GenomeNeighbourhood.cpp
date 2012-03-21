@@ -354,7 +354,7 @@ void GenomeNeighbourhood::processLinks(int mode){
 
 		/** we don't continue if we found something interesting... **/
 
-/*
+/**/
 		bool foundSomethingReallyCool=false;
 
 		if(mode==FETCH_CHILDREN){
@@ -366,7 +366,7 @@ void GenomeNeighbourhood::processLinks(int mode){
 				foundSomethingReallyCool=true;
 			}
 		}
-*/
+/**/
 
 		for(int i=0;i<(int)links->size();i++){
 
@@ -377,7 +377,7 @@ void GenomeNeighbourhood::processLinks(int mode){
 			Kmer newKmer=links->at(i);
 
 			if(nextDepth<= m_maximumDepth && m_visited.count(newKmer)==0
-				/*&& !foundSomethingReallyCool*/ ){
+				&& !foundSomethingReallyCool ){
 		
 				m_stackOfVertices.push(newKmer);
 				m_stackOfDepths.push(nextDepth);
@@ -429,7 +429,7 @@ void GenomeNeighbourhood::processSide(int mode){
 
 		m_visited.clear();
 		m_foundContigs.clear();
-		m_maximumDepth=1024;
+		m_maximumDepth=4096;
 
 		m_startedSide=true;
 
@@ -634,9 +634,13 @@ void GenomeNeighbourhood::call_RAY_SLAVE_MODE_NEIGHBOURHOOD(){
 					continue;
 				}
 
-				cout<<"[GenomeNeighbourhood] ITEM LEFT contig-"<<contigName<<" "<<contigStrand<<" 0 ";
+				cout<<"[GenomeNeighbourhood] ITEM LEFT ";
+
 				cout<<"contig-"<<m_leftNeighbours[i].getContig()<<" "<<m_leftNeighbours[i].getStrand();
 				cout<<" "<<m_leftNeighbours[i].getProgression()<<"(TODO) ";
+
+				cout<<" contig-"<<contigName<<" "<<contigStrand<<" 0 ";
+
 				cout<<m_leftNeighbours[i].getDepth()<<endl;
 			}
 
@@ -649,9 +653,13 @@ void GenomeNeighbourhood::call_RAY_SLAVE_MODE_NEIGHBOURHOOD(){
 					continue;
 				}
 
-				cout<<"[GenomeNeighbourhood] ITEM RIGHT contig-"<<contigName<<" "<<contigStrand<<" "<<contigLength-1;
-				cout<<"contig-"<<m_rightNeighbours[i].getContig()<<" "<<m_rightNeighbours[i].getStrand();
+				cout<<"[GenomeNeighbourhood] ITEM RIGHT ";
+
+				cout<<"contig-"<<contigName<<" "<<contigStrand<<" "<<contigLength-1;
+
+				cout<<" contig-"<<m_rightNeighbours[i].getContig()<<" "<<m_rightNeighbours[i].getStrand();
 				cout<<" "<<m_rightNeighbours[i].getProgression()<<"(TODO) ";
+
 				cout<<m_rightNeighbours[i].getDepth()<<endl;
 			}
 
