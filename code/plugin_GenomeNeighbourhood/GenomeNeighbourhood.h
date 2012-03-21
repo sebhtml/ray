@@ -81,6 +81,9 @@ class GenomeNeighbourhood: public CorePlugin{
 	bool m_receivedPath;
 	bool m_requestedPath;
 	bool m_reverseStrand;
+	
+	bool m_directDone;
+	bool m_reverseDone;
 
 	/* virtual communication */
 	VirtualCommunicator*m_virtualCommunicator;
@@ -114,7 +117,7 @@ class GenomeNeighbourhood: public CorePlugin{
 	void createStacks(Kmer a);
 	void processSide(int mode);
 	void processLinks(int mode);
-
+	void resetKmerStates();
 	void fetchPaths();
 public:
 

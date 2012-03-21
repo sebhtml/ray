@@ -30,22 +30,32 @@
 #include <assert.h>
 #endif
 
-#define FETCH_PARENTS 0
-#define FETCH_CHILDREN 1
+#define FETCH_PARENTS 0x0
+#define FETCH_CHILDREN 0x1
 
 void GenomeNeighbourhood::fetchPaths(){
 
 	Kmer currentKmer=m_stackOfVertices.top();
 	int depth=m_stackOfDepths.top();
 
+	Kmer kmer=currentKmer;
+
+	if(m_reverseStrand){
+		kmer=kmer.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+	}
+
 	if(!m_numberOfPathsRequested){
+
+		#ifdef DEBUG_NEIGHBOURHOOD_COMMUNICATION
+		cout<<"Sending RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE"<<endl;
+		#endif
 
 		// send a message to request the links of the current vertex
 		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 		int bufferPosition=0;
-		currentKmer.pack(buffer,&bufferPosition);
+		kmer.pack(buffer,&bufferPosition);
 	
-		Rank destination=m_parameters->_vertexRank(&currentKmer);
+		Rank destination=m_parameters->_vertexRank(&kmer);
 
 		Message aMessage(buffer,m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE),
 			destination,RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,m_rank);
@@ -67,6 +77,10 @@ void GenomeNeighbourhood::fetchPaths(){
 
 		m_paths=elements[0];
 
+		#ifdef DEBUG_NEIGHBOURHOOD_COMMUNICATION
+		cout<<"Received reply for RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE"<<endl;
+		#endif
+
 		#ifdef DEBUG_NEIGHBOURHOOD_PATHS
 		cout<<"Number of paths: "<<m_paths<<endl;
 		#endif
@@ -77,15 +91,15 @@ void GenomeNeighbourhood::fetchPaths(){
 		m_requestedPath=false;
 		m_receivedPath=false;
 
-	}else if(m_pathIndex == m_paths){
+	}else if(m_numberOfPathsReceived && m_pathIndex == m_paths){
+
+		#ifdef DEBUG_NEIGHBOURHOOD_PATHS
+		cout<<"Index completed."<<endl;
+		#endif
 
 		m_fetchedPaths=true;
 
 	}else if(m_numberOfPathsReceived && !m_requestedPath){
-		Kmer kmer=currentKmer;
-
-		if(m_reverseStrand)
-			kmer=kmer.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 
 		int destination=kmer.vertexRank(m_parameters->getSize(),
 			m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
@@ -97,6 +111,10 @@ void GenomeNeighbourhood::fetchPaths(){
 		int outputPosition=0;
 		kmer.pack(message,&outputPosition);
 		message[outputPosition++]=m_pathIndex;
+
+		#ifdef DEBUG_NEIGHBOURHOOD_COMMUNICATION
+		cout<<"Sending RAY_MPI_TAG_ASK_VERTEX_PATH"<<endl;
+		#endif
 
 		Message aMessage(message,elementsPerQuery,destination,
 			RAY_MPI_TAG_ASK_VERTEX_PATH,m_parameters->getRank());
@@ -121,6 +139,9 @@ void GenomeNeighbourhood::fetchPaths(){
 
 		m_receivedPath=true;
 
+		#ifdef DEBUG_NEIGHBOURHOOD_COMMUNICATION
+		cout<<"Received reply for RAY_MPI_TAG_ASK_VERTEX_PATH"<<endl;
+		#endif
 
 		m_requestedPath=false;
 		m_receivedPath=false;
@@ -137,9 +158,39 @@ void GenomeNeighbourhood::processLinks(int mode){
 	Kmer currentKmer=m_stackOfVertices.top();
 	int depth=m_stackOfDepths.top();
 
-	if(!m_fetchedPaths){
+	if(!m_directDone){
+		if(!m_fetchedPaths){
 
-		fetchPaths();
+			fetchPaths();
+		}else{
+		
+			#ifdef DEBUG_NEIGHBOURHOOD_COMMUNICATION
+			cout<<"m_directDone= True"<<endl;
+			#endif
+
+			m_directDone=true;
+			//m_fetchedPaths=false;
+			m_numberOfPathsRequested=false;
+			m_reverseDone=false;
+
+			m_reverseStrand=true;
+
+		}
+/**/
+	}else if(!m_reverseDone){
+		if(!m_fetchedPaths){
+
+			fetchPaths();
+
+		}else{
+			
+			#ifdef DEBUG_NEIGHBOURHOOD_COMMUNICATION
+			cout<<"m_reverseDone= True"<<endl;
+			#endif
+	
+			m_reverseDone=true;
+		}
+/**/
 
 	}else if(m_fetchedPaths && !m_linksRequested){
 
@@ -242,8 +293,9 @@ void GenomeNeighbourhood::processLinks(int mode){
 	}else if(m_fetchedPaths && m_linksRequested && m_linksReceived){
 		
 		// restart the adventure
-		m_fetchedPaths=false;
-		m_numberOfPathsRequested=false;
+
+		resetKmerStates();
+
 	}
 }
 
@@ -277,8 +329,7 @@ void GenomeNeighbourhood::processSide(int mode){
 
 		createStacks(kmer);
 
-		m_numberOfPathsRequested=false;
-		m_fetchedPaths=false;
+		resetKmerStates();
 
 		m_visited.clear();
 		m_maximumDepth=1024;
@@ -295,6 +346,13 @@ void GenomeNeighbourhood::processSide(int mode){
 
 }
 
+void GenomeNeighbourhood::resetKmerStates(){
+	m_numberOfPathsRequested=false;
+	m_fetchedPaths=false;
+	m_directDone=false;
+	m_reverseDone=false;
+
+}
 
 void GenomeNeighbourhood::createStacks(Kmer a){
 	while(!m_stackOfVertices.empty()){
