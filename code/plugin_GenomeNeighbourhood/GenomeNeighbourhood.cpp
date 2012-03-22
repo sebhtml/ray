@@ -70,6 +70,7 @@ void GenomeNeighbourhood::call_RAY_MPI_TAG_NEIGHBOURHOOD_DATA(Message*message){
 	assert(rightVertexStrand=='F' || rightVertexStrand == 'R');
 	#endif
 
+/*
 	if(rightVertexStrand=='R'){
 		rightProgressionInContig=m_contigLengths->operator[](rightContig)-rightProgressionInContig;
 	}
@@ -78,6 +79,7 @@ void GenomeNeighbourhood::call_RAY_MPI_TAG_NEIGHBOURHOOD_DATA(Message*message){
 	if(leftVertexStrand=='R'){
 		leftProgressionInContig=m_contigLengths->operator[](leftContig)-leftProgressionInContig;
 	}
+*/
 
 	NeighbourPair pair(leftContig,leftVertexStrand,leftProgressionInContig,
 				rightContig,rightVertexStrand,rightProgressionInContig,
@@ -604,21 +606,39 @@ all other cases are invalid.
 		int width1=length1/windows;
 		int width2=length2/windows;
 
+/*
+                           *        *
+ -------------------------->        --------------------------->
+*/
 		if(strand1=='F' && progression1 > length1-1-width1
 		&& strand2=='F' && progression2 < width2){
 
 			valid=true; // case 1.
 
+/*
+ 
+ ------------------------->     +
+                                <-----------------------------
+*/
 		}else if(strand1=='F' && progression1 > length1-1-width1
 		&& strand2=='R' && progression2 > length2-1-width2){
 
 			valid=true;// case 2.
 
+/*
+ 
+ <------------------------
+                              ------------------------------------>
+*/
 		}else if(strand1=='R' && progression1 < width1
 		&& strand2=='F' && progression2 < width2){
 
 			valid=true; // case 3.
 
+/*
+ <-------------------------------
+                                   <-----------------------------
+*/
 		}else if(strand1=='R' && progression1 < width1
 		&& strand2=='R' && progression2 > length2-1 - width2){
 
