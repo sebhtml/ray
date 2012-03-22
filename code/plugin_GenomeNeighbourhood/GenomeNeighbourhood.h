@@ -30,6 +30,7 @@
 #include <plugins/CorePlugin.h>
 #include <plugin_GenomeNeighbourhood/GenomeNeighbourhood_adapters.h>
 #include <plugin_GenomeNeighbourhood/Neighbour.h>
+#include <plugin_GenomeNeighbourhood/NeighbourPair.h>
 #include <plugin_KmerAcademyBuilder/Kmer.h>
 #include <communication/VirtualCommunicator.h>
 #include <application_core/Parameters.h>
@@ -122,6 +123,8 @@ class GenomeNeighbourhood: public CorePlugin{
 	vector<Neighbour> m_leftNeighbours;
 	vector<Neighbour> m_rightNeighbours;
 
+	vector<NeighbourPair> m_finalList;
+
 /** sending neighbours **/
 
 	bool m_sentRightNeighbours;
@@ -143,6 +146,7 @@ class GenomeNeighbourhood: public CorePlugin{
 	void selectHits();
 	void sendLeftNeighbours();
 	void sendRightNeighbours();
+	void processFinalList();
 
 public:
 

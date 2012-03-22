@@ -25,8 +25,7 @@
 //#define DEBUG_NEIGHBOURHOOD_PATHS
 //#define DEBUG_NEIGHBOUR_LISTING
 //#define DEBUG_SIDE
-
-
+//#define DEBUG_LEFT_PATHS
 
 #include <plugin_GenomeNeighbourhood/GenomeNeighbourhood.h>
 
@@ -60,6 +59,7 @@ void GenomeNeighbourhood::call_RAY_MPI_TAG_NEIGHBOURHOOD_DATA(Message*message){
 	int gapSizeInKmers=incoming[position++];
 
 	#ifdef ASSERT
+	assert(gapSizeInKmers >= 1);
 	assert(m_rank==0x00);
 	assert(m_contigLengths->count(leftContig)>0);
 	assert(m_contigLengths->count(rightContig)>0);
@@ -70,6 +70,21 @@ void GenomeNeighbourhood::call_RAY_MPI_TAG_NEIGHBOURHOOD_DATA(Message*message){
 	assert(leftVertexStrand=='F' || leftVertexStrand=='R');
 	assert(rightVertexStrand=='F' || rightVertexStrand == 'R');
 	#endif
+
+	if(rightVertexStrand=='R'){
+		rightProgressionInContig=m_contigLengths->operator[](rightContig)-rightProgressionInContig;
+	}
+
+	// get the position on the actual strand
+	if(leftVertexStrand=='R'){
+		leftProgressionInContig=m_contigLengths->operator[](leftContig)-leftProgressionInContig;
+	}
+
+	NeighbourPair pair(leftContig,leftVertexStrand,leftProgressionInContig,
+				rightContig,rightVertexStrand,rightProgressionInContig,
+				gapSizeInKmers);
+
+	m_finalList.push_back(pair);
 
 	int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_NEIGHBOURHOOD_DATA);
 
@@ -400,6 +415,7 @@ void GenomeNeighbourhood::processLinks(int mode){
 /**/
 		bool foundSomethingReallyCool=false;
 
+/*
 		if(mode==FETCH_CHILDREN){
 			if(!m_rightNeighbours.empty()){
 				foundSomethingReallyCool=true;
@@ -409,6 +425,7 @@ void GenomeNeighbourhood::processLinks(int mode){
 				foundSomethingReallyCool=true;
 			}
 		}
+*/
 /**/
 
 		for(int i=0;i<(int)links->size();i++){
@@ -516,6 +533,100 @@ void GenomeNeighbourhood::createStacks(Kmer a){
 	m_stackOfDepths.push(0);
 }
 
+void GenomeNeighbourhood::processFinalList(){
+/* we have a list of pairs
+ * there are duplicates
+ * and the list is still unfiltered.
+ *
+ * the first step is to select the best entry for
+ * any ordered pair where (a,b) and (b,a) are
+ * different
+ */
+
+/* now, select one entry for each */
+
+
+/* now, select one entry for each */
+
+/* cases:
+ *
+ *
+
+VALID
+
+1.
+            *            *
+ ----------->            ------------>
+
+2.
+            *            *
+ ----------->            <------------
+
+3.
+            *            *
+<------------            ------------->
+
+4.
+            *            *
+<------------            <-------------
+
+all other cases are invalid.
+
+ *
+ */
+
+	int WIDTH=128;
+
+	for(int i=0;i<(int)m_finalList.size();i++){
+		uint64_t contig1=m_finalList[i].getContig1();
+		uint64_t contig2=m_finalList[i].getContig2();
+		int length1=m_contigLengths->operator[](contig1);
+		int length2=m_contigLengths->operator[](contig2);
+		char strand1=m_finalList[i].getStrand1();
+		char strand2=m_finalList[i].getStrand2();
+		int progression1=m_finalList[i].getProgression1();
+		int progression2=m_finalList[i].getProgression2();
+
+		int depth=m_finalList[i].getDepth();
+
+		bool valid=false;
+
+		if(strand1=='F' && progression1 > length1-WIDTH -1
+		&& strand2=='F' && progression2 < WIDTH){
+
+			valid=true; // case 1.
+
+		}else if(strand1=='F' && progression1 > length1-WIDTH -1
+		&& strand2=='R' && progression2 > length2- WIDTH-1){
+
+			valid=true;// case 2.
+
+		}else if(strand1=='R' && progression1 < WIDTH
+		&& strand2=='F' && progression2 < WIDTH){
+
+			valid=true; // case 3.
+
+		}else if(strand1=='R' && progression1 < WIDTH
+		&& strand2=='R' && progression2 > length2- WIDTH -1){
+
+			valid=true; // case 4.
+		}
+
+		cout<<"ENTRY contig-"<<contig1<<" "<<strand1<<" "<<progression1<<" and ";
+		cout<<"contig-"<<contig2<<" "<<strand2<<" "<<progression2<<" with "<<depth<<" ";
+
+		if(valid){
+			cout<<"VALID";
+		}else{
+			cout<<"INVALID";
+		}
+		cout<<endl;
+	}
+
+
+
+}
+
 void GenomeNeighbourhood::call_RAY_MASTER_MODE_NEIGHBOURHOOD(){
 
 	if(!m_started){
@@ -524,6 +635,15 @@ void GenomeNeighbourhood::call_RAY_MASTER_MODE_NEIGHBOURHOOD(){
 		m_started=true;
 
 	}else if(m_core->getSwitchMan()->allRanksAreReady()){
+
+		cout<<"[GenomeNeighbourhood] in final list: "<<m_finalList.size()<<endl;
+
+		processFinalList();
+
+		m_finalList.clear();
+		m_contigNames->clear();
+		m_contigLengths->clear();
+		m_contigs->clear();
 
 		m_timePrinter->printElapsedTime("Computing neighbourhoods");
 
@@ -618,6 +738,8 @@ void GenomeNeighbourhood::selectHits(){
 		cout<<m_rightNeighbours[i].getDepth()<<endl;
 		#endif
 	}
+
+	m_rightNeighbours=rightNeighbours;
 
 }
 
@@ -812,6 +934,12 @@ void GenomeNeighbourhood::sendRightNeighbours(){
 
 
 	}else{
+
+		#ifdef DEBUG_LEFT_PATHS
+		cout<<"[DEBUG_LEFT_PATHS] processed left paths: "<<m_leftNeighbours.size()<<endl;
+		#endif
+
+
 		m_sentRightNeighbours=true;
 
 	}
@@ -864,6 +992,10 @@ void GenomeNeighbourhood::sendLeftNeighbours(){
 			m_neighbourIndex++;
 		}
 	}else{
+
+		#ifdef DEBUG_LEFT_PATHS
+		cout<<"[DEBUG_LEFT_PATHS] processed left paths: "<<m_leftNeighbours.size()<<endl;
+		#endif
 
 		m_sentLeftNeighbours=true;
 		m_sentRightNeighbours=false;

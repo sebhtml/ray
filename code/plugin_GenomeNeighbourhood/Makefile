@@ -5,6 +5,7 @@
 
 GenomeNeighbourhood-y += plugin_GenomeNeighbourhood/GenomeNeighbourhood.o
 GenomeNeighbourhood-y += plugin_GenomeNeighbourhood/Neighbour.o
+GenomeNeighbourhood-y += plugin_GenomeNeighbourhood/NeighbourPair.o
 GenomeNeighbourhood-y += plugin_GenomeNeighbourhood/GenomeNeighbourhood_adapters.o
 
 obj-y += $(GenomeNeighbourhood-y)
