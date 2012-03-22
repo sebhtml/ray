@@ -81,7 +81,7 @@ void Scaffolder::solve(){
 	ostringstream linkFile;
 	linkFile<<m_parameters->getPrefix()<<"ScaffoldLinks.txt";
 	ofstream f(linkFile.str().c_str());
-	f<<"Left contig name	Left contig strand	Right contig name	Right contig strand	";
+	f<<"#Left contig name	Left contig strand	Right contig name	Right contig strand	";
 	f<<"Average gap length	Average gap count";
 	f<<"	Summary link iterator 1	Summary count 1	Summary average 1	Summary standard  deviation 1";
 	f<<"	Summary link iterator 2	Summary count 2	Summary average 2	Summary standard  deviation 2";

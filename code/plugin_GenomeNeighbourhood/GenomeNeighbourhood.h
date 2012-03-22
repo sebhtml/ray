@@ -77,6 +77,7 @@ class GenomeNeighbourhood: public CorePlugin{
 	bool m_linksRequested;
 	bool m_linksReceived;
 	int m_paths;
+	bool m_foundPathsForThisVertex;
 	int m_pathIndex;
 	bool m_numberOfPathsRequested;
 	bool m_numberOfPathsReceived;

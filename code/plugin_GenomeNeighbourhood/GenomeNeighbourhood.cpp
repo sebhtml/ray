@@ -17,8 +17,6 @@
     along with this program (gpl-3.0.txt).  
 	see <http://www.gnu.org/licenses/>
 
-\file GenomeNeighbourhood.h
-\author Sébastien Boisvert
 */
 
 //#define DEBUG_NEIGHBOURHOOD_COMMUNICATION
@@ -28,13 +26,14 @@
 //#define DEBUG_LEFT_PATHS
 
 #include <plugin_GenomeNeighbourhood/GenomeNeighbourhood.h>
+#include <sstream>
 
 #ifdef ASSERT
 #include <assert.h>
 #endif
 
-#define FETCH_PARENTS 0x0345678
-#define FETCH_CHILDREN 0x1810230
+#define FETCH_PARENTS 	0x00345678
+#define FETCH_CHILDREN 	0x01810230
 
 void GenomeNeighbourhood::call_RAY_MPI_TAG_NEIGHBOURHOOD_DATA(Message*message){
 	
@@ -96,6 +95,11 @@ void GenomeNeighbourhood::call_RAY_MPI_TAG_NEIGHBOURHOOD_DATA(Message*message){
 }
 
 void GenomeNeighbourhood::fetchPaths(int mode){
+
+/** stop the search when something is found **/
+/** this will speed things up, but will report less hits because of repeated k-mers **/
+
+	bool stopWhenSomethingIsFound=true;
 
 	Kmer currentKmer=m_stackOfVertices.top();
 	int depth=m_stackOfDepths.top();
@@ -242,6 +246,10 @@ void GenomeNeighbourhood::fetchPaths(int mode){
 
 			Neighbour friendlyNeighbour(strand,depth,pathIdentifier,progression);
 		
+			if(stopWhenSomethingIsFound){
+				m_foundPathsForThisVertex=true;
+			}
+
 			if(mode==FETCH_PARENTS){
 				m_leftNeighbours.push_back(friendlyNeighbour);
 
@@ -412,22 +420,6 @@ void GenomeNeighbourhood::processLinks(int mode){
 
 		/** we don't continue if we found something interesting... **/
 
-/**/
-		bool foundSomethingReallyCool=false;
-
-/*
-		if(mode==FETCH_CHILDREN){
-			if(!m_rightNeighbours.empty()){
-				foundSomethingReallyCool=true;
-			}
-		}else if(mode==FETCH_PARENTS){
-			if(!m_leftNeighbours.empty()){
-				foundSomethingReallyCool=true;
-			}
-		}
-*/
-/**/
-
 		for(int i=0;i<(int)links->size();i++){
 
 			#ifdef ASSERT
@@ -437,7 +429,8 @@ void GenomeNeighbourhood::processLinks(int mode){
 			Kmer newKmer=links->at(i);
 
 			if(nextDepth<= m_maximumDepth && m_visited.count(newKmer)==0
-				&& !foundSomethingReallyCool ){
+
+				&& !m_foundPathsForThisVertex){ /* avoid exploring too much when something is already on the table **/
 		
 				m_stackOfVertices.push(newKmer);
 				m_stackOfDepths.push(nextDepth);
@@ -489,7 +482,10 @@ void GenomeNeighbourhood::processSide(int mode){
 
 		m_visited.clear();
 		m_foundContigs.clear();
-		m_maximumDepth=4096;
+
+/* the maximum depth
+ * values are 1024, 2048 or 4096 */
+		m_maximumDepth=1024;
 
 		m_startedSide=true;
 
@@ -519,6 +515,8 @@ void GenomeNeighbourhood::resetKmerStates(){
 	m_reverseDone=false;
 
 	m_reverseStrand=false;
+
+	m_foundPathsForThisVertex=false;
 }
 
 void GenomeNeighbourhood::createStacks(Kmer a){
@@ -575,7 +573,17 @@ all other cases are invalid.
  *
  */
 
-	int WIDTH=128;
+	ostringstream relations;
+
+	relations<<m_parameters->getPrefix()<<"/NeighbourhoodRelations.txt";
+
+	string file=relations.str();
+
+	ofstream f(file.c_str());
+	
+	f<<"#LeftContigPath	LengthInKmers	DNAStrand	PositionOnStrand";
+	f<<"	RightContigPath	LengthInKmers	DNAStrand	PositionOnStrand";
+	f<<"	DistanceInKmers	QualityControlStatus"<<endl;
 
 	for(int i=0;i<(int)m_finalList.size();i++){
 		uint64_t contig1=m_finalList[i].getContig1();
@@ -591,37 +599,45 @@ all other cases are invalid.
 
 		bool valid=false;
 
-		if(strand1=='F' && progression1 > length1-WIDTH -1
-		&& strand2=='F' && progression2 < WIDTH){
+		int windows=(0x00000001 << 0x00000002);
+
+		int width1=length1/windows;
+		int width2=length2/windows;
+
+		if(strand1=='F' && progression1 > length1-1-width1
+		&& strand2=='F' && progression2 < width2){
 
 			valid=true; // case 1.
 
-		}else if(strand1=='F' && progression1 > length1-WIDTH -1
-		&& strand2=='R' && progression2 > length2- WIDTH-1){
+		}else if(strand1=='F' && progression1 > length1-1-width1
+		&& strand2=='R' && progression2 > length2-1-width2){
 
 			valid=true;// case 2.
 
-		}else if(strand1=='R' && progression1 < WIDTH
-		&& strand2=='F' && progression2 < WIDTH){
+		}else if(strand1=='R' && progression1 < width1
+		&& strand2=='F' && progression2 < width2){
 
 			valid=true; // case 3.
 
-		}else if(strand1=='R' && progression1 < WIDTH
-		&& strand2=='R' && progression2 > length2- WIDTH -1){
+		}else if(strand1=='R' && progression1 < width1
+		&& strand2=='R' && progression2 > length2-1 - width2){
 
 			valid=true; // case 4.
 		}
 
-		cout<<"ENTRY contig-"<<contig1<<" "<<strand1<<" "<<progression1<<" and ";
-		cout<<"contig-"<<contig2<<" "<<strand2<<" "<<progression2<<" with "<<depth<<" ";
+		f<<"contig-"<<contig1<<"	"<<length1<<"	"<<strand1<<"	"<<progression1<<"";
+		f<<"	contig-"<<contig2<<"	"<<length2<<"	"<<strand2<<"	"<<progression2<<"";
+		f<<"	"<<depth<<"	";
 
 		if(valid){
-			cout<<"VALID";
+			f<<"PASS";
 		}else{
-			cout<<"INVALID";
+			f<<"FAIL";
 		}
-		cout<<endl;
+		f<<endl;
 	}
+
+	f.close();
 
 
 
@@ -814,6 +830,9 @@ void GenomeNeighbourhood::call_RAY_SLAVE_MODE_NEIGHBOURHOOD(){
 		if(!m_doneLeftSide){
 	
 			if(!m_startedLeft){
+
+				cout<<"Rank "<<m_rank<<" is fetching contig path neighbours ["<<m_contigIndex<<"/"<<m_contigs->size()<<"]"<<endl;
+
 				m_startedLeft=true;
 				m_startedSide=false;
 				m_doneSide=false;
@@ -873,6 +892,8 @@ void GenomeNeighbourhood::call_RAY_SLAVE_MODE_NEIGHBOURHOOD(){
 			m_startedRight=false;
 		}
 	}else{
+
+		cout<<"Rank "<<m_rank<<" is fetching contig path neighbours ["<<m_contigIndex<<"/"<<m_contigs->size()<<"]"<<endl;
 
 		#ifdef ASSERT
 		assert(m_contigIndex == (int)m_contigs->size());
