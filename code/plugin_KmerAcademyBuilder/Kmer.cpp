@@ -300,18 +300,25 @@ uint64_t Kmer::hash_function_2(){
 	#endif
 }
 
-string Kmer::idToWord(int wordSize,bool color){
-	char a[1000];
-	for(int p=0;p<wordSize;p++){
+void Kmer::convertToString(int kmerLength,bool color, char*buffer){
+	for(int p=0;p<kmerLength;p++){
 		int bitPosition=2*p;
 		int chunkId=p/32;
 		int bitPositionInChunk=(bitPosition%64);
 		uint64_t chunk=getU64(chunkId);
 		uint64_t j=(chunk<<(62-bitPositionInChunk))>>62; // clear the bits.
-		a[p]=codeToChar(j,color);
+		buffer[p]=codeToChar(j,color);
 	}
-	a[wordSize]='\0';
+	buffer[kmerLength]='\0';
+}
+
+string Kmer::idToWord(int wordSize,bool color){
+	char a[300];
+
+	convertToString(wordSize,color,a);
+
 	string b=a;
+
 	return b;
 }
 
@@ -396,3 +403,24 @@ Kmer Kmer::complementVertex(int wordSize,bool colorSpace){
 	return output;
 }
 
+double Kmer::getGuanineCytosineProportion(int kmerLength,bool coloredMode){
+	char buffer[300];
+
+	convertToString(kmerLength,coloredMode,buffer);
+
+	int count=0;
+
+	for(int i=0;i<kmerLength;i++){
+		if(buffer[i]=='G' || buffer[i]=='C'){
+			count++;
+		}
+	}
+
+	#ifdef ASSERT
+	assert(kmerLength!=0);
+	#endif
+
+	double proportion=(0.0+count)/kmerLength;
+
+	return proportion;
+}

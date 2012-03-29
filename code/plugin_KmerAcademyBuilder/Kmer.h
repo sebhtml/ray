@@ -127,6 +127,9 @@ public:
 	void write(ofstream*f);
 	void read(ifstream*f);
 
+	void convertToString(int kmerLength,bool coloredMode,char*buffer);
+	double getGuanineCytosineProportion(int kmerLength,bool coloredMode);
+
 }ATTRIBUTE_PACKED;
 
 /*

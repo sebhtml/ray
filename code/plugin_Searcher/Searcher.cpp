@@ -686,17 +686,33 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 
 		if(m_writeDetailedFiles){ /* now we write coverage frequencies */
 
+			#ifdef ASSERT
+			assert(m_coverageValues.size() == (*m_contigs)[m_contig].size());
+			#endif
+
 			for(int i=0;i<(int)m_coverageValues.size();i++){
 				int position=i+1;
 				int coverage=m_coverageValues[i];
 				int colors=m_colorValues[i];
+
+				//*************
+				// compute the GC ratio too
+				int kmerLength=m_parameters->getWordSize();
+
+				// this is legacy, getColorSpaceMode is always false usually...
+				// anyway the code path for getColorSpaceMode=true is not tested very well
+				bool coloredMode=m_parameters->getColorSpaceMode();
+
+				Kmer*kmer=&((*m_contigs)[m_contig][i]);
+				double gcRatio=kmer->getGuanineCytosineProportion(kmerLength,coloredMode);
 
 				#ifdef ASSERT
 				assert(coverage>=2);
 				assert(colors>=0);
 				#endif
 
-				m_currentCoverageFile<<position<<"	"<<coverage<<"	"<<colors<<endl;
+				m_currentCoverageFile<<position<<"	"<<coverage<<"	";
+				m_currentCoverageFile<<gcRatio<<"	"<<colors<<endl;
 			}
 
 			m_currentCoverageFile<<"</coverageDepths>"<<endl;
@@ -828,7 +844,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 					m_currentCoverageFile<<"<contig><name>contig-"<<contigName<<"</name>";
 					m_currentCoverageFile<<"<lengthInKmers>"<<length<<"</lengthInKmers>"<<endl;
 					m_currentCoverageFile<<"<coverageDepths>"<<endl;
-					m_currentCoverageFile<<"#KmerPosition	KmerCoverage	PhysicalColors"<<endl;
+					m_currentCoverageFile<<"#KmerPosition	KmerCoverage	GuanineCytosineProportion	PhysicalColors"<<endl;
 				}
 			}
 	
