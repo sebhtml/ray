@@ -52,6 +52,9 @@ RayPlatform/communication/MessageRouter.cpp
 RayPlatform/communication/Message.cpp
 RayPlatform/communication/mpi_tags.cpp
 RayPlatform/communication/BufferedData.cpp
+
+
+
 code/plugin_MachineHelper/MachineHelper.cpp
 code/plugin_MachineHelper/MachineHelper_adapters.cpp
 code/plugin_Library/Library.cpp
@@ -148,6 +151,8 @@ code/plugin_Scaffolder/ScaffoldingEdge.cpp
 code/plugin_Scaffolder/Scaffolder_adapters.cpp
 code/plugin_Scaffolder/ScaffoldingLink.cpp
 code/plugin_GenomeNeighbourhood/GenomeNeighbourhood.cpp
+code/plugin_GenomeNeighbourhood/NeighbourPair.cpp
+code/plugin_GenomeNeighbourhood/Neighbour.cpp
 code/plugin_GenomeNeighbourhood/GenomeNeighbourhood_adapters.cpp
 code/plugin_PhylogenyViewer/GenomeToTaxonLoader.cpp
 code/plugin_PhylogenyViewer/PhylogenyViewer_adapters.cpp
@@ -156,4 +161,3 @@ code/plugin_PhylogenyViewer/PhylogeneticTreeLoader.cpp
 code/plugin_PhylogenyViewer/TaxonNameLoader.cpp
 
 )
-
