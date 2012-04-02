@@ -33,14 +33,19 @@ DESCRIPTION:
        -s sequenceFile
               Provides a file containing single-end reads.
 
-  Biological abundances and phylogeny 
+  Biological abundances and taxonomy
 
        -search searchDirectory
               Provides a directory containing fasta files to be searched in the de Bruijn graph.
               Biological abundances will be written to RayOutput/BiologicalAbundances
               See Documentation/BiologicalAbundances.txt
 
-       -with-taxonomy Genome-to-Taxon.tsv TreeOfLife-Edges.tsv Taxons.tsv
+       -one-color-per-file
+              Sets one color per file instead of one per sequence.
+              By default, each sequence in each file has a different color.
+              For files with large numbers of sequences, using one single color per file may be more efficient.
+
+       -with-taxonomy Genome-to-Taxon.tsv TreeOfLife-Edges.tsv Taxon-Names.tsv
               Provides a taxonomy.
               See Documentation/Phylogeny.txt for details.
 
@@ -318,4 +323,4 @@ COPYRIGHT
        You have received a copy of the GNU General Public License
        along with this program (see LICENSE).
 
-Ray 2.0.0-rc4
+Ray 2.0.0-rc5
