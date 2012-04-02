@@ -41,8 +41,6 @@ ColorSet::ColorSet(){
 	int i=0;
 	
 	OPERATION_IN_PLACE_ONE_REFERENCE=i++;
-	OPERATION_NO_VIRTUAL_COLOR_HAS_PHYSICAL_COLOR_CREATION=i++;
-	OPERATION_NO_VIRTUAL_COLOR_HAS_COUNT_CREATION=i++;
 	OPERATION_NO_VIRTUAL_COLOR_HAS_HASH_CREATION=i++;
 	OPERATION_VIRTUAL_COLOR_HAS_COLORS_FETCH=i++;
 	OPERATION_NO_VIRTUAL_COLOR_HAS_COLORS_CREATION=i++;
@@ -198,8 +196,6 @@ void ColorSet::printSummary(ostream*out,bool xml){
 	(*out)<<"  OPERATION_getVirtualColorFrom operations: "<<m_operations[OPERATION_getVirtualColorFrom]<<endl;
 	(*out)<<endl;
 	(*out)<<"  OPERATION_IN_PLACE_ONE_REFERENCE: "<<m_operations[OPERATION_IN_PLACE_ONE_REFERENCE]<<endl;
-	(*out)<<"  OPERATION_NO_VIRTUAL_COLOR_HAS_PHYSICAL_COLOR_CREATION operations: "<<m_operations[OPERATION_NO_VIRTUAL_COLOR_HAS_PHYSICAL_COLOR_CREATION]<<endl;
-	(*out)<<"  OPERATION_NO_VIRTUAL_COLOR_HAS_COUNT_CREATION operations: "<<m_operations[OPERATION_NO_VIRTUAL_COLOR_HAS_COUNT_CREATION]<<endl;
 	(*out)<<"  OPERATION_NO_VIRTUAL_COLOR_HAS_HASH_CREATION operations: "<<m_operations[OPERATION_NO_VIRTUAL_COLOR_HAS_HASH_CREATION]<<endl;
 	(*out)<<"  OPERATION_VIRTUAL_COLOR_HAS_COLORS_FETCH operations: "<<m_operations[OPERATION_VIRTUAL_COLOR_HAS_COLORS_FETCH]<<endl;
 	(*out)<<"  OPERATION_NO_VIRTUAL_COLOR_HAS_COLORS_CREATION operations: "<<m_operations[OPERATION_NO_VIRTUAL_COLOR_HAS_COLORS_CREATION]<<endl;
@@ -405,7 +401,7 @@ VirtualKmerColorHandle ColorSet::getVirtualColorFrom(VirtualKmerColorHandle hand
 
 	// in any case, we have to compute the hash from scratch
 	// because the new color has to be inserted in
-	// a sorted set
+	// a sorted se
 	// 2012-02-01: not anymore, captain !
 	// the sum of a group of numbers does not depend on their order...
 	

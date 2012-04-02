@@ -295,7 +295,11 @@ void Parameters::parseCommands(){
 	set<string> phylogeny;
 	phylogeny.insert("-with-taxonomy");
 
+	set<string> coloringOneColor;
+	coloringOneColor.insert("-one-color-per-file");
+
 	vector<set<string> > toAdd;
+	toAdd.push_back(coloringOneColor);
 	toAdd.push_back(phylogeny);
 	toAdd.push_back(minimumContigLength);
 	toAdd.push_back(showExtensionChoiceOption);
@@ -1198,11 +1202,16 @@ void Parameters::showUsage(){
 	showOption("-s sequenceFile","Provides a file containing single-end reads.");
 	cout<<endl;
 
-	cout<<"  Biological abundances and phylogeny "<<endl;
+	cout<<"  Biological abundances and taxonomy"<<endl;
 	cout<<endl;
 	showOption("-search searchDirectory","Provides a directory containing fasta files to be searched in the de Bruijn graph.");
 	showOptionDescription("Biological abundances will be written to RayOutput/BiologicalAbundances");
 	showOptionDescription("See Documentation/BiologicalAbundances.txt");
+	cout<<endl;
+
+	showOption("-one-color-per-file", "Sets one color per file instead of one per sequence.");
+	showOptionDescription("By default, each sequence in each file has a different color.");
+	showOptionDescription("For files with large numbers of sequences, using one single color per file may be more efficient.");
 	cout<<endl;
 
 	showOption("-with-taxonomy Genome-to-Taxon.tsv TreeOfLife-Edges.tsv Taxon-Names.tsv","Provides a taxonomy.");

@@ -2811,7 +2811,18 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		// xxxx000yyyyyyyyyyyyy
 		//    10000000000000000
 
-		m_color= m_globalSequenceIterator + COLOR_NAMESPACE * (m_directoryIterator);
+		PhysicalKmerColor colorInNamespace=m_globalSequenceIterator;
+
+		// for large datasets, using one color per file may be better for memory usage...
+		// in this case, we use one color per file
+		// colors in different directories are independent because of namespaces.
+
+		if(m_parameters->hasOption("-one-color-per-file")){
+			colorInNamespace= m_fileIterator;
+		}
+
+		// generate a color that includes the namespace
+		m_color= colorInNamespace + COLOR_NAMESPACE * (m_directoryIterator);
 
 		/* unique identifiers have their own namespace */
 
