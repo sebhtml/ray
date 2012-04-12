@@ -579,7 +579,7 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		ostringstream summary;
 		summary<<m_parameters->getPrefix()<<"/BiologicalAbundances/_DeNovoAssembly/Contigs.tsv";
 
-		contigSummaryFile.open(summary.str().c_str());
+		contigSummaryFile.open(summary.str().c_str(), ios_base::app);
 
 		contigSummaryFile<<"#Contig name	K-mer length	Length in k-mers";
 		contigSummaryFile<<"	Colored k-mers";
@@ -641,7 +641,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 			file2<<m_parameters->getPrefix()<<"/BiologicalAbundances/_DeNovoAssembly/";
 			file2<<m_parameters->getRank()<<".CoverageData.xml";
 
-			m_currentCoverageFile.open(file2.str().c_str());
+			m_currentCoverageFile.open(file2.str().c_str(),ios_base::app);
 
 			m_currentCoverageFile<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"<<endl;
 			m_currentCoverageFile<<"<root>"<<endl;
@@ -1149,7 +1149,8 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 		ostringstream summaryFile;
 		summaryFile<<m_parameters->getPrefix()<<"/BiologicalAbundances/_Coloring/"<<m_parameters->getRank()<<".Operations.txt";
-		ofstream f1(summaryFile.str().c_str());
+		ofstream f1;
+		f1.open(summaryFile.str().c_str(),ios_base::app);
 
 		m_colorSet.printSummary(&f1,true);
 
@@ -1159,7 +1160,8 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 		ostringstream virtualStuff;
 		virtualStuff<<m_parameters->getPrefix()<<"/BiologicalAbundances/_Coloring/"<<m_parameters->getRank()<<".VirtualColors.txt";
-		ofstream f2(virtualStuff.str().c_str());
+		ofstream f2;
+		f2.open(virtualStuff.str().c_str(),ios_base::app);
 		m_colorSet.printColors(&f2);
 		f2.close();
 
@@ -2065,7 +2067,7 @@ void Searcher::createTrees(){
 		ostringstream directory6;
 		directory6<<m_parameters->getPrefix()<<"/BiologicalAbundances/_Directories.tsv";
 	
-		directoriesFile.open(directory6.str().c_str());
+		directoriesFile.open(directory6.str().c_str(),ios_base::app);
 		directoriesFile<<"#Directory	DirectoryName	Files"<<endl;
 	}
 
@@ -2089,7 +2091,7 @@ void Searcher::createTrees(){
 		if(m_parameters->getRank()==MASTER_RANK){
 			createDirectory(directory2Str.c_str());
 
-			files.open(fileForFiles.str().c_str());
+			files.open(fileForFiles.str().c_str(),ios_base::app);
 
 			files<<"#FileNumber	FileName	Sequences"<<endl;
 
@@ -3052,7 +3054,7 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 		// add the file name without the .fasta
 		fileName<<"SequenceAbundances.xml";
 
-		m_arrayOfFiles[directoryIterator]=fopen(fileName.str().c_str(),"w");
+		m_arrayOfFiles[directoryIterator]=fopen(fileName.str().c_str(),"a");
 		
 		#ifdef ASSERT
 		assert(m_activeFiles>=0); // it is 0 or 1 or something else
@@ -3267,7 +3269,7 @@ void Searcher::call_RAY_MPI_TAG_CONTIG_IDENTIFICATION(Message*message){
        		identifications<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
        		identifications<<baseName<<"/ContigIdentifications.tsv";
 
-       		m_identificationFiles[directoryIterator]=fopen(identifications.str().c_str(),"w");
+       		m_identificationFiles[directoryIterator]=fopen(identifications.str().c_str(),"a");
 
        		ostringstream line;
        	
