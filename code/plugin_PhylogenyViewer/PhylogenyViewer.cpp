@@ -103,7 +103,8 @@ void PhylogenyViewer::call_RAY_MASTER_MODE_PHYLOGENY_MAIN(){
 		hitFile<<"/Taxons.xml";
 
 		string file=hitFile.str();
-		ofstream f(file.c_str());
+		ofstream f;
+		f.open(file.c_str(),ios_base::app);
 
 		#ifdef ASSERT
 		assert(f.is_open());
