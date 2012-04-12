@@ -28,6 +28,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <sstream>
 #include <plugin_VerticesExtractor/GridTable.h>
 using namespace std;
 
@@ -263,6 +264,7 @@ class Searcher :  public CorePlugin {
 
 	/** file to write coverage distribution */
 	ofstream m_currentCoverageFile;
+	ostringstream m_currentCoverageFile_Buffer;
 
 	/** a vector to store coverage values */
 	vector<int> m_coverageValues;
@@ -358,6 +360,11 @@ class Searcher :  public CorePlugin {
 
 	/* count the k-mer observations */
 	uint64_t countKmerObservations();
+
+	/* I/O optimization */
+	uint64_t m_flushOperations;
+	int m_bufferSize;
+	void flushCoverageXMLBuffer(bool force);
 public:
 
 	void call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS();

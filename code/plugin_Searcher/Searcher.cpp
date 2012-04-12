@@ -605,6 +605,7 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		contigSummaryFile.close();
 
 		m_timePrinter->printElapsedTime("Counting contig biological abundances");
+
 		cout<<endl;
 
 		m_switchMan->closeMasterMode();
@@ -643,8 +644,8 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 
 			m_currentCoverageFile.open(file2.str().c_str(),ios_base::app);
 
-			m_currentCoverageFile<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"<<endl;
-			m_currentCoverageFile<<"<root>"<<endl;
+			m_currentCoverageFile_Buffer<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"<<endl;
+			m_currentCoverageFile_Buffer<<"<root>"<<endl;
 		}
 
 	// we have finished our part
@@ -653,7 +654,9 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		/* close the XML file */
 		if(m_writeDetailedFiles){
 	
-			m_currentCoverageFile<<"</root>"<<endl;
+			m_currentCoverageFile_Buffer<<"</root>"<<endl;
+
+			flushCoverageXMLBuffer(true);
 
 			m_currentCoverageFile.close();
 		}
@@ -667,6 +670,8 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		#ifdef ASSERT
 		assert(m_bufferedData.isEmpty());
 		#endif
+
+		cout<<"[IO] Input/output: operations: "<<m_flushOperations<<" bufferSize: "<<m_bufferSize<<endl;
 
 	// we finished a contig
 	}else if(!m_requestedCoverage && m_contigPosition==(int)(*m_contigs)[m_contig].size()
@@ -711,13 +716,13 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 				assert(colors>=0);
 				#endif
 
-				m_currentCoverageFile<<position<<"	"<<coverage<<"	";
-				m_currentCoverageFile<<gcRatio<<"	"<<colors<<endl;
+				m_currentCoverageFile_Buffer<<position<<"	"<<coverage<<"	";
+				m_currentCoverageFile_Buffer<<gcRatio<<"	"<<colors<<endl;
 			}
 
-			m_currentCoverageFile<<"</coverageDepths>"<<endl;
-			m_currentCoverageFile<<"<coverageFrequencies>"<<endl;
-			m_currentCoverageFile<<"#KmerCoverage	Count"<<endl;
+			m_currentCoverageFile_Buffer<<"</coverageDepths>"<<endl;
+			m_currentCoverageFile_Buffer<<"<coverageFrequencies>"<<endl;
+			m_currentCoverageFile_Buffer<<"#KmerCoverage	Count"<<endl;
 		}
 
 		int mode=0;
@@ -730,7 +735,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 			int coverage=i->first;
 
 			if(m_writeDetailedFiles){
-				m_currentCoverageFile<<coverage<<"	"<<count<<endl;
+				m_currentCoverageFile_Buffer<<coverage<<"	"<<count<<endl;
 			}
 
 			if(count>modeCount){
@@ -743,7 +748,9 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		}
 	
 		if(m_writeDetailedFiles){
-			m_currentCoverageFile<<"</coverageFrequencies></contig>"<<endl;
+			m_currentCoverageFile_Buffer<<"</coverageFrequencies></contig>"<<endl;
+
+			flushCoverageXMLBuffer(false);
 		}
 
 		double mean=sum;
@@ -841,10 +848,10 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 						m_colorValues[i]=-1;
 					}
 
-					m_currentCoverageFile<<"<contig><name>contig-"<<contigName<<"</name>";
-					m_currentCoverageFile<<"<lengthInKmers>"<<length<<"</lengthInKmers>"<<endl;
-					m_currentCoverageFile<<"<coverageDepths>"<<endl;
-					m_currentCoverageFile<<"#KmerPosition	KmerCoverage	GuanineCytosineProportion	PhysicalColors"<<endl;
+					m_currentCoverageFile_Buffer<<"<contig><name>contig-"<<contigName<<"</name>";
+					m_currentCoverageFile_Buffer<<"<lengthInKmers>"<<length<<"</lengthInKmers>"<<endl;
+					m_currentCoverageFile_Buffer<<"<coverageDepths>"<<endl;
+					m_currentCoverageFile_Buffer<<"#KmerPosition	KmerCoverage	GuanineCytosineProportion	PhysicalColors"<<endl;
 				}
 			}
 	
@@ -3312,6 +3319,24 @@ uint64_t Searcher::getTotalNumberOfKmerObservations(){
 	return m_totalNumberOfKmerObservations;
 }
 
+void Searcher::flushCoverageXMLBuffer(bool force){
+
+	int bufferSize=m_bufferSize;
+
+	if(force || (int)m_currentCoverageFile_Buffer.str().length()>=bufferSize){
+
+		// flush data
+		m_currentCoverageFile<<m_currentCoverageFile_Buffer.str();
+		m_currentCoverageFile_Buffer.str("");
+
+		#ifdef ASSERT
+		assert(m_currentCoverageFile_Buffer.str().length()==0);
+		#endif
+
+		m_flushOperations++;
+	}
+}
+
 void Searcher::registerPlugin(ComputeCore*core){
 
 	PluginHandle plugin=core->allocatePluginHandle();
@@ -3476,6 +3501,8 @@ void Searcher::registerPlugin(ComputeCore*core){
 
 
 	m_totalNumberOfKmerObservations=0;
+
+	m_bufferSize=4194304; /* 4MB */ // 134217728 /*128 MB */
 }
 
 void Searcher::resolveSymbols(ComputeCore*core){
@@ -3567,6 +3594,8 @@ void Searcher::resolveSymbols(ComputeCore*core){
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES);
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES, RAY_MASTER_MODE_SEARCHER_CLOSE);
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_SEARCHER_CLOSE, RAY_MASTER_MODE_PHYLOGENY_MAIN);
+
+	m_flushOperations=0;
 }
 
 
