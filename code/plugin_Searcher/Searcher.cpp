@@ -671,7 +671,9 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		assert(m_bufferedData.isEmpty());
 		#endif
 
-		cout<<"[IO] Input/output operations for coverage XML objects: "<<m_coverageXMLflushOperations<<" bufferSize: "<<CONFIG_FILE_IO_BUFFER_SIZE<<" bytes"<<endl;
+		cout<<"[IO] Input/output operations for coverage XML objects: ";
+		cout<<m_coverageXMLflushOperations;
+		cout<<" / bufferSize: "<<CONFIG_FILE_IO_BUFFER_SIZE<<" bytes"<<endl;
 
 	// we finished a contig
 	}else if(!m_requestedCoverage && m_contigPosition==(int)(*m_contigs)[m_contig].size()
@@ -1075,10 +1077,18 @@ void Searcher::call_RAY_SLAVE_MODE_SEARCHER_CLOSE(){
 	// close identification files
 	for(map<int,FILE*>::iterator i=m_identificationFiles.begin();
 		i!=m_identificationFiles.end();i++){
+
+		int directoryIterator=i->first;
+
+		flushContigIdentificationBuffer(directoryIterator,true);
+
 		fclose(i->second);
+
+		delete m_identificationFiles_Buffer[directoryIterator];
 	}
 
 	m_identificationFiles.clear();
+	m_identificationFiles_Buffer.clear();
 
 	// close abundance files
 
@@ -1117,8 +1127,12 @@ void Searcher::call_RAY_SLAVE_MODE_SEARCHER_CLOSE(){
 
 	m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
 
-	cout<<"[IO] Input/output operations for sequence XML objects: "<<m_sequenceXMLflushOperations<<" bufferSize: ";
-	cout<<CONFIG_FILE_IO_BUFFER_SIZE<<" bytes"<<endl;
+	cout<<"[IO] Input/output operations for sequence XML objects: "<<m_sequenceXMLflushOperations;
+	cout<<" / bufferSize: ";
+	cout<<""<<CONFIG_FILE_IO_BUFFER_SIZE<<" bytes"<<endl;
+	cout<<"[IO] Input/output operations for identification TSV objects: ";
+	cout<<m_contigIdentificationflushOperations<<" / bufferSize: ";
+	cout<<""<<CONFIG_FILE_IO_BUFFER_SIZE<<" bytes"<<endl;
 }
 
 /** massively parallel implementation of
@@ -3285,6 +3299,7 @@ void Searcher::call_RAY_MPI_TAG_CONTIG_IDENTIFICATION(Message*message){
        		identifications<<baseName<<"/ContigIdentifications.tsv";
 
        		m_identificationFiles[directoryIterator]=fopen(identifications.str().c_str(),"a");
+		m_identificationFiles_Buffer[directoryIterator]=new ostringstream;
 
        		ostringstream line;
        	
@@ -3294,7 +3309,9 @@ void Searcher::call_RAY_MPI_TAG_CONTIG_IDENTIFICATION(Message*message){
        		line<<"	Sequence length in k-mers	Matches in contig	Contig length ratio";
        		line<<"	Sequence length ratio"<<endl;
 
-       		fprintf(m_identificationFiles[directoryIterator],"%s",line.str().c_str());
+       		*(m_identificationFiles_Buffer[directoryIterator])<<line.str();
+
+		flushContigIdentificationBuffer(directoryIterator,false);
        	}
 
        	// write an entry in the file
@@ -3307,7 +3324,7 @@ void Searcher::call_RAY_MPI_TAG_CONTIG_IDENTIFICATION(Message*message){
        		line<<"	"<<sequenceIterator<<"	"<<sequenceName<<"	";
        		line<<numberOfKmers<<"	"<<count<<"	"<<ratio<<"	"<<sequenceRatio<<endl;
 
-       		fprintf(m_identificationFiles[directoryIterator],"%s",line.str().c_str());
+       		*(m_identificationFiles_Buffer[directoryIterator])<<line.str();
        	}
 
 	// send a reply
@@ -3335,8 +3352,10 @@ void Searcher::flushSequenceAbundanceXMLBuffer(int directoryIterator,bool force)
 	assert(m_arrayOfFiles_Buffer.count(directoryIterator)>0);
 	assert(m_arrayOfFiles.count(directoryIterator)>0);
 	#endif
+	
+	int available=m_arrayOfFiles_Buffer[directoryIterator]->str().length();
 
-	if(force || (int)m_arrayOfFiles_Buffer[directoryIterator]->str().length()>=bufferSize){
+	if(available>=1 && (force || available>=bufferSize)){
 
 		string copy=m_arrayOfFiles_Buffer[directoryIterator]->str();
 
@@ -3353,11 +3372,43 @@ void Searcher::flushSequenceAbundanceXMLBuffer(int directoryIterator,bool force)
 	}
 }
 
+void Searcher::flushContigIdentificationBuffer(int directoryIterator,bool force){
+
+	int bufferSize=CONFIG_FILE_IO_BUFFER_SIZE;
+
+	#ifdef ASSERT
+	assert(m_identificationFiles.count(directoryIterator)>0);
+	assert(m_identificationFiles_Buffer.count(directoryIterator)>0);
+	#endif
+	
+	int available=m_identificationFiles_Buffer[directoryIterator]->str().length();
+
+	if(available>=1 && (force || available>=bufferSize)){
+
+		string copy=m_identificationFiles_Buffer[directoryIterator]->str();
+
+		// flush data
+		fprintf(m_identificationFiles[directoryIterator],"%s",copy.c_str());
+
+		m_identificationFiles_Buffer[directoryIterator]->str("");
+
+		#ifdef ASSERT
+		assert(m_identificationFiles_Buffer[directoryIterator]->str().length()==0);
+		#endif
+
+		m_contigIdentificationflushOperations++;
+	}
+}
+
+
+
 void Searcher::flushCoverageXMLBuffer(bool force){
 
 	int bufferSize=CONFIG_FILE_IO_BUFFER_SIZE;
 
-	if(force || (int)m_currentCoverageFile_Buffer.str().length()>=bufferSize){
+	int available=m_currentCoverageFile_Buffer.str().length();
+
+	if(available>=1 && (force || available>=bufferSize)){
 
 		// flush data
 		m_currentCoverageFile<<m_currentCoverageFile_Buffer.str();
@@ -3629,6 +3680,7 @@ void Searcher::resolveSymbols(ComputeCore*core){
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_SEARCHER_CLOSE, RAY_MASTER_MODE_PHYLOGENY_MAIN);
 
 	m_coverageXMLflushOperations=0;
+	m_contigIdentificationflushOperations=0;
 	m_sequenceXMLflushOperations=0;
 }
 

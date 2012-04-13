@@ -282,6 +282,9 @@ class Searcher :  public CorePlugin {
 
 	/** for the master rank */
 	map<int,FILE*> m_identificationFiles;
+	map<int,ostringstream*> m_identificationFiles_Buffer;
+	int m_contigIdentificationflushOperations;
+	void flushContigIdentificationBuffer(int directory,bool force);
 
 	// base names of directories
 	vector<string> m_directoryNames;
