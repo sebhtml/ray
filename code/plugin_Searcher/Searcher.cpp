@@ -2074,6 +2074,9 @@ int Searcher::getAbundanceWriter(int directory){
 
 int Searcher::getWriter(int directory){
 
+	/* only MASTER_RANK has the meta-data
+ * for contig lengths */
+
 	return MASTER_RANK;
 
 	/* things are distributed here too */
