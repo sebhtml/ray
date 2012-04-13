@@ -671,7 +671,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		assert(m_bufferedData.isEmpty());
 		#endif
 
-		cout<<"[IO] Input/output: operations: "<<m_flushOperations<<" bufferSize: "<<m_bufferSize<<endl;
+		cout<<"[IO] Input/output operations for coverage XML objects: "<<m_coverageXMLflushOperations<<" bufferSize: "<<CONFIG_FILE_IO_BUFFER_SIZE<<" bytes"<<endl;
 
 	// we finished a contig
 	}else if(!m_requestedCoverage && m_contigPosition==(int)(*m_contigs)[m_contig].size()
@@ -1092,16 +1092,21 @@ void Searcher::call_RAY_SLAVE_MODE_SEARCHER_CLOSE(){
 
 		int directoryIterator=i->first;
 
-		fprintf(m_arrayOfFiles[directoryIterator],"</root>");
-		fclose(m_arrayOfFiles[directoryIterator]);
+		*(m_arrayOfFiles_Buffer[directoryIterator])<<"</root>";
 
+		flushSequenceAbundanceXMLBuffer(directoryIterator,true);
+
+		fclose(m_arrayOfFiles[directoryIterator]);
 
 		cout<<"Closed file "<<m_directoryIterator<<" "<<m_fileIterator<<", active file descriptors: "<<m_activeFiles<<endl;
 
 		m_activeFiles--;
+
+		delete m_arrayOfFiles_Buffer[directoryIterator];
 	}
 
 	m_arrayOfFiles.clear();
+	m_arrayOfFiles_Buffer.clear();
 
 	#ifdef ASSERT
 	assert(m_activeFiles==0);
@@ -1111,6 +1116,9 @@ void Searcher::call_RAY_SLAVE_MODE_SEARCHER_CLOSE(){
 	m_writer.close();
 
 	m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
+
+	cout<<"[IO] Input/output operations for sequence XML objects: "<<m_sequenceXMLflushOperations<<" bufferSize: ";
+	cout<<CONFIG_FILE_IO_BUFFER_SIZE<<" bytes"<<endl;
 }
 
 /** massively parallel implementation of
@@ -3062,7 +3070,8 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 		fileName<<"SequenceAbundances.xml";
 
 		m_arrayOfFiles[directoryIterator]=fopen(fileName.str().c_str(),"a");
-		
+		m_arrayOfFiles_Buffer[directoryIterator]=new ostringstream;
+
 		#ifdef ASSERT
 		assert(m_activeFiles>=0); // it is 0 or 1 or something else
 		#endif
@@ -3081,8 +3090,7 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 		content88<<"<totalAssembledKmerObservations>"<<m_totalNumberOfKmerObservations;
 		content88<<"</totalAssembledKmerObservations>"<<endl;
 
-		fprintf(m_arrayOfFiles[directoryIterator],
-			"%s",content88.str().c_str());
+		*(m_arrayOfFiles_Buffer[directoryIterator])<<content88.str();
 
 		cout<<"Opened "<<fileName.str()<<", active file descriptors: "<<m_activeFiles<<endl;
 	}
@@ -3169,9 +3177,9 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 		assert(m_arrayOfFiles.count(directoryIterator)>0);
 		#endif
 
-		fprintf(m_arrayOfFiles[directoryIterator],
-			"%s",content.str().c_str());
+		*(m_arrayOfFiles_Buffer[directoryIterator])<<content.str();
 
+		flushSequenceAbundanceXMLBuffer(directoryIterator,false);
 
 		// also write a shorter version
 
@@ -3319,9 +3327,35 @@ uint64_t Searcher::getTotalNumberOfKmerObservations(){
 	return m_totalNumberOfKmerObservations;
 }
 
+void Searcher::flushSequenceAbundanceXMLBuffer(int directoryIterator,bool force){
+
+	int bufferSize=CONFIG_FILE_IO_BUFFER_SIZE;
+
+	#ifdef ASSERT
+	assert(m_arrayOfFiles_Buffer.count(directoryIterator)>0);
+	assert(m_arrayOfFiles.count(directoryIterator)>0);
+	#endif
+
+	if(force || (int)m_arrayOfFiles_Buffer[directoryIterator]->str().length()>=bufferSize){
+
+		string copy=m_arrayOfFiles_Buffer[directoryIterator]->str();
+
+		// flush data
+		fprintf(m_arrayOfFiles[directoryIterator],"%s",copy.c_str());
+
+		m_arrayOfFiles_Buffer[directoryIterator]->str("");
+
+		#ifdef ASSERT
+		assert(m_arrayOfFiles_Buffer[directoryIterator]->str().length()==0);
+		#endif
+
+		m_sequenceXMLflushOperations++;
+	}
+}
+
 void Searcher::flushCoverageXMLBuffer(bool force){
 
-	int bufferSize=m_bufferSize;
+	int bufferSize=CONFIG_FILE_IO_BUFFER_SIZE;
 
 	if(force || (int)m_currentCoverageFile_Buffer.str().length()>=bufferSize){
 
@@ -3333,7 +3367,7 @@ void Searcher::flushCoverageXMLBuffer(bool force){
 		assert(m_currentCoverageFile_Buffer.str().length()==0);
 		#endif
 
-		m_flushOperations++;
+		m_coverageXMLflushOperations++;
 	}
 }
 
@@ -3502,7 +3536,6 @@ void Searcher::registerPlugin(ComputeCore*core){
 
 	m_totalNumberOfKmerObservations=0;
 
-	m_bufferSize=4194304; /* 4MB */ // 134217728 /*128 MB */
 }
 
 void Searcher::resolveSymbols(ComputeCore*core){
@@ -3595,7 +3628,8 @@ void Searcher::resolveSymbols(ComputeCore*core){
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES, RAY_MASTER_MODE_SEARCHER_CLOSE);
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_SEARCHER_CLOSE, RAY_MASTER_MODE_PHYLOGENY_MAIN);
 
-	m_flushOperations=0;
+	m_coverageXMLflushOperations=0;
+	m_sequenceXMLflushOperations=0;
 }
 
 

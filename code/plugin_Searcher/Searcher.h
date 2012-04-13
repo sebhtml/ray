@@ -307,6 +307,8 @@ class Searcher :  public CorePlugin {
 
 	/** files to write */
 	map<int,FILE* > m_arrayOfFiles;
+	map<int,ostringstream*> m_arrayOfFiles_Buffer;
+
 	/** track the descriptors */
 	int m_activeFiles;
 
@@ -362,9 +364,10 @@ class Searcher :  public CorePlugin {
 	uint64_t countKmerObservations();
 
 	/* I/O optimization */
-	uint64_t m_flushOperations;
-	int m_bufferSize;
+	int m_sequenceXMLflushOperations;
+	int m_coverageXMLflushOperations;
 	void flushCoverageXMLBuffer(bool force);
+	void flushSequenceAbundanceXMLBuffer(int directory,bool force);
 public:
 
 	void call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS();

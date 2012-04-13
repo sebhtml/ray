@@ -151,4 +151,11 @@ see <http://www.gnu.org/licenses/>
 #define RAY_64_BITS
 #endif
 
+/* since Lustre is not very good at caching file input/output operations
+ * Ray agglomerates these operations */
+/* 4 MB: 4194304 */
+/* 128 MB: 134217728 */
+
+#define CONFIG_FILE_IO_BUFFER_SIZE 1048576 /* 1 MB */
+
 #endif
