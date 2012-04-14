@@ -1,0 +1,40 @@
+
+Because Ray is compiled as a single executable, it is fairly easy to deploy it 
+in the cloud.
+
+For example:
+
+
+mpiexec -n 64 Ray \
+ -k \
+ 31 \
+ -p \
+ Sample/100_1.fasta \
+ Sample/100_2.fasta \
+ -p \
+ Sample/10_1.fasta \
+ Sample/10_2.fasta \
+ -p \
+ Sample/11_1.fasta \
+ Sample/11_2.fasta \
+ -p \
+ Sample/1_1.fasta \
+ Sample/1_2.fasta \
+ -p \
+ Sample/12_1.fasta \
+ Sample/12_2.fasta \
+ -p \
+ Sample/13_1.fasta \
+ Sample/13_2.fasta \
+ -p \
+ Sample/14_1.fasta \
+ Sample/14_2.fasta \
+ -p \
+ Sample/15_1.fasta \
+ Sample/15_2.fasta \
+ -p \
+ Sample/16_1.fasta \
+ Sample/16_2.fasta \
+ -o BigJob
+
+

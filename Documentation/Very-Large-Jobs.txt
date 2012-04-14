@@ -1,0 +1,71 @@
+
+For very large jobs, routing should be enabled.
+Message routing reduces the latency.
+
+
+
+mpiexec -n 512 Ray \
+ -route-messages -connection-type debruijn -routing-graph-degree 8 \
+ -k \
+ 31 \
+ -p \
+ Sample/100_1.fasta \
+ Sample/100_2.fasta \
+ -p \
+ Sample/10_1.fasta \
+ Sample/10_2.fasta \
+ -p \
+ Sample/11_1.fasta \
+ Sample/11_2.fasta \
+ -p \
+ Sample/1_1.fasta \
+ Sample/1_2.fasta \
+ -p \
+ Sample/12_1.fasta \
+ Sample/12_2.fasta \
+ -p \
+ Sample/13_1.fasta \
+ Sample/13_2.fasta \
+ -p \
+ Sample/14_1.fasta \
+ Sample/14_2.fasta \
+ -p \
+ Sample/15_1.fasta \
+ Sample/15_2.fasta \
+ -p \
+ Sample/16_1.fasta \
+ Sample/16_2.fasta \
+ -o BigJob
+
+
+
+From the documentation:
+
+
+  Message routing for large number of cores
+
+       -route-messages
+              Enables the Ray message router. Disabled by default.
+              Messages will be routed accordingly so that any rank can
+communicate directly with only a few others.
+              Without -route-messages, any rank can communicate directly with
+any other rank.
+              Files generated: Routing/Connections.txt, Routing/Routes.txt and
+Routing/RelayEvents.txt
+              and Routing/Summary.txt
+
+       -connection-type type
+              Sets the connection type for routes.
+              Accepted values are debruijn, group, random, kautz and complete.
+Default is debruijn.
+              With the type debruijn, the number of ranks must be a power of
+something.
+              Examples: 256 = 16*16, 512=8*8*8, 49=7*7, and so on.
+              Otherwise, don't use debruijn routing but use another one
+              With the type kautz, the number of ranks n must be
+n=(k+1)*k^(d-1) for some k and d
+
+       -routing-graph-degree degree
+              Specifies the outgoing degree for the routing graph.
+
+
