@@ -567,15 +567,15 @@ void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 	cout<<"Rank "<<m_parameters->getRank()<< " is appending its fusions"<<endl;
 	string output=m_parameters->getOutputFile();
 	ofstream fp;
-	if(m_parameters->getRank()== MASTER_RANK){
-		fp.open(output.c_str());
-	}else{
-		fp.open(output.c_str(),ios_base::out|ios_base::app);
-	}
+
+	fp.open(output.c_str(),ios_base::out|ios_base::app);
+
 	int total=0;
 
 	m_scaffolder->setContigPaths(&(m_ed->m_EXTENSION_identifiers),&(m_ed->m_EXTENSION_contigs));
 	m_searcher->setContigs(&(m_ed->m_EXTENSION_contigs),&(m_ed->m_EXTENSION_identifiers));
+
+	ostringstream operationBuffer;
 
 	for(int i=0;i<(int)m_ed->m_EXTENSION_contigs.size();i++){
 		uint64_t uniqueId=m_ed->m_EXTENSION_identifiers[i];
@@ -586,10 +586,16 @@ void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 		string contig=convertToString(&(m_ed->m_EXTENSION_contigs[i]),m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 		
 		string withLineBreaks=addLineBreaks(contig,m_parameters->getColumns());
-		fp<<">contig-"<<uniqueId<<" "<<contig.length()<<" nucleotides"<<endl<<withLineBreaks;
 
+		operationBuffer<<">contig-"<<uniqueId<<" "<<contig.length()<<" nucleotides"<<endl<<withLineBreaks;
+
+		flushFileOperationBuffer(false,&operationBuffer,&fp,CONFIG_FILE_IO_BUFFER_SIZE);
 	}
+
 	cout<<"Rank "<<m_parameters->getRank()<<" appended "<<total<<" elements"<<endl;
+
+	flushFileOperationBuffer(true,&operationBuffer,&fp,CONFIG_FILE_IO_BUFFER_SIZE);
+
 	fp.close();
 
 	if(m_parameters->showMemoryUsage()){

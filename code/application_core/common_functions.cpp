@@ -241,7 +241,15 @@ void flushFileOperationBuffer(bool force,ostringstream*buffer,ofstream*file,int 
 
 	if(force || copy.length()>=bufferSize){
 
+		#ifdef ASSERT
+		assert(file->is_open());
+		#endif
+
 		(*file)<<copy;
 		buffer->str("");
+
+		#ifdef ASSERT
+		assert(buffer->str()=="");
+		#endif
 	}
 }
