@@ -78,6 +78,9 @@ string reverseComplement(string*a);
 uint64_t pack_pointer(void**pointer);
 void unpack_pointer(void**pointer,uint64_t integerValue);
 
+
+void flushFileOperationBuffer(bool force,ostringstream*buffer,ofstream*file,int bufferSize);
+
 #endif
 
 

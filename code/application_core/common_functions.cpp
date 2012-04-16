@@ -235,5 +235,13 @@ void unpack_pointer(void**pointer,uint64_t integerValue){
 
 }
 
+void flushFileOperationBuffer(bool force,ostringstream*buffer,ofstream*file,int bufferSize){
 
+	string copy=buffer->str();
 
+	if(force || copy.length()>=bufferSize){
+
+		(*file)<<copy;
+		buffer->str("");
+	}
+}

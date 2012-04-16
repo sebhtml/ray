@@ -50,6 +50,8 @@ void Scaffolder::addMasterContig(uint64_t name,int length){
 	m_masterLengths.push_back(length);
 }
 
+
+
 void Scaffolder::solve(){
 
 /*
@@ -167,13 +169,23 @@ averageValues[1],countValues[1],standardDeviationValues[1]);
 	ostringstream contigList;
 	contigList<<m_parameters->getPrefix()<<"ContigLengths.txt";
 	ofstream f2(contigList.str().c_str());
+
+	ostringstream operationBuffer;
+
 	for(int i=0;i<(int)m_masterContigs.size();i++){
 		int length=m_masterLengths[i]+m_parameters->getWordSize()-1;
-		f2<<"contig-"<<m_masterContigs[i]<<"\t"<<length<<endl;
+
+		operationBuffer<<"contig-"<<m_masterContigs[i]<<"\t"<<length<<endl;
+
 		m_allContigLengths.push_back(length);
 		ScaffoldingVertex scaffoldingVertex(m_masterContigs[i],length);
 		scaffoldingVertices.push_back(scaffoldingVertex);
+
+		flushFileOperationBuffer(false,&operationBuffer,&f2,CONFIG_FILE_IO_BUFFER_SIZE);
 	}
+
+	flushFileOperationBuffer(true,&operationBuffer,&f2,CONFIG_FILE_IO_BUFFER_SIZE);
+
 	f2.close();
 
 	/* run the greedy solver */
