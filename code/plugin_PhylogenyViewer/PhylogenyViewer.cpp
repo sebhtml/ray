@@ -536,6 +536,8 @@ void PhylogenyViewer::populateRanks(map<string,uint64_t>*rankSelfObservations,
 
 void PhylogenyViewer::showObservations_XML(ostream*stream){
 
+	ostringstream operationBuffer;
+
 	/* build a mashup for the ranks
  * this will contain total at each level */
 
@@ -544,21 +546,21 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 
 	populateRanks(&rankSelfObservations,&rankRecursiveObservations);
 
-	(*stream)<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"<<endl;
-	(*stream)<<"<root>"<<endl;
+	operationBuffer<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"<<endl;
+	operationBuffer<<"<root>"<<endl;
 
 	/* add the sample name in the XML file */
-	(*stream)<<"<sample>";
-	(*stream)<<m_parameters->getSampleName();
-	(*stream)<<"</sample>"<<endl;
+	operationBuffer<<"<sample>";
+	operationBuffer<<m_parameters->getSampleName();
+	operationBuffer<<"</sample>"<<endl;
 
-	(*stream)<<"<totalAssembledKmerObservations>"<<m_totalNumberOfKmerObservations<<"</totalAssembledKmerObservations>"<<endl;
+	operationBuffer<<"<totalAssembledKmerObservations>"<<m_totalNumberOfKmerObservations<<"</totalAssembledKmerObservations>"<<endl;
 
 	uint64_t totalColoredAssembledKmerObservations=m_totalNumberOfKmerObservations-m_unknown;
 
-	(*stream)<<"<totalColoredAssembledKmerObservations>"<<totalColoredAssembledKmerObservations<<"</totalColoredAssembledKmerObservations>"<<endl;
+	operationBuffer<<"<totalColoredAssembledKmerObservations>"<<totalColoredAssembledKmerObservations<<"</totalColoredAssembledKmerObservations>"<<endl;
 
-	(*stream)<<"<ranks>"<<endl;
+	operationBuffer<<"<ranks>"<<endl;
 
 	for(map<string,uint64_t>::iterator i=rankSelfObservations.begin();i!=rankSelfObservations.end();i++){
 		string rank=i->first;
@@ -568,27 +570,28 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 		assert(rankSelfObservations.count(rank)>0);
 		#endif
 
-		(*stream)<<"<entry><rank>"<<rank<<"</rank><self><assembledKmerObservations>";
-		(*stream)<<rankSelfObservations[rank]<<"</assembledKmerObservations></self>";
-		(*stream)<<"<recursive><assembledKmerObservations>"<<rankRecursiveObservations[rank];
-		(*stream)<<"</assembledKmerObservations></recursive></entry>"<<endl;
+		operationBuffer<<"<entry><rank>"<<rank<<"</rank><self><assembledKmerObservations>";
+		operationBuffer<<rankSelfObservations[rank]<<"</assembledKmerObservations></self>";
+		operationBuffer<<"<recursive><assembledKmerObservations>"<<rankRecursiveObservations[rank];
+		operationBuffer<<"</assembledKmerObservations></recursive></entry>"<<endl;
 
 	}
 
-	(*stream)<<"</ranks>"<<endl;
+	operationBuffer<<"</ranks>"<<endl;
 
-	(*stream)<<"<entry>";
-	(*stream)<<"<taxon><identifier>unknown</identifier><name>unknown</name><rank>unknown</rank></taxon>"<<endl;
-	(*stream)<<"<path></path>"<<endl;
-	(*stream)<<"<self><assembledKmerObservations>"<<m_unknown<<"</assembledKmerObservations>";
+	operationBuffer<<"<entry>";
+	operationBuffer<<"<taxon><identifier>unknown</identifier><name>unknown</name><rank>unknown</rank></taxon>"<<endl;
+	operationBuffer<<"<path></path>"<<endl;
+	operationBuffer<<"<self><assembledKmerObservations>"<<m_unknown<<"</assembledKmerObservations>";
 
 	double ratio=m_unknown;
+
 	if(m_totalNumberOfKmerObservations!=0)
 		ratio/=m_totalNumberOfKmerObservations;
 
-	(*stream)<<"<proportion>"<<ratio<<"</proportion>";
-	(*stream)<<"<coloredProportion>0</coloredProportion>";
-	(*stream)<<"<coloredProportionInRank>0</coloredProportionInRank></self></entry>"<<endl;
+	operationBuffer<<"<proportion>"<<ratio<<"</proportion>";
+	operationBuffer<<"<coloredProportion>0</coloredProportion>";
+	operationBuffer<<"<coloredProportionInRank>0</coloredProportionInRank></self></entry>"<<endl;
 
 	for(map<TaxonIdentifier,string>::iterator i=m_taxonNames.begin();
 		i!=m_taxonNames.end();i++){
@@ -618,24 +621,24 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 			continue;
 		}
 
-		(*stream)<<"<entry>"<<endl;
+		operationBuffer<<"<entry>"<<endl;
 
-		printTaxon_XML(taxon,stream);
+		printTaxon_XML(taxon,&operationBuffer);
 
 		vector<TaxonIdentifier> path;
 
 		getTaxonPathFromRoot(taxon,&path);
-		printTaxonPath_XML(taxon,&path,stream);
+		printTaxonPath_XML(taxon,&path,&operationBuffer);
 
-		(*stream)<<"<self>"<<endl;
-		(*stream)<<"<assembledKmerObservations>"<<count<<"</assembledKmerObservations>";
+		operationBuffer<<"<self>"<<endl;
+		operationBuffer<<"<assembledKmerObservations>"<<count<<"</assembledKmerObservations>";
 
 
 		double ratio=count;
 		if(m_totalNumberOfKmerObservations!=0)
 			ratio/=m_totalNumberOfKmerObservations;
 
-		(*stream)<<"<proportion>"<<ratio<<"</proportion>";
+		operationBuffer<<"<proportion>"<<ratio<<"</proportion>";
 
 		double coloredRatio=count;
 
@@ -643,21 +646,21 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 			coloredRatio/=totalColoredAssembledKmerObservations;
 		}
 
-		(*stream)<<"<coloredProportion>"<<coloredRatio<<"</coloredProportion>";
+		operationBuffer<<"<coloredProportion>"<<coloredRatio<<"</coloredProportion>";
 
-		(*stream)<<"</self>"<<endl;
+		operationBuffer<<"</self>"<<endl;
 
-		(*stream)<<"<recursive>";
-		(*stream)<<"<assembledKmerObservations>";
-		(*stream)<<recursiveCount;
-		(*stream)<<"</assembledKmerObservations>"<<endl;
+		operationBuffer<<"<recursive>";
+		operationBuffer<<"<assembledKmerObservations>";
+		operationBuffer<<recursiveCount;
+		operationBuffer<<"</assembledKmerObservations>"<<endl;
 
 
 		double ratio2=recursiveCount;
 		if(m_totalNumberOfKmerObservations!=0)
 			ratio2/=m_totalNumberOfKmerObservations;
 
-		(*stream)<<"<proportion>"<<ratio2<<"</proportion>";
+		operationBuffer<<"<proportion>"<<ratio2<<"</proportion>";
 
 		double coloredRatio2=recursiveCount;
 
@@ -665,7 +668,7 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 			coloredRatio2/=totalColoredAssembledKmerObservations;
 		}
 
-		(*stream)<<"<coloredProportion>"<<coloredRatio2<<"</coloredProportion>";
+		operationBuffer<<"<coloredProportion>"<<coloredRatio2<<"</coloredProportion>";
 
 		double coloredRatio2InRank=recursiveCount;
 
@@ -673,14 +676,38 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 			coloredRatio2InRank/=rankRecursiveCount;
 		}
 
-		(*stream)<<"<coloredProportionInRank>"<<coloredRatio2InRank<<"</coloredProportionInRank>";
+		operationBuffer<<"<coloredProportionInRank>"<<coloredRatio2InRank<<"</coloredProportionInRank>";
 		
-		(*stream)<<"</recursive>"<<endl;
+		operationBuffer<<"</recursive>"<<endl;
 
-		(*stream)<<"</entry>"<<endl;
+		operationBuffer<<"</entry>"<<endl;
+
+		flush(false,&operationBuffer,stream);
 	}
 
-	(*stream)<<"</root>"<<endl;
+	operationBuffer<<"</root>"<<endl;
+
+	flush(true,&operationBuffer,stream);
+}
+
+void PhylogenyViewer::flush(bool force,ostringstream*buffer,ostream*file){
+
+	string copy=buffer->str();
+
+	if(force || copy.length()>=CONFIG_FILE_IO_BUFFER_SIZE){
+
+		#ifdef ASSERT
+		//assert(file->is_open()); 
+		#endif
+
+		(*file)<<copy;
+		buffer->str("");
+
+		#ifdef ASSERT
+		assert(buffer->str()=="");
+		#endif
+		
+	}
 }
 
 uint64_t PhylogenyViewer::getRecursiveCount(TaxonIdentifier taxon){

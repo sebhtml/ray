@@ -197,6 +197,8 @@ class PhylogenyViewer: public CorePlugin{
 	void populateRanks(map<string,uint64_t>*rankSelfObservations,
 		map<string,uint64_t>*rankRecursiveObservations);
 	uint64_t getSelfCount(TaxonIdentifier taxon);
+
+	void flush(bool force,ostringstream*buffer,ostream*file);
 public:
 
 	void call_RAY_MASTER_MODE_PHYLOGENY_MAIN();
