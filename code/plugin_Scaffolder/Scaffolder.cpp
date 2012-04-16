@@ -209,32 +209,51 @@ averageValues[1],countValues[1],standardDeviationValues[1]);
 
 	// write scaffold list
 	ostringstream scaffoldList;
+
 	scaffoldList<<m_parameters->getPrefix()<<"ScaffoldComponents.txt";
+
 	ostringstream scaffoldLengths;
+
 	scaffoldLengths<<m_parameters->getPrefix()<<"ScaffoldLengths.txt";
-	ofstream f3(scaffoldLengths.str().c_str());
-	ofstream f4(scaffoldList.str().c_str());
+
+	ofstream scaffoldLengthFile(scaffoldLengths.str().c_str());
+	ostringstream scaffoldLengthFile_Buffer;
+
+	ofstream scaffoldComponentFile(scaffoldList.str().c_str());
+	ostringstream scaffoldComponentFile_Buffer;
+
 	for(int i=0;i<(int)m_scaffoldContigs.size();i++){
 		int scaffoldName=i;
 		int length=0;
+
 		for(int j=0;j<(int)m_scaffoldContigs[i].size();j++){
 			uint64_t contigName=m_scaffoldContigs[i][j];
 			char contigStrand=m_scaffoldStrands[i][j];
 			int theLength=m_contigLengths[contigName]+m_parameters->getWordSize()-1;
-			f4<<"scaffold-"<<scaffoldName<<"\t"<<"contig-"<<contigName<<"\t"<<contigStrand<<"\t"<<theLength<<endl;
+
+			scaffoldComponentFile_Buffer<<"scaffold-"<<scaffoldName<<"\t"<<"contig-"<<contigName<<"\t"<<contigStrand<<"\t"<<theLength<<endl;
 			length+=theLength;
+
 			if(j!=(int)m_scaffoldContigs[i].size()-1){
 				int theLength=m_scaffoldGaps[i][j];
-				f4<<"scaffold-"<<scaffoldName<<"\tgap\t-\t"<<theLength<<endl;
+				scaffoldComponentFile_Buffer<<"scaffold-"<<scaffoldName<<"\tgap\t-\t"<<theLength<<endl;
 				length+=theLength;
 			}
 		}
-		f3<<"scaffold-"<<scaffoldName<<"\t"<<length<<endl;
-		f4<<endl;
+
+		scaffoldLengthFile_Buffer<<"scaffold-"<<scaffoldName<<"\t"<<length<<endl;
+		scaffoldComponentFile_Buffer<<endl;
 		m_allScaffoldLengths.push_back(length);
+
+		flushFileOperationBuffer(false,&scaffoldComponentFile_Buffer,&scaffoldComponentFile,CONFIG_FILE_IO_BUFFER_SIZE);
+		flushFileOperationBuffer(false,&scaffoldLengthFile_Buffer,&scaffoldLengthFile,CONFIG_FILE_IO_BUFFER_SIZE);
 	}
-	f2.close();
-	f3.close();
+
+	flushFileOperationBuffer(true,&scaffoldComponentFile_Buffer,&scaffoldComponentFile,CONFIG_FILE_IO_BUFFER_SIZE);
+	scaffoldComponentFile.close();
+
+	flushFileOperationBuffer(true,&scaffoldLengthFile_Buffer,&scaffoldLengthFile,CONFIG_FILE_IO_BUFFER_SIZE);
+	scaffoldLengthFile.close();
 
 }
 
