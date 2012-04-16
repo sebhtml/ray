@@ -156,6 +156,7 @@ see <http://www.gnu.org/licenses/>
 /* 4 MB: 4194304 */
 /* 128 MB: 134217728 */
 
-#define CONFIG_FILE_IO_BUFFER_SIZE 1048576 /* 1 MB */
+//#define CONFIG_FILE_IO_BUFFER_SIZE 1048576 /* 1 MB */
+#define CONFIG_FILE_IO_BUFFER_SIZE 33554432 /* 32 MB */
 
 #endif
