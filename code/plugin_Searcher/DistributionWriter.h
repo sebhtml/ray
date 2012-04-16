@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <fstream>
 #include <string>
+#include <sstream>
 using namespace std;
 
 /**
@@ -38,8 +39,12 @@ class DistributionWriter{
 	string m_base;
 	Rank m_rank;
 	ofstream m_output;
+	ostringstream m_output_Buffer;
+	int m_operations;
 
 	void openFile();
+
+	void flush(bool force);
 
 public:
 	DistributionWriter();

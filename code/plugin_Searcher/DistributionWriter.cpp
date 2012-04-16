@@ -19,10 +19,15 @@
 */
 
 #include <plugin_Searcher/DistributionWriter.h>
+#include <application_core/constants.h>
 
 #include <sstream>
 #include <iostream>
 using namespace std;
+
+#ifdef ASSERT
+#include <assert.h>
+#endif
 
 DistributionWriter::DistributionWriter(){
 	m_gotFile=false;
@@ -42,60 +47,91 @@ void DistributionWriter::write(int directory,int file,int sequence,
 
 	openFile();
 
-	m_output<<"<entry><directory>";
-	m_output<<directoryName<<"</directory><file>"<<fileName<<"</file><sequence>";
-	m_output<<sequence<<"</sequence>"<<endl;
+	m_output_Buffer<<"<entry><directory>";
+	m_output_Buffer<<directoryName<<"</directory><file>"<<fileName<<"</file><sequence>";
+	m_output_Buffer<<sequence<<"</sequence>"<<endl;
 
-	m_output<<"<raw>"<<endl;
+	m_output_Buffer<<"<raw>"<<endl;
 
-	m_output<<"#Coverage depth	Frequency"<<endl;
+	m_output_Buffer<<"#Coverage depth	Frequency"<<endl;
 
 	for(map<int,uint64_t>::iterator i=all->begin();
 		i!=all->end();i++){
 
-		m_output<<i->first<<"	"<<i->second<<endl;
+		m_output_Buffer<<i->first<<"	"<<i->second<<endl;
 	}
 	
-	m_output<<"</raw>"<<endl;
+	m_output_Buffer<<"</raw>"<<endl;
 
-	m_output<<"<uniquelyColored>"<<endl;
+	m_output_Buffer<<"<uniquelyColored>"<<endl;
 
-	m_output<<"#Coverage depth	Frequency"<<endl;
+	m_output_Buffer<<"#Coverage depth	Frequency"<<endl;
 
 	for(map<int,uint64_t>::iterator i=uniquelyColored->begin();
 		i!=uniquelyColored->end();i++){
 
-		m_output<<i->first<<"	"<<i->second<<endl;
+		m_output_Buffer<<i->first<<"	"<<i->second<<endl;
 	}
 
-	m_output<<"</uniquelyColored>"<<endl;
+	m_output_Buffer<<"</uniquelyColored>"<<endl;
 
-	m_output<<"<uniquelyColoredAndAssembled>"<<endl;
-	m_output<<"#Coverage depth	Frequency"<<endl;
+	m_output_Buffer<<"<uniquelyColoredAndAssembled>"<<endl;
+	m_output_Buffer<<"#Coverage depth	Frequency"<<endl;
 
 	for(map<int,uint64_t>::iterator i=uniquelyColoredAndAssembled->begin();
 		i!=uniquelyColoredAndAssembled->end();i++){
 
-		m_output<<i->first<<"	"<<i->second<<endl;
+		m_output_Buffer<<i->first<<"	"<<i->second<<endl;
 	}
 
-	m_output<<"</uniquelyColoredAndAssembled>"<<endl;
-	m_output<<"</entry>"<<endl;
+	m_output_Buffer<<"</uniquelyColoredAndAssembled>"<<endl;
+	m_output_Buffer<<"</entry>"<<endl;
+
+	flush(false);
+}
+
+void DistributionWriter::flush(bool force){
+
+	string copy=m_output_Buffer.str();
+
+	if(force || copy.length()>=CONFIG_FILE_IO_BUFFER_SIZE){
+
+		#ifdef ASSERT
+		assert(m_output.is_open());
+		#endif
+
+		m_output<<copy;
+		m_output_Buffer.str("");
+
+		#ifdef ASSERT
+		assert(m_output_Buffer.str()=="");
+		#endif
+
+		m_operations++;
+	}
 }
 
 void DistributionWriter::close(){
 	if(m_gotFile){
-		m_output<<"</root>"<<endl;
+		m_output_Buffer<<"</root>"<<endl;
+
+		flush(true);
 
 		m_output.close();
 
 		m_gotFile=false;
+
+		cout<<"[IO] Rank "<<m_rank<<" performed "<<m_operations<<" input/output operations on the file system from DistributionWriter."<<endl;
+
 	}
 }
 
 void DistributionWriter::openFile(){
-	if(m_gotFile)
+	if(m_gotFile){
 		return;
+	}
+
+	m_operations=0;
 
 	ostringstream rawDistribution;
 	rawDistribution<<m_base<<"/"<<m_rank<<".Distributions.xml";
@@ -103,8 +139,8 @@ void DistributionWriter::openFile(){
 
 	cout<<"Opened "<<rawDistribution.str()<<endl;
 
-	m_output<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"<<endl;
-	m_output<<"<root>"<<endl;
+	m_output_Buffer<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"<<endl;
+	m_output_Buffer<<"<root>"<<endl;
 
 	m_gotFile=true;
 }
