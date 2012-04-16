@@ -154,8 +154,9 @@ see <http://www.gnu.org/licenses/>
 /* since Lustre is not very good at caching file input/output operations
  * Ray agglomerates these operations */
 
-#define CONFIG_FILE_IO_BUFFER_SIZE 4194304 /* 4 MB */
 //#define CONFIG_FILE_IO_BUFFER_SIZE 1048576 /* 1 MB */
+//#define CONFIG_FILE_IO_BUFFER_SIZE 4194304 /* 4 MB */
+#define CONFIG_FILE_IO_BUFFER_SIZE 16777216 /* 16 MB */
 //#define CONFIG_FILE_IO_BUFFER_SIZE 33554432 /* 32 MB */
 //#define CONFIG_FILE_IO_BUFFER_SIZE 134217728 /* 128 MB */
 
