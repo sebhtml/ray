@@ -50,6 +50,8 @@ using namespace std;
  */
 class Scaffolder :  public CorePlugin{
 
+	ostringstream m_operationBuffer;
+
 	MessageTag RAY_MPI_TAG_SCAFFOLDING_LINKS_REPLY;
 	MessageTag RAY_MPI_TAG_START_SCAFFOLDER;
 
@@ -81,7 +83,7 @@ class Scaffolder :  public CorePlugin{
 
 	int m_rankIdForContig;
 	bool m_hasContigSequence_Initialised;
-	FILE*m_fp;
+	ofstream m_fp;
 	bool m_hasContigSequence;
 	string m_contigSequence;
 	map<uint64_t,int> m_contigLengths;

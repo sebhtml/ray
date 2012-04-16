@@ -1290,7 +1290,8 @@ void Scaffolder::call_RAY_MASTER_MODE_WRITE_SCAFFOLDS(){
 		m_hasContigSequence=false;
 		m_hasContigSequence_Initialised=false;
 		string file=m_parameters->getScaffoldFile();
-		m_fp=fopen(file.c_str(),"w");
+
+		m_fp.open(file.c_str(),ios_base::out|ios_base::app);
 	}
 
 	m_virtualCommunicator->forceFlush();
@@ -1301,10 +1302,14 @@ void Scaffolder::call_RAY_MASTER_MODE_WRITE_SCAFFOLDS(){
 		if(m_contigId<(int)m_scaffoldContigs[m_scaffoldId].size()){
 			uint64_t contigNumber=m_scaffoldContigs[m_scaffoldId][m_contigId];
 			if(!m_hasContigSequence){
+		
+				// This sends messages
 				getContigSequence(contigNumber);
+
 			}else{ /* at this point, m_contigSequence is filled. */
 				if(m_contigId==0){
-					fprintf(m_fp,">scaffold-%i\n",m_scaffoldId);
+
+					m_operationBuffer<<">scaffold-"<<m_scaffoldId<<endl;
 					m_positionOnScaffold=0;
 				}
 
@@ -1333,7 +1338,7 @@ void Scaffolder::call_RAY_MASTER_MODE_WRITE_SCAFFOLDS(){
 					}
 				}
 				
-				fprintf(m_fp,"%s",outputBuffer.str().c_str());
+				m_operationBuffer<<outputBuffer.str().c_str();
 
 				if(m_contigId<(int)m_scaffoldContigs[m_scaffoldId].size()-1){
 					int gapSize=m_scaffoldGaps[m_scaffoldId][m_contigId];
@@ -1348,22 +1353,30 @@ void Scaffolder::call_RAY_MASTER_MODE_WRITE_SCAFFOLDS(){
 							outputBuffer2<<"\n";
 						}
 					}
-					fprintf(m_fp,"%s",outputBuffer2.str().c_str());
+
+					m_operationBuffer<<outputBuffer2.str().c_str();
 				}
 				m_contigId++;
 				m_hasContigSequence=false;
 				m_hasContigSequence_Initialised=false;
 			}
 		}else{
-			fprintf(m_fp,"\n");
+			m_operationBuffer<<endl;
+
 			m_scaffoldId++;
 			m_contigId=0;
 			m_positionOnScaffold=0;
 			m_hasContigSequence=false;
 			m_hasContigSequence_Initialised=false;
 		}
+
+
+		flushFileOperationBuffer(false,&m_operationBuffer,&m_fp,CONFIG_FILE_IO_BUFFER_SIZE);
 	}else{
-		fclose(m_fp);
+
+		flushFileOperationBuffer(true,&m_operationBuffer,&m_fp,CONFIG_FILE_IO_BUFFER_SIZE);
+	
+		m_fp.close();
 
 		m_switchMan->closeMasterMode();
 

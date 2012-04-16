@@ -239,7 +239,7 @@ void flushFileOperationBuffer(bool force,ostringstream*buffer,ofstream*file,int 
 
 	string copy=buffer->str();
 
-	if(force || copy.length()>=bufferSize){
+	if(force || (int)copy.length()>=bufferSize){
 
 		#ifdef ASSERT
 		assert(file->is_open());
