@@ -83,12 +83,15 @@ void Scaffolder::solve(){
 	ostringstream linkFile;
 	linkFile<<m_parameters->getPrefix()<<"ScaffoldLinks.txt";
 	ofstream f(linkFile.str().c_str());
-	f<<"#Left contig name	Left contig strand	Right contig name	Right contig strand	";
-	f<<"Average gap length	Average gap count";
-	f<<"	Summary link iterator 1	Summary count 1	Summary average 1	Summary standard  deviation 1";
-	f<<"	Summary link iterator 2	Summary count 2	Summary average 2	Summary standard  deviation 2";
 
-	f<<endl;
+	ostringstream operationBuffer;
+
+	operationBuffer<<"#Left contig name	Left contig strand	Right contig name	Right contig strand	";
+	operationBuffer<<"Average gap length	Average gap count";
+	operationBuffer<<"	Summary link iterator 1	Summary count 1	Summary average 1	Summary standard  deviation 1";
+	operationBuffer<<"	Summary link iterator 2	Summary count 2	Summary average 2	Summary standard  deviation 2";
+
+	operationBuffer<<endl;
 
 	/* Prototype */
 	vector<ScaffoldingVertex> scaffoldingVertices;
@@ -135,34 +138,40 @@ void Scaffolder::solve(){
 						we want contig B to reach contig A */
 					if(n==2){
 						int average=sum/n;
-						f<<"contig-"<<leftContig<<"\t"<<leftStrand<<"\tcontig-"<<rightContig<<"\t"<<rightStrand<<"\t"<<average;
+						operationBuffer<<"contig-"<<leftContig<<"\t"<<leftStrand<<"\tcontig-"<<rightContig<<"\t"<<rightStrand<<"\t"<<average;
 
 						#ifdef ASSERT
 						assert(averageValues.size() == countValues.size());
 						assert(standardDeviationValues.size() == countValues.size());
 						#endif
 
-						f<<"	"<<averageValues.size();
+						operationBuffer<<"	"<<averageValues.size();
 						for(int summarizedLinkIterator=0;
 							summarizedLinkIterator<(int)averageValues.size();
 							summarizedLinkIterator++){
-							f<<"\t"<<summarizedLinkIterator;
-							f<<"	"<<countValues[summarizedLinkIterator];
-							f<<"	"<<averageValues[summarizedLinkIterator];
-							f<<"	"<<standardDeviationValues[summarizedLinkIterator];
+
+							operationBuffer<<"\t"<<summarizedLinkIterator;
+							operationBuffer<<"	"<<countValues[summarizedLinkIterator];
+							operationBuffer<<"	"<<averageValues[summarizedLinkIterator];
+							operationBuffer<<"	"<<standardDeviationValues[summarizedLinkIterator];
 						}
-						f<<endl;
+						operationBuffer<<endl;
 
 	
 						ScaffoldingEdge scaffoldingEdge(leftContig,leftStrand,rightContig,rightStrand,average,averageValues[0],countValues[0],standardDeviationValues[0],
 averageValues[1],countValues[1],standardDeviationValues[1]);
 
 						scaffoldingEdges.push_back(scaffoldingEdge);
+
+						flushFileOperationBuffer(false,&operationBuffer,&f,CONFIG_FILE_IO_BUFFER_SIZE);
 					}
 				}
 			}
 		}
 	}
+
+	flushFileOperationBuffer(true,&operationBuffer,&f,CONFIG_FILE_IO_BUFFER_SIZE);
+
 	f.close();
 	
 	// write contig list
@@ -170,7 +179,7 @@ averageValues[1],countValues[1],standardDeviationValues[1]);
 	contigList<<m_parameters->getPrefix()<<"ContigLengths.txt";
 	ofstream f2(contigList.str().c_str());
 
-	ostringstream operationBuffer;
+	operationBuffer.str("");
 
 	for(int i=0;i<(int)m_masterContigs.size();i++){
 		int length=m_masterLengths[i]+m_parameters->getWordSize()-1;
