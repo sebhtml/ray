@@ -67,7 +67,9 @@ void NetworkTest::constructor(int rank,int size,StaticVector*inbox,StaticVector*
 	/* default is 500 */
 	m_numberOfWords=500;
 
-	m_numberOfTestMessages=m_parameters->getSize()*1000;
+	m_messagesPerRank=1000;
+
+	m_numberOfTestMessages=m_parameters->getSize()*m_messagesPerRank;
 
 	m_writeRawData=m_parameters->hasOption("-write-network-test-raw-data");
 	/* the seed must be different for all MPI ranks */
@@ -133,9 +135,21 @@ void NetworkTest::call_RAY_SLAVE_MODE_TEST_NETWORK(){
 			m_receivedMicroseconds.push_back(endingMicroSeconds);
 
 			m_sentCurrentTestMessage=false;
+
+			if(m_currentTestMessage % m_messagesPerRank == 0){
+				cout<<"Rank "<<m_rank<<" is testing the network ["<<m_currentTestMessage<<"/";
+				cout<<m_numberOfTestMessages<<"]"<<endl;
+			}
+
 			m_currentTestMessage++;
 		}
+
 	}else if(!m_sentData){
+
+
+		cout<<"Rank "<<m_rank<<" is testing the network ["<<m_currentTestMessage<<"/";
+		cout<<m_numberOfTestMessages<<"]"<<endl;
+
 		// we finished gathering data.
 		// now we compute the mode for the latency
 		// TODO: this should probably done after everyone has finished

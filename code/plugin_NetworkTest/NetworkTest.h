@@ -81,6 +81,8 @@ class NetworkTest :  public CorePlugin {
  */
 	bool m_writeRawData;
 
+	int m_messagesPerRank;
+
 	vector<int> m_destinations;
 	vector<uint64_t> m_sentMicroseconds;
 	vector<uint64_t> m_receivedMicroseconds;
