@@ -146,20 +146,30 @@ void Searcher::call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS(){
 		m_switchMan->openMasterMode(m_outbox,m_parameters->getRank());
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_MASTER_COUNT_REPLY)){
 		m_ranksSynced++;
+
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_SHARING_COMPLETED)){
 		m_ranksDoneSharing++;
+
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_COUNTING_DONE)){
 
 		uint64_t*buffer=m_inbox->at(0)->getBuffer();
 
 		#ifdef ASSERT
-		assert(m_inbox->at(0)->getCount()==1);
+		assert(m_inbox->at(0)->getCount()==4);
 		#endif
 
-		uint64_t count=buffer[0];
+		int bufferPosition=0;
+
+		uint64_t assembledKmerObservations=buffer[bufferPosition++];
+		uint64_t assembledColoredKmerObservations=buffer[bufferPosition++];
+		uint64_t assembledKmers=buffer[bufferPosition++];
+		uint64_t assembledColoredKmers=buffer[bufferPosition++];
 
 		/* agglomerate the count */
-		m_totalNumberOfKmerObservations+=count;
+		m_totalNumberOfAssembledKmerObservations+=assembledKmerObservations;
+		m_totalNumberOfAssembledColoredKmerObservations+=assembledColoredKmerObservations;
+		m_totalNumberOfAssembledKmers+=assembledKmers;
+		m_totalNumberOfAssembledColoredKmers+=assembledColoredKmers;
 
 		m_ranksDoneCounting++;
 
@@ -184,10 +194,15 @@ void Searcher::call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS(){
 
 		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
+		int bufferSize=0;
 		// send the total
-		buffer[0]=m_totalNumberOfKmerObservations;
+		buffer[bufferSize++]=m_totalNumberOfAssembledKmerObservations;
+		buffer[bufferSize++]=m_totalNumberOfAssembledColoredKmerObservations;
+		buffer[bufferSize++]=m_totalNumberOfAssembledKmers;
+		buffer[bufferSize++]=m_totalNumberOfAssembledColoredKmers;
 
-		m_switchMan->sendMessageToAll(buffer,1,m_outbox,m_parameters->getRank(),RAY_MPI_TAG_SEARCH_SHARE_COUNTS);
+		m_switchMan->sendMessageToAll(buffer,bufferSize,
+			m_outbox,m_parameters->getRank(),RAY_MPI_TAG_SEARCH_SHARE_COUNTS);
 
 	}else if(m_ranksDoneSharing==m_parameters->getSize()){
 		m_sendCounts=true;
@@ -310,6 +325,7 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 		
 		m_countedDirectories=false;
 	}else if(!m_countedDirectories){
+
 		#ifdef CONFIG_COUNT_ELEMENTS_VERBOSE
 		cout<<"counting"<<endl;
 		#endif
@@ -342,11 +358,20 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 
 		// count the k-mer observations for the part of the graph
 
-		uint64_t localKmerObservations=countKmerObservations();
+		uint64_t localAssembledKmerObservations=0;
+		uint64_t localAssembledColoredKmerObservations=0;
+		uint64_t localAssembledKmers=0;
+		uint64_t localAssembledColoredKmers=0;
+
+		countKmerObservations(&localAssembledKmerObservations,&localAssembledColoredKmerObservations,
+			&localAssembledKmers,&localAssembledColoredKmers);
 
 		uint64_t*buffer2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 		int bufferSize=0;
-		buffer2[bufferSize++]=localKmerObservations;
+		buffer2[bufferSize++]=localAssembledKmerObservations;
+		buffer2[bufferSize++]=localAssembledColoredKmerObservations;
+		buffer2[bufferSize++]=localAssembledKmers;
+		buffer2[bufferSize++]=localAssembledColoredKmers;
 
 		// tell root that we are done
 		m_switchMan->sendMessage(buffer2,bufferSize,m_outbox,m_parameters->getRank(),MASTER_RANK,RAY_MPI_TAG_SEARCH_COUNTING_DONE);
@@ -357,10 +382,15 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 		uint64_t*buffer=message->getBuffer();
 		
 		#ifdef ASSERT
-		assert(message->getCount()==1);
+		assert(message->getCount()==4);
 		#endif
 
-		m_totalNumberOfKmerObservations=buffer[0];
+		int bufferPosition=0;
+
+		m_totalNumberOfAssembledKmerObservations=buffer[bufferPosition++];
+		m_totalNumberOfAssembledColoredKmerObservations=buffer[bufferPosition++];
+		m_totalNumberOfAssembledKmers=buffer[bufferPosition++];
+		m_totalNumberOfAssembledColoredKmers=buffer[bufferPosition++];
 
 		m_shareCounts=true;
 		m_directoryIterator=0;
@@ -426,19 +456,20 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 	}
 }
 
-uint64_t Searcher::countKmerObservations(){
-
-	uint64_t total=0;
+void Searcher::countKmerObservations(uint64_t*localAssembledKmerObservations,
+	uint64_t*localAssembledColoredKmerObservations,
+	uint64_t*localAssembledKmers,uint64_t*localAssembledColoredKmers){
 
 	GridTableIterator iterator;
 	iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
 
 	//* only fetch half of the iterated things because we just need one k-mer
 	// for any pair of reverse-complement k-mers 
-	
-	int parity=0;
+	// TODO: maybe each k-mer of any pair of in a twin should
+	// be processed, because maybe each k-mer is actually 
+	// in genome...
 
-	map<int,uint64_t> frequencies;
+	int parity=0;
 
 	while(iterator.hasNext()){
 
@@ -487,10 +518,21 @@ uint64_t Searcher::countKmerObservations(){
 		
 		int kmerCoverage=node->getCoverage(&key);
 
-		total+=kmerCoverage;
+		(*localAssembledKmerObservations)+=kmerCoverage;
+		(*localAssembledKmers)++;
+
+		// check the colors
+		VirtualKmerColorHandle color=node->getVirtualColor();
+		set<PhysicalKmerColor>*physicalColors=m_colorSet.getPhysicalColors(color);
+
+		// the k-mer is not colored at all...
+		if(physicalColors->size()==0){
+			continue;
+		}
+
+		(*localAssembledColoredKmerObservations)+=kmerCoverage;
+		(*localAssembledColoredKmers)++;
 	}
-	
-	return total;
 }
 
 void Searcher::createRootDirectories(){
@@ -589,7 +631,7 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		contigSummaryFile<<"	Proportion"<<endl;
 
 		// count the total
-		uint64_t total=m_totalNumberOfKmerObservations;
+		uint64_t total=m_totalNumberOfAssembledKmerObservations;
 		for(int i=0;i<(int)m_listOfContigEntries.size();i++){
 
 			m_contigLengths[m_listOfContigEntries[i].getName()]=m_listOfContigEntries[i].getLength();
@@ -3104,8 +3146,15 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 
 		content88<<"<root><sample>"<<m_parameters->getSampleName()<<"</sample><searchDirectory>"<<baseName<<"</searchDirectory>"<<endl;
 	
-		content88<<"<totalAssembledKmerObservations>"<<m_totalNumberOfKmerObservations;
+		content88<<"<totalAssembledKmerObservations>"<<m_totalNumberOfAssembledKmerObservations;
 		content88<<"</totalAssembledKmerObservations>"<<endl;
+		content88<<"<totalAssembledColoredKmerObservations>"<<m_totalNumberOfAssembledColoredKmerObservations;
+		content88<<"</totalAssembledColoredKmerObservations>"<<endl;
+		
+		content88<<"<totalAssembledKmers>"<<m_totalNumberOfAssembledKmers;
+		content88<<"</totalAssembledKmers>"<<endl;
+		content88<<"<totalAssembledColoredKmers>"<<m_totalNumberOfAssembledColoredKmers;
+		content88<<"</totalAssembledColoredKmers>"<<endl;
 
 		*(m_arrayOfFiles_Buffer[directoryIterator])<<content88.str();
 
@@ -3185,10 +3234,21 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 		content<<"<demultiplexedKmerObservations>"<<demultiplexedObservations<<"</demultiplexedKmerObservations>";
 
 		double proportion=demultiplexedObservations;
-		if(m_totalNumberOfKmerObservations!=0)
-			proportion/=m_totalNumberOfKmerObservations;
+		double proportionWithColors=demultiplexedObservations;
 
-		content<<"<proportion>"<<proportion<<"</proportion></entry>"<<endl;
+		if(m_totalNumberOfAssembledKmerObservations!=0){
+			proportion/=m_totalNumberOfAssembledKmerObservations;
+		}
+
+		if(m_totalNumberOfAssembledColoredKmerObservations!=0){
+			proportionWithColors/=m_totalNumberOfAssembledColoredKmerObservations;
+		}
+
+		content<<endl;
+		content<<"<proportion>"<<proportion<<"</proportion>"<<endl;
+		content<<"<proportionWithAssembledColoredKmerObservations>"<<proportionWithColors;
+		content<<"</proportionWithAssembledColoredKmerObservations>";
+		content<<"</entry>"<<endl;
 
 		#ifdef ASSERT
 		assert(m_arrayOfFiles.count(directoryIterator)>0);
@@ -3344,7 +3404,7 @@ string Searcher::getDirectoryBaseName(int directoryIterator){
 }
 
 uint64_t Searcher::getTotalNumberOfKmerObservations(){
-	return m_totalNumberOfKmerObservations;
+	return m_totalNumberOfAssembledKmerObservations;
 }
 
 void Searcher::flushSequenceAbundanceXMLBuffer(int directoryIterator,bool force){
@@ -3588,8 +3648,10 @@ void Searcher::registerPlugin(ComputeCore*core){
 	core->setObjectSymbol(m_plugin,&m_contigLengths,"/RayAssembler/ObjectStore/ContigLengths.ray");
 
 
-	m_totalNumberOfKmerObservations=0;
-
+	m_totalNumberOfAssembledKmerObservations=0;
+	m_totalNumberOfAssembledColoredKmerObservations=0;
+	m_totalNumberOfAssembledKmers=0;
+	m_totalNumberOfAssembledColoredKmers=0;
 }
 
 void Searcher::resolveSymbols(ComputeCore*core){

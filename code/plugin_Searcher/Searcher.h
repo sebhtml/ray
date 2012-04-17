@@ -144,7 +144,10 @@ class Searcher :  public CorePlugin {
 	uint64_t m_sequencesToProcess;
 	uint64_t m_filesToProcess;
 
-	uint64_t m_totalNumberOfKmerObservations;
+	uint64_t m_totalNumberOfAssembledKmerObservations;
+	uint64_t m_totalNumberOfAssembledColoredKmerObservations;
+	uint64_t m_totalNumberOfAssembledKmers;
+	uint64_t m_totalNumberOfAssembledColoredKmers;
 	
 	PhysicalKmerColor m_color;
 	PhysicalKmerColor m_identifier;
@@ -364,7 +367,9 @@ class Searcher :  public CorePlugin {
 	void createRootDirectories();
 
 	/* count the k-mer observations */
-	uint64_t countKmerObservations();
+	void countKmerObservations(uint64_t*localAssembledKmerObservations,
+		uint64_t*localAssembledColoredKmerObservations,
+		uint64_t*localAssembledKmers,uint64_t*localAssembledColoredKmers);
 
 	/* I/O optimization */
 	int m_sequenceXMLflushOperations;
