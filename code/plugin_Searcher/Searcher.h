@@ -98,6 +98,9 @@ class Searcher :  public CorePlugin {
 	MessageTag RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY_REPLY;
 	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS;
 	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS_REPLY;
+	MessageTag RAY_MPI_TAG_FINISHED_COLORING;
+	MessageTag RAY_MPI_TAG_GET_GRAPH_COUNTS;
+	MessageTag RAY_MPI_TAG_GET_GRAPH_COUNTS_REPLY;
 
 	MasterMode RAY_MASTER_MODE_KILL_RANKS;
 	MasterMode RAY_MASTER_MODE_ADD_COLORS;
@@ -133,6 +136,9 @@ class Searcher :  public CorePlugin {
 
 /** translator for virtual colors **/
 	ColorSet m_colorSet;
+
+	int m_finishedColoring;
+	bool m_locallyFinishedColoring;
 
 /** an object that writes files */
 	DistributionWriter m_writer;

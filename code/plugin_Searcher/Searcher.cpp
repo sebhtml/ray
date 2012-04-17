@@ -22,6 +22,8 @@
 
 #define CONFIG_DOUBLE_PRECISION 100000
 
+#define DEBUG_GRAPH_COUNTS
+
 #include <plugin_Searcher/Searcher.h>
 #include <plugin_VerticesExtractor/Vertex.h>
 #include <core/OperatingSystem.h>
@@ -152,24 +154,6 @@ void Searcher::call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS(){
 
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_COUNTING_DONE)){
 
-		uint64_t*buffer=m_inbox->at(0)->getBuffer();
-
-		#ifdef ASSERT
-		assert(m_inbox->at(0)->getCount()==4);
-		#endif
-
-		int bufferPosition=0;
-
-		uint64_t assembledKmerObservations=buffer[bufferPosition++];
-		uint64_t assembledColoredKmerObservations=buffer[bufferPosition++];
-		uint64_t assembledKmers=buffer[bufferPosition++];
-		uint64_t assembledColoredKmers=buffer[bufferPosition++];
-
-		/* agglomerate the count */
-		m_totalNumberOfAssembledKmerObservations+=assembledKmerObservations;
-		m_totalNumberOfAssembledColoredKmerObservations+=assembledColoredKmerObservations;
-		m_totalNumberOfAssembledKmers+=assembledKmers;
-		m_totalNumberOfAssembledColoredKmers+=assembledColoredKmers;
 
 		m_ranksDoneCounting++;
 
@@ -356,25 +340,9 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 		m_sharedCounts=false;
 		m_shareCounts=false;
 
-		// count the k-mer observations for the part of the graph
-
-		uint64_t localAssembledKmerObservations=0;
-		uint64_t localAssembledColoredKmerObservations=0;
-		uint64_t localAssembledKmers=0;
-		uint64_t localAssembledColoredKmers=0;
-
-		countKmerObservations(&localAssembledKmerObservations,&localAssembledColoredKmerObservations,
-			&localAssembledKmers,&localAssembledColoredKmers);
-
-		uint64_t*buffer2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-		int bufferSize=0;
-		buffer2[bufferSize++]=localAssembledKmerObservations;
-		buffer2[bufferSize++]=localAssembledColoredKmerObservations;
-		buffer2[bufferSize++]=localAssembledKmers;
-		buffer2[bufferSize++]=localAssembledColoredKmers;
 
 		// tell root that we are done
-		m_switchMan->sendMessage(buffer2,bufferSize,m_outbox,m_parameters->getRank(),MASTER_RANK,RAY_MPI_TAG_SEARCH_COUNTING_DONE);
+		m_switchMan->sendMessage(NULL,0,m_outbox,m_parameters->getRank(),MASTER_RANK,RAY_MPI_TAG_SEARCH_COUNTING_DONE);
 
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_SHARE_COUNTS)){
 
@@ -2675,6 +2643,43 @@ void Searcher::call_RAY_MASTER_MODE_ADD_COLORS(){
 	if(!m_startedColors){
 		m_switchMan->openMasterMode(m_outbox,m_parameters->getRank());
 		m_startedColors=true;
+
+	}else if(m_inbox->hasMessage(RAY_MPI_TAG_FINISHED_COLORING)){
+
+		m_finishedColoring++;
+
+		#ifdef DEBUG_GRAPH_COUNTS
+		cout<<"Root receives graph counts"<<endl;
+		#endif
+
+		if(m_finishedColoring==m_parameters->getSize()){
+
+			m_switchMan->sendToAll(m_outbox,m_parameters->getRank(),
+				RAY_MPI_TAG_GET_GRAPH_COUNTS);
+		}
+
+	}else if(m_inbox->hasMessage(RAY_MPI_TAG_GET_GRAPH_COUNTS_REPLY)){
+
+		uint64_t*buffer=m_inbox->at(0)->getBuffer();
+
+		#ifdef ASSERT
+		assert(m_inbox->at(0)->getCount()==4);
+		#endif
+
+		int bufferPosition=0;
+
+		uint64_t assembledKmerObservations=buffer[bufferPosition++];
+		uint64_t assembledColoredKmerObservations=buffer[bufferPosition++];
+		uint64_t assembledKmers=buffer[bufferPosition++];
+		uint64_t assembledColoredKmers=buffer[bufferPosition++];
+
+		/* agglomerate the count */
+		m_totalNumberOfAssembledKmerObservations+=assembledKmerObservations;
+		m_totalNumberOfAssembledColoredKmerObservations+=assembledColoredKmerObservations;
+		m_totalNumberOfAssembledKmers+=assembledKmers;
+		m_totalNumberOfAssembledColoredKmers+=assembledColoredKmers;
+
+
 	}else if(m_switchMan->allRanksAreReady()){
 		m_switchMan->closeMasterMode();
 
@@ -2775,19 +2780,54 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		#endif
 
 	// all directories were processed
-	}else if(m_directoryIterator==m_searchDirectories_size){
+	}else if(m_directoryIterator==m_searchDirectories_size && !m_locallyFinishedColoring){
 	
 		showProcessedKmers();
 
 		m_bufferedData.showStatistics(m_parameters->getRank());
 
-		// this kills the batman
-		m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
-
 		#ifdef CONFIG_DEBUG_COLORS
 		cout<<"Finished."<<endl;
 		#endif
 
+		// tell root that we are done
+		m_switchMan->sendMessage(NULL,0,m_outbox,m_parameters->getRank(),MASTER_RANK,
+			RAY_MPI_TAG_FINISHED_COLORING);
+
+		#ifdef DEBUG_GRAPH_COUNTS
+		cout<<"I finished coloring my stuff."<<endl;
+		#endif
+
+		m_locallyFinishedColoring=true;
+
+	}else if(m_inbox->hasMessage(RAY_MPI_TAG_GET_GRAPH_COUNTS)){
+		// count the k-mer observations for the part of the graph
+
+		uint64_t localAssembledKmerObservations=0;
+		uint64_t localAssembledColoredKmerObservations=0;
+		uint64_t localAssembledKmers=0;
+		uint64_t localAssembledColoredKmers=0;
+
+		countKmerObservations(&localAssembledKmerObservations,&localAssembledColoredKmerObservations,
+			&localAssembledKmers,&localAssembledColoredKmers);
+
+		uint64_t*buffer2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+		int bufferSize=0;
+		buffer2[bufferSize++]=localAssembledKmerObservations;
+		buffer2[bufferSize++]=localAssembledColoredKmerObservations;
+		buffer2[bufferSize++]=localAssembledKmers;
+		buffer2[bufferSize++]=localAssembledColoredKmers;
+
+		// tell root that we are done
+		m_switchMan->sendMessage(buffer2,bufferSize,m_outbox,m_parameters->getRank(),MASTER_RANK,
+			RAY_MPI_TAG_GET_GRAPH_COUNTS_REPLY);
+
+		// this kills the batman
+		m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
+
+	}else if(m_locallyFinishedColoring){
+
+		// busy waiting...
 
 	// all files in a directory were processed
 	}else if(m_fileIterator==(int)m_searchDirectories[m_directoryIterator].getSize()){
@@ -3604,6 +3644,13 @@ void Searcher::registerPlugin(ComputeCore*core){
 	RAY_MPI_TAG_SEQUENCE_BIOLOGICAL_ABUNDANCES=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_SEQUENCE_BIOLOGICAL_ABUNDANCES,"RAY_MPI_TAG_SEQUENCE_BIOLOGICAL_ABUNDANCES");
 
+	RAY_MPI_TAG_FINISHED_COLORING=core->allocateMessageTagHandle(plugin);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_FINISHED_COLORING,"RAY_MPI_TAG_FINISHED_COLORING");
+	RAY_MPI_TAG_GET_GRAPH_COUNTS=core->allocateMessageTagHandle(plugin);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_GRAPH_COUNTS,"RAY_MPI_TAG_GET_GRAPH_COUNTS");
+	RAY_MPI_TAG_GET_GRAPH_COUNTS_REPLY=core->allocateMessageTagHandle(plugin);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_GRAPH_COUNTS_REPLY,"RAY_MPI_TAG_GET_GRAPH_COUNTS_REPLY");
+
 	RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_REPLY,"RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_REPLY");
 
@@ -3652,6 +3699,10 @@ void Searcher::registerPlugin(ComputeCore*core){
 	m_totalNumberOfAssembledColoredKmerObservations=0;
 	m_totalNumberOfAssembledKmers=0;
 	m_totalNumberOfAssembledColoredKmers=0;
+
+	m_finishedColoring=0;
+
+	m_locallyFinishedColoring=false;
 }
 
 void Searcher::resolveSymbols(ComputeCore*core){
