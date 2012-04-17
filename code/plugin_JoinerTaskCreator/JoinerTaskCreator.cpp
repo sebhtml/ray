@@ -87,6 +87,7 @@ void JoinerTaskCreator::finalizeMethod(){
 
 	if(m_parameters->showMemoryUsage()){
 		showMemoryUsage(m_parameters->getRank());
+		showDate();
 	}
 
 	m_initialized=false;
@@ -107,9 +108,14 @@ bool JoinerTaskCreator::hasUnassignedTask(){
  */
 Worker*JoinerTaskCreator::assignNextTask(){
 
-	if(m_currentWorkerIdentifier % 10== 0)
+	if(m_currentWorkerIdentifier % 10== 0){
 		cout<<"Rank "<<m_parameters->getRank()<<" JoinerTaskCreator assignNextTask ["<<m_currentWorkerIdentifier<<"/"<<m_paths->size()*2<<"]"<<endl;
 
+		if(m_parameters->showMemoryUsage()){
+			showMemoryUsage(m_parameters->getRank());
+			showDate();
+		}
+	}
 
 	JoinerWorker*worker=new JoinerWorker;
 	worker->constructor(m_currentWorkerIdentifier,&(m_paths->at(m_iterator)),m_pathIdentifiers->at(m_iterator),m_reverseStrand,m_virtualCommunicator,m_parameters,m_outboxAllocator,
@@ -136,9 +142,14 @@ Worker*JoinerTaskCreator::assignNextTask(){
 /** get the result of a worker */
 void JoinerTaskCreator::processWorkerResult(Worker*worker){
 
-	if(m_completedJobs % 10== 0)
+	if(m_completedJobs % 10== 0){
 		cout<<"Rank "<<m_parameters->getRank()<<" JoinerTaskCreator processWorkerResult ["<<m_completedJobs<<"/"<<m_paths->size()*2<<"]"<<endl;
 
+		if(m_parameters->showMemoryUsage()){
+			showMemoryUsage(m_parameters->getRank());
+			showDate();
+		}
+	}
 
 	JoinerWorker*worker2=(JoinerWorker*)worker;
 	if(worker2->isPathEliminated()){

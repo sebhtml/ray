@@ -111,6 +111,7 @@ Worker*FusionTaskCreator::assignNextTask(){
 
 		if(m_parameters->showMemoryUsage()){
 			showMemoryUsage(m_parameters->getRank());
+			showDate();
 		}
 	}
 
@@ -142,6 +143,7 @@ void FusionTaskCreator::processWorkerResult(Worker*worker){
 
 		if(m_parameters->showMemoryUsage()){
 			showMemoryUsage(m_parameters->getRank());
+			showDate();
 		}
 	}
 
