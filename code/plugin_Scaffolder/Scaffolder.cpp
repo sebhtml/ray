@@ -181,6 +181,11 @@ averageValues[1],countValues[1],standardDeviationValues[1]);
 
 	operationBuffer.str("");
 
+	cout<<"Rank 0 will write "<<m_masterContigs.size()<<" contig lengths"<<endl;
+
+	scaffoldingVertices.reserve(m_masterContigs.size());
+	m_allScaffoldLengths.reserve(m_masterContigs.size());
+
 	for(int i=0;i<(int)m_masterContigs.size();i++){
 		int length=m_masterLengths[i]+m_parameters->getWordSize()-1;
 
@@ -196,6 +201,8 @@ averageValues[1],countValues[1],standardDeviationValues[1]);
 	flushFileOperationBuffer(true,&operationBuffer,&f2,CONFIG_FILE_IO_BUFFER_SIZE);
 
 	f2.close();
+
+	cout<<"Rank 0 will solve the scaffolding problem."<<endl;
 
 	/* run the greedy solver */
 	ScaffoldingAlgorithm solver;
@@ -359,6 +366,9 @@ void Scaffolder::call_RAY_SLAVE_MODE_SCAFFOLDER(){
 	if(m_contigId<(int)(*m_contigs).size()){
 		processContig();
 	}else{
+
+		cout<<"Rank "<<m_parameters->getRank()<<" finished gathering scaffold links."<<endl;
+
 		if(m_parameters->hasOption("-debug-scaffolder")){
 			cout<<" sending MASTER_RANK,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING"<<endl;
 		}
