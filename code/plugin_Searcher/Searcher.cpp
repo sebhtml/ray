@@ -3449,27 +3449,14 @@ uint64_t Searcher::getTotalNumberOfKmerObservations(){
 
 void Searcher::flushSequenceAbundanceXMLBuffer(int directoryIterator,bool force){
 
-	int bufferSize=CONFIG_FILE_IO_BUFFER_SIZE;
 
 	#ifdef ASSERT
 	assert(m_arrayOfFiles_Buffer.count(directoryIterator)>0);
 	assert(m_arrayOfFiles.count(directoryIterator)>0);
 	#endif
 	
-	int available=m_arrayOfFiles_Buffer[directoryIterator]->str().length();
-
-	if(available>=1 && (force || available>=bufferSize)){
-
-		string copy=m_arrayOfFiles_Buffer[directoryIterator]->str();
-
-		// flush data
-		fprintf(m_arrayOfFiles[directoryIterator],"%s",copy.c_str());
-
-		m_arrayOfFiles_Buffer[directoryIterator]->str("");
-
-		#ifdef ASSERT
-		assert(m_arrayOfFiles_Buffer[directoryIterator]->str().length()==0);
-		#endif
+	if(flushFileOperationBuffer_FILE(force,(m_arrayOfFiles_Buffer[directoryIterator]),
+		m_arrayOfFiles[directoryIterator],CONFIG_FILE_IO_BUFFER_SIZE)){
 
 		m_sequenceXMLflushOperations++;
 	}
@@ -3477,50 +3464,26 @@ void Searcher::flushSequenceAbundanceXMLBuffer(int directoryIterator,bool force)
 
 void Searcher::flushContigIdentificationBuffer(int directoryIterator,bool force){
 
-	int bufferSize=CONFIG_FILE_IO_BUFFER_SIZE;
-
 	#ifdef ASSERT
 	assert(m_identificationFiles.count(directoryIterator)>0);
 	assert(m_identificationFiles_Buffer.count(directoryIterator)>0);
 	#endif
 	
-	int available=m_identificationFiles_Buffer[directoryIterator]->str().length();
-
-	if(available>=1 && (force || available>=bufferSize)){
-
-		string copy=m_identificationFiles_Buffer[directoryIterator]->str();
-
-		// flush data
-		fprintf(m_identificationFiles[directoryIterator],"%s",copy.c_str());
-
-		m_identificationFiles_Buffer[directoryIterator]->str("");
-
-		#ifdef ASSERT
-		assert(m_identificationFiles_Buffer[directoryIterator]->str().length()==0);
-		#endif
+	if(flushFileOperationBuffer_FILE(force,(m_identificationFiles_Buffer[directoryIterator]),
+		m_identificationFiles[directoryIterator],CONFIG_FILE_IO_BUFFER_SIZE)){
 
 		m_contigIdentificationflushOperations++;
 	}
+
 }
 
 
 
 void Searcher::flushCoverageXMLBuffer(bool force){
-
-	int bufferSize=CONFIG_FILE_IO_BUFFER_SIZE;
-
-	int available=m_currentCoverageFile_Buffer.str().length();
-
-	if(available>=1 && (force || available>=bufferSize)){
-
-		// flush data
-		m_currentCoverageFile<<m_currentCoverageFile_Buffer.str();
-		m_currentCoverageFile_Buffer.str("");
-
-		#ifdef ASSERT
-		assert(m_currentCoverageFile_Buffer.str().length()==0);
-		#endif
-
+	
+	if(flushFileOperationBuffer(force,&m_currentCoverageFile_Buffer,
+		&m_currentCoverageFile,CONFIG_FILE_IO_BUFFER_SIZE)){
+		
 		m_coverageXMLflushOperations++;
 	}
 }

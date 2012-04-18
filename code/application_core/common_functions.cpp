@@ -235,21 +235,41 @@ void unpack_pointer(void**pointer,uint64_t integerValue){
 
 }
 
-void flushFileOperationBuffer(bool force,ostringstream*buffer,ofstream*file,int bufferSize){
+bool flushFileOperationBuffer(bool force,ostringstream*buffer,ostream*file,int bufferSize){
 
-	string copy=buffer->str();
+	int available=buffer->tellp();
 
-	if(force || (int)copy.length()>=bufferSize){
+	if(available==0)
+		return false;
 
-		#ifdef ASSERT
-		assert(file->is_open());
-		#endif
+	if(force || available>=bufferSize){
 
-		(*file)<<copy;
+		(*file)<<buffer->str();
 		buffer->str("");
 
-		#ifdef ASSERT
-		assert(buffer->str()=="");
-		#endif
+		return true;
 	}
+
+	return false;
 }
+
+bool flushFileOperationBuffer_FILE(bool force,ostringstream*buffer,FILE*file,int bufferSize){
+
+	int available=buffer->tellp();
+
+	if(available==0)
+		return false;
+
+	if(force || available>=bufferSize){
+
+		string copy=buffer->str();
+
+		fprintf(file,"%s",copy.c_str());
+		buffer->str("");
+
+		return true;
+	}
+
+	return false;
+}
+

@@ -682,32 +682,12 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 
 		operationBuffer<<"</entry>"<<endl;
 
-		flush(false,&operationBuffer,stream);
+		flushFileOperationBuffer(false,&operationBuffer,stream,CONFIG_FILE_IO_BUFFER_SIZE);
 	}
 
 	operationBuffer<<"</root>"<<endl;
 
-	flush(true,&operationBuffer,stream);
-}
-
-void PhylogenyViewer::flush(bool force,ostringstream*buffer,ostream*file){
-
-	string copy=buffer->str();
-
-	if(force || copy.length()>=CONFIG_FILE_IO_BUFFER_SIZE){
-
-		#ifdef ASSERT
-		//assert(file->is_open()); 
-		#endif
-
-		(*file)<<copy;
-		buffer->str("");
-
-		#ifdef ASSERT
-		assert(buffer->str()=="");
-		#endif
-		
-	}
+	flushFileOperationBuffer(true,&operationBuffer,stream,CONFIG_FILE_IO_BUFFER_SIZE);
 }
 
 uint64_t PhylogenyViewer::getRecursiveCount(TaxonIdentifier taxon){

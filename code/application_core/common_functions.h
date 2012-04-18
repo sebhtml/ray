@@ -79,7 +79,8 @@ uint64_t pack_pointer(void**pointer);
 void unpack_pointer(void**pointer,uint64_t integerValue);
 
 
-void flushFileOperationBuffer(bool force,ostringstream*buffer,ofstream*file,int bufferSize);
+bool flushFileOperationBuffer(bool force,ostringstream*buffer,ostream*file,int bufferSize);
+bool flushFileOperationBuffer_FILE(bool force,ostringstream*buffer,FILE*file,int bufferSize);
 
 #endif
 

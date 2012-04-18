@@ -20,6 +20,7 @@
 
 #include <plugin_Searcher/DistributionWriter.h>
 #include <application_core/constants.h>
+#include <application_core/common_functions.h>
 
 #include <sstream>
 #include <iostream>
@@ -87,35 +88,14 @@ void DistributionWriter::write(int directory,int file,int sequence,
 	m_output_Buffer<<"</uniquelyColoredAndAssembled>"<<endl;
 	m_output_Buffer<<"</entry>"<<endl;
 
-	flush(false);
-}
-
-void DistributionWriter::flush(bool force){
-
-	string copy=m_output_Buffer.str();
-
-	if(force || copy.length()>=CONFIG_FILE_IO_BUFFER_SIZE){
-
-		#ifdef ASSERT
-		assert(m_output.is_open());
-		#endif
-
-		m_output<<copy;
-		m_output_Buffer.str("");
-
-		#ifdef ASSERT
-		assert(m_output_Buffer.str()=="");
-		#endif
-
-		m_operations++;
-	}
+	flushFileOperationBuffer(false,&m_output_Buffer,&m_output,CONFIG_FILE_IO_BUFFER_SIZE);
 }
 
 void DistributionWriter::close(){
 	if(m_gotFile){
 		m_output_Buffer<<"</root>"<<endl;
 
-		flush(true);
+		flushFileOperationBuffer(true,&m_output_Buffer,&m_output,CONFIG_FILE_IO_BUFFER_SIZE);
 
 		m_output.close();
 

@@ -44,7 +44,6 @@ class DistributionWriter{
 
 	void openFile();
 
-	void flush(bool force);
 
 public:
 	DistributionWriter();
