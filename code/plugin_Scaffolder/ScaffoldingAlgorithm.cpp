@@ -245,7 +245,7 @@ void ScaffoldingAlgorithm::solve(
 
 	/* END OF CODE TO MOVE */
 
-	int total=0;
+	uint64_t total=0;
 
 	int numberOfLarge=0;
 	for(int i=0;i<(int)scaffoldContigs->size();i++){
