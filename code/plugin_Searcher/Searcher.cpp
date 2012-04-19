@@ -3264,7 +3264,8 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 		uint64_t demultiplexedObservations=0;
 
 		if(hasPeak || hasHighFrequency){
-			demultiplexedObservations=coloredAssembledMode*matches;
+			demultiplexedObservations=coloredAssembledMode;
+			demultiplexedObservations*=matches;
 		}
 
 		if(coloredAssembledMode >= 10* coloredMode){ // this means that the entry is invalid usually
