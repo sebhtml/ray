@@ -101,6 +101,7 @@ class Searcher :  public CorePlugin {
 	MessageTag RAY_MPI_TAG_FINISHED_COLORING;
 	MessageTag RAY_MPI_TAG_GET_GRAPH_COUNTS;
 	MessageTag RAY_MPI_TAG_GET_GRAPH_COUNTS_REPLY;
+	MessageTag RAY_MPI_TAG_GRAPH_COUNTS;
 
 	MasterMode RAY_MASTER_MODE_KILL_RANKS;
 	MasterMode RAY_MASTER_MODE_ADD_COLORS;
@@ -142,6 +143,9 @@ class Searcher :  public CorePlugin {
 
 /** an object that writes files */
 	DistributionWriter m_writer;
+
+	bool m_pumpedCounts;
+	void shareTotalGraphCounts();
 
 	uint64_t m_processedFiles;
 	uint64_t m_processedSequences;

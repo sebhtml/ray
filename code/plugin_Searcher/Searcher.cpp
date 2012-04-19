@@ -176,16 +176,7 @@ void Searcher::call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS(){
 		assert(m_parameters->getRank() == 0);
 		#endif
 
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-
-		int bufferSize=0;
-		// send the total
-		buffer[bufferSize++]=m_totalNumberOfAssembledKmerObservations;
-		buffer[bufferSize++]=m_totalNumberOfAssembledColoredKmerObservations;
-		buffer[bufferSize++]=m_totalNumberOfAssembledKmers;
-		buffer[bufferSize++]=m_totalNumberOfAssembledColoredKmers;
-
-		m_switchMan->sendMessageToAll(buffer,bufferSize,
+		m_switchMan->sendMessageToAll(NULL,0,
 			m_outbox,m_parameters->getRank(),RAY_MPI_TAG_SEARCH_SHARE_COUNTS);
 
 	}else if(m_ranksDoneSharing==m_parameters->getSize()){
@@ -346,19 +337,6 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_SHARE_COUNTS)){
 
-		Message*message=m_inbox->at(0);
-		uint64_t*buffer=message->getBuffer();
-		
-		#ifdef ASSERT
-		assert(message->getCount()==4);
-		#endif
-
-		int bufferPosition=0;
-
-		m_totalNumberOfAssembledKmerObservations=buffer[bufferPosition++];
-		m_totalNumberOfAssembledColoredKmerObservations=buffer[bufferPosition++];
-		m_totalNumberOfAssembledKmers=buffer[bufferPosition++];
-		m_totalNumberOfAssembledColoredKmers=buffer[bufferPosition++];
 
 		m_shareCounts=true;
 		m_directoryIterator=0;
@@ -539,6 +517,23 @@ void Searcher::createRootDirectories(){
 	}
 }
 
+void Searcher::shareTotalGraphCounts(){
+
+	uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+
+	int bufferSize=0;
+
+	// send the total
+	buffer[bufferSize++]=m_totalNumberOfAssembledKmerObservations;
+	buffer[bufferSize++]=m_totalNumberOfAssembledColoredKmerObservations;
+	buffer[bufferSize++]=m_totalNumberOfAssembledKmers;
+	buffer[bufferSize++]=m_totalNumberOfAssembledColoredKmers;
+
+	m_switchMan->sendMessageToAll(buffer,bufferSize,
+		m_outbox,m_parameters->getRank(),RAY_MPI_TAG_GRAPH_COUNTS);
+
+}
+
 void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 
 	if(!m_countContigKmersMasterStarted){
@@ -629,6 +624,9 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 	m_activeWorkers.clear();
 
 	if(!m_countContigKmersSlaveStarted){
+		
+		cout<<"Rank "<<m_parameters->getRank()<<": starting SlaveMode= call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES"<<endl;
+
 		#ifdef CONFIG_CONTIG_ABUNDANCE_VERBOSE
 		cout<<"Starting"<<endl;
 		#endif
@@ -657,6 +655,38 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 			m_currentCoverageFile_Buffer<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"<<endl;
 			m_currentCoverageFile_Buffer<<"<root>"<<endl;
 		}
+
+		if(m_parameters->getRank()== MASTER_RANK){
+
+			shareTotalGraphCounts();
+
+		}
+
+	}else if(m_inbox->hasMessage(RAY_MPI_TAG_GRAPH_COUNTS)){
+
+		#ifdef ASSERT
+		assert(m_pumpedCounts==false);
+		#endif
+
+		Message*message=m_inbox->at(0);
+		uint64_t*buffer=message->getBuffer();
+		
+		#ifdef ASSERT
+		assert(message->getCount()==4);
+		#endif
+
+		int bufferPosition=0;
+
+		m_totalNumberOfAssembledKmerObservations=buffer[bufferPosition++];
+		m_totalNumberOfAssembledColoredKmerObservations=buffer[bufferPosition++];
+		m_totalNumberOfAssembledKmers=buffer[bufferPosition++];
+		m_totalNumberOfAssembledColoredKmers=buffer[bufferPosition++];
+
+		m_pumpedCounts=true;
+
+	}else if(!m_pumpedCounts){
+
+		// wait for that to be done before doing anything else
 
 	// we have finished our part
 	}else if(m_contig == (int) m_contigs->size()){
@@ -3617,6 +3647,9 @@ void Searcher::registerPlugin(ComputeCore*core){
 
 	RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_REPLY,"RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_REPLY");
+	
+	RAY_MPI_TAG_GRAPH_COUNTS=core->allocateMessageTagHandle(plugin);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GRAPH_COUNTS,"RAY_MPI_TAG_GRAPH_COUNTS");
 
 	RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY.setObject(this);
@@ -3667,6 +3700,8 @@ void Searcher::registerPlugin(ComputeCore*core){
 	m_finishedColoring=0;
 
 	m_locallyFinishedColoring=false;
+
+	m_pumpedCounts=false;
 }
 
 void Searcher::resolveSymbols(ComputeCore*core){
