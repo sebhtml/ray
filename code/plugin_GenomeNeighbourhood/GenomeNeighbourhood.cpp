@@ -583,9 +583,11 @@ all other cases are invalid.
 
 	ofstream f(file.c_str());
 	
-	f<<"#LeftContigPath	LengthInKmers	DNAStrand	PositionOnStrand";
-	f<<"	RightContigPath	LengthInKmers	DNAStrand	PositionOnStrand";
-	f<<"	DistanceInKmers	QualityControlStatus"<<endl;
+	ostringstream operationBuffer;
+
+	operationBuffer<<"#LeftContigPath	LengthInKmers	DNAStrand	PositionOnStrand";
+	operationBuffer<<"	RightContigPath	LengthInKmers	DNAStrand	PositionOnStrand";
+	operationBuffer<<"	DistanceInKmers	QualityControlStatus"<<endl;
 
 	for(int i=0;i<(int)m_finalList.size();i++){
 		uint64_t contig1=m_finalList[i].getContig1();
@@ -645,22 +647,23 @@ all other cases are invalid.
 			valid=true; // case 4.
 		}
 
-		f<<"contig-"<<contig1<<"	"<<length1<<"	"<<strand1<<"	"<<progression1<<"";
-		f<<"	contig-"<<contig2<<"	"<<length2<<"	"<<strand2<<"	"<<progression2<<"";
-		f<<"	"<<depth<<"	";
+		operationBuffer<<"contig-"<<contig1<<"	"<<length1<<"	"<<strand1<<"	"<<progression1<<"";
+		operationBuffer<<"	contig-"<<contig2<<"	"<<length2<<"	"<<strand2<<"	"<<progression2<<"";
+		operationBuffer<<"	"<<depth<<"	";
 
 		if(valid){
-			f<<"PASS";
+			operationBuffer<<"PASS";
 		}else{
-			f<<"FAIL";
+			operationBuffer<<"FAIL";
 		}
-		f<<endl;
+		operationBuffer<<endl;
+
+		flushFileOperationBuffer(false,&operationBuffer,&f,CONFIG_FILE_IO_BUFFER_SIZE);
 	}
 
+	flushFileOperationBuffer(true,&operationBuffer,&f,CONFIG_FILE_IO_BUFFER_SIZE);
+
 	f.close();
-
-
-
 }
 
 void GenomeNeighbourhood::call_RAY_MASTER_MODE_NEIGHBOURHOOD(){
