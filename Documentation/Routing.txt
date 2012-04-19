@@ -1,0 +1,38 @@
+This guide contains network architecture for routing messages with Ray.
+
+
+
+Vertices: 512
+Type: de Bruijn
+Degree: 8
+Diameter: 3 (8*8*8)
+
+Vertices: 1024
+Type: de Bruijn
+Degree: 4
+Diameter: 5 (4*4*4*4*4)
+
+Vertices: 1024
+Type: de Bruijn
+Degree: 32
+Diameter: 2 (32*32)
+
+Vertices: 1024
+Type: de Bruijn
+Degree: 2
+Diameter: 10 (2^10)
+
+Vertices: 750
+Type: Kautz
+Degree: 5
+Diameter: 4 (6*5*5*5)
+
+Vertices: 972
+Type: Kautz
+Degree: 3
+Diameter: 6 (4*3*3*3*3*3)
+
+Vertices: 768
+Type: Kautz
+Degree: 2
+Diameter: 9 (3*2*2*2*2*2*2*2*2)
