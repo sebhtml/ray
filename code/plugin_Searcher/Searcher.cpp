@@ -1609,8 +1609,13 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 				bool hasHighFrequency=false;
 
-				for(map<int,uint64_t>::iterator i=m_coloredAssembledCoverageDistribution.begin();
-					i!=m_coloredAssembledCoverageDistribution.end();i++){
+				map<int,uint64_t>*distributionToUseForDepth=NULL;
+
+				distributionToUseForDepth=&(m_coloredCoverageDistribution);
+				//distributionToUseForDepth=&(m_coloredAssembledCoverageDistribution);
+
+				for(map<int,uint64_t>::iterator i=distributionToUseForDepth->begin();
+					i!=distributionToUseForDepth->end();i++){
 					
 					xValues.push_back(i->first);
 					yValues.push_back(i->second);
@@ -3293,9 +3298,11 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 
 		uint64_t demultiplexedObservations=0;
 
+		uint64_t breadthOfCoverage=matches;
+		uint64_t depthOfCoverage=coloredMode;
+
 		if(hasPeak || hasHighFrequency){
-			demultiplexedObservations=coloredAssembledMode;
-			demultiplexedObservations*=matches;
+			demultiplexedObservations=breadthOfCoverage*depthOfCoverage;
 		}
 
 		if(coloredAssembledMode >= 10* coloredMode){ // this means that the entry is invalid usually
