@@ -404,7 +404,8 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 
 void Searcher::countKmerObservations(uint64_t*localAssembledKmerObservations,
 	uint64_t*localAssembledColoredKmerObservations,
-	uint64_t*localAssembledKmers,uint64_t*localAssembledColoredKmers){
+	uint64_t*localAssembledKmers,uint64_t*localAssembledColoredKmers,
+	uint64_t*localColoredKmerObservations,uint64_t*localColoredKmers){
 
 	GridTableIterator iterator;
 	iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
@@ -452,32 +453,33 @@ void Searcher::countKmerObservations(uint64_t*localAssembledKmerObservations,
 			a=a->getNext();
 		}
 
-		if(!nicelyAssembled){
-			continue; // the k-mer is not nicely assembled...
-		}
-
-		#ifdef ASSERT
-		assert(nicelyAssembled);
-		#endif
+		bool assembled=nicelyAssembled;
 
 		// at this point, we have a nicely assembled k-mer
 		
 		int kmerCoverage=node->getCoverage(&key);
 
-		(*localAssembledKmerObservations)+=kmerCoverage;
-		(*localAssembledKmers)++;
+		if(assembled){
+			(*localAssembledKmerObservations)+=kmerCoverage;
+			(*localAssembledKmers)++;
+		}
 
 		// check the colors
 		VirtualKmerColorHandle color=node->getVirtualColor();
 		set<PhysicalKmerColor>*physicalColors=m_colorSet.getPhysicalColors(color);
 
-		// the k-mer is not colored at all...
-		if(physicalColors->size()==0){
-			continue;
+		bool colored=physicalColors->size()>0;
+
+		if(colored){
+			(*localColoredKmerObservations)+=kmerCoverage;
+			(*localColoredKmers)++;
+		}
+		
+		if(assembled && colored){
+			(*localAssembledColoredKmerObservations)+=kmerCoverage;
+			(*localAssembledColoredKmers)++;
 		}
 
-		(*localAssembledColoredKmerObservations)+=kmerCoverage;
-		(*localAssembledColoredKmers)++;
 	}
 }
 
@@ -528,6 +530,8 @@ void Searcher::shareTotalGraphCounts(){
 	buffer[bufferSize++]=m_totalNumberOfAssembledColoredKmerObservations;
 	buffer[bufferSize++]=m_totalNumberOfAssembledKmers;
 	buffer[bufferSize++]=m_totalNumberOfAssembledColoredKmers;
+	buffer[bufferSize++]=m_totalNumberOfColoredKmerObservations;
+	buffer[bufferSize++]=m_totalNumberOfColoredKmers;
 
 	m_switchMan->sendMessageToAll(buffer,bufferSize,
 		m_outbox,m_parameters->getRank(),RAY_MPI_TAG_GRAPH_COUNTS);
@@ -672,7 +676,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		uint64_t*buffer=message->getBuffer();
 		
 		#ifdef ASSERT
-		assert(message->getCount()==4);
+		assert(message->getCount()==6);
 		#endif
 
 		int bufferPosition=0;
@@ -681,6 +685,8 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		m_totalNumberOfAssembledColoredKmerObservations=buffer[bufferPosition++];
 		m_totalNumberOfAssembledKmers=buffer[bufferPosition++];
 		m_totalNumberOfAssembledColoredKmers=buffer[bufferPosition++];
+		m_totalNumberOfColoredKmerObservations=buffer[bufferPosition++];
+		m_totalNumberOfColoredKmers=buffer[bufferPosition++];
 
 		m_pumpedCounts=true;
 
@@ -2698,7 +2704,7 @@ void Searcher::call_RAY_MASTER_MODE_ADD_COLORS(){
 		uint64_t*buffer=m_inbox->at(0)->getBuffer();
 
 		#ifdef ASSERT
-		assert(m_inbox->at(0)->getCount()==4);
+		assert(m_inbox->at(0)->getCount()==6);
 		#endif
 
 		int bufferPosition=0;
@@ -2707,12 +2713,16 @@ void Searcher::call_RAY_MASTER_MODE_ADD_COLORS(){
 		uint64_t assembledColoredKmerObservations=buffer[bufferPosition++];
 		uint64_t assembledKmers=buffer[bufferPosition++];
 		uint64_t assembledColoredKmers=buffer[bufferPosition++];
+		uint64_t coloredKmerObservations=buffer[bufferPosition++];
+		uint64_t coloredKmers=buffer[bufferPosition++];
 
 		/* agglomerate the count */
 		m_totalNumberOfAssembledKmerObservations+=assembledKmerObservations;
 		m_totalNumberOfAssembledColoredKmerObservations+=assembledColoredKmerObservations;
 		m_totalNumberOfAssembledKmers+=assembledKmers;
 		m_totalNumberOfAssembledColoredKmers+=assembledColoredKmers;
+		m_totalNumberOfColoredKmerObservations+=coloredKmerObservations;
+		m_totalNumberOfColoredKmers+=coloredKmers;
 
 
 	}else if(m_switchMan->allRanksAreReady()){
@@ -2842,9 +2852,12 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		uint64_t localAssembledColoredKmerObservations=0;
 		uint64_t localAssembledKmers=0;
 		uint64_t localAssembledColoredKmers=0;
+		uint64_t localColoredKmerObservations=0;
+		uint64_t localColoredKmers=0;
 
 		countKmerObservations(&localAssembledKmerObservations,&localAssembledColoredKmerObservations,
-			&localAssembledKmers,&localAssembledColoredKmers);
+			&localAssembledKmers,&localAssembledColoredKmers,
+			&localColoredKmerObservations,&localColoredKmers);
 
 		uint64_t*buffer2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 		int bufferSize=0;
@@ -2852,6 +2865,9 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		buffer2[bufferSize++]=localAssembledColoredKmerObservations;
 		buffer2[bufferSize++]=localAssembledKmers;
 		buffer2[bufferSize++]=localAssembledColoredKmers;
+		buffer2[bufferSize++]=localColoredKmerObservations;
+		buffer2[bufferSize++]=localColoredKmers;
+	
 
 		// tell root that we are done
 		m_switchMan->sendMessage(buffer2,bufferSize,m_outbox,m_parameters->getRank(),MASTER_RANK,
@@ -3223,13 +3239,21 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 	
 		content88<<"<totalAssembledKmerObservations>"<<m_totalNumberOfAssembledKmerObservations;
 		content88<<"</totalAssembledKmerObservations>"<<endl;
-		content88<<"<totalAssembledColoredKmerObservations>"<<m_totalNumberOfAssembledColoredKmerObservations;
-		content88<<"</totalAssembledColoredKmerObservations>"<<endl;
-		
 		content88<<"<totalAssembledKmers>"<<m_totalNumberOfAssembledKmers;
 		content88<<"</totalAssembledKmers>"<<endl;
+
+		content88<<"<totalColoredKmerObservations>"<<m_totalNumberOfColoredKmerObservations;
+		content88<<"</totalColoredKmerObservations>"<<endl;
+		content88<<"<totalColoredKmers>"<<m_totalNumberOfColoredKmers;
+		content88<<"</totalColoredKmers>"<<endl;
+
+		content88<<"<totalAssembledColoredKmerObservations>"<<m_totalNumberOfAssembledColoredKmerObservations;
+		content88<<"</totalAssembledColoredKmerObservations>"<<endl;
 		content88<<"<totalAssembledColoredKmers>"<<m_totalNumberOfAssembledColoredKmers;
 		content88<<"</totalAssembledColoredKmers>"<<endl;
+		
+
+
 
 		*(m_arrayOfFiles_Buffer[directoryIterator])<<content88.str();
 
@@ -3699,6 +3723,8 @@ void Searcher::registerPlugin(ComputeCore*core){
 	core->setObjectSymbol(m_plugin,&m_contigLengths,"/RayAssembler/ObjectStore/ContigLengths.ray");
 
 
+	m_totalNumberOfColoredKmerObservations=0;
+	m_totalNumberOfColoredKmers=0;
 	m_totalNumberOfAssembledKmerObservations=0;
 	m_totalNumberOfAssembledColoredKmerObservations=0;
 	m_totalNumberOfAssembledKmers=0;
