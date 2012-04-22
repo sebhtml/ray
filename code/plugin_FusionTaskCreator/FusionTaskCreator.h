@@ -70,6 +70,9 @@ class FusionTaskCreator: public TaskCreator, public CorePlugin {
 	uint64_t m_iterator;
 	uint64_t m_currentWorkerIdentifier;
 	bool m_reverseStrand;
+
+	bool m_finishedInPreviousCycle;
+
 public:
 	void constructor( VirtualProcessor*virtualProcessor,StaticVector*outbox,
 		RingAllocator*outboxAllocator,int*mode,Parameters*parameters,vector<vector<Kmer> >*paths,vector<uint64_t>*pathIdentifiers,

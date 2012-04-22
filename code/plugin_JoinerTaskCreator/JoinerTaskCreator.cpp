@@ -60,6 +60,12 @@ void JoinerTaskCreator::initializeMethod(){
 
 /** finalize the whole thing */
 void JoinerTaskCreator::finalizeMethod(){
+
+	if(m_previouslyDone){
+
+		cout<<"Rank "<<m_parameters->getRank()<<" will not do anything, completion occured previously for joining."<<endl;
+	}
+
 	/** all the paths */
 	int numberOfPaths=m_paths->size();
 
@@ -70,11 +76,17 @@ void JoinerTaskCreator::finalizeMethod(){
 
 	bool removedPaths=false;
 	
-	if(eliminatedPaths >= 1)
+	if(eliminatedPaths >= 1){
 		removedPaths = true;
+	}
+	
+	// nothing was eliminated
+	if(!removedPaths){
+		m_previouslyDone=true;
+	}
 
 	cout<<"Rank "<<m_parameters->getRank()<<" JoinerTaskCreator ["<<m_completedJobs<<"/"<<2*m_paths->size()<<"]"<<endl;
-	cout<<"Statistics: all paths: "<<numberOfPaths<<" eliminated: "<<eliminatedPaths<<endl;
+	cout<<"Statistics: all paths: "<<numberOfPaths<<" eliminated during joining: "<<eliminatedPaths<<endl;
 
 	/* send a message */
 	uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t));
@@ -95,6 +107,11 @@ void JoinerTaskCreator::finalizeMethod(){
 
 /** has an unassigned task left to compute */
 bool JoinerTaskCreator::hasUnassignedTask(){
+
+	if(m_previouslyDone){
+		return false;
+	}
+
 	return m_iterator < (uint64_t)m_paths->size();
 }
 
@@ -180,6 +197,8 @@ void JoinerTaskCreator::registerPlugin(ComputeCore*core){
 	m_adapter_RAY_SLAVE_MODE_FINISH_FUSIONS.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_FINISH_FUSIONS, &m_adapter_RAY_SLAVE_MODE_FINISH_FUSIONS);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_FINISH_FUSIONS,"RAY_SLAVE_MODE_FINISH_FUSIONS");
+
+	m_previouslyDone=false;
 }
 
 void JoinerTaskCreator::resolveSymbols(ComputeCore*core){

@@ -58,6 +58,12 @@ void FusionTaskCreator::initializeMethod(){
 
 /** finalize the whole thing */
 void FusionTaskCreator::finalizeMethod(){
+
+	if(m_finishedInPreviousCycle){
+
+		cout<<"Rank "<<m_parameters->getRank()<<" will not do anything, completion occured previously for fusing."<<endl;
+	}
+
 	/** all the paths */
 	int numberOfPaths=m_paths->size();
 
@@ -68,12 +74,17 @@ void FusionTaskCreator::finalizeMethod(){
 
 	bool removedPaths=false;
 	
-	if(eliminatedPaths>= 1)
+	if(eliminatedPaths>= 1){
 		removedPaths = true;
+	}
 
+	// nothing was eliminated here.
+	if(!removedPaths){
+		m_finishedInPreviousCycle=true;
+	}
 
 	cout<<"Rank "<<m_parameters->getRank()<<" FusionTaskCreator ["<<m_completedJobs<<"/"<<2*m_paths->size()<<"]"<<endl;
-	cout<<"Statistics: all paths: "<<numberOfPaths<<" eliminated: "<<eliminatedPaths<<endl;
+	cout<<"Statistics: all paths: "<<numberOfPaths<<" eliminated during fusing: "<<eliminatedPaths<<endl;
 
 	/* send a message */
 	uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t));
@@ -93,6 +104,13 @@ void FusionTaskCreator::finalizeMethod(){
 
 /** has an unassigned task left to compute */
 bool FusionTaskCreator::hasUnassignedTask(){
+	
+	// we have nothing to do if we finished in the previous cycle.
+	if(m_finishedInPreviousCycle){
+
+		return false;
+	}
+
 	return m_iterator < (uint64_t)m_paths->size();
 }
 
@@ -182,6 +200,7 @@ void FusionTaskCreator::registerPlugin(ComputeCore*core){
 	RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY,"RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY");
 
+	m_finishedInPreviousCycle=false;
 }
 
 void FusionTaskCreator::resolveSymbols(ComputeCore*core){

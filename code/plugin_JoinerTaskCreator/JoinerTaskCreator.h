@@ -70,6 +70,8 @@ class JoinerTaskCreator: public TaskCreator,  public CorePlugin{
 
 	vector<vector<Kmer> >*m_newPaths;
 
+	bool m_previouslyDone;
+
 public:
 	void constructor( VirtualProcessor*virtualProcessor,StaticVector*outbox,
 		RingAllocator*outboxAllocator,int*mode,Parameters*parameters,vector<vector<Kmer> >*paths,vector<uint64_t>*pathIdentifiers,
