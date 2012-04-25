@@ -220,15 +220,19 @@ void MachineHelper::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES (){
 		i!=m_coverageDistribution->end();i++){
 		int coverageValue=i->first;
 		uint64_t vertices=i->second;
+
 		if(coverageValue<lowestCoverage){
 			verticesWith1Coverage=vertices;
 			lowestCoverage=coverageValue;
 		}
+
 		if(coverageValue>=m_parameters->getMinimumCoverage()){
 			genomeKmers+=vertices;
 		}
+
 		numberOfVertices+=vertices;
 	}
+
 	double percentageSeenOnce=(0.0+verticesWith1Coverage)/numberOfVertices*100.00;
 
 	ostringstream g;
@@ -236,6 +240,8 @@ void MachineHelper::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES (){
 	g<<"CoverageDistributionAnalysis.txt";
 	ofstream outputFile(g.str().c_str());
 	outputFile<<"k-mer length:\t"<<m_parameters->getWordSize()<<endl;
+	outputFile<<"Number of k-mers in the distributed de Bruijn graph: ";
+	outputFile<<numberOfVertices<<endl;
 	outputFile<<"Lowest coverage observed:\t"<<lowestCoverage<<endl;
 	outputFile<<"MinimumCoverage:\t"<<m_parameters->getMinimumCoverage()<<endl;
 	outputFile<<"PeakCoverage:\t"<<m_parameters->getPeakCoverage()<<endl;
