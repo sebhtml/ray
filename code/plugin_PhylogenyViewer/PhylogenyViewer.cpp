@@ -430,7 +430,7 @@ void PhylogenyViewer::gatherKmerObservations(){
 	
 			uint64_t nameSpace=physicalColor/COLOR_NAMESPACE_MULTIPLIER;
 		
-			if(nameSpace==COLOR_PHYLOGENY_NAMESPACE){
+			if(nameSpace==COLOR_NAMESPACE_PHYLOGENY){
 				PhysicalKmerColor colorForPhylogeny=physicalColor % COLOR_NAMESPACE_MULTIPLIER;
 
 				#ifdef ASSERT
@@ -1224,7 +1224,7 @@ void PhylogenyViewer::extractColorsForPhylogeny(){
 	
 			uint64_t nameSpace=physicalColor/COLOR_NAMESPACE_MULTIPLIER;
 		
-			if(nameSpace==COLOR_PHYLOGENY_NAMESPACE){
+			if(nameSpace==COLOR_NAMESPACE_PHYLOGENY){
 				PhysicalKmerColor colorForPhylogeny=physicalColor % COLOR_NAMESPACE_MULTIPLIER;
 
 				m_colorsForPhylogeny.insert(colorForPhylogeny);
@@ -1333,5 +1333,6 @@ void PhylogenyViewer::resolveSymbols(ComputeCore*core){
 	m_timePrinter=(TimePrinter*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/Timer.ray");
 
 	m_searcher=(Searcher*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/plugin_Searcher.ray");
+
 }
 

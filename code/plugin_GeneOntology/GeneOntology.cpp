@@ -42,10 +42,69 @@ void GeneOntology::call_RAY_MASTER_MODE_ONTOLOGY_MAIN(){
 	}
 }
 
+void GeneOntology::fetchRelevantColors(){
+
+	GridTableIterator iterator;
+	iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
+
+	//* only fetch half of the iterated things because we just need one k-mer
+	// for any pair of reverse-complement k-mers 
+	
+	int parity=0;
+
+	while(iterator.hasNext()){
+
+		Vertex*node=iterator.next();
+		Kmer key=*(iterator.getKey());
+
+		#ifdef ASSERT
+		assert(parity==0 || parity==1);
+		#endif
+
+		if(parity==0){
+			parity=1;
+		}else if(parity==1){
+			parity=0;
+
+			continue; // we only need data with parity=0
+		}
+
+		VirtualKmerColorHandle color=node->getVirtualColor();
+		set<PhysicalKmerColor>*physicalColors=m_colorSet->getPhysicalColors(color);
+
+		for(set<PhysicalKmerColor>::iterator j=physicalColors->begin();
+			j!=physicalColors->end();j++){
+
+			PhysicalKmerColor physicalColor=*j;
+	
+			uint64_t nameSpace=physicalColor/COLOR_NAMESPACE_MULTIPLIER;
+		
+			if(nameSpace==COLOR_NAMESPACE_EMBL_CDS){
+				PhysicalKmerColor colorForPhylogeny=physicalColor % COLOR_NAMESPACE_MULTIPLIER;
+
+				m_colorsForOntology.insert(colorForPhylogeny);
+
+			}
+		}
+	}
+		
+	cout<<"Rank "<<m_rank<<" has exactly "<<m_colorsForOntology.size()<<" k-mer physical colors related to EMBL CDS objects."<<endl;
+	cout<<endl;
+
+
+	m_listedRelevantColors=true;
+
+}
 
 void GeneOntology::call_RAY_SLAVE_MODE_ONTOLOGY_MAIN(){
 
-	m_switchMan->closeSlaveModeLocally(m_outbox,m_rank);
+	if(!m_listedRelevantColors){
+
+		fetchRelevantColors();
+
+	}else{
+		m_switchMan->closeSlaveModeLocally(m_outbox,m_rank);
+	}
 }
 
 
@@ -106,5 +165,7 @@ void GeneOntology::resolveSymbols(ComputeCore*core){
 	m_timePrinter=(TimePrinter*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/Timer.ray");
 
 	m_searcher=(Searcher*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/plugin_Searcher.ray");
+
+	m_listedRelevantColors=false;
 }
 

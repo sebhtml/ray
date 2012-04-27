@@ -47,6 +47,9 @@ using namespace std;
  */
 class GeneOntology: public CorePlugin{
 
+	bool m_listedRelevantColors;
+
+	set<PhysicalKmerColor> m_colorsForOntology;
 
 	GridTable*m_subgraph;
 	Parameters*m_parameters;
@@ -79,6 +82,7 @@ class GeneOntology: public CorePlugin{
 	Adapter_RAY_MASTER_MODE_ONTOLOGY_MAIN m_adapter_RAY_MASTER_MODE_ONTOLOGY_MAIN;
 	Adapter_RAY_SLAVE_MODE_ONTOLOGY_MAIN m_adapter_RAY_SLAVE_MODE_ONTOLOGY_MAIN;
 
+	void fetchRelevantColors /**/ ();
 public:
 
 	void call_RAY_MASTER_MODE_ONTOLOGY_MAIN();

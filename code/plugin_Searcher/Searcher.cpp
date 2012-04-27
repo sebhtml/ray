@@ -2998,7 +2998,7 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		if(m_searchDirectories[m_directoryIterator].hasCurrentSequenceIdentifier()){
 			uint64_t theIdentifier=m_searchDirectories[m_directoryIterator].getCurrentSequenceIdentifier();
 
-			uint64_t nameSpace=COLOR_PHYLOGENY_NAMESPACE;
+			uint64_t nameSpace=COLOR_NAMESPACE_PHYLOGENY;
 			nameSpace*= COLOR_NAMESPACE_MULTIPLIER;
 			m_identifier=theIdentifier + nameSpace;
 
@@ -3006,7 +3006,7 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 
 			uint64_t theIdentifier=m_searchDirectories[m_directoryIterator].getIdentifier_EMBL_CDS();
 
-			uint64_t nameSpace=COLOR_EMBL_CDS_NAMESPACE;
+			uint64_t nameSpace=COLOR_NAMESPACE_EMBL_CDS;
 			nameSpace*= COLOR_NAMESPACE_MULTIPLIER;
 			m_identifier=theIdentifier+nameSpace;
 
