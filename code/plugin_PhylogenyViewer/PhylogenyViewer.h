@@ -141,6 +141,7 @@ class PhylogenyViewer: public CorePlugin{
 
 	Searcher*m_searcher;
 
+	MasterMode RAY_MASTER_MODE_ONTOLOGY_MAIN;
 	MasterMode RAY_MASTER_MODE_PHYLOGENY_MAIN;
 	MasterMode RAY_MASTER_MODE_KILL_RANKS;
 	MasterMode RAY_MASTER_MODE_NEIGHBOURHOOD;

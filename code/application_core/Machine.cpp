@@ -794,6 +794,7 @@ void Machine::registerPlugins(){
 	m_computeCore.registerPlugin(&m_searcher);
 	m_computeCore.registerPlugin(&m_phylogeny);
 	m_computeCore.registerPlugin(&m_genomeNeighbourhood);
+	m_computeCore.registerPlugin(&m_ontologyPlugin);
 
 	// resolve the symbols
 	// this is done here because we want to write a summary for

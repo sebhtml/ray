@@ -102,6 +102,7 @@
 #include <plugin_MachineHelper/MachineHelper.h>
 #include <plugin_PhylogenyViewer/PhylogenyViewer.h>
 #include <plugin_GenomeNeighbourhood/GenomeNeighbourhood.h>
+#include <plugin_GeneOntology/GeneOntology.h>
 
 /** C++ bits **/
 #include <map>
@@ -154,6 +155,7 @@ class Machine{
 	NetworkTest m_networkTest;
 	EdgePurger m_edgePurger;
 	PhylogenyViewer m_phylogeny;
+	GeneOntology m_ontologyPlugin;
 
 	KmerAcademyBuilder m_kmerAcademyBuilder;
 	bool m_initialisedAcademy;

@@ -46,6 +46,33 @@ uint64_t KeyEncoder::getPhysicalKmerColor_EMBL_CDS(const char*identifier){
 	return value;
 }
 
+/*
+
+encoding identifiers for EMBL_CDS
+
+    an identifier is 3 letters and 5 numbers, such as EMBL_CDS:CAA00003 
+
+    the color namespace mask is 10000000000000000 
+
+therefore, the 5 last number can be stored directly as the 5 last numbers
+
+    each of the 3 letter can hold 26 values 
+
+so basically, convert the 3-letter code to base 10, multiply it by 100000 and add the 5 last numbers.
+
+for the 3-letter code, each letter is valued from 0 to 25. 26^3 = 17576
+
+namespace multiplier           10000000000000000
+3-letter code multiplier                  100000
+
+the 3-letter code goes from 0 to 17575 and the 5-digit code goes from 0 to 99999
+
+EMBL-CDS can store at most 1 757 582 424 proteins. (uint32_t)
+
+[edit] encoding identifiers for GO
+
+GO:0000001 to are valued from 0 to 9999999 (use uint32_t) 
+*/
 uint64_t KeyEncoder::encode_EMBL_CDS(const char*identifier){
 	/* >EMBL_CDS:CBW26015 CBW26015.1 */
 
