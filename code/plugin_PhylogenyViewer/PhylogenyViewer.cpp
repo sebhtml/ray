@@ -1334,5 +1334,6 @@ void PhylogenyViewer::resolveSymbols(ComputeCore*core){
 
 	m_searcher=(Searcher*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/plugin_Searcher.ray");
 
+	m_started=false;
 }
 

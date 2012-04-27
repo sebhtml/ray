@@ -167,5 +167,7 @@ void GeneOntology::resolveSymbols(ComputeCore*core){
 	m_searcher=(Searcher*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/plugin_Searcher.ray");
 
 	m_listedRelevantColors=false;
+
+	m_started=false;
 }
 
