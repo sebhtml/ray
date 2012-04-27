@@ -380,9 +380,9 @@ void GenomeNeighbourhood::processLinks(int mode){
 		#endif
 
 		uint8_t edges=elements[0];
-		int coverage=elements[1];
 
 		#ifdef ASSERT
+		int coverage=elements[1];
 		assert(coverage>0);
 		#endif
 

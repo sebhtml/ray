@@ -607,10 +607,11 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 		assert(rankRecursiveObservations.count(rank)>0);
 		#endif
 
-		uint64_t rankSelfCount=rankSelfObservations[rank];
 		uint64_t rankRecursiveCount=rankRecursiveObservations[rank];
 
 		#ifdef ASSERT
+		uint64_t rankSelfCount=rankSelfObservations[rank]; //-
+
 		assert(rankSelfCount>=0);
 		assert(rankRecursiveCount>=0);
 		#endif

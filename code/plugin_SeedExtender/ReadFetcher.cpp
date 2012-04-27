@@ -94,13 +94,13 @@ void ReadFetcher::work(){
 		vector<uint64_t> buffer;
 		m_virtualCommunicator->getMessageResponseElements(m_workerId,&buffer);
 
-		int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_READS);
-
 		#ifdef ASSERT
+		int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_READS);
 		assert((int)buffer.size()==period);
 		#endif
 
-
+		//. ------
+		
 		#ifdef GUILLIMIN_BUG
 		int destination=m_parameters->_vertexRank(&m_vertex);
 		if(m_parameters->getRank()==destination){
@@ -136,9 +136,9 @@ void ReadFetcher::work(){
 			int position=buffer[3];
 			char strand=(char)buffer[4];
 
+			#ifdef ASSERT
 			int destination=m_parameters->_vertexRank(&m_vertex);
 
-			#ifdef ASSERT
 			assert(readIndex>=0);
 			assert(position>=0);
 
