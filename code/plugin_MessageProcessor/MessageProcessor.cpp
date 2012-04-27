@@ -1690,16 +1690,16 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH(Message*message){
 		#endif
 
 		vector<Direction> paths=m_subgraph->getDirections(&kmer);
-		int i=incoming[pos++];
+		int indexInArray=incoming[pos++];
 
 		/* increment because there is padding */
 		pos++;
 
 		#ifdef ASSERT
-		assert(i<(int)paths.size());
+		assert(indexInArray<(int)paths.size());
 		#endif
 
-		Direction d=paths[i];
+		Direction d=paths[indexInArray];
 		kmer.pack(message2,&outputPosition);
 		message2[outputPosition++]=d.getWave();
 
