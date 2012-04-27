@@ -53,6 +53,7 @@ using namespace std;
  * */
 class GenomeNeighbourhood: public CorePlugin{
 
+	bool m_pluginIsEnabled;
 	Parameters*m_parameters;
 
 	stack<Kmer> m_stackOfVertices;

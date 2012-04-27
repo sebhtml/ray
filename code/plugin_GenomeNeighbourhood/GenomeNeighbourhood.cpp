@@ -822,6 +822,15 @@ void GenomeNeighbourhood::selectHits(){
  */
 void GenomeNeighbourhood::call_RAY_SLAVE_MODE_NEIGHBOURHOOD(){
 
+	if(!m_pluginIsEnabled){
+
+		cout<<"Rank "<<m_rank<<": the CorePlugin GenomeNeighbourhood is disabled..."<<endl;
+
+		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getMessagesHandler()->getRank());
+
+		return; /* . */
+	}
+
 	/* force flush everything ! */
 	m_virtualCommunicator->forceFlush();
 	m_virtualCommunicator->processInbox(&m_activeWorkers);
@@ -1137,5 +1146,8 @@ void GenomeNeighbourhood::resolveSymbols(ComputeCore*core){
 	m_workerId=0;
 
 	m_slaveStarted=false;
+
+	/* this plugin is disabled because it is not ready yet */
+	m_pluginIsEnabled=false;
 }
 

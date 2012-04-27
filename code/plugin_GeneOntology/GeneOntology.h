@@ -70,6 +70,7 @@ class GeneOntology: public CorePlugin{
 
 	MasterMode RAY_MASTER_MODE_ONTOLOGY_MAIN;
 	MasterMode RAY_MASTER_MODE_KILL_RANKS;
+	MasterMode RAY_MASTER_MODE_NEIGHBOURHOOD;
 
 	SlaveMode RAY_SLAVE_MODE_ONTOLOGY_MAIN;
 

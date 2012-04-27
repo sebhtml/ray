@@ -1250,7 +1250,7 @@ void PhylogenyViewer::registerPlugin(ComputeCore*core){
 	m_plugin=core->allocatePluginHandle();
 
 	core->setPluginName(m_plugin,"PhylogenyViewer");
-	core->setPluginDescription(m_plugin,"Get a phylogeny view on the sample.");
+	core->setPluginDescription(m_plugin,"Get a taxonomy view of the sample.");
 	core->setPluginAuthors(m_plugin,"Sébastien Boisvert");
 	core->setPluginLicense(m_plugin,"GNU General Public License version 3");
 
