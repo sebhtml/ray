@@ -32,7 +32,9 @@ using namespace std;
 
 // #define DEBUG_ENCODER
 
-uint64_t KeyEncoder::getPhysicalKmerColor_EMBL_CDS(const char*identifier){
+//#define DEBUG_GO_ENCODING
+
+uint64_t KeyEncoder::getEncoded_EMBL_CDS(const char*identifier){
 
 	populateMap();
 	
@@ -179,4 +181,53 @@ void KeyEncoder::populateMap(){
 	m_mapping['Z']=value++;
 
 }
+
+/* GO:0050662 */
+GeneOntologyIdentifier KeyEncoder::encodeGeneOntologyHandle(const char*identifier){
+	
+	uint32_t value=0;
+
+	int start=3;
+	int length=7;
+	int base=10;
+	int total=start+length;
+
+	if(strlen(identifier)!=total){
+		cout<<"Error: can not encode GO handle "<<identifier<<endl;
+		return 0;
+	}
+
+	#ifdef ASSERT
+	assert(strlen(identifier)== (start+length));
+	#endif
+
+
+	for(int i=0;i<length;i++){
+
+		char symbol=identifier[total-1-i];
+
+		#ifdef ASSERT
+		assert(m_mapping.count(symbol)>0);
+		#endif
+
+		uint32_t localValue=m_mapping[symbol];
+
+		int iterations=i;
+
+		while(iterations--){
+			localValue*=base;
+		}
+
+		value+=localValue;
+	}
+
+	#ifdef DEBUG_GO_ENCODING
+	cout<<"[goEncode] input= "<<identifier<<" output= "<<value<<endl;
+	#endif
+
+
+
+	return value;
+}
+
 

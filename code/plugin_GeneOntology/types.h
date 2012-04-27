@@ -18,8 +18,8 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#ifndef _PhylogenyTypes_h
-#define _PhylogenyTypes_h
+#ifndef _OntologyTypes_h
+#define _OntologyTypes_h
 
 #include <stdint.h>
 

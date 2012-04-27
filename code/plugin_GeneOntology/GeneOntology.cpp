@@ -23,6 +23,7 @@
 #include <plugin_GeneOntology/GeneOntology.h>
 #include <plugin_VerticesExtractor/GridTableIterator.h>
 #include <core/OperatingSystem.h>
+#include <plugin_GeneOntology/KeyEncoder.h>
 
 //#define DEBUG_PHYLOGENY
 
@@ -94,6 +95,89 @@ void GeneOntology::fetchRelevantColors(){
 
 	m_listedRelevantColors=true;
 
+	m_loadedAnnotations=false;
+
+}
+
+void GeneOntology::fetchArguments(){
+
+	int count=m_core->getNumberOfArguments();
+
+	char**arguments=m_core->getArgumentValues();
+
+	string operationCode="-gene-ontology";
+	int numberOfOperands=2;
+
+	for(int i=0;i<count;i++){
+		
+		string token=arguments[i];
+
+		if(token==operationCode){
+	
+			int remaining=count-(i+1);
+
+			if(remaining!=numberOfOperands){
+				cout<<"Error: needs "<<numberOfOperands<<" operands, you provided "<<remaining<<endl;
+
+				return;
+			}
+	
+			m_ontologyFileName=arguments[i+1];
+			m_annotationFileName=arguments[i+2];
+		}
+	}
+
+}
+
+void GeneOntology::loadAnnotations(){
+
+	KeyEncoder encoder;
+
+	fetchArguments();
+
+	ifstream f;
+	f.open(m_annotationFileName);
+
+	cout<<"Rank "<<m_rank<<" is loading annotations from "<<m_annotationFileName<<endl;
+
+	int i=0;
+	while(!f.eof()){
+		
+
+		if(i%10000==0){
+	
+			cout<<"Rank "<<m_rank<<" is loading annotations from "<<m_annotationFileName<<" ";
+			cout<<i<<endl;
+		}
+
+		i++;
+
+		string emblCdsIdentifier="";
+		string goIdentifier="";
+
+		f>>emblCdsIdentifier>>goIdentifier;
+
+		if(emblCdsIdentifier==""||goIdentifier==""){
+			continue;
+		}
+
+		PhysicalKmerColor emblCdsKey=encoder.getEncoded_EMBL_CDS(emblCdsIdentifier.c_str());
+
+		if(m_colorsForOntology.count(emblCdsKey)==0){
+	
+			continue; // not in the graph anyway
+		}
+
+		GeneOntologyIdentifier goHandle=encoder.encodeGeneOntologyHandle(goIdentifier.c_str());
+	
+		m_annotations[emblCdsKey].push_back(goHandle);
+	}
+
+	f.close();
+
+	cout<<"Rank "<<m_rank<<" loaded Gene Ontology annotations"<<endl;
+
+	m_loadedAnnotations=true;
 }
 
 void GeneOntology::call_RAY_SLAVE_MODE_ONTOLOGY_MAIN(){
@@ -102,6 +186,9 @@ void GeneOntology::call_RAY_SLAVE_MODE_ONTOLOGY_MAIN(){
 
 		fetchRelevantColors();
 
+	}else if(!m_loadedAnnotations){
+
+		loadAnnotations();
 	}else{
 		m_switchMan->closeSlaveModeLocally(m_outbox,m_rank);
 	}

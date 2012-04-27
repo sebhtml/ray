@@ -705,7 +705,7 @@ PhysicalKmerColor SearchDirectory::getIdentifier_EMBL_CDS(){
 	string header=m_currentSequenceHeader;
 	string token=header.substr(10,8);
 
-	return m_encoder.getPhysicalKmerColor_EMBL_CDS(token.c_str());
+	return m_encoder.getEncoded_EMBL_CDS(token.c_str());
 }
 
 

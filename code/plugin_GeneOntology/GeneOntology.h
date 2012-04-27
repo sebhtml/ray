@@ -38,6 +38,7 @@
 #include <set>
 #include <stdint.h>
 #include <map>
+#include <vector>
 using namespace std;
 
 /** 
@@ -47,6 +48,12 @@ using namespace std;
  */
 class GeneOntology: public CorePlugin{
 
+	char*m_ontologyFileName;
+	char*m_annotationFileName;
+
+	map<PhysicalKmerColor,vector<GeneOntologyIdentifier> > m_annotations;
+
+	bool m_loadedAnnotations;
 	bool m_listedRelevantColors;
 
 	set<PhysicalKmerColor> m_colorsForOntology;
@@ -83,6 +90,10 @@ class GeneOntology: public CorePlugin{
 	Adapter_RAY_SLAVE_MODE_ONTOLOGY_MAIN m_adapter_RAY_SLAVE_MODE_ONTOLOGY_MAIN;
 
 	void fetchRelevantColors /**/ ();
+	void loadAnnotations();
+	void fetchArguments();
+
+
 public:
 
 	void call_RAY_MASTER_MODE_ONTOLOGY_MAIN();

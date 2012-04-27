@@ -298,8 +298,12 @@ void Parameters::parseCommands(){
 	set<string> coloringOneColor;
 	coloringOneColor.insert("-one-color-per-file");
 
+	set<string> ontology;
+	ontology.insert("-gene-ontology");
+
 	vector<set<string> > toAdd;
 	toAdd.push_back(coloringOneColor);
+	toAdd.push_back(ontology);
 	toAdd.push_back(phylogeny);
 	toAdd.push_back(minimumContigLength);
 	toAdd.push_back(showExtensionChoiceOption);

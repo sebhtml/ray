@@ -25,6 +25,7 @@
 
 #include <map>
 #include <stdint.h>
+#include <plugin_GeneOntology/types.h>
 using namespace std;
 
 class KeyEncoder{
@@ -36,8 +37,9 @@ class KeyEncoder{
 	uint64_t encode_EMBL_CDS(const char*identifier);
 public:
 
-	uint64_t getPhysicalKmerColor_EMBL_CDS(const char*identifier);
+	uint64_t getEncoded_EMBL_CDS(const char*identifier);
 
+	GeneOntologyIdentifier /**/ encodeGeneOntologyHandle(const char*identifier);
 };
 
 #endif
