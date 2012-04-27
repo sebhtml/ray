@@ -32,8 +32,10 @@ Ray
 #include<iostream>
 using namespace std;
 
+#define NUMBER_OF_SEQUENCES_PERIOD 10000
+
 void SequencesLoader::registerSequence(){
-	if(m_myReads->size()%100000==0){
+	if(m_myReads->size()% NUMBER_OF_SEQUENCES_PERIOD ==0){
 		uint64_t amount=m_myReads->size();
 		cout<<"Rank "<<m_rank<<" has "<<amount<<" sequence reads"<<endl;
 
