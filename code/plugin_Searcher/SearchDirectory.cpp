@@ -50,6 +50,7 @@ void SearchDirectory::constructor(string path){
 	m_hasFile=false;
 
 	m_currentFileStream=NULL;
+
 }
 
 string*SearchDirectory::getFileName(int j){
@@ -679,3 +680,32 @@ string SearchDirectory::filterName(string a){
 
 	return a;
 }
+
+/* 
+ * >EMBL_CDS:CBW26015 CBW26015.1 */
+bool SearchDirectory::hasIdentifier_EMBL_CDS(){
+	
+	string currentSequenceHeader=m_currentSequenceHeader;
+
+	if(currentSequenceHeader.find(">EMBL_CDS:") == 0){
+		return true;
+	}
+
+	return false;
+}
+
+PhysicalKmerColor SearchDirectory::getIdentifier_EMBL_CDS(){
+
+	#ifdef ASSERT
+	assert(hasIdentifier_EMBL_CDS());
+	#endif
+
+	/* >EMBL_CDS:CBW26015 CBW26015.1 */
+
+	string header=m_currentSequenceHeader;
+	string token=header.substr(10,8);
+
+	return m_encoder.getPhysicalKmerColor_EMBL_CDS(token.c_str());
+}
+
+

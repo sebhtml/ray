@@ -2484,7 +2484,7 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 				j!=physicalColors->end();j++){
 				PhysicalKmerColor physicalColor=*j;
 		
-				int nameSpace=physicalColor/COLOR_NAMESPACE;
+				int nameSpace=physicalColor/COLOR_NAMESPACE_MULTIPLIER;
 			
 				counts[nameSpace]++;
 				if(counts[nameSpace]>1){
@@ -2989,7 +2989,7 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		}
 
 		// generate a color that includes the namespace
-		m_color= colorInNamespace + COLOR_NAMESPACE * (m_directoryIterator);
+		m_color= colorInNamespace + COLOR_NAMESPACE_MULTIPLIER * (m_directoryIterator);
 
 		/* unique identifiers have their own namespace */
 
@@ -2998,9 +2998,18 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		if(m_searchDirectories[m_directoryIterator].hasCurrentSequenceIdentifier()){
 			uint64_t theIdentifier=m_searchDirectories[m_directoryIterator].getCurrentSequenceIdentifier();
 
-			uint64_t nameSpace=PHYLOGENY_NAMESPACE;
-			nameSpace*= COLOR_NAMESPACE;
+			uint64_t nameSpace=COLOR_PHYLOGENY_NAMESPACE;
+			nameSpace*= COLOR_NAMESPACE_MULTIPLIER;
 			m_identifier=theIdentifier + nameSpace;
+
+		}else if(m_searchDirectories[m_directoryIterator].hasIdentifier_EMBL_CDS()){
+
+			uint64_t theIdentifier=m_searchDirectories[m_directoryIterator].getIdentifier_EMBL_CDS();
+
+			uint64_t nameSpace=COLOR_EMBL_CDS_NAMESPACE;
+			nameSpace*= COLOR_NAMESPACE_MULTIPLIER;
+			m_identifier=theIdentifier+nameSpace;
+
 		}
 
 

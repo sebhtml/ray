@@ -34,10 +34,11 @@ using namespace std;
 // 18446744073709551615
 // xxxxyyyyyyyyyyyyyyyy
 //    10000000000000000
-#define COLOR_NAMESPACE 10000000000000000
+#define COLOR_NAMESPACE_MULTIPLIER 10000000000000000
 
 // colors in the phylogeny namespace: 1024 * 10000000000000000 + identifier 
-#define PHYLOGENY_NAMESPACE 1024
+#define COLOR_PHYLOGENY_NAMESPACE 1024
+#define COLOR_EMBL_CDS_NAMESPACE 789
 
 typedef uint32_t VirtualKmerColorHandle;
 

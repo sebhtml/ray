@@ -187,7 +187,7 @@ void ColorSet::printSummary(ostream*out,bool xml){
 	(*out)<<endl;
 	(*out)<<"Keys in index: "<<m_index.size()<<endl;
 	(*out)<<"Observed collisions when populating the index: "<<m_collisions<<endl;
-	(*out)<<"COLOR_NAMESPACE= "<<COLOR_NAMESPACE<<endl;
+	(*out)<<"COLOR_NAMESPACE_MULTIPLIER= "<<COLOR_NAMESPACE_MULTIPLIER<<endl;
 	(*out)<<endl;
 
 	(*out)<<"Operations"<<endl;

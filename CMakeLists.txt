@@ -159,5 +159,6 @@ code/plugin_PhylogenyViewer/PhylogenyViewer_adapters.cpp
 code/plugin_PhylogenyViewer/PhylogenyViewer.cpp
 code/plugin_PhylogenyViewer/PhylogeneticTreeLoader.cpp
 code/plugin_PhylogenyViewer/TaxonNameLoader.cpp
+code/plugin_GeneOntology/KeyEncoder.cpp
 
 )

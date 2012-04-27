@@ -23,6 +23,8 @@
 #define _SearchDirectory_h
 
 #include <plugin_KmerAcademyBuilder/Kmer.h>
+#include <plugin_GeneOntology/KeyEncoder.h>
+#include <plugin_Searcher/VirtualKmerColor.h>
 
 #include <set>
 #include <string>
@@ -39,6 +41,8 @@ using namespace std;
  * to be used for coloring
  */
 class SearchDirectory{
+
+	KeyEncoder m_encoder;
 
 	bool m_hasBufferedLine;
 
@@ -106,8 +110,10 @@ public:
 	string getCurrentSequenceName();
 
 	bool hasCurrentSequenceIdentifier();
-
 	uint64_t getCurrentSequenceIdentifier();
+
+	bool hasIdentifier_EMBL_CDS();
+	PhysicalKmerColor getIdentifier_EMBL_CDS();
 
 	bool hasDirectory(int file);
 	void setCreatedDirectory(int file);

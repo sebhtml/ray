@@ -428,10 +428,10 @@ void PhylogenyViewer::gatherKmerObservations(){
 
 			PhysicalKmerColor physicalColor=*j;
 	
-			uint64_t nameSpace=physicalColor/COLOR_NAMESPACE;
+			uint64_t nameSpace=physicalColor/COLOR_NAMESPACE_MULTIPLIER;
 		
-			if(nameSpace==PHYLOGENY_NAMESPACE){
-				PhysicalKmerColor colorForPhylogeny=physicalColor % COLOR_NAMESPACE;
+			if(nameSpace==COLOR_PHYLOGENY_NAMESPACE){
+				PhysicalKmerColor colorForPhylogeny=physicalColor % COLOR_NAMESPACE_MULTIPLIER;
 
 				#ifdef ASSERT
 				if(m_colorsForPhylogeny.count(colorForPhylogeny)==0){
@@ -1221,10 +1221,10 @@ void PhylogenyViewer::extractColorsForPhylogeny(){
 
 			PhysicalKmerColor physicalColor=*j;
 	
-			uint64_t nameSpace=physicalColor/COLOR_NAMESPACE;
+			uint64_t nameSpace=physicalColor/COLOR_NAMESPACE_MULTIPLIER;
 		
-			if(nameSpace==PHYLOGENY_NAMESPACE){
-				PhysicalKmerColor colorForPhylogeny=physicalColor % COLOR_NAMESPACE;
+			if(nameSpace==COLOR_PHYLOGENY_NAMESPACE){
+				PhysicalKmerColor colorForPhylogeny=physicalColor % COLOR_NAMESPACE_MULTIPLIER;
 
 				m_colorsForPhylogeny.insert(colorForPhylogeny);
 
@@ -1297,7 +1297,7 @@ void PhylogenyViewer::registerPlugin(ComputeCore*core){
 	m_size=core->getMessagesHandler()->getSize();
 	m_extractedColorsForPhylogeny=false;
 
-	UNKNOWN_TAXON=COLOR_NAMESPACE;
+	UNKNOWN_TAXON=COLOR_NAMESPACE_MULTIPLIER;
 
 	m_loadAllTree=true;
 
