@@ -52,6 +52,7 @@ class GeneOntology: public CorePlugin{
 	char*m_annotationFileName;
 
 	map<PhysicalKmerColor,vector<GeneOntologyIdentifier> > m_annotations;
+	bool m_slaveStarted;
 
 	bool m_loadedAnnotations;
 	bool m_listedRelevantColors;
@@ -93,6 +94,9 @@ class GeneOntology: public CorePlugin{
 	void loadAnnotations();
 	bool fetchArguments();
 
+	map<GeneOntologyIdentifier,map<int,int> > m_ontologyTermFrequencies;
+	void countOntologyTermsInGraph();
+	bool m_countOntologyTermsInGraph;
 
 public:
 

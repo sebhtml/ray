@@ -136,11 +136,12 @@ bool GeneOntology::fetchArguments(){
 
 void GeneOntology::loadAnnotations(){
 
+	m_loadedAnnotations=true;
+	m_countOntologyTermsInGraph=false;
+
 	KeyEncoder encoder;
 
 	if(!fetchArguments()){
-
-		m_loadedAnnotations=true;
 
 		return;
 	}
@@ -185,25 +186,112 @@ void GeneOntology::loadAnnotations(){
 
 	f.close();
 
-	cout<<"Rank "<<m_rank<<" loaded Gene Ontology annotations"<<endl;
+	cout<<"Rank "<<m_rank<<" loaded Gene Ontology annotations, ";
+	cout<<m_annotations.size()<<" objects with ontology terms"<<endl;
 
-	m_loadedAnnotations=true;
+	m_colorsForOntology.clear();
 }
 
 void GeneOntology::call_RAY_SLAVE_MODE_ONTOLOGY_MAIN(){
 
-	if(!m_listedRelevantColors){
+	if(!m_slaveStarted){
+
+		m_listedRelevantColors=false;
+		m_loadedAnnotations=false;
+		m_countOntologyTermsInGraph=false;
+
+		m_slaveStarted=true;
+
+	}else if(!m_listedRelevantColors){
 
 		fetchRelevantColors();
 
 	}else if(!m_loadedAnnotations){
 
 		loadAnnotations();
+
+	}else if(!m_countOntologyTermsInGraph){
+		countOntologyTermsInGraph();
+
 	}else{
 		m_switchMan->closeSlaveModeLocally(m_outbox,m_rank);
 	}
 }
 
+void GeneOntology::countOntologyTermsInGraph(){
+	
+	cout<<"Rank "<<m_rank<<": counting ontology terms in the graph..."<<endl;
+
+	#ifdef ASSERT
+	assert(m_ontologyTermFrequencies.size()==0);
+	#endif
+
+	GridTableIterator iterator;
+	iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
+
+	//* only fetch half of the iterated things because we just need one k-mer
+	// for any pair of reverse-complement k-mers 
+	
+	int parity=0;
+
+	while(iterator.hasNext()){
+
+		Vertex*node=iterator.next();
+		Kmer key=*(iterator.getKey());
+
+		#ifdef ASSERT
+		assert(parity==0 || parity==1);
+		#endif
+
+		if(parity==0){
+			parity=1;
+		}else if(parity==1){
+			parity=0;
+
+			continue; // we only need data with parity=0
+		}
+
+		VirtualKmerColorHandle color=node->getVirtualColor();
+		set<PhysicalKmerColor>*physicalColors=m_colorSet->getPhysicalColors(color);
+
+		int kmerCoverage=node->getCoverage(&key);
+
+		for(set<PhysicalKmerColor>::iterator j=physicalColors->begin();
+			j!=physicalColors->end();j++){
+
+			PhysicalKmerColor physicalColor=*j;
+	
+			uint64_t nameSpace=physicalColor/COLOR_NAMESPACE_MULTIPLIER;
+		
+			if(nameSpace==COLOR_NAMESPACE_EMBL_CDS){
+
+				PhysicalKmerColor colorForPhylogeny=physicalColor % COLOR_NAMESPACE_MULTIPLIER;
+	
+				/* the color is in the graph, but no annotations exist... */
+				if(m_annotations.count(colorForPhylogeny)==0){
+					continue;
+				}
+
+				vector<GeneOntologyIdentifier>*terms=NULL;
+				terms=&(m_annotations[colorForPhylogeny]);
+
+				int numberOfTerms=terms->size();
+
+				for(int i=0;i<numberOfTerms;i++){
+
+					GeneOntologyIdentifier term=terms->at(i);
+
+					m_ontologyTermFrequencies[term][kmerCoverage]++;
+				}
+			}
+		}
+	}
+
+	cout<<"Rank "<<m_rank<<": "<<m_ontologyTermFrequencies.size();
+	cout<<" have some biological signal"<<endl;
+
+	m_countOntologyTermsInGraph=true;
+}
 
 void GeneOntology::registerPlugin(ComputeCore*core){
 
@@ -263,8 +351,7 @@ void GeneOntology::resolveSymbols(ComputeCore*core){
 
 	m_searcher=(Searcher*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/plugin_Searcher.ray");
 
-	m_listedRelevantColors=false;
-
+	m_slaveStarted=false;
 	m_started=false;
 }
 
