@@ -86,6 +86,10 @@ class GeneOntology: public CorePlugin{
 	SlaveMode RAY_SLAVE_MODE_ONTOLOGY_MAIN;
 
 	MessageTag RAY_MPI_TAG_ONTOLOGY_MAIN;
+	MessageTag RAY_MPI_TAG_SYNCHRONIZE_TERMS;
+	MessageTag RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY;
+	Adapter_RAY_MPI_TAG_SYNCHRONIZE_TERMS m_adapter_RAY_MPI_TAG_SYNCHRONIZE_TERMS;
+	Adapter_RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY m_adapter_RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY;
 
 	Adapter_RAY_MASTER_MODE_ONTOLOGY_MAIN m_adapter_RAY_MASTER_MODE_ONTOLOGY_MAIN;
 	Adapter_RAY_SLAVE_MODE_ONTOLOGY_MAIN m_adapter_RAY_SLAVE_MODE_ONTOLOGY_MAIN;
@@ -97,11 +101,17 @@ class GeneOntology: public CorePlugin{
 	map<GeneOntologyIdentifier,map<int,int> > m_ontologyTermFrequencies;
 	void countOntologyTermsInGraph();
 	bool m_countOntologyTermsInGraph;
+	bool m_synced;
+	void synchronize();
 
 public:
 
 	void call_RAY_MASTER_MODE_ONTOLOGY_MAIN();
 	void call_RAY_SLAVE_MODE_ONTOLOGY_MAIN();
+
+	void call_RAY_MPI_TAG_SYNCHRONIZE_TERMS(Message*message);
+	void call_RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY(Message*message);
+
 
 	void registerPlugin(ComputeCore*core);
 	void resolveSymbols(ComputeCore*core);

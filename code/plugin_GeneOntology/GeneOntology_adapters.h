@@ -27,19 +27,11 @@
 
 class GeneOntology;
 
-class Adapter_RAY_MASTER_MODE_ONTOLOGY_MAIN: public MasterModeHandler{
-	GeneOntology*m_object;
-public:
-	void setObject(GeneOntology*object);
-	void call();
-};
+____CreateMasterModeAdapterDeclaration(GeneOntology,RAY_MASTER_MODE_ONTOLOGY_MAIN);
 
-class Adapter_RAY_SLAVE_MODE_ONTOLOGY_MAIN: public SlaveModeHandler{
-	GeneOntology*m_object;
+____CreateSlaveModeAdapterDeclaration(GeneOntology,RAY_SLAVE_MODE_ONTOLOGY_MAIN);
 
-public:
-	void setObject(GeneOntology*object);
-	void call();
-};
+____CreateMessageTagAdapterDeclaration(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS);
+____CreateMessageTagAdapterDeclaration(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY);
 
 #endif

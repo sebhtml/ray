@@ -20,20 +20,12 @@
 
 #include <plugin_GeneOntology/GeneOntology.h>
 
-void Adapter_RAY_SLAVE_MODE_ONTOLOGY_MAIN::setObject(GeneOntology*object){
-	m_object=object;
-}
+____CreateSlaveModeAdapterImplementation(GeneOntology,RAY_SLAVE_MODE_ONTOLOGY_MAIN);
 
-void Adapter_RAY_SLAVE_MODE_ONTOLOGY_MAIN::call(){
-	m_object->call_RAY_SLAVE_MODE_ONTOLOGY_MAIN();
-}
+____CreateMasterModeAdapterImplementation(GeneOntology,RAY_MASTER_MODE_ONTOLOGY_MAIN);
 
-void Adapter_RAY_MASTER_MODE_ONTOLOGY_MAIN::setObject(GeneOntology*object){
-	m_object=object;
-}
+____CreateMessageTagAdapterImplementation(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS);
+____CreateMessageTagAdapterImplementation(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY);
 
-void Adapter_RAY_MASTER_MODE_ONTOLOGY_MAIN::call(){
-	m_object->call_RAY_MASTER_MODE_ONTOLOGY_MAIN();
-}
 
 

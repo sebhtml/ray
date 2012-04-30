@@ -27,6 +27,14 @@
 
 //#define DEBUG_PHYLOGENY
 
+void GeneOntology::call_RAY_MPI_TAG_SYNCHRONIZE_TERMS(Message*message){
+
+}
+
+void GeneOntology::call_RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY(Message*message){
+
+}
+
 void GeneOntology::call_RAY_MASTER_MODE_ONTOLOGY_MAIN(){
 	if(!m_started){
 
@@ -199,6 +207,7 @@ void GeneOntology::call_RAY_SLAVE_MODE_ONTOLOGY_MAIN(){
 		m_listedRelevantColors=false;
 		m_loadedAnnotations=false;
 		m_countOntologyTermsInGraph=false;
+		m_synced=false;
 
 		m_slaveStarted=true;
 
@@ -213,9 +222,20 @@ void GeneOntology::call_RAY_SLAVE_MODE_ONTOLOGY_MAIN(){
 	}else if(!m_countOntologyTermsInGraph){
 		countOntologyTermsInGraph();
 
+	}else if(!m_synced){
+		
+		synchronize();
+
 	}else{
 		m_switchMan->closeSlaveModeLocally(m_outbox,m_rank);
 	}
+}
+
+void GeneOntology::synchronize(){
+
+	// sync with master
+
+	m_synced=true;
 }
 
 void GeneOntology::countOntologyTermsInGraph(){
@@ -295,6 +315,8 @@ void GeneOntology::countOntologyTermsInGraph(){
 
 void GeneOntology::registerPlugin(ComputeCore*core){
 
+	m_core=core;
+
 	m_plugin=core->allocatePluginHandle();
 
 	core->setPluginName(m_plugin,"GeneOntology");
@@ -315,6 +337,18 @@ void GeneOntology::registerPlugin(ComputeCore*core){
 	RAY_MPI_TAG_ONTOLOGY_MAIN=core->allocateMessageTagHandle(m_plugin);
 	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_ONTOLOGY_MAIN,"RAY_MPI_TAG_ONTOLOGY_MAIN");
 
+	RAY_MPI_TAG_SYNCHRONIZE_TERMS=m_core->allocateMessageTagHandle(m_plugin);
+	m_core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_SYNCHRONIZE_TERMS,"RAY_MPI_TAG_SYNCHRONIZE_TERMS");
+	m_adapter_RAY_MPI_TAG_SYNCHRONIZE_TERMS.setObject(this);
+	m_core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_SYNCHRONIZE_TERMS,&m_adapter_RAY_MPI_TAG_SYNCHRONIZE_TERMS);
+
+	RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY=m_core->allocateMessageTagHandle(m_plugin);
+	m_core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY,"RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY");
+	m_adapter_RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY.setObject(this);
+	m_core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY,&m_adapter_RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY);
+
+
+
 	m_switchMan=core->getSwitchMan();
 	m_outbox=core->getOutbox();
 	m_inbox=core->getInbox();
@@ -324,7 +358,6 @@ void GeneOntology::registerPlugin(ComputeCore*core){
 	m_rank=core->getMessagesHandler()->getRank();
 	m_size=core->getMessagesHandler()->getSize();
 
-	m_core=core;
 }
 
 void GeneOntology::resolveSymbols(ComputeCore*core){
