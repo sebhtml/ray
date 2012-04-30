@@ -91,7 +91,7 @@ class GeneOntology: public CorePlugin{
 
 	void fetchRelevantColors /**/ ();
 	void loadAnnotations();
-	void fetchArguments();
+	bool fetchArguments();
 
 
 public:

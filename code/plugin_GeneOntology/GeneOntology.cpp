@@ -99,7 +99,7 @@ void GeneOntology::fetchRelevantColors(){
 
 }
 
-void GeneOntology::fetchArguments(){
+bool GeneOntology::fetchArguments(){
 
 	int count=m_core->getNumberOfArguments();
 
@@ -119,13 +119,18 @@ void GeneOntology::fetchArguments(){
 			if(remaining!=numberOfOperands){
 				cout<<"Error: needs "<<numberOfOperands<<" operands, you provided "<<remaining<<endl;
 
-				return;
+				return false;
 			}
 	
 			m_ontologyFileName=arguments[i+1];
 			m_annotationFileName=arguments[i+2];
+
+			return true;
 		}
 	}
+
+	return false;
+
 
 }
 
@@ -133,7 +138,12 @@ void GeneOntology::loadAnnotations(){
 
 	KeyEncoder encoder;
 
-	fetchArguments();
+	if(!fetchArguments()){
+
+		m_loadedAnnotations=true;
+
+		return;
+	}
 
 	ifstream f;
 	f.open(m_annotationFileName);
