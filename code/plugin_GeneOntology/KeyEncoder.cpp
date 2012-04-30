@@ -192,7 +192,9 @@ GeneOntologyIdentifier KeyEncoder::encodeGeneOntologyHandle(const char*identifie
 	int base=10;
 	int total=start+length;
 
-	if(strlen(identifier)!=total){
+	int actualLength=strlen(identifier);
+
+	if(actualLength!=total){
 		cout<<"Error: can not encode GO handle "<<identifier<<endl;
 		return 0;
 	}
