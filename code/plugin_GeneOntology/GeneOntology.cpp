@@ -25,10 +25,33 @@
 #include <core/OperatingSystem.h>
 #include <plugin_GeneOntology/KeyEncoder.h>
 
-//#define DEBUG_PHYLOGENY
+//#define DEBUG_ONTOLOGY_SYNC
 
 void GeneOntology::call_RAY_MPI_TAG_SYNCHRONIZE_TERMS(Message*message){
 
+	#ifdef DEBUG_ONTOLOGY_SYNC
+	cout<<"[DEBUG_ONTOLOGY_SYNC] received <<call_RAY_MPI_TAG_SYNCHRONIZE_TERMS"<<endl;
+	#endif
+
+	Rank source=message->getSource();
+
+	// we don't need to synchronize master
+	if(source!=MASTER_RANK){
+
+		int count=message->getCount();
+		uint64_t*buffer=message->getBuffer();
+
+		for(int i=0;i<count;i+=3){
+			GeneOntologyIdentifier term=buffer[i+0];
+			int kmerCoverage= buffer[i+1];
+			int frequency=buffer[i+2];
+
+			incrementOntologyTermFrequency(term,kmerCoverage,frequency);
+		}
+	}
+
+	m_switchMan->sendMessage(NULL,0,m_outbox,m_rank,message->getSource(),
+		RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY);
 }
 
 void GeneOntology::call_RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY(Message*message){
@@ -163,7 +186,7 @@ void GeneOntology::loadAnnotations(){
 	while(!f.eof()){
 		
 
-		if(i%10000==0){
+		if(i%100000==0){
 	
 			cout<<"Rank "<<m_rank<<" is loading annotations from "<<m_annotationFileName<<" ";
 			cout<<i<<endl;
@@ -208,6 +231,7 @@ void GeneOntology::call_RAY_SLAVE_MODE_ONTOLOGY_MAIN(){
 		m_loadedAnnotations=false;
 		m_countOntologyTermsInGraph=false;
 		m_synced=false;
+		m_waitingForReply=false;
 
 		m_slaveStarted=true;
 
@@ -227,15 +251,142 @@ void GeneOntology::call_RAY_SLAVE_MODE_ONTOLOGY_MAIN(){
 		synchronize();
 
 	}else{
+		if(m_rank==MASTER_RANK){
+
+			cout<<"Rank "<<m_rank<<": synchronization is complete!"<<endl;
+			cout<<"Rank "<<m_rank<<": ontology terms with biological signal: "<<m_ontologyTermFrequencies.size()<<endl;
+
+		}
+
 		m_switchMan->closeSlaveModeLocally(m_outbox,m_rank);
 	}
 }
 
 void GeneOntology::synchronize(){
 
+	// we received the response
+	if(m_inbox->hasMessage(RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY)){
+
+		#ifdef DEBUG_ONTOLOGY_SYNC
+		cout<<"[DEBUG_ONTOLOGY_SYNC] Received RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY"<<endl;
+		#endif
+
+		m_waitingForReply=false;
+	}
+
+	if(m_waitingForReply){
+		return;
+	}
+
 	// sync with master
 
-	m_synced=true;
+	if(hasDataToSync()){
+
+		#ifdef DEBUG_ONTOLOGY_SYNC
+		cout<<"[DEBUG_ONTOLOGY_SYNC] Will create data message"<<endl;
+		#endif
+
+		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+
+		#ifdef ASSERT
+		assert(buffer!=NULL);
+		#endif
+
+		int bufferPosition=0;
+
+		int available=(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t))/3;
+		int added=0;
+
+		while(hasDataToSync() && added < available){
+
+			#ifdef DEBUG_ONTOLOGY_SYNC
+			cout<<"[DEBUG_ONTOLOGY_SYNC] will add an object."<<endl;
+			#endif
+
+			#ifdef ASSERT
+			if(added==0){
+				assert(bufferPosition==0);
+			}
+			#endif
+				
+			addDataToBuffer(buffer,&bufferPosition);
+
+			#ifdef ASSERT
+			assert(bufferPosition%3 == 0);
+			#endif
+
+			added++;
+
+			#ifdef DEBUG_ONTOLOGY_SYNC
+			cout<<"[DEBUG_ONTOLOGY_SYNC] added "<<added<<" available "<<available<<endl;
+			#endif
+		}
+
+		#ifdef DEBUG_ONTOLOGY_SYNC
+		cout<<"[DEBUG_ONTOLOGY_SYNC] sending RAY_MPI_TAG_SYNCHRONIZE_TERMS"<<endl;
+		#endif
+
+		m_switchMan->sendMessage(buffer,bufferPosition,m_outbox,m_rank,MASTER_RANK,RAY_MPI_TAG_SYNCHRONIZE_TERMS);
+
+		m_waitingForReply=true;
+	}
+
+	/* we are not waiting for a reply and we don't have more data to synchronize */
+	if(!m_waitingForReply){
+		m_synced=true;
+
+		cout<<"Rank "<<m_rank<<": synced ontology term profiles with master"<<endl;
+	}
+}
+
+void GeneOntology::__skipToData(){
+	// skip empty slots
+	while(m_ontologyTermFrequencies_iterator1 != m_ontologyTermFrequencies.end()
+	&& m_ontologyTermFrequencies_iterator2==m_ontologyTermFrequencies_iterator1->second.end()){
+
+		m_ontologyTermFrequencies_iterator1++;
+
+		if(m_ontologyTermFrequencies_iterator1!=m_ontologyTermFrequencies.end()){
+			m_ontologyTermFrequencies_iterator2=m_ontologyTermFrequencies_iterator1->second.begin();
+		}
+	}
+}
+
+bool GeneOntology::hasDataToSync(){
+
+	__skipToData();
+
+	return m_ontologyTermFrequencies_iterator1 != m_ontologyTermFrequencies.end();
+}
+
+void GeneOntology::addDataToBuffer(uint64_t*buffer,int*bufferPosition){
+
+	GeneOntologyIdentifier term=m_ontologyTermFrequencies_iterator1->first;
+	int coverage=m_ontologyTermFrequencies_iterator2->first;
+	int frequency=m_ontologyTermFrequencies_iterator2->second;
+
+	#ifdef DEBUG_ONTOLOGY_SYNC
+	cout<<"[DEBUG_ONTOLOGY_SYNC] bufferPosition= "<<*(bufferPosition)<<endl;
+	#endif
+
+	buffer[(*bufferPosition)++]=term;
+	#ifdef DEBUG_ONTOLOGY_SYNC
+	cout<<"[DEBUG_ONTOLOGY_SYNC] bufferPosition= "<<*(bufferPosition)<<endl;
+	#endif
+
+	buffer[(*bufferPosition)++]=coverage;
+	#ifdef DEBUG_ONTOLOGY_SYNC
+	cout<<"[DEBUG_ONTOLOGY_SYNC] bufferPosition= "<<*(bufferPosition)<<endl;
+	#endif
+
+	buffer[(*bufferPosition)++]=frequency;
+	#ifdef DEBUG_ONTOLOGY_SYNC
+	cout<<"[DEBUG_ONTOLOGY_SYNC] bufferPosition= "<<*(bufferPosition)<<endl;
+	#endif
+
+	m_ontologyTermFrequencies_iterator2++;
+
+	__skipToData();
 }
 
 void GeneOntology::countOntologyTermsInGraph(){
@@ -301,16 +452,37 @@ void GeneOntology::countOntologyTermsInGraph(){
 
 					GeneOntologyIdentifier term=terms->at(i);
 
-					m_ontologyTermFrequencies[term][kmerCoverage]++;
+					incrementOntologyTermFrequency(term,kmerCoverage,1);
 				}
 			}
 		}
 	}
 
-	cout<<"Rank "<<m_rank<<": "<<m_ontologyTermFrequencies.size();
-	cout<<" have some biological signal"<<endl;
+	m_ontologyTermFrequencies_iterator1=m_ontologyTermFrequencies.begin();
+
+	if(m_ontologyTermFrequencies_iterator1!=m_ontologyTermFrequencies.end()){
+		m_ontologyTermFrequencies_iterator2=m_ontologyTermFrequencies_iterator1->second.begin();
+	}
 
 	m_countOntologyTermsInGraph=true;
+
+	cout<<"Rank "<<m_rank<<": "<<m_ontologyTermFrequencies.size();
+	cout<<" have some biological signal"<<endl;
+}
+
+void GeneOntology::incrementOntologyTermFrequency(GeneOntologyIdentifier term,COVERAGE_TYPE kmerCoverage,int frequency){
+
+	#ifdef ASSERT
+	assert(kmerCoverage>0);
+	assert(frequency>0);
+	#endif
+
+	m_ontologyTermFrequencies[term][kmerCoverage]+=frequency;
+
+	#ifdef ASSERT
+	assert(m_ontologyTermFrequencies.count(term)>0);
+	assert(m_ontologyTermFrequencies[term].count(kmerCoverage)>0);
+	#endif
 }
 
 void GeneOntology::registerPlugin(ComputeCore*core){

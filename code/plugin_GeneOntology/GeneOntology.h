@@ -99,10 +99,20 @@ class GeneOntology: public CorePlugin{
 	bool fetchArguments();
 
 	map<GeneOntologyIdentifier,map<int,int> > m_ontologyTermFrequencies;
+	map<GeneOntologyIdentifier,map<int,int> >::iterator m_ontologyTermFrequencies_iterator1;
+	map<int,int>::iterator m_ontologyTermFrequencies_iterator2;
+
 	void countOntologyTermsInGraph();
 	bool m_countOntologyTermsInGraph;
+
+	// synchronization
 	bool m_synced;
 	void synchronize();
+	void __skipToData();
+	bool hasDataToSync();
+	void addDataToBuffer(uint64_t*buffer,int*bufferPosition);
+	void incrementOntologyTermFrequency(GeneOntologyIdentifier term,COVERAGE_TYPE kmerCoverage,int frequency);
+	bool m_waitingForReply;
 
 public:
 
