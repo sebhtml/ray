@@ -60,6 +60,9 @@ using namespace std;
 
 #include <plugin_MessageProcessor/MessageProcessor_adapters.h>
 
+#include <core/ComputeCore.h>
+
+
 /**
  * MessageProcessor receives all the messages of a MPI rank
  * Message objects may also be checked using the Message inbox (m_inbox)
