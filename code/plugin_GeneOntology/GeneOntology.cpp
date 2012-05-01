@@ -383,8 +383,24 @@ void GeneOntology::writeOntologyFiles(){
 
 	xmlStream.close();
 
-
 	ofstream tsvStream(tsvFile.c_str());
+
+	operationBuffer<<"#Identifier	Name	Mode k-mer coverage	Mean k-mer coverage"<<endl;
+
+	for(map<GeneOntologyIdentifier,map<COVERAGE_TYPE,int> >::iterator i=
+		m_ontologyTermFrequencies.begin();i!=m_ontologyTermFrequencies.end();i++){
+
+		GeneOntologyIdentifier handle=i->first;
+
+		operationBuffer<<getGeneOntologyIdentifier(handle)<<"	";
+		operationBuffer<<getGeneOntologyName(handle)<<"	";
+		operationBuffer<<modeCoverages[handle]<<"	";
+		operationBuffer<<meanCoverages[handle]<<endl;
+
+		flushFileOperationBuffer(false,&operationBuffer,&tsvStream,CONFIG_FILE_IO_BUFFER_SIZE);
+	}
+
+	flushFileOperationBuffer(true,&operationBuffer,&tsvStream,CONFIG_FILE_IO_BUFFER_SIZE);
 
 	tsvStream.close();
 }
