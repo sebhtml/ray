@@ -26,6 +26,7 @@
 #include <plugin_GeneOntology/KeyEncoder.h>
 
 //#define DEBUG_ONTOLOGY_SYNC
+//#define DEBUG_ONTOLOGY_LOADER  //_---------------________----___---____--____------
 
 void GeneOntology::call_RAY_MPI_TAG_SYNCHRONIZE_TERMS(Message*message){
 
@@ -186,7 +187,7 @@ void GeneOntology::loadAnnotations(){
 	while(!f.eof()){
 		
 
-		if(i%100000==0){
+		if(i%500000==0){
 	
 			cout<<"Rank "<<m_rank<<" is loading annotations from "<<m_annotationFileName<<" ";
 			cout<<i<<endl;
@@ -256,10 +257,200 @@ void GeneOntology::call_RAY_SLAVE_MODE_ONTOLOGY_MAIN(){
 			cout<<"Rank "<<m_rank<<": synchronization is complete!"<<endl;
 			cout<<"Rank "<<m_rank<<": ontology terms with biological signal: "<<m_ontologyTermFrequencies.size()<<endl;
 
+			writeOntologyFiles();
 		}
 
 		m_switchMan->closeSlaveModeLocally(m_outbox,m_rank);
 	}
+}
+
+string GeneOntology::getGeneOntologyName(GeneOntologyIdentifier handle){
+
+	if(m_descriptions.count(handle)==0){
+
+		return "NULL";
+	}
+	
+	return m_descriptions[handle];
+}
+
+string GeneOntology::getGeneOntologyIdentifier(GeneOntologyIdentifier handle){
+
+	if(m_identifiers.count(handle)==0){
+		return "NULL";
+	}
+
+	return m_identifiers[handle];
+}
+
+void GeneOntology::writeOntologyFiles(){
+	ostringstream theFile;
+	theFile<<m_parameters->getPrefix()<<"/BiologicalAbundances/_GeneOntology";
+
+	string directory=theFile.str();
+	createDirectory(directory.c_str());
+
+	theFile<<"/Terms";
+
+	ostringstream xmlFileStream;
+	xmlFileStream<<theFile.str()<<".xml";
+	ostringstream tsvFileStream;
+	tsvFileStream<<theFile.str()<<".tsv";
+
+	string xmlFile=xmlFileStream.str();
+	string tsvFile=tsvFileStream.str();
+
+
+	loadOntology(&m_identifiers,&m_descriptions);
+
+	map<GeneOntologyIdentifier,int> modeCoverages;
+	map<GeneOntologyIdentifier,double> meanCoverages;
+
+
+
+	ofstream xmlStream(xmlFile.c_str());
+	ostringstream operationBuffer; //-------------
+
+
+	operationBuffer<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"<<endl;
+	operationBuffer<<"<root>"<<endl;
+
+
+	for(map<GeneOntologyIdentifier,map<COVERAGE_TYPE,int> >::iterator i=
+		m_ontologyTermFrequencies.begin();i!=m_ontologyTermFrequencies.end();i++){
+
+		GeneOntologyIdentifier handle=i->first;
+
+		int mode=0;
+		int modeCount=0;
+		double sum=0;
+		int total=0;
+
+		for(map<COVERAGE_TYPE,int>::iterator j=i->second.begin();j!=i->second.end();j++){
+
+			COVERAGE_TYPE coverage=j->first;
+			int frequency=j->second;
+
+			if(frequency>modeCount){
+				mode=coverage;
+				modeCount=frequency;
+			}
+
+			sum+=coverage*frequency;
+			total+=frequency;
+		}
+
+		double mean=sum;
+
+		if(total!=0){
+			mean/=total;
+		}
+		
+		#ifdef ASSERT
+		assert(modeCoverages.count(handle)==0);
+		assert(meanCoverages.count(handle)==0);
+		#endif /**/
+
+		modeCoverages[handle]=mode;
+		meanCoverages[handle]=mean; /**/
+
+		operationBuffer<<"<geneOntologyTerm>"<<endl;
+		operationBuffer<<"<identifier>";
+		operationBuffer<<getGeneOntologyIdentifier(handle)<<"</identifier><name>";
+		operationBuffer<<getGeneOntologyName(handle)<<"</name>"<<endl;
+		operationBuffer<<"<modeKmerCoverage>"<<mode<<"</modeKmerCoverage>";
+		operationBuffer<<"<meanKmerCoverage>"<<mean<<"</meanKmerCoverage>";
+		operationBuffer<<"<distribution>"<<endl;
+
+		operationBuffer<<"#Coverage	Frequency"<<endl;
+
+		for(map<COVERAGE_TYPE,int>::iterator j=i->second.begin();j!=i->second.end();j++){
+
+			COVERAGE_TYPE coverage=j->first;
+			int frequency=j->second;
+
+			operationBuffer<<coverage<<"	"<<frequency<<endl;
+		}
+
+		operationBuffer<<"</distribution></geneOntologyTerm>"<<endl;
+
+		flushFileOperationBuffer(false,&operationBuffer,&xmlStream,CONFIG_FILE_IO_BUFFER_SIZE);
+	}
+
+	operationBuffer<<"</root>"<<endl;
+
+	flushFileOperationBuffer(true,&operationBuffer,&xmlStream,CONFIG_FILE_IO_BUFFER_SIZE);
+
+	xmlStream.close();
+
+
+	ofstream tsvStream(tsvFile.c_str());
+
+	tsvStream.close();
+}
+
+void GeneOntology::loadOntology(map<GeneOntologyIdentifier,string>*identifiers,
+		map<GeneOntologyIdentifier,string>*descriptions){
+
+/* pick up all these entries:
+ *
+ * [Term]
+ * id: GO:2001312
+ * name: lysobisphosphatidic acid biosynthetic process
+ */
+
+	KeyEncoder encoder;
+
+	char line[2048];
+
+	ifstream f(m_ontologyFileName);
+
+	string identifier="";
+	bool processing=false;
+
+	while(!f.eof()){
+		f.getline(line,2048);
+
+		string overlay=line;
+		if(overlay=="[Term]"){
+			processing=true;
+
+		}else if(!processing){
+			// busy wait on input/output operations
+
+		}else if(overlay.length()>=3 && overlay.substr(0,3)=="id:"){
+	
+			identifier=overlay.substr(4);
+		}else if(overlay.length()>=5 && overlay.substr(0,5)=="name:"){
+			string name=overlay.substr(6);
+
+			#ifdef DEBUG_ONTOLOGY_LOADER
+			cout<<"[DEBUG_ONTOLOGY_LOADER] "<<identifier<<" -> "<<name<<endl;
+			#endif
+
+
+			GeneOntologyIdentifier handle=encoder.encodeGeneOntologyHandle(identifier.c_str());
+
+			#ifdef ASSERT
+			assert(identifiers->count(handle)==0);
+			assert(descriptions->count(handle)==0);
+			#endif
+
+			(*identifiers)[handle]=identifier;
+			(*descriptions)[handle]=name;
+
+			processing=false;
+		}
+	}
+
+	f.close();
+
+	cout<<"Rank "<<m_rank<<": loaded "<<identifiers->size()<<" gene ontology terms."<<endl;
+
+	#ifdef ASSERT
+	assert(identifiers->size()==descriptions->size());
+	#endif
+
 }
 
 void GeneOntology::synchronize(){

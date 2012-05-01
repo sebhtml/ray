@@ -98,9 +98,9 @@ class GeneOntology: public CorePlugin{
 	void loadAnnotations();
 	bool fetchArguments();
 
-	map<GeneOntologyIdentifier,map<int,int> > m_ontologyTermFrequencies;
-	map<GeneOntologyIdentifier,map<int,int> >::iterator m_ontologyTermFrequencies_iterator1;
-	map<int,int>::iterator m_ontologyTermFrequencies_iterator2;
+	map<GeneOntologyIdentifier,map<COVERAGE_TYPE,int> > m_ontologyTermFrequencies;
+	map<GeneOntologyIdentifier,map<COVERAGE_TYPE,int> >::iterator m_ontologyTermFrequencies_iterator1;
+	map<COVERAGE_TYPE,int>::iterator m_ontologyTermFrequencies_iterator2;
 
 	void countOntologyTermsInGraph();
 	bool m_countOntologyTermsInGraph;
@@ -113,6 +113,20 @@ class GeneOntology: public CorePlugin{
 	void addDataToBuffer(uint64_t*buffer,int*bufferPosition);
 	void incrementOntologyTermFrequency(GeneOntologyIdentifier term,COVERAGE_TYPE kmerCoverage,int frequency);
 	bool m_waitingForReply;
+
+	// write files
+	void writeOntologyFiles();
+
+	// load ontology
+	void loadOntology(map<GeneOntologyIdentifier,string>*identifiers,
+		map<GeneOntologyIdentifier,string>*descriptions);
+
+	// load ontology names
+	map<GeneOntologyIdentifier,string> m_identifiers;
+	map<GeneOntologyIdentifier,string> m_descriptions;
+
+	string getGeneOntologyName(GeneOntologyIdentifier handle);
+	string getGeneOntologyIdentifier(GeneOntologyIdentifier handle);
 
 public:
 

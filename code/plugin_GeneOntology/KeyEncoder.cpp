@@ -136,11 +136,12 @@ uint64_t KeyEncoder::encode_EMBL_CDS(const char*identifier){
 
 void KeyEncoder::populateMap(){
 
-	if(m_mapping.size()!=0){
+	if(m_mapping.size()>0){ //____----___---___--__----__---___-----_
 		return;
 	}
 
 	int value=0;
+
 	m_mapping['0']=value++;
 	m_mapping['1']=value++;
 	m_mapping['2']=value++;
@@ -152,7 +153,9 @@ void KeyEncoder::populateMap(){
 	m_mapping['8']=value++;
 	m_mapping['9']=value++;
 
+
 	value=0;
+
 	m_mapping['A']=value++;
 	m_mapping['B']=value++;
 	m_mapping['C']=value++;
@@ -185,6 +188,12 @@ void KeyEncoder::populateMap(){
 /* GO:0050662 */
 GeneOntologyIdentifier KeyEncoder::encodeGeneOntologyHandle(const char*identifier){
 	
+	populateMap();
+
+	#ifdef ASSERT
+	assert(m_mapping.size()>0);
+	#endif
+
 	uint32_t value=0;
 
 	int start=3;
@@ -209,6 +218,9 @@ GeneOntologyIdentifier KeyEncoder::encodeGeneOntologyHandle(const char*identifie
 		char symbol=identifier[total-1-i];
 
 		#ifdef ASSERT
+		if(m_mapping.count(symbol)==0){
+			cout<<"Error: <input>"<<identifier<<"</input>"<<" symbol is "<<symbol<<endl;
+		}
 		assert(m_mapping.count(symbol)>0);
 		#endif
 
