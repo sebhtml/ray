@@ -6,6 +6,21 @@ SYNOPSIS
 
 DESCRIPTION:
 
+  The Ray genome assembler is built on top of the RayPlatform, a generic plugin-based
+  distributed and parallel compute engine that uses the message-passing interface
+  for passing messages.
+
+  Ray targets several applications:
+
+    - de novo genome assembly
+    - de novo meta-genome assembly
+    - de novo transcriptome assembly (works, but not tested a lot)
+    - quantification of contig abundances
+    - quantification of microbiome consortia members
+    - quantification of transcript expression
+    - taxonomy profiling of samples
+    - gene ontology profiling of samples
+
        -help
               Displays this help page.
 
@@ -33,7 +48,7 @@ DESCRIPTION:
        -s sequenceFile
               Provides a file containing single-end reads.
 
-  Biological abundances and taxonomy
+  Biological abundances
 
        -search searchDirectory
               Provides a directory containing fasta files to be searched in the de Bruijn graph.
@@ -45,10 +60,18 @@ DESCRIPTION:
               By default, each sequence in each file has a different color.
               For files with large numbers of sequences, using one single color per file may be more efficient.
 
+  Taxonomic profiling with colored de Bruijn graphs
+
        -with-taxonomy Genome-to-Taxon.tsv TreeOfLife-Edges.tsv Taxon-Names.tsv
               Provides a taxonomy.
-              See Documentation/Phylogeny.txt for details.
+              Computes and writes detailed taxonomic profiles.
+              See Documentation/Taxonomy.txt for details.
 
+       -gene-ontology OntologyTerms.txt  Annotations.txt
+              Provides an ontology and annotations.
+              OntologyTerms.txt is fetched from http://geneontology.org
+              Annotations.txt is a 2-column file (EMBL_CDS handle	&	gene ontology identifier)
+              See Documentation/GeneOntology.txt
   Outputs
 
        -o outputDirectory

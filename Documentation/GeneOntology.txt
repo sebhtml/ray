@@ -1,0 +1,7 @@
+
+Ray can output gene ontology profiles using a colored de Bruijn approach.
+
+Files created are 
+
+	<RayOutput>/BiologicalAbundances/_GeneOntology/Terms.xml
+	<RayOutput>/BiologicalAbundances/_GeneOntology/Terms.tsv

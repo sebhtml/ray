@@ -1179,6 +1179,21 @@ void Parameters::showUsage(){
 	cout<<"DESCRIPTION:"<<endl;
 
 	cout<<endl;
+	cout<<"  The Ray genome assembler is built on top of the RayPlatform, a generic plugin-based"<<endl;
+	cout<<"  distributed and parallel compute engine that uses the message-passing interface"<<endl;
+	cout<<"  for passing messages."<<endl;
+	cout<<endl;
+	cout<<"  Ray targets several applications:"<<endl;
+	cout<<endl;
+	cout<<"    - de novo genome assembly"<<endl;
+	cout<<"    - de novo meta-genome assembly"<<endl;
+	cout<<"    - de novo transcriptome assembly (works, but not tested a lot)"<<endl;
+	cout<<"    - quantification of contig abundances"<<endl;
+	cout<<"    - quantification of microbiome consortia members"<<endl;
+	cout<<"    - quantification of transcript expression"<<endl;
+	cout<<"    - taxonomy profiling of samples"<<endl;
+	cout<<"    - gene ontology profiling of samples"<<endl;
+	cout<<endl;
 	showOption("-help","Displays this help page.");
 	cout<<endl;
 	showOption("-version","Displays Ray version and compilation options.");
@@ -1206,7 +1221,7 @@ void Parameters::showUsage(){
 	showOption("-s sequenceFile","Provides a file containing single-end reads.");
 	cout<<endl;
 
-	cout<<"  Biological abundances and taxonomy"<<endl;
+	cout<<"  Biological abundances"<<endl;
 	cout<<endl;
 	showOption("-search searchDirectory","Provides a directory containing fasta files to be searched in the de Bruijn graph.");
 	showOptionDescription("Biological abundances will be written to RayOutput/BiologicalAbundances");
@@ -1218,10 +1233,17 @@ void Parameters::showUsage(){
 	showOptionDescription("For files with large numbers of sequences, using one single color per file may be more efficient.");
 	cout<<endl;
 
+	cout<<"  Taxonomic profiling with colored de Bruijn graphs"<<endl;
+	cout<<endl;
 	showOption("-with-taxonomy Genome-to-Taxon.tsv TreeOfLife-Edges.tsv Taxon-Names.tsv","Provides a taxonomy.");
-	showOptionDescription("See Documentation/Phylogeny.txt for details.");
+	showOptionDescription("Computes and writes detailed taxonomic profiles.");
+	showOptionDescription("See Documentation/Taxonomy.txt for details.");
 
 	cout<<endl;
+	showOption("-gene-ontology OntologyTerms.txt  Annotations.txt","Provides an ontology and annotations.");
+	showOptionDescription("OntologyTerms.txt is fetched from http://geneontology.org");
+	showOptionDescription("Annotations.txt is a 2-column file (EMBL_CDS handle	&	gene ontology identifier)");
+	showOptionDescription("See Documentation/GeneOntology.txt");
 	
 
 	cout<<"  Outputs"<<endl;

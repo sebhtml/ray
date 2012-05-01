@@ -15,14 +15,13 @@ Ray is documented in
 ## Solutions (all bundled in a single Product called Ray)
 
 - de novo genome assembly
-- quantification of contig abundance
-
-- de novo meta-genome assembly (algorithms: méta-Ray)
-- quantification of microbiome consortia members (algorithms: Colored Rays)
-- phylogenetic profiling based of virtual coloring (in development)
-
+- de novo meta-genome assembly
 - de novo transcriptome assembly (works, but not tested a lot)
-- quantification of transcript expression (algorithms: Colored Rays)
+- quantification of contig abundances
+- quantification of microbiome consortia members
+- quantification of transcript expression
+- taxonomy profiling of samples
+- gene ontology profiling of samples
 
 
 see Documentation/BiologicalAbundances.txt
