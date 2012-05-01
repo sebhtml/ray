@@ -34,11 +34,19 @@
 #include <memory/RingAllocator.h>
 #include <plugin_SequencesLoader/Read.h>
 #include <core/ComputeCore.h>
-#include <plugin_KmerAcademyBuilder/KmerAcademyBuilder_adapters.h>
 
 #include <set>
 #include <vector>
 using namespace std;
+
+ /* generated_automatically */
+class KmerAcademyBuilder; /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterDeclaration(KmerAcademyBuilder,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY); /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+
 
 /*
  * Any MPI rank has some reads to process.

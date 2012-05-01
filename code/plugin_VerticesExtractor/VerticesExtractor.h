@@ -34,11 +34,19 @@
 #include <profiling/Derivative.h>
 #include <profiling/Profiler.h>
 #include <core/ComputeCore.h>
-#include <plugin_VerticesExtractor/VerticesExtractor_adapters.h>
 
 #include <set>
 #include <vector>
 using namespace std;
+
+ /* generated_automatically */
+class VerticesExtractor; /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterDeclaration(VerticesExtractor,RAY_SLAVE_MODE_EXTRACT_VERTICES); /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+
 
 /*
  * Any MPI rank has some reads to process.

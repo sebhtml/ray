@@ -34,6 +34,13 @@
 #include <plugin_SeedExtender/BubbleTool.h>
 #include <cryptography/crypto.h>
 #include <math.h> /* sqrt */
+
+ /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterImplementation(SeedExtender,RAY_SLAVE_MODE_EXTENSION); /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+
 using namespace std;
 
 /** extend the seeds */

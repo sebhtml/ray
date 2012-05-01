@@ -23,6 +23,13 @@
 #include <plugin_FusionTaskCreator/FusionWorker.h>
 #include <core/OperatingSystem.h>
 
+ /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterImplementation(FusionTaskCreator,RAY_SLAVE_MODE_FUSION); /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+
+
 void FusionTaskCreator::call_RAY_SLAVE_MODE_FUSION(){
 
 	mainLoop();

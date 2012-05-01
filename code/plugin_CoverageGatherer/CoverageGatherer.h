@@ -32,7 +32,15 @@
 #include <map>
 using namespace std;
 
-#include <plugin_CoverageGatherer/CoverageGatherer_adapters.h>
+ /* generated_automatically */
+class CoverageGatherer; /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterDeclaration(CoverageGatherer,RAY_SLAVE_MODE_SEND_DISTRIBUTION); /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+
+
 
 /**
  * \author Sébastien Boisvert

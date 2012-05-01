@@ -24,6 +24,13 @@
 #include <stdio.h>
 #include <core/OperatingSystem.h>
 
+ /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterImplementation(EdgePurger,RAY_SLAVE_MODE_PURGE_NULL_EDGES); /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+
+
 //#define DEBUG_EdgePurger
 
 void EdgePurger::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,

@@ -38,7 +38,15 @@
 #include <set>
 using namespace std;
 
-#include <plugin_FusionTaskCreator/FusionTaskCreator_adapters.h>
+ /* generated_automatically */
+class FusionTaskCreator; /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterDeclaration(FusionTaskCreator,RAY_SLAVE_MODE_FUSION); /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+
+
 
 /**
  * The class creates and kills workers for the fusion of

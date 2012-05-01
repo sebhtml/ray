@@ -39,7 +39,16 @@ class SeedExtender;
 #include <set>
 using namespace std;
 
-#include <plugin_SeedingData/SeedingData_adapters.h>
+ /* generated_automatically */
+class SeedingData; /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterDeclaration(SeedingData,RAY_SLAVE_MODE_START_SEEDING); /* generated_automatically */
+____CreateSlaveModeAdapterDeclaration(SeedingData,RAY_SLAVE_MODE_SEND_SEED_LENGTHS); /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+
+
 
 /*
  * Computes seeds in the k-mer graph.

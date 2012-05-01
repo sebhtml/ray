@@ -25,6 +25,16 @@
 #include <core/OperatingSystem.h>
 #include <plugin_GeneOntology/KeyEncoder.h>
 
+ /* generated_automatically */
+____CreateMasterModeAdapterImplementation(GeneOntology,RAY_MASTER_MODE_ONTOLOGY_MAIN); /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterImplementation(GeneOntology,RAY_SLAVE_MODE_ONTOLOGY_MAIN); /* generated_automatically */
+ /* generated_automatically */
+____CreateMessageTagAdapterImplementation(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS); /* generated_automatically */
+____CreateMessageTagAdapterImplementation(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY); /* generated_automatically */
+ /* generated_automatically */
+
+
 //#define DEBUG_ONTOLOGY_SYNC
 //#define DEBUG_ONTOLOGY_LOADER  //_---------------________----___---____--____------
 

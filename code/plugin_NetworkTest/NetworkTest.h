@@ -34,7 +34,16 @@
 #include <map>
 using namespace std;
 
-#include <plugin_NetworkTest/NetworkTest_adapters.h>
+ /* generated_automatically */
+class NetworkTest; /* generated_automatically */
+ /* generated_automatically */
+____CreateMasterModeAdapterDeclaration(NetworkTest,RAY_MASTER_MODE_TEST_NETWORK); /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterDeclaration(NetworkTest,RAY_SLAVE_MODE_TEST_NETWORK); /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+
+
 
 /**
  * This class tests the network

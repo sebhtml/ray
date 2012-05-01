@@ -1,5 +1,4 @@
 
-Searcher-y += plugin_Searcher/Searcher_adapters.o
 Searcher-y += plugin_Searcher/Searcher.o
 Searcher-y += plugin_Searcher/SearchDirectory.o
 Searcher-y += plugin_Searcher/ContigSearchEntry.o

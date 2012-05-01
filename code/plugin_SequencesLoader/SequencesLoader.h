@@ -31,11 +31,19 @@
 #include <plugin_SequencesLoader/Read.h>
 #include <plugin_SeedExtender/BubbleData.h>
 #include <core/ComputeCore.h>
-#include <plugin_SequencesLoader/SequencesLoader_adapters.h>
 
 #include <time.h>
 #include <vector>
 using namespace std;
+
+ /* generated_automatically */
+class SequencesLoader; /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterDeclaration(SequencesLoader,RAY_SLAVE_MODE_LOAD_SEQUENCES); /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+
 
 /*
  * Computes the partition on reads (MASTER_RANK).

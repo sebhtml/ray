@@ -28,6 +28,13 @@
 #include <application_core/common_functions.h>
 #include <communication/Message.h>
 
+ /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterImplementation(SequencesIndexer,RAY_SLAVE_MODE_INDEX_SEQUENCES); /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+
+
 void SequencesIndexer::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(){
 	if(!m_initiatedIterator){
 		m_theSequenceId=0;

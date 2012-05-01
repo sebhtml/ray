@@ -35,6 +35,27 @@
 #include <fstream>
 #include <sstream>
 #include <math.h> /* sqrt */
+
+ /* generated_automatically */
+____CreateMasterModeAdapterImplementation(Searcher,RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS); /* generated_automatically */
+____CreateMasterModeAdapterImplementation(Searcher,RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES); /* generated_automatically */
+____CreateMasterModeAdapterImplementation(Searcher,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES); /* generated_automatically */
+____CreateMasterModeAdapterImplementation(Searcher,RAY_MASTER_MODE_ADD_COLORS); /* generated_automatically */
+____CreateMasterModeAdapterImplementation(Searcher,RAY_MASTER_MODE_SEARCHER_CLOSE); /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterImplementation(Searcher,RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS); /* generated_automatically */
+____CreateSlaveModeAdapterImplementation(Searcher,RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES); /* generated_automatically */
+____CreateSlaveModeAdapterImplementation(Searcher,RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES); /* generated_automatically */
+____CreateSlaveModeAdapterImplementation(Searcher,RAY_SLAVE_MODE_ADD_COLORS); /* generated_automatically */
+____CreateSlaveModeAdapterImplementation(Searcher,RAY_SLAVE_MODE_SEARCHER_CLOSE); /* generated_automatically */
+ /* generated_automatically */
+____CreateMessageTagAdapterImplementation(Searcher,RAY_MPI_TAG_ADD_KMER_COLOR); /* generated_automatically */
+____CreateMessageTagAdapterImplementation(Searcher,RAY_MPI_TAG_CONTIG_IDENTIFICATION); /* generated_automatically */
+____CreateMessageTagAdapterImplementation(Searcher,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS); /* generated_automatically */
+____CreateMessageTagAdapterImplementation(Searcher,RAY_MPI_TAG_GET_COVERAGE_AND_PATHS); /* generated_automatically */
+____CreateMessageTagAdapterImplementation(Searcher,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY); /* generated_automatically */
+ /* generated_automatically */
+
 using namespace std;
 
 //#define CONFIG_CONTIG_ABUNDANCE_VERBOSE

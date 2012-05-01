@@ -1,5 +1,4 @@
 
-SeedExtender-y += plugin_SeedExtender/SeedExtender_adapters.o
 SeedExtender-y += plugin_SeedExtender/SeedExtender.o
 SeedExtender-y +=  plugin_SeedExtender/Direction.o
 SeedExtender-y += plugin_SeedExtender/VertexMessenger.o plugin_SeedExtender/ReadFetcher.o

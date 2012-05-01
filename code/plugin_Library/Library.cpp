@@ -29,6 +29,15 @@
 #include <application_core/common_functions.h>
 #include <assert.h>
 #include <application_core/Parameters.h>
+
+ /* generated_automatically */
+____CreateMasterModeAdapterImplementation(Library,RAY_MASTER_MODE_UPDATE_DISTANCES); /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterImplementation(Library,RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION); /* generated_automatically */
+____CreateSlaveModeAdapterImplementation(Library,RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES); /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+
 using namespace std;
 
 /* send the information to all ranks */

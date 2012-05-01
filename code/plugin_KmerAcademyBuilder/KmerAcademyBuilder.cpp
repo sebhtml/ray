@@ -30,6 +30,13 @@
 #include <structures/StaticVector.h>
 #include <application_core/common_functions.h>
 #include <fstream>
+
+ /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterImplementation(KmerAcademyBuilder,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY); /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+
 using namespace std;
 
 void KmerAcademyBuilder::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(){

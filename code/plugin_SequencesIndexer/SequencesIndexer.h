@@ -36,13 +36,21 @@
 #include <plugin_SequencesLoader/ArrayOfReads.h>
 #include <profiling/Derivative.h>
 #include <plugin_SequencesLoader/Read.h>
-#include <plugin_SequencesIndexer/SequencesIndexer_adapters.h>
 #include <core/ComputeCore.h>
 
 #include <map>
 #include <vector>
 #include <fstream>
 using namespace std;
+
+ /* generated_automatically */
+class SequencesIndexer; /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterDeclaration(SequencesIndexer,RAY_SLAVE_MODE_INDEX_SEQUENCES); /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+
 
 /*
  * Computes optimal read markers using workers.

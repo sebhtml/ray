@@ -33,12 +33,20 @@
 #include <plugin_EdgePurger/EdgePurgerWorker.h>
 #include <scheduling/TaskCreator.h>
 #include <core/ComputeCore.h>
-#include <plugin_EdgePurger/EdgePurger_adapters.h>
 
 #include <map>
 #include <set>
 #include <stdint.h>
 using namespace std;
+
+ /* generated_automatically */
+class EdgePurger; /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterDeclaration(EdgePurger,RAY_SLAVE_MODE_PURGE_NULL_EDGES); /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+
 
 /**
  * VerticesExtractor.cpp adds k-mers and ingoing and outgoing edges

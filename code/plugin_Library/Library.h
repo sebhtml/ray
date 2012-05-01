@@ -36,10 +36,20 @@
 #include <handlers/SlaveModeHandler.h>
 #include <handlers/MasterModeHandler.h>
 #include <core/ComputeCore.h>
-#include <plugin_Library/Library_adapters.h>
 
 #include <map>
 using namespace std;
+
+ /* generated_automatically */
+class Library; /* generated_automatically */
+ /* generated_automatically */
+____CreateMasterModeAdapterDeclaration(Library,RAY_MASTER_MODE_UPDATE_DISTANCES); /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterDeclaration(Library,RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION); /* generated_automatically */
+____CreateSlaveModeAdapterDeclaration(Library,RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES); /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+
 
 /*
  * This class computes the average outer distances 

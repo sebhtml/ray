@@ -28,7 +28,6 @@
 #include <profiling/TimePrinter.h>
 #include <core/ComputeCore.h>
 #include <plugins/CorePlugin.h>
-#include <plugin_GenomeNeighbourhood/GenomeNeighbourhood_adapters.h>
 #include <plugin_GenomeNeighbourhood/Neighbour.h>
 #include <plugin_GenomeNeighbourhood/NeighbourPair.h>
 #include <plugin_KmerAcademyBuilder/Kmer.h>
@@ -40,6 +39,17 @@
 #include <stdint.h> /* for uint64_t */
 #include <stack>
 using namespace std;
+
+ /* generated_automatically */
+class GenomeNeighbourhood; /* generated_automatically */
+ /* generated_automatically */
+____CreateMasterModeAdapterDeclaration(GenomeNeighbourhood,RAY_MASTER_MODE_NEIGHBOURHOOD); /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterDeclaration(GenomeNeighbourhood,RAY_SLAVE_MODE_NEIGHBOURHOOD); /* generated_automatically */
+ /* generated_automatically */
+____CreateMessageTagAdapterDeclaration(GenomeNeighbourhood,RAY_MPI_TAG_NEIGHBOURHOOD_DATA); /* generated_automatically */
+ /* generated_automatically */
+
 
 /**
  * The plugin GenomeNeighbourhood outputs a file file

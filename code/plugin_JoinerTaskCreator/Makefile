@@ -1,5 +1,4 @@
 
-JoinerTaskCreator-y += plugin_JoinerTaskCreator/JoinerTaskCreator_adapters.o
 JoinerTaskCreator-y += plugin_JoinerTaskCreator/JoinerWorker.o 
 JoinerTaskCreator-y += plugin_JoinerTaskCreator/JoinerTaskCreator.o
 

@@ -1,5 +1,4 @@
 
-SequencesLoader-y += plugin_SequencesLoader/SequencesLoader_adapters.o 
 SequencesLoader-y += plugin_SequencesLoader/SequencesLoader.o 
 SequencesLoader-y += plugin_SequencesLoader/Read.o  plugin_SequencesLoader/ArrayOfReads.o 
 SequencesLoader-y += plugin_SequencesLoader/ColorSpaceDecoder.o plugin_SequencesLoader/ColorSpaceLoader.o 

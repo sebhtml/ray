@@ -31,6 +31,14 @@
 #include <core/slave_modes.h>
 #include <application_core/Parameters.h>
 
+ /* generated_automatically */
+____CreateMasterModeAdapterImplementation(Amos,RAY_MASTER_MODE_AMOS); /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterImplementation(Amos,RAY_SLAVE_MODE_AMOS); /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+
+
 void Amos::constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*outbox,
 	FusionData*fusionData,ExtensionData*extensionData,int*masterMode,int*slaveMode,Scaffolder*scaffolder,
 	StaticVector*inbox,VirtualCommunicator*virtualCommunicator){

@@ -35,12 +35,20 @@ class SeedingData;
 #include <handlers/SlaveModeHandler.h>
 
 #include <core/ComputeCore.h>
-#include <plugin_FusionData/FusionData_adapters.h>
 
 #include <vector>
 #include <map>
 #include <set>
 using namespace std;
+
+ /* generated_automatically */
+class FusionData; /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterDeclaration(FusionData,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS); /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+
 
 /*
  * Contains information regarding fusion of extensions.

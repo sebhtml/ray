@@ -36,7 +36,16 @@
 #include <vector>
 using namespace std;
 
-#include <plugin_Amos/Amos_adapters.h>
+ /* generated_automatically */
+class Amos; /* generated_automatically */
+ /* generated_automatically */
+____CreateMasterModeAdapterDeclaration(Amos,RAY_MASTER_MODE_AMOS); /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterDeclaration(Amos,RAY_SLAVE_MODE_AMOS); /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+
+
 
 /**
  * AMOS specification is available : http://sourceforge.net/apps/mediawiki/amos/index.php?title=AMOS

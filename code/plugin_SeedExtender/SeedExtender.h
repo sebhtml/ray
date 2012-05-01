@@ -47,8 +47,16 @@ class DepthFirstSearchData;
 #include <handlers/SlaveModeHandler.h>
 #include <core/ComputeCore.h>
 
-#include <plugin_SeedExtender/SeedExtender_adapters.h>
 using namespace std;
+
+ /* generated_automatically */
+class SeedExtender; /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterDeclaration(SeedExtender,RAY_SLAVE_MODE_EXTENSION); /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+
 
 /*
  * Performs the extension of seeds.

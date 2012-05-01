@@ -36,7 +36,15 @@
 #include <set>
 using namespace std;
 
-#include <plugin_JoinerTaskCreator/JoinerTaskCreator_adapters.h>
+ /* generated_automatically */
+class JoinerTaskCreator; /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterDeclaration(JoinerTaskCreator,RAY_SLAVE_MODE_FINISH_FUSIONS); /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+
+
 
 /**
  * The class creates and kills workers for the fusion of

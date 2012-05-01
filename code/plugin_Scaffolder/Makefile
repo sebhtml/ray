@@ -1,5 +1,4 @@
 
-Scaffolder-y += plugin_Scaffolder/Scaffolder_adapters.o
 Scaffolder-y += plugin_Scaffolder/Scaffolder.o 
 Scaffolder-y += plugin_Scaffolder/ScaffoldingLink.o
 Scaffolder-y += plugin_Scaffolder/SummarizedLink.o

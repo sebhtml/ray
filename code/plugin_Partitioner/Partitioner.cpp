@@ -24,6 +24,14 @@
 
 #include <stdlib.h>
 
+ /* generated_automatically */
+____CreateMasterModeAdapterImplementation(Partitioner,RAY_MASTER_MODE_COUNT_FILE_ENTRIES); /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterImplementation(Partitioner,RAY_SLAVE_MODE_COUNT_FILE_ENTRIES); /* generated_automatically */
+ /* generated_automatically */
+ /* generated_automatically */
+
+
 void Partitioner::constructor(RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,
 	SwitchMan*switchMan){
 

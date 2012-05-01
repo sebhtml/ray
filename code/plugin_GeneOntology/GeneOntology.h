@@ -33,13 +33,24 @@
 
 #include <plugin_Searcher/Searcher.h>
 #include <plugin_GeneOntology/types.h>
-#include <plugin_GeneOntology/GeneOntology_adapters.h>
 
 #include <set>
 #include <stdint.h>
 #include <map>
 #include <vector>
 using namespace std;
+
+ /* generated_automatically */
+class GeneOntology; /* generated_automatically */
+ /* generated_automatically */
+____CreateMasterModeAdapterDeclaration(GeneOntology,RAY_MASTER_MODE_ONTOLOGY_MAIN); /* generated_automatically */
+ /* generated_automatically */
+____CreateSlaveModeAdapterDeclaration(GeneOntology,RAY_SLAVE_MODE_ONTOLOGY_MAIN); /* generated_automatically */
+ /* generated_automatically */
+____CreateMessageTagAdapterDeclaration(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS); /* generated_automatically */
+____CreateMessageTagAdapterDeclaration(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY); /* generated_automatically */
+ /* generated_automatically */
+
 
 /** 
  * a plugin to know what is present in a sample 
