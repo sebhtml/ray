@@ -51,6 +51,7 @@ using namespace std;
 #include <plugin_Searcher/QualityCaller.h>
 #include <plugin_Searcher/Searcher_adapters.h>
 #include <plugin_Searcher/DistributionWriter.h>
+#include <core/ComputeCore.h>
 
 #define CONFIG_NICELY_ASSEMBLED_KMER_POSITION 0
 
