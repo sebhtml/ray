@@ -187,7 +187,6 @@ class PhylogenyViewer: public CorePlugin{
 	void showObservations(ostream*stream);
 	void sendTreeCounts();
 	TaxonIdentifier findCommonAncestor(vector<TaxonIdentifier>*taxons);
-	void call_RAY_MPI_TAG_TAXON_OBSERVATIONS(Message*m);
 	string getTaxonRank(TaxonIdentifier taxon);
 
 	void showObservations_XML(ostream*stream);
@@ -204,6 +203,7 @@ public:
 	void call_RAY_MASTER_MODE_PHYLOGENY_MAIN();
 	void call_RAY_SLAVE_MODE_PHYLOGENY_MAIN();
 	void call_RAY_MPI_TAG_TOUCH_TAXON(Message*message);
+	void call_RAY_MPI_TAG_TAXON_OBSERVATIONS(Message*message);
 
 	void registerPlugin(ComputeCore*core);
 	void resolveSymbols(ComputeCore*core);
