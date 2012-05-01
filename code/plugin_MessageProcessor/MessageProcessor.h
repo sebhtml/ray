@@ -106,7 +106,6 @@ class MessageProcessor :  public CorePlugin {
 	MessageTag RAY_MPI_TAG_START_INDEXING_SEQUENCES;
 	MessageTag RAY_MPI_TAG_START_SEEDING;
 	MessageTag RAY_MPI_TAG_START_VERTICES_DISTRIBUTION;
-	MessageTag RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL;
 	MessageTag RAY_MPI_TAG_TEST_NETWORK_MESSAGE;
 	MessageTag RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY;
 	MessageTag RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION;
@@ -342,7 +341,6 @@ class MessageProcessor :  public CorePlugin {
 	Adapter_RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY m_adapter_RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY;
 	Adapter_RAY_MPI_TAG_I_FINISHED_SCAFFOLDING m_adapter_RAY_MPI_TAG_I_FINISHED_SCAFFOLDING;
 	Adapter_RAY_MPI_TAG_GET_CONTIG_CHUNK m_adapter_RAY_MPI_TAG_GET_CONTIG_CHUNK;
-	Adapter_RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL m_adapter_RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL;
 
 	MessageRouter*m_router;
 
@@ -598,7 +596,6 @@ SequencesIndexer*m_si
 	void call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY(Message*message);
 	void call_RAY_MPI_TAG_I_FINISHED_SCAFFOLDING(Message*message);
 	void call_RAY_MPI_TAG_GET_CONTIG_CHUNK(Message*message);
-	void call_RAY_MPI_TAG_SWITCHMAN_COMPLETION_SIGNAL(Message*message);
 	
 	void registerPlugin(ComputeCore*core);
 	void resolveSymbols(ComputeCore*core);
