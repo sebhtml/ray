@@ -2088,7 +2088,13 @@ void SeedExtender::finalizeExtensions(vector<AssemblySeed>*seeds,FusionData*fusi
 
 	printf("Rank %i is extending seeds [%i/%i] (completed)\n",
 		m_parameters->getRank(),(int)(*seeds).size(),(int)(*seeds).size());
-	double ratio=(0.0+m_extended)/seeds->size()*100.0;
+
+	double ratio=(0.0+m_extended)*100.0;
+
+	if(seeds->size()!=0){
+		ratio/=seeds->size();
+	}
+
 	printf("Rank %i extended %i seeds out of %i (%.2f%%)\n",m_parameters->getRank(),
 		m_extended,(int)seeds->size(),ratio);
 	fflush(stdout);
