@@ -140,6 +140,13 @@ class GeneOntology: public CorePlugin{
 	string getGeneOntologyIdentifier(GeneOntologyIdentifier handle);
 
 	bool m_gotGeneOntologyParameter;
+
+	// load parents from gene ontology file
+	map<GeneOntologyIdentifier,vector<GeneOntologyIdentifier> > m_parents;
+	bool hasParent(GeneOntologyIdentifier handle);
+	void getParents(GeneOntologyIdentifier handle,vector<GeneOntologyIdentifier>*parents);
+	void addParentGeneOntologyIdentifier(GeneOntologyIdentifier handle,GeneOntologyIdentifier parent);
+
 public:
 
 	void call_RAY_MASTER_MODE_ONTOLOGY_MAIN();

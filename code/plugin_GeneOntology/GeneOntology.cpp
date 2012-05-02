@@ -454,6 +454,13 @@ void GeneOntology::loadOntology(map<GeneOntologyIdentifier,string>*identifiers,
 	string identifier="";
 	bool processing=false;
 
+	string typeDef="[Typedef]";
+
+	/* is_a: GO:0007005 ! mitochondrion organization */
+	string isARelation="is_a:";
+
+	string example="GO:*******";
+
 	while(!f.eof()){
 		f.getline(line,2048);
 
@@ -485,6 +492,17 @@ void GeneOntology::loadOntology(map<GeneOntologyIdentifier,string>*identifiers,
 			(*identifiers)[handle]=identifier;
 			(*descriptions)[handle]=name;
 
+		}else if(overlay.length()>=isARelation.length() && overlay.substr(0,isARelation.length())==isARelation){
+		
+			string parentIdentifier=overlay.substr(6,example.length());
+			GeneOntologyIdentifier parentHandle=encoder.encodeGeneOntologyHandle(parentIdentifier.c_str());
+
+			GeneOntologyIdentifier handle=encoder.encodeGeneOntologyHandle(identifier.c_str());
+
+			addParentGeneOntologyIdentifier(handle,parentHandle);
+
+		}else if(overlay.length()>=typeDef.length() && overlay.substr(0,typeDef.length())==typeDef){
+
 			processing=false;
 		}
 	}
@@ -497,6 +515,40 @@ void GeneOntology::loadOntology(map<GeneOntologyIdentifier,string>*identifiers,
 	assert(identifiers->size()==descriptions->size());
 	#endif
 
+}
+
+void GeneOntology::addParentGeneOntologyIdentifier(GeneOntologyIdentifier term,GeneOntologyIdentifier parent){
+
+	#ifdef ASSERT
+	if(hasParent(term)){
+		vector<GeneOntologyIdentifier> parents;
+		getParents(term,&parents);
+
+		for(int i=0;i<(int)parents.size();i++){
+			assert(parent!=parents[i]);
+		}
+	}
+	#endif /* ASSERT */
+
+	m_parents[term].push_back(parent);
+}
+
+void GeneOntology::getParents(GeneOntologyIdentifier handle,vector<GeneOntologyIdentifier>*parents){
+
+	#ifdef ASSERT
+	assert(parents->size()==0);
+	assert(hasParent(handle));
+	#endif
+
+	for(int i=0;i<(int)m_parents[handle].size();i++){
+		parents->push_back(m_parents[handle][i]);
+	}
+	
+}
+
+bool GeneOntology::hasParent(GeneOntologyIdentifier handle){
+
+	return m_parents.count(handle)>0;
 }
 
 void GeneOntology::synchronize(){
