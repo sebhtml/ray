@@ -3359,6 +3359,8 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 
 		uint64_t demultiplexedObservations=0;
 
+		/* this colored depth is estimated with uniquely colored k-mers */
+
 		uint64_t breadthOfCoverage=matches;
 		uint64_t depthOfCoverage=coloredMode;
 
@@ -3373,21 +3375,25 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 		content<<"<demultiplexedKmerObservations>"<<demultiplexedObservations<<"</demultiplexedKmerObservations>";
 
 		double proportion=demultiplexedObservations;
-		double proportionWithColors=demultiplexedObservations;
 
-		if(m_totalNumberOfAssembledKmerObservations!=0){
-			proportion/=m_totalNumberOfAssembledKmerObservations;
+		if(m_totalNumberOfColoredKmerObservations!=0){
+			proportion/=m_totalNumberOfColoredKmerObservations;
 		}
 
+
+		content<<endl;
+		content<<"<proportion>"<<proportion<<"</proportion>"<<endl;
+		content<<"</entry>"<<endl;
+
+		#ifdef TEST_COLORED_AND_ASSEMBLED
+
+		double proportionWithColors=demultiplexedObservations;
 		if(m_totalNumberOfAssembledColoredKmerObservations!=0){
 			proportionWithColors/=m_totalNumberOfAssembledColoredKmerObservations;
 		}
 
-		content<<endl;
-		content<<"<proportion>"<<proportion<<"</proportion>"<<endl;
-		content<<"<proportionWithAssembledColoredKmerObservations>"<<proportionWithColors;
-		content<<"</proportionWithAssembledColoredKmerObservations>";
-		content<<"</entry>"<<endl;
+		#endif /* TEST_COLORED_AND_ASSEMBLED */
+
 
 		#ifdef ASSERT
 		assert(m_arrayOfFiles.count(directoryIterator)>0);
@@ -3397,21 +3403,6 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 
 		flushSequenceAbundanceXMLBuffer(directoryIterator,false);
 
-		// also write a shorter version
-
-		if(demultiplexedObservations>0){
-
-
-			ostringstream content2;
-
-			content2<<"<entry><file>"<<m_fileNames[directoryIterator][fileIterator]<<"</file>"<<endl;
-			content2<<"<sequence>"<<sequenceIterator<<"</sequence><name>"<<sequenceName<<"</name>"<<endl;
-
-			content2<<"<demultiplexedKmerObservations>"<<demultiplexedObservations<<"</demultiplexedKmerObservations>";
-			content2<<"<proportion>"<<proportion<<"</proportion></entry>";
-			content2<<endl;
-
-		}
 	}
 
 	// send a reply
