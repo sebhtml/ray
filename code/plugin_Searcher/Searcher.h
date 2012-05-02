@@ -448,6 +448,8 @@ public:
 
 	uint64_t getTotalNumberOfKmerObservations();
 
+	uint64_t getTotalNumberOfColoredKmerObservationsForANameSpace(int namespaceNumber);
+
 }; /* Searcher */
 
 

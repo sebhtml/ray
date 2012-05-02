@@ -559,6 +559,13 @@ void Searcher::shareTotalGraphCounts(){
 
 }
 
+uint64_t Searcher::getTotalNumberOfColoredKmerObservationsForANameSpace(int namespaceNumber){
+
+	/* TODO: actually provide a count that is specific to a namespace... */
+
+	return m_totalNumberOfAssembledKmerObservations;
+}
+
 void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 
 	if(!m_countContigKmersMasterStarted){

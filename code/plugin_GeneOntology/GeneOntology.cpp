@@ -331,6 +331,9 @@ void GeneOntology::writeOntologyFiles(){
 	operationBuffer<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"<<endl;
 	operationBuffer<<"<root>"<<endl;
 
+	uint64_t totalForTheGraph=m_searcher->getTotalNumberOfColoredKmerObservationsForANameSpace(COLOR_NAMESPACE_EMBL_CDS);
+	operationBuffer<<"<totalColoredKmerObservations>";
+	operationBuffer<<totalForTheGraph<<"</totalColoredKmerObservations>"<<endl;
 
 	for(map<GeneOntologyIdentifier,map<COVERAGE_TYPE,int> >::iterator i=
 		m_ontologyTermFrequencies.begin();i!=m_ontologyTermFrequencies.end();i++){
@@ -339,8 +342,9 @@ void GeneOntology::writeOntologyFiles(){
 
 		int mode=0;
 		int modeCount=0;
-		double sum=0;
 		int total=0;
+
+		uint64_t totalObservations=0;
 
 		for(map<COVERAGE_TYPE,int>::iterator j=i->second.begin();j!=i->second.end();j++){
 
@@ -352,11 +356,12 @@ void GeneOntology::writeOntologyFiles(){
 				modeCount=frequency;
 			}
 
-			sum+=coverage*frequency;
 			total+=frequency;
+
+			totalObservations+=coverage*frequency;
 		}
 
-		double mean=sum;
+		double mean=totalObservations;
 
 		if(total!=0){
 			mean/=total;
@@ -375,7 +380,16 @@ void GeneOntology::writeOntologyFiles(){
 		operationBuffer<<getGeneOntologyIdentifier(handle)<<"</identifier><name>";
 		operationBuffer<<getGeneOntologyName(handle)<<"</name>"<<endl;
 		operationBuffer<<"<modeKmerCoverage>"<<mode<<"</modeKmerCoverage>";
-		operationBuffer<<"<meanKmerCoverage>"<<mean<<"</meanKmerCoverage>";
+		operationBuffer<<"<meanKmerCoverage>"<<mean<<"</meanKmerCoverage>"<<endl;
+		operationBuffer<<"<totalColoredKmerObservations>"<<totalObservations<<"</totalColoredKmerObservations>"<<endl;
+
+		double estimatedProportion=(0.0+totalObservations);
+
+		if(totalForTheGraph!=0){
+			estimatedProportion/=totalForTheGraph;
+		}
+
+		operationBuffer<<"<proportion>"<<estimatedProportion<<"</proportion>"<<endl;
 		operationBuffer<<"<distribution>"<<endl;
 
 		operationBuffer<<"#Coverage	Frequency"<<endl;
