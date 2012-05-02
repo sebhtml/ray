@@ -185,8 +185,11 @@ void GeneOntology::loadAnnotations(){
 
 	if(!fetchArguments()){
 
+		m_gotGeneOntologyParameter=false;
 		return;
 	}
+
+	m_gotGeneOntologyParameter=true;
 
 	ifstream f;
 	f.open(m_annotationFileName);
@@ -310,6 +313,9 @@ void GeneOntology::writeOntologyFiles(){
 	string xmlFile=xmlFileStream.str();
 	string tsvFile=tsvFileStream.str();
 
+	if(!m_gotGeneOntologyParameter){
+		return;
+	}
 
 	loadOntology(&m_identifiers,&m_descriptions);
 

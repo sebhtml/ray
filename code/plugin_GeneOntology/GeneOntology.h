@@ -139,6 +139,7 @@ class GeneOntology: public CorePlugin{
 	string getGeneOntologyName(GeneOntologyIdentifier handle);
 	string getGeneOntologyIdentifier(GeneOntologyIdentifier handle);
 
+	bool m_gotGeneOntologyParameter;
 public:
 
 	void call_RAY_MASTER_MODE_ONTOLOGY_MAIN();
