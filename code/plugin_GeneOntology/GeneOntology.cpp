@@ -650,6 +650,10 @@ void GeneOntology::countOntologyTermsInGraph(){
 
 		int kmerCoverage=node->getCoverage(&key);
 
+		// this is the set of gene ontology terms that 
+		// the current k-mer contributes to
+		set<GeneOntologyIdentifier> ontologyTerms;
+
 		for(set<PhysicalKmerColor>::iterator j=physicalColors->begin();
 			j!=physicalColors->end();j++){
 
@@ -675,9 +679,20 @@ void GeneOntology::countOntologyTermsInGraph(){
 
 					GeneOntologyIdentifier term=terms->at(i);
 
-					incrementOntologyTermFrequency(term,kmerCoverage,1);
+					ontologyTerms.insert(term);
 				}
 			}
+		}
+
+		// here, we have a list of gene ontology terms
+		// update each of them. 
+
+		int quantity=1;
+
+		for(set<GeneOntologyIdentifier>::iterator i=ontologyTerms.begin();i!=ontologyTerms.end();i++){
+			
+			GeneOntologyIdentifier term=*i;
+			incrementOntologyTermFrequency(term,kmerCoverage, quantity);
 		}
 	}
 
