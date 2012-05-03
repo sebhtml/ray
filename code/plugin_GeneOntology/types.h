@@ -26,5 +26,16 @@
 /* encodes something like GO:0011221 */
 typedef uint32_t GeneOntologyIdentifier;
 
+typedef uint8_t GeneOntologyDomain;
+
+#define GENE_ONTOLOGY_DOMAIN_cellular_component 0x0
+#define GENE_ONTOLOGY_DOMAIN_biological_process 0x1
+#define GENE_ONTOLOGY_DOMAIN_molecular_function 0x2
+
+#define GENE_ONTOLOGY_DOMAIN_biological_process_STRING "biological_process"
+#define GENE_ONTOLOGY_DOMAIN_cellular_component_STRING "cellular_component"
+#define GENE_ONTOLOGY_DOMAIN_molecular_function_STRING "molecular_function"
+
+
 #endif
 

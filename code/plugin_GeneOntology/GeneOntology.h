@@ -151,6 +151,34 @@ class GeneOntology: public CorePlugin{
 	void getPathsFromRoot(GeneOntologyIdentifier handle,vector<vector<GeneOntologyIdentifier> >*paths);
 	void printPathsFromRoot(GeneOntologyIdentifier handle,ostream*stream);
 
+	// domains
+	
+	void setDomain(GeneOntologyIdentifier handle,GeneOntologyDomain domain);
+	GeneOntologyDomain getGeneOntologyDomain(const char*text);
+
+	map<GeneOntologyIdentifier,GeneOntologyDomain> m_termDomains;
+	map<string,GeneOntologyDomain> m_domains;
+
+	// tree processing
+	
+	GeneOntologyIdentifier m_biologicalProcessHandle;
+	GeneOntologyIdentifier m_cellularComponentHandle;
+	GeneOntologyIdentifier m_molecularFunctionHandle;
+	map<GeneOntologyIdentifier,int> m_termCounts;
+	map<GeneOntologyIdentifier,int> m_recursiveCounts;
+	map<GeneOntologyIdentifier,vector<GeneOntologyIdentifier> > m_children;
+	void getChildren(GeneOntologyIdentifier handle,vector<GeneOntologyIdentifier>*children);
+	void addRecursiveCount(GeneOntologyIdentifier handle,int count);
+	int getRecursiveCount(GeneOntologyIdentifier handle);
+	void writeOntologyProfile(GeneOntologyDomain domain);
+	int getDomainDepth(GeneOntologyDomain domain);
+	int getDeepestDepth(GeneOntologyIdentifier handle,int depth);
+	void writeTrees();
+	void populateRecursiveValues();
+	GeneOntologyDomain getDomain(GeneOntologyIdentifier handle);
+	int computeRecursiveCount(GeneOntologyIdentifier handle,set<GeneOntologyIdentifier>*visited);
+	int getGeneOntologyCount(GeneOntologyIdentifier handle);
+
 public:
 
 	void call_RAY_MASTER_MODE_ONTOLOGY_MAIN();

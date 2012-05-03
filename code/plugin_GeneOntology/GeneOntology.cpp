@@ -65,6 +65,21 @@ void GeneOntology::call_RAY_MPI_TAG_SYNCHRONIZE_TERMS(Message*message){
 		RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY);
 }
 
+GeneOntologyDomain GeneOntology::getGeneOntologyDomain(const char*text){
+
+	if(m_domains.size()==0){
+		m_domains[GENE_ONTOLOGY_DOMAIN_molecular_function_STRING]=GENE_ONTOLOGY_DOMAIN_molecular_function;
+		m_domains[GENE_ONTOLOGY_DOMAIN_cellular_component_STRING]=GENE_ONTOLOGY_DOMAIN_cellular_component;
+		m_domains[GENE_ONTOLOGY_DOMAIN_biological_process_STRING]=GENE_ONTOLOGY_DOMAIN_biological_process;
+	}
+
+	#ifdef ASSERT
+	assert(m_domains.count(text)>0);
+	#endif
+
+	return m_domains[text];
+}
+
 void GeneOntology::call_RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY(Message*message){
 
 }
@@ -271,10 +286,149 @@ void GeneOntology::call_RAY_SLAVE_MODE_ONTOLOGY_MAIN(){
 			cout<<"Rank "<<m_rank<<": ontology terms with biological signal: "<<m_ontologyTermFrequencies.size()<<endl;
 
 			writeOntologyFiles();
+
+			writeTrees();
 		}
 
 		m_switchMan->closeSlaveModeLocally(m_outbox,m_rank);
 	}
+}
+
+void GeneOntology::writeTrees(){
+
+	populateRecursiveValues();
+
+	writeOntologyProfile(GENE_ONTOLOGY_DOMAIN_biological_process);
+	writeOntologyProfile(GENE_ONTOLOGY_DOMAIN_cellular_component);
+	writeOntologyProfile(GENE_ONTOLOGY_DOMAIN_molecular_function);
+}
+
+void GeneOntology::writeOntologyProfile(GeneOntologyDomain domain){
+
+	int maximumDepth=getDomainDepth(domain);
+
+	cout<<"[GeneOntology] maximum depth for GeneOntologyDomain "<<domain<<" is "<<maximumDepth<<endl;
+
+	for(int depth=0;depth<maximumDepth;depth++){
+
+	}
+}
+
+int GeneOntology::getDomainDepth(GeneOntologyDomain domain){
+
+	GeneOntologyIdentifier root=m_molecularFunctionHandle;
+
+	if(domain==GENE_ONTOLOGY_DOMAIN_molecular_function){
+		root=m_molecularFunctionHandle;
+	}else if(domain==GENE_ONTOLOGY_DOMAIN_cellular_component){
+		root=m_cellularComponentHandle;
+	}else if(domain==GENE_ONTOLOGY_DOMAIN_biological_process){
+		root=m_biologicalProcessHandle;
+	}
+
+	return getDeepestDepth(root,0);
+}
+
+int GeneOntology::getDeepestDepth(GeneOntologyIdentifier handle,int depth){
+
+	bool skipDifferentDomain=true;
+
+	vector<GeneOntologyIdentifier> children;
+	getChildren(handle,&children);
+
+	int deepest=depth;
+
+	for(int i=0;i<(int)children.size();i++){
+
+		GeneOntologyIdentifier child=children[i];
+		
+		if(skipDifferentDomain && getDomain(child)!=getDomain(handle)){
+
+			continue;
+		}
+
+		int newDepth=getDeepestDepth(child,depth+1);
+
+		if(newDepth>deepest){
+			deepest=newDepth;
+		}
+	}
+
+	return deepest;
+}
+
+void GeneOntology::populateRecursiveValues(){
+
+	for(map<GeneOntologyIdentifier,GeneOntologyDomain>::iterator i=m_termDomains.begin();
+		i!=m_termDomains.end();i++){
+
+		GeneOntologyIdentifier handle=i->first;
+
+		set<GeneOntologyIdentifier> visited;
+
+		int recursiveCount=computeRecursiveCount(handle,&visited);
+
+		addRecursiveCount(handle,recursiveCount);
+	}
+}
+
+void GeneOntology::addRecursiveCount(GeneOntologyIdentifier handle,int count){
+
+	#ifdef ASSERT
+	assert(m_recursiveCounts.count(handle)==0);
+	#endif
+
+	m_recursiveCounts[handle]=count;
+}
+
+int GeneOntology::getRecursiveCount(GeneOntologyIdentifier handle){
+	#ifdef ASSERT
+	assert(m_recursiveCounts.count(handle)==1);
+	#endif
+
+	return m_recursiveCounts[handle];
+
+}
+
+int GeneOntology::computeRecursiveCount(GeneOntologyIdentifier handle,set<GeneOntologyIdentifier>*visited){
+
+	bool skipDifferentDomain=true;
+
+	int count=0;
+	if(visited->count(handle)>1){
+		return count;
+	}
+	
+	count+=getGeneOntologyCount(handle);
+
+	visited->insert(handle);
+
+	vector<GeneOntologyIdentifier> children;
+
+	getChildren(handle,&children);
+
+	for(int i=0;i<(int)children.size();i++){
+
+		GeneOntologyIdentifier child=children[i];
+		
+		if(skipDifferentDomain && getDomain(child)!=getDomain(handle)){
+
+			continue;
+		}
+
+		count+=computeRecursiveCount(child,visited);
+	}
+
+	return count;
+}
+
+int GeneOntology::getGeneOntologyCount(GeneOntologyIdentifier handle){
+
+	if(m_termCounts.count(handle)==0){
+		return 0;
+	}
+
+	return m_termCounts[handle];
 }
 
 string GeneOntology::getGeneOntologyName(GeneOntologyIdentifier handle){
@@ -396,6 +550,8 @@ void GeneOntology::writeOntologyFiles(){
 		
 		estimatedProportions[handle]=estimatedProportion;
 
+		m_termCounts[handle]=totalObservations;
+
 		operationBuffer<<"<proportion>"<<estimatedProportion<<"</proportion>"<<endl;
 		operationBuffer<<"<distribution>"<<endl;
 
@@ -443,6 +599,24 @@ void GeneOntology::writeOntologyFiles(){
 	tsvStream.close();
 }
 
+void GeneOntology::setDomain(GeneOntologyIdentifier handle,GeneOntologyDomain domain){
+	
+	#ifdef ASSERT
+	assert(m_termDomains.count(handle)==0);
+	#endif
+
+	m_termDomains[handle]=domain;
+}
+
+GeneOntologyDomain GeneOntology::getDomain(GeneOntologyIdentifier handle){
+
+	#ifdef ASSERT
+	assert(m_termDomains.count(handle)>0);
+	#endif
+
+	return m_termDomains[handle];
+}
+
 void GeneOntology::loadOntology(map<GeneOntologyIdentifier,string>*identifiers,
 		map<GeneOntologyIdentifier,string>*descriptions){
 
@@ -468,6 +642,8 @@ void GeneOntology::loadOntology(map<GeneOntologyIdentifier,string>*identifiers,
 	string isARelation="is_a:";
 
 	string example="GO:*******";
+
+	string theNamespace="namespace:";
 
 	while(!f.eof()){
 		f.getline(line,2048);
@@ -499,6 +675,24 @@ void GeneOntology::loadOntology(map<GeneOntologyIdentifier,string>*identifiers,
 
 			(*identifiers)[handle]=identifier;
 			(*descriptions)[handle]=name;
+
+			if(name==GENE_ONTOLOGY_DOMAIN_biological_process_STRING){
+				m_biologicalProcessHandle=handle;
+			}else if(name==GENE_ONTOLOGY_DOMAIN_molecular_function_STRING){
+				m_molecularFunctionHandle=handle;
+			}else if(name==GENE_ONTOLOGY_DOMAIN_cellular_component_STRING){
+				m_cellularComponentHandle=handle;
+			}
+
+		}else if(overlay.length()>=theNamespace.length() && overlay.substr(0,theNamespace.length())==theNamespace){
+
+			string namespaceName=overlay.substr(theNamespace.length()+1);
+
+			GeneOntologyDomain domain=getGeneOntologyDomain(namespaceName.c_str());
+
+			GeneOntologyIdentifier handle=encoder.encodeGeneOntologyHandle(identifier.c_str());
+
+			setDomain(handle,domain);
 
 		}else if(overlay.length()>=isARelation.length() && overlay.substr(0,isARelation.length())==isARelation){
 		
@@ -607,14 +801,35 @@ void GeneOntology::addParentGeneOntologyIdentifier(GeneOntologyIdentifier term,G
 	#endif /* ASSERT */
 
 	m_parents[term].push_back(parent);
+
+	m_children[parent].push_back(term);
+}
+
+void GeneOntology::getChildren(GeneOntologyIdentifier handle,vector<GeneOntologyIdentifier>*children){
+
+	#ifdef ASSERT
+	assert(children->size()==0);
+	#endif
+
+	if(m_children.count(handle)==0){
+		return;
+	}
+
+	for(int i=0;i<(int)m_children[handle].size();i++){
+		children->push_back(m_children[handle][i]);
+	}
+	
 }
 
 void GeneOntology::getParents(GeneOntologyIdentifier handle,vector<GeneOntologyIdentifier>*parents){
 
 	#ifdef ASSERT
 	assert(parents->size()==0);
-	assert(hasParent(handle));
 	#endif
+
+	if(m_parents.count(handle)==0){
+		return;
+	}
 
 	for(int i=0;i<(int)m_parents[handle].size();i++){
 		parents->push_back(m_parents[handle][i]);
