@@ -379,6 +379,10 @@ void GeneOntology::writeOntologyFiles(){
 		operationBuffer<<"<identifier>";
 		operationBuffer<<getGeneOntologyIdentifier(handle)<<"</identifier><name>";
 		operationBuffer<<getGeneOntologyName(handle)<<"</name>"<<endl;
+
+		/* print paths to root */
+		printPathsFromRoot(handle,&operationBuffer);
+
 		operationBuffer<<"<modeKmerCoverage>"<<mode<<"</modeKmerCoverage>";
 		operationBuffer<<"<meanKmerCoverage>"<<mean<<"</meanKmerCoverage>"<<endl;
 		operationBuffer<<"<totalColoredKmerObservations>"<<totalObservations<<"</totalColoredKmerObservations>"<<endl;
@@ -515,6 +519,74 @@ void GeneOntology::loadOntology(map<GeneOntologyIdentifier,string>*identifiers,
 	assert(identifiers->size()==descriptions->size());
 	#endif
 
+}
+
+void GeneOntology::printPathsFromRoot(GeneOntologyIdentifier handle,ostream*stream){
+
+	vector<vector<GeneOntologyIdentifier> > paths;
+
+	getPathsFromRoot(handle,&paths);
+
+	(*stream)<<"<paths><count>";
+	(*stream)<<paths.size()<<"</count>"<<endl;
+
+	for(int i=0;i<(int)paths.size();i++){
+		(*stream)<<"<path>"<<endl;
+
+		for(int j=0;j<(int)paths[i].size();j++){
+			GeneOntologyIdentifier identifier=paths[i][j];
+
+			(*stream)<<"<geneOntologyTerm><identifier>";
+			(*stream)<<getGeneOntologyIdentifier(identifier);
+			(*stream)<<"</identifier><name>";
+			(*stream)<<getGeneOntologyName(identifier)<<"</name>";
+			(*stream)<<"</geneOntologyTerm>"<<endl;
+		}
+
+		(*stream)<<"</path>"<<endl;
+	}
+
+	(*stream)<<"</paths>"<<endl;
+}
+
+/* returns a list of paths to the root 
+ * for a given handle */
+void GeneOntology::getPathsFromRoot(GeneOntologyIdentifier handle,vector<vector<GeneOntologyIdentifier> >*paths){
+
+	// if there are no parents,
+	//getParents/ simply return the simple path
+	if(!hasParent(handle)){
+		vector<GeneOntologyIdentifier> path;
+		path.push_back(handle);
+		paths->push_back(path);
+		return;
+	}
+
+	// get the parents
+	vector<GeneOntologyIdentifier> parents;
+	getParents(handle,&parents);
+
+	// the paths are:
+	//   for each parent:
+	//      path to the root of the parent (includes parent) + handle
+	for(int i=0;i<(int)parents.size();i++){
+
+		GeneOntologyIdentifier parentHandle=parents[i];
+		vector<vector<GeneOntologyIdentifier> > parentPaths;
+	
+		getPathsFromRoot(parentHandle,&parentPaths);
+
+		// for each of these paths,
+		// add the current to the path
+
+		for(int j=0;j<(int)parentPaths.size();j++){
+			parentPaths[j].push_back(handle);
+
+			// add this path to the final list.
+			
+			paths->push_back(parentPaths[j]);
+		}
+	}
 }
 
 void GeneOntology::addParentGeneOntologyIdentifier(GeneOntologyIdentifier term,GeneOntologyIdentifier parent){

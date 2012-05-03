@@ -147,6 +147,10 @@ class GeneOntology: public CorePlugin{
 	void getParents(GeneOntologyIdentifier handle,vector<GeneOntologyIdentifier>*parents);
 	void addParentGeneOntologyIdentifier(GeneOntologyIdentifier handle,GeneOntologyIdentifier parent);
 
+	// get paths from root
+	void getPathsFromRoot(GeneOntologyIdentifier handle,vector<vector<GeneOntologyIdentifier> >*paths);
+	void printPathsFromRoot(GeneOntologyIdentifier handle,ostream*stream);
+
 public:
 
 	void call_RAY_MASTER_MODE_ONTOLOGY_MAIN();
