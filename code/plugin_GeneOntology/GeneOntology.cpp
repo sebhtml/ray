@@ -321,6 +321,7 @@ void GeneOntology::writeOntologyFiles(){
 
 	map<GeneOntologyIdentifier,int> modeCoverages;
 	map<GeneOntologyIdentifier,double> meanCoverages;
+	map<GeneOntologyIdentifier,double> estimatedProportions;
 
 
 
@@ -392,6 +393,8 @@ void GeneOntology::writeOntologyFiles(){
 		if(totalForTheGraph!=0){
 			estimatedProportion/=totalForTheGraph;
 		}
+		
+		estimatedProportions[handle]=estimatedProportion;
 
 		operationBuffer<<"<proportion>"<<estimatedProportion<<"</proportion>"<<endl;
 		operationBuffer<<"<distribution>"<<endl;
@@ -419,7 +422,7 @@ void GeneOntology::writeOntologyFiles(){
 
 	ofstream tsvStream(tsvFile.c_str());
 
-	operationBuffer<<"#Identifier	Name	Mode k-mer coverage	Mean k-mer coverage"<<endl;
+	operationBuffer<<"#Identifier	Name	Mode k-mer coverage	Mean k-mer coverage	Proportion"<<endl;
 
 	for(map<GeneOntologyIdentifier,map<COVERAGE_TYPE,int> >::iterator i=
 		m_ontologyTermFrequencies.begin();i!=m_ontologyTermFrequencies.end();i++){
@@ -429,7 +432,8 @@ void GeneOntology::writeOntologyFiles(){
 		operationBuffer<<getGeneOntologyIdentifier(handle)<<"	";
 		operationBuffer<<getGeneOntologyName(handle)<<"	";
 		operationBuffer<<modeCoverages[handle]<<"	";
-		operationBuffer<<meanCoverages[handle]<<endl;
+		operationBuffer<<meanCoverages[handle]<<"	";
+		operationBuffer<<estimatedProportions[handle]<<endl;
 
 		flushFileOperationBuffer(false,&operationBuffer,&tsvStream,CONFIG_FILE_IO_BUFFER_SIZE);
 	}
