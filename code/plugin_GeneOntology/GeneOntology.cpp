@@ -298,6 +298,26 @@ void GeneOntology::writeTrees(){
 
 	populateRecursiveValues();
 
+	// compute depths
+	computeDepths(m_cellularComponentHandle,0);
+	computeDepths(m_molecularFunctionHandle,0);
+	computeDepths(m_biologicalProcessHandle,0);
+
+	int withoutDepth=0;
+
+	for(map<GeneOntologyIdentifier,GeneOntologyDomain>::iterator i=m_termDomains.begin();
+		i!=m_termDomains.end();i++){
+
+		GeneOntologyIdentifier handle=i->first;
+
+		if(m_depths.count(handle)==0){
+			withoutDepth++;
+		}
+	}
+
+	cout<<"Gene ontology terms without depth information: "<<withoutDepth<<endl;
+
+
 	writeOntologyProfile(GENE_ONTOLOGY_DOMAIN_biological_process);
 	writeOntologyProfile(GENE_ONTOLOGY_DOMAIN_cellular_component);
 	writeOntologyProfile(GENE_ONTOLOGY_DOMAIN_molecular_function);
@@ -309,9 +329,103 @@ void GeneOntology::writeOntologyProfile(GeneOntologyDomain domain){
 
 	cout<<"[GeneOntology] maximum depth for GeneOntologyDomain "<<domain<<" is "<<maximumDepth<<endl;
 
+	string domainName="NULL";
+
+	if(domain==GENE_ONTOLOGY_DOMAIN_biological_process){
+		domainName=GENE_ONTOLOGY_DOMAIN_biological_process_STRING;
+	}else if(domain==GENE_ONTOLOGY_DOMAIN_cellular_component){
+		domainName=GENE_ONTOLOGY_DOMAIN_cellular_component_STRING;
+	}else if(domain==GENE_ONTOLOGY_DOMAIN_molecular_function){
+		domainName=GENE_ONTOLOGY_DOMAIN_molecular_function_STRING;
+	}
+
+	#ifdef ASSERT
+	assert(domainName!="NULL");
+	#endif
+
+	uint64_t totalForTheGraph=m_searcher->getTotalNumberOfColoredKmerObservationsForANameSpace(COLOR_NAMESPACE_EMBL_CDS);
+
 	for(int depth=0;depth<maximumDepth;depth++){
 
+		// create the file for the domain and given depth.
+
+		ostringstream operationBuffer;
+
+		ostringstream fileName;
+		fileName<<m_parameters->getPrefix()<<"/BiologicalAbundances/_GeneOntology";
+		fileName<<"/"<<domainName<<".Depth="<<depth<<".tsv";
+		string file2=fileName.str();
+
+		ofstream file;
+
+
+		for(map<GeneOntologyIdentifier,int>::iterator i=m_recursiveCounts.begin();
+			i!=m_recursiveCounts.end();i++){
+
+			GeneOntologyIdentifier handle=i->first;
+
+			int count=i->second;
+
+
+			if(count==0){
+				continue;
+			}
+
+			if(!hasDepth(handle)){
+				continue;
+			}
+
+			if(getGeneOntologyDepth(handle)!=depth){
+				continue;
+			}
+
+			if(getDomain(handle)!=domain){
+				continue;
+			}
+
+			double proportion=count;
+
+			if(totalForTheGraph!=0){
+				proportion/=totalForTheGraph;
+			}
+
+			if(!file.is_open()){
+				file.open(file2.c_str());
+				operationBuffer<<"#Identifier	Name	Proportion	Observations	Total"<<endl;
+			}
+
+			operationBuffer<<getGeneOntologyIdentifier(handle);
+			operationBuffer<<"	"<<getGeneOntologyName(handle)<<"	";
+			operationBuffer<<proportion;
+			operationBuffer<<"	"<<count<<"	"<<totalForTheGraph<<endl;
+
+			flushFileOperationBuffer(false,&operationBuffer,&file,CONFIG_FILE_IO_BUFFER_SIZE);
+
+		}
+
+		if(file.is_open()){
+			flushFileOperationBuffer(true,&operationBuffer,&file,CONFIG_FILE_IO_BUFFER_SIZE);
+			file.close();
+		}
 	}
+}
+
+bool GeneOntology::hasDepth(GeneOntologyIdentifier handle){
+
+	return m_depths.count(handle)==1;
+}
+
+int GeneOntology::getGeneOntologyDepth(GeneOntologyIdentifier handle){
+
+	#ifdef ASSERT
+	if(m_depths.count(handle)==0){
+		cout<<"Error: handle "<<handle<<" identifier="<<getGeneOntologyIdentifier(handle)<<" has no depth"<<endl;
+	}
+
+	assert(m_depths.count(handle)==1);
+	#endif
+
+	return m_depths[handle];
 }
 
 int GeneOntology::getDomainDepth(GeneOntologyDomain domain){
@@ -370,6 +484,8 @@ void GeneOntology::populateRecursiveValues(){
 
 		addRecursiveCount(handle,recursiveCount);
 	}
+
+	cout<<"Populated recursive values..."<<endl;
 }
 
 void GeneOntology::addRecursiveCount(GeneOntologyIdentifier handle,int count){
@@ -390,18 +506,15 @@ int GeneOntology::getRecursiveCount(GeneOntologyIdentifier handle){
 
 }
 
-int GeneOntology::computeRecursiveCount(GeneOntologyIdentifier handle,set<GeneOntologyIdentifier>*visited){
+void GeneOntology::computeDepths(GeneOntologyIdentifier handle,int depth){
+
+	if(m_depths.count(depth)==1){
+		return;
+	}
+
+	m_depths[handle]=depth;
 
 	bool skipDifferentDomain=true;
-
-	int count=0;
-	if(visited->count(handle)>1){
-		return count;
-	}
-	
-	count+=getGeneOntologyCount(handle);
-
-	visited->insert(handle);
 
 	vector<GeneOntologyIdentifier> children;
 
@@ -413,6 +526,37 @@ int GeneOntology::computeRecursiveCount(GeneOntologyIdentifier handle,set<GeneOn
 		
 		if(skipDifferentDomain && getDomain(child)!=getDomain(handle)){
 
+			continue;
+		}
+
+		computeDepths(child,depth+1);
+	}
+}
+
+
+int GeneOntology::computeRecursiveCount(GeneOntologyIdentifier handle,set<GeneOntologyIdentifier>*visited){
+
+	bool skipDifferentDomain=true;
+
+	int count=0;
+
+	// don't count any term twice
+	if(visited->count(handle)>1){
+		return count;
+	}
+	
+	count+=getGeneOntologyCount(handle);
+
+	visited->insert(handle);
+
+	vector<GeneOntologyIdentifier> children;
+	getChildren(handle,&children);
+
+	for(int i=0;i<(int)children.size();i++){
+
+		GeneOntologyIdentifier child=children[i];
+		
+		if(skipDifferentDomain && getDomain(child)!=getDomain(handle)){
 			continue;
 		}
 

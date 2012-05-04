@@ -178,6 +178,10 @@ class GeneOntology: public CorePlugin{
 	GeneOntologyDomain getDomain(GeneOntologyIdentifier handle);
 	int computeRecursiveCount(GeneOntologyIdentifier handle,set<GeneOntologyIdentifier>*visited);
 	int getGeneOntologyCount(GeneOntologyIdentifier handle);
+	map<GeneOntologyIdentifier,int> m_depths;
+	int getGeneOntologyDepth(GeneOntologyIdentifier handle);
+	void computeDepths(GeneOntologyIdentifier root,int depth);
+	bool hasDepth(GeneOntologyIdentifier handle);
 
 public:
 
