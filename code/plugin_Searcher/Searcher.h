@@ -405,7 +405,8 @@ class Searcher :  public CorePlugin {
 	void countKmerObservations(uint64_t*localAssembledKmerObservations,
 		uint64_t*localAssembledColoredKmerObservations,
 		uint64_t*localAssembledKmers,uint64_t*localAssembledColoredKmers,
-		uint64_t*localColoredKmerObservations,uint64_t*localColoredKmers
+		uint64_t*localColoredKmerObservations,uint64_t*localColoredKmers,
+		uint64_t*geneCdsKmerObservations
 );
 
 	/* I/O optimization */
@@ -413,6 +414,10 @@ class Searcher :  public CorePlugin {
 	int m_coverageXMLflushOperations;
 	void flushCoverageXMLBuffer(bool force);
 	void flushSequenceAbundanceXMLBuffer(int directory,bool force);
+
+	// EMBL_CDS namespace
+	uint64_t m_totalNumberOfKmerObservations_EMBL_CDS;
+
 public:
 
 	void call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS();

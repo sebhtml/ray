@@ -34,17 +34,17 @@ ____CreateMessageTagAdapterImplementation(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_T
 ____CreateMessageTagAdapterImplementation(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY); /* generated_automatically */
  /* generated_automatically */
 
-
+//#define BUG_DETERMINISM
 //#define DEBUG_ONTOLOGY_SYNC
 //#define DEBUG_ONTOLOGY_LOADER  //_---------------________----___---____--____------
 
 void GeneOntology::call_RAY_MPI_TAG_SYNCHRONIZE_TERMS(Message*message){
 
-	#ifdef DEBUG_ONTOLOGY_SYNC
-	cout<<"[DEBUG_ONTOLOGY_SYNC] received <<call_RAY_MPI_TAG_SYNCHRONIZE_TERMS"<<endl;
-	#endif
-
 	Rank source=message->getSource();
+
+	#ifdef DEBUG_ONTOLOGY_SYNC
+	cout<<"[DEBUG_ONTOLOGY_SYNC] received call_RAY_MPI_TAG_SYNCHRONIZE_TERMS from "<<source<<endl;
+	#endif
 
 	// we don't need to synchronize master
 	if(source!=MASTER_RANK){
@@ -53,9 +53,18 @@ void GeneOntology::call_RAY_MPI_TAG_SYNCHRONIZE_TERMS(Message*message){
 		uint64_t*buffer=message->getBuffer();
 
 		for(int i=0;i<count;i+=3){
+
 			GeneOntologyIdentifier term=buffer[i+0];
 			int kmerCoverage= buffer[i+1];
 			int frequency=buffer[i+2];
+
+			#ifdef BUG_DETERMINISM
+			if(term==49){
+				cout<<"[BUG_DETERMINISM] viaMessage incrementOntologyTermFrequency "<<term<<" "<<kmerCoverage<<" "<<frequency<<endl;
+			}
+			#endif
+
+
 
 			incrementOntologyTermFrequency(term,kmerCoverage,frequency);
 		}
@@ -1193,6 +1202,13 @@ void GeneOntology::countOntologyTermsInGraph(){
 		for(set<GeneOntologyIdentifier>::iterator i=ontologyTerms.begin();i!=ontologyTerms.end();i++){
 			
 			GeneOntologyIdentifier term=*i;
+
+			#ifdef BUG_DETERMINISM
+			if(term==49){
+				cout<<"[BUG_DETERMINISM] viaCounter: incrementOntologyTermFrequency "<<term<<" "<<kmerCoverage<<" "<<quantity<<endl;
+			}
+			#endif
+
 			incrementOntologyTermFrequency(term,kmerCoverage, quantity);
 		}
 	}
