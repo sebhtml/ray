@@ -997,6 +997,13 @@ bool GeneOntology::hasParent(GeneOntologyIdentifier handle){
 
 void GeneOntology::synchronize(){
 
+	// master don't need to sync anything
+	if(m_core->getMessagesHandler()->getRank() == MASTER_RANK){
+		m_synced=true;
+		cout<<"Rank "<<m_rank<<": synced ontology term profiles with master"<<endl;
+		return;
+	}
+
 	// we received the response
 	if(m_inbox->hasMessage(RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY)){
 
