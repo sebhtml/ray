@@ -182,7 +182,9 @@ bool GeneOntology::fetchArguments(){
 	
 			int remaining=count-(i+1);
 
-			if(remaining!=numberOfOperands){
+			// check that we have at least
+			// the required number of operands
+			if(remaining < numberOfOperands){
 				cout<<"Error: needs "<<numberOfOperands<<" operands, you provided "<<remaining<<endl;
 
 				return false;

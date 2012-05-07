@@ -451,10 +451,11 @@ void PhylogenyViewer::gatherKmerObservations(){
 
 				//assert(m_colorsForPhylogeny.count(colorForPhylogeny)>0);
 
+				// this means that this genome is not in the taxonomy tree
 				if(m_genomeToTaxon.count(colorForPhylogeny)==0){
 
 					if(m_warnings.count(colorForPhylogeny)==0){
-						cout<<"Warning, color "<<colorForPhylogeny<<" is not stored, "<<m_genomeToTaxon.size()<<" available for translation:"<<endl;
+						cout<<"Warning, color "<<colorForPhylogeny<<" is not stored, "<<m_genomeToTaxon.size()<<" available. This means that you provided a genome sequence that is not classified in the taxonomy."<<endl;
 
 						#ifdef VERBOSE
 						for(map<GenomeIdentifier,TaxonIdentifier>::iterator i=m_genomeToTaxon.begin();i!=m_genomeToTaxon.end();i++){
