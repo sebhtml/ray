@@ -608,6 +608,10 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 	operationBuffer<<"<coloredProportion>0</coloredProportion>";
 	operationBuffer<<"<coloredProportionInRank>0</coloredProportionInRank></self></entry>"<<endl;
 
+	// declare tsv files
+	map<string,FILE*> tsvFiles;
+	map<string,ostringstream*> tsvBuffers;
+
 	for(map<TaxonIdentifier,string>::iterator i=m_taxonNames.begin();
 		i!=m_taxonNames.end();i++){
 
@@ -686,24 +690,64 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 
 		operationBuffer<<"<coloredProportion>"<<coloredRatio2<<"</coloredProportion>";
 
-		double coloredRatio2InRank=recursiveCount;
+		double coloredRatioInRank=recursiveCount;
 
 		if(rankRecursiveCount!=0){
-			coloredRatio2InRank/=rankRecursiveCount;
+			coloredRatioInRank/=rankRecursiveCount;
 		}
 
-		operationBuffer<<"<coloredProportionInRank>"<<coloredRatio2InRank<<"</coloredProportionInRank>";
+		operationBuffer<<"<coloredProportionInRank>"<<coloredRatioInRank<<"</coloredProportionInRank>";
 		
 		operationBuffer<<"</recursive>"<<endl;
 
 		operationBuffer<<"</entry>"<<endl;
 
 		flushFileOperationBuffer(false,&operationBuffer,stream,CONFIG_FILE_IO_BUFFER_SIZE);
+
+		// add data to the tsv file
+
+
+		if(tsvFiles.count(rank)==0){
+			ostringstream theFile;
+			theFile<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
+			theFile<<"0-Profile.TaxonomyRank="<<rank<<".txt";
+	
+			string tsvFile=theFile.str();
+			tsvFiles[rank]=fopen(tsvFile.c_str(),"a");
+
+			tsvBuffers[rank]=new ostringstream();
+
+			*(tsvBuffers[rank])<<"#TaxonIdentifier	TaxonName	TaxonRank	TaxonProportion"<<endl;
+		}
+
+		string name=getTaxonName(taxon);
+
+		*(tsvBuffers[rank])<<taxon<<"	"<<name<<"	"<<rank;
+		*(tsvBuffers[rank])<<"	"<<coloredRatioInRank<<endl;
 	}
 
+	// close XML files
 	operationBuffer<<"</root>"<<endl;
-
 	flushFileOperationBuffer(true,&operationBuffer,stream,CONFIG_FILE_IO_BUFFER_SIZE);
+
+
+	// close tsv files
+	for(map<string,FILE*>::iterator i=tsvFiles.begin();i!=tsvFiles.end();i++){
+	
+		string rank=i->first;
+		FILE*file=i->second;
+
+		string text=tsvBuffers[rank]->str();
+		fprintf(file,"%s",text.c_str());
+
+		delete tsvBuffers[rank];
+
+		fclose(file);
+	}
+
+	tsvBuffers.clear();
+	tsvFiles.clear();
+
 }
 
 uint64_t PhylogenyViewer::getRecursiveCount(TaxonIdentifier taxon){
