@@ -1337,6 +1337,7 @@ void GeneOntology::countOntologyTermsInGraph(){
 
 	cout<<"Rank "<<m_rank<<": "<<m_ontologyTermFrequencies.size();
 	cout<<" have some biological signal"<<endl;
+	cout<<"Number of dereferenced alternate handles: "<<m_dereferences<<endl;
 }
 
 GeneOntologyIdentifier GeneOntology::dereferenceTerm(GeneOntologyIdentifier handle){
@@ -1353,6 +1354,7 @@ GeneOntologyIdentifier GeneOntology::dereferenceTerm_safe(GeneOntologyIdentifier
 	}
 
 	visited->insert(handle);
+	m_dereferences++;
 
 	GeneOntologyIdentifier link=m_symbolicLinks[handle];
 

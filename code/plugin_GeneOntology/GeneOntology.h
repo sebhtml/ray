@@ -192,6 +192,8 @@ class GeneOntology: public CorePlugin{
 	GeneOntologyIdentifier dereferenceTerm(GeneOntologyIdentifier handle);
 	map<GeneOntologyIdentifier,GeneOntologyIdentifier> m_symbolicLinks;
 
+	// dereferences
+	uint64_t m_dereferences;
 public:
 
 	void call_RAY_MASTER_MODE_ONTOLOGY_MAIN();
