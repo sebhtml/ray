@@ -504,7 +504,7 @@ void Searcher::countKmerObservations(uint64_t*localAssembledKmerObservations,
 
 		// check the namespace too...
 		// for gene ontology, we just want genes...
-
+		// and the k-mer contributes only once.
 		bool isGeneForGeneOntologyProfiling=false;
 
 		for(set<PhysicalKmerColor>::iterator j=physicalColors->begin();

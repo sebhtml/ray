@@ -176,12 +176,21 @@ class GeneOntology: public CorePlugin{
 	void writeTrees();
 	void populateRecursiveValues();
 	GeneOntologyDomain getDomain(GeneOntologyIdentifier handle);
+	string getDomainName(GeneOntologyDomain handle);
+	map<GeneOntologyDomain,string> m_domainNames;
+
 	int computeRecursiveCount(GeneOntologyIdentifier handle,set<GeneOntologyIdentifier>*visited);
 	int getGeneOntologyCount(GeneOntologyIdentifier handle);
 	map<GeneOntologyIdentifier,int> m_depths;
 	int getGeneOntologyDepth(GeneOntologyIdentifier handle);
 	void computeDepths(GeneOntologyIdentifier root,int depth);
 	bool hasDepth(GeneOntologyIdentifier handle);
+
+	// alternate identifiers
+	
+	GeneOntologyIdentifier dereferenceTerm_safe(GeneOntologyIdentifier handle,set<GeneOntologyIdentifier>*visited);
+	GeneOntologyIdentifier dereferenceTerm(GeneOntologyIdentifier handle);
+	map<GeneOntologyIdentifier,GeneOntologyIdentifier> m_symbolicLinks;
 
 public:
 

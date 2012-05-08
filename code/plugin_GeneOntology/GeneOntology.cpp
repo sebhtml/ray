@@ -74,6 +74,20 @@ void GeneOntology::call_RAY_MPI_TAG_SYNCHRONIZE_TERMS(Message*message){
 		RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY);
 }
 
+string GeneOntology::getDomainName(GeneOntologyDomain handle){
+	if(m_domainNames.size()==0){
+		m_domainNames[GENE_ONTOLOGY_DOMAIN_molecular_function]=GENE_ONTOLOGY_DOMAIN_molecular_function_STRING;
+		m_domainNames[GENE_ONTOLOGY_DOMAIN_cellular_component]=GENE_ONTOLOGY_DOMAIN_cellular_component_STRING;
+		m_domainNames[GENE_ONTOLOGY_DOMAIN_biological_process]=GENE_ONTOLOGY_DOMAIN_biological_process_STRING;
+	}
+
+	#ifdef ASSERT
+	assert(m_domainNames.count(handle)==1);
+	#endif
+
+	return m_domainNames[handle];
+}
+
 GeneOntologyDomain GeneOntology::getGeneOntologyDomain(const char*text){
 
 	if(m_domains.size()==0){
@@ -283,7 +297,10 @@ void GeneOntology::call_RAY_SLAVE_MODE_ONTOLOGY_MAIN(){
 
 		loadAnnotations();
 
+		loadOntology(&m_identifiers,&m_descriptions);
+
 	}else if(!m_countOntologyTermsInGraph){
+
 		countOntologyTermsInGraph();
 
 	}else if(!m_synced){
@@ -626,7 +643,6 @@ void GeneOntology::writeOntologyFiles(){
 		return;
 	}
 
-	loadOntology(&m_identifiers,&m_descriptions);
 
 	map<GeneOntologyIdentifier,int> modeCoverages;
 	map<GeneOntologyIdentifier,double> meanCoverages;
@@ -644,6 +660,12 @@ void GeneOntology::writeOntologyFiles(){
 	uint64_t totalForTheGraph=m_searcher->getTotalNumberOfColoredKmerObservationsForANameSpace(COLOR_NAMESPACE_EMBL_CDS);
 	operationBuffer<<"<totalColoredKmerObservations>";
 	operationBuffer<<totalForTheGraph<<"</totalColoredKmerObservations>"<<endl;
+
+	// declare tsv files
+	map<string,FILE*> tsvFiles;
+	map<string,ostringstream*> tsvBuffers;
+
+
 
 	for(map<GeneOntologyIdentifier,map<COVERAGE_TYPE,int> >::iterator i=
 		m_ontologyTermFrequencies.begin();i!=m_ontologyTermFrequencies.end();i++){
@@ -685,10 +707,14 @@ void GeneOntology::writeOntologyFiles(){
 		modeCoverages[handle]=mode;
 		meanCoverages[handle]=mean; /**/
 
+		GeneOntologyDomain domain=getDomain(handle);
+		string domainName=getDomainName(domain);
+
 		operationBuffer<<"<geneOntologyTerm>"<<endl;
 		operationBuffer<<"<identifier>";
 		operationBuffer<<getGeneOntologyIdentifier(handle)<<"</identifier><name>";
 		operationBuffer<<getGeneOntologyName(handle)<<"</name>"<<endl;
+		operationBuffer<<"<domain>"<<domainName<<"</domain>"<<endl;
 
 		/* print paths to root */
 		printPathsFromRoot(handle,&operationBuffer);
@@ -723,6 +749,29 @@ void GeneOntology::writeOntologyFiles(){
 		operationBuffer<<"</distribution></geneOntologyTerm>"<<endl;
 
 		flushFileOperationBuffer(false,&operationBuffer,&xmlStream,CONFIG_FILE_IO_BUFFER_SIZE);
+
+
+		// also output beautiful tsv file too
+
+
+		if(tsvFiles.count(domainName)==0){
+			ostringstream theFile;
+			theFile<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
+			theFile<<"0-Profile.GeneOntologyDomain="<<domainName<<".txt";
+	
+			string tsvFile=theFile.str();
+			tsvFiles[domainName]=fopen(tsvFile.c_str(),"a");
+
+			tsvBuffers[domainName]=new ostringstream();
+
+			*(tsvBuffers[domainName])<<"#TermIdentifier	TermName	TermDomain	TermProportion"<<endl;
+		}
+
+		*(tsvBuffers[domainName])<<getGeneOntologyIdentifier(handle)<<"	";
+		*(tsvBuffers[domainName])<<getGeneOntologyName(handle)<<"	";
+		*(tsvBuffers[domainName])<<domainName;
+		*(tsvBuffers[domainName])<<"	"<<estimatedProportion<<endl;
+
 	}
 
 	operationBuffer<<"</root>"<<endl;
@@ -734,6 +783,26 @@ void GeneOntology::writeOntologyFiles(){
 	ofstream tsvStream(tsvFile.c_str());
 
 	operationBuffer<<"#Identifier	Name	Mode k-mer coverage	Mean k-mer coverage	Proportion"<<endl;
+
+
+	// close tsv files
+	for(map<string,FILE*>::iterator i=tsvFiles.begin();i!=tsvFiles.end();i++){
+	
+		string category=i->first;
+		FILE*file=i->second;
+
+		string text=tsvBuffers[category]->str();
+		fprintf(file,"%s",text.c_str());
+
+		delete tsvBuffers[category];
+
+		fclose(file);
+	}
+
+	tsvBuffers.clear();
+	tsvFiles.clear();
+
+
 
 	for(map<GeneOntologyIdentifier,map<COVERAGE_TYPE,int> >::iterator i=
 		m_ontologyTermFrequencies.begin();i!=m_ontologyTermFrequencies.end();i++){
@@ -765,7 +834,19 @@ void GeneOntology::setDomain(GeneOntologyIdentifier handle,GeneOntologyDomain do
 
 GeneOntologyDomain GeneOntology::getDomain(GeneOntologyIdentifier handle){
 
+	// if the term has no domain, return molecular_function
+	// this should not happen anyway because alternative identifiers
+	// are dereferenced.
+	if(m_termDomains.count(handle)==0){
+		cout<<"Error, GeneOntologyIdentifier "<<handle<<" has no domain"<<endl;
+		return GENE_ONTOLOGY_DOMAIN_molecular_function;
+	}
+
 	#ifdef ASSERT
+	if(m_termDomains.count(handle)==0){
+		cout<<"Error, handle= "<<handle<<" termDomains: "<<m_termDomains.size()<<endl;
+	}
+
 	assert(m_termDomains.count(handle)>0);
 	#endif
 
@@ -799,6 +880,7 @@ void GeneOntology::loadOntology(map<GeneOntologyIdentifier,string>*identifiers,
 	string example="GO:*******";
 
 	string theNamespace="namespace:";
+	string alternate="alt_id: ";
 
 	while(!f.eof()){
 		f.getline(line,2048);
@@ -813,6 +895,8 @@ void GeneOntology::loadOntology(map<GeneOntologyIdentifier,string>*identifiers,
 		}else if(overlay.length()>=3 && overlay.substr(0,3)=="id:"){
 	
 			identifier=overlay.substr(4);
+
+
 		}else if(overlay.length()>=5 && overlay.substr(0,5)=="name:"){
 			string name=overlay.substr(6);
 
@@ -848,6 +932,21 @@ void GeneOntology::loadOntology(map<GeneOntologyIdentifier,string>*identifiers,
 			GeneOntologyIdentifier handle=encoder.encodeGeneOntologyHandle(identifier.c_str());
 
 			setDomain(handle,domain);
+		
+		}else if(overlay.length()>=alternate.length() && overlay.substr(0,alternate.length())==alternate){
+
+			string alternateIdentifier=overlay.substr(alternate.length());
+
+			GeneOntologyIdentifier alternateHandle=encoder.encodeGeneOntologyHandle(alternateIdentifier.c_str());
+
+			GeneOntologyIdentifier handle=encoder.encodeGeneOntologyHandle(identifier.c_str());
+
+			// an alternate handle can be utilised only once
+			#ifdef ASSERT
+			assert(m_symbolicLinks.count(alternateHandle)==0);
+			#endif
+
+			m_symbolicLinks[alternateHandle]=handle;
 
 		}else if(overlay.length()>=isARelation.length() && overlay.substr(0,isARelation.length())==isARelation){
 		
@@ -1212,13 +1311,15 @@ void GeneOntology::countOntologyTermsInGraph(){
 			
 			GeneOntologyIdentifier term=*i;
 
+			GeneOntologyIdentifier realTerm=dereferenceTerm(term);
+
 			#ifdef BUG_DETERMINISM
 			if(term==49){
 				cout<<"[BUG_DETERMINISM] viaCounter: incrementOntologyTermFrequency "<<term<<" "<<kmerCoverage<<" "<<quantity<<endl;
 			}
 			#endif
 
-			incrementOntologyTermFrequency(term,kmerCoverage, quantity);
+			incrementOntologyTermFrequency(realTerm,kmerCoverage, quantity);
 		}
 	}
 
@@ -1234,11 +1335,35 @@ void GeneOntology::countOntologyTermsInGraph(){
 	cout<<" have some biological signal"<<endl;
 }
 
+GeneOntologyIdentifier GeneOntology::dereferenceTerm(GeneOntologyIdentifier handle){
+
+	set<GeneOntologyIdentifier> visited;
+
+	return dereferenceTerm_safe(handle,&visited);
+}
+
+GeneOntologyIdentifier GeneOntology::dereferenceTerm_safe(GeneOntologyIdentifier handle,set<GeneOntologyIdentifier>*visited){
+
+	if(m_symbolicLinks.count(handle)==0 || visited->count(handle) == 1){
+		return handle;
+	}
+
+	visited->insert(handle);
+
+	GeneOntologyIdentifier link=m_symbolicLinks[handle];
+
+	return dereferenceTerm_safe(link,visited);
+}
+
 void GeneOntology::incrementOntologyTermFrequency(GeneOntologyIdentifier term,COVERAGE_TYPE kmerCoverage,int frequency){
 
 	#ifdef ASSERT
 	assert(kmerCoverage>0);
 	assert(frequency>0);
+
+	// make sure we are not using an alternate identifier...
+	assert(m_termDomains.count(term)==1);
+	assert(m_descriptions.count(term)==1);
 	#endif
 
 	m_ontologyTermFrequencies[term][kmerCoverage]+=frequency;
