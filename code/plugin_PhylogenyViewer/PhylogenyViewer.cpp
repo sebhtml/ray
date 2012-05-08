@@ -710,7 +710,7 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 		if(tsvFiles.count(rank)==0){
 			ostringstream theFile;
 			theFile<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
-			theFile<<"0-Profile.TaxonomyRank="<<rank<<".txt";
+			theFile<<"0.Profile.TaxonomyRank="<<rank<<".tsv";
 	
 			string tsvFile=theFile.str();
 			tsvFiles[rank]=fopen(tsvFile.c_str(),"a");

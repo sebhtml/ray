@@ -757,7 +757,7 @@ void GeneOntology::writeOntologyFiles(){
 		if(tsvFiles.count(domainName)==0){
 			ostringstream theFile;
 			theFile<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
-			theFile<<"0-Profile.GeneOntologyDomain="<<domainName<<".txt";
+			theFile<<"0.RayProfile.GeneOntologyDomain="<<domainName<<".tsv";
 	
 			string tsvFile=theFile.str();
 			tsvFiles[domainName]=fopen(tsvFile.c_str(),"a");
@@ -855,6 +855,10 @@ GeneOntologyDomain GeneOntology::getDomain(GeneOntologyIdentifier handle){
 
 void GeneOntology::loadOntology(map<GeneOntologyIdentifier,string>*identifiers,
 		map<GeneOntologyIdentifier,string>*descriptions){
+
+	if(!m_gotGeneOntologyParameter){
+		return ; /*--*/
+	}
 
 /* pick up all these entries:
  *

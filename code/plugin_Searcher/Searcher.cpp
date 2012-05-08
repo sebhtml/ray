@@ -1211,6 +1211,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEARCHER_CLOSE(){
 		flushSequenceAbundanceXMLBuffer(directoryIterator,true);
 
 		fclose(m_arrayOfFiles[directoryIterator]);
+		fclose(m_arrayOfFiles_tsv[directoryIterator]);
 
 		cout<<"Closed file "<<m_directoryIterator<<" "<<m_fileIterator<<", active file descriptors: "<<m_activeFiles<<endl;
 
@@ -3291,6 +3292,16 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 		m_arrayOfFiles[directoryIterator]=fopen(fileName.str().c_str(),"a");
 		m_arrayOfFiles_Buffer[directoryIterator]=new ostringstream;
 
+		// create tsv file too
+	
+		ostringstream fileName_tsv;
+		fileName_tsv<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
+		fileName_tsv<<"0.RayProfile."<<baseName<<".tsv";
+
+		m_arrayOfFiles_tsv[directoryIterator]=fopen(fileName_tsv.str().c_str(),"a");
+		m_arrayOfFiles_tsv_Buffer[directoryIterator]=new ostringstream;
+
+
 		#ifdef ASSERT
 		assert(m_activeFiles>=0); // it is 0 or 1 or something else
 		#endif
@@ -3330,6 +3341,8 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 		*(m_arrayOfFiles_Buffer[directoryIterator])<<content88.str();
 
 		cout<<"Opened "<<fileName.str()<<", active file descriptors: "<<m_activeFiles<<endl;
+
+		*(m_arrayOfFiles_tsv_Buffer[directoryIterator])<<"#Name	Proportion"<<endl;
 	}
 
 
@@ -3435,6 +3448,10 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 		#endif
 
 		*(m_arrayOfFiles_Buffer[directoryIterator])<<content.str();
+
+		if(demultiplexedObservations>0){
+			*(m_arrayOfFiles_tsv_Buffer[directoryIterator])<<m_fileNames[directoryIterator][fileIterator]<<"	"<<proportion<<endl;
+		}
 
 		flushSequenceAbundanceXMLBuffer(directoryIterator,false);
 
@@ -3585,6 +3602,9 @@ void Searcher::flushSequenceAbundanceXMLBuffer(int directoryIterator,bool force)
 
 		m_sequenceXMLflushOperations++;
 	}
+
+	flushFileOperationBuffer_FILE(force,m_arrayOfFiles_tsv_Buffer[directoryIterator],
+		m_arrayOfFiles_tsv[directoryIterator],CONFIG_FILE_IO_BUFFER_SIZE);
 }
 
 void Searcher::flushContigIdentificationBuffer(int directoryIterator,bool force){
@@ -3799,6 +3819,7 @@ void Searcher::registerPlugin(ComputeCore*core){
 	m_locallyFinishedColoring=false;
 
 	m_pumpedCounts=false;
+
 }
 
 void Searcher::resolveSymbols(ComputeCore*core){

@@ -350,6 +350,10 @@ class Searcher :  public CorePlugin {
 	map<int,FILE* > m_arrayOfFiles;
 	map<int,ostringstream*> m_arrayOfFiles_Buffer;
 
+	// tsv profiles
+	map<int,FILE* > m_arrayOfFiles_tsv;
+	map<int,ostringstream*> m_arrayOfFiles_tsv_Buffer;
+
 	/** track the descriptors */
 	int m_activeFiles;
 
