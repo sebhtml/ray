@@ -371,6 +371,9 @@ void PhylogenyViewer::loadTree(){
 
 void PhylogenyViewer::gatherKmerObservations(){
 
+	/* set to true to use only assembled kmers */
+	bool useOnlyAssembledKmer=false;
+
 	GridTableIterator iterator;
 	iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
 
@@ -416,12 +419,12 @@ void PhylogenyViewer::gatherKmerObservations(){
 			a=a->getNext();
 		}
 
-		if(!nicelyAssembled){
+		if(useOnlyAssembledKmer && !nicelyAssembled){
 			continue; // the k-mer is not nicely assembled...
 		}
 
 		#ifdef ASSERT
-		assert(nicelyAssembled);
+		assert(nicelyAssembled || !useOnlyAssembledKmer);
 		#endif
 
 		// at this point, we have a nicely assembled k-mer
@@ -433,6 +436,7 @@ void PhylogenyViewer::gatherKmerObservations(){
 
 		vector<TaxonIdentifier> taxons;
 
+		// get a list of taxons associated with this kmer
 		for(set<PhysicalKmerColor>::iterator j=physicalColors->begin();
 			j!=physicalColors->end();j++){
 
@@ -581,10 +585,10 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 		assert(rankSelfObservations.count(rank)>0);
 		#endif
 
-		operationBuffer<<"<entry><rank>"<<rank<<"</rank><self><assembledKmerObservations>";
-		operationBuffer<<rankSelfObservations[rank]<<"</assembledKmerObservations></self>";
-		operationBuffer<<"<recursive><assembledKmerObservations>"<<rankRecursiveObservations[rank];
-		operationBuffer<<"</assembledKmerObservations></recursive></entry>"<<endl;
+		operationBuffer<<"<entry><rank>"<<rank<<"</rank><self><kmerObservations>";
+		operationBuffer<<rankSelfObservations[rank]<<"</kmerObservations></self>";
+		operationBuffer<<"<recursive><kmerObservations>"<<rankRecursiveObservations[rank];
+		operationBuffer<<"</kmerObservations></recursive></entry>"<<endl;
 
 	}
 
@@ -593,7 +597,7 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 	operationBuffer<<"<entry>";
 	operationBuffer<<"<taxon><identifier>unknown</identifier><name>unknown</name><rank>unknown</rank></taxon>"<<endl;
 	operationBuffer<<"<path></path>"<<endl;
-	operationBuffer<<"<self><assembledKmerObservations>"<<m_unknown<<"</assembledKmerObservations>";
+	operationBuffer<<"<self><kmerObservations>"<<m_unknown<<"</kmerObservations>";
 
 	double ratio=m_unknown;
 
@@ -643,7 +647,7 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 		printTaxonPath_XML(taxon,&path,&operationBuffer);
 
 		operationBuffer<<"<self>"<<endl;
-		operationBuffer<<"<assembledKmerObservations>"<<count<<"</assembledKmerObservations>";
+		operationBuffer<<"<kmerObservations>"<<count<<"</kmerObservations>";
 
 
 		double ratio=count;
@@ -663,9 +667,9 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 		operationBuffer<<"</self>"<<endl;
 
 		operationBuffer<<"<recursive>";
-		operationBuffer<<"<assembledKmerObservations>";
+		operationBuffer<<"<kmerObservations>";
 		operationBuffer<<recursiveCount;
-		operationBuffer<<"</assembledKmerObservations>"<<endl;
+		operationBuffer<<"</kmerObservations>"<<endl;
 
 
 		double ratio2=recursiveCount;
