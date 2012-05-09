@@ -3296,7 +3296,7 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 	
 		ostringstream fileName_tsv;
 		fileName_tsv<<m_parameters->getPrefix()<<"/BiologicalAbundances/";
-		fileName_tsv<<"0.RayProfile."<<baseName<<".tsv";
+		fileName_tsv<<"0.Profile."<<baseName<<".tsv";
 
 		m_arrayOfFiles_tsv[directoryIterator]=fopen(fileName_tsv.str().c_str(),"a");
 		m_arrayOfFiles_tsv_Buffer[directoryIterator]=new ostringstream;
