@@ -66,7 +66,7 @@ void FusionTaskCreator::initializeMethod(){
 /** finalize the whole thing */
 void FusionTaskCreator::finalizeMethod(){
 
-	if(m_finishedInPreviousCycle){
+	if(m_fastRun && m_finishedInPreviousCycle){
 
 		cout<<"Rank "<<m_parameters->getRank()<<" will not do anything, completion occured previously for fusing."<<endl;
 	}
@@ -113,7 +113,7 @@ void FusionTaskCreator::finalizeMethod(){
 bool FusionTaskCreator::hasUnassignedTask(){
 	
 	// we have nothing to do if we finished in the previous cycle.
-	if(m_finishedInPreviousCycle){
+	if(m_fastRun && m_finishedInPreviousCycle){
 
 		return false;
 	}
@@ -208,6 +208,9 @@ void FusionTaskCreator::registerPlugin(ComputeCore*core){
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY,"RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY");
 
 	m_finishedInPreviousCycle=false;
+
+	// TODO: this is buggy
+	m_fastRun=false;
 }
 
 void FusionTaskCreator::resolveSymbols(ComputeCore*core){

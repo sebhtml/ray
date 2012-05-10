@@ -68,7 +68,7 @@ void JoinerTaskCreator::initializeMethod(){
 /** finalize the whole thing */
 void JoinerTaskCreator::finalizeMethod(){
 
-	if(m_previouslyDone){
+	if(m_fastRun && m_previouslyDone){
 
 		cout<<"Rank "<<m_parameters->getRank()<<" will not do anything, completion occured previously for joining."<<endl;
 	}
@@ -115,7 +115,7 @@ void JoinerTaskCreator::finalizeMethod(){
 /** has an unassigned task left to compute */
 bool JoinerTaskCreator::hasUnassignedTask(){
 
-	if(m_previouslyDone){
+	if(m_fastRun && m_previouslyDone){
 		return false;
 	}
 
@@ -206,6 +206,9 @@ void JoinerTaskCreator::registerPlugin(ComputeCore*core){
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_FINISH_FUSIONS,"RAY_SLAVE_MODE_FINISH_FUSIONS");
 
 	m_previouslyDone=false;
+
+	// TODO this is buggy
+	m_fastRun=false;
 }
 
 void JoinerTaskCreator::resolveSymbols(ComputeCore*core){

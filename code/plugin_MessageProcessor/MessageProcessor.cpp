@@ -1976,8 +1976,9 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 
 		if(!eliminated){
 			fusions.push_back((m_ed->m_EXTENSION_contigs)[i]);
-			if(!appendReverseComplement)
+			if(!appendReverseComplement){
 				continue;
+			}
 
 			vector<Kmer> rc;
 			for(int j=(m_ed->m_EXTENSION_contigs)[i].size()-1;j>=0;j--){

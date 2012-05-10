@@ -81,6 +81,10 @@ class FusionTaskCreator: public TaskCreator, public CorePlugin {
 
 	bool m_finishedInPreviousCycle;
 
+	// fast run
+
+	bool m_fastRun;
+
 public:
 	void constructor( VirtualProcessor*virtualProcessor,StaticVector*outbox,
 		RingAllocator*outboxAllocator,int*mode,Parameters*parameters,vector<vector<Kmer> >*paths,vector<uint64_t>*pathIdentifiers,

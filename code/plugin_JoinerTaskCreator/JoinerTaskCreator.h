@@ -78,7 +78,9 @@ class JoinerTaskCreator: public TaskCreator,  public CorePlugin{
 
 	vector<vector<Kmer> >*m_newPaths;
 
+	// fast run parameters
 	bool m_previouslyDone;
+	bool m_fastRun;
 
 public:
 	void constructor( VirtualProcessor*virtualProcessor,StaticVector*outbox,
