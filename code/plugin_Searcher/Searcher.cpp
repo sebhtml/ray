@@ -1583,6 +1583,9 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		m_coloredMatches=0;
 		m_coloredCoverageDistribution.clear();
 
+		m_assembledMatches=0;
+		m_assembledCoverageDistribution.clear();
+
 		m_coloredAssembledMatches=0;
 		m_coloredAssembledCoverageDistribution.clear();
 
@@ -1642,6 +1645,8 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			// compute the colored mode
 			
 			int coloredMode=getDistributionMode(&m_coloredCoverageDistribution);
+			int assembledMode=getDistributionMode(&m_assembledCoverageDistribution);
+
 
 			int coloredAssembledMode=getDistributionMode(&m_coloredAssembledCoverageDistribution);
 
@@ -1756,6 +1761,9 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 				buffer[bufferPosition++]=m_coloredMatches;
 				buffer[bufferPosition++]=coloredMode;
+
+				buffer[bufferPosition++]=m_assembledMatches;
+				buffer[bufferPosition++]=assembledMode;
 
 				buffer[bufferPosition++]=m_coloredAssembledMatches;
 				buffer[bufferPosition++]=coloredAssembledMode;
@@ -2042,6 +2050,11 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 					bool colorsAreUniqueInNamespaces=buffer[bufferPosition++];
 	
 					bool nicelyAssembled=buffer[bufferPosition++];
+
+					if(nicelyAssembled){
+						m_assembledCoverageDistribution[coverage]++;
+						m_assembledMatches++;
+					}
 
 					if(colorsAreUniqueInNamespaces){
 						m_coloredCoverageDistribution[coverage]++;
@@ -3262,6 +3275,9 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 	int coloredMatches=buffer[bufferPosition++];
 	int coloredMode=buffer[bufferPosition++];
 
+	int assembledMatches=buffer[bufferPosition++];
+	int assembledMode=buffer[bufferPosition++];
+
 	int coloredAssembledMatches=buffer[bufferPosition++];
 	int coloredAssembledMode=buffer[bufferPosition++];
 
@@ -3385,16 +3401,29 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 
 		double coloredRatio=coloredMatches;
 
-		if(numberOfKmers!=0)
+		if(numberOfKmers!=0){
 			coloredRatio/=numberOfKmers;
+		}
 
 		content<<"<uniquelyColored><kmerMatches>"<<coloredMatches<<"</kmerMatches><proportion>"<<coloredRatio<<"</proportion>";
 		content<<"<modeKmerCoverage>"<<coloredMode<<"</modeKmerCoverage></uniquelyColored>"<<endl;
 
+		double assembledRatio=assembledMatches;
+
+		if(numberOfKmers!=0){
+			assembledRatio/=numberOfKmers;
+		}
+		
+		content<<"<assembled><kmerMatches>"<<assembledMatches;
+		content<<"</kmerMatches><proportion>"<<assembledRatio<<"</proportion>";
+		content<<"<modeKmerCoverage>"<<assembledMode<<"</modeKmerCoverage>";
+		content<<"</assembled>"<<endl;
+
 		double coloredAssembledRatio=coloredAssembledMatches;
 
-		if(numberOfKmers!=0)
+		if(numberOfKmers!=0){
 			coloredAssembledRatio/=numberOfKmers;
+		}
 
 		content<<"<uniquelyColoredAndAssembled><kmerMatches>"<<coloredAssembledMatches<<"</kmerMatches><proportion>"<<coloredAssembledRatio;
 		content<<"</proportion><modeKmerCoverage>"<<coloredAssembledMode<<"</modeKmerCoverage></uniquelyColoredAndAssembled>"<<endl;

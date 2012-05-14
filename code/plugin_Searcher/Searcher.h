@@ -312,6 +312,7 @@ class Searcher :  public CorePlugin {
 
 	map<int,uint64_t> m_coverageDistribution;
 	map<int,uint64_t> m_coloredCoverageDistribution;
+	map<int,uint64_t> m_assembledCoverageDistribution;
 	map<int,uint64_t> m_coloredAssembledCoverageDistribution;
 
 	/** search directory objects */
@@ -336,6 +337,7 @@ class Searcher :  public CorePlugin {
 	/** number of matches for a sequence */
 	int m_matches;
 	int m_coloredMatches;
+	int m_assembledMatches;
 	int m_coloredAssembledMatches;
 
 	/** k-mer length */
