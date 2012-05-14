@@ -49,6 +49,7 @@ ____CreateSlaveModeAdapterDeclaration(GeneOntology,RAY_SLAVE_MODE_ONTOLOGY_MAIN)
  /* generated_automatically */
 ____CreateMessageTagAdapterDeclaration(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS); /* generated_automatically */
 ____CreateMessageTagAdapterDeclaration(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY); /* generated_automatically */
+____CreateMessageTagAdapterDeclaration(GeneOntology,RAY_MPI_TAG_SYNCHRONIZATION_DONE); /* generated_automatically */
  /* generated_automatically */
 
 
@@ -99,8 +100,11 @@ class GeneOntology: public CorePlugin{
 	MessageTag RAY_MPI_TAG_ONTOLOGY_MAIN;
 	MessageTag RAY_MPI_TAG_SYNCHRONIZE_TERMS;
 	MessageTag RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY;
+	MessageTag RAY_MPI_TAG_SYNCHRONIZATION_DONE;
+
 	Adapter_RAY_MPI_TAG_SYNCHRONIZE_TERMS m_adapter_RAY_MPI_TAG_SYNCHRONIZE_TERMS;
 	Adapter_RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY m_adapter_RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY;
+	Adapter_RAY_MPI_TAG_SYNCHRONIZATION_DONE m_adapter_RAY_MPI_TAG_SYNCHRONIZATION_DONE;
 
 	Adapter_RAY_MASTER_MODE_ONTOLOGY_MAIN m_adapter_RAY_MASTER_MODE_ONTOLOGY_MAIN;
 	Adapter_RAY_SLAVE_MODE_ONTOLOGY_MAIN m_adapter_RAY_SLAVE_MODE_ONTOLOGY_MAIN;
@@ -194,6 +198,12 @@ class GeneOntology: public CorePlugin{
 
 	// dereferences
 	uint64_t m_dereferences;
+
+	// new formula for counting profile percentages
+	uint64_t m_kmerObservationsWithGeneOntologies;
+	bool m_synchronizedTotal;
+	int m_ranksSynchronized;
+
 public:
 
 	void call_RAY_MASTER_MODE_ONTOLOGY_MAIN();
@@ -202,6 +212,7 @@ public:
 	void call_RAY_MPI_TAG_SYNCHRONIZE_TERMS(Message*message);
 	void call_RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY(Message*message);
 
+	void call_RAY_MPI_TAG_SYNCHRONIZATION_DONE(Message*message);
 
 	void registerPlugin(ComputeCore*core);
 	void resolveSymbols(ComputeCore*core);

@@ -20,6 +20,8 @@
 
 //#define DEBUG_RECURSION
 
+#define SENTINEL_VALUE_FOR_TOTAL 123456789
+
 #include <plugin_GeneOntology/GeneOntology.h>
 #include <plugin_VerticesExtractor/GridTableIterator.h>
 #include <core/OperatingSystem.h>
@@ -32,6 +34,7 @@ ____CreateSlaveModeAdapterImplementation(GeneOntology,RAY_SLAVE_MODE_ONTOLOGY_MA
  /* generated_automatically */
 ____CreateMessageTagAdapterImplementation(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS); /* generated_automatically */
 ____CreateMessageTagAdapterImplementation(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY); /* generated_automatically */
+____CreateMessageTagAdapterImplementation(GeneOntology,RAY_MPI_TAG_SYNCHRONIZATION_DONE); /* generated_automatically */
  /* generated_automatically */
 
 //#define BUG_DETERMINISM
@@ -55,16 +58,29 @@ void GeneOntology::call_RAY_MPI_TAG_SYNCHRONIZE_TERMS(Message*message){
 		for(int i=0;i<count;i+=3){
 
 			GeneOntologyIdentifier term=buffer[i+0];
-			int kmerCoverage= buffer[i+1];
-			int frequency=buffer[i+2];
+			uint64_t kmerCoverage= buffer[i+1];
+			uint64_t frequency=buffer[i+2];
+
+			if(term==SENTINEL_VALUE_FOR_TOTAL && kmerCoverage == SENTINEL_VALUE_FOR_TOTAL
+				&& count==3){
+
+				uint64_t kmerObservationsWithGeneOntologies=frequency;
+
+				m_kmerObservationsWithGeneOntologies+=kmerObservationsWithGeneOntologies;
+
+				cout<<"Rank "<<m_rank;
+				cout<<" Synchronizing kmer observations with gene ontology terms: ";
+				cout<<kmerObservationsWithGeneOntologies;
+				cout<<" (from "<<source<<")"<<endl;
+		
+				continue;
+			}
 
 			#ifdef BUG_DETERMINISM
 			if(term==49){
 				cout<<"[BUG_DETERMINISM] viaMessage incrementOntologyTermFrequency "<<term<<" "<<kmerCoverage<<" "<<frequency<<endl;
 			}
 			#endif
-
-
 
 			incrementOntologyTermFrequency(term,kmerCoverage,frequency);
 		}
@@ -106,6 +122,13 @@ GeneOntologyDomain GeneOntology::getGeneOntologyDomain(const char*text){
 void GeneOntology::call_RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY(Message*message){
 
 }
+
+void GeneOntology::call_RAY_MPI_TAG_SYNCHRONIZATION_DONE(Message*message){
+
+	m_ranksSynchronized++;
+}
+
+
 
 void GeneOntology::call_RAY_MASTER_MODE_ONTOLOGY_MAIN(){
 	if(!m_started){
@@ -309,6 +332,11 @@ void GeneOntology::call_RAY_SLAVE_MODE_ONTOLOGY_MAIN(){
 
 	}else{
 		if(m_rank==MASTER_RANK){
+
+			// busy wait for other to complete their tasks.
+			if(m_ranksSynchronized<m_core->getMessagesHandler()->getSize()){
+				return;
+			}
 
 			cout<<"Rank "<<m_rank<<": synchronization is complete!"<<endl;
 			cout<<"Rank "<<m_rank<<": ontology terms with biological signal: "<<m_ontologyTermFrequencies.size()<<endl;
@@ -653,6 +681,7 @@ void GeneOntology::writeOntologyFiles(){
 	ofstream xmlStream(xmlFile.c_str());
 	ostringstream operationBuffer; //-------------
 
+	cout<<"TOTAL: "<<m_kmerObservationsWithGeneOntologies<<endl;
 
 	operationBuffer<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"<<endl;
 	operationBuffer<<"<root>"<<endl;
@@ -1102,13 +1131,6 @@ bool GeneOntology::hasParent(GeneOntologyIdentifier handle){
 
 void GeneOntology::synchronize(){
 
-	// master don't need to sync anything
-	if(m_core->getMessagesHandler()->getRank() == MASTER_RANK){
-		m_synced=true;
-		cout<<"Rank "<<m_rank<<": synced ontology term profiles with master"<<endl;
-		return;
-	}
-
 	// we received the response
 	if(m_inbox->hasMessage(RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY)){
 
@@ -1123,9 +1145,30 @@ void GeneOntology::synchronize(){
 		return;
 	}
 
+	bool isMaster=m_core->getMessagesHandler()->getRank() == MASTER_RANK;
+
+	if(!m_synchronizedTotal && !isMaster){
+	
+		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+		int bufferPosition=0;
+
+		m_synchronizedTotal=true;
+
+		buffer[bufferPosition++]=SENTINEL_VALUE_FOR_TOTAL;
+		buffer[bufferPosition++]=SENTINEL_VALUE_FOR_TOTAL;
+		buffer[bufferPosition++]=m_kmerObservationsWithGeneOntologies;
+
+		m_switchMan->sendMessage(buffer,bufferPosition,m_outbox,m_rank,MASTER_RANK,RAY_MPI_TAG_SYNCHRONIZE_TERMS);
+
+		m_waitingForReply=true;
+
+		return;
+
+	}
+
 	// sync with master
 
-	if(hasDataToSync()){
+	if(hasDataToSync() && !isMaster){
 
 		#ifdef DEBUG_ONTOLOGY_SYNC
 		cout<<"[DEBUG_ONTOLOGY_SYNC] Will create data message"<<endl;
@@ -1181,6 +1224,8 @@ void GeneOntology::synchronize(){
 		m_synced=true;
 
 		cout<<"Rank "<<m_rank<<": synced ontology term profiles with master"<<endl;
+
+		m_switchMan->sendMessage(NULL,0,m_outbox,m_rank,MASTER_RANK,RAY_MPI_TAG_SYNCHRONIZATION_DONE);
 	}
 }
 
@@ -1236,6 +1281,8 @@ void GeneOntology::addDataToBuffer(uint64_t*buffer,int*bufferPosition){
 
 void GeneOntology::countOntologyTermsInGraph(){
 	
+	m_kmerObservationsWithGeneOntologies=0;
+
 	cout<<"Rank "<<m_rank<<": counting ontology terms in the graph..."<<endl;
 
 	#ifdef ASSERT
@@ -1325,6 +1372,11 @@ void GeneOntology::countOntologyTermsInGraph(){
 
 			incrementOntologyTermFrequency(realTerm,kmerCoverage, quantity);
 		}
+
+		// update the total
+		if(!ontologyTerms.empty()){
+			m_kmerObservationsWithGeneOntologies+=kmerCoverage;
+		}
 	}
 
 	m_ontologyTermFrequencies_iterator1=m_ontologyTermFrequencies.begin();
@@ -1338,6 +1390,8 @@ void GeneOntology::countOntologyTermsInGraph(){
 	cout<<"Rank "<<m_rank<<": "<<m_ontologyTermFrequencies.size();
 	cout<<" have some biological signal"<<endl;
 	cout<<"Number of dereferenced alternate handles: "<<m_dereferences<<endl;
+	cout<<"Number of k-mer observations with gene ontology terms: ";
+	cout<<m_kmerObservationsWithGeneOntologies<<endl;
 }
 
 GeneOntologyIdentifier GeneOntology::dereferenceTerm(GeneOntologyIdentifier handle){
@@ -1404,6 +1458,11 @@ void GeneOntology::registerPlugin(ComputeCore*core){
 	RAY_MPI_TAG_ONTOLOGY_MAIN=core->allocateMessageTagHandle(m_plugin);
 	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_ONTOLOGY_MAIN,"RAY_MPI_TAG_ONTOLOGY_MAIN");
 
+	RAY_MPI_TAG_SYNCHRONIZATION_DONE=core->allocateMessageTagHandle(m_plugin);
+	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_SYNCHRONIZATION_DONE,"RAY_MPI_TAG_SYNCHRONIZATION_DONE");
+	m_adapter_RAY_MPI_TAG_SYNCHRONIZATION_DONE.setObject(this);
+	m_core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_SYNCHRONIZATION_DONE,&m_adapter_RAY_MPI_TAG_SYNCHRONIZATION_DONE);
+
 	RAY_MPI_TAG_SYNCHRONIZE_TERMS=m_core->allocateMessageTagHandle(m_plugin);
 	m_core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_SYNCHRONIZE_TERMS,"RAY_MPI_TAG_SYNCHRONIZE_TERMS");
 	m_adapter_RAY_MPI_TAG_SYNCHRONIZE_TERMS.setObject(this);
@@ -1425,6 +1484,9 @@ void GeneOntology::registerPlugin(ComputeCore*core){
 	m_rank=core->getMessagesHandler()->getRank();
 	m_size=core->getMessagesHandler()->getSize();
 
+	m_synchronizedTotal=false;
+
+	m_ranksSynchronized=0;
 }
 
 void GeneOntology::resolveSymbols(ComputeCore*core){
