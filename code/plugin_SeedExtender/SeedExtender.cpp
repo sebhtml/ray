@@ -2053,6 +2053,15 @@ int SeedExtender::chooseWithSeed(){
 		cout<<"Error: The seed contains a choice not supported by the graph."<<endl;
 		cout<<"Extension length: "<<m_ed->m_EXTENSION_extension.size()<<" vertices"<<endl;
 		cout<<"position="<<m_ed->m_EXTENSION_currentPosition<<" "<<m_ed->m_EXTENSION_currentSeed.at(m_ed->m_EXTENSION_currentPosition)->idToWord(wordSize,m_parameters->getColorSpaceMode())<<" with "<<m_ed->m_enumerateChoices_outgoingEdges.size()<<" choices ";
+
+		cout<<"The previous kmer is ";
+
+		int previousPosition=m_ed->m_EXTENSION_currentPosition-1;
+
+		if(previousPosition>=0){
+			cout<<m_ed->m_EXTENSION_currentSeed.at(previousPosition)->idToWord(wordSize,m_parameters->getColorSpaceMode());
+		}
+
 		cout<<endl;
 		cout<<"Seed length: "<<m_ed->m_EXTENSION_currentSeed.size()<<" vertices"<<endl;
 		cout<<"Choices: ";
