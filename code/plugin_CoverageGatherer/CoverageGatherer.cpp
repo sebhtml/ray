@@ -58,7 +58,7 @@ void CoverageGatherer::writeKmers(){
 	iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
 	FILE*kmerFile=NULL;
 	ostringstream name;
-	name<<m_parameters->getPrefix()<<".kmers.txt";
+	name<<m_parameters->getPrefix()<<"/kmers.txt";
 	if(m_parameters->getRank()==0)
 		kmerFile=fopen(name.str().c_str(),"w"); // create empty file 
 	else
