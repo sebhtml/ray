@@ -117,13 +117,13 @@ see <http://www.gnu.org/licenses/>
 
 
 #if CONFIG_MAXIMUM_COVERAGE < 256
-	typedef uint8_t COVERAGE_TYPE ;
+	typedef uint8_t CoverageDepth ;
 #elif CONFIG_MAXIMUM_COVERAGE < 65536
-	typedef uint16_t COVERAGE_TYPE;
+	typedef uint16_t CoverageDepth;
 #elif CONFIG_MAXIMUM_COVERAGE < 4294967296
-	typedef uint32_t COVERAGE_TYPE;
+	typedef uint32_t CoverageDepth;
 #else
-	typedef uint64_t COVERAGE_TYPE;
+	typedef uint64_t CoverageDepth;
 #endif
 
 /** 32-bit or 64-bit system */
@@ -159,5 +159,6 @@ see <http://www.gnu.org/licenses/>
 #define CONFIG_FILE_IO_BUFFER_SIZE 16777216 /* 16 MB */
 //#define CONFIG_FILE_IO_BUFFER_SIZE 33554432 /* 32 MB */
 //#define CONFIG_FILE_IO_BUFFER_SIZE 134217728 /* 128 MB */
+
 
 #endif

@@ -1121,29 +1121,29 @@ void Parameters::printFinalMessage(){
 	cout<<"Rank "<<MASTER_RANK<<" wrote library statistics"<<endl;
 }
 
-COVERAGE_TYPE Parameters::getMaximumAllowedCoverage(){
-	COVERAGE_TYPE a=0;
+CoverageDepth Parameters::getMaximumAllowedCoverage(){
+	CoverageDepth a=0;
 	a--;
 	return a;
 }
 
-void Parameters::setPeakCoverage(COVERAGE_TYPE a){
+void Parameters::setPeakCoverage(CoverageDepth a){
 	if(!m_providedPeakCoverage){
 		m_peakCoverage=a;
 	}
 }
 
-void Parameters::setRepeatCoverage(COVERAGE_TYPE a){
+void Parameters::setRepeatCoverage(CoverageDepth a){
 	if(!m_providedRepeatCoverage){
 		m_repeatCoverage=a;
 	}
 }
 
-COVERAGE_TYPE Parameters::getPeakCoverage(){
+CoverageDepth Parameters::getPeakCoverage(){
 	return m_peakCoverage;
 }
 
-COVERAGE_TYPE Parameters::getRepeatCoverage(){
+CoverageDepth Parameters::getRepeatCoverage(){
 	return m_repeatCoverage;
 }
 
@@ -1561,11 +1561,11 @@ uint64_t Parameters::getGlobalIdFromRankAndLocalId(int rank,int id){
 	return rank*x+id;
 }
 
-COVERAGE_TYPE Parameters::getMinimumCoverage(){
+CoverageDepth Parameters::getMinimumCoverage(){
 	return m_minimumCoverage;
 }
 
-void Parameters::setMinimumCoverage(COVERAGE_TYPE a){
+void Parameters::setMinimumCoverage(CoverageDepth a){
 	if(!m_providedMinimumCoverage)
 		m_minimumCoverage=a;
 }
@@ -1615,7 +1615,7 @@ void Parameters::fileNameHook(string fileName){
 	}
 }
 
-COVERAGE_TYPE Parameters::getMinimumCoverageToStore(){
+CoverageDepth Parameters::getMinimumCoverageToStore(){
 	return 2;
 }
 

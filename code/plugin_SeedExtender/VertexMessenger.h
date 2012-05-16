@@ -53,7 +53,7 @@ class VertexMessenger{
 	StaticVector*m_outbox;
 	RingAllocator*m_outboxAllocator;
 	uint8_t m_edges;
-	uint16_t m_coverageValue;
+	CoverageDepth m_coverageValue;
 	vector<ReadAnnotation> m_annotations;
 	bool m_isDone;
 	Kmer m_vertex;
@@ -73,7 +73,7 @@ class VertexMessenger{
 	void getReadsForRepeatedVertex();
 public:
 	void constructor(Kmer vertex,uint64_t wave,int pos,set<uint64_t>*matesToMeet,StaticVector*inbox,StaticVector*outbox,
-	RingAllocator*outboxAllocator,Parameters*parameters,bool getReads,int peakCoverage,
+	RingAllocator*outboxAllocator,Parameters*parameters,bool getReads,CoverageDepth peakCoverage,
 	MessageTag RAY_MPI_TAG_VERTEX_INFO,
 	MessageTag RAY_MPI_TAG_VERTEX_INFO_REPLY,
 	MessageTag RAY_MPI_TAG_VERTEX_READS,
@@ -84,7 +84,7 @@ public:
 
 	bool isDone();
 	void work();
-	uint16_t getCoverageValue();
+	CoverageDepth getCoverageValue();
 	uint8_t getEdges();
 	vector<ReadAnnotation>getReadAnnotations();
 };

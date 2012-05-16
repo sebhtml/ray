@@ -204,12 +204,12 @@ uint8_t VertexMessenger::getEdges(){
 	return m_edges;
 }
 
-uint16_t VertexMessenger::getCoverageValue(){
+CoverageDepth VertexMessenger::getCoverageValue(){
 	return m_coverageValue;
 }
 
 void VertexMessenger::constructor(Kmer vertex,uint64_t wave,int pos,set<uint64_t>*matesToMeet,StaticVector*inbox,StaticVector*outbox,
-	RingAllocator*outboxAllocator,Parameters*parameters,bool getReads,int peakCoverage,
+	RingAllocator*outboxAllocator,Parameters*parameters,bool getReads,CoverageDepth peakCoverage,
 
 	MessageTag RAY_MPI_TAG_VERTEX_INFO,
 	MessageTag RAY_MPI_TAG_VERTEX_INFO_REPLY,

@@ -696,7 +696,7 @@ void GeneOntology::writeOntologyFiles(){
 
 
 
-	for(map<GeneOntologyIdentifier,map<COVERAGE_TYPE,int> >::iterator i=
+	for(map<GeneOntologyIdentifier,map<CoverageDepth,int> >::iterator i=
 		m_ontologyTermFrequencies.begin();i!=m_ontologyTermFrequencies.end();i++){
 
 		GeneOntologyIdentifier handle=i->first;
@@ -707,9 +707,9 @@ void GeneOntology::writeOntologyFiles(){
 
 		uint64_t totalObservations=0;
 
-		for(map<COVERAGE_TYPE,int>::iterator j=i->second.begin();j!=i->second.end();j++){
+		for(map<CoverageDepth,int>::iterator j=i->second.begin();j!=i->second.end();j++){
 
-			COVERAGE_TYPE coverage=j->first;
+			CoverageDepth coverage=j->first;
 			int frequency=j->second;
 
 			if(frequency>modeCount){
@@ -767,9 +767,9 @@ void GeneOntology::writeOntologyFiles(){
 
 		operationBuffer<<"#Coverage	Frequency"<<endl;
 
-		for(map<COVERAGE_TYPE,int>::iterator j=i->second.begin();j!=i->second.end();j++){
+		for(map<CoverageDepth,int>::iterator j=i->second.begin();j!=i->second.end();j++){
 
-			COVERAGE_TYPE coverage=j->first;
+			CoverageDepth coverage=j->first;
 			int frequency=j->second;
 
 			operationBuffer<<coverage<<"	"<<frequency<<endl;
@@ -833,7 +833,7 @@ void GeneOntology::writeOntologyFiles(){
 
 
 
-	for(map<GeneOntologyIdentifier,map<COVERAGE_TYPE,int> >::iterator i=
+	for(map<GeneOntologyIdentifier,map<CoverageDepth,int> >::iterator i=
 		m_ontologyTermFrequencies.begin();i!=m_ontologyTermFrequencies.end();i++){
 
 		GeneOntologyIdentifier handle=i->first;
@@ -1415,7 +1415,7 @@ GeneOntologyIdentifier GeneOntology::dereferenceTerm_safe(GeneOntologyIdentifier
 	return dereferenceTerm_safe(link,visited);
 }
 
-void GeneOntology::incrementOntologyTermFrequency(GeneOntologyIdentifier term,COVERAGE_TYPE kmerCoverage,int frequency){
+void GeneOntology::incrementOntologyTermFrequency(GeneOntologyIdentifier term,CoverageDepth kmerCoverage,int frequency){
 
 	#ifdef ASSERT
 	assert(kmerCoverage>0);

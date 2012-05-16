@@ -70,14 +70,14 @@ class Parameters{
 
 	bool m_reducerIsActivated;
 	int m_size;
-	COVERAGE_TYPE m_repeatCoverage;
+	CoverageDepth m_repeatCoverage;
 	Rank m_rank;
-	COVERAGE_TYPE m_peakCoverage;
+	CoverageDepth m_peakCoverage;
 
 	map<int,vector<int> > m_libraryAverageLength;
 	map<int,vector<int> > m_libraryDeviation;
 	int m_numberOfLibraries;
-	COVERAGE_TYPE m_minimumCoverage;
+	CoverageDepth m_minimumCoverage;
 	bool m_error;
 	string m_prefix;
 	bool m_amos;
@@ -96,7 +96,7 @@ class Parameters{
 	set<int> m_leftFiles;
 	set<int> m_rightFiles;
 	set<int> m_interleavedFiles;
-	COVERAGE_TYPE m_seedCoverage;
+	CoverageDepth m_seedCoverage;
 	bool m_colorSpaceMode;
 	string m_input;
 	vector<string> m_commands;
@@ -150,11 +150,11 @@ public:
 	int getLibrary(int file);
 	void printFinalMessage();
 	bool isInterleavedFile(int i);
-	void setPeakCoverage(COVERAGE_TYPE a);
-	COVERAGE_TYPE getPeakCoverage();
+	void setPeakCoverage(CoverageDepth a);
+	CoverageDepth getPeakCoverage();
 	void addLibraryData(int library,int average,int deviation);
 	int getNumberOfLibraries();
-	COVERAGE_TYPE  getRepeatCoverage();
+	CoverageDepth  getRepeatCoverage();
 	string getPrefix();
 	int getRank();
 	int getSize();
@@ -167,9 +167,9 @@ public:
 	int getIdFromGlobalId(uint64_t a);
 	int getMaximumDistance();
 	uint64_t getGlobalIdFromRankAndLocalId(int rank,int id);
-	COVERAGE_TYPE getMaximumAllowedCoverage();
-	COVERAGE_TYPE getMinimumCoverage();
-	void setMinimumCoverage(COVERAGE_TYPE a);
+	CoverageDepth getMaximumAllowedCoverage();
+	CoverageDepth getMinimumCoverage();
+	void setMinimumCoverage(CoverageDepth a);
 	Kmer _complementVertex(Kmer*a);
 	bool hasPairedReads();
 	int _vertexRank(Kmer*a);
@@ -192,10 +192,10 @@ public:
 	string getScaffoldFile();
 	int getColumns();
 	int getLargeContigThreshold();
-	void setRepeatCoverage(COVERAGE_TYPE a);
+	void setRepeatCoverage(CoverageDepth a);
 	bool showMemoryAllocations();
 	bool writeKmers();
-	COVERAGE_TYPE getMinimumCoverageToStore();
+	CoverageDepth getMinimumCoverageToStore();
 
 	int getLibraryMaxAverageLength(int i);
 	int getLibraryMaxStandardDeviation(int i);

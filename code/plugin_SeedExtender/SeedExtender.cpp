@@ -180,7 +180,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				(*receivedVertexCoverage)=*(m_cache.find(kmer,false)->getValue());
 
 				#ifdef ASSERT
-				assert((COVERAGE_TYPE)(*receivedVertexCoverage)<=m_parameters->getMaximumAllowedCoverage());
+				assert((CoverageDepth)(*receivedVertexCoverage)<=m_parameters->getMaximumAllowedCoverage());
 				#endif
 
 			}else if(!(*vertexCoverageRequested)&&(m_cache).find(reverseComplement,false)!=NULL){
@@ -189,17 +189,19 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				(*receivedVertexCoverage)=*(m_cache.find(reverseComplement,false)->getValue());
 
 				#ifdef ASSERT
-				assert((COVERAGE_TYPE)(*receivedVertexCoverage)<=m_parameters->getMaximumAllowedCoverage());
+				assert((CoverageDepth)(*receivedVertexCoverage)<=m_parameters->getMaximumAllowedCoverage());
 				#endif
 
 			}else if(!(*vertexCoverageRequested)){
 				uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(KMER_U64_ARRAY_SIZE*sizeof(uint64_t));
 				int bufferPosition=0;
 				kmer.pack(message,&bufferPosition);
-				int dest=m_parameters->_vertexRank(&kmer);
+				Rank dest=m_parameters->_vertexRank(&kmer);
+
 
 				Message aMessage(message,bufferPosition,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
 				(*outbox).push_back(aMessage);
+
 				(*vertexCoverageRequested)=true;
 				(*vertexCoverageReceived)=false;
 				(*receivedVertexCoverage)=0;
@@ -212,13 +214,24 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				(*outgoingEdgeIndex)++;
 				(*vertexCoverageRequested)=false;
 
-				COVERAGE_TYPE coverageValue=*receivedVertexCoverage;
+				CoverageDepth coverageValue=*receivedVertexCoverage;
 
 				#ifdef ASSERT
 
+				if(coverageValue==0){
+					Rank dest=m_parameters->_vertexRank(&kmer);
+
+					cout<<"The kmer has a coverage of 0: ";
+					cout<<kmer.idToWord(m_parameters->getWordSize(),
+						m_parameters->getColorSpaceMode());
+					cout<<" current rank: "<<theRank;
+					cout<<" from rank "<<dest;
+					cout<<endl;
+				}
+
 				assert(coverageValue!=0);// this is impossible.
 
-				assert((COVERAGE_TYPE)(*receivedVertexCoverage)<=m_parameters->getMaximumAllowedCoverage());
+				assert((CoverageDepth)(*receivedVertexCoverage)<=m_parameters->getMaximumAllowedCoverage());
 				#endif
 
 
@@ -404,7 +417,7 @@ Presently, insertions or deletions up to 8 are supported.
 
 				int fancyMultiplier=REPEAT_MULTIPLIER;
 
-				COVERAGE_TYPE theRepeatedCoverage=m_currentPeakCoverage*fancyMultiplier;
+				CoverageDepth theRepeatedCoverage=m_currentPeakCoverage*fancyMultiplier;
 
 				#ifdef CONFIG_USE_COVERAGE_DISTRIBUTION
 				theRepeatedCoverage=m_parameters->getRepeatCoverage();
@@ -1458,9 +1471,9 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				// its mate was not seen yet.
 				
 				#ifdef CONFIG_USE_COVERAGE_DISTRIBUTION
-				COVERAGE_TYPE thresholdCoverage=2*m_parameters->getPeakCoverage();
+				CoverageDepth thresholdCoverage=2*m_parameters->getPeakCoverage();
 				#else
-				COVERAGE_TYPE thresholdCoverage=2*m_currentPeakCoverage;
+				CoverageDepth thresholdCoverage=2*m_currentPeakCoverage;
 				#endif
 
 				//cout<<"THreshold= "<<thresholdCoverage<<endl;

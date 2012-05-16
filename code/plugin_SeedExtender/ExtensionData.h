@@ -122,7 +122,7 @@ public:
 	map<Kmer,vector<int> > m_EXTENSION_pairedReadPositionsForVertices;
 	map<Kmer,vector<int> > m_EXTENSION_pairedLibrariesForVertices;
 	map<Kmer,vector<uint64_t> > m_EXTENSION_pairedReadsForVertices;
-	COVERAGE_TYPE m_currentCoverage;
+	CoverageDepth m_currentCoverage;
 
 	set<uint64_t> m_EXTENSION_readsInRange;
 	set<uint64_t> m_pairedReadsWithoutMate;

@@ -1072,6 +1072,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message)
 	uint64_t*incoming=(uint64_t*)buffer;
 	int count=message->getCount();
 	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(count*sizeof(uint64_t));
+
 	for(int i=0;i<count;i+=KMER_U64_ARRAY_SIZE){
 		Kmer vertex;
 		int bufferPosition=i;
@@ -1082,14 +1083,19 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message)
 		Vertex*node=m_subgraph->find(&vertex);
 
 		// if it is not there, then it has a coverage of 0
-		COVERAGE_TYPE coverage=0;
+		CoverageDepth coverage=0;
 
 		if(node!=NULL){
 			coverage=node->getCoverage(&vertex);
+
+			#ifdef ASSERT
+			assert(coverage!=0);
+			#endif
 		}
 
 		message2[i]=coverage;
 	}
+
 	Message aMessage(message2,count,source,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY,m_rank);
 	m_outbox->push_back(aMessage);
 }
@@ -2267,7 +2273,7 @@ void MessageProcessor::call_RAY_MPI_TAG_KMER_ACADEMY_DATA(Message*message){
 			tmp->m_count=1;
 		}
 
-		COVERAGE_TYPE oldValue=tmp->m_count;
+		CoverageDepth oldValue=tmp->m_count;
 		if(tmp->m_lowerKey==l)
 			tmp->m_count++;
 		if(tmp->m_count<oldValue)

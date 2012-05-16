@@ -113,9 +113,9 @@ class GeneOntology: public CorePlugin{
 	void loadAnnotations();
 	bool fetchArguments();
 
-	map<GeneOntologyIdentifier,map<COVERAGE_TYPE,int> > m_ontologyTermFrequencies;
-	map<GeneOntologyIdentifier,map<COVERAGE_TYPE,int> >::iterator m_ontologyTermFrequencies_iterator1;
-	map<COVERAGE_TYPE,int>::iterator m_ontologyTermFrequencies_iterator2;
+	map<GeneOntologyIdentifier,map<CoverageDepth,int> > m_ontologyTermFrequencies;
+	map<GeneOntologyIdentifier,map<CoverageDepth,int> >::iterator m_ontologyTermFrequencies_iterator1;
+	map<CoverageDepth,int>::iterator m_ontologyTermFrequencies_iterator2;
 
 	void countOntologyTermsInGraph();
 	bool m_countOntologyTermsInGraph;
@@ -126,7 +126,7 @@ class GeneOntology: public CorePlugin{
 	void __skipToData();
 	bool hasDataToSync();
 	void addDataToBuffer(uint64_t*buffer,int*bufferPosition);
-	void incrementOntologyTermFrequency(GeneOntologyIdentifier term,COVERAGE_TYPE kmerCoverage,int frequency);
+	void incrementOntologyTermFrequency(GeneOntologyIdentifier term,CoverageDepth kmerCoverage,int frequency);
 	bool m_waitingForReply;
 
 	// write files

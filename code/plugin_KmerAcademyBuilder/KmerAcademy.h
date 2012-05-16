@@ -35,7 +35,7 @@
 class KmerCandidate{
 public:
 	Kmer m_lowerKey;
-	COVERAGE_TYPE m_count;
+	CoverageDepth m_count;
 }ATTRIBUTE_PACKED;
 
 /**

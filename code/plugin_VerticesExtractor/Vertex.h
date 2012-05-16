@@ -51,7 +51,7 @@ public:
 	/*
  *	The coverage of the vertex
  */
-	COVERAGE_TYPE m_coverage_lower;
+	CoverageDepth m_coverage_lower;
 
 	/*
  *	the ingoing and outgoing edges.
@@ -78,8 +78,8 @@ public:
 	void addIngoingEdge_ClassicMethod(Kmer*vertex,Kmer*a,int k);
 
 	void constructor();
-	void setCoverage(Kmer*a,COVERAGE_TYPE coverage);
-	COVERAGE_TYPE getCoverage(Kmer*p);
+	void setCoverage(Kmer*a,CoverageDepth coverage);
+	CoverageDepth getCoverage(Kmer*p);
 	void addOutgoingEdge(Kmer*vertex,Kmer*a,int k);
 	void addIngoingEdge(Kmer*vertex,Kmer*a,int k);
 	vector<Kmer> getIngoingEdges(Kmer*a,int k);
