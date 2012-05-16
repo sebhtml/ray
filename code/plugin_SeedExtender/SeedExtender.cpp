@@ -202,7 +202,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				(*outbox).push_back(aMessage);
 				(*vertexCoverageRequested)=true;
 				(*vertexCoverageReceived)=false;
-				(*receivedVertexCoverage)=-1;
+				(*receivedVertexCoverage)=0;
 
 				MACRO_COLLECT_PROFILING_INFORMATION();
 
@@ -212,16 +212,27 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				(*outgoingEdgeIndex)++;
 				(*vertexCoverageRequested)=false;
 
+				COVERAGE_TYPE coverageValue=*receivedVertexCoverage;
+
 				#ifdef ASSERT
+
+				assert(coverageValue!=0);// this is impossible.
+
 				assert((COVERAGE_TYPE)(*receivedVertexCoverage)<=m_parameters->getMaximumAllowedCoverage());
 				#endif
 
-				COVERAGE_TYPE coverageValue=*receivedVertexCoverage;
 
 				// Parameters::getMinimumCoverageToStore returns 2 always.
 				if(coverageValue>=m_parameters->getMinimumCoverageToStore()){
 					ed->m_EXTENSION_coverages.push_back((*receivedVertexCoverage));
 					ed->m_enumerateChoices_outgoingEdges.push_back(kmer);
+				}else{
+					cout<<"Warning: the kmer ";
+					cout<<kmer.idToWord(m_parameters->getWordSize(),
+						m_parameters->getColorSpaceMode());
+					cout<<" has a strange coverage: "<<coverageValue;
+					cout<<", it will be skipped for the children listing"<<endl;
+
 				}
 
 				MACRO_COLLECT_PROFILING_INFORMATION();
