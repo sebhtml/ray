@@ -1082,10 +1082,12 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message)
 		Vertex*node=m_subgraph->find(&vertex);
 
 		// if it is not there, then it has a coverage of 0
-		int coverage=0;
+		COVERAGE_TYPE coverage=0;
 
-		if(node!=NULL)
+		if(node!=NULL){
 			coverage=node->getCoverage(&vertex);
+		}
+
 		message2[i]=coverage;
 	}
 	Message aMessage(message2,count,source,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY,m_rank);
@@ -1095,6 +1097,10 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message)
 void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY(Message*message){
 	void*buffer=message->getBuffer();
 	uint64_t*incoming=(uint64_t*)buffer;
+
+	#ifdef ASSERT
+	#endif
+
 	(m_seedingData->m_SEEDING_receivedVertexCoverage)=incoming[0];
 	(m_seedingData->m_SEEDING_vertexCoverageReceived)=true;
 }

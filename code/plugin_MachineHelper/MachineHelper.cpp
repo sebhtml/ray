@@ -245,13 +245,14 @@ void MachineHelper::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES (){
 
 	uint64_t numberOfVertices=0;
 	uint64_t verticesWith1Coverage=0;
-	int lowestCoverage=9999;
+	COVERAGE_TYPE lowestCoverage=9999;
 	
 	uint64_t genomeKmers=0;
 
 	for(map<int,uint64_t>::iterator i=m_coverageDistribution->begin();
 		i!=m_coverageDistribution->end();i++){
-		int coverageValue=i->first;
+
+		COVERAGE_TYPE coverageValue=i->first;
 		uint64_t vertices=i->second;
 
 		if(coverageValue<lowestCoverage){

@@ -46,7 +46,7 @@ bool Vertex::isAssembled(){
 	return m_assembled;
 }
 
-void Vertex::setCoverage(Kmer*a,int coverage){
+void Vertex::setCoverage(Kmer*a,COVERAGE_TYPE coverage){
 	COVERAGE_TYPE max=0;
 	max=max-1;// underflow.
 	if(*a==m_lowerKey){
@@ -58,7 +58,7 @@ void Vertex::setCoverage(Kmer*a,int coverage){
 	}
 }
 
-int Vertex::getCoverage(Kmer*a){
+COVERAGE_TYPE Vertex::getCoverage(Kmer*a){
 	return m_coverage_lower;
 }
 

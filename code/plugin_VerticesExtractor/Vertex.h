@@ -78,8 +78,8 @@ public:
 	void addIngoingEdge_ClassicMethod(Kmer*vertex,Kmer*a,int k);
 
 	void constructor();
-	void setCoverage(Kmer*a,int coverage);
-	int getCoverage(Kmer*p);
+	void setCoverage(Kmer*a,COVERAGE_TYPE coverage);
+	COVERAGE_TYPE getCoverage(Kmer*p);
 	void addOutgoingEdge(Kmer*vertex,Kmer*a,int k);
 	void addIngoingEdge(Kmer*vertex,Kmer*a,int k);
 	vector<Kmer> getIngoingEdges(Kmer*a,int k);

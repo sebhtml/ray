@@ -213,6 +213,8 @@ bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,int
 int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges);
 
 
+	// bug hunting
+	uint8_t m_compactEdges;
 
 
 public:

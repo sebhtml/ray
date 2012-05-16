@@ -118,6 +118,7 @@ m_edgesRequested,m_receivedOutgoingEdges,m_chooser,m_bubbleData,m_parameters->ge
 m_oa,m_parameters->getWordSize(),m_seeds);
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
+
 	}else if(!m_ed->m_EXTENSION_enumerateChoices){
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
@@ -146,6 +147,13 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 ){
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
+	// apparently, the list of edges is obtained elsewhere...
+	// this file contains the oldest code in Ray
+	// the code quality is awful, especially with all these arguments for each
+	// private method.
+	//
+	// indeed, this information is fetched inside 
+	// SeedExtender::markCurrentVertexAsAssembled
 	if(!(*edgesRequested)){
 		ed->m_EXTENSION_coverages.clear();
 		ed->m_enumerateChoices_outgoingEdges.clear();
@@ -154,9 +162,11 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 		ed->m_EXTENSION_currentPosition++;
 		(*vertexCoverageRequested)=false;
 		(*outgoingEdgeIndex)=0;
+
 	}else if((*edgesReceived)){
 
-		MACRO_COLLECT_PROFILING_INFORMATION();
+		MACRO_COLLECT_PROFILING_INFORMATION(); //-
+
 		if((*outgoingEdgeIndex)<(int)(*receivedOutgoingEdges).size()){
 			Kmer kmer=(*receivedOutgoingEdges)[(*outgoingEdgeIndex)];
 			Kmer reverseComplement=kmer.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
@@ -206,7 +216,9 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				assert((COVERAGE_TYPE)(*receivedVertexCoverage)<=m_parameters->getMaximumAllowedCoverage());
 				#endif
 
-				int coverageValue=*receivedVertexCoverage;
+				COVERAGE_TYPE coverageValue=*receivedVertexCoverage;
+
+				// Parameters::getMinimumCoverageToStore returns 2 always.
 				if(coverageValue>=m_parameters->getMinimumCoverageToStore()){
 					ed->m_EXTENSION_coverages.push_back((*receivedVertexCoverage));
 					ed->m_enumerateChoices_outgoingEdges.push_back(kmer);
@@ -590,6 +602,7 @@ Presently, insertions or deletions up to 8 are supported.
 
 			if(m_dfsData->m_doChoice_tips_i<(int)ed->m_enumerateChoices_outgoingEdges.size()){
 				if(!m_dfsData->m_doChoice_tips_dfs_done){
+
 					if(ed->m_enumerateChoices_outgoingEdges.size()==1){
 						m_dfsData->m_doChoice_tips_dfs_done=true;
 					}else{
@@ -904,10 +917,12 @@ Kmer *currentVertex,BubbleData*bubbleData){
 		if(ed->m_enumerateChoices_outgoingEdges.size()>1 && ed->m_EXTENSION_readsInRange.size()>0
 		&&m_parameters->showEndingContext() && false){ /* don't show this tree. */
 			map<Kmer,set<Kmer> >arcs;
+
 			for(int i=0;i<(int)bubbleData->m_BUBBLE_visitedVertices.size();i++){
 				Kmer root=*currentVertex;
 				Kmer child=ed->m_enumerateChoices_outgoingEdges[i];
 				arcs[root].insert(child);
+
 				for(int j=0;j<(int)bubbleData->m_BUBBLE_visitedVertices[i].size();j+=2){
 					Kmer first=bubbleData->m_BUBBLE_visitedVertices[i][j];
 					Kmer second=bubbleData->m_BUBBLE_visitedVertices[i][j+1];
@@ -1255,7 +1270,9 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
-		uint64_t compactEdges=m_vertexMessenger.getEdges();
+		uint8_t compactEdges=m_vertexMessenger.getEdges();
+
+		m_compactEdges=compactEdges;
 		*receivedOutgoingEdges=currentVertex->_getOutgoingEdges(compactEdges,m_parameters->getWordSize());
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
@@ -1664,7 +1681,9 @@ void SeedExtender::inspect(ExtensionData*ed,Kmer*currentVertex){
 	cout<<ed->m_enumerateChoices_outgoingEdges.size()<<" choices ";
 
 	cout<<endl;
+
 	for(int i=0;i<(int)ed->m_enumerateChoices_outgoingEdges.size();i++){
+
 		string vertex=ed->m_enumerateChoices_outgoingEdges[i].idToWord(wordSize,m_parameters->getColorSpaceMode());
 		Kmer key=ed->m_enumerateChoices_outgoingEdges[i];
 		cout<<endl;
@@ -1698,10 +1717,12 @@ void SeedExtender::inspect(ExtensionData*ed,Kmer*currentVertex){
 
 void SeedExtender::removeUnfitLibraries(){
 	bool hasPairedSequences=false;
+
 	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
 		map<int,vector<int> > classifiedValues;
 		map<int,vector<uint64_t> > reads;
 		Kmer vertex=m_ed->m_enumerateChoices_outgoingEdges[i];
+
 		for(int j=0;j<(int)m_ed->m_EXTENSION_pairedReadPositionsForVertices[vertex].size();j++){
 			int value=m_ed->m_EXTENSION_pairedReadPositionsForVertices[vertex][j];
 			int library=m_ed->m_EXTENSION_pairedLibrariesForVertices[vertex][j];
@@ -2041,7 +2062,9 @@ int SeedExtender::chooseWithSeed(){
 
 		Kmer*kmerInSeed=m_ed->m_EXTENSION_currentSeed.at(m_ed->m_EXTENSION_currentPosition);
 
+		// find a perfect match
 		for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
+		
 			if(m_ed->m_enumerateChoices_outgoingEdges[i]== *kmerInSeed ){
 				return i;
 			}
@@ -2054,6 +2077,7 @@ int SeedExtender::chooseWithSeed(){
 		cout<<"Extension length: "<<m_ed->m_EXTENSION_extension.size()<<" vertices"<<endl;
 		cout<<"position="<<m_ed->m_EXTENSION_currentPosition<<" "<<m_ed->m_EXTENSION_currentSeed.at(m_ed->m_EXTENSION_currentPosition)->idToWord(wordSize,m_parameters->getColorSpaceMode())<<" with "<<m_ed->m_enumerateChoices_outgoingEdges.size()<<" choices ";
 
+		cout<<endl;
 		cout<<"The previous kmer is ";
 
 		int previousPosition=m_ed->m_EXTENSION_currentPosition-1;
@@ -2070,7 +2094,19 @@ int SeedExtender::chooseWithSeed(){
 		}
 		cout<<endl;
 
+		cout<<"m_ed->m_enumeratechoices_outgoingedges.size() -> ";
+		cout<<m_ed->m_enumerateChoices_outgoingEdges.size()<<endl;
+		//cout<<"(*receivedOutgoingEdges).size() -> "<<(*receivedOutgoingEdges).size()<<endl;
+		cout<<"m_compactEdges -> "<<endl;
+		print8(m_compactEdges);
+
+
 		#endif
+
+		#ifdef ASSERT
+		assert(m_ed->m_EXTENSION_coverages.size()==m_ed->m_enumerateChoices_outgoingEdges.size());
+		#endif
+
 
 		#ifdef ASSERT
 		assert(false);

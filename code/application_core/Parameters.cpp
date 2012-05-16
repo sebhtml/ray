@@ -1127,21 +1127,23 @@ COVERAGE_TYPE Parameters::getMaximumAllowedCoverage(){
 	return a;
 }
 
-void Parameters::setPeakCoverage(int a){
-	if(!m_providedPeakCoverage)
+void Parameters::setPeakCoverage(COVERAGE_TYPE a){
+	if(!m_providedPeakCoverage){
 		m_peakCoverage=a;
+	}
 }
 
-void Parameters::setRepeatCoverage(int a){
-	if(!m_providedRepeatCoverage)
+void Parameters::setRepeatCoverage(COVERAGE_TYPE a){
+	if(!m_providedRepeatCoverage){
 		m_repeatCoverage=a;
+	}
 }
 
-int Parameters::getPeakCoverage(){
+COVERAGE_TYPE Parameters::getPeakCoverage(){
 	return m_peakCoverage;
 }
 
-int Parameters::getRepeatCoverage(){
+COVERAGE_TYPE Parameters::getRepeatCoverage(){
 	return m_repeatCoverage;
 }
 
@@ -1559,11 +1561,11 @@ uint64_t Parameters::getGlobalIdFromRankAndLocalId(int rank,int id){
 	return rank*x+id;
 }
 
-int Parameters::getMinimumCoverage(){
+COVERAGE_TYPE Parameters::getMinimumCoverage(){
 	return m_minimumCoverage;
 }
 
-void Parameters::setMinimumCoverage(int a){
+void Parameters::setMinimumCoverage(COVERAGE_TYPE a){
 	if(!m_providedMinimumCoverage)
 		m_minimumCoverage=a;
 }
@@ -1613,7 +1615,7 @@ void Parameters::fileNameHook(string fileName){
 	}
 }
 
-int Parameters::getMinimumCoverageToStore(){
+COVERAGE_TYPE Parameters::getMinimumCoverageToStore(){
 	return 2;
 }
 

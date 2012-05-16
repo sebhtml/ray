@@ -70,14 +70,14 @@ class Parameters{
 
 	bool m_reducerIsActivated;
 	int m_size;
-	int m_repeatCoverage;
-	int m_rank;
-	int m_peakCoverage;
+	COVERAGE_TYPE m_repeatCoverage;
+	Rank m_rank;
+	COVERAGE_TYPE m_peakCoverage;
 
 	map<int,vector<int> > m_libraryAverageLength;
 	map<int,vector<int> > m_libraryDeviation;
 	int m_numberOfLibraries;
-	int m_minimumCoverage;
+	COVERAGE_TYPE m_minimumCoverage;
 	bool m_error;
 	string m_prefix;
 	bool m_amos;
@@ -96,7 +96,7 @@ class Parameters{
 	set<int> m_leftFiles;
 	set<int> m_rightFiles;
 	set<int> m_interleavedFiles;
-	int m_seedCoverage;
+	COVERAGE_TYPE m_seedCoverage;
 	bool m_colorSpaceMode;
 	string m_input;
 	vector<string> m_commands;
@@ -150,11 +150,11 @@ public:
 	int getLibrary(int file);
 	void printFinalMessage();
 	bool isInterleavedFile(int i);
-	void setPeakCoverage(int a);
-	int getPeakCoverage();
+	void setPeakCoverage(COVERAGE_TYPE a);
+	COVERAGE_TYPE getPeakCoverage();
 	void addLibraryData(int library,int average,int deviation);
 	int getNumberOfLibraries();
-	int getRepeatCoverage();
+	COVERAGE_TYPE  getRepeatCoverage();
 	string getPrefix();
 	int getRank();
 	int getSize();
@@ -168,8 +168,8 @@ public:
 	int getMaximumDistance();
 	uint64_t getGlobalIdFromRankAndLocalId(int rank,int id);
 	COVERAGE_TYPE getMaximumAllowedCoverage();
-	int getMinimumCoverage();
-	void setMinimumCoverage(int a);
+	COVERAGE_TYPE getMinimumCoverage();
+	void setMinimumCoverage(COVERAGE_TYPE a);
 	Kmer _complementVertex(Kmer*a);
 	bool hasPairedReads();
 	int _vertexRank(Kmer*a);
@@ -192,10 +192,10 @@ public:
 	string getScaffoldFile();
 	int getColumns();
 	int getLargeContigThreshold();
-	void setRepeatCoverage(int a);
+	void setRepeatCoverage(COVERAGE_TYPE a);
 	bool showMemoryAllocations();
 	bool writeKmers();
-	int getMinimumCoverageToStore();
+	COVERAGE_TYPE getMinimumCoverageToStore();
 
 	int getLibraryMaxAverageLength(int i);
 	int getLibraryMaxStandardDeviation(int i);
