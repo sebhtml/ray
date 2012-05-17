@@ -87,10 +87,6 @@ see <http://www.gnu.org/licenses/>
 #define DOUBLE_ENCODING_G_COLOR '2'
 #define DOUBLE_ENCODING_T_COLOR '3'
 
-
-// the maximum number of tags
-#define MAXIMUM_NUMBER_OF_TAGS 256
-
 #define MAX_ALLOCATED_OUTPUT_BUFFERS 17
 
 /* maximum value for a uint16_t */
