@@ -23,6 +23,7 @@
 #define _Neighbour_h
 
 #include <stdint.h> /** for uint64_t **/
+#include <application_core/constants.h>
 
 
 /**
@@ -30,17 +31,17 @@
  */
 class Neighbour{
 
-	char m_strand;
+	Strand m_strand;
 	int m_depth;
-	uint64_t m_contigName;
+	PathHandle m_contigName;
 	int m_progression;
 
 public:
-	Neighbour(char dnaStrand,int depth,uint64_t contig,int progression);
+	Neighbour(Strand dnaStrand,int depth,PathHandle contig,int progression);
 
-	char getStrand();
+	Strand getStrand();
 	int getDepth();
-	uint64_t getContig();
+	PathHandle getContig();
 	int getProgression();
 };
 

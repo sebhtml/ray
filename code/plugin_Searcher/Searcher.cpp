@@ -111,9 +111,9 @@ void Searcher::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS(Message*messa
 
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
-	uint64_t*incoming=(uint64_t*)buffer;
+	MessageUnit*incoming=(MessageUnit*)buffer;
 	int count=message->getCount();
-	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(count*sizeof(uint64_t));
+	MessageUnit*message2=(MessageUnit*)m_outboxAllocator->allocate(count*sizeof(MessageUnit));
 
 	int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS);
 
@@ -180,7 +180,8 @@ void Searcher::call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS(){
 
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_ELEMENTS)){
 		Message*message=m_inbox->at(0);
-		uint64_t*buffer=message->getBuffer();
+		MessageUnit*buffer=message->getBuffer();
+
 		int directory=buffer[0];
 		int file=buffer[1];
 		int count=buffer[2];
@@ -221,7 +222,7 @@ void Searcher::call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS(){
 
 			int count=m_searchDirectories[m_masterDirectoryIterator].getCount(m_masterFileIterator);
 
-			uint64_t*buffer2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+			MessageUnit*buffer2=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 			int bufferSize=0;
 			buffer2[bufferSize++]=m_masterDirectoryIterator;
 			buffer2[bufferSize++]=m_masterFileIterator;
@@ -250,7 +251,7 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 		m_countElementsSlaveStarted=true;
 		m_listedDirectories=false;
 
-		m_bufferedData.constructor(m_parameters->getSize(),MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
+		m_bufferedData.constructor(m_parameters->getSize(),MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit),
 			"RAY_MALLOC_TYPE_:Searcher",m_parameters->showMemoryAllocations(),KMER_U64_ARRAY_SIZE);
 
 		#ifdef CONFIG_COUNT_ELEMENTS_VERBOSE
@@ -266,7 +267,8 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_MASTER_COUNT)){
 		Message*message=m_inbox->at(0);
-		uint64_t*buffer=message->getBuffer();
+		MessageUnit*buffer=message->getBuffer();
+
 		int directory=buffer[0];
 		int file=buffer[1];
 		int count=buffer[2];
@@ -400,7 +402,7 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 			}
 
 			// sent a response
-			uint64_t*buffer2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+			MessageUnit*buffer2=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 			int bufferSize=0;
 			buffer2[bufferSize++]=m_directoryIterator;
 			buffer2[bufferSize++]=m_fileIterator;
@@ -423,11 +425,11 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 	}
 }
 
-void Searcher::countKmerObservations(uint64_t*localAssembledKmerObservations,
-	uint64_t*localAssembledColoredKmerObservations,
-	uint64_t*localAssembledKmers,uint64_t*localAssembledColoredKmers,
-	uint64_t*localColoredKmerObservations,uint64_t*localColoredKmers,
-	uint64_t*geneCdsKmerObservations){
+void Searcher::countKmerObservations(LargeCount*localAssembledKmerObservations,
+	LargeCount*localAssembledColoredKmerObservations,
+	LargeCount*localAssembledKmers,LargeCount*localAssembledColoredKmers,
+	LargeCount*localColoredKmerObservations,LargeCount*localColoredKmers,
+	LargeCount*geneCdsKmerObservations){
 
 	GridTableIterator iterator;
 	iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
@@ -565,7 +567,7 @@ void Searcher::createRootDirectories(){
 
 void Searcher::shareTotalGraphCounts(){
 
-	uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
 	int bufferSize=0;
 
@@ -583,7 +585,7 @@ void Searcher::shareTotalGraphCounts(){
 
 }
 
-uint64_t Searcher::getTotalNumberOfColoredKmerObservationsForANameSpace(int namespaceNumber){
+LargeCount Searcher::getTotalNumberOfColoredKmerObservationsForANameSpace(int namespaceNumber){
 
 	/* TODO: actually provide a count that is specific to a namespace... */
 
@@ -608,11 +610,11 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		#endif
 
 		Message*message=m_inbox->at(0);
-		uint64_t*buffer=message->getBuffer();
+		MessageUnit*buffer=message->getBuffer();
 
 		int bufferPosition=0;
 
-		uint64_t name=buffer[bufferPosition++];
+		PathHandle name=buffer[bufferPosition++];
 		int length=buffer[bufferPosition++];
 		int coloredKmers=(int)buffer[bufferPosition++];
 		int mode=buffer[bufferPosition++];
@@ -627,7 +629,7 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		m_listOfContigEntries.push_back(entry);
 
 		// sent a response
-		uint64_t*buffer2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+		MessageUnit*buffer2=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
 		int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_CONTIG_ABUNDANCE);
 
@@ -654,7 +656,8 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		contigSummaryFile<<"	Proportion"<<endl;
 
 		// count the total
-		uint64_t total=m_totalNumberOfAssembledKmerObservations;
+		LargeCount total=m_totalNumberOfAssembledKmerObservations;
+
 		for(int i=0;i<(int)m_listOfContigEntries.size();i++){
 
 			m_contigLengths[m_listOfContigEntries[i].getName()]=m_listOfContigEntries[i].getLength();
@@ -729,7 +732,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		#endif
 
 		Message*message=m_inbox->at(0);
-		uint64_t*buffer=message->getBuffer();
+		MessageUnit*buffer=message->getBuffer();
 		
 		#ifdef ASSERT
 		assert(message->getCount()==6+1);
@@ -783,7 +786,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 	}else if(!m_requestedCoverage && m_contigPosition==(int)(*m_contigs)[m_contig].size()
 		&& m_bufferedData.isEmpty()){
 
-		uint64_t contigName=(*m_contigNames)[m_contig];
+		PathHandle contigName=(*m_contigNames)[m_contig];
 
 		int lengthInKmers=(*m_contigs)[m_contig].size();
 
@@ -832,11 +835,11 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		}
 
 		int mode=0;
-		uint64_t sum=0;
-		uint64_t totalCount=0;
+		LargeCount sum=0;
+		LargeCount totalCount=0;
 		int modeCount=0;
 
-		for(map<int,uint64_t>::iterator i=m_coverageDistribution.begin();i!=m_coverageDistribution.end();i++){
+		for(map<CoverageDepth,LargeCount>::iterator i=m_coverageDistribution.begin();i!=m_coverageDistribution.end();i++){
 			int count=i->second;
 			int coverage=i->first;
 
@@ -869,7 +872,8 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		cout<<"Closing file"<<endl;
 		#endif
 
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+		MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+
 		int bufferSize=0;
 		buffer[bufferSize++]=contigName;
 		buffer[bufferSize++]=lengthInKmers;
@@ -913,7 +917,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		#endif
 
 		m_waitingForAbundanceReply=false;
-		vector<uint64_t> data;
+		vector<MessageUnit> data;
 		m_virtualCommunicator->getMessageResponseElements(m_workerId,&data);
 
 	// process contig kmers
@@ -943,7 +947,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 	
 				if(m_writeDetailedFiles){
 
-					uint64_t contigName=m_contigNames->at(m_contig);
+					PathHandle contigName=m_contigNames->at(m_contig);
 
 					int length=(*m_contigs)[m_contig].size();
 					m_coverageValues.resize(length);
@@ -1030,7 +1034,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 			 && m_inbox->hasMessage(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS_REPLY)){
 
 		Message*message=m_inbox->at(0);
-		uint64_t*buffer=message->getBuffer();
+		MessageUnit*buffer=message->getBuffer();
 		int count=message->getCount();
 
 		m_pendingMessages--;
@@ -1101,7 +1105,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 	}
 }
 
-void Searcher::setContigs(vector<vector<Kmer> >*paths,vector<uint64_t>*names){
+void Searcher::setContigs(vector<vector<Kmer> >*paths,vector<PathHandle>*names){
 	m_contigs=paths;
 	m_contigNames=names;
 }
@@ -1439,11 +1443,11 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		
 			ContigHit hit=*m_sortedHitsIterator;
 			
-			uint64_t contig=hit.getContig();
+			PathHandle contig=hit.getContig();
 			int count=hit.getMatches();
 			char strand=hit.getStrand();
 
-			uint64_t*messageBuffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+			MessageUnit*messageBuffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 			int bufferPosition=0;
 
 			messageBuffer[bufferPosition++]=contig;
@@ -1473,7 +1477,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			// here, the message is ready to be send.
 			// the filtering is done on the other end...
 
-			Message aMessage(messageBuffer,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
+			Message aMessage(messageBuffer,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit),
 				getWriter(m_directoryIterator),RAY_MPI_TAG_CONTIG_IDENTIFICATION,m_parameters->getRank());
 
 			m_outbox->push_back(aMessage);
@@ -1679,12 +1683,12 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 				bool hasHighFrequency=false;
 
-				map<int,uint64_t>*distributionToUseForDepth=NULL;
+				map<CoverageDepth,LargeCount>*distributionToUseForDepth=NULL;
 
 				distributionToUseForDepth=&(m_coloredCoverageDistribution);
 				//distributionToUseForDepth=&(m_coloredAssembledCoverageDistribution);
 
-				for(map<int,uint64_t>::iterator i=distributionToUseForDepth->begin();
+				for(map<CoverageDepth,LargeCount>::iterator i=distributionToUseForDepth->begin();
 					i!=distributionToUseForDepth->end();i++){
 					
 					xValues.push_back(i->first);
@@ -1705,9 +1709,9 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 				// store the hits
 				// sort hits
-				for(map<uint64_t,set<int> >::iterator i=m_contigCounts['F'].begin();i!=m_contigCounts['F'].end();i++){
+				for(map<PathHandle,set<int> >::iterator i=m_contigCounts['F'].begin();i!=m_contigCounts['F'].end();i++){
 					int matches=i->second.size();
-					uint64_t contig=i->first;
+					PathHandle contig=i->first;
 
 					ContigHit hit(m_sequenceIterator,contig,'F',matches);
 					m_sortedHits.push_back(hit);
@@ -1721,9 +1725,9 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 					//cout.flush();
 				}
 		
-				for(map<uint64_t,set<int> >::iterator i=m_contigCounts['R'].begin();i!=m_contigCounts['R'].end();i++){
+				for(map<PathHandle,set<int> >::iterator i=m_contigCounts['R'].begin();i!=m_contigCounts['R'].end();i++){
 					int matches=i->second.size();
-					uint64_t contig=i->first;
+					PathHandle contig=i->first;
 		
 					ContigHit hit(m_sequenceIterator,contig,'R',matches);
 					m_sortedHits.push_back(hit);
@@ -1739,7 +1743,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		
 				// send a message to write the abundances
 
-				uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+				MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 				int bufferPosition=0;
 
 				// pack stuff.
@@ -1785,7 +1789,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				// the rank that can write to this directory.
 				int writer=getAbundanceWriter(m_directoryIterator);
 
-				Message aMessage(buffer,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
+				Message aMessage(buffer,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit),
 					writer,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY,
 					m_parameters->getRank());
 
@@ -1978,7 +1982,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				m_requestedCoverage && m_inbox->hasMessage(RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY)){
 
 			Message*message=m_inbox->at(0);
-			uint64_t*buffer=message->getBuffer();
+			MessageUnit*buffer=message->getBuffer();
 
 			#ifdef ASSERT
 			assert(message!=NULL);
@@ -1987,7 +1991,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			int count=message->getCount();
 
 /* TODO: implement responses 
-			uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(count*sizeof(uint64_t));
+			MessageUnit*message2=(MessageUnit*)m_outboxAllocator->allocate(count*sizeof(MessageUnit));
 			int outputBufferPosition=0;
 */
 
@@ -1997,7 +2001,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			assert(m_pendingMessages==0);
 			#endif
 
-			// the size (number of uint64_t) of things per vertex
+			// the size (number of MessageUnit) of things per vertex
 			int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_COVERAGE_AND_PATHS);
 
 			#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
@@ -2095,7 +2099,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 						//reply=true;
 
 					for(int j=0;j<numberOfPaths;j++){
-						uint64_t contigPath=buffer[bufferPosition++];
+						PathHandle contigPath=buffer[bufferPosition++];
 						int contigPosition=buffer[bufferPosition++];
 						char strand=buffer[bufferPosition++];
 
@@ -2469,11 +2473,11 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 
 	void*buffer=message->getBuffer();
 	int source=message->getSource();
-	uint64_t*incoming=(uint64_t*)buffer;
+	MessageUnit*incoming=(MessageUnit*)buffer;
 	int count=message->getCount();
 
 	// reply buffer
-	uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(count*sizeof(uint64_t));
+	MessageUnit*message2=(MessageUnit*)m_outboxAllocator->allocate(count*sizeof(MessageUnit));
 
 	int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_COVERAGE_AND_PATHS);
 
@@ -2620,7 +2624,7 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 			#endif
 
 			// remove duplicates
-			set<uint64_t> contigPaths;
+			set<PathHandle> contigPaths;
 
 			int processed=0;
 
@@ -2630,12 +2634,13 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 				assert(pathIndex<(int)paths.size());
 				#endif
 
-				uint64_t path=paths[pathIndex].getWave();
+				PathHandle path=paths[pathIndex].getWave();
 				int contigPosition=paths[pathIndex].getProgression();
 				char strand='F';
 
-				if(weHaveLowerKey!=paths[pathIndex].isLower())
+				if(weHaveLowerKey!=paths[pathIndex].isLower()){
 					strand='R';
+				}
 
 				#ifdef CONFIG_CONTIG_IDENTITY_VERBOSE
 				cout<<"Index= "<<pathIndex<<" Storing Contig Data "<<path<<" "<<contigPosition<<endl;
@@ -2668,7 +2673,7 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 	}
 
 	#ifdef ASSERT
-	assert(count*sizeof(uint64_t)<=MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	assert(count*sizeof(MessageUnit)<=MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	#endif
 
 	Message aMessage(message2,count,source,RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY,
@@ -2684,7 +2689,7 @@ void Searcher::call_RAY_MPI_TAG_ADD_KMER_COLOR(Message*message){
 	#endif
 
 	int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_ADD_KMER_COLOR);
-	uint64_t*buffer=message->getBuffer();
+	MessageUnit*buffer=message->getBuffer();
 	int count=message->getCount();
 
 	for(int i=0;i<count;i+=period){
@@ -2773,17 +2778,17 @@ void Searcher::call_RAY_MASTER_MODE_ADD_COLORS(){
 
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_GET_GRAPH_COUNTS_REPLY)){
 
-		uint64_t*buffer=m_inbox->at(0)->getBuffer();
+		MessageUnit*buffer=m_inbox->at(0)->getBuffer();
 
 		int bufferPosition=0;
 
-		uint64_t assembledKmerObservations=buffer[bufferPosition++];
-		uint64_t assembledColoredKmerObservations=buffer[bufferPosition++];
-		uint64_t assembledKmers=buffer[bufferPosition++];
-		uint64_t assembledColoredKmers=buffer[bufferPosition++];
-		uint64_t coloredKmerObservations=buffer[bufferPosition++];
-		uint64_t coloredKmers=buffer[bufferPosition++];
-		uint64_t geneCdsKmerObservations=buffer[bufferPosition++];
+		LargeCount assembledKmerObservations=buffer[bufferPosition++];
+		LargeCount assembledColoredKmerObservations=buffer[bufferPosition++];
+		LargeCount assembledKmers=buffer[bufferPosition++];
+		LargeCount assembledColoredKmers=buffer[bufferPosition++];
+		LargeCount coloredKmerObservations=buffer[bufferPosition++];
+		LargeCount coloredKmers=buffer[bufferPosition++];
+		LargeCount geneCdsKmerObservations=buffer[bufferPosition++];
 
 		/* agglomerate the count */
 		m_totalNumberOfAssembledKmerObservations+=assembledKmerObservations;
@@ -2918,20 +2923,20 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_GET_GRAPH_COUNTS)){
 		// count the k-mer observations for the part of the graph
 
-		uint64_t localAssembledKmerObservations=0;
-		uint64_t localAssembledColoredKmerObservations=0;
-		uint64_t localAssembledKmers=0;
-		uint64_t localAssembledColoredKmers=0;
-		uint64_t localColoredKmerObservations=0;
-		uint64_t localColoredKmers=0;
-		uint64_t geneCdsKmerObservations=0;
+		LargeCount localAssembledKmerObservations=0;
+		LargeCount localAssembledColoredKmerObservations=0;
+		LargeCount localAssembledKmers=0;
+		LargeCount localAssembledColoredKmers=0;
+		LargeCount localColoredKmerObservations=0;
+		LargeCount localColoredKmers=0;
+		LargeCount geneCdsKmerObservations=0;
 
 		countKmerObservations(&localAssembledKmerObservations,&localAssembledColoredKmerObservations,
 			&localAssembledKmers,&localAssembledColoredKmers,
 			&localColoredKmerObservations,&localColoredKmers,
 			&geneCdsKmerObservations);
 
-		uint64_t*buffer2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+		MessageUnit*buffer2=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 		int bufferSize=0;
 
 		buffer2[bufferSize++]=localAssembledKmerObservations;
@@ -3070,17 +3075,17 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		m_identifier=m_color;
 
 		if(m_searchDirectories[m_directoryIterator].hasCurrentSequenceIdentifier()){
-			uint64_t theIdentifier=m_searchDirectories[m_directoryIterator].getCurrentSequenceIdentifier();
+			PhysicalKmerColor theIdentifier=m_searchDirectories[m_directoryIterator].getCurrentSequenceIdentifier();
 
-			uint64_t nameSpace=COLOR_NAMESPACE_PHYLOGENY;
+			PhysicalKmerColor nameSpace=COLOR_NAMESPACE_PHYLOGENY;
 			nameSpace*= COLOR_NAMESPACE_MULTIPLIER;
 			m_identifier=theIdentifier + nameSpace;
 
 		}else if(m_searchDirectories[m_directoryIterator].hasIdentifier_EMBL_CDS()){
 
-			uint64_t theIdentifier=m_searchDirectories[m_directoryIterator].getIdentifier_EMBL_CDS();
+			PhysicalKmerColor theIdentifier=m_searchDirectories[m_directoryIterator].getIdentifier_EMBL_CDS();
 
-			uint64_t nameSpace=COLOR_NAMESPACE_EMBL_CDS;
+			PhysicalKmerColor nameSpace=COLOR_NAMESPACE_EMBL_CDS;
 			nameSpace*= COLOR_NAMESPACE_MULTIPLIER;
 			m_identifier=theIdentifier+nameSpace;
 
@@ -3172,7 +3177,7 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 					added++;
 				}
 
-				uint64_t color=m_color;
+				PhysicalKmerColor  color=m_color;
 
 				// add the color
 				m_bufferedData.addAt(rankToFlush,color);
@@ -3180,7 +3185,7 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 
 				/* also add the GenBank identifier for phylogeny analyses */
 
-				uint64_t identifier=m_identifier;
+				PhysicalKmerColor identifier=m_identifier;
 				m_bufferedData.addAt(rankToFlush,identifier);
 				added++;
 
@@ -3232,16 +3237,16 @@ void Searcher::dumpDistributions(){
 		fileName.c_str());
 }
 
-int Searcher::getDistributionMode(map<int,uint64_t>*distribution){
+int Searcher::getDistributionMode(map<CoverageDepth,LargeCount>*distribution){
 
 	int mode=0;
-	int modeCount=0;
+	LargeCount modeCount=0;
 
-	for(map<int,uint64_t>::iterator i=distribution->begin();
+	for(map<CoverageDepth,LargeCount>::iterator i=distribution->begin();
 		i!=distribution->end();i++){
 
-		int count=i->second;
-		int coverage=i->first;
+		CoverageDepth coverage=i->first;
+		LargeCount count=i->second;
 
 		if(count>modeCount){
 			mode=coverage;
@@ -3257,7 +3262,7 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 	// unpack stuff
 	
 	int bufferPosition=0;
-	uint64_t*buffer=message->getBuffer();
+	MessageUnit*buffer=message->getBuffer();
 
 
 
@@ -3434,12 +3439,12 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 
 		content<<"<hasPeak>"<<hasPeak<<"</hasPeak><hasHighFrequency>"<<hasHighFrequency<<"</hasHighFrequency></qualityControl>"<<endl;
 
-		uint64_t demultiplexedObservations=0;
+		LargeCount demultiplexedObservations=0;
 
 		/* this colored depth is estimated with uniquely colored k-mers */
 
-		uint64_t breadthOfCoverage=matches;
-		uint64_t depthOfCoverage=coloredMode;
+		LargeCount breadthOfCoverage=matches;
+		LargeCount depthOfCoverage=coloredMode;
 
 		if(hasPeak || hasHighFrequency){
 			demultiplexedObservations=breadthOfCoverage*depthOfCoverage;
@@ -3495,11 +3500,11 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 
 void Searcher::call_RAY_MPI_TAG_CONTIG_IDENTIFICATION(Message*message){
 
-       	uint64_t*messageBuffer=message->getBuffer();
+       	MessageUnit*messageBuffer=message->getBuffer();
 
        	// process the message
        	int bufferPosition=0;
-       	uint64_t contig=messageBuffer[bufferPosition++];
+       	PathHandle contig=messageBuffer[bufferPosition++];
 
        	char strand=messageBuffer[bufferPosition++];
 
@@ -3614,7 +3619,7 @@ string Searcher::getDirectoryBaseName(int directoryIterator){
 	return baseName;
 }
 
-uint64_t Searcher::getTotalNumberOfKmerObservations(){
+LargeCount Searcher::getTotalNumberOfKmerObservations(){
 	return m_totalNumberOfAssembledKmerObservations;
 }
 

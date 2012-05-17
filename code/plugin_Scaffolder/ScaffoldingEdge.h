@@ -22,6 +22,9 @@
 #ifndef _ScaffoldingEdge_h
 #define _ScaffoldingEdge_h
 
+#include <application_core/constants.h>
+#include <core/types.h>
+
 #include <stdint.h>
 #include <fstream>
 using namespace std;
@@ -30,10 +33,10 @@ using namespace std;
 #define RIGHT_SIDE 1
 
 class ScaffoldingEdge{
-	uint64_t m_leftContig;
-	uint64_t m_rightContig;
-	char m_leftStrand;
-	char m_rightStrand;
+	PathHandle m_leftContig;
+	PathHandle m_rightContig;
+	Strand m_leftStrand;
+	Strand m_rightStrand;
 
 	int m_gapSize;
 
@@ -45,17 +48,17 @@ class ScaffoldingEdge{
 	int m_average2;
 	int m_standardDeviation2;
 public:
-	ScaffoldingEdge(uint64_t leftContig,char leftStrand,uint64_t rightContig,char rightStrand,int gapSize,
+	ScaffoldingEdge(PathHandle leftContig,Strand leftStrand,PathHandle rightContig,Strand rightStrand,int gapSize,
 		int average1,int count1,int standardDeviation1,
 		int average2,int count2,int standardDeviation2);
 
 	ScaffoldingEdge();
 
 	int getGapSize();
-	uint64_t getLeftContig();
-	char getLeftStrand();
-	uint64_t getRightContig();
-	char getRightStrand();
+	PathHandle getLeftContig();
+	Strand getLeftStrand();
+	PathHandle getRightContig();
+	Strand getRightStrand();
 
 	int getCount1();
 	int getAverage1();
@@ -70,9 +73,9 @@ public:
 	int getPriority()const ;
 	bool operator<(const ScaffoldingEdge&other)const;
 
-	char getStrand(uint64_t name);
+	Strand getStrand(PathHandle name);
 
-	int getSide(uint64_t name);
+	int getSide(PathHandle name);
 
 	ScaffoldingEdge getReverseEdge();
 

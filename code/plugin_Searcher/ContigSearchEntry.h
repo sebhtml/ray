@@ -18,6 +18,9 @@
 	see <http://www.gnu.org/licenses/>
 */
 
+#include <application_core/constants.h>
+#include <core/types.h>
+
 #include <stdint.h> /* for uint64_t */
 #include <fstream>
 using namespace std;
@@ -26,22 +29,22 @@ using namespace std;
 #define _ContigSearchEntry_h
 
 class ContigSearchEntry{
-	uint64_t m_name;
+	PathHandle m_name;
 	int m_length;
 	int m_modeCoverage;
 	double m_meanCoverage;
 	int m_coloredKmers;
 
 public:
-	ContigSearchEntry(uint64_t name,int length,int mode,double mean,int coloredKmers);
+	ContigSearchEntry(PathHandle name,int length,int mode,double mean,int coloredKmers);
 
-	uint64_t getName();
+	PathHandle getName();
 	int getLength();
 	int getMode();
 	double getMean();
 	int getTotal();
 
-	void write(ofstream*f,uint64_t total,int kmerLength);
+	void write(ofstream*f,LargeCount total,int kmerLength);
 };
 
 #endif

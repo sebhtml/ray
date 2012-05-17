@@ -83,8 +83,8 @@ class Parameters{
 	bool m_amos;
 	bool m_initiated;
 	vector<string> m_singleEndReadsFile;
-	map<int,uint64_t> m_numberOfSequencesInFile;
-	uint64_t m_totalNumberOfSequences;
+	map<int,LargeCount> m_numberOfSequencesInFile;
+	LargeCount m_totalNumberOfSequences;
 	map<int,int> m_fileLibrary;
 	vector<vector<int> > m_libraryFiles;
 	set<int> m_automaticLibraries;
@@ -143,8 +143,8 @@ public:
 	bool getError();
 	void addDistance(int library,int distance,int count);
 	void computeAverageDistances();
-	uint64_t getNumberOfSequences(int n);
-	void setNumberOfSequences(int file,uint64_t n);
+	LargeCount getNumberOfSequences(int n);
+	void setNumberOfSequences(int file,LargeCount n);
 	int getNumberOfFiles();
 	bool isAutomatic(int library);
 	int getLibrary(int file);
@@ -163,10 +163,10 @@ public:
 	void showUsage();
 	int getReducerValue();
 
-	int getRankFromGlobalId(uint64_t a);
+	Rank getRankFromGlobalId(uint64_t a);
 	int getIdFromGlobalId(uint64_t a);
 	int getMaximumDistance();
-	uint64_t getGlobalIdFromRankAndLocalId(int rank,int id);
+	uint64_t getGlobalIdFromRankAndLocalId(Rank rank,int id);
 	CoverageDepth getMaximumAllowedCoverage();
 	CoverageDepth getMinimumCoverage();
 	void setMinimumCoverage(CoverageDepth a);

@@ -100,7 +100,7 @@ class FusionData : public CorePlugin {
 	int m_FINISH_positionStart;
 	bool m_FINISH_hasHit;
 
-	uint64_t m_selectedPath;
+	PathHandle m_selectedPath;
 	int m_selectedPosition;
 
 public:
@@ -109,7 +109,7 @@ public:
 	bool m_FINISH_fusionOccured;
 	vector<vector<Kmer > > m_FINISH_newFusions;
 	vector<int> m_FINISH_coverages;
-	map<uint64_t,int> m_FINISH_pathLengths;
+	map<PathHandle,int> m_FINISH_pathLengths;
 	Kmer  m_FINISH_received_vertex;
 
 	bool m_Machine_getPaths_INITIALIZED;
@@ -141,9 +141,9 @@ public:
 	bool m_FUSION_path_requested;
 	Direction m_FUSION_receivedPath;
 	Parameters*m_parameters;
-	map<uint64_t,int> m_FUSION_identifier_map;
+	map<PathHandle,int> m_FUSION_identifier_map;
 
-	set<uint64_t> m_FUSION_eliminated;
+	set<PathHandle> m_FUSION_eliminated;
 
 	void call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS();
 

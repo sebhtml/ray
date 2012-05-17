@@ -87,7 +87,7 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 
 	// 1. iterate on active workers
 	if(m_activeWorkerIterator!=m_activeWorkers.end()){
-		uint64_t workerId=*m_activeWorkerIterator;
+		WorkerHandle workerId=*m_activeWorkerIterator;
 		#ifdef ASSERT
 		assert(m_aliveWorkers.count(workerId)>0);
 		assert(!m_aliveWorkers[workerId].isDone());
@@ -160,7 +160,7 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 			// there is at least one worker to start
 			// AND
 			// the number of alive workers is below the maximum
-			if(m_SEEDING_i<(uint64_t)m_subgraph->size()&&(int)m_aliveWorkers.size()<m_maximumAliveWorkers){
+			if(m_SEEDING_i<m_subgraph->size()&&(int)m_aliveWorkers.size()<m_maximumAliveWorkers){
 				if(m_SEEDING_i % 100000 ==0){
 					printf("Rank %i is creating seeds [%i/%i]\n",getRank(),(int)m_SEEDING_i+1,(int)m_subgraph->size());
 					fflush(stdout);
@@ -169,6 +169,7 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 						showMemoryUsage(m_rank);
 					}
 				}
+
 				#ifdef ASSERT
 				if(m_SEEDING_i==0){
 					assert(m_completedJobs==0&&m_activeWorkers.size()==0&&m_aliveWorkers.size()==0);
@@ -236,8 +237,9 @@ RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE
 			ostringstream fileName;
 			fileName<<m_parameters->getPrefix()<<"Rank"<<m_parameters->getRank()<<".RaySeeds.fasta";
 			ofstream f(fileName.str().c_str());
+
 			for(int i=0;i<(int)m_SEEDING_seeds.size();i++){
-				uint64_t id=getPathUniqueId(m_parameters->getRank(),i);
+				PathHandle id=getPathUniqueId(m_parameters->getRank(),i);
 				f<<">RaySeed-"<<id<<endl;
 
 				f<<addLineBreaks(convertToString(m_SEEDING_seeds[i].getVertices(),
@@ -286,11 +288,13 @@ int SeedingData::getSize(){
 void SeedingData::updateStates(){
 	// erase completed jobs
 	for(int i=0;i<(int)m_workersDone.size();i++){
-		uint64_t workerId=m_workersDone[i];
+		WorkerHandle workerId=m_workersDone[i];
+
 		#ifdef ASSERT
 		assert(m_activeWorkers.count(workerId)>0);
 		assert(m_aliveWorkers.count(workerId)>0);
 		#endif
+
 		m_activeWorkers.erase(workerId);
 		m_aliveWorkers.erase(workerId);
 		m_completedJobs++;
@@ -298,7 +302,7 @@ void SeedingData::updateStates(){
 	m_workersDone.clear();
 
 	for(int i=0;i<(int)m_waitingWorkers.size();i++){
-		uint64_t workerId=m_waitingWorkers[i];
+		WorkerHandle workerId=m_waitingWorkers[i];
 		#ifdef ASSERT
 		assert(m_activeWorkers.count(workerId)>0);
 		#endif
@@ -307,7 +311,7 @@ void SeedingData::updateStates(){
 	m_waitingWorkers.clear();
 
 	for(int i=0;i<(int)m_activeWorkersToRestore.size();i++){
-		uint64_t workerId=m_activeWorkersToRestore[i];
+		WorkerHandle workerId=m_activeWorkersToRestore[i];
 		m_activeWorkers.insert(workerId);
 	}
 	m_activeWorkersToRestore.clear();
@@ -343,8 +347,8 @@ void SeedingData::call_RAY_SLAVE_MODE_SEND_SEED_LENGTHS(){
 		return;
 	}
 	
-	uint64_t*messageBuffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-	int maximumPairs=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t)/2;
+	MessageUnit*messageBuffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	int maximumPairs=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit)/2;
 	int i=0;
 	while(i<maximumPairs && m_iterator!=m_slaveSeedLengths.end()){
 		int length=m_iterator->first;

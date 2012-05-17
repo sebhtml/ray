@@ -160,5 +160,20 @@ see <http://www.gnu.org/licenses/>
 //#define CONFIG_FILE_IO_BUFFER_SIZE 33554432 /* 32 MB */
 //#define CONFIG_FILE_IO_BUFFER_SIZE 134217728 /* 128 MB */
 
+/* the identifier of a read */
+typedef uint64_t ReadHandle;
+
+/* the identifier for a path in the de Bruijn graph */
+typedef uint64_t PathHandle;
+
+/* a DNA strand */
+typedef char Strand;
+
+/* a datatype for counts */
+typedef uint64_t LargeCount;
+
+/* a datatype for an index */
+typedef uint64_t LargeIndex;
+
 
 #endif

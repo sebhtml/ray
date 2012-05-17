@@ -21,6 +21,8 @@
 #ifndef _QualityCaller_h
 #define _QualityCaller_h
 
+#include <application_core/constants.h>
+#include <core/types.h>
 #include <stdint.h>
 #include <vector>
 #include <map>
@@ -32,7 +34,7 @@ class QualityCaller{
 
 public:
 	double computeCorrelation(vector<int>*x,vector<int>*y);
-	double computeQuality(map<int,uint64_t>*array1,map<int,uint64_t>*array2);
+	double computeQuality(map<CoverageDepth,LargeCount>*array1,map<CoverageDepth,LargeCount>*array2);
 
 };
 

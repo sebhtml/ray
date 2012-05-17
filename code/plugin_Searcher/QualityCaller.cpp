@@ -65,7 +65,7 @@ double QualityCaller::computeCorrelation(vector<int>*x,vector<int>*y){
 	return correlation;
 }
 
-double QualityCaller::computeQuality(map<int,uint64_t>*array1,map<int,uint64_t>*array2){
+double QualityCaller::computeQuality(map<CoverageDepth,LargeCount>*array1,map<CoverageDepth,LargeCount>*array2){
 	vector<int> y1Values;
 	vector<int> y2Values;
 
@@ -73,7 +73,7 @@ double QualityCaller::computeQuality(map<int,uint64_t>*array1,map<int,uint64_t>*
 	cout<<"peakY for array1 "<<bestX<<endl;
 	#endif
 
-	for(map<int,uint64_t>::iterator i=array1->begin();i!=array1->end();i++){
+	for(map<CoverageDepth,LargeCount>::iterator i=array1->begin();i!=array1->end();i++){
 		int x1=i->first;
 		int y1=i->second;
 		

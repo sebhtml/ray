@@ -35,8 +35,8 @@ class ArrayOfReads{
 	Read**m_chunks;
 	int m_numberOfChunks;
 	int m_maxNumberOfChunks;
-	uint64_t m_elements;
-	uint64_t m_maxSize;
+	LargeCount m_elements;
+	LargeCount m_maxSize;
 public:
 	/**
  * 	add a read
@@ -46,9 +46,9 @@ public:
 /** 
  * get a read
  */
-	Read*at(uint64_t i);
-	Read*operator[](uint64_t i);
-	uint64_t size();
+	Read*at(LargeIndex i);
+	Read*operator[](LargeIndex i);
+	LargeCount size();
 	void clear();
 	void constructor(MyAllocator*allocator);
 	void reset();

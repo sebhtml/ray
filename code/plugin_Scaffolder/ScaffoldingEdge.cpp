@@ -26,7 +26,7 @@
 #include <assert.h>
 using namespace std;
 
-ScaffoldingEdge::ScaffoldingEdge(uint64_t leftContig,char leftStrand,uint64_t rightContig,char rightStrand,int gapSize,
+ScaffoldingEdge::ScaffoldingEdge(PathHandle leftContig,Strand leftStrand,PathHandle rightContig,Strand rightStrand,int gapSize,
 	int average1,int count1,int standardDeviation1,
 	int average2,int count2,int standardDeviation2){
 	m_gapSize=gapSize;
@@ -59,19 +59,19 @@ ScaffoldingEdge ScaffoldingEdge::getReverseEdge(){
 	return e2;
 }
 
-uint64_t ScaffoldingEdge::getLeftContig(){
+PathHandle ScaffoldingEdge::getLeftContig(){
 	return m_leftContig;
 }
 
-char ScaffoldingEdge::getLeftStrand(){
+Strand ScaffoldingEdge::getLeftStrand(){
 	return m_leftStrand;
 }
 
-uint64_t ScaffoldingEdge::getRightContig(){
+PathHandle ScaffoldingEdge::getRightContig(){
 	return m_rightContig;
 }
 
-char ScaffoldingEdge::getRightStrand(){
+Strand ScaffoldingEdge::getRightStrand(){
 	return m_rightStrand;
 }
 
@@ -164,7 +164,7 @@ void ScaffoldingEdge::print(){
 	cout<<m_leftContig<<" "<<m_leftStrand<<" "<<m_rightContig<<" "<<m_rightStrand<<" gap= "<<m_gapSize<<" priority= "<<getPriority()<<endl;
 }
 
-char ScaffoldingEdge::getStrand(uint64_t name){
+Strand ScaffoldingEdge::getStrand(PathHandle name){
 	#ifdef ASSERT
 	assert(name==getLeftContig() || name==getRightContig());
 	#endif
@@ -177,7 +177,7 @@ char ScaffoldingEdge::getStrand(uint64_t name){
 	return 'x';
 }
 
-int ScaffoldingEdge::getSide(uint64_t name){
+int ScaffoldingEdge::getSide(PathHandle name){
 	#ifdef ASSERT
 	assert(name==getLeftContig() || name==getRightContig());
 	#endif

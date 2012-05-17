@@ -69,9 +69,9 @@ class Loader{
 	ArrayOfReads m_reads;
 	MyAllocator m_allocator;
 
-	uint64_t m_currentOffset;
+	LargeIndex m_currentOffset;
 	int m_maxToLoad;
-	uint64_t m_size;
+	LargeCount m_size;
 
 	SffLoader m_sff;
 	ColorSpaceLoader m_color;
@@ -91,8 +91,8 @@ class Loader{
 public:
 	void constructor(const char*prefix,bool show);
 	int load(string file,bool isGenome);
-	uint64_t size();
-	Read*at(uint64_t i);
+	LargeCount size();
+	Read*at(LargeIndex i);
 	void clear();
 	void reset();
 };

@@ -109,7 +109,7 @@ class SeedExtender: public CorePlugin  {
 
 	bool m_checkedCheckpoint;
 
-	uint64_t m_sumOfCoveragesInSeed;
+	LargeCount m_sumOfCoveragesInSeed;
 	map<int,int> m_localCoverageDistribution;
 
 	Profiler*m_profiler;
@@ -127,7 +127,7 @@ class SeedExtender: public CorePlugin  {
 	int m_extended;
 	bool m_hasPairedSequences;
 	bool m_pickedInformation;
-	SplayTree<uint64_t,Read>m_cacheForRepeatedReads;
+	SplayTree<ReadHandle,Read>m_cacheForRepeatedReads;
 	SplayTree<uint64_t,ReadAnnotation*> m_cacheForListOfReads;
 	MyAllocator m_cacheAllocator;
 
@@ -147,12 +147,12 @@ class SeedExtender: public CorePlugin  {
 	ExtensionData*m_ed;
 	MyAllocator*m_directionsAllocator;
 
-	set<uint64_t> m_matesToMeet;
+	set<ReadHandle> m_matesToMeet;
 	bool m_messengerInitiated;
 	VertexMessenger m_vertexMessenger;
 
-	set<uint64_t> m_eliminatedSeeds;
-	map<int,vector<uint64_t> >m_expiredReads;
+	set<ReadHandle> m_eliminatedSeeds;
+	map<int,vector<ReadHandle> >m_expiredReads;
 
 	void inspect(ExtensionData*ed,Kmer*currentVertex);
 
@@ -227,7 +227,7 @@ public:
 
 	vector<Direction>*getDirections();
 
-	set<uint64_t>*getEliminatedSeeds();
+	set<PathHandle>*getEliminatedSeeds();
 
 	void constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed,GridTable*table,StaticVector*inbox,
 	Profiler*profiler,StaticVector*outbox,SeedingData*seedingData,int*mode,

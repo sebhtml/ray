@@ -21,17 +21,19 @@
 #ifndef _ScaffoldingVertex_h
 #define _ScaffoldingVertex_h
 
+#include <application_core/constants.h>
+#include <core/types.h>
 #include <stdint.h>
 #include <fstream>
 using namespace std;
 
 class ScaffoldingVertex{
-	uint64_t m_name;
+	PathHandle m_name;
 	int m_length;
 public:
-	ScaffoldingVertex(uint64_t name,int length);
+	ScaffoldingVertex(PathHandle name,int length);
 	ScaffoldingVertex();
-	uint64_t getName();
+	PathHandle getName();
 	int getLength();
 	void read(ifstream*f);
 };

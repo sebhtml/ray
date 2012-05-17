@@ -43,10 +43,10 @@ class JoinerWorker: public Worker{
 	MessageTag RAY_MPI_TAG_GET_PATH_VERTEX;
 
 	bool m_requestedNumberOfPaths;
-	uint64_t m_workerIdentifier;
+	WorkerHandle m_workerIdentifier;
 	bool m_isDone;
 	vector<Kmer>*m_path;
-	uint64_t m_identifier;
+	PathHandle m_identifier;
 	bool m_reverseStrand;
 	bool m_eliminated;
 	int m_position;
@@ -58,7 +58,7 @@ class JoinerWorker: public Worker{
 	bool m_gatheredHits;
 	bool m_initializedGathering;
 	bool m_requestedHitLength;
-	vector<uint64_t> m_hitNames;
+	vector<PathHandle> m_hitNames;
 	vector<int> m_hitLengths;
 	int m_hitIterator;
 
@@ -67,11 +67,11 @@ class JoinerWorker: public Worker{
 	bool m_selectedHit;
 	int m_selectedHitIndex;
 
-	map<uint64_t,int> m_hits;
-	map<uint64_t,int> m_minPosition;
-	map<uint64_t,int> m_maxPosition;
-	map<uint64_t,int> m_minPositionOnSelf;
-	map<uint64_t,int> m_maxPositionOnSelf;
+	map<PathHandle,int> m_hits;
+	map<PathHandle,int> m_minPosition;
+	map<PathHandle,int> m_maxPosition;
+	map<PathHandle,int> m_minPositionOnSelf;
+	map<PathHandle,int> m_maxPositionOnSelf;
 
 	vector<Kmer> m_hitVertices;
 	int m_hitPosition;
@@ -81,7 +81,7 @@ class JoinerWorker: public Worker{
 	bool m_receivedPath;
 	bool m_requestedPath;
 public:
-	void constructor(uint64_t i,vector<Kmer>*path,uint64_t identifier,bool reverseStrand,
+	void constructor(WorkerHandle i,vector<Kmer>*path,PathHandle identifier,bool reverseStrand,
 VirtualCommunicator*virtualCommunicator,Parameters*parameters,RingAllocator*outboxAllocator,
 vector<vector<Kmer> >*newPaths,
 
@@ -96,10 +96,10 @@ vector<vector<Kmer> >*newPaths,
 	/* a method for Worker interface */
 	bool isDone();
 	/* a method for Worker interface */
-	uint64_t getWorkerIdentifier();
+	WorkerHandle getWorkerIdentifier();
 
 	bool isPathEliminated();
-	uint64_t getPathIdentifier();
+	PathHandle getPathIdentifier();
 };
 
 #endif

@@ -21,7 +21,7 @@
 #include <plugin_Searcher/ContigHit.h>
 
 
-ContigHit::ContigHit(int sequence,uint64_t contig,char strand,int matches){
+ContigHit::ContigHit(int sequence,PathHandle contig,char strand,int matches){
 	m_sequenceId=sequence;
 	m_contigId=contig;
 	m_contigStrand=strand;
@@ -32,7 +32,7 @@ int ContigHit::getSequence(){
 	return m_sequenceId;
 }
 
-uint64_t ContigHit::getContig(){
+PathHandle ContigHit::getContig(){
 	return m_contigId;
 }
 

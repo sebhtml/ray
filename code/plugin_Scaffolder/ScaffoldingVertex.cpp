@@ -24,12 +24,12 @@
 #include <iostream>
 using namespace std;
 
-ScaffoldingVertex::ScaffoldingVertex(uint64_t name,int length){
+ScaffoldingVertex::ScaffoldingVertex(PathHandle name,int length){
 	m_name=name;
 	m_length=length;
 }
 
-uint64_t ScaffoldingVertex::getName(){
+PathHandle ScaffoldingVertex::getName(){
 	return m_name;
 }
 

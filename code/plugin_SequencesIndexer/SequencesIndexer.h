@@ -97,15 +97,15 @@ class SequencesIndexer: public CorePlugin{
 	StaticVector*m_outbox;
 
 	VirtualCommunicator*m_virtualCommunicator;
-	SplayTree<uint64_t,char> m_activeWorkers;
-	SplayTreeIterator<uint64_t,char> m_activeWorkerIterator;
+	SplayTree<WorkerHandle,char> m_activeWorkers;
+	SplayTreeIterator<WorkerHandle,char> m_activeWorkerIterator;
 
-	SplayTree<uint64_t,IndexerWorker> m_aliveWorkers;
+	SplayTree<WorkerHandle,IndexerWorker> m_aliveWorkers;
 	
 	bool m_communicatorWasTriggered;
-	vector<uint64_t> m_workersDone;
-	vector<uint64_t> m_waitingWorkers;
-	vector<uint64_t> m_activeWorkersToRestore;
+	vector<WorkerHandle> m_workersDone;
+	vector<WorkerHandle> m_waitingWorkers;
+	vector<WorkerHandle> m_activeWorkersToRestore;
 
 	ArrayOfReads*m_myReads;
 	RingAllocator*m_outboxAllocator;

@@ -98,11 +98,11 @@ void ArrayOfReads::push_back(Read*a){
 	#endif
 }
 
-uint64_t ArrayOfReads::size(){
+LargeCount ArrayOfReads::size(){
 	return m_elements;
 }
 
-Read*ArrayOfReads::at(uint64_t i){
+Read*ArrayOfReads::at(LargeIndex i){
 	#ifdef ASSERT
 	assert(m_maxSize!=0);
 	assert(m_numberOfChunks!=0);
@@ -130,7 +130,7 @@ Read*ArrayOfReads::at(uint64_t i){
 	return theRead;
 }
 
-Read*ArrayOfReads::operator[](uint64_t i){
+Read*ArrayOfReads::operator[](LargeIndex i){
 	return at(i);
 }
 

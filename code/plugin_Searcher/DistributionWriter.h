@@ -21,6 +21,7 @@
 #ifndef _DistributionWriter_h
 #define _DistributionWriter_h
 
+#include <application_core/constants.h>
 #include <core/types.h> /* for Rank */
 
 #include <map>
@@ -51,7 +52,7 @@ public:
 	void setRank(Rank rank);
 
 	void write(int directory,int file,int sequence,
-		map<int,uint64_t>*all,map<int,uint64_t>*uniquelyColored,map<int,uint64_t>*uniquelyColoredAndAssembled,
+		map<CoverageDepth,LargeCount>*all,map<CoverageDepth,LargeCount>*uniquelyColored,map<CoverageDepth,LargeCount>*uniquelyColoredAndAssembled,
 	const char*directoryName,const char*fileName);
 
 	void close();

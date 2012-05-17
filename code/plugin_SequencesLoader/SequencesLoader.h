@@ -63,14 +63,14 @@ class SequencesLoader : public CorePlugin{
 	MyAllocator*m_persistentAllocator;
 	ArrayOfReads*m_myReads;
 	Parameters*m_parameters;
-	uint64_t m_distribution_currentSequenceId;
+	LargeIndex m_distribution_currentSequenceId;
 	int m_distribution_file_id;
-	uint64_t m_distribution_sequence_id;
+	LargeIndex m_distribution_sequence_id;
 	bool m_LOADER_isLeftFile;
 	bool m_LOADER_isRightFile;
 	Loader m_loader;
 	bool m_isInterleavedFile;
-	int m_rank;
+	Rank m_rank;
 	int m_size;
 	
 	StaticVector*m_outbox;

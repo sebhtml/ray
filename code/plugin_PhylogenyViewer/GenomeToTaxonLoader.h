@@ -22,6 +22,8 @@
 #define _GenomeToTaxonLoader_h
 
 
+#include <application_core/constants.h>
+#include <core/types.h>
 #include <plugin_PhylogenyViewer/types.h>
 
 #include <string>
@@ -40,8 +42,8 @@ class GenomeToTaxonLoader{
 
 	int STEPPING;
 
-	uint64_t m_size;
-	uint64_t m_current;
+	LargeCount m_size;
+	LargeIndex m_current;
 
 public:
 	void load(string file);

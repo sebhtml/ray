@@ -66,7 +66,7 @@ void VirtualKmerColor::addPhysicalColor(PhysicalKmerColor color){
 	m_colors.insert(color);
 }
 
-uint64_t VirtualKmerColor::getNumberOfReferences(){
+LargeCount VirtualKmerColor::getNumberOfReferences(){
 	return m_references;
 }
 

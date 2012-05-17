@@ -21,14 +21,14 @@
 
 #include <plugin_GenomeNeighbourhood/Neighbour.h>
 
-Neighbour::Neighbour(char dnaStrand,int depth,uint64_t contig,int progression){
+Neighbour::Neighbour(Strand dnaStrand,int depth,PathHandle contig,int progression){
 	m_strand=dnaStrand;
 	m_depth=depth;
 	m_contigName=contig;
 	m_progression=progression;
 }
 
-char Neighbour::getStrand(){
+Strand Neighbour::getStrand(){
 	return m_strand;
 }
 
@@ -36,7 +36,7 @@ int Neighbour::getDepth(){
 	return m_depth;
 }
 
-uint64_t Neighbour::getContig(){
+PathHandle Neighbour::getContig(){
 	return m_contigName;
 }
 

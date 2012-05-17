@@ -23,27 +23,29 @@
 #define _SummarizedLink
 
 #include <stdint.h>
+#include <application_core/constants.h>
+#include <core/types.h>
 
 class SummarizedLink{
 	int m_count;
-	uint64_t m_leftContig;
-	uint64_t m_rightContig;
-	char m_leftStrand;
-	char m_rightStrand;
+	PathHandle m_leftContig;
+	PathHandle m_rightContig;
+	Strand m_leftStrand;
+	Strand m_rightStrand;
 	int m_average;
 	int m_standardDeviation;
 public:
-	SummarizedLink(uint64_t leftContig,char leftStrand,uint64_t rightContig,char rightStrand,int average,int count,int standardDeviation);
+	SummarizedLink(PathHandle leftContig,char leftStrand,PathHandle rightContig,Strand rightStrand,int average,int count,int standardDeviation);
 	SummarizedLink();
 	int getStandardDeviation();
-	uint64_t getLeftContig();
-	char getLeftStrand();
-	uint64_t getRightContig();
-	char getRightStrand();
+	PathHandle getLeftContig();
+	Strand getLeftStrand();
+	PathHandle getRightContig();
+	Strand getRightStrand();
 	int getAverage();
 	int getCount();
-	void pack(uint64_t*a,int*b);
-	void unpack(uint64_t*buffer,int*position);
+	void pack(MessageUnit*a,int*b);
+	void unpack(MessageUnit*buffer,int*position);
 };
 
 #endif

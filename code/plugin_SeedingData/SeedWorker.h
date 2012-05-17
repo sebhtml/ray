@@ -43,7 +43,7 @@ class SeedWorker : public Worker {
 	int m_mainVertexCoverage;
 
 	map<Kmer,int> m_cache;
-	uint64_t m_workerIdentifier;
+	WorkerHandle m_workerIdentifier;
 	bool m_finished;
 	Kmer m_SEEDING_currentChildVertex;
 	bool m_SEEDING_InedgesReceived;
@@ -91,7 +91,7 @@ class SeedWorker : public Worker {
 	VirtualCommunicator*m_virtualCommunicator;
 public:
 	void constructor(Kmer*vertex,Parameters*parameters,RingAllocator*outboxAllocator,
-		VirtualCommunicator*vc,uint64_t workerId,
+		VirtualCommunicator*vc,WorkerHandle workerId,
 
 	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,
 	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE
@@ -111,7 +111,7 @@ public:
 	bool isDone();
 
 	/** get the worker number */
-	uint64_t getWorkerIdentifier();
+	WorkerHandle getWorkerIdentifier();
 
 };
 

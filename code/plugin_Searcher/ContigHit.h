@@ -21,18 +21,20 @@
 #ifndef _ContigHit_h
 #define _ContigHit_h
 
+#include <application_core/constants.h>
+#include <core/types.h>
 #include <stdint.h>
 
 class ContigHit{
 	int m_sequenceId;
-	uint64_t m_contigId;
-	char m_contigStrand;
+	PathHandle m_contigId;
+	Strand m_contigStrand;
 	int m_matches;
 public:
-	ContigHit(int sequence,uint64_t contig,char strand,int matches);
+	ContigHit(int sequence,PathHandle contig,Strand strand,int matches);
 	int getSequence();
-	uint64_t getContig();
-	char getStrand();
+	PathHandle getContig();
+	Strand getStrand();
 	int getMatches();
 };
 

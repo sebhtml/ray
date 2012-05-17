@@ -23,6 +23,7 @@
 #ifndef _VirtualKmerColor_h
 #define _VirtualKmerColor_h
 
+#include <application_core/constants.h>
 #include <stdint.h>
 #include <vector>
 #include <set>
@@ -42,7 +43,7 @@ typedef uint64_t PhysicalKmerColor;
 class VirtualKmerColor{
 
 /** half the number of k-mers using this virtual color **/
-	uint64_t m_references;
+	LargeCount m_references;
 
 /** the list of physical colors **/
 	set<PhysicalKmerColor> m_colors;
@@ -57,7 +58,7 @@ public:
 	void incrementReferences();
 	void decrementReferences();
 
-	uint64_t getNumberOfReferences();
+	LargeCount getNumberOfReferences();
 
 	set<PhysicalKmerColor>*getPhysicalColors();
 

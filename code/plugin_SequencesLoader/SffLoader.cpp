@@ -95,16 +95,19 @@ int SffLoader::openSff(string file){
 	invert32(&version);
 	uint32_t MAGIC=0x2e736666;
 	uint32_t _VERSION=1;
+
 	if(MAGIC!=magic_number){
 		(cout)<<"Error: incorrect magic number "<<endl;
 		printf("%x\n",magic_number);
 		printf("%x\n",MAGIC);
 		return EXIT_FAILURE;
 	}
+
 	if(_VERSION!=version){
 		(cout)<<"Error: incorrect version"<<endl;
 		return EXIT_FAILURE;
 	}
+
 	fread_result=fread((char*)&index_offset,1,sizeof(uint64_t),m_fp);
 	invert64(&index_offset);
 	fread_result=fread((char*)&index_length,1,sizeof(uint32_t),m_fp);

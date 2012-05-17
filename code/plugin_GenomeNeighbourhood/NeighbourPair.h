@@ -23,6 +23,7 @@
 #define _NeighbourPair_h
 
 #include <stdint.h> /** for uint64_t **/
+#include <application_core/constants.h>
 
 
 /**
@@ -30,26 +31,27 @@
  */
 class NeighbourPair{
 
-	uint64_t m_contigName1;
-	char m_strand1;
+	PathHandle m_contigName1;
+	Strand m_strand1;
 	int m_progression1;
 
-	uint64_t m_contigName2;
-	char m_strand2;
+	PathHandle m_contigName2;
+	Strand m_strand2;
 	int m_progression2;
 
 	int m_depth;
 
 public:
-	NeighbourPair(uint64_t contig1,char strand1,int progression1,uint64_t contig2,char strand2,int progression2,
+	NeighbourPair(PathHandle contig1,Strand strand1,int progression1,PathHandle contig2,
+		Strand strand2,int progression2,
 		int depth);
 
-	uint64_t getContig1();
-	char getStrand1();
+	PathHandle getContig1();
+	Strand getStrand1();
 	int getProgression1();
 
-	uint64_t getContig2();
-	char getStrand2();
+	PathHandle getContig2();
+	Strand getStrand2();
 	int getProgression2();
 
 	int getDepth();

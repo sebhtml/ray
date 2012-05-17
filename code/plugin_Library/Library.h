@@ -108,18 +108,18 @@ class Library :  public CorePlugin{
 	bool m_libraryIndexInitiated;
 	bool m_workerInitiated;
 	bool m_initiatedIterator;
-	uint64_t m_SEEDING_i;
-	set<uint64_t> m_activeWorkers;
-	set<uint64_t>::iterator m_activeWorkerIterator;
+	LargeIndex m_SEEDING_i;
+	set<WorkerHandle> m_activeWorkers;
+	set<WorkerHandle>::iterator m_activeWorkerIterator;
 	int m_completedJobs;
 	int m_maximumAliveWorkers;
 	int m_maximumWorkers;
 
-	map<uint64_t,LibraryWorker> m_aliveWorkers;
+	map<WorkerHandle,LibraryWorker> m_aliveWorkers;
 	bool m_communicatorWasTriggered;
-	vector<uint64_t> m_workersDone;
-	vector<uint64_t> m_waitingWorkers;
-	vector<uint64_t> m_activeWorkersToRestore;
+	vector<WorkerHandle> m_workersDone;
+	vector<WorkerHandle> m_waitingWorkers;
+	vector<WorkerHandle> m_activeWorkersToRestore;
 
 	MyAllocator m_allocator;
 	void updateStates();

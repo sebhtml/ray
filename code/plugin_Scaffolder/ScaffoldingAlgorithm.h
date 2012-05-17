@@ -32,10 +32,10 @@ class ScaffoldingAlgorithm{
 	vector<ScaffoldingVertex>*m_vertices;
 	vector<ScaffoldingEdge>*m_edges;
 
-	map<uint64_t,map<uint64_t,ScaffoldingEdge> > m_addedEdges;
+	map<PathHandle,map<PathHandle,ScaffoldingEdge> > m_addedEdges;
 	int m_numberOfEdges;
 
-	map<uint64_t,int> m_lengths;
+	map<PathHandle,int> m_lengths;
 
 	map<int,map<int,int> > m_conflicts;
 public:
@@ -44,24 +44,24 @@ public:
 	void setEdges(vector<ScaffoldingEdge>*edges);
 	void addEdge(ScaffoldingEdge*edge);
 
-	bool hasConflictWithEdgeAroundContig(ScaffoldingEdge*edgeToBeAdded,ScaffoldingEdge*alreadyAcceptedEdge,uint64_t contigToCheck);
+	bool hasConflictWithEdgeAroundContig(ScaffoldingEdge*edgeToBeAdded,ScaffoldingEdge*alreadyAcceptedEdge,PathHandle contigToCheck);
 	bool hasConflictWithEdge(ScaffoldingEdge*edgeToBeAdded,ScaffoldingEdge*alreadyAcceptedEdge);
-	bool hasConflictWithContig(ScaffoldingEdge*edge,uint64_t contig);
+	bool hasConflictWithContig(ScaffoldingEdge*edge,PathHandle contig);
 	bool hasConflict(ScaffoldingEdge*edge);
 
 	void solve(
 
-	vector<vector<uint64_t> >*m_scaffoldContigs,
+	vector<vector<PathHandle> >*m_scaffoldContigs,
 	vector<vector<char> >*m_scaffoldStrands,
 	vector<vector<int> >*m_scaffoldGaps
 );
 
 
-	void extractScaffolds(char state,map<uint64_t,int>*colors,uint64_t vertex,
-	map<uint64_t,map<char,vector<vector<uint64_t> > > >*parents,
-	map<uint64_t,map<char,vector<vector<uint64_t> > > >*children,set<int>*completedColours,
+	void extractScaffolds(char state,map<PathHandle,int>*colors,PathHandle vertex,
+	map<PathHandle,map<char,vector<vector<PathHandle> > > >*parents,
+	map<PathHandle,map<char,vector<vector<PathHandle> > > >*children,set<int>*completedColours,
 
-	vector<vector<uint64_t> >*scaffoldContigs,
+	vector<vector<PathHandle> >*scaffoldContigs,
 	vector<vector<char> >*scaffoldStrands,
 	vector<vector<int> >*scaffoldGaps
 );

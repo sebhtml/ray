@@ -83,7 +83,7 @@ class GenomeNeighbourhood: public CorePlugin{
 
 	/* graph surfing */
 	set<Kmer> m_visited;
-	set<uint64_t> m_foundContigs;
+	set<PathHandle > m_foundContigs;
 	int m_maximumDepth;
 	bool m_linksRequested;
 	bool m_linksReceived;
@@ -102,9 +102,9 @@ class GenomeNeighbourhood: public CorePlugin{
 
 	/* virtual communication */
 	VirtualCommunicator*m_virtualCommunicator;
-	vector<uint64_t> m_activeWorkers;
+	vector<WorkerHandle> m_activeWorkers;
 	Rank m_rank;
-	uint64_t m_workerId;
+	WorkerHandle m_workerId;
 	RingAllocator*m_outboxAllocator;
 
 	ComputeCore*m_core;
@@ -129,7 +129,7 @@ class GenomeNeighbourhood: public CorePlugin{
 
 	/** contig paths */
 	vector<vector<Kmer> >*m_contigs;
-	vector<uint64_t>*m_contigNames;
+	vector<PathHandle>*m_contigNames;
 
 /** genome folks in the neighbourhood **/
 	vector<Neighbour> m_leftNeighbours;
@@ -146,7 +146,7 @@ class GenomeNeighbourhood: public CorePlugin{
 	bool m_receivedReply;
 	bool m_sentEntry;
 
-	map<uint64_t,int>*m_contigLengths;
+	map<PathHandle,int>*m_contigLengths;
 
 /** private parts **/
 

@@ -99,7 +99,7 @@ class PhylogenyViewer: public CorePlugin{
 	bool m_syncedTree;
 	bool m_unknownSent;
 
-	map<TaxonIdentifier,uint64_t>::iterator m_countIterator;
+	map<TaxonIdentifier,LargeCount>::iterator m_countIterator;
 
 	set<TaxonIdentifier>::iterator m_taxonIterator;
 
@@ -119,15 +119,15 @@ class PhylogenyViewer: public CorePlugin{
 	map<TaxonIdentifier,string> m_taxonNames;
 	map<TaxonIdentifier,string> m_taxonRanks;
 
-	map<TaxonIdentifier,uint64_t> m_taxonObservations;
-	map<TaxonIdentifier,uint64_t> m_taxonObservationsMaster;
+	map<TaxonIdentifier,LargeCount> m_taxonObservations;
+	map<TaxonIdentifier,LargeCount> m_taxonObservationsMaster;
 
-	map<TaxonIdentifier,uint64_t> m_taxonRecursiveObservations;
+	map<TaxonIdentifier,LargeCount> m_taxonRecursiveObservations;
 
 	TaxonIdentifier UNKNOWN_TAXON;
 
-	uint64_t m_unknown;
-	uint64_t m_unknownMaster;
+	LargeCount m_unknown;
+	LargeCount m_unknownMaster;
 
 	map<TaxonIdentifier,set<TaxonIdentifier> > m_treeChildren;
 	map<TaxonIdentifier,TaxonIdentifier> m_treeParents;
@@ -173,7 +173,7 @@ class PhylogenyViewer: public CorePlugin{
 
 	bool m_loadAllTree;
 
-	uint64_t m_totalNumberOfKmerObservations;
+	LargeCount m_totalNumberOfKmerObservations;
 
 	void extractColorsForPhylogeny();
 	void loadTaxons();
@@ -203,11 +203,11 @@ class PhylogenyViewer: public CorePlugin{
 	void showObservations_XML(ostream*stream);
 	void printTaxonPath_XML(TaxonIdentifier taxon,vector<TaxonIdentifier>*path,ostream*stream);
 	void printTaxon_XML(TaxonIdentifier taxon,ostream*stream);
-	uint64_t getRecursiveCount(TaxonIdentifier taxon);
+	LargeCount getRecursiveCount(TaxonIdentifier taxon);
 
-	void populateRanks(map<string,uint64_t>*rankSelfObservations,
-		map<string,uint64_t>*rankRecursiveObservations);
-	uint64_t getSelfCount(TaxonIdentifier taxon);
+	void populateRanks(map<string,LargeCount>*rankSelfObservations,
+		map<string,LargeCount>*rankRecursiveObservations);
+	LargeCount getSelfCount(TaxonIdentifier taxon);
 
 public:
 

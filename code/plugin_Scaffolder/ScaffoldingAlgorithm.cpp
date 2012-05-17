@@ -40,14 +40,14 @@ void ScaffoldingAlgorithm::setEdges(vector<ScaffoldingEdge>*edges){
 
 /* TODO: use pointers or references to store ScaffoldingEdge objects */
 void ScaffoldingAlgorithm::solve(
-	vector<vector<uint64_t> >*scaffoldContigs,
+	vector<vector<PathHandle> >*scaffoldContigs,
 	vector<vector<char> >*scaffoldStrands,
 	vector<vector<int> >*scaffoldGaps
 		){
 
 	cout<<"Welcome to GreedySolver v1.0"<<endl;
 
-	map<uint64_t,map<uint64_t,int> > validCounts;
+	map<PathHandle,map<PathHandle,int> > validCounts;
 
 	vector<vector<uint64_t> > megaLinks;
 
@@ -109,40 +109,44 @@ void ScaffoldingAlgorithm::solve(
 	/** filter edges with greedy algorithm */
 	/** populate megaLinks with accepted edges */
 
-	for(map<uint64_t,map<uint64_t,ScaffoldingEdge> >::iterator i=m_addedEdges.begin();i!=m_addedEdges.end();i++){
-		for(map<uint64_t,ScaffoldingEdge>::iterator j=i->second.begin();j!=i->second.end();j++){
-			uint64_t first=i->first;
-			uint64_t second=j->first;
-			if(second < first)
+	for(map<PathHandle,map<PathHandle,ScaffoldingEdge> >::iterator i=m_addedEdges.begin();i!=m_addedEdges.end();i++){
+		for(map<PathHandle,ScaffoldingEdge>::iterator j=i->second.begin();j!=i->second.end();j++){
+			PathHandle first=i->first;
+			PathHandle second=j->first;
+
+			if(second < first){
 				continue;
+			}
 
 			ScaffoldingEdge edge=j->second;
 		
 			vector<uint64_t> megaLink;
-			uint64_t leftContig=edge.getLeftContig();
+			PathHandle leftContig=edge.getLeftContig();
 			megaLink.push_back(leftContig);
 			char leftStrand=edge.getLeftStrand();
 			megaLink.push_back(leftStrand);
-			uint64_t rightContig=edge.getRightContig();
+			PathHandle rightContig=edge.getRightContig();
 			megaLink.push_back(rightContig);
 			char rightStrand=edge.getRightStrand();
 			megaLink.push_back(rightStrand);
 			int average=edge.getGapSize();
 			megaLink.push_back(average);
 			megaLinks.push_back(megaLink);
+
 			validCounts[leftContig][rightContig]++;
 			validCounts[rightContig][leftContig]++;
 		}
 	}
 
 	// create the graph
-	set<uint64_t> vertices;
-	map<uint64_t,map<char,vector<vector<uint64_t> > > > parents;
-	map<uint64_t,map<char,vector<vector<uint64_t> > > > children;
+	set<PathHandle> vertices;
+	map<PathHandle,map<char,vector<vector<PathHandle> > > > parents;
+	map<PathHandle,map<char,vector<vector<PathHandle> > > > children;
+
 	for(int i=0;i<(int)megaLinks.size();i++){
-		uint64_t leftContig=megaLinks[i][0];
+		PathHandle leftContig=megaLinks[i][0];
 		char leftStrand=megaLinks[i][1];
-		uint64_t rightContig=megaLinks[i][2];
+		PathHandle rightContig=megaLinks[i][2];
 		char rightStrand=megaLinks[i][3];
 		int distance=megaLinks[i][4];
 		char otherLeftStrand='F';
@@ -155,41 +159,44 @@ void ScaffoldingAlgorithm::solve(
 			otherRightStrand='R';
 		children[leftContig][leftStrand].push_back(megaLinks[i]);
 		parents[rightContig][rightStrand].push_back(megaLinks[i]);
+
 		vector<uint64_t> reverseLink;
 		reverseLink.push_back(rightContig);
 		reverseLink.push_back(otherRightStrand);
 		reverseLink.push_back(leftContig);
 		reverseLink.push_back(otherLeftStrand);
 		reverseLink.push_back(distance);
+
 		children[rightContig][otherRightStrand].push_back(reverseLink);
 		parents[leftContig][otherLeftStrand].push_back(reverseLink);
 	}
 
 	// add colors to the graph
-	map<uint64_t,int> colors;
-	map<int,vector<uint64_t> > colorMap;
+	map<PathHandle,int> colors;
+	map<int,vector<PathHandle> > colorMap;
 	int i=0;
-	for(set<uint64_t>::iterator j=vertices.begin();j!=vertices.end();j++){
+	for(set<PathHandle>::iterator j=vertices.begin();j!=vertices.end();j++){
 		colors[*j]=i;
 		colorMap[i].push_back(*j);
 		i++;
 	}
 	
 	// do some color merging.
-	for(set<uint64_t>::iterator j=vertices.begin();j!=vertices.end();j++){
-		uint64_t vertex=*j;
+	for(set<PathHandle>::iterator j=vertices.begin();j!=vertices.end();j++){
+		PathHandle vertex=*j;
 		char state='F';
 		if(children.count(vertex)>0&&children[vertex].count(state)>0
 			&&children[vertex][state].size()==1){
-			uint64_t childVertex=children[vertex][state][0][2];
+			PathHandle childVertex=children[vertex][state][0][2];
 			char childState=children[vertex][state][0][3];
 			if(parents[childVertex][childState].size()==1
 			&&validCounts[vertex][childVertex]==1){
 				int currentColor=colors[vertex];
 				int childColor=colors[childVertex];
 				if(currentColor!=childColor){
+
 					for(int i=0;i<(int)colorMap[childColor].size();i++){
-						uint64_t otherVertex=colorMap[childColor][i];
+						PathHandle otherVertex=colorMap[childColor][i];
 						colors[otherVertex]=currentColor;
 						colorMap[currentColor].push_back(otherVertex);
 					}
@@ -200,7 +207,7 @@ void ScaffoldingAlgorithm::solve(
 		state='R';
 		if(children.count(vertex)>0&&children[vertex].count(state)>0
 			&&children[vertex][state].size()==1){
-			uint64_t childVertex=children[vertex][state][0][2];
+			PathHandle childVertex=children[vertex][state][0][2];
 			char childState=children[vertex][state][0][3];
 			if(parents[childVertex][childState].size()==1
 			&& validCounts[vertex][childVertex]==1){
@@ -208,7 +215,7 @@ void ScaffoldingAlgorithm::solve(
 				int childColor=colors[childVertex];
 				if(currentColor!=childColor){
 					for(int i=0;i<(int)colorMap[childColor].size();i++){
-						uint64_t otherVertex=colorMap[childColor][i];
+						PathHandle otherVertex=colorMap[childColor][i];
 						colors[otherVertex]=currentColor;
 						colorMap[currentColor].push_back(otherVertex);
 					}
@@ -220,8 +227,8 @@ void ScaffoldingAlgorithm::solve(
 
 	// extract scaffolds
 	set<int>completedColours;
-	for(set<uint64_t>::iterator j=vertices.begin();j!=vertices.end();j++){
-		uint64_t vertex=*j;
+	for(set<PathHandle>::iterator j=vertices.begin();j!=vertices.end();j++){
+		PathHandle vertex=*j;
 		extractScaffolds('F',&colors,vertex,&parents,&children,&completedColours,scaffoldContigs,scaffoldStrands,scaffoldGaps);
 		extractScaffolds('R',&colors,vertex,&parents,&children,&completedColours,scaffoldContigs,scaffoldStrands,scaffoldGaps);
 	}
@@ -230,9 +237,9 @@ void ScaffoldingAlgorithm::solve(
 
 	// add unscaffolded stuff.
 	for(int i=0;i<(int)m_vertices->size();i++){
-		uint64_t contig=m_vertices->at(i).getName();
+		PathHandle contig=m_vertices->at(i).getName();
 		if(colors.count(contig)==0){
-			vector<uint64_t> contigs;
+			vector<PathHandle> contigs;
 			vector<char> strands;
 			vector<int> gaps;
 			contigs.push_back(contig);
@@ -245,7 +252,7 @@ void ScaffoldingAlgorithm::solve(
 
 	/* END OF CODE TO MOVE */
 
-	uint64_t total=0;
+	LargeCount total=0;
 
 	int numberOfLarge=0;
 	for(int i=0;i<(int)scaffoldContigs->size();i++){
@@ -272,8 +279,8 @@ void ScaffoldingAlgorithm::solve(
 void ScaffoldingAlgorithm::addEdge(ScaffoldingEdge*edge){
 	//cout<<"Adding edge "<<endl;
 	//edge->print();
-	uint64_t leftContig=edge->getLeftContig();
-	uint64_t rightContig=edge->getRightContig();
+	PathHandle leftContig=edge->getLeftContig();
+	PathHandle rightContig=edge->getRightContig();
 
 	m_addedEdges[leftContig][rightContig]=*edge;
 	m_addedEdges[rightContig][leftContig]=*edge;
@@ -281,8 +288,8 @@ void ScaffoldingAlgorithm::addEdge(ScaffoldingEdge*edge){
 }
 
 bool ScaffoldingAlgorithm::hasConflict(ScaffoldingEdge*edge){
-	uint64_t leftContig=edge->getLeftContig();
-	uint64_t rightContig=edge->getRightContig();
+	PathHandle leftContig=edge->getLeftContig();
+	PathHandle rightContig=edge->getRightContig();
 
 	if(hasConflictWithContig(edge,leftContig))
 		return true;
@@ -294,13 +301,13 @@ bool ScaffoldingAlgorithm::hasConflict(ScaffoldingEdge*edge){
 
 }
 
-bool ScaffoldingAlgorithm::hasConflictWithContig(ScaffoldingEdge*edge,uint64_t contig){
+bool ScaffoldingAlgorithm::hasConflictWithContig(ScaffoldingEdge*edge,PathHandle contig){
 	/* the contig is now connected */
 	if(m_addedEdges.count(contig) == 0)
 		return false;
 
 	/* check if there is a conflit between existing edges */
-	for(map<uint64_t,ScaffoldingEdge>::iterator i=m_addedEdges[contig].begin();
+	for(map<PathHandle,ScaffoldingEdge>::iterator i=m_addedEdges[contig].begin();
 			i!=m_addedEdges[contig].end();i++){
 		ScaffoldingEdge otherEdge=i->second;
 		
@@ -312,10 +319,10 @@ bool ScaffoldingAlgorithm::hasConflictWithContig(ScaffoldingEdge*edge,uint64_t c
 }
 
 bool ScaffoldingAlgorithm::hasConflictWithEdge(ScaffoldingEdge*edgeToBeAdded,ScaffoldingEdge*alreadyAcceptedEdge){
-	uint64_t edge1LeftContig=edgeToBeAdded->getLeftContig();
-	uint64_t edge1RightContig=edgeToBeAdded->getRightContig();
-	uint64_t edge2LeftContig=alreadyAcceptedEdge->getLeftContig();
-	uint64_t edge2RightContig=alreadyAcceptedEdge->getRightContig();
+	PathHandle edge1LeftContig=edgeToBeAdded->getLeftContig();
+	PathHandle edge1RightContig=edgeToBeAdded->getRightContig();
+	PathHandle edge2LeftContig=alreadyAcceptedEdge->getLeftContig();
+	PathHandle edge2RightContig=alreadyAcceptedEdge->getRightContig();
 
 	if(edge1LeftContig == edge2LeftContig){
 		if(hasConflictWithEdgeAroundContig(edgeToBeAdded,alreadyAcceptedEdge,edge1LeftContig)){
@@ -344,7 +351,8 @@ bool ScaffoldingAlgorithm::hasConflictWithEdge(ScaffoldingEdge*edgeToBeAdded,Sca
 	return false;
 }
 
-bool ScaffoldingAlgorithm::hasConflictWithEdgeAroundContig(ScaffoldingEdge*edgeToBeAdded,ScaffoldingEdge*alreadyAcceptedEdge,uint64_t contigToCheck){
+bool ScaffoldingAlgorithm::hasConflictWithEdgeAroundContig(ScaffoldingEdge*edgeToBeAdded,ScaffoldingEdge*alreadyAcceptedEdge,PathHandle contigToCheck){
+
 	int edge1ContigSide=edgeToBeAdded->getSide(contigToCheck);
 	char edge1ContigStrand=edgeToBeAdded->getStrand(contigToCheck);
 
@@ -385,15 +393,15 @@ bool ScaffoldingAlgorithm::hasConflictWithEdgeAroundContig(ScaffoldingEdge*edgeT
 	return false;
 }
 
-void ScaffoldingAlgorithm::extractScaffolds(char state,map<uint64_t,int>*colors,uint64_t vertex,
-	map<uint64_t,map<char,vector<vector<uint64_t> > > >*parents,
-	map<uint64_t,map<char,vector<vector<uint64_t> > > >*children,set<int>*completedColours,
+void ScaffoldingAlgorithm::extractScaffolds(char state,map<PathHandle,int>*colors,PathHandle vertex,
+	map<PathHandle,map<char,vector<vector<PathHandle> > > >*parents,
+	map<PathHandle,map<char,vector<vector<PathHandle> > > >*children,set<int>*completedColours,
 
-	vector<vector<uint64_t> >*scaffoldContigs,
+	vector<vector<PathHandle> >*scaffoldContigs,
 	vector<vector<char> >*scaffoldStrands,
 	vector<vector<int> >*scaffoldGaps
 ){
-	vector<uint64_t> contigs;
+	vector<PathHandle> contigs;
 	vector<char> strands;
 	vector<int> gaps;
 	bool skip=false;
@@ -406,7 +414,7 @@ void ScaffoldingAlgorithm::extractScaffolds(char state,map<uint64_t,int>*colors,
 			#ifdef ASSERT
 			assert(0<(*parents)[vertex][state][i].size());
 			#endif
-			uint64_t parent=(*parents)[vertex][state][i][0];
+			PathHandle parent=(*parents)[vertex][state][i][0];
 			int parentColor=(*colors)[parent];
 			if(parentColor==currentColor){
 				skip=true;
@@ -428,16 +436,20 @@ void ScaffoldingAlgorithm::extractScaffolds(char state,map<uint64_t,int>*colors,
 				#ifdef ASSERT
 				assert(2<(*children)[vertex][state][i].size());
 				#endif
-				uint64_t childVertex=(*children)[vertex][state][i][2];
+
+				PathHandle childVertex=(*children)[vertex][state][i][2];
 				int childColor=(*colors)[childVertex];
 				if(childColor==currentColor){
 					#ifdef ASSERT
 					assert(3<(*children)[vertex][state][i].size());
 					#endif
+
 					char childState=(*children)[vertex][state][i][3];
+
 					#ifdef ASSERT
 					assert(4<(*children)[vertex][state][i].size());
 					#endif
+
 					int gap=(*children)[vertex][state][i][4];
 					gaps.push_back(gap);
 

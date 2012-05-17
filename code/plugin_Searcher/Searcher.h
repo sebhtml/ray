@@ -170,19 +170,19 @@ class Searcher :  public CorePlugin {
 	bool m_pumpedCounts;
 	void shareTotalGraphCounts();
 
-	uint64_t m_processedFiles;
-	uint64_t m_processedSequences;
+	LargeCount m_processedFiles;
+	LargeCount m_processedSequences;
 
-	uint64_t m_sequencesToProcessInFile;
-	uint64_t m_sequencesToProcess;
-	uint64_t m_filesToProcess;
+	LargeCount m_sequencesToProcessInFile;
+	LargeCount m_sequencesToProcess;
+	LargeCount m_filesToProcess;
 
-	uint64_t m_totalNumberOfColoredKmerObservations;
-	uint64_t m_totalNumberOfColoredKmers;
-	uint64_t m_totalNumberOfAssembledKmerObservations;
-	uint64_t m_totalNumberOfAssembledColoredKmerObservations;
-	uint64_t m_totalNumberOfAssembledKmers;
-	uint64_t m_totalNumberOfAssembledColoredKmers;
+	LargeCount m_totalNumberOfColoredKmerObservations;
+	LargeCount m_totalNumberOfColoredKmers;
+	LargeCount m_totalNumberOfAssembledKmerObservations;
+	LargeCount m_totalNumberOfAssembledColoredKmerObservations;
+	LargeCount m_totalNumberOfAssembledKmers;
+	LargeCount m_totalNumberOfAssembledColoredKmers;
 	
 	PhysicalKmerColor m_color;
 	PhysicalKmerColor m_identifier;
@@ -205,7 +205,7 @@ class Searcher :  public CorePlugin {
 	int m_numberOfRanksThatFinishedSequenceAbundances;
 
 	/** total number of kmers processed */
-	uint64_t m_kmersProcessed;
+	LargeCount m_kmersProcessed;
 
 	/** manually buffered data */
 	BufferedData m_bufferedData;
@@ -228,10 +228,10 @@ class Searcher :  public CorePlugin {
  * being processed
  *
  * map<char, map<contig, set<position > > > */
-	map<char, map<uint64_t,set<int> > > m_contigCounts;
+	map<char, map<PathHandle,set<int> > > m_contigCounts;
 
 /** the set of observed paths for the current position */
-	map<int,set<uint64_t > > m_observedPaths;
+	map<int,set<PathHandle> > m_observedPaths;
 
 	// state of the machine
 	bool m_checkedHits;
@@ -239,7 +239,7 @@ class Searcher :  public CorePlugin {
 /**
  * this is only populated on master
  */
-	map<uint64_t,int> m_contigLengths;
+	map<PathHandle,int> m_contigLengths;
 
 	// iterators for hits
 	vector<ContigHit> m_sortedHits;
@@ -249,7 +249,7 @@ class Searcher :  public CorePlugin {
 	vector<ContigSearchEntry> m_listOfContigEntries;
 
 	/** the identifier to give to the virtual communicator */
-	uint64_t m_workerId;
+	WorkerHandle m_workerId;
 
 	// for counting entries in category files
 	bool m_countElementsMasterStarted;
@@ -273,7 +273,7 @@ class Searcher :  public CorePlugin {
 
 	/** contig paths */
 	vector<vector<Kmer> >*m_contigs;
-	vector<uint64_t>*m_contigNames;
+	vector<PathHandle>*m_contigNames;
 
 	// synchronization
 	int m_ranksDoneCounting;
@@ -298,7 +298,7 @@ class Searcher :  public CorePlugin {
 	bool m_finished;
 
 	// for the virtual communicator
-	vector<uint64_t> m_activeWorkers;
+	vector<WorkerHandle> m_activeWorkers;
 
 	/** file to write coverage distribution */
 	ofstream m_currentCoverageFile;
@@ -310,10 +310,10 @@ class Searcher :  public CorePlugin {
 
 	bool m_waitingForAbundanceReply;
 
-	map<int,uint64_t> m_coverageDistribution;
-	map<int,uint64_t> m_coloredCoverageDistribution;
-	map<int,uint64_t> m_assembledCoverageDistribution;
-	map<int,uint64_t> m_coloredAssembledCoverageDistribution;
+	map<CoverageDepth,LargeCount> m_coverageDistribution;
+	map<CoverageDepth,LargeCount> m_coloredCoverageDistribution;
+	map<CoverageDepth,LargeCount> m_assembledCoverageDistribution;
+	map<CoverageDepth,LargeCount> m_coloredAssembledCoverageDistribution;
 
 	/** search directory objects */
 	SearchDirectory*m_searchDirectories;
@@ -384,7 +384,7 @@ class Searcher :  public CorePlugin {
 	void showContigAbundanceProgress();
 	void createTrees();
 
-	uint64_t m_lastPrinted;
+	LargeIndex m_lastPrinted;
 
 	bool isFileOwner(int globalFile);
 
@@ -394,7 +394,7 @@ class Searcher :  public CorePlugin {
 
 	void showProcessedKmers();
 
-	int getDistributionMode(map<int,uint64_t>*distribution);
+	int getDistributionMode(map<CoverageDepth,LargeCount>*distribution);
 
 	void dumpDistributions();
 	string getDirectoryBaseName(int i);
@@ -408,11 +408,11 @@ class Searcher :  public CorePlugin {
 	void createRootDirectories();
 
 	/* count the k-mer observations */
-	void countKmerObservations(uint64_t*localAssembledKmerObservations,
-		uint64_t*localAssembledColoredKmerObservations,
-		uint64_t*localAssembledKmers,uint64_t*localAssembledColoredKmers,
-		uint64_t*localColoredKmerObservations,uint64_t*localColoredKmers,
-		uint64_t*geneCdsKmerObservations
+	void countKmerObservations(LargeCount*localAssembledKmerObservations,
+		LargeCount*localAssembledColoredKmerObservations,
+		LargeCount*localAssembledKmers,LargeCount*localAssembledColoredKmers,
+		LargeCount*localColoredKmerObservations,LargeCount*localColoredKmers,
+		LargeCount*geneCdsKmerObservations
 );
 
 	/* I/O optimization */
@@ -422,7 +422,7 @@ class Searcher :  public CorePlugin {
 	void flushSequenceAbundanceXMLBuffer(int directory,bool force);
 
 	// EMBL_CDS namespace
-	uint64_t m_totalNumberOfKmerObservations_EMBL_CDS;
+	LargeCount m_totalNumberOfKmerObservations_EMBL_CDS;
 
 public:
 
@@ -449,7 +449,7 @@ public:
 	VirtualCommunicator*m_vc,StaticVector*inbox,RingAllocator*outboxAllocator,
 		GridTable*graph);
 
-	void setContigs(vector<vector<Kmer> >*paths,vector<uint64_t>*names);
+	void setContigs(vector<vector<Kmer> >*paths,vector<PathHandle>*names);
 
 	void call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message);
 	void call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message);
@@ -457,9 +457,9 @@ public:
 	void registerPlugin(ComputeCore*core);
 	void resolveSymbols(ComputeCore*core);
 
-	uint64_t getTotalNumberOfKmerObservations();
+	LargeCount getTotalNumberOfKmerObservations();
 
-	uint64_t getTotalNumberOfColoredKmerObservationsForANameSpace(int namespaceNumber);
+	LargeCount getTotalNumberOfColoredKmerObservationsForANameSpace(int namespaceNumber);
 
 }; /* Searcher */
 

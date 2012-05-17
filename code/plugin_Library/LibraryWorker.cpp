@@ -32,7 +32,7 @@ bool LibraryWorker::isDone(){
 	return m_done;
 }
 
-void LibraryWorker::constructor(uint64_t id,SeedingData*seedingData,VirtualCommunicator*virtualCommunicator,RingAllocator*outboxAllocator,Parameters*parameters,
+void LibraryWorker::constructor(WorkerHandle id,SeedingData*seedingData,VirtualCommunicator*virtualCommunicator,RingAllocator*outboxAllocator,Parameters*parameters,
 StaticVector*inbox,StaticVector*outbox,	map<int,map<int,int> >*libraryDistances,int*detectedDistances,MyAllocator*allocator,
 MessageTag RAY_MPI_TAG_GET_READ_MATE,
 MessageTag RAY_MPI_TAG_REQUEST_VERTEX_READS
@@ -69,8 +69,8 @@ void LibraryWorker::work(){
 	#endif
 	if(m_EXTENSION_currentPosition==(int)m_seedingData->m_SEEDING_seeds[m_SEEDING_i].size()){
 		while(m_database.size()>0){
-			SplayNode<uint64_t,LibraryElement>*node=m_database.getRoot();
-			uint64_t key=node->getKey();
+			SplayNode<ReadHandle,LibraryElement>*node=m_database.getRoot();
+			ReadHandle key=node->getKey();
 			m_database.remove(key,true,m_allocator);
 		}
 		m_done=true;
@@ -97,7 +97,7 @@ void LibraryWorker::work(){
 				ReadAnnotation annotation=m_readFetcher.getResult()->at(m_EXTENSION_edgeIterator);
 				int rightRead=annotation.getReadIndex();
 				if(!m_EXTENSION_hasPairedReadRequested){
-					uint64_t*message=(uint64_t*)(m_outboxAllocator)->allocate(1*sizeof(uint64_t));
+					MessageUnit*message=(MessageUnit*)(m_outboxAllocator)->allocate(1*sizeof(MessageUnit));
 					message[0]=rightRead;
 					#ifdef ASSERT
 					assert(m_parameters!=NULL);
@@ -110,7 +110,7 @@ void LibraryWorker::work(){
 					m_virtualCommunicator->pushMessage(m_SEEDING_i,&aMessage);
 					m_EXTENSION_hasPairedReadRequested=true;
 				}else if(m_virtualCommunicator->isMessageProcessed(m_SEEDING_i)){
-					vector<uint64_t> buffer;
+					vector<MessageUnit> buffer;
 					m_virtualCommunicator->getMessageResponseElements(m_SEEDING_i,&buffer);
 					#ifdef ASSERT
 					assert((int)buffer.size()==4);
@@ -123,13 +123,13 @@ void LibraryWorker::work(){
 						int readLength=buffer[0];
 						bool isAutomatic=m_parameters->isAutomatic(library);
 						if(isAutomatic){
-							uint64_t uniqueReadIdentifier=getPathUniqueId(buffer[1],buffer[2]);
-							SplayNode<uint64_t,LibraryElement>*node=m_database.find(uniqueReadIdentifier,false);
+							PathHandle uniqueReadIdentifier=getPathUniqueId(buffer[1],buffer[2]);
+							SplayNode<ReadHandle,LibraryElement>*node=m_database.find(uniqueReadIdentifier,false);
 							if(node!=NULL){
 								LibraryElement*element=node->getValue();
 								int rightStrandPosition=annotation.getPositionOnStrand();
-								char rightStrand=annotation.getStrand();
-								char leftStrand=element->m_readStrand;
+								Strand rightStrand=annotation.getStrand();
+								Strand leftStrand=element->m_readStrand;
 								int leftStrandPosition=element->m_strandPosition;
 											
 								if(( leftStrand=='F' && rightStrand=='R' )
@@ -148,13 +148,13 @@ void LibraryWorker::work(){
 				}
 			}else{
 				for(int i=0;i<(int)m_readFetcher.getResult()->size();i++){
-					uint64_t uniqueId=m_readFetcher.getResult()->at(i).getUniqueId();
+					ReadHandle uniqueId=m_readFetcher.getResult()->at(i).getUniqueId();
 					int position=m_EXTENSION_currentPosition;
-					char strand=m_readFetcher.getResult()->at(i).getStrand();
+					Strand strand=m_readFetcher.getResult()->at(i).getStrand();
 					int strandPosition=m_readFetcher.getResult()->at(i).getPositionOnStrand();
 					// read, position, strand
 					bool flag;
-					SplayNode<uint64_t,LibraryElement>*node=m_database.insert(uniqueId,m_allocator,&flag);
+					SplayNode<ReadHandle,LibraryElement>*node=m_database.insert(uniqueId,m_allocator,&flag);
 					LibraryElement*element=node->getValue();
 					element->m_readPosition=position;
 					element->m_readStrand=strand;
@@ -167,6 +167,6 @@ void LibraryWorker::work(){
 	}
 }
 
-uint64_t LibraryWorker::getWorkerIdentifier(){
+WorkerHandle LibraryWorker::getWorkerIdentifier(){
 	return m_SEEDING_i;
 }

@@ -29,29 +29,29 @@
 using namespace std;
 
 
-CoverageDistribution::CoverageDistribution(map<int,uint64_t>*distributionOfCoverage,string*file){
+CoverageDistribution::CoverageDistribution(map<CoverageDepth,LargeCount>*distributionOfCoverage,string*file){
 	if(file!=NULL){
 		ofstream f;
 		f.open(file->c_str());
-		for(map<int,uint64_t>::iterator i=distributionOfCoverage->begin();i!=distributionOfCoverage->end();i++){
+		for(map<CoverageDepth,LargeCount>::iterator i=distributionOfCoverage->begin();i!=distributionOfCoverage->end();i++){
 			f<<""<<i->first<<" "<<i->second<<endl;
 		}
 		f.close();
 	}
 	
-	vector<int> x;
-	vector<uint64_t> y;
-	for(map<int,uint64_t>::iterator i=distributionOfCoverage->begin();i!=distributionOfCoverage->end();i++){
+	vector<CoverageDepth> x;
+	vector<LargeCount> y;
+	for(map<CoverageDepth,LargeCount>::iterator i=distributionOfCoverage->begin();i!=distributionOfCoverage->end();i++){
 		x.push_back(i->first);
 		y.push_back(i->second);
 	}
 
 	int windowSize=10;
-	int minimumX=1;
-	uint64_t minimumY=2*4096;
-	uint64_t minimumY2=55000;
-	int maximumX=65535-1;
-	int safeThreshold=256;
+	CoverageDepth minimumX=1;
+	LargeCount minimumY=2*4096;
+	LargeCount minimumY2=55000;
+	CoverageDepth maximumX=65535-1;
+	CoverageDepth safeThreshold=256;
 
 	/** get the votes to find the peak */
 	map<int,int> votes;

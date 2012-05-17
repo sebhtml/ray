@@ -24,6 +24,7 @@
 
 #include <application_core/constants.h>
 #include <stdint.h>
+#include <core/types.h>
 
 /* this header was missing, but the code compiled with clang++, gcc, intel, pgi, but not pathscale. pathscale was right */
 #include <fstream> 
@@ -73,9 +74,9 @@ public:
 	bool isEqual(Kmer*a);
 	bool isLower(Kmer*a);
 	void print();
-	void pack(uint64_t*messageBuffer,int*messagePosition);
-	void unpack(uint64_t*messageBuffer,int*messagePosition);
-	void unpack(vector<uint64_t>*messageBuffer,int*messagePosition);
+	void pack(MessageUnit *messageBuffer,int*messagePosition);
+	void unpack(MessageUnit*messageBuffer,int*messagePosition);
+	void unpack(vector<MessageUnit>*messageBuffer,int*messagePosition);
 	void operator=(const Kmer&b);
 	bool operator<(const Kmer&b)const;
 	bool operator!=(const Kmer&b)const;

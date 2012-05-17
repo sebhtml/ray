@@ -36,8 +36,8 @@ void JoinerTaskCreator::call_RAY_SLAVE_MODE_FINISH_FUSIONS(){
 
 void JoinerTaskCreator::constructor(VirtualProcessor*virtualProcessor,StaticVector*outbox,
 		RingAllocator*outboxAllocator,int*mode,Parameters*parameters,
-		vector<vector<Kmer> >*paths,vector<uint64_t>*pathIdentifiers,
-		set<uint64_t>*eliminated,VirtualCommunicator*virtualCommunicator,
+		vector<vector<Kmer> >*paths,vector<PathHandle>*pathIdentifiers,
+		set<PathHandle>*eliminated,VirtualCommunicator*virtualCommunicator,
 		vector<vector<Kmer> >*newPaths){
 	m_newPaths=newPaths;
 
@@ -96,7 +96,7 @@ void JoinerTaskCreator::finalizeMethod(){
 	cout<<"Statistics: all paths: "<<numberOfPaths<<" eliminated during joining: "<<eliminatedPaths<<endl;
 
 	/* send a message */
-	uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t));
+	MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(sizeof(MessageUnit));
 	message[0]=removedPaths;
 	Message aMessage(message,1,MASTER_RANK,RAY_MPI_TAG_FINISH_FUSIONS_FINISHED,m_parameters->getRank());
 	m_outbox->push_back(aMessage);
@@ -119,7 +119,7 @@ bool JoinerTaskCreator::hasUnassignedTask(){
 		return false;
 	}
 
-	return m_iterator < (uint64_t)m_paths->size();
+	return m_iterator < (LargeCount)m_paths->size();
 }
 
 /** assign the next task to a worker and return this worker 

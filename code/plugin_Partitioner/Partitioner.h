@@ -89,9 +89,9 @@ class Partitioner :  public CorePlugin{
 	/** are we currently sending counts ?*/
 	bool m_currentlySendingCounts;
 	/** counts for a peer slave */
-	map<int,uint64_t> m_slaveCounts;
+	map<int,LargeCount> m_slaveCounts;
 	/** counts for the master node */
-	map<int,uint64_t> m_masterCounts;
+	map<int,LargeCount> m_masterCounts;
 
 	/** --- Below are the only elements necessary to bind Partitioner to the Ray software stack */
 	/** allocator for outgoing messages */

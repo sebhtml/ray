@@ -29,7 +29,7 @@
 using namespace std;
 
 void ReadFetcher::constructor(Kmer*vertex,RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,
-VirtualCommunicator*vc,uint64_t workerId,
+VirtualCommunicator*vc,WorkerHandle workerId,
 	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_READS
 ){
 	this->RAY_MPI_TAG_REQUEST_VERTEX_READS=RAY_MPI_TAG_REQUEST_VERTEX_READS;
@@ -55,11 +55,11 @@ void ReadFetcher::work(){
 		return;
 	}
 	if(!m_readsRequested){
-		uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+		MessageUnit*message2=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 		int bufferPosition=0;
 		m_vertex.pack(message2,&bufferPosition);
 
-		uint64_t integerValue=pack_pointer((void**)&m_pointer);
+		MessageUnit integerValue=pack_pointer((void**)&m_pointer);
 
 		// fancy trick to transmit a void* over the network
 		message2[bufferPosition++]=integerValue;
@@ -91,7 +91,7 @@ void ReadFetcher::work(){
 		m_readsRequested=true;
 
 	}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		vector<uint64_t> buffer;
+		vector<MessageUnit> buffer;
 		m_virtualCommunicator->getMessageResponseElements(m_workerId,&buffer);
 
 		#ifdef ASSERT
@@ -158,11 +158,11 @@ void ReadFetcher::work(){
 			m_done=true;
 		}else{
 
-			uint64_t*message2=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+			MessageUnit*message2=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 			int bufferPosition=0;
 			m_vertex.pack(message2,&bufferPosition);
 
-			uint64_t integerValue=pack_pointer((void**)&m_pointer);
+			MessageUnit integerValue=pack_pointer((void**)&m_pointer);
 			message2[bufferPosition++]=integerValue;
 
 			int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_READS);

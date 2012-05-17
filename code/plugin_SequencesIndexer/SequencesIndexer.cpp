@@ -65,7 +65,8 @@ void SequencesIndexer::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(){
 	}
 
 	if(m_activeWorkerIterator.hasNext()){
-		uint64_t workerId=m_activeWorkerIterator.next()->getKey();
+		WorkerHandle workerId=m_activeWorkerIterator.next()->getKey();
+
 		#ifdef ASSERT
 		assert(m_aliveWorkers.find(workerId,false)!=NULL);
 		assert(!m_aliveWorkers.find(workerId,false)->getValue()->isDone());
@@ -262,7 +263,7 @@ MyAllocator*SequencesIndexer::getAllocator(){
 void SequencesIndexer::updateStates(){
 	// erase completed jobs
 	for(int i=0;i<(int)m_workersDone.size();i++){
-		uint64_t workerId=m_workersDone[i];
+		WorkerHandle workerId=m_workersDone[i];
 		#ifdef ASSERT
 		assert(m_activeWorkers.find(workerId,false)!=NULL);
 		assert(m_aliveWorkers.find(workerId,false)!=NULL);
@@ -274,7 +275,7 @@ void SequencesIndexer::updateStates(){
 	m_workersDone.clear();
 
 	for(int i=0;i<(int)m_waitingWorkers.size();i++){
-		uint64_t workerId=m_waitingWorkers[i];
+		WorkerHandle workerId=m_waitingWorkers[i];
 		#ifdef ASSERT
 		assert(m_activeWorkers.find(workerId,false)!=NULL);
 		#endif
@@ -284,7 +285,7 @@ void SequencesIndexer::updateStates(){
 
 	for(int i=0;i<(int)m_activeWorkersToRestore.size();i++){
 		bool flag;
-		uint64_t workerId=m_activeWorkersToRestore[i];
+		WorkerHandle workerId=m_activeWorkersToRestore[i];
 		m_activeWorkers.insert(workerId,&m_workAllocator,&flag);
 	}
 	m_activeWorkersToRestore.clear();

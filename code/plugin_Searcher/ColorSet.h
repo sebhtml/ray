@@ -71,7 +71,7 @@ class ColorSet{
 	int OPERATION_allocateVirtualColorHandle ;
 	int OPERATION_DUMMY ;
 
-	uint64_t m_operations[32];
+	LargeCount m_operations[32];
 
 /** a list of available handles **/
 	set<VirtualKmerColorHandle> m_availableHandles;
@@ -82,9 +82,9 @@ class ColorSet{
 /** a list of physical colors **/
 	set<PhysicalKmerColor> m_physicalColors;
 
-	map<uint64_t,set<VirtualKmerColorHandle> > m_index;
+	map<LargeIndex,set<VirtualKmerColorHandle> > m_index;
 
-	uint64_t m_collisions;
+	LargeCount m_collisions;
 
 
 
@@ -132,7 +132,7 @@ public:
 	VirtualKmerColorHandle getVirtualColorFrom(VirtualKmerColorHandle handle,PhysicalKmerColor color);
 
 	int getTotalNumberOfPhysicalColors();
-	uint64_t getTotalNumberOfVirtualColors();
+	LargeCount getTotalNumberOfVirtualColors();
 
 	void printSummary(ostream*out,bool xml);
 	void printColors(ostream*out);

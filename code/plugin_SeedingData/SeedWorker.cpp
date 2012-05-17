@@ -123,7 +123,7 @@ bool SeedWorker::isDone(){
 }
 
 void SeedWorker::constructor(Kmer*key,Parameters*parameters,RingAllocator*outboxAllocator,
-		VirtualCommunicator*virtualCommunicator,uint64_t workerId,
+		VirtualCommunicator*virtualCommunicator,WorkerHandle workerId,
 
 	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,
 	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE
@@ -180,7 +180,8 @@ void SeedWorker::do_1_1_test(){
 		m_SEEDING_InedgesRequested=false;
 	}else if(!m_SEEDING_ingoingEdgesDone){
 		if(!m_SEEDING_InedgesRequested){
-			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
+
+			MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(MessageUnit));
 			int bufferPosition=0;
 			m_SEEDING_currentVertex.pack(message,&bufferPosition);
 			Message aMessage(message,m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT),
@@ -197,7 +198,7 @@ void SeedWorker::do_1_1_test(){
 		}else if(m_virtualCommunicator->isMessageProcessed(m_workerIdentifier)
 			&&!m_ingoingEdgesReceived){
 			m_ingoingEdgesReceived=true;
-			vector<uint64_t> elements;
+			vector<MessageUnit> elements;
 			m_virtualCommunicator->getMessageResponseElements(m_workerIdentifier,&elements);
 			uint8_t edges=elements[0];
 			m_mainVertexCoverage=elements[1];
@@ -231,7 +232,7 @@ void SeedWorker::do_1_1_test(){
 					m_SEEDING_ingoingEdgeIndex++;
 					m_ingoingCoverages.push_back(m_SEEDING_receivedVertexCoverage);
 				}else if(!m_SEEDING_vertexCoverageRequested){
-					uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(KMER_U64_ARRAY_SIZE*sizeof(uint64_t));
+					MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(KMER_U64_ARRAY_SIZE*sizeof(MessageUnit));
 					int bufferPosition=0;
 					vertex.pack(message,&bufferPosition);
 					int dest=m_parameters->_vertexRank(&vertex);
@@ -241,7 +242,7 @@ void SeedWorker::do_1_1_test(){
 					m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 					m_SEEDING_vertexCoverageRequested=true;
 				}else if(m_virtualCommunicator->isMessageProcessed(m_workerIdentifier)){
-					vector<uint64_t> response;
+					vector<MessageUnit> response;
 					m_virtualCommunicator->getMessageResponseElements(m_workerIdentifier,&response);
 					m_SEEDING_receivedVertexCoverage=response[0];
 					m_cache[vertex]=m_SEEDING_receivedVertexCoverage;
@@ -256,7 +257,7 @@ void SeedWorker::do_1_1_test(){
 					m_SEEDING_outgoingEdgeIndex++;
 					m_outgoingCoverages.push_back(m_SEEDING_receivedVertexCoverage);
 				}else if(!m_SEEDING_vertexCoverageRequested){
-					uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(KMER_U64_ARRAY_SIZE*sizeof(uint64_t));
+					MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(KMER_U64_ARRAY_SIZE*sizeof(MessageUnit));
 					int bufferPosition=0;
 					vertex.pack(message,&bufferPosition);
 					int dest=m_parameters->_vertexRank(&vertex);
@@ -267,7 +268,7 @@ void SeedWorker::do_1_1_test(){
 					m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 					m_SEEDING_vertexCoverageRequested=true;
 				}else if(m_virtualCommunicator->isMessageProcessed(m_workerIdentifier)){
-					vector<uint64_t> response;
+					vector<MessageUnit> response;
 					m_virtualCommunicator->getMessageResponseElements(m_workerIdentifier,&response);
 					m_SEEDING_receivedVertexCoverage=response[0];
 					m_cache[vertex]=m_SEEDING_receivedVertexCoverage;
@@ -362,6 +363,6 @@ vector<int>*SeedWorker::getCoverageVector(){
 	return &m_coverages;
 }
 
-uint64_t SeedWorker::getWorkerIdentifier(){
+WorkerHandle SeedWorker::getWorkerIdentifier(){
 	return m_workerIdentifier;
 }

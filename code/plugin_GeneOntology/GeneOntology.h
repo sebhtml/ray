@@ -125,7 +125,7 @@ class GeneOntology: public CorePlugin{
 	void synchronize();
 	void __skipToData();
 	bool hasDataToSync();
-	void addDataToBuffer(uint64_t*buffer,int*bufferPosition);
+	void addDataToBuffer(MessageUnit*buffer,int*bufferPosition);
 	void incrementOntologyTermFrequency(GeneOntologyIdentifier term,CoverageDepth kmerCoverage,int frequency);
 	bool m_waitingForReply;
 
@@ -197,10 +197,10 @@ class GeneOntology: public CorePlugin{
 	map<GeneOntologyIdentifier,GeneOntologyIdentifier> m_symbolicLinks;
 
 	// dereferences
-	uint64_t m_dereferences;
+	LargeCount m_dereferences;
 
 	// new formula for counting profile percentages
-	uint64_t m_kmerObservationsWithGeneOntologies;
+	LargeCount m_kmerObservationsWithGeneOntologies;
 	bool m_synchronizedTotal;
 	int m_ranksSynchronized;
 

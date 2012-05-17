@@ -37,13 +37,13 @@ using namespace std;
  */
 class PairedRead{
 	uint32_t m_readIndex;
-	uint16_t m_rank;
+	uint16_t m_rank; // should be Rank
 	uint16_t m_library;
 public:
 	void constructor(int rank,int id,int library);
-	int getRank();
+	Rank getRank();
 	uint32_t getId();
-	uint64_t getUniqueId();
+	ReadHandle getUniqueId();
 	int getLibrary();
 
 	void read(ifstream*f);

@@ -22,6 +22,8 @@
 #ifndef _CoverageDistribution
 #define _CoverageDistribution
 
+#include <application_core/constants.h>
+#include <core/types.h>
 #include <map>
 #include <string>
 #include <vector>
@@ -39,10 +41,11 @@ class CoverageDistribution{
 	int m_peakCoverage;
 	int m_repeatCoverage;
 
-	void findPeak(vector<int>*x,vector<uint64_t>*y,vector<uint64_t>*rawValues);
+	void findPeak(vector<int>*x,vector<LargeCount>*y,vector<LargeCount>*rawValues);
+
 	vector<uint64_t> smoothData(vector<uint64_t>*a);
 public:
-	CoverageDistribution(map<int,uint64_t>*distributionOfCoverage,string*file);
+	CoverageDistribution(map<CoverageDepth,LargeCount>*distributionOfCoverage,string*file);
 	int getMinimumCoverage();
 	int getPeakCoverage();
 	int getRepeatCoverage();

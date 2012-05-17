@@ -66,10 +66,10 @@ TODO: does the code pay attention when the coverage indicates a repeated k-mer ?
 			if(m_reverseStrand)
 				kmer=kmer.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 
-			int destination=kmer.vertexRank(m_parameters->getSize(),
+			Rank destination=kmer.vertexRank(m_parameters->getSize(),
 				m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 			int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE);
-			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(elementsPerQuery);
+			MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(elementsPerQuery);
 			int outputPosition=0;
 			kmer.pack(message,&outputPosition);
 			Message aMessage(message,elementsPerQuery,destination,
@@ -79,12 +79,13 @@ TODO: does the code pay attention when the coverage indicates a repeated k-mer ?
 			m_requestedNumberOfPaths=true;
 			m_receivedNumberOfPaths=false;
 
-			if(m_parameters->hasOption("-debug-fusions2"))
+			if(m_parameters->hasOption("-debug-fusions2")){
 				cout<<"worker "<<m_workerIdentifier<<" send RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE"<<endl;
+			}
 
 		/* receive the number of paths */
 		}else if(m_requestedNumberOfPaths && !m_receivedNumberOfPaths && m_virtualCommunicator->isMessageProcessed(m_workerIdentifier)){
-			vector<uint64_t> response;
+			vector<MessageUnit> response;
 			m_virtualCommunicator->getMessageResponseElements(m_workerIdentifier,&response);
 			m_numberOfPaths=response[0];
 		
@@ -110,10 +111,10 @@ TODO: does the code pay attention when the coverage indicates a repeated k-mer ?
 				if(m_reverseStrand)
 					kmer=kmer.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 	
-				int destination=kmer.vertexRank(m_parameters->getSize(),
+				Rank destination=kmer.vertexRank(m_parameters->getSize(),
 					m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 				int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_ASK_VERTEX_PATH);
-				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(elementsPerQuery);
+				MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(elementsPerQuery);
 				int outputPosition=0;
 				kmer.pack(message,&outputPosition);
 				message[outputPosition++]=m_pathIndex;
@@ -122,20 +123,21 @@ TODO: does the code pay attention when the coverage indicates a repeated k-mer ?
 					RAY_MPI_TAG_ASK_VERTEX_PATH,m_parameters->getRank());
 				m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 
-				if(m_parameters->hasOption("-debug-fusions2"))
+				if(m_parameters->hasOption("-debug-fusions2")){
 					cout<<"worker "<<m_workerIdentifier<<" send RAY_MPI_TAG_ASK_VERTEX_PATH "<<m_pathIndex<<endl;
+				}
 
 				m_requestedPath=true;
 				m_receivedPath=false;
 			/* receive the path */
 			}else if(!m_receivedPath && m_virtualCommunicator->isMessageProcessed(m_workerIdentifier)){
-				vector<uint64_t> response;
+				vector<MessageUnit> response;
 				m_virtualCommunicator->getMessageResponseElements(m_workerIdentifier,&response);
 				int bufferPosition=0;
 
 				/* skip the k-mer because we don't need it */
 				bufferPosition+=KMER_U64_ARRAY_SIZE;
-				uint64_t otherPathIdentifier=response[bufferPosition++];
+				PathHandle otherPathIdentifier=response[bufferPosition++];
 				//int progression=response[bufferPosition++];
 
 				if(m_parameters->hasOption("-debug-fusions2"))
@@ -162,7 +164,7 @@ TODO: does the code pay attention when the coverage indicates a repeated k-mer ?
 	/* gather hit information */
 	}else if(!m_gatheredHits){
 		if(!m_initializedGathering){
-			for(map<uint64_t,int>::iterator i=m_hits.begin();i!=m_hits.end();i++){
+			for(map<PathHandle,int>::iterator i=m_hits.begin();i!=m_hits.end();i++){
 				m_hitNames.push_back(i->first);
 			}
 			m_initializedGathering=true;
@@ -171,10 +173,10 @@ TODO: does the code pay attention when the coverage indicates a repeated k-mer ?
 		}else if(m_hitIterator < (int) m_hitNames.size()){
 			/* ask the hit length */
 			if(!m_requestedHitLength){
-				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1);
+				MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(1);
 
-				uint64_t hitName=m_hitNames[m_hitIterator];
-				int destination=getRankFromPathUniqueId(hitName);
+				PathHandle hitName=m_hitNames[m_hitIterator];
+				Rank destination=getRankFromPathUniqueId(hitName);
 
 				message[0]=hitName;
 
@@ -185,7 +187,7 @@ TODO: does the code pay attention when the coverage indicates a repeated k-mer ?
 
 			/* receive the hit length */
 			}else if(m_virtualCommunicator->isMessageProcessed(m_workerIdentifier)){
-				vector<uint64_t> response;
+				vector<MessageUnit> response;
 				m_virtualCommunicator->getMessageResponseElements(m_workerIdentifier,&response);
 				int length=response[0];
 
@@ -217,7 +219,7 @@ TODO: does the code pay attention when the coverage indicates a repeated k-mer ?
 		}
 
 		for(int i=0;i<(int)m_hitNames.size();i++){
-			uint64_t hit=m_hitNames[i];
+			PathHandle hit=m_hitNames[i];
 			int hitLength=m_hitLengths[i];
 			int selfLength=m_path->size();
 			int matches=m_hits[hit];
@@ -250,11 +252,11 @@ TODO: does the code pay attention when the coverage indicates a repeated k-mer ?
 	}
 }
 
-uint64_t FusionWorker::getWorkerIdentifier(){
+WorkerHandle FusionWorker::getWorkerIdentifier(){
 	return m_workerIdentifier;
 }
 
-void FusionWorker::constructor(uint64_t number,vector<Kmer>*path,uint64_t identifier,bool reverseStrand,
+void FusionWorker::constructor(WorkerHandle number,vector<Kmer>*path,PathHandle identifier,bool reverseStrand,
 	VirtualCommunicator*virtualCommunicator,Parameters*parameters,RingAllocator*outboxAllocator,
 
 	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH,
@@ -290,6 +292,6 @@ bool FusionWorker::isPathEliminated(){
 	return m_eliminated;
 }
 
-uint64_t FusionWorker::getPathIdentifier(){
+PathHandle FusionWorker::getPathIdentifier(){
 	return m_identifier;
 }

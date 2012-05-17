@@ -43,7 +43,7 @@ void DistributionWriter::setRank(Rank rank){
 }
 
 void DistributionWriter::write(int directory,int file,int sequence,
-	map<int,uint64_t>*all,map<int,uint64_t>*uniquelyColored,map<int,uint64_t>*uniquelyColoredAndAssembled,
+	map<CoverageDepth,LargeCount>*all,map<CoverageDepth,LargeCount>*uniquelyColored,map<CoverageDepth,LargeCount>*uniquelyColoredAndAssembled,
 	const char*directoryName,const char*fileName){
 
 	openFile();
@@ -56,7 +56,7 @@ void DistributionWriter::write(int directory,int file,int sequence,
 
 	m_output_Buffer<<"#Coverage depth	Frequency"<<endl;
 
-	for(map<int,uint64_t>::iterator i=all->begin();
+	for(map<CoverageDepth,LargeCount>::iterator i=all->begin();
 		i!=all->end();i++){
 
 		m_output_Buffer<<i->first<<"	"<<i->second<<endl;
@@ -68,7 +68,7 @@ void DistributionWriter::write(int directory,int file,int sequence,
 
 	m_output_Buffer<<"#Coverage depth	Frequency"<<endl;
 
-	for(map<int,uint64_t>::iterator i=uniquelyColored->begin();
+	for(map<CoverageDepth,LargeCount>::iterator i=uniquelyColored->begin();
 		i!=uniquelyColored->end();i++){
 
 		m_output_Buffer<<i->first<<"	"<<i->second<<endl;
@@ -79,7 +79,7 @@ void DistributionWriter::write(int directory,int file,int sequence,
 	m_output_Buffer<<"<uniquelyColoredAndAssembled>"<<endl;
 	m_output_Buffer<<"#Coverage depth	Frequency"<<endl;
 
-	for(map<int,uint64_t>::iterator i=uniquelyColoredAndAssembled->begin();
+	for(map<CoverageDepth,LargeCount>::iterator i=uniquelyColoredAndAssembled->begin();
 		i!=uniquelyColoredAndAssembled->end();i++){
 
 		m_output_Buffer<<i->first<<"	"<<i->second<<endl;

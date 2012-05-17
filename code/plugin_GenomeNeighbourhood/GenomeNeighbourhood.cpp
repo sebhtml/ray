@@ -46,7 +46,7 @@ ____CreateMessageTagAdapterImplementation(GenomeNeighbourhood,RAY_MPI_TAG_NEIGHB
 
 void GenomeNeighbourhood::call_RAY_MPI_TAG_NEIGHBOURHOOD_DATA(Message*message){
 	
-	uint64_t*incoming=(uint64_t*)message->getBuffer();
+	MessageUnit*incoming=(MessageUnit*)message->getBuffer();
 	int position=0;
 
 	/* progressions are on the 'F' strand.
@@ -56,11 +56,11 @@ void GenomeNeighbourhood::call_RAY_MPI_TAG_NEIGHBOURHOOD_DATA(Message*message){
  * it is sent this way because only master has the length on contigs
  *
  */
-	uint64_t leftContig=incoming[position++];
-	char leftVertexStrand=incoming[position++];
+	PathHandle leftContig=incoming[position++];
+	Strand leftVertexStrand=incoming[position++];
 	int leftProgressionInContig=incoming[position++];
 
-	uint64_t rightContig=incoming[position++];
+	PathHandle rightContig=incoming[position++];
 	char rightVertexStrand=incoming[position++];
 	int rightProgressionInContig=incoming[position++];
 
@@ -98,7 +98,7 @@ void GenomeNeighbourhood::call_RAY_MPI_TAG_NEIGHBOURHOOD_DATA(Message*message){
 
 	int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_NEIGHBOURHOOD_DATA);
 
-	uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(period*sizeof(uint64_t));
+	MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(period*sizeof(MessageUnit));
 	Message aMessage(buffer,period,message->getSource(),RAY_MPI_TAG_NEIGHBOURHOOD_DATA_REPLY,
 		m_parameters->getRank());
 
@@ -137,7 +137,7 @@ void GenomeNeighbourhood::fetchPaths(int mode){
 		#endif
 
 		// send a message to request the links of the current vertex
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
+		MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 		int bufferPosition=0;
 		kmer.pack(buffer,&bufferPosition);
 	
@@ -158,7 +158,7 @@ void GenomeNeighbourhood::fetchPaths(int mode){
 
 	}else if(!m_numberOfPathsReceived && m_virtualCommunicator->isMessageProcessed(m_workerId)){
 
-		vector<uint64_t> elements;
+		vector<MessageUnit> elements;
 		m_virtualCommunicator->getMessageResponseElements(m_workerId,&elements);
 
 		m_paths=elements[0];
@@ -197,12 +197,12 @@ void GenomeNeighbourhood::fetchPaths(int mode){
 
 	}else if(m_numberOfPathsReceived && !m_requestedPath){
 
-		int destination=kmer.vertexRank(m_parameters->getSize(),
+		Rank destination=kmer.vertexRank(m_parameters->getSize(),
 			m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 
 		int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_ASK_VERTEX_PATH);
 
-		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(elementsPerQuery);
+		MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(elementsPerQuery);
 
 		int outputPosition=0;
 		kmer.pack(message,&outputPosition);
@@ -221,14 +221,14 @@ void GenomeNeighbourhood::fetchPaths(int mode){
 		m_receivedPath=false;
 
 	}else if(m_numberOfPathsReceived && !m_receivedPath && m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		vector<uint64_t> response;
+		vector<MessageUnit> response;
 		m_virtualCommunicator->getMessageResponseElements(m_workerId,&response);
 
 		int bufferPosition=0;
 
 		/* skip the k-mer because we don't need it */
 		bufferPosition+=KMER_U64_ARRAY_SIZE;
-		uint64_t pathIdentifier=response[bufferPosition++];
+		PathHandle pathIdentifier=response[bufferPosition++];
 		int progression=response[bufferPosition++];
 
 		
@@ -356,7 +356,7 @@ void GenomeNeighbourhood::processLinks(int mode){
 		#endif
 
 		// send a message to request the links of the current vertex
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
+		MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 		int bufferPosition=0;
 		currentKmer.pack(buffer,&bufferPosition);
 	
@@ -381,7 +381,7 @@ void GenomeNeighbourhood::processLinks(int mode){
 		cout<<"Message received, RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT"<<endl;
 		#endif
 
-		vector<uint64_t> elements;
+		vector<MessageUnit> elements;
 		m_virtualCommunicator->getMessageResponseElements(m_workerId,&elements);
 
 		#ifdef ASSERT
@@ -599,12 +599,12 @@ all other cases are invalid.
 	operationBuffer<<"	DistanceInKmers	QualityControlStatus"<<endl;
 
 	for(int i=0;i<(int)m_finalList.size();i++){
-		uint64_t contig1=m_finalList[i].getContig1();
-		uint64_t contig2=m_finalList[i].getContig2();
+		PathHandle contig1=m_finalList[i].getContig1();
+		PathHandle contig2=m_finalList[i].getContig2();
 		int length1=m_contigLengths->operator[](contig1);
 		int length2=m_contigLengths->operator[](contig2);
-		char strand1=m_finalList[i].getStrand1();
-		char strand2=m_finalList[i].getStrand2();
+		Strand strand1=m_finalList[i].getStrand1();
+		Strand strand2=m_finalList[i].getStrand2();
 		int progression1=m_finalList[i].getProgression1();
 		int progression2=m_finalList[i].getProgression2();
 
@@ -703,13 +703,13 @@ void GenomeNeighbourhood::selectHits(){
 	/** we have all the neighbours, unfiltered... **/
 	/* process neighbours */
 
-	map<uint64_t,int> leftMinimums;
-	map<uint64_t,int> leftMaximums;
-	map<uint64_t,int> rightMinimums;
-	map<uint64_t,int> rightMaximums;
+	map<PathHandle,int> leftMinimums;
+	map<PathHandle,int> leftMaximums;
+	map<PathHandle,int> rightMinimums;
+	map<PathHandle,int> rightMaximums;
 
 	for(int i=0;i<(int)m_leftNeighbours.size();i++){
-		uint64_t contig=m_leftNeighbours[i].getContig();
+		PathHandle contig=m_leftNeighbours[i].getContig();
 		int progression=m_leftNeighbours[i].getProgression();
 
 		if(leftMinimums.count(contig)==0 || progression < leftMinimums[contig]){
@@ -723,7 +723,7 @@ void GenomeNeighbourhood::selectHits(){
 	}
 
 	for(int i=0;i<(int)m_rightNeighbours.size();i++){
-		uint64_t contig=m_rightNeighbours[i].getContig();
+		PathHandle contig=m_rightNeighbours[i].getContig();
 		int progression=m_rightNeighbours[i].getProgression();
 
 		if(rightMinimums.count(contig)==0 || progression < rightMinimums[contig]){
@@ -738,7 +738,7 @@ void GenomeNeighbourhood::selectHits(){
 	vector<Neighbour> leftNeighbours;
 
 	for(int i=0;i<(int)m_leftNeighbours.size();i++){
-		uint64_t contig=m_leftNeighbours[i].getContig();
+		PathHandle contig=m_leftNeighbours[i].getContig();
 		int progression=m_leftNeighbours[i].getProgression();
 
 		if(progression!=leftMinimums[contig] && progression != leftMaximums[contig]){
@@ -766,7 +766,7 @@ void GenomeNeighbourhood::selectHits(){
 
 	for(int i=0;i<(int)m_rightNeighbours.size();i++){
 
-		uint64_t contig=m_rightNeighbours[i].getContig();
+		PathHandle contig=m_rightNeighbours[i].getContig();
 		int progression=m_rightNeighbours[i].getProgression();
 
 		if(progression!=rightMinimums[contig] && progression != rightMaximums[contig]){
@@ -862,8 +862,8 @@ void GenomeNeighbourhood::call_RAY_SLAVE_MODE_NEIGHBOURHOOD(){
 	}else if(m_contigIndex<(int)m_contigs->size()){ /* there is still work to do */
 
 /*
-		uint64_t contigName=m_contigNames->at(m_contigIndex);
-		char contigStrand='F';
+		PathHandle contigName=m_contigNames->at(m_contigIndex);
+		Strand contigStrand='F';
 		int contigLength=m_contigs->at(m_contigIndex).size();
 */
 
@@ -954,7 +954,7 @@ void GenomeNeighbourhood::sendRightNeighbours(){
 			m_sentEntry=true;
 
 			// send a message to request the links of the current vertex
-			uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
+			MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 
 			Rank destination=0x0;
 			int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_NEIGHBOURHOOD_DATA);
@@ -984,7 +984,7 @@ void GenomeNeighbourhood::sendRightNeighbours(){
 
 		}else if(!m_receivedReply && m_virtualCommunicator->isMessageProcessed(m_workerId)){
 
-			vector<uint64_t> elements;
+			vector<MessageUnit> elements;
 			m_virtualCommunicator->getMessageResponseElements(m_workerId,&elements);
 
 
@@ -1014,7 +1014,7 @@ void GenomeNeighbourhood::sendLeftNeighbours(){
 			m_sentEntry=true;
 
 			// send a message to request the links of the current vertex
-			uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
+			MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 
 			Rank destination=0x0;
 			int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_NEIGHBOURHOOD_DATA);
@@ -1044,7 +1044,7 @@ void GenomeNeighbourhood::sendLeftNeighbours(){
 
 		}else if(!m_receivedReply && m_virtualCommunicator->isMessageProcessed(m_workerId)){
 
-			vector<uint64_t> elements;
+			vector<MessageUnit> elements;
 			m_virtualCommunicator->getMessageResponseElements(m_workerId,&elements);
 
 
@@ -1140,9 +1140,9 @@ void GenomeNeighbourhood::resolveSymbols(ComputeCore*core){
 	// fetch parallel shared objects
 	m_timePrinter=(TimePrinter*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/Timer.ray");
 	m_contigs=(vector<vector<Kmer> >*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/ContigPaths.ray");
-	m_contigNames=(vector<uint64_t>*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/ContigNames.ray");
+	m_contigNames=(vector<PathHandle>*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/ContigNames.ray");
 	m_parameters=(Parameters*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/Parameters.ray");
-	m_contigLengths=(map<uint64_t,int>*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/ContigLengths.ray");
+	m_contigLengths=(map<PathHandle,int>*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/ContigLengths.ray");
 
 
 	m_virtualCommunicator=core->getVirtualCommunicator();

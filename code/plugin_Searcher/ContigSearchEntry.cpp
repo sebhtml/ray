@@ -21,7 +21,7 @@
 #include <plugin_Searcher/ContigSearchEntry.h>
 
 
-ContigSearchEntry::ContigSearchEntry(uint64_t name,int length,int mode,double mean,int coloredKmers){
+ContigSearchEntry::ContigSearchEntry(PathHandle name,int length,int mode,double mean,int coloredKmers){
 	m_name=name;
 	m_length=length;
 	m_modeCoverage=mode;
@@ -30,7 +30,7 @@ ContigSearchEntry::ContigSearchEntry(uint64_t name,int length,int mode,double me
 	m_coloredKmers=coloredKmers;
 }
 
-uint64_t ContigSearchEntry::getName(){
+PathHandle ContigSearchEntry::getName(){
 	return m_name;
 }
 
@@ -51,7 +51,7 @@ int ContigSearchEntry::getTotal(){
 	return getMode()*getLength();
 }
 
-void ContigSearchEntry::write(ofstream*file,uint64_t total,int kmerLength){
+void ContigSearchEntry::write(ofstream*file,LargeCount total,int kmerLength){
 	double ratio=getTotal();
 
 	// be careful with those 0s

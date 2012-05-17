@@ -92,7 +92,7 @@ class NetworkTest :  public CorePlugin {
 
 	int m_messagesPerRank;
 
-	vector<int> m_destinations;
+	vector<Rank> m_destinations;
 	vector<uint64_t> m_sentMicroseconds;
 	vector<uint64_t> m_receivedMicroseconds;
 

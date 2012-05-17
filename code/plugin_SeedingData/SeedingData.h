@@ -84,20 +84,20 @@ class SeedingData : public CorePlugin{
 	bool m_flushAllMode;
 	VirtualCommunicator*m_virtualCommunicator;
 	bool m_initiatedIterator;
-	int m_rank;
+	Rank m_rank;
 	int m_size;
 	RingAllocator*m_outboxAllocator;
 	StaticVector*m_outbox;
 	StaticVector*m_inbox;
 	int*m_seedCoverage;
 	int*m_mode;
-	set<uint64_t> m_activeWorkers;
-	set<uint64_t>::iterator m_activeWorkerIterator;
-	map<uint64_t,SeedWorker> m_aliveWorkers;
+	set<WorkerHandle> m_activeWorkers;
+	set<WorkerHandle>::iterator m_activeWorkerIterator;
+	map<WorkerHandle,SeedWorker> m_aliveWorkers;
 	bool m_communicatorWasTriggered;
-	vector<uint64_t> m_workersDone;
-	vector<uint64_t> m_waitingWorkers;
-	vector<uint64_t> m_activeWorkersToRestore;
+	vector<WorkerHandle> m_workersDone;
+	vector<WorkerHandle> m_waitingWorkers;
+	vector<WorkerHandle> m_activeWorkersToRestore;
 	Parameters*m_parameters;
 	GridTable*m_subgraph;
 	GridTableIterator m_splayTreeIterator;
@@ -135,7 +135,7 @@ public:
 	bool m_SEEDING_passedParentsTest;
 	bool m_SEEDING_Extended;
 	bool m_SEEDING_edgesReceived;
-	uint64_t m_SEEDING_i;
+	LargeIndex m_SEEDING_i;
 
 	int m_SEEDING_outgoing_index;
 	bool m_SEEDING_outgoing_choice_done;

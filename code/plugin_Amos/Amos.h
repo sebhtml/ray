@@ -70,7 +70,7 @@ class Amos :  public CorePlugin{
 
 	VirtualCommunicator*m_virtualCommunicator;
 	StaticVector*m_inbox;
-	uint64_t m_workerId;
+	WorkerHandle m_workerId;
 	ReadFetcher m_readFetcher;
 	int*m_master_mode;
 	int*m_slave_mode;
@@ -84,7 +84,7 @@ class Amos :  public CorePlugin{
 	int m_sequence_id;
 	ExtensionData*m_ed;
 	int m_mode_send_vertices_sequence_id_position;
-	vector<uint64_t> m_activeWorkers;
+	vector<WorkerHandle> m_activeWorkers;
 public:
 	void call_RAY_MASTER_MODE_AMOS();
 	void call_RAY_SLAVE_MODE_AMOS();

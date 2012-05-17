@@ -628,7 +628,7 @@ bool SearchDirectory::hasCurrentSequenceIdentifier(){
 	return false;
 }
 
-uint64_t SearchDirectory::getCurrentSequenceIdentifier(){
+PhysicalKmerColor SearchDirectory::getCurrentSequenceIdentifier(){
 	int count=0;
 	int i=0;
 
@@ -642,8 +642,9 @@ uint64_t SearchDirectory::getCurrentSequenceIdentifier(){
 		i++;
 	}
 
-	if(count!=2)
+	if(count!=2){
 		return DUMMY_IDENTIFIER; // return a dummy identifier
+	}
 
 	// >gi|1234|
 	//
@@ -656,7 +657,7 @@ uint64_t SearchDirectory::getCurrentSequenceIdentifier(){
 	istringstream aStream;
 	aStream.str(content);
 
-	uint64_t identifier;
+	PhysicalKmerColor identifier;
 
 	aStream>>identifier;
 

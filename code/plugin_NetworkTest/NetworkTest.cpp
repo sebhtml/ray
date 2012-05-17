@@ -115,7 +115,7 @@ void NetworkTest::call_RAY_SLAVE_MODE_TEST_NETWORK(){
 
 
 	#ifdef ASSERT
-	assert(m_numberOfWords*sizeof(uint64_t) <= MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	assert(m_numberOfWords*sizeof(MessageUnit) <= MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	#endif
 
 	if(m_currentTestMessage<m_numberOfTestMessages){
@@ -124,7 +124,7 @@ void NetworkTest::call_RAY_SLAVE_MODE_TEST_NETWORK(){
 			if(m_currentTestMessage==0)
 				m_sentData=false;
 
-			uint64_t startingTimeMicroseconds=getMicroseconds();
+			LargeCount startingTimeMicroseconds=getMicroseconds();
 
 			/** send to a random rank */
 			int destination=rand()%m_size;
@@ -132,13 +132,13 @@ void NetworkTest::call_RAY_SLAVE_MODE_TEST_NETWORK(){
 			m_sentMicroseconds.push_back(startingTimeMicroseconds);
 			m_destinations.push_back(destination);
 
-			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(m_numberOfWords*sizeof(uint64_t));
+			MessageUnit *message=(MessageUnit*)m_outboxAllocator->allocate(m_numberOfWords*sizeof(MessageUnit));
 			Message aMessage(message,m_numberOfWords,destination,RAY_MPI_TAG_TEST_NETWORK_MESSAGE,m_rank);
 			m_outbox->push_back(aMessage);
 			m_sentCurrentTestMessage=true;
 			//cout<<m_rank<<" sends RAY_MPI_TAG_TEST_NETWORK_MESSAGE to "<<destination<<endl;
 		}else if(m_inbox->size()>0 && m_inbox->at(0)->getTag()==RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY){
-			uint64_t endingMicroSeconds=getMicroseconds();
+			LargeCount endingMicroSeconds=getMicroseconds();
 			
 			m_receivedMicroseconds.push_back(endingMicroSeconds);
 
@@ -164,13 +164,14 @@ void NetworkTest::call_RAY_SLAVE_MODE_TEST_NETWORK(){
 
 		int latency=getModeLatency();
 
-		cout<<"Rank "<<m_rank<<": mode latency for "<<(*m_name)<<" when requesting a reply for a message of "<<sizeof(uint64_t)*m_numberOfWords<<" bytes is "<<latency<<" microseconds (10^-6 seconds)"<<endl;
+		cout<<"Rank "<<m_rank<<": mode latency for "<<(*m_name)<<" when requesting a reply for a message of "<<sizeof(MessageUnit)*m_numberOfWords<<" bytes is "<<latency<<" microseconds (10^-6 seconds)"<<endl;
 
-		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+		MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 		message[0]=latency;
 		char*destination=(char*)(message+1);
 		strcpy(destination,m_name->c_str());
-		Message aMessage(message,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),MASTER_RANK,RAY_MPI_TAG_TEST_NETWORK_REPLY,m_rank);
+		Message aMessage(message,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit),
+			MASTER_RANK,RAY_MPI_TAG_TEST_NETWORK_REPLY,m_rank);
 		m_outbox->push_back(aMessage);
 
 		m_sentData=true;
@@ -206,8 +207,8 @@ void NetworkTest::writeData(){
 		f<<"# tag for test messages: RAY_MPI_TAG_TEST_NETWORK_MESSAGE"<<endl;
 		f<<"# tag for reply messages: RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY"<<endl;
 		f<<"# number of words per message: "<<m_numberOfWords<<endl;
-		f<<"# word size in bytes: "<<sizeof(uint64_t)<<endl;
-		f<<"# number of bytes for test messages: "<<m_numberOfWords*sizeof(uint64_t)<<endl;
+		f<<"# word size in bytes: "<<sizeof(MessageUnit)<<endl;
+		f<<"# number of bytes for test messages: "<<m_numberOfWords*sizeof(MessageUnit)<<endl;
 		f<<"# number of bytes for reply messages: 0"<<endl;
 		f<<"# number of test messages: "<<m_numberOfTestMessages<<endl;
 		f<<"# mode latency measured in microseconds: "<<getModeLatency()<<endl;
@@ -223,8 +224,8 @@ void NetworkTest::writeData(){
 		map<int,int> counters;
 
 		for(int i=0;i<(int)m_sentMicroseconds.size();i++){
-			uint64_t time1=m_sentMicroseconds[i];
-			uint64_t time2=m_receivedMicroseconds[i];
+			LargeCount time1=m_sentMicroseconds[i];
+			LargeCount time2=m_receivedMicroseconds[i];
 			int destination=m_destinations[i];
 			counters[destination] ++ ;
 			f<<i<<"	"<<"	"<<m_parameters->getRank()<<"	"<<destination<<"	"<<time1<<"	"<<time2<<"	"<<time2-time1<<"	"<<counters[destination]<<endl;
@@ -262,7 +263,9 @@ void NetworkTest::call_RAY_MASTER_MODE_TEST_NETWORK (){
 	}else if(m_inbox->size()>0&&(*m_inbox)[0]->getTag()==RAY_MPI_TAG_TEST_NETWORK_REPLY){
 		int rank=m_inbox->at(0)->getSource();
 		int latency=m_inbox->at(0)->getBuffer()[0];
-		uint64_t*buffer=m_inbox->at(0)->getBuffer();
+
+		MessageUnit*buffer=m_inbox->at(0)->getBuffer();
+
 		char*name=(char*)(buffer+1);
 		string stringName=name;
 		m_names[rank]=stringName;
@@ -277,7 +280,7 @@ void NetworkTest::call_RAY_MASTER_MODE_TEST_NETWORK (){
 		file<<m_parameters->getPrefix();
 		file<<"NetworkTest.txt";
 		ofstream f(file.str().c_str());
-		f<<"# average latency in microseconds (10^-6 seconds) when requesting a reply for a message of "<<sizeof(uint64_t)*m_numberOfWords<<" bytes"<<endl;
+		f<<"# average latency in microseconds (10^-6 seconds) when requesting a reply for a message of "<<sizeof(MessageUnit)*m_numberOfWords<<" bytes"<<endl;
 		f<<"# MessagePassingInterfaceRank\tName\tModeLatencyInMicroseconds\tNumberOfTestMessages"<<endl;
 
 		vector<int> latencies;

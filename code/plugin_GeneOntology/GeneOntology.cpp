@@ -53,18 +53,18 @@ void GeneOntology::call_RAY_MPI_TAG_SYNCHRONIZE_TERMS(Message*message){
 	if(source!=MASTER_RANK){
 
 		int count=message->getCount();
-		uint64_t*buffer=message->getBuffer();
+		MessageUnit*buffer=message->getBuffer();
 
 		for(int i=0;i<count;i+=3){
 
 			GeneOntologyIdentifier term=buffer[i+0];
-			uint64_t kmerCoverage= buffer[i+1];
-			uint64_t frequency=buffer[i+2];
+			CoverageDepth kmerCoverage= buffer[i+1];
+			LargeCount frequency=buffer[i+2];
 
 			if(term==SENTINEL_VALUE_FOR_TOTAL && kmerCoverage == SENTINEL_VALUE_FOR_TOTAL
 				&& count==3){
 
-				uint64_t kmerObservationsWithGeneOntologies=frequency;
+				LargeCount kmerObservationsWithGeneOntologies=frequency;
 
 				m_kmerObservationsWithGeneOntologies+=kmerObservationsWithGeneOntologies;
 
@@ -181,7 +181,7 @@ void GeneOntology::fetchRelevantColors(){
 
 			PhysicalKmerColor physicalColor=*j;
 	
-			uint64_t nameSpace=physicalColor/COLOR_NAMESPACE_MULTIPLIER;
+			PhysicalKmerColor nameSpace=physicalColor/COLOR_NAMESPACE_MULTIPLIER;
 		
 			if(nameSpace==COLOR_NAMESPACE_EMBL_CDS){
 				PhysicalKmerColor colorForPhylogeny=physicalColor % COLOR_NAMESPACE_MULTIPLIER;
@@ -399,7 +399,7 @@ void GeneOntology::writeOntologyProfile(GeneOntologyDomain domain){
 	assert(domainName!="NULL");
 	#endif
 
-	uint64_t totalForTheGraph=m_searcher->getTotalNumberOfColoredKmerObservationsForANameSpace(COLOR_NAMESPACE_EMBL_CDS);
+	LargeCount totalForTheGraph=m_searcher->getTotalNumberOfColoredKmerObservationsForANameSpace(COLOR_NAMESPACE_EMBL_CDS);
 
 	for(int depth=0;depth<maximumDepth;depth++){
 
@@ -686,7 +686,7 @@ void GeneOntology::writeOntologyFiles(){
 	operationBuffer<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"<<endl;
 	operationBuffer<<"<root>"<<endl;
 
-	uint64_t totalForTheGraph=m_searcher->getTotalNumberOfColoredKmerObservationsForANameSpace(COLOR_NAMESPACE_EMBL_CDS);
+	LargeCount totalForTheGraph=m_searcher->getTotalNumberOfColoredKmerObservationsForANameSpace(COLOR_NAMESPACE_EMBL_CDS);
 	operationBuffer<<"<totalColoredKmerObservations>";
 	operationBuffer<<totalForTheGraph<<"</totalColoredKmerObservations>"<<endl;
 
@@ -705,7 +705,7 @@ void GeneOntology::writeOntologyFiles(){
 		int modeCount=0;
 		int total=0;
 
-		uint64_t totalObservations=0;
+		LargeCount totalObservations=0;
 
 		for(map<CoverageDepth,int>::iterator j=i->second.begin();j!=i->second.end();j++){
 
@@ -1149,7 +1149,7 @@ void GeneOntology::synchronize(){
 
 	if(!m_synchronizedTotal && !isMaster){
 	
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+		MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 		int bufferPosition=0;
 
 		m_synchronizedTotal=true;
@@ -1174,7 +1174,7 @@ void GeneOntology::synchronize(){
 		cout<<"[DEBUG_ONTOLOGY_SYNC] Will create data message"<<endl;
 		#endif
 
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+		MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
 		#ifdef ASSERT
 		assert(buffer!=NULL);
@@ -1182,7 +1182,7 @@ void GeneOntology::synchronize(){
 
 		int bufferPosition=0;
 
-		int available=(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t))/3;
+		int available=(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit))/3;
 		int added=0;
 
 		while(hasDataToSync() && added < available){
@@ -1249,11 +1249,11 @@ bool GeneOntology::hasDataToSync(){
 	return m_ontologyTermFrequencies_iterator1 != m_ontologyTermFrequencies.end();
 }
 
-void GeneOntology::addDataToBuffer(uint64_t*buffer,int*bufferPosition){
+void GeneOntology::addDataToBuffer(MessageUnit*buffer,int*bufferPosition){
 
 	GeneOntologyIdentifier term=m_ontologyTermFrequencies_iterator1->first;
-	int coverage=m_ontologyTermFrequencies_iterator2->first;
-	int frequency=m_ontologyTermFrequencies_iterator2->second;
+	CoverageDepth coverage=m_ontologyTermFrequencies_iterator2->first;
+	LargeCount frequency=m_ontologyTermFrequencies_iterator2->second;
 
 	#ifdef DEBUG_ONTOLOGY_SYNC
 	cout<<"[DEBUG_ONTOLOGY_SYNC] bufferPosition= "<<*(bufferPosition)<<endl;
@@ -1328,7 +1328,7 @@ void GeneOntology::countOntologyTermsInGraph(){
 
 			PhysicalKmerColor physicalColor=*j;
 	
-			uint64_t nameSpace=physicalColor/COLOR_NAMESPACE_MULTIPLIER;
+			PhysicalKmerColor nameSpace=physicalColor/COLOR_NAMESPACE_MULTIPLIER;
 		
 			if(nameSpace==COLOR_NAMESPACE_EMBL_CDS){
 

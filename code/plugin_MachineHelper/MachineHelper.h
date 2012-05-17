@@ -274,7 +274,7 @@ class MachineHelper: public CorePlugin{
 	time_t*m_lastTime;
 	bool*m_writeKmerInitialised;
 	Partitioner*m_partitioner;
-	map<int,map<int,uint64_t> > m_edgeDistribution;
+	map<int,map<int,LargeCount> > m_edgeDistribution;
 
 	VirtualCommunicator*m_virtualCommunicator;
 	KmerAcademyBuilder*m_kmerAcademyBuilder;
@@ -343,7 +343,7 @@ class MachineHelper: public CorePlugin{
 	StaticVector*m_outbox;
 	StaticVector*m_inbox;
 	bool*m_aborted;
-	map<int,uint64_t>*m_coverageDistribution;
+	map<CoverageDepth,LargeCount>*m_coverageDistribution;
 	int*m_numberOfMachinesDoneSendingCoverage;
 	int*m_numberOfRanksWithCoverageData;
 
@@ -355,7 +355,7 @@ public:
 	void constructor(int argc,char**argv,Parameters*parameters,
 		SwitchMan*switchMan,RingAllocator*outboxAllocator,
 		StaticVector*outbox,bool*aborted,
-	map<int,uint64_t>*coverageDistribution,
+	map<CoverageDepth,LargeCount>*coverageDistribution,
 	int*numberOfMachinesDoneSendingCoverage,int*numberOfRanksWithCoverageData,
 bool*reductionOccured,ExtensionData*ed,FusionData*fusionData,
 Profiler*p,NetworkTest*nt,SeedingData*sd,

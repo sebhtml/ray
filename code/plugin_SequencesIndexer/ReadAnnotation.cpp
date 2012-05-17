@@ -57,7 +57,7 @@ ReadAnnotation*ReadAnnotation::getNext()const{
 	return m_next;
 }
 
-uint64_t ReadAnnotation::getUniqueId()const{
+ReadHandle ReadAnnotation::getUniqueId()const{
 	return getPathUniqueId(m_rank,m_readIndex);
 }
 

@@ -48,7 +48,7 @@ void Library::call_RAY_MASTER_MODE_UPDATE_DISTANCES(){
 			m_currentLibrary++;
 		/** send the message if not already done */
 		}else if(!m_informationSent){
-			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+			MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 			int outputPosition=0;
 			for(int i=0;i<m_parameters->getLibraryPeaks(m_currentLibrary);i++){
 				message[outputPosition++]=m_currentLibrary;
@@ -105,7 +105,7 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 	#ifdef GUILLIMIN_BUG
 	if(m_inbox->hasMessage(RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY)){
 		Message*message=m_inbox->at(0);
-		uint64_t*buffer=message->getBuffer();
+		MessageUnit*buffer=message->getBuffer();
 		if(m_parameters->getRank()==message->getSource()){
 			cout<<endl;
 			cout<<"Globally receiving RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY from "<<message->getSource()<<endl;
@@ -125,7 +125,7 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 	#ifdef GUILLIMIN_BUG
 	if(m_inbox->hasMessage(RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY)){
 		Message*message=m_inbox->at(0);
-		uint64_t*buffer=message->getBuffer();
+		MessageUnit*buffer=message->getBuffer();
 		if(m_parameters->getRank()==message->getSource()){
 			cout<<endl;
 			cout<<"Globally receiving RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY from "<<message->getSource()<<endl;
@@ -140,7 +140,7 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 
 	if(m_outbox->hasMessage(RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY)){
 		Message*message=m_outbox->at(0);
-		uint64_t*buffer=message->getBuffer();
+		MessageUnit*buffer=message->getBuffer();
 		if(m_parameters->getRank()==message->getDestination()){
 			cout<<endl;
 			cout<<"Globally sending RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY to "<<message->getDestination()<<endl;
@@ -183,7 +183,7 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 	}
 
 	if(m_activeWorkerIterator!=m_activeWorkers.end()){
-		uint64_t workerId=*m_activeWorkerIterator;
+		WorkerHandle workerId=*m_activeWorkerIterator;
 
 		#ifdef ASSERT
 		if(m_aliveWorkers.count(workerId)==0){
@@ -259,7 +259,7 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 						cout<<"Message "<<p<<" destination "<<m_outbox->at(p)->getDestination();
 						cout<<" tag "<<MESSAGE_TAGS[m_outbox->at(p)->getTag()]<<endl;
 						cout<<"Content"<<endl;
-						uint64_t*buffer=m_outbox->at(p)->getBuffer();
+						MessageUnit*buffer=m_outbox->at(p)->getBuffer();
 						for(int q=0;q<m_outbox->at(p)->getCount();q++){
 							cout<<"; "<<q<<" -> "<<buffer[q];
 						}
@@ -294,7 +294,7 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 		}
 
 		Message*message=m_outbox->at(i);
-		uint64_t*buffer=message->getBuffer();
+		MessageUnit*buffer=message->getBuffer();
 		if(m_parameters->getRank()==message->getDestination()){
 			cout<<endl;
 			cout<<"Globally sending RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY to "<<message->getDestination()<<endl;
@@ -359,7 +359,7 @@ Library::Library(){
 }
 
 void Library::allocateBuffers(){
-	m_bufferedData.constructor(m_size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
+	m_bufferedData.constructor(m_size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit),
 		"RAY_MALLOC_TYPE_LIBRARY_BUFFERS",m_parameters->showMemoryAllocations(),3);
 	(m_libraryIndexInitiated)=false;
 	(m_libraryIterator)=0;
@@ -409,11 +409,13 @@ void Library::call_RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES(){
 void Library::updateStates(){
 	// erase completed jobs
 	for(int i=0;i<(int)m_workersDone.size();i++){
-		uint64_t workerId=m_workersDone[i];
+		WorkerHandle workerId=m_workersDone[i];
+
 		#ifdef ASSERT
 		assert(m_activeWorkers.count(workerId)>0);
 		assert(m_aliveWorkers.count(workerId)>0);
 		#endif
+
 		m_activeWorkers.erase(workerId);
 		m_aliveWorkers.erase(workerId);
 		if(m_completedJobs%10==0){
@@ -426,16 +428,19 @@ void Library::updateStates(){
 	m_workersDone.clear();
 
 	for(int i=0;i<(int)m_waitingWorkers.size();i++){
-		uint64_t workerId=m_waitingWorkers[i];
+		WorkerHandle workerId=m_waitingWorkers[i];
+
 		#ifdef ASSERT
 		assert(m_activeWorkers.count(workerId)>0);
 		#endif
+
 		m_activeWorkers.erase(workerId);
 	}
 	m_waitingWorkers.clear();
 
 	for(int i=0;i<(int)m_activeWorkersToRestore.size();i++){
-		uint64_t workerId=m_activeWorkersToRestore[i];
+		WorkerHandle workerId=m_activeWorkersToRestore[i];
+
 		m_activeWorkers.insert(workerId);
 	}
 	m_activeWorkersToRestore.clear();

@@ -24,7 +24,7 @@
 #include <core/statistics.h>
 
 void IndexerWorker::constructor(int sequenceId,Parameters*parameters,RingAllocator*outboxAllocator,
-	VirtualCommunicator*vc,uint64_t workerId,ArrayOfReads*a,MyAllocator*allocator,
+	VirtualCommunicator*vc,WorkerHandle workerId,ArrayOfReads*a,MyAllocator*allocator,
 	ofstream*f,
 	map<int,map<int,int> >*forwardStatistics,
 	map<int,map<int,int> >*reverseStatistics,
@@ -78,14 +78,14 @@ void IndexerWorker::work(){
 			Kmer vertex=read->getVertex(m_position,m_parameters->getWordSize(),'F',m_parameters->getColorSpaceMode());
 			m_vertices.push_back(vertex,m_allocator);
 			int sendTo=m_parameters->_vertexRank(&vertex);
-			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
+			MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(MessageUnit));
 			int bufferPosition=0;
 			vertex.pack(message,&bufferPosition);
 			Message aMessage(message,bufferPosition,sendTo,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_parameters->getRank());
 			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 			m_coverageRequested=true;
 		}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
-			vector<uint64_t> response;
+			vector<MessageUnit> response;
 			m_virtualCommunicator->getMessageResponseElements(m_workerId,&response);
 			int coverage=response[0];
 			m_coverages.push_back(coverage,m_allocator);
@@ -147,7 +147,7 @@ void IndexerWorker::work(){
 			if(selectedPosition!=-1){
 				Kmer vertex=(m_vertices).at(selectedPosition);
 				int sendTo=m_parameters->_vertexRank(&vertex);
-				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(5*sizeof(uint64_t));
+				MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(5*sizeof(MessageUnit));
 				int j=0;
 				vertex.pack(message,&j);
 				message[j++]=m_parameters->getRank();
@@ -162,7 +162,7 @@ void IndexerWorker::work(){
 				m_forwardIndexed=true;
 			}
 		}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
-			vector<uint64_t> response;
+			vector<MessageUnit> response;
 			m_virtualCommunicator->getMessageResponseElements(m_workerId,&response);
 			m_forwardIndexed=true;
 			m_reverseIndexed=false;
@@ -224,7 +224,7 @@ void IndexerWorker::work(){
 				Kmer tmp=m_vertices.at(selectedPosition);
 				Kmer vertex=m_parameters->_complementVertex(&tmp);
 				int sendTo=m_parameters->_vertexRank(&vertex);
-				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(5*sizeof(uint64_t));
+				MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(5*sizeof(MessageUnit));
 				int positionOnStrand=read->length()-m_parameters->getWordSize()-selectedPosition;
 				int j=0;
 				vertex.pack(message,&j);
@@ -240,7 +240,7 @@ void IndexerWorker::work(){
 				m_reverseIndexed=true;
 			}
 		}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
-			vector<uint64_t> response;
+			vector<MessageUnit> response;
 			m_virtualCommunicator->getMessageResponseElements(m_workerId,&response);
 			m_reverseIndexed=true;
 		}
@@ -318,7 +318,7 @@ void IndexerWorker::work(){
 	}
 }
 
-uint64_t IndexerWorker::getWorkerIdentifier(){
+WorkerHandle IndexerWorker::getWorkerIdentifier(){
 	return m_workerId;
 }
 

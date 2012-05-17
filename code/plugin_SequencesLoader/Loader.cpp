@@ -127,7 +127,7 @@ int Loader::load(string file,bool isGenome){
 	return EXIT_FAILURE;
 }
 
-Read*Loader::at(uint64_t i){
+Read*Loader::at(LargeIndex i){
 	#ifdef ASSERT
 	assert(i<m_size);
 	#endif
@@ -144,7 +144,7 @@ Read*Loader::at(uint64_t i){
 	return m_reads.at(i-m_currentOffset);
 }
 
-uint64_t Loader::size(){
+LargeCount Loader::size(){
 	return m_size;
 }
 

@@ -43,13 +43,14 @@ using namespace std;
 
 void SequencesLoader::registerSequence(){
 	if(m_myReads->size()% NUMBER_OF_SEQUENCES_PERIOD ==0){
-		uint64_t amount=m_myReads->size();
+		LargeCount amount=m_myReads->size();
 		cout<<"Rank "<<m_rank<<" has "<<amount<<" sequence reads"<<endl;
 
 		if(m_parameters->showMemoryUsage()){
 			showMemoryUsage(m_rank);
 		}
 	}
+
 	#ifdef ASSERT
 	assert(m_distribution_sequence_id<m_loader.size());
 	#endif
@@ -65,14 +66,14 @@ void SequencesLoader::registerSequence(){
 	m_myReads->push_back(&myRead);
 
 	if(m_LOADER_isLeftFile){
-		uint64_t leftSequenceGlobalId=m_distribution_currentSequenceId;
-		uint64_t leftSequenceIdOnRank=m_myReads->size()-1;
+		ReadHandle leftSequenceGlobalId=m_distribution_currentSequenceId;
+		LargeIndex leftSequenceIdOnRank=m_myReads->size()-1;
 
 		#ifdef ASSERT
 		assert(m_loader.size()!=0);
 		#endif
 
-		uint64_t rightSequenceGlobalId=leftSequenceGlobalId+m_loader.size();
+		ReadHandle rightSequenceGlobalId=leftSequenceGlobalId+m_loader.size();
 
 		#ifdef ASSERT
 		assert(leftSequenceGlobalId<rightSequenceGlobalId);
@@ -87,7 +88,7 @@ void SequencesLoader::registerSequence(){
 		}
 		#endif
 
-		uint64_t rightSequenceIdOnRank=m_parameters->getIdFromGlobalId(rightSequenceGlobalId);
+		LargeIndex rightSequenceIdOnRank=m_parameters->getIdFromGlobalId(rightSequenceGlobalId);
 
 		int library=m_parameters->getLibrary(m_distribution_file_id);
 		
@@ -99,29 +100,29 @@ void SequencesLoader::registerSequence(){
 		assert(m_loader.size()!=0);
 		#endif
 
-		uint64_t rightSequenceGlobalId=(m_distribution_currentSequenceId);
-		uint64_t rightSequenceIdOnRank=m_myReads->size()-1;
-		uint64_t leftSequenceGlobalId=rightSequenceGlobalId-m_loader.size();
+		ReadHandle rightSequenceGlobalId=(m_distribution_currentSequenceId);
+		LargeIndex rightSequenceIdOnRank=m_myReads->size()-1;
+		ReadHandle leftSequenceGlobalId=rightSequenceGlobalId-m_loader.size();
 
-		int leftSequenceRank=m_parameters->getRankFromGlobalId(leftSequenceGlobalId);
+		Rank leftSequenceRank=m_parameters->getRankFromGlobalId(leftSequenceGlobalId);
 		#ifdef ASSERT
 		if(leftSequenceRank>=m_size){
 			cout<<"Global="<<leftSequenceGlobalId<<" rank="<<leftSequenceRank<<endl;
 		}
 		assert(leftSequenceRank<m_size);
 		#endif
-		uint64_t leftSequenceIdOnRank=m_parameters->getIdFromGlobalId(leftSequenceGlobalId);
+		LargeIndex leftSequenceIdOnRank=m_parameters->getIdFromGlobalId(leftSequenceGlobalId);
 		int library=m_parameters->getLibrary(m_distribution_file_id);
 
 		(*m_myReads)[rightSequenceIdOnRank]->setRightType();
 		(*m_myReads)[rightSequenceIdOnRank]->getPairedRead()->constructor(leftSequenceRank,leftSequenceIdOnRank,library);
 	// left sequence in interleaved file
 	}else if(m_isInterleavedFile && ((m_distribution_sequence_id)%2)==0){
-		uint64_t rightSequenceGlobalId=(m_distribution_currentSequenceId)+1;
-		int rightSequenceRank=m_parameters->getRankFromGlobalId(rightSequenceGlobalId);
-		uint64_t rightSequenceIdOnRank=m_parameters->getIdFromGlobalId(rightSequenceGlobalId);
+		ReadHandle rightSequenceGlobalId=(m_distribution_currentSequenceId)+1;
+		Rank rightSequenceRank=m_parameters->getRankFromGlobalId(rightSequenceGlobalId);
+		LargeIndex rightSequenceIdOnRank=m_parameters->getIdFromGlobalId(rightSequenceGlobalId);
 
-		uint64_t leftSequenceIdOnRank=m_myReads->size()-1;
+		LargeIndex leftSequenceIdOnRank=m_myReads->size()-1;
 
 		int library=m_parameters->getLibrary(m_distribution_file_id);
 		
@@ -130,11 +131,11 @@ void SequencesLoader::registerSequence(){
 
 	// only the right sequence.
 	}else if(m_isInterleavedFile &&((m_distribution_sequence_id)%2)==1){
-		uint64_t rightSequenceGlobalId=(m_distribution_currentSequenceId);
-		uint64_t rightSequenceIdOnRank=m_myReads->size()-1;
-		uint64_t leftSequenceGlobalId=rightSequenceGlobalId-1;
-		int leftSequenceRank=m_parameters->getRankFromGlobalId(leftSequenceGlobalId);
-		uint64_t leftSequenceIdOnRank=m_parameters->getIdFromGlobalId(leftSequenceGlobalId);
+		ReadHandle rightSequenceGlobalId=(m_distribution_currentSequenceId);
+		LargeIndex rightSequenceIdOnRank=m_myReads->size()-1;
+		ReadHandle leftSequenceGlobalId=rightSequenceGlobalId-1;
+		Rank leftSequenceRank=m_parameters->getRankFromGlobalId(leftSequenceGlobalId);
+		LargeIndex leftSequenceIdOnRank=m_parameters->getIdFromGlobalId(leftSequenceGlobalId);
 		int library=m_parameters->getLibrary(m_distribution_file_id);
 		
 		(*m_myReads)[rightSequenceIdOnRank]->setRightType();
@@ -160,7 +161,9 @@ bool SequencesLoader::writeSequencesToAMOSFile(int rank,int size,
 	m_loader.constructor(m_parameters->getMemoryPrefix().c_str(),m_parameters->showMemoryAllocations());
 	for(m_distribution_file_id=0;m_distribution_file_id<(int)allFiles.size();
 		m_distribution_file_id++){
+
 		int res=m_loader.load(allFiles[(m_distribution_file_id)],false);
+
 		if(res==EXIT_FAILURE){
 			return false;
 		}
@@ -169,8 +172,8 @@ bool SequencesLoader::writeSequencesToAMOSFile(int rank,int size,
 		// write Reads in AMOS format.
 		if(rank==MASTER_RANK&&m_parameters->useAmos()){
 			char qlt[20000];
-			for(uint64_t i=0;i<m_loader.size();i++){
-				uint64_t iid=m_distribution_currentSequenceId;
+			for(LargeIndex i=0;i<m_loader.size();i++){
+				ReadHandle iid=m_distribution_currentSequenceId;
 				m_distribution_currentSequenceId++;
 				char seq[4000];
 				m_loader.at(i)->getSeq(seq,m_parameters->getColorSpaceMode(),true);
@@ -211,9 +214,9 @@ bool SequencesLoader::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
 		cout.flush();
 
 		ifstream f(m_parameters->getCheckpointFile("Sequences").c_str());
-		uint64_t count=0;
-		f.read((char*)&count,sizeof(uint64_t));
-		for(uint64_t i=0;i<count;i++){
+		LargeCount count=0;
+		f.read((char*)&count,sizeof(LargeCount));
+		for(LargeIndex i=0;i<count;i++){
 			Read myRead;
 			myRead.read(&f,m_persistentAllocator);
 			m_myReads->push_back(&myRead);
@@ -232,22 +235,22 @@ bool SequencesLoader::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
 	// count the number of sequences in all files.
 	vector<string> allFiles=(*m_parameters).getAllFiles();
 	
-	uint64_t totalNumberOfSequences=0;
+	LargeCount totalNumberOfSequences=0;
 	for(int i=0;i<(int)m_parameters->getNumberOfFiles();i++){
 		totalNumberOfSequences+=m_parameters->getNumberOfSequences(i);
 	}
 
-	uint64_t sequencesPerRank=totalNumberOfSequences/m_size;
-	uint64_t sequencesOnRanksBeforeThisOne=m_rank*sequencesPerRank;
+	LargeCount sequencesPerRank=totalNumberOfSequences/m_size;
+	LargeIndex sequencesOnRanksBeforeThisOne=m_rank*sequencesPerRank;
 	
-	uint64_t startingSequenceId=sequencesOnRanksBeforeThisOne;
-	uint64_t endingSequenceId=startingSequenceId+sequencesPerRank-1;
+	LargeIndex startingSequenceId=sequencesOnRanksBeforeThisOne;
+	LargeIndex endingSequenceId=startingSequenceId+sequencesPerRank-1;
 
 	if(m_rank==m_size-1){
 		endingSequenceId=totalNumberOfSequences-1;
 	}
 
-	uint64_t sequences=endingSequenceId-startingSequenceId+1;
+	LargeCount sequences=endingSequenceId-startingSequenceId+1;
 
 	cout<<"Rank "<<m_rank<<" : partition is ["<<startingSequenceId;
 	cout<<";"<<endingSequenceId<<"], "<<sequences<<" sequence reads"<<endl;
@@ -262,7 +265,7 @@ bool SequencesLoader::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
 		assert(m_myReads->size()<=sequences);
 		#endif
 
-		uint64_t sequencesInFile=m_parameters->getNumberOfSequences(m_distribution_file_id);
+		LargeCount sequencesInFile=m_parameters->getNumberOfSequences(m_distribution_file_id);
 
 		if(!(startingSequenceId<m_distribution_currentSequenceId+sequencesInFile)){
 			m_distribution_currentSequenceId+=sequencesInFile;
@@ -315,7 +318,7 @@ bool SequencesLoader::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
 	m_outbox->push_back(aMessage);
 	(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 
-	uint64_t amount=m_myReads->size();
+	LargeCount amount=m_myReads->size();
 	cout<<"Rank "<<m_rank<<" has "<<amount<<" sequence reads (completed)"<<endl;
 
 	/* write the checkpoint file */
@@ -326,9 +329,9 @@ bool SequencesLoader::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
 
 		ofstream f(m_parameters->getCheckpointFile("Sequences").c_str());
 
-		uint64_t count=m_myReads->size();
-		f.write((char*)&count,sizeof(uint64_t));
-		for(uint64_t i=0;i<count;i++){
+		LargeCount count=m_myReads->size();
+		f.write((char*)&count,sizeof(LargeCount));
+		for(LargeIndex i=0;i<count;i++){
 			m_myReads->at(i)->write(&f);
 		}
 

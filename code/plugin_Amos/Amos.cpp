@@ -57,7 +57,7 @@ void Amos::constructor(Parameters*parameters,RingAllocator*outboxAllocator,Stati
 
 void Amos::call_RAY_MASTER_MODE_AMOS(){
 	if(!m_ed->m_EXTENSION_currentRankIsStarted){
-		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
+		MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(MessageUnit));
 		message[0]=m_ed->m_EXTENSION_currentPosition;
 		Message aMessage(message,1,m_ed->m_EXTENSION_rank,RAY_MPI_TAG_WRITE_AMOS,m_parameters->getRank());
 		m_outbox->push_back(aMessage);
@@ -98,7 +98,7 @@ void Amos::call_RAY_SLAVE_MODE_AMOS(){
 	*/
 
 	if(m_contigId==(int)m_ed->m_EXTENSION_contigs.size()){// all contigs are processed
-		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
+		MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(MessageUnit));
 		message[0]=m_ed->m_EXTENSION_currentPosition;
 		Message aMessage(message,1,MASTER_RANK,RAY_MPI_TAG_WRITE_AMOS_REPLY,m_parameters->getRank());
 		m_outbox->push_back(aMessage);
@@ -172,23 +172,23 @@ void Amos::call_RAY_SLAVE_MODE_AMOS(){
 			}
 		}else if(m_ed->m_EXTENSION_reads_received){
 			if(m_fusionData->m_FUSION_path_id<(int)m_ed->m_EXTENSION_receivedReads.size()){
-				int readRank=m_ed->m_EXTENSION_receivedReads[m_fusionData->m_FUSION_path_id].getRank();
-				char strand=m_ed->m_EXTENSION_receivedReads[m_fusionData->m_FUSION_path_id].getStrand();
+				Rank readRank=m_ed->m_EXTENSION_receivedReads[m_fusionData->m_FUSION_path_id].getRank();
+				Strand strand=m_ed->m_EXTENSION_receivedReads[m_fusionData->m_FUSION_path_id].getStrand();
 				int idOnRank=m_ed->m_EXTENSION_receivedReads[m_fusionData->m_FUSION_path_id].getReadIndex();
 				if(!m_ed->m_EXTENSION_readLength_requested){
 					m_ed->m_EXTENSION_readLength_requested=true;
 					m_ed->m_EXTENSION_readLength_received=false;
-					uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
+					MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(MessageUnit));
 					message[0]=idOnRank;
 					Message aMessage(message,1,readRank,RAY_MPI_TAG_ASK_READ_LENGTH,m_parameters->getRank());
 					m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 				}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
-					vector<uint64_t> result;
+					vector<MessageUnit> result;
 					m_virtualCommunicator->getMessageResponseElements(m_workerId,&result);
 					int readLength=result[0];
 					int forwardOffset=result[1];
 					int reverseOffset=result[2];
-					uint64_t globalIdentifier=m_parameters->getGlobalIdFromRankAndLocalId(readRank,idOnRank)+1;
+					ReadHandle globalIdentifier=m_parameters->getGlobalIdFromRankAndLocalId(readRank,idOnRank)+1;
 					int start=forwardOffset;
 					int theEnd=readLength-1;
 					int offset=m_mode_send_vertices_sequence_id_position;

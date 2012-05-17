@@ -110,7 +110,7 @@ public:
 	string getCurrentSequenceName();
 
 	bool hasCurrentSequenceIdentifier();
-	uint64_t getCurrentSequenceIdentifier();
+	LargeIndex getCurrentSequenceIdentifier();
 
 	bool hasIdentifier_EMBL_CDS();
 	PhysicalKmerColor getIdentifier_EMBL_CDS();

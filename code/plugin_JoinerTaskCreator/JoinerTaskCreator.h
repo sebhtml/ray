@@ -68,12 +68,12 @@ class JoinerTaskCreator: public TaskCreator,  public CorePlugin{
 	StaticVector*m_outbox;
 	int*m_slaveMode;
 	vector<vector<Kmer> >*m_paths;
-	vector<uint64_t>*m_pathIdentifiers;
+	vector<PathHandle>*m_pathIdentifiers;
 
-	set<uint64_t>*m_eliminated;
+	set<PathHandle>*m_eliminated;
 
 	uint64_t m_iterator;
-	uint64_t m_currentWorkerIdentifier;
+	WorkerHandle m_currentWorkerIdentifier;
 	bool m_reverseStrand;
 
 	vector<vector<Kmer> >*m_newPaths;
@@ -84,8 +84,8 @@ class JoinerTaskCreator: public TaskCreator,  public CorePlugin{
 
 public:
 	void constructor( VirtualProcessor*virtualProcessor,StaticVector*outbox,
-		RingAllocator*outboxAllocator,int*mode,Parameters*parameters,vector<vector<Kmer> >*paths,vector<uint64_t>*pathIdentifiers,
-		set<uint64_t>*eliminated,VirtualCommunicator*virtualCommunicator,
+		RingAllocator*outboxAllocator,int*mode,Parameters*parameters,vector<vector<Kmer> >*paths,vector<PathHandle>*pathIdentifiers,
+		set<PathHandle>*eliminated,VirtualCommunicator*virtualCommunicator,
 		vector<vector<Kmer> >*newPaths
 );
 

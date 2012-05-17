@@ -45,8 +45,9 @@ using namespace std;
 
 void CoverageGatherer::writeKmers(){
 	#ifdef ASSERT
-	uint64_t n=0;
+	LargeCount n=0;
 	#endif
+
 	if(m_subgraph->getKmerAcademy()->size()==0){
 		(*m_slaveMode)=RAY_SLAVE_MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_COVERAGE_END,
@@ -133,8 +134,9 @@ void CoverageGatherer::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
 
 	if(m_distributionOfCoverage.size()==0){
 		#ifdef ASSERT
-		uint64_t n=0;
+		LargeCount n=0;
 		#endif
+
 		if(m_subgraph->getKmerAcademy()->size()==0){
 			(*m_slaveMode)=RAY_SLAVE_MODE_DO_NOTHING;
 			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_COVERAGE_END,
@@ -167,12 +169,12 @@ void CoverageGatherer::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
 			m_waiting=false;
 		}
 	}else{
-		uint64_t*messageContent=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+		MessageUnit*messageContent=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 		int count=0;
-		int maximumElements=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t);
+		int maximumElements=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit);
 		while(count<maximumElements && m_coverageIterator!=m_distributionOfCoverage.end()){
-			int coverage=m_coverageIterator->first;
-			uint64_t numberOfVertices=m_coverageIterator->second;
+			CoverageDepth coverage=m_coverageIterator->first;
+			LargeCount numberOfVertices=m_coverageIterator->second;
 			messageContent[count]=coverage;
 			messageContent[count+1]=numberOfVertices;
 			count+=2;

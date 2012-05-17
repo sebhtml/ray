@@ -38,17 +38,17 @@ class GridTable{
 	MyHashTable<Kmer,Vertex> m_hashTable;
 	KmerAcademy m_kmerAcademy;
 	Parameters*m_parameters;
-	uint64_t m_size;
+	LargeCount m_size;
 	bool m_inserted;
 
-	uint64_t m_findOperations;
+	LargeCount m_findOperations;
 
 	/** verbosity */
 	bool m_verbose;
 
 public:
-	void constructor(int rank,Parameters*a);
-	uint64_t size();
+	void constructor(Rank rank,Parameters*a);
+	LargeCount size();
 	Vertex*find(Kmer*key);
 	Vertex*insert(Kmer*key);
 	bool inserted();

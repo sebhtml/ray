@@ -505,7 +505,7 @@ class MessageProcessor :  public CorePlugin {
 
 	RingAllocator*m_inboxAllocator;
 	MyAllocator*m_persistentAllocator;
-	vector<uint64_t>*m_identifiers;
+	vector<PathHandle>*m_identifiers;
 	bool*m_mode_sendDistribution;
 	bool*m_alive;
 	int*m_mode;
@@ -520,7 +520,7 @@ class MessageProcessor :  public CorePlugin {
 	bool*m_nextReductionOccured;
 	MyAllocator*m_directionsAllocator;
 	int*m_mode_send_coverage_iterator;
-	map<int,uint64_t>*m_coverageDistribution;
+	map<CoverageDepth,LargeCount>*m_coverageDistribution;
 	int*m_sequence_ready_machines;
 	int*m_numberOfMachinesReadyForEdgesDistribution;
 	int*m_numberOfMachinesReadyToSendDistribution;
@@ -561,7 +561,7 @@ ExtensionData*ed,
 		int size,
 	RingAllocator*m_inboxAllocator,
 	MyAllocator*m_persistentAllocator,
-	vector<uint64_t>*m_identifiers,
+	vector<PathHandle>*m_identifiers,
 	bool*m_mode_sendDistribution,
 	bool*m_alive,
 	int*m_mode,
@@ -576,7 +576,7 @@ ExtensionData*ed,
 	bool*m_nextReductionOccured,
 	MyAllocator*m_directionsAllocator,
 	int*m_mode_send_coverage_iterator,
-	map<int,uint64_t>*m_coverageDistribution,
+	map<CoverageDepth,LargeCount>*m_coverageDistribution,
 	int*m_sequence_ready_machines,
 	int*m_numberOfMachinesReadyForEdgesDistribution,
 	int*m_numberOfMachinesReadyToSendDistribution,

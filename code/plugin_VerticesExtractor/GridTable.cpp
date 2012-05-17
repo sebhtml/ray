@@ -46,7 +46,7 @@ void GridTable::constructor(int rank,Parameters*parameters){
 	m_verbose=false;
 }
 
-uint64_t GridTable::size(){
+LargeCount GridTable::size(){
 	return m_size;
 }
 
@@ -94,7 +94,8 @@ Vertex*GridTable::insert(Kmer*key){
 	if(key->isLower(&lowerKey)){
 		lowerKey=*key;
 	}
-	uint64_t sizeBefore=m_hashTable.size();
+
+	LargeCount sizeBefore=m_hashTable.size();
 	Vertex*entry=m_hashTable.insert(&lowerKey);
 	m_inserted=m_hashTable.size()>sizeBefore;
 

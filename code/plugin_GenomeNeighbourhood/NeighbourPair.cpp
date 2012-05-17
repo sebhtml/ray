@@ -20,8 +20,9 @@
 */
 
 #include <plugin_GenomeNeighbourhood/NeighbourPair.h>
+#include <application_core/constants.h>
 
-NeighbourPair::NeighbourPair(uint64_t contig1,char strand1,int progression1,uint64_t contig2,char strand2,int progression2,
+NeighbourPair::NeighbourPair(PathHandle contig1,Strand strand1,int progression1,PathHandle contig2,Strand strand2,int progression2,
 		int depth){
 
 	m_contigName1=contig1;
@@ -35,11 +36,11 @@ NeighbourPair::NeighbourPair(uint64_t contig1,char strand1,int progression1,uint
 	m_depth=depth;
 }
 
-char NeighbourPair::getStrand1(){
+Strand NeighbourPair::getStrand1(){
 	return m_strand1;
 }
 
-uint64_t NeighbourPair::getContig1(){
+PathHandle NeighbourPair::getContig1(){
 	return m_contigName1;
 }
 
@@ -47,11 +48,11 @@ int NeighbourPair::getProgression1(){
 	return m_progression1;
 }
 
-char NeighbourPair::getStrand2(){
+Strand NeighbourPair::getStrand2(){
 	return m_strand2;
 }
 
-uint64_t NeighbourPair::getContig2(){
+PathHandle NeighbourPair::getContig2(){
 	return m_contigName2;
 }
 

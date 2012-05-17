@@ -42,10 +42,10 @@ class FusionWorker: public Worker{
 	MessageTag RAY_MPI_TAG_GET_PATH_LENGTH;
 
 	bool m_requestedNumberOfPaths;
-	uint64_t m_workerIdentifier;
+	WorkerHandle m_workerIdentifier;
 	bool m_isDone;
 	vector<Kmer>*m_path;
-	uint64_t m_identifier;
+	PathHandle m_identifier;
 	bool m_reverseStrand;
 	bool m_eliminated;
 	int m_position;
@@ -57,15 +57,15 @@ class FusionWorker: public Worker{
 	bool m_gatheredHits;
 	bool m_initializedGathering;
 	bool m_requestedHitLength;
-	vector<uint64_t> m_hitNames;
+	vector<PathHandle> m_hitNames;
 	vector<int> m_hitLengths;
 	int m_hitIterator;
-	map<uint64_t,int> m_hits;
+	map<PathHandle,int> m_hits;
 	int m_pathIndex;
 	bool m_receivedPath;
 	bool m_requestedPath;
 public:
-	void constructor(uint64_t i,vector<Kmer>*path,uint64_t identifier,bool reverseStrand,
+	void constructor(WorkerHandle i,vector<Kmer>*path,PathHandle identifier,bool reverseStrand,
 VirtualCommunicator*virtualCommunicator,Parameters*parameters,RingAllocator*outboxAllocator,
 	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH,
 	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,
@@ -79,10 +79,10 @@ VirtualCommunicator*virtualCommunicator,Parameters*parameters,RingAllocator*outb
 	/* a method for Worker interface */
 	bool isDone();
 	/* a method for Worker interface */
-	uint64_t getWorkerIdentifier();
+	WorkerHandle getWorkerIdentifier();
 
 	bool isPathEliminated();
-	uint64_t getPathIdentifier();
+	PathHandle getPathIdentifier();
 };
 
 #endif

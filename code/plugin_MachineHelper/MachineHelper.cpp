@@ -82,11 +82,11 @@ void MachineHelper::call_RAY_MASTER_MODE_LOAD_CONFIG(){
 		return;
 	}
 
-	uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
+	MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(2*sizeof(MessageUnit));
 	message[0]=m_parameters->getWordSize();
 	message[1]=m_parameters->getColorSpaceMode();
 
-	for(int i=0;i<m_parameters->getSize();i++){
+	for(Rank i=0;i<m_parameters->getSize();i++){
 		Message aMessage(message,2,i,RAY_MPI_TAG_SET_WORD_SIZE,m_parameters->getRank());
 		m_outbox->push_back(aMessage);
 	}
@@ -97,7 +97,7 @@ void MachineHelper::call_RAY_MASTER_MODE_LOAD_CONFIG(){
 void MachineHelper::constructor(int argc,char**argv,Parameters*parameters,
 SwitchMan*switchMan,RingAllocator*outboxAllocator,
 		StaticVector*outbox,bool*aborted,
-	map<int,uint64_t>*coverageDistribution,
+	map<CoverageDepth,LargeCount>*coverageDistribution,
 	int*numberOfMachinesDoneSendingCoverage,
 	int*numberOfRanksWithCoverageData,bool*reductionOccured,
 	ExtensionData*ed,FusionData*fusionData,
@@ -197,10 +197,11 @@ void MachineHelper::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES (){
 		int n=0;
 		f.read((char*)&n,sizeof(int));
 		int coverage=0;
-		uint64_t count=0;
+
+		LargeCount count=0;
 		for(int i=0;i<n;i++){
 			f.read((char*)&coverage,sizeof(int));
-			f.read((char*)&count,sizeof(uint64_t));
+			f.read((char*)&count,sizeof(LargeCount));
 			(*m_coverageDistribution)[coverage]=count;
 		}
 		f.close();
@@ -211,11 +212,12 @@ void MachineHelper::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES (){
 		ofstream f(m_parameters->getCheckpointFile("CoverageDistribution").c_str());
 		int theSize=m_coverageDistribution->size();
 		f.write((char*)&theSize,sizeof(int));
-		for(map<int,uint64_t>::iterator i=m_coverageDistribution->begin();i!=m_coverageDistribution->end();i++){
-			int coverage=i->first;
-			uint64_t count=i->second;
-			f.write((char*)&coverage,sizeof(int));
-			f.write((char*)&count,sizeof(uint64_t));
+
+		for(map<CoverageDepth,LargeCount>::iterator i=m_coverageDistribution->begin();i!=m_coverageDistribution->end();i++){
+			CoverageDepth coverage=i->first;
+			LargeCount count=i->second;
+			f.write((char*)&coverage,sizeof(CoverageDepth));
+			f.write((char*)&count,sizeof(LargeCount));
 		}
 		f.close();
 	}
@@ -243,17 +245,17 @@ void MachineHelper::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES (){
 	cout<<"Rank "<<getRank()<<": the minimum coverage is "<<m_parameters->getMinimumCoverage()<<endl;
 	cout<<"Rank "<<getRank()<<": the peak coverage is "<<m_parameters->getPeakCoverage()<<endl;
 
-	uint64_t numberOfVertices=0;
-	uint64_t verticesWith1Coverage=0;
+	LargeCount numberOfVertices=0;
+	LargeCount verticesWith1Coverage=0;
 	CoverageDepth lowestCoverage=9999;
 	
-	uint64_t genomeKmers=0;
+	LargeCount genomeKmers=0;
 
-	for(map<int,uint64_t>::iterator i=m_coverageDistribution->begin();
+	for(map<CoverageDepth,LargeCount>::iterator i=m_coverageDistribution->begin();
 		i!=m_coverageDistribution->end();i++){
 
 		CoverageDepth coverageValue=i->first;
-		uint64_t vertices=i->second;
+		LargeCount vertices=i->second;
 
 		if(coverageValue<lowestCoverage){
 			verticesWith1Coverage=vertices;
@@ -303,13 +305,14 @@ void MachineHelper::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES (){
 	}
 
 	// see these values to everyone.
-	uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(3*sizeof(uint64_t));
+	MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(3*sizeof(MessageUnit));
 	buffer[0]=m_parameters->getMinimumCoverage();
 	buffer[1]=m_parameters->getPeakCoverage();
 	buffer[2]=m_parameters->getRepeatCoverage();
 
 	(*m_numberOfRanksWithCoverageData)=0;
-	for(int i=0;i<m_parameters->getSize();i++){
+
+	for(Rank i=0;i<m_parameters->getSize();i++){
 		Message aMessage(buffer,3,i,RAY_MPI_TAG_SEND_COVERAGE_VALUES,getRank());
 		m_outbox->push_back(aMessage);
 	}
@@ -343,17 +346,17 @@ void MachineHelper::call_RAY_MASTER_MODE_LOAD_SEQUENCES(){
 		return;
 	}
 
-	uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	uint32_t*messageInInts=(uint32_t*)message;
 	messageInInts[0]=m_parameters->getNumberOfFiles();
 
 	for(int i=0;i<(int)m_parameters->getNumberOfFiles();i++){
-		messageInInts[1+i]=(uint64_t)m_parameters->getNumberOfSequences(i);
+		messageInInts[1+i]=(LargeCount)m_parameters->getNumberOfSequences(i);
 	}
 	
-	for(int i=0;i<getSize();i++){
-		Message aMessage(message,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
-		i,RAY_MPI_TAG_LOAD_SEQUENCES,getRank());
+	for(Rank i=0;i<getSize();i++){
+		Message aMessage(message,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit),
+			i,RAY_MPI_TAG_LOAD_SEQUENCES,getRank());
 		m_outbox->push_back(aMessage);
 	}
 
@@ -400,7 +403,7 @@ void MachineHelper::call_RAY_MASTER_MODE_WRITE_KMERS(){
 		m_coverageRank=0;
 		m_numberOfRanksDone=0;
 	}else if(m_inbox->size()>0 && m_inbox->at(0)->getTag()==RAY_MPI_TAG_WRITE_KMERS_REPLY){
-		uint64_t*buffer=(uint64_t*)m_inbox->at(0)->getBuffer();
+		MessageUnit*buffer=(MessageUnit*)m_inbox->at(0)->getBuffer();
 		int bufferPosition=0;
 		for(int i=0;i<=4;i++){
 			for(int j=0;j<=4;j++){
@@ -447,14 +450,15 @@ void MachineHelper::call_RAY_MASTER_MODE_WRITE_KMERS(){
 }
 
 void MachineHelper::call_RAY_SLAVE_MODE_WRITE_KMERS(){
-	if(m_parameters->writeKmers())
+	if(m_parameters->writeKmers()){
 		m_coverageGatherer->writeKmers();
+	}
 	
 	/* send edge distribution */
 	GridTableIterator iterator;
 	iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
 
-	map<int,map<int,uint64_t> > distribution;
+	map<int,map<int,LargeCount> > distribution;
 	while(iterator.hasNext()){
 		Vertex*node=iterator.next();
 		Kmer key=*(iterator.getKey());
@@ -463,8 +467,9 @@ void MachineHelper::call_RAY_SLAVE_MODE_WRITE_KMERS(){
 		distribution[parents][children]++;
 	}
 
-	uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	int outputPosition=0;
+
 	for(int i=0;i<=4;i++){
 		for(int j=0;j<=4;j++){
 			buffer[outputPosition++]=distribution[i][j];
@@ -525,7 +530,7 @@ void MachineHelper::call_RAY_MASTER_MODE_PREPARE_SEEDING(){
 
 void MachineHelper::call_RAY_SLAVE_MODE_ASSEMBLE_WAVES(){
 	// take each seed, and extend it in both direction using previously obtained information.
-	if(m_seedingData->m_SEEDING_i==(uint64_t)m_seedingData->m_SEEDING_seeds.size()){
+	if(m_seedingData->m_SEEDING_i==(LargeCount)m_seedingData->m_SEEDING_seeds.size()){
 		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_ASSEMBLE_WAVES_DONE,getRank());
 		m_outbox->push_back(aMessage);
 	}else{
@@ -587,14 +592,16 @@ void MachineHelper::call_RAY_MASTER_MODE_TRIGGER_EXTENSIONS(){
 
 void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 	/* clear eliminated paths */
-	vector<uint64_t> newNames;
+	vector<PathHandle> newNames;
 	vector<vector<Kmer> > newPaths;
 
 	for(int i=0;i<(int)m_ed->m_EXTENSION_contigs.size();i++){
-		uint64_t uniqueId=m_ed->m_EXTENSION_identifiers[i];
+		PathHandle uniqueId=m_ed->m_EXTENSION_identifiers[i];
+
 		if(m_fusionData->m_FUSION_eliminated.count(uniqueId)>0){
 			continue;
 		}
+
 		newNames.push_back(uniqueId);
 		newPaths.push_back(m_ed->m_EXTENSION_contigs[i]);
 	}
@@ -618,10 +625,12 @@ void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 	ostringstream operationBuffer;
 
 	for(int i=0;i<(int)m_ed->m_EXTENSION_contigs.size();i++){
-		uint64_t uniqueId=m_ed->m_EXTENSION_identifiers[i];
+		PathHandle uniqueId=m_ed->m_EXTENSION_identifiers[i];
+
 		if(m_fusionData->m_FUSION_eliminated.count(uniqueId)>0){
 			continue;
 		}
+
 		total++;
 		string contig=convertToString(&(m_ed->m_EXTENSION_contigs[i]),m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 		
@@ -651,9 +660,9 @@ void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 
 		/* write each path with its name and vertices */
 		for(int i=0;i<theSize;i++){
-			uint64_t name=m_ed->m_EXTENSION_identifiers[i];
+			PathHandle name=m_ed->m_EXTENSION_identifiers[i];
 			int vertices=m_ed->m_EXTENSION_contigs[i].size();
-			f.write((char*)&name,sizeof(uint64_t));
+			f.write((char*)&name,sizeof(PathHandle));
 			f.write((char*)&vertices,sizeof(int));
 			for(int j=0;j<vertices;j++){
 				m_ed->m_EXTENSION_contigs[i][j].write(&f);
@@ -707,7 +716,7 @@ void MachineHelper::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 			count=1;
 		}
 
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+		MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
 		(*m_reductionOccured)=false;
 		m_cycleStarted=true;
@@ -756,13 +765,14 @@ void MachineHelper::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 
 		/* if paths were merged in RAY_MPI_TAG_FINISH_FUSIONS,
 		then we want to continue these mergeing events */
-		if((*m_reductionOccured) && m_cycleNumber < lastAllowedCycleNumber)
+		if((*m_reductionOccured) && m_cycleNumber < lastAllowedCycleNumber){
 			m_mustStop = false;
+		}
 
 		if(m_mustStop){
 			count=1;
 		}
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+		MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
 		for(int i=0;i<getSize();i++){
 			Message aMessage(buffer,count,i,RAY_MPI_TAG_CLEAR_DIRECTIONS,getRank());

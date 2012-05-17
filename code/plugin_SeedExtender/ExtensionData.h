@@ -41,7 +41,7 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class ExtensionData{
-	SplayTree<uint64_t,ExtensionElement>*m_database;
+	SplayTree<ReadHandle,ExtensionElement>*m_database;
 	int m_numberOfBins;
 	Parameters*m_parameters;
 	MyAllocator m_allocator;
@@ -66,7 +66,7 @@ public:
 	int m_EXTENSION_edgeIterator;
 	bool m_EXTENSION_hasPairedReadRequested;
 	bool m_EXTENSION_hasPairedReadReceived;
-	vector<uint64_t> m_EXTENSION_identifiers;
+	vector<PathHandle> m_EXTENSION_identifiers;
 
 	/**
 	*	bidirectional flow algorithm using Ray's many heuristics
@@ -111,29 +111,29 @@ public:
 	vector<ReadAnnotation> m_EXTENSION_receivedReads;
 	bool m_EXTENSION_reads_requested;
 	bool m_EXTENSION_reads_received;
-	vector<uint64_t> m_sequencesToFree;
+	vector<ReadHandle> m_sequencesToFree;
 	int m_EXTENSION_receivedLength;
 	bool m_EXTENSION_reverseVertexDone;
 	// reads used so far
 	// reads to check (the ones "in range")
 	bool m_EXTENSION_singleEndResolution;
-	set<uint64_t>::iterator m_EXTENSION_readIterator;
+	set<ReadHandle>::iterator m_EXTENSION_readIterator;
 	map<Kmer,vector<int> > m_EXTENSION_readPositionsForVertices;
 	map<Kmer,vector<int> > m_EXTENSION_pairedReadPositionsForVertices;
 	map<Kmer,vector<int> > m_EXTENSION_pairedLibrariesForVertices;
-	map<Kmer,vector<uint64_t> > m_EXTENSION_pairedReadsForVertices;
+	map<Kmer,vector<ReadHandle> > m_EXTENSION_pairedReadsForVertices;
 	CoverageDepth m_currentCoverage;
 
-	set<uint64_t> m_EXTENSION_readsInRange;
-	set<uint64_t> m_pairedReadsWithoutMate;
-	map<int,vector<uint64_t> > m_expirations;
+	set<ReadHandle> m_EXTENSION_readsInRange;
+	set<ReadHandle> m_pairedReadsWithoutMate;
+	map<int,vector<ReadHandle> > m_expirations;
 
 	void lazyDestructor();
 
 	void resetStructures(Profiler*m_profiler);
-	ExtensionElement*getUsedRead(uint64_t a);
-	ExtensionElement*addUsedRead(uint64_t a);
-	void removeSequence(uint64_t a);
+	ExtensionElement*getUsedRead(ReadHandle a);
+	ExtensionElement*addUsedRead(ReadHandle a);
+	void removeSequence(ReadHandle a);
 	void constructor(Parameters*parameters);
 
 	void destructor();

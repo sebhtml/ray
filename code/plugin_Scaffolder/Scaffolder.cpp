@@ -53,7 +53,7 @@ void Scaffolder::addMasterLink(SummarizedLink*a){
 	m_masterLinks.push_back(*a);
 }
 
-void Scaffolder::addMasterContig(uint64_t name,int length){
+void Scaffolder::addMasterContig(PathHandle name,int length){
 	m_masterContigs.push_back(name);
 	m_masterLengths.push_back(length);
 }
@@ -69,12 +69,13 @@ void Scaffolder::solve(){
  */
 	int minimumNumberOfRawLinks=3; 
 
-	map<uint64_t,map<char,map<uint64_t,map<char,vector<int> > > > > keys;
+	map<PathHandle,map<char,map<PathHandle,map<char,vector<int> > > > > keys;
 	for(int i=0;i<(int)m_masterLinks.size();i++){
-		uint64_t leftContig=m_masterLinks[i].getLeftContig();
-		char leftStrand=m_masterLinks[i].getLeftStrand();
-		uint64_t rightContig=m_masterLinks[i].getRightContig();
-		char rightStrand=m_masterLinks[i].getRightStrand();
+		PathHandle leftContig=m_masterLinks[i].getLeftContig();
+		Strand leftStrand=m_masterLinks[i].getLeftStrand();
+		PathHandle rightContig=m_masterLinks[i].getRightContig();
+		Strand rightStrand=m_masterLinks[i].getRightStrand();
+
 		int average=m_masterLinks[i].getAverage();
 		int number=m_masterLinks[i].getCount();
 		int standardDeviation=m_masterLinks[i].getStandardDeviation();
@@ -105,18 +106,23 @@ void Scaffolder::solve(){
 	vector<ScaffoldingVertex> scaffoldingVertices;
 	vector<ScaffoldingEdge> scaffoldingEdges;
 
-	for(map<uint64_t,map<char,map<uint64_t,map<char,vector<int> > > > >::iterator i=
+	for(map<PathHandle,map<Strand,map<PathHandle,map<Strand,vector<int> > > > >::iterator i=
 		keys.begin();i!=keys.end();i++){
-		uint64_t leftContig=i->first;
-		for(map<char,map<uint64_t,map<char,vector<int> > > >::iterator j=i->second.begin();
+
+		PathHandle leftContig=i->first;
+
+		for(map<Strand,map<PathHandle,map<Strand,vector<int> > > >::iterator j=i->second.begin();
 			j!=i->second.end();j++){
-			char leftStrand=j->first;
-			for(map<uint64_t,map<char,vector<int> > >::iterator k=j->second.begin();
+
+			Strand leftStrand=j->first;
+			for(map<PathHandle,map<Strand,vector<int> > >::iterator k=j->second.begin();
 				k!=j->second.end();k++){
-				uint64_t rightContig=k->first;
-				for(map<char,vector<int> >::iterator l=k->second.begin();
+				PathHandle rightContig=k->first;
+
+				for(map<Strand,vector<int> >::iterator l=k->second.begin();
+
 					l!=k->second.end();l++){
-					char rightStrand=l->first;
+					Strand rightStrand=l->first;
 					int sum=0;
 					int n=0;
 					int pos=0;
@@ -242,8 +248,9 @@ averageValues[1],countValues[1],standardDeviationValues[1]);
 		int length=0;
 
 		for(int j=0;j<(int)m_scaffoldContigs[i].size();j++){
-			uint64_t contigName=m_scaffoldContigs[i][j];
-			char contigStrand=m_scaffoldStrands[i][j];
+
+			PathHandle contigName=m_scaffoldContigs[i][j];
+			Strand contigStrand=m_scaffoldStrands[i][j];
 			int theLength=m_contigLengths[contigName]+m_parameters->getWordSize()-1;
 
 			scaffoldComponentFile_Buffer<<"scaffold-"<<scaffoldName<<"\t"<<"contig-"<<contigName<<"\t"<<contigStrand<<"\t"<<theLength<<endl;
@@ -285,7 +292,7 @@ void Scaffolder::printFinalMessage(){
 
 void Scaffolder::computeStatistics(vector<int>*lengths,int minimumLength,ostream*outputStream){
 	vector<int> accepted;
-	uint64_t totalLength=0;
+	LargeCount totalLength=0;
 	for(int i=0;i<(int)lengths->size();i++){
 		int contigLength=lengths->at(i);
 		if(contigLength>=minimumLength){
@@ -304,7 +311,7 @@ void Scaffolder::computeStatistics(vector<int>*lengths,int minimumLength,ostream
 
 	sort(accepted.begin(), accepted.end());
 
-	uint64_t sumOfLengths=0;
+	LargeCount sumOfLengths=0;
 	int i=0;
 	sumOfLengths += accepted[i];
 	while(sumOfLengths < totalLength/2){
@@ -388,7 +395,7 @@ void Scaffolder::call_RAY_SLAVE_MODE_SCAFFOLDER(){
 	}
 }
 
-void Scaffolder::setContigPaths(vector<uint64_t>*names,vector<vector<Kmer> >*paths){
+void Scaffolder::setContigPaths(vector<PathHandle>*names,vector<vector<Kmer> >*paths){
 	m_contigNames=names;
 	m_contigs=paths;
 }
@@ -410,7 +417,7 @@ void Scaffolder::processContig(){
 
 void Scaffolder::sendContigInfo(){
 	if(!m_sentContigInfo){
-		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+		MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 		message[0]=(*m_contigNames)[m_contigId];
 		message[1]=(*m_contigs)[m_contigId].size();
 		Message aMessage(message,2,
@@ -418,7 +425,7 @@ void Scaffolder::sendContigInfo(){
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		m_sentContigInfo=true;
 	}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		vector<uint64_t> response;
+		vector<MessageUnit> response;
 		m_virtualCommunicator->getMessageResponseElements(m_workerId,&response);
 		m_sentContigMeta=true;
 	}
@@ -427,7 +434,7 @@ void Scaffolder::sendContigInfo(){
 void Scaffolder::sendSummary(){
 	if(m_summaryIterator<(int)m_summary.size()){
 		if(!m_entrySent){
-			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+			MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
 			int i=0;
 			m_summary[m_summaryIterator].pack(message,&i);
@@ -437,7 +444,7 @@ void Scaffolder::sendSummary(){
 			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 			m_entrySent=true;
 		}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
-			vector<uint64_t> response;
+			vector<MessageUnit> response;
 			m_virtualCommunicator->getMessageResponseElements(m_workerId,&response);
 			m_summaryIterator++;
 			m_entrySent=false;
@@ -457,7 +464,7 @@ void Scaffolder::performSummary(){
 	assert(m_vertexCoverageValues.size() == (*m_contigs)[m_contigId].size());
 	#endif
 
-	uint64_t sum=0;
+	LargeCount sum=0;
 
 	int peakCoverage=getMode(&m_vertexCoverageValues);
 
@@ -485,7 +492,7 @@ void Scaffolder::performSummary(){
 		mean /= n;
 	}
 
-	uint64_t sumOfSquares=0;
+	LargeCount sumOfSquares=0;
 	for(int i=0;i<(int)m_vertexCoverageValues.size();i++){
 		int coverageValue=m_vertexCoverageValues[i];
 		int diff=coverageValue-mean;
@@ -534,7 +541,7 @@ void Scaffolder::performSummary(){
 		assert(m_contigId < (int)m_contigNames->size());
 		#endif
 
-		uint64_t contigName=(*m_contigNames)[m_contigId];
+		PathHandle contigName=(*m_contigNames)[m_contigId];
 		int vertices=m_vertexCoverageValues.size();
 		fp<<"contig-"<<contigName<<endl;
 		fp<<vertices<<" vertices"<<endl;
@@ -551,15 +558,16 @@ void Scaffolder::performSummary(){
 
 	m_summary.clear();
 	m_summaryIterator=0;
-	for(map<uint64_t,map<char,map<uint64_t,map<char,vector<ScaffoldingLink> > > > >::iterator i=
+	for(map<PathHandle,map<Strand,map<PathHandle,map<Strand,vector<ScaffoldingLink> > > > >::iterator i=
 		m_scaffoldingSummary.begin();i!=m_scaffoldingSummary.end();i++){
-		uint64_t leftContig=i->first;
-		for(map<char,map<uint64_t,map<char,vector<ScaffoldingLink> > > >::iterator j=i->second.begin();
+
+		PathHandle leftContig=i->first;
+		for(map<Strand,map<PathHandle,map<Strand,vector<ScaffoldingLink> > > >::iterator j=i->second.begin();
 			j!=i->second.end();j++){
-			char leftStrand=j->first;
-			for(map<uint64_t,map<char,vector<ScaffoldingLink> > >::iterator k=j->second.begin();
+			Strand leftStrand=j->first;
+			for(map<PathHandle,map<Strand,vector<ScaffoldingLink> > >::iterator k=j->second.begin();
 				k!=j->second.end();k++){
-				uint64_t rightContig=k->first;
+				PathHandle rightContig=k->first;
 				for(map<char,vector<ScaffoldingLink> >::iterator l=k->second.begin();
 					l!=k->second.end();l++){
 					char rightStrand=l->first;
@@ -652,7 +660,7 @@ void Scaffolder::processVertex(Kmer*vertex){
 	// 					get the paths that goes on them
 	// 					print the linking information
 	if(!m_coverageRequested){
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
+		MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 		int bufferPosition=0;
 		vertex->pack(buffer,&bufferPosition);
 		Message aMessage(buffer,m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT),
@@ -688,7 +696,7 @@ void Scaffolder::processVertex(Kmer*vertex){
 		}
 	}else if(!m_coverageReceived
 		&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		vector<uint64_t> elements;
+		vector<MessageUnit> elements;
 		m_virtualCommunicator->getMessageResponseElements(m_workerId,&elements);
 
 		#ifdef ASSERT
@@ -777,20 +785,23 @@ void Scaffolder::processAnnotation(){
 	//
 
 	ReadAnnotation*a=&(m_readFetcher.getResult()->at(m_readAnnotationId));
-	int rank=a->getRank();
+	Rank rank=a->getRank();
 	int sequenceId=a->getReadIndex();
-	char strand=a->getStrand();
+	Strand strand=a->getStrand();
 	int positionOnStrand=a->getPositionOnStrand();
+
 	if(!m_hasPairRequested){
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
+		MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 		buffer[0]=sequenceId;
 		Message aMessage(buffer,1,rank,RAY_MPI_TAG_HAS_PAIRED_READ,m_parameters->getRank());
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		m_hasPairRequested=true;
 		m_hasPairReceived=false;
+
 	}else if(!m_hasPairReceived
 	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		vector<uint64_t> response;
+
+		vector<MessageUnit> response;
 		m_virtualCommunicator->getMessageResponseElements(m_workerId,&response);
 		m_hasPair=response[0];
 		m_hasPairReceived=true;
@@ -801,7 +812,7 @@ void Scaffolder::processAnnotation(){
 		m_readAnnotationId++;
 		m_hasPairRequested=false;
 	}else if(!m_pairRequested){
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
+		MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 		buffer[0]=sequenceId;
 		Message aMessage(buffer,1,
 		rank,RAY_MPI_TAG_GET_READ_MATE,m_parameters->getRank());
@@ -810,7 +821,7 @@ void Scaffolder::processAnnotation(){
 		m_pairReceived=false;
 	}else if(!m_pairReceived
 	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		vector<uint64_t> response;
+		vector<MessageUnit> response;
 		m_virtualCommunicator->getMessageResponseElements(m_workerId,&response);
 		m_readLength=response[0];
 		m_pairedReadRank=response[1];
@@ -821,7 +832,7 @@ void Scaffolder::processAnnotation(){
 	}else if(!m_pairReceived){
 		return;
 	}else if(!m_markersRequested){
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
+		MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 		buffer[0]=m_pairedReadIndex;
 		Message aMessage(buffer,1,
 		m_pairedReadRank,RAY_MPI_TAG_GET_READ_MARKERS,m_parameters->getRank());
@@ -830,7 +841,7 @@ void Scaffolder::processAnnotation(){
 		m_markersReceived=false;
 	}else if(!m_markersReceived
 	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		vector<uint64_t> response;
+		vector<MessageUnit> response;
 		m_virtualCommunicator->getMessageResponseElements(m_workerId,&response);
 		int bufferPosition=0;
 		m_pairedReadLength=response[bufferPosition++];
@@ -855,7 +866,7 @@ void Scaffolder::processAnnotation(){
 			m_forwardDirectionLengthRequested=true;
 			m_forwardDirectionLengthReceived=true;
 		}
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
+		MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 		int bufferPosition=0;
 		m_pairedForwardMarker.pack(buffer,&bufferPosition);
 
@@ -869,7 +880,7 @@ void Scaffolder::processAnnotation(){
 		m_forwardDirectionsReceived=false;
 	}else if(!m_forwardDirectionsReceived
 	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		vector<uint64_t> response;
+		vector<MessageUnit> response;
 		m_virtualCommunicator->getMessageResponseElements(m_workerId,&response);
 		m_pairedForwardMarkerCoverage=response[0];
 
@@ -908,7 +919,7 @@ void Scaffolder::processAnnotation(){
 	}else if(!m_forwardDirectionsReceived){
 		return;
 	}else if(!m_forwardDirectionLengthRequested){
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
+		MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 		int rankId=getRankFromPathUniqueId(m_pairedForwardDirectionName);
 		buffer[0]=m_pairedForwardDirectionName;
 		Message aMessage(buffer,1,
@@ -920,7 +931,7 @@ void Scaffolder::processAnnotation(){
 
 	}else if(!m_forwardDirectionLengthReceived
 	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		vector<uint64_t> response;
+		vector<MessageUnit> response;
 		m_virtualCommunicator->getMessageResponseElements(m_workerId,&response);
 		m_pairedForwardDirectionLength=response[0];
 		m_forwardDirectionLengthReceived=true;
@@ -1072,7 +1083,7 @@ Case 13. (allowed)
 			m_reverseDirectionLengthReceived=true;
 		}
 
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
+		MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 		int bufferPosition=0;
 		m_pairedReverseMarker.pack(buffer,&bufferPosition);
 
@@ -1086,7 +1097,7 @@ Case 13. (allowed)
 		m_reverseDirectionsReceived=false;
 	}else if(!m_reverseDirectionsReceived
 	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		vector<uint64_t> response;
+		vector<MessageUnit> response;
 		m_virtualCommunicator->getMessageResponseElements(m_workerId,&response);
 		m_pairedReverseMarkerCoverage=response[0];
 		m_pairedReverseHasDirection=response[1];
@@ -1124,8 +1135,8 @@ Case 13. (allowed)
 	}else if(!m_reverseDirectionsReceived){
 		return;
 	}else if(!m_reverseDirectionLengthRequested){
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(Kmer));
-		int rankId=getRankFromPathUniqueId(m_pairedReverseDirectionName);
+		MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(Kmer));
+		Rank rankId=getRankFromPathUniqueId(m_pairedReverseDirectionName);
 		buffer[0]=m_pairedReverseDirectionName;
 		Message aMessage(buffer,1,
 		rankId,RAY_MPI_TAG_GET_PATH_LENGTH,m_parameters->getRank());
@@ -1134,7 +1145,7 @@ Case 13. (allowed)
 		m_reverseDirectionLengthReceived=false;
 	}else if(!m_reverseDirectionLengthReceived
 	&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
-		vector<uint64_t> response;
+		vector<MessageUnit> response;
 		m_virtualCommunicator->getMessageResponseElements(m_workerId,&response);
 		m_pairedReverseDirectionLength=response[0];
 		m_reverseDirectionLengthReceived=true;
@@ -1279,7 +1290,7 @@ Case 16. (allowed)
 	}
 }
 
-void Scaffolder::getContigSequence(uint64_t id){
+void Scaffolder::getContigSequence(PathHandle id){
 	if(!m_hasContigSequence_Initialised){
 		m_hasContigSequence_Initialised=true;
 		m_rankIdForContig=getRankFromPathUniqueId(id);
@@ -1292,14 +1303,14 @@ void Scaffolder::getContigSequence(uint64_t id){
 	if(m_position<m_theLength){
 		if(!m_requestedContigChunk){
 			m_requestedContigChunk=true;
-			uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+			MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 			message[0]=id;
 			message[1]=m_position;
 			Message aMessage(message,2,
 				m_rankIdForContig,RAY_MPI_TAG_GET_CONTIG_CHUNK,m_parameters->getRank());
 			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
-			vector<uint64_t> data;
+			vector<MessageUnit> data;
 			m_virtualCommunicator->getMessageResponseElements(m_workerId,&data);
 			/* the position in the message buffer */
 			int pos=0;
@@ -1346,7 +1357,7 @@ void Scaffolder::call_RAY_MASTER_MODE_WRITE_SCAFFOLDS(){
 
 	if(m_scaffoldId<(int)m_scaffoldContigs.size()){
 		if(m_contigId<(int)m_scaffoldContigs[m_scaffoldId].size()){
-			uint64_t contigNumber=m_scaffoldContigs[m_scaffoldId][m_contigId];
+			PathHandle contigNumber=m_scaffoldContigs[m_scaffoldId][m_contigId];
 			if(!m_hasContigSequence){
 		
 				// This sends messages

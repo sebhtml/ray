@@ -53,13 +53,13 @@ class EdgePurgerWorker : public Worker {
 	GridTable*m_subgraph;
 	Kmer m_currentKmer;
 	Vertex*m_vertex;
-	uint64_t m_workerId;
+	WorkerHandle m_workerId;
 	StaticVector*m_inbox;
 	StaticVector*m_outbox;
 	RingAllocator*m_outboxAllocator;
 	VirtualCommunicator*m_virtualCommunicator;
 public:
-	void constructor(uint64_t workerId,Vertex*vertex,Kmer*currentKmer,GridTable*subgraph,VirtualCommunicator*virtualCommunicator,RingAllocator*outboxAllocator,Parameters*parameters,
+	void constructor(WorkerHandle workerId,Vertex*vertex,Kmer*currentKmer,GridTable*subgraph,VirtualCommunicator*virtualCommunicator,RingAllocator*outboxAllocator,Parameters*parameters,
 		StaticVector*inbox,StaticVector*outbox,MessageTag tag);
 
 	/** work a little bit 
@@ -71,7 +71,7 @@ public:
 	bool isDone();
 
 	/** get the worker number */
-	uint64_t getWorkerIdentifier();
+	WorkerHandle getWorkerIdentifier();
 
 };
 

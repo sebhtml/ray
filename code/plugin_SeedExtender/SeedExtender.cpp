@@ -193,7 +193,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				#endif
 
 			}else if(!(*vertexCoverageRequested)){
-				uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(KMER_U64_ARRAY_SIZE*sizeof(uint64_t));
+				MessageUnit*message=(MessageUnit*)(*outboxAllocator).allocate(KMER_U64_ARRAY_SIZE*sizeof(MessageUnit));
 				int bufferPosition=0;
 				kmer.pack(message,&bufferPosition);
 				Rank dest=m_parameters->_vertexRank(&kmer);
@@ -321,7 +321,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 				// we received the vertex for that read,
 				// now check if it matches one of 
 				// the many choices we have
-				uint64_t uniqueId=*(ed->m_EXTENSION_readIterator);
+				ReadHandle uniqueId=*(ed->m_EXTENSION_readIterator);
 				ExtensionElement*element=ed->getUsedRead(uniqueId);
 
 				#ifdef ASSERT
@@ -432,7 +432,7 @@ Presently, insertions or deletions up to 8 are supported.
 					ed->m_EXTENSION_readIterator++;
 				}else{// the read is paired
 					PairedRead*pairedRead=element->getPairedRead();
-					uint64_t uniqueReadIdentifier=pairedRead->getUniqueId();
+					ReadHandle uniqueReadIdentifier=pairedRead->getUniqueId();
 
 					MACRO_COLLECT_PROFILING_INFORMATION();
 
@@ -524,7 +524,8 @@ Presently, insertions or deletions up to 8 are supported.
 						if(!m_hasPairedSequences){
 							break;// can'T free if there are no pairs
 						}
-						uint64_t uniqueId=ed->m_sequencesToFree[i];
+
+						ReadHandle uniqueId=ed->m_sequencesToFree[i];
 						m_ed->m_pairedReadsWithoutMate.erase(uniqueId);
 
 						// free the sequence
@@ -988,13 +989,13 @@ Kmer *currentVertex,BubbleData*bubbleData){
 		if(m_parameters->hasOption("-show-distance-summary")){
 			/** show the utilised outer distances */
 			cout<<"Rank "<<theRank<<" utilised outer distances: "<<endl;
-			for(map<int,map<int, uint64_t> >::iterator i=m_pairedScores.begin();i!=m_pairedScores.end();i++){
-				for(map<int,uint64_t>::iterator j=i->second.begin();j!=i->second.end();j++){
+			for(map<int,map<int,LargeCount> >::iterator i=m_pairedScores.begin();i!=m_pairedScores.end();i++){
+				for(map<int,LargeCount>::iterator j=i->second.begin();j!=i->second.end();j++){
 					int lib=i->first;
 					int peak=j->first;
 					int average=m_parameters->getLibraryAverageLength(lib,peak);
 					int deviation=m_parameters->getLibraryStandardDeviation(lib,peak);
-					uint64_t count=j->second;
+					LargeCount count=j->second;
 	
 					cout<<"Rank "<<theRank<<" Library: "<<lib<<" LibraryPeak: "<<peak<<" PeakAverage: "<<average<<" PeakDeviation: "<<deviation<<" Pairs: "<<count<<endl;
 				}
@@ -1002,7 +1003,7 @@ Kmer *currentVertex,BubbleData*bubbleData){
 		}
 
 	
-		uint64_t id=getPathUniqueId(theRank,ed->m_EXTENSION_currentSeedIndex);
+		PathHandle id=getPathUniqueId(theRank,ed->m_EXTENSION_currentSeedIndex);
 		ed->m_EXTENSION_identifiers.push_back(id);
 	}
 
@@ -1078,7 +1079,7 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 				return;
 			}
 
-			uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(2*sizeof(uint64_t));
+			MessageUnit*message=(MessageUnit*)(*outboxAllocator).allocate(2*sizeof(MessageUnit));
 			int bufferPosition=0;
 			currentVertex->pack(message,&bufferPosition);
 			int destination=m_parameters->_vertexRank(currentVertex);
@@ -1152,13 +1153,13 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 		// TODO: fix this at the source in the first place...
 		// this code does not change the result, but reduces the granularity
 		if(m_ed->m_expirations.count(previousPosition) > 0){
-			vector<uint64_t>*expired=&(m_ed->m_expirations)[previousPosition];
+			vector<ReadHandle>*expired=&(m_ed->m_expirations)[previousPosition];
 
 			// erase these reads from the list of reads without mate 
 			// because they are expired...
 			// this just free some memory and does not change the result.
 			for(int i=0;i<(int)expired->size();i++){
-				uint64_t readId=expired->at(i);
+				ReadHandle readId=expired->at(i);
 				m_ed->m_pairedReadsWithoutMate.erase(readId);
 
 				// remove the mate too if necessary
@@ -1166,7 +1167,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				ExtensionElement*element=ed->getUsedRead(readId);
 				if(element != NULL && element->hasPairedRead()){
 					PairedRead*pairedRead=element->getPairedRead();
-					uint64_t mateId=pairedRead->getUniqueId();
+					ReadHandle mateId=pairedRead->getUniqueId();
 
 					m_matesToMeet.erase(mateId);
 				}
@@ -1210,7 +1211,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
-		uint64_t waveId=getPathUniqueId(theRank,ed->m_EXTENSION_currentSeedIndex);
+		PathHandle waveId=getPathUniqueId(theRank,ed->m_EXTENSION_currentSeedIndex);
 		// save wave progress.
 		#ifdef ASSERT
 		assert((int)getIdFromPathUniqueId(waveId)==ed->m_EXTENSION_currentSeedIndex);
@@ -1276,7 +1277,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 			cout<<ed->m_EXTENSION_receivedReads.size()<<" read markers at position "<<currentPosition;
 			for(int i=0;i<(int)ed->m_EXTENSION_receivedReads.size();i++){
 				ReadAnnotation annotation=ed->m_EXTENSION_receivedReads[i];
-				uint64_t uniqueId=annotation.getUniqueId();
+				ReadHandle uniqueId=annotation.getUniqueId();
 				cout<<" "<<uniqueId;
 			}
 			cout<<endl;
@@ -1321,7 +1322,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 			MACRO_COLLECT_PROFILING_INFORMATION();
 
 			ReadAnnotation annotation=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache];
-			uint64_t uniqueId=annotation.getUniqueId();
+			ReadHandle uniqueId=annotation.getUniqueId();
 
 			MACRO_COLLECT_PROFILING_INFORMATION();
 
@@ -1348,7 +1349,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				if(ed->m_EXTENSION_readsInRange.count(uniqueId)==0 && anElement->hasPairedRead()){
 					char theRightStrand=anElement->getStrand();
 					PairedRead*pairedRead=anElement->getPairedRead();
-					uint64_t mateId=pairedRead->getUniqueId();
+					ReadHandle mateId=pairedRead->getUniqueId();
 
 					ExtensionElement*extensionElement=ed->getUsedRead(mateId);
 
@@ -1409,7 +1410,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 			/** this case never happens because m_cacheForRepeatedReads is never populated */
 			}else if(!m_sequenceRequested
 				&&m_cacheForRepeatedReads.find(uniqueId,false)!=NULL){
-				SplayNode<uint64_t,Read>*node=m_cacheForRepeatedReads.find(uniqueId,false);
+				SplayNode<ReadHandle,Read>*node=m_cacheForRepeatedReads.find(uniqueId,false);
 				#ifdef ASSERT
 				assert(node!=NULL);
 				#endif
@@ -1441,7 +1442,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				assert(sequenceRank>=0);
 				assert(sequenceRank<size);
 				#endif
-				uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
+
+				MessageUnit*message=(MessageUnit*)(*outboxAllocator).allocate(1*sizeof(MessageUnit));
 				message[0]=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache].getReadIndex();
 				Message aMessage(message,1,sequenceRank,RAY_MPI_TAG_REQUEST_READ_SEQUENCE,theRank);
 				outbox->push_back(aMessage);
@@ -1481,7 +1483,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				if(addRead && ed->m_currentCoverage>= thresholdCoverage){
 					// the vertex is repeated
 					if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
-						uint64_t mateId=ed->m_EXTENSION_pairedRead.getUniqueId();
+						ReadHandle mateId=ed->m_EXTENSION_pairedRead.getUniqueId();
 						// the mate is required to allow proper placement
 						
 						ExtensionElement*extensionElement=ed->getUsedRead(mateId);
@@ -1495,7 +1497,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 				// check the distance.
 				if(addRead && ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
-					uint64_t mateId=ed->m_EXTENSION_pairedRead.getUniqueId();
+					ReadHandle mateId=ed->m_EXTENSION_pairedRead.getUniqueId();
 					// the mate is required to allow proper placement
 					
 					ExtensionElement*extensionElement=ed->getUsedRead(mateId);
@@ -1582,7 +1584,9 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 					// received paired read too !
 					if(ed->m_EXTENSION_pairedRead.getLibrary()!=DUMMY_LIBRARY){
 						element->setPairedRead(ed->m_EXTENSION_pairedRead);
-						uint64_t mateId=ed->m_EXTENSION_pairedRead.getUniqueId();
+
+						ReadHandle mateId=ed->m_EXTENSION_pairedRead.getUniqueId();
+
 						if(ed->getUsedRead(mateId)==NULL){// the mate has not shown up yet
 							ed->m_pairedReadsWithoutMate.insert(uniqueId);
 
@@ -1631,7 +1635,7 @@ vector<Direction>*SeedExtender::getDirections(){
 	return &m_receivedDirections;
 }
 
-set<uint64_t>*SeedExtender::getEliminatedSeeds(){
+set<PathHandle>*SeedExtender::getEliminatedSeeds(){
 	return &m_eliminatedSeeds;
 }
 
@@ -1744,13 +1748,13 @@ void SeedExtender::removeUnfitLibraries(){
 
 	for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
 		map<int,vector<int> > classifiedValues;
-		map<int,vector<uint64_t> > reads;
+		map<int,vector<ReadHandle> > reads;
 		Kmer vertex=m_ed->m_enumerateChoices_outgoingEdges[i];
 
 		for(int j=0;j<(int)m_ed->m_EXTENSION_pairedReadPositionsForVertices[vertex].size();j++){
 			int value=m_ed->m_EXTENSION_pairedReadPositionsForVertices[vertex][j];
 			int library=m_ed->m_EXTENSION_pairedLibrariesForVertices[vertex][j];
-			uint64_t readId=m_ed->m_EXTENSION_pairedReadsForVertices[vertex][j];
+			ReadHandle readId=m_ed->m_EXTENSION_pairedReadsForVertices[vertex][j];
 			classifiedValues[library].push_back(value);
 			reads[library].push_back(readId);
 		}
@@ -1798,7 +1802,7 @@ void SeedExtender::removeUnfitLibraries(){
 				}
 			}else if(j->second.size()>10){// to restore reads for a library, we need at least 5
 				for(int k=0;k<(int)j->second.size();k++){
-					uint64_t uniqueId=reads[library][k];
+					ReadHandle uniqueId=reads[library][k];
 					m_ed->m_sequencesToFree.push_back(uniqueId);
 				}
 			}
@@ -1827,22 +1831,23 @@ void SeedExtender::setFreeUnmatedPairedReads(){
 		return;
 	}
 
-	vector<uint64_t>*expired=&(m_ed->m_expirations)[m_ed->m_EXTENSION_extension.size()];
+	vector<ReadHandle>*expired=&(m_ed->m_expirations)[m_ed->m_EXTENSION_extension.size()];
 
 	//cout<<"Items expiring: "<<expired->size()<<endl;
 
 	for(int i=0;i<(int)expired->size();i++){
-		uint64_t readId=expired->at(i);
+		ReadHandle readId=expired->at(i);
 		if(m_ed->m_pairedReadsWithoutMate.count(readId)>0){
 			m_ed->m_sequencesToFree.push_back(readId); // RECYCLING IS desactivated
 		}
 	}
+
 	m_ed->m_expirations.erase(m_ed->m_EXTENSION_extension.size());
 }
 
 void SeedExtender::showReadsInRange(){
 	cout<<"Reads in range ("<<m_ed->m_EXTENSION_readsInRange.size()<<"):";
-	for(set<uint64_t>::iterator i=m_ed->m_EXTENSION_readsInRange.begin();
+	for(set<ReadHandle>::iterator i=m_ed->m_EXTENSION_readsInRange.begin();
 		i!=m_ed->m_EXTENSION_readsInRange.end();i++){
 		cout<<" "<<*i;
 	}
@@ -1866,7 +1871,7 @@ void SeedExtender::printExtensionStatus(Kmer*currentVertex){
 /*
 	cout<<"Expiration.size= "<<(m_ed->m_expirations).size()<<endl;
 	cout<<"Entries: "<<endl;
-	for(map<int,vector<uint64_t> >::iterator i=m_ed->m_expirations.begin();i!=m_ed->m_expirations.end();i++){
+	for(map<int,vector<ReadHandle> >::iterator i=m_ed->m_expirations.begin();i!=m_ed->m_expirations.end();i++){
 		cout<<i->first<<" "<<i->second.size()<<endl;
 	}
 */
@@ -1923,7 +1928,7 @@ void SeedExtender::readCheckpoint(FusionData*fusionData){
 		m_ed->m_EXTENSION_contigs.push_back(extension);
 
 		/* add the identifier */
-		uint64_t id=getPathUniqueId(m_parameters->getRank(),m_ed->m_EXTENSION_contigs.size()-1);
+		PathHandle id=getPathUniqueId(m_parameters->getRank(),m_ed->m_EXTENSION_contigs.size()-1);
 		m_ed->m_EXTENSION_identifiers.push_back(id);
 	}
 
@@ -1938,7 +1943,7 @@ void SeedExtender::readCheckpoint(FusionData*fusionData){
 
 	// store the reverse map
 	for(int i=0;i<(int)m_ed->m_EXTENSION_identifiers.size();i++){
-		uint64_t id=m_ed->m_EXTENSION_identifiers[i];
+		PathHandle id=m_ed->m_EXTENSION_identifiers[i];
 		fusionData->m_FUSION_identifier_map[id]=i;
 	}
 }
@@ -1949,8 +1954,8 @@ void SeedExtender::showSequences(){
 
 	int firstPosition=m_ed->m_EXTENSION_extension.size()-1;
 
-	for(set<uint64_t>::iterator i=m_ed->m_EXTENSION_readsInRange.begin();i!=m_ed->m_EXTENSION_readsInRange.end();i++){
-		uint64_t uniqueId=*i;
+	for(set<ReadHandle>::iterator i=m_ed->m_EXTENSION_readsInRange.begin();i!=m_ed->m_EXTENSION_readsInRange.end();i++){
+		ReadHandle uniqueId=*i;
 		ExtensionElement*element=m_ed->getUsedRead(uniqueId);
 
 		int startPosition=element->getPosition();
@@ -1971,8 +1976,8 @@ void SeedExtender::showSequences(){
 	cout<<"Consensus starting at "<<firstPosition<<endl;
 	cout<<sequence<<endl;
 
-	for(set<uint64_t>::iterator i=m_ed->m_EXTENSION_readsInRange.begin();i!=m_ed->m_EXTENSION_readsInRange.end();i++){
-		uint64_t uniqueId=*i;
+	for(set<ReadHandle>::iterator i=m_ed->m_EXTENSION_readsInRange.begin();i!=m_ed->m_EXTENSION_readsInRange.end();i++){
+		ReadHandle uniqueId=*i;
 		ExtensionElement*element=m_ed->getUsedRead(uniqueId);
 
 		int startPosition=element->getPosition();
@@ -1995,7 +2000,7 @@ void SeedExtender::showSequences(){
 
 		if(element->hasPairedRead()){
 			PairedRead*pairedRead=element->getPairedRead();
-			uint64_t mateId=pairedRead->getUniqueId();
+			ReadHandle mateId=pairedRead->getUniqueId();
 			ExtensionElement*element2=m_ed->getUsedRead(mateId);
 
 			if(element2 != NULL){
@@ -2013,7 +2018,8 @@ void SeedExtender::showSequences(){
 
 void SeedExtender::processExpiredReads(){
 	for(int i=0;i<(int)m_expiredReads[m_ed->m_EXTENSION_currentPosition].size();i++){
-		uint64_t uniqueId=m_expiredReads[m_ed->m_EXTENSION_currentPosition][i];
+
+		ReadHandle uniqueId=m_expiredReads[m_ed->m_EXTENSION_currentPosition][i];
 		m_ed->m_EXTENSION_readsInRange.erase(uniqueId);
 
 		// free the sequence
@@ -2177,7 +2183,8 @@ void SeedExtender::finalizeExtensions(vector<AssemblySeed>*seeds,FusionData*fusi
 
 	// store the reverse map
 	for(int i=0;i<(int)m_ed->m_EXTENSION_identifiers.size();i++){
-		uint64_t id=m_ed->m_EXTENSION_identifiers[i];
+
+		PathHandle id=m_ed->m_EXTENSION_identifiers[i];
 		fusionData->m_FUSION_identifier_map[id]=i;
 	}
 
@@ -2204,8 +2211,10 @@ void SeedExtender::finalizeExtensions(vector<AssemblySeed>*seeds,FusionData*fusi
 		ostringstream fileName;
 		fileName<<m_parameters->getPrefix()<<"Rank"<<m_parameters->getRank()<<"RayExtensions.fasta";
 		ofstream f(fileName.str().c_str());
+
 		for(int i=0;i<(int)m_ed->m_EXTENSION_identifiers.size();i++){
-			uint64_t id=m_ed->m_EXTENSION_identifiers[i];
+
+			PathHandle id=m_ed->m_EXTENSION_identifiers[i];
 			f<<">RayExtension-"<<id<<endl;
 
 			f<<addLineBreaks(convertToString(&(m_ed->m_EXTENSION_contigs.at(i)),

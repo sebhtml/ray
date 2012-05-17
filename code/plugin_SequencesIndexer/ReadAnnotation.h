@@ -35,9 +35,9 @@ using namespace std;
 class ReadAnnotation{
 	ReadAnnotation*m_next;
 	uint32_t m_readIndex;
-	uint16_t m_rank;
+	uint16_t m_rank; // should be Rank
 	uint16_t m_positionOnStrand;
-	char m_strand;
+	Strand m_strand;
 	bool m_lower;
 public:
 	void constructor(int a,int b,int positionOnStrand,char c,bool lower);
@@ -45,10 +45,10 @@ public:
 	int getRank()const;
 	int getReadIndex()const;
 	int getPositionOnStrand()const;
-	char getStrand()const;
+	Strand getStrand()const;
 	ReadAnnotation*getNext()const;
 	void setNext(ReadAnnotation*a);
-	uint64_t getUniqueId() const;
+	ReadHandle getUniqueId() const;
 
 	void read(ifstream*f,bool isLower);
 	void write(ofstream*f);

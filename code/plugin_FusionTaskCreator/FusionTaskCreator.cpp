@@ -37,8 +37,8 @@ void FusionTaskCreator::call_RAY_SLAVE_MODE_FUSION(){
 
 void FusionTaskCreator::constructor(VirtualProcessor*virtualProcessor,StaticVector*outbox,
 		RingAllocator*outboxAllocator,int*mode,Parameters*parameters,
-		vector<vector<Kmer> >*paths,vector<uint64_t>*pathIdentifiers,
-		set<uint64_t>*eliminated,VirtualCommunicator*virtualCommunicator){
+		vector<vector<Kmer> >*paths,vector<PathHandle>*pathIdentifiers,
+		set<PathHandle>*eliminated,VirtualCommunicator*virtualCommunicator){
 	m_virtualCommunicator=virtualCommunicator;
 
 	m_eliminated=eliminated;
@@ -94,7 +94,7 @@ void FusionTaskCreator::finalizeMethod(){
 	cout<<"Statistics: all paths: "<<numberOfPaths<<" eliminated during fusing: "<<eliminatedPaths<<endl;
 
 	/* send a message */
-	uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t));
+	MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(sizeof(MessageUnit));
 	message[0]=removedPaths;
 	Message aMessage(message,1,MASTER_RANK,RAY_MPI_TAG_FUSION_DONE,m_parameters->getRank());
 	m_outbox->push_back(aMessage);
@@ -118,7 +118,7 @@ bool FusionTaskCreator::hasUnassignedTask(){
 		return false;
 	}
 
-	return m_iterator < (uint64_t)m_paths->size();
+	return m_iterator < (LargeCount)m_paths->size();
 }
 
 /** assign the next task to a worker and return this worker 

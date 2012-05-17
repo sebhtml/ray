@@ -66,7 +66,7 @@ void DepthFirstSearchData::depthFirstSearch(Kmer root,Kmer a,int maxDepth,
 			(*vertexCoverageRequested)=true;
 			(*vertexCoverageReceived)=false;
 			
-			uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(KMER_U64_ARRAY_SIZE*sizeof(uint64_t));
+			MessageUnit*message=(MessageUnit*)(*outboxAllocator).allocate(KMER_U64_ARRAY_SIZE*sizeof(MessageUnit));
 			int j=0;
 			vertexToVisit.pack(message,&j);
 			int dest=parameters->_vertexRank(&vertexToVisit);
@@ -84,7 +84,7 @@ void DepthFirstSearchData::depthFirstSearch(Kmer root,Kmer a,int maxDepth,
 				}
 			
 				// visit the vertex, and ask next edges.
-				uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
+				MessageUnit*message=(MessageUnit*)(*outboxAllocator).allocate(1*sizeof(MessageUnit));
 				int bufferPosition=0;
 				vertexToVisit.pack(message,&bufferPosition);
 				int destination=parameters->_vertexRank(&vertexToVisit);
@@ -191,7 +191,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(Kmer a,int maxDepth,
 			(*vertexCoverageRequested)=true;
 			(*vertexCoverageReceived)=false;
 			
-			uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(KMER_U64_ARRAY_SIZE*sizeof(uint64_t));
+			MessageUnit*message=(MessageUnit*)(*outboxAllocator).allocate(KMER_U64_ARRAY_SIZE*sizeof(MessageUnit));
 			int bufferPosition=0;
 			vertexToVisit.pack(message,&bufferPosition);
 			int dest=parameters->_vertexRank(&vertexToVisit);
@@ -229,7 +229,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(Kmer a,int maxDepth,
 				}
 			
 				// visit the vertex, and ask next edges.
-				uint64_t*message=(uint64_t*)(*outboxAllocator).allocate(1*sizeof(uint64_t));
+				MessageUnit*message=(MessageUnit*)(*outboxAllocator).allocate(1*sizeof(MessageUnit));
 				int bufferPosition=0;
 				vertexToVisit.pack(message,&bufferPosition);
 				int destination=parameters->_vertexRank(&vertexToVisit);

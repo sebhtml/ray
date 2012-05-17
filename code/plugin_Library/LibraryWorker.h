@@ -52,11 +52,11 @@ class LibraryWorker : public Worker {
 	map<int,map<int,int> >*m_libraryDistances;
 	ExtensionData*m_ed;
 
-	SplayTree<uint64_t,LibraryElement> m_database;
+	SplayTree<ReadHandle,LibraryElement> m_database;
 
 	MyAllocator*m_allocator;
 	VirtualCommunicator*m_virtualCommunicator;
-	uint64_t m_SEEDING_i;
+	PathHandle m_SEEDING_i;
 	RingAllocator*m_outboxAllocator;
 	Parameters*m_parameters;
 	int m_EXTENSION_currentPosition;
@@ -70,7 +70,7 @@ class LibraryWorker : public Worker {
 	
 public:
 
-	void constructor(uint64_t id,SeedingData*seedingData,VirtualCommunicator*virtualCommunicator,RingAllocator*outboxAllocator,
+	void constructor(WorkerHandle id,SeedingData*seedingData,VirtualCommunicator*virtualCommunicator,RingAllocator*outboxAllocator,
 	Parameters*parameters,StaticVector*inbox,StaticVector*outbox,map<int,map<int,int> >*libraryDistances,int*detectedDistances,
 		MyAllocator*allocator,
 MessageTag RAY_MPI_TAG_GET_READ_MATE,
@@ -86,7 +86,7 @@ MessageTag RAY_MPI_TAG_GET_READ_MATE,
 	bool isDone();
 
 	/** get the worker number */
-	uint64_t getWorkerIdentifier();
+	WorkerHandle getWorkerIdentifier();
 
 };
 

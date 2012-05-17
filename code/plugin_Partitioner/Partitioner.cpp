@@ -67,9 +67,9 @@ void Partitioner::call_RAY_MASTER_MODE_COUNT_FILE_ENTRIES(){
 		}
 	/** a peer send the count for one file */
 	}else if(m_inbox->size()>0 && m_inbox->at(0)->getTag()== RAY_MPI_TAG_FILE_ENTRY_COUNT){
-		uint64_t*buffer=m_inbox->at(0)->getBuffer();
+		MessageUnit*buffer=m_inbox->at(0)->getBuffer();
 		int file=buffer[0];
-		uint64_t count=buffer[1];
+		LargeCount count=buffer[1];
 		m_masterCounts[file]=count;
 
 		if(m_parameters->hasOption("-debug-partitioner"))
@@ -98,11 +98,13 @@ void Partitioner::call_RAY_MASTER_MODE_COUNT_FILE_ENTRIES(){
 
 			f2<<"Files: "<<m_parameters->getNumberOfFiles()<<endl;
 			f2<<endl;
-			uint64_t totalSequences=0;
+
+			LargeCount totalSequences=0;
 			for(int i=0;i<(int)m_parameters->getNumberOfFiles();i++){
 				f2<<"FileNumber: "<<i<<endl;
 				f2<<"	FilePath: "<<m_parameters->getFile(i)<<endl;
-				uint64_t entries=m_parameters->getNumberOfSequences(i);
+
+				LargeCount entries=m_parameters->getNumberOfSequences(i);
 				f2<<" 	NumberOfSequences: "<<entries<<endl;
 				if(entries>0){
 					f2<<"	FirstSequence: "<<totalSequences<<endl;
@@ -127,15 +129,19 @@ void Partitioner::call_RAY_MASTER_MODE_COUNT_FILE_ENTRIES(){
 			fileName2<<m_parameters->getPrefix();
 			fileName2<<"SequencePartition.txt";
 			ofstream f3(fileName2.str().c_str());
-			uint64_t perRank=totalSequences/m_parameters->getSize();
+
+			LargeCount perRank=totalSequences/m_parameters->getSize();
 			f3<<"#Rank	FirstSequence	LastSequence	NumberOfSequences"<<endl;
 			for(int i=0;i<m_parameters->getSize();i++){
-				uint64_t first=i*perRank;
-				uint64_t last=first+perRank-1;
-				if(i==m_parameters->getSize()-1)
+				LargeIndex first=i*perRank;
+				LargeIndex last=first+perRank-1;
+
+				if(i==m_parameters->getSize()-1){
 					last=totalSequences-1;
+				}
 				
-				uint64_t count=last-first+1;
+				LargeCount count=last-first+1;
+
 				f3<<i<<"\t"<<first<<"\t"<<last<<"\t"<<count<<endl;
 			}
 			f3.close();
@@ -162,9 +168,9 @@ void Partitioner::call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES(){
 			f.read((char*)&count,sizeof(int));
 			for(int i=0;i<count;i++){
 				int file=-1;
-				uint64_t sequences=0;
+				LargeCount sequences=0;
 				f.read((char*)&file,sizeof(int));
-				f.read((char*)&sequences,sizeof(uint64_t));
+				f.read((char*)&sequences,sizeof(LargeCount));
 
 				#ifdef ASSERT
 				assert(file>=0);
@@ -194,12 +200,13 @@ void Partitioner::call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES(){
 			cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint Partition"<<endl;
 			int count=m_slaveCounts.size();
 			f.write((char*)&count,sizeof(int));
-			for(map<int,uint64_t>::iterator i=m_slaveCounts.begin();
+
+			for(map<int,LargeCount>::iterator i=m_slaveCounts.begin();
 				i!=m_slaveCounts.end();i++){
 				int file=i->first;
-				uint64_t sequences=i->second;
+				LargeCount sequences=i->second;
 				f.write((char*)&file,sizeof(int));
-				f.write((char*)&sequences,sizeof(uint64_t));
+				f.write((char*)&sequences,sizeof(LargeCount));
 			}
 
 			f.close();
@@ -236,7 +243,7 @@ void Partitioner::call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES(){
 				m_currentFileToSend++;
 			/** send the count and wait for a reply to continue */
 			}else if(!m_sentCount){
-				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+				MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 				message[0]=m_currentFileToSend;
 				message[1]=m_slaveCounts[m_currentFileToSend];
 				Message aMessage(message,2,MASTER_RANK,RAY_MPI_TAG_FILE_ENTRY_COUNT,m_parameters->getRank());

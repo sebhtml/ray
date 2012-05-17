@@ -84,21 +84,21 @@ void Kmer::print(){
 	printf("\n");
 }
 
-void Kmer::pack(uint64_t*messageBuffer,int*messagePosition){
+void Kmer::pack(MessageUnit*messageBuffer,int*messagePosition){
 	for(int i=0;i<getNumberOfU64();i++){
 		messageBuffer[*messagePosition]=getU64(i);
 		(*messagePosition)++;
 	}
 }
 
-void Kmer::unpack(uint64_t*messageBuffer,int*messagePosition){
+void Kmer::unpack(MessageUnit*messageBuffer,int*messagePosition){
 	for(int i=0;i<getNumberOfU64();i++){
 		setU64(i,messageBuffer[*messagePosition]);
 		(*messagePosition)++;
 	}
 }
 
-void Kmer::unpack(vector<uint64_t>*messageBuffer,int*messagePosition){
+void Kmer::unpack(vector<MessageUnit>*messageBuffer,int*messagePosition){
 	for(int i=0;i<getNumberOfU64();i++){
 		setU64(i,(*messageBuffer)[*messagePosition]);
 		(*messagePosition)++;

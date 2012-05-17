@@ -26,6 +26,7 @@
 #include <map>
 #include <stdint.h>
 #include <plugin_GeneOntology/types.h>
+#include <plugin_Searcher/VirtualKmerColor.h>
 using namespace std;
 
 class KeyEncoder{
@@ -34,10 +35,10 @@ class KeyEncoder{
 
 	void populateMap();
 
-	uint64_t encode_EMBL_CDS(const char*identifier);
+	PhysicalKmerColor encode_EMBL_CDS(const char*identifier);
 public:
 
-	uint64_t getEncoded_EMBL_CDS(const char*identifier);
+	PhysicalKmerColor getEncoded_EMBL_CDS(const char*identifier);
 
 	GeneOntologyIdentifier /**/ encodeGeneOntologyHandle(const char*identifier);
 };

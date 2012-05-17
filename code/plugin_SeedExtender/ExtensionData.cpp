@@ -29,7 +29,7 @@ using namespace std;
 void ExtensionData::constructor(Parameters*parameters){
 	m_parameters=parameters;
 	m_numberOfBins=1;
-	m_database=(SplayTree<uint64_t,ExtensionElement>*)__Malloc(m_numberOfBins*sizeof(SplayTree<uint64_t,ExtensionElement>),
+	m_database=(SplayTree<ReadHandle,ExtensionElement>*)__Malloc(m_numberOfBins*sizeof(SplayTree<ReadHandle,ExtensionElement>),
 		"RAY_MALLOC_TYPE_EXTENSION_DATA_TREES",m_parameters->showMemoryAllocations());
 	createStructures();
 
@@ -102,16 +102,16 @@ void ExtensionData::destructor(){
 	__Free(m_database,"RAY_MALLOC_TYPE_EXTENSION_DATA_TREES",m_parameters->showMemoryAllocations());
 }
 
-ExtensionElement*ExtensionData::getUsedRead(uint64_t a){
+ExtensionElement*ExtensionData::getUsedRead(ReadHandle a){
 	int bin=0;//uniform_hashing_function_1_64_64(a)%m_numberOfBins;
-	SplayNode<uint64_t,ExtensionElement>*node=m_database[bin].find(a,true);
+	SplayNode<ReadHandle,ExtensionElement>*node=m_database[bin].find(a,true);
 	if(node!=NULL && node->getValue()->m_activated){
 		return node->getValue();
 	}
 	return NULL;
 }
 
-ExtensionElement*ExtensionData::addUsedRead(uint64_t a){
+ExtensionElement*ExtensionData::addUsedRead(ReadHandle a){
 	bool val;
 	int bin=0;
 	ExtensionElement*element=m_database[bin].insert(a,&m_allocator,&val)->getValue();
@@ -120,7 +120,7 @@ ExtensionElement*ExtensionData::addUsedRead(uint64_t a){
 	return element;
 }
 
-void ExtensionData::removeSequence(uint64_t a){
+void ExtensionData::removeSequence(ReadHandle a){
 	int bin=0;
 	m_database[bin].remove(a,false,&m_allocator);
 }
@@ -130,7 +130,7 @@ MyAllocator*ExtensionData::getAllocator(){
 }
 
 void ExtensionData::lazyDestructor(){
-	SplayTreeIterator<uint64_t,ExtensionElement> i;
+	SplayTreeIterator<ReadHandle,ExtensionElement> i;
 	i.constructor(&(m_database[0]));
 	while(i.hasNext()){
 		ExtensionElement*element=i.next()->getValue();

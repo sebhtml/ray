@@ -35,15 +35,15 @@ void EdgePurgerWorker::work(){
 		}else if(m_iterator<(int)m_edges.size()){
 			Kmer vertex=m_edges[m_iterator];
 			if(!m_coverageRequested){
-				int sendTo=m_parameters->_vertexRank(&vertex);
-				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
+				Rank sendTo=m_parameters->_vertexRank(&vertex);
+				MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(MessageUnit));
 				int bufferPosition=0;
 				vertex.pack(message,&bufferPosition);
 				Message aMessage(message,bufferPosition,sendTo,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_parameters->getRank());
 				m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 				m_coverageRequested=true;
 			}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
-				vector<uint64_t> response;
+				vector<MessageUnit> response;
 				m_virtualCommunicator->getMessageResponseElements(m_workerId,&response);
 
 				CoverageDepth coverage=response[0];
@@ -68,15 +68,15 @@ void EdgePurgerWorker::work(){
 		}else if(m_iterator<(int)m_edges.size()){
 			Kmer vertex=m_edges[m_iterator];
 			if(!m_coverageRequested){
-				int sendTo=m_parameters->_vertexRank(&vertex);
-				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
+				Rank sendTo=m_parameters->_vertexRank(&vertex);
+				MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(MessageUnit));
 				int bufferPosition=0;
 				vertex.pack(message,&bufferPosition);
 				Message aMessage(message,bufferPosition,sendTo,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,m_parameters->getRank());
 				m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 				m_coverageRequested=true;
 			}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
-				vector<uint64_t> response;
+				vector<MessageUnit> response;
 				m_virtualCommunicator->getMessageResponseElements(m_workerId,&response);
 
 				CoverageDepth coverage=response[0];
@@ -94,7 +94,7 @@ void EdgePurgerWorker::work(){
 	}
 }
 
-void EdgePurgerWorker::constructor(uint64_t workerId,Vertex*vertex,Kmer*currentKmer,GridTable*subgraph,VirtualCommunicator*virtualCommunicator,RingAllocator*outboxAllocator,Parameters*parameters,
+void EdgePurgerWorker::constructor(WorkerHandle workerId,Vertex*vertex,Kmer*currentKmer,GridTable*subgraph,VirtualCommunicator*virtualCommunicator,RingAllocator*outboxAllocator,Parameters*parameters,
 		StaticVector*inbox,StaticVector*outbox,
 	MessageTag tag){
 
@@ -114,6 +114,6 @@ void EdgePurgerWorker::constructor(uint64_t workerId,Vertex*vertex,Kmer*currentK
 	m_ingoingInitialised=false;
 }
 
-uint64_t EdgePurgerWorker::getWorkerIdentifier(){
+WorkerHandle EdgePurgerWorker::getWorkerIdentifier(){
 	return m_workerId;
 }

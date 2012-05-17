@@ -75,7 +75,7 @@ class IndexerWorker /*: public Worker*/{
 
 public:
 	void constructor(int sequenceId,Parameters*parameters,RingAllocator*outboxAllocator,
-		VirtualCommunicator*vc,uint64_t workerId,ArrayOfReads*a,MyAllocator*allocator,
+		VirtualCommunicator*vc,WorkerHandle workerId,ArrayOfReads*a,MyAllocator*allocator,
 	ofstream*f,
 	map<int,map<int,int> >*forwardStatistics,
 	map<int,map<int,int> >*reverseStatistics,
@@ -92,7 +92,7 @@ public:
 	bool isDone();
 
 	/** get the worker number */
-	uint64_t getWorkerIdentifier();
+	WorkerHandle getWorkerIdentifier();
 
 };
 

@@ -791,7 +791,7 @@ void Parameters::parseCommands(){
 	
 	assert((int)m_singleEndReadsFile.size()<=maximumNumberOfFiles);
 
-	uint64_t result=1;
+	LargeCount result=1;
 	for(int p=0;p<m_wordSize;p++){
 		result*=4;
 	}
@@ -1071,7 +1071,7 @@ void Parameters::addLibraryData(int library,int average,int deviation){
 	}
 }
 
-void Parameters::setNumberOfSequences(int file,uint64_t n){
+void Parameters::setNumberOfSequences(int file,LargeCount n){
 	if(m_numberOfSequencesInFile.count(file)==0){
 		m_numberOfSequencesInFile[file]=n;
 		m_totalNumberOfSequences+=n;
@@ -1082,7 +1082,7 @@ int Parameters::getNumberOfLibraries(){
 	return m_numberOfLibraries;
 }
 
-uint64_t Parameters::getNumberOfSequences(int file){
+LargeCount Parameters::getNumberOfSequences(int file){
 	#ifdef ASSERT
 	if(file>=(int)m_numberOfSequencesInFile.size())
 		cout<<"Error File= "<<file<<" Files: "<<m_numberOfSequencesInFile.size()<<endl;
@@ -1531,12 +1531,13 @@ int Parameters::getReducerValue(){
 	return m_reducerPeriod;
 }
 
-int Parameters::getRankFromGlobalId(uint64_t a){
+Rank Parameters::getRankFromGlobalId(ReadHandle a){
 	uint64_t elementsPerRank=m_totalNumberOfSequences/m_size;
-	int rank=a/elementsPerRank;
+	Rank rank=a/elementsPerRank;
 	if(rank==m_size){
 		rank--;
 	}
+
 	#ifdef ASSERT
 	if(rank>=m_size){
 		cout<<"GlobalIdentifier="<<a<<" Total="<<m_totalNumberOfSequences<<" Size="<<m_size<<" Rank="<<rank<<endl;
@@ -1546,9 +1547,9 @@ int Parameters::getRankFromGlobalId(uint64_t a){
 	return rank;
 }
 
-int Parameters::getIdFromGlobalId(uint64_t a){
+int Parameters::getIdFromGlobalId(ReadHandle a){
 	int bin=getRankFromGlobalId(a);
-	uint64_t x=m_totalNumberOfSequences/m_size;
+	LargeCount x=m_totalNumberOfSequences/m_size;
 	return a-bin*x;
 }
 
@@ -1556,7 +1557,7 @@ int Parameters::getMaximumDistance(){
 	return m_maximumDistance;
 }
 
-uint64_t Parameters::getGlobalIdFromRankAndLocalId(int rank,int id){
+uint64_t Parameters::getGlobalIdFromRankAndLocalId(Rank rank,int id){
 	uint64_t x=m_totalNumberOfSequences/m_size;
 	return rank*x+id;
 }

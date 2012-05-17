@@ -49,13 +49,13 @@ public:
  */
 class KmerAcademy{
 	Parameters*m_parameters;
-	uint64_t m_size;
+	LargeCount m_size;
 	bool m_inserted;
 	MyHashTable<Kmer,KmerCandidate> m_hashTable;
 
 public:
-	void constructor(int rank,Parameters*a);
-	uint64_t size();
+	void constructor(Rank rank,Parameters*a);
+	LargeCount size();
 	KmerCandidate*find(Kmer*key);
 	KmerCandidate*insert(Kmer*key);
 	bool inserted();

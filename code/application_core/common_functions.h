@@ -61,9 +61,9 @@ string convertToString(vector<Kmer>*b,int m_wordSize,bool color);
 
 Kmer kmerAtPosition(const char*string,int pos,int w,char strand,bool color);
 
-uint64_t getPathUniqueId(int rank,int id);
-int getIdFromPathUniqueId(uint64_t a);
-int getRankFromPathUniqueId(uint64_t a);
+PathHandle getPathUniqueId(int rank,int id);
+int getIdFromPathUniqueId(PathHandle a);
+int getRankFromPathUniqueId(PathHandle a);
 
 void print64(uint64_t a);
 void print8(uint8_t a);
@@ -75,8 +75,8 @@ char complementNucleotide(char c);
  */
 string reverseComplement(string*a);
 
-uint64_t pack_pointer(void**pointer);
-void unpack_pointer(void**pointer,uint64_t integerValue);
+MessageUnit pack_pointer(void**pointer);
+void unpack_pointer(void**pointer,MessageUnit integerValue);
 
 
 bool flushFileOperationBuffer(bool force,ostringstream*buffer,ostream*file,int bufferSize);

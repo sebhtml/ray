@@ -43,7 +43,7 @@ void KmerAcademy::constructor(int rank,Parameters*parameters){
 	}
 }
 
-uint64_t KmerAcademy::size(){
+LargeCount KmerAcademy::size(){
 	return m_size;
 }
 
@@ -68,7 +68,7 @@ KmerCandidate*KmerAcademy::insert(Kmer*key){
 	if(key->isLower(&lowerKey)){
 		lowerKey=*key;
 	}
-	uint64_t sizeBefore=m_hashTable.size();
+	LargeCount sizeBefore=m_hashTable.size();
 	KmerCandidate*entry=m_hashTable.insert(&lowerKey);
 	m_inserted=m_hashTable.size()>sizeBefore;
 

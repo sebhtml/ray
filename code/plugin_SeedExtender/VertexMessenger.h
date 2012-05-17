@@ -45,9 +45,9 @@ class VertexMessenger{
 	MessageTag RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY;
 	MessageTag RAY_MPI_TAG_VERTEX_READS_REPLY;
 
-	int m_peakCoverage;
+	CoverageDepth m_peakCoverage;
 
-	set<uint64_t>::iterator m_mateIterator;
+	set<ReadHandle>::iterator m_mateIterator;
 	Parameters*m_parameters;
 	StaticVector*m_inbox;
 	StaticVector*m_outbox;
@@ -57,22 +57,23 @@ class VertexMessenger{
 	vector<ReadAnnotation> m_annotations;
 	bool m_isDone;
 	Kmer m_vertex;
-	uint64_t m_waveId;
+	PathHandle m_waveId;
 	int m_wavePosition;
-	set<uint64_t>*m_matesToMeet;
+	set<ReadHandle>*m_matesToMeet;
 	bool m_receivedBasicInfo;
 	bool m_requestedBasicInfo;
 	int m_numberOfAnnotations;
 	bool m_getReads;
 	void*m_pointer;
 	bool m_requestedReads;
-	int m_destination;
+	Rank m_destination;
 	bool m_receivedReads;
 
 	void getReadsForUniqueVertex();
 	void getReadsForRepeatedVertex();
 public:
-	void constructor(Kmer vertex,uint64_t wave,int pos,set<uint64_t>*matesToMeet,StaticVector*inbox,StaticVector*outbox,
+	void constructor(Kmer vertex,PathHandle wave,int pos,
+		set<ReadHandle>*matesToMeet,StaticVector*inbox,StaticVector*outbox,
 	RingAllocator*outboxAllocator,Parameters*parameters,bool getReads,CoverageDepth peakCoverage,
 	MessageTag RAY_MPI_TAG_VERTEX_INFO,
 	MessageTag RAY_MPI_TAG_VERTEX_INFO_REPLY,

@@ -34,12 +34,13 @@ using namespace std;
 
 //#define DEBUG_GO_ENCODING
 
-uint64_t KeyEncoder::getEncoded_EMBL_CDS(const char*identifier){
+PhysicalKmerColor KeyEncoder::getEncoded_EMBL_CDS(const char*identifier){
+
 
 	populateMap();
 	
 
-	uint64_t value=encode_EMBL_CDS(identifier);
+	PhysicalKmerColor value=encode_EMBL_CDS(identifier);
 
 	#ifdef DEBUG_ENCODER
 	cout<<"[encoder] Input: "<<identifier<<" Output: "<<value<<endl;
@@ -75,16 +76,16 @@ EMBL-CDS can store at most 1 757 582 424 proteins. (uint32_t)
 
 GO:0000001 to are valued from 0 to 9999999 (use uint32_t) 
 */
-uint64_t KeyEncoder::encode_EMBL_CDS(const char*identifier){
+PhysicalKmerColor KeyEncoder::encode_EMBL_CDS(const char*identifier){
 	/* >EMBL_CDS:CBW26015 CBW26015.1 */
 
-	uint64_t returnValue=0;
+	PhysicalKmerColor returnValue=0;
 
 	#ifdef ASSERT
 	assert(strlen(identifier)==3+5);
 	#endif
 
-	uint64_t rightPartValue=0;
+	PhysicalKmerColor rightPartValue=0;
 
 	for(int exponent=0;exponent<5;exponent++){
 		char symbol=identifier[7-exponent];

@@ -22,14 +22,14 @@
 #include <plugin_SeedExtender/Direction.h>
 #include <stdlib.h>
 
-void Direction::constructor(uint64_t wave,int progression,bool lower){
+void Direction::constructor(PathHandle wave,int progression,bool lower){
 	m_lower=lower;
 	m_wave=wave;
 	m_progression=progression;
 	m_next=NULL;
 }
 
-uint64_t Direction::getWave(){
+PathHandle Direction::getWave(){
 	return m_wave;
 }
 

@@ -95,7 +95,7 @@ class Scaffolder :  public CorePlugin{
 	ofstream m_fp;
 	bool m_hasContigSequence;
 	string m_contigSequence;
-	map<uint64_t,int> m_contigLengths;
+	map<PathHandle,int> m_contigLengths;
 	int m_position;
 	int m_theLength;
 	vector<Kmer> m_contigPath;
@@ -111,13 +111,13 @@ class Scaffolder :  public CorePlugin{
 	int m_positionOnScaffold;
 	bool m_writeContigRequested;
 
-	vector<vector<uint64_t> > m_scaffoldContigs;
+	vector<vector<PathHandle> > m_scaffoldContigs;
 	vector<vector<char> >m_scaffoldStrands;
 	vector<vector<int> >m_scaffoldGaps;
 
 	bool m_sentContigInfo;
 	bool m_sentContigMeta;
-	vector<uint64_t> m_masterContigs;
+	vector<PathHandle> m_masterContigs;
 	vector<int> m_masterLengths;
 	vector<SummarizedLink>m_masterLinks;
 	int m_summaryIterator;
@@ -125,10 +125,10 @@ class Scaffolder :  public CorePlugin{
 	vector<SummarizedLink>m_summary;
 	bool m_summaryPerformed;
 	bool m_entrySent;
-	map<uint64_t,map<char,map<uint64_t,map<char,vector<ScaffoldingLink> > > > > m_scaffoldingSummary;
+	map<PathHandle,map<char,map<PathHandle,map<char,vector<ScaffoldingLink> > > > > m_scaffoldingSummary;
 	bool m_reverseDirectionsReceived;
 	bool m_reverseDirectionLengthReceived;
-	uint64_t m_pairedReverseDirectionName;
+	PathHandle m_pairedReverseDirectionName;
 	int m_pairedReverseDirectionPosition;
 	int m_pairedReverseMarkerCoverage;
 	bool m_pairedReverseHasDirection;
@@ -142,7 +142,7 @@ class Scaffolder :  public CorePlugin{
 	bool m_forwardDirectionsReceived;
 	int m_pairedForwardMarkerCoverage;
 	bool m_pairedForwardHasDirection;
-	uint64_t m_pairedForwardDirectionName;
+	PathHandle m_pairedForwardDirectionName;
 	int m_pairedForwardDirectionPosition;
 	bool m_reverseDirectionsRequested;
 	int m_readLength;
@@ -164,8 +164,8 @@ class Scaffolder :  public CorePlugin{
 	bool m_initialisedFetcher;
 	int m_readAnnotationId;
 	ReadFetcher m_readFetcher;
-	vector<uint64_t> m_activeWorkers;
-	uint64_t m_workerId;
+	vector<WorkerHandle> m_activeWorkers;
+	WorkerHandle m_workerId;
 	VirtualCommunicator*m_virtualCommunicator;
 	bool m_coverageRequested;
 	bool m_coverageReceived;
@@ -176,7 +176,7 @@ class Scaffolder :  public CorePlugin{
 	int m_contigId;
 	int m_positionOnContig;
 	vector<vector<Kmer> >*m_contigs;
-	vector<uint64_t>*m_contigNames;
+	vector<PathHandle>*m_contigNames;
 
 	Parameters*m_parameters;
 	StaticVector*m_inbox;
@@ -187,7 +187,7 @@ class Scaffolder :  public CorePlugin{
 	/**
  *	gets a contig sequence by receiving several MPI messages
  */
-	void getContigSequence(uint64_t id);
+	void getContigSequence(PathHandle id);
 	void processContig();
 	void processContigPosition();
 	void processVertex(Kmer*vertex);
@@ -196,9 +196,9 @@ class Scaffolder :  public CorePlugin{
 	void performSummary();
 	void sendSummary();
 	void sendContigInfo();
-	void extractScaffolds(char state,map<uint64_t,int>*colors,uint64_t vertex,
-		map<uint64_t,map<char,vector<vector<uint64_t> > > >*parents,
-		map<uint64_t,map<char,vector<vector<uint64_t> > > >*children,set<int>*completedColours);
+	void extractScaffolds(char state,map<PathHandle,int>*colors,PathHandle vertex,
+		map<PathHandle,map<char,vector<vector<PathHandle> > > >*parents,
+		map<PathHandle,map<char,vector<vector<PathHandle> > > >*children,set<int>*completedColours);
 
 
 	void computeStatistics(vector<int>*lengths,int minimumLength,ostream*outputStream);
@@ -218,10 +218,10 @@ public:
 	void constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
 		VirtualCommunicator*vc,SwitchMan*switchMan);
 	void call_RAY_SLAVE_MODE_SCAFFOLDER();
-	void setContigPaths(vector<uint64_t>*names,vector<vector<Kmer> >*paths);
+	void setContigPaths(vector<PathHandle>*names,vector<vector<Kmer> >*paths);
 	void addMasterLink(SummarizedLink*link);
 	void solve();
-	void addMasterContig(uint64_t name,int length);
+	void addMasterContig(PathHandle name,int length);
 	void call_RAY_MASTER_MODE_WRITE_SCAFFOLDS();
 	void printFinalMessage();
 

@@ -54,9 +54,9 @@ void FusionData::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
 	
 			/* write each path with its name and vertices */
 			for(int i=0;i<theSize;i++){
-				uint64_t name=0;
+				PathHandle name=0;
 				int vertices=0;
-				f.read((char*)&name,sizeof(uint64_t));
+				f.read((char*)&name,sizeof(PathHandle));
 				f.read((char*)&vertices,sizeof(int));
 				vector<Kmer> path;
 				for(int j=0;j<vertices;j++){
@@ -80,11 +80,12 @@ void FusionData::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
 	if(!isReady()){
 		return;
 	}
-	if(!m_buffers.isEmpty() && m_seedingData->m_SEEDING_i==(uint64_t)m_ed->m_EXTENSION_contigs.size()){
+
+	if(!m_buffers.isEmpty() && m_seedingData->m_SEEDING_i==(LargeCount)m_ed->m_EXTENSION_contigs.size()){
 		m_ready+=m_buffers.flushAll(RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY,m_outboxAllocator,m_outbox,getRank());
 		return;
 
-	}else if(m_buffers.isEmpty() && m_seedingData->m_SEEDING_i==(uint64_t)m_ed->m_EXTENSION_contigs.size()){
+	}else if(m_buffers.isEmpty() && m_seedingData->m_SEEDING_i==(LargeCount)m_ed->m_EXTENSION_contigs.size()){
 		printf("Rank %i is distributing fusions [%i/%i] (completed)\n",getRank(),(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
 		fflush(stdout);
 		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED,getRank());
@@ -146,7 +147,7 @@ void FusionData::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
 }
 
 void FusionData::readyBuffers(){
-	m_buffers.constructor(m_size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),
+	m_buffers.constructor(m_size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit),
 		"RAY_MALLOC_TYPE_FUSION_BUFFERS",m_parameters->showMemoryAllocations(),KMER_U64_ARRAY_SIZE+2);
 }
 
@@ -208,7 +209,7 @@ bool FusionData::isReady(){
  *                          ----------------------->
  */
 void FusionData::finishFusions(){
-	if(m_seedingData->m_SEEDING_i==(uint64_t)m_ed->m_EXTENSION_contigs.size()){
+	if(m_seedingData->m_SEEDING_i==(LargeCount)m_ed->m_EXTENSION_contigs.size()){
 		printf("Rank %i is finishing fusions [%i/%i] (completed)\n",getRank(),(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
 		fflush(stdout);
 
@@ -217,7 +218,7 @@ void FusionData::finishFusions(){
 			showDate();
 		}
 
-		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(1*sizeof(uint64_t));
+		MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(MessageUnit));
 		message[0]=m_FINISH_fusionOccured;
 		Message aMessage(message,1,MASTER_RANK,RAY_MPI_TAG_FINISH_FUSIONS_FINISHED,getRank());
 		m_outbox->push_back(aMessage);
@@ -265,7 +266,8 @@ void FusionData::finishFusions(){
 	}
 	// check if the path begins with someone else.
 	
-	uint64_t currentId=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
+	PathHandle currentId=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
+
 	#ifdef ASSERT
 	assert(getRankFromPathUniqueId(currentId)<m_size);
 	#endif
@@ -362,18 +364,18 @@ void FusionData::finishFusions(){
 		// 
 
 			int hits=0;
-			map<uint64_t,vector<int> > indexOnDirection2;
+			map<PathHandle,vector<int> > indexOnDirection2;
 
-			set<uint64_t> in1;
+			set<PathHandle> in1;
 			
 			for(int j=0;j<(int)directions1.size();j++){
-				uint64_t waveId=directions1[j].getWave();
+				PathHandle waveId=directions1[j].getWave();
 				in1.insert(waveId);
 			}
 
 			// index the index for each wave
 			for(int j=0;j<(int)directions2.size();j++){
-				uint64_t waveId=directions2[j].getWave();
+				PathHandle waveId=directions2[j].getWave();
 				if(in1.count(waveId)==0){
 					continue;
 				}
@@ -387,7 +389,7 @@ void FusionData::finishFusions(){
 			// find all hits
 			//
 			for(int i=0;i<(int)directions1.size();i++){
-				uint64_t wave1=directions1[i].getWave();
+				PathHandle wave1=directions1[i].getWave();
 				if(indexOnDirection2.count(wave1)==0){
 					continue;
 				}
@@ -474,7 +476,7 @@ void FusionData::finishFusions(){
 		}
 	}else{
 		// check if it is there for at least overlapMinimumLength
-		uint64_t pathId=m_selectedPath;
+		PathHandle pathId=m_selectedPath;
 		int progression=m_selectedPosition;
 
 		// only one path, just go where it goes...
@@ -482,8 +484,8 @@ void FusionData::finishFusions(){
 		// the same start and end.
 		if(m_FINISH_pathLengths.count(pathId)==0){
 			if(!m_FUSION_pathLengthRequested){
-				int rankId=getRankFromPathUniqueId(pathId);
-				uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t));
+				Rank rankId=getRankFromPathUniqueId(pathId);
+				MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(sizeof(MessageUnit));
 				message[0]=pathId;
 	
 				#ifdef ASSERT
@@ -507,8 +509,8 @@ void FusionData::finishFusions(){
 				// get its paths,
 				// and continue...
 				if(!m_FINISH_vertex_requested){
-					int rankId=getRankFromPathUniqueId(pathId);
-					uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(sizeof(uint64_t)*2);
+					Rank rankId=getRankFromPathUniqueId(pathId);
+					MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(sizeof(MessageUnit)*2);
 					message[0]=pathId;
 					message[1]=nextPosition;
 					Message aMessage(message,2,rankId,RAY_MPI_TAG_GET_PATH_VERTEX,getRank());
@@ -587,7 +589,7 @@ void FusionData::getPaths(Kmer vertex){
 		}
 		m_Machine_getPaths_DONE=true;
 	}else if(!m_FUSION_paths_requested){
-		uint64_t*message=(uint64_t*)m_outboxAllocator->allocate(2*sizeof(uint64_t));
+		MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(2*sizeof(MessageUnit));
 		int bufferPosition=0;
 		vertex.pack(message,&bufferPosition);
 		message[bufferPosition++]=0;

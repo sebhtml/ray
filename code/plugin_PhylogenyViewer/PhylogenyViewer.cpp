@@ -224,9 +224,9 @@ void PhylogenyViewer::sendTreeCounts(){
 		assert(m_countIterator!= m_taxonObservations.end());
 		#endif
 
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+		MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
-		int maximum=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t);
+		int maximum=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit);
 
 		int bufferPosition=0;
 
@@ -239,7 +239,7 @@ void PhylogenyViewer::sendTreeCounts(){
 
 		while(bufferPosition<maximum && m_countIterator!= m_taxonObservations.end()){
 			TaxonIdentifier taxon=m_countIterator->first;
-			uint64_t count=m_countIterator->second;
+			LargeCount count=m_countIterator->second;
 
 			buffer[bufferPosition++]=taxon;
 			buffer[bufferPosition++]=count;
@@ -265,7 +265,7 @@ void PhylogenyViewer::sendTreeCounts(){
 }
 
 void PhylogenyViewer::call_RAY_MPI_TAG_TAXON_OBSERVATIONS(Message*message){
-	uint64_t*buffer=message->getBuffer();
+	MessageUnit*buffer=message->getBuffer();
 
 	int count=message->getCount();
 
@@ -276,7 +276,7 @@ void PhylogenyViewer::call_RAY_MPI_TAG_TAXON_OBSERVATIONS(Message*message){
 
 	for(int i=0;i<count;i+=2){
 		TaxonIdentifier taxon=buffer[i];
-		uint64_t count=buffer[i+1];
+		LargeCount count=buffer[i+1];
 
 		if(taxon==UNKNOWN_TAXON){
 			m_unknownMaster+=count;
@@ -291,7 +291,7 @@ void PhylogenyViewer::call_RAY_MPI_TAG_TAXON_OBSERVATIONS(Message*message){
 }
 
 void PhylogenyViewer::call_RAY_MPI_TAG_TOUCH_TAXON(Message*message){
-	uint64_t*buffer=message->getBuffer();
+	MessageUnit*buffer=message->getBuffer();
 
 	int count=message->getCount();
 
@@ -382,7 +382,7 @@ void PhylogenyViewer::gatherKmerObservations(){
 	
 	int parity=0;
 
-	map<int,uint64_t> frequencies;
+	map<CoverageDepth,LargeCount> frequencies;
 
 	while(iterator.hasNext()){
 
@@ -442,7 +442,7 @@ void PhylogenyViewer::gatherKmerObservations(){
 
 			PhysicalKmerColor physicalColor=*j;
 	
-			uint64_t nameSpace=physicalColor/COLOR_NAMESPACE_MULTIPLIER;
+			PhysicalKmerColor nameSpace=physicalColor/COLOR_NAMESPACE_MULTIPLIER;
 		
 			if(nameSpace==COLOR_NAMESPACE_PHYLOGENY){
 				PhysicalKmerColor colorForPhylogeny=physicalColor % COLOR_NAMESPACE_MULTIPLIER;
@@ -498,7 +498,7 @@ void PhylogenyViewer::gatherKmerObservations(){
 	cout<<endl;
 	cout<<"Taxon frequencies (only one DNA strand selected)"<<endl;
 	cout<<"Count	Frequency"<<endl;
-	for(map<int,uint64_t>::iterator i=frequencies.begin();i!=frequencies.end();i++){
+	for(map<CoverageDepth,LargeCount>::iterator i=frequencies.begin();i!=frequencies.end();i++){
 		cout<<""<<i->first<<"	"<<i->second<<endl;
 	}
 
@@ -517,7 +517,7 @@ void PhylogenyViewer::gatherKmerObservations(){
 	m_countIterator=m_taxonObservations.begin();
 }
 
-uint64_t PhylogenyViewer::getSelfCount(TaxonIdentifier taxon){
+LargeCount PhylogenyViewer::getSelfCount(TaxonIdentifier taxon){
 	if(m_taxonObservations.count(taxon)==0){
 		return 0;
 	}
@@ -525,15 +525,15 @@ uint64_t PhylogenyViewer::getSelfCount(TaxonIdentifier taxon){
 	return m_taxonObservations[taxon];
 }
 
-void PhylogenyViewer::populateRanks(map<string,uint64_t>*rankSelfObservations,
-		map<string,uint64_t>*rankRecursiveObservations){
+void PhylogenyViewer::populateRanks(map<string,LargeCount>*rankSelfObservations,
+		map<string,LargeCount>*rankRecursiveObservations){
 
 	for(map<TaxonIdentifier,string>::iterator i=m_taxonNames.begin();
 		i!=m_taxonNames.end();i++){
 
 		TaxonIdentifier taxon=i->first;
-		uint64_t selfCount=getSelfCount(taxon);
-		uint64_t recursiveCount=getRecursiveCount(taxon);
+		LargeCount selfCount=getSelfCount(taxon);
+		LargeCount recursiveCount=getRecursiveCount(taxon);
 
 		string rank=getTaxonRank(taxon);
 
@@ -556,8 +556,8 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 	/* build a mashup for the ranks
  * this will contain total at each level */
 
-	map<string,uint64_t> rankRecursiveObservations;
-	map<string,uint64_t> rankSelfObservations;
+	map<string,LargeCount> rankRecursiveObservations;
+	map<string,LargeCount> rankSelfObservations;
 
 	populateRanks(&rankSelfObservations,&rankRecursiveObservations);
 
@@ -571,13 +571,13 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 
 	operationBuffer<<"<totalAssembledKmerObservations>"<<m_totalNumberOfKmerObservations<<"</totalAssembledKmerObservations>"<<endl;
 
-	uint64_t totalColoredAssembledKmerObservations=m_totalNumberOfKmerObservations-m_unknown;
+	LargeCount totalColoredAssembledKmerObservations=m_totalNumberOfKmerObservations-m_unknown;
 
 	operationBuffer<<"<totalColoredAssembledKmerObservations>"<<totalColoredAssembledKmerObservations<<"</totalColoredAssembledKmerObservations>"<<endl;
 
 	operationBuffer<<"<ranks>"<<endl;
 
-	for(map<string,uint64_t>::iterator i=rankSelfObservations.begin();i!=rankSelfObservations.end();i++){
+	for(map<string,LargeCount>::iterator i=rankSelfObservations.begin();i!=rankSelfObservations.end();i++){
 		string rank=i->first;
 
 		#ifdef ASSERT
@@ -617,7 +617,7 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 
 		TaxonIdentifier taxon=i->first;
 
-		uint64_t count=getSelfCount(taxon);
+		LargeCount count=getSelfCount(taxon);
 
 		string rank=getTaxonRank(taxon);
 
@@ -626,16 +626,16 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 		assert(rankRecursiveObservations.count(rank)>0);
 		#endif
 
-		uint64_t rankRecursiveCount=rankRecursiveObservations[rank];
+		LargeCount rankRecursiveCount=rankRecursiveObservations[rank];
 
 		#ifdef ASSERT
-		uint64_t rankSelfCount=rankSelfObservations[rank]; //-
+		LargeCount rankSelfCount=rankSelfObservations[rank]; //-
 
 		assert(rankSelfCount>=0);
 		assert(rankRecursiveCount>=0);
 		#endif
 
-		uint64_t recursiveCount=getRecursiveCount(taxon);
+		LargeCount recursiveCount=getRecursiveCount(taxon);
 
 		if(recursiveCount==0){
 			continue;
@@ -750,7 +750,7 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 
 }
 
-uint64_t PhylogenyViewer::getRecursiveCount(TaxonIdentifier taxon){
+LargeCount PhylogenyViewer::getRecursiveCount(TaxonIdentifier taxon){
 
 	if(m_taxonRecursiveObservations.count(taxon)>0){
 
@@ -762,7 +762,7 @@ uint64_t PhylogenyViewer::getRecursiveCount(TaxonIdentifier taxon){
 		return m_taxonRecursiveObservations[taxon];
 	}
 
-	uint64_t count=getSelfCount(taxon);
+	LargeCount count=getSelfCount(taxon);
 
 	if(m_treeChildren.count(taxon)>0){
 		for(set<TaxonIdentifier>::iterator i=m_treeChildren[taxon].begin();
@@ -782,11 +782,11 @@ uint64_t PhylogenyViewer::getRecursiveCount(TaxonIdentifier taxon){
 void PhylogenyViewer::showObservations(ostream*stream){
 
 	(*stream)<<endl;
-	for(map<TaxonIdentifier,uint64_t>::iterator i=m_taxonObservations.begin();
+	for(map<TaxonIdentifier,LargeCount>::iterator i=m_taxonObservations.begin();
 		i!=m_taxonObservations.end();i++){
 
 		TaxonIdentifier taxon=i->first;
-		uint64_t count=i->second;
+		LargeCount count=i->second;
 
 		(*stream)<<endl;
 		(*stream)<<"Taxon: "<<getTaxonName(taxon)<<" ["<<taxon<<"]"<<endl;
@@ -1165,9 +1165,9 @@ void PhylogenyViewer::sendTaxonsFromMaster(){
 		assert(m_taxonIterator!= m_taxonsForPhylogeny.end());
 		#endif
 
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+		MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
-		int maximum=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t);
+		int maximum=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit);
 
 		int bufferPosition=0;
 
@@ -1214,9 +1214,9 @@ void PhylogenyViewer::sendTaxonsToMaster(){
 		assert(m_taxonIterator!= m_taxonsForPhylogeny.end());
 		#endif
 
-		uint64_t*buffer=(uint64_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+		MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
-		int maximum=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t);
+		int maximum=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit);
 
 		int bufferPosition=0;
 
@@ -1281,7 +1281,7 @@ void PhylogenyViewer::extractColorsForPhylogeny(){
 
 			PhysicalKmerColor physicalColor=*j;
 	
-			uint64_t nameSpace=physicalColor/COLOR_NAMESPACE_MULTIPLIER;
+			PhysicalKmerColor nameSpace=physicalColor/COLOR_NAMESPACE_MULTIPLIER;
 		
 			if(nameSpace==COLOR_NAMESPACE_PHYLOGENY){
 				PhysicalKmerColor colorForPhylogeny=physicalColor % COLOR_NAMESPACE_MULTIPLIER;

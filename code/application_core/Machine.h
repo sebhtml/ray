@@ -222,7 +222,7 @@ class Machine{
 	ExtensionData*m_ed;
 
 	// coverage distribubtion
-	map<int,uint64_t> m_coverageDistribution;
+	map<CoverageDepth,LargeCount> m_coverageDistribution;
 	int m_numberOfMachinesDoneSendingCoverage;
 	
 	string m_VERSION;
@@ -265,7 +265,7 @@ class Machine{
 	bool m_messageSentForEdgesDistribution;
 	int m_maximumAllocatedOutputBuffers;
 	// COLLECTING things.
-	vector<uint64_t> m_identifiers;
+	vector<PathHandle> m_identifiers;
 	// FINISHING.
 	int m_FINISH_n;
 	int m_DISTRIBUTE_n;

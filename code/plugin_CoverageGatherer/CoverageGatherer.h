@@ -60,8 +60,8 @@ class CoverageGatherer : public CorePlugin{
 
 	Adapter_RAY_SLAVE_MODE_SEND_DISTRIBUTION m_adapter_RAY_SLAVE_MODE_SEND_DISTRIBUTION;
 
-	map<int,uint64_t> m_distributionOfCoverage;
-	map<int,uint64_t>::iterator m_coverageIterator;
+	map<CoverageDepth,LargeCount> m_distributionOfCoverage;
+	map<CoverageDepth,LargeCount>::iterator m_coverageIterator;
 	bool m_waiting;
 	Parameters*m_parameters;
 	StaticVector*m_inbox;

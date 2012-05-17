@@ -201,7 +201,7 @@ SlaveMode*mode,RingAllocator*outboxAllocator){
 
 	m_mode_send_vertices_sequence_id=0;
 	m_mode_send_vertices_sequence_id_position=0;
-	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint64_t),"RAY_MALLOC_TYPE_KMER_ACADEMY_BUFFER",m_parameters->showMemoryAllocations(),KMER_U64_ARRAY_SIZE);
+	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit),"RAY_MALLOC_TYPE_KMER_ACADEMY_BUFFER",m_parameters->showMemoryAllocations(),KMER_U64_ARRAY_SIZE);
 	
 	m_pendingMessages=0;
 	m_size=size;

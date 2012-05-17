@@ -21,8 +21,10 @@
 
 #include <plugin_Scaffolder/SummarizedLink.h>
 
-SummarizedLink::SummarizedLink(uint64_t leftContig,char leftStrand,uint64_t rightContig,char rightStrand,int average,int count,
+SummarizedLink::SummarizedLink(PathHandle leftContig,Strand leftStrand,PathHandle rightContig,
+	Strand rightStrand,int average,int count,
 	int standardDeviation){
+
 	m_standardDeviation=standardDeviation;
 	m_leftContig=leftContig;
 	m_leftStrand=leftStrand;
@@ -32,19 +34,19 @@ SummarizedLink::SummarizedLink(uint64_t leftContig,char leftStrand,uint64_t righ
 	m_count=count;
 }
 
-uint64_t SummarizedLink::getLeftContig(){
+PathHandle SummarizedLink::getLeftContig(){
 	return m_leftContig;
 }
 
-char SummarizedLink::getLeftStrand(){
+Strand SummarizedLink::getLeftStrand(){
 	return m_leftStrand;
 }
 
-uint64_t SummarizedLink::getRightContig(){
+PathHandle SummarizedLink::getRightContig(){
 	return m_rightContig;
 }
 
-char SummarizedLink::getRightStrand(){
+Strand SummarizedLink::getRightStrand(){
 	return m_rightStrand;
 }
 
@@ -56,7 +58,7 @@ int SummarizedLink::getCount(){
 	return m_count;
 }
 
-void SummarizedLink::pack(uint64_t*buffer,int*position){
+void SummarizedLink::pack(MessageUnit*buffer,int*position){
 	buffer[(*position)++]=getLeftContig();
 	buffer[(*position)++]=getLeftStrand();
 	buffer[(*position)++]=getRightContig();
@@ -66,7 +68,7 @@ void SummarizedLink::pack(uint64_t*buffer,int*position){
 	buffer[(*position)++]=getStandardDeviation();
 }
 
-void SummarizedLink::unpack(uint64_t*buffer,int*position){
+void SummarizedLink::unpack(MessageUnit*buffer,int*position){
 	m_leftContig=buffer[(*position)++];
 	m_leftStrand=buffer[(*position)++];
 	m_rightContig=buffer[(*position)++];

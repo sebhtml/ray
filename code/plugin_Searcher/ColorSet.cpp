@@ -173,7 +173,7 @@ int ColorSet::getTotalNumberOfPhysicalColors(){
 	return m_physicalColors.size();
 }
 
-uint64_t ColorSet::getTotalNumberOfVirtualColors(){
+LargeCount ColorSet::getTotalNumberOfVirtualColors(){
 	return m_virtualColors.size();
 }
 
@@ -222,12 +222,12 @@ void ColorSet::printSummary(ostream*out,bool xml){
 
 	// print frequencies
 	
-	map<int,uint64_t>  referenceFrequencies;
-	map<int,uint64_t> colorFrequencies;
+	map<CoverageDepth,LargeCount>  referenceFrequencies;
+	map<CoverageDepth,LargeCount> colorFrequencies;
 
 
 	for(int i=0;i< (int)getTotalNumberOfVirtualColors();i++){
-		uint64_t references=getVirtualColor(i)->getNumberOfReferences();
+		LargeCount references=getVirtualColor(i)->getNumberOfReferences();
 
 		referenceFrequencies[references]++;
 
@@ -239,7 +239,7 @@ void ColorSet::printSummary(ostream*out,bool xml){
 	(*out)<<endl;
 	(*out)<<"<referencesPerVirtualColor><frequencies>"<<endl;
 
-	for(map<int,uint64_t>::iterator i=referenceFrequencies.begin();i!=referenceFrequencies.end();
+	for(map<CoverageDepth,LargeCount>::iterator i=referenceFrequencies.begin();i!=referenceFrequencies.end();
 		i++){
 		
 		(*out)<<i->first<<"	"<<i->second<<endl;
@@ -248,7 +248,7 @@ void ColorSet::printSummary(ostream*out,bool xml){
 
 	(*out)<<"<physicalColorsPerVirtualColor><frequencies>"<<endl;
 
-	for(map<int,uint64_t>::iterator i=colorFrequencies.begin();i!=colorFrequencies.end();
+	for(map<CoverageDepth,LargeCount>::iterator i=colorFrequencies.begin();i!=colorFrequencies.end();
 		i++){
 		
 		(*out)<<i->first<<"	"<<i->second<<endl;
@@ -266,7 +266,7 @@ void ColorSet::printColors(ostream*out){
 	for(int i=0;i< (int)getTotalNumberOfVirtualColors();i++){
 		(*out)<<"Virtual color: "<<i<<endl;
 
-		uint64_t references=getVirtualColor(i)->getNumberOfReferences();
+		LargeCount references=getVirtualColor(i)->getNumberOfReferences();
 		(*out)<<" References: "<<references<<endl;
 
 		set<PhysicalKmerColor>*colors=getVirtualColor(i)->getPhysicalColors();
