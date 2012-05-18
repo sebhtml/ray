@@ -107,7 +107,6 @@ RayPlatform/routing/GraphImplementationGroup.cpp
 RayPlatform/routing/GraphImplementationComplete.cpp
 RayPlatform/routing/GraphImplementationDeBruijn.cpp
 RayPlatform/routing/GraphImplementationRandom.cpp
-RayPlatform/scheduling/SwitchMan_adapters.cpp
 RayPlatform/scheduling/TaskCreator.cpp
 RayPlatform/scheduling/SwitchMan.cpp
 RayPlatform/scheduling/VirtualProcessor.cpp
