@@ -138,18 +138,6 @@ DESCRIPTION:
               Runs in color-space
               Needs csfasta files. Activated automatically if csfasta files are provided.
 
-       -minimumCoverage minimumCoverage
-              Sets manually the minimum coverage.
-              If not provided, it is computed by Ray automatically.
-
-       -peakCoverage peakCoverage
-              Sets manually the peak coverage.
-              If not provided, it is computed by Ray automatically.
-
-       -repeatCoverage repeatCoverage
-              Sets manually the repeat coverage.
-              If not provided, it is computed by Ray automatically.
-
   Checkpointing
 
        -write-checkpoints
@@ -346,4 +334,4 @@ COPYRIGHT
        You have received a copy of the GNU General Public License
        along with this program (see LICENSE).
 
-Ray 2.0.0-rc6
+Ray 2.0.0-rc7

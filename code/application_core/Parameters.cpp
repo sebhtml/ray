@@ -1304,6 +1304,8 @@ void Parameters::showUsage(){
 	showOption("-color-space","Runs in color-space");
 	showOptionDescription("Needs csfasta files. Activated automatically if csfasta files are provided.");
 	cout<<endl;
+
+/*
 	showOption("-minimumCoverage minimumCoverage","Sets manually the minimum coverage.");
 	showOptionDescription("If not provided, it is computed by Ray automatically.");
 	cout<<endl;
@@ -1313,6 +1315,7 @@ void Parameters::showUsage(){
 	showOption("-repeatCoverage repeatCoverage","Sets manually the repeat coverage.");
 	showOptionDescription("If not provided, it is computed by Ray automatically.");
 	cout<<endl;
+*/
 
 	cout<<"  Checkpointing"<<endl;
 	cout<<endl;
