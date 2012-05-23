@@ -122,7 +122,7 @@ int Loader::load(string file,bool isGenome){
 	}
 	#endif
 	
-	cout<<file<<": unknown extension, exiting. (see Ray --help for valid extensions)"<<endl;
+	cout<<"Error: "<<file<<": unknown extension, exiting. (see Ray --help for valid extensions)"<<endl;
 
 	return EXIT_FAILURE;
 }
