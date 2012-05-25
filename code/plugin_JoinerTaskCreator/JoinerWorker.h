@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C)  2011  Sébastien Boisvert
+    Copyright (C)  2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -59,7 +59,7 @@ class JoinerWorker: public Worker{
 	bool m_initializedGathering;
 	bool m_requestedHitLength;
 	vector<PathHandle> m_hitNames;
-	vector<int> m_hitLengths;
+	map<PathHandle,int> m_hitLengths;
 	int m_hitIterator;
 
 	vector<vector<Kmer> >*m_newPaths;
@@ -72,6 +72,9 @@ class JoinerWorker: public Worker{
 	map<PathHandle,int> m_maxPosition;
 	map<PathHandle,int> m_minPositionOnSelf;
 	map<PathHandle,int> m_maxPositionOnSelf;
+
+	map<PathHandle,vector<int> > m_selfPositions;
+	map<PathHandle,vector<int> > m_hitPositions;
 
 	vector<Kmer> m_hitVertices;
 	int m_hitPosition;

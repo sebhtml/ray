@@ -150,42 +150,30 @@ void JoinerWorker::work(){
 				PathHandle otherPathIdentifier=response[bufferPosition++];
 				int progression=response[bufferPosition++];
 
-				if(m_parameters->hasOption("-debug-fusions2"))
+				if(m_parameters->hasOption("-debug-fusions2")){
 					cout<<"worker "<<m_workerIdentifier<<" receive RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY"<<endl;
+				}
 
 				if(otherPathIdentifier != m_identifier){
 					m_hits[otherPathIdentifier]++;
 			
-					/* TODO: these values should be updated in a better way. */
-
 					int positionOnSelf=m_position;
+
 					if(m_reverseStrand){
 						positionOnSelf=m_path->size()-m_position-1;
 					}
 
-					if(m_minPosition.count(otherPathIdentifier) == 0){
-						m_minPosition[otherPathIdentifier]=progression;
-						m_minPositionOnSelf[otherPathIdentifier]=positionOnSelf;
-					}
+					// maybe it would be better not to store everything ?
+					// an algorithm would be needed for that however.
 
-					if(m_maxPosition.count(otherPathIdentifier) == 0){
-						m_maxPosition[otherPathIdentifier]=progression;
-						m_maxPositionOnSelf[otherPathIdentifier]=positionOnSelf;
-					}
+					// just store everything and check them later...
+					m_selfPositions[otherPathIdentifier].push_back(positionOnSelf);
+					m_hitPositions[otherPathIdentifier].push_back(progression);
 
 					if(m_parameters->hasOption("-debug-fusions")){
 						cout<<"SelfLength= "<<m_path->size()<<" SelfStrand= "<<m_reverseStrand<<" MatchPair "<<" Self= "<<positionOnSelf<<" Other= "<<progression<<endl;
 					}
 
-					if(progression < m_minPosition[otherPathIdentifier] && positionOnSelf < m_minPositionOnSelf[otherPathIdentifier]){
-						m_minPosition[otherPathIdentifier]=progression;
-						m_minPositionOnSelf[otherPathIdentifier]=positionOnSelf;
-					}
-
-					if(progression > m_maxPosition[otherPathIdentifier] && positionOnSelf > m_maxPositionOnSelf[otherPathIdentifier]){
-						m_maxPosition[otherPathIdentifier]=progression;
-						m_maxPositionOnSelf[otherPathIdentifier]=positionOnSelf;
-					}
 				}
 				m_receivedPath=true;
 
@@ -199,8 +187,9 @@ void JoinerWorker::work(){
 			m_receivedNumberOfPaths=false;
 
 
-			if(m_parameters->hasOption("-debug-fusions2"))
+			if(m_parameters->hasOption("-debug-fusions2")){
 				cout<<"worker "<<m_workerIdentifier<<" Next position is "<<m_position<<endl;
+			}
 		}
 	/* gather hit information */
 	}else if(!m_gatheredHits){
@@ -208,6 +197,7 @@ void JoinerWorker::work(){
 			for(map<PathHandle,int>::iterator i=m_hits.begin();i!=m_hits.end();i++){
 				m_hitNames.push_back(i->first);
 			}
+
 			m_initializedGathering=true;
 			m_hitIterator=0;
 			m_requestedHitLength=false;
@@ -230,10 +220,14 @@ void JoinerWorker::work(){
 			}else if(m_virtualCommunicator->isMessageProcessed(m_workerIdentifier)){
 				vector<MessageUnit> response;
 				m_virtualCommunicator->getMessageResponseElements(m_workerIdentifier,&response);
+
+				PathHandle hitName=m_hitNames[m_hitIterator];
 				int length=response[0];
-				if(m_parameters->hasOption("-debug-fusions2"))
+				if(m_parameters->hasOption("-debug-fusions2")){
 					cout<<"received length, value= "<<length<<endl;
-				m_hitLengths.push_back(length);
+				}
+
+				m_hitLengths[hitName]=(length);
 
 				m_hitIterator++;
 				m_requestedHitLength=false;
@@ -254,6 +248,128 @@ void JoinerWorker::work(){
 		assert(m_hitIterator == (int)m_hitLengths.size());
 		#endif
 
+		// here, populate coordinates
+
+		#ifdef ASSERT
+		assert(m_selfPositions.size()==m_hitPositions.size());
+		#endif
+
+		int bestSelfScore=0;
+		int bestOtherScore=0;
+
+		for(map<PathHandle,vector<int> >::iterator i=m_selfPositions.begin();i!=m_selfPositions.end();i++){
+	
+			PathHandle otherIdentifier=i->first;
+
+			set<int> positionsForSelf;
+			set<int> positionsForOther;
+
+			for(int j=0;j<(int)m_selfPositions[otherIdentifier].size();j++){
+				positionsForSelf.insert(m_selfPositions[otherIdentifier][j]);
+				positionsForOther.insert(m_hitPositions[otherIdentifier][j]);
+			}
+
+			// find the coordinates now
+			
+			int maximumBadEvents=32;
+			int relevantScore=128;
+
+			// for self
+			for(int j=0;j<(int)m_selfPositions[otherIdentifier].size();j++){
+
+				int start=m_selfPositions[otherIdentifier][j];
+				int before=start-1;
+
+				if(positionsForSelf.count(before)>0){
+					continue;
+				}
+
+				int localScore=0;
+
+				int badEvents=0;
+
+				int position=start;
+				int last=start;
+
+				while(positionsForSelf.count(position)>0 || badEvents < maximumBadEvents ){
+
+					if(positionsForSelf.count(position)==0){
+						badEvents++;
+					}else{
+						badEvents=0;
+						last=position;
+					}
+
+					localScore++;
+					position++;
+				}
+
+				if(localScore > bestSelfScore){
+			
+					if(localScore >= relevantScore){
+						cout<<"New best score for self (handle: "<<m_identifier<<", length: "<<m_path->size()<<") with "<<localScore<<", other handle: "<<otherIdentifier<<endl;
+					}
+
+					m_minPositionOnSelf[otherIdentifier]=start;
+					m_maxPositionOnSelf[otherIdentifier]=last;
+
+					bestSelfScore=localScore;// this is needed to avoid future deceptions in the probing event scheduling enterprise
+				}
+			}
+
+			// for other
+			for(int j=0;j<(int)m_selfPositions[otherIdentifier].size();j++){
+
+				int start=m_hitPositions[otherIdentifier][j];
+				int before=start-1;
+
+				if(positionsForOther.count(before)>0){
+					continue;
+				}
+
+				int localScore=0;
+
+				int badEvents=0;
+
+				int position=start;
+				int last=start;
+
+				while(positionsForOther.count(position)>0 || badEvents < maximumBadEvents ){
+
+					if(positionsForOther.count(position)==0){
+						badEvents++;
+					}else{
+						badEvents=0;
+						last=position;
+					}
+
+					localScore++;
+					position++;
+				}
+
+				if(localScore > bestOtherScore){
+			
+					if(localScore >= relevantScore){
+						cout<<"New best score for other (handle: "<<otherIdentifier<<", length: "<<m_hitLengths[otherIdentifier]<<") with "<<localScore<<", other handle: "<<otherIdentifier<<endl;
+					}
+
+					m_minPosition[otherIdentifier]=start;
+					m_maxPosition[otherIdentifier]=last;
+
+
+					bestOtherScore=localScore;// this is needed to avoid future deceptions in the probing event scheduling enterprise
+				}
+
+			}
+		}
+
+		m_selfPositions.clear();
+		m_hitPositions.clear();
+
+		#ifdef ASSERT
+		assert(m_selfPositions.size()==m_hitPositions.size());
+		assert(m_selfPositions.size()==0);
+		#endif
 
 		if(m_parameters->hasOption("-debug-fusions")){
 			cout<<"JoinerWorker worker "<<m_workerIdentifier<<" path "<<m_identifier<<" strand= "<<m_reverseStrand<<" is Done, analyzed "<<m_position<<" position length is "<<m_path->size()<<endl;
@@ -267,6 +383,12 @@ void JoinerWorker::work(){
 			PathHandle hit=m_hitNames[i];
 			//int hitLength=m_hitLengths[i];
 			//int selfLength=m_path->size();
+
+
+			#ifdef ASSERT
+			assert(m_hits.count(hit)>0);
+			#endif
+
 			int matches=m_hits[hit];
 
 			#ifdef ASSERT
@@ -279,19 +401,28 @@ void JoinerWorker::work(){
 				continue;
 */
 
-			int hitLength=m_hitLengths[i];
+			int hitLength=m_hitLengths[hit];
 			int selfLength=m_path->size();
 
 			if(m_parameters->hasOption("-debug-fusions")){
 				cout<<"JoinerWorker hit selfPath= "<<m_identifier<<" selfStrand="<<m_reverseStrand<<" selfLength= "<<selfLength<<" MinSelf="<<m_minPositionOnSelf[hit]<<" MaxSelf="<<m_maxPositionOnSelf[hit]<<" Path="<<hit<<"	matches= "<<matches<<"	length= "<<hitLength<<" minPosition= "<<m_minPosition[hit]<<" maxPosition= "<<m_maxPosition[hit]<<endl;
 			}
 
-			if(matches < 1000)
+			double minimumMatchProportion=0.1;
+			int minimumMatchesTest1=1000;
+			//int minimumMatchesTest2=4096;
+			double softZone=0.3;
+
+
+			// TODO: why 1000 ? why not 1024 ?
+			if(matches < minimumMatchesTest1){
 				continue;
+			}
 
 			/* TODO check that the hit is on one side */
 
 			int selfRange=m_maxPositionOnSelf[hit] - m_minPositionOnSelf[hit];
+
 			if(selfRange < 0)
 				selfRange-=selfRange;
 
@@ -303,8 +434,69 @@ void JoinerWorker::work(){
 			double selfRangeRatio=(selfRange+0.0)/matches;
 			double otherRangeRatio=(otherRange+0.0)/matches;
 
-			if(selfRangeRatio < 0.7 || otherRangeRatio < 0.7 || selfRangeRatio > 1.3 || otherRangeRatio > 1.3)
+			if(selfRangeRatio < (1-softZone) || otherRangeRatio < (1-softZone) 
+				|| selfRangeRatio > (1+softZone) || otherRangeRatio > (1+softZone)){
+
 				continue;
+			}
+
+/*
+			if(matches < minimumMatchesTest2){
+				continue; // this is too risky !
+			}
+*/
+
+			double selfMatchRatio=matches/(0.0+selfLength);
+			double otherMatchRatio=matches/(0.0+hitLength);
+
+			if(selfMatchRatio < minimumMatchProportion || otherMatchRatio < minimumMatchProportion){
+				continue;
+			}
+
+	/*
+ *
+ * only do this trick if we are really sure about it ...
+ *
+
+Example that will create a misassembly:
+
+Created new path, length= 370536
+Received hit path data.
+Matches: 1451
+Self
+ Identifier: 5000003
+ Strand: 0
+ Length: 154684
+ Begin: 153202
+ End: 154683
+Hit
+ Identifier: 1
+ Strand: 0
+ Length: 242904
+ Begin: 25570
+ End: 27051
+
+while there is 1451 matches, this is simply not sufficient to do the matching.
+at the moment, the minimum is 1000. Maybe change that to something larger, like 
+8192.
+
+The main purpose of this code is to merge things that are identical, almost.
+
+We have to be careful however because repeated stuff in the genome will cause assembly errors
+if the present code is not careful.
+
+irb(main):002:0> 1451/154684.0
+=> 0.0093804142639187
+
+rb(main):003:0> 1451.0/242904
+=> 0.00597355333794421
+
+Also, don't do it if the matching ratios are below 10%.
+
+
+ *
+ *
+ */
 
 			numberOfHits++;
 			selectedHit=i;
@@ -312,7 +504,7 @@ void JoinerWorker::work(){
 
 		if(numberOfHits == 1){
 			PathHandle hit=m_hitNames[selectedHit];
-			int hitLength=m_hitLengths[selectedHit];
+			int hitLength=m_hitLengths[hit];
 			int selfLength=m_path->size();
 			int matches=m_hits[hit];
 			
@@ -325,17 +517,25 @@ void JoinerWorker::work(){
 			m_hitPosition=0;
 			m_requestedHitVertex=false;
 		}else{
+
+			// there is more than 1 hit
+			// do nothing with this.
 			m_isDone=true;
+
+			cout<<"Notice: number of hits is not 1: "<<numberOfHits<<" fetched hits."<<endl;
 		}
 
 	/* gather all the vertices of the hit and try to join them */
 	}else if(m_selectedHit){
-		int hitLength=m_hitLengths[m_selectedHitIndex];
+
+		PathHandle hitName=m_hitNames[m_selectedHitIndex];
+
+		int hitLength=m_hitLengths[hitName];
+
 		if(m_hitPosition < hitLength){
 			if(!m_requestedHitVertex){
 				MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(1);
 
-				PathHandle hitName=m_hitNames[m_selectedHitIndex];
 				int destination=getRankFromPathUniqueId(hitName);
 
 				message[0]=hitName;
@@ -435,6 +635,23 @@ void JoinerWorker::work(){
 				m_newPaths->push_back(newPath);
 
 				cout<<"Created new path, length= "<<newPath.size()<<endl;
+				
+				cout<<"Received hit path data."<<endl;
+				cout<<"Matches: "<<matches<<endl;
+				cout<<"Self"<<endl;
+				cout<<" Identifier: "<<m_identifier<<endl;
+				cout<<" Strand: "<<m_reverseStrand<<endl;
+				cout<<" Length: "<<m_path->size()<<endl;
+				cout<<" Begin: "<<m_minPositionOnSelf[hitName]<<endl;
+				cout<<" End: "<<m_maxPositionOnSelf[hitName]<<endl;
+				cout<<"Hit"<<endl;
+				cout<<" Identifier: "<<hitName<<endl;
+				cout<<" Strand: 0"<<endl;
+				cout<<" Length: "<<hitLength<<endl;
+				cout<<" Begin: "<<m_minPosition[hitName]<<endl;
+				cout<<" End: "<<m_maxPosition[hitName]<<endl;
+
+
 				m_eliminated=true;
 
 /*
@@ -469,6 +686,23 @@ void JoinerWorker::work(){
 				m_newPaths->push_back(newPath);
 
 				cout<<"Created new path, length= "<<newPath.size()<<endl;
+
+				cout<<"Received hit path data."<<endl;
+				cout<<"Matches: "<<matches<<endl;
+				cout<<"Self"<<endl;
+				cout<<" Identifier: "<<m_identifier<<endl;
+				cout<<" Strand: "<<m_reverseStrand<<endl;
+				cout<<" Length: "<<m_path->size()<<endl;
+				cout<<" Begin: "<<m_minPositionOnSelf[hitName]<<endl;
+				cout<<" End: "<<m_maxPositionOnSelf[hitName]<<endl;
+				cout<<"Hit"<<endl;
+				cout<<" Identifier: "<<hitName<<endl;
+				cout<<" Strand: 0"<<endl;
+				cout<<" Length: "<<hitLength<<endl;
+				cout<<" Begin: "<<m_minPosition[hitName]<<endl;
+				cout<<" End: "<<m_maxPosition[hitName]<<endl;
+
+
 				m_eliminated=true;
 
 			}else{

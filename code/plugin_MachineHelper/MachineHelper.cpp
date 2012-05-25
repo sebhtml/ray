@@ -708,10 +708,11 @@ void MachineHelper::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 	//  * a distribute cycle
 	//  * a fusion cycle
 
-	int lastAllowedCycleNumber=2; //5;
+	int lastAllowedCycleNumber=5 ; //=5;
 
 	if(!m_cycleStarted){
 		int count=0;
+
 		if(m_mustStop){
 			count=1;
 		}
