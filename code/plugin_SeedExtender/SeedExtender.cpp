@@ -38,10 +38,21 @@
  /* generated_automatically */
  /* generated_automatically */
 ____CreateSlaveModeAdapterImplementation(SeedExtender,RAY_SLAVE_MODE_EXTENSION); /* generated_automatically */
+____CreateMessageTagAdapterImplementation(SeedExtender,RAY_MPI_TAG_ADD_GRAPH_PATH);
  /* generated_automatically */
  /* generated_automatically */
 
 using namespace std;
+
+void SeedExtender::closePathFile(){
+
+	if(m_pathFile.is_open()){
+		flushFileOperationBuffer(true,&m_pathFileBuffer,&m_pathFile,CONFIG_FILE_IO_BUFFER_SIZE);
+
+		m_pathFile.close();
+	}
+
+}
 
 /** extend the seeds */
 void SeedExtender::call_RAY_SLAVE_MODE_EXTENSION(){
@@ -609,6 +620,7 @@ Presently, insertions or deletions up to 8 are supported.
 		}else if(!ed->m_doChoice_tips_Detected && ed->m_EXTENSION_readsInRange.size()>0){
  			//for each entries in ed->m_enumerateChoices_outgoingEdges, do a dfs of max depth 40.
 			//if the reached depth is 40, it is not a tip, otherwise, it is.
+			
 			int maxDepth=2*m_parameters->getWordSize();
 			if(!m_dfsData->m_doChoice_tips_Initiated){
 				m_dfsData->m_doChoice_tips_i=0;
@@ -1005,6 +1017,26 @@ Kmer *currentVertex,BubbleData*bubbleData){
 	
 		PathHandle id=getPathUniqueId(theRank,ed->m_EXTENSION_currentSeedIndex);
 		ed->m_EXTENSION_identifiers.push_back(id);
+
+
+
+		// <send the information to master>
+
+		MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+		int bufferPosition=0;
+
+		int pathLength=ed->m_EXTENSION_extension.size();
+		int flows=ed->m_flowNumber;
+
+		buffer[bufferPosition++]=id;
+		buffer[bufferPosition++]=pathLength;
+		buffer[bufferPosition++]=flows;
+
+		m_switchMan->sendMessage(buffer,bufferPosition,m_outbox,m_parameters->getRank(),MASTER_RANK,RAY_MPI_TAG_ADD_GRAPH_PATH);
+	
+		// we don't need a reply for this message
+		//
+
 	}
 
 	/** reset the observations for outer distances utilised during the extension */
@@ -2259,6 +2291,32 @@ void SeedExtender::initializeExtensions(vector<AssemblySeed>*seeds){
 
 }
 
+void SeedExtender::call_RAY_MPI_TAG_ADD_GRAPH_PATH(Message*message){
+
+	MessageUnit*buffer=message->getBuffer();
+	Rank source=message->getSource();
+	PathHandle pathHandle=buffer[0];
+	int pathLength=buffer[1];
+	int flows=buffer[2];
+
+	if(!m_pathFile.is_open()){
+	
+		ostringstream fileName;
+		fileName<<m_parameters->getPrefix()<<"/ParallelPaths.txt";
+
+		string file=fileName.str();
+		m_pathFile.open(file.c_str(),ios_base::app);
+
+		#ifdef ASSERT
+		assert(m_pathFile.is_open());
+		#endif
+
+		m_pathFileBuffer<<"#Rank	Path	Length"<<endl;
+	}
+
+	m_pathFileBuffer<<source<<"	"<<pathHandle<<"	"<<pathLength<<"	"<<flows<<endl;
+}
+
 void SeedExtender::skipSeed(vector<AssemblySeed>*seeds){
 	cout<<"Rank "<<m_parameters->getRank()<<" skips seed ["<<m_ed->m_EXTENSION_currentSeedIndex<<"/"<<
 		(*seeds).size()<<"]"<<endl;
@@ -2297,11 +2355,19 @@ void SeedExtender::registerPlugin(ComputeCore*core){
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_EXTENSION,&m_adapter_RAY_SLAVE_MODE_EXTENSION);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_EXTENSION,"RAY_SLAVE_MODE_EXTENSION");
 
+	RAY_MPI_TAG_ADD_GRAPH_PATH=core->allocateMessageTagHandle(plugin);
+	m_adapter_RAY_MPI_TAG_ADD_GRAPH_PATH.setObject(this);
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ADD_GRAPH_PATH,&m_adapter_RAY_MPI_TAG_ADD_GRAPH_PATH);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ADD_GRAPH_PATH,"RAY_MPI_TAG_ADD_GRAPH_PATH");
+
 	RAY_MPI_TAG_CONTIG_INFO_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_CONTIG_INFO_REPLY,"RAY_MPI_TAG_CONTIG_INFO_REPLY");
 
 	RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY,"RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY");
+	
+	m_switchMan=core->getSwitchMan();
+
 
 }
 

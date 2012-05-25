@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -25,9 +25,11 @@
 class FusionData;
 class DepthFirstSearchData;
 
+#include <vector>
+#include <fstream>
+
 #include <application_core/common_functions.h>
 #include <communication/Message.h>
-#include <vector>
 #include <profiling/Profiler.h>
 #include <plugin_SeedExtender/VertexMessenger.h>
 #include <plugin_SeedExtender/ExtensionData.h>
@@ -54,6 +56,7 @@ class SeedExtender; /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
 ____CreateSlaveModeAdapterDeclaration(SeedExtender,RAY_SLAVE_MODE_EXTENSION); /* generated_automatically */
+____CreateMessageTagAdapterDeclaration(SeedExtender,RAY_MPI_TAG_ADD_GRAPH_PATH);
  /* generated_automatically */
  /* generated_automatically */
 
@@ -79,11 +82,13 @@ class SeedExtender: public CorePlugin  {
 	MessageTag RAY_MPI_TAG_VERTEX_READS_FROM_LIST;
 	MessageTag RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY;
 	MessageTag RAY_MPI_TAG_VERTEX_READS_REPLY;
+	MessageTag RAY_MPI_TAG_ADD_GRAPH_PATH;
 
 	SlaveMode RAY_SLAVE_MODE_EXTENSION;
 	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
 
 	Adapter_RAY_SLAVE_MODE_EXTENSION m_adapter_RAY_SLAVE_MODE_EXTENSION;
+	Adapter_RAY_MPI_TAG_ADD_GRAPH_PATH m_adapter_RAY_MPI_TAG_ADD_GRAPH_PATH;
 
 // all these parameters are not attributes.
 	vector<AssemblySeed>*m_seeds;
@@ -217,6 +222,11 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 	uint8_t m_compactEdges;
 
 
+	// storage for parallel paths
+	ofstream m_pathFile;
+	ostringstream m_pathFileBuffer;
+
+	SwitchMan*m_switchMan;
 public:
 	bool m_sequenceReceived;
 	bool m_sequenceRequested;
@@ -237,7 +247,11 @@ public:
 	int*receivedVertexCoverage,vector<Kmer>*receivedOutgoingEdges,Chooser*chooser,
 		OpenAssemblerChooser*oa);
 
+	void closePathFile();
+
 	void call_RAY_SLAVE_MODE_EXTENSION();
+
+	void call_RAY_MPI_TAG_ADD_GRAPH_PATH(Message*message);
 
 	void registerPlugin(ComputeCore*core);
 	void resolveSymbols(ComputeCore*core);

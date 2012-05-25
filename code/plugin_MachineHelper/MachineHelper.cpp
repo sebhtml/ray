@@ -843,11 +843,15 @@ void MachineHelper::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 }
 
 void MachineHelper::call_RAY_MASTER_MODE_ASK_EXTENSIONS(){
+
 	// ask ranks to send their extensions.
 	if(!m_ed->m_EXTENSION_currentRankIsSet){
 		m_ed->m_EXTENSION_currentRankIsSet=true;
 		m_ed->m_EXTENSION_currentRankIsStarted=false;
 		m_ed->m_EXTENSION_rank++;
+
+		m_seedExtender->closePathFile();
+
 	}
 	if(m_ed->m_EXTENSION_rank==getSize()){
 		m_timePrinter->printElapsedTime("Generation of contigs");
