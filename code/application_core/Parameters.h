@@ -119,6 +119,10 @@ class Parameters{
 
 	string getBaseName(string directory);
 	bool isDirectorySeparator(char a);
+
+	string m_checkpointDirectory;
+	bool m_hasCheckpointDirectory;
+
 public:
 	Parameters();
 	string getReceivedMessagesFile();

@@ -91,6 +91,9 @@ Parameters::Parameters(){
 
 	/** the default is to not use a default value */
 	m_degree=2;
+
+	m_checkpointDirectory="Checkpoints";
+	m_hasCheckpointDirectory=false;
 }
 
 bool Parameters::showExtensionChoice(){
@@ -301,7 +304,13 @@ void Parameters::parseCommands(){
 	set<string> ontology;
 	ontology.insert("-gene-ontology");
 
+	set<string> checkpoints;
+	checkpoints.insert("-read-write-checkpoints");
+	checkpoints.insert("-write-checkpoints");
+	checkpoints.insert("-read-checkpoints");
+
 	vector<set<string> > toAdd;
+	toAdd.push_back(checkpoints);
 	toAdd.push_back(coloringOneColor);
 	toAdd.push_back(ontology);
 	toAdd.push_back(phylogeny);
@@ -376,6 +385,36 @@ void Parameters::parseCommands(){
 			token=m_commands[i];
 			m_memoryFilePrefix=token;
 			providedMemoryPrefix=true;
+
+		}else if(checkpoints.count(token)>0){
+			i++;
+			int items=m_commands.size()-i;
+			if(items<1){
+				if(m_rank==MASTER_RANK){
+					cout<<"Error: "<<token<<" needs 1 item, you provided "<<items<<endl;
+				}
+				m_error=true;
+				return;
+			}
+			token=m_commands[i];
+
+			if(m_hasCheckpointDirectory){
+				cout<<"Warning: can not set already set checkpoint directory."<<endl;
+				continue;
+			}
+
+			m_checkpointDirectory=token;
+			m_hasCheckpointDirectory=true;
+
+			cout<<"Rank "<<m_rank<<" checkpoint directory: "<<m_checkpointDirectory;
+
+			if(m_rank==MASTER_RANK){
+
+				if(!fileExists(m_checkpointDirectory.c_str())){
+					createDirectory(m_checkpointDirectory.c_str());
+				}
+			}
+
 		}else if(outputFileCommands.count(token)>0){
 			i++;
 			int items=m_commands.size()-i;
@@ -1320,11 +1359,11 @@ void Parameters::showUsage(){
 	cout<<"  Checkpointing"<<endl;
 	cout<<endl;
 
-	showOption("-write-checkpoints","Write checkpoint files");
+	showOption("-write-checkpoints checkpointDirectory","Write checkpoint files");
 	cout<<endl;
-	showOption("-read-checkpoints","Read checkpoint files");
+	showOption("-read-checkpoints checkpointDirectory","Read checkpoint files");
 	cout<<endl;
-	showOption("-read-write-checkpoints","Read and write checkpoint files");
+	showOption("-read-write-checkpoints checkpointDirectory","Read and write checkpoint files");
 	cout<<endl;
 
 	cout<<"  Message routing for large number of cores"<<endl;
@@ -1640,6 +1679,7 @@ bool Parameters::hasFile(const char*file){
 
 string Parameters::getCheckpointFile(const char*checkpointName){
 	ostringstream a;
+	a<<m_checkpointDirectory<<"/";
 	a<<"Rank"<<getRank()<<".Checkpoint."<<checkpointName<<".ray";
 	return a.str();
 }
@@ -1656,6 +1696,7 @@ bool Parameters::hasCheckpoint(const char*checkpointName){
 bool Parameters::writeCheckpoints(){
 	if(hasOption("-write-checkpoints"))
 		return true;
+
 	if(hasOption("-read-write-checkpoints"))
 		return true;
 	return false;

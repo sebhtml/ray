@@ -140,13 +140,13 @@ DESCRIPTION:
 
   Checkpointing
 
-       -write-checkpoints
+       -write-checkpoints checkpointDirectory
               Write checkpoint files
 
-       -read-checkpoints
+       -read-checkpoints checkpointDirectory
               Read checkpoint files
 
-       -read-write-checkpoints
+       -read-write-checkpoints checkpointDirectory
               Read and write checkpoint files
 
   Message routing for large number of cores
@@ -334,4 +334,4 @@ COPYRIGHT
        You have received a copy of the GNU General Public License
        along with this program (see LICENSE).
 
-Ray 2.0.0-rc7
+Ray 2.0.0-devel
