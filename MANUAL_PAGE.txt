@@ -131,6 +131,16 @@ DESCRIPTION:
 
   Assembly options (defaults work well)
 
+       -disable-recycling
+              Disables read recycling during the assembly
+              reads will be set free in 3 cases:
+              1. the distance did not match for a pair
+              2. the read has not met its mate
+              3. the library population indicates a wrong placement
+              see Constrained traversal of repeats with paired sequences.
+              Sébastien Boisvert, Élénie Godzaridis, François Laviolette & Jacques Corbeil.
+              First Annual RECOMB Satellite Workshop on Massively Parallel Sequencing, March 26-27 2011, Vancouver, BC, Canada.
+
        -minimum-contig-length
               Changes the minimum contig length, default is 100
 
@@ -334,4 +344,4 @@ COPYRIGHT
        You have received a copy of the GNU General Public License
        along with this program (see LICENSE).
 
-Ray 2.0.0-devel
+Ray 2.0.0-rc8+devel

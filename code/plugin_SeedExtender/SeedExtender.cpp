@@ -536,6 +536,10 @@ Presently, insertions or deletions up to 8 are supported.
 							break;// can'T free if there are no pairs
 						}
 
+						if(m_parameters->hasOption("-disable-recycling")){
+							break;
+						}
+
 						ReadHandle uniqueId=ed->m_sequencesToFree[i];
 						m_ed->m_pairedReadsWithoutMate.erase(uniqueId);
 

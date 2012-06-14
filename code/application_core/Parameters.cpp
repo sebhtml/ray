@@ -1337,6 +1337,16 @@ void Parameters::showUsage(){
 	cout<<"  Assembly options (defaults work well)"<<endl;
 	cout<<endl;
 	
+	showOption("-disable-recycling","Disables read recycling during the assembly");
+	showOptionDescription("reads will be set free in 3 cases:");
+	showOptionDescription("1. the distance did not match for a pair");
+	showOptionDescription("2. the read has not met its mate");
+	showOptionDescription("3. the library population indicates a wrong placement");
+	showOptionDescription("see Constrained traversal of repeats with paired sequences.");
+	showOptionDescription("Sébastien Boisvert, Élénie Godzaridis, François Laviolette & Jacques Corbeil.");
+	showOptionDescription("First Annual RECOMB Satellite Workshop on Massively Parallel Sequencing, March 26-27 2011, Vancouver, BC, Canada.");
+	cout<<endl;
+
 	showOption("-minimum-contig-length","Changes the minimum contig length, default is 100");
 	cout<<endl;
 
