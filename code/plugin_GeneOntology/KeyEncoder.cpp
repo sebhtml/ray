@@ -210,7 +210,7 @@ GeneOntologyIdentifier KeyEncoder::encodeGeneOntologyHandle(const char*identifie
 	}
 
 	#ifdef ASSERT
-	assert(strlen(identifier)== (start+length));
+	assert((int)strlen(identifier)== (start+length));
 	#endif
 
 
