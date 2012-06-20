@@ -1,38 +1,63 @@
+For very large jobs, routing should be enabled.
+Message routing reduces the latency and memory usage.
+Also, the network will by happier.
+
 This guide contains network architecture for routing messages with Ray.
 
+Vertices is the number of computer cores to use (mpiexec -n ###)
 
+See also Documentation/Very-Large-Jobs.txt.
+
+
+
+Vertices: 256
+Type: de Bruijn
+Degree: 4
+Diameter: 4 (4*4*4*4=256)
+Options:  -route-messages -connection-type debruijn -routing-graph-degree 4
 
 Vertices: 512
 Type: de Bruijn
 Degree: 8
 Diameter: 3 (8*8*8)
+Options:  -route-messages -connection-type debruijn -routing-graph-degree 8
 
 Vertices: 1024
 Type: de Bruijn
 Degree: 4
 Diameter: 5 (4*4*4*4*4)
+Options:  -route-messages -connection-type debruijn -routing-graph-degree 4
 
 Vertices: 1024
 Type: de Bruijn
 Degree: 32
 Diameter: 2 (32*32)
+Options:  -route-messages -connection-type debruijn -routing-graph-degree 32
 
 Vertices: 1024
 Type: de Bruijn
 Degree: 2
 Diameter: 10 (2^10)
+Options:  -route-messages -connection-type debruijn -routing-graph-degree 2
+
+
+
 
 Vertices: 750
 Type: Kautz
 Degree: 5
 Diameter: 4 (6*5*5*5)
+Options:  -route-messages -connection-type kautz -routing-graph-degree 5
 
 Vertices: 972
 Type: Kautz
 Degree: 3
 Diameter: 6 (4*3*3*3*3*3)
+Options:  -route-messages -connection-type kautz -routing-graph-degree 3
 
 Vertices: 768
 Type: Kautz
 Degree: 2
 Diameter: 9 (3*2*2*2*2*2*2*2*2)
+Options:  -route-messages -connection-type kautz -routing-graph-degree 2
+
