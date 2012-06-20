@@ -1,19 +1,9 @@
 
 If you want to contribute, clone the repository, make changes
 and I (Sébastien Boisvert) will pull from you after reviewing
-the code changes.
+the code changes. You can also use "Fork/Pull request" on github.
 
 You can also submit a signed-off patch.
-
-
-== Guidelines ==
-
-You can clone the ray git repository.
-
-	git clone git://github.com/sebhtml/ray.git
-
-After making some changes to Ray, you can prepare a patch and send it on the
-mailing list denovoassembler-devel AT lists.sourceforge.net
 
 === A good patch ===
 
@@ -33,10 +23,24 @@ A patch should not:
 
 - change substantially the Ray architecture (i.e.: prototypes)
 - contain changes related to unrelated issues (i.e. adding support for X _AND_ fixing bug Y)
-     (in that case, submit more than one patch)
+     (in that case, submit more than one)
 
 
-== git workflow ==
+
+== Guidelines ==
+
+You can also send a patch file, but it is easier for everyone to clone the
+repository and submit a pull request.
+
+You can clone the ray git repository.
+
+	git clone git://github.com/sebhtml/ray.git
+
+
+After making some changes to Ray, you can prepare a patch and send it on the
+mailing list denovoassembler-devel AT lists.sourceforge.net
+
+== Procedure for creating a patch file ==
 
 
 From http://ariejan.net/2009/10/26/how-to-create-and-apply-a-patch-with-git/
