@@ -2,6 +2,8 @@
 * run unit tests
 * check version in Makefile
 * ./Ray -help > MANUAL_PAGE.txt
+* compile with make
+* compile with cmake
 * git tag vx.y.z
 * git checkout tag,
 * do a tar.bz2, compile it (make + make install) and test it
