@@ -19,6 +19,9 @@
 
 */
 
+// This option disables metagenome and transcriptome assembly
+// #define CONFIG_USE_COVERAGE_DISTRIBUTION
+
 /* TODO: free sequence in ExtensionElement objects when they are not needed anymore */
 
 #include <application_core/constants.h>
@@ -367,10 +370,13 @@ Presently, insertions or deletions up to 8 are supported.
 
 				element->getSequence(m_receivedString,m_parameters);
 				char*theSequence=m_receivedString;
+
 				#ifdef ASSERT
 				assert(theSequence!=NULL);
 				#endif
+
 				ed->m_EXTENSION_receivedLength=strlen(theSequence);
+
 				if(distance>(ed->m_EXTENSION_receivedLength-wordSize)){
 					cout<<"OutOfRange UniqueId="<<uniqueId<<" Length="<<strlen(theSequence)<<" StartPosition="<<element->getPosition()<<" CurrentPosition="<<ed->m_EXTENSION_extension.size()-1<<" StrandPosition="<<element->getStrandPosition()<<endl;
 					#ifdef ASSERT
@@ -1248,6 +1254,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
 		PathHandle waveId=getPathUniqueId(theRank,ed->m_EXTENSION_currentSeedIndex);
+
 		// save wave progress.
 		#ifdef ASSERT
 		assert((int)getIdFromPathUniqueId(waveId)==ed->m_EXTENSION_currentSeedIndex);
@@ -1367,6 +1374,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 			MACRO_COLLECT_PROFILING_INFORMATION();
 
 			/**
+			 * CAse 1. we already saw the read
+			 *
 			 * if the read is still within the range of the peak, update it 
 			 *
 			 * this complicated code add-on avoids the collapsing of
@@ -1446,10 +1455,13 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 			/** this case never happens because m_cacheForRepeatedReads is never populated */
 			}else if(!m_sequenceRequested
 				&&m_cacheForRepeatedReads.find(uniqueId,false)!=NULL){
+
 				SplayNode<ReadHandle,Read>*node=m_cacheForRepeatedReads.find(uniqueId,false);
+
 				#ifdef ASSERT
 				assert(node!=NULL);
 				#endif
+
 				node->getValue()->getSeq(m_receivedString,m_parameters->getColorSpaceMode(),false);
 				PairedRead*pr=node->getValue()->getPairedRead();
 
@@ -1487,6 +1499,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				MACRO_COLLECT_PROFILING_INFORMATION();
 
 			/* we received a sequence read */
+			/* we will add the read to our soup */
 			}else if(m_sequenceReceived){
 
 				bool addRead=true;
@@ -1508,10 +1521,14 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				// don't add it up if its is marked on a repeated vertex and
 				// its mate was not seen yet.
 				
+
+				// Just to be sure, we use a conservative multiplicator of 1.5.
+				int multiplierForAddingReads=1.5;
+
 				#ifdef CONFIG_USE_COVERAGE_DISTRIBUTION
-				CoverageDepth thresholdCoverage=2*m_parameters->getPeakCoverage();
+				CoverageDepth thresholdCoverage=multiplierForAddingReads*m_parameters->getPeakCoverage();
 				#else
-				CoverageDepth thresholdCoverage=2*m_currentPeakCoverage;
+				CoverageDepth thresholdCoverage=multiplierForAddingReads*m_currentPeakCoverage;
 				#endif
 
 				//cout<<"THreshold= "<<thresholdCoverage<<endl;
