@@ -33,12 +33,30 @@ void LibraryPeakFinder::findPeaks(vector<int>*x,vector<int>*y,vector<int>*peakAv
 
 	/* the special case of simulated data
  * with a standard deviation of 0 */
-	if(x->size()==1 && y->at(0) >= 4096){
-		peakAverages->push_back(x->at(0));
-		peakStandardDeviation->push_back(0);
 
-		return;
+	uint64_t total=0;
+
+	for(int i=0;i<(int)y->size();i++){
+		total+=y->at(i);
 	}
+
+	for(int i=0;i<(int)y->size();i++){
+		if(total==0){
+			break;
+		}
+		double ratio=y->at(i)/(total+0.0);
+	
+		if(y->size()<=16 && ratio>=0.90){
+
+			peakAverages->push_back(x->at(i));
+			peakStandardDeviation->push_back(i);
+
+			return;
+		}
+
+	}
+
+	// Now we begin the real analysis
 
 	vector<int> backgroundData;
 	
