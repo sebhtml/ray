@@ -133,7 +133,15 @@ void AssemblySeed::computePeakCoverageUsingMean(){
 		//#endif
 
 		sum+=coverage*frequency;
+		count+=frequency;
 	}
+
+	#ifdef ASSERT
+	assert(m_coverageValues.size()>=1);
+	assert(count!=0);
+	assert(count>0);
+	assert(sum > 0);
+	#endif
 
 	int mean=( sum / count );
 
