@@ -19,6 +19,7 @@
 */
 
 #include <plugin_SeedingData/AssemblySeed.h>
+#include <application_core/constants.h>
 #include <core/statistics.h>
 #include <iostream>
 #include <map>
@@ -52,6 +53,38 @@ void AssemblySeed::resetCoverageValues(){
 }
 
 void AssemblySeed::computePeakCoverage(){
+
+	bool useMode=false;
+	bool useMean=true;
+
+	#ifdef ASSERT
+	assert((useMode || useMean) && !(useMode && useMean));
+	#endif
+
+	// the default is to use the weighted mean algorithm 
+
+	#ifdef ASSERT
+	assert(useMean==true);
+	assert(useMode==false);
+	#endif
+
+	if(useMode){
+		computePeakCoverageUsingMode();
+	}else if(useMean){
+		computePeakCoverageUsingMean();
+	}
+}
+
+int AssemblySeed::getPeakCoverage(){
+	return m_peakCoverage;
+}
+
+void AssemblySeed::addCoverageValue(int value){
+	m_coverageValues.push_back(value);
+}
+
+void AssemblySeed::computePeakCoverageUsingMode(){
+
 	map<int,int> frequencies;
 
 	for(int i=0;i<(int)m_coverageValues.size();i++){
@@ -67,18 +100,44 @@ void AssemblySeed::computePeakCoverage(){
 			best=i->first;
 		}
 
+		//#ifdef CONFIG_VERBOSITY_FOR_SEEDS
 		cout<<i->first<<"	"<<i->second<<endl;
+		//#endif
 	}
 
 	cout<<"mode= "<<best<<" length= "<<m_vertices.size()<<endl;
 
 	m_peakCoverage=best;
+
 }
 
-int AssemblySeed::getPeakCoverage(){
-	return m_peakCoverage;
-}
+void AssemblySeed::computePeakCoverageUsingMean(){
 
-void AssemblySeed::addCoverageValue(int value){
-	m_coverageValues.push_back(value);
+	map<int,int> frequencies;
+
+	for(int i=0;i<(int)m_coverageValues.size();i++){
+		frequencies[m_coverageValues[i]]++;
+	}
+
+	LargeCount sum=0;
+	LargeCount count=0;
+
+	for(map<int,int>::iterator i=frequencies.begin();
+		i!=frequencies.end();i++){
+
+		CoverageDepth coverage=i->first;
+		LargeCount frequency=i->second;
+
+		//#ifdef CONFIG_VERBOSITY_FOR_SEEDS
+		cout<<coverage<<"	"<<frequency<<endl;
+		//#endif
+
+		sum+=coverage*frequency;
+	}
+
+	int mean=( sum / count );
+
+	cout<<"mean= "<<mean <<" length= "<<m_vertices.size()<<endl;
+
+	m_peakCoverage=mean;
 }

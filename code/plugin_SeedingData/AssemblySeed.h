@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -25,11 +25,25 @@
 #include <plugin_KmerAcademyBuilder/Kmer.h>
 using namespace std;
 
+/**
+ * This class describes objects representing assembly seeds.
+ * An assembly seed is a path in the de Bruijn graph.
+ * It is likely unique in the target genome (hopefully !)
+ * \author pro grammer: Sébastien Boisvert (good with grammar)
+ * \author co-designer: The Ray committee of wise people (E. God.)
+ * \date updated 2012-06-21 for the release of v2.0.0
+ */
 class AssemblySeed{
 	vector<Kmer> m_vertices;
 	vector<int> m_coverageValues;
 
 	int m_peakCoverage;
+
+/** computes locality with a weighted mean (locality object is peak coverage) **/
+	void computePeakCoverageUsingMean();
+
+/** computes locality with a mode (locality object is peak coverage) **/
+	void computePeakCoverageUsingMode();
 
 public:
 	AssemblySeed();
