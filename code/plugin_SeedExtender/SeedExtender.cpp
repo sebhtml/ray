@@ -1522,8 +1522,10 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				// its mate was not seen yet.
 				
 
-				// Just to be sure, we use a conservative multiplicator of 1.5.
-				int multiplierForAddingReads=1.5;
+				// Just to be sure, we use a conservative multiplicator of XYZ
+				// this use to be 2.0
+				// this needs to be a floating number.
+				double multiplierForAddingReads=1.5;
 
 				#ifdef CONFIG_USE_COVERAGE_DISTRIBUTION
 				CoverageDepth thresholdCoverage=multiplierForAddingReads*m_parameters->getPeakCoverage();
