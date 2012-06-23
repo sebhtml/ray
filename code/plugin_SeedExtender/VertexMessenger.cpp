@@ -28,6 +28,9 @@
 #include <iostream>
 using namespace std;
 
+/**
+* This method will fetch reads for the k-mer
+*/
 void VertexMessenger::work(){
 	if(m_isDone){
 		return;
@@ -41,6 +44,7 @@ void VertexMessenger::work(){
 		message[j++]=m_wavePosition;
 		Message aMessage(message,j,m_destination,RAY_MPI_TAG_VERTEX_INFO,m_parameters->getRank());
 		m_outbox->push_back(aMessage);
+
 	}else if(!m_receivedBasicInfo &&m_inbox->size()==1&&m_inbox->at(0)->getTag()==RAY_MPI_TAG_VERTEX_INFO_REPLY){
 		m_receivedBasicInfo=true;
 		MessageUnit*buffer=(MessageUnit*)m_inbox->at(0)->getBuffer();
@@ -83,7 +87,8 @@ void VertexMessenger::work(){
 			m_numberOfAnnotations=0;
 			m_annotations.clear();
 			m_isDone=true;
-		}else if(m_coverageValue>=3* m_peakCoverage){
+
+		}else if(m_coverageValue>= 3* m_peakCoverage){
 			getReadsForRepeatedVertex();
 		}else{
 			getReadsForUniqueVertex();
