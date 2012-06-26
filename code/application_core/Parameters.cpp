@@ -1586,16 +1586,22 @@ int Parameters::getReducerValue(){
 Rank Parameters::getRankFromGlobalId(ReadHandle a){
 	uint64_t elementsPerRank=m_totalNumberOfSequences/m_size;
 	Rank rank=a/elementsPerRank;
-	if(rank==m_size){
-		rank--;
+
+	if(rank >= m_size){
+		rank=m_size-1;
 	}
 
 	#ifdef ASSERT
+
+	assert(rank>=0);
+
 	if(rank>=m_size){
 		cout<<"GlobalIdentifier="<<a<<" Total="<<m_totalNumberOfSequences<<" Size="<<m_size<<" Rank="<<rank<<endl;
 	}
+
 	assert(rank<m_size);
 	#endif
+
 	return rank;
 }
 

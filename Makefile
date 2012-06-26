@@ -1,8 +1,8 @@
 VERSION = 2
 PATCHLEVEL = 0
-SUBLEVEL = 0
-EXTRAVERSION = 
-NAME = Dark Astrocyte of Knowledge
+SUBLEVEL = 1
+EXTRAVERSION = -devel
+NAME = 
 
 # number of cores to use for compilation
 J=1
