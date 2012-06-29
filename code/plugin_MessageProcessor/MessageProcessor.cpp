@@ -316,6 +316,11 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 	}
 	#endif
 
+	#ifdef ASSERT
+	assert(period>=5);
+	#endif
+
+	// this is a multiplexed message.
 	for(int i=0;i<message->getCount();i+=period){
 		Kmer vertex;
 		int bufferPosition=i;
@@ -326,6 +331,19 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 
 		uint64_t integerValue=buffer[bufferPosition++];
 		unpack_pointer((void**)&ptr, integerValue);
+
+		#ifdef ASSERT
+		// check the padding
+		
+		int start=KMER_U64_ARRAY_SIZE+1;
+
+		for(int iterator=start;iterator<period;iterator++){
+			if(buffer[i+iterator]!=0){
+				cout<<"Error: message corruption detected, the padding changed !"<<endl;
+			}
+			assert(buffer[i+iterator]==0);
+		}
+		#endif
 
 		#ifdef GUILLIMIN_BUG
 		if(printBug){

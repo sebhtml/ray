@@ -71,6 +71,22 @@ void ReadFetcher::work(){
 			message2[bufferPosition++]=0;
 		}
 
+		#ifdef ASSERT
+		int start=KMER_U64_ARRAY_SIZE+1;
+	
+		assert(period>=5);
+
+		// Padding must be 0.
+		while(start<period){
+			if(message2[start]!=0){
+				cout<<"Error, padding must be 0."<<endl;
+			}
+			assert(message2[start]==0);
+			start++;
+		}
+
+		#endif
+		
 		int destination=m_parameters->_vertexRank(&m_vertex);
 
 		#ifdef GUILLIMIN_BUG
@@ -85,7 +101,8 @@ void ReadFetcher::work(){
 		}
 		#endif
 
-		Message aMessage(message2,period,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,m_parameters->getRank());
+		Message aMessage(message2,period,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,
+			m_parameters->getRank());
 
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		m_readsRequested=true;
