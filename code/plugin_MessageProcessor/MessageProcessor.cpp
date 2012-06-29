@@ -305,6 +305,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 	int OFFSET_STRAND=offset++;
 
 	#ifdef ASSERT
+	assert(OFFSET_STRAND < period);
 	assert(message->getCount()%period ==0);
 	#endif
 
