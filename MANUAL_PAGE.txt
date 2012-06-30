@@ -189,6 +189,10 @@ DESCRIPTION:
 
   Debugging
 
+       -verify-message-integrity
+              Checks message data reliability for any non-empty message.
+              add '-D CONFIG_SSE_4_2' in the Makefile to use hardware instruction (SSE 4.2)
+
        -run-profiler
               Runs the profiler as the code runs. By default, only show granularity warnings.
               Running the profiler increases running times.
@@ -344,4 +348,4 @@ COPYRIGHT
        You have received a copy of the GNU General Public License
        along with this program (see LICENSE).
 
-Ray 2.0.0
+Ray 2.0.1-devel

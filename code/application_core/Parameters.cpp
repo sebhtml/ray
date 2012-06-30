@@ -1404,6 +1404,12 @@ void Parameters::showUsage(){
 
 	cout<<"  Debugging"<<endl;
 	cout<<endl;
+
+	showOption("-verify-message-integrity","Checks message data reliability for any non-empty message.");
+	showOptionDescription("add '-D CONFIG_SSE_4_2' in the Makefile to use hardware instruction (SSE 4.2)");
+	cout<<endl;
+
+
 	showOption("-run-profiler","Runs the profiler as the code runs. By default, only show granularity warnings.");
 	showOptionDescription("Running the profiler increases running times.");
 	cout<<endl;
