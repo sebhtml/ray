@@ -27,6 +27,7 @@
 using namespace std;
 
 #define CONFIG_SOFT_SIGNAL_THRESHOLD 32
+#define CONFIG_PEAK_MINIMUM_SIGNAL 2
 
 /** find multiple peaks in the distribution of inserts for a library */
 void LibraryPeakFinder::findPeaks(vector<int>*x,vector<int>*y,vector<int>*peakAverages,vector<int>*peakStandardDeviation){
@@ -51,6 +52,8 @@ void LibraryPeakFinder::findPeaks(vector<int>*x,vector<int>*y,vector<int>*peakAv
 			peakAverages->push_back(x->at(i));
 			peakStandardDeviation->push_back(i);
 
+			cout<<"[LibraryPeakFinder] too few points"<<endl;
+
 			return;
 		}
 
@@ -61,17 +64,28 @@ void LibraryPeakFinder::findPeaks(vector<int>*x,vector<int>*y,vector<int>*peakAv
 	vector<int> backgroundData;
 	
 	for(int i=0;i<(int)y->size();i++){
-		if(y->at(i) < CONFIG_SOFT_SIGNAL_THRESHOLD){
+
+		int verticalValue=y->at(i);
+
+		if(verticalValue < CONFIG_PEAK_MINIMUM_SIGNAL){
+			continue;
+		}
+
+		if(verticalValue < CONFIG_SOFT_SIGNAL_THRESHOLD){
 			backgroundData.push_back(y->at(i));
 		}
 	}
 
 	int signalAverage=(int)getAverage(&backgroundData);
 
+	#define VERBOSE
+
 	#ifdef VERBOSE
 	int signalMode=getMode(&backgroundData);
 	cout<<"Mode= "<<signalMode<<" signalAverage= "<<signalAverage<<endl;
 	#endif
+
+	#undef VERBOSE
 
 	int signalThreshold=signalAverage;
 
