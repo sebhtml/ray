@@ -90,6 +90,8 @@ class Scaffolder :  public CorePlugin{
 	
 	TimePrinter*m_timePrinter;
 
+	bool m_hasPairedReads;    //Added to skip scaffolding in case of unpaired reads
+
 	int m_rankIdForContig;
 	bool m_hasContigSequence_Initialised;
 	ofstream m_fp;
@@ -211,7 +213,8 @@ public:
  *	Number of ranks that have finished scaffolding
  */
 	int m_numberOfRanksFinished;
-
+	
+	
 	/**
  *	Constructor of the scaffolder
  */

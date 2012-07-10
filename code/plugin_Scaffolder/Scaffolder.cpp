@@ -372,13 +372,15 @@ void Scaffolder::call_RAY_SLAVE_MODE_SCAFFOLDER(){
 		m_positionOnContig=0;
 		m_forwardDone=false;
 		m_coverageRequested=false;
+		m_hasPairedReads=m_parameters->hasPairedReads();
 	}
 
 	m_virtualCommunicator->forceFlush();
 	m_virtualCommunicator->processInbox(&m_activeWorkers);
 	m_activeWorkers.clear();
-
-	if(m_contigId<(int)(*m_contigs).size()){
+	
+	//Add the condition hasPairedReads to skip scaffolding in case of unpaired reads
+	if(m_hasPairedReads && m_contigId<(int)(*m_contigs).size()){
 		processContig();
 	}else{
 
