@@ -1,7 +1,8 @@
 
-If you want to contribute, clone the repository, make changes
+If you want to contribute, clone the git repository, make changes
 and I (Sébastien Boisvert) will pull from you after reviewing
-the code changes. You can also use "Fork/Pull request" on github.
+the code changes. You can use "Fork/Pull request" on github for
+that.
 
 You can also submit a signed-off patch.
 
@@ -12,68 +13,12 @@ A patch should:
 - be concise
 - address one issue/bug/feature (not many)
     (in that case, submit more than one patch)
-- be easy to review
-- should compile cleanly with -std=c++98 -Wall with g++
+- should compile cleanly with -std=c++98 (or -ansi) -Wall with g++
+
+
 - should pass all system tests
 - should pass all unit tests
 
-=== A bad patch ===
 
-A patch should not:
-
-- change substantially the Ray architecture (i.e.: prototypes)
-- contain changes related to unrelated issues (i.e. adding support for X _AND_ fixing bug Y)
-     (in that case, submit more than one)
-
-
-
-== Guidelines ==
-
-You can also send a patch file, but it is easier for everyone to clone the
-repository and submit a pull request.
-
-You can clone the ray git repository.
-
-	git clone git://github.com/sebhtml/ray.git
-
-
-After making some changes to Ray, you can prepare a patch and send it on the
-mailing list denovoassembler-devel AT lists.sourceforge.net
-
-== Procedure for creating a patch file ==
-
-
-From http://ariejan.net/2009/10/26/how-to-create-and-apply-a-patch-with-git/
-
-
-=== create a patch from changes to the master branch ===
-
-git format-patch -s master --stdout > fix.patch
-
-=== create a patch from a specific commit ===
-
-you can create a patch from a commit too:
-
-git format-patch -s -1 cdefecb3ab --stdout > fix.patch
-
-=== check, sign and apply the patch (done by the maintainer of Ray) ===
-
-git apply --stat fix.patch
-git apply --check fix.patch
-git am --signoff < fix.patch 
-
-=== Result ===
-
-This will then show in the log:
-
-commit cc143591613efd741b66c58ba9aaea05e1f8f332
-Author:     Joe Connaissant <LOL@lol.com>
-AuthorDate: Thu Jul 21 08:01:02 2011 -0400
-Commit:     Sébastien Boisvert <Sebastien.Boisvert.3@ulaval.ca>
-CommitDate: Thu Jul 21 08:04:17 2011 -0400
-
-    SMU MSG
-    
-    Signed-off-by: Joe Connaissant <LOL@lol.com>
-    Signed-off-by: Sébastien Boisvert <Sebastien.Boisvert.3@ulaval.ca>
-
+Read http://www.kernel.org/doc/Documentation/SubmittingPatches if to learn
+more.
