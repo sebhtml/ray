@@ -20,5 +20,5 @@ A patch should:
 - should pass all unit tests
 
 
-Read http://www.kernel.org/doc/Documentation/SubmittingPatches if to learn
+Read http://www.kernel.org/doc/Documentation/SubmittingPatches to learn
 more.
