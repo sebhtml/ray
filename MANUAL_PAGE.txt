@@ -148,6 +148,10 @@ DESCRIPTION:
               Runs in color-space
               Needs csfasta files. Activated automatically if csfasta files are provided.
 
+       -use-maximum-seed-coverage
+              Ignores any seed with a coverage depth above this threshold.
+              The default is 4294967295.
+
   Checkpointing
 
        -write-checkpoints checkpointDirectory
