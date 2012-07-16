@@ -94,6 +94,8 @@ Parameters::Parameters(){
 
 	m_checkpointDirectory="Checkpoints";
 	m_hasCheckpointDirectory=false;
+
+	m_maximumSeedCoverage=getMaximumAllowedCoverage();
 }
 
 bool Parameters::showExtensionChoice(){
@@ -309,6 +311,10 @@ void Parameters::parseCommands(){
 	checkpoints.insert("-write-checkpoints");
 	checkpoints.insert("-read-checkpoints");
 
+
+	set<string> maximumSeedCoverage;
+	maximumSeedCoverage.insert("-use-maximum-seed-coverage");
+
 	vector<set<string> > toAdd;
 	toAdd.push_back(checkpoints);
 	toAdd.push_back(coloringOneColor);
@@ -338,6 +344,7 @@ void Parameters::parseCommands(){
 	toAdd.push_back(showMalloc);
 	toAdd.push_back(writeKmers);
 	toAdd.push_back(colorSpaceMode);
+	toAdd.push_back(maximumSeedCoverage);
 
 	for(int i=0;i<(int)toAdd.size();i++){
 		for(set<string>::iterator j=toAdd[i].begin();j!=toAdd[i].end();j++){
@@ -508,6 +515,23 @@ void Parameters::parseCommands(){
 			addLibraryData(m_numberOfLibraries,meanFragmentLength,standardDeviation);
 
 			m_numberOfLibraries++;
+
+		}else if(maximumSeedCoverage.count(token)>0){
+			i++;
+			int items=m_commands.size()-i;
+
+			if(items<1){
+				if(m_rank==MASTER_RANK){
+					cout<<"Error: "<<token<<" needs 1 item, you provided "<<items<<endl;
+				}
+				m_error=true;
+				return;
+			}
+			token=m_commands[i];
+
+			m_maximumSeedCoverage=atoi(token.c_str());
+
+
 		}else if(pairedReadsCommands.count(token)>0){
 			// make sure there is at least 4 elements left.
 			int items=0;
@@ -1354,6 +1378,14 @@ void Parameters::showUsage(){
 	showOptionDescription("Needs csfasta files. Activated automatically if csfasta files are provided.");
 	cout<<endl;
 
+	ostringstream buffer3;
+	buffer3<<"The default is "<<getMaximumAllowedCoverage()<<".";
+	showOption("-use-maximum-seed-coverage","Ignores any seed with a coverage depth above this threshold.");
+	showOptionDescription(buffer3.str());
+
+	cout<<endl;
+
+
 /*
 	showOption("-minimumCoverage minimumCoverage","Sets manually the minimum coverage.");
 	showOptionDescription("If not provided, it is computed by Ray automatically.");
@@ -1794,4 +1826,8 @@ string Parameters::getBaseName(string directory){
 bool Parameters::isDirectorySeparator(char a){
 	/* POSIX or Redmond separator */
 	return a=='/' || a=='\\';
+}
+
+CoverageDepth Parameters::getMaximumSeedCoverage(){
+	return m_maximumSeedCoverage;
 }

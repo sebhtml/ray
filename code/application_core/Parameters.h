@@ -38,6 +38,9 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class Parameters{
+
+	CoverageDepth m_maximumSeedCoverage;
+
 	string m_genomeToTaxonFile;
 	string m_treeFile;
 	string m_taxonNameFile;
@@ -232,6 +235,9 @@ public:
 	string getTreeFile();
 	string getTaxonNameFile();
 	string getSampleName();
+
+/** gets the maximum coverage depth allowed for seeds. **/
+	CoverageDepth getMaximumSeedCoverage();
 };
 
 #endif

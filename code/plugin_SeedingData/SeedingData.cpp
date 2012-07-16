@@ -142,8 +142,16 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 					}
 
 					theSeed.computePeakCoverage();
+		
+					CoverageDepth peakCoverage=theSeed.getPeakCoverage();
 
-					cout<<"Got a seed, peak coverage: "<<theSeed.getPeakCoverage()<<endl;
+					cout<<"Got a seed, peak coverage: "<<peakCoverage<<endl;
+	
+					/* ignore the seed if it has too much coverage. */
+					if(peakCoverage > m_parameters->getMaximumSeedCoverage()){
+						return;
+					}
+
 
 					m_SEEDING_seeds.push_back(theSeed);
 				}
