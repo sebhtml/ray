@@ -531,6 +531,8 @@ void Parameters::parseCommands(){
 
 			m_maximumSeedCoverage=atoi(token.c_str());
 
+			cout<<"[Parameters] changed the maximum seed coverage depth to ";
+			cout<<m_maximumSeedCoverage<<endl;
 
 		}else if(pairedReadsCommands.count(token)>0){
 			// make sure there is at least 4 elements left.
