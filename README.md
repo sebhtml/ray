@@ -3,7 +3,7 @@
 Ray is a parallel de novo genome assembler that utilises the message-passing interface everywhere
 and is implemented using peer-to-peer communication.
 
-Ray is implemented using the Ray Platform, a message-passing-interface programming framework.
+Ray is implemented using RayPlatform, a message-passing-interface programming framework.
 
 Ray is documented in
 
@@ -15,13 +15,13 @@ Ray is documented in
 ## Solutions (all bundled in a single Product called Ray)
 
 - de novo genome assembly
-- de novo meta-genome assembly
+- de novo meta-genome assembly (with Ray Méta)
 - de novo transcriptome assembly (works, but not tested a lot)
 - quantification of contig abundances
-- quantification of microbiome consortia members
+- quantification of microbiome consortia members (with Ray Communities)
 - quantification of transcript expression
-- taxonomy profiling of samples
-- gene ontology profiling of samples
+- taxonomy profiling of samples (with Ray Communities)
+- gene ontology profiling of samples (with Ray Ontologies)
 
 
 see Documentation/BiologicalAbundances.txt

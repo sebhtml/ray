@@ -12,14 +12,14 @@ DESCRIPTION:
 
   Ray targets several applications:
 
-    - de novo genome assembly
-    - de novo meta-genome assembly
+    - de novo genome assembly (with Ray vanilla)
+    - de novo meta-genome assembly (with Ray Méta)
     - de novo transcriptome assembly (works, but not tested a lot)
     - quantification of contig abundances
-    - quantification of microbiome consortia members
+    - quantification of microbiome consortia members (with Ray Communities)
     - quantification of transcript expression
-    - taxonomy profiling of samples
-    - gene ontology profiling of samples
+    - taxonomy profiling of samples (with Ray Communities)
+    - gene ontology profiling of samples (with Ray Ontologies)
 
        -help
               Displays this help page.
