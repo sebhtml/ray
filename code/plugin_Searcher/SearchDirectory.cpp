@@ -143,6 +143,14 @@ int SearchDirectory::getSize(){
 }
 
 void SearchDirectory::setCount(int file,int count){
+	
+	#ifdef ASSERT
+	int current=m_counts[file];
+	if(current!=0){
+		assert(current==count);
+	}
+	#endif
+
 	m_counts[file]=count;
 }
 
