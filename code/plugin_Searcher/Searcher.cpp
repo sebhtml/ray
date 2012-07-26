@@ -376,6 +376,7 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 		m_shareCounts=true;
 		m_directoryIterator=0;
 		m_fileIterator=0;
+		m_globalFileIterator=0;
 		m_waiting=false;
 	
 		#ifdef CONFIG_COUNT_ELEMENTS_VERBOSE
