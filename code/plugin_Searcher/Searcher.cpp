@@ -59,7 +59,7 @@ ____CreateMessageTagAdapterImplementation(Searcher,RAY_MPI_TAG_WRITE_SEQUENCE_AB
 using namespace std;
 
 //#define CONFIG_CONTIG_ABUNDANCE_VERBOSE
-//#define CONFIG_COUNT_ELEMENTS_VERBOSE
+#define CONFIG_COUNT_ELEMENTS_VERBOSE
 //#define CONFIG_DEBUG_IOPS
 //#define CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
 //#define CONFIG_CONTIG_IDENTITY_VERBOSE
@@ -182,14 +182,26 @@ void Searcher::call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS(){
 		Message*message=m_inbox->at(0);
 		MessageUnit*buffer=message->getBuffer();
 
-		int directory=buffer[0];
-		int file=buffer[1];
-		int count=buffer[2];
+		Rank source=message->getSource();
+
+		int position=0;
+
+		int directory=buffer[position++];
+		int file=buffer[position++];
+		int count=buffer[position++];
+
+		#ifdef CONFIG_COUNT_ELEMENTS_VERBOSE
+		cout<<"Received RAY_MPI_TAG_SEARCH_ELEMENTS from "<<source<<endl;
+		#endif
 
 		m_searchDirectories[directory].setCount(file,count);
 
 		// send a response
 		m_switchMan->sendEmptyMessage(m_outbox,m_parameters->getRank(),message->getSource(),RAY_MPI_TAG_SEARCH_ELEMENTS_REPLY);
+
+		#ifdef CONFIG_COUNT_ELEMENTS_VERBOSE
+		cout<<"Sending a reply with RAY_MPI_TAG_SEARCH_ELEMENTS_REPLY to "<<source<<endl;
+		#endif
 
 	}else if(m_ranksDoneCounting==m_parameters->getSize()){
 		m_ranksDoneCounting=-1;
@@ -334,7 +346,7 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 		for(int i=0;i<(int)m_searchDirectories_size;i++){
 			int count=m_searchDirectories[i].getSize();
 			for(int j=0;j<count;j++){
-				if(fileNumber%m_parameters->getSize() == m_parameters->getRank()){
+				if(isFileOwner(fileNumber)){
 					#ifdef CONFIG_COUNT_ELEMENTS_VERBOSE
 					cout<<"Hop counting"<<endl;
 					#endif
@@ -371,6 +383,7 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 		#endif
 
 		cout<<"Rank "<<m_parameters->getRank()<<" syncing with master"<<endl;
+
 	}else if(!m_sharedCounts && m_shareCounts){
 		if(m_directoryIterator==m_searchDirectories_size){
 
@@ -380,24 +393,42 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 
 			m_synchronizationIsDone=false;
 		}else if(m_fileIterator==(int)m_searchDirectories[m_directoryIterator].getSize()){
+
+			#ifdef CONFIG_COUNT_ELEMENTS_VERBOSE
+			cout<<"Synchronized counts."<<endl;
+			#endif
+
+
 			cout<<"Rank "<<m_parameters->getRank()<<" synced "<<*(m_searchDirectories[m_directoryIterator].getDirectoryName())<<endl;
 
 			m_fileIterator=0;
 			m_directoryIterator++;
 		}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_ELEMENTS_REPLY)){
+
+
 			#ifdef CONFIG_COUNT_ELEMENTS_VERBOSE
 			cout<<"received RAY_MPI_TAG_SEARCH_ELEMENTS_REPLY, resuming work"<<endl;
 			#endif
 
 			m_waiting=false;
+
+		/* otherwise we still have things to send */
 		}else if(!m_waiting){
 			
 			int count=m_searchDirectories[m_directoryIterator].getCount(m_fileIterator);
 
 			// we don't need to sync stuff with 0 sequences
 			// because 0 is the default value
-			if(count==0){
+			
+			// only sync if we are the owner.
+			if(!isFileOwner(m_globalFileIterator) || count == 0){
+
+				#ifdef CONFIG_COUNT_ELEMENTS_VERBOSE
+				//cout<<"Count is 0, skipping."<<endl;
+				#endif
+
 				m_fileIterator++;
+				m_globalFileIterator++;
 				return;
 			}
 
@@ -417,10 +448,11 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 
 		
 			#ifdef CONFIG_COUNT_ELEMENTS_VERBOSE
-			cout<<"Rank "<<m_parameters->getRank()<<" Sending RAY_MPI_TAG_SEARCH_ELEMENTS "<<m_directoryIterator<<" "<<m_fileIterator<<endl;
+			cout<<"Rank "<<m_parameters->getRank()<<" Sending RAY_MPI_TAG_SEARCH_ELEMENTS directory="<<m_directoryIterator<<" file="<<m_fileIterator<<" objects="<<count<<" globalHandle="<<m_fileIterator<<endl;
 			#endif
 
 			m_fileIterator++;
+			m_globalFileIterator++;
 		}
 	}
 }
