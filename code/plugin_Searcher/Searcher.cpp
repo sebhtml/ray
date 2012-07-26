@@ -392,19 +392,20 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 			m_sharedCounts=true;
 
 			m_synchronizationIsDone=false;
-		}else if(m_fileIterator==(int)m_searchDirectories[m_directoryIterator].getSize()){
 
 			#ifdef CONFIG_COUNT_ELEMENTS_VERBOSE
 			cout<<"Synchronized counts."<<endl;
 			#endif
 
+		}else if(!m_waiting 
+			&& m_fileIterator==(int)m_searchDirectories[m_directoryIterator].getSize()){
 
 			cout<<"Rank "<<m_parameters->getRank()<<" synced "<<*(m_searchDirectories[m_directoryIterator].getDirectoryName())<<endl;
 
 			m_fileIterator=0;
 			m_directoryIterator++;
-		}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_ELEMENTS_REPLY)){
 
+		}else if(m_waiting && m_inbox->hasMessage(RAY_MPI_TAG_SEARCH_ELEMENTS_REPLY)){
 
 			#ifdef CONFIG_COUNT_ELEMENTS_VERBOSE
 			cout<<"received RAY_MPI_TAG_SEARCH_ELEMENTS_REPLY, resuming work"<<endl;
