@@ -57,6 +57,8 @@ class SeedExtender; /* generated_automatically */
  /* generated_automatically */
 ____CreateSlaveModeAdapterDeclaration(SeedExtender,RAY_SLAVE_MODE_EXTENSION); /* generated_automatically */
 ____CreateMessageTagAdapterDeclaration(SeedExtender,RAY_MPI_TAG_ADD_GRAPH_PATH);
+____CreateMessageTagAdapterDeclaration(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED); /* generated_automatically */
+____CreateMessageTagAdapterDeclaration(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY); /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
 
@@ -67,10 +69,13 @@ ____CreateMessageTagAdapterDeclaration(SeedExtender,RAY_MPI_TAG_ADD_GRAPH_PATH);
  */
 class SeedExtender: public CorePlugin  {
 
+	Rank m_rank;
+
 	MessageTag RAY_MPI_TAG_CONTIG_INFO_REPLY;
 	MessageTag RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY;
 
 	MessageTag RAY_MPI_TAG_ASK_IS_ASSEMBLED;
+	MessageTag RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY;
 	MessageTag RAY_MPI_TAG_EXTENSION_IS_DONE;
 	MessageTag RAY_MPI_TAG_REQUEST_READ_SEQUENCE;
 	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE;
@@ -88,7 +93,10 @@ class SeedExtender: public CorePlugin  {
 	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
 
 	Adapter_RAY_SLAVE_MODE_EXTENSION m_adapter_RAY_SLAVE_MODE_EXTENSION;
+
 	Adapter_RAY_MPI_TAG_ADD_GRAPH_PATH m_adapter_RAY_MPI_TAG_ADD_GRAPH_PATH;
+	Adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED m_adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED;
+	Adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY m_adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY;
 
 // all these parameters are not attributes.
 	vector<AssemblySeed>*m_seeds;
@@ -252,6 +260,8 @@ public:
 	void call_RAY_SLAVE_MODE_EXTENSION();
 
 	void call_RAY_MPI_TAG_ADD_GRAPH_PATH(Message*message);
+	void call_RAY_MPI_TAG_ASK_IS_ASSEMBLED(Message*message);
+	void call_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY(Message*message);
 
 	void registerPlugin(ComputeCore*core);
 	void resolveSymbols(ComputeCore*core);

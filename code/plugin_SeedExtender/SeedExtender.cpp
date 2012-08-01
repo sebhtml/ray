@@ -42,6 +42,8 @@
  /* generated_automatically */
 ____CreateSlaveModeAdapterImplementation(SeedExtender,RAY_SLAVE_MODE_EXTENSION); /* generated_automatically */
 ____CreateMessageTagAdapterImplementation(SeedExtender,RAY_MPI_TAG_ADD_GRAPH_PATH);
+____CreateMessageTagAdapterImplementation(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED); /* generated_automatically */
+____CreateMessageTagAdapterImplementation(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY); /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
 
@@ -1732,6 +1734,9 @@ Chooser*chooser,OpenAssemblerChooser*oa
 	m_cacheForListOfReads.constructor();
 	ostringstream prefixFull;
 	m_parameters=parameters;
+
+	m_rank=m_parameters->getRank();
+
 	prefixFull<<m_parameters->getMemoryPrefix()<<"_SeedExtender";
 	m_cacheAllocator.constructor(4194304,"RAY_MALLOC_TYPE_SEED_EXTENDER_CACHE",m_parameters->showMemoryAllocations());
 	m_inbox=inbox;
@@ -2314,6 +2319,35 @@ void SeedExtender::initializeExtensions(vector<AssemblySeed>*seeds){
 
 }
 
+void SeedExtender::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED(Message*message){
+	void*buffer=message->getBuffer();
+	Rank source=message->getSource();
+	MessageUnit*incoming=(MessageUnit*)buffer;
+	Kmer vertex;
+	int pos=0;
+	vertex.unpack(incoming,&pos);
+
+	#ifdef ASSERT
+	Vertex*node=m_subgraph->find(&vertex);
+	assert(node!=NULL);
+	#endif
+
+	MessageUnit*message2=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(MessageUnit));
+	message2[0]=m_subgraph->isAssembled(&vertex);
+
+	Message aMessage(message2,1,source,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY,m_rank);
+	m_outbox->push_back(aMessage);
+}
+
+void SeedExtender::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY(Message*message){
+	void*buffer=message->getBuffer();
+	MessageUnit*incoming=(MessageUnit*)buffer;
+
+	(m_ed->m_EXTENSION_VertexAssembled_received)=true;
+	(m_ed->m_EXTENSION_vertexIsAssembledResult)=(bool)incoming[0];
+}
+
+
 void SeedExtender::call_RAY_MPI_TAG_ADD_GRAPH_PATH(Message*message){
 
 	MessageUnit*buffer=message->getBuffer();
@@ -2391,6 +2425,16 @@ void SeedExtender::registerPlugin(ComputeCore*core){
 	
 	m_switchMan=core->getSwitchMan();
 
+	RAY_MPI_TAG_ASK_IS_ASSEMBLED=core->allocateMessageTagHandle(plugin);
+	m_adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED.setObject(this);
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_IS_ASSEMBLED, &m_adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_IS_ASSEMBLED,"RAY_MPI_TAG_ASK_IS_ASSEMBLED");
+
+	RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY=core->allocateMessageTagHandle(plugin);
+	m_adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY.setObject(this);
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY, &m_adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY,"RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY");
+
 
 }
 
@@ -2398,7 +2442,6 @@ void SeedExtender::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_EXTENSION=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_EXTENSION");
 	RAY_SLAVE_MODE_DO_NOTHING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DO_NOTHING");
 
-	RAY_MPI_TAG_ASK_IS_ASSEMBLED=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ASK_IS_ASSEMBLED");
 	RAY_MPI_TAG_EXTENSION_IS_DONE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_EXTENSION_IS_DONE");
 	RAY_MPI_TAG_REQUEST_READ_SEQUENCE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_REQUEST_READ_SEQUENCE");
 	RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE");
@@ -2413,4 +2456,8 @@ void SeedExtender::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_VERTEX_READS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_VERTEX_READS_REPLY");
 	RAY_MPI_TAG_CONTIG_INFO_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_CONTIG_INFO_REPLY");
 	RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY");
+
+
+	RAY_MPI_TAG_ASK_IS_ASSEMBLED=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ASK_IS_ASSEMBLED");
+	RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY");
 }

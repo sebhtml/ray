@@ -90,8 +90,6 @@ ____CreateMessageTagAdapterImplementation(MessageProcessor,RAY_MPI_TAG_REQUEST_V
 ____CreateMessageTagAdapterImplementation(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY); /* generated_automatically */
 ____CreateMessageTagAdapterImplementation(MessageProcessor,RAY_MPI_TAG_EXTENSION_IS_DONE); /* generated_automatically */
 ____CreateMessageTagAdapterImplementation(MessageProcessor,RAY_MPI_TAG_ASK_EXTENSION); /* generated_automatically */
-____CreateMessageTagAdapterImplementation(MessageProcessor,RAY_MPI_TAG_ASK_IS_ASSEMBLED); /* generated_automatically */
-____CreateMessageTagAdapterImplementation(MessageProcessor,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY); /* generated_automatically */
 ____CreateMessageTagAdapterImplementation(MessageProcessor,RAY_MPI_TAG_ASK_EXTENSION_DATA); /* generated_automatically */
 ____CreateMessageTagAdapterImplementation(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA_REPLY); /* generated_automatically */
 ____CreateMessageTagAdapterImplementation(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA); /* generated_automatically */
@@ -1375,33 +1373,6 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_EXTENSION(Message*message){
 	}
 }
 
-void MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED(Message*message){
-	void*buffer=message->getBuffer();
-	Rank source=message->getSource();
-	MessageUnit*incoming=(MessageUnit*)buffer;
-	Kmer vertex;
-	int pos=0;
-	vertex.unpack(incoming,&pos);
-
-	#ifdef ASSERT
-	Vertex*node=m_subgraph->find(&vertex);
-	assert(node!=NULL);
-	#endif
-
-	MessageUnit*message2=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(MessageUnit));
-	message2[0]=m_subgraph->isAssembled(&vertex);
-
-	Message aMessage(message2,1,source,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY,m_rank);
-	m_outbox->push_back(aMessage);
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY(Message*message){
-	void*buffer=message->getBuffer();
-	MessageUnit*incoming=(MessageUnit*)buffer;
-
-	(m_ed->m_EXTENSION_VertexAssembled_received)=true;
-	(m_ed->m_EXTENSION_vertexIsAssembledResult)=(bool)incoming[0];
-}
 
 void MessageProcessor::call_RAY_MPI_TAG_ASK_EXTENSION_DATA(Message*message){
 	(m_seedingData->m_SEEDING_i)=0;
@@ -2810,15 +2781,6 @@ void MessageProcessor::registerPlugin(ComputeCore*core){
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_EXTENSION, &m_adapter_RAY_MPI_TAG_ASK_EXTENSION);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_EXTENSION,"RAY_MPI_TAG_ASK_EXTENSION");
 
-	RAY_MPI_TAG_ASK_IS_ASSEMBLED=core->allocateMessageTagHandle(plugin);
-	m_adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED.setObject(this);
-	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_IS_ASSEMBLED, &m_adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED);
-	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_IS_ASSEMBLED,"RAY_MPI_TAG_ASK_IS_ASSEMBLED");
-
-	RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY=core->allocateMessageTagHandle(plugin);
-	m_adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY.setObject(this);
-	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY, &m_adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY);
-	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY,"RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY");
 
 	RAY_MPI_TAG_ASK_EXTENSION_DATA=core->allocateMessageTagHandle(plugin);
 	m_adapter_RAY_MPI_TAG_ASK_EXTENSION_DATA.setObject(this);
@@ -3252,8 +3214,6 @@ void MessageProcessor::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY");
 	RAY_MPI_TAG_ASK_EXTENSION=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ASK_EXTENSION");
 	RAY_MPI_TAG_ASK_EXTENSION_DATA=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ASK_EXTENSION_DATA");
-	RAY_MPI_TAG_ASK_IS_ASSEMBLED=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ASK_IS_ASSEMBLED");
-	RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY");
 	RAY_MPI_TAG_ASK_LIBRARY_DISTANCES=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ASK_LIBRARY_DISTANCES");
 	RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED");
 	RAY_MPI_TAG_ASK_READ_LENGTH=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ASK_READ_LENGTH");

@@ -115,8 +115,6 @@ ____CreateMessageTagAdapterDeclaration(MessageProcessor,RAY_MPI_TAG_REQUEST_VERT
 ____CreateMessageTagAdapterDeclaration(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY); /* generated_automatically */
 ____CreateMessageTagAdapterDeclaration(MessageProcessor,RAY_MPI_TAG_EXTENSION_IS_DONE); /* generated_automatically */
 ____CreateMessageTagAdapterDeclaration(MessageProcessor,RAY_MPI_TAG_ASK_EXTENSION); /* generated_automatically */
-____CreateMessageTagAdapterDeclaration(MessageProcessor,RAY_MPI_TAG_ASK_IS_ASSEMBLED); /* generated_automatically */
-____CreateMessageTagAdapterDeclaration(MessageProcessor,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY); /* generated_automatically */
 ____CreateMessageTagAdapterDeclaration(MessageProcessor,RAY_MPI_TAG_ASK_EXTENSION_DATA); /* generated_automatically */
 ____CreateMessageTagAdapterDeclaration(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA_REPLY); /* generated_automatically */
 ____CreateMessageTagAdapterDeclaration(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA); /* generated_automatically */
@@ -295,8 +293,6 @@ class MessageProcessor :  public CorePlugin {
 	MessageTag RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY;
 	MessageTag RAY_MPI_TAG_ASK_EXTENSION;
 	MessageTag RAY_MPI_TAG_ASK_EXTENSION_DATA;
-	MessageTag RAY_MPI_TAG_ASK_IS_ASSEMBLED;
-	MessageTag RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY;
 	MessageTag RAY_MPI_TAG_ASK_LIBRARY_DISTANCES;
 	MessageTag RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED;
 	MessageTag RAY_MPI_TAG_ASK_READ_LENGTH;
@@ -397,8 +393,6 @@ class MessageProcessor :  public CorePlugin {
 	Adapter_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY m_adapter_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY;
 	Adapter_RAY_MPI_TAG_EXTENSION_IS_DONE m_adapter_RAY_MPI_TAG_EXTENSION_IS_DONE;
 	Adapter_RAY_MPI_TAG_ASK_EXTENSION m_adapter_RAY_MPI_TAG_ASK_EXTENSION;
-	Adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED m_adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED;
-	Adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY m_adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY;
 	Adapter_RAY_MPI_TAG_ASK_EXTENSION_DATA m_adapter_RAY_MPI_TAG_ASK_EXTENSION_DATA;
 	Adapter_RAY_MPI_TAG_EXTENSION_DATA_REPLY m_adapter_RAY_MPI_TAG_EXTENSION_DATA_REPLY;
 	Adapter_RAY_MPI_TAG_EXTENSION_DATA m_adapter_RAY_MPI_TAG_EXTENSION_DATA;
@@ -652,8 +646,6 @@ SequencesIndexer*m_si
 	void call_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY(Message*message);
 	void call_RAY_MPI_TAG_EXTENSION_IS_DONE(Message*message);
 	void call_RAY_MPI_TAG_ASK_EXTENSION(Message*message);
-	void call_RAY_MPI_TAG_ASK_IS_ASSEMBLED(Message*message);
-	void call_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY(Message*message);
 	void call_RAY_MPI_TAG_ASK_EXTENSION_DATA(Message*message);
 	void call_RAY_MPI_TAG_EXTENSION_DATA_REPLY(Message*message);
 	void call_RAY_MPI_TAG_EXTENSION_DATA(Message*message);
