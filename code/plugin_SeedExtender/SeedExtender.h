@@ -69,6 +69,16 @@ ____CreateMessageTagAdapterDeclaration(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED
  */
 class SeedExtender: public CorePlugin  {
 
+/** hot skipping technology (TM) **/
+
+	int m_redundantProcessingVirtualMachineCycles;
+	bool m_hotSkippingMode;
+	int m_hotSkippingThreshold;
+	bool m_theProcessIsRedundantByAGreaterAndMightyRank;
+
+	void configureTheBeautifulHotSkippingTechnology();
+
+
 	Rank m_rank;
 
 	MessageTag RAY_MPI_TAG_CONTIG_INFO_REPLY;
@@ -235,6 +245,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 	ostringstream m_pathFileBuffer;
 
 	SwitchMan*m_switchMan;
+
 public:
 	bool m_sequenceReceived;
 	bool m_sequenceRequested;

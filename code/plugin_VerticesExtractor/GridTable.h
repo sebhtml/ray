@@ -60,6 +60,7 @@ public:
 	void clearDirections(Kmer*a);
 	void buildData(Parameters*a);
 	bool isAssembled(Kmer*a);
+	bool isAssembledByGreaterRank(Kmer*a,Rank origin);
 
 	bool insertedInAcademy();
 	KmerCandidate*insertInAcademy(Kmer*key);

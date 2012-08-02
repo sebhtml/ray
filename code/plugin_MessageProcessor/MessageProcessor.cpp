@@ -487,6 +487,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTEX_INFO(Message*message){
 	Kmer complement=m_parameters->_complementVertex(&vertex);
 	bool lower=vertex<complement;
 	Vertex*node=m_subgraph->find(&vertex);
+
 	#ifdef ASSERT
 	assert(node!=NULL);
 	#endif
@@ -501,15 +502,19 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTEX_INFO(Message*message){
 	}
 	e=m_subgraph->getReads(&vertex);
 
-/*
 	PathHandle wave=incoming[bufferPosition++];
+
+	Rank origin=getRankFromPathUniqueId(wave);
+
+/*
 	int progression=incoming[bufferPosition++];
 	// add direction in the graph
 	Direction*d=(Direction*)m_directionsAllocator->allocate(sizeof(Direction));
 	d->constructor(wave,progression,lower);
 	m_subgraph->addDirection(&vertex,d);
 */
-	m_subgraph->find(&vertex)->assemble();
+
+	m_subgraph->find(&vertex)->assemble(origin);
 
 	MessageUnit*outgoingMessage=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	outgoingMessage[0]=node->getCoverage(&vertex);
@@ -519,6 +524,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTEX_INFO(Message*message){
 	int processed=0;
 	int maximumToReturn=(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit)-5)/4;
 	e=m_subgraph->getReads(&vertex);
+
 	while(e!=NULL&&processed<maximumToReturn){
 		if(e->isLower()==lower){
 			outgoingMessage[pos++]=e->getRank();

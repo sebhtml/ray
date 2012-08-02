@@ -71,7 +71,9 @@ public:
  *	which hyperfusions go on this vertex at least once?
  */
 	Direction*m_directions;
-	bool m_assembled;
+
+/** the greatest rank that assembled the k-mer **/
+	Rank m_assembled;
 
 
 	void addOutgoingEdge_ClassicMethod(Kmer*vertex,Kmer*a,int k);
@@ -95,8 +97,9 @@ public:
 	vector<Direction> getDirections(Kmer*a);
 	void clearDirections(Kmer*a);
 
-	void assemble();
+	void assemble(Rank origin);
 	bool isAssembled();
+	bool isAssembledByGreaterRank(Rank origin);
 
 	void write(Kmer*key,ofstream*f,int kmerLength);
 	void writeAnnotations(Kmer*key,ofstream*f,int kmerLength,bool color);

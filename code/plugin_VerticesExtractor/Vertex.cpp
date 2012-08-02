@@ -27,23 +27,34 @@
 #include<iostream>
 using namespace std;
 
+#define __NO_ORIGIN -999
+
 void Vertex::constructor(){
 	m_coverage_lower=0;
 	m_edges_lower=0;
 	m_edges_higher=0;
 	m_readsStartingHere=NULL;
 	m_directions=NULL;
-	m_assembled=false;
+	m_assembled=__NO_ORIGIN;
 
 	m_color=0;
 }
 
-void Vertex::assemble(){
-	m_assembled=true;
+void Vertex::assemble(Rank origin){
+	if(origin>m_assembled)
+		m_assembled=origin;
+
+	#ifdef ASSERT
+	assert(m_assembled!=__NO_ORIGIN);
+	#endif
 }
 
 bool Vertex::isAssembled(){
-	return m_assembled;
+	return m_assembled!=__NO_ORIGIN;
+}
+
+bool Vertex::isAssembledByGreaterRank(Rank origin){
+	return origin<m_assembled;
 }
 
 void Vertex::setCoverage(Kmer*a,CoverageDepth coverage){

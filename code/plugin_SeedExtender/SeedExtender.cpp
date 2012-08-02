@@ -22,6 +22,8 @@
 // This option disables metagenome and transcriptome assembly
 // #define CONFIG_USE_COVERAGE_DISTRIBUTION
 
+//#define CONFIG_DEBUG_SEED_EXTENSION
+	
 /* TODO: free sequence in ExtensionElement objects when they are not needed anymore */
 
 #include <application_core/constants.h>
@@ -110,18 +112,20 @@ void SeedExtender::call_RAY_SLAVE_MODE_EXTENSION(){
 
 	if(!m_ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled){
 
-	checkIfCurrentVertexIsAssembled(m_ed,m_outbox,m_outboxAllocator,m_outgoingEdgeIndex,&m_last_value,
+		checkIfCurrentVertexIsAssembled(m_ed,m_outbox,m_outboxAllocator,m_outgoingEdgeIndex,&m_last_value,
 m_currentVertex,m_parameters->getRank(),m_vertexCoverageRequested,m_parameters->getWordSize(),m_parameters->getSize(),m_seeds);
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
 	}else if(
+		(
 		/* the first flow */
 		m_ed->m_flowNumber==1 
  		/* vertex is assembled already */
 		&& m_ed->m_EXTENSION_vertexIsAssembledResult 
  		/* we have not exited the seed */
 		&& m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_currentSeed.size()
-		){
+		&& m_ed->m_EXTENSION_currentPosition==0
+		)){
 		
 		skipSeed(m_seeds);
 
@@ -364,7 +368,8 @@ otherwise, index is < 0 and the extension element remains unchanged.
 Presently, insertions or deletions up to 8 are supported.
 */
 
-				int distance=ed->m_EXTENSION_extension.size()-startPosition+element->getStrandPosition();
+				int currentPosition=ed->m_EXTENSION_extension.size();
+				int distance=currentPosition-startPosition+element->getStrandPosition();
 
 				#ifdef ASSERT
 				assert(startPosition<(int)ed->m_extensionCoverageValues.size());
@@ -381,15 +386,21 @@ Presently, insertions or deletions up to 8 are supported.
 
 				if(distance>(ed->m_EXTENSION_receivedLength-wordSize)){
 					cout<<"OutOfRange UniqueId="<<uniqueId<<" Length="<<strlen(theSequence)<<" StartPosition="<<element->getPosition()<<" CurrentPosition="<<ed->m_EXTENSION_extension.size()-1<<" StrandPosition="<<element->getStrandPosition()<<endl;
+					cout<<"Distance from origin is "<<distance<<", length: ";
+					cout<<ed->m_EXTENSION_receivedLength<<", k-mer length: ";
+					cout<<wordSize<<endl;
+
 					#ifdef ASSERT
 					assert(false);
 					#endif
+
 					// the read is now out-of-range
 					ed->m_EXTENSION_readIterator++;	
 					return;
 				}
 
 				char theRightStrand=element->getStrand();
+
 				#ifdef ASSERT
 				assert(theRightStrand=='R'||theRightStrand=='F');
 				assert(element->getType()==TYPE_SINGLE_END||element->getType()==TYPE_RIGHT_END||element->getType()==TYPE_LEFT_END);
@@ -1091,12 +1102,18 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
+	//cout<<"checkIfCurrentVertexIsAssembled "<<ed->m_EXTENSION_currentPosition<<endl;
+
+/*
 	if(!(ed->m_EXTENSION_currentPosition<(int)ed->m_EXTENSION_currentSeed.size())
 		&& ed->m_flowNumber==1){
 
 		checkedCurrentVertex();
 
-	}else if(!ed->m_EXTENSION_directVertexDone){
+	}else 
+*/
+
+	if(!ed->m_EXTENSION_directVertexDone){
 		if(!ed->m_EXTENSION_VertexAssembled_requested){
 
 			MACRO_COLLECT_PROFILING_INFORMATION();
@@ -1112,32 +1129,64 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 				fflush(stdout);
 				
 			}
+
+			if(ed->m_EXTENSION_currentPosition==0){
+				configureTheBeautifulHotSkippingTechnology(); /* */
+			}
+
 			ed->m_EXTENSION_VertexAssembled_requested=true;
+			ed->m_EXTENSION_VertexAssembled_received=false;
 	
 			MACRO_COLLECT_PROFILING_INFORMATION();
 
 			/* if the position is not 0 on flow 0, we don't need to send this message */
+
 			if(!(ed->m_EXTENSION_currentPosition==0 && ed->m_flowNumber==0)){
+/*
 				ed->m_EXTENSION_vertexIsAssembledResult=false;
 				ed->m_EXTENSION_VertexAssembled_received=true;
 				return;
+*/
 			}
+
 
 			MessageUnit*message=(MessageUnit*)(*outboxAllocator).allocate(2*sizeof(MessageUnit));
 			int bufferPosition=0;
 			currentVertex->pack(message,&bufferPosition);
-			int destination=m_parameters->_vertexRank(currentVertex);
+			message[bufferPosition++]=m_rank;
+
+			Rank destination=m_parameters->_vertexRank(currentVertex);
 			Message aMessage(message,bufferPosition,destination,RAY_MPI_TAG_ASK_IS_ASSEMBLED,theRank);
 			(*outbox).push_back(aMessage);
-			ed->m_EXTENSION_VertexAssembled_received=false;
 
 			MACRO_COLLECT_PROFILING_INFORMATION();
+
 		}else if(ed->m_EXTENSION_VertexAssembled_received){
+
+			if(m_theProcessIsRedundantByAGreaterAndMightyRank){
+				m_redundantProcessingVirtualMachineCycles++;
+
+			}
+
+			#ifdef CONFIG_DEBUG_SEED_EXTENSION
+			cout<<"m_theProcessIsRedundantByAGreaterAndMightyRank ";
+			cout<<m_theProcessIsRedundantByAGreaterAndMightyRank;
+			cout<<" position "<<ed->m_EXTENSION_currentPosition<<endl;
+			#endif
+
+			if(m_redundantProcessingVirtualMachineCycles>m_hotSkippingThreshold
+				&& !m_hotSkippingMode){
+
+				m_hotSkippingMode=true;
+				cout<<"[SeedExtender] activating Hot Skipping !"<<endl;
+			}
+
 			ed->m_EXTENSION_reverseVertexDone=false;
 			ed->m_EXTENSION_directVertexDone=true;
 			ed->m_EXTENSION_VertexMarkAssembled_requested=false;
 			(*vertexCoverageRequested)=false;
 			ed->m_EXTENSION_VertexAssembled_requested=false;
+
 			if(ed->m_EXTENSION_vertexIsAssembledResult){
 				ed->m_EXTENSION_checkedIfCurrentVertexIsAssembled=true;
 				ed->m_EXTENSION_markedCurrentVertexAsAssembled=false;
@@ -1749,6 +1798,22 @@ Chooser*chooser,OpenAssemblerChooser*oa
 	m_bubbleTool.constructor(parameters);
 
 	m_profiler=profiler;
+
+	configureTheBeautifulHotSkippingTechnology();
+}
+
+void SeedExtender::configureTheBeautifulHotSkippingTechnology(){
+
+	//cout<<"calling configureTheBeautifulHotSkippingTechnology"<<endl;
+
+	m_hotSkippingThreshold=1000;
+	m_redundantProcessingVirtualMachineCycles=1/1000;
+
+	#ifdef ASSERT
+	assert(m_redundantProcessingVirtualMachineCycles==0x0);
+	#endif
+
+	m_hotSkippingMode=false;
 }
 
 void SeedExtender::inspect(ExtensionData*ed,Kmer*currentVertex){
@@ -2327,15 +2392,20 @@ void SeedExtender::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED(Message*message){
 	int pos=0;
 	vertex.unpack(incoming,&pos);
 
+	Rank origin=incoming[pos++];
+
 	#ifdef ASSERT
 	Vertex*node=m_subgraph->find(&vertex);
 	assert(node!=NULL);
 	#endif
 
-	MessageUnit*message2=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(MessageUnit));
-	message2[0]=m_subgraph->isAssembled(&vertex);
+	int outputPosition=0;
 
-	Message aMessage(message2,1,source,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY,m_rank);
+	MessageUnit*message2=(MessageUnit*)m_outboxAllocator->allocate(2*sizeof(MessageUnit));
+	message2[outputPosition++]=m_subgraph->isAssembled(&vertex);
+	message2[outputPosition++]=m_subgraph->isAssembledByGreaterRank(&vertex,origin);
+
+	Message aMessage(message2,outputPosition,source,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY,m_rank);
 	m_outbox->push_back(aMessage);
 }
 
@@ -2344,7 +2414,20 @@ void SeedExtender::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY(Message*message){
 	MessageUnit*incoming=(MessageUnit*)buffer;
 
 	(m_ed->m_EXTENSION_VertexAssembled_received)=true;
-	(m_ed->m_EXTENSION_vertexIsAssembledResult)=(bool)incoming[0];
+
+	int position=0;
+
+	(m_ed->m_EXTENSION_vertexIsAssembledResult)=(bool)incoming[position++];
+	m_theProcessIsRedundantByAGreaterAndMightyRank=(bool)incoming[position++];
+
+
+	#ifdef CONFIG_DEBUG_SEED_EXTENSION
+	if(m_theProcessIsRedundantByAGreaterAndMightyRank)
+		cout<<"A greater rank was detected."<<endl;
+	else
+		cout<<"Not greater"<<endl;
+
+	#endif
 }
 
 

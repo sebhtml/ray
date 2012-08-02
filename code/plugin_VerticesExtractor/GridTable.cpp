@@ -114,6 +114,20 @@ bool GridTable::inserted(){
 	return m_inserted;
 }
 
+bool GridTable::isAssembledByGreaterRank(Kmer*a,Rank origin){
+	#ifdef ASSERT
+	assert(a!=NULL);
+	#endif
+
+	Vertex*entry=find(a);
+	
+	#ifdef ASSERT
+	assert(entry!=NULL);
+	#endif
+
+	return entry->isAssembledByGreaterRank(origin);
+}
+
 bool GridTable::isAssembled(Kmer*a){
 	#ifdef ASSERT
 	assert(a!=NULL);
@@ -126,10 +140,6 @@ bool GridTable::isAssembled(Kmer*a){
 	#endif
 
 	return entry->isAssembled();
-/*
-	Kmer reverse=a->complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
-	return getDirections(a).size()>0||getDirections(&reverse).size()>0;
-*/
 }
 
 KmerAcademy*GridTable::getKmerAcademy(){
