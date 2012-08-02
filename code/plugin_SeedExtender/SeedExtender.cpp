@@ -125,7 +125,9 @@ m_currentVertex,m_parameters->getRank(),m_vertexCoverageRequested,m_parameters->
  		/* we have not exited the seed */
 		&& m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_currentSeed.size()
 		&& m_ed->m_EXTENSION_currentPosition==0
-		)){
+		)
+		||
+		m_hotSkippingMode){
 		
 		skipSeed(m_seeds);
 
@@ -923,6 +925,7 @@ map<Kmer,set<Kmer> >*arcs,map<Kmer,int>*coverages,int depth,set<Kmer>*visited){
 /** store the extension and do the next one right now */
 void SeedExtender::storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<AssemblySeed>*seeds,
 Kmer *currentVertex,BubbleData*bubbleData){
+
 	if((int)ed->m_EXTENSION_extension.size()+m_parameters->getWordSize()-1>=m_parameters->getMinimumContigLength()){
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
@@ -1179,6 +1182,9 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 
 				m_hotSkippingMode=true;
 				cout<<"[SeedExtender] activating Hot Skipping !"<<endl;
+
+				ed->m_EXTENSION_extension.clear();
+				storeExtensionAndGetNextOne(m_ed,m_rank,m_seeds,currentVertex,m_bubbleData);
 			}
 
 			ed->m_EXTENSION_reverseVertexDone=false;
@@ -1806,7 +1812,7 @@ void SeedExtender::configureTheBeautifulHotSkippingTechnology(){
 
 	//cout<<"calling configureTheBeautifulHotSkippingTechnology"<<endl;
 
-	m_hotSkippingThreshold=1000;
+	m_hotSkippingThreshold=99999999;
 	m_redundantProcessingVirtualMachineCycles=1/1000;
 
 	#ifdef ASSERT
