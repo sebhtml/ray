@@ -80,6 +80,15 @@ You need a C++ compiler (supporting C++ 1998), make, an implementation of MPI (s
 
 Tested C++ compilers: see Documentation/COMPILERS.txt
 
+
+## Faster execution
+
+Some processors have the popcnt instruction.
+
+	make PREFIX=Build.popcnt DEBUG=n ASSERT=n EXTRA=-mpopcnt
+	make install
+
+
 ## Use large k-mers
 
 	make PREFIX=Ray-Large-k-mers MAXKMERLENGTH=64
