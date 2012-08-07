@@ -113,6 +113,13 @@ void NetworkTest::constructor(int rank,int size,StaticVector*inbox,StaticVector*
  * */
 void NetworkTest::call_RAY_SLAVE_MODE_TEST_NETWORK(){
 
+	if(!m_started){
+
+		m_started=true;
+
+		if(m_parameters->hasOption("-skip-network-test"))
+			m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
+	}
 
 	#ifdef ASSERT
 	assert(m_numberOfWords*sizeof(MessageUnit) <= MAXIMUM_MESSAGE_SIZE_IN_BYTES);
@@ -409,4 +416,6 @@ void NetworkTest::resolveSymbols(ComputeCore*core){
 
 
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_TEST_NETWORK,RAY_MASTER_MODE_COUNT_FILE_ENTRIES);
+
+	m_started=false;
 }

@@ -135,6 +135,8 @@ class NetworkTest :  public CorePlugin {
 	/** the current test message has been sent ? */
 	bool m_sentCurrentTestMessage;
 
+	bool m_started;
+
 	/** latencies */
 	map<int,int> m_latencies;
 	map<int,string> m_names;

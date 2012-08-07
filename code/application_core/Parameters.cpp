@@ -1467,6 +1467,8 @@ void Parameters::showUsage(){
 	cout<<endl;
 	showOption("-write-network-test-raw-data","Writes one additional file per rank detailing the network test.");
 	cout<<endl;
+	showOption("-skip-network-test","Skips the network test.");
+	cout<<endl;
 
 	cout<<"  Debugging"<<endl;
 	cout<<endl;
