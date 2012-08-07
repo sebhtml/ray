@@ -128,10 +128,21 @@ see <http://www.gnu.org/licenses/>
 /** use __WORDSIZE */
 #define NUMBER_OF_BITS __WORDSIZE
 
+#elif defined(_WIN64)
+
+#define NUMBER_OF_BITS 64
+
+#elif defined (_WIN32)
+
+#define NUMBER_OF_BITS 32
+
+
 /** assume 64 bits */
 /* you may get some compilation warnings about printf and fprintf */
 #else
+
 #define NUMBER_OF_BITS 64
+
 #endif
 
 /* 64-bit system */
