@@ -1247,6 +1247,8 @@ void Parameters::showUsage(){
 	cout<<"SYNOPSIS"<<endl;
 	cout<<basicSpaces<<"mpiexec -n NUMBER_OF_RANKS Ray -k KMERLENGTH -p l1_1.fastq l1_2.fastq -p l2_1.fastq l2_2.fastq -o test"<<endl;
 	cout<<endl;
+	cout<<basicSpaces<<"mpiexec -n NUMBER_OF_RANKS Ray Ray.conf # with commands in a file"<<endl;
+	cout<<endl;
 
 	cout<<"DESCRIPTION:"<<endl;
 

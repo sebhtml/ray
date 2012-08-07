@@ -4,6 +4,8 @@ NAME
 SYNOPSIS
        mpiexec -n NUMBER_OF_RANKS Ray -k KMERLENGTH -p l1_1.fastq l1_2.fastq -p l2_1.fastq l2_2.fastq -o test
 
+       mpiexec -n NUMBER_OF_RANKS Ray Ray.conf # with commands in a file
+
 DESCRIPTION:
 
   The Ray genome assembler is built on top of the RayPlatform, a generic plugin-based
@@ -369,4 +371,4 @@ COPYRIGHT
        You have received a copy of the GNU General Public License
        along with this program (see LICENSE).
 
-Ray 2.0.1-devel
+Ray 2.1.0-devel

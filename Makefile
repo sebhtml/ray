@@ -1,6 +1,6 @@
 VERSION = 2
-PATCHLEVEL = 0
-SUBLEVEL = 1
+PATCHLEVEL = 1
+SUBLEVEL = 0
 EXTRAVERSION = -devel
 NAME = Ancient Granularity of Epochs
 
