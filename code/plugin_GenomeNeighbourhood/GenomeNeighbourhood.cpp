@@ -1158,5 +1158,8 @@ void GenomeNeighbourhood::resolveSymbols(ComputeCore*core){
 
 	/* this plugin is disabled because it is not ready yet */
 	m_pluginIsEnabled=false;
+
+	if(m_parameters->hasOption("-find-neighbourhoods"))
+		m_pluginIsEnabled=true;
 }
 

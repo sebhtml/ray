@@ -98,6 +98,10 @@ DESCRIPTION:
 
   Other outputs
 
+       -find-neighborhoods
+              Computes contig neighborhoods in the de Bruijn graph
+              Output file: RayOutput/NeighbourhoodRelations.txt
+
        -amos
               Writes the AMOS file called RayOutput/AMOS.afg
               An AMOS file contains read positions on contigs.

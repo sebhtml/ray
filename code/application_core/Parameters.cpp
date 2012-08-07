@@ -1352,6 +1352,10 @@ void Parameters::showUsage(){
 
 	cout<<"  Other outputs"<<endl;
 	cout<<endl;
+	showOption("-find-neighbourhoods","Computes contig neighborhoods in the de Bruijn graph");
+	showOptionDescription("Output file: RayOutput/NeighbourhoodRelations.txt");
+	cout<<endl;
+
 	showOption("-amos","Writes the AMOS file called RayOutput/AMOS.afg");
 	showOptionDescription("An AMOS file contains read positions on contigs.");
 	showOptionDescription("Can be opened with software with graphical user interface.");
