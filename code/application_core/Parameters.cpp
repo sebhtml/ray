@@ -23,6 +23,10 @@
  * TODO: add option -minimumScaffoldLength
  */
 
+#define __DEFAULT_BUCKETS 262144
+#define __DEFAULT_LOAD_FACTOR_THRESHOLD 0.6
+#define __DEFAULT_BUCKETS_PER_GROUP 64
+
 #include <core/OperatingSystem.h>
 #include<application_core/common_functions.h>
 #include<application_core/Parameters.h>
@@ -1241,8 +1245,9 @@ void Parameters::showUsage(){
 	cout<<"NAME"<<endl<<basicSpaces<<"Ray - assemble genomes in parallel using the message-passing interface"<<endl<<endl;
 
 	cout<<"SYNOPSIS"<<endl;
-	cout<<basicSpaces<<"mpiexec -np NUMBER_OF_RANKS Ray -k KMERLENGTH -p l1_1.fastq l1_2.fastq -p l2_1.fastq l2_2.fastq -o test"<<endl;
+	cout<<basicSpaces<<"mpiexec -n NUMBER_OF_RANKS Ray -k KMERLENGTH -p l1_1.fastq l1_2.fastq -p l2_1.fastq l2_2.fastq -o test"<<endl;
 	cout<<endl;
+
 	cout<<"DESCRIPTION:"<<endl;
 
 	cout<<endl;
@@ -1286,6 +1291,31 @@ void Parameters::showUsage(){
 	cout<<endl;
 
 	showOption("-s sequenceFile","Provides a file containing single-end reads.");
+	cout<<endl;
+
+	cout<<"  Distributed storage engine"<<endl;
+	cout<<endl;
+	ostringstream text;
+	text<<"Default value: "<<__DEFAULT_BUCKETS;
+	showOption("-hash-table-buckets buckets","Sets the initial number of buckets. Must be a power of 2 !");
+	showOptionDescription(text.str());
+	text.str("");
+
+	cout<<endl;
+	text<<"Default value: "<<__DEFAULT_BUCKETS_PER_GROUP<<", Must be between >=1 and <= 64";
+	showOption("-hash-table-buckets-per-group buckets",
+		"Sets the number of buckets per group for sparse storage");
+	showOptionDescription(text.str());
+	text.str("");
+	cout<<endl;
+
+	showOption("-hash-table-load-factor-threshold threshold","Sets the load factor threshold for real-time resizing");
+
+	text<<"Default value: "<< __DEFAULT_LOAD_FACTOR_THRESHOLD<<", must be >= 0.5 and < 1";
+	showOptionDescription(text.str());
+	cout<<endl;
+	
+	showOption("-hash-table-verbosity","Activates verbosity for the distributed storage engine");
 	cout<<endl;
 
 	cout<<"  Biological abundances"<<endl;
@@ -1833,3 +1863,89 @@ bool Parameters::isDirectorySeparator(char a){
 CoverageDepth Parameters::getMaximumSeedCoverage(){
 	return m_maximumSeedCoverage;
 }
+
+
+int Parameters::getNumberOfBuckets(){
+
+	int buckets=__DEFAULT_BUCKETS;
+
+	if(hasConfigurationOption("-hash-table-buckets",1))
+		return getConfigurationInteger("-hash-table-buckets",0);
+
+	return buckets;
+}
+
+int Parameters::getNumberOfBucketsPerGroup(){
+
+	int bucketsPerGroup=__DEFAULT_BUCKETS_PER_GROUP;
+
+	if(hasConfigurationOption("-hash-table-buckets-per-group",1))
+		return getConfigurationInteger("-hash-table-buckets-per-group",0);
+
+	return bucketsPerGroup;
+}
+
+double Parameters::getLoadFactorThreshold(){
+
+	double loadFactorThreshold=__DEFAULT_LOAD_FACTOR_THRESHOLD;
+
+	if(hasConfigurationOption("-hash-table-load-factor-threshold",1))
+		return getConfigurationDouble("-hash-table-load-factor-threshold",0);
+
+	return loadFactorThreshold;
+}
+
+bool Parameters::hasConfigurationOption(const char*string,int count){
+	for(int i=0;i<(int)m_commands.size();i++){
+		if(strcmp(m_commands[i].c_str(),string)==0){
+			int left=m_commands.size()-1-i;
+
+			return left>=count;
+		}
+	}
+
+	return false;
+}
+
+double Parameters::getConfigurationDouble(const char*string,int offset){
+
+	#ifdef ASSERT
+	assert(hasConfigurationOption(string,offset+1));
+	#endif
+
+	for(int i=0;i<(int)m_commands.size();i++){
+		if(strcmp(m_commands[i].c_str(),string)==0){
+
+			istringstream buffer(m_commands[i+1]);
+
+			double value=-1;
+			buffer>>value;
+
+			return value;
+		}
+	}
+
+	return 0.0;
+
+}
+
+int Parameters::getConfigurationInteger(const char*string,int offset){
+	#ifdef ASSERT
+	assert(hasConfigurationOption(string,offset+1));
+	#endif
+
+	for(int i=0;i<(int)m_commands.size();i++){
+		if(strcmp(m_commands[i].c_str(),string)==0){
+
+			istringstream buffer(m_commands[i+1]);
+
+			int value=-1;
+			buffer>>value;
+
+			return value;
+		}
+	}
+
+	return 0;
+}
+

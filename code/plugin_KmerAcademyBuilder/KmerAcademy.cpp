@@ -33,8 +33,21 @@ using namespace std;
 void KmerAcademy::constructor(int rank,Parameters*parameters){
 	m_parameters=parameters;
 	m_size=0;
-	m_hashTable.constructor("RAY_MALLOC_TYPE_KMER_ACADEMY",
-		m_parameters->showMemoryAllocations(),m_parameters->getRank());
+
+	int buckets=m_parameters->getNumberOfBuckets();
+	int bucketsPerGroup=m_parameters->getNumberOfBucketsPerGroup();
+	double loadFactorThreshold=m_parameters->getLoadFactorThreshold();
+
+	cout<<"[KmerAcademy] buckets="<<buckets<<" bucketsPerGroup="<<bucketsPerGroup;
+	cout<<" loadFactorThreshold="<<loadFactorThreshold<<endl;
+
+	m_hashTable.constructor(buckets,"RAY_MALLOC_TYPE_KMER_ACADEMY",
+		m_parameters->showMemoryAllocations(),m_parameters->getRank(),
+		bucketsPerGroup,loadFactorThreshold
+		);
+
+	if(m_parameters->hasOption("-hash-table-verbosity"))
+		m_hashTable.toggleVerbosity();
 
 	m_inserted=false;
 

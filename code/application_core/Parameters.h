@@ -238,6 +238,15 @@ public:
 
 /** gets the maximum coverage depth allowed for seeds. **/
 	CoverageDepth getMaximumSeedCoverage();
+
+	int getNumberOfBuckets();
+	int getNumberOfBucketsPerGroup();
+	double getLoadFactorThreshold();
+
+
+	int getConfigurationInteger(const char*string,int offset);
+	double getConfigurationDouble(const char*string,int offset);
+	bool hasConfigurationOption(const char*string,int count);
 };
 
 #endif

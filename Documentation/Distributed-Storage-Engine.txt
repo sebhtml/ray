@@ -1,0 +1,29 @@
+The distributed storage engine used by Ray is a distributed sparse hash table that
+uses these features:
+
+- incremental resizing
+- double hashing
+- buckets are in groups
+- distributed
+
+
+The run-time options:
+
+
+  Distributed storage engine
+
+       -hash-table-buckets buckets
+              Sets the initial number of buckets. Must be a power of 2 !
+              Default value: 262144
+
+       -hash-table-buckets-per-group buckets
+              Sets the number of buckets per group for sparse storage
+              Default value: 64, Must be between >=1 and <= 64
+
+       -hash-table-load-factor-threshold threshold
+              Sets the load factor threshold for real-time resizing
+              Default value: 0.6, must be >= 0.5 and < 1
+
+       -hash-table-verbosity
+              Activates verbosity for the distributed storage engine
+

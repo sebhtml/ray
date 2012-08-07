@@ -2,7 +2,7 @@ NAME
        Ray - assemble genomes in parallel using the message-passing interface
 
 SYNOPSIS
-       mpiexec -np NUMBER_OF_RANKS Ray -k KMERLENGTH -p l1_1.fastq l1_2.fastq -p l2_1.fastq l2_2.fastq -o test
+       mpiexec -n NUMBER_OF_RANKS Ray -k KMERLENGTH -p l1_1.fastq l1_2.fastq -p l2_1.fastq l2_2.fastq -o test
 
 DESCRIPTION:
 
@@ -47,6 +47,23 @@ DESCRIPTION:
 
        -s sequenceFile
               Provides a file containing single-end reads.
+
+  Distributed storage engine
+
+       -hash-table-buckets buckets
+              Sets the initial number of buckets. Must be a power of 2 !
+              Default value: 262144
+
+       -hash-table-buckets-per-group buckets
+              Sets the number of buckets per group for sparse storage
+              Default value: 64, Must be between >=1 and <= 64
+
+       -hash-table-load-factor-threshold threshold
+              Sets the load factor threshold for real-time resizing
+              Default value: 0.6, must be >= 0.5 and < 1
+
+       -hash-table-verbosity
+              Activates verbosity for the distributed storage engine
 
   Biological abundances
 
