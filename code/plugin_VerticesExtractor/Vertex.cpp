@@ -287,3 +287,13 @@ void Vertex::setVirtualColor(VirtualKmerColorHandle handle){
 	m_color=handle;
 }
 
+
+Kmer Vertex::getKey(){
+	return m_lowerKey;
+}
+
+void Vertex::setKey(Kmer key){
+	m_lowerKey=key;
+}
+
+

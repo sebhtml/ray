@@ -108,6 +108,11 @@ public:
 
 	void setVirtualColor(VirtualKmerColorHandle handle);
 
+	Kmer getKey();
+	void setKey(Kmer key);
+
+
+
 } ATTRIBUTE_PACKED;
 
 #endif

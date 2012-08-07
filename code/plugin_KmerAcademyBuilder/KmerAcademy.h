@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2011  Sébastien Boisvert
+    Copyright (C) 2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -24,19 +24,11 @@
 
 #include <memory/MyAllocator.h>
 #include <plugin_KmerAcademyBuilder/Kmer.h>
+#include <plugin_KmerAcademyBuilder/KmerCandidate.h>
 #include <application_core/Parameters.h>
 #include <structures/MyHashTable.h>
 #include <stdint.h>
 
-/** a KmerCandidate may become a genomic super-star --
- * one of the fews that make it to the graph
- * \author Sébastien Boisvert
- */
-class KmerCandidate{
-public:
-	Kmer m_lowerKey;
-	CoverageDepth m_count;
-}ATTRIBUTE_PACKED;
 
 /**
  * The KmerAcademy is the place where KmerCandidate  

@@ -58,6 +58,7 @@ code/application_core/common_functions.cpp
 code/application_core/Machine.cpp
 code/plugin_Amos/Amos.cpp
 code/plugin_KmerAcademyBuilder/Kmer.cpp
+code/plugin_KmerAcademyBuilder/KmerCandidate.cpp
 code/plugin_KmerAcademyBuilder/KmerAcademyBuilder.cpp
 code/plugin_KmerAcademyBuilder/KmerAcademy.cpp
 code/plugin_KmerAcademyBuilder/BloomFilter.cpp
