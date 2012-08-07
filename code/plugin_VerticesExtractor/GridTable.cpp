@@ -254,7 +254,7 @@ MyHashTable<Kmer,Vertex>*GridTable::getHashTable(){
 }
 
 void GridTable::printStatistics(){
-	m_hashTable.printStatistics();
+	m_hashTable.printProbeStatistics();
 }
 
 void GridTable::completeResizing(){

@@ -115,9 +115,10 @@ MyHashTable<Kmer,KmerCandidate>*KmerAcademy::getHashTable(){
 
 /** print statistics of the hash table */
 void KmerAcademy::printStatistics(){
-	m_hashTable.printStatistics();
+	m_hashTable.printProbeStatistics();
 }
 
 void KmerAcademy::completeResizing(){
 	m_hashTable.completeResizing();
+
 }
