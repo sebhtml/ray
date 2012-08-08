@@ -354,9 +354,11 @@ FILES
 
 DOCUMENTATION
 
-       This help page (always up-to-date)
-       Manual (Portable Document Format): InstructionManual.pdf
-       Mailing list archives: http://sourceforge.net/mailarchive/forum.php?forum_name=denovoassembler-users
+       - mpiexec -n 1 Ray -help|less (always up-to-date)
+       - This help page (always up-to-date)
+       - The directory Documentation/
+       - Manual (Portable Document Format): InstructionManual.tex (in Documentation)
+       - Mailing list archives: http://sourceforge.net/mailarchive/forum.php?forum_name=denovoassembler-users
 
 AUTHOR
        Written by Sébastien Boisvert.

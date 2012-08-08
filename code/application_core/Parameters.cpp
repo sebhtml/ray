@@ -1621,9 +1621,12 @@ void Parameters::showUsage(){
 
 	cout<<"DOCUMENTATION"<<endl;
 	cout<<endl;
-	cout<<basicSpaces<<"This help page (always up-to-date)"<<endl;
-	cout<<basicSpaces<<"Manual (Portable Document Format): InstructionManual.pdf"<<endl;
-	cout<<basicSpaces<<"Mailing list archives: http://sourceforge.net/mailarchive/forum.php?forum_name=denovoassembler-users"<<endl;
+	cout<<basicSpaces<<"- mpiexec -n 1 Ray -help|less (always up-to-date)"<<endl;
+	cout<<basicSpaces<<"- This help page (always up-to-date)"<<endl;
+	cout<<basicSpaces<<"- The directory Documentation/"<<endl;
+ 
+	cout<<basicSpaces<<"- Manual (Portable Document Format): InstructionManual.tex (in Documentation)"<<endl;
+	cout<<basicSpaces<<"- Mailing list archives: http://sourceforge.net/mailarchive/forum.php?forum_name=denovoassembler-users"<<endl;
 	cout<<endl;
 	cout<<"AUTHOR"<<endl;
 	cout<<basicSpaces<<"Written by Sébastien Boisvert."<<endl;
