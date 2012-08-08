@@ -56,7 +56,6 @@ class KmerAcademyBuilder : public CorePlugin{
 
 	SlaveMode RAY_SLAVE_MODE_BUILD_KMER_ACADEMY;
 
-	Adapter_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY m_adapter_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY;
 
 	Profiler*m_profiler;
 

@@ -52,7 +52,6 @@ class JoinerTaskCreator: public TaskCreator,  public CorePlugin{
 	SlaveMode RAY_SLAVE_MODE_FINISH_FUSIONS;
 	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
 
-	Adapter_RAY_SLAVE_MODE_FINISH_FUSIONS m_adapter_RAY_SLAVE_MODE_FINISH_FUSIONS;
 
 	VirtualCommunicator*m_virtualCommunicator;
 	RingAllocator*m_outboxAllocator;

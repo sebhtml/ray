@@ -59,7 +59,6 @@ class EdgePurger : public TaskCreator, public CorePlugin {
 	SlaveMode RAY_SLAVE_MODE_PURGE_NULL_EDGES;
 
 
-	Adapter_RAY_SLAVE_MODE_PURGE_NULL_EDGES m_adapter_RAY_SLAVE_MODE_PURGE_NULL_EDGES;
 
 	Profiler*m_profiler;
 

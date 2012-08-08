@@ -90,11 +90,7 @@ class SeedExtender: public CorePlugin  {
 	SlaveMode RAY_SLAVE_MODE_EXTENSION;
 	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
 
-	Adapter_RAY_SLAVE_MODE_EXTENSION m_adapter_RAY_SLAVE_MODE_EXTENSION;
 
-	Adapter_RAY_MPI_TAG_ADD_GRAPH_PATH m_adapter_RAY_MPI_TAG_ADD_GRAPH_PATH;
-	Adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED m_adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED;
-	Adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY m_adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY;
 
 // all these parameters are not attributes.
 	vector<AssemblySeed>*m_seeds;

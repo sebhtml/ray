@@ -55,7 +55,6 @@ class FusionTaskCreator: public TaskCreator, public CorePlugin {
 	SlaveMode RAY_SLAVE_MODE_FUSION;
 	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
 
-	Adapter_RAY_SLAVE_MODE_FUSION m_adapter_RAY_SLAVE_MODE_FUSION;
 
 	VirtualCommunicator*m_virtualCommunicator;
 	RingAllocator*m_outboxAllocator;

@@ -113,9 +113,6 @@ class GenomeNeighbourhood: public CorePlugin{
 	MessageTag RAY_MPI_TAG_NEIGHBOURHOOD_DATA;
 	MessageTag RAY_MPI_TAG_NEIGHBOURHOOD_DATA_REPLY;
 
-	Adapter_RAY_SLAVE_MODE_NEIGHBOURHOOD m_adapter_RAY_SLAVE_MODE_NEIGHBOURHOOD;
-	Adapter_RAY_MASTER_MODE_NEIGHBOURHOOD m_adapter_RAY_MASTER_MODE_NEIGHBOURHOOD;
-	Adapter_RAY_MPI_TAG_NEIGHBOURHOOD_DATA m_adapter_RAY_MPI_TAG_NEIGHBOURHOOD_DATA;
 
 	/** contig paths */
 	vector<vector<Kmer> >*m_contigs;

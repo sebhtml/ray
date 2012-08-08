@@ -56,8 +56,6 @@ class Amos :  public CorePlugin{
 	SlaveMode RAY_SLAVE_MODE_AMOS;
 	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
 
-	Adapter_RAY_SLAVE_MODE_AMOS m_adapter_RAY_SLAVE_MODE_AMOS;
-	Adapter_RAY_MASTER_MODE_AMOS m_adapter_RAY_MASTER_MODE_AMOS;
 
 	VirtualCommunicator*m_virtualCommunicator;
 	StaticVector*m_inbox;

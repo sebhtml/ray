@@ -50,7 +50,6 @@ class CoverageGatherer : public CorePlugin{
 	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
 	SlaveMode RAY_SLAVE_MODE_SEND_DISTRIBUTION;
 
-	Adapter_RAY_SLAVE_MODE_SEND_DISTRIBUTION m_adapter_RAY_SLAVE_MODE_SEND_DISTRIBUTION;
 
 	map<CoverageDepth,LargeCount> m_distributionOfCoverage;
 	map<CoverageDepth,LargeCount>::iterator m_coverageIterator;

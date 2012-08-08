@@ -63,7 +63,6 @@ class VerticesExtractor: public CorePlugin{
 	SlaveMode RAY_SLAVE_MODE_EXTRACT_VERTICES;
 	SlaveMode RAY_SLAVE_MODE_WRITE_KMERS;
 
-	Adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES m_adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES;
 
 	Derivative m_derivative;
 

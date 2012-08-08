@@ -61,7 +61,6 @@ class FusionData : public CorePlugin {
 	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
 	SlaveMode RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS;
 
-	Adapter_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS m_adapter_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS;
 
 	/** debug fusion code */
 	bool m_debugFusionCode;

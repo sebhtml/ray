@@ -50,7 +50,6 @@ class SequencesLoader : public CorePlugin{
 	SlaveMode RAY_SLAVE_MODE_LOAD_SEQUENCES;
 	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
 
-	Adapter_RAY_SLAVE_MODE_LOAD_SEQUENCES m_adapter_RAY_SLAVE_MODE_LOAD_SEQUENCES;
 
 	MyAllocator*m_persistentAllocator;
 	ArrayOfReads*m_myReads;

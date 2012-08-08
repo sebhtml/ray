@@ -74,8 +74,6 @@ class Scaffolder :  public CorePlugin{
 	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
 	SlaveMode RAY_SLAVE_MODE_SCAFFOLDER;
 
-	Adapter_RAY_MASTER_MODE_WRITE_SCAFFOLDS m_adapter_RAY_MASTER_MODE_WRITE_SCAFFOLDS;
-	Adapter_RAY_SLAVE_MODE_SCAFFOLDER m_adapter_RAY_SLAVE_MODE_SCAFFOLDER;
 
 	SwitchMan*m_switchMan;
 	

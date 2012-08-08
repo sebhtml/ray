@@ -64,8 +64,6 @@ class SeedingData : public CorePlugin{
 	SlaveMode RAY_SLAVE_MODE_SEND_SEED_LENGTHS;
 
 
-	Adapter_RAY_SLAVE_MODE_START_SEEDING m_adapter_RAY_SLAVE_MODE_START_SEEDING;
-	Adapter_RAY_SLAVE_MODE_SEND_SEED_LENGTHS m_adapter_RAY_SLAVE_MODE_SEND_SEED_LENGTHS;
 
 	/** checkpointing */
 	bool m_checkedCheckpoint;
