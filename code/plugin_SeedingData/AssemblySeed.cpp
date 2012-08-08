@@ -100,9 +100,9 @@ void AssemblySeed::computePeakCoverageUsingMode(){
 			best=i->first;
 		}
 
-		//#ifdef CONFIG_VERBOSITY_FOR_SEEDS
+		#ifdef CONFIG_VERBOSITY_FOR_SEEDS
 		cout<<i->first<<"	"<<i->second<<endl;
-		//#endif
+		#endif
 	}
 
 	cout<<"mode= "<<best<<" length= "<<m_vertices.size()<<endl;
@@ -128,9 +128,9 @@ void AssemblySeed::computePeakCoverageUsingMean(){
 		CoverageDepth coverage=i->first;
 		LargeCount frequency=i->second;
 
-		//#ifdef CONFIG_VERBOSITY_FOR_SEEDS
+		#ifdef CONFIG_VERBOSITY_FOR_SEEDS
 		cout<<coverage<<"	"<<frequency<<endl;
-		//#endif
+		#endif
 
 		sum+=coverage*frequency;
 		count+=frequency;
