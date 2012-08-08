@@ -236,12 +236,10 @@ void Amos::registerPlugin(ComputeCore*core){
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_AMOS=core->allocateSlaveModeHandle(plugin);
-	m_adapter_RAY_SLAVE_MODE_AMOS.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_AMOS, &m_adapter_RAY_SLAVE_MODE_AMOS);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_AMOS,"RAY_SLAVE_MODE_AMOS");
 
 	RAY_MASTER_MODE_AMOS=core->allocateMasterModeHandle(plugin);
-	m_adapter_RAY_MASTER_MODE_AMOS.setObject(this);
 	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_AMOS, &m_adapter_RAY_MASTER_MODE_AMOS);
 	core->setMasterModeSymbol(plugin,RAY_MASTER_MODE_AMOS,"RAY_MASTER_MODE_AMOS");
 }

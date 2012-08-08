@@ -184,7 +184,6 @@ void EdgePurger::registerPlugin(ComputeCore*core){
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_PURGE_NULL_EDGES=core->allocateSlaveModeHandle(plugin);
-	m_adapter_RAY_SLAVE_MODE_PURGE_NULL_EDGES.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_PURGE_NULL_EDGES, &m_adapter_RAY_SLAVE_MODE_PURGE_NULL_EDGES);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_PURGE_NULL_EDGES,"RAY_SLAVE_MODE_PURGE_NULL_EDGES");
 

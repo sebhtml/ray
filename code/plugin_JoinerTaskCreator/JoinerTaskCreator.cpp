@@ -203,7 +203,6 @@ void JoinerTaskCreator::registerPlugin(ComputeCore*core){
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_FINISH_FUSIONS=core->allocateSlaveModeHandle(plugin);
-	m_adapter_RAY_SLAVE_MODE_FINISH_FUSIONS.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_FINISH_FUSIONS, &m_adapter_RAY_SLAVE_MODE_FINISH_FUSIONS);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_FINISH_FUSIONS,"RAY_SLAVE_MODE_FINISH_FUSIONS");
 

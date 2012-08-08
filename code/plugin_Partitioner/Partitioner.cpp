@@ -277,12 +277,10 @@ void Partitioner::registerPlugin(ComputeCore*core){
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_MASTER_MODE_COUNT_FILE_ENTRIES=core->allocateMasterModeHandle(plugin);
-	m_adapter_RAY_MASTER_MODE_COUNT_FILE_ENTRIES.setObject(this);
 	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_COUNT_FILE_ENTRIES,&m_adapter_RAY_MASTER_MODE_COUNT_FILE_ENTRIES);
 	core->setMasterModeSymbol(plugin,RAY_MASTER_MODE_COUNT_FILE_ENTRIES,"RAY_MASTER_MODE_COUNT_FILE_ENTRIES");
 
 	RAY_SLAVE_MODE_COUNT_FILE_ENTRIES=core->allocateSlaveModeHandle(plugin);
-	m_adapter_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_COUNT_FILE_ENTRIES, &m_adapter_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_COUNT_FILE_ENTRIES,"RAY_SLAVE_MODE_COUNT_FILE_ENTRIES");
 

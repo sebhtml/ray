@@ -306,7 +306,6 @@ void SequencesIndexer::registerPlugin(ComputeCore*core){
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_INDEX_SEQUENCES=core->allocateSlaveModeHandle(plugin);
-	m_adapter_RAY_SLAVE_MODE_INDEX_SEQUENCES.setObject(this);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_INDEX_SEQUENCES,&m_adapter_RAY_SLAVE_MODE_INDEX_SEQUENCES);
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_INDEX_SEQUENCES,"RAY_SLAVE_MODE_INDEX_SEQUENCES");
 
