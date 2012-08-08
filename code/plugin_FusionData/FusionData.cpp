@@ -29,7 +29,7 @@ __CreatePlugin(FusionData);
 
  /**/
  /**/
-____CreateSlaveModeAdapterImplementation(FusionData,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS); /**/
+__CreateSlaveModeAdapter(FusionData,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS); /**/
  /**/
  /**/
 

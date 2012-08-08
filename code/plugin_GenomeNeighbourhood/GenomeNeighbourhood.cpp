@@ -35,11 +35,11 @@
 __CreatePlugin(GenomeNeighbourhood);
 
  /**/
-____CreateMasterModeAdapterImplementation(GenomeNeighbourhood,RAY_MASTER_MODE_NEIGHBOURHOOD); /**/
+__CreateMasterModeAdapter(GenomeNeighbourhood,RAY_MASTER_MODE_NEIGHBOURHOOD); /**/
  /**/
-____CreateSlaveModeAdapterImplementation(GenomeNeighbourhood,RAY_SLAVE_MODE_NEIGHBOURHOOD); /**/
+__CreateSlaveModeAdapter(GenomeNeighbourhood,RAY_SLAVE_MODE_NEIGHBOURHOOD); /**/
  /**/
-____CreateMessageTagAdapterImplementation(GenomeNeighbourhood,RAY_MPI_TAG_NEIGHBOURHOOD_DATA); /**/
+__CreateMessageTagAdapter(GenomeNeighbourhood,RAY_MPI_TAG_NEIGHBOURHOOD_DATA); /**/
  /**/
 
 

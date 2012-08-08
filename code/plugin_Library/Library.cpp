@@ -34,10 +34,10 @@
 __CreatePlugin(Library);
 
  /**/
-____CreateMasterModeAdapterImplementation(Library,RAY_MASTER_MODE_UPDATE_DISTANCES); /**/
+__CreateMasterModeAdapter(Library,RAY_MASTER_MODE_UPDATE_DISTANCES); /**/
  /**/
-____CreateSlaveModeAdapterImplementation(Library,RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION); /**/
-____CreateSlaveModeAdapterImplementation(Library,RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES); /**/
+__CreateSlaveModeAdapter(Library,RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION); /**/
+__CreateSlaveModeAdapter(Library,RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES); /**/
  /**/
  /**/
 

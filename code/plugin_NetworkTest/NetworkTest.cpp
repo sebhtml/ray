@@ -35,9 +35,9 @@
 __CreatePlugin(NetworkTest);
 
  /**/
-____CreateMasterModeAdapterImplementation(NetworkTest,RAY_MASTER_MODE_TEST_NETWORK); /**/
+__CreateMasterModeAdapter(NetworkTest,RAY_MASTER_MODE_TEST_NETWORK); /**/
  /**/
-____CreateSlaveModeAdapterImplementation(NetworkTest,RAY_SLAVE_MODE_TEST_NETWORK); /**/
+__CreateSlaveModeAdapter(NetworkTest,RAY_SLAVE_MODE_TEST_NETWORK); /**/
  /**/
  /**/
 

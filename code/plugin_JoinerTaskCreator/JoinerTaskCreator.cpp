@@ -27,7 +27,7 @@ __CreatePlugin(JoinerTaskCreator);
 
  /**/
  /**/
-____CreateSlaveModeAdapterImplementation(JoinerTaskCreator,RAY_SLAVE_MODE_FINISH_FUSIONS); /**/
+__CreateSlaveModeAdapter(JoinerTaskCreator,RAY_SLAVE_MODE_FINISH_FUSIONS); /**/
  /**/
  /**/
 

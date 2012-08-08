@@ -28,7 +28,7 @@ __CreatePlugin(EdgePurger);
 
  /**/
  /**/
-____CreateSlaveModeAdapterImplementation(EdgePurger,RAY_SLAVE_MODE_PURGE_NULL_EDGES); /**/
+__CreateSlaveModeAdapter(EdgePurger,RAY_SLAVE_MODE_PURGE_NULL_EDGES); /**/
  /**/
  /**/
 

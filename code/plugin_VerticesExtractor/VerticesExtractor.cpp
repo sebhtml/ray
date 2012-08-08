@@ -34,7 +34,7 @@ __CreatePlugin(VerticesExtractor);
 
  /**/
  /**/
-____CreateSlaveModeAdapterImplementation(VerticesExtractor,RAY_SLAVE_MODE_EXTRACT_VERTICES); /**/
+__CreateSlaveModeAdapter(VerticesExtractor,RAY_SLAVE_MODE_EXTRACT_VERTICES); /**/
  /**/
  /**/
 

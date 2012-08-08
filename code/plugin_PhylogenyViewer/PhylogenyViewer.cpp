@@ -30,12 +30,12 @@
 __CreatePlugin(PhylogenyViewer);
 
  /**/
-____CreateMasterModeAdapterImplementation(PhylogenyViewer,RAY_MASTER_MODE_PHYLOGENY_MAIN); /**/
+__CreateMasterModeAdapter(PhylogenyViewer,RAY_MASTER_MODE_PHYLOGENY_MAIN); /**/
  /**/
-____CreateSlaveModeAdapterImplementation(PhylogenyViewer,RAY_SLAVE_MODE_PHYLOGENY_MAIN); /**/
+__CreateSlaveModeAdapter(PhylogenyViewer,RAY_SLAVE_MODE_PHYLOGENY_MAIN); /**/
  /**/
-____CreateMessageTagAdapterImplementation(PhylogenyViewer,RAY_MPI_TAG_TOUCH_TAXON); /**/
-____CreateMessageTagAdapterImplementation(PhylogenyViewer,RAY_MPI_TAG_TAXON_OBSERVATIONS); /**/
+__CreateMessageTagAdapter(PhylogenyViewer,RAY_MPI_TAG_TOUCH_TAXON); /**/
+__CreateMessageTagAdapter(PhylogenyViewer,RAY_MPI_TAG_TAXON_OBSERVATIONS); /**/
  /**/
 
 

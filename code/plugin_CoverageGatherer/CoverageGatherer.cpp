@@ -39,7 +39,7 @@ __CreatePlugin(CoverageGatherer);
 
  /**/
  /**/
-____CreateSlaveModeAdapterImplementation(CoverageGatherer,RAY_SLAVE_MODE_SEND_DISTRIBUTION); /**/
+__CreateSlaveModeAdapter(CoverageGatherer,RAY_SLAVE_MODE_SEND_DISTRIBUTION); /**/
  /**/
  /**/
 

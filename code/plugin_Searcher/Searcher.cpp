@@ -39,23 +39,23 @@
 __CreatePlugin(Searcher);
 
  /**/
-____CreateMasterModeAdapterImplementation(Searcher,RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS); /**/
-____CreateMasterModeAdapterImplementation(Searcher,RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES); /**/
-____CreateMasterModeAdapterImplementation(Searcher,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES); /**/
-____CreateMasterModeAdapterImplementation(Searcher,RAY_MASTER_MODE_ADD_COLORS); /**/
-____CreateMasterModeAdapterImplementation(Searcher,RAY_MASTER_MODE_SEARCHER_CLOSE); /**/
+__CreateMasterModeAdapter(Searcher,RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS); /**/
+__CreateMasterModeAdapter(Searcher,RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES); /**/
+__CreateMasterModeAdapter(Searcher,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES); /**/
+__CreateMasterModeAdapter(Searcher,RAY_MASTER_MODE_ADD_COLORS); /**/
+__CreateMasterModeAdapter(Searcher,RAY_MASTER_MODE_SEARCHER_CLOSE); /**/
  /**/
-____CreateSlaveModeAdapterImplementation(Searcher,RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS); /**/
-____CreateSlaveModeAdapterImplementation(Searcher,RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES); /**/
-____CreateSlaveModeAdapterImplementation(Searcher,RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES); /**/
-____CreateSlaveModeAdapterImplementation(Searcher,RAY_SLAVE_MODE_ADD_COLORS); /**/
-____CreateSlaveModeAdapterImplementation(Searcher,RAY_SLAVE_MODE_SEARCHER_CLOSE); /**/
+__CreateSlaveModeAdapter(Searcher,RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS); /**/
+__CreateSlaveModeAdapter(Searcher,RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES); /**/
+__CreateSlaveModeAdapter(Searcher,RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES); /**/
+__CreateSlaveModeAdapter(Searcher,RAY_SLAVE_MODE_ADD_COLORS); /**/
+__CreateSlaveModeAdapter(Searcher,RAY_SLAVE_MODE_SEARCHER_CLOSE); /**/
  /**/
-____CreateMessageTagAdapterImplementation(Searcher,RAY_MPI_TAG_ADD_KMER_COLOR); /**/
-____CreateMessageTagAdapterImplementation(Searcher,RAY_MPI_TAG_CONTIG_IDENTIFICATION); /**/
-____CreateMessageTagAdapterImplementation(Searcher,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS); /**/
-____CreateMessageTagAdapterImplementation(Searcher,RAY_MPI_TAG_GET_COVERAGE_AND_PATHS); /**/
-____CreateMessageTagAdapterImplementation(Searcher,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY); /**/
+__CreateMessageTagAdapter(Searcher,RAY_MPI_TAG_ADD_KMER_COLOR); /**/
+__CreateMessageTagAdapter(Searcher,RAY_MPI_TAG_CONTIG_IDENTIFICATION); /**/
+__CreateMessageTagAdapter(Searcher,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS); /**/
+__CreateMessageTagAdapter(Searcher,RAY_MPI_TAG_GET_COVERAGE_AND_PATHS); /**/
+__CreateMessageTagAdapter(Searcher,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY); /**/
  /**/
 
 using namespace std;

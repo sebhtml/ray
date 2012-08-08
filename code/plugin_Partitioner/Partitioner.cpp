@@ -27,9 +27,9 @@
 __CreatePlugin(Partitioner);
 
  /**/
-____CreateMasterModeAdapterImplementation(Partitioner,RAY_MASTER_MODE_COUNT_FILE_ENTRIES); /**/
+__CreateMasterModeAdapter(Partitioner,RAY_MASTER_MODE_COUNT_FILE_ENTRIES); /**/
  /**/
-____CreateSlaveModeAdapterImplementation(Partitioner,RAY_SLAVE_MODE_COUNT_FILE_ENTRIES); /**/
+__CreateSlaveModeAdapter(Partitioner,RAY_SLAVE_MODE_COUNT_FILE_ENTRIES); /**/
  /**/
  /**/
 

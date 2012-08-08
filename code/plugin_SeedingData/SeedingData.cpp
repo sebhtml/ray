@@ -35,8 +35,8 @@ __CreatePlugin(SeedingData);
 
  /**/
  /**/
-____CreateSlaveModeAdapterImplementation(SeedingData,RAY_SLAVE_MODE_START_SEEDING); /**/
-____CreateSlaveModeAdapterImplementation(SeedingData,RAY_SLAVE_MODE_SEND_SEED_LENGTHS); /**/
+__CreateSlaveModeAdapter(SeedingData,RAY_SLAVE_MODE_START_SEEDING); /**/
+__CreateSlaveModeAdapter(SeedingData,RAY_SLAVE_MODE_SEND_SEED_LENGTHS); /**/
  /**/
  /**/
 

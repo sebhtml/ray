@@ -35,7 +35,7 @@ __CreatePlugin(SequencesLoader);
 
  /**/
  /**/
-____CreateSlaveModeAdapterImplementation(SequencesLoader,RAY_SLAVE_MODE_LOAD_SEQUENCES); /**/
+__CreateSlaveModeAdapter(SequencesLoader,RAY_SLAVE_MODE_LOAD_SEQUENCES); /**/
  /**/
  /**/
 

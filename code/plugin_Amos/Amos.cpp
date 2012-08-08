@@ -34,9 +34,9 @@
 __CreatePlugin(Amos);
 
  /**/
-____CreateMasterModeAdapterImplementation(Amos,RAY_MASTER_MODE_AMOS); /**/
+__CreateMasterModeAdapter(Amos,RAY_MASTER_MODE_AMOS); /**/
  /**/
-____CreateSlaveModeAdapterImplementation(Amos,RAY_SLAVE_MODE_AMOS); /**/
+__CreateSlaveModeAdapter(Amos,RAY_SLAVE_MODE_AMOS); /**/
  /**/
  /**/
 

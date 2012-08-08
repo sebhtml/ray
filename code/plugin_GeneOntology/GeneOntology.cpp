@@ -30,13 +30,13 @@
 __CreatePlugin(GeneOntology);
 
  /**/
-____CreateMasterModeAdapterImplementation(GeneOntology,RAY_MASTER_MODE_ONTOLOGY_MAIN); /**/
+__CreateMasterModeAdapter(GeneOntology,RAY_MASTER_MODE_ONTOLOGY_MAIN); /**/
  /**/
-____CreateSlaveModeAdapterImplementation(GeneOntology,RAY_SLAVE_MODE_ONTOLOGY_MAIN); /**/
+__CreateSlaveModeAdapter(GeneOntology,RAY_SLAVE_MODE_ONTOLOGY_MAIN); /**/
  /**/
-____CreateMessageTagAdapterImplementation(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS); /**/
-____CreateMessageTagAdapterImplementation(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY); /**/
-____CreateMessageTagAdapterImplementation(GeneOntology,RAY_MPI_TAG_SYNCHRONIZATION_DONE); /**/
+__CreateMessageTagAdapter(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS); /**/
+__CreateMessageTagAdapter(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY); /**/
+__CreateMessageTagAdapter(GeneOntology,RAY_MPI_TAG_SYNCHRONIZATION_DONE); /**/
  /**/
 
 //#define BUG_DETERMINISM

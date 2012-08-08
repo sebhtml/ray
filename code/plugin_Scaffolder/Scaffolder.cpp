@@ -43,9 +43,9 @@
 __CreatePlugin(Scaffolder);
 
  /**/
-____CreateMasterModeAdapterImplementation(Scaffolder,RAY_MASTER_MODE_WRITE_SCAFFOLDS); /**/
+__CreateMasterModeAdapter(Scaffolder,RAY_MASTER_MODE_WRITE_SCAFFOLDS); /**/
  /**/
-____CreateSlaveModeAdapterImplementation(Scaffolder,RAY_SLAVE_MODE_SCAFFOLDER); /**/
+__CreateSlaveModeAdapter(Scaffolder,RAY_SLAVE_MODE_SCAFFOLDER); /**/
  /**/
  /**/
 

@@ -44,10 +44,10 @@ __CreatePlugin(SeedExtender);
 
  /**/
  /**/
-____CreateSlaveModeAdapterImplementation(SeedExtender,RAY_SLAVE_MODE_EXTENSION); /**/
-____CreateMessageTagAdapterImplementation(SeedExtender,RAY_MPI_TAG_ADD_GRAPH_PATH);
-____CreateMessageTagAdapterImplementation(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED); /**/
-____CreateMessageTagAdapterImplementation(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY); /**/
+__CreateSlaveModeAdapter(SeedExtender,RAY_SLAVE_MODE_EXTENSION); /**/
+__CreateMessageTagAdapter(SeedExtender,RAY_MPI_TAG_ADD_GRAPH_PATH);
+__CreateMessageTagAdapter(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED); /**/
+__CreateMessageTagAdapter(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY); /**/
  /**/
  /**/
 

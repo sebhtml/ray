@@ -32,7 +32,7 @@ __CreatePlugin(SequencesIndexer);
 
  /**/
  /**/
-____CreateSlaveModeAdapterImplementation(SequencesIndexer,RAY_SLAVE_MODE_INDEX_SEQUENCES); /**/
+__CreateSlaveModeAdapter(SequencesIndexer,RAY_SLAVE_MODE_INDEX_SEQUENCES); /**/
  /**/
  /**/
 

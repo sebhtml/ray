@@ -36,7 +36,7 @@ __CreatePlugin(KmerAcademyBuilder);
 
  /**/
  /**/
-____CreateSlaveModeAdapterImplementation(KmerAcademyBuilder,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY); /**/
+__CreateSlaveModeAdapter(KmerAcademyBuilder,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY); /**/
  /**/
  /**/
 
