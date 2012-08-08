@@ -38,6 +38,10 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class Parameters{
+	
+	string m_configurationContent;
+
+	void writeConfigurationFile();
 
 	CoverageDepth m_maximumSeedCoverage;
 

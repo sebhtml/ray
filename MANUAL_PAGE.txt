@@ -29,6 +29,11 @@ DESCRIPTION:
        -version
               Displays Ray version and compilation options.
 
+  Using a configuration file
+
+  Ray can be launched with
+  mpiexec -n 16 Ray Ray.conf
+  The configuration file can include comments (starting with #).
   K-mer length
 
        -k kmerLength

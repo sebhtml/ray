@@ -127,15 +127,77 @@ int Parameters::getWordSize(){
 }
 
 void Parameters::loadCommandsFromFile(char*file){
+
+	// first, load the configuration into a stream
+	
+	ostringstream content;
+	#define __BLOCK_SIZE 4096
+
 	ifstream f(file);
 	while(!f.eof()){
-		string token="";
-		f>>token;
-		if(token!=""){
-			m_commands.push_back(token);
-		}
+		char buffer[__BLOCK_SIZE];
+
+		f.read(buffer,__BLOCK_SIZE);
+
+		content<<buffer;
 	}
 	f.close();
+
+	#undef __BLOCK_SIZE
+
+	ostringstream withoutComments;
+
+	m_configurationContent=content.str();
+
+	bool insideComment=false;
+
+	int total=m_configurationContent.length();
+
+	int i=0;
+	char beginComment='#';
+	char endComment='\n';
+
+	while(i<total){
+		char data=m_configurationContent[i];
+
+		if(data==beginComment && !insideComment){
+			insideComment=true;
+		}else if(data==endComment && insideComment){
+			insideComment=false;
+		}else if(!insideComment){
+			withoutComments<<data;
+		}
+		i++;
+	}
+
+	string withoutCommentsString=withoutComments.str();
+
+	//#define __debug_comments
+
+	#ifdef __debug_comments
+	cout<<"<Original>"<<endl;
+	cout<<m_configurationContent;
+	cout<<"</Original>"<<endl;
+
+	cout<<"<Without comments>"<<endl;
+	cout<<withoutCommentsString;
+	cout<<"</Without comments>"<<endl;
+
+	#endif
+
+	istringstream realData(withoutCommentsString);
+
+	while(1){
+		string token="";
+
+		realData>>token;
+
+		if(token=="")
+			break;
+
+		m_commands.push_back(token);
+	}
+	
 }
 
 void Parameters::loadCommandsFromArguments(int argc,char**argv){
@@ -896,6 +958,19 @@ void Parameters::writeCommandFile(){
 	ofstream f2(rayRuntime.str().c_str());
 	f2<<"Ray version: "<<RAY_VERSION<<endl;
 	f2.close();
+
+	writeConfigurationFile();
+}
+
+void Parameters::writeConfigurationFile(){
+	if(m_configurationContent=="")
+		return;
+
+	ostringstream file;
+	file<<getPrefix()<<"/Ray.conf";
+	ofstream f(file.str().c_str());
+	f<<m_configurationContent;
+	f.close();
 }
 
 void Parameters::constructor(int argc,char**argv,int rank,int size){
@@ -1273,6 +1348,13 @@ void Parameters::showUsage(){
 	showOption("-version","Displays Ray version and compilation options.");
 	cout<<endl;
 
+	cout<<"  Using a configuration file"<<endl;
+	cout<<endl;
+	cout<<"    Ray can be launched with"<<endl;
+	cout<<"    mpiexec -n 16 Ray Ray.conf"<<endl;
+	cout<<"    The configuration file can include comments (starting with #)."<<endl;
+
+	cout<<endl;
 	cout<<"  K-mer length"<<endl;
 	cout<<endl;
 	showOption("-k kmerLength","Selects the length of k-mers. The default value is 21. ");
