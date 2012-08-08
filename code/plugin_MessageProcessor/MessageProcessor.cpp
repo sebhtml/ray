@@ -38,6 +38,8 @@
 #include <application_core/Parameters.h>
 #include <core/ComputeCore.h>
 
+__CreatePlugin(MessageProcessor);
+
  /**/
  /**/
  /**/
@@ -3303,6 +3305,7 @@ void MessageProcessor::resolveSymbols(ComputeCore*core){
 	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_ASK_VERTEX_PATH, (KMER_U64_ARRAY_SIZE + 2) );
 	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_GET_PATH_VERTEX, max(2,KMER_U64_ARRAY_SIZE) );
 
+	__BindPlugin(MessageProcessor);
 }
 
 

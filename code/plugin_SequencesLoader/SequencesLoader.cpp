@@ -31,6 +31,8 @@ Ray
 #include<plugin_SequencesLoader/Read.h>
 #include<iostream>
 
+__CreatePlugin(SequencesLoader);
+
  /**/
  /**/
 ____CreateSlaveModeAdapterImplementation(SequencesLoader,RAY_SLAVE_MODE_LOAD_SEQUENCES); /**/
@@ -376,4 +378,6 @@ void SequencesLoader::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_DO_NOTHING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DO_NOTHING");
 
 	RAY_MPI_TAG_SEQUENCES_READY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SEQUENCES_READY");
+
+	__BindPlugin(SequencesLoader);
 }

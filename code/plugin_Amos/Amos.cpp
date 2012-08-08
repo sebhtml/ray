@@ -31,6 +31,8 @@
 #include <core/slave_modes.h>
 #include <application_core/Parameters.h>
 
+__CreatePlugin(Amos);
+
  /**/
 ____CreateMasterModeAdapterImplementation(Amos,RAY_MASTER_MODE_AMOS); /**/
  /**/
@@ -255,4 +257,6 @@ void Amos::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_WRITE_AMOS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_WRITE_AMOS");
 	RAY_MPI_TAG_WRITE_AMOS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_WRITE_AMOS_REPLY");
 	RAY_MPI_TAG_REQUEST_VERTEX_READS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_REQUEST_VERTEX_READS");
+
+	__BindPlugin(Amos);
 }

@@ -40,6 +40,8 @@
 #include <assert.h>
 #include <math.h> /* for sqrt */
 
+__CreatePlugin(Scaffolder);
+
  /**/
 ____CreateMasterModeAdapterImplementation(Scaffolder,RAY_MASTER_MODE_WRITE_SCAFFOLDS); /**/
  /**/
@@ -1501,4 +1503,6 @@ void Scaffolder::resolveSymbols(ComputeCore*core){
 	core->setMessageTagToSlaveModeSwitch(m_plugin, RAY_MPI_TAG_START_SCAFFOLDER,             RAY_SLAVE_MODE_SCAFFOLDER );
 
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_WRITE_SCAFFOLDS, RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS);
+
+	__BindPlugin(Scaffolder);
 }

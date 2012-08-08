@@ -25,6 +25,8 @@
 #include <sstream>
 #include <communication/Message.h>
 
+__CreatePlugin(FusionData);
+
  /**/
  /**/
 ____CreateSlaveModeAdapterImplementation(FusionData,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS); /**/
@@ -668,4 +670,6 @@ void FusionData::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_GET_PATH_LENGTH=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_PATH_LENGTH");
 	RAY_MPI_TAG_GET_PATH_VERTEX=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_PATH_VERTEX");
 	RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY");
+
+	__BindPlugin(FusionData);
 }

@@ -28,6 +28,8 @@
 #include <application_core/common_functions.h>
 #include <communication/Message.h>
 
+__CreatePlugin(SequencesIndexer);
+
  /**/
  /**/
 ____CreateSlaveModeAdapterImplementation(SequencesIndexer,RAY_SLAVE_MODE_INDEX_SEQUENCES); /**/
@@ -339,4 +341,6 @@ void SequencesIndexer::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY");
 	RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_VERTEX_READS_FROM_LIST_REPLY");
 	RAY_MPI_TAG_VERTEX_READS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_VERTEX_READS_REPLY");
+
+	__BindPlugin(SequencesIndexer);
 }

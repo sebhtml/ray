@@ -36,6 +36,8 @@
 #include <sstream>
 #include <math.h> /* sqrt */
 
+__CreatePlugin(Searcher);
+
  /**/
 ____CreateMasterModeAdapterImplementation(Searcher,RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS); /**/
 ____CreateMasterModeAdapterImplementation(Searcher,RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES); /**/
@@ -3983,6 +3985,8 @@ void Searcher::resolveSymbols(ComputeCore*core){
 	m_coverageXMLflushOperations=0;
 	m_contigIdentificationflushOperations=0;
 	m_sequenceXMLflushOperations=0;
+
+	__BindPlugin(Searcher);
 }
 
 

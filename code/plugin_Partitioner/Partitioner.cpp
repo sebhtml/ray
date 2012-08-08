@@ -24,6 +24,8 @@
 
 #include <stdlib.h>
 
+__CreatePlugin(Partitioner);
+
  /**/
 ____CreateMasterModeAdapterImplementation(Partitioner,RAY_MASTER_MODE_COUNT_FILE_ENTRIES); /**/
  /**/
@@ -324,4 +326,7 @@ void Partitioner::resolveSymbols(ComputeCore*core){
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_COUNT_FILE_ENTRIES, RAY_SLAVE_MODE_COUNT_FILE_ENTRIES );
 
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_COUNT_FILE_ENTRIES,RAY_MASTER_MODE_LOAD_SEQUENCES);
+
+	__BindPlugin(Partitioner);
+
 }

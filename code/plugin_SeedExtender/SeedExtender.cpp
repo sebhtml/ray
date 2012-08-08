@@ -40,6 +40,8 @@
 #include <cryptography/crypto.h>
 #include <math.h> /* sqrt */
 
+__CreatePlugin(SeedExtender);
+
  /**/
  /**/
 ____CreateSlaveModeAdapterImplementation(SeedExtender,RAY_SLAVE_MODE_EXTENSION); /**/
@@ -2549,4 +2551,6 @@ void SeedExtender::resolveSymbols(ComputeCore*core){
 
 	RAY_MPI_TAG_ASK_IS_ASSEMBLED=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ASK_IS_ASSEMBLED");
 	RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY");
+
+	__BindPlugin(SeedExtender);
 }

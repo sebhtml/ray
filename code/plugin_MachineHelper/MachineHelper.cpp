@@ -28,6 +28,8 @@
 #include <map>
 #include <sstream>
 
+__CreatePlugin(MachineHelper);
+
  /**/
 ____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_LOAD_CONFIG); /**/
 ____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_SEND_COVERAGE_VALUES); /**/
@@ -1327,4 +1329,6 @@ void MachineHelper::resolveSymbols(ComputeCore*core){
 
 	core->setObjectSymbol(m_plugin,&(m_ed->m_EXTENSION_contigs),"/RayAssembler/ObjectStore/ContigPaths.ray");
 	core->setObjectSymbol(m_plugin,&(m_ed->m_EXTENSION_identifiers),"/RayAssembler/ObjectStore/ContigNames.ray");
+
+	__BindPlugin(MachineHelper);
 }

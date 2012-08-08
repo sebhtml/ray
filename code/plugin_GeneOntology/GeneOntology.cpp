@@ -27,6 +27,8 @@
 #include <core/OperatingSystem.h>
 #include <plugin_GeneOntology/KeyEncoder.h>
 
+__CreatePlugin(GeneOntology);
+
  /**/
 ____CreateMasterModeAdapterImplementation(GeneOntology,RAY_MASTER_MODE_ONTOLOGY_MAIN); /**/
  /**/
@@ -1515,5 +1517,7 @@ void GeneOntology::resolveSymbols(ComputeCore*core){
 
 	m_slaveStarted=false;
 	m_started=false;
+
+	__BindPlugin(GeneOntology);
 }
 

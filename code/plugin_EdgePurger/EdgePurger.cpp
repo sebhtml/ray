@@ -24,6 +24,8 @@
 #include <stdio.h>
 #include <core/OperatingSystem.h>
 
+__CreatePlugin(EdgePurger);
+
  /**/
  /**/
 ____CreateSlaveModeAdapterImplementation(EdgePurger,RAY_SLAVE_MODE_PURGE_NULL_EDGES); /**/
@@ -204,4 +206,5 @@ void EdgePurger::resolveSymbols(ComputeCore*core){
 
 	RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY");
 
+	__BindPlugin(EdgePurger);
 }

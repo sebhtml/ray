@@ -31,6 +31,9 @@
 #include <application_core/common_functions.h>
 #include <fstream>
 
+
+__CreatePlugin(KmerAcademyBuilder);
+
  /**/
  /**/
 ____CreateSlaveModeAdapterImplementation(KmerAcademyBuilder,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY); /**/
@@ -280,4 +283,7 @@ void KmerAcademyBuilder::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED");
 
 	RAY_MPI_TAG_KMER_ACADEMY_DATA_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_KMER_ACADEMY_DATA_REPLY");
+
+	__BindPlugin(KmerAcademyBuilder);
+
 }

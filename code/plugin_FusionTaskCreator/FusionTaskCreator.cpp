@@ -23,6 +23,8 @@
 #include <plugin_FusionTaskCreator/FusionWorker.h>
 #include <core/OperatingSystem.h>
 
+__CreatePlugin(FusionTaskCreator);
+
  /**/
  /**/
 ____CreateSlaveModeAdapterImplementation(FusionTaskCreator,RAY_SLAVE_MODE_FUSION); /**/
@@ -222,4 +224,6 @@ void FusionTaskCreator::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_GET_PATH_LENGTH=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_PATH_LENGTH");
 	RAY_MPI_TAG_FUSION_DONE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_FUSION_DONE");
 	RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY");
+
+	__BindPlugin(FusionTaskCreator);
 }

@@ -32,6 +32,8 @@
 #include <assert.h>
 #endif
 
+__CreatePlugin(GenomeNeighbourhood);
+
  /**/
 ____CreateMasterModeAdapterImplementation(GenomeNeighbourhood,RAY_MASTER_MODE_NEIGHBOURHOOD); /**/
  /**/
@@ -1161,5 +1163,7 @@ void GenomeNeighbourhood::resolveSymbols(ComputeCore*core){
 
 	if(m_parameters->hasOption("-find-neighbourhoods"))
 		m_pluginIsEnabled=true;
+
+	__BindPlugin(GenomeNeighbourhood);
 }
 

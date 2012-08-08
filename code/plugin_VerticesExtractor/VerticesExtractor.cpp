@@ -30,6 +30,8 @@
 #include <structures/StaticVector.h>
 #include <application_core/common_functions.h>
 
+__CreatePlugin(VerticesExtractor);
+
  /**/
  /**/
 ____CreateSlaveModeAdapterImplementation(VerticesExtractor,RAY_SLAVE_MODE_EXTRACT_VERTICES); /**/
@@ -414,4 +416,6 @@ void VerticesExtractor::resolveSymbols(ComputeCore*core){
 
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_BUILD_GRAPH,          RAY_SLAVE_MODE_EXTRACT_VERTICES );
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_WRITE_KMERS,   RAY_SLAVE_MODE_WRITE_KMERS);
+
+	__BindPlugin(VerticesExtractor);
 }

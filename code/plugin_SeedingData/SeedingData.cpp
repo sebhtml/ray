@@ -31,6 +31,8 @@
 #include <communication/mpi_tags.h>
 #include <plugin_SeedingData/SeedWorker.h>
 
+__CreatePlugin(SeedingData);
+
  /**/
  /**/
 ____CreateSlaveModeAdapterImplementation(SeedingData,RAY_SLAVE_MODE_START_SEEDING); /**/
@@ -444,5 +446,5 @@ void SeedingData::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_SEND_SEED_LENGTHS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SEND_SEED_LENGTHS");
 	RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY");
 
-
+	__BindPlugin(SeedingData);
 }

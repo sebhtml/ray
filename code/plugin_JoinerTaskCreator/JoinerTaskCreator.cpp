@@ -23,6 +23,8 @@
 #include <plugin_JoinerTaskCreator/JoinerWorker.h>
 #include <core/OperatingSystem.h>
 
+__CreatePlugin(JoinerTaskCreator);
+
  /**/
  /**/
 ____CreateSlaveModeAdapterImplementation(JoinerTaskCreator,RAY_SLAVE_MODE_FINISH_FUSIONS); /**/
@@ -220,4 +222,6 @@ void JoinerTaskCreator::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_GET_PATH_LENGTH=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_PATH_LENGTH");
 	RAY_MPI_TAG_GET_PATH_VERTEX=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_PATH_VERTEX");
 	RAY_MPI_TAG_FINISH_FUSIONS_FINISHED=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_FINISH_FUSIONS_FINISHED");
+
+	__BindPlugin(JoinerTaskCreator);
 }

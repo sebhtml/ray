@@ -30,6 +30,9 @@
 #include <assert.h>
 #include <application_core/Parameters.h>
 
+
+__CreatePlugin(Library);
+
  /**/
 ____CreateMasterModeAdapterImplementation(Library,RAY_MASTER_MODE_UPDATE_DISTANCES); /**/
  /**/
@@ -518,6 +521,8 @@ void Library::resolveSymbols(ComputeCore*core){
 
 
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_UPDATE_DISTANCES,RAY_MASTER_MODE_TRIGGER_FUSIONS);
+
+	__BindPlugin(Library);
 }
 
 

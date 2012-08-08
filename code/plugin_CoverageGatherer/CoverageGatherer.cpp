@@ -35,6 +35,8 @@
 #include <plugin_KmerAcademyBuilder/KmerAcademyIterator.h>
 #include <sstream>
 
+__CreatePlugin(CoverageGatherer);
+
  /**/
  /**/
 ____CreateSlaveModeAdapterImplementation(CoverageGatherer,RAY_SLAVE_MODE_SEND_DISTRIBUTION); /**/
@@ -247,4 +249,7 @@ void CoverageGatherer::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION_REPLY");
 	RAY_MPI_TAG_GET_COVERAGE_AND_MARK_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_COVERAGE_AND_MARK_REPLY");
 	RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY");
+
+	__BindPlugin(CoverageGatherer);
+
 }

@@ -32,6 +32,8 @@
 #include <iostream>
 #include <core/ComputeCore.h>
 
+__CreatePlugin(NetworkTest);
+
  /**/
 ____CreateMasterModeAdapterImplementation(NetworkTest,RAY_MASTER_MODE_TEST_NETWORK); /**/
  /**/
@@ -418,4 +420,6 @@ void NetworkTest::resolveSymbols(ComputeCore*core){
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_TEST_NETWORK,RAY_MASTER_MODE_COUNT_FILE_ENTRIES);
 
 	m_started=false;
+
+	__BindPlugin(NetworkTest);
 }

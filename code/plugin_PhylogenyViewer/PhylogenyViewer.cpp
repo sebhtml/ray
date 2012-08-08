@@ -27,6 +27,8 @@
 #include <plugin_PhylogenyViewer/TaxonNameLoader.h>
 #include <core/OperatingSystem.h>
 
+__CreatePlugin(PhylogenyViewer);
+
  /**/
 ____CreateMasterModeAdapterImplementation(PhylogenyViewer,RAY_MASTER_MODE_PHYLOGENY_MAIN); /**/
  /**/
@@ -1394,5 +1396,7 @@ void PhylogenyViewer::resolveSymbols(ComputeCore*core){
 	m_searcher=(Searcher*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/plugin_Searcher.ray");
 
 	m_started=false;
+
+	__BindPlugin(PhylogenyViewer);
 }
 
