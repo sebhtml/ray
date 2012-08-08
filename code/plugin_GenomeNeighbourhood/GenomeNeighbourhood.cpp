@@ -32,13 +32,13 @@
 #include <assert.h>
 #endif
 
- /* generated_automatically */
-____CreateMasterModeAdapterImplementation(GenomeNeighbourhood,RAY_MASTER_MODE_NEIGHBOURHOOD); /* generated_automatically */
- /* generated_automatically */
-____CreateSlaveModeAdapterImplementation(GenomeNeighbourhood,RAY_SLAVE_MODE_NEIGHBOURHOOD); /* generated_automatically */
- /* generated_automatically */
-____CreateMessageTagAdapterImplementation(GenomeNeighbourhood,RAY_MPI_TAG_NEIGHBOURHOOD_DATA); /* generated_automatically */
- /* generated_automatically */
+ /**/
+____CreateMasterModeAdapterImplementation(GenomeNeighbourhood,RAY_MASTER_MODE_NEIGHBOURHOOD); /**/
+ /**/
+____CreateSlaveModeAdapterImplementation(GenomeNeighbourhood,RAY_SLAVE_MODE_NEIGHBOURHOOD); /**/
+ /**/
+____CreateMessageTagAdapterImplementation(GenomeNeighbourhood,RAY_MPI_TAG_NEIGHBOURHOOD_DATA); /**/
+ /**/
 
 
 #define FETCH_PARENTS 	0x00345678

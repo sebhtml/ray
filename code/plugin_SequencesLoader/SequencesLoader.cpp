@@ -31,11 +31,11 @@ Ray
 #include<plugin_SequencesLoader/Read.h>
 #include<iostream>
 
- /* generated_automatically */
- /* generated_automatically */
-____CreateSlaveModeAdapterImplementation(SequencesLoader,RAY_SLAVE_MODE_LOAD_SEQUENCES); /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
+ /**/
+ /**/
+____CreateSlaveModeAdapterImplementation(SequencesLoader,RAY_SLAVE_MODE_LOAD_SEQUENCES); /**/
+ /**/
+ /**/
 
 using namespace std;
 

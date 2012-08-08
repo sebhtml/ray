@@ -35,11 +35,11 @@
 #include <plugin_KmerAcademyBuilder/KmerAcademyIterator.h>
 #include <sstream>
 
- /* generated_automatically */
- /* generated_automatically */
-____CreateSlaveModeAdapterImplementation(CoverageGatherer,RAY_SLAVE_MODE_SEND_DISTRIBUTION); /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
+ /**/
+ /**/
+____CreateSlaveModeAdapterImplementation(CoverageGatherer,RAY_SLAVE_MODE_SEND_DISTRIBUTION); /**/
+ /**/
+ /**/
 
 using namespace std;
 

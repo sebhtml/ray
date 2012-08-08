@@ -40,14 +40,14 @@
 #include <cryptography/crypto.h>
 #include <math.h> /* sqrt */
 
- /* generated_automatically */
- /* generated_automatically */
-____CreateSlaveModeAdapterImplementation(SeedExtender,RAY_SLAVE_MODE_EXTENSION); /* generated_automatically */
+ /**/
+ /**/
+____CreateSlaveModeAdapterImplementation(SeedExtender,RAY_SLAVE_MODE_EXTENSION); /**/
 ____CreateMessageTagAdapterImplementation(SeedExtender,RAY_MPI_TAG_ADD_GRAPH_PATH);
-____CreateMessageTagAdapterImplementation(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED); /* generated_automatically */
-____CreateMessageTagAdapterImplementation(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY); /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
+____CreateMessageTagAdapterImplementation(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED); /**/
+____CreateMessageTagAdapterImplementation(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY); /**/
+ /**/
+ /**/
 
 using namespace std;
 

@@ -30,11 +30,11 @@
 #include <structures/StaticVector.h>
 #include <application_core/common_functions.h>
 
- /* generated_automatically */
- /* generated_automatically */
-____CreateSlaveModeAdapterImplementation(VerticesExtractor,RAY_SLAVE_MODE_EXTRACT_VERTICES); /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
+ /**/
+ /**/
+____CreateSlaveModeAdapterImplementation(VerticesExtractor,RAY_SLAVE_MODE_EXTRACT_VERTICES); /**/
+ /**/
+ /**/
 
 
 void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){

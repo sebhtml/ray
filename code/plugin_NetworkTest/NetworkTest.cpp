@@ -32,12 +32,12 @@
 #include <iostream>
 #include <core/ComputeCore.h>
 
- /* generated_automatically */
-____CreateMasterModeAdapterImplementation(NetworkTest,RAY_MASTER_MODE_TEST_NETWORK); /* generated_automatically */
- /* generated_automatically */
-____CreateSlaveModeAdapterImplementation(NetworkTest,RAY_SLAVE_MODE_TEST_NETWORK); /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
+ /**/
+____CreateMasterModeAdapterImplementation(NetworkTest,RAY_MASTER_MODE_TEST_NETWORK); /**/
+ /**/
+____CreateSlaveModeAdapterImplementation(NetworkTest,RAY_SLAVE_MODE_TEST_NETWORK); /**/
+ /**/
+ /**/
 
 using namespace std;
 

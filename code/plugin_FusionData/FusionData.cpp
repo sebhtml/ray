@@ -25,11 +25,11 @@
 #include <sstream>
 #include <communication/Message.h>
 
- /* generated_automatically */
- /* generated_automatically */
-____CreateSlaveModeAdapterImplementation(FusionData,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS); /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
+ /**/
+ /**/
+____CreateSlaveModeAdapterImplementation(FusionData,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS); /**/
+ /**/
+ /**/
 
 using namespace std;
 

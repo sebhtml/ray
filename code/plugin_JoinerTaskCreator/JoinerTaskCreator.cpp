@@ -23,11 +23,11 @@
 #include <plugin_JoinerTaskCreator/JoinerWorker.h>
 #include <core/OperatingSystem.h>
 
- /* generated_automatically */
- /* generated_automatically */
-____CreateSlaveModeAdapterImplementation(JoinerTaskCreator,RAY_SLAVE_MODE_FINISH_FUSIONS); /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
+ /**/
+ /**/
+____CreateSlaveModeAdapterImplementation(JoinerTaskCreator,RAY_SLAVE_MODE_FINISH_FUSIONS); /**/
+ /**/
+ /**/
 
 
 void JoinerTaskCreator::call_RAY_SLAVE_MODE_FINISH_FUSIONS(){

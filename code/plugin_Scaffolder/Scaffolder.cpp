@@ -40,12 +40,12 @@
 #include <assert.h>
 #include <math.h> /* for sqrt */
 
- /* generated_automatically */
-____CreateMasterModeAdapterImplementation(Scaffolder,RAY_MASTER_MODE_WRITE_SCAFFOLDS); /* generated_automatically */
- /* generated_automatically */
-____CreateSlaveModeAdapterImplementation(Scaffolder,RAY_SLAVE_MODE_SCAFFOLDER); /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
+ /**/
+____CreateMasterModeAdapterImplementation(Scaffolder,RAY_MASTER_MODE_WRITE_SCAFFOLDS); /**/
+ /**/
+____CreateSlaveModeAdapterImplementation(Scaffolder,RAY_SLAVE_MODE_SCAFFOLDER); /**/
+ /**/
+ /**/
 
 using namespace std;
 

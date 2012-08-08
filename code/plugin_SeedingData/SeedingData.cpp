@@ -31,12 +31,12 @@
 #include <communication/mpi_tags.h>
 #include <plugin_SeedingData/SeedWorker.h>
 
- /* generated_automatically */
- /* generated_automatically */
-____CreateSlaveModeAdapterImplementation(SeedingData,RAY_SLAVE_MODE_START_SEEDING); /* generated_automatically */
-____CreateSlaveModeAdapterImplementation(SeedingData,RAY_SLAVE_MODE_SEND_SEED_LENGTHS); /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
+ /**/
+ /**/
+____CreateSlaveModeAdapterImplementation(SeedingData,RAY_SLAVE_MODE_START_SEEDING); /**/
+____CreateSlaveModeAdapterImplementation(SeedingData,RAY_SLAVE_MODE_SEND_SEED_LENGTHS); /**/
+ /**/
+ /**/
 
 
 bool myComparator_sort(const AssemblySeed & a,const AssemblySeed & b){

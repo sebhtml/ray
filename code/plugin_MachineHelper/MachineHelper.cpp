@@ -28,37 +28,37 @@
 #include <map>
 #include <sstream>
 
- /* generated_automatically */
-____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_LOAD_CONFIG); /* generated_automatically */
-____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_SEND_COVERAGE_VALUES); /* generated_automatically */
-____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_WRITE_KMERS); /* generated_automatically */
-____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_LOAD_SEQUENCES); /* generated_automatically */
-____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION); /* generated_automatically */
-____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING); /* generated_automatically */
-____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_PURGE_NULL_EDGES); /* generated_automatically */
-____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_TRIGGER_INDEXING); /* generated_automatically */
-____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS); /* generated_automatically */
-____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS); /* generated_automatically */
-____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_PREPARE_SEEDING); /* generated_automatically */
-____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_TRIGGER_SEEDING); /* generated_automatically */
-____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_TRIGGER_DETECTION); /* generated_automatically */
-____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_ASK_DISTANCES); /* generated_automatically */
-____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_START_UPDATING_DISTANCES); /* generated_automatically */
-____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_TRIGGER_EXTENSIONS); /* generated_automatically */
-____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_TRIGGER_FUSIONS); /* generated_automatically */
-____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS); /* generated_automatically */
-____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_START_FUSION_CYCLE); /* generated_automatically */
-____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_ASK_EXTENSIONS); /* generated_automatically */
-____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_SCAFFOLDER); /* generated_automatically */
-____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_KILL_RANKS); /* generated_automatically */
-____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_KILL_ALL_MPI_RANKS); /* generated_automatically */
- /* generated_automatically */
-____CreateSlaveModeAdapterImplementation(MachineHelper,RAY_SLAVE_MODE_WRITE_KMERS); /* generated_automatically */
-____CreateSlaveModeAdapterImplementation(MachineHelper,RAY_SLAVE_MODE_ASSEMBLE_WAVES); /* generated_automatically */
-____CreateSlaveModeAdapterImplementation(MachineHelper,RAY_SLAVE_MODE_SEND_EXTENSION_DATA); /* generated_automatically */
-____CreateSlaveModeAdapterImplementation(MachineHelper,RAY_SLAVE_MODE_DIE); /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
+ /**/
+____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_LOAD_CONFIG); /**/
+____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_SEND_COVERAGE_VALUES); /**/
+____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_WRITE_KMERS); /**/
+____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_LOAD_SEQUENCES); /**/
+____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION); /**/
+____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING); /**/
+____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_PURGE_NULL_EDGES); /**/
+____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_TRIGGER_INDEXING); /**/
+____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS); /**/
+____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS); /**/
+____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_PREPARE_SEEDING); /**/
+____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_TRIGGER_SEEDING); /**/
+____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_TRIGGER_DETECTION); /**/
+____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_ASK_DISTANCES); /**/
+____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_START_UPDATING_DISTANCES); /**/
+____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_TRIGGER_EXTENSIONS); /**/
+____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_TRIGGER_FUSIONS); /**/
+____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS); /**/
+____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_START_FUSION_CYCLE); /**/
+____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_ASK_EXTENSIONS); /**/
+____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_SCAFFOLDER); /**/
+____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_KILL_RANKS); /**/
+____CreateMasterModeAdapterImplementation(MachineHelper,RAY_MASTER_MODE_KILL_ALL_MPI_RANKS); /**/
+ /**/
+____CreateSlaveModeAdapterImplementation(MachineHelper,RAY_SLAVE_MODE_WRITE_KMERS); /**/
+____CreateSlaveModeAdapterImplementation(MachineHelper,RAY_SLAVE_MODE_ASSEMBLE_WAVES); /**/
+____CreateSlaveModeAdapterImplementation(MachineHelper,RAY_SLAVE_MODE_SEND_EXTENSION_DATA); /**/
+____CreateSlaveModeAdapterImplementation(MachineHelper,RAY_SLAVE_MODE_DIE); /**/
+ /**/
+ /**/
 
 using namespace std;
 

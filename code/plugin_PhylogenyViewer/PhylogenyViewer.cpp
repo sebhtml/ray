@@ -27,14 +27,14 @@
 #include <plugin_PhylogenyViewer/TaxonNameLoader.h>
 #include <core/OperatingSystem.h>
 
- /* generated_automatically */
-____CreateMasterModeAdapterImplementation(PhylogenyViewer,RAY_MASTER_MODE_PHYLOGENY_MAIN); /* generated_automatically */
- /* generated_automatically */
-____CreateSlaveModeAdapterImplementation(PhylogenyViewer,RAY_SLAVE_MODE_PHYLOGENY_MAIN); /* generated_automatically */
- /* generated_automatically */
-____CreateMessageTagAdapterImplementation(PhylogenyViewer,RAY_MPI_TAG_TOUCH_TAXON); /* generated_automatically */
-____CreateMessageTagAdapterImplementation(PhylogenyViewer,RAY_MPI_TAG_TAXON_OBSERVATIONS); /* generated_automatically */
- /* generated_automatically */
+ /**/
+____CreateMasterModeAdapterImplementation(PhylogenyViewer,RAY_MASTER_MODE_PHYLOGENY_MAIN); /**/
+ /**/
+____CreateSlaveModeAdapterImplementation(PhylogenyViewer,RAY_SLAVE_MODE_PHYLOGENY_MAIN); /**/
+ /**/
+____CreateMessageTagAdapterImplementation(PhylogenyViewer,RAY_MPI_TAG_TOUCH_TAXON); /**/
+____CreateMessageTagAdapterImplementation(PhylogenyViewer,RAY_MPI_TAG_TAXON_OBSERVATIONS); /**/
+ /**/
 
 
 //#define DEBUG_PHYLOGENY
