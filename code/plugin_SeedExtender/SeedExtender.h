@@ -51,14 +51,6 @@ class DepthFirstSearchData;
 
 using namespace std;
 
- /* generated_automatically */
-class SeedExtender; /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
-
-
 /*
  * Performs the extension of seeds.
  * \author Sébastien Boisvert

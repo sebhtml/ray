@@ -39,13 +39,6 @@
 #include <vector>
 using namespace std;
 
- /* generated_automatically */
-class KmerAcademyBuilder; /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
-
 
 /*
  * Any MPI rank has some reads to process.

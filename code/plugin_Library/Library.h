@@ -40,13 +40,6 @@
 #include <map>
 using namespace std;
 
- /* generated_automatically */
-class Library; /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
-
 
 /*
  * This class computes the average outer distances 

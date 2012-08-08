@@ -43,13 +43,6 @@
 #include <fstream>
 using namespace std;
 
- /* generated_automatically */
-class SequencesIndexer; /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
-
 
 /*
  * Computes optimal read markers using workers.

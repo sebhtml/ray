@@ -52,13 +52,6 @@ using namespace std;
 #include <plugin_Searcher/DistributionWriter.h>
 #include <core/ComputeCore.h>
 
- /* generated_automatically */
-class Searcher; /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
-
 
 #define CONFIG_NICELY_ASSEMBLED_KMER_POSITION 0
 

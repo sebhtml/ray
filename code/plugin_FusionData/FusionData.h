@@ -41,13 +41,6 @@ class SeedingData;
 #include <set>
 using namespace std;
 
- /* generated_automatically */
-class FusionData; /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
-
 
 /*
  * Contains information regarding fusion of extensions.

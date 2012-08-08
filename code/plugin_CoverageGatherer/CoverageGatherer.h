@@ -32,13 +32,6 @@
 #include <map>
 using namespace std;
 
- /* generated_automatically */
-class CoverageGatherer; /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
-
 
 
 /**

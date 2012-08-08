@@ -36,13 +36,6 @@
 #include <set>
 using namespace std;
 
- /* generated_automatically */
-class JoinerTaskCreator; /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
-
 
 
 /**

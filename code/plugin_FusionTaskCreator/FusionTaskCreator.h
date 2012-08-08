@@ -38,13 +38,6 @@
 #include <set>
 using namespace std;
 
- /* generated_automatically */
-class FusionTaskCreator; /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
-
 
 
 /**

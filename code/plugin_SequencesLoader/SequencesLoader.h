@@ -36,13 +36,6 @@
 #include <vector>
 using namespace std;
 
- /* generated_automatically */
-class SequencesLoader; /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
-
 
 /*
  * Computes the partition on reads (MASTER_RANK).

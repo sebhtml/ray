@@ -42,13 +42,6 @@
 
 using namespace std;
 
- /* generated_automatically */
-class Scaffolder; /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
-
 
 /**
  * Scaffolder class, it uses MPI through the virtual communicator.

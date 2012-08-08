@@ -40,13 +40,6 @@
 #include <vector>
 using namespace std;
 
- /* generated_automatically */
-class GeneOntology; /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
-
 
 /** 
  * a plugin to know what is present in a sample 

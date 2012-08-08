@@ -61,13 +61,6 @@ using namespace std;
 
 #include <core/ComputeCore.h>
 
- /* generated_automatically */
-class MessageProcessor; /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
-
 
 
 /**

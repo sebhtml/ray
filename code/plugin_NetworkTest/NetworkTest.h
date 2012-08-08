@@ -34,13 +34,6 @@
 #include <map>
 using namespace std;
 
- /* generated_automatically */
-class NetworkTest; /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
-
 
 
 /**

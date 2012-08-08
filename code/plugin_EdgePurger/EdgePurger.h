@@ -39,13 +39,6 @@
 #include <stdint.h>
 using namespace std;
 
- /* generated_automatically */
-class EdgePurger; /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
-
 
 /**
  * VerticesExtractor.cpp adds k-mers and ingoing and outgoing edges

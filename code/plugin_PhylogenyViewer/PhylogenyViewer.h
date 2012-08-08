@@ -68,13 +68,6 @@ Genome-to-Taxon.tsv  Taxon-Names.tsv  Taxon-Types.tsv  TreeOfLife-Edges.tsv
 #include <map>
 using namespace std;
 
- /* generated_automatically */
-class PhylogenyViewer; /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
-
 
 /** 
  * a plugin to know what is present in a sample 

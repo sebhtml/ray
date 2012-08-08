@@ -35,13 +35,6 @@
 #include <map>
 using namespace std;
 
- /* generated_automatically */
-class Partitioner; /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
-
 
 /**
  * This class counts the number of entries in each input file in parallel 

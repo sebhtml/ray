@@ -36,13 +36,6 @@
 #include <vector>
 using namespace std;
 
- /* generated_automatically */
-class Amos; /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
-
 
 
 /**

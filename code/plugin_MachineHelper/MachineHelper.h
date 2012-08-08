@@ -55,14 +55,6 @@
 #include <map>
 using namespace std;
 
- /* generated_automatically */
-class MachineHelper; /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
-
-
 
 /** this file contains __legacy code__
  * Old handlers are here.

@@ -39,13 +39,6 @@ class SeedExtender;
 #include <set>
 using namespace std;
 
- /* generated_automatically */
-class SeedingData; /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
-
 
 
 /*

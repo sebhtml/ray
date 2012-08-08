@@ -40,13 +40,6 @@
 #include <stack>
 using namespace std;
 
- /* generated_automatically */
-class GenomeNeighbourhood; /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
- /* generated_automatically */
-
 
 /**
  * The plugin GenomeNeighbourhood outputs a file file
