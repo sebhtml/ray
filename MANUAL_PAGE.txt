@@ -98,7 +98,7 @@ DESCRIPTION:
 
   Other outputs
 
-       -find-neighborhoods
+       -find-neighbourhoods
               Computes contig neighborhoods in the de Bruijn graph
               Output file: RayOutput/NeighbourhoodRelations.txt
 
