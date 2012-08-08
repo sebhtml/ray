@@ -90,9 +90,6 @@ code/plugin_PhylogenyViewer/PhylogenyViewer.cpp
 code/plugin_PhylogenyViewer/PhylogeneticTreeLoader.cpp
 code/plugin_PhylogenyViewer/TaxonNameLoader.cpp
 RayPlatform/handlers/MasterModeExecutor.cpp
-RayPlatform/handlers/MessageTagHandler.cpp
-RayPlatform/handlers/SlaveModeHandler.cpp
-RayPlatform/handlers/MasterModeHandler.cpp
 RayPlatform/handlers/SlaveModeExecutor.cpp
 RayPlatform/handlers/MessageTagExecutor.cpp
 RayPlatform/core/master_modes.cpp
