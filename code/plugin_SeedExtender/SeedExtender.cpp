@@ -26,6 +26,8 @@
 	
 /* TODO: free sequence in ExtensionElement objects when they are not needed anymore */
 
+#define __PROGRESSION_PERIOD 1000
+
 #include <application_core/constants.h>
 #include <string.h>
 #include <structures/StaticVector.h>
@@ -1282,7 +1284,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
-		if(theCurrentSize%100==0){
+		if(theCurrentSize% __PROGRESSION_PERIOD ==0){
 			if(theCurrentSize==0 && ed->m_flowNumber ==0){
 
 				m_flowedVertices.clear();
