@@ -40,7 +40,6 @@ using namespace std;
 class SequencesLoader; /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
-____CreateSlaveModeAdapterDeclaration(SequencesLoader,RAY_SLAVE_MODE_LOAD_SEQUENCES); /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
 

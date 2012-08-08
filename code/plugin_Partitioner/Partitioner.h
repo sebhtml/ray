@@ -38,9 +38,7 @@ using namespace std;
  /* generated_automatically */
 class Partitioner; /* generated_automatically */
  /* generated_automatically */
-____CreateMasterModeAdapterDeclaration(Partitioner,RAY_MASTER_MODE_COUNT_FILE_ENTRIES); /* generated_automatically */
  /* generated_automatically */
-____CreateSlaveModeAdapterDeclaration(Partitioner,RAY_SLAVE_MODE_COUNT_FILE_ENTRIES); /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
 

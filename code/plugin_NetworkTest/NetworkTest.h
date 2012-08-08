@@ -37,9 +37,7 @@ using namespace std;
  /* generated_automatically */
 class NetworkTest; /* generated_automatically */
  /* generated_automatically */
-____CreateMasterModeAdapterDeclaration(NetworkTest,RAY_MASTER_MODE_TEST_NETWORK); /* generated_automatically */
  /* generated_automatically */
-____CreateSlaveModeAdapterDeclaration(NetworkTest,RAY_SLAVE_MODE_TEST_NETWORK); /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
 

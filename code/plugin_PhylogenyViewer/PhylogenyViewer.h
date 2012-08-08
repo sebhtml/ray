@@ -71,12 +71,8 @@ using namespace std;
  /* generated_automatically */
 class PhylogenyViewer; /* generated_automatically */
  /* generated_automatically */
-____CreateMasterModeAdapterDeclaration(PhylogenyViewer,RAY_MASTER_MODE_PHYLOGENY_MAIN); /* generated_automatically */
  /* generated_automatically */
-____CreateSlaveModeAdapterDeclaration(PhylogenyViewer,RAY_SLAVE_MODE_PHYLOGENY_MAIN); /* generated_automatically */
  /* generated_automatically */
-____CreateMessageTagAdapterDeclaration(PhylogenyViewer,RAY_MPI_TAG_TOUCH_TAXON); /* generated_automatically */
-____CreateMessageTagAdapterDeclaration(PhylogenyViewer,RAY_MPI_TAG_TAXON_OBSERVATIONS); /* generated_automatically */
  /* generated_automatically */
 
 

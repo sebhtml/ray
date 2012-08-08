@@ -43,7 +43,6 @@ using namespace std;
 class VerticesExtractor; /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
-____CreateSlaveModeAdapterDeclaration(VerticesExtractor,RAY_SLAVE_MODE_EXTRACT_VERTICES); /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
 

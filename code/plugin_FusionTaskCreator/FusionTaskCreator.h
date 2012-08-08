@@ -42,7 +42,6 @@ using namespace std;
 class FusionTaskCreator; /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
-____CreateSlaveModeAdapterDeclaration(FusionTaskCreator,RAY_SLAVE_MODE_FUSION); /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
 

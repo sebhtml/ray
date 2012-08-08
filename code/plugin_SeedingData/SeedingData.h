@@ -43,8 +43,6 @@ using namespace std;
 class SeedingData; /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
-____CreateSlaveModeAdapterDeclaration(SeedingData,RAY_SLAVE_MODE_START_SEEDING); /* generated_automatically */
-____CreateSlaveModeAdapterDeclaration(SeedingData,RAY_SLAVE_MODE_SEND_SEED_LENGTHS); /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
 

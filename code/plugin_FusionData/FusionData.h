@@ -45,7 +45,6 @@ using namespace std;
 class FusionData; /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
-____CreateSlaveModeAdapterDeclaration(FusionData,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS); /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
 

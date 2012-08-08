@@ -43,13 +43,8 @@ using namespace std;
  /* generated_automatically */
 class GeneOntology; /* generated_automatically */
  /* generated_automatically */
-____CreateMasterModeAdapterDeclaration(GeneOntology,RAY_MASTER_MODE_ONTOLOGY_MAIN); /* generated_automatically */
  /* generated_automatically */
-____CreateSlaveModeAdapterDeclaration(GeneOntology,RAY_SLAVE_MODE_ONTOLOGY_MAIN); /* generated_automatically */
  /* generated_automatically */
-____CreateMessageTagAdapterDeclaration(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS); /* generated_automatically */
-____CreateMessageTagAdapterDeclaration(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY); /* generated_automatically */
-____CreateMessageTagAdapterDeclaration(GeneOntology,RAY_MPI_TAG_SYNCHRONIZATION_DONE); /* generated_automatically */
  /* generated_automatically */
 
 

@@ -55,10 +55,6 @@ using namespace std;
 class SeedExtender; /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
-____CreateSlaveModeAdapterDeclaration(SeedExtender,RAY_SLAVE_MODE_EXTENSION); /* generated_automatically */
-____CreateMessageTagAdapterDeclaration(SeedExtender,RAY_MPI_TAG_ADD_GRAPH_PATH);
-____CreateMessageTagAdapterDeclaration(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED); /* generated_automatically */
-____CreateMessageTagAdapterDeclaration(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY); /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
 

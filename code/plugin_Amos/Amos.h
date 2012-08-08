@@ -39,9 +39,7 @@ using namespace std;
  /* generated_automatically */
 class Amos; /* generated_automatically */
  /* generated_automatically */
-____CreateMasterModeAdapterDeclaration(Amos,RAY_MASTER_MODE_AMOS); /* generated_automatically */
  /* generated_automatically */
-____CreateSlaveModeAdapterDeclaration(Amos,RAY_SLAVE_MODE_AMOS); /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
 

@@ -43,11 +43,8 @@ using namespace std;
  /* generated_automatically */
 class GenomeNeighbourhood; /* generated_automatically */
  /* generated_automatically */
-____CreateMasterModeAdapterDeclaration(GenomeNeighbourhood,RAY_MASTER_MODE_NEIGHBOURHOOD); /* generated_automatically */
  /* generated_automatically */
-____CreateSlaveModeAdapterDeclaration(GenomeNeighbourhood,RAY_SLAVE_MODE_NEIGHBOURHOOD); /* generated_automatically */
  /* generated_automatically */
-____CreateMessageTagAdapterDeclaration(GenomeNeighbourhood,RAY_MPI_TAG_NEIGHBOURHOOD_DATA); /* generated_automatically */
  /* generated_automatically */
 
 

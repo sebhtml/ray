@@ -45,9 +45,7 @@ using namespace std;
  /* generated_automatically */
 class Scaffolder; /* generated_automatically */
  /* generated_automatically */
-____CreateMasterModeAdapterDeclaration(Scaffolder,RAY_MASTER_MODE_WRITE_SCAFFOLDS); /* generated_automatically */
  /* generated_automatically */
-____CreateSlaveModeAdapterDeclaration(Scaffolder,RAY_SLAVE_MODE_SCAFFOLDER); /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
 

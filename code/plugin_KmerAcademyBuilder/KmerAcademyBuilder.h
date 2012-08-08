@@ -43,7 +43,6 @@ using namespace std;
 class KmerAcademyBuilder; /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
-____CreateSlaveModeAdapterDeclaration(KmerAcademyBuilder,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY); /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
 

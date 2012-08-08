@@ -36,7 +36,6 @@ using namespace std;
 class CoverageGatherer; /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
-____CreateSlaveModeAdapterDeclaration(CoverageGatherer,RAY_SLAVE_MODE_SEND_DISTRIBUTION); /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
 

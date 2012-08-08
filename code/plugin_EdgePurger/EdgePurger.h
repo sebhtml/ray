@@ -43,7 +43,6 @@ using namespace std;
 class EdgePurger; /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
-____CreateSlaveModeAdapterDeclaration(EdgePurger,RAY_SLAVE_MODE_PURGE_NULL_EDGES); /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
 

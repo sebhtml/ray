@@ -47,7 +47,6 @@ using namespace std;
 class SequencesIndexer; /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
-____CreateSlaveModeAdapterDeclaration(SequencesIndexer,RAY_SLAVE_MODE_INDEX_SEQUENCES); /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
 

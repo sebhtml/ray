@@ -40,7 +40,6 @@ using namespace std;
 class JoinerTaskCreator; /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
-____CreateSlaveModeAdapterDeclaration(JoinerTaskCreator,RAY_SLAVE_MODE_FINISH_FUSIONS); /* generated_automatically */
  /* generated_automatically */
  /* generated_automatically */
 
