@@ -83,9 +83,11 @@ Tested C++ compilers: see Documentation/COMPILERS.txt
 
 ## Faster execution
 
-Some processors have the popcnt instruction.
+Some processors have the popcnt instruction and other cool instructions.
+With gcc, add -march=native to build Ray for the processor used for
+the compilation.
 
-	make PREFIX=Build.popcnt DEBUG=n ASSERT=n EXTRA=-mpopcnt
+	make PREFIX=Build.native DEBUG=n ASSERT=n EXTRA=" -march=native"
 	make install
 
 
@@ -114,10 +116,30 @@ see the Makefile for more.
 
 To run Ray on paired reads:
 
-	mpirun -np 25 Ray -p lib1.left.fasta lib1.right.fasta -p lib2.left.fasta lib2.right.fasta -o RayOutput
+	mpiexec -n 25 Ray -k31 -p lib1.left.fasta lib1.right.fasta -p lib2.left.fasta lib2.right.fasta -o RayOutput
 	ls RayOutput/Contigs.fasta
 	ls RayOutput/Scaffolds.fasta
 	ls RayOutput/
+
+# Using a configuration file
+
+Ray can be run with a configuration file instead.
+
+mpiexec -n 16 Ray Ray.conf
+
+Content of Ray.conf:
+
+ 
+ -k 31  # this is a comment
+ -p 
+    lib1.left.fasta 
+    lib1.right.fasta 
+
+ -p
+   lib2.left.fasta 
+   lib2.right.fasta  
+ 
+  -o RayOutput
 
 # Outputted files
 
